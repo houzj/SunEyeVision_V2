@@ -29,10 +29,8 @@ public sealed class RootWorkflowOverviewTests
  [Fact]
  public void Actual_overview_validates_atomically_renders_source_cards_and_routes_requests_without_model_writes()
  {
-  Exception? failure=null;var thread=new Thread(()=>
+  UiRuntime.Run(()=>
   {
-   try
-   {
     var control=new RootWorkflowOverviewControl();
     var entry=new RootWorkflowOverviewEntry("root","根流程",false,false,false,true,true,true,null,null,null,null);
     control.SetEntries(new[]{entry},"document",7);
@@ -60,9 +58,7 @@ public sealed class RootWorkflowOverviewTests
     control.SetEntries(Array.Empty<RootWorkflowOverviewEntry>(),"document",9);
     Assert.Empty(surface.Children.Cast<UIElement>());Assert.Equal(Visibility.Visible,((TextBlock)control.FindName("EmptyHint")).Visibility);
     control.CancelGesture();
-   }
-   catch(Exception error){failure=error;}
-  });thread.SetApartmentState(ApartmentState.STA);thread.Start();Assert.True(thread.Join(TimeSpan.FromSeconds(30)));if(failure is not null)throw failure;
+  });
  }
  static System.Collections.Generic.IEnumerable<T> Descendants<T>(DependencyObject parent) where T:DependencyObject
  {

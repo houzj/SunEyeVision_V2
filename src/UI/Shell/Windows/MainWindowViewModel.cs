@@ -912,14 +912,25 @@ SplitterPosition = position;
         /// <summary>
         /// 更新当前解决方案信息
         /// </summary>
+        private bool _solutionInfoRefreshQueued;
         private void UpdateCurrentSolutionInfo()
         {
+            // Visibility/retirement callbacks can run inside a document notification.
+            // Read the settled session state after that owner-thread transaction returns.
+            if (_solutionInfoRefreshQueued || _documentHostReleased) return;
+            _solutionInfoRefreshQueued = true;
+            var dispatcher = System.Windows.Application.Current?.Dispatcher ?? System.Windows.Threading.Dispatcher.CurrentDispatcher;
+            dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+            {
+                _solutionInfoRefreshQueued = false;
+                if (_documentHostReleased) return;
             OnPropertyChanged(nameof(CurrentSolutionName));
             OnPropertyChanged(nameof(CurrentSolutionPath));
             OnPropertyChanged(nameof(HasCurrentSolution));
             OnPropertyChanged(nameof(HasUnsavedSolutionChanges));
             var name = HasCurrentSolution ? CurrentSolutionName : "未打开方案";
             Title = "太阳眼视觉 - " + name + (HasUnsavedSolutionChanges ? " *" : "");
+            }));
         }
 
         /// <summary>

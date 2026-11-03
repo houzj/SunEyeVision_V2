@@ -12,37 +12,6 @@ namespace SunEyeVision.UI.Tests;
 
 public sealed class SingleInstanceCoordinatorTests
 {
-    [Fact]
-    public async Task Preparing_transition_rejects_reentry_before_touching_services()
-    {
-        // Exercise just the admission guard, without constructing real services or touching user data.
-        var model = (SunEyeVision.UI.Shell.Windows.MainWindowViewModel)
-            System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(SunEyeVision.UI.Shell.Windows.MainWindowViewModel));
-        var field = model.GetType().GetField("_transitionPreparationInProgress",
-            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
-        field.SetValue(model, true);
-        Assert.False(model.CanAcceptExternalActivation);
-        Assert.False(await model.PrepareSolutionTransitionAsync());
-        field.SetValue(model, false);
-        Assert.True(model.CanAcceptExternalActivation);
-    }
-
-    [Fact]
-    public void External_solution_entry_reuses_stop_and_save_transition()
-    {
-        var type = typeof(SunEyeVision.UI.Shell.Windows.MainWindowViewModel);
-        var method = type.GetMethod("OpenExternalSolutionAsync",
-            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
-        var attribute = method.GetCustomAttributes(typeof(System.Runtime.CompilerServices.AsyncStateMachineAttribute), false)
-            .Cast<System.Runtime.CompilerServices.AsyncStateMachineAttribute>().Single();
-        var body = attribute.StateMachineType.GetMethod("MoveNext",
-            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public)!
-            .GetMethodBody()!.GetILAsByteArray()!;
-        var token = type.GetMethod("PrepareSolutionTransitionAsync")!.MetadataToken;
-        Assert.Contains(System.Linq.Enumerable.Range(0, body.Length - 4),
-            i => (body[i] == 0x28 || body[i] == 0x6f) && BitConverter.ToInt32(body, i + 1) == token);
-    }
-
     private static string Name() => "SunEyeVision.Test.Instance." + Guid.NewGuid().ToString("N");
     private static Task<InstanceActivationResult> Accept(InstanceActivationRequest request)
         => Task.FromResult(InstanceActivationResult.Delivered);

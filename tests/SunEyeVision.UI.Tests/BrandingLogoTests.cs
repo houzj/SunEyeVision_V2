@@ -200,17 +200,5 @@ public sealed class BrandingLogoTests
         encoder.Save(stream);
     }
 
-    private static void RunSta(Action action)
-    {
-        // The test host has no WPF Application startup to register the pack URI parser.
-        System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Application).TypeHandle);
-        _ = System.IO.Packaging.PackUriHelper.Create(new Uri("http://localhost/"));
-        Exception? error = null;
-        var thread = new Thread(() => { try { action(); } catch (Exception ex) { error = ex; } });
-        thread.SetApartmentState(ApartmentState.STA);
-        thread.IsBackground = true;
-        thread.Start();
-        Assert.True(thread.Join(TimeSpan.FromSeconds(30)), "Logo test timed out");
-        if (error != null) ExceptionDispatchInfo.Capture(error).Throw();
-    }
+    private static void RunSta(Action action) => UiRuntime.Run(action);
 }

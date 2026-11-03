@@ -521,12 +521,14 @@ public sealed class ResultPresentationPresenterTests:IDisposable
     private static RunFixture Success(ToolSchema schema, Dictionary<string, object?> values, Action? release = null)
     {
         var identity=new ToolExecutionOwner().Begin("source",Guid.NewGuid(),"result-presenter-tests");
-        var output=new SunEyeVision.TestFixtures.WorkspaceProbeOutput(values);
+        var output=new FrozenTestOutput(values);
         var snapshot=DeclaredOutputSnapshot.Capture(schema,1,identity,"source",
             new(true,output,BusinessJudgment.Pass,Array.Empty<Diagnostic>()),new CallbackOwner(release),0);
         return new(snapshot);
     }
 
+    private sealed class FrozenTestOutput(IReadOnlyDictionary<string,object?> values):IToolOutput
+    { public IReadOnlyDictionary<string,object?> ToValues()=>values; }
     private sealed class CallbackOwner(Action? release):IDisposable
     {
         private Action? _release=release;

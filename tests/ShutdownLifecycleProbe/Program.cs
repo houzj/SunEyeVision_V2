@@ -17,6 +17,8 @@ internal static class Program
     [STAThread]
     private static int Main(string[] args)
     {
+        var productRoot=typeof(Program).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().Single(item=>item.Key=="HostProductRoot").Value!;
+        AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY",Path.GetFullPath(productRoot));
         try { return args.Contains("full-startup-probe") ? RunFullStartup(args) : Run(args); }
         catch(Exception error) { Console.Error.WriteLine(error); return 1; }
     }

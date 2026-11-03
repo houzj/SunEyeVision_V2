@@ -32,8 +32,7 @@ public sealed class AboutWindowTests
     [Fact]
     public void Window_renders_both_themes_and_updates_existing_resource_references()
     {
-        Exception? error = null;
-        var thread = new Thread(() =>
+        UiRuntime.Run(() =>
         {
             AboutWindow? window = null;
             try
@@ -79,13 +78,7 @@ public sealed class AboutWindowTests
                     }
                 }
             }
-            catch (Exception ex) { error = ex; }
             finally { window?.Close(); }
         });
-        thread.SetApartmentState(ApartmentState.STA);
-        thread.IsBackground = true;
-        thread.Start();
-        Assert.True(thread.Join(TimeSpan.FromSeconds(30)), "关于窗口主题测试超时");
-        if (error != null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(error).Throw();
     }
 }

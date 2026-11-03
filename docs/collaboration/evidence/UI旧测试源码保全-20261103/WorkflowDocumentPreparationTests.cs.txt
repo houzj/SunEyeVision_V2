@@ -1,0 +1,194 @@
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Reflection;
+using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
+using SunEyeVision.Plugin.Runtime;
+using SunEyeVision.Plugin.SDK.Core;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Metadata;
+using NSubstitute;
+using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.UI.Features.WorkflowUI;
+using SunEyeVision.UI.Services;
+using SunEyeVision.UI.Services.Interaction;
+using SunEyeVision.UI.Services.Workflow;
+using SunEyeVision.Workflow;
+using Xunit;
+
+namespace SunEyeVision.UI.Tests;
+
+[Collection("Editor commit UI")]
+public sealed class WorkflowDocumentPreparationTests
+{
+    private static (WorkflowExecutionManager Manager, WorkflowTabViewModel Tab, Solution Document,IInputProvider Input,WorkflowEngine Engine) Fixture()
+    {
+        SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.InitializeSolutionManager(
+            System.IO.Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT") ?? AppContext.BaseDirectory, "s2-preparation-data"));
+        var engine = new WorkflowEngine(Substitute.For<ILogger>());
+        var flow = engine.CreateWorkflow(Guid.NewGuid().ToString(), "document preparation");
+        var input = Substitute.For<IInputProvider>(); input.GetInputImageAsync().Returns(Task.FromResult<object?>(null));
+        var manager = new WorkflowExecutionManager(input, engine, new RuntimeInputSnapshotService());
+        return (manager, new WorkflowTabViewModel { Id = flow.Id, Name = flow.Name, WorkflowNodes = flow.Nodes, WorkflowConnections = flow.Connections }, new Solution { Workflows = new() { flow } },input,engine);
+    }
+    [Fact]
+    public void RunSingle_and_solution_prepare_document_once_before_nested_execution() => Sta(() =>
+    {
+        var f = Fixture(); var manager = f.Manager; using var cleanup = new ManagerCleanup(manager); var calls = 0;
+        manager.CapturePublishedConfiguration = () => { Assert.False(Monitor.IsEntered(GlobalVariable.ValueGate)); calls++; return Capture(f.Document); };
+        manager.RunSingleAsync(f.Tab).GetAwaiter().GetResult(); Assert.Equal(1, calls);
+        calls = 0;
+        manager.RunSolutionAsync(new[] { f.Tab }, f.Document).GetAwaiter().GetResult(); Assert.Equal(1, calls);
+    });
+    [Fact]
+    public void Missing_production_document_entry_rejects_before_input_or_legacy_flush() => Sta(() =>
+    {
+        var f = Fixture(); var manager = f.Manager; using var cleanup = new ManagerCleanup(manager); string? error = null;
+        manager.WorkflowExecutionError += (_, e) => error = e.ErrorMessage;
+        manager.RunSingleAsync(f.Tab).GetAwaiter().GetResult();
+        Assert.NotNull(error); Assert.Contains("正式配置快照入口", error);
+    });
+    [Fact]
+    public void Communication_admission_prepares_once_and_nested_run_does_not_prepare_again() => Sta(() =>
+    {
+        var f = Fixture(); var manager = f.Manager; using var cleanup = new ManagerCleanup(manager); var calls = 0;
+        manager.CapturePublishedConfiguration = () => {calls++;return Capture(f.Document);};
+        Assert.True(manager.RunCommunicationOperationAsync(token => manager.RunSingleAsync(f.Tab, token), CancellationToken.None).GetAwaiter().GetResult());
+        Assert.Equal(1, calls);
+    });
+    [Fact]
+    public void Continuous_admission_prepares_once_per_iteration() => Sta(() =>
+    {
+        var f = Fixture(); var manager = f.Manager; using var cleanup = new ManagerCleanup(manager); var calls = 0; var completed = 0;
+        var stopped = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        string? failure = null;
+        manager.CapturePublishedConfiguration = () => {Interlocked.Increment(ref calls);return Capture(f.Document);};
+        manager.WorkflowExecutionCompleted += (_, _) => { if (Interlocked.Increment(ref completed) == 2) manager.StopContinuousRun(f.Tab); };
+        manager.WorkflowExecutionStopped += (_, _) => stopped.TrySetResult();
+        manager.WorkflowExecutionError += (_, e) => { failure = e.ErrorMessage; stopped.TrySetResult(); };
+        Assert.True(manager.StartContinuousRun(f.Tab));
+        Assert.True(stopped.Task.Wait(TimeSpan.FromSeconds(10)), "Continuous preparation did not finish.");
+        Assert.Null(failure); Assert.Equal(2, completed); Assert.Equal(2, calls);
+    });
+    [Theory]
+    [InlineData(false,false,false)]
+    [InlineData(true,false,false)]
+    [InlineData(false,true,false)]
+    [InlineData(true,true,false)]
+    [InlineData(false,false,true)]
+    [InlineData(true,false,true)]
+    public void Manager_produces_same_and_cross_flow_globals_before_consumers_without_initial_fallback(bool crossFlow,bool fail,bool invalid) => Sta(() =>
+    {
+        var f=Fixture();using var cleanup=new ManagerCleanup(f.Manager);ToolRegistry.RegisterTool(typeof(GlobalProductionProbe));
+        var label=Guid.NewGuid().ToString("N");var sourceFlow=f.Document.Workflows[0];
+        var source=new WorkflowNodeBase("source","source","source",GlobalProbeId){Parameters=new GlobalProbeParameters{Label=label+"/source",Source=true,Value=42,Fail=fail}};
+        var consumerFlow=crossFlow?new SunEyeVision.Workflow.Workflow("consumer-flow","consumer"):sourceFlow;
+        if(crossFlow){f.Document.Workflows.Add(consumerFlow);}
+        var consumer=new WorkflowNodeBase("consumer","consumer","consumer",GlobalProbeId){Parameters=new GlobalProbeParameters{Label=label+"/consumer",Input=777}};
+        consumer.ParamSettings.SetSetting(ParamSetting.CreateBinding("Input","__GlobalVars__","produced"));
+        consumerFlow.Nodes.Add(consumer);sourceFlow.Nodes.Add(source);
+        sourceFlow.Nodes.Add(new("independent","independent","independent",GlobalProbeId){Parameters=new GlobalProbeParameters{Label=label+"/independent",Source=true,Value=7}});
+        // Register only the real engine definitions needed for UI consistency/presentation.
+        if(crossFlow)f.Engine.RegisterWorkflow(consumerFlow);
+        var reference=new OutputReference(source.Id,invalid?"missing":"output.value",TypeRef.ScalarOf(ScalarKind.Float64),scopeId:sourceFlow.Id);
+        var variable=new GlobalVariable("produced",999d,"Double"){Id="produced",ProducerBinding=new(){ReferenceExpression=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(reference)}};
+        variable.ConsumerBindings.Add(new(){WorkflowId=consumerFlow.Id,NodeId=consumer.Id,ParameterName="Input"});f.Document.GlobalVariables.Add(variable);
+        var host=new NodeConfigurationEditHost(f.Document);var publication=WorkflowPublishedConfiguration.Capture(host.Capture(),f.Document);
+        f.Manager.CapturePublishedConfiguration=()=>publication;
+        var failures=new List<string>();f.Manager.WorkflowExecutionError+=(_,args)=>failures.Add(args.ErrorMessage);
+        try
+        {
+            if(crossFlow)
+            {
+                var consumerTab=new WorkflowTabViewModel{Id=consumerFlow.Id,Name=consumerFlow.Name,WorkflowNodes=consumerFlow.Nodes,WorkflowConnections=consumerFlow.Connections};
+                f.Manager.RunSolutionAsync(new[]{consumerTab,f.Tab},f.Document).GetAwaiter().GetResult();
+            }
+            else f.Manager.RunSingleAsync(f.Tab).GetAwaiter().GetResult();
+            if(fail||invalid){Assert.False(Seen.TryGetValue(label+"/consumer",out _));Assert.NotEmpty(failures);}
+            else{Assert.Equal(42d,Seen[label+"/consumer"]);Assert.Empty(failures);}
+            Assert.Equal(999d,variable.Value);Assert.Equal(777d,((GlobalProbeParameters)consumer.Parameters).Input);
+            Assert.Equal(7d,Seen[label+"/independent"]);
+            if(!invalid)Assert.Equal(reference.PortId,publication.GlobalDefinitions.Single().ProducerBinding!.SourceReference!.PortId);
+            if(!crossFlow&&!fail&&!invalid)
+            {
+                Seen.TryRemove(label+"/consumer",out _);
+                Assert.True(f.Manager.RunCommunicationOperationAsync(async token=>
+                {await f.Manager.RunCommunicationNodeAsync(sourceFlow.Id,source.Id,token);await f.Manager.RunCommunicationNodeAsync(sourceFlow.Id,consumer.Id,token);},default).GetAwaiter().GetResult());
+                Assert.Equal(42d,Seen[label+"/consumer"]);Seen.TryRemove(label+"/consumer",out _);
+                Assert.ThrowsAny<Exception>(()=>f.Manager.RunCommunicationNodeAsync(sourceFlow.Id,consumer.Id,default).GetAwaiter().GetResult());
+                Assert.False(Seen.ContainsKey(label+"/consumer"));Assert.Equal(999d,variable.Value);
+            }
+        }
+        finally{Seen.TryRemove(label+"/source",out _);Seen.TryRemove(label+"/consumer",out _);Seen.TryRemove(label+"/independent",out _);ToolRegistry.UnregisterTool(GlobalProbeId);}
+    });
+
+    [Fact]
+    public void Capture_freezes_one_host_revision_actual_owner_paths_and_live_unbound_values_without_bound_initials() => Sta(() =>
+    {
+        var f=Fixture();using var cleanup=new ManagerCleanup(f.Manager);
+        var unbound=new GlobalVariable("plain",1L,"Integer"){Id="plain"};f.Document.GlobalVariables.Add(unbound);
+        f.Document.FilePath=System.IO.Path.Combine(System.IO.Path.GetTempPath(),"D06-base-a","capture.solution");
+        var host=new NodeConfigurationEditHost(f.Document);var accepted=host.Capture();unbound.Value=17L;
+        var publication=WorkflowPublishedConfiguration.Capture(accepted,f.Document);
+        var directory=publication.ResourcePaths.BaseDirectory;f.Document.FilePath=System.IO.Path.Combine(System.IO.Path.GetTempPath(),"D06-base-b","capture.solution");
+        Assert.Equal(System.IO.Path.Combine(System.IO.Path.GetTempPath(),"D06-base-a"),directory);Assert.Equal(directory,publication.ResourcePaths.BaseDirectory);
+        Assert.Equal(accepted.Version,publication.Configuration.DocumentRevision);Assert.Same(f.Document.ExecutionOwner,publication.ExecutionOwner);
+        Assert.Equal(17L,Assert.Single(publication.GlobalDefinitions).Value);unbound.Value=99L;
+        Assert.Equal(17L,Assert.Single(publication.GlobalDefinitions).Value);
+    });
+
+    [Fact]
+    public void Cancellation_during_input_wait_retires_actual_batch_and_next_run_has_no_stale_values() => Sta(() =>
+    {
+        var f=Fixture();using var cleanup=new ManagerCleanup(f.Manager);using var cancel=new CancellationTokenSource();
+        var entered=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release=new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        f.Input.GetInputImageAsync().Returns(_=>{entered.TrySetResult();return release.Task;});
+        f.Manager.CapturePublishedConfiguration=()=>Capture(f.Document);
+        var stopped=0;f.Manager.WorkflowExecutionStopped+=(_,_)=>stopped++;
+        var running=f.Manager.RunSingleAsync(f.Tab,cancel.Token);Assert.True(entered.Task.Wait(TimeSpan.FromSeconds(5)));
+        var dictionary=(System.Collections.IDictionary)typeof(WorkflowExecutionManager).GetField("_preparedRunInputs",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(f.Manager)!;
+        var item=dictionary[f.Tab.RootWorkflowId]!;
+        var values=Assert.IsType<WorkflowGlobalRunValues>(item.GetType().GetProperty("ProducedGlobals")!.GetValue(item));
+        cancel.Cancel();release.SetResult(null);running.GetAwaiter().GetResult();
+        Assert.Equal(1,stopped);Assert.Throws<ObjectDisposedException>(()=>values.Capture());Assert.Empty(dictionary.Keys.Cast<object>());
+        f.Input.GetInputImageAsync().Returns(Task.FromResult<object?>(null));f.Manager.RunSingleAsync(f.Tab).GetAwaiter().GetResult();
+        Assert.False(f.Manager.IsAnyRunning());
+    });
+
+    private const string GlobalProbeId="D06.Manager.GlobalProbe";
+    private static readonly ConcurrentDictionary<string,double> Seen=new();
+    public sealed class GlobalProbeParameters:ToolParameters,IOutputContractProvider
+    {
+        public string Label{get;set;}="";public bool Source{get;set;}public bool Fail{get;set;}public double Value{get;set;}public double Input{get;set;}
+        public IReadOnlyList<OutputVariable> GetOutputContract()=>new[]{new OutputVariable{Name="Value",PortId="output.value",DeclaredType=typeof(double),VariableType="Double",IsCollection=false}};
+    }
+    public sealed class GlobalProbeResults:ToolResults
+    {public double Value{get;set;}public override List<PropertyMapEntry> GetPropertyMap()=>new(){new("Value","Value")};}
+    [Tool(id:GlobalProbeId,displayName:"正式全局生产接线探针")]
+    public sealed class GlobalProductionProbe:IToolPlugin<GlobalProbeParameters,GlobalProbeResults>
+    {
+        public GlobalProbeResults Run(GlobalProbeParameters parameters)
+        {
+            var result=new GlobalProbeResults{Value=parameters.Source?parameters.Value:parameters.Input};
+            if(parameters.Fail)result.SetError("controlled producer failure");
+            else{Seen[parameters.Label]=result.Value;result.SetSuccess();}return result;
+        }
+    }
+
+    private static WorkflowPublishedConfiguration Capture(Solution document)=>WorkflowPublishedConfiguration.Capture(new NodeConfigurationEditHost(document).Capture(),document);
+    private sealed class ManagerCleanup(WorkflowExecutionManager manager) : IDisposable { public void Dispose() => manager.Dispose(); }
+    private static void Sta(Action action)
+    {
+        Exception? failure = null;
+        var thread = new Thread(() => { try { action(); } catch (Exception ex) { failure = ex; } }) { IsBackground = true };
+        thread.SetApartmentState(ApartmentState.STA); thread.Start();
+        Assert.True(thread.Join(TimeSpan.FromSeconds(25)), "Run preparation test timed out.");
+        if (failure != null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+    }
+}

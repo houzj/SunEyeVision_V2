@@ -1,0 +1,105 @@
+using System.IO;
+using System.Reflection;
+using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
+using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
+using SunEyeVision.Workflow;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
+using SunEyeVision.UI.Shell.Windows;
+using System.Windows;
+using Xunit;
+using Flow=SunEyeVision.Workflow.Workflow;
+namespace SunEyeVision.UI.Tests;
+[Collection("VM canvas UI")]
+public sealed class RuntimeImageConnectionOwnershipTests
+{
+ [Fact]
+ public void Automatic_connection_accepts_declared_image_member_and_rejects_wrong_member_or_edge()
+ {
+  var host=typeof(RuntimeImageConnectionOwnershipTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().Single(a=>a.Key=="HostDebugRoot").Value!;
+  var prior=AppContext.GetData("APP_CONTEXT_BASE_DIRECTORY");
+  try
+  {
+   AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY",Path.TrimEndingDirectorySeparator(Path.GetFullPath(host))+Path.DirectorySeparatorChar);
+   Assert.True(PluginLoader.LoadPlugins());
+   var source=new WorkflowNodeBase("image","图像源","图像源","ImageLoad"){RuntimeConfiguration=RuntimeToolConfiguration.Create("ImageLoad")};
+   var target=new WorkflowNodeBase("blob","Blob","Blob","BlobAnalysis"){RuntimeConfiguration=RuntimeToolConfiguration.Create("BlobAnalysis")};
+   var flow=new Flow("ownership-test","连线归属");flow.Nodes.Add(source);flow.Nodes.Add(target);
+   flow.Connections.Add(new WorkflowConnection("edge",source.Id,target.Id));
+   var port=source.RuntimeConfiguration!.Schema.Outputs.Single(item=>item.Id=="output.image");
+   var image=port.Type.Fields.Single(item=>item.Type==TypeRef.ResourceOf(ResourceKind.Image));
+   var number=port.Type.Fields.First(item=>item.Type==TypeRef.ScalarOf(ScalarKind.Int64));
+   void Bind(string member,string origin,string? scope=null)
+   {
+    var reference=new OutputReference(source.Id,port.Id,port.Type,new[]{member},scopeId:scope??flow.Id,storage:port.Storage);
+    target.RuntimeConfiguration=target.RuntimeConfiguration!.WithFieldSettings(new Dictionary<string,ParameterSetting>{
+     ["input.image"]=new ReferenceSetting(reference,OriginId:origin)});
+   }
+   Bind(image.Id,"connection:edge");
+   Assert.False(OutputBindingChangeService.GetExecutionInputIssues(flow).ContainsKey(target.Id));
+   Bind(number.Id,"connection:edge");
+   Assert.True(OutputBindingChangeService.GetExecutionInputIssues(flow).ContainsKey(target.Id));
+   Bind("missing-member","connection:edge");
+   Assert.True(OutputBindingChangeService.GetExecutionInputIssues(flow).ContainsKey(target.Id));
+   Bind(image.Id,"connection:other");
+   Assert.True(OutputBindingChangeService.GetExecutionInputIssues(flow).ContainsKey(target.Id));
+   Bind(image.Id,"connection:edge","another-flow");
+   Assert.True(OutputBindingChangeService.GetExecutionInputIssues(flow).ContainsKey(target.Id));
+  }
+  finally{AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY",prior);}
+ }
+ [Fact]
+ public void Main_window_automatic_connection_uses_formal_member_reference_and_preserves_existing_setting()
+  =>SunEyeVision.TestShared.WpfTestDispatcher.Invoke(()=>
+ {
+  if(Application.Current is null)_=new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
+  var host=typeof(RuntimeImageConnectionOwnershipTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().Single(a=>a.Key=="HostDebugRoot").Value!;
+  var prior=AppContext.GetData("APP_CONTEXT_BASE_DIRECTORY");
+  MainWindowViewModel? main=null;
+  var managerField=typeof(ServiceInitializer).GetField("_solutionManager",BindingFlags.Static|BindingFlags.NonPublic)!;
+  object? priorManager=null;var managerReplaced=false;
+  try
+  {
+   AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY",Path.TrimEndingDirectorySeparator(Path.GetFullPath(host))+Path.DirectorySeparatorChar);
+   Assert.True(PluginLoader.LoadPlugins());
+   var directory=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"image-auto-"+Guid.NewGuid().ToString("N"));
+   Directory.CreateDirectory(directory);
+   ServiceInitializer.InitializeServices();
+   priorManager=managerField.GetValue(null);managerField.SetValue(null,new SolutionManager(directory));managerReplaced=true;
+   var source=new SunEyeVision.UI.Shared.WorkflowNode("source","图像源","图像源","ImageLoad"){RuntimeConfiguration=RuntimeToolConfiguration.Create("ImageLoad")};
+   var target=new SunEyeVision.UI.Shared.WorkflowNode("target","Blob","Blob","BlobAnalysis"){RuntimeConfiguration=RuntimeToolConfiguration.Create("BlobAnalysis")};
+   var flow=new Flow("automatic-image","自动图像连线");flow.Nodes.Add(source);flow.Nodes.Add(target);
+   var edge=new WorkflowConnection("edge",source.Id,target.Id);flow.Connections.Add(edge);
+   var document=new Solution{Workflows=new(){flow}};
+   ServiceInitializer.SolutionManager.SetCurrentSolution(document,false);
+   ServiceInitializer.CommunicationService.OutputBindings.AcceptHistoryConfiguration(document);
+   main=new MainWindowViewModel();main.SelectedNode=target;
+   var method=typeof(MainWindowViewModel).GetMethod("TryAutoBindRuntimeImageSource",BindingFlags.Instance|BindingFlags.NonPublic)!;
+   method.Invoke(main,new object?[]{target,edge});
+   var accepted=Assert.IsType<ReferenceSetting>(target.RuntimeConfiguration!.Fields.Read("input.image"));
+   var port=source.RuntimeConfiguration!.Schema.Outputs.Single(item=>item.Id=="output.image");
+   var image=port.Type.Fields.Single(item=>item.Type==TypeRef.ResourceOf(ResourceKind.Image));
+   Assert.Equal("connection:edge",accepted.OriginId);
+   Assert.Equal(source.Id,accepted.Reference.NodeId);Assert.Equal(flow.Id,accepted.Reference.ScopeId);
+   Assert.Equal(port.Id,accepted.Reference.PortId);Assert.Equal(port.Type,accepted.Reference.Type);
+   Assert.Equal(new[]{image.Id},accepted.Reference.MemberFieldPath);
+   Assert.Empty(target.ParamSettings.Settings);
+   Assert.False(OutputBindingChangeService.GetExecutionInputIssues(flow).ContainsKey(target.Id));
+   method.Invoke(main,new object?[]{target,edge});
+   Assert.Same(accepted,target.RuntimeConfiguration.Fields.Read("input.image"));
+   Assert.True(main.DeleteCanvasConnection(edge));
+   Assert.Empty(flow.Connections);
+   var removed=Assert.IsType<ReferenceSetting>(target.RuntimeConfiguration.Fields.Read("input.image"));
+   Assert.Null(removed.OriginId);Assert.False(string.IsNullOrWhiteSpace(removed.RebindingReason));
+   Assert.Equal(accepted.Reference.MemberFieldPath,removed.Reference.MemberFieldPath);
+   var history=ServiceInitializer.SolutionManager.Session!.History;
+   Assert.True(history.Undo());Assert.Single(flow.Connections);
+   var restored=Assert.IsType<ReferenceSetting>(target.RuntimeConfiguration.Fields.Read("input.image"));
+   Assert.Equal("connection:edge",restored.OriginId);Assert.Null(restored.RebindingReason);
+   Assert.Equal(accepted.Reference.MemberFieldPath,restored.Reference.MemberFieldPath);
+   Assert.True(history.Redo());Assert.Empty(flow.Connections);
+   Assert.False(string.IsNullOrWhiteSpace(Assert.IsType<ReferenceSetting>(target.RuntimeConfiguration.Fields.Read("input.image")).RebindingReason));
+  }
+  finally{main?.CloseResultPresentation();main?.ReleaseDocumentHost();if(managerReplaced){managerField.SetValue(null,priorManager);ServiceInitializer.CommunicationService.OutputBindings.AcceptHistoryConfiguration((priorManager as SolutionManager)?.CurrentSolution);}AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY",prior);}
+ });
+}

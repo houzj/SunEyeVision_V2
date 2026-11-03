@@ -1,0 +1,191 @@
+using System.IO;
+using System.Reflection;
+using System.Runtime.ExceptionServices;
+using System.Threading;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
+using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
+using SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources;
+using SunEyeVision.Plugin.Wpf.Fields;
+using SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources;
+using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
+using SunEyeVision.Plugin.Wpf.Presenters.Results;
+using Xunit;
+
+namespace SunEyeVision.UI.Tests;
+
+[Collection("VM canvas UI")]
+public sealed class ImageSourceDesignCompositionTests
+{
+    [Fact]
+    public void Typed_localization_dictionary_loads_without_static_collection_extension_and_design_uses_real_strip() => Sta(() =>
+    {
+        var application=Application.Current??new Application {ShutdownMode=ShutdownMode.OnExplicitShutdown};
+        var previousResources=application.Resources;
+        application.Resources=new ResourceDictionary();
+        try
+        {
+        var dictionary=Assert.IsType<ResourceDictionary>(System.Windows.Markup.XamlReader.Parse(
+            "<ResourceDictionary xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\" xmlns:l=\"clr-namespace:SunEyeVision.Plugin.Wpf.Native.Common.Localization;assembly=SunEyeVision.Plugin.Wpf\"><ResourceDictionary.MergedDictionaries><l:LocalizationResources/></ResourceDictionary.MergedDictionaries></ResourceDictionary>"));
+        var language=Assert.IsType<SunEyeVision.Plugin.Wpf.Native.Common.Localization.LocalizationResources>(Assert.Single(dictionary.MergedDictionaries));
+        Assert.Same(SunEyeVision.Plugin.Wpf.Native.Common.Localization.LocalizationResourceDictionary.Instance,Assert.Single(language.MergedDictionaries));
+        Assert.Null(new ImageSourceStrip().Session); // Production construction never installs visual sample data.
+        var design=new SunEyeVision.Plugin.Wpf.Design.ImageSources.ImageSourceStripDesignView();
+        var window=Show(design);window.Width=800;window.UpdateLayout();
+        try
+        {
+            var strip=Assert.IsType<ImageSourceStrip>(design.FindName("EditableStrip"));
+            Assert.Equal(3,strip.Items.Count);Assert.False(strip.IsReadOnly);
+            Assert.Contains(strip.Resources.MergedDictionaries,resource=>resource is SunEyeVision.Plugin.Wpf.Native.Common.Localization.LocalizationResources);
+            Assert.Equal(SunEyeVision.Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang("RunParam_Auto Switch","自动切换"),strip.AutoSwitchText);
+            var bitmap=new System.Windows.Media.Imaging.RenderTargetBitmap((int)Math.Ceiling(design.ActualWidth),(int)Math.Ceiling(design.ActualHeight),96,96,System.Windows.Media.PixelFormats.Pbgra32);
+            bitmap.Render(design);var png=new System.Windows.Media.Imaging.PngBitmapEncoder();png.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bitmap));
+            using var file=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"s1-typed-resources-design.png"));png.Save(file);
+        }
+        finally{window.Content=null;window.Close();}
+        }
+        finally{application.Resources=previousResources;}
+    });
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Public_design_context_uses_actual_local_camera_composition_without_device_connection(bool camera) => Sta(() =>
+    {
+        WithFactory((assembly,factory)=>
+        {
+            Assert.DoesNotContain(assembly.GetReferencedAssemblies(),reference=>reference.Name is "SunEyeVision.UI" or "SunEyeVision.Workflow" or "SunEyeVision.DeviceDriver");
+            var context=Context(assembly,camera);
+            var view=factory.CreateSettingsView(context.Draft,context.Options);
+            var window=Show(view.View);
+            try
+            {
+                var input=Assert.IsType<ImageSourceInputView>(Assert.IsAssignableFrom<ContentControl>(context.Options.InputContent).Content);
+                Assert.Equal(camera,input.IsCamera);
+                Assert.Empty(Visuals<ImageSourceStrip>(view.View));
+                Assert.False(input.CameraPicker.IsEnabled);Assert.False(input.OpenCameraButton.IsEnabled);
+                Assert.Equal("设计态：未连接设备",input.CameraStatus.Text);
+                Assert.Single(input.CameraPicker.Items);
+                Assert.Equal(camera?"camera":"local",context.Draft.CaptureFields().Get<string>("source.kind"));
+                Assert.True(view.TryCapture(out var fields,out var error),error);Assert.DoesNotContain(fields.Capture().Values,value=>value is ReferenceSetting);
+                view.Dispose();
+            }
+            finally{window.Content=null;window.Close();view.Dispose();}
+        });
+    });
+
+    [Fact]
+    public void Actual_field_edit_changes_same_draft_and_refreshes_source_visibility_and_auto_switch() => Sta(() =>
+    {
+        WithFactory((assembly,factory)=>
+        {
+            var context=Context(assembly,false);using var view=factory.CreateSettingsView(context.Draft,context.Options);
+            var window=Show(view.View);
+            try
+            {
+                var changed=0;view.Changed+=()=>changed++;
+                var input=Assert.IsType<ImageSourceInputView>(Assert.IsAssignableFrom<ContentControl>(context.Options.InputContent).Content);
+                Assert.True(Field(view,"local.auto-switch").TrySetConstant(false));
+                Assert.False(context.Draft.CaptureFields().Get<bool>("local.auto-switch"));
+                Assert.True(Field(view,"source.kind").TrySetConstant("camera"));
+                Assert.Equal("camera",context.Draft.CaptureFields().Get<string>("source.kind"));Assert.True(input.IsCamera);
+                Assert.Empty(Visuals<ImageSourceStrip>(view.View));
+                Assert.True(Field(view,"source.kind").TrySetConstant("local"));
+                Assert.False(input.IsCamera);
+                Assert.False(context.Draft.CaptureFields().Get<bool>("local.auto-switch"));Assert.True(changed>=3);
+                Assert.True(view.TryCapture(out _,out var error),error);
+            }
+            finally{window.Content=null;window.Close();}
+        });
+    });
+
+    [Fact]
+    public void Public_rebind_rejects_old_source_callbacks_and_releases_each_attached_input_once() => Sta(() =>
+    {
+        WithFactory((assembly,factory)=>
+        {
+            var first=Context(assembly,false);var second=Context(assembly,true);
+            // These contexts own disposable design input even when our callback probe replaces it.
+            ((IDisposable)first.Options.InputContent!).Dispose();((IDisposable)second.Options.InputContent!).Dispose();
+            var source=new CallbackSource();var next=new CallbackSource();var accepts=0;var nextAccepts=0;
+            var view=factory.CreateSettingsView(first.Draft,new(InputContent:source,AcceptCandidate:_=>accepts++));
+            var window=Show(view.View);
+            try
+            {
+                var oldPrepare=source.Prepare!;var oldAccept=source.Accept!;
+                oldPrepare();oldAccept(first.Draft.CaptureFields());Assert.Equal(1,accepts);
+                var changed=0;view.Changed+=()=>changed++;
+                source.Notify();Assert.Equal(1,changed);Assert.Equal(0,source.DisposeCount);
+                Bind(view,second.Draft,new(InputContent:next,AcceptCandidate:_=>nextAccepts++));window.UpdateLayout();
+                Assert.Equal(1,source.DisposeCount);Assert.Equal(0,next.DisposeCount);
+                Assert.Throws<InvalidOperationException>(oldPrepare);
+                Assert.Throws<InvalidOperationException>(()=>oldAccept(first.Draft.CaptureFields()));
+                Assert.Equal(1,accepts);Assert.Equal(0,nextAccepts);
+                source.Notify();Assert.Equal(1,changed); // previous Changed subscription was removed.
+                Assert.Equal("camera",second.Draft.CaptureFields().Get<string>("source.kind"));
+                var currentPrepare=next.Prepare!;var currentAccept=next.Accept!;
+                currentPrepare();currentAccept(second.Draft.CaptureFields());Assert.Equal(1,nextAccepts);
+                view.Dispose();view.Dispose();Assert.Equal(1,next.DisposeCount);Assert.Equal(1,source.DisposeCount);
+                Assert.Throws<InvalidOperationException>(currentPrepare);
+                Assert.Throws<InvalidOperationException>(()=>currentAccept(second.Draft.CaptureFields()));
+                Assert.Throws<ObjectDisposedException>(()=>Bind(view,second.Draft,new()));
+                Assert.Equal(1,nextAccepts);
+            }
+            finally{window.Content=null;window.Close();view.Dispose();}
+        });
+    });
+
+    private static DeclaredFieldEditor Field(IToolSettingsView view,string id)=>Visuals<DeclaredFieldEditor>(view.View).Single(field=>field.FieldId==id);
+    private static (IToolSettingsDraft Draft,ToolSettingsViewOptions Options) Context(Assembly assembly,bool camera)
+        =>((IToolSettingsDraft,ToolSettingsViewOptions))assembly.GetType("SunEyeVision.Tool.ImageSource.Wpf.Design.ImageSourceDesignData",true)!
+            .GetMethod("CreateParameterContext",BindingFlags.Public|BindingFlags.Static)!.Invoke(null,new object[]{camera})!;
+    private static void Bind(IToolSettingsView view,IToolSettingsDraft draft,ToolSettingsViewOptions options)
+    {
+        try{view.GetType().GetMethod("Bind",BindingFlags.Public|BindingFlags.Instance)!.Invoke(view,new object[]{draft,options});}
+        catch(TargetInvocationException error)when(error.InnerException is not null){ExceptionDispatchInfo.Capture(error.InnerException).Throw();}
+    }
+    private static void WithFactory(Action<Assembly,IToolPresentationFactory> action)
+    {
+        var host=typeof(ImageSourceDesignCompositionTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().Single(item=>item.Key=="HostDebugRoot").Value!;
+        var prior=AppContext.GetData("APP_CONTEXT_BASE_DIRECTORY");
+        try
+        {
+            AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY",Path.TrimEndingDirectorySeparator(Path.GetFullPath(host))+Path.DirectorySeparatorChar);
+            Assert.True(PluginLoader.LoadPlugins());
+            var runtime=ToolRegistry.CreateRuntime("ImageLoad");
+            var settingsFields=Assert.IsAssignableFrom<IToolSettingsFields>(runtime);
+            var defaults=settingsFields.ReadSettings(runtime.CreateSettings()).CopyValues()
+                .ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal);
+            using var registered=ToolRegistry.CreateSettingsView("ImageLoad",new FieldSettings(settingsFields.SettingsSchema.Inputs,defaults));
+            Assert.Equal("SunEyeVision.Tool.ImageSource.Wpf.Views.ImageSourceParameterEditor",registered.GetType().FullName);
+            var assembly=registered.GetType().Assembly;
+            var factory=Assert.IsAssignableFrom<IToolPresentationFactory>(Activator.CreateInstance(assembly.GetType("SunEyeVision.Tool.ImageSource.Wpf.ImageSourceEditorFactory",true)!));
+            action(assembly,factory);
+        }
+        finally{AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY",prior);}
+    }
+    private static Window Show(FrameworkElement view)
+    {var window=new Window{Content=view,Width=650,Height=760,Left=-10000,ShowActivated=false};window.Show();window.UpdateLayout();return window;}
+    private static IEnumerable<T> Visuals<T>(DependencyObject root)where T:DependencyObject
+    {
+        if(root is T match)yield return match;
+        for(var index=0;index<VisualTreeHelper.GetChildrenCount(root);index++)
+            foreach(var child in Visuals<T>(VisualTreeHelper.GetChild(root,index)))yield return child;
+    }
+    private static void Sta(Action action)
+    {
+        SunEyeVision.TestShared.WpfTestDispatcher.Invoke(action);
+    }
+    private sealed class CallbackSource:UserControl,IImageSourceSettingsContent,IDisposable
+    {
+        public Action? Prepare{get;private set;}public Action<FieldSettings>? Accept{get;private set;}
+        public int DisposeCount{get;private set;}
+        public event Action? Changed;
+        public void BindSourceDraft(IToolSettingsDraft draft,Action prepareEdit,Action<FieldSettings> acceptCandidate){Prepare=prepareEdit;Accept=acceptCandidate;}
+        public void RefreshSourceDraft(){}
+        public void Notify()=>Changed?.Invoke();
+        public void Dispose(){DisposeCount++;}
+    }
+}

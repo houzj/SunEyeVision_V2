@@ -679,11 +679,11 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
             // 获取 MainWindowViewModel
 
-            if (Window.GetWindow(this) is MainWindow mainWindow)
+            if (Window.GetWindow(this)?.DataContext is MainWindowViewModel ownerViewModel)
 
             {
 
-                _viewModel = mainWindow.DataContext as MainWindowViewModel;
+                _viewModel = ownerViewModel;
 
                 if (_viewModel != null)
 

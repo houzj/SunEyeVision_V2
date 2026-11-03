@@ -61,18 +61,16 @@ public sealed class WorkspaceTimingPresentationTests
  {
   var snapshot=new WorkflowExecutionSnapshot("root","流程");Assert.Equal("—",snapshot.FlowElapsedText);
   snapshot.UpdateNodeStatus("node","节点","运行中");var node=Assert.Single(snapshot.Nodes);Assert.False(node.HasModuleTiming);Assert.False(node.HasAlgorithmTiming);
-  snapshot.UpdateNodeResult("node","节点",new SunEyeVision.Plugin.SDK.Execution.Results.NodeExecutionResult{NodeId="node",Status=SunEyeVision.Plugin.SDK.Execution.Results.ExecutionStatus.Cancelled});
+  snapshot.UpdateNodeResult("node","节点",new SunEyeVision.Plugin.Runtime.NodeExecutionResult{NodeId="node",Status=SunEyeVision.Plugin.Runtime.ExecutionStatus.Cancelled});
   Assert.False(node.HasModuleTiming);Assert.False(node.HasAlgorithmTiming);
-  snapshot.UpdateNodeResult("node","节点",new SunEyeVision.Plugin.SDK.Execution.Results.NodeExecutionResult{NodeId="node",StartTime=new DateTime(2026,10,27),EndTime=new DateTime(2026,10,27),Status=SunEyeVision.Plugin.SDK.Execution.Results.ExecutionStatus.Success,Result=new RootConfigurationTests.Results{ExecutionTimeMs=0}});
-  Assert.True(node.HasModuleTiming);Assert.True(node.HasAlgorithmTiming);Assert.Equal(0,node.AlgorithmElapsedMs);
+  snapshot.UpdateNodeResult("node","节点",new SunEyeVision.Plugin.Runtime.NodeExecutionResult{NodeId="node",StartTime=new DateTime(2026,10,27),EndTime=new DateTime(2026,10,27),Status=SunEyeVision.Plugin.Runtime.ExecutionStatus.Success});
+  Assert.True(node.HasModuleTiming);Assert.False(node.HasAlgorithmTiming);Assert.Equal(TimeSpan.Zero,node.ModuleElapsed);
+  var measured=new WorkflowNodeExecutionSnapshot("measured","节点","成功",TimeSpan.Zero,0);
+  Assert.True(measured.HasModuleTiming);Assert.True(measured.HasAlgorithmTiming);
   snapshot.Begin("流程");Assert.False(node.HasModuleTiming);Assert.False(node.HasAlgorithmTiming);
  }
  private static void OnSta(Action action)
  {
-  Exception? failure=null;
-  var thread=new Thread(()=>{try{action();}catch(Exception ex){failure=ex;}});
-  thread.SetApartmentState(ApartmentState.STA);thread.Start();
-  Assert.True(thread.Join(TimeSpan.FromSeconds(20)),"WPF计时呈现检查超时");
-  if(failure!=null)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+  UiRuntime.Run(action);
  }
 }

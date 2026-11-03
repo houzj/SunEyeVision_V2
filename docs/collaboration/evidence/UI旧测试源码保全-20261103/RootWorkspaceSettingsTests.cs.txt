@@ -1,0 +1,97 @@
+﻿using System.Text.Json;
+using SunEyeVision.Workflow;
+using SunEyeVision.UI.Features.WorkflowUI;
+using SunEyeVision.UI.Features.WorkflowUI.Commands;
+using SunEyeVision.UI.Services;
+using SunEyeVision.UI.Services.Interaction;
+using SunEyeVision.UI.Services.Workflow;
+using SunEyeVision.Plugin.SDK.Core;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
+using Xunit;
+using Flow=SunEyeVision.Workflow.Workflow;
+namespace SunEyeVision.UI.Tests;
+[Collection("VM canvas UI")]
+public sealed class RootWorkspaceSettingsTests
+{
+ [Fact]
+ public void Settings_survive_formal_roundtrip_and_run_capture_while_old_run_keeps_its_generation()
+ {
+  var flow=new Flow("root","流程"){WorkspaceSettings=new(){RunIntervalMs=351,StopOnNg=true,OverviewX=250,OverviewY=400}};
+  var document=new Solution{Workflows=new(){flow}};
+  var snapshot=SunEyeVision.Workflow.Persistence.SolutionSnapshot.Prepare(document,System.IO.Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"根策略正式保存.json"));
+  Assert.Contains("RunIntervalMs",snapshot.Json);
+  var restored=JsonSerializer.Deserialize<Solution>(JsonSerializer.Serialize(document,WorkflowSerializationOptions.Default),WorkflowSerializationOptions.Default)!;
+  Assert.Equal(flow.WorkspaceSettings,Assert.Single(restored.Workflows).WorkspaceSettings);
+  var run=WorkflowRunConfiguration.Capture(restored.Workflows);
+  restored.Workflows[0].WorkspaceSettings=new(){RunIntervalMs=12};
+  Assert.Equal(351,run.GetRootSettings("root").RunIntervalMs);Assert.True(run.GetRootSettings("root").StopOnNg);
+  Assert.Equal(351,run.CopyWorkflow("root")!.WorkspaceSettings.RunIntervalMs);
+  Assert.Equal(flow.WorkspaceSettings,flow.Clone().WorkspaceSettings);
+  var host=new NodeConfigurationEditHost(document);host.SynchronizeStructure();Assert.Equal(351,WorkflowRunConfiguration.Capture(document.Workflows).GetRootSettings("root").RunIntervalMs);
+ }
+ [Fact]
+ public void Invalid_settings_are_rejected_at_assignment_and_file_boundary_and_Group_cannot_consume_root_policy()
+ {
+  var flow=new Flow("root","流程");Assert.Throws<ArgumentOutOfRangeException>(()=>flow.WorkspaceSettings=new(){RunIntervalMs=-1});
+  Assert.Throws<ArgumentException>(()=>flow.WorkspaceSettings=new(){OverviewX=1});
+  Assert.Throws<ArgumentException>(()=>flow.WorkspaceSettings=new(){OverviewX=double.NaN,OverviewY=0});
+  var json=JsonSerializer.Serialize(flow,WorkflowSerializationOptions.Default).Replace("\"RunIntervalMs\": 80","\"RunIntervalMs\": -1");
+  Assert.Throws<JsonException>(()=>JsonSerializer.Deserialize<Flow>(json,WorkflowSerializationOptions.Default));
+  flow.IsSubroutine=true;Assert.Throws<InvalidOperationException>(()=>WorkflowRunConfiguration.Capture(new[]{flow}).GetRootSettings("root"));
+ }
+ [Fact]
+ public void Root_policy_command_undo_restores_settings_and_refreshes_tab_without_rewriting_node_parameters()
+ {
+  var flow=new Flow("root","流程");var tab=new WorkflowTabViewModel{Id=flow.Id};tab.BindRootDefinition(flow);var count=0;
+  tab.PropertyChanged+=(_,e)=>{if(e.PropertyName==nameof(tab.RootSettings))count++;};
+  tab.CommandManager.Execute(new ChangeRootWorkspaceSettingsCommand(flow,new(){RunIntervalMs=54,StopOnNg=true},()=>{}));
+  Assert.True(tab.RootSettings.StopOnNg);tab.CommandManager.Undo();Assert.False(tab.RootSettings.StopOnNg);tab.CommandManager.Redo();Assert.Equal(54,tab.RootSettings.RunIntervalMs);Assert.Equal(3,count);
+ }
+ [Fact]
+ public void Runtime_failure_is_not_invented_as_detection_NG()
+ {
+  using var failed=ExecutionResult.CreateFailure("执行异常");var policy=new RootWorkspaceSettings{StopOnNg=true};Assert.False(policy.ShouldStopAfter(failed));
+  using var ng=ExecutionResult.CreateSuccess();ng.SetNodeResult("node",new(){Result=new ProbeResults{Status=ExecutionStatus.Success,JudgmentStatus="NG"}});Assert.True(policy.ShouldStopAfter(ng));Assert.False((policy with{StopOnNg=false}).ShouldStopAfter(ng));
+ }
+ [Fact]
+ public async Task Real_continuous_execution_stops_after_successful_NG_and_releases_lease()
+ {
+  ToolRegistry.RegisterTool(typeof(RootPolicyProbe));var engine=new WorkflowEngine(VisionLogger.Instance);
+  var flow=engine.CreateWorkflow(Guid.NewGuid().ToString(),"NG停止");flow.WorkspaceSettings=new(){StopOnNg=true,RunIntervalMs=100000};
+  flow.Nodes.Add(new("probe","probe","probe","RootPolicyProbe"){Parameters=new ProbeParameters{Ng=true}});
+  var engineProbe=new WorkflowExecutionEngine(engine,new SunEyeVision.Plugin.Infrastructure.Managers.Plugin.PluginManager(VisionLogger.Instance),VisionLogger.Instance);
+  using(var result=await engineProbe.ExecuteWorkflowAsync(flow.Id,null))
+  {
+   Assert.True(result.Success,string.Join("; ",result.Errors));
+   Assert.True(flow.WorkspaceSettings.ShouldStopAfter(result),"真实工具判定："+string.Join(";",result.NodeResults.Values.Select(n=>n.Result?.JudgmentStatus??"null")));
+  }
+  var tab=new WorkflowTabViewModel{Id=flow.Id,Name=flow.Name,WorkflowNodes=flow.Nodes,WorkflowConnections=flow.Connections};
+  var manager=new WorkflowExecutionManager(new EmptyInput(),engine,new RuntimeInputSnapshotService()){AllowUnhostedRunForTests=true};
+  using var cleanup=new Cleanup(manager);
+  var stopped=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);var rounds=0;string? failure=null;
+  manager.WorkflowExecutionCompleted+=(_,_)=>Interlocked.Increment(ref rounds);manager.WorkflowExecutionStopped+=(_,_)=>stopped.TrySetResult();manager.WorkflowExecutionError+=(_,e)=>{failure=e.ErrorMessage;stopped.TrySetException(new InvalidOperationException(failure));manager.StopContinuousRun(tab);};
+  try{Assert.True(manager.StartContinuousRun(tab));await stopped.Task.WaitAsync(TimeSpan.FromSeconds(15));Assert.Null(failure);Assert.Equal(1,rounds);Assert.False(manager.IsRunning(flow.Id));}
+  finally{manager.StopContinuousRun(tab);await manager.StopAndWaitAsync(TimeSpan.FromSeconds(5));}
+ }
+ [Fact]
+ public async Task Configured_long_interval_is_cancellable_and_cannot_delay_stop_or_leave_a_running_lease()
+ {
+  ToolRegistry.RegisterTool(typeof(RootPolicyProbe));var engine=new WorkflowEngine(VisionLogger.Instance);var flow=engine.CreateWorkflow(Guid.NewGuid().ToString(),"间隔取消");flow.WorkspaceSettings=new(){RunIntervalMs=100000};
+  flow.Nodes.Add(new("probe","probe","probe","RootPolicyProbe"){Parameters=new ProbeParameters()});var tab=new WorkflowTabViewModel{Id=flow.Id,Name=flow.Name,WorkflowNodes=flow.Nodes,WorkflowConnections=flow.Connections};
+  var manager=new WorkflowExecutionManager(new EmptyInput(),engine,new RuntimeInputSnapshotService()){AllowUnhostedRunForTests=true};
+  using var cleanup=new Cleanup(manager);
+  var completed=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);manager.WorkflowExecutionCompleted+=(_,_)=>completed.TrySetResult();
+  try{Assert.True(manager.StartContinuousRun(tab));await completed.Task.WaitAsync(TimeSpan.FromSeconds(15));await Task.Delay(30);Assert.True(manager.IsRunning(flow.Id));manager.StopContinuousRun(tab);await manager.StopAndWaitAsync(TimeSpan.FromSeconds(3));Assert.False(manager.IsRunning(flow.Id));}
+  finally{manager.StopContinuousRun(tab);await manager.StopAndWaitAsync(TimeSpan.FromSeconds(5));}
+ }
+ public sealed class ProbeParameters:ToolParameters {public bool Ng{get;set;} public ResultPresentationConfig ResultPresentation{get;set;}=new(){Judgments=new(){new(){Key="probe",Enabled=true}}};}
+ public sealed class ProbeResults:ToolResults {}
+ [Tool("RootPolicyProbe","根策略回归探针")]
+ public sealed class RootPolicyProbe:IToolPlugin<ProbeParameters,ProbeResults>
+ {public ProbeResults Run(ProbeParameters parameters)=>new(){Status=ExecutionStatus.Success,IsPass=!parameters.Ng};}
+ private sealed class Cleanup(WorkflowExecutionManager manager):IDisposable {public void Dispose()=>manager.Dispose();}
+ private sealed class EmptyInput:IInputProvider {public Task<object?> GetInputImageAsync()=>Task.FromResult<object?>(null);}
+}

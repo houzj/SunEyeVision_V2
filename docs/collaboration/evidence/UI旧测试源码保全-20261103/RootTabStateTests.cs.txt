@@ -1,0 +1,41 @@
+﻿using SunEyeVision.Workflow;
+using SunEyeVision.UI.Services.Workflow;
+using SunEyeVision.UI.Features.WorkflowUI;
+using SunEyeVision.UI.Shell.Controls.Shell;
+using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
+using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
+using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.SDK.Validation;
+using Xunit;
+using System.Reflection;
+using Flow=SunEyeVision.Workflow.Workflow;
+namespace SunEyeVision.UI.Tests;
+[Collection("VM canvas UI")]
+public sealed class RootTabStateTests
+{
+ [Fact]
+ public void Configuration_check_reads_formal_runtime_and_graph_without_running()
+ {
+  var flow=new Flow("root","根");var tab=new WorkflowTabViewModel(RootCanvasFixture.Directory){Id=flow.Id};Bind(tab,flow);
+  Assert.True(tab.IsRootConfigurationReady);Assert.Empty(flow.Nodes); // 空图就绪不代表可运行。
+  var node=RootCanvasFixture.Node("node");flow.Nodes.Add(node);Assert.False(tab.IsRootConfigurationReady);Assert.Contains("没有可运行的图片",tab.RootConfigurationSummary);
+  var policy=ImageSourcePolicy.Read(node)!;policy.FilePaths=new(){"image.png"};policy.ForRunPaths=new(){"image.png"};policy.CurrentIndex=0;policy.ApplyTo(node);typeof(WorkflowTabViewModel).GetMethod("RefreshRootReadiness",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(tab,null);Assert.True(tab.IsRootConfigurationReady);
+  flow.Connections.Add(new(){Id="bad",SourceNodeId="missing",TargetNodeId=node.Id});Assert.False(tab.IsRootConfigurationReady);
+  flow.Connections.Clear();Assert.True(tab.IsRootConfigurationReady);
+  node.ToolType="NotDeployed";Assert.False(tab.IsRootConfigurationReady);Assert.Contains("工具未加载",tab.RootConfigurationSummary);
+  flow.Nodes.Clear();Assert.True(tab.IsRootConfigurationReady);
+  var replacement=new Flow("other","替换");Bind(tab,replacement);flow.Nodes.Add(node);Assert.True(tab.IsRootConfigurationReady);Assert.Empty(replacement.Nodes);
+ }
+ [Theory]
+ [InlineData(100,100,80,400,1000,false,100)]
+ [InlineData(100,10,80,400,1000,false,70)]
+ [InlineData(100,310,80,400,1000,false,130)]
+ [InlineData(100,-60,80,400,1000,false,10)]
+ [InlineData(100,400,80,400,1000,false,210)]
+ [InlineData(100,400,80,400,180,false,180)]
+ [InlineData(100,100,80,400,1000,true,0)]
+ public void Selection_scroll_keeps_native_edge_allowance_instead_of_centering(double offset,double left,double width,double viewport,double maximum,bool first,double expected)
+ =>Assert.Equal(expected,(double)typeof(ShellWorkspaceControl).Assembly.GetType("SunEyeVision.UI.Shell.Controls.Shell.WorkflowTabViewport")!.GetMethod("SelectedOffset",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{offset,left,width,viewport,maximum,first})!);
+ private static void Bind(WorkflowTabViewModel tab,Flow flow)=>typeof(WorkflowTabViewModel).GetMethod("BindRootDefinition",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(tab,new object?[]{flow,null});
+ public sealed class InvalidParameters:ToolParameters{public override ValidationResult Validate()=>ValidationResult.Failure("缺少长度");}
+}

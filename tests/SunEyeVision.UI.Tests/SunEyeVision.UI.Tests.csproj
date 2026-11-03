@@ -23,14 +23,15 @@
     <PackageReference Include="OPCFoundation.NetStandard.Opc.Ua.Server" Version="1.5.378.176" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="../_shared/WpfTestDispatcher.cs" Link="_shared/WpfTestDispatcher.cs" />
-    <Compile Include="../_shared/ResultWorkspaceRuntimeProbe.cs" Link="_shared/ResultWorkspaceRuntimeProbe.cs" />
+
+    <ProjectReference Include="../ShutdownLifecycleProbe/ShutdownLifecycleProbe.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../../src/UI/SunEyeVision.UI.csproj" />
-    <ProjectReference Include="../SunEyeVision.GlobalProduction.Runtime.Tests/SunEyeVision.GlobalProduction.Runtime.Tests.csproj" />
-    <ProjectReference Include="../../tools/SunEyeVision.Tool.ProtocolAssemble/SunEyeVision.Tool.ProtocolAssemble.csproj" />
-    <ProjectReference Include="../../tools/SunEyeVision.Tool.ProtocolParse/SunEyeVision.Tool.ProtocolParse.csproj" />
-    <ProjectReference Include="../../tools/SunEyeVision.Tool.ReceiveData/SunEyeVision.Tool.ReceiveData.csproj" />
-    <ProjectReference Include="../../tools/SunEyeVision.Tool.SendData/SunEyeVision.Tool.SendData.csproj" />
-    <ProjectReference Include="../../tools/SunEyeVision.Tool.PointPointMeasure/SunEyeVision.Tool.PointPointMeasure.csproj" />
+    <ProjectReference Include="../../src/Application/SunEyeVision.Application.csproj" />
+    <ProjectReference Include="../../src/Infrastructure.Persistence/SunEyeVision.Infrastructure.Persistence.csproj" />
+
+
+
+
+
   </ItemGroup>
 </Project>

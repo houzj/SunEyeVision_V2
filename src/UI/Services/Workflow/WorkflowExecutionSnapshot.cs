@@ -2,7 +2,6 @@ using SunEyeVision.Plugin.Runtime;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.UI.Core;
 using SunEyeVision.Domain.Workflows;
 

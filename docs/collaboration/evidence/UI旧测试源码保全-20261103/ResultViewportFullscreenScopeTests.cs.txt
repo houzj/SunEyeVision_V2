@@ -1,0 +1,284 @@
+using System.ComponentModel;
+using System.Runtime.ExceptionServices;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Threading;
+using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Runtime;
+using SunEyeVision.Plugin.Wpf.Adapters.Regions;
+using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls;
+using SunEyeVision.Plugin.Wpf.Presenters.Results;
+using SunEyeVision.Plugin.Wpf.Regions;
+using SunEyeVision.UI.Services.Images;
+using Xunit;
+
+namespace SunEyeVision.UI.Tests;
+
+public sealed class ResultViewportFullscreenScopeTests
+{
+    [Fact]
+    public void Original_navigation_moves_with_same_frame_keeps_commands_and_restores_all_slots_on_double_click() => Sta(() =>
+    {
+        using var fixture=new Scene("panel");
+        var panel=Assert.IsType<StackPanel>(fixture.Holder);
+        var clicks=0;
+        var previous=new Button {Command=new SunEyeVision.UI.Core.RelayCommand(()=>clicks++)};
+        var next=new Button {Command=new SunEyeVision.UI.Core.RelayCommand(()=>clicks+=10)};
+        panel.Children.Add(previous);panel.Children.Add(next);
+        panel.Resources["FullscreenThemeProbe"]=System.Windows.Media.Brushes.Orange;
+        var receipt=fixture.Pane.CurrentFrame;
+        using var fullscreen=ResultViewportFullscreenScope.Open(fixture.View,fixture.Owner,new[]{previous,next});
+        Drain();
+        var surface=Assert.IsType<Grid>(fullscreen.Window.Content);
+        Assert.Contains(fixture.View,surface.Children.Cast<UIElement>());
+        Assert.Contains(previous,surface.Children.Cast<UIElement>());Assert.Contains(next,surface.Children.Cast<UIElement>());
+        Assert.Same(panel.Resources["FullscreenThemeProbe"],surface.FindResource("FullscreenThemeProbe"));
+        previous.Command.Execute(null);next.Command.Execute(null);Assert.Equal(11,clicks);
+        Assert.Equal(receipt,fixture.Pane.CurrentFrame);
+        fullscreen.Window.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,0,MouseButton.Left)
+            {RoutedEvent=Control.PreviewMouseDoubleClickEvent});
+        Drain();
+        Assert.False(fullscreen.IsCurrent);fixture.AssertOriginalSlot();
+        Assert.Same(previous,panel.Children[3]);Assert.Same(next,panel.Children[4]);
+        Assert.Equal(receipt,fixture.Pane.CurrentFrame);Assert.Null(fullscreen.CloseError);
+    });
+    [Theory]
+    [InlineData("panel", "dispose")]
+    [InlineData("panel", "close")]
+    [InlineData("panel", "escape")]
+    [InlineData("decorator", "dispose")]
+    [InlineData("decorator", "close")]
+    [InlineData("decorator", "escape")]
+    [InlineData("content", "dispose")]
+    [InlineData("content", "close")]
+    [InlineData("content", "escape")]
+    public void Same_native_view_frame_and_borrow_restore_the_actual_parent_slot(string parent, string exit) => Sta(() =>
+    {
+        using var fixture = new Scene(parent);
+        var before = fixture.Pane.CurrentFrame;
+        using var borrowed = Assert.IsType<ResultViewportImageLease>(fixture.Pane.BorrowCurrentImage());
+        var unloaded = 0;
+        fixture.View.Unloaded += (_, args) => { if (ReferenceEquals(args.OriginalSource, fixture.View)) unloaded++; };
+        using var fullscreen = ResultViewportFullscreenScope.Open(fixture.View, fixture.Owner);
+        Drain();
+        Assert.True(fullscreen.IsCurrent);
+        Assert.Same(fixture.View, fullscreen.View);
+        Assert.Same(fixture.View, fullscreen.Window.Content);
+        Assert.Same(fixture.View, fixture.Pane.Viewport.View);
+        Assert.Equal(before, fixture.Pane.CurrentFrame);
+        Assert.True(borrowed.IsCurrent);
+        Assert.Equal(new byte[] { 7 }, fixture.Pane.Viewport.ReadPixel(0, 0));
+        if (exit == "close") fullscreen.Window.Close();
+        else if (exit == "escape")
+        {
+            var source = Assert.IsAssignableFrom<PresentationSource>(PresentationSource.FromVisual(fullscreen.Window));
+            fullscreen.Window.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Escape)
+                { RoutedEvent = Keyboard.PreviewKeyDownEvent });
+        }
+        else fullscreen.Dispose();
+        Drain();
+        Assert.False(fullscreen.IsCurrent); Assert.False(fullscreen.Window.IsVisible);
+        Assert.Null(fullscreen.CloseError);
+        fixture.AssertOriginalSlot();
+        Assert.True(unloaded > 0);
+        Assert.Equal(before, fixture.Pane.CurrentFrame);
+        Assert.True(borrowed.IsCurrent);
+        Assert.Equal(0, fixture.OwnerReleaseCount);
+    });
+
+    [Fact]
+    public void Actual_roi_attachment_reloads_on_same_view_without_retiring_background_or_edit_borrow() => Sta(() =>
+    {
+        using var fixture = new Scene("panel");
+        using var image = Assert.IsType<ResultViewportImageLease>(fixture.Pane.BorrowCurrentImage());
+        var snapshot = new RoiEditSnapshot(new RoiEditStamp(Guid.NewGuid(), 0, image.Image.Frame), Array.Empty<RoiEditItem>(), new[]{new RoiGroupState("region",RoiCoverage.Explicit,RoiCoverage.Explicit)});
+        using var session = new NativeRoiSession(image.Image, () => snapshot,
+            (_, _) => RoiEditAcceptance.Reject(snapshot, "本用例不提交编辑。"), () => image.IsCurrent,
+            () => new RoiHistoryAvailability(false, false), "region");
+        using var roi = fixture.Pane.Viewport.BeginRoiEditing(image.Receipt, session, () => image.IsCurrent);
+        Assert.True(roi.IsCurrent);
+        using var fullscreen = ResultViewportFullscreenScope.Open(fixture.View, fixture.Owner);
+        Drain();
+        Assert.True(roi.IsCurrent); Assert.True(session.IsCurrent); Assert.True(image.IsCurrent);
+        Assert.Equal(image.Receipt, fixture.Pane.CurrentFrame);
+        Assert.NotNull(fixture.View.ImageDataSource);
+        fullscreen.Dispose(); Drain();
+        fixture.AssertOriginalSlot();
+        Assert.True(roi.IsCurrent); Assert.True(session.IsCurrent); Assert.True(image.IsCurrent);
+        Assert.Equal(image.Receipt, fixture.Pane.CurrentFrame);
+        Assert.False(roi.HasPendingGesture);
+        Assert.Equal(0, fixture.OwnerReleaseCount);
+    });
+
+    [Fact]
+    public void Two_sides_are_mutually_exclusive_and_late_old_dispose_cannot_move_new_view() => Sta(() =>
+    {
+        using var fixture = new Scene("panel");
+        var panel = Assert.IsType<StackPanel>(fixture.Holder);
+        var second = new ImageViewBox(); panel.Children.Add(second);
+        using var secondPane = new ResultImagePane(second);
+        Assert.True(secondPane.TryPresent(fixture.Publication, fixture.Reference, "flow", () => true, out _));
+        using var old = ResultViewportFullscreenScope.Open(fixture.View, fixture.Owner); Drain();
+        using var next = ResultViewportFullscreenScope.Open(second, fixture.Owner); Drain();
+        Assert.False(old.IsCurrent); Assert.False(old.Window.IsVisible);
+        fixture.AssertOriginalSlot();
+        Assert.True(next.IsCurrent); Assert.Same(second, next.Window.Content);
+        var receipt = secondPane.CurrentFrame;
+        old.Dispose();
+        Assert.True(next.IsCurrent); Assert.Same(second, next.Window.Content);
+        Assert.Equal(receipt, secondPane.CurrentFrame);
+        next.Dispose(); Drain();
+        Assert.Same(second, panel.Children[3]);
+        Assert.NotNull(fixture.Pane.CurrentFrame);
+    });
+
+    [Fact]
+    public void Main_window_close_restores_active_view_and_leaves_pane_lifetime_to_its_owner() => Sta(() =>
+    {
+        using var fixture = new Scene("panel");
+        using var borrowed = Assert.IsType<ResultViewportImageLease>(fixture.Pane.BorrowCurrentImage());
+        using var fullscreen = ResultViewportFullscreenScope.Open(fixture.View, fixture.Owner); Drain();
+        fixture.Owner.Close(); Drain();
+        Assert.False(fullscreen.IsCurrent); Assert.False(fullscreen.Window.IsVisible);
+        fixture.AssertOriginalSlot(); Assert.True(borrowed.IsCurrent);
+        Assert.NotNull(fixture.Pane.CurrentFrame);
+        Assert.Equal(0, fixture.OwnerReleaseCount);
+    });
+
+    [Theory]
+    [InlineData("decorator")]
+    [InlineData("content")]
+    public void Replaced_original_slot_is_never_overwritten_by_old_fullscreen_close(string parent) => Sta(() =>
+    {
+        using var fixture = new Scene(parent);
+        using var fullscreen = ResultViewportFullscreenScope.Open(fixture.View, fixture.Owner); Drain();
+        var replacement = new Border();
+        if (fixture.Holder is Decorator decorator) decorator.Child = replacement;
+        else Assert.IsType<ContentControl>(fixture.Holder).Content = replacement;
+        fullscreen.Dispose(); Drain();
+        Assert.Null(fixture.View.Parent);
+        Assert.Same(replacement, fixture.Holder is Decorator actual ? actual.Child : Assert.IsType<ContentControl>(fixture.Holder).Content);
+        Assert.NotNull(fixture.Pane.CurrentFrame);
+    });
+
+    [Fact]
+    public void External_reparenting_wins_and_late_scope_does_not_detach_the_new_parent() => Sta(() =>
+    {
+        using var fixture = new Scene("panel");
+        using var fullscreen = ResultViewportFullscreenScope.Open(fixture.View, fixture.Owner); Drain();
+        var newer = new Grid();
+        fullscreen.Window.Content = null; newer.Children.Add(fixture.View);
+        fullscreen.Dispose(); Drain();
+        Assert.Same(newer, fixture.View.Parent); Assert.Contains(fixture.View, newer.Children.Cast<UIElement>());
+        Assert.NotNull(fixture.Pane.CurrentFrame);
+    });
+
+    [Fact]
+    public void Bound_content_slot_keeps_its_binding_expression_through_move_and_restore() => Sta(() =>
+    {
+        using var fixture = new Scene("content");
+        var content = Assert.IsType<ContentControl>(fixture.Holder);
+        var source = new ContentSource { Value = fixture.View };
+        BindingOperations.SetBinding(content, ContentControl.ContentProperty, new Binding(nameof(ContentSource.Value)) { Source = source });
+        var expression = BindingOperations.GetBindingExpression(content, ContentControl.ContentProperty);
+        using var fullscreen = ResultViewportFullscreenScope.Open(fixture.View, fixture.Owner); Drain();
+        Assert.True(BindingOperations.IsDataBound(content, ContentControl.ContentProperty));
+        fullscreen.Dispose(); Drain();
+        fixture.AssertOriginalSlot();
+        Assert.Same(expression, BindingOperations.GetBindingExpression(content, ContentControl.ContentProperty));
+        Assert.Same(fixture.View, source.Value);
+    });
+
+    [Fact]
+    public void Invalid_owner_leaves_view_in_place_and_loaded_reentrant_switch_preserves_new_scope() => Sta(() =>
+    {
+        using var fixture = new Scene("panel");
+        var neverShownOwner = new Window();
+        try
+        {
+            Assert.Throws<InvalidOperationException>(() => ResultViewportFullscreenScope.Open(fixture.View, neverShownOwner));
+            fixture.AssertOriginalSlot(); Assert.NotNull(fixture.Pane.CurrentFrame);
+        }
+        finally { neverShownOwner.Close(); }
+        var panel = Assert.IsType<StackPanel>(fixture.Holder);
+        var second = new ImageViewBox(); panel.Children.Add(second);
+        using var secondPane = new ResultImagePane(second);
+        Assert.True(secondPane.TryPresent(fixture.Publication, fixture.Reference, "flow", () => true, out _));
+        ResultViewportFullscreenScope? newScope = null;
+        var armed = true;
+        RoutedEventHandler loaded = (_, args) =>
+        {
+            if (!armed || !ReferenceEquals(args.OriginalSource, fixture.View) || ReferenceEquals(Window.GetWindow(fixture.View), fixture.Owner)) return;
+            armed = false; newScope = ResultViewportFullscreenScope.Open(second, fixture.Owner);
+        };
+        fixture.View.Loaded += loaded;
+        try
+        {
+            ResultViewportFullscreenScope? old = null;
+            try { old = ResultViewportFullscreenScope.Open(fixture.View, fixture.Owner); }
+            catch (InvalidOperationException) when (newScope is not null) { }
+            Drain();
+            Assert.NotNull(newScope); Assert.True(newScope!.IsCurrent);
+            old?.Dispose();
+            Assert.True(newScope.IsCurrent); Assert.Same(second, newScope.Window.Content);
+            Assert.NotNull(secondPane.CurrentFrame);
+            fixture.AssertOriginalSlot();
+        }
+        finally { fixture.View.Loaded -= loaded; newScope?.Dispose(); }
+    });
+
+    private sealed class ContentSource : INotifyPropertyChanged
+    {
+        public FrameworkElement? Value { get; set; }
+        public event PropertyChangedEventHandler? PropertyChanged { add { } remove { } }
+    }
+    private sealed class Scene : IDisposable
+    {
+        internal readonly Window Owner;
+        internal readonly ImageViewBox View = new();
+        internal readonly FrameworkElement Holder;
+        internal readonly ResultImagePane Pane;
+        internal readonly IResultPublication Publication;
+        internal readonly OutputReference Reference;
+        internal int OwnerReleaseCount;
+        internal Scene(string kind)
+        {
+            if (kind == "panel")
+            {
+                var panel = new StackPanel(); panel.Children.Add(new Border()); panel.Children.Add(View); panel.Children.Add(new Border()); Holder = panel;
+            }
+            else if (kind == "decorator") Holder = new Border { Child = View };
+            else Holder = new ContentControl { Content = View };
+            Pane = new ResultImagePane(View);
+            var resources = new FrozenOutputResources();
+            var image = resources.CreateGray8(2, 1, new byte[] { 7, 8 });
+            var type = TypeRef.ResourceOf(ResourceKind.Image);
+            var schema = new ToolSchema(Array.Empty<Port>(), new[] { new Port("output.image", type) });
+            var identity = new RunIdentity(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "source", Guid.NewGuid());
+            Publication = new ResultPublication(schema, new ResultPublicationStamp(Guid.NewGuid(), identity, 1, schema.Fingerprint),
+                ResultViewState.Success, new InputValues(schema.Outputs, new Dictionary<string, object?> { ["output.image"] = image }),
+                new ActionOwner(() => { OwnerReleaseCount++; resources.Dispose(); }), () => true);
+            Reference = new OutputReference("source", "output.image", type, scopeId: "flow");
+            Owner = new Window { Content = Holder, Width = 400, Height = 300, ShowActivated = false, ShowInTaskbar = false };
+            Owner.Show(); Drain();
+            Assert.True(Pane.TryPresent(Publication, Reference, "flow", () => true, out var error), error); Drain();
+        }
+        internal void AssertOriginalSlot()
+        {
+            if (Holder is StackPanel panel) { Assert.Same(View, panel.Children[1]); Assert.Same(panel, View.Parent); }
+            else if (Holder is Decorator decorator) Assert.Same(View, decorator.Child);
+            else Assert.Same(View, Assert.IsType<ContentControl>(Holder).Content);
+        }
+        public void Dispose() { Owner.Close(); Pane.Dispose(); Publication.Dispose(); }
+    }
+    private sealed class ActionOwner(Action dispose) : IDisposable { public void Dispose() => dispose(); }
+    private static void Drain()
+    {
+        var frame = new DispatcherFrame();
+        Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => frame.Continue = false));
+        Dispatcher.PushFrame(frame);
+    }
+    private static void Sta(Action action) => SunEyeVision.TestShared.WpfTestDispatcher.Invoke(action);
+}

@@ -10,7 +10,7 @@ public sealed class DeclaredFieldJsonTests
     {
         var empty=new ToolSchema(Array.Empty<Port>(),Array.Empty<Port>());
         var settings=new ToolSchema(new[]{new Port("threshold",TypeRef.ScalarOf(ScalarKind.Int64),Storage:NumericStorage.Int32,EditModes:FieldEditModes.Constant)},Array.Empty<Port>());
-        return new("tool",empty,settings,empty,new Dictionary<string,ParameterReferenceBehavior>(),new(null,Array.Empty<ResourceFieldDeclaration>(),"admitted"));
+        return new("tool",empty,settings,empty,new Dictionary<string,ParameterReferenceBehavior>(),new(null,Array.Empty<ResourceFieldDeclaration>(),"admitted"),Array.Empty<ManualReferenceSource>());
     }
     [Fact] public void Declared_constant_decodes_with_actual_numeric_storage()
     {

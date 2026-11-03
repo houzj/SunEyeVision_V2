@@ -18,6 +18,7 @@ public static class VariableArchive
         ArgumentNullException.ThrowIfNull(types);
         ArgumentNullException.ThrowIfNull(sourceOptions);
         ArgumentNullException.ThrowIfNull(scope);
+        scope.ClaimDecode();
         try
         {
             if (extension != null && !ReferenceEquals(extension.Scope, scope))
@@ -40,7 +41,7 @@ public static class VariableArchive
             var variables = JsonSerializer.Deserialize<List<GlobalVariable>>(items.ToJsonString(), options) ?? throw new JsonException("Invalid variables.");
             return new VariableArchiveCandidate(scope, bytes, variables.AsReadOnly(), diagnostics.AsReadOnly());
         }
-        catch { scope.Dispose(); throw; }
+        catch (Exception error) { scope.ReleaseAfterFailure(error); throw; }
     }
 
     /// <summary>Call synchronously while the application owns its value gate; no borrowed value is retained.</summary>

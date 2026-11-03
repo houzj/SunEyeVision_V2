@@ -17,6 +17,7 @@ public static class SolutionDocumentReader
     {
         ArgumentNullException.ThrowIfNull(declarations);ArgumentNullException.ThrowIfNull(variableTypes);
         ArgumentNullException.ThrowIfNull(sourceOptions);ArgumentNullException.ThrowIfNull(scope);
+        scope.ClaimDecode();
         try
         {
             if(extension is not null && !ReferenceEquals(extension.Scope,scope)) throw new InvalidOperationException("Codec and candidate must use the same decode resource scope.");
@@ -46,7 +47,7 @@ public static class SolutionDocumentReader
                 VersionHistory=List<SolutionVersion>(root,"VersionHistory",options),ResourcePlan=resources,Diagnostics=diagnostics.AsReadOnly()
             };
         }
-        catch { scope.Dispose(); throw; }
+        catch (Exception error) { scope.ReleaseAfterFailure(error); throw; }
     }
     private static WorkflowReadCandidate ReadWorkflow(JsonNode node,IReadOnlyDictionary<string,FrozenToolDeclarations> declarations,JsonSerializerOptions options)
     {
@@ -54,7 +55,7 @@ public static class SolutionDocumentReader
         var nodes=Array.AsReadOnly(((JsonArray?)root["Nodes"] ?? new JsonArray()).Select(n=>ReadNode(n!,declarations)).ToArray());
         var edges=Array.AsReadOnly(((JsonArray?)root["Connections"] ?? new JsonArray()).Select(e=>ReadEdge(e!,options)).ToArray());
         return new(Required(root,"Id"),Text(root,"Name",string.Empty),Bool(root,"IsSubroutine",false),
-            Value(root,"RootConfiguration",options,new RootWorkflowConfiguration())!,Value(root,"WorkspaceSettings",options,new RootWorkspaceSettings())!,nodes,edges);
+            Value(root,"RootConfiguration",options,new RootWorkflowConfiguration())!,Value(root,"WorkspaceSettings",options,new RootWorkspaceSettings())!,nodes,edges,ReadAdditionalData(root));
     }
     private static NodeReadCandidate ReadNode(JsonNode node,IReadOnlyDictionary<string,FrozenToolDeclarations> declarations)
     {
@@ -72,7 +73,14 @@ public static class SolutionDocumentReader
         var ports=declared.Schema.Inputs.Concat(declared.SettingsSchema.Inputs).Concat(declared.DisplaySchema.Inputs);
         var config=new ToolConfiguration(tool,new FieldSettings(ports,fields),current,parameterBindingOrder:order);
         return new(Required(root,"Id"),Text(root,"Name",string.Empty),Text(root,"DispName",string.Empty),tool,Int(root,"GlobalIndex",-1),Int(root,"LocalIndex",-1),Bool(root,"IsEnabled",true),
-            OptionalText(root,"SubroutineId"),OptionalText(root,"SelectedDisplayReference"),Finite(root,"PositionX",0),Finite(root,"PositionY",0),Finite(root,"Width",140),Finite(root,"Height",90),config);
+            OptionalText(root,"SubroutineId"),OptionalText(root,"SelectedDisplayReference"),Finite(root,"PositionX",0),Finite(root,"PositionY",0),Finite(root,"Width",140),Finite(root,"Height",90),config,ReadAdditionalData(root));
+    }
+    private static IReadOnlyDictionary<string,JsonElement>? ReadAdditionalData(JsonObject root)
+    {
+        if (root["AdditionalData"] is null) return null;
+        if (root["AdditionalData"] is not JsonObject value) throw new JsonException("AdditionalData must be an object.");
+        using var doc=JsonDocument.Parse(value.ToJsonString());
+        return new System.Collections.ObjectModel.ReadOnlyDictionary<string,JsonElement>(doc.RootElement.EnumerateObject().ToDictionary(p=>p.Name,p=>p.Value.Clone(),StringComparer.Ordinal));
     }
     private static ConnectionReadCandidate ReadEdge(JsonNode node,JsonSerializerOptions options)
     {

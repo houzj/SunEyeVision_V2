@@ -83,7 +83,7 @@ public static class SolutionDocumentValidator
             var workflow = workflows[w]!;
             var path = "$.Workflows[" + w + "]";
             // WorkflowJsonConverter writes exactly these structural fields; extension data is not an approved schema.
-            RejectUnknownMembers(workflow, path, new[] { "Id", "Name", "IsSubroutine", "WorkspaceSettings", "RootConfiguration", "Nodes", "Connections" });
+            RejectUnknownMembers(workflow, path, new[] { "Id", "Name", "IsSubroutine", "WorkspaceSettings", "RootConfiguration", "Nodes", "Connections", "AdditionalData" });
             if(workflow is JsonObject flowObject && flowObject.ContainsKey("WorkspaceSettings"))
             {
                 var settingsPath=path+".WorkspaceSettings";
@@ -112,7 +112,7 @@ public static class SolutionDocumentValidator
             {
                 var node = nodes[n] ?? throw new JsonException("Null node.", path + ".Nodes[" + n + "]", null, null);
                 RequireId(node, path + ".Nodes[" + n + "]");
-                RejectUnknownMembers(node, path + ".Nodes[" + n + "]", new[] { "Id", "Name", "DispName", "ToolType", "GlobalIndex", "LocalIndex", "IsEnabled", "SubroutineId", "SelectedDisplayReference", "PositionX", "PositionY", "Width", "Height", "Configuration" });
+                RejectUnknownMembers(node, path + ".Nodes[" + n + "]", new[] { "Id", "Name", "DispName", "ToolType", "GlobalIndex", "LocalIndex", "IsEnabled", "SubroutineId", "SelectedDisplayReference", "PositionX", "PositionY", "Width", "Height", "Configuration", "AdditionalData" });
                 if (!ids.Add(node["Id"]!.GetValue<string>())) throw new JsonException("Duplicate node identity.", path + ".Nodes[" + n + "].Id", null, null);
                 if (node is JsonObject nodeObject && (nodeObject.ContainsKey("Parameters") || nodeObject.ContainsKey("ParamSettings")))
                     throw new JsonException("Current Runtime nodes cannot contain SDK parameter models.", path + ".Nodes[" + n + "]", null, null);

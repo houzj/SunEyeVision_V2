@@ -7,7 +7,8 @@ namespace SunEyeVision.Domain.Persistence;
 public sealed class FrozenToolDeclarations
 {
     public FrozenToolDeclarations(string toolId, ToolSchema schema, ToolSchema settingsSchema, ToolSchema displaySchema,
-        IReadOnlyDictionary<string, ParameterReferenceBehavior> referenceBehaviors, ToolHostDeclarationSnapshot hostDeclarations)
+        IReadOnlyDictionary<string, ParameterReferenceBehavior> referenceBehaviors, ToolHostDeclarationSnapshot hostDeclarations,
+        IReadOnlyList<ManualReferenceSource> manualReferenceSources)
     {
         if(string.IsNullOrWhiteSpace(toolId))throw new ArgumentException("Tool identity is required.",nameof(toolId));
         ToolId=toolId; Schema=schema ?? throw new ArgumentNullException(nameof(schema));
@@ -31,6 +32,9 @@ public sealed class FrozenToolDeclarations
         var input=hostDeclarations.HostInputs;
         var detached=input is null ? null : new HostInputDeclaration(input.CapabilityId,input.Version,input.Ports,input.Services);
         HostDeclarations=new ToolHostDeclarationSnapshot(detached,Array.AsReadOnly(resources),hostDeclarations.Fingerprint);
+        ArgumentNullException.ThrowIfNull(manualReferenceSources);
+        ManualReferenceSources=Array.AsReadOnly(manualReferenceSources
+            .Select(source => new ManualReferenceSource(source.PortId, source.MemberPath)).ToArray());
     }
     public string ToolId { get; }
     public ToolSchema Schema { get; }
@@ -38,4 +42,5 @@ public sealed class FrozenToolDeclarations
     public ToolSchema DisplaySchema { get; }
     public IReadOnlyDictionary<string,ParameterReferenceBehavior> ReferenceBehaviors { get; }
     public ToolHostDeclarationSnapshot HostDeclarations { get; }
+    public IReadOnlyList<ManualReferenceSource> ManualReferenceSources { get; }
 }

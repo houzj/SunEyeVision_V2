@@ -36,7 +36,9 @@ public sealed class SolutionReadCandidate : IDisposable
     public void Dispose()=>_scope.Dispose();
 }
 public sealed record WorkflowReadCandidate(string Id,string Name,bool IsSubroutine,RootWorkflowConfiguration RootConfiguration,
-    RootWorkspaceSettings WorkspaceSettings,IReadOnlyList<NodeReadCandidate> Nodes,IReadOnlyList<ConnectionReadCandidate> Connections);
+    RootWorkspaceSettings WorkspaceSettings,IReadOnlyList<NodeReadCandidate> Nodes,IReadOnlyList<ConnectionReadCandidate> Connections,
+    IReadOnlyDictionary<string,JsonElement>? AdditionalData);
 public sealed record NodeReadCandidate(string Id,string Name,string DispName,string ToolType,int GlobalIndex,int LocalIndex,bool IsEnabled,
-    string? SubroutineId,string? SelectedDisplayReference,double PositionX,double PositionY,double Width,double Height,ToolConfiguration Configuration);
+    string? SubroutineId,string? SelectedDisplayReference,double PositionX,double PositionY,double Width,double Height,ToolConfiguration Configuration,
+    IReadOnlyDictionary<string,JsonElement>? AdditionalData);
 public sealed record ConnectionReadCandidate(string Id,string SourceNodeId,string TargetNodeId,string SourcePort,string TargetPort,IReadOnlyList<CanvasPoint>? ManualPathPoints);

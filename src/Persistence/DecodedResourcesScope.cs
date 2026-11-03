@@ -8,10 +8,26 @@ public sealed class DecodedResourcesScope : IDisposable
     private readonly object _gate = new();
     private List<IDisposable>? _owned = new();
     private readonly HashSet<IDisposable> _identities = new(ReferenceEqualityComparer.Instance);
+    private bool _decodeClaimed;
     private readonly bool _failRegistrationAfterAdd, _failOwnerConstruction;
     public DecodedResourcesScope() { }
     internal DecodedResourcesScope(bool failRegistrationAfterAdd, bool failOwnerConstruction)
         => (_failRegistrationAfterAdd,_failOwnerConstruction)=(failRegistrationAfterAdd,failOwnerConstruction);
+    internal void ClaimDecode()
+    {
+        lock (_gate)
+        {
+            if (_owned is null || _decodeClaimed)
+                throw new InvalidOperationException("A decode scope belongs to exactly one candidate.");
+            _decodeClaimed = true;
+        }
+    }
+    internal void ReleaseAfterFailure(Exception primary)
+    {
+        try { Dispose(); }
+        catch (Exception cleanup) { throw new AggregateException("Decoding and resource cleanup both failed.", primary, cleanup); }
+        ExceptionDispatchInfo.Capture(primary).Throw();
+    }
     internal void RegisterNew(IDisposable resource)
     {
         ArgumentNullException.ThrowIfNull(resource);

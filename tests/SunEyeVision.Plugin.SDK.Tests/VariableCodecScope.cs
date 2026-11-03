@@ -12,8 +12,9 @@ internal sealed class VariableCodecScope : IDisposable
     {
         var resolver = new DefaultJsonTypeInfoResolver();
         resolver.Modifiers.Add(info => { if (info.Type == holderType)
-            info.Properties.Single(p => p.Name == "Value").CustomConverter = new GlobalVariableValueConverter(new SdkVariableValueExtensionCodec(_scope)); });
+            info.Properties.Single(p => p.Name == "Value").CustomConverter = new GlobalVariableValueConverter(new ComplexVariableValueCodec(_scope)); });
         Options = new JsonSerializerOptions { TypeInfoResolver = resolver };
     }
     public void Dispose() => _scope.Dispose();
 }
+

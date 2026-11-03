@@ -50,15 +50,15 @@ internal static class SessionLifecycleProbe
    Console.WriteLine("probe: tool admission, paused control flow, workflow and debug rejection passed");
    Console.WriteLine("probe: unadmitted/paused open rejection passed; real editor windows use bounded hidden child");
    ConfigureImage(session,flow,source,imageFile);
-   var valid=Path.Combine(data,"valid.solution");session.SaveAs(valid,Path.Combine(data,"recovery"),data,Types,Options,scope=>new SdkVariableValueExtensionCodec(scope));
+   var valid=Path.Combine(data,"valid.solution");session.SaveAs(valid,Path.Combine(data,"recovery"),data,Types,Options,scope=>new ComplexVariableValueCodec(scope));
    var original=File.ReadAllBytes(valid);var hash=System.Security.Cryptography.SHA256.HashData(original);
-   session=manager.Open(valid,_=>Types,scope=>new SdkVariableValueExtensionCodec(scope),Options,discardPendingEdits:true);
+   session=manager.Open(valid,_=>Types,scope=>new ComplexVariableValueCodec(scope),Options,discardPendingEdits:true);
    Check(session.GetNodes(session.GetWorkflows().Single().Id).Single().ToolType=="ImageLoad","实际保存重开失去节点");
    foreach(var id in new[]{"UnknownTool","Subroutine","Condition"})
    {
     var raw=JsonNode.Parse(original)!;raw["Workflows"]![0]!["Nodes"]![0]!["ToolType"]=id;raw["Workflows"]![0]!["Nodes"]![0]!["Configuration"]!["ToolId"]=id;
     var path=Path.Combine(data,id+".solution");File.WriteAllText(path,raw.ToJsonString());var candidateBytes=File.ReadAllBytes(path);
-    Reject(()=>manager.Open(path,_=>Types,scope=>new SdkVariableValueExtensionCodec(scope),Options),"缺组件V4 Open "+id);
+    Reject(()=>manager.Open(path,_=>Types,scope=>new ComplexVariableValueCodec(scope),Options),"缺组件V4 Open "+id);
     Check(ReferenceEquals(session,manager.CurrentSession)&&candidateBytes.SequenceEqual(File.ReadAllBytes(path)),"失败Open改源/换会话");
    }
    foreach(var malformed in new[]{"missing-configuration","mismatch-configuration","legacy-sdk-model","paused-subroutine-link","paused-subroutine-space"})
@@ -69,12 +69,12 @@ internal static class SessionLifecycleProbe
     else if(malformed=="legacy-sdk-model")node["Parameters"]=new JsonObject();
     else node["SubroutineId"]=malformed=="paused-subroutine-space"?" ":"paused-child";
     var path=Path.Combine(data,malformed+".solution");File.WriteAllText(path,raw.ToJsonString());var bytes=File.ReadAllBytes(path);
-    Reject(()=>manager.Open(path,_=>Types,scope=>new SdkVariableValueExtensionCodec(scope),Options),malformed);
+    Reject(()=>manager.Open(path,_=>Types,scope=>new ComplexVariableValueCodec(scope),Options),malformed);
     Check(ReferenceEquals(session,manager.CurrentSession)&&bytes.SequenceEqual(File.ReadAllBytes(path)),"坏配置Open更改源/会话："+malformed);
    }
    var emptyLink=JsonNode.Parse(original)!;emptyLink["Workflows"]![0]!["Nodes"]![0]!["SubroutineId"]="";
    var emptyPath=Path.Combine(data,"empty-subroutine-default.solution");File.WriteAllText(emptyPath,emptyLink.ToJsonString());
-   using(var independent=new DocumentSessionManager(directory)){var allowed=independent.Open(emptyPath,_=>Types,scope=>new SdkVariableValueExtensionCodec(scope),Options);Check(allowed.GetNodes(allowed.GetWorkflows().Single().Id).Single().SubroutineId=="","空默认SubroutineId被误拒绝");}
+   using(var independent=new DocumentSessionManager(directory)){var allowed=independent.Open(emptyPath,_=>Types,scope=>new ComplexVariableValueCodec(scope),Options);Check(allowed.GetNodes(allowed.GetWorkflows().Single().Id).Single().SubroutineId=="","空默认SubroutineId被误拒绝");}
    Reject(()=>session.Save(valid,Path.Combine(data,"recovery"),Types,Options,_=>throw new InvalidOperationException("受控codec失败")),"真实保存准入失败");
    Check(hash.SequenceEqual(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(valid))),"失败Save改写源");
    Console.WriteLine("probe: admitted save/reopen and missing/paused rejected open/save preserve bytes passed");
@@ -99,10 +99,10 @@ internal static class SessionLifecycleProbe
  private static void RetiredSaveAndAdmission(PluginManager production,string data,string imageFile)
  {
   using var manager=new DocumentSessionManager(production.RuntimeDirectory!);var session=manager.CreateNew("目录代次保存守卫");var flow=session.GetWorkflows().Single();var node=Add(session,flow,"ImageLoad");ConfigureImage(session,flow,node,imageFile);
-  var path=Path.Combine(data,"retired-save.solution");session.SaveAs(path,Path.Combine(data,"retired-recovery"),data,Types,Options,scope=>new SdkVariableValueExtensionCodec(scope));var before=File.ReadAllBytes(path);
+  var path=Path.Combine(data,"retired-save.solution");session.SaveAs(path,Path.Combine(data,"retired-recovery"),data,Types,Options,scope=>new ComplexVariableValueCodec(scope));var before=File.ReadAllBytes(path);
   var cap=session.AdmitPresentation(flow.Id,node.Id);var draft=session.Editing.Host.BeginEdit(flow.Id,node.Id);using var debug=session.OpenDebugSession(flow.Id,node);
   Wait(production.LoadPluginsAsync());Check(production.LastAdmissionError is null,production.LastAdmissionError??"");Check(!cap.IsCurrent,"新目录发布没有退休旧cap");
-  Reject(()=>session.Save(path,Path.Combine(data,"retired-recovery"),Types,Options,scope=>new SdkVariableValueExtensionCodec(scope)),"缺旧准入代的真实Save");
+  Reject(()=>session.Save(path,Path.Combine(data,"retired-recovery"),Types,Options,scope=>new ComplexVariableValueCodec(scope)),"缺旧准入代的真实Save");
   Check(before.SequenceEqual(File.ReadAllBytes(path)),"目录退休的Save更改源字节");
   Reject(()=>session.CaptureRunBatch(new[]{flow.Id}),"旧目录会话执行");Reject(()=>debug.Capture(draft,null,_=>{}),"旧目录私有调试");
   Console.WriteLine("probe: retired actual session save/run/debug rejected and source preserved");
@@ -137,3 +137,4 @@ internal static class SessionLifecycleProbe
   {public string CapabilityId=>inner.CapabilityId;public int CapabilityVersion=>inner.CapabilityVersion;public IReadOnlyList<string> Services=>inner.Services;public async ValueTask<IPreparedHostInputs> PrepareAsync(HostInputPreparationContext context){owner.Entered.Set();if(!owner.Release.Wait(TimeSpan.FromSeconds(10)))throw new TimeoutException("未释放实际宿主输入");return await inner.PrepareAsync(context);}public void Dispose()=>inner.Dispose();}
  }
 }
+

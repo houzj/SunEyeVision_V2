@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +18,7 @@ public sealed class CommunicationBinaryPayloadTests
     public void Payload_owns_input_and_returns_only_owned_copies()
     {
         var source = new byte[] { 0, 92 };
-        var payload = new BinaryPayload(source);
+        var payload = new BinaryValue(source);
         source[1] = 0;
         var copy = payload.ToArray(); copy[0] = 255;
         Assert.Equal(new byte[] { 0, 92 }, payload.ToArray());
@@ -27,9 +28,9 @@ public sealed class CommunicationBinaryPayloadTests
     [Fact]
     public void Binary_is_an_independent_sequence_not_restored_Byte_scalar()
     {
-        Assert.Equal("Binary", SdkTypeVocabulary.ToTypeVocabulary(typeof(BinaryPayload)));
-        Assert.Equal("Binary", SdkTypeVocabulary.ToTypeVocabulary(typeof(BinaryPayload[])));
-        Assert.Equal(typeof(BinaryPayload), SdkTypeVocabulary.ToSystemType("Binary"));
+        Assert.Equal("Binary", SdkTypeVocabulary.ToTypeVocabulary(typeof(BinaryValue)));
+        Assert.Equal("Binary", SdkTypeVocabulary.ToTypeVocabulary(typeof(BinaryValue[])));
+        Assert.Equal(typeof(BinaryValue), SdkTypeVocabulary.ToSystemType("Binary"));
         Assert.Null(SdkTypeVocabulary.ToTypeVocabulary(typeof(byte)));
         Assert.Null(SdkTypeVocabulary.ToTypeVocabulary(typeof(byte[])));
         Assert.Null(SdkTypeVocabulary.ToSystemType("Byte"));
@@ -42,13 +43,13 @@ public sealed class CommunicationBinaryPayloadTests
     [InlineData(4)]
     public void Result_contract_preserves_payload_boundaries_including_single_byte(int length)
     {
-        var payload = new BinaryPayload(Enumerable.Range(0, length).Select(i => (byte)i).ToArray());
+        var payload = new BinaryValue(Enumerable.Range(0, length).Select(i => (byte)i).ToArray());
         var result = new PayloadResult { Data = payload };
         var variable = result.GetOutputVariables().Single(v => v.Name == "Data");
         Assert.Equal("Binary", variable.VariableType);
-        Assert.Same(payload, Assert.Single(Assert.IsType<BinaryPayload[]>(variable.RuntimeValue)));
-        Assert.Same(payload, Assert.IsType<BinaryPayload>(OutputVariableResolver.Resolve(result, "Data")));
-        Assert.Same(payload, Assert.Single(Assert.IsType<BinaryPayload[]>(OutputVariableResolver.Resolve(result, "Data[]"))));
+        Assert.Same(payload, Assert.Single(Assert.IsType<BinaryValue[]>(variable.RuntimeValue)));
+        Assert.Same(payload, Assert.IsType<BinaryValue>(OutputVariableResolver.Resolve(result, "Data")));
+        Assert.Same(payload, Assert.Single(Assert.IsType<BinaryValue[]>(OutputVariableResolver.Resolve(result, "Data[]"))));
     }
 
     [Fact]
@@ -67,19 +68,19 @@ public sealed class CommunicationBinaryPayloadTests
     {
         var data = Enumerable.Range(0, length).Select(i => (byte)i).ToArray();
         using var codec = new VariableCodecScope(typeof(Holder));
-        var json = JsonSerializer.Serialize(new Holder { Value = new BinaryPayload(data) }, codec.Options);
+        var json = JsonSerializer.Serialize(new Holder { Value = new BinaryValue(data) }, codec.Options);
         Assert.Contains("\"Type\":\"Binary\"", json);
         var loaded = JsonSerializer.Deserialize<Holder>(json, codec.Options)!;
-        Assert.Equal(data, Assert.IsType<BinaryPayload>(loaded.Value).ToArray());
+        Assert.Equal(data, Assert.IsType<BinaryValue>(loaded.Value).ToArray());
     }
 
     [Fact]
     public void Multiple_payloads_remain_separate_when_persisted()
     {
-        var values = new[] { new BinaryPayload(new byte[] { 1 }), new BinaryPayload(new byte[] { 2, 3 }) };
+        var values = new[] { new BinaryValue(new byte[] { 1 }), new BinaryValue(new byte[] { 2, 3 }) };
         using var codec = new VariableCodecScope(typeof(Holder));
         var loaded = JsonSerializer.Deserialize<Holder>(JsonSerializer.Serialize(new Holder { Value = values }, codec.Options), codec.Options)!;
-        var restored = Assert.IsType<BinaryPayload[]>(loaded.Value);
+        var restored = Assert.IsType<BinaryValue[]>(loaded.Value);
         Assert.Equal(2, restored.Length);
         Assert.Equal(new byte[] { 1 }, restored[0].ToArray());
         Assert.Equal(new byte[] { 2, 3 }, restored[1].ToArray());
@@ -97,7 +98,7 @@ public sealed class CommunicationBinaryPayloadTests
 
     private sealed class PayloadResult : ToolResults
     {
-        public BinaryPayload? Data { get; init; }
+        public BinaryValue? Data { get; init; }
         public override List<PropertyMapEntry> GetPropertyMap() => new() { new(nameof(Data), "原始数据") };
     }
 
@@ -106,3 +107,4 @@ public sealed class CommunicationBinaryPayloadTests
         public object? Value { get; set; }
     }
 }
+

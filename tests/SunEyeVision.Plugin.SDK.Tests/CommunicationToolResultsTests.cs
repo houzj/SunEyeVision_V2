@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +17,7 @@ public sealed class CommunicationToolResultsTests
         var id = Guid.NewGuid();
         var field = new CommunicationOutputField(id, "重命名后", "Binary");
         var result = new CommunicationToolResults(new[] { field });
-        var data = new BinaryPayload(new byte[] { 0, 92 });
+        var data = new BinaryValue(new byte[] { 0, 92 });
         result.PublishOutputs(new Dictionary<Guid, object?> { [id] = data });
         result.SetSuccess();
         Assert.Same(data, OutputVariableResolver.Resolve(result, field.BindingKey));
@@ -76,3 +77,4 @@ public sealed class CommunicationToolResultsTests
         Assert.Throws<NotSupportedException>(() => new CommunicationToolResults(new[] { field with { VariableType = "Byte" } }));
     }
 }
+

@@ -44,7 +44,7 @@ public sealed class ImageSourceSessionTests
  });
  [Fact] public void Local_debug_freezes_private_settings_base_and_sequence_without_publishing_formal_state()=>RuntimeHost.Run(()=>
  {
-  using var f=new RuntimeFixture();var path=f.Write("relative.pgm",20);f.Paths("relative.pgm");f.Session.SaveAs(Path.Combine(f.DirectoryPath,"saved.solution"),Path.Combine(f.DirectoryPath,"recovery"),f.DirectoryPath,new FrozenVariableTypeCatalog(Array.Empty<KeyValuePair<string,string>>()),new System.Text.Json.JsonSerializerOptions(),scope=>new SdkVariableValueExtensionCodec(scope));
+  using var f=new RuntimeFixture();var path=f.Write("relative.pgm",20);f.Paths("relative.pgm");f.Session.SaveAs(Path.Combine(f.DirectoryPath,"saved.solution"),Path.Combine(f.DirectoryPath,"recovery"),f.DirectoryPath,new FrozenVariableTypeCatalog(Array.Empty<KeyValuePair<string,string>>()),new System.Text.Json.JsonSerializerOptions(),scope=>new ComplexVariableValueCodec(scope));
   var scope=f.Scope();var draft=f.Draft();using var call=f.Capture(scope,draft);using var result=f.Execute(call);Assert.True(result.IsSuccess,result.ErrorMessage);using var reader=result.AcquireReader();Assert.Equal(path,reader.Values!.Get<string>("output.file"));Assert.Equal(7L,reader.Values.Get<long>("output.sequence"));Assert.Equal(new byte[]{20,20},RuntimeFixture.Image(reader).CopyPixels());
   draft.ApplyFields(new Dictionary<string,ParameterSetting>{{"sequence.initial",new ConstantSetting(88L)}});Assert.Throws<InvalidOperationException>(call.AcceptParameters);Assert.Equal(7L,Assert.IsType<ConstantSetting>(f.Node.Configuration.Fields.Read("sequence.initial")).Value);Assert.Null(f.Session.AcquirePublishedResult(f.Flow.Id,f.Node.Id));
  });

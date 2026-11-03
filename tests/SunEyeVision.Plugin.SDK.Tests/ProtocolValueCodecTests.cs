@@ -1,3 +1,4 @@
+using SunEyeVision.Plugin.Contracts;
 using System;
 using SunEyeVision.Plugin.SDK.Models.Communication;
 using Xunit;
@@ -55,7 +56,7 @@ public sealed class ProtocolValueCodecTests
     public void Binary_fields_are_owned_payloads_and_do_not_decode_text()
     {
         var bytes = Convert.FromHexString("00FF");
-        var payload = Assert.IsType<BinaryPayload>(ProtocolValueCodec.Decode(bytes, 0, 1, "Binary"));
+        var payload = Assert.IsType<BinaryValue>(ProtocolValueCodec.Decode(bytes, 0, 1, "Binary"));
         bytes[0] = 42;
         Assert.Equal("00FF", payload.ToString());
         Assert.Throws<FormatException>(() => ProtocolValueCodec.Decode(bytes, 0, 2, "Binary"));
@@ -70,3 +71,4 @@ public sealed class ProtocolValueCodecTests
         Assert.Throws<FormatException>(() => ProtocolValueCodec.ConvertText("NaN", "float"));
     }
 }
+

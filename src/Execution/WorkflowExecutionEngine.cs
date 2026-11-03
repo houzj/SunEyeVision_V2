@@ -137,8 +137,35 @@ public sealed class WorkflowExecutionEngine
                     catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { throw; }
                     catch (Exception error)
                     {
+                        DeclaredOutputSnapshot? failed = null;
+                        var errors = new List<string> { error.Message };
+                        if (outputs.TryRemove(finished.Id, out var abandoned))
+                            try { abandoned.Dispose(); } catch (Exception cleanupError) { errors.Add("未接纳结果释放失败：" + cleanupError.Message); }
+                        var identity = identities[finished.Id];
+                        if (identity.HasStartedExecution && !cancellation.IsCancellationRequested)
+                        {
+                            var node = items[finished.Id].Node;
+                            var schema = new ToolSchema(Array.Empty<Port>(), node.Schema.Outputs, outputDisplay: node.Schema.OutputDisplay);
+                            failed = DeclaredOutputSnapshot.WithoutValues(schema, 0, identity.ToInvocationIdentity(finished.Id),
+                                ExecutionStatus.Failed, new[] { new Diagnostic("execution", error.Message) },
+                                fields: node.ResultFields, sourceWorkflowId: workflow.WorkflowId, executionIdentity: identity);
+                            try
+                            {
+                                if (!identity.TryPublish(() => { })) throw new InvalidOperationException("失败结果的执行身份已失效。");
+                                request.AcceptResult(node, failed);
+                                outputs.TryGetValue(finished.Id, out var previous);
+                                outputs[finished.Id] = failed;
+                                if (previous is not null) try { previous.Dispose(); } catch (Exception cleanupError) { errors.Add("旧结果释放失败：" + cleanupError.Message); }
+                                NotifyNodeCompleted(finished.Id, failed);
+                            }
+                            catch (Exception publishError)
+                            {
+                                errors.Add("失败结果接纳失败：" + publishError.Message);
+                                failed.Dispose(); failed = null;
+                            }
+                        }
                         nodeResults[finished.Id] = new NodeExecutionResult { NodeId = finished.Id, Success = false,
-                            Status = ExecutionStatus.Failed, ErrorMessages = new List<string> { error.Message } };
+                            Status = ExecutionStatus.Failed, Result = failed, ErrorMessages = errors };
                         NotifyNodeStatus(finished.Id, ExecutionStatus.Failed);
                     }
                 }

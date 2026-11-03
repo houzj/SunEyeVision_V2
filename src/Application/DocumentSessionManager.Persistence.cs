@@ -26,12 +26,21 @@ public sealed partial class DocumentSessionManager
             var declarations=FreezeDeclarations(bytes,_directory);
             var types=captureTypes(bytes); var scope=new DecodedResourcesScope();
             IVariableValueExtensionCodec? codec;
-            try { codec=createCodec(scope); } catch { scope.Dispose(); throw; }
+            try { codec=createCodec(scope); }
+            catch(Exception failure)
+            {
+                try { scope.Dispose(); } catch(Exception cleanup) { throw new AggregateException("创建解码器和释放候选资源均失败。",failure,cleanup); }
+                throw;
+            }
             using var candidate=SolutionDocumentReader.Read(bytes,declarations,types,options,scope,codec,Path.GetDirectoryName(path));
             cancellationToken.ThrowIfCancellationRequested();
             var session=DocumentSession.FromPersistenceCandidate(candidate,_directory,declarations);
             try { session.SetOpenedPersistenceBaseline(candidate.PrepareSave(path,TargetExpectation.Match(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(bytes))))); cancellationToken.ThrowIfCancellationRequested(); }
-            catch { session.Dispose(); throw; }
+            catch(Exception failure)
+            {
+                try { session.Dispose(); } catch(Exception cleanup) { throw new AggregateException("准备打开方案和释放候选均失败。",failure,cleanup); }
+                throw;
+            }
             Install(session,discardPendingEdits);
             return session;
         }

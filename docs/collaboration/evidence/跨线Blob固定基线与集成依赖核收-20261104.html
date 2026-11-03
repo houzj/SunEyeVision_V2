@@ -1,0 +1,220 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>跨线Blob固定基线核收</title><style>body{max-width:1200px;margin:28px auto;background:#132737;color:#e7edf4;font:16px/1.7 sans-serif}table{border-collapse:collapse;width:100%}td,th{border:1px solid #607b91;padding:12px}pre{white-space:pre-wrap;background:#213f53;padding:18px}.flow{display:flex;gap:8px;margin:20px 0}.flow span{background:#2a4b61;padding:13px;flex:1}a{color:#acd7f4}</style><h1>Blob固定代码基线：跨工作区核收与依赖</h1><p>2026-11-04 · 技术总监集中交接。其独立树固定7ee44699d，非D盘主仓正式已合，也非本工作区已集成。该提交是阶段文档，产品代码完整串与前置见下；原回执SHA256 18359B06C7D24CCA05B608F9BDA130A686C535929DCB3C5BBCADCA6CAF3327DF。独立通过不能转签本树。</p><div class="flow"><span>f48<br>真实轮廓共享接缝</span><span>78 + a0<br>矩形与单双正式字段</span><span>83 → fee → a53<br>六模式/软参数/图像与重入</span><span>本树消费者整批接入<br>自行构建封包回归</span></div><table><tr><th>已核事实</th><th>集成决策 / 状态</th></tr><tr><td>产品串83a477ac9→fee612da3→a53d6bffa；832仅测试隔离，7ee仅证据。</td><td>源码差异已只读检查。前置a0ad02add、78c5ef475及f48d5fa90均非根祖先；这不能单凭祖先判断功能缺失，后续按实际文件/行为核差。尚未应用此工具批。</td></tr><tr><td>新增七settings；原Blob OutputGrayImage/GrayImage/request退出，Field5仍Nullable Image但语义为BlobImage。</td><td>同步正式XML字段/编辑控件/参数冻结/结果树和图像需求/保存重开/复制/单次连续消费者，不保Gray兼容别名。主窗NativeResults里的output.gray-image属于图像源，不能误删。</td></tr><tr><td>83共享产品仅NativeThresholdUiDraftControls；前置f48还改ResultDisplayDescriptor、轮廓投影/viewport和ResultWorkspacePresenter.Display，且含旧WorkflowNode。</td><td>必须取真实共享前置并与当前Session表现层集中适配；禁止把已退休src/Workflow重新带回、复制整个旧分支UI或为旧node加桥。当前不打断A/B/C独立批。</td></tr><tr><td>Auto/Relative局部域、未知筛选和超容量普通图像保护仍有限制；原13特征容量选择新单元未闭口。</td><td>保持原回执精确范围：需要Field5而不可得时明确拒绝，普通无需求可null+诊断；不把六阈值自测算全部Blob像素语义完成。不提前接其在途容量堆。</td></tr><tr><td>下一正式出口</td><td>完整依赖/消费者设计后在独立整合批重建UI与全量Release、真实图像源→Blob、参数/结果/显示/绑定/复制/文件/取消和reader。当前只读核收，无本树Blob集成通过证明；主仓、人工、VS另计。</td></tr></table><h2>固定来源回执（原JSON转义快照）</h2><pre>{
+  &quot;status&quot;: &quot;WORKTREE_INTEGRATION_SELF_TEST_CLOSED&quot;,
+  &quot;unit&quot;: &quot;原六模式阈值/正式七参数/8位工作图/Binary副本/非零Region/有限候选BlobImage完整生产链&quot;,
+  &quot;candidateSource&quot;: &quot;e460a839bcb7cb62cf4bf8075aa1e292eacf45ac&quot;,
+  &quot;integrationSource&quot;: &quot;a53d6bffab1e74263cdc638563383621c1f0c7ed&quot;,
+  &quot;codeCommits&quot;: [
+    &quot;83a477ac98dd1917e1a074cf90423e0dab3c7c30&quot;,
+    &quot;fee612da36a493bc3d6f8a488cfb9ed017315bc1&quot;,
+    &quot;a53d6bffab1e74263cdc638563383621c1f0c7ed&quot;
+  ],
+  &quot;harnessOnlyAfterBuild&quot;: &quot;83282386b：仅测试目录增加case名/毫秒/GUID隔离，PS语法检查通过；本轮实际两阈值测试目录各不相同，没有覆盖，二进制封包仍为a53d6bffa&quot;,
+  &quot;classification&quot;: &quot;原机器指令/C体的HALCON语义移植与必要图像/资源适配；原控件/模板复用，不称逐文件原生算法源码直迁或原机同态&quot;,
+  &quot;builds&quot;: {
+    &quot;full&quot;: {
+      &quot;seconds&quot;: 58.39,
+      &quot;warnings&quot;: 6411,
+      &quot;errors&quot;: 0
+    },
+    &quot;ui&quot;: {
+      &quot;seconds&quot;: 54.83,
+      &quot;warnings&quot;: 6409,
+      &quot;errors&quot;: 0
+    }
+  },
+  &quot;tracks&quot;: [
+    {
+      &quot;dir&quot;: &quot;Release/_validation/ThresholdChain/attempt-20261104-012409&quot;,
+      &quot;groups&quot;: 5,
+      &quot;name&quot;: &quot;六模式/AutoSoft/None&quot;
+    },
+    {
+      &quot;dir&quot;: &quot;Release/_validation/ThresholdChain/attempt-20261104-012405&quot;,
+      &quot;groups&quot;: 4,
+      &quot;name&quot;: &quot;Single/Double整链&quot;
+    },
+    {
+      &quot;dir&quot;: &quot;Release/_validation/S4-20261025/BlobThreePageUi/attempt-008&quot;,
+      &quot;groups&quot;: 18,
+      &quot;name&quot;: &quot;真实三页&quot;
+    },
+    {
+      &quot;dir&quot;: &quot;Release/_validation/S4-20261025/BlobResultWorkspace/attempt-007&quot;,
+      &quot;groups&quot;: 4,
+      &quot;name&quot;: &quot;结果工作区及不可得清旧图&quot;
+    },
+    {
+      &quot;dir&quot;: &quot;Release/_validation/S4-20261025/BlobParameterProduction/attempt-005&quot;,
+      &quot;groups&quot;: 19,
+      &quot;name&quot;: &quot;正式参数生产&quot;
+    },
+    {
+      &quot;dir&quot;: &quot;Release/_validation/S4-20261025/BlobRangeProduction/Area/Core/attempt-001&quot;,
+      &quot;groups&quot;: 14,
+      &quot;name&quot;: &quot;Area范围完整链&quot;
+    }
+  ],
+  &quot;loadedHashes&quot;: [
+    {
+      &quot;mismatch&quot;: 0,
+      &quot;checked&quot;: 13,
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\ThresholdChain\\attempt-20261104-012409&quot;
+    },
+    {
+      &quot;mismatch&quot;: 0,
+      &quot;checked&quot;: 13,
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\ThresholdChain\\attempt-20261104-012405&quot;
+    },
+    {
+      &quot;mismatch&quot;: 0,
+      &quot;checked&quot;: 15,
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobThreePageUi\\attempt-008&quot;
+    },
+    {
+      &quot;mismatch&quot;: 0,
+      &quot;checked&quot;: 15,
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobResultWorkspace\\attempt-007&quot;
+    },
+    {
+      &quot;mismatch&quot;: 0,
+      &quot;checked&quot;: 13,
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-005&quot;
+    },
+    {
+      &quot;mismatch&quot;: 0,
+      &quot;checked&quot;: 15,
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\Area\\Core\\attempt-001&quot;
+    }
+  ],
+  &quot;payload&quot;: {
+    &quot;sourceCommit&quot;: &quot;a53d6bffab1e74263cdc638563383621c1f0c7ed&quot;,
+    &quot;entries&quot;: 201,
+    &quot;payloadSha256&quot;: &quot;3E10C8878EDAEEFF9DB780B212F2C4D29942E0B794A83C3657A747D657B62338&quot;,
+    &quot;hashAndFileSetUnchanged&quot;: true
+  },
+  &quot;artifacts&quot;: [
+    {
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\ThresholdChain\\attempt-20261104-012409\\receipt.json&quot;,
+      &quot;sha256&quot;: &quot;D17C1247F4C43D6AA35ABB1A4BA22B3D1B1BD568B2880AC0E28DB790F1BE4EB8&quot;
+    },
+    {
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\ThresholdChain\\attempt-20261104-012409\\loaded-product.tsv&quot;,
+      &quot;sha256&quot;: &quot;B2208D653AC27C6451801F08DD061AAAA700773548BEAC8BB6DF413953E91392&quot;
+    },
+    {
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\ThresholdChain\\attempt-20261104-012409\\run.log&quot;,
+      &quot;sha256&quot;: &quot;4E3F740A251A5CBD63BD05F282FB740C9EDED7C6173BA7A549F1BF7D4FDA8C48&quot;
+    },
+    {
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\ThresholdChain\\attempt-20261104-012405\\receipt.json&quot;,
+      &quot;sha256&quot;: &quot;96F730AB8C98F34E1E815622943AC0F3B35EF66778BA979C32CB0D5FDB002F1D&quot;
+    },
+    {
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\ThresholdChain\\attempt-20261104-012405\\loaded-product.tsv&quot;,
+      &quot;sha256&quot;: &quot;B2208D653AC27C6451801F08DD061AAAA700773548BEAC8BB6DF413953E91392&quot;
+    },
+    {
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\ThresholdChain\\attempt-20261104-012405\\run.log&quot;,
+      &quot;sha256&quot;: &quot;9B84102201DDCB05AABAEC13FC0F8AD18F0F8021EDA7E38AB49E693728332D93&quot;
+    },
+    {
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobThreePageUi\\attempt-008\\receipt.json&quot;,
+      &quot;sha256&quot;: &quot;E192CDFF833CB57DFF75E87AF21C5EAF88AF702CC3A2279ADD623783EC9A29D6&quot;
+    },
+    {
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobThreePageUi\\attempt-008\\loaded-product.tsv&quot;,
+      &quot;sha256&quot;: &quot;E80616EF801C9310FC0C617BD2A353ECB5BDB6BA38C9ECE255388E1BC073FE68&quot;
+    },
+    {
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobThreePageUi\\attempt-008\\run.log&quot;,
+      &quot;sha256&quot;: &quot;E5B0EF813E7CBB55EF485833A5B903EE8355B2406B5F5473F6E8A34D44206DDE&quot;
+    },
+    {
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobResultWorkspace\\attempt-007\\receipt.json&quot;,
+      &quot;sha256&quot;: &quot;FFABEFC1BE6520DCD87F1B55ECEBD332AC21E131C3863162DBBCE195021B1761&quot;
+    },
+    {
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobResultWorkspace\\attempt-007\\loaded-product.tsv&quot;,
+      &quot;sha256&quot;: &quot;2D3ADD54A8D66D4017C48375E663D7DEB23894AAA77A03DD167E8FA533FAA0EB&quot;
+    },
+    {
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobResultWorkspace\\attempt-007\\run.log&quot;,
+      &quot;sha256&quot;: &quot;D64F601A1FB2A547F92103E4BADA2198FEA246B867A36AA676B66C8A21A6456D&quot;
+    },
+    {
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-005\\receipt.json&quot;,
+      &quot;sha256&quot;: &quot;2F07BEFF7ED1BAD96FD6CBF64D2329B341F8FFCBFF2235827E8E07991AC08E11&quot;
+    },
+    {
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-005\\loaded-product.tsv&quot;,
+      &quot;sha256&quot;: &quot;9C1900E320AB80E3748DE97AC3C43ACB2A7F75BC6B48D55DE1DB2E5CEA9A91F0&quot;
+    },
+    {
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobParameterProduction\\attempt-005\\run.log&quot;,
+      &quot;sha256&quot;: &quot;1A39002D7A4D3586346DEF06004AC3826B69A8FF9791B20724B02F7C995F41A7&quot;
+    },
+    {
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\Area\\Core\\attempt-001\\receipt.json&quot;,
+      &quot;sha256&quot;: &quot;512103C175F6BDB80127DBD9DDF708770FAB5708C674B371E1719EC1723049D5&quot;
+    },
+    {
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\Area\\Core\\attempt-001\\loaded-product.tsv&quot;,
+      &quot;sha256&quot;: &quot;3BBE6CDE1D2EA4FE6B74049375C7888108FF1DDBA3051FAFC8E794519329D003&quot;
+    },
+    {
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobRangeProduction\\Area\\Core\\attempt-001\\run.log&quot;,
+      &quot;sha256&quot;: &quot;20A9E158C59709FD84CB7A2969E4DF444EFA2001AE63159D039BF6AC43D6B884&quot;
+    },
+    {
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\AutoSoftIntegration\\ui-build.log&quot;,
+      &quot;sha256&quot;: &quot;B86CF026949C7CEA2BDF6DF230459C9949C7F08AA4D191BE1573CFBDB861B1F9&quot;
+    },
+    {
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\AutoSoftIntegration\\full-build.log&quot;,
+      &quot;sha256&quot;: &quot;FCB93D5986772F450ADD63E9C0DF0EF1A143ECDCDDA6A42119D602C3F37D87B0&quot;
+    },
+    {
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\AutoSoftIntegration\\payload-check.json&quot;,
+      &quot;sha256&quot;: &quot;0C3E1F9AD6DFAC999740089387B85ACD9D6B3617A2C1D94244FF9CE0D3375E0E&quot;
+    },
+    {
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\AutoSoftIntegration\\loaded-hashes.json&quot;,
+      &quot;sha256&quot;: &quot;F12116966B257136EE18B3E0C3781BDF3BF0E2A1B8D88C0AE0C9BA599D2BABAC&quot;
+    },
+    {
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\ThresholdChain\\attempt-20261104-012409\\auto-soft-report.json&quot;,
+      &quot;sha256&quot;: &quot;9334DFB5D6BA1B516F63BAF0D42791742EC5104706BB0A03B0733C254CDD2B9C&quot;
+    },
+    {
+      &quot;path&quot;: &quot;C:\\Users\\houzhongjie\\.codex\\worktrees\\s2-blob-supported-chain\\SunEyeVision_V2\\Release\\_validation\\S4-20261025\\BlobThreePageUi\\attempt-008\\three-page-design-RelativeSoftThreshold.png&quot;,
+      &quot;sha256&quot;: &quot;5124412861F67E2C250AFBE85DF5C642238ADF940E40A591EE905FFCC56FFE0A&quot;
+    }
+  ],
+  &quot;completed&quot;: [
+    &quot;None/Single/Double/Auto/FixedSoft/RelativeSoft六正式模式与原六选项双向接纳&quot;,
+    &quot;七Int32字段由唯一XML/真实draft持有，引用/raw/模式休眠/重绑/确认取消/历史保存及调试冻结&quot;,
+    &quot;原float32同分与两次CVTT/柔和度整数、None复制反转和Auto双边含等值&quot;,
+    &quot;Binary保留mask后真实8位中间值并先于Region后处理；非零Region连接真实测量/轮廓/文本&quot;,
+    &quot;旧Blob专属Gray API/Field5灰图退出，真实候选区域白图与不可得诊断、明确需求拒绝及旧图清理&quot;,
+    &quot;正常面积float32→int过滤及越界保护；窗口Range引用取值后重入拒绝旧快照且不覆盖新编辑&quot;
+  ],
+  &quot;limits&quot;: [
+    &quot;Auto/Relative本批仅全矩形有效域；ROI/Mask统计语义未全证，不冒称所有域等价&quot;,
+    &quot;FixedSoft原有序C06 UI与允许反序Kernel分列；窗口反序常量/当前引用值/缺值保护，不清正式值&quot;,
+    &quot;休眠字段的绑定仍参与宿主全字段解析，保留并保护；输入工厂无视图/非视觉reader仍需先访问Basic&quot;,
+    &quot;BlobImage仅无未证Circle/Rect筛选且候选数不超过FindNum正常集合提供；超限或未知筛选可null+诊断，明确需求失败&quot;,
+    &quot;rows/Region超FindNum当前仍本方Sort.Take适配且有诊断；原容量堆替换及原13特征精确排序未迁，不把图像保护泛称全部结果保护&quot;,
+    &quot;Auto/Relative运行阈值是本方按原公式计算，同次冻结诊断标明，原厂外部发布尚未证&quot;,
+    &quot;原优化hist/扫描、非8位转换、ROI外像素/孔洞、并行/原标签/测量判定及最大内接框/Fixture仍分别保留，未做VM原机像素差分&quot;
+  ],
+  &quot;visual&quot;: &quot;已看本树同组装RelativeSoft正式字段WPF图并复用候选FixedSoft预览；不是VS实际设计器&quot;,
+  &quot;candidateOnly&quot;: &quot;合同XUnit3项只沿候选回执，未在本树重跑；本树六轨及重入反例均真实运行&quot;,
+  &quot;notRun&quot;: [
+    &quot;D盘主仓正式集成&quot;,
+    &quot;本版VS实际设计器&quot;,
+    &quot;统一用户人工验收&quot;,
+    &quot;未把所有历史测试改动算作已运行&quot;
+  ],
+  &quot;next&quot;: &quot;BLOB_SELECTION_MIGRATION_DESIGN_20261104.json：普通Area过滤→原三模式容量替换→BlobImage与rows同集合，原13特征范围保留&quot;
+}
+</pre></html>

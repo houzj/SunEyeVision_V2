@@ -1,3 +1,13 @@
+## 2026-11-04 当前源复制整合与跨线Blob基线核收
+
+根产品71a94ee53，含0fdf8b1cd/7f3fb02e0：按VM补证的当前源读取、UI删除清空/Undo不复活、+100/5吸附及同次事务逐点位置。52工程完整Release0错6123warn，同版封包39399EAC1671B964E68327D375065D85BB7CC5089FFA460B757B087BA2F9FCE8，Graph39/39、隐藏Canvas25/25；current-source-clipboard-integrated-build/seal、current-source-graph/canvas-integrated-20261104.log及相应TRX。Root改名生产专项待A新合同，不丢；物理键盘/VM运行/VS/人工未验。当前无根活跃构建测试句柄。
+
+Blob统筹固定7ee44699d（仅文档）；实际代码83a→fee→a53，还须a0单双阈值、78真实矩形、f48轮廓共享闭包。本树已只读看stat与回执，未应用，不复制载荷/不恢复旧Workflow或Gray兼容别名；跨线完整核收HTML保存原JSON快照与哈希。新增七settings/Field5 Nullable Image语义变BlobImage均须完整消费者同步。祖先检查三前置均不在当前祖先，但行为是否已有须核文件，不能仅据Git ID判缺基础。
+
+并行A根集合共享内核在途，B主窗连续消费b825计时在途；C新树D:/MyWork/line-aiproject/platform-image-acquisition-20261104（71a基线）开始按80971精确合同实施：Contracts.Acquisition真实Workflow身份/Preview null，Infrastructure.ImageSources与DeviceDriver.Camera非WPF同manager/gate/租约，相机专属UI/旧合同整闭包退出；B主窗共享文件仍唯一写、不抢写。真实MVS硬件禁止顺手启动，默认软件测试filter Category!=RealHardware；模拟路径真实测，不把旧typed缺口静态推断签运行通过。
+
+原主HTML/完整剩余矩阵已统一阶段效果、真实验证和未做范围。目标保持全平台；其它18工具/SDK活跃消费者、目录最终目标树、Group/新循环暂停等原清单全部保留。根未合主仓；人工、设计器、主仓分别记。
+
 ## 2026-11-04 新证据影响核收及三个完整在途批
 
 根当前172ebc70f，产品已合b825真实模块时间/连续只读摘要和89d唯一FragmentBuilder。52工程正常全量Release0错6123warn；同版27063FE131443F6E66FAA35778C87902C7AD1C6813039DA31C2DFDEFADA6F926，Editing17/Graph35/隐藏Canvas24；b825实际Execution16/Continuous15组过。build/run/TRX位于Release/_validation/fragment-*-integrated-*20261104及continuous-summary-*3-20261104。首轮真实模块Duration缺失已沿Engine修复，不降断言；本批非主窗连续已完成，B仍接完整主窗。当前无根构建/测试活跃句柄。

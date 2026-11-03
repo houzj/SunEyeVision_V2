@@ -8,6 +8,7 @@ public interface IDocumentEditParticipant
     bool HasPendingChanges { get; }
     bool IsValid { get; }
     DocumentEditProposal Prepare(NodeConfigurationEditHost host);
+    void Acknowledge(DocumentEditProposal prepared, DocumentEditReceipt receipt);
     void Cancel();
 }
 
@@ -62,19 +63,65 @@ public sealed class DocumentEditSession : IDisposable
         _busy = true;
         try
         {
-            PruneInvalidScopes();
-            var selected = scopeId is { } id
-                ? new[] { _participants.TryGetValue(id, out var participant) ? participant : throw new InvalidOperationException("编辑范围不存在。") }
-                : _participants.Values.ToArray();
-            if (selected.Length == 0) throw new InvalidOperationException("没有需要准备的编辑范围。");
-            var prepared = selected.Select(participant => (Participant: participant, Proposal: participant.Prepare(Host))).ToArray();
-            foreach (var item in prepared)
-                if (!item.Participant.IsValid || !_participants.TryGetValue(item.Participant.ScopeId, out var current) ||
-                    !ReferenceEquals(current, item.Participant))
-                    throw new InvalidOperationException("准备期间编辑范围已退出，草稿未接受。");
-            return new(DocumentEditProposal.Combine(_session, prepared.Select(item => item.Proposal).ToArray()), prepared);
+            return PrepareCore(scopeId);
         }
         finally { _busy = false; }
+    }
+
+    public DocumentEditReceipt Apply(Guid? scopeId = null)
+    {
+        EnsureAvailable();
+        _busy = true;
+        try
+        {
+            var prepared = PrepareCore(scopeId);
+            _session.ValidateEdit(prepared.Combined);
+            EnsureRegistered(prepared.Parts);
+            var receipt = _session.CommitEdit(prepared.Combined);
+            var errors = new List<Exception>();
+            foreach (var item in prepared.Parts)
+            {
+                if (!_participants.TryGetValue(item.Participant.ScopeId, out var current) || !ReferenceEquals(current, item.Participant))
+                    continue;
+                try { item.Participant.Acknowledge(item.Proposal, receipt); }
+                catch (Exception error) { errors.Add(error); }
+            }
+            if (errors.Count != 0) throw new AggregateException("编辑已提交，但部分编辑视图未能刷新。", errors);
+            return receipt;
+        }
+        finally { _busy = false; }
+    }
+
+    public void Validate(Guid? scopeId = null)
+    {
+        EnsureAvailable();
+        _busy = true;
+        try
+        {
+            var prepared = PrepareCore(scopeId);
+            _session.ValidateEdit(prepared.Combined);
+            EnsureRegistered(prepared.Parts);
+        }
+        finally { _busy = false; }
+    }
+
+    private PreparedDocumentEdits PrepareCore(Guid? scopeId)
+    {
+        PruneInvalidScopes();
+        var selected = scopeId is { } id
+            ? new[] { _participants.TryGetValue(id, out var participant) ? participant : throw new InvalidOperationException("编辑范围不存在。") }
+            : _participants.Values.ToArray();
+        if (selected.Length == 0) throw new InvalidOperationException("没有需要准备的编辑范围。");
+        var prepared = selected.Select(participant => (Participant: participant, Proposal: participant.Prepare(Host))).ToArray();
+        EnsureRegistered(prepared);
+        return new(DocumentEditProposal.Combine(_session, prepared.Select(item => item.Proposal).ToArray()), prepared);
+    }
+
+    private void EnsureRegistered(IReadOnlyList<(IDocumentEditParticipant Participant, DocumentEditProposal Proposal)> prepared)
+    {
+        foreach (var item in prepared)
+            if (!item.Participant.IsValid || !_participants.TryGetValue(item.Participant.ScopeId, out var current) || !ReferenceEquals(current, item.Participant))
+                throw new InvalidOperationException("准备期间编辑范围已退出，草稿未接受。");
     }
 
     private void EnsureAvailable()

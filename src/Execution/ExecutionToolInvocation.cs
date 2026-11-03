@@ -7,10 +7,12 @@ namespace SunEyeVision.Execution;
 /// <summary>The resource-owning invocation shared by the formal and debug execution paths.</summary>
 internal static class ExecutionToolInvocation
 {
+    // On entry, sourceReaders transfer to this call and must survive until the invocation drains.
     internal static async ValueTask<DeclaredOutputSnapshot> ExecuteAsync(ExecutionNodeSnapshot node,
         ToolExecutionIdentity identity, IReadOnlyDictionary<string, object?> inputValues,
         IReadOnlyDictionary<string, object?> settingValues, IEnumerable<OutputValueRequest> requests,
-        IHostInputPreparer? hostInput, IReadOnlyList<IDisposable> sourceReaders, Action<string> log)
+        IHostInputPreparer? hostInput, IReadOnlyList<IDisposable> sourceReaders, Action<string> log,
+        IReadOnlyDictionary<string, DeclaredOutputField>? resultFields)
     {
         ArgumentNullException.ThrowIfNull(node); ArgumentNullException.ThrowIfNull(identity);
         ArgumentNullException.ThrowIfNull(sourceReaders); ArgumentNullException.ThrowIfNull(log);
@@ -26,8 +28,9 @@ internal static class ExecutionToolInvocation
         var timer = Stopwatch.StartNew();
         try
         {
-            if (invocationIdentity.DocumentSessionId != node.DocumentOwnerId)
-                throw new InvalidOperationException("执行身份不属于冻结方案 owner。");
+            if (!ReferenceEquals(identity.Owner, node.Owner) || identity.NodeId != node.OwnerDomainId
+                || invocationIdentity.DocumentSessionId != node.DocumentOwnerId)
+                throw new InvalidOperationException("执行身份不属于冻结方案中的实际节点。");
             admission = node.Owner.EnterRun(identity);
             identity.CancellationToken.ThrowIfCancellationRequested();
             generation = node.Directory.AcquireInvocation();
@@ -52,7 +55,7 @@ internal static class ExecutionToolInvocation
             // Capture consumes both output and owned resources even if it throws.
             transferred = true;
             result = DeclaredOutputSnapshot.Capture(node.Schema, 0, identity, node.NodeId,
-                outcome, owned, timer.Elapsed.TotalMilliseconds, sourceWorkflowId: node.WorkflowId);
+                outcome, owned, timer.Elapsed.TotalMilliseconds, fields: resultFields, sourceWorkflowId: node.WorkflowId);
             return result;
         }
         catch (Exception error) { failure = error; throw; }

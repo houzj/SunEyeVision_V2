@@ -8,10 +8,14 @@ namespace SunEyeVision.Execution;
 public sealed class ExecutionWorkflowSnapshot
 {
     internal ExecutionWorkflowSnapshot(string workflowId, long documentRevision,
+        RuntimeDirectorySnapshot directory, ToolExecutionOwner owner,
         IReadOnlyList<ExecutionWorkflowNode> nodes,
         IReadOnlyDictionary<string, IReadOnlyCollection<string>> predecessors)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(workflowId);
+        ArgumentNullException.ThrowIfNull(directory);
+        ArgumentNullException.ThrowIfNull(owner);
+        if (!directory.IsActive || owner.IsRetired) throw new InvalidOperationException("方案执行 owner 或目录已退役。");
         ArgumentNullException.ThrowIfNull(nodes);
         ArgumentNullException.ThrowIfNull(predecessors);
         var copy = nodes.ToArray();
@@ -40,19 +44,23 @@ public sealed class ExecutionWorkflowSnapshot
             foreach (var id in ready) remaining.Remove(id);
             foreach (var pending in remaining.Values) pending.ExceptWith(ready);
         }
-        if (copy.Length > 0 && copy.Any(item => !ReferenceEquals(item.Node.Owner, copy[0].Node.Owner)
-            || !ReferenceEquals(item.Node.Directory, copy[0].Node.Directory)))
+        if (copy.Any(item => !ReferenceEquals(item.Node.Owner, owner)
+            || !ReferenceEquals(item.Node.Directory, directory)))
             throw new ArgumentException("执行图节点不属于同一方案运行 owner 或目录代次。", nameof(nodes));
         WorkflowId = workflowId;
         DocumentRevision = documentRevision;
         Nodes = Array.AsReadOnly(copy);
         Predecessors = new ReadOnlyDictionary<string, IReadOnlyCollection<string>>(edges);
+        Directory = directory;
+        Owner = owner;
     }
 
     public string WorkflowId { get; }
     public long DocumentRevision { get; }
     public IReadOnlyList<ExecutionWorkflowNode> Nodes { get; }
     public IReadOnlyDictionary<string, IReadOnlyCollection<string>> Predecessors { get; }
+    internal RuntimeDirectorySnapshot Directory { get; }
+    internal ToolExecutionOwner Owner { get; }
 }
 
 /// <summary>The execution snapshot and enabled state of the same captured node.</summary>

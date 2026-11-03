@@ -1,3 +1,4 @@
+using SunEyeVision.Application.Communications;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,8 +9,8 @@ using System.Threading.Tasks;
 using SunEyeVision.DeviceDriver.Communications;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Features.CommunicationManager;
-using SunEyeVision.Workflow;
-using ConfiguredCommunication = SunEyeVision.Workflow.Communication;
+using SunEyeVision.Domain.Solutions;
+using ConfiguredCommunication = SunEyeVision.Domain.Solutions.Communication;
 
 namespace SunEyeVision.UI.Services.Communication;
 
@@ -49,9 +50,9 @@ public sealed class CommunicationAutomationService : IAsyncDisposable
 
     public CommunicationAutomationService(CommunicationRuntimeManager runtime) => _runtime = runtime;
     private static T Copy<T>(T value) => JsonSerializer.Deserialize<T>(
-        JsonSerializer.Serialize(value, WorkflowSerializationOptions.Default), WorkflowSerializationOptions.Default)!;
+        JsonSerializer.Serialize(value, new System.Text.Json.JsonSerializerOptions()), new System.Text.Json.JsonSerializerOptions())!;
 
-    public void Reset(Solution? solution)
+    public void Reset(SolutionDefinition? solution)
     {
         lock (_gate)
         {
@@ -63,37 +64,36 @@ public sealed class CommunicationAutomationService : IAsyncDisposable
         }
     }
 
-    public void Refresh(Solution? solution)
+    public void Refresh(SolutionDefinition? solution)
     {
         lock (_gate)
         {
             if (_disposed) return;
             _version++;
-            _devices = (solution?.Communications ?? new()).Select(Copy).ToDictionary(d => d.Id);
-            var definitions = solution?.CommunicationTriggers ?? new();
+            _devices = (solution?.Communications ?? Array.Empty<ConfiguredCommunication>()).Select(Copy).ToDictionary(d => d.Id);
+            var definitions = solution?.CommunicationTriggers ?? Array.Empty<CommunicationTriggerDefinition>();
             _rules = definitions.Where(r => r.Source is "Event" or "GlobalData").Select(Copy).ToArray();
-            if (solution != null)
-            {
-                EnsureIdentifiers(solution.Workflows.Where(w => !w.IsSubroutine).Select(w => w.Id),
-                    solution.CommunicationResponses.WorkflowIdentifiers);
-                EnsureIdentifiers(solution.Devices.Where(d => d.Type == DeviceType.Camera).Select(d => d.Id),
-                    solution.CommunicationResponses.CameraIdentifiers);
-            }
             _responses = Copy(solution?.CommunicationResponses ?? new());
             var next = new Dictionary<Guid, (string, CommunicationReceiveEventViewModel)>();
-            foreach (var definition in solution?.CommunicationEvents ?? new())
+            foreach (var definition in solution?.CommunicationEvents ?? Array.Empty<CommunicationEventDefinition>())
             {
-                var signature = JsonSerializer.Serialize(definition, WorkflowSerializationOptions.Default);
+                var signature = JsonSerializer.Serialize(definition, new System.Text.Json.JsonSerializerOptions());
                 next[definition.EventId] = _receivers.TryGetValue(definition.EventId, out var old) && old.Signature == signature
                     ? old : (signature, CommunicationReceiveStateFactory.Create(definition));
             }
             _receivers = next;
-            _workflowIds = (solution?.Workflows ?? new()).Where(w => !w.IsSubroutine)
+            _workflowIds = (solution?.Workflows ?? Array.Empty<SunEyeVision.Domain.Workflows.WorkflowDefinition>()).Where(w => !w.IsSubroutine)
+                .Where(w => _responses.WorkflowIdentifiers.ContainsKey(w.Id))
                 .Select(w => (w.Id, Number: _responses.WorkflowIdentifiers[w.Id].ToString(System.Globalization.CultureInfo.InvariantCulture)))
                 .ToDictionary(x => x.Id, x => x.Number);
-            _cameraIds = (solution?.Devices ?? new()).Where(d => d.Type == DeviceType.Camera)
+            _cameraIds = (solution?.Devices ?? Array.Empty<Device>()).Where(d => d.Type == DeviceType.Camera)
+                .Where(d => _responses.CameraIdentifiers.ContainsKey(d.Id))
                 .Select(d => (d.Id, Number: _responses.CameraIdentifiers[d.Id].ToString(System.Globalization.CultureInfo.InvariantCulture)))
                 .ToDictionary(x => x.Id, x => x.Number);
+            if(solution is not null && _responses.WorkflowState.Enabled && solution.Workflows.Any(w=>!w.IsSubroutine && !_workflowIds.ContainsKey(w.Id)))
+                Warn("部分流程缺少正式持久响应编号，相关状态响应不可用。");
+            if(solution is not null && _responses.CameraState.Enabled && solution.Devices.Any(d=>d.Type==DeviceType.Camera && !_cameraIds.ContainsKey(d.Id)))
+                Warn("部分相机缺少正式持久响应编号，相关状态响应不可用。");
         }
     }
 
@@ -114,13 +114,6 @@ public sealed class CommunicationAutomationService : IAsyncDisposable
             }
             ProcessUploadedData(new(_uploadSession, deviceId, null, timestamp, "String", text, rawData: data));
         }
-    }
-
-    private static void EnsureIdentifiers(IEnumerable<string> ids, Dictionary<string, int> numbers)
-    {
-        var next = numbers.Count == 0 ? 0 : numbers.Values.Max();
-        foreach (var id in ids)
-            if (!numbers.ContainsKey(id)) numbers[id] = checked(++next);
     }
 
     public void ProcessModbus(ModbusPollResult sample, SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveSample? receiveSample = null)

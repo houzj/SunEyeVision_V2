@@ -1,0 +1,359 @@
+{
+  "baseline": "90e9b44efa4cc817b29643a5b9ea6ddfa2473825",
+  "purpose": "Paused Group historical dependency evidence; never compiled or loaded",
+  "archiveSha256": "fb74c71ec3ec3f8cd053bceefb868a1794180e8c417244475942b21f1d9021b1",
+  "files": [
+    {
+      "path": "src/Workflow/AlgorithmNode.Runtime.cs",
+      "sha256": "817877d1a43966679f0f2524cb7c16332b7ca937b6f6a59387d46ce7872c99e5"
+    },
+    {
+      "path": "src/Workflow/AlgorithmNode.cs",
+      "sha256": "ac0ffe7c768067d01205a8fe250be5184d3c85c8b041a5ebd2405276ac23bdb9"
+    },
+    {
+      "path": "src/Workflow/AlgorithmResult.cs",
+      "sha256": "3fc13bb31ea7dd32c505758aeba4884433695ad60b79d257fb1d6a513dbe7f44"
+    },
+    {
+      "path": "src/Workflow/ApplicationDataLocationService.cs",
+      "sha256": "3620f3f8dd5822081b3d6d25d06bc24de58c98b5c941aafbcfc8a57d8984cf1c"
+    },
+    {
+      "path": "src/Workflow/ApplicationDataPaths.cs",
+      "sha256": "19fb07a48d39ad0fb686b77beeb4b2db51688bfd4fdda239c179a6e5f71f9666"
+    },
+    {
+      "path": "src/Workflow/BindingConfigurationStore.cs",
+      "sha256": "543ed9530bf23c1d19e3d899a027530ade9a7ab97955e3ee38968df7c128cb7c"
+    },
+    {
+      "path": "src/Workflow/BindingRelationCatalog.cs",
+      "sha256": "af6db07e62b2abb2ffb4c943b9b986ce7ecbf3e90d52f23c0d034f33f1faba64"
+    },
+    {
+      "path": "src/Workflow/CommunicationPayloadCodec.cs",
+      "sha256": "95bcecc334006830b48fa94e22cf31908253a0f71ed4ef7c5410e41fb3e35721"
+    },
+    {
+      "path": "src/Workflow/CommunicationSendEventFormatter.cs",
+      "sha256": "18c3af2a7ca1e78b63f9c4d95b73d221ae29d5817837189827d00e9f1be90742"
+    },
+    {
+      "path": "src/Workflow/CommunicationTriggerEvaluation.cs",
+      "sha256": "1adc0c859d9ed3ab22059f650082c9eba37b01a53a327b0cc752d495bdffc3d5"
+    },
+    {
+      "path": "src/Workflow/CommunicationUploadSnapshot.cs",
+      "sha256": "67853612e390599b96d09b9af03d382d53f593d4c0d2ca4be1df1a65a3159ff3"
+    },
+    {
+      "path": "src/Workflow/DocumentEditSession.cs",
+      "sha256": "7fa6edcaf1f72634cdc1c1a4fed96f2819eb810da3728f55906ad7b9939a4d31"
+    },
+    {
+      "path": "src/Workflow/DomainUsings.cs",
+      "sha256": "0fbed5e4c69803fc24c3f38c0a68b72292a0a1b3f7e937e1eebb2bd7eb7c1e11"
+    },
+    {
+      "path": "src/Workflow/EventBusIntegration.cs",
+      "sha256": "17ac5bef3717e1ff23a1c8bb31f2a7e35306d080595a1f127a9c20bb3434d27e"
+    },
+    {
+      "path": "src/Workflow/EventDrivenExecutor.cs",
+      "sha256": "ca124034353ca23cb012e1a9f636db7261f9f49cf7f93df4b672f8899c95811a"
+    },
+    {
+      "path": "src/Workflow/GenerationResourceOwner.cs",
+      "sha256": "ed3376cd86718e6487de3d3d4f2484208dacb0d86a8e6c990203d548822445a6"
+    },
+    {
+      "path": "src/Workflow/GlobalProducerBindingRules.cs",
+      "sha256": "ca681eaabb57f8d036397be020ab376151dc1c917f484c1eac6666d4637b46a6"
+    },
+    {
+      "path": "src/Workflow/GlobalUsings.cs",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "path": "src/Workflow/GraphBindingUndoSnapshot.cs",
+      "sha256": "18cab3ff2f8be945a6ba61202aad1919daeb76eedcba07da5ed9e16ff116760f"
+    },
+    {
+      "path": "src/Workflow/ImageQueue.cs",
+      "sha256": "5b255490ee13944332b18bbab83a9f548a5ebbfc38f0bb8574f75318f636a862"
+    },
+    {
+      "path": "src/Workflow/ImageSourceDebugCursor.cs",
+      "sha256": "2a4d1c720f5277394c9c69bbfd67d9d0114ac5897eec5733473c90c18e17d8fc"
+    },
+    {
+      "path": "src/Workflow/ImageSourceInvocationInputs.cs",
+      "sha256": "27332b68bd5c1024f3712c83eec8e8cffe8d7e88411a1838e86ac3899e13bb00"
+    },
+    {
+      "path": "src/Workflow/ImageSourcePolicy.cs",
+      "sha256": "29e3408f1f0e1904ec7daf4a91bb2f66951ab1988a36eb04c8b9226e6fbeb9fd"
+    },
+    {
+      "path": "src/Workflow/LocalImageSequenceService.cs",
+      "sha256": "19d93e5ea538cd26a2126b3c9bef9a7439de6958b234220cd9dfe47c3bf42b85"
+    },
+    {
+      "path": "src/Workflow/ManualReferenceQualification.cs",
+      "sha256": "0d42ff62186cf92d4b894b6b0a9803b372e3b0125c594d30a13fced5d9211560"
+    },
+    {
+      "path": "src/Workflow/NodeConfigurationEditHost.DocumentHistory.cs",
+      "sha256": "98b5de6370c552b42f2a938f994c345429f54ccb462d6396bc672d4eb78fa02f"
+    },
+    {
+      "path": "src/Workflow/NodeConfigurationEditHost.ParameterValues.cs",
+      "sha256": "c2aaa22fc5b14c8287e7e9780ff070fb868346099dca70417129c9aac8a57de7"
+    },
+    {
+      "path": "src/Workflow/NodeConfigurationEditHost.RootConfiguration.cs",
+      "sha256": "d775daae3616d4f0b605160befc82cdb8659c31b39670956c12b15df544be366"
+    },
+    {
+      "path": "src/Workflow/NodeConfigurationEditHost.cs",
+      "sha256": "4b96f0774b122f9156e77dee6225feeaf07ae3e695944d0cf6bac6f52f7ff806"
+    },
+    {
+      "path": "src/Workflow/OutputBindingChangeService.cs",
+      "sha256": "d81f7669684a543c418628d9b45b81fcead59d8a1eb2f4c764d0e64bd74b5ef0"
+    },
+    {
+      "path": "src/Workflow/Persistence/SolutionDocumentBindingValidator.cs",
+      "sha256": "ee2f5104e072a8ef896243f007894c265b3cd5dc853e10b6fa473b33c824b163"
+    },
+    {
+      "path": "src/Workflow/Persistence/SolutionFormatPolicy.cs",
+      "sha256": "a940dce5df3972fd24f5aa62ed2e5f6f76af4132e8c3e90fd93519495e960661"
+    },
+    {
+      "path": "src/Workflow/Persistence/SolutionPersistenceResult.cs",
+      "sha256": "11568d0b0be750e98e9841274ef6e42db01575138efba745b6903b779c4038de"
+    },
+    {
+      "path": "src/Workflow/Persistence/SolutionSnapshot.cs",
+      "sha256": "f926d36dc171fe11a48a12fa362dca38d09b4152b1cb60c94d4512ebb1082903"
+    },
+    {
+      "path": "src/Workflow/RootWorkspaceExecutionRules.cs",
+      "sha256": "99f4bbf0d7494ce65624bf344c247db550749dd1d110df670bc099ec168790b1"
+    },
+    {
+      "path": "src/Workflow/RunContext.cs",
+      "sha256": "717191f0be982e528164ef537ffd184f0a829833d7c8c5a36ebbc52a929ff16e"
+    },
+    {
+      "path": "src/Workflow/RuntimeDebugInvocation.cs",
+      "sha256": "4540fa2349fbdd62978a4602e9bcd1c53f4f0fe28697ef746217704dd5760e09"
+    },
+    {
+      "path": "src/Workflow/RuntimeDisplayBindings.cs",
+      "sha256": "8b82e3c20972947e7b874106f6437aec83f43bd2e7d6a0fd94c8cc622b1cd5c7"
+    },
+    {
+      "path": "src/Workflow/RuntimeHostInputAdapters.cs",
+      "sha256": "2e4e87e7ede51f9c62ccad2498c17c5bbc5a7676af139b3eb030ba07d5896d3f"
+    },
+    {
+      "path": "src/Workflow/RuntimeInputBindings.cs",
+      "sha256": "1516bbf4b348872489490206ff3b622a7f73f10108ec20006ac212934d4f511a"
+    },
+    {
+      "path": "src/Workflow/RuntimeInputPreviewLease.cs",
+      "sha256": "ead0926d8436cf484a3d59f6bab2f82cd18ae58d7c86b48b6889e5f63695d4a9"
+    },
+    {
+      "path": "src/Workflow/RuntimeNodeAdmission.cs",
+      "sha256": "91b617ede26d69cc19a46489a6bea31cb965771c4a9a63bff0a0a07131d08fb4"
+    },
+    {
+      "path": "src/Workflow/RuntimeParameterValueAcceptance.cs",
+      "sha256": "af744d217fefa0507fa01751f370cb45d217225334c1282b1f08d24bbf1a9b37"
+    },
+    {
+      "path": "src/Workflow/RuntimeToolConfiguration.BindingOrder.cs",
+      "sha256": "f5b21a03e23f4e6e7bb47fe612113eb1cc1f274ae39171dcb4c41d5e8edd16a4"
+    },
+    {
+      "path": "src/Workflow/RuntimeToolConfiguration.Display.cs",
+      "sha256": "a637f3c63fefe2f231317a2c8b0d0d4851770e124e7d9df1d89d3a1e597652b2"
+    },
+    {
+      "path": "src/Workflow/RuntimeToolConfiguration.ReferenceBehavior.cs",
+      "sha256": "255c9f7ffe53ee220e2e21f999a021556741faa7b487cad9a1bb0b3e115824ab"
+    },
+    {
+      "path": "src/Workflow/RuntimeToolConfiguration.cs",
+      "sha256": "e6a62ce41416d62e7729db785a78029f630ef065afe0d8b4d7072dab8e88beda"
+    },
+    {
+      "path": "src/Workflow/RuntimeVariableBindings.cs",
+      "sha256": "02ee1f85d80c0cab156ea2ac16a927ce762cbe05a384c2d3b11923da1252304c"
+    },
+    {
+      "path": "src/Workflow/ScopedNodeInfoProvider.cs",
+      "sha256": "c322b83327d0c3f2df4d4571c463a2131c96d2ee386a385f1628d19c78104509"
+    },
+    {
+      "path": "src/Workflow/Solution.cs",
+      "sha256": "325e1ee727c69d730ece2cd7f801211d368152a0ada8f5829529178742995b0c"
+    },
+    {
+      "path": "src/Workflow/SolutionCache.cs",
+      "sha256": "a32906bb447eb628a3b13ec239f62d064fa9be11ecb650803cc3f3ca5c060e94"
+    },
+    {
+      "path": "src/Workflow/SolutionExecutionDependencyGraph.cs",
+      "sha256": "b96ed30c3fa5cf615e20cd23b76a2ceb3ff89a6f3b5e18805552c2734c9cf4bc"
+    },
+    {
+      "path": "src/Workflow/SolutionManager.cs",
+      "sha256": "53a88886c403bc45fd329c29db8f50c3aa4a16d0818b7d9d5fc0723a5e2c0634"
+    },
+    {
+      "path": "src/Workflow/SolutionMetadata.cs",
+      "sha256": "74f803a41318a24120478e3b30499fa8eccdde393fb20763cd0205ad10a799b0"
+    },
+    {
+      "path": "src/Workflow/SolutionMetadataEventArgs.cs",
+      "sha256": "50778ef55a4fa3b6d0e880b0bee299a446316d49daa387a71a642e7707cc1907"
+    },
+    {
+      "path": "src/Workflow/SolutionRegistry.cs",
+      "sha256": "f9746de277fe088c291de4c93f2b0e2c1fcf3cd1bf2b2e8500c78ee09db600d2"
+    },
+    {
+      "path": "src/Workflow/SolutionRepository.cs",
+      "sha256": "9a38bc2be86dea67afc126c5b36fa062acee9a4d7c57b773bbdc9dc6852131fd"
+    },
+    {
+      "path": "src/Workflow/SolutionSession.cs",
+      "sha256": "3b7467b633fc87f246390ea24b8054a10e400869820cad4523f4b5504210ed47"
+    },
+    {
+      "path": "src/Workflow/SolutionSettings.cs",
+      "sha256": "240be4568269c09f4d0c0cafe2db699df50ff6580910eb7212110c87f7a53de3"
+    },
+    {
+      "path": "src/Workflow/SunEyeVision.Workflow.csproj",
+      "sha256": "796e564e841fb9cbdf6721d02a3ccd93aaa4fe1b45189b4b4fc6c4b427c9cdad"
+    },
+    {
+      "path": "src/Workflow/ToolParameterSnapshot.cs",
+      "sha256": "c19ea0bad20f63aab14b68773939e064a2b2bdd08166b527d5a44806b6b653ed"
+    },
+    {
+      "path": "src/Workflow/TriggerManager.cs",
+      "sha256": "a0fb5644c297ea50aa20548c7bbb2945f5f067abc40fc0c16e8e04abe1daab3f"
+    },
+    {
+      "path": "src/Workflow/VisionEvents.cs",
+      "sha256": "4ebf761e36fa5a587586ab99c450bda24e57dcf144f2aa598de2013611029e93"
+    },
+    {
+      "path": "src/Workflow/Workflow.cs",
+      "sha256": "2f1c4c56d7813a70a3ec3edfc99d77b4c71fb7f08e586db9dad9d389dcdc97e7"
+    },
+    {
+      "path": "src/Workflow/WorkflowBindingContext.cs",
+      "sha256": "0aacfd27c27c6643fcc11a8630802fa239131b7d0c06bdb5b6d9a089823b3780"
+    },
+    {
+      "path": "src/Workflow/WorkflowContext.cs",
+      "sha256": "753542ea6037a515ec6f5e077b3c9e20ab69c4560bb6d4bd3e169478a50879bb"
+    },
+    {
+      "path": "src/Workflow/WorkflowDefinitionService.cs",
+      "sha256": "a993add8fa20b48cfd43d8fdc4d80e645bd105f14cf6cd465c6242069d48de59"
+    },
+    {
+      "path": "src/Workflow/WorkflowEngine.cs",
+      "sha256": "9fd61d925e4dd5f3d7ae79398449f8d2bf49d155e31ce29359871dc37da181c7"
+    },
+    {
+      "path": "src/Workflow/WorkflowEngineFactory.cs",
+      "sha256": "3abd9a82b34d63ae370cac36907a229b46324fc3965407971611b14b72ed90ee"
+    },
+    {
+      "path": "src/Workflow/WorkflowExecutionDependencyGraph.cs",
+      "sha256": "418cb2f5a548c6a03a2662d76e2f43e601ac3f198c8543774ff1fb178f6f8c97"
+    },
+    {
+      "path": "src/Workflow/WorkflowExecutionEngine.cs",
+      "sha256": "4c1a1102928e43e8a6b28b6af076e68274f9246ee5f37ec4cff3522c4818d366"
+    },
+    {
+      "path": "src/Workflow/WorkflowExecutionPlan.cs",
+      "sha256": "dec79e57f5263f8faf29f9622e35ac19415ec3ac5f79c03206f5caa99aa90ea1"
+    },
+    {
+      "path": "src/Workflow/WorkflowFragmentCopy.cs",
+      "sha256": "579e3060501848ad8b0fe2416fe0ac3082921ce9cdf43c2212e0dfa15d958244"
+    },
+    {
+      "path": "src/Workflow/WorkflowGlobalProduction.cs",
+      "sha256": "86c1207b70b4b47da77ae58cc703b13310044ba6ff6c90e7c121aeaa3dca6e23"
+    },
+    {
+      "path": "src/Workflow/WorkflowGlobalVariableReceiveService.cs",
+      "sha256": "e68cdcfc27edb66750c9bb2e29adb1a690409836e6c88e8110219155eaacc629"
+    },
+    {
+      "path": "src/Workflow/WorkflowJsonConverter.cs",
+      "sha256": "d04d599e5c8c151eb69e47bfb440ad50b5cf1fbb376422711253a118f3fd7d63"
+    },
+    {
+      "path": "src/Workflow/WorkflowNode.cs",
+      "sha256": "4936d51703aa8cf5e0847661a1acab1e9e3b23daf3f13e0f2dc2eb0be8b41d65"
+    },
+    {
+      "path": "src/Workflow/WorkflowNodeFactory.cs",
+      "sha256": "53ed1bc31d125ccbbb9d8a110e2693305dbfaafde00fe467414a018fd1fe5ba0"
+    },
+    {
+      "path": "src/Workflow/WorkflowOwnership.cs",
+      "sha256": "98222cf7d889a88082223f6ff8a17d83af63e0482099bddd3e9c5bc13829a327"
+    },
+    {
+      "path": "src/Workflow/WorkflowOwnershipPaused.cs",
+      "sha256": "1163939de4b7e0578bcbdb746ac8e3ef06bd1b2bb726886932c641d3f4a3298f"
+    },
+    {
+      "path": "src/Workflow/WorkflowPublishedConfiguration.cs",
+      "sha256": "3d220a88afd3e9f74b69701b4e2aead924910d20ac29577fdc20a2e03d18159a"
+    },
+    {
+      "path": "src/Workflow/WorkflowResourceLeaseManager.cs",
+      "sha256": "4d5ecee12b552e028421b2a485c8489daffc80ad416416441049bd0628d60558"
+    },
+    {
+      "path": "src/Workflow/WorkflowRunConfiguration.cs",
+      "sha256": "d656b2fc14832e80d345d8bf61fe082e9841579f566d1413148a162840549544"
+    },
+    {
+      "path": "src/Workflow/WorkflowRunRequest.cs",
+      "sha256": "eb7696759dcbdd3afe06aea09c7f98e27e71f94677e3dbe69622b33e52e532ac"
+    },
+    {
+      "path": "src/Workflow/WorkflowRunScope.cs",
+      "sha256": "db8eb5875564f23ae967a76a323a8d3c50831770737a25ebc51e5e26e2c63532"
+    },
+    {
+      "path": "src/Workflow/WorkflowRunSession.cs",
+      "sha256": "4c3f4d4f02b5fd460b3a0d79ead52ac4a056d8b7f239c894466d96d40f3c7b53"
+    },
+    {
+      "path": "src/Workflow/WorkflowSerializationOptions.cs",
+      "sha256": "a50afb21cf88722bd766653169f5b2b455f4c66c9024b434141b8ce398404e22"
+    },
+    {
+      "path": "src/Workflow/packages.lock.json",
+      "sha256": "e5ad3dfd80fb631b5a4036c1ce39371a5e40591e0a7cecb918e05ff5fe0ff2e1"
+    }
+  ]
+}

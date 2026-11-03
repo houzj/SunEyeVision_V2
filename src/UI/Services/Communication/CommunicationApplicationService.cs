@@ -1,4 +1,5 @@
-﻿using System;
+using SunEyeVision.Application.Communications;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,8 +9,8 @@ using System.Threading.Tasks;
 using SunEyeVision.DeviceDriver.Communications;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.UI.Features.CommunicationManager;
-using SunEyeVision.Workflow;
-using ConfiguredCommunication = SunEyeVision.Workflow.Communication;
+using SunEyeVision.Domain.Solutions;
+using ConfiguredCommunication = SunEyeVision.Domain.Solutions.Communication;
 
 namespace SunEyeVision.UI.Services.Communication;
 
@@ -21,11 +22,11 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
     private sealed record ConnectionPlan(CommunicationDeviceSnapshot Configuration, int PollInterval,
         ModbusPollAddress[] Addresses, string[] OpcUaNodeIds);
 
-    private readonly SolutionManager _solutions;
+    private readonly SunEyeVision.Application.DocumentSession _session;
     private readonly object _gate = new();
     private Task _switchTask = Task.CompletedTask;
     private CancellationTokenSource? _switchCancellation;
-    private Solution? _activeSolution;
+    private SolutionDefinition? _activeSolution;
     private volatile bool _connectionsReady;
     private sealed class DeviceLifetime
     {
@@ -64,7 +65,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
     private bool IsCurrentDeviceLocked(ConfiguredCommunication device, CancellationToken solutionToken) =>
         !_disposed && !solutionToken.IsCancellationRequested &&
         (_switchCancellation?.Token ?? CancellationToken.None) == solutionToken &&
-        ReferenceEquals(_activeSolution?.Communications.Find(d => d.Id == device.Id), device);
+        ReferenceEquals(_activeSolution?.Communications.FirstOrDefault(d => d.Id == device.Id), device);
     private sealed class ReconnectAttempt(CancellationToken lifetime)
     {
         public Guid ConnectionOwner { get; } = Guid.NewGuid();
@@ -94,6 +95,27 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
     private readonly Dictionary<string, ConnectionPolicyUpdate> _policyUpdates = new(StringComparer.Ordinal);
     private readonly List<Task> _reconnectTasks = new();
     private bool _disposed;
+    private int _activeOperations;
+    private readonly TaskCompletionSource _operationsDrained = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private Task? _disposeTask;
+    private IDisposable EnterOperation()
+    {
+        lock(_gate)
+        {
+            ObjectDisposedException.ThrowIf(_disposed,this);
+            checked { _activeOperations++; }
+            return new OperationLease(this);
+        }
+    }
+    private sealed class OperationLease(CommunicationApplicationService owner) : IDisposable
+    {
+        private CommunicationApplicationService? _owner=owner;
+        public void Dispose()
+        {
+            var current=Interlocked.Exchange(ref _owner,null); if(current is null)return;
+            lock(current._gate) if(--current._activeOperations==0 && current._disposed)current._operationsDrained.TrySetResult();
+        }
+    }
     private IReadOnlyList<CommunicationHeartbeatJob> _heartbeatPlans = Array.Empty<CommunicationHeartbeatJob>();
     private bool _heartbeatReady;
     private readonly OpcUaPointPolling _opcUaPolling;
@@ -107,14 +129,13 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
     public CommunicationAutomationService Automation { get; }
     public SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveService Receives { get; } = new();
     public WorkflowCommunicationSendService Sends { get; }
-    public OutputBindingChangeService OutputBindings { get; } = new();
 
-    public CommunicationApplicationService(SolutionManager solutions, CommunicationRuntimeComposition composition)
+    public CommunicationApplicationService(SunEyeVision.Application.DocumentSession session, CommunicationRuntimeComposition composition)
     {
-        _solutions = solutions ?? throw new ArgumentNullException(nameof(solutions));
+        _session = session ?? throw new ArgumentNullException(nameof(session));
         Composition = composition ?? throw new ArgumentNullException(nameof(composition));
         Sends = new(() => { lock (_gate) return _disposed ? null : _activeSolution; },
-            Composition.Runtime, GetDeviceOperationToken);
+            Composition.Runtime, GetDeviceOperationToken, EnterOperation);
         Heartbeats = new CommunicationHeartbeatService(Composition.Runtime);
         Automation = new CommunicationAutomationService(Composition.Runtime);
         Automation.DeviceLifetimeReader = id =>
@@ -130,13 +151,9 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
         Composition.Runtime.OpcUaPointValueChanged += OnAutomationOpcUa;
         Composition.Polling.BatchReceived += OnAutomationModbus;
         Heartbeats.Runner.StatusChanged += OnHeartbeatStatus;
-        _solutions.SolutionOpened += OnSolutionOpened;
-        _solutions.SolutionClosed += OnSolutionClosed;
-        _solutions.SolutionSaving += OnSolutionSaving;
         Composition.Runtime.ConnectionClosed += OnConnectionClosed;
         Composition.Runtime.StatusChanged += OnReceiveStatus;
-        if (_solutions.CurrentSolution is { } current)
-            BeginSolutionSwitch(current);
+        BeginSolutionSwitch(_session.Document);
     }
 
     public Task ReadyAsync()
@@ -144,7 +161,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
         lock (_gate) return _switchTask;
     }
 
-    public async Task VerifyWorkspaceReadyAsync(Solution expected)
+    public async Task VerifyWorkspaceReadyAsync(SolutionDefinition expected)
     {
         await ReadyAsync().WaitAsync(TimeSpan.FromSeconds(30));
         lock (_gate)
@@ -155,7 +172,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
         }
     }
 
-    public void RefreshAutomationConfiguration(Solution solution)
+    public void RefreshAutomationConfiguration(SolutionDefinition solution)
     {
         lock (_gate)
             if (!_disposed && ReferenceEquals(solution, _activeSolution))
@@ -166,7 +183,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
             }
     }
 
-    private void ConfigureReceiveSources(Solution? solution, bool reset = false)
+    private void ConfigureReceiveSources(SolutionDefinition? solution, bool reset = false)
     {
         var sources = new List<SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveSource>();
         foreach (var device in solution?.Communications.Where(d => d.IsEnabled) ?? Enumerable.Empty<ConfiguredCommunication>())
@@ -184,7 +201,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
     }
     private static string ReceiveConfigurationKey(ConfiguredCommunication device)
     {
-        var config = System.Text.Json.Nodes.JsonNode.Parse(System.Text.Json.JsonSerializer.Serialize(device, WorkflowSerializationOptions.Default))!.AsObject();
+        var config = System.Text.Json.Nodes.JsonNode.Parse(System.Text.Json.JsonSerializer.Serialize(device, new System.Text.Json.JsonSerializerOptions()))!.AsObject();
         // Labels do not change the current connection or the meaning of received bytes.
         config.Remove(nameof(ConfiguredCommunication.Name));
         config.Remove(nameof(ConfiguredCommunication.Description));
@@ -214,6 +231,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
     private async Task<(object Value, DateTimeOffset? SourceTime)> ReadCurrentDeviceAsync(
         SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveSource source, CancellationToken token)
     {
+        using var operation=EnterOperation();
         ConfiguredCommunication device; int start = 0, count = 0; string nodeId = "";
         lock (_gate)
         {
@@ -260,8 +278,10 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
     private IReadOnlyList<SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource> GetCurrentVariables()
     {
         lock (_gate) lock (GlobalVariable.ValueGate)
-            return (_activeSolution?.GlobalVariables ?? new()).Where(v => v.Type is "String" or "Integer" or "Double" or "Boolean" or "Binary")
-                .Select(WorkflowGlobalVariableReceiveService.Describe).ToArray();
+            return (_activeSolution?.GlobalVariables ?? Array.Empty<GlobalVariable>()).Where(v => v.Type is "String" or "Integer" or "Double" or "Boolean" or "Binary")
+                .Select(v => new SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource(v.Id,v.Name,v.Group,v.Type,
+                    v.ProducerBinding is not null || !string.IsNullOrEmpty(v.RebindingReason) || !string.IsNullOrEmpty(v.BindingValidationPending),
+                    v.ProducerBinding?.SourceReference.NodeId ?? "",v.ProducerBinding?.SourceReference.PortId ?? "",v.ProducerBinding?.SourceReference.ScopeId ?? "")).ToArray();
     }
     private IReadOnlyDictionary<string, SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableValue> ReadCurrentVariables(IReadOnlyList<string> ids)
     {
@@ -331,8 +351,9 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
     public async Task<int> SendEventAsync(Guid eventId, IReadOnlyDictionary<Guid, object?> parameterSnapshot,
         CancellationToken cancellationToken = default)
     {
+        using var operation=EnterOperation();
         ArgumentNullException.ThrowIfNull(parameterSnapshot);
-        var solution = _solutions.CurrentSolution ?? throw new InvalidOperationException("未打开方案。");
+        var solution = _session.Document;
         var definition = solution.CommunicationSendEvents.FirstOrDefault(item => item.EventId == eventId)
             ?? throw new InvalidOperationException("发送事件不存在或已被删除。");
         var device = solution.Communications.FirstOrDefault(item => item.Id == definition.DeviceId)
@@ -344,11 +365,11 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
         return await service.SendAsync(plan, cancellation.Token, status).ConfigureAwait(false);
     }
 
-    internal CancellationToken GetDeviceOperationToken(Solution expectedSolution, string deviceId)
+    internal CancellationToken GetDeviceOperationToken(SolutionDefinition expectedSolution, string deviceId)
     {
         lock (_gate)
         {
-            var device = _activeSolution?.Communications.Find(d => d.Id == deviceId);
+            var device = _activeSolution?.Communications.FirstOrDefault(d => d.Id == deviceId);
             if (_disposed || !_connectionsReady || !ReferenceEquals(expectedSolution, _activeSolution) ||
                 device?.IsEnabled != true || _retiredDevices.Contains(device) || _manualDisconnects.Contains(deviceId))
                 return new CancellationToken(true);
@@ -363,15 +384,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
         if (status != previous && status is not ("发送成功" or "等待连接或接收端"))
             LogWarning($"心跳 {id} 发送失败：{status}");
     }
-    private void OnSolutionOpened(object? sender, Solution solution) => BeginSolutionSwitch(solution);
-    private void OnSolutionSaving(object? sender, Solution solution)
-    {
-        if (ReferenceEquals(solution, _activeSolution)) OutputBindings.ReconcileAll();
-        else { var validation = new OutputBindingChangeService(); validation.Reset(solution); validation.ReconcileAll(); }
-    }
-    private void OnSolutionClosed(object? sender, EventArgs e) => BeginSolutionSwitch(null);
-
-    private void BeginSolutionSwitch(Solution? solution)
+    private void BeginSolutionSwitch(SolutionDefinition? solution)
     {
         IReadOnlyList<CommunicationHeartbeatJob> heartbeatPlans;
         try { heartbeatPlans = Heartbeats.CreateJobs(solution); }
@@ -401,8 +414,6 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
             _reconnectTasks.RemoveAll(task => task.IsCompleted);
             _activeSolution = solution;
             ObserveDevicesLocked(solution);
-            OutputBindings.Reset(solution);
-            OutputBindings.ReconcileAll();
             ConfigureReceiveSources(solution, reset: true);
             _heartbeatReady = false;
             Automation.Reset(solution);
@@ -450,7 +461,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
             DeviceLifetime lifetime;
             lock (_gate)
             {
-                var device = _activeSolution?.Communications.Find(d => d.Id == plan.Configuration.Id);
+                var device = _activeSolution?.Communications.FirstOrDefault(d => d.Id == plan.Configuration.Id);
                 if (_switchCancellation?.Token != token || device?.IsEnabled != true ||
                     !_connectionIntents.Contains(plan.Configuration.Id) || _manualDisconnects.Contains(plan.Configuration.Id)) continue;
                 lifetime = GetDeviceLifetimeLocked(device);
@@ -495,9 +506,9 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
     }
 
     /// <summary>Called after configuration is captured into the shared solution; no file write.</summary>
-    public void RefreshHeartbeatConfiguration(Solution solution)
+    public void RefreshHeartbeatConfiguration(SolutionDefinition solution)
     {
-        if (!ReferenceEquals(solution, _solutions.CurrentSolution)) return;
+        if (!ReferenceEquals(solution, _session.Document)) return;
         try
         {
             var plans = Heartbeats.CreateJobs(solution);
@@ -540,7 +551,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
                 (e.RuntimeStatus != null && !Composition.Runtime.IsCurrentStatus(e.RuntimeStatus))) return;
             Composition.Polling.Stop(e.CommunicationId);
             Automation.ResetDeviceHistory(e.CommunicationId);
-            foreach (var point in _activeSolution?.Communications.Find(d => d.Id == e.CommunicationId)?.OpcUaDataPoints ?? new())
+            foreach (var point in _activeSolution?.Communications.FirstOrDefault(d => d.Id == e.CommunicationId)?.OpcUaDataPoints ?? new())
                 _monitorStatuses.TryRemove(point.Id, out _);
             device = _activeSolution?.Communications.FirstOrDefault(item => item.Id == e.CommunicationId);
             token = _switchCancellation?.Token ?? CancellationToken.None;
@@ -560,9 +571,9 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
         }
     }
 
-    private void ObserveDevicesLocked(Solution? solution)
+    private void ObserveDevicesLocked(SolutionDefinition? solution)
     {
-        var current = (solution?.Communications ?? new()).ToHashSet();
+        var current = (solution?.Communications ?? Array.Empty<ConfiguredCommunication>()).ToHashSet();
         foreach (var removed in _observedDevices.Except(current).ToArray())
         {
             CancelDeviceLifetimeLocked(removed.Id);
@@ -586,7 +597,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
         lock (_gate)
         {
             if (_disposed) return;
-            var device = _activeSolution?.Communications.Find(d => d.Id == deviceId);
+            var device = _activeSolution?.Communications.FirstOrDefault(d => d.Id == deviceId);
             if (device != null) ConnectionPolicyChanged(device,
                 new PropertyChangedEventArgs(nameof(ConfiguredCommunication.AutoReconnect)));
         }
@@ -632,7 +643,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
     private bool IsCurrentPolicyLocked(ConnectionPolicyUpdate update, long revision) =>
         !_disposed && !_retiredDevices.Contains(update.Device) && !update.Lifetime.IsCancellationRequested &&
         _policyUpdates.TryGetValue(update.Device.Id, out var current) && ReferenceEquals(current, update) &&
-        current.Revision == revision && _activeSolution?.Communications.Find(d => d.Id == update.Device.Id) == update.Device;
+        current.Revision == revision && _activeSolution?.Communications.FirstOrDefault(d => d.Id == update.Device.Id) == update.Device;
 
     private async Task DrainConnectionPolicyUpdatesAsync(ConnectionPolicyUpdate update)
     {
@@ -718,11 +729,12 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
     /// <summary>Manual stop cancels and drains the retry before disposing the active adapter.</summary>
     public async Task DisconnectDeviceAsync(string deviceId)
     {
+        using var operation=EnterOperation();
         ConfiguredCommunication? device;
         CancellationToken lifetime;
         lock (_gate)
         {
-            device = _activeSolution?.Communications.Find(d => d.Id == deviceId);
+            device = _activeSolution?.Communications.FirstOrDefault(d => d.Id == deviceId);
             lifetime = _switchCancellation?.Token ?? CancellationToken.None;
             if (_disposed || device == null) return;
             // Invalidate before waiting for a manual connect or policy worker's gate.
@@ -741,11 +753,12 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
     /// <summary>Disconnect once without disabling the user's AutoReconnect policy.</summary>
     public async Task DisconnectConnectionAsync(string deviceId)
     {
+        using var operation=EnterOperation();
         ConfiguredCommunication? device;
         CancellationToken lifetime;
         lock (_gate)
         {
-            device = _activeSolution?.Communications.Find(d => d.Id == deviceId);
+            device = _activeSolution?.Communications.FirstOrDefault(d => d.Id == deviceId);
             lifetime = _switchCancellation?.Token ?? CancellationToken.None;
             if (_disposed || device == null) return;
             _policyUpdates.Remove(deviceId);
@@ -784,7 +797,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
                 _manualDisconnects.Add(deviceId);
                 _connectionIntents.Remove(deviceId);
             }
-            else if (_activeSolution?.Communications.Find(d => d.Id == deviceId)?.IsEnabled != true)
+            else if (_activeSolution?.Communications.FirstOrDefault(d => d.Id == deviceId)?.IsEnabled != true)
                 _connectionIntents.Remove(deviceId);
             CancelDeviceLifetimeLocked(deviceId);
             if (_reconnecting.TryGetValue(deviceId, out var attempt))
@@ -808,6 +821,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
 
     public async Task ConnectDeviceAsync(CommunicationDeviceSnapshot configuration)
     {
+        using var operation=EnterOperation();
         ConfiguredCommunication device;
         CancellationToken lifetime;
         CancellationToken requestToken;
@@ -815,7 +829,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
         lock (_gate)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-            device = _activeSolution?.Communications.Find(d => d.Id == configuration.Id)
+            device = _activeSolution?.Communications.FirstOrDefault(d => d.Id == configuration.Id)
                 ?? throw new InvalidOperationException("通讯设备已删除或不属于当前方案。");
             lifetime = _switchCancellation?.Token ?? CancellationToken.None;
             requestToken = GetDeviceLifetimeLocked(device).Token;
@@ -875,7 +889,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
                 lock (_gate)
                 {
                     if (_disposed || !device.IsEnabled || !device.AutoReconnect || !_connectionIntents.Contains(device.Id) || _manualDisconnects.Contains(device.Id) ||
-                        _activeSolution?.Communications.Find(d => d.Id == device.Id) != device) return;
+                        _activeSolution?.Communications.FirstOrDefault(d => d.Id == device.Id) != device) return;
                     attempt.ConnectionLostAgain = false;
                     attempt.Waiting = false;
                 }
@@ -895,7 +909,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
                     {
                         token.ThrowIfCancellationRequested();
                         if (!device.IsEnabled || !device.AutoReconnect || _disposed ||
-                            _activeSolution?.Communications.Find(d => d.Id == device.Id) != device)
+                            _activeSolution?.Communications.FirstOrDefault(d => d.Id == device.Id) != device)
                             return;
                         if (device.IsModbus)
                             Composition.Polling.Start(device.Id, device.PollInterval,
@@ -911,7 +925,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
                     lock (_gate)
                     {
                         if (token.IsCancellationRequested || _disposed ||
-                            !ReferenceEquals(_activeSolution?.Communications.Find(d => d.Id == device.Id), device)) return;
+                            !ReferenceEquals(_activeSolution?.Communications.FirstOrDefault(d => d.Id == device.Id), device)) return;
                         _reconnectFailures.Remove(device.Id);
                     }
                     VisionLogger.Instance.Log(LogLevel.Info, $"通讯自动重连成功：设备={device.Name}({device.Id})",
@@ -925,7 +939,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
                     lock (_gate)
                     {
                         if (token.IsCancellationRequested || _disposed ||
-                            !ReferenceEquals(_activeSolution?.Communications.Find(d => d.Id == device.Id), device) ||
+                            !ReferenceEquals(_activeSolution?.Communications.FirstOrDefault(d => d.Id == device.Id), device) ||
                             !_reconnecting.TryGetValue(device.Id, out var currentAttempt) ||
                             !ReferenceEquals(currentAttempt, attempt)) return;
                         _connectionErrors[device.Id] = ex.Message;
@@ -979,10 +993,11 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
 
     public async Task MonitorOpcUaPointAsync(string communicationId, string nodeId, CancellationToken token = default)
     {
+        using var operation=EnterOperation();
         CancellationToken lifetime;
         lock (_gate)
         {
-            var device = _activeSolution?.Communications.Find(d => d.Id == communicationId);
+            var device = _activeSolution?.Communications.FirstOrDefault(d => d.Id == communicationId);
             if (_disposed || !_connectionsReady || device?.IsEnabled != true || _manualDisconnects.Contains(communicationId)) return;
             lifetime = GetDeviceLifetimeLocked(device).Token;
         }
@@ -1000,8 +1015,8 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
         lock (_gate)
         {
             if (_disposed) return;
-            point = _activeSolution?.Communications.Find(d => d.Id == communicationId)?.OpcUaDataPoints.Find(p => p.NodeId == nodeId);
-            var device = _activeSolution?.Communications.Find(d => d.Id == communicationId);
+            point = _activeSolution?.Communications.FirstOrDefault(d => d.Id == communicationId)?.OpcUaDataPoints.Find(p => p.NodeId == nodeId);
+            var device = _activeSolution?.Communications.FirstOrDefault(d => d.Id == communicationId);
             if (device?.IsEnabled != true || _manualDisconnects.Contains(communicationId)) return;
             lifetime = GetDeviceLifetimeLocked(device).Token;
         }
@@ -1042,6 +1057,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
 
     public async Task UnmonitorOpcUaPointAsync(string communicationId, string nodeId, CancellationToken token = default)
     {
+        using var operation=EnterOperation();
         await _monitorGate.WaitAsync(token).ConfigureAwait(false);
         try { await UnmonitorOpcUaPointCoreAsync(communicationId, nodeId, token).ConfigureAwait(false); }
         finally { _monitorGate.Release(); }
@@ -1063,14 +1079,18 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
         }
     }
 
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
+    {
+        lock(_gate) return new ValueTask(_disposeTask ??= DisposeCoreAsync());
+    }
+    private async Task DisposeCoreAsync()
     {
         Task pending;
         Task[] pendingRetries;
         lock (_gate)
         {
-            if (_disposed) return;
             _disposed = true;
+            if(_activeOperations==0)_operationsDrained.TrySetResult();
             _connectionsReady = false;
             foreach (var device in _observedDevices) device.PropertyChanged -= ConnectionPolicyChanged;
             _observedDevices.Clear();
@@ -1080,9 +1100,6 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
             Composition.Runtime.DataReceived -= OnAutomationData;
             Composition.Runtime.OpcUaPointValueChanged -= OnAutomationOpcUa;
             Composition.Polling.BatchReceived -= OnAutomationModbus;
-            _solutions.SolutionOpened -= OnSolutionOpened;
-            _solutions.SolutionClosed -= OnSolutionClosed;
-            _solutions.SolutionSaving -= OnSolutionSaving;
             Composition.Runtime.ConnectionClosed -= OnConnectionClosed;
             Composition.Runtime.StatusChanged -= OnReceiveStatus;
             _switchCancellation?.Cancel();
@@ -1094,6 +1111,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
         catch (Exception ex) { LogWarning($"关闭通讯服务时取消方案切换：{ex.Message}"); }
         try { await Task.WhenAll(pendingRetries).ConfigureAwait(false); }
         catch (Exception ex) { LogWarning($"关闭通讯服务时取消重连：{ex.Message}"); }
+        await _operationsDrained.Task.ConfigureAwait(false);
         await Heartbeats.DisposeAsync().ConfigureAwait(false);
         await _opcUaPolling.StopAllAsync().ConfigureAwait(false);
         await Automation.DisposeAsync().ConfigureAwait(false);

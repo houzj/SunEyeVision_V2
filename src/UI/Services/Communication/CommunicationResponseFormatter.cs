@@ -1,7 +1,9 @@
+using SunEyeVision.Application.Communications;
+using SunEyeVision.Domain.Solutions;
 using System;
 using System.Linq;
-using SunEyeVision.Workflow;
-using ConfiguredCommunication = SunEyeVision.Workflow.Communication;
+
+using ConfiguredCommunication = SunEyeVision.Domain.Solutions.Communication;
 
 namespace SunEyeVision.UI.Services.Communication;
 

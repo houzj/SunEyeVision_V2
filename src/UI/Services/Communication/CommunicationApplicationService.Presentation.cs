@@ -23,7 +23,7 @@ public sealed partial class CommunicationApplicationService
             if (!_connectionsReady)
                 return new(false, CommunicationState.Disconnected, false, 0,
                     _disposed ? "已断开" : "正在切换方案", "");
-            var device = _activeSolution?.Communications.Find(d => d.Id == id);
+            var device = _activeSolution?.Communications.FirstOrDefault(d => d.Id == id);
             var enabled = !_disposed && device?.IsEnabled == true && _connectionIntents.Contains(id) && !_manualDisconnects.Contains(id);
             var reconnecting = enabled && device!.AutoReconnect &&
                 _reconnecting.TryGetValue(id, out var activeRetry) && !activeRetry.Cancellation.IsCancellationRequested;

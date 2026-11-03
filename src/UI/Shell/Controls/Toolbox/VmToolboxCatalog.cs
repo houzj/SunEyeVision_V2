@@ -20,7 +20,7 @@ internal sealed class VmToolboxCatalog
 
     internal static VmToolboxCatalog Load()
     {
-        static Stream Open(string name) => Application.GetResourceStream(new Uri(
+        static Stream Open(string name) => System.Windows.Application.GetResourceStream(new Uri(
             "pack://application:,,,/SunEyeVision.UI;component/Resources/Toolbox/" + name))?.Stream
             ?? throw new InvalidDataException("工具箱资源不存在：" + name);
         using var groupStream = Open("ToolGroups.xml");

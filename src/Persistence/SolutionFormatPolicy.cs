@@ -24,6 +24,21 @@ public static class SolutionFormatPolicy
             !root.TryGetProperty("SchemaVersion", out var version) ||
             version.ValueKind != JsonValueKind.Number || !version.TryGetInt32(out var number) || number != Current)
             throw new JsonException("不支持该方案格式；需要 SchemaVersion 4。", "$.SchemaVersion", null, null);
+        var triggerProperties=root.EnumerateObject().Where(property => string.Equals(property.Name,"CommunicationTriggers",StringComparison.OrdinalIgnoreCase)).ToArray();
+        if(triggerProperties.Length>1)throw new JsonException("通讯触发规则字段不唯一。","$.CommunicationTriggers",null,null);
+        if(triggerProperties.Length==1 && triggerProperties[0].Value.ValueKind!=JsonValueKind.Null)
+        {
+            if(triggerProperties[0].Value.ValueKind!=JsonValueKind.Array)throw new JsonException("通讯触发规则必须是数组。","$.CommunicationTriggers",null,null);
+            var triggerIndex=0;
+            foreach(var trigger in triggerProperties[0].Value.EnumerateArray())
+            {
+                if(trigger.ValueKind!=JsonValueKind.Object)throw new JsonException("通讯触发规则必须是对象。",$"$.CommunicationTriggers[{triggerIndex}]",null,null);
+                foreach(var property in trigger.EnumerateObject())
+                    if(string.Equals(property.Name,"FieldId",StringComparison.OrdinalIgnoreCase) || string.Equals(property.Name,"ParameterComparisonEnabled",StringComparison.OrdinalIgnoreCase))
+                        throw new JsonException("旧通信触发字段不属于方案格式 4。",$"$.CommunicationTriggers[{triggerIndex}].{property.Name}",null,null);
+                triggerIndex++;
+            }
+        }
         var variableProperties = root.EnumerateObject().Where(property =>
             string.Equals(property.Name, "GlobalVariables", StringComparison.OrdinalIgnoreCase)).ToArray();
         if (variableProperties.Length > 1)

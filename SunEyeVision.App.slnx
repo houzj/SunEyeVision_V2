@@ -18,7 +18,6 @@
   <Project Path="Src/SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj" />
   <Project Path="Src/DeviceDriver/SunEyeVision.DeviceDriver.csproj" />
   <Project Path="Src/UI/SunEyeVision.UI.csproj" />
-  <Project Path="Src/Workflow/SunEyeVision.Workflow.csproj" />
   <Project Path="tools/SunEyeVision.BlobAnalysis/Runtime/SunEyeVision.BlobAnalysis.Runtime.csproj" />
   <Project Path="tools/SunEyeVision.BlobAnalysis/Wpf/SunEyeVision.BlobAnalysis.Wpf.csproj" />
   <Project Path="tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj" />

@@ -19,14 +19,9 @@ private string _MatchMode = "等于";
     public string Command { get => _Command; set => SetProperty(ref _Command, value); }
     private string _TargetId = "";
     public string TargetId { get => _TargetId; set => SetProperty(ref _TargetId, value); }
-    private Guid? _FieldId = null;
-    public Guid? FieldId { get => _FieldId; set => SetProperty(ref _FieldId, value); }
     private string? _triggerParameterSource;
-    /// <summary>Current event output path (eventId.fieldId), or a literal trigger value. Null preserves legacy FieldId.</summary>
+    /// <summary>Event output path (eventId.fieldId), or a literal trigger value.</summary>
     public string? TriggerParameterSource { get => _triggerParameterSource; set => SetProperty(ref _triggerParameterSource, value); }
-    private bool _parameterComparisonEnabled;
-    /// <summary>Legacy persisted flag; equality now depends only on a non-empty trigger parameter source.</summary>
-    public bool ParameterComparisonEnabled { get => _parameterComparisonEnabled; set => SetProperty(ref _parameterComparisonEnabled, value); }
     private Guid? _comparisonOutputId;
     public Guid? ComparisonOutputId { get => _comparisonOutputId; set => SetProperty(ref _comparisonOutputId, value); }
     // New global rules use Source=GlobalData; old String rules are not converted or executed.

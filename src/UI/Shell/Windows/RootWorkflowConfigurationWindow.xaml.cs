@@ -1,30 +1,26 @@
 using SunEyeVision.Plugin.Wpf;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Wpf.Fields;
 using SunEyeVision.UI.Services.Editing;
-using SunEyeVision.UI.Shared;
-using SunEyeVision.Workflow;
+using SunEyeVision.Domain.Workflows;
 namespace SunEyeVision.UI.Shell.Windows;
 public partial class RootWorkflowConfigurationWindow:ThemeDialogWindow
 {
  private readonly RootWorkflowConfigurationContext _context;
- private readonly Func<Task> _run;private readonly Action _repeat,_stop;private readonly Func<bool> _running;
- private readonly Func<string,DeclaredOutputSnapshot?> _readResult;
+ private readonly Func<Task>? _run;private readonly Action? _repeat,_stop;private readonly Func<bool>? _running;
+
  private readonly List<DeclaredFieldEditor> _fields=new();
  private readonly DispatcherTimer _refresh=new(){Interval=TimeSpan.FromMilliseconds(160)};
  private bool _rebuilding;
  internal RootWorkflowConfigurationContext Context=>_context;
- internal RootWorkflowConfigurationWindow(RootWorkflowConfigurationContext context,Func<Task> run,Action repeat,Action stop,Func<bool> running,Func<string,DeclaredOutputSnapshot?> readResult)
+ internal RootWorkflowConfigurationWindow(RootWorkflowConfigurationContext context,Func<Task>? run,Action? repeat,Action? stop,Func<bool>? running)
  {
-  _context=context;_run=run;_repeat=repeat;_stop=stop;_running=running;_readResult=readResult;
+  _context=context;_run=run;_repeat=repeat;_stop=stop;_running=running;
   InitializeComponent();Resources.MergedDictionaries.Add(EditorResources.Create());Heading.Text=Title=context.Root.Name+" · 流程配置";
   _context.PrepareView=()=>_fields.FirstOrDefault(f=>f.HasInvalidText)?.Error;
   _context.HasPendingView=()=>_fields.Any(f=>f.HasInvalidText);_context.Changed+=Rebuild;
@@ -34,8 +30,8 @@ public partial class RootWorkflowConfigurationWindow:ThemeDialogWindow
  private void RefreshTick(object? sender,EventArgs e){if(!_context.IsValid){Close();return;}RefreshResultView(()=>{RefreshState();RefreshPublishedResultsCore();});}
  private void RefreshState()
  {
-  bool running=_running();bool editable=_context.CanEdit;ConfigurationTabs.IsEnabled=editable;ApplyButton.IsEnabled=AcceptButton.IsEnabled=editable;
-  RunOnce.IsEnabled=Repeat.IsEnabled=editable&&_context.Root.Nodes.Count>0;Stop.IsEnabled=running;
+  bool running=_running?.Invoke()==true;bool editable=_context.CanEdit;ConfigurationTabs.IsEnabled=editable;ApplyButton.IsEnabled=AcceptButton.IsEnabled=editable;
+  RunOnce.IsEnabled=editable&&_run is not null&&_context.Root.Nodes.Count>0;Repeat.IsEnabled=editable&&_repeat is not null&&_context.Root.Nodes.Count>0;Stop.IsEnabled=running&&_stop is not null;
   UndoButton.IsEnabled=!running&&!_context.HasPendingChanges&&_context.CanUndo;RedoButton.IsEnabled=!running&&!_context.HasPendingChanges&&_context.CanRedo;
  }
  private void Rebuild()
@@ -76,7 +72,7 @@ public partial class RootWorkflowConfigurationWindow:ThemeDialogWindow
  }
  private string FormatReference(OutputReference reference)
  {
-  var node=_context.Root.Nodes.FirstOrDefault(n=>n.Id==reference.NodeId);var output=_context.Query.GetSchema(reference.NodeId)?.FindOutputDisplay(reference.PortId);
+  var node=_context.Root.Nodes.FirstOrDefault(n=>n.Id==reference.NodeId);var output=_context.GetSchema(reference.NodeId)?.FindOutputDisplay(reference.PortId);
   return (node?.DispName??reference.NodeId)+" · "+(output?.DisplayName??reference.PortId)+(reference.MemberFieldPath.Count==0?"":" / "+string.Join(" / ",DeclaredReferenceCandidateBuilder.MemberNames(output,reference.MemberFieldPath)));
  }
  private void EditParametersClick(object sender,RoutedEventArgs e)=>Safe(()=>
@@ -93,9 +89,9 @@ public partial class RootWorkflowConfigurationWindow:ThemeDialogWindow
  private void ApplyClick(object sender,RoutedEventArgs e)=>ApplyDraft();
  private void AcceptClick(object sender,RoutedEventArgs e){if(ApplyDraft())Close();}
  private void CancelClick(object sender,RoutedEventArgs e)=>Close();
- private async void RunClick(object sender,RoutedEventArgs e){if(!ApplyDraft())return;try{RunOnce.IsEnabled=Repeat.IsEnabled=false;await _run();}catch(Exception error){Error.Text=error.Message;}finally{if(IsLoaded){RefreshState();RefreshPublishedResults();}}}
- private void RepeatClick(object sender,RoutedEventArgs e){if(ApplyDraft())Safe(_repeat);RefreshState();}
- private void StopClick(object sender,RoutedEventArgs e)=>Safe(_stop);
+ private async void RunClick(object sender,RoutedEventArgs e){if(!ApplyDraft())return;try{RunOnce.IsEnabled=Repeat.IsEnabled=false;await (_run ?? throw new InvalidOperationException("正式执行入口尚未接入。"))();}catch(Exception error){Error.Text=error.Message;}finally{if(IsLoaded){RefreshState();RefreshPublishedResults();}}}
+ private void RepeatClick(object sender,RoutedEventArgs e){if(ApplyDraft())Safe(_repeat ?? (()=>throw new InvalidOperationException("连续运行入口尚未接入。")));RefreshState();}
+ private void StopClick(object sender,RoutedEventArgs e)=>Safe(_stop ?? (()=>throw new InvalidOperationException("停止入口尚未接入。")));
  private void UndoClick(object sender,RoutedEventArgs e)=>Safe(_context.Undo);
  private void RedoClick(object sender,RoutedEventArgs e)=>Safe(_context.Redo);
  private void DragTitle(object sender,MouseButtonEventArgs e){if(e.ChangedButton==MouseButton.Left)DragMove();}
@@ -116,23 +112,9 @@ public partial class RootWorkflowConfigurationWindow:ThemeDialogWindow
  }
  private void RefreshPublishedResultsCore()
  {
-  var rows=new List<ResultRow>();
-  foreach(var node in _context.Root.Nodes)
-  {
-   var result=_readResult(node.Id);if(result==null)continue;
-   using var reader=result.AcquireReader();
-   foreach(var schema in new[]{_context.Query.GetSchema(node.Id)}.OfType<ToolSchema>())
-   foreach(var port in schema.Outputs)
-   {
-
-    if(port.Type.Shape!=ValueShape.Scalar)continue;
-    object? value=reader.Values?.Contains(port.Id)==true?reader.Values.Get<object?>(port.Id):null;
-    var text=value switch{null=>"",string str=>str.Length>1024?str[..1024]+"…":str,bool or byte or short or int or long or float or double or decimal=>Convert.ToString(value,CultureInfo.InvariantCulture)??"",_=>"非标量运行值"};
-    rows.Add(new(node.DispName+" · "+(schema.FindOutputDisplay(port.Id)?.DisplayName??port.Id),text));
-   }
-  }
-  Results.ItemsSource=rows;RefreshImagePreview();
+  Results.ItemsSource=new[] { new ResultRow("正式结果读取尚未接入", "") };
+  RefreshImagePreview();
  }
-
  private sealed record ResultRow(string Name,string Value);
+
 }

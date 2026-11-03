@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -110,7 +110,7 @@ namespace SunEyeVision.UI.Services.Logging
 
         #region 构造函数
 
-        public CircularBufferLogCollection(int capacity = DefaultCapacity) : this(capacity, Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher)
+        public CircularBufferLogCollection(int capacity = DefaultCapacity) : this(capacity, System.Windows.Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher)
         {
         }
 

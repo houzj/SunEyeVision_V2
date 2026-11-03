@@ -17,7 +17,7 @@ namespace SunEyeVision.UI.Shell.Controls.Common
         {
             InitializeComponent();
             Message = message;
-            Owner = Application.Current?.MainWindow;
+            Owner = System.Windows.Application.Current?.MainWindow;
             ShowInTaskbar = false;
         }
     }

@@ -1,3 +1,4 @@
+using SunEyeVision.Application.Communications;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -5,7 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using SunEyeVision.DeviceDriver.Communications;
-using SunEyeVision.Workflow;
+using SunEyeVision.Domain.Solutions;
 
 namespace SunEyeVision.UI.Services.Communication;
 
@@ -15,9 +16,9 @@ public sealed class CommunicationHeartbeatService : IAsyncDisposable
     public CommunicationHeartbeatRunner Runner { get; } = new();
     public CommunicationHeartbeatService(CommunicationRuntimeManager runtime) => _runtime = runtime;
 
-    public void Update(Solution? solution) => Runner.Update(CreateJobs(solution));
+    public void Update(SolutionDefinition? solution) => Runner.Update(CreateJobs(solution));
 
-    public IReadOnlyList<CommunicationHeartbeatJob> CreateJobs(Solution? solution)
+    public IReadOnlyList<CommunicationHeartbeatJob> CreateJobs(SolutionDefinition? solution)
     {
         // Capture on the caller's configuration thread; background jobs never enumerate live UI lists.
         var jobs = new List<CommunicationHeartbeatJob>();
@@ -33,8 +34,8 @@ public sealed class CommunicationHeartbeatService : IAsyncDisposable
                 var configuredDevice = solution.Communications.FirstOrDefault(device => device.Id == definition.DeviceId)
                     ?? throw new InvalidOperationException("心跳绑定设备已删除。");
                 if (!configuredDevice.IsEnabled) continue;
-                var device = JsonSerializer.Deserialize<SunEyeVision.Workflow.Communication>(
-                    JsonSerializer.Serialize(configuredDevice, WorkflowSerializationOptions.Default), WorkflowSerializationOptions.Default)!;
+                var device = JsonSerializer.Deserialize<SunEyeVision.Domain.Solutions.Communication>(
+                    JsonSerializer.Serialize(configuredDevice, new System.Text.Json.JsonSerializerOptions()), new System.Text.Json.JsonSerializerOptions())!;
                 var config = JsonSerializer.Deserialize<CommunicationHeartbeatDefinition>(JsonSerializer.Serialize(definition))!;
                 if (config.Mode is not ("Single" or "Alternate")) throw new FormatException("心跳模式无效。");
                 // Parse both configured values before enabling; OPC UA permissions are rechecked at each send.

@@ -34,7 +34,7 @@ namespace SunEyeVision.UI.Services
         {
             IsDarkTheme = isDark;
 
-            foreach (Window window in Application.Current.Windows)
+            foreach (Window window in System.Windows.Application.Current.Windows)
             {
                 Apply(window, isDark);
             }

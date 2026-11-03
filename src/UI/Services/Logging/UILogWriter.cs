@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -97,7 +97,7 @@ namespace SunEyeVision.UI.Services.Logging
 
         public UILogWriter()
         {
-            _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
+            _dispatcher = System.Windows.Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
             _logEntries = new CircularBufferLogCollection(MaxDisplayLogs, _dispatcher);
 
             // 创建事件聚合器（100ms节流间隔）

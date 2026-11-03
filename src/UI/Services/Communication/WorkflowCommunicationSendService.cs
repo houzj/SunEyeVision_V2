@@ -1,3 +1,4 @@
+using SunEyeVision.Application.Communications;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -8,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SunEyeVision.DeviceDriver.Communications;
 using SunEyeVision.Plugin.SDK.Models.Communication;
-using SunEyeVision.Workflow;
+using SunEyeVision.Domain.Solutions;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -16,14 +17,14 @@ using SunEyeVision.Plugin.SDK.Execution.Parameters;
 namespace SunEyeVision.UI.Services.Communication;
 
 /// <summary>No controls or scheduling. Reuses the application's existing connection and send core.</summary>
-public sealed class WorkflowCommunicationSendService(Func<Solution?> solutionReader, CommunicationRuntimeManager runtime,
-    Func<Solution, string, CancellationToken>? lifetimeReader = null) : ICommunicationSendService
+public sealed class WorkflowCommunicationSendService(Func<SolutionDefinition?> solutionReader, CommunicationRuntimeManager runtime,
+    Func<SolutionDefinition, string, CancellationToken>? lifetimeReader, Func<IDisposable> enterOperation) : ICommunicationSendService
 {
     private readonly CommunicationSendEventService _events = new(runtime);
-    private Solution Solution => solutionReader() ?? throw new InvalidOperationException("当前通信方案不可用。");
+    private SolutionDefinition SolutionDefinition => solutionReader() ?? throw new InvalidOperationException("当前通信方案不可用。");
     /// <summary>Configuration and variable debug use a private candidate. Physical I/O retains its live lifetime guards.</summary>
-    public ICommunicationSendService CreateConfigurationView(Func<Solution?> candidate)
-        => new ConfigurationView(this, new WorkflowCommunicationSendService(candidate, runtime));
+    public ICommunicationSendService CreateConfigurationView(Func<SolutionDefinition?> candidate)
+        => new ConfigurationView(this, new WorkflowCommunicationSendService(candidate, runtime, lifetimeReader, enterOperation));
     private sealed class ConfigurationView(WorkflowCommunicationSendService live, WorkflowCommunicationSendService candidate) : ICommunicationSendService
     {
         public IReadOnlyList<CommunicationSendTarget> GetTargets() => candidate.GetTargets();
@@ -33,12 +34,12 @@ public sealed class WorkflowCommunicationSendService(Func<Solution?> solutionRea
             => candidate.ConfigureVariablePublications(workflowId, nodeId, mappings);
         public async Task<PreparedCommunicationSend> PrepareAsync(CommunicationSendRequest request, CancellationToken token = default)
         {
-            var configuration = candidate.Solution;
+            var configuration = candidate.SolutionDefinition;
             var plan = await (request.Kind == "Variable" ? candidate.PrepareAsync(request, token) : live.PrepareAsync(request, token)).ConfigureAwait(false);
             return new(plan.Name, plan.Value, ct =>
             {
                 ct.ThrowIfCancellationRequested();
-                if (!ReferenceEquals(configuration, candidate.Solution))
+                if (!ReferenceEquals(configuration, candidate.SolutionDefinition))
                     throw new InvalidOperationException("发送编辑范围已经接纳、关闭或被替换，旧准备项不能提交。");
                 return plan.SubmitAsync(ct);
             });
@@ -46,7 +47,8 @@ public sealed class WorkflowCommunicationSendService(Func<Solution?> solutionRea
     }
     public IReadOnlyList<CommunicationSendTarget> GetTargets()
     {
-        var solution = Solution; var targets = new List<CommunicationSendTarget>();
+        using var operation=enterOperation();
+        var solution = SolutionDefinition; var targets = new List<CommunicationSendTarget>();
         foreach (var device in solution.Communications.Where(d => d.IsEnabled))
         {
             if (device.IsRawProtocol) targets.Add(new("Device", "", device.Id, device.Name, "Raw", "Binary"));
@@ -91,8 +93,9 @@ public sealed class WorkflowCommunicationSendService(Func<Solution?> solutionRea
 
     public async Task<PreparedCommunicationSend> PrepareAsync(CommunicationSendRequest request, CancellationToken token = default)
     {
+        using var operation=enterOperation();
         token.ThrowIfCancellationRequested();
-        var solution = Solution;
+        var solution = SolutionDefinition;
         if (request.Inputs.Count == 0) throw new FormatException("请配置发送数据。");
         foreach (var input in request.Inputs) CommunicationSendTypes.Validate(input.Value, input.DataType);
         if (request.Kind == "Variable")
@@ -115,12 +118,12 @@ public sealed class WorkflowCommunicationSendService(Func<Solution?> solutionRea
             ?? throw new InvalidOperationException("目标设备不存在或已禁用。");
         var deviceLifetime = lifetimeReader?.Invoke(solution, originalDevice.Id) ?? CancellationToken.None;
         deviceLifetime.ThrowIfCancellationRequested();
-        var signature = JsonSerializer.Serialize(originalDevice, WorkflowSerializationOptions.Default);
-        var device = JsonSerializer.Deserialize<SunEyeVision.Workflow.Communication>(signature, WorkflowSerializationOptions.Default)!;
+        var signature = JsonSerializer.Serialize(originalDevice, new System.Text.Json.JsonSerializerOptions());
+        var device = JsonSerializer.Deserialize<SunEyeVision.Domain.Solutions.Communication>(signature, new System.Text.Json.JsonSerializerOptions())!;
         var status = runtime.GetStatus(new(device.Id));
         if (!runtime.IsConnected(device.Id)) throw new InvalidOperationException("设备尚未连接。");
-        var eventSignature = request.Kind == "Event" ? JsonSerializer.Serialize(definition, WorkflowSerializationOptions.Default) : null;
-        definition = JsonSerializer.Deserialize<CommunicationSendEventDefinition>(JsonSerializer.Serialize(definition, WorkflowSerializationOptions.Default), WorkflowSerializationOptions.Default)!;
+        var eventSignature = request.Kind == "Event" ? JsonSerializer.Serialize(definition, new System.Text.Json.JsonSerializerOptions()) : null;
+        definition = JsonSerializer.Deserialize<CommunicationSendEventDefinition>(JsonSerializer.Serialize(definition, new System.Text.Json.JsonSerializerOptions()), new System.Text.Json.JsonSerializerOptions())!;
         CommunicationSendPlan plan;
         if (request.Kind == "Device" && device.IsRawProtocol)
         {
@@ -185,11 +188,12 @@ public sealed class WorkflowCommunicationSendService(Func<Solution?> solutionRea
         token.ThrowIfCancellationRequested();
         return new(device.Name, plan.Protocol == "OpcUa" ? CommunicationReceiveService.Normalize(plan.Scalar!) : new BinaryPayload(plan.PayloadBytes), async ct =>
         {
+            using var submission=enterOperation();
             ct.ThrowIfCancellationRequested();
-            if (!ReferenceEquals(solution, Solution) || !runtime.IsConnected(device.Id) ||
+            if (!ReferenceEquals(solution, SolutionDefinition) || !runtime.IsConnected(device.Id) ||
                 !ReferenceEquals(status, runtime.GetStatus(new(device.Id))) ||
-                JsonSerializer.Serialize(solution.Communications.FirstOrDefault(d => d.Id == device.Id), WorkflowSerializationOptions.Default) != signature ||
-                (eventSignature != null && JsonSerializer.Serialize(solution.CommunicationSendEvents.FirstOrDefault(e => e.EventId.ToString() == request.EventId), WorkflowSerializationOptions.Default) != eventSignature))
+                JsonSerializer.Serialize(solution.Communications.FirstOrDefault(d => d.Id == device.Id), new System.Text.Json.JsonSerializerOptions()) != signature ||
+                (eventSignature != null && JsonSerializer.Serialize(solution.CommunicationSendEvents.FirstOrDefault(e => e.EventId.ToString() == request.EventId), new System.Text.Json.JsonSerializerOptions()) != eventSignature))
                 throw new InvalidOperationException("发送前方案、连接或目标配置已变化，未提交。");
             using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(ct, deviceLifetime);
             var count = await _events.SendAsync(plan, cancellation.Token, status).ConfigureAwait(false);

@@ -85,7 +85,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
 
         /// <summary>
         /// 退出菜单点击 / 关闭按钮 - 关闭应用。
-        /// 不能直接用 Application.Current.Shutdown()——它会绕过主窗口 OnClosing 的拦截（强制关闭、跳过保存/确认弹窗）。
+        /// 不能直接用 System.Windows.Application.Current.Shutdown()——它会绕过主窗口 OnClosing 的拦截（强制关闭、跳过保存/确认弹窗）。
         /// 改为调用主窗口 Close()，走正常的 OnClosing 确认流程（用户确认后才真正关闭）。
         /// </summary>
         private void ExitMenu_Click(object sender, RoutedEventArgs e)
@@ -97,7 +97,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             }
             else
             {
-                Application.Current.Shutdown();
+                System.Windows.Application.Current.Shutdown();
             }
         }
 

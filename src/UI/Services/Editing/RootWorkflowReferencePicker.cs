@@ -1,33 +1,11 @@
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using System.Windows;
-using System.Windows.Controls;
-using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.Runtime;
-using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.Wpf.Fields;
+using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
-using SunEyeVision.UI.Shell.Windows;
-using SunEyeVision.Workflow;
+
 namespace SunEyeVision.UI.Services.Editing;
+
+/// <summary>The scoped reference picker remains unavailable until the session supplies admitted candidates.</summary>
 internal static class RootWorkflowReferencePicker
 {
- internal static ReferenceFieldOptions Options(RootWorkflowConfigurationContext context,RootParameterProxy proxy) => new(_ => Candidates(context,proxy),
-  (_,proposal) => proposal is ReferenceSetting reference ? context.ValidateReference(proxy,reference) : null);
- internal static ReferenceCandidates Candidates(RootWorkflowConfigurationContext context,RootParameterProxy proxy)
- {
-  var resource=context.Resolve(proxy).Resource;
-  var query=context.Query;var candidates=new List<DeclaredReferenceCandidate>();var target=proxy.NodeId;
-  var names=query.GetBindingCandidateNodeNames(target);
-  foreach(var id in names.Keys)
-   foreach(var schema in new[]{query.GetSchema(id)}.OfType<ToolSchema>())
-   foreach(var output in schema.Outputs)
-   {
-
-    try{candidates.AddRange(DeclaredReferenceCandidateBuilder.Build(schema,output,id,query.WorkflowId,names.GetValueOrDefault(id,"可绑定节点")));}
-    catch(ArgumentException){continue;}
-   }
-  _=context.Resolve(proxy);
-  return new(candidates.Where(candidate=>resource is null||resource.Runtime||candidate.SelectedType==resource.Port.Type),
-   candidates.Where(candidate=>candidate.Output.Type.Shape!=ValueShape.Sequence&&candidate.SelectedType==DataType.Integer));
- }
+ internal static ReferenceFieldOptions Options(RootWorkflowConfigurationContext context, RootParameterProxy proxy) =>
+  new(_ => ReferenceCandidates.Empty, (_, _) => "正式引用来源选择尚未接入。");
 }

@@ -15,7 +15,7 @@ public sealed class ToolboxDesignData
     public ObservableCollection<ToolItem> SelectedCategoryTools {get;}=new();
     public ToolboxDesignData()
     {
-        var resource=Application.GetResourceStream(new Uri("pack://application:,,,/SunEyeVision.UI;component/Resources/Toolbox/ToolGroups.xml"));
+        var resource=System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/SunEyeVision.UI;component/Resources/Toolbox/ToolGroups.xml"));
         if(resource==null)return;
         using var stream=resource.Stream;
         foreach(var g in XDocument.Load(stream).Root!.Elements("Group"))

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0-windows</TargetFramework><UseWPF>true</UseWPF><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
+ <ItemGroup>
+  <ProjectReference Include="../../src/Application/SunEyeVision.Application.csproj" />
+  <ProjectReference Include="../../src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj" />
+  <ProjectReference Include="../../src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj" />
+  <Compile Include="../../src/UI/Services/Editing/RootParameterCatalog.cs" Link="RootParameterCatalog.cs" />
+  <Compile Include="../../src/UI/Services/Editing/RootResourceProxyBinding.cs" Link="RootResourceProxyBinding.cs" />
+  <Compile Include="../../src/UI/Services/Editing/RootWorkflowConfigurationContext.cs" Link="RootWorkflowConfigurationContext.cs" />
+  <Compile Include="../../src/UI/Services/Editing/RootWorkflowReferencePicker.cs" Link="RootWorkflowReferencePicker.cs" />
+  <Compile Include="../../src/UI/Services/Workflow/RootWorkflowReadiness.cs" Link="RootWorkflowReadiness.cs" />
+  <Compile Include="../../src/UI/Services/Editing/DeclaredReferenceCandidateBuilder.cs" Link="DeclaredReferenceCandidateBuilder.cs" />
+  <Compile Include="../../src/UI/Services/Editing/Nodes/ImageSourceDraftContent.cs" Link="ImageSourceDraftContent.cs" />
+  <Compile Include="../../src/UI/Services/ImageSourceResolver.cs" Link="ImageSourceResolver.cs" />
+  <Compile Include="../../src/UI/Shell/Windows/RootWorkflowConfigurationWindow.xaml.cs" Link="RootWorkflowConfigurationWindow.xaml.cs" />
+  <Compile Include="../../src/UI/Shell/Windows/RootWorkflowConfigurationWindow.Images.cs" Link="RootWorkflowConfigurationWindow.Images.cs" />
+  <Page Include="../../src/UI/Shell/Windows/RootWorkflowConfigurationWindow.xaml" Link="RootWorkflowConfigurationWindow.xaml" />
+  <Compile Include="../../src/UI/Shell/Windows/RootWorkflowRunSettingsWindow.xaml.cs" Link="RootWorkflowRunSettingsWindow.xaml.cs" />
+  <Page Include="../../src/UI/Shell/Windows/RootWorkflowRunSettingsWindow.xaml" Link="RootWorkflowRunSettingsWindow.xaml" />
+ </ItemGroup>
+</Project>

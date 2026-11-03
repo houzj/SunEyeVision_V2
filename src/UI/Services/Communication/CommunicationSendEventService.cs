@@ -1,3 +1,5 @@
+using SunEyeVision.Application.Communications;
+using SunEyeVision.Domain.Solutions;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -7,9 +9,9 @@ using System.Threading.Tasks;
 using Opc.Ua;
 using SunEyeVision.DeviceDriver.Communications;
 using SunEyeVision.UI.Features.CommunicationManager;
-using SunEyeVision.Workflow;
+
 using SunEyeVision.Plugin.SDK.Devices.Communication;
-using ConfiguredCommunication = SunEyeVision.Workflow.Communication;
+using ConfiguredCommunication = SunEyeVision.Domain.Solutions.Communication;
 
 namespace SunEyeVision.UI.Services.Communication;
 

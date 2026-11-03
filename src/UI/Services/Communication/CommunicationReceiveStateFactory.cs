@@ -1,6 +1,8 @@
+using SunEyeVision.Application.Communications;
+using SunEyeVision.Domain.Solutions;
 using System;
 using SunEyeVision.UI.Features.CommunicationManager;
-using SunEyeVision.Workflow;
+
 
 namespace SunEyeVision.UI.Services.Communication;
 

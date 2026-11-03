@@ -1,3 +1,9 @@
+## 2026-11-03 旧 Workflow 产品退出集中交接检查点
+
+共享基线 2c3a7eb76 上集中核收 B 主窗与 C 根配置/通信完整前置；移除 src/Workflow 88 受控源码及产品工程引用，原字节归档 ZIP/JSON 保留暂停 Group 证据。正常 ProjectReference UI Release 0 错误/6073 警告；真实通信回环/退役排空和 V4 严格字段探针通过。全量 Release 51 错误/6061 警告，主要旧测试合同与链接，未计目标完成。日志及完整效果/边界已同步原主 HTML。
+
+下一批：A 四非 UI 测试项目接此固定退出基线迁移；根整合 B 7ab/6a 的 UI 测试与生产修正、A 稳定调试及原子接受、C 整族中立命名完整闭包，然后迁移其余解决方案测试图并执行正式构建和宿主生命周期。不得恢复兼容桥、转签独立候选成绩或隐藏未做范围。NodeDraft 临时写权已由 A 交回，待合 A b75 原子安装批；Group 暂停，人工/VS/主仓未验。
+
 ## 2026-11-03 通知期只读与目录退役共享修正
 
 基线90e9b44ef；根正在集中退休旧Workflow与C根配置/通信闭包，尚未宣布完整GUI通过。当前单独固定给并行线的共享合同：HasUnsavedChanges为owner只读，已提交通知期可查、不拿编辑门禁；RuntimeDirectory.IsActive为Volatile只读，退役标记在原gate写，租约计数/排空不变。23真实Session和15实际xUnit通过，日志notification-read-session-20261103.log/directory-visibility-execution-tests-20261103.log。B191独立候选7ab、A调试竞态修复、C中立命名整串均待根完整整合，不挪用成绩。Root NodeConfigurationEditDraft单文件写权临时交A竞态修复，根不修改它。人工/VS/主仓未验，Group暂停；后续继续完成产品构建图与实际主窗，不把共享局部通过当目标完成。

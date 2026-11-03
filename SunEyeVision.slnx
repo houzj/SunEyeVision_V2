@@ -71,9 +71,6 @@
   <Folder Name="/Src/UI/">
     <Project Path="Src/UI/SunEyeVision.UI.csproj" />
   </Folder>
-  <Folder Name="/Src/Workflow/">
-    <Project Path="Src/Workflow/SunEyeVision.Workflow.csproj" />
-  </Folder>
   <Folder Name="/Tests/SunEyeVision.Identity.Tests/">
     <Project Path="tests/SunEyeVision.Identity.Tests/SunEyeVision.Identity.Tests.csproj" />
   </Folder>

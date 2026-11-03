@@ -94,6 +94,8 @@ namespace SunEyeVision.UI.Features.Camera
         private CameraSession? _session;
         private CameraPreviewWindow? _previewWindow;
         private bool _previewOpening;
+        private readonly Func<IDisposable> _acquirePreviewActivity;
+        private IDisposable? _failedPreviewActivity;
         private bool _changingCamera;
         private bool _hasPendingCamera;
         private CameraDevice? _pendingCamera;
@@ -245,9 +247,10 @@ namespace SunEyeVision.UI.Features.Camera
             ? "连接中..."
             : IsConnected ? "断开" : "连接";
 
-        public CameraDetailViewModel(CameraRuntimeManager runtime)
+        public CameraDetailViewModel(CameraRuntimeManager runtime, Func<IDisposable> acquirePreviewActivity)
         {
             _runtime = runtime ?? throw new ArgumentNullException(nameof(runtime));
+            _acquirePreviewActivity = acquirePreviewActivity ?? throw new ArgumentNullException(nameof(acquirePreviewActivity));
             ConnectCommand = new RelayCommand(Connect);
             DisconnectCommand = new RelayCommand(Disconnect);
             ToggleConnectionCommand = new RelayCommand(ToggleConnection);
@@ -552,7 +555,13 @@ namespace SunEyeVision.UI.Features.Camera
 
         private void Connect()
         {
-            _ = ConnectAsync();
+            _ = ConnectFromCommandAsync();
+        }
+
+        private async Task ConnectFromCommandAsync()
+        {
+            try { await ConnectAsync().ConfigureAwait(true); }
+            catch (Exception error) { ParameterStatus = "相机连接清理未完成：" + error.Message; }
         }
 
         private void Disconnect()
@@ -575,13 +584,18 @@ namespace SunEyeVision.UI.Features.Camera
         internal async Task PreviewAsync()
         {
             if (_previewWindow is { IsVisible: true }) { _previewWindow.Activate(); return; }
+            if (_failedPreviewActivity != null) { ParameterStatus = "上次预览清理未完成，方案切换已保护。"; return; }
             if (_changingCamera || _previewOpening || _connectionBusy) return;
             var camera = SelectedCamera;
             if (camera == null || string.IsNullOrWhiteSpace(camera.DeviceId)) return;
+            IDisposable activity;
+            try { activity = _acquirePreviewActivity(); }
+            catch (Exception error) { ParameterStatus = "无法打开预览：" + error.Message; return; }
             _previewOpening = true;
             CameraSession? session = null;
             CameraPreviewWindow? window = null;
             var ownsSession = false;
+            var cleanupSucceeded = true;
             try
             {
                 var reference = new CameraDeviceRef(camera.DeviceId);
@@ -594,7 +608,7 @@ namespace SunEyeVision.UI.Features.Camera
                 }
                 if (!ReferenceEquals(SelectedCamera, camera))
                 {
-                    if (ownsSession) await CloseAbandonedPreviewAsync(camera, session).ConfigureAwait(true);
+                    if (ownsSession) cleanupSucceeded = await CloseAbandonedPreviewAsync(camera, session).ConfigureAwait(true);
                     return;
                 }
 
@@ -607,7 +621,7 @@ namespace SunEyeVision.UI.Features.Camera
                             SelectedParameterCategory?.ViewKind, SelectedParameterCategory?.CategoryPath).ConfigureAwait(true);
                         if (!ReferenceEquals(SelectedCamera, camera))
                         {
-                            if (ownsSession) await CloseAbandonedPreviewAsync(camera, session).ConfigureAwait(true);
+                            if (ownsSession) cleanupSucceeded = await CloseAbandonedPreviewAsync(camera, session).ConfigureAwait(true);
                             return;
                         }
                         _parameterSchemaLoaded = true;
@@ -628,7 +642,7 @@ namespace SunEyeVision.UI.Features.Camera
                 if (!ReferenceEquals(SelectedCamera, camera)
                     || !_runtime.TryGetSession(reference, out var current) || !ReferenceEquals(current, session))
                 {
-                    if (ownsSession) await CloseAbandonedPreviewAsync(camera, session).ConfigureAwait(true);
+                    if (ownsSession) cleanupSucceeded = await CloseAbandonedPreviewAsync(camera, session).ConfigureAwait(true);
                     return;
                 }
 
@@ -638,7 +652,7 @@ namespace SunEyeVision.UI.Features.Camera
                 {
                     if (ReferenceEquals(_previewWindow, window)) _previewWindow = null;
                 };
-                var owner = Application.Current?.Windows.OfType<Window>()
+                var owner = System.Windows.Application.Current?.Windows.OfType<Window>()
                     .FirstOrDefault(item => item.DataContext is CameraManagerViewModel manager
                         && ReferenceEquals(manager.CameraDetailViewModel, this));
                 if (owner != null) window.Owner = owner;
@@ -651,10 +665,11 @@ namespace SunEyeVision.UI.Features.Camera
                 if (window is not null)
                 {
                     try { await window.CloseResourcesAsync().ConfigureAwait(true); }
-                    catch (Exception cleanup) { if (!ReferenceEquals(error, cleanup)) failure = new AggregateException(error, cleanup); }
+                    catch (Exception cleanup) { cleanupSucceeded = false; if (!ReferenceEquals(error, cleanup)) failure = new AggregateException(error, cleanup); }
                 }
                 else if (session is not null && ownsSession)
-                    await CloseAbandonedPreviewAsync(camera, session).ConfigureAwait(true);
+                    cleanupSucceeded = await CloseAbandonedPreviewAsync(camera, session).ConfigureAwait(true);
+                else if (error is AggregateException) cleanupSucceeded = false;
                 VisionLogger.Instance.Log(LogLevel.Error, "相机预览打开失败：" + failure.Message,
                     "CameraPreviewTrace", failure, LogTarget.All);
                 if (ReferenceEquals(SelectedCamera, camera)) ParameterStatus = "预览打开失败：" + failure.Message;
@@ -663,17 +678,20 @@ namespace SunEyeVision.UI.Features.Camera
             {
                 if (ReferenceEquals(_previewWindow, window)) _previewWindow = null;
                 _previewOpening = false;
+                if (cleanupSucceeded) activity.Dispose();
+                else { _failedPreviewActivity = activity; ParameterStatus = "预览清理未完成，方案切换已保护。"; }
             }
         }
 
-        private async Task CloseAbandonedPreviewAsync(CameraDevice camera, CameraSession session)
+        private async Task<bool> CloseAbandonedPreviewAsync(CameraDevice camera, CameraSession session)
         {
-            try { await ClosePreviewSessionAsync(camera, session, true).ConfigureAwait(true); }
+            try { await ClosePreviewSessionAsync(camera, session, true).ConfigureAwait(true); return true; }
             catch (Exception error)
             {
                 VisionLogger.Instance.Log(LogLevel.Error, "预览取消后的相机连接清理失败：" + error.Message,
                     "CameraPreviewTrace", error, LogTarget.All);
                 if (ReferenceEquals(SelectedCamera, camera)) ParameterStatus = "预览连接清理失败：" + error.Message;
+                return false;
             }
         }
 
@@ -817,6 +835,7 @@ namespace SunEyeVision.UI.Features.Camera
                         {
                             VisionLogger.Instance.Log(LogLevel.Error, "过期相机连接清理失败：" + error.Message,
                                 "CameraPreviewTrace", error, LogTarget.All);
+                            throw new AggregateException("过期相机连接清理未完成。", error);
                         }
                     }
                     return (null, false);
@@ -829,6 +848,7 @@ namespace SunEyeVision.UI.Features.Camera
                 }
                 return (session, opened);
             }
+            catch (AggregateException) { throw; }
             catch (Exception ex)
             {
                 camera.State = CameraState.Faulted;

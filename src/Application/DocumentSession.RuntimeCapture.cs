@@ -12,14 +12,15 @@ public sealed partial class DocumentSession
     /// <summary>Reserve one real root and freeze all selected workflows, values and input ownership together.</summary>
     public DocumentRunBatch CaptureRunBatch(IEnumerable<string> workflowIds,
         IReadOnlyDictionary<ScopedNodeIdentity, IHostInputPreparer>? hostInputs = null,
-        IReadOnlyDictionary<string, WorkflowImageInput>? workflowImages = null)
+        IReadOnlyDictionary<string, WorkflowImageInput>? workflowImages = null, IHostInputFactory? hostFactory = null)
     {
         ArgumentNullException.ThrowIfNull(workflowIds);
         EnsureOwnerCanEdit();
         var requested = workflowIds.ToArray();
         if (requested.Length == 0 || requested.Any(string.IsNullOrWhiteSpace) || requested.Distinct(StringComparer.Ordinal).Count() != requested.Length)
             throw new ArgumentException("运行流程必须非空且身份唯一。", nameof(workflowIds));
-        var hosts = (hostInputs ?? new Dictionary<ScopedNodeIdentity, IHostInputPreparer>()).ToArray();
+        var hosts = (hostInputs ?? new Dictionary<ScopedNodeIdentity, IHostInputPreparer>()).ToList();
+        var createdHosts = new List<IHostInputPreparer>();
         var images = (workflowImages ?? new Dictionary<string, WorkflowImageInput>()).ToArray();
         if (hosts.Any(pair => pair.Key is null || pair.Value is null) || images.Any(pair => pair.Value is null || pair.Value.Image is null || pair.Value.Lease is null))
             throw new ArgumentException("运行输入缺少实际身份或资源租约。 ");
@@ -63,6 +64,23 @@ public sealed partial class DocumentSession
                             var view = RequireNode(scope, item.Node.Id);
                             if (!ReferenceEquals(view.Node, item.Node) || !ReferenceEquals(item.Configuration, view.Node.Configuration))
                                 throw new InvalidOperationException("运行捕获期间节点实例或配置已改变。 ");
+                            var hostKey = new ScopedNodeIdentity(flow.Id, item.Node.Id);
+                            if (hostFactory is not null && view.Configuration.HostDeclarations.HostInputs is { } declaration && !hosts.Any(pair => pair.Key == hostKey))
+                            {
+                                var configuration = view.Configuration.Configuration;
+                                var fields = new FieldSettings(configuration.Fields.Declarations.Values, configuration.Fields.Capture());
+                                var context = new HostInputFactoryContext(hostKey, configuration.ToolId, view.Configuration.Schema,
+                                    view.Configuration.SettingsSchema, fields, configuration.CaptureCurrentValues(), declaration,
+                                    new SunEyeVision.Persistence.SolutionResourceResolver(_resourceBaseDirectory));
+                                var prepared = hostFactory.Create(context);
+                                if (prepared is not null)
+                                {
+                                    if (hosts.Any(pair => ReferenceEquals(pair.Value, prepared)))
+                                        throw new InvalidOperationException("宿主输入准备器不能由多个节点共享。");
+                                    createdHosts.Add(prepared);
+                                    hosts.Add(new(hostKey, prepared));
+                                }
+                            }
                             var snapshot = IssueExecutionNode(view);
                             nodeCaptures.Add(new(flow.Id, item.Node.Id), new(flow, item.Node, view.Configuration.Configuration, view.Configuration.ConfigurationIdentity));
                             nodes.Add(new(snapshot, item.Enabled));
@@ -147,6 +165,7 @@ public sealed partial class DocumentSession
             var errors = new List<Exception> { failure };
             try { variableValues?.Dispose(); } catch (Exception error) { errors.Add(error); }
             try { reservation.Dispose(); } catch (Exception error) { errors.Add(error); }
+            foreach (var host in createdHosts) try { host.Dispose(); } catch (Exception error) { errors.Add(error); }
             if (errors.Count > 1) throw new AggregateException("运行捕获和内部资源释放均失败。", errors);
             throw;
         }

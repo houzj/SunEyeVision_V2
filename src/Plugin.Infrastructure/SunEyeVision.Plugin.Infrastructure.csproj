@@ -22,12 +22,14 @@
   <ItemGroup>
     <!-- 保持对 Core 的引用(需要 ILogger) -->
     <ProjectReference Include="..\Core\SunEyeVision.Core.csproj" />
+    <ProjectReference Include="..\Application\SunEyeVision.Application.csproj" />
     <ProjectReference Include="..\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
     <ProjectReference Include="..\Plugin.Wpf\SunEyeVision.Plugin.Wpf.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="Infrastructure\IPluginManager.cs" />
+    <Compile Include="ImageSources\*.cs" />
 
 
     <Compile Include="Managers\Plugin\PluginManager.cs" />

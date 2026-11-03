@@ -1,3 +1,10 @@
+## 2026-11-03 在途实体会话真实接缝与原厂优先规则
+
+已只读核三树真实源码，非文档推定：A的638f8ab7a/4f36b8104为实体、可信scope、ChangeSet及图草稿准备检查点，Application定位0错，原子图提交/引用修复/生产文档工厂仍缺；B已在同一UI独立树互合真实源码，不造空提交/旧桥，整体构建目前在旧Workflow编辑Host访问Domain内部raw/CAS处失败，待A将Host整体迁Application，不加Workflow友元掩盖。原overview终结后由workflow_domain接续同一UI唯一写权，未分走图职责。C的f92/0234含纯Persistence+正式Infrastructure.Persistence引用、真实SDK/OpenCV复杂值适配与通信owner状态；当前仅组件验证，未通过整体方案保存/关闭或UI生产链，不计完成。
+
+重要范围纠偏：UI.csproj明确排除旧CommunicationManager绝大多数Page/Compile，仅六个非视觉helper纳入；保留源码不等于活动界面，不直接恢复旧自研管理器。通信服务现DeviceLifetime/断连/停止复用，删除、同ID重建及迟到Dispatcher必须核真实实例和状态；旧源码通知线程不能凭假设强制owner。变量Image新Mat只有本次解码范围拥有，候选失败释放、成功交正式文档，运行/编辑/历史及reader排空后释放；导入导出与方案保存共享同一宿主codec/解码scope。正式/调试当前仍仅接纯值变量，不为本批扩图像变量执行语义。保存真实复杂值在捕获时编码，不把Mat/可变矩阵或ROI借用冒称不可变域快照。
+
+主仓用户最新“解决问题优先对照原厂设计”已同步AGENTS.md和取证约定。开窗本方双BindDraft/已有窗检查晚是确证线索，不是VM内部策略；原VM完整链由主仓已向既有负责人集中取静态原证，未有回件、未授权新原机测试。B正按正式草稿/设计时/拒绝替换/失败/迟到全生命周期设计和冷/热分段计时推进，不把未验候选367c当完成。其他实体会话与通信源码继续，不等证据全停。
 ## 2026-11-03 实体会话关键路径增设方案数据独立线
 
 经已授权并行策略，实际创建platform-solution-data-20261103独立worktree/分支，从13024cf8a起，由规范编码线接手GlobalVariable/Communication整族；实体会话线已停止写该族并保全未完成草稿至自身Release/_validation，双方不并写。共享ProducerBinding/ConsumerBinding源7d019a3a9仅供接线，尚非完整可交付模型。A继续SolutionDefinition/DocumentSession/原子图事务/历史/执行/持久化组装及Domain.csproj；C独占两族Domain/运行状态/值converter/纯值策略和非UI消费者，B独占全部UI可视接线。变量raw/CAS保持内部原协议且仅Application友元，Value converter由Persistence对单Value属性注册；通信状态与配置分离。词汇以Contracts TypeRef/纯值声明唯一权威、CLR视觉映射留宿主适配，不复制两表。不把定位编译/临时草稿测试计生产完成。

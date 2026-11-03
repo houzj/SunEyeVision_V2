@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
-using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.VisualElements;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Display.ImageView.Base.ImageView.ROI;
 

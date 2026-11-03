@@ -145,10 +145,10 @@ internal static class S2DocumentEditingCases
             var shape=editors[0].NativeView;
             Require(context.DraftNode.RuntimeConfiguration!.Fields.Read(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobLocalRoi.InputId) is UnsetSetting,"无帧夹具不应已有本地几何");
             var command=(ICommand)shape.DataContext.GetType().GetProperty("ValueChangedCommand")!.GetValue(shape.DataContext)!;
-            command.Execute(SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Box);Pump();
+            command.Execute(SunEyeVision.Plugin.Wpf.Native.Dependencies.Regions.RoiType.Box);Pump();
             Require(context.DraftNode.RuntimeConfiguration!.Fields.Read(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobLocalRoi.InputId) is UnsetSetting,"无真实匹配帧仍写入几何");
             Require(!roi.HasUiChanges&&control.TryCapture(out restored),"无帧拒绝创建后破坏原基线："+restored);
-            command.Execute(SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.FullScreen);Pump();
+            command.Execute(SunEyeVision.Plugin.Wpf.Native.Dependencies.Regions.RoiType.FullScreen);Pump();
             Require(!roi.HasUiChanges&&control.TryCapture(out restored),"全域基线不能捕获："+restored);        });
         Case("原图文眼睛颜色文本及样式pending均跟踪，不把默认眼睛当已绘制",()=>
         {
@@ -317,7 +317,7 @@ internal static class S2DocumentEditingCases
         {
             var node=pending.Pop();if(!seen.Add(node))continue;yield return node;
             foreach(var child in LogicalTreeHelper.GetChildren(node).OfType<DependencyObject>())pending.Push(child);
-            if(node is SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamListView list)
+            if(node is SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Core.ParamListView list)
                 foreach(var row in list.Items.OfType<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>())if(row.View is {} view)pending.Push(view);
         }
     }

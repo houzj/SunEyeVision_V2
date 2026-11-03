@@ -13,7 +13,7 @@
     <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/datetimeupdown/themes/generic.xaml" />
     <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/datetimepicker/themes/generic.xaml" />
     <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/multilinetexteditor/themes/generic.xaml" />
-    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/VMControls/controls/numericupdown/themes/generic.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/UpDown/controls/numericupdown/themes/generic.xaml" />
     <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/timepicker/themes/generic.xaml" />
     <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/timespanupdown/themes/generic.xaml" />
   </ResourceDictionary.MergedDictionaries>

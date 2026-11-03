@@ -337,7 +337,7 @@ internal static class S2DocumentEditingCases
         {
             var node=pending.Pop();if(!seen.Add(node))continue;yield return node;
             foreach(var child in LogicalTreeHelper.GetChildren(node).OfType<DependencyObject>())pending.Push(child);
-            if(node is SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamListView list)
+            if(node is SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Core.ParamListView list)
                 foreach(var row in list.Items.OfType<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>())if(row.View is {} view)pending.Push(view);
         }
     }

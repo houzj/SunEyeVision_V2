@@ -6,7 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Collections.ObjectModel;
-using NativeHost=SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamListView;
+using NativeHost=SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Core.ParamListView;
 using SunEyeVision.Plugin.Wpf.Presenters.References;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.Resources;
@@ -163,9 +163,9 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   if(original?.Path?.Path=="ChildMargin"&&original.RelativeSource?.Mode==RelativeSourceMode.FindAncestor
      &&original.RelativeSource.AncestorType==typeof(NativeHost))
    BindingOperations.SetBinding(row,FrameworkElement.MarginProperty,new Binding(nameof(NativeHost.ChildMargin)){Source=page});
-  if(row is SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.LeftRightControl native
-     &&native.ReadLocalValue(SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.LeftRightControl.ChildLeftWidthProperty)==DependencyProperty.UnsetValue)
-   BindingOperations.SetBinding(native,SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.LeftRightControl.ChildLeftWidthProperty,
+  if(row is SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Rows.LeftRightControl native
+     &&native.ReadLocalValue(SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Rows.LeftRightControl.ChildLeftWidthProperty)==DependencyProperty.UnsetValue)
+   BindingOperations.SetBinding(native,SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Rows.LeftRightControl.ChildLeftWidthProperty,
        new Binding(nameof(NativeHost.ChildLeftWidth)){Source=page});
  }
  public void UseRegionSourceSelector(string fieldId)=>_editors[fieldId].UseRegionSourceSelector();

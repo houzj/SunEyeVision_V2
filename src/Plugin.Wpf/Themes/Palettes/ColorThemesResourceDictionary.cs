@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Threading;
-using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.ValueConverters;
 
 namespace SunEyeVision.Plugin.Wpf.Themes.Palettes;
 

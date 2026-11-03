@@ -1,0 +1,14 @@
+using SunEyeVision.Plugin.Wpf.Native.Input.FieldPrimitives.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners;
+using System;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.FieldPrimitives.Controls;
+
+[Flags]
+public enum ArrowEnds
+{
+	None = 0,
+	Start = 1,
+	End = 2,
+	Both = Start | End
+}

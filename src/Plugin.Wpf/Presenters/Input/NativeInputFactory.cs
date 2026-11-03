@@ -31,7 +31,7 @@ public static class NativeInputFactory
     {
         // Both faces must resolve even before the inactive Image is attached to a visual tree.
         var bitmap=new BitmapImage(new Uri("pack://application:,,,"+Root+
-            "Themes/Assets/Native/Composition/Apps.XmlUI/resources/"+(value?"swith_on.png":"swith_off.png"),UriKind.Absolute));
+            "Themes/Assets/Native/Composition/EditorAssets/resources/"+(value?"swith_on.png":"swith_off.png"),UriKind.Absolute));
         bitmap.Freeze();
         return new Image{Stretch=Stretch.None,Source=bitmap};
     }

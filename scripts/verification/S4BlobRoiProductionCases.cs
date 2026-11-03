@@ -104,7 +104,7 @@ internal static class S2DocumentEditingCases
         void Draw(object owner,string group,string kind,bool expected=true)
         {
             var editor=Editor(owner,group);var context=editor.NativeView.DataContext;
-            var type=kind switch {"rectangle"=>SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Box,"annulus"=>SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.SectorRing,"sector"=>SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Sector,_=>SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Polygon};
+            var type=kind switch {"rectangle"=>SunEyeVision.Plugin.Wpf.Native.Dependencies.Regions.RoiType.Box,"annulus"=>SunEyeVision.Plugin.Wpf.Native.Dependencies.Regions.RoiType.SectorRing,"sector"=>SunEyeVision.Plugin.Wpf.Native.Dependencies.Regions.RoiType.Sector,_=>SunEyeVision.Plugin.Wpf.Native.Dependencies.Regions.RoiType.Polygon};
             ((ICommand)Get(context,"ValueChangedCommand")).Execute(type);Pump();
             var session=Session(owner,group);var request=session.ActiveDraw??throw new Exception("原工具箱未进入实际视口绘制："+Get(owner,"Error"));
             var attachment=(SunEyeVision.Plugin.Wpf.Presenters.Display.INativeRoiEditLease)Get(owner,"_interaction");
@@ -122,7 +122,7 @@ internal static class S2DocumentEditingCases
         Case("无正式图像仍保原两组工具箱，不能伪造绘制帧",()=>
         {
             var formal=node.RuntimeConfiguration;var window=Open();var current=Control(window);var privateOwner=Owner(current);var editor=Editor(privateOwner,BlobLocalRoi.Inspection);
-            Require(editor.NativeView.IsVisible&&editor.NativeView.IsEnabled,"无图时原形状入口消失");((ICommand)Get(editor.NativeView.DataContext,"ValueChangedCommand")).Execute(SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Box);Pump();
+            Require(editor.NativeView.IsVisible&&editor.NativeView.IsEnabled,"无图时原形状入口消失");((ICommand)Get(editor.NativeView.DataContext,"ValueChangedCommand")).Execute(SunEyeVision.Plugin.Wpf.Native.Dependencies.Regions.RoiType.Box);Pump();
             Require(((System.Collections.IDictionary)Get(privateOwner,"_sessions")).Count==0&&ReferenceEquals(formal,node.RuntimeConfiguration),"无图时造帧或写正式模型");window.Close();Pump();
         });
         var run=vm.RunSelectedImageAsync();PumpUntil(()=>run.IsCompleted);run.GetAwaiter().GetResult();Pump();
@@ -148,7 +148,7 @@ internal static class S2DocumentEditingCases
             Require(ReferenceEquals(selectedBefore,workspace.SelectedOutputItem)&&node.SelectedDisplayReference==displayBefore,"仅打开窗口改了显示来源");
             var editors=Logical(control).OfType<NativeRoiEditor>().ToArray();Require(editors.Length==2&&editors.All(editor=>editor.Visibility==Visibility.Visible&&editor.NativeView.IsEnabled),"原两组工具箱消失");
             Require(((System.Collections.IDictionary)Get(owner,"_sessions")).Count==0,"打开即借帧");
-            var drawContext=editors[0].NativeView.DataContext;((ICommand)Get(drawContext,"ValueChangedCommand")).Execute(SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Box);Pump();
+            var drawContext=editors[0].NativeView.DataContext;((ICommand)Get(drawContext,"ValueChangedCommand")).Execute(SunEyeVision.Plugin.Wpf.Native.Dependencies.Regions.RoiType.Box);Pump();
             Require(((System.Collections.IDictionary)Get(owner,"_sessions")).Count==0,"选错显示图仍能进入绘制");
             first.Close();Pump();TraceDisplay("after-close");Console.WriteLine("关闭比较 instance="+ReferenceEquals(selectedBefore,workspace.SelectedOutputItem)+" key="+(selectedBefore is not null&&workspace.SelectedOutputItem is not null&&(string)Get(selectedBefore,"Key")== (string)Get(workspace.SelectedOutputItem,"Key"))+" model="+(node.SelectedDisplayReference==displayBefore)+" file="+File.ReadAllBytes(path).SequenceEqual(bytes));Require(workspace.SelectedOutputItem is not null&&selectedBefore is not null&&(string)Get(selectedBefore,"Key")== (string)Get(workspace.SelectedOutputItem,"Key")&&node.SelectedDisplayReference==displayBefore&&File.ReadAllBytes(path).SequenceEqual(bytes),"取消改变稳定显示身份/方案");
             var after=initialViewport.CurrentFrame!;var raster=Get(initialViewport,"_frame");
@@ -352,7 +352,7 @@ internal static class S2DocumentEditingCases
         {
             var node=pending.Pop();if(!seen.Add(node))continue;yield return node;
             foreach(var child in LogicalTreeHelper.GetChildren(node).OfType<DependencyObject>())pending.Push(child);
-            if(node is SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamListView list)
+            if(node is SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Core.ParamListView list)
                 foreach(var row in list.Items.OfType<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>())if(row.View is {} view)pending.Push(view);
         }
     }

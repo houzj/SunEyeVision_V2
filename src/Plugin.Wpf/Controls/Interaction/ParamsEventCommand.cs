@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Commom;
+using SunEyeVision.Plugin.Wpf.Native.Input.FieldPrimitives.Shared;
 using SunEyeVision.Plugin.Wpf.Controls.Interaction;
 using System;
 using System.Windows;

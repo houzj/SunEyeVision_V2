@@ -101,14 +101,14 @@ internal static class S2DocumentEditingCases
                 if(reject)throw new ArgumentException("拒绝开关提案");
                 writes.Add((bool)((ConstantSetting)setting).Value);
             });
-        var first=(SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.BooleanControl)editor.InputElement!;
+        var first=(SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Editors.BooleanControl)editor.InputElement!;
         var eventField=first.GetType().GetField("OnCheckedChange",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!;
         Check(first.IsChecked==false&&!first.IsThreeState&&writes.Count==0,"开关原件初始化恢复不提交且不启用三态");
         Check(first.OffContent is Image {Source:BitmapSource off}&&first.OnContent is Image {Source:BitmapSource on}
             &&off.IsFrozen&&on.IsFrozen,"开关两个原厂图片在独立视图中均已解析并冻结");
         Check(editor.TrySetConstant(true)&&writes.SequenceEqual(new[]{true})
             &&((ConstantSetting)editor.Setting).Value is true,"开关正式字段接纳链写入布尔值");
-        var current=(SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.BooleanControl)editor.InputElement!;
+        var current=(SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Editors.BooleanControl)editor.InputElement!;
         Check(current.IsChecked==true&&eventField.GetValue(first) is null,"开关回填新视图且退役原件解绑事件");
         first.SetCurrentValue(System.Windows.Controls.Primitives.ToggleButton.IsCheckedProperty,true);
         Check(writes.Count==1,"退役开关迟到状态变化不提交");
@@ -117,7 +117,7 @@ internal static class S2DocumentEditingCases
             &&current.IsChecked==true&&writes.Count==1,"开关宿主拒绝保留已接纳值及视图");
         reject=false;
         Check(editor.TrySetConstant(false)&&writes.SequenceEqual(new[]{true,false})
-            &&((SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.BooleanControl)editor.InputElement!).IsChecked==false,
+            &&((SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Editors.BooleanControl)editor.InputElement!).IsChecked==false,
             "开关拒绝后可重新接纳并清除错误回填");
         var last=editor.InputElement!;editor.Dispose();editor.Dispose();
         Check(editor.InputElement is null&&editor.Content is null&&eventField.GetValue(last) is null
@@ -409,13 +409,13 @@ internal static class S2DocumentEditingCases
         {
             window.Show();window.UpdateLayout();Pump();
             var input=(SunEyeVision.Plugin.Wpf.Presenters.Display.NativeColorPresenter)field.InputElement!;
-            var command=SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerControlView.SelectColorCommand;
+            var command=SunEyeVision.Plugin.Wpf.Native.Input.FieldPrimitives.Editors.ColorPickerControlView.SelectColorCommand;
             void Pick(Color color){command.Execute(new SolidColorBrush(color),input.NativeView);Pump();}
             Check(writes.Count==0&&input.SelectedColor==Color.FromArgb(200,10,20,30),"颜色原件回填RGBA而不初始化写入");
             Pick(Colors.Red);Pick(Colors.Blue);
             Check(writes.Count==2&&writes.Last().Get<long>("b")==255,"颜色原调色命令连续写正式RGBA草稿");
             Check(System.Windows.Data.BindingOperations.IsDataBound(input.NativeView,
-                SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerControlView.CurrentColorProperty),"颜色原命令保留双向绑定");
+                SunEyeVision.Plugin.Wpf.Native.Input.FieldPrimitives.Editors.ColorPickerControlView.CurrentColorProperty),"颜色原命令保留双向绑定");
             reject=true;Pick(Colors.Green);
             Check(writes.Count==2&&input.SelectedColor==Colors.Blue&&input.NativeView.CurrentColor.Color==Colors.Blue,"颜色拒绝回填同一原件已接纳值");
             reject=false;Pick(Colors.Red);Check(writes.Count==3,"颜色拒绝后继续选择可接纳");
@@ -424,7 +424,7 @@ internal static class S2DocumentEditingCases
             var tabs=Descendants<TabControl>(popup.Child).Single();
             Check(popup.IsOpen&&tabs.Items.Count==2,"颜色真实弹层包含默认与更多两页");
             tabs.SelectedIndex=1;Pump();
-            Check(Descendants<SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.AdvancedColorPickerDialog>(popup.Child).Any(),"颜色更多页显示原高级调色器");
+            Check(Descendants<SunEyeVision.Plugin.Wpf.Native.Input.FieldPrimitives.Editors.AdvancedColorPickerDialog>(popup.Child).Any(),"颜色更多页显示原高级调色器");
             field.IsEnabled=false;Pump();Check(!input.Palette.IsDropDownOpen,"颜色禁用关闭真实弹层");
             var accepted=writes.Count;Pick(Colors.Green);
             Check(writes.Count==accepted&&input.SelectedColor==Colors.Red,"颜色禁用迟到原命令不写入且恢复正式投影");
@@ -453,7 +453,7 @@ internal static class S2DocumentEditingCases
         var revision=draft.Revision;
         for(var i=0;i<tabs.Items.Count;i++)view.SelectedPageIndex=i;
         foreach(var tab in tabs.Items.Cast<TabItem>())
-            if(tab.Content is SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamListView host)
+            if(tab.Content is SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Core.ParamListView host)
                 foreach(var expand in host.Items.Cast<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>()
                     .Select(row=>row.View).OfType<NativeAdvancedPresenter>()){expand.IsExpanded=true;expand.IsExpanded=false;}
         Check(draft.Revision==revision,"参数页宿主整套导航与高级展开不写草稿");
@@ -569,7 +569,7 @@ internal static class S2DocumentEditingCases
                 var sample=Descendants<SunEyeVision.Plugin.Wpf.Design.NativeCrosshairSample>(entry).Single();
                 Check(Application.Current is null&&sample.Crosshairs.CrossDatas.Count==2,"辅助线真实XAML无Application创建同一两模型");
                 Check(Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged.SliderArrange>(entry).Count()==6
-                    &&Descendants<SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerControlView>(entry).Count()==2,"辅助线设计时完整原六数值与两色板");
+                    &&Descendants<SunEyeVision.Plugin.Wpf.Native.Input.FieldPrimitives.Editors.ColorPickerControlView>(entry).Count()==2,"辅助线设计时完整原六数值与两色板");
                 Check(CrosshairNumbers(entry).SequenceEqual(sample.Crosshairs.CrossDatas.SelectMany(model=>new[]{Math.Round(model.CenterX),Math.Round(model.CenterY),model.StrokeThickness})),"辅助线设计原数值模板已初始化并显示两模型");
                 sample.Crosshairs.CrossDatas[0].CenterPoint=new Point(100,90);Render(entry,"native-crosshair-design-edited.png",1040,430);
                 Check(sample.Crosshairs.CrossDatas[0].CenterX==100&&sample.Crosshairs.CrossDatas[0].CenterY==90,"辅助线设计时消费真实模型与布局");
@@ -697,10 +697,10 @@ internal static class S2DocumentEditingCases
             using(var field=new DeclaredFieldEditor(new Port("host.enabled",DataType.Boolean),"启用",new ConstantSetting(true),_=>throw new Exception("设计宿主不得写参数")))
             using(var row=new SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow(new("独立原宿主"),field))
             {
-                var list=new SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamListView();list.SetRows(new[]{row});
+                var list=new SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Core.ParamListView();list.SetRows(new[]{row});
                 Render(list,"native-parameter-host-independent.png",500,220);
-                Check(Application.Current is null&&Descendants<SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamUserControl>(list).Count()==1
-                    &&Descendants<SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.LeftRightControl>(list).Single().ChildLeftWidth==89,
+                Check(Application.Current is null&&Descendants<SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Core.ParamUserControl>(list).Count()==1
+                    &&Descendants<SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Rows.LeftRightControl>(list).Single().ChildLeftWidth==89,
                     "原参数宿主与原行无Application独立组装且不写草稿");
                 list.SetRows(null);
             }
@@ -731,23 +731,23 @@ internal static class S2DocumentEditingCases
                     Check(ReferenceEquals(scene.Session,session)&&session.Frame==frame&&session.Items.Select(item=>item.Id).SequenceEqual(identities)
                         &&expand.IsChecked==true&&scene.Viewport.NativeView.ImageDataSource is not null&&scene.Viewport.NativeView.Source is not null,
                         $"独立原ROI场景{index}同会话/同帧/稳定对象及原展开按钮和真实图像");
-                    var numbers=Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangeFloat>(scene.Editor).Count();
-                    foreach(var number in Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangeFloat>(scene.Editor))
+                    var numbers=Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.Coordinates.SliderArrangeFloat>(scene.Editor).Count();
+                    foreach(var number in Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.Coordinates.SliderArrangeFloat>(scene.Editor))
                     {
                         var roiCombo=(ComboBox)number.FindName("CBox");
-                        var leaf=(SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.NumericControl)roiCombo.Template.FindName("T1",roiCombo);
+                        var leaf=(SunEyeVision.Plugin.Wpf.Native.Numeric.Coordinates.NumericControl)roiCombo.Template.FindName("T1",roiCombo);
                         var text=(TextBox)leaf.FindName("ValueText");
                         Check(leaf.ActualWidth>0&&text.ActualWidth>0&&double.TryParse(text.Text,System.Globalization.NumberStyles.Float,System.Globalization.CultureInfo.InvariantCulture,out var shown)&&Math.Abs(shown-number.StartValue)<.011,$"形状{index}真实数字列宽/文字及绑定值独立可见");
                     }
-                    var points=Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangePoint>(scene.Editor).ToArray();
-                    Check(index==2?points.Length==8&&points.Count(point=>point.IsX)==4&&points.Count(point=>!point.IsX)==4&&points.All(point=>((System.Windows.Controls.Primitives.ToggleButton)point.FindName("ToBtn")).Template.FindName("T1",(System.Windows.Controls.Primitives.ToggleButton)point.FindName("ToBtn")) is SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.NumericControl):numbers==expected[index],$"独立原ROI形状{index}完整参数数量浮点={numbers}/顶点={points.Length}");
+                    var points=Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.Coordinates.SliderArrangePoint>(scene.Editor).ToArray();
+                    Check(index==2?points.Length==8&&points.Count(point=>point.IsX)==4&&points.Count(point=>!point.IsX)==4&&points.All(point=>((System.Windows.Controls.Primitives.ToggleButton)point.FindName("ToBtn")).Template.FindName("T1",(System.Windows.Controls.Primitives.ToggleButton)point.FindName("ToBtn")) is SunEyeVision.Plugin.Wpf.Native.Numeric.Coordinates.NumericControl):numbers==expected[index],$"独立原ROI形状{index}完整参数数量浮点={numbers}/顶点={points.Length}");
                 }
                 SunEyeVision.Plugin.Wpf.Design.NativeRoiDesignData.SetSampleIndex(scene,2);
                 Render(scene,"native-roi-scene-polygon-visible.png",1020,560);
-                foreach(var point in Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangePoint>(scene.Editor))
+                foreach(var point in Descendants<SunEyeVision.Plugin.Wpf.Native.Numeric.Coordinates.SliderArrangePoint>(scene.Editor))
                 {
                     var toggle=(System.Windows.Controls.Primitives.ToggleButton)point.FindName("ToBtn");
-                    var leaf=(SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.NumericControl)toggle.Template.FindName("T1",toggle);
+                    var leaf=(SunEyeVision.Plugin.Wpf.Native.Numeric.Coordinates.NumericControl)toggle.Template.FindName("T1",toggle);
                     var text=(TextBox)leaf.FindName("ValueText");
                     Check(leaf.ActualWidth>0&&text.ActualWidth>0&&double.TryParse(text.Text,System.Globalization.NumberStyles.Float,System.Globalization.CultureInfo.InvariantCulture,out var shown)&&Math.Abs(shown-(point.IsX?point.PointSource.X:point.PointSource.Y))<.011,"原Point真实坐标和列宽可在无Loaded设计中显示");
                 }
@@ -777,9 +777,9 @@ internal static class S2DocumentEditingCases
             var nativeColor=new NativeColorPresenter {SelectedColor=Color.FromArgb(200,10,20,30)};
             Render(nativeColor,"native-color-independent.png",394,38);
             Check(nativeColor.NativeView.CurrentColor.Color==Color.FromArgb(200,10,20,30)
-                &&nativeColor.NativeView.GetType().FullName=="SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerControlView"
+                &&nativeColor.NativeView.GetType().FullName=="SunEyeVision.Plugin.Wpf.Native.Input.FieldPrimitives.Editors.ColorPickerControlView"
                 &&Application.Current is null,"原色板及RGB真实视图可无Application/宿主独立设计渲染");
-            var paletteLeaf=new SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerFirstItem();
+            var paletteLeaf=new SunEyeVision.Plugin.Wpf.Native.Input.FieldPrimitives.Editors.ColorPickerFirstItem();
             Render(paletteLeaf,"native-palette-leaf-independent.png",300,250);
             var paletteLabels=Descendants<Label>(paletteLeaf).Select(label=>label.Content as string).ToArray();
             Check(paletteLabels.Contains((string)paletteLeaf.FindResource("Lang_ThemeColors"))
@@ -809,7 +809,7 @@ internal static class S2DocumentEditingCases
             // inspecting its real visual template; preserve the saved XAML page index.
             var inputTabs=(TabControl)fields.Content;
             inputTabs.SelectedItem=inputTabs.Items.Cast<TabItem>().Single(tab=>
-                tab.Content is SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamListView native
+                tab.Content is SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Core.ParamListView native
                 &&native.ItemsSource.Cast<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>().Select(row=>row.View).OfType<DeclaredInputFieldsView>().Any(view=>
                     view.Fields.Any(field=>field.FieldId==BlobTool.ImageInput)));
             Render(first,"parameters-initial.png",600,680);
@@ -873,7 +873,7 @@ internal static class S2DocumentEditingCases
                     var outputMask=(SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor)roi.Children[0];
                     Check(outputMask.FieldId=="ui-only-output-mask"&&outputMask.TrySetConstant(true)&&outputMask.TrySetConstant(false),
                         "输出掩膜使用原开关并能切换临时UI状态");
-                    Check(roi.IsEnabled&&Descendants<SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.RoiSelectControl>(roi).Count()==2,
+                    Check(roi.IsEnabled&&Descendants<SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Editors.RoiSelectControl>(roi).Count()==2,
                         "真实Blob基本页显示可操作的检测与屏蔽原形状控件，当前状态仅用于界面试用");
                     bool SetRadio(int index,long value)=>(bool)roi.Children[index].GetType().GetMethod("TrySetConstant")!.Invoke(roi.Children[index],new object[]{value})!;
                     Check(position.TrySetConstant(true),"开启位置修正以检查区域类型跨页显隐");
@@ -900,25 +900,25 @@ internal static class S2DocumentEditingCases
                     Check(SetRadio(3,0)&&roi.Children[4].Visibility==Visibility.Visible,"切回绘制恢复原形状控件");
                     var shape=(FrameworkElement)roi.Children[4];var context=shape.DataContext;
                     var command=(System.Windows.Input.ICommand)context.GetType().GetProperty("ValueChangedCommand")!.GetValue(context)!;
-                    command.Execute(SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Box);
+                    command.Execute(SunEyeVision.Plugin.Wpf.Native.Dependencies.Regions.RoiType.Box);
                     Check((bool)context.GetType().GetProperty("BoxA")!.GetValue(context)!&&!(bool)context.GetType().GetProperty("FullScreenA")!.GetValue(context)!,
                         "原ROI形状命令更新界面选择且保持互斥");
-                    var maskContext=Descendants<SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.RoiSelectControl>(roi).Last().DataContext;
+                    var maskContext=Descendants<SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Editors.RoiSelectControl>(roi).Last().DataContext;
                     var maskCommand=(System.Windows.Input.ICommand)maskContext.GetType().GetProperty("ValueChangedCommand")!.GetValue(maskContext)!;
                     Check((bool)maskContext.GetType().GetProperty("FullScreenEnableA")!.GetValue(maskContext)!
                         &&!(bool)maskContext.GetType().GetProperty("FullScreenA")!.GetValue(maskContext)!,
                         "屏蔽区提供全屏入口但默认不选择全屏");
-                    maskCommand.Execute(SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.FullScreen);
+                    maskCommand.Execute(SunEyeVision.Plugin.Wpf.Native.Dependencies.Regions.RoiType.FullScreen);
                     Check((bool)maskContext.GetType().GetProperty("FullScreenA")!.GetValue(maskContext)!,"屏蔽区全屏入口可选择");
                 }
                 if(index==1)
                 {
-                    var page=(SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamListView)((TabItem)tabs.Items[index]).Content;
+                    var page=(SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Core.ParamListView)((TabItem)tabs.Items[index]).Content;
                     var advanced=page.Items.Cast<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>()
                         .Select(row=>row.View).OfType<SunEyeVision.Plugin.Wpf.Presenters.Parameters.NativeAdvancedPresenter>().Single();
                     var circle=fields.Fields.Single(field=>field.FieldId=="field:7d59f57f71c65911b88bae5f90d994d9").View;
                     var binaryOutput=fields.Fields.Single(field=>field.FieldId=="field:73f2c01e7b385e0ab2d35f739a88e718");
-                    var binaryRow=(SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.LeftRightControl)
+                    var binaryRow=(SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Rows.LeftRightControl)
                         ((SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor)binaryOutput.View).EditorBody;
                     var expectedLabelWidth=SunEyeVision.Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang("Language")=="English"?170d:89d;
                     Check(page.ChildLeftWidth==expectedLabelWidth&&binaryRow.ChildLeftWidth==expectedLabelWidth,"运行参数页标签使用当前语言原控件列");
@@ -1079,7 +1079,7 @@ internal static class S2DocumentEditingCases
     private static IEnumerable<DeclaredFieldEditor> InputFields(DeclaredFieldsView fields)
     {
         var tabs=(TabControl)fields.Content;
-        return tabs.Items.Cast<TabItem>().Select(tab=>(SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamListView)tab.Content)
+        return tabs.Items.Cast<TabItem>().Select(tab=>(SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Core.ParamListView)tab.Content)
             .SelectMany(native=>native.ItemsSource.Cast<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>()).Select(row=>row.View).OfType<DeclaredInputFieldsView>()
             .SelectMany(input=>input.Fields);
     }

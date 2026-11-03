@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI;
+using SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Core;
 using SunEyeVision.Plugin.Wpf.Controls.Parameters;
 using System;
 using System.Globalization;

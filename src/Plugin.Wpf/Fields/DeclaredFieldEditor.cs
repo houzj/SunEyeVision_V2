@@ -37,7 +37,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     private ConstantSetting? _constant => _state.ConstantBackup;
     private readonly FieldPresentation? _presentation;
     private bool _referenceMode => _state.IsReferenceMode;
-    private readonly SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.LeftRightControl _row = new();
+    private readonly SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Rows.LeftRightControl _row = new();
     private readonly StackPanel _externalActions=new(){Orientation=Orientation.Horizontal};
     internal void AddInlineAction(UIElement action)=>_externalActions.Children.Add(action);
     internal void RemoveInlineAction(UIElement action)=>_externalActions.Children.Remove(action);
@@ -272,11 +272,11 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
                     _detachBooleanInput=()=>eye.Click-=onEyeClick;
                     InputElement=eye;_body.Children.Add(eye);return;
                 }
-                var input = new SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.BooleanControl
+                var input = new SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Editors.BooleanControl
                     { IsChecked = value as bool? == true,IsThreeState=false,
                       OffContent=NativeInputFactory.BooleanImage(false),OnContent=NativeInputFactory.BooleanImage(true),
                       HorizontalAlignment=HorizontalAlignment.Left,VerticalAlignment=VerticalAlignment.Center };
-                SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.BooleanControl.IsCheckedChange onCheckedChange = (_, _) =>
+                SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Editors.BooleanControl.IsCheckedChange onCheckedChange = (_, _) =>
                 {
                     if(!CurrentRender()||_updatingInput||!input.IsEnabled||!input.IsLoaded||!input.IsVisible||!ReferenceEquals(InputElement,input))return;
                     if(input.IsChecked is bool proposed&&_setting is ConstantSetting {Value:bool accepted}&&proposed==accepted&&_editError.Length==0)return;
@@ -447,7 +447,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
         _updatingInput=true;
         try
         {
-            if(input is SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.BooleanControl boolean&&accepted.Value is bool value)
+            if(input is SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Editors.BooleanControl boolean&&accepted.Value is bool value)
                 boolean.SetCurrentValue(ToggleButton.IsCheckedProperty,value);
             else if(_presentation?.Layout?.DialogPrimary==true&&input is ToggleButton eye&&accepted.Value is bool visible)
                 eye.SetCurrentValue(ToggleButton.IsCheckedProperty,visible);

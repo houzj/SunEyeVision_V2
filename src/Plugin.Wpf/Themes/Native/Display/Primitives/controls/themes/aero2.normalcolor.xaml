@@ -12,7 +12,7 @@
     <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/datetimeupdown/themes/aero2.normalcolor.xaml" />
     <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/datetimepicker/themes/aero2.normalcolor.xaml" />
     <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/multilinetexteditor/themes/aero2.normalcolor.xaml" />
-    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/VMControls/controls/numericupdown/themes/aero2.normalcolor.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/UpDown/controls/numericupdown/themes/aero2.normalcolor.xaml" />
     <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/propertygrid/themes/aero2.normalcolor.xaml" />
     <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/timepicker/themes/aero2.normalcolor.xaml" />
     <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/Primitives/controls/timespanupdown/themes/aero2.normalcolor.xaml" />

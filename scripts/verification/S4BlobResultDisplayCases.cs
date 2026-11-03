@@ -114,7 +114,7 @@ internal static partial class S2DocumentEditingCases
         void Draw(object owner,string group,string kind,bool expected=true)
         {
             var editor=Editor(owner,group);var context=editor.NativeView.DataContext;
-            var type=kind switch {"rectangle"=>SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Box,"annulus"=>SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.SectorRing,"sector"=>SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Sector,_=>SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Polygon};
+            var type=kind switch {"rectangle"=>SunEyeVision.Plugin.Wpf.Native.Dependencies.Regions.RoiType.Box,"annulus"=>SunEyeVision.Plugin.Wpf.Native.Dependencies.Regions.RoiType.SectorRing,"sector"=>SunEyeVision.Plugin.Wpf.Native.Dependencies.Regions.RoiType.Sector,_=>SunEyeVision.Plugin.Wpf.Native.Dependencies.Regions.RoiType.Polygon};
             ((ICommand)Get(context,"ValueChangedCommand")).Execute(type);Pump();
             var session=Session(owner,group);var request=session.ActiveDraw??throw new Exception("原工具箱未进入实际视口绘制："+Get(owner,"Error"));
             var attachment=(SunEyeVision.Plugin.Wpf.Presenters.Display.INativeRoiEditLease)Get(owner,"_interaction");
@@ -1016,7 +1016,7 @@ internal static partial class S2DocumentEditingCases
         {
             var node=pending.Pop();if(!seen.Add(node))continue;yield return node;
             foreach(var child in LogicalTreeHelper.GetChildren(node).OfType<DependencyObject>())pending.Push(child);
-            if(node is SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamListView list)
+            if(node is SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Core.ParamListView list)
                 foreach(var row in list.Items.OfType<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>())if(row.View is {} view)pending.Push(view);
         }
     }

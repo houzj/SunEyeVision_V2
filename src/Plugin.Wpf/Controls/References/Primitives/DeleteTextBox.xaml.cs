@@ -1,12 +1,12 @@
 using SunEyeVision.Plugin.Wpf.Controls.Popups;
 using SunEyeVision.Plugin.Wpf.Interop.Windows;
-using SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab;
+using SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Rows;
 using SunEyeVision.Plugin.Wpf.Controls.References.Primitives;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Markup;
-using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.VisualElements;
 
 namespace SunEyeVision.Plugin.Wpf.Controls.References.Primitives;
 

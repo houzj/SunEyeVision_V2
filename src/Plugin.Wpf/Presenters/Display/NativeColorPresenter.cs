@@ -5,8 +5,8 @@ using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Threading;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
-using NativePicker = SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerControlView;
-using NativePopup = SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls.PopupButton;
+using NativePicker = SunEyeVision.Plugin.Wpf.Native.Input.FieldPrimitives.Editors.ColorPickerControlView;
+using NativePopup = SunEyeVision.Plugin.Wpf.Native.Input.FieldPrimitives.Controls.PopupButton;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Display;
 

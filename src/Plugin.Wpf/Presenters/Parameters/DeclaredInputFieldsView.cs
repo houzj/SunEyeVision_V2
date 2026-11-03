@@ -5,7 +5,7 @@ using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Fields;
 using SunEyeVision.Plugin.Wpf.Presenters.References;
-using NativeHost=SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamListView;
+using NativeHost=SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Core.ParamListView;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 

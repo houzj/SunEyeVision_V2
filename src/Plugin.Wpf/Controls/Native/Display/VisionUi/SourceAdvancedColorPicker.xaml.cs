@@ -1,9 +1,9 @@
 using SunEyeVision.Plugin.Wpf.Native.Display.VisionUi;
 using SunEyeVision.Plugin.Wpf.Native.Input.VisionUi;
 using SunEyeVision.Plugin.Wpf.Native.Display.Primitives;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.UpDown;
 using SunEyeVision.Plugin.Wpf.Native.Display.Primitives.PropertyGrid.Editors;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.UpDown.PropertyGrid.Editors;
 using System;
 using System.Windows;
 using System.Windows.Controls;

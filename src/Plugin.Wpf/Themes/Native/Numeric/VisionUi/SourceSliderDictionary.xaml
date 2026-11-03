@@ -112,11 +112,11 @@
             <UIElement.RenderTransform>
               <TranslateTransform Y="-2" />
             </UIElement.RenderTransform>
-            <Image Name="im" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Numeric/Apps.XmlUI/滑块_normal.png" />
+            <Image Name="im" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Numeric/Coordinates/滑块_normal.png" />
           </Canvas>
           <ControlTemplate.Triggers>
             <Trigger Property="Thumb.IsDragging" Value="True">
-              <Setter TargetName="im" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Numeric/Apps.XmlUI/滑块_click.png" />
+              <Setter TargetName="im" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Numeric/Coordinates/滑块_click.png" />
             </Trigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>

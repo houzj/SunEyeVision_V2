@@ -1,0 +1,30 @@
+using SunEyeVision.Plugin.Wpf.Native.Display.Primitives;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.UpDown;
+using SunEyeVision.Plugin.Wpf.Native.Display.Primitives.PropertyGrid.Editors;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.UpDown.PropertyGrid.Editors;
+using System;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Numeric.UpDown;
+
+public class ShortUpDown : CommonNumericUpDown<short>
+{
+	static ShortUpDown()
+	{
+		CommonNumericUpDown<short>.UpdateMetadata(typeof(ShortUpDown), (short)1, short.MinValue, short.MaxValue);
+	}
+
+	public ShortUpDown()
+		: base((FromText)short.TryParse, (FromDecimal)decimal.ToInt16, (Func<short, short, bool>)((short v1, short v2) => v1 < v2), (Func<short, short, bool>)((short v1, short v2) => v1 > v2))
+	{
+	}
+
+	protected override short IncrementValue(short value, short increment)
+	{
+		return (short)(value + increment);
+	}
+
+	protected override short DecrementValue(short value, short increment)
+	{
+		return (short)(value - increment);
+	}
+}

@@ -1,5 +1,5 @@
 using SunEyeVision.Plugin.Wpf.Controls.Foundation;
-using SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI;
+using SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Core;
 using SunEyeVision.Plugin.Wpf.Controls.Parameters;
 using System;
 using System.CodeDom.Compiler;
@@ -9,7 +9,7 @@ using System.Windows.Data;
 using System.Windows.Interop;
 using System.Windows.Markup;
 using SunEyeVision.Plugin.Wpf.Native.Display.Primitives;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.UpDown;
 
 
 namespace SunEyeVision.Plugin.Wpf.Controls.Parameters;

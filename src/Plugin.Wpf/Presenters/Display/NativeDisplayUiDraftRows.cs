@@ -10,8 +10,8 @@ using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Adapters.Text;
 using SunEyeVision.Plugin.Wpf.Fields;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
-using NativeHost=SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamListView;
-using NativeRow=SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.LeftRightControl;
+using NativeHost=SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Core.ParamListView;
+using NativeRow=SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Rows.LeftRightControl;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Display;
 

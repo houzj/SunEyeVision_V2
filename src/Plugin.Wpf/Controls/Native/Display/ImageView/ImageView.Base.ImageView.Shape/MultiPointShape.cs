@@ -1,7 +1,7 @@
 using SunEyeVision.Plugin.Wpf.Native.Display.Primitives;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.UpDown;
 using SunEyeVision.Plugin.Wpf.Native.Display.Primitives.PropertyGrid.Editors;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.UpDown.PropertyGrid.Editors;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,7 +15,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.WriteableBitmapEx;
 using System.Windows.Media.Imaging;
-using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.ValueConverters;
 using SunEyeVision.Plugin.Wpf.Native.Display.Contracts;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Display.ImageView.Base.ImageView.Shape;

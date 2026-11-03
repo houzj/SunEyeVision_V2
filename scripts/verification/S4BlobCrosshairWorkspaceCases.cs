@@ -120,12 +120,12 @@ internal static class S2DocumentEditingCases
     var originalBinding=Number(settings,one,"CenterX").GetBindingExpression(Native.Numeric.Arranged.SliderArrangeBase.StartValueProperty);
     Number(settings,one,"CenterX").SetCurrentValue(Native.Numeric.Arranged.SliderArrangeBase.StartValueProperty,3d);Number(settings,one,"CenterY").SetCurrentValue(Native.Numeric.Arranged.SliderArrangeBase.StartValueProperty,4d);Number(settings,one,"StrokeThickness").SetCurrentValue(Native.Numeric.Arranged.SliderArrangeBase.StartValueProperty,2d);
     Toggle(settings,two,"IsVisible").SetCurrentValue(ToggleButton.IsCheckedProperty,true);Pump();
-    var picker=Visuals<Native.Input.HikPcUI.ListView.ColorPickerControlView>(settings).Single(control=>ReferenceEquals(control.DataContext,one));Native.Input.HikPcUI.ListView.ColorPickerControlView.SelectColorCommand.Execute("#FF0000FF",picker);Pump();
+    var picker=Visuals<Native.Input.FieldPrimitives.Editors.ColorPickerControlView>(settings).Single(control=>ReferenceEquals(control.DataContext,one));Native.Input.FieldPrimitives.Editors.ColorPickerControlView.SelectColorCommand.Execute("#FF0000FF",picker);Pump();
     Require(one.CenterPoint==new Point(3,4)&&one.StrokeThickness==2&&one.Stroke=="#FF0000FF"&&two.IsVisible&&two.Stroke!="#FF0000FF","原控件未回写或双实例污染");
     Require(originalBinding?.Status==BindingStatus.Active&&ReferenceEquals(originalBinding,Number(settings,one,"CenterX").GetBindingExpression(Native.Numeric.Arranged.SliderArrangeBase.StartValueProperty)),"编辑替换了正式TwoWay绑定");
     var center=Visuals<Button>(settings).Single(button=>ReferenceEquals(button.Command,one.CenterCommand));Require(center.Command.CanExecute(center.CommandParameter),"实际居中按钮Command不可用");center.Command.Execute(center.CommandParameter);Pump();Require(one.CenterPoint==new Point(8,8),"原居中命令未消费当前真实尺寸");
     Toggle(settings,one,"IsLocked").SetCurrentValue(ToggleButton.IsCheckedProperty,true);Pump();Require(one.IsLocked&&!two.IsLocked,"原锁定没有独立回写");Toggle(settings,one,"IsLocked").SetCurrentValue(ToggleButton.IsCheckedProperty,false);Pump();
-    Capture(settings,"crosshair-production-settings.png");var prior=settings;settings.Close();Pump();Native.Input.HikPcUI.ListView.ColorPickerControlView.SelectColorCommand.Execute("#FFFF0000",picker);Require(one.Stroke=="#FF0000FF","关闭后旧色板写入");settings=OpenCross();Require(!ReferenceEquals(prior,settings)&&one.CenterPoint==new Point(8,8),"重开复用旧窗或无故重置");
+    Capture(settings,"crosshair-production-settings.png");var prior=settings;settings.Close();Pump();Native.Input.FieldPrimitives.Editors.ColorPickerControlView.SelectColorCommand.Execute("#FFFF0000",picker);Require(one.Stroke=="#FF0000FF","关闭后旧色板写入");settings=OpenCross();Require(!ReferenceEquals(prior,settings)&&one.CenterPoint==new Point(8,8),"重开复用旧窗或无故重置");
    });
    Case("真实表高亮与辅助十字层独立共存",()=>{
     object? Field(object instance,string name)
@@ -155,9 +155,9 @@ internal static class S2DocumentEditingCases
     Require(Field(selectionLayer,"_prepared") is null&&selected.All(item=>!Contains(combined,item)),"清除高亮未只退役选择图层");
     Require(publication.IsCurrent()&&Receipt()==receipt&&ReferenceEquals(Get(pane,"Display"),display)&&originalDisplay.All(item=>Contains(combined,item))&&originalCross.All(item=>Contains(combined,item))&&CrossShapes().Count==2,"清高亮删除常驻图文、辅助十字或改变帧");
    });
-   var firstReceipt=Receipt();var oldWindow=settings;var oldNumber=Number(settings,one,"CenterX");var oldPicker=Visuals<Native.Input.HikPcUI.ListView.ColorPickerControlView>(settings).Single(control=>ReferenceEquals(control.DataContext,one));
+   var firstReceipt=Receipt();var oldWindow=settings;var oldNumber=Number(settings,one,"CenterX");var oldPicker=Visuals<Native.Input.FieldPrimitives.Editors.ColorPickerControlView>(settings).Single(control=>ReferenceEquals(control.DataContext,one));
    Case("真实灰二值切换保物理帧并退役旧设置叶",()=>{
-    SelectImage(BlobSchema.Field(6));Until(()=>Receipt()!=firstReceipt);Require(Receipt().Frame==firstReceipt.Frame&&Receipt().Coordinates==BlobSchema.ImageFrame,"同次灰/二值物理帧或坐标错配");Require(!oldWindow.IsVisible,"换图未关闭旧设置窗");settings=OpenCross();var accepted=one.CenterPoint;var stroke=one.Stroke;oldNumber.SetCurrentValue(Native.Numeric.Arranged.SliderArrangeBase.StartValueProperty,99d);Native.Input.HikPcUI.ListView.ColorPickerControlView.SelectColorCommand.Execute("#FFFF0000",oldPicker);Pump();Require(one.CenterPoint==accepted&&one.Stroke==stroke,"旧图设置叶写入当前帧");
+    SelectImage(BlobSchema.Field(6));Until(()=>Receipt()!=firstReceipt);Require(Receipt().Frame==firstReceipt.Frame&&Receipt().Coordinates==BlobSchema.ImageFrame,"同次灰/二值物理帧或坐标错配");Require(!oldWindow.IsVisible,"换图未关闭旧设置窗");settings=OpenCross();var accepted=one.CenterPoint;var stroke=one.Stroke;oldNumber.SetCurrentValue(Native.Numeric.Arranged.SliderArrangeBase.StartValueProperty,99d);Native.Input.FieldPrimitives.Editors.ColorPickerControlView.SelectColorCommand.Execute("#FFFF0000",oldPicker);Pump();Require(one.CenterPoint==accepted&&one.Stroke==stroke,"旧图设置叶写入当前帧");
    });
    var beforeRerun=Receipt();var retiredWindow=settings;var retiredNumber=Number(settings,one,"CenterX");
    var oldLease=(IDisposable)output.GetType().GetMethod("BorrowCurrentImage",Flags)!.Invoke(output,null)!;borrowed.Add(oldLease);retainedImage=(IReadOnlyImage)Get(oldLease,"Image");

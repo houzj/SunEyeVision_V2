@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Input.FieldPrimitives.Controls;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.Spinners;
 using System;
 using System.Globalization;

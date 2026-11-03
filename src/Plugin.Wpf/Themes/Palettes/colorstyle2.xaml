@@ -77,14 +77,14 @@
     <!--快捷工具点击背景颜色-->
     <SolidColorBrush x:Key="Col_Menubar_Shortcut_Pressed_Background" Color="#601877F2"/>
     <!--VM信息展示背景颜色-->
-    <LinearGradientBrush  x:Key="Col_Menubar_VMInfo_Background" StartPoint="0.5,0" EndPoint="0.5,1">
+    <LinearGradientBrush  x:Key="Col_Menubar_ProductInfo_Background" StartPoint="0.5,0" EndPoint="0.5,1">
         <GradientStop Color="#F5F5F5 " Offset="0"/>
         <GradientStop Color="#F5F5F5 " Offset="1"/>
     </LinearGradientBrush>
     <!--VM信息展示字体颜色-->
-    <SolidColorBrush x:Key="Col_Menubar_VMInfo_Foreground" Color="#333333"/>
+    <SolidColorBrush x:Key="Col_Menubar_ProductInfo_Foreground" Color="#333333"/>
     <!--VM信息展示边框颜色-->
-    <SolidColorBrush x:Key="Col_Menubar_VMInfo_BorderBrush" Color="#8F8B88"/>
+    <SolidColorBrush x:Key="Col_Menubar_ProductInfo_BorderBrush" Color="#8F8B88"/>
     <!--========================3、工具栏（14种）========================-->
     <!--背景色-->
     <SolidColorBrush x:Key="Col_Toolbar_Backgound" Color="#F8F8F8"/>

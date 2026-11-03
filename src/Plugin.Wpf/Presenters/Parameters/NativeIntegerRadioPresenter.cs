@@ -5,7 +5,7 @@ using System.Windows.Input;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
-using NativeRow=SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.LeftRightControl;
+using NativeRow=SunEyeVision.Plugin.Wpf.Native.Composition.Parameters.Rows.LeftRightControl;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 

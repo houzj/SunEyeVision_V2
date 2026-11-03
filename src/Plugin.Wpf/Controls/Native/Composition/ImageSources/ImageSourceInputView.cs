@@ -21,7 +21,7 @@ public sealed class ImageSourceInputView : UserControl
         row.Children.Add(new TextBlock { Text="关联相机",VerticalAlignment=VerticalAlignment.Center });
         Grid.SetColumn(CameraPicker,1);CameraPicker.ToolTip=CameraStatus;row.Children.Add(CameraPicker);
         OpenCameraButton.Content=new Image { Width=26,Height=26,Stretch=Stretch.Uniform,
-            Source=new BitmapImage(new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/resources/ic_camera-settings_normal.png",UriKind.Relative)) };
+            Source=new BitmapImage(new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Icons/ic_camera-settings_normal.png",UriKind.Relative)) };
         OpenCameraButton.ToolTip="相机设置";OpenCameraButton.Background=Brushes.Transparent;
         OpenCameraButton.BorderThickness=new Thickness(0);Grid.SetColumn(OpenCameraButton,2);
         row.Children.Add(OpenCameraButton);Content=row;

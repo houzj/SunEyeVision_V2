@@ -1,7 +1,7 @@
 using SunEyeVision.Plugin.Wpf.Native.Display.Primitives;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.UpDown;
 using SunEyeVision.Plugin.Wpf.Native.Display.Primitives.PropertyGrid.Editors;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.UpDown.PropertyGrid.Editors;
 using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.VM.Utility;
 using SunEyeVision.Plugin.Wpf.Native.Display.Primitives.Platform;

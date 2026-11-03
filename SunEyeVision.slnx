@@ -171,5 +171,11 @@
   <Folder Name="/Tools/SunEyeVision.ImageSource/" />
   <Folder Name="/Tools/SunEyeVision.ImageSource/Runtime/" />
   <Folder Name="/Tools/SunEyeVision.ImageSource/Wpf/" />
+  <Folder Name="/Tests/AdmissionPreparationComponent/">
+    <Project Path="tests/AdmissionPreparationComponent/AdmissionPreparationComponent.csproj" />
+  </Folder>
+  <Folder Name="/Tests/AdmissionPreparationProbe/">
+    <Project Path="tests/AdmissionPreparationProbe/AdmissionPreparationProbe.csproj" />
+  </Folder>
 </Solution>
 

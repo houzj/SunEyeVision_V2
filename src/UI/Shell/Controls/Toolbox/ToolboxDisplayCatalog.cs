@@ -10,15 +10,15 @@ using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 namespace SunEyeVision.UI.Shell.Controls.Toolbox;
 
 /// <summary>用户确认的展示目录；ToolId 是独立产品身份，不因目录项存在而表示已加载。</summary>
-internal sealed class VmToolboxCatalog
+internal sealed class ToolboxDisplayCatalog
 {
     internal sealed record Entry(string Category, string Id, string Name, string Icon, string? ToolId, bool MappingVerified);
     internal IReadOnlyList<DirectoryToolGroup> Groups { get; }
     internal IReadOnlyList<Entry> Entries { get; }
-    private VmToolboxCatalog(IReadOnlyList<DirectoryToolGroup> groups, IReadOnlyList<Entry> entries)
+    private ToolboxDisplayCatalog(IReadOnlyList<DirectoryToolGroup> groups, IReadOnlyList<Entry> entries)
         => (Groups, Entries) = (groups, entries);
 
-    internal static VmToolboxCatalog Load()
+    internal static ToolboxDisplayCatalog Load()
     {
         static Stream Open(string name) => System.Windows.Application.GetResourceStream(new Uri(
             "pack://application:,,,/SunEyeVision.UI;component/Resources/Toolbox/" + name))?.Stream
@@ -33,7 +33,7 @@ internal sealed class VmToolboxCatalog
             .OrderBy(g => g.Order).ToArray();
         if (groups.Select(x => x.Name).Distinct(StringComparer.Ordinal).Count() != groups.Length)
             throw new InvalidDataException("工具箱分类重复。");
-        using var stream = Open("VmToolCatalog.json");
+        using var stream = Open("ToolboxDisplayCatalog.json");
         using var document = JsonDocument.Parse(stream);
         var entries = new List<Entry>();
         foreach (var group in document.RootElement.EnumerateArray())

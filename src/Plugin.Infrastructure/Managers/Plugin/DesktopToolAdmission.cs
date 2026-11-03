@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using SunEyeVision.Plugin.Runtime;
 namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 
@@ -8,4 +11,10 @@ public sealed class DesktopToolAdmission
     {Directory=directory;Runtime=runtime;}
     public ToolDirectoryCatalog Directory { get; }
     public RuntimeDirectorySnapshot Runtime { get; }
+    public bool IsCurrent => PluginManager.IsCurrent(this);
+    public IReadOnlyList<SunEyeVision.Plugin.Contracts.ToolComponentMetadata> GetComponentMetadata()
+    {
+        if (!IsCurrent) throw new InvalidOperationException("桌面工具目录已退役。");
+        return Array.AsReadOnly(Runtime.Components.Select(component => component.Metadata).ToArray());
+    }
 }

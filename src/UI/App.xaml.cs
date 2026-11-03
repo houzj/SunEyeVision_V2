@@ -121,8 +121,9 @@ public partial class App : System.Windows.Application
                 var probePluginManager=inspectToolbox?new PluginManager():null;
                 if (inspectToolbox)
                     await probePluginManager!.LoadPluginsAsync();
-                var toolbox = inspectToolbox ? new SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxViewModel(probePluginManager!.DesktopAdmission??throw new InvalidOperationException("缺少已准入工具目录。")) : null;
-                if(inspectToolbox)probePluginManager!.AssertCompleteReleaseToolSet(SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.DirectoryCatalog?.ToolIds ?? Array.Empty<string>());
+                var admission = inspectToolbox ? probePluginManager!.DesktopAdmission ?? throw new InvalidOperationException("缺少已准入工具目录。") : null;
+                var toolbox = admission is null ? null : new SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxViewModel(admission);
+                if(inspectToolbox)probePluginManager!.AssertCompleteReleaseToolSet();
                 var info = new
                 {
                     releaseVersion = SunEyeVision.Foundation.Versioning.AppVersionInfo.Product,
@@ -134,8 +135,8 @@ public partial class App : System.Windows.Application
                     startupWindowBackground = (TryFindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.WindowBackgroundBrush) as SolidColorBrush)?.Color.ToString(),
                     toolboxCategories = toolbox?.Categories.Select(c => new { name = c.Name, icon = c.Icon, count = c.ToolCount }).ToArray(),
                     toolboxTools = toolbox?.AllTools.Select(t => new { id = t.ToolId, name = t.Name, category = t.Category, icon = t.Icon, iconSource=t.IconSource, available=t.IsAvailable }).ToArray(),
-                    loadedDirectoryToolAssemblies = inspectToolbox ? AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetName().Name).Intersect(SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.DirectoryCatalog!.Tools.Select(t=>Path.GetFileNameWithoutExtension(t.AssemblyPath))).ToArray() : null,
-                    toolComponents = inspectToolbox ? SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.GetComponentMetadata() : null
+                    loadedDirectoryToolAssemblies = inspectToolbox ? AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetName().Name).Intersect(admission!.Directory.Tools.Select(t=>Path.GetFileNameWithoutExtension(t.AssemblyPath))).ToArray() : null,
+                    toolComponents = inspectToolbox ? admission!.GetComponentMetadata() : null
                 };
                 File.WriteAllText(e.Args[1], System.Text.Json.JsonSerializer.Serialize(info));
                 Shutdown(0);
@@ -230,7 +231,7 @@ public partial class App : System.Windows.Application
         await pluginManager.LoadPluginsAsync();
         try
         {
-            pluginManager.AssertCompleteReleaseToolSet(SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.DirectoryCatalog?.ToolIds ?? Array.Empty<string>());
+            pluginManager.AssertCompleteReleaseToolSet();
         }
         catch (Exception ex)
         {

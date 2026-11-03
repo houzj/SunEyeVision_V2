@@ -98,8 +98,9 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         /// </summary>
         /// <param name="algorithmType">算法类型（工具ID）</param>
         /// <returns>适配器实例，如果未找到则返回默认适配器</returns>
-        public static INodeDisplayAdapter GetAdapter(string algorithmType)
+        public static INodeDisplayAdapter GetAdapter(CanvasNodeProjection node)
         {
+            var algorithmType = node.ToolType;
             if (string.IsNullOrWhiteSpace(algorithmType))
                 return _defaultAdapter;
 
@@ -108,18 +109,8 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
                 return manualAdapter;
 
             // 回退到基于 Category 的自动匹配
-            try
-            {
-                var metadata = Plugin.Infrastructure.Managers.Tool.ToolRegistry.GetToolMetadata(algorithmType);
-                if (metadata != null && !string.IsNullOrWhiteSpace(metadata.Category))
-                {
-                    return GetAdapterByCategory(metadata.Category);
-                }
-            }
-            catch
-            {
-                // 静默失败，返回默认适配器
-            }
+            if (node.Catalog is { } metadata)
+                return GetAdapterByCategory(metadata.Category);
 
             return _defaultAdapter;
         }

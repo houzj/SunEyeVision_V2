@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
+    <AssemblyName>SunEyeVision.AdmissionPreparation.Probe</AssemblyName>
+    <ToolComponentId>SunEyeVision.AdmissionPreparation.Probe</ToolComponentId><ToolComponentToolId>AdmissionPreparationProbe</ToolComponentToolId>
+    <ToolComponentRole>Runtime</ToolComponentRole><ToolComponentEntryType>SunEyeVision.AdmissionPreparation.Probe.Definition</ToolComponentEntryType>
+  </PropertyGroup>
+  <ItemGroup><ProjectReference Include="../../src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj" /></ItemGroup>
+</Project>

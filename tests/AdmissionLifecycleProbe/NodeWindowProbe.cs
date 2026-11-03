@@ -33,6 +33,9 @@ internal static class NodeWindowProbe
   try
   {
    var flow=session.GetWorkflows().Single();
+   using var canvas=new SunEyeVision.UI.Features.WorkflowUI.Canvas.DocumentCanvasProjection(session,flow.Id);
+   SessionLifecycleProbe.Check(viewModel.Toolbox.Categories.Count==15,"完整工具箱分类缺失。");
+   SessionLifecycleProbe.Check(viewModel.Toolbox.AllTools.Any(item=>!item.IsAvailable),"未实现工具未保持不可用。");
    foreach(var id in new[]{"UnknownTool","Subroutine","Condition"})
    {
     var invalid=new SunEyeVision.Domain.Workflows.NodeDefinition(Guid.NewGuid().ToString("N"),id,id,
@@ -44,6 +47,14 @@ internal static class NodeWindowProbe
    foreach(var id in new[]{"ImageLoad","BlobAnalysis"})
    {
     var graph=session.PrepareGraphEdit(flow.Id);var node=session.CreateNode(graph,id,new(150,120));session.CommitGraphEdit(graph,"建立真实参数节点");
+    var projection=canvas.Nodes.Single(item=>ReferenceEquals(item.Definition,node));
+    var catalog=session.GetNodeCatalog(flow.Id,node)??throw new Exception("实际节点缺少目录声明："+id);
+    var fake=new SunEyeVision.Domain.Workflows.NodeDefinition(node.Id,node.Name,node.ToolType,node.Configuration);
+    try { session.GetNodeCatalog(flow.Id,fake); throw new Exception("目录查询接纳了同 ID 假节点。"); }
+    catch(InvalidOperationException) { }
+    SessionLifecycleProbe.Check(projection.ToolIconKey==catalog.IconKey,"画布节点图标未使用同代声明："+id);
+    var icon=new SunEyeVision.UI.Converters.Node.ToolNodeIconConverter().Convert(projection,typeof(object),null!,System.Globalization.CultureInfo.InvariantCulture);
+    SessionLifecycleProbe.Check(icon is string uri&&uri.EndsWith("tool-"+catalog.IconKey+".png",StringComparison.Ordinal),"画布图标资源身份不一致："+id);
     viewModel.SelectedNode=node;viewModel.OpenDebugWindowCommand.Execute(node);Pump();
     var window=app.Windows.OfType<RuntimeToolEditorWindow>().SingleOrDefault(w=>w.IsVisible)??throw new Exception("正式命令未显示实际参数窗："+id);
     SessionLifecycleProbe.Check(window.IsLoaded&&SunEyeVision.Plugin.Editing.Wpf.ToolEditorCommit.GetDraftContext(window.Editor) is ProductionEditorContext{IsValid:true},"实际参数草稿未接入："+id);
@@ -52,6 +63,25 @@ internal static class NodeWindowProbe
     Console.WriteLine("隐藏桌面真实窗口通过: "+id);
    }
    Console.WriteLine("probe: hidden production parameter windows closed and scopes released");
+   using (var copyDraft=session.Editing.Host.BeginRootCollectionEdit())
+   {
+    var issued=copyDraft.Copy(flow,"画布退役验证",1);
+    var receipt=session.CommitEdit(SunEyeVision.Application.Editing.DocumentEditProposal.Prepare(session.Editing.Host,collection:copyDraft));
+    var copied=receipt.AcceptedRoots[issued];
+    using var copiedCanvas=new SunEyeVision.UI.Features.WorkflowUI.Canvas.DocumentCanvasProjection(session,copied.Id);
+    var before=copiedCanvas.Nodes.Select(item=>item.Definition).ToArray();
+    SessionLifecycleProbe.Check(before.Length==2,"复制流程画布节点缺失。");
+    using(var deletion=session.Editing.Host.BeginRootCollectionEdit())
+    {
+     deletion.Remove(copied);
+     session.CommitEdit(SunEyeVision.Application.Editing.DocumentEditProposal.Prepare(session.Editing.Host,collection:deletion));
+    }
+    SessionLifecycleProbe.Check(session.LastObserverError is null,"删除根流程时旧画布观察者失败："+session.LastObserverError);
+    SessionLifecycleProbe.Check(copiedCanvas.Nodes.Select(item=>item.Definition).SequenceEqual(before),"旧画布未等待标签页对账。");
+    SessionLifecycleProbe.Check(session.Undo()&&session.GetWorkflows().Any(item=>ReferenceEquals(item,copied)),"撤销未恢复同一实际根流程。");
+    SessionLifecycleProbe.Check(session.LastObserverError is null,"撤销根删除时画布观察者失败："+session.LastObserverError);
+    Console.WriteLine("probe: real root deletion and undo preserved canvas observer identity");
+   }
   }
   finally
   {

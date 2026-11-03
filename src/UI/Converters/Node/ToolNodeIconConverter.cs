@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
-using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 
 namespace SunEyeVision.UI.Converters.Node;
 
@@ -11,9 +11,9 @@ public sealed class ToolNodeIconConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        if(value is not string id||ToolRegistry.DirectoryCatalog?.Find(id) is not { } tool)
+        if(value is not ICanvasToolIconSource node || node.ToolIconKey is not { } key)
             return DependencyProperty.UnsetValue;
-        return "pack://application:,,,/SunEyeVision.UI;component/Resources/Toolbox/tool-"+tool.Icon+".png";
+        return "pack://application:,,,/SunEyeVision.UI;component/Resources/Toolbox/tool-"+key+".png";
     }
     public object ConvertBack(object value,Type targetType,object parameter,CultureInfo culture)
         =>throw new NotSupportedException();

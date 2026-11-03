@@ -19,24 +19,24 @@ public sealed class ToolDirectoryCatalogTests
         var c=new ToolDirectoryCatalog(f.Groups,new[]{a,b,hidden},calls.Add);
         Assert.Equal(new[]{f.Groups},calls);Assert.Equal(new[]{"b","a"},c.GetCategory("采集").Select(x=>x.Id));
         Assert.Equal(2,c.CountCategory("采集"));Assert.Equal(hidden,c.Find("hidden"));Assert.Equal(3,c.ToolIds.Count);
-        Assert.Equal("a",a.ToMetadata().Id);Assert.Equal("采集",a.ToMetadata().Category);
+        Assert.Equal("a",a.Id);Assert.Equal("采集",a.Category);
     }
     [Fact] public void Duplicate_identity_unknown_category_and_empty_runtime_are_rejected()
     {
-        using var f=new Fixture();Assert.Throws<InvalidDataException>(()=>new ToolDirectoryCatalog(f.Groups,new[]{Tool("a"),Tool("a")}));
-        Assert.Throws<InvalidDataException>(()=>new ToolDirectoryCatalog(f.Groups,new[]{Tool("a",category:"不存在")}));
-        Assert.Throws<InvalidDataException>(()=>new ToolDirectoryCatalog(f.Groups,Array.Empty<DirectoryTool>()));
+        using var f=new Fixture();Assert.Throws<InvalidDataException>(()=>new ToolDirectoryCatalog(f.Groups,new[]{Tool("a"),Tool("a")}, _ => {}));
+        Assert.Throws<InvalidDataException>(()=>new ToolDirectoryCatalog(f.Groups,new[]{Tool("a",category:"不存在")}, _ => {}));
+        Assert.Throws<InvalidDataException>(()=>new ToolDirectoryCatalog(f.Groups,Array.Empty<DirectoryTool>(), _ => {}));
     }
     [Fact] public void Group_manifest_cannot_declare_tool_producers_or_duplicate_categories()
     {
         using var f=new Fixture();File.WriteAllText(f.Groups,"<ToolGroups SchemaVersion='1'><Group Name='采集' Order='1' Icon='a' HoverIcon='b'/><Tool Id='fake'/></ToolGroups>");
-        Assert.Throws<InvalidDataException>(()=>new ToolDirectoryCatalog(f.Groups,new[]{Tool("a")}));
+        Assert.Throws<InvalidDataException>(()=>new ToolDirectoryCatalog(f.Groups,new[]{Tool("a")}, _ => {}));
         File.WriteAllText(f.Groups,"<ToolGroups SchemaVersion='1'><Group Name='采集' Order='1' Icon='a' HoverIcon='b'/><Group Name='采集' Order='2' Icon='a' HoverIcon='b'/></ToolGroups>");
-        Assert.Throws<InvalidDataException>(()=>new ToolDirectoryCatalog(f.Groups,new[]{Tool("a")}));
+        Assert.Throws<InvalidDataException>(()=>new ToolDirectoryCatalog(f.Groups,new[]{Tool("a")}, _ => {}));
     }
     [Fact] public void Group_xml_rejects_external_entity()
     {
         using var f=new Fixture();File.WriteAllText(f.Groups,"<!DOCTYPE x [<!ENTITY a SYSTEM 'file:///missing'>]><ToolGroups SchemaVersion='1'>&a;</ToolGroups>");
-        Assert.ThrowsAny<Exception>(()=>new ToolDirectoryCatalog(f.Groups,new[]{Tool("a")}));
+        Assert.ThrowsAny<Exception>(()=>new ToolDirectoryCatalog(f.Groups,new[]{Tool("a")}, _ => {}));
     }
 }

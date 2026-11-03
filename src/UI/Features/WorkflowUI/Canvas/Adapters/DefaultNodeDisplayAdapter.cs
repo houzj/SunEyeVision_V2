@@ -16,7 +16,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
 
         public string GetIcon(CanvasNodeProjection node)
         {
-            return SunEyeVision.Plugin.Infrastructure.Managers.Tool.ToolRegistry.DirectoryCatalog?.Find(node.ToolType)?.Icon ?? string.Empty;
+            return node.Catalog?.IconKey ?? string.Empty;
         }
 
         public Color GetBackgroundColor(CanvasNodeProjection node)

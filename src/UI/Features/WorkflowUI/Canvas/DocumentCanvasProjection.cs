@@ -15,6 +15,7 @@ public sealed class DocumentCanvasProjection : IDisposable
 {
     private readonly DocumentSession _session;
     private readonly string _workflowId;
+    private readonly WorkflowDefinition _workflow;
     private readonly ObservableCollection<CanvasNodeProjection> _nodes = new();
     private readonly ObservableCollection<CanvasConnectionProjection> _connections = new();
     private bool _disposed;
@@ -23,6 +24,7 @@ public sealed class DocumentCanvasProjection : IDisposable
     {
         _session = session ?? throw new ArgumentNullException(nameof(session));
         _workflowId = workflowId ?? throw new ArgumentNullException(nameof(workflowId));
+        _workflow = _session.GetWorkflows().Single(flow => flow.Id == _workflowId);
         Nodes = new(_nodes);
         Connections = new(_connections);
         Synchronize();
@@ -158,6 +160,9 @@ public sealed class DocumentCanvasProjection : IDisposable
     private void OnChanged(object? sender, DocumentChangeSet change)
     {
         if (_disposed || !ReferenceEquals(sender, _session) || change.EditSessionId != _session.EditSessionId) return;
+        // A removed root can still have a live tab until the root collection observer
+        // disposes it. Never resolve its id to a replacement root in that interval.
+        if (!_session.GetWorkflows().Any(flow => ReferenceEquals(flow, _workflow))) return;
         if (change.ChangedNodes.Any(x => x.Identity.WorkflowId == _workflowId) ||
             change.RemovedNodes.Any(x => x.Identity.WorkflowId == _workflowId) ||
             change.ChangedConnections.Any(x => x.WorkflowId == _workflowId))
@@ -173,7 +178,7 @@ public sealed class DocumentCanvasProjection : IDisposable
         var actualEdges = _session.GetConnections(_workflowId);
         var existing = _nodes.ToDictionary(x => x.Definition, (IEqualityComparer<NodeDefinition>)ReferenceEqualityComparer.Instance);
         var nextNodes = actualNodes.Select(node => existing.TryGetValue(node, out var projection)
-            ? projection : new CanvasNodeProjection(node)).ToArray();
+            ? projection : new CanvasNodeProjection(node, () => _session.GetNodeCatalog(_workflowId, node))).ToArray();
         Replace(_nodes, nextNodes);
         foreach (var node in nextNodes) node.Refresh();
         var existingEdges = _connections.ToDictionary(x => x.Definition, (IEqualityComparer<ConnectionDefinition>)ReferenceEqualityComparer.Instance);
@@ -239,12 +244,22 @@ public sealed class CanvasConnectionProjection : INotifyPropertyChanged
 }
 
 /// <summary>只组合实际节点，不复制或修改正式领域实体。</summary>
-public sealed class CanvasNodeProjection : INotifyPropertyChanged
+public interface ICanvasToolIconSource { string? ToolIconKey { get; } }
+
+public sealed class CanvasNodeProjection : INotifyPropertyChanged, ICanvasToolIconSource
 {
     private bool _selected, _editingName;
     private string _renameBuffer = string.Empty;
+    private readonly Func<SunEyeVision.Plugin.Contracts.ToolCatalogDescriptor?>? _catalog;
     public CanvasNodeProjection(NodeDefinition definition) => Definition = definition;
+    internal CanvasNodeProjection(NodeDefinition definition, Func<SunEyeVision.Plugin.Contracts.ToolCatalogDescriptor?> catalog)
+    { Definition = definition; _catalog = catalog; }
     public NodeDefinition Definition { get; }
+    public SunEyeVision.Plugin.Contracts.ToolCatalogDescriptor? Catalog
+    {
+        get { try { return _catalog?.Invoke(); } catch (InvalidOperationException) { return null; } }
+    }
+    public string? ToolIconKey => Catalog?.IconKey;
     public string Id => Definition.Id;
     public string Name => Definition.Name;
     public string DispName => Definition.DispName;

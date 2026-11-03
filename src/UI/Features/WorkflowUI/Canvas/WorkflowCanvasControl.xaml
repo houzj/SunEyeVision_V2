@@ -261,7 +261,7 @@
                                 <Grid Grid.Column="0">
                                     <Grid.Style><Style TargetType="Grid"><Setter Property="Width" Value="24"/><Style.Triggers><DataTrigger Binding="{Binding IsSubroutineNode}" Value="True"><Setter Property="Width" Value="31"/></DataTrigger></Style.Triggers></Style></Grid.Style>
                                     <!-- 图标叠上居中；状态时反白；对子程序节点隐藏 -->
-                                    <Image Source="{Binding ToolType, Converter={StaticResource ToolNodeIcon}}" Width="16" Height="16" Margin="4,0,0,0" VerticalAlignment="Center">
+                                    <Image Source="{Binding Converter={StaticResource ToolNodeIcon}}" Width="16" Height="16" Margin="4,0,0,0" VerticalAlignment="Center">
                                         <Image.Style>
                                             <Style TargetType="Image">
                                                 <Style.Triggers>

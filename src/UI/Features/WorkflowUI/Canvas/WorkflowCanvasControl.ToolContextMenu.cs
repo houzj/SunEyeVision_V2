@@ -3,7 +3,6 @@ using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using SunEyeVision.UI.Features.WorkflowUI;
 using SunEyeVision.UI.Shell.Controls.Toolbox;
-using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 namespace SunEyeVision.UI.Features.WorkflowUI.Canvas;
 public partial class WorkflowCanvasControl
 {

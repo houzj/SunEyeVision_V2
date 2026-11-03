@@ -101,7 +101,7 @@ namespace SunEyeVision.UI.Services.Rendering
         {
             if (value is CanvasNodeProjection node)
             {
-                var adapter = NodeDisplayAdapterFactory.GetAdapter(node.ToolType);
+                var adapter = NodeDisplayAdapterFactory.GetAdapter(node);
                 var color = adapter.GetBackgroundColor(node);
                 // 节流日志（全链诊断）：节点卡片背景实际颜色，判定齿轮 #333333 叠什么底。
                 // 注：画布 XAML 实际绑定本缓存转换器（x:Key="NodeBackgroundColorConverter"），

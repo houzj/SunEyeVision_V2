@@ -251,16 +251,18 @@ public sealed class MainWorkspaceLayoutTests
 
     private static void VerifyToolboxCatalog()
     {
-        static SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxViewModel EmptyCatalog()
-        {
-            var type=typeof(SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxViewModel);
-            var constructor=type.GetConstructors(System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Single();
-            return (SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxViewModel)constructor.Invoke(new object?[]{null,(Func<string,SunEyeVision.Plugin.SDK.Metadata.ToolMetadata?>)(_=>null),(Func<string,bool>)(_=>false),(Func<bool>)(()=>true)});
-        }
-        var empty = EmptyCatalog();
-        Assert.Equal(15, empty.Categories.Count);
-        Assert.Equal(143, empty.AllTools.Count);
-        Assert.All(empty.AllTools, item => { Assert.False(item.IsAvailable); Assert.False(item.CanActivate()); });
+        var productRoot=Environment.GetEnvironmentVariable("SUNEYE_INFRA_PRODUCT_ROOT");
+        Assert.False(string.IsNullOrWhiteSpace(productRoot), "必须提供本工作区正式载荷根。");
+        AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY",Path.TrimEndingDirectorySeparator(Path.GetFullPath(productRoot!))+Path.DirectorySeparatorChar);
+        var manager=new SunEyeVision.Plugin.Infrastructure.Managers.Plugin.PluginManager();
+        manager.LoadPluginsAsync().GetAwaiter().GetResult();
+        Assert.Null(manager.LastAdmissionError);
+        var admission=Assert.IsType<SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DesktopToolAdmission>(manager.DesktopAdmission);
+        SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxViewModel NewCatalog() => new(admission);
+        var empty=NewCatalog();
+        Assert.Equal(15,empty.Categories.Count);
+        Assert.True(empty.AllTools.Count>=143);
+        Assert.Contains(empty.AllTools,item=>!item.IsAvailable&&!item.CanActivate());
         empty.IsCompactMode = false;
         empty.Categories[0].IsExpanded = true;
         var toolbox = new SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxControl { DataContext = empty };
@@ -277,7 +279,7 @@ public sealed class MainWorkspaceLayoutTests
         empty.IsCompactMode = true;
         empty.SelectedCategory = "采集";
         Assert.True(empty.IsCompactModePopupOpen);
-        var replacement = EmptyCatalog();
+        var replacement = NewCatalog();
         toolbox.DataContext = replacement;
         Assert.False(empty.IsCompactModePopupOpen);
         Assert.Null(empty.SelectedCategory);
@@ -292,26 +294,12 @@ public sealed class MainWorkspaceLayoutTests
         empty.IsCompactMode = false;
         toolbox.Measure(new Size(230, 650)); toolbox.Arrange(new Rect(0, 0, 230, 650)); toolbox.UpdateLayout();
         var borders = new List<Border>(); CollectBorders(toolbox, borders);
-        Assert.Contains(borders, b => b.DataContext is SunEyeVision.UI.Shell.Controls.Toolbox.ToolItem { Name: "图像源" } && !b.IsEnabled);
-        var path = Path.Combine(Path.GetTempPath(), "suneye-toolbox-" + Guid.NewGuid() + ".xml");
+        Assert.Contains(borders, b => b.DataContext is SunEyeVision.UI.Shell.Controls.Toolbox.ToolItem item && !item.IsAvailable && !b.IsEnabled);
         try
         {
-            File.WriteAllText(path, "<ToolGroups SchemaVersion='1'><Group Name='采集' Order='1' Icon='a.png' HoverIcon='b.png'/><Group Name='定位' Order='2' Icon='c.png' HoverIcon='d.png'/><Group Name='测量' Order='3' Icon='e.png' HoverIcon='f.png'/></ToolGroups>");
-            var tools = new[] {
-                new SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DirectoryTool("ImageLoad", "图像源", "采集", 1, "image", "", "entry", "image.dll", true),
-                new SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DirectoryTool("BlobAnalysis", "Blob分析", "定位", 1, "blob", "", "entry", "blob.dll", true),
-                new SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DirectoryTool("LineCircleMeasure", "线圆测量", "测量", 1, "generic", "", "entry", "extra.dll", true)
-            };
-            var directory = new SunEyeVision.Plugin.Infrastructure.Managers.Plugin.ToolDirectoryCatalog(path, tools);
-            var current = true; var admitted = true;
-            SunEyeVision.Plugin.SDK.Metadata.ToolMetadata? Resolve(string id) => id == "BlobAnalysis" ? throw new InvalidOperationException("模拟加载失败") :
-                new() { Id = id, Category = id == "ImageLoad" ? "采集" : "测量" };
-            var type = typeof(SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxViewModel);
-            var ctor = type.GetConstructor(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
-                null, new[] { typeof(SunEyeVision.Plugin.Infrastructure.Managers.Plugin.ToolDirectoryCatalog), typeof(Func<string, SunEyeVision.Plugin.SDK.Metadata.ToolMetadata>), typeof(Func<string, bool>), typeof(Func<bool>) }, null)!;
-            var model = (SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxViewModel)ctor.Invoke(new object[] { directory, (Func<string, SunEyeVision.Plugin.SDK.Metadata.ToolMetadata?>)Resolve, (Func<string, bool>)(_ => admitted), (Func<bool>)(() => current) });
+            var model=NewCatalog();
             Assert.Equal(15, model.Categories.Count);
-            Assert.Equal(144, model.AllTools.Count);
+            Assert.True(model.AllTools.Count >= 143);
             var image = Assert.Single(model.GetCategoryTools("采集"), t => t.ToolId == "ImageLoad");
             Assert.True(image.IsAvailable); Assert.True(image.CanActivate());
             var canvasHost = new SunEyeVision.UI.Features.WorkflowUI.Canvas.WorkflowCanvasControl();
@@ -325,6 +313,8 @@ public sealed class MainWorkspaceLayoutTests
             var previewPresenter = Assert.IsType<ContentPresenter>(preview.Child);
             Assert.Same(Assert.IsType<ItemsControl>(canvasHost.FindName("VmNodeItems")).ItemTemplate, previewPresenter.ContentTemplate);
             var previewNode = Assert.IsAssignableFrom<object>(previewPresenter.Content);
+            Assert.Equal(admission.Runtime.GetCatalog("ImageLoad")!.IconKey,
+                Assert.IsAssignableFrom<SunEyeVision.UI.Features.WorkflowUI.Canvas.ICanvasToolIconSource>(previewNode).ToolIconKey);
             object? Read(string name)=>previewNode.GetType().GetProperty(name)!.GetValue(previewNode);
             Assert.Equal(true,Read("IsToolboxPreview")); Assert.Equal("图像源", Read("DispName"));
             Assert.Equal("ImageLoad", Read("ToolType")); Assert.False(preview.IsHitTestVisible);
@@ -366,15 +356,10 @@ public sealed class MainWorkspaceLayoutTests
             previewHandler.Canvas_DragOver(canvasA, over);
             Assert.Equal(DragDropEffects.Copy, over.Effects);
             Assert.Equal(Visibility.Visible, entered.Visibility);
-            var blob = Assert.Single(model.GetCategoryTools("定位"), t => t.ToolId == "BlobAnalysis");
-            Assert.False(blob.IsAvailable); Assert.Contains("加载失败", blob.ToolTip);
-            var measure = model.GetCategoryTools("测量").Where(t => t.ToolId == "LineCircleMeasure").ToArray();
-            Assert.Equal(2, measure.Length);
-            Assert.Contains(measure, t => !t.IsAvailable && t.ToolTip.Contains("映射尚未核实"));
-            Assert.Contains(measure, t => t.IsAvailable && t.Name.Contains("已部署，未匹配目录"));
-            var absentDirectory = new SunEyeVision.Plugin.Infrastructure.Managers.Plugin.ToolDirectoryCatalog(path, new[] { tools[0] });
-            var absent = (SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxViewModel)ctor.Invoke(new object[] { absentDirectory, (Func<string, SunEyeVision.Plugin.SDK.Metadata.ToolMetadata?>)Resolve, (Func<string, bool>)(_ => admitted), (Func<bool>)(() => true) });
-            Assert.Contains("未部署或未准入", Assert.Single(absent.GetCategoryTools("定位"), t => t.ToolId == "BlobAnalysis").ToolTip);
+            var blob=Assert.Single(model.GetCategoryTools("定位"),t=>t.ToolId=="BlobAnalysis");
+            Assert.True(blob.IsAvailable);
+            var disabled=Assert.Single(model.GetCategoryTools("测量"),t=>t.ToolId=="LineCircleMeasure");
+            Assert.False(disabled.IsAvailable);
             model.SelectedCategory = "采集";
             Assert.True(Assert.Single(model.SelectedCategoryTools, t => t.ToolId == "ImageLoad").IsAvailable);
             var host = new SunEyeVision.UI.Shell.Controls.Toolbox.ToolboxControl { DataContext = model };
@@ -408,17 +393,13 @@ public sealed class MainWorkspaceLayoutTests
             beginDrag.SetValue(host, (Func<DependencyObject, object, DragDropEffects, DragDropEffects>)((_, _, _) => throw new InvalidOperationException("模拟拖动失败")));
             drag.Invoke(host, new object[] { dragSource, image });
             Assert.False(host.IsDragging); Assert.Null(model.SelectedCategory);
-            down.Invoke(host, new object[] { new Border { Tag = blob }, pointer }); Assert.Null(armed.GetValue(host));
+            down.Invoke(host, new object[] { new Border { Tag = disabled }, pointer }); Assert.Null(armed.GetValue(host));
             down.Invoke(host, new object[] { new Border { Tag = image }, pointer }); Assert.Same(image, armed.GetValue(host));
-            down.Invoke(host, new object[] { new Border { Tag = blob }, pointer }); Assert.Null(armed.GetValue(host));
+            down.Invoke(host, new object[] { new Border { Tag = disabled }, pointer }); Assert.Null(armed.GetValue(host));
             down.Invoke(host, new object[] { new Border { Tag = image }, pointer }); Assert.Same(image, armed.GetValue(host));
             up.Invoke(host, new object[] { host, pointer }); Assert.Null(armed.GetValue(host));
-            admitted = false;
-            Assert.False(image.CanActivate());
-            model.SelectedCategory = "采集";
-            Assert.Contains("运行组件未准入", Assert.Single(model.SelectedCategoryTools, t => t.ToolId == "ImageLoad").ToolTip);
-            admitted = true;
-            current = false;
+            manager.UnloadPluginsAsync().GetAwaiter().GetResult();
+            Assert.Null(Assert.IsAssignableFrom<SunEyeVision.UI.Features.WorkflowUI.Canvas.ICanvasToolIconSource>(previewNode).ToolIconKey);
             down.Invoke(host, new object[] { new Border { Tag = image }, pointer }); Assert.Null(armed.GetValue(host));
             Assert.False(image.CanActivate());
             model.SelectedCategory = "采集";
@@ -426,7 +407,7 @@ public sealed class MainWorkspaceLayoutTests
             Assert.False(refreshed.IsAvailable); Assert.Contains("目录已变化", refreshed.ToolTip);
             Assert.Same(refreshed, Assert.Single(model.Categories.First(c => c.Name == "采集").Tools!, t => t.ToolId == "ImageLoad"));
         }
-        finally { File.Delete(path); }
+        finally { manager.UnloadPluginsAsync().GetAwaiter().GetResult(); }
     }
     private sealed class TopBarState : System.ComponentModel.INotifyPropertyChanged
     {

@@ -8,7 +8,6 @@ using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.Infrastructure.Infrastructure;
-using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 
 namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
 {
@@ -23,9 +22,11 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
     public class PluginManager : IPluginManager
     {
         private readonly ILogger _logger;
-        private readonly IToolCatalog _toolCatalog;
         private readonly Dictionary<Type, List<object>> _plugins = new();
         private static readonly object AdmissionGate=new();
+        private sealed record PublishedAdmission(DesktopToolAdmission Desktop, ReleasePayloadAuthority Authority, Guid Owner);
+        private static PublishedAdmission? _current;
+        private static long _generation;
         private static TaskCompletionSource? AdmissionTransition;
         private static Guid? DesktopHostGeneration;
         private static int DesktopHostPins;
@@ -35,10 +36,15 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         private int _lastRejectedCount;
         private readonly List<string> _admissionFailures=new();
         public string? LastAdmissionError {get;private set;}
-        public RuntimeDirectorySnapshot? RuntimeDirectory => ToolRegistry.CurrentAdmission?.Runtime;
+        public RuntimeDirectorySnapshot? RuntimeDirectory { get { lock (AdmissionGate) return AdmissionTransition is null && _current?.Desktop.Runtime.IsActive == true ? _current.Desktop.Runtime : null; } }
         public DesktopToolAdmission? DesktopAdmission
         {
-            get { var current=ToolRegistry.CurrentAdmission; return current is null?null:new DesktopToolAdmission(current.Directory,current.Runtime); }
+            get { lock (AdmissionGate) return AdmissionTransition is null && _current?.Desktop.Runtime.IsActive == true ? _current.Desktop : null; }
+        }
+        internal static bool IsCurrent(DesktopToolAdmission admission)
+        {
+            lock (AdmissionGate)
+                return AdmissionTransition is null && ReferenceEquals(_current?.Desktop, admission) && admission.Runtime.IsActive;
         }
         public IReadOnlyList<string> AdmissionFailures=>_admissionFailures.ToArray();
 
@@ -47,13 +53,13 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         {
             lock(AdmissionGate)
             {
-                var current=ToolRegistry.CurrentAdmission;
-                if(AdmissionTransition is not null || current is null || current.Owner!=_ownerId || current.Runtime.Generation!=_ownedGeneration)
+                var current=_current;
+                if(AdmissionTransition is not null || current is null || current.Owner!=_ownerId || !current.Desktop.Runtime.IsActive || current.Desktop.Runtime.Generation!=_ownedGeneration)
                     throw new InvalidOperationException("桌面工作区不能绑定已变化的插件目录。");
-                if(DesktopHostGeneration is not null && DesktopHostGeneration!=current.Runtime.Generation)
+                if(DesktopHostGeneration is not null && DesktopHostGeneration!=current.Desktop.Runtime.Generation)
                     throw new InvalidOperationException("桌面工作区已绑定另一目录代次。");
-                DesktopHostGeneration=current.Runtime.Generation;DesktopHostPins++;
-                return new DesktopHostPin(current.Runtime.Generation);
+                DesktopHostGeneration=current.Desktop.Runtime.Generation;DesktopHostPins++;
+                return new DesktopHostPin(current.Desktop.Runtime.Generation);
             }
         }
         private sealed class DesktopHostPin(Guid generation):IDisposable
@@ -71,28 +77,22 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
             }
         }
 
-        public void AssertCompleteReleaseToolSet(IEnumerable<string> actualToolIds)
+        public void AssertCompleteReleaseToolSet()
         {
-            var actual=actualToolIds.OrderBy(id=>id,StringComparer.Ordinal).ToArray();
             lock(AdmissionGate)
             {
-            var admission=ToolRegistry.CurrentAdmission;
-            if(admission is null||LastAdmissionError is not null||_lastRejectedCount!=0)
+            var admission=_current;
+            if(admission is null||AdmissionTransition is not null||!admission.Desktop.Runtime.IsActive)
                 throw new InvalidDataException("Release plugin admission failed: "+(LastAdmissionError??string.Join("; ",_admissionFailures)));
+            var actual=admission.Desktop.Directory.ToolIds.OrderBy(id=>id,StringComparer.Ordinal).ToArray();
             var expected=admission.Authority.ExpectedTools.Keys.OrderBy(id=>id,StringComparer.Ordinal).ToArray();
             if(!actual.SequenceEqual(expected,StringComparer.Ordinal))throw new InvalidDataException("Registered toolbox differs from the complete declared release ToolId set.");
             }
         }
 
         public PluginManager(ILogger logger)
-            : this(logger, new ToolRegistryCatalog())
-        {
-        }
-
-        internal PluginManager(ILogger logger, IToolCatalog toolCatalog)
         {
             _logger = new AdmissionLogger(logger ?? throw new ArgumentNullException(nameof(logger)));
-            _toolCatalog = toolCatalog ?? throw new ArgumentNullException(nameof(toolCatalog));
         }
 
         // Logging is outside publication gates and cannot turn an already-published
@@ -110,7 +110,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         /// 无参构造函数 - 使用空日志器
         /// </summary>
         public PluginManager()
-            : this(new NullLogger(), new ToolRegistryCatalog())
+            : this(new NullLogger())
         {
         }
 
@@ -124,7 +124,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                 lock(AdmissionGate)
                 {
                     pending=AdmissionTransition?.Task;
-                    if(pending is null){attempt=++_attempt;expectedGeneration=ToolRegistry.CurrentGeneration;break;}
+                    if(pending is null){attempt=++_attempt;expectedGeneration=_generation;break;}
                 }
                 await pending.ConfigureAwait(false);
             }
@@ -138,38 +138,43 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                 var authority=new ReleasePayloadAuthority(AppContext.BaseDirectory);
                 var snapshot=authority.PrepareDesktopDirectory();
                 var components=snapshot.Components;
-                var registration=_toolCatalog.PrepareRegistration(Array.Empty<Type>(),components);
+                foreach (var component in components.Where(c => c.Metadata.Role == SunEyeVision.Plugin.Contracts.ToolComponentRole.Editor))
+                {
+                    var type = component.EntryType;
+                    if (type.IsAbstract || type.GetConstructor(Type.EmptyTypes) is null ||
+                        type.Assembly.GetReferencedAssemblies().Any(a => a.Name == "SunEyeVision.UI") ||
+                        !typeof(SunEyeVision.Plugin.Wpf.Presenters.Results.IToolPresentationFactory).IsAssignableFrom(type) ||
+                        typeof(IToolPlugin).IsAssignableFrom(type))
+                        throw new InvalidOperationException("桌面编辑组件必须是独立的正式呈现工厂。 "+component.Metadata.ToolId);
+                }
                 var declarations=components.Where(c=>c.Metadata.Role==SunEyeVision.Plugin.Contracts.ToolComponentRole.Runtime).Select(c=>
                 {
-                    var catalog=((SunEyeVision.Plugin.Contracts.IToolCatalogProvider)Activator.CreateInstance(c.EntryType)!).Catalog;
+                    var catalog=snapshot.GetCatalog(c.Metadata.ToolId) ?? throw new InvalidOperationException("已准入工具缺少目录声明："+c.Metadata.ToolId);
                     return new DirectoryTool(c.Metadata.ToolId,catalog.DisplayName,catalog.Category,catalog.Order,
                         catalog.IconKey,catalog.Description,c.EntryType.FullName!,c.EntryType.Assembly.Location,true);
                 }).ToArray();
                 var directory=new ToolDirectoryCatalog(Path.Combine(AppContext.BaseDirectory,"ToolGroups.xml"),declarations,authority.VerifyApprovedFile);
-                var admission=new ToolRegistry.PublishedToolAdmission(directory,authority,snapshot,_ownerId,EnsureToolLoaded);
+                var admission=new PublishedAdmission(new DesktopToolAdmission(directory,snapshot),authority,_ownerId);
                 RuntimeDirectorySnapshot? retiring;
                 Task drained;
                 lock(AdmissionGate)
                 {
                     if(DesktopHostPins!=0)throw new InvalidOperationException("桌面工作区仍使用当前目录，不能重载插件。");
-                    if(AdmissionTransition is not null || attempt!=_attempt || expectedGeneration!=ToolRegistry.CurrentGeneration)
+                    if(AdmissionTransition is not null || attempt!=_attempt || expectedGeneration!=_generation)
                         throw new InvalidOperationException("Admission attempt was superseded by another load or unload.");
-                    // Validate commit scopes before making the prior generation unavailable.
-                    using(var validation=registration.EnterCommit()) { }
                     transition=new(TaskCreationOptions.RunContinuationsAsynchronously);
                     AdmissionTransition=transition;
-                    retiring=ToolRegistry.CurrentAdmission?.Runtime;
+                    retiring=_current?.Desktop.Runtime;
                     drained=retiring?.BeginRetirement()??Task.CompletedTask;
                 }
                 if(retiring is not null)signal=Task.Run(retiring.SignalRetirement);
                 await drained.ConfigureAwait(false);
                 lock(AdmissionGate)
                 {
-                    if(!ReferenceEquals(AdmissionTransition,transition) || attempt!=_attempt || expectedGeneration!=ToolRegistry.CurrentGeneration)
+                    if(!ReferenceEquals(AdmissionTransition,transition) || attempt!=_attempt || expectedGeneration!=_generation)
                         throw new InvalidOperationException("Admission transition was superseded before publication.");
-                    using var commit=registration.EnterCommit();
-                    commit.Publish();
-                    ToolRegistry.ConfigureDirectory(admission);
+                    _current=admission;
+                    ++_generation;
                     _ownedGeneration=snapshot.Generation;
                     LastAdmissionError=null;_lastRejectedCount=0;_admissionFailures.Clear();
                     count=directory.ToolIds.Count;
@@ -183,20 +188,17 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                 lock(AdmissionGate)
                 {
                     if(ReferenceEquals(AdmissionTransition,transition) && transition is not null)
-                    {AdmissionTransition=null;transition.TrySetResult();transition=null;}
+                    {
+                        if (_current is { } current && !current.Desktop.Runtime.IsActive)
+                        { _current=null; ++_generation; }
+                        AdmissionTransition=null;transition.TrySetResult();transition=null;
+                    }
                     if(attempt==_attempt)LastAdmissionError=failure;
                 }
             }
             if(failure is null)_logger.LogInfo($"产品组件准入完成：{count}个工具。");
             else _logger.LogError("[发布准入] "+failure);
         }
-        private void EnsureToolLoaded(string toolId)
-        {
-            var current=ToolRegistry.CurrentAdmission;
-            if (current?.Directory.Find(toolId) is not null && !current.Runtime.Contains(toolId))
-                throw new InvalidOperationException("产品目录缺少已准入Runtime组件：" + toolId);
-        }
-
         /// <summary>
         /// 卸载所有插件
         /// </summary>
@@ -215,13 +217,13 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                     if(pending is null)
                     {
                         ++_attempt;
-                        var current=ToolRegistry.CurrentAdmission;
-                        if(current is not null && current.Owner==_ownerId && current.Runtime.Generation==_ownedGeneration)
+                        var current=_current;
+                        if(current is not null && current.Owner==_ownerId && current.Desktop.Runtime.Generation==_ownedGeneration)
                         {
                             if(DesktopHostPins!=0)throw new InvalidOperationException("桌面工作区尚未释放插件目录。");
                             transition=new(TaskCreationOptions.RunContinuationsAsynchronously);
                             AdmissionTransition=transition;
-                            retiring=current.Runtime;
+                            retiring=current.Desktop.Runtime;
                             drained=retiring.BeginRetirement();
                         }
                         else _ownedGeneration=null;
@@ -238,10 +240,10 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                 await drained.ConfigureAwait(false);
                 lock(AdmissionGate)
                 {
-                    var current=ToolRegistry.CurrentAdmission;
-                    if(!ReferenceEquals(AdmissionTransition,transition)||current is null || current.Owner!=_ownerId || current.Runtime.Generation!=_ownedGeneration)
+                    var current=_current;
+                    if(!ReferenceEquals(AdmissionTransition,transition)||current is null || current.Owner!=_ownerId || current.Desktop.Runtime.Generation!=_ownedGeneration)
                         throw new InvalidOperationException("卸载代次在排空期间发生变化。");
-                    _plugins.Clear();_toolCatalog.Clear();_ownedGeneration=null;
+                    _plugins.Clear();_current=null;++_generation;_ownedGeneration=null;
                     AdmissionTransition=null;transition.TrySetResult();transition=null;
                 }
                 await ObserveRetirementSignalAsync(signal).ConfigureAwait(false);
@@ -250,7 +252,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
             {
                 lock(AdmissionGate)
                     if(transition is not null && ReferenceEquals(AdmissionTransition,transition))
-                    {AdmissionTransition=null;transition.TrySetResult();}
+                    { if (_current is { } current && !current.Desktop.Runtime.IsActive) { _current=null; ++_generation; } AdmissionTransition=null;transition.TrySetResult();}
                 throw;
             }
             _logger.LogInfo("插件卸载完成");

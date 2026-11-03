@@ -17,7 +17,6 @@ using SunEyeVision.UI.Shell.Controls.Common;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Services;
 using SunEyeVision.UI.Core;
-using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using AIStudio.Wpf.DiagramDesigner;
 using AIStudio.Wpf.DiagramDesigner.ViewModels;
 using SunEyeVision.UI.Services.Canvas;
@@ -396,7 +395,7 @@ namespace SunEyeVision.UI.Shell.Windows
             try
             {
                 // 工具插件现在通过ToolboxViewModel自动加载
-                var toolCount = ToolRegistry.GetToolCount();
+                var toolCount = _viewModel.Toolbox.AvailableToolCount;
                 _viewModel.StatusText = $"已加载 {toolCount} 个工具插件";
                 // 初始化智能路径转换器的节点集合（使用当前选中的 Tab 的节点集合）
                 if (_viewModel.WorkflowTabViewModel?.SelectedTab != null)

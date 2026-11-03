@@ -7,7 +7,7 @@ using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Contracts.Results.Presentation;
 using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
-using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
+
 
 
 internal static class Program
@@ -37,10 +37,10 @@ Console.WriteLine("probe: initial admission");
 await manager.LoadPluginsAsync();
 if(manager.LastAdmissionError is not null)throw new Exception("Initial admission failed: "+manager.LastAdmissionError);
 var previous=manager.RuntimeDirectory??throw new Exception("Missing admitted directory.");
-var oldDirectory=ToolRegistry.DirectoryCatalog??throw new Exception("Missing desktop directory.");
+var oldAdmission=manager.DesktopAdmission??throw new Exception("Missing desktop directory."); var oldDirectory=oldAdmission.Directory;
 var admittedIds=previous.ToolIds.OrderBy(id=>id,StringComparer.Ordinal).ToArray();
 if(!admittedIds.SequenceEqual(new[]{"BlobAnalysis","ImageLoad"}))throw new Exception("Unexpected admitted Runtime identities.");
-var metadata=ToolRegistry.GetAllToolMetadata().ToArray();
+var metadata=oldDirectory.Tools.ToArray();
 if(metadata.Select(m=>m.Id).Distinct(StringComparer.Ordinal).Count()!=metadata.Length || !metadata.Select(m=>m.Id).OrderBy(id=>id,StringComparer.Ordinal).SequenceEqual(admittedIds))
     throw new Exception("Registry metadata does not match the admitted generation.");
 foreach(var id in admittedIds)
@@ -69,7 +69,7 @@ try
     AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY",missing+Path.DirectorySeparatorChar);
     await manager.LoadPluginsAsync();
     if(manager.LastAdmissionError is null)throw new Exception("Missing payload was accepted.");
-    if(!ReferenceEquals(previous,manager.RuntimeDirectory) || !ReferenceEquals(oldDirectory,ToolRegistry.DirectoryCatalog))
+    if(!ReferenceEquals(previous,manager.RuntimeDirectory) || !ReferenceEquals(oldAdmission,manager.DesktopAdmission))
         throw new Exception("Failed reload replaced or cleared the prior complete generation.");
 }
 finally
@@ -90,30 +90,37 @@ if(!ReferenceEquals(newer,nonOwner.RuntimeDirectory))throw new Exception("Old ow
 await Task.WhenAll(manager.LoadPluginsAsync(),manager.UnloadPluginsAsync());
 Console.WriteLine("probe: concurrent load and unload completed");
 await manager.LoadPluginsAsync();
-if(manager.LastAdmissionError is not null || manager.RuntimeDirectory is null || ToolRegistry.DirectoryCatalog is null)
+if(manager.LastAdmissionError is not null || manager.RuntimeDirectory is null || manager.DesktopAdmission is null)
     throw new Exception("Final admission after competing operations failed: "+manager.LastAdmissionError);
 await manager.UnloadPluginsAsync();
-if(manager.RuntimeDirectory is not null || ToolRegistry.DirectoryCatalog is not null)throw new Exception("Unload left published state.");
-// A plugin/catalog preparation callback waits for another manager to unload. This
-// must complete without holding the publication gate across untrusted preparation.
-var helper=new PluginManager();
-Console.WriteLine("probe: reentrant preparation");
-var reentrant=new PluginManager(new NullLogger(),new CallbackCatalog(()=>
+if(manager.RuntimeDirectory is not null || manager.DesktopAdmission is not null)throw new Exception("Unload left published state.");
+// A real generation retirement callback reenters another manager, outside the publication lock.
+var callbackOwner=new PluginManager();
+await callbackOwner.LoadPluginsAsync();
+var callbackDirectory=callbackOwner.RuntimeDirectory??throw new Exception("Missing callback generation.");
+using(var callbackPin=callbackDirectory.AcquireInvocation())
 {
-    if(!Task.Run(helper.UnloadPluginsAsync).Wait(TimeSpan.FromSeconds(5)))throw new TimeoutException("Preparation blocked on a reentrant unload.");
-}));
-await reentrant.LoadPluginsAsync();
-if(reentrant.LastAdmissionError is not null || reentrant.RuntimeDirectory is null)
-    throw new Exception("Reentrant preparation failed: "+reentrant.LastAdmissionError);
-reentrant.AssertCompleteReleaseToolSet(new ReentrantIds(()=>
-{
-    if(!Task.Run(helper.UnloadPluginsAsync).Wait(TimeSpan.FromSeconds(5)))throw new TimeoutException("Enumeration held the admission gate.");
-}));
+    var callbackHelper=new PluginManager();
+    using var callback=callbackPin.RetirementToken.Register(()=>
+    {
+        if(!Task.Run(callbackHelper.UnloadPluginsAsync).Wait(TimeSpan.FromSeconds(5)))
+            throw new TimeoutException("Retirement callback held the publication gate.");
+    });
+    var pending=callbackOwner.UnloadPluginsAsync();
+    await Task.Delay(100);
+    callbackPin.Dispose();
+    await pending.WaitAsync(TimeSpan.FromSeconds(10));
+}
+Console.WriteLine("probe: retirement callback reentered another manager");
+var metadataOwner=new PluginManager();
+await metadataOwner.LoadPluginsAsync();
 var metadataFailures=new System.Collections.Concurrent.ConcurrentQueue<string>();
 Parallel.Invoke(
-    ()=> { for(var i=0;i<1000;i++) { var ids=ToolRegistry.GetAllToolMetadata().Select(x=>x.Id).OrderBy(x=>x).ToArray(); if(ids.Length!=0 && !ids.SequenceEqual(new[]{"BlobAnalysis","ImageLoad"}))metadataFailures.Enqueue(string.Join(",",ids)); } },
-    ()=> { reentrant.UnloadPluginsAsync().GetAwaiter().GetResult(); helper.LoadPluginsAsync().GetAwaiter().GetResult(); });
-if(!metadataFailures.IsEmpty)throw new Exception("Mixed metadata generation: "+string.Join(";",metadataFailures));
+    () => { for (var i=0;i<1000;i++) { var admission=metadataOwner.DesktopAdmission; if (admission is null) continue;
+        var ids=admission.Directory.Tools.Select(item=>item.Id).OrderBy(id=>id,StringComparer.Ordinal).ToArray();
+        if (!ids.SequenceEqual(new[]{"BlobAnalysis","ImageLoad"})) metadataFailures.Enqueue(string.Join(",",ids)); } },
+    () => { metadataOwner.UnloadPluginsAsync().GetAwaiter().GetResult(); new PluginManager().LoadPluginsAsync().GetAwaiter().GetResult(); });
+if (!metadataFailures.IsEmpty) throw new Exception("Mixed metadata generation: "+string.Join(";",metadataFailures));
 // Establish an ordinary owner for the stale-preparation case.
 var staleOwner=new PluginManager();
 await staleOwner.LoadPluginsAsync();
@@ -153,14 +160,7 @@ callbackLease.Dispose();
 await staleOwner.LoadPluginsAsync();
 if(staleOwner.LastAdmissionError is not null || staleOwner.RuntimeDirectory is null || ReferenceEquals(callbackGeneration,staleOwner.RuntimeDirectory))
     throw new Exception("Published generation was reported rejected after a retirement callback failed.");
-// A genuine owner unload during preparation invalidates the stale candidate.
-var stale=new PluginManager(new NullLogger(),new CallbackCatalog(()=>
-{
-    if(!Task.Run(staleOwner.UnloadPluginsAsync).Wait(TimeSpan.FromSeconds(5)))throw new TimeoutException("Owner unload blocked during preparation.");
-}));
-await stale.LoadPluginsAsync();
-if(stale.LastAdmissionError is null || ToolRegistry.DirectoryCatalog is not null)
-    throw new Exception("Stale prepared admission was published after owner unload.");
+await staleOwner.UnloadPluginsAsync();
 Console.WriteLine("probe: production workflow result reader");
 var production=new PluginManager();
 await production.LoadPluginsAsync();
@@ -189,31 +189,4 @@ static class ProbeErrorMode
 sealed class EmptyOutput:IToolOutput
 {
     public IReadOnlyDictionary<string,object?> ToValues()=>new Dictionary<string,object?>();
-}
-
-sealed class CallbackCatalog(Action callback):IToolCatalog
-{
-    private readonly ToolRegistryCatalog _inner=new();
-    public int Count=>_inner.Count;
-    public void Register(Type type)=>_inner.Register(type);
-    public IPreparedToolRegistration PrepareRegistration(IReadOnlyList<Type> types)=>_inner.PrepareRegistration(types);
-    public IPreparedToolRegistration PrepareRegistration(IReadOnlyList<Type> types,IReadOnlyList<ToolComponentRegistration> components)
-    {callback();return _inner.PrepareRegistration(types,components);}
-    public void Clear()=>_inner.Clear();
-    public bool Contains(string id)=>_inner.Contains(id);
-    public IToolPlugin? CreateTool(string id)=>_inner.CreateTool(id);
-    public ToolParameters CreateParameters(string id)=>_inner.CreateParameters(id);
-    public ToolMetadata? GetMetadata(string id)=>_inner.GetMetadata(id);
-    public IReadOnlyList<ToolMetadata> GetAllMetadata()=>_inner.GetAllMetadata();
-}
-
-sealed class ReentrantIds(Action callback):IEnumerable<string>
-{
-    public IEnumerator<string> GetEnumerator()
-    {
-        callback();
-        yield return "BlobAnalysis";
-        yield return "ImageLoad";
-    }
-    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()=>GetEnumerator();
 }

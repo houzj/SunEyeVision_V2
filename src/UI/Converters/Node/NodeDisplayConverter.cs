@@ -17,7 +17,7 @@ namespace SunEyeVision.UI.Converters.Node
         {
             if (value is CanvasNodeProjection node)
             {
-                var adapter = NodeDisplayAdapterFactory.GetAdapter(node.ToolType);
+                var adapter = NodeDisplayAdapterFactory.GetAdapter(node);
                 return adapter.GetDisplayText(node);
             }
             return string.Empty;
@@ -40,7 +40,7 @@ namespace SunEyeVision.UI.Converters.Node
         {
             if (value is CanvasNodeProjection node)
             {
-                var adapter = NodeDisplayAdapterFactory.GetAdapter(node.ToolType);
+                var adapter = NodeDisplayAdapterFactory.GetAdapter(node);
                 var color = adapter.GetBackgroundColor(node);
                 // 节流日志：确认节点背景色（暗色主题下是否仍为浅色，判定图标对比度来源）
                 var logKey = $"{node.ToolType}→{color}";
@@ -72,7 +72,7 @@ namespace SunEyeVision.UI.Converters.Node
         {
             if (value is CanvasNodeProjection node)
             {
-                var adapter = NodeDisplayAdapterFactory.GetAdapter(node.ToolType);
+                var adapter = NodeDisplayAdapterFactory.GetAdapter(node);
                 return new SolidColorBrush(adapter.GetBorderColor(node));
             }
             return new SolidColorBrush(Color.FromRgb(255, 149, 0)); // #ff9500

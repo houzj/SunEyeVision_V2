@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
-using SunEyeVision.Plugin.SDK.Metadata;
 
 namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 
@@ -12,10 +11,7 @@ public enum DirectoryToolKind { Runtime }
 
 public sealed record DirectoryTool(string Id, string DisplayName, string Category, int Order,
     string Icon, string Description, string EntryType, string AssemblyPath, bool IsVisible, DirectoryToolKind Kind = DirectoryToolKind.Runtime)
-{
-    public ToolMetadata ToMetadata() => new() { Id=Id, DisplayName=DisplayName, Category=Category,
-        Icon=Icon, Description=Description, DeclaredOrder=Order };
-}
+;
 public sealed record DirectoryToolGroup(string Name, int Order, string Icon, string HoverIcon);
 
 /// <summary>产品目录。只消费已准入Runtime声明，分类资源不承载工具生产者。</summary>
@@ -27,14 +23,15 @@ public sealed class ToolDirectoryCatalog
     public IReadOnlyCollection<DirectoryTool> Tools => _tools.Values.ToArray();
     public int CountCategory(string name) => _tools.Values.Count(t => t.Category == name && t.IsVisible);
 
-    public ToolDirectoryCatalog(string groupsFile, IEnumerable<DirectoryTool> runtimeTools, Action<string>? verifyFile = null)
+    internal ToolDirectoryCatalog(string groupsFile, IEnumerable<DirectoryTool> runtimeTools, Action<string> verifyFile)
     {
-        verifyFile?.Invoke(groupsFile);
+        ArgumentNullException.ThrowIfNull(verifyFile);
+        verifyFile(groupsFile);
         var root = Read(groupsFile, "ToolGroups");
         if (root.Elements().Any(e => e.Name != "Group"))
             throw new InvalidDataException("产品分类文件不能声明旧SDK工具目录。");
-        Groups = root.Elements("Group").Select(e => new DirectoryToolGroup(Required(e, "Name"),
-            (int)e.Attribute("Order")!, Required(e, "Icon"), Required(e, "HoverIcon"))).OrderBy(g => g.Order).ToArray();
+        Groups = Array.AsReadOnly(root.Elements("Group").Select(e => new DirectoryToolGroup(Required(e, "Name"),
+            (int)e.Attribute("Order")!, Required(e, "Icon"), Required(e, "HoverIcon"))).OrderBy(g => g.Order).ToArray());
         if (Groups.Select(g => g.Name).Distinct(StringComparer.Ordinal).Count() != Groups.Count)
             throw new InvalidDataException("分类名称重复。");
         foreach (var tool in runtimeTools)

@@ -87,27 +87,28 @@ namespace SunEyeVision.UI.Services.Interaction
             if(_tempDragNode?.Tag is string id&&id==item.ToolId&&ReferenceEquals(_tempDragNode.Parent,canvas))
             {_tempDragNode.Visibility=Visibility.Visible;UpdateTempNodePosition(position);return;}
             if(_tempDragNode?.Parent is ControlsCanvas previous)previous.Children.Remove(_tempDragNode);
-            var preview = new ToolboxNodePreview(item.ToolId, item.Name);
+            var preview = new ToolboxNodePreview(item);
             var presenter = new ContentPresenter { Content = preview, ContentTemplate = _canvasControl.GetVmNodeTemplate() };
             _tempDragNode=new Border{Width=preview.HitAreaWidth,Height=preview.HitAreaHeight,Opacity=.7,
                 Child=presenter,Tag=item.ToolId,IsHitTestVisible=false};
             ControlsCanvas.SetZIndex(_tempDragNode,10000);canvas.Children.Add(_tempDragNode);UpdateTempNodePosition(position);
         }
         // 拖放预览仅包含模板需要的展示值，不创建或模拟正式节点身份。
-        private sealed class ToolboxNodePreview(string toolType, string displayName)
+        private sealed class ToolboxNodePreview(ToolItem item) : SunEyeVision.UI.Features.WorkflowUI.Canvas.ICanvasToolIconSource
         {
-            public string ToolType => toolType;
-            public string DispName => displayName;
+            public string ToolType => item.ToolId;
+            public string DispName => item.Name;
+            public string? ToolIconKey => item.NodeIconKey?.Invoke();
             // The shared node template creates a TwoWay TextBox binding even while hidden.
             // This is only local preview text; it never edits a document node.
-            public string RenameBuffer { get; set; } = displayName;
+            public string RenameBuffer { get; set; } = item.Name;
             public bool IsToolboxPreview => true;
             public int GlobalIndex => -1;
             public bool IsEnabled => true;
             public bool IsSelected => false;
             public bool IsEditingName => false;
             public bool IsGroupLoopEnabled => false;
-            public bool IsSubroutineNode => string.Equals(toolType, "Subroutine", StringComparison.OrdinalIgnoreCase);
+            public bool IsSubroutineNode => string.Equals(ToolType, "Subroutine", StringComparison.OrdinalIgnoreCase);
             private SunEyeVision.UI.Shared.NodeStyleConfig Style => IsSubroutineNode ? SunEyeVision.UI.Shared.NodeStyles.Group : SunEyeVision.UI.Shared.NodeStyles.Standard;
             public double VisualWidth => Style.NodeWidth;
             public double VisualHeight => Style.NodeHeight;

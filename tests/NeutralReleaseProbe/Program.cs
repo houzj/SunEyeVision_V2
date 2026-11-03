@@ -1,6 +1,9 @@
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Runtime;
 
+ProbeErrorMode.DisableSystemDialogs();
+try
+{
 if(typeof(RuntimeDirectorySnapshot).GetConstructors().Length!=0 ||
     typeof(RuntimeDirectorySnapshot).GetMethods(System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.Static).Any(m=>m.Name=="Prepare"))
     throw new Exception("A caller can construct a directory without release admission.");
@@ -39,6 +42,16 @@ try
     Console.WriteLine("ImageLoad and BlobAnalysis executed; no WPF/UI/SDK loaded.");
 }
 finally { File.Delete(path); }
+}
+catch(Exception error) { Console.Error.WriteLine(error); return 1; }
+return 0;
+
+static class ProbeErrorMode
+{
+    [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+    private static extern uint SetErrorMode(uint mode);
+    internal static void DisableSystemDialogs()=>SetErrorMode(0x0001|0x0002|0x8000);
+}
 
 sealed class Context(string path,IOutputResources resources):IToolExecutionContext,ILocalImageReadContext
 {

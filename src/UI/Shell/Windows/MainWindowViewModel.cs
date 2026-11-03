@@ -14,7 +14,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
 using SunEyeVision.UI.Shared;
-using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
 using SunEyeVision.UI.Services.Editing;
 using SunEyeVision.UI.Services.Monitoring;
 using SunEyeVision.Plugin.Wpf.Presenters.Results;

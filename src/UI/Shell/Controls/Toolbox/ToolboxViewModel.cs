@@ -4,8 +4,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
 using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
-using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
-using SunEyeVision.Plugin.SDK.Metadata;
 using SunEyeVision.UI.Core;
 
 namespace SunEyeVision.UI.Shell.Controls.Toolbox;
@@ -14,15 +12,14 @@ namespace SunEyeVision.UI.Shell.Controls.Toolbox;
 public sealed class ToolboxViewModel : ViewModelBase
 {
     private readonly ToolDirectoryCatalog? _directory;
-    private readonly VmToolboxCatalog _catalog;
-    private readonly Func<string, ToolMetadata?> _resolve;
-    private readonly Func<string, bool> _hasRuntime;
-    private readonly Func<bool> _directoryCurrent;
+    private readonly ToolboxDisplayCatalog _catalog;
+    private readonly DesktopToolAdmission _admission;
     private bool _compact = true, _popup;
     private string? _selected;
     private string _status = string.Empty;
     public string StatusMessage { get => _status; private set => SetProperty(ref _status, value); }
     public ObservableCollection<ToolCategory> Categories { get; } = new();
+    public int AvailableToolCount => _admission.IsCurrent ? _admission.Directory.ToolIds.Count : 0;
     public ObservableCollection<ToolItem> AllTools => new(Categories.SelectMany(c => BuildCategory(c.Name, true)));
     public ObservableCollection<ToolItem> SelectedCategoryTools { get; } = new();
     public bool IsCompactMode
@@ -48,15 +45,11 @@ public sealed class ToolboxViewModel : ViewModelBase
         }
     }
     public ICommand ToggleDisplayModeCommand { get; }
-    public ToolboxViewModel(DesktopToolAdmission admission) : this(admission.Directory,
-        id=>admission.Directory.Find(id)?.ToMetadata(),admission.Runtime.Contains,()=>admission.Runtime.IsActive) { }
-    internal ToolboxViewModel(ToolDirectoryCatalog? directory, Func<string, ToolMetadata?> resolve, Func<string, bool> hasRuntime, Func<bool> directoryCurrent)
+    public ToolboxViewModel(DesktopToolAdmission admission)
     {
-        _directory = directory;
-        _resolve = resolve ?? throw new ArgumentNullException(nameof(resolve));
-        _hasRuntime = hasRuntime ?? throw new ArgumentNullException(nameof(hasRuntime));
-        _directoryCurrent = directoryCurrent ?? throw new ArgumentNullException(nameof(directoryCurrent));
-        _catalog = VmToolboxCatalog.Load();
+        _admission = admission ?? throw new ArgumentNullException(nameof(admission));
+        _directory = admission.Directory;
+        _catalog = ToolboxDisplayCatalog.Load();
         ToggleDisplayModeCommand = new RelayCommand(() => IsCompactMode = !IsCompactMode);
         foreach (var g in _catalog.Groups)
         {
@@ -88,7 +81,7 @@ public sealed class ToolboxViewModel : ViewModelBase
         var verified = _catalog.Entries.Where(e => e.MappingVerified && e.ToolId != null).Select(e => e.ToolId!).ToHashSet(StringComparer.Ordinal);
         foreach (var entry in _catalog.Entries.Where(e => e.Category == name))
         {
-            var id = entry.ToolId ?? "vm:" + entry.Id;
+            var id = entry.ToolId ?? "catalog:" + entry.Id;
             var runtime = entry.MappingVerified && entry.ToolId != null ? _directory?.Find(entry.ToolId) : null;
             var error = !entry.MappingVerified ? (entry.ToolId == null ? "尚未实现" : "工具映射尚未核实") :
                 _directory == null ? "运行目录不可用" : runtime == null ? "工具未部署或未准入" :
@@ -96,7 +89,8 @@ public sealed class ToolboxViewModel : ViewModelBase
             if (error == null && load) error = CheckRuntime(runtime!);
             yield return new ToolItem(entry.Name, entry.Category, "generic", entry.Name, id)
             { CatalogIcon = entry.Icon, IsAvailable = load && error == null, LoadError = error ?? (load ? null : "等待加载"),
-              AvailabilityProbe = error == null && runtime != null ? () => CheckRuntime(runtime) == null : null };
+              AvailabilityProbe = error == null && runtime != null ? () => CheckRuntime(runtime) == null : null,
+              NodeIconKey = error == null && runtime != null ? () => CheckRuntime(runtime) == null ? _admission.Runtime.GetCatalog(runtime.Id)?.IconKey : null : null };
         }
         if (_directory == null) yield break;
         foreach (var runtime in _directory.GetCategory(name).Where(t => !verified.Contains(t.Id)))
@@ -104,17 +98,18 @@ public sealed class ToolboxViewModel : ViewModelBase
             var error = load ? CheckRuntime(runtime) : "等待加载";
             yield return new ToolItem(runtime.DisplayName + "（已部署，未匹配目录）", runtime.Category, runtime.Icon, runtime.Description, runtime.Id)
             { IsAvailable = load && error == null, LoadError = error,
-              AvailabilityProbe = error == null ? () => CheckRuntime(runtime) == null : null };
+              AvailabilityProbe = error == null ? () => CheckRuntime(runtime) == null : null,
+              NodeIconKey = error == null ? () => CheckRuntime(runtime) == null ? _admission.Runtime.GetCatalog(runtime.Id)?.IconKey : null : null };
         }
     }
     private string? CheckRuntime(DirectoryTool runtime)
     {
         try
         {
-            if (!_directoryCurrent() || !ReferenceEquals(_directory?.Find(runtime.Id), runtime)) return "运行目录已变化，请重新打开工具箱";
-            var metadata = _resolve(runtime.Id);
-            if (!_hasRuntime(runtime.Id)) return "工具运行组件未准入";
-            return metadata == null || metadata.Id != runtime.Id || metadata.Category != runtime.Category ? "工具未成功注册" : null;
+            if (!_admission.IsCurrent || !ReferenceEquals(_directory?.Find(runtime.Id), runtime)) return "运行目录已变化，请重新打开工具箱";
+            var metadata = _admission.Runtime.GetCatalog(runtime.Id);
+            if (!_admission.Runtime.Contains(runtime.Id)) return "工具运行组件未准入";
+            return metadata == null || metadata.Category != runtime.Category ? "工具未成功注册" : null;
         }
         catch (Exception error) { return "工具加载失败：" + error.Message; }
     }

@@ -18,6 +18,7 @@ namespace SunEyeVision.UI.Shell.Controls.Toolbox
         public bool IsAvailable { get; init; } = true;
         public string? LoadError { get; init; }
         internal Func<bool>? AvailabilityProbe { get; init; }
+        internal Func<string?>? NodeIconKey { get; init; }
         public bool CanActivate() { try { return IsAvailable && AvailabilityProbe?.Invoke() == true; } catch { return false; } }
         public string ToolTip => IsAvailable ? Name : Name + "：" + LoadError;
 

@@ -2510,7 +2510,7 @@
       "dependencies": [
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
-          "sha256": "5401407138FFDE78EA7282F2F17DC7B8AB53F3C14C43FD37DF70FD81E2B10F8D"
+          "sha256": "AA0E543A260799CA5195BA1A806DDBE268D829C7B5013FD8485628E2CAA88532"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Display/NativeResultImageFrame.cs",
@@ -2697,7 +2697,7 @@
           },
           {
             "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
-            "sha256": "5401407138FFDE78EA7282F2F17DC7B8AB53F3C14C43FD37DF70FD81E2B10F8D"
+            "sha256": "AA0E543A260799CA5195BA1A806DDBE268D829C7B5013FD8485628E2CAA88532"
           }
         ],
         "evidence": "docs/collaboration/evidence/O06_NATIVE_ROI_OWNER_CANDIDATE_20261028.json",
@@ -3169,7 +3169,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
-          "sha256": "5401407138FFDE78EA7282F2F17DC7B8AB53F3C14C43FD37DF70FD81E2B10F8D"
+          "sha256": "AA0E543A260799CA5195BA1A806DDBE268D829C7B5013FD8485628E2CAA88532"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiSamples.cs",
@@ -3440,7 +3440,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
-          "sha256": "5401407138FFDE78EA7282F2F17DC7B8AB53F3C14C43FD37DF70FD81E2B10F8D"
+          "sha256": "AA0E543A260799CA5195BA1A806DDBE268D829C7B5013FD8485628E2CAA88532"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Display/NativeResultImageFrame.cs",
@@ -3580,7 +3580,7 @@
           },
           {
             "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
-            "sha256": "5401407138FFDE78EA7282F2F17DC7B8AB53F3C14C43FD37DF70FD81E2B10F8D"
+            "sha256": "AA0E543A260799CA5195BA1A806DDBE268D829C7B5013FD8485628E2CAA88532"
           }
         ],
         "evidence": "docs/collaboration/evidence/O06_NATIVE_ROI_OWNER_CANDIDATE_20261028.json",
@@ -4568,7 +4568,7 @@
           },
           {
             "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
-            "sha256": "5401407138FFDE78EA7282F2F17DC7B8AB53F3C14C43FD37DF70FD81E2B10F8D"
+            "sha256": "AA0E543A260799CA5195BA1A806DDBE268D829C7B5013FD8485628E2CAA88532"
           }
         ],
         "evidence": "docs/collaboration/evidence/O06_NATIVE_ROI_OWNER_CANDIDATE_20261028.json",
@@ -5864,7 +5864,7 @@
           },
           {
             "path": "src/Plugin.Wpf/Adapters/Regions/NativeRoiSession.cs",
-            "sha256": "5401407138FFDE78EA7282F2F17DC7B8AB53F3C14C43FD37DF70FD81E2B10F8D"
+            "sha256": "AA0E543A260799CA5195BA1A806DDBE268D829C7B5013FD8485628E2CAA88532"
           }
         ],
         "evidence": "docs/collaboration/evidence/O06_NATIVE_ROI_OWNER_CANDIDATE_20261028.json",

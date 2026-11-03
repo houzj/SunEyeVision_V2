@@ -67,7 +67,10 @@ const nsPairs=sortLongest([
  ['Input.HikPcUI.ImageView','Input.FieldPrimitives.Imaging'],
  ['Input.HikPcUI.Models','Input.FieldPrimitives.Models'],
  ['Input.HikPcUI','Input.FieldPrimitives'],
-].map(([a,b])=>['SunEyeVision.Plugin.Wpf.Native.'+a,'SunEyeVision.Plugin.Wpf.Native.'+b]));
+].flatMap(([a,b])=>[
+ ['SunEyeVision.Plugin.Wpf.Native.'+a,'SunEyeVision.Plugin.Wpf.Native.'+b],
+ ['Native.'+a,'Native.'+b],
+]));
 const textPairs=sortLongest([
  ...pathPairs.flatMap(([a,b])=>[[a,b],[a.slice(product.length),b.slice(product.length)]]),
 ]);
@@ -179,11 +182,25 @@ if(mode==='apply'){
  fs.mkdirSync(path.dirname(abs(reportPath)),{recursive:true});
  fs.writeFileSync(abs(reportPath),JSON.stringify(report,null,2)+'\n');
  console.log(JSON.stringify({moves:report.moves,changed:report.changed,report:reportPath}));
+}else if(mode==='repair-current'){
+ const report=JSON.parse(fs.readFileSync(abs(reportPath),'utf8'));
+ for(const p of productFiles().filter(productText)){
+  const before=fs.readFileSync(abs(p)),after=Buffer.from(mapText(before.toString('utf8')));
+  if(before.equals(after))continue;
+  fs.writeFileSync(abs(p),after);
+  let record=report.records.find(item=>item.to===p);
+  if(!record){record={from:p,to:p,beforeSha256:sha(before)};report.records.push(record);}
+  record.afterSha256=sha(after);record.bytePreserved=record.beforeSha256===record.afterSha256;
+ }
+ report.changed=report.records.length;
+ fs.writeFileSync(abs(reportPath),JSON.stringify(report,null,2)+'\n');
+ const before=fs.readFileSync(abs(catalogPath),'utf8');
+ fs.writeFileSync(abs(catalogPath),refreshCatalog(before));
 }else if(mode==='refresh-catalog'){
  const before=fs.readFileSync(abs(catalogPath),'utf8');
  fs.writeFileSync(abs(catalogPath),refreshCatalog(before));
  console.log('Current Catalog paths/SHA refreshed; original identities protected.');
-}else if(mode!=='check')throw Error('Expected apply, check or refresh-catalog');
+}else if(mode!=='check')throw Error('Expected apply, check, repair-current or refresh-catalog');
 
 const issues=[];
 const report=fs.existsSync(abs(reportPath))?JSON.parse(fs.readFileSync(abs(reportPath),'utf8')):null;

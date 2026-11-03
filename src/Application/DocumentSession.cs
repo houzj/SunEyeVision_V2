@@ -1,6 +1,7 @@
 using SunEyeVision.Domain.Solutions;
 using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Plugin.Runtime;
+using SunEyeVision.Plugin.Contracts;
 
 namespace SunEyeVision.Application;
 
@@ -44,6 +45,18 @@ public sealed partial class DocumentSession : IDisposable
         }
     }
 
+    /// <summary>Read the actual workflow identities owned by the live document session.</summary>
+    public IReadOnlyList<WorkflowDefinition> GetWorkflows()
+    {
+        lock (_gate)
+        {
+            EnsureOpen();
+            if (Document.Id != _documentId || Document.Workflows.Select(flow => flow.Id).Distinct(StringComparer.Ordinal).Count() != Document.Workflows.Count)
+                throw new InvalidOperationException("方案或流程身份已变化，或流程身份不唯一。");
+            return Array.AsReadOnly(Document.Workflows.ToArray());
+        }
+    }
+
     /// <summary>Read the actual nodes of one live workflow; returned identities remain owned by this session.</summary>
     public IReadOnlyList<NodeDefinition> GetNodes(string workflowId)
     {
@@ -69,6 +82,12 @@ public sealed partial class DocumentSession : IDisposable
     public NodeDefinition? FindNode(string workflowId, string nodeId)
     {
         lock (_gate) return FindNode(OpenScope(workflowId), nodeId)?.Node;
+    }
+
+    /// <summary>Null means the node is absent; an invalid or retired declaration is rejected.</summary>
+    public ToolSchema? GetNodeSchema(string workflowId, string nodeId)
+    {
+        lock (_gate) return FindNode(OpenScope(workflowId), nodeId)?.Configuration.Schema;
     }
 
     /// <summary>Prepare a private proposal. It does not mutate the session or commit history.</summary>

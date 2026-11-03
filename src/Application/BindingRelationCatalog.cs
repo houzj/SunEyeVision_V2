@@ -21,6 +21,10 @@ internal static class BindingRelationCatalog
             var selection = setting switch { VariableSetting value => value.Reference.Selection, ReferenceSetting value => value.Reference.Selection, _ => null };
             if (selection is not null)
                 foreach (var index in IndexVariables(selection)) yield return (fieldId, index);
+            if (!executionOnly && setting is DisplayExpressionSetting expression)
+                foreach (var slot in expression.Slots)
+                    if (slot.Reference is { } source)
+                        foreach (var index in IndexVariables(source.Selection)) yield return (fieldId, index);
         }
     }
     internal static IReadOnlyDictionary<string, ReferenceSetting> References(AdmittedToolConfiguration admitted, bool executionOnly = false)

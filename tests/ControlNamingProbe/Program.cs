@@ -13,6 +13,11 @@ internal static class Program
  "Themes/Native/Display/PresentationControls/controls/themes/aero2.normalcolor.xaml",
  "Themes/Native/Numeric/PresentationControls/controls/numericupdown/themes/generic.xaml"})
  { var dict=new ResourceDictionary{Source=new Uri("/SunEyeVision.Plugin.Wpf;component/"+path,UriKind.Relative)}; if(dict.Source is null) throw new Exception(path); Console.WriteLine("PASS: dictionary "+path); }
+ foreach(var locale in new[]{"zh-cn","en-us"})
+ { var text=new ResourceDictionary{Source=new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Localization/"+locale+".xaml",UriKind.Relative)};
+   if(text["Lang_LearnApplication"]?.ToString()?.Contains("VisionMaster",StringComparison.OrdinalIgnoreCase)!=false ||
+      !text.Contains("RunParam_ExternalBoard_I Calibration Board")) throw new Exception("localization identity"); }
+ Console.WriteLine("PASS: neutral application labels and factual third-party board keys in both locales");
  var slider=new SliderArrange{Minimum=0,Maximum=100000,StartValue=123,SliderTickFrequency=10};
  if(slider.StartValue!=123) throw new Exception("slider value");
  var blobContext=SunEyeVision.Tool.BlobAnalysis.Wpf.Design.BlobDesignData.CreateParameterContext();
@@ -27,6 +32,11 @@ internal static class Program
  Console.WriteLine("PASS: real Blob and image source editor assembly with design inputs");
  var corner=new SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.Base.ImageView.ROI.EditRoundedWindow(100,5);
  corner.Close();
+ var normalized=new SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.Base.ImageView.ROI.NormalizedRectROI();
+ var rectangle=new SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.Base.ImageView.ROI.RectROISubstitute { SubstituteRect=new Rect(1,2,3,4) };
+ rectangle.Measure(new Size(64,64)); rectangle.Arrange(new Rect(0,0,64,64));
+ if(rectangle.SubstituteRect.Width!=3 || normalized is null) throw new Exception("ROI resource or geometry projection failed");
+ Console.WriteLine("PASS: normalized rectangle loads dynamic dictionary and native rectangle projection");
  using var viewport=new NativeResultViewport();
  foreach(var name in new[]{"SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls.Core.ErrorMessages.resources", "SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls.Properties.Resources.resources"})
   using (var stream=typeof(NativeResultViewport).Assembly.GetManifestResourceStream(name) ?? throw new Exception("missing resx "+name))

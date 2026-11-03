@@ -166,7 +166,7 @@
   <sys:String x:Key="Lang_CurFetLost">Can't find current module</sys:String>
   <sys:String x:Key="Lang_NoImageErr">No Image</sys:String>
   <sys:String x:Key="Lang_FetSaveErrtoNew">Can't save due to no model created, please create model first</sys:String>
-  <sys:String x:Key="Lang_UnknowErr">Unknown Error! VisionMaster will be shut down!</sys:String>
+  <sys:String x:Key="Lang_UnknowErr">Unknown error. The application will close.</sys:String>
   <sys:String x:Key="Lang_CheckToolItem">Check ToolItems.xml</sys:String>
   <sys:String x:Key="Lang_IfDelFlow">Delete this Flow?</sys:String>
   <sys:String x:Key="Lang_LangLack">Lack of Language</sys:String>
@@ -331,7 +331,7 @@
   <sys:String x:Key="Lang_ImageShowError">Error in image display</sys:String>
   <sys:String x:Key="Lang_SolManagerMaxNum">Number of solution exceeds the limit</sys:String>
   <sys:String x:Key="Lang_ParamSetFail">Params set Failed!</sys:String>
-  <sys:String x:Key="Lang_ApplicationRepeatStart">VisionMaster start failed, same process detected!</sys:String>
+  <sys:String x:Key="Lang_ApplicationRepeatStart">Application start failed: another process is already running.</sys:String>
   <sys:String x:Key="Lang_ServerNoExist">Abnormal shutdown of service detected, program will exit!</sys:String>
   <sys:String x:Key="错误提示">Error</sys:String>
   <sys:String x:Key="基准点创建失败!">Creating fiducial point failed, reason: parameter is not set.</sys:String>
@@ -862,7 +862,7 @@
   <sys:String x:Key="借助检测工具查找工件缺陷">Detect Defects</sys:String>
   <sys:String x:Key="用于识别">Recognition</sys:String>
   <sys:String x:Key="通过识别工具进行方案设计">Design by Recognition Tools</sys:String>
-  <sys:String x:Key="学习使用VISIONMASTER">About</sys:String>
+  <sys:String x:Key="学习使用程序">About</sys:String>
   <sys:String x:Key="查看示例方案">Examples</sys:String>
   <sys:String x:Key="获取更多支持和帮助">Get Support</sys:String>
   <sys:String x:Key="不再显示">Do not ask again</sys:String>
@@ -1279,7 +1279,7 @@
   <sys:String x:Key="Lang_Trainadjust">When the training error is too large , you can adjust th training parameters to reduce it</sys:String>
   <sys:String x:Key="开始训练">Start to Train</sys:String>
   <sys:String x:Key="Lang_AwardInfo">Warning: This computer program is protected by copyright and international treaties. Unauthorized reproduction or distribution of the program (or any part thereof) will be subject to severe civil and criminal sanctions, and will be prosecuted to the maximum extent permitted by laws.</sys:String>
-  <sys:String x:Key="Lang_Company">CopyRight © 2017-2025 Hangzhou HikRobot Co., Ltd. All Rights Reserved.</sys:String>
+  <sys:String x:Key="Lang_Company">See component provenance for third-party copyright information.</sys:String>
   <sys:String x:Key="开机软件自启动">Auto Start</sys:String>
   <sys:String x:Key="默认运行界面">Open Operation Window by Default</sys:String>
   <sys:String x:Key="文件自动加载">File Auto Load</sys:String>
@@ -5858,7 +5858,7 @@ Steps:
   <sys:String x:Key="CircleAngleExtend">CircleAngleExtend</sys:String>
   <sys:String x:Key="InputAnnulus">InputAnnulus</sys:String>
   <sys:String x:Key="help_doc_std">.\Help\EN\index.html</sys:String>
-  <sys:String x:Key="help_doc_neu">.\Help\EN\VisionMasterHelp.chm</sys:String>
+  <sys:String x:Key="help_doc_neu"></sys:String>
   <sys:String x:Key="RunParam_Edge 0 Type">Edge 0 Type</sys:String>
   <sys:String x:Key="RunParam_Edge 1 Type">Edge 1 Type</sys:String>
   <sys:String x:Key="Edge0 Search Type">Edge0 Search Type</sys:String>
@@ -6316,7 +6316,7 @@ Steps:
   <sys:String x:Key="Lang_SaveAs">Save as</sys:String>
   <sys:String x:Key="添加地址">Add Address</sys:String>
   <sys:String x:Key="获取SDK底层数据错误">Get SDK data error</sys:String>
-  <sys:String x:Key="Lang_Startuptask">VisionMaster Start up task schedule automatically</sys:String>
+  <sys:String x:Key="Lang_Startuptask">Application startup task schedule</sys:String>
   <sys:String x:Key="Lang_callbackok">Callback start success</sys:String>
   <sys:String x:Key="Lang_callbackerror">Callback start failed</sys:String>
   <sys:String x:Key="全局变量通信设置:获取全局变量ID失败">Global variable communication settings: Getting global variable ID failed.</sys:String>
@@ -9614,7 +9614,7 @@ Operation:
   <sys:String x:Key="RunParam_SUB_LESS_EQ_BIN">RunParam_SUB_LESS_EQ_BIN</sys:String>
   <sys:String x:Key="保存相机参数">Save CameraParams</sys:String>
   <sys:String x:Key="SaveCameraParams">Save To UserSet1</sys:String>
-  <sys:String x:Key="Lang_MultiTip">After the change is reentrant, all processes of VisionMaster need to be closed and then restarted, and running parameter subscription is not available.</sys:String>
+  <sys:String x:Key="Lang_MultiTip">After the change is reentrant, all application processes need to be closed and then restarted, and running parameter subscription is not available.</sys:String>
   <sys:String x:Key="Box Result">Box Result</sys:String>
   <sys:String x:Key="该模块未配置显示项">No display items are configured for this module</sys:String>
   <sys:String x:Key="Lang_ModelDescription">Models larger than 500M do not support save model data operations!</sys:String>

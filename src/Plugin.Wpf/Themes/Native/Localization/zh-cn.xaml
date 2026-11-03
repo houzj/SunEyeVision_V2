@@ -35,7 +35,7 @@
   <!--帮助-->
   <sys:String x:Key="Lang_HelpDoc">帮助文档</sys:String>
   <sys:String x:Key="Lang_OnlineHelpDoc">帮助文档（在线）</sys:String>
-  <sys:String x:Key="Lang_LearnApplication">学习VisionMaster</sys:String>
+  <sys:String x:Key="Lang_LearnApplication">产品帮助</sys:String>
   <sys:String x:Key="Lang_VerInfo">版本信息</sys:String>
   <sys:String x:Key="Lang_MoreInfo">更多支持</sys:String>
   <sys:String x:Key="Lang_WecPage">打开欢迎页</sys:String>
@@ -158,7 +158,7 @@
   <sys:String x:Key="Lang_CurFetLost">未找到当前模块</sys:String>
   <sys:String x:Key="Lang_NoImageErr">当前未加载图像</sys:String>
   <sys:String x:Key="Lang_FetSaveErrtoNew">未生成模型,无法保存,请先生成模型</sys:String>
-  <sys:String x:Key="Lang_UnknowErr">VisionMaster遇到未知错误，即将关闭！</sys:String>
+  <sys:String x:Key="Lang_UnknowErr">程序遇到未知错误，即将关闭！</sys:String>
   <sys:String x:Key="Lang_CheckToolItem">检查ToolItems.xml文件</sys:String>
   <sys:String x:Key="Lang_IfDelFlow">是否删除流程？</sys:String>
   <sys:String x:Key="Lang_LangLack">语言资源缺失</sys:String>
@@ -323,7 +323,7 @@
   <sys:String x:Key="Lang_ImageShowError">图像显示异常</sys:String>
   <sys:String x:Key="Lang_SolManagerMaxNum">方案数目超出限制</sys:String>
   <sys:String x:Key="Lang_ParamSetFail">参数设置失败！</sys:String>
-  <sys:String x:Key="Lang_ApplicationRepeatStart">VisionMaster启动失败，检测到相同进程！</sys:String>
+  <sys:String x:Key="Lang_ApplicationRepeatStart">程序启动失败，检测到相同进程！</sys:String>
   <sys:String x:Key="Lang_ServerNoExist">检测到服务异常关闭，程序即将退出！</sys:String>
   <sys:String x:Key="错误提示">错误提示</sys:String>
   <sys:String x:Key="基准点创建失败!">基准点创建失败，原因:参数[输入图像]未配置!</sys:String>
@@ -848,7 +848,7 @@
   <sys:String x:Key="借助检测工具查找工件缺陷">借助检测工具查找工件缺陷</sys:String>
   <sys:String x:Key="用于识别">用于识别</sys:String>
   <sys:String x:Key="通过识别工具进行方案设计">通过识别工具进行方案设计</sys:String>
-  <sys:String x:Key="学习使用VISIONMASTER">学习使用VISIONMASTER</sys:String>
+  <sys:String x:Key="学习使用程序">学习使用程序</sys:String>
   <sys:String x:Key="查看示例方案">查看示例方案</sys:String>
   <sys:String x:Key="获取更多支持和帮助">获取更多支持和帮助</sys:String>
   <sys:String x:Key="不再显示">不再显示</sys:String>
@@ -1256,7 +1256,7 @@
   <sys:String x:Key="Lang_Trainadjust">训练误差过大时，可通过调整训练参数减少误差。</sys:String>
   <sys:String x:Key="开始训练">开始训练</sys:String>
   <sys:String x:Key="Lang_AwardInfo">警告：本计算机程序受著作权和国际条约保护。如未经授权而擅自复制或传播本程序（或其中任何部分），将受到严厉的民事及刑事制裁，并将在法律许可范围内受到最大程度的起诉。</sys:String>
-  <sys:String x:Key="Lang_Company">CopyRight © 2017-2025 杭州海康机器人股份有限公司 版权所有</sys:String>
+  <sys:String x:Key="Lang_Company">第三方组件版权与来源见说明</sys:String>
   <sys:String x:Key="开机软件自启动">开机软件自启动</sys:String>
   <sys:String x:Key="默认运行界面">默认启动运行界面</sys:String>
   <sys:String x:Key="文件自动加载">文件自动加载</sys:String>
@@ -6468,7 +6468,7 @@
   <sys:String x:Key="RunParam_Fit Mode4">拟合方式4</sys:String>
   <sys:String x:Key="Lang_SaveAs">另存为</sys:String>
   <sys:String x:Key="获取SDK底层数据错误">获取SDK底层数据错误</sys:String>
-  <sys:String x:Key="Lang_Startuptask">VisionMaster开机自动启动任务计划</sys:String>
+  <sys:String x:Key="Lang_Startuptask">程序开机自动启动任务计划</sys:String>
   <sys:String x:Key="Lang_callbackok">回调全部打开成功</sys:String>
   <sys:String x:Key="Lang_callbackerror">回调全部打开失败</sys:String>
   <sys:String x:Key="模块创建失败">模块创建失败</sys:String>
@@ -9754,7 +9754,7 @@
   <sys:String x:Key="RunParam_SUB_LESS_EQ_BIN">(I1-(I2 + C))&gt;=0?0:255</sys:String>
   <sys:String x:Key="保存相机参数">保存相机参数</sys:String>
   <sys:String x:Key="SaveCameraParams">保存用户集1</sys:String>
-  <sys:String x:Key="Lang_MultiTip">更改可重入后，需关闭VisionMaster所有进程后重启软件生效，且运行参数订阅不可用。</sys:String>
+  <sys:String x:Key="Lang_MultiTip">更改可重入后，需关闭程序所有进程后重启软件生效，且运行参数订阅不可用。</sys:String>
   <sys:String x:Key="Box Result">矩形结果</sys:String>
   <sys:String x:Key="该模块未配置显示项">该模块未配置显示项</sys:String>
   <sys:String x:Key="Lang_ModelDescription">若模型大小超过500M，则不支持方案存模型操作！</sys:String>

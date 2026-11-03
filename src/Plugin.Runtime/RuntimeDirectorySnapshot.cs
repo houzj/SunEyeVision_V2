@@ -20,7 +20,7 @@ public sealed class RuntimeDirectorySnapshot
         Generation=Guid.NewGuid();
     }
     public Guid Generation { get; }
-    public bool IsActive { get { lock(_lifetimeGate)return !_retiring; } }
+    public bool IsActive => !Volatile.Read(ref _retiring);
     internal IReadOnlyList<ToolComponentRegistration> Components { get; }
     public IReadOnlyCollection<string> ToolIds => _runtimes.Keys.ToArray();
     public bool Contains(string toolId)=>_runtimes.ContainsKey(toolId);
@@ -61,7 +61,7 @@ public sealed class RuntimeDirectorySnapshot
     {
         lock(_lifetimeGate)
         {
-            _retiring=true;
+            Volatile.Write(ref _retiring,true);
             if(_leases==0)_drained.TrySetResult();
             return _drained.Task;
         }

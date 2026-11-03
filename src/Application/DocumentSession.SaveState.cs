@@ -15,7 +15,11 @@ public sealed partial class DocumentSession
     {
         get
         {
-            EnsureOwnerCanEdit();
+            if (Environment.CurrentManagedThreadId != _ownerThread)
+                throw new InvalidOperationException("保存状态只能由方案所属线程读取。");
+            lock (_gate) EnsureOpen();
+            // This is a read of already installed state, also valid during change/retirement
+            // notifications. Do not apply the edit admission gate to a UI title query.
             if (Editing.HasPendingChanges) return true;
             lock (_gate)
             {

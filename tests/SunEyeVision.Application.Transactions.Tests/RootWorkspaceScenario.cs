@@ -23,8 +23,12 @@ internal static class RootWorkspaceScenario
             .Invoke(null, new object[] { new[] { component } })!;
         using var manager = new DocumentSessionManager(directory);
         var session = manager.CreateNew(); var flow = session.GetWorkflows().Single();
+        var readDuringNotification = false;
+        session.Changed += (_, _) => { _ = session.HasUnsavedChanges; readDuringNotification = true; };
         var graph = session.PrepareGraphEdit(flow.Id); var node = session.CreateNode(graph, "TransactionProbe", new CanvasPoint(0, 0));
         session.CommitGraphEdit(graph, "工作区测试节点");
+        Check(readDuringNotification && session.LastObserverError is null,
+            "Read-only save state must remain available during committed document notifications.");
         var displayReference = ParameterSettingCanonical.Serialize(new OutputReference(node.Id, "image", TypeRef.ResourceOf(ResourceKind.Image), scopeId: flow.Id));
         var beforeNavigationHistory = session.HistoryEntries.Count;
         var beforeNavigationRevision = session.ChangeRevision;

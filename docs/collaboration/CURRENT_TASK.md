@@ -1,3 +1,7 @@
+## 2026-11-03 通知期只读与目录退役共享修正
+
+基线90e9b44ef；根正在集中退休旧Workflow与C根配置/通信闭包，尚未宣布完整GUI通过。当前单独固定给并行线的共享合同：HasUnsavedChanges为owner只读，已提交通知期可查、不拿编辑门禁；RuntimeDirectory.IsActive为Volatile只读，退役标记在原gate写，租约计数/排空不变。23真实Session和15实际xUnit通过，日志notification-read-session-20261103.log/directory-visibility-execution-tests-20261103.log。B191独立候选7ab、A调试竞态修复、C中立命名整串均待根完整整合，不挪用成绩。Root NodeConfigurationEditDraft单文件写权临时交A竞态修复，根不修改它。人工/VS/主仓未验，Group暂停；后续继续完成产品构建图与实际主窗，不把共享局部通过当目标完成。
+
 ## 2026-11-03 当前树界面核心实际集成回归
 
 基线a7412863a；新增固定c8的中立PresentationProbe组件完整测试前置（原根不存在该目录，Git曾错误推断目录重命名已纠正）。本树CanvasProjection 5/5、0跳过；RuntimeEditorProductionProbe真实ImageLoad/Blob参数控件+Window+Session+Prepare/回执/关闭通过，保留未解析SN文本。日志ui-canvas-integrated-tests-20261103.log/ui-real-editor-integrated-20261103.log；均真实本树项目重建，不签完整MainWindow/封包/主题/VS。

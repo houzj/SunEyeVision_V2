@@ -3,7 +3,7 @@
   "sourceBaseline": "de6b7a3ba1e84aadc7cf3c43e29e488127d6f01a",
   "formalProduct": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
   "scope": "保留全部Catalog原条目和B08 A00-A23；控件已验范围不扩称原全域完成",
-  "latestFormal": "docs/collaboration/evidence/C05_NUMERIC_MODEL_FORMAL_20261103.json",
+  "latestFormal": "docs/collaboration/evidence/C06_NUMERIC_RANGE_FORMAL_20261103.json",
   "catalogCount": 28,
   "entries": [
     {
@@ -256,15 +256,22 @@
     "range": {
       "name": "C06双端范围完整组合",
       "priority": 2,
-      "state": "下一完整单元：既有三范围生产链和原证具备，完整模型及比较迁移待实施",
+      "state": "完整实施自测闭口：正式同版195组，含三真实范围各8模型+16生产，源码/加载/570项封包核符",
       "sources": [
-        "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
-        "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs"
+        "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+        "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
+        "src/Plugin.Wpf/Adapters/Fields/NativeNumericModel.cs",
+        "src/Plugin.Wpf/Controls/Native/Numeric/Arranged/SliderArrangeBase.cs",
+        "src/Plugin.Wpf/Fields/DeclaredFieldsView.NumericModels.cs",
+        "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+        "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+        "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs"
       ],
-      "existingImplementation": "面积/圆度/矩形度双端独立引用、组接纳、真实执行及历史已有限自测",
-      "remaining": "原Check左右非对称、isInitValue不同HasValue、临时普通读不安装对端模型、双端模型版本/组接纳/原Dispatcher退役须集中对齐；其余范围仍UI-only",
+      "existingImplementation": "原Integer/Float双端模型、初始化/原始比较/TwoWay、左右非对称Check与原OldValue恢复；现有组草稿和引用/执行/确认历史保存/退役链复用；全部实际已验",
+      "remaining": "其他缺producer范围仍UI-only保护；宿主普通读及极端Int32溢出不宣称原SDK等价；实际VS/自然输入/统一人工另记；C07和S3仍待本阶段推进",
       "owner": "主线，补证集中经逆向负责人",
-      "acceptanceExit": "左右对称/单端双端引用、0/1/多值、箭头失焦Dispatcher及关闭，保引用身份与执行快照"
+      "acceptanceExit": "左右对称/单端双端引用、0/1/多值、箭头失焦Dispatcher及关闭，保引用身份与执行快照",
+      "formalReceipt": "docs/collaboration/evidence/C06_NUMERIC_RANGE_FORMAL_20261103.json"
     },
     "reference": {
       "name": "C07/B08订阅、来源树、展开与变量",
@@ -434,7 +441,7 @@
     "A23"
   ],
   "b08Authority": "docs/collaboration/evidence/B08_INTEGRATED_ACCEPTANCE_CHECKLIST_20261031.json",
-  "nextWholeUnit": "C06双端范围：复用C05模型/API和现三筛选范围，同一完整组合集中设计、实施、自审及生产回归后闭口；不扩S3",
+  "nextWholeUnit": "C07/B08完整来源显示与引用编辑：依据原VmIO/ButtonSelecter/EnumerationG迁移caption、[]及编辑/刷新，复用既有完整身份/树/事务/生命周期，保原24项及缺基础保护",
   "evidenceRequest": "已向既有逆向负责人集中提交；本次仅静态，不扩大原机授权",
   "workflowBaseline": {
     "directNumericOverlap": [
@@ -450,7 +457,7 @@
   "status": "S1实施自测闭口；C05完整单数值正式自测闭口；下一C06，S2/S3全范围未完成",
   "originalNumericEvidence": "docs/collaboration/evidence/C05_C06_ORIGINAL_NUMERIC_MODEL_20261103.md",
   "originalNumericReceipt": "docs/collaboration/evidence/C05_C06_ORIGINAL_NUMERIC_MODEL_RECEIPT_20261103.json",
-  "previousLatestFormal": "docs/collaboration/evidence/BLOB_REAL_THREE_PAGE_UI_FORMAL_20261103.json",
+  "previousLatestFormal": "docs/collaboration/evidence/C05_NUMERIC_MODEL_FORMAL_20261103.json",
   "unitClosures": {
     "C05": {
       "source": "de6b7a3ba1e84aadc7cf3c43e29e488127d6f01a",
@@ -463,6 +470,18 @@
       "receipt": "docs/collaboration/evidence/C05_NUMERIC_MODEL_FORMAL_20261103.json",
       "status": "IMPLEMENTATION_SELF_TEST_CLOSED",
       "passedCaseGroups": 172.0
+    },
+    "C06": {
+      "status": "IMPLEMENTATION_SELF_TEST_CLOSED",
+      "source": "787e842e69426f555f115afda8cc84f170515a8b",
+      "receipt": "docs/collaboration/evidence/C06_NUMERIC_RANGE_FORMAL_20261103.json",
+      "passedCaseGroups": 195.0,
+      "notClaimed": [
+        "C07/B08完整来源显示和编辑待下一批",
+        "缺producer及依赖基础的保护占位非已实现",
+        "S3完整算法及VM像素数值同态验证",
+        "实际VS/自然键鼠与统一人工验收另记"
+      ]
     }
   }
 }

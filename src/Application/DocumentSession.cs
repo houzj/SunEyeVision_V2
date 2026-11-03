@@ -44,6 +44,39 @@ public sealed partial class DocumentSession : IDisposable
         }
     }
 
+    /// <summary>Read the actual nodes of one live workflow; returned identities remain owned by this session.</summary>
+    public IReadOnlyList<NodeDefinition> GetNodes(string workflowId)
+    {
+        lock (_gate)
+        {
+            var scope = OpenScope(workflowId);
+            ValidateScopeCore(scope);
+            return Array.AsReadOnly(scope.Flow.Nodes.ToArray());
+        }
+    }
+
+    public IReadOnlyList<ConnectionDefinition> GetConnections(string workflowId)
+    {
+        lock (_gate)
+        {
+            var scope = OpenScope(workflowId);
+            ValidateScopeCore(scope);
+            return Array.AsReadOnly(scope.Flow.Connections.ToArray());
+        }
+    }
+
+    /// <summary>Resolve through this session's directory and owner; null means the scoped node is absent.</summary>
+    public NodeDefinition? FindNode(string workflowId, string nodeId)
+    {
+        lock (_gate) return FindNode(OpenScope(workflowId), nodeId)?.Node;
+    }
+
+    /// <summary>Prepare a private proposal. It does not mutate the session or commit history.</summary>
+    public GraphEditDraft PrepareGraphEdit(string workflowId)
+    {
+        lock (_gate) return CreateGraphDraft(OpenScope(workflowId));
+    }
+
     internal GraphEditDraft CreateGraphDraft(WorkflowScope scope)
     {
         lock (_gate)

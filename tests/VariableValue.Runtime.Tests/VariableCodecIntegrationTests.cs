@@ -46,14 +46,16 @@ public sealed class VariableCodecIntegrationTests
     {
         Assert.Throws<JsonException>(()=>JsonSerializer.Deserialize<object>("{\"Type\":\"Image\",\"Value\":\"!\"}",Options()));
         Assert.Throws<JsonException>(()=>JsonSerializer.Deserialize<object>("{\"Type\":\"Transform\",\"Value\":{}}",Options()));
+        Assert.Throws<JsonException>(()=>JsonSerializer.Deserialize<object>("{\"Type\":\"Image\",\"Value\":\"AA==\"}",Options()));
         using var empty=new Mat();
         Assert.Throws<JsonException>(()=>JsonSerializer.Serialize((object)empty,Options()));
     }
     [Fact] public void Roi_shape_preserves_real_sdk_type()
     {
-        var json=JsonSerializer.Serialize((object)new RoiShape(),Options());
+        var json=JsonSerializer.Serialize((object)new RoiShape { Geometry=new SunEyeVision.Plugin.SDK.Models.Geometry.Point2d(12.5,34.25) },Options());
         var loaded=Assert.IsType<RoiShape[]>(JsonSerializer.Deserialize<object>(json,Options()));
-        Assert.Single(loaded);
+        var point=Assert.IsType<SunEyeVision.Plugin.SDK.Models.Geometry.Point2d>(Assert.Single(loaded).Geometry);
+        Assert.Equal(12.5,point.X); Assert.Equal(34.25,point.Y);
     }
     [Fact] public void Image_roundtrip_owns_a_new_real_mat()
     {
@@ -63,6 +65,8 @@ public sealed class VariableCodecIntegrationTests
         Assert.NotSame(image,loaded);Assert.Equal(2,loaded.Rows);Assert.Equal(3,loaded.Cols);Assert.Equal((byte)23,loaded.At<byte>(0,0));
     }
 }
+
+
 
 
 

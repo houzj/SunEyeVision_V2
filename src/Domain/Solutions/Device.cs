@@ -80,8 +80,14 @@ public enum DeviceStatus
 /// </remarks>
 public class Device
 {
-    [System.Text.Json.Serialization.JsonExtensionData]
-    public System.Collections.Generic.Dictionary<string, System.Text.Json.JsonElement>? AdditionalData { get; set; }
+    private System.Collections.Generic.IReadOnlyDictionary<string, System.Text.Json.JsonElement>? _additionalData;
+    public System.Collections.Generic.IReadOnlyDictionary<string, System.Text.Json.JsonElement>? AdditionalData
+    {
+        get => _additionalData;
+        internal set => _additionalData = value is null ? null :
+            new System.Collections.ObjectModel.ReadOnlyDictionary<string, System.Text.Json.JsonElement>(
+                value.ToDictionary(pair => pair.Key, pair => pair.Value.Clone(), System.StringComparer.Ordinal));
+    }
 
     private string _name = "";
     private string _manufacturer = "";

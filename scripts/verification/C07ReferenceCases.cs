@@ -80,6 +80,16 @@ internal static class C07ReferenceCases
     f.Raw(A.Label+"[bad]");var before=f.Accepted;f.Choose(B.NodeId);Check(ReferenceEquals(f.Accepted,before)&&f.Display==B.Label+"[bad]"&&f.Editor.HasInvalidText,"切源丢invalid后缀或半写正式");f.Raw(B.Label+"[2]");Check(f.Accepted is ReferenceSetting{Reference.NodeId:"12",Reference.Selection:BindingSelection.AtConstant{Index:2}}&&!f.Editor.HasInvalidText,"组合原文修复不能单次接纳");
     foreach(var change in new[]{"accepted","mode","clear"}){using var changed=new Fixture(new ReferenceSetting(A.Reference(new BindingSelection.AtConstant(1))),true,required:change=="clear");changed.Raw(A.Label+"[bad]",false);var state=F(changed.Editor,"_state")!;var fired=false;System.ComponentModel.PropertyChangedEventHandler observer=(_,e)=>{if(fired||e.PropertyName!="CurValueA"||F(changed.Session,"_pendingReference") is null)return;fired=true;if(change=="accepted")Check(changed.Editor.TrySetConstant(2d),"通知内接纳新常量失败");else if(change=="mode")Call(state,"TryUseConstant",new object?[]{null});else Call(state,"ClearReference");};((System.ComponentModel.INotifyPropertyChanged)changed.Session).PropertyChanged+=observer;changed.Choose(B.NodeId);((System.ComponentModel.INotifyPropertyChanged)changed.Session).PropertyChanged-=observer;Check(fired,"未触发实际同步通知");Check(changed.Accepted is ConstantSetting {Value:double number}&&number==2d||change!="accepted"&&changed.Accepted is ReferenceSetting{Reference.NodeId:"11"},"旧切源覆盖新状态");Check(!changed.Editor.Error.Contains("索引"),"旧通知续提交污染新状态错误");}
    });
+   Case("组合默认选项按原只读值开放索引",()=>{
+    var port=new Port("inline",DataType.Number,EditModes:FieldEditModes.Constant|FieldEditModes.Reference);
+    var row=new FieldPresentation("inline","位置","A",0,FieldEditorKind.Scalar){Layout=new("A","A",Minimum:0,Maximum:100,DecimalPlaces:2)};
+    ParameterSetting accepted=new ReferenceSetting(A.Reference(new BindingSelection.AtConstant(1)));
+    using var fields=new DeclaredFieldsView(new[]{(Port:port,Presentation:row,Value:accepted)},changes=>accepted=changes["inline"],new ReferenceFieldOptions(_=>new(new[]{A,B},new[]{Index})),inlineConstants:new HashSet<string>{"inline"});Show(fields);
+    var editor=(DeclaredFieldEditor)fields.Fields.Single().View;var session=F(F(editor,"_referencePresenter")!,"_session")!;Call(session,"Refresh");Pump();
+    var text=Visual<DeleteTextBox>(editor).Single(t=>ReferenceEquals(t.DataContext,session));Check(!text.IsReadOnly,"原组合本应可编辑");Keyboard.Focus(text);Check(text.IsKeyboardFocused,"组合没有实际焦点");text.SelectionStart=text.Text.Length-1;Pump();
+    Check(P<bool>(session,"IsTextDropDownOpen"),"组合ReadOnly=false却被另一个默认EditableIndex门禁阻断");
+    text.Text=A.Label+"[2]";text.GetBindingExpression(TextBox.TextProperty)!.UpdateSource();Pump();Check(accepted is ReferenceSetting{Reference.Selection:BindingSelection.AtConstant{Index:2}},"原组合完整索引原文没有接纳");
+   });
    Case("变量保后缀scalar构造拒绝与旧请求退出",()=>{
     using var f=new Fixture(new ReferenceSetting(A.Reference(new BindingSelection.AtConstant(1))),true,true);
     void Open(){f.Command("ClickCommand",Nodes(P<object>(f.Session,"SourceNodes")).Single(n=>P<bool>(n,"VariableManager")));Check(f.Request?.IsValid==true,"变量请求未产生");}

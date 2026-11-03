@@ -230,7 +230,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     }
     private bool TryStageReference(ParameterSetting reference)
     {
-        if(_options.EditableIndex&&!_suspended&&CanBrowse&&NeedsSelectionRepair(reference))
+        if(!ReadOnlyA&&!_suspended&&CanBrowse&&NeedsSelectionRepair(reference))
         {
             _pendingReference=new(reference,_state.AcceptanceVersion);_pendingVersion++;SetPending(null);
             var version=_pendingVersion;var popupGeneration=_popupGeneration;
@@ -392,7 +392,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
                 if(NeedsSelectionRepair(source))throw new ArgumentException("请选择有效的序列索引后再确认。");
                 return true;
             }
-            if(!_options.EditableIndex)throw new ArgumentException("请输入有效数值，或选择来源。");
+            if(ReadOnlyA)throw new ArgumentException("请输入有效数值，或选择来源。");
             var prefix=Label(source)+"[";
             var projected=ProjectedType(source);
             if(projected is null||!_pendingText.StartsWith(prefix,StringComparison.Ordinal)
@@ -444,7 +444,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         if(!args.IsFocus){IsTextDropDownOpen=false;return;}
         if(ReadOnlyA||args.SelectionStart<1||args.SelectionStart>text.Length)return;
         var before=text[..args.SelectionStart];var after=text[args.SelectionStart..];
-        var inside=_options.EditableIndex&&HasSequenceReference
+        var inside=!ReadOnlyA&&HasSequenceReference
             &&before.LastIndexOf('[')>before.LastIndexOf(']')&&after.IndexOf(']')>=0
             &&(after.IndexOf('[')<0||after.IndexOf(']')<after.IndexOf('['));
         if(_expansion?.IsValid==true){_expansion.SetIndex(inside,inside);Notify(nameof(IsSelectedSubscribeParam));RequestClose();return;}

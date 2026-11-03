@@ -10,6 +10,7 @@ public static class BlobResultDisplay
 {
     public const string Graphic="display.blob";
     public const string Text="display.text";
+    public const string Outline="display.outline";
     public const string Inspection="display.inspection",Mask="display.mask",Annulus="display.annulus";
     public static string Field(string group,string role)=>group+"."+role;
     private sealed record Definition(Port Port,FieldPresentation Presentation,object Value);
@@ -17,7 +18,7 @@ public static class BlobResultDisplay
     public static ToolSchema Schema {get;}=new(Definitions.Select(item=>item.Port),Array.Empty<Port>(),new ToolPresentation(Definitions.Select(item=>item.Presentation)));
     public static ResultDisplayDescriptor Descriptor {get;}=new(new(BlobSchema.BlobsPort),new(BlobSchema.BlobsPort,new[]{"element-id"}),
         new(BlobSchema.BlobsPort,new[]{"rotated-bounds"}),new(BlobSchema.BlobsPort,new[]{"region"}),
-        new(BlobSchema.BlobsPort,new[]{"area"}),new(BlobSchema.BlobsPort,new[]{"judgment-passed"}));
+        new(BlobSchema.BlobsPort,new[]{"area"}),new(BlobSchema.BlobsPort,new[]{"judgment-passed"}),new(BlobSchema.BlobsPort,new[]{"boundary"}));
     public static InputValues Defaults()=>new(Schema.Inputs,Definitions.ToDictionary(item=>item.Port.Id,item=>(object?)item.Value,StringComparer.Ordinal));
     private static IReadOnlyList<Definition> Build()
     {
@@ -43,6 +44,7 @@ public static class BlobResultDisplay
         }
         GraphicFields(Graphic,"Blob",ok);
         GraphicFields(Inspection,"ROI",PresentationDeclarations.Color(0,0,255));
+        Add(Field(Outline,"visible"),"轮廓点","图像显示",DataType.Boolean,true);
         Add(Field(Text,"visible"),"文本","图像显示",DataType.Boolean,true);
         GraphicFields(Mask,"屏蔽区域",PresentationDeclarations.Color(0,0,255),.5);
         GraphicFields(Annulus,"扇环检测区域",PresentationDeclarations.Color(0,0,255));
@@ -73,7 +75,7 @@ public static class BlobResultDisplay
         var x=Position("x");var y=Position("y");
         ResultGraphicAppearance Style(string group)=>new(Read<bool>(Field(group,"visible")),Color(group,"ok"),Color(group,"ng"),Number(group,"opacity"),Number(group,"width"));
         return new(Style(Graphic),
-            new(Read<bool>(Field(Text,"visible")),content,Color(Text,"ok"),Color(Text,"ng"),Number(Text,"size"),Number(Text,"opacity"),x is ConstantSetting {Value:double xv}?xv:0,y is ConstantSetting {Value:double yv}?yv:0,expression,x,y),Style(Inspection),Style(Mask),Style(Annulus));
+            new(Read<bool>(Field(Text,"visible")),content,Color(Text,"ok"),Color(Text,"ng"),Number(Text,"size"),Number(Text,"opacity"),x is ConstantSetting {Value:double xv}?xv:0,y is ConstantSetting {Value:double yv}?yv:0,expression,x,y),Style(Inspection),Style(Mask),Style(Annulus),Read<bool>(Field(Outline,"visible")));
     }
     public static void ValidateDisplayReference(OutputReference reference,bool numeric=false)
     {

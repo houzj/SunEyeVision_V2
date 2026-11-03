@@ -5,9 +5,9 @@ namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 
 public enum BlobConnectivity { Connected_8 = 8, Connected_4 = 4 }
 public enum BlobThresholdMode { Binary, BinaryInv }
-public enum BlobSortFeature { SortFeatureArea = 1, SortFeaturePerimeter = 2, SortFeatureCircularity = 3, SortFeatureRect = 4, SortFeatureCentroidX = 5, SortFeatureCentroidY = 6 }
+public enum BlobSortFeature { SortFeatureArea = 1, SortFeaturePerimeter = 2, SortFeatureCircularity = 3, SortFeatureRect = 4, SortFeatureCentroidX = 5, SortFeatureCentroidY = 6, SortFeatureRectX = 10, SortFeatureRectY = 11 }
 public enum BlobSortMode { SortModeAscend = 1, SortModeDecend = 2, SortModeNotSort = 3 }
-public enum BlobSegmentationMode { SingleThreshold, DoubleThreshold, None }
+public enum BlobSegmentationMode { SingleThreshold, DoubleThreshold, None, AutoThreshold, FixedSoftThreshold, RelativeSoftThreshold }
 public enum BlobJudgmentKind { Range, Empty, Boolean }
 public sealed record BlobJudgment(
     [property: JsonRequired] string Key,
@@ -25,6 +25,13 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
     {
         if (!initializeDefaults) { Judgments = Array.Empty<BlobJudgment>(); return; }
         var definition=BlobParameterDefinition.Instance;
+        FixedSoftLowerThreshold=definition.Default<int>(nameof(FixedSoftLowerThreshold));
+        FixedSoftUpperThreshold=definition.Default<int>(nameof(FixedSoftUpperThreshold));
+        ThresholdSoftness=definition.Default<int>(nameof(ThresholdSoftness));
+        RelativeLeftRatio=definition.Default<int>(nameof(RelativeLeftRatio));
+        RelativeRightRatio=definition.Default<int>(nameof(RelativeRightRatio));
+        RelativeLowerRatio=definition.Default<int>(nameof(RelativeLowerRatio));
+        RelativeUpperRatio=definition.Default<int>(nameof(RelativeUpperRatio));
         Threshold=definition.Default<int>(nameof(Threshold));
         UpperThreshold=definition.Default<int>(nameof(UpperThreshold));
         SegmentationMode=definition.Default<BlobSegmentationMode>(nameof(SegmentationMode));
@@ -40,7 +47,7 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
         FilterRectangularityMin=definition.Default<double>(nameof(FilterRectangularityMin));
         FilterRectangularityMax=definition.Default<double>(nameof(FilterRectangularityMax));
         BlobCountLimit=definition.Default<int>(nameof(BlobCountLimit));
-        OutputGrayImage=definition.Default<bool>(nameof(OutputGrayImage));
+        OutputBlobImage=definition.Default<bool>(nameof(OutputBlobImage));
         OutputBinaryImage=definition.Default<bool>(nameof(OutputBinaryImage));
         OutputBoundary=definition.Default<bool>(nameof(OutputBoundary));
         SortMode=definition.Default<BlobSortMode>(nameof(SortMode));
@@ -51,6 +58,20 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
 
     [JsonRequired]
     public int Threshold { get; init; }
+    [JsonRequired]
+    public int FixedSoftLowerThreshold { get; init; }
+    [JsonRequired]
+    public int FixedSoftUpperThreshold { get; init; }
+    [JsonRequired]
+    public int ThresholdSoftness { get; init; }
+    [JsonRequired]
+    public int RelativeLeftRatio { get; init; }
+    [JsonRequired]
+    public int RelativeRightRatio { get; init; }
+    [JsonRequired]
+    public int RelativeLowerRatio { get; init; }
+    [JsonRequired]
+    public int RelativeUpperRatio { get; init; }
     [JsonRequired]
     public int UpperThreshold { get; init; }
     [JsonRequired]
@@ -81,7 +102,7 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
     [JsonRequired]
     public int BlobCountLimit { get; init; }
     [JsonRequired]
-    public bool OutputGrayImage { get; init; }
+    public bool OutputBlobImage { get; init; }
     [JsonRequired]
     public bool OutputBinaryImage { get; init; }
     [JsonRequired]
@@ -117,13 +138,19 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
         if (SegmentationMode == BlobSegmentationMode.DoubleThreshold)
         {
             Number(nameof(UpperThreshold), UpperThreshold);
-            Check(UpperThreshold >= Threshold, "双阈值下限不能超过上限。");
         }
+        Number(nameof(FixedSoftLowerThreshold),FixedSoftLowerThreshold);
+        Number(nameof(FixedSoftUpperThreshold),FixedSoftUpperThreshold);
+        Number(nameof(ThresholdSoftness),ThresholdSoftness);
+        Number(nameof(RelativeLeftRatio),RelativeLeftRatio);
+        Number(nameof(RelativeRightRatio),RelativeRightRatio);
+        Number(nameof(RelativeLowerRatio),RelativeLowerRatio);
+        Number(nameof(RelativeUpperRatio),RelativeUpperRatio);
         Number(nameof(BlobCountLimit), BlobCountLimit);
         void Range(bool enabled, string minField, double min, string maxField, double max)
         {
             Number(minField, min); Number(maxField, max);
-            if(enabled)Check(min <= max, "筛选下限不能超过上限。");
+            if(enabled&&minField!=nameof(FilterAreaMin))Check(min <= max, "筛选下限不能超过上限。");
         }
         Range(IsAreaFilterEnabled, nameof(FilterAreaMin), FilterAreaMin, nameof(FilterAreaMax), FilterAreaMax);
         Range(IsCircularityFilterEnabled, nameof(FilterCircularityMin), FilterCircularityMin, nameof(FilterCircularityMax), FilterCircularityMax);

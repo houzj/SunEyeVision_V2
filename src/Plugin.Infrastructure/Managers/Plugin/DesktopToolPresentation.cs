@@ -82,6 +82,8 @@ public static class DesktopToolPresentation
         public bool HasPendingEdits=>_view.HasPendingEdits;
         public long AcceptedRevision=>_view.AcceptedRevision;
         public IReadOnlyList<string> AcceptedFieldOrder=>_view.AcceptedFieldOrder;
+        public IReadOnlyList<NumericModelReadResult> ReadNumericModels(NumericModelReadScope scope,string? fieldId=null)
+        { _admission.EnsureCurrent();ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed)!=0,this);var result=_view.ReadNumericModels(scope,fieldId);_admission.EnsureCurrent();return result; }
         public FieldSettings CaptureAcceptedFields(){_admission.EnsureCurrent();var fields=_view.CaptureAcceptedFields();_admission.EnsureCurrent();return fields;}
         public event Action? Changed
         {

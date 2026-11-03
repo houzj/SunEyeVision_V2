@@ -9,16 +9,17 @@ using SunEyeVision.Plugin.Wpf.Presenters.Numeric;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Views;
 
-/// <summary>Unavailable original-page roles; real settings continue to use the single host draft.</summary>
+/// <summary>Original run-page UI; supported fields stay on the host draft and previews stay in this window.</summary>
 internal static class BlobRunUi
 {
-    internal static ToolSettingsViewOptions AddUnavailableRows(ToolSettingsViewOptions options,Func<string?>? validateSupportedState=null)
+    internal static ToolSettingsViewOptions AddRows(ToolSettingsViewOptions options,IToolSettingsDraft draft,DeclaredSettingsView settingsView,Func<string?> validateSupportedState,Action<BlobRunUiState>? observe=null)
     {
         var rows=options.AdditionalAnchoredContents?.ToList()??new List<AnchoredSettingsContent>();
         var created=new List<DeclaredFieldEditor>();
         var ranges=new List<NativeUiDraftRange>();
         var conditionalRows=new List<NativeUiConditionalFields>();
 
+        NativeThresholdUiDraftControls? threshold=null;BlobRunUiState? state=null;
         try
         {
             DeclaredFieldEditor Create(Port port,string label,ParameterSetting initial,FieldLayout layout,
@@ -27,8 +28,8 @@ internal static class BlobRunUi
                 var presentation=new FieldPresentation(port.Id,label,"运行参数",0,kind,choices?.Keys,choices){Layout=layout};
                 var editor=new DeclaredFieldEditor(port,label,initial,_=>{},ReferenceFieldOptions.Empty,
                     choiceLabels:choices,presentation:presentation)
-                    {IsEnabled=false,ToolTip="尚未接入正式功能，当前仅展示原布局。"};
-                System.Windows.Controls.ToolTipService.SetShowOnDisabled(editor,true);created.Add(editor);return editor;
+                    ;
+                created.Add(editor);return editor;
             }
             var layout=new FieldLayout("运行参数","运行参数");
             var fill=Create(new Port("ui-only-run.hole-area",DataType.Integer,Storage:NumericStorage.Int32,
@@ -39,11 +40,8 @@ internal static class BlobRunUi
             var contour=Create(new Port("ui-only-run.contour-type",DataType.Text,EditModes:FieldEditModes.Constant,
                     Choices:new TextChoiceConstraint(labels.Keys)),"输出轮廓类型",new ConstantSetting("NoneContour"),
                 layout,FieldEditorKind.Choice,labels);
-            var blob=Create(new Port("ui-only-run.blob-image",DataType.Boolean,EditModes:FieldEditModes.Constant),
-                "Blob图像输出",new ConstantSetting(true),layout);
             rows.Add(new("field:e748553b7cb45d1a8003c2b345b1d98f",fill,FollowAnchorVisibility:false));
             rows.Add(new("field:fcdb01b095c25c6ea22384f993450aac",contour,FollowAnchorVisibility:false));
-            rows.Add(new("field:fcdb01b095c25c6ea22384f993450aac",blob,FollowAnchorVisibility:false));
             const string circleAnchor="field:7d59f57f71c65911b88bae5f90d994d9";
             const string sortAnchor="field:cb01714e6b0b503a812fe7a99f1c815e";
             var advanced=layout with{Section="高级",Advanced=true};
@@ -69,16 +67,15 @@ internal static class BlobRunUi
                 if(id=="outside-pixels")
                 {
                     var value=Create(new Port("ui-only-run.outside-count",DataType.Integer,Storage:NumericStorage.Int32,
-                        EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"最大超界像素",new ConstantSetting(0L),
+                        EditModes:FieldEditModes.Constant|FieldEditModes.Reference),AppLocalizationService.GetLang("MaxOutPixelNum"),new ConstantSetting(0L),
                         advanced with{Minimum=0,Maximum=9000000,DecimalPlaces=0,Increment=1});
                     var conditional=new NativeUiConditionalFields(editor,value);conditionalRows.Add(conditional);content=conditional;
                 }
                 if(specification.Item1 is not null)
                 {
                     var range=new NativeUiDraftRange(editor,"ui-only-run."+id,specification.Item1,specification.Item2,
-                        specification.Item3,specification.Item4,specification.Item5,specification.Item6);
-                    range.IsEnabled=false;range.ToolTip="尚未接入正式功能，当前仅展示原布局。";
-                    System.Windows.Controls.ToolTipService.SetShowOnDisabled(range,true);ranges.Add(range);content=range;
+                        specification.Item3,specification.Item4,specification.Item5,specification.Item6,upperMinimum:id=="axis-ratio"?0:null);
+                    ranges.Add(range);content=range;
                 }
                 rows.Add(new(anchor,content,FollowAnchorVisibility:false,InsertBefore:before));
             }
@@ -98,45 +95,66 @@ internal static class BlobRunUi
                 ("SortFeatureAxisAngle","Two step spindle angle"),("SortFeatureAxisRatio","MinAxis / LongAxis")})
                 sortFeatures.Add(key,AppLocalizationService.GetLang(resource));
             var sortFeatureId="field:8ca20000000040008000000000000004";
+            var sortInitial=draft.CaptureFields().Read(sortFeatureId);
+            var sortPreview=Create(new Port("ui-only-run.sort-feature",DataType.Text,EditModes:FieldEditModes.Constant,Choices:new TextChoiceConstraint(sortFeatures.Keys)),
+                "排序特征",sortInitial,advanced,FieldEditorKind.Choice,sortFeatures);
+            rows.Add(new(sortFeatureId,sortPreview,FollowAnchorVisibility:false,InsertBefore:true));
             var inner=Create(new Port("ui-only-run.inner-count",DataType.Integer,Storage:NumericStorage.Int32,
-                EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"最大内接矩形输出数量",new ConstantSetting(0L),
+                EditModes:FieldEditModes.Constant|FieldEditModes.Reference),AppLocalizationService.GetLang("RunParam_MaxAreaInnerRectNum"),new ConstantSetting(0L),
                 advanced with{Minimum=0,Maximum=10,DecimalPlaces=0,Increment=1});
-            rows.Add(new(sortAnchor,inner,FollowAnchorVisibility:false));
-            Toggle("outside-pixels","像素超界使能",sortAnchor,false);
+            rows.Add(new("field:8ca20000000040008000000000000003",inner,FollowAnchorVisibility:false));
+            Toggle("outside-pixels",AppLocalizationService.GetLang("RunParam_MaxOutPixelNumEnable"),"field:8ca20000000040008000000000000003",false);
             var suppressed=options.SuppressedFieldRows?.ToHashSet(StringComparer.Ordinal)??new HashSet<string>(StringComparer.Ordinal);
-            suppressed.Add("field:2fff619e51a359a6a9af286c5e8fef65");
+
             suppressed.Add("field:3799fbc2f80e58bf9abc7d2c0ad70067");
 
 
 
             const string mode="field:8ca20000000040008000000000000001";
+            threshold=new NativeThresholdUiDraftControls(externalSingleFields:true,externalDoubleFields:true,externalSoftFields:true);
+            rows.Add(new(mode,threshold,FollowAnchorVisibility:false,InsertBefore:true));
+            suppressed.Add(mode);suppressed.Add(sortFeatureId);
+            var gates=options.FieldVisibilitySources?.ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal)??new Dictionary<string,FrameworkElement>(StringComparer.Ordinal);
+            gates["field:88b45ab61b965761b901670fd587903f"]=threshold.PolarityVisibilitySource;
+            gates["field:43bda03261df55b88f963bd18f2ba4d9"]=threshold.SingleOrDoubleVisibilitySource;
+            gates["field:8ca20000000040008000000000000002"]=threshold.DoubleVisibilitySource;
+            gates["field:8ca20000000040008000000000000010"]=threshold.FixedSoftVisibilitySource;
+            gates["field:8ca20000000040008000000000000011"]=threshold.FixedSoftVisibilitySource;
+            gates["field:8ca20000000040008000000000000012"]=threshold.SoftVisibilitySource;
+            foreach(var suffix in new[]{"13","14","15","16"})gates["field:8ca200000000400080000000000000"+suffix]=threshold.RelativeSoftVisibilitySource;
             var displays=options.ChoiceDisplays?.ToDictionary(entry=>entry.Key,entry=>entry.Value,StringComparer.Ordinal)
                 ??new Dictionary<string,DeclaredChoiceDisplayOptions>(StringComparer.Ordinal);
-            var supportedFeatures=new HashSet<string>(new[]{"SortFeatureArea","SortFeaturePerimeter","SortFeatureCircularity","SortFeatureRect","SortFeatureCentroidX","SortFeatureCentroidY"},StringComparer.Ordinal);
+            var supportedFeatures=new HashSet<string>(new[]{"SortFeatureArea","SortFeaturePerimeter","SortFeatureCircularity","SortFeatureRect","SortFeatureCentroidX","SortFeatureCentroidY","SortFeatureRectX","SortFeatureRectY"},StringComparer.Ordinal);
             displays.Add(sortFeatureId,new(sortFeatures.Select(pair=>new DeclaredChoiceDisplayItem(pair.Key,pair.Value,
                 supportedFeatures.Contains(pair.Key)?pair.Key:null,supportedFeatures.Contains(pair.Key),
                 supportedFeatures.Contains(pair.Key)?null:"该排序特征的正式数值语义尚未实现。"))));
             displays.Add(mode,new(new[]{
-                new DeclaredChoiceDisplayItem("BinaryImage","不进行二值化","None",false,"当前算法语义尚未统一，不能确认或执行此模式。"),
+                new DeclaredChoiceDisplayItem("BinaryImage","不进行二值化","None",true),
                 new DeclaredChoiceDisplayItem("SingleThreshold","单阈值","SingleThreshold",true),
-                new DeclaredChoiceDisplayItem("DoubleThreshold","双阈值","DoubleThreshold",false,"当前双阈值算法极性与原厂显隐不一致，不能确认或执行。"),
-                new DeclaredChoiceDisplayItem("AutoThreshold","自动阈值",null,false,"自动阈值尚未实现。"),
-                new DeclaredChoiceDisplayItem("FixedSoftThreshold","软阈值（固定）",null,false,"固定软阈值尚未实现。"),
-                new DeclaredChoiceDisplayItem("RelativeSoftThreshold","软阈值（相对）",null,false,"相对软阈值尚未实现。")
+                new DeclaredChoiceDisplayItem("DoubleThreshold","双阈值","DoubleThreshold",true),
+                new DeclaredChoiceDisplayItem("AutoThreshold","自动阈值","AutoThreshold",true),
+                new DeclaredChoiceDisplayItem("FixedSoftThreshold","软阈值（固定）","FixedSoftThreshold",true),
+                new DeclaredChoiceDisplayItem("RelativeSoftThreshold","软阈值（相对）","RelativeSoftThreshold",true)
             }));
-            return options with {AdditionalAnchoredContents=rows,SuppressedFieldRows=suppressed,ChoiceDisplays=displays,
-                ReferenceOptions=options.ReferenceOptions is {} reference?reference with{EditableIndex=true}:null,
+            state=new BlobRunUiState(draft,settingsView,threshold,sortPreview,supportedFeatures,created,ranges);
+            observe?.Invoke(state);
+            return options with {AdditionalAnchoredContents=rows,SuppressedFieldRows=suppressed,ChoiceDisplays=displays,FieldVisibilitySources=gates,
                 ValidateUiState=()=>
                 {
                     var previous=options.ValidateUiState?.Invoke();
                     if(!string.IsNullOrEmpty(previous))return previous;
-                    return validateSupportedState is not null?validateSupportedState():"ROI绘制、继承模式及结果显示组合尚未接入正式状态，当前窗口不能执行或保存。";
+                    return validateSupportedState();
                 }};
         }
         catch(Exception failure)
         {
-            try{foreach(var row in conditionalRows)row.Dispose();foreach(var range in ranges)range.Dispose();foreach(var editor in created)editor.Dispose();}
-            catch(Exception cleanup){throw new AggregateException(failure,cleanup);}
+            var errors=new List<Exception>{failure};
+            var cleanup=new Action[]{()=>state?.Dispose(),()=>threshold?.Dispose()}
+                .Concat(conditionalRows.Select(row=>(Action)row.Dispose))
+                .Concat(ranges.Select(range=>(Action)range.Dispose))
+                .Concat(created.Select(editor=>(Action)editor.Dispose));
+            foreach(var action in cleanup)try{action();}catch(Exception error){errors.Add(error);}
+            if(errors.Count>1)throw new AggregateException(errors);
             throw;
         }
     }

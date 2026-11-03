@@ -59,6 +59,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
         Action<double>? projectBoundValue=null,Func<bool>? isCurrent=null,Func<Window?>? getOwner=null)
     {
         _state=state;_layout=presentation?.Layout;_eventRoot=eventRoot;_native=nativeInput;
+        state.EnableNumericModel(_layout);
         _observedAcceptance=state.AcceptanceVersion;
         _observedReference=state.IsReferenceMode;
         _isCurrent=isCurrent;_getOwner=getOwner;_requireStartBinding=requireStartBinding;_projectBoundValue=projectBoundValue;
@@ -87,6 +88,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
                 _arrange.OnStartValueChange+=OnNativeValue;_arrange.OnLeftTypeChange+=OnModeChanged;
             }
             else{_leaf=(Numbers.NumericControl)nativeInput;_leaf.OnNumericClick+=OnLeafValue;}
+            if(_state.NumericModel is {} model)model.Changed+=OnNumericModelChanged;
             _state.Changed+=OnStateChanged;_state.ExplicitlyAccepted+=OnExplicitlyAccepted;
             eventRoot.Loaded+=OnLoaded;eventRoot.Unloaded+=OnUnloaded;eventRoot.IsVisibleChanged+=OnVisibilityChanged;
             eventRoot.IsEnabledChanged+=OnEnabledChanged;
@@ -107,7 +109,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
     }
     private void OnLoaded(object sender,RoutedEventArgs args)
     {
-        if(!Current())return;_active=true;
+        if(!Current())return;_active=true;_arrange?.PrepareBorrowedInteractions(_active&&_eventRoot.IsVisible&&_eventRoot.IsEnabled&&!_presentationHidden);
         _loadGeneration++;
         AttachInput();
         if(_disposed||_state.IsDisposed)return;
@@ -158,7 +160,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
     private void ProjectState()
     {
         if(!Current()||_syncing)return;
-        _syncing=true;
+        _arrange?.RetireBorrowedInteractions();_syncing=true;
         try
         {
             if(_arrange is not null)
@@ -170,7 +172,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
             }
             if(_commit is not {IsDirty:true})_commit?.ProjectAccepted();
             else if(_state.IsReferenceMode)_commit?.ProjectAccepted();
-            if(_commit is null&&(_state.Accepted as ConstantSetting??_state.ConstantBackup) is {} initial&&_arrange is not null)
+            if(_commit is null&&(_state.NumericModel is {} model?model.HasValue?new ConstantSetting(model.Value):null:_state.Accepted as ConstantSetting??_state.ConstantBackup) is {} initial&&_arrange is not null)
             {
                 try{_arrange.StartValue=Convert.ToDouble(NativeNumericSequenceProjection.Single(_state.Port,initial.Value!),CultureInfo.InvariantCulture);}
                 catch(ArgumentException failure){_state.SetSourceError(failure.Message);}
@@ -186,6 +188,11 @@ internal sealed class NativeNumberCoordinator : IDisposable
         try{_commit?.ProjectAccepted();}
         finally{_syncing=false;DrainAcceptedProjection();}
         ProjectState();
+    }
+    private void OnNumericModelChanged()
+    {
+        if(!Current()||_syncing||_commit?.IsDirty==true)return;
+        _syncing=true;try{_commit?.ProjectAccepted();}finally{_syncing=false;DrainAcceptedProjection();}
     }
     private void OnStateChanged()
     {
@@ -258,7 +265,11 @@ internal sealed class NativeNumberCoordinator : IDisposable
             }
             else
             {
-                if(_state.ConstantBackup is {} backup)TrySetConstant(backup.Value!);
+                if(_state.NumericModel is not null)
+                {
+                    if(!_state.TryUseConstant()&&!_state.IsReferenceMode)_commit?.BeginConstantEntry();
+                }
+                else if(_state.ConstantBackup is {} backup)TrySetConstant(backup.Value!);
                 else
                 {
                     _state.TryUseConstant();
@@ -310,7 +321,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
     }
     private void OnUnloaded(object sender,RoutedEventArgs args)
     {
-        _active=false;_loadGeneration++;_resume?.Abort();_resume=null;var owner=_owner;_owner=null;
+        _arrange?.PrepareBorrowedInteractions(false);_active=false;_loadGeneration++;_resume?.Abort();_resume=null;var owner=_owner;_owner=null;
         ParameterCleanup.Run(new Action[]{()=>{if(owner is not null)owner.Deactivated-=OnDeactivated;},
             ()=>_commit?.Suspend(),()=>_referenceScope?.PrepareForVisibility(false),()=>_expansion?.Close(),ClosePopups});
     }
@@ -319,13 +330,13 @@ internal sealed class NativeNumberCoordinator : IDisposable
         if(_disposed)return;
         if(!visible)
         {
-            _presentationHidden=true;_loadGeneration++;_resume?.Abort();_resume=null;
+            _arrange?.PrepareBorrowedInteractions(false);_presentationHidden=true;_loadGeneration++;_resume?.Abort();_resume=null;
             ParameterCleanup.Run(new Action[]{()=>_commit?.Suspend(),()=>_referenceScope?.PrepareForVisibility(false),
                 ()=>_expansion?.Close(),ClosePopups});
         }
         else
         {
-            _presentationHidden=false;_referenceScope?.PrepareForVisibility(_eventRoot.IsEnabled);
+            _presentationHidden=false;_arrange?.PrepareBorrowedInteractions(_active&&_eventRoot.IsVisible&&_eventRoot.IsEnabled&&!_presentationHidden);_referenceScope?.PrepareForVisibility(_eventRoot.IsEnabled);
             if(!_active||!_eventRoot.IsVisible||_commit?.IsSuspended!=true)return;
             QueueResume();
         }
@@ -342,25 +353,27 @@ internal sealed class NativeNumberCoordinator : IDisposable
         if(!Current())return;
         if(!_eventRoot.IsEnabled)
         {
-            _loadGeneration++;_resume?.Abort();_resume=null;
+            _arrange?.PrepareBorrowedInteractions(false);_loadGeneration++;_resume?.Abort();_resume=null;
             ParameterCleanup.Run(new Action[]{()=>_commit?.Suspend(),()=>_referenceScope?.PrepareForVisibility(false),
                 ()=>_expansion?.Close(),ClosePopups});
         }
         else
         {
+            _arrange?.PrepareBorrowedInteractions(_active&&_eventRoot.IsVisible&&!_presentationHidden);
             _referenceScope?.PrepareForVisibility(!_presentationHidden&&_eventRoot.IsVisible);
             QueueResume();
         }
     }
     private void OnVisibilityChanged(object sender,DependencyPropertyChangedEventArgs args)=>PrepareForVisibility(_eventRoot.IsVisible);
     private void OnDeactivated(object? sender,EventArgs args)=>ClosePopups();
+    internal long EditVersion=>_commit?.EditVersion??0;
     public NumericPendingEdit? TakePendingRaw(){_commit?.Suspend();return _commit?.Pending;}
     public void RestorePending(NumericPendingEdit? raw)=>_commit?.RestorePending(raw);
     public void Dispose()
     {
-        if(_disposed)return;_disposed=true;_active=false;_presentationHidden=true;_loadGeneration++;
+        if(_disposed)return;_disposed=true;_arrange?.PrepareBorrowedInteractions(false);_active=false;_presentationHidden=true;_loadGeneration++;
         var cleanup=new List<Action>{Cancel,()=>{_resume?.Abort();_resume=null;},()=>_reference?.SetSuspended(true),()=>_commit?.Suspend(),ClosePopups,
-            ()=>{_state.Changed-=OnStateChanged;_state.ExplicitlyAccepted-=OnExplicitlyAccepted;},
+            ()=>{_state.Changed-=OnStateChanged;_state.ExplicitlyAccepted-=OnExplicitlyAccepted;if(_state.NumericModel is {} model)model.Changed-=OnNumericModelChanged;},
             ()=>{if(_arrange is not null){_arrange.OnStartValueChange-=OnNativeValue;_arrange.OnLeftTypeChange-=OnModeChanged;
                 if(ReferenceEquals(_arrange.SubscribeDataLeft,_reference))_arrange.SubscribeDataLeft=null;}
                 else if(_leaf is not null)_leaf.OnNumericClick-=OnLeafValue;},

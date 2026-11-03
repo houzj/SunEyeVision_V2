@@ -33,7 +33,7 @@ public sealed class BlobDisplayDefinition
                     throw new InvalidDataException("An unavailable display column cannot declare an output member or numeric format.");
                 return new ResultColumnDescriptor(Required(item,"key"),Required(item,"label"),null,UnavailableReason:unavailable.Value);
             }
-            var source=new ResultFieldPath(port,[Required(item,"member")]);
+            var source=new ResultFieldPath(port,Required(item,"member").Split('/'));
             return new ResultColumnDescriptor(Required(item,"key"),Required(item,"label"),source,Attribute(item,"unit"),Integer(item,"decimals",0,15),
                 null,new(port,["rotated-bounds"]),new(port,["region"]));
         }),new(port),Required(table,"identity"));

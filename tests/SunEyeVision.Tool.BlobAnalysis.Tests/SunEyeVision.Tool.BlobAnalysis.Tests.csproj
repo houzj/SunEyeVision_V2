@@ -41,4 +41,5 @@
       <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="$([System.String]::Copy('%(ReferenceCopyLocalPaths.Filename)').StartsWith('SunEyeVision.'))" />
     </ItemGroup>
   </Target>
+  <ItemGroup><Reference Include="halcondotnetxl"><HintPath>$(HalconSourceRoot)/net/halcondotnetxl.dll</HintPath><Private>false</Private></Reference></ItemGroup>
 </Project>

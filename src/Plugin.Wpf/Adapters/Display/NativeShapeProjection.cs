@@ -7,11 +7,29 @@ using SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.Base.ImageView.Shape;
 
 namespace SunEyeVision.Plugin.Wpf.Adapters.Display;
 
-internal sealed record PreparedNativeShapes(object[] Items, int Count, int Vertices);
+internal sealed record PreparedNativeShapes(object[] Items, int Count, int Vertices, object[]? PresentationItems = null);
 
 /// <summary>Nonvisual projection to original interfaces. Never scales coordinates or owns a view.</summary>
-internal static class NativeShapeProjection
+internal static partial class NativeShapeProjection
 {
+    // Keep semantic rows separate from the original result-list packaging. Other
+    // independently owned selection/ROI/cross layers retain their direct items.
+    internal static object[] Presentation(object[] items,
+        SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.ImageViewBox view)
+    {
+        var result = new List<object>();
+        if(items.Any(item=>item is IOutlinePoint))result.Add(new OutlineBatch());
+        for (var index = 0; index < items.Length;)
+        {
+            var first = items[index];
+            if (first is IMultiText) { result.Add(first); index++; continue; }
+            var type = first.GetType(); var run = new List<object>();
+            do { run.Add(items[index++]); }
+            while (index < items.Length && items[index].GetType() == type);
+            DrawShapeHelper.DrawShapes(run, result, view, isLowQuality: false);
+        }
+        return result.ToArray();
+    }
     internal static PreparedNativeShapes Texts(IReadOnlyList<NativeTextOverlay> texts, int maximum)
     {
         ArgumentNullException.ThrowIfNull(texts);

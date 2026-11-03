@@ -1,4 +1,4 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -53,7 +53,8 @@ public sealed partial class NativeResultViewport : IDisposable
         {
             view.NativePrepareExport = _prepareExport;
             foreach (var path in new[] { "Themes/Native/OriginalTheme.xaml", "Themes/Native/Display/ImageViewport/base/imageview/shape/shapeitemspagestyle.xaml",
-                "Themes/Native/Display/ImageViewport/base/imageview/shape/crossshape/crossshapestyle.xaml" })
+                "Themes/Native/Display/ImageViewport/base/imageview/shape/crossshape/crossshapestyle.xaml",
+                "Themes/Native/Display/ImageViewport/base/imageview/shape/multipointshape/multipointshapestyle.xaml" })
             {
                 var resource = new ResourceDictionary { Source = new Uri("/SunEyeVision.Plugin.Wpf;component/" + path, UriKind.Relative) };
                 _resources.Add(resource); view.Resources.MergedDictionaries.Add(resource);

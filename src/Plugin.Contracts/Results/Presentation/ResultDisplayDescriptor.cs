@@ -1,4 +1,4 @@
-namespace SunEyeVision.Plugin.Contracts.Results.Presentation;
+﻿namespace SunEyeVision.Plugin.Contracts.Results.Presentation;
 
 /// <summary>Presentation-only fields: persisted with the tool, never invocation inputs or algorithm parameters.</summary>
 public interface IToolResultDisplayProvider
@@ -15,20 +15,22 @@ public sealed record ResultTextAppearance(bool Visible,string Content,ResultDisp
     double FontSize,double Opacity,double X,double Y,DisplayExpressionSetting? Expression=null,ParameterSetting? PositionX=null,ParameterSetting? PositionY=null);
 /// <summary>Pure immutable appearance. Its host revision is independent of invocation/run identity.</summary>
 public sealed record ResultDisplayAppearance(ResultGraphicAppearance Graphic,ResultTextAppearance Text,
-    ResultGraphicAppearance? Inspection=null,ResultGraphicAppearance? Mask=null,ResultGraphicAppearance? Annulus=null);
+    ResultGraphicAppearance? Inspection=null,ResultGraphicAppearance? Mask=null,ResultGraphicAppearance? Annulus=null,bool OutlineVisible=false);
 
 /// <summary>Only declared same-row output paths. Does not own values, resources, callbacks or a renderer.</summary>
 public sealed class ResultDisplayDescriptor
 {
     public ResultDisplayDescriptor(ResultFieldPath rows,ResultFieldPath identity,ResultFieldPath quadrilateral,
-        ResultFieldPath geometrySource,ResultFieldPath textValue,ResultFieldPath passed)
-    {Rows=rows;Identity=identity;Quadrilateral=quadrilateral;GeometrySource=geometrySource;TextValue=textValue;Passed=passed;}
+        ResultFieldPath geometrySource,ResultFieldPath textValue,ResultFieldPath passed,ResultFieldPath? outline=null)
+    {Rows=rows;Identity=identity;Quadrilateral=quadrilateral;GeometrySource=geometrySource;TextValue=textValue;Passed=passed;Outline=outline;}
     public ResultFieldPath Rows {get;}
     public ResultFieldPath Identity {get;}
     public ResultFieldPath Quadrilateral {get;}
     public ResultFieldPath GeometrySource {get;}
     public ResultFieldPath TextValue {get;}
     public ResultFieldPath Passed {get;}
+    public ResultFieldPath? Outline {get;}
+    public IReadOnlyList<OutputValueRequest> RequiredOutputs=>Outline is null?Array.Empty<OutputValueRequest>():new[]{new OutputValueRequest(Outline.PortId,Outline.MemberFieldPath)};
     public void Validate(ToolSchema schema)
     {
         var rows=Rows.Resolve(schema);
@@ -41,6 +43,16 @@ public sealed class ResultDisplayDescriptor
         {var type=path.Resolve(schema);if(type.Shape!=ValueShape.Sequence)throw new ArgumentException("Display member lost its row cardinality.");return type.Element!;}
         if(Element(Identity)!=DataType.Integer||Element(Passed)!=DataType.Boolean||Element(TextValue)!=DataType.Number
             ||Element(GeometrySource)!=TypeRef.ResourceOf(ResourceKind.Region))throw new ArgumentException("Display identity, status, value or physical geometry source differs from its declaration.");
+        if(Outline is {} outline)
+        {
+            if(outline.PortId!=Rows.PortId||outline.MemberFieldPath.Count!=Rows.MemberFieldPath.Count+1||!outline.MemberFieldPath.Take(Rows.MemberFieldPath.Count).SequenceEqual(Rows.MemberFieldPath))
+                throw new ArgumentException("Outline must address the same result rows.");
+            var boundary=Element(outline);
+            var paths=boundary.Fields.SingleOrDefault(port=>port.Id=="paths")?.Type;
+            var points=paths?.Element?.Fields.SingleOrDefault(port=>port.Id=="points")?.Type;
+            if(boundary.Shape!=ValueShape.Record||paths?.Shape!=ValueShape.Sequence||points?.Shape!=ValueShape.Sequence||points.Element?.Geometry!=GeometryKind.Point)
+                throw new ArgumentException("Outline requires boundary paths and point geometry.");
+        }
         var geometry=Element(Quadrilateral);
         if(geometry.Shape!=ValueShape.Sequence||geometry.Element?.Shape!=ValueShape.Geometry||geometry.Element.Geometry!=GeometryKind.Point||geometry.Count!=CountConstraint.Exactly(4))
             throw new ArgumentException("Display quadrilaterals require declared point sequences.");

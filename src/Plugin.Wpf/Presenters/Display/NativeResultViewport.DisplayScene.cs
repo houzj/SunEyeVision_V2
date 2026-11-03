@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Adapters.Display;
+﻿using SunEyeVision.Plugin.Wpf.Adapters.Display;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Display;
 
@@ -14,7 +14,7 @@ public sealed partial class NativeResultViewport
     {
         internal DisplaySceneLayer(NativeResultViewport owner,int order):base(owner,order){}
         public bool Present(NativeResultFrameReceipt receipt,long revision,IReadOnlyList<NativeGeometryOverlay> geometry,
-            IReadOnlyList<NativeTextOverlay> texts,Func<bool> isCurrent,IReadOnlyList<NativeRoiResultOverlay>? roi=null)
+            IReadOnlyList<NativeTextOverlay> texts,Func<bool> isCurrent,IReadOnlyList<NativeRoiResultOverlay>? roi=null,IReadOnlyList<NativeOutlineOverlay>? outlines=null)
             =>Present(receipt,revision,isCurrent,(owner,current)=>
             {
                 if(texts.Sum(text=>(long)(text.Content?.Length??0))>1_000_000)throw new ArgumentException("text-budget: 场景文字超过资源预算。");
@@ -23,7 +23,10 @@ public sealed partial class NativeResultViewport
                 var words=NativeShapeProjection.Texts(texts,owner.ShapeBudget);
                 if(!current())throw new NativeProjectionRetiredException();
                 var regions=NativeRoiResultProjection.Prepare(receipt,roi??Array.Empty<NativeRoiResultOverlay>(),owner.ShapeBudget,owner._shapeLimits.MaximumPolygonVertices,current);
-                return new PreparedNativeShapes(shapes.Items.Concat(regions.Items).Concat(words.Items).ToArray(),checked(shapes.Count+regions.Count+words.Count),checked(shapes.Vertices+regions.Vertices));
+                var points=NativeShapeProjection.Outlines(receipt,outlines??Array.Empty<NativeOutlineOverlay>(),owner.ShapeBudget,owner._shapeLimits.MaximumPolygonVertices,current);
+                var items=shapes.Items.Concat(regions.Items).Concat(words.Items).Concat(points.Items).ToArray();
+                return new PreparedNativeShapes(items,checked(shapes.Count+regions.Count+words.Count+points.Count),checked(shapes.Vertices+regions.Vertices+points.Vertices),
+                    NativeShapeProjection.Presentation(items,owner._view));
             });
     }
 }

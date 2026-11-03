@@ -1,4 +1,5 @@
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using SunEyeVision.Plugin.Wpf.Fields;
 
 namespace SunEyeVision.Plugin.Wpf.Adapters.Fields;
@@ -15,6 +16,48 @@ internal sealed class DeclaredFieldState : IDisposable
     private readonly bool _allowUnboundReference;
     private bool _writing;
     private bool _referenceCleared;
+    internal NativeNumericModel? NumericModel {get;private set;}
+    private long _numericRead;
+    internal int NumericEndpoint {get;set;}=-1;
+    internal DeclaredFieldState? NumericPeer {get;set;}
+    internal Action<object>? NumericCheck {get;set;}
+    internal string ReadNumericComparisonString()
+    {
+        ObjectDisposedException.ThrowIf(IsDisposed,this);
+        var value=_readCurrentValue?.Invoke()??throw new InvalidOperationException("普通参数不可用。");
+        // Only the original Check bridge consumes a raw ordinary string. Explicit
+        // model reads still validate the formal CLR type and storage separately.
+        if(value.Value is string raw)return raw;
+        var scalar=NativeNumericSequenceProjection.Single(Port,ValueRules.Freeze(Port,value.Value)!);
+        return Convert.ToString(scalar,System.Globalization.CultureInfo.InvariantCulture)??throw new InvalidOperationException("普通参数没有字符串值。");
+    }
+    internal void EnableNumericModel(FieldLayout? layout)=>NumericModel??=new(Port,layout,_accepted);
+    internal NumericModelReadResult ReadNumericModel(Func<bool>? current=null,Func<ConstantSetting?>? readCurrentValue=null)
+    {
+        var peer=NumericPeer;var peerAcceptance=peer?.AcceptanceVersion;var peerVersion=peer?.NumericModel?.Version;
+        var numericVersion=NumericModel?.Version;
+        bool Current()=>!IsDisposed&&(current?.Invoke()??true)&&!IsDisposed
+            &&(peer is null||!peer.IsDisposed&&peer.AcceptanceVersion==peerAcceptance&&peer.NumericModel?.Version==peerVersion)
+            &&NumericModel?.Version==numericVersion;
+        if(!Current())return new(Port.Id,NumericModelReadStatus.Retired);
+        if(NumericModel is not {} model)return new(Port.Id,NumericModelReadStatus.NotApplicable);
+        var request=++_numericRead;var acceptance=AcceptanceVersion;
+        try
+        {
+            var read=readCurrentValue??_readCurrentValue;var value=read?.Invoke();
+            if(!Current()||request!=_numericRead||acceptance!=AcceptanceVersion)return new(Port.Id,NumericModelReadStatus.Retired);
+            if(value is null)return new(Port.Id,NumericModelReadStatus.Unavailable);
+            var prepared=model.ReadProjection(value.Value!);NumericCheck?.Invoke(value.Value!);
+            if(!Current()||request!=_numericRead||acceptance!=AcceptanceVersion)return new(Port.Id,NumericModelReadStatus.Retired);
+            var scalar=NativeNumericSequenceProjection.Single(Port,value.Value!);
+            var changed=!Equals(model.CurValue,scalar)||!model.HasValue;
+            numericVersion=model.Version+(changed?1:0);
+            var status=model.Install(scalar);
+            return !Current()||request!=_numericRead||acceptance!=AcceptanceVersion?new(Port.Id,NumericModelReadStatus.Retired):new(Port.Id,status);
+        }
+        catch(Exception error)
+        {return new(Port.Id,Current()&&request==_numericRead&&acceptance==AcceptanceVersion?NumericModelReadStatus.Failed:NumericModelReadStatus.Retired,error.Message);}
+    }
     public Port Port { get; }
     internal ParameterReferenceBehavior ReferenceBehavior {get;}
     public ParameterSetting Accepted => CopySetting(_accepted);
@@ -25,7 +68,7 @@ internal sealed class DeclaredFieldState : IDisposable
             if(IsDisposed)return null;
             // A production host owns current values. Missing host data must not silently
             // resurrect a pre-subscription backup or an XML default.
-            if(_readCurrentValue is {} read&&_accepted is ReferenceSetting or VariableSetting)
+            if(NumericModel is null&&_readCurrentValue is {} read&&_accepted is ReferenceSetting or VariableSetting)
             {
                 var value=read();
                 return IsDisposed||value is null?null:(ConstantSetting)CopySetting(value);
@@ -117,7 +160,7 @@ internal sealed class DeclaredFieldState : IDisposable
             foreach(var (state,value) in prepared)
             {
                 state._accepted=value.Setting;state._constantBackup=value.ConstantBackup;state.IsReferenceMode=value.ReferenceMode;
-                state._referenceCleared=false;state.EditError="";state.SourceError="";state.AcceptanceVersion++;
+                state._referenceCleared=false;state.EditError="";state.SourceError="";state.AcceptanceVersion++;state.NumericModel?.Accept(value.Setting);
             }
         }
         finally{foreach(var state in states)state._writing=false;}
@@ -179,7 +222,7 @@ internal sealed class DeclaredFieldState : IDisposable
                 if(value is ConstantSetting constant)state._constantBackup=constant;
                 state.IsReferenceMode=referenceMode;state._referenceCleared=false;state.EditError="";
                 if(clearSourceError)state.SourceError="";
-                state.AcceptanceVersion++;
+                state.AcceptanceVersion++;state.NumericModel?.Accept(value);
             }
             accepted=true;
         }
@@ -247,9 +290,17 @@ internal sealed class DeclaredFieldState : IDisposable
         IsReferenceMode = true; Changed?.Invoke();
     }
 
-    public bool TryUseConstant()
+    public bool TryUseConstant(Func<ConstantSetting,bool>? accept=null)
     {
         if (IsDisposed) return false;
+        if(NumericModel is not null&&(Port.EditModes&FieldEditModes.Constant)==0){SetEditError("此字段不允许常量。");return false;}
+        if(NumericModel is {} model&&_accepted is ReferenceSetting or VariableSetting)
+        {
+            var result=ReadNumericModel();
+            if(result.Status is NumericModelReadStatus.Updated or NumericModelReadStatus.Unchanged)return accept is null?TrySet(model.Prepare(model.Value!)):accept(model.Prepare(model.Value!));
+            if(IsDisposed)return false;
+            IsReferenceMode=false;EditError=result.Error??"普通参数不可用，请输入新的常量值；正式引用在有效提交前保持。";Changed?.Invoke();return false;
+        }
         if (ConstantBackup is { } value) return TrySet(value);
         if((Port.EditModes&FieldEditModes.Constant)==0){SetEditError("此字段不允许常量。");return false;}
         IsReferenceMode=false;
@@ -343,6 +394,6 @@ internal sealed class DeclaredFieldState : IDisposable
     public void Dispose()
     {
         if (IsDisposed) return;
-        IsDisposed = true; Changed = null;ExplicitlyAccepted=null; _write = null;_validate=null;_propose=null;_readCurrentValue=null;
+        IsDisposed = true; _numericRead++;NumericModel?.Retire(); NumericPeer=null;NumericCheck=null;Changed = null;ExplicitlyAccepted=null; _write = null;_validate=null;_propose=null;_readCurrentValue=null;
     }
 }

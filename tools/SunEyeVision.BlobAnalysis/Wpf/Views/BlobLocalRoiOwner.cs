@@ -1,4 +1,4 @@
-﻿using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.Regions;
 using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;

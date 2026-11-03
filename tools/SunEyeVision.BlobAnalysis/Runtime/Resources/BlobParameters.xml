@@ -14,6 +14,9 @@
       <Choice key="None" label="不进行二值化" />
       <Choice key="SingleThreshold" label="单阈值" />
       <Choice key="DoubleThreshold" label="双阈值" />
+      <Choice key="AutoThreshold" label="自动阈值" />
+      <Choice key="FixedSoftThreshold" label="软阈值（固定）" />
+      <Choice key="RelativeSoftThreshold" label="软阈值（相对）" />
     </Parameter>
     <Parameter id="Type" type="Enum" default="Binary" label="极性" fieldId="field:88b45ab61b965761b901670fd587903f" allowReference="false" visibleWhen="SegmentationMode" visibleValue="DoubleThreshold" visibleNegate="true">
       <Choice key="Binary" label="亮于背景" />
@@ -21,11 +24,18 @@
     </Parameter>
     <Parameter id="Threshold" bindingName="LowThreshold" type="Integer" default="100" label="低阈值" minimum="0" maximum="255" decimals="0" increment="1" fieldId="field:43bda03261df55b88f963bd18f2ba4d9" allowReference="true" visibleWhen="SegmentationMode" visibleValue="None" visibleNegate="true" />
     <Parameter id="UpperThreshold" bindingName="HightThreshold" type="Integer" default="150" label="高阈值" minimum="0" maximum="255" decimals="0" increment="1" fieldId="field:8ca20000000040008000000000000002" allowReference="true" visibleWhen="SegmentationMode" visibleValue="DoubleThreshold" />
+    <Parameter id="FixedSoftLowerThreshold" bindingName="LowSoftThreshold" type="Integer" default="100" label="阈值范围" minimum="1" maximum="255" decimals="0" increment="1" fieldId="field:8ca20000000040008000000000000010" allowReference="true" visibleWhen="SegmentationMode" visibleValue="FixedSoftThreshold" pairWith="FixedSoftUpperThreshold" />
+    <Parameter id="FixedSoftUpperThreshold" bindingName="HightSoftThreshold" type="Integer" default="150" label="高阈值" minimum="0" maximum="255" decimals="0" increment="1" fieldId="field:8ca20000000040008000000000000011" allowReference="true" visibleWhen="SegmentationMode" visibleValue="FixedSoftThreshold" />
+    <Parameter id="ThresholdSoftness" bindingName="Softness" type="Integer" default="254" label="软阈值柔和度" minimum="0" maximum="254" decimals="0" increment="1" fieldId="field:8ca20000000040008000000000000012" allowReference="true" />
+    <Parameter id="RelativeLeftRatio" bindingName="SoftLeftRatio" type="Integer" default="5" label="低尾部比例" minimum="0" maximum="100" decimals="0" increment="1" fieldId="field:8ca20000000040008000000000000013" allowReference="true" visibleWhen="SegmentationMode" visibleValue="RelativeSoftThreshold" />
+    <Parameter id="RelativeRightRatio" bindingName="SoftRightRatio" type="Integer" default="5" label="高尾部比例" minimum="0" maximum="100" decimals="0" increment="1" fieldId="field:8ca20000000040008000000000000014" allowReference="true" visibleWhen="SegmentationMode" visibleValue="RelativeSoftThreshold" />
+    <Parameter id="RelativeLowerRatio" bindingName="SoftLowRatio" type="Integer" default="40" label="低阈值比例" minimum="0" maximum="100" decimals="0" increment="1" fieldId="field:8ca20000000040008000000000000015" allowReference="true" visibleWhen="SegmentationMode" visibleValue="RelativeSoftThreshold" />
+    <Parameter id="RelativeUpperRatio" bindingName="SoftHighRatio" type="Integer" default="60" label="高阈值比例" minimum="0" maximum="100" decimals="0" increment="1" fieldId="field:8ca20000000040008000000000000016" allowReference="true" visibleWhen="SegmentationMode" visibleValue="RelativeSoftThreshold" />
     <Parameter id="BlobCountLimit" bindingName="FindNum" type="Integer" default="100" label="查找个数" minimum="1" maximum="20000" decimals="0" increment="1" fieldId="field:e748553b7cb45d1a8003c2b345b1d98f" allowReference="true" />
     <Parameter id="IsAreaFilterEnabled" type="Boolean" default="true" label="面积使能" fieldId="field:e9845ab7a46e5ee9b42310bef5a11c19" allowReference="false" />
     <Parameter id="FilterAreaMin" bindingName="MinArea" type="Integer" default="10" label="面积下限" minimum="1" maximum="999999999" decimals="0" increment="1" fieldId="field:fcdb01b095c25c6ea22384f993450aac" allowReference="true" pairWith="FilterAreaMax" visibleWhen="IsAreaFilterEnabled" visibleValue="true" />
     <Parameter id="FilterAreaMax" bindingName="MaxArea" type="Integer" default="999999999" label="面积上限" minimum="1" maximum="999999999" decimals="0" increment="1" fieldId="field:cdce3e942b555fa58489e08eeb39236f" allowReference="true" visibleWhen="IsAreaFilterEnabled" visibleValue="true" />
-    <Parameter id="OutputGrayImage" type="Boolean" default="true" label="灰度图像输出" fieldId="field:2fff619e51a359a6a9af286c5e8fef65" allowReference="false" />
+    <Parameter id="OutputBlobImage" type="Boolean" default="true" label="Blob图像输出" fieldId="field:2fff619e51a359a6a9af286c5e8fef65" allowReference="false" />
     <Parameter id="OutputBinaryImage" type="Boolean" default="true" label="二值化图像输出" fieldId="field:73f2c01e7b385e0ab2d35f739a88e718" allowReference="false" />
     <Parameter id="OutputBoundary" type="Boolean" default="false" label="轮廓输出" fieldId="field:3799fbc2f80e58bf9abc7d2c0ad70067" allowReference="false" />
   </Group>
@@ -43,6 +53,8 @@
       <Choice key="SortFeatureRect" label="矩形度" />
       <Choice key="SortFeatureCentroidX" label="质心X" />
       <Choice key="SortFeatureCentroidY" label="质心Y" />
+      <Choice key="SortFeatureRectX" label="矩形左上X" />
+      <Choice key="SortFeatureRectY" label="矩形左上Y" />
     </Parameter>
     <Parameter id="SortMode" type="Enum" default="SortModeDecend" label="排序方式" fieldId="field:cb01714e6b0b503a812fe7a99f1c815e" allowReference="false">
       <Choice key="SortModeAscend" label="升序" />

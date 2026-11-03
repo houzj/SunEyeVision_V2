@@ -1,4 +1,4 @@
-﻿using SunEyeVision.Plugin.Wpf.Adapters.References;
+using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.Windows;
 using System.ComponentModel;
 using SunEyeVision.Plugin.Contracts;
@@ -21,19 +21,25 @@ public static class BlobDesignData
     {
         // Attach to the real child, so displaying the root XAML does not depend on its code-behind constructor.
         if(args.NewValue is true&&DesignerProperties.GetIsInDesignMode(view)&&view is DeclaredSettingsView presenter)
-        {var sample=CreateParameterContext();presenter.Bind(sample.Draft,sample.Options);}
+        {var sample=CreateParameterContext();BindParameterContext(presenter,sample);}
     }
     public static (IToolSettingsDraft Draft,ToolSettingsViewOptions Options) CreateParameterContext()
     {
         var draft=new DesignDraft();var schema=draft.Tool.Describe();
         var inputs=new DeclaredInputFieldsView(schema,_=>new UnsetSetting(),(_,_)=>{},ReferenceFieldOptions.Empty);
-        var pose=BlobRoiUi.Add(inputs);
-        const string position="field:c95f3a26edf55097863a7ec47d17cce5";
-        return(draft,BlobDisplayUi.AddUnavailableRows(BlobRunUi.AddUnavailableRows(new(ReferenceOptions:ReferenceFieldOptions.Empty,InputSection:schema.Presentation!.Fields.First().Layout!.Page,InputContent:inputs,
-            AdditionalAfterField:position,AdditionalAfterContent:pose,AdditionalAfterCondition:new(position,true),
-            HeaderlessSectionAnchors:new HashSet<string>{position},
-            FieldVisibilitySources:new Dictionary<string,FrameworkElement>{{position,
-                ((SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeAssistUiDraftControls)pose).GraphicVisibilitySource!}})),draft.Schema));
+        return(draft,new(ReferenceOptions:ReferenceFieldOptions.Empty,InputSection:schema.Presentation!.Fields.First().Layout!.Page,InputContent:inputs));
+    }
+    private static readonly DependencyProperty CompositionProperty=DependencyProperty.RegisterAttached("Composition",typeof(BlobUiComposition),typeof(BlobDesignData));
+    internal static BlobUiComposition? GetComposition(DeclaredSettingsView presenter)=>presenter.GetValue(CompositionProperty) as BlobUiComposition;
+    public static void BindParameterContext(DeclaredSettingsView presenter,(IToolSettingsDraft Draft,ToolSettingsViewOptions Options) context)
+    {
+        if(GetComposition(presenter) is {} previous)
+        {
+            if(!previous.IsDisposed&&ReferenceEquals(previous.Draft,context.Draft)&&ReferenceEquals(previous.BaseOptions,context.Options))
+            {previous.RebindSameContext();return;}
+            previous.Dispose();presenter.ClearValue(CompositionProperty);
+        }
+        var composition=new BlobUiComposition(presenter,context.Draft,context.Options);presenter.SetValue(CompositionProperty,composition);
     }
     private sealed class DesignDraft : IToolSettingsDraft
     {
@@ -82,8 +88,8 @@ public static class BlobResultDesignData
             var points=new[]{new Point2(20,20),new Point2(40,20),new Point2(40,32),new Point2(20,32)};
             var secondPoints=new[]{new Point2(49,33),new Point2(61,33),new Point2(61,41),new Point2(49,41)};
             var records=new[] {
-                new BlobMeasurement(1,1,240,64,30,26,0.74,0.92,new BlobBounds(20,20,20,12),points,Array.Empty<BlobBoundaryPath>(),region,true),
-                new BlobMeasurement(2,2,96,40,55,37,0.81,0.88,new BlobBounds(49,33,12,8),secondPoints,Array.Empty<BlobBoundaryPath>(),region,true)
+                new BlobMeasurement(1,1,240,64,30,26,0.74,0.92,new BlobBounds(20,20,20,12),new BlobOrientedBounds(30,26,20,12,0),points,Array.Empty<BlobBoundaryPath>(),region,true),
+                new BlobMeasurement(2,2,96,40,55,37,0.81,0.88,new BlobBounds(49,33,12,8),new BlobOrientedBounds(55,37,12,8,0),secondPoints,Array.Empty<BlobBoundaryPath>(),region,true)
             };
             object? Sample(Port port)
             {

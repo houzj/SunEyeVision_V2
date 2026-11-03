@@ -27,6 +27,15 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
     private readonly ReferenceWindowOwner _referenceWindowOwner;
     private readonly bool _ownsReferenceWindowOwner;
     public IReadOnlyList<DeclaredFieldEditor> Fields {get;}
+    internal IReadOnlyList<NumericModelReadResult> ReadNumericModels(NumericModelReadScope scope,string? fieldId,bool pageKnown,bool currentPage,Func<bool> current,
+        IReadOnlyDictionary<string,ConstantSetting?>? currentValues=null)
+    {
+        var candidates=_fields.Where(field=>scope==NumericModelReadScope.Field?field.FieldId==fieldId:field.HasNumericModel).ToArray();
+        if(scope==NumericModelReadScope.CurrentPage&&!currentPage)
+            return pageKnown?Array.Empty<NumericModelReadResult>():Array.AsReadOnly(candidates.Select(field=>new NumericModelReadResult(field.FieldId,NumericModelReadStatus.NotApplicable,"输入组合未声明可证明的页面归属。" )).ToArray());
+        return Array.AsReadOnly(candidates.Select(field=>field.ReadNumericModel(()=>!_disposed&&current(),
+            currentValues is not null&&currentValues.TryGetValue(field.FieldId,out var value)?()=>value:null)).ToArray());
+    }
     public DeclaredInputFieldsView(ToolSchema schema,Func<Port,ParameterSetting> read,
         Action<Port,ParameterSetting> write,ReferenceFieldOptions references,
         Func<OutputReference,string>? format=null,
@@ -36,8 +45,10 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
         _ownsReferenceWindowOwner=references.WindowOwner is null;_referenceWindowOwner=references.WindowOwner??new ReferenceWindowOwner(this,()=>!_disposed,new(),false);references=references with{WindowOwner=_referenceWindowOwner};
         _references=references;_formatReference=format;
         Fields=_fields.AsReadOnly();
+        using var sharedResourceScope=SunEyeVision.Plugin.Wpf.EditorResources.BeginSharedResourceScope();
         try
         {
+            Resources.MergedDictionaries.Add(SunEyeVision.Plugin.Wpf.EditorResources.Create());
             var declarations=(schema.Presentation??throw new ArgumentException("Input presentation is required.")).Fields
                 .Select(field=>(Field:field,Port:schema.Inputs.Single(port=>port.Id==field.FieldId),
                     Section:field.Layout?.Section??throw new ArgumentException("Input section is required."))).ToArray();

@@ -64,6 +64,8 @@ public partial class ImageSourceParameterEditor : UserControl, IToolSettingsView
         if(_source is not null)_source.Changed+=OnSourceChanged;
     }
 
+    public IReadOnlyList<NumericModelReadResult> ReadNumericModels(NumericModelReadScope scope,string? fieldId=null)
+    { ObjectDisposedException.ThrowIf(_disposed,this); return Editor.ReadNumericModels(scope,fieldId); }
     public FrameworkElement View => this;
     public bool HasInvalidInput => Editor.HasInvalidInput;
     public bool HasPendingEdits=>Editor.HasPendingEdits;

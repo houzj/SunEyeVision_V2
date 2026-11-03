@@ -1,0 +1,206 @@
+{
+  "status": "已核所请求可视组合与数值回读新增前置；接收方须按自身新架构独立构建集成，不是已验其分支",
+  "sourceBaseline": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+  "commitOrder": [
+    "88bd05264",
+    "4ce3c9007",
+    "74dd0c459",
+    "37b0f5fe8",
+    "78453550f",
+    "f48aef12f",
+    "a5d1d138f"
+  ],
+  "duplicateCommits": "7e50f146c与616fdb3df同一显式读回补丁，不重复合；旧宿主文件只取职责不复制",
+  "productFiles": [
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "51ADFB36FC7E8C3D68A354A2A9099C2FA8596D7F98D82FE843F9D0AB8AD01D71"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "BD2DC0DB7BA31D9564F91516481DCBD69CA14183A7A635EAC36B029D36AE6198"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericModel.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "560A4E59FB0D35689F6A6335E23BD943CB25787D83D2253F6DEB14CC3D9851B0"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldOptions.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "2930D3404F7F94AD403B152E70AC9804FB27E517579B3EA106472B7373B9BAC2"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/Arranged/SliderArrangeBase.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "97816C5A8F10CB23841FECD7D83C364F493812A2EE343FF83A1B69FCDF31BB62"
+    },
+    {
+      "path": "src/Plugin.Wpf/EditorResources.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "26962C711C5F2F1287FC33BE876A9399E45561A3B7DD0D86133DFCE754B06E8C"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldAccess.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "C58A6F6591B30C0557AF694811A0187E3B9D73734C05C1416ACB666D6CC7C5FE"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "A59F0D45796260DB8A5B13AF0FEC78BAB733B58E2AD3A3E89464CE02547FDFD2"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "00CADD045255FC723FC60CE140F74A1D7DBFAD7C48E6C86D1156064358C334B6"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.NumericModels.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "CB4E56382EFD1AA09D6209A173E359789FB2814688E5D12BC0D542981A71414D"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "4A0D152FDBDB9BC6222E1F854E8FB7FF245E6135CEF33AA061035B830843B7A5"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "CF7381F9B40951A2F14CBCF66A918E7DE156BF499D2E01C256A79B9C8AF801A8"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredInputFieldsView.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "E76DFE1E321E7D86E9763EC2ECF8281E721185CAA6CBE0BFEEAB5522C50B5145"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "EEB9564B997EEDC18F50A8F79130AD8A44332F3AFF975D4D10C3FC5F6074A345"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "EA11EEF0F1B59AE8F336F9C7F37F29525679489BBB3D1CC5796946FD622AED30"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Parameters/NumericModelReadResult.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "81932AF8F0F4A21DBEDBA7AD8A768F529D57F54BFDF14133FCA14281FCA1A6AF"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/BlobEditorFactory.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "A732B9BA9F5E3B38475098CF0E4EAE5A37C64B4E9969E785D2E5712657E1DFA4"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/BlobResultViewFactory.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "F76460D80FD8792B784EB5D0495FF28F7113DDCE1210D71634728ECAB904EEFB"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Design/BlobDesignData.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "8437CD654BB1D18F92ED3D5120FC647C5CE1E5636F3879D4756C9A55B34BED49"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/packages.lock.json",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "A192D78AEDFE5E9E9DF06CBAEAF485A1BE525D2EE4B7D8DD9827281E32020AFB"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/SunEyeVision.BlobAnalysis.Wpf.csproj",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "CDEF4605FD3CC258B5826C0EFEB70944E3845902722A0199F083664758939A70"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobDisplayUi.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "C2252110F1515E3575F11F6266373B69798C0C25716CF3FBB989A8464E662820"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobLocalRoiOwner.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "AA2A67D5FC0FF8B237A60DFCDA215683C675E552E9BEFC6CC43EC02FDF6CCB0E"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobLocalRoiOwner.Preview.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "174F5F69AB237F96DA0BE5B4852F1BB623E22316D404002C43ADF335ED981E67"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobLocalRoiProjection.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "B4D40974F3E32F3447FC18FC3056E12A7DDB54C69E6F3927CA3D8429BD35A7D0"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "C6264E9ADF29A4081DC22F65CB42D032AA554668ADBE557602A5B3E7014D6872"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "0FEC217F263B89C5900237DF6B563EFC75D5CC2D23414804D1A6763D3F3A093A"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobResultView.xaml",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "CDF42F08F16014C7A29089189EB25D25521549773A33CB872A496BD4B0166F08"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobResultView.xaml.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "B22DD3F6D52C3B3521C78B730509349DB0CAEB3A7C20D715B820113649859CCB"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRoiUi.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "BB2378404917607FA7D6035491BD777B5DCF4C88633507128CFC8D2024598902"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRunUi.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "53A35F165A6262059918BA147BD5BA1300A8AF0C65CD2D6B05615772E4A1F49F"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRunUiState.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "D049E4FB6DC054E3A1A52B4CC50F01D4474C24433D344F67903A80D42C67C6D2"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobSupportedWindowState.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "595477BB75A7FE04A343F7D7A2B1978C028EA7C996D7F1464B118387ACB2D6B1"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobUiComposition.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "F4BB30C4A6CCE46D5B250ED163AA0AC4B0361543E6D179CB123B2E668C173DE9"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobUiPreviewScope.cs",
+      "sourceCommit": "7ee44699d1a87e01c7839273c4a9b0644b7efee4",
+      "sha256": "D273A5BC10E55D64709F03914AA179A800D5B56AB4EEC0769C5EA3978FAF6229"
+    }
+  ],
+  "hostResponsibilities": [
+    "IToolSettingsView/BlobParameterEditor.ReadNumericModels(Field/CurrentPage/All)显式入口；All只取一次ReadCurrentValues物化快照，revision/generation/owner前后检查，左端先于右端，失败返回各model状态不填0",
+    "ReferenceFieldOptions.ReadCurrentValues为已接纳当前值快照，按既有draft/formal基线政策选值，不是新proposal求值器；新来源/索引只在实际执行解析，类型/索引/数量失败继续拒绝",
+    "每次批回读开始捕获本次当前配置，全部fallback读同一对象；末尾检查同一编辑会话/文档代次和当前配置身份，正常不可变编辑替换不能与建窗旧对象比较；回读中换代仍拒绝",
+    "ToolSettingsViewOptions.InputContentFactory与PageBuilt是原选中页组装接缝：只有选中页构建真实输入控件，关联实际fieldHost，初选Run/Result可延迟Basic，不因UI未造而复制模型或假默认；未建立输入的执行保护如实接入",
+    "输入/附加页内容成功接纳转视图所有权；重绑同实例保留，替换/销毁释放，不双释放。旧窗口、弹层、异步回调/订阅与原文状态依owner/generation退役",
+    "EditorResources.BeginSharedResourceScope须同WPF线程嵌套释放，复用正式资源，不能变成全局任意线程持有缓存"
+  ],
+  "excludedOldHost": [
+    "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
+    "src/UI/Services/Editing/ProductionEditorContext.cs",
+    "src/Workflow/NodeConfigurationEditHost.ParameterValues.cs"
+  ],
+  "newArchitectureAdaptation": "接收方用自身DocumentSession编辑生命周期接以上非视觉职责；不复制旧Workflow/旧窗口控制器，不覆盖其新架构正确能力，不加旧兼容桥。Plugin.Wpf其余原控件/模板/资源及csproj引用按固定源与既有Catalog核对，不能只取同名新类。",
+  "pendingCurrentCandidate": "本线新八特征选择及范围订阅语义修正仍在隔离最终验证，尚无固定新提交，当前不得以本树working diff当7ee源；完成后另发精确代码串与共享单文件修正。"
+}

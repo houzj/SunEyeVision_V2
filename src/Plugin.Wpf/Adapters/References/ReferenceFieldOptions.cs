@@ -12,7 +12,8 @@ public sealed record ReferenceFieldOptions(
     Func<VariableReference,string>? FormatVariable=null,
     Func<Port,ConstantSetting?>? ReadCurrentValue=null,
     ReferenceWindowOwner? WindowOwner=null,
-    Func<Port,ParameterReferenceBehavior>? ReadBehavior=null)
+    Func<Port,ParameterReferenceBehavior>? ReadBehavior=null,
+    Func<IReadOnlyDictionary<string,ConstantSetting?>>? ReadCurrentValues=null)
 {
     public static ReferenceFieldOptions Empty { get; } = new(_ => ReferenceCandidates.Empty);
 }

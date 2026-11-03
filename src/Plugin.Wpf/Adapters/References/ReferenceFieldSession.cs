@@ -108,8 +108,8 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         _=>""};
     private string AcceptedText()
     {
-        if(!HasPendingReference&&!_state.ReferenceCleared&&_allowConstantText&&_state.Accepted is ConstantSetting number)
-            return number.Value switch{long integer=>integer.ToString(CultureInfo.InvariantCulture),double real when NumericStorageRules.Effective(_state.Port.Type,_state.Port.Storage)==NumericStorage.Float32=>((float)real).ToString("R",CultureInfo.InvariantCulture),double real=>real.ToString("R",CultureInfo.InvariantCulture),_=>""};
+        if(!HasPendingReference&&!_state.ReferenceCleared&&_state.Accepted is ConstantSetting number)
+            return number.Value switch{long integer=>integer.ToString(CultureInfo.InvariantCulture),double real when NumericStorageRules.Effective(_state.Port.Type,_state.Port.Storage)==NumericStorage.Float32=>((float)real).ToString("R",CultureInfo.InvariantCulture),double real=>real.ToString("R",CultureInfo.InvariantCulture),_=>AppLocalizationService.GetLang("Lang_ConstantValue","已设置常量")};
         if(DisplaySetting is not {} source)return "";
         var label=Label(source);var selection=ReferenceSettingParts.Selection(source);
         return ProjectedType(source)?.Shape!=ValueShape.Sequence&&selection is BindingSelection.AllItems?label:label+" ["+(selection switch
@@ -193,6 +193,11 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         var selection=DisplaySetting is {} old&&candidate.SelectedType.Shape==ValueShape.Sequence
             ?ReferenceSettingParts.Selection(old):BindingSelection.All;
         Submit(new ReferenceSetting(candidate.Reference(selection),ReferenceSettingParts.Conversion(_state.Accepted)));
+    }
+    internal static void ValidateSelectionShape(ParameterSetting reference)
+    {
+        if(ReferenceSettingParts.Selection(reference) is not BindingSelection.AllItems&&ProjectedType(reference) is not {Shape:ValueShape.Sequence})
+            throw new ArgumentException("当前标量声明不支持索引；已保留原来源和索引，不会自动改为ALL。");
     }
     private bool TryStageReference(ParameterSetting reference)
     {

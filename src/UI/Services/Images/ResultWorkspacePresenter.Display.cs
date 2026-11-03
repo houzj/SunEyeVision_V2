@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -96,6 +96,7 @@ internal sealed partial class ResultWorkspacePresenter
                         foreach(var shape in group.Shapes)roi.Add(new(frozen.SourceFrame,shape,Color(frozen.Passed?style.Ok:style.Ng),group.Role==ResultGeometryRole.Mask?System.Windows.Media.Color.FromRgb(255,84,0):Colors.Transparent,style.Width,style.Opacity));
                     }
                 }
+                var outlines=new List<NativeOutlineOverlay>();long outlinePoints=0;
                 var geometry=new List<NativeGeometryOverlay>();var texts=new List<NativeTextOverlay>();var ids=new HashSet<long>();long textCharacters=0;
                 DeclaredValueReader Member(DeclaredValueReader row,ResultFieldPath path)=>row.GetField(path.MemberFieldPath.Last());
                 for(var i=0;i<rows.Count;i++)
@@ -115,6 +116,24 @@ internal sealed partial class ResultWorkspacePresenter
                         {if(corners.GetElement(p).GetGeometry() is not PointGeometry point||point.Frame!=receipt.Coordinates)throw new InvalidOperationException("矩形角点坐标域不匹配。");points.Add(point.Point);}
                         geometry.Add(new(region.SourceFrame,new PolygonGeometry(receipt.Coordinates,points),Color(passed?appearance.Graphic.Ok:appearance.Graphic.Ng),appearance.Graphic.Width,appearance.Graphic.Opacity));
                     }
+                    if(appearance.OutlineVisible&&state.Descriptor.Outline is {} outlinePath)
+                    {
+                        var paths=Member(row,outlinePath).GetField("paths");var points=new List<Point2>();
+                        for(var pathIndex=0;pathIndex<paths.Count;pathIndex++)
+                        {
+                            var sourcePoints=paths.GetElement(pathIndex).GetField("points");
+                            outlinePoints=checked(outlinePoints+sourcePoints.Count);
+                            if(outlinePoints>1_000_000)throw new ArgumentException("outline-budget: 场景轮廓点超过预算。");
+                            for(var pointIndex=0;pointIndex<sourcePoints.Count;pointIndex++)
+                            {
+                                if(!Current())throw new InvalidOperationException("轮廓准备期间结果已失效。");
+                                if(sourcePoints.GetElement(pointIndex).GetGeometry() is not PointGeometry point||point.Frame!=receipt.Coordinates)
+                                    throw new InvalidOperationException("轮廓点与图像坐标域不匹配。");
+                                points.Add(point.Point);
+                            }
+                        }
+                        outlines.Add(new(region.SourceFrame,receipt.Coordinates,points.ToArray(),i,passed,Color(appearance.Graphic.Ok),Color(appearance.Graphic.Ng)));
+                    }
                     if(appearance.Text.Visible)
                     {
                         if(appearance.Text.Content.Length>1_000_000)throw new ArgumentException("text-budget: 场景文字超过资源预算。");
@@ -130,7 +149,7 @@ internal sealed partial class ResultWorkspacePresenter
                 if(!Attempt()){candidate.Dispose();continue;}
                 pane.Display=candidate;original?.Dispose();
                 bool Owns()=>Current()&&candidate.Text?.IsCurrent!=false&&epoch==_epoch&&request==_displayRequest&&attempt==_displayAttempt&&paneGeneration==pane.Generation&&ReferenceEquals(pane.Display,candidate)&&!candidate.Disposed&&pane.Image.CurrentFrame==receipt;
-                if(!Owns()||!layer.Present(receipt,++_layerRevision,geometry,texts,Owns,roi))
+                if(!Owns()||!layer.Present(receipt,++_layerRevision,geometry,texts,Owns,roi,outlines))
                 {if(ReferenceEquals(pane.Display,candidate))pane.Display=null;candidate.Dispose();}
             }
             catch(Exception error)

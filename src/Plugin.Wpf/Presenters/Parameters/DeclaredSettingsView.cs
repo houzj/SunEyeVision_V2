@@ -40,6 +40,32 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
             throw new InvalidOperationException("参数草稿捕获期间已改变或重新绑定。");
         return fields;
     }
+    public IReadOnlyList<NumericModelReadResult> ReadNumericModels(NumericModelReadScope scope,string? fieldId=null)
+    {
+        VerifyAccess();
+        if(!Enum.IsDefined(scope))throw new ArgumentOutOfRangeException(nameof(scope));
+        if(scope==NumericModelReadScope.Field&&string.IsNullOrWhiteSpace(fieldId))throw new ArgumentException("单项回读必须指定字段。",nameof(fieldId));
+        var fields=_fields;var generation=_generation;var draft=Draft;long? batchRevision=null;
+        bool Current()=>!_disposed&&generation==_generation&&ReferenceEquals(fields,_fields)&&ReferenceEquals(draft,Draft)&&(!batchRevision.HasValue||draft?.Revision==batchRevision.Value);
+        if(!Current()||fields is null)return new[]{new NumericModelReadResult(fieldId??"",_disposed?NumericModelReadStatus.Retired:NumericModelReadStatus.Unavailable)};
+        var input=_inputContent as DeclaredInputFieldsView;var options=Options??new();
+        bool OwnsInput()=>Current()&&ReferenceEquals(input,_inputContent);
+        IReadOnlyDictionary<string,ConstantSetting?>? currentValues=null;
+        if(scope==NumericModelReadScope.All&&(fields.HasNumericModels||input?.Fields.Any(field=>field.HasNumericModel)==true)
+            &&options.ReferenceOptions?.ReadCurrentValues is {} readCurrentValues)
+        {
+            // A batch optimization must not change the established contract that a failed
+            // host read is reported by the individual numeric models while the page remains open.
+            batchRevision=draft?.Revision;
+            try{currentValues=readCurrentValues();}catch{currentValues=null;}
+        }
+        if(scope==NumericModelReadScope.Field&&input?.Fields.Any(field=>field.FieldId==fieldId)==true)
+            return input.ReadNumericModels(scope,fieldId,true,true,OwnsInput);
+        var result=fields.ReadNumericModels(scope,fieldId,Current,currentValues);
+        if(input is null||scope==NumericModelReadScope.Field)return result;
+        var extra=input.ReadNumericModels(scope,null,fields.HasNumericInputPage(options.InputAfterField,options.InputSection),fields.NumericInputPage(options.InputAfterField,options.InputSection),OwnsInput,currentValues);
+        return Array.AsReadOnly(result.Concat(extra).ToArray());
+    }
     public event Action? Changed;
     public DeclaredSettingsView() { }
     public DeclaredSettingsView(IToolSettingsDraft draft,ToolSettingsViewOptions? options=null)=>Bind(draft,options);
@@ -77,6 +103,9 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
         ObjectDisposedException.ThrowIf(_disposed,this);
         var draft=Draft;var options=Options??new();var optionsIdentity=Options;
         var nextInput=draft is null?null:options.InputContent;
+        var inputFactory=draft is null?null:options.InputContentFactory;
+        FrameworkElement? createdInput=nextInput;
+        if(nextInput is not null&&inputFactory is not null)throw new ArgumentException("输入内容不能同时声明实例和按页工厂。");
         var additions=draft is null?Array.Empty<KeyValuePair<string,FrameworkElement>>():(options.AdditionalPageContents?.ToArray()??[]);
         var anchored=draft is null?Array.Empty<AnchoredSettingsContent>():(options.AdditionalAnchoredContents?.ToArray()??[]);
         if(anchored.Any(entry=>entry is null||string.IsNullOrWhiteSpace(entry.FieldId)||entry.Content is null))
@@ -96,6 +125,12 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
         _additionalContents=owned;
         var schema=draft.Schema;var values=draft.CaptureFields();
         if(schema.Presentation is null)throw new ArgumentException("Runtime settings require explicit presentation metadata.");
+        var inputPage=options.InputAfterField is {} inputAnchor
+            ?schema.Presentation.Fields.FirstOrDefault(field=>field.FieldId==inputAnchor) is {} anchorField?anchorField.Layout?.Page??anchorField.Group:null
+            :options.InputSection is {} inputSection
+                ?schema.Presentation.Fields.FirstOrDefault(field=>field.Group==inputSection) is {} sectionField?sectionField.Layout?.Page??sectionField.Group
+                    :schema.Presentation.Fields.Any(field=>StringComparer.Ordinal.Equals(field.Layout?.Page??field.Group,inputSection))?inputSection:null
+                :schema.Presentation.Fields.FirstOrDefault()?.Layout?.Page;
         var images=options.ImageSources?.ToDictionary(pair=>pair.Key,pair=>pair.Value??throw new ArgumentException("图像来源函数不能为空。"),StringComparer.Ordinal);
         T Observe<T>(Func<T> callback)
         {
@@ -135,7 +170,20 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
                 if(!Current())throw new InvalidOperationException("图像来源读取期间视图已重绑或释放。");
                 return result;
             }),StringComparer.Ordinal),options.ParentConditions,options.InlineConstants,texts,options.GraphicDisplays?.ToArray(),options.TextDisplays?.ToArray(),
-            options.AssistCompositions?.ToArray(),options.HeaderlessSectionAnchors,options.PageLabelWidths,options.ChoiceDisplays,options.VisibilityDisplays);
+            options.AssistCompositions?.ToArray(),options.HeaderlessSectionAnchors,options.PageLabelWidths,options.ChoiceDisplays,options.VisibilityDisplays,
+            inputFactory is null&&options.PageBuilt is null?null:(page,built)=>
+            {
+                if(!Current())throw new InvalidOperationException("参数页工厂所属会话已退役。");
+                if(inputFactory is not null&&createdInput is null&&StringComparer.Ordinal.Equals(page,inputPage))
+                {
+                    var content=inputFactory(built)??throw new InvalidOperationException("输入页工厂返回空内容。");
+                    createdInput=content;
+                    if(options.InputAfterField is {} anchor)built.AddAfterField(anchor,content,options.InputCondition);
+                    else built.AddToGroup(options.InputSection??throw new ArgumentException("An input content section is required."),content,0,options.InputCondition);
+                }
+                var pageInput=StringComparer.Ordinal.Equals(page,inputPage)?createdInput:null;
+                options.PageBuilt?.Invoke(page,built,pageInput);
+            },SelectedPageIndex);
 
             if(!Current()){candidate.Dispose();return;}
             if(nextInput is not null)
@@ -165,14 +213,15 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
             candidate.SelectedPageIndex=SelectedPageIndex;
             foreach(var field in candidate.Fields)field.Changed+=OnChanged;
             candidate.PageChanged+=OnPageChanged;
-            _fields=candidate;_inputContent=nextInput;
+            _fields=candidate;_inputContent=createdInput;
             Content=candidate;
+            if(Current()&&ReferenceEquals(_fields,candidate))ReadNumericModels(NumericModelReadScope.All);
         }
         catch(Exception failure)
         {
             try
             {
-                ParameterCleanup.Run(new Action[]{()=>{if(Current())Detach();},()=>candidate?.Dispose()});
+                ParameterCleanup.Run(new Action[]{()=>{if(Current())Detach();},()=>candidate?.Dispose(),()=>{if(createdInput is IDisposable disposable&&!ReferenceEquals(createdInput,_inputContent))disposable.Dispose();}});
             }
             catch(Exception cleanup){throw new AggregateException(failure,cleanup);}
             throw;

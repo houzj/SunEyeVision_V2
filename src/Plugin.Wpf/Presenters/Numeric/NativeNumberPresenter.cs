@@ -19,6 +19,8 @@ internal sealed class NativeNumberPresenter : Decorator,IDisposable
 
 
     public TextBox? TextEditor=>_coordinator.TextEditor;
+    internal long EditVersion=>_coordinator.EditVersion;
+    internal void RestoreUiProjectionRaw(NumericPendingEdit raw){_coordinator.RestorePending(raw);}
     internal bool HasPendingEdits=>_coordinator.HasPendingEdits;
     public NativeNumberPresenter(DeclaredFieldState state,FieldPresentation? presentation,ReferenceFieldOptions? references,Func<OutputReference,string>? format,bool numericSequence=false)
     {

@@ -105,7 +105,8 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     private FrameworkElement? _inputElement;
     public FrameworkElement? InputElement {get=>_numeric?.TextEditor??_textPresenter?.TextEditor??_inputElement;private set=>_inputElement=value;}
     private bool MissingReference=>_state.MissingReference;
-    internal NativeParameterItemState NativeItemState=>_state.EditError.Length!=0?NativeParameterItemState.WriteError:_state.SourceError.Length!=0?NativeParameterItemState.ReadError:HasInvalidText?NativeParameterItemState.WriteError:NativeParameterItemState.Normal;
+    internal NativeParameterItemState NativeItemState=>NativeParameterRow.ProjectState(new[]{_state},
+        ChoiceError is not null||_children.Any(child=>child.NativeItemState!=NativeParameterItemState.Normal));
     public bool HasInvalidText => _state.HasInvalidInput || ChoiceError is not null || _children.Any(child => child.HasInvalidText);
     public bool HasPendingEdits=>!_disposed&&(HasInvalidText||_numeric?.HasPendingEdits==true||_textPresenter?.HasPendingEdits==true
         ||_referencePresenter?.HasPendingEdits==true||_children.Any(child=>child.HasPendingEdits));
@@ -149,9 +150,12 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
             integerRadioOptions.ValidatePort(port);
             if(integerRadioOptions.Validate(_state.Accepted) is {} error)_state.SetEditError(error);
         }
+        if(!inlineConstantReference&&integerRadioOptions is null&&port.Choices is null
+            &&(numericSequence||port.EditModes!=FieldEditModes.Reference&&port.Type.Shape==ValueShape.Scalar&&port.Type.Scalar is ScalarKind.Int64 or ScalarKind.Float64))
+            _state.EnableNumericModel(presentation?.Layout);
         _state.Changed+=OnStateChanged;
         _state.ExplicitlyAccepted+=OnExplicitlyAccepted;
-        Resources.MergedDictionaries.Add(EditorResources.Create());
+        if(!EditorResources.IsSharedResourceScopeActive)Resources.MergedDictionaries.Add(EditorResources.Create());
         _error.Style=EditorResources.ErrorStyle();
         Tag=port.Id;Margin=new Thickness(0);MinHeight=32;
         _label.Text=label;_label.VerticalAlignment=VerticalAlignment.Center;_label.TextTrimming=TextTrimming.CharacterEllipsis;_label.ToolTip=label;_label.FontSize=14;
@@ -189,6 +193,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
 
     private void Render()
     {
+        using var sharedResourceScope=EditorResources.BeginSharedResourceScope();
         if(_disposed)return;
         _renderGeneration++;
         var generation=_renderGeneration;
@@ -408,6 +413,20 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
         return _children.All(child=>child.TryCommitPending());
     }
 
+    /// <summary>Retire transient interactions without accepting or discarding pending input.</summary>
+    public void RetireInteractions()
+    {
+        if(_disposed)return;
+        var resume=_presentationVisible&&IsVisible;
+        ParameterCleanup.Run(new Action[]{()=>((IParameterVisibility)this).PrepareForVisibility(false),
+            ()=>{if(resume&&!_disposed&&IsVisible)((IParameterVisibility)this).PrepareForVisibility(true);}});
+    }
+    internal bool HasNumericModel=>_state.NumericModel is not null;
+    internal NumericModelReadResult ReadNumericModel(Func<bool> current,Func<SunEyeVision.Plugin.Contracts.ConstantSetting?>? readCurrentValue=null)
+        =>_state.ReadNumericModel(()=>!_disposed&&current(),readCurrentValue);
+    internal long NumericEditVersion=>_numeric?.EditVersion??0;
+    internal void RestoreUiProjectionRaw(string raw)
+    {if(_disposed||_numeric is null)return;_numeric.RestoreUiProjectionRaw(new(raw,_state.AcceptanceVersion));_numeric.PrepareForVisibility(_presentationVisible&&IsVisible);}
     private bool _presentationVisible=true;
     void IParameterVisibility.PrepareForVisibility(bool visible)
     {

@@ -61,6 +61,16 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
     public bool OwnsDraft(object? node) => IsValid && (ReferenceEquals(node, _draft) || ReferenceEquals(node, _draft.Node));
     internal SunEyeVision.Plugin.Contracts.ConstantSetting? ReadCurrentParameter(string fieldId)
     { EnsureCurrent(); return Host.ReadCurrentParameter(_draft, fieldId); }
+    internal IReadOnlyDictionary<string, SunEyeVision.Plugin.Contracts.ConstantSetting?> ReadCurrentParameters()
+    {
+        EnsureCurrent();
+        var draft=_draft;var configuration=draft.Configuration;var revision=_session.ChangeRevision;
+        var values=configuration.Fields.Declarations.Keys.ToDictionary(id=>id,id=>Host.ReadCurrentParameter(draft,id),StringComparer.Ordinal);
+        EnsureCurrent();
+        if(!ReferenceEquals(draft,_draft)||!ReferenceEquals(configuration,draft.Configuration)||revision!=_session.ChangeRevision)
+            throw new InvalidOperationException("参数当前值批回读期间编辑会话或配置已变化。");
+        return new System.Collections.ObjectModel.ReadOnlyDictionary<string,SunEyeVision.Plugin.Contracts.ConstantSetting?>(values);
+    }
     public DocumentEditProposal Prepare(NodeConfigurationEditHost host)
     {
         EnsureCurrent();

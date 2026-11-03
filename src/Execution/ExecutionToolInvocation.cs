@@ -57,7 +57,8 @@ internal static class ExecutionToolInvocation
             if (node.Schema.WorkflowImageInputId is { } imagePort && !values.ContainsKey(imagePort) && workflowImage is not null)
                 values.Add(imagePort, workflowImage);
             var inputs = new InputValues(node.Schema.Inputs, values);
-            outcome = await ToolRuntimeExecutor.ExecuteAsync(node.Definition, settings, inputs, bound, plan.Requests).ConfigureAwait(false);
+            var requests = plan.Requests.Concat(node.RequiredDisplayOutputs).ToArray();
+            outcome = await ToolRuntimeExecutor.ExecuteAsync(node.Definition, settings, inputs, bound, requests).ConfigureAwait(false);
             var owned = new GenerationResourceOwner(resources, generation);
             generation = null;
             // Capture consumes both output and owned resources even if it throws.

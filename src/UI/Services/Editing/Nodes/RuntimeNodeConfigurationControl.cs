@@ -94,24 +94,28 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
                 selection.Variables.Select(variable => new VariableSelectionItem(variable.Name, variable.Group, variable.Index, variable.Description, "", variable.Reference)), selection.ReferenceBehavior);
         }, ValidateProposal:(port,setting)=>ValidateChanges(new Dictionary<string,ParameterSetting>{{port.Id,setting}}), EditableIndex: true, WindowOwner: _referenceOwner,
             ReadCurrentValue: port => CurrentContext().ReadCurrentParameter(port.Id),
+            ReadCurrentValues: () => CurrentContext().ReadCurrentParameters(),
             ReadBehavior: port => (port.EditModes&(FieldEditModes.Reference|FieldEditModes.DisplayExpression))==0
                 ?ParameterReferenceBehavior.StrictExactlyOne:Selection(port).ReferenceBehavior);
         var inputSchema = draft.InputSchema;
         // Resolve actual capability before constructing input content. Only one input view is built.
         var declaration = context.Session.GetNodeHostInputDeclaration(draft.WorkflowId,draft.Node);
-        FrameworkElement inputContent;
-        if(declaration is { CapabilityId:"image-source",Version:1 })
-            inputContent=_imageSourceContent=new ImageSourceDraftContent(context.Session,
-                context.Session.GetWorkflows().Single(flow=>flow.Id==draft.WorkflowId&&!flow.IsSubroutine),draft.Node,
-                ()=>Current()?context.PreparedDraft:null,Current);
-        else
+        FrameworkElement? inputContent=null;
+        Func<DeclaredFieldsView,FrameworkElement>? inputFactory=null;
+        FrameworkElement CreateInputContent(DeclaredFieldsView pageHost)
         {
+            if(!Current())throw new InvalidOperationException("输入页创建期间编辑会话已失效。");
             var panel=new DeclaredInputFieldsView(inputSchema,
                 port=>CurrentContext().PreparedDraft.Configuration.Fields.Read(port.Id),
                 (port,value)=>{if(!Current())throw new InvalidOperationException("输入编辑已失效。");var edits=new Dictionary<string,ParameterSetting>{{port.Id,value}};var error=ValidateChanges(edits);if(error is not null)throw new InvalidOperationException(error);CurrentContext().PreparedDraft.ApplyFields(edits);},
                 references,FormatReference,port=>Candidates(Selection(port)));
-            _inputs.AddRange(panel.Fields);inputContent=panel;
+            _inputs.Clear();_inputs.AddRange(panel.Fields);return panel;
         }
+        if(declaration is { CapabilityId:"image-source",Version:1 })
+            inputContent=_imageSourceContent=new ImageSourceDraftContent(context.Session,
+                context.Session.GetWorkflows().Single(flow=>flow.Id==draft.WorkflowId&&!flow.IsSubroutine),draft.Node,
+                ()=>Current()?context.PreparedDraft:null,Current);
+        else inputFactory=CreateInputContent;
         var textExpressions=draft.DisplaySchema.Inputs.Where(port=>(port.EditModes & FieldEditModes.DisplayExpression)!=0).ToDictionary(port=>port.Id,port=>
             new SunEyeVision.Plugin.Wpf.Adapters.Text.TextExpressionOptions(()=>
             {
@@ -130,7 +134,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
         try
         {
             candidate = DesktopToolPresentation.CreateSettingsView(admission, draft.Configuration.Fields.Select(editorPorts),
-                new ToolSettingsViewOptions(references, FormatReference, inputSchema.Presentation?.Fields.FirstOrDefault()?.Layout?.Page, inputContent, ValidateComposition:group=>ValidateChanges(group.Changes), TextExpressions:textExpressions, RoiFrames:_roiFrames));
+                new ToolSettingsViewOptions(references, FormatReference, inputSchema.Presentation?.Fields.FirstOrDefault()?.Layout?.Page, inputContent, ValidateComposition:group=>ValidateChanges(group.Changes), TextExpressions:textExpressions, RoiFrames:_roiFrames, InputContentFactory:inputFactory));
             if (!Current()) throw new InvalidOperationException("参数页创建期间节点已失效。");
             _view = candidate; _acceptedFields=candidate.CaptureAcceptedFields(); _syncedRevision = candidate.AcceptedRevision; _captureError = "";
             candidate.Changed += Changed; Content = candidate.View;
@@ -232,6 +236,15 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
         var retained=current.ParameterBindingOrder.Where(id=>Bound(id)&&Identity(id,current.Fields.Read(id))==Identity(id,fields.Read(id))).ToList();
         foreach(var id in changes.Keys.Concat(fields.Capture().Keys).Distinct(StringComparer.Ordinal))if(Bound(id)&&!retained.Contains(id,StringComparer.Ordinal))retained.Add(id);
         return retained;
+    }
+    public IReadOnlyList<NumericModelReadResult> ReadNumericModels(NumericModelReadScope scope,string? fieldId=null)
+    {
+        VerifyAccess();var context=CurrentContext();var generation=_generation;
+        var view=_view??throw new InvalidOperationException("参数视图尚未就绪。");
+        var result=view.ReadNumericModels(scope,fieldId);
+        if(generation!=_generation||!ReferenceEquals(view,_view)||!ReferenceEquals(context,CurrentContext()))
+            throw new InvalidOperationException("数值回读期间参数页已重新绑定。");
+        return result;
     }
     public bool TryValidateEditor(out string error) => CurrentContext().TryValidateEditor(out error);
     public bool TryCommitEditor(out string error) => CurrentContext().TryCommitEditor(out error);

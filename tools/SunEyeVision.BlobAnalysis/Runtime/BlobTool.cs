@@ -1,4 +1,4 @@
-﻿using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Contracts.Results.Presentation;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
@@ -12,7 +12,9 @@ public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolR
     public const string MaskInput = "input.mask.region";
     public const string PoseInput = "input.pose";
     public IReadOnlyList<ManualReferenceSource> ManualReferenceSources {get;} =
-        Array.AsReadOnly(new[] {11,12,19,20,21,22,23,24}.Select(id=>new ManualReferenceSource(BlobSchema.Field(id))).ToArray());
+        Array.AsReadOnly(new[] {11,12,19,20,21,22,23,24}.Select(id=>new ManualReferenceSource(BlobSchema.Field(id)))
+            .Concat(new[]{"center-x","center-y","width","height","angle-degrees"}.Select(member=>new ManualReferenceSource(BlobSchema.BlobsPort,new[]{"oriented-bounds",member})))
+            .Concat(new[]{5,6}.SelectMany(id=>new[]{"width","height","pixel-format"}.Select(member=>new ManualReferenceSource(BlobSchema.Field(id),new[]{member})))).ToArray());
     public string ToolId => Id;
     public ToolCatalogDescriptor Catalog {get;}=new("Blob分析","连通域分析与特征提取","blob","定位",10);
     public ToolSchema ResultSchema => new(Array.Empty<Port>(), BlobSchema.Outputs,outputDisplay:BlobSchema.OutputDisplay);
@@ -27,7 +29,9 @@ public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolR
     public object MaterializeSettings(InputValues values)=>BlobParameterDefinition.Instance.MaterializeSettings(values);
     public IReadOnlyDictionary<string,ParameterReferenceBehavior> ParameterReferenceBehaviors {get;}
         =new System.Collections.ObjectModel.ReadOnlyDictionary<string,ParameterReferenceBehavior>(
-            new[]{nameof(BlobSettings.Threshold),nameof(BlobSettings.UpperThreshold),nameof(BlobSettings.BlobCountLimit),nameof(BlobSettings.FilterAreaMin),nameof(BlobSettings.FilterAreaMax)}
+            new[]{nameof(BlobSettings.Threshold),nameof(BlobSettings.UpperThreshold),nameof(BlobSettings.BlobCountLimit),nameof(BlobSettings.FilterAreaMin),nameof(BlobSettings.FilterAreaMax),
+                nameof(BlobSettings.FixedSoftLowerThreshold),nameof(BlobSettings.FixedSoftUpperThreshold),nameof(BlobSettings.ThresholdSoftness),
+                nameof(BlobSettings.RelativeLeftRatio),nameof(BlobSettings.RelativeRightRatio),nameof(BlobSettings.RelativeLowerRatio),nameof(BlobSettings.RelativeUpperRatio)}
                 .ToDictionary(name=>BlobParameterDefinition.Instance.SettingsFieldId(name),_=>ParameterReferenceBehavior.FirstItemWithIndexReadZeroFallback));
     public ToolSchema Describe()
     {
@@ -60,13 +64,13 @@ public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolR
         }
         void Range(string enabled,string minimum,string maximum)
         {
-            if(Constant(enabled) is not true)return;
+            if(Constant(enabled) is not true||minimum==nameof(BlobSettings.FilterAreaMin))return;
             var lower=Constant(minimum);var upper=Constant(maximum);
             if(lower is long or double && upper is long or double &&
                Convert.ToDouble(lower,System.Globalization.CultureInfo.InvariantCulture)>Convert.ToDouble(upper,System.Globalization.CultureInfo.InvariantCulture))
                 errors.Add(new("BLOB_SETTINGS_INVALID","筛选下限不能超过上限。",definition.SettingsFieldId(minimum)));
         }
-        if(Constant(nameof(BlobSettings.SegmentationMode)) is not nameof(BlobSegmentationMode.SingleThreshold))
+        if(!BlobThresholdCapabilities.IsSupported(Constant(nameof(BlobSettings.SegmentationMode)) as string))
             errors.Add(new("BLOB_MODE_NOT_READY","该阈值模式尚未完成原厂语义对齐。",definition.SettingsFieldId(nameof(BlobSettings.SegmentationMode))));
         Range(nameof(BlobSettings.IsAreaFilterEnabled),nameof(BlobSettings.FilterAreaMin),nameof(BlobSettings.FilterAreaMax));
         Range(nameof(BlobSettings.IsCircularityFilterEnabled),nameof(BlobSettings.FilterCircularityMin),nameof(BlobSettings.FilterCircularityMax));

@@ -27,6 +27,10 @@ public sealed class ExecutionNodeSnapshot
             ?? throw new InvalidOperationException("工具运行资源键缺失。")).ToArray()));
         var projection = (definition as SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultPresentationProvider)?.ResultProjection;
         HasResultDisplay = definition is SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultDisplayProvider;
+        RequiredDisplayOutputs = Array.AsReadOnly((definition as SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultDisplayProvider)
+            ?.ResultDisplay.RequiredOutputs.Select(request => new OutputValueRequest(request.PortId, request.FieldPath)).ToArray()
+            ?? Array.Empty<OutputValueRequest>());
+        foreach (var request in RequiredDisplayOutputs) request.Validate(schema);
         var shown = projection?.Kind == SunEyeVision.Plugin.Contracts.Results.Presentation.ResultProjectionKind.PropertyList
             ? projection.Columns.Where(column => column.Value is not null).Select(column => column.Value!.PortId).ToHashSet(StringComparer.Ordinal) : null;
         ResultFields = new ReadOnlyDictionary<string, DeclaredOutputField>(schema.Outputs.ToDictionary(port => port.Id,
@@ -61,6 +65,7 @@ public sealed class ExecutionNodeSnapshot
     public ToolCapabilities Capabilities { get; }
     public IReadOnlyDictionary<string, DeclaredOutputField> ResultFields { get; }
     public bool HasResultDisplay { get; }
+    internal IReadOnlyList<OutputValueRequest> RequiredDisplayOutputs { get; }
     public IReadOnlyDictionary<string, ParameterReferenceBehavior> ReferenceBehaviors { get; }
     public IReadOnlyDictionary<string, string> BindingNames { get; }
     public IReadOnlySet<string> ActiveInputs { get; }

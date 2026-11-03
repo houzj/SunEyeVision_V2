@@ -5,37 +5,41 @@ using SunEyeVision.Plugin.Contracts.Results.Presentation;
 namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 
 public readonly record struct BlobBounds(double X, double Y, double Width, double Height);
+public readonly record struct BlobOrientedBounds(double CenterX,double CenterY,double Width,double Height,double AngleDegrees);
 public sealed record BlobBoundaryPath(long Id, long? ParentId, string Role, IReadOnlyList<Point2> Points);
 public sealed record BlobMeasurement(long ElementId, int Label, double Area, double Perimeter,
     double CentroidX, double CentroidY, double Circularity, double Rectangularity, BlobBounds Bounds,
-    IReadOnlyList<Point2> RotatedBounds, IReadOnlyList<BlobBoundaryPath> Boundary, IReadOnlyRegion Region, bool JudgmentPassed);
+    BlobOrientedBounds OrientedBounds, IReadOnlyList<Point2> RotatedBounds, IReadOnlyList<BlobBoundaryPath> Boundary, IReadOnlyRegion Region, bool JudgmentPassed);
 
 /// <summary>One final ordered result set. Independent resource readers can outlive this output owner.</summary>
 public sealed class BlobOutput : IToolOutput, IDisposable, IToolResultGeometryOutput
 {
     private readonly IDisposable[] _owned;
     private int _disposed;
-    internal BlobOutput(BlobSettings settings, IEnumerable<BlobMeasurement> measurements, IReadOnlyImage? gray, IReadOnlyImage? binary,
+    internal BlobOutput(BlobSettings settings,BlobThresholdExecutionSnapshot threshold,IEnumerable<Diagnostic> diagnostics,IEnumerable<BlobSelectionEntry> selection, IEnumerable<BlobMeasurement> measurements, IReadOnlyImage? blobImage, IReadOnlyImage? binary,
         IReadOnlyRegion region, IReadOnlyRegion ok, IReadOnlyRegion ng, double whiteRatio,
         double[] histogram, double[] means, bool isPass, IEnumerable<string> messages, IEnumerable<IDisposable> owned,ResultGeometrySnapshot resultGeometry)
     {
         ResultGeometry=resultGeometry;
-        ThresholdMinUsed=settings.SegmentationMode == BlobSegmentationMode.None ? null : settings.Threshold;
-        ThresholdMaxUsed=settings.SegmentationMode == BlobSegmentationMode.None ? null : settings.SegmentationMode == BlobSegmentationMode.SingleThreshold ? 255 : settings.UpperThreshold;
-        TypeUsed=settings.SegmentationMode == BlobSegmentationMode.None ? "NotApplied" : settings.Type.ToString();
+        ThresholdExecution=threshold;ExecutionDiagnostics=Array.AsReadOnly(diagnostics.ToArray());
+        SelectionExecution=Array.AsReadOnly(selection.ToArray());
+        ThresholdMinUsed=threshold.Lower;ThresholdMaxUsed=threshold.Upper;TypeUsed=threshold.Polarity;
         SegmentationModeUsed=settings.SegmentationMode.ToString();
-        Measurements = Array.AsReadOnly(measurements.ToArray()); GrayImage = gray; BinaryImage = binary;
+        Measurements = Array.AsReadOnly(measurements.ToArray()); BlobImage = blobImage; BinaryImage = binary;
         Region = region; OkRegion = ok; NgRegion = ng; WhitePixelRatio = whiteRatio;
         Histogram = Array.AsReadOnly(histogram.ToArray()); ChannelMeans = Array.AsReadOnly(means.ToArray());
         IsPass = isPass; JudgmentMessages = Array.AsReadOnly(messages.ToArray()); _owned = owned.Distinct<IDisposable>(ReferenceEqualityComparer.Instance).ToArray();
     }
     public ResultGeometrySnapshot ResultGeometry {get;}
     public IReadOnlyList<BlobMeasurement> Measurements { get; }
+    public BlobThresholdExecutionSnapshot ThresholdExecution {get;}
+    public IReadOnlyList<Diagnostic> ExecutionDiagnostics {get;}
+    public IReadOnlyList<BlobSelectionEntry> SelectionExecution {get;}
     public int? ThresholdMinUsed { get; }
     public int? ThresholdMaxUsed { get; }
     public string TypeUsed { get; }
     public string SegmentationModeUsed { get; }
-    public IReadOnlyImage? GrayImage { get; }
+    public IReadOnlyImage? BlobImage { get; }
     public IReadOnlyImage? BinaryImage { get; }
     public IReadOnlyRegion Region { get; }
     public IReadOnlyRegion OkRegion { get; }
@@ -52,12 +56,20 @@ public sealed class BlobOutput : IToolOutput, IDisposable, IToolResultGeometryOu
     public double MaximumArea => Count == 0 ? 0 : Measurements.Max(x => x.Area);
     public double AverageCircularity => Count == 0 ? 0 : Measurements.Average(x => x.Circularity);
     public double AverageRectangularity => Count == 0 ? 0 : Measurements.Average(x => x.Rectangularity);
+    private static RecordValue? ImageValue(IReadOnlyImage? image,TypeRef declaration)
+    {
+        if(image is null)return null;
+        ResourceContractRules.ValidateImage(image);
+        if(image.Layout.Format!=PixelLayout.Gray8)throw new NotSupportedException("Blob图像四成员发布仅支持真实Gray8格式。");
+        return new(declaration,new Dictionary<string,object?>{
+            ["data"]=image,["width"]=(long)image.Width,["height"]=(long)image.Height,["pixel-format"]=17301505L});
+    }
     public IReadOnlyDictionary<string, object?> ToValues()
     {
         ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
         return new ReadOnlyDictionary<string, object?>(new Dictionary<string, object?> {
             [BlobSchema.BlobsPort] = new SequenceValue(BlobSchema.BlobsType, Measurements.Select(x => (object?)BlobSchema.Freeze(x))),
-            [BlobSchema.Field(5)] = GrayImage, [BlobSchema.Field(6)] = BinaryImage,
+            [BlobSchema.Field(5)] = ImageValue(BlobImage,BlobSchema.BlobImageType), [BlobSchema.Field(6)] = ImageValue(BinaryImage,BlobSchema.BinaryImageType),
             [BlobSchema.Field(4)] = IsPass,
             [BlobSchema.Field(8)] = ThresholdMinUsed is int lower ? (object)(long)lower : null, [BlobSchema.Field(9)] = ThresholdMaxUsed is int upper ? (object)(long)upper : null, [BlobSchema.Field(10)] = TypeUsed, [BlobSchema.Field(102)] = SegmentationModeUsed,
             [BlobSchema.Field(11)] = (long)Count, [BlobSchema.Field(12)] = TotalArea,

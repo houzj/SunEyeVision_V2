@@ -11,19 +11,28 @@ public static class BlobSchema
     public static string RegionPort => Field(101);
     public static TypeRef PointType { get; } = TypeRef.GeometryOf(GeometryKind.Point, ImageFrame);
     public static TypeRef BoundsType { get; } = TypeRef.RecordOf("blob.bounds", new[] { new Port("x", DataType.Number), new Port("y", DataType.Number), new Port("width", DataType.Number), new Port("height", DataType.Number) });
+    public static TypeRef OrientedBoundsType {get;}=TypeRef.RecordOf("blob.oriented-bounds",new[]{new Port("center-x",DataType.Number),new Port("center-y",DataType.Number),new Port("width",DataType.Number),new Port("height",DataType.Number),new Port("angle-degrees",DataType.Number)});
     public static TypeRef BoundaryType { get; } = SpatialDeclarations.Boundary(ImageFrame);
     public static TypeRef BlobType { get; } = TypeRef.RecordOf("blob.result", new[] {
         new Port("element-id", DataType.Integer), new Port("label", DataType.Integer), new Port("area", DataType.Number), new Port("perimeter", DataType.Number),
         new Port("centroid-x", DataType.Number), new Port("centroid-y", DataType.Number), new Port("centroid", PointType),
         new Port("circularity", DataType.Number), new Port("rectangularity", DataType.Number), new Port("bounds", BoundsType),
+        new Port("oriented-bounds",OrientedBoundsType),
         new Port("rotated-bounds", TypeRef.SequenceOf(PointType, CountConstraint.Exactly(4)), false),
         new Port("contour", TypeRef.SequenceOf(PointType), false), new Port("contour-lossy", DataType.Boolean, false), new Port("judgment-passed", DataType.Boolean),
         new Port("boundary", BoundaryType, false), new Port("region", TypeRef.ResourceOf(ResourceKind.Region)) });
     public static TypeRef BlobsType { get; } = TypeRef.SequenceOf(BlobType);
+    private static TypeRef ImageRecord(string name)=>TypeRef.RecordOf(name,new[]{
+        new Port("data",TypeRef.ResourceOf(ResourceKind.Image)),
+        new Port("width",DataType.Integer,Storage:NumericStorage.Int32),
+        new Port("height",DataType.Integer,Storage:NumericStorage.Int32),
+        new Port("pixel-format",DataType.Integer,Storage:NumericStorage.Int32)});
+    public static TypeRef BlobImageType {get;}=ImageRecord("blob.image");
+    public static TypeRef BinaryImageType {get;}=ImageRecord("blob.binary-image");
     public static IReadOnlyList<Port> Outputs { get; } = Array.AsReadOnly(new[] {
         new Port(Field(4), DataType.Boolean),
-        new Port(Field(5), TypeRef.ResourceOf(ResourceKind.Image), Nullable:true),
-        new Port(Field(6), TypeRef.ResourceOf(ResourceKind.Image), Nullable:true),
+        new Port(Field(5), BlobImageType, Nullable:true),
+        new Port(Field(6), BinaryImageType, Nullable:true),
         new Port(Field(8), DataType.Integer, Nullable:true), new Port(Field(9), DataType.Integer, Nullable:true), new Port(Field(10), DataType.Text), new Port(Field(102), DataType.Text),
         new Port(Field(11), DataType.Integer), new Port(Field(12), DataType.Number), new Port(Field(13), DataType.Number),
         new Port(Field(14), DataType.Number), new Port(Field(15), DataType.Number), new Port(Field(16), DataType.Number),
@@ -46,6 +55,7 @@ public static class BlobSchema
             ["centroid-x"] = blob.CentroidX, ["centroid-y"] = blob.CentroidY, ["centroid"] = new PointGeometry(ImageFrame, new(blob.CentroidX, blob.CentroidY)),
             ["circularity"] = blob.Circularity, ["rectangularity"] = blob.Rectangularity,
             ["bounds"] = new RecordValue(BoundsType, new Dictionary<string, object?> { ["x"] = blob.Bounds.X, ["y"] = blob.Bounds.Y, ["width"] = blob.Bounds.Width, ["height"] = blob.Bounds.Height }),
+            ["oriented-bounds"] = new RecordValue(OrientedBoundsType,new Dictionary<string,object?>{["center-x"]=blob.OrientedBounds.CenterX,["center-y"]=blob.OrientedBounds.CenterY,["width"]=blob.OrientedBounds.Width,["height"]=blob.OrientedBounds.Height,["angle-degrees"]=blob.OrientedBounds.AngleDegrees}),
             ["judgment-passed"] = blob.JudgmentPassed, ["region"] = blob.Region,
             ["rotated-bounds"] = new SequenceValue(TypeRef.SequenceOf(PointType, CountConstraint.Exactly(4)), blob.RotatedBounds.Select(p => (object?)new PointGeometry(ImageFrame, p)))
         };

@@ -1,4 +1,4 @@
-﻿using SunEyeVision.Plugin.Wpf.Adapters.Fields;
+using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
 using System.Windows;
 using SunEyeVision.Plugin.Contracts;
@@ -38,7 +38,9 @@ public sealed record ToolSettingsViewOptions(
     IReadOnlyDictionary<string,FrameworkElement>? FieldVisibilitySources=null,
     IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? ChoiceDisplays=null,
     SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameSource? RoiFrames=null,
-    IReadOnlyList<NativeVisibilityDisplayOptions>? VisibilityDisplays=null)
+    IReadOnlyList<NativeVisibilityDisplayOptions>? VisibilityDisplays=null,
+    Action<string,DeclaredFieldsView,FrameworkElement?>? PageBuilt=null,
+    Func<DeclaredFieldsView,FrameworkElement>? InputContentFactory=null)
 {
     private IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? _choiceDisplays=FreezeChoiceDisplays(ChoiceDisplays);
     public IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? ChoiceDisplays
@@ -59,6 +61,7 @@ public interface IToolSettingsView : IDisposable
     long AcceptedRevision { get; }
     IReadOnlyList<string> AcceptedFieldOrder { get; }
     FieldSettings CaptureAcceptedFields();
+    IReadOnlyList<NumericModelReadResult> ReadNumericModels(NumericModelReadScope scope,string? fieldId=null);
     event Action? Changed;
     bool TryCapture(out FieldSettings fields,out string error);
 }

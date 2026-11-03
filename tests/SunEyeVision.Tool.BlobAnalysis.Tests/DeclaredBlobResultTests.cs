@@ -88,8 +88,10 @@ public sealed class DeclaredBlobResultTests
     {
         var pixels=new byte[32*32];
         for(var i=0;i<count;i++)for(var y=0;y<4;y++)for(var x=0;x<4;x++)pixels[(2+(i==2?16:0)+y)*32+2+i*10+x]=255;
-        using var host=new Host(new BlobSettings{IsAreaFilterEnabled=false,OutputGrayImage=true,OutputBinaryImage=true,OutputBoundary=true},pixels,32,32);
+
+        using var host=new Host(new BlobSettings{IsAreaFilterEnabled=false,OutputBlobImage=true,OutputBinaryImage=true,OutputBoundary=true},pixels,32,32);
         var run=host.Run(); Assert.True(run.Success,string.Join(";",run.Errors));
+
         var publication=Assert.Single(run.DeclaredOutputs);Assert.Equal(BlobSchema.Outputs.Count,publication.Schema.Outputs.Count);
         var first=run.AcquireDeclaredOutput(publication.Identity);var second=run.AcquireDeclaredOutput(publication.Identity);
         var records=second.Values!.Read(BlobSchema.BlobsPort);Assert.Equal(count,records.Count);
@@ -99,7 +101,15 @@ public sealed class DeclaredBlobResultTests
             var record=records.GetElement(i);Assert.Equal(16,record.GetField("area").GetScalar<double>());
             Assert.True(ids.Add(record.GetField("element-id").GetScalar<long>()));Assert.Equal(4,record.GetField("rotated-bounds").Count);
         }
-        var borrowed=second.Values.Get<IReadOnlyImage>(BlobSchema.Field(5));
+        foreach (var imageField in new[] { BlobSchema.Field(5), BlobSchema.Field(6) })
+        {
+            var imageRecord = second.Values.Read(imageField);
+            Assert.Equal(32L, imageRecord.GetField("width").GetScalar<long>());
+            Assert.Equal(32L, imageRecord.GetField("height").GetScalar<long>());
+            Assert.Equal(17301505L, imageRecord.GetField("pixel-format").GetScalar<long>());
+            Assert.Equal(1024, second.Values.Get<RecordValue>(imageField).Get<IReadOnlyImage>("data").CopyPixels().Length);
+        }
+        var borrowed=second.Values.Get<RecordValue>(BlobSchema.Field(5)).Get<IReadOnlyImage>("data");
         host.Result!.Dispose();host.Batch!.Dispose();host.Session.Dispose();first.Dispose();
         Assert.Equal(1024,borrowed.CopyPixels().Length);
         second.Dispose();Assert.Throws<ObjectDisposedException>(()=>borrowed.CopyPixels());Assert.Equal(1024,host.Input.CopyPixels().Length);

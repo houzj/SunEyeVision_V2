@@ -14,20 +14,26 @@ public sealed partial class DocumentSession
 
     private void PostResultAvailable(ScopedNodeIdentity key, RunIdentity identity)
     {
-        var context = _runtimeOwnerContext;
-        if (context is null) return;
         var receipt = new PublishedNodeResult(key, identity);
-        try { context.Post(_ =>
+        bool post;
+        lock (_gate)
         {
-            if (Environment.CurrentManagedThreadId != _ownerThread) return;
-            lock (_gate)
-                if (_closed || _closing || !_publishedRuntimeResults.TryGetValue(key, out var current) || current.Snapshot.Identity != receipt.Identity) return;
-            var errors = new List<Exception>();
-            foreach (EventHandler<PublishedNodeResult> handler in RuntimeResultAvailable?.GetInvocationList() ?? Array.Empty<Delegate>())
-                try { handler(this, receipt); } catch (Exception error) { errors.Add(error); }
-            if (errors.Count != 0) LastObserverError = new AggregateException("运行结果观察者失败。", errors);
-        }, null); }
-        catch (Exception error) { LastObserverError = error; }
+            if (_closed || _closing || !_publishedRuntimeResults.TryGetValue(key, out var current) || current.Snapshot.Identity != identity) return;
+            _runtimeResultNotifications.Enqueue(receipt);
+            post = _runtimeOwnerContext is not null && !_runtimeNotificationScheduled;
+            if (post) _runtimeNotificationScheduled = true;
+        }
+        if (post) PostRuntimeChanges();
+    }
+
+    private void NotifyRuntimeResult(PublishedNodeResult receipt)
+    {
+        lock (_gate)
+            if (_closed || _closing || !_publishedRuntimeResults.TryGetValue(receipt.Node, out var current) || current.Snapshot.Identity != receipt.Identity) return;
+        var errors = new List<Exception>();
+        foreach (EventHandler<PublishedNodeResult> handler in RuntimeResultAvailable?.GetInvocationList() ?? Array.Empty<Delegate>())
+            try { handler(this, receipt); } catch (Exception error) { errors.Add(error); }
+        if (errors.Count != 0) LastObserverError = new AggregateException("运行结果观察者失败。", errors);
     }
 
     /// <summary>Borrow the actual published result; caller releases the returned reader.</summary>
@@ -41,11 +47,9 @@ public sealed partial class DocumentSession
         DeclaredOutputReader acquired;
         try { acquired = entry.Snapshot.AcquireReader(); }
         catch (ObjectDisposedException) { return null; }
-        lock (_gate)
-        {
-            if (_closed || _closing || !_publishedRuntimeResults.TryGetValue(key, out var current) || !ReferenceEquals(entry, current))
-            { acquired.Dispose(); return null; }
-        }
+        bool stale;
+        lock (_gate) stale = _closed || _closing || !_publishedRuntimeResults.TryGetValue(key, out var current) || !ReferenceEquals(entry, current);
+        if (stale) { acquired.Dispose(); return null; }
         if (!identity.IsDomainCurrent) { acquired.Dispose(); return null; }
         return acquired;
     }

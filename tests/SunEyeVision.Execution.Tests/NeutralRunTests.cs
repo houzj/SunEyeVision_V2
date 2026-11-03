@@ -24,7 +24,14 @@ public sealed class NeutralRunTests
         var edit = session.PrepareGraphEdit(flow.Id);
         var node = session.CreateNode(edit, "NeutralRun", new CanvasPoint(0, 0));
         session.CommitGraphEdit(edit, "添加测试节点");
-        using var batch = session.CaptureRunBatch(new[] { flow.Id });
+        var notifications = 0;
+        session.RuntimeResultAvailable += (_, _) => notifications++;
+        var context = SynchronizationContext.Current;
+        DocumentRunBatch batch;
+        try { SynchronizationContext.SetSynchronizationContext(null); batch = session.CaptureRunBatch(new[] { flow.Id }); }
+        finally { SynchronizationContext.SetSynchronizationContext(context); }
+        using (batch)
+        {
         using (var result = batch.RunAsync(_ => { }).GetAwaiter().GetResult())
         {
             Assert.True(result.Workflows[flow.Id].Success);
@@ -33,8 +40,12 @@ public sealed class NeutralRunTests
             Assert.Equal(session.ResultOwnerId, reader!.Snapshot.Identity.DocumentSessionId);
             Assert.Equal(42L, reader.Values!.Get<long>("number"));
         }
+        Assert.Equal(0, notifications);
+        session.DrainRuntimeChanges();
+        Assert.Equal(1, notifications);
         Assert.Equal(0, NeutralOutput.Disposals);
         batch.Dispose();
+        }
         session.Dispose();
         Assert.Equal(1, NeutralOutput.Disposals);
     }

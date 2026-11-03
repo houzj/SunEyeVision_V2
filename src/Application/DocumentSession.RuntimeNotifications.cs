@@ -3,6 +3,7 @@ namespace SunEyeVision.Application;
 public sealed partial class DocumentSession
 {
     private readonly Queue<DocumentChangeSet> _runtimeChanges = new();
+    private readonly Queue<PublishedNodeResult> _runtimeResultNotifications = new();
     private SynchronizationContext? _runtimeOwnerContext;
     private bool _runtimeNotificationScheduled, _runtimeDraining;
 
@@ -54,22 +55,24 @@ public sealed partial class DocumentSession
         {
             if (_runtimeDraining) return;
             if (_closed || _closing || _owner.IsRetired || !_directory.IsActive)
-            { _runtimeChanges.Clear(); _runtimeNotificationScheduled = false; return; }
+            { _runtimeChanges.Clear(); _runtimeResultNotifications.Clear(); _runtimeNotificationScheduled = false; return; }
             _runtimeDraining = true;
         }
         try
         {
             while (true)
             {
-                DocumentChangeSet change;
+                DocumentChangeSet? change = null;
+                PublishedNodeResult? result = null;
                 lock (_gate)
                 {
                     if (_closed || _closing || _owner.IsRetired || !_directory.IsActive)
-                    { _runtimeChanges.Clear(); _runtimeNotificationScheduled = false; return; }
-                    if (_runtimeChanges.Count == 0) { _runtimeNotificationScheduled = false; return; }
-                    change = _runtimeChanges.Dequeue();
+                    { _runtimeChanges.Clear(); _runtimeResultNotifications.Clear(); _runtimeNotificationScheduled = false; return; }
+                    if (_runtimeChanges.Count > 0) change = _runtimeChanges.Dequeue();
+                    else if (_runtimeResultNotifications.Count > 0) result = _runtimeResultNotifications.Dequeue();
+                    else { _runtimeNotificationScheduled = false; return; }
                 }
-                NotifyChanged(change);
+                if (change is not null) NotifyChanged(change); else NotifyRuntimeResult(result!);
             }
         }
         finally { lock (_gate) _runtimeDraining = false; }

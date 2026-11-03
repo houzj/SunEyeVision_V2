@@ -48,7 +48,7 @@ public partial class WorkflowCanvasControl
             item.Click += (_, _) => { if (CanEditVmCanvas) action(); }; owner.Items.Add(item);
         }
         Add(menu, "删除", () => CurrentWorkflowTab?.DocumentCanvas?.Delete(VmSelectedNodes(), Array.Empty<CanvasConnectionProjection>()));
-        menu.Items.Add(new MenuItem { Header = "复制", IsEnabled = false, ToolTip = "节点复制尚未接入正式会话事务" });
+        Add(menu, "复制", () => _viewModel?.CopyCanvasSelection());
         Add(menu, "禁用", () => SetVmSelectionEnabled(false)); Add(menu, "启用", () => SetVmSelectionEnabled(true));
         menu.Items.Add(new Separator());
         var align = new MenuItem { Header = "对齐" }; menu.Items.Add(align);
@@ -86,7 +86,7 @@ public partial class WorkflowCanvasControl
         {
             if (VmTextInputOwnsKeyboard() || !WorkflowCanvas.IsKeyboardFocusWithin || !CanEditVmCanvas) return;
             if ((Keyboard.Modifiers & ModifierKeys.Control) != 0 && e.Key is Key.C or Key.V)
-            { if (_viewModel != null) _viewModel.StatusText = "节点复制尚未接入正式会话事务，暂不可用。"; e.Handled = true; return; }
+            { if(e.Key==Key.C)_viewModel?.CopyCanvasSelection();else _viewModel?.PasteCanvasSelection(); e.Handled = true; return; }
             if (!_vmBoxSelectionActive) return;
             if ((Keyboard.Modifiers & ModifierKeys.Control) != 0 && e.Key is Key.A or Key.F)
             { SetVmSelectionEnabled(e.Key == Key.A); e.Handled = true; }

@@ -165,7 +165,7 @@ public partial class WorkflowCanvasControl
         var insertion = session.After.Count == 1 ? _vmInsertionWire : null;
         if (session.Copy)
         {
-            if (_viewModel != null) _viewModel.StatusText = "节点复制尚未接入正式会话事务，暂不可用。";
+            if (_viewModel?.DuplicateCanvasNodes(session.After)==true)e.Effects=DragDropEffects.Copy;
             return;
         }
         if (insertion != null && positions.Length == 1)

@@ -9,8 +9,10 @@ public partial class WorkflowCanvasControl
     private void InitializeVmCanvasClipboard()
     {
         var menu = new ContextMenu();
-        var paste = new MenuItem { Header = "粘贴", InputGestureText = "Ctrl+V", IsEnabled = false, ToolTip = "节点复制尚未接入正式会话事务" }; menu.Items.Add(paste);
+        var paste = new MenuItem { Header = "粘贴", InputGestureText = "Ctrl+V" }; menu.Items.Add(paste);
+        paste.Click += (_, _) => { if(CanEditVmCanvas) _viewModel?.PasteCanvasSelection(_vmPastePoint); };
         menu.Opened += (_, _) => {
+            paste.IsEnabled=CanEditVmCanvas && _viewModel?.CanPasteCanvasSelection==true;
             PopulateVmToolContextMenu(menu,_vmPastePoint);
         };
         WorkflowCanvas.ContextMenuOpening += (_, _) => _vmPastePoint = Mouse.GetPosition(WorkflowCanvas);
@@ -18,6 +20,13 @@ public partial class WorkflowCanvasControl
     }
     private void NodeContextMenu_Copy_Click(object sender, RoutedEventArgs e)
     {
-        if (_viewModel != null) _viewModel.StatusText = "节点复制尚未接入正式会话事务，暂不可用。";
+        if(!CanEditVmCanvas || sender is not MenuItem item ||
+            ItemsControl.ItemsControlFromItemContainer(item) is not ContextMenu menu ||
+            menu.PlacementTarget is not FrameworkElement { DataContext: CanvasNodeProjection node })return;
+        if(!node.IsSelected)
+        {
+            foreach(var current in CurrentWorkflowTab?.DocumentCanvas?.Nodes.AsEnumerable() ?? Enumerable.Empty<CanvasNodeProjection>())current.IsSelected=ReferenceEquals(current,node);
+        }
+        _viewModel?.CopyCanvasSelection();
     }
 }

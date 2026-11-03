@@ -59,12 +59,14 @@ public sealed class CanvasSessionTests
         Assert.Equal(DragDropEffects.Move,args.Effects);Assert.NotEqual(opening,node.Position);Assert.Equal(count+1,f.Session.HistoryEntries.Count);
         f.Session.Undo();Assert.Equal(opening,node.Position);UiRuntime.Call(f.View,"CancelVmCanvasGesture");
     });
-    [Fact] public void Alignment_and_selection_enable_are_one_session_edit_and_copy_remains_unavailable()=>UiRuntime.Run(()=>
+    [Fact] public void Alignment_enable_and_copy_use_actual_session_transactions()=>UiRuntime.Run(()=>
     {
         using var f=new DocumentUiFixture();var first=f.Add();var second=f.Add("ImageLoad",350,260);f.Projection(first).IsSelected=true;f.Projection(second).IsSelected=true;
         var before=new[]{first.Position,second.Position};var revision=f.Session.HistoryEntries.Count;UiRuntime.Call(f.View,"AlignVmSelection",VmNodeAlignment.Left);Assert.Equal(first.PositionX,second.PositionX);Assert.Equal(revision+1,f.Session.HistoryEntries.Count);
         f.Session.Undo();Assert.Equal(before,new[]{first.Position,second.Position});UiRuntime.Call(f.View,"SetVmSelectionEnabled",false);Assert.False(first.IsEnabled);Assert.False(second.IsEnabled);f.Session.Undo();Assert.True(first.IsEnabled);Assert.True(second.IsEnabled);
-        var menu=(ContextMenu)UiRuntime.Call(f.View,"CreateVmSelectionMenu")!;Assert.False(menu.Items.OfType<MenuItem>().Single(item=>item.Header?.ToString()=="复制").IsEnabled);
+        var menu=(ContextMenu)UiRuntime.Call(f.View,"CreateVmSelectionMenu")!;Assert.True(menu.Items.OfType<MenuItem>().Single(item=>item.Header?.ToString()=="复制").IsEnabled);
+        Assert.True(f.Main.CopyCanvasSelection());Assert.True(f.Main.PasteCanvasSelection());UiRuntime.Pump();Assert.Equal(4,f.Canvas.Nodes.Count);
+        Assert.Equal(2,f.Canvas.Nodes.Count(item=>item.IsSelected));Assert.True(f.Session.Undo());Assert.Equal(2,f.Canvas.Nodes.Count);
         var entry=Assert.Single(f.Main.FindWorkflowNodesById(first.Id));Assert.Same(first,entry.Node);Assert.True(f.Main.NavigateSearchResult(entry));Assert.Same(first,f.Main.SelectedNode);
     });
 }

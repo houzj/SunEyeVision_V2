@@ -4,7 +4,6 @@
   <ItemGroup><ProjectReference Include="../../src/UI/SunEyeVision.UI.csproj"/><ProjectReference Include="../../src/Infrastructure.Persistence/SunEyeVision.Infrastructure.Persistence.csproj"/>
     <Compile Include="../SunEyeVision.UI.Tests/Session/CanvasSessionTests.cs" Link="CanvasSessionTests.cs"/>
     <Compile Include="../SunEyeVision.UI.Tests/Session/DocumentUiFixture.cs" Link="DocumentUiFixture.cs"/>
-    <Compile Include="../SunEyeVision.UI.Tests/Session/WpfTestDispatcher.cs" Link="WpfTestDispatcher.cs"/>
-    <Compile Include="../SunEyeVision.UI.Tests/Session/AssemblyTests.cs" Link="AssemblyTests.cs"/>
+    <Compile Include="../_shared/WpfTestDispatcher.cs" Link="WpfTestDispatcher.cs"/>
   </ItemGroup>
 </Project>

@@ -4,6 +4,7 @@ using SunEyeVision.UI.Services.PathCalculators;
 using SunEyeVision.UI.Services.Rendering;
 using Xunit;
 namespace SunEyeVision.UI.Tests;
+[Collection("VM canvas UI")]
 public sealed class CanvasGeometrySessionTests
 {
  [Theory] [InlineData(357.3,281.8,355,280)] [InlineData(355,280,355,280)]

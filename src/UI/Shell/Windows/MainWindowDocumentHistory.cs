@@ -12,7 +12,7 @@ public partial class MainWindowViewModel
     private bool _documentHostReleased;
     public void ReleaseDocumentHost()
     {
-        if(_documentHostReleased)return;_documentHostReleased=true;
+        if(_documentHostReleased)return;_documentHostReleased=true;ClearCanvasClipboard();
         WorkflowTabViewModel.UnbindDocumentManager();
         if(_documentEventOwner is {} manager)manager.SessionChanged-=FormalDocumentSessionChanged;
         _documentEventOwner=null;UnbindFormalSession();

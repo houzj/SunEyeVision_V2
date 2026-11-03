@@ -1,0 +1,17 @@
+{
+  "status": "SOURCE_INTEGRATED_FORMAL_PENDING",
+  "integrationCommit": "0387e80ac",
+  "relativeAliasFix": "9f7db7909",
+  "publicProduct": "e567eed25fda33327eebc0b3366e35d34157c4da",
+  "canonicalProductDifference": [],
+  "moved": 1269,
+  "changed": 1739,
+  "candidateMapSha256": "0681448019179F31DE03F9805A68CEF313AA438963D0C0334690478B6E37A5A5",
+  "mainMapSha256": "780620587F31197866C2ACE5D1EF0D77D4FE92FBB28801FBD6012B1C5BBF90C5",
+  "checkSha256": "C840239F0DF1C569069525995E40CCC2ACA21FAC80E8D6514F7EDFA2D94F5622",
+  "currentCatalogSha256": "27A435282580F2DED5D5A668F5DE2B5EF3B69CE1955AA9A48329239A9CDE360E",
+  "catalogRawShaDifferences": "相同规范Git源的主仓/候选实际换行差异；已映射文件raw同，未改动但被引用源的rawSHA另按主仓刷新；原identity与历史对象不变",
+  "preexistingMissing": "结构报告逐原路径/行记录14预存URI及3缺pending记录；不是本批新增或已实现",
+  "candidateAndFormal": "候选两线独立构建在途，当前未正式验收；不得借C07旧成绩",
+  "remaining": "本批外91默认编译cs仍有原厂家族及实际依赖，下一步按消费整族处理，不称全产品中立"
+}

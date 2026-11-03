@@ -248,7 +248,7 @@
         "tools/SunEyeVision.ImageSource/Wpf/Views/ImageSourceParameterEditor.xaml.cs"
       ],
       "existingImplementation": "字段owner模型、原件投影、整数格点/double舍入、显式Field/Page/All及唯一根初始化；正式身份/raw/模型/执行值分离；原确认失败hidden绑定和popup/Dispose整链已修；真实确认取消历史复制保存重开及继承/图文消费者通过",
-      "remaining": "VM native普通读取等价及极端原溢出域不声称；C06、缺producer和S3各自保留；实际VS/自然键鼠和统一人工另记",
+      "remaining": "VM native普通读取等价及极端原溢出域不声称；C06/C07已分别正式闭口；缺producer和S3继续保留；实际VS/自然键鼠和统一人工另记",
       "owner": "主线统一设计/集成；公共与消费者两既有独立工作树共同完成；正式回执见latestFormal",
       "acceptanceExit": "同一单值控件完整入口→选源→运行/回读→切常量/解绑→历史保存重开→退役；先于C06",
       "formalReceipt": "docs/collaboration/evidence/C05_NUMERIC_MODEL_FORMAL_20261103.json"
@@ -455,7 +455,7 @@
     "candidate": "6ec1ead54"
   },
   "estimates": "缺现证据的部分不报可靠工期；明确缺口与阶段出口，不能无限笼统待确认",
-  "status": "S1实施自测闭口；C05完整单数值正式自测闭口；下一C06，S2/S3全范围未完成",
+  "status": "S1实施自测闭口；C05/C06/C07完整控件正式自测闭口；产品职责命名整批实施中，待同版Blob集成核收；S3未实施，完整范围保留",
   "originalNumericEvidence": "docs/collaboration/evidence/C05_C06_ORIGINAL_NUMERIC_MODEL_20261103.md",
   "originalNumericReceipt": "docs/collaboration/evidence/C05_C06_ORIGINAL_NUMERIC_MODEL_RECEIPT_20261103.json",
   "previousLatestFormal": "docs/collaboration/evidence/C06_NUMERIC_RANGE_FORMAL_20261103.json",
@@ -499,7 +499,7 @@
   },
   "previousSourceBaseline": "787e842e69426f555f115afda8cc84f170515a8b",
   "remainingProductStructure": {
-    "status": "待S2成片归一；不能宣称全部命名已中立",
+    "status": "两既有工作树成片实施中：目录/namespace/资源URI/当前Catalog及消费者同步，未构建验收，不称全部中立",
     "baseline": "4c3a34a1b",
     "evidence": "只读核查主仓实际默认编译项、Plugin.Wpf.csproj:17/NativeResources.props及原pack URI；不来自历史命名专项的泛化",
     "trackedPaths": 1630,
@@ -514,5 +514,19 @@
     ],
     "action": "C07完成后按实际Blob参数/引用/ROI依赖闭包一批同步职责目录/namespace/XAML类及资源URI/消费者与Catalog当前SHA；不合并不同原件家族，不删未知pending，不扩控件功能",
     "originalIdentity": "Catalog原assembly/type/path/SHA/MVID及来源注释保留，不与最终产品命名混淆"
+  },
+  "supportedIntegrationExit": {
+    "review": "主线与消费者只读沿当前源码核对：除本命名闭包外，未定位必须重造才能贯通已支持Blob链的独立基础控件",
+    "required": "命名整批后同一正式产物选图→参数/引用→ROI→执行→同次图文/树表→确认历史保存重开→退役，当前未验，不转签旧成绩",
+    "reuse": "C05/C06/C07、本地ROI、已有图文/结果表/视口，保持完整链不重做",
+    "protected": [
+      "位置修正三UI/六native语义和真实producer未接，BlobRoiUi/BlobSupportedWindowState明确拒绝",
+      "图像ROI、输出mask和屏蔽继承缺消费语义，BlobLocalRoiOwner.Preview保护",
+      "四图形缺测量或位置producer，不造输出；原文本索引/长度全域未证",
+      "连续停止/Reset需宿主非视觉session，多图/历史由共享宿主负责，不由控件另造owner",
+      "导出native字体/Gray16带图等平台差异明确保护"
+    ],
+    "next": "S2同版集成支持范围与缺基础保护核收后进入S3完整算法迁移，不能把占位称功能实现",
+    "notCompletion": true
   }
 }

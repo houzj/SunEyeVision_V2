@@ -54,3 +54,5 @@ Numeric.Arranged（C05/C06）、Coordinates（ROI坐标）、UpDown（独立spin
 - Windows资源路径按大小写无关查找实际文件；namespace仍精确映射。源码与URI中的ResourceDictionaries/resources大小写不得造成漏迁。
 - 同一UpDown家族的Themes/Native/Numeric/VMControls/controls/numericupdown/themes两份XAML同步到Numeric/UpDown对应路径，消费者O06WindowPresentation实际主题断言同步。仅组织映射，16项原主题组成不变。
 - 消费者现有17个verification测试修改已固定e8028cdc0；两份原厂来源路径脚本及旧Boolean别名不存在断言不替换，src/UI/tools未发现本批产品引用。不是17个功能新增或测试通过。
+
+- 本批新FieldPrimitives内4个仍含厂商前缀的产品类型/文件同批迁名：Controls.HikCheckBox→FieldCheckBox、Controls.HikTextBox→FieldTextBox、Imaging.HikCoverStyleConverter→OverlayStyleConverter、Imaging.HikCoverCircleStyleConverter→CircularOverlayStyleConverter。同步构造器/XAML/资源引用和当前Catalog本地名，原originalType/path/来源注释不改。已核目标无冲突；消费者src/UI/tools/现验证脚本无这4类型，不造空提交。VMControls.WPF.Release两基类属本闭包外保完整待办，不能称原命名全清。

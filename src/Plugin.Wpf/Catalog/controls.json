@@ -59,11 +59,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
-          "sha256": "EF743D674766CA3119A3D3CD3C470CAB0B16C11CCE737DC4EC08D9B587D1B0BA"
+          "sha256": "BD2DC0DB7BA31D9564F91516481DCBD69CA14183A7A635EAC36B029D36AE6198"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeTextInheritance.cs",
-          "sha256": "136F1F2B39BCC2C4E195E87C3AB734605CB45CA49BE0F5E66838ACDC1AC98322"
+          "sha256": "FD04582CEFD81B0031D0579ABE3E90063AE8CEC2E1A8071538496C34DC0B5F04"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Composition/Parameters/Rows/LeftRightControl.xaml.cs",
@@ -79,11 +79,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
-          "sha256": "7BD8446A8CB80BBF6F8A0D160534F7639E2DC45756FD8B0FE9043FFEA4A948FE"
+          "sha256": "4A0D152FDBDB9BC6222E1F854E8FB7FF245E6135CEF33AA061035B830843B7A5"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
-          "sha256": "C942B4209BC3D32EC82BD54E2F4B4BE4268FC67FEB0B6FFC9F0B8DCFEA98E9EC"
+          "sha256": "A4F0A485034A5D4DDF4AD07690FAB57889672913D6017929707FDE5029289B93"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
@@ -227,12 +227,12 @@
         },
         {
           "localPath": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
-          "localSha256": "CB9F9BAD232DED8DE714AB4D050396C5E47B132C3D05BA36779EE720FC59F7A2",
+          "localSha256": "39A993EF2246D662C6F5E8694030478DD2A667A27AAB95EE52160CC2F6EB3C12",
           "sourceKind": "nonvisual-adapter-or-explicit-original-composition"
         },
         {
           "localPath": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
-          "localSha256": "E63E130772B00A7A5D700A64D307DC8C88D63FE7D5EB516E0CCC7DA079C36A84",
+          "localSha256": "898B5DBD76D5207CF69BA5C9836DD47E61CE153352102CD49B7D33F1802905D0",
           "sourceKind": "nonvisual-adapter-or-explicit-original-composition"
         },
         {
@@ -287,11 +287,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
-          "sha256": "CB9F9BAD232DED8DE714AB4D050396C5E47B132C3D05BA36779EE720FC59F7A2"
+          "sha256": "39A993EF2246D662C6F5E8694030478DD2A667A27AAB95EE52160CC2F6EB3C12"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
-          "sha256": "E63E130772B00A7A5D700A64D307DC8C88D63FE7D5EB516E0CCC7DA079C36A84"
+          "sha256": "898B5DBD76D5207CF69BA5C9836DD47E61CE153352102CD49B7D33F1802905D0"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
@@ -380,15 +380,15 @@
       "dependencies": [
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "7A453800E228C6C5256C6C029B58F09ACC9FEF2705FEEE47DCE5E0D4CD4771E8"
+          "sha256": "23FA657BB910584B641397BF434B97E7C58A5B95A19ED2297442C6BE0F3AF6AD"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeTextInheritance.cs",
-          "sha256": "136F1F2B39BCC2C4E195E87C3AB734605CB45CA49BE0F5E66838ACDC1AC98322"
+          "sha256": "FD04582CEFD81B0031D0579ABE3E90063AE8CEC2E1A8071538496C34DC0B5F04"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Common/Localization/LocalizationResourceDictionary.cs",
-          "sha256": "B564D5200B7264E8E39424E23BCA50166148DD74A8DDD038A8D4E3915DFB28D5"
+          "sha256": "EC26255BB5112A91DEFD4B334EF239DDAF7E466BCE847FEA558BF6A3EE235DD8"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Dependencies/WriteableBitmapEx.Wpf/System.Windows.Media.Imaging/BitmapContext.cs",
@@ -579,7 +579,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeTextInheritance.cs",
-          "sha256": "136F1F2B39BCC2C4E195E87C3AB734605CB45CA49BE0F5E66838ACDC1AC98322"
+          "sha256": "FD04582CEFD81B0031D0579ABE3E90063AE8CEC2E1A8071538496C34DC0B5F04"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Input/NativeInputFactory.cs",
@@ -595,7 +595,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "7A453800E228C6C5256C6C029B58F09ACC9FEF2705FEEE47DCE5E0D4CD4771E8"
+          "sha256": "23FA657BB910584B641397BF434B97E7C58A5B95A19ED2297442C6BE0F3AF6AD"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Options.cs",
@@ -708,7 +708,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "7A453800E228C6C5256C6C029B58F09ACC9FEF2705FEEE47DCE5E0D4CD4771E8"
+          "sha256": "23FA657BB910584B641397BF434B97E7C58A5B95A19ED2297442C6BE0F3AF6AD"
         }
       ],
       "consumers": [
@@ -770,7 +770,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeTextInheritance.cs",
-          "sha256": "136F1F2B39BCC2C4E195E87C3AB734605CB45CA49BE0F5E66838ACDC1AC98322"
+          "sha256": "FD04582CEFD81B0031D0579ABE3E90063AE8CEC2E1A8071538496C34DC0B5F04"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Input/NativeInputFactory.cs",
@@ -786,7 +786,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "7A453800E228C6C5256C6C029B58F09ACC9FEF2705FEEE47DCE5E0D4CD4771E8"
+          "sha256": "23FA657BB910584B641397BF434B97E7C58A5B95A19ED2297442C6BE0F3AF6AD"
         }
       ],
       "consumers": [
@@ -1068,7 +1068,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "7A453800E228C6C5256C6C029B58F09ACC9FEF2705FEEE47DCE5E0D4CD4771E8"
+          "sha256": "23FA657BB910584B641397BF434B97E7C58A5B95A19ED2297442C6BE0F3AF6AD"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Parameters/FgConverter.cs",
@@ -1104,7 +1104,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/InlineConstantRules.cs",
-          "sha256": "C9CF0F152EFE7C1D96FBC0162559391B192D09E4CFDDEB4E804E496B5E055EF9"
+          "sha256": "5A77C4364EAD99ABB4651DEF40319930769F9D77C3EF76F3605C6CF3BD173FB4"
         },
         {
           "path": "src/Plugin.Contracts/FieldPresentation.cs",
@@ -1112,7 +1112,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceBindingBatch.cs",
-          "sha256": "1E4DDA87B92A1C496E54465CCB4BE72E19DFB8371B33CA1C9FE0B2F2448C7F02"
+          "sha256": "964689623D85E2CF16A9EDD08B34E7ACBCDA2A8AB423ADDDC19918567F709EE8"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceSample.cs",
@@ -1363,11 +1363,11 @@
       "dependencies": [
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "7A453800E228C6C5256C6C029B58F09ACC9FEF2705FEEE47DCE5E0D4CD4771E8"
+          "sha256": "23FA657BB910584B641397BF434B97E7C58A5B95A19ED2297442C6BE0F3AF6AD"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
-          "sha256": "EF743D674766CA3119A3D3CD3C470CAB0B16C11CCE737DC4EC08D9B587D1B0BA"
+          "sha256": "BD2DC0DB7BA31D9564F91516481DCBD69CA14183A7A635EAC36B029D36AE6198"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
@@ -1391,11 +1391,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
-          "sha256": "7BD8446A8CB80BBF6F8A0D160534F7639E2DC45756FD8B0FE9043FFEA4A948FE"
+          "sha256": "4A0D152FDBDB9BC6222E1F854E8FB7FF245E6135CEF33AA061035B830843B7A5"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
-          "sha256": "C942B4209BC3D32EC82BD54E2F4B4BE4268FC67FEB0B6FFC9F0B8DCFEA98E9EC"
+          "sha256": "A4F0A485034A5D4DDF4AD07690FAB57889672913D6017929707FDE5029289B93"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/StableSliderTrack.cs",
@@ -1415,7 +1415,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericModel.cs",
-          "sha256": "95A894E984137B3DD04A24669714871DBB43A9A95D84F1CA2288881DAA5B4ED6"
+          "sha256": "560A4E59FB0D35689F6A6335E23BD943CB25787D83D2253F6DEB14CC3D9851B0"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
@@ -1423,7 +1423,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.NumericModels.cs",
-          "sha256": "C2E1920296439B3263E06E892C1F1C0F7FEDFD71ADD3A73D3CD3D28B2E4F3316"
+          "sha256": "9911C695B3C030526EA89CEF9ADA69E9BCA81657BBD2E2D540A43B5C68FDCDA2"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredInputFieldsView.cs",
@@ -1431,15 +1431,15 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
-          "sha256": "CB9F9BAD232DED8DE714AB4D050396C5E47B132C3D05BA36779EE720FC59F7A2"
+          "sha256": "39A993EF2246D662C6F5E8694030478DD2A667A27AAB95EE52160CC2F6EB3C12"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
-          "sha256": "E63E130772B00A7A5D700A64D307DC8C88D63FE7D5EB516E0CCC7DA079C36A84"
+          "sha256": "898B5DBD76D5207CF69BA5C9836DD47E61CE153352102CD49B7D33F1802905D0"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/NumericModelReadResult.cs",
-          "sha256": "E0F400FC01617580EE64AA44551B20E726F7E46770DA60856218624A54B95677"
+          "sha256": "81932AF8F0F4A21DBEDBA7AD8A768F529D57F54BFDF14133FCA14281FCA1A6AF"
         }
       ],
       "dependencyCatalogRefs": [
@@ -1718,11 +1718,11 @@
       "dependencies": [
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
-          "sha256": "EF743D674766CA3119A3D3CD3C470CAB0B16C11CCE737DC4EC08D9B587D1B0BA"
+          "sha256": "BD2DC0DB7BA31D9564F91516481DCBD69CA14183A7A635EAC36B029D36AE6198"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "7A453800E228C6C5256C6C029B58F09ACC9FEF2705FEEE47DCE5E0D4CD4771E8"
+          "sha256": "23FA657BB910584B641397BF434B97E7C58A5B95A19ED2297442C6BE0F3AF6AD"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
@@ -1894,11 +1894,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
-          "sha256": "7BD8446A8CB80BBF6F8A0D160534F7639E2DC45756FD8B0FE9043FFEA4A948FE"
+          "sha256": "4A0D152FDBDB9BC6222E1F854E8FB7FF245E6135CEF33AA061035B830843B7A5"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
-          "sha256": "C942B4209BC3D32EC82BD54E2F4B4BE4268FC67FEB0B6FFC9F0B8DCFEA98E9EC"
+          "sha256": "A4F0A485034A5D4DDF4AD07690FAB57889672913D6017929707FDE5029289B93"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
@@ -2569,7 +2569,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/AcceptedFieldValue.cs",
-          "sha256": "4BBCC75F0BA58D5E7B7E3B9BA89E9F93CDA84E0C251BA2ACBB877707B6EF7650",
+          "sha256": "13B48E53868D10B8B844DB265242CF0C9199EBBB260C008D8203A0E619809A06",
           "kind": "中立菜单与宿主历史同根组合"
         },
         {
@@ -2992,7 +2992,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeTextInheritance.cs",
-          "sha256": "136F1F2B39BCC2C4E195E87C3AB734605CB45CA49BE0F5E66838ACDC1AC98322"
+          "sha256": "FD04582CEFD81B0031D0579ABE3E90063AE8CEC2E1A8071538496C34DC0B5F04"
         }
       ],
       "dependencyCatalogRefs": [
@@ -3105,7 +3105,7 @@
       "dependencies": [
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/NativeIntegerRadioOptions.cs",
-          "sha256": "9F7225902FC99E5A8B4A4A7986D3C4ACCF47201D983E1A8AC89673B679D3267C"
+          "sha256": "AF7178CD977C05C7A775BF7E7838DB77F9FECE570D70FCEDDB7CC0622E8F9A97"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/NativeIntegerRadioPresenter.cs",
@@ -3125,23 +3125,23 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
-          "sha256": "CB9F9BAD232DED8DE714AB4D050396C5E47B132C3D05BA36779EE720FC59F7A2"
+          "sha256": "39A993EF2246D662C6F5E8694030478DD2A667A27AAB95EE52160CC2F6EB3C12"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
-          "sha256": "E63E130772B00A7A5D700A64D307DC8C88D63FE7D5EB516E0CCC7DA079C36A84"
+          "sha256": "898B5DBD76D5207CF69BA5C9836DD47E61CE153352102CD49B7D33F1802905D0"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeIntegerRadioSample.cs",
-          "sha256": "4FDCBF9C27E0830D33CEC15FB8212946F26561D2FA367ED568C7AB82D6E17B1B"
+          "sha256": "6A919C02CCDDC111B6053BFA579D90D5510C05FF12CFB926911B3BF18F315E71"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeIntegerRadioScene.xaml",
-          "sha256": "E9032BD9B1C6FF25AB16A34795848E79622D906EE30BDEC996A0515852D26C51"
+          "sha256": "36E6044C1D07CFE47632D66AC59E9B4B36A8A70A75664E5557142A49B431813F"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeTextInheritance.cs",
-          "sha256": "136F1F2B39BCC2C4E195E87C3AB734605CB45CA49BE0F5E66838ACDC1AC98322"
+          "sha256": "FD04582CEFD81B0031D0579ABE3E90063AE8CEC2E1A8071538496C34DC0B5F04"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Common/Localization/ResourceBinding.cs",
@@ -3149,15 +3149,15 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "7A453800E228C6C5256C6C029B58F09ACC9FEF2705FEEE47DCE5E0D4CD4771E8"
+          "sha256": "23FA657BB910584B641397BF434B97E7C58A5B95A19ED2297442C6BE0F3AF6AD"
         },
         {
           "path": "src/Plugin.Wpf/Fields/FieldGroupCandidate.cs",
-          "sha256": "CEA896AC752A0305A48BD2A0D009D789F9680B423F79B2292F9D36C553455EBB"
+          "sha256": "4EC4E69B2DE4DE056AD7B684E17804DB212412EB2328049DB251D2B87EAE913F"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Groups.cs",
-          "sha256": "1E4A747BD94EB2CB0BAA14C9829D8567056F8E42B5FC7E083FF18CE8E1C72A6C"
+          "sha256": "DB9C7C1595930464123310BE39192E0D5B1B956D162EC3AF85A2B2C3BF77E979"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
@@ -3181,7 +3181,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceScene.xaml",
-          "sha256": "693D97544EC5E98E1C623AA9CBEC0E6AE5BDEB0A9D8C7A4F172B1309A058E2E2"
+          "sha256": "3EACEC674A6653566D1105DB3254500903D971B6FDA7C30C0F25F4C866F5D9CF"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Options.cs",
@@ -3193,7 +3193,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceBindingBatch.cs",
-          "sha256": "1E4DDA87B92A1C496E54465CCB4BE72E19DFB8371B33CA1C9FE0B2F2448C7F02"
+          "sha256": "964689623D85E2CF16A9EDD08B34E7ACBCDA2A8AB423ADDDC19918567F709EE8"
         },
         {
           "path": "src/Plugin.Contracts/BindingPlans.cs",
@@ -3216,7 +3216,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/AcceptedFieldValue.cs",
-          "sha256": "4BBCC75F0BA58D5E7B7E3B9BA89E9F93CDA84E0C251BA2ACBB877707B6EF7650",
+          "sha256": "13B48E53868D10B8B844DB265242CF0C9199EBBB260C008D8203A0E619809A06",
           "kind": "中立菜单与宿主历史同根组合"
         },
         {
@@ -3464,7 +3464,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeRoiInheritanceScene.xaml",
-          "sha256": "693D97544EC5E98E1C623AA9CBEC0E6AE5BDEB0A9D8C7A4F172B1309A058E2E2"
+          "sha256": "3EACEC674A6653566D1105DB3254500903D971B6FDA7C30C0F25F4C866F5D9CF"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Native/Display/ImageView/base/imageview/roi/roicontrolbasestyle.xaml",
@@ -3480,7 +3480,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceBindingBatch.cs",
-          "sha256": "1E4DDA87B92A1C496E54465CCB4BE72E19DFB8371B33CA1C9FE0B2F2448C7F02"
+          "sha256": "964689623D85E2CF16A9EDD08B34E7ACBCDA2A8AB423ADDDC19918567F709EE8"
         },
         {
           "path": "src/Plugin.Contracts/BindingPlans.cs",
@@ -3503,7 +3503,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/AcceptedFieldValue.cs",
-          "sha256": "4BBCC75F0BA58D5E7B7E3B9BA89E9F93CDA84E0C251BA2ACBB877707B6EF7650",
+          "sha256": "13B48E53868D10B8B844DB265242CF0C9199EBBB260C008D8203A0E619809A06",
           "kind": "中立菜单与宿主历史同根组合"
         },
         {
@@ -4146,11 +4146,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "7A453800E228C6C5256C6C029B58F09ACC9FEF2705FEEE47DCE5E0D4CD4771E8"
+          "sha256": "23FA657BB910584B641397BF434B97E7C58A5B95A19ED2297442C6BE0F3AF6AD"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
-          "sha256": "EF743D674766CA3119A3D3CD3C470CAB0B16C11CCE737DC4EC08D9B587D1B0BA"
+          "sha256": "BD2DC0DB7BA31D9564F91516481DCBD69CA14183A7A635EAC36B029D36AE6198"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeParameterRows.cs",
@@ -4166,7 +4166,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Text/TextExpressionOptions.cs",
-          "sha256": "EF89C630CDB6DDEC9B5C57B2878BE605AE4A0352C9561531441270248EA7ECAA"
+          "sha256": "B1AE5623868EF014309BF77ED714029B4349202BF5642404F428D25C6271F810"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Common/ImageViewBox.Host.cs",
@@ -4354,7 +4354,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeDisplayScene.xaml",
-          "sha256": "06F3DE247F780D91DFE7F8C64C812C37183E8BE04D8017609F7A6E5AF6DF305B"
+          "sha256": "BE4DD8BCC5F87BCAEEC4C73C586286CCA6F162ECA879DB2E16447BD81D83FC92"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
@@ -4362,11 +4362,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Displays.cs",
-          "sha256": "2C155E081357BA43085302A953E79591D7D138967195E74E7DA59924227CD6FA"
+          "sha256": "FEA7621489947314620ADC4BC6E1E8F787F2A3DF9576032F68E8C7938CDB0D0B"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Groups.cs",
-          "sha256": "1E4A747BD94EB2CB0BAA14C9829D8567056F8E42B5FC7E083FF18CE8E1C72A6C"
+          "sha256": "DB9C7C1595930464123310BE39192E0D5B1B956D162EC3AF85A2B2C3BF77E979"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Options.cs",
@@ -4386,7 +4386,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Display/NativeGraphicBridge.cs",
-          "sha256": "E311EC425DCBA759EDEDD32D5CA734CFDE8EB8583557175406BA6C1285D9A0E2"
+          "sha256": "65443504D6A626D8880DF87C3CC72CF287F7299CFF9CC6FE6C1BAE5E77D30128"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Display/NativeGraphicStylePresenter.cs",
@@ -4398,15 +4398,15 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
-          "sha256": "7BD8446A8CB80BBF6F8A0D160534F7639E2DC45756FD8B0FE9043FFEA4A948FE"
+          "sha256": "4A0D152FDBDB9BC6222E1F854E8FB7FF245E6135CEF33AA061035B830843B7A5"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
-          "sha256": "CB9F9BAD232DED8DE714AB4D050396C5E47B132C3D05BA36779EE720FC59F7A2"
+          "sha256": "39A993EF2246D662C6F5E8694030478DD2A667A27AAB95EE52160CC2F6EB3C12"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
-          "sha256": "E63E130772B00A7A5D700A64D307DC8C88D63FE7D5EB516E0CCC7DA079C36A84"
+          "sha256": "898B5DBD76D5207CF69BA5C9836DD47E61CE153352102CD49B7D33F1802905D0"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Text/NativeTextPresenter.cs",
@@ -4875,11 +4875,11 @@
       "dependencies": [
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-          "sha256": "7A453800E228C6C5256C6C029B58F09ACC9FEF2705FEEE47DCE5E0D4CD4771E8"
+          "sha256": "23FA657BB910584B641397BF434B97E7C58A5B95A19ED2297442C6BE0F3AF6AD"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
-          "sha256": "EF743D674766CA3119A3D3CD3C470CAB0B16C11CCE737DC4EC08D9B587D1B0BA"
+          "sha256": "BD2DC0DB7BA31D9564F91516481DCBD69CA14183A7A635EAC36B029D36AE6198"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeParameterRows.cs",
@@ -4979,7 +4979,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeDisplayScene.xaml",
-          "sha256": "06F3DE247F780D91DFE7F8C64C812C37183E8BE04D8017609F7A6E5AF6DF305B"
+          "sha256": "BE4DD8BCC5F87BCAEEC4C73C586286CCA6F162ECA879DB2E16447BD81D83FC92"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
@@ -4987,11 +4987,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Displays.cs",
-          "sha256": "2C155E081357BA43085302A953E79591D7D138967195E74E7DA59924227CD6FA"
+          "sha256": "FEA7621489947314620ADC4BC6E1E8F787F2A3DF9576032F68E8C7938CDB0D0B"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Groups.cs",
-          "sha256": "1E4A747BD94EB2CB0BAA14C9829D8567056F8E42B5FC7E083FF18CE8E1C72A6C"
+          "sha256": "DB9C7C1595930464123310BE39192E0D5B1B956D162EC3AF85A2B2C3BF77E979"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Options.cs",
@@ -5011,7 +5011,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Display/NativeGraphicBridge.cs",
-          "sha256": "E311EC425DCBA759EDEDD32D5CA734CFDE8EB8583557175406BA6C1285D9A0E2"
+          "sha256": "65443504D6A626D8880DF87C3CC72CF287F7299CFF9CC6FE6C1BAE5E77D30128"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Display/NativeGraphicStylePresenter.cs",
@@ -5019,15 +5019,15 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
-          "sha256": "7BD8446A8CB80BBF6F8A0D160534F7639E2DC45756FD8B0FE9043FFEA4A948FE"
+          "sha256": "4A0D152FDBDB9BC6222E1F854E8FB7FF245E6135CEF33AA061035B830843B7A5"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
-          "sha256": "CB9F9BAD232DED8DE714AB4D050396C5E47B132C3D05BA36779EE720FC59F7A2"
+          "sha256": "39A993EF2246D662C6F5E8694030478DD2A667A27AAB95EE52160CC2F6EB3C12"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
-          "sha256": "E63E130772B00A7A5D700A64D307DC8C88D63FE7D5EB516E0CCC7DA079C36A84"
+          "sha256": "898B5DBD76D5207CF69BA5C9836DD47E61CE153352102CD49B7D33F1802905D0"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Assets/Native/Numeric/Arranged/combo_ic_top_click.png",
@@ -5192,11 +5192,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Results/IToolResultView.cs",
-          "sha256": "59B5939A76A78A7C09959B900735D38F47F8476EB09743FCE30CBE3FFF1155C2"
+          "sha256": "6531D7C648E0F666E8697D2A3FBC1A5B01E67E90758BF8C27E196C0581B13B34"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Results/ResultPublication.cs",
-          "sha256": "ABAC9EC02973B9A277F2A4DBCA520B31464F2D8021A39A8AEAE2E1F453FA5A6D"
+          "sha256": "C182868FE151774D5D13B6F645D22D58D93AF07F0117A051103D94CBF0BC6342"
         },
         {
           "path": "src/Plugin.Contracts/Results/Presentation/ResultProjectionDescriptor.cs",
@@ -5372,12 +5372,12 @@
       "dependencies": [
         {
           "path": "src/Plugin.Wpf/Presenters/Results/ResultPublication.cs",
-          "sha256": "ABAC9EC02973B9A277F2A4DBCA520B31464F2D8021A39A8AEAE2E1F453FA5A6D",
+          "sha256": "C182868FE151774D5D13B6F645D22D58D93AF07F0117A051103D94CBF0BC6342",
           "origin": "自研声明/生命周期适配"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Results/IToolResultView.cs",
-          "sha256": "59B5939A76A78A7C09959B900735D38F47F8476EB09743FCE30CBE3FFF1155C2",
+          "sha256": "6531D7C648E0F666E8697D2A3FBC1A5B01E67E90758BF8C27E196C0581B13B34",
           "origin": "自研声明/生命周期适配"
         },
         {
@@ -5710,12 +5710,12 @@
       "dependencies": [
         {
           "path": "src/Plugin.Wpf/Presenters/Results/ResultPublication.cs",
-          "sha256": "ABAC9EC02973B9A277F2A4DBCA520B31464F2D8021A39A8AEAE2E1F453FA5A6D",
+          "sha256": "C182868FE151774D5D13B6F645D22D58D93AF07F0117A051103D94CBF0BC6342",
           "origin": "自研声明/生命周期适配"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Results/IToolResultView.cs",
-          "sha256": "59B5939A76A78A7C09959B900735D38F47F8476EB09743FCE30CBE3FFF1155C2",
+          "sha256": "6531D7C648E0F666E8697D2A3FBC1A5B01E67E90758BF8C27E196C0581B13B34",
           "origin": "自研声明/生命周期适配"
         },
         {
@@ -5754,7 +5754,7 @@
         "files": [
           {
             "path": "src/Plugin.Wpf/Adapters/Display/NativeResultRaster.cs",
-            "sha256": "E984726135437D159974CAA744CBB9D63B3FA295B56B5EF6AC91C151CB9F72A6"
+            "sha256": "D92383C3823073886B81B46CE26F7A9D5137E7466D88653547C522B49CA535FB"
           },
           {
             "path": "src/Plugin.Wpf/Adapters/Display/NativeResultImageFrame.cs",
@@ -5766,11 +5766,11 @@
           },
           {
             "path": "src/Plugin.Wpf/Design/NativeResultRasterScene.xaml",
-            "sha256": "95C8D39414EB8F9EE4CA11E8DFCBA41B6BE75979AD0F6F7F1FB9DD0A717BB088"
+            "sha256": "6C65941390E33EB40889BDA85167A02222A904ADCDF64E578BBBBB0EF8B4DB42"
           },
           {
             "path": "src/Plugin.Wpf/Design/NativeResultRasterSample.cs",
-            "sha256": "1C2AE9E208C081DE4BF4447CF303B898972A855EE89B8A08D943FDCD68B15D9D"
+            "sha256": "4E3BA83CBCFD932ADAB00B1D90D85C249261A24079242C67ACCAA257F02C9876"
           }
         ],
         "sourceEvidence": "docs/collaboration/evidence/O06_NATIVE_RASTER_LAYER_CANDIDATE_20261028.json",
@@ -5823,7 +5823,7 @@
           },
           {
             "path": "src/Plugin.Wpf/Design/NativeResultRasterSample.cs",
-            "sha256": "1C2AE9E208C081DE4BF4447CF303B898972A855EE89B8A08D943FDCD68B15D9D"
+            "sha256": "4E3BA83CBCFD932ADAB00B1D90D85C249261A24079242C67ACCAA257F02C9876"
           }
         ],
         "evidence": "docs/collaboration/evidence/O06_NATIVE_SHAPE_LAYER_CANDIDATE_20261028.json",
@@ -5931,7 +5931,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Composition/Parameters/NativeToolEditorFrame.xaml.cs",
-          "sha256": "24E3C5B8550BA0310E883F525BF5058879D8AF5A72F56F08BB41FC6B5A127250"
+          "sha256": "843AF52B3A618A606CD2AB6232FE6F476F649CCCD1F744216C48A7AD0C2D8E90"
         },
         {
           "path": "src/Plugin.Wpf/Themes/Native/Composition/Commands/BottomCommands.xaml",
@@ -5939,11 +5939,11 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeToolEditorScene.xaml",
-          "sha256": "9AAFA306E91C6DD295E504A366E9C5523DD9C5859AA5CE03391966B9BC701F3C"
+          "sha256": "BAB824EE593570FEB381AE36E194CC8705199F47EA6BA61C4F1B88930D0AD0F0"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeToolEditorSample.cs",
-          "sha256": "A4CE3C1B14068ABAC7AFDC973EA3FFD68CFB2234BD52BF4E11324D9BA6334CF9"
+          "sha256": "F1228D15ADEDB78CE5FC11896E18BF7ECE20B5E92C002E3538054AAA5E1C4A05"
         }
       ],
       "dependencies": [
@@ -6078,11 +6078,11 @@
       "localFiles": [
         {
           "path": "src/Plugin.Wpf/Presenters/Parameters/NativeAssistOptions.cs",
-          "sha256": "9608D965683B39D669BDFE118C0F47DB4E7E5DFFED3EAD4B6325A0A34AB4136F"
+          "sha256": "B67927BC6B4F96895369E609369373E7C404E50695009BB0FD0FBB5ACD64112A"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Assist.cs",
-          "sha256": "6D1F4BE481D97D62F8813797CC33FE55925EE8F2DE735528D342829A74C7D041"
+          "sha256": "EEE52DCA2AF7983D8F27ECFD985D3AD43BA864CDD0ECFD7DA0E69A9C9BFD889D"
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
@@ -6094,15 +6094,15 @@
         },
         {
           "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Groups.cs",
-          "sha256": "1E4A747BD94EB2CB0BAA14C9829D8567056F8E42B5FC7E083FF18CE8E1C72A6C"
+          "sha256": "DB9C7C1595930464123310BE39192E0D5B1B956D162EC3AF85A2B2C3BF77E979"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeAssistSample.cs",
-          "sha256": "77BA1EE618C87A8990F3F58C0E975D298D89CE38275974EE1EF8CCD552F8D2A4"
+          "sha256": "50B3EFF2A4CCBCF221C1EAA4FF07FEAB67E9977819B88AFA251376A93823193F"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeAssistScene.xaml",
-          "sha256": "0BC9CAF26E381A07D0BC45CA793F690DC0FA5CA5CCEBD5518C1B3C65C831AACD"
+          "sha256": "150C17A2B78BA73E3E25741C4AF1805F6D263BB9FA4ACEC9A46E878FEFA23F73"
         }
       ],
       "dependencies": [
@@ -6428,7 +6428,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Composition/Display/CrosshairSettingsWindow.xaml",
-          "sha256": "1B4A0A3FFFC810770E3E90C9BB49C10C9F069B32C75F15E90960D800D3E22779"
+          "sha256": "28352BF7F65E444D63F37251D02741E37DBA9C1AE833D79595965EB03B04F1BD"
         },
         {
           "path": "src/Plugin.Wpf/Controls/Native/Composition/Display/CrosshairSettingsWindow.xaml.cs",
@@ -6532,15 +6532,15 @@
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeCrosshairDesignData.cs",
-          "sha256": "5C7CED06CDD84AEC198E65810F69413BC7F83B7BD5F7E4693E7B8FAE591A5E8C"
+          "sha256": "4359C244D49B1967AB3BF77A68A8583F6DF56E7B6273DBD6D6BBAF6ADB58A4BB"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeCrosshairSample.cs",
-          "sha256": "66393FF81797BF5D6C80B55C73640399549D16C4E4187B86AED9CCD2F4403505"
+          "sha256": "1C349E2660FA41794DCABA7303463A7AE092B670CBEC9FFD8EA4FE25AF10C336"
         },
         {
           "path": "src/Plugin.Wpf/Design/NativeCrosshairScene.xaml",
-          "sha256": "DFF5E158682642D5D102B3DF0BE0F052511C93B00FB1506F89BE124CE7336856"
+          "sha256": "8BDC05EC8B3A13457791E01F31D2D8D38D51BECFB53B1C0535ECFB91BA36EF23"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.Cross.cs",
@@ -6768,7 +6768,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\GlobalVariableSelectDlg.xaml",
           "originalSha256": "023A989C41ABBF8CE85E4E4DC28F23CA39C13133A96D60A8B81CE58945B95818",
           "localPath": "src\\Plugin.Wpf\\Controls\\References\\Variables\\VariableSelectionDialog.xaml",
-          "localSha256": "54B489FA5EF17A8815C55AB12CA47D61211129FE0DC78E64531273BA783E7FA1",
+          "localSha256": "263A8EFF2FA9F218A5811F21EFABB2181AD0FA0AA270B3AD826771855C295C7E",
           "coverage": "原视觉/交互迁入；中立命名、资源路径及冻结候选适配，反编译EventSetter顺序规范化"
         },
         {
@@ -6786,7 +6786,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\TreeViewCombobox.xaml",
           "originalSha256": "B2040C21191106B6561519C4B2B88DF16596F90A644035D8D27D5D6AEB44F305",
           "localPath": "src\\Plugin.Wpf\\Controls\\References\\Variables\\VariableGroupSelector.xaml",
-          "localSha256": "252DCB7350F8EC1A008E9BCDC9CD7876D813E31C5F29E65F060AD3F72805FF92",
+          "localSha256": "4B4BBD4209DCE2749A344EA75A29244F525B801C651DCD577C110216BB3AFC38",
           "coverage": "原视觉/交互迁入；中立命名、资源路径及冻结候选适配，反编译EventSetter顺序规范化"
         },
         {
@@ -6822,7 +6822,7 @@
           "originalPath": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\Apps.XmlUI.ParamTab\\PageNumControl.xaml",
           "originalSha256": "59CD28F6C897F69651629D7A6C46612FEA1317770687A100A98421F60FB60AFD",
           "localPath": "src\\Plugin.Wpf\\Controls\\References\\Variables\\VariablePageNavigator.xaml",
-          "localSha256": "1F031AAA9B8EA662EBEE0D013BDA5A5A07978A378DECF0CED2809F43786200CB",
+          "localSha256": "D8CF964CE2687F36E513E7A9EF438A4FC00A68039AF1B6415E4342A8D8F16581",
           "coverage": "原视觉/交互迁入；中立命名、资源路径及冻结候选适配，反编译EventSetter顺序规范化"
         },
         {
@@ -7005,27 +7005,27 @@
       },
       {
         "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
-        "sha256": "7BD8446A8CB80BBF6F8A0D160534F7639E2DC45756FD8B0FE9043FFEA4A948FE"
+        "sha256": "4A0D152FDBDB9BC6222E1F854E8FB7FF245E6135CEF33AA061035B830843B7A5"
       },
       {
         "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberPresenter.cs",
-        "sha256": "C942B4209BC3D32EC82BD54E2F4B4BE4268FC67FEB0B6FFC9F0B8DCFEA98E9EC"
+        "sha256": "A4F0A485034A5D4DDF4AD07690FAB57889672913D6017929707FDE5029289B93"
       },
       {
         "path": "src/Plugin.Wpf/Presenters/Numeric/NativeUiDraftRange.cs",
-        "sha256": "6750B32AA38701C7315C58B9D9CE496015BFE6CB615AF3579838147875F45501"
+        "sha256": "35F10B287CC39AA07CC05A01CE1CD1ED2731BD93BC2492A1CE99094A65497E7D"
       },
       {
         "path": "src/Plugin.Wpf/Presenters/Parameters/NativeJudgmentUiDraftControls.cs",
-        "sha256": "72FAF66199B7085E29EC0F2B6260B8CB79216A25467DBC2B90DBAC44028B95F6"
+        "sha256": "DBA28669E106D436575228C73468BF5A151CC68F8BA6081BE66FB54F87ADDFE3"
       },
       {
         "path": "src/Plugin.Wpf/Presenters/Parameters/NativeThresholdUiDraftControls.cs",
-        "sha256": "A93FBCB06C7F8F41E5B3D6177D8CBB2ABE3FFADABFD0A155CC63ABF8AC3FBF72"
+        "sha256": "5801F67FFF79DF61AF07737DCCB57A6BD1A3A119461DE014DFCCC2B404D46E63"
       },
       {
         "path": "src/Plugin.Wpf/Presenters/Parameters/NativeUiConditionalFields.cs",
-        "sha256": "BD63804DA0B07072AB85B79D1EBDC25DA713D2B7A3E48AE7586D2839B08766F4"
+        "sha256": "7E69613DD0502C29553B3F6B0F0A486D65863F5375D900F4D94AD404DB6FAE7B"
       }
     ]
   },
@@ -7117,15 +7117,15 @@
     "files": [
       {
         "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-        "sha256": "7A453800E228C6C5256C6C029B58F09ACC9FEF2705FEEE47DCE5E0D4CD4771E8"
+        "sha256": "23FA657BB910584B641397BF434B97E7C58A5B95A19ED2297442C6BE0F3AF6AD"
       },
       {
         "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
-        "sha256": "EF743D674766CA3119A3D3CD3C470CAB0B16C11CCE737DC4EC08D9B587D1B0BA"
+        "sha256": "BD2DC0DB7BA31D9564F91516481DCBD69CA14183A7A635EAC36B029D36AE6198"
       },
       {
         "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericModel.cs",
-        "sha256": "95A894E984137B3DD04A24669714871DBB43A9A95D84F1CA2288881DAA5B4ED6"
+        "sha256": "560A4E59FB0D35689F6A6335E23BD943CB25787D83D2253F6DEB14CC3D9851B0"
       },
       {
         "path": "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
@@ -7133,7 +7133,7 @@
       },
       {
         "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.NumericModels.cs",
-        "sha256": "C2E1920296439B3263E06E892C1F1C0F7FEDFD71ADD3A73D3CD3D28B2E4F3316"
+        "sha256": "9911C695B3C030526EA89CEF9ADA69E9BCA81657BBD2E2D540A43B5C68FDCDA2"
       },
       {
         "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
@@ -7141,7 +7141,7 @@
       },
       {
         "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
-        "sha256": "7BD8446A8CB80BBF6F8A0D160534F7639E2DC45756FD8B0FE9043FFEA4A948FE"
+        "sha256": "4A0D152FDBDB9BC6222E1F854E8FB7FF245E6135CEF33AA061035B830843B7A5"
       },
       {
         "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredInputFieldsView.cs",
@@ -7149,15 +7149,15 @@
       },
       {
         "path": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
-        "sha256": "CB9F9BAD232DED8DE714AB4D050396C5E47B132C3D05BA36779EE720FC59F7A2"
+        "sha256": "39A993EF2246D662C6F5E8694030478DD2A667A27AAB95EE52160CC2F6EB3C12"
       },
       {
         "path": "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
-        "sha256": "E63E130772B00A7A5D700A64D307DC8C88D63FE7D5EB516E0CCC7DA079C36A84"
+        "sha256": "898B5DBD76D5207CF69BA5C9836DD47E61CE153352102CD49B7D33F1802905D0"
       },
       {
         "path": "src/Plugin.Wpf/Presenters/Parameters/NumericModelReadResult.cs",
-        "sha256": "E0F400FC01617580EE64AA44551B20E726F7E46770DA60856218624A54B95677"
+        "sha256": "81932AF8F0F4A21DBEDBA7AD8A768F529D57F54BFDF14133FCA14281FCA1A6AF"
       },
       {
         "path": "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
@@ -7183,19 +7183,19 @@
     "files": [
       {
         "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
-        "sha256": "7A453800E228C6C5256C6C029B58F09ACC9FEF2705FEEE47DCE5E0D4CD4771E8",
+        "sha256": "23FA657BB910584B641397BF434B97E7C58A5B95A19ED2297442C6BE0F3AF6AD",
         "gitBlob": "ae705c72fc69fee26d79fd61e677c9fd3f3f5d9b",
         "candidateRawSha256": "7A453800E228C6C5256C6C029B58F09ACC9FEF2705FEEE47DCE5E0D4CD4771E8"
       },
       {
         "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
-        "sha256": "EF743D674766CA3119A3D3CD3C470CAB0B16C11CCE737DC4EC08D9B587D1B0BA",
+        "sha256": "BD2DC0DB7BA31D9564F91516481DCBD69CA14183A7A635EAC36B029D36AE6198",
         "gitBlob": "6f25b4106b8a69d5e66a8372b8002cd2911c6438",
         "candidateRawSha256": "EF743D674766CA3119A3D3CD3C470CAB0B16C11CCE737DC4EC08D9B587D1B0BA"
       },
       {
         "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericModel.cs",
-        "sha256": "95A894E984137B3DD04A24669714871DBB43A9A95D84F1CA2288881DAA5B4ED6",
+        "sha256": "560A4E59FB0D35689F6A6335E23BD943CB25787D83D2253F6DEB14CC3D9851B0",
         "gitBlob": "547e5049171dd606bb0403064241a8a79b34722f",
         "candidateRawSha256": "95A894E984137B3DD04A24669714871DBB43A9A95D84F1CA2288881DAA5B4ED6"
       },
@@ -7207,7 +7207,7 @@
       },
       {
         "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.NumericModels.cs",
-        "sha256": "C2E1920296439B3263E06E892C1F1C0F7FEDFD71ADD3A73D3CD3D28B2E4F3316",
+        "sha256": "9911C695B3C030526EA89CEF9ADA69E9BCA81657BBD2E2D540A43B5C68FDCDA2",
         "gitBlob": "be7914378ef840cc8e96d7bcf67b06b535f8dce3",
         "candidateRawSha256": "C2E1920296439B3263E06E892C1F1C0F7FEDFD71ADD3A73D3CD3D28B2E4F3316"
       },
@@ -7219,7 +7219,7 @@
       },
       {
         "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
-        "sha256": "7BD8446A8CB80BBF6F8A0D160534F7639E2DC45756FD8B0FE9043FFEA4A948FE",
+        "sha256": "4A0D152FDBDB9BC6222E1F854E8FB7FF245E6135CEF33AA061035B830843B7A5",
         "gitBlob": "7b1ea80794a02f9ab61c823c3e7d222d66f758e4",
         "candidateRawSha256": "7BD8446A8CB80BBF6F8A0D160534F7639E2DC45756FD8B0FE9043FFEA4A948FE"
       },
@@ -7253,7 +7253,7 @@
       },
       {
         "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Groups.cs",
-        "sha256": "1E4A747BD94EB2CB0BAA14C9829D8567056F8E42B5FC7E083FF18CE8E1C72A6C",
+        "sha256": "DB9C7C1595930464123310BE39192E0D5B1B956D162EC3AF85A2B2C3BF77E979",
         "gitBlob": "acfb4db13ef375470411b6384a17c3e593af3549"
       },
       {

@@ -1,3 +1,13 @@
+## 2026-11-04 本树连续核心与节点复制整批自测通过
+
+当前产品c28b519b1：A5a/6b→60e4eabb9及其后置、C c33/8e/780→4b66819aa/212528896/c28b519b1已集中合入。全量Release0错6123warn，同版封包B20D235E32D62B1C313950FB3034815123B817CD772B5F856E8AFFBACB441C5F；真实连续探针13组通过，WorkflowGraph35/35、隐藏Canvas24/24。结果见continuous-clipboard-integrated-full-build、continuous-integrated-run、clipboard-graph/canvas-integrated-20261104.log和integrated-rechecks-20261104 TRX。
+
+前置84e真实准入25/25通过（admission-integrated-coherent-test-20261104.log），此前二次SHA失败已定位：测试重建更新产品，随后Probe私有Foundation旧副本；正常refs最后重建Probe并校对真实字节再封包/no-build通过，禁止手工复制或绕门禁。编辑13/13、Domain22/22复验已完成，指定物理相机测试仍不具备；不签全套803全部通过。d42无WPFSession独立载荷的真实生产链通过，桌面SDK依赖未退出。
+
+下一共享批：根集合事务尚无产品，整体设计已审定、C纯builder接缝61da975f8待核收冻结；连续主窗由B独立树整体设计，需补真实耗时summary，不能造UI循环。A只读依赖审计c6c66cf80指出其他18工具及SDK活跃消费者与图像输入旧CWT路径，须整体处理，不把两工具签全平台。Group/新循环暂停。下一步统一审定候选view/token/编号/资源ABI，根负责共享集合/Domain/Persistence；B/C不写这些共享文件。
+
+当前没有根构建/测试活跃句柄；源码集成与全部自测如上，用户人工/VS/主仓未验。主HTML和完整剩余矩阵已统一阶段效果、验证和未做范围，目标保持全平台不缩。
+
 ## 2026-11-04 准入完整候选集中核收
 
 合B2e75bd39e的真实Session准入/运行/文件/reader/隐藏两工具窗口完整探针；独立1/1不签本树。前置287拒暂停拥有关系已在根。根集合整体设计也纳入主树（已审定，尚无产品实现）；本轮需正常UI全refs、Probe独立目录构建、正式重封、明确两环境路径后实际测试。源码/证据/人工/集成分别记，Group暂停。

@@ -264,6 +264,7 @@ public sealed partial class DocumentSession : IDisposable
         {
             if (_closed) return;
             if (_closing || _notifying || _admitting || _preparing) throw new InvalidOperationException("方案正在关闭、通知、准入或准备事务，不能重入关闭。");
+            if (_activities.Count != 0) throw new InvalidOperationException("方案后台活动尚未排空，请先停止并释放：" + string.Join("、", _activities.Values));
             _closing = true;
         }
         Exception? retireFailure = null;

@@ -161,4 +161,35 @@ public sealed class NodeClipboardTests
   Assert.Equal(count,f.Session.HistoryEntries.Count);Assert.True(f.Session.Undo());Assert.Same(actual,Assert.Single(f.Session.Document.GlobalVariables));
   Assert.Single(f.Session.PasteNodeClipboard(f.Root.Id,fragment,new CanvasPoint(250,250)).Nodes);
  }
+ [Fact] public void Inactive_roi_with_variable_index_is_validated_for_target_scope_and_current_variable_type()
+ {
+  using var f=new SessionGraphFixture();using(var variables=f.Session.Editing.Host.BeginVariableEdit())
+  {variables.Variables.Add(new GlobalVariable("索引",0L,"Integer"));f.Session.CommitEdit(DocumentEditProposal.Prepare(f.Session.Editing.Host,variables:variables));}
+  var variable=Assert.Single(f.Session.Document.GlobalVariables);var source=f.Add("BlobAnalysis");var target=f.Add("BlobAnalysis",200,20);
+  var port=f.Session.GetNodeSchema(f.Root.Id,source.Id)!.Outputs.Single(item=>item.Id=="field:8ca10000000040008000000000000019");
+  var index=new VariableReference(f.Session.Document.Id,variable.Id,TypeRef.ScalarOf(ScalarKind.Int64));
+  var reference=new OutputReference(source.Id,port.Id,port.Type,selection:new BindingSelection.AtVariable(index),scopeId:f.Root.Id);
+  const string field="input.roi.rectangle.center-x";var edit=f.Session.Editing.Host.BeginEdit(f.Root.Id,target.Id);
+  edit.ApplyFields(new Dictionary<string,ParameterSetting>{{field,new ReferenceSetting(reference)}});
+  f.Session.CommitEdit(DocumentEditProposal.Prepare(f.Session.Editing.Host,nodes:new[]{edit}));
+  var types=new SunEyeVision.Domain.Persistence.FrozenVariableTypeCatalog(new Dictionary<string,string>{{"Integer","System.Int64"},{"Double","System.Double"}});
+  var original=Path.Combine(f.CaseDirectory,"inactive.solution");f.Session.SaveAs(original,Path.Combine(f.CaseDirectory,"backup"),f.CaseDirectory,types,SessionGraphFixture.Options,_=>null);
+  var json=System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(original))!;var flows=json["Workflows"]!.AsArray();var second=flows[0]!.DeepClone();
+  second["Id"]=Guid.NewGuid().ToString("N");second["Name"]="目标";second["Nodes"]=new System.Text.Json.Nodes.JsonArray();second["Connections"]=new System.Text.Json.Nodes.JsonArray();flows.Add(second);
+  var path=Path.Combine(f.CaseDirectory,"inactive-multi.solution");File.WriteAllText(path,json.ToJsonString());
+  var session=f.Manager.Open(path,_=>types,_=>null,SessionGraphFixture.Options);var sourceFlow=session.GetWorkflows().Single(flow=>flow.Id==f.Root.Id);var targetFlow=session.GetWorkflows().Single(flow=>flow.Name=="目标");
+  var currentTarget=session.FindNode(sourceFlow.Id,target.Id)!;var fragment=session.CaptureNodeClipboard(sourceFlow.Id,new[]{currentTarget});
+  var accepted=session.PasteNodeClipboard(sourceFlow.Id,fragment,new CanvasPoint(400,200));Assert.Single(accepted.Nodes);Assert.True(session.Undo());
+  var before=session.HistoryEntries.Count;Assert.ThrowsAny<Exception>(()=>session.PasteNodeClipboard(targetFlow.Id,fragment,new CanvasPoint(400,200)));
+  Assert.Equal(before,session.HistoryEntries.Count);Assert.Empty(session.GetNodes(targetFlow.Id));
+  var remove=session.PrepareGraphEdit(sourceFlow.Id);remove.DeleteNodesAndConnections(new[]{currentTarget},Array.Empty<ConnectionDefinition>());session.CommitGraphEdit(remove,"删除源");
+  using(var variables=session.Editing.Host.BeginVariableEdit())
+  {variables.Variables.Single().Type="Double";variables.SetValue(variable.Id,0d);session.CommitEdit(DocumentEditProposal.Prepare(session.Editing.Host,variables:variables));}
+  before=session.HistoryEntries.Count;Assert.ThrowsAny<Exception>(()=>session.PasteNodeClipboard(sourceFlow.Id,fragment,new CanvasPoint(500,200)));
+  Assert.Equal(before,session.HistoryEntries.Count);Assert.Single(session.GetNodes(sourceFlow.Id));
+  var occupied=session.GetWorkflows().SelectMany(flow=>session.GetNodes(flow.Id)).Select(node=>node.GlobalIndex).ToHashSet();
+  var expected=Enumerable.Range(1,occupied.Count+1).First(index=>!occupied.Contains(index));
+  var graph=session.PrepareGraphEdit(targetFlow.Id);var created=session.CreateNode(graph,"ImageLoad",new CanvasPoint(600,200));
+  Assert.Equal(expected,created.GlobalIndex);session.CommitGraphEdit(graph,"验证编号未泄漏");
+ }
 }

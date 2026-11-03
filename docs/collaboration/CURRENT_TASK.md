@@ -1,3 +1,8 @@
+## 2026-11-04 可信目录与根集合UI完整集中集成通过
+
+根产品7bf6812c3（3c32可信目录+caba中立名，8ee顶栏真实连续状态，c585根集合UI）；61工程全量0错6127warn。正式载荷BA3699FB31EE268C55BB041FACA43DEF2FFD6B384BE1121995A4F42F1DAD01DC：完整UI225/225、真实工具箱/顶栏1/1、Authority/目录/隐藏两工具参数窗25/25；真实Main根菜单/删除Undo旧窗退休/复制HALCON/保存重开/双主题/关闭排空、连续主窗暂停恢复/取消和同意关闭Stop-await/OLE、真实生产工厂RunChain13含无WPF/UI/SDK加载均退出0。准备组件独立载荷0951E30...真实重入/owner卸载过期拒绝退出0。catalog-root-ui-*20261104和TRX为根证据。首次探针路径、旧连续占位断言失败记录保留，不退回功能。根无活跃句柄。
+
+Blob独立集成树c5da（d390正确Record资源读者、408双图+父状态、b5域修复），全量0错6145warn，完整专项句柄75098正在执行；之前D4D9载荷10资源/RunChain10/隐藏两窗过，不签全部。A继续真实pose常量关闭清除专项；B从7bf新独立树核完整画布中立命名；C复杂值设计46b8已给V5/档案V2与权威字段，待根精确审定后整批实施，未改产品。Host.OwnsRoot(draft)捕获代次缺口保留，现UI已同步退休窗口，不能代签API准确性。原主方案和完整矩阵当前摘要统一替换，原阶段证据折叠保留；18工具/SDK活跃消费者/全局变量/最终树完整范围不缩，Group暂停，人工/VS/主仓分列。
 ## 2026-11-04 域修复后的正式生产工厂无桌面整链通过
 
 根1c前置79域修复全59工程Release0错6124warn已完成。RunChainProbe真实ImageSourceHostInputFactory的本地/模拟相机、正式/连续/私有调试、变量、失败、取消删除、Undo、V4及释放13组通过，并在Run返回且内部using释放后检查实际程序集：未加载WPF/UI/旧SDK。载荷5EB9C02DD823B77DFDA150EB51DBBF7641EE51CD95D82B6D617B53F19E957623；explicit-domain-integrated-{full-build,seal}与explicit-domain-production-{probe-build,runchain}-20261104.log。无根活跃句柄。全量Blob新专项A待最终固定后集成；C可信目录补中立命名，B根集合UI按C增量接缝核收，禁止整文件回退b927采集/连续。原主HTML和矩阵已同步，本次不签全平台/硬件/VS/人工/主仓。

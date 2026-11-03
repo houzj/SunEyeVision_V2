@@ -44,6 +44,7 @@ public sealed class WorkflowExecutionEngine
         var identities = new Dictionary<string, ToolExecutionIdentity>(StringComparer.Ordinal);
         var outputs = new ConcurrentDictionary<string, DeclaredOutputSnapshot>(StringComparer.Ordinal);
         var nodeResults = new Dictionary<string, NodeExecutionResult>(StringComparer.Ordinal);
+        var timings = new ConcurrentDictionary<string, (DateTime Start, DateTime? End)>(StringComparer.Ordinal);
         var running = new List<(string Id, IDisposable Lease, Task<DeclaredOutputSnapshot> Task)>();
         IDisposable? workflowLease = null;
         ExecutionResult? final = null;
@@ -89,9 +90,21 @@ public sealed class WorkflowExecutionEngine
                     request.HostInputs.TryGetValue(id, out var host);
                     try
                     {
-                        var task = Task.Run(async () => await ExecutionToolInvocation.ExecuteAsync(workflow, item.Node, bindings.ForNode(id), identities[id],
-                            expected, outputs, request.VariableValues, request.ParameterValues, host, request.WorkflowImage,
-                            log, item.Node.ResultFields).ConfigureAwait(false));
+                        var task = Task.Run(async () =>
+                        {
+                            // Module time includes admitted input preparation and invocation, but not
+                            // dependency/resource queueing. Use monotonic elapsed time for its end.
+                            var started = DateTime.UtcNow;
+                            var moduleTimer = Stopwatch.StartNew();
+                            timings[id] = (started, null);
+                            try
+                            {
+                                return await ExecutionToolInvocation.ExecuteAsync(workflow, item.Node, bindings.ForNode(id), identities[id],
+                                    expected, outputs, request.VariableValues, request.ParameterValues, host, request.WorkflowImage,
+                                    log, item.Node.ResultFields).ConfigureAwait(false);
+                            }
+                            finally { timings[id] = (started, started + moduleTimer.Elapsed); }
+                        });
                         running.Add((id, lease!, task));
                     }
                     catch { lease!.Dispose(); throw; }
@@ -187,6 +200,12 @@ public sealed class WorkflowExecutionEngine
                 try { var late = await item.Task.ConfigureAwait(false); late.Dispose(); } catch { }
                 try { item.Lease.Dispose(); } catch (Exception error) { cleanup.Add(error); }
             }
+            // Cancellation can create the final aggregate before running tasks drain.
+            // Populate only real started calls after every task has reached its finally.
+            if (final is not null)
+                foreach (var pair in final.NodeResults)
+                    if (timings.TryGetValue(pair.Key, out var timing))
+                    { pair.Value.StartTime = timing.Start; pair.Value.EndTime = timing.End; }
             foreach (var identity in identities.Values) try { identity.CompleteCallbacks(); } catch (Exception error) { cleanup.Add(error); }
             foreach (var output in outputs.Values) try { output.Dispose(); } catch (Exception error) { cleanup.Add(error); }
             try { request.Complete(); } catch (Exception error) { cleanup.Add(error); }

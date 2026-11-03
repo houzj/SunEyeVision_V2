@@ -61,6 +61,16 @@ internal static class Program
             throw new Exception($"末张停止或多轮无效：{completion} 通知数={rounds.Count}");
         using var reader=session.AcquirePublishedResult(flow.Id,blob.Id)??throw new Exception("缺少最终结果reader");
         var firstIdentity=reader.Snapshot.Identity;
+        var lastSummary=rounds.Last().Workflows.Single();
+        var lastNode=lastSummary.Nodes.Single(node=>node.NodeId==blob.Id);
+        if(lastSummary.ExecutionTime<=TimeSpan.Zero || lastNode.Duration is null ||
+            lastNode.Identity!=reader.Snapshot.Identity || lastNode.AlgorithmExecutionTimeMs!=reader.Snapshot.ExecutionTimeMs)
+            throw new Exception($"连续摘要没有保留实际完成耗时和该轮reader身份。Flow={lastSummary.ExecutionTime},Duration={lastNode.Duration},SummaryId={lastNode.Identity},ReaderId={reader.Snapshot.Identity},SummaryMs={lastNode.AlgorithmExecutionTimeMs},ReaderMs={reader.Snapshot.ExecutionTimeMs}");
+        if(lastSummary.Nodes.Count!=2 || lastSummary.Nodes.Any(node=>node.Duration is null || node.AlgorithmExecutionTimeMs is null))
+            throw new Exception("真实执行节点缺少模块/算法时间。");
+        try { ((IList<ContinuousNodeSummary>)lastSummary.Nodes).Clear(); throw new Exception("连续摘要可被消费者修改。"); }
+        catch(NotSupportedException) { }
+        Console.WriteLine("PASS 连续完成摘要与真实reader的算法耗时/运行身份一致，节点时长和根耗时来自正式结果");
         continuous.Dispose();
         Console.WriteLine($"PASS 多轮={completion.CompletedRounds} 末张停止，真实结果reader可用");
 
@@ -265,6 +275,19 @@ internal static class Program
             else if(outcome.Reason!=(mode==2?ContinuousStopReason.Cancelled:ContinuousStopReason.Requested)||outcome.Error is not null)throw new Exception("在途停止或取消未排空："+outcome);
         }
         Console.WriteLine("PASS 在途停止幂等、资源唯一释放及释放失败聚合");
+        using(var blocked=new BlockingFactory(false))
+        using(var cancelledBatch=manager.CaptureCurrentRunBatch(new[]{sourceFlow.Id},hostFactory:blocked))
+        {
+            var pending=cancelledBatch.RunAsync(_=>{});deadline=DateTime.UtcNow+TimeSpan.FromSeconds(30);
+            while(!blocked.Started.Task.IsCompleted) { Pump(queue,signal,deadline); if(pending.IsCompleted)throw new Exception("取消计时场景未进入输入准备"); }
+            cancelledBatch.Stop();
+            while(!pending.IsCompleted)Pump(queue,signal,deadline);
+            using var cancelled=pending.GetAwaiter().GetResult();
+            var cancelledNodes=cancelled.Workflows[sourceFlow.Id].NodeResults;
+            if(cancelledNodes[source.Id].Duration is null || cancelledNodes[blob.Id].Duration is not null)
+                throw new Exception("在途输入取消未保实际模块时间，或给未派发Blob伪造时长");
+        }
+        Console.WriteLine("PASS 取消排空保留已开始模块时间，未派发节点没有伪造时长");
 
         var sourceGraph=reopened.PrepareGraphEdit(sourceFlow.Id);
         sourceGraph.SetNodeEnabled(sourceFlow.Nodes.Single(item=>item.Id==blob.Id),false);
@@ -299,6 +322,11 @@ internal static class Program
                 var failedResult=failedTask.GetAwaiter().GetResult();
                 if(failedResult.Reason!=ContinuousStopReason.Failed||failedResult.Error is null||failedRounds.Count!=1||failedRounds[0].Workflows.Single().Errors.Count==0)
                     throw new Exception("源文件缺失未保留正式失败诊断："+failedResult);
+                var failedNodes=failedRounds[0].Workflows.Single().Nodes;
+                if(failedNodes.Single(node=>node.NodeId==source.Id).Duration is null ||
+                    failedNodes.Single(node=>node.NodeId==blob.Id).Duration is not null ||
+                    failedNodes.Single(node=>node.NodeId==blob.Id).AlgorithmExecutionTimeMs is not null)
+                    throw new Exception("失败模块缺少时间或未派发节点携带假时间");
             }
             finally { foreach(var path in paths)WriteBitmap(path); }
         }

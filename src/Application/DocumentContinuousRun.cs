@@ -11,8 +11,15 @@ public enum ContinuousPhase { Created, Running, Waiting, Paused, Stopping, Compl
 public enum ContinuousStopReason { Requested, Cancelled, LastImage, BusinessNg, Failed }
 public sealed record ContinuousRunState(Guid EditSessionId, Guid RootRunId, ContinuousPhase Phase, long Round, string? ActiveWorkflowId);
 public sealed record ContinuousNodeStatus(Guid RootRunId, long Round, string WorkflowId, string NodeId, ExecutionStatus Status);
+/// <summary>Resource-free facts captured from this exact node invocation, never a retained output lease.</summary>
+public sealed record ContinuousNodeSummary(string NodeId, ExecutionStatus Status, TimeSpan? Duration,
+    double? AlgorithmExecutionTimeMs, RunIdentity? Identity, IReadOnlyList<string> Errors);
 public sealed record WorkflowRoundSummary(string WorkflowId, ExecutionStatus Status, bool HasBusinessNg)
-{ public IReadOnlyList<string> Errors { get; init; } = Array.Empty<string>(); }
+{
+    public TimeSpan ExecutionTime { get; init; }
+    public IReadOnlyList<ContinuousNodeSummary> Nodes { get; init; } = Array.Empty<ContinuousNodeSummary>();
+    public IReadOnlyList<string> Errors { get; init; } = Array.Empty<string>();
+}
 public sealed record ContinuousRoundSummary(Guid RootRunId, long Round, IReadOnlyList<WorkflowRoundSummary> Workflows, ContinuousStopReason? StopReason);
 public sealed record ContinuousRunCompletion(ContinuousStopReason Reason, long CompletedRounds, Exception? Error);
 
@@ -150,7 +157,12 @@ public sealed class DocumentContinuousRun : IDisposable
                     (flow,result,request) =>
                     {
                         var ng=result.NodeResults.Values.Any(n=>n.Result is {IsSuccess:true,Judgment:BusinessJudgment.Fail});
-                        summaries.Add(new(flow,result.Status,ng) { Errors=Array.AsReadOnly(result.Errors.ToArray()) });
+                        summaries.Add(new(flow,result.Status,ng) {
+                            ExecutionTime=result.ExecutionTime,
+                            Nodes=Array.AsReadOnly(result.NodeResults.Select(pair=>new ContinuousNodeSummary(pair.Key,
+                                pair.Value.Status,pair.Value.Duration,pair.Value.Status==ExecutionStatus.NotExecuted ? null : pair.Value.Result?.ExecutionTimeMs,
+                                pair.Value.Result?.Identity,Array.AsReadOnly(pair.Value.ErrorMessages.ToArray()))).ToArray()),
+                            Errors=Array.AsReadOnly(result.Errors.ToArray()) });
                         lock(_gate) _due[flow]=checked(NowLocked()+(long)(_settings[flow].RunIntervalMs*(double)Stopwatch.Frequency/1000));
                         var last=false;
                         foreach(var (nodeId,preparer) in request.HostInputs)

@@ -14,10 +14,12 @@ public sealed class CommunicationRuntimeState : INotifyPropertyChanged, IDisposa
 {
     private readonly int _ownerThread = Environment.CurrentManagedThreadId;
     private bool _retired;
+    private readonly Action<Action> _postToOwner;
     private CommunicationStateSnapshot _snapshot = new(CommunicationRuntimeStatus.Disconnected,false,false,false,"","");
-    public CommunicationRuntimeState(Communication definition)
+    public CommunicationRuntimeState(Communication definition, Action<Action> postToOwner)
     {
         Definition = definition ?? throw new ArgumentNullException(nameof(definition));
+        _postToOwner = postToOwner ?? throw new ArgumentNullException(nameof(postToOwner));
         Definition.PropertyChanged += DefinitionChanged;
     }
     public Communication Definition { get; }
@@ -47,9 +49,19 @@ public sealed class CommunicationRuntimeState : INotifyPropertyChanged, IDisposa
     }
     private void DefinitionChanged(object? sender, PropertyChangedEventArgs e)
     {
+        var name=e.PropertyName;
+        if(Environment.CurrentManagedThreadId!=_ownerThread)
+        {
+            _postToOwner(()=>PublishDefinitionChange(name));
+            return;
+        }
+        PublishDefinitionChange(name);
+    }
+    private void PublishDefinitionChange(string? name)
+    {
         RequireOwner(); if(_retired)return;
-        if(e.PropertyName is nameof(Communication.IsEnabled) or nameof(Communication.SupportsRuntimeToggle) or nameof(Communication.ProtocolKey) or nameof(Communication.ConnectionType)) Changed(nameof(CanToggleRuntime));
-        if(e.PropertyName is nameof(Communication.ProtocolKey) or nameof(Communication.ProtocolDisplayName) or nameof(Communication.ConnectionType)) Changed(nameof(ProtocolStatusText));
+        if(name is nameof(Communication.IsEnabled) or nameof(Communication.SupportsRuntimeToggle) or nameof(Communication.ProtocolKey) or nameof(Communication.ConnectionType)) Changed(nameof(CanToggleRuntime));
+        if(name is nameof(Communication.ProtocolKey) or nameof(Communication.ProtocolDisplayName) or nameof(Communication.ConnectionType)) Changed(nameof(ProtocolStatusText));
     }
     private void Changed([CallerMemberName]string? name=null) => PropertyChanged?.Invoke(this,new PropertyChangedEventArgs(name));
     private void RequireOwner() { if(Environment.CurrentManagedThreadId!=_ownerThread)throw new InvalidOperationException("Communication runtime state must be accessed on its owning dispatcher."); }
@@ -88,3 +100,4 @@ public sealed class ModbusPointRuntimeState : INotifyPropertyChanged, IDisposabl
     private void RequireOwner() { if(Environment.CurrentManagedThreadId!=_ownerThread)throw new InvalidOperationException("Modbus point state must be accessed on its owning dispatcher."); }
     public void Dispose() { RequireOwner();_retired=true; }
 }
+

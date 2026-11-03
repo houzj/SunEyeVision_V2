@@ -8,13 +8,28 @@ public sealed class CommunicationStateTests
     {
         var device=new Communication { Id="1", IsEnabled=true, ProtocolKey="tcp-client" };
         var other=new Communication { Id="1" };
-        using var state=new CommunicationRuntimeState(device);
+        using var state=new CommunicationRuntimeState(device, action => action());
         var update=new CommunicationStateSnapshot(CommunicationRuntimeStatus.Connected,true,false,true,"连接","错误");
         Assert.False(state.TryApply(other,update));
         Assert.True(state.TryApply(device,update));
         Assert.True(state.IsActuallyConnected); Assert.True(state.IsConnectionEnabled);
         Assert.True(state.HasRuntimeConnectionError); Assert.False(state.CanToggleRuntime);
         state.Dispose(); Assert.False(state.TryApply(device,update with { IsRuntimeOperationInProgress=false }));
+    }
+    [Fact] public void Background_definition_change_posts_and_late_notification_is_rejected()
+    {
+        var device=new Communication { IsEnabled=true };
+        var pending=new System.Collections.Concurrent.ConcurrentQueue<Action>();
+        using var state=new CommunicationRuntimeState(device,pending.Enqueue);
+        var changes=0;state.PropertyChanged += (_,_)=>changes++;
+        Task.Run(()=>device.IsEnabled=false).GetAwaiter().GetResult();
+        Assert.Equal(0,changes);
+        Assert.True(pending.TryDequeue(out var posted)); posted!();
+        Assert.True(changes>0);
+        Task.Run(()=>device.IsEnabled=true).GetAwaiter().GetResult();
+        state.Dispose();var before=changes;
+        while(pending.TryDequeue(out posted))posted();
+        Assert.Equal(before,changes);
     }
     [Fact] public void Point_updates_are_explicit_bounded_and_reject_retired_instance()
     {
@@ -34,3 +49,4 @@ public sealed class CommunicationStateTests
         Assert.IsType<InvalidOperationException>(error);
     }
 }
+

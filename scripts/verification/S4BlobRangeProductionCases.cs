@@ -280,7 +280,12 @@ internal static class S2DocumentEditingCases
         shell.Close();dialogs.Stop();Pump();File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"range-model-report.json"),System.Text.Json.JsonSerializer.Serialize(new{scope,caseSet,passed=_passed}));Console.WriteLine("Blob范围"+scope+"整链："+_passed+"组通过；不代原厂全域/自然焦点/剪贴板/连续会话/ROI图文。");return 0;
     }
     private static object? _lastChoice;
-    private static object Get(object target,string name)=>target.GetType().GetProperty(name,BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance)?.GetValue(target)??target.GetType().GetField(name,BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance)?.GetValue(target)??throw new Exception("缺少实际成员："+name);
+    private static object Get(object target,string name)
+    {
+        var property=target.GetType().GetProperty(name,BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance);if(property is not null)return property.GetValue(target)!;
+        var field=target.GetType().GetField(name,BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance);if(field is not null)return field.GetValue(target)!;
+        throw new Exception("缺少实际成员："+name);
+    }
     private static DeclaredReferenceCandidate? Candidate(object item)=>(DeclaredReferenceCandidate?)Get(item,"Candidate");
     private static AppsPopup? _activePopup;
     private static bool Right(DeclaredFieldAccess f)=>f.FieldId is "field:cdce3e942b555fa58489e08eeb39236f" or "field:1a8be75176b350f09f3cd64506c136da" or "field:c38989cfdf9e51799d27e0eeee34e726";

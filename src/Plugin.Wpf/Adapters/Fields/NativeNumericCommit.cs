@@ -66,7 +66,11 @@ internal sealed class NativeNumericCommit : IDisposable
         _text.TextChanged+=OnTextChanged;
         try
         {
-            if(!_paired&&_state.NumericModel is not null&&_owner is not null)_owner.OnStartValueChange+=OnOwnerValue;
+            if(_state.NumericModel is not null&&_owner is not null)
+            {
+                if(_valueProperty==Numbers.SliderArrangeBase.EndValueProperty)_owner.OnEndValueChange+=OnOwnerValue;
+                else _owner.OnStartValueChange+=OnOwnerValue;
+            }
             ProjectAccepted();
         }
         catch(Exception failure)
@@ -228,6 +232,13 @@ internal sealed class NativeNumericCommit : IDisposable
     public void ProjectAccepted()
     {
         if(!Current())return;
+        _owner?.RetireBorrowedInteractions();
+        try{ProjectAcceptedCore();}
+        finally{if(Current())_owner?.RetireBorrowedInteractions();}
+    }
+    private void ProjectAcceptedCore()
+    {
+        if(!Current())return;
         var model=_state.NumericModel;
         if(model is not null&&IsDirty)return;
         if(_state.IsReferenceMode&&model is null){IsDirty=false;_rawError="";_pendingRaw=null;return;}
@@ -296,8 +307,8 @@ internal sealed class NativeNumericCommit : IDisposable
     {
         // The original popup forces both input sources before raising this event.
         // Only its unedited, unknown subscribed slot may discard that hidden validation.
-        if(!_paired&&Current()&&_state.IsReferenceMode&&_state.NumericModel is {HasValue:false}&&!IsDirty)
-            RestoreUnknownReferenceTarget();
+        if(Current()&&_state.IsReferenceMode&&_state.NumericModel is not null&&!IsDirty)
+            ProjectAccepted();
     }
     public void BeginConstantEntry()
     {
@@ -344,7 +355,8 @@ internal sealed class NativeNumericCommit : IDisposable
     }
     private void DetachInteractions()=>ParameterCleanup.Run(new Action[]{
         ()=>_text.TextChanged-=OnTextChanged,
-        ()=>{if(!_paired&&_owner is not null)_owner.OnStartValueChange-=OnOwnerValue;}});
+        ()=>{if(_owner is not null)_owner.OnStartValueChange-=OnOwnerValue;},
+        ()=>{if(_owner is not null)_owner.OnEndValueChange-=OnOwnerValue;}});
     public void Dispose()
     {if(_disposed)return;_disposed=true;DetachInteractions();}
 }

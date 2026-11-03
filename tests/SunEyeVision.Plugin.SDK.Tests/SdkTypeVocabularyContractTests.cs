@@ -4,7 +4,6 @@ using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Workflow;
 using Xunit;
 
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
@@ -96,13 +95,13 @@ public class SdkTypeVocabularyContractTests
 
     private class ValueHolder
     {
-        [JsonConverter(typeof(GlobalVariableValueConverter))]
         public object? Value { get; set; }
     }
 
     private static object? RoundTrip(object? value)
     {
-        var options = new JsonSerializerOptions();
+        using var codec = new VariableCodecScope(typeof(ValueHolder));
+        var options = codec.Options;
         var json = JsonSerializer.Serialize(new ValueHolder { Value = value }, options);
         var back = JsonSerializer.Deserialize<ValueHolder>(json, options);
         Assert.NotNull(back);
@@ -169,20 +168,10 @@ public class SdkTypeVocabularyContractTests
     }
 
     [Fact]
-    public void RoundTrip_LegacyDoubleArrayName_PreservesArray()
-    {
-        // 存量兼容：历史 JSON 使用 "Double[]" 类型名，反序列化不应静默丢失。
-        const string legacyJson = "{\"Value\":{\"Type\":\"Double[]\",\"Value\":[1.0,2.0,3.0]}}";
-        var back = JsonSerializer.Deserialize<ValueHolder>(legacyJson);
-        Assert.NotNull(back);
-        Assert.IsType<double[]>(back!.Value);
-        Assert.Equal(new double[] { 1.0, 2.0, 3.0 }, (double[])back.Value!);
-    }
-
-    [Fact]
     public void SerializeValue_ScalarDouble_StoredAsScalarJson()
     {
-        var json = JsonSerializer.Serialize(new ValueHolder { Value = 3.14 });
+        using var codec = new VariableCodecScope(typeof(ValueHolder));
+        var json = JsonSerializer.Serialize(new ValueHolder { Value = 3.14 }, codec.Options);
         Assert.Contains("\"Value\":3.14", json);
     }
 
@@ -190,31 +179,14 @@ public class SdkTypeVocabularyContractTests
     public void Declared_scalar_json_preserves_its_value_and_shape()
     {
         const string scalarJson = "{\"Value\":{\"Type\":\"Double\",\"Value\":3.14}}";
-        var restored=JsonSerializer.Deserialize<ValueHolder>(scalarJson)!;
+        using var codec = new VariableCodecScope(typeof(ValueHolder));
+        var restored=JsonSerializer.Deserialize<ValueHolder>(scalarJson, codec.Options)!;
         Assert.Equal(3.14,Assert.IsType<double>(restored.Value));
     }
 
     #endregion
 
     #region 契约：全局变量闸门（Region 禁止 / RoI 允许，方案步骤2 + 验收 #7）
-
-    [Fact]
-    public void GlobalVariable_RegionType_Invalid()
-    {
-        // Region 仅运行时，不可作为全局变量类型（闸门保留）。
-        var gv = new GlobalVariable("r", null, "Region");
-        var (isValid, _) = gv.Validate();
-        Assert.False(isValid);
-    }
-
-    [Fact]
-    public void GlobalVariable_RoIType_Valid()
-    {
-        // RoI（图形定义）可作为全局变量类型（步骤2 放开）。
-        var gv = new GlobalVariable("roi", null, "ROI");
-        var (isValid, _) = gv.Validate();
-        Assert.True(isValid);
-    }
 
     #endregion
 

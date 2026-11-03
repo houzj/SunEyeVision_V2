@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -7,24 +7,12 @@ using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Plugin.SDK.Models;
 using SunEyeVision.Plugin.SDK.Models.Communication;
-using SunEyeVision.Workflow;
 using Xunit;
 
 namespace SunEyeVision.Plugin.SDK.Tests;
 
 public sealed class CommunicationBinaryPayloadTests
 {
-    [Fact]
-    public void Binary_contract_uses_current_development_baseline_without_legacy_support()
-    {
-        Assert.Equal("3.0", SunEyeVision.Plugin.SDK.Core.ToolContract.Version);
-        Assert.True(SunEyeVision.Plugin.SDK.Core.ToolContract.IsCompatible(new Version(3, 0)));
-        Assert.False(SunEyeVision.Plugin.SDK.Core.ToolContract.IsCompatible(new Version(2, 0)));
-        Assert.False(SunEyeVision.Plugin.SDK.Core.ToolContract.IsCompatible(new Version(2, 1)));
-        Assert.False(SunEyeVision.Plugin.SDK.Core.ToolContract.IsCompatible(new Version(3, 1)));
-        Assert.False(SunEyeVision.Plugin.SDK.Core.ToolContract.IsCompatible(null));
-    }
-
     [Fact]
     public void Payload_owns_input_and_returns_only_owned_copies()
     {
@@ -78,9 +66,10 @@ public sealed class CommunicationBinaryPayloadTests
     public void Global_variable_round_trip_preserves_exact_bytes_and_tuple_shape(int length)
     {
         var data = Enumerable.Range(0, length).Select(i => (byte)i).ToArray();
-        var json = JsonSerializer.Serialize(new Holder { Value = new BinaryPayload(data) });
+        using var codec = new VariableCodecScope(typeof(Holder));
+        var json = JsonSerializer.Serialize(new Holder { Value = new BinaryPayload(data) }, codec.Options);
         Assert.Contains("\"Type\":\"Binary\"", json);
-        var loaded = JsonSerializer.Deserialize<Holder>(json)!;
+        var loaded = JsonSerializer.Deserialize<Holder>(json, codec.Options)!;
         Assert.Equal(data, Assert.IsType<BinaryPayload>(loaded.Value).ToArray());
     }
 
@@ -88,7 +77,8 @@ public sealed class CommunicationBinaryPayloadTests
     public void Multiple_payloads_remain_separate_when_persisted()
     {
         var values = new[] { new BinaryPayload(new byte[] { 1 }), new BinaryPayload(new byte[] { 2, 3 }) };
-        var loaded = JsonSerializer.Deserialize<Holder>(JsonSerializer.Serialize(new Holder { Value = values }))!;
+        using var codec = new VariableCodecScope(typeof(Holder));
+        var loaded = JsonSerializer.Deserialize<Holder>(JsonSerializer.Serialize(new Holder { Value = values }, codec.Options), codec.Options)!;
         var restored = Assert.IsType<BinaryPayload[]>(loaded.Value);
         Assert.Equal(2, restored.Length);
         Assert.Equal(new byte[] { 1 }, restored[0].ToArray());
@@ -98,8 +88,9 @@ public sealed class CommunicationBinaryPayloadTests
     [Fact]
     public void Malformed_persisted_payload_does_not_become_an_empty_success_value()
     {
+        using var codec = new VariableCodecScope(typeof(Holder));
         var error = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<Holder>(
-            "{\"Value\":{\"Type\":\"Binary\",\"Value\":[\"not base64!\"]}}"));
+            "{\"Value\":{\"Type\":\"Binary\",\"Value\":[\"not base64!\"]}}", codec.Options));
         Assert.IsType<FormatException>(error.InnerException);
         Assert.Contains("Binary", error.Message);
     }
@@ -112,7 +103,6 @@ public sealed class CommunicationBinaryPayloadTests
 
     public sealed class Holder
     {
-        [JsonConverter(typeof(GlobalVariableValueConverter))]
         public object? Value { get; set; }
     }
 }

@@ -109,14 +109,55 @@
           "xunit.extensibility.core": "[2.9.3]"
         }
       },
+      "suneyevision.application": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Domain": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Execution": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Persistence": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )"
+        }
+      },
+      "suneyevision.domain": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
+        }
+      },
+      "suneyevision.execution": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Domain": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )"
+        }
+      },
+      "suneyevision.foundation": {
+        "type": "Project"
+      },
       "SunEyeVision.OutcomeOwnership.Probe": {
         "type": "Project",
         "dependencies": {
           "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
         }
       },
+      "suneyevision.persistence": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Domain": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
+        }
+      },
       "suneyevision.plugin.contracts": {
         "type": "Project"
+      },
+      "suneyevision.plugin.runtime": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Foundation": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
+        }
       }
     },
     "net9.0-windows7.0/win-x64": {}

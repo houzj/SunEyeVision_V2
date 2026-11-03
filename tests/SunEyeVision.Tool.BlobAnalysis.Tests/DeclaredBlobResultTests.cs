@@ -1,39 +1,58 @@
-using NSubstitute;
-using SunEyeVision.HalAdapter;
+using SunEyeVision.Application;
+using SunEyeVision.Application.Editing;
+using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.Infrastructure.Infrastructure;
-using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Logging;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Tool.BlobAnalysis.Runtime;
-using SunEyeVision.Workflow;
 using Xunit;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Tests;
 
 public sealed class DeclaredBlobResultTests
 {
-    private static WorkflowExecutionEngine Engine(BlobSettings settings,out SunEyeVision.Workflow.Workflow flow,out WorkflowNodeBase node)
+    private sealed class Host : IDisposable
     {
-        var directory=SunEyeVision.TestShared.ProductRuntimeTestHost.CreateRuntimeDirectory();
-        var logger=Substitute.For<ILogger>();var workflows=new WorkflowEngine(logger,directory);
-        flow=workflows.CreateWorkflow("blob-"+Guid.NewGuid().ToString("N"),"blob");
-        node=new WorkflowNodeBase("blob","blob","blob",BlobTool.Id){RuntimeConfiguration=RuntimeToolConfiguration.Create(directory,BlobTool.Id).WithSettings(settings)};
-        flow.AddNode(node);return new(workflows,logger);
+        public readonly DocumentSession Session;
+        public readonly WorkflowDefinition Flow;
+        public readonly NodeDefinition Node;
+        private readonly FrozenOutputResources _inputOwner = new();
+        public readonly IReadOnlyImage Input;
+        public DocumentRunBatch? Batch;
+        public DocumentRunResult? Result;
+        public Host(BlobSettings settings, byte[] pixels, int width, int height)
+        {
+            Session = DocumentSession.CreateNew(SunEyeVision.TestShared.ProductRuntimeTestHost.CreateRuntimeDirectory());
+            Flow = Session.GetWorkflows().Single(); var graph = Session.PrepareGraphEdit(Flow.Id);
+            Node = Session.CreateNode(graph, BlobTool.Id, new CanvasPoint(0, 0)); Session.CommitGraphEdit(graph, "添加 Blob");
+            var draft = Session.Editing.Host.BeginEdit(Flow.Id, Node.Id);
+            var settingsValues = new BlobTool().ReadSettings(settings).CopyValues();
+            draft.ApplyFields(settingsValues.ToDictionary(pair => pair.Key, pair => (ParameterSetting)new ConstantSetting(pair.Value), StringComparer.Ordinal));
+
+            Session.CommitEdit(DocumentEditProposal.Prepare(Session.Editing.Host, nodes: new[] { draft }));
+            Input = _inputOwner.CreateGray8(width, height, pixels);
+        }
+        public ExecutionResult Run()
+        {
+            Batch = Session.CaptureRunBatch(new[] { Flow.Id }, workflowImages: new Dictionary<string,WorkflowImageInput>
+            { [Flow.Id] = new WorkflowImageInput(Input, Input.AcquirePixels()) });
+            Result = Batch.RunAsync(_ => { }).WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult();
+            return Result.Workflows[Flow.Id];
+        }
+        public void Dispose()
+        {
+            Result?.Dispose(); Batch?.Dispose(); Session.Dispose(); _inputOwner.Dispose();
+        }
     }
+
     [Fact]
-    public async Task Sorted_filtered_boundary_records_keep_native_element_identity()
+    public void Sorted_filtered_boundary_records_keep_native_element_identity()
     {
         var pixels=new byte[64*64];
         foreach(var box in new[]{(X:2,Y:2,W:3,H:3),(X:22,Y:7,W:4,H:5),(X:8,Y:28,W:6,H:7)})
             for(var y=0;y<box.H;y++)for(var x=0;x<box.W;x++)pixels[(box.Y+y)*64+box.X+x]=255;
-        using var input=HalImage.CreateFromBytes(pixels,64,64,1);
-        var executor=Engine(new BlobSettings{IsAreaFilterEnabled=true,FilterAreaMin=10,FilterAreaMax=100,SortMode=BlobSortMode.SortModeDecend,OutputBoundary=true},out var flow,out _);
-        using var run=await executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,input)).WaitAsync(TimeSpan.FromSeconds(30));
-        Assert.True(run.Success,string.Join(";",run.Errors));
-        var output=(BlobOutput)((DeclaredOutputSnapshot)run.NodeResults["blob"].Result!).Output!;
+        using var host = new Host(new BlobSettings { IsAreaFilterEnabled=true,FilterAreaMin=10,FilterAreaMax=100,SortMode=BlobSortMode.SortModeDecend,OutputBoundary=true }, pixels,64,64);
+        var run=host.Run(); Assert.True(run.Success,string.Join(";",run.Errors));
+        var output=(BlobOutput)run.NodeResults[host.Node.Id].Result!.Output!;
         using var reader=run.AcquireDeclaredOutput(Assert.Single(run.DeclaredOutputs).Identity);
         var records=reader.Values!.Read(BlobSchema.BlobsPort);
         Assert.Equal(new[]{42d,20d},Enumerable.Range(0,records.Count).Select(i=>records.GetElement(i).GetField("area").GetScalar<double>()));
@@ -51,27 +70,26 @@ public sealed class DeclaredBlobResultTests
         }
     }
     [Fact]
-    public async Task Explicit_missing_image_is_not_replaced_by_root_input()
+    public void Explicit_missing_image_is_not_replaced_by_root_input()
     {
-        using var input=HalImage.CreateFromBytes(new byte[32*32],32,32,1);
-        var executor=Engine(new BlobSettings(),out var flow,out var node);
-        var reference=new OutputReference("missing","missing-image",TypeRef.ResourceOf(ResourceKind.Image),scopeId:flow.Id);
-        node.RuntimeConfiguration=node.RuntimeConfiguration!.WithFieldSettings(new Dictionary<string,ParameterSetting>{{BlobTool.ImageInput,new ReferenceSetting(reference)}});
-        using var run=await executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,input)).WaitAsync(TimeSpan.FromSeconds(30));
-        Assert.False(run.Success);Assert.Equal(reference,Assert.IsType<ReferenceSetting>(node.RuntimeConfiguration.Fields.Read(BlobTool.ImageInput)).Reference);
-        Assert.Equal(1024,input.GetPixelData().Length);
+        using var host = new Host(new BlobSettings(),new byte[32*32],32,32);
+        var before = host.Node.Configuration;
+        var draft = host.Session.Editing.Host.BeginEdit(host.Flow.Id, host.Node.Id);
+        var reference = new OutputReference("missing", "missing-image", TypeRef.ResourceOf(ResourceKind.Image), scopeId: host.Flow.Id);
+        draft.ApplyFields(new Dictionary<string,ParameterSetting> { [BlobTool.ImageInput] = new ReferenceSetting(reference) });
+        var error = Assert.Throws<InvalidOperationException>(() => host.Session.CommitEdit(DocumentEditProposal.Prepare(host.Session.Editing.Host, nodes: new[] { draft })));
+        Assert.Contains("Source schema", error.Message);
+        Assert.Same(before, host.Node.Configuration);
+        Assert.Equal(1024,host.Input.CopyPixels().Length);
     }
     [Theory]
     [InlineData(0)] [InlineData(1)] [InlineData(3)]
-    public async Task Native_workflow_publishes_records_and_independent_reader_leases(int count)
+    public void Native_workflow_publishes_records_and_independent_reader_leases(int count)
     {
         var pixels=new byte[32*32];
         for(var i=0;i<count;i++)for(var y=0;y<4;y++)for(var x=0;x<4;x++)pixels[(2+(i==2?16:0)+y)*32+2+i*10+x]=255;
-        using var input=HalImage.CreateFromBytes(pixels,32,32,1);
-        var executor=Engine(new BlobSettings{IsAreaFilterEnabled=false,OutputGrayImage=true,OutputBinaryImage=true,OutputBoundary=true},out var flow,out var node);
-        using var run=await executor.ExecuteWorkflowAsync(new WorkflowRunRequest(flow.Id,input)).WaitAsync(TimeSpan.FromSeconds(30));
-        Assert.True(run.Success,string.Join(";",run.Errors));
-        Assert.Equal(100,((BlobSettings)node.RuntimeConfiguration!.CaptureSettings()).Threshold);
+        using var host=new Host(new BlobSettings{IsAreaFilterEnabled=false,OutputGrayImage=true,OutputBinaryImage=true,OutputBoundary=true},pixels,32,32);
+        var run=host.Run(); Assert.True(run.Success,string.Join(";",run.Errors));
         var publication=Assert.Single(run.DeclaredOutputs);Assert.Equal(BlobSchema.Outputs.Count,publication.Schema.Outputs.Count);
         var first=run.AcquireDeclaredOutput(publication.Identity);var second=run.AcquireDeclaredOutput(publication.Identity);
         var records=second.Values!.Read(BlobSchema.BlobsPort);Assert.Equal(count,records.Count);
@@ -82,7 +100,8 @@ public sealed class DeclaredBlobResultTests
             Assert.True(ids.Add(record.GetField("element-id").GetScalar<long>()));Assert.Equal(4,record.GetField("rotated-bounds").Count);
         }
         var borrowed=second.Values.Get<IReadOnlyImage>(BlobSchema.Field(5));
-        run.Dispose();first.Dispose();Assert.Equal(1024,borrowed.CopyPixels().Length);
-        second.Dispose();Assert.Throws<ObjectDisposedException>(()=>{borrowed.CopyPixels();});Assert.Equal(1024,input.GetPixelData().Length);
+        host.Result!.Dispose();host.Batch!.Dispose();host.Session.Dispose();first.Dispose();
+        Assert.Equal(1024,borrowed.CopyPixels().Length);
+        second.Dispose();Assert.Throws<ObjectDisposedException>(()=>borrowed.CopyPixels());Assert.Equal(1024,host.Input.CopyPixels().Length);
     }
 }

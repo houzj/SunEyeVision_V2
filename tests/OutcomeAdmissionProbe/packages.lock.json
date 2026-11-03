@@ -84,6 +84,16 @@
           "System.Text.Encodings.Web": "10.0.3"
         }
       },
+      "suneyevision.application": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Domain": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Execution": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Persistence": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )"
+        }
+      },
       "suneyevision.core": {
         "type": "Project",
         "dependencies": {
@@ -97,7 +107,18 @@
         }
       },
       "suneyevision.domain": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
+        }
+      },
+      "suneyevision.execution": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Domain": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )"
+        }
       },
       "suneyevision.foundation": {
         "type": "Project"
@@ -105,6 +126,13 @@
       "SunEyeVision.OutcomeOwnership.Probe": {
         "type": "Project",
         "dependencies": {
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
+        }
+      },
+      "suneyevision.persistence": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Domain": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
         }
       },
@@ -117,6 +145,7 @@
           "OpenCvSharp4": "[4.13.0.20260222, )",
           "OpenCvSharp4.Extensions": "[4.13.0.20260222, )",
           "OpenCvSharp4.runtime.win": "[4.13.0.20260222, )",
+          "SunEyeVision.Application": "[2.0.0-alpha.8, )",
           "SunEyeVision.Core": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )"
@@ -146,17 +175,6 @@
       },
       "suneyevision.tool.kernels": {
         "type": "Project"
-      },
-      "suneyevision.workflow": {
-        "type": "Project",
-        "dependencies": {
-          "OpenCvSharp4": "[4.13.0.20260222, )",
-          "OpenCvSharp4.runtime.win": "[4.13.0.20260222, )",
-          "SunEyeVision.Core": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Domain": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Plugin.Infrastructure": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )"
-        }
       }
     },
     "net9.0-windows7.0/win-x64": {

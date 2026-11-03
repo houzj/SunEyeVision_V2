@@ -24,7 +24,7 @@
     <PackageReference Include="NSubstitute" Version="5.3.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../../src/Workflow/SunEyeVision.Workflow.csproj" />
+    <ProjectReference Include="../../src/Application/SunEyeVision.Application.csproj" />
     <ProjectReference Include="../../src/Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" />
     <!-- Runtime角色组件唯一部署宿主根，由EnsureComponentLoaded精确加载，不copy-local。 -->
     <ProjectReference Include="../../tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj">

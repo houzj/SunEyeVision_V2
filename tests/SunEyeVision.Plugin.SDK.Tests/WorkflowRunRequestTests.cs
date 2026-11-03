@@ -1,48 +1,36 @@
-using System.Collections.Generic;
-using NSubstitute;
-using SunEyeVision.Plugin.SDK.Devices.Camera;
-using SunEyeVision.Plugin.SDK.Vision.Contracts;
-using SunEyeVision.Workflow;
+using System.IO;
+using SunEyeVision.Application;
+using SunEyeVision.Plugin.Runtime;
 using Xunit;
-
 namespace SunEyeVision.Plugin.SDK.Tests;
-
 public class WorkflowRunRequestTests
 {
-    [Fact]
-    public void Constructor_CopiesMutableHostDictionaries()
+    private sealed class CountingLease(IDisposable inner) : IDisposable
     {
-        var runtimeParameters = new Dictionary<string, object> { ["ImageIndex"] = 1 };
-        var globals = new Dictionary<string, object?> { ["Threshold"] = 50d };
-        var overrides = new Dictionary<string, IReadOnlyDictionary<string, object?>>
-        {
-            ["image-load"] = new Dictionary<string, object?> { ["FilePath"] = "first.png" }
-        };
-
-        var request = new WorkflowRunRequest("workflow", null, globals, runtimeParameters,
-            nodeParameterOverrides: overrides);
-
-        runtimeParameters["ImageIndex"] = 2;
-        globals["Threshold"] = 60d;
-        ((Dictionary<string, object?>)overrides["image-load"])["FilePath"] = "second.png";
-
-        Assert.Equal(1, request.RuntimeParameters["ImageIndex"]);
-        Assert.Equal(50d, request.GlobalVariables["Threshold"]);
-        Assert.Equal("first.png", request.NodeParameterOverrides["image-load"]["FilePath"]);
+        public int Count;
+        public void Dispose() { if (Interlocked.Increment(ref Count) != 1) throw new InvalidOperationException("租约重复释放"); inner.Dispose(); }
     }
-
     [Fact]
-    public void Constructor_FreezesCameraFrameNodeMappingWithoutTakingOwnership()
+    public void Actual_batch_freezes_input_mapping_and_releases_only_its_lease()
     {
-        var image = Substitute.For<IVisionImage>();
-        using var frame = new CameraFrame(new CameraDeviceRef("camera-1"), 123,
-            DateTimeOffset.UtcNow, image);
-        var frames = new Dictionary<string, CameraFrame> { ["source-node"] = frame };
-
-        var request = new WorkflowRunRequest("workflow", cameraFrames: frames);
-        frames.Clear();
-
-        Assert.Same(frame, request.CameraFrames["source-node"]);
-        Assert.False(frame.IsDisposed);
+        var payload = Environment.GetEnvironmentVariable("SUNEYE_ROOT_TEST_PAYLOAD") ?? throw new InvalidOperationException("缺少正式载荷。");
+        var directory = new ReleasePayloadAuthority(payload).PrepareRuntimeDirectory();
+        using var session = DocumentSession.CreateNew(directory);
+        var flow = Assert.Single(session.GetWorkflows());
+        using var owner = new FrozenOutputResources();
+        var image = owner.CreateGray8(2, 1, new byte[] { 12, 34 });
+        var lease = new CountingLease(image.AcquirePixels());
+        var inputs = new Dictionary<string, WorkflowImageInput> { [flow.Id] = new(image, lease) };
+        using (var batch = session.CaptureRunBatch(new[] { flow.Id }, workflowImages: inputs))
+        {
+            Assert.Equal(0, lease.Count);
+            inputs.Clear();
+            using var result = batch.RunAsync(_ => { }).WaitAsync(TimeSpan.FromSeconds(15)).GetAwaiter().GetResult();
+            Assert.True(result.Workflows.ContainsKey(flow.Id));
+            Assert.Equal(new byte[] { 12, 34 }, image.CopyPixels());
+            Assert.Equal(1, lease.Count);
+        }
+        Assert.Equal(1, lease.Count);
+        Assert.Equal(new byte[] { 12, 34 }, image.CopyPixels());
     }
 }

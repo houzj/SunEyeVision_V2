@@ -3,9 +3,11 @@ using System.Text.Json;
 using NSubstitute;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Runtime;
-using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 using SunEyeVision.Tool.ImageSource.Runtime;
-using SunEyeVision.Workflow;
+using SunEyeVision.Application;
+using SunEyeVision.Application.Editing;
+using SunEyeVision.Domain.Workflows;
+using SunEyeVision.Domain.Persistence;
 using Xunit;
 
 namespace SunEyeVision.ImageSource.Runtime.Tests;
@@ -22,30 +24,53 @@ public sealed class ImageSourceRuntimeTests
     private static InputValues Input(IReadOnlyDictionary<string,object?> values)=>new(ImageSourceTool.Schema.Inputs,values);
 
     [Fact]
-    public void Settings_defaults_and_full_payload_round_trip_only_through_runtime_configuration()
+    public void Settings_defaults_and_full_payload_round_trip_through_the_admitted_v4_session()
     {
-        var directory=SunEyeVision.TestShared.ProductRuntimeTestHost.CreateRuntimeDirectory();
-        var options=WorkflowSerializationOptions.For(directory);
-        var files=new List<string>{"assets/a.png","assets/b.png"};
-        var settings=new ImageSourceSettings{FileReferences=files,StartIndex=1,SelectedReferences=new[]{"assets/b.png"},RunMode="selected",
-            AutoSwitch=false,StopAtLast=true,SourceKind="camera",CameraDeviceId="device",CameraTimeoutMs=4200,OutputFormat="rgb24",InitialSequence=25};
-        var node=new WorkflowNodeBase("source","源","源","ImageLoad"){RuntimeConfiguration=RuntimeToolConfiguration.Create(directory,"ImageLoad").WithSettings(settings)};
-        files.Clear();
-        var json=JsonSerializer.Serialize(node,options);
-        Assert.DoesNotContain("\"ImageSourceConfig\"",json);Assert.DoesNotContain("\"InputSource\"",json);
-        Assert.DoesNotContain("\"OutputCache\"",json);Assert.DoesNotContain("\"LastResult\"",json);
-        var restored=JsonSerializer.Deserialize<WorkflowNodeBase>(json,options)!;
-        var actual=Assert.IsType<ImageSourceSettings>(restored.RuntimeConfiguration!.CaptureSettings());
-        Assert.Equal(new[]{"assets/a.png","assets/b.png"},actual.FileReferences);Assert.Equal(1,actual.StartIndex);
-        Assert.Equal(new[]{"assets/b.png"},actual.SelectedReferences);Assert.Equal("selected",actual.RunMode);
-        Assert.False(actual.AutoSwitch);Assert.True(actual.StopAtLast);Assert.Equal("camera",actual.SourceKind);
-        Assert.Equal("device",actual.CameraDeviceId);Assert.Equal(4200,actual.CameraTimeoutMs);Assert.Equal("rgb24",actual.OutputFormat);Assert.Equal(25,actual.InitialSequence);
-        var empty=RuntimeToolConfiguration.Create(directory,"ImageLoad");
-        var reopened=JsonSerializer.Deserialize<RuntimeToolConfiguration>(JsonSerializer.Serialize(empty,options),options)!;
-        var defaults=Assert.IsType<ImageSourceSettings>(reopened.CaptureSettings());
-        Assert.Empty(defaults.FileReferences);Assert.Empty(defaults.SelectedReferences);Assert.Equal(-1,defaults.StartIndex);Assert.Empty(reopened.Validate());
+        var directory = SunEyeVision.TestShared.ProductRuntimeTestHost.CreateRuntimeDirectory();
+        using var manager = new DocumentSessionManager(directory);
+        var session = manager.CreateNew("图像源配置测试");
+        var flow = session.GetWorkflows().Single();
+        var graph = session.PrepareGraphEdit(flow.Id);
+        var node = session.CreateNode(graph, "ImageLoad", new CanvasPoint(0, 0));
+        session.CommitGraphEdit(graph, "添加图像源");
+        var draft = session.Editing.Host.BeginEdit(flow.Id, node.Id);
+        Assert.Empty(draft.Configuration.Fields.Get<SequenceValue>(ImageSourceFields.Paths));
+        Assert.Empty(draft.Configuration.Fields.Get<SequenceValue>(ImageSourceFields.Selected));
+        Assert.Equal(-1L, draft.Configuration.Fields.Get<long>(ImageSourceFields.Start));
+        var files = new[] { "assets/a.png", "assets/b.png" };
+        var pathType = draft.SettingsSchema.Inputs.Single(port => port.Id == ImageSourceFields.Paths).Type;
+        draft.ApplyFields(new Dictionary<string,ParameterSetting>
+        {
+            [ImageSourceFields.Paths] = new ConstantSetting(new SequenceValue(pathType, files)),
+            [ImageSourceFields.Selected] = new ConstantSetting(new SequenceValue(pathType, new[] { files[1] })),
+            [ImageSourceFields.Start] = new ConstantSetting(1L), [ImageSourceFields.RunMode] = new ConstantSetting("selected"),
+            [ImageSourceFields.AutoSwitch] = new ConstantSetting(false), [ImageSourceFields.StopAtLast] = new ConstantSetting(true),
+            [ImageSourceFields.SourceKind] = new ConstantSetting("camera"), [ImageSourceFields.CameraDevice] = new ConstantSetting("device"),
+            [ImageSourceFields.CameraTimeout] = new ConstantSetting(4200L), [ImageSourceFields.OutputFormat] = new ConstantSetting("rgb24"),
+            [ImageSourceFields.InitialSequence] = new ConstantSetting(25L)
+        });
+        session.CommitEdit(DocumentEditProposal.Prepare(session.Editing.Host, nodes: new[] { draft }));
+        var data = Path.Combine(SunEyeVision.TestShared.ProductRuntimeTestHost.ProductRoot, "test-data", "image-source", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(Path.Combine(data, "assets"));
+        File.WriteAllBytes(Path.Combine(data, files[0]), new byte[] { 1 });
+        File.WriteAllBytes(Path.Combine(data, files[1]), new byte[] { 2 });
+        var target = Path.Combine(data, "source.solution");
+        var types = new FrozenVariableTypeCatalog(new Dictionary<string,string>());
+        session.SaveAs(target, Path.Combine(data, "backup"), data, types, new JsonSerializerOptions(), _ => null);
+        var json = File.ReadAllText(target);
+        Assert.DoesNotContain("\"RuntimeConfiguration\"", json);
+        Assert.DoesNotContain("\"ImageSourceConfig\"", json);
+        Assert.DoesNotContain("\"InputSource\"", json);
+        var reopened = manager.Open(target, _ => types, _ => null, new JsonSerializerOptions());
+        var actual = reopened.GetNodes(flow.Id).Single().Configuration.Fields;
+        Assert.Equal(files, actual.Get<SequenceValue>(ImageSourceFields.Paths).Cast<string>());
+        Assert.Equal(new[] { files[1] }, actual.Get<SequenceValue>(ImageSourceFields.Selected).Cast<string>());
+        Assert.Equal(1L, actual.Get<long>(ImageSourceFields.Start)); Assert.Equal("selected", actual.Get<string>(ImageSourceFields.RunMode));
+        Assert.False(actual.Get<bool>(ImageSourceFields.AutoSwitch)); Assert.True(actual.Get<bool>(ImageSourceFields.StopAtLast));
+        Assert.Equal("camera", actual.Get<string>(ImageSourceFields.SourceKind)); Assert.Equal("device", actual.Get<string>(ImageSourceFields.CameraDevice));
+        Assert.Equal(4200L, actual.Get<long>(ImageSourceFields.CameraTimeout)); Assert.Equal("rgb24", actual.Get<string>(ImageSourceFields.OutputFormat));
+        Assert.Equal(25L, actual.Get<long>(ImageSourceFields.InitialSequence));
     }
-
     [Fact]
     public void Fields_freeze_input_collections_and_invalid_edit_never_mutates_previous_settings()
     {

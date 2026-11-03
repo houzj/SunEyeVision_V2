@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0-windows</TargetFramework><UseWPF>true</UseWPF><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../../src/Workflow/SunEyeVision.Workflow.csproj"/>
+    <ProjectReference Include="../../src/Application/SunEyeVision.Application.csproj"/>
     <ProjectReference Include="../../src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj"/>
     <ProjectReference Include="../OutcomeOwnershipComponent/OutcomeOwnershipComponent.csproj"/>
     <Content Include="../../src/Plugin.SDK/Metadata/ToolGroups.xml" Link="ToolGroups.xml" CopyToOutputDirectory="PreserveNewest"/>

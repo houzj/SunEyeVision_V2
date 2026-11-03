@@ -151,13 +151,17 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         var changed=!Equals(model.CurValue,raw);versions[endpoint]=model.Version+(changed?1:0);
         return _commits[endpoint]!.ProjectCandidate(value,()=>model.NativeValue=Convert.ToDouble(raw,CultureInfo.InvariantCulture))&&model.Version==versions[endpoint];
     }
-    private void RestoreModels(IEnumerable<int> endpoints,long[] versions)
+    private bool RestoreModels(IEnumerable<int> endpoints,long[] versions,Func<bool> current)
     {
+        var old=_states.Select(state=>state.NumericModel!.CaptureOldValue()).ToArray();
         foreach(var i in endpoints)
         {
-            var model=_states[i].NumericModel!;var old=new ConstantSetting(model.OldValue);
-            _commits[i]!.ProjectCandidate(old,model.RestoreOldValue);versions[i]=model.Version;
+            if(!current())return false;
+            var model=_states[i].NumericModel!;var saved=old[i];var value=new ConstantSetting(saved.Value);
+            versions[i]=model.Version+(!Equals(model.CurValue,saved.Value)?1:0);
+            if(!_commits[i]!.ProjectCandidate(value,()=>model.RestoreOldValue(saved.Value,saved.Known))||!current())return false;
         }
+        return current();
     }
     private static (double Min,double Max) Bounds(Port port,FieldLayout layout)
     {
@@ -322,8 +326,8 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
                 _syncing=true;
                 try
                 {
-                    RestoreModels(new[]{0,1},modelVersions);
-                    for(var i=0;i<2;i++)_commits[i]!.RestoreRejected(raw[i]);
+                    if(RestoreModels(new[]{0,1},modelVersions,Unchanged))
+                        for(var i=0;i<2;i++){if(!Unchanged())break;_commits[i]!.RestoreRejected(raw[i]);if(!Unchanged())break;}
                 }
                 finally{_syncing=false;}
             }
@@ -438,7 +442,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
                     _syncing=true;
                     try
                     {
-                        RestoreModels(new[]{endpoint},modelVersions);commits[endpoint]!.RestoreRejected(raw);
+                        if(RestoreModels(new[]{endpoint},modelVersions,Unchanged)&&Unchanged())commits[endpoint]!.RestoreRejected(raw);
                     }
                     finally{_syncing=false;}
                 }
@@ -510,13 +514,14 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         if(_disposed)return;
         if(!IsEnabled)
         {
-            _generation++;_resume?.Abort();_resume=null;
+            NativeView.PrepareBorrowedInteractions(false);_generation++;_resume?.Abort();_resume=null;
             ParameterCleanup.Run(_commits.Where(commit=>commit is not null).Select(commit=>(Action)commit!.Suspend)
                 .Concat(_scopes.Where(scope=>scope is not null).Select(scope=>(Action)(()=>scope!.PrepareForVisibility(false))))
                 .Concat(new Action[]{_expansion.Close,ClosePopups}));
         }
         else
         {
+            NativeView.PrepareBorrowedInteractions(_active&&IsVisible&&!_presentationHidden);
             foreach(var scope in _scopes)scope?.PrepareForVisibility(!_presentationHidden&&IsVisible);
             QueueResume();
         }

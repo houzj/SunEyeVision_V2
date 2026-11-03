@@ -66,7 +66,11 @@ internal sealed class NativeNumericCommit : IDisposable
         _text.TextChanged+=OnTextChanged;
         try
         {
-            if(!_paired&&_state.NumericModel is not null&&_owner is not null)_owner.OnStartValueChange+=OnOwnerValue;
+            if(_state.NumericModel is not null&&_owner is not null)
+            {
+                if(_valueProperty==Numbers.SliderArrangeBase.EndValueProperty)_owner.OnEndValueChange+=OnOwnerValue;
+                else _owner.OnStartValueChange+=OnOwnerValue;
+            }
             ProjectAccepted();
         }
         catch(Exception failure)
@@ -130,7 +134,7 @@ internal sealed class NativeNumericCommit : IDisposable
     {
         if(NativeNumericSequenceProjection.Applies(_state.Port)&&value is not double)value=NativeNumericSequenceProjection.Single(_state.Port,value);
         EnsureRepresentable(new ConstantSetting(value));
-        if(!_paired&&_state.NumericModel is {} model)
+        if(_state.NumericModel is {} model)
         {var prepared=model.Prepare(value);ValidateBounds(prepared.Value!);return prepared;}
         if(value is double number)
         {
@@ -152,7 +156,7 @@ internal sealed class NativeNumericCommit : IDisposable
     }
     public void ValidateStored(ConstantSetting setting)
     {
-        if(!_paired&&_state.NumericModel is {} model){model.ReadProjection(setting.Value!);ValidateBounds(setting.Value!);return;}
+        if(_state.NumericModel is {} model){model.ReadProjection(setting.Value!);ValidateBounds(setting.Value!);return;}
         var prepared=PrepareValue(setting.Value!);
         if(!NativeNumericSequenceProjection.Same(_state.Port,prepared.Value,setting.Value))throw new ArgumentException("当前数值超出声明的编辑精度，请明确修改后提交。");
     }
@@ -228,6 +232,13 @@ internal sealed class NativeNumericCommit : IDisposable
     public void ProjectAccepted()
     {
         if(!Current())return;
+        _owner?.RetireBorrowedInteractions();
+        try{ProjectAcceptedCore();}
+        finally{if(Current())_owner?.RetireBorrowedInteractions();}
+    }
+    private void ProjectAcceptedCore()
+    {
+        if(!Current())return;
         var model=_state.NumericModel;
         if(model is not null&&IsDirty)return;
         if(_state.IsReferenceMode&&model is null){IsDirty=false;_rawError="";_pendingRaw=null;return;}
@@ -261,6 +272,9 @@ internal sealed class NativeNumericCommit : IDisposable
             // A restored raw SetCurrentValue can remain the effective target override even
             // after UpdateTarget. Install this accepted text without replacing either binding.
             if(!WriteText(expected,()=>_text.SetCurrentValue(TextBox.TextProperty,expected),stamp))return;
+            // A programmatic accepted/reference projection must finish as a target
+            // refresh. It is not a new user transfer through the opposite-end rule.
+            if(inner is not null&&!WriteText(expected,inner.UpdateTarget,stamp))return;
             IsDirty=false;_rawError="";_pendingRaw=null;
         }
         finally{_syncing=syncing;if(!_syncing&&_validateRaw)ValidateRaw();}
@@ -295,9 +309,9 @@ internal sealed class NativeNumericCommit : IDisposable
     private void OnOwnerValue(object sender,RoutedPropertyChangedEventArgs<double> args)
     {
         // The original popup forces both input sources before raising this event.
-        // Only its unedited, unknown subscribed slot may discard that hidden validation.
-        if(!_paired&&Current()&&_state.IsReferenceMode&&_state.NumericModel is {HasValue:false}&&!IsDirty)
-            RestoreUnknownReferenceTarget();
+        // Only its unedited, owned subscribed slot may discard that hidden validation.
+        if(Current()&&_state.IsReferenceMode&&_state.NumericModel is not null&&!IsDirty)
+            ProjectAccepted();
     }
     public void BeginConstantEntry()
     {
@@ -322,7 +336,9 @@ internal sealed class NativeNumericCommit : IDisposable
     }
     public void RestoreRejected(NumericPendingEdit? raw)
     {
-        var suspended=_suspended;var stamp=Stamp();ProjectAccepted();
+        var suspended=_suspended;var stamp=Stamp();
+        if(raw is {} saved&&saved.Acceptance==_state.AcceptanceVersion){IsDirty=false;_pendingRaw=null;}
+        ProjectAccepted();
         if(raw is null||!Matches(stamp))return;
         RestorePending(raw);if(!suspended)Resume();
     }
@@ -342,7 +358,8 @@ internal sealed class NativeNumericCommit : IDisposable
     }
     private void DetachInteractions()=>ParameterCleanup.Run(new Action[]{
         ()=>_text.TextChanged-=OnTextChanged,
-        ()=>{if(!_paired&&_owner is not null)_owner.OnStartValueChange-=OnOwnerValue;}});
+        ()=>{if(_owner is not null)_owner.OnStartValueChange-=OnOwnerValue;},
+        ()=>{if(_owner is not null)_owner.OnEndValueChange-=OnOwnerValue;}});
     public void Dispose()
     {if(_disposed)return;_disposed=true;DetachInteractions();}
 }

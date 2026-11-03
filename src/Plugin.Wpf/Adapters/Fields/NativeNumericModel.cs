@@ -4,16 +4,41 @@ using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 namespace SunEyeVision.Plugin.Wpf.Adapters.Fields;
 
 /// <summary>One field owner's nonpersistent CurValue. Neither a binding identity nor an execution value.</summary>
-internal sealed class NativeNumericModel
+internal sealed class NativeNumericModel : System.ComponentModel.INotifyPropertyChanged
 {
     private readonly Port _port;
     private readonly FieldLayout? _layout;
     internal bool HasValue {get;private set;}
-    internal object? Value {get;private set;}
+    private object _curValue;
+    private object _oldValue;
+    private bool _oldHasValue;
+    internal object? Value=>HasValue?_curValue:null;
+    internal object CurValue=>_curValue;
+    internal bool IsInitValue {get;private set;}
+    public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+    public double NativeValue
+    {
+        get=>Convert.ToDouble(_curValue,System.Globalization.CultureInfo.InvariantCulture);
+        set=>SetOriginal(_port.Type.Scalar==ScalarKind.Int64?(object)checked((long)value):value);
+    }
+    private bool SetOriginal(object raw,bool notifyNative=true)
+    {
+        var different=!Equals(_curValue,raw);
+        if(!different)return false;
+        _curValue=NativeNumericSequenceProjection.Single(_port,Prepare(raw,false,freezeStorage:false).Value!);
+        IsInitValue=true;Version++;
+        if(notifyNative)PropertyChanged?.Invoke(this,new(nameof(NativeValue)));return true;
+    }
+    internal object OldValue=>_oldValue;
+    internal (object Value,bool Known) CaptureOldValue()=> (_oldValue,_oldHasValue);
+    internal void RestoreOldValue(object value,bool known)
+    {
+        HasValue=known;SetOriginal(value);
+    }
     internal long Version {get;private set;}
     internal event Action? Changed;
     internal NativeNumericModel(Port port,FieldLayout? layout,ParameterSetting accepted)
-    {_port=port;_layout=layout;Accept(accepted);}
+    {_port=port;_layout=layout;_curValue=port.Type.Scalar==ScalarKind.Int64?(object)0L:0d;_oldValue=_curValue;Accept(accepted);}
     internal ConstantSetting Prepare(object value,bool checkBounds=true,bool freezeStorage=true)
     {
         var floating=_port.Type.Scalar==ScalarKind.Float64||NativeNumericSequenceProjection.Applies(_port);
@@ -53,15 +78,20 @@ internal sealed class NativeNumericModel
     internal void Accept(ParameterSetting setting)
     {
         if(setting is not ConstantSetting constant)return;
-        try{Install(NativeNumericSequenceProjection.Single(_port,ReadProjection(constant.Value!,false).Value!),false);}catch(Exception error)when(error is ArgumentException or OverflowException or FormatException){HasValue=false;Value=null;Version++;}
+        try{ReadProjection(constant.Value!,false);Install(NativeNumericSequenceProjection.Single(_port,constant.Value!),false);}catch(Exception error)when(error is ArgumentException or OverflowException or FormatException){HasValue=false;Version++;}
     }
     internal NumericModelReadStatus Install(object value,bool publish=true,bool force=false)
     {
-        if(_port.Type.Scalar==ScalarKind.Float64||NativeNumericSequenceProjection.Applies(_port))value=Math.Round(Convert.ToDouble(value,System.Globalization.CultureInfo.InvariantCulture),_layout?.DecimalPlaces??2,MidpointRounding.ToEven);
-        if(!force&&HasValue&&Equals(Value,value))return NumericModelReadStatus.Unchanged;
-        HasValue=true;Value=value;Version++;
+        // Host reads and accepted-state installation project through the existing
+        // Changed/state owner, whose commit preserves pending raw. Native TwoWay
+        // input still raises the original setter notification synchronously.
+        var changed=SetOriginal(value,notifyNative:false);
+        if(!HasValue){HasValue=true;if(!changed)Version++;changed=true;}
+        if(force&&!changed){Version++;changed=true;}
+        _oldValue=_curValue;_oldHasValue=HasValue;
+        if(!changed)return NumericModelReadStatus.Unchanged;
         if(publish)ParameterCleanup.Run((Changed?.GetInvocationList().Cast<Action>()??Enumerable.Empty<Action>()).Select(handler=>(Action)(()=>handler())));
         return NumericModelReadStatus.Updated;
     }
-    internal void Retire()=>Changed=null;
+    internal void Retire(){Changed=null;PropertyChanged=null;}
 }

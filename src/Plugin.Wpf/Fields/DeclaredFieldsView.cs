@@ -313,8 +313,8 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
        propose:proposal=>ProposeSingle(field.Port.Id,proposal),readCurrentValue:references?.ReadCurrentValue is {} read?()=>read(field.Port):null,referenceBehavior:references?.ReadBehavior?.Invoke(field.Port)??ParameterReferenceBehavior.StrictExactlyOne);
    _fieldStates.Add(state);states.Add(field.Port.Id,state);
    _numericModelPages[field.Port.Id]=field.Presentation.Layout?.Page??field.Presentation.Group;
-   if(!paired.Contains(field.Port.Id)&&!radios.ContainsKey(field.Port.Id)&&!_inlineConstants.Contains(field.Port.Id)
-       &&field.Port.EditModes!=FieldEditModes.Reference&&field.Port.Choices is null&&field.Port.Type.Shape==ValueShape.Scalar
+   if(!radios.ContainsKey(field.Port.Id)&&!_inlineConstants.Contains(field.Port.Id)
+       &&(paired.Contains(field.Port.Id)||field.Port.EditModes!=FieldEditModes.Reference)&&field.Port.Choices is null&&field.Port.Type.Shape==ValueShape.Scalar
        &&field.Port.Type.Scalar is ScalarKind.Int64 or ScalarKind.Float64)state.EnableNumericModel(field.Presentation.Layout);
   }
   var access=new Dictionary<string,DeclaredFieldAccess>(StringComparer.Ordinal);

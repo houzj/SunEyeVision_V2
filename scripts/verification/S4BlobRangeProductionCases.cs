@@ -55,7 +55,7 @@ internal static class S2DocumentEditingCases
     }
     private static int Run()
     {
-        var caseSet=Environment.GetEnvironmentVariable("S4_BLOB_RANGE_CASE_SET")??"Core";if(caseSet is not ("Core" or "Sensitivity" or "Publication" or "All"))throw new Exception("未知范围case set");
+        var caseSet=Environment.GetEnvironmentVariable("S4_BLOB_RANGE_CASE_SET")??"Core";if(caseSet is not ("Core" or "Sensitivity" or "Publication" or "All" or "C06"))throw new Exception("未知范围case set");
         var app=new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
         SunEyeVision.Plugin.SDK.Vision.Hosting.VisionImageFactoryLocator.Current=new SunEyeVision.HalAdapter.HalImageFactory();
         SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext(Dispatcher.CurrentDispatcher));
@@ -151,10 +151,98 @@ internal static class S2DocumentEditingCases
         void Rerun(){var run=vm.RunSelectedImageAsync();PumpUntil(()=>run.IsCompleted);run.GetAwaiter().GetResult();Require(Context().GetNodeResult(producer.Id)?.Result is DeclaredOutputSnapshot{IsSuccess:true},"重跑未产生真实前序结果");}
         Case(scope+"真实多形敏感样本分别仅改变下限与上限",()=>{var original=File.ReadAllBytes(imageFile);SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow? w=null;try{WriteImage(64,true);Rerun();var baseline=Producer();Require(baseline.Count==2,"敏感样本不是两个真实区域");double Feature(BlobMeasurement m)=>integer?m.Area:scope=="Circularity"?m.Circularity:m.Rectangularity;var ordered=baseline.Measurements.OrderBy(Feature).ToArray();var a=Feature(ordered[0]);var b=Feature(ordered[1]);var cut=integer?Math.Floor((a+b)/2):Math.Round((a+b)/2,2);Require(a<cut&&cut<b,"敏感指标未分离："+a+"/"+b);w=Open();Enable(w,true);var lo=Field(w,0);var hi=Field(w,1);var min=integer?1d:0d;var max=integer?999999999d:1d;Require(lo.TrySetConstant(Number(min))&&hi.TrySetConstant(Number(max)),"敏感基线失败");Require(Debug(w,min,max).Count==2,"宽范围非两对象");Require(lo.TrySetConstant(Number(cut)),"仅改下限失败");var lower=Debug(w,cut,max);Require(lower.Count==1&&lower.Measurements[0].Area==ordered[1].Area,"下限未单独选高指标对象");Confirm(w);SaveReplay(cut,max);w=Open();Enable(w,true);lo=Field(w,0);hi=Field(w,1);Require(lo.TrySetConstant(Number(min))&&hi.TrySetConstant(Number(cut)),"仅改上限失败");var upperResult=Debug(w,min,cut);Require(upperResult.Count==1&&upperResult.Measurements[0].Area==ordered[0].Area&&ordered[0].Area!=ordered[1].Area,"上限未单独选另一对象");Confirm(w);SaveReplay(min,cut);w=Open();Enable(w,true);lo=Field(w,0);hi=Field(w,1);Require(hi.TrySetConstant(Number(max)),"恢复范围失败");Debug(w,min,max);Confirm(w);SaveReplay(min,max);}finally{if(w?.IsVisible==true)w.Close();File.WriteAllBytes(imageFile,original);Rerun();Pump();}});
         Case(scope+"捕获后真实输出publication更替仅影响下一次消费",()=>{var original=File.ReadAllBytes(imageFile);var w=Open();Enable(w,true);Require(Field(w,1).TrySetConstant(Number(integer?999999999:1)),"快照上限失败");var lo=Field(w,0);Subscribe(lo);var session=Session(lo);Choose(session,false,item=>Candidate(item)?.Reference(BindingSelection.All) is {} r&&r.NodeId==(integer?source.Id:producer.Id)&&(integer?r.PortId=="output.image"&&r.MemberFieldPath.SequenceEqual(new[]{"width"}):r.PortId==BlobSchema.Field(23)));if(!integer)SetIndex(session,"0");var old=integer?8d:Producer().Measurements.Single().Circularity;var oldFrame=Producer().Region.SourceFrame;var c=Control(w);var capture=(Func<WorkflowNodeBase,RuntimeDebugInvocation>)typeof(RuntimeNodeConfigurationControl).GetField("_captureDebug",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(c)!;c.SetDebugCapture(draft=>{var frozen=capture(draft);try{WriteImage(16,false);Rerun();Require(Producer().Region.SourceFrame!=oldFrame,"上游未生成新物理帧");return frozen;}catch{frozen.Dispose();throw;}});try{Debug(w,old,integer?999999999:1);c.SetDebugCapture(capture);var next=integer?16d:Producer().Measurements.Single().Circularity;Require(next!=old,"输出样本值没有变化");Debug(w,next,integer?999999999:1);}finally{c.SetDebugCapture(capture);if(w.IsVisible)w.Close();File.WriteAllBytes(imageFile,original);Rerun();Pump();}});
-        shell.Close();dialogs.Stop();Pump();Console.WriteLine("Blob范围"+scope+"整链："+_passed+"组通过；不代原厂全域/自然焦点/剪贴板/连续会话/ROI图文。");return 0;
+        if(caseSet=="C06")
+        {
+            var baseLow=integer?2d:.1;var baseHigh=integer?80d:1d;
+            DeclaredSettingsView Editor(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow w)=>(DeclaredSettingsView)Get(Control(w).Content,"Editor");
+            object State(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow w,int end)=>((Array)Get(Field(w,end).View,"_states")).GetValue(end)!;
+            object Model(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow w,int end)=>Get(State(w,end),"NumericModel");
+            double Cur(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow w,int end)=>Convert.ToDouble(Get(Model(w,end),"CurValue"));
+            bool Known(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow w,int end)=>(bool)Get(Model(w,end),"HasValue");
+            long Version(object model)=>(long)Get(model,"Version");
+            string Stamp(RuntimeToolConfiguration configuration)=>Get(configuration,"ConfigurationIdentity")+"|"+Get(configuration,"CurrentValuesIdentity");
+            string Accepted(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow w)=>string.Join("|",new[]{0,1}.Select(end=>Identity(Field(w,end).Setting)));
+            NumericModelReadResult Read(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow w,int end)=>Control(w).ReadNumericModels(NumericModelReadScope.Field,end==0?threshold:upper).Single();
+            void TraceModels(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow w,string stage)
+            {File.AppendAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"range-models.jsonl"),System.Text.Json.JsonSerializer.Serialize(new{scope,stage,fields=new[]{0,1}.Select(end=>new{end,id=end==0?threshold:upper,setting=Identity(Field(w,end).Setting),known=Known(w,end),curValue=Cur(w,end),isInitValue=(bool)Get(Model(w,end),"IsInitValue"),version=Version(Model(w,end)),Field(w,end).HasPendingEdits,Field(w,end).HasInvalidText,Field(w,end).Error}).ToArray()})+Environment.NewLine);}
+            void ReadOnly(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow w,Action read)
+            {
+                var formal=Stamp(node.RuntimeConfiguration!);var candidate=Stamp(Config(w));var position=history.Position;var bytes=File.ReadAllBytes(path);var pending=Control(w).HasPendingEdits;
+                read();Pump();TraceModels(w,"explicit-read");Require(formal==Stamp(node.RuntimeConfiguration!)&&candidate==Stamp(Config(w))&&position==history.Position&&bytes.SequenceEqual(File.ReadAllBytes(path))&&pending==Control(w).HasPendingEdits,"C06回读污染业务配置/执行当前值/历史/文件或pending");
+            }
+            void SeedPair()
+            {
+                var w=Open();Enable(w,true);Require(Field(w,1).TrySetConstant(Number(integer?999999999:1))&&Field(w,0).TrySetConstant(Number(baseLow))&&Field(w,1).TrySetConstant(Number(baseHigh)),"C06正式常量基线未接纳");Confirm(w);
+            }
+            void References(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow w)
+            {foreach(var end in new[]{0,1}){var field=Field(w,end);Subscribe(field);SelectVariable(Session(field),false,values.Id);SetIndex(Session(field),end.ToString());}}
+            void SeedReferences(){SeedPair();var w=Open();Enable(w,true);References(w);Confirm(w);}
+            void Rebind(SunEyeVision.UI.Services.Editing.NativeRuntimeEditorWindow w,Func<Port,ConstantSetting?> reader)
+            {var editor=Editor(w);var options=editor.Options!;editor.Bind(editor.Draft!,options with{ReferenceOptions=options.ReferenceOptions! with{ReadCurrentValue=reader}});w.UpdateLayout();Pump();TraceModels(w,"root-rebind");}
+            Case("C06"+scope+"真实Field页全量有序读取与两个模型身份不写业务",()=>{
+                SeedPair();var w=Open();Enable(w,true);var editor=Editor(w);var original=editor.Options!.ReferenceOptions!.ReadCurrentValue!;var calls=new List<string>();
+                Rebind(w,p=>{if(p.Id==threshold||p.Id==upper)calls.Add(p.Id);return original(p);});
+                Require(Known(w,0)&&Known(w,1)&&Cur(w,0)==baseLow&&Cur(w,1)==baseHigh,"C06根All未建立实际双端模型");
+                calls.Clear();ReadOnly(w,()=>{var result=Read(w,1);Require(result.Status is NumericModelReadStatus.Updated or NumericModelReadStatus.Unchanged,"C06右Field未实际参与");});Require(calls.SequenceEqual(new[]{upper}),"右Field读取了左端或返回额外更新");
+                calls.Clear();editor.SelectedPageIndex=1;w.UpdateLayout();Pump();ReadOnly(w,()=>{var results=Control(w).ReadNumericModels(NumericModelReadScope.CurrentPage);Require(results.Any(r=>r.FieldId==threshold)&&results.Any(r=>r.FieldId==upper),"实际运行页缺成对端点");});Require(calls.SequenceEqual(new[]{threshold,upper}),"C06页回读不遵原先左后右");
+                calls.Clear();ReadOnly(w,()=>{var results=Control(w).ReadNumericModels(NumericModelReadScope.All);Require(results.Any(r=>r.FieldId==threshold)&&results.Any(r=>r.FieldId==upper),"All漏双端");});Require(calls.SequenceEqual(new[]{threshold,upper}),"All双端重复或倒序");
+                var count=calls.Count;w.Hide();Pump();w.Show();Pump();Require(calls.Count==count,"普通Hide/Show重复根初始化");w.Close();Pump();
+            });
+            Case("C06"+scope+"局部模型订阅身份与真实执行值分离再显式回读",()=>{
+                SeedPair();var formal=Stamp(node.RuntimeConfiguration!);var bytes=File.ReadAllBytes(path);var position=history.Position;var w=Open();Enable(w,true);References(w);var ids=Accepted(w);
+                Require(Cur(w,0)==baseLow&&Cur(w,1)==baseHigh,"选源直接以实时执行值覆盖模型");Debug(w,lowValue,highValue);TraceModels(w,"after-real-debug-before-read");
+                Require(Cur(w,0)==baseLow&&Cur(w,1)==baseHigh&&Accepted(w)==ids,"执行或读执行值冒充模型更新/替换引用");
+                ReadOnly(w,()=>Require(Read(w,0).Status is NumericModelReadStatus.Updated or NumericModelReadStatus.Unchanged,"左显式回读失败"));Require(Cur(w,0)==lowValue&&Cur(w,1)==baseHigh,"单项读取连带安装右模型");
+                ReadOnly(w,()=>Require(Read(w,1).Status is NumericModelReadStatus.Updated or NumericModelReadStatus.Unchanged,"右显式回读失败"));Require(Cur(w,1)==highValue&&Accepted(w)==ids,"回读改变完整引用身份");
+                w.Close();Pump();Require(formal==Stamp(node.RuntimeConfiguration!)&&bytes.SequenceEqual(File.ReadAllBytes(path))&&history.Position==position,"模型回读取消污染正式/文件/历史");
+            });
+            Case("C06"+scope+"原初始化与临时右读不安装右模型且失败不造正式值",()=>{
+                SeedReferences();var w=Open();Enable(w,true);var original=Editor(w).Options!.ReferenceOptions!.ReadCurrentValue!;var phase=0;var calls=new List<string>();
+                ConstantSetting? Reader(Port p)
+                {
+                    if(p.Id!=threshold&&p.Id!=upper)return original(p);calls.Add(p.Id);
+                    if(phase==0)return null;
+                    if(p.Id==threshold)return new(Number(lowValue));
+                    if(phase==2)throw new InvalidOperationException("C06真实普通参数读取故障");
+                    return new(Number(highValue));
+                }
+                Rebind(w,Reader);Require(!Known(w,0)&&!Known(w,1)&&Cur(w,0)==0&&Cur(w,1)==0&&!(bool)Get(Model(w,0),"IsInitValue")&&!(bool)Get(Model(w,1),"IsInitValue"),"未知模型原typed0与HasValue/init混同");
+                var right=Model(w,1);var version=Version(right);calls.Clear();phase=1;ReadOnly(w,()=>Require(Read(w,0).Status==NumericModelReadStatus.Updated,"左Field临时比较读取未采用本端有效值"));
+                Require(calls.SequenceEqual(new[]{threshold,upper})&&!Known(w,1)&&Version(right)==version&&Cur(w,1)==0&&!(bool)Get(right,"IsInitValue"),"左Check临时右读被冒充右Field更新/安装模型");
+                ReadOnly(w,()=>Require(Read(w,1).Status==NumericModelReadStatus.Updated,"右正式Field读取失败"));Require(Known(w,1)&&Cur(w,1)==highValue&&(bool)Get(right,"IsInitValue"),"右非零模型原初始化未迁入");
+                calls.Clear();ReadOnly(w,()=>Require(Read(w,0).Status==NumericModelReadStatus.Unchanged,"同值左读取状态错误"));Require(calls.SequenceEqual(new[]{threshold}),"已init右端仍做临时普通读");
+                phase=0;Rebind(w,Reader);right=Model(w,1);version=Version(right);phase=2;ReadOnly(w,()=>Require(Read(w,0).Status==NumericModelReadStatus.Updated,"右临时读取异常未沿原局部比较分支"));Require(!Known(w,1)&&Version(right)==version,"临时右读异常生成已知默认模型");
+                ReadOnly(w,()=>Require(Read(w,1).Status==NumericModelReadStatus.Failed,"显式右读异常伪称成功"));Require(!Known(w,1)&&Version(right)==version&&Field(w,1).Setting is VariableSetting,"显式读取失败污染模型/引用");
+                if(!integer){phase=0;Rebind(w,p=>p.Id==threshold||p.Id==upper?null:original(p));Rebind(w,p=>p.Id==threshold||p.Id==upper?new ConstantSetting(0d):original(p));Require(Known(w,0)&&Known(w,1)&&Cur(w,0)==0&&Cur(w,1)==0&&!(bool)Get(Model(w,0),"IsInitValue")&&!(bool)Get(Model(w,1),"IsInitValue"),"已知0被当作原setter已初始化");}
+                w.Close();Pump();
+            });
+            Case("C06"+scope+"坏raw显式读取保留与完整双端原子提案拒绝恢复",()=>{
+                SeedPair();var w=Open();Enable(w,true);var lo=Field(w,0);var hi=Field(w,1);var before=Accepted(w);var formal=Stamp(node.RuntimeConfiguration!);var position=history.Position;var low=(TextBox)lo.InputElement!;low.SetCurrentValue(TextBox.TextProperty,"C06-invalid-pair");
+                ReadOnly(w,()=>Read(w,0));Require(low.Text=="C06-invalid-pair"&&lo.HasPendingEdits&&!lo.TryCommitPending()&&Accepted(w)==before,"显式回读吞坏raw或半写另一端");
+                low.SetCurrentValue(TextBox.TextProperty,baseLow.ToString(System.Globalization.CultureInfo.InvariantCulture));Require(lo.TryCommitPending(),"坏raw恢复失败");
+                var high=(TextBox)hi.InputElement!;low.SetCurrentValue(TextBox.TextProperty,baseHigh.ToString(System.Globalization.CultureInfo.InvariantCulture));high.SetCurrentValue(TextBox.TextProperty,baseLow.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                Require(!(bool)lo.View.GetType().GetMethod("TryCommitPending")!.Invoke(lo.View,new object[]{true})!&&Accepted(w)==before,"倒序成对提案被接纳或半写");
+                low.SetCurrentValue(TextBox.TextProperty,baseLow.ToString(System.Globalization.CultureInfo.InvariantCulture));high.SetCurrentValue(TextBox.TextProperty,baseHigh.ToString(System.Globalization.CultureInfo.InvariantCulture));Require((bool)lo.View.GetType().GetMethod("TryCommitPending")!.Invoke(lo.View,new object[]{true})!,"双端raw恢复后整组提案失败");
+                Debug(w,baseLow,baseHigh);w.Close();Pump();Require(formal==Stamp(node.RuntimeConfiguration!)&&position==history.Position,"组提案取消写正式或历史");
+            });
+            Case("C06"+scope+"未知双引用原生弹窗关闭及Dispatcher旧根退役",()=>{
+                SeedReferences();var w=Open();Enable(w,true);var editor=Editor(w);var original=editor.Options!.ReferenceOptions!.ReadCurrentValue!;Rebind(w,p=>p.Id==threshold||p.Id==upper?null:original(p));
+                var lo=Field(w,0);var range=lo.View;var native=Get(range,"NativeView");var box=(ComboBox)((FrameworkElement)native).FindName("CBox");var identity=Accepted(w);var models=new[]{Model(w,0),Model(w,1)};var versions=models.Select(Version).ToArray();
+                box.IsDropDownOpen=true;Pump();Require(box.IsDropDownOpen,"原between弹窗未实际打开");var popup=(Popup)box.Template.FindName("PART_Popup",box);Require(popup.Child is not null,"原between弹层未创建真实内容");box.IsDropDownOpen=false;Pump();
+                Require(!Known(w,0)&&!Known(w,1)&&Accepted(w)==identity&&!lo.HasPendingEdits&&!Field(w,1).HasPendingEdits&&Visual(range).Concat(Visual(popup.Child)).OfType<FrameworkElement>().All(e=>!Validation.GetHasError(e)),"原popup关闭产生假模型/绑定错误/引用变动");
+                box.IsDropDownOpen=true;Pump();var sliders=Visual(popup.Child).OfType<Slider>().ToArray();Require(sliders.Length>0,"原between真实Slider缺失");sliders[0].SetCurrentValue(Slider.ValueProperty,integer?4d:.4);var snapshot=models.Select(Version).ToArray();var oldIdentity=Accepted(w);var options=editor.Options!;editor.Bind(editor.Draft!,options);Pump();
+                Require(models.Select(Version).SequenceEqual(snapshot)&&Accepted(w)==oldIdentity,"旧Dispatcher在换根后继续写旧模型或新根引用");w.Close();Pump();
+            });
+            Case("C06"+scope+"成对回读期间换根迟到拒绝及关闭拒旧模型",()=>{
+                SeedReferences();var w=Open();Enable(w,true);var editor=Editor(w);var field=Field(w,0);var state=State(w,0);var model=Model(w,0);var version=Version(model);var reader=state.GetType().GetField("_readCurrentValue",BindingFlags.Instance|BindingFlags.NonPublic)!;var original=(Func<ConstantSetting?>)reader.GetValue(state)!;var rebound=false;
+                reader.SetValue(state,(Func<ConstantSetting?>)(()=>{if(!rebound){rebound=true;editor.Bind(editor.Draft!,editor.Options!);}return original();}));
+                Require(Read(w,0).Status==NumericModelReadStatus.Retired&&Version(model)==version,"回读换根迟到值装入旧模型");var newModel=Model(w,0);var newVersion=Version(newModel);w.Close();Pump();Require(field.View.GetType().GetProperty("NativeView") is not null&&Version(newModel)==newVersion,"关闭修改了模型值");Require(Control(w).ReadNumericModels(NumericModelReadScope.Field,threshold).Single().Status==NumericModelReadStatus.Retired,"关闭后旧根仍允许回读");
+            });
+        }
+        shell.Close();dialogs.Stop();Pump();File.WriteAllText(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"range-model-report.json"),System.Text.Json.JsonSerializer.Serialize(new{scope,caseSet,passed=_passed}));Console.WriteLine("Blob范围"+scope+"整链："+_passed+"组通过；不代原厂全域/自然焦点/剪贴板/连续会话/ROI图文。");return 0;
     }
     private static object? _lastChoice;
-    private static object Get(object target,string name)=>target.GetType().GetProperty(name)!.GetValue(target)!;
+    private static object Get(object target,string name)=>target.GetType().GetProperty(name,BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance)?.GetValue(target)??target.GetType().GetField(name,BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance)?.GetValue(target)??throw new Exception("缺少实际成员："+name);
     private static DeclaredReferenceCandidate? Candidate(object item)=>(DeclaredReferenceCandidate?)Get(item,"Candidate");
     private static AppsPopup? _activePopup;
     private static bool Right(DeclaredFieldAccess f)=>f.FieldId is "field:cdce3e942b555fa58489e08eeb39236f" or "field:1a8be75176b350f09f3cd64506c136da" or "field:c38989cfdf9e51799d27e0eeee34e726";
@@ -218,7 +306,7 @@ internal static class S2DocumentEditingCases
     {yield return root;for(var n=0;n<VisualTreeHelper.GetChildrenCount(root);n++)foreach(var child in Visual(VisualTreeHelper.GetChild(root,n)))yield return child;}
     private static void Case(string name,Action action)
     {
-        var set=Environment.GetEnvironmentVariable("S4_BLOB_RANGE_CASE_SET")??"Core";var selected=name.Contains("敏感样本")?"Sensitivity":name.Contains("输出publication")?"Publication":"Core";if(set!="All"&&set!=selected)return;
+        var set=Environment.GetEnvironmentVariable("S4_BLOB_RANGE_CASE_SET")??"Core";var selected=name.StartsWith("C06",StringComparison.Ordinal)?"C06":name.Contains("敏感样本")?"Sensitivity":name.Contains("输出publication")?"Publication":"Core";if(set!="All"&&set!=selected)return;
         var file=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,"reference-chain-progress.log");
         File.AppendAllText(file,DateTime.UtcNow.ToString("O")+" BEGIN "+name+Environment.NewLine);
         try{action();_passed++;Console.WriteLine("通过："+name);File.AppendAllText(file,DateTime.UtcNow.ToString("O")+" PASS "+name+Environment.NewLine);}

@@ -20,6 +20,12 @@ public sealed partial class DeclaredFieldsView
                 ||NumericSelectedPage is {} page&&_numericModelPages[state.Port.Id]==page)).ToArray();
         if(candidates.Length==0&&scope==NumericModelReadScope.Field)
             return new[]{new NumericModelReadResult(fieldId!,_disposed||!current()?NumericModelReadStatus.Retired:NumericModelReadStatus.NotApplicable)};
-        return Array.AsReadOnly(candidates.Select(state=>state.ReadNumericModel(()=>!_disposed&&current())).ToArray());
+        var ordered=new List<SunEyeVision.Plugin.Wpf.Adapters.Fields.DeclaredFieldState>();
+        foreach(var state in candidates)
+        {
+            if(state.NumericEndpoint==1&&state.NumericPeer is {} left&&candidates.Contains(left)&&!ordered.Contains(left))ordered.Add(left);
+            if(!ordered.Contains(state))ordered.Add(state);
+        }
+        return Array.AsReadOnly(ordered.Select(state=>state.ReadNumericModel(()=>!_disposed&&current())).ToArray());
     }
 }

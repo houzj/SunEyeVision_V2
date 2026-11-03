@@ -109,7 +109,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
     }
     private void OnLoaded(object sender,RoutedEventArgs args)
     {
-        if(!Current())return;_active=true;
+        if(!Current())return;_active=true;_arrange?.PrepareBorrowedInteractions(_active&&_eventRoot.IsVisible&&_eventRoot.IsEnabled&&!_presentationHidden);
         _loadGeneration++;
         AttachInput();
         if(_disposed||_state.IsDisposed)return;
@@ -160,7 +160,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
     private void ProjectState()
     {
         if(!Current()||_syncing)return;
-        _syncing=true;
+        _arrange?.RetireBorrowedInteractions();_syncing=true;
         try
         {
             if(_arrange is not null)
@@ -321,7 +321,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
     }
     private void OnUnloaded(object sender,RoutedEventArgs args)
     {
-        _active=false;_loadGeneration++;_resume?.Abort();_resume=null;var owner=_owner;_owner=null;
+        _arrange?.PrepareBorrowedInteractions(false);_active=false;_loadGeneration++;_resume?.Abort();_resume=null;var owner=_owner;_owner=null;
         ParameterCleanup.Run(new Action[]{()=>{if(owner is not null)owner.Deactivated-=OnDeactivated;},
             ()=>_commit?.Suspend(),()=>_referenceScope?.PrepareForVisibility(false),()=>_expansion?.Close(),ClosePopups});
     }
@@ -330,13 +330,13 @@ internal sealed class NativeNumberCoordinator : IDisposable
         if(_disposed)return;
         if(!visible)
         {
-            _presentationHidden=true;_loadGeneration++;_resume?.Abort();_resume=null;
+            _arrange?.PrepareBorrowedInteractions(false);_presentationHidden=true;_loadGeneration++;_resume?.Abort();_resume=null;
             ParameterCleanup.Run(new Action[]{()=>_commit?.Suspend(),()=>_referenceScope?.PrepareForVisibility(false),
                 ()=>_expansion?.Close(),ClosePopups});
         }
         else
         {
-            _presentationHidden=false;_referenceScope?.PrepareForVisibility(_eventRoot.IsEnabled);
+            _presentationHidden=false;_arrange?.PrepareBorrowedInteractions(_active&&_eventRoot.IsVisible&&_eventRoot.IsEnabled&&!_presentationHidden);_referenceScope?.PrepareForVisibility(_eventRoot.IsEnabled);
             if(!_active||!_eventRoot.IsVisible||_commit?.IsSuspended!=true)return;
             QueueResume();
         }
@@ -353,12 +353,13 @@ internal sealed class NativeNumberCoordinator : IDisposable
         if(!Current())return;
         if(!_eventRoot.IsEnabled)
         {
-            _loadGeneration++;_resume?.Abort();_resume=null;
+            _arrange?.PrepareBorrowedInteractions(false);_loadGeneration++;_resume?.Abort();_resume=null;
             ParameterCleanup.Run(new Action[]{()=>_commit?.Suspend(),()=>_referenceScope?.PrepareForVisibility(false),
                 ()=>_expansion?.Close(),ClosePopups});
         }
         else
         {
+            _arrange?.PrepareBorrowedInteractions(_active&&_eventRoot.IsVisible&&!_presentationHidden);
             _referenceScope?.PrepareForVisibility(!_presentationHidden&&_eventRoot.IsVisible);
             QueueResume();
         }
@@ -370,7 +371,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
     public void RestorePending(NumericPendingEdit? raw)=>_commit?.RestorePending(raw);
     public void Dispose()
     {
-        if(_disposed)return;_disposed=true;_active=false;_presentationHidden=true;_loadGeneration++;
+        if(_disposed)return;_disposed=true;_arrange?.PrepareBorrowedInteractions(false);_active=false;_presentationHidden=true;_loadGeneration++;
         var cleanup=new List<Action>{Cancel,()=>{_resume?.Abort();_resume=null;},()=>_reference?.SetSuspended(true),()=>_commit?.Suspend(),ClosePopups,
             ()=>{_state.Changed-=OnStateChanged;_state.ExplicitlyAccepted-=OnExplicitlyAccepted;if(_state.NumericModel is {} model)model.Changed-=OnNumericModelChanged;},
             ()=>{if(_arrange is not null){_arrange.OnStartValueChange-=OnNativeValue;_arrange.OnLeftTypeChange-=OnModeChanged;

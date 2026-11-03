@@ -26,6 +26,10 @@ public class SliderArrangeBase : UserControl, INotifyPropertyChanged
 	protected bool IsThrough = false;
 
 	protected bool LoadAlready = false;
+    private long _borrowedInteractionGeneration;
+    private bool _borrowedInteractionActive=true;
+    internal void RetireBorrowedInteractions()=>_borrowedInteractionGeneration++;
+    internal void PrepareBorrowedInteractions(bool active){_borrowedInteractionActive=active;RetireBorrowedInteractions();}
 	private bool _nativeLayoutInitialized;
 
 	protected int d = 5;
@@ -1054,10 +1058,10 @@ public class SliderArrangeBase : UserControl, INotifyPropertyChanged
 
 	protected void SL_Bat1_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
 	{
-        var proposed = e.NewValue;
+        var generation=_borrowedInteractionGeneration;
         Dispatcher.BeginInvoke((Action)(() =>
         {
-            if (!IsLoaded || StartValue != proposed) return;
+            if (!_borrowedInteractionActive||generation!=_borrowedInteractionGeneration) return;
             if (SliderType == SliderArrangeType.bothWay)
 			{
 				if (e.NewValue > EndValue)
@@ -1090,10 +1094,10 @@ public class SliderArrangeBase : UserControl, INotifyPropertyChanged
 
 	protected void SL_Bat2_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
 	{
-        var proposed = e.NewValue;
+        var generation=_borrowedInteractionGeneration;
         Dispatcher.BeginInvoke((Action)(() =>
         {
-            if (!IsLoaded || EndValue != proposed) return;
+            if (!_borrowedInteractionActive||generation!=_borrowedInteractionGeneration) return;
             if (SliderType == SliderArrangeType.bothWay)
 			{
 				if (e.NewValue < StartValue)
@@ -1168,8 +1172,10 @@ public class SliderArrangeBase : UserControl, INotifyPropertyChanged
 
 	protected void RepeatButton_Click(object sender, RoutedEventArgs e)
 	{
-		Dispatcher.BeginInvoke((Action)(() =>
-		{
+        var generation=_borrowedInteractionGeneration;
+        Dispatcher.BeginInvoke((Action)(() =>
+        {
+            if(!_borrowedInteractionActive||generation!=_borrowedInteractionGeneration)return;
 			if (!isBetween || !isBeside)
 			{
 				DoValueChange(sender);

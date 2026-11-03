@@ -1,0 +1,212 @@
+{
+  "schema": "c06-whole-original-control-public-candidate/v1",
+  "scope": "C06公共整控件候选，原数据/绑定/Check/事件及必要宿主生命周期适配；不替代真实生产线、主仓正式或VS人工",
+  "baseline": "0c4b454de2a939bfcb51c010d928cb79778460b0",
+  "productSourceCommit": "c507b5bcdac5872e7f7bf942ec80602a08bab6fe",
+  "branch": "codex/c06-range-model-public-20261103",
+  "sourceManifest": [
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
+      "sha256": "7A453800E228C6C5256C6C029B58F09ACC9FEF2705FEEE47DCE5E0D4CD4771E8",
+      "gitBlob": "ae705c72fc69fee26d79fd61e677c9fd3f3f5d9b"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
+      "sha256": "EF743D674766CA3119A3D3CD3C470CAB0B16C11CCE737DC4EC08D9B587D1B0BA",
+      "gitBlob": "6f25b4106b8a69d5e66a8372b8002cd2911c6438"
+    },
+    {
+      "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericModel.cs",
+      "sha256": "95A894E984137B3DD04A24669714871DBB43A9A95D84F1CA2288881DAA5B4ED6",
+      "gitBlob": "547e5049171dd606bb0403064241a8a79b34722f"
+    },
+    {
+      "path": "src/Plugin.Wpf/Controls/Native/Numeric/Arranged/SliderArrangeBase.cs",
+      "sha256": "B494FA3FA9CACCA10BECB6B75B6BF526F74EBD87E85A92AF50A4B4EB9BBCD3F2",
+      "gitBlob": "8c03cd46ba217caec5e14dcedab0ed43abb17243"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.NumericModels.cs",
+      "sha256": "C2E1920296439B3263E06E892C1F1C0F7FEDFD71ADD3A73D3CD3D28B2E4F3316",
+      "gitBlob": "be7914378ef840cc8e96d7bcf67b06b535f8dce3"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+      "sha256": "C87AC43DD4C9BCE59AA7329458036FD79FD16C2EC7D8FBC09D7B59A9BB4A37CD",
+      "gitBlob": "47422a1bdc9d06138e1e49d9e95358e4efbb52a6"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+      "sha256": "7BD8446A8CB80BBF6F8A0D160534F7639E2DC45756FD8B0FE9043FFEA4A948FE",
+      "gitBlob": "7b1ea80794a02f9ab61c823c3e7d222d66f758e4"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
+      "sha256": "E63E045EAECAE02F4284A46D86066536AA2180FF97BAC0B3096CF170891B927E",
+      "gitBlob": "212df8959431deef3e62e1f5df7629b94557c896"
+    }
+  ],
+  "originalSources": [
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\Integer.cs",
+      "sha256": "530ADE2D749EB089211786A20909FA24771EE25E38C6B66B1CA4275412CEC278"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\Float.cs",
+      "sha256": "577DB9B9E5E53AD8F97FBF67F0ED006D294C488B94D4EB3E76F2C51253197EA5"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\IntegerBettween.cs",
+      "sha256": "1F49D565E7792332B3B6F8BD7815546B179B6FA56FC6432A7E82150B583AD0F9"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\FloatBettween.cs",
+      "sha256": "0AC785326A7B856438BFB2FAC1515DF3E61B5402F0BC1B660F192D393EBD2302"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\ValueBettween.cs",
+      "sha256": "E3148003D0F9C687D161A4C50B467CB89CF8D1E6BA4DBF194016F879701DB835"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\ValueBase.cs",
+      "sha256": "E60DB3CF3E18751803693CCE6EFE037183E46D629578064F9C65989ECA2472F7"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\NameValueItem.cs",
+      "sha256": "90B4742E79243F46C46FD6B38187EE7F5BE49D4C6677F994133215A3796FED46"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlParser.CapabilityAudit\\Apps.XmlParser.ParamTab\\RangeChecker.cs",
+      "sha256": "48DEB21CA19AAC1B719A9F6308842C9D45E5DD58D5F2A23150A368208FB816E7"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\Apps.XmlUI\\styles\\paramusercontroldatatemplate.xaml",
+      "sha256": "96B98F06FBAF9BC2CF1F481B2A24323ECFC11831C05698E9FA5B18EC294E0F63"
+    },
+    {
+      "path": "D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\VM.PcUI\\HikPcUI.ListView\\SliderArrangeBase.cs",
+      "sha256": "CDCE54E608EEE5421A2863C700B28DDBE89242514EF44690B7B1EC83544C8FF2"
+    }
+  ],
+  "builds": [
+    {
+      "kind": "UI",
+      "log": "Release/_validation/C06NumericRange-20261103/ui-build-009.log",
+      "exit": 0,
+      "warnings": 6553,
+      "errors": 0,
+      "elapsed": "00:01:42.68"
+    },
+    {
+      "kind": "full",
+      "log": "Release/_validation/C06NumericRange-20261103/full-build-010.log",
+      "exit": 0,
+      "warnings": 6555,
+      "errors": 0,
+      "elapsed": "00:01:00.20"
+    }
+  ],
+  "publicC06": {
+    "scope": "C06公共完整双端迁移候选，不替代真实Blob三页/主仓/实际VS",
+    "exit": 0,
+    "buildSourceCommit": "c507b5bcdac5872e7f7bf942ec80602a08bab6fe",
+    "testHEAD": "c507b5bcdac5872e7f7bf942ec80602a08bab6fe",
+    "payloadDiffPaths": [],
+    "payloadDiffRejected": [],
+    "payloadSourceCommit": "c507b5bcdac5872e7f7bf942ec80602a08bab6fe",
+    "payloadSha256": "D565AD4A4D7ECCFEBB102270D0386625A9FFD8CC0E8A32BD11CEF523414D0790",
+    "payloadPassed": true,
+    "productSourcesDirty": [],
+    "worktreeDirty": [
+      " M docs/collaboration/CURRENT_TASK.md",
+      "?? docs/collaboration/evidence/BLOB_RENDER_CHAIN_CANDIDATE_20261102/source-freeze-002.json",
+      "?? docs/collaboration/evidence/BLOB_TEXT_DISPLAY_CANDIDATE_20261102/"
+    ],
+    "identityPassed": true,
+    "passedCases": 9,
+    "productSourceCommit": "c507b5bcdac5872e7f7bf942ec80602a08bab6fe",
+    "commit": "c507b5bcdac5872e7f7bf942ec80602a08bab6fe",
+    "source": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\scripts\\verification\\C06NumericRangeCases.cs",
+    "sourceSha256": "5520E1E81CB1F941CEA7B0232F755CE0FF4D21E80931819A8BD26843A251BDD0",
+    "runnerSha256": "1D45C83376B08D5966D6535C46EFB151595C3EA0B3C8DD0F93CD8AD33C0BF4FE",
+    "product": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+    "loaded": [
+      {
+        "name": "SunEyeVision.Plugin.Wpf",
+        "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+        "sha256": "082E507406EF8BD67E87FDC947A1C33F87411A5589DF568773514460BDE65111",
+        "matchesCandidate": true
+      },
+      {
+        "name": "SunEyeVision.Plugin.Contracts",
+        "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+        "sha256": "3E86BFE54D2D0F0B77E6EA2BC97534B6CC44720CA5719BA4E6E94D461BE2E3AE",
+        "matchesCandidate": true
+      }
+    ]
+  },
+  "publicC05": {
+    "scope": "C05公共数值模型候选，不替代真实Blob三页/主仓/实际VS",
+    "exit": 0,
+    "buildSourceCommit": "c507b5bcdac5872e7f7bf942ec80602a08bab6fe",
+    "testHEAD": "c507b5bcdac5872e7f7bf942ec80602a08bab6fe",
+    "payloadDiffPaths": [],
+    "payloadDiffRejected": [],
+    "payloadSourceCommit": "c507b5bcdac5872e7f7bf942ec80602a08bab6fe",
+    "payloadSha256": "D565AD4A4D7ECCFEBB102270D0386625A9FFD8CC0E8A32BD11CEF523414D0790",
+    "payloadPassed": true,
+    "productSourcesDirty": [],
+    "worktreeDirty": [
+      " M docs/collaboration/CURRENT_TASK.md",
+      "?? docs/collaboration/evidence/BLOB_RENDER_CHAIN_CANDIDATE_20261102/source-freeze-002.json",
+      "?? docs/collaboration/evidence/BLOB_TEXT_DISPLAY_CANDIDATE_20261102/"
+    ],
+    "identityPassed": true,
+    "passedCases": 10,
+    "productSourceCommit": "c507b5bcdac5872e7f7bf942ec80602a08bab6fe",
+    "commit": "c507b5bcdac5872e7f7bf942ec80602a08bab6fe",
+    "source": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\scripts\\verification\\C05NumericModelCases.cs",
+    "sourceSha256": "46CCBD44986125EF11181AECA6B895E88B8A53EB0633A90B172F2CBED3217E64",
+    "runnerSha256": "7A68B541FD50B87F5CC98DC26B719073A418F7E6F9898D9435A2DB63CAEC648A",
+    "product": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+    "loaded": [
+      {
+        "name": "SunEyeVision.Plugin.Wpf",
+        "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+        "sha256": "082E507406EF8BD67E87FDC947A1C33F87411A5589DF568773514460BDE65111",
+        "matchesCandidate": true
+      },
+      {
+        "name": "SunEyeVision.Plugin.Contracts",
+        "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+        "sha256": "3E86BFE54D2D0F0B77E6EA2BC97534B6CC44720CA5719BA4E6E94D461BE2E3AE",
+        "matchesCandidate": true
+      }
+    ]
+  },
+  "preservedFailures": [
+    "C06 attempt001: dispose clears binding changed DP baseline, fixture corrected without removing retirement assertion",
+    "C06 attempt002: ordinary model notification bypassed protected raw projection",
+    "C06 attempt003: intermediate9 pass only; C05 attempt016 private reflection arity stale",
+    "C06 attempt004/005: known owned projection tail left inner binding dirty; exact per-state diagnosis retained"
+  ],
+  "adaptations": [
+    "typed long bridge for original Int32, checked Int64 intermediate safety inherited from C05; extreme overflow domain not claimed VM-equivalent",
+    "ordinary typed callback/InvariantCulture string bridge is host adaptation; original local parse0/exceptionMax only comparison, never known/execution/formal defaults",
+    "host read/accept uses existing Changed/state owner protected projection, original NativeValue setter retains synchronous TwoWay notification",
+    "existing complete group draft transaction replaces native global writes; no SDK or Workflow interface expansion",
+    "borrowed native generation only retires obsolete owner callbacks; original normal dispatcher/event ordering retained",
+    "per-owned reference binding cleanup runs outside business input gates, retains model/reference/raw and never writes source/globalValidation"
+  ],
+  "unverified": [
+    "消费者同版真实Area/Circularity/Rectangularity及其完整保存执行链由消费者回执另记",
+    "主仓正式UI/full/整组与实际VS及用户人工另记",
+    "VM原机/像素/完整调度等价未测试，本批未启动原VM/SDK",
+    "C07/其他缺基础producer/算法/平台不算本C06已实现"
+  ],
+  "protectedFiles": [
+    "Catalog/O06/主方案/CURRENT未写",
+    "既有CURRENT脏内容和两份untracked旧证据完整保留",
+    "消费者三测试文件仅按主线授权cherry b3bfb168a为c026e4ee0，未双写"
+  ]
+}

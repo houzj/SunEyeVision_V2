@@ -1,11 +1,11 @@
 [CmdletBinding()]
-param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeGlobals','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','RuntimeEditor','RuntimeEditorUiStage','VariableDialog','VariableFields','DesignTime','Components','FieldEditing','NumericContract','RangeRoundtrip','ImageInputSelection','ParameterValues','BlobParameterProduction','BlobRangeLayout','BlobRangeProduction','BlobSupportedWindow','BlobRoiProduction','BlobReferenceWindow','BlobExpandedReference','BlobRoiInheritance','BlobRoiPreview','BlobResultDisplay','BlobThreePageUi','NativeExport','B08NumericComposition','C05NumberModels','BlobCrosshairWorkspace','BlobResultWorkspace','ManualReferenceQualification','NumericIndexProduction','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings','WorkflowBaseline','WorkflowHost','ImageSources','GlobalBinding','ThemeStartup','SdkBaseline','InfrastructureBaseline','PolygonPrimitives','ResultChain','ImageSourceRecovery')][string]$Track='DocumentEditing',
+param([ValidateSet('DocumentEditing','Related','RuntimeKernel','RuntimeGlobals','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','RuntimeEditor','RuntimeEditorUiStage','VariableDialog','VariableFields','DesignTime','Components','FieldEditing','NumericContract','RangeRoundtrip','ImageInputSelection','ParameterValues','BlobParameterProduction','BlobRangeLayout','BlobRangeProduction','BlobSupportedWindow','BlobRoiProduction','BlobReferenceWindow','BlobExpandedReference','BlobRoiInheritance','BlobRoiPreview','BlobResultDisplay','BlobThreePageUi','NativeExport','B08NumericComposition','C05NumberModels','C06RangeModels','BlobCrosshairWorkspace','BlobResultWorkspace','ManualReferenceQualification','NumericIndexProduction','FullChain','WindowPresentation','Algorithm','Resources','RoiComposition','RoiBindings','WorkflowBaseline','WorkflowHost','ImageSources','GlobalBinding','ThemeStartup','SdkBaseline','InfrastructureBaseline','PolygonPrimitives','ResultChain','ImageSourceRecovery')][string]$Track='DocumentEditing',
       [ValidateSet('S2','S3','S4')][string]$Stage='S2',
       [ValidateSet('Formal','Candidate')][string]$ValidationScope='Formal',
       [ValidateRange(0,900)][int]$TimeoutSeconds=0)
 $ErrorActionPreference='Stop'
 if($Track -in @('RuntimeKernel','RuntimeGlobals','RuntimeAlgorithm','RuntimeWorkflow','RuntimeDebug','RuntimeImage','RuntimeUnits','RuntimeCatalog','Components','Algorithm','Resources','RoiComposition','RoiBindings') -and $Stage -ne 'S3'){throw '本检查轨道仅用于S3正式产物验证'}
-if($Track -in @('RuntimeEditor','RuntimeEditorUiStage','VariableDialog','VariableFields','DesignTime','FieldEditing','NumericContract','RangeRoundtrip','ImageInputSelection','ParameterValues','BlobParameterProduction','BlobRangeLayout','BlobRangeProduction','BlobSupportedWindow','BlobRoiProduction','BlobReferenceWindow','BlobExpandedReference','BlobRoiInheritance','BlobRoiPreview','BlobResultDisplay','BlobThreePageUi','NativeExport','B08NumericComposition','C05NumberModels','BlobCrosshairWorkspace','BlobResultWorkspace','ManualReferenceQualification','NumericIndexProduction','FullChain','WindowPresentation','PolygonPrimitives','ResultChain','ImageSourceRecovery') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链/窗口检查仅用于S4正式产物验证'}
+if($Track -in @('RuntimeEditor','RuntimeEditorUiStage','VariableDialog','VariableFields','DesignTime','FieldEditing','NumericContract','RangeRoundtrip','ImageInputSelection','ParameterValues','BlobParameterProduction','BlobRangeLayout','BlobRangeProduction','BlobSupportedWindow','BlobRoiProduction','BlobReferenceWindow','BlobExpandedReference','BlobRoiInheritance','BlobRoiPreview','BlobResultDisplay','BlobThreePageUi','NativeExport','B08NumericComposition','C05NumberModels','C06RangeModels','BlobCrosshairWorkspace','BlobResultWorkspace','ManualReferenceQualification','NumericIndexProduction','FullChain','WindowPresentation','PolygonPrimitives','ResultChain','ImageSourceRecovery') -and $Stage -ne 'S4'){throw '字段/绑定/区域/整链/窗口检查仅用于S4正式产物验证'}
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 # Formal validation must run from the primary checkout, before creating any output.
 $gitDir = git -C $root rev-parse --absolute-git-dir
@@ -22,6 +22,15 @@ if ($ValidationScope -eq 'Candidate' -and [string]::Equals($gitDir, $commonDir, 
 }
 $product=Join-Path $root 'Release/SunEyeVision_v1.0.0/SunEyeVision'
 $dir=Join-Path $root ('Release/_validation/'+$Stage+'-20261025/' + $Track)
+if($Track -in @('BlobRangeProduction','C06RangeModels'))
+{
+    $rangeScope=if($env:S4_BLOB_RANGE_SCOPE){$env:S4_BLOB_RANGE_SCOPE}else{'Area'}
+    $rangeCaseSet=if($Track -eq 'C06RangeModels'){'C06'}elseif($env:S4_BLOB_RANGE_CASE_SET){$env:S4_BLOB_RANGE_CASE_SET}else{'Core'}
+    if($rangeScope -notin @('Area','Circularity','Rectangularity') -or $rangeCaseSet -notin @('Core','Sensitivity','Publication','All','C06')){throw '非法范围scope或caseSet，未创建测试输出'}
+    if($Track -eq 'BlobRangeProduction' -and $rangeCaseSet -eq 'C06'){throw 'C06专项使用独立C06RangeModels轨'}
+    $env:S4_BLOB_RANGE_SCOPE=$rangeScope;$env:S4_BLOB_RANGE_CASE_SET=$rangeCaseSet
+    $dir=Join-Path $dir ($rangeScope+'/'+$rangeCaseSet)
+}
 New-Item -ItemType Directory -Path $dir -Force | Out-Null
 $attempt=1;while(Test-Path -LiteralPath (Join-Path $dir ('attempt-{0:d3}' -f $attempt))){$attempt++}
 $logDir=Join-Path $dir ('attempt-{0:d3}' -f $attempt)
@@ -156,7 +165,7 @@ if($Track -eq 'BlobRoiInheritance'){$source='S4BlobRoiInheritanceCases.cs'}
 if($Track -eq 'BlobRoiPreview'){$source='S4BlobRoiPreviewCases.cs'}
 if($Track -in @('BlobResultDisplay','BlobThreePageUi','NativeExport')){$source='S4BlobResultDisplayCases.cs'}
 if($Track -in @('B08NumericComposition','C05NumberModels')){$source='S4B08NumericReferenceCompositionCases.cs'}
-if($Track -eq 'BlobRangeProduction'){$source='S4BlobRangeProductionCases.cs'}
+if($Track -in @('BlobRangeProduction','C06RangeModels')){$source='S4BlobRangeProductionCases.cs'}
 if($Track -eq 'BlobCrosshairWorkspace'){$source='S4BlobCrosshairWorkspaceCases.cs'}
 if($Track -eq 'BlobResultWorkspace'){$source='S4BlobResultWorkspaceCases.cs'}
 if($Track -eq 'ManualReferenceQualification'){$source='S4ManualReferenceQualificationCases.cs'}
@@ -241,7 +250,7 @@ $stdout=$process.StandardOutput.ReadToEndAsync();$stderr=$process.StandardError.
 # Recovery contains hundreds of real WPF cases. Its runner enforces a separate
 # 90-second watchdog per case; the aggregate budget must not terminate a healthy
 # case merely because earlier completed cases consumed the former global budget.
-$processTimeoutMs=if($TimeoutSeconds -gt 0){$TimeoutSeconds*1000}elseif($Track -eq 'BlobRangeProduction'){360000}elseif($Track -eq 'BlobRoiProduction'){360000}elseif($Track -eq 'BlobCrosshairWorkspace'){240000}elseif($Track -eq 'BlobReferenceWindow'){360000}elseif($Track -eq 'BlobExpandedReference'){480000}elseif($Track -eq 'BlobRoiInheritance'){480000}elseif($Track -eq 'BlobRoiPreview'){480000}elseif($Track -eq 'BlobResultDisplay'){480000}elseif($Track -in @('B08NumericComposition','C05NumberModels')){480000}elseif($Track -eq 'BlobSupportedWindow'){180000}elseif($Track -eq 'FieldEditing' -and $env:B08_REFERENCE_CASE_SCOPE -eq 'WindowSession'){240000}elseif($Track -eq 'ImageSourceRecovery' -and -not $env:S2_DIAGNOSTIC_CASE){300000}elseif($Track -eq 'FieldEditing' -and $env:B08_REFERENCE_CASE_SCOPE -eq 'CrossDocument'){360000}elseif($Track -eq 'RuntimeEditorUiStage'){180000}elseif($Track -eq 'FieldEditing' -and -not $env:B08_REFERENCE_CASE_SCOPE){180000}else{90000}
+$processTimeoutMs=if($TimeoutSeconds -gt 0){$TimeoutSeconds*1000}elseif($Track -in @('BlobRangeProduction','C06RangeModels')){480000}elseif($Track -eq 'BlobRoiProduction'){360000}elseif($Track -eq 'BlobCrosshairWorkspace'){240000}elseif($Track -eq 'BlobReferenceWindow'){360000}elseif($Track -eq 'BlobExpandedReference'){480000}elseif($Track -eq 'BlobRoiInheritance'){480000}elseif($Track -eq 'BlobRoiPreview'){480000}elseif($Track -eq 'BlobResultDisplay'){480000}elseif($Track -in @('B08NumericComposition','C05NumberModels')){480000}elseif($Track -eq 'BlobSupportedWindow'){180000}elseif($Track -eq 'FieldEditing' -and $env:B08_REFERENCE_CASE_SCOPE -eq 'WindowSession'){240000}elseif($Track -eq 'ImageSourceRecovery' -and -not $env:S2_DIAGNOSTIC_CASE){300000}elseif($Track -eq 'FieldEditing' -and $env:B08_REFERENCE_CASE_SCOPE -eq 'CrossDocument'){360000}elseif($Track -eq 'RuntimeEditorUiStage'){180000}elseif($Track -eq 'FieldEditing' -and -not $env:B08_REFERENCE_CASE_SCOPE){180000}else{90000}
 $finished=$process.WaitForExit($processTimeoutMs)
 if(-not $finished){$process.Kill($true);$process.WaitForExit()}
 [IO.File]::WriteAllText((Join-Path $logDir 'run.log'),$stdout.GetAwaiter().GetResult(),[Text.Encoding]::UTF8)
@@ -257,6 +266,7 @@ if($Track -in @('ManualReferenceQualification','NumericIndexProduction'))
 if($Track -eq 'ImageInputSelection'){$receipt.track=$Track;$receipt.caseReport=Join-Path $logDir 'image-input-selection-report.json';$receipt.loaded=($env:S4_IMAGE_INPUT_LOADED -eq '1')}
 if($Track -eq 'RangeRoundtrip'){$receipt.track=$Track;$receipt.caseReport=Join-Path $logDir 'range-roundtrip-report.json';$receipt.loaded=($env:S4_RANGE_LOADED -eq '1')}
 if($Track -eq 'BlobRangeLayout'){$receipt.track=$Track;$receipt.caseReport=Join-Path $logDir 'blob-range-layout-report.json'}
+if($Track -in @('BlobRangeProduction','C06RangeModels')){$receipt.track=$Track;$receipt.rangeScope=$rangeScope;$receipt.rangeCaseSet=$rangeCaseSet;$receipt.caseReport=Join-Path $logDir 'range-model-report.json'}
 if($Track -eq 'BlobParameterProduction'){$receipt.track=$Track;$receipt.caseReport=Join-Path $logDir 'blob-parameter-production-report.json'}
 if($Track -in @('RuntimeEditor','RuntimeEditorUiStage')){$receipt.track=$Track;$receipt.caseReport=Join-Path $logDir 'ui-stage-report.json'}
 $receipt | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $logDir 'receipt.json') -Encoding utf8

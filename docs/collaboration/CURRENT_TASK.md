@@ -1,3 +1,9 @@
+## 2026-11-04 Blob完整共享组合隔离整合在途
+
+根84ba7902e产品不变；根另写D:/MyWork/line-aiproject/platform-blob-integration-20261104，codex/platform-blob-integration-20261104，唯一写。03588/6cbaa/6f8/a9a/764/bd6为f48/78/a0/83/fee/a53前置未交付。已按总监a5bcc固定7ee35文件核SHA（仅LF/CRLF归一），集中接C05数字模型、范围比较、按页组合及新Session批回读/执行快照资源需求；不恢复旧Workflow/旧宿主。来源锁仍旧依赖图使首次还原失败，恢复本树正确锁后locked restore通过；首轮全量显示接口中立映射错误及随后共享职责缺口正在整体核闭包，尚无整批通过。87689八特征新单元待核，不套用来源成绩。
+
+A根集合候选同源全量/真实复制运行/V4已验，仍待固定；B连续主窗在途；C图像宿主与相机a142候选非视觉链已验，真实UI/主窗/全量仍待B整合。原主HTML与完整矩阵同步当前状态和失败边界；人工/VS/主仓分列，完整目标保持、其余18工具不缩、Group/新循环暂停。下一步完成Blob新Session消费者全量构建与真正宿主回归，然后合根，不能把前置源码或候选当整批完成。
+
 ## 2026-11-04 当前源复制整合与跨线Blob基线核收
 
 根产品71a94ee53，含0fdf8b1cd/7f3fb02e0：按VM补证的当前源读取、UI删除清空/Undo不复活、+100/5吸附及同次事务逐点位置。52工程完整Release0错6123warn，同版封包39399EAC1671B964E68327D375065D85BB7CC5089FFA460B757B087BA2F9FCE8，Graph39/39、隐藏Canvas25/25；current-source-clipboard-integrated-build/seal、current-source-graph/canvas-integrated-20261104.log及相应TRX。Root改名生产专项待A新合同，不丢；物理键盘/VM运行/VS/人工未验。当前无根活跃构建测试句柄。

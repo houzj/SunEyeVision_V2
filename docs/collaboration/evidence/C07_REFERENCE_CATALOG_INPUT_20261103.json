@@ -1,11 +1,11 @@
 {
   "catalogCurrentRecordsUpdated": 19,
-  "sourceBaseline": "2a96da3134a5fa1b7964968165775db25295d9b1",
+  "sourceBaseline": "e284a47c7cb6bc56512fbc43beddb85fae215622",
   "files": [
     {
       "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
-      "sha256": "D65322136E708A26911A7A4B394C6D0DF54FCECE41DBCF09DC963238B1B7F230",
-      "gitBlob": "9696ec593e1f34cec9e4496e1434815dcd211925"
+      "sha256": "9DB4ACB68F4DD5461F14B87E09FBDF146EB491538E9D079BEC88CECFFA5DDA90",
+      "gitBlob": "8c8f6d7b8b02be36d7a924a284417b55bfb69edb"
     },
     {
       "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Groups.cs",

@@ -247,7 +247,7 @@
         },
         {
           "localPath": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
-          "localSha256": "D65322136E708A26911A7A4B394C6D0DF54FCECE41DBCF09DC963238B1B7F230",
+          "localSha256": "9DB4ACB68F4DD5461F14B87E09FBDF146EB491538E9D079BEC88CECFFA5DDA90",
           "sourceKind": "nonvisual-adapter-or-explicit-original-composition"
         }
       ],
@@ -303,7 +303,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
-          "sha256": "D65322136E708A26911A7A4B394C6D0DF54FCECE41DBCF09DC963238B1B7F230"
+          "sha256": "9DB4ACB68F4DD5461F14B87E09FBDF146EB491538E9D079BEC88CECFFA5DDA90"
         }
       ]
     },
@@ -1060,7 +1060,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
-          "sha256": "D65322136E708A26911A7A4B394C6D0DF54FCECE41DBCF09DC963238B1B7F230"
+          "sha256": "9DB4ACB68F4DD5461F14B87E09FBDF146EB491538E9D079BEC88CECFFA5DDA90"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/References/NativeReferencePresenter.cs",
@@ -1371,7 +1371,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
-          "sha256": "D65322136E708A26911A7A4B394C6D0DF54FCECE41DBCF09DC963238B1B7F230"
+          "sha256": "9DB4ACB68F4DD5461F14B87E09FBDF146EB491538E9D079BEC88CECFFA5DDA90"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
@@ -1756,7 +1756,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
-          "sha256": "D65322136E708A26911A7A4B394C6D0DF54FCECE41DBCF09DC963238B1B7F230",
+          "sha256": "9DB4ACB68F4DD5461F14B87E09FBDF146EB491538E9D079BEC88CECFFA5DDA90",
           "role": "当前真实组合及非视觉状态/生命周期闭包"
         },
         {
@@ -1882,7 +1882,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
-          "sha256": "D65322136E708A26911A7A4B394C6D0DF54FCECE41DBCF09DC963238B1B7F230"
+          "sha256": "9DB4ACB68F4DD5461F14B87E09FBDF146EB491538E9D079BEC88CECFFA5DDA90"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
@@ -3161,7 +3161,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
-          "sha256": "D65322136E708A26911A7A4B394C6D0DF54FCECE41DBCF09DC963238B1B7F230"
+          "sha256": "9DB4ACB68F4DD5461F14B87E09FBDF146EB491538E9D079BEC88CECFFA5DDA90"
         },
         {
           "path": "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
@@ -7244,12 +7244,12 @@
   },
   "currentC07ReferenceIntegration": {
     "status": "完整源集成，正式验收待完成",
-    "sourceBaseline": "2a96da3134a5fa1b7964968165775db25295d9b1",
+    "sourceBaseline": "e284a47c7cb6bc56512fbc43beddb85fae215622",
     "files": [
       {
         "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
-        "sha256": "D65322136E708A26911A7A4B394C6D0DF54FCECE41DBCF09DC963238B1B7F230",
-        "gitBlob": "9696ec593e1f34cec9e4496e1434815dcd211925"
+        "sha256": "9DB4ACB68F4DD5461F14B87E09FBDF146EB491538E9D079BEC88CECFFA5DDA90",
+        "gitBlob": "8c8f6d7b8b02be36d7a924a284417b55bfb69edb"
       },
       {
         "path": "src/Plugin.Wpf/Fields/DeclaredFieldsView.Groups.cs",
@@ -7286,6 +7286,7 @@
       "更名pending采用既有严格raw/稳定身份保护，不宣称原版刷新时序已证",
       "host草稿原子拒绝保当前正式值；不复制原SDK全局副作用",
       "现有TrySetFields单范围引用/变量内部交原range事务，未扩公开/SDK/Workflow接口"
-    ]
+    ],
+    "finalCombinationGuard": "实际默认组合WPF反例已确认；Stage/Parse/Focus统一原ReadOnly，普通ValueBase仍只读，未新增family或接口，公共完整范围10组待本源验证"
   }
 }

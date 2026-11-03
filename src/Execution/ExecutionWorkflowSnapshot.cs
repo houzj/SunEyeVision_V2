@@ -10,7 +10,9 @@ public sealed class ExecutionWorkflowSnapshot
     internal ExecutionWorkflowSnapshot(string workflowId, long documentRevision,
         RuntimeDirectorySnapshot directory, ToolExecutionOwner owner,
         IReadOnlyList<ExecutionWorkflowNode> nodes,
-        IReadOnlyDictionary<string, IReadOnlyCollection<string>> predecessors)
+        IReadOnlyDictionary<string, IReadOnlyCollection<string>> predecessors,
+        IReadOnlyDictionary<string, IReadOnlyCollection<string>> controlPredecessors,
+        IReadOnlyList<ExecutionControlEdge> controlEdges)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(workflowId);
         ArgumentNullException.ThrowIfNull(directory);
@@ -18,6 +20,8 @@ public sealed class ExecutionWorkflowSnapshot
         if (!directory.IsActive || owner.IsRetired) throw new InvalidOperationException("方案执行 owner 或目录已退役。");
         ArgumentNullException.ThrowIfNull(nodes);
         ArgumentNullException.ThrowIfNull(predecessors);
+        ArgumentNullException.ThrowIfNull(controlPredecessors);
+        ArgumentNullException.ThrowIfNull(controlEdges);
         var copy = nodes.ToArray();
         if (copy.Any(item => item is null || item.Node is null || item.Node.WorkflowId != workflowId) ||
             copy.Select(item => item.Node.NodeId).Distinct(StringComparer.Ordinal).Count() != copy.Length)
@@ -47,10 +51,33 @@ public sealed class ExecutionWorkflowSnapshot
         if (copy.Any(item => !ReferenceEquals(item.Node.Owner, owner)
             || !ReferenceEquals(item.Node.Directory, directory)))
             throw new ArgumentException("执行图节点不属于同一方案运行 owner 或目录代次。", nameof(nodes));
+        if (controlPredecessors.Count != ids.Count || controlPredecessors.Keys.Any(id => !ids.Contains(id)))
+            throw new ArgumentException("控制连线与节点身份不一致。", nameof(controlPredecessors));
+        var controls = new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.Ordinal);
+        foreach (var id in ids)
+        {
+            if (!controlPredecessors.TryGetValue(id, out var sources) || sources is null)
+                throw new ArgumentException("控制连线缺少节点。", nameof(controlPredecessors));
+            var unique = sources.ToHashSet(StringComparer.Ordinal);
+            if (unique.Count != sources.Count || unique.Any(source => !edges[id].Contains(source)))
+                throw new ArgumentException("控制连线不是本次执行依赖的子集。", nameof(controlPredecessors));
+            controls.Add(id, Array.AsReadOnly(unique.ToArray()));
+        }
+        var frozenEdges = controlEdges.ToArray();
+        if (frozenEdges.Any(edge => edge is null || string.IsNullOrWhiteSpace(edge.Id)
+            || !ids.Contains(edge.SourceNodeId) || !ids.Contains(edge.TargetNodeId))
+            || frozenEdges.Select(edge => edge.Id).Distinct(StringComparer.Ordinal).Count() != frozenEdges.Length)
+            throw new ArgumentException("控制连线身份无效或不唯一。", nameof(controlEdges));
+        foreach (var id in ids)
+            if (!frozenEdges.Where(edge => edge.TargetNodeId == id).Select(edge => edge.SourceNodeId)
+                .ToHashSet(StringComparer.Ordinal).SetEquals(controls[id]))
+                throw new ArgumentException("控制连线与控制前驱不一致。", nameof(controlEdges));
         WorkflowId = workflowId;
         DocumentRevision = documentRevision;
         Nodes = Array.AsReadOnly(copy);
         Predecessors = new ReadOnlyDictionary<string, IReadOnlyCollection<string>>(edges);
+        ControlPredecessors = new ReadOnlyDictionary<string, IReadOnlyCollection<string>>(controls);
+        ControlEdges = Array.AsReadOnly(frozenEdges);
         Directory = directory;
         Owner = owner;
     }
@@ -59,9 +86,12 @@ public sealed class ExecutionWorkflowSnapshot
     public long DocumentRevision { get; }
     public IReadOnlyList<ExecutionWorkflowNode> Nodes { get; }
     public IReadOnlyDictionary<string, IReadOnlyCollection<string>> Predecessors { get; }
+    public IReadOnlyDictionary<string, IReadOnlyCollection<string>> ControlPredecessors { get; }
+    public IReadOnlyList<ExecutionControlEdge> ControlEdges { get; }
     internal RuntimeDirectorySnapshot Directory { get; }
     internal ToolExecutionOwner Owner { get; }
 }
 
 /// <summary>The execution snapshot and enabled state of the same captured node.</summary>
 public sealed record ExecutionWorkflowNode(ExecutionNodeSnapshot Node, bool IsEnabled);
+public sealed record ExecutionControlEdge(string Id, string SourceNodeId, string TargetNodeId);

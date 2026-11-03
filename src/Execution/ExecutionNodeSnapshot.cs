@@ -12,7 +12,8 @@ public sealed class ExecutionNodeSnapshot
         IToolDefinition definition, RuntimeDirectorySnapshot directory, ToolSchema schema, ToolSchema settingsSchema,
         ToolSchema displaySchema, IReadOnlyDictionary<string, ParameterReferenceBehavior> referenceBehaviors,
         IReadOnlyDictionary<string, string> bindingNames, IReadOnlySet<string> activeInputs,
-        ToolHostDeclarationSnapshot hostDeclarations, ToolExecutionOwner owner)
+        ToolHostDeclarationSnapshot hostDeclarations, IReadOnlyList<ManualReferenceSource> manualReferenceSources,
+        ToolExecutionOwner owner)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(workflowId); ArgumentException.ThrowIfNullOrWhiteSpace(nodeId);
         ArgumentNullException.ThrowIfNull(configuration); ArgumentNullException.ThrowIfNull(definition);
@@ -21,12 +22,18 @@ public sealed class ExecutionNodeSnapshot
             throw new InvalidOperationException("执行快照的工具、作用域或准入目录不一致。");
         WorkflowId = workflowId; NodeId = nodeId; Configuration = configuration; Definition = definition;
         Directory = directory; Schema = schema; SettingsSchema = settingsSchema; DisplaySchema = displaySchema;
+        var capabilities = definition.Capabilities() ?? throw new InvalidOperationException("工具缺少运行资源声明。");
+        Capabilities = new ToolCapabilities(Array.AsReadOnly((capabilities.ResourceKeys
+            ?? throw new InvalidOperationException("工具运行资源键缺失。")).ToArray()));
         ReferenceBehaviors = new ReadOnlyDictionary<string, ParameterReferenceBehavior>(
             new Dictionary<string, ParameterReferenceBehavior>(referenceBehaviors, StringComparer.Ordinal));
         BindingNames = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>(bindingNames, StringComparer.Ordinal));
         ActiveInputs = System.Collections.Frozen.FrozenSet.ToFrozenSet(activeInputs, StringComparer.Ordinal);
         HostDeclarations = new ToolHostDeclarationSnapshot(hostDeclarations.HostInputs,
             Array.AsReadOnly(hostDeclarations.ResourceFields.ToArray()), hostDeclarations.Fingerprint);
+        ArgumentNullException.ThrowIfNull(manualReferenceSources);
+        ManualReferenceSources = Array.AsReadOnly(manualReferenceSources.Select(source =>
+            new ManualReferenceSource(source.PortId, Array.AsReadOnly(source.MemberPath.ToArray()))).ToArray());
         Owner = owner;
     }
 
@@ -44,10 +51,12 @@ public sealed class ExecutionNodeSnapshot
     public ToolSchema Schema { get; }
     public ToolSchema SettingsSchema { get; }
     public ToolSchema DisplaySchema { get; }
+    public ToolCapabilities Capabilities { get; }
     public IReadOnlyDictionary<string, ParameterReferenceBehavior> ReferenceBehaviors { get; }
     public IReadOnlyDictionary<string, string> BindingNames { get; }
     public IReadOnlySet<string> ActiveInputs { get; }
     public ToolHostDeclarationSnapshot HostDeclarations { get; }
+    public IReadOnlyList<ManualReferenceSource> ManualReferenceSources { get; }
     public Guid DocumentOwnerId => Owner.Id;
     internal IToolDefinition Definition { get; }
     internal RuntimeDirectorySnapshot Directory { get; }

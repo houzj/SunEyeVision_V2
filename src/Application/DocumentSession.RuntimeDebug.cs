@@ -121,31 +121,49 @@ public sealed partial class DocumentSession
                     var display = AcquirePublishedResult(flow.Id, node.Node.Id);
                     if (display is not null) displayReaders.Add(display);
                 }
+            var debugValidityToken = (debugCancellation ?? throw new InvalidOperationException("调试取消域缺失。")).Token;
+            // Called only under _gate. It checks immutable graph and actual published-reader identities;
+            // it never acquires an execution-owner lock or invokes plugin declaration code.
+            bool CurrentUnderGate(bool accepting = false)
+            {
+                if (accepting && (_notifying || _admitting || _preparing)) return false;
+                if (_closed || _closing || _owner.IsRetired || !_directory.IsActive || debugValidityToken.IsCancellationRequested ||
+                    Document.Id != _documentId || !draft.IsCapturedCurrent(token) ||
+                    flows.Length != Document.Workflows.Count || flows.Where((flow, index) => !ReferenceEquals(flow, Document.Workflows[index])).Any() ||
+                    !states.All(pair => pair.Value.MatchesCurrent(pair.Key))) return false;
+                foreach (var reader in readers.Concat(displayReaders))
+                {
+                    var snapshot = reader.Snapshot;
+                    if (snapshot.SourceWorkflowId is not { } flowId ||
+                        !_publishedRuntimeResults.TryGetValue(new ScopedNodeIdentity(flowId, snapshot.Identity.NodeId), out var current) ||
+                        !ReferenceEquals(snapshot, current.Snapshot)) return false;
+                }
+                lock (GlobalVariable.ValueGate)
+                {
+                    var actual = Document.GlobalVariables.ToArray();
+                    if (actual.Length != actualVariables.Length || actual.Where((value, index) => !ReferenceEquals(value, actualVariables[index])).Any()) return false;
+                    var current = GlobalVariable.CaptureDefinitions(actual).ToArray();
+                    if (current.Length != definitions.Length || current.Where((value, index) => value.Id != definitions[index].Id ||
+                        value.ValueRevision != definitions[index].ValueRevision || VariableConfigurationSignature(value) != VariableConfigurationSignature(definitions[index])).Any()) return false;
+                }
+                return true;
+            }
             bool Current()
             {
                 if (!draft.IsCapturedCurrent(token) || _owner.IsRetired || !_directory.IsActive ||
                     readers.Concat(displayReaders).Any(reader => reader.Snapshot.ExecutionIdentity is not { IsDomainCurrent: true })) return false;
+                lock (_gate) return CurrentUnderGate();
+            }
+            void AcceptPrivateValues(IReadOnlyDictionary<string, object?> values)
+            {
+                var prepared = draft.PreparePrivateParameterValues(values, token);
+                if (!Current()) throw new InvalidOperationException("调试参数准备期间来源已变化。");
                 lock (_gate)
                 {
-                    if (_closed || _closing || Document.Id != _documentId || !draft.IsCapturedCurrent(token) ||
-                        flows.Length != Document.Workflows.Count || flows.Where((flow, index) => !ReferenceEquals(flow, Document.Workflows[index])).Any() ||
-                        !states.All(pair => pair.Value.MatchesCurrent(pair.Key))) return false;
-                    foreach (var reader in readers.Concat(displayReaders))
-                    {
-                        var snapshot = reader.Snapshot;
-                        if (snapshot.SourceWorkflowId is not { } flowId ||
-                            !_publishedRuntimeResults.TryGetValue(new ScopedNodeIdentity(flowId, snapshot.Identity.NodeId), out var current) ||
-                            !ReferenceEquals(snapshot, current.Snapshot)) return false;
-                    }
-                    lock (GlobalVariable.ValueGate)
-                    {
-                        var actual = Document.GlobalVariables.ToArray();
-                        if (actual.Length != actualVariables.Length || actual.Where((value, index) => !ReferenceEquals(value, actualVariables[index])).Any()) return false;
-                        var current = GlobalVariable.CaptureDefinitions(actual).ToArray();
-                        if (current.Length != definitions.Length || current.Where((value, index) => value.Id != definitions[index].Id ||
-                            value.ValueRevision != definitions[index].ValueRevision || VariableConfigurationSignature(value) != VariableConfigurationSignature(definitions[index])).Any()) return false;
-                    }
-                    return true;
+                    // 本方合同：此锁内最终来源、版本和取消检查通过即为接纳线性化点。
+                    // 此前取消拒绝；此后并发取消不回滚已安装的纯候选。
+                    if (!CurrentUnderGate(accepting: true)) throw new InvalidOperationException("调试参数安装前来源已变化或会话正在通知。");
+                    draft.InstallPreparedPrivateValues(prepared);
                 }
             }
             if (!Current()) throw new InvalidOperationException("调试来源、草稿或结果在捕获期间已变化。");
@@ -155,7 +173,7 @@ public sealed partial class DocumentSession
             var invocation = ExecutionDebugInvocation.Capture(workflow, target, debugOwner, readers, displayReaders,
                 snapshots.Values.ToArray(), producers, variables, hostInput, null, null, Current, log, (debugCancellation ?? throw new InvalidOperationException("调试取消域缺失。")).Token, previewInputs);
             variables.Dispose(); variables = null;
-            var wrapper = new DocumentDebugInvocation(draft, token, invocation, debugOwner, Current, activity, debugCancellation, onReleased);
+            var wrapper = new DocumentDebugInvocation(invocation, debugOwner, Current, AcceptPrivateValues, activity, debugCancellation, onReleased);
             debugCancellation = null;
             createdHost = null;
             activity = null;
@@ -179,18 +197,17 @@ public sealed partial class DocumentSession
 /// <summary>Owns one private debug execution and applies values only on the original draft owner thread.</summary>
 public sealed class DocumentDebugInvocation : IDisposable
 {
-    private readonly NodeConfigurationEditDraft _draft;
-    private readonly NodeDraftDebugToken _token;
     private readonly ExecutionDebugInvocation _invocation;
     private readonly ToolExecutionOwner _owner;
     private readonly Func<bool> _isCurrent;
+    private readonly Action<IReadOnlyDictionary<string, object?>> _acceptPrivateValues;
     private int _completed, _accepted, _disposed;
     private IDisposable? _activity;
     private CancellationTokenSource? _cancellation;
     private Action? _onReleased;
-    internal DocumentDebugInvocation(NodeConfigurationEditDraft draft, NodeDraftDebugToken token,
-        ExecutionDebugInvocation invocation, ToolExecutionOwner owner, Func<bool> isCurrent, IDisposable activity, CancellationTokenSource cancellation, Action onReleased)
-    { _draft = draft; _token = token; _invocation = invocation; _owner = owner; _isCurrent = isCurrent; _activity = activity; _cancellation = cancellation; _onReleased = onReleased; }
+    internal DocumentDebugInvocation(ExecutionDebugInvocation invocation, ToolExecutionOwner owner, Func<bool> isCurrent,
+        Action<IReadOnlyDictionary<string, object?>> acceptPrivateValues, IDisposable activity, CancellationTokenSource cancellation, Action onReleased)
+    { _invocation = invocation; _owner = owner; _isCurrent = isCurrent; _acceptPrivateValues = acceptPrivateValues; _activity = activity; _cancellation = cancellation; _onReleased = onReleased; }
     public async Task<DeclaredOutputSnapshot> ExecuteAsync()
     {
         var result = await _invocation.ExecuteAsync().ConfigureAwait(false);
@@ -203,7 +220,7 @@ public sealed class DocumentDebugInvocation : IDisposable
     {
         if (Volatile.Read(ref _disposed) != 0 || _owner.IsRetired || Volatile.Read(ref _completed) == 0 || Volatile.Read(ref _accepted) != 0 || !_isCurrent())
             throw new InvalidOperationException("调试结果未成功完成、已接纳或来源已失效。");
-        _draft.AcceptPrivateParameterValues(_invocation.AcceptedParameters, _token);
+        _acceptPrivateValues(_invocation.AcceptedParameters);
         Interlocked.Exchange(ref _accepted, 1);
     }
     public void Dispose()

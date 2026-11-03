@@ -72,21 +72,29 @@ public sealed class NodeConfigurationEditDraft
         _candidate = next;
     }
 
-    /// <summary>Owner-thread acceptance of one captured debug round, never a partial value update.</summary>
-    internal void AcceptPrivateParameterValues(IReadOnlyDictionary<string, object?> values, NodeDraftDebugToken token)
+    // Preparation may call admitted tool validation; it must occur outside the Session gate.
+    internal PreparedPrivateValues PreparePrivateParameterValues(IReadOnlyDictionary<string, object?> values, NodeDraftDebugToken token)
     {
         ArgumentNullException.ThrowIfNull(values); ArgumentNullException.ThrowIfNull(token);
-        EnsureCurrent();
+        EnsureOwner();
         if (!IsCapturedCurrent(token)) throw new InvalidOperationException("调试回执的草稿版本已失效。");
-        var candidate = _candidate;
+        var previous = _candidate; var candidate = previous;
         foreach (var pair in values) candidate = candidate.WithAcceptedParameterValue(pair.Key, pair.Value);
-        EnsureCurrent();
-        if (!IsCapturedCurrent(token)) throw new InvalidOperationException("调试接纳期间草稿版本已变化。");
-        if (values.Count == 0) return;
-        Interlocked.Exchange(ref _revision, checked(_revision + 1));
-        _candidate = candidate;
+        if (!IsCapturedCurrent(token) || !ReferenceEquals(previous, _candidate))
+            throw new InvalidOperationException("调试准备期间草稿版本已变化。");
+        return new PreparedPrivateValues(this, token, previous, candidate, values.Count != 0);
     }
 
+    // Called only inside the owning Session gate after source identities are revalidated.
+    internal void InstallPreparedPrivateValues(PreparedPrivateValues prepared)
+    {
+        EnsureOwner();
+        if (!ReferenceEquals(prepared.Draft, this) || !IsCapturedCurrent(prepared.Token) || !ReferenceEquals(_candidate, prepared.Previous))
+            throw new InvalidOperationException("调试安装期间草稿版本已变化。");
+        if (!prepared.HasValues) return;
+        Interlocked.Exchange(ref _revision, checked(_revision + 1));
+        _candidate = prepared.Candidate;
+    }
     // Debug workers may only inspect this immutable stamp; they never access the
     // owner-thread draft or document members. The Session separately validates scope.
     internal NodeDraftDebugToken CaptureDebugToken()
@@ -134,3 +142,5 @@ internal sealed record NodeDraftDebugToken(NodeConfigurationEditDraft Draft, lon
 
 internal sealed record NodeConfigurationEditProposal(DocumentSession Session, AdmittedNodeView Opening,
     AdmittedToolConfiguration Candidate, long DraftRevision);
+
+internal sealed record PreparedPrivateValues(NodeConfigurationEditDraft Draft, NodeDraftDebugToken Token, AdmittedToolConfiguration Previous, AdmittedToolConfiguration Candidate, bool HasValues);

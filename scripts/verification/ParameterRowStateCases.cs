@@ -84,7 +84,10 @@ internal static class ParameterRowStateCases
   input.Text="invalid-number";Pump();
   Check(access.HasInvalidText,"无效数字文本不再校验");Expect(NativeParameterItemState.WriteError,Colors.Red,"无效文本必须保留红框");
   input.Text="9";Pump();Expect(NativeParameterItemState.ReadError,Colors.Yellow,"原始文本修复不能抹掉独立来源错误");
-  Check(access.TryCommitPending(),"合法文本不能提交");Pump();
+  // A paired transaction may correctly reject while an independent read failure
+  // is still active. Recover that source before asking the owner to accept raw.
+  Call(state,"SetSourceError","");Expect(NativeParameterItemState.Normal,Colors.Transparent,"独立来源恢复后仍有错误框");
+  Check(access.TryCommitPending(),"合法文本不能提交: "+access.Error);Pump();
   Expect(NativeParameterItemState.Normal,Colors.Transparent,"合法提交后错误框未恢复");
   if(paired)
   {

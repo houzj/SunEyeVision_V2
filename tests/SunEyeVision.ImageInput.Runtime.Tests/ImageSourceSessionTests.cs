@@ -3,13 +3,13 @@ using NSubstitute;
 using SunEyeVision.Application;
 using SunEyeVision.Domain.Persistence;
 using SunEyeVision.Domain.Workflows;
-using SunEyeVision.HalAdapter;
+
 using SunEyeVision.Infrastructure.Persistence;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.Infrastructure.ImageSources;
+using SunEyeVision.Infrastructure.ImageSources;
 using SunEyeVision.Plugin.Runtime;
-using SunEyeVision.Plugin.SDK.Devices.Camera;
-using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using SunEyeVision.Plugin.Contracts.Acquisition;
+
 using Xunit;
 namespace SunEyeVision.ImageInput.Runtime.Tests;
 [Collection("正式WPF owner")]
@@ -77,36 +77,48 @@ public sealed class ImageSourceSessionTests
   using(var bypass=f.Session.CaptureRunBatch(new[]{f.Flow.Id})){using var rejected=RuntimeHost.Wait(Task.Run(()=>bypass.RunAsync(_=>{})));Assert.False(rejected.Workflows[f.Flow.Id].Success);f.Session.DrainRuntimeChanges();}
   f.Edit(("input.local-address",new UnsetSetting()),("input.sequence",new UnsetSetting()));using var good=f.Formal();Assert.True(good.Snapshot.IsSuccess);Assert.Equal(new byte[]{50,50},RuntimeFixture.Image(good).CopyPixels());
  });
- [Fact] public void Camera_debug_uses_frozen_device_timeout_metadata_and_releases_acquired_frame_before_returning()=>RuntimeHost.Run(()=>
+ [Fact] public void Camera_debug_uses_real_run_identity_and_disposes_owned_frame()=>RuntimeHost.Run(()=>
  {
-  using var frame=new TrackedFrame();var service=Substitute.For<ICameraCaptureService>();CameraCaptureRequest? captured=null;service.CaptureAsync(Arg.Any<CameraCaptureRequest>(),Arg.Any<CancellationToken>()).Returns(call=>{captured=call.Arg<CameraCaptureRequest>();return Task.FromResult(frame.Frame);});using var f=new RuntimeFixture(service);f.Camera();using var call=f.Capture(f.Scope());using var result=f.Execute(call);Assert.True(result.IsSuccess,result.ErrorMessage);using var reader=result.AcquireReader();
-  Assert.Equal("camera",captured!.CameraRef.Value);Assert.Equal(TimeSpan.FromMilliseconds(1234),captured.Timeout);Assert.Equal(CameraTriggerMode.Continuous,captured.TriggerMode);Assert.Equal(result.Identity.RequestId.ToString("N"),captured.DiagnosticCorrelationId);Assert.True(frame.Frame.IsDisposed);Assert.Equal(1,frame.ImageDisposals);Assert.Equal("42",reader.Values!.Get<string>("output.device-frame-id"));Assert.Equal(new byte[]{30,80},RuntimeFixture.Image(reader).CopyPixels());
+  using var frame=new TrackedFrame();var service=Substitute.For<ICameraFrameProvider>();CameraFrameRequest? captured=null;
+  service.CaptureAsync(Arg.Any<CameraFrameRequest>(),Arg.Any<CancellationToken>()).Returns(call=>{captured=call.Arg<CameraFrameRequest>();return new ValueTask<ICameraFrameLease>(frame.Initialize(captured));});
+  using var f=new RuntimeFixture(service);f.Camera();using var call=f.Capture(f.Scope());using var result=f.Execute(call);Assert.True(result.IsSuccess,result.ErrorMessage);using var reader=result.AcquireReader();
+  Assert.Equal("camera",captured!.DeviceId);Assert.Equal(TimeSpan.FromMilliseconds(1234),captured.Timeout);Assert.Equal(CameraRequestPurpose.Workflow,captured.Purpose);Assert.Equal(result.Identity,captured.ProducerRun);
+  Assert.True(frame.IsDisposed);Assert.Equal(1,frame.Disposals);Assert.Equal("42",reader.Values!.Get<string>("output.device-frame-id"));Assert.Equal(new byte[]{30,80},RuntimeFixture.Image(reader).CopyPixels());
  });
- [Theory][InlineData("wrong-device")][InlineData("untyped")][InlineData("missing-device")][InlineData("service-failure")] public void Camera_debug_rejects_invalid_capture_without_success_publication_or_resource_leaks(string failure)=>RuntimeHost.Run(()=>
+ [Theory][InlineData("wrong-device")][InlineData("wrong-run")][InlineData("missing-device")][InlineData("service-failure")] public void Camera_debug_rejects_invalid_capture_without_publication_or_leak(string failure)=>RuntimeHost.Run(()=>
  {
-  using var frame=new TrackedFrame(failure=="wrong-device"?"other":"camera",failure!="untyped");var service=Substitute.For<ICameraCaptureService>();int captures=0;service.CaptureAsync(Arg.Any<CameraCaptureRequest>(),Arg.Any<CancellationToken>()).Returns(_=>{captures++;return failure=="service-failure"?Task.FromException<CameraFrame>(new IOException("采集失败")):Task.FromResult(frame.Frame);});using var f=new RuntimeFixture(service);f.Camera(failure=="missing-device"?"":"camera");
-  Assert.ThrowsAny<Exception>(()=>{using var call=f.Capture(f.Scope());using var result=f.Execute(call);if(!result.IsSuccess)throw new InvalidOperationException(result.ErrorMessage);});Assert.Equal(failure=="missing-device"?0:1,captures);Assert.Equal(failure is "wrong-device" or "untyped"?1:0,frame.ImageDisposals);Assert.Null(f.Session.AcquirePublishedResult(f.Flow.Id,f.Node.Id));
+  using var frame=new TrackedFrame(failure=="wrong-device"?"other":"camera",failure=="wrong-run");var service=Substitute.For<ICameraFrameProvider>();int captures=0;
+  service.CaptureAsync(Arg.Any<CameraFrameRequest>(),Arg.Any<CancellationToken>()).Returns(call=>{captures++;if(failure=="service-failure")return ValueTask.FromException<ICameraFrameLease>(new IOException("采集失败"));return new ValueTask<ICameraFrameLease>(frame.Initialize(call.Arg<CameraFrameRequest>()));});
+  using var f=new RuntimeFixture(service);f.Camera(failure=="missing-device"?"":"camera");
+  Assert.ThrowsAny<Exception>(()=>{using var call=f.Capture(f.Scope());using var result=f.Execute(call);if(!result.IsSuccess)throw new InvalidOperationException(result.ErrorMessage);});
+  Assert.Equal(failure=="missing-device"?0:1,captures);Assert.Equal(failure is "wrong-device" or "wrong-run"?1:0,frame.Disposals);Assert.Null(f.Session.AcquirePublishedResult(f.Flow.Id,f.Node.Id));
  });
- [Fact] public void Camera_cancel_before_debug_capture_does_not_admit_or_call_the_service()=>RuntimeHost.Run(()=>
+ [Fact] public void Camera_cancel_before_debug_capture_does_not_call_provider()=>RuntimeHost.Run(()=>
  {
-  var service=Substitute.For<ICameraCaptureService>();using var f=new RuntimeFixture(service);f.Camera();using var cancellation=new CancellationTokenSource();cancellation.Cancel();Assert.ThrowsAny<Exception>(()=>{using var call=f.Capture(f.Scope(),cancellation:cancellation.Token);using var result=f.Execute(call);if(!result.IsSuccess)throw new InvalidOperationException(result.ErrorMessage);});Assert.Empty(service.ReceivedCalls());Assert.Null(f.Session.AcquirePublishedResult(f.Flow.Id,f.Node.Id));
+  var service=Substitute.For<ICameraFrameProvider>();using var f=new RuntimeFixture(service);f.Camera();using var cancellation=new CancellationTokenSource();cancellation.Cancel();
+  Assert.ThrowsAny<Exception>(()=>{using var call=f.Capture(f.Scope(),cancellation:cancellation.Token);using var result=f.Execute(call);if(!result.IsSuccess)throw new InvalidOperationException(result.ErrorMessage);});Assert.Empty(service.ReceivedCalls());Assert.Null(f.Session.AcquirePublishedResult(f.Flow.Id,f.Node.Id));
  });
- [Theory][InlineData(false)][InlineData(true)] public void Camera_debug_retains_original_failure_and_frame_cleanup_failure(bool cancelled)=>RuntimeHost.Run(()=>
+ [Theory][InlineData(false)][InlineData(true)] public void Camera_retains_primary_and_cleanup_failure(bool cancelled)=>RuntimeHost.Run(()=>
  {
-  var image=Substitute.For<IVisionImage>();image.When(x=>x.Dispose()).Do(_=>throw new InvalidOperationException("frame-release-failed"));var frame=new CameraFrame(new(cancelled?"camera":"other"),42,DateTimeOffset.UtcNow,image);using var cancellation=new CancellationTokenSource();var service=Substitute.For<ICameraCaptureService>();service.CaptureAsync(Arg.Any<CameraCaptureRequest>(),Arg.Any<CancellationToken>()).Returns(_=>{if(cancelled)cancellation.Cancel();return Task.FromResult(frame);});using var f=new RuntimeFixture(service);f.Camera();using var call=f.Capture(f.Scope(),cancellation:cancellation.Token);
-  var error=Assert.ThrowsAny<Exception>(()=>f.Execute(call));IEnumerable<Exception> errors=error is AggregateException aggregate?aggregate.Flatten().InnerExceptions:new[]{error}.ToList();Assert.Contains(errors,e=>e.Message=="frame-release-failed");Assert.Contains(errors,e=>cancelled?e is OperationCanceledException:e.Message.Contains("设备身份不匹配"));Assert.True(frame.IsDisposed);image.Received(1).Dispose();
+  using var frame=new TrackedFrame(cancelled?"camera":"other",throwOnDispose:true);using var cancellation=new CancellationTokenSource();var service=Substitute.For<ICameraFrameProvider>();
+  service.CaptureAsync(Arg.Any<CameraFrameRequest>(),Arg.Any<CancellationToken>()).Returns(call=>{var item=frame.Initialize(call.Arg<CameraFrameRequest>());if(cancelled)cancellation.Cancel();return new ValueTask<ICameraFrameLease>(item);});
+  using var f=new RuntimeFixture(service);f.Camera();using var invocation=f.Capture(f.Scope(),cancellation:cancellation.Token);
+  var error=Assert.ThrowsAny<Exception>(()=>f.Execute(invocation));IEnumerable<Exception> errors=error is AggregateException aggregate?aggregate.Flatten().InnerExceptions:new[]{error};
+  Assert.Contains(errors,e=>e.Message=="frame-release-failed");Assert.Contains(errors,e=>cancelled?e is OperationCanceledException:e.Message.Contains("设备或本次运行身份不匹配"));Assert.True(frame.IsDisposed);Assert.Equal(1,frame.Disposals);
  });
- [Fact] public void Direct_formal_borrowed_camera_frame_remains_host_owned_after_run_disposal()=>RuntimeHost.Run(()=>
+ [Fact] public void Formal_camera_result_reader_survives_owned_input_release()=>RuntimeHost.Run(()=>
  {
-  using var frame=new TrackedFrame();var service=Substitute.For<ICameraCaptureService>();using var f=new RuntimeFixture(service);f.Camera();var factory=new DelegateFactory(_=>new ImageSourceHostInputPreparer(null,7,service,frame.Frame));using(var reader=f.Formal(factory)){Assert.True(reader.Snapshot.IsSuccess,reader.Snapshot.ErrorMessage);Assert.Equal(new byte[]{30,80},RuntimeFixture.Image(reader).CopyPixels());Assert.False(frame.Frame.IsDisposed);}Assert.False(frame.Frame.IsDisposed);Assert.Empty(service.ReceivedCalls());frame.Dispose();Assert.Equal(1,frame.ImageDisposals);
+  using var frame=new TrackedFrame();var service=Substitute.For<ICameraFrameProvider>();service.CaptureAsync(Arg.Any<CameraFrameRequest>(),Arg.Any<CancellationToken>()).Returns(call=>new ValueTask<ICameraFrameLease>(frame.Initialize(call.Arg<CameraFrameRequest>())));
+  using var f=new RuntimeFixture(service);f.Camera();using var reader=f.Formal();Assert.True(reader.Snapshot.IsSuccess,reader.Snapshot.ErrorMessage);Assert.True(frame.IsDisposed);Assert.Equal(new byte[]{30,80},RuntimeFixture.Image(reader).CopyPixels());
  });
- [Fact] public void Camera_debug_cancellation_disposes_late_frame_and_inflight_close_waits_for_drain()=>RuntimeHost.Run(()=>
+ [Fact] public void Camera_debug_cancellation_disposes_late_frame_and_close_waits_for_drain()=>RuntimeHost.Run(()=>
  {
-  using var frame=new TrackedFrame();var service=Substitute.For<ICameraCaptureService>();var entered=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);var late=new TaskCompletionSource<CameraFrame>(TaskCreationOptions.RunContinuationsAsynchronously);service.CaptureAsync(Arg.Any<CameraCaptureRequest>(),Arg.Any<CancellationToken>()).Returns(_=>{entered.TrySetResult();return late.Task;});using var f=new RuntimeFixture(service);f.Camera();var scope=f.Scope();using var call=f.Capture(scope);var task=Task.Run(call.ExecuteAsync);RuntimeHost.Wait(entered.Task);
-  try{Assert.Throws<InvalidOperationException>(call.Dispose);Assert.Throws<InvalidOperationException>(scope.Dispose);Assert.ThrowsAny<Exception>(()=>RuntimeHost.Wait(call.ExecuteAsync()));call.Cancel();}finally{late.TrySetResult(frame.Frame);}
-  Assert.ThrowsAny<OperationCanceledException>(()=>RuntimeHost.Wait(task));Assert.True(frame.Frame.IsDisposed);Assert.Equal(1,frame.ImageDisposals);call.Dispose();scope.Dispose();Assert.Null(f.Session.AcquirePublishedResult(f.Flow.Id,f.Node.Id));
- });
- [Fact] public void Debug_snapshot_is_single_use_and_retained_output_readers_survive_result_close()=>RuntimeHost.Run(()=>
+  using var frame=new TrackedFrame();var service=Substitute.For<ICameraFrameProvider>();var entered=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);var late=new TaskCompletionSource<ICameraFrameLease>(TaskCreationOptions.RunContinuationsAsynchronously);CameraFrameRequest? captured=null;
+  service.CaptureAsync(Arg.Any<CameraFrameRequest>(),Arg.Any<CancellationToken>()).Returns(call=>{captured=call.Arg<CameraFrameRequest>();entered.TrySetResult();return new ValueTask<ICameraFrameLease>(late.Task);});
+  using var f=new RuntimeFixture(service);f.Camera();var scope=f.Scope();using var call=f.Capture(scope);var task=Task.Run(call.ExecuteAsync);RuntimeHost.Wait(entered.Task);
+  try{Assert.Throws<InvalidOperationException>(call.Dispose);Assert.Throws<InvalidOperationException>(scope.Dispose);Assert.ThrowsAny<Exception>(()=>RuntimeHost.Wait(call.ExecuteAsync()));call.Cancel();}finally{late.TrySetResult(frame.Initialize(captured!));}
+  Assert.ThrowsAny<OperationCanceledException>(()=>RuntimeHost.Wait(task));Assert.True(frame.IsDisposed);Assert.Equal(1,frame.Disposals);call.Dispose();scope.Dispose();Assert.Null(f.Session.AcquirePublishedResult(f.Flow.Id,f.Node.Id));
+ }); [Fact] public void Debug_snapshot_is_single_use_and_retained_output_readers_survive_result_close()=>RuntimeHost.Run(()=>
  {
   using var f=new RuntimeFixture();f.Paths(f.Write("a.pgm",60));var scope=f.Scope();var abandoned=f.Capture(scope);abandoned.Dispose();abandoned.Dispose();Assert.ThrowsAny<Exception>(()=>f.Execute(abandoned));using var call=f.Capture(scope);using var result=f.Execute(call);var reader=result.AcquireReader();var image=RuntimeFixture.Image(reader);using var pixels=image.AcquirePixels();using var domain=pixels.AcquireDomainReader();var expected=domain.ReadRuns(0,4096).ToArray();reader.Dispose();result.Dispose();Assert.Throws<ObjectDisposedException>(()=>image.Frame);Assert.Equal(new byte[]{60,60},pixels.GetRow(0).ToArray());pixels.Dispose();Assert.Throws<ObjectDisposedException>(()=>pixels.GetRow(0).ToArray());Assert.Equal(expected,domain.ReadRuns(0,4096).ToArray());domain.Dispose();Assert.Throws<ObjectDisposedException>(()=>domain.SourceFrame);Assert.ThrowsAny<Exception>(()=>f.Execute(call));call.Dispose();
  });
@@ -119,10 +131,18 @@ public sealed class ImageSourceSessionTests
   public IHostInputPreparer? Create(HostInputFactoryContext context)=>new Block(actual.Create(context)!,this);public void Dispose()=>Release.TrySetResult();
   private sealed class Block(IHostInputPreparer actual,BlockingFactory owner):IHostInputPreparer{public string CapabilityId=>actual.CapabilityId;public int CapabilityVersion=>actual.CapabilityVersion;public IReadOnlyList<string> Services=>actual.Services;public async ValueTask<IPreparedHostInputs> PrepareAsync(HostInputPreparationContext context){owner.Entered.TrySetResult();await owner.Release.Task;return await actual.PrepareAsync(context);}public void Dispose()=>actual.Dispose();}
  }
- private sealed class TrackedFrame:IDisposable
+ private sealed class TrackedFrame(string device="camera",bool wrongRun=false,bool throwOnDispose=false):ICameraFrameLease,IDisposable
  {
-  private readonly HalImage? _native;public int ImageDisposals{get;private set;}public CameraFrame Frame{get;}
-  public TrackedFrame(string device="camera",bool typed=true){IVisionImage image;if(typed){_native=HalImage.CreateFromBytes(new byte[]{30,80},2,1,1);image=Substitute.For<IVisionImage,ITypedImageSnapshotSource>();((ITypedImageSnapshotSource)image).CaptureSnapshot(Arg.Any<ImageFrameAddress>()).Returns(call=>((ITypedImageSnapshotSource)_native).CaptureSnapshot(call.Arg<ImageFrameAddress>()));}else image=Substitute.For<IVisionImage>();image.When(x=>x.Dispose()).Do(_=>{ImageDisposals++;_native?.Dispose();});Frame=new(new(device),42,DateTimeOffset.Parse("2026-10-28T01:02:03+00:00"),image);}
-  public void Dispose()=>Frame.Dispose();
+  private FrozenImageResource? _image;public bool IsDisposed{get;private set;}public int Disposals{get;private set;}
+  public string DeviceId=>device;public long DeviceFrameId=>42;public DateTimeOffset Timestamp=>DateTimeOffset.Parse("2026-10-28T01:02:03+00:00");
+  public IReadOnlyImage Image=>_image??throw new ObjectDisposedException(nameof(TrackedFrame));
+  public ICameraFrameLease Initialize(CameraFrameRequest request)
+  {
+   var identity=wrongRun ? request.ProducerRun!.Value with { RequestId=Guid.NewGuid() } : request.ProducerRun;
+   var address=new ImageFrameAddress(Guid.NewGuid(),"camera:"+device,identity);
+   _image=new FrozenImageResource(new ImageLayout(2,1,2,PixelLayout.Gray8),address,new CoordinateFrame("camera:"+device,CoordinateDomain.Image,CoordinateUnit.Pixel),new byte[]{30,80},new[]{new RegionRun(0,0,1)});return this;
+  }
+  public ValueTask DisposeAsync(){if(IsDisposed)return ValueTask.CompletedTask;IsDisposed=true;Disposals++;_image?.Dispose();_image=null;if(throwOnDispose)throw new InvalidOperationException("frame-release-failed");return ValueTask.CompletedTask;}
+  public void Dispose(){if(!IsDisposed)DisposeAsync().GetAwaiter().GetResult();}
  }
 }

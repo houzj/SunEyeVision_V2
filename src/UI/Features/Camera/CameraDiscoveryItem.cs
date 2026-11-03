@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.SDK.Devices.Camera;
+using SunEyeVision.Plugin.Contracts.Acquisition;
 using SunEyeVision.Plugin.SDK.Models;
 
 namespace SunEyeVision.UI.Features.Camera;

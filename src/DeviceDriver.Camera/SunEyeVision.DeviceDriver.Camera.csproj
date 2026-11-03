@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework><PlatformTarget>x64</PlatformTarget><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings>
+    <MvsSdkRoot Condition="'$(MvsSdkRoot)' == '' and '$(MVS_SDK_ROOT)' != ''">$(MVS_SDK_ROOT)</MvsSdkRoot>
+    <MvsSdkRoot Condition="'$(MvsSdkRoot)' == '' and Exists('D:\Program Files\MVS\Development')">D:\Program Files\MVS\Development</MvsSdkRoot>
+    <DefineConstants Condition="Exists('$(MvsSdkRoot)\DotNet\win64\MvCameraControl.Net.dll')">$(DefineConstants);MVS_SDK_AVAILABLE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup><ProjectReference Include="../Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj" /><ProjectReference Include="../Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" /></ItemGroup>
+  <ItemGroup Condition="Exists('$(MvsSdkRoot)\DotNet\win64\MvCameraControl.Net.dll')"><Reference Include="MvCameraControl.Net"><HintPath>$(MvsSdkRoot)\DotNet\win64\MvCameraControl.Net.dll</HintPath><Private>true</Private></Reference></ItemGroup>
+</Project>

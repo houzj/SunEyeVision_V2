@@ -2,7 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SunEyeVision.DeviceDriver.Cameras.Contracts;
 using SunEyeVision.DeviceDriver.Cameras.Simulation;
-using SunEyeVision.Plugin.SDK.Devices.Camera;
+using SunEyeVision.Plugin.Contracts.Acquisition;
 using Xunit;
 
 namespace SunEyeVision.DeviceDriver.Tests;
@@ -21,16 +21,10 @@ public sealed class CameraRuntimeManagerTests
         var manager = new CameraRuntimeManager(new[] { new SimulatedCameraFactory(options) });
 
         var devices = await manager.DiscoverAsync(new[] { discovery });
-        using var frame = await manager.CaptureAsync(
-            new CameraCaptureRequest
-            {
-                CameraRef = new CameraDeviceRef(options.DeviceId),
-                Timeout = System.TimeSpan.FromSeconds(1)
-            },
-            CancellationToken.None);
+        await using var frame = await manager.CaptureAsync(new CameraFrameRequest(options.DeviceId,CameraRequestPurpose.Preview,null,System.TimeSpan.FromSeconds(1)),CancellationToken.None);
 
         Assert.Single(devices);
-        Assert.Equal(options.DeviceId, frame.CameraRef.Value);
+        Assert.Equal(options.DeviceId, frame.DeviceId);
         Assert.True(frame.Image.Width > 0);
         Assert.True(frame.Image.Height > 0);
 
@@ -84,13 +78,9 @@ public sealed class CameraRuntimeManagerTests
         var cameraRef = new CameraDeviceRef(options.DeviceId);
         await using var session = await manager.OpenAsync(cameraRef, CameraAccessMode.Exclusive);
 
-        using var frame = await manager.CaptureAsync(new CameraCaptureRequest
-        {
-            CameraRef = cameraRef,
-            Timeout = System.TimeSpan.FromSeconds(1)
-        }, CancellationToken.None);
+        await using var frame = await manager.CaptureAsync(new CameraFrameRequest(cameraRef.Value,CameraRequestPurpose.Preview,null,System.TimeSpan.FromSeconds(1)),CancellationToken.None);
 
-        Assert.False(frame.Image.IsEmpty);
+        Assert.True(frame.Image.Width > 0);
         Assert.True(manager.TryGetSession(cameraRef, out var retained));
         Assert.Same(session, retained);
     }

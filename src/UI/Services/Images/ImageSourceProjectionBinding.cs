@@ -4,7 +4,7 @@ using SunEyeVision.Application;
 using SunEyeVision.Application.Editing;
 using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.Infrastructure.ImageSources;
+using SunEyeVision.Infrastructure.ImageSources;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.UI.Services.Images;
 using SunEyeVision.UI.Services;

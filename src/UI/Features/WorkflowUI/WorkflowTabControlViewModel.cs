@@ -43,6 +43,8 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         /// </summary>
         public Func<WorkflowTabViewModel, bool>? StartContinuousExecution { get; set; }
         public Func<WorkflowTabViewModel, bool>? StopContinuousExecution { get; set; }
+          public Func<bool>? StartAllContinuousExecution { get; set; }
+          public Func<bool>? StopAllContinuousExecution { get; set; }
 
         private readonly SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot _directory;
         private SunEyeVision.Application.DocumentSessionManager? _sessionManager;
@@ -194,7 +196,6 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             if (StartContinuousExecution?.Invoke(workflow) == true)
             {
                 _recentStopRequests.Remove(workflow.RootWorkflowId);
-                workflow.IsRunning = true;
                 WorkflowStatusChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -238,10 +239,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         /// </summary>
         public void StartAllWorkflows()
         {
-            foreach (var workflow in Tabs)
-            {
-                StartContinuous(workflow);
-            }
+            StartAllContinuousExecution?.Invoke();
         }
 
         /// <summary>
@@ -249,10 +247,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         /// </summary>
         public void StopAllWorkflows()
         {
-            foreach (var workflow in Tabs)
-            {
-                StopWorkflow(workflow);
-            }
+            StopAllContinuousExecution?.Invoke();
         }
 
         /// <summary>

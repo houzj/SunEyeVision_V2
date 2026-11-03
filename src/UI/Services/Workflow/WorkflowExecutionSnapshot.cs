@@ -15,6 +15,7 @@ public sealed class WorkflowExecutionSnapshot : ViewModelBase
     private DateTime? _startedAt;
     private DateTime? _endedAt;
     private TimeSpan _elapsed;
+    private bool _continuousRound, _hasFlowTiming = true;
 
     public WorkflowExecutionSnapshot(string workflowId, string workflowName)
     {
@@ -40,16 +41,17 @@ public sealed class WorkflowExecutionSnapshot : ViewModelBase
         _ => "尚未运行"
     };
 
-    public string FlowElapsedText=>StartedAt.HasValue?Elapsed.TotalMilliseconds.ToString("N2"):"—";
+    public string FlowElapsedText=>StartedAt.HasValue&&_hasFlowTiming?Elapsed.TotalMilliseconds.ToString("N2"):"—";
     public string StatusBarText => Status switch
     {
         ExecutionStatus.Success => $"{Elapsed.TotalMilliseconds:F2} ms",
-        ExecutionStatus.Running => $"运行中 {Elapsed.TotalMilliseconds:F2} ms",
+        ExecutionStatus.Running => _continuousRound?"运行中…":$"运行中 {Elapsed.TotalMilliseconds:F2} ms",
         _ => StatusText
     };
 
     internal void Begin(string workflowName)
     {
+        _continuousRound=false;_hasFlowTiming=true;
         WorkflowName = workflowName;
         Status = ExecutionStatus.Running;
         StartedAt = DateTime.Now;
@@ -128,6 +130,7 @@ public sealed class WorkflowExecutionSnapshot : ViewModelBase
 
     internal void Complete(ExecutionResult result, Func<string, string> nodeNameResolver)
     {
+        _continuousRound=false;_hasFlowTiming=true;
         CompletedRunCount++;OnPropertyChanged(nameof(CompletedRunCount));
         Status = result.Status;
         EndedAt = DateTime.Now;
@@ -141,14 +144,34 @@ public sealed class WorkflowExecutionSnapshot : ViewModelBase
         Notify();
     }
 
+    internal void PrepareContinuousRound(string name)
+    {
+        WorkflowName=name;_continuousRound=true;_hasFlowTiming=false;
+        Status=ExecutionStatus.NotExecuted;StartedAt=EndedAt=null;Elapsed=TimeSpan.Zero;
+        foreach(var node in Nodes)node.ResetForRun();Notify();
+    }
+    internal void BeginContinuous(string name){Begin(name);_continuousRound=true;_hasFlowTiming=false;Notify();}
+    internal void CompleteContinuous(SunEyeVision.Application.WorkflowRoundSummary summary,Func<string,string> name)
+    {
+        _continuousRound=true;_hasFlowTiming=true;CompletedRunCount++;OnPropertyChanged(nameof(CompletedRunCount));
+        Status=summary.Status;EndedAt=DateTime.Now;StartedAt??=EndedAt;Elapsed=summary.ExecutionTime;
+        foreach(var item in summary.Nodes)
+        {
+            var text=item.Status switch{ExecutionStatus.Success=>"成功",ExecutionStatus.Cancelled=>"已取消",ExecutionStatus.Failed=>"失败",ExecutionStatus.Timeout=>"超时",ExecutionStatus.NotExecuted=>"未执行",_=>item.Status.ToString()};
+            var node=Nodes.FirstOrDefault(node=>node.NodeId==item.NodeId);
+            if(node is null)Nodes.Add(new(item.NodeId,name(item.NodeId),text,item.Duration,item.AlgorithmExecutionTimeMs));
+            else node.Update(name(item.NodeId),text,item.Duration,item.AlgorithmExecutionTimeMs);
+        }
+        Notify();
+    }
     internal void FinishWithoutResult(ExecutionStatus status)
     {
         if(status is not (ExecutionStatus.Cancelled or ExecutionStatus.Failed))throw new ArgumentException("没有结果的运行只能明确记录取消或失败。",nameof(status));
-        Status=status;EndedAt=DateTime.Now;Elapsed=StartedAt is {} started?EndedAt.Value-started:TimeSpan.Zero;Notify();
+        Status=status;EndedAt=DateTime.Now;Elapsed=!_continuousRound&&StartedAt is {} started?EndedAt.Value-started:TimeSpan.Zero;Notify();
     }
     internal void Tick()
     {
-        if (Status == ExecutionStatus.Running && StartedAt.HasValue)
+        if (!_continuousRound && Status == ExecutionStatus.Running && StartedAt.HasValue)
         {
             Elapsed = DateTime.Now - StartedAt.Value;
             OnPropertyChanged(nameof(StatusBarText));

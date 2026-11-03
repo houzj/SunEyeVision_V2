@@ -3,7 +3,7 @@ using System.Collections.Specialized;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.UI.Services.Thumbnail;
-using SunEyeVision.Plugin.Infrastructure.ImageSources;
+using SunEyeVision.Infrastructure.ImageSources;
 
 namespace SunEyeVision.UI.Shared;
 

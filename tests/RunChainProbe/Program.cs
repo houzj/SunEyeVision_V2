@@ -7,8 +7,10 @@ using SunEyeVision.Application.Editing;
 using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Domain.Solutions;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.Infrastructure.ImageSources;
+using SunEyeVision.Infrastructure.ImageSources;
 using SunEyeVision.Plugin.Runtime;
+using SunEyeVision.DeviceDriver.Cameras.Contracts;
+using SunEyeVision.DeviceDriver.Cameras.Simulation;
 
 internal static class Program
 {
@@ -268,6 +270,55 @@ internal static class Program
                 throw new Exception("跨流程生产变量不是实际图像宽度");
         }
         Console.WriteLine("PASS: V4 保存重开、跨流程 producer 与私有参数接纳");
+        var cameraOptions=new SimulatedCameraOptions {Width=8,Height=8,FrameDelay=TimeSpan.Zero};
+        var cameraRuntime=new CameraRuntimeManager(new[]{new SimulatedCameraFactory(cameraOptions)});
+        try
+        {
+            cameraRuntime.RegisterDevices(new SimulatedCameraDiscoveryProvider(cameraOptions).DiscoverAsync(CancellationToken.None).GetAwaiter().GetResult());
+            using var cameraManager=new DocumentSessionManager(directory);
+            var cameraSession=cameraManager.CreateNew("模拟相机运行");var cameraFlow=cameraSession.GetWorkflows().Single();
+            var cameraGraph=cameraSession.PrepareGraphEdit(cameraFlow.Id);
+            var cameraSource=cameraSession.CreateNode(cameraGraph,"ImageLoad",new CanvasPoint(0,0));
+            var cameraBlob=cameraSession.CreateNode(cameraGraph,"BlobAnalysis",new CanvasPoint(200,0));
+            cameraGraph.AddConnection(new ConnectionDefinition("camera-wire",cameraSource.Id,cameraBlob.Id,"output.image","input.image"));
+            cameraSession.CommitGraphEdit(cameraGraph,"连接相机和 Blob");
+            var cameraDraft=cameraSession.Editing.Host.BeginEdit(cameraFlow.Id,cameraSource.Id);
+            cameraDraft.ApplyFields(new Dictionary<string,ParameterSetting>{{"source.kind",new ConstantSetting("camera")},{"camera.device",new ConstantSetting(cameraOptions.DeviceId)}});
+            cameraSession.CommitEdit(DocumentEditProposal.Prepare(cameraSession.Editing.Host,nodes:new[]{cameraDraft}));
+            using var cameraFactory=new ImageSourceHostInputFactory(cameraRuntime);
+            using(var batch=cameraSession.CaptureRunBatch(new[]{cameraFlow.Id},hostFactory:cameraFactory))
+            using(var result=batch.RunAsync(Console.WriteLine).WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult())
+            {
+                if(!result.Workflows[cameraFlow.Id].Success)throw new Exception("模拟相机正式运行失败："+string.Join(";",result.Workflows[cameraFlow.Id].Errors));
+                using var reader=cameraSession.AcquirePublishedResult(cameraFlow.Id,cameraBlob.Id)??throw new Exception("模拟相机 Blob reader 缺失");
+            }
+            var pendingOwner=new System.Collections.Concurrent.ConcurrentQueue<Action>();using var ownerSignal=new AutoResetEvent(false);
+            void PostOwner(Action action){pendingOwner.Enqueue(action);ownerSignal.Set();}
+            using(var continuous=cameraManager.CaptureCurrentContinuousRun(new[]{cameraFlow.Id},cameraFactory,PostOwner))
+            {
+                var completed=0;continuous.RoundCompleted+=_=>{if(++completed==2)continuous.Stop();};
+                var running=continuous.RunAsync(_=>{});var deadline=DateTime.UtcNow+TimeSpan.FromSeconds(30);
+                while(!running.IsCompleted)
+                {
+                    while(pendingOwner.TryDequeue(out var work))work();
+                    if(DateTime.UtcNow>deadline){continuous.Stop();throw new TimeoutException("模拟相机连续运行超时");}
+                    ownerSignal.WaitOne(20);
+                }
+                while(pendingOwner.TryDequeue(out var work))work();
+                var completion=running.GetAwaiter().GetResult();
+                if(completion.Error is not null || completed<2)throw new Exception("模拟相机连续运行失败",completion.Error);
+            }
+            Console.WriteLine("PASS: 模拟相机生产工厂连续两轮与正常停止");
+            using(var editor=cameraSession.OpenDebugSession(cameraFlow.Id,cameraSource))
+            {
+                var draft=cameraSession.Editing.Host.BeginEdit(cameraFlow.Id,cameraSource.Id);
+                using var debug=editor.Capture(draft,null,_=>{},hostFactory:cameraFactory);
+                using var result=debug.ExecuteAsync().WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult();
+                if(!result.IsSuccess)throw new Exception("模拟相机私有调试失败");
+            }
+            Console.WriteLine("PASS: 模拟相机实际工厂、正式 ImageLoad→Blob 与私有调试");
+        }
+        finally { cameraRuntime.DisposeAsync().AsTask().GetAwaiter().GetResult(); }
         File.Delete(imagePath2);
         File.Delete(imagePath);
         return 0;

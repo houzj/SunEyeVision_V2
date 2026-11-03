@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using SunEyeVision.Application;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.Infrastructure.ImageSources;
+using SunEyeVision.Infrastructure.ImageSources;
 using SunEyeVision.UI.Services.Images;
 using SunEyeVision.UI.Services.Workflow;
 namespace SunEyeVision.UI.Shell.Windows;
@@ -83,7 +83,7 @@ public partial class MainWindowViewModel
    {
     foreach(var id in _formalRunningRootIds)GetFormalExecutionSnapshot(id)?.FinishWithoutResult(ExecutionStatus.Cancelled);
     foreach(var tab in WorkflowTabViewModel.Tabs.Where(tab=>_formalRunningRootIds.Contains(tab.RootWorkflowId)))tab.IsRunning=false;
-    _formalRunningRootIds.Clear();_formalActiveBatch=null;NotifyFormalRunState();
+    _formalRunningRootIds.Clear();_formalActiveBatch=null;_singlePaused=false;RefreshRootTabReadiness();NotifyFormalRunState();
    }
   }
  }
@@ -111,19 +111,26 @@ public partial class MainWindowViewModel
   var context=session.CaptureHostInputContext(root.Id,node);if(context is null)return;
   foreach(var receipt in FormalImageInputs.TakeCompletedReads(context))
   {
+   if(_formalContinuousRun is {} continuous)
+   {
+    using var published=session.AcquirePublishedResult(root.Id,node.Id);
+    if(published is null||published.Snapshot.Identity.RunId!=continuous.State.RootRunId||published.Snapshot.Identity.RequestId!=receipt.Read.RequestId)continue;
+   }
    if(!FormalImageInputs.IsReceiptCurrent(context,receipt)||!ReferenceEquals(binding,ActiveImageSourceBinding))continue;
    binding.TryPresentCompletedRead(FormalImageInputs,receipt,binding.Source.EditVersion);
   }
  }
  private async Task StopFormalExecutionAsync(TimeSpan timeout)
  {
-  _formalActiveBatch?.Stop();var task=_formalRunTask;
+  Exception? stopError=null;try{RequestStopFormalExecution();}catch(Exception error){stopError=error;}var task=_formalRunTask;
   if(task is null)return;
   await task.WaitAsync(timeout);
+  if(_formalReleaseError is {} release)throw new InvalidOperationException("正式执行释放失败，方案保持打开。",release);
+  if(stopError is not null)throw stopError;
  }
  private void ReleaseFormalExecution()
  {
-  if(_formalRunTask is {IsCompleted:false})throw new InvalidOperationException("正式运行尚未排空，不能释放输入工厂。");
+  if(_formalRunTask is {IsCompleted:false}||IsRunning)throw new InvalidOperationException("正式运行尚未排空，不能释放输入工厂。");
   _formalImageInputs?.Dispose();_formalImageInputs=null;_formalExecutionSnapshots.Clear();
  }
 }

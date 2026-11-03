@@ -4,8 +4,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SunEyeVision.DeviceDriver.Cameras.Contracts;
-using SunEyeVision.DeviceDriver.Cameras.Hikvision.Mvs;
-using SunEyeVision.Plugin.SDK.Devices.Camera;
+using SunEyeVision.DeviceDriver.Cameras.Industrial;
+using SunEyeVision.Plugin.Contracts.Acquisition;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -26,7 +26,7 @@ public sealed class RealMvsConnectionDiagnosticTests
     [Trait("Category", "RealHardware")]
     public async Task DiscoverAndOpenPersistedHikrobotCamera()
     {
-        var provider = new MvsCameraDiscoveryProvider();
+        var provider = new IndustrialCameraDiscoveryProvider();
         var elapsed = Stopwatch.StartNew();
         _output.WriteLine($"DISCOVERY_BEGIN serial={ExpectedSerial}");
 
@@ -42,10 +42,10 @@ public sealed class RealMvsConnectionDiagnosticTests
             string.Equals(device.SerialNumber, ExpectedSerial, StringComparison.OrdinalIgnoreCase)).ToArray();
         Assert.Single(matching);
         var descriptor = matching[0];
-        Assert.True(string.Equals($"hikvision-mvs:{ExpectedSerial}", descriptor.DeviceId,
+        Assert.True(string.Equals($"industrial-camera:{ExpectedSerial}", descriptor.DeviceId,
             StringComparison.OrdinalIgnoreCase), $"Unexpected DeviceId: {descriptor.DeviceId}");
 
-        var factory = new MvsCameraAdapterFactory(provider);
+        var factory = new IndustrialCameraAdapterFactory(provider);
         Assert.True(factory.CanCreate(descriptor), "MVS factory rejected the discovered camera descriptor.");
         _output.WriteLine($"MATCH_OK elapsedMs={elapsed.ElapsedMilliseconds} id={descriptor.DeviceId}");
 

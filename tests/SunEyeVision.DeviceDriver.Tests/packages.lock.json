@@ -460,6 +460,13 @@
           "System.IO.Ports": "[9.0.0, )"
         }
       },
+      "suneyevision.devicedriver.camera": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )"
+        }
+      },
       "suneyevision.domain": {
         "type": "Project",
         "dependencies": {

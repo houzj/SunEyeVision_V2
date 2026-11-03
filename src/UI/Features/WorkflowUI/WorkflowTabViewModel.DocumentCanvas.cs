@@ -39,7 +39,7 @@ public partial class WorkflowTabViewModel
     private void DocumentCanvasContentChanged(object? sender, EventArgs e)
     {
         if(!ReferenceEquals(sender,_documentCanvas))return;
-        if(_rootDefinition is {} root)SynchronizeRootName(root.Name);RefreshRootReadiness();
+        if(_rootDefinition is {} root)SynchronizeRootName(root.Name);QueueRootReadiness();
         OnPropertyChanged(nameof(WorkflowNodes));OnPropertyChanged(nameof(WorkflowConnections));
         WorkflowContentChanged?.Invoke(this,EventArgs.Empty);
     }

@@ -81,6 +81,17 @@ public partial class ShellTopBarControl
                 trigger.Setters.Add(new Setter(OpacityProperty, 0.45));
                 style.Triggers.Add(trigger);
             }
+            if(entry.Special=="continuous")
+            {
+                var running=new DataTrigger{Binding=new Binding("IsContinuousRunning"),Value=true};
+                running.Setters.Add(new Setter(Image.SourceProperty,ImageSource("/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/WorkspaceControls/resources/toolbarstop_n.png")));
+                style.Triggers.Add(running);
+                var stopping=new MultiDataTrigger();
+                stopping.Conditions.Add(new Condition(new Binding("IsContinuousRunning"),true));
+                stopping.Conditions.Add(new Condition(new Binding("IsEnabled"){RelativeSource=new RelativeSource(RelativeSourceMode.FindAncestor,typeof(Button),1)},false));
+                stopping.Setters.Add(new Setter(Image.SourceProperty,ImageSource("/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/WorkspaceControls/resources/toolbarstop_disable.png")));
+                style.Triggers.Add(stopping);
+            }
             image.Style = style;
             button.Content = image;
         }

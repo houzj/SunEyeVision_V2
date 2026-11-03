@@ -1,7 +1,7 @@
 using System;
 using SunEyeVision.DeviceDriver.Cameras.Contracts;
-using SunEyeVision.DeviceDriver.Cameras.Hikvision.Mvs;
-using SunEyeVision.Plugin.SDK.Devices.Camera;
+using SunEyeVision.DeviceDriver.Cameras.Industrial;
+using SunEyeVision.Plugin.Contracts.Acquisition;
 using Xunit;
 
 namespace SunEyeVision.DeviceDriver.Tests;
@@ -13,7 +13,7 @@ public sealed class MvsCaptureConfigurationParserTests
     [InlineData("7", "Software")]
     public void SoftwareUsesSymbolicRatherThanVendorNumericValue(string raw, string symbolic)
     {
-        var config = MvsCaptureConfigurationParser.Parse(
+        var config = IndustrialCaptureConfigurationParser.Parse(
             EnumNode("AcquisitionMode", "2", ("2", "Continuous")),
             EnumNode("TriggerMode", "1", ("1", "On")),
             EnumNode("TriggerSource", raw, (raw, symbolic)),
@@ -27,7 +27,7 @@ public sealed class MvsCaptureConfigurationParserTests
     [Fact]
     public void SameNumericValueCanMeanExternalLineOnAnotherDevice()
     {
-        var config = MvsCaptureConfigurationParser.Parse(
+        var config = IndustrialCaptureConfigurationParser.Parse(
             EnumNode("AcquisitionMode", "0", ("0", "SingleFrame")),
             EnumNode("TriggerMode", "1", ("1", "On")),
             EnumNode("TriggerSource", "0", ("0", "Line0")));
@@ -41,7 +41,7 @@ public sealed class MvsCaptureConfigurationParserTests
     [Fact]
     public void TriggerOffIgnoresStaleSourceValue()
     {
-        var config = MvsCaptureConfigurationParser.Parse(
+        var config = IndustrialCaptureConfigurationParser.Parse(
             EnumNode("AcquisitionMode", "9", ("9", "Continuous")),
             EnumNode("TriggerMode", "4", ("4", "Off")),
             EnumNode("TriggerSource", "0", ("0", "Software")));
@@ -54,7 +54,7 @@ public sealed class MvsCaptureConfigurationParserTests
     [Fact]
     public void MissingSymbolicDoesNotGuessHardware()
     {
-        var config = MvsCaptureConfigurationParser.Parse(
+        var config = IndustrialCaptureConfigurationParser.Parse(
             EnumNode("AcquisitionMode", "2", ("2", "Continuous")),
             EnumNode("TriggerMode", "1", ("1", "On")),
             EnumNode("TriggerSource", "0", ("0", "0")));
@@ -66,7 +66,7 @@ public sealed class MvsCaptureConfigurationParserTests
     [Fact]
     public void NonFrameTriggerSelectorIsRejected()
     {
-        var config = MvsCaptureConfigurationParser.Parse(
+        var config = IndustrialCaptureConfigurationParser.Parse(
             EnumNode("AcquisitionMode", "2", ("2", "Continuous")),
             EnumNode("TriggerMode", "1", ("1", "On")),
             EnumNode("TriggerSource", "0", ("0", "Software")),

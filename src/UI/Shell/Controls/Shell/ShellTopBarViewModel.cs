@@ -68,6 +68,9 @@ namespace SunEyeVision.UI.Shell.Controls
                 case nameof(IRootCoordinator.IsAllWorkflowsRunning):
                     IsAllWorkflowsRunning = _coordinator.IsAllWorkflowsRunning;
                     break;
+                case nameof(IRootCoordinator.IsContinuousRunning):
+                    OnPropertyChanged(nameof(IsContinuousRunning));
+                    break;
                 case nameof(IRootCoordinator.HasCurrentSolution):
                     HasCurrentSolution = _coordinator.HasCurrentSolution;
                     break;
@@ -129,6 +132,7 @@ namespace SunEyeVision.UI.Shell.Controls
 
         /// <summary>切换全部连续运行命令</summary>
         public ICommand ToggleContinuousAllCommand => _coordinator.ToggleContinuousAllCommand;
+        public bool IsContinuousRunning => _coordinator.IsContinuousRunning;
 
         /// <summary>切换亮/暗主题命令</summary>
         public ICommand ToggleThemeCommand { get; }

@@ -42,10 +42,10 @@ public partial class MainWindowViewModel
  internal async Task RunOverviewRoot(RootOverviewRequestEventArgs request)
  {
   var tab=ResolveOverviewRequest(request.RootId,request.DocumentIdentity,request.Revision,false);if(tab==null)return;
-  if(request.RunKind==RootOverviewRunKind.ToggleContinuous&&IsFormalRootRunning(tab.RootWorkflowId)){_formalActiveBatch?.Stop();return;}
+  if(request.RunKind==RootOverviewRunKind.ToggleContinuous&&IsFormalRootRunning(tab.RootWorkflowId)){RequestStopFormalExecution();return;}
   if(!CanEditRootWorkspace||tab.IsInSubroutine||tab.RootWorkflowNodes.Count==0)return;
   SetSelectedTab(tab);
-  if(request.RunKind==RootOverviewRunKind.Single)await ExecuteRunWorkflow();else StatusText="连续运行尚未接入正式调度，暂不可用。";
+  if(request.RunKind==RootOverviewRunKind.Single)await ExecuteRunWorkflow();else StartFormalContinuous(new[]{tab.RootWorkflowId});
  }
  internal bool CommitOverviewPosition(RootOverviewPositionEventArgs request,bool copy)
  {

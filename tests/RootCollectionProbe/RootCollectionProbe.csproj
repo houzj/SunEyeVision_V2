@@ -2,6 +2,7 @@
   <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0-windows</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/Application/SunEyeVision.Application.csproj" />
+    <ProjectReference Include="../../src/Infrastructure.ImageSources/SunEyeVision.Infrastructure.ImageSources.csproj" />
     <ProjectReference Include="../../src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj" />
     <ProjectReference Include="../../src/SunEyeVision.HalAdapter/Runtime/SunEyeVision.HalAdapter.Runtime.csproj" />
     <ProjectReference ReferenceOutputAssembly="false" Include="../../tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj" />

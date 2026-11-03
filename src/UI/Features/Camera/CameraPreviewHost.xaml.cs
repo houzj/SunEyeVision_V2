@@ -8,9 +8,10 @@ using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using SunEyeVision.DeviceDriver.Cameras;
 using SunEyeVision.DeviceDriver.Cameras.Contracts;
-using SunEyeVision.Plugin.SDK.Devices.Camera;
+using SunEyeVision.Plugin.Contracts.Acquisition;
 using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.Plugin.SDK.Vision.Hosting;
+using SunEyeVision.Plugin.Contracts;
+using System.Windows.Media;
 
 namespace SunEyeVision.UI.Features.Camera;
 
@@ -465,34 +466,25 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
         }
     }
 
-    public async ValueTask OnFrameAsync(CameraFrame frame, CancellationToken cancellationToken)
+    public async ValueTask OnFrameAsync(ICameraFrameLease frame, CancellationToken cancellationToken)
     {
+        Exception? failure=null;
         try
         {
             if (Volatile.Read(ref _stopped) != 0 || cancellationToken.IsCancellationRequested) return;
             var frameIndex = Interlocked.Increment(ref _displayedFrameCount);
             if (frameIndex == 1 || frameIndex % 120 == 0)
             {
-                var pixelType = frame.Metadata.TryGetValue("pixelType", out var value) ? value : "unknown";
+                var pixelType = frame.Image.Layout.Format.ToString();
                 VisionLogger.Instance.Log(LogLevel.Info,
-                    $"[camera-trace={_activeCorrelationId ?? "preview-open"}] 收到图像帧 camera={_cameraRef.Value} frame={frame.FrameId} streamFrameIndex={frameIndex} size={frame.Image.Width}x{frame.Image.Height} channels={frame.Image.Channels} pixelType={pixelType} frameAgeMs={(DateTimeOffset.UtcNow - frame.Timestamp).TotalMilliseconds:F1}",
+                    $"[camera-trace={_activeCorrelationId ?? "preview-open"}] 收到图像帧 camera={_cameraRef.Value} frame={frame.DeviceFrameId} streamFrameIndex={frameIndex} size={frame.Image.Width}x{frame.Image.Height} channels={frame.Image.Layout.Format.ToString()} pixelType={pixelType} frameAgeMs={(DateTimeOffset.UtcNow - frame.Timestamp).TotalMilliseconds:F1}",
                     "CameraPreviewTrace", target: LogTarget.All);
             }
-            var bitmap = VisionImageConverterLocator.Current?.ToBitmapSource(frame.Image);
-            if (bitmap is null)
-            {
-                VisionLogger.Instance.Log(LogLevel.Error,
-                    $"[camera-trace={_activeCorrelationId ?? "preview-open"}] 图像转换器返回空图像 camera={_cameraRef.Value} frame={frame.FrameId} size={frame.Image.Width}x{frame.Image.Height} channels={frame.Image.Channels}",
-                    "CameraPreviewTrace", target: LogTarget.All);
-                await Dispatcher.InvokeAsync(() =>
-                {
-                    if (Volatile.Read(ref _stopped) == 0 && !cancellationToken.IsCancellationRequested && IsLoaded)
-                        StatusText.Text = "预览失败：当前帧无法转换为显示图像";
-                });
-                return;
-            }
-
-            await UpdateImageAsync(bitmap, frame.FrameId, cancellationToken).ConfigureAwait(false);
+            var layout=frame.Image.Layout;
+            var format=layout.Format switch { PixelLayout.Gray8=>PixelFormats.Gray8,PixelLayout.Bgr24=>PixelFormats.Bgr24,PixelLayout.Bgra32=>PixelFormats.Bgra32,_=>throw new InvalidOperationException("不支持相机像素格式。") };
+            var bitmap=BitmapSource.Create(layout.Width,layout.Height,96,96,format,null,frame.Image.CopyPixels(),layout.RowStrideBytes);
+            bitmap.Freeze();
+            await UpdateImageAsync(bitmap, frame.DeviceFrameId, cancellationToken).ConfigureAwait(false);
             if (((_singleFrameMode && frameIndex == 1)
                     || Interlocked.CompareExchange(ref _singleShotRequested, 0, 1) == 1)
                 && Interlocked.Exchange(ref _singleFrameStopScheduled, 1) == 0)
@@ -514,14 +506,16 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
         catch (Exception ex)
         {
             VisionLogger.Instance.Log(LogLevel.Error,
-                $"[camera-trace={_activeCorrelationId ?? "preview-open"}] 图像转码/提交预览失败 camera={_cameraRef.Value} frame={frame.FrameId}: {ex.Message}",
+                $"[camera-trace={_activeCorrelationId ?? "preview-open"}] 图像转码/提交预览失败 camera={_cameraRef.Value} frame={frame.DeviceFrameId}: {ex.Message}",
                 "CameraPreviewTrace", ex, LogTarget.All);
+            failure=ex;
             throw;
         }
         finally
         {
             // 转成独立 BitmapSource 后，当前回调释放相机帧。
-            frame.Dispose();
+            try { await frame.DisposeAsync().ConfigureAwait(false); }
+            catch(Exception cleanup) when(failure is not null) { throw new AggregateException("相机预览和帧释放均失败。",failure,cleanup); }
         }
     }
 

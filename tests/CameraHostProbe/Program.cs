@@ -4,9 +4,11 @@ using System.Windows.Threading;
 using SunEyeVision.UI.Tests;
 using NSubstitute;
 using SunEyeVision.DeviceDriver.Cameras.Contracts;
-using SunEyeVision.Plugin.SDK.Devices.Camera;
-using SunEyeVision.Plugin.SDK.Vision.Contracts;
-using SunEyeVision.Plugin.SDK.Vision.Hosting;
+using SunEyeVision.Plugin.Contracts.Acquisition;
+using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Runtime;
+
+
 using SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport;
 using SunEyeVision.UI.Features.Camera;
 using System.Windows.Media;
@@ -86,28 +88,26 @@ internal static class Program
  static void FramePresentation()
  {
   var runtime=new CameraRuntimeManager(Array.Empty<ICameraAdapterFactory>());
-  var reference=new CameraDeviceRef("sample");
-  var host=new CameraPreviewHost(runtime,reference);
-  var image=Substitute.For<IVisionImage>();
-  var bridge=Substitute.For<IVisionImageDisplayBridge>();
-  byte[] pixels={1,2,3,255,4,5,6,255};
-  var bitmap=BitmapSource.Create(2,1,96,96,PixelFormats.Bgra32,null,pixels,8);bitmap.Freeze();
-  bridge.ToBitmapSource(image).Returns(bitmap);
-  var previous=VisionImageConverterLocator.Current;VisionImageConverterLocator.Current=bridge;
+  var reference=new CameraDeviceRef("sample");var host=new CameraPreviewHost(runtime,reference);
   try {
-   var frame=new CameraFrame(reference,1,DateTimeOffset.UtcNow,image);
-   Pump(async()=>await host.OnFrameAsync(frame,CancellationToken.None));
+   var frame=new TestFrame(1);Pump(async()=>await host.OnFrameAsync(frame,CancellationToken.None));
    var view=(ImageViewBox)host.FindName("ImageDisplay");
    if(!frame.IsDisposed||view.ImageDataSource is not { Width:2, Height:1 } output||output.Buffer[0]!=1)
     throw new Exception("sample frame was not shown or released");
    Pump(async()=>await host.DisposeAsync());
    if(view.ImageDataSource is not null)throw new Exception("preview pixels retained after close");
-   var late=new CameraFrame(reference,2,DateTimeOffset.UtcNow,Substitute.For<IVisionImage>());
-   Pump(async()=>await host.OnFrameAsync(late,CancellationToken.None));
+   var late=new TestFrame(2);Pump(async()=>await host.OnFrameAsync(late,CancellationToken.None));
    if(!late.IsDisposed||view.ImageDataSource is not null)throw new Exception("late frame published after close");
-  } finally {VisionImageConverterLocator.Current=previous;Pump(async()=>await runtime.DisposeAsync());}
+  } finally {Pump(async()=>await runtime.DisposeAsync());}
  }
- static void Pump(Func<Task> action)
+ private sealed class TestFrame(long id):ICameraFrameLease
+ {
+  private FrozenImageResource? _image=new(new ImageLayout(2,1,8,PixelLayout.Bgra32),new ImageFrameAddress(Guid.NewGuid(),"camera:sample"),
+   new CoordinateFrame("camera:sample",CoordinateDomain.Image,CoordinateUnit.Pixel),new byte[]{1,2,3,255,4,5,6,255},new[]{new RegionRun(0,0,1)});
+  public string DeviceId=>"sample";public long DeviceFrameId=>id;public DateTimeOffset Timestamp=>DateTimeOffset.UtcNow;
+  public IReadOnlyImage Image=>_image??throw new ObjectDisposedException(nameof(TestFrame));public bool IsDisposed=>_image is null;
+  public ValueTask DisposeAsync(){Interlocked.Exchange(ref _image,null)?.Dispose();return ValueTask.CompletedTask;}
+ } static void Pump(Func<Task> action)
  {
   var frame=new DispatcherFrame();Exception? failure=null;
   _=Run();Dispatcher.PushFrame(frame);

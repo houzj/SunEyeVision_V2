@@ -33,6 +33,7 @@ namespace SunEyeVision.UI.Core
         /// 是否正在运行（跨域共享运行状态）
         /// </summary>
         bool IsRunning { get; }
+        bool IsContinuousRunning { get; }
 
         /// <summary>
         /// 相机状态文字（跨域共享）

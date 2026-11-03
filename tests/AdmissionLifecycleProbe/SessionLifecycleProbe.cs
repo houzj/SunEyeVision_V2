@@ -8,7 +8,7 @@ using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Infrastructure.Persistence;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Contracts.Results.Presentation;
-using SunEyeVision.Plugin.Infrastructure.ImageSources;
+using SunEyeVision.Infrastructure.ImageSources;
 using SunEyeVision.Plugin.Infrastructure.Managers.Plugin;
 using SunEyeVision.Plugin.Runtime;
 

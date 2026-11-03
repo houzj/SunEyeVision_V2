@@ -5,7 +5,7 @@ using SunEyeVision.Application.Editing;
 using SunEyeVision.Domain.Persistence;
 using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.Infrastructure.ImageSources;
+using SunEyeVision.Infrastructure.ImageSources;
 using SunEyeVision.Plugin.Runtime;
 
 internal static class Program

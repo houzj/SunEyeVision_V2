@@ -5,7 +5,7 @@ using SunEyeVision.Application;
 using SunEyeVision.Application.Editing;
 using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.Infrastructure.ImageSources;
+using SunEyeVision.Infrastructure.ImageSources;
 using SunEyeVision.Plugin.Runtime;
 namespace SunEyeVision.ImageInput.Runtime.Tests;
 internal static class RuntimeHost
@@ -27,7 +27,7 @@ internal sealed class RuntimeFixture:IDisposable
  internal readonly NodeDefinition Node;
  internal readonly ImageSourceHostInputFactory Factory;
  private readonly List<DocumentDebugSession> _scopes=new();
- internal RuntimeFixture(SunEyeVision.Plugin.SDK.Devices.Camera.ICameraCaptureService? camera=null)
+ internal RuntimeFixture(SunEyeVision.Plugin.Contracts.Acquisition.ICameraFrameProvider? camera=null)
  {
   DirectoryPath=Path.GetFullPath(Path.Combine(RuntimeHost.ProductRoot,"..","..","_validation","ImageInputRuntime",Guid.NewGuid().ToString("N")));Directory.CreateDirectory(DirectoryPath);
   Manager=new(RuntimeHost.Runtime);Session=Manager.CreateNew("正式图像输入回归");Flow=Session.GetWorkflows().Single();var graph=Session.PrepareGraphEdit(Flow.Id);Node=Session.CreateNode(graph,"ImageLoad",new(150,120));Session.CommitGraphEdit(graph,"建立实际图像源");Factory=new(camera);

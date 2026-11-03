@@ -4,7 +4,7 @@ using SunEyeVision.Application;
 using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Editing.Wpf;
-using SunEyeVision.Plugin.Infrastructure.ImageSources;
+using SunEyeVision.Infrastructure.ImageSources;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using SunEyeVision.UI.Services.Editing;

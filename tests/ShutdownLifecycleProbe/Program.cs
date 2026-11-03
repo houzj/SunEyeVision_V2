@@ -19,7 +19,7 @@ internal static class Program
     {
         var productRoot=typeof(Program).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().Single(item=>item.Key=="HostProductRoot").Value!;
         AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY",Path.GetFullPath(productRoot));
-        try { return args.Contains("full-startup-probe") ? RunFullStartup(args) : Run(args); }
+        try { return args.Contains("continuous-main") ? ContinuousMainProbe.Run() : args.Contains("full-startup-probe") ? RunFullStartup(args) : Run(args); }
         catch(Exception error) { Console.Error.WriteLine(error); return 1; }
     }
     [System.Runtime.InteropServices.DllImport("user32.dll",CharSet=System.Runtime.InteropServices.CharSet.Unicode,SetLastError=true)]

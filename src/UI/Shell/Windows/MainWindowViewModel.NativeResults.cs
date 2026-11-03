@@ -18,7 +18,7 @@ public partial class MainWindowViewModel
     internal event Action<string>? ResultWorkspaceRootSettled;
     private void ConfigureFormalImageSourcePresentation()
     {
-        ImageSourceCanNavigate=()=>CanAcceptExternalActivation&&!IsDebugWindowOpen&&DocumentManager.CurrentSession is not null;
+        ImageSourceCanNavigate=()=>CanAcceptExternalActivation&&!IsDebugWindowOpen&&!IsExecutionStopping&&DocumentManager.CurrentSession is not null;
         ImageSourceActivate=ActivateFormalImageSourceAsync;
         ImageSourceEditAccepted=receipt=>
         {

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using SunEyeVision.DeviceDriver.Cameras;
 using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.Plugin.SDK.Devices.Camera;
+using SunEyeVision.Plugin.Contracts.Acquisition;
 
 using SunEyeVision.UI.Core;
 

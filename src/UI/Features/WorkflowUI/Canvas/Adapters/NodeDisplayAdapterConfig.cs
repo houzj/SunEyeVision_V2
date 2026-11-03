@@ -114,7 +114,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         public static SunEyeVision.Application.DocumentSessionManager SolutionManager => _solutionManager ?? throw new InvalidOperationException("方案会话管理器未初始化，请先调用 InitializeSolutionManager()");
 
         public static CameraRuntimeComposition CameraRuntime
-            => _cameraRuntime ??= new CameraRuntimeComposition();
+            => _cameraRuntime ??= new CameraRuntimeComposition(diagnostic => VisionLogger.Instance.Log(diagnostic.Level switch { SunEyeVision.DeviceDriver.Cameras.Contracts.CameraDiagnosticLevel.Error => LogLevel.Error, SunEyeVision.DeviceDriver.Cameras.Contracts.CameraDiagnosticLevel.Warning => LogLevel.Warning, _ => LogLevel.Info }, $"[{diagnostic.DeviceId}][{diagnostic.CorrelationId}] {diagnostic.Message}{(diagnostic.Error is null ? string.Empty : Environment.NewLine + diagnostic.Error)}", "CameraRuntime"));
 
         public static CommunicationRuntimeComposition CommunicationRuntime
         {
@@ -144,9 +144,9 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
                         _communicationService = new CommunicationApplicationService(session, CommunicationRuntime);
                         _communicationService.Automation.CameraConnectionObserver = id =>
                             _cameraRuntime != null && _cameraRuntime.Runtime.TryGetSession(
-                                new SunEyeVision.Plugin.SDK.Devices.Camera.CameraDeviceRef(id), out var session)
-                            && session.Adapter.State is SunEyeVision.Plugin.SDK.Devices.Camera.CameraState.Connected
-                                or SunEyeVision.Plugin.SDK.Devices.Camera.CameraState.Capturing;
+                                new SunEyeVision.Plugin.Contracts.Acquisition.CameraDeviceRef(id), out var session)
+                            && session.Adapter.State is SunEyeVision.Plugin.Contracts.Acquisition.CameraState.Connected
+                                or SunEyeVision.Plugin.Contracts.Acquisition.CameraState.Capturing;
                     }
                     return _communicationService;
                 }

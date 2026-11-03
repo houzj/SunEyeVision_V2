@@ -1,7 +1,7 @@
 using SunEyeVision.Application.Editing;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Domain.Workflows;
-using SunEyeVision.Plugin.Infrastructure.ImageSources;
+using SunEyeVision.Infrastructure.ImageSources;
 using Xunit;
 namespace SunEyeVision.WorkflowGraph.Tests;
 public sealed class CanonicalCurrentValueTests

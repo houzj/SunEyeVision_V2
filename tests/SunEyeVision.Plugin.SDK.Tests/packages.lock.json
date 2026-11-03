@@ -241,6 +241,13 @@
           "System.Text.Json": "[10.0.3, )"
         }
       },
+      "suneyevision.devicedriver.camera": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )"
+        }
+      },
       "suneyevision.domain": {
         "type": "Project",
         "dependencies": {
@@ -270,6 +277,13 @@
         "dependencies": {
           "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )"
+        }
+      },
+      "suneyevision.infrastructure.imagesources": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Application": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
         }
       },
       "suneyevision.infrastructure.persistence": {

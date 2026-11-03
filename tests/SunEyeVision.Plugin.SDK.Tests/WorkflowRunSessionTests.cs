@@ -5,7 +5,7 @@ using SunEyeVision.Application;
 using SunEyeVision.Application.Editing;
 using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.Infrastructure.ImageSources;
+using SunEyeVision.Infrastructure.ImageSources;
 using SunEyeVision.Plugin.Runtime;
 using Xunit;
 namespace SunEyeVision.Plugin.SDK.Tests;

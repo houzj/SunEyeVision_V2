@@ -173,13 +173,13 @@ namespace SunEyeVision.UI.Shell.Windows
             set => SetProperty(ref _title, value);
         }
 
-        public bool IsRunning => _formalActiveBatch is not null;
+        public bool IsRunning => _formalActiveBatch is not null || _formalContinuousRun is not null;
         private void NotifyFormalRunState()
         {
-            Status=IsRunning?"运行中":"已停止";
+            Status=FormalExecutionStateText;
             ActiveImageSourceBinding?.RefreshAvailability();
             foreach(var editor in _variableEditors.ToArray())editor.RefreshAvailability();
-            OnPropertyChanged(nameof(IsRunning));OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace));
+            OnPropertyChanged(nameof(IsRunning));OnPropertyChanged(nameof(IsContinuousRunning));OnPropertyChanged(nameof(IsExecutionPaused));OnPropertyChanged(nameof(IsExecutionStopping));OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace));
             OnWorkflowStatusChanged(WorkflowTabViewModel,EventArgs.Empty);
             System.Windows.Input.CommandManager.InvalidateRequerySuggested();
         }
@@ -669,6 +669,8 @@ SplitterPosition = position;
             // 初始化执行管理器（传入共享的 WorkflowEngine，子程序工作流已注册在其中）
             WorkflowTabViewModel.StartContinuousExecution = StartContinuousWorkflow;
             WorkflowTabViewModel.StopContinuousExecution = StopContinuousWorkflow;
+            WorkflowTabViewModel.StartAllContinuousExecution = StartAllContinuousWorkflows;
+            WorkflowTabViewModel.StopAllContinuousExecution = () => { if(!IsRunning)return false; RequestStopFormalExecution(); return true; };
 
             // 初始化节点结果管理器
 
@@ -718,7 +720,7 @@ SplitterPosition = position;
             ShowAboutCommand = new RelayCommand(ExecuteShowAbout);
             ShowHelpCommand = new RelayCommand(ExecuteShowHelp);
             ShowShortcutsCommand = new RelayCommand(ExecuteShowShortcuts);
-            PauseCommand = new RelayCommand(ExecutePause,()=>false);
+            PauseCommand = new RelayCommand(ExecutePause,CanPauseFormalExecution);
             UndoCommand = new RelayCommand(ExecuteUndo, CanExecuteUndo);
             RedoCommand = new RelayCommand(ExecuteRedo, CanExecuteRedo);
             DeleteSelectedNodesCommand = new RelayCommand(ExecuteDeleteSelectedNodes, CanDeleteSelectedNodes);
@@ -727,7 +729,7 @@ SplitterPosition = position;
 
             // 所有工作流
             RunAllWorkflowsCommand = new RelayCommand(async () => await ExecuteRunAllWorkflows(), () => !IsRunning&&CanEditRootWorkspace&&WorkflowTabViewModel.Tabs.Any(tab=>tab.RootWorkflowNodes.Count>0));
-            ToggleContinuousAllCommand = new RelayCommand(()=>StatusText="连续运行尚未接入正式调度，暂不可用。", () => false);
+            ToggleContinuousAllCommand = new RelayCommand(ExecuteToggleContinuousAll, CanToggleContinuousAll);
 
             // 图像视图
 
@@ -882,7 +884,7 @@ SplitterPosition = position;
 
         private void ExecutePause()
         {
-            // TODO: 实现暂停
+            ToggleFormalPause();
         }
 
         private void ExecuteUndo() => ReplayDocumentEdit(undo: true);
@@ -998,7 +1000,7 @@ SplitterPosition = position;
 
         private void ExecuteStopWorkflow()
         {
-            _formalActiveBatch?.Stop();StatusText="正在停止正式运行，等待当前调用排空。";
+            try { RequestStopFormalExecution(); StatusText="正在停止正式运行，等待当前调用排空。"; } catch(Exception error) { StatusText="停止请求失败，仍等待实际排空："+error.Message; }
         }
 
         private void ExecuteShowSettings()
@@ -1691,30 +1693,13 @@ SplitterPosition = position;
         /// <summary>
         /// 切换所有工作流运行/停止
         /// </summary>
-        private void ExecuteToggleContinuousAll()
-        {
-            if (IsAllWorkflowsRunning)
-            {
-                AddLog("⏹️ 停止所有工作流");
-                WorkflowTabViewModel.StopAllWorkflows();
-            }
-            else
-            {
-                AddLog("▶️ 开始所有工作流");
-                WorkflowTabViewModel.StartAllWorkflows();
-            }
-        }
+        private void ExecuteToggleContinuousAll() { if(IsContinuousRunning)ExecuteStopWorkflow(); else StartAllContinuousWorkflows(); }
 
         /// <summary>由预览 UI 发布当前输入；执行器只读取服务中的不可变选择快照。</summary>
 
 
-        private bool StartContinuousWorkflow(WorkflowTabViewModel workflow)
-        { StatusText="连续运行尚未接入正式调度，暂不可用。";return false; }
-
-        private bool StopContinuousWorkflow(WorkflowTabViewModel workflow)
-        { if(_formalActiveBatch is null)return false;_formalActiveBatch.Stop();return true; }
-
-
+        private bool StartContinuousWorkflow(WorkflowTabViewModel workflow) => StartFormalContinuous(new[]{workflow.RootWorkflowId});
+        private bool StopContinuousWorkflow(WorkflowTabViewModel workflow) { if(!IsFormalRootRunning(workflow.RootWorkflowId))return false; RequestStopFormalExecution(); return true; }
 
         /// <summary>
         /// 执行开始事件

@@ -48,7 +48,7 @@ public partial class MainWindowViewModel
         foreach(var editor in _productionEditors.ToArray())if(!editor.IsValid)editor.Discard();
         if(SelectedNode is {} selected&&!OwnsSelectedDocumentNode(selected))SelectedNode=null;
         else RefreshFormalPublishedResult();
-        RefreshFormalImageSourceSelection();NotifyResultDisplayChanged();RefreshRootTabReadiness();UpdateCurrentSolutionInfo();UpdateUndoRedoCommands();
+        RefreshFormalImageSourceSelection();NotifyResultDisplayChanged();foreach(var tab in WorkflowTabViewModel.Tabs)tab.QueueRootReadiness();UpdateCurrentSolutionInfo();UpdateUndoRedoCommands();
         OnPropertyChanged(nameof(CanUndoRootWorkspace));OnPropertyChanged(nameof(CanRedoRootWorkspace));OnPropertyChanged(nameof(EditHistoryLocations));
     }
     internal void SetFormalDisplaySelection(SunEyeVision.Domain.Workflows.NodeDefinition node,string? reference)

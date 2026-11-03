@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SunEyeVision.DeviceDriver.Cameras;
 using SunEyeVision.DeviceDriver.Cameras.Contracts;
-using SunEyeVision.Plugin.SDK.Devices.Camera;
+using SunEyeVision.Plugin.Contracts.Acquisition;
 using SunEyeVision.Plugin.SDK.Logging;
 
 using SunEyeVision.UI.Core;
@@ -1195,7 +1195,7 @@ namespace SunEyeVision.UI.Features.Camera
             bool exposureAutoWasEnabled,
             bool gainAutoWasEnabled)
         {
-            if (!string.Equals(adapterId, "hikvision-mvs", StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(adapterId, "industrial-camera", StringComparison.OrdinalIgnoreCase))
                 return string.Empty;
 
             var notes = new List<string>();

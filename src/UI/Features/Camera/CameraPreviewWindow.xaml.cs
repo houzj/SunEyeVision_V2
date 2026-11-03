@@ -4,7 +4,7 @@ using System.Windows;
 using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.DeviceDriver.Cameras;
 using SunEyeVision.DeviceDriver.Cameras.Contracts;
-using SunEyeVision.Plugin.SDK.Devices.Camera;
+using SunEyeVision.Plugin.Contracts.Acquisition;
 
 namespace SunEyeVision.UI.Features.Camera;
 

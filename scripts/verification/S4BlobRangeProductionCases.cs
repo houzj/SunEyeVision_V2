@@ -296,7 +296,7 @@ internal static class S2DocumentEditingCases
     {
         var field=SessionFields[session];
         var source=SessionSources.GetValueOrDefault(session)??field.Setting;
-        var proposal=source switch
+        ParameterSetting proposal=source switch
         {
             VariableSetting v=>v with {Reference=new VariableReference(v.Reference.SolutionId,v.Reference.VariableId,v.Reference.Type,selection,v.Reference.Storage)},
             ReferenceSetting r=>r with {Reference=new OutputReference(r.Reference.NodeId,r.Reference.PortId,r.Reference.Type,r.Reference.MemberFieldPath,selection,r.Reference.ScopeId,r.Reference.Storage)},
@@ -319,7 +319,7 @@ internal static class S2DocumentEditingCases
         if(index){var solution=SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSolution!;SetSelection(session,new BindingSelection.AtVariable(new VariableReference(solution.Id,id,DataType.Integer,BindingSelection.All,NumericStorage.Int64)));return;}
         // Complete popup preparation before starting the modal waiter; no queued callback races a pre-dialog Pump.
         if(_activePopup is {IsLoaded:true}){_activePopup.IsDropDownOpen=true;_activePopup.UpdateLayout();Pump();}
-        ((ICommand)Get(session,"DropDownCommand")).Execute(null);Pump();if(index)session.GetType().GetProperty("IsTextDropDownOpen")!.SetValue(session,true);
+        ((ICommand)Get(session,"DropDownCommand")).Execute(null);Pump();
         var manager=Tree((System.Collections.IEnumerable)Get(session,index?"IndexNodes":"SourceNodes")).Single(item=>(bool)Get(item,"VariableManager"));
         Exception? failure=null;var selected=false;VariableSelectionDialog? ownedDialog=null;var deadline=DateTime.UtcNow.AddSeconds(15);var timer=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(20)};
         timer.Tick+=(_,_)=>{

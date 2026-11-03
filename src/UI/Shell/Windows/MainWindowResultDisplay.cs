@@ -52,7 +52,7 @@ public partial class MainWindowViewModel
   var session=DocumentManager.CurrentSession;var node=SelectedNode;var workflowId=WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId;
   var snapshot=_resultPublicationSnapshot;var revision=_resultDisplayRevision;
   if(session is null||node is null||workflowId is null||snapshot is null||!OwnsSelectedDocumentNode(node)
-   ||snapshot.Identity.DocumentSessionId!=session.ResultOwnerId||snapshot.Identity.NodeId!=node.Id||snapshot.SourceWorkflowId!=workflowId
+   ||(snapshot.Identity.DocumentSessionId!=session.ResultOwnerId&&!ReferenceEquals(CurrentEditorDebugSnapshot,snapshot))||snapshot.Identity.NodeId!=node.Id||snapshot.SourceWorkflowId!=workflowId
    ||!ReferenceEquals(_resultPublication,expectedPublication)||snapshot.Identity!=expectedPublication.Stamp.Invocation)return null;
   var preview=_displayPreview;
   var draft=preview?.Current==true?preview.Context.PreparedDraft:null;
@@ -67,8 +67,7 @@ public partial class MainWindowViewModel
    if(draft is not null&&(!ReferenceEquals(_displayPreview,preview)||preview?.Current!=true||!ReferenceEquals(preview.Context.PreparedDraft,draft)
     ||!ReferenceEquals(draft.Configuration,configuration)))return false;
    if(draft is null&&!ReferenceEquals(node.Configuration,configuration))return false;
-   using var reader=session.AcquirePublishedResult(workflowId,node.Id);
-   return reader is not null&&ReferenceEquals(reader.Snapshot,snapshot);
+   return IsCurrentPresentedSnapshot(session,workflowId,node,snapshot);
   }
   if(!Current())return null;
   return new(descriptor,appearance,revision,Current,(snapshot.Output as IToolResultGeometryOutput)?.ResultGeometry,()=>

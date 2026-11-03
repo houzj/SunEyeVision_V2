@@ -1170,10 +1170,10 @@ SplitterPosition = position;
             return changed&&intent==_nodeSelectionIntent&&ReferenceEquals(_selectedNode,node);
         }
 
-        private void ExecuteOpenDebugWindow(NodeDefinition? node)
+        private async void ExecuteOpenDebugWindow(NodeDefinition? node)
         {
             if (node is null) return;
-            try { OpenFormalNodeEditor(node); }
+            try { await OpenFormalNodeEditor(node); }
             catch (Exception error) { StatusText="节点打开失败："+error.Message; AddLog(StatusText); }
         }
 
@@ -2078,20 +2078,20 @@ SplitterPosition = position;
                         ThemeMessageDialog.MessageIcon.Question, owner) != MessageBoxResult.OK) return false;
                 _solutionTransitionPrepared=true;
                 await StopFormalExecutionAsync(TimeSpan.FromSeconds(30));
-                if (manager.CurrentSession == null) return TryCloseParameterWindowsForTransition();
+                if (manager.CurrentSession == null) return await TryCloseParameterWindowsForTransitionAsync();
                 if (reload)
                 {
                     var discard = ThemeMessageDialog.Show("从磁盘重新加载会放弃当前未保存的编辑，不会自动保存。是否继续？", "重新加载方案", MessageBoxButton.OKCancel, ThemeMessageDialog.MessageIcon.Question, owner);
                     if (discard != MessageBoxResult.OK) { EndSolutionTransition(); return false; }
-                    return TryCloseParameterWindowsForTransition();
+                    return await TryCloseParameterWindowsForTransitionAsync();
                 }
                 // A transition prompt is not Apply/Save. Cancel must leave private drafts private.
-                if (manager.CurrentSession?.HasUnsavedChanges!=true) return TryCloseParameterWindowsForTransition();
+                if (manager.CurrentSession?.HasUnsavedChanges!=true) return await TryCloseParameterWindowsForTransitionAsync();
                 var result = ThemeMessageDialog.Show("当前方案有未保存修改。是否保存？", "保存方案", MessageBoxButton.YesNoCancel, ThemeMessageDialog.MessageIcon.Question, owner);
                 if (result == MessageBoxResult.Cancel || result == MessageBoxResult.None) { EndSolutionTransition(); return false; }
                 if (result == MessageBoxResult.Yes && (!SaveCurrentDocumentWithPrompt(owner) || manager.CurrentSession?.HasUnsavedChanges == true))
                 { EndSolutionTransition(); return false; }
-                return TryCloseParameterWindowsForTransition();
+                return await TryCloseParameterWindowsForTransitionAsync();
             }
             catch (Exception ex)
             {

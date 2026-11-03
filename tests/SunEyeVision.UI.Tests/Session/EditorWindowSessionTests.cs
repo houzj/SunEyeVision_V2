@@ -32,7 +32,7 @@ public sealed class EditorWindowSessionTests
  {
   using var f=new DocumentUiFixture();var node=f.Add("BlobAnalysis");f.Main.SelectedNode=node;f.Main.OpenDebugWindowCommand.Execute(node);UiRuntime.Pump();
   var window=System.Windows.Application.Current.Windows.OfType<RuntimeToolEditorWindow>().Single();var context=Assert.IsType<ProductionEditorContext>(ToolEditorCommit.GetDraftContext(window.Editor));
-  Assert.True(context.IsValid);Assert.False(window.ExecuteOnce.CanExecute(null));Assert.False(window.StartContinuous.CanExecute(null));
+  Assert.True(context.IsValid);Assert.True(window.ExecuteOnce.CanExecute(null));Assert.False(window.StartContinuous.CanExecute(null));
   bool? dirtyDuringNotification=null;Exception? notificationFailure=null;
   EventHandler<SunEyeVision.Application.DocumentChangeSet> observe=(_,_)=>
   {try{dirtyDuringNotification=f.Session.HasUnsavedChanges;}catch(Exception error){notificationFailure=error;}};

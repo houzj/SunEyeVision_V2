@@ -21,7 +21,7 @@ public sealed class DocumentFilesSessionTests
   Assert.Same(actual,f.Main.WorkflowTabViewModel.SelectedTab!.DocumentCanvas!.Nodes.Single().Definition);
  });
  [Theory]
- [InlineData("formal")][InlineData("empty")][InlineData("cancel")][InlineData("wait")][InlineData("preferences")]
+ [InlineData("debug")][InlineData("formal")][InlineData("empty")][InlineData("cancel")][InlineData("wait")][InlineData("preferences")]
  public async Task Actual_main_process_exercises_file_activation_cancel_and_resource_drain(string scenario)
  {
   var product=UiRuntime.ProductRoot;var worktree=Directory.GetParent(product.TrimEnd(Path.DirectorySeparatorChar,Path.AltDirectorySeparatorChar))!.Parent!.Parent!.FullName;

@@ -79,10 +79,12 @@ public partial class MainWindowViewModel
             foreach(var node in nodes.Where(node=>ids.Contains(node.Id)).OrderBy(node=>node.Id==selected.Id?0:1))
             {
                 using var acquired=session.AcquirePublishedResult(scope,node.Id);
-                var snapshot=acquired?.Snapshot;
+                var privateSnapshot=ReferenceEquals(node,selected)?CurrentEditorDebugSnapshot:null;
+                var snapshot=privateSnapshot??acquired?.Snapshot;
                 bool SnapshotCurrent()
                 {
                     if(!Owner()||snapshot is null)return false;
+                    if(privateSnapshot is not null)return ReferenceEquals(CurrentEditorDebugSnapshot,snapshot)&&Owner();
                     using var latest=session.AcquirePublishedResult(scope,node.Id);
                     return latest is not null&&ReferenceEquals(latest.Snapshot,snapshot)&&Owner();
                 }
@@ -132,12 +134,12 @@ public partial class MainWindowViewModel
                 }
                 if(!Owner())throw new InvalidOperationException("建立图像来源期间工作区已被替换。");
             }
-            if(session.GetNodeSchema(scope,selected.Id) is {} inputSchema)
+            if((SelectedEditorContext?.PreparedDraft.InputSchema??session.GetNodeSchema(scope,selected.Id)) is {} inputSchema)
             {
                 var inputKeys=new HashSet<string>(StringComparer.Ordinal);
                 foreach(var input in inputSchema.Inputs.Where(port=>port.Type==TypeRef.ResourceOf(ResourceKind.Image)))
                 {
-                    if(selected.Configuration.Fields.Read(input.Id) is not ReferenceSetting setting)continue;
+                    if((SelectedEditorContext?.PreparedDraft.Configuration??selected.Configuration).Fields.Read(input.Id) is not ReferenceSetting setting)continue;
                     var reference=setting.Reference;
                     if(!string.IsNullOrEmpty(setting.RebindingReason)||reference.ScopeId is {} explicitScope&&explicitScope!=scope)continue;
                     var scoped=new OutputReference(reference.NodeId,reference.PortId,reference.Type,reference.MemberFieldPath,

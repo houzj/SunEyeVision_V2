@@ -33,19 +33,23 @@ public partial class MainWindowViewModel
         RefreshFormalImageSourceSelection();
         NotifyResultDisplayChanged();
     }
-    private void OpenFormalNodeEditor(NodeDefinition node)
+    private long _editorOpenGeneration;
+    private async System.Threading.Tasks.Task OpenFormalNodeEditor(NodeDefinition node)
     {
+        var opening=++_editorOpenGeneration;
+        if(_documentHostReleased||IsRunning||_solutionTransitionPrepared||_transitionPreparationInProgress)
+            throw new InvalidOperationException("当前主窗正在运行、切换或关闭，不能打开参数页。");
         if (!OwnsSelectedDocumentNode(node)) throw new InvalidOperationException("节点已退出当前实际流程。");
         var session=DocumentManager.CurrentSession!;
         var workflowId=WorkflowTabViewModel.SelectedTab!.CurrentWorkflowId;
         _=session.AdmitPresentation(workflowId,node.Id);
         if (_openDebugWindow is {} previous)
         {
-            var closed=false; void Closed(object? sender,EventArgs args)=>closed=true;
-            previous.Closed+=Closed;
-            try { previous.Close(); } finally { previous.Closed-=Closed; }
-            if (!closed) { previous.Activate(); return; }
+            if(previous is RuntimeToolEditorWindow actual)
+            {if(!await actual.CloseAndDrainAsync()){previous.Activate();return;}}
+            else {previous.Close();if(previous.IsVisible){previous.Activate();return;}}
         }
+        if(opening!=_editorOpenGeneration||_documentHostReleased||_solutionTransitionPrepared||_transitionPreparationInProgress)return;
         if (!ReferenceEquals(DocumentManager.CurrentSession,session) || !OwnsSelectedDocumentNode(node))
             throw new InvalidOperationException("关闭旧窗口期间方案或节点已变化。");
         SelectedNode=node;
@@ -75,7 +79,23 @@ public partial class MainWindowViewModel
             context.PreserveViewAfterRebase=control.AdoptRebasedDraft;
             context.Deactivated+=control.Dispose;
             context.Deactivated+=()=>{if(window.IsLoaded)window.Close();};
-            window.SetRunAvailability(()=>false);
+            _editorDebugContext=context;_editorDebugControl=control;
+            control.ConfigureDebug(context,()=>FormalImageInputs,
+                ()=>Current()&&!IsRunning&&!_solutionTransitionPrepared&&!_transitionPreparationInProgress,
+                message=>control.Dispatcher.BeginInvoke(new Action(()=>AddLog(message))),
+                field=>
+                {
+                    if(!context.IsValid||control.HasPendingEdits)return null;
+                    var setting=context.PreparedDraft.Configuration.Fields.Read(field) as SunEyeVision.Plugin.Contracts.ReferenceSetting;
+                    return setting is null?null:RuntimeRoiFrameBorrow?.Invoke(setting.Reference,()=>context.IsValid&&!control.HasPendingEdits);
+                },RefreshEditorDebugResult);
+            RoiFrameAvailabilityChanged+=control.RefreshRoiFrame;
+            context.Deactivated+=()=>
+            {
+                RoiFrameAvailabilityChanged-=control.RefreshRoiFrame;
+                if(ReferenceEquals(_editorDebugControl,control)){_editorDebugControl=null;_editorDebugContext=null;RefreshEditorDebugResult();}
+            };
+            window.SetRunAvailability(()=>Current()&&!IsRunning&&!_solutionTransitionPrepared&&!_transitionPreparationInProgress);
             control.BindDraft(context.PreparedDraft);
             var preview=InstallResultDisplayPreview(session,node,context,control);context.Deactivated+=preview.Dispose;
             TrackProductionEditor(_productionEditors,context,window);

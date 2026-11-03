@@ -128,7 +128,7 @@ internal sealed class DocumentUiFixture:IDisposable
     }
     public void Dispose()
     {
-        foreach(var editor in System.Windows.Application.Current.Windows.OfType<SunEyeVision.UI.Services.Editing.RuntimeToolEditorWindow>().ToArray())editor.Close();
+        foreach(var editor in System.Windows.Application.Current.Windows.OfType<SunEyeVision.UI.Services.Editing.RuntimeToolEditorWindow>().ToArray())UiRuntime.Await(editor.CloseAndDrainAsync());
         Results.Shutdown();Main.ReleasePluginConsumersForShutdown();Main.ReleaseDocumentHost();
         UiRuntime.Await(ServiceInitializer.DisposeCommunicationRuntimeAsync().AsTask());
         UiRuntime.Await(ServiceInitializer.DisposeCameraRuntimeAsync().AsTask());

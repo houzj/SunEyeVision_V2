@@ -21,6 +21,24 @@ namespace SunEyeVision.UI.Services.Editing;
 public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPendingState, IToolEditorCommitParticipant, IDisposable
 {
     private ProductionEditorContext? _context;
+    private ProductionEditorDebug? _debug;
+    private SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameSource? _roiFrames;
+    private Task? _debugRetirement;
+    internal event Action? DebugStateChanged;
+    internal bool IsDebugBusy => _debug?.IsBusy == true;
+    internal bool CanDebug => !_disposed && _debug?.CanRun == true;
+    internal Guid? DebugScopeId => _debug?.ScopeId;
+    internal SunEyeVision.Plugin.Runtime.DeclaredOutputSnapshot? CurrentDebugSnapshot => _debug?.CurrentSnapshot;
+    internal void ConfigureDebug(ProductionEditorContext context, Func<IHostInputFactory> factory, Func<bool> canRun, Action<string> log, Func<string,SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameLease?> borrowFrame, Action changed)
+    {
+        if (_debug is not null) throw new InvalidOperationException("参数页已拥有调试会话。");
+        _debug = new ProductionEditorDebug(context,this,factory,canRun,log,()=>{DebugStateChanged?.Invoke();changed();});
+        _roiFrames = new(borrowFrame,CaptureDebugInputs);
+    }
+    internal SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiInputLease CaptureDebugInputs(IReadOnlyCollection<string> fields) => (_debug ?? throw new InvalidOperationException("参数调试尚未就绪。")).CaptureInputs(fields);
+    internal Task CloseDebugAsync() => _debugRetirement ??= _debug?.DisposeAsync().AsTask() ?? Task.CompletedTask;
+    internal void StopDebug() => _debug?.Stop();
+    internal void PublishDebugCompletion(SunEyeVision.Plugin.Runtime.DeclaredOutputSnapshot? result,string? error) => ExecutionCompleted?.Invoke(this,new RuntimeToolExecutionEventArgs(result,error));
     private IToolSettingsView? _view;
     private FieldSettings? _acceptedFields;
     private ImageSourceDraftContent? _imageSourceContent;
@@ -44,7 +62,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
         ObjectDisposedException.ThrowIf(_disposed, this);
         var context = ToolEditorCommit.GetDraftContext(this) as ProductionEditorContext ?? throw new InvalidOperationException("参数页未绑定正式编辑范围。");
         if (!context.IsValid || !ReferenceEquals(context.PreparedDraft, draft)) throw new InvalidOperationException("草稿不属于当前参数页。");
-        ReleaseView(); _context = context;
+        _debug?.InvalidateDraft(); ReleaseView(); _context = context;
         var generation = ++_generation;
         bool Current() => !_disposed && generation == _generation && context.IsValid && ReferenceEquals(_context, context);
         var admission = context.Session.AdmitPresentation(draft.WorkflowId, draft.Node.Id);
@@ -112,7 +130,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
         try
         {
             candidate = DesktopToolPresentation.CreateSettingsView(admission, draft.Configuration.Fields.Select(editorPorts),
-                new ToolSettingsViewOptions(references, FormatReference, inputSchema.Presentation?.Fields.FirstOrDefault()?.Layout?.Page, inputContent, ValidateComposition:group=>ValidateChanges(group.Changes), TextExpressions:textExpressions));
+                new ToolSettingsViewOptions(references, FormatReference, inputSchema.Presentation?.Fields.FirstOrDefault()?.Layout?.Page, inputContent, ValidateComposition:group=>ValidateChanges(group.Changes), TextExpressions:textExpressions, RoiFrames:_roiFrames));
             if (!Current()) throw new InvalidOperationException("参数页创建期间节点已失效。");
             _view = candidate; _acceptedFields=candidate.CaptureAcceptedFields(); _syncedRevision = candidate.AcceptedRevision; _captureError = "";
             candidate.Changed += Changed; Content = candidate.View;
@@ -145,6 +163,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
             }
         }
         catch (Exception error) { _captureError = error.Message; }
+        _debug?.InvalidateDraft();
         ResultDisplayEdited?.Invoke();
     }
     public bool TryCapture(out string error)
@@ -168,6 +187,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
     internal void AdoptRebasedDraft(NodeConfigurationEditDraft draft)
     {
         if(!ReferenceEquals(CurrentContext().PreparedDraft,draft))throw new InvalidOperationException("回执草稿不属于当前视图。");
+        _debug?.InvalidateDraft();
         _imageSourceContent?.RebaseDraft(draft);
     }
     private void ApplyAcceptedFields(FieldSettings fields)
@@ -215,18 +235,13 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
     }
     public bool TryValidateEditor(out string error) => CurrentContext().TryValidateEditor(out error);
     public bool TryCommitEditor(out string error) => CurrentContext().TryCommitEditor(out error);
-    public Task RunDebugAsync()
-    {
-        const string error = "正式节点调试输入和执行接缝尚未接入，当前不可执行。";
-        ExecutionCompleted?.Invoke(this, new RuntimeToolExecutionEventArgs(null, error));
-        return Task.FromException(new InvalidOperationException(error));
-    }
-    internal void RefreshRoiFrame() { }
+    public Task RunDebugAsync() => (_debug ?? throw new InvalidOperationException("参数调试尚未接入实际会话。")).RunAsync();
+    internal void RefreshRoiFrame() => _roiFrames?.Refresh();
     private void ReleaseView()
     {
         var view = _view; _view = null; _acceptedFields=null; _imageSourceContent=null; Content = null; _inputs.Clear();
         try { if (view is not null) { view.Changed -= Changed; view.Dispose(); } }
         finally { _referenceOwner?.Dispose(); _referenceOwner = null; }
     }
-    public void Dispose() { if (_disposed) return; _disposed = true; _generation++; ReleaseView(); _context = null; }
+    public void Dispose() { if (_disposed) return; _disposed = true; _generation++; _ = CloseDebugAsync(); ReleaseView(); _context = null; }
 }

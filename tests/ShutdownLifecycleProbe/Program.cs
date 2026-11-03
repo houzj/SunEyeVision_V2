@@ -144,12 +144,12 @@ internal static class Program
             }
             if((DateTime.UtcNow-start)>TimeSpan.FromSeconds(30))throw new TimeoutException("Shutdown probe timed out.");
         };
-        timer.Start();Console.WriteLine("probe: showing window");main.Show();if(failing is not null){failing.Owner=main;failing.Show();}Console.WriteLine("probe: window shown");main.Dispatcher.BeginInvoke(new Action(async ()=>{try{if(scenario=="formal")await VerifyFormalMain(main,session!,root);if(scenario=="preferences")VerifyPreferenceRegistration(app,session!,paths,root);Console.WriteLine("probe: calling Close");main.Close();Console.WriteLine("probe: Close returned");}catch(Exception error){dispatchFailure=error;timer.Stop();Dispatcher.CurrentDispatcher.BeginInvokeShutdown(DispatcherPriority.Background);}}));
+        timer.Start();Console.WriteLine("probe: showing window");main.Show();if(failing is not null){failing.Owner=main;failing.Show();}Console.WriteLine("probe: window shown");main.Dispatcher.BeginInvoke(new Action(async ()=>{try{if(scenario is "formal" or "debug")await VerifyFormalMain(main,session!,root,scenario=="debug");if(scenario=="preferences")VerifyPreferenceRegistration(app,session!,paths,root);Console.WriteLine("probe: calling Close");main.Close();Console.WriteLine("probe: Close returned");}catch(Exception error){dispatchFailure=error;timer.Stop();Dispatcher.CurrentDispatcher.BeginInvokeShutdown(DispatcherPriority.Background);}}));
         Console.WriteLine("probe: starting dispatcher");
         Dispatcher.Run();
         if(dispatchFailure is not null&&scenario!="throw")throw new Exception("Dispatcher failure.",dispatchFailure);
         if(scenario=="throw"&&(dispatchFailure is null||!sawFailure||!closed))throw new Exception("Child exception did not recover through a guarded retry.");
-        if(scenario is "normal" or "formal" or "empty" or "preferences"&&!closed)throw new Exception("Normal window did not close.");
+        if(scenario is "normal" or "formal" or "debug" or "empty" or "preferences"&&!closed)throw new Exception("Normal window did not close.");
         if(scenario=="wait"&&(!sawTimeout||!closed))throw new Exception("Reader timeout/release path did not close.");
         if(scenario=="cancel"&&!sawCancel)throw new Exception("Cancel prompt was not reached.");
         if(scenario=="failure"&&(!sawFailure||!closed))throw new Exception("Cleanup refusal did not recover through a guarded retry.");
@@ -181,7 +181,7 @@ internal static class Program
         for(var i=0;i<System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent);i++)
             foreach(var nested in Descendants<T>(System.Windows.Media.VisualTreeHelper.GetChild(parent,i)))yield return nested;
     }
-    private static async Task VerifyFormalMain(MainWindow main,SunEyeVision.Application.DocumentSession session,string root)
+    private static async Task VerifyFormalMain(MainWindow main,SunEyeVision.Application.DocumentSession session,string root,bool verifyDebug=false)
     {
         var vm=(MainWindowViewModel)main.DataContext;
         var flow=session.GetWorkflows().Single();
@@ -200,6 +200,17 @@ internal static class Program
         if(!editor.Editor.IsLoaded||editor.Editor.Content is null)throw new Exception("真实主窗参数页未加载。");
         var settings=Descendants<SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView>(editor.Editor).Single();
         if(!settings.TrySetFields(new Dictionary<string,SunEyeVision.Plugin.Contracts.ParameterSetting>{{"sequence.initial",new SunEyeVision.Plugin.Contracts.ConstantSetting(9L)}}))throw new Exception("真实主窗SN字段未接受私有输入。");
+        if(verifyDebug)
+        {
+            if(!editor.ExecuteOnce.CanExecute(null))throw new Exception("实际主窗原底栏单次调试未启用。");
+            editor.ExecuteOnce.Execute(null);
+            var deadline=DateTime.UtcNow.AddSeconds(15);
+            while(editor.State.IsRunning){if(DateTime.UtcNow>deadline)throw new TimeoutException("实际参数窗调试未排空。");await Task.Delay(5);}
+            var privateResult=(SunEyeVision.Plugin.Runtime.DeclaredOutputSnapshot?)editor.Editor.GetType().GetProperty("CurrentDebugSnapshot",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(editor.Editor);
+            if(privateResult is not {IsSuccess:true}||privateResult.Identity.DocumentSessionId==session.ResultOwnerId||session.AcquirePublishedResult(flow.Id,node.Id) is not null||vm.FlatResultRows.Count==0)
+                throw new Exception("实际参数窗私有调试结果没有通过原结果区呈现，或污染了正式发布。");
+            Console.WriteLine("debug: actual MainWindow -> original bottom command -> stable Session debug -> HALCON -> private result table; formal result remains absent");
+        }
         session.Editing.Apply();editor.Close();
         Console.WriteLine("formal: actual session -> canvas selection -> actual parameter window -> receipt -> close");
         var run=(Task)typeof(MainWindowViewModel).GetMethod("ExecuteRunWorkflow",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(vm,null)!;await run;

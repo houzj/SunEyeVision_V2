@@ -68,13 +68,12 @@ public partial class MainWindowViewModel
     {
         var session=DocumentManager.CurrentSession;var node=SelectedNode;var workflowId=WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId;
         if(session is null||node is null||workflowId is null||snapshot.Identity.NodeId!=node.Id||snapshot.SourceWorkflowId!=workflowId)return;
-        if(snapshot.Identity.DocumentSessionId!=session.ResultOwnerId)return;
+        if(snapshot.Identity.DocumentSessionId!=session.ResultOwnerId&&!ReferenceEquals(CurrentEditorDebugSnapshot,snapshot))return;
         var epoch=RetireResultPublication();var owner=CaptureResultViewOwner(epoch);
         bool Current()
         {
             if(!owner()||sourceIsCurrent?.Invoke()==false)return false;
-            using var latest=session.AcquirePublishedResult(workflowId,node.Id);
-            return latest is not null&&ReferenceEquals(latest.Snapshot,snapshot)&&owner();
+            return IsCurrentPresentedSnapshot(session,workflowId,node,snapshot)&&owner();
         }
         if(!Current())return;
         var publication=ToolResultViews.FromSnapshot(snapshot,Current);
@@ -87,6 +86,7 @@ public partial class MainWindowViewModel
         var session=DocumentManager.CurrentSession;var node=SelectedNode;var workflowId=WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId;
         if(session is null||node is null||workflowId is null){ClearResultDisplay();return;}
         if(!OwnsSelectedDocumentNode(node)){SelectedNode=null;return;}
+        if(CurrentEditorDebugSnapshot is {} debug){PresentSnapshot(debug,node.Name);return;}
         using var reader=session.AcquirePublishedResult(workflowId,node.Id);
         if(reader is not null){PresentSnapshot(reader.Snapshot,node.Name);return;}
         var schema=session.GetNodeSchema(workflowId,node.Id);

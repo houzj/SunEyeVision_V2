@@ -15,13 +15,13 @@ public partial class MainWindowViewModel
         OnPropertyChanged(nameof(IsDebugWindowOpen));OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace));
         System.Windows.Input.CommandManager.InvalidateRequerySuggested();
     }
-    private bool TryCloseParameterWindowsForTransition()
+    private async Task<bool> TryCloseParameterWindowsForTransitionAsync()
     {
         if(_openDebugWindow is {} previous)
         {
-            var closed=false;void Closed(object? sender,EventArgs args)=>closed=true;previous.Closed+=Closed;
-            try{previous.Close();}finally{previous.Closed-=Closed;}
-            if(!closed){EndSolutionTransition();return false;}
+            if(previous is Services.Editing.RuntimeToolEditorWindow actual)
+            {if(!await actual.CloseAndDrainAsync()){EndSolutionTransition();return false;}}
+            else {previous.Close();if(previous.IsVisible){EndSolutionTransition();return false;}}
         }
         if(_auxiliaryParameterWindows.TryCloseAll())return true;
         EndSolutionTransition();return false;

@@ -1,3 +1,8 @@
+## 2026-11-03 规范编码87f4集成自测闭口，实体会话继续
+
+产品合入f8c05a6c19f13833cef1e50047461601c6ee2128，自身完整Release0错/3357警告，封包ED669DEB11F72BD318553BAE8343F78C6EEB805C24B88995B446456DC37A5B71。规范3/Graph39(含当前值正式保存重开1)/SDK302/输入24/图像源31/Blob11/查询7/Root38同载no-build全部通过；隐藏Text6，attempt036 PID49388退出0，Contracts/Runtime/Workflow/UI四实际加载路径及SHA逐项核对。原编码主文档、全平台计划和剩余矩阵统一更新。证据Release/_validation/canonical-integrated-20261103/final-evidence.json。首次full缺新测试assets失败，锁定restore后通过，原日志保留；旧S4当前值/数值脚本编译失败不计通过。人工/设计器/主仓合并未做，Group暂停。
+
+下一整批两条源码线继续：领域线在独立树集中处理真实Solution全部业务字段、唯一配置/可信准入、DocumentSession原子图事务与历史、执行/持久化；UI线前置缓存生命周期3cc5d6cec自身UI0错、14项通过，完整组合仍需后端真实ABI，不借前置成绩计整批完成。只读评审已交实际变量/设备/通信/事件/DB等依赖给领域线，不以假Solution或JsonElement替业务。公共ABI未形成前不强合半成品，原目标与清单保持。
 ## 2026-11-03 共享规范编码集中合入，待本地集成验证
 
 已保留双方设计及候选记录，合入13024cf8a/4c26614e2的唯一Contracts编码和全部直接消费者。下一实体/会话与UI完整迁移继续在两个独立worktree；当前87f4接下来重建正式Release并相称回归，不能借独立候选成绩。

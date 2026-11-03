@@ -407,9 +407,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
      {
       var affected=field.Presentation.Layout?.DialogGroup is {} displayGroup?section.Where(item=>item.Presentation.Layout?.DialogGroup==displayGroup).Select(item=>item.Port.Id).ToArray():
        field.Presentation.Layout?.PairWith is {} other?new[]{field.Port.Id,other}:new[]{field.Port.Id};
-      var row=BorrowRow(metadata,view,()=>affected.Any(id=>states[id].EditError.Length!=0)?NativeParameterItemState.WriteError:
-       affected.Any(id=>states[id].SourceError.Length!=0)?NativeParameterItemState.ReadError:
-       affected.Any(id=>states[id].HasInvalidInput)?NativeParameterItemState.WriteError:NativeParameterItemState.Normal);
+      var row=BorrowRow(metadata,view,()=>NativeParameterRow.ProjectState(affected.Select(id=>states[id])));
       pageRows.Rows.Add(row);_positions.Add(view,(pageRows,row));
      }
      _visibility.Add(view,(advanced,field.Presentation.Layout?.VisibleWhen));

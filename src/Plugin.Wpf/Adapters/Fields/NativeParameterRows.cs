@@ -34,6 +34,19 @@ public sealed class NativeParameterRow : INotifyPropertyChanged,IDisposable
     public bool EnableA=>!_disposed;
     public bool CustomVisibleA=>!_disposed&&_view.Visibility!=Visibility.Collapsed;
     public NativeParameterItemState MyItemState=>_disposed?NativeParameterItemState.Normal:_state();
+    // The original row distinguishes read/write failures from an unfinished source
+    // choice. MissingReference still blocks capture; it is not a failed write.
+    internal static NativeParameterItemState ProjectState(IEnumerable<DeclaredFieldState> states,bool otherInvalid=false)
+    {
+        var readError=false;var invalid=otherInvalid;
+        foreach(var state in states)
+        {
+            if(state.EditError.Length!=0)return NativeParameterItemState.WriteError;
+            readError|=state.SourceError.Length!=0;
+            invalid|=state.HasInvalidInput&&!state.MissingReference;
+        }
+        return readError?NativeParameterItemState.ReadError:invalid?NativeParameterItemState.WriteError:NativeParameterItemState.Normal;
+    }
     public ICommand ParamItemSelectedCommand {get;}
     public event PropertyChangedEventHandler? PropertyChanged;
     public NativeParameterRow(NativeParameterGroup group,FrameworkElement view,Func<NativeParameterItemState>? state=null,Action? selected=null)

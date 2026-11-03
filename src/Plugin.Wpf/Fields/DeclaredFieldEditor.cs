@@ -105,7 +105,8 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     private FrameworkElement? _inputElement;
     public FrameworkElement? InputElement {get=>_numeric?.TextEditor??_textPresenter?.TextEditor??_inputElement;private set=>_inputElement=value;}
     private bool MissingReference=>_state.MissingReference;
-    internal NativeParameterItemState NativeItemState=>_state.EditError.Length!=0?NativeParameterItemState.WriteError:_state.SourceError.Length!=0?NativeParameterItemState.ReadError:HasInvalidText?NativeParameterItemState.WriteError:NativeParameterItemState.Normal;
+    internal NativeParameterItemState NativeItemState=>NativeParameterRow.ProjectState(new[]{_state},
+        ChoiceError is not null||_children.Any(child=>child.NativeItemState!=NativeParameterItemState.Normal));
     public bool HasInvalidText => _state.HasInvalidInput || ChoiceError is not null || _children.Any(child => child.HasInvalidText);
     public bool HasPendingEdits=>!_disposed&&(HasInvalidText||_numeric?.HasPendingEdits==true||_textPresenter?.HasPendingEdits==true
         ||_referencePresenter?.HasPendingEdits==true||_children.Any(child=>child.HasPendingEdits));

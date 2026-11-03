@@ -1,45 +1,20 @@
 @echo off
-echo ========================================
-echo 清理并重新编译解决方案
-echo ========================================
-echo.
-
-echo [1/4] 清理解决方案...
-dotnet clean SunEyeVision.sln
-if errorlevel 1 (
-    echo 清理失败！
-    pause
-    exit /b 1
+chcp 65001 >nul
+setlocal
+cd /d "%~dp0"
+rem 由正式工程图Rebuild管理产物，不递归手删目录，不构建旧Workflow工程。
+if /i "%~1"=="--restore" (
+    dotnet restore SunEyeVision.slnx --locked-mode
+    if errorlevel 1 goto :fail
 )
-echo 清理完成！
-echo.
-
-echo [2/4] 清理 bin 和 obj 目录...
-for /d /r . %%d in (bin obj) do @if exist "%%d" rd /s /q "%%d"
-echo 清理完成！
-echo.
-
-echo [3/4] 重新编译 Workflow 项目...
-dotnet build src/Workflow/SunEyeVision.Workflow.csproj --configuration Release
-if errorlevel 1 (
-    echo Workflow 编译失败！
-    pause
-    exit /b 1
-)
-echo Workflow 编译成功！
-echo.
-
-echo [4/4] 重新编译 UI 项目...
-dotnet build src/UI/SunEyeVision.UI.csproj --configuration Release
-if errorlevel 1 (
-    echo UI 编译失败！
-    pause
-    exit /b 1
-)
-echo UI 编译成功！
-echo.
-
-echo ========================================
-echo 全部编译成功！
-echo ========================================
-pause
+echo 正在重建正式完整解决方案（Release）...
+dotnet build SunEyeVision.slnx --configuration Release --no-restore -t:Rebuild
+if errorlevel 1 goto :fail
+echo 重建完成：Release\SunEyeVision_v1.0.0\SunEyeVision
+if not defined CI pause
+exit /b 0
+:fail
+set "BUILD_EXIT=%errorlevel%"
+echo 重建失败，退出码 %BUILD_EXIT%。
+if not defined CI pause
+exit /b %BUILD_EXIT%

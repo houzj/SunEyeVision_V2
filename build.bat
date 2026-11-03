@@ -1,30 +1,19 @@
 @echo off
+chcp 65001 >nul
+setlocal
 cd /d "%~dp0"
-echo ========================================
-echo SunEyeVision 构建脚本 (Debug模式)
-echo ========================================
-echo.
-
-echo 正在编译主解决方案...
-dotnet build SunEyeVision.sln --configuration Debug
-if %errorlevel% neq 0 (
-    echo.
-    echo ========================================
-    echo 编译失败！请检查错误信息。
-    echo ========================================
-    pause
-    exit /b 1
+if /i "%~1"=="--restore" (
+    dotnet restore SunEyeVision.slnx --locked-mode
+    if errorlevel 1 goto :fail
 )
-
-echo.
-echo 正在初始化 ScriptRefs（3 个必备 DLL）...
-powershell -ExecutionPolicy Bypass -File scripts\Init-ScriptRefs.ps1
-
-echo.
-echo ========================================
-echo 构建成功！
-echo ========================================
-echo.
-echo 插件目录: src\UI\bin\Debug\net9.0-windows\plugins\
-echo 运行应用程序请使用: run_app.bat
-pause
+echo 正在构建正式完整解决方案（Release）...
+dotnet build SunEyeVision.slnx --configuration Release --no-restore
+if errorlevel 1 goto :fail
+echo 构建完成：Release\SunEyeVision_v1.0.0\SunEyeVision
+if not defined CI pause
+exit /b 0
+:fail
+set "BUILD_EXIT=%errorlevel%"
+echo 构建失败，退出码 %BUILD_EXIT%。
+if not defined CI pause
+exit /b %BUILD_EXIT%

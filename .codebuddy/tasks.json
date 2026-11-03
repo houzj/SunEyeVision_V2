@@ -7,7 +7,7 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/SunEyeVision.sln",
+        "${workspaceFolder}/SunEyeVision.slnx",
         "/configuration:Debug",
         "/verbosity:minimal"
       ],
@@ -27,7 +27,7 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/SunEyeVision.sln",
+        "${workspaceFolder}/SunEyeVision.slnx",
         "/configuration:Release",
         "/verbosity:minimal"
       ],
@@ -44,7 +44,7 @@
       "type": "process",
       "args": [
         "clean",
-        "${workspaceFolder}/SunEyeVision.sln"
+        "${workspaceFolder}/SunEyeVision.slnx"
       ],
       "problemMatcher": "$msCompile",
       "presentation": {

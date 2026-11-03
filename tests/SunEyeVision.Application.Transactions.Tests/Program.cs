@@ -396,7 +396,8 @@ var reopenedResourceSave = resourceReopened.Save(movedPath, Path.Combine(resourc
 Check(reopenedResourceSave.WrittenSnapshot.ResourcePlan.Single().AbsolutePath == absoluteResource, "重开后保存应保持资源身份。");
 Console.WriteLine("PASS 相对资源另存、重复保存、副本、捕获、实际解析与重开同一语义基址");
 DisplayValidationScenario.Run(saveRoot);
-Console.WriteLine("21 个事务场景通过；真实工具、WPF及完整运行仍待整批验证。");
+RootWorkspaceScenario.Run(saveRoot);
+Console.WriteLine("22 个事务场景通过；真实工具、WPF及完整运行仍待整批验证。");
 return 0;
 }
 catch (Exception error) { Console.Error.WriteLine(error); return 1; }

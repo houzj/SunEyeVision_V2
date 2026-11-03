@@ -40,7 +40,8 @@ public sealed partial class DocumentSession
                 var prepared = PrepareEditCore(proposal);
                 var effects = ProjectGraphChange(prepared.Before.Graphs, prepared.After.Graphs);
                 var variableChanges = ProjectVariableChanges(prepared.Before, prepared.After, prepared.ValueWrites.Keys);
-                var rootChanged = prepared.Before.Roots.Any(pair => pair.Value != prepared.After.Roots[pair.Key]);
+                var workflowChanges = ProjectWorkflowConfigurationChanges(prepared.Before, prepared.After);
+                var rootChanged = workflowChanges.Length != 0;
                 var configurationChanged = effects.Nodes.Count != 0 || effects.Removed.Count != 0 || effects.Connections.Count != 0 ||
                     rootChanged || prepared.Before.Variables.Length != prepared.After.Variables.Length ||
                     prepared.Before.Variables.Where((variable, index) => !ReferenceEquals(variable, prepared.After.Variables[index])).Any() ||
@@ -61,8 +62,7 @@ public sealed partial class DocumentSession
                 var change = changed ? new DocumentChangeSet(EditSessionId, revision, DocumentChangeOrigin.Edit,
                     nodeChanges.ToImmutableArray(), effects.Removed.ToImmutableArray(), effects.Connections.ToImmutableArray(),
                     variableChanges.ToImmutableArray(), prepared.Invalidated.ToImmutableArray(),
-                    prepared.After.Roots.Where(pair => prepared.Before.Roots[pair.Key] != pair.Value)
-                        .Select(pair => new WorkflowChange(pair.Key, WorkflowChangedAspect.RootConfiguration)).ToImmutableArray()) : null;
+                    workflowChanges) : null;
                 DocumentHistoryEntry? history = null;
                 if (changed)
                 {

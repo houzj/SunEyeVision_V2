@@ -33,6 +33,9 @@ public sealed class NodeConfigurationEditDraft
     public ToolSchema SettingsSchema => _candidate.SettingsSchema;
     public ToolSchema DisplaySchema => _candidate.DisplaySchema;
     internal AdmittedToolConfiguration CurrentCandidate => _candidate;
+    internal ConstantSetting? ReadCurrentParameter(string fieldId) { EnsureCurrent(); return _candidate.Configuration.ReadCurrentParameter(fieldId); }
+    internal bool HasPendingChanges => _candidate.ConfigurationIdentity != _opening.Configuration.ConfigurationIdentity ||
+        _candidate.SettingsSchema.Inputs.Any(port => _candidate.Configuration.CurrentValueChangedFrom(port.Id, _opening.Configuration.Configuration));
 
     /// <summary>Apply a complete group through the admitted declaration before replacing the candidate.</summary>
     public void ApplyFields(IReadOnlyDictionary<string, ParameterSetting> changes)

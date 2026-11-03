@@ -1,3 +1,17 @@
+## 2026-11-03 根工作区运行设置、独立导航与来源对应集中交接
+
+- 基线提交：2ec22ee64；本批复用界面保全点c8a8b773b的归属/待改/当前值查询，原件文件身份见原主HTML本批对应表。
+- 当前分支：codex/workflow-toolbox-dataflow。
+- 当前执行者：Codex根；A执行/宿主输入，C图像源与根配置，新的ui_production主窗/节点参数/结果；旧workflow_domain已中断撤写。
+- 任务目标：同一Root草稿和统一事务接受RunIntervalMs/StopOnNg，Overview导航独立；原证与本方实现分类可核，不冒称完整原厂等价。
+- 允许修改目录：本批根独占Application核心及Editing接缝；B/C/A各独立树既定写权不变。
+- 已修改文件：根Root草稿/Proposal回执、EditState/History/ChangeSet、Workspace导航partial、Host已有能力、真实事务测试及原主HTML/整体设计。
+- 已完成：运行设置/根配置/参数联合提交，Undo/Redo保最新Overview；运行中导航不进参数历史，真实实例/边界/重入/观察者失败保护；回执保Prepare后输入，保存前接纳和重开。
+- 未完成：UI窗口原件370×200/SliderArrange迁移、实际连续间隔/NG停止执行、流程目录增删重排、完整主窗和旧Workflow退出；不因存储字段可改而计运行功能完成。
+- 已执行构建与测试：Application Release0错；22项Session场景root-workspace-shared-editing-20261103.log；13项执行root-workspace-execution-20261103.log；实际Mat与取消/替换拒绝/关闭释放root-workspace-native-20261103.log均0退出。
+- 人工验收结果：本批未做；VS设计器与主仓集成未验。
+- 已知风险或禁止改动：NG停止目前只核原件菜单入口，无完整原生链证据；导航保存/历史完整原件依赖未核，本方职责不能称直迁。Group/循环暂停，不改主仓产物，不加旧友元/兼容模型。
+- 下一步：按固定共享源接主窗与C间隔窗；集中退出旧Workflow6错并补正式视图/字段预验/引用顺序接缝；A/C完成真实图像源→Blob及序列选择释放，来源映射持续归原主方案。
 ## 2026-11-03 显示查询与正式编辑验证、节点生命周期共享
 
 集成C132/ebfd查询源和根CandidateDisplayValidation，显示前序/自身、不造执行依赖，表达式Reference/Self及位置、跨流程/变量索引/格式/非法自身字段拒绝；21实际Session场景通过（session-display-host-lifetime-20261103.log），含记录行与序列位置、历史、保存重开。实际节点Guid+token生命周期抽成无UI partial，删除与Undo不复活；GetNodeHostInputDeclaration(workflowId,actualNode)拒同ID伪造。Aab7/c76已cherry756/cd5，Execution13/13（session-node-lifetime-execution-20261103.log）。原主HTML同步。不代表正式Blob/完整主窗/全量通过。

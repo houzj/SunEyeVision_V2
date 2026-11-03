@@ -18,6 +18,7 @@ public sealed class GlobalVariableConfigurationEditDraft : IDisposable
     private readonly Dictionary<GlobalVariable, GlobalVariable?> _origins = new(ReferenceEqualityComparer.Instance);
     private bool _consumed;
     private long _revision;
+    private readonly string _initialIdentity;
 
     internal GlobalVariableConfigurationEditDraft(DocumentSession session, IEnumerable<GlobalVariable>? candidate = null)
     {
@@ -29,10 +30,13 @@ public sealed class GlobalVariableConfigurationEditDraft : IDisposable
             for (var i = 0; i < Variables.Count; i++) _origins.Add(Variables[i], _opening.Entries[i].Actual);
         Variables.CollectionChanged += CandidatesChanged;
         WatchCandidates();
+        _initialIdentity = CandidateIdentity(_opening.Entries.Select(entry => entry.Opening));
     }
 
     public Guid EditSessionId => _session.EditSessionId;
     internal DocumentSession Session => _session;
+    internal bool HasPendingChanges => _explicitValues.Any(pair => _valueOwners.TryGetValue(pair.Key, out var owner) && Variables.Any(item => ReferenceEquals(item, owner) && item.Id == pair.Key)) ||
+        CandidateIdentity(Variables) != _initialIdentity;
     /// <summary>Only candidate copies belong here; adding/removing them does not change the document.</summary>
     public ObservableCollection<GlobalVariable> Variables { get; }
 
@@ -66,15 +70,15 @@ public sealed class GlobalVariableConfigurationEditDraft : IDisposable
         var origins = values.Select(variable => new VariableCandidateOrigin(variable.Id, variable, _origins.GetValueOrDefault(variable))).ToArray();
         return new(_session, _opening, copies, Array.AsReadOnly(origins), writes,
             new ReadOnlyDictionary<string, long>(_valueRevisions.Where(pair => IsCurrentWrite(pair.Key)).ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal)),
-            _revision, CandidateIdentity());
+            _revision, CandidateIdentity(Variables));
     }
 
     internal bool Matches(GlobalVariableConfigurationEditProposal frozen) => ReferenceEquals(frozen.Session, _session) &&
-        frozen.DraftRevision == _revision && frozen.DraftIdentity == CandidateIdentity();
+        frozen.DraftRevision == _revision && frozen.DraftIdentity == CandidateIdentity(Variables);
 
     // Nested producer metadata, extension dictionaries and editable arrays can change in
     // place without PropertyChanged. Do not serialize or take ownership of native values.
-    private string CandidateIdentity() => System.Text.Json.JsonSerializer.Serialize(Variables.Select(variable => new
+    private static string CandidateIdentity(IEnumerable<GlobalVariable> variables) => System.Text.Json.JsonSerializer.Serialize(variables.Select(variable => new
     {
         variable.Id, variable.Name, variable.Group, variable.Index, variable.Type, variable.Description,
         variable.ProducerBinding, variable.RebindingReason, variable.BindingValidationPending, variable.AdditionalData,

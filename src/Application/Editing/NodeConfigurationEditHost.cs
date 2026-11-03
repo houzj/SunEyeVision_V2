@@ -9,6 +9,25 @@ public sealed partial class NodeConfigurationEditHost
     private bool _closed;
     internal DocumentSession Session => _session;
 
+    public bool OwnsNode(string workflowId, SunEyeVision.Domain.Workflows.NodeDefinition node)
+    {
+        EnsureAvailable(); ArgumentNullException.ThrowIfNull(node);
+        return _session.GetNodes(workflowId).Any(item => ReferenceEquals(item, node));
+    }
+    public bool OwnsRoot(RootWorkflowConfigurationEditDraft draft)
+    {
+        EnsureAvailable(); ArgumentNullException.ThrowIfNull(draft);
+        return ReferenceEquals(draft.Session, _session) && !draft.Workflow.IsSubroutine &&
+            _session.GetWorkflows().Any(item => ReferenceEquals(item, draft.Workflow));
+    }
+    public bool HasPendingChanges(NodeConfigurationEditDraft draft)
+    { EnsureAvailable(); ArgumentNullException.ThrowIfNull(draft); return ReferenceEquals(draft.Session, _session) ? draft.HasPendingChanges : throw new InvalidOperationException("草稿属于另一个方案。"); }
+    public bool HasPendingChanges(RootWorkflowConfigurationEditDraft draft)
+    { EnsureAvailable(); ArgumentNullException.ThrowIfNull(draft); return ReferenceEquals(draft.Session, _session) ? draft.HasPendingChanges : throw new InvalidOperationException("草稿属于另一个方案。"); }
+    public bool HasPendingChanges(GlobalVariableConfigurationEditDraft draft)
+    { EnsureAvailable(); ArgumentNullException.ThrowIfNull(draft); return ReferenceEquals(draft.Session, _session) ? draft.HasPendingChanges : throw new InvalidOperationException("草稿属于另一个方案。"); }
+    public SunEyeVision.Plugin.Contracts.ConstantSetting? ReadCurrentParameter(NodeConfigurationEditDraft draft, string fieldId)
+    { EnsureAvailable(); ArgumentNullException.ThrowIfNull(draft); if (!ReferenceEquals(draft.Session, _session)) throw new InvalidOperationException("草稿属于另一个方案。"); return draft.ReadCurrentParameter(fieldId); }
     internal NodeConfigurationEditHost(DocumentSession session)
         => _session = session ?? throw new ArgumentNullException(nameof(session));
 
@@ -37,7 +56,8 @@ public sealed partial class NodeConfigurationEditHost
         var current = _session.OpenScope(draft.WorkflowId);
         if (!ReferenceEquals(current.Flow, draft.Workflow)) throw new InvalidOperationException("根流程实例已被替换。");
         var rebased = new RootWorkflowConfigurationEditDraft(_session, current,
-            draft.Matches(frozen) ? current.Flow.RootConfiguration : draft.Configuration);
+            draft.Matches(frozen) ? current.Flow.RootConfiguration : draft.Configuration,
+            draft.Matches(frozen) ? current.Flow.WorkspaceSettings : draft.WorkspaceSettings);
         draft.MarkConsumed();
         return rebased;
     }

@@ -11,6 +11,7 @@ public sealed partial class DocumentSession
 {
     private sealed record EditState(IReadOnlyDictionary<WorkflowDefinition, GraphState> Graphs,
         IReadOnlyDictionary<WorkflowDefinition, RootWorkflowConfiguration> Roots,
+        IReadOnlyDictionary<WorkflowDefinition, RootWorkspaceSettings> Workspaces,
         GlobalVariable[] Variables, IReadOnlyList<GlobalVariable> Definitions);
     private sealed record PreparedEdit(EditState Before, EditState After,
         IReadOnlyDictionary<GlobalVariable, object?> ValueWrites,
@@ -22,11 +23,14 @@ public sealed partial class DocumentSession
             (IEqualityComparer<WorkflowDefinition>)ReferenceEqualityComparer.Instance),
         Document.Workflows.ToDictionary(flow => flow, flow => flow.RootConfiguration,
             (IEqualityComparer<WorkflowDefinition>)ReferenceEqualityComparer.Instance),
+        Document.Workflows.ToDictionary(flow => flow, flow => flow.WorkspaceSettings,
+            (IEqualityComparer<WorkflowDefinition>)ReferenceEqualityComparer.Instance),
         Document.GlobalVariables.ToArray(), GlobalVariable.CaptureDefinitions(Document.GlobalVariables.ToArray()));
 
     private bool MatchesEditState(EditState state) => Document.Workflows.Count == state.Graphs.Count &&
         state.Graphs.All(pair => Document.Workflows.Count(flow => ReferenceEquals(flow, pair.Key)) == 1 &&
-            pair.Value.MatchesCurrent(pair.Key) && ReferenceEquals(pair.Key.RootConfiguration, state.Roots[pair.Key])) &&
+            pair.Value.MatchesCurrent(pair.Key) && ReferenceEquals(pair.Key.RootConfiguration, state.Roots[pair.Key]) &&
+            SameWorkspaceRunSettings(pair.Key.WorkspaceSettings, state.Workspaces[pair.Key])) &&
         Document.GlobalVariables.Count == state.Variables.Length &&
         state.Variables.Where((variable, index) => !ReferenceEquals(variable, Document.GlobalVariables[index])).Any() == false &&
         GlobalVariable.CaptureDefinitions(Document.GlobalVariables.ToArray()).Select(VariableConfigurationSignature)
@@ -52,13 +56,17 @@ public sealed partial class DocumentSession
             (IEqualityComparer<WorkflowDefinition>)ReferenceEqualityComparer.Instance);
         var roots = new Dictionary<WorkflowDefinition, RootWorkflowConfiguration>(before.Roots,
             ReferenceEqualityComparer.Instance);
+        var workspaces = new Dictionary<WorkflowDefinition, RootWorkspaceSettings>(before.Workspaces, ReferenceEqualityComparer.Instance);
         foreach (var item in proposal.Roots)
         {
             ValidateScopeCore(item.Scope);
-            if (item.Scope.Flow.IsSubroutine || !ReferenceEquals(item.Opening, item.Scope.Flow.RootConfiguration))
+            if (item.Scope.Flow.IsSubroutine || !ReferenceEquals(item.Opening, item.Scope.Flow.RootConfiguration) ||
+                !SameWorkspaceRunSettings(item.OpeningWorkspace, item.Scope.Flow.WorkspaceSettings))
                 throw new InvalidOperationException("根流程配置已变化。");
             RootConfigurationValidation.Validate(item.Candidate, graphs[item.Scope.Flow], AdmitConfiguration);
             roots[item.Scope.Flow] = item.Candidate;
+            item.Workspace.Validate();
+            workspaces[item.Scope.Flow] = MergeWorkspaceRunSettings(item.Workspace, item.Scope.Flow.WorkspaceSettings);
         }
 
         var accepted = new Dictionary<GlobalVariable, GlobalVariable>(ReferenceEqualityComparer.Instance);
@@ -163,7 +171,7 @@ public sealed partial class DocumentSession
             seeds, (node, config) => AdmitConfiguration(node, config).ExecutionConfigurationIdentity);
         if (!Current()) throw new InvalidOperationException("编辑准备回调期间正式方案已变化。");
         proposal.EnsureCanConsume();
-        return new PreparedEdit(before, new EditState(reconciled.Graphs, roots, variables, reconciled.Variables),
+        return new PreparedEdit(before, new EditState(reconciled.Graphs, roots, workspaces, variables, reconciled.Variables),
             new ReadOnlyDictionary<GlobalVariable, object?>(writes),
             new ReadOnlyDictionary<GlobalVariable, GlobalVariable>(accepted), invalidated);
     }

@@ -96,8 +96,7 @@ public sealed partial class DocumentSession
                     effects.Nodes.ToImmutableArray(), effects.Removed.ToImmutableArray(),
                     effects.Connections.ToImmutableArray(), variableChanges.ToImmutableArray(),
                     History.LastInvalidatedNodes.ToImmutableArray(),
-                    after.Roots.Where(pair => before.Roots[pair.Key] != pair.Value)
-                        .Select(pair => new WorkflowChange(pair.Key, WorkflowChangedAspect.RootConfiguration)).ToImmutableArray());
+                    ProjectWorkflowConfigurationChanges(before, after));
                 ChangeRevision = revision;
                 RetireChangedDomains(change);
             }

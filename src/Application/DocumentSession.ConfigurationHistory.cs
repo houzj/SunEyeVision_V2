@@ -10,7 +10,7 @@ public sealed partial class DocumentSession
     private static EditState ForConfigurationHistory(EditState state) => new(
         state.Graphs.ToDictionary(pair => pair.Key, pair => pair.Value.WithoutCurrentValues(),
             (IEqualityComparer<WorkflowDefinition>)ReferenceEqualityComparer.Instance),
-        state.Roots, state.Variables.ToArray(), StripRuntimeValues(state.Definitions));
+        state.Roots, state.Workspaces, state.Variables.ToArray(), StripRuntimeValues(state.Definitions));
 
     private sealed class ConfigurationHistoryOperation : IDocumentHistoryOperation, IDocumentHistoryReplayEffects
     {
@@ -91,6 +91,8 @@ public sealed partial class DocumentSession
                         }
                         foreach (var (flow, graph) in state.Graphs) graph.Apply(flow, resolve);
                         foreach (var (flow, configuration) in state.Roots) flow.RootConfiguration = configuration;
+                        foreach (var (flow, workspace) in state.Workspaces)
+                            flow.WorkspaceSettings = MergeWorkspaceRunSettings(workspace, flow.WorkspaceSettings);
                         for (var index = 0; index < state.Variables.Length; index++)
                         {
                             var variable = state.Variables[index];

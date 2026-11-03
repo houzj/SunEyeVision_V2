@@ -15,7 +15,7 @@ public sealed record ConnectionChange(string WorkflowId, ConnectionDefinition Co
     string? OldSourceNodeId, string? OldTargetNodeId);
 public sealed record VariableChange(GlobalVariable Variable, VariableChangeKind Kind, string? OldId, int? OldIndex, bool ValueChanged = false);
 [Flags]
-public enum WorkflowChangedAspect { RootConfiguration = 1 }
+public enum WorkflowChangedAspect { RootConfiguration = 1, RunSettings = 2 }
 public sealed record WorkflowChange(WorkflowDefinition Workflow, WorkflowChangedAspect Aspects);
 public sealed record DocumentChangeSet(Guid EditSessionId, long Revision, DocumentChangeOrigin Origin,
     ImmutableArray<NodeChange> ChangedNodes, ImmutableArray<RemovedNode> RemovedNodes,

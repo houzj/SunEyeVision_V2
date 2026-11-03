@@ -1,3 +1,8 @@
+## 2026-11-03 原件开窗证据核收与V4整体策略冻结
+
+长期用户原则已同源写AGENTS/取证约定及原全平台计划：UI/控件模型/交互/工具组织原件直接迁，HALCON算法对标；只留必要身份/执行保存/资源平台接缝，不能演变重设计。原开窗静态报告已按原格式归档VM_EDITOR_OPEN_LIFECYCLE_ORIGINAL_20261103.md，SHA50A2370844A9355286E624318E2B476399216BE2A6DF8B299589591C2E4BF03B，核三个源SHA及关键关闭/根缓存调用。原件先Close旧窗再开，不据此推窗口缓存或恰一次Bind；UI将退出本方无原证额外Yes/No替换对话。独立限定窗首轮拒绝/取消通过、确认替换失败后改Closed信号并复验通过；冷热计时未与旧版同环境对照，不称提速，新架构/故障/设计时还未验。
+
+技术总监已正式核同意方案SchemaVersion4：新节点Configuration，旧3/RuntimeConfiguration/派生ConsumerBindings严格拒绝不覆盖原文件，无旧桥，Contracts codec版本/字节不变。老主仓曾有派生列表写入，当前87f4创建入口已退出，残余消费者按整链删除；不是VM文档格式。A继续Application/Host/原子图/Execution及生产Manager，C已接管纯Persistence整层V4/元数据/原子保存/恢复/解码资源scope和变量独立导入导出，Domain.Persistence冻结声明由C写；B续UI实际消费者。各自工作树仍在途，当前87f4正式产品仍f8/ED669，不交付新方案链。详情已统一原主HTML而非仅账本。
 ## 2026-11-03 在途实体会话真实接缝与原厂优先规则
 
 已只读核三树真实源码，非文档推定：A的638f8ab7a/4f36b8104为实体、可信scope、ChangeSet及图草稿准备检查点，Application定位0错，原子图提交/引用修复/生产文档工厂仍缺；B已在同一UI独立树互合真实源码，不造空提交/旧桥，整体构建目前在旧Workflow编辑Host访问Domain内部raw/CAS处失败，待A将Host整体迁Application，不加Workflow友元掩盖。原overview终结后由workflow_domain接续同一UI唯一写权，未分走图职责。C的f92/0234含纯Persistence+正式Infrastructure.Persistence引用、真实SDK/OpenCV复杂值适配与通信owner状态；当前仅组件验证，未通过整体方案保存/关闭或UI生产链，不计完成。

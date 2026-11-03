@@ -1,0 +1,1395 @@
+{
+  "schemaVersion": 1,
+  "kind": "public-candidate-handoff",
+  "baseline": "8962f6bdbc74e88637fecd3d8bd01677849134b1",
+  "branch": "codex/parameter-neutral-public-20261103",
+  "productSource": "e567eed25fda33327eebc0b3366e35d34157c4da",
+  "publicProduct": "a4300d81e40b6641b2f7c28e30bf6e24eb4460ec",
+  "consumerTests": "e8028cdc0f137c54e21e4aa62449fbd1327e65a7",
+  "consumerIntegration": "7377aa46ff9ac55a471b5a04d0ec2b86467ae3d7",
+  "publicCorrection": "e567eed25fda33327eebc0b3366e35d34157c4da",
+  "candidateRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101",
+  "productRoot": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101/Release/SunEyeVision_v1.0.0/SunEyeVision",
+  "candidateReceipt": {
+    "scope": "公共候选整批命名迁移自测，不替代主仓正式/实际VS/人工",
+    "source": "e567eed25fda33327eebc0b3366e35d34157c4da",
+    "publicProduct": "a4300d81e",
+    "consumerTests": "e8028cdc0",
+    "publicCorrection": "e567eed25",
+    "passed": true,
+    "builds": [
+      {
+        "source": "e567eed25fda33327eebc0b3366e35d34157c4da",
+        "command": "dotnet build src/UI/SunEyeVision.UI.csproj -c Release --no-restore -p:HalconSourceRoot=D:/MyWork/SunEyeVision_V2/libs/halcon/",
+        "started": "2026-11-03T13:02:15.5328195+08:00",
+        "finished": "2026-11-03T13:04:36.6978379+08:00",
+        "exitCode": 0,
+        "log": "Release/_validation/parameter-neutral-public-20261103/UI002.log"
+      },
+      {
+        "source": "e567eed25fda33327eebc0b3366e35d34157c4da",
+        "command": "dotnet build SunEyeVision.slnx -c Release --no-restore -p:HalconSourceRoot=D:/MyWork/SunEyeVision_V2/libs/halcon/",
+        "started": "2026-11-03T13:04:36.8250618+08:00",
+        "finished": "2026-11-03T13:06:27.6363709+08:00",
+        "exitCode": 0,
+        "log": "Release/_validation/parameter-neutral-public-20261103/full001.log"
+      }
+    ],
+    "failedInitialBuild": "Release/_validation/parameter-neutral-public-20261103/UI001.json",
+    "tracks": [
+      {
+        "track": "C07Reference",
+        "cases": 10,
+        "receipt": "Release\\_validation\\C07Reference-20261103\\attempt-005\\receipt.json",
+        "receiptSha256": "2416A25B6B7D709A92AF9F9DDEC42B337390CFF4850C56E477176F94D9D1B33E",
+        "exit": 0,
+        "loaded": [
+          {
+            "name": "SunEyeVision.Plugin.Contracts",
+            "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+            "sha256": "E2F19AAE041E695835220E26B60E532FD5F9B0FE8B5B20FEE6D5A97354AEBFF2",
+            "matchesCandidate": true
+          },
+          {
+            "name": "SunEyeVision.Plugin.Wpf",
+            "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+            "sha256": "8F69427203002EAC6618553E0405165B27A9580E98E0504EE3DE13FFDB85B206",
+            "matchesCandidate": true
+          }
+        ]
+      },
+      {
+        "track": "WindowPresentation",
+        "cases": 1,
+        "receipt": "Release\\_validation\\S4-20261025\\WindowPresentation\\attempt-012\\receipt.json",
+        "receiptSha256": "F3FEAE5FF924103F6CE202D00CF66E82B034204422B115969323D0461A20DE3F",
+        "exit": 0,
+        "loaded": [
+          {
+            "name": "SunEyeVision.Plugin.Wpf",
+            "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Wpf.dll",
+            "sha256": "8F69427203002EAC6618553E0405165B27A9580E98E0504EE3DE13FFDB85B206",
+            "matchesCandidate": true
+          },
+          {
+            "name": "SunEyeVision.UI",
+            "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.dll",
+            "sha256": "CE96F6E1EDD6B7B9DC60C9F30E6A40BD90111CA32A47F241D9DF7F454923AB01",
+            "matchesCandidate": true
+          },
+          {
+            "name": "SunEyeVision.Plugin.SDK",
+            "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.SDK.dll",
+            "sha256": "BC7597A0266EBAB3E4EFF8FA7BA5CFB97C13BC49E1CE23EA9067AB089D3508F6",
+            "matchesCandidate": true
+          },
+          {
+            "name": "SunEyeVision.Plugin.Contracts",
+            "path": "D:\\MyWork\\line-aiproject\\blob-reference-chain-20261101\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.Plugin.Contracts.dll",
+            "sha256": "E2F19AAE041E695835220E26B60E532FD5F9B0FE8B5B20FEE6D5A97354AEBFF2",
+            "matchesCandidate": true
+          }
+        ]
+      }
+    ],
+    "payloadSource": "e567eed25fda33327eebc0b3366e35d34157c4da",
+    "payloadEntries": 201,
+    "payloadSha256": "B8CB52984AA0529612D71524D05F86470BEE89848324186BE7F2FC101ABEDE19",
+    "payloadEntriesVerified": true,
+    "payloadUnchanged": true,
+    "completeFileCount": 202,
+    "completeFilesUnchanged": true,
+    "differences": [],
+    "entryFailures": [],
+    "structureCheck": "Release/_validation/parameter-neutral-public-20261103/structure-check-final.json",
+    "structureCheckSha256": "1690A349EBA0C9D72816FFEFBDF37FEB49599D4DCAB9DBA90FD08E675C7D4DF7",
+    "existingMissingUris": [
+      {
+        "oldSource": "src/Plugin.Wpf/Controls/Native/Composition/Apps.XmlUI/Apps.XmlUI/UserTempConverter.cs",
+        "oldLine": 22,
+        "oldTarget": "Themes/Native/Composition/Apps.XmlUI/Styles/ParamUserControlDataTemplate.xaml",
+        "source": "src/Plugin.Wpf/Controls/Native/Composition/Parameters/Core/UserTempConverter.cs",
+        "target": "Themes/Native/Composition/Apps.XmlUI/Styles/ParamUserControlDataTemplate.xaml",
+        "dynamic": false,
+        "classification": "existing-pending-resource"
+      },
+      {
+        "oldSource": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ImageView/HikCoverCircleStyleConverter.cs",
+        "oldLine": 18,
+        "oldTarget": "Themes/Native/Input/VM.PcUI/imageview/roidictionary.xaml",
+        "source": "src/Plugin.Wpf/Controls/Native/Input/FieldPrimitives/Imaging/CircularOverlayStyleConverter.cs",
+        "target": "Themes/Native/Input/VM.PcUI/imageview/roidictionary.xaml",
+        "dynamic": false,
+        "classification": "existing-pending-resource"
+      },
+      {
+        "oldSource": "src/Plugin.Wpf/Controls/Native/Input/VM.PcUI/HikPcUI.ImageView/HikCoverStyleConverter.cs",
+        "oldLine": 18,
+        "oldTarget": "Themes/Native/Input/VM.PcUI/imageview/roidictionary.xaml",
+        "source": "src/Plugin.Wpf/Controls/Native/Input/FieldPrimitives/Imaging/OverlayStyleConverter.cs",
+        "target": "Themes/Native/Input/VM.PcUI/imageview/roidictionary.xaml",
+        "dynamic": false,
+        "classification": "existing-pending-resource"
+      },
+      {
+        "oldSource": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF.Release/VMControls.WPF.Release.Front/StyleHelper.cs",
+        "oldLine": 19,
+        "oldTarget": "Themes/Native/Input/VMControls.WPF.Release/front/styles/{controlType.Name}.xaml",
+        "source": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF.Release/VMControls.WPF.Release.Front/StyleHelper.cs",
+        "target": "Themes/Native/Input/VMControls.WPF.Release/front/styles/{controlType.Name}.xaml",
+        "dynamic": true,
+        "classification": "existing-dynamic-uri"
+      },
+      {
+        "oldSource": "src/Plugin.Wpf/Themes/Combo.xaml",
+        "oldLine": 694,
+        "oldTarget": "Themes/Assets/ic_清空图片_normal.png",
+        "source": "src/Plugin.Wpf/Themes/Combo.xaml",
+        "target": "Themes/Assets/ic_清空图片_normal.png",
+        "dynamic": false,
+        "classification": "existing-missing-resource"
+      },
+      {
+        "oldSource": "src/Plugin.Wpf/Themes/Combo.xaml",
+        "oldLine": 699,
+        "oldTarget": "Themes/Assets/ic_清空图片_click.png",
+        "source": "src/Plugin.Wpf/Themes/Combo.xaml",
+        "target": "Themes/Assets/ic_清空图片_click.png",
+        "dynamic": false,
+        "classification": "existing-missing-resource"
+      },
+      {
+        "oldSource": "src/Plugin.Wpf/Themes/Combo.xaml",
+        "oldLine": 703,
+        "oldTarget": "Themes/Assets/ic_清空图片_click.png",
+        "source": "src/Plugin.Wpf/Themes/Combo.xaml",
+        "target": "Themes/Assets/ic_清空图片_click.png",
+        "dynamic": false,
+        "classification": "existing-missing-resource"
+      },
+      {
+        "oldSource": "src/Plugin.Wpf/Themes/Combo.xaml",
+        "oldLine": 707,
+        "oldTarget": "Themes/Assets/ic_清空图片_click.png",
+        "source": "src/Plugin.Wpf/Themes/Combo.xaml",
+        "target": "Themes/Assets/ic_清空图片_click.png",
+        "dynamic": false,
+        "classification": "existing-missing-resource"
+      },
+      {
+        "oldSource": "src/Plugin.Wpf/Themes/Combo.xaml",
+        "oldLine": 711,
+        "oldTarget": "Themes/Assets/ic_清空图片_click.png",
+        "source": "src/Plugin.Wpf/Themes/Combo.xaml",
+        "target": "Themes/Assets/ic_清空图片_click.png",
+        "dynamic": false,
+        "classification": "existing-missing-resource"
+      },
+      {
+        "oldSource": "src/Plugin.Wpf/Themes/Combo.xaml",
+        "oldLine": 716,
+        "oldTarget": "Themes/Assets/ic_清空图片_disable.png",
+        "source": "src/Plugin.Wpf/Themes/Combo.xaml",
+        "target": "Themes/Assets/ic_清空图片_disable.png",
+        "dynamic": false,
+        "classification": "existing-missing-resource"
+      },
+      {
+        "oldSource": "src/Plugin.Wpf/Themes/Combo.xaml",
+        "oldLine": 779,
+        "oldTarget": "Themes/Assets/ic_tab_downarrow_normal.png",
+        "source": "src/Plugin.Wpf/Themes/Combo.xaml",
+        "target": "Themes/Assets/ic_tab_downarrow_normal.png",
+        "dynamic": false,
+        "classification": "existing-missing-resource"
+      },
+      {
+        "oldSource": "src/Plugin.Wpf/Themes/Combo.xaml",
+        "oldLine": 783,
+        "oldTarget": "Themes/Assets/ic_tab_downarrow_disable.png",
+        "source": "src/Plugin.Wpf/Themes/Combo.xaml",
+        "target": "Themes/Assets/ic_tab_downarrow_disable.png",
+        "dynamic": false,
+        "classification": "existing-missing-resource"
+      },
+      {
+        "oldSource": "src/Plugin.Wpf/Themes/Combo.xaml",
+        "oldLine": 786,
+        "oldTarget": "Themes/Assets/ic_tab_downarrow_hover.png",
+        "source": "src/Plugin.Wpf/Themes/Combo.xaml",
+        "target": "Themes/Assets/ic_tab_downarrow_hover.png",
+        "dynamic": false,
+        "classification": "existing-missing-resource"
+      },
+      {
+        "oldSource": "src/Plugin.Wpf/Themes/Combo.xaml",
+        "oldLine": 789,
+        "oldTarget": "Themes/Assets/ic_tab_downarrow_click.png",
+        "source": "src/Plugin.Wpf/Themes/Combo.xaml",
+        "target": "Themes/Assets/ic_tab_downarrow_click.png",
+        "dynamic": false,
+        "classification": "existing-missing-resource"
+      }
+    ],
+    "preexistingCatalogMissingFiles": [
+      {
+        "baseline": "8962f6bdbc74e88637fecd3d8bd01677849134b1",
+        "oldPath": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/CrossConfig.xaml.pending",
+        "currentPath": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/CrossConfig.xaml.pending"
+      },
+      {
+        "baseline": "8962f6bdbc74e88637fecd3d8bd01677849134b1",
+        "oldPath": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/CrossConfig.xaml.cs.pending",
+        "currentPath": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/CrossConfig.xaml.cs.pending"
+      },
+      {
+        "baseline": "8962f6bdbc74e88637fecd3d8bd01677849134b1",
+        "oldPath": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/CrossData.cs.pending",
+        "currentPath": "src/Plugin.Wpf/Controls/Native/Input/VMControls.WPF/VMControls.WPF/CrossData.cs.pending"
+      }
+    ],
+    "remainingDefaultProducts": "Release/_validation/parameter-neutral-public-20261103/remaining-default-products.json",
+    "productDirty": [],
+    "files": [
+      {
+        "path": ".halcon-native-deployed",
+        "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+        "length": 0
+      },
+      {
+        "path": "AIStudio.Wpf.DiagramDesigner.dll",
+        "sha256": "9004BEBF74794BD52E48E50803DB2F941128726728B8BCD85F114CC6DD46A95D",
+        "length": 649728
+      },
+      {
+        "path": "BitFaster.Caching.dll",
+        "sha256": "300C8211CB43D820C91FC3CF1C943FE3EE843AE16AAC29761422E4370AC5114C",
+        "length": 172544
+      },
+      {
+        "path": "CommonControl.deps.json",
+        "sha256": "34A2631740C9479D40B3B5048D1E956E3172124ADAB64DF7C6EADFF8C63945A7",
+        "length": 16690
+      },
+      {
+        "path": "CommonControl.dll",
+        "sha256": "6BC8D6BF53500811E2FEF5A4B763D380020F104304EC92FB2F3A3B98F94A1104",
+        "length": 129536
+      },
+      {
+        "path": "CommonControl.xml",
+        "sha256": "A55935CE17C5B9A626AC9AB44C8A1487FEF98A7E68ECD7E11EC858B8F20ADFB8",
+        "length": 22845
+      },
+      {
+        "path": "d3dcompiler_47.dll",
+        "sha256": "5653BC7B0E2701561464EF36602FF6171C96BFFE96E4C3597359CD7ADDCBA88A",
+        "length": 4891080
+      },
+      {
+        "path": "hAI2ibOpenVINOLoader.dll",
+        "sha256": "EC8E1C36E8EFF5501A076C79E898A4DC927F2FC30DBA880367BD92BFE730F594",
+        "length": 160768
+      },
+      {
+        "path": "hAI2ibTensorRT.dll",
+        "sha256": "5661DBCBC03E2423C51080299A081ACBE6011A61958DEAD89C3C7E10D3762E99",
+        "length": 3056640
+      },
+      {
+        "path": "hAI2OpenVINO.dll",
+        "sha256": "11913757FE7FB00CA4C58ECCB1D1A2AAE97F67BB6DFD3F3CAF11CBF63EE489B6",
+        "length": 583168
+      },
+      {
+        "path": "halcon.dll",
+        "sha256": "8D21F583137722398D0DBE3D07CA008D315C272EBCB9C094FAF81142051FB509",
+        "length": 79219712
+      },
+      {
+        "path": "halconc.dll",
+        "sha256": "2D591E8CD893D75BEE5E3685DA30B9F87A4EDCF3E9D20B05BBDE32E4FBD01774",
+        "length": 1610728
+      },
+      {
+        "path": "halconcpp.dll",
+        "sha256": "0E50E2BDF7147E70EA94E89EEB0A54B940173755D1BEEF93C9D3FA2065412289",
+        "length": 9262568
+      },
+      {
+        "path": "halconcppxl.dll",
+        "sha256": "163E6236EFA36666CC16A02F825E12A132374EFD1D9B4796FAAF2F1C0058C641",
+        "length": 9262568
+      },
+      {
+        "path": "halconcxl.dll",
+        "sha256": "7540B25A8E0F7E7A6D5BDF0368F984D46E7EBF574C77B5148E0FA78B3AAEF7B5",
+        "length": 1610728
+      },
+      {
+        "path": "halcondl.dll",
+        "sha256": "0E64A3B8AD690818E2B8A448E231F7F8836EA8FBE00A91F5C172D3A7DF7F1010",
+        "length": 56360936
+      },
+      {
+        "path": "halcondlxl.dll",
+        "sha256": "3886B197EBC004374EAB59F40DBA8AE8F8342259598068FD8F695F78BFFD1C44",
+        "length": 56359912
+      },
+      {
+        "path": "halcondotnetxl.dll",
+        "sha256": "A1C8C3EF74F37F751E5CFB08A513B68F36A75511D7B4F9FD4E5A532E45652C57",
+        "length": 1579496
+      },
+      {
+        "path": "halconxl.dll",
+        "sha256": "1054836E23F053657671E142B86C98864BCAE9E926D658C622E3121DC735AF27",
+        "length": 78704616
+      },
+      {
+        "path": "hcanvas.dll",
+        "sha256": "41287E4F7A7FBA4D658AF5690ACD6C0F3AB318069792F0ABEAE70F00E70F505A",
+        "length": 4087272
+      },
+      {
+        "path": "hdevenginecpp.dll",
+        "sha256": "2FA5EE047A39B8208EE02E7B0839E0713F734333081C10AF8272F5D8EDAC27BE",
+        "length": 28594664
+      },
+      {
+        "path": "hdevenginecppxl.dll",
+        "sha256": "B77A7FE61D152FD9EC9A4F95F208F7BE9D69810EF734022B9B195C9D85BAC90E",
+        "length": 28594664
+      },
+      {
+        "path": "Help\\api\\index.html",
+        "sha256": "BE29B14DC1FFA8FF2FEF6C24C3D01C84D2DB9B879EB8995D95FB28BDF6999B25",
+        "length": 11110
+      },
+      {
+        "path": "Help\\architecture\\index.html",
+        "sha256": "DDC3A7ED3E604F78DF6356A21D36031C8ECE6B9831E37D5BF288113E67195637",
+        "length": 29393
+      },
+      {
+        "path": "Help\\features\\index.html",
+        "sha256": "489509B5A1BCA489128DF79D8633FC0EAA9B682F7D032E98732B48BFEBECA2E1",
+        "length": 14676
+      },
+      {
+        "path": "Help\\index.html",
+        "sha256": "9241C1566F04E4F01616E300B8420C91CDB5A29EAE9E203EFBAF045609029310",
+        "length": 8227
+      },
+      {
+        "path": "Help\\progress\\index.html",
+        "sha256": "AD7F3B5474167D07D3107859E23306BEB4EF9FFFE161FC8C60110F2004BE57F4",
+        "length": 13830
+      },
+      {
+        "path": "Help\\roadmap\\index.html",
+        "sha256": "F4379A74DAE45D2EC68C3F02CFBCD1A600117D7DBE10EE81834111B0E788B0ED",
+        "length": 25567
+      },
+      {
+        "path": "Help\\styles.css",
+        "sha256": "8C68160AF90A5119614531301A39762AE974092BE0235025F7C21402F2E17856",
+        "length": 6106
+      },
+      {
+        "path": "Help\\SunEyeVision.hhp",
+        "sha256": "05306A4C6F006B2118D1376F229719C2C4A62D8536723D25B4DA54A8022580D7",
+        "length": 437
+      },
+      {
+        "path": "Help\\usermanual\\index.html",
+        "sha256": "4D3942E8E6DE3913058B6852E89A5E324DF8555F20B356ECA281796C3639A9DD",
+        "length": 12653
+      },
+      {
+        "path": "Humanizer.dll",
+        "sha256": "D6853075547D7E303EFD60354D911A2FF18EDBA582CDA2FA59D91A2E5DCF9E98",
+        "length": 355944
+      },
+      {
+        "path": "Icons\\app_logo.ico",
+        "sha256": "F91847C9EDB34C86DA5875061DABF84CD285560DA25CC66D96B80D5E7D22FE36",
+        "length": 172402
+      },
+      {
+        "path": "Icons\\README.md",
+        "sha256": "5C01AC69793BEB1A50F50030EFFCFD45FB8F633B397052B00250F96F215D0D63",
+        "length": 3110
+      },
+      {
+        "path": "Icons\\solution_128x128.ico",
+        "sha256": "8C57FC4EF5458FB0816CDC6613089F01557B8566B32E4BBC3EF218A8986ABD83",
+        "length": 9713
+      },
+      {
+        "path": "Icons\\solution_16x16.ico",
+        "sha256": "22584FEED5536C0D3F72E509B91218E1EA7AAE4B55DF5D2FE925F0CA3F45DA80",
+        "length": 223
+      },
+      {
+        "path": "Icons\\solution_256x256.ico",
+        "sha256": "5BF2E23A4C6A44E96C8FA6938B8437C33AF5F54FD168FF75F17BAB5D2FEFE607",
+        "length": 17843
+      },
+      {
+        "path": "Icons\\solution_32x32.ico",
+        "sha256": "E89D0DFBCEF5DC350F3693F0FC481BB6523A1E253F5206029DDE79E99B3329E4",
+        "length": 2079
+      },
+      {
+        "path": "Icons\\solution_48x48.ico",
+        "sha256": "16F873AB30873F860B89FBDA467E4279EA82ED29B6C0B750B8BEE325F659DBA2",
+        "length": 3579
+      },
+      {
+        "path": "Icons\\solution_64x64.ico",
+        "sha256": "E789D6121F0D2B624254ED81A6A7AB02F148289776D31C2F54D13133524753AE",
+        "length": 5728
+      },
+      {
+        "path": "Icons\\solution_preview.png",
+        "sha256": "0491C4BB050B018D1FC707D91EEBF257AFDCFBB0E364BC1FC4B5F4695999FE9D",
+        "length": 2107
+      },
+      {
+        "path": "Icons\\solution.ico",
+        "sha256": "6542C0733422B00B67DA300B84D772EA7B53ED1A69CD7FA1AF05D38DBB3D6E8A",
+        "length": 19162
+      },
+      {
+        "path": "Icons\\suneyevision-app-icon.svg",
+        "sha256": "A989E8EACD5D86CBF834FECC3ABB7A61E3E18B6A16C466C5ED49837E4E5EF67F",
+        "length": 1179
+      },
+      {
+        "path": "Icons\\suneyevision-logo.svg",
+        "sha256": "270D2335DC2370DD02D7725FB74A82D7D99763260C270A518F43B39A1217BD46",
+        "length": 796
+      },
+      {
+        "path": "Icons\\suneyevision.ico",
+        "sha256": "8F6483B688B9C26E2EC4539F879E59565AD026383736577C11AC033DD7BF18F8",
+        "length": 29051
+      },
+      {
+        "path": "ICSharpCode.AvalonEdit.dll",
+        "sha256": "0FE9AC94AA22E60B32D670A3D35C58FEF628D1B3352D56F32F2986BF5F96F844",
+        "length": 622592
+      },
+      {
+        "path": "libcrypto-3-x64.dll",
+        "sha256": "D737F38E47286A0EA7E60FC25711656EAB7F26666B294C91E4ECA80E95BFCFB4",
+        "length": 6223848
+      },
+      {
+        "path": "libcurl.dll",
+        "sha256": "D9BC98E7D70F8B6B18568256F9AC60B4D2D5B9BE87E1909DF49FDF83EDB860FB",
+        "length": 747496
+      },
+      {
+        "path": "libiomp5md.dll",
+        "sha256": "0D241ED916A83EE68CD126267E29FDEC3B75EDBB698C07CAFF846EF20649706D",
+        "length": 1919904
+      },
+      {
+        "path": "libssl-3-x64.dll",
+        "sha256": "B8E53028EB580DF21274CE6D04A4787963B07BA24CAA73656F0776374146BB14",
+        "length": 1170920
+      },
+      {
+        "path": "libusb-1.0.dll",
+        "sha256": "DAD737644B8A17D52C2EE51688A11F1EF169D5653A78AE5D653C997635D824B4",
+        "length": 319440
+      },
+      {
+        "path": "libwdi-usan.dll",
+        "sha256": "82F1957A7466018A747BB2BED053034E2698E3B7D222B67EFA35B7B982EAA671",
+        "length": 6457808
+      },
+      {
+        "path": "MediaInfo.dll",
+        "sha256": "6FCF4CBD90F21C62F678818A9ECC80BF6B370E4A1F5D914A7D9699336E014900",
+        "length": 5234688
+      },
+      {
+        "path": "Microsoft.CodeAnalysis.AnalyzerUtilities.dll",
+        "sha256": "27300B349AE0C552CCB9BEA18BAF55B1FC99A517B0D4E15E557AF4D3A4BFF119",
+        "length": 543624
+      },
+      {
+        "path": "Microsoft.CodeAnalysis.CSharp.dll",
+        "sha256": "CFB5F2785C30485EDA803D58FB8330D737CB07D469CD3D7BC1113D58E8D8E4BB",
+        "length": 6555408
+      },
+      {
+        "path": "Microsoft.CodeAnalysis.CSharp.Features.dll",
+        "sha256": "41D62B24232AF6E896B372E6BB4D1EA9066CE40229388FB55B221FDFDA124FC5",
+        "length": 2136872
+      },
+      {
+        "path": "Microsoft.CodeAnalysis.CSharp.Workspaces.dll",
+        "sha256": "C63F6D8FDB79E443C37CCE6A2248E04BFE2C82D4BDA24B6C01FF1420E6A728B3",
+        "length": 909104
+      },
+      {
+        "path": "Microsoft.CodeAnalysis.dll",
+        "sha256": "0A7FB1D94E0E7F46798B138CAA67E5D5FB8FB98FD31B5294C917DEF057AB3D80",
+        "length": 2988856
+      },
+      {
+        "path": "Microsoft.CodeAnalysis.Elfie.dll",
+        "sha256": "8EC0E18AC570157B3863F70035B644925D89996AD901F31EF918D2B0F7428941",
+        "length": 145840
+      },
+      {
+        "path": "Microsoft.CodeAnalysis.Features.dll",
+        "sha256": "FC743C40512353992FF24C80159B966EE879DA4E2538EEEB693E489C7A5ECDDB",
+        "length": 4990760
+      },
+      {
+        "path": "Microsoft.CodeAnalysis.Scripting.dll",
+        "sha256": "7C3973A0997A1901C4F5978EF901E3AE96DDB780DEAD70A42F65F2E3F6F23E8F",
+        "length": 135984
+      },
+      {
+        "path": "Microsoft.CodeAnalysis.Workspaces.dll",
+        "sha256": "32402BAA9383AFD30E660AF0BD3D23BDB7E596207AFEAC8C6B3ED6F6A5CA6F1D",
+        "length": 4122936
+      },
+      {
+        "path": "Microsoft.DiaSymReader.dll",
+        "sha256": "7F3E7543321FF4C2675B94E56A4A32C935C11C82FCC60D4F6CB611CB0A8DAADC",
+        "length": 87168
+      },
+      {
+        "path": "Microsoft.Extensions.DependencyInjection.Abstractions.dll",
+        "sha256": "EBC3F5CADC8500DFDC56A3B578C1EDAB7E4CFB3C47E1F095BB2EDCB3D3F71544",
+        "length": 65832
+      },
+      {
+        "path": "Microsoft.Extensions.DependencyInjection.dll",
+        "sha256": "058D963098106D577626670E68D02D52F20EBDF25EC5FD67F18E0EE21291E505",
+        "length": 95528
+      },
+      {
+        "path": "Microsoft.Extensions.Logging.Abstractions.dll",
+        "sha256": "507E97F2D53C71110F8A20CA950B3E847C7314D356319F3A4DE8156A1C8A6B98",
+        "length": 66856
+      },
+      {
+        "path": "Microsoft.Extensions.Logging.dll",
+        "sha256": "970120F53F8538CA20AC618E31FBDDFB1BC7AF61B90ED46F2CA7D5665FE97D1A",
+        "length": 51496
+      },
+      {
+        "path": "Microsoft.Extensions.Options.dll",
+        "sha256": "0F87DACAC018C7F4DCB320AD85ECE8193F292242F9699035F5A1AF6CC983C3B7",
+        "length": 65320
+      },
+      {
+        "path": "Microsoft.Extensions.Primitives.dll",
+        "sha256": "072BEE9CE967A0539D79DC41A2C646CDF39E06FDDCAFE64B34A824CFFAD57983",
+        "length": 44840
+      },
+      {
+        "path": "Microsoft.Msagl.dll",
+        "sha256": "5AF6FCCFC4DEC1D5DE806B79DC267FA92B59AE546EC288FA998C390E9B65237D",
+        "length": 1836032
+      },
+      {
+        "path": "Microsoft.Msagl.Drawing.dll",
+        "sha256": "24D6D91BA29BF72E37E6C50ED0D6BDD2B464DCF3797E6074DCA3E0CB74D9C391",
+        "length": 180736
+      },
+      {
+        "path": "Microsoft.Msagl.WpfGraphControl.dll",
+        "sha256": "FE531971D79D69FE0CD61EF3BE1D8C6C8C58A5C8FCD49EF322352F686CCD3019",
+        "length": 70656
+      },
+      {
+        "path": "Microsoft.Win32.SystemEvents.dll",
+        "sha256": "32D2A413376E61071410681FC33894AEA61ED861BE778DD29A7231C23A29C91C",
+        "length": 27960
+      },
+      {
+        "path": "Microsoft.Xaml.Behaviors.dll",
+        "sha256": "0493049FEBB4BE74BDF669AD7FA754941C2754FE33421E230A8F14C8FD06C8C4",
+        "length": 145792
+      },
+      {
+        "path": "MvCameraControl.Net.dll",
+        "sha256": "082903E4CFAEAA9161058361403144220769D09596DE3065BCC5A16D0632ACDF",
+        "length": 66560
+      },
+      {
+        "path": "MvCameraControl.Net.xml",
+        "sha256": "82AFBCC21F0EBB1A0110F3C14B6574A92939E845A94EBDEB26D522369D29B1C1",
+        "length": 314765
+      },
+      {
+        "path": "mvloglib.dll",
+        "sha256": "5D4C14A72AD3B18615B738D6A6F47005022B98B2280EE3CF195C73B0D41155D6",
+        "length": 336872
+      },
+      {
+        "path": "Newtonsoft.Json.dll",
+        "sha256": "A28C251DFE36D881E9E2462E171441B8B0EC156FE3F452602C9149B1B9EFE05B",
+        "length": 723368
+      },
+      {
+        "path": "NModbus.dll",
+        "sha256": "3C987405CFD3925E611F1A8EA9C98691CC727AC1D5EA9D7FC7F050D7E338EAFC",
+        "length": 115712
+      },
+      {
+        "path": "Opc.Ua.Client.dll",
+        "sha256": "5232C6727ED6EDF77DAD118BC823659413FA4DB8CADB7C4024AEA29DAC4D2A31",
+        "length": 852096
+      },
+      {
+        "path": "Opc.Ua.Configuration.dll",
+        "sha256": "54A41557AF0B3545AB4278A4D13F44F02DA166097E3C4FAC24152562270A4CE2",
+        "length": 85120
+      },
+      {
+        "path": "Opc.Ua.Core.dll",
+        "sha256": "351A42D2267CF5969CE9819AB1971BD5E92E94968BEF3C5AB267E7933F00CEEE",
+        "length": 7941248
+      },
+      {
+        "path": "Opc.Ua.Security.Certificates.dll",
+        "sha256": "FBBCCC615FB6E4FA81FDBA3772613D6EFEF2833110784C25BD0BD92E23588405",
+        "length": 79488
+      },
+      {
+        "path": "Opc.Ua.Types.dll",
+        "sha256": "3FA7A333328007AE2016F4DE6FAB69A2F6873B793AFF4EA6DB53F6620EE065CD",
+        "length": 1125504
+      },
+      {
+        "path": "OpenCvSharp.dll",
+        "sha256": "90796CE6B45A19755104EC8C3933AB3B62B84E4FCB50B0A1CE8132F755A8D852",
+        "length": 963072
+      },
+      {
+        "path": "OpenCvSharp.Extensions.dll",
+        "sha256": "A39CFA936C4E4BF0AA452460C76B15EEE0CDAE5E5A8AD70A3A1A49A055B4A300",
+        "length": 20992
+      },
+      {
+        "path": "release-payload.json",
+        "sha256": "B8CB52984AA0529612D71524D05F86470BEE89848324186BE7F2FC101ABEDE19",
+        "length": 48183
+      },
+      {
+        "path": "Roy-T.AStar.dll",
+        "sha256": "919FF723B43C3464E593FB4A2B83B5CBF3413F09D242371038FDA8C513F197C2",
+        "length": 26624
+      },
+      {
+        "path": "ruiSDK_5.6.0.x64.dll",
+        "sha256": "7D9DCD0D3F673D74CED181A04685901D0CF5709553CCC03523418C662E0B0C98",
+        "length": 1026640
+      },
+      {
+        "path": "runtimes\\android-arm\\native\\libSystem.IO.Ports.Native.so",
+        "sha256": "FE8A4DE800D3CF735FF93BF115C57D30244878A0596F526391D0209D4DC12D64",
+        "length": 9436
+      },
+      {
+        "path": "runtimes\\android-arm64\\native\\libSystem.IO.Ports.Native.so",
+        "sha256": "78243AD1DD5573C628F23AE089C55FB83D13E73829D622C9A9130BE001660034",
+        "length": 13352
+      },
+      {
+        "path": "runtimes\\android-x64\\native\\libSystem.IO.Ports.Native.so",
+        "sha256": "E1D8F35B4995392879D2E955F3D44D417A3B1D2DA1AA030C991DFC9DE4E313E8",
+        "length": 14024
+      },
+      {
+        "path": "runtimes\\android-x86\\native\\libSystem.IO.Ports.Native.so",
+        "sha256": "37F5E57DA9965ED4FF1D3388AF3FC4A80EBFB9F51CF52363CE95E1E95AA07ED0",
+        "length": 12460
+      },
+      {
+        "path": "runtimes\\browser\\lib\\net8.0\\System.Text.Encodings.Web.dll",
+        "sha256": "094D68ABDAF30E84FBD2E721D0889DAA318FBBD2E2C3E51B879151EC57D6AE94",
+        "length": 65832
+      },
+      {
+        "path": "runtimes\\linux-arm\\native\\libSystem.IO.Ports.Native.so",
+        "sha256": "95E49AFE036573E2F30D30C5BBB14B8E70228660BC74ACEBA442FC3D198C9470",
+        "length": 9744
+      },
+      {
+        "path": "runtimes\\linux-arm64\\native\\libSystem.IO.Ports.Native.so",
+        "sha256": "CC1E8A8E1A857F4ADD726E2580F48F1039F3F37172CFDAC12638BC47388C9A77",
+        "length": 14744
+      },
+      {
+        "path": "runtimes\\linux-bionic-arm64\\native\\libSystem.IO.Ports.Native.so",
+        "sha256": "3F015DA80383C7AC3951722E433D5625DC25E5D4A8FA0F41CE467D1E6A961E96",
+        "length": 13352
+      },
+      {
+        "path": "runtimes\\linux-bionic-x64\\native\\libSystem.IO.Ports.Native.so",
+        "sha256": "C6F7093FE7ADD6B035FB58C86D87149BD9992C804AB5AB3775E76F04AF73C1FE",
+        "length": 14024
+      },
+      {
+        "path": "runtimes\\linux-musl-arm\\native\\libSystem.IO.Ports.Native.so",
+        "sha256": "9D6374CE436961993361FCBA79BB005E6E001781CDF93948728C1CA0EFC2A014",
+        "length": 9540
+      },
+      {
+        "path": "runtimes\\linux-musl-arm64\\native\\libSystem.IO.Ports.Native.so",
+        "sha256": "52074382E194426C4E277CCF985DEFBBF98780CC3F055510E4649686CB85152C",
+        "length": 14456
+      },
+      {
+        "path": "runtimes\\linux-musl-x64\\native\\libSystem.IO.Ports.Native.so",
+        "sha256": "2CFD60691EB401462BA0C916D03FB826526E8F0533665FD26C3AD01D1994EC0B",
+        "length": 14896
+      },
+      {
+        "path": "runtimes\\linux-x64\\native\\libSystem.IO.Ports.Native.so",
+        "sha256": "1C35B36B9E663394B16D33CFFD4443D0A720FF6E58233C1C97038163C3C07EE1",
+        "length": 15272
+      },
+      {
+        "path": "runtimes\\maccatalyst-arm64\\native\\libSystem.IO.Ports.Native.dylib",
+        "sha256": "8C5752242F24A7067F8B4E8C9F926B49C67AFD2812A1AF8D151A7F248EF8F40E",
+        "length": 52384
+      },
+      {
+        "path": "runtimes\\maccatalyst-x64\\native\\libSystem.IO.Ports.Native.dylib",
+        "sha256": "00F3D1653AC884ADFA7200107207EC2516855CDBE9CAC831404DDF783D9FFFB7",
+        "length": 51840
+      },
+      {
+        "path": "runtimes\\osx-arm64\\native\\libSystem.IO.Ports.Native.dylib",
+        "sha256": "17F3FD62D336BA18382738A66ED598931E783792E53913A59CC24F20805F06AC",
+        "length": 70480
+      },
+      {
+        "path": "runtimes\\osx-x64\\native\\libSystem.IO.Ports.Native.dylib",
+        "sha256": "559F3316E920CD7564B2C25B5FC71A8860E3F6DE1D7642BFC0DA816EAC8772C5",
+        "length": 70496
+      },
+      {
+        "path": "runtimes\\unix\\lib\\net9.0\\System.IO.Ports.dll",
+        "sha256": "AC15A59614DC200DE46B3610DC5F97EB220327312C2E8F847954D14F1E84892B",
+        "length": 75560
+      },
+      {
+        "path": "runtimes\\win-x64\\native\\opencv_videoio_ffmpeg4130_64.dll",
+        "sha256": "FCC614672159094A35815B7EA2819A648CBF86C30D90C57E8C6BA1432F594548",
+        "length": 28578304
+      },
+      {
+        "path": "runtimes\\win-x64\\native\\OpenCvSharpExtern.dll",
+        "sha256": "341594F0FC0E0A7AEA3C84E43E7D28A1D728E1FE5BBD8757BAD32FD321BE23B7",
+        "length": 66764288
+      },
+      {
+        "path": "runtimes\\win-x86\\native\\opencv_videoio_ffmpeg4130.dll",
+        "sha256": "DF9DBAD111678F753B8932F73010866AF8ADF5F5EB9E14BE778CF66B25B46E44",
+        "length": 25699328
+      },
+      {
+        "path": "runtimes\\win-x86\\native\\OpenCvSharpExtern.dll",
+        "sha256": "A911ECAA29AB725BAC223F084736E3BC00D41C556D1BE29F55064789F9A0BB2C",
+        "length": 44658176
+      },
+      {
+        "path": "runtimes\\win\\lib\\net7.0\\System.Management.dll",
+        "sha256": "A7E248C3E6F25F4673E2006FA77F4A4322A3C74C2652DCC395178329FEB7FF28",
+        "length": 295568
+      },
+      {
+        "path": "runtimes\\win\\lib\\net9.0\\Microsoft.Win32.SystemEvents.dll",
+        "sha256": "C87218F70685FC2DCC29422F613C8D3EF0EE1CA894A4F84E73A47E6E8C1BA307",
+        "length": 81160
+      },
+      {
+        "path": "runtimes\\win\\lib\\net9.0\\System.IO.Ports.dll",
+        "sha256": "A487D82F7293CE45A17DA8D770A65EFF62BA94332B0EFF7D65F53C344DAB01CB",
+        "length": 89392
+      },
+      {
+        "path": "runtimes\\win\\lib\\net9.0\\System.Text.Encodings.Web.dll",
+        "sha256": "1A58D328DD491D1E594D9E1ECEC16C34FBA5AB15052ADA12A0ADC9AE0ECDAEEA",
+        "length": 65832
+      },
+      {
+        "path": "S7.Net.dll",
+        "sha256": "E293FE25F6E774069A5C38F0778E47F2C8A0D7327741A6DF1C62FB0F98D497CF",
+        "length": 99328
+      },
+      {
+        "path": "SharpDX.Direct2D1.dll",
+        "sha256": "1E447257562CA40798D39AB4138A64172DC7AEB91DF7A7EBF52CE59959C37A47",
+        "length": 495616
+      },
+      {
+        "path": "SharpDX.Direct3D11.dll",
+        "sha256": "5C1C08571840FBF4B985A063AC6957130596A8883920A7174FB7C516826DDAB1",
+        "length": 282624
+      },
+      {
+        "path": "SharpDX.dll",
+        "sha256": "518D45A5AAEC84CB37E83EE2CF58C503AB6A25FEBB8C48B53316340C967E84BD",
+        "length": 275968
+      },
+      {
+        "path": "SharpDX.DXGI.dll",
+        "sha256": "18C4EC89BC0DEECFC91BCB7EA1F29A2690E9288003C366EA02703374B4B6D732",
+        "length": 147968
+      },
+      {
+        "path": "SharpGen.Runtime.COM.dll",
+        "sha256": "35282958014C210BFDE28399C9FA3841B6D51F81FF1DA23AD0EDAD985DFA5B0C",
+        "length": 168960
+      },
+      {
+        "path": "SharpGen.Runtime.dll",
+        "sha256": "0DC12AB829852555CCC9D8193E4422CD4CA389741DE0A54A189DE8A1C9B6BF4A",
+        "length": 79872
+      },
+      {
+        "path": "SunEyeVision.Core.deps.json",
+        "sha256": "F37D6BC5B32060AED9AF1E2CE90D65374D7C85745E8951329B9F059F0EB796E9",
+        "length": 10021
+      },
+      {
+        "path": "SunEyeVision.Core.dll",
+        "sha256": "5608A98FFF478DCC196C96464B8929F1261DF15534A85326F0536ADC5869FEBC",
+        "length": 70144
+      },
+      {
+        "path": "SunEyeVision.Core.xml",
+        "sha256": "0E9AE74A8DADD384B0FA4FCFDDDF7E813FF70146B03F9E9A6D7250748176ABA5",
+        "length": 67061
+      },
+      {
+        "path": "SunEyeVision.CvAdapter.deps.json",
+        "sha256": "22CA6D918B6AE3167FA91C8D73066344ECF3B9477234C530C07FBC13C7036AC8",
+        "length": 4713
+      },
+      {
+        "path": "SunEyeVision.CvAdapter.dll",
+        "sha256": "D0A659DB48094C7B8F66AB30C38FD311CB69B3852EDA9E26ACC6BCEE0D0D247E",
+        "length": 22528
+      },
+      {
+        "path": "SunEyeVision.CvAdapter.xml",
+        "sha256": "E13E14162591D40B089E50A525677174644BFCB09AA3B3E995013610F5CF1230",
+        "length": 5461
+      },
+      {
+        "path": "SunEyeVision.CvEngine.deps.json",
+        "sha256": "6C5A0C6F1721437A63F21638051094B7CB3CDC4655DA919E66F450F0C1F1AA39",
+        "length": 2367
+      },
+      {
+        "path": "SunEyeVision.CvEngine.dll",
+        "sha256": "14C588E42CE682294FB207C9FF4901C8A88BD92B8CD80AAE466B1D3008CFEDE8",
+        "length": 83456
+      },
+      {
+        "path": "SunEyeVision.CvEngine.xml",
+        "sha256": "F9740C754F7A4317AA167BC774AAF954461E2A6C96BD43BB811DF06E5B67E043",
+        "length": 33434
+      },
+      {
+        "path": "SunEyeVision.DeviceDriver.deps.json",
+        "sha256": "B264F5B83D289FD6125D7F43F9D833F9E50E1D97E6A5E99954E095A4BAF88BA9",
+        "length": 40704
+      },
+      {
+        "path": "SunEyeVision.DeviceDriver.dll",
+        "sha256": "5BF5B2EB9999D5BA0EC26D39571AECA592991D2BBBE4E9860893D2102FD91277",
+        "length": 301568
+      },
+      {
+        "path": "SunEyeVision.HalAdapter.deps.json",
+        "sha256": "EDD2B54E7E3D4B109C4EA760C1F06AB6388372D946E3E3DF0F3DABBA54C37D3C",
+        "length": 2902
+      },
+      {
+        "path": "SunEyeVision.HalAdapter.dll",
+        "sha256": "FA9B6F53E4C2C90704C66C4B0E04FA5545D6551798385C88808BCE45FF71C767",
+        "length": 77824
+      },
+      {
+        "path": "SunEyeVision.HalAdapter.Runtime.deps.json",
+        "sha256": "BE4663BD2BB284B5061E939456823BA09C4784C323B2C605C674B04A34451902",
+        "length": 1500
+      },
+      {
+        "path": "SunEyeVision.HalAdapter.Runtime.dll",
+        "sha256": "4F19AAF545EF5774226A3F29D63C91D5ECB2FB160CD20088E8547DD0549AADA9",
+        "length": 30720
+      },
+      {
+        "path": "SunEyeVision.HalAdapter.xml",
+        "sha256": "6EA60A93AA921B928886955F04924B970432AB40EE7E7FC1B19D63B9D4B55320",
+        "length": 19064
+      },
+      {
+        "path": "SunEyeVision.Plugin.Contracts.deps.json",
+        "sha256": "D830CCB4A60B20C00F5E8E077B8A283BB5100C0E90DEBFE94351645D1192D805",
+        "length": 483
+      },
+      {
+        "path": "SunEyeVision.Plugin.Contracts.dll",
+        "sha256": "E2F19AAE041E695835220E26B60E532FD5F9B0FE8B5B20FEE6D5A97354AEBFF2",
+        "length": 229888
+      },
+      {
+        "path": "SunEyeVision.Plugin.Contracts.xml",
+        "sha256": "02DA9E94245F28A5B1B86C8744E4BEF7497191AA045C9FB3FB5EC1728A80C46D",
+        "length": 21466
+      },
+      {
+        "path": "SunEyeVision.Plugin.Infrastructure.deps.json",
+        "sha256": "8E8C522026DC3B92795FE06053D86BC9E080DF6EAB8436F302F130C7A6571DE5",
+        "length": 12843
+      },
+      {
+        "path": "SunEyeVision.Plugin.Infrastructure.dll",
+        "sha256": "5AEDDF9E28BA4F1AB22209ABC9C2CEAFCEB062CE929E4BAAB359D16615026C41",
+        "length": 85504
+      },
+      {
+        "path": "SunEyeVision.Plugin.Infrastructure.xml",
+        "sha256": "57D4CCB54A7F60813DBCE723FCF4E250E37A8162023ADCBED9F0D2C56F04EE8A",
+        "length": 18701
+      },
+      {
+        "path": "SunEyeVision.Plugin.Runtime.deps.json",
+        "sha256": "47DE8DD11D189B566488B4AB40E72444A4D572E0589614B3601CAA6E205A6E09",
+        "length": 956
+      },
+      {
+        "path": "SunEyeVision.Plugin.Runtime.dll",
+        "sha256": "647B7E5A83D9B5EBEFE2AADD0F08E19D2D91AE369788DB12C02D18C1878D9F32",
+        "length": 127488
+      },
+      {
+        "path": "SunEyeVision.Plugin.SDK.deps.json",
+        "sha256": "61D308CAE28E32E7229833C3F7B3BF84D8AC8B191AF7EC3B3F4CAA3C399115E1",
+        "length": 1840
+      },
+      {
+        "path": "SunEyeVision.Plugin.SDK.dll",
+        "sha256": "BC7597A0266EBAB3E4EFF8FA7BA5CFB97C13BC49E1CE23EA9067AB089D3508F6",
+        "length": 1417216
+      },
+      {
+        "path": "SunEyeVision.Plugin.SDK.xml",
+        "sha256": "09D3CB13FA51FD26A92D3A13772BCC71761CB9299C4D9EBA9A60EE095EA8EDD8",
+        "length": 924835
+      },
+      {
+        "path": "SunEyeVision.Plugin.Wpf.deps.json",
+        "sha256": "BB054B82B4B0743DFEC5E407D3BAE8439A152141825323BD18766968F1AE746C",
+        "length": 4318
+      },
+      {
+        "path": "SunEyeVision.Plugin.Wpf.dll",
+        "sha256": "8F69427203002EAC6618553E0405165B27A9580E98E0504EE3DE13FFDB85B206",
+        "length": 8124928
+      },
+      {
+        "path": "SunEyeVision.Tool.BlobAnalysis.Runtime.deps.json",
+        "sha256": "02CB425EA6198A7F55FFEC42DAC6A9D1BECF4FCA8C41C9D1EE4A5FA98DFD415F",
+        "length": 2069
+      },
+      {
+        "path": "SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+        "sha256": "91E2069978F9CB4CBE961B983999B7823E8DFF8CBD8C1D97A23224AF4EEEB32D",
+        "length": 183296
+      },
+      {
+        "path": "SunEyeVision.Tool.BlobAnalysis.Wpf.deps.json",
+        "sha256": "9A8778E0F8EAC0908371D1DFD6B72E7434648823491B00BAA299E0C3BFD4843A",
+        "length": 5071
+      },
+      {
+        "path": "SunEyeVision.Tool.BlobAnalysis.Wpf.dll",
+        "sha256": "935E40CE301443A49E406B8521AFDE85C21D0C19E043B4CC063B5CC1F69310FF",
+        "length": 116224
+      },
+      {
+        "path": "SunEyeVision.Tool.ImageSource.Runtime.deps.json",
+        "sha256": "85C0A99633AF86104CAEF33E45731ECD7A0BDE51DB6B622F268382859C2D4027",
+        "length": 2066
+      },
+      {
+        "path": "SunEyeVision.Tool.ImageSource.Runtime.dll",
+        "sha256": "CAA1721EAAEA1FE26ED55455478273D4A60835C0727566EC76C99B27336483E0",
+        "length": 49152
+      },
+      {
+        "path": "SunEyeVision.Tool.ImageSource.Wpf.deps.json",
+        "sha256": "E29B153121BB90A16CA67C5ECB887984E33CEF7508ABBD71B0DE281826FBEB71",
+        "length": 5068
+      },
+      {
+        "path": "SunEyeVision.Tool.ImageSource.Wpf.dll",
+        "sha256": "8DEC4857982B59D96956F2B5C47210B22BE89ECEDEACFEA0AD0F84D7C5115A31",
+        "length": 32768
+      },
+      {
+        "path": "SunEyeVision.Tool.Kernels.deps.json",
+        "sha256": "AF326DD0101DD87C35AA4501B078B652542A54DA2FF35006B63D45AAE5933F35",
+        "length": 471
+      },
+      {
+        "path": "SunEyeVision.Tool.Kernels.dll",
+        "sha256": "80652217081E4AF74D0760FEA3D33C7B7E611093A7254994736FA772150E6506",
+        "length": 12800
+      },
+      {
+        "path": "SunEyeVision.UI.deps.json",
+        "sha256": "7E46D6A48A7F30F4F681B318BE33113EE5F4DD8672DB1AC2DCDF53B285AD4834",
+        "length": 72805
+      },
+      {
+        "path": "SunEyeVision.UI.dll",
+        "sha256": "CE96F6E1EDD6B7B9DC60C9F30E6A40BD90111CA32A47F241D9DF7F454923AB01",
+        "length": 3867648
+      },
+      {
+        "path": "SunEyeVision.UI.exe",
+        "sha256": "EE3136B4D58031C7A33FCAE4B43DC19341F898A1475D0244DF5ABE6B8996D8CA",
+        "length": 185856
+      },
+      {
+        "path": "SunEyeVision.UI.runtimeconfig.json",
+        "sha256": "05917B409D59AF31BC8D3021BC06302A0C21C7D05B449603D6CC9F0301A2B66C",
+        "length": 516
+      },
+      {
+        "path": "SunEyeVision.UI.xml",
+        "sha256": "8948A09EC8FCD706D831D96DFA859D7911C69037A35F414BEFFF2D69CA2EE1EA",
+        "length": 591561
+      },
+      {
+        "path": "SunEyeVision.Workflow.deps.json",
+        "sha256": "4A8861A8F5CD3577CDA465D6DDB8A4A7F685DC546C921B114DC05A29FBB0C918",
+        "length": 13511
+      },
+      {
+        "path": "SunEyeVision.Workflow.dll",
+        "sha256": "396D38E60D57B469A119F19564455F32074EAE03707D4CF3679E9132CBCCDCC8",
+        "length": 1028096
+      },
+      {
+        "path": "SunEyeVision.Workflow.xml",
+        "sha256": "6736CDF141346C33A0FC1CB853B134EB229F9841C0FB377836B53C1CF3CAC0E7",
+        "length": 241196
+      },
+      {
+        "path": "SvgPathProperties.dll",
+        "sha256": "32256D48BE7F0671B54D46571EFB5774CDB8F5BDE3BA9A6B38F5F9C72AD1EFCC",
+        "length": 43008
+      },
+      {
+        "path": "System.Collections.Immutable.dll",
+        "sha256": "D5C21583D2D8D8C367DEDB9679DF2DE28C79EEC174CF92A61A1ED147C8F13AF6",
+        "length": 251176
+      },
+      {
+        "path": "System.Composition.AttributedModel.dll",
+        "sha256": "0F403E98D8BAD390B970704A93AA532042409F499032823CAC47E3004BAD9C8A",
+        "length": 20128
+      },
+      {
+        "path": "System.Composition.Convention.dll",
+        "sha256": "88E716224482A702E3D44F02E6311B9D91FCE9AF506ABF0482E8C5F82379034F",
+        "length": 53520
+      },
+      {
+        "path": "System.Composition.Hosting.dll",
+        "sha256": "8D9A239C7B03CE4A047ED0ABD9E835DB0FEEAAA16C157E7D308603D03EFB7EBC",
+        "length": 55056
+      },
+      {
+        "path": "System.Composition.Runtime.dll",
+        "sha256": "324ACDFC86C5ADAA12E9C4F40DEACF1E9F45AC2E84E542A02D130E7380F79D6E",
+        "length": 25880
+      },
+      {
+        "path": "System.Composition.TypedParts.dll",
+        "sha256": "3100191A1448B9A613E04A63B65899CF74371FC2F5C03315AA40AB53468C7A24",
+        "length": 65288
+      },
+      {
+        "path": "System.Diagnostics.DiagnosticSource.dll",
+        "sha256": "D3207CB267581834BA131D58744A1573535562807EFD64188EFB0F3F977CF549",
+        "length": 202536
+      },
+      {
+        "path": "System.Drawing.Common.dll",
+        "sha256": "215671B68ADB5CA804808F6F27CD128A405A55E00FF585DFA01F273E6ADB2C37",
+        "length": 422152
+      },
+      {
+        "path": "System.Formats.Asn1.dll",
+        "sha256": "CAB99B7F8FE31F6B80DCEBA1D32BD473795AB87F2F3F7C6C7D7502A4523A25DF",
+        "length": 97064
+      },
+      {
+        "path": "System.IO.Pipelines.dll",
+        "sha256": "5C1633D6B47A19E275D800AC139BAD8EC30E8D20F4287A3656743B481F1F672E",
+        "length": 78160
+      },
+      {
+        "path": "System.IO.Ports.dll",
+        "sha256": "BC831187317F2891A91229F4C998CD47BFB34370C1113C4F3D91B58402B7465A",
+        "length": 37680
+      },
+      {
+        "path": "System.Management.dll",
+        "sha256": "F515CA5C944C332AB706FF0A7C2E53E66D0D9D8A663E9B2691B35129EE22559B",
+        "length": 74384
+      },
+      {
+        "path": "System.Private.Windows.Core.dll",
+        "sha256": "4EA987E896DFBD99F102DAA0E89AFEAEEA9EF3DDCA98AB87103B1E7E8B9AA911",
+        "length": 1226544
+      },
+      {
+        "path": "System.Private.Windows.GdiPlus.dll",
+        "sha256": "0A83D208F01B69427AC941EBC125DC9328C8A4EDDBFE6E070B1FD610B5CD5A8E",
+        "length": 169232
+      },
+      {
+        "path": "System.Reactive.dll",
+        "sha256": "2B6C31DFB1FC6019A42A007ED0E5E00574DE6EA0C47FED0CA282BF3BB2771B0C",
+        "length": 1455056
+      },
+      {
+        "path": "System.Text.Encodings.Web.dll",
+        "sha256": "F7B90DA4AF08524B1607C43DE6CB0EA1A44D3AE325A52B3B67DBBB740238333A",
+        "length": 65832
+      },
+      {
+        "path": "System.Text.Json.dll",
+        "sha256": "4D48CC5561DB996ED816CFDA200A219F0010858913E824D6089102F73F8A8749",
+        "length": 649000
+      },
+      {
+        "path": "ToolGroups.xml",
+        "sha256": "AD99E4C58E2C04EE4D37415FDFFA32BA10932FEA252B0290F9B90448ED2D28A1",
+        "length": 2029
+      },
+      {
+        "path": "uastack.dll",
+        "sha256": "81D9FA126158B6E9BADBBD5D1F3DB3A8D1DDAE707D8038D9DEDCB6CE63893CD5",
+        "length": 1425384
+      },
+      {
+        "path": "Vortice.Direct2D1.dll",
+        "sha256": "A74435AFC731CB2342B5C2EA470C559D629B2D62A1F64C82246F6C6406F473D4",
+        "length": 535040
+      },
+      {
+        "path": "Vortice.Direct3D11.dll",
+        "sha256": "14ACAC4B10FC24AE4C4301CCCAA0F38E38196461534E58E18CE32BDADDEFCEF4",
+        "length": 352768
+      },
+      {
+        "path": "Vortice.DirectX.dll",
+        "sha256": "A4AE2E041A8927F9F78F9CE6B146021AF252B6FCD1D472F8D2E83BB2F2347C2A",
+        "length": 365056
+      },
+      {
+        "path": "Vortice.DXGI.dll",
+        "sha256": "8227F8D02836FBC0030E94AAA855CE4D98E67BBEF446A46B944FE897FA7011BB",
+        "length": 91648
+      },
+      {
+        "path": "Vortice.Mathematics.dll",
+        "sha256": "8AFB953820E950465F79B42C1F7218FFD12A22F626B32D32ABF2B145B9FD37ED",
+        "length": 123904
+      },
+      {
+        "path": "WpfAnimatedGif.dll",
+        "sha256": "AACA1D5B4F4061B2A4ADF86F06A7D49ADC3DBE87DF9A84C9EBE29C0381CE43EF",
+        "length": 43008
+      },
+      {
+        "path": "zh-Hans\\Microsoft.CodeAnalysis.CSharp.Features.resources.dll",
+        "sha256": "5E6D0DC3D73169D9C5F6536B3222B581F20D769E3C3B6EEB79E02B13042C3296",
+        "length": 44304
+      },
+      {
+        "path": "zh-Hans\\Microsoft.CodeAnalysis.CSharp.resources.dll",
+        "sha256": "5BB17F29F827EC0E01526E60AEADA465229DB2C6957BA2799A171142BD970B33",
+        "length": 393016
+      },
+      {
+        "path": "zh-Hans\\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll",
+        "sha256": "9723B22DEF0AFAE87FA2E25AD389A216D2D88BF0A6CAF3C3C3C3F636C5B70F57",
+        "length": 17688
+      },
+      {
+        "path": "zh-Hans\\Microsoft.CodeAnalysis.Features.resources.dll",
+        "sha256": "18E1BF8EA65D94E454A422D54FFFD9B0DFD2EED012D9827F1295468B9857F8B4",
+        "length": 172816
+      },
+      {
+        "path": "zh-Hans\\Microsoft.CodeAnalysis.resources.dll",
+        "sha256": "37D9E69257A1D58E8B1B0F3DB40C45CD1E48D109B9BFCD6C496C8189D1DEE38E",
+        "length": 44848
+      },
+      {
+        "path": "zh-Hans\\Microsoft.CodeAnalysis.Scripting.resources.dll",
+        "sha256": "D049B4DCFE1C22AA9DEA4B538E31CE9FC3277E23B0FCE7FE79A3FEC8AAD581BD",
+        "length": 18192
+      },
+      {
+        "path": "zh-Hans\\Microsoft.CodeAnalysis.Workspaces.resources.dll",
+        "sha256": "E2C82529F3CB881955C4BA286C2EF1DDB6EBBC20E370D14D3F15E65431C59BD8",
+        "length": 44320
+      }
+    ]
+  },
+  "initialFailure": {
+    "source": "7377aa46ff9ac55a471b5a04d0ec2b86467ae3d7",
+    "command": "dotnet build src/UI/SunEyeVision.UI.csproj -c Release --no-restore -p:HalconSourceRoot=D:/MyWork/SunEyeVision_V2/libs/halcon/",
+    "started": "2026-11-03T12:59:55.7562521+08:00",
+    "finished": "2026-11-03T13:00:37.0219621+08:00",
+    "exitCode": 1,
+    "log": "Release/_validation/parameter-neutral-public-20261103/UI001.log",
+    "summary": {
+      "warnings": "2706",
+      "errors": "5",
+      "elapsed": "00:00:39.53"
+    },
+    "cause": "NativeRoiSession:109/117-120 retained relative Native.Dependencies.Apps.XmlParser.ParamTab qualifiers; corrected by e567eed25, no runtime tests claimed on failed build"
+  },
+  "successfulBuildSummary": {
+    "UI002": {
+      "warnings": "6553",
+      "errors": "0",
+      "elapsed": "00:02:20.02"
+    },
+    "full001": {
+      "warnings": "6541",
+      "errors": "0",
+      "elapsed": "00:01:49.27"
+    }
+  },
+  "validationCommands": [
+    "scripts/verification/Run-C07ReferenceValidation.ps1",
+    "env O06_WINDOW_CASE_FILTER=中立显示资源精确Aero2依赖与原箭头入口; scripts/verification/Run-S2ReleaseValidation.ps1 -Track WindowPresentation -Stage S4 -ValidationScope Candidate -TimeoutSeconds 900; clear env in finally"
+  ],
+  "evidenceFiles": [
+    {
+      "path": "Release/_validation/parameter-neutral-public-20261103/candidate-receipt.json",
+      "sha256": "29E3406D79BAE87705C46752673B43322EB95A2F46C69C1827B3A05599C7CCFF"
+    },
+    {
+      "path": "Release/_validation/parameter-neutral-public-20261103/UI001.json",
+      "sha256": "7D79CA19AD2204EB4D398D83D83F22C5CF930C6F48CF56D57A60754658289973"
+    },
+    {
+      "path": "Release/_validation/parameter-neutral-public-20261103/UI001.log",
+      "sha256": "3BB5F70ED59FA7AADDFEBC77E95948165D5C16BB2DFE9FB456FDDD3BAB2CB627"
+    },
+    {
+      "path": "Release/_validation/parameter-neutral-public-20261103/UI002.json",
+      "sha256": "9FB526865F12BC61F28652153FCB22B485076CA62D3298BCF4471B2E5B17E300"
+    },
+    {
+      "path": "Release/_validation/parameter-neutral-public-20261103/UI002.log",
+      "sha256": "10D9AA804D8844ED2F81E178502DB3B35714CB8AE85FEEE713D72F9CFFDBE63A"
+    },
+    {
+      "path": "Release/_validation/parameter-neutral-public-20261103/full001.json",
+      "sha256": "F2A36F4A7FFBB44C8049E2CF8CE4D95F8AD565456CCA137C31A23A2530FA45F3"
+    },
+    {
+      "path": "Release/_validation/parameter-neutral-public-20261103/full001.log",
+      "sha256": "F63FCB31F698B06328197D9FE9B6CF5889985C5AC6A55EF4BFD99A0A35BE4A42"
+    },
+    {
+      "path": "Release/_validation/parameter-neutral-public-20261103/payload-before.json",
+      "sha256": "1389CBD0261B9E99EC31C2FAC11CFF6027FC8A3642B15AD04B12955C7EB22EC1"
+    },
+    {
+      "path": "Release/_validation/parameter-neutral-public-20261103/structure-map.json",
+      "sha256": "0681448019179F31DE03F9805A68CEF313AA438963D0C0334690478B6E37A5A5"
+    },
+    {
+      "path": "Release/_validation/parameter-neutral-public-20261103/structure-check-final.json",
+      "sha256": "1690A349EBA0C9D72816FFEFBDF37FEB49599D4DCAB9DBA90FD08E675C7D4DF7"
+    },
+    {
+      "path": "Release/_validation/parameter-neutral-public-20261103/remaining-default-products.json",
+      "sha256": "0D4351429F770DBB83DA95B9A99AD540E4D49EEAFCB5BF89912FA6E5FB4BDEAB"
+    },
+    {
+      "path": "scripts/analysis/Invoke-ParameterNeutralStructure.mjs",
+      "sha256": "9810101851B9419C957298661CECEF479D75B30C995AE8429FFF2490C9D4DA78"
+    },
+    {
+      "path": "scripts/verification/Run-C07ReferenceValidation.ps1",
+      "sha256": "C1672F1ADDF4A997A1C0712E3C93A917BA9455E602CEC78DC9377788E1A138F7"
+    },
+    {
+      "path": "scripts/verification/C07ReferenceCases.cs",
+      "sha256": "2ED90984BD60DD610FB7FB095107164FDC607D3A62A1FD0371E54480C8A4E731"
+    },
+    {
+      "path": "scripts/verification/Run-S2ReleaseValidation.ps1",
+      "sha256": "2ACEC903C61C8E78184C7323FD27E1ECDE3BE73C770BECE97C2F81ED2F3AD6BE"
+    },
+    {
+      "path": "scripts/verification/O06WindowPresentationCases.cs",
+      "sha256": "F315F06615B2B318A9BA836B244F9A88F0C4F3540B928AE3F6AADB577E8EE4B5"
+    },
+    {
+      "path": "Release/_validation/C07Reference-20261103/attempt-005/receipt.json",
+      "sha256": "2416A25B6B7D709A92AF9F9DDEC42B337390CFF4850C56E477176F94D9D1B33E"
+    },
+    {
+      "path": "Release/_validation/C07Reference-20261103/attempt-005/loaded-product.tsv",
+      "sha256": "88C0269E61CBF1B3B21CDC30D831C6D15F974BEC4D7054FE424026F8A28DF0D2"
+    },
+    {
+      "path": "Release/_validation/C07Reference-20261103/attempt-005/run.log",
+      "sha256": "DBB5EBB0798B31F60CC08B52167B4B79C3494CCB8BBF695A11C1BB2D9D9D2F8D"
+    },
+    {
+      "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-012/receipt.json",
+      "sha256": "F3FEAE5FF924103F6CE202D00CF66E82B034204422B115969323D0461A20DE3F"
+    },
+    {
+      "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-012/loaded-product.tsv",
+      "sha256": "5344B0260AC5DC543FD4D29FB4E5EDD04AE33744FEB8AA1B8D4253622557AB78"
+    },
+    {
+      "path": "Release/_validation/S4-20261025/WindowPresentation/attempt-012/run.log",
+      "sha256": "FF54E062A5027418EBB82647E0B8BD5316EFBBB34D4B9BB90FFE657F21D99832"
+    }
+  ],
+  "scopeLimits": [
+    "Candidate only; main checkout formal verification separate",
+    "Actual Visual Studio designer, natural keyboard/mouse and user acceptance not performed",
+    "14 preexisting URI rows are 3 pending resource lookups, 1 dynamic URI and 10 missing Combo asset references; no new missing mapped URI",
+    "3 preexisting current Catalog pending paths are separate from those 3 pending URI rows; baseline absence retained",
+    "Remaining 91 cs, 7 XAML, 553 packaged assets and 521 pending snapshots are not completed by this batch",
+    "No rebuild or historical formal receipt changes for this document handoff"
+  ],
+  "nextStep": "Main agent integrates and verifies the same formal source; subsequent structure retirement/renaming requires its unified design decision"
+}

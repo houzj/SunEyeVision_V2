@@ -1,0 +1,174 @@
+using System;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public class HikCircleCaliperRoiParameter : HikCoverCircleRoiParameter
+{
+	public uint _CaliperNum = 30u;
+
+	public double _CaliperWidth = 20.0;
+
+	public double _CaliperHeight = 10.0;
+
+	public double _Angle = 0.0;
+
+	private bool _IsLimitFlag = true;
+
+	public new string Name { get; set; } = "圆卡尺";
+
+	public uint CaliperNum
+	{
+		get
+		{
+			return _CaliperNum;
+		}
+		set
+		{
+			if (_CaliperNum != value)
+			{
+				_CaliperNum = value;
+				NotifyPropertyChanged("CaliperNum");
+			}
+		}
+	}
+
+	public double CaliperWidth
+	{
+		get
+		{
+			return _CaliperWidth;
+		}
+		set
+		{
+			if (_CaliperWidth != value)
+			{
+				_CaliperWidth = value;
+				NotifyPropertyChanged("CaliperWidth");
+				NotifyPropertyChanged("MaxRadius");
+				NotifyPropertyChanged("MinRadius");
+			}
+		}
+	}
+
+	public double CaliperHeight
+	{
+		get
+		{
+			return _CaliperHeight;
+		}
+		set
+		{
+			if (_CaliperHeight != value)
+			{
+				_CaliperHeight = value;
+				NotifyPropertyChanged("CaliperHeight");
+			}
+		}
+	}
+
+	public double Angle
+	{
+		get
+		{
+			return _Angle;
+		}
+		set
+		{
+			if (_Angle != value)
+			{
+				_Angle = value;
+				NotifyPropertyChanged("Angle");
+			}
+		}
+	}
+
+	public override double Radius
+	{
+		get
+		{
+			return _Radius;
+		}
+		set
+		{
+			if (_Radius != value)
+			{
+				_Radius = value;
+				NotifyPropertyChanged("Radius");
+				NotifyPropertyChanged("MaxRadius");
+				NotifyPropertyChanged("MinRadius");
+			}
+		}
+	}
+
+	public double MaxRadius
+	{
+		get
+		{
+			double num = Math.Round(_Radius + _CaliperWidth / 2.0);
+			return (num <= 0.0) ? 1.0 : num;
+		}
+		set
+		{
+			if (MaxRadius != value)
+			{
+				double num = value;
+				if (num < MinRadius)
+				{
+					num = MinRadius;
+				}
+				double num2 = num - MinRadius;
+				double radius = (num + MinRadius) / 2.0;
+				_CaliperWidth = ((num2 < 0.0) ? 0.0 : num2);
+				_Radius = radius;
+				IsLimitFlag = false;
+				NotifyPropertyChanged("CaliperWidth");
+				NotifyPropertyChanged("Radius");
+				IsLimitFlag = true;
+			}
+		}
+	}
+
+	public override double MinRadius
+	{
+		get
+		{
+			double num = Math.Round(_Radius - CaliperWidth / 2.0);
+			return (num <= 0.0) ? 1.0 : num;
+		}
+		set
+		{
+			if (MinRadius != value)
+			{
+				double num = value;
+				if (num > MaxRadius)
+				{
+					num = MaxRadius;
+				}
+				double num2 = MaxRadius - num;
+				double radius = (num + MaxRadius) / 2.0;
+				_CaliperWidth = ((num2 < 0.0) ? 0.0 : num2);
+				_Radius = radius;
+				IsLimitFlag = false;
+				NotifyPropertyChanged("CaliperWidth");
+				NotifyPropertyChanged("Radius");
+				IsLimitFlag = true;
+			}
+		}
+	}
+
+	public bool IsLimitFlag
+	{
+		get
+		{
+			return _IsLimitFlag;
+		}
+		set
+		{
+			if (_IsLimitFlag != value)
+			{
+				_IsLimitFlag = value;
+				NotifyPropertyChanged("IsLimitFlag");
+			}
+		}
+	}
+}

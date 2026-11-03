@@ -1,0 +1,101 @@
+using System.Windows;
+using Apps.Interface;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public class HikRectangleShapeParameter : ShapeParameter, IRect
+{
+	public Point _CenterPoint = new Point(0.0, 0.0);
+
+	public float _width = 0f;
+
+	public float _height = 0f;
+
+	public float _Angle = 0f;
+
+	public Point CenterPoint
+	{
+		get
+		{
+			return _CenterPoint;
+		}
+		set
+		{
+			if (_CenterPoint != value)
+			{
+				_CenterPoint = value;
+				NotifyPropertyChanged("OriginPoint");
+			}
+		}
+	}
+
+	public float CenterX
+	{
+		get
+		{
+			return (float)CenterPoint.X;
+		}
+		set
+		{
+		}
+	}
+
+	public float CenterY
+	{
+		get
+		{
+			return (float)CenterPoint.Y;
+		}
+		set
+		{
+		}
+	}
+
+	public float Width
+	{
+		get
+		{
+			return _width;
+		}
+		set
+		{
+			if (_width != value)
+			{
+				_width = value;
+				NotifyPropertyChanged("Width");
+			}
+		}
+	}
+
+	public float Height
+	{
+		get
+		{
+			return _height;
+		}
+		set
+		{
+			if (_height != value)
+			{
+				_height = value;
+				NotifyPropertyChanged("Height");
+			}
+		}
+	}
+
+	public float Angle
+	{
+		get
+		{
+			return _Angle;
+		}
+		set
+		{
+			if (_Angle != value)
+			{
+				_Angle = value;
+				NotifyPropertyChanged("Angle");
+			}
+		}
+	}
+}

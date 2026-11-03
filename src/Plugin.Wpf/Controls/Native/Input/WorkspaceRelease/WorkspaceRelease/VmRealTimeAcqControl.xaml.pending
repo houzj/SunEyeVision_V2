@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<local:WorkspaceControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.WorkspaceRelease.VmRealTimeAcqControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.WorkspaceRelease" xmlns:vmWpfC="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.WorkspaceControls.CameraAcq" x:Name="us">
-  <Control.Template>
-    <ControlTemplate>
-      <vmWpfC:RealTimeAcqControl Name="realTimeAcqControl" ModuleSource="{Binding ModuleSource, ElementName=us}" IsShowButton="{Binding IsShowButton, ElementName=us}" />
-    </ControlTemplate>
-  </Control.Template>
-</local:WorkspaceControl>

@@ -1,0 +1,84 @@
+using System.Windows;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public class HikCircleMesRoiParameter : RoiParameter
+{
+	public string _Name = "圆";
+
+	public Point _centerpoint = default;
+
+	public double _Radius = 0.0;
+
+	public string Name
+	{
+		get
+		{
+			return _Name;
+		}
+		set
+		{
+			_Name = value;
+		}
+	}
+
+	public Point CenterPoint
+	{
+		get
+		{
+			return _centerpoint;
+		}
+		set
+		{
+			if (_centerpoint != value)
+			{
+				_centerpoint = value;
+				NotifyPropertyChanged("CenterPoint");
+				NotifyPropertyChanged("CenterX");
+				NotifyPropertyChanged("CenterY");
+			}
+		}
+	}
+
+	public double CenterX
+	{
+		get
+		{
+			return CenterPoint.X;
+		}
+		set
+		{
+			CenterPoint = new Point(value, CenterPoint.Y);
+			NotifyPropertyChanged("CenterX");
+		}
+	}
+
+	public double CenterY
+	{
+		get
+		{
+			return CenterPoint.Y;
+		}
+		set
+		{
+			CenterPoint = new Point(CenterPoint.X, value);
+			NotifyPropertyChanged("CenterY");
+		}
+	}
+
+	public double Radius
+	{
+		get
+		{
+			return _Radius;
+		}
+		set
+		{
+			if (_Radius != value)
+			{
+				_Radius = value;
+				NotifyPropertyChanged("Radius");
+			}
+		}
+	}
+}

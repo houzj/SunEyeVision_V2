@@ -1,0 +1,40 @@
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public class HikCrossParameter : RoiParameter
+{
+	public double _pointX;
+
+	public double _pointY;
+
+	public double PointX
+	{
+		get
+		{
+			return _pointX;
+		}
+		set
+		{
+			if (_pointX != value)
+			{
+				_pointX = value;
+				NotifyPropertyChanged("PointX");
+			}
+		}
+	}
+
+	public double PointY
+	{
+		get
+		{
+			return _pointY;
+		}
+		set
+		{
+			if (_pointY != value)
+			{
+				_pointY = value;
+				NotifyPropertyChanged("PointY");
+			}
+		}
+	}
+}

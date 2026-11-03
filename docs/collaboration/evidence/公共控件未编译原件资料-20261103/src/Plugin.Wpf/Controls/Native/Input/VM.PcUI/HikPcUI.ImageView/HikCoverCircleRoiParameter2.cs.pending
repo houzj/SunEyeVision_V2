@@ -1,0 +1,100 @@
+using System;
+using System.Windows;
+using System.Windows.Media;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public class HikCoverCircleRoiParameter2 : HikCoverCircleRoiParameter
+{
+	public SweepDirection _ClockWise = SweepDirection.Clockwise;
+
+	public SweepDirection ClockWise
+	{
+		get
+		{
+			return _ClockWise;
+		}
+		set
+		{
+			if (_ClockWise != value)
+			{
+				_ClockWise = value;
+				NotifyPropertyChanged("ClockWise");
+			}
+		}
+	}
+
+	public override double Radius
+	{
+		get
+		{
+			return _Radius;
+		}
+		set
+		{
+			if (_Radius != value)
+			{
+				_Radius = value;
+				NotifyPropertyChanged("Radius");
+			}
+		}
+	}
+
+	public override double MinRadius
+	{
+		get
+		{
+			return _MinRadius;
+		}
+		set
+		{
+			if (_MinRadius != value)
+			{
+				_MinRadius = value;
+				NotifyPropertyChanged("MinRadius");
+			}
+		}
+	}
+
+	public override double AngleRange
+	{
+		get
+		{
+			double num = StartAngle * 2.0 * Math.PI / 360.0;
+			double num2 = EndAngle * 2.0 * Math.PI / 360.0;
+			Vector vector = new Vector(Math.Cos(num), Math.Sin(num));
+			Vector vector2 = new Vector(Math.Cos(num2), Math.Sin(num2));
+			double num3 = Vector.AngleBetween(vector2, vector);
+			if (ClockWise == SweepDirection.Clockwise)
+			{
+				_AngleRange = 360.0 - ((num3 < 0.0) ? (360.0 + num3) : num3);
+			}
+			else
+			{
+				_AngleRange = ((num3 <= 0.0) ? (360.0 + num3) : num3);
+			}
+			return _AngleRange;
+		}
+		set
+		{
+			if (_AngleRange != value)
+			{
+				RotateTransform rotateTransform = new RotateTransform();
+				rotateTransform.Angle = value;
+				double num = StartAngle * 2.0 * Math.PI / 360.0;
+				Point point = new Point(Math.Cos(num), Math.Sin(num));
+				Point point2 = ((ClockWise != SweepDirection.Clockwise) ? rotateTransform.Inverse.Transform(point) : rotateTransform.Transform(point));
+				double num2 = Math.Atan2(point2.Y, point2.X) * 180.0 / Math.PI;
+				if (Math.Abs(num2 - StartAngle) < 0.0009)
+				{
+					EndAngle = StartAngle;
+				}
+				else
+				{
+					EndAngle = num2;
+				}
+				NotifyPropertyChanged("AngleRange");
+			}
+		}
+	}
+}

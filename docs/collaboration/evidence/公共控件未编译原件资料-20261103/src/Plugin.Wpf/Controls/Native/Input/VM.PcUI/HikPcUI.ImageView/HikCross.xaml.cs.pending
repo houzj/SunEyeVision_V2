@@ -1,0 +1,209 @@
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public partial class HikCross : UserControl, IDisposable, IComponentConnector
+{
+	private HikImageView owner;
+
+	private static double width = 2.0;
+
+	private static double size = 30.0;
+
+	public static readonly DependencyProperty ThickProperty = DependencyProperty.Register("Thick", typeof(Thickness), typeof(HikCross), new PropertyMetadata(new Thickness(width)));
+
+	public static readonly DependencyProperty PointSizeProperty = DependencyProperty.Register("PointSize", typeof(double), typeof(HikCross), new PropertyMetadata(width));
+
+	public static readonly DependencyProperty XProperty = DependencyProperty.Register("X", typeof(double), typeof(HikCross), new PropertyMetadata(double.MinValue, OnXChanged));
+
+	public static readonly DependencyProperty YProperty = DependencyProperty.Register("Y", typeof(double), typeof(HikCross), new PropertyMetadata(double.MinValue, OnYChanged));
+
+	private bool IsAdded = false;
+
+	public Thickness Thick
+	{
+		get
+		{
+			return (Thickness)GetValue(ThickProperty);
+		}
+		set
+		{
+			SetValue(ThickProperty, value);
+		}
+	}
+
+	public double PointSize
+	{
+		get
+		{
+			return (double)GetValue(PointSizeProperty);
+		}
+		set
+		{
+			SetValue(PointSizeProperty, value);
+		}
+	}
+
+	public double X
+	{
+		get
+		{
+			return (double)GetValue(XProperty);
+		}
+		set
+		{
+			SetValue(XProperty, value);
+		}
+	}
+
+	public double Y
+	{
+		get
+		{
+			return (double)GetValue(YProperty);
+		}
+		set
+		{
+			SetValue(YProperty, value);
+		}
+	}
+
+	public void Dispose()
+	{
+		if (owner != null)
+		{
+			HikImageView hikImageView = owner;
+			hikImageView.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Remove(hikImageView.OnScaleChange, new HikImageView.ScaleChanged(owner_OnScaleChange));
+		}
+	}
+
+	public HikCross()
+	{
+		InitializeComponent();
+		Width = size;
+		Height = size;
+	}
+
+	private static void OnXChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikCross).ChangeX();
+	}
+
+	private void ChangeX()
+	{
+		double num = X * owner.Radio - Width / 2.0;
+		if (!double.IsInfinity(num))
+		{
+			SetValue(Canvas.LeftProperty, num);
+		}
+	}
+
+	private static void OnYChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		(d as HikCross).ChangeY();
+	}
+
+	private void ChangeY()
+	{
+		double num = Y * owner.Radio - Height / 2.0;
+		if (!double.IsInfinity(num))
+		{
+			SetValue(Canvas.TopProperty, num);
+		}
+	}
+
+	public void RegisterRoi(HikImageView imageView)
+	{
+		owner = imageView;
+		if (owner != null)
+		{
+			owner.PrepareRawRoi(RoiUIType.HikTool);
+			owner.MouseLeftButtonDown += owner_MouseLeftButtonDown;
+			HikImageView hikImageView = owner;
+			hikImageView.OnDrawRoi_MouseUpChange = (HikImageView.DrawRoi_MouseUpChange)Delegate.Combine(hikImageView.OnDrawRoi_MouseUpChange, new HikImageView.DrawRoi_MouseUpChange(owner_OnDrawRoi_MouseUpChange));
+			HikImageView hikImageView2 = owner;
+			hikImageView2.OnScaleChange = (HikImageView.ScaleChanged)Delegate.Combine(hikImageView2.OnScaleChange, new HikImageView.ScaleChanged(owner_OnScaleChange));
+		}
+		if (!IsAdded)
+		{
+			owner?.AddChild(this);
+			IsAdded = true;
+		}
+	}
+
+	private void owner_OnScaleChange(object sender, object Tag)
+	{
+		double num = 1.0;
+		if (Tag is double)
+		{
+			num = (double)Tag;
+		}
+		double num2 = (sender as ScaleTransform).ScaleX * num;
+		Thick = new Thickness(width / num2);
+		PointSize = width / num2;
+		Width = size / num2;
+		Height = size / num2;
+		ChangeX();
+		ChangeY();
+	}
+
+	private void owner_OnDrawRoi_MouseUpChange(object sender, MouseEventArgs e)
+	{
+		owner.SourceImage.ReleaseMouseCapture();
+	}
+
+	private void owner_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+	{
+		if (!IsAdded)
+		{
+			owner.AddChild(this);
+			IsAdded = true;
+		}
+		if (owner.SourceImage.Source != null)
+		{
+			Point position = e.GetPosition(owner.SourceImage);
+			if (position.X < 0.0)
+			{
+				position.X = 0.0;
+			}
+			if (position.Y < 0.0)
+			{
+				position.Y = 0.0;
+			}
+			if (position.X > owner.SourceImage.Width)
+			{
+				position.X = owner.SourceImage.Width;
+			}
+			if (position.Y > owner.SourceImage.ActualHeight)
+			{
+				position.Y = owner.SourceImage.ActualHeight;
+			}
+			X = position.X / owner.Radio;
+			Y = position.Y / owner.Radio;
+			HikCrossParameter hikCrossParameter = owner.DoGetExtendROIParam(RoiUIType.HikTool) as HikCrossParameter;
+			if (hikCrossParameter == null)
+			{
+				hikCrossParameter = new HikCrossParameter();
+			}
+			hikCrossParameter.PointX = X;
+			hikCrossParameter.PointY = Y;
+			owner.ChangeRoiCount(hikCrossParameter);
+		}
+	}
+
+	public void UnRegisterRoi()
+	{
+		if (owner != null)
+		{
+			owner.UnPrepareRawRoi();
+			owner.MouseLeftButtonDown -= owner_MouseLeftButtonDown;
+			HikImageView hikImageView = owner;
+			hikImageView.OnDrawRoi_MouseUpChange = (HikImageView.DrawRoi_MouseUpChange)Delegate.Remove(hikImageView.OnDrawRoi_MouseUpChange, new HikImageView.DrawRoi_MouseUpChange(owner_OnDrawRoi_MouseUpChange));
+		}
+	}
+}

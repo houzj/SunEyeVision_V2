@@ -1,0 +1,56 @@
+using System.Collections.ObjectModel;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public class HikPolylineRoiParameter : RoiParameter
+{
+	public ObservableCollection<PolygonPoint> _PathPoints = new ObservableCollection<PolygonPoint>();
+
+	private string _Name = "轨迹";
+
+	private PolygonPoint _SelectItem = null;
+
+	public ObservableCollection<PolygonPoint> PathPoints
+	{
+		get
+		{
+			return _PathPoints;
+		}
+		set
+		{
+			if (_PathPoints != value)
+			{
+				_PathPoints = value;
+				NotifyPropertyChanged("PathPoints");
+			}
+		}
+	}
+
+	public string Name
+	{
+		get
+		{
+			return _Name;
+		}
+		set
+		{
+			_Name = value;
+		}
+	}
+
+	public PolygonPoint SelectItem
+	{
+		get
+		{
+			return _SelectItem;
+		}
+		set
+		{
+			if (_SelectItem != value)
+			{
+				_SelectItem = value;
+				NotifyPropertyChanged("SelectItem");
+			}
+		}
+	}
+}

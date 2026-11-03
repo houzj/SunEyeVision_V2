@@ -1,0 +1,112 @@
+using System.Windows;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ImageView;
+
+public class HikLineRoiParameter : RoiParameter
+{
+	public string _Name = "直线";
+
+	public Point _startpoint = default;
+
+	public Point _endpoint = default;
+
+	public string Name
+	{
+		get
+		{
+			return _Name;
+		}
+		set
+		{
+			_Name = value;
+		}
+	}
+
+	public Point StartPoint
+	{
+		get
+		{
+			return _startpoint;
+		}
+		set
+		{
+			if (_startpoint != value)
+			{
+				_startpoint = value;
+				NotifyPropertyChanged("StartPoint");
+				NotifyPropertyChanged("StartPointX");
+				NotifyPropertyChanged("StartPointY");
+			}
+		}
+	}
+
+	public double StartPointX
+	{
+		get
+		{
+			return StartPoint.X;
+		}
+		set
+		{
+			StartPoint = new Point(value, StartPoint.Y);
+			NotifyPropertyChanged("StartPointX");
+		}
+	}
+
+	public double StartPointY
+	{
+		get
+		{
+			return StartPoint.Y;
+		}
+		set
+		{
+			StartPoint = new Point(StartPoint.X, value);
+			NotifyPropertyChanged("StartPointY");
+		}
+	}
+
+	public Point EndPoint
+	{
+		get
+		{
+			return _endpoint;
+		}
+		set
+		{
+			if (_endpoint != value)
+			{
+				_endpoint = value;
+				NotifyPropertyChanged("EndPoint");
+				NotifyPropertyChanged("EndPointX");
+				NotifyPropertyChanged("EndPointY");
+			}
+		}
+	}
+
+	public double EndPointX
+	{
+		get
+		{
+			return EndPoint.X;
+		}
+		set
+		{
+			EndPoint = new Point(value, EndPoint.Y);
+			NotifyPropertyChanged("EndPointX");
+		}
+	}
+
+	public double EndPointY
+	{
+		get
+		{
+			return EndPoint.Y;
+		}
+		set
+		{
+			EndPoint = new Point(EndPoint.X, value);
+			NotifyPropertyChanged("EndPointY");
+		}
+	}
+}

@@ -1,4 +1,7 @@
 using System.Runtime.InteropServices;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using SunEyeVision.Domain.Persistence;
 using SunEyeVision.Application;
 using SunEyeVision.Application.Editing;
 using SunEyeVision.Domain.Workflows;
@@ -147,6 +150,7 @@ internal static class Program
         }
         Console.WriteLine("PASS: 私有调试从真实来源重算生产变量并原子接纳参数");
         factory.SelectIndex(context, 1);
+
         File.Delete(imagePath2);
         using (var failedBatch = session.CaptureRunBatch(new[] { flow.Id }, hostFactory: tracking))
         using (var failedRun = failedBatch.RunAsync(_ => { }).WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult())
@@ -182,11 +186,34 @@ internal static class Program
                 !string.Equals(ReadPrivate(), imagePath2, StringComparison.OrdinalIgnoreCase))
                 throw new Exception("私有图像源游标没有独立跨次切换");
             if (factory.TakeCompletedReads(context).Count != 0) throw new Exception("私有读取污染正式运行回执");
+            var blocking = new BlockingFactory(factory);
+            var cancelDraft = session.Editing.Host.BeginEdit(flow.Id, source.Id);
+            using (var pending = sourceEditor.Capture(cancelDraft, null, _ => { }, hostFactory: blocking))
+            {
+                var running = pending.ExecuteAsync();
+                if (!blocking.Started.Task.Wait(TimeSpan.FromSeconds(10))) throw new Exception("调试读取未进入异步准备");
+                try { sourceEditor.Dispose(); throw new Exception("未排空调试时编辑器意外关闭"); }
+                catch (InvalidOperationException) { }
+                try { using var ignored = running.WaitAsync(TimeSpan.FromSeconds(10)).GetAwaiter().GetResult(); throw new Exception("编辑器关闭未取消调试"); }
+                catch (OperationCanceledException) { }
+            }
+            sourceEditor.Dispose();
+            Console.WriteLine("PASS: 异步输入准备中关闭取消并排空编辑器调试");
         }
         Console.WriteLine("PASS: 私有图像源连续游标与正式运行隔离");
+        using var retiredEditor = session.OpenDebugSession(flow.Id, source);
+        var retiredDraft = session.Editing.Host.BeginEdit(flow.Id, source.Id);
+        var retiringFactory = new BlockingFactory(factory);
+        using var retiredInvocation = retiredEditor.Capture(retiredDraft, null, _ => { }, hostFactory: retiringFactory);
+        var retiredTask = retiredInvocation.ExecuteAsync();
+        if (!retiringFactory.Started.Task.Wait(TimeSpan.FromSeconds(10))) throw new Exception("待删除节点的调试未进入异步准备");
         var remove = session.PrepareGraphEdit(flow.Id);
         remove.DeleteNodesAndConnections(new[] { source }, Array.Empty<ConnectionDefinition>());
         session.CommitGraphEdit(remove, "删除图像源");
+        try { using var ignored = retiredTask.WaitAsync(TimeSpan.FromSeconds(10)).GetAwaiter().GetResult(); throw new Exception("删除节点未取消其调试"); }
+        catch (OperationCanceledException) { }
+        retiredInvocation.Dispose(); retiredEditor.Dispose();
+        Console.WriteLine("PASS: 删除节点取消并排空其在途调试");
         try { context.EnsureCurrent(); throw new Exception("删除后的旧上下文仍然有效"); }
         catch (InvalidOperationException) { }
         if (!session.Undo()) throw new Exception("图像源删除撤销失败");
@@ -194,6 +221,53 @@ internal static class Program
         if (restored.NodeGeneration == context.NodeGeneration || !context.NodeRetirement.IsCancellationRequested)
             throw new Exception("撤销恢复错误复用已退役游标代次");
         Console.WriteLine("PASS: 取消不产生读取收据，删除和撤销隔离游标代次");
+        var dataDir = Path.Combine(Path.GetDirectoryName(path)!, "_validation", "cross-flow-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dataDir);
+        var savedPath = Path.Combine(dataDir, "original.solution");
+        var types = new FrozenVariableTypeCatalog(new Dictionary<string,string> { ["Integer"] = "System.Int64" });
+        session.SaveAs(savedPath, Path.Combine(dataDir,"backup"), dataDir, types, new JsonSerializerOptions(), _ => null);
+        var document = JsonNode.Parse(File.ReadAllText(savedPath))!;
+        var workflows = document["Workflows"]!.AsArray();
+        var second = workflows[0]!.DeepClone();
+        second["Id"] = Guid.NewGuid().ToString("N"); second["Name"] = "跨流程测试";
+        second["Nodes"] = new JsonArray(); second["Connections"] = new JsonArray();
+        workflows.Add(second);
+        var multiPath = Path.Combine(dataDir, "multi.solution");
+        File.WriteAllText(multiPath, document.ToJsonString());
+        var reopened = manager.Open(multiPath, _ => types, _ => null, new JsonSerializerOptions());
+        var sourceFlow = reopened.GetWorkflows().Single(item => item.Id == flow.Id);
+        var targetFlow = reopened.GetWorkflows().Single(item => item.Name == "跨流程测试");
+        var targetGraph = reopened.PrepareGraphEdit(targetFlow.Id);
+        var targetSource = reopened.CreateNode(targetGraph, "ImageLoad", new CanvasPoint(0, 0));
+        var targetBlob = reopened.CreateNode(targetGraph, "BlobAnalysis", new CanvasPoint(200, 0));
+        targetGraph.AddConnection(new ConnectionDefinition("cross-wire", targetSource.Id, targetBlob.Id, "output.image", "input.image"));
+        reopened.CommitGraphEdit(targetGraph, "创建跨流程测试");
+        var targetSourceDraft = reopened.Editing.Host.BeginEdit(targetFlow.Id, targetSource.Id);
+        var targetPaths = targetSourceDraft.SettingsSchema.Inputs.Single(port => port.Id == "local.paths");
+        targetSourceDraft.ApplyFields(new Dictionary<string,ParameterSetting> { ["local.paths"] = new ConstantSetting(new SequenceValue(targetPaths.Type, new object?[] { imagePath })) });
+        var targetBlobDraft = reopened.Editing.Host.BeginEdit(targetFlow.Id, targetBlob.Id);
+        var targetImage = reopened.GetNodeSchema(targetFlow.Id, targetSource.Id)!.Outputs.Single(port => port.Id == "output.image");
+        var reopenedVariable = reopened.Document.GlobalVariables.Single(item => item.Name == "宽度变量");
+        targetBlobDraft.ApplyFields(new Dictionary<string,ParameterSetting> {
+            ["input.image"] = new ReferenceSetting(new OutputReference(targetSource.Id, targetImage.Id, targetImage.Type, new[] { "data" }, scopeId: targetFlow.Id)),
+            [threshold] = new VariableSetting(new VariableReference(reopened.Document.Id, reopenedVariable.Id, TypeRef.ScalarOf(ScalarKind.Int64)))
+        });
+        reopened.CommitEdit(DocumentEditProposal.Prepare(reopened.Editing.Host, nodes: new[] { targetSourceDraft, targetBlobDraft }));
+        using var crossFactory = new ImageSourceHostInputFactory();
+        using (var crossBatch = reopened.CaptureRunBatch(new[] { sourceFlow.Id, targetFlow.Id }, hostFactory: crossFactory))
+        using (var crossRun = crossBatch.RunAsync(_ => { }).WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult())
+            if (!crossRun.Workflows.Values.All(item => item.Success)) throw new Exception("跨流程正式运行失败");
+        using (var crossEditor = reopened.OpenDebugSession(targetFlow.Id, targetBlob))
+        {
+            var crossDraft = reopened.Editing.Host.BeginEdit(targetFlow.Id, targetBlob.Id);
+            using var crossDebug = crossEditor.Capture(crossDraft, null, _ => { });
+            using var crossResult = crossDebug.ExecuteAsync().WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult();
+            if (!crossResult.IsSuccess) throw new Exception("跨流程生产变量调试失败");
+            crossDebug.AcceptParameters();
+            if (crossDraft.Configuration.ReadCurrentParameter(threshold)?.Value is not long number || number != 8L)
+                throw new Exception("跨流程生产变量不是实际图像宽度");
+        }
+        Console.WriteLine("PASS: V4 保存重开、跨流程 producer 与私有参数接纳");
         File.Delete(imagePath2);
         File.Delete(imagePath);
         return 0;
@@ -206,4 +280,25 @@ internal static class Program
             Seen.Add(context.Node.NodeId);
             return inner.Create(context);
         }
+    }    private sealed class BlockingFactory(ImageSourceHostInputFactory inner) : IHostInputFactory
+    {
+        public readonly TaskCompletionSource Started = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public IHostInputPreparer? Create(HostInputFactoryContext context)
+        {
+            var prepared = inner.Create(context);
+            return prepared is null ? null : new BlockingPreparer(prepared, Started);
+        }
+    }
+    private sealed class BlockingPreparer(IHostInputPreparer inner, TaskCompletionSource started) : IHostInputPreparer
+    {
+        public string CapabilityId => inner.CapabilityId;
+        public int CapabilityVersion => inner.CapabilityVersion;
+        public IReadOnlyList<string> Services => inner.Services;
+        public async ValueTask<IPreparedHostInputs> PrepareAsync(HostInputPreparationContext context)
+        {
+            started.TrySetResult();
+            await Task.Delay(Timeout.InfiniteTimeSpan, context.Cancellation);
+            return await inner.PrepareAsync(context);
+        }
+        public void Dispose() => inner.Dispose();
     }}

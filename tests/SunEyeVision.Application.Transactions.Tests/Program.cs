@@ -303,6 +303,7 @@ Check(acknowledgeCount == 2 && !saveParticipant.HasPendingChanges, "保存必须
 ChangeSavedThreshold(33L);
 var copyPath = Path.Combine(saveRoot, "copy.solution");
 saveSession.SaveCopy(copyPath, Path.Combine(saveRoot, "copy-backup"), saveRoot, saveTypes, saveOptions, _ => null);
+Check(saveSession.HasUnsavedChanges, "SaveCopy must not acknowledge current edits as saved to the active file.");
 Check(acknowledgeCount == 3 && saveSession.LastWrittenSnapshot!.TargetPath == savePath, "保存副本接受编辑但不改活动文件身份。");
 ChangeSavedThreshold(34L);
 _ = saveSession.CaptureForSave(saveTypes, saveOptions);
@@ -337,6 +338,7 @@ Check(beforeFailedAck.SequenceEqual(File.ReadAllBytes(copyPath)) &&
     (long)((ConstantSetting)reopenedSaveNode.Configuration.Fields.Read("threshold")).Value! == 44L,
     "回执失败不得写文件，也不得伪装回滚已正式接受的编辑。");
 reopenedSave.Editing.Unregister(failedAck.ScopeId);
+Check(reopenedSave.HasUnsavedChanges, "A failed file save must not mark an accepted configuration clean.");
 var prepareFailure = new SaveParticipant("受控准备失败", () => true,
     _ => throw new InvalidOperationException("受控准备失败"), (_, _) => throw new Exception("不得确认失败提案"));
 reopenedSave.Editing.Register(prepareFailure);

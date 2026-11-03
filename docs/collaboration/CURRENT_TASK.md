@@ -1,3 +1,13 @@
+## 2026-11-03 显示导航与保存状态共享交接
+
+- 基线：bed69637e；分支codex/workflow-toolbox-dataflow；根独占Application核心，B主窗/参数/结果/Plugin.Wpf，A执行调试，C图像源/根窗完成候选后接全局变量UI，均独立树。
+- 目标/完成：SetNodeDisplayReference通过真实节点和前序自身图像编译、独立导航通知，保存重开保留且不入编辑历史。HasUnsavedChanges统一pending/历史状态/导航内容/显式值编辑，Undo回保存点和裁剪边界正确；保存副本/失败不标clean。
+- 修改：Application DisplayNavigation/SaveState、History保存状态身份、Persistence Save/As/Open、显式值提交、真实RootWorkspace与保存场景、原主方案及详细HTML。
+- 验证：23真实Session场景，navigation-save-state-session-20261103-final.log，0退出；含15次实际根事务裁剪和Undo，不是镜像单测。
+- 未完成：主窗消费者/全量/正式工具本树重封/私有调试签发/旧Workflow退出；设备通信新写事务须登记状态，尚未接通入口保持保护。
+- 人工/设计器/主仓集成：未做。Group不做，不启动混合Release为交付。
+- 下一步：交B精确共享接口，集中核收其27源码前置与328/504/a53整窗候选，再合C根配置等完整边界；现有6处旧Workflow错误不恢复兼容桥。
+
 ## 2026-11-03 正式失败结果候选与调试原子接纳共享
 
 基于029149901集中合A两批为62d95a4a8/38a7b2d8c；本树正式载荷未重封，不借用A自测签章。根补internal AcceptPrivateParameterValues(values,NodeDraftDebugToken)：同版本私有候选整体准备、实际会话与版本复核、一次换版；无半批成功。23实际Session场景再次通过，debug-values-session-20261103.log；完整调试签发由A独占Runtime partial接续，不改Editing。主HTML/详细设计已同步。B/C继续各自独立生产消费者，主窗/全量/设计器/人工/主仓集成均未签；Group暂停。

@@ -95,7 +95,7 @@ public sealed partial class DocumentSession
         ArgumentNullException.ThrowIfNull(variableTypes); ArgumentNullException.ThrowIfNull(options);
         AcceptEditorsForSave();
         using var mutation = _owner.BeginDocumentMutation();
-        long revision; EncodedSolutionDocument encoded;
+        long revision; PersistenceStateStamp savedState; EncodedSolutionDocument encoded;
         lock (_gate)
         {
             EnsureOwnerCanEdit();
@@ -106,7 +106,7 @@ public sealed partial class DocumentSession
                 expected = TargetExpectation.Match(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(_lastWrittenSnapshot.CopyBytes())));
             }
             sourceDirectory = ResolveResourceBaseDirectory(sourceDirectory);
-            revision = ChangeRevision;
+            revision = ChangeRevision; savedState = CapturePersistenceState();
             encoded = CaptureAcceptedDocument(variableTypes, options, createCodec, sourceDirectory, Path.GetDirectoryName(Path.GetFullPath(destination)));
         }
         mutation.Dispose();
@@ -114,7 +114,7 @@ public sealed partial class DocumentSession
         lock (_gate)
         {
             if (!_closed && !_closing && !_owner.IsRetired && _directory.IsActive)
-            { _resourceBaseDirectory ??= sourceDirectory; _lastWrittenSnapshot = receipt.WrittenSnapshot; _lastWrittenRevision = revision; }
+            { _resourceBaseDirectory ??= sourceDirectory; _lastWrittenSnapshot = receipt.WrittenSnapshot; _lastWrittenRevision = revision; _writtenState = savedState; }
         }
         return receipt;
     }
@@ -142,14 +142,14 @@ public sealed partial class DocumentSession
         ArgumentNullException.ThrowIfNull(variableTypes); ArgumentNullException.ThrowIfNull(options);
         AcceptEditorsForSave();
         using var mutation = _owner.BeginDocumentMutation();
-        long revision; EncodedSolutionDocument encoded;
+        long revision; PersistenceStateStamp savedState; EncodedSolutionDocument encoded;
         lock (_gate)
         {
             EnsureOwnerCanEdit();
             sourceDirectory = ResolveResourceBaseDirectory(sourceDirectory)!;
             if (!updateBaseline && _lastWrittenSnapshot is not null && string.Equals(Path.GetFullPath(destination), _lastWrittenSnapshot.TargetPath, StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException("保存副本不能覆盖当前方案。");
-            revision = ChangeRevision;
+            revision = ChangeRevision; savedState = CapturePersistenceState();
             encoded = CaptureAcceptedDocument(variableTypes, options, createCodec, sourceDirectory, Path.GetDirectoryName(Path.GetFullPath(destination)));
         }
         mutation.Dispose();
@@ -157,7 +157,7 @@ public sealed partial class DocumentSession
         lock (_gate)
         {
             if (updateBaseline && !_closed && !_closing && !_owner.IsRetired && _directory.IsActive)
-            { _resourceBaseDirectory ??= sourceDirectory; _lastWrittenSnapshot = receipt.WrittenSnapshot; _lastWrittenRevision = revision; }
+            { _resourceBaseDirectory ??= sourceDirectory; _lastWrittenSnapshot = receipt.WrittenSnapshot; _lastWrittenRevision = revision; _writtenState = savedState; }
         }
         return receipt;
     }

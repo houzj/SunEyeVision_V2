@@ -64,6 +64,8 @@ public sealed partial class DocumentSession
                     variableChanges.ToImmutableArray(), prepared.Invalidated.ToImmutableArray(),
                     workflowChanges) : null;
                 DocumentHistoryEntry? history = null;
+                var explicitValueEdit = currentValuesChanged || prepared.ValueWrites.Count != 0
+                    ? checked(_explicitValueEdit + 1) : _explicitValueEdit;
                 if (changed)
                 {
                     var operation = new ConfigurationHistoryOperation(this, prepared, proposal);
@@ -85,7 +87,7 @@ public sealed partial class DocumentSession
                     }
                     catch { operation.Dispose(); throw; }
                     if (!configurationChanged) operation.Dispose();
-                    ChangeRevision = revision;
+                    ChangeRevision = revision; _explicitValueEdit = explicitValueEdit;
                     RetireChangedDomains(change!);
                 }
                 proposal.MarkConsumed();

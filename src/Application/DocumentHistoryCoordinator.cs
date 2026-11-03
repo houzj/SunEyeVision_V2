@@ -41,6 +41,8 @@ public sealed class DocumentHistoryCoordinator : IDisposable
     private readonly int _ownerThread = Environment.CurrentManagedThreadId;
     private readonly int _capacity;
     private int _position;
+    private Guid _baseStateId = Guid.NewGuid();
+    internal Guid CurrentStateId => _position == 0 ? _baseStateId : _items[_position - 1].Entry.Id;
     private long _sequence;
     private bool _busy, _notifying, _closed, _initialPresentationBlocked;
     private Func<IDisposable>? _mutationLeaseProvider;
@@ -148,7 +150,7 @@ public sealed class DocumentHistoryCoordinator : IDisposable
         LastInvalidatedNodes = operation is IDocumentHistoryReplayEffects effects ? effects.InvalidatedNodes : Array.Empty<ScopedNodeIdentity>();
         Revision++;
         Item? trimmed = null;
-        if (_items.Count > _capacity) { trimmed = _items[0]; _items.RemoveAt(0); _position--; }
+        if (_items.Count > _capacity) { trimmed = _items[0]; _baseStateId = trimmed.Entry.Id; _items.RemoveAt(0); _position--; }
         Release(discarded.Concat(trimmed is null ? Array.Empty<Item>() : new[] { trimmed }));
         Notify();
         return entry;
@@ -264,7 +266,7 @@ public sealed class DocumentHistoryCoordinator : IDisposable
         if (_closed) return;
         EnsureMutationAllowed(allowFault: true);
         _closed = true; LastInvalidatedNodes = Array.Empty<ScopedNodeIdentity>();
-        var discarded = _items.ToArray(); _items.Clear(); _position = 0; Revision++;
+        var discarded = _items.ToArray(); _baseStateId = CurrentStateId; _items.Clear(); _position = 0; Revision++;
         Release(discarded); Notify(); Changed = null; _mutationLeaseProvider = null;
     }
 }

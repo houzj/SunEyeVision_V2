@@ -25,6 +25,29 @@ internal static class RootWorkspaceScenario
         var session = manager.CreateNew(); var flow = session.GetWorkflows().Single();
         var graph = session.PrepareGraphEdit(flow.Id); var node = session.CreateNode(graph, "TransactionProbe", new CanvasPoint(0, 0));
         session.CommitGraphEdit(graph, "工作区测试节点");
+        var displayReference = ParameterSettingCanonical.Serialize(new OutputReference(node.Id, "image", TypeRef.ResourceOf(ResourceKind.Image), scopeId: flow.Id));
+        var beforeNavigationHistory = session.HistoryEntries.Count;
+        var beforeNavigationRevision = session.ChangeRevision;
+        session.SetNodeDisplayReference(flow.Id, node, displayReference);
+        Check(node.SelectedDisplayReference == displayReference && session.HistoryEntries.Count == beforeNavigationHistory &&
+            session.ChangeRevision == beforeNavigationRevision, "Display selection must not mutate parameter history or execution identity.");
+        Reject(() => session.SetNodeDisplayReference(flow.Id, node, ParameterSettingCanonical.Serialize(
+            new OutputReference(node.Id, "count", DataType.Integer, scopeId: flow.Id))));
+        Reject(() => session.SetNodeDisplayReference(flow.Id, node, ParameterSettingCanonical.Serialize(
+            new OutputReference(node.Id, "image", TypeRef.ResourceOf(ResourceKind.Image), scopeId: "other-flow"))));
+        var navigationSnapshot = node.SelectedDisplayReference;
+        EventHandler<NodeDisplayNavigationChange> brokenNavigation = (_, _) =>
+        {
+            Reject(() => session.SetNodeDisplayReference(flow.Id, node, displayReference));
+            Check(Task.Run(() => session.GetWorkflows().Count).Wait(TimeSpan.FromSeconds(2)), "Navigation callback must be outside the session lock.");
+            throw new InvalidOperationException("Controlled navigation observer failure");
+        };
+        session.NodeDisplayNavigationChanged += brokenNavigation;
+        session.SetNodeDisplayReference(flow.Id, node, null);
+        Check(node.SelectedDisplayReference is null && session.LastObserverError is AggregateException,
+            "Observer failure must not roll back accepted display navigation.");
+        session.NodeDisplayNavigationChanged -= brokenNavigation;
+        session.SetNodeDisplayReference(flow.Id, node, navigationSnapshot);
         var historyBefore = session.HistoryEntries.Count; var changeBefore = session.ChangeRevision;
         var navigationChanges = new List<WorkflowNavigationChange>();
         session.WorkspaceNavigationChanged += (_, change) => navigationChanges.Add(change);
@@ -49,6 +72,7 @@ internal static class RootWorkspaceScenario
         Check(session.Undo() && flow.WorkspaceSettings.RunIntervalMs == 80 && !flow.WorkspaceSettings.StopOnNg &&
             flow.WorkspaceSettings.OverviewX == 200 && flow.RootConfiguration.RunParameters.Length == 0,
             "撤销不得回放旧导航。");
+        Check(node.SelectedDisplayReference == displayReference, "Undo must not replay old display navigation.");
         Check(session.Redo() && flow.WorkspaceSettings.RunIntervalMs == 250 && flow.WorkspaceSettings.OverviewY == 300 &&
             flow.RootConfiguration.RunParameters.Length == 1, "重做运行设置不得回放旧导航。");
         var owner = (ToolExecutionOwner)typeof(DocumentSession).GetProperty("ExecutionOwner", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(session)!;
@@ -100,12 +124,39 @@ internal static class RootWorkspaceScenario
         var types = new FrozenVariableTypeCatalog(Array.Empty<KeyValuePair<string, string>>());
         session.SaveAs(path, Path.Combine(dataRoot, "workspace-backup"), dataRoot, types, new System.Text.Json.JsonSerializerOptions(), _ => null);
         Check(flow.WorkspaceSettings.RunIntervalMs == 500 && !participant.HasPendingChanges, "保存前须统一接纳运行设置。");
+        Check(!session.HasUnsavedChanges, "Successful SaveAs must establish a clean configuration/navigation baseline.");
+        session.SetNodeDisplayReference(flow.Id, node, null);
+        Check(session.HasUnsavedChanges, "Persistent display selection must be unsaved.");
+        session.SetNodeDisplayReference(flow.Id, node, displayReference);
+        Check(!session.HasUnsavedChanges, "Restoring saved display selection must restore clean state.");
+        session.SetOverviewPosition(flow, new CanvasPoint(351, 451));
+        Check(session.HasUnsavedChanges, "Persistent overview navigation must be unsaved.");
+        session.SetOverviewPosition(flow, new CanvasPoint(350, 450));
+        Check(!session.HasUnsavedChanges, "Navigation clean state must compare content, not a monotonic revision.");
+        var dirtyEdit = session.Editing.Host.BeginRootEdit(flow.Id);
+        dirtyEdit.WorkspaceSettings = dirtyEdit.WorkspaceSettings with { RunIntervalMs = 501 };
+        session.CommitEdit(DocumentEditProposal.Prepare(session.Editing.Host, roots: new[] { dirtyEdit }));
+        Check(session.HasUnsavedChanges && session.Undo() && !session.HasUnsavedChanges && session.Redo() &&
+            session.HasUnsavedChanges && session.Undo() && !session.HasUnsavedChanges,
+            "Undo and redo must compare the actual saved history state, not ChangeRevision.");
+        for (var index = 0; index < 15; index++)
+        {
+            var bounded = session.Editing.Host.BeginRootEdit(flow.Id);
+            bounded.WorkspaceSettings = bounded.WorkspaceSettings with { RunIntervalMs = 600 + index };
+            session.CommitEdit(DocumentEditProposal.Prepare(session.Editing.Host, roots: new[] { bounded }));
+        }
+        Check(session.HasUnsavedChanges, "Changed history after trimming must remain dirty.");
+        for (var index = 0; index < 15; index++) Check(session.Undo(), "Bounded history undo failed.");
+        Check(!session.HasUnsavedChanges && flow.WorkspaceSettings.RunIntervalMs == 500,
+            "Undo to a saved state at the trimmed history boundary must be clean.");
         var countBeforeNoop = session.HistoryEntries.Count;
         var noChange = session.Editing.Host.BeginRootEdit(flow.Id);
         Check(session.CommitEdit(DocumentEditProposal.Prepare(session.Editing.Host, roots: new[] { noChange })).Change is null &&
             session.HistoryEntries.Count == countBeforeNoop, "运行设置无变化不能制造历史。");
         var reopened = manager.Open(path, _ => types, _ => null, new System.Text.Json.JsonSerializerOptions());
         var settings = reopened.GetWorkflows().Single().WorkspaceSettings;
+        Check(!reopened.HasUnsavedChanges && reopened.GetNodes(flow.Id).Single().SelectedDisplayReference == displayReference,
+            "Reopen must restore display navigation and establish the actual clean baseline.");
         Check(settings.RunIntervalMs == 500 && settings.StopOnNg && settings.OverviewX == 350 && settings.OverviewY == 450,
             "保存重开必须保留运行设置与最新导航。");
         Console.WriteLine("PASS 根工作区联合编辑、独立导航、运行门禁、回执保新输入、历史与保存重开");

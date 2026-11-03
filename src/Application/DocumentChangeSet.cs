@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using SunEyeVision.Domain.Solutions;
 using SunEyeVision.Domain.Workflows;
 
 namespace SunEyeVision.Application;
@@ -7,13 +8,16 @@ namespace SunEyeVision.Application;
 public enum NodeChangedAspect { Identity = 1, Configuration = 2, Geometry = 4, Presentation = 8, CurrentValues = 16 }
 public enum DocumentChangeOrigin { Edit, Undo, Redo, RuntimeCurrentValues }
 public enum ConnectionChangeKind { Added, Updated, Removed }
+public enum VariableChangeKind { Added, Updated, Removed }
 public sealed record NodeChange(ScopedNodeIdentity Identity, NodeDefinition Node, NodeChangedAspect Aspects);
 public sealed record RemovedNode(ScopedNodeIdentity Identity, NodeDefinition Node, int OriginalIndex);
 public sealed record ConnectionChange(string WorkflowId, ConnectionDefinition Connection, ConnectionChangeKind Kind,
     string? OldSourceNodeId, string? OldTargetNodeId);
+public sealed record VariableChange(GlobalVariable Variable, VariableChangeKind Kind, string? OldId, int? OldIndex);
 public sealed record DocumentChangeSet(Guid EditSessionId, long Revision, DocumentChangeOrigin Origin,
     ImmutableArray<NodeChange> ChangedNodes, ImmutableArray<RemovedNode> RemovedNodes,
-    ImmutableArray<ConnectionChange> ChangedConnections, ImmutableArray<ScopedNodeIdentity> ExecutionInvalidatedNodes);
+    ImmutableArray<ConnectionChange> ChangedConnections, ImmutableArray<VariableChange> ChangedVariables,
+    ImmutableArray<ScopedNodeIdentity> ExecutionInvalidatedNodes);
 
 public sealed partial class DocumentSession
 {
@@ -32,11 +36,12 @@ public sealed partial class DocumentSession
     // The caller holds the session gate and invokes this only after installing the committed state.
     private DocumentChangeSet CreateCommittedChange(DocumentChangeOrigin origin,
         IEnumerable<NodeChange> changedNodes, IEnumerable<RemovedNode> removedNodes,
-        IEnumerable<ConnectionChange> changedConnections, IEnumerable<ScopedNodeIdentity> executionInvalidatedNodes)
+        IEnumerable<ConnectionChange> changedConnections, IEnumerable<VariableChange> changedVariables,
+        IEnumerable<ScopedNodeIdentity> executionInvalidatedNodes)
     {
         var next = checked(ChangeRevision + 1);
         var change = new DocumentChangeSet(EditSessionId, next, origin, changedNodes.ToImmutableArray(),
-            removedNodes.ToImmutableArray(), changedConnections.ToImmutableArray(),
+            removedNodes.ToImmutableArray(), changedConnections.ToImmutableArray(), changedVariables.ToImmutableArray(),
             executionInvalidatedNodes.Distinct().ToImmutableArray());
         ChangeRevision = next;
         return change;

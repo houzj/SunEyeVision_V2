@@ -5,12 +5,12 @@ using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Threading;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
-using NativePicker = SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerControlView;
-using NativePopup = SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.Controls.PopupButton;
+using NativePicker = SunEyeVision.Plugin.Wpf.Native.Input.Interaction.ListView.ColorPickerControlView;
+using NativePopup = SunEyeVision.Plugin.Wpf.Native.Input.Interaction.Controls.PopupButton;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Display;
 
-/// <summary>Hosts the original VM.PcUI RGB surface, palette, tabs and advanced picker unchanged.
+/// <summary>Hosts the original Interaction.Pc RGB surface, palette, tabs and advanced picker unchanged.
 /// Only adapts the selected value; the caller owns the private draft and its transaction.</summary>
 public sealed class NativeColorPresenter : Decorator, IDisposable
 {

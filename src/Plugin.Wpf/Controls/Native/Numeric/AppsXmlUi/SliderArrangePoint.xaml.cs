@@ -6,7 +6,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-namespace SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl;
+namespace SunEyeVision.Plugin.Wpf.Native.Numeric.ParameterPresentation.ParamTabControl;
 /// <summary>Original point-number/slider template. A borrowed slot stages coordinates; point hashes are never identities.</summary>
 public partial class SliderArrangePoint : SliderArrangeBase
 {

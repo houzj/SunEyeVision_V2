@@ -4,7 +4,7 @@ using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.Display;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Display;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape;
+using SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.Base.ImageView.Shape;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Display;
 

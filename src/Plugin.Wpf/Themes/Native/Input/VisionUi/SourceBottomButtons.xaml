@@ -1,5 +1,5 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-<!-- Source: Apps.Style/buttonstyle/bottombuttonstyle.xaml Orange_ButtonStyle; Apps.ColorFun colorstyle and colorstyle1. -->
+<!-- Source: SharedStyles/buttonstyle/bottombuttonstyle.xaml Orange_ButtonStyle; ThemeColors colorstyle and colorstyle1. -->
 <SolidColorBrush x:Key="btnEditTemplateBorderBG" Color="#E1DEDE" />
 <SolidColorBrush x:Key="BottomLineBtnEnableBB" Color="#B8B6B6" />
 <SolidColorBrush x:Key="ParamsTabForeground" Color="#FF666666" />

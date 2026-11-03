@@ -4,7 +4,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.Commands;
-using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.PresentationControls.RenderInterface;
 
 namespace SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Display;
 

@@ -1,17 +1,17 @@
-﻿using System.Collections;
+using System.Collections;
 using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using System.Collections.ObjectModel;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView;
+using SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.Base.ImageView;
 using SunEyeVision.Plugin.Wpf.Regions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.ROI;
+using SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.Base.ImageView.ROI;
 using System.Windows.Input;
 using System.Windows.Media;
 using SunEyeVision.Plugin.Wpf.Adapters.Regions;
-using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.PresentationControls.RenderInterface;
+using SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Regions;
 

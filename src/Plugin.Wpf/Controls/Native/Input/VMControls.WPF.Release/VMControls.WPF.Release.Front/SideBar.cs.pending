@@ -1,7 +1,0 @@
-using FrontendUI.Design.Controls;
-
-namespace SunEyeVision.Plugin.Wpf.Native.Input.VMControls.WPF.Release.Front;
-
-public class SideBar : FrontendUI.Design.Controls.SubRoot
-{
-}

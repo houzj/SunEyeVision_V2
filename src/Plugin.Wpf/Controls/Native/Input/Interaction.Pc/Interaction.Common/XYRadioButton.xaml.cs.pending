@@ -1,0 +1,24 @@
+using System;
+using System.CodeDom.Compiler;
+using System.Diagnostics;
+using System.Windows.Markup;
+using SunEyeVision.Plugin.Wpf.Native.Input.Interaction.ImageView;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.Interaction.Common;
+
+public partial class XYRadioButton : ImageViewControlButton, IComponentConnector
+{
+	public override ImageViewController.BarItemenum Itemenum => ImageViewController.BarItemenum.coordinates;
+
+	public XYRadioButton()
+	{
+		ToolTipString = "坐标";
+		InitializeComponent();
+	}
+
+	protected override void PrepareRawRoi()
+	{
+		ImageView.PrepareRawRoi(RoiUIType.HikXY);
+	}
+
+}

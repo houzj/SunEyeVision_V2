@@ -20,7 +20,7 @@ internal static class Program
    var openingSettings = new RootWorkspaceSettings { RunIntervalMs = 123, StopOnNg = true };
    var settingsWindow = new SunEyeVision.UI.Shell.Windows.RootWorkflowRunSettingsWindow(openingSettings);
    settingsWindow.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.FrameworkElement.LoadedEvent));
-   var interval = (SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrange)settingsWindow.FindName("Interval");
+   var interval = (SunEyeVision.Plugin.Wpf.Native.Numeric.Interaction.ListView.SliderArrange)settingsWindow.FindName("Interval");
    if (settingsWindow.Width != 370 || settingsWindow.Height != 200 || interval.Minimum != 0 || interval.Maximum != 100000 ||
        interval.SliderTickFrequency != 10 || interval.StartValue != 123 || !settingsWindow.Settings.StopOnNg)
     throw new Exception("root run interval window does not retain declared range and loaded settings");

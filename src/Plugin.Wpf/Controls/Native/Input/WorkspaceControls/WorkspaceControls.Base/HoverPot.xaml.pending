@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SunEyeVision.Plugin.Wpf.Native.Input.WorkspaceControls.Base.HoverPot" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors" HorizontalAlignment="Left" VerticalAlignment="Top" xmlns:base="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.WorkspaceControls.Base" MouseLeftButtonDown="UserControl_MouseLeftButtonDown" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.ThemeColors">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <x:StaticExtension Member="vm_port_0:ColorThemesResourceDictionary.Instance" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid Background="{DynamicResource Col_EditProcess_Selected_Ligature}" />
+  <i:Interaction.Triggers>
+    <i:EventTrigger EventName="HMouseLeftButtonDown">
+      <i:InvokeCommandAction Command="{Binding MouseDownCommand}" CommandParameter="{Binding}" />
+    </i:EventTrigger>
+  </i:Interaction.Triggers>
+</UserControl>

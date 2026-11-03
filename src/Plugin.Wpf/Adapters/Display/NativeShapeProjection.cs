@@ -2,8 +2,8 @@ using System.Windows;
 using System.Windows.Media;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Presenters.Display;
-using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.PresentationControls.RenderInterface;
+using SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.Base.ImageView.Shape;
 
 namespace SunEyeVision.Plugin.Wpf.Adapters.Display;
 

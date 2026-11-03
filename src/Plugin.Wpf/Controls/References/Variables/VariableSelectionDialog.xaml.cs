@@ -5,7 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
+using SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls;
 
 namespace SunEyeVision.Plugin.Wpf.Controls.References.Variables;
 

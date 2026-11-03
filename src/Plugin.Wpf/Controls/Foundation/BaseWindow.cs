@@ -1,9 +1,9 @@
 using SunEyeVision.Plugin.Wpf.Controls.Foundation;
 using SunEyeVision.Plugin.Wpf.Themes.Palettes;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
+using SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Presentation.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls.PropertyGrid.Editors;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Presentation.Controls.PropertyGrid.Editors;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -23,7 +23,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Shell;
 using System.Windows.Threading;
-using SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun;
+using SunEyeVision.Plugin.Wpf.Native.Display.ThemeColors;
 using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
 
 namespace SunEyeVision.Plugin.Wpf.Controls.Foundation;

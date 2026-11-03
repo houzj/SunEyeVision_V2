@@ -9,9 +9,9 @@ using SunEyeVision.Plugin.Wpf.Fields;
 using SunEyeVision.Plugin.Wpf.Regions;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using SunEyeVision.Plugin.Wpf.Presenters.Input;
-using SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl;
-using NativeRow=SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.LeftRightControl;
-using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.XmlParser.ParamTab;
+using SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamTabControl;
+using NativeRow=SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamTab.LeftRightControl;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.ParameterSchema.ParamTab;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Regions;
 

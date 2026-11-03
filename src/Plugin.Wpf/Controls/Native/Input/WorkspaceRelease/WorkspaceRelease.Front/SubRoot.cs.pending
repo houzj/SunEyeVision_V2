@@ -1,0 +1,7 @@
+using FrontendUI.Design.Controls;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.WorkspaceRelease.Front;
+
+public class SubRoot : FrontendUI.Design.Controls.SubRoot
+{
+}

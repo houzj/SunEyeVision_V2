@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun;
+using SunEyeVision.Plugin.Wpf.Native.Display.ThemeColors;
 using SunEyeVision.Plugin.Wpf.Themes.Palettes;
 using SunEyeVision.Plugin.Wpf.Infrastructure.Resources;
 using System;
@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Threading;
-using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.DataAdapters;
 
 namespace SunEyeVision.Plugin.Wpf.Themes.Palettes;
 

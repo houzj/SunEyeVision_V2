@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.WindowUtilities.Extern;
 using SunEyeVision.Plugin.Wpf.Interop.Windows;
 namespace SunEyeVision.Plugin.Wpf.Interop.Windows;
 

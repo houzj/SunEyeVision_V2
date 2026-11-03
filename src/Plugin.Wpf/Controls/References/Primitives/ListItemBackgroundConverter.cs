@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab;
+using SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamTab;
 using SunEyeVision.Plugin.Wpf.Controls.References.Primitives;
 using System;
 using System.Globalization;

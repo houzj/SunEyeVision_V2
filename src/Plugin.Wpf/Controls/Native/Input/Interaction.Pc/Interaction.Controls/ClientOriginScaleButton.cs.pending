@@ -1,0 +1,39 @@
+using SunEyeVision.Plugin.Wpf.Native.Input.Interaction.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Interaction.Controls;
+using System.Windows;
+using System.Windows.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Input.Interaction.ImageView;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.Interaction.Controls;
+
+public class ClientOriginScaleButton : Button
+{
+	public static readonly DependencyProperty HookHikImageViewProperty;
+
+	public HikImageView HookHikImageView
+	{
+		get
+		{
+			return (HikImageView)GetValue(HookHikImageViewProperty);
+		}
+		set
+		{
+			SetValue(HookHikImageViewProperty, value);
+		}
+	}
+
+	static ClientOriginScaleButton()
+	{
+		HookHikImageViewProperty = DependencyProperty.Register("HookHikImageView", typeof(HikImageView), typeof(ClientOriginScaleButton), new PropertyMetadata((object)null));
+		FrameworkElement.DefaultStyleKeyProperty.OverrideMetadata(typeof(ClientOriginScaleButton), new FrameworkPropertyMetadata(typeof(ClientOriginScaleButton)));
+	}
+
+	protected override void OnClick()
+	{
+		base.OnClick();
+		if (HookHikImageView != null)
+		{
+			HookHikImageView.Init();
+		}
+	}
+}

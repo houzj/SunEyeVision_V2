@@ -9,7 +9,7 @@ using System.Windows.Threading;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.Display;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls;
+using SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Display;
 
@@ -52,8 +52,8 @@ public sealed partial class NativeResultViewport : IDisposable
         try
         {
             view.NativePrepareExport = _prepareExport;
-            foreach (var path in new[] { "Themes/Native/OriginalTheme.xaml", "Themes/Native/Display/VMBaseControls/base/imageview/shape/shapeitemspagestyle.xaml",
-                "Themes/Native/Display/VMBaseControls/base/imageview/shape/crossshape/crossshapestyle.xaml" })
+            foreach (var path in new[] { "Themes/Native/OriginalTheme.xaml", "Themes/Native/Display/ImageViewport/base/imageview/shape/shapeitemspagestyle.xaml",
+                "Themes/Native/Display/ImageViewport/base/imageview/shape/crossshape/crossshapestyle.xaml" })
             {
                 var resource = new ResourceDictionary { Source = new Uri("/SunEyeVision.Plugin.Wpf;component/" + path, UriKind.Relative) };
                 _resources.Add(resource); view.Resources.MergedDictionaries.Add(resource);

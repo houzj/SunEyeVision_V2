@@ -1,9 +1,9 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Regions;
-using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.PresentationControls.RenderInterface;
 
 namespace SunEyeVision.Plugin.Wpf.Adapters.Regions;
 

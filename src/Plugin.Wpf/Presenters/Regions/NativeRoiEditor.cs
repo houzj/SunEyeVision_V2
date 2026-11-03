@@ -7,8 +7,8 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Threading;
 using SunEyeVision.Plugin.Wpf.Adapters.Regions;
-using SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl;
-using Numbers=SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl;
+using SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamTabControl;
+using Numbers=SunEyeVision.Plugin.Wpf.Native.Numeric.ParameterPresentation.ParamTabControl;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Regions;
 

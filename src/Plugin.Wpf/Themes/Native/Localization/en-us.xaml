@@ -35,7 +35,7 @@
   <!--帮助-->
   <sys:String x:Key="Lang_HelpDoc">Help</sys:String>
   <sys:String x:Key="Lang_OnlineHelpDoc">Online Help</sys:String>
-  <sys:String x:Key="Lang_LearnVM">About</sys:String>
+  <sys:String x:Key="Lang_LearnApplication">About</sys:String>
   <sys:String x:Key="Lang_VerInfo">Version</sys:String>
   <sys:String x:Key="Lang_MoreInfo">More</sys:String>
   <sys:String x:Key="Lang_WecPage">Welcome Page</sys:String>
@@ -74,11 +74,11 @@
   <sys:String x:Key="Lang_HstRslt">History</sys:String>
   <sys:String x:Key="Lang_Time">Time</sys:String>
   <sys:String x:Key="Lang_ModuData">Module Data</sys:String>
-  <!--HikMessageBox 第一版无-->
-  <!--HikMessageBox 按钮 -->
+  <!--NativeMessageBox 第一版无-->
+  <!--NativeMessageBox 按钮 -->
   <sys:String x:Key="Lang_Msg_Cancel">Cancel</sys:String>
-  <!--HikMessageBox 提示文字 -->
-  <!-- HikMessageBox Title-->
+  <!--NativeMessageBox 提示文字 -->
+  <!-- NativeMessageBox Title-->
   <sys:String x:Key="Lang_BackRun">Background Running</sys:String>
   <sys:String x:Key="Lang_StopBackRun">Exit and Stop</sys:String>
   <sys:String x:Key="Lang_UnNotify">Remember Me</sys:String>
@@ -331,7 +331,7 @@
   <sys:String x:Key="Lang_ImageShowError">Error in image display</sys:String>
   <sys:String x:Key="Lang_SolManagerMaxNum">Number of solution exceeds the limit</sys:String>
   <sys:String x:Key="Lang_ParamSetFail">Params set Failed!</sys:String>
-  <sys:String x:Key="Lang_VMRepeatStart">VisionMaster start failed, same process detected!</sys:String>
+  <sys:String x:Key="Lang_ApplicationRepeatStart">VisionMaster start failed, same process detected!</sys:String>
   <sys:String x:Key="Lang_ServerNoExist">Abnormal shutdown of service detected, program will exit!</sys:String>
   <sys:String x:Key="错误提示">Error</sys:String>
   <sys:String x:Key="基准点创建失败!">Creating fiducial point failed, reason: parameter is not set.</sys:String>
@@ -6087,8 +6087,8 @@ Steps:
   <sys:String x:Key="Lang_CopyFailed">CopyFailed</sys:String>
   <sys:String x:Key="样本移至...">Sample move to...</sys:String>
   <sys:String x:Key="Lang_OutputConfig">Output Config</sys:String>
-  <sys:String x:Key="RunParam_Hikvision_I Calibration Board">HikRobot I Calibration Board</sys:String>
-  <sys:String x:Key="RunParam_Hikvision_II Calibration Board">HikRobot II Calibration Board</sys:String>
+  <sys:String x:Key="RunParam_ExternalBoard_I Calibration Board">HikRobot I Calibration Board</sys:String>
+  <sys:String x:Key="RunParam_ExternalBoard_II Calibration Board">HikRobot II Calibration Board</sys:String>
   <sys:String x:Key="标签已满">Exceed Max number</sys:String>
   <sys:String x:Key="标签类已满">Exceed Max number</sys:String>
   <sys:String x:Key="IOControllerType">Controller Type</sys:String>
@@ -7847,7 +7847,7 @@ Operation:
   <sys:String x:Key="Lang_CheckImageEmptyTip">Image data is empty without supporting overlay display.</sys:String>
   <sys:String x:Key="输入输出数量超出最大限制！">Beyond IO number limits!</sys:String>
   <sys:String x:Key="Lang_SendInterval(ms)">Send Interval(ms)</sys:String>
-  <sys:String x:Key="hik_Standard">Hik Standard</sys:String>
+  <sys:String x:Key="StandardLocalization">Hik Standard</sys:String>
   <sys:String x:Key="Lang_OverwriteGalleryFileAsk">Overwrite the original Gallery file, continue or not?</sys:String>
   <sys:String x:Key="Lang_EmptyFolder">empty folder</sys:String>
   <sys:String x:Key="Lang_NoImageOrRegisterLimit">no registrable images or registered images have reached the upper limit</sys:String>
@@ -9794,7 +9794,7 @@ Operation:
   <sys:String x:Key="QueryModuleIDFailedTip">Query failed. Please check the ID of Module</sys:String>
   <sys:String x:Key="Rate">Down Sample Rate</sys:String>
   <sys:String x:Key="Lang_DevlopmentAndRunBackground">The secondary development program has started, please select the software to run in the background when you close the software</sys:String>
-  <sys:String x:Key="Lang_ReStartVM">After the restart, the advanced settings modification takes effect, pay attention to saving the scheme in advance and whether to restart?</sys:String>
+  <sys:String x:Key="Lang_RestartApplication">After the restart, the advanced settings modification takes effect, pay attention to saving the scheme in advance and whether to restart?</sys:String>
   <sys:String x:Key="ModuStatus:{0},CalibStatus{1},TransWorldError:{2},RotWorldError{3},CalibProgress:{4}/{5}">ModuStatus:{0},CalibStatus{1},TransWorldError:{2},RotWorldError{3},CalibProgress:{4}/{5}</sys:String>
   <sys:String x:Key="请选择设备">Please Chose Device!</sys:String>
   <sys:String x:Key="开始采集成功">Start Grabbing Sucessfully</sys:String>
@@ -10641,8 +10641,8 @@ Operation:
   <sys:String x:Key="Fast">Fast</sys:String>
   <sys:String x:Key="Lang_DataofLastestRunTimes">Data of The Lastest RunTimes</sys:String>
   <sys:String x:Key="RunParam_By Image">By Image</sys:String>
-  <sys:String x:Key="RunParam_Hikvision_IV2 Calibration Board">HikRobot I V2 Calibration Board</sys:String>
-  <sys:String x:Key="RunParam_Hikvision_IIV2 Calibration Board">HikRobot II V2 Calibration Board</sys:String>
+  <sys:String x:Key="RunParam_ExternalBoard_IV2 Calibration Board">HikRobot I V2 Calibration Board</sys:String>
+  <sys:String x:Key="RunParam_ExternalBoard_IIV2 Calibration Board">HikRobot II V2 Calibration Board</sys:String>
   <sys:String x:Key="Lang_CacheDataLimits">The cache data of RecordModule exceeds the limit</sys:String>
   <sys:String x:Key="Lang_CacheDataNull">The cache data of RecordModule is null</sys:String>
   <sys:String x:Key="请输入搜索条件">Please enter words</sys:String>
@@ -10893,7 +10893,7 @@ Operation:
   <sys:String x:Key="RunParam_User Output Value All">UserOutputValueAll</sys:String>
   <sys:String x:Key="Controls whether or not the selected trigger is active">Controls whether or not the selected trigger is active</sys:String>
   <sys:String x:Key="RunParam_Trigger Mode">Trigger Mode</sys:String>
-  <sys:String x:Key="ImageCollectHikModu">HKR Frame Grabber</sys:String>
+  <sys:String x:Key="ImageCollectExternalFrameGrabber">HKR Frame Grabber</sys:String>
   <sys:String x:Key="PredictStatus">Predict Status</sys:String>
   <sys:String x:Key="Confidence Threshold">Confidence Threshold</sys:String>
   <sys:String x:Key="Lang_PlcTriiger_Message">PLC device address can only enter integer {0} type</sys:String>

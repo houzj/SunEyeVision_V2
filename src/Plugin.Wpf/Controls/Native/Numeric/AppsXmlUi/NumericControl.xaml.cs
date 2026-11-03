@@ -1,5 +1,5 @@
-using SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl;
+using SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamTabControl;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.ParameterPresentation.ParamTabControl;
 using System;
 using System.ComponentModel;
 using System.Globalization;
@@ -10,7 +10,7 @@ using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
 
-namespace SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl;
+namespace SunEyeVision.Plugin.Wpf.Native.Numeric.ParameterPresentation.ParamTabControl;
 
 public partial class NumericControl : UserControl, INotifyPropertyChanged, IComponentConnector
 {
@@ -18,9 +18,9 @@ public partial class NumericControl : UserControl, INotifyPropertyChanged, IComp
 
 	public static readonly DependencyProperty IsReadOnlyProperty = DependencyProperty.Register("IsReadOnly", typeof(bool), typeof(NumericControl), new PropertyMetadata(false));
 
-	public static readonly DependencyProperty TBtnBgNormalProperty = DependencyProperty.Register("TBtnBgNormal", typeof(string), typeof(NumericControl), new PropertyMetadata("/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Numeric/Apps.XmlUI/combo_ic_top_normal.png"));
+	public static readonly DependencyProperty TBtnBgNormalProperty = DependencyProperty.Register("TBtnBgNormal", typeof(string), typeof(NumericControl), new PropertyMetadata("/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Numeric/ParameterPresentation/combo_ic_top_normal.png"));
 
-	public static readonly DependencyProperty TBtnBgHoverProperty = DependencyProperty.Register("TBtnBgHover", typeof(string), typeof(NumericControl), new PropertyMetadata("/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Numeric/Apps.XmlUI/combo_ic_top_click.png"));
+	public static readonly DependencyProperty TBtnBgHoverProperty = DependencyProperty.Register("TBtnBgHover", typeof(string), typeof(NumericControl), new PropertyMetadata("/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Numeric/ParameterPresentation/combo_ic_top_click.png"));
 
 	public static readonly DependencyProperty TBorderBrushProperty = DependencyProperty.Register("TBorderBrush", typeof(Brush), typeof(NumericControl), new PropertyMetadata(Brushes.Gray));
 

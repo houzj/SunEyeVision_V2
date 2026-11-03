@@ -1,0 +1,37 @@
+using SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Presentation.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls.PropertyGrid.Editors;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Presentation.Controls.PropertyGrid.Editors;
+using System;
+using System.Globalization;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls.Core.Converters;
+
+public class CenterTitleConverter : IMultiValueConverter
+{
+	public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+	{
+		double width = ((Size)values[0]).Width;
+		double num = (double)values[1];
+		ColumnDefinitionCollection columnDefinitionCollection = (ColumnDefinitionCollection)values[2];
+		double actualWidth = columnDefinitionCollection[2].ActualWidth;
+		double actualWidth2 = columnDefinitionCollection[3].ActualWidth;
+		if (width + actualWidth2 * 2.0 < num)
+		{
+			return 1;
+		}
+		if (width < actualWidth)
+		{
+			return 2;
+		}
+		return 3;
+	}
+
+	public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+	{
+		throw new NotImplementedException();
+	}
+}

@@ -43,7 +43,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-<!-- Original Apps.XmlUI Expand template; only the external business property name is adapted. -->
+<!-- Original ParameterPresentation Expand template; only the external business property name is adapted. -->
 <DataTemplate x:Key="NativeAdvancedToggle">
 <ToggleButton Height="30" Margin="0,0,40,0" HorizontalAlignment="Right" Padding="6,0,0,0" VerticalContentAlignment="Center" Content="{DynamicResource 高级参数}" Style="{StaticResource ExpandButtonStyle}" IsChecked="{Binding IsExpanded, Mode=TwoWay}"/>
 </DataTemplate>

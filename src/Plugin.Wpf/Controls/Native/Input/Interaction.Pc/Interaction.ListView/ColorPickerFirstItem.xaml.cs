@@ -1,0 +1,14 @@
+using SunEyeVision.Plugin.Wpf.Native.Input.Interaction.ListView;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Interaction.ListView;
+using System.Windows.Controls;
+using System.Windows.Markup;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.Interaction.ListView;
+
+public partial class ColorPickerFirstItem : UserControl, IComponentConnector
+{
+	public ColorPickerFirstItem()
+	{
+		InitializeComponent();
+	}
+}

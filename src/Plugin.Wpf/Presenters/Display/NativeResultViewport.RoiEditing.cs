@@ -93,10 +93,10 @@ public sealed partial class NativeResultViewport
             foreach (var path in new[] { "roiitemspagestyle", "subroiitemspagestyle", "rectroi/rectroistyle",
                 "circleroi/circleroistyle", "polygonroi/polygonroistyle", "sectorroi/sectorroistyle" })
             {
-                var resource = new ResourceDictionary { Source = new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/roi/" + path + ".xaml", UriKind.Relative) };
+                var resource = new ResourceDictionary { Source = new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/ImageViewport/base/imageview/roi/" + path + ".xaml", UriKind.Relative) };
                 installed.Add(resource); _view.Resources.MergedDictionaries.Add(resource);
             }
-            var shape = new ResourceDictionary { Source = new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/VMBaseControls/base/imageview/shape/annularsectorshape/annularsectorshapestyle.xaml", UriKind.Relative) };
+            var shape = new ResourceDictionary { Source = new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/ImageViewport/base/imageview/shape/annularsectorshape/annularsectorshapestyle.xaml", UriKind.Relative) };
             installed.Add(shape); _view.Resources.MergedDictionaries.Add(shape);
             _resources.AddRange(installed); _roiResources = true;
         }

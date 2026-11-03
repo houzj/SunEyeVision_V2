@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Windows.Input;
@@ -106,7 +106,7 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
         ROIValueChangedCommand=new EditCommand(_=>{if(_selected is {} selected)TryCommit(selected);});
         ValueChangedCommand=new EditCommand(value=>
         {
-            if(value is Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.FullScreen)
+            if(value is Native.Dependencies.ParameterSchema.ParamTab.RoiType.FullScreen)
             {
                 var group=_groups.SingleOrDefault(state=>state.Group==DrawingGroup);
                 if(group is not null&&group.EmptyCoverage!=RoiCoverage.Explicit)TrySetCoverage(group.EmptyCoverage);
@@ -114,10 +114,10 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
             }
             var kind=value switch
             {
-                Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Box=>"rectangle",
-                Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.SectorRing=>"annulus",
-                Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Sector=>"sector",
-                Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Polygon=>"polygon",
+                Native.Dependencies.ParameterSchema.ParamTab.RoiType.Box=>"rectangle",
+                Native.Dependencies.ParameterSchema.ParamTab.RoiType.SectorRing=>"annulus",
+                Native.Dependencies.ParameterSchema.ParamTab.RoiType.Sector=>"sector",
+                Native.Dependencies.ParameterSchema.ParamTab.RoiType.Polygon=>"polygon",
                 _=>throw new NotSupportedException("该原绘制类型尚未接入。")
             };
             BeginDraw(kind);

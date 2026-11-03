@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:display="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell" x:Name="View">
+<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:display="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell" x:Name="View">
   <UserControl.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>

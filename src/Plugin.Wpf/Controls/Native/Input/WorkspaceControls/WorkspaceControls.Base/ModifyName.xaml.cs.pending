@@ -1,0 +1,36 @@
+using System.Windows;
+using System.Windows.Markup;
+using SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Presentation.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Input.WorkspaceControls.DataForUI;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.WorkspaceControls.Base;
+
+/// <summary>
+/// ModifyName.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// ModifyName
+/// </summary>
+public partial class ModifyName : BaseWindow, IComponentConnector
+{
+	public ModifyName()
+	{
+		InitializeComponent();
+	}
+
+	public ModifyName(VmModuleBaseDecorator decorator)
+	{
+		InitializeComponent();
+		if (decorator is VmModuleDecorator dataContext)
+		{
+			DataContext = dataContext;
+		}
+	}
+
+	private void SearchClick(object sender, RoutedEventArgs e)
+	{
+		DataContext = null;
+		Close();
+	}
+}

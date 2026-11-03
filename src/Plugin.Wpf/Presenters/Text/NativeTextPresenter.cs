@@ -107,7 +107,7 @@ internal sealed class NativeTextPresenter : Decorator,IDisposable
         if(args.Key!=Key.Enter)return;
         if(!IsLoaded||!IsVisible||_text is not {IsKeyboardFocused:true} text
             ||args.OriginalSource is not DependencyObject origin||!IsWithinText(origin,text))return;
-        // Intercept at the parent before the original HikTextBox MoveFocus(Next).
+        // Intercept at the parent before the original InteractionTextBox MoveFocus(Next).
         if(!TryCommitPending()){args.Handled=true;return;}
         if(_disposed){args.Handled=true;return;}
         Close();

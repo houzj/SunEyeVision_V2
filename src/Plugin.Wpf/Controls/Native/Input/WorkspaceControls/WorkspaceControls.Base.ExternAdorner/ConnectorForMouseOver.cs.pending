@@ -1,0 +1,43 @@
+using System.Windows;
+using WindowUtilities.Service;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.View.Utility;
+using SunEyeVision.Plugin.Wpf.Native.Display.ViewUtility;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.WorkspaceControls.Base.ExternAdorner;
+
+/// <summary>
+/// 给Item加上4个锚点
+/// </summary>
+public class ConnectorForMouseOver : AdornerProvider
+{
+	private readonly AdornerPanel adornerPanel = null;
+
+	private readonly AdornerPanel subAdornerPanel;
+
+	public ConnectorForMouseOver()
+	{
+		adornerPanel = new AdornerPanelAttachToWorkArea();
+		Adorners.Add(adornerPanel);
+		subAdornerPanel = new AdornerPanel();
+	}
+
+	protected override void OnInitialized()
+	{
+		if (ExtendedItem is DiagramItem diagramItem)
+		{
+			ZoomArea parent = diagramItem.GetParent<ZoomArea>();
+			adornerPanel.WorkAreaElement = parent;
+			subAdornerPanel.Width = diagramItem.ActualWidth;
+			subAdornerPanel.Height = diagramItem.ActualHeight;
+			subAdornerPanel.HorizontalAlignment = HorizontalAlignment.Left;
+			subAdornerPanel.VerticalAlignment = VerticalAlignment.Top;
+			adornerPanel.Children.Add(subAdornerPanel);
+		}
+		base.OnInitialized();
+	}
+
+	protected override void OnRemove()
+	{
+		base.OnRemove();
+	}
+}

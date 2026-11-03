@@ -4,7 +4,7 @@
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceScrollBars.xaml" />
-        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Apps.Style/checkboxstyle/checkboxstyle.xaml" />
+        <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/SharedStyles/checkboxstyle/checkboxstyle.xaml" />
       </ResourceDictionary.MergedDictionaries>
       <vm_port_0:LeftMarginMultiplierConverter x:Key="lengthConverter" Length="14" />
       <Style x:Key="TreeViewItemFocusVisual">

@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.DataAdapters;
 using SunEyeVision.Plugin.Wpf.Infrastructure.Resources;
 using System.Windows;
 

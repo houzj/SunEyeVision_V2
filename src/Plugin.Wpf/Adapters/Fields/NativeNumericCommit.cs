@@ -3,7 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using SunEyeVision.Plugin.Contracts;
-using Numbers=SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;
+using Numbers=SunEyeVision.Plugin.Wpf.Native.Numeric.Interaction.ListView;
 
 namespace SunEyeVision.Plugin.Wpf.Adapters.Fields;
 

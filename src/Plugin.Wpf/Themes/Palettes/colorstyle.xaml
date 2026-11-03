@@ -88,7 +88,7 @@
   <SolidColorBrush x:Key="ScrollBarFillTg" Color="#CFDDEA" />
   <SolidColorBrush x:Key="ScrollBarStrokeTg" Color="#CCA7C6E5" />
   <SolidColorBrush x:Key="GridLinesBrush" Color="#00E9ECF1" />
-  <SolidColorBrush x:Key="HikTextBoxFg" Color="#777777" />
+  <SolidColorBrush x:Key="InteractionTextBoxFg" Color="#777777" />
   <SolidColorBrush x:Key="ListViewFg" Color="#FF042271" />
   <SolidColorBrush x:Key="LogicTypeButtonBB" Color="#FFB8B6B6" />
   <SolidColorBrush x:Key="LogicTypeStroke" Color="#4CA9A9A9" />

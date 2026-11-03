@@ -1,10 +1,10 @@
 using SunEyeVision.Plugin.Wpf.Utilities;
-using SunEyeVision.Plugin.Wpf.Native.Dependencies.VM.Utility;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMUtility;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMControls;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMControls.PropertyGrid.Editors;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls.PropertyGrid.Editors;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.View.Utility;
+using SunEyeVision.Plugin.Wpf.Native.Display.ViewUtility;
+using SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Presentation.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls.PropertyGrid.Editors;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Presentation.Controls.PropertyGrid.Editors;
 using System;
 using System.Windows;
 using System.Windows.Media;

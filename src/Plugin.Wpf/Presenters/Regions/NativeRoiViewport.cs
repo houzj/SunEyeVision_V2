@@ -3,7 +3,7 @@ using System.Windows.Controls;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Adapters.Regions;
 using SunEyeVision.Plugin.Wpf.Presenters.Display;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls;
+using SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Regions;
 

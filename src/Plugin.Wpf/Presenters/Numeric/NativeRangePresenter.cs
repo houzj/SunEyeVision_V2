@@ -12,7 +12,7 @@ using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Presenters.References;
 using SunEyeVision.Plugin.Wpf.Fields;
-using Numbers=SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;
+using Numbers=SunEyeVision.Plugin.Wpf.Native.Numeric.Interaction.ListView;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Numeric;
 
@@ -85,7 +85,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
             _states[i].Changed+=OnStateChanged;
         }
         NativeView.SubscribeDataLeft=_references[0];NativeView.SubscribeDataRight=_references[1];
-        var row=new SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTab.LeftRightControl();
+        var row=new SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamTab.LeftRightControl();
         row.LeftContent=new TextBlock{Text=Label,ToolTip=Label,FontSize=14,VerticalAlignment=VerticalAlignment.Center,TextTrimming=TextTrimming.CharacterEllipsis};
         row.RightContent=NativeView;Content=row;
         NativeView.OnStartValueChange+=OnLeftValue;NativeView.OnEndValueChange+=OnRightValue;

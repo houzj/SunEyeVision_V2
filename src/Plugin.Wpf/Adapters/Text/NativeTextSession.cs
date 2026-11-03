@@ -6,7 +6,7 @@ using System.Windows.Input;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
-using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper.Extern;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.WindowUtilities.Extern;
 
 namespace SunEyeVision.Plugin.Wpf.Adapters.Text;
 

@@ -1,0 +1,19 @@
+using System.Windows.Markup;
+using SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Presentation.Controls;
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.WorkspaceControls.TimeDialog;
+
+/// <summary>
+/// UserControl1.xaml 的交互逻辑
+/// </summary>
+/// <summary>
+/// ShowTimeDialog
+/// </summary>
+public partial class ShowTimeDialog : BaseWindow, IComponentConnector
+{
+	public ShowTimeDialog()
+	{
+		InitializeComponent();
+	}
+}

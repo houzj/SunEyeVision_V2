@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/PresentationControls/controls/Themes/Aero2/Brushes.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/PresentationControls/controls/Themes/Aero2/Buttons.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/PresentationControls/controls/Themes/Aero2/Common.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/PresentationControls/controls/Chromes/Themes/Aero2.NormalColor.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/PresentationControls/controls/ButtonSpinner/Themes/Aero2.NormalColor.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/PresentationControls/controls/CollectionControl/Themes/Aero2.NormalColor.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/PresentationControls/controls/ColorCanvas/Themes/Aero2.NormalColor.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/PresentationControls/controls/ColorPicker/Themes/Aero2.NormalColor.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/PresentationControls/controls/DateTimeUpDown/Themes/Aero2.NormalColor.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/PresentationControls/controls/DateTimePicker/Themes/Aero2.NormalColor.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/PresentationControls/controls/MultiLineTextEditor/Themes/Aero2.NormalColor.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/PresentationControls/controls/numericupdown/Themes/Aero2.NormalColor.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/PresentationControls/controls/PropertyGrid/Themes/Aero2.NormalColor.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/PresentationControls/controls/TimePicker/Themes/Aero2.NormalColor.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/PresentationControls/controls/TimeSpanUpDown/Themes/Aero2.NormalColor.xaml" />
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Display/PresentationControls/controls/WatermarkTextBox/Themes/Aero2.NormalColor.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

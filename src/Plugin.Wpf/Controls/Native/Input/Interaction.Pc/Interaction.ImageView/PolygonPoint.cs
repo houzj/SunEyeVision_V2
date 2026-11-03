@@ -1,0 +1,71 @@
+using System.ComponentModel;
+
+
+namespace SunEyeVision.Plugin.Wpf.Native.Input.Interaction.ImageView;
+
+public class PolygonPoint : INotifyPropertyChanged
+{
+	public float x;
+
+	public float y;
+
+	private uint index;
+
+	public float X
+	{
+		get
+		{
+			return x;
+		}
+		set
+		{
+			if (x != value)
+			{
+				x = value;
+				NotifyPropertyChanged("X");
+			}
+		}
+	}
+
+	public float Y
+	{
+		get
+		{
+			return y;
+		}
+		set
+		{
+			if (y != value)
+			{
+				y = value;
+				NotifyPropertyChanged("Y");
+			}
+		}
+	}
+
+	public uint Index
+	{
+		get
+		{
+			return index;
+		}
+		set
+		{
+			if (index != value)
+			{
+				index = value;
+				NotifyPropertyChanged("Index");
+			}
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public void NotifyPropertyChanged(string propertyName)
+	{
+		if (PropertyChanged != null)
+		{
+			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+		}
+	}
+}

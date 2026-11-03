@@ -35,7 +35,7 @@
   <!--帮助-->
   <sys:String x:Key="Lang_HelpDoc">帮助文档</sys:String>
   <sys:String x:Key="Lang_OnlineHelpDoc">帮助文档（在线）</sys:String>
-  <sys:String x:Key="Lang_LearnVM">学习VisionMaster</sys:String>
+  <sys:String x:Key="Lang_LearnApplication">学习VisionMaster</sys:String>
   <sys:String x:Key="Lang_VerInfo">版本信息</sys:String>
   <sys:String x:Key="Lang_MoreInfo">更多支持</sys:String>
   <sys:String x:Key="Lang_WecPage">打开欢迎页</sys:String>
@@ -66,11 +66,11 @@
   <sys:String x:Key="Lang_HstRslt">历史结果</sys:String>
   <sys:String x:Key="Lang_Time">时间</sys:String>
   <sys:String x:Key="Lang_ModuData">模块数据</sys:String>
-  <!--HikMessageBox 第一版无-->
-  <!--HikMessageBox 按钮 -->
+  <!--NativeMessageBox 第一版无-->
+  <!--NativeMessageBox 按钮 -->
   <sys:String x:Key="Lang_Msg_Cancel">取消</sys:String>
-  <!--HikMessageBox 提示文字 -->
-  <!-- HikMessageBox Title-->
+  <!--NativeMessageBox 提示文字 -->
+  <!-- NativeMessageBox Title-->
   <sys:String x:Key="Lang_BackRun">后台运行</sys:String>
   <sys:String x:Key="Lang_StopBackRun">退出软件,停止运行</sys:String>
   <sys:String x:Key="Lang_UnNotify">记住我的选择</sys:String>
@@ -323,7 +323,7 @@
   <sys:String x:Key="Lang_ImageShowError">图像显示异常</sys:String>
   <sys:String x:Key="Lang_SolManagerMaxNum">方案数目超出限制</sys:String>
   <sys:String x:Key="Lang_ParamSetFail">参数设置失败！</sys:String>
-  <sys:String x:Key="Lang_VMRepeatStart">VisionMaster启动失败，检测到相同进程！</sys:String>
+  <sys:String x:Key="Lang_ApplicationRepeatStart">VisionMaster启动失败，检测到相同进程！</sys:String>
   <sys:String x:Key="Lang_ServerNoExist">检测到服务异常关闭，程序即将退出！</sys:String>
   <sys:String x:Key="错误提示">错误提示</sys:String>
   <sys:String x:Key="基准点创建失败!">基准点创建失败，原因:参数[输入图像]未配置!</sys:String>
@@ -6181,8 +6181,8 @@
   <sys:String x:Key="Lang_CopyFailed">复制失败</sys:String>
   <sys:String x:Key="样本移至...">样本移至...</sys:String>
   <sys:String x:Key="Lang_OutputConfig">输出配置</sys:String>
-  <sys:String x:Key="RunParam_Hikvision_I Calibration Board">海康I型标定板</sys:String>
-  <sys:String x:Key="RunParam_Hikvision_II Calibration Board">海康II型标定板</sys:String>
+  <sys:String x:Key="RunParam_ExternalBoard_I Calibration Board">海康I型标定板</sys:String>
+  <sys:String x:Key="RunParam_ExternalBoard_II Calibration Board">海康II型标定板</sys:String>
   <sys:String x:Key="标签已满">标签已满</sys:String>
   <sys:String x:Key="标签类已满">标签类已满</sys:String>
   <sys:String x:Key="IOControllerType">控制器型号</sys:String>
@@ -7972,7 +7972,7 @@
   <sys:String x:Key="Lang_CheckImageEmptyTip">图像数据为空，不支持叠加显示。</sys:String>
   <sys:String x:Key="输入输出数量超出最大限制！">输入输出数量超出最大限制！</sys:String>
   <sys:String x:Key="Lang_SendInterval(ms)">发送间隔(ms)</sys:String>
-  <sys:String x:Key="hik_Standard">自研定位</sys:String>
+  <sys:String x:Key="StandardLocalization">自研定位</sys:String>
   <sys:String x:Key="Lang_OverwriteGalleryFileAsk">覆盖原有Gallery文件，是否继续？</sys:String>
   <sys:String x:Key="Lang_EmptyFolder">空文件夹</sys:String>
   <sys:String x:Key="Lang_NoImageOrRegisterLimit">无可注册图像或注册图像已达上限</sys:String>
@@ -9934,7 +9934,7 @@
   <sys:String x:Key="QueryModuleIDFailedTip">查询失败，请确认模块ID是否正确</sys:String>
   <sys:String x:Key="Rate">下采样率</sys:String>
   <sys:String x:Key="Lang_DevlopmentAndRunBackground">二次开发程序已启动，关闭软件时请选择软件在后台运行</sys:String>
-  <sys:String x:Key="Lang_ReStartVM">重启后高级设置修改生效，注意提前保存方案，是否重启?</sys:String>
+  <sys:String x:Key="Lang_RestartApplication">重启后高级设置修改生效，注意提前保存方案，是否重启?</sys:String>
   <sys:String x:Key="ModuStatus:{0},CalibStatus{1},TransWorldError:{2},RotWorldError{3},CalibProgress:{4}/{5}">模块状态:{0},标定状态{1},平移估计真实误差:{2},旋转真实平均误差{3},标定进度:{4}/{5}</sys:String>
   <sys:String x:Key="请选择设备">请选择设备！</sys:String>
   <sys:String x:Key="开始采集成功">开始采集成功</sys:String>
@@ -10809,8 +10809,8 @@
   <sys:String x:Key="Fast">快速</sys:String>
   <sys:String x:Key="Lang_DataofLastestRunTimes">最新执行数据条数</sys:String>
   <sys:String x:Key="RunParam_By Image">按图像</sys:String>
-  <sys:String x:Key="RunParam_Hikvision_IV2 Calibration Board">海康扩展I型标定板</sys:String>
-  <sys:String x:Key="RunParam_Hikvision_IIV2 Calibration Board">海康扩展II型标定板</sys:String>
+  <sys:String x:Key="RunParam_ExternalBoard_IV2 Calibration Board">海康扩展I型标定板</sys:String>
+  <sys:String x:Key="RunParam_ExternalBoard_IIV2 Calibration Board">海康扩展II型标定板</sys:String>
   <sys:String x:Key="Lang_CacheDataLimits">数据记录模块缓存数据超限</sys:String>
   <sys:String x:Key="Lang_CacheDataNull">数据记录模块缓存数据为空</sys:String>
   <sys:String x:Key="请输入搜索条件">请输入搜索条件</sys:String>
@@ -11070,7 +11070,7 @@
   <sys:String x:Key="RunParam_User Output Value All">脉冲数</sys:String>
   <sys:String x:Key="Controls whether or not the selected trigger is active">触发模式</sys:String>
   <sys:String x:Key="RunParam_Trigger Mode">触发模式</sys:String>
-  <sys:String x:Key="ImageCollectHikModu">HKR采集卡</sys:String>
+  <sys:String x:Key="ImageCollectExternalFrameGrabber">HKR采集卡</sys:String>
   <sys:String x:Key="PredictStatus">预测状态</sys:String>
   <sys:String x:Key="Confidence Threshold">置信度阈值</sys:String>
   <sys:String x:Key="Lang_PlcTriiger_Message">PLC设备地址只能输入整数{0}类型</sys:String>

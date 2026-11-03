@@ -478,7 +478,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type ToggleButton}">
           <Grid Background="#00FFFFFF">
-            <Image Name="icon" Width="28" Height="28" VerticalAlignment="Center" HorizontalAlignment="Center" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/resources/ic_image-fold_normal.png" />
+            <Image Name="icon" Width="28" Height="28" VerticalAlignment="Center" HorizontalAlignment="Center" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/ic_image-fold_normal.png" />
           </Grid>
           <ControlTemplate.Triggers>
             <MultiTrigger>
@@ -486,31 +486,31 @@
                 <Condition Property="ToggleButton.IsChecked" Value="True" />
                 <Condition Property="UIElement.IsMouseOver" Value="True" />
               </MultiTrigger.Conditions>
-              <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/resources/ic_image-fold_click.png" />
+              <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/ic_image-fold_click.png" />
             </MultiTrigger>
             <MultiTrigger>
               <MultiTrigger.Conditions>
                 <Condition Property="ToggleButton.IsChecked" Value="True" />
                 <Condition Property="IsEnabled" Value="False" />
               </MultiTrigger.Conditions>
-              <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/resources/ic_image-fold_disable.png" />
+              <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/ic_image-fold_disable.png" />
             </MultiTrigger>
             <Trigger Property="ToggleButton.IsChecked" Value="False">
-              <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/resources/ic_image-unfold_normal.png" />
+              <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/ic_image-unfold_normal.png" />
             </Trigger>
             <MultiTrigger>
               <MultiTrigger.Conditions>
                 <Condition Property="ToggleButton.IsChecked" Value="False" />
                 <Condition Property="UIElement.IsMouseOver" Value="True" />
               </MultiTrigger.Conditions>
-              <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/resources/ic_image-unfold_click.png" />
+              <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/ic_image-unfold_click.png" />
             </MultiTrigger>
             <MultiTrigger>
               <MultiTrigger.Conditions>
                 <Condition Property="ToggleButton.IsChecked" Value="False" />
                 <Condition Property="IsEnabled" Value="False" />
               </MultiTrigger.Conditions>
-              <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/resources/ic_image-unfold_disable.png" />
+              <Setter TargetName="icon" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/ic_image-unfold_disable.png" />
             </MultiTrigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>

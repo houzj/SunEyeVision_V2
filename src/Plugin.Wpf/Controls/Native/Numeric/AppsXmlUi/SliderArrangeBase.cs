@@ -1,5 +1,5 @@
-using SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl;
+using SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamTabControl;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.ParameterPresentation.ParamTabControl;
 using System;
 using System.ComponentModel;
 using System.Windows;
@@ -7,7 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl;
+namespace SunEyeVision.Plugin.Wpf.Native.Numeric.ParameterPresentation.ParamTabControl;
 
 public class SliderArrangeBase : UserControl, INotifyPropertyChanged
 {
@@ -47,9 +47,9 @@ public class SliderArrangeBase : UserControl, INotifyPropertyChanged
 
 	public static readonly DependencyProperty IsReadOnlyProperty = DependencyProperty.Register("IsReadOnly", typeof(bool), typeof(SliderArrangeBase), new PropertyMetadata(false));
 
-	public static readonly DependencyProperty TBtnBgNormalProperty = DependencyProperty.Register("TBtnBgNormal", typeof(string), typeof(SliderArrangeBase), new PropertyMetadata("/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Numeric/Apps.XmlUI/combo_ic_top_normal.png"));
+	public static readonly DependencyProperty TBtnBgNormalProperty = DependencyProperty.Register("TBtnBgNormal", typeof(string), typeof(SliderArrangeBase), new PropertyMetadata("/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Numeric/ParameterPresentation/combo_ic_top_normal.png"));
 
-	public static readonly DependencyProperty TBtnBgHoverProperty = DependencyProperty.Register("TBtnBgHover", typeof(string), typeof(SliderArrangeBase), new PropertyMetadata("/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Numeric/Apps.XmlUI/combo_ic_top_click.png"));
+	public static readonly DependencyProperty TBtnBgHoverProperty = DependencyProperty.Register("TBtnBgHover", typeof(string), typeof(SliderArrangeBase), new PropertyMetadata("/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Numeric/ParameterPresentation/combo_ic_top_click.png"));
 
 	public static readonly DependencyProperty TBorderBrushProperty = DependencyProperty.Register("TBorderBrush", typeof(Brush), typeof(SliderArrangeBase), new PropertyMetadata((Brush)new BrushConverter().ConvertFromString("#CCCCCC")));
 

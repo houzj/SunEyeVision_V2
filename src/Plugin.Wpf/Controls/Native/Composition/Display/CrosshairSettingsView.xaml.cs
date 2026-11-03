@@ -4,7 +4,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using System.Globalization;
 using System.Windows.Input;
-using Numbers = SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView;
+using Numbers = SunEyeVision.Plugin.Wpf.Native.Numeric.Interaction.ListView;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 
 namespace SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Display;

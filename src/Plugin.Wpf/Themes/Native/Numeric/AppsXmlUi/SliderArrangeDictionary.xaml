@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ResourceDictionary x:Class="SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl.SliderArrangeDictionary" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:paramtabcontrol="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl">
+<ResourceDictionary x:Class="SunEyeVision.Plugin.Wpf.Native.Numeric.ParameterPresentation.ParamTabControl.SliderArrangeDictionary" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:paramtabcontrol="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.ParameterPresentation.ParamTabControl">
   <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter" />
   <Style x:Key="SliderRepeatButtonStyle" TargetType="{x:Type RepeatButton}">
     <Setter Property="FrameworkElement.OverridesDefaultStyle" Value="True" />
@@ -112,11 +112,11 @@
             <UIElement.RenderTransform>
               <TranslateTransform Y="-2" />
             </UIElement.RenderTransform>
-            <Image Name="im" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Numeric/Apps.XmlUI/滑块_normal.png" />
+            <Image Name="im" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Numeric/ParameterPresentation/滑块_normal.png" />
           </Canvas>
           <ControlTemplate.Triggers>
             <Trigger Property="Thumb.IsDragging" Value="True">
-              <Setter TargetName="im" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Numeric/Apps.XmlUI/滑块_click.png" />
+              <Setter TargetName="im" Property="Image.Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Numeric/ParameterPresentation/滑块_click.png" />
             </Trigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>

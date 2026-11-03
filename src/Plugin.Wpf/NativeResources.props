@@ -6,20 +6,20 @@
     <Resource Include="Themes/Palettes/colorstyle2.xaml" />
     <Page Remove="Themes/Palettes/colorstyle3.xaml" />
     <Resource Include="Themes/Palettes/colorstyle3.xaml" />
-    <EmbeddedResource Update="Controls/Native/Display/VMControls/VM.Controls.Core.ErrorMessages.resx">
-      <LogicalName>SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Core.ErrorMessages.resources</LogicalName>
+    <EmbeddedResource Update="Controls/Native/Display/PresentationControls/Presentation.Controls.Core.ErrorMessages.resx">
+      <LogicalName>SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls.Core.ErrorMessages.resources</LogicalName>
     </EmbeddedResource>
-    <EmbeddedResource Update="Controls/Native/Display/VMControls/VM.Controls.Properties.Resources.resx">
-      <LogicalName>SunEyeVision.Plugin.Wpf.Native.Display.VMControls.Properties.Resources.resources</LogicalName>
+    <EmbeddedResource Update="Controls/Native/Display/PresentationControls/Presentation.Controls.Properties.Resources.resx">
+      <LogicalName>SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls.Properties.Resources.resources</LogicalName>
     </EmbeddedResource>
-    <EmbeddedResource Include="Themes/Assets/Native/Display/VMBaseControls/VMBaseControls.Resources.旋转光标.png">
-      <LogicalName>SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Resources.旋转光标.png</LogicalName>
+    <EmbeddedResource Include="Themes/Assets/Native/Display/ImageViewport/ImageViewport.Resources.旋转光标.png">
+      <LogicalName>SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.Resources.旋转光标.png</LogicalName>
     </EmbeddedResource>
-    <EmbeddedResource Include="Themes/Assets/Native/Display/VMBaseControls/VMBaseControls.Resources.鼠标双向箭头.png">
-      <LogicalName>SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Resources.鼠标双向箭头.png</LogicalName>
+    <EmbeddedResource Include="Themes/Assets/Native/Display/ImageViewport/ImageViewport.Resources.鼠标双向箭头.png">
+      <LogicalName>SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.Resources.鼠标双向箭头.png</LogicalName>
     </EmbeddedResource>
-    <EmbeddedResource Include="Themes/Assets/Native/Display/VMBaseControls/VMBaseControls.Resources.鼠标旋转箭头.png">
-      <LogicalName>SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Resources.鼠标旋转箭头.png</LogicalName>
+    <EmbeddedResource Include="Themes/Assets/Native/Display/ImageViewport/ImageViewport.Resources.鼠标旋转箭头.png">
+      <LogicalName>SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.Resources.鼠标旋转箭头.png</LogicalName>
     </EmbeddedResource>
     <EmbeddedResource Update="Controls/Native/Dependencies/Mvvm/Mvvm.Properties.Resources.resx">
       <LogicalName>SunEyeVision.Plugin.Wpf.Native.Dependencies.Mvvm.Properties.Resources.resources</LogicalName>

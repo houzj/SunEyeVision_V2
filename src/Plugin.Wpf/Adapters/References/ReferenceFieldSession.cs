@@ -196,7 +196,9 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     {
         var old=DisplaySetting;var selection=old is null?BindingSelection.All:ReferenceSettingParts.Selection(old);
         var acceptance=_state.AcceptanceVersion;var generation=_uiGeneration;
-        bool UnacceptedCurrent()=>!_disposed&&!_state.IsDisposed&&acceptance==_state.AcceptanceVersion&&generation==_uiGeneration;
+        var referenceMode=_state.IsReferenceMode;var referenceCleared=_state.ReferenceCleared;
+        bool UnacceptedCurrent()=>!_disposed&&!_state.IsDisposed&&acceptance==_state.AcceptanceVersion&&generation==_uiGeneration
+            &&referenceMode==_state.IsReferenceMode&&referenceCleared==_state.ReferenceCleared;
         try
         {
             var proposal=create(selection);
@@ -208,7 +210,10 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
             if(bracket<0)throw new ArgumentException("待编辑原文没有完整索引后缀，请取消或修正原文后再选择来源。");
             if(!_candidatesValid||!SourceAvailable(proposal))throw new ArgumentException("来源或索引已失效，请刷新后重新选择。");
             _pendingReference=new(proposal,_state.AcceptanceVersion);_pendingVersion++;
-            SetPending(Label(proposal)+raw[bracket..]);RestoreSelection();Notify(nameof(CurValueA));
+            SetPending(Label(proposal)+raw[bracket..]);
+            if(!UnacceptedCurrent())return false;
+            RestoreSelection();if(!UnacceptedCurrent())return false;
+            Notify(nameof(CurValueA));if(!UnacceptedCurrent())return false;
             return TryCommitPendingFromUi();
         }
         catch(Exception error)when((error is ArgumentException or FormatException or OverflowException or InvalidOperationException)&&UnacceptedCurrent())

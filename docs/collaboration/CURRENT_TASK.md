@@ -1,3 +1,14 @@
+## 2026-11-03 界面候选核收与应用数据职责交接
+
+- 基线：fc15e6c64，分支codex/workflow-toolbox-dataflow；根负责Application/构建图/旧Workflow退休，B独立树负责完整UI，A独立树执行调试，C全局变量UI候选已交。
+- 完成：按27固定前置合实际画布/节点参数/门禁/正式根运行候选328/504/a53；纠正Git将CanvasProjection.Tests误判为RunChainProbe目录重命名，不混探针。
+- 应用目录职责：Infrastructure.Persistence.ApplicationData下Locate/Prepare/Remember及Paths；不迁旧ImportLegacy/MigrateData或SolutionSettings，新应用目录schema2，Config/start-page.json。
+- 验证：真实文件application-data-probe-20261103-final.log退出0；UI恢复新引用图后真正Release仍5519警告/6旧Workflow错误，不计通过；锁文件既有包版本/hash未升级。
+- 未完成：B当前主窗load/save/activate与旧命令全部消费者批待核收，旧Workflow尚未从product退休；C变量、根窗候选待完整整合；A调试及本树正式重封未完。
+- 人工/设计器/主仓集成未做；原主HTML、精确前置HTML、职责图与失败日志同步。
+- 禁止：不恢复兼容桥/友元，不以BuildProjectReferences=false或局部视图探针签整个主窗，Group不做。
+- 下一步：将新AppData固定给B完成最后旧命名引用，统一合其较大完整批并退出Workflow产品图，然后正式全量和实际主窗/工具运行验证。
+
 ## 2026-11-03 显示导航与保存状态共享交接
 
 - 基线：bed69637e；分支codex/workflow-toolbox-dataflow；根独占Application核心，B主窗/参数/结果/Plugin.Wpf，A执行调试，C图像源/根窗完成候选后接全局变量UI，均独立树。

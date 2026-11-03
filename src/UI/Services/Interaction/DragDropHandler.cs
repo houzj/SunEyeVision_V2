@@ -98,7 +98,9 @@ namespace SunEyeVision.UI.Services.Interaction
         {
             public string ToolType => toolType;
             public string DispName => displayName;
-            public string RenameBuffer => displayName;
+            // The shared node template creates a TwoWay TextBox binding even while hidden.
+            // This is only local preview text; it never edits a document node.
+            public string RenameBuffer { get; set; } = displayName;
             public bool IsToolboxPreview => true;
             public int GlobalIndex => -1;
             public bool IsEnabled => true;

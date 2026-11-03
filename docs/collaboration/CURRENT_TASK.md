@@ -1,3 +1,14 @@
+## 2026-11-03 联合编辑、唯一管理器与方案存储集中集成
+
+基于3c905fe02/68eb9695d/5b8d07132/56fa24ad1集中整合c70a7072f。根已实现ValidateEdit/CommitEdit及正式回执：节点参数、根配置、变量在一个会话事务/历史安装，当前值显式CAS与私有值三方合并沿原合同，值写不造配置历史，变量草稿回执按实际实例映射，根配置与变量增删回放统一Changed。新增CreateNode(draft,toolId,position)通过真实目录构造默认输入/参数/显示字段，成功才进私有提案并分配不占用全局状态的序号；manager唯一活动会话及活动租约已供UI接入。
+
+C持久化partial已集中合：新实体同步编码、严格V4重读、SHA前置、Save/SaveAs/Copy、Open完整准入，非活动方案RestoreInactive保护活动路径，未实现活动原地恢复。真实owner排空和Editing/History释放后才ReleaseDecodedResources；当前根工作区实际探针已复验Mat正常关闭/解码取消/拒绝替换释放，未误释放原借用Mat，保存重开/外改/恢复SHA拒绝通过。非正式工具载荷。原先缺hook的负例保留。另经执行线实查修正owner→session回调与session→owner编辑反锁：先取得Owner编辑租约再进Session gate，IsRetired只读不反锁，期间拒迟到发布，8秒受限回归实际通过。
+
+当前Application中立事务16场景、真实Session+OpenCV持久化探针均0退出；日志与源码/二进制SHA在Release/_validation/application-edit-persistence-integrated-20261103/evidence.json，失败NU1004新依赖锁更新和局部编译失败原记录保留。未全量Release/未正式ImageLoad→Blob/未WPF/未人工/未设计器/未主仓合并，不启动作为交付。UI与Execution仍迁完整生产消费者，通信四活动服务已从B无diff明确交C独立树，B保持组合活动租约/相机/画布/编辑唯一写权；设备配置写事务暂缺，入口保护，既有CameraRuntime预览采集保留。全平台目标未缩减、保持在途。
+## 2026-11-03 会话持久化候选资源回归
+
+基于 5b8d07132，测试声明的真实 Session 完成保存、重开、复制和目标 SHA 防并发；实际 Mat 正常关闭、取消与替换拒绝均已释放候选并保留原会话。非活动路径 Restore 经双 SHA 与真实声明校验，活动路径保护需先关闭。正式 ImageLoad/Blob 封包、UI/应用集成及活动文件原地恢复未验证或未实现，不视为全平台闭口。详见证据原主文档。
+
 ## 2026-11-03 方案会话持久化候选
 
 新增会话 owner/ValueGate 内冻结写入、打开候选准入及管理器安装；默认同路径 SHA 匹配，另存默认目标不存在。测试声明探针通过真实会话编辑、另存、重开、并发拒绝、失败保留和取消；正式封包、复杂值关闭排空和 App 宿主尚未验证。会话 Dispose 必须接 ReleaseDecodedResources 并在运行/编辑/历史释放后处理错误；当前禁止视为完整交付。
@@ -16468,5 +16479,6 @@ D05混合记录现在按稳定字段/索引路径及弱publication/lease按128�
 - 已在独立分支整合资源线 ad3948688 和单次所有权修正 b5b67bfd4（本树 19bd0b1d0），Runtime 调试使用唯一 HostInput 准备器；捕获失败释放、成功由 invocation 接管。
 - 统一封包全量 Release 0 错；封包后无重编图像源正式/调试 24/24、输入身份与所有权 3/3；隐藏 WPF attempt-025 检查图像源捕获失败释放与 Blob 实际调试，attempt-026 检查门禁、禁用占位和执行中关闭。统一载荷哈希、测试日志及快照范围见 evidence/统一WPF编辑事务抽离设计-20261102.html。
 - 上述为独立候选，主线合并其它调度变更后须重建重验；完整 Group、旧 SDK 可视完全退出、自然输入、设计器与人工验收未完成，连续调试及重置业务保持禁用占位。此前 44 组属于旧载荷，不计为本次完整回归。
+
 
 

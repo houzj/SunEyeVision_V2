@@ -28,11 +28,12 @@ public sealed partial class DocumentSession
     {
         ArgumentNullException.ThrowIfNull(draft);
         ArgumentException.ThrowIfNullOrWhiteSpace(description);
+        EnsureOwnerCanEdit();
+        using var mutation = _owner.BeginDocumentMutation();
         DocumentChangeSet? change;
         lock (_gate)
         {
             EnsureOwnerCanEdit();
-            using var mutation = _owner.BeginDocumentMutation();
             var scope = OpenScope(draft.Workflow.Id);
             var prepared = PrepareGraphEditCore(scope, draft);
             if (prepared.After.All(pair => pair.Value.MatchesCurrent(pair.Key)) &&
@@ -65,6 +66,7 @@ public sealed partial class DocumentSession
             }
             finally { _preparing = false; }
         }
+        mutation.Dispose();
         NotifyChanged(change);
         return change;
     }
@@ -74,11 +76,12 @@ public sealed partial class DocumentSession
 
     private bool ReplayGraphHistory(DocumentChangeOrigin origin)
     {
+        EnsureOwnerCanEdit();
+        using var mutation = _owner.BeginDocumentMutation();
         DocumentChangeSet change;
         lock (_gate)
         {
             EnsureOwnerCanEdit();
-            using var mutation = _owner.BeginDocumentMutation();
             if (origin == DocumentChangeOrigin.Undo ? !History.CanUndo : !History.CanRedo) return false;
             var before = CaptureEditState();
             var revision = checked(ChangeRevision + 1);
@@ -100,6 +103,7 @@ public sealed partial class DocumentSession
             }
             finally { _preparing = false; }
         }
+        mutation.Dispose();
         NotifyChanged(change);
         return true;
     }

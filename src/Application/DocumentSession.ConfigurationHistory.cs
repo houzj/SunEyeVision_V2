@@ -54,6 +54,7 @@ public sealed partial class DocumentSession
                 var definitions = GlobalVariable.CaptureDefinitions(target.Definitions.ToArray());
                 var restoreValues = new Dictionary<GlobalVariable, GlobalVariable.ValueState>(ReferenceEqualityComparer.Instance);
                 var writes = initial?.ValueWrites;
+                var installed = false;
                 lock (GlobalVariable.ValueGate)
                 {
                     foreach (var variable in expected.Variables.Concat(target.Variables).Distinct<GlobalVariable>(ReferenceEqualityComparer.Instance))
@@ -76,10 +77,17 @@ public sealed partial class DocumentSession
                     lock (GlobalVariable.ValueGate)
                     {
                         _session.EnsureOpen();
+                        if (rollback && !installed) return;
                         if (!rollback)
                         {
                             if (!_session.MatchesEditState(expected)) throw new InvalidOperationException("安装前正式状态已变化。");
                             if (initial is not null) _session.CheckExplicitValueRevisions(initial, _proposal!);
+                            // No rollback may overwrite a value written after Prepare but before
+                            // Apply. Capture the actual rollback values only once installation starts.
+                            restoreValues.Clear();
+                            foreach (var variable in expected.Variables.Concat(target.Variables).Distinct<GlobalVariable>(ReferenceEqualityComparer.Instance))
+                                restoreValues.Add(variable, variable.CaptureValueRaw());
+                            installed = true;
                         }
                         foreach (var (flow, graph) in state.Graphs) graph.Apply(flow, resolve);
                         foreach (var (flow, configuration) in state.Roots) flow.RootConfiguration = configuration;
@@ -95,6 +103,7 @@ public sealed partial class DocumentSession
                             }
                         }
                         _session.Document.GlobalVariables = state.Variables;
+                        if (rollback) installed = false;
                     }
                 }
                 var restoreDefinitions = GlobalVariable.CaptureDefinitions(restore.Definitions.ToArray());

@@ -21,12 +21,13 @@ public sealed partial class DocumentSession
         IVariableValueExtensionCodec? codec = null, string? sourceDirectory = null)
     {
         ArgumentNullException.ThrowIfNull(variableTypes); ArgumentNullException.ThrowIfNull(options);
+        EnsureOwnerCanEdit();
+        using var mutation=_owner.BeginDocumentMutation();
         lock (_gate)
         {
             EnsureOwnerCanEdit(); _preparing=true;
             try
             {
-                using var mutation=_owner.BeginDocumentMutation();
                 lock(GlobalVariable.ValueGate)
                 {
                     var declarations=CapturePersistenceDeclarations();
@@ -47,6 +48,8 @@ public sealed partial class DocumentSession
     {
         cancellationToken.ThrowIfCancellationRequested();
         if(expected?.Kind==TargetExpectationKind.Unchecked) throw new ArgumentException("方案会话保存必须校验目标身份。",nameof(expected));
+        EnsureOwnerCanEdit();
+        using var mutation=_owner.BeginDocumentMutation();
         long revision; EncodedSolutionDocument encoded;
         lock(_gate)
         {
@@ -60,6 +63,7 @@ public sealed partial class DocumentSession
             sourceDirectory ??= _lastWrittenSnapshot is null ? null : Path.GetDirectoryName(_lastWrittenSnapshot.TargetPath);
             revision=ChangeRevision; encoded=CaptureForSave(variableTypes,options,codec,sourceDirectory);
         }
+        mutation.Dispose();
         var receipt=SolutionFileCommit.Write(encoded.BindTarget(destination,expected ?? TargetExpectation.Missing),recoveryPath,cancellationToken:cancellationToken);
         lock(_gate) { if (!_closed && !_closing && !_owner.IsRetired && _directory.IsActive) { _lastWrittenSnapshot=receipt.WrittenSnapshot; _lastWrittenRevision=revision; } }
         return receipt;
@@ -85,6 +89,8 @@ public sealed partial class DocumentSession
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceDirectory); ArgumentNullException.ThrowIfNull(createCodec);
         if(expected?.Kind==TargetExpectationKind.Unchecked) throw new ArgumentException("方案会话另存为必须校验目标身份。",nameof(expected));
         cancellationToken.ThrowIfCancellationRequested();
+        EnsureOwnerCanEdit();
+        using var mutation=_owner.BeginDocumentMutation();
         long revision; EncodedSolutionDocument encoded;
         lock(_gate)
         {
@@ -97,7 +103,6 @@ public sealed partial class DocumentSession
                     throw new InvalidOperationException("源资源目录与当前打开或已保存的方案位置不一致。");
                 if(!updateBaseline && _lastWrittenSnapshot is not null && string.Equals(Path.GetFullPath(destination),_lastWrittenSnapshot.TargetPath,StringComparison.OrdinalIgnoreCase))
                     throw new InvalidOperationException("保存副本不能覆盖当前方案。");
-                using var mutation=_owner.BeginDocumentMutation();
                 lock(GlobalVariable.ValueGate)
                 {
                     revision=ChangeRevision;
@@ -116,6 +121,7 @@ public sealed partial class DocumentSession
             }
             finally { _preparing=false; }
         }
+        mutation.Dispose();
         var receipt=SolutionFileCommit.Write(encoded.BindTarget(destination,expected ?? TargetExpectation.Missing),recoveryPath,cancellationToken:cancellationToken);
         lock(_gate) { if (updateBaseline && !_closed && !_closing && !_owner.IsRetired && _directory.IsActive) { _lastWrittenSnapshot=receipt.WrittenSnapshot; _lastWrittenRevision=revision; } }
         return receipt;

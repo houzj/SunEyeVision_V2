@@ -7,6 +7,7 @@
         "dependencies": {
           "SunEyeVision.Domain": "[2.0.0-alpha.8, )",
           "SunEyeVision.Execution": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Persistence": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )"
         }
@@ -27,6 +28,13 @@
       },
       "suneyevision.foundation": {
         "type": "Project"
+      },
+      "suneyevision.persistence": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Domain": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
+        }
       },
       "suneyevision.plugin.contracts": {
         "type": "Project"

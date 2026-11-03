@@ -12,6 +12,38 @@ namespace SunEyeVision.Application;
 
 public sealed partial class DocumentSessionManager
 {
+    /// <summary>Restore a fully admitted backup only to a target that is not the active document.</summary>
+    public FrozenSaveReceipt RestoreInactive(string targetPath,string backupPath,string expectedTargetHash,string expectedBackupHash,
+        Func<ReadOnlyMemory<byte>,FrozenVariableTypeCatalog> captureTypes,
+        Func<DecodedResourcesScope,IVariableValueExtensionCodec?> createCodec,JsonSerializerOptions options,
+        CancellationToken cancellationToken=default)
+    {
+        EnsureAvailable(); ArgumentNullException.ThrowIfNull(captureTypes); ArgumentNullException.ThrowIfNull(createCodec); ArgumentNullException.ThrowIfNull(options);
+        _busy=true;
+        try
+        {
+            cancellationToken.ThrowIfCancellationRequested(); targetPath=Path.GetFullPath(targetPath); backupPath=Path.GetFullPath(backupPath);
+            var activePath=CurrentSession?.LastWrittenSnapshot?.TargetPath;
+            if(activePath is not null && string.Equals(targetPath,activePath,StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("活动方案不能原地恢复，请先关闭，再恢复并重新打开。");
+            var bytes=File.ReadAllBytes(backupPath); cancellationToken.ThrowIfCancellationRequested();
+            if(!string.Equals(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(bytes)),expectedBackupHash,StringComparison.OrdinalIgnoreCase))
+                throw new IOException("备份在验证后发生变化，不执行恢复。");
+            var declarations=FreezeDeclarations(bytes,_directory); var types=captureTypes(bytes); var scope=new DecodedResourcesScope();
+            IVariableValueExtensionCodec? codec;
+            try { codec=createCodec(scope); }
+            catch(Exception failure) { try { scope.Dispose(); } catch(Exception cleanup) { throw new AggregateException("创建解码器和释放候选资源均失败。",failure,cleanup); } throw; }
+            using var candidate=SolutionDocumentReader.Read(bytes,declarations,types,options,scope,codec,Path.GetDirectoryName(targetPath));
+            cancellationToken.ThrowIfCancellationRequested();
+            using(var admitted=DocumentSession.FromPersistenceCandidate(candidate,_directory,declarations)) { }
+            cancellationToken.ThrowIfCancellationRequested();
+            using var lease=_directory.AcquireInvocation();
+            var frozen=candidate.PrepareSave(targetPath,TargetExpectation.Match(expectedTargetHash));
+            return SolutionFileCommit.Restore(frozen,backupPath,expectedTargetHash.ToUpperInvariant(),expectedBackupHash.ToUpperInvariant(),cancellationToken);
+        }
+        finally { _busy=false; }
+    }
+
     /// <summary>Prepare a complete candidate before replacing the current session.</summary>
     public DocumentSession Open(string path, Func<ReadOnlyMemory<byte>,FrozenVariableTypeCatalog> captureTypes,
         Func<DecodedResourcesScope,IVariableValueExtensionCodec?> createCodec, JsonSerializerOptions options,

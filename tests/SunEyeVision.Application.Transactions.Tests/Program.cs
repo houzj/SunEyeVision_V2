@@ -4,6 +4,9 @@ using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.TestFixtures;
+using SunEyeVision.Application.Editing;
+using SunEyeVision.Domain.Solutions;
+using System.Collections.Immutable;
 
 // Neutral component/transaction tests. This deliberately does not claim an installed
 // ImageLoad/Blob payload or the WPF production manager has passed.
@@ -29,8 +32,8 @@ var flow = session.GetWorkflows().Single();
 var notifications = new List<DocumentChangeSet>();
 session.Changed += (_, change) => notifications.Add(change);
 NodeDefinition Node(string id) => new(id, id, "TransactionProbe",
-    new ToolConfiguration("TransactionProbe", new FieldSettings(TransactionProbeDefinition.Schema.Inputs,
-        new Dictionary<string, ParameterSetting>())));
+    new ToolConfiguration("TransactionProbe", new FieldSettings(TransactionProbeDefinition.Schema.Inputs.Concat(TransactionProbeDefinition.Parameters.Inputs),
+        new Dictionary<string, ParameterSetting> { ["threshold"] = new ConstantSetting(1L) })));
 
 Check(session.HistoryEntries.Count == 0 && flow.Nodes.Count == 0, "新方案须有一个真实空流程。");
 Check(session.CommitGraphEdit(session.PrepareGraphEdit(flow.Id), "空编辑") is null && notifications.Count == 0,
@@ -102,12 +105,131 @@ Check(notifications.Zip(notifications.Skip(1), (a, b) => b.Revision == a.Revisio
 session.Dispose();
 Reject(() => session.PrepareGraphEdit(flow.Id));
 Console.WriteLine("PASS 连续版本与关闭后拒绝");
-Console.WriteLine("8 个事务场景通过；真实工具、持久化、UI及完整运行仍待整批验证。");
+
+using var manager = new DocumentSessionManager(directory);
+var editedSession = manager.CreateNew();
+var editedFlow = editedSession.GetWorkflows().Single();
+var editableNode = new NodeDefinition("editable", "editable", "TransactionProbe",
+    new ToolConfiguration("TransactionProbe", new FieldSettings(TransactionProbeDefinition.Schema.Inputs.Concat(TransactionProbeDefinition.Parameters.Inputs),
+        new Dictionary<string, ParameterSetting> { ["threshold"] = new ConstantSetting(1L) })));
+var addEditable = editedSession.PrepareGraphEdit(editedFlow.Id); addEditable.AddNode(editableNode);
+editedSession.CommitGraphEdit(addEditable, "新增可编辑节点");
+var host = editedSession.Editing.Host;
+var parameterDraft = host.BeginEdit(editedFlow.Id, editableNode.Id);
+parameterDraft.ApplyFields(new Dictionary<string, ParameterSetting> { ["threshold"] = new ConstantSetting(8L) });
+var parameters = DocumentEditProposal.Prepare(host, nodes: new[] { parameterDraft });
+editedSession.ValidateEdit(parameters);
+Check((long)((ConstantSetting)editableNode.Configuration.Fields.Read("threshold")).Value! == 1L, "验证不能安装草稿。");
+var parameterReceipt = editedSession.CommitEdit(parameters);
+Check(parameterReceipt.History is not null && (long)((ConstantSetting)editableNode.Configuration.Fields.Read("threshold")).Value! == 8L,
+    "参数编辑应通过正式事务安装。");
+Reject(() => editedSession.CommitEdit(parameters));
+Check(editedSession.Undo() && (long)((ConstantSetting)editableNode.Configuration.Fields.Read("threshold")).Value! == 1L, "参数撤销失败。");
+Check(editedSession.Redo(), "参数重做失败。");
+Console.WriteLine("PASS 正式参数提案验证提交与统一历史");
+
+using var variables = host.BeginVariableEdit();
+var candidateVariable = new GlobalVariable("计数", new long[] { 1, 2 }, "Integer") { Id = "count" };
+variables.Variables.Add(candidateVariable);
+var variableProposal = DocumentEditProposal.Prepare(host, variables: variables);
+var variableReceipt = editedSession.CommitEdit(variableProposal);
+var actualVariable = variableReceipt.AcceptedVariables[candidateVariable];
+Check(!ReferenceEquals(actualVariable, candidateVariable) && ReferenceEquals(actualVariable, editedSession.Document.GlobalVariables.Single()),
+    "回执须返回草稿到正式实例映射。");
+actualVariable.Value = new long[] { 7, 8 }; // Unit simulation of a later runtime value, not a real execution claim.
+Check(editedSession.Undo() && editedSession.Document.GlobalVariables.Count == 0, "新增变量撤销失败。");
+Check(editedSession.Redo() && ReferenceEquals(editedSession.Document.GlobalVariables.Single(), actualVariable) &&
+    ((long[])actualVariable.Value!)[0] == 7, "历史不得重放旧变量运行值或另造实际实体。");
+Console.WriteLine("PASS 新变量实际实例回执与历史保留运行值");
+
+using var valueDraft = host.BeginVariableEdit();
+valueDraft.SetValue(actualVariable.Id, new long[] { 9, 10 });
+var valueProposal = DocumentEditProposal.Prepare(host, variables: valueDraft);
+var historyCount = editedSession.HistoryEntries.Count;
+var valueReceipt = editedSession.CommitEdit(valueProposal);
+Check(valueReceipt.History is null && editedSession.HistoryEntries.Count == historyCount && ((long[])actualVariable.Value!)[0] == 9,
+    "当前值写入不应生成配置历史。");
+using var staleValueDraft = host.BeginVariableEdit(); staleValueDraft.SetValue(actualVariable.Id, new long[] { 11 });
+var staleValue = DocumentEditProposal.Prepare(host, variables: staleValueDraft);
+actualVariable.Value = new long[] { 12 };
+Reject(() => editedSession.CommitEdit(staleValue));
+Check(((long[])actualVariable.Value!)[0] == 12 && editedSession.HistoryEntries.Count == historyCount, "值冲突必须整批拒绝且保留正式值。");
+Console.WriteLine("PASS 显式值无配置历史与并发修订冲突拒绝");
+
+var rootDraft = host.BeginRootEdit(editedFlow.Id);
+rootDraft.Configuration = new RootWorkflowConfiguration { RunParameters = ImmutableArray.Create(
+    new RootParameterProxy(Guid.NewGuid(), editableNode.Id, editableNode.ToolType, "threshold", "threshold", "阈值")) };
+var combinedNode = host.BeginEdit(editedFlow.Id, editableNode.Id);
+combinedNode.ApplyFields(new Dictionary<string, ParameterSetting> { ["threshold"] = new ConstantSetting(20L) });
+var combined = DocumentEditProposal.Prepare(host, nodes: new[] { combinedNode }, roots: new[] { rootDraft });
+var combinedReceipt = editedSession.CommitEdit(combined);
+Check(combinedReceipt.Change!.ChangedWorkflows.Length == 1 && editedFlow.RootConfiguration.RunParameters.Length == 1,
+    "根配置和节点编辑应共同发布。");
+Check(editedSession.Undo() && editedFlow.RootConfiguration.RunParameters.Length == 0 &&
+    (long)((ConstantSetting)editableNode.Configuration.Fields.Read("threshold")).Value! == 8L, "复合根配置撤销失败。");
+Console.WriteLine("PASS 根配置与参数共同提交和回放");
+
+var managerOwner = (ToolExecutionOwner)typeof(DocumentSession).GetProperty("ExecutionOwner", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(editedSession)!;
+var managerRun = Guid.NewGuid(); managerOwner.ActivateRoot(managerRun);
+try { Reject(() => manager.CreateNew()); Check(ReferenceEquals(manager.CurrentSession, editedSession), "活动根运行中替换应保留旧会话。"); }
+finally { managerOwner.CompleteRoot(managerRun); }
+var replacement = manager.CreateNew();
+Check(!ReferenceEquals(replacement, editedSession) && ReferenceEquals(manager.CurrentSession, replacement), "唯一管理器替换失败。");
+Console.WriteLine("PASS 活动根流程间隙关闭保护与唯一会话替换");
+var createdFlow = replacement.GetWorkflows().Single();
+var create = replacement.PrepareGraphEdit(createdFlow.Id);
+Reject(() => replacement.CreateNode(create, "missing-tool", new CanvasPoint(1, 2)));
+var createdFirst = replacement.CreateNode(create, "TransactionProbe", new CanvasPoint(12, 24));
+var createdSecond = replacement.CreateNode(create, "TransactionProbe", new CanvasPoint(24, 48));
+Check(createdFlow.Nodes.Count == 0 && createdFirst.GlobalIndex == 1 && createdSecond.GlobalIndex == 2 &&
+    createdFirst.LocalIndex == 1 && createdSecond.LocalIndex == 2, "失败创建不得消耗序号，成功创建只能进入私有提案。");
+replacement.CommitGraphEdit(create, "可信工具节点创建");
+Check(ReferenceEquals(createdFlow.Nodes[0], createdFirst), "节点创建提交须保实际实体。");
+Console.WriteLine("PASS 可信目录节点工厂和提案内序号分配");
+var activity = replacement.AcquireActivityLease("通信测试驱动");
+Reject(() => manager.CreateNew());
+Check(ReferenceEquals(manager.CurrentSession, replacement) && replacement.ActiveActivities.Count == 1, "活动尚未排空时必须保留旧会话。");
+Task.Run(activity.Dispose).GetAwaiter().GetResult();
+Check(replacement.ActiveActivities.Count == 0, "异步排空释放未生效。");
+manager.CloseCurrent();
+Console.WriteLine("PASS 实际后台活动关闭保护及异步释放");
+var lockingSession = manager.CreateNew();
+var lockingOwner = (ToolExecutionOwner)typeof(DocumentSession).GetProperty("ExecutionOwner", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(lockingSession)!;
+var lateIdentity = lockingOwner.Begin("late", Guid.NewGuid(), "test");
+using var entered = new ManualResetEventSlim();
+using var releaseCallback = new ManualResetEventSlim();
+using var finished = new ManualResetEventSlim();
+var watchdog = new Thread(() =>
+{
+    if (!finished.Wait(TimeSpan.FromSeconds(8)))
+    { Console.Error.WriteLine("FAIL 运行发布与方案编辑发生锁序死锁。"); Environment.Exit(97); }
+}) { IsBackground = true };
+watchdog.Start();
+var publisher = Task.Run(() => lateIdentity.TryPublish(() =>
+{
+    entered.Set();
+    releaseCallback.Wait();
+    _ = lockingSession.GetWorkflows();
+}));
+Check(entered.Wait(TimeSpan.FromSeconds(2)), "迟到发布没有进入真实owner门禁。");
+var releaseTask = Task.Run(() => { Thread.Sleep(100); releaseCallback.Set(); });
+var lockingFlow = lockingSession.GetWorkflows().Single();
+lockingSession.CommitGraphEdit(lockingSession.PrepareGraphEdit(lockingFlow.Id), "锁序回归");
+Check(publisher.GetAwaiter().GetResult(), "已有合法发布应完成后再进入编辑。");
+releaseTask.GetAwaiter().GetResult();
+finished.Set(); watchdog.Join();
+Console.WriteLine("PASS 真实迟到发布回调与文档编辑锁序");
+Console.WriteLine("16 个事务场景通过；真实工具、WPF及完整运行仍待整批验证。");
 return 0;
 }
 catch (Exception error) { Console.Error.WriteLine(error); return 1; }
 
-public sealed class TransactionProbeDefinition : IToolDefinition<WorkspaceProbeSettings, WorkspaceProbeOutput>, IToolSettingsFields, IToolCatalogProvider
+public sealed record TransactionSettings : IToolSettings<TransactionSettings>
+{
+    public long Threshold { get; init; } = 1;
+    public TransactionSettings Freeze() => this with { };
+}
+public sealed class TransactionProbeDefinition : IToolDefinition<TransactionSettings, WorkspaceProbeOutput>, IToolSettingsFields, IToolCatalogProvider
 {
     private readonly WorkspaceProbeDefinition _inner = new();
     public static readonly ToolSchema Schema = new(
@@ -116,10 +238,12 @@ public sealed class TransactionProbeDefinition : IToolDefinition<WorkspaceProbeS
     public string ToolId => "TransactionProbe";
     public ToolCatalogDescriptor Catalog => _inner.Catalog;
     public ToolSchema Describe() => Schema;
-    public ToolSchema SettingsSchema => _inner.SettingsSchema;
-    public InputValues ReadSettings(object settings) => _inner.ReadSettings(settings);
-    public object MaterializeSettings(InputValues values) => _inner.MaterializeSettings(values);
-    public IReadOnlyList<Diagnostic> Validate(WorkspaceProbeSettings settings) => Array.Empty<Diagnostic>();
+    public static readonly ToolSchema Parameters = new(new[] { new Port("threshold", TypeRef.ScalarOf(ScalarKind.Int64),
+        EditModes: FieldEditModes.Constant | FieldEditModes.Reference) }, Array.Empty<Port>());
+    public ToolSchema SettingsSchema => Parameters;
+    public InputValues ReadSettings(object settings) => new(Parameters.Inputs, new Dictionary<string, object?> { ["threshold"] = ((TransactionSettings)settings).Threshold });
+    public object MaterializeSettings(InputValues values) => new TransactionSettings { Threshold = values.Get<long>("threshold") };
+    public IReadOnlyList<Diagnostic> Validate(TransactionSettings settings) => Array.Empty<Diagnostic>();
     public ToolCapabilities Capabilities() => ToolCapabilities.None;
-    public IToolSession<WorkspaceProbeSettings, WorkspaceProbeOutput> CreateSession() => throw new NotSupportedException("仅事务准入探针。");
+    public IToolSession<TransactionSettings, WorkspaceProbeOutput> CreateSession() => throw new NotSupportedException("仅事务准入探针。");
 }

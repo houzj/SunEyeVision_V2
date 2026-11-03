@@ -123,6 +123,17 @@ public sealed partial class DocumentSession
             variables = next.ToArray();
         }
 
+        foreach (var variable in definitions.Where(variable => variable.ProducerBinding is not null))
+        {
+            var previous = before.Definitions.SingleOrDefault(item => item.Id == variable.Id);
+            if (previous?.ProducerBinding?.ReferenceExpression == variable.ProducerBinding!.ReferenceExpression && previous.Type == variable.Type) continue;
+            var validation = GlobalProducerBindingRules.Validate(variable.ProducerBinding, variable,
+                id => graphs.SingleOrDefault(pair => pair.Key.Id == id).Value?.Nodes.Select(item => item.Node).ToArray(),
+                node => { var state = graphs.Values.SelectMany(graph => graph.Nodes).Single(item => ReferenceEquals(item.Node, node));
+                    return AdmitConfiguration(node, state.Configuration).Schema; }, Current);
+            if (validation.State is not (BindingCompatibility.Compatible or BindingCompatibility.Conditional))
+                throw new InvalidOperationException(validation.Reason);
+        }
         var beforeDependencies = GraphDependencySnapshot.Create(Document, before.Graphs, before.Definitions, AdmitConfiguration);
         var reconciled = GraphBindingReconciliation.Prepare(Document, graphs, definitions, AdmitConfiguration, Current);
         var afterDependencies = GraphDependencySnapshot.Create(Document, reconciled.Graphs, reconciled.Variables, AdmitConfiguration);
@@ -130,9 +141,21 @@ public sealed partial class DocumentSession
             CandidateInputValidation.Validate(_documentId, flow.Id, ResultOwnerId, ChangeRevision, graph, reconciled.Variables,
                 proposal.Nodes.Where(item => item.Opening.Scope.WorkflowId == flow.Id).Select(item => item.Opening.Node.Id).ToHashSet(StringComparer.Ordinal),
                 proposal.Variables is not null, AdmitConfiguration);
+        var changedVariables = before.Definitions.Select(variable => variable.Id).Union(reconciled.Variables.Select(variable => variable.Id))
+            .Where(id => { var old = before.Definitions.SingleOrDefault(variable => variable.Id == id);
+                var next = reconciled.Variables.SingleOrDefault(variable => variable.Id == id);
+                return old is null || next is null || VariableConfigurationSignature(old) != VariableConfigurationSignature(next); })
+            .Concat(writes.Keys.Select(variable => variable.Id)).ToHashSet(StringComparer.Ordinal);
+        var seeds = new HashSet<ScopedNodeIdentity>(reconciled.Invalidated);
+        foreach (var collection in new[] { before.Graphs, reconciled.Graphs })
+            foreach (var (flow, graph) in collection)
+                foreach (var item in graph.Nodes)
+                    if (BindingRelationCatalog.VariableReferences(AdmitConfiguration(item.Node, item.Configuration))
+                        .Any(reference => reference.Reference.SolutionId == _documentId && changedVariables.Contains(reference.Reference.VariableId)))
+                        seeds.Add(new(flow.Id, item.Node.Id));
         var invalidated = GraphInvalidationProjection.Compare(before.Graphs.ToDictionary(pair => pair.Key.Id, pair => pair.Value),
             reconciled.Graphs.ToDictionary(pair => pair.Key.Id, pair => pair.Value), beforeDependencies, afterDependencies,
-            reconciled.Invalidated, (node, config) => AdmitConfiguration(node, config).ExecutionConfigurationIdentity);
+            seeds, (node, config) => AdmitConfiguration(node, config).ExecutionConfigurationIdentity);
         if (!Current()) throw new InvalidOperationException("编辑准备回调期间正式方案已变化。");
         proposal.EnsureCanConsume();
         return new PreparedEdit(before, new EditState(reconciled.Graphs, roots, variables, reconciled.Variables),

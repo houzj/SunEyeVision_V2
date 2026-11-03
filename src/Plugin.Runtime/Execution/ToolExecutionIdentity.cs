@@ -10,7 +10,7 @@ public sealed class ToolExecutionOwner
     private bool _hasEverStarted;
     public bool HasEverStarted { get { lock(_gate)return _hasEverStarted; } }
     /// <summary>Read-only document lifetime state; querying does not create execution admission.</summary>
-    public bool IsRetired { get { lock(_gate)return _retired; } }
+    public bool IsRetired => Volatile.Read(ref _retired);
     private readonly object _gate = new();
     private readonly Dictionary<string, Guid> _domains = new(StringComparer.Ordinal);
     private sealed class ScopeAdmissions(Guid root)
@@ -76,7 +76,7 @@ public sealed class ToolExecutionOwner
     {
         lock (_gate)
         {
-            bool Current() => !_retired && (!callback || identity.CallbacksOpen) && !identity.CancellationToken.IsCancellationRequested &&
+            bool Current() => !_retired && !_documentMutation && (!callback || identity.CallbacksOpen) && !identity.CancellationToken.IsCancellationRequested &&
                 _domains.TryGetValue(identity.NodeId, out var generation) && generation == identity.NodeGeneration &&
                 _latest.TryGetValue(identity.NodeId, out var admitted) && admitted.Root == identity.RootRunId &&
                 admitted.Requests.TryGetValue(identity.RunId, out var request) && request == identity.RequestId;

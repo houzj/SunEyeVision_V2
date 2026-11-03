@@ -10,10 +10,11 @@ public sealed partial class DocumentSession
     public void ValidateEdit(DocumentEditProposal proposal)
     {
         ArgumentNullException.ThrowIfNull(proposal);
+        EnsureOwnerCanEdit();
+        using var mutation = _owner.BeginDocumentMutation();
         lock (_gate)
         {
             EnsureOwnerCanEdit();
-            using var mutation = _owner.BeginDocumentMutation();
             _preparing = true;
             try
             {
@@ -27,11 +28,12 @@ public sealed partial class DocumentSession
     public DocumentEditReceipt CommitEdit(DocumentEditProposal proposal)
     {
         ArgumentNullException.ThrowIfNull(proposal);
+        EnsureOwnerCanEdit();
+        using var mutation = _owner.BeginDocumentMutation();
         DocumentEditReceipt receipt;
         lock (_gate)
         {
             EnsureOwnerCanEdit();
-            using var mutation = _owner.BeginDocumentMutation();
             _preparing = true;
             try
             {
@@ -91,6 +93,7 @@ public sealed partial class DocumentSession
             }
             finally { _preparing = false; }
         }
+        mutation.Dispose();
         if (receipt.Change is { } committed) NotifyChanged(committed);
         return receipt;
     }

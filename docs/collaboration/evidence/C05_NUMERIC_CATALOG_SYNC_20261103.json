@@ -327,5 +327,16 @@
       "after": "898B5DBD76D5207CF69BA5C9836DD47E61CE153352102CD49B7D33F1802905D0",
       "before": "E24F6C063A6670101A9B8533D54F09569B8A6C914AEF5D04F40E9EF2E8BE39D7"
     }
-  ]
+  ],
+  "repairIntegration": {
+    "sourceBaseline": "48678980fc3b205c90ed8c6e37b2e2ac545129ec",
+    "publicSource": "31d434cc068333efdcf1ff42b56df85cfd090fba",
+    "consumerSource": "d5d3e56b7b31a1269420f96d213f226ab0c50e2e",
+    "changedProduct": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
+    "sha256": "18F72E336199A4DC419637C3DFC22F08210973474A78FC32BFB99BA3165ECA37",
+    "currentHashOccurrencesUpdated": 6,
+    "status": "待主仓正式同版验收",
+    "originalIdentityUnchanged": true,
+    "candidateAll44": "独立31d产品完整44组自然通过，旧071超时原因未复现，未移签正式"
+  }
 }

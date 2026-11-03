@@ -59,7 +59,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
-          "sha256": "7DF06C97F551B6036DA761BC3CE3B002AB7F316742C5106E827B66FDC984EB29"
+          "sha256": "18F72E336199A4DC419637C3DFC22F08210973474A78FC32BFB99BA3165ECA37"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeTextInheritance.cs",
@@ -1367,7 +1367,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
-          "sha256": "7DF06C97F551B6036DA761BC3CE3B002AB7F316742C5106E827B66FDC984EB29"
+          "sha256": "18F72E336199A4DC419637C3DFC22F08210973474A78FC32BFB99BA3165ECA37"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
@@ -1517,15 +1517,16 @@
         "status": "SOURCE_INTEGRATED_FORMAL_VALIDATION_PENDING",
         "receipt": "docs/collaboration/evidence/C05_NUMERIC_MODEL_FORMAL_20261103.json",
         "scope": "字段owner模型、原控件投影、显式单项/页/全量回读、根初始化、整数格点与真实Blob消费者；C06仍原行为",
-        "baseline": "a3d4059be99a9ffd5e3c5d86ecb92336f9491f39",
-        "consumerCandidate": "f2e794533d8db8235505ca6b4ccf98d908d82843",
+        "baseline": "48678980fc3b205c90ed8c6e37b2e2ac545129ec",
+        "consumerCandidate": "d5d3e56b7b31a1269420f96d213f226ab0c50e2e",
         "boundaries": [
           "宿主CurrentValues适配不证明VM native普通读等价",
           "无值不造默认；原值投影与新候选严格存储分开",
           "极端Int32中间溢出采用Int64安全适配",
-          "C06/B08全量与S3/实际VS人工仍分别记录"
+          "C06/B08全量与S3/实际VS人工仍分别记录",
+          "未知引用隐藏槽只恢复原绑定物理目标，不将其当模型/正式值；真实坏raw继续阻断"
         ],
-        "publicCandidate": "66c25c70a76c3a897aed646f694c92d7b2617564"
+        "publicCandidate": "31d434cc068333efdcf1ff42b56df85cfd090fba"
       }
     },
     {
@@ -1717,7 +1718,7 @@
       "dependencies": [
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
-          "sha256": "7DF06C97F551B6036DA761BC3CE3B002AB7F316742C5106E827B66FDC984EB29"
+          "sha256": "18F72E336199A4DC419637C3DFC22F08210973474A78FC32BFB99BA3165ECA37"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
@@ -4149,7 +4150,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
-          "sha256": "7DF06C97F551B6036DA761BC3CE3B002AB7F316742C5106E827B66FDC984EB29"
+          "sha256": "18F72E336199A4DC419637C3DFC22F08210973474A78FC32BFB99BA3165ECA37"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeParameterRows.cs",
@@ -4878,7 +4879,7 @@
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
-          "sha256": "7DF06C97F551B6036DA761BC3CE3B002AB7F316742C5106E827B66FDC984EB29"
+          "sha256": "18F72E336199A4DC419637C3DFC22F08210973474A78FC32BFB99BA3165ECA37"
         },
         {
           "path": "src/Plugin.Wpf/Adapters/Fields/NativeParameterRows.cs",
@@ -7111,7 +7112,7 @@
     ]
   },
   "currentC05NumericIntegration": {
-    "status": "源码已合入，正式构建与同版自测待完成",
+    "status": "未知引用隐藏绑定与原生弹窗修正已合入，正式重建验收待完成",
     "evidence": "docs/collaboration/evidence/C05_NUMERIC_CATALOG_SYNC_20261103.json",
     "files": [
       {
@@ -7120,7 +7121,7 @@
       },
       {
         "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
-        "sha256": "7DF06C97F551B6036DA761BC3CE3B002AB7F316742C5106E827B66FDC984EB29"
+        "sha256": "18F72E336199A4DC419637C3DFC22F08210973474A78FC32BFB99BA3165ECA37"
       },
       {
         "path": "src/Plugin.Wpf/Adapters/Fields/NativeNumericModel.cs",
@@ -7171,6 +7172,6 @@
         "sha256": "82731084CDBC1EF7F259F558DA49028CADB7BF10C4EFA82D3EFAE080E242F520"
       }
     ],
-    "sourceBaseline": "a3d4059be99a9ffd5e3c5d86ecb92336f9491f39"
+    "sourceBaseline": "48678980fc3b205c90ed8c6e37b2e2ac545129ec"
   }
 }

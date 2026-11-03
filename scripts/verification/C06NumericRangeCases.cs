@@ -77,6 +77,27 @@ internal static class C06NumericRangeCases
     f.Text(0).Text="100.004";Check(!(bool)Call(f.Range,"TryCommitPending",false)!&&f.Text(0).Text=="100.004","raw先舍入掩盖绝对越界");
    });
    Case("原生popup两未知槽与无值解绑坏raw",()=>{
+    foreach(var knownLeft in new[]{false,true})
+    {
+     var armed=false;var ordinary=0;using var life=new Fixture(true,Ref(true),Ref(true),ReferenceFieldOptions.Empty with{ReadCurrentValue=p=>{ordinary++;return armed&&p.Id=="lo"?new(15L):null;}},min:10,max:100);
+     if(knownLeft){armed=true;Check(Read(life,"lo").Status==NumericModelReadStatus.Updated,"known引用准备失败");Pump();Check(P<long>(life.Model(0),"CurValue")==15,"普通投影原Slider队列改写known模型");}ordinary=0;
+     var popup=(ComboBox)life.Native.FindName("CBox");var versions=life.States.Select(state=>P<long>(P<object>(state,"NumericModel"),"Version")).ToArray();
+     void Verify(string state)
+     {
+      Flush(life);Check(ordinary==0&&!P<bool>(life.Model(1),"HasValue")&&life.Low.Setting is ReferenceSetting&&life.High.Setting is ReferenceSetting,state+"清理改回读/unknown/正式引用");
+      Check(Enumerable.Range(0,2).All(i=>P<long>(life.Model(i),"Version")==versions[i]),state+"owned清理改变模型版本");
+      if(knownLeft)Check(P<long>(life.Model(0),"CurValue")==15,state+"known模型被旧Slider改0");else Check(!P<bool>(life.Model(0),"HasValue"),state+"unknown被安装");
+     }
+     foreach(var state in new[]{"disable","hide","program-close","unload"})
+     {
+      popup.IsDropDownOpen=true;Pump();Check(popup.IsDropDownOpen,state+"原生popup未实际打开");
+      if(state=="disable")life.View.IsEnabled=false;else if(state=="hide")life.View.Visibility=Visibility.Collapsed;else if(state=="program-close")Call(life.Range,"ClosePopups");else host.Children.Clear();
+      Pump();Check(!popup.IsDropDownOpen,state+"原生popup未关闭");Verify(state);
+      if(state=="disable")life.View.IsEnabled=true;else if(state=="hide")life.View.Visibility=Visibility.Visible;else if(state=="unload")host.Children.Add(life.View);
+      window.UpdateLayout();Pump();Verify(state+"-resume");
+     }
+    }
+
     var reads=0;using var f=new Fixture(true,Ref(true),Ref(true),ReferenceFieldOptions.Empty with{ReadCurrentValue=_=>{reads++;return null;}},min:10,max:100);reads=0;var box=(ComboBox)f.Native.FindName("CBox");Check(box.IsVisible&&box.IsEnabled,"原生CBox不可打开");box.IsDropDownOpen=true;Pump();Check(box.IsDropDownOpen,"未真实开popup");box.IsDropDownOpen=false;Pump();Flush(f);Check(!P<bool>(f.Model(0),"HasValue")&&!P<bool>(f.Model(1),"HasValue")&&reads==0,"未知槽物理值被安装或回读");
     f.Native.IsSubscribeLeft=false;Call(f.Native,"DoLeftTypeChange");Pump();Check(f.Low.Setting is ReferenceSetting&&f.Text(0).Text==string.Empty&&f.Low.HasPendingEdits&&f.Low.HasInvalidText&&reads==1,"无值解绑未保护正式引用");f.Text(0).Text="bad-raw";Call(f.Range,"ReplayAccepted");Pump();Check(f.Text(0).Text=="bad-raw"&&f.Low.HasInvalidText,"重投影清实际坏raw");
    });

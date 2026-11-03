@@ -15,7 +15,13 @@
 
 `VmModuleExtern.GetParamRoot`（`Apps.XmlParser.ParamTab/VmModuleExtern.cs:28-35`）仅在 `ModuleParam.Data==null` 时创建根并保存，否则返回缓存对象。`AlgorithmTabRoot.Dispose:1558-1561` 所读方法仅设置 `IsSubscribeInWindow=false`，没有清 `ModuleParam.Data`；`DoFinish:854-865` 遍历 tab 完成处理。故所核路径能证明**以 ModuleParam.Data 为宿主的根缓存**，不能证明所有内部资源持续可用、所有重开都不重新初始化，也不能将新 `ParamsTabControlBase`、WPF 模板或布局说成缓存。`DoIniter` 和 `GetItemsValueUnit` 在 ParamsConfig 变更路径中依然调用；具体项初始化是否重复、各视图实现的加载/虚拟化和首帧时点须另证。
 
-普通参数读取以已有 `B08-C05运行回读调用者与单值合同补证-20261103.md` 为准：逐项可达 `GetParamUnit → IUserStringData → ModuleParam.GetParamValue → IMVS_GetParamValue`。是否一次读取、分页、并发/同步耗时及 native 内部缓存，不能由链路数目推定。当前实现的两次 BindDraft 是另一项目已知事实，不能倒推 VM 存在或不存在相同次数的模型读写。
+普通参数读取以已有 `B08-C05运行回读调用者与单值合同补证-20261103.md` 为准：逐项可达 `GetParamUnit → IUserStringData → ModuleParam.GetParamValue → IMVS_GetParamValue`。是否一次读取、分页、并发/同步耗时及 native 内部缓存，不能由链路数目推定。
+
+## 当前实现的窗口组装与本轮修正
+
+2026-11-03 已核到主仓 Runtime Blob 打开路径：`NodeOpenDecisionChain.CreateDebugControl` 创建轻量空 `RuntimeNodeConfigurationControl`，`MainWindowRuntimeEditing.InitializeRuntimeEditor` 建立正式 `ProductionEditorContext`、先挂接 draft context，再只调用一次 `control.BindDraft(context.DraftNode)` 组装完整声明页，随后绑定结果预览并 `Show()`。原构造函数曾先以正式节点副本 `BindDraft(node.Clone())`，正式会话随后又绑定一次；现已删除临时参数页组装，避免双份控件和订阅创建。单项正式 Release 回归 `O06_WINDOW_CASE_FILTER=正式Runtime三页` 已自然通过，核对三页、声明展示字段全集及基础/组合输入；旧的55/4计数已更新为基于正式声明的集合核对。
+
+本轮在 `MainWindowViewModel.ExecuteOpenDebugWindow` 与 `MainWindowRuntimeEditing.InitializeRuntimeEditor` 增加分段耗时日志：`[Perf] 双击节点窗 NodeOpenDecisionChain`、`查询服务与宿主准备`、`BindDraft完整参数页组装`、`结果预览绑定`、`窗口Show同步耗时`、`双击节点窗至Show完成`。它们能指出当前慢在命令前置、完整UI组装、结果预览还是窗口Show；尚未取得用户机器上的实际数值，也未与原厂同机动态测时对比。因此本次只能确认重复组装已去除，不能声称慢速已彻底解决或已经达到VM速度。`window.Show()`计时只是同步调用，不代表首帧呈现；人工比较应分别记录点击到首帧和关闭重开。
 
 ## 切换、关闭与结果视图
 
@@ -25,7 +31,7 @@
 
 ## 实施建议与最小验收
 
-- 依据已证路径，在新窗重活之前完成权限/资源准入和旧窗关闭；采用单一已确认的 session/root 绑定流程，避免先给临时 draft 组完整 UI 再给正式 session 重建。此为针对当前双 Bind 的设计建议，**不是 VM 恰好只发生一次绑定或原版性能原因的证明**。
+- 依据已证路径，在新窗重活之前完成权限/资源准入和旧窗关闭；当前重复 Bind 已移除，后续依据上述分段日志定位仍慢的真实阶段，再按VM证据检查对应完整路径；**不是 VM 恰好只发生一次绑定或原版性能原因的证明**。
 - 明确区分可缓存的模块参数根/解析元数据、每窗 WPF 实例、结果视图 decorator 与真实模块 session 的所有权；复用须以节点/方案身份和生命周期安全为前提，避免把旧节点 UI 或订阅带到新节点。后台加载、首帧骨架、单飞/代次、额外释放检查均是自研优化，不能标为原机制。
 - 本方真实可交互桌面分段计时：入口→准入/关闭→窗口构造→根获取/解析→DoIniter→普通参数读回次数与耗时→模板首次构建/Loaded→首帧；各分冷进程、同节点重复、不同节点切换、关闭重开，并统计工厂次数、DataContext/模型绑定次数、读写次数、UI 响应。对拒绝关闭、加载失败、旧回调和方案切换保留测试；原机差分不在本轮已执行范围。
 

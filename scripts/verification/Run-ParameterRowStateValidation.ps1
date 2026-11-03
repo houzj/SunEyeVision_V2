@@ -3,6 +3,9 @@ param([switch]$DiagnosticBaseline)
 $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $product=Join-Path $root 'Release/SunEyeVision_v1.0.0/SunEyeVision'
+$gitDir=[IO.Path]::GetFullPath((git -C $root rev-parse --absolute-git-dir),$root).TrimEnd([IO.Path]::DirectorySeparatorChar,[IO.Path]::AltDirectorySeparatorChar)
+$commonDir=[IO.Path]::GetFullPath((git -C $root rev-parse --git-common-dir),$root).TrimEnd([IO.Path]::DirectorySeparatorChar,[IO.Path]::AltDirectorySeparatorChar)
+$validationScope=if([string]::Equals($gitDir,$commonDir,[StringComparison]::OrdinalIgnoreCase)){'主仓正式Release上的参数行定向自测；不替代VS与人工'}else{'独立worktree候选Release自测；不替代主仓/VS/人工'}
 $base=Join-Path $root 'Release/_validation/ParameterRowState-20261103'
 $attempt=1;while(Test-Path (Join-Path $base ('attempt-{0:d3}' -f $attempt))){$attempt++}
 $dir=Join-Path $base ('attempt-{0:d3}' -f $attempt);New-Item -ItemType Directory -Path $dir -Force|Out-Null
@@ -48,5 +51,5 @@ $productDirty=@(git -C $root status --porcelain -- src tools)
 $worktreeDirty=@(git -C $root status --porcelain)
 $payloadPassed=($buildCommitValid -and $payloadDiffRejected.Count -eq 0 -and $productDirty.Count -eq 0)
 if(!$identityPassed -or !$casesPassed -or (!$DiagnosticBaseline -and !$payloadPassed)){$exit=1}
-[ordered]@{scope='参数行等待选源与读写校验状态候选，不替代主仓/实际VS/人工';diagnosticBaseline=[bool]$DiagnosticBaseline;exit=$exit;buildSourceCommit=$buildSourceCommit;testHEAD=$testHead;payloadDiffPaths=$payloadDiffPaths;payloadDiffRejected=$payloadDiffRejected;payloadSourceCommit=$payload.sourceCommit;payloadSha256=(Get-FileHash $payloadPath -Algorithm SHA256).Hash;payloadPassed=$payloadPassed;productSourcesDirty=$productDirty;worktreeDirty=$worktreeDirty;identityPassed=$identityPassed;passedCases=$passedCases;productSourceCommit=(git -C $root log -1 --format=%H -- src/Plugin.Wpf);commit=(git -C $root rev-parse HEAD);source=$source;sourceSha256=(Get-FileHash $source -Algorithm SHA256).Hash;runnerSha256=(Get-FileHash $PSCommandPath -Algorithm SHA256).Hash;product=$product;loaded=$loaded}|ConvertTo-Json -Depth 8|Set-Content (Join-Path $dir 'receipt.json') -Encoding utf8
+[ordered]@{scope=$validationScope;diagnosticBaseline=[bool]$DiagnosticBaseline;exit=$exit;buildSourceCommit=$buildSourceCommit;testHEAD=$testHead;payloadDiffPaths=$payloadDiffPaths;payloadDiffRejected=$payloadDiffRejected;payloadSourceCommit=$payload.sourceCommit;payloadSha256=(Get-FileHash $payloadPath -Algorithm SHA256).Hash;payloadPassed=$payloadPassed;productSourcesDirty=$productDirty;worktreeDirty=$worktreeDirty;identityPassed=$identityPassed;passedCases=$passedCases;productSourceCommit=(git -C $root log -1 --format=%H -- src/Plugin.Wpf);commit=(git -C $root rev-parse HEAD);source=$source;sourceSha256=(Get-FileHash $source -Algorithm SHA256).Hash;runnerSha256=(Get-FileHash $PSCommandPath -Algorithm SHA256).Hash;product=$product;loaded=$loaded}|ConvertTo-Json -Depth 8|Set-Content (Join-Path $dir 'receipt.json') -Encoding utf8
 if($exit -ne 0){throw ('公共组件候选失败：'+$dir)}

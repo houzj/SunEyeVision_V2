@@ -36,10 +36,12 @@ internal static class C06NumericRangeCases
  }
  static ReferenceSetting Ref(bool integer=false)=>new(new OutputReference("producer","value",integer?(TypeRef)DataType.Integer:DataType.Number));
  static NumericModelReadResult Read(Fixture f,string id)=>f.View.ReadNumericModels(NumericModelReadScope.Field,id).Single();
- static void Flush(Fixture f)
+ static void Flush(Fixture f,string phase="flush")
  {
   var leaves=((Array)F(f.Range,"_leaves")).Cast<Numbers.NumericControl>().ToArray();
-  foreach(var leaf in leaves){var text=(TextBox)leaf.FindName("ValueText");var bindings=new[]{leaf.GetBindingExpression(Numbers.NumericControl.TextProperty)!,text.GetBindingExpression(TextBox.TextProperty)!};var dirty=bindings.Where(b=>b.IsDirty).ToArray();Check(dirty.All(b=>b.ValidateWithoutUpdate()),"隐藏槽dirty校验失败");foreach(var b in dirty)b.UpdateSource();Check(!Validation.GetHasError(leaf)&&!Validation.GetHasError(text),"隐藏槽遗留WPF错误");}
+  foreach(var leaf in leaves){var endpoint=Array.IndexOf(leaves,leaf);var text=(TextBox)leaf.FindName("ValueText");var bindings=new[]{leaf.GetBindingExpression(Numbers.NumericControl.TextProperty)!,text.GetBindingExpression(TextBox.TextProperty)!};var dirty=bindings.Where(b=>b.IsDirty).ToArray();var commit=((Array)F(f.Range,"_commits")).GetValue(endpoint)!;
+   Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new{phase,endpoint,leaf.IsLoaded,leaf.IsVisible,leaf.IsEnabled,leafText=leaf.Text,raw=text.Text,dirty=bindings.Select(b=>b.IsDirty).ToArray(),bindingStatus=bindings.Select(b=>b.Status.ToString()).ToArray(),current=Call(commit,"Current"),pending=P<bool>(commit,"IsDirty"),known=P<bool>(f.Model(endpoint),"HasValue"),cur=P<object>(f.Model(endpoint),"CurValue"),version=P<long>(f.Model(endpoint),"Version"),errors=Validation.GetErrors(leaf).Concat(Validation.GetErrors(text)).Select(e=>new{rule=e.RuleInError.GetType().FullName,content=e.ErrorContent?.ToString(),binding=e.BindingInError?.ToString()}).ToArray()}));
+   Check(dirty.All(b=>b.ValidateWithoutUpdate()),phase+"隐藏槽dirty校验失败");foreach(var b in dirty)b.UpdateSource();Check(!Validation.GetHasError(leaf)&&!Validation.GetHasError(text),phase+"隐藏槽遗留WPF错误");}
  }
  static int Run()
  {
@@ -84,7 +86,7 @@ internal static class C06NumericRangeCases
      var popup=(ComboBox)life.Native.FindName("CBox");var versions=life.States.Select(state=>P<long>(P<object>(state,"NumericModel"),"Version")).ToArray();
      void Verify(string state)
      {
-      Flush(life);Check(ordinary==0&&!P<bool>(life.Model(1),"HasValue")&&life.Low.Setting is ReferenceSetting&&life.High.Setting is ReferenceSetting,state+"清理改回读/unknown/正式引用");
+      Flush(life,"known="+knownLeft+"/"+state);Check(ordinary==0&&!P<bool>(life.Model(1),"HasValue")&&life.Low.Setting is ReferenceSetting&&life.High.Setting is ReferenceSetting,state+"清理改回读/unknown/正式引用");
       Check(Enumerable.Range(0,2).All(i=>P<long>(life.Model(i),"Version")==versions[i]),state+"owned清理改变模型版本");
       if(knownLeft)Check(P<long>(life.Model(0),"CurValue")==15,state+"known模型被旧Slider改0");else Check(!P<bool>(life.Model(0),"HasValue"),state+"unknown被安装");
      }

@@ -4,10 +4,10 @@
     <ProjectReference Include="../../src/Application/SunEyeVision.Application.csproj" />
     <ProjectReference Include="../../src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj" />
     <ProjectReference Include="../../src/SunEyeVision.HalAdapter/Runtime/SunEyeVision.HalAdapter.Runtime.csproj" />
-    <ProjectReference Include="../../tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj" />
-    <ProjectReference Include="../../tools/SunEyeVision.BlobAnalysis/Runtime/SunEyeVision.BlobAnalysis.Runtime.csproj" />
-    <ProjectReference Include="../../tools/SunEyeVision.ImageSource/Wpf/SunEyeVision.ImageSource.Wpf.csproj" />
-    <ProjectReference Include="../../tools/SunEyeVision.BlobAnalysis/Wpf/SunEyeVision.BlobAnalysis.Wpf.csproj" />
+    <ProjectReference ReferenceOutputAssembly="false" Include="../../tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj" />
+    <ProjectReference ReferenceOutputAssembly="false" Include="../../tools/SunEyeVision.BlobAnalysis/Runtime/SunEyeVision.BlobAnalysis.Runtime.csproj" />
+    <ProjectReference ReferenceOutputAssembly="false" Include="../../tools/SunEyeVision.ImageSource/Wpf/SunEyeVision.ImageSource.Wpf.csproj" />
+    <ProjectReference ReferenceOutputAssembly="false" Include="../../tools/SunEyeVision.BlobAnalysis/Wpf/SunEyeVision.BlobAnalysis.Wpf.csproj" />
   </ItemGroup>
   <ItemGroup><Reference Include="halcondotnetxl"><HintPath>$(HalconSourceRoot)/net/halcondotnetxl.dll</HintPath><Private>true</Private></Reference></ItemGroup>
 </Project>

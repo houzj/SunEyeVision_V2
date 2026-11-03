@@ -8,7 +8,7 @@ using System.Windows.Threading;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Wpf.Adapters.Regions;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls;
+using SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport;
 using SunEyeVision.Plugin.Wpf.Presenters.Results;
 using SunEyeVision.Plugin.Wpf.Regions;
 using SunEyeVision.UI.Services.Images;

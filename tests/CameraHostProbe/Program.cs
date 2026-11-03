@@ -7,11 +7,11 @@ using SunEyeVision.DeviceDriver.Cameras.Contracts;
 using SunEyeVision.Plugin.SDK.Devices.Camera;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
 using SunEyeVision.Plugin.SDK.Vision.Hosting;
-using SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls;
+using SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport;
 using SunEyeVision.UI.Features.Camera;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.Presentation.Controls;
 using SunEyeVision.Plugin.Wpf.Controls.Inputs;
 
 internal static class Program

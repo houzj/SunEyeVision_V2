@@ -68,7 +68,7 @@ internal static class S2DocumentEditingCases
         var imageHost=new SunEyeVision.UI.Shell.Controls.Shell.ImageResultControl{DataContext=vm.ImageResult,Width=780};
         imageHost.Initialize(vm);
         var workspace=(SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell)imageHost.FindName("Workspace");
-        var image=(SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.ImageViewBox)workspace.OutputViewport;
+        var image=(SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.ImageViewBox)workspace.OutputViewport;
         var panel=new StackPanel{Orientation=Orientation.Horizontal};panel.Children.Add(canvasControl);panel.Children.Add(imageHost);
         var shell=new Window{DataContext=vm,Content=panel,Width=1640,Height=500,Left=-10000,ShowActivated=false,ShowInTaskbar=false};app.MainWindow=shell;shell.Show();Pump();
         var drop=new WorkflowDragDropHandler(canvasControl){TabViewModel=vm.WorkflowTabViewModel};
@@ -441,7 +441,7 @@ internal static class S2DocumentEditingCases
         {
             var node=pending.Pop();if(!seen.Add(node))continue;yield return node;
             foreach(var child in LogicalTreeHelper.GetChildren(node).OfType<DependencyObject>())pending.Push(child);
-            if(node is SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamListView list)
+            if(node is SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamListView list)
                 foreach(var row in list.Items.OfType<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>())if(row.View is {} view)pending.Push(view);
         }
     }

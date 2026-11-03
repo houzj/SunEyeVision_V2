@@ -14,11 +14,11 @@
    <Grid x:Name="LogSummary" Margin="9,0,8,0" Visibility="Collapsed">
     <Grid.ColumnDefinitions><ColumnDefinition Width="20"/><ColumnDefinition Width="68"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
     <Image Width="20" Height="20" VerticalAlignment="Center"><Image.Style><Style TargetType="Image">
-     <Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_log_信息.png"/>
+     <Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/WorkspaceControls/resources/ic_log_信息.png"/>
      <Style.Triggers>
-      <DataTrigger Binding="{Binding Level}" Value="{x:Static logging:LogLevel.Warning}"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_log_告警.png"/></DataTrigger>
-      <DataTrigger Binding="{Binding Level}" Value="{x:Static logging:LogLevel.Error}"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_log_错误.png"/></DataTrigger>
-      <DataTrigger Binding="{Binding Level}" Value="{x:Static logging:LogLevel.Fatal}"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/ic_log_错误.png"/></DataTrigger>
+      <DataTrigger Binding="{Binding Level}" Value="{x:Static logging:LogLevel.Warning}"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/WorkspaceControls/resources/ic_log_告警.png"/></DataTrigger>
+      <DataTrigger Binding="{Binding Level}" Value="{x:Static logging:LogLevel.Error}"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/WorkspaceControls/resources/ic_log_错误.png"/></DataTrigger>
+      <DataTrigger Binding="{Binding Level}" Value="{x:Static logging:LogLevel.Fatal}"><Setter Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/WorkspaceControls/resources/ic_log_错误.png"/></DataTrigger>
      </Style.Triggers>
     </Style></Image.Style></Image>
     <TextBlock Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center" FontSize="12"
@@ -31,7 +31,7 @@
    <Button Grid.Column="2" Width="24" Height="24" Margin="2,0,6,0" IsEnabled="False"
            ToolTipService.ShowOnDisabled="True" ToolTip="日志列表待接入原件控件" AutomationProperties.Name="展开日志（待接入）"
            Background="Transparent" BorderThickness="0">
-    <Image Width="20" Height="20" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/resources/ic_log_unfold_disable.png"/>
+    <Image Width="20" Height="20" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/ic_log_unfold_disable.png"/>
    </Button>
   </Grid>
  </Border>

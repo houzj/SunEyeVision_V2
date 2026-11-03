@@ -12,7 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Data;
 using System.Windows.Input;
 using SunEyeVision.Plugin.Wpf.Presenters.Display;
-using NativeBoolean=SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamTabControl.BooleanControl;
+using NativeBoolean=SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamTabControl.BooleanControl;
 using NativeTree=SunEyeVision.Plugin.Wpf.Controls.References.Primitives.SubTreeView;
 using NativeText=SunEyeVision.Plugin.Wpf.Controls.References.Primitives.DeleteTextBox;
 using AppsPopup=SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton;
@@ -88,12 +88,12 @@ internal static class S2DocumentEditingCases
             var color=PresentationDeclarations.Color(10,20,30);var colorWrites=0;
             var record=new DeclaredFieldEditor(new("color",PresentationDeclarations.Rgba),"颜色",new ConstantSetting(color),next=>{color=(RecordValue)((ConstantSetting)next).Value!;colorWrites++;});
             Show(record);var colorInput=(NativeColorPresenter)record.InputElement!;
-            var nativeColorCommand=SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerControlView.SelectColorCommand;
+            var nativeColorCommand=SunEyeVision.Plugin.Wpf.Native.Input.Interaction.ListView.ColorPickerControlView.SelectColorCommand;
             void Pick(NativeColorPresenter target,Color value)=>nativeColorCommand.Execute(new SolidColorBrush(value),target.NativeView);
             Pick(colorInput,Color.FromArgb(200,255,20,30));
             Pick(colorInput,Color.FromArgb(123,32,64,128));
             Require(!record.HasInvalidText&&color.Get<long>("r")==32&&color.Get<long>("a")==123&&colorWrites==2,"原调色命令连续写入RGBA失败");
-            Require(BindingOperations.IsDataBound(colorInput.NativeView,SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerControlView.CurrentColorProperty),"原调色命令切断双向绑定");
+            Require(BindingOperations.IsDataBound(colorInput.NativeView,SunEyeVision.Plugin.Wpf.Native.Input.Interaction.ListView.ColorPickerControlView.CurrentColorProperty),"原调色命令切断双向绑定");
             colorInput.SelectedColor=Color.FromArgb(200,255,20,30);
             Require(colorInput.NativeView.CurrentColor.Color==colorInput.SelectedColor,"外部颜色恢复没有同步原件");
             Pick(colorInput,Colors.Red);
@@ -108,7 +108,7 @@ internal static class S2DocumentEditingCases
                 using var stream=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,file));encoder.Save(stream);
             }
             paletteTabs.SelectedIndex=1;Pump();CapturePalette("native-palette-more.png");
-            var advanced=NativeDescendants(palettePopup.Child).OfType<SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.AdvancedColorPickerDialog>().Single();
+            var advanced=NativeDescendants(palettePopup.Child).OfType<SunEyeVision.Plugin.Wpf.Native.Input.Interaction.ListView.AdvancedColorPickerDialog>().Single();
             var brightness=(Slider)advanced.FindName("brightnessSlider");
             var beforeMoreWrites=colorWrites;
             var redBase=Color.FromRgb(255,0,0);
@@ -116,14 +116,14 @@ internal static class S2DocumentEditingCases
             brightness.Value=.25;Pump();
             Require(colorWrites==beforeMoreWrites+1 && color.Get<long>("r")==redHalf.R && color.Get<long>("g")==redHalf.G && color.Get<long>("b")==redHalf.B && color.Get<long>("a")==255,
                 "首次打开更多页调亮度未按原公式基于已接受红色写入");
-            Require(BindingOperations.IsDataBound(advanced,SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.AdvancedColorPickerDialog.SelectedCurrentColorProperty)
-                && BindingOperations.IsDataBound(colorInput.NativeView,SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerControlView.CurrentColorProperty),"更多页操作断开颜色绑定");
+            Require(BindingOperations.IsDataBound(advanced,SunEyeVision.Plugin.Wpf.Native.Input.Interaction.ListView.AdvancedColorPickerDialog.SelectedCurrentColorProperty)
+                && BindingOperations.IsDataBound(colorInput.NativeView,SunEyeVision.Plugin.Wpf.Native.Input.Interaction.ListView.ColorPickerControlView.CurrentColorProperty),"更多页操作断开颜色绑定");
             brightness.Value=.75;Pump();
             var redLight=Color.FromScRgb(1f,redBase.ScR+(1f-redBase.ScR)*.5f,redBase.ScG+(1f-redBase.ScG)*.5f,redBase.ScB+(1f-redBase.ScB)*.5f);
             Require(colorWrites==beforeMoreWrites+2 && color.Get<long>("r")==redLight.R && color.Get<long>("g")==redLight.G && color.Get<long>("b")==redLight.B && color.Get<long>("a")==255,"更多页第二次调亮度未按原公式继续写入：实际="+color.Get<long>("r")+","+color.Get<long>("g")+","+color.Get<long>("b")+","+color.Get<long>("a")+" 预期="+redLight+" writes="+colorWrites+" before="+beforeMoreWrites);
             Pick(colorInput,Colors.Blue);Pump();beforeMoreWrites=colorWrites;brightness.Value=.25;Pump();
             Require(colorWrites==beforeMoreWrites+1 && color.Get<long>("r")==0 && color.Get<long>("g")==0 && color.Get<long>("b")>0,"外部选蓝后亮度仍沿用旧基色");
-            var nativeColorProperty=SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerControlView.CurrentColorProperty;
+            var nativeColorProperty=SunEyeVision.Plugin.Wpf.Native.Input.Interaction.ListView.ColorPickerControlView.CurrentColorProperty;
             var descriptor=DependencyPropertyDescriptor.FromProperty(nativeColorProperty,colorInput.NativeView.GetType());
             var reenter=true;Color reenteredProposal=default;
             EventHandler reentrant=(_,_)=>
@@ -141,7 +141,7 @@ internal static class S2DocumentEditingCases
             var reentryHalf=Color.FromScRgb(1f,reentryBase.ScR*.5f,reentryBase.ScG*.5f,reentryBase.ScB*.5f);
             brightness.Value=.25;Pump();
             Require(color.Get<long>("r")==reentryHalf.R&&color.Get<long>("g")==reentryHalf.G&&color.Get<long>("b")==reentryHalf.B,"重入后的下次亮度仍使用旧颜色");
-            var advancedColorProperty=SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.AdvancedColorPickerDialog.SelectedCurrentColorProperty;
+            var advancedColorProperty=SunEyeVision.Plugin.Wpf.Native.Input.Interaction.ListView.AdvancedColorPickerDialog.SelectedCurrentColorProperty;
             var sliderBorder=(Border)advanced.FindName("brightnessSliderBorder");var signal=true;
             RoutedPropertyChangedEventHandler<double> throwingSlider=(_,eventArgs)=>{if(signal&&eventArgs.NewValue==.5){signal=false;throw new InvalidOperationException("亮度观察者故障");}};
             brightness.ValueChanged+=throwingSlider;var failureObserved=false;
@@ -179,7 +179,7 @@ internal static class S2DocumentEditingCases
             Require(failureObserved&&color.Get<long>("r")==11&&color.Get<long>("g")==22&&color.Get<long>("b")==33&&middle.R==11&&middle.G==22&&middle.B==33,"标记观察者异常后已接纳颜色未同步或异常丢失");
             Console.WriteLine("通过：更多页连续亮度、双向绑定、外部颜色同步、接纳及标记重入和异常清理；图表像素由测试注入");
             paletteTabs.SelectedIndex=0;Pump();CapturePalette("native-palette-default.png");
-            Require(NativeDescendants(palettePopup.Child).OfType<SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.ColorPickerFirstItem>().Any(),"默认页未接原主题/标准色板");
+            Require(NativeDescendants(palettePopup.Child).OfType<SunEyeVision.Plugin.Wpf.Native.Input.Interaction.ListView.ColorPickerFirstItem>().Any(),"默认页未接原主题/标准色板");
             var originalHeader=NativeDescendants(palettePopup.Child).OfType<Label>().First();
             var headerText=NativeDescendants(originalHeader).OfType<TextBlock>().First();
             Require(headerText.Foreground is SolidColorBrush headerBrush&&headerBrush.Color==Color.FromRgb(0,0,139)&&headerText.FontWeight==FontWeights.Bold,"宿主全局文字样式覆盖原色板标题");
@@ -193,7 +193,7 @@ internal static class S2DocumentEditingCases
             guardedPicker.Palette.IsDropDownOpen=true;Pump();
             var guardedPopup=(Popup)guardedPicker.Palette.Template.FindName("PART_Popup",guardedPicker.Palette);
             var guardedTabs=NativeDescendants(guardedPopup.Child).OfType<TabControl>().Single();guardedTabs.SelectedIndex=1;Pump();
-            var guardedAdvanced=NativeDescendants(guardedPopup.Child).OfType<SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.AdvancedColorPickerDialog>().Single();
+            var guardedAdvanced=NativeDescendants(guardedPopup.Child).OfType<SunEyeVision.Plugin.Wpf.Native.Input.Interaction.ListView.AdvancedColorPickerDialog>().Single();
             var guardedBrightness=(Slider)guardedAdvanced.FindName("brightnessSlider");guardedBrightness.Value=.25;Pump();
             Require(guardedEditor.HasInvalidText&&guardedColor.Get<long>("r")==1&&guardedPicker.SelectedColor==Color.FromRgb(1,2,3)
                 &&guardedPicker.NativeView.CurrentColor.Color==Color.FromRgb(1,2,3)&&guardedAdvanced.SelectedCurrentColor.Color==Color.FromRgb(1,2,3),"更多页写入拒绝未恢复完整颜色链");
@@ -208,7 +208,7 @@ internal static class S2DocumentEditingCases
             Require(guardedAttempts==closedAttempts&&guardedColor.Get<long>("r")==0&&guardedColor.Get<long>("g")==0&&guardedColor.Get<long>("b")==255,"已关闭的更多页改变草稿");
             guardedPicker.Palette.IsDropDownOpen=true;Pump();guardedPopup=(Popup)guardedPicker.Palette.Template.FindName("PART_Popup",guardedPicker.Palette);
             guardedTabs=NativeDescendants(guardedPopup.Child).OfType<TabControl>().Single();guardedTabs.SelectedIndex=1;Pump();
-            guardedAdvanced=NativeDescendants(guardedPopup.Child).OfType<SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI.ListView.AdvancedColorPickerDialog>().Single();
+            guardedAdvanced=NativeDescendants(guardedPopup.Child).OfType<SunEyeVision.Plugin.Wpf.Native.Input.Interaction.ListView.AdvancedColorPickerDialog>().Single();
             guardedBrightness=(Slider)guardedAdvanced.FindName("brightnessSlider");
             Require(guardedBrightness.Value==.5&&guardedAdvanced.SelectedCurrentColor.Color.R==0&&guardedAdvanced.SelectedCurrentColor.Color.G==0&&guardedAdvanced.SelectedCurrentColor.Color.B==255,"重新打开未恢复已接纳颜色及亮度");
             guardedBrightness.Value=.25;Pump();Require(guardedColor.Get<long>("r")==0&&guardedColor.Get<long>("g")==0&&guardedColor.Get<long>("b")>0&&guardedColor.Get<long>("b")<255,"重新打开后沿旧颜色调亮度");
@@ -541,7 +541,7 @@ internal static class S2DocumentEditingCases
             foreach(var field in new[]{lower,upper})
             {
                 var text=(TextBox)field.InputElement!;Require(text.IsLoaded&&text.IsVisible&&text.IsEnabled&&text.Text=="999999999","真实面积端点文本/状态不完整");
-                DependencyObject numeric=text;while(numeric is not SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl){numeric=VisualTreeHelper.GetParent(numeric)??throw new Exception("找不到原NumericControl");}
+                DependencyObject numeric=text;while(numeric is not SunEyeVision.Plugin.Wpf.Native.Numeric.Interaction.ListView.NumericControl){numeric=VisualTreeHelper.GetParent(numeric)??throw new Exception("找不到原NumericControl");}
                 var tip=((FrameworkElement)numeric).ToolTip;Require(tip is string value&&value==text.Text,"原T1/T2 ToolTip未绑定完整当前文本");
                 window.Activate();text.Focus();Pump();Require(text.IsKeyboardFocused,"真实面积文本无法取得焦点");
                 void Key(Key key){text.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice,PresentationSource.FromVisual(text)!,Environment.TickCount,key){RoutedEvent=Keyboard.KeyDownEvent});window.UpdateLayout();Pump();}
@@ -1588,11 +1588,11 @@ internal static class S2DocumentEditingCases
         Require(NativeDescendants(field).OfType<AppsPopup>().All(button=>!button.IsDropDownOpen
             &&button.Template.FindName("PART_Popup",button) is not Popup {IsOpen:true}),"来源接纳后原Popup实际未关闭");
     }
-    private static SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl OriginalNumberInput(DependencyObject field)
+    private static SunEyeVision.Plugin.Wpf.Native.Numeric.Interaction.ListView.NumericControl OriginalNumberInput(DependencyObject field)
     {
-        var original=NativeDescendants(field).OfType<SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeBase>().Single();
+        var original=NativeDescendants(field).OfType<SunEyeVision.Plugin.Wpf.Native.Numeric.Interaction.ListView.SliderArrangeBase>().Single();
         var box=(ComboBox)original.FindName("CBox");box.ApplyTemplate();
-        return (SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl)box.Template.FindName("T1",box);
+        return (SunEyeVision.Plugin.Wpf.Native.Numeric.Interaction.ListView.NumericControl)box.Template.FindName("T1",box);
     }
     private static void Click(DependencyObject control,string tooltip)
     {

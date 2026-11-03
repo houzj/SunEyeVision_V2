@@ -113,7 +113,7 @@
                 <Button x:Name="RunModeButton" Grid.Column="1" Style="{StaticResource TitleBarButton}" IsEnabled="False"
                         ToolTip="运行模式：功能尚未接入" ToolTipService.ShowOnDisabled="True" Margin="6,0,8,0" Padding="0">
                     <StackPanel Orientation="Horizontal" Opacity="0.45">
-                        <Image Width="24" Height="24" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/Apps.Style/resources/frontend/ic_topbar_运行fronted_normal.png"/>
+                        <Image Width="24" Height="24" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/frontend/ic_topbar_运行fronted_normal.png"/>
                         <TextBlock Text="运行模式" FontSize="13" Margin="6,0,8,0" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>

@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.PresentationControls.RenderInterface;
 
 namespace SunEyeVision.UI.Features.Camera;
 

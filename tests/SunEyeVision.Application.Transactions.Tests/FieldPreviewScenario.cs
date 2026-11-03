@@ -41,26 +41,9 @@ internal static class FieldPreviewScenario
         Reject(() => draft.ApplyFields(changes, new[] { "threshold" }));
         Check(frozen.Matches(draft), "Rejected field order must not invalidate a prepared draft.");
         draft.ApplyFields(changes, new[] { "limit", "threshold" });
-        var captureToken = typeof(NodeConfigurationEditDraft).GetMethod("CaptureDebugToken", BindingFlags.Instance | BindingFlags.NonPublic)!;
-        var acceptValues = typeof(NodeConfigurationEditDraft).GetMethod("AcceptPrivateParameterValues", BindingFlags.Instance | BindingFlags.NonPublic)!;
-        var token = captureToken.Invoke(draft, null)!;
-        var priorDebug = draft.Configuration;
-        try
-        {
-            acceptValues.Invoke(draft, new object[] { new Dictionary<string, object?> { ["threshold"] = 4L, ["missing"] = 7L }, token });
-            throw new Exception("Invalid debug batch was accepted.");
-        }
-        catch (TargetInvocationException e) when (e.InnerException is ArgumentException or InvalidOperationException) { }
-        Check(ReferenceEquals(priorDebug, draft.Configuration), "Failed debug batch partially changed the draft.");
-        acceptValues.Invoke(draft, new object[] { new Dictionary<string, object?> { ["threshold"] = 4L, ["limit"] = 6L }, token });
-        Check((long)host.ReadCurrentParameter(draft, "threshold")!.Value! == 4L &&
-            (long)host.ReadCurrentParameter(draft, "limit")!.Value! == 6L, "Complete debug values were not accepted atomically.");
-        try
-        {
-            acceptValues.Invoke(draft, new object[] { new Dictionary<string, object?> { ["threshold"] = 9L }, token });
-            throw new Exception("Stale debug token was accepted.");
-        }
-        catch (TargetInvocationException e) when (e.InnerException is InvalidOperationException) { }
+        // Debug acceptance now runs through DocumentDebugSession/DocumentDebugInvocation.
+        // Atomic candidate preparation, stale-reader rejection and cancellation are covered by
+        // Execution.Tests/DebugAcceptanceRaceTests and the real RuntimeRunChainProbe.
         session.CommitEdit(DocumentEditProposal.Prepare(host, nodes: new[] { draft }));
         Check(second.Configuration.ParameterBindingOrder.SequenceEqual(new[] { "limit", "threshold" }), "Accepted parameter order was lost.");
         Check(session.Undo() && second.Configuration.ParameterBindingOrder.Count == 0 && session.Redo() &&

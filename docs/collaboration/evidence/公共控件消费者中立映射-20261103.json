@@ -1,0 +1,142 @@
+{
+  "source": "f3ebe4318",
+  "target": "d74ab2f89",
+  "namespaceAndTypes": [
+    {
+      "from": "SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls",
+      "to": "SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport"
+    },
+    {
+      "from": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls.HikMessageBox",
+      "to": "SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls.NativeMessageBox"
+    },
+    {
+      "from": "SunEyeVision.Plugin.Wpf.Native.Display.VMControls",
+      "to": "SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls"
+    },
+    {
+      "from": "SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls",
+      "to": "SunEyeVision.Plugin.Wpf.Native.Numeric.Presentation.Controls"
+    },
+    {
+      "from": "SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI",
+      "to": "SunEyeVision.Plugin.Wpf.Native.Numeric.Interaction"
+    },
+    {
+      "from": "SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls",
+      "to": "SunEyeVision.Plugin.Wpf.Native.Dependencies.PresentationControls"
+    },
+    {
+      "from": "SunEyeVision.Plugin.Wpf.Native.Input.HikPcUI",
+      "to": "SunEyeVision.Plugin.Wpf.Native.Input.Interaction"
+    },
+    {
+      "from": "SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI",
+      "to": "SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation"
+    },
+    {
+      "from": "SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI",
+      "to": "SunEyeVision.Plugin.Wpf.Native.Numeric.ParameterPresentation"
+    },
+    {
+      "from": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData",
+      "to": "SunEyeVision.Plugin.Wpf.Native.Dependencies.DataAdapters"
+    },
+    {
+      "from": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.UIHelper",
+      "to": "SunEyeVision.Plugin.Wpf.Native.Dependencies.WindowUtilities"
+    },
+    {
+      "from": "SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.XmlParser",
+      "to": "SunEyeVision.Plugin.Wpf.Native.Dependencies.ParameterSchema"
+    },
+    {
+      "from": "SunEyeVision.Plugin.Wpf.Native.Display.Apps.ColorFun",
+      "to": "SunEyeVision.Plugin.Wpf.Native.Display.ThemeColors"
+    },
+    {
+      "from": "SunEyeVision.Plugin.Wpf.Native.Display.HikVision",
+      "to": "SunEyeVision.Plugin.Wpf.Native.Display.PlatformStyles"
+    },
+    {
+      "from": "SunEyeVision.Plugin.Wpf.Native.Display.VMUtility",
+      "to": "SunEyeVision.Plugin.Wpf.Native.Display.ViewUtility"
+    }
+  ],
+  "resourcePaths": [
+    {
+      "from": "Themes/Native/Display/VMBaseControls/",
+      "to": "Themes/Native/Display/ImageViewport/"
+    },
+    {
+      "from": "Themes/Native/Display/VMControls/",
+      "to": "Themes/Native/Display/PresentationControls/"
+    },
+    {
+      "from": "Themes/Native/Numeric/VMControls/",
+      "to": "Themes/Native/Numeric/PresentationControls/"
+    },
+    {
+      "from": "Themes/Assets/Native/Input/VMControls.WPF/",
+      "to": "Themes/Assets/Native/Input/WorkspaceControls/"
+    },
+    {
+      "from": "Themes/Assets/Native/Composition/Apps.Style/",
+      "to": "Themes/Assets/Native/Composition/SharedStyles/"
+    },
+    {
+      "from": "Themes/Assets/Native/Composition/Apps.XmlUI/",
+      "to": "Themes/Assets/Native/Composition/ParameterPresentation/"
+    },
+    {
+      "from": "Themes/Assets/Native/Numeric/VM.PcUI/",
+      "to": "Themes/Assets/Native/Numeric/Interaction.Pc/"
+    },
+    {
+      "from": "Themes/VmFieldStyles.xaml",
+      "to": "Themes/FieldStyles.xaml"
+    },
+    {
+      "from": "Themes/VmSliderDictionary.xaml",
+      "to": "Themes/SliderDictionary.xaml"
+    }
+  ],
+  "appliedFiles": [
+    "scripts/verification/O06AlgorithmCases.cs",
+    "scripts/verification/O06PolygonPrimitiveCases.cs",
+    "scripts/verification/O06WindowPresentationCases.cs",
+    "scripts/verification/S4B08NumericReferenceCompositionCases.cs",
+    "scripts/verification/S4BlobCrosshairWorkspaceCases.cs",
+    "scripts/verification/S4BlobExpandedReferenceCases.cs",
+    "scripts/verification/S4BlobRangeLayoutCases.cs",
+    "scripts/verification/S4BlobRangeProductionCases.cs",
+    "scripts/verification/S4BlobReferenceWindowCases.cs",
+    "scripts/verification/S4BlobResultDisplayCases.cs",
+    "scripts/verification/S4BlobResultWorkspaceCases.cs",
+    "scripts/verification/S4BlobRoiInheritanceCases.cs",
+    "scripts/verification/S4BlobRoiPreviewCases.cs",
+    "scripts/verification/S4BlobRoiProductionCases.cs",
+    "scripts/verification/S4BlobSupportedWindowCases.cs",
+    "scripts/verification/S4DesignTimeCases.cs",
+    "scripts/verification/S4FieldEditingCases.cs",
+    "scripts/verification/S4FullChainCases.cs",
+    "scripts/verification/S4NumericContractCases.cs",
+    "scripts/verification/S4RangeRoundtripCases.cs",
+    "scripts/verification/S4RuntimeEditorCases.cs",
+    "src/UI/Features/Camera/CameraBitmapImageData.cs",
+    "src/UI/Features/Camera/CameraParameterPanel.xaml",
+    "src/UI/Features/Camera/CameraPreviewHost.xaml",
+    "src/UI/Services/Images/ResultWorkspacePresenter.cs",
+    "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+    "src/UI/Shell/Controls/Shell/ShellMenuCatalog.cs",
+    "src/UI/Shell/Controls/Shell/ShellTopBarControl.xaml",
+    "src/UI/Shell/Controls/Shell/StatusBarControl.xaml",
+    "src/UI/Shell/Windows/RootWorkflowConfigurationWindow.xaml",
+    "tests/CameraHostProbe/Program.cs",
+    "tests/SunEyeVision.UI.Tests/LocalResultImagePreviewTests.cs",
+    "tests/SunEyeVision.UI.Tests/NativeResultCompositionTests.cs",
+    "tests/SunEyeVision.UI.Tests/ResultImagePaneTests.cs",
+    "tests/SunEyeVision.UI.Tests/ResultViewportFullscreenScopeTests.cs"
+  ],
+  "limitations": "仅实际产品token/URI，原件身份和历史档案不修改；本树构建运行仍须验证。"
+}

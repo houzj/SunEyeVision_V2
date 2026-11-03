@@ -126,7 +126,7 @@ internal static class S2DocumentEditingCases
             fields.IsEnabled=false;var afterDisable=writes;var valueAfterDisable=accepted;
             if(queued)
             {
-                var native=Desc(fields).OfType<SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl>().ElementAt(endpoint);
+                var native=Desc(fields).OfType<SunEyeVision.Plugin.Wpf.Native.Numeric.Interaction.ListView.NumericControl>().ElementAt(endpoint);
                 ((RepeatButton)native.FindName("UpButton")).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
                 fields.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice,PresentationSource.FromVisual(window)!,Environment.TickCount,Key.Enter){RoutedEvent=Keyboard.PreviewKeyDownEvent});
             }
@@ -157,8 +157,8 @@ internal static class S2DocumentEditingCases
         var writes=0;var accepted=.25d;
         using var fields=new DeclaredFieldsView(new[]{Port("low"),Port("high")}.Take(range?2:1).Select((port,i)=>(port,Presentation(port.Id,range&&i==0?"high":null),(ParameterSetting)new ConstantSetting(i==endpoint?.25d:i==0?0d:1d))),values=>{writes++;accepted=(double)((ConstantSetting)values[endpoint==0?"low":"high"]).Value!;},Options(.125));
         Prepare(fields);var field=fields.Fields[endpoint];var text=(TextBox)field.InputElement!;
-        var leaf=Desc(fields).OfType<SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl>().ElementAt(endpoint);
-        var original=new SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.RangeRule{Container=leaf}.Validate(raw,System.Globalization.CultureInfo.InvariantCulture);
+        var leaf=Desc(fields).OfType<SunEyeVision.Plugin.Wpf.Native.Numeric.Interaction.ListView.NumericControl>().ElementAt(endpoint);
+        var original=new SunEyeVision.Plugin.Wpf.Native.Numeric.Interaction.ListView.RangeRule{Container=leaf}.Validate(raw,System.Globalization.CultureInfo.InvariantCulture);
         text.Text=raw;var result=field.TryCommitPending();
         Check((range?"range":"scalar")+"原始越界不可借舍入进入范围"+raw,!original.IsValid&&!result&&writes==0&&accepted==.25d&&text.Text==raw,
             new{Endpoint=endpoint,Raw=raw,OriginalRangeRuleValid=original.IsValid,result,writes,accepted,RetainedRaw=text.Text,field.Error,fields.IsLoaded,HasPresentationSource=PresentationSource.FromVisual(fields)!=null});

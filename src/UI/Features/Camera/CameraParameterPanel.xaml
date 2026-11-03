@@ -3,13 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:SunEyeVision.UI.Features.Camera"
              xmlns:controls="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Inputs;assembly=SunEyeVision.Plugin.Wpf"
-             xmlns:numeric="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.VM.Controls;assembly=SunEyeVision.Plugin.Wpf"
+             xmlns:numeric="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.Presentation.Controls;assembly=SunEyeVision.Plugin.Wpf"
              xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
              Background="Transparent">
     <UserControl.Resources>
       <ResourceDictionary>
         <ResourceDictionary.MergedDictionaries>
-            <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/VMControls/controls/numericupdown/themes/generic.xaml"/>
+            <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/PresentationControls/controls/numericupdown/themes/generic.xaml"/>
         </ResourceDictionary.MergedDictionaries>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <local:CameraNumericFormatConverter x:Key="CameraNumericFormatConverter"/>

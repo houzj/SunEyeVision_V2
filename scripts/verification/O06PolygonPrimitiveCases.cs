@@ -7,8 +7,8 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Threading;
 using SunEyeVision.Plugin.Wpf;
-using SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.BaseData;
-using SunEyeVision.Plugin.Wpf.Native.Numeric.Apps.XmlUI.ParamTabControl;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.DataAdapters;
+using SunEyeVision.Plugin.Wpf.Native.Numeric.ParameterPresentation.ParamTabControl;
 internal static class S2DocumentEditingCases
 {
     private static int passed;

@@ -155,7 +155,7 @@ internal static class S2DocumentEditingCases
                 mode.TrySetConstant("DoubleThreshold");Require(lower.View.Visibility==Visibility.Visible&&upper.View.Visibility==Visibility.Visible&&type.View.Visibility==Visibility.Visible,"Double隐藏有效字段");
                 mode.TrySetConstant("None");Require(lower.View.Visibility==Visibility.Collapsed&&upper.View.Visibility==Visibility.Collapsed&&type.View.Visibility==Visibility.Collapsed,"None仍显示阈值");
                 mode.TrySetConstant("DoubleThreshold");
-                var native=Logical(upper.View).OfType<SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.SliderArrangeBase>().Single();
+                var native=Logical(upper.View).OfType<SunEyeVision.Plugin.Wpf.Native.Numeric.Interaction.ListView.SliderArrangeBase>().Single();
                 var combo=(System.Windows.Controls.ComboBox)native.FindName("CBox");combo.ApplyTemplate();
                 var toggle=Visuals(combo).OfType<ToggleButton>().Single(button=>button.GetBindingExpression(ToggleButton.IsCheckedProperty)?.ParentBinding.Path?.Path=="IsSubscribeLeft");
                 toggle.IsChecked=true;toggle.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));

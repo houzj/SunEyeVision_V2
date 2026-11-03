@@ -186,7 +186,7 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
     }
     private static void SetImageName(Pane pane,string? name)
         =>pane.Image.Viewport.View.SetCurrentValue(
-            SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.ImageViewBox.ImageNameProperty,name);
+            SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.ImageViewBox.ImageNameProperty,name);
     private void PrepareSourceDisplayPreservation(SunEyeVision.UI.Shared.ImageInputSource source,SourceDisplayPreservationScope scope)
     {
         if(_disposed||!ReferenceEquals(_main.ActiveInputSource,source))return;

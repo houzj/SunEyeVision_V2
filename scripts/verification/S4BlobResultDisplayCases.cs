@@ -116,7 +116,7 @@ internal static class S2DocumentEditingCases
         void Draw(object owner,string group,string kind,bool expected=true)
         {
             var editor=Editor(owner,group);var context=editor.NativeView.DataContext;
-            var type=kind switch {"rectangle"=>SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Box,"annulus"=>SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.SectorRing,"sector"=>SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Sector,_=>SunEyeVision.Plugin.Wpf.Native.Dependencies.Apps.XmlParser.ParamTab.RoiType.Polygon};
+            var type=kind switch {"rectangle"=>SunEyeVision.Plugin.Wpf.Native.Dependencies.ParameterSchema.ParamTab.RoiType.Box,"annulus"=>SunEyeVision.Plugin.Wpf.Native.Dependencies.ParameterSchema.ParamTab.RoiType.SectorRing,"sector"=>SunEyeVision.Plugin.Wpf.Native.Dependencies.ParameterSchema.ParamTab.RoiType.Sector,_=>SunEyeVision.Plugin.Wpf.Native.Dependencies.ParameterSchema.ParamTab.RoiType.Polygon};
             ((ICommand)Get(context,"ValueChangedCommand")).Execute(type);Pump();
             var session=Session(owner,group);var request=session.ActiveDraw??throw new Exception("原工具箱未进入实际视口绘制："+Get(owner,"Error"));
             var attachment=(SunEyeVision.Plugin.Wpf.Presenters.Display.INativeRoiEditLease)Get(owner,"_interaction");
@@ -641,7 +641,7 @@ internal static class S2DocumentEditingCases
                     var ring=Geometry(Scene()).Single(item=>item.GetType().Name=="Annular");
                     Require(Math.Abs((double)Get(ring,"StartAngle")-Math.Min(values.Start,values.End))<1e-9&&Math.Abs((double)Get(ring,"AngleRange")-Math.Abs(values.End-values.Start))<1e-9&&(double)Get(ring,"InnerRadius")==values.Inner,"原扇环参数未保持同弧域");
                     Require(Group(ResultGeometryRole.Annulus).Shapes.Count==1&&Group(ResultGeometryRole.Inspection).Shapes.Count==0,"扇环被误画为矩形");
-                    var original=SunEyeVision.Plugin.Wpf.Native.Display.VMBaseControls.Base.ImageView.Shape.AnnularSectorShape.GetAnnularGeometry((SunEyeVision.Plugin.Wpf.Native.Dependencies.VMControls.RenderInterface.IAnnularSector)ring,64,64,1,1);
+                    var original=SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.Base.ImageView.Shape.AnnularSectorShape.GetAnnularGeometry((SunEyeVision.Plugin.Wpf.Native.Dependencies.PresentationControls.RenderInterface.IAnnularSector)ring,64,64,1,1);
                     var field=original.GetType().BaseType!.GetField("geometry",BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public);var drawn=(System.Windows.Media.Geometry)field!.GetValue(original)!;
                     Point At(double radius,double angle)=>new(20+radius*Math.Cos(angle*Math.PI/180),20+radius*Math.Sin(angle*Math.PI/180));
                     if(values.End!=360)Require(drawn.FillContains(At(6,160))&&!drawn.FillContains(At(6,100))&&!drawn.FillContains(At(1,160)),"原renderer正负扇环实际弧域或孔洞不符");
@@ -1007,7 +1007,7 @@ internal static class S2DocumentEditingCases
         {
             var node=pending.Pop();if(!seen.Add(node))continue;yield return node;
             foreach(var child in LogicalTreeHelper.GetChildren(node).OfType<DependencyObject>())pending.Push(child);
-            if(node is SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamListView list)
+            if(node is SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamListView list)
                 foreach(var row in list.Items.OfType<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>())if(row.View is {} view)pending.Push(view);
         }
     }

@@ -13,7 +13,7 @@ internal sealed record ShellMenuEntry(string Id, string Label, string? Command =
 
 internal static class ShellMenuCatalog
 {
-    private const string Native = "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/VMControls.WPF/resources/";
+    private const string Native = "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/WorkspaceControls/resources/";
     private const string Workflow = "/SunEyeVision.UI;component/Resources/Workflow/";
     internal static IReadOnlyList<ShellMenuEntry> Create() => new[]
     {

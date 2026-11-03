@@ -96,7 +96,7 @@ internal static class S2DocumentEditingCases
         var high=fields.Fields.Single(f=>f.FieldId==BindingId("MaxArea"));
         var low=fields.Fields.Single(f=>f.FieldId==BindingId("MinArea"));
         Require(high.Setting is ConstantSetting{Value:999999999L},"面积上限不是声明最大值");
-        var hosts=Visual(control).OfType<SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamListView>().Where(v=>v.IsVisible).ToArray();
+        var hosts=Visual(control).OfType<SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamListView>().Where(v=>v.IsVisible).ToArray();
         Require(hosts.Length==1,"运行页原生列表宿主数量不唯一");var pageHost=hosts[0];
         var initial=new{first.Width,first.ActualWidth,first.MinWidth,maxWidth=Finite(first.MaxWidth),first.Height,first.ResizeMode,first.SizeToContent,labelWidth=pageHost.ChildLeftWidth};
         var matrix=new List<object>();
@@ -117,7 +117,7 @@ internal static class S2DocumentEditingCases
         }
         first.Close();Pump();
         var standalone=new List<object>();
-        var numeric=new SunEyeVision.Plugin.Wpf.Native.Numeric.HikPcUI.ListView.NumericControl
+        var numeric=new SunEyeVision.Plugin.Wpf.Native.Numeric.Interaction.ListView.NumericControl
             {FontSize=14,HorizontalAlignment=HorizontalAlignment.Left,VerticalAlignment=VerticalAlignment.Top,
              Minimum=1,Maximum=999999999,MinValue=1,MaxValue=999999999,IsNeedCheckExtremumByXML=true,Text="999999999"};
         var isolated=new Window{Owner=shell,Title="迁入原数值控件独立宽度量测",Width=420,Height=150,Left=-10000,ShowActivated=false,ShowInTaskbar=false,Content=numeric};isolated.Show();
@@ -183,7 +183,7 @@ internal static class S2DocumentEditingCases
         {
             var node=pending.Pop();if(!seen.Add(node))continue;yield return node;
             foreach(var child in LogicalTreeHelper.GetChildren(node).OfType<DependencyObject>())pending.Push(child);
-            if(node is SunEyeVision.Plugin.Wpf.Native.Composition.Apps.XmlUI.ParamListView list)
+            if(node is SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamListView list)
                 foreach(var row in list.Items.OfType<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>())if(row.View is {} view)pending.Push(view);
         }
     }

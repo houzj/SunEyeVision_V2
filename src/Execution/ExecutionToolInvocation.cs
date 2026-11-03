@@ -30,7 +30,9 @@ internal static class ExecutionToolInvocation
         var timer = Stopwatch.StartNew();
         try
         {
-            if (!ReferenceEquals(identity.Owner, node.Owner) || identity.NodeId != node.OwnerDomainId
+            if (!ReferenceEquals(workflow.Owner, node.Owner) || !ReferenceEquals(workflow.Directory, node.Directory)
+                || !workflow.Nodes.Any(item => ReferenceEquals(item.Node, node))
+                || !ReferenceEquals(identity.Owner, node.Owner) || identity.NodeId != node.OwnerDomainId
                 || invocationIdentity.DocumentSessionId != node.DocumentOwnerId)
                 throw new InvalidOperationException("执行身份不属于冻结方案中的实际节点。");
             admission = node.Owner.EnterRun(identity);

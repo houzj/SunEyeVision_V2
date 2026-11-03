@@ -5,7 +5,7 @@ using SunEyeVision.Plugin.Runtime;
 
 namespace SunEyeVision.Execution;
 
-public enum WorkflowExecutionState { Idle, Running, Paused, Stopping }
+public enum WorkflowExecutionState { Idle, Running, Paused, Stopped, Completed, Error, Stopping }
 
 /// <summary>Dispatches a frozen workflow using the established dependency-ready queue and resource leases.</summary>
 public sealed class WorkflowExecutionEngine
@@ -86,10 +86,14 @@ public sealed class WorkflowExecutionEngine
                     pending.Remove(id);
                     NotifyNodeStatus(id, ExecutionStatus.Running);
                     request.HostInputs.TryGetValue(id, out var host);
-                    var task = Task.Run(async () => await ExecutionToolInvocation.ExecuteAsync(workflow, item.Node, bindings.ForNode(id), identities[id],
-                        expected, outputs, request.VariableValues, request.ParameterValues, host, request.WorkflowImage,
-                        log, item.Node.ResultFields).ConfigureAwait(false));
-                    running.Add((id, lease!, task));
+                    try
+                    {
+                        var task = Task.Run(async () => await ExecutionToolInvocation.ExecuteAsync(workflow, item.Node, bindings.ForNode(id), identities[id],
+                            expected, outputs, request.VariableValues, request.ParameterValues, host, request.WorkflowImage,
+                            log, item.Node.ResultFields).ConfigureAwait(false));
+                        running.Add((id, lease!, task));
+                    }
+                    catch { lease!.Dispose(); throw; }
                 }
                 if (running.Count == 0)
                 {

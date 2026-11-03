@@ -55,6 +55,19 @@ public sealed class ImageSourceHostInputFactory : IHostInputFactory, IDisposable
         }
     }
 
+    /// <summary>Retire this source cursor; an in-flight round drains without publishing its old receipt.</summary>
+    public void Reset(HostInputFactoryContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        context.EnsureCurrent();
+        Cursor? retired;
+        lock (_gate)
+        {
+            if (_disposed) throw new ObjectDisposedException(nameof(ImageSourceHostInputFactory));
+            _cursors.Remove((context.EditSessionId, context.NodeGeneration, context.DebugScopeId), out retired);
+        }
+        if (retired is not null) { retired.Retirement.Dispose(); retired.Sequence.Dispose(); }
+    }
     /// <summary>Drain current-generation receipts on the document owner thread.</summary>
     public IReadOnlyList<ImageSourceReadReceipt> TakeCompletedReads(HostInputFactoryContext context)
     {

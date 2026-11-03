@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 using SunEyeVision.Application;
 using SunEyeVision.Application.Editing;
 using SunEyeVision.Domain.Workflows;
+using SunEyeVision.Domain.Solutions;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Infrastructure.ImageSources;
 using SunEyeVision.Plugin.Runtime;
@@ -113,9 +114,38 @@ internal static class Program
         if (factory.IsReceiptCurrent(context, receipts[0])) throw new Exception("旧收据在下一次读取后仍有效");
         var latest = factory.TakeCompletedReads(context);
         if (latest.Count != 1 || latest[0].Read.Entry.OriginalIndex != 1) throw new Exception("连续运行未自动切换图像");
+        using (var resetBatch = session.CaptureRunBatch(new[] { flow.Id }, hostFactory: tracking))
+        {
+            factory.Reset(context);
+            using var resetRun = resetBatch.RunAsync(_ => { }).WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult();
+            if (!resetRun.Workflows[flow.Id].Success) throw new Exception("重置影响了已冻结运行");
+        }
+        if (factory.TakeCompletedReads(context).Count != 0) throw new Exception("重置后收到旧轮次回执");
         factory.SelectIndex(context, 0);
         if (factory.IsReceiptCurrent(context, latest[0])) throw new Exception("旧收据在新选择后仍有效");
         Console.WriteLine("PASS: 连续轮次、选图及旧收据失效");
+        using (var variableDraft = session.Editing.Host.BeginVariableEdit())
+        {
+            var sourceReference = new OutputReference(source.Id, imagePort.Id, imagePort.Type, new[] { "width" }, scopeId: flow.Id);
+            variableDraft.Variables.Add(new GlobalVariable("宽度变量", 0L, "Integer")
+            { ProducerBinding = new ProducerBinding { ReferenceExpression = ParameterSettingCanonical.Serialize(sourceReference) } });
+            session.CommitEdit(DocumentEditProposal.Prepare(session.Editing.Host, variables: variableDraft));
+        }
+        var widthVariable = session.Document.GlobalVariables.Single(item => item.Name == "宽度变量");
+        var variableDraftNode = session.Editing.Host.BeginEdit(flow.Id, blob.Id);
+        const string threshold = "field:43bda03261df55b88f963bd18f2ba4d9";
+        variableDraftNode.ApplyFields(new Dictionary<string,ParameterSetting> {
+            [threshold] = new VariableSetting(new VariableReference(session.Document.Id, widthVariable.Id, TypeRef.ScalarOf(ScalarKind.Int64)))
+        });
+        using (var variableDebug = editorDebug.Capture(variableDraftNode, null, _ => { }))
+        using (var result = variableDebug.ExecuteAsync().WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult())
+        {
+            if (!result.IsSuccess) throw new Exception("生产变量私有调试失败");
+            variableDebug.AcceptParameters();
+            if (variableDraftNode.Configuration.ReadCurrentParameter(threshold)?.Value is not long current || current != 8L)
+                throw new Exception("生产变量未从实际图像结果重算并写入私有草稿：" + variableDraftNode.Configuration.ReadCurrentParameter(threshold)?.Value + " 类型=" + variableDraftNode.Configuration.ReadCurrentParameter(threshold)?.Value?.GetType().FullName);
+        }
+        Console.WriteLine("PASS: 私有调试从真实来源重算生产变量并原子接纳参数");
         factory.SelectIndex(context, 1);
         File.Delete(imagePath2);
         using (var failedBatch = session.CaptureRunBatch(new[] { flow.Id }, hostFactory: tracking))

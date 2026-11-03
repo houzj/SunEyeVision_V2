@@ -1,0 +1,120 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>当前UI生产保护入口与完整验收审计</title><style>:root{color-scheme:dark}body{max-width:1340px;margin:auto;padding:30px;background:#111c28;color:#dfebf4;font:15px/1.75 'Microsoft YaHei',sans-serif}h1{font-size:30px}h2{margin-top:38px;color:#a8d7fc}h3{color:#abd1ee}p{color:#c0d0dc}table{border-collapse:collapse;width:100%;margin:16px 0}th,td{padding:11px;border:1px solid #3c5468;text-align:left;vertical-align:top}th{background:#233a4d}code{overflow-wrap:anywhere;color:#bce1ff}a{color:#92cfff}.note{padding:16px;background:#223244;border-left:4px solid #e8b86a}.flow{display:flex;gap:12px;flex-wrap:wrap}.flow span{flex:1;min-width:140px;background:#223b50;padding:15px}.tag{color:#ffd28a}summary{cursor:pointer;font-weight:bold}svg{width:100%;height:auto}@media(max-width:800px){table{display:block;overflow-x:auto}}</style></head><body>
+<h1>当前 UI 生产保护入口与完整验收审计</h1><p>只读基线 <b>d9182ab66</b>（含四工程测试迁移 e0→d918、根预览修复 cd579）；2026-11-03。源码从固定提交读取，没有同步构建、运行新测试、修改产品或其他测试。本页是当前缺口审计和后续成批实施输入，不是平台完成声明。</p>
+<div class="note">原76项、W01–W05、G01–G06、既有根流程R01–R18及全平台目标矩阵均保留。<a href="全平台目标源码树重构计划-20261102.html">原全平台主计划</a>与<code>docs/01-方案设计/2026/08/11/画布节点样式与状态体系优化方案-20260811-103552.md</code>历史主方案仍为范围依据。保护入口的禁用断言、构建通过、核心 probe、原件静态证据、真实主窗自动测试、VS设计器、原厂动态差分及人工外观验收分别记录。固定 <code>return false</code> 必须结合调用链判断：身份/验证失败返回属于正常保护；未接通业务的无条件返回才是生产缺口。</div>
+<p><a href="#priority">优先级</a> · <a href="#roots">根流程目录</a> · <a href="#canvas">节点/画布</a> · <a href="#execution">执行/根配置</a> · <a href="#variables">变量/设备/通信</a> · <a href="#shell">其他主入口</a> · <a href="#workspace">W/G矩阵</a> · <a href="#platform">全平台矩阵</a> · <a href="#original76">原76逐项保留</a> · <a href="#handoff">交接</a></p>
+<h2 id="priority">判定与集中交付顺序</h2><div class="flow"><span><b>Ⅰ 已具备基础，消费者未接</b><br>根配置单次运行、根代理引用选择、相机页管理跳转/状态、设备批量连接、欢迎页最近文件菜单</span><span><b>Ⅱ 基础部分具备，需完整补齐</b><br>根目录事务、节点片段复制、设备配置/通信绑定事务、变量导入导出、连续调度</span><span><b>Ⅲ 精确缺基础或用户准占位</b><br>局部变量/注释/超时协作、结果剩余类型、帮助发布/历史导航、未实现工具</span><span><b>Ⅳ 已具备或正常门禁</b><br>单次执行/停止、真实编辑保存/回执、就绪检查、正常状态与身份守卫</span></div>
+<p>建议下一成批顺序：①根目录管理（完整新事务+Tab/总览/至少一根/历史文件）；②节点片段复制（C已有独立整体设计）；③根配置既有引用/单次运行消费者；④设备/通信正式编辑与触发；⑤其余已授权占位按依赖接续。连续/暂停/间隔/NG由A另行整体设计，本页只标消费者及验收边界，不再设计UI循环。</p>
+<h2 id="roots">根流程新增、复制、删除、改名与至少一条</h2><table><tr><th>原需求 / 已有行为位置</th><th>当前差异 / 基础判定</th><th>决策与完整验收出口</th></tr>
+<tr><td>新增、复制、改名、删除：<code>MainWindowRootWorkspace.cs:17–21</code>；Tab菜单与新增按钮、总览复制均调用此处。</td><td>四方法统一 <code>UnavailableRootCollection()</code>。Application <code>DocumentSession.GetWorkflows</code>只读；<code>GraphEditDraft</code>仅改一个既有flow内节点/边；RootDraft只包含配置及运行设置。未找到正式根集合增删/重排/改名提案与历史操作。<b>Ⅱ，缺集合事务，不能直接开按钮。</b></td><td>共享Application唯一负责人提供候选/校验/提交/撤销、生命周期退休与通知；UI只消费。批次贯通新增默认、名称规则、目录顺序、复制新身份/资源/引用、删除影响、Tab/选中/总览同步、Undo/Redo、保存重开、取消失败。禁止直接改Domain内部集合。</td></tr>
+<tr><td>至少保留一条：<code>DocumentSession.GraphCommit.cs:12–17</code>新建方案生成“流程1”；<code>ShellWorkspaceControl.xaml.cs:DeleteWorkflowWithConfirm</code>。</td><td>新方案存在一根；当前没有任何成功删除路径，故不能据此证明“删到最后一条被正式拒绝”。删除UI仍可弹确认并给笼统失败提示。<b>Ⅱ，规则尚未成为可验证的集合提交不变量。</b></td><td>根设计先明确用户要求的“至少一根”，在最终候选校验层拒删除最后一根，包括跨窗口、批删、重放和文件读入策略；UI禁用与提示随同。验收两根删一、最后一根拒绝、失败无历史/dirty/选中变化，撤销恢复同实体而退休cap不复活。</td></tr>
+<tr><td>Tab改名：<code>WorkflowTabViewModel.ConfirmRename</code>→<code>MainWindowViewModel.OnTabNameCommitted</code>→固定false的RenameRootWorkspace。</td><td>ConfirmRename先写显示名称/Name再发事件，正式flow.Name不会变；可能形成“UI显示已改名、保存后恢复”。菜单“重命名”未带统一RootEdit标签。<b>生产一致性风险，而非完成占位。</b></td><td>整批根事务后改为正式回执驱动Tab显示，失败保持正式名并保留/明确取消用户文本；运行/切换门禁覆盖菜单、F2/双击等所有入口。验收拒绝/重复名/失效、跨Tab、UndoRedo及重开，不能只验证事件触发。</td></tr>
+<tr><td>总览位置/Tab切换：<code>MainWindowRootOverview</code>、<code>Session.SetOverviewPosition</code>、Tab.DocumentCanvas。</td><td>实际流程/节点投影、导航位置及保存脏状态已有；总览Ctrl复制仍落到CopyRootWorkspace固定失败。导航不是根目录事务。<b>Ⅳ现有导航可复用；复制属Ⅱ。</b></td><td>保留运行时可导航与独立NavigationRevision，不把位置拖动重放为运行或编辑历史。根复制成功一次性落位；失败不制造空Tab/幽灵项。当前视口/DPI物理效果仍需单列人工验收。</td></tr></table>
+<h2 id="canvas">节点、工具箱、画布与复制粘贴/Ctrl拖</h2><table><tr><th>原需求 / 已有实现</th><th>差异与决定</th><th>完整验收出口</th></tr>
+<tr><td><code>MainWindowViewModel.CanvasClipboard</code>：CanPaste=false，Copy/Paste/Duplicate全固定false；Canvas Clipboard/GroupSelection/XAML菜单禁用；<code>NodeGestures.VmNodeDrop</code>复制分支只提示返回。</td><td><b>Ⅱ</b>。实际选中、幽灵、配置stamp、落点、Graph事务、CreateNode/连接/Undo及资源resolver已具备；缺的是“片段复制候选+schema引用/变量/资源重映射+原子安装”正式服务，而不是所有基础均缺失。C已固定 <code>1dae2f5f3</code>整体设计，后续沿该设计集中实施，不另造第二剪贴板模型。</td><td>同流程/跨根/跨方案范围明示；新节点与内部边独立身份，外部引用过滤/拒绝规则、显示与输入及producer绑定重映射、相对资源及持有权；菜单/Ctrl+C,V/组选/Ctrl拖使用同一事务。一次Undo、Redo/保存重开、取消不分配残留、节点删除/切方案旧剪贴板失效。原76第16/23/68仍未完整交付。</td></tr>
+<tr><td>普通移动、框选、组选/对齐、插线、手动连线/编辑路径、菜单焦点：Canvas各partial→DocumentCanvasProjection→Session图事务。</td><td><b>Ⅳ</b>正常生产链已有，不能把所有false当停用。ReadVmMove/ValidVmNodeMove/配置stamp、可编辑门禁、越界取消、连接规则拒绝属于正常守卫。完整原76逐项行为等价及多DPI不是本次只读审计可签章。</td><td>按C01–C12既有用例和原件证据复用；正常/非法/取消/失捕获/失活/卸载/切页、同实体UndoRedo、文件、焦点文本优先均验。复制新增只扩对应共同事务和生命周期，不重写正确移动/线条逻辑。</td></tr>
+<tr><td>工具目录 <code>ToolboxViewModel</code>与ToolItem.CanActivate、正式DesktopAdmission；<code>DragDropHandler.ToolboxNodePreview</code>。</td><td>映射未核/未部署/未准入项不可拖是精准保护，不代表对应工具完成。图像源/Blob实际已准入，预览同实际模板；cd579本地RenameBuffer修复未赋正式节点身份。目录保留项数量不能当全部工具生产实现。</td><td>真实部署目录/资源与schema一致、无SDK视觉回退；可用工具拖入真实Session，无效tool/过期准入拒绝；预览重用/换容器/隐藏和同模板、载荷状态、异常退出。未部署工具在全平台工具矩阵保留明确未实现，不能按目录143/144项计算完成。</td></tr>
+<tr><td>Group进入/返回、创建/配置、循环与显示：Tab.IsInSubroutine=false，Shell进入/配置提示未接，原源码归档。</td><td><b>Ⅲ用户明确暂停</b>，与根重复运行不同。不能恢复旧Workflow桥或为用例造Group成功。</td><td>G01–G06原完整清单保留，待用户恢复后按实际新Session拥有关系、递归生命周期、复制/删除/文件/运行/显示整批接续；本批不扩展。</td></tr></table>
+<h2 id="execution">正式执行、就绪与根配置</h2><table><tr><th>行为位置</th><th>基础与差异</th><th>后续决定 / 验收出口</th></tr>
+<tr><td>主窗单次当前/全部根、Stop：<code>MainWindowFormalExecution.RunFormalWorkflowsAsync</code>→CaptureCurrentRunBatch→worker RunAsync→owner DrainRuntimeChanges/结果reader。</td><td><b>Ⅳ已有完整实际链</b>。节点状态、真实HALCON、来源收据、运行结束、停止排空及关闭已接。不能因旧TODO“加载工作流”就推断整个新主窗未加载；加载由MainWindowDocumentFiles/StartupEntries和Session Manager完成。</td><td>沿现有真实UI/主窗probe和Session证据复用，根最终同版集成自测/人工另记。运行/停止不入编辑历史，失败不伪造成功；已删除节点/旧session回调不更新新窗口。</td></tr>
+<tr><td><code>PauseCommand</code>固定false且ExecutePause空；StartContinuousWorkflow=false、ToggleContinuousAll=false；RuntimeToolEditorWindow.StartContinuous也禁用。</td><td><b>Ⅱ已有核心，UI/调度链未接</b>。DocumentRunBatch.Pause/Resume、ExecutionRunControl已存在。不得把“缺基础”作为全部永久禁用理由。单次批并非重复轮次状态。</td><td>A负责执行层重复轮次整体设计，再接稳定UI；本页不设计循环。验收暂停/恢复/停止/关闭排空、当前/全部根状态、每轮快照、错误/取消、编辑门禁与来源导航队列，连续调试另需明确是否同scope私有游标而非复用主窗正式运行。</td></tr>
+<tr><td>RunIntervalMs、StopOnNg：RootDraft/RootSettingsWindow/ChangeRootSettings→CommitEdit。</td><td>编辑、Undo/Redo、Save/重开已具备，<b>正式单次调度没有消费</b>。设置可保存不等于执行语义已完成。</td><td>与A连续批同代设置快照、间隔取消和NG判定统筹；验收实际间隔/NG停止、暂停时间规则、旧轮回调、不忙等、不无限重入。非Group循环语义。</td></tr>
+<tr><td>Tab.Readiness→Session.CheckWorkflowReadiness；RootWorkflowReadiness.Evaluate返回固定失败。</td><td><b>Ⅳ就绪已接</b>。固定失败helper在d918没有消费者，仅残留旧提示；Tab真实查询、根红点与Run CanExecute有效。配置通过不保证设备/文件运行成功。</td><td>不用重造检查器；后续清理死helper/过时注释由产品写者处理。本审计不将其当未迁功能。验收参数与变量无效、禁止跨flow、恢复后灯和运行门禁，实际Run入口仍最终校验。</td></tr>
+<tr><td>MainWindowRootConfiguration构窗传 <code>run:null,repeat:null,stop:null,running:null</code>。</td><td><b>Ⅰ单次消费者未接，重复依赖A</b>。注释“执行入口尚未交付”已过时；主窗真实单次和leased结果呈现已有。根配置本身多节点草稿/回执并非缺失。</td><td>让同一编辑/运行协调器准备并提交窗口pending再正式捕获，复用主窗单次/Stop和实际root结果；不能给按钮临时Task。验收dirty文本、Prepare后新输入、切方案/关闭取消、失败保留草稿、Undo/保存/结果lease与owner线程。</td></tr>
+<tr><td>RootWorkflowReferencePicker.Options始终Empty；Context.Write拒ReferenceSetting/VariableSetting，ValidateReference固定错误。</td><td><b>Ⅰ候选与验证基础已具备</b>：Session.CaptureReferenceSelections(actualNode,fieldId)、Host.ValidateFieldProposals以及实际参数窗候选/类型/顺序预验都已存在。缺根代理到实际NodeDraft/字段的消费者组装，非共享能力全缺。</td><td>按真实RootParameterProxy解析实际node/port，复用同一候选及无副作用预验、格式/位置与顺序；一次根+多节点proposal统一提交。验收前序/自身显示/变量可用范围、跨flow拒绝、关闭/重基旧回调拒绝、原文本及回执后输入不丢。</td></tr>
+<tr><td>参数窗稳定OpenDebugSession、ProductionEditorDebug、CaptureInputs/AcceptParameters；ROI私有Undo返回Reject。</td><td>单次调试/私有游标/输入预览与排空已接；相关“not ready”异常多为正常状态守卫。<b>Ⅲ ROI专属私有撤销未具备</b>，不能用方案正式Undo替代。额外图形/算法未部署仍按实际tool声明。</td><td>复用7e实际窗口7项+199整体既有证据；完整ROI原交互/私有历史待独立设计。关闭先取消排空lease/invocation再scope；重基保留新输入、删节点拒回写，不因简单断言禁用而称完整ROI已迁。</td></tr>
+<tr><td>等待超时/流程局部变量/标题注释XAML显式禁用。</td><td><b>Ⅲ精确缺基础</b>。等待超时缺根执行协作取消/释放政策；局部变量没有当前作用域/存储/快照合同；注释无独立模型/事务/复制保存。不能用全局变量或节点名字代替。</td><td>保留标明未实现的入口及W01/W02/W03范围。超时可复用取消基础但仍需业务定义；局部变量和注释须一次完整编辑/引用/执行或呈现/Undo/保存/退出链，勿无限扩基础阻塞已具备项目。</td></tr></table>
+<h2 id="variables">变量、设备与通信</h2><table><tr><th>现有行为位置</th><th>差异 / 判定</th><th>完整验收出口</th></tr>
+<tr><td>GlobalVariableManagerViewModel(session,isCurrent,canEdit)，dialog准备/回执/退订；结果绑定MainWindowResultBindingEditing。</td><td><b>Ⅳ新会话变量主链已有</b>，真实引用实例、草稿/回执、producer绑定已有；类型/资源不支持或样本索引不可绑是精准限制。UI私有原始文本校验失败return false不是“变量没迁”。</td><td>新增/值编辑/分组改名/producer绑定/解绑、准备后新输入、窗口关闭/切方案、运行快照/发布不冒用户dirty、Undo/Save/重开。同id伪实例拒绝。全类型支持按实际声明，不把5公开控件测试等同管理器业务全闭环。</td></tr>
+<tr><td>变量Import/Export固定false、OpenTargetParameter仅警告；公开TargetParameter窗口仍可独立显示。</td><td><b>Ⅱ格式/资源/导入事务未接；目标绑定属Ⅰ/Ⅱ边界</b>。现有变量事务/原子方案保存基础可复用，不是变量底座全缺；但未定义独立变量文件格式/资源政策。节点端VariableSetting已可选，管理器目标反向入口尚未组织actual node/field选择。</td><td>用户已准占位继续明示，后续格式与资源完整设计；目标入口必须对真实实际字段/类型/引用候选并统一Host提交，禁止名称式旧SDK参数桥。导入冲突、取消、无效格式/资源、失败不改live、Undo/重开及目标删除需同批验。</td></tr>
+<tr><td>相机主入口可开CameraManager；列表Document.Devices快照，详情/预览借CameraRuntime和Session活动租约；dialog.Closed DisposeAsync。</td><td><b>Ⅳ已有连接/详情/预览基础</b>，不能写“设备全部不可用”。但Add/Delete/Rename/Save/BatchEnable/Disable固定false，PersistCameraList只提示。Application未见设备编辑提案参与者。<b>Ⅱ正式配置事务缺口。</b></td><td>设备业务字段、实际device身份、dirty/history/保存、运行和预览租约冲突、删除退役、相机配置回执，不能只修改UI Cameras集合。实际硬件连接与预览仍需环境验，已有控制服务测试不能代替。</td></tr>
+<tr><td>CameraManager.Export/GlobalSettings仅提示；BatchConnect/Disconnect命令可执行但仅提示右侧详情/更新统计；SetCameraConnectionAsync是真实单台入口。</td><td><b>Ⅰ批量连接消费者没接</b>，已有单设备运行服务和活动租约；导出/全局设置业务与原子写未定义属Ⅱ/Ⅲ。不能因按钮可点称批连接已实现。</td><td>批量按实际会话和device引用冻结、取消/部分失败汇总/关闭排空、连接状态同步复用单台服务；导出与全局设置明确文案/禁用，待设计后验文件失败、身份及配置事务。</td></tr>
+<tr><td>RuntimeNodeConfigurationControl创建ImageSourceDraftContent没有传cameraStatus/openCamera。</td><td><b>Ⅰ可复用服务却未注入</b>。主窗相机管理及运行服务已有；参数页状态/打开相机按钮因委托缺失禁用。真实图像源读取已可使用工厂注入的相机服务。</td><td>宿主注入actualSession/Device身份、真实Owner和状态订阅，不让工具依UI。重基不重建控件；相机窗关闭/会话变化及时退订，缺设备精准提示，参数草稿不因跳转丢失。</td></tr>
+<tr><td>ShowCommunicationManagerCommand固定false；Execute仅警告。CommunicationApplicationService有连接/协议服务/通知，配置窗源码保留。</td><td><b>Ⅱ部分基础已具备</b>。TCP/UDP/串口/Modbus/OPC等服务不是空壳；缺新Session的设备与事件配置事务及正式字段绑定，不能直接开旧窗。源字段按名称猜测/旧Variable桥不准恢复。</td><td>先正式配置/编辑/dirty/save，接实际字段引用和运行快照、来源身份，再开放窗口。端到端真实协议收/发、配置失败与回滚、并发断线/切方案/关闭排空、文件/Undo及资源验证。协议硬件条件单列。</td></tr>
+<tr><td>MainWindowCommunicationAutomation.DispatchCommunicationAsync无条件Task.FromException；WorkflowCommunicationSendService发布正式字段身份抛错。</td><td><b>Ⅰ/Ⅱ基础存在但适配不完整</b>。已有正式单次根运行和Automation dispatcher，缺受控触发请求→实际Session/root、参数候选及并发政策；发送transport已有但producer字段身份迁移未通。不能仅把dispatcher指向任意Run忽略token/门禁。</td><td>根执行统一排队/冲突/取消政策、触发前参数快照与回执、busy/完成/NG/错误响应、旧session请求丢弃。CIP目标/模块动作工具接口、脚本接收、S7接收运行时等明确缺能力项目单列，不以支持其它协议泛化完成。</td></tr></table>
+<h2 id="shell">主窗、结果、设置、帮助与历史的保护入口</h2><table><tr><th>项目 / 位置</th><th>判定与已有能力</th><th>决定与验收出口</th></tr>
+<tr><td>最近方案菜单DisabledReason；MainWindowStartupEntries/StartPage已有最近文件。</td><td><b>Ⅰ</b>菜单投影未接，可复用欢迎页实际Open入口和方案过渡。示例方案需本方正式样例资源清单属Ⅱ。</td><td>历史路径失效/移位、取消保存/编辑准备、Open失败保持当前、最近列表只在成功更新；不调用旧Solution模型。示例缺资源时精确禁用。</td></tr>
+<tr><td>权限/软件/方案设置、运行/采集策略、标定、光源、语言、锁定、脚本、触发、运行界面/综合配置、运行模式：ShellMenuCatalog Disabled；ShowSettingsCommand却可执行空ExecuteShowSettings。</td><td><b>Ⅲ具体业务未接/未完成设计</b>；部分独立能力（主题、布局、目录、RunSettings、相机）已有，不能宣称全平台设置底座缺失。空可执行设置是无反馈入口风险。用户准占位范围保留，不借本审计扩架构。</td><td>按原全平台矩阵逐项独立声明当前状态；主入口精准禁用或解释。需要接的设置走其现有正式存储，不另造全局第二权威；参数/方案/运行界面职责明确后全链验。</td></tr>
+<tr><td>ClearLog可执行但方法仅TODO；SaveSplitterPosition遗留TODO。</td><td>日志清空是实际无动作缺口，应明确当前日志视图/存储语义；布局保存已由MainWindow/MainWorkspaceLayout.Capture+Save承担，不能凭旧Splitter TODO报布局未保存。</td><td>日志明确清视图还是清历史/订阅缓冲，接正确writer而不是只清一字符串。布局按实际持久化正常/写失败/重启/多DPI验证；本页未重跑。</td></tr>
+<tr><td>结果发布/图像/模块/变量绑定：MainWindowResultPublication/Display、GetNodeResultPresentation、leased result reader。</td><td><b>Ⅳ已具备正式链</b>；无声明视图、类型/资源不支持、旧generation或非当前session拒绝是准确保护。尚无对应工具/呈现类型的要求保留未实现，不能按“显示空白”笼统补回旧模型。</td><td>实际工具单次/私有调试、选中切换/删除/关闭、租约释放、producer绑定、显示导航、Save/重开；结果来源身份与表现配置分离。工具全集/ROI/任意数据类型扩展按原目标，不为本批审计提前扩公共合同。</td></tr>
+<tr><td>NavigateEditHistoryCommand固定false；EditHistoryLocations可读HistoryEntries；普通Undo/Redo已正式。</td><td><b>Ⅲ用户准占位</b>。历史条目有显示基础，但无正式任意历史跳转合同，不能循环UI Undo冒充原子定位。顶栏“操作记录”也是独立禁用占位，非同一编辑历史。</td><td>保留精准文案及需求；未来任意跳转需原子候选、参与者准备/失效、位置选中与生命周期。现有Undo/Redo不应被记未迁，也不等于任意历史导航完成。</td></tr>
+<tr><td>HelpWindow可打开本方Help/index.html或开发路径；ShowShortcuts打开同窗无跳页；顶栏在线帮助/更多/社区禁用。</td><td><b>Ⅲ用户准占位/发布待验</b>。窗口与基础本方帮助已有，实际发布文件/导航和快捷键定位未由本审计证明。C命名后原厂英文帮助路径已清，不能当可用帮助来源。</td><td>以本方正式打包帮助文件为唯一证据，缺文件明确提示；不要回填原SDK路径。结果帮助/操作历史仍按已准占位，不以弹出空帮助窗口、按钮禁用测试称原需求完成。</td></tr></table>
+<h2 id="workspace">W01–W05 / G01–G06：历史范围和当前事实分别保留</h2><p>历史索引中“新增改名删除可验”“根间隔与NG停止同代快照”等描述属于旧基线，不能转签d918的新Session。以下按当前源重新标记，旧证据原文不改。</p><table><tr><th>编号 / 完整范围</th><th>当前事实与下一完整出口</th></tr><tr><td>W01 流程栏/标签/配置状态/变量入口/运行停止新增</td><td>真实根Tab、就绪与单次停止已有；新增/根目录未接，局部变量缺基础，根配置运行与引用消费者待接；连续由A。完整多状态/主题/焦点及窗口验收不能省。</td></tr><tr><td>W02 根新增复制改名删除/顺序/引用/历史文件/运行设置</td><td>目录四项保护，改名UI预写风险；至少一根须正式规则。运行设置能存但运行未消费，等待超时未接。完整事务和资源所有权集中补。</td></tr><tr><td>W03 搜索名称/独立ID/定位/注释/背景滚动</td><td>实际Session搜索及导航已有；标题注释缺模型/事务。Group搜索导航暂停。实际滚动/DPI/焦点由既有测试和后续物理验收核，不把旧注释TODO推整个搜索缺失。</td></tr><tr><td>W04 底栏/耗时/缩放/运行取消/详情单窗</td><td>真实根执行快照和单窗资源、百分比/缩放已有；全部原厂详情布局、Group模块算法选项、连续/暂停仍未全具备。底栏测试通过不等全套W04完成。</td></tr><tr><td>W05 根/子容器视口、历史选择焦点、小地图/切换退订</td><td>根实际投影/导航/视口/小地图已有；Group进入返回暂停；全焦点恢复和多DPI物理未验。运行导航独立编辑历史与dirty内容签名。</td></tr><tr><td>G01–G06 配置、拥有者导航、IO/变量/隐藏、循环报告与呈现、独立复制、递归清理文件</td><td>全部保留原索引完整范围，用户暂停Group；不以源归档或关闭入口计完成。不恢复旧Workflow、旧SDK视觉、兼容桥或双权威。</td></tr></table>
+<h2 id="platform">全平台目标矩阵仍有效</h2><table><tr><th>职责</th><th>本审计对应 / 不能据此宣布完成的范围</th></tr><tr><td>Domain + Application</td><td>当前唯一Session图/编辑/变量/导航/保存/身份基础；根目录、设备通信编辑、局部变量/注释/任意历史等缺口如上。共享仅唯一负责人改。</td></tr><tr><td>Execution + App.Runtime</td><td>正式单次/取消/暂停核心、host factory与debug已有；连续/间隔/NG由A设计，Group暂停；真实运行和UI状态必须全链验。</td></tr><tr><td>Persistence</td><td>新格式资源、live基址、codec factory、原子保存/SaveAs及dirty核心；独立变量导入导出、设备配置事务关联、跨卷/异常场景按原矩阵保留，不兼容旧格式。</td></tr><tr><td>Plugin.Contracts / Plugin.Runtime / Infrastructure</td><td>独立工具边界、实际admission/retirement、leased结果/主输入能力已有；工具未部署、动作/协议字段来源、未来分发依赖仍独立跟踪。</td></tr><tr><td>Plugin.Wpf / 工具Wpf</td><td>中立控件和实际ImageLoad/Blob组合已有；VS真实设计器、全部工具/完整ROI/全部原件状态和资源覆盖未由本页证明。禁止旧SDK可视回退。</td></tr><tr><td>UI / App / 平台设备通信</td><td>本页完整入口范围；根流程、复制、根配置、设备通信及壳占位继续跟进。旧Workflow退出与正常构建不等于所有原能力迁移完成。</td></tr><tr><td>Tests / 发布 / DevKit</td><td>四工程35通过是既有固定候选证据；根51项目全量Release进行中，本页不转签结果。当前ProjectReference，开发包/两个模板/源码外DLL独立验收另列后续；不通过复制现成DLL或stub制造绿色。</td></tr></table>
+<h2 id="original76">原76项逐项保全（历史描述不当当前完成状态）</h2><p>原始来源：固定d918的 <code>docs/01-方案设计/2026/10/完整迁移设计输入索引-20261027.json</code> 中 original76；以下逐项复制原需求及C链，不删除/合并。此页只读审计不重新宣称76项逐态等价。C01–C12已有实际图/呈现/门禁能力，但复制相关16/23/68明确未完整实现；C13随Group暂停，C14完整物理/DPI未验。每项仍须依其C链正常/失败/取消/失效/UndoRedo/文件/退出与原件资源证据最终验收。</p>
+<table><tr><th>原编号</th><th>原需求</th><th>完整生产链</th><th>当前审计边界</th></tr><tr><td>1</td><td>普通节点110&#215;30、圆角4</td><td>C01</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>2</td><td>图像源圆角15</td><td>C01</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>3</td><td>130&#215;50基础命中区，视觉居中</td><td>C01</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>4</td><td>原PNG图标、渐变、阴影、字体</td><td>C01</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>5</td><td>子程序40高、动态输出每行14高</td><td>C01</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>6</td><td>普通/悬停/选择/禁用/执行等完整状态</td><td>C01</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>7</td><td>单击未选节点清空后选中；已选节点保留组选</td><td>C02</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>8</td><td>双击普通节点开参数；双击子程序进组</td><td>C02</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>9</td><td>参数窗口打开时拦截单击编辑</td><td>C02</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>10</td><td>选中单节点时关联线联动变色</td><td>C02</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>11</td><td>空白左拖框选</td><td>C03</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>12</td><td>Ctrl+空白左拖平移</td><td>C03</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>13</td><td>框选按完整包含节点边界判断</td><td>C03</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>14</td><td>组选橙色虚线外框、外扩10、圆角3</td><td>C03</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>15</td><td>从组选框本体拖动整组</td><td>C03</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>16</td><td>组选菜单：删除/复制/启用/禁用/6种对齐/2种分布</td><td>C03</td><td>含复制：未完整实现，其余行为仍验</td></tr>
+<tr><td>17</td><td>节点首次移动才进入OLE，微小移动不预览</td><td>C04</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>18</td><td>拖动用0.7透明幽灵，原节点不动</td><td>C04</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>19</td><td>单节点/整组五单位吸附</td><td>C04</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>20</td><td>组中各节点按恢复规则限制5000边界</td><td>C04</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>21</td><td>拖动显示对齐辅助线</td><td>C04</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>22</td><td>下方热区、70间距、66&#215;22提示及滞回</td><td>C04</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>23</td><td>Ctrl拖动复制选中片段及内部连线</td><td>C04</td><td>Ctrl复制未实现，C设计在途</td></tr>
+<tr><td>24</td><td>拖动效果在起拖时锁定，释放修饰键须匹配</td><td>C04</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>25</td><td>松开一次性提交，整次移动进入撤销历史</td><td>C04</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>26</td><td>Escape/越界释放/失活取消移动，恢复原位</td><td>C04</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>27</td><td>工具拖入使用匹配卡片及五单位落点</td><td>C05</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>28</td><td>不可用工具禁止拖动</td><td>C05</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>29</td><td>OLE载荷校验窗口/方案/流程/修订号</td><td>C05</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>30</td><td>拖出画布隐藏预览，放到外面不提交</td><td>C05</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>31</td><td>拖到线附近按实际Path+10宽描边命中并加粗</td><td>C06</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>32</td><td>工具/单节点插线时替换前后连接</td><td>C06</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>33</td><td>多节点插线限制、排除自身关联线/节点内部</td><td>C06</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>34</td><td>Ctrl复制落线的恢复特殊分支</td><td>C06</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>35</td><td>插线/复制/落点作为完整操作撤销重做</td><td>C06</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>36</td><td>四向三边矩形手柄及20&#215;30/30&#215;20热区</td><td>C07</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>37</td><td>悬停显示正确节点端口，移出隐藏</td><td>C07</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>38</td><td>按下只待命，首次移动再捕获和预览</td><td>C07</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>39</td><td>预览终点跟随鼠标，不提前吸附到目标锚点</td><td>C07</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>40</td><td>目标按逆Z序节点、扩展命中区及最近端口判断</td><td>C07</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>41</td><td>释放只消费移动阶段记录的目标，不能重新发现目标</td><td>C07</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>42</td><td>自连/重复/端口占用/拓扑合法性由同一模型事务校验</td><td>C07</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>43</td><td>点击无移动取消；画布外释放取消</td><td>C07</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>44</td><td>创建连接仅提交一次且可撤销重做</td><td>C07</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>45</td><td>原AStar/优化/转折点/钝化计算</td><td>C08</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>46</td><td>四向锚点与最终路径一致</td><td>C08</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>47</td><td>原箭头几何、方向及正常/选择色</td><td>C08</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>48</td><td>单击线不触发画布平移</td><td>C08</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>49</td><td>选线、节点选择和焦点遵守同一规则</td><td>C08</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>50</td><td>选中且有焦点显示6&#215;6线段中点手柄</td><td>C08</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>51</td><td>点击手柄优先编辑，父级不得启动画布手势</td><td>C08</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>52</td><td>原方向拖动状态机、五单位吸附、5000限制</td><td>C08</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>53</td><td>预览不写保存数据；释放一次提交；无变化不入历史</td><td>C08</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>54</td><td>线段编辑Escape/失捕获/失焦/失活取消</td><td>C08</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>55</td><td>手动路径保存、重开、复制、撤销/重做</td><td>C08</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>56</td><td>节点移动后手动路径端点与相邻段跟随</td><td>C08</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>57</td><td>手动/自动线视觉路径与命中路径一致</td><td>C08</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>58</td><td>5000页面、棋盘背景与完整主题</td><td>C09</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>59</td><td>平移过程中松开Ctrl不再移动</td><td>C09</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>60</td><td>Ctrl滚轮缩放、Shift滚轮横滚及组合键顺序</td><td>C09</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>61</td><td>缩放档位、上限下限、鼠标锚点一致</td><td>C09</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>62</td><td>小地图187&#215;150、真实画布内容、橙色视口</td><td>C10</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>63</td><td>小地图点击外部居中，首次移动捕获拖动</td><td>C10</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>64</td><td>小地图22&#215;22展开/收起、四态原图</td><td>C10</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>65</td><td>小地图滚轮与主画布一致</td><td>C10</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>66</td><td>切流程保存/恢复缩放与视口，订阅及时解除</td><td>C10</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>67</td><td>Delete只在画布焦点内，选线优先删除</td><td>C11</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>68</td><td>Ctrl+C/V复制粘贴片段，方案作用域及落点规则</td><td>C11</td><td>复制粘贴未实现，C设计在途</td></tr>
+<tr><td>69</td><td>Ctrl+A启用组选、Ctrl+F禁用组选</td><td>C11</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>70</td><td>Ctrl+Z/Y仅画布焦点且非锁定/运行时执行</td><td>C11</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>71</td><td>文本框/组合框优先处理编辑按键</td><td>C11</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>72</td><td>运行/锁定/参数窗口/概览/关闭统一EditableCanvas门禁</td><td>C12</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>73</td><td>所有手势校验方案/流程/文档修订号</td><td>C12</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>74</td><td>Escape/失捕获/失活/卸载/切页统一取消所有手势</td><td>C12</td><td>本页不改签完成；沿C链现有证据逐项验</td></tr>
+<tr><td>75</td><td>子程序进入/返回、组内节点与导航状态一致</td><td>C13</td><td>Group暂停</td></tr>
+<tr><td>76</td><td>多屏DPI、缩放后热区/幽灵/小地图坐标一致</td><td>C14</td><td>完整物理/DPI未验</td></tr></table>
+<h2 id="handoff">交接与证据限制</h2><p>基线d9182ab66；分支codex/platform-document-projection-20261103；执行者Codex。允许修改：仅本新HTML，未改src/tests/共享合同或主线账本。目标：当前UI受保护需求的全链只读审计。已完成：固定源入口、消费者与Application行为核对、76/W/G/全平台范围保留；未做：产品实施、新构建/运行、VS设计器、相机/协议硬件、VM动态/人工外观。构建/测试本页只引用既有记录，不报告新的通过。已知风险：改名UI预写、空可执行设置/清日志/批量设备提示、根设置能存未执行、根配置过时缺基础提示；下一步由根裁决完整批次和唯一写边界，不零散放开按钮。</p><p>源码证据以git show/grep d9182ab66读取；无旧模型恢复、无新厂商运行取证。本页不覆盖根后续提交，新候选若新增集合/调度/设备事务需更新对应判断，旧失败/历史范围继续保留。</p></body></html>

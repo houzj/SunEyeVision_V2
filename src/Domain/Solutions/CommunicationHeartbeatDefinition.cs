@@ -1,6 +1,6 @@
 using System;
 
-namespace SunEyeVision.Workflow;
+namespace SunEyeVision.Domain.Solutions;
 
 /// <summary>Configuration only. Runtime counters and timer state are not persisted.</summary>
 public sealed class CommunicationHeartbeatDefinition

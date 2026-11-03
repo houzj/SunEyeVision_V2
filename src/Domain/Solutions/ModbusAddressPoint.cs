@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json.Serialization;
-using SunEyeVision.Plugin.SDK.Models;
 
-namespace SunEyeVision.Workflow;
+
+namespace SunEyeVision.Domain.Solutions;
 
 /// <summary>
 /// Modbus 地址空间中的一个连续寄存器地址块。
 /// 线圈地址暂不纳入当前 UI 方案，保留模型扩展空间供后续启用。
 /// </summary>
-public sealed class ModbusAddressPoint : ObservableObject
+public sealed class ModbusAddressPoint : SolutionObservableObject
 {
     private string _name = "地址";
     private int _startAddress;
@@ -21,8 +21,6 @@ public sealed class ModbusAddressPoint : ObservableObject
     private string _byteOrder = "ABCD";
     private bool _pollEnabled;
     private int _timeoutMs = 200;
-    private string _currentValue = string.Empty;
-    private bool _hasReceivedData;
 
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
 
@@ -112,26 +110,6 @@ public sealed class ModbusAddressPoint : ObservableObject
     }
 
     [JsonIgnore]
-    public string CurrentValue
-    {
-        get => _currentValue;
-        set => SetProperty(ref _currentValue, value ?? string.Empty);
-    }
-
-    /// <summary>
-    /// 地址级接收记录。必须使用可通知集合，因为记录窗口可能在轮询期间保持打开状态。
-    /// </summary>
-    [JsonIgnore]
-    public ObservableCollection<string> ReceiveRecords { get; set; } = new();
-
-    [JsonIgnore]
-    public bool HasReceivedData
-    {
-        get => _hasReceivedData;
-        set => SetProperty(ref _hasReceivedData, value);
-    }
-
-    [JsonIgnore]
     public int EndAddress => StartAddress + Math.Max(Count, 1) - 1;
 
     [JsonIgnore]
@@ -150,8 +128,8 @@ public sealed class ModbusAddressPoint : ObservableObject
         AccessMode = AccessMode,
         ByteOrder = ByteOrder,
         PollEnabled = PollEnabled,
-        TimeoutMs = TimeoutMs,
-        CurrentValue = CurrentValue,
-        ReceiveRecords = new ObservableCollection<string>(ReceiveRecords)
+        TimeoutMs = TimeoutMs
+
+
     };
 }

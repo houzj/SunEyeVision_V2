@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SunEyeVision.Workflow;
+namespace SunEyeVision.Domain.Solutions;
 
 /// <summary>
 /// 通讯接收事件的持久化配置。运行时值、展开状态和临时消息不写入方案。

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SunEyeVision.Workflow;
+namespace SunEyeVision.Domain.Solutions;
 
 /// <summary>Reusable send format. Live values and send history are not persisted.</summary>
 public sealed class CommunicationSendEventDefinition

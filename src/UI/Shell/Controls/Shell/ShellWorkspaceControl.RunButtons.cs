@@ -1,7 +1,14 @@
-﻿using System.Windows;
+using System.Windows;
 namespace SunEyeVision.UI.Shell.Controls.Shell;
 public partial class ShellWorkspaceControl
 {
+    public static readonly DependencyProperty RootCollectionEditingAllowedProperty = DependencyProperty.Register(
+        nameof(RootCollectionEditingAllowed), typeof(bool), typeof(ShellWorkspaceControl), new PropertyMetadata(false));
+    public bool RootCollectionEditingAllowed
+    {
+        get => (bool)GetValue(RootCollectionEditingAllowedProperty);
+        set => SetValue(RootCollectionEditingAllowedProperty, value);
+    }
     public static readonly DependencyProperty WorkflowEditingAllowedProperty = DependencyProperty.Register(
         nameof(WorkflowEditingAllowed), typeof(bool), typeof(ShellWorkspaceControl), new PropertyMetadata(true));
     public bool WorkflowEditingAllowed

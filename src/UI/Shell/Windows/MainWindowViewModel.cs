@@ -178,7 +178,7 @@ namespace SunEyeVision.UI.Shell.Windows
             Status=FormalExecutionStateText;
             ActiveImageSourceBinding?.RefreshAvailability();
             foreach(var editor in _variableEditors.ToArray())editor.RefreshAvailability();
-            OnPropertyChanged(nameof(IsRunning));OnPropertyChanged(nameof(IsContinuousRunning));OnPropertyChanged(nameof(IsExecutionPaused));OnPropertyChanged(nameof(IsExecutionStopping));OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace));
+            OnPropertyChanged(nameof(IsRunning));OnPropertyChanged(nameof(IsContinuousRunning));OnPropertyChanged(nameof(IsExecutionPaused));OnPropertyChanged(nameof(IsExecutionStopping));OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace));OnPropertyChanged(nameof(CanEditRootCollection));
             OnWorkflowStatusChanged(WorkflowTabViewModel,EventArgs.Empty);
             System.Windows.Input.CommandManager.InvalidateRequerySuggested();
         }
@@ -682,14 +682,13 @@ SplitterPosition = position;
             // 选中标签页变化时更新运行/停止按钮状态
             WorkflowTabViewModel.SelectionChanged += OnSelectedTabChanged;
 
-            // 监听新 Tab 创建，自动订阅 NameCommitted 事件
+            // 监听新 Tab 创建，自动订阅 根流程名称请求 事件
             WorkflowTabViewModel.Tabs.CollectionChanged += OnTabsCollectionChanged;
 
-            // 为已存在的 Tab（如默认工作流）订阅 NameCommitted
+            // 为已存在的 Tab（如默认工作流）订阅 根流程名称请求
             foreach (var tab in WorkflowTabViewModel.Tabs)
             {
-                tab.NameCommitted -= OnTabNameCommitted;
-                tab.NameCommitted += OnTabNameCommitted;
+                tab.RenameRequested = name => RenameRootWorkspace(tab,name);
                 EnsureFormalExecutionSnapshot(tab.RootWorkflowId);
             }
 
@@ -760,7 +759,7 @@ SplitterPosition = position;
         /// </summary>
         private void OnSelectedTabChanged(object? sender,EventArgs e)
         {
-            ReleaseProductionEditors();ClearFormalImageSourceSelection();
+            ReleaseProductionEditorContexts(_productionEditors);ClearFormalImageSourceSelection();
             SelectedNode=null;SelectedConnection=null;
             var tab=WorkflowTabViewModel.SelectedTab;
             if(tab?.DocumentCanvas is {} canvas)
@@ -770,7 +769,7 @@ SplitterPosition = position;
             }
             BindDocumentHistory();CloseExecutionSnapshotDetails();RefreshStatusBarExecutionSnapshot();
             UpdateCurrentCanvasType();UpdateUndoRedoCommands();
-            OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace));
+            OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace));OnPropertyChanged(nameof(CanEditRootCollection));
             SelectedTabChanged?.Invoke(this,EventArgs.Empty);
         }
 
@@ -779,7 +778,7 @@ SplitterPosition = position;
         /// </summary>
         private void OnWorkflowStatusChanged(object? sender, EventArgs e)
         {
-            OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace));
+            OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace));OnPropertyChanged(nameof(CanEditRootCollection));
             // 所有工作流状态
             IsAllWorkflowsRunning = WorkflowTabViewModel.IsAnyWorkflowRunning;
             AllWorkflowsRunButtonText = IsAllWorkflowsRunning ? "停止" : "运行";
@@ -799,31 +798,15 @@ SplitterPosition = position;
         /// <summary>
         /// Tab 重命名提交事件 — 同步更新引擎中对应 Workflow 的 Name
         /// </summary>
-        private void OnTabNameCommitted(object? sender,string newName)
-        {
-            if(sender is WorkflowTabViewModel tab)RenameRootWorkspace(tab,newName);
-        }
-
-        /// <summary>
-        /// Tabs 集合变化事件 — 为新增的 Tab 订阅 NameCommitted
-        /// </summary>
         private void OnTabsCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems != null)
-            {
-                foreach (var item in e.NewItems)
-                {
-                    if (item is WorkflowTabViewModel tab)
-                    {
-                        tab.NameCommitted -= OnTabNameCommitted;
-                        tab.NameCommitted += OnTabNameCommitted;
-                        // 快照属于工作流 UI 状态的一部分，创建标签时即建立，而不是首次运行后才生成。
-                        EnsureFormalExecutionSnapshot(tab.RootWorkflowId);
-                    }
-                }
-            }
+            if(e.Action==System.Collections.Specialized.NotifyCollectionChangedAction.Move)return;
+            if(e.OldItems is not null)foreach(var tab in e.OldItems.OfType<WorkflowTabViewModel>())
+            {tab.RenameRequested=null;_formalExecutionSnapshots.Remove(tab.RootWorkflowId);}
+            if(e.NewItems is not null)foreach(var tab in e.NewItems.OfType<WorkflowTabViewModel>())
+            {tab.RenameRequested=name=>RenameRootWorkspace(tab,name);EnsureFormalExecutionSnapshot(tab.RootWorkflowId);}
+            OnPropertyChanged(nameof(WorkflowCount));NotifyRootCollectionAvailability();
         }
-
         /// <summary>
         /// 更新当前画布类型显示
         /// </summary>
@@ -2047,13 +2030,13 @@ SplitterPosition = position;
         private bool _transitionPreparationInProgress;
         internal bool CanAcceptExternalActivation => !_solutionTransitionPrepared && !_transitionPreparationInProgress
             && (System.Windows.Application.Current is not App app || !app.HasPendingWorkspaceDeviceRestore);
-        public void EndSolutionTransition() { _solutionTransitionPrepared=false; ActiveImageSourceBinding?.RefreshAvailability(); OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace)); }
+        public void EndSolutionTransition() { _solutionTransitionPrepared=false; ActiveImageSourceBinding?.RefreshAvailability(); OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace));OnPropertyChanged(nameof(CanEditRootCollection)); }
         public async System.Threading.Tasks.Task<bool> PrepareSolutionTransitionAsync(bool reload = false, Window? owner = null)
         {
             if (_transitionPreparationInProgress) return false;
             owner = ResolveSolutionDialogOwner(owner);
             _transitionPreparationInProgress = true;
-            OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace));
+            OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace));OnPropertyChanged(nameof(CanEditRootCollection));
             try
             {
                 var manager = SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager;
@@ -2083,7 +2066,7 @@ SplitterPosition = position;
                 ThemeMessageDialog.Show("操作未完成，原方案保持打开：" + ex.Message, "方案切换", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error, owner);
                 return false;
             }
-            finally { _transitionPreparationInProgress = false; ActiveImageSourceBinding?.RefreshAvailability(); OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace)); }
+            finally { _transitionPreparationInProgress = false; ActiveImageSourceBinding?.RefreshAvailability(); OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace));OnPropertyChanged(nameof(CanEditRootCollection)); }
         }
 
         /// <summary>External file activation reuses existing stop/save and identity-conflict rules.</summary>

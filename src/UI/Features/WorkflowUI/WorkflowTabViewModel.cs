@@ -16,6 +16,7 @@ public partial class WorkflowTabViewModel : ObservableObject
     private string _id=Guid.NewGuid().ToString("N"),_name="工作流",_currentWorkflowName="工作流";
     private DocumentSession? _canvasSession;
     private WorkflowDefinition? _rootDefinition;
+    private bool _rootRetired;
     private bool _isRunning;
     private RunMode _runMode;
     private WorkflowState _state;
@@ -28,7 +29,11 @@ public partial class WorkflowTabViewModel : ObservableObject
     public string Id { get=>_id;set{if(_canvasSession is not null&&value!=_id)throw new InvalidOperationException("已绑定标签页不能替换流程身份。");if(SetProperty(ref _id,value)){OnPropertyChanged(nameof(RootWorkflowId));OnPropertyChanged(nameof(CurrentWorkflowId));}} }
     public string RootWorkflowId=>Id;
     public string CurrentWorkflowId=>Id;
-    public string Name {get=>_name;set{if(SetProperty(ref _name,value)){_currentWorkflowName=value;OnPropertyChanged(nameof(EffectiveDisplayName));}}}
+    public string Name {get=>_name;set{if(_canvasSession is not null){if(value!=_name)RenameRequested?.Invoke(value);return;}if(SetProperty(ref _name,value)){_currentWorkflowName=value;OnPropertyChanged(nameof(EffectiveDisplayName));}}}
+    internal WorkflowDefinition? ActualRoot=>_rootDefinition;
+    internal bool OwnsRoot(DocumentSession session,WorkflowDefinition root)=>!_rootRetired&&ReferenceEquals(_canvasSession,session)&&ReferenceEquals(_rootDefinition,root);
+    internal void RetireRootProjection()=>_rootRetired=true;
+    internal bool IsRootProjectionRetired=>_rootRetired;
     public string EffectiveDisplayName=>_currentWorkflowName;
     public bool IsInSubroutine=>false;
     public string? SubroutineIcon=>null;
@@ -45,11 +50,12 @@ public partial class WorkflowTabViewModel : ObservableObject
 
         private bool _isEditingName;
         private string _renameBuffer = string.Empty;
+        private long _renameRevision;
 
         /// <summary>
-        /// 重命名完成事件 — 通知外部（如 MainWindowViewModel）更新引擎中的 Workflow.Name
+        /// 根集合事务请求；实际名称只能由正式回执更新。
         /// </summary>
-        public event EventHandler<string>? NameCommitted;
+        internal Func<string,bool>? RenameRequested {get;set;}
 
         /// <summary>
         /// 是否正在编辑名称
@@ -66,7 +72,7 @@ public partial class WorkflowTabViewModel : ObservableObject
         public string RenameBuffer
         {
             get => _renameBuffer;
-            set => SetProperty(ref _renameBuffer, value);
+            set { if(SetProperty(ref _renameBuffer, value))_renameRevision++; }
         }
 
         /// <summary>
@@ -80,30 +86,16 @@ public partial class WorkflowTabViewModel : ObservableObject
         }
 
         /// <summary>
-        /// 确认重命名 — 写入引擎中当前工作流的 Name
-        /// 触发 NameCommitted 事件通知外部更新引擎
+        /// 确认重命名 — 请求当前实际根的集合事务。
+        /// 成功才结束编辑；失败及回执期间的新原文本继续保留。
         /// </summary>
         public bool ConfirmRename()
         {
-            var trimmed = RenameBuffer?.Trim();
-            if (string.IsNullOrEmpty(trimmed))
-            {
-                IsEditingName = false;
-                return false;
-            }
-
-            // 更新当前显示名称
-            _currentWorkflowName = trimmed;
-            if (!IsInSubroutine)
-            {
-                _name = trimmed;
-                OnPropertyChanged(nameof(Name));
-            }
-            OnPropertyChanged(nameof(EffectiveDisplayName));
-            IsEditingName = false;
-
-            // 通知外部更新引擎中的 Workflow.Name
-            NameCommitted?.Invoke(this, trimmed);
+            var text = RenameBuffer;
+            var revision = _renameRevision;
+            if(RenameRequested?.Invoke(text)!=true)return false;
+            // A receipt may arrive after a view has received another raw edit.
+            if(revision==_renameRevision){RenameBuffer=Name;IsEditingName=false;}
             return true;
         }
 

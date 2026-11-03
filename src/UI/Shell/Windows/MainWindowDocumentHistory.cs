@@ -45,6 +45,28 @@ public partial class MainWindowViewModel
     private void FormalDocumentChanged(object? sender,DocumentChangeSet change)
     {
         if(_documentHostReleased||!ReferenceEquals(sender,_observedDocumentSession)||!ReferenceEquals(sender,DocumentManager.CurrentSession))return;
+        if(!change.RemovedNodes.IsDefaultOrEmpty)CanvasClipboardNodesDeleted(change.RemovedNodes.Select(item=>item.Node).ToArray());
+        if(!change.ChangedRoots.IsDefaultOrEmpty)
+        {
+            // Retire selection-bound participants before their acknowledgement. A removed
+            // root cannot accept a rebase; Undo must not reactivate its old windows.
+            foreach(var editor in _productionEditors.ToArray())if(!editor.IsValid)editor.Discard();
+            if(_rootConfigurationWindow is {} rootWindow&&change.ChangedRoots.Any(item=>
+                item.Kind==RootCollectionChangeKind.Removed&&ReferenceEquals(item.Workflow,rootWindow.Context.Root)))
+            {rootWindow.Context.Dispose();rootWindow.Close();}
+            var session=_observedDocumentSession!;
+            System.Windows.Threading.Dispatcher.CurrentDispatcher.BeginInvoke(new Action(()=>
+            {
+                if(_documentHostReleased||!ReferenceEquals(session,DocumentManager.CurrentSession))return;
+                WorkflowTabViewModel.ReconcileDocumentTabs(session);
+                RefreshChangedDocumentViews(change);
+            }));
+            return;
+        }
+        RefreshChangedDocumentViews(change);
+    }
+    private void RefreshChangedDocumentViews(DocumentChangeSet change)
+    {
         foreach(var editor in _productionEditors.ToArray())if(!editor.IsValid)editor.Discard();
         if(SelectedNode is {} selected&&!OwnsSelectedDocumentNode(selected))SelectedNode=null;
         else RefreshFormalPublishedResult();

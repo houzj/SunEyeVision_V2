@@ -48,6 +48,9 @@ namespace SunEyeVision.UI.Features.WorkflowUI
 
         private readonly SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot _directory;
         private SunEyeVision.Application.DocumentSessionManager? _sessionManager;
+        private SunEyeVision.Application.DocumentSession? _collectionSession;
+        private bool _reconciling;
+        private long _collectionBinding;
 
         internal void BindDocumentManager(SunEyeVision.Application.DocumentSessionManager manager)
         {
@@ -57,10 +60,12 @@ namespace SunEyeVision.UI.Features.WorkflowUI
             UnbindDocumentManager();
             _sessionManager = manager;
             manager.SessionChanged += DocumentSessionChanged;
+            ObserveCollection(manager.CurrentSession);
             try { InstallDocumentTabs(next); }
             catch
             {
                 manager.SessionChanged -= DocumentSessionChanged;
+                ObserveCollection(null);
                 _sessionManager = null;
                 foreach (var tab in next) tab.UnbindDocumentCanvas();
                 throw;
@@ -71,6 +76,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         {
             if (_sessionManager is null) return;
             _sessionManager.SessionChanged -= DocumentSessionChanged;
+            ObserveCollection(null);
             _sessionManager = null;
             foreach (var tab in Tabs) tab.UnbindDocumentCanvas();
         }
@@ -78,6 +84,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         private void DocumentSessionChanged(object? sender, SunEyeVision.Application.DocumentSessionReplacement change)
         {
             if (!ReferenceEquals(sender, _sessionManager)) return;
+            ObserveCollection(change.Current);
             try { ReplaceDocumentTabs(change.Current); }
             catch
             {
@@ -91,6 +98,69 @@ namespace SunEyeVision.UI.Features.WorkflowUI
 
         private void ReplaceDocumentTabs(SunEyeVision.Application.DocumentSession? session)
             => InstallDocumentTabs(PrepareDocumentTabs(session));
+
+        private void ObserveCollection(SunEyeVision.Application.DocumentSession? session)
+        {
+            if (_collectionSession is {} previous) previous.Changed -= RootCollectionChanged;
+            _collectionSession = session; _collectionBinding++;
+            if (session is not null) session.Changed += RootCollectionChanged;
+        }
+
+        private void RootCollectionChanged(object? sender, SunEyeVision.Application.DocumentChangeSet change)
+        {
+            if (change.ChangedRoots.IsDefaultOrEmpty || !ReferenceEquals(sender, _collectionSession)) return;
+            foreach (var removed in change.ChangedRoots.Where(item => item.Kind == SunEyeVision.Application.RootCollectionChangeKind.Removed))
+                foreach (var tab in Tabs.Where(tab => ReferenceEquals(tab.ActualRoot, removed.Workflow))) tab.RetireRootProjection();
+            var session = _collectionSession!; var binding = _collectionBinding;
+            System.Windows.Threading.Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
+            {
+                if (binding == _collectionBinding && ReferenceEquals(session, _sessionManager?.CurrentSession)) ReconcileDocumentTabs(session);
+            }));
+        }
+
+        internal void ReconcileDocumentTabs(SunEyeVision.Application.DocumentSession session,
+            SunEyeVision.Domain.Workflows.WorkflowDefinition? preferred = null)
+        {
+            if (!ReferenceEquals(session, _collectionSession) || !ReferenceEquals(session, _sessionManager?.CurrentSession)) return;
+            var roots = session.GetWorkflows().Where(flow => !flow.IsSubroutine).ToArray();
+            var previous = _selectedTab;
+            var previousIndex = previous is null ? 0 : Math.Max(0, Tabs.IndexOf(previous));
+            var prepared = new List<WorkflowTabViewModel>();
+            var created = new List<WorkflowTabViewModel>();
+            try
+            {
+                foreach (var root in roots)
+                {
+                    var tab = Tabs.SingleOrDefault(item => item.OwnsRoot(session, root));
+                    if (tab is null)
+                    {
+                        tab = new WorkflowTabViewModel { Id = root.Id, Name = root.Name };
+                        created.Add(tab); tab.BindDocumentCanvas(session, root.Id);
+                    }
+                    prepared.Add(tab);
+                }
+            }
+            catch { foreach (var tab in created) tab.UnbindDocumentCanvas(); throw; }
+            var selected = preferred is null ? null : prepared.SingleOrDefault(tab => tab.OwnsRoot(session, preferred));
+            selected ??= previous is not null && prepared.Contains(previous) ? previous : prepared.ElementAtOrDefault(Math.Min(previousIndex, prepared.Count - 1));
+            _reconciling = true;
+            try
+            {
+                foreach (var removed in Tabs.Where(tab => !prepared.Contains(tab)).ToArray()) { removed.UnbindDocumentCanvas(); Tabs.Remove(removed); }
+                for (var index = 0; index < prepared.Count; index++)
+                {
+                    var tab = prepared[index];
+                    if (!Tabs.Contains(tab)) Tabs.Insert(index, tab);
+                    else if (Tabs.IndexOf(tab) != index) Tabs.Move(Tabs.IndexOf(tab), index);
+                    tab.SynchronizeRootName(roots[index].Name);
+                    tab.QueueRootReadiness();
+                }
+                _selectedTab = selected;
+                OnPropertyChanged(nameof(SelectedTab));
+            }
+            finally { _reconciling = false; }
+            if (!ReferenceEquals(previous, selected)) SelectionChanged?.Invoke(this, EventArgs.Empty);
+        }
 
         private List<WorkflowTabViewModel> PrepareDocumentTabs(SunEyeVision.Application.DocumentSession? session)
         {
@@ -141,9 +211,10 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         /// </summary>
         public WorkflowTabViewModel? SelectedTab
         {
-            get => _selectedTab;
+            get => _selectedTab is { IsRootProjectionRetired: false } ? _selectedTab : null;
             set
             {
+                if (_reconciling || value is { IsRootProjectionRetired: true } || value is not null && !Tabs.Contains(value)) return;
                 if (SetProperty(ref _selectedTab, value))
                 {
                     // 触发选中变化事件

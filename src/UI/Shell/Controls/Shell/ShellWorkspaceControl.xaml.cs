@@ -83,6 +83,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         {
             _viewModel = viewModel;
             SetBinding(WorkflowEditingAllowedProperty, new System.Windows.Data.Binding(nameof(MainWindowViewModel.CanEditWorkflowCanvas)) { Source = viewModel });
+            SetBinding(RootCollectionEditingAllowedProperty, new System.Windows.Data.Binding(nameof(MainWindowViewModel.CanEditRootCollection)) { Source = viewModel });
             SetBinding(RootWorkspaceEditingAllowedProperty, new System.Windows.Data.Binding(nameof(MainWindowViewModel.CanEditRootWorkspace)) { Source = viewModel });
             SetBinding(SingleExecutionBusyProperty, new System.Windows.Data.Binding(nameof(MainWindowViewModel.IsRunning)) { Source = viewModel });
             WorkflowSearch.QuerySources=viewModel.SearchWorkflowNodes;WorkflowSearch.Navigate=SearchNavigate;WorkflowSearch.NavigateId=SearchNavigateId;
@@ -376,7 +377,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         private void AddWorkflow_Click(object sender, RoutedEventArgs e)
         {
-            if (_viewModel?.CanEditRootWorkspace != true) return;
+            if (_viewModel?.CanEditRootCollection != true) return;
             if(!_viewModel.AddRootWorkspace())return;
             _viewModel.StatusText = "已添加新工作流";
             // 自动显示新增Tab，保留边缘余量
@@ -557,7 +558,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         private void TabItem_Rename_Click(object sender, RoutedEventArgs e)
         {
-            if (_viewModel?.CanEditWorkflowCanvas != true) return;
+            if (_viewModel?.CanEditRootCollection != true) return;
             var workflow = GetWorkflowFromContextMenu(sender);
             if (workflow == null) return;
             workflow.BeginRename();
@@ -583,7 +584,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             {
                 if (e.Key == Key.Enter)
                 {
-                    if (_viewModel?.CanEditWorkflowCanvas == true) workflow.ConfirmRename();
+                    if (_viewModel?.CanEditRootCollection == true) workflow.ConfirmRename();
                     else workflow.CancelRename();
                     e.Handled = true;
                 }
@@ -604,7 +605,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             {
                 if (workflow.IsEditingName)
                 {
-                    if (_viewModel?.CanEditWorkflowCanvas == true) workflow.ConfirmRename();
+                    if (_viewModel?.CanEditRootCollection == true) workflow.ConfirmRename();
                     else workflow.CancelRename();
                 }
             }
@@ -1404,6 +1405,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         private void DeleteWorkflowWithConfirm(WorkflowTabViewModel workflow)
         {
+            if (_viewModel?.CanDeleteRootWorkspace(workflow) != true) { _viewModel!.StatusText="流程不可删除：至少保留一根，并须先停止执行。"; return; }
             var owner = Window.GetWindow(this);
             if (workflow.IsRunning)
             {
@@ -1430,7 +1432,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 else
                 {
                     ThemeMessageDialog.Show(
-                        "当前流程不可删除，请确认运行、参数编辑和引用状态。",
+                        _viewModel.StatusText,
                         "提示",
                         System.Windows.MessageBoxButton.OK,
                         ThemeMessageDialog.MessageIcon.Warning,

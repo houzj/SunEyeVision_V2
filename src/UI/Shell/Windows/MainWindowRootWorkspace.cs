@@ -14,11 +14,27 @@ public partial class MainWindowViewModel
     public bool CanRedoRootWorkspace=>CanEditRootWorkspace&&DocumentManager.CurrentSession?.CanRedo==true;
     internal void UndoRootWorkspace(){try{if(CanUndoRootWorkspace)DocumentManager.CurrentSession!.Undo();}catch(Exception error){StatusText="撤销已停止："+error.Message;}}
     internal void RedoRootWorkspace(){try{if(CanRedoRootWorkspace)DocumentManager.CurrentSession!.Redo();}catch(Exception error){StatusText="重做已停止："+error.Message;}}
-    private bool UnavailableRootCollection(){StatusText="流程目录增删、复制、改名尚未接入正式会话事务，暂不可用。";return false;}
-    internal bool AddRootWorkspace()=>UnavailableRootCollection();
-    internal bool CopyRootWorkspace(WorkflowTabViewModel tab,System.Windows.Point? overviewPosition=null)=>UnavailableRootCollection();
-    private bool RenameRootWorkspace(WorkflowTabViewModel tab,string name)=>UnavailableRootCollection();
-    internal bool DeleteRootWorkspace(WorkflowTabViewModel tab)=>UnavailableRootCollection();
+    internal bool AddRootWorkspace()=>ApplyRootCollection("新增流程",(session,draft)=>
+        draft.Add(AvailableRootName(session),session.GetWorkflows().Count(flow=>!flow.IsSubroutine)));
+    internal bool CopyRootWorkspace(WorkflowTabViewModel tab,System.Windows.Point? overviewPosition=null)
+    {
+        var root=ResolveCollectionRoot(tab);if(root is null){StatusText="复制源流程已退出当前方案，或正在执行。";return false;}
+        return ApplyRootCollection("复制流程",(session,draft)=>draft.Copy(root,AvailableRootName(session,root),
+            Array.IndexOf(session.GetWorkflows().Where(flow=>!flow.IsSubroutine).ToArray(),root)+1,
+            overviewPosition is {} point?new CanvasPoint(point.X,point.Y):null));
+    }
+    private bool RenameRootWorkspace(WorkflowTabViewModel tab,string name)
+    {
+        var root=ResolveCollectionRoot(tab);if(root is null){StatusText="名称未提交：流程已退出当前方案，或正在执行。";return false;}
+        try{if(RootWorkflowNameRules.Normalize(name)==root.Name)return true;}
+        catch(Exception error){StatusText="名称未提交："+error.Message;return false;}
+        return ApplyRootCollection("重命名流程",(_,draft)=>{draft.Rename(root,name);return null;});
+    }
+    internal bool DeleteRootWorkspace(WorkflowTabViewModel tab)
+    {
+        var root=ResolveCollectionRoot(tab);if(root is null){StatusText="删除源流程已退出当前方案，或正在执行。";return false;}
+        return ApplyRootCollection("删除流程",(_,draft)=>{draft.Remove(root);return null;});
+    }
     internal WorkflowDefinition? ResolveEditableRoot(WorkflowTabViewModel tab)
     {
         if(!CanEditWorkflowCanvas||tab.IsInSubroutine||!WorkflowTabViewModel.Tabs.Contains(tab))return null;

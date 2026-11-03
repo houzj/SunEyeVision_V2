@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
 using SunEyeVision.UI.Shell.Windows;
 namespace SunEyeVision.UI.Shell.Controls.Shell;
@@ -16,6 +16,8 @@ public partial class ShellWorkspaceControl
   foreach(var item in menu.Items.OfType<MenuItem>())
   {
    if(item.Tag as string=="RootEdit")item.IsEnabled=_viewModel?.CanEditRootWorkspace==true&&menu.DataContext is SunEyeVision.UI.Features.WorkflowUI.WorkflowTabViewModel {IsInSubroutine:false};
+   if(item.Tag as string=="RootCollection")item.IsEnabled=_viewModel?.CanEditRootCollection==true;
+   if(item.Tag as string=="RootDelete")item.IsEnabled=menu.DataContext is SunEyeVision.UI.Features.WorkflowUI.WorkflowTabViewModel tab&&_viewModel?.CanDeleteRootWorkspace(tab)==true;
   }
  }
  private void RootRunSettingsClick(object sender,RoutedEventArgs e)

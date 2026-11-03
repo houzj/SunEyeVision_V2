@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using SunEyeVision.UI.Shell.Controls.Shell;
 using SunEyeVision.UI.Features.WorkflowUI;
 using SunEyeVision.Domain.Workflows;
@@ -21,14 +21,14 @@ public partial class MainWindowViewModel
    bool continuous=tab?.IsRunning==true&&tab.RunMode==RunMode.Continuous;
    return new RootWorkflowOverviewEntry(root.Id,root.Name,tab?.IsRootConfigurationReady==true,running,continuous,
     tab!=null&&!tab.IsInSubroutine&&!IsRunning&&!IsDebugWindowOpen&&DocumentManager.CurrentSession?.Editing.HasPendingChanges!=true&&root.Nodes.Count>0,
-    tab!=null&&!tab.IsInSubroutine&&CanEditRootWorkspace,tab!=null&&!tab.IsInSubroutine&&CanEditRootWorkspace,
+    tab!=null&&!tab.IsInSubroutine&&CanEditRootWorkspace,tab!=null&&!tab.IsInSubroutine&&CanEditRootCollection,
     snapshot is {CompletedRunCount:>0}?snapshot.CompletedRunCount:null,snapshot?.EndedAt!=null?snapshot.Elapsed.TotalMilliseconds:null,root.WorkspaceSettings.OverviewX,root.WorkspaceSettings.OverviewY);
   }).ToArray();
   return(identity,_rootOverviewRevision,entries);
  }
  private WorkflowTabViewModel? ResolveOverviewRequest(string rootId,string identity,long revision,bool edit)
  {
-  var current=CaptureRootOverview();if(current.Identity!=identity||current.Revision!=revision||edit&&!CanEditRootWorkspace)return null;
+  var current=CaptureRootOverview();if(current.Identity!=identity||current.Revision!=revision||edit&&!CanEditRootCollection)return null;
   var tab=WorkflowTabViewModel.Tabs.SingleOrDefault(t=>t.RootWorkflowId==rootId);
   return tab!=null&&DocumentManager.CurrentSession?.GetWorkflows().Any(w=>w.Id==rootId&&!w.IsSubroutine)==true?tab:null;
  }

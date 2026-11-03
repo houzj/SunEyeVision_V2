@@ -110,6 +110,12 @@
         }
       },
       "suneyevision.domain": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
+        }
+      },
+      "suneyevision.plugin.contracts": {
         "type": "Project"
       }
     },

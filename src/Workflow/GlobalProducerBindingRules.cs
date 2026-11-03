@@ -17,20 +17,19 @@ public static class GlobalProducerBindingRules
     public static bool TryDescribeTarget(string vocabulary, out Port target, out Type clrType, out string reason)
     {
         target=null!;clrType=null!;reason=string.Empty;
-        // Current variable declarations express scalar and sequence cardinality explicitly.
-        // Do not inherit historical SDK carrier aliases (Integer[] -> int[]) here.
-        var resolved=vocabulary switch {
-            "Integer[]"=>typeof(long[]),"Double[]"=>typeof(double[]),
-            "String[]"=>typeof(string[]),"Boolean[]"=>typeof(bool[]),
-            _=>SdkTypeVocabulary.ToSystemType(vocabulary)};
-        if(resolved is null)
-        {reason="全局变量类型没有正式存储声明。";return false;}
-        if(!BindingClrAdapter.TryDescribe(resolved,out var type,out var storage)
-            ||!(type.Shape==ValueShape.Scalar||type.Shape==ValueShape.Sequence&&type.Element!.Shape==ValueShape.Scalar))
-        {reason="全局变量尚无资源、组合或几何的正式存储及租约合同，不能建立此生产绑定。";return false;}
-        target=new Port("value",type,Storage:storage);clrType=resolved;return true;
+        if (!VariableValueDeclarations.TryGetPort(vocabulary, out target))
+        { reason = "全局变量尚无资源、组合或几何的正式存储及租约合同，不能建立此生产绑定。"; return false; }
+        var declaration = target.Type.Shape == ValueShape.Sequence ? target.Type.Element! : target.Type;
+        var scalar = declaration.Scalar switch
+        {
+            ScalarKind.Boolean => typeof(bool), ScalarKind.Text => typeof(string),
+            ScalarKind.Int64 => target.Storage == NumericStorage.Int32 ? typeof(int) : typeof(long),
+            ScalarKind.Float64 => target.Storage == NumericStorage.Float32 ? typeof(float) : typeof(double),
+            _ => throw new InvalidOperationException("变量声明不是纯值。")
+        };
+        clrType = target.Type.Shape == ValueShape.Sequence ? scalar.MakeArrayType() : scalar;
+        return true;
     }
-
     public static BindingValidation Validate(Solution solution,ProducerBinding producer,GlobalVariable variable,SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot directory)
     {
         ArgumentNullException.ThrowIfNull(solution);ArgumentNullException.ThrowIfNull(directory);

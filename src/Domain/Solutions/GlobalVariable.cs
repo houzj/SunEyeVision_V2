@@ -1,0 +1,428 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json.Serialization;
+
+namespace SunEyeVision.Domain.Solutions;
+
+/// <summary>A value/revision pair captured under ValueGate. Editable primitive arrays are copied.
+/// Other legacy values remain borrowed and read-only; this type confers no resource ownership.</summary>
+public sealed record GlobalVariableValueSnapshot(object? Value, long Revision);
+
+
+/// <summary>
+/// 全局变量
+/// </summary>
+/// <remarks>
+/// 用于存储解决方案级别的全局变量，可以在所有工作流和节点中访问。
+/// 
+/// 设计原则（rule-010: 方案系统实现规范）：
+/// - 弱类型 + 类型字符串（视觉软件行业标准）
+/// - 使用 JsonConverter 保留类型信息
+/// - 支持分组管理（多工位/多相机场景）
+/// 
+/// 支持的数据类型：
+/// - 基础类型：Integer, String, Boolean, Double, Byte
+/// - OpenCvSharp类型：Point, Rectangle, Size
+/// - 图像类型：Image
+/// - 几何类型：Circle, Line, Annulus, RotatedRect, Polygon
+/// - 区域/图形：Region（仅运行时）
+/// 
+/// JSON格式示例：
+/// {
+///   "Id": "var_001",
+///   "Name": "阈值",
+///   "Group": "参数设置",
+///   "Index": 1,
+///   "Type": "Integer",
+///   "Value": { "Type": "Integer", "Value": 128 },
+///   "Description": "二值化阈值"
+/// }
+/// </remarks>
+public class GlobalVariable : SolutionObservableObject
+{
+    [System.Text.Json.Serialization.JsonExtensionData]
+    public System.Collections.Generic.Dictionary<string, System.Text.Json.JsonElement>? AdditionalData { get; set; }
+
+    public static object ValueGate { get; } = new();
+    private string _name = "";
+    private string _group = "默认分组";
+    private int _index = 0;
+    private object? _value = null;
+    private long _valueRevision;
+    private string _type = "String";
+    private string _description = "";
+    private bool _isInitialized = false;
+
+    /// <summary>
+    /// 变量ID
+    /// </summary>
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+
+    /// <summary>
+    /// 变量名称
+    /// </summary>
+    public string Name
+    {
+        get => _name;
+        set => SetProperty(ref _name, value, "变量名称");
+    }
+
+    /// <summary>
+    /// 变量所属分组
+    /// </summary>
+    /// <remarks>
+    /// 支持多工位/多相机场景的分组管理。
+    /// 例如："工位1参数"、"工位2参数"、"相机1设置"、"相机2设置"
+    /// </remarks>
+    public string Group
+    {
+        get => _group;
+        set => SetProperty(ref _group, value, "所属分组");
+    }
+
+    /// <summary>
+    /// 变量在分组中的序号（用于UI显示）
+    /// </summary>
+    public int Index
+    {
+        get => _index;
+        set => SetProperty(ref _index, value, "序号");
+    }
+
+    /// <summary>
+    /// 变量值（使用转换器保留类型信息）
+    /// </summary>
+    /// <remarks>
+    /// 使用 GlobalVariableValueConverter 保留类型信息，
+    /// 序列化格式：{ "Type": "Integer", "Value": 128 }
+    /// </remarks>
+    
+    public object? Value
+    {
+        get { lock (ValueGate) return _value; }
+        set
+        {
+            lock (ValueGate)
+            {
+                if (Equals(_value, value)) return;
+                var revision = checked(_valueRevision + 1);
+                _value = value;
+                _valueRevision = revision;
+            }
+            OnPropertyChanged(nameof(Value));
+            OnPropertyChanged(nameof(ValueRevision));
+        }
+    }
+
+    /// <summary>Instance-local runtime revision. Never persisted or copied into configuration history.</summary>
+    [JsonIgnore]
+    public long ValueRevision { get { lock (ValueGate) return _valueRevision; } }
+
+    public GlobalVariableValueSnapshot CaptureValue()
+    {
+        lock (ValueGate) return new(CopyEditableValue(_value), _valueRevision);
+    }
+
+    /// <summary>Capture one coherent runtime value set. Pass the document's concrete List
+    /// or an already fixed array; no caller-defined enumerator executes under ValueGate.</summary>
+    public static IReadOnlyDictionary<string, GlobalVariableValueSnapshot> CaptureValues(IReadOnlyList<GlobalVariable> variables)
+    {
+        CheckCaptureCollection(variables);
+        var result = new Dictionary<string, GlobalVariableValueSnapshot>(StringComparer.Ordinal);
+        lock (ValueGate)
+            foreach (var variable in CaptureMembers(variables))
+                result.Add(variable.Id, new(CopyEditableValue(variable._value), variable._valueRevision));
+        return new System.Collections.ObjectModel.ReadOnlyDictionary<string, GlobalVariableValueSnapshot>(result);
+    }
+
+    /// <summary>Capture members, configuration, bindings and runtime values in one value-lock
+    /// interval. Definitions and primitive arrays are independent copies. Native/complex values
+    /// remain borrowed and read-only, with no ownership or serialization implied.</summary>
+    public static IReadOnlyList<GlobalVariable> CaptureDefinitions(IReadOnlyList<GlobalVariable> variables)
+    {
+        CheckCaptureCollection(variables);
+        GlobalVariable[] result;
+        lock (ValueGate)
+            result = CaptureMembers(variables).Select(v => v.CopyDefinitionRaw()).ToArray();
+        return Array.AsReadOnly(result);
+    }
+
+    private static void CheckCaptureCollection(IReadOnlyList<GlobalVariable> variables)
+    {
+        ArgumentNullException.ThrowIfNull(variables);
+        if (variables is not List<GlobalVariable> && variables is not GlobalVariable[])
+            throw new ArgumentException("Capture requires the document variable List or a fixed array.", nameof(variables));
+    }
+    private static GlobalVariable[] CaptureMembers(IReadOnlyList<GlobalVariable> variables) => variables is List<GlobalVariable> list
+        ? list.ToArray() : (GlobalVariable[])((GlobalVariable[])variables).Clone();
+
+    private GlobalVariable CopyDefinitionRaw()
+    {
+        RequireValueGate();
+        var copy = new GlobalVariable { Id = Id, CreatedTime = CreatedTime };
+        var producer = _producerBinding == null ? null : new ProducerBinding
+        {
+            ReferenceExpression = _producerBinding.ReferenceExpression,
+            WorkflowName = _producerBinding.WorkflowName, NodeName = _producerBinding.NodeName,
+            ResultDisplayName = _producerBinding.ResultDisplayName
+        };
+        copy.ApplyConfigurationRaw(new(_name, _group, _index, _type, _description, producer,
+            RebindingReason, BindingValidationPending, AdditionalData?.ToDictionary(p => p.Key, p => p.Value.Clone()), ModifiedTime));
+        copy.ApplyValueRaw(new(CopyEditableValue(_value), _valueRevision));
+        copy._isInitialized = _isInitialized;
+        return copy;
+    }
+    // These raw operations are the existing configuration host's projection adapter. They
+    // never run setters, logging or observers while the shared runtime value lock is held.
+    internal sealed record ConfigurationState(string Name, string Group, int Index, string Type,
+        string Description, ProducerBinding? Producer,
+        string Required, string Pending, Dictionary<string, System.Text.Json.JsonElement>? AdditionalData,
+        DateTime ModifiedTime);
+    internal readonly record struct ValueState(object? Value, long Revision);
+
+    internal ConfigurationState CaptureConfiguration() => new(_name, _group, _index, _type,
+        _description, _producerBinding, RebindingReason, BindingValidationPending,
+        AdditionalData, ModifiedTime);
+
+    internal void ApplyConfigurationRaw(ConfigurationState state)
+    {
+        RequireValueGate();
+        _name = state.Name; _group = state.Group; _index = state.Index; _type = state.Type;
+        _description = state.Description; _producerBinding = state.Producer;
+        RebindingReason = state.Required; BindingValidationPending = state.Pending;
+        AdditionalData = state.AdditionalData; ModifiedTime = state.ModifiedTime;
+    }
+
+    internal ValueState CaptureValueRaw()
+    { RequireValueGate(); return new(_value, _valueRevision); }
+
+    internal void ApplyValueRaw(ValueState state)
+    { RequireValueGate(); _value = state.Value; _valueRevision = state.Revision; }
+
+    private static void RequireValueGate()
+    {
+        if (!System.Threading.Monitor.IsEntered(ValueGate))
+            throw new InvalidOperationException("Runtime value projection requires ValueGate.");
+    }
+
+    // Only the four existing text-editable primitive families participate in value editing.
+    // Do not clone, inspect or take ownership of native/image/other complex payloads here.
+    internal static object? CopyEditableValue(object? value) => value switch
+    {
+        int[] a => (int[])a.Clone(), long[] a => (long[])a.Clone(),
+        float[] a => (float[])a.Clone(), double[] a => (double[])a.Clone(),
+        string[] a => (string[])a.Clone(), bool[] a => (bool[])a.Clone(),
+        _ => value
+    };
+
+    internal void EmitConfigurationNotifications(bool valueChanged, List<Exception> errors)
+    {
+        var names = new[] { nameof(Name), nameof(Group), nameof(Index), nameof(Type), nameof(Description),
+            nameof(ProducerBinding), nameof(InputSourceDisplayText),
+            nameof(IsComplexValue), nameof(RebindingReason),
+            nameof(BindingValidationPending), nameof(AdditionalData), nameof(ModifiedTime) };
+        foreach (var name in names)
+            try { OnPropertyChanged(name); } catch (Exception error) { errors.Add(error); }
+        if (!valueChanged) return;
+        try { OnPropertyChanged(nameof(Value)); } catch (Exception error) { errors.Add(error); }
+        try { OnPropertyChanged(nameof(ValueRevision)); } catch (Exception error) { errors.Add(error); }
+    }
+
+    /// <summary>
+    /// 变量类型（词汇表由 SdkTypeVocabulary 定义）
+    /// </summary>
+    public string Type
+    {
+        get => _type;
+        set => SetProperty(ref _type, value, "变量类型");
+    }
+
+    /// <summary>
+    /// 变量描述/注释
+    /// </summary>
+    public string Description
+    {
+        get => _description;
+        set => SetProperty(ref _description, value, "变量描述");
+    }
+
+    /// <summary>
+    /// 是否为复杂类型（图像/图形/矩阵等），此类「当前值」只读占位显示，不可编辑
+    /// </summary>
+    /// <remarks>
+    /// 文本可编辑类型为 Integer/String/Boolean/Double，其余（Image/RoI/Transform/Circle/
+    /// RotatedRect/Point/Polygon/Line/Annulus）为复杂类型，仅显示占位（如 [图像]）。
+    /// </remarks>
+    [JsonIgnore]
+    public bool IsComplexValue
+    {
+        get
+        {
+            switch (Type)
+            {
+                case "Integer":
+                case "String":
+                case "Boolean":
+                case "Double":
+                    return false;
+                default:
+                    return true;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 输入来源（可选）。为空表示变量使用方案保存的初值或宿主在运行请求中提供的值。
+    /// 非空时表示该变量由一个节点结果产生，并在解决方案级依赖图中连接到所有消费者。
+    /// </summary>
+    private ProducerBinding? _producerBinding;
+    public string RebindingReason { get; set; } = string.Empty;
+    public string BindingValidationPending { get; set; } = string.Empty;
+    public ProducerBinding? ProducerBinding
+    {
+        get => _producerBinding;
+        set
+        {
+            if (ReferenceEquals(_producerBinding, value))
+                return;
+            _producerBinding = value;
+            if (value != null) RebindingReason = string.Empty;
+            OnPropertyChanged(nameof(ProducerBinding));
+            OnPropertyChanged(nameof(InputSourceDisplayText));
+        }
+    }
+
+    /// <summary>输入来源显示文本；为空时变量使用方案初值或运行请求中提供的值。</summary>
+    [JsonIgnore]
+    public string InputSourceDisplayText => ProducerBinding?.DisplayPath ?? (string.IsNullOrEmpty(RebindingReason) ? "未绑定（使用初值）" : "请选择（需重新绑定）");
+
+    /// <summary>
+    /// 是否已初始化
+    /// </summary>
+    public bool IsInitialized
+    {
+        get => _isInitialized;
+        set => SetProperty(ref _isInitialized, value, "是否已初始化");
+    }
+
+    /// <summary>
+    /// 创建时间
+    /// </summary>
+    public DateTime CreatedTime { get; set; } = DateTime.Now;
+
+    /// <summary>
+    /// 修改时间
+    /// </summary>
+    public DateTime ModifiedTime { get; set; } = DateTime.Now;
+
+    /// <summary>
+    /// 无参构造函数
+    /// </summary>
+    public GlobalVariable()
+    {
+    }
+
+    /// <summary>
+    /// 构造函数
+    /// </summary>
+    public GlobalVariable(string name, object? value, string type = "String", string group = "默认分组")
+    {
+        Name = name;
+        Value = value;
+        Type = type;
+        Group = group;
+    }
+
+    /// <summary>
+    /// 克隆变量
+    /// </summary>
+    public GlobalVariable Clone()
+    {
+        return new GlobalVariable
+        {
+            Id = Guid.NewGuid().ToString(),
+            AdditionalData = AdditionalData?.ToDictionary(p => p.Key, p => p.Value.Clone()),
+            Name = Name,
+            Group = Group,
+            Index = Index,
+            Value = Value,  // 注意：值类型会被复制，引用类型只复制引用
+            Type = Type,
+            Description = Description,
+            ProducerBinding = ProducerBinding == null ? null : new ProducerBinding
+            {
+                ReferenceExpression = ProducerBinding.ReferenceExpression,
+                WorkflowName = ProducerBinding.WorkflowName,
+                NodeName = ProducerBinding.NodeName,
+                ResultDisplayName = ProducerBinding.ResultDisplayName
+            },
+            IsInitialized = IsInitialized,
+            RebindingReason = RebindingReason,
+            BindingValidationPending = BindingValidationPending,
+            CreatedTime = CreatedTime,
+            ModifiedTime = DateTime.Now
+        };
+    }
+
+    /// <summary>
+    /// 检查名称是否全局重复
+    /// </summary>
+    /// <param name="allVariables">所有全局变量</param>
+    /// <param name="newName">新名称</param>
+    /// <param name="excludeId">排除的变量ID（重命名时排除自身）</param>
+    public static bool IsNameDuplicate(
+        IEnumerable<GlobalVariable> allVariables,
+        string newName,
+        string? excludeId = null)
+    {
+        return allVariables.Any(v =>
+            v.Name.Equals(newName, StringComparison.OrdinalIgnoreCase) &&
+            v.Id != excludeId);
+    }
+
+    /// <summary>
+    /// 验证变量
+    /// </summary>
+    public (bool IsValid, List<string> Errors) Validate()
+    {
+        var errors = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(Name))
+        {
+            errors.Add("变量名称不能为空");
+        }
+
+        if (string.IsNullOrEmpty(Type))
+        {
+            errors.Add("变量类型不能为空");
+        }
+
+        // 验证类型是否有效
+        if (!IsValidType(Type))
+        {
+            errors.Add($"不支持的变量类型: {Type}");
+        }
+
+        return (errors.Count == 0, errors);
+    }
+
+    /// <summary>
+    /// 检查类型是否有效
+    /// </summary>
+    // Runtime declarations identify scalar/sequence shape explicitly. The manager's
+    // IsComplexValue property describes its current text-editor capability, not value ownership.
+    internal static bool IsPureValueDeclaration(string type)
+        =>SunEyeVision.Plugin.Contracts.VariableValueDeclarations.TryGetPort(type,out _);
+    private static bool IsValidType(string type)
+    {
+        return !string.IsNullOrWhiteSpace(type);
+    }
+
+    /// <summary>外部修改生产者绑定字段后刷新显示列。</summary>
+    public void NotifyInputSourceDisplayChanged()
+    {
+        OnPropertyChanged(nameof(ProducerBinding));
+        OnPropertyChanged(nameof(InputSourceDisplayText));
+    }
+}
+

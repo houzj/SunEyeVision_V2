@@ -25,4 +25,19 @@ public sealed partial class DocumentSessionManager
         }
         finally { _busy = false; }
     }
+    /// <summary>Capture continuous execution only for this manager's installed document.</summary>
+    public DocumentContinuousRun CaptureCurrentContinuousRun(IReadOnlyList<string> workflowIds,
+        IHostInputFactory? hostFactory = null, Action<Action>? ownerPost = null)
+    {
+        EnsureAvailable();
+        var session=CurrentSession ?? throw new InvalidOperationException("当前没有打开的方案。");
+        _busy=true;
+        try
+        {
+            var run=session.CaptureContinuousRun(workflowIds,hostFactory,ownerPost);
+            if(!ReferenceEquals(CurrentSession,session)) { run.Dispose(); throw new InvalidOperationException("运行捕获期间活动方案已变化。"); }
+            return run;
+        }
+        finally { _busy=false; }
+    }
 }

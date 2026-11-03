@@ -38,3 +38,10 @@ public interface IHostInputFactory
 {
     IHostInputPreparer? Create(HostInputFactoryContext context);
 }
+
+/// <summary>Read-only facts from one fully settled host preparer; not a plugin execution contract.</summary>
+public sealed record HostReadCompletion(Guid EditSessionId, Guid NodeGeneration, ScopedNodeIdentity Node, RunIdentity Run, bool StopAfterCurrent);
+public interface IHostInputRoundObserver
+{
+    IReadOnlyList<HostReadCompletion> CaptureCompletedReads();
+}

@@ -37,7 +37,7 @@ public sealed class ImageSourceHostInputFactory : IHostInputFactory, IDisposable
         var cursor = GetCursor(context);
         long version;
         lock (_gate) version = cursor.SelectionVersion;
-        return new OwnedPreparer(cursor.Sequence.CreatePreparer(context.Node.NodeId, _cameraService), cursor.Sequence,
+        return new OwnedPreparer(context, cursor.Sequence.CreatePreparer(context.Node.NodeId, _cameraService), cursor.Sequence,
             round => PublishReceipt(context, cursor, version, round));
     }
 
@@ -164,18 +164,50 @@ public sealed class ImageSourceHostInputFactory : IHostInputFactory, IDisposable
         foreach (var cursor in cursors) { cursor.Retirement.Dispose(); cursor.Sequence.Dispose(); }
     }
 
-    private sealed class OwnedPreparer(IHostInputPreparer inner, ImageSourceRunSequence sequence, Action<LocalImageReadRound> completed) : IHostInputPreparer
+    private sealed class OwnedPreparer(HostInputFactoryContext owner, IHostInputPreparer inner, ImageSourceRunSequence sequence, Action<LocalImageReadRound> completed) : IHostInputPreparer, IHostInputRoundObserver
     {
         private int _disposed;
+        private readonly object _gate = new();
+        private RunIdentity? _run;
+        private IReadOnlyList<HostReadCompletion>? _reads;
         public string CapabilityId => inner.CapabilityId;
         public int CapabilityVersion => inner.CapabilityVersion;
         public IReadOnlyList<string> Services => inner.Services;
-        public System.Threading.Tasks.ValueTask<IPreparedHostInputs> PrepareAsync(HostInputPreparationContext context) => inner.PrepareAsync(context);
+        public System.Threading.Tasks.ValueTask<IPreparedHostInputs> PrepareAsync(HostInputPreparationContext context)
+        {
+            lock (_gate)
+            {
+                if (_run is not null) throw new InvalidOperationException("宿主输入准备器只能接纳一次运行。");
+                _run = context.Identity;
+            }
+            return inner.PrepareAsync(context);
+        }
+        public IReadOnlyList<HostReadCompletion> CaptureCompletedReads()
+        {
+            lock (_gate) return _reads ?? throw new InvalidOperationException("图像输入尚未结算。");
+        }
         public void Dispose()
         {
             if (Interlocked.Exchange(ref _disposed, 1) != 0) return;
-            try { inner.Dispose(); }
-            finally { completed(sequence.FinishRound()); }
+            var errors = new List<Exception>();
+            try { inner.Dispose(); } catch (Exception error) { errors.Add(error); }
+            try
+            {
+                var round = sequence.FinishRound();
+                lock (_gate)
+                {
+                    if (round.Accepted.Count > 0 && _run is null) throw new InvalidOperationException("图像回执缺少本轮运行身份。");
+                    _reads = Array.AsReadOnly(round.Accepted.Select(read =>
+                    {
+                        var run = _run!.Value;
+                        if (read.RequestId != run.RequestId) throw new InvalidOperationException("图像回执请求身份与准备器不一致。");
+                        return new HostReadCompletion(owner.EditSessionId, owner.NodeGeneration, owner.Node, run, read.StopAfterCurrent);
+                    }).ToArray());
+                }
+                completed(round);
+            }
+            catch (Exception error) { errors.Add(error); }
+            if (errors.Count != 0) throw new AggregateException("图像输入结算失败。", errors);
         }
     }
 }

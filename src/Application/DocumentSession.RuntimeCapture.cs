@@ -13,6 +13,12 @@ public sealed partial class DocumentSession
     public DocumentRunBatch CaptureRunBatch(IEnumerable<string> workflowIds,
         IReadOnlyDictionary<ScopedNodeIdentity, IHostInputPreparer>? hostInputs = null,
         IReadOnlyDictionary<string, WorkflowImageInput>? workflowImages = null, IHostInputFactory? hostFactory = null)
+        => CaptureRunBatchCore(workflowIds, hostInputs, workflowImages, hostFactory, null);
+
+    private DocumentRunBatch CaptureRunBatchCore(IEnumerable<string> workflowIds,
+        IReadOnlyDictionary<ScopedNodeIdentity, IHostInputPreparer>? hostInputs,
+        IReadOnlyDictionary<string, WorkflowImageInput>? workflowImages, IHostInputFactory? hostFactory,
+        ExecutionRunBatch? existingReservation)
     {
         ArgumentNullException.ThrowIfNull(workflowIds);
         EnsureOwnerCanEdit();
@@ -21,6 +27,7 @@ public sealed partial class DocumentSession
             throw new ArgumentException("运行流程必须非空且身份唯一。", nameof(workflowIds));
         var hosts = (hostInputs ?? new Dictionary<ScopedNodeIdentity, IHostInputPreparer>()).ToList();
         var createdHosts = new List<IHostInputPreparer>();
+        var hostGenerations = new Dictionary<ScopedNodeIdentity, Guid>();
         var images = (workflowImages ?? new Dictionary<string, WorkflowImageInput>()).ToArray();
         if (hosts.Any(pair => pair.Key is null || pair.Value is null) || images.Any(pair => pair.Value is null || pair.Value.Image is null || pair.Value.Lease is null))
             throw new ArgumentException("运行输入缺少实际身份或资源租约。 ");
@@ -30,7 +37,8 @@ public sealed partial class DocumentSession
         if (images.Select(pair => pair.Value.Lease).Distinct(ReferenceEqualityComparer.Instance).Count() != images.Length ||
             images.Any(pair => hosts.Any(host => ReferenceEquals(host.Value, pair.Value.Lease))))
             throw new ArgumentException("每个流程图像租约必须具有唯一所有者。", nameof(workflowImages));
-        var reservation = new ExecutionRunBatch(_owner, _directory);
+        var reservation = existingReservation ?? new ExecutionRunBatch(_owner, _directory);
+        var ownsReservation = existingReservation is null;
         ExecutionVariableValues? variableValues = null;
         try
         {
@@ -74,6 +82,7 @@ public sealed partial class DocumentSession
                                     if (hosts.Any(pair => ReferenceEquals(pair.Value, prepared)))
                                         throw new InvalidOperationException("宿主输入准备器不能由多个节点共享。");
                                     createdHosts.Add(prepared);
+                                    hostGenerations.Add(hostKey, context.NodeGeneration);
                                     hosts.Add(new(hostKey, prepared));
                                 }
                             }
@@ -122,7 +131,7 @@ public sealed partial class DocumentSession
                             latest.Where((variable, index) => variable.ValueRevision != definitions[index].ValueRevision).Any())
                             throw new InvalidOperationException("运行冻结期间变量配置或当前值已改变。 ");
                     }
-                    return new DocumentRunBatch(this, reservation, variableValues, requests, order);
+                    return new DocumentRunBatch(this, reservation, variableValues, requests, order, ownsReservation, hostGenerations);
                 }
                 finally { _preparing = false; }
             }
@@ -131,7 +140,7 @@ public sealed partial class DocumentSession
         {
             var errors = new List<Exception> { failure };
             try { variableValues?.Dispose(); } catch (Exception error) { errors.Add(error); }
-            try { reservation.Dispose(); } catch (Exception error) { errors.Add(error); }
+            if (ownsReservation) try { reservation.Dispose(); } catch (Exception error) { errors.Add(error); }
             foreach (var host in createdHosts) try { host.Dispose(); } catch (Exception error) { errors.Add(error); }
             if (errors.Count > 1) throw new AggregateException("运行捕获和内部资源释放均失败。", errors);
             throw;

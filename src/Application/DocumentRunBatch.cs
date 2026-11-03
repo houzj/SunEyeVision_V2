@@ -9,6 +9,10 @@ public sealed class DocumentRunBatch : IDisposable
 {
     private readonly DocumentSession _session;
     private readonly ExecutionRunBatch _reservation;
+    private readonly bool _ownsReservation;
+    private readonly IReadOnlyDictionary<SunEyeVision.Domain.Workflows.ScopedNodeIdentity, Guid> _hostGenerations;
+    internal IReadOnlyList<string> WorkflowOrder => _order;
+    internal IReadOnlyDictionary<SunEyeVision.Domain.Workflows.ScopedNodeIdentity, Guid> HostGenerations => _hostGenerations;
     private readonly ExecutionVariableValues _variables;
     private readonly IReadOnlyDictionary<string, ExecutionRunRequest> _requests;
     private readonly IReadOnlyList<string> _order;
@@ -16,8 +20,9 @@ public sealed class DocumentRunBatch : IDisposable
     private CancellationTokenSource? _cancellation;
     private int _state;
     internal DocumentRunBatch(DocumentSession session, ExecutionRunBatch reservation, ExecutionVariableValues variables,
-        IReadOnlyDictionary<string, ExecutionRunRequest> requests, IReadOnlyList<string> order)
-    { _session = session; _reservation = reservation; _variables = variables; _requests = requests; _order = order; }
+        IReadOnlyDictionary<string, ExecutionRunRequest> requests, IReadOnlyList<string> order, bool ownsReservation = true,
+        IReadOnlyDictionary<SunEyeVision.Domain.Workflows.ScopedNodeIdentity, Guid>? hostGenerations = null)
+    { _session = session; _reservation = reservation; _variables = variables; _requests = requests; _order = order; _ownsReservation = ownsReservation; _hostGenerations = hostGenerations ?? new Dictionary<SunEyeVision.Domain.Workflows.ScopedNodeIdentity, Guid>(); }
 
     public event Action<string, string, ExecutionStatus>? NodeStatusChanged;
     public bool Pause() => _engine.PauseExecution();
@@ -30,7 +35,19 @@ public sealed class DocumentRunBatch : IDisposable
         if (failure is not null) throw failure;
     }
 
-    public async Task<DocumentRunResult> RunAsync(Action<string> log, CancellationToken cancellationToken = default)
+    public Task<DocumentRunResult> RunAsync(Action<string> log, CancellationToken cancellationToken = default)
+        => RunCoreAsync(log, cancellationToken, null, null, null);
+
+    internal Task<DocumentRunResult> RunRoundAsync(Action<string> log, CancellationToken cancellationToken,
+        Func<string, CancellationToken, ValueTask> beforeWorkflow,
+        Func<string, ExecutionResult, ExecutionRunRequest, bool> afterWorkflow,
+        Func<string, Func<Task<ExecutionResult>>, Task<ExecutionResult>> startWorkflow)
+        => RunCoreAsync(log, cancellationToken, beforeWorkflow, afterWorkflow, startWorkflow);
+
+    private async Task<DocumentRunResult> RunCoreAsync(Action<string> log, CancellationToken cancellationToken,
+        Func<string, CancellationToken, ValueTask>? beforeWorkflow,
+        Func<string, ExecutionResult, ExecutionRunRequest, bool>? afterWorkflow,
+        Func<string, Func<Task<ExecutionResult>>, Task<ExecutionResult>>? startWorkflow)
     {
         ArgumentNullException.ThrowIfNull(log);
         var cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -43,13 +60,16 @@ public sealed class DocumentRunBatch : IDisposable
             foreach (var id in _order)
             {
                 cancellation.Token.ThrowIfCancellationRequested();
+                if (beforeWorkflow is not null) await beforeWorkflow(id, cancellation.Token).ConfigureAwait(false);
+                cancellation.Token.ThrowIfCancellationRequested();
                 void OnStatus(string nodeId, ExecutionStatus status) => NodeStatusChanged?.Invoke(id, nodeId, status);
                 _engine.NodeStatusChanged += OnStatus;
                 try
                 {
-                    var result = await _engine.ExecuteAsync(_reservation, _requests[id], log, cancellation.Token).ConfigureAwait(false);
+                    Task<ExecutionResult> Start() => _engine.ExecuteAsync(_reservation, _requests[id], log, cancellation.Token);
+                    var result = await (startWorkflow is null ? Start() : startWorkflow(id, Start)).ConfigureAwait(false);
                     results.Add(id, result);
-                    if (result.Status == ExecutionStatus.Cancelled) break;
+                    if (result.Status == ExecutionStatus.Cancelled || (afterWorkflow is not null && !afterWorkflow(id, result, _requests[id]))) break;
                 }
                 finally { _engine.NodeStatusChanged -= OnStatus; }
             }
@@ -84,7 +104,7 @@ public sealed class DocumentRunBatch : IDisposable
         var errors = new List<Exception>();
         foreach (var request in _requests.Values) try { request.Dispose(); } catch (Exception error) { errors.Add(error); }
         try { _variables.Dispose(); } catch (Exception error) { errors.Add(error); }
-        try { _reservation.Dispose(); } catch (Exception error) { errors.Add(error); }
+        if (_ownsReservation) try { _reservation.Dispose(); } catch (Exception error) { errors.Add(error); }
         if (errors.Count != 0) throw new AggregateException("运行批次释放失败。", errors);
     }
 }

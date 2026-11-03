@@ -1,3 +1,13 @@
+## 2026-11-04 新证据影响核收及三个完整在途批
+
+根当前172ebc70f，产品已合b825真实模块时间/连续只读摘要和89d唯一FragmentBuilder。52工程正常全量Release0错6123warn；同版27063FE131443F6E66FAA35778C87902C7AD1C6813039DA31C2DFDEFADA6F926，Editing17/Graph35/隐藏Canvas24；b825实际Execution16/Continuous15组过。build/run/TRX位于Release/_validation/fragment-*-integrated-*20261104及continuous-summary-*3-20261104。首轮真实模块Duration缺失已沿Engine修复，不降断言；本批非主窗连续已完成，B仍接完整主窗。当前无根构建/测试活跃句柄。
+
+关键新证据：逆向集中回件“流程Tab及节点整根复制静态交接-20261104.md”实际SHA=5EC3618EAF519967811A6620527C5950CDF69E8B176A8BCEEE4DAC071F927671，根读完整原ProcedurePaste及Copy/Paste装饰器676–813，报告转义版本快照在evidence/流程Tab与复制原件补证核收-20261104.html。普通复制Paste现查源参数，UI删除任一源清空全部；无坐标+100/5吸附非20/40；Tab.Move所核原件明确不支持。撤回旧源删仍贴/永久配置快照假设；旧35/24仅结构检查点，不签新VM语义。C现读/清理/位置整链修正在独立树，e85f源码待其全版验证，尚未合根。A集合不造排序入口、名称补已证禁用字符，保有序候选/V4，未知native冲突与复制名标本方政策。
+
+并行：A D:/MyWork/line-aiproject/platform-root-collection-20261104，98b073798基线，唯一共享Application Editing/Flow生命周期/Graph候选依赖/Domain/Persistence，根不并写这些文件；C提供唯一FragmentBuilder91给A，不另造clone，根当前已合；B codex/platform-continuous-ui-20261104独立树消费b825计时与完整连续Core，已审定75设计，不改共享内核；C先完成新证据Clipboard整链，图像宿主中立化完整设计保留。它发现模拟/MVS帧目前仅IVisionImage，不实现正式路径要求typed snapshot，真实相机工作流不能签通过。A/B/C候选、根集成、人工、VS、主仓分别记。
+
+原主HTML及完整剩余矩阵已阶段同步。其它18工具及SDK非视觉活跃消费者/实际桌面图像宿主仍未迁；目标不缩，不以两工具/测试数签全平台。Group/新循环暂停，开发包不做，当前只项目引用并设计可扩展。原件查询经统筹，已向技术总监同步本阶段及新证据影响，不要求其停工或立即主仓合并。
+
 ## 2026-11-04 本树连续核心与节点复制整批自测通过
 
 当前产品c28b519b1：A5a/6b→60e4eabb9及其后置、C c33/8e/780→4b66819aa/212528896/c28b519b1已集中合入。全量Release0错6123warn，同版封包B20D235E32D62B1C313950FB3034815123B817CD772B5F856E8AFFBACB441C5F；真实连续探针13组通过，WorkflowGraph35/35、隐藏Canvas24/24。结果见continuous-clipboard-integrated-full-build、continuous-integrated-run、clipboard-graph/canvas-integrated-20261104.log和integrated-rechecks-20261104 TRX。

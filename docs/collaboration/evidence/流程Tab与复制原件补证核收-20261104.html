@@ -1,0 +1,33 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>流程Tab与复制原件补证核收</title><style>body{max-width:1250px;margin:30px auto;background:#152535;color:#dfeaf4;font:16px/1.7 sans-serif}table{border-collapse:collapse;width:100%}td,th{border:1px solid #637f92;padding:12px}pre{white-space:pre-wrap;background:#223a4c;padding:20px}section{margin:22px 0;padding:20px;background:#213747}a{color:#a7dafd}</style><h1>流程Tab与复制：原件补证版本及影响核收</h1><p>2026-11-04 · 逆向统筹集中回件，根实际校验源报告SHA256：5EC3618EAF519967811A6620527C5950CDF69E8B176A8BCEEE4DAC071F927671。报告来自静态反编译/XAML，未启动原机/SDK。原DLL身份、反编译文本SHA分别在下方原报告中保留，不能将二者混为运行身份。</p><table><tr><th>旧假设/范围</th><th>新证据及决定</th><th>源码与验收接入</th></tr><tr><td>普通节点复制永久冻结源参数，删源仍可粘贴</td><td>Copy只记录FullName；Paste当场重查源并CopyModuleParam。普通UI删除命中任意复制源时清空全部Clipboard。撤回旧假设，按当前源重读；UI删除后Undo不恢复剪贴板。</td><td>C统一修改Clipboard定位/粘贴/删除消费者和全部相关测试，纯FragmentBuilder仅冻结单次输入，ABI保留。原35/24证明旧检查点，不证明新语义已迁移；在途不能计完成。</td></tr><tr><td>来源失踪/名称/身份</td><td>底层ProcedurePaste对失踪来源逐项跳过；与UI先清空不同。流程/模块Name构成FullName，改名会失效。保Session/目录/真实对象更严格保护，不能用同名新实体冒充；它是平台适配。</td><td>源参数编辑取新值、正常删除/Undo、非UI部分/全部失踪、源/根改名、同名假体、无有效源不建历史、单次提交和资源生命周期全部集中回归。</td></tr><tr><td>默认20/40递增偏移</td><td>原Copy记录首选源Decorator.Position，无坐标Paste为该位置+100，5像素吸附/边界处理；方法没有Paste后递增。显式坐标和后续节点夹限分支不同。</td><td>C沿VmModuleBaseDecorator676–813原代码适配真实NodeRect和Domain中心。所有位置在同一Paste draft安装；非统一夹限时清手工路径交正式router，这是明确适配，非原件路径证据。</td></tr><tr><td>根Tab排序功能</td><td>所查CollectionChanged.Move明确NotImplemented，头部仅选择；当前范围无可用排序入口。不据此宣称全版本不存在。</td><td>A不新增排序API/UI；有序候选和V4文件仍保实际顺序。原完整排序追踪项保留为“所核原件不支持，受保护，不计实现”，不因实现结果删清单。</td></tr><tr><td>名称与整根复制</td><td>Tab控件MaxLength64，名称setter拒? ; . [ ] &lt; &gt; ( ) `；native唯一性/冲突策略未知。根复制Export→Import(mode2)后补前驱/根IO，未证native所有内节点/proxy细节。</td><td>A同步根纯规则/V4和整体设计；Trim/OrdinalIgnoreCase/副本后缀明示本方政策。统一Proposal/历史/代次/资源为本平台适配，禁止假称native全部已证。</td></tr></table><section><h2>版本化原报告内容</h2><p>下方为源报告文本的HTML转义快照；源MD哈希对应原始字节，不对应本HTML。来源路径：D:/MyWork/REA逆向测试/docs/joint-audit/流程Tab及节点整根复制静态交接-20261104.md。</p><pre># 根流程 Tab 与节点、整根复制：现有原件集中核对
+
+范围：既有 VM 4.4 安装件对应的托管反编译和 XAML；未启动 VM/SDK，不修改其他项目。原程序集历史身份：`Applications/myLibs/VM.Core.dll` SHA-256 `936763F6C8A1BF9FCF59F22ACEBCA8FEB09B5F3D5701AE77C82BDC81E626190D`；`Applications/myLibs/VMControls.WPF.dll` `99FFA401C8784472913AD43813D68A8A5577890C00E149506E3E5664FA61C97D`。这些是已有原件身份，下面的文件哈希是反编译文本本身，不是原 DLL 哈希，也不证明运行态装载身份。
+
+## 根流程 Tab 与重命名
+
+- `ProcedureConfigControl.xaml:523–529`：Tab 的 `ItemsSource` 为 `DecoratedProcedures`；标签编辑 `HeadReNameTextBox` 的 `MaxLength=64`，双向 `Name` 使用 `UpdateSourceTrigger=Explicit`。64 是该控件的编辑限制，不单凭此断言 SDK/API 名称长度或字符编码限制。
+- 同文件 `:255–270`：根流程菜单包括 CopyCommand 与 DisplayModuleSet.RenameCommand；其复制入口在单流程显示模式有隐藏触发。`VmModuleBaseDecorator.cs:358` 的 Name setter 在将值转交模块前拒绝 `? ; . [ ] &lt; &gt; ( ) \``，然后登记改名历史并赋值。该控件路径对空名称通过底层异常分支展示提示，不能推断所有编程 API 相同。
+- `VmProcedure.cs:102–119` 的 Name setter 仅在 `name != value` 时调用 `SetProcessName(ID,value)`；成功后更新托管名称并发 `ReName`。此本地字符串不同判断不证明 SDK 的重复名称判定是否忽略大小写，允许字符、尾空格、同名/大小写碰撞和原生错误码仍未知。
+- `ProcedureConfigControl.xaml.cs:1028–1080` 的 AddProcedures 按新输入枚举顺序向装饰集合 `.Add`，非初始化新增后选 `LastOrDefault`；根复制经导入回调造成 Add 时，已核 UI 投影会追加并选末项。原生导入是否总以何种顺序通知、内部原始集合/保存顺序不因此全域闭合。
+- `:1226–1260` 的集合变动处理 Add/Remove/Replace/Reset，而 `NotifyCollectionChangedAction.Move` 明确 `throw new NotImplementedException()`；XAML 已读 Tab 头绑定 `HeadText_MouseDown`，该处理器只调整当前选中项。**本范围没有找到可用的 Tab 拖拽重排入口；Move 在该处理器非受支持操作**。这不是对其他插件、版本或外部原生通道不存在排序入口的全程序证明。
+
+## 普通节点复制：已核可复用链
+
+`VmModuleBaseDecorator.CopyItemsCommandExecute` 保存来源 FullName；粘贴进入 `VmModuleSet.ProcedurePaste:1318`，逐名称从当前 `VmSolution.Instance` 查源，源不存在则跳过。普通模块按源实际类型创建目标，建立旧对象→新对象映射，去除目标初生动态输出，`CopyModuleParam(old.ID,new.ID)`，复制禁用状态、注册 IO 并 `InitDynamicIO`；所有创建完成后逐目标调用 `ModulePaste(map)`，再逐目标 `ModulePasteFinish(map)`。Group 是 Export→LoadGroup→CopyModuleParam 单独分支。细节与历史证据见 [B02](../reverse/B02-identity-preflight-batch6.md)。
+
+`VmModule.ModulePaste:2746` 对执行前驱优先使用映射后的副本；原前驱未复制且与目标同父级、`SpModuleCheck(false)` 通过时可保留原连接，并复制 SourceIndex/TargetIndex（缺省分别 2/0）。随后按条件挑选输入，`PasteIO` 复制/映射输入输出，非 Group 刷新 ready，`UpdateRunParamBind(FullName,map)`，再调用工具 `Paste` 及显示路径 `PasteNode`；`ModulePasteFinish` 的具体工具重写仍依各工具实现。
+
+`VmModule.PasteIO:3530` 根据 IO 名字找目标：常量创建新的常量 IO；ID 13000 的特殊全局源沿用原引用；映射中存在 producer 时取得新 producer 的同名 IO，并相应复制常量索引或映射索引；未映射源按触发字符串、父子关系/同父级分支处理，有些分支不设置引用。不能概括成“所有外部引用都保留”或“跨根一律清空”。
+
+## 整根流程复制
+
+`VmProcedureDecorator.CopyCommandExe:442` 注册根历史并调用 `VmProcedure.CopyProcedure:1208`：设置导出结束标志、Export；路径非空则 `ImportProFile(..., isForceIgnoreGlobal:false, nIdAllocateWay:0, isFromCopy:true)`，导入非空结果才调用 `procedureInfoCopy(oldProcedure)`；Export 返回 null 时新建流程。`VmSolution.ImportProFile:3039–3155` 对复制且非对话框路径等待导出，调用 SDK `ImportProcess` 时复制模式参数为 2，并等待导入结束后返回结果。
+
+`procedureInfoCopy:951–981` 遍历原流程的 `PreModules`，复制关联索引 UserData 到新流程名称键，并确保前驱的 `NextModules` 包含新流程；然后初始化动态 IO，建立仅含旧流程→新流程的映射，对根输入/输出调用 `PasteIO`。这证明一条具体外部前驱和根 IO 补接路径；**不证明 SDK 导入如何复制所有内部节点、外部 producer、工具参数 proxy 或失效订阅**。名称如何由 SDK 生成、冲突如何处理，仍需 native ImportProcess 路径或隔离运行证据；不能自定“原名后缀”冒作原版。
+
+## 反编译文本 SHA-256
+
+- `analysis/decompiled/VM.Core/VM.Core/VmProcedure.cs`：`FDDE074D17C50C37F8D0BFE097CF20F904CDB4B59D4AC39612FC023C3F0B69DA`；`VmSolution.cs`：`C141E2C53913B233B768782D6757FAE5997ECAF638B35DB2DDF98F5EF951A13E`。
+- `VM.Core/VmModuleSet.cs`：`F3B98C4436686B0A9BABF8CDE4F5F6C83814664B8F7835DFABBEB02E2A64A346`；`VM.Core/VmModule.cs`：`53E2F0F9032C4631B59CF0EB2A00E06D50469D94706E7E370E9CC7E1059C72CE`。
+- `VMControls.WPF/VMControls.WPF/ProcedureConfigControl.xaml`：`A91F89DD2214F3B4CC3AD432D14CAF8732D11BC376B29C64AD1B8A75A982F106`；同名 `.xaml.cs`：`36BE1620196C60A72EFB03DAB8AFB4FA302BA1BA8EC4ACF7EB1F5F61883678BD`。
+- `VMControls.WPF/VMControls.WPF.DataForUI/VmModuleBaseDecorator.cs`：`F124B9A5E3CE5B8E2E856D3E325B00A4B143F7074513CCC74D542EC35C2695DD`；`VmProcedureDecorator.cs`：`A229FE33277EB857A0AFA3F6A9FDB56807D2178AD5E6958B28BC63175CE19B5A`。
+</pre></section></html>

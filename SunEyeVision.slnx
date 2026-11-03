@@ -146,5 +146,8 @@
   <Folder Name="/Tests/SunEyeVision.ShellFooter.Tests/">
     <Project Path="tests/SunEyeVision.ShellFooter.Tests/SunEyeVision.ShellFooter.Tests.csproj" />
   </Folder>
+  <Folder Name="/Tests/ContinuousRunProbe/">
+    <Project Path="tests/ContinuousRunProbe/ContinuousRunProbe.csproj" />
+  </Folder>
 </Solution>
 

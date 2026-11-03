@@ -225,6 +225,14 @@ var presentationDraft = presentationSession.PrepareGraphEdit(presentationFlow.Id
 var presentationNode = presentationSession.CreateNode(presentationDraft, "TransactionProbe", new CanvasPoint(0, 0));
 presentationSession.CommitGraphEdit(presentationDraft, "呈现节点");
 var presentation = presentationSession.AdmitPresentation(presentationFlow.Id, presentationNode.Id);
+var lifetimeScope = typeof(DocumentSession).GetMethod("OpenScope", BindingFlags.Instance | BindingFlags.NonPublic)!
+    .Invoke(presentationSession, new object[] { presentationFlow.Id });
+var lifetimeCapture = typeof(DocumentSession).GetMethod("CaptureNodeLifetime", BindingFlags.Instance | BindingFlags.NonPublic)!;
+(Guid Generation, CancellationToken Retirement) NodeLifetime() =>
+    ((Guid, CancellationToken))lifetimeCapture.Invoke(presentationSession, new[] { lifetimeScope, presentationNode })!;
+var initialLifetime = NodeLifetime();
+Check(initialLifetime.Generation != Guid.Empty && NodeLifetime().Generation == initialLifetime.Generation,
+    "同一实际节点生命周期须稳定且代次不为空。");
 Check(presentation.IsCurrent && presentationSession.GetNodeSettingsSchema(presentationFlow.Id, presentationNode.Id)!.Inputs.Any(port => port.Id == "threshold"),
     "呈现必须使用实际节点声明。");
 var presentationMove = presentationSession.PrepareGraphEdit(presentationFlow.Id);
@@ -245,12 +253,14 @@ using var presentationRegistration = presentation.RetirementToken.Register(() =>
 var presentationDelete = presentationSession.PrepareGraphEdit(presentationFlow.Id);
 presentationDelete.DeleteNodesAndConnections(new[] { presentationNode }, Array.Empty<ConnectionDefinition>());
 presentationSession.CommitGraphEdit(presentationDelete, "删除呈现节点");
-Check(retirementCalls == 1 && !presentation.IsCurrent && presentationSession.LastPresentationReleaseError is AggregateException,
+Check(retirementCalls == 1 && !presentation.IsCurrent && presentationSession.LastNodeRetirementError is AggregateException,
     "清理失败不得回滚删除，且必须保留诊断。");
 Check(presentationSession.Undo() && ReferenceEquals(presentationFlow.Nodes.Single(), presentationNode) && !presentation.IsCurrent,
     "撤销恢复实体不能复活已退出窗口的呈现能力。");
 var restoredPresentation = presentationSession.AdmitPresentation(presentationFlow.Id, presentationNode.Id);
 Check(restoredPresentation.IsCurrent, "恢复实体须重新准入独立呈现生命周期。");
+Check(initialLifetime.Retirement.IsCancellationRequested && NodeLifetime().Generation != initialLifetime.Generation,
+    "Undo恢复同一节点不得复活旧宿主游标代次。");
 manager.CloseCurrent();
 Check(!restoredPresentation.IsCurrent && restoredPresentation.RetirementToken.IsCancellationRequested,
     "方案关闭必须退役仍打开的呈现能力。");
@@ -348,6 +358,10 @@ var resourceFlow = resourceSession.GetWorkflows().Single();
 var resourceGraph = resourceSession.PrepareGraphEdit(resourceFlow.Id);
 var resourceNode = resourceSession.CreateNode(resourceGraph, "ResourceProbe", new CanvasPoint(0, 0));
 resourceSession.CommitGraphEdit(resourceGraph, "资源节点");
+Check(resourceSession.GetNodeHostInputDeclaration(resourceFlow.Id, resourceNode)?.CapabilityId == "resource-probe",
+    "宿主能力必须读取已准入声明。");
+Reject(() => resourceSession.GetNodeHostInputDeclaration(resourceFlow.Id,
+    new NodeDefinition(resourceNode.Id, resourceNode.Name, resourceNode.ToolType, resourceNode.Configuration)));
 var resourceDraft = resourceSession.Editing.Host.BeginEdit(resourceFlow.Id, resourceNode.Id);
 resourceDraft.ApplyFields(new Dictionary<string, ParameterSetting> { ["file"] = new ConstantSetting("asset.txt") });
 resourceSession.CommitEdit(DocumentEditProposal.Prepare(resourceSession.Editing.Host, nodes: new[] { resourceDraft }));
@@ -381,7 +395,8 @@ Check(resourceReopened.ResourceBaseDirectory == movedRoot &&
 var reopenedResourceSave = resourceReopened.Save(movedPath, Path.Combine(resourceRoot, "backup"), saveTypes, saveOptions);
 Check(reopenedResourceSave.WrittenSnapshot.ResourcePlan.Single().AbsolutePath == absoluteResource, "重开后保存应保持资源身份。");
 Console.WriteLine("PASS 相对资源另存、重复保存、副本、捕获、实际解析与重开同一语义基址");
-Console.WriteLine("20 个事务场景通过；真实工具、WPF及完整运行仍待整批验证。");
+DisplayValidationScenario.Run(saveRoot);
+Console.WriteLine("21 个事务场景通过；真实工具、WPF及完整运行仍待整批验证。");
 return 0;
 }
 catch (Exception error) { Console.Error.WriteLine(error); return 1; }
@@ -428,9 +443,11 @@ public sealed record ResourceProbeSettings : IToolSettings<ResourceProbeSettings
     public ResourceProbeSettings Freeze() => this with { };
 }
 public sealed class ResourceProbeDefinition : IToolDefinition<ResourceProbeSettings, WorkspaceProbeOutput>, IToolSettingsFields,
-    IToolCatalogProvider, IToolResourceFieldDeclarations
+    IToolCatalogProvider, IToolResourceFieldDeclarations, IToolHostInputDeclaration
 {
     public string ToolId => "ResourceProbe";
+    public HostInputDeclaration HostInputs { get; } = new("resource-probe", 1,
+        new[] { new HostInputPort("input.image", TypeRef.ResourceOf(ResourceKind.Image)) }, Array.Empty<string>());
     public ToolCatalogDescriptor Catalog { get; } = new("资源测试", "验证路径语义", "generic", "测试", 0);
     public ToolSchema Describe() => WorkspaceProbeDefinition.Schema;
     public ToolSchema SettingsSchema { get; } = new(new[] { new Port("file", TypeRef.ScalarOf(ScalarKind.Text),

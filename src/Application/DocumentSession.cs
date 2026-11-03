@@ -283,7 +283,7 @@ public sealed partial class DocumentSession : IDisposable
         }
         _directoryRetirement.Dispose();
         Exception? presentationFailure = null;
-        try { RetirePresentations(); } catch (Exception error) { presentationFailure = error; }
+        try { RetireNodeLifetimes(); } catch (Exception error) { presentationFailure = error; }
         Exception? editingFailure = null;
         try { Editing.Dispose(); editingFailure = Editing.LastReleaseError; } catch (Exception error) { editingFailure = error; }
         Exception? historyFailure = null;

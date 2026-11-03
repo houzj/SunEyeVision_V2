@@ -1,3 +1,9 @@
+## 2026-11-03 显示查询与正式编辑验证、节点生命周期共享
+
+集成C132/ebfd查询源和根CandidateDisplayValidation，显示前序/自身、不造执行依赖，表达式Reference/Self及位置、跨流程/变量索引/格式/非法自身字段拒绝；21实际Session场景通过（session-display-host-lifetime-20261103.log），含记录行与序列位置、历史、保存重开。实际节点Guid+token生命周期抽成无UI partial，删除与Undo不复活；GetNodeHostInputDeclaration(workflowId,actualNode)拒同ID伪造。Aab7/c76已cherry756/cd5，Execution13/13（session-node-lifetime-execution-20261103.log）。原主HTML同步。不代表正式Blob/完整主窗/全量通过。
+
+B集中主窗SelectedNode/节点参数/结果，图像源UI完整边界已以dd2等交C继续独立树，A接同次准入宿主factory/正式游标，等待本批生命周期ABI后集成。副作用不在锁内、工具不依App、当前ProjectReference不制开发包、Group暂停保持。
+
 ## 2026-11-03 统一live资源基址与所有保存出口
 
 C已真实ImageLoad复现跨目录SaveAs后Save的资源身份漂移（reference-repro2.log，原封包5E7...49CD）。根新增Session.ResourceBaseDirectory/CreateResourcePathResolver，Open初始化实际文件目录；live相对字段不重写，所有保存从唯一来源重定位目标，拒伪造source。Capture/Save均改fresh codec factory，不保旧实例重载；复杂Mat跨目录SaveAs+Save四scope全部释放，正式图像保留到关闭。20事务和真实Mat探针0退出，原主HTML同步；UI/host消费者整体接线B/A继续，尚非正式工具修后/主窗/全量通过。

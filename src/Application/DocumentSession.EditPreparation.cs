@@ -138,9 +138,14 @@ public sealed partial class DocumentSession
         var reconciled = GraphBindingReconciliation.Prepare(Document, graphs, definitions, AdmitConfiguration, Current);
         var afterDependencies = GraphDependencySnapshot.Create(Document, reconciled.Graphs, reconciled.Variables, AdmitConfiguration);
         foreach (var (flow, graph) in reconciled.Graphs)
+        {
+            var participants = proposal.Nodes.Where(item => item.Opening.Scope.WorkflowId == flow.Id)
+                .Select(item => item.Opening.Node.Id).ToHashSet(StringComparer.Ordinal);
             CandidateInputValidation.Validate(_documentId, flow.Id, ResultOwnerId, ChangeRevision, graph, reconciled.Variables,
-                proposal.Nodes.Where(item => item.Opening.Scope.WorkflowId == flow.Id).Select(item => item.Opening.Node.Id).ToHashSet(StringComparer.Ordinal),
-                proposal.Variables is not null, AdmitConfiguration);
+                participants, proposal.Variables is not null, AdmitConfiguration);
+            CandidateDisplayValidation.Validate(flow.Id, ResultOwnerId, ChangeRevision, graph,
+                participants, proposal.Variables is not null, AdmitConfiguration);
+        }
         var changedVariables = before.Definitions.Select(variable => variable.Id).Union(reconciled.Variables.Select(variable => variable.Id))
             .Where(id => { var old = before.Definitions.SingleOrDefault(variable => variable.Id == id);
                 var next = reconciled.Variables.SingleOrDefault(variable => variable.Id == id);

@@ -5,12 +5,9 @@ namespace SunEyeVision.Application;
 
 public sealed partial class DocumentSession
 {
-    private readonly CancellationTokenSource _presentationRetirement = new();
-    private readonly Dictionary<SunEyeVision.Domain.Workflows.NodeDefinition, CancellationTokenSource> _nodePresentations =
-        new(ReferenceEqualityComparer.Instance);
-    private readonly List<CancellationTokenSource> _removedPresentations = new();
+
     private readonly List<IDisposable> _invalidatedRuntimePublications = new();
-    public Exception? LastPresentationReleaseError { get; private set; }
+
 
     public ToolSchema? GetNodeSettingsSchema(string workflowId, string nodeId)
     {
@@ -31,11 +28,8 @@ public sealed partial class DocumentSession
         {
             var scope = OpenScope(workflowId);
             var captured = RequireNode(scope, nodeId);
-            if (!_nodePresentations.TryGetValue(captured.Node, out var lifetime))
-            {
-                lifetime = CancellationTokenSource.CreateLinkedTokenSource(_presentationRetirement.Token);
-                _nodePresentations.Add(captured.Node, lifetime);
-            }
+            var lifetime = CaptureNodeLifetime(scope, captured.Node);
+
             bool Current()
             {
                 lock (_gate)
@@ -48,15 +42,8 @@ public sealed partial class DocumentSession
                         nodes[0].ToolType == captured.Configuration.Configuration.ToolId;
                 }
             }
-            return new ToolPresentationAdmission(_directory, captured.Configuration.Definition, Current, lifetime.Token);
+            return new ToolPresentationAdmission(_directory, captured.Configuration.Definition, Current, lifetime.Retirement);
         }
-    }
-
-    // No cancellation callback executes under the transaction or owner lock.
-    private void QueueRemovedPresentations(DocumentChangeSet change)
-    {
-        foreach (var removed in change.RemovedNodes)
-            if (_nodePresentations.Remove(removed.Node, out var lifetime)) _removedPresentations.Add(lifetime);
     }
 
     private void CompleteChangePublication(DocumentChangeSet change)
@@ -68,7 +55,7 @@ public sealed partial class DocumentSession
             IDisposable[] invalidatedResults;
             lock (_gate)
             {
-                removed = _removedPresentations.ToArray(); _removedPresentations.Clear();
+                removed = _retiredNodeLifetimes.ToArray(); _retiredNodeLifetimes.Clear();
                 invalidatedResults = _invalidatedRuntimePublications.ToArray(); _invalidatedRuntimePublications.Clear();
             }
             var failures = new List<Exception>();
@@ -77,7 +64,7 @@ public sealed partial class DocumentSession
                 try { lifetime.Cancel(throwOnFirstException: false); } catch (Exception error) { failures.Add(error); }
                 finally { lifetime.Dispose(); }
             }
-            LastPresentationReleaseError = failures.Count == 0 ? null : new AggregateException("节点已移除，部分呈现清理观察者失败。", failures);
+            LastNodeRetirementError = failures.Count == 0 ? null : new AggregateException("节点已移除，部分生命周期清理观察者失败。", failures);
             var resultFailures = new List<Exception>();
             foreach (var publication in invalidatedResults)
                 try { publication.Dispose(); } catch (Exception error) { resultFailures.Add(error); }
@@ -88,19 +75,4 @@ public sealed partial class DocumentSession
         finally { _notifying = false; }
     }
 
-    private void RetirePresentations()
-    {
-        CancellationTokenSource[] sources;
-        lock (_gate)
-        {
-            sources = _nodePresentations.Values.Concat(_removedPresentations).ToArray();
-            _nodePresentations.Clear(); _removedPresentations.Clear();
-        }
-        try { _presentationRetirement.Cancel(throwOnFirstException: false); }
-        finally
-        {
-            foreach (var source in sources) source.Dispose();
-            _presentationRetirement.Dispose();
-        }
-    }
 }

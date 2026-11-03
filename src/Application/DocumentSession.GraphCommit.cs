@@ -121,7 +121,7 @@ public sealed partial class DocumentSession
     // roll it back, and every invalidated domain must still be retired before new admission.
     private void RetireChangedDomains(DocumentChangeSet change)
     {
-        QueueRemovedPresentations(change);
+        QueueRemovedNodeLifetimes(change);
         _invalidatedRuntimePublications.AddRange(TakeInvalidatedRuntimePublications(change.ExecutionInvalidatedNodes));
         var failures = new List<Exception>();
         foreach (var identity in change.ExecutionInvalidatedNodes)

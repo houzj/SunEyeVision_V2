@@ -387,6 +387,8 @@ public sealed partial class SolutionManagerUiTests
         public int DisplayIndex=>-1;
         public int ConfiguredStartIndex=>-1;
         public bool IsReadOnly=>false;
+        public bool CanEdit=>true;
+        public bool CanNavigate=>true;
         public bool IsSelectMode=>false;
         public bool AutoSwitchEnabled=>false;
         public bool IsImporting=>false;

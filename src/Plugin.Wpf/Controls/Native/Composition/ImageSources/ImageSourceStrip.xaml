@@ -253,7 +253,7 @@
     </ResourceDictionary>
   </UserControl.Resources>
 <StackPanel><Grid Height="40" Background="{DynamicResource ImageSources.Background}"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="130"/><ColumnDefinition Width="36"/></Grid.ColumnDefinitions>
-<StackPanel Grid.Column="1" Height="40" HorizontalAlignment="Right" IsEnabled="{Binding CanInteract, ElementName=ImagePanel}" Orientation="Horizontal" Visibility="{Binding ExpandedVisibility, ElementName=ImagePanel}">
+<StackPanel Grid.Column="1" Height="40" HorizontalAlignment="Right" IsEnabled="{Binding CanEdit, ElementName=ImagePanel}" Orientation="Horizontal" Visibility="{Binding ExpandedVisibility, ElementName=ImagePanel}">
   <TextBlock Text="{Binding AutoSwitchText, ElementName=ImagePanel}" ToolTip="{Binding AutoSwitchToolTip, ElementName=ImagePanel}" Foreground="{DynamicResource ImageSources.Foreground}" FontSize="14" VerticalAlignment="Center" Margin="5,1,-5,0"/>
   <ContentControl Margin="20,0,0,0">
     <inputs:ContentToggleSwitch x:Name="AutoSwitch" Margin="5,4,0,0" IsChecked="{Binding AutoSwitchEnabled, ElementName=ImagePanel, Mode=TwoWay}" VerticalAlignment="Center" ToolTip="{Binding AutoSwitchToolTip, ElementName=ImagePanel}">
@@ -262,10 +262,10 @@
     </inputs:ContentToggleSwitch>
   </ContentControl>
 </StackPanel>
-<ComboBox Style="{StaticResource ListViewComboBoxGrayStyle}" x:Name="Mode" DisplayMemberPath="DisplayName" SelectedValuePath="Value" ToolTip="{Binding SelectedItem.DisplayName, RelativeSource={RelativeSource Self}}" IsEnabled="{Binding CanInteract, ElementName=ImagePanel}" Grid.Column="2" Width="90" Margin="20,5" SelectedIndex="{Binding ModeIndex, ElementName=ImagePanel, Mode=OneWay}" SelectionChanged="ModeChanged" Visibility="{Binding ExpandedVisibility, ElementName=ImagePanel}"></ComboBox>
+<ComboBox Style="{StaticResource ListViewComboBoxGrayStyle}" x:Name="Mode" DisplayMemberPath="DisplayName" SelectedValuePath="Value" ToolTip="{Binding SelectedItem.DisplayName, RelativeSource={RelativeSource Self}}" IsEnabled="{Binding CanEdit, ElementName=ImagePanel}" Grid.Column="2" Width="90" Margin="20,5" SelectedIndex="{Binding ModeIndex, ElementName=ImagePanel, Mode=OneWay}" SelectionChanged="ModeChanged" Visibility="{Binding ExpandedVisibility, ElementName=ImagePanel}"></ComboBox>
 <DockPanel Grid.Column="0" Height="28" Margin="100,5,0,5" LastChildFill="True"><DockPanel.Style><Style TargetType="DockPanel"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding IsImporting, ElementName=ImagePanel}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></DockPanel.Style><Button DockPanel.Dock="Right" Content="取消导入" Click="CancelImportClick"/><TextBlock Foreground="{DynamicResource ImageSources.Foreground}" Text="{Binding Status, ElementName=ImagePanel}" TextTrimming="CharacterEllipsis"/></DockPanel><ToggleButton Grid.Column="4" Style="{StaticResource DisplayHideBtnStyle}" IsChecked="{Binding IsExpanded, ElementName=ImagePanel, Mode=TwoWay}"/>
-</Grid><Grid Margin="5,-40,5,5" IsEnabled="{Binding CanInteract, ElementName=ImagePanel}">  <Grid Name="imageListGrid">
-    <Button Height="54" Width="18" Margin="1,41,1,1" VerticalAlignment="Top" HorizontalAlignment="Left" ToolTip="{DynamicResource Lang_FirstImage}" Visibility="{Binding FirstVisibility, ElementName=ImagePanel}" Click="FirstImage_Click">
+</Grid><Grid Margin="5,-40,5,5">  <Grid Name="imageListGrid">
+    <Button IsEnabled="{Binding CanEdit, ElementName=ImagePanel}" Height="54" Width="18" Margin="1,41,1,1" VerticalAlignment="Top" HorizontalAlignment="Left" ToolTip="{DynamicResource Lang_FirstImage}" Visibility="{Binding FirstVisibility, ElementName=ImagePanel}" Click="FirstImage_Click">
       <Control.Template>
         <ControlTemplate TargetType="{x:Type Button}">
           <Border Name="bd" BorderThickness="1" Background="{DynamicResource ImageSources.Background}" BorderBrush="{DynamicResource ImageSources.Border}">
@@ -292,7 +292,7 @@
         </ControlTemplate>
       </Control.Template>
     </Button>
-    <ListBox Name="lst" AllowDrop="True" Margin="20,39,1,-1" Background="#00FFFFFF" BorderBrush="#00FFFFFF" VerticalAlignment="Top" ScrollViewer.VerticalScrollBarVisibility="Disabled" Style="{DynamicResource ListBoxStyle1}" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.CacheLengthUnit="Item" VirtualizingPanel.CacheLength="5" ItemsSource="{Binding Items, ElementName=ImagePanel}" SelectedIndex="{Binding DisplayIndex, ElementName=ImagePanel, Mode=OneWay}" DragEnter="ListDragOver" DragOver="ListDragOver" Drop="ListDrop" PreviewKeyDown="ListKeyDown" SelectionChanged="ListSelectionChanged">
+    <ListBox Name="lst" IsEnabled="{Binding CanUseList, ElementName=ImagePanel}" AllowDrop="True" Margin="20,39,1,-1" Background="#00FFFFFF" BorderBrush="#00FFFFFF" VerticalAlignment="Top" ScrollViewer.VerticalScrollBarVisibility="Disabled" Style="{DynamicResource ListBoxStyle1}" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.CacheLengthUnit="Item" VirtualizingPanel.CacheLength="5" ItemsSource="{Binding Items, ElementName=ImagePanel}" SelectedIndex="{Binding DisplayIndex, ElementName=ImagePanel, Mode=OneWay}" DragEnter="ListDragOver" DragOver="ListDragOver" Drop="ListDrop" PreviewKeyDown="ListKeyDown" SelectionChanged="ListSelectionChanged">
       <ItemsControl.ItemsPanel>
         <ItemsPanelTemplate>
           <VirtualizingStackPanel IsItemsHost="True" Orientation="Horizontal" />
@@ -302,7 +302,7 @@
         <DataTemplate>
           <Grid Background="#FF000000" Width="72" Height="52" Margin="2" Tag="{Binding ElementName=BtnDelete}" MouseEnter="Grid_MouseEnter" MouseLeave="Grid_MouseLeave" MouseDown="Grid_MouseDown"><Grid.ToolTip><TextBlock><TextBlock.Text><MultiBinding StringFormat="{}{0} {1}"><Binding Path="Name"/><Binding Path="ResourceError"/></MultiBinding></TextBlock.Text></TextBlock></Grid.ToolTip>
             <local:ImageSourceThumbnail Source="{Binding Thumbnail}"><local:ImageSourceThumbnail.ContextMenu><ContextMenu Style="{StaticResource ImageSources.ContextMenuStyle}"><MenuItem Header="{DynamicResource Lang_OpenFileDir}" Click="MenuItem_Click" /></ContextMenu></local:ImageSourceThumbnail.ContextMenu></local:ImageSourceThumbnail>
-            <Button Name="BtnDelete" Margin="0,1,1,0" VerticalAlignment="Top" HorizontalAlignment="Right" Content="×" Height="16" Width="16" Visibility="Collapsed" Tag="{Binding}" Click="BtnDelete_Click">
+            <Button Name="BtnDelete" IsEnabled="{Binding CanEdit, RelativeSource={RelativeSource AncestorType={x:Type local:ImageSourceStrip}}}" Margin="0,1,1,0" VerticalAlignment="Top" HorizontalAlignment="Right" Content="×" Height="16" Width="16" Visibility="Collapsed" Tag="{Binding}" Click="BtnDelete_Click">
               <Control.Template>
                 <ControlTemplate TargetType="{x:Type Button}">
                   <Image Name="ImageBackground" Width="16" Height="16" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/ImageSources/item-delete-normal.png" />
@@ -320,7 +320,7 @@
                 </ControlTemplate>
               </Control.Template>
             </Button>
-            <CheckBox Margin="6,2.5,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Style="{StaticResource SmallCheckBoxStyle}" Tag="{Binding}" IsChecked="{Binding IsForRun, Mode=OneWay}" Visibility="{Binding IsSelectMode, Converter={StaticResource BooleanToVisibilityConverter}, RelativeSource={RelativeSource AncestorType={x:Type local:ImageSourceStrip}}}" Click="CheckBox_Click" />
+            <CheckBox IsEnabled="{Binding CanEdit, RelativeSource={RelativeSource AncestorType={x:Type local:ImageSourceStrip}}}" Margin="6,2.5,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Style="{StaticResource SmallCheckBoxStyle}" Tag="{Binding}" IsChecked="{Binding IsForRun, Mode=OneWay}" Visibility="{Binding IsSelectMode, Converter={StaticResource BooleanToVisibilityConverter}, RelativeSource={RelativeSource AncestorType={x:Type local:ImageSourceStrip}}}" Click="CheckBox_Click" />
           </Grid>
         </DataTemplate>
       </ItemsControl.ItemTemplate>
@@ -357,7 +357,7 @@
         </TextBlock.Text>
       </TextBlock>
     </StackPanel>
-    <Grid Height="40" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="1,1,20,1">
+    <Grid Height="40" IsEnabled="{Binding CanEdit, ElementName=ImagePanel}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="1,1,20,1">
       <Button Name="BtnImageAdd" ToolTip="{DynamicResource Lang_ImageAdd}" Content="{DynamicResource 添加图片}" HorizontalAlignment="Left" Height="34" Width="34" Margin="5,0,0,0" Click="BtnImageAdd_Click">
         <Control.Template>
           <ControlTemplate TargetType="{x:Type Button}">

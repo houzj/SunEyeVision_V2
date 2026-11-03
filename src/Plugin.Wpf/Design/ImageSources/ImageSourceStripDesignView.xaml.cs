@@ -45,6 +45,8 @@ public partial class ImageSourceStripDesignView : UserControl
         public int DisplayIndex { get; private set; }
         public int ConfiguredStartIndex { get; private set; }
         public bool IsReadOnly { get; }
+        public bool CanEdit => !IsReadOnly;
+        public bool CanNavigate => !IsReadOnly;
         public bool IsSelectMode { get; private set; }
         public bool AutoSwitchEnabled { get; private set; }
         public bool IsImporting => false;

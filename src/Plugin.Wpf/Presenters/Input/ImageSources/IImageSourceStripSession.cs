@@ -51,6 +51,8 @@ public interface IImageSourceStripSession : INotifyPropertyChanged
     long Version { get; }
     int DisplayIndex { get; }
     int ConfiguredStartIndex { get; }
+    bool CanEdit { get; }
+    bool CanNavigate { get; }
     bool IsReadOnly { get; }
     bool IsSelectMode { get; }
     bool AutoSwitchEnabled { get; }

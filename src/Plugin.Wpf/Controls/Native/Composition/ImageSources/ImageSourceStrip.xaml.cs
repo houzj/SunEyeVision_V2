@@ -54,7 +54,9 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     public string AutoSwitchText => SunEyeVision.Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang("RunParam_Auto Switch", "自动切换");
     public string AutoSwitchToolTip => SunEyeVision.Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang("Switch to next image every run", "每次执行后会自动切换至下一张图片");
     public bool IsImporting => Session?.IsImporting ?? false;
-    public bool CanInteract => Session is not null && !IsReadOnly && !IsImporting;
+    public bool CanEdit => Session?.CanEdit == true && !IsImporting;
+    public bool CanNavigate => Session?.CanNavigate == true && !IsImporting;
+    public bool CanUseList => CanEdit || CanNavigate;
     public bool IsFirstResetActive => _firstResetActive;
     public Visibility ExpandedVisibility => IsExpanded ? Visibility.Visible : Visibility.Collapsed;
     public string? Status => _requestError ?? Session?.Status;
@@ -146,7 +148,7 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
             SetCurrentValue(AutoSwitchEnabledProperty, session?.AutoSwitchEnabled ?? false);
             if (!Current()) return;
             foreach (var name in new[] { nameof(Items), nameof(DisplayIndex), nameof(DisplayNumber), nameof(ImageCount), nameof(IsReadOnly),
-                nameof(IsSelectMode), nameof(ModeIndex), nameof(AutoSwitchEnabled), nameof(AutoSwitchText), nameof(AutoSwitchToolTip), nameof(IsImporting), nameof(CanInteract), nameof(IsFirstResetActive), nameof(ExpandedVisibility), nameof(FirstVisibility), nameof(Status) })
+                nameof(IsSelectMode), nameof(ModeIndex), nameof(AutoSwitchEnabled), nameof(AutoSwitchText), nameof(AutoSwitchToolTip), nameof(IsImporting), nameof(CanEdit), nameof(CanNavigate), nameof(CanUseList), nameof(IsFirstResetActive), nameof(ExpandedVisibility), nameof(FirstVisibility), nameof(Status) })
             {
                 if(!Current())return;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
@@ -213,7 +215,14 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     {
         var session = Session; var lifetime = _lifetime;
         if (session is null || lifetime is null || lifetime.IsCancellationRequested || _refreshing) return;
-        if ((session.IsReadOnly || session.IsImporting) && kind != ImageSourceStripRequestKind.CancelImport) return;
+        var allowed=kind switch
+        {
+            ImageSourceStripRequestKind.CancelImport=>true,
+            ImageSourceStripRequestKind.Activate=>CanNavigate,
+            ImageSourceStripRequestKind.OpenDirectory=>CanUseList,
+            _=>CanEdit
+        };
+        if(!allowed)return;
         var request = new ImageSourceStripRequest(kind, session.Version, id, flag, itemIds, paths);
         try { _requestError = null; await session.RequestAsync(request, lifetime.Token); }
         catch (OperationCanceledException) when (lifetime.IsCancellationRequested) { }
@@ -224,16 +233,16 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     }
     private async void Grid_MouseDown(object sender, MouseButtonEventArgs e)
     {
-        if (e.ChangedButton != MouseButton.Left || Item(sender) is not { } item || !CanInteract) return;
+        if (e.ChangedButton != MouseButton.Left || Item(sender) is not { } item || !CanUseList) return;
 
-        if (IsSelectMode && (Keyboard.Modifiers & ModifierKeys.Control) != 0)
+        if (CanEdit && IsSelectMode && (Keyboard.Modifiers & ModifierKeys.Control) != 0)
         {
             e.Handled = true;
             var selected = Items.Where(x => x.IsForRun).Select(x => x.Id).ToHashSet(StringComparer.Ordinal);
             if (!selected.Remove(item.Id)) selected.Add(item.Id);
             await Request(ImageSourceStripRequestKind.SetRunSelection, itemIds: Items.Where(x => selected.Contains(x.Id)).Select(x => x.Id));
         }
-        else if (IsSelectMode && (Keyboard.Modifiers & ModifierKeys.Shift) != 0 && DisplayIndex >= 0)
+        else if (CanEdit && IsSelectMode && (Keyboard.Modifiers & ModifierKeys.Shift) != 0 && DisplayIndex >= 0)
         {
             e.Handled = true;
             int end = Items.ToList().FindIndex(x => x.Id == item.Id);
@@ -241,7 +250,8 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
             int first = Math.Min(DisplayIndex, end), last = Math.Max(DisplayIndex, end);
             await Request(ImageSourceStripRequestKind.SetRunSelection, itemIds: Items.Skip(first).Take(last - first + 1).Select(x => x.Id));
         }
-        else ArmUserSelection();
+        else if(CanNavigate) ArmUserSelection();
+        else e.Handled=true;
     }
     private async void CheckBox_Click(object sender, RoutedEventArgs e)
     {
@@ -290,20 +300,20 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     {
         if (_refreshing || sender is not ToggleButton toggle) return;
         // The original event precedes some outer TwoWay transfers; read the internal sender.
-        if (!CanInteract || !IsLoaded || !ReferenceEquals(Session, _attached)) { Refresh(); return; }
+        if (!CanEdit || !IsLoaded || !ReferenceEquals(Session, _attached)) { Refresh(); return; }
         await Request(ImageSourceStripRequestKind.SetAutoSwitch, flag: toggle.IsChecked == true);
     }
     private async void ModeChanged(object sender, SelectionChangedEventArgs e)
     { if (!_refreshing && IsLoaded && Mode.SelectedIndex is 0 or 1) await Request(ImageSourceStripRequestKind.SetMode, flag: Mode.SelectedIndex == 1); }
     private async void CancelImportClick(object sender, RoutedEventArgs e) => await Request(ImageSourceStripRequestKind.CancelImport);
     private void Grid_MouseEnter(object sender, MouseEventArgs e)
-    { if (sender is Grid grid && grid.FindName("BtnDelete") is Button button) button.Visibility = CanInteract ? Visibility.Visible : Visibility.Collapsed; }
+    { if (sender is Grid grid && grid.FindName("BtnDelete") is Button button) button.Visibility = CanEdit ? Visibility.Visible : Visibility.Collapsed; }
     private void Grid_MouseLeave(object sender, MouseEventArgs e)
     { if (sender is Grid grid && grid.FindName("BtnDelete") is Button button) button.Visibility = Visibility.Collapsed; }
     private bool TryGetDropFiles(DragEventArgs e,out string[] paths)
     {
         paths=Array.Empty<string>();
-        if(!CanInteract||!e.Data.GetDataPresent(DataFormats.FileDrop)
+        if(!CanEdit||!e.Data.GetDataPresent(DataFormats.FileDrop)
             ||e.Data.GetData(DataFormats.FileDrop) is not string[] candidates||candidates.Length==0)return false;
         foreach(var path in candidates)
         {
@@ -324,7 +334,8 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     }
     private void ListKeyDown(object sender, KeyEventArgs e)
     {
-        if (!CanInteract || Items.Count == 0 || e.Key is not (Key.Left or Key.Right or Key.Up or Key.Down or Key.Home or Key.End or Key.PageUp or Key.PageDown)) return;
+        if (Items.Count == 0 || e.Key is not (Key.Left or Key.Right or Key.Up or Key.Down or Key.Home or Key.End or Key.PageUp or Key.PageDown)) return;
+        if(!CanNavigate){e.Handled=true;return;}
         if (Keyboard.FocusedElement == lst && lst.SelectedIndex >= 0)
         {
             lst.ScrollIntoView(lst.SelectedItem); lst.UpdateLayout();
@@ -341,7 +352,7 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     }
     private async void ListSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (!ReferenceEquals(e.OriginalSource, lst) || !_keyboardSelectionPending || _refreshing || !CanInteract) return;
+        if (!ReferenceEquals(e.OriginalSource, lst) || !_keyboardSelectionPending || _refreshing || !CanNavigate) return;
         _keyboardSelectionPending = false;
         if (lst.SelectedItem is ImageSourceStripItem item) await Request(ImageSourceStripRequestKind.Activate, item.Id);
     }

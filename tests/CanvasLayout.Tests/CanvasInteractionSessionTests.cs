@@ -52,4 +52,27 @@ public sealed class CanvasInteractionSessionTests
   UiRuntime.Call(f.View,"ClearVmInsertionWire"); Assert.Equal(2d,visual.StrokeThickness);
   Assert.Null(UiRuntime.Call(f.View,"FindVmInsertionWire",pointer,new[]{a.Id}));
  });
+ [Fact] public void Running_tab_rejects_canvas_gesture_until_stopped()=>UiRuntime.Run(()=>
+ {
+  using var f=new DocumentUiFixture(); f.Add(); f.Host.UpdateLayout(); UiRuntime.Pump();
+  var property=f.View.GetType().GetProperty("CanEditVmCanvas",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance)!;
+  Assert.True((bool)property.GetValue(f.View)!); f.Tab.IsRunning=true;
+  Assert.False((bool)property.GetValue(f.View)!);
+  var canvas=(System.Windows.Controls.Canvas)f.View.FindName("WorkflowCanvas");
+  canvas.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,0,MouseButton.Left){RoutedEvent=UIElement.PreviewMouseLeftButtonDownEvent});
+  Assert.False(UiRuntime.Field<bool>(f.View,"_isBoxSelecting"));
+  f.Tab.IsRunning=false; Assert.True((bool)property.GetValue(f.View)!);
+ });
+ [Fact] public void Auto_connect_is_one_undoable_transaction_and_failed_creation_preserves_graph()=>UiRuntime.Run(()=>
+ {
+  using var f=new DocumentUiFixture(); var first=f.Add(); var before=f.Session.HistoryEntries.Count;
+  var second=f.Canvas.CreateNode("BlobAnalysis",new(300,300),predecessor:f.Projection(first)); UiRuntime.Pump();
+  var edge=Assert.Single(f.Canvas.Connections); Assert.Equal(first.Id,edge.SourceNodeId); Assert.Equal(second.Id,edge.TargetNodeId);
+  Assert.Equal(before+1,f.Session.HistoryEntries.Count);
+  Assert.True(f.Canvas.Undo()); UiRuntime.Pump(); Assert.Single(f.Canvas.Nodes); Assert.Empty(f.Canvas.Connections);
+  Assert.True(f.Canvas.Redo()); UiRuntime.Pump(); Assert.Equal(2,f.Canvas.Nodes.Count); Assert.Single(f.Canvas.Connections);
+  var count=f.Session.HistoryEntries.Count;
+  Assert.ThrowsAny<Exception>(()=>f.Canvas.CreateNode("unadmitted-tool",new(500,300),predecessor:f.Projection(first)));
+  Assert.Equal(2,f.Canvas.Nodes.Count); Assert.Single(f.Canvas.Connections); Assert.Equal(count,f.Session.HistoryEntries.Count);
+ });
 }

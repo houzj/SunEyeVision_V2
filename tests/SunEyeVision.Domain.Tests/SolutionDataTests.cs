@@ -32,6 +32,14 @@ public sealed class SolutionDataTests
         Assert.Equal(3,point.EndAddress);
     }
     [Fact]
+    public void Variable_definition_contains_no_persisted_consumer_cache()
+    {
+        var variable = new GlobalVariable("变量",7L,"Integer");
+        Assert.Null(typeof(GlobalVariable).GetProperty("ConsumerBindings"));
+        Assert.Null(typeof(GlobalVariable).GetProperty("OutputTargetDisplayText"));
+        Assert.DoesNotContain("ConsumerBindings",JsonSerializer.Serialize(variable));
+    }
+    [Fact]
     public void Variable_captures_revision_and_copies_primitive_arrays()
     {
         var variable=new GlobalVariable("变量",null,"Integer[]");
@@ -42,3 +50,4 @@ public sealed class SolutionDataTests
         Assert.Equal(1,variable.ValueRevision);
     }
 }
+

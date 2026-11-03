@@ -70,6 +70,11 @@ internal static class ParameterRowStateCases
   reject=true;var before=fields.Fields.Single(field=>field.FieldId=="lo").Setting;var priorWrites=writes;Choose("2");
   Check(ReferenceEquals(before,fields.Fields.Single(field=>field.FieldId=="lo").Setting)&&writes==priorWrites&&fields.HasInvalidActiveFields,"失败选源改写已接纳值或放宽门禁");
   Expect(NativeParameterItemState.WriteError,Colors.Red,"真实编辑拒绝必须保红框优先级");
+  // Choose refreshes live declarations and legitimately clears its old source
+  // availability error. Install an independent read failure after that refresh.
+  Call(state,"SetSourceError","independent-read-failed");
+  Check(P<string>(state,"SourceError")=="independent-read-failed","夹具未安装独立读错");
+  Expect(NativeParameterItemState.WriteError,Colors.Red,"独立读写错误同时存在时必须红框优先");
   Call(state,"SetEditError","");Expect(NativeParameterItemState.ReadError,Colors.Yellow,"清写错不能抹掉读错");
   reject=false;Choose("2");Call(state,"SetSourceError","");
   Expect(NativeParameterItemState.Normal,Colors.Transparent,"重新合法选源不能清理错误框");

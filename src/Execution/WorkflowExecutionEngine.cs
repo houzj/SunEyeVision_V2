@@ -22,8 +22,9 @@ public sealed class WorkflowExecutionEngine
     public bool ResumeExecution() { lock (_gate) { if (_control?.Resume() != true) return false; _state = WorkflowExecutionState.Running; return true; } }
     public void StopExecution() { ExecutionRunControl? control; lock (_gate) { control = _control; if (control is not null) _state = WorkflowExecutionState.Stopping; } control?.Stop(); }
 
-    public async Task<ExecutionResult> ExecuteAsync(ExecutionRunRequest request, Action<string> log, CancellationToken cancellation = default)
+    internal async Task<ExecutionResult> ExecuteAsync(ExecutionRunBatch batch, ExecutionRunRequest request, Action<string> log, CancellationToken cancellation = default)
     {
+        ArgumentNullException.ThrowIfNull(batch);
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(log);
         var control = new ExecutionRunControl(cancellation);
@@ -38,18 +39,18 @@ public sealed class WorkflowExecutionEngine
         }
         cancellation = control.Token;
         var workflow = request.Workflow;
-        var root = Guid.NewGuid(); var scope = root;
+        var root = batch.RootId; var scope = Guid.NewGuid();
         var timer = Stopwatch.StartNew();
         var identities = new Dictionary<string, ToolExecutionIdentity>(StringComparer.Ordinal);
         var outputs = new ConcurrentDictionary<string, DeclaredOutputSnapshot>(StringComparer.Ordinal);
         var nodeResults = new Dictionary<string, NodeExecutionResult>(StringComparer.Ordinal);
         var running = new List<(string Id, IDisposable Lease, Task<DeclaredOutputSnapshot> Task)>();
-        var activated = false;
+        IDisposable? workflowLease = null;
         ExecutionResult? final = null;
         Exception? failure = null;
         try
         {
-            workflow.Owner.ActivateRoot(root); activated = true;
+            workflowLease = batch.Enter(workflow);
             var bindings = new ExecutionBindingPlan(workflow, scope, request.VariableValues,
                 request.GlobalProducers.Select(item => item.Source));
             foreach (var item in workflow.Nodes)
@@ -148,8 +149,8 @@ public sealed class WorkflowExecutionEngine
             }
             foreach (var identity in identities.Values) try { identity.CompleteCallbacks(); } catch (Exception error) { cleanup.Add(error); }
             foreach (var output in outputs.Values) try { output.Dispose(); } catch (Exception error) { cleanup.Add(error); }
-            if (activated) try { workflow.Owner.CompleteRoot(root); } catch (Exception error) { cleanup.Add(error); }
             try { request.Complete(); } catch (Exception error) { cleanup.Add(error); }
+            try { workflowLease?.Dispose(); } catch (Exception error) { cleanup.Add(error); }
             lock (_gate) { _running = false; _control = null; _state = WorkflowExecutionState.Idle; }
             try { control.Dispose(); } catch (Exception error) { cleanup.Add(error); }
             if (cleanup.Count != 0)

@@ -70,7 +70,18 @@ try {
     scope=>new SunEyeVision.Infrastructure.Persistence.SdkVariableValueExtensionCodec(scope),new JsonSerializerOptions());
  var loaded=(OpenCvSharp.Mat)imageSession.Document.GlobalVariables.Single().Value!;
  if(loaded.IsDisposed || original.IsDisposed)throw new Exception("图像未正确接纳");
+ var nativeMoved=Path.Combine(root,"native-moved"); Directory.CreateDirectory(nativeMoved);
+ var nativeMovedPath=Path.Combine(nativeMoved,"image.solution");
+ var nativeTypes=SunEyeVision.Infrastructure.Persistence.SdkVariableVocabularyCapture.FromCandidate(File.ReadAllBytes(imagePath));
+ var codecs=new List<TrackingCodec>();
+ SunEyeVision.Persistence.Variables.IVariableValueExtensionCodec NewCodec(DecodedResourcesScope scope)
+ { var value=new TrackingCodec(scope);codecs.Add(value);return value; }
+ imageSession.SaveAs(nativeMovedPath,Path.Combine(root,"native-backup"),root,nativeTypes,new JsonSerializerOptions(),NewCodec);
+ imageSession.Save(nativeMovedPath,Path.Combine(root,"native-backup"),nativeTypes,new JsonSerializerOptions(),NewCodec);
+ if(codecs.Count!=4 || codecs.Any(codec=>codec.Image is null || !codec.Image.IsDisposed) || loaded.IsDisposed || original.IsDisposed)
+    throw new Exception("保存与重定位必须各用独立解码范围并释放候选，保留正式借用图像");
  manager.CloseCurrent(); if(!loaded.IsDisposed || original.IsDisposed)throw new Exception("关闭未释放本次解码图像或错误释放原图");
+ Console.WriteLine("PASS 复杂图像值跨目录另存和再次保存：四次解码范围独立释放、正式图像关闭前保留");
  Console.WriteLine("PASS 测试声明：真实会话编辑、另存、打开、外部并发拒绝、打开失败保留与取消");return 0;
 } catch(Exception ex) { Console.Error.WriteLine(ex); return 1; }
 

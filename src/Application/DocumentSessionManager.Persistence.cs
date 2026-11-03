@@ -105,7 +105,7 @@ public sealed partial class DocumentSessionManager
 public sealed partial class DocumentSession
 {
     internal void SetOpenedPersistenceBaseline(FrozenSolutionDocument opened)
-    { lock(_gate) { EnsureOpen(); _lastWrittenSnapshot=opened; _lastWrittenRevision=ChangeRevision; } }
+    { lock(_gate) { EnsureOpen(); _lastWrittenSnapshot=opened; _lastWrittenRevision=ChangeRevision; _resourceBaseDirectory=NormalizeResourceDirectory(Path.GetDirectoryName(opened.TargetPath)!); } }
     internal static DocumentSession FromPersistenceCandidate(SolutionReadCandidate candidate,RuntimeDirectorySnapshot directory,
         IReadOnlyDictionary<string,FrozenToolDeclarations> declarations)
     {

@@ -1,3 +1,7 @@
+## 2026-11-03 统一live资源基址与所有保存出口
+
+C已真实ImageLoad复现跨目录SaveAs后Save的资源身份漂移（reference-repro2.log，原封包5E7...49CD）。根新增Session.ResourceBaseDirectory/CreateResourcePathResolver，Open初始化实际文件目录；live相对字段不重写，所有保存从唯一来源重定位目标，拒伪造source。Capture/Save均改fresh codec factory，不保旧实例重载；复杂Mat跨目录SaveAs+Save四scope全部释放，正式图像保留到关闭。20事务和真实Mat探针0退出，原主HTML同步；UI/host消费者整体接线B/A继续，尚非正式工具修后/主窗/全量通过。
+
 ## 2026-11-03 运行结果与会话释放集中集成
 
 合入A4b51241bd与945锁外读者/无上下文通知修正（本线59d5517fb），根补失效reader队列锁外释放以及Dispose在Editing/History后decoded前释放结果。真实关闭泄漏负例已转正，Execution11/11（含最后会话引用与外部借用/Undo），19Session事务复验通过。日志session-runtime-publications-20261103-integrated.log、session-runtime-transaction-integration-20261103.log；首次NETSDK1004缺assets已锁定还原，旧失败保留。主HTML同步。不代表正式ImageLoad→Blob/主窗/全量通过；B完整UI、C引用来源查询及SaveAs基址只读复现、A调试/运行异常继续。

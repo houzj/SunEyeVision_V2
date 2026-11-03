@@ -338,7 +338,50 @@ var failedAckRecovered = manager.Open(copyPath, _ => saveTypes, _ => null, saveO
 Check((long)((ConstantSetting)failedAckRecovered.GetNodes(saveFlow.Id).Single().Configuration.Fields.Read("threshold")).Value! == 44L,
     "处理失败参与者后须能保存并真实重开已接受编辑。");
 Console.WriteLine("PASS 保存准备与回执失败保护原文件，已提交编辑保留并可再次保存重开");
-Console.WriteLine("19 个事务场景通过；真实工具、WPF及完整运行仍待整批验证。");
+var resourceRegistration = new ToolComponentRegistration(new ToolComponentMetadata("resource-probe", "ResourceProbe",
+    ToolComponentRole.Runtime, FoundationContract.Major, FoundationContract.Minor), typeof(ResourceProbeDefinition));
+var resourceDirectory = (RuntimeDirectorySnapshot)typeof(RuntimeDirectorySnapshot).GetMethod("Prepare", BindingFlags.Static | BindingFlags.NonPublic)!
+    .Invoke(null, new object[] { new[] { resourceRegistration } })!;
+using var resourceManager = new DocumentSessionManager(resourceDirectory);
+var resourceSession = resourceManager.CreateNew();
+var resourceFlow = resourceSession.GetWorkflows().Single();
+var resourceGraph = resourceSession.PrepareGraphEdit(resourceFlow.Id);
+var resourceNode = resourceSession.CreateNode(resourceGraph, "ResourceProbe", new CanvasPoint(0, 0));
+resourceSession.CommitGraphEdit(resourceGraph, "资源节点");
+var resourceDraft = resourceSession.Editing.Host.BeginEdit(resourceFlow.Id, resourceNode.Id);
+resourceDraft.ApplyFields(new Dictionary<string, ParameterSetting> { ["file"] = new ConstantSetting("asset.txt") });
+resourceSession.CommitEdit(DocumentEditProposal.Prepare(resourceSession.Editing.Host, nodes: new[] { resourceDraft }));
+var resourceRoot = Path.Combine(saveRoot, "resources");
+var movedRoot = Path.Combine(resourceRoot, "moved"); var copyRoot = Path.Combine(resourceRoot, "copy");
+Directory.CreateDirectory(movedRoot); Directory.CreateDirectory(copyRoot);
+var absoluteResource = Path.Combine(resourceRoot, "asset.txt"); File.WriteAllText(absoluteResource, "resource");
+var originalPath = Path.Combine(resourceRoot, "original.solution"); var movedPath = Path.Combine(movedRoot, "moved.solution");
+resourceSession.SaveAs(originalPath, Path.Combine(resourceRoot, "backup"), resourceRoot, saveTypes, saveOptions, _ => null);
+var movedReceipt = resourceSession.SaveAs(movedPath, Path.Combine(resourceRoot, "backup"), resourceRoot, saveTypes, saveOptions, _ => null);
+Check(movedReceipt.WrittenSnapshot.ResourcePlan.Single().AbsolutePath == absoluteResource && resourceSession.ResourceBaseDirectory == resourceRoot,
+    "另存为不得改变live资源基址。");
+Check((string)((ConstantSetting)resourceNode.Configuration.Fields.Read("file")).Value! == "asset.txt" &&
+    resourceSession.CreateResourcePathResolver().Resolve("file", "asset.txt", ResourcePurpose.FileRead).Address == absoluteResource,
+    "运行与编辑解析须仍指向同一实际资源，不能悄然改写live字段。");
+var resourceSavedAgain = resourceSession.Save(movedPath, Path.Combine(resourceRoot, "backup"), saveTypes, saveOptions);
+Check(resourceSavedAgain.WrittenSnapshot.ResourcePlan.Single().AbsolutePath == absoluteResource,
+    "跨目录另存后再次保存必须保持资源绝对身份。");
+Reject(() => resourceSession.Save(movedPath, Path.Combine(resourceRoot, "backup"), saveTypes, saveOptions, sourceDirectory: movedRoot));
+var resourceCopyPath = Path.Combine(copyRoot, "copy.solution");
+var resourceCopy = resourceSession.SaveCopy(resourceCopyPath, Path.Combine(resourceRoot, "backup"), resourceRoot, saveTypes, saveOptions, _ => null);
+Check(resourceCopy.WrittenSnapshot.ResourcePlan.Single().AbsolutePath == absoluteResource && resourceSession.LastWrittenSnapshot!.TargetPath == movedPath,
+    "副本不能改变live基址和当前文件。");
+Check(resourceSession.CaptureForSave(saveTypes, saveOptions).BindTarget(movedPath).ResourcePlan.Single().AbsolutePath == absoluteResource,
+    "显式保存捕获也须从live基址重定位到当前文件。");
+var resourceReopened = resourceManager.Open(movedPath, _ => saveTypes, _ => null, saveOptions);
+var relativeAfterOpen = (string)((ConstantSetting)resourceReopened.GetNodes(resourceFlow.Id).Single().Configuration.Fields.Read("file")).Value!;
+Check(resourceReopened.ResourceBaseDirectory == movedRoot &&
+    resourceReopened.CreateResourcePathResolver().Resolve("file", relativeAfterOpen, ResourcePurpose.FileRead).Address == absoluteResource,
+    "重开应以实际打开文件目录解释已重定位字段。");
+var reopenedResourceSave = resourceReopened.Save(movedPath, Path.Combine(resourceRoot, "backup"), saveTypes, saveOptions);
+Check(reopenedResourceSave.WrittenSnapshot.ResourcePlan.Single().AbsolutePath == absoluteResource, "重开后保存应保持资源身份。");
+Console.WriteLine("PASS 相对资源另存、重复保存、副本、捕获、实际解析与重开同一语义基址");
+Console.WriteLine("20 个事务场景通过；真实工具、WPF及完整运行仍待整批验证。");
 return 0;
 }
 catch (Exception error) { Console.Error.WriteLine(error); return 1; }
@@ -378,4 +421,26 @@ public sealed class SaveParticipant(string key, Func<bool> pending,
     public DocumentEditProposal Prepare(NodeConfigurationEditHost host) => prepare(host);
     public void Acknowledge(DocumentEditProposal proposal, DocumentEditReceipt receipt) => acknowledge(proposal, receipt);
     public void Cancel() { }
+}
+public sealed record ResourceProbeSettings : IToolSettings<ResourceProbeSettings>
+{
+    public string File { get; init; } = "";
+    public ResourceProbeSettings Freeze() => this with { };
+}
+public sealed class ResourceProbeDefinition : IToolDefinition<ResourceProbeSettings, WorkspaceProbeOutput>, IToolSettingsFields,
+    IToolCatalogProvider, IToolResourceFieldDeclarations
+{
+    public string ToolId => "ResourceProbe";
+    public ToolCatalogDescriptor Catalog { get; } = new("资源测试", "验证路径语义", "generic", "测试", 0);
+    public ToolSchema Describe() => WorkspaceProbeDefinition.Schema;
+    public ToolSchema SettingsSchema { get; } = new(new[] { new Port("file", TypeRef.ScalarOf(ScalarKind.Text),
+        Required: false, EditModes: FieldEditModes.Constant) }, Array.Empty<Port>());
+    public IReadOnlyList<ResourceFieldDeclaration> ResourceFields { get; } = new[] {
+        new ResourceFieldDeclaration("file", ResourcePurpose.FileRead, ResourceReferenceCardinality.Scalar) };
+    public InputValues ReadSettings(object settings) => new(SettingsSchema.Inputs,
+        new Dictionary<string, object?> { ["file"] = ((ResourceProbeSettings)settings).File });
+    public object MaterializeSettings(InputValues values) => new ResourceProbeSettings { File = values.Get<string>("file") };
+    public IReadOnlyList<Diagnostic> Validate(ResourceProbeSettings settings) => Array.Empty<Diagnostic>();
+    public ToolCapabilities Capabilities() => ToolCapabilities.None;
+    public IToolSession<ResourceProbeSettings, WorkspaceProbeOutput> CreateSession() => throw new NotSupportedException("资源持久化测试，不执行算法。");
 }

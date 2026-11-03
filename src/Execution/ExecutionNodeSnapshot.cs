@@ -32,6 +32,14 @@ public sealed class ExecutionNodeSnapshot
 
     public string WorkflowId { get; }
     public string NodeId { get; }
+    internal string OwnerDomainId => MakeOwnerDomainId(WorkflowId, NodeId);
+    internal static string MakeOwnerDomainId(string workflowId, string nodeId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(workflowId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(nodeId);
+        // Match the existing formal and debug admission/retirement identity.
+        return workflowId + "/" + nodeId;
+    }
     public ToolConfiguration Configuration { get; }
     public ToolSchema Schema { get; }
     public ToolSchema SettingsSchema { get; }

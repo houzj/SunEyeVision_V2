@@ -1,9 +1,9 @@
 {
   "schema": "blob-s2-full-control-inventory/v1",
-  "sourceBaseline": "44a4120bfc2d1c66a690ab1c7dc1e6d81d2fc8ed",
-  "formalProduct": "3480dfc94c6e8276cc8476dfa7b45f78c03f90cc",
+  "sourceBaseline": "de6b7a3ba1e84aadc7cf3c43e29e488127d6f01a",
+  "formalProduct": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
   "scope": "保留全部Catalog原条目和B08 A00-A23；控件已验范围不扩称原全域完成",
-  "latestFormal": "docs/collaboration/evidence/BLOB_REAL_THREE_PAGE_UI_FORMAL_20261103.json",
+  "latestFormal": "docs/collaboration/evidence/C05_NUMERIC_MODEL_FORMAL_20261103.json",
   "catalogCount": 28,
   "entries": [
     {
@@ -185,7 +185,7 @@
         "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs"
       ],
       "existingImplementation": "同一真实组装、草稿、条件显隐、生命周期及已支持接纳；S1完整18组",
-      "remaining": "未支持组仍仅UI；宿主新平台待按已固定工作流基线集成；VS/自然操作另记",
+      "remaining": "未支持组仍仅UI；宿主新平台待按已固定工作流基线集成；VS/自然操作另记；用户新增开窗慢，已有两次BindDraft完整组装证据，耗时分段和优化归工作流节点/会话/UI整链，当前未修",
       "owner": "主线控件；工作流负责宿主",
       "acceptanceExit": "真实窗口配置/原文/拒绝与支持态恢复、同owner清理"
     },
@@ -230,27 +230,39 @@
     "number": {
       "name": "C05单数值完整控件",
       "priority": 1,
-      "state": "下一完整单元：整体原证核对中",
+      "state": "完整实施自测闭口：正式Release同版172组，实际源和加载身份已核",
       "sources": [
-        "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+        "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs",
         "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs",
-        "src/Plugin.Wpf/Adapters/Fields/DeclaredFieldState.cs"
+        "src/Plugin.Wpf/Adapters/Fields/NativeNumericModel.cs",
+        "src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs",
+        "src/Plugin.Wpf/Fields/DeclaredFieldsView.NumericModels.cs",
+        "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+        "src/Plugin.Wpf/Presenters/Numeric/NativeNumberCoordinator.cs",
+        "src/Plugin.Wpf/Presenters/Parameters/DeclaredInputFieldsView.cs",
+        "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+        "src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs",
+        "src/Plugin.Wpf/Presenters/Parameters/NumericModelReadResult.cs",
+        "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
+        "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobParameterEditor.xaml.cs",
+        "tools/SunEyeVision.ImageSource/Wpf/Views/ImageSourceParameterEditor.xaml.cs"
       ],
-      "existingImplementation": "常量/引用、原文、边界、模式切换、当前值及真实消费已有生产链，复用；本批已独立核原Float/Integer源码，现浮点舍入一致，复用",
-      "remaining": "原托管Float为double并按ToEven舍入，现PrepareValue已匹配；普通参数回读与执行值的宿主语义及完整输入/回读时序仍待补证，不把ComType=float当single",
-      "owner": "主线整体设计/实施，既有逆向负责人集中补证",
-      "acceptanceExit": "同一单值控件完整入口→选源→运行/回读→切常量/解绑→历史保存重开→退役；先于C06"
+      "existingImplementation": "字段owner模型、原件投影、整数格点/double舍入、显式Field/Page/All及唯一根初始化；正式身份/raw/模型/执行值分离；原确认失败hidden绑定和popup/Dispose整链已修；真实确认取消历史复制保存重开及继承/图文消费者通过",
+      "remaining": "VM native普通读取等价及极端原溢出域不声称；C06、缺producer和S3各自保留；实际VS/自然键鼠和统一人工另记",
+      "owner": "主线统一设计/集成；公共与消费者两既有独立工作树共同完成；正式回执见latestFormal",
+      "acceptanceExit": "同一单值控件完整入口→选源→运行/回读→切常量/解绑→历史保存重开→退役；先于C06",
+      "formalReceipt": "docs/collaboration/evidence/C05_NUMERIC_MODEL_FORMAL_20261103.json"
     },
     "range": {
       "name": "C06双端范围完整组合",
       "priority": 2,
-      "state": "复用三筛选范围；依赖C05整体决定",
+      "state": "下一完整单元：既有三范围生产链和原证具备，完整模型及比较迁移待实施",
       "sources": [
         "src/Plugin.Wpf/Presenters/Numeric/NativeRangePresenter.cs",
         "src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs"
       ],
       "existingImplementation": "面积/圆度/矩形度双端独立引用、组接纳、真实执行及历史已有限自测",
-      "remaining": "引用对端按null与原隐藏模型夹值有静态差异；回读时序未证；其余原范围为UI-only",
+      "remaining": "原Check左右非对称、isInitValue不同HasValue、临时普通读不安装对端模型、双端模型版本/组接纳/原Dispatcher退役须集中对齐；其余范围仍UI-only",
       "owner": "主线，补证集中经逆向负责人",
       "acceptanceExit": "左右对称/单端双端引用、0/1/多值、箭头失焦Dispatcher及关闭，保引用身份与执行快照"
     },
@@ -263,7 +275,7 @@
         "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs"
       ],
       "existingImplementation": "当前声明资格、固定/动态索引、展开/变量模态、确认/历史/重开与真实消费者已有限验",
-      "remaining": "未知/Group/动态输出和缺producer保护；偏好仅会话、不称磁盘Dirty/Undo；原解绑和全域时序未全证",
+      "remaining": "未知/Group/动态输出和缺producer保护；偏好仅会话、不称磁盘Dirty/Undo；原解绑和全域时序未全证；新增已证来源名称/标量All索引显示差异，见B08_SOURCE_CAPTION_ORIGINAL_20261103.md，产品未修",
       "owner": "主线公共引用；工作流目录/owner；逆向补具体缺口",
       "acceptanceExit": "同一完整引用控件及真实混合窗；原24项完成或明确依赖保护，人工统一另记"
     },
@@ -422,7 +434,7 @@
     "A23"
   ],
   "b08Authority": "docs/collaboration/evidence/B08_INTEGRATED_ACCEPTANCE_CHECKLIST_20261031.json",
-  "nextWholeUnit": "先C05单数值的完整原件/模型/回读/身份链，完成后C06双端；现有正确链复用，不先将引用对端null改为实时值",
+  "nextWholeUnit": "C06双端范围：复用C05模型/API和现三筛选范围，同一完整组合集中设计、实施、自审及生产回归后闭口；不扩S3",
   "evidenceRequest": "已向既有逆向负责人集中提交；本次仅静态，不扩大原机授权",
   "workflowBaseline": {
     "directNumericOverlap": [
@@ -435,7 +447,22 @@
     "candidate": "6ec1ead54"
   },
   "estimates": "缺现证据的部分不报可靠工期；明确缺口与阶段出口，不能无限笼统待确认",
-  "status": "S2完整盘点与取证设计；未修改产品、未新增工作树、未宣称S2闭口",
+  "status": "S1实施自测闭口；C05完整单数值正式自测闭口；下一C06，S2/S3全范围未完成",
   "originalNumericEvidence": "docs/collaboration/evidence/C05_C06_ORIGINAL_NUMERIC_MODEL_20261103.md",
-  "originalNumericReceipt": "docs/collaboration/evidence/C05_C06_ORIGINAL_NUMERIC_MODEL_RECEIPT_20261103.json"
+  "originalNumericReceipt": "docs/collaboration/evidence/C05_C06_ORIGINAL_NUMERIC_MODEL_RECEIPT_20261103.json",
+  "previousLatestFormal": "docs/collaboration/evidence/BLOB_REAL_THREE_PAGE_UI_FORMAL_20261103.json",
+  "unitClosures": {
+    "C05": {
+      "source": "de6b7a3ba1e84aadc7cf3c43e29e488127d6f01a",
+      "notClaimed": [
+        "C06与B08全部24项",
+        "缺producer及UI-only组合的功能实现",
+        "S3算法及原机像素/特征等价",
+        "实际VS设计器和自然键鼠/统一人工"
+      ],
+      "receipt": "docs/collaboration/evidence/C05_NUMERIC_MODEL_FORMAL_20261103.json",
+      "status": "IMPLEMENTATION_SELF_TEST_CLOSED",
+      "passedCaseGroups": 172.0
+    }
+  }
 }

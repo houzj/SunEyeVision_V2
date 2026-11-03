@@ -65,7 +65,7 @@ public sealed partial class DocumentSession
                             if (!ReferenceEquals(view.Node, item.Node) || !ReferenceEquals(item.Configuration, view.Node.Configuration))
                                 throw new InvalidOperationException("运行捕获期间节点实例或配置已改变。 ");
                             var hostKey = new ScopedNodeIdentity(flow.Id, item.Node.Id);
-                            if (hostFactory is not null && view.Configuration.HostDeclarations.HostInputs is { } declaration && !hosts.Any(pair => pair.Key == hostKey))
+                            if (item.Enabled && hostFactory is not null && view.Configuration.HostDeclarations.HostInputs is not null && !hosts.Any(pair => pair.Key == hostKey))
                             {
                                 var context = CaptureHostInputContextCore(scope, view) ?? throw new InvalidOperationException("宿主声明已变化。");
                                 var prepared = hostFactory.Create(context);

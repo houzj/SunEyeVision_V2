@@ -24,6 +24,8 @@ internal static class Program
         var graph = session.PrepareGraphEdit(flow.Id);
         var source = session.CreateNode(graph, "ImageLoad", new CanvasPoint(0, 0));
         var blob = session.CreateNode(graph, "BlobAnalysis", new CanvasPoint(200, 0));
+        var disabled = session.CreateNode(graph, "ImageLoad", new CanvasPoint(400, 0));
+        graph.SetNodeEnabled(disabled, false);
         graph.AddConnection(new ConnectionDefinition("wire", source.Id, blob.Id, "output.image", "input.image"));
         session.CommitGraphEdit(graph, "连接图像源和 Blob");
         var imagePath = Path.Combine(path, "run-probe.bmp");
@@ -42,8 +44,9 @@ internal static class Program
         blobDraft.ApplyFields(new Dictionary<string,ParameterSetting> { ["input.image"] = new ReferenceSetting(new OutputReference(source.Id,imagePort.Id,imagePort.Type,new[]{"data"},scopeId:flow.Id)) });
         session.CommitEdit(DocumentEditProposal.Prepare(session.Editing.Host, nodes: new[] { sourceDraft, blobDraft }));
         using var factory = new ImageSourceHostInputFactory();
+        var tracking = new TrackingFactory(factory);
         var context = session.CaptureHostInputContext(flow.Id, source)!;
-        using (var batch = session.CaptureRunBatch(new[] { flow.Id }, hostFactory: factory))
+        using (var batch = session.CaptureRunBatch(new[] { flow.Id }, hostFactory: tracking))
         using (var result = batch.RunAsync(Console.WriteLine).WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult())
         {
             factory.SelectIndex(context, 1);
@@ -53,14 +56,15 @@ internal static class Program
             using var reader = session.AcquirePublishedResult(flow.Id, blob.Id) ?? throw new Exception("会话缺少 Blob 结果 reader");
             Console.WriteLine("PASS: 实际准入、图像读取、Blob 执行和结果 reader");
         }
+        if (tracking.Seen.Contains(disabled.Id)) throw new Exception("禁用节点不应创建宿主输入");
         if (factory.TakeCompletedReads(context).Count != 0) throw new Exception("新选择不能被旧轮次收据覆盖");
-        using (var batch = session.CaptureRunBatch(new[] { flow.Id }, hostFactory: factory))
+        using (var batch = session.CaptureRunBatch(new[] { flow.Id }, hostFactory: tracking))
         using (var result = batch.RunAsync(Console.WriteLine).WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult())
             if (!result.Workflows[flow.Id].Success) throw new Exception("第二轮执行失败");
         var receipts = factory.TakeCompletedReads(context);
         if (receipts.Count != 1 || receipts[0].Read.Entry.OriginalIndex != 1 || !factory.IsReceiptCurrent(context, receipts[0]))
             throw new Exception("选图后的读取收据或实际来源不一致");
-        using (var nextBatch = session.CaptureRunBatch(new[] { flow.Id }, hostFactory: factory))
+        using (var nextBatch = session.CaptureRunBatch(new[] { flow.Id }, hostFactory: tracking))
         using (var nextRun = nextBatch.RunAsync(_ => { }).WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult())
             if (!nextRun.Workflows[flow.Id].Success) throw new Exception("连续执行失败");
         if (factory.IsReceiptCurrent(context, receipts[0])) throw new Exception("旧收据在下一次读取后仍有效");
@@ -71,7 +75,7 @@ internal static class Program
         Console.WriteLine("PASS: 连续轮次、选图及旧收据失效");
         factory.SelectIndex(context, 1);
         File.Delete(imagePath2);
-        using (var failedBatch = session.CaptureRunBatch(new[] { flow.Id }, hostFactory: factory))
+        using (var failedBatch = session.CaptureRunBatch(new[] { flow.Id }, hostFactory: tracking))
         using (var failedRun = failedBatch.RunAsync(_ => { }).WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult())
         {
             if (failedRun.Workflows[flow.Id].Success) throw new Exception("缺失图像意外执行成功");
@@ -82,7 +86,7 @@ internal static class Program
         var failedReceipts = factory.TakeCompletedReads(context);
         if (failedReceipts.Count != 1) throw new Exception("读取接纳后的失败应保留实际读取收据");
         Console.WriteLine("PASS: 实际读取失败替换上轮成功状态");
-        using (var cancelled = session.CaptureRunBatch(new[] { flow.Id }, hostFactory: factory))
+        using (var cancelled = session.CaptureRunBatch(new[] { flow.Id }, hostFactory: tracking))
         {
             using var cancellation = new CancellationTokenSource(); cancellation.Cancel();
             try { using var ignored = cancelled.RunAsync(_ => { }, cancellation.Token).GetAwaiter().GetResult(); throw new Exception("取消的运行意外成功"); }
@@ -103,4 +107,12 @@ internal static class Program
         File.Delete(imagePath);
         return 0;
     }
-}
+    private sealed class TrackingFactory(ImageSourceHostInputFactory inner) : IHostInputFactory
+    {
+        public readonly HashSet<string> Seen = new(StringComparer.Ordinal);
+        public IHostInputPreparer? Create(HostInputFactoryContext context)
+        {
+            Seen.Add(context.Node.NodeId);
+            return inner.Create(context);
+        }
+    }}

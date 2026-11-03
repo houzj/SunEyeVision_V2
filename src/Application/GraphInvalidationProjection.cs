@@ -21,8 +21,7 @@ internal static class GraphInvalidationProjection
             foreach (var nodeId in oldNodes.Keys.Union(newNodes.Keys, StringComparer.Ordinal))
             {
                 if (!oldNodes.TryGetValue(nodeId, out var first) || !newNodes.TryGetValue(nodeId, out var second) ||
-                    !ReferenceEquals(first.Node, second.Node) || first.Name != second.Name ||
-                    first.DisplayName != second.DisplayName || first.Enabled != second.Enabled ||
+                    !ReferenceEquals(first.Node, second.Node) || first.Enabled != second.Enabled ||
                     (!ReferenceEquals(first.Configuration, second.Configuration) &&
                      executionIdentity(first.Node, first.Configuration) != executionIdentity(second.Node, second.Configuration)))
                     affected.Add(new(flowId, nodeId));

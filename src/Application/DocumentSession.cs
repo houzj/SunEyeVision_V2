@@ -34,6 +34,7 @@ public sealed partial class DocumentSession : IDisposable
             throw new InvalidOperationException("活动方案必须至少包含一个根流程。");
         _documentId = document.Id;
         History = new DocumentHistoryCoordinator(EditSessionId);
+        History.SetMutationLeaseProvider(_owner.BeginDocumentMutation);
         Editing = new DocumentEditSession(this);
         _directoryRetirement = directory.RetirementToken.Register(() => { lock (_gate) _definitions.Clear(); });
     }

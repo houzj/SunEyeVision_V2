@@ -1,3 +1,10 @@
+## 2026-11-03 根接管生产事务并集成实体会话候选
+
+已核A明确交接7636e9729，集成cc27261b6；执行两检查点6a803/d487对应e7b8/32d已接，未合主仓。根唯一写Domain核心/Application核心/正式Manager/Runtime Owner排他；A仅Execution与旧执行源退出，B仅Editing+UI，C变量通信/Persistence/Infrastructure，避免同树并写。
+
+实际新增DocumentSession.CreateNew、CommitGraphEdit、Undo/Redo与统一Changed生产入口：至少一个真实根流程；完整候选先图/自动引用/变量依赖修复后单历史安装，无变化不造历史；正式Owner编辑租约排他根/节点运行，同线程内部历史嵌套；执行失效按唯一workflow/node域退役，清理观察者失败独立记录。名称及几何与执行配置区分，通知锁外并拒重入。
+
+Application定位构建0错；中立事务8组通过（复合添加、过期、移动、连线自动引用、删除同实体恢复、运行排他、通知异常、关闭）。首次探针未声明WorkflowImageInputId而测试自动引用失败，补完整测试声明后通过，产品不为测试降低规则；记录Release/_validation/application-graph-publication-20261103。测试目录以实际中立声明准入，未冒称真实图像源/Blob或完整生产Manager。参数/变量CommitEdit、持久化打开保存、执行调度、UI实际接线尚未完成；本次在途构建已改本树Release依赖，旧ED669封包只是历史成绩，当前未重新封包/不得启动交付。全量/宿主/人工/设计器/主线集成未验，目标保持。
 ## 2026-11-03 原件开窗证据核收与V4整体策略冻结
 
 长期用户原则已同源写AGENTS/取证约定及原全平台计划：UI/控件模型/交互/工具组织原件直接迁，HALCON算法对标；只留必要身份/执行保存/资源平台接缝，不能演变重设计。原开窗静态报告已按原格式归档VM_EDITOR_OPEN_LIFECYCLE_ORIGINAL_20261103.md，SHA50A2370844A9355286E624318E2B476399216BE2A6DF8B299589591C2E4BF03B，核三个源SHA及关键关闭/根缓存调用。原件先Close旧窗再开，不据此推窗口缓存或恰一次Bind；UI将退出本方无原证额外Yes/No替换对话。独立限定窗首轮拒绝/取消通过、确认替换失败后改Closed信号并复验通过；冷热计时未与旧版同环境对照，不称提速，新架构/故障/设计时还未验。

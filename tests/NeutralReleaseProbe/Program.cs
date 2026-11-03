@@ -33,6 +33,7 @@ try
     var blobOutcome=await ToolRuntimeExecutor.ExecuteAsync(blob,blob.CreateSettings(),blobInput,context);
     if(!blobOutcome.Success || blobOutcome.Output is null)throw new Exception("Blob failed: "+string.Join(";",blobOutcome.Diagnostics.Select(x=>x.Message)));
     (blobOutcome.Output as IDisposable)?.Dispose();
+    SessionChain.Verify(directory, path);
     var forbidden=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetName().Name).Where(n=>n is "PresentationFramework" or "PresentationCore" or "WindowsBase" or "System.Xaml" or "SunEyeVision.Plugin.Wpf" or "SunEyeVision.UI" or "SunEyeVision.Plugin.SDK" or "SunEyeVision.Tool.ImageSource.Wpf" or "SunEyeVision.Tool.BlobAnalysis.Wpf").ToArray();
     if(forbidden.Length!=0)throw new Exception("Desktop assemblies loaded: "+string.Join(",",forbidden));
     Console.WriteLine("ImageLoad and BlobAnalysis executed; no WPF/UI/SDK loaded.");

@@ -2,6 +2,30 @@
   "version": 1,
   "dependencies": {
     "net9.0": {
+      "suneyevision.application": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Domain": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Execution": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Persistence": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )"
+        }
+      },
+      "suneyevision.domain": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
+        }
+      },
+      "suneyevision.execution": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Domain": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )"
+        }
+      },
       "suneyevision.foundation": {
         "type": "Project"
       },
@@ -10,6 +34,13 @@
         "dependencies": {
           "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )"
+        }
+      },
+      "suneyevision.persistence": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Domain": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
         }
       },
       "suneyevision.plugin.contracts": {

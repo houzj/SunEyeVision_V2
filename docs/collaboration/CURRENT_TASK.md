@@ -1,3 +1,11 @@
+## 2026-11-04 整合失败复验与新一批生产设计
+
+本树a50之后完整51工程Release已0错；首轮全套803项787通过16失败，不曾计全过。正确SUNEYE_EDITING_TEST_PAYLOAD后编辑13/13通过，真实物理线程前置修正后Domain22/22通过（integrated-rechecks-20261104）。剩余Admission旧Probe整链由B迁移并补实际V4拥有关系反例；指定真实相机DA5892282未发现，硬件用例独立记录，不能替换串号或签通过。
+
+B实际证实非空SubroutineId被普通ImageLoad忽略，根287cbce52在严格文件/唯一配置准入拒绝，Application正常全refs0错，B接此整链复验，不实现暂停Group。A连续运行与C节点复制独立生产候选在途，候选结果不转签根集成。B根集合完整设计已审定七项本方政策，根负责共享Application/Domain/Persistence、C唯一片段算法、B后接UI；尚无根集合产品实现，排序入口证据仍须核收。
+
+根扩展NeutralReleaseProbe从直接两工具到真实Session编辑/运行/reader/V4重开/取消，单文件输入工厂为测试组合，不冒称桌面游标/相机SDK依赖已退出；源码已正常全refs构建0错，同版NeutralHost封包6757EB46实际整链通过且未加载WPF/UI/SDK；B准入候选也已独立通过，待根集成。详细设计见evidence/无桌面会话与暂停语义门禁验证-20261104.html。Group暂停，原76/W/R及全平台矩阵不缩，旧代码无兼容双轨；人工、设计器、主仓分别记录，目标继续。
+
 ## 2026-11-03 VS 全项目加载失败修复
 
 用户报告87f4解决方案51项目全卸载。实际项目文件51/51均存在；本机VS18 Full MSBuild复现Directory.Build.props的GetRelativePath MSB4186（CLI Core可用，Full不提供此API）。已替换Full/Core共同API，51项目逐一用VS自带MSBuild评估全部通过；UI正式输出及Probe隔离输出同时核实。vs-project-evaluation-before/after与vs-all-projects-evaluation-20261103.json记录证据。未控制用户VS/关闭编辑；界面卸载状态需重新加载，不删除缓存。

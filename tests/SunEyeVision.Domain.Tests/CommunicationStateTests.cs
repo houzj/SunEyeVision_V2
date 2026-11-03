@@ -22,11 +22,11 @@ public sealed class CommunicationStateTests
         var pending=new System.Collections.Concurrent.ConcurrentQueue<Action>();
         using var state=new CommunicationRuntimeState(device,pending.Enqueue);
         var changes=0;state.PropertyChanged += (_,_)=>changes++;
-        Task.Run(()=>device.IsEnabled=false).GetAwaiter().GetResult();
+        Assert.Null(OnForeignThread(()=>device.IsEnabled=false));
         Assert.Equal(0,changes);
         Assert.True(pending.TryDequeue(out var posted)); posted!();
         Assert.True(changes>0);
-        Task.Run(()=>device.IsEnabled=true).GetAwaiter().GetResult();
+        Assert.Null(OnForeignThread(()=>device.IsEnabled=true));
         state.Dispose();var before=changes;
         while(pending.TryDequeue(out posted))posted();
         Assert.Equal(before,changes);
@@ -42,11 +42,28 @@ public sealed class CommunicationStateTests
         Assert.True(state.TryApply(point,new(ClearRecords:true))); Assert.Empty(state.ReceiveRecords);
         state.Dispose();Assert.False(state.TryApply(point,new(Value:"late")));
     }
-    [Fact] public async Task State_rejects_cross_thread_writes()
+    [Fact] public void State_rejects_cross_thread_writes()
     {
-        var point=new ModbusAddressPoint(); var state=new ModbusPointRuntimeState(point);
-        var error=await Task.Run(()=>Record.Exception(()=>state.TryApply(point,new(Value:"late"))));
+        var point=new ModbusAddressPoint(); using var state=new ModbusPointRuntimeState(point);
+        var error=OnForeignThread(()=>state.TryApply(point,new(Value:"late")));
         Assert.IsType<InvalidOperationException>(error);
     }
+    // Task.Run can execute inline when a synchronous wait helps drain a saturated pool.
+    // These cases require a genuinely different physical owner thread.
+    private static Exception? OnForeignThread(Action action)
+    {
+        var owner=Environment.CurrentManagedThreadId;
+        var workerId=owner; Exception? error=null;
+        var worker=new Thread(()=>
+        {
+            workerId=Environment.CurrentManagedThreadId;
+            error=Record.Exception(action);
+        }) { IsBackground=true,Name="通信状态跨owner核验" };
+        worker.Start();
+        Assert.True(worker.Join(TimeSpan.FromSeconds(10)),"通信状态外部线程未排空。");
+        Assert.NotEqual(owner,workerId);
+        return error;
+    }
+
 }
 

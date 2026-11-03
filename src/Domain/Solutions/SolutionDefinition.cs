@@ -15,7 +15,7 @@ public sealed class SolutionDefinition
     public string Id { get; }
     public string Name { get; internal set; }
     public string Description { get; internal set; } = string.Empty;
-    public int SchemaVersion { get; internal set; } = 3;
+    public int SchemaVersion { get; internal set; } = 4;
     public string Version { get; internal set; } = "1.0";
     private IReadOnlyDictionary<string, JsonElement>? _additionalData;
     public IReadOnlyDictionary<string, JsonElement>? AdditionalData

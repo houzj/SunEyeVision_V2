@@ -22,6 +22,19 @@ try {
  if(reopened.GetNodes(flow.Id).Single().Id!="n")throw new Exception("重开节点错误");
  var samePathReceipt=reopened.Save(path,Path.Combine(root,"backup"),catalog,new JsonSerializerOptions());
  if(!ReferenceEquals(reopened.LastWrittenSnapshot,samePathReceipt.WrittenSnapshot))throw new Exception("同路径保存基线错误");
+ var hash=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(path)));
+ bool activeRestoreRejected=false;
+ try { manager.RestoreInactive(path,path,hash,hash,_=>catalog,_=>null,new JsonSerializerOptions()); } catch(InvalidOperationException) { activeRestoreRejected=true; }
+ if(!activeRestoreRejected || !ReferenceEquals(manager.CurrentSession,reopened)) throw new Exception("活动方案恢复未受保护");
+ var offlineTarget=Path.Combine(root,"offline.solution"); var offlineBackup=Path.Combine(root,"offline.backup");
+ File.Copy(path,offlineBackup); File.WriteAllText(offlineTarget,"previous");
+ var beforeHash=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(offlineTarget)));
+ manager.RestoreInactive(offlineTarget,offlineBackup,beforeHash,hash,_=>catalog,_=>null,new JsonSerializerOptions());
+ if(!File.ReadAllBytes(offlineTarget).SequenceEqual(File.ReadAllBytes(offlineBackup)) || !ReferenceEquals(manager.CurrentSession,reopened)) throw new Exception("非活动方案恢复错误");
+ bool wrongHashRejected=false;
+ try { manager.RestoreInactive(offlineTarget,offlineBackup,new string('0',64),hash,_=>catalog,_=>null,new JsonSerializerOptions()); } catch(IOException) { wrongHashRejected=true; }
+ if(!wrongHashRejected || !File.ReadAllBytes(offlineTarget).SequenceEqual(File.ReadAllBytes(offlineBackup))) throw new Exception("恢复身份冲突未保全文件");
+ Console.WriteLine("PASS 非活动方案受验证恢复、活动路径保护与 SHA 冲突保全");
  reopened.SaveCopy(Path.Combine(root,"copy.solution"),Path.Combine(root,"copy.backup"),root,catalog,new JsonSerializerOptions(),_=>null);
  if(!ReferenceEquals(reopened.LastWrittenSnapshot,samePathReceipt.WrittenSnapshot))throw new Exception("保存副本改变当前基线");
  var rejectedCopy=false; try { reopened.SaveCopy(path,Path.Combine(root,"copy.backup"),root,catalog,new JsonSerializerOptions(),_=>null,TargetExpectation.Match(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(path))))); } catch(InvalidOperationException) { rejectedCopy=true; }
@@ -46,6 +59,13 @@ try {
      scope=>{tracking=new TrackingCodec(scope);cancelOpen.Cancel();return tracking;},new JsonSerializerOptions(),cancellationToken:cancelOpen.Token);throw new Exception("打开未取消"); } catch(OperationCanceledException) { }
  if(!ReferenceEquals(manager.CurrentSession,reopened)||tracking?.Image is null||!tracking.Image.IsDisposed)throw new Exception("取消打开未保留原会话或未释放候选 Mat");
  Console.WriteLine("PASS 解码后取消打开：旧会话保留、候选 Mat 已释放");
+ var pending=new PendingParticipant(); reopened.Editing.Register(pending); TrackingCodec? rejected=null; bool failedReplacement=false;
+ try { manager.Open(imagePath,bytes=>SunEyeVision.Infrastructure.Persistence.SdkVariableVocabularyCapture.FromCandidate(bytes.Span),
+    scope=>rejected=new TrackingCodec(scope),new JsonSerializerOptions()); } catch(InvalidOperationException) { failedReplacement=true; }
+ if(!failedReplacement||!ReferenceEquals(manager.CurrentSession,reopened)||rejected?.Image is null||!rejected.Image.IsDisposed)
+    throw new Exception("拒绝替换时原会话或新 Mat 所有权错误");
+ reopened.Editing.Unregister(pending.ScopeId);
+ Console.WriteLine("PASS 未提交编辑拒绝替换：旧会话保留、已转移的候选 Mat 已释放");
  var imageSession=manager.Open(imagePath,bytes=>SunEyeVision.Infrastructure.Persistence.SdkVariableVocabularyCapture.FromCandidate(bytes.Span),
     scope=>new SunEyeVision.Infrastructure.Persistence.SdkVariableValueExtensionCodec(scope),new JsonSerializerOptions());
  var loaded=(OpenCvSharp.Mat)imageSession.Document.GlobalVariables.Single().Value!;
@@ -62,4 +82,10 @@ sealed class TrackingCodec(DecodedResourcesScope scope) : SunEyeVision.Persisten
  public bool SupportsType(string typeName)=>_inner.SupportsType(typeName);
  public object? Read(string typeName,JsonElement value,JsonSerializerOptions options) { var result=_inner.Read(typeName,value,options); Image=result as OpenCvSharp.Mat ?? Image;return result; }
  public bool TryWrite(object value,JsonSerializerOptions options,out string typeName,out object? serializedValue)=>_inner.TryWrite(value,options,out typeName,out serializedValue);
+}
+sealed class PendingParticipant : SunEyeVision.Application.Editing.IDocumentEditParticipant
+{
+ public Guid ScopeId { get; }=Guid.NewGuid(); public string ScopeKey=>"pending"; public bool HasPendingChanges=>true; public bool IsValid=>true;
+ public SunEyeVision.Application.Editing.DocumentEditProposal Prepare(SunEyeVision.Application.Editing.NodeConfigurationEditHost host)=>throw new NotSupportedException();
+ public void Cancel() { }
 }

@@ -18,7 +18,21 @@ internal static class Program
     [STAThread] private static int Main(string[] args)
     {
         SetErrorMode(0x0001 | 0x0002 | 0x8000);
-        try { return Run(args); } catch (Exception e) { Console.Error.WriteLine(e); return 1; }
+        try
+        {
+            var exitCode = Run(args);
+            var forbidden = AppDomain.CurrentDomain.GetAssemblies()
+                .Select(assembly => assembly.GetName().Name)
+                .Where(name => name is "PresentationFramework" or "PresentationCore" or "WindowsBase" or "System.Xaml"
+                    or "SunEyeVision.Plugin.Wpf" or "SunEyeVision.UI" or "SunEyeVision.Plugin.SDK"
+                    or "SunEyeVision.Tool.ImageSource.Wpf" or "SunEyeVision.Tool.BlobAnalysis.Wpf")
+                .OrderBy(name => name, StringComparer.Ordinal).ToArray();
+            if (forbidden.Length != 0)
+                throw new InvalidOperationException("生产工厂非视觉运行链加载了桌面或旧 SDK 程序集：" + string.Join(", ", forbidden));
+            Console.WriteLine("PASS: 真实本地/模拟相机工厂、执行及释放全链未加载 WPF、UI 或旧 SDK");
+            return exitCode;
+        }
+        catch (Exception e) { Console.Error.WriteLine(e); return 1; }
     }
     private static int Run(string[] args)
     {

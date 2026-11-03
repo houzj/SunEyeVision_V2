@@ -1,3 +1,6 @@
+## 2026-11-04 域修复后的正式生产工厂无桌面整链通过
+
+根1c前置79域修复全59工程Release0错6124warn已完成。RunChainProbe真实ImageSourceHostInputFactory的本地/模拟相机、正式/连续/私有调试、变量、失败、取消删除、Undo、V4及释放13组通过，并在Run返回且内部using释放后检查实际程序集：未加载WPF/UI/旧SDK。载荷5EB9C02DD823B77DFDA150EB51DBBF7641EE51CD95D82B6D617B53F19E957623；explicit-domain-integrated-{full-build,seal}与explicit-domain-production-{probe-build,runchain}-20261104.log。无根活跃句柄。全量Blob新专项A待最终固定后集成；C可信目录补中立命名，B根集合UI按C增量接缝核收，禁止整文件回退b927采集/连续。原主HTML和矩阵已同步，本次不签全平台/硬件/VS/人工/主仓。
 ## 2026-11-04 根集合核心与采集/连续主窗集中集成通过；域适配修复待复验
 
 当前产品79f4ae856，前置b927（C完整82→a142与B cd60整批）、根集合676/669。根集合53工程最终Release0错6110warn，同版9372748341F19903AA766BC38B7B87770EC803EF1D5DDE7FD38C8D2D32B8BB6F：Editing39/Graph39、真实复制运行/删除Undo/V4重开通过，日志root-collection-integrated-final-*20261104。首次RootCollectionProbe私有工具副本失败保留，669将四工具只作构建引用，未绕门禁。

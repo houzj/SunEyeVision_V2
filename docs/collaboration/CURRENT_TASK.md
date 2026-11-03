@@ -1,3 +1,10 @@
+## 2026-11-04 Blob完整新会话与中立画布统一集成通过
+
+根产品5bf65949e（前置3a6画布中立命名、7bf根集合UI、3c可信目录、79域修复、b927采集连续）。61工程locked restore通过，Release0错6150warn；同版载荷1EBEECBE2FF6EA5B48B24DD5E1B7C3515AA5CA41199C3C1762F2E56A36539FFA：冷FixedSoft新testhost1、Blob36、UI227、Canvas27、Shell5全过且0skip；真实主窗根操作/复制HALCON/保存重开/双主题/关闭/OLE及连续暂停恢复/取消与同意Stop-await关闭均exit0，生产工厂RunChain13无WPF/UI/SDK和CoreContinuous15组过。blob-canvas-unified-*20261104+TRX为根证据。源图像/Blob字段与共享控件整批已合，不再标仅独立候选。根无活跃构建/测试句柄。
+
+独立Blob最终243复合常量显示→原件Delete→Unset→父状态清理，UI201/201，失败用例400转正；已与完整36算法/资源专项集中入根同版验证。原件冷Result-first无主窗入口列防御未验。Host.OwnsRoot(draft)单独scope代次准确性仍待共享合同补齐，UI已退休窗口不代签该API。原主HTML和完整矩阵当前摘要统一替换，历史折叠保留。
+
+下一并行批：A从5bf新platform-measure-audit-20261104只读设计六测量工具整组；C platform-sdk-complex-values-20261104细化唯一现合同上的V5/档案2/中立持久ROI和8/16位光栅设计，禁止重造纯值框架或弱化运行frame，未改产品；B变量UI整体只读设计bad313完成待核。其余18工具/全局变量/SDK活跃消费者/最终树完整范围不缩，Group/新循环暂停。未启动用户可见程序，未合主仓、未推送；人工/VS/主仓分列。
 ## 2026-11-04 可信目录与根集合UI完整集中集成通过
 
 根产品7bf6812c3（3c32可信目录+caba中立名，8ee顶栏真实连续状态，c585根集合UI）；61工程全量0错6127warn。正式载荷BA3699FB31EE268C55BB041FACA43DEF2FFD6B384BE1121995A4F42F1DAD01DC：完整UI225/225、真实工具箱/顶栏1/1、Authority/目录/隐藏两工具参数窗25/25；真实Main根菜单/删除Undo旧窗退休/复制HALCON/保存重开/双主题/关闭排空、连续主窗暂停恢复/取消和同意关闭Stop-await/OLE、真实生产工厂RunChain13含无WPF/UI/SDK加载均退出0。准备组件独立载荷0951E30...真实重入/owner卸载过期拒绝退出0。catalog-root-ui-*20261104和TRX为根证据。首次探针路径、旧连续占位断言失败记录保留，不退回功能。根无活跃句柄。

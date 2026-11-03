@@ -1,6 +1,8 @@
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
+using Numbers=SunEyeVision.Plugin.Wpf.Native.Numeric.Arranged;
 using System.Windows.Threading;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf;
@@ -29,6 +31,22 @@ internal static class C05NumericModelCases
   var draft=new FieldSettingsDraft(schema,new FieldSettings(schema.Inputs,fields.ToDictionary(x=>x.Port.Id,x=>x.Value)));
   return new(draft,(options??new()) with{ReferenceOptions=refs});
  }
+ static void FlushOwned(Numbers.NumericControl leaf,TextBox text,string phase)
+ {
+  var bindings=new[]{leaf.GetBindingExpression(Numbers.NumericControl.TextProperty)!,text.GetBindingExpression(TextBox.TextProperty)!};
+  var dirty=bindings.Where(b=>b.IsDirty).ToArray();Console.WriteLine($"{phase} dirty={dirty.Length} errors={Validation.GetErrors(leaf).Count+Validation.GetErrors(text).Count} text={text.Text}");
+  foreach(var error in Validation.GetErrors(leaf).Concat(Validation.GetErrors(text)))Console.WriteLine($"{phase} validation rule={error.RuleInError.GetType().FullName} content={error.ErrorContent} binding={error.BindingInError}");
+  Check(dirty.All(b=>b.ValidateWithoutUpdate()),phase+" dirty校验拒绝");foreach(var binding in dirty)binding.UpdateSource();
+  Check(!Validation.GetHasError(leaf)&&!Validation.GetHasError(text),phase+" 全窗flush等价检查存在WPF错误："+string.Join("|",Validation.GetErrors(leaf).Concat(Validation.GetErrors(text)).Select(e=>e.ErrorContent)));
+  Check(bindings.All(b=>!b.IsDirty),phase+" flush后残留dirty");
+ }
+ static void OpenCloseNative(Numbers.SliderArrangeBase native,Numbers.NumericControl leaf,TextBox text,string phase)
+ {
+  var box=(ComboBox)native.FindName("CBox");Console.WriteLine($"{phase} CBox visible={box.IsVisible} enabled={box.IsEnabled} loaded={box.IsLoaded}");
+  if(box.IsVisible&&box.IsEnabled&&box.IsLoaded){box.IsDropDownOpen=true;Pump();Console.WriteLine($"{phase} CBox opened={box.IsDropDownOpen}");box.IsDropDownOpen=false;Pump();Console.WriteLine($"{phase} CBox closed={!box.IsDropDownOpen}");}
+  else Console.WriteLine(phase+" CBox不可打开，保留实际条件");
+  FlushOwned(leaf,text,phase+" popup-close");
+ }
  static int Run()
  {
   new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};owner=new Window{Content=host=new StackPanel(),Width=650,Height=850,Left=-20000,Top=-20000,ShowActivated=false,ShowInTaskbar=false};owner.Resources.MergedDictionaries.Add(EditorResources.Create());owner.Show();Pump();
@@ -55,6 +73,38 @@ internal static class C05NumericModelCases
    });
    Case("无值异常解绑保正式引用且允许明确新常量",()=>{
     foreach(var fail in new[]{false,true}){var p=Int();var identity=new ReferenceSetting(new OutputReference("producer","value",DataType.Integer));var refs=ReferenceFieldOptions.Empty with{ReadCurrentValue=_=>fail?throw new InvalidOperationException("ordinary-read-failed"):null};using var e=Editor(p,identity,Layout(p),refs);Show(e);Check(Read(e).Status==(fail?NumericModelReadStatus.Failed:NumericModelReadStatus.Unavailable),"读失败状态");Check(!(bool)Call(State(e),"TryUseConstant")!&&e.Setting==identity&&!P<bool>(State(e),"IsReferenceMode"),"失败解绑破坏引用或锁死输入");Check(e.HasInvalidText,"未接纳输入态无门禁");Check(e.TrySetConstant(9L)&&e.Setting==new ConstantSetting(9L),"失败后无法明确输入");}
+   });
+   Case("未知引用隐藏绑定确认刷新及无值解绑坏raw保护",()=>{
+    var p=new Port("unknown.sequence",TypeRef.SequenceOf(DataType.Number),EditModes:FieldEditModes.Constant|FieldEditModes.Reference);
+    var identity=new ReferenceSetting(new OutputReference("producer","value",p.Type));var reads=0;var refs=ReferenceFieldOptions.Empty with{ReadCurrentValue=_=>{reads++;return null;}};
+    using var e=new DeclaredFieldEditor(p,p.Id,identity,_=>{},refs,numericSequence:true);Show(e);
+    var coordinator=F(F(e,"_numeric"),"_coordinator");var commit=F(coordinator,"_commit");var native=(Numbers.SliderArrangeBase)F(coordinator,"_arrange");var leaf=(Numbers.NumericControl)F(coordinator,"_leaf");var text=(TextBox)e.InputElement!;
+    var outer=leaf.GetBindingExpression(Numbers.NumericControl.TextProperty)!;var inner=text.GetBindingExpression(TextBox.TextProperty)!;
+    Check(!P<bool>(Model(e),"HasValue")&&reads==0,"未知引用初始化被冒充回读");
+    // Reproduce the confirmed old target transfer: an empty hidden slot cannot convert to StartValue.
+    text.SetCurrentValue(TextBox.TextProperty,string.Empty);inner.UpdateSource();outer.UpdateSource();
+    Check(outer.HasValidationError&&Validation.GetHasError(leaf),"未复现隐藏空串转换失败");
+    Call(commit,"ProjectAccepted");Pump();
+    FlushOwned(leaf,text,"unknown-sequence inner-override");OpenCloseNative(native,leaf,text,"unknown-sequence");
+    Check(!P<bool>(Model(e),"HasValue")&&reads==0&&e.Setting==identity&&!e.HasPendingEdits,"物理target被当模型或正式候选");
+    native.IsSubscribeLeft=false;Call(native,"DoLeftTypeChange");Pump();
+    Check(reads==1&&e.Setting==identity&&!P<bool>(State(e),"IsReferenceMode")&&text.Text==string.Empty&&e.HasPendingEdits&&e.HasInvalidText,"无值解绑未保持空raw受保护输入态");
+    Call(commit,"ProjectAccepted");Check(text.Text==string.Empty&&e.HasInvalidText,"未知常量输入被物理target覆盖");
+    text.Text="actual-bad-raw";Pump();Call(commit,"ProjectAccepted");
+    Check(text.Text=="actual-bad-raw"&&e.HasPendingEdits&&e.HasInvalidText&&!e.TryCommitPending()&&e.Setting==identity,"真实坏raw被引用绑定恢复清掉");
+    Check(e.TrySetConstant(4.5)&&e.Setting is ConstantSetting accepted&&accepted.Value is not double,"明确常量不能接纳正式sequence");
+    var integer=Int("unknown.integer");var intIdentity=new ReferenceSetting(new OutputReference("producer","integer",DataType.Integer));var intReads=0;
+    using(var integral=Editor(integer,intIdentity,Layout(integer,min:10,max:100),ReferenceFieldOptions.Empty with{ReadCurrentValue=_=>{intReads++;return null;}}))
+    {
+     Show(integral);var c=F(F(integral,"_numeric"),"_coordinator");var a=(Numbers.SliderArrangeBase)F(c,"_arrange");var l=(Numbers.NumericControl)F(c,"_leaf");var t=(TextBox)integral.InputElement!;
+     Console.WriteLine($"unknown-integer physical={a.StartValue} min={l.Minimum} max={l.Maximum}");
+     Call(F(c,"_commit"),"ProjectAccepted");FlushOwned(l,t,"unknown-integer");OpenCloseNative(a,l,t,"unknown-integer");
+     Check(!P<bool>(Model(integral),"HasValue")&&intReads==0&&integral.Setting==intIdentity&&!integral.HasPendingEdits,"整数物理target污染未知模型");
+     var retired=F(c,"_commit");Call(retired,"Dispose");
+     l.SetCurrentValue(Numbers.NumericControl.TextProperty,string.Empty);l.GetBindingExpression(Numbers.NumericControl.TextProperty)!.UpdateSource();
+     Check(Validation.GetHasError(l),"未建立旧owner事件退役探针");Call(a,"DoStartValueChange");
+     Check(Validation.GetHasError(l)&&!P<bool>(Model(integral),"HasValue")&&intReads==0&&integral.Setting==intIdentity,"已退役事件仍恢复绑定或改变模型");
+    }
    });
    Case("raw跨回读隐藏与重建保留模型及旧叶退役",()=>{
     var p=Int();using var e=Editor(p,new ConstantSetting(3L),Layout(p),ReferenceFieldOptions.Empty with{ReadCurrentValue=_=>new(11L)});Show(e);var text=(TextBox)e.InputElement!;text.Text="raw-invalid";Pump();Check(Read(e).Status==NumericModelReadStatus.Updated&&text.Text=="raw-invalid"&&e.HasPendingEdits,"read覆盖raw");e.RetireInteractions();e.Visibility=Visibility.Collapsed;Pump();e.Visibility=Visibility.Visible;Pump();Check(text.Text=="raw-invalid","隐藏丢raw");var model=Model(e);e.TrySetConstant(4L);Call(e,"Render");Pump();Check(ReferenceEquals(model,Model(e)),"同state重建丢模型");text.Text="99";Pump();Check(e.Setting==new ConstantSetting(4L),"旧TextBox回调污染");
@@ -87,5 +137,17 @@ internal static class C05NumericModelCases
   }
   finally{owner.Close();Application.Current.Shutdown();}
  }
- [STAThread]public static int Main(){try{return Run();}catch(Exception e){Console.Error.WriteLine(e);return 1;}}
+ static IntPtr desktop;
+ [System.Runtime.InteropServices.DllImport("user32.dll",CharSet=System.Runtime.InteropServices.CharSet.Unicode,SetLastError=true)]static extern IntPtr CreateDesktop(string name,IntPtr device,IntPtr mode,int flags,uint access,IntPtr security);
+ [System.Runtime.InteropServices.DllImport("user32.dll",SetLastError=true)]static extern bool SetThreadDesktop(IntPtr value);
+ [System.Runtime.InteropServices.DllImport("user32.dll",SetLastError=true)]static extern bool CloseDesktop(IntPtr value);
+ [STAThread]public static int Main()
+ {
+  var result=1;var thread=new Thread(()=>{
+   try{desktop=CreateDesktop("SunEyeVision-C05-"+Guid.NewGuid().ToString("N"),IntPtr.Zero,IntPtr.Zero,0,0x000F01FF,IntPtr.Zero);
+    if(desktop==IntPtr.Zero||!SetThreadDesktop(desktop))throw new System.ComponentModel.Win32Exception(System.Runtime.InteropServices.Marshal.GetLastWin32Error(),"独立隐藏桌面不可用；不回退到用户桌面。");
+    Console.WriteLine("C05隐藏桌面已建立，不切换用户桌面。");result=Run();}
+   catch(Exception e){Console.Error.WriteLine(e);}});
+  thread.SetApartmentState(ApartmentState.STA);thread.Start();thread.Join();if(desktop!=IntPtr.Zero)CloseDesktop(desktop);return result;
+ }
 }

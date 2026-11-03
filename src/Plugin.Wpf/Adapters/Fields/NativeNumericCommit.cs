@@ -64,8 +64,16 @@ internal sealed class NativeNumericCommit : IDisposable
         if(owner is not null&&valueProperty is null)throw new ArgumentException("原数值组合必须明确端点。");
         _text=(TextBox)leaf.FindName("ValueText");
         _text.TextChanged+=OnTextChanged;
-        try{ProjectAccepted();}
-        catch{_disposed=true;_text.TextChanged-=OnTextChanged;throw;}
+        try
+        {
+            if(!_paired&&_state.NumericModel is not null&&_owner is not null)_owner.OnStartValueChange+=OnOwnerValue;
+            ProjectAccepted();
+        }
+        catch(Exception failure)
+        {
+            _disposed=true;
+            try{DetachInteractions();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}throw;
+        }
     }
     private void OnTextChanged(object sender,TextChangedEventArgs args)
     {
@@ -225,7 +233,7 @@ internal sealed class NativeNumericCommit : IDisposable
         if(_state.IsReferenceMode&&model is null){IsDirty=false;_rawError="";_pendingRaw=null;return;}
         var constant=model is not null?model.HasValue?new ConstantSetting(model.Value):null:_state.Accepted as ConstantSetting??_state.ConstantBackup;
         if(constant is null)
-        {if(model is not null){var empty=Stamp();WriteText(string.Empty,()=>_text.SetCurrentValue(TextBox.TextProperty,string.Empty),empty);}return;}
+        {if(model is not null){if(_state.IsReferenceMode)RestoreUnknownReferenceTarget();else{var empty=Stamp();WriteText(string.Empty,()=>_text.SetCurrentValue(TextBox.TextProperty,string.Empty),empty);}}return;}
         EnsureRepresentable(constant);
         if(_suspended&&model is null){IsDirty=false;_rawError="";_pendingRaw=null;return;}
         string expected;
@@ -256,6 +264,40 @@ internal sealed class NativeNumericCommit : IDisposable
             IsDirty=false;_rawError="";_pendingRaw=null;
         }
         finally{_syncing=syncing;if(!_syncing&&_validateRaw)ValidateRaw();}
+    }
+    private void RestoreUnknownReferenceTarget()
+    {
+        // The subscribed slot keeps its original physical target. It is not a known
+        // field value: never install it in the model or use it as a constant proposal.
+        if(_owner is null||_valueProperty is null)return;
+        var outer=_leaf.GetBindingExpression(Numbers.NumericControl.TextProperty);
+        var inner=_text.GetBindingExpression(TextBox.TextProperty);
+        if(outer is null)return;
+        var stamp=Stamp();var binding=outer.ParentBinding;
+        var culture=binding.ConverterCulture??_leaf.Language.GetSpecificCulture();
+        var physical=_owner.GetValue(_valueProperty);
+        var expected=binding.Converter is {} converter?converter.Convert(physical,typeof(string),binding.ConverterParameter,culture) as string
+            :Convert.ToString(physical,culture);
+        if(expected is null)return;
+        bool Owned()=>Matches(stamp)&&_state.IsReferenceMode&&!IsDirty
+            &&_state.NumericModel is {HasValue:false}
+            &&ReferenceEquals(outer,_leaf.GetBindingExpression(Numbers.NumericControl.TextProperty))
+            &&ReferenceEquals(inner,_text.GetBindingExpression(TextBox.TextProperty));
+        void Restore(Action action){if(Owned())WriteText(expected,action,stamp);}
+        // Attempt every owned binding even if another cleanup throws; a reentrant
+        // edit, rebind or disposal invalidates the remaining restoration actions.
+        ParameterCleanup.Run(new Action[]{
+            ()=>Restore(()=>Validation.ClearInvalid(outer)),
+            ()=>Restore(outer.UpdateTarget),
+            ()=>{if(inner is not null)Restore(()=>Validation.ClearInvalid(inner));},
+            ()=>{if(inner is not null)Restore(inner.UpdateTarget);}});
+    }
+    private void OnOwnerValue(object sender,RoutedPropertyChangedEventArgs<double> args)
+    {
+        // The original popup forces both input sources before raising this event.
+        // Only its unedited, unknown subscribed slot may discard that hidden validation.
+        if(!_paired&&Current()&&_state.IsReferenceMode&&_state.NumericModel is {HasValue:false}&&!IsDirty)
+            RestoreUnknownReferenceTarget();
     }
     public void BeginConstantEntry()
     {
@@ -298,6 +340,9 @@ internal sealed class NativeNumericCommit : IDisposable
         _rawError=ReadRaw(out _,out var error)?"":error;
         if(_rawError.Length!=0)_state.SetEditError(_rawError);
     }
+    private void DetachInteractions()=>ParameterCleanup.Run(new Action[]{
+        ()=>_text.TextChanged-=OnTextChanged,
+        ()=>{if(!_paired&&_owner is not null)_owner.OnStartValueChange-=OnOwnerValue;}});
     public void Dispose()
-    {if(_disposed)return;_disposed=true;_text.TextChanged-=OnTextChanged;}
+    {if(_disposed)return;_disposed=true;DetachInteractions();}
 }

@@ -15,6 +15,7 @@ public sealed class ExecutionWorkflowSnapshot
         IReadOnlyList<ExecutionControlEdge> controlEdges)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(workflowId);
+        if (documentRevision < 0) throw new ArgumentOutOfRangeException(nameof(documentRevision));
         ArgumentNullException.ThrowIfNull(directory);
         ArgumentNullException.ThrowIfNull(owner);
         if (!directory.IsActive || owner.IsRetired) throw new InvalidOperationException("方案执行 owner 或目录已退役。");

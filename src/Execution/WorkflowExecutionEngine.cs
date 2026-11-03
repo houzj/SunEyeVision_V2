@@ -115,7 +115,20 @@ public sealed class WorkflowExecutionEngine
                             throw new InvalidOperationException("节点执行身份已失效，拒绝发布结果。 ");
                         }
                         cancellation.ThrowIfCancellationRequested();
-                        ExecutionGlobalProducers.Complete(request, finished.Id, root, scope, cancellation, expected, outputs);
+                        var previousVariables = request.GlobalProducers.Any(item => item.Source.ScopeId == workflow.WorkflowId
+                            && item.Source.NodeId == finished.Id) ? request.VariableValues?.CaptureState() : null;
+                        try
+                        {
+                            ExecutionGlobalProducers.Complete(request, finished.Id, root, scope, cancellation, expected, outputs);
+                            request.AcceptResult(items[finished.Id].Node, output);
+                        }
+                        catch (Exception acceptanceFailure)
+                        {
+                            if (previousVariables is not null)
+                                try { request.VariableValues!.RestoreState(previousVariables); }
+                                catch (Exception rollback) { throw new AggregateException("结果接纳失败且运行变量回滚失败。", acceptanceFailure, rollback); }
+                            throw;
+                        }
                         nodeResults.Add(finished.Id, new NodeExecutionResult { NodeId = finished.Id, Success = output.IsSuccess,
                             Status = output.Status, Result = output, ErrorMessages = output.Diagnostics.Select(issue => issue.Message).ToList() });
                         NotifyNodeCompleted(finished.Id, output);

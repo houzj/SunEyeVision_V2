@@ -29,6 +29,16 @@ public sealed class RootWorkflowConfigurationEditDraft
 
     public Guid EditSessionId => _session.EditSessionId;
     internal DocumentSession Session => _session;
+    internal bool IsOwnedBy(DocumentSession session)
+    {
+        if (!ReferenceEquals(_session, session)) return false;
+        try
+        {
+            _session.ValidateScope(_scope);
+            return !_scope.Flow.IsSubroutine;
+        }
+        catch (InvalidOperationException) { return false; }
+    }
     internal RootWorkflowConfiguration OpeningConfiguration => _opening;
     internal RootWorkspaceSettings OpeningWorkspace => _openingWorkspace;
     public string WorkflowId => _scope.WorkflowId;

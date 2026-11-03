@@ -35,14 +35,23 @@ public sealed class RootCollectionTests
         session.CommitEdit(renamed);
         Assert.Equal("之后的名称", actual.Name);
         var scope = session.OpenScope(actual.Id);
+        var capturedRoot = host.BeginRootEdit(actual.Id);
+        Assert.True(host.OwnsRoot(capturedRoot));
         using var deletion = host.BeginRootCollectionEdit();
         deletion.Remove(actual);
         session.CommitEdit(DocumentEditProposal.Prepare(host, collection: deletion));
         Assert.Throws<InvalidOperationException>(() => session.ValidateScope(scope));
+        Assert.False(host.OwnsRoot(capturedRoot));
         Assert.True(session.Undo());
         Assert.Same(actual, session.GetWorkflows().Single(item => item.Id == actual.Id));
         Assert.Throws<InvalidOperationException>(() => session.ValidateScope(scope));
+        Assert.False(host.OwnsRoot(capturedRoot));
         session.ValidateScope(session.OpenScope(actual.Id));
+        Assert.Throws<InvalidOperationException>(() => capturedRoot.Configuration = capturedRoot.Configuration);
+        var freshRoot = host.BeginRootEdit(actual.Id);
+        Assert.True(host.OwnsRoot(freshRoot));
+        freshRoot.Configuration = freshRoot.Configuration with { RunParameters = freshRoot.Configuration.RunParameters };
+        Assert.True(host.OwnsRoot(freshRoot));
     }
 
     [Theory]

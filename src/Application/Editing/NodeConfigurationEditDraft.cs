@@ -72,6 +72,21 @@ public sealed class NodeConfigurationEditDraft
         _candidate = next;
     }
 
+    /// <summary>Owner-thread acceptance of one captured debug round, never a partial value update.</summary>
+    internal void AcceptPrivateParameterValues(IReadOnlyDictionary<string, object?> values, NodeDraftDebugToken token)
+    {
+        ArgumentNullException.ThrowIfNull(values); ArgumentNullException.ThrowIfNull(token);
+        EnsureCurrent();
+        if (!IsCapturedCurrent(token)) throw new InvalidOperationException("调试回执的草稿版本已失效。");
+        var candidate = _candidate;
+        foreach (var pair in values) candidate = candidate.WithAcceptedParameterValue(pair.Key, pair.Value);
+        EnsureCurrent();
+        if (!IsCapturedCurrent(token)) throw new InvalidOperationException("调试接纳期间草稿版本已变化。");
+        if (values.Count == 0) return;
+        Interlocked.Exchange(ref _revision, checked(_revision + 1));
+        _candidate = candidate;
+    }
+
     // Debug workers may only inspect this immutable stamp; they never access the
     // owner-thread draft or document members. The Session separately validates scope.
     internal NodeDraftDebugToken CaptureDebugToken()

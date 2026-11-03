@@ -1,3 +1,7 @@
+## 2026-11-03 正式失败结果候选与调试原子接纳共享
+
+基于029149901集中合A两批为62d95a4a8/38a7b2d8c；本树正式载荷未重封，不借用A自测签章。根补internal AcceptPrivateParameterValues(values,NodeDraftDebugToken)：同版本私有候选整体准备、实际会话与版本复核、一次换版；无半批成功。23实际Session场景再次通过，debug-values-session-20261103.log；完整调试签发由A独占Runtime partial接续，不改Editing。主HTML/详细设计已同步。B/C继续各自独立生产消费者，主窗/全量/设计器/人工/主仓集成均未签；Group暂停。
+
 ## 2026-11-03 正式字段预验与呈现查询集中交接
 
 - 基线：b41a08f8f，独立分支codex/workflow-toolbox-dataflow，未合主仓。

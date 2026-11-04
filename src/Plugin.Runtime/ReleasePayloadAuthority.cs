@@ -151,6 +151,7 @@ public sealed class ReleasePayloadAuthority
             VerifyApprovedFile(path);
             var assembly=AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
             VerifyApprovedAssembly(assembly);
+            LoadApprovedDependencies(assembly,new HashSet<string>(StringComparer.Ordinal));
             var actual=assembly.GetCustomAttributes<ToolComponentAttribute>().ToArray();
             if(actual.Length!=group.Count()||actual.Any(a=>!group.Any(c=>a.Metadata==c.Metadata&&a.EntryType==c.EntryType)))
                 throw new InvalidDataException("Component PE declarations differ from the release payload: "+group.Key);
@@ -163,6 +164,33 @@ public sealed class ReleasePayloadAuthority
         return result;
     }
 
+    // Component dependencies belong to the approved payload, not to an accidental host deps.json.
+    // Follow only exact PE identities; framework resolution and existing runtime guards remain unchanged.
+    private void LoadApprovedDependencies(Assembly owner,HashSet<string> visited)
+    {
+        if(!visited.Add(owner.FullName!))return;
+        foreach(var reference in owner.GetReferencedAssemblies())
+        {
+            var matches=_entries.Values.Where(entry=>entry.Identity==reference.FullName).ToArray();
+            if(matches.Length==0)continue;
+            if(matches.Length!=1)throw new InvalidDataException("Ambiguous approved dependency identity: "+reference.FullName);
+            var entry=matches[0];var path=Resolve(entry.Path);
+            VerifyFile(path,entry);
+            var loaded=AssemblyLoadContext.Default.Assemblies.SingleOrDefault(assembly=>assembly.FullName==reference.FullName);
+            if(loaded is null)
+            {
+                loaded=AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
+                VerifyApprovedAssembly(loaded);
+            }
+            else
+            {
+                // Hosts and test hosts may already own an exact same-byte approved dependency.
+                // Identity alone is never sufficient to trust that instance.
+                VerifyFile(loaded.Location,entry);
+            }
+            LoadApprovedDependencies(loaded,visited);
+        }
+    }
     private void VerifyHostProductIdentity(JsonElement payload)
     {
         // The Foundation PE is the product identity anchor. A fixture/root copy

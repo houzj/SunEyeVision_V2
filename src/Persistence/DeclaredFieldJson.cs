@@ -99,6 +99,8 @@ public static class DeclaredFieldJson
             if(value.ValueKind!=JsonValueKind.Array)throw new JsonException("Sequence constant must be an array.");
             result=new SequenceValue(port.Type,value.EnumerateArray().Select(item=>ReadValue(new Port("element",port.Type.Element!),item)));
         }
+        else if(port.Type.Shape==ValueShape.Geometry)
+            result=GeometryValueCanonical.Read(value,port.Type);
         else if(port.Type.Shape==ValueShape.Scalar)
             result=port.Type.Scalar switch
             {

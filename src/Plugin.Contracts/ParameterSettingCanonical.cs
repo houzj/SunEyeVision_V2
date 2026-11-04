@@ -242,6 +242,7 @@ public static class ParameterSettingCanonical
     private static void WriteValue(Utf8JsonWriter writer,object? value)
     {
         if(value is null){writer.WriteNullValue();return;}
+        if(value is GeometryValue geometry){GeometryValueCanonical.Write(writer,geometry);return;}
         if(value is RecordValue record)
         {writer.WriteStartObject();foreach(var item in record.CopyFields()){writer.WritePropertyName(item.Key);WriteValue(writer,item.Value);}writer.WriteEndObject();return;}
         if(value is SequenceValue sequence){writer.WriteStartArray();foreach(var item in sequence)WriteValue(writer,item);writer.WriteEndArray();return;}

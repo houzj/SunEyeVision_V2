@@ -1,0 +1,65 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>六测量原件批次回件核收</title><style>body{font:15px/1.7 sans-serif;max-width:1200px;margin:30px auto}table{border-collapse:collapse;width:100%}td,th{border:1px solid #9ab;padding:10px}pre{white-space:pre-wrap;background:#eef3f7;padding:20px}</style><h1>六测量工具：集中静态证据核收及实施影响</h1><p>核收基线bd15ef061；原报告SHA256 4AE29D84E5B02B8E94BBAFA2943BEE3E79577F210DE645B6EB1730D6280048F9，资源快照SHA256 679BECD8C0E42623BB016D0FB06989B066DD886F2427BB9EDF84B3E545006FAA。原报告D:/MyWork/REA逆向测试/docs/joint-audit/六测量工具静态批次证据与未闭合边界-20261104.md；资源JSON以原字节保留为<a href="六测量原件资源批次快照-20261104.json">本批只读快照</a>，不依赖动态页面未来内容。未运行原VM/SDK/设备。</p><table><tr><th>新已证事实</th><th>对整组实施的影响</th></tr><tr><td>ChooseCoordinate=1 ImageCor、2 SpecCor；OutputAngleRange=0 RangeSegment、1 RangeLinear</td><td>原界面参数码不能按本方旧统一枚举猜。六wrapper对码0先读float、转double fmod180，再折到[-90,90)，+90归-90，转回float；码1不在包装层归一。内核角度方向仍未知，必须标本方几何重建语义。</td></tr><tr><td>P2P/P2L已核输入函数不取图；四IsForce工具在所核订阅输入先取图</td><td>支持前两者有基础的无图数值分支，但不夸称原件所有宿主均允许；后四继续明确缺图保护，不能按订阅有几何就静默放开。</td></tr><tr><td>SpecCor条件下发布9个MeasureCalibMatrix并变换部分点；标量角度/距离另从结果对象取</td><td>禁止把它等同当前6系数SpatialDeclarations.Affine2D或用变换后的点重新算全部标量冒称VM；本批物理标定/方向与矩阵布局明确保护，后续在原CalibTrans适配位替换。</td></tr><tr><td>父级Name查找优先最近Category；HiddenOperation、CategoryHiddenOperation、ButtonSelecter清订阅行为不同</td><td>保同名OriginPoint各父级身份；迁完整触发/恢复/初始化闭包，不全局按同名扁平合并，不概括“隐藏全清”或“全保”。原JSON保所有Trigger/MultiTrigger/Initers。</td></tr><tr><td>原生数学函数和反编译/汇编入口已定位，部分C类型传播不收敛</td><td>仍有具体可追入口，不能写静态手段已穷尽。当前未确认公式/退化/交点顺序以本方明确假设或不可得保护推进，集中留替换位置；原Wrapper已证部分立即采用，不把整组都停工。</td></tr></table><p>本页是取证回件与设计影响，不是六工具已实现或原机数值验证。A独立树完整Runtime/Wpf/Authority/Session/资源与保存整链仍在途；C复杂持久值和B变量视觉并行，不因本回件等待动态原机。</p><details><summary>原报告完整转义快照（保留既有Markdown来源）</summary><pre># 六测量工具静态批次证据与未闭合边界
+
+范围：VM 4.4.0 的 P2P、P2L、P2C、L2L、L2C、C2C。仅对原文件和自有副本做静态 XML、托管源码、原生反编译与必要指令核对；未启动原 VM/SDK。本报告把界面声明与算法生产分开；未证条目保留具体入口及自研适配边界，不把合理几何公式标为原厂实现。
+
+## 完整资源与触发清单
+
+[六工具资源 JSON](六测量工具资源触发与输入清单-20261104.json) 保存各工具原 AlgorithmTab.xml 与模块输入输出 XML 的路径和 SHA-256、所有具名节点及父级、所有 `Trigger`/`MultiTrigger` 的原 XML/条件/操作、`Initers`、每个输入/输出 `Filter` 的 IsForce/IsPrefer/IsArray、所有 `Combination` 的 Style 和成员。可用 `tests/NativeEvidence/Export-SixMeasureResources.ps1` 复验。对应各工具依次为：P2P 18 条规则、7 组初始化；P2L 25/11；P2C 22/11；L2L 34/15；L2C 38/15；C2C 36/15。清单保留 XML 原文；它是声明，不表示所有事件已动态运行或所有标签即原生行为。
+
+六份原 AlgorithmTab SHA-256：P2P `061456DCF089C1F85F4EA205C3BDAD5EE72210DC12840771D4C720E6C6A6FE0D`；P2L `57E3986CF25CFAB8A9FCB9920EACBBF05036B86AD6E409DE5ABF93BFFBBBFB4B`；P2C `242EFC4716449E1C845B434026510183C30A9372BA36F9D40B1F4CCE175F8B6F`；L2L `9594D5CA9BD29E1EF8440C97278B14E9C641CEC4BAABD798CBD7C8A4C605DCFD`；L2C `F2805778E979E3A742BC152CEE8E9BF91C58816EAA2244C6CC3836DFDC87DCC2`；C2C `2A0BD781508CA53F7BDBBE9B5F13C69964616F3AA0EB9E0C81E093AA17F7A637`。JSON 自带六个模块 DLL 和输入 XML 摘要；采集脚本和 JSON 摘要见文末。
+
+## 父分类、组合输入和绑定行为
+
+六工具 `ChooseCoordinate` 均声明 `ImageCor=1`、`SpecCor=2`；此处仅是枚举名称/值，不能由名称推导矩阵方向。`OutputAngleRange` 均声明 `RangeSegment=0`、`RangeLinear=1`，默认 1；六种工具的角度包装行为见下文。
+
+P2P 的 `InputWay/InputWay1` 分别在整点和 X/Y 输入之间切换；P2L/P2C 首点相同。P2L 的 `InputWay2` 为 0 整线、1 两点、2 四坐标；P2C 的 `InputWay2` 为 0 圆、1 圆参数。L2L 两线、L2C 线和圆、C2C 两圆的具体 InputWay、对应目标及 `DoInitOperaion` 全列于 JSON，不将其缩成所有工具统一模式。
+
+L2L/L2C/C2C 的 `SourceSelect` 声明 0 订阅、1 绘制。三个 XML 的 `CurValue` 触发项无比较值时调用 `RoiDisplayOperation`，值 1 时分别隐藏两组输入 Category、显示 ROI Category 和 `RoiType`。`Trigger.OnTrigger` 在 `Value == null` 时执行其操作；触发变化也需要考虑 `ReOnTrigger` 对先前生效操作的恢复，不能只看值 1 时显示一项而忽略其他项。原 `RoiDisplayOperation.Operate` 调 `IModuleResultView.SetRoiVisible()`，不能根据名称断言清除 ROI。
+
+P2P/P2L/P2C 的两个不同分类中有同名 `OriginPoint`。`Setter.GetTargetObj` 先在离触发器最近的 Category 按名称寻找，找不到再调用 `AlgorithmTabRoot.FindBaseNodeByName`；全局查找按 Tab 遍历先返回首个结果。为此配置保持父级身份，不能把所有同名节点压成一条。`ChooseCoordinate` 触发 `OriginPoint` 可见性，`OriginPoint` 的 `GetSelectedFilterOperation` 初始化查询模块输入 `CalibMatrix`，回写订阅名称；不能据此把它误认为输入点本身或直接等于矩阵数值。
+
+`HiddenOperation` 通过目标 `CustomVisibleA=false`；`ValueBase.CustomVisibleA` 在节点和直接父 Category 的 `IsDeleteSubscribeA` 均允许、且已存在非空订阅时清 `_SubData.CurValueA` 并触发回读。`ButtonSelecter` 继承 `NameValueItem` 的基本可见 setter，没有该 `ValueBase` 覆写；`CategoryHiddenOperation` 只设置 Category 的 `CustomVisibleA`，该属性实现未逐个清子节点。因此不能概括为“隐藏必清所有绑定”或“切模式必保留所有绑定”。进一步事件与撤销异常路径需按具体实例追证。
+
+## 输入与无图边界
+
+P2P/P2L 的输入资源 `InImage` 声明 `IsPrefer=true`；P2C/L2L/L2C/C2C 声明 `IsForce=true`。六个 `CalibMatrix` 均声明 `IsForce=false, IsArray=true`。精确每项及组合归属见 JSON，强制/优先标志本身不等于一次具体运行结果。
+
+P2P `GetProcessInput@18000a360` 和 P2L `GetProcessInput@18000a380` 所核函数体读取坐标/线端点，没有调用图像获取；相应 `Process@18000b330/18000b910` 先读可选标定，再读输入，条件满足时 `ProcessAlg → LimitJudge → ProcessOutput`。这表明这些函数入口没有图像参数读取；不证明框架预检、所有错误分支及真实宿主均允许无图。
+
+P2C `GetProcessInput@18000a620 → 180007d00 → 180007c00`，C2C `18000baa0 → 1800080c0 → 180007fc0` 在已核订阅路径先调用 `VM_M_GetImage(&quot;InImage&quot;)`；获取函数返回非零直接向上返回，随后还读取图像宽、高、像素格式并检查可用状态。L2L/L2C 的订阅 `Process` 经 `GetProcessInput`，图像读取错误进入失败分支；绘制模式走 `FindProcess`。只凭 XML 不足以推断返回码、空指针但返回成功等全部边界；对四个 IsForce 工具的全部缺图行为仍需沿 VM_M_GetImage 与框架预检继续追。
+
+## 标定输入和已核输出时序
+
+六个模块的原 `Process` 导出体均可在 `analysis/full-audit/measure-six-static-20261104/&lt;工具&gt;/named/` 查阅；P2L `Process@18000b910` 在 `ProcessAlg` 之前调用 `GetProcessCalibMatrixInput@180009e70`。后者读 `CalibMatrix` 数组并设置模块矩阵状态，通过标定变换对象写入；源码中输入数量及错误分支需结合原汇编，不可假设所有长度都安全。相应矩阵传入后，由 `CalibTrans@18000a0d0` 调其标定对象的参数、执行和结果接口，不能仅从此层确定矩阵的乘法约定。
+
+P2L `ProcessOutput@18000ae50` 的所核分支：矩阵有效且选择字符串与原文件字节 `&quot;2&quot;` 精确匹配时，先发布 9 个 `MeasureCalibMatrix`，再对线起点、线终点、输入点调用 `CalibTrans`；投影点也按该条件变换后输出。随后 `P2LAngle`、`P2LDistPerpend`、`P2LDistMin`、`P2LDistMax` 从结果对象分别取值发布。点线最小/最大分别来自结果 vtable `+0x20/+0x28`，投影来自 `+8`；**不能仅凭这些名称断定是线段端点距离、无限直线还是别的定义**。P2P `ProcessOutput@18000aba0` 同样在特定条件下转换输入两点和结果中点；角度及距离从结果对象另取，不能假定它们根据转换后的输出坐标重新计算。具体变量/寄存器以每份 asm 为准。
+
+P2C `ProcessAlg@18000ae70` 构造圆对象并向原工具的参数对象分别输入圆和点，`ProcessOutput@18000b260` 从不同结果访问器发布近/远距离，`P2C1Distfarthest` 对应 vtable `+0x20`；其数值生产公式、点在圆内与同心边界仍未闭合。
+
+C2C `ProcessAlg@18000c5c0` 依次创建圆 1、圆 2 并交给相应原工具参数接口；`ProcessOutput@18000cb00` 按结果 vtable `+8/+0x10` 分别发布 `PointInter1/2`，并可对两点做标定变换；模块没有在所核发布代码中对两点排序。`C2CType` 只在结果状态非零且 type 非零时发布，索引 1–5 的文本依次为 `Inside/Inscribe/Intersect/Circumscribe/Outside`；这里是模块的文本映射，具体容差、内外切定义、距离公式及两个交点的生产顺序仍需追原 SDK。
+
+### 六种工具的角度范围包装
+
+P2L `MVDP2LMeasureCpp!180001c30`、P2C `MVDP2CMeasureCpp!180001c10`、C2C `MVDC2CMeasureCpp!180001da0` 将原 `MVD_Algorithm_Process` 返回角度写入结果前检查参数：码 0 时将 float 角度提升为 double，执行 `fmod(angle,180)`；小于 -90 时加 180，大于或等于 90 时减 180，再转 float。有限角度结果落在 `[-90,90)`，例如 +90 归到 -90；码 1 分支直接使用原算法返回角度，不在这些包装函数中归一。P2L/P2C/C2C 模块 `SetParam(OutputAngleRange)` 所核分支将输入 1 传为 1，其余传为 0。此处只证范围包装，**不证明内核角度的起点、方向、单位之外的有效范围或 from/to 次序**；NaN、无穷、负零及异常不归入有限数结论。
+
+P2L/C2C 所用 PE 中 `1800036a8/6b0/6b8` 的 double 常量分别是 `90/-90/180`，P2C 对应 `180003690/698/6a0`。包装 DLL 身份分别为 `94797F06457A551C963C76A22DD9B81B534D155926099F2EC0613308B358F3F2`、`B71ACA26E06D38435743DF3D123C3914F251CC18B2B74424BB505A4CCB490069`、`FE28C5F1796D73EA53FA217DF0316EA787CFCBD8584D7ADCACA669244BD37608`；对应原指令及 C 在 `analysis/full-audit/measure-six-static-20261104/{P2L,P2C,C2C}-wrapper/addresses/`。这三条 wrapper 分别向内核请求类型 `0x195/0x194/0x191`；内核返回的数值来源尚需继续追。
+
+同样的 float→double、`fmod(180)`、`-90/90` 分支在 P2P `MVDP2PMeasureCpp!180001a30`、L2L `MVDL2LMeasureCpp!180001d90`、L2C `MVDL2CMeasureCpp!180001da0` 中成立；其内核类型依次为 `0x196/0x193/0x192`。P2P 所用常量地址 `180003668/670/678`、L2L `180003690/698/6a0`、L2C `1800036b8/6c0/6c8` 的 double 值也分别为 `90/-90/180`。P2P、L2L 与 L2C 的模块 setter 将值 1 传 1，其余传 0；L2L 的分支在 `out/180022ad0.c`。三份包装 DLL SHA-256：P2P `AC5C36F576DABC7A04B27133FCE39DD15E8FCD10C384C4BCDF282B6FADCDC4DD`、L2L `ECBDB6B6CB9EDBD29BD0316FDD4042EC4AA0D3F4CBC784AF9A4E43EC245A3015`、L2C `950318ADB2996F77AEBC62626E0BEB086AF95E52F7FA271BDD8BE57ED332BDF4`。六项的内核角度方向和数据定义仍独立未知。
+
+## 已定位的原生数学生产入口
+
+六个工具类型 `0x191–0x196` 的句柄由 `MVD_Algorithm_CreateHandle@180014930 → 180053170` 建立；原 PE 中 vtable `181eb8d98 + 0x18 = 1800535f0`。该分派器依次将 C2C/L2C/L2L/P2C/P2L/P2P 交给 `180054400/180055040/180055390/180055b20/180055e10/180056140`，再进入 `1807b9590` 的 operation `7/6/4/3/2/1`。随后几何校验入口分别为 `1807c42c0/1807c41e0/1807c4020/1807c3fb0/1807c3ed0/1807c3e40`。P2C 与 C2C 的已核参数检查均对半径非正返回 `0x10000019`；P2L/L2L/L2C 检查对应线的端点差接近零，具体阈值和比较应以原指令及常量为准。
+
+`1807b9590` 的导出函数体仅 1019 字节，但反编译 C 显示跳到更远的分支，反编译器还提示类型传播未收敛，故其大段反编译不能单独证明全部参数位置或公式；需逐操作取连续原指令核对 ABI。几何校验器之后的原数学函数已定位为 P2P `180682e20`、P2L `1807c4340`、P2C `1807c46a0`、L2L `1806fc600`、L2C `1807b8020`、C2C `1807b8400`，函数体、常量和所有异常分支仍须核对。以上新取 C/asm 位于 `analysis/full-audit/measure-six-static-20261104/core{,2,3,4,5}/`，它们是继续追证的具体入口，不能以“静态手段穷尽”收尾。
+
+## 本批未闭合及自研边界
+
+- 六工具的 OutputAngleRange 包装已如上确认；六工具内核角度符号、线端点方向和 from/to 次序尚未闭合。替换位置：测量结果的角度语义适配器；任何先行算法必须标记自研假设。
+- 矩阵行列布局、正逆变换、旋转/平移顺序、尺度作用于长度和半径的算法行为：已追模块层 `CalibTrans` 和对象调用，具体函数在 `MVDCalibTransCpp.dll` / 下游原生内核。替换位置：坐标和单位转换适配器；不要把点变换及标量结果混作已知关系。
+- P2L 极值、P2C 最近最远、C2C 距离/相交判定及交点生产排序：SDK 包装 DLL 和结果 getter 已定位，内部生产体与特殊几何条件尚缺。替换位置：各工具的数值/结果构造器；空值、相切、重合、退化路径应明确自研占位。
+- 四个强制图像工具的所有无图/空值行为，模板触发与运行时绑定的保存恢复及 ROI 模式完整互作：XML、主要操作和部分原生输入函数已取；仍有可追调用，不能宣称静态条件已经穷尽。替换位置：输入校验及 ROI/订阅会话适配层，不将 XML 强制标记直接写成全部分支事实。
+
+## 证据与复验
+
+原生模块副本、函数 C/asm、引用清单在 `analysis/full-audit/measure-six-static-20261104/&lt;工具&gt;/{bin,out,named,addresses}`；直接取体脚本为 `tests/NativeEvidence/Run-MeasureStatic.ps1`、`Run-MeasureNamed.ps1`、`Run-MeasureAddresses.ps1`。Ghidra 对个别函数提示删除不可达块或参数传播异常，边界必须用同目录原指令复核。资源导出脚本 SHA-256 `D8EC23ED18F1296C85A891863D03D9F1E10CB8854E4905EDFFC5184F51BD30ED`；JSON SHA-256 `679BECD8C0E42623BB016D0FB06989B066DD886F2427BB9EDF84B3E545006FAA`。本批未做原机差分，也未改其他工作区。
+</pre></details></html>

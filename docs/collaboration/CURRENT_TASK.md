@@ -1,3 +1,8 @@
+## 2026-11-04 正式开发构建工程图完成；复杂值集成核收中
+
+根源码bd15ef061（a931统一入口/94dc重复签封已纠正），唯一SunEyeVision.slnx实核61工程/0缺路径；四脚本复用既有UI AfterBuild签封，退出旧.sln/App/Legacy视图与旧Workflow构建，MSBuild Rebuild不手删。实际build-full.bat Release0错6150warn/exit0，自动载荷66FCDC574EEE1B8A0538C301DB932F432BE930C06E6B66083349A29C1DB04C4A；同版RunChain13不加载WPF/UI/SDK、隐藏两工具窗口/根删除Undo身份退出0。canonical-build-entry-final-full / production-run / hidden-window-20261104.log。原主方案/矩阵/详细设计同步，VS重新打开与Rebuild所有变体未测，不冒签。
+
+六测量完整HTML转义报告与原JSON快照已入根，资源SHA679BECD8C0E42623BB016D0FB06989B066DD886F2427BB9EDF84B3E545006FAA，报告4AE29D84E5B02B8E94BBAFA2943BEE3E79577F210DE645B6EB1730D6280048F9。已通知A角度包装/九值标定/父级触发，仍有原生入口不签静态穷尽。C候选6d8/文档58e独立全量及存储24/Persistence45/SDK280与真实Session/TCP/RunChain/隐藏App通过；根审发现codec接受任意IReadOnlyStoredRaster与受控实现设计矛盾，C补充7c74限定受控类型、25定向通过，实际保存拒绝链仍在验，未合入。B变量视觉原树唯一写；A六工具正式Authority/UI尚在途，显示真实帧消费由根核，不伪帧/塞ROI。全平台范围不缩，Group/新增循环暂停，人工/VS/主仓分列。
 ## 2026-11-04 根配置草稿所属查询捕获代次整链修复通过
 
 根产品dafcf3c98（前置f7增加draft验证/真实回归；首次PowerShell保留变量使host替换未执行，before测试真实失败已保留）。host.OwnsRoot实际委托draft捕获scope→现Session.ValidateScope；删除→Undo同实体旧draft仍false/写入拒绝，新draft true且正常可编辑。全61工程Release0错6150warn，载荷1F304C6C643EEA28B59FC2EFD5D07E2337D492375C56850E3B3530B701540906：Editing39/39、根UI23/23、真实Main根操作/复制HALCON/保存重开/双主题/关闭排空退出0；root-draft-generation-*20261104和TRX。根无活跃构建测试句柄。原主HTML与矩阵当前作用域待办改为真实修复回执；联合5bf/1EBE证据保原版范围。

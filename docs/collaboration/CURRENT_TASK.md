@@ -1,3 +1,11 @@
+## 2026-11-04 已核收框架消息；先两工具原型统一基线
+
+已读原版架构新增tool-layer-new-development-20261104及方案管理静态报告（7633D791…6039E6），总监交接81837f48a及产品ce64已接收，尚未统一到根f03。先现有图像源＋Blob打通新Session：正式Schema/Storage/空态、真实窗口、唯一草稿与历史保存、执行和私有调试快照、同次结果与图像区域reader释放。其它工具在途保留停止扩展；原全平台范围保留，Group/新循环暂停。禁止整仓恢复旧SDK/Workflow/主窗；两Blob候选未提交测试及设计修改原地保护。新主窗空态GetNodeSchema、运行publication.Schema、引用RootPort.Storage已核源码，新Int32状态/Float32总面积消费者仍待整批验证。
+
+详细“框架消息核收与原型统一基线实施批-20261104.html”和原主计划/剩余矩阵同步本阶段。数据目录旧Locate/选择窗/Remember门禁须整体退出；B日志三个提交已固定，App路径接缝由唯一负责人集中调整，原厂资源/日志/恢复路径未证不猜。根人工查看Release继续冻结。独立几何探针修正reader.Values后构建0错0warn，实际Session链未运行不计通过；C公共ROI/宿主自测仍在途，不把子项结果签成完整批完成。
+## 2026-11-04 当前人工查看Release保持不变
+
+用户询问进度并确认打开路径。已告知可打开本树Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe；当前产品f03e6347f（几何常量整链源码），正式全量Release0错6154warn，载荷1A289D1261066C1E21C3AC6AE40BB3766C986FAD26FC626A8C211388C0B390E1，247条目只读核对0缺失/0字节差异。已明确承诺用户测试期间冻结此Release；不得再次构建/还原/签封覆盖本树产物，替换前协调关闭。源码分析、文档、并行独立树实施继续。几何七类/嵌套/严格反例的修复前3失败与修复后Persistence48通过已保留，但真实Session/历史/执行专项仍待，不把93上批UI232成绩转签f03。93/D5完整上批证据保留，f03只是当前可查看的新构建，不宣称全平台目标已完成。
 ## 2026-11-04 V5复杂值与变量原件集中集成完成；全平台继续
 
 根产品93b1ff896，已合C完整95d/30cc/bd49/25072/cbf（原ded/463/873/6d8/7c74）与B完整63e354bfa（原48c，Shutdown保最终词汇捕获/实际变量场景）；146/188/93集中修复退出旧Hal装配后实际主窗依赖加载。最终61工程locked restore/全量Release0错3418warn，载荷D5A32CDD3C28CA68F9292092B3905CA1466BD37EF5E03E90726D155AF48BA054，49关键依赖实际字节相同。变量25/Persistence45/SDK280/完整UI232/公共变量6/Authority25均通过0skip；真实Session非空V5/档案2/保存重开/伪光栅零回调拒绝/TCP/无WPF生产RunChain13/变量Main原件命令和绑定单receipt/结果解绑重绑/隐藏两参数窗/完整App启动与全部reader-Session-目录-Dispatcher-OLE关闭均exit0。complex-variable-approved-*20261104日志、TRX和hash JSON为最终证据；先前失败保留，93本批以后无根活跃验证句柄。

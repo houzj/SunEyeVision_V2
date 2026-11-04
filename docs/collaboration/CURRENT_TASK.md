@@ -1,3 +1,12 @@
+## 2026-11-04 V5复杂值与变量原件集中集成完成；全平台继续
+
+根产品93b1ff896，已合C完整95d/30cc/bd49/25072/cbf（原ded/463/873/6d8/7c74）与B完整63e354bfa（原48c，Shutdown保最终词汇捕获/实际变量场景）；146/188/93集中修复退出旧Hal装配后实际主窗依赖加载。最终61工程locked restore/全量Release0错3418warn，载荷D5A32CDD3C28CA68F9292092B3905CA1466BD37EF5E03E90726D155AF48BA054，49关键依赖实际字节相同。变量25/Persistence45/SDK280/完整UI232/公共变量6/Authority25均通过0skip；真实Session非空V5/档案2/保存重开/伪光栅零回调拒绝/TCP/无WPF生产RunChain13/变量Main原件命令和绑定单receipt/结果解绑重绑/隐藏两参数窗/完整App启动与全部reader-Session-目录-Dispatcher-OLE关闭均exit0。complex-variable-approved-*20261104日志、TRX和hash JSON为最终证据；先前失败保留，93本批以后无根活跃验证句柄。
+
+关键依赖修复：仅批准清单PE+SHA；递归实际组件引用，已签封owner.deps经CLR resolver选RID胜出，不猜路径；已加载副本亦验实际bytes，组件入口严格来源保持。RunChain去显式HAL/Kernel bootstrap后仍过；A与B日志线已精确接同Authority文件，不重复合其版本。
+
+原平台主HTML/完整剩余矩阵/全局变量方案及逆向计划/复杂值设计已集中统一，新增统一验证HTML与最终真实双主题PNG。原完整范围不缩：目标批量字段绑定/初始化配置执行/流程局部/档案UI/复杂新运行绑定等未实现保护；六测量/公共绘制、日志、其它工具、SDK退出和最终物理树继续，Group/新循环暂停；人工/VS/硬件/原厂动态/主仓未验。本批自测完成不等人工。
+
+并行A平台measure-integration直接分支/引用/历史/保存中立探针自测通过，但绘制/原件整数下拉UI仍在途，尚未根集成；几何常量canonical未支持为真实共享缺口，与持久storedROI不同，暂保护不伪通过。C独立platform-measure-roi-implementation（63前置），独占公共ROI/字段+RuntimeNodeConfigurationControl，同草稿跨schema候选/实际帧/回调退休已定位，四原件与手势仍在途；隐藏未激活desktop直接CaptureMouse=false，不能冒称物理鼠标通过。B独立platform-neutral-logging（146+精确93前置），已批准中立完整日志设计，正在真实启动/关闭验证，根未合。逆向负责人已集中请求SectorCaliper与CircleAnnulus字段转换/内半径/单位及卡尺绑定证据，不顺手运行原SDK/硬件。主仓总监398a/ce2原13排序/C-R/F6/rad已固定，尚未接本方新Session，后续按真实消费者差异集中核收，不整文件回退旧SDK。
 ## 2026-11-04 正式开发构建工程图完成；复杂值集成核收中
 
 根源码bd15ef061（a931统一入口/94dc重复签封已纠正），唯一SunEyeVision.slnx实核61工程/0缺路径；四脚本复用既有UI AfterBuild签封，退出旧.sln/App/Legacy视图与旧Workflow构建，MSBuild Rebuild不手删。实际build-full.bat Release0错6150warn/exit0，自动载荷66FCDC574EEE1B8A0538C301DB932F432BE930C06E6B66083349A29C1DB04C4A；同版RunChain13不加载WPF/UI/SDK、隐藏两工具窗口/根删除Undo身份退出0。canonical-build-entry-final-full / production-run / hidden-window-20261104.log。原主方案/矩阵/详细设计同步，VS重新打开与Rebuild所有变体未测，不冒签。

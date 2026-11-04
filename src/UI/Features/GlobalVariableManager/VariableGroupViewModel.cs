@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Linq;
-using SunEyeVision.Plugin.SDK.Models;
+
 using SunEyeVision.Domain.Solutions;
 
 using SunEyeVision.UI.Core;
@@ -73,7 +73,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         /// </summary>
         public VariableGroupViewModel(string name)
         {
-            _name = name;
+            _name = name; _editingText = name;
             Variables = new ObservableCollection<GlobalVariable>();
         }
 
@@ -138,6 +138,6 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         public void CommitEdit() => IsEditing = false;
 
         /// <summary>取消编辑：还原名称</summary>
-        public void CancelEdit() { IsEditing = false; EditingText = ""; }
+        public void CancelEdit() { IsEditing = false; EditingText = Name; }
     }
 }

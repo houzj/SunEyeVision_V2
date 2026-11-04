@@ -76,7 +76,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private void OnHostEditingStateChanged(object? sender,System.ComponentModel.PropertyChangedEventArgs args)
         {
             if(_viewModel is null)return;
-            var allowed=_viewModel.CanEditRootWorkspace&&_viewModel.WorkflowTabViewModel.SelectedTab?.IsInSubroutine!=true;
+            var allowed=_viewModel.CanEditResultBindings&&_viewModel.WorkflowTabViewModel.SelectedTab?.IsInSubroutine!=true;
             SetCurrentValue(EditingAllowedProperty,allowed);
             ImagePreviewContent.IsRunning=_viewModel.WorkflowTabViewModel.SelectedTab is {} tab&&_viewModel.IsFormalRootRunning(tab.RootWorkflowId);
             CommandManager.InvalidateRequerySuggested();
@@ -242,7 +242,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             var binding=new ProducerBinding{ReferenceExpression=endpoint.ReferenceExpression,
                 WorkflowName=root.Name,NodeName=node.DispName,ResultDisplayName=endpoint.ResultPath};
             var choices=expected.Document.GlobalVariables.Where(variable=>
-                (!remove||variable.ProducerBinding?.ReferenceExpression==binding.ReferenceExpression)
+                (remove?variable.ProducerBinding?.ReferenceExpression==binding.ReferenceExpression:main.IsResultVariableCandidate(expected,binding,variable))
                 ).ToList();
             if(choices.Count==0)
             {

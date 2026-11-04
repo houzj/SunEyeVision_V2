@@ -1,0 +1,153 @@
+{
+  "Baseline": "ded0f48f2",
+  "OriginalPendingPath": "src/Plugin.Wpf/Controls/Native/Input/WorkspaceControls/WorkspaceControls.GlobalUI/GlobalVariableDialog.xaml.pending",
+  "OriginalPendingSha256": "257866439FF7EBDBF2298C5CE7DDF0FC8212A65A6862B708CA19558C97EF439B",
+  "RawDecompiledIdentity": "17fd6594d9b0e5a893075d9ebf54d4abdf7f79ea9731168751d2fd9366354163（原件XAML静态目录，不是本已改namespace的pending SHA）",
+  "SourceNamedElements": [
+    "addIcon",
+    "Back",
+    "bd",
+    "border",
+    "btnDown",
+    "btnExport",
+    "btnImport",
+    "btnTop",
+    "btnUp",
+    "ColumnDefinition0",
+    "ColumnDefinition1",
+    "Com",
+    "ComContent",
+    "Content",
+    "dgComitColumn",
+    "gridGlob",
+    "head",
+    "HeaderPanel",
+    "headText",
+    "icon1",
+    "Image",
+    "img",
+    "itemNameTxt",
+    "LightSave",
+    "line",
+    "linkButton",
+    "outBorder",
+    "PART_ItemsHolder",
+    "PART_SelectedContentHost",
+    "PopExport",
+    "PopImport",
+    "rect",
+    "RowDefinition0",
+    "RowDefinition1",
+    "scroll",
+    "SearchText",
+    "source",
+    "stack",
+    "subComContent",
+    "tabControl",
+    "targetText",
+    "ToggleButton",
+    "txtFocus",
+    "varDataGrid",
+    "windowShadow"
+  ],
+  "TargetNamedElements": [
+    "addIcon",
+    "ArrayDetails",
+    "Back",
+    "bd",
+    "Border",
+    "btnDown",
+    "btnExport",
+    "btnImport",
+    "btnTop",
+    "btnUp",
+    "ColumnDefinition0",
+    "ColumnDefinition1",
+    "Com",
+    "ComContent",
+    "Content",
+    "dgComitColumn",
+    "head",
+    "HeaderPanel",
+    "headText",
+    "icon1",
+    "InputSourceText",
+    "LightSave",
+    "line",
+    "linkButton",
+    "PART_ItemsHolder",
+    "PART_SelectedContentHost",
+    "PopExport",
+    "PopImport",
+    "rect",
+    "RowDefinition0",
+    "RowDefinition1",
+    "scroll",
+    "SearchText",
+    "stack",
+    "subComContent",
+    "tabControl",
+    "targetText",
+    "ToggleButton",
+    "txtFocus",
+    "varDataGrid",
+    "VariableNameEditor",
+    "VariableValueEditor"
+  ],
+  "TargetEventForwards": [
+    "Loaded",
+    "NameChanged",
+    "ValueChanged",
+    "LostFocus",
+    "KeyDown",
+    "TypeChanged",
+    "GroupLostFocus",
+    "GroupKeyDown",
+    "Array",
+    "Delete",
+    "RenameGroup",
+    "DeleteGroup",
+    "Search",
+    "GroupChanged"
+  ],
+  "Excluded": [
+    "SDK异步加载/动态IO进度服务：现Session已加载，导入禁用，同步草稿操作不显示假进度",
+    "CommInit配置缺基础，不能TwoWay到IsInitialized运行状态",
+    "目标参数完整资格/反向消费者尚缺，保持保护",
+    "流程局部scope、档案UI、新复杂运行绑定未扩"
+  ],
+  "Files": [
+    {
+      "Path": "src/Plugin.Wpf/Controls/References/Variables/VariableManagerView.xaml",
+      "SHA256": "4D2D0425A62FB2E8846E498A6B3286BDC0AEC5DDB3DB36BF28EDB18C0C8000F2"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Controls/References/Variables/VariableManagerView.xaml.cs",
+      "SHA256": "E87C7333605679CEA38819FDF66F1065C2261163100693B71AA65971C01162B9"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Controls/References/Variables/VariableManagerDesignData.cs",
+      "SHA256": "9B8543CB95A4F1BDF003B37C13F4A2B171D71B1C53A0D62B96B45101200CCDCF"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Themes/References/VariableManagerStyles.xaml",
+      "SHA256": "EB586D784A5480C75D4906DA3432E979FAD064409F4585C1C3D3D7E068DC518C"
+    },
+    {
+      "Path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerDialog.xaml",
+      "SHA256": "6D1A56F9139551BDD153000A2D45855E79609028C11D4B78FD927D2CB997D218"
+    },
+    {
+      "Path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerDialog.xaml.cs",
+      "SHA256": "B7D0AA2615B32DF905D8BC433C0D6ADA9C93F459B30035405C88F3F3FC3AE510"
+    },
+    {
+      "Path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerViewModel.cs",
+      "SHA256": "2C5A62B88E94A12B12B213B28203E74011E96B1016F841A553E98EEBCBEEB7AC"
+    },
+    {
+      "Path": "src/UI/Features/GlobalVariableManager/VariableGroupViewModel.cs",
+      "SHA256": "B963F42784D9A1414EC4981D084E36745FD3D24AC0710C93542B6B5589DA8B72"
+    }
+  ]
+}

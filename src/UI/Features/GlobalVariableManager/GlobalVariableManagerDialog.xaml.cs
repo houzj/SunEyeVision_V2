@@ -1,255 +1,114 @@
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.Editing.Wpf;
+using SunEyeVision.Plugin.Wpf.Controls.Foundation;
+using SunEyeVision.Plugin.Wpf.Controls.References.Variables;
 using System;
-using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
-using OpenCvSharp;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.Vision.Contracts;
-using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Features.Dialogs;
-using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.Domain.Solutions;
-
 namespace SunEyeVision.UI.Features.GlobalVariableManager
 {
-    /// <summary>
-    /// 全局变量管理器对话框
-    /// </summary>
-    public partial class GlobalVariableManagerDialog : ThemeDialogWindow
+    public partial class GlobalVariableManagerDialog : BaseWindow
     {
         private readonly System.Collections.Generic.HashSet<string> _valueEdits = new(StringComparer.Ordinal);
         private readonly System.Collections.Generic.Dictionary<string, string> _pendingNames = new(StringComparer.Ordinal);
         private readonly System.Collections.Generic.Dictionary<string, string> _pendingValues = new(StringComparer.Ordinal);
+        private readonly System.Collections.Generic.Dictionary<string, string> _pendingGroups = new(StringComparer.Ordinal);
+        private readonly System.Collections.Generic.List<Window> _children = new();
         private bool _refreshing;
         public GlobalVariableManagerDialog(GlobalVariableManagerViewModel viewModel)
         {
             InitializeComponent();
-            DataContext = viewModel ?? throw new System.ArgumentNullException(nameof(viewModel));
+            DataContext = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
+            SetResourceReference(StyleProperty, typeof(BaseWindow));
             viewModel.PrepareView = () => TryCommitPendingEdits(out var error) ? null : error;
             viewModel.HasPendingViewEdits = () => HasRetainedPendingEdits;
             viewModel.AcceptView = AcceptPublication;
             viewModel.PendingViewStamp = () => PendingEditStamp;
             viewModel.AcknowledgeViewEdits = AcknowledgeRetainedEdits;
+            ManagerView.EditorAction += OnEditorAction;
             Closed += (_, _) =>
             {
-                viewModel.Groups.CollectionChanged -= OnGroupsCollectionChanged;
+                ManagerView.EditorAction -= OnEditorAction;
+                foreach (var child in _children.ToArray()) child.Close();
+                _children.Clear();
                 viewModel.PrepareView = null; viewModel.HasPendingViewEdits = null;
                 viewModel.AcceptView = null; viewModel.PendingViewStamp = null; viewModel.AcknowledgeViewEdits = null;
                 viewModel.Discard();
             };
-
-            // Tab 新增时自动滚动到最右端
-            viewModel.Groups.CollectionChanged += OnGroupsCollectionChanged;
-
-            // 监听 ScrollViewer 状态变化，动态切换两个 "+" 按钮
-            GroupTabScrollViewer.Loaded += (s, e) => UpdateAddButtonPosition();
-            GroupTabScrollViewer.SizeChanged += (s, e) => UpdateAddButtonPosition();
         }
-
-        /// <summary>
-        /// 分组集合变化时自动滚动 ScrollViewer 到最右端
-        /// </summary>
-        private void OnGroupsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private void OnEditorAction(string action, object sender, RoutedEventArgs args)
         {
-            if (e.Action == NotifyCollectionChangedAction.Add && GroupTabScrollViewer != null)
+            if (DataContext is not GlobalVariableManagerViewModel vm || !vm.IsValid) return;
+            switch (action)
             {
-                GroupTabScrollViewer.Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    GroupTabScrollViewer.ScrollToRightEnd();
-                    UpdateAddButtonPosition();
-                }));
-            }
-        }
-
-        /// <summary>
-        /// 根据 Tab 是否溢出，切换两个 "+" 按钮的可见性
-        /// 未溢出 → 显示 ScrollViewer 内部的按钮（紧跟在 Tab 右侧）
-        /// 已溢出 → 显示列1 的固定按钮（始终可见）
-        /// </summary>
-        private void UpdateAddButtonPosition()
-        {
-            bool isOverflow = GroupTabScrollViewer.ScrollableWidth > 0;
-
-            if (isOverflow)
-            {
-                ScrollableAddButton.Visibility = Visibility.Collapsed;
-                FixedAddButton.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                ScrollableAddButton.Visibility = Visibility.Visible;
-                FixedAddButton.Visibility = Visibility.Collapsed;
-            }
-        }
-
-        private void Close_Click(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
-
-        /// <summary>
-        /// 分组标签选中事件
-        /// </summary>
-        private void GroupRadioButton_Checked(object sender, RoutedEventArgs e)
-        {
-            if (sender is RadioButton radioButton && radioButton.DataContext is VariableGroupViewModel groupVM)
-            {
-                var viewModel = DataContext as GlobalVariableManagerViewModel;
-                if (viewModel != null && viewModel.SelectedGroup != groupVM)
-                {
-                    viewModel.SelectedGroup = groupVM;
-                }
-
-                // 将选中的 Tab 滚动到可视区域（特别用于通过下拉 Popup 切换的场景）
-                var container = GroupItemsControl?.ItemContainerGenerator.ContainerFromItem(groupVM);
-                if (container is FrameworkElement element)
-                {
-                    element.BringIntoView();
-                }
-            }
-        }
-
-        /// <summary>
-        /// 重命名分组菜单点击 → 改为触发内联编辑（不再弹窗）
-        /// </summary>
-        private void RenameGroupMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is MenuItem menuItem && menuItem.CommandParameter is VariableGroupViewModel groupVM)
-            {
-                groupVM.BeginEdit();
-            }
-        }
-
-        /// <summary>
-        /// 删除分组菜单点击
-        /// </summary>
-        private void DeleteGroupMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is MenuItem menuItem && menuItem.CommandParameter is VariableGroupViewModel groupVM)
-            {
-                var viewModel = DataContext as GlobalVariableManagerViewModel;
-                if (viewModel == null) return;
-
-                // 先选中要删除的分组
-                viewModel.SelectedGroup = groupVM;
-
-                // 级联删除确认（允许删除非空分组）
-                if (groupVM.Variables.Count > 0)
-                {
-                    var result = ThemeMessageDialog.Show(
-                        $"分组 '{groupVM.Name}' 中有 {groupVM.Variables.Count} 个变量，\n删除分组将同时删除这些变量。\n\n是否继续？",
-                        "确认删除",
-                        MessageBoxButton.YesNo,
-                        ThemeMessageDialog.MessageIcon.Warning);
-
-                    if (result != MessageBoxResult.Yes)
-                        return;
-                }
-
-                viewModel.DeleteGroupWithVariables();
-            }
-        }
-
-        /// <summary>
-        /// 编辑 TextBox 可见性变化时自动聚焦并全选，同时评估溢出状态
-        /// </summary>
-        private void EditTextBox_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            if (sender is TextBox textBox)
-            {
-                if (textBox.IsVisible)
-                {
-                    textBox.Focus();
-                    textBox.SelectAll();
-                    // 编辑开始：TextBox 可能比原 RadioButton 更宽，需重新评估溢出并滚动到最右
-                    textBox.Dispatcher.BeginInvoke(new Action(() =>
+                case "Loaded": VariableEditor_Loaded(sender, args); break;
+                case "NameChanged": VariableNameTextBox_TextChanged(sender, (TextChangedEventArgs)args); break;
+                case "ValueChanged": VariableValueTextBox_TextChanged(sender, (TextChangedEventArgs)args); break;
+                case "LostFocus":
+                    if (sender is TextBox {Name:"VariableNameEditor"}) VariableNameTextBox_LostFocus(sender,args);
+                    else if (sender is TextBox {Name:"VariableValueEditor"}) VariableValueTextBox_LostFocus(sender,args);
+                    break;
+                case "KeyDown":
+                    if (args is KeyEventArgs key && key.Key == Key.Enter) { if (TryCommitPendingEdits(out _)) Keyboard.ClearFocus(); key.Handled=true; }
+                    break;
+                case "RenameGroup": if (vm.CanEdit && sender is FrameworkElement { DataContext: VariableGroupViewModel group }) group.BeginEdit(); break;
+                case "GroupLostFocus":
+                    if (vm.CanEdit && sender is FrameworkElement { DataContext: VariableGroupViewModel renamed }) ConfirmGroup(vm,renamed);
+                    break;
+                case "GroupChanged":
+                    if(!_refreshing && sender is GroupRenameTextBox {DataContext:VariableGroupViewModel changed} groupBox && changed.IsEditing)
+                        _pendingGroups[changed.Name]=groupBox.Text;
+                    break;
+                case "GroupKeyDown":
+                    if (sender is FrameworkElement {DataContext:VariableGroupViewModel editing} && args is KeyEventArgs groupKey)
                     {
-                        GroupTabScrollViewer.ScrollToRightEnd();
-                        UpdateAddButtonPosition();
-                    }));
-                }
-                else
-                {
-                    // 编辑结束：重新评估溢出状态
-                    UpdateAddButtonPosition();
-                }
+                        if(groupKey.Key==Key.Escape){_pendingGroups.Remove(editing.Name);editing.CancelEdit();groupKey.Handled=true;}
+                        else if(groupKey.Key==Key.Enter){ConfirmGroup(vm,editing);groupKey.Handled=true;}
+                    }
+                    break;
+                case "DeleteGroup":
+                    if (vm.CanEdit && sender is FrameworkElement {DataContext:VariableGroupViewModel deleted})
+                    {
+                        if (deleted.Variables.Count!=0 && ThemeMessageDialog.Show($"删除分组“{deleted.Name}”及其中{deleted.Variables.Count}个变量？","删除分组",MessageBoxButton.YesNo,ThemeMessageDialog.MessageIcon.Warning)!=MessageBoxResult.Yes) return;
+                        vm.SelectedGroup=deleted;vm.DeleteGroupWithVariables();
+                    }
+                    break;
+                case "TypeChanged":
+                    if(vm.CanEdit&&sender is ComboBox {DataContext:GlobalVariable typed,SelectedValue:string type}&&vm.DraftVariables.Any(item=>ReferenceEquals(item,typed)))
+                    {
+                        object? initial=type switch {"Integer"=>new long[]{0},"Double"=>new double[]{0},"String"=>"","Boolean"=>new bool[]{false},"Integer[]"=>Array.Empty<long>(),"Double[]"=>Array.Empty<double>(),"String[]"=>Array.Empty<string>(),"Boolean[]"=>Array.Empty<bool>(),_=>null};
+                        if(initial is not null){typed.Type=type;_pendingValues.Remove(typed.Id);_valueEdits.Remove(typed.Id);vm.SetDraftValue(typed,initial);}
+                    }
+                    break;
+                case "Delete": if (sender is FrameworkElement {DataContext:GlobalVariable variable} && vm.DeleteVariableCommand.CanExecute(variable)) vm.DeleteVariableCommand.Execute(variable);break;
+                case "Array": if (sender is FrameworkElement {DataContext:GlobalVariable array}) ShowArray(array);break;
+                case "Search": Keyboard.ClearFocus();break;
             }
         }
-
-        /// <summary>
-        /// 编辑中文字变化时重新评估溢出状态（编辑框宽度变化可能导致溢出）
-        /// </summary>
-        private void EditTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void ShowArray(GlobalVariable variable)
         {
-            if (sender is TextBox textBox && textBox.IsVisible)
-            {
-                textBox.Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    UpdateAddButtonPosition();
-                }));
-            }
+            if (DataContext is not GlobalVariableManagerViewModel vm || !vm.IsValid || !vm.DraftVariables.Any(item=>ReferenceEquals(item,variable))) return;
+            if (variable.CaptureValue().Value is not Array values) return;
+            var dialog=new VariableArrayDialog(variable.Name,values.Cast<object?>().Select(VariableManagerValueTextProxy.Format)){Owner=this,ShowInTaskbar=false};
+            _children.Add(dialog);dialog.Closed+=(_,_)=>_children.Remove(dialog);dialog.ShowDialog();
         }
-
-        /// <summary>
-        /// 编辑 TextBox 键盘事件：Enter=提交，Escape=取消
-        /// </summary>
-        private void EditTextBox_KeyDown(object sender, KeyEventArgs e)
+        private void ConfirmGroup(GlobalVariableManagerViewModel vm,VariableGroupViewModel group)
         {
-            if (sender is TextBox textBox && textBox.DataContext is VariableGroupViewModel groupVM)
-            {
-                var viewModel = DataContext as GlobalVariableManagerViewModel;
-                if (viewModel == null) return;
-
-                if (e.Key == Key.Enter)
-                {
-                    viewModel.ConfirmGroupRename(groupVM);
-                    e.Handled = true;
-                }
-                else if (e.Key == Key.Escape)
-                {
-                    groupVM.CancelEdit();
-                    e.Handled = true;
-                }
-            }
+            var openingName=group.Name;vm.ConfirmGroupRename(group);
+            if(!group.IsEditing)_pendingGroups.Remove(openingName);
         }
-
-        /// <summary>
-        /// 编辑 TextBox 失焦时自动提交
-        /// </summary>
-        private void EditTextBox_LostFocus(object sender, RoutedEventArgs e)
+        private void RestorePendingGroups()
         {
-            if (sender is TextBox textBox && textBox.DataContext is VariableGroupViewModel groupVM)
-            {
-                var viewModel = DataContext as GlobalVariableManagerViewModel;
-                viewModel?.ConfirmGroupRename(groupVM);
-            }
+            if(DataContext is not GlobalVariableManagerViewModel vm)return;
+            _refreshing=true;
+            try{foreach(var group in vm.Groups)if(_pendingGroups.TryGetValue(group.Name,out var raw)){group.EditingText=raw;group.IsEditing=true;}}
+            finally{_refreshing=false;}
         }
-
-        /// <summary>
-        /// 鼠标点击 ComboBox 时延迟展开下拉。
-        /// 不阻止事件传播，DataGrid 自然处理行选中和单元格激活。
-        /// 延迟展开确保 DataGrid 编辑模式建立后 SelectedItem 绑定已连接到正确行。
-        /// 键盘 Tab 导航不会触发此方法，所以不会误展开。
-        /// </summary>
-        private void TypeComboBox_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (sender is ComboBox comboBox && !comboBox.IsDropDownOpen)
-            {
-                comboBox.Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    comboBox.IsDropDownOpen = true;
-                }), System.Windows.Threading.DispatcherPriority.Input);
-            }
-        }
-
         private bool TryValidateNameEditor(TextBox box, out string error)
         {
             error = "";
@@ -315,9 +174,9 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             try { box.SetCurrentValue(TextBox.TextProperty, raw); }
             finally { _refreshing = false; }
         }
-        internal bool HasRetainedPendingEdits => _pendingNames.Count != 0 || _pendingValues.Count != 0 ||
+        internal bool HasRetainedPendingEdits => _pendingNames.Count != 0 || _pendingValues.Count != 0 || _pendingGroups.Count!=0 ||
             SunEyeVision.Plugin.Editing.Wpf.ToolEditorCommit.HasPendingEdits(this);
-        internal string PendingEditStamp => System.Text.Json.JsonSerializer.Serialize(new { Names = _pendingNames, Values = _pendingValues });
+        internal string PendingEditStamp => System.Text.Json.JsonSerializer.Serialize(new { Names = _pendingNames, Values = _pendingValues, Groups=_pendingGroups });
         internal void AcknowledgeRetainedEdits(string stamp)
         {
             using var saved = System.Text.Json.JsonDocument.Parse(stamp);
@@ -326,6 +185,9 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             foreach (var item in saved.RootElement.GetProperty("Values").EnumerateObject())
                 if (_pendingValues.TryGetValue(item.Name, out var current) && current == item.Value.GetString())
                 { _pendingValues.Remove(item.Name); _valueEdits.Remove(item.Name); }
+            foreach(var item in saved.RootElement.GetProperty("Groups").EnumerateObject())
+                if(_pendingGroups.TryGetValue(item.Name,out var current)&&current==item.Value.GetString())_pendingGroups.Remove(item.Name);
+            RestorePendingGroups();
         }
         internal void AcceptPublication()
         {
@@ -335,6 +197,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
                 _valueEdits.Clear();
                 _pendingNames.Clear();
                 _pendingValues.Clear();
+                _pendingGroups.Clear();
 
             }
             finally { _refreshing = false; }
@@ -380,6 +243,13 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             error = "";
             if (DataContext is not GlobalVariableManagerViewModel vm) return true;
             var variables = vm.DraftVariables;
+            foreach(var group in vm.Groups)
+            {
+                var name=_pendingGroups.TryGetValue(group.Name,out var rawGroup)?rawGroup.Trim():group.Name;
+                if(string.IsNullOrWhiteSpace(name)){error="分组名称不能为空，当前输入已保留。";return false;}
+                if(vm.Groups.Any(other=>!ReferenceEquals(other,group)&&string.Equals(_pendingGroups.TryGetValue(other.Name,out var rawOther)?rawOther.Trim():other.Name,name,StringComparison.Ordinal)))
+                {error=$"分组名称“{name}”已存在，当前输入已保留。";return false;}
+            }
             foreach (var variable in variables)
             {
                 var name = _pendingNames.TryGetValue(variable.Id, out var rawName) ? rawName.Trim() : variable.Name;
@@ -397,6 +267,8 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         public bool TryCommitPendingEdits(out string error)
         {
             if (!TryValidatePendingEdits(out error)) return false;
+            if(DataContext is GlobalVariableManagerViewModel groupsModel)
+                foreach(var group in groupsModel.Groups.Where(group=>group.IsEditing).ToArray())ConfirmGroup(groupsModel,group);
             var nameEditors = Visuals(this).OfType<TextBox>().Where(b => b.Name == "VariableNameEditor").Select(b => (Box: b, Text: b.Text)).ToArray();
             var valueEditors = Visuals(this).OfType<TextBox>()
                 .Where(b => b.Name == "VariableValueEditor" && !b.IsReadOnly)
@@ -461,23 +333,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             => Binding.DoNothing;
 
-        private static string FormatComplex(object value) => value switch
-        {
-            SunEyeVision.Plugin.Contracts.BinaryValue payload => payload.ToString(),
-            SunEyeVision.Plugin.Contracts.BinaryValue[] payloads =>
-                string.Join(" | ", payloads.Select(p => p.ToString())),
-            Mat => "[图像]",
-            SunEyeVision.Plugin.Contracts.IReadOnlyStoredRaster => "[图像]",
-            AffineMatrix => "[变换矩阵]",
-            RoiShape[] => "[图形定义]",
-            Circle2d[] => "[圆]",
-            RotatedRect2d[] => "[旋转矩形]",
-            SunEyeVision.Plugin.SDK.Models.Geometry.Point2d[] => "[点]",
-            Polygon2d[] => "[多边形]",
-            Line2d[] => "[直线]",
-            Annulus2d[] => "[圆环]",
-            _ => value.ToString() ?? string.Empty
-        };
+        private static string FormatComplex(object value) => VariableManagerValueTextProxy.Format(value);
 
         /// <summary>
         /// 按变量类型把文本解析回值（数组形态，对齐反序列化契约）。解析失败返回 null。

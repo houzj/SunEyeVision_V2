@@ -1,0 +1,863 @@
+{
+  "Baseline": "5bf65949e",
+  "Purpose": "只读源码身份与XAML直接依赖清单；不是递归闭包或运行通过证明",
+  "Files": [
+    {
+      "Path": "src/Application/DocumentSession.ReferenceSelections.cs",
+      "Sha256": "368E71C5DB2F12C8FD1FD3C2F5537C02A9D51EA2847A8234A2B6D3D703B60F8C"
+    },
+    {
+      "Path": "src/Application/Editing/GlobalVariableConfigurationEditDraft.cs",
+      "Sha256": "C892B4C1754EF019385961E67AB1414C402E20129580F8BE5BF1FD53C077EB76"
+    },
+    {
+      "Path": "src/Application/GlobalProducerBindingRules.cs",
+      "Sha256": "DC589B7EE5DA86E187BD30243C9812D97BF3E9811A5344A284DF377F3D201E6E"
+    },
+    {
+      "Path": "src/Plugin.Contracts/VariableValueDeclarations.cs",
+      "Sha256": "E320C1911FBB3D6C1131063A7C9483ADEFAF562E32CA439B4E9E4620B8FC3D99"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Adapters/References/DeclaredReferenceCandidate.cs",
+      "Sha256": "A1D1C3F058C7DF8E3E66A55EF01B28D507D783D6EE14A02410300CF297833442"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Adapters/References/DeclaredReferenceTree.cs",
+      "Sha256": "D7D78EE4F502C07D924EC9414BE5FED9FB0A4CEFDCDB1C21CAF0535A1C2CE869"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Adapters/References/ReferenceBindingBatch.cs",
+      "Sha256": "1E4DDA87B92A1C496E54465CCB4BE72E19DFB8371B33CA1C9FE0B2F2448C7F02"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Adapters/References/ReferenceCandidates.cs",
+      "Sha256": "7CCB33E1E53A4B9A7565C3C7D89B3D3202185A66B2C3D2FCC3E23A69589E6932"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Adapters/References/ReferenceExpansionRequest.cs",
+      "Sha256": "AA98B4D363AB157BE28CBBA81811161378AD5DD46A5C7CD32DBF0A9024FB45CF"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldOptions.cs",
+      "Sha256": "2930D3404F7F94AD403B152E70AC9804FB27E517579B3EA106472B7373B9BAC2"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs",
+      "Sha256": "10F4D215650E4EA3EBDECFE6D298C6DE7D424476BD393B162BC49C7991901B75"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Adapters/References/ReferencePopupScope.cs",
+      "Sha256": "C4CFDB284D696B1A8B735FADE5C2F1D71FF98B3A1DD589050184C951D21CAEC0"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Adapters/References/ReferenceSettingParts.cs",
+      "Sha256": "DA0BD67B87A2EBB280E8BDB8D677C229B3B1692CB745337004E8C3279BA878EB"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Adapters/References/ReferenceWindowOwner.cs",
+      "Sha256": "83F8A4742723EE1CDFB440CA99F1B28201F1EA9F527A7AAAA1CCC58D208E272B"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Adapters/References/VariableSelectionRequest.cs",
+      "Sha256": "6A4EC1F781EB9B2437B1E5FC39E845DB880F9C6AD273ABCBBB953B2AB2D09715"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Controls/References/Variables/GroupRenameTextBox.cs",
+      "Sha256": "06DF9C94C6894C01CE82439C73FB00B0C1045FFC728C671C134D8984AA92C0B3"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Controls/References/Variables/PageNumberItem.cs",
+      "Sha256": "3BC0E5358AE0575B9141B42D5401AE4259EF7A584974C3F0E93ED4FF09C77952"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Controls/References/Variables/PageSizeOption.cs",
+      "Sha256": "F2C9527E654F87C5C9D939DF243272D048FE58D3F2CE0D097F70A18DD80B443F"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Controls/References/Variables/TargetParameterSelectionDialog.xaml",
+      "Sha256": "276C1DE898865A72DC3A8FEBDE4CC2A3D65F600A3DFF6BB2A62B09AB0BFF3676",
+      "NamedElements": [
+        "Image",
+        "LeftPanel",
+        "SearchComboBox",
+        "RunParamsSelectTreeView",
+        "ScrollViewer"
+      ],
+      "ResourceSources": [
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/OriginalTheme.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Foundation/BaseWindow.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceScrollBars.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Commands/BottomCommands.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/References/VariableSelectionStyles.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/delete_normal.png"
+      ],
+      "Bindings": [
+        "Style.BasedOn={StaticResource deleteButton}",
+        "TextBlock.ToolTip={Binding DisplayPath}",
+        "TextBlock.Text={Binding DisplayPath}",
+        "Button.Style={StaticResource delete}",
+        "TextBlock.Text={DynamicResource Lang_SelectList}",
+        "ComboBox.Style={StaticResource ListViewComboBoxStyle}",
+        "TargetParameterTree.ItemsSource={Binding TreeNodes}",
+        "TextBlock.Text={DynamicResource Lang_GlobalVariableTargetParams}",
+        "ScrollViewer.Style={StaticResource RecScrollViewer}",
+        "ScrollViewer.MaxHeight={Binding Path=Height, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Grid}}}",
+        "ItemsControl.ItemsSource={Binding SelectedConsumers}",
+        "Button.Content={DynamicResource Confirm}",
+        "Button.Style={StaticResource BottomButtonStyle}"
+      ]
+    },
+    {
+      "Path": "src/Plugin.Wpf/Controls/References/Variables/TargetParameterSelectionDialog.xaml.cs",
+      "Sha256": "99BD27DFEDBE7FFD778604145DF9017C218AA04048EF9BC0D7D443C0FC18E9D3"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Controls/References/Variables/TargetParameterTree.xaml",
+      "Sha256": "1122D5718A75848544D70BA644C9D0CCD33C3E6070F88394B67FF3010A3C361C",
+      "NamedElements": [
+        "UserControl",
+        "icon",
+        "Bd",
+        "Expander",
+        "PART_Header",
+        "Rect",
+        "ItemsHost",
+        "treeView"
+      ],
+      "ResourceSources": [
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceScrollBars.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/SharedStyles/checkboxstyle/checkboxstyle.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/References/btn_高级参数_uparrow.png"
+      ],
+      "Bindings": [
+        "Setter.Value={Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}",
+        "Setter.Value={Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}",
+        "Setter.Value={StaticResource TreeViewItemFocusVisual}",
+        "Grid.Margin={Binding Converter={StaticResource lengthConverter}, RelativeSource={RelativeSource TemplatedParent}}",
+        "ToggleButton.Style={StaticResource ExpandCollapseToggleStyle}",
+        "ToggleButton.IsChecked={Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}",
+        "Rectangle.Stroke={DynamicResource Col_Theme}",
+        "Setter.Value={DynamicResource {x:Static SystemColors.GrayTextBrushKey}}",
+        "ScrollViewer.Style={DynamicResource RecScrollViewer}",
+        "TreeView.ItemContainerStyle={DynamicResource TreeViewItemStyle1}",
+        "TreeView.ItemsSource={Binding ItemsSource, ElementName=UserControl}",
+        "HierarchicalDataTemplate.ItemsSource={Binding Children}",
+        "CheckBox.Style={DynamicResource CheckBoxStyle1}",
+        "CheckBox.Foreground={Binding Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TreeViewItem}}}",
+        "CheckBox.IsChecked={Binding IsSelected, Mode=TwoWay}",
+        "TextBlock.Foreground={Binding Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TreeViewItem}}}",
+        "TextBlock.ToolTip={Binding Name}",
+        "TextBlock.Text={Binding Name}"
+      ]
+    },
+    {
+      "Path": "src/Plugin.Wpf/Controls/References/Variables/TargetParameterTree.xaml.cs",
+      "Sha256": "EC8F8BD38EC147BFCA6F1D3C964FD480A3AD16CC45F360669AF34BE937FDA431"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Controls/References/Variables/VariableArrayDialog.xaml",
+      "Sha256": "AA12EFC7106F9B35C601CC0485C6256F583098638EEAD40CEB2EBF6934EB071F",
+      "NamedElements": [
+        "ArrayDialog"
+      ],
+      "ResourceSources": [
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/OriginalTheme.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Foundation/BaseWindow.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceScrollBars.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Commands/BottomCommands.xaml"
+      ],
+      "Bindings": [
+        "BaseWindow.Title={Binding WindowTitle, ElementName=ArrayDialog}",
+        "TextBlock.ToolTip={Binding Index}",
+        "TextBlock.Text={Binding Index}",
+        "TextBlock.ToolTip={Binding Value}",
+        "TextBlock.Text={Binding Value}",
+        "ScrollViewer.Style={StaticResource RecScrollViewer}",
+        "ItemsControl.ItemsSource={Binding ElementName=ArrayDialog, Path=BindItems}",
+        "VariablePageNavigator.TotalDataCount={Binding ElementName=ArrayDialog, Path=ItemsTotalCount}",
+        "VariablePageNavigator.CurrentPageNumber={Binding ElementName=ArrayDialog, Path=CurrentPageNum, Mode=TwoWay}",
+        "VariablePageNavigator.PageDataCount={Binding ElementName=ArrayDialog, Path=PageCount, Mode=TwoWay}"
+      ]
+    },
+    {
+      "Path": "src/Plugin.Wpf/Controls/References/Variables/VariableArrayDialog.xaml.cs",
+      "Sha256": "3171B19CA6BECC8979A91483B6C005D3D3A150129DE22526B10F7E9CEF0EE86A"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml",
+      "Sha256": "252DCB7350F8EC1A008E9BCDC9CD7876D813E31C5F29E65F060AD3F72805FF92",
+      "NamedElements": [
+        "templateRoot",
+        "PART_Popup",
+        "toggleButton",
+        "contentPresenter"
+      ],
+      "ResourceSources": [
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/OriginalTheme.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceScrollBars.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/References/Primitives/SourceTree.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Commands/BottomCommands.xaml"
+      ],
+      "Bindings": [
+        "ColumnDefinition.MinWidth={DynamicResource {x:Static SystemParameters.VerticalScrollBarWidthKey}}",
+        "Popup.PopupAnimation={DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}",
+        "Popup.IsOpen={Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}",
+        "Border.BorderBrush={DynamicResource TextBox.Static.Border}",
+        "Border.Background={DynamicResource ComboBoxBorderS}",
+        "ParamsEventCommand.Command={Binding ClickCommand}",
+        "ToggleButton.IsChecked={Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}",
+        "ToggleButton.Style={Binding ToggleButtonStyle, RelativeSource={RelativeSource Mode=TemplatedParent}}",
+        "ContentPresenter.Content={Binding ExternSelectedItem, RelativeSource={RelativeSource Mode=TemplatedParent}}",
+        "ContentPresenter.ContentTemplate={Binding ExternSelectedItemTemplate, RelativeSource={RelativeSource Mode=TemplatedParent}}"
+      ]
+    },
+    {
+      "Path": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupSelector.xaml.cs",
+      "Sha256": "C9A4227DD774F5F8436A86541CC5D909720EF374398855AF80452846C434F5AE"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml",
+      "Sha256": "2390C36604E80D881857BE97F674743F031FEA8C498E74274A72714745707AFC",
+      "NamedElements": [
+        "Bd",
+        "Expander",
+        "PART_Header",
+        "ItemsHost",
+        "Bd",
+        "_tv_scrollviewer_",
+        "PART_View"
+      ],
+      "ResourceSources": [
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/OriginalTheme.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceScrollBars.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/References/Primitives/SourceTree.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Commands/BottomCommands.xaml"
+      ],
+      "Bindings": [
+        "Setter.Value={Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}",
+        "Setter.Value={Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}",
+        "Setter.Value={StaticResource TreeViewItemFocusVisual}",
+        "Grid.Margin={Binding Converter={StaticResource lengthConverter}, RelativeSource={RelativeSource TemplatedParent}}",
+        "ToggleButton.Style={StaticResource ExpandCollapseToggleStyle}",
+        "ToggleButton.IsChecked={Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}",
+        "Setter.Value={DynamicResource TitleColor}",
+        "Setter.Value={DynamicResource TitleColor}",
+        "Setter.Value={DynamicResource {x:Static SystemColors.GrayTextBrushKey}}",
+        "Setter.Value={DynamicResource {x:Static SystemColors.WindowBrushKey}}",
+        "Setter.Value={DynamicResource ListBorder}",
+        "Setter.Value={DynamicResource {x:Static SystemColors.ControlTextBrushKey}}",
+        "ScrollViewer.Style={StaticResource RecScrollViewer}",
+        "Setter.Value={DynamicResource {x:Static SystemColors.ControlBrushKey}}",
+        "TreeView.Style={StaticResource TreeViewStyle1}",
+        "TreeView.ItemContainerStyle={StaticResource TreeViewItemStyle1}",
+        "TreeView.ItemsSource={Binding ItemsSource, RelativeSource={RelativeSource Mode=TemplatedParent}}"
+      ]
+    },
+    {
+      "Path": "src/Plugin.Wpf/Controls/References/Variables/VariableGroupTree.xaml.cs",
+      "Sha256": "0E13F38064CDA8DFA9725F7C0304EB61C033691B7DBB5E77FE42ABC30D0605F3"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml",
+      "Sha256": "1F031AAA9B8EA662EBEE0D013BDA5A5A07978A378DECF0CED2809F43786200CB",
+      "NamedElements": [
+        "pagenumControl",
+        "Bd",
+        "lb",
+        "icon",
+        "icon",
+        "SearchComboBox",
+        "PART_ButtonPrePage",
+        "PART_ListBoxPages",
+        "PART_ButtonNextPage",
+        "txtJumpNum",
+        "btnOk"
+      ],
+      "ResourceSources": [
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/OriginalTheme.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceScrollBars.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/References/Primitives/SourceTree.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Commands/BottomCommands.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/References/Pagination/ic_arrow_back_normal.png",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/References/Pagination/ic_arrow_preve_normal.png"
+      ],
+      "Bindings": [
+        "Label.Content={Binding StrNum}",
+        "Condition.Binding={Binding Path=IsNum}",
+        "Condition.Binding={Binding IsMouseOver, RelativeSource={RelativeSource Self}}",
+        "Setter.Value={DynamicResource Col_Theme}",
+        "Condition.Binding={Binding Path=IsNum}",
+        "Condition.Binding={Binding IsSelected, RelativeSource={RelativeSource Self}}",
+        "Setter.Value={DynamicResource Col_Theme}",
+        "Setter.Value={DynamicResource GlobalBorderBg}",
+        "Setter.Value={DynamicResource TextBox.Static.Border}",
+        "Setter.Value={DynamicResource ParamsTabForeground}",
+        "Setter.Value={DynamicResource Col_Theme}",
+        "Setter.Value={DynamicResource Col_Theme}",
+        "Setter.Value={DynamicResource Col_Theme}",
+        "Setter.Value={DynamicResource Col_Theme}",
+        "Setter.Value={DynamicResource BottomLineBtnEnableBG}",
+        "Setter.Value={DynamicResource BottomLineBtnEnableBB}",
+        "Setter.Value={DynamicResource btnEditTemplateEnableFG}",
+        "ComboBox.Style={StaticResource ListViewComboBoxStyle}",
+        "ComboBox.Visibility={Binding PageCountVisible, ElementName=pagenumControl}",
+        "ComboBox.Width={Binding NumWidth, ElementName=pagenumControl}",
+        "ComboBox.ItemsSource={Binding pageCountInfos, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:VariablePageNavigator}}}",
+        "ComboBox.SelectedValue={Binding PageDataCount, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:VariablePageNavigator}}}",
+        "TextBlock.Text={Binding Path=DisplayTotalCount, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:VariablePageNavigator}}}",
+        "Button.Style={DynamicResource BtnInfoStyle}",
+        "Button.Visibility={Binding Path=BtnCollapsed, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:VariablePageNavigator}}",
+        "ListBox.ItemContainerStyle={StaticResource ListBoxItemStyle1}",
+        "ListBox.ItemsSource={Binding Path=ShowingPageNumberCollection, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:VariablePageNavigator}}}",
+        "ListBox.Background={Binding Path=Background, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:VariablePageNavigator}}}",
+        "Button.Style={DynamicResource BtnInfoStyle}",
+        "Button.Visibility={Binding Path=BtnCollapsed, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:VariablePageNavigator}}",
+        "TextBlock.Text={DynamicResource Lang_Jump}",
+        "TextBlock.Text={DynamicResource Lang_Page}",
+        "Button.Content={DynamicResource 跳转}",
+        "Button.Style={StaticResource jmpButtonStyle}"
+      ]
+    },
+    {
+      "Path": "src/Plugin.Wpf/Controls/References/Variables/VariablePageNavigator.xaml.cs",
+      "Sha256": "539CCFFB94819479CC59CC1AF97EBAF34E9DEC03BD20DF8ADED3F65EFB783C50"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDesignData.cs",
+      "Sha256": "7D801CF2E2DAFE0B85F5C509C45CA3B39F83ED86155B8C78912B3B3F75063160"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml",
+      "Sha256": "54B489FA5EF17A8815C55AB12CA47D61211129FE0DC78E64531273BA783E7FA1",
+      "NamedElements": [
+        "variableSelectionDialog",
+        "bd",
+        "txt1",
+        "txt2",
+        "txt3",
+        "txt4",
+        "Border",
+        "SearchText",
+        "globalVarList"
+      ],
+      "ResourceSources": [
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/OriginalTheme.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Foundation/BaseWindow.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceScrollBars.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Commands/BottomCommands.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/References/VariableSelectionStyles.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/References/ic_empty.png"
+      ],
+      "Bindings": [
+        "BaseWindow.Title={DynamicResource lang_SelectGlobalVariable}",
+        "Setter.Value={DynamicResource {x:Static SystemColors.WindowBrushKey}}",
+        "ScrollViewer.Style={StaticResource RecScrollViewer}",
+        "TextBlock.Text={Binding Index}",
+        "TextBlock.ToolTip={Binding Path=Text, RelativeSource={RelativeSource Self}}",
+        "TextBlock.Text={Binding RemarkInfo}",
+        "TextBlock.ToolTip={Binding Path=Text, RelativeSource={RelativeSource Self}}",
+        "TextBlock.Text={Binding Value}",
+        "TextBlock.ToolTip={Binding Path=Text, RelativeSource={RelativeSource Self}}",
+        "Setter.Value={Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Converter={StaticResource listItemBackgroundConverter}}",
+        "Setter.Value={DynamicResource Col_Theme}",
+        "Setter.Value={DynamicResource Col_Theme}",
+        "Border.BorderBrush={DynamicResource ListViewComboBoxBordBrush}",
+        "Border.Background={DynamicResource ListViewComboBoxBackground}",
+        "VariableGroupSelector.TextBlock.Foreground={DynamicResource TextBox.Normal.Forground}",
+        "VariableGroupSelector.ToggleButtonStyle={StaticResource ComboxStyleBtn}",
+        "VariableGroupSelector.ItemsSource={Binding EnumEntrysA, ElementName=variableSelectionDialog}",
+        "VariableGroupSelector.ExternSelectedItem={Binding TriggerSelectedObject, ElementName=variableSelectionDialog, Mode=TwoWay}",
+        "HierarchicalDataTemplate.ItemsSource={Binding EnumEntrysA}",
+        "TextBlock.Text={Binding DisplayNameA}",
+        "TextBlock.ToolTip={Binding Text, RelativeSource={RelativeSource Mode=Self}}",
+        "TextBlock.Text={Binding FullName}",
+        "ContentControl.ContentTemplate={StaticResource ComboboxTree}",
+        "ContentControl.Content={Binding}",
+        "TextBox.Tag={DynamicResource Lang_Search}",
+        "TextBox.Style={StaticResource input}",
+        "Button.Style={StaticResource searchBtn}",
+        "TextBlock.Text={DynamicResource Number}",
+        "TextBlock.Text={DynamicResource Lang_Variable}",
+        "TextBlock.Text={DynamicResource Lang_ReMark}",
+        "TextBlock.Text={DynamicResource Lang_GlobalVariableDefaultValue}",
+        "Border.Visibility={Binding ElementName=variableSelectionDialog, Path=EmptyStatus}",
+        "TextBlock.Text={DynamicResource Lang_ContentEmpty}",
+        "ListView.ItemsSource={Binding BindItems, ElementName=variableSelectionDialog}",
+        "Border.Visibility={Binding ElementName=variableSelectionDialog, Path=PageNumShowStatus}",
+        "VariablePageNavigator.TotalDataCount={Binding ElementName=variableSelectionDialog, Path=ItemsTotalCount}",
+        "VariablePageNavigator.CurrentPageNumber={Binding ElementName=variableSelectionDialog, Path=CurrentPageNum, Mode=TwoWay}",
+        "VariablePageNavigator.PageDataCount={Binding ElementName=variableSelectionDialog, Path=PageCount, Mode=TwoWay}",
+        "Button.Style={StaticResource BottomButtonStyle}",
+        "Button.Content={DynamicResource Confirm}"
+      ]
+    },
+    {
+      "Path": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionDialog.xaml.cs",
+      "Sha256": "08EC9EB73585947EBD4490CB89AA4A7A138E58945848120E1AAC8958C9328BDF"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Controls/References/Variables/VariableSelectionItem.cs",
+      "Sha256": "AD4F2B1B3E37E70D73D68E6441AF4A4C5DA98BC3AAE8381C66413EE20786260C"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Presenters/References/NativeReferencePresenter.cs",
+      "Sha256": "28C97079E9C6CCA6C5A58EA8602E47876DC8F67321A80D9DF39D1E0C407FA435"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Presenters/References/ReferenceExpansionCoordinator.cs",
+      "Sha256": "E02B92D1715A52FAA7FAC36906152AC5FCF14D032EE4D9FA58CA96D803416156"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Themes/References/GroupRenameTextBox.xaml",
+      "Sha256": "75BC0D6A9F8490B56985386F90AEE61A5EC6C15F0A8383014C7FF8080368C86C",
+      "NamedElements": [
+        "border",
+        "tb",
+        "PART_ContentHost"
+      ],
+      "ResourceSources": [],
+      "Bindings": [
+        "Setter.Value={DynamicResource {x:Static SystemColors.WindowBrushKey}}",
+        "Setter.Value={DynamicResource TextBox.Static.Border}",
+        "Setter.Value={DynamicResource {x:Static SystemColors.ControlTextBrushKey}}",
+        "Setter.Value={Binding IsRenaming, Mode=OneWay, RelativeSource={RelativeSource Mode=Self}}",
+        "Setter.Value={DynamicResource TextBox.MouseOver.Border}",
+        "Setter.Value={DynamicResource TextBox.Focus.Border}",
+        "Setter.Value={DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}"
+      ]
+    },
+    {
+      "Path": "src/Plugin.Wpf/Themes/References/Primitives/SourceTree.xaml",
+      "Sha256": "FE2AEFDC10B6808B1C0E266E1AF6B8A6F340BDE63F00681F536555F4D95266DB",
+      "NamedElements": [
+        "icon",
+        "im"
+      ],
+      "ResourceSources": [
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/OriginalTheme.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceScrollBars.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/References/btn_高级参数_uparrow.png",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/References/check2-box_off.png"
+      ],
+      "Bindings": [
+        "Rectangle.Stroke={DynamicResource {x:Static SystemColors.ControlTextBrushKey}}",
+        "Rectangle.Stroke={DynamicResource {x:Static SystemColors.ControlTextBrushKey}}",
+        "Setter.Value={DynamicResource {x:Static SystemColors.ControlTextBrushKey}}",
+        "Setter.Value={DynamicResource CheckBoxFillNormal}",
+        "Setter.Value={DynamicResource CheckBoxStroke}",
+        "Setter.Value={StaticResource EmptyCheckBoxFocusVisual}",
+        "Setter.Value={StaticResource CheckRadioFocusVisual}",
+        "Setter.Value={DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"
+      ]
+    },
+    {
+      "Path": "src/Plugin.Wpf/Themes/References/VariableManagerStyles.xaml",
+      "Sha256": "EB586D784A5480C75D4906DA3432E979FAD064409F4585C1C3D3D7E068DC518C",
+      "NamedElements": [
+        "Image",
+        "addIcon",
+        "BackgroundBorder",
+        "PART_LeftHeaderGripper",
+        "PART_RightHeaderGripper",
+        "outBorder",
+        "DG_ScrollViewer",
+        "PART_ColumnHeadersPresenter",
+        "PART_ScrollContentPresenter",
+        "PART_VerticalScrollBar",
+        "PART_HorizontalScrollBar",
+        "img",
+        "img",
+        "img",
+        "Image"
+      ],
+      "ResourceSources": [
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/OriginalTheme.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceScrollBars.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Commands/BottomCommands.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/References/VariableSelectionStyles.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/References/GroupRenameTextBox.xaml",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/delete_normal.png",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/btn_新建模板_normal.png",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/ic_top_normal.png",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/ic_up_normal.png",
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/ic_down_normal.png",
+        "pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/WorkspaceControls/resources/swith_off.png"
+      ],
+      "Bindings": [
+        "Setter.Value={DynamicResource GlobalBorderBg}",
+        "Setter.Value={DynamicResource TextBox.Static.Border}",
+        "Setter.Value={DynamicResource ParamsTabForeground}",
+        "Setter.Value={DynamicResource Col_Theme}",
+        "Setter.Value={DynamicResource Col_Theme}",
+        "Setter.Value={DynamicResource Col_Theme}",
+        "Setter.Value={DynamicResource Col_Theme}",
+        "Setter.Value={DynamicResource BottomLineBtnEnableBG}",
+        "Setter.Value={DynamicResource BottomLineBtnEnableBB}",
+        "Setter.Value={DynamicResource btnEditTemplateEnableFG}",
+        "Setter.Value={Binding Path=ColumnHeaderHeight, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}",
+        "Border.BorderBrush={Binding Path=HorizontalGridLinesBrush, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}",
+        "Setter.Value={DynamicResource Col_Theme}",
+        "Button.Style={DynamicResource {ComponentResourceKey ResourceId=DataGridSelectAllButtonStyle, TypeInTargetAssembly={x:Type DataGrid}}}",
+        "Button.Visibility={Binding HeadersVisibility, ConverterParameter={x:Static DataGridHeadersVisibility.All}, Converter={x:Static DataGrid.HeadersVisibilityConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}",
+        "Button.Width={Binding CellsPanelHorizontalOffset, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}",
+        "DataGridColumnHeadersPresenter.Visibility={Binding HeadersVisibility, ConverterParameter={x:Static DataGridHeadersVisibility.Column}, Converter={x:Static DataGrid.HeadersVisibilityConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}",
+        "ScrollBar.Style={StaticResource RecScrollBarStyle}",
+        "ScrollBar.Value={Binding VerticalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}",
+        "ColumnDefinition.Width={Binding NonFrozenColumnsViewportHorizontalOffset, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}",
+        "ScrollBar.Style={StaticResource RecScrollBarStyle}",
+        "ScrollBar.Value={Binding HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}",
+        "Border.BorderBrush={DynamicResource Col_ShowResults_BorderBrush}",
+        "Setter.Value={DynamicResource TextBox.Static.Border}",
+        "Setter.Value={DynamicResource Col_Theme}",
+        "Setter.Value={DynamicResource Col_Theme}",
+        "Setter.Value={DynamicResource TextBox.Static.Border}",
+        "Setter.Value={DynamicResource Col_Theme}",
+        "Setter.Value={DynamicResource Col_Theme}",
+        "Setter.Value={DynamicResource TextBox.Static.Border}",
+        "Setter.Value={DynamicResource Col_Theme}",
+        "Setter.Value={DynamicResource Col_Theme}",
+        "Setter.Value={DynamicResource GlobalBorderBg}",
+        "Setter.Value={DynamicResource TextBox.Static.Border}",
+        "Setter.Value={DynamicResource ParamsTabForeground}",
+        "Setter.Value={DynamicResource Col_Theme}",
+        "Setter.Value={DynamicResource Col_Theme}",
+        "Setter.Value={DynamicResource Col_Theme}",
+        "Setter.Value={DynamicResource Col_Theme}",
+        "Setter.Value={DynamicResource BottomLineBtnEnableBG}",
+        "Setter.Value={DynamicResource BottomLineBtnEnableBB}",
+        "Setter.Value={DynamicResource btnEditTemplateEnableFG}",
+        "Setter.Value={DynamicResource {x:Static SystemColors.ControlTextBrushKey}}",
+        "Setter.Value={DynamicResource Lang_COMMSTREMPTY}",
+        "DataTrigger.Binding={Binding Name}",
+        "DataTrigger.Binding={Binding Name}"
+      ]
+    },
+    {
+      "Path": "src/Plugin.Wpf/Themes/References/VariableSelectionStyles.xaml",
+      "Sha256": "1C8F5A70DA98969EC26E53681C9F58F46DB46A4464D801CC3CF4DD9847ECF90C",
+      "NamedElements": [
+        "Bd",
+        "PART_ContentHost",
+        "Message",
+        "icon"
+      ],
+      "ResourceSources": [
+        "/SunEyeVision.Plugin.Wpf;component/Themes/Assets/References/ic_search_normal.png"
+      ],
+      "Bindings": [
+        "Setter.Value={DynamicResource TextBox.Normal.Forground}",
+        "Setter.Value={DynamicResource ListViewComboBoxBackground}",
+        "Setter.Value={DynamicResource TextBox.Static.Border}",
+        "Setter.Value={DynamicResource {x:Static SystemColors.ControlBrushKey}}",
+        "Setter.Value={DynamicResource {x:Static SystemColors.GrayTextBrushKey}}",
+        "Setter.Value={DynamicResource Col_Theme}",
+        "Setter.Value={DynamicResource Col_Theme}",
+        "DataTrigger.Binding={Binding Path=Text, RelativeSource={RelativeSource Self}}",
+        "Setter.Value={DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}",
+        "Border.BorderBrush={DynamicResource TextButtonBB}"
+      ]
+    },
+    {
+      "Path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerDialog.xaml",
+      "Sha256": "A80015B81D5D3D6DAC0DF831EF10D267F008ED4FA904E4B6F61E6979CB068A1C",
+      "NamedElements": [
+        "BackgroundBorder",
+        "SwitchEllipse",
+        "SearchTextBox",
+        "GroupTabScrollViewer",
+        "GroupItemsControl",
+        "ScrollableAddButton",
+        "FixedAddButton",
+        "GroupDropdownButton",
+        "VariableNameEditor",
+        "VariableValueEditor",
+        "ButtonBorder"
+      ],
+      "ResourceSources": [],
+      "Bindings": [
+        "ThemeDialogWindow.Background={DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}",
+        "Style.BasedOn={StaticResource ToolButtonStyle}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}",
+        "Setter.Value={Binding DisplayName}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.ControlHoverBackgroundBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.ControlBackgroundBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.AccentBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.AccentBrush}}",
+        "Border.Background={DynamicResource {x:Static base:ThemeKeys.ThumbnailBorderBrush}}",
+        "Border.BorderBrush={DynamicResource {x:Static base:ThemeKeys.ThumbnailBorderBrush}}",
+        "Rectangle.Fill={DynamicResource {x:Static base:ThemeKeys.TextOnDarkBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.SuccessBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.SuccessBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.TableHeaderBackgroundBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.TableHeaderTextBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.TableRowHoverBackgroundBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackgroundBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackgroundBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackgroundBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.TableRowSelectedBackgroundBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.AccentBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.AccentBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.ControlHoverBackgroundBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.AccentBrush}}",
+        "Border.Background={DynamicResource {x:Static base:ThemeKeys.ToolBarBackgroundBrush}}",
+        "Border.BorderBrush={DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}",
+        "Button.Command={Binding AddVariableCommand}",
+        "Button.Style={StaticResource ToolbarButtonStyle}",
+        "Button.Command={Binding ImportCommand}",
+        "Button.Style={StaticResource ToolbarButtonStyle}",
+        "Button.Command={Binding ExportCommand}",
+        "Button.Style={StaticResource ToolbarButtonStyle}",
+        "TextBox.Text={Binding SearchText, UpdateSourceTrigger=PropertyChanged}",
+        "TextBox.Background={DynamicResource {x:Static base:ThemeKeys.InputBackgroundBrush}}",
+        "TextBox.BorderBrush={DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}",
+        "TextBlock.Foreground={DynamicResource {x:Static base:ThemeKeys.TextDisabledBrush}}",
+        "Condition.Binding={Binding Text, ElementName=SearchTextBox}",
+        "Condition.Binding={Binding IsKeyboardFocused, ElementName=SearchTextBox}",
+        "Border.IsEnabled={Binding CanEdit}",
+        "Border.Background={DynamicResource {x:Static base:ThemeKeys.ToolBarBackgroundBrush}}",
+        "Border.BorderBrush={DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}",
+        "ItemsControl.ItemsSource={Binding Groups}",
+        "RadioButton.Content={Binding DisplayName}",
+        "RadioButton.IsChecked={Binding IsSelected, Mode=TwoWay}",
+        "RadioButton.Style={StaticResource GroupTabStyle}",
+        "RadioButton.Visibility={Binding IsEditing,                                                          Converter={StaticResource InverseBoolToVisibilityConverter}}",
+        "TextBox.Text={Binding EditingText, UpdateSourceTrigger=PropertyChanged}",
+        "TextBox.Visibility={Binding IsEditing,                                                       Converter={StaticResource BoolToVisibilityConverter}}",
+        "TextBox.Style={StaticResource InlineTabEditStyle}",
+        "MenuItem.CommandParameter={Binding}",
+        "MenuItem.CommandParameter={Binding}",
+        "Button.Foreground={DynamicResource {x:Static base:ThemeKeys.AccentBrush}}",
+        "Button.Command={Binding AddGroupCommand}",
+        "Button.Foreground={DynamicResource {x:Static base:ThemeKeys.AccentBrush}}",
+        "Button.Command={Binding AddGroupCommand}",
+        "ToggleButton.Foreground={DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}",
+        "Popup.IsOpen={Binding IsChecked, ElementName=GroupDropdownButton, Mode=TwoWay}",
+        "Popup.PlacementTarget={Binding ElementName=GroupDropdownButton}",
+        "Border.Background={DynamicResource {x:Static base:ThemeKeys.ContextMenuBackgroundBrush}}",
+        "Border.BorderBrush={DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}",
+        "Border.Effect={StaticResource DropShadowEffect}",
+        "ItemsControl.ItemsSource={Binding Groups}",
+        "RadioButton.Content={Binding DisplayName}",
+        "RadioButton.IsChecked={Binding IsSelected, Mode=TwoWay}",
+        "RadioButton.Style={StaticResource PopupGroupItemStyle}",
+        "DataGrid.IsEnabled={Binding CanEdit}",
+        "DataGrid.ItemsSource={Binding CurrentVariables}",
+        "DataGrid.SelectedItem={Binding SelectedVariable}",
+        "DataGrid.Background={DynamicResource {x:Static base:ThemeKeys.TableRowBackgroundBrush}}",
+        "DataGrid.ColumnHeaderStyle={StaticResource GvDataGridHeaderStyle}",
+        "DataGrid.RowStyle={StaticResource GvDataGridRowStyle}",
+        "DataGrid.CellStyle={StaticResource GvDataGridCellStyle}",
+        "TextBox.Text={Binding Index}",
+        "TextBox.BorderBrush={DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}",
+        "TextBox.Text={Binding Name, Mode=OneWay}",
+        "TextBox.BorderBrush={DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}",
+        "TextBox.Text={Binding Description, UpdateSourceTrigger=PropertyChanged}",
+        "TextBox.BorderBrush={DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}",
+        "ComboBox.ItemsSource={Binding DataContext.TypeOptions, RelativeSource={RelativeSource AncestorType=DataGrid}}",
+        "ComboBox.SelectedValue={Binding Type, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}",
+        "ComboBox.BorderBrush={DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}",
+        "TextBlock.Text={Binding DisplayName}",
+        "TextBox.Text={Binding Value, Converter={StaticResource ValueTextConverter}, Mode=OneWay}",
+        "TextBox.IsReadOnly={Binding IsComplexValue}",
+        "TextBox.BorderBrush={DynamicResource {x:Static base:ThemeKeys.InputBorderBrush}}",
+        "TextBox.ToolTip={Binding Value, Converter={StaticResource ValueTextConverter}}",
+        "TextBlock.Text={Binding InputSourceDisplayText}",
+        "TextBlock.Foreground={DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}",
+        "ToggleButton.IsChecked={Binding IsInitialized, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}",
+        "ToggleButton.Style={StaticResource SwitchToggleButton}",
+        "Button.Foreground={DynamicResource {x:Static base:ThemeKeys.ErrorBrush}}",
+        "Button.Command={Binding DataContext.DeleteVariableCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}",
+        "Button.CommandParameter={Binding}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.ErrorBrush}}",
+        "Border.Background={DynamicResource {x:Static base:ThemeKeys.ToolBarBackgroundBrush}}",
+        "Border.BorderBrush={DynamicResource {x:Static base:ThemeKeys.TableGridLineBrush}}",
+        "Button.Command={Binding SaveCommand}",
+        "Button.Style={StaticResource PrimaryButtonStyle}",
+        "Button.Style={StaticResource SecondaryButtonStyle}"
+      ]
+    },
+    {
+      "Path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerDialog.xaml.cs",
+      "Sha256": "55EFBA82F7C5AE027B3094F3B2489B9CC3F0FD007AD9E2D4C5A487929935A0BE"
+    },
+    {
+      "Path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerViewModel.cs",
+      "Sha256": "0D1F107DC3C7BB5152E6372B9A9BB370521EB06B66F011EB5421868ACB7CC9BA"
+    },
+    {
+      "Path": "src/UI/Features/GlobalVariableManager/GlobalVariableSelectionService.cs",
+      "Sha256": "2D69123525FD19FDE6E0E61D338D77A2B0DF31E47A6FD50A3D06DA44E675A945"
+    },
+    {
+      "Path": "src/UI/Features/GlobalVariableManager/VariableGroupViewModel.cs",
+      "Sha256": "115053F286D79C2ED2CDF9DF6FDDCD1685C949CFC10931E238B1C3D366D24232"
+    },
+    {
+      "Path": "src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs",
+      "Sha256": "2FA48782D6DA97AF79C62352236DC866CA613189986BDD5B26E18712B26027E3"
+    },
+    {
+      "Path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+      "Sha256": "0FB01A66DD259EE09C588C61E1A9BE26EB4F590A4863347C97AEB5D783A3FB96"
+    },
+    {
+      "Path": "src/UI/Shell/Controls/Shell/ShellWorkspaceControl.xaml",
+      "Sha256": "7B5DDA40BBAA705A2F511BDCC71DFA166857B329BAA13607ED8C2885416E3E62",
+      "NamedElements": [
+        "Chrome",
+        "WorkflowTabControl",
+        "TabHeaderBar",
+        "TabPanelScrollViewer",
+        "HeaderPanel",
+        "ScrollableAddButtonBorder",
+        "WorkflowViewButton",
+        "WorkflowLocations",
+        "FixedAddButtonBorder",
+        "PART_SelectedContentHost",
+        "TabBorder",
+        "SelectedIndicator",
+        "HeaderLayout",
+        "SubroutineBackBtn",
+        "SubroutineSettingsBtn",
+        "RootTabTools",
+        "RootConfigurationBtn",
+        "RootVariablesBtn",
+        "NameHost",
+        "RootReadinessIndicator",
+        "TabNameText",
+        "TabNameEditor",
+        "SingleRunBtn",
+        "ContinuousRunBtn",
+        "CanvasScrollViewer",
+        "CanvasSizingGrid",
+        "WorkflowCanvasHost",
+        "RootEmptyPanel",
+        "WorkflowSearch",
+        "MiniMapHost",
+        "MiniMapBorder",
+        "MiniMapCanvas",
+        "MiniMapMinimizeButton",
+        "MiniMapRestoreButton",
+        "RootOverview",
+        "WorkspaceStatusBar"
+      ],
+      "ResourceSources": [
+        "/SunEyeVision.UI;component/Shell/Controls/Shell/WorkflowTabButtonStyles.xaml",
+        "/SunEyeVision.UI;component/Shell/Controls/Shell/RootWorkflowOverviewDrawings.xaml"
+      ],
+      "Bindings": [
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.ButtonHoverBackgroundBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.ButtonHoverBackgroundBrush}}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.ButtonPressedBackgroundBrush}}",
+        "Border.Background={DynamicResource {x:Static base:ThemeKeys.TabStripBackgroundBrush}}",
+        "Border.BorderBrush={DynamicResource {x:Static base:ThemeKeys.BorderBrush}}",
+        "TabControl.Background={DynamicResource {x:Static base:ThemeKeys.TabStripBackgroundBrush}}",
+        "TabControl.ItemsSource={Binding Tabs}",
+        "TabControl.SelectedItem={Binding SelectedTab, Mode=OneWay}",
+        "Border.Background={DynamicResource {x:Static base:ThemeKeys.TabStripBackgroundBrush}}",
+        "Border.BorderBrush={DynamicResource {x:Static base:ThemeKeys.TabItemBorderBrush}}",
+        "Button.Style={StaticResource WorkflowAddButton}",
+        "Button.Style={StaticResource WorkflowImageButton}",
+        "Setter.Value={StaticResource ic_单个normalDrawingImage}",
+        "Condition.Binding={Binding IsRootOverviewVisible,RelativeSource={RelativeSource AncestorType=shell:ShellWorkspaceControl}}",
+        "Condition.Binding={Binding IsMouseOver,RelativeSource={RelativeSource AncestorType=Button}}",
+        "Setter.Value={StaticResource ic_单个hoverDrawingImage}",
+        "Condition.Binding={Binding IsRootOverviewVisible,RelativeSource={RelativeSource AncestorType=shell:ShellWorkspaceControl}}",
+        "Condition.Binding={Binding IsPressed,RelativeSource={RelativeSource AncestorType=Button}}",
+        "Setter.Value={StaticResource ic_单个clickDrawingImage}",
+        "Condition.Binding={Binding IsRootOverviewVisible,RelativeSource={RelativeSource AncestorType=shell:ShellWorkspaceControl}}",
+        "Condition.Binding={Binding IsEnabled,RelativeSource={RelativeSource AncestorType=Button}}",
+        "Setter.Value={StaticResource ic_单个disableDrawingImage}",
+        "Condition.Binding={Binding IsRootOverviewVisible,RelativeSource={RelativeSource AncestorType=shell:ShellWorkspaceControl}}",
+        "Setter.Value={StaticResource ic_全局normalDrawingImage}",
+        "Condition.Binding={Binding IsRootOverviewVisible,RelativeSource={RelativeSource AncestorType=shell:ShellWorkspaceControl}}",
+        "Condition.Binding={Binding IsMouseOver,RelativeSource={RelativeSource AncestorType=Button}}",
+        "Setter.Value={StaticResource ic_全局hoverDrawingImage}",
+        "Condition.Binding={Binding IsRootOverviewVisible,RelativeSource={RelativeSource AncestorType=shell:ShellWorkspaceControl}}",
+        "Condition.Binding={Binding IsPressed,RelativeSource={RelativeSource AncestorType=Button}}",
+        "Setter.Value={StaticResource ic_全局clickDrawingImage}",
+        "Condition.Binding={Binding IsRootOverviewVisible,RelativeSource={RelativeSource AncestorType=shell:ShellWorkspaceControl}}",
+        "Condition.Binding={Binding IsEnabled,RelativeSource={RelativeSource AncestorType=Button}}",
+        "Setter.Value={StaticResource ic_全局disableDrawingImage}",
+        "Button.Style={StaticResource WorkflowAddButton}",
+        "DataTrigger.Binding={Binding IsRootOverviewVisible,RelativeSource={RelativeSource AncestorType=shell:ShellWorkspaceControl}}",
+        "MenuItem.IsChecked={Binding RootSettings.StopOnNg,Mode=OneWay}",
+        "Border.Background={DynamicResource {x:Static base:ThemeKeys.TabStripBackgroundBrush}}",
+        "Border.BorderBrush={DynamicResource {x:Static base:ThemeKeys.TabItemBorderBrush}}",
+        "Rectangle.Fill={DynamicResource {x:Static base:ThemeKeys.AccentBrush}}",
+        "Button.FontFamily={StaticResource IconFontFamily}",
+        "Button.Foreground={DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}",
+        "DataTrigger.Binding={Binding IsInSubroutine}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.AccentBrush}}",
+        "Button.FontFamily={StaticResource IconFontFamily}",
+        "Button.Foreground={DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}",
+        "DataTrigger.Binding={Binding IsInSubroutine}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.AccentBrush}}",
+        "Button.Style={StaticResource RootConfigurationButton}",
+        "Button.Style={StaticResource RootVariablesButton}",
+        "Border.Background={DynamicResource {x:Static base:ThemeKeys.TabItemBorderBrush}}",
+        "Ellipse.ToolTip={Binding RootConfigurationSummary}",
+        "DataTrigger.Binding={Binding IsRootConfigurationReady}",
+        "DataTrigger.Binding={Binding IsInSubroutine}",
+        "TextBlock.Text={Binding EffectiveDisplayName}",
+        "TextBlock.Foreground={DynamicResource {x:Static base:ThemeKeys.TabItemTextBrush}}",
+        "TextBox.Text={Binding RenameBuffer, UpdateSourceTrigger=PropertyChanged}",
+        "Button.Tag={Binding}",
+        "Button.Style={StaticResource WorkflowSingleButton}",
+        "Button.Tag={Binding}",
+        "Button.Style={StaticResource WorkflowContinuousButton}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.TabItemHoverBrush}}",
+        "Condition.Binding={Binding IsSelected,RelativeSource={RelativeSource Self}}",
+        "Condition.Binding={Binding IsInSubroutine}",
+        "DataTrigger.Binding={Binding IsInSubroutine}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.TabItemBackgroundBrush}}",
+        "Condition.Binding={Binding IsSelected,RelativeSource={RelativeSource Self}}",
+        "Condition.Binding={Binding IsInSubroutine}",
+        "Condition.Binding={Binding IsMouseOver,RelativeSource={RelativeSource Self}}",
+        "Condition.Binding={Binding IsInSubroutine}",
+        "Setter.Value={DynamicResource {x:Static base:ThemeKeys.TabItemHoverBrush}}",
+        "DataTrigger.Binding={Binding IsEditingName}",
+        "ContentControl.Content={Binding}",
+        "ScrollViewer.Background={DynamicResource {x:Static base:ThemeKeys.WorkspaceBackgroundBrush}}",
+        "Grid.Background={DynamicResource {x:Static base:ThemeKeys.WorkflowCanvasSurfaceBrush}}",
+        "WorkflowCanvasControl.DataContext={Binding}",
+        "DataTrigger.Binding={Binding Items.Count,ElementName=WorkflowTabControl}",
+        "TextBlock.Foreground={DynamicResource ThemeTextPrimaryBrush}",
+        "Button.IsEnabled={Binding RootCollectionEditingAllowed,RelativeSource={RelativeSource AncestorType=shell:ShellWorkspaceControl}}",
+        "Button.Style={StaticResource MiniMapToggleButtonStyle}",
+        "DataTrigger.Binding={Binding IsMouseOver,RelativeSource={RelativeSource AncestorType=Button}}",
+        "Button.Style={StaticResource MiniMapToggleButtonStyle}",
+        "DataTrigger.Binding={Binding IsMouseOver,RelativeSource={RelativeSource AncestorType=Button}}"
+      ]
+    },
+    {
+      "Path": "src/UI/Shell/Windows/MainWindowProductionEditing.cs",
+      "Sha256": "A63676768C114B048E823F9AD945FA540EDDC38ACF3988424B0A7D4CCD1A5C1A"
+    },
+    {
+      "Path": "src/UI/Shell/Windows/MainWindowResultBindingEditing.cs",
+      "Sha256": "A6F81F83F411CE026DAE8C93AD10BE1A4041BB7E53ECC0E9209D52341875FCE3"
+    },
+    {
+      "Path": "src/UI/Shell/Windows/MainWindowViewModel.cs",
+      "Sha256": "DECF1E2E6A570B875B6290D8A8009228E20399AD4D51DD6DE1750C5244FD48A3"
+    }
+  ]
+}

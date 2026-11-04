@@ -1,0 +1,468 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SunEyeVision.Plugin.Wpf.Controls.References.Variables.VariableManagerView" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" d:DesignWidth="1170" d:DesignHeight="650" d:DataContext="{d:DesignInstance Type=local:VariableManagerDesignData, IsDesignTimeCreatable=True}" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.References.Variables" xmlns:common="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.Interaction.Commom" xmlns:presentation="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls" xmlns:foundation="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Foundation" xmlns:system="clr-namespace:System;assembly=mscorlib">
+  <UserControl.Resources>
+    <local:VariableManagerValueTextProxy x:Key="ValueTextConverter" />
+    <local:VariableManagerArrayVisibilityConverter x:Key="ArrayVisibilityConverter" />
+    <local:VariableManagerValueReadOnlyConverter x:Key="ValueReadOnlyConverter" />
+  </UserControl.Resources>
+  <Grid Background="#F2F3F5" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <FrameworkElement.Resources>
+      <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+          <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/References/VariableManagerStyles.xaml" />
+        </ResourceDictionary.MergedDictionaries>
+        <Style x:Key="BottomLineButtonStyle" TargetType="{x:Type Button}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+          <Setter Property="Foreground" Value="{DynamicResource ParamsTabForeground}" />
+          <Setter Property="FontFamily" Value="Microsoft YaHei" />
+          <Setter Property="Background" Value="#F2F2F2" />
+          <Setter Property="BorderBrush" Value="#CCCCCC" />
+          <Setter Property="FontSize" Value="12px" />
+          <Setter Property="HorizontalContentAlignment" Value="Center" />
+          <Setter Property="VerticalAlignment" Value="Center" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type Button}">
+                <foundation:FouerColorBorder Name="Border" CornerRadius="2" BottomBorderBrush="{DynamicResource Col_Theme}" Padding="{TemplateBinding Control.Padding}" Margin="0" Background="{TemplateBinding Control.Background}" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="1,1,1,1">
+                  <ContentPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+                </foundation:FouerColorBorder>
+                <ControlTemplate.Triggers>
+                  <Trigger Property="UIElement.IsMouseOver" Value="True">
+                    <Setter Property="FrameworkElement.Cursor" Value="Hand" />
+                  </Trigger>
+                  <Trigger Property="IsPressed" Value="True">
+                    <Setter Value="{DynamicResource Col_Theme}" Property="Background" />
+                    <Setter Property="Foreground" Value="#FFFFFF" />
+                  </Trigger>
+                  <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="#80F2F2F2" />
+                    <Setter Property="Foreground" Value="#80666666" />
+                    <Setter Property="BorderBrush" Value="#80CCCCCC" />
+                    <Setter TargetName="Border" Value="{DynamicResource Col_Theme_Light}" Property="foundation:FouerColorBorder.BottomBorderBrush" />
+                  </Trigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+        <Style x:Key="delete_ButtonStyle" TargetType="{x:Type Button}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+          <Setter Property="HorizontalContentAlignment" Value="Center" />
+          <Setter Property="VerticalContentAlignment" Value="Center" />
+          <Setter Property="VerticalAlignment" Value="Center" />
+          <Setter Property="HorizontalAlignment" Value="Right" />
+          <Style.Triggers>
+            <Trigger Property="FrameworkElement.Tag" Value="unbind">
+              <Setter Property="Template">
+                <Setter.Value>
+                  <ControlTemplate TargetType="{x:Type Button}">
+                    <Image Name="addIcon" Margin="2,0,0,0" Width="24" Height="24" Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/WorkspaceControls/resources/ic_deduct_normal.png" />
+                    <ControlTemplate.Triggers>
+                      <Trigger Property="UIElement.IsMouseOver" Value="True">
+                        <Setter Value="{DynamicResource Col_Theme}" Property="BorderBrush" />
+                        <Setter TargetName="addIcon" Property="Image.Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/WorkspaceControls/resources/ic_deduct_hover.png" />
+                      </Trigger>
+                      <Trigger Property="IsPressed" Value="True">
+                        <Setter Value="{DynamicResource Col_Theme}" Property="BorderBrush" />
+                        <Setter TargetName="addIcon" Property="Image.Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/WorkspaceControls/resources/ic_deduct_click.png" />
+                      </Trigger>
+                    </ControlTemplate.Triggers>
+                  </ControlTemplate>
+                </Setter.Value>
+              </Setter>
+            </Trigger>
+            <Trigger Property="FrameworkElement.Tag" Value="bind">
+              <Setter Property="Template">
+                <Setter.Value>
+                  <ControlTemplate TargetType="{x:Type Button}">
+                    <Image Name="addIcon" Margin="2,0,0,0" Width="32" Height="32" Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/WorkspaceControls/resources/ic_link_gray_normal.png" />
+                    <ControlTemplate.Triggers>
+                      <Trigger Property="UIElement.IsMouseOver" Value="True">
+                        <Setter TargetName="addIcon" Property="Image.Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/WorkspaceControls/resources/ic_link_gray_click.png" />
+                      </Trigger>
+                      <Trigger Property="IsPressed" Value="True">
+                        <Setter TargetName="addIcon" Property="Image.Source" Value="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/WorkspaceControls/resources/ic_link_gray_click.png" />
+                      </Trigger>
+                      <DataTrigger Value="Collapsed" Binding="{Binding ElementName=ulinkButton, Path=Visibility}">
+                        <Setter Property="Visibility" Value="Visible" />
+                      </DataTrigger>
+                      <DataTrigger Value="Visible" Binding="{Binding ElementName=ulinkButton, Path=Visibility}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                      </DataTrigger>
+                    </ControlTemplate.Triggers>
+                  </ControlTemplate>
+                </Setter.Value>
+              </Setter>
+            </Trigger>
+          </Style.Triggers>
+        </Style>
+        <Style x:Key="delete" TargetType="{x:Type Button}" BasedOn="{StaticResource deleteButton}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+          <EventSetter Event="Click" Handler="Delete_OnHandler" />
+        </Style>
+        <Style x:Key="norLabel" TargetType="{x:Type Label}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+          <Setter Property="FontFamily" Value="Microsoft YaHei" />
+          <Setter Property="Foreground" Value="#4C4C4C" />
+          <Setter Property="FontWeight" Value="Bold" />
+          <Setter Property="FontSize" Value="14px" />
+          <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="showTipLabel" TargetType="{x:Type Label}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+          <Setter Property="Foreground" Value="#4C4C4C" />
+          <Setter Property="FontFamily" Value="Microsoft YaHei" />
+          <Setter Property="FontWeight" Value="Bold" />
+          <Setter Property="FontSize" Value="14px" />
+          <Setter Property="VerticalAlignment" Value="Center" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type Label}">
+                <Border BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" Background="{TemplateBinding Control.Background}" Padding="{TemplateBinding Control.Padding}" SnapsToDevicePixels="True">
+                  <StackPanel Orientation="Horizontal">
+                    <ContentPresenter ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}" Content="{TemplateBinding ContentControl.Content}" ContentStringFormat="{TemplateBinding ContentControl.ContentStringFormat}" HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+                    <Image Name="icon1" Margin="2,0,0,0" Height="18" Width="18" Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/WorkspaceControls/resources/ic_help_normal.png">
+                      <FrameworkElement.ToolTip>
+                        <TextBlock Text="{TemplateBinding FrameworkElement.Tag}" Width="200" TextWrapping="Wrap" />
+                      </FrameworkElement.ToolTip>
+                    </Image>
+                  </StackPanel>
+                </Border>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+        <Style x:Key="MyButtonStyle" TargetType="{x:Type Button}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+          <Setter Property="Background" Value="#00FFFFFF" />
+          <Setter Property="BorderBrush" Value="{DynamicResource GloCameraComboBB}" />
+          <Setter Property="BorderThickness" Value="1" />
+          <Setter Property="Foreground" Value="{DynamicResource ParamsTabForeground}" />
+          <Setter Property="FontFamily" Value="Microsoft YaHei" />
+          <Setter Property="FontSize" Value="14" />
+          <Setter Property="HorizontalContentAlignment" Value="Left" />
+          <Setter Property="VerticalContentAlignment" Value="Center" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type Button}">
+                <Border Name="Back" Background="#00FFFFFF" Height="24" Margin="2,0,2,0" Focusable="False">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="10" />
+                      <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentPresenter Grid.Column="1" HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+                    <Rectangle Name="rect" Grid.ColumnSpan="2" Fill="{DynamicResource Col_Theme}" Height="1" StrokeThickness="0" Visibility="Collapsed" VerticalAlignment="Bottom" />
+                  </Grid>
+                </Border>
+                <ControlTemplate.Triggers>
+                  <Trigger Property="UIElement.IsMouseOver" Value="True">
+                    <Setter TargetName="Back" Value="{DynamicResource Col_Theme}" Property="Border.Background" />
+                    <Setter Property="Foreground" Value="#FFFFFFFF" />
+                  </Trigger>
+                  <Trigger Property="IsPressed" Value="True">
+                    <Setter TargetName="Back" Value="{DynamicResource Col_Theme}" Property="Border.Background" />
+                    <Setter TargetName="rect" Property="Visibility" Value="Visible" />
+                    <Setter Property="Foreground" Value="#FFFFFFFF" />
+                  </Trigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+        <presentation:InteractionContextMenu x:Key="GroupOperateMenu" DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+          <MenuItem Header="{DynamicResource Lang_Rename}" Click="RenameGroup_Click" />
+          <MenuItem Header="{DynamicResource Lang_Delet}" Click="DeleteGroup_Click" />
+        </presentation:InteractionContextMenu>
+        <common:SuperImageButton x:Key="Com" ToolTip="空组仅保留在当前窗口；含变量后随方案保存。" HorizontalAlignment="Left" Command="{Binding AddGroupCommand}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+          <common:SuperImageButton.NormalConnent>
+            <Image Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/ic_hu_add_normal.png" Stretch="None" />
+          </common:SuperImageButton.NormalConnent>
+          <common:SuperImageButton.DisableConnent>
+            <Image Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/ic_hu_add_disable.png" Stretch="None" />
+          </common:SuperImageButton.DisableConnent>
+          <common:SuperImageButton.PressedConnent>
+            <Image Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/ic_hu_add_click.png" Stretch="None" />
+          </common:SuperImageButton.PressedConnent>
+          <common:SuperImageButton.MOverConnent>
+            <Image Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/ic_hu_add_hover.png" Stretch="None" />
+          </common:SuperImageButton.MOverConnent>
+        </common:SuperImageButton>
+        <Style x:Key="TabControlStyle1" TargetType="{x:Type TabControl}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+          <Setter Property="Foreground" Value="{DynamicResource LogicTypeFG}" />
+          <Setter Property="Padding" Value="0" />
+          <Setter Property="BorderThickness" Value="1" />
+          <Setter Property="BorderBrush" Value="#E6E8EB" />
+          <Setter Property="HorizontalContentAlignment" Value="Center" />
+          <Setter Property="VerticalContentAlignment" Value="Center" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type TabControl}">
+                <Grid ClipToBounds="True" KeyboardNavigation.TabNavigation="Local" SnapsToDevicePixels="True">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Name="ColumnDefinition0" />
+                    <ColumnDefinition Name="ColumnDefinition1" Width="0" />
+                  </Grid.ColumnDefinitions>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Name="RowDefinition0" Height="38" />
+                    <RowDefinition Name="RowDefinition1" Height="*" />
+                  </Grid.RowDefinitions>
+                  <Border Name="head" BorderBrush="#E6E8EB" BorderThickness="0,1,0,0" Background="#FAFAFC">
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="64" />
+                      </Grid.ColumnDefinitions>
+                      <Grid>
+                        <ScrollViewer Name="scroll" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" Grid.Column="1" ScrollChanged="Sv_ScrollChanged">
+                          <StackPanel Name="stack" Orientation="Horizontal" HorizontalAlignment="Left">
+                            <TabPanel Name="HeaderPanel" Margin="0" ZIndex="1" IsItemsHost="True" KeyboardNavigation.TabIndex="1" />
+                            <Grid Name="Com" Margin="4,0,0,0" Width="32">
+                              <ContentPresenter Name="ComContent" HorizontalAlignment="Left" Content="{x:Null}" IsEnabled="{Binding DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                            </Grid>
+                          </StackPanel>
+                        </ScrollViewer>
+                      </Grid>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Background="#00FFFFFF">
+                        <ContentPresenter Name="subComContent" Content="{x:Null}" />
+                        <ComboBox Width="32" Background="#00FFFFFF" ItemsSource="{TemplateBinding ItemsControl.ItemsSource}" DisplayMemberPath="Name" Style="{StaticResource ListViewBtnComboBoxStyle}" SelectedItem="{Binding SelectedGroup, Mode=TwoWay}" />
+                      </StackPanel>
+                    </Grid>
+                  </Border>
+                  <Grid Name="PART_ItemsHolder" Column="0" Row="1" />
+                  <ContentPresenter Name="PART_SelectedContentHost" Grid.Row="1" ContentSource="SelectedContent" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+                </Grid>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+        <Style x:Key="TopTabItemStyle1" TargetType="{x:Type TabItem}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+          <Setter Property="FontSize" Value="12" />
+          <Setter Property="FontWeight" Value="Normal" />
+          <Setter Property="Foreground" Value="{DynamicResource ParamsTabForeground}" />
+          <Setter Property="TabItem.IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+          <Setter Property="FrameworkElement.ContextMenu" Value="{StaticResource GroupOperateMenu}" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type TabItem}">
+                <Grid ToolTip="{Binding Name}">
+                  <Border Name="bd" HorizontalAlignment="Center" VerticalAlignment="Center" Height="35" Width="auto" Background="#00FFFFFF">
+                    <StackPanel Orientation="Horizontal" Background="#00FFFFFF" Margin="0,0,12,0">
+                      <ContentPresenter Name="Content" ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8,0,0,0" SnapsToDevicePixels="True" />
+                    </StackPanel>
+                  </Border>
+                  <Rectangle Name="line" Height="2" Fill="{DynamicResource Col_Theme}" Visibility="Hidden" VerticalAlignment="Bottom" />
+                </Grid>
+                <ControlTemplate.Triggers>
+                  <Trigger Property="TabItem.IsSelected" Value="True">
+                    <Setter TargetName="bd" Value="{DynamicResource Col_Theme_Light}" Property="Border.Background" />
+                    <Setter Property="FontWeight" Value="Bold" />
+                    <Setter Value="{DynamicResource Col_ModuleConfig_Title_Selected_Foreground}" Property="Foreground" />
+                    <Setter TargetName="line" Property="Visibility" Value="Visible" />
+                  </Trigger>
+                  <Trigger Property="UIElement.IsMouseOver" Value="True">
+                    <Setter Property="FrameworkElement.Cursor" Value="Hand" />
+                    <Setter TargetName="line" Property="Visibility" Value="Visible" />
+                  </Trigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+      </ResourceDictionary>
+    </FrameworkElement.Resources>
+    <Grid.RowDefinitions>
+      <RowDefinition />
+      <RowDefinition Height="32" />
+    </Grid.RowDefinitions>
+    <Grid Margin="15,10,15,0" Background="#F2F3F5">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="34" />
+        <RowDefinition />
+      </Grid.RowDefinitions>
+      <Grid Row="0">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="440" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="300" />
+        </Grid.ColumnDefinitions>
+        <TextBox Name="txtFocus" Width="0" Height="0" MaxLength="1" Style="{x:Null}" />
+        <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Bottom" Height="32">
+          <Button Width="94" Height="32" Style="{StaticResource Add_ButtonStyle}" Content="{DynamicResource Lang_GlobalVariableAdd}" FontSize="14px" Command="{Binding AddVariableCommand}" IsEnabled="{Binding CanEdit}"></Button>
+          <Button Name="btnImport" IsEnabled="False" ToolTipService.ShowOnDisabled="True" Content="{DynamicResource 导入}" Margin="10,0,0,0" Width="50" Height="32" Style="{StaticResource importButtonStyle}" IsHitTestVisible="False" ToolTip="变量导入尚未接入一次Session事务。" />
+          <Popup Name="PopImport" StaysOpen="False" Margin="0" AllowsTransparency="True" PlacementTarget="{Binding ElementName=btnImport}">
+            <Grid Height="60" Width="80" HorizontalAlignment="Left" Background="#00FFFFFF">
+              <Border BorderBrush="#00FFFFFF" BorderThickness="1" CornerRadius="4" Padding="0,4,0,4" Background="{DynamicResource GlobalBorderBg}">
+                <UIElement.Effect>
+                  <DropShadowEffect Color="#1F0E01" BlurRadius="4" ShadowDepth="4" Opacity="0.4" />
+                </UIElement.Effect>
+                <StackPanel>
+                  <Button Content="{DynamicResource Local}" Style="{StaticResource MyButtonStyle}" IsEnabled="False" />
+                  <Button Content="{DynamicResource Remote}" Style="{StaticResource MyButtonStyle}" IsEnabled="False" />
+                </StackPanel>
+              </Border>
+            </Grid>
+          </Popup>
+          <Button Name="btnExport" IsEnabled="False" ToolTipService.ShowOnDisabled="True" Content="{DynamicResource 导出}" Margin="10,0,0,0" Width="50" Height="32" Style="{StaticResource importButtonStyle}" IsHitTestVisible="False" ToolTip="变量导出尚未接入受控原子写入。" />
+          <Popup Name="PopExport" StaysOpen="False" Margin="0" AllowsTransparency="True" PlacementTarget="{Binding ElementName=btnExport}">
+            <Grid Height="60" Width="80" HorizontalAlignment="Left" Background="#00FFFFFF">
+              <Border BorderBrush="#00FFFFFF" BorderThickness="1" CornerRadius="4" Padding="0,4,0,4" Background="{DynamicResource GlobalBorderBg}">
+                <UIElement.Effect>
+                  <DropShadowEffect Color="#1F0E01" BlurRadius="4" ShadowDepth="4" Opacity="0.4" />
+                </UIElement.Effect>
+                <StackPanel>
+                  <Button Content="{DynamicResource Local}" Style="{StaticResource MyButtonStyle}" IsEnabled="False" />
+                  <Button Content="{DynamicResource Remote}" Style="{StaticResource MyButtonStyle}" IsEnabled="False" />
+                </StackPanel>
+              </Border>
+            </Grid>
+          </Popup>
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Bottom" Height="32" Margin="10,0,0,0">
+            <TextBox Name="SearchText" Tag="{DynamicResource Lang_GlobalVariableSearchName}" Style="{StaticResource input}" Padding="6,0,16,0" Width="190" Height="32" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+            <Button Style="{StaticResource searchBtn}" Margin="-32,0,0,0" Click="Search_Click" />
+          </StackPanel>
+        </StackPanel>
+        <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom" Height="32">
+          <Button Name="btnTop" Margin="10,0,0,0" ToolTip="{DynamicResource Lang_Top}" Width="28" Height="28" Style="{StaticResource TopButtonStyle}" Command="{Binding MoveTopCommand}" />
+          <Button Name="btnUp" Margin="10,0,0,0" ToolTip="{DynamicResource MoveUp}" Width="28" Height="28" Style="{StaticResource UpButtonStyle}" Command="{Binding MoveUpCommand}" />
+          <Button Name="btnDown" Margin="10,0,0,0" ToolTip="{DynamicResource MoveDown}" Width="28" Height="28" Style="{StaticResource DownButtonStyle}" Command="{Binding MoveDownCommand}" />
+          <Button Name="LightSave" Grid.Column="2" Width="78" Height="30" Margin="10,0,0,0" Style="{StaticResource BottomLineButtonStyle}" Content="{DynamicResource Lang_GlobalVariableSave}" IsEnabled="{Binding CanEdit}" Visibility="Visible" Command="{Binding SaveCommand}" />
+        </StackPanel>
+      </Grid>
+      <TabControl Name="tabControl" Grid.Row="1" Margin="0,12,0,0" Style="{StaticResource TabControlStyle1}" ItemContainerStyle="{StaticResource TopTabItemStyle1}" ItemsSource="{Binding Groups}" SelectedItem="{Binding SelectedGroup, Mode=TwoWay}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <ContentPresenter ContextMenu="{StaticResource GroupOperateMenu}" Content="{Binding}">
+              <ContentPresenter.ContentTemplate>
+                <DataTemplate>
+                  <local:GroupRenameTextBox Name="headText" BorderThickness="0" Background="#00FFFFFF" MaxLength="64" FontSize="14px" FontFamily="Microsoft YaHei" Margin="8,0,0,0" VerticalAlignment="Center" MaxWidth="100" Text="{Binding EditingText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ToolTip="{Binding Name}" IsRenaming="{Binding IsEditing, Mode=TwoWay}" TextChanged="Group_TextChanged" PreviewLostKeyboardFocus="Group_PreviewLostFocus" PreviewKeyDown="Group_KeyDown" />
+                </DataTemplate>
+              </ContentPresenter.ContentTemplate>
+            </ContentPresenter>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+        <TabControl.ContentTemplate>
+          <DataTemplate>
+            <Grid>
+              <Border Visibility="{Binding DataContext.EmptyStatus, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                <StackPanel VerticalAlignment="Center">
+                  <Image Height="50" Width="100" VerticalAlignment="Center" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/References/ic_empty.png" />
+                  <TextBlock Text="{DynamicResource Lang_ContentEmpty}" Margin="0,10,0,0" HorizontalAlignment="Center" FontSize="14" FontFamily="Microsoft YaHei" />
+                </StackPanel>
+              </Border>
+              <StackPanel Orientation="Vertical" VerticalAlignment="Top" Margin="0,5,0,0">
+                <DataGrid Name="varDataGrid" Width="{TemplateBinding FrameworkElement.Width}" Style="{StaticResource varDataGridStyle}" MaxHeight="510" CanUserSortColumns="False" CanUserReorderColumns="False" BorderThickness="0" BorderBrush="#00FFFFFF" GridLinesVisibility="Vertical" AutoGenerateColumns="False" SelectionMode="Single" ItemsSource="{Binding DataContext.CurrentVariables, RelativeSource={RelativeSource AncestorType=UserControl}}" IsEnabled="{Binding DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=UserControl}}" SelectedItem="{Binding DataContext.SelectedVariable, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay}">
+                  <FrameworkElement.Resources>
+                    <ResourceDictionary>
+                      <Style x:Key="{x:Type TextBox}" TargetType="{x:Type TextBox}" BasedOn="{StaticResource input}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                        <EventSetter Event="LostFocus" Handler="Editor_LostFocus" />
+                        <EventSetter Event="PreviewKeyDown" Handler="Editor_KeyDown" />
+                      </Style>
+                    </ResourceDictionary>
+                  </FrameworkElement.Resources>
+                  <DataGrid.Columns>
+                    <DataGridTemplateColumn IsReadOnly="True" Width="60">
+                      <DataGridColumn.Header>
+                        <Label Style="{StaticResource norLabel}" Content="{DynamicResource Lang_GlobalVariableIndex}" />
+                      </DataGridColumn.Header>
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <TextBlock VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,0,5,0" FontFamily="Microsoft YaHei" FontSize="14px" Foreground="#666666" Text="{Binding Index}" />
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Width="135">
+                      <DataGridColumn.Header>
+                        <Label Style="{StaticResource norLabel}" Content="{DynamicResource Lang_Name}" />
+                      </DataGridColumn.Header>
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <TextBox Name="VariableNameEditor" Loaded="Editor_Loaded" TextChanged="Name_TextChanged" Margin="5,0,5,0" Height="32" HorizontalAlignment="Stretch" Text="{Binding Name, Mode=OneWay}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Self}}"></TextBox>
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Width="130">
+                      <DataGridColumn.Header>
+                        <Label Style="{StaticResource norLabel}" Content="{DynamicResource Lang_ReMark}" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                      </DataGridColumn.Header>
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <TextBox Margin="5,0,5,0" Height="32" HorizontalAlignment="Stretch" Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Mode=Self}}" />
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Width="95">
+                      <DataGridColumn.Header>
+                        <Label Style="{StaticResource norLabel}" Content="{DynamicResource Lang_Type}" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                      </DataGridColumn.Header>
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <ComboBox Style="{StaticResource ListViewComboBoxStyle}" Margin="5,0,5,0" Height="32" HorizontalAlignment="Stretch" SelectedValue="{Binding Type, Mode=TwoWay}" SelectionChanged="Type_SelectionChanged" SelectedValuePath="Value" DisplayMemberPath="DisplayName" ItemsSource="{Binding DataContext.TypeOptions, RelativeSource={RelativeSource AncestorType=UserControl}}"><ComboBox.ItemContainerStyle><Style TargetType="ComboBoxItem"><Setter Property="IsEnabled" Value="{Binding CanChoose}"/><Setter Property="ToolTip" Value="{Binding AvailabilityReason}"/></Style></ComboBox.ItemContainerStyle></ComboBox>
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Width="158">
+                      <DataGridColumn.Header>
+                        <Label Style="{StaticResource norLabel}" Content="{DynamicResource Lang_GlobalVariableDefaultValue}" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                      </DataGridColumn.Header>
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <Grid Margin="5,0,5,0" Background="#00FFFFFF" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                            <TextBox Margin="0" Height="32" HorizontalAlignment="Stretch" Name="VariableValueEditor" Text="{Binding Value, Converter={StaticResource ValueTextConverter}, Mode=OneWay}" Loaded="Editor_Loaded" TextChanged="Value_TextChanged" IsReadOnly="{Binding Type, Converter={StaticResource ValueReadOnlyConverter}}" ToolTip="{Binding Value, Converter={StaticResource ValueTextConverter}}"><TextBox.Visibility><MultiBinding Converter="{StaticResource ArrayVisibilityConverter}" ConverterParameter="Text"><Binding Path="Value"/><Binding Path="Type"/></MultiBinding></TextBox.Visibility></TextBox>
+                            <Button Foreground="#F76900" Height="32" Background="#00FFFFFF" Content="{DynamicResource Lang_Details}" FontSize="14px" FontFamily="Microsoft YaHei" BorderThickness="0" VerticalAlignment="Center" HorizontalAlignment="Left" Style="{x:Null}" Name="ArrayDetails" Click="Array_Click"><Button.Visibility><MultiBinding Converter="{StaticResource ArrayVisibilityConverter}"><Binding Path="Value"/><Binding Path="Type"/></MultiBinding></Button.Visibility></Button>
+                          </Grid>
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Width="150">
+                      <DataGridColumn.Header>
+                        <Label Style="{StaticResource showTipLabel}" Tag="{DynamicResource Lang_GlobalVariableTipInput}" Content="{DynamicResource Lang_GlobalVariableInputSource}" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                      </DataGridColumn.Header>
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <TextBlock Name="InputSourceText" Margin="5,0,5,0" HorizontalAlignment="Stretch" FontSize="14px" VerticalAlignment="Center" FontFamily="Microsoft YaHei" Foreground="#666666" Text="{Binding InputSourceDisplayText}" ToolTip="{Binding InputSourceDisplayText}" />
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Width="160">
+                      <DataGridColumn.Header>
+                        <Label Style="{StaticResource showTipLabel}" Tag="{DynamicResource Lang_GlobalVariableTipOutput}" Content="{DynamicResource Lang_GlobalVariableTargetOutput}" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                      </DataGridColumn.Header>
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <Grid Background="#00FFFFFF" Margin="5,0,5,0" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                            <TextBlock Name="targetText" MaxWidth="140" VerticalAlignment="Center" HorizontalAlignment="Left" FontFamily="Microsoft YaHei" FontSize="14px" Foreground="#0080FF" Text="消费者查询待接入" ToolTip="当前缺少正式反向目标资格查询，不能按名称绑定。" IsEnabled="False">
+                              <UIElement.InputBindings></UIElement.InputBindings>
+                            </TextBlock>
+                            <Button Name="linkButton" HorizontalAlignment="Left" Style="{StaticResource delete_ButtonStyle}" Tag="bind" IsEnabled="False" ToolTip="目标参数批量绑定尚未接入正式会话资格。" />
+                          </Grid>
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn x:Name="dgComitColumn" Width="93" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                      <DataGridColumn.Header>
+                        <Label Style="{StaticResource showTipLabel}" Tag="{DynamicResource Lang_GlobalVariableLable}" Content="{DynamicResource Lang_CalculatorCInitial}" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                      </DataGridColumn.Header>
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <ToggleButton Name="ToggleButton" Style="{StaticResource boolean}" HorizontalAlignment="Center" IsChecked="False" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="初始化策略尚无会话配置字段及执行语义；运行状态不能作为可编辑配置。" />
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Width="75">
+                      <DataGridColumn.Header>
+                        <Label Style="{StaticResource norLabel}" Content="{DynamicResource Lang_Operate}" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                      </DataGridColumn.Header>
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <Button Style="{StaticResource delete}" VerticalAlignment="Center" IsEnabled="{Binding DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                  </DataGrid.Columns>
+                </DataGrid>
+              </StackPanel>
+            </Grid>
+          </DataTemplate>
+        </TabControl.ContentTemplate>
+      </TabControl>
+    </Grid>
+    <Border Grid.Row="1" Background="#E4E5E7" Visibility="{Binding PageNumShowStatus}">
+      <local:VariablePageNavigator HorizontalAlignment="Right" Margin="0,1,9,2" PageCountVisible="Visible" PageDataCount="{Binding Path=PageCount, Mode=TwoWay}" TotalDataCount="{Binding Path=ItemsTotalCount}" CurrentPageNumber="{Binding Path=CurrentPageNum, Mode=TwoWay}" />
+    </Border>
+  </Grid>
+</UserControl>

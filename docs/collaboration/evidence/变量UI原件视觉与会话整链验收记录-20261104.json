@@ -1,0 +1,155 @@
+{
+  "Baseline": "ded0f48f2",
+  "Branch": "codex/platform-variable-ui-20261104",
+  "FixtureCheckpoint": "dc36a49c41d091a4684a476ba032049ac3bdff2f",
+  "ExternalTestPrerequisite": "463ca51d6",
+  "ProductPayload": "C613BBCAD4B85C5E2BAF1C3873249B8738DB2FB20219584EAB9CAD0500234847",
+  "FinalFullBuild": "variable-ui-final-build11.log:0错误/5990警告",
+  "PriorWholeUi": "variable-ui-final10.log:231/231/0skip（最终组原文本与菜单增量之前）",
+  "FinalIncrement": "variable-ui-increment11.log:7/7/0skip",
+  "FinalPublicView": "variable-wpf-final11.log:6/6/0skip",
+  "FinalMain": "variable-ui-native-final12.log: NativeExit=0；actual command/producer value/result selection/V5 reopen/session+services+Dispatcher+OLE drained",
+  "NotVerified": [
+    "VM动态差分",
+    "VS实际设计器",
+    "物理用户键鼠",
+    "主线集成",
+    "真实硬件"
+  ],
+  "OwnedSource": [
+    {
+      "Path": "src/Plugin.Wpf/Controls/References/Variables/VariableManagerView.xaml",
+      "RawSha256": "4D2D0425A62FB2E8846E498A6B3286BDC0AEC5DDB3DB36BF28EDB18C0C8000F2",
+      "NormalizedTextSha256": "FADC35E6B0942964C246AD06E6A60127DF69AA1D3C96C4BDC61C2B9A33023EAA"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Controls/References/Variables/VariableManagerView.xaml.cs",
+      "RawSha256": "E87C7333605679CEA38819FDF66F1065C2261163100693B71AA65971C01162B9",
+      "NormalizedTextSha256": "BDEA80808236A5F431107C2FFC9ACC76296647864F3948FF3E74282638A15C79"
+    },
+    {
+      "Path": "src/Plugin.Wpf/Controls/References/Variables/VariableManagerDesignData.cs",
+      "RawSha256": "9B8543CB95A4F1BDF003B37C13F4A2B171D71B1C53A0D62B96B45101200CCDCF",
+      "NormalizedTextSha256": "9B8543CB95A4F1BDF003B37C13F4A2B171D71B1C53A0D62B96B45101200CCDCF"
+    },
+    {
+      "Path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerDialog.xaml",
+      "RawSha256": "6D1A56F9139551BDD153000A2D45855E79609028C11D4B78FD927D2CB997D218",
+      "NormalizedTextSha256": "0995684A292F1EA0D8F704A43938769F4161ECE8091C58A99C3664B6FD537E47"
+    },
+    {
+      "Path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerDialog.xaml.cs",
+      "RawSha256": "B7D0AA2615B32DF905D8BC433C0D6ADA9C93F459B30035405C88F3F3FC3AE510",
+      "NormalizedTextSha256": "A1A34A71119A948DC7275CC2C184B8F266C7D30853E386DD8306D0C50D15B654"
+    },
+    {
+      "Path": "src/UI/Features/GlobalVariableManager/GlobalVariableManagerViewModel.cs",
+      "RawSha256": "2C5A62B88E94A12B12B213B28203E74011E96B1016F841A553E98EEBCBEEB7AC",
+      "NormalizedTextSha256": "0DFA474FD219538D354430C4DA37AE2E833BEF8A2EA7FE83DC06580608ABB9BF"
+    },
+    {
+      "Path": "src/UI/Features/GlobalVariableManager/VariableGroupViewModel.cs",
+      "RawSha256": "B963F42784D9A1414EC4981D084E36745FD3D24AC0710C93542B6B5589DA8B72",
+      "NormalizedTextSha256": "3E3E634CE74F2B29EBDDA5C2DB78520C7775B3799CA051A2C444E93179E0638E"
+    },
+    {
+      "Path": "src/UI/Shell/Windows/MainWindowResultBindingEditing.cs",
+      "RawSha256": "CCF3298E6AAAFCC816CF3AF431940D7BBA1EC4268CA7C54AE63F7134B87AE919",
+      "NormalizedTextSha256": "9248FF7FC1E1B6A573CF1793B0FA772888E1B909615BE2B7C5D202D0A063EC84"
+    },
+    {
+      "Path": "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+      "RawSha256": "6C77024EA17A2E2EFC1DBF12DA514A9B5750D5F796757B0FB28F50F82B276038",
+      "NormalizedTextSha256": "F98BBD5327E046A56BEEF822288AB27E7649E53B2A95768FB2427FAB53631CBD"
+    },
+    {
+      "Path": "tests/SunEyeVision.UI.Tests/Session/DocumentUiFixture.cs",
+      "RawSha256": "20FA6D455D38CECBEBC892E1C648D8AFA02EC8D00EC87020E22D3CF3289210D2",
+      "NormalizedTextSha256": "2551081E13EB1C6C99FF712E61A5D579FDEF63001DFBB9EBFCCCB2F1742FB781"
+    },
+    {
+      "Path": "tests/SunEyeVision.UI.Tests/Session/VariableManagerProductionTests.cs",
+      "RawSha256": "30200D53979BD77F9386EC39D4B2183FD0AD1D1F047E53A01C6193EBA8DC65E8",
+      "NormalizedTextSha256": "30200D53979BD77F9386EC39D4B2183FD0AD1D1F047E53A01C6193EBA8DC65E8"
+    },
+    {
+      "Path": "tests/SunEyeVision.Variables.Wpf.Tests/VariableManagerViewTests.cs",
+      "RawSha256": "5F795CEA182F516F5C52D96254F6691692F7E90DC9B2F9B773BD186C3CF0A58C",
+      "NormalizedTextSha256": "5F795CEA182F516F5C52D96254F6691692F7E90DC9B2F9B773BD186C3CF0A58C"
+    },
+    {
+      "Path": "tests/ShutdownLifecycleProbe/Program.cs",
+      "RawSha256": "D46D12C59A30FFB78B603729ACA463A14010F04B31CC8FD745DCF87CDF5B5A6B",
+      "NormalizedTextSha256": "E811B683C444E392E3E85B37B183CC9AF75CBED16D39F1A368CD8D59A994F9A2"
+    },
+    {
+      "Path": "tests/ShutdownLifecycleProbe/ContinuousMainProbe.cs",
+      "RawSha256": "0E47BD9158FE2292D3CA9E56BAAE1F4650AFED4C6AF164E28FCF95004785F75B",
+      "NormalizedTextSha256": "273CB115FDE002999965DEEAF7881E581EDEA01E013277B51AA7A9174DF5BE36"
+    },
+    {
+      "Path": "tests/ShutdownLifecycleProbe/RootCollectionMainProbe.cs",
+      "RawSha256": "E504124F74E6B2799B1F974169CB024F2793114A0CF4A2B545E71040919F7052",
+      "NormalizedTextSha256": "E2ADD50BEA7C428260553E224C4653DD8976B00BE2D74019B9F852354FD7CE4C"
+    },
+    {
+      "Path": "tests/ShutdownLifecycleProbe/VariableManagerMainProbe.cs",
+      "RawSha256": "C165F9EC664AEB83D457E36A46EFF6686012A03A0C0CD002E53E53F3FF18E260",
+      "NormalizedTextSha256": "C165F9EC664AEB83D457E36A46EFF6686012A03A0C0CD002E53E53F3FF18E260"
+    }
+  ],
+  "ExternalSource": [
+    {
+      "Path": "tests/AdmissionLifecycleProbe/SessionLifecycleProbe.cs",
+      "Sha256": "507071B363406BA3487E63E6C990303D68B6551073C56C2C383E16DDFE1BA54E",
+      "NotInVisualCommit": true
+    },
+    {
+      "Path": "tests/SunEyeVision.ImageInput.Runtime.Tests/ImageSourceSessionTests.cs",
+      "Sha256": "4CB11D7EAC4DB16105FF1D524D3D1542D2A4A151E654F68045B074B1CE9330FB",
+      "NotInVisualCommit": true
+    },
+    {
+      "Path": "tests/SunEyeVision.Plugin.SDK.Tests/CommunicationBinaryPayloadTests.cs",
+      "Sha256": "6BD33A384FFA926BB9A63330A8D315630F886CAD2F7A04C040519E133944B46F",
+      "NotInVisualCommit": true
+    },
+    {
+      "Path": "tests/SunEyeVision.Plugin.SDK.Tests/CommunicationToolResultsTests.cs",
+      "Sha256": "F4136F67896B529F5C7611C14752776A2698A05BC5CE4887B586D5920B454A05",
+      "NotInVisualCommit": true
+    },
+    {
+      "Path": "tests/SunEyeVision.Plugin.SDK.Tests/ProtocolValueCodecTests.cs",
+      "Sha256": "4EC994F0B38DF5271010AD0C097F4EE20643160D2EFCFFD5896531FE87C7D54D",
+      "NotInVisualCommit": true
+    },
+    {
+      "Path": "tests/SunEyeVision.Plugin.SDK.Tests/VariableCodecScope.cs",
+      "Sha256": "6D9FC2B63A2D392FA6CC195080912468A58F2760A80FAA9791644A1C2D4B1720",
+      "NotInVisualCommit": true
+    }
+  ],
+  "Artifacts": [
+    {
+      "Path": "SunEyeVision.UI.dll",
+      "Sha256": "28305D609B41C516455DD99EB8A04D57A8B3B29CF549B1FA0B92931EBF8E503A"
+    },
+    {
+      "Path": "SunEyeVision.Plugin.Wpf.dll",
+      "Sha256": "8B56C61C7CBB24041ACCB5078889FB31888BD2EDCB8B5F0BD6F5588354B619F6"
+    },
+    {
+      "Path": "SunEyeVision.Application.dll",
+      "Sha256": "2510A1329D10F8C59ABBAAE63D036142A74E0072C65D320C1B891B3338FA70B1"
+    },
+    {
+      "Path": "SunEyeVision.Plugin.Contracts.dll",
+      "Sha256": "56282F9314222624E3090E5E10E61ECD34E6E1E2339819356BF5D930EAAB945E"
+    },
+    {
+      "Path": "release-payload.json",
+      "Sha256": "C613BBCAD4B85C5E2BAF1C3873249B8738DB2FB20219584EAB9CAD0500234847"
+    }
+  ]
+}

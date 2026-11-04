@@ -67,7 +67,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             {
                 if (SetProperty(ref _selectedGroup, value))
                 {
-                    UpdateFilteredVariables();
+                    _currentPageNum = 1; UpdateFilteredVariables();
                     OnPropertyChanged(nameof(CurrentVariables));
                 }
             }
@@ -85,7 +85,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         public GlobalVariable? SelectedVariable
         {
             get => _selectedVariable;
-            set => SetProperty(ref _selectedVariable, value);
+            set { if(SetProperty(ref _selectedVariable, value)) CommandManager.InvalidateRequerySuggested(); }
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             {
                 if (SetProperty(ref _searchText, value))
                 {
-                    UpdateFilteredVariables();
+                    _currentPageNum = 1; UpdateFilteredVariables();
                 }
             }
         }
@@ -155,7 +155,11 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         /// <summary>
         /// 类型选项列表（中文显示名 + 英文值，用于 ComboBox 绑定）
         /// </summary>
-        public sealed record VariableTypeOption(string DisplayName, string Value);
+        public sealed record VariableTypeOption(string DisplayName, string Value)
+        {
+            public bool CanChoose=>Value is "Integer" or "Double" or "String" or "Boolean" or "Integer[]" or "Double[]" or "String[]" or "Boolean[]";
+            public string AvailabilityReason=>CanChoose?"":"当前支持只读存储呈现，尚无受控复杂值编辑入口。";
+        }
         public List<VariableTypeOption> TypeOptions { get; } = VariableValueDeclarations.DisplayNames.Select(pair => new VariableTypeOption(pair.Value, pair.Key)).ToList();
 
         public DocumentSession EditingSession => _session;
@@ -238,6 +242,9 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         }
         private void InitializeCommands()
         {
+            MoveUpCommand=new RelayCommand(()=>MoveVariable(-1),()=>CanMove(-1));
+            MoveDownCommand=new RelayCommand(()=>MoveVariable(1),()=>CanMove(1));
+            MoveTopCommand=new RelayCommand(()=>MoveVariable(-2),()=>CanMove(-1));
             AddVariableCommand = new RelayCommand(AddVariable, CanAddVariable);
             DeleteVariableCommand = new RelayCommand(DeleteVariable, CanDeleteVariable);
             AddGroupCommand = new RelayCommand(AddGroup, () => CanEdit);
@@ -260,6 +267,8 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             var variables = DraftVariables;
 
             // 清空现有分组
+            var selectedName=SelectedGroup?.Name;var page=_currentPageNum;
+            var emptyGroups=Groups.Where(group=>group.Variables.Count==0).Select(group=>group.Name).ToArray();
             Groups.Clear();
 
             // 从现有变量中按 Group 字段归类
@@ -280,6 +289,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
                 }
             }
 
+            foreach(var name in emptyGroups.Where(name=>!Groups.Any(group=>group.Name==name))) Groups.Add(new VariableGroupViewModel(name));
             // 始终保证至少有一个默认分组
             if (Groups.Count == 0)
             {
@@ -288,7 +298,8 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             }
 
             // 默认选中第一个分组
-            SelectedGroup = Groups[0];
+            SelectedGroup = Groups.FirstOrDefault(group=>group.Name==selectedName)??Groups[0];
+            _currentPageNum=page;UpdateFilteredVariables();
             SelectedGroup.IsSelected = true;
 
             LogInfo($"加载分组完成，共 {Groups.Count} 个分组");
@@ -297,30 +308,51 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         /// <summary>
         /// 更新过滤后的变量列表
         /// </summary>
+        private int _currentPageNum=1, _pageCount=12, _itemsTotalCount;
+        public int CurrentPageNum { get=>_currentPageNum;set{if(value==_currentPageNum)return;_currentPageNum=value;UpdateFilteredVariables();} }
+        public int PageCount {get=>_pageCount;set{if(value<=0||value==_pageCount)return;_pageCount=value;_currentPageNum=1;UpdateFilteredVariables();OnPropertyChanged();}}
+        public int ItemsTotalCount=>_itemsTotalCount;
+        public string EmptyStatus=>ItemsTotalCount==0?"Visible":"Collapsed";
+        public string PageNumShowStatus=>ItemsTotalCount==0?"Collapsed":"Visible";
+        public ICommand MoveUpCommand {get;private set;}=null!;
+        public ICommand MoveDownCommand {get;private set;}=null!;
+        public ICommand MoveTopCommand {get;private set;}=null!;
+        private GlobalVariable[] OrderedGroup()=>SelectedGroup?.Variables.OrderBy(variable=>variable.Index).ToArray()??Array.Empty<GlobalVariable>();
+        private bool CanMove(int direction)
+        {
+            if(!CanEdit||SelectedVariable is null)return false;
+            var group=OrderedGroup();var index=Array.IndexOf(group,SelectedVariable);
+            return index>=0&&(direction<0?index>0:index<group.Length-1);
+        }
+        private void MoveVariable(int direction)
+        {
+            if(!CanMove(direction))return;
+            if(PrepareView?.Invoke() is {} error){LogWarning(error);return;}
+            var group=OrderedGroup();var current=SelectedVariable!;var index=Array.IndexOf(group,current);
+            var target=direction==-2?0:index+direction;
+            if(direction==-2)
+            {
+                var sourceIndex=current.Index;var firstIndex=group[0].Index;
+                foreach(var variable in DraftVariables.Where(variable=>variable.Index>=firstIndex&&variable.Index<sourceIndex))variable.Index++;
+                current.Index=firstIndex;
+            }
+            else{var other=group[target];var oldIndex=current.Index;current.Index=other.Index;other.Index=oldIndex;}
+            var filtered=OrderedGroup().Where(variable=>string.IsNullOrEmpty(SearchText)||variable.Name.Contains(SearchText,StringComparison.Ordinal)).ToArray();
+            var visibleIndex=Array.IndexOf(filtered,current);
+            _currentPageNum=direction==-2?1:Math.Max(1,visibleIndex/PageCount+1);UpdateFilteredVariables();SelectedVariable=visibleIndex<0?null:current;
+        }
         private void UpdateFilteredVariables()
         {
+            var selected=SelectedVariable;
+            var values=OrderedGroup().Where(variable=>string.IsNullOrEmpty(SearchText)||variable.Name.Contains(SearchText,StringComparison.Ordinal)).ToArray();
+            _itemsTotalCount=values.Length;
+            _currentPageNum=Math.Clamp(_currentPageNum,1,Math.Max(1,(values.Length+PageCount-1)/PageCount));
             CurrentVariables.Clear();
-
-            if (SelectedGroup == null)
-                return;
-
-            var variables = SelectedGroup.Variables.AsEnumerable();
-
-            // 应用搜索过滤
-            if (!string.IsNullOrWhiteSpace(SearchText))
-            {
-                variables = variables.Where(v =>
-                    v.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
-                    v.Description.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
-                    v.Type.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
-            }
-
-            foreach (var variable in variables.OrderBy(v => v.Index))
-            {
-                CurrentVariables.Add(variable);
-            }
+            foreach(var variable in values.Skip((_currentPageNum-1)*PageCount).Take(PageCount))CurrentVariables.Add(variable);
+            if(selected is not null && !values.Any(variable=>ReferenceEquals(variable,selected)))SelectedVariable=null;
+            OnPropertyChanged(nameof(CurrentPageNum));OnPropertyChanged(nameof(ItemsTotalCount));OnPropertyChanged(nameof(EmptyStatus));OnPropertyChanged(nameof(PageNumShowStatus));
+            CommandManager.InvalidateRequerySuggested();
         }
-
         #region 分组操作
 
         /// <summary>
@@ -398,14 +430,15 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
         public void ConfirmGroupRename(VariableGroupViewModel? groupVM)
         {
             if (!CanEdit) return;
-            if (groupVM == null || !groupVM.IsEditing) return;
+            if (groupVM == null || !groupVM.IsEditing || !Groups.Any(group=>ReferenceEquals(group,groupVM))) return;
 
             string newName = groupVM.EditingText?.Trim();
 
             // 空名称 → 还原
             if (string.IsNullOrWhiteSpace(newName))
             {
-                groupVM.CancelEdit();
+                groupVM.IsEditing=true;
+                LogWarning("分组名称不能为空，当前输入保留。");
                 return;
             }
 
@@ -420,7 +453,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
             if (Groups.Any(g => g.Name == newName && g != groupVM))
             {
                 LogWarning($"分组名称 '{newName}' 已存在");
-                groupVM.BeginEdit(); // 重新进入编辑让用户修改
+                groupVM.IsEditing=true; // Retain the raw duplicate name for correction.
                 return;
             }
 
@@ -504,7 +537,7 @@ namespace SunEyeVision.UI.Features.GlobalVariableManager
 
             SelectedGroup.AddVariable(variable);
             DraftVariables.Add(variable);
-            CurrentVariables.Add(variable);
+            _currentPageNum=Math.Max(1,(SelectedGroup.Variables.Count+PageCount-1)/PageCount);UpdateFilteredVariables();
             SelectedVariable = variable;
 
             LogInfo($"添加全局变量: {variable.Name} (分组: {SelectedGroup.Name}, 序号: {variableIndex})");

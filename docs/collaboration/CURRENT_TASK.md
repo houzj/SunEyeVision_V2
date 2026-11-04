@@ -16688,3 +16688,11 @@ D05混合记录现在按稳定字段/索引路径及弱publication/lease按128�
 - 自身 UI Release 定位构建 0 错（build-complex-ui-second.log）；中立值定向 21 项通过（build-complex-tests-second.log），首轮未指定 HalconSourceRoot 的失败保留在 build-complex-tests-first.log。构建与测试不是同一最终封包，不能代表整链或主线通过。
 - 仍需可信载荷的非空 V5 方案/档案2 保存重开、旧版本拒绝、原子文件与取消失败、会话及读者排空、TCP Binary、隐藏真实主窗、完整测试消费者迁移与统一全量封包。历史 V3 旧字节仅为证据，不作新格式兼容。
 - 补充：本树正式准入 Session 验证非空 V5/档案2 图像、Binary、矩阵数组、大弧及另存保存重开；TCP 回环与受控资源排空通过，完整日志与边界见原复杂值设计。隐藏 App 探针默认起始页会等待用户，使用隔离正式偏好关闭起始页后主窗加载及排空关闭通过；这些仍是未统一源码封包的定位结果。
+
+
+## 2026-11-04 变量原件视觉与唯一会话独立候选完成
+- 基线ded0f48f2；platform-variable-ui-20261104/codex同名分支。UI/Features/GlobalVariableManager及新增Plugin.Wpf VariableManagerView/设计数据、结果门禁/资格/统一Flush、UI/Variables测试和Shutdown探针为本线写域；Application/Domain/Contracts/App/通信/DocumentFiles/工具/Group未改。
+- 最终正常全量Release0错5990warn；完整UI231/231后组原文与复用菜单增量7/7，公共控件6/6（无主UI独立同视图）。真实隐藏Main变量命令/14条分页、正式Boolean producer同时Flush待提交文本且单history、实际HALCON发布值/结果区选择资格过滤重绑、V5保存重开/根Undo/关闭服务与Dispatcher-OLE排空通过，两主题PNG已看。
+- 原整体方案/逆向计划/主平台HTML及剩余矩阵已统一当前范围、旧证据、失败/未验。设计与覆盖/SHA/验收/交接在evidence/变量UI*20261104。日志/TRX/图片同树Release/_validation/VariableUi-20261104；已保留早期codec/空词汇/标签与门禁/独立dispatcher失败。
+- C463ca51d6六测试原字节经根批准只作联编前置，不纳视觉提交；本树还原锁图亦非本线交付。fixture中立codec/真实词汇捕获已先固定dc36a49c4供C联编。根后续合C和视觉固定源后须独立同源重建。
+- 未实现：完整目标消费者/批量绑定、CommInit策略（IsInitialized运行状态不能假作配置）、流程局部变量、档案UI/远程、复杂值新运行绑定、管理器运行值报告；空组仅窗口内。主线/实际VS/VM动态差分/物理键鼠/用户人工/真实硬件未验；原76/W01–W05/全平台/Group暂停保持。

@@ -151,7 +151,7 @@ public sealed class ReleasePayloadAuthority
             VerifyApprovedFile(path);
             var assembly=AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
             VerifyApprovedAssembly(assembly);
-            LoadApprovedDependencies(assembly,new HashSet<string>(StringComparer.Ordinal));
+            LoadApprovedDependencies(assembly,_entries[group.Key],new HashSet<string>(StringComparer.Ordinal));
             var actual=assembly.GetCustomAttributes<ToolComponentAttribute>().ToArray();
             if(actual.Length!=group.Count()||actual.Any(a=>!group.Any(c=>a.Metadata==c.Metadata&&a.EntryType==c.EntryType)))
                 throw new InvalidDataException("Component PE declarations differ from the release payload: "+group.Key);
@@ -166,15 +166,25 @@ public sealed class ReleasePayloadAuthority
 
     // Component dependencies belong to the approved payload, not to an accidental host deps.json.
     // Follow only exact PE identities; framework resolution and existing runtime guards remain unchanged.
-    private void LoadApprovedDependencies(Assembly owner,HashSet<string> visited)
+    private void LoadApprovedDependencies(Assembly owner,Entry ownerEntry,HashSet<string> visited)
     {
         if(!visited.Add(owner.FullName!))return;
+        AssemblyDependencyResolver? resolver=null;
+        var depsPath=Path.ChangeExtension(ownerEntry.Path,".deps.json").Replace('\\','/');
+        if(_entries.TryGetValue(depsPath,out var deps))
+        {
+            VerifyFile(Resolve(depsPath),deps);
+            resolver=new AssemblyDependencyResolver(Resolve(ownerEntry.Path));
+        }
         foreach(var reference in owner.GetReferencedAssemblies())
         {
             var matches=_entries.Values.Where(entry=>entry.Identity==reference.FullName).ToArray();
             if(matches.Length==0)continue;
-            if(matches.Length!=1)throw new InvalidDataException("Ambiguous approved dependency identity: "+reference.FullName);
-            var entry=matches[0];var path=Resolve(entry.Path);
+            var winner=matches.Length==1?null:resolver?.ResolveAssemblyToPath(reference);
+            var entry=matches.Length==1?matches[0]:matches.SingleOrDefault(candidate=>
+                winner is not null&&string.Equals(Resolve(candidate.Path),Path.GetFullPath(winner),StringComparison.OrdinalIgnoreCase))
+                ??throw new InvalidDataException("Approved dependency has no unique declared runtime winner: "+reference.FullName);
+            var path=Resolve(entry.Path);
             VerifyFile(path,entry);
             var loaded=AssemblyLoadContext.Default.Assemblies.SingleOrDefault(assembly=>assembly.FullName==reference.FullName);
             loaded??=AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
@@ -182,7 +192,7 @@ public sealed class ReleasePayloadAuthority
             // Apply the same exact PE identity and byte proof to both resolution outcomes.
             if(loaded.FullName!=entry.Identity)throw new FileLoadException("Loaded dependency identity differs from the approved payload.",loaded.Location);
             VerifyFile(loaded.Location,entry);
-            LoadApprovedDependencies(loaded,visited);
+            LoadApprovedDependencies(loaded,entry,visited);
         }
     }
     private void VerifyHostProductIdentity(JsonElement payload)

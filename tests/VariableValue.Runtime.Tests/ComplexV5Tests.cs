@@ -8,6 +8,28 @@ using Xunit;
 
 public sealed class ComplexV5Tests
 {
+    private sealed class UntrustedRaster : IReadOnlyStoredRaster
+    {
+        public int Calls;
+        public StoredRasterLayout Layout { get { Calls++; throw new InvalidOperationException("外部布局不应被调用"); } }
+        public IStoredRasterReader AcquireReader() { Calls++; throw new InvalidOperationException("外部读取器不应被调用"); }
+    }
+
+    [Fact]
+    public void Untrusted_raster_is_rejected_under_value_gate_without_invoking_external_code()
+    {
+        var image=new UntrustedRaster();
+        using var scope=new DecodedResourcesScope();
+        var codec=new ComplexVariableValueCodec(scope);
+        Assert.False(codec.TryGetToken(image,out _));
+        using(var stream=new MemoryStream())using(var writer=new Utf8JsonWriter(stream))
+            Assert.Throws<JsonException>(()=>codec.WriteValue(writer,"Image",image,new JsonSerializerOptions()));
+        var variables=new[]{new GlobalVariable("伪造图像",image,"Image")};
+        lock(GlobalVariable.ValueGate)
+            Assert.Throws<NotSupportedException>(()=>VariableArchive.Encode(variables,new JsonSerializerOptions(),codec));
+        Assert.Equal(0,image.Calls);
+    }
+
     private static JsonSerializerOptions Options(DecodedResourcesScope scope)
     {
         var options = new JsonSerializerOptions();

@@ -80,6 +80,14 @@ try {
  var loadedMatrices=(SequenceValue)imageSession.Document.GlobalVariables.Single(v=>v.Name=="矩阵").Value!;
  var loadedRoi=(SequenceValue)imageSession.Document.GlobalVariables.Single(v=>v.Name=="区域").Value!;
  if(!loadedBinary.ToArray().SequenceEqual(new byte[]{1,2,255}) || loadedMatrices.Count!=2 || ((RecordValue)loadedMatrices[1]!).Get<double>("offset-y")!=6d || !((RecordValue)loadedRoi[0]!).Get<bool>("major-arc"))throw new Exception("方案 V5 复杂值回读失败");
+ var rasterVariable=imageSession.Document.GlobalVariables.Single(v=>v.Name=="图像");
+ var untrusted=new UntrustedRaster();rasterVariable.Value=untrusted;
+ var rejectedPath=Path.Combine(root,"untrusted.solution");var rejectedCodecTypes=SunEyeVision.Infrastructure.Persistence.VariableVocabularyCapture.FromCandidate(File.ReadAllBytes(imagePath));
+ try { imageSession.SaveAs(rejectedPath,Path.Combine(root,"untrusted-recovery"),root,rejectedCodecTypes,new JsonSerializerOptions(),scope=>new SunEyeVision.Infrastructure.Persistence.ComplexVariableValueCodec(scope)); throw new Exception("伪造像素资产被接受"); }
+ catch(NotSupportedException) { }
+ if(untrusted.Calls!=0 || File.Exists(rejectedPath))throw new Exception("拒绝伪造资产时发生外部回调或写入文件");
+ rasterVariable.Value=loaded;
+ Console.WriteLine("PASS 真实会话保存拒绝伪造像素资产：无外部回调、无目标文件");
  if(IsDisposed(loaded) || IsDisposed(original))throw new Exception("图像未正确接纳");
  var nativeMoved=Path.Combine(root,"native-moved"); Directory.CreateDirectory(nativeMoved);
  var nativeMovedPath=Path.Combine(nativeMoved,"image.solution");
@@ -122,6 +130,12 @@ sealed class PendingParticipant : SunEyeVision.Application.Editing.IDocumentEdit
  public SunEyeVision.Application.Editing.DocumentEditProposal Prepare(SunEyeVision.Application.Editing.NodeConfigurationEditHost host)=>throw new NotSupportedException();
  public void Acknowledge(SunEyeVision.Application.Editing.DocumentEditProposal proposal, SunEyeVision.Application.DocumentEditReceipt receipt) => throw new NotSupportedException();
  public void Cancel() { }
+}
+sealed class UntrustedRaster : IReadOnlyStoredRaster
+{
+ public int Calls;
+ public StoredRasterLayout Layout { get { Calls++; throw new InvalidOperationException("外部布局不应被调用"); } }
+ public IStoredRasterReader AcquireReader() { Calls++; throw new InvalidOperationException("外部读取器不应被调用"); }
 }
 
 

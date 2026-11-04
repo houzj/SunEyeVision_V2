@@ -48,7 +48,7 @@ public sealed class ComplexVariableValueCodec(DecodedResourcesScope scope) : IVa
     {
         typeName=value switch {BinaryValue or BinaryValue[]=>"Binary",RecordValue record when record.Declaration==VariableValueDeclarations.StoredTransform=>"Transform",
             SequenceValue sequence when sequence.Declaration==TransformSequence=>"Transform",SequenceValue sequence when sequence.Declaration==VariableValueDeclarations.StoredRoiSequence=>"ROI",
-            IReadOnlyStoredRaster=>"Image",_=>string.Empty};
+            FrozenStoredRaster=>"Image",_=>string.Empty};
         return typeName.Length!=0;
     }
     public void WriteValue(Utf8JsonWriter writer,string typeName,object value,JsonSerializerOptions options)
@@ -58,7 +58,7 @@ public sealed class ComplexVariableValueCodec(DecodedResourcesScope scope) : IVa
         {
             case BinaryValue binary: writer.WriteStringValue(Convert.ToBase64String(binary.ToArray()));break;
             case BinaryValue[] binaries: writer.WriteStartArray();foreach(var binary in binaries)writer.WriteStringValue(Convert.ToBase64String(binary.ToArray()));writer.WriteEndArray();break;
-            case IReadOnlyStoredRaster image: writer.WriteStringValue(WriteImage(image));break;
+            case FrozenStoredRaster image: writer.WriteStringValue(WriteImage(image));break;
             case RecordValue record: VariableValueDeclarations.ValidateStoredTransform(record);WriteRecord(writer,record);break;
             case SequenceValue sequence: writer.WriteStartArray();foreach(var item in sequence){var record=(RecordValue)item!;if(typeName=="ROI")VariableValueDeclarations.ValidateStoredRoi(record);else VariableValueDeclarations.ValidateStoredTransform(record);WriteRecord(writer,record);}writer.WriteEndArray();break;
             default:throw new JsonException("Unsupported complex value.");
@@ -83,7 +83,7 @@ public sealed class ComplexVariableValueCodec(DecodedResourcesScope scope) : IVa
         for(var row=0;row<image.Rows;row++)Marshal.Copy(image.Ptr(row),pixels,row*stride,stride);
         var result=new FrozenStoredRaster(layout,pixels);Scope.RegisterNew(result);return result;
     }
-    private static string WriteImage(IReadOnlyStoredRaster image)
+    private static string WriteImage(FrozenStoredRaster image)
     {
         using var reader=image.AcquireReader();var layout=reader.Layout;
         var type=layout.Format switch {StoredRasterFormat.Gray8=>MatType.CV_8UC1,StoredRasterFormat.Gray16=>MatType.CV_16UC1,

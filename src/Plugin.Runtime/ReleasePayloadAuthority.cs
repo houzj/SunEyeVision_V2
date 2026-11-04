@@ -177,17 +177,11 @@ public sealed class ReleasePayloadAuthority
             var entry=matches[0];var path=Resolve(entry.Path);
             VerifyFile(path,entry);
             var loaded=AssemblyLoadContext.Default.Assemblies.SingleOrDefault(assembly=>assembly.FullName==reference.FullName);
-            if(loaded is null)
-            {
-                loaded=AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
-                VerifyApprovedAssembly(loaded);
-            }
-            else
-            {
-                // Hosts and test hosts may already own an exact same-byte approved dependency.
-                // Identity alone is never sufficient to trust that instance.
-                VerifyFile(loaded.Location,entry);
-            }
+            loaded??=AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
+            // The CLR can return an existing host instance even for a requested approved path.
+            // Apply the same exact PE identity and byte proof to both resolution outcomes.
+            if(loaded.FullName!=entry.Identity)throw new FileLoadException("Loaded dependency identity differs from the approved payload.",loaded.Location);
+            VerifyFile(loaded.Location,entry);
             LoadApprovedDependencies(loaded,visited);
         }
     }

@@ -1,3 +1,10 @@
+## 2026-11-04 用户明确整条生产链贯通
+
+工具UI、交互、工作流、图像源与Blob作为同一原型联动实施及自测；工具箱/节点连线/参数引用/正式与私有执行/同次图像结果/历史保存重开/取消关闭释放全部贯通后才签本次批完成。原主方案、矩阵及本批HTML已同步；缺基础保护，不以局部测试替代生产链。
+
+## 2026-11-04 独立框架集成候选已接日志，构建在途
+
+根设计固定984da7d45。新独立树D:/MyWork/line-aiproject/platform-framework-unified-20261104，分支codex/framework-unified-20261104，以984为基线；B日志d14/e174/6a三提交分别接成ce0d56e48/576b77e92/7d5d2e1a2，仅CURRENT/原主HTML冲突按根最新保留，B独立设计及最终JSON回执完整保留；产品冲突0。候选locked restore自然0，日志framework-unified-restore-20261104.log；候选全量Release已自然退出0：6216警告/0错误，2:28.76，日志framework-unified-logging-build-20261104.log；session25112已终态。候选Diagnostics16/File6/Footer7通过0fail0skip，日志framework-unified-{diagnostics,file-logging,footer}-20261104.log；尚非完整主窗/两工具联动自测通过。根Release未变。B正在只读核总监新Blob数值状态/结果显示消费者，根尚未接Blob新判断批；App数据目录门禁仍未实施退出，不能把日志整合说成启动问题已解决。A冻结其它工具扩展准备交接，C共享唯一草稿/动态输入与公共ROI批仍在途。
 ## 2026-11-04 已核收框架消息；先两工具原型统一基线
 
 已读原版架构新增tool-layer-new-development-20261104及方案管理静态报告（7633D791…6039E6），总监交接81837f48a及产品ce64已接收，尚未统一到根f03。先现有图像源＋Blob打通新Session：正式Schema/Storage/空态、真实窗口、唯一草稿与历史保存、执行和私有调试快照、同次结果与图像区域reader释放。其它工具在途保留停止扩展；原全平台范围保留，Group/新循环暂停。禁止整仓恢复旧SDK/Workflow/主窗；两Blob候选未提交测试及设计修改原地保护。新主窗空态GetNodeSchema、运行publication.Schema、引用RootPort.Storage已核源码，新Int32状态/Float32总面积消费者仍待整批验证。

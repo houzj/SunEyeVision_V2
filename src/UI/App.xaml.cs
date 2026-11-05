@@ -268,6 +268,8 @@ public partial class App : System.Windows.Application
         LogStartupStage("Service.Initialize completed");
         // 日志系统已完成初始化，此处记录实际运行文件身份，避免启动早期埋点丢失。
         LogRuntimeIdentity();
+        // 日志系统进入稳定态后自查一次文件写入是否已经在失败：降级必须可见，不能只留计数器没人读。
+        ServiceInitializer.ReportFileLogWriteFailure();
 
         // 4. 使用默认路径
         var defaultPath = _dataPaths!.SolutionsDirectory;

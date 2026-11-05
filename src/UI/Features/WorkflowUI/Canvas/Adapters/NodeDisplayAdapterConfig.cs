@@ -239,9 +239,12 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
             var logger = VisionLogger.Instance;
 
             // 添加默认日志写入器（确保日志从一开始就有输出）
-            // 1. 文件写入器 - 持久化到本地（双轨制：UI显示 + 文件落盘）
-            //    日志根目录与 docs/ 平级，位于项目根下 logs/。
-            var logRoot = _dataPaths?.LogDirectory ?? Path.Combine(Path.GetTempPath(), "SunEyeVision", "startup-logs");
+            // 1. 文件写入器 - 持久化到应用数据根下的 Logs 目录（双轨制：UI显示 + 文件落盘）
+            var logRoot = (_dataPaths ?? throw new InvalidOperationException("应用数据目录尚未初始化。")).LogDirectory;
+            // 写入器必须先注册：VisionLogger.Log() 只入队，后台批量取出后按当前写入器分发，
+            // 写入器为 0 时整批直接丢弃。若先做保留清理再注册，清理失败的 Warning 会随机丢失。
+            _fileLogWriter = new FileLogWriter(logRoot);
+            logger.AddWriter(_fileLogWriter);
             if (Directory.Exists(logRoot))
             {
                 var files = Directory.GetFiles(logRoot, "*.txt", SearchOption.AllDirectories).Select(path => new FileInfo(path)).OrderByDescending(f => f.LastWriteTimeUtc).ToArray();
@@ -250,11 +253,11 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
                 {
                     retained += file.Length;
                     if (file.LastWriteTimeUtc < DateTime.UtcNow.AddDays(-30) || retained > 256L * 1024 * 1024)
-                        try { file.Delete(); } catch (IOException) { }
+                        try { file.Delete(); }
+                        catch (Exception failure) when (failure is IOException or UnauthorizedAccessException)
+                        { logger.Log(LogLevel.Warning, $"旧日志文件无法删除，已保留：{file.FullName}（{failure.Message}）", "ServiceInitializer"); }
                 }
             }
-            var fileWriter = new FileLogWriter(logRoot);
-            logger.AddWriter(fileWriter);
 
             // 2. UI写入器 - 通过延迟初始化方法创建，确保全局共享唯一实例
             InitializeUILogWriter();
@@ -265,8 +268,32 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
             // 测试日志
             logger.Info("日志系统初始化完成", "ServiceInitializer");
             // 数据根来源必须如实落盘：配置缺失走缺省根时同样可见。
-            if (_dataPaths is not null)
-                logger.Info($"应用数据根：{_dataPaths.Root}（来源：{_dataPaths.RootSource}）", "ServiceInitializer");
+            logger.Info($"应用数据根：{_dataPaths.Root}（来源：{_dataPaths.RootSource}）", "ServiceInitializer");
+        }
+
+        /// <summary>
+        /// 启动期自查一次文件日志写入失败：日志系统已进入稳定态，若磁盘写入已经在失败，就在这里记一条
+        /// Warning（累计次数 + 最近原因），让「日志写不进磁盘」在日志自身与 UI 日志面板都看得见。
+        /// 正常启动写入失败次数为 0 时不写任何内容，避免每次启动都刷噪音。
+        /// </summary>
+        public static void ReportFileLogWriteFailure()
+        {
+            var writer = _fileLogWriter ?? throw new InvalidOperationException("日志系统尚未初始化。");
+            var logger = VisionLogger.Instance;
+
+            // 后台队列是异步落盘的：先催一次刷新并等它排空（300ms 上限），否则读到的可能是还没更新过的计数。
+            // 等待放在线程池上，避免撞上 UI 同步上下文造成死锁。
+            Task.Run(() => logger.FlushAsync()).GetAwaiter().GetResult();
+            var deadline = Environment.TickCount64 + 300;
+            while (logger.QueueSize > 0 && Environment.TickCount64 < deadline)
+                Thread.Sleep(5);
+
+            if (writer.WriteFailureCount <= 0)
+                return;
+
+            logger.Warning(
+                $"日志文件写入已失败 {writer.WriteFailureCount} 次，最近一次原因：{writer.LastWriteFailure?.Message ?? "未知"}；磁盘上的日志可能不完整。",
+                "ServiceInitializer");
         }
 
         /// <summary>

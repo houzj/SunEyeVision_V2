@@ -7,6 +7,7 @@ using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 using SunEyeVision.UI.Services.Connection;
 using SunEyeVision.UI.Services.Performance;
+using SunEyeVision.Plugin.SDK.Logging;
 
 using SunEyeVision.UI.Features.WorkflowUI;
 
@@ -192,7 +193,8 @@ namespace SunEyeVision.UI.Services.Performance
             }
             catch (Exception ex)
             {
-                // 记录错误但不中断程序
+                // 批量更新失败不中断程序，但必须留下可观测记录，否则画布会静默停在旧状态。
+                VisionLogger.Instance.Log(LogLevel.Warning, "批量更新失败：" + ex.Message, "EnhancedBatchUpdateManager");
             }
         }
 

@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using SunEyeVision.Core.Services;
+using SunEyeVision.Plugin.SDK.Logging;
 
 namespace SunEyeVision.Core.IO
 {
@@ -340,7 +342,9 @@ return FileAccessResult.FileLocked;
 }
                 catch (Exception ex)
                 {
-}
+                    // 延迟删除失败不能静默：文件仍占用磁盘，但引用计数已归零，必须留下可观测记录。
+                    LogManager.Instance.Log(LogLevel.Warning, $"延迟删除文件失败，已保留该文件：{filePath}（{ex.Message}）", "FileAccessManager");
+                }
             }
             
             MarkAsDeleted(filePath);

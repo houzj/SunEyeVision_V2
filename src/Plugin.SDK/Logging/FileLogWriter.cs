@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using SunEyeVision.Plugin.SDK.Logging;
 
 namespace SunEyeVision.Plugin.SDK.Logging
@@ -39,6 +40,8 @@ namespace SunEyeVision.Plugin.SDK.Logging
         private DateTime _currentLogFileDate;
         private DateTime _lastFlushTime = DateTime.MinValue;
         private bool _isDisposed;
+        private long _writeFailureCount;
+        private Exception? _lastWriteFailure;
 
         #endregion
 
@@ -55,6 +58,12 @@ namespace SunEyeVision.Plugin.SDK.Logging
         /// 日志文件路径
         /// </summary>
         public string? CurrentLogFile => _currentLogFile;
+
+        /// <summary>写入失败累计次数。写入失败不阻断日志队列，但必须可观测。</summary>
+        public long WriteFailureCount => Interlocked.Read(ref _writeFailureCount);
+
+        /// <summary>最近一次写入失败的原因；从未失败时为 null。</summary>
+        public Exception? LastWriteFailure => _lastWriteFailure;
 
         /// <summary>
         /// 是否包含异常堆栈
@@ -89,9 +98,10 @@ namespace SunEyeVision.Plugin.SDK.Logging
                     _writer?.WriteLine(line);
                     TryAutoFlush();
                 }
-                catch
+                catch (Exception error)
                 {
-                    // 文件写入失败不阻断日志队列（写入器内部异常不影响主流程）
+                    // 文件写入失败不阻断日志队列，但必须可观测（计数 + 最近一次原因）。
+                    RecordWriteFailure(error);
                 }
             }
         }
@@ -119,9 +129,10 @@ namespace SunEyeVision.Plugin.SDK.Logging
                     _writer?.Write(sb.ToString());
                     TryAutoFlush();
                 }
-                catch
+                catch (Exception error)
                 {
-                    // 文件写入失败不阻断日志队列（写入器内部异常不影响主流程）
+                    // 文件写入失败不阻断日志队列，但必须可观测（计数 + 最近一次原因）。
+                    RecordWriteFailure(error);
                 }
             }
         }
@@ -146,6 +157,12 @@ namespace SunEyeVision.Plugin.SDK.Logging
                 _writer?.Dispose();
                 _writer = null;
             }
+        }
+
+        private void RecordWriteFailure(Exception error)
+        {
+            Interlocked.Increment(ref _writeFailureCount);
+            _lastWriteFailure = error;
         }
 
         /// <summary>

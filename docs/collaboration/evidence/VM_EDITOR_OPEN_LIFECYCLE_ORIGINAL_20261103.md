@@ -37,6 +37,12 @@
 
 **尚未闭合**：Window.Close 是否可取消及对应重入、构造到第一帧 WPF 具体模板实例化时序、`GetParamRoot` 缓存失效的全部入口、Blob 实际加载的 Control/程序集、同机各段耗时和原厂后台线程栈。下一步可定向查 `TabWinBase`/BaseWindow Closing、参数页 `ParamsTabUserControl`、GetParamRoot 清空 Data 的调用者及静态程序集装配；所列可追入口未完成前不称静态方法穷尽。
 
+## 2026-11-03 用户仍报告慢：已按静态原厂顺序修正切窗路径，冷开待真实分段数据
+
+只读审查确认当前主仓 Runtime 参数窗曾在新窗 factory 和 `NativeRuntimeEditorWindow` 构造完成后，才询问并关闭 `_openDebugWindow`；VM `ProcedureConfigControl.OpenParams` 则在创建新窗前关闭现有窗。主仓已把 Runtime 配置窗单例准入/关闭前移到 `NodeOpenDecisionChain.Execute` 之前，用户拒绝或 `Close()` 仍保持加载时直接返回，避免旧窗未关闭仍创建另一整套编辑器。遗留 SDK/自定义窗口保留原逻辑。此修正只保证切换窗口路径顺序与VM静态证据一致，不证明冷启动耗时下降。
+
+另在 `window.ContentRendered` 增一次性首帧计时；现有 `Show()` 计时仅是同步调用耗时。首次冷开仍然每次新建 `ToolSettingsEditSession` 和声明字段视图；VM只证 `ModuleParam.Data` 下的参数根缓存，不能推断VM缓存WPF树，也不能据此断言它就是慢因。已定位真实日志目录 `D:\SunEyeVisionData\Logs`；最新文件时间13:33早于14:06 Release构建，且目录无本次双击 `[Perf]` 记录，故不能给当前二进制的实测慢段。源码变更尚未正式构建/验证；VS及MSBuild进程仍活跃，维持构建冻结，之后按完整窗口及Blob链自测，再依据分段读数决定字段视图/首帧后续优化。
+
 ## 身份
 
 `Applications/myLibs/VMControls.WPF.dll` SHA-256 `99FFA401C8784472913AD43813D68A8A5577890C00E149506E3E5664FA61C97D`，MVID `d144317f-3992-4275-9b0f-13fb6163e07d`；`Apps.XmlParser.dll` SHA-256 `78EC7AE1E5ADEFFF29197099C7109B153A3F75D092B7C3E9DC253D8C1B25A8D1`，MVID `d0604401-ab61-48a4-938b-faad16d74e7c`；`Apps.XmlUI.dll` SHA-256 `639D0FB9DFCA81E38DF690E201B73874CE006D1361B689DDC6D5F41F7B0B04FD`，MVID `a00f8b40-7a51-4c6d-8aeb-cad134724f1f`。反编译文本：`ProcedureConfigControl.xaml.cs` SHA-256 `36BE1620196C60A72EFB03DAB8AFB4FA302BA1BA8EC4ACF7EB1F5F61883678BD`；`VmModuleExtern.cs` `4D4B726DF4EAC492C955502CB90118E793679EE74718B900E62625CFE2DE2C9C`；`ParamsConfigControlBase.xaml.cs` `6E625D0A505D37E17E59D6A357353AAFAFFB3D9A4BF4E4F8F87EE31087436F58`。身份不证明运行时实际装载。

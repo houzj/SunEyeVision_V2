@@ -98,3 +98,4 @@
 - 正式 `ParameterRowState` 3/3自然通过：整数单字段、浮点单字段、配对整数行；等待选源透明且确认门禁保留，输入错误红/来源错误黄、恢复及合法选源均通过。Wpf与Contracts两程序集实际路径及SHA匹配正式Release；回执 `Release/_validation/ParameterRowState-20261103/attempt-002/receipt.json`，sourceCommit及封包SHA一致。
 - 正式 `WindowPresentation` 单一三页/声明字段全集用例1/1自然通过，回执 `Release/_validation/S4-20261025/WindowPresentation/attempt-403/receipt.json`。不将此前整轨320组/11失败的宽轨运行改称全过；本批仅报告定向窗口组合通过。
 - 双击慢速仍待实测：Release已有NodeOpenDecisionChain、查询服务、BindDraft组装、结果预览、Show同步及点击至Show耗时日志。静态VM证据不能给出原厂动态耗时，本方尚无用户桌面阶段毫秒值或同机原厂差分；已证明重复组装删除，未声称性能问题完全闭口。用户启动Release后按日志数值继续针对慢段修复。本批不改变原Blob清单与阶段范围。
+- **2026-11-03续记：** 用户复测仍认为双击慢。原厂打开顺序与当前切换窗顺序差异已找到并在源码修正：Runtime窗先关闭旧窗再进入factory，拒绝或关闭被拦截不组新窗；同时新增 `ContentRendered` 首帧计时。代码尚未构建/自测，遵守试用期间冻结。冷开仍无真实各段读数；原参数根缓存不等于WPF树缓存，性能未闭口，完整S2/S3范围不变。

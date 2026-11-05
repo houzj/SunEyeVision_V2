@@ -2640,6 +2640,36 @@ SplitterPosition = position;
             try
             {
                 LogNodeStorageIdentity(node, "打开调试窗口");
+                // VM's parameter-window path closes the current editor before it
+                // constructs the next one. Keep the Runtime Blob path in that
+                // order so a window switch does not pay for two complete editors
+                // at once, and do not create a replacement if closing was vetoed.
+                var runtimeWindowPreflight = node.RuntimeConfiguration is not null;
+                if (runtimeWindowPreflight && _openDebugWindow?.IsLoaded == true)
+                {
+                    var currentWindow = _openDebugWindow;
+                    var result = ThemeMessageDialog.Show(
+                        $"调试窗口已打开（{currentWindow.Title}）\n\n是否关闭当前窗口并打开新的调试窗口？",
+                        "调试窗口已存在",
+                        MessageBoxButton.YesNo,
+                        ThemeMessageDialog.MessageIcon.Question);
+
+                    if (result != MessageBoxResult.Yes)
+                    {
+                        currentWindow.Activate();
+                        currentWindow.Focus();
+                        return;
+                    }
+
+                    currentWindow.Close();
+                    if (currentWindow.IsLoaded)
+                    {
+                        currentWindow.Activate();
+                        currentWindow.Focus();
+                        return;
+                    }
+                }
+
                 var context = new NodeOpenContext(Application.Current.MainWindow);
                 // UI owns editor creation. Use the formal node so identity and style
                 // overrides are not lost in an incomplete execution-node conversion.
@@ -2660,8 +2690,9 @@ SplitterPosition = position;
                 if (context.CreatedWindow is SunEyeVision.Plugin.SDK.UI.Windows.DefaultDebugWindow iconWindow)
                     iconWindow.ToolIconKey = node.Icon;
 
-                // 调试窗口单例管理
-                if (_openDebugWindow?.IsLoaded == true)
+                // Legacy tool windows still use the existing post-factory path.
+                // Runtime editors have already performed VM-ordered close preflight.
+                if (!runtimeWindowPreflight && _openDebugWindow?.IsLoaded == true)
                 {
                     var result = ThemeMessageDialog.Show(
                         $"调试窗口已打开（{_openDebugWindow.Title}）\n\n是否关闭当前窗口并打开新的调试窗口？",

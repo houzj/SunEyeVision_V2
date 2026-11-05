@@ -323,7 +323,12 @@ internal static class S2DocumentEditingCases
     private static WorkflowNodeBase RuntimeNode(string id,string tool=BlobTool.Id)=>new(id,id,id,tool){RuntimeConfiguration=RuntimeToolConfiguration.Create(tool)};
     private static ReferenceSetting ImageReference(WorkflowNodeBase source,string scope,string edge)
     {
-        var port=source.RuntimeConfiguration!.Schema.Outputs.First(port=>port.Type==TypeRef.ResourceOf(ResourceKind.Image));
+        // RuntimeToolConfiguration.Schema is the declared input contract. Producer
+        // outputs live on the independently registered result provider.
+        var producer=ToolRegistry.CreateRuntime(source.RuntimeConfiguration!.ToolId)
+            as SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultPresentationProvider
+            ??throw new InvalidOperationException("图像源Runtime未声明结果输出契约。");
+        var port=producer.ResultSchema.Outputs.First(port=>port.Type==TypeRef.ResourceOf(ResourceKind.Image));
         return new(new OutputReference(source.Id,port.Id,port.Type,scopeId:scope,storage:port.Storage),OriginId:"connection:"+edge);
     }
     private static void BindImage(WorkflowNodeBase target,ReferenceSetting reference)=>target.RuntimeConfiguration=target.RuntimeConfiguration!.WithFieldSettings(new Dictionary<string,ParameterSetting>{{BlobTool.ImageInput,reference}});

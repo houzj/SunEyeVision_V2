@@ -133,6 +133,13 @@ public partial class MainWindowViewModel
             _nodeDebugWindows[node.Id]=window;
             window.Closed+=(_,_)=>_nodeDebugWindows.Remove(node.Id);
             phaseStopwatch.Restart();
+            EventHandler? contentRendered=null;
+            contentRendered=(_,_)=>
+            {
+                if(contentRendered is not null)window.ContentRendered-=contentRendered;
+                LogOpenPhase("首帧ContentRendered");
+            };
+            window.ContentRendered+=contentRendered;
             window.Show();LogOpenPhase("窗口Show同步耗时");return true;
         }
         catch{context.Discard();throw;}

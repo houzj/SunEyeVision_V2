@@ -3419,3 +3419,9 @@ D05混合记录现在按稳定字段/索引路径及弱publication/lease按128�
 - `MainWindowViewModel` 与 `MainWindowRuntimeEditing` 增加命令链、查询服务准备、BindDraft组装、结果预览、Show同步及点击到Show结束计时。现仅证明重复组装去除和局部组合用例通过，尚无用户机实际毫秒值或VM同机动态差分；下次正式Release人工试开后按日志找慢段，不能宣称整体已快。
 - 行状态、单次组装、计时日志固定提交4e1ba46fe；正式全量Release构建6555警告/0错误，用时1:11.57，载荷源提交一致，SHA256 `ECCEB25897D9627182AF6BC5018BF8A20A4BD8E60B6A3103B15E5D8FA0E72620`。正式行状态组件3组自然通过，实际从正式目录加载Wpf/Contracts且SHA匹配；正式O06三页/字段全集定向用例1组自然通过。回执分别在 `Release/_validation/ParameterRowState-20261103/attempt-002/receipt.json` 和 `Release/_validation/S4-20261025/WindowPresentation/attempt-403/receipt.json`。本批仅此范围闭口，不代表Blob整工具完成；S2/S3与原A00–A23保持原范围。
 - 双击速度仍未作原厂同机动态对比：分段计时已进入Release，需看用户实际打开日志中的各阶段值后才能针对慢段继续修复；目前确认去掉重复组装，不宣称整体性能已对齐。人工VM对照单独记录，不挡自动自测的批次闭口。
+## 2026-11-03 Runtime Blob 双击开窗顺序与首帧计时续修（源码待正式构建）
+- 用户仍实测双击弹窗明显慢于VM。只读审查确认一次可证差异：VM先通过准入并关闭当前参数窗，再组新窗；当前 Runtime 路径原先先创建新编辑器/窗口，随后才询问关闭旧窗。现将 Runtime 配置窗的单例确认及关闭前移到 `NodeOpenDecisionChain.Execute` 之前；拒绝、关闭被取消时不再继续构造新窗。旧SDK/自定义窗保持原路径。
+- 计时此前仅到 `Window.Show()` 同步返回，不能代表首帧已显示。现增一次性 `ContentRendered` 计时，输出 `[Perf] Runtime参数窗 首帧ContentRendered`，用于区分完整参数组装与WPF首帧呈现。现有NodeOpenDecisionChain、宿主准备、BindDraft、结果预览、Show及点击至Show计时保留。
+- VM静态证据只证实 `ModuleParam.Data` 参数根缓存；不能声称整棵WPF树缓存或冷开已提速。已按本机数据目录定位 `D:\SunEyeVisionData\Logs`：最新日志13:33，早于14:06 Release载荷；日志中无本次双击计时，说明新载荷实测读数缺失，冷开慢因未闭合。以上源码尚未构建或自测；当前VS/MSBuild仍在运行，保持试用构建冻结，之后跑窗口单例/拒绝关闭/首帧与完整Blob链相称回归，再正式Release。
+- 正式S4 FullChain attempt-001在产品场景前退出：测试夹具把Runtime输入Schema误当图像源结果输出契约，属于过期夹具，未触达产品验证。现改为通过正式 `IToolResultPresentationProvider.ResultSchema` 读取图像源输出身份；修复尚未构建/运行，原失败回执保留，解除冻结后重新跑同一全链。
+

@@ -42,11 +42,10 @@ public partial class MainWindowViewModel
    ClearFormalImageSourceSelection();
    bool Current() => ReferenceEquals(DocumentManager.CurrentSession, session) &&
     ReferenceEquals(WorkflowTabViewModel.SelectedTab, tab) && ReferenceEquals(SelectedNode, selected);
-   _activeImageSourceBinding = new ImageSourceProjectionBinding(session, root, source, Current,
+   SetActiveImageSourceBinding(new ImageSourceProjectionBinding(session, root, source, Current,
     () => CanEditRootWorkspace && !IsRunning, () => ImageSourceCanNavigate?.Invoke() == true,
     ImageSourceEditAccepted, ImageSourceActivate,
-    prepareDisplay: ImageSourcePrepareDisplay, reportPresentationError: ImageSourcePresentationError);
-   OnPropertyChanged(nameof(ActiveImageSourceBinding));
+    prepareDisplay: ImageSourcePrepareDisplay, reportPresentationError: ImageSourcePresentationError));
   }
   catch (Exception error)
   {
@@ -59,9 +58,16 @@ public partial class MainWindowViewModel
  {
   var old = _activeImageSourceBinding;
   if (old is null) return;
-  _activeImageSourceBinding = null;
   try { old.Dispose(); }
   catch (Exception error) { StatusText = "图像源释放失败：" + error.Message; }
+  SetActiveImageSourceBinding(null);
+ }
+
+ /// <summary>会话与"是否显示图像源条"的唯一写入口，避免可见性开关再次与数据链脱节。</summary>
+ private void SetActiveImageSourceBinding(ImageSourceProjectionBinding? binding)
+ {
+  _activeImageSourceBinding = binding;
+  _imageResult.HasActiveImageSource = binding is not null;
   OnPropertyChanged(nameof(ActiveImageSourceBinding));
  }
 }

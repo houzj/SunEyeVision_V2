@@ -22,7 +22,7 @@ namespace SunEyeVision.UI.Shell.Controls
 
 
         private bool _hasModuleResults;
-        private bool _showImagePreview;
+        private bool _hasActiveImageSource;
         private SunEyeVision.UI.Shared.ImageInputSource? _activeInputSource;
 
         private ObservableCollection<FlatResultRow> _flatResultRows = new();
@@ -59,26 +59,12 @@ namespace SunEyeVision.UI.Shell.Controls
         }
 
         /// <summary>
-        /// 是否显示图像及其预览模块（ImageCaptureTool 节点专用）
+        /// 当前选中节点是否解析出可编辑的图像源会话；为真时结果区下方显示图像源条（含 0 张图）。
         /// </summary>
-        public bool ShowImagePreview
+        public bool HasActiveImageSource
         {
-            get => _showImagePreview;
-            set
-            {
-                if (SetProperty(ref _showImagePreview, value))
-                {
-                    OnPropertyChanged(nameof(ImagePreviewHeight));
-                }
-            }
-        }
-
-        /// <summary>
-        /// 图像预览高度，用于动态控制图像预览模块的空间
-        /// </summary>
-        public System.Windows.GridLength ImagePreviewHeight
-        {
-            get => ShowImagePreview ? new System.Windows.GridLength(60) : new System.Windows.GridLength(0);
+            get => _hasActiveImageSource;
+            set => SetProperty(ref _hasActiveImageSource, value);
         }
 
         /// <summary>

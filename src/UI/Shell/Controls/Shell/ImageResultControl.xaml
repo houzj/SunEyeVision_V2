@@ -13,7 +13,7 @@
    <results:PropertyListView SelectedItemChanged="OnResultTreeSelectionChanged"/>
   </composition:ResultWorkspaceShell.PropertyListContent>
   <composition:ResultWorkspaceShell.SourceStripContent>
-   <StackPanel Visibility="{Binding ShowImagePreview, Converter={StaticResource VisibleWhenTrue}}">
+   <StackPanel Visibility="{Binding HasActiveImageSource, Converter={StaticResource VisibleWhenTrue}}">
 
     <sources:ImageSourceStrip/>
    </StackPanel>

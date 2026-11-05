@@ -85,8 +85,6 @@ namespace SunEyeVision.UI.Shell.Windows
         // 图像显示
         private double _imageScale = 1.0;
 
-        private bool _showImagePreview = false;
-
         // 图像预览
         private bool _autoSwitchEnabled = true;
 
@@ -346,23 +344,6 @@ namespace SunEyeVision.UI.Shell.Windows
 
         // 图像显示相关
 
-
-        /// <summary>
-        /// 是否显示图像及其预览模块（ImageCaptureTool节点专用）
-        /// </summary>
-        public bool ShowImagePreview
-        {
-            get => _imageResult.ShowImagePreview;
-            set => _imageResult.ShowImagePreview = value;
-        }
-
-        /// <summary>
-        /// 图像预览高度，用于动态控制图像预览模块的空间
-        /// </summary>
-        public GridLength ImagePreviewHeight
-        {
-            get => _imageResult.ImagePreviewHeight;
-        }
 
         /// <summary>
         /// 计算结果
@@ -674,7 +655,8 @@ SplitterPosition = position;
             // 初始化节点结果管理器
 
 
-            // 订阅执行管理器事件            // 连续执行每轮开始：自动切换开启时推进输入图并刷新运行时参数
+            // 订阅执行管理器事件
+            // 连续执行每轮开始：自动切换开启时推进输入图并刷新运行时参数
 
             // 初始化当前画布类型
             UpdateCurrentCanvasType();

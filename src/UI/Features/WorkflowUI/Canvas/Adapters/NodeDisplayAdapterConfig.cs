@@ -264,6 +264,9 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
 
             // 测试日志
             logger.Info("日志系统初始化完成", "ServiceInitializer");
+            // 数据根来源必须如实落盘：配置缺失走缺省根时同样可见。
+            if (_dataPaths is not null)
+                logger.Info($"应用数据根：{_dataPaths.Root}（来源：{_dataPaths.RootSource}）", "ServiceInitializer");
         }
 
         /// <summary>

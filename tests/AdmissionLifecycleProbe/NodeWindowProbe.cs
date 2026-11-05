@@ -25,7 +25,7 @@ internal static class NodeWindowProbe
   var manager=new PluginManager();manager.LoadPluginsAsync().GetAwaiter().GetResult();SessionLifecycleProbe.Check(manager.LastAdmissionError is null,manager.LastAdmissionError??"");
   using var pin=manager.PinDesktopHost();
   var root=SessionLifecycleProbe.CaseDirectory("node-window");
-  var paths=new ApplicationDataLocationService(Path.Combine(root,"locator.json")).Prepare(Path.Combine(root,"Data"));
+  var paths=ApplicationDataPaths.Open(Path.Combine(root,"Data"));
   ServiceInitializer.ConfigureDataPaths(paths);ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(paths,manager.RuntimeDirectory!);
   var session=ServiceInitializer.SolutionManager.CreateNew("真实参数窗");
   var viewModel=new MainWindowViewModel(manager.DesktopAdmission!);

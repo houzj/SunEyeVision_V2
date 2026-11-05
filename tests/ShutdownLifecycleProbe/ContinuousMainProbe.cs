@@ -47,9 +47,8 @@ internal static class ContinuousMainProbe
   var app=(SunEyeVision.UI.App)System.Windows.Application.Current;
   var plugins=new PluginManager();plugins.LoadPluginsAsync().GetAwaiter().GetResult();Check(plugins.LastAdmissionError is null,plugins.LastAdmissionError??"");using var pin=plugins.PinDesktopHost();
   var root=Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,"..","..","_validation","ContinuousMain",Guid.NewGuid().ToString("N")));Directory.CreateDirectory(root);
-  var paths=new ApplicationDataLocationService(Path.Combine(root,"locator.json")).Prepare(Path.Combine(root,"Data"));ServiceInitializer.ConfigureDataPaths(paths);ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(paths,plugins.RuntimeDirectory!);
+  var paths=ApplicationDataPaths.Open(Path.Combine(root,"Data"));ServiceInitializer.ConfigureDataPaths(paths);ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(paths,plugins.RuntimeDirectory!);
   typeof(SunEyeVision.UI.App).GetField("_dataPaths",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(app,paths);
-  typeof(SunEyeVision.UI.App).GetField("_dataLocations",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(app,new ApplicationDataLocationService(Path.Combine(root,"locator.json")));
   var theme=new ThemeManager(()=>null,_=>{});theme.Initialize();ServiceLocator.Instance.Register(theme);
   var session=ServiceInitializer.SolutionManager.CreateNew("实际连续主窗");var flow=session.GetWorkflows().Single();var graph=session.PrepareGraphEdit(flow.Id);var node=session.CreateNode(graph,"ImageLoad",new(150,120));session.CommitGraphEdit(graph,"建立真实图像源");
   var image=Path.Combine(root,"source.pgm");File.WriteAllBytes(image,System.Text.Encoding.ASCII.GetBytes("P5\n2 1\n255\n").Concat(new byte[]{21,45}).ToArray());var draft=session.Editing.Host.BeginEdit(flow.Id,node.Id);draft.ApplyFields(new Dictionary<string,ParameterSetting>{{"local.paths",new ConstantSetting(new[]{image})},{"local.start",new ConstantSetting(0L)},{"local.auto-switch",new ConstantSetting(false)}});

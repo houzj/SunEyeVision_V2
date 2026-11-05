@@ -47,7 +47,7 @@ internal static class RootCollectionMainProbe
  internal static void RunWindow()
  {
   var app=(App)System.Windows.Application.Current;var root=Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,"..","..","_validation","RootCollectionMain",Guid.NewGuid().ToString("N")));Directory.CreateDirectory(root);
-  var locations=new ApplicationDataLocationService(Path.Combine(root,"locator.json"));var paths=locations.Prepare(Path.Combine(root,"Data"));typeof(App).GetField("_dataPaths",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(app,paths);typeof(App).GetField("_dataLocations",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(app,locations);
+  var paths=ApplicationDataPaths.Open(Path.Combine(root,"Data"));typeof(App).GetField("_dataPaths",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(app,paths);
   var plugins=new PluginManager();plugins.LoadPluginsAsync().GetAwaiter().GetResult();Check(plugins.LastAdmissionError is null,plugins.LastAdmissionError??"");using var pin=plugins.PinDesktopHost();
   ServiceInitializer.ConfigureDataPaths(paths);ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(paths,plugins.RuntimeDirectory!);var theme=new ThemeManager(()=>null,_=>{});theme.Initialize();ServiceLocator.Instance.Register(theme);
   var session=ServiceInitializer.SolutionManager.CreateNew("隐藏根集合生产链");var flow=session.GetWorkflows().Single();var graph=session.PrepareGraphEdit(flow.Id);var source=session.CreateNode(graph,"ImageLoad",new(150,120));var blob=session.CreateNode(graph,"BlobAnalysis",new(350,210));graph.AddConnection(new("source-blob",source.Id,blob.Id,"BottomPort","TopPort"));session.CommitGraphEdit(graph,"建立真实源和Blob");

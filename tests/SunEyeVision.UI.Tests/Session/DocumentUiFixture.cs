@@ -42,7 +42,7 @@ internal static class UiRuntime
                 _plugins=new PluginManager();_plugins.LoadPluginsAsync().GetAwaiter().GetResult();
                 if(_plugins.LastAdmissionError is {} error)throw new InvalidOperationException(error);
                 _desktop=_plugins.PinDesktopHost();
-                var paths=new ApplicationDataLocationService(Path.Combine(Cases,"locator.json")).Prepare(Path.Combine(Cases,"Data"));
+                var paths=ApplicationDataPaths.Open(Path.Combine(Cases,"Data"));
                 ServiceInitializer.ConfigureDataPaths(paths);ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(paths,_plugins.DesktopAdmission!.Runtime);
                 var theme=new ThemeManager(()=>null,_=>{});theme.Initialize();ServiceLocator.Instance.Register(theme);
             }

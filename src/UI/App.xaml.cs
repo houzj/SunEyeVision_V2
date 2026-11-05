@@ -50,7 +50,6 @@ public partial class App : System.Windows.Application
     private PluginManager? _pluginManager;
     private IDisposable? _desktopDirectoryPin;
     private ApplicationDataPaths? _dataPaths;
-    private ApplicationDataLocationService? _dataLocations;
     private string? _requestedSolutionPath;
     public StartPageSettings StartPreferences { get; private set; } = new();
     private string StartPreferencesFile => _dataPaths!.ConfigFile;
@@ -242,27 +241,14 @@ public partial class App : System.Windows.Application
         _splashScreen?.UpdateProgress(35);
 
 
-        // Select/restore the user data root before creating any persistent service.
+        // Resolve the data root before creating any persistent service. The root is configured in the
+        // product directory App.ini ([Data] Root); a missing key uses the per-user default.
         try
         {
             var context = StartupLaunchContext.Current;
-            var locations = new ApplicationDataLocationService(context.IsIsolated ? Path.Combine(context.IsolatedRoot!, "data-location.json") : null);
-            _dataLocations=locations;
-            if (context.IsIsolated) _dataPaths = locations.Prepare(Path.Combine(context.IsolatedRoot!, "Data"));
-            string? reason = null;
-            if (_dataPaths == null) { try { _dataPaths = locations.Locate(); } catch (Exception ex) { reason = ex.Message; } }
-            while (_dataPaths == null)
-            {
-                _splashScreen?.CloseImmediately(); _splashScreen = null;
-                var directoryDialog = new DataDirectoryDialog(locations, reason: reason);
-                if (directoryDialog.ShowDialog() != true) { _startupRejected = true; Shutdown(0); return; }
-                try
-                {
-                    var selected = directoryDialog.SelectedPaths!;
-                    locations.Remember(selected); _dataPaths = selected;
-                }
-                catch (Exception ex) { reason = ex.Message; }
-            }
+            _dataPaths = context.IsIsolated
+                ? ApplicationDataPaths.Open(Path.Combine(context.IsolatedRoot!, "Data"), "隔离启动根")
+                : ApplicationDataPaths.OpenConfigured();
             ServiceInitializer.ConfigureDataPaths(_dataPaths);
             try { StartPreferences = StartPageSettings.Load(StartPreferencesFile); }
             catch (Exception ex) { VisionLogger.Instance.Log(LogLevel.Warning, "起始页偏好无法读取，本次显示起始页：" + ex.Message, "App"); StartPreferences = new(); }
@@ -270,6 +256,7 @@ public partial class App : System.Windows.Application
         catch (Exception ex)
         {
             _startupRejected = true;
+            _splashScreen?.CloseImmediately(); _splashScreen = null;
             ThemeMessageDialog.Show("无法初始化数据目录：" + ex.Message, "数据目录", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             Shutdown(1); return;
         }
@@ -347,7 +334,6 @@ public partial class App : System.Windows.Application
         bool previous = StartPreferences.HideStartPage;
         StartPreferences.HideStartPage = hidden;
         try { SaveShellPreferences(); }
-        catch (PreferencesRegistrationException) { throw; }
         catch { StartPreferences.HideStartPage = previous; throw; }
     }
 
@@ -360,18 +346,15 @@ public partial class App : System.Windows.Application
         catch (Exception ex) { VisionLogger.Instance.Log(LogLevel.Warning, "方案已打开；最近记录写入或目录登记未完整完成：" + ex.Message, "App"); }
     }
 
-    private sealed class PreferencesRegistrationException(Exception failure):IOException("应用偏好已写入，但数据目录定位登记失败。请保留当前目录并重试："+failure.Message,failure) { }
     internal void SaveShellPreferences()
     {
         var paths=_dataPaths??throw new InvalidOperationException("应用数据目录尚未初始化。");
-        var locations=_dataLocations??throw new InvalidOperationException("应用数据目录定位服务尚未初始化。");
         StartPreferences.Save(paths.ConfigFile);
-        try{locations.Remember(paths);}catch(Exception error){throw new PreferencesRegistrationException(error);}
     }
     internal void SaveWindowLayout(SunEyeVision.UI.Shared.LayoutConfig layout)
     {
         var previous=StartPreferences.WindowLayout;StartPreferences.WindowLayout=layout;
-        try{SaveShellPreferences();}catch(PreferencesRegistrationException){throw;}catch{StartPreferences.WindowLayout=previous;throw;}
+        try{SaveShellPreferences();}catch{StartPreferences.WindowLayout=previous;throw;}
     }
 
     private void RemoveRecentSolution(string path)
@@ -382,7 +365,6 @@ public partial class App : System.Windows.Application
         if (!StartPreferences.DismissedPaths.Contains(path, StringComparer.OrdinalIgnoreCase))
             StartPreferences.DismissedPaths.Add(path);
         try { SaveShellPreferences(); }
-        catch(PreferencesRegistrationException){throw;}
         catch { StartPreferences.RecentFiles = files; StartPreferences.DismissedPaths = dismissed; throw; }
     }
 
@@ -835,7 +817,6 @@ public partial class App : System.Windows.Application
             var previous = StartPreferences.Theme;
             StartPreferences.Theme = value;
             try { SaveShellPreferences(); }
-            catch(PreferencesRegistrationException){throw;}
             catch { StartPreferences.Theme = previous; throw; }
         });
         themeManager.Initialize();

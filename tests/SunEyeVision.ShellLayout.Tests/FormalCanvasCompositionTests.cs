@@ -22,7 +22,7 @@ public sealed class FormalCanvasCompositionTests
   var root=typeof(FormalCanvasCompositionTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().Single(item=>item.Key=="HostDebugRoot").Value!;
   AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY",root);var plugins=new PluginManager();plugins.LoadPluginsAsync().GetAwaiter().GetResult();Assert.Null(plugins.LastAdmissionError);
   var pin=plugins.PinDesktopHost();var directory=Path.GetFullPath(Path.Combine(root,"..","..","_validation","ShellLayout",Guid.NewGuid().ToString("N")));
-  var paths=new ApplicationDataLocationService(Path.Combine(directory,"locator.json")).Prepare(Path.Combine(directory,"Data"));ServiceInitializer.ConfigureDataPaths(paths);ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(paths,plugins.DesktopAdmission!.Runtime);var theme=new ThemeManager(()=>null,_=>{});theme.Initialize();ServiceLocator.Instance.Register(theme);
+  var paths=ApplicationDataPaths.Open(Path.Combine(directory,"Data"));ServiceInitializer.ConfigureDataPaths(paths);ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(paths,plugins.DesktopAdmission!.Runtime);var theme=new ThemeManager(()=>null,_=>{});theme.Initialize();ServiceLocator.Instance.Register(theme);
   var session=ServiceInitializer.SolutionManager.CreateNew("实际布局与画布");var main=new MainWindowViewModel(plugins.DesktopAdmission);var workspace=new ShellWorkspaceControl{DataContext=main.Workspace};workspace.Initialize(main);
   var window=new Window{Content=workspace,DataContext=main,Width=1000,Height=600,Left=-32000,Top=-32000,ShowActivated=false,ShowInTaskbar=false,WindowStartupLocation=WindowStartupLocation.Manual};
   try

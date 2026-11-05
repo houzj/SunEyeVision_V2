@@ -78,9 +78,7 @@ internal static class Program
         var pin=manager.PinDesktopHost();
         typeof(App).GetField("_pluginManager",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(app,manager);
         typeof(App).GetField("_desktopDirectoryPin",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(app,pin);
-        var locations=new ApplicationDataLocationService(Path.Combine(root,"locator.json"));
-        var paths=locations.Prepare(root);locations.Remember(paths);
-        typeof(App).GetField("_dataLocations",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(app,locations);
+        var paths=ApplicationDataPaths.Open(root);
         typeof(App).GetField("_dataPaths",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(app,paths);
         ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(paths,admission.Runtime);
         Console.WriteLine("probe: services initialized");
@@ -160,20 +158,26 @@ internal static class Program
     }
     private static void VerifyPreferenceRegistration(App app,SunEyeVision.Application.DocumentSession session,ApplicationDataPaths paths,string root)
     {
-        var locator=Path.Combine(root,"locator.json");var backup=Path.Combine(root,"locator.saved.json");
-        using var opening=System.Text.Json.JsonDocument.Parse(File.ReadAllText(paths.MarkerFile));var id=opening.RootElement.GetProperty("dataId").GetString();
-        File.Move(locator,backup);Directory.CreateDirectory(locator);
+        // 固定数据根：偏好写入失败必须显式抛出并回滚内存状态，且不得再生成任何目录门禁文件。
+        var hadConfig=File.Exists(paths.ConfigFile);var backup=paths.ConfigFile+".saved";
+        if(hadConfig)File.Move(paths.ConfigFile,backup);
+        Directory.CreateDirectory(paths.ConfigFile);
+        var rejected=false;
         try
         {
-            var failed=false;try{app.SetStartPageHidden(true);}catch(IOException error){failed=error.Message.Contains("已写入");}
-            using var written=System.Text.Json.JsonDocument.Parse(File.ReadAllText(paths.ConfigFile));
-            using var marker=System.Text.Json.JsonDocument.Parse(File.ReadAllText(paths.MarkerFile));
-            if(!failed||!app.StartPreferences.HideStartPage||!written.RootElement.GetProperty("HideStartPage").GetBoolean()||marker.RootElement.GetProperty("dataId").GetString()!=id||session.HasUnsavedChanges)throw new Exception("偏好已写、目录登记失败的状态被错误回退或污染方案。");
+            try{app.SetStartPageHidden(true);}catch(IOException){rejected=true;}
+            if(!rejected)throw new Exception("固定根偏好写入失败时没有抛出异常。");
+            if(app.StartPreferences.HideStartPage)throw new Exception("偏好写入失败后内存状态没有回滚。");
+            if(File.Exists(Path.Combine(root,"locator.json"))||File.Exists(Path.Combine(paths.Root,"data-location.json"))||File.Exists(Path.Combine(paths.Root,"suneyevision-data.json")))throw new Exception("退出后的数据根仍生成门禁文件。");
         }
-        finally{Directory.Delete(locator);File.Move(backup,locator);}
+        finally{Directory.Delete(paths.ConfigFile);if(hadConfig)File.Move(backup,paths.ConfigFile);}
+        app.SetStartPageHidden(true);
+        using(var written=System.Text.Json.JsonDocument.Parse(File.ReadAllText(paths.ConfigFile)))
+            if(!written.RootElement.GetProperty("HideStartPage").GetBoolean()||session.HasUnsavedChanges)throw new Exception("固定根偏好没有写入，或污染方案保存状态。");
         app.SetStartPageHidden(false);
-        if(new ApplicationDataLocationService(locator).Locate()?.Root!=paths.Root||session.HasUnsavedChanges)throw new Exception("同一隔离locator重试未成功，或污染方案保存状态。");
-        Console.WriteLine("preferences: actual locator retained; written preferences survive registration failure; dataId and document clean state unchanged; retry accepted");
+        using(var cleared=System.Text.Json.JsonDocument.Parse(File.ReadAllText(paths.ConfigFile)))
+            if(cleared.RootElement.GetProperty("HideStartPage").GetBoolean()||session.HasUnsavedChanges)throw new Exception("固定根偏好重写失败，或污染方案保存状态。");
+        Console.WriteLine("preferences: fixed data root keeps preferences; failed write throws and rolls back memory; no locator/marker created; retry accepted; document clean");
     }
     private static IEnumerable<T> Descendants<T>(DependencyObject parent) where T:DependencyObject
     {

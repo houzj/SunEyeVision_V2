@@ -65,7 +65,7 @@ public sealed class RootWorkspaceHostRuntimeTests
         {
             manager.LoadPluginsAsync().GetAwaiter().GetResult();Assert.Null(manager.LastAdmissionError);var admission=Assert.IsType<DesktopToolAdmission>(manager.DesktopAdmission);
             var directory=Path.Combine(caseRoot,"host-"+Guid.NewGuid().ToString("N"));
-            var paths=new ApplicationDataLocationService(Path.Combine(directory,"locator.json")).Prepare(directory);
+            var paths=ApplicationDataPaths.Open(directory);
             ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(paths,admission.Runtime);
             var solutions=ServiceInitializer.SolutionManager;solutions.CreateUntitledSolution();viewModel=new MainWindowViewModel(admission);
             var shell=new ShellWorkspaceControl{DataContext=viewModel.WorkflowTabViewModel};shell.Initialize(viewModel);

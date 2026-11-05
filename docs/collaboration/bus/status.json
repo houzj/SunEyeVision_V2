@@ -1,0 +1,196 @@
+{
+  "updated": "2026-11-05 16:00",
+  "note": "任务卡账本。各线只改自己 lane 卡的 state/note/updated。协议见 README.md。",
+  "cards": [
+    {
+      "id": "T-0001",
+      "lane": "framework",
+      "title": "静默兜底收口：C2/C4 补日志 + D4b 只读日志文件不阻断启动",
+      "state": "done",
+      "updated": "2026-11-05 14:50",
+      "note": "C2/C4/D4b/D3/D4 已落盘；回执 results/T-0001-framework.md（含越界说明与夹带项）。运行期 2 条验收需人工（H-0008）；FileLogWriter 属 A 类待裁（H-0006）。",
+      "priority": 1,
+      "goal": "文件删除失败、批量更新异常不再无声无息；日志保留清理失败不会让程序启动不了。",
+      "scope": [
+        "src/Core/IO/FileAccessManager.cs",
+        "src/UI/Services/Performance/EnhancedBatchUpdateManager.cs",
+        "src/UI/Features/WorkflowUI/Canvas/Adapters/NodeDisplayAdapterConfig.cs"
+      ],
+      "forbidden": [
+        "删除或修改 LibraryValidator.cs（已由中心还原，保持原样）",
+        "删除或移动 tests/SunEyeVision.RootCanvas.Tests 任何文件（已由中心还原）",
+        "扫改 A 类空 catch（取消/释放/关闭/UI 回调），一律不动"
+      ],
+      "acceptance": [
+        "锁定一个过期日志文件后启动，日志出现旧日志删除失败 Warning",
+        "只读属性的过期日志文件不得阻断启动",
+        "全量 Release 构建 0 错误，警告数相对 6150 无异常增减"
+      ]
+    },
+    {
+      "id": "T-0002",
+      "lane": "framework",
+      "title": "App.ini 解析契约测试（零产品改动路线）",
+      "state": "done",
+      "updated": "2026-11-05 14:50",
+      "note": "10 条契约测试落 tests/SunEyeVision.UI.Tests/Session/ApplicationDataPathsConfigurationTests.cs（独立串行集合、不碰 AppContext、盘符 DriveInfo 探测）；Persistence.Tests 的 csproj 与锁文件已 git checkout -- 还原。回执 results/T-0002-framework.md。",
+      "priority": 2,
+      "goal": "数据根配置写错时程序必须报错而不是静默退回缺省，这条行为要有一组可重跑的测试兜住。",
+      "scope": [
+        "tests/SunEyeVision.UI.Tests/",
+        "（如已加 OpenConfigured 重载，保留并在回执说明）"
+      ],
+      "forbidden": [
+        "不得在 Persistence.Tests 新增对 Infrastructure.Persistence 的引用",
+        "不得写死不存在盘符（本机 C/D/Y/Z 均真实存在），须用 DriveInfo 探测"
+      ],
+      "acceptance": [
+        "带 BOM 的 App.ini 可正常解析",
+        "[Other] 段在 [Data] 之前可正确跳过",
+        "重复键/空值/相对路径/不存在盘符/段名缺右括号/非 key=value 均抛 InvalidDataException 且消息含行号或原因",
+        "测试类置于非并行集合，不污染其它测试的 AppContext"
+      ]
+    },
+    {
+      "id": "T-0003",
+      "lane": "framework",
+      "title": "图像源条选中节点后不显示的回归修复",
+      "state": "done",
+      "updated": "2026-11-05 14:50",
+      "note": "可见性改绑 HasActiveImageSource，并由 SetActiveImageSourceBinding 唯一写入口同步；StackPanel 包裹层保留；回归断言已加入 SourceAndVariablesSessionTests。界面 4 条验收需人工（H-0008）。回执 results/T-0003-framework.md。",
+      "priority": 1,
+      "goal": "选中图像源节点后，右侧结果区下方要出现图像源条（零张图时也显示 0/0 与工具条），选中其它节点则隐藏。",
+      "scope": [
+        "src/UI/Shell/Controls/Shell/ImageResultControl.xaml",
+        "src/UI/Shell/Controls/Shell/ImageResultViewModel.cs",
+        "src/UI/Shell/Windows/MainWindowViewModel.cs",
+        "src/UI/Shell/Windows/MainWindowImageSourceEditing.cs"
+      ],
+      "forbidden": [
+        "不得删除 SourceStripContent 的 StackPanel 包裹层（代码里强制 Panel 转型 + Single()）",
+        "不得重建图像源解析与会话链路，只补显示判断",
+        "不得改动 ResultWorkspaceShell 布局与主题"
+      ],
+      "acceptance": [
+        "选中图像源节点且零张图：条可见，计数 0/0，工具条可点",
+        "加载 2 张图：条内显示 2 个缩略图",
+        "选中 Blob 分析节点：条隐藏，上方结果画布不受影响",
+        "连续快速切换选中 10 次：不抛异常、不出现空条"
+      ]
+    },
+    {
+      "id": "T-0004",
+      "lane": "docs",
+      "title": "文档重组零丢失核验 + D8 归属拆分 + 数据根部署差异记录",
+      "state": "claimed",
+      "priority": 1,
+      "goal": "文档重分类后不能出现死链或内容缺失；自建机制不能记成原厂依据；Debug 与 Release 数据根不同这件事要让读者看见。",
+      "scope": [
+        "docs/（除 docs/collaboration/bus/ 与 docs/collaboration/evidence/VM*.html）"
+      ],
+      "forbidden": [
+        "不得移动或删除 docs/collaboration/bus/",
+        "不得删除任何文档，只能移动；任何真实删除须中心批准"
+      ],
+      "acceptance": [
+        "给出数量账：删除数 = 归档新增数 + 移位新增数 + 真实删除数",
+        "抽样用 git show HEAD:<旧路径> 与现路径逐字节比对，结论写明方法",
+        "文档索引与 CURRENT_TASK 引用的路径全部指向新位置，无死链",
+        "解决方案管理器方案加定案横幅且分条标注；工具箱基线做节首归属拆分",
+        "写明 Release 指向 D:\\SunEyeVisionData、Debug 走缺省根，含验收误判风险"
+      ]
+    },
+    {
+      "id": "T-0005",
+      "lane": "rea",
+      "title": "常驻证据队列：启动时序、日志与保留、偏好机制、方案格式版本、插件准入、恢复目录",
+      "state": "done",
+      "priority": 1,
+      "goal": "把原厂行为的可核验证据持续补齐，用于校正我方自建机制，不依赖下游是否在改代码。",
+      "note": "六项已交（启动时序/日志与保留/偏好/方案格式版本/插件准入/恢复目录），回执 results/T-0005-rea.md，进度 progress/rea.md。方案版本项结论：原件版本不符走 CompatibleTool 五阶段迁移+另存，非拒绝。插件准入项结论：ToolItemInfo.xml 才是工具箱准入；我方 ToolGroups.xml 的 Order 与原厂 priority 逐一相同但机制自建。恢复项结论：原件保留临时现场，未见恢复配置，不宣称有恢复机制。待裁决 1 项（B 类）：ValidateSchema 版本不符是否改为只读打开+提示+另存。",
+      "updated": "2026-11-05 14:45",
+      "scope": [
+        "docs/collaboration/evidence/VM*.html"
+      ],
+      "forbidden": [
+        "不得启动原厂 SDK 或另起逆向工程",
+        "不得修改 src/、tests/ 或其它 docs 路径"
+      ],
+      "acceptance": [
+        "每份证据给出文件名 + 三条关键结论 + 校正我方哪一处",
+        "证据内引用可追溯（章节锚点或截图编号）",
+        "需要用户授权才能继续时置 blocked 并写明缺口"
+      ]
+    },
+    {
+      "id": "T-0006",
+      "lane": "framework",
+      "title": "数据根不存在时提示一次后继续启动",
+      "state": "done",
+      "priority": 2,
+      "goal": "App.ini 配出来的数据根原本不存在时，启动期提示一次「根不存在，已创建空目录，请检查 App.ini」，确认后正常启动，不硬拦。",
+      "scope": [
+        "src/Infrastructure.Persistence/ApplicationData/ApplicationDataPaths.cs",
+        "src/UI/App.xaml.cs"
+      ],
+      "forbidden": [
+        "缺省根与调用方指定根不得触发提示",
+        "不得改成抛异常阻断启动",
+        "不得对已存在的根弹提示"
+      ],
+      "acceptance": [
+        "配置盘符存在但目录不存在的根：提示出现，确认后进主界面",
+        "目录本来就存在：不出现提示（反例）",
+        "无 App.ini 走缺省根：不出现提示",
+        "提示文案必须包含该根路径"
+      ],
+      "note": "用户 2026-11-05 验收时定调：这套自建数据根提示按原厂(VM)流程拆除，App.ini 也不再进载荷 SHA（H-0013 取 A）。已删提示块与 IsRootNewlyCreated/OpenConfiguredRoot；清单 591 条不含 App.ini，实测只改 App.ini 不重封包可正常启动（44s 进主界面、新根自动创建）。卡作废(superseded)，回执 results/T-0006-framework.md。",
+      "updated": "2026-11-05 14:50"
+    },
+    {
+      "id": "T-0007",
+      "lane": "framework",
+      "title": "删除 tests/SunEyeVision.RootCanvas.Tests（整目录 7 文件 + 清悬空链接）",
+      "state": "done",
+      "priority": 3,
+      "goal": "清掉长期不参与构建、且已无法编译的 RootCanvas 测试目录，同时不留下悬空链接。",
+      "scope": [
+        "tests/SunEyeVision.RootCanvas.Tests/",
+        "tests/RootCanvasHostProbe/RootCanvasHostProbe.csproj"
+      ],
+      "forbidden": [
+        "不得删除 src/UI/Features/WorkflowUI/Canvas/Adapters/LibraryValidator.cs",
+        "不得删除 tests/RootCanvasHostProbe 的其它内容（该工程去留另议）"
+      ],
+      "acceptance": [
+        "整目录 7 个文件删除，Git 有记录",
+        "RootCanvasHostProbe.csproj 中指向 RootWorkspaceHostRuntimeTests.cs 与 RootCanvasFixture.cs 的两条悬空链接清除",
+        "全量构建 0 错误"
+      ],
+      "note": "口径 A 执行完毕：7 文件删除（git status 7 条 D）+ 两条悬空 Compile Include 清除；全仓 csproj/slnx/props/targets 对 RootCanvas.Tests 引用 0；全量构建 0 错误/6143 警告。LibraryValidator.cs 未触碰。回执 results/T-0007-framework.md。",
+      "updated": "2026-11-05 14:50"
+    },
+    {
+      "id": "T-0008",
+      "lane": "framework",
+      "title": "让日志写入失败真正被读一次",
+      "state": "done",
+      "priority": 1,
+      "goal": "日志系统初始化完成后读一次 WriteFailureCount，大于 0 就记 Warning，避免「有出口没人读」的假可观测。",
+      "scope": [
+        "src/UI/Features/WorkflowUI/Canvas/Adapters/NodeDisplayAdapterConfig.cs"
+      ],
+      "forbidden": [
+        "不得把 FileLogWriter 写入路径改为会抛",
+        "不得新增全局单例或静态状态",
+        "不得扫改其它 catch"
+      ],
+      "acceptance": [
+        "正常启动不出现该 Warning（反例，防噪音）",
+        "日志目录不可写时该 Warning 出现且带累计次数与最近原因"
+      ],
+      "note": "落点收回卡内 scope：ServiceInitializer 复用既有 _fileLogWriter 字段，新增 ReportFileLogWriteFailure()（队列排空上限 300ms，线程池等待避免 UI 死锁），启动期在 App.xaml.cs:282 调一次；撤回上一轮的 VisionLogger.GetWriters() 及其测试（日志门面公共面不变）。全量 Release 0 错误/6144 警告，唯一警告变化是 _fileLogWriter 的 CS0169 消失。运行期反例已实测通过（6 次起停均无该 Warning）；正例（日志目录不可写）未验，回执 results/T-0008-framework.md。",
+      "updated": "2026-11-05 14:50"
+    }
+  ]
+}

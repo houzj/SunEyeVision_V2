@@ -216,7 +216,7 @@ sequenceDiagram
     PM->>PM: 扫描DLL文件
     PM->>P: 创建插件实例
     P->>PM: Initialize()
-    PM->>PM: 加载plugin.json
+    PM->>PM: 读取工具声明（plugin.json 已废弃）
     PM-->>VM: 返回已加载插件列表
     VM->>PU: GetMainControl(plugin)
     PU->>PU: 判断UI模式

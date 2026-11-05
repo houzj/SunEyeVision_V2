@@ -138,7 +138,7 @@ SunEyeVision.UI/
 #### PluginManager（插件管理器）
 - 负责插件的加载、注册、生命周期管理
 - 支持从指定目录批量加载插件
-- 读取plugin.json获取插件元数据
+- 工具身份由 `release-payload.json`＋`ToolGroups.xml`＋准入链提供（原 `plugin.json` 已废弃，其读取代码不参与编译）
 - 提供插件查询和管理API
 
 #### 共享UI组件库
@@ -167,7 +167,7 @@ SunEyeVision.UI/
 
 ```
 Plugins/[PluginName]/
-├── plugin.json                      # 插件元数据
+├── （plugin.json 已废弃，不再需要该文件）
 ├── [PluginName].csproj             # 项目文件
 ├── [PluginName]Plugin.cs           # 插件主类（实现IPlugin）
 ├── Nodes/                           # 节点实现（如果适用）
@@ -176,25 +176,9 @@ Plugins/[PluginName]/
 └── Services/                        # 插件内部服务
 ```
 
-### 3.2 plugin.json 元数据格式
+### 3.2 plugin.json 元数据格式（已废弃）
 
-```json
-{
-  "pluginId": "ImageProcessing",      // 插件唯一标识
-  "pluginName": "Image Processing Plugin",
-  "version": "1.0.0",
-  "description": "Image processing algorithms plugin",
-  "author": "Team A",                 // 开发团队
-  "dependencies": [],                 // 依赖的其他插件
-  "permissions": [],                 // 权限要求
-  "minFrameworkVersion": "1.0.0",    // 最低框架版本
-  "customData": {                    // 自定义数据
-    "category": "Image Processing",
-    "supportedFormats": ["jpg", "png", "bmp"]
-  }
-}
-```
-
+`plugin.json` 已废弃，不参与编译（`src\Core\SunEyeVision.Core.csproj:16` 有 `<Compile Remove="Services/PluginManager.cs" />`）。现行工具身份链＝`release-payload.json` ＋ `ToolGroups.xml` ＋ 准入（`src\Plugin.Infrastructure\Managers\Plugin\PluginManager.cs:150-158`）。本指南写于 2026-02，其余内容可能同样过时。
 ### 3.3 插件开发示例
 
 #### 示例1：Auto模式插件（零代码UI）
@@ -452,7 +436,7 @@ Plugins/
 
 1. **需求分析**：确定插件功能、UI模式
 2. **接口设计**：定义插件需要实现的接口
-3. **元数据编写**：创建plugin.json
+3. **元数据登记**：登记 `ToolItemInfo.xml`（原厂 4 字段 name/priority/toolTip/helpUrl）；发布时生成 `release-payload.json`/`ToolGroups.xml`（`plugin.json` 已废弃）
 4. **插件开发**：实现接口，编写业务逻辑
 5. **UI开发**：根据模式开发UI（Auto/Hybrid/Custom）
 6. **调试测试**：使用插件调试系统进行测试
@@ -461,7 +445,7 @@ Plugins/
 ### 5.3 版本管理
 
 - 每个插件独立版本号
-- 插件间依赖在plugin.json中声明
+- 插件间依赖由构建/部署规则与 `release-payload.json` 承载（`plugin.json` 已废弃）
 - 框架版本向后兼容，逐步升级
 
 ### 5.4 代码规范
@@ -567,7 +551,7 @@ PanelManager.Instance.RegisterPanel(new MyPanelExtension());
 ```
 Plugins/[PluginName]/
 ├── [PluginName].csproj
-├── plugin.json
+├── ToolItemInfo.xml（发布时生成；`plugin.json` 已废弃）
 ├── Core/                    # 核心逻辑
 │   ├── [PluginName]Plugin.cs
 │   └── ...
@@ -606,7 +590,7 @@ Plugins/[PluginName]/
 1. 优先使用Auto模式，减少UI开发成本
 2. 充分利用共享UI组件，避免重复造轮子
 3. 遵循接口规范，确保兼容性
-4. 编写完善的plugin.json元数据
+4. 维护 `ToolItemInfo.xml` 条目（`plugin.json` 已废弃）
 5. 利用调试系统进行充分测试
 6. 注重代码注释和文档
 
@@ -648,7 +632,7 @@ Q2: 插件间如何通信？
 A2: 通过框架的事件总线或服务层进行通信，避免直接依赖。
 
 Q3: 如何处理插件版本兼容？
-A3: 在plugin.json中声明依赖和最低框架版本，框架会自动检查兼容性。
+A3: `plugin.json` 已废弃；依赖与最低版本由 `release-payload.json` 与准入链校验。
 
 Q4: 自定义UI如何使用共享组件？
 A4: 在自定义UI中引用共享命名空间，直接实例化共享组件。

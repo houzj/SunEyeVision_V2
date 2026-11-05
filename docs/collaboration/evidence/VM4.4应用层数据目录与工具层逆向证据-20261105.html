@@ -1,0 +1,571 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VM4.4 应用层数据目录与工具层逆向证据</title><style>:root{color-scheme:dark;background:#0b1524;color:#e5eff9;font:15px/1.7 'Microsoft YaHei UI',sans-serif}body{max-width:1400px;margin:auto;padding:28px}a{color:#98ceff}h1{font-size:26px;border-bottom:2px solid #3c5364;padding-bottom:12px}h2{font-size:20px;color:#87d9ff;border-bottom:1px solid #3c5364;padding-bottom:6px;margin-top:34px}h3{font-size:16px;color:#a8e6a3;margin-top:22px}table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14px}td,th{border:1px solid #415263;padding:8px;vertical-align:top}th{background:#263949;text-align:left}code{background:#202c36;color:#d1f5d1;padding:1px 5px;border-radius:4px;font:13px Consolas,monospace}pre{background:#091728;padding:14px;white-space:pre-wrap;overflow-wrap:anywhere;font:12.5px/1.6 Consolas,monospace;border:1px solid #33506a;border-radius:6px}.obs{color:#7ee787;font-weight:600}.inf{color:#e3b341;font-weight:600}.unk{color:#ff7b72;font-weight:600}.note{border-left:5px solid #f3aa49;background:#302d28;padding:12px 16px;margin:16px 0}.small{color:#9fb3c6;font-size:13px}ul,ol{padding-left:24px}</style>
+
+<h1>VM 4.4 应用层数据目录与工具层逆向证据</h1>
+
+<p class="small">取证日：2026-11-05 ｜ 原件基线：VisionMaster <code>V4.4.0 Build20250516@1555331</code>（<code>Applications/VersionInfo.config</code>）｜ 安装根：<code>D:\Program Files\VisionMaster4.4.0</code> ｜ 我方仓库：<code>D:\MyWork\SunEyeVision_V2</code> main<br>
+本文只做取证与文档，未修改 <code>src</code>/<code>tools</code>/<code>tests</code> 任何代码，未启动 <code>VisionMaster.exe</code>，未写注册表、未改安装目录。</p>
+
+<h2>0. 结论摘要</h2>
+<table>
+<tr><th>#</th><th>结论</th><th>档次</th></tr>
+<tr><td>A1</td><td><b>VM 4.4 没有"首次启动选择数据目录"这一步。</b>数据根被硬编码为安装目录：<code>Program.Main</code> 首行把进程工作目录强制设为 EXE 目录，<code>VM.AppData</code> 用一组相对安装根的字面量拼出全部配置/模块/模板路径，无定位文件、无目录解析器、无 UI 入口。</td><td class="obs">观察到</td></tr>
+<tr><td>A2</td><td><code>App.ini</code> 的 <code>SaveSol</code> <b>只是"上次另存为目录"的对话框记忆</b>，不是数据根。读于"另存为"打开前，写于另存成功且目录存在后；同族还有 <code>OpenSol</code>/<code>SaveSolRemote</code>/<code>OpenSolRemote</code>。</td><td class="obs">观察到</td></tr>
+<tr><td>A3</td><td>方案文件（<code>.sol</code>）是 <b>ZIP 容器</b>，版本字段在 <code>SolutionFile\VmServer.xml</code> 的 <code>&lt;SoftVersion&gt;&lt;Version CurrentVersion="V4.4.0"/&gt;</code>。程序侧三级处理：格式非法直接拒；<code>&lt; V4.0.0</code> 直接拒；<code>V4.0.0 ~ 当前版本</code> 走 <code>CompatibleTool.exe</code> 转成新文件。升级动作是 <b>模块 IO 名迁移</b>（<code>CompatibleTool.xml</code> 白名单）。</td><td class="obs">观察到</td></tr>
+<tr><td>A4</td><td>安装目录之外<b>没有必需运行数据</b>。<code>%APPDATA%\VisionMaster4.4.0\res</code> 与 <code>%APPDATA%\MVDAlgorithmSDK4.4.1.3\res</code> 内容全是<b>安装器残留</b>（InstallLog / InstallPackages.zip / License*.rtf / CheckPath.bat），<b>不是运行时资源缓存</b>（修正此前描述）。<code>%LOCALAPPDATA%</code>、<code>%PROGRAMDATA%</code> 无 VM 目录。</td><td class="obs">观察到（内容）<br>推断（删了也能启动）</td></tr>
+<tr><td>A5</td><td>目录职责已逐项落地到配置/程序命名。<b><code>data\</code> 不是数据根</b>，只有一份 SharpDevelop 代码模板头（<code>options\StandardHeader.xml</code>），与"应用数据"无关。</td><td class="obs">观察到</td></tr>
+<tr><td>B</td><td>工具层逆向材料量大（evidence 目录 577 个文件），<b>托管链路证据充分、native 与运行对照完全空缺</b>。VM 工具<b>不是独立可分发的插件包</b>（走 ModuleProxy + Server 服务），因此我方"工具独立开发公开合同/分发边界"<b>没有 VM 原件可迁移</b>，属平台自建设计。</td><td class="obs">观察到 / 缺口明确</td></tr>
+</table>
+
+<div class="note"><b>方法学与限制（必读）。</b>本机 <b>REA MCP 未注册</b>，本批<b>没有</b>启动进程注入、动态挂钩或 native 反汇编能力。所用原件证据来源为：①安装目录的 ini/xml/config/dll 字符串与 PE 常量；②桌面真实方案文件的 ZIP 结构；③<b>既有 REA 归档反编译源码</b> <code>D:\MyWork\REA逆向测试\analysis\decompiled</code>（<code>VisionMaster.Exe.Audit</code>、<code>VM.Core</code>、<code>VMControls.WPF</code>、<code>VMControls.Data</code>、<code>VM.PlatformSDKCS.Audit</code>、<code>Apps.XmlUI</code>/<code>Apps.XmlParser</code>、<code>Apps.Style</code> 等）。③项的引用一律标出文件与行号，可复核；但<b>静态反编译不等于运行证据</b>，凡涉及时序、首帧、native 内部、真实释放时点的结论均标"未知"。<br>
+另：`D:\MyWork\参考项目\VisionMaster` 是 HeBianGu 开源 H.Controls.Diagram 示例，<b>不是海康原件</b>，本文未引用其作为证据。</div>
+
+<h2>A. 应用层数据目录</h2>
+
+<h3>A1｜VM 启动链里是否存在"首次启动选择数据目录"？ —— <span class="unk">不存在</span></h3>
+
+<p><span class="obs">观察到（强证据，三条独立线索一致）</span></p>
+
+<p><b>线索 1：进程工作目录被强制设为 EXE 目录。</b><code>VisionMaster.Exe.Audit/VisionMaster/Program.cs:63</code>（<code>Main</code> 第一条语句）：</p>
+<pre>private static void Main(string[] args)
+{
+    Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
+    string config = ConfigurationHelper.GetConfig("IsMultiApp");
+    ...</pre>
+<p>它把"数据根"直接等价于"EXE 所在目录"。后续所有相对路径（<code>myLibs</code>、<code>Module(sp)</code>、<code>App.ini</code>、<code>log</code>）因此都锚在安装目录。</p>
+
+<p><b>线索 2：<code>VM.AppData.dll</code> 的路由字面量全是对安装根的固定拼写，没有解析器痕迹。</b>该程序集 13 KB，用户字符串全集里出现下列常量：</p>
+<pre>\Applications\        //Module(sp)//x64//     //ApplicationTemplate//
+\AppData.dat          \Resources\RevertSource\AppData.dat
+\WelcomePage.GIF      \Resources\RevertSource\WelcomePage.GIF
+\myLibs\Librarys.Config   \Resources\RevertSource\Librarys.Config
+\VisionMaster.exe      \Resources\RevertSource\VisionMaster.exe
+VersionInfo.config     VersionInfo     Lang_version     yyyyMMdd     Temp.cfg     .cfg
+ToolGroup.xml          ApplicationItemInfo.xml          SaveSolRemote   OpenSolRemote   OpenApp</pre>
+<p>其中 <code>\Resources\RevertSource\...</code> 是"原样还原副本"（品牌化文件被改坏后可一键还原），这本身说明<b>配置必须在安装目录内且可被重置</b>，而不是可重定位的用户数据。</p>
+
+<p><b>线索 3：全量关键词统计为 0。</b>对 <code>VisionMaster.exe</code> 及 <code>myLibs</code>（83 个托管程序集）、<code>GateWay</code>、<code>Server</code> 全量扫描 UTF-16 用户字符串：</p>
+<table>
+<tr><th>关键词</th><th>VisionMaster.exe (UTF-16)</th><th>myLibs/GateWay/Server 命中文件</th></tr>
+<tr><td><code>DataPath</code> / <code>数据目录</code> / <code>数据路径</code> / <code>首次</code> / <code>SelectDir</code> / <code>BrowseFolder</code> / <code>InstallPath</code> / <code>AppPath</code> / <code>BasePath</code> / <code>DefaultPath</code></td><td>0</td><td>无</td></tr>
+<tr><td><code>SaveSol</code></td><td>8</td><td>VM.AppData(1)、VMControls.Data(1)、VMControls.WPF(1)、PlatformManager(1)</td></tr>
+<tr><td><code>SolutionPath</code></td><td>1</td><td>VMControls.WPF(1)、GateWayFrameworkData(1)</td></tr>
+<tr><td><code>App.ini</code></td><td>0</td><td>VM.Utility(2)</td></tr>
+</table>
+
+<p><b>补充：目录选择对话框程序集存在，但不在启动链上。</b><code>myLibs\DirectoryBrowser.dll</code>（200 KB，自定义 WPF 文件/文件夹对话框，内嵌 <code>folderbrowserdialog.xaml</code> / <code>savefiledialog.xaml</code> / <code>openfiledialog.xaml</code>）确实提供文件夹选择能力，<code>ProjectManager.cs</code> 顶部也有 <code>using DirectoryBrowser;</code>。但全量反编译检索到的 <code>FolderBrowserDialog</code> 使用点<b>全部在工具参数层</b>：</p>
+<ul>
+<li><code>VMControls.WPF.GlobalUI/GlobalVariableDialog.xaml.cs:2022,2064</code> —— 全局变量 <code>.gvar</code> 导入/导出</li>
+<li><code>VMControls.WPF/ImageListPanelBase.cs:1114</code> —— 远程 FTP 目录选择（拼 <code>/root/vmtempfiles/ftp</code>）</li>
+<li><code>Apps.XmlParser.ParamTab/ExportAlgorithmWindow.xaml.cs:188</code>、<code>OpenFolderDialog.cs:134,149</code> —— 导出算法目录 / 文件参数目录</li>
+</ul>
+<p>启动链（<code>Program.Main → BeforeStartPart/BeforeStartMian → MainWindowData → ShowMainWindow</code>）中未见任何目录选择调用。</p>
+
+<p><b>结论：</b>VM 的数据根 = 安装目录，是<b>安装期决定、运行期不可改</b>的。要"换数据目录"在 VM 语境里等于<b>换一个安装副本</b>（或改 <code>Applications</code> 目录权限）。</p>
+
+<p class="small"><span class="unk">未知</span>：<code>AppData.dat</code> 缺失/损坏时的兜底行为（本机文件完好，未做破坏性实验）；<code>IsNeutral=true</code>（中性版/客制版）时是否改变任何路径 —— 从 <code>CheckIsNeutral</code>（<code>MainWindowData.cs:1091-1116</code>）看它只切换菜单 XML（<code>MenuItems.xml</code> / <code>NeutralMenuItems.xml</code> / <code>...Linux.xml</code>），<b>不影响目录</b>。</p>
+
+<h3>A2｜<code>App.ini</code> 的 <code>SaveSol</code>：谁读写、何时写、缺省值</h3>
+
+<p><span class="obs">观察到</span> —— 读写点集中在 <code>VisionMaster.Exe.Audit/VisionMaster.Project/ProjectManager.cs</code>。</p>
+
+<table>
+<tr><th>动作</th><th>位置</th><th>语义</th></tr>
+<tr><td>读</td><td><code>AnotherSaveSolution</code> <code>:252</code><br><code>string text = ConfigurationHelper.INIGetStringValue("SaveSol");</code></td><td>取"上次另存的目录"</td></tr>
+<tr><td>用</td><td><code>:262-265</code><br><code>if (text != null &amp;&amp; Directory.Exists(text)) ((FileDialogBase)val3).InitialFolder = new ShellFolder(ShellItem.FromParsingName(text));</code></td><td>目录存在才作为"另存为"对话框初始目录；否则不设，用对话框自身默认</td></tr>
+<tr><td>写</td><td><code>:286-290</code><br><code>string directoryName = Path.GetDirectoryName(val3.ShellFile.Path); if (Directory.Exists(directoryName)) ConfigurationHelper.INISetStringValue("SaveSol", directoryName);</code></td><td>另存<b>成功</b>后回写父目录</td></tr>
+<tr><td>同族键</td><td><code>OpenSol</code> <code>:521</code>；<code>SaveSolRemote</code> <code>:307,332</code>；<code>OpenSolRemote</code>（VM.AppData 常量）；<code>ModuleOpenPath</code>/<code>ModuleOpenRemotePath</code>（VM.Utility 常量）</td><td>打开方案 / 远程存 / 远程开 / 模块打开目录，全部是<b>对话框初始目录记忆</b></td></tr>
+</table>
+
+<p><b>写入器 = <code>VM.Utility.ConfigurationHelper</code>。</b><code>VM.Utility.dll</code> 字符串含 <code>App.ini</code>、<code>/App.ini</code>、<code>DefaultSection</code>、<code>section</code>、<code>(key)</code>、以及 <code>Save config begin/end</code>→<code>Bak config begin/end</code>（写前备份），即"带 <code>.bak</code> 的 ini 读写"。</p>
+
+<p><b>缺省值：</b>安装分发的 <code>Applications\App.ini</code> 实测内容（56 字节）：</p>
+<pre>[DefaultSection]
+SaveSol=C:\Users\houzhongjie\Desktop</pre>
+<p>这是<b>安装器按当前用户写入的初值</b>（=桌面），并非程序内置默认。<b>推断</b>：键缺失时 <code>INIGetStringValue</code> 返回空/null → 不设 <code>InitialFolder</code>，由 <code>DirectoryBrowser.FileSaveDialog</code>（<code>RestoreDirectory=true</code>）自行决定初始位置。<span class="unk">未知</span>：该对话框在无初始目录时的确切落点（需运行观察）。</p>
+
+<div class="note"><b>对设计的意义：</b><code>SaveSol</code> 是<b>纯 UI 便利记忆</b>，与"应用数据根"职责无关。我们的 <code>data-location.json</code>（数据根定位）与 VM 的 <code>SaveSol</code> 不是同一类东西，不能互相类比；若要类比，应类比"另存为/打开对话框上次目录"这一功能点，而不是目录管理。</div>
+
+<h3>A3｜方案文件的格式版本字段与升级/拒绝策略</h3>
+
+<p><span class="obs">观察到（文件结构 + 程序侧校验双证）</span></p>
+
+<h4>文件侧：<code>.sol</code> 是 ZIP 容器</h4>
+<p>实测 <code>C:\Users\houzhongjie\Desktop\test.sol</code>（402 KB）：首字节 <code>50 4B 03 04</code>（ZIP），共 15 个 entry：</p>
+<pre>SolutionFile\VmServer.xml                              5160
+SolutionFile\MoudleFrame                            389634     ← 注意原件拼写为 MoudleFrame
+SolutionFile\GlobalScript_0                            3938
+SolutionFile\UiParamData\_1+0+ImageSourceModule        191
+SolutionFile\UiParamData\_2+0+IMVSLineFindModu         113
+SolutionFile\UiParamData\_13+0+ImageSourceModule       191
+SolutionFile\UiParamData\_14+0+IMVSContourMatchModu     88
+SolutionFile\UiParamData\_10000+1+IMVSProcessControl    55
+SolutionFile\UiParamData\_10001+1+IMVSProcessControl    87
+SolutionFile\UiParamData\_11000+3+CommManagerModule     56
+SolutionFile\UiParamData\_13000+5+GlobalVariableModule  56
+SolutionFile\UiParamData\_14200+8+GlobalTriggerModule   56
+SolutionFile\UiParamData\_24000+25+LocalVariableModule  40
+SolutionFile\UiParamData\_26000+26+ProcedureComm        40
+SolutionFile\UiParamData\_70000+100+solution            55</pre>
+<p>Entry 命名规律：<code>_&lt;moduleIndex&gt;+&lt;typeCode&gt;+&lt;ModuleTypeName&gt;</code>，<code>typeCode</code> 与 <code>VmServer.xml</code> 中 <code>&lt;Module Type="..."/&gt;</code> 一致（0=普通模块、3=通信管理、5=全局变量、8=全局触发、25=流程局部变量、26=流程通信、100=solution）。<b>UI 参数数据与模块框架数据分文件存放</b>（<code>UiParamData</code> 与 <code>MoudleFrame</code>），这与"UI 分块映射"配置（<code>ServerConfiguration.ini: UiChunkDataThreshold=20480</code>、<code>IsUiChunkDataMapWhenLoad</code>）呼应。</p>
+
+<h4>版本字段</h4>
+<pre>&lt;Root&gt;
+    &lt;SoftVersion&gt;
+        &lt;Version CurrentVersion="V4.4.0" /&gt;
+    &lt;/SoftVersion&gt;
+    &lt;SaveInfo&gt;&lt;SaveInfo Time="2026-11-02 11:25:05" Name="VisionMaster.exe" /&gt;&lt;/SaveInfo&gt;
+    &lt;SolutionInfo&gt;&lt;Solution SolutionName="test" /&gt;&lt;/SolutionInfo&gt;
+    ...
+&lt;/Root&gt;</pre>
+<p><code>SaveInfo</code> 同时记录保存时间与保存者程序名（可用于"本文件由哪个版本/程序保存"的追溯）。</p>
+
+<h4>程序侧：三级校验（<code>ProjectManager.LoadSolution</code>）</h4>
+<table>
+<tr><th>级别</th><th>调用 / 判据</th><th>结果</th></tr>
+<tr><td>1. 文件/格式/密码</td><td><code>:559</code> <code>mSolutionManager.CheckSolution(filename, ref nHasPwd, ref nValidFormat)</code>；<code>:567</code> <code>if (nValidFormat != 1)</code></td><td><code>LoadSolutionFailed(..., Lang_SolFmt)</code> →「无法打开方案，请审核方案格式。」</td></tr>
+<tr><td>2. 过旧拒绝</td><td><code>:603-611</code> <code>ServerSDKAPI.IMVS_GetSolutionVersion(handle, filename, pwd, ref pstSolutionVersionInfo)</code>；<code>string.Compare(strTargetSolutionInfo, "V4.0.0") &lt; 0</code></td><td>弹 <code>Lang_SolVersion_OutOfDate</code> →「无法加载V4.0.0之前版本」，<b>拒绝加载</b></td></tr>
+<tr><td>3. 老版本升级</td><td><code>:670-702</code> <code>string.Compare(strTargetSolutionInfo, Lang_version) &lt; 0</code>（<code>Lang_version</code> = <code>V4.4.0</code>）</td><td>启动 <code>CompatibleTool.exe VMSolution;"&lt;源&gt;";&lt;密码&gt;;"&lt;目标&gt;";V4.4.0</code>，<b>生成新版本文件</b>（不原地改写），目标名冲突时追加 <code>_1/_2...</code>；<code>CompatibleTool.exe(.config)</code> 缺失则提示文件不存在并中止</td></tr>
+</table>
+
+<p><b>升级动作不是改版本号，而是模块 IO 名迁移。</b><code>Applications\CompatibleTool.xml</code>（14.9 KB）是白名单，按 <code>ModuleInfo/TypeName</code> + <code>IOInfo SrcName→DstName</code> 声明重命名，例如：</p>
+<pre>&lt;TypeName&gt;IMVSCircleEdgePairInspModu&lt;/TypeName&gt;
+  &lt;IOInfo SrcName="MinWidth"   DstName="MinWidths"/&gt;
+  &lt;IOInfo SrcName="ROI"        DstName="DetectROIs"/&gt;
+  &lt;IOInfo SrcName="DetectAnnulus" DstName="DetectROIAnnulus"/&gt; ...</pre>
+<p>说明 4.x 之间的"版本升级"= <b>旧输出/参数名映射到新名</b>，不是容器格式重写。</p>
+
+<p class="small"><span class="unk">未知</span>：<code>strTargetSolutionInfo</code> 与 <code>VmServer.xml/SoftVersion/CurrentVersion</code> 是否为同一字段（推断为同一，因两者取值域一致且 <code>IMVS_GetSolutionVersion</code> 就读容器内版本），未做 native 内存核对；<code>MoudleFrame</code> 的内部序列化格式（二进制/压缩）未解析。</p>
+
+<h3>A4｜VM 是否在安装目录之外存放必需数据</h3>
+
+<p><span class="obs">观察到</span></p>
+<table>
+<tr><th>位置</th><th>实际内容</th><th>性质</th></tr>
+<tr><td><code>%APPDATA%\VisionMaster4.4.0\res</code>（7 文件）</td><td><code>CheckPath.bat</code>、<code>DriverInstallLog.txt</code>、<code>InstallLog.txt</code>、<code>InstallPackages.zip</code>(1 MB)、<code>UninstallPackages.zip</code>、<code>LicenseChs.rtf</code>、<code>LicenseEng.rtf</code></td><td><b>安装器残留</b>，不是运行时资源缓存（修正此前描述）</td></tr>
+<tr><td><code>%APPDATA%\MVDAlgorithmSDK4.4.1.3\res</code>（55 文件）</td><td>安装向导 UI 图片与按钮（<code>btn_*.png</code>、<code>checkbox_*.png</code>、<code>progressbar.png</code>…）、<code>config.xml</code>、<code>DuiEditor*.xml</code>、<code>InstallLog.txt</code>、<code>LicenseChs.rtf</code>、<code>CheckPath.bat</code></td><td>同上，MVD 算法 SDK 安装器残留</td></tr>
+<tr><td><code>%LOCALAPPDATA%</code></td><td>无 VM / MVD / Hik 目录</td><td>—</td></tr>
+<tr><td><code>%PROGRAMDATA%</code></td><td>无 VM / MVD / Hik 目录</td><td>—</td></tr>
+</table>
+
+<p><b>运行期写入全部落在安装目录</b>（实例证据）：</p>
+<table>
+<tr><th>目录</th><th>现存文件数</th><th>用途证据</th></tr>
+<tr><td><code>Applications\log</code></td><td>33</td><td><code>App.cs:510</code> <code>BaseDirectory + "\\log\\" + ExternError + "error.txt"</code></td></tr>
+<tr><td><code>Applications\TempFiles</code></td><td>（首次另存时创建）</td><td><code>ProjectManager.GetNewFilePath</code> <code>:384-389</code> <code>BaseDirectory + "\\TempFiles"</code>，撤销快照 <code>0.sol</code> 放这里</td></tr>
+<tr><td><code>Applications\Temporary</code></td><td>16</td><td>运行期临时</td></tr>
+<tr><td><code>Applications\GwLoadSolution</code></td><td>12（<code>&lt;n&gt;-&lt;hash&gt;-plc.py</code>）</td><td>通信网关脚本化方案（PLC 脚本）</td></tr>
+<tr><td><code>Applications\TempImage</code> / <code>ImageTemp</code></td><td>1 / 0</td><td><code>ModuleProxyConfiguration.ini: ImageTempPath = .\ImageTemp\</code>（注释明确"仅支持英文路径"）</td></tr>
+<tr><td><code>Applications\UiMapFile</code> / <code>ServerExportFile</code></td><td>0 / 0</td><td>UI 分块映射 / 服务端导出</td></tr>
+</table>
+
+<p><b>注册表：</b>顶层 <code>VisionMaster.Exe.Audit</code> 反编译集中 <code>Registry.</code> 检索 0 命中；唯一注册表读取是 <code>ServiceManager.CheckServiceDirectory</code>（<code>ServiceManager.cs:30</code> 读 <code>HKLM\SYSTEM\CurrentControlSet\Services\&lt;svc&gt;\ImagePath</code>，用于判断服务安装路径是否为本目录）。<span class="unk">未知</span>：<code>Apps.*</code>/<code>PublicFile</code> 等未反编译程序集是否写注册表（本批未覆盖），故记"顶层未见"，不记"不存在"。</p>
+
+<p class="small"><span class="inf">推断</span>：删除 <code>%APPDATA%</code> 两个 res 目录不影响 VM 运行（内容均为安装产物且无运行时引用证据）。<b>未做实机删除验证</b>，故为推断而非观察。</p>
+
+<h3>A5｜安装目录各子目录职责</h3>
+
+<table>
+<tr><th>目录 / 文件</th><th>规模（实测）</th><th>职责（证据）</th><th>档次</th></tr>
+<tr><td><code>Applications\</code></td><td>进程根</td><td><b>同时是数据根</b>：<code>Program.cs:63</code> 强制 CWD = <code>BaseDirectory</code>；<code>VM.AppData</code> 常量全部相对根</td><td class="obs">观察到</td></tr>
+<tr><td><code>myLibs\</code></td><td>118 文件 / 33.2 MB</td><td>托管框架程序集（<code>VM.Core</code>、<code>VMControls.WPF</code>、<code>Apps.XmlUI/XmlParser/Data</code>、<code>VisionMasterMain</code>、<code>DirectoryBrowser</code>、<code>PatCreate</code>…）+ <b>显式加载清单</b> <code>Librarys.Config</code>/<code>LibrarysEx.Config</code>（13 行，<code>myLibs//VM.Core.dll</code> … <code>VisionMaster.exe</code>）；<code>VmModuleSet.LoadModuleDLL</code> 依此装载依赖</td><td class="obs">观察到</td></tr>
+<tr><td><code>Module(sp)\</code></td><td>2155 文件 / 99.4 MB（x64+x86）</td><td>算法工具模块实体。根 4 个 XML 是<b>全局元数据</b>：<code>Combination.xml</code>(169 KB，可用数据类型与 Filters，如 <code>ImageData/Point</code>)、<code>Display.xml</code>(10.9 KB，显示对象样式 <code>okcolor/ngcolor/linetype</code>)、<code>Group.xml</code>(233 KB，参数分组 UI 与枚举/触发器)、<code>ShapePropertyConfig.xml</code>(6.6 KB，ROI 形状属性页)；<code>x64\&lt;Category&gt;\&lt;ModuleName&gt;\</code> 是单工具目录。<b>模块路径清单</b>见 <code>Applications\ModulePathGenerate.txt</code>（15.2 KB，<code>模块名 # Module(sp)\x64\分类\模块名 # 类型</code>，类型含 FUNCTION/NORMAL/IMAGE/COMMUNCATION）</td><td class="obs">观察到</td></tr>
+<tr><td><code>ModuleProxy\</code></td><td>2412 文件 / 95.5 MB</td><td><b>模块宿主代理进程</b>（x64/x86 各一套）。<code>ModuleProxyConfiguration.ini</code>：<code>PreLoadOption=1</code>（算法模块预加载）、<code>PreInitMVDOption=1</code>、<code>MVDSetClocksGpu</code>、<code>BufferNodeNum=2</code>、<code>InitMilOption=0</code>、<code>HistoryResultCountDefault=40</code>、<code>HistoryResultCountWhenLoop=10000</code>、<code>ImageTempPath=.\ImageTemp\</code>；<code>Server\ServerConfiguration.ini: ProxyPath = ../ModuleProxy/x64/ModuleProxy</code> 指向它</td><td class="obs">观察到</td></tr>
+<tr><td><code>Server\</code></td><td>17 文件 / 15.8 MB</td><td><b>VisionMasterServer Windows 服务端</b>（<code>PlatformManager.dll</code> 9.3 MB、<code>PlugAuthorization.dll</code> 7.0 MB、<code>PlugMonitorResource.dll</code>）；<code>ServerConfiguration.ini</code> 定义服务名 <code>VisionMasterServer</code>、监听 <code>tcp://127.0.0.1:5556</code>、<code>PublicFilePath=../PublicFile/x64</code>、<code>ProxyPath=../ModuleProxy/x64/ModuleProxy</code>、端口池 10000-10040、<code>MQType=1</code>（海康 MQ）、<code>TokenSrc=VisionMasterServerApp.exe</code>、<code>SolutionTimeoutMin/Max=300/600</code>；<code>ServerAuthConfig.ini</code> 授权类型；<code>ServerInstall/Start/Stop/Uninstall.bat</code> 服务生命周期</td><td class="obs">观察到</td></tr>
+<tr><td><code>GateWay\</code></td><td>104 文件 / 7.4 MB</td><td><b>通信网关子系统</b>（<code>GateWay.Control/Data/Json/Compress/CostomDialog/Localization/Base.Xml</code> 等 + 自带 <code>Lang\</code>/<code>Module\</code>(77 文件)/<code>PublicFile\</code>）；<code>Applications\GwLoadSolution\*.py</code> 是其脚本化方案落地</td><td class="obs">观察到</td></tr>
+<tr><td><code>PublicFile\</code></td><td>217 文件 / 337 MB</td><td><b>原生运行库</b>（x64/x86）：<code>iMVS-6000PlatformSDK.dll</code>（SDK 桥）、<code>iMVS-6000Module.dll</code>、<code>MVD</code> 算法、<code>hasp_windows_x64_33582.dll</code>（加密锁）、<code>ImgProcLib.dll</code>、<code>GW-PlatformSDK.dll</code>、<code>QtPlugins\</code>、<code>FeatureTreeResource\</code>、<code>images.db(+shm/wal/bk)</code>（SQLite）。<code>Server\ServerConfiguration.ini: PublicFilePath=../PublicFile/x64</code> 明确它是"公共库路径"；<code>Applications\qt.conf: Prefix=D:/.../Applications/PublicFile/x64 / Plugins=QtPlugins</code> 说明 Qt 运行库根也在这里</td><td class="obs">观察到</td></tr>
+<tr><td><code>platforms\</code></td><td>1 文件 / 1.2 MB</td><td>仅 <code>qwindows.dll</code> = <b>Qt 平台插件</b>（Qt 硬编码要求 <code>platforms\</code> 目录，与 qt.conf 的 Prefix 解耦）</td><td class="obs">观察到</td></tr>
+<tr><td><code>data\</code></td><td>1 文件 / 0 MB</td><td><b>不是应用数据根！</b>唯一内容 <code>options\StandardHeader.xml</code> = SharpDevelop 代码模板头（<code>${res:XML.StandardHeader.CreatedBySharpDevelop}</code> …），服务脚本编辑器"新建文件头"</td><td class="obs">观察到（纠正假设）</td></tr>
+<tr><td><code>ProjectParam\</code></td><td>12 文件 / 0.1 MB</td><td><code>Designer\LaytoutTemplate\{zh-cn,en-us}\</code> 三件套 <code>.png/.vmd/.xml</code>：<b>前端（HMI）设计器布局模板</b>「通用模板」「生产统计模板」</td><td class="obs">观察到</td></tr>
+<tr><td><code>ApplicationTemplate\</code> / <code>ApplyTemplate\</code> / <code>ApplyModule\</code></td><td>11 / 1 / 0 文件</td><td><b>应用模板向导</b>：<code>Detection</code>/<code>location</code>/<code>Multi</code> × <code>General</code>/<code>Profession</code> × <code>GeometryDetection</code>，元数据 <code>ApplicationItemInfo.xml</code>、<code>ApplyItemInfo.xml</code></td><td class="obs">观察到</td></tr>
+<tr><td><code>ApplicationTemplate</code> 同源的 <code>//ApplicationTemplate//</code> 常量</td><td>—</td><td>出现在 <code>VM.AppData.dll</code>，证明它是<b>框架识别的固定相对路径</b>而非普通素材目录</td><td class="obs">观察到</td></tr>
+<tr><td><code>ColorStyle\</code></td><td>3 xaml</td><td>3 套配色（<code>ColorStyle1/2/3.xaml</code>）</td><td class="obs">观察到</td></tr>
+<tr><td><code>Lang\</code> / <code>LangCFG\</code> / <code>ErrorCode\</code></td><td>7 / 6 / 8</td><td>语言资源（<code>zh-cn</code>/<code>en-us</code>/<code>zh-tw</code> ×普通/3D）、语言配置（<code>LanguageSet.cfg</code> + 两份 <code>VisionMaster*.cfg</code>）、错误码资源与工具</td><td class="obs">观察到</td></tr>
+<tr><td><code>Tools\</code> / <code>ToolsOfInternal\</code></td><td>925 / 9 文件</td><td>辅助工具（激活 <code>ActivationTool</code>/<code>AuthActiveTool</code>、日志级别、算法版本切换、标定板生成、环境检测、<code>VMRegister.exe</code> 注册、<code>GenerateModulePath.exe</code> 生成 <code>ModulePathGenerate.txt</code>、<code>MVDVersionObtain.exe</code>、<code>VersionInfoTool.exe</code>）</td><td class="obs">观察到</td></tr>
+<tr><td><code>GlobalScript\</code></td><td>60 文件 / 7.6 MB</td><td>全局脚本（每方案 <code>&lt;guid&gt;GlobalScript.txt</code> + <code>DLL\</code> + <code>Samples\</code>），<b>自带独立 <code>App.ini</code></b>（键：<code>ModuSlientExecuteMode</code>、<code>CompileWaitTime</code>）—— 与根 <code>App.ini</code> 是两个不同文件，同名不同段</td><td class="obs">观察到</td></tr>
+<tr><td><code>3rdLib\</code></td><td>49 文件 / 73.5 MB</td><td>第三方库（OpenCv、NPOI、OxyPlot、SharpDX、WriteableBitmapEx、MVVM、MvCameraControl、Office、ICSharpCode、MVD）</td><td class="obs">观察到</td></tr>
+<tr><td><code>EncRuntime\</code> / <code>Help\</code> / <code>CalibGuideSample\</code> / <code>ColorCFG\</code> / <code>UiMapFile\</code> / <code>TempImage\</code> / <code>Temporary\</code> / <code>log\</code> / <code>ServerApp\</code> / <code>ServerExportFile\</code> / <code>GwLoadSolution\</code></td><td>—</td><td>加密运行库 / 帮助 / 标定向导样例 / 颜色配置 / UI 映射 / 临时图像 / 临时 / 日志 / 服务端前台程序 / 服务端导出 / 网关脚本方案</td><td class="obs">观察到</td></tr>
+</table>
+
+<h2>A′. VM 做法 vs 我方现状 对照</h2>
+
+<table>
+<tr><th>维度</th><th>VM 4.4（原件证据）</th><th>我方当前（源码实证）</th><th>差异定性</th></tr>
+<tr><td>数据根</td><td>安装目录，硬编码相对常量；进程 CWD 强制为 EXE 目录；无定位文件</td><td><code>ApplicationDataLocationService</code>：<code>%LOCALAPPDATA%\SunEyeVision\data-location.json</code> → <code>dataRoot</code>（<code>ApplicationDataLocationService.cs:10-21</code>），支持隔离根覆盖（<code>App.xaml.cs:249-251</code>）</td><td><b>我方能力，无 VM 原件</b>（与既有自述一致）</td></tr>
+<tr><td>目录身份</td><td>无（就一个目录，靠安装路径区分）</td><td>标记文件 <code>SunEyeVisionData</code> + <code>schemaVersion=2</code> + <code>dataId</code> GUID（<code>ApplicationDataPaths.cs:8,20-25</code>）</td><td>我方自建</td></tr>
+<tr><td>目录校验</td><td>无（<code>AppData.dat</code> 缺失时行为未知）</td><td><code>ValidateAvailable</code> + <code>CheckWritable</code> + 拒绝安装目录（<code>ApplicationDataLocationService.cs:36-40</code>）</td><td>我方自建</td></tr>
+<tr><td>版本不匹配</td><td><code>AppData.dat</code> 只有布尔/字符串字段，<b>无版本号</b>；<code>VersionInfo.config</code> 是产品版本表</td><td><code>schemaVersion != 2</code> → 抛 <code>InvalidDataException("应用目录定位格式不受支持。")</code>（<code>:18-19</code>）</td><td>我方更严格；VM 无对应机制可迁移</td></tr>
+<tr><td>配置写在何处</td><td><code>Applications\App.ini</code>（ini，<code>[DefaultSection]</code>，带 <code>.bak</code>）；<code>AppData.dat</code>（XML）；<code>VisionMaster.cfg</code>（XML，10 KB，含 <code>AutoLoadPath</code>/<code>IsAutoLoadPath</code>/<code>MaxModuleLimit=256</code>/<code>MaxProcessLimit=16</code>/<code>ServerAddress=127.0.0.1:5556</code>/<code>LangSet</code>/<code>CacheCount=10</code>…）</td><td><code>suneyevision-data.json</code> 标记 + <code>Config</code>/<code>Solutions</code>/<code>Log</code>/<code>Recovery</code> 子目录（<code>:37-38</code>）</td><td>实现方式不同，职责可取</td></tr>
+<tr><td><b>方案格式版本</b></td><td>ZIP 容器内 <code>VmServer.xml/SoftVersion/CurrentVersion</code>；三级策略：格式非法拒 / <code>&lt;V4.0.0</code> 拒 / 旧版走 <code>CompatibleTool.exe</code> <b>转出新文件</b>（IO 名迁移白名单）</td><td><code>SolutionFormatPolicy.ValidateReadable</code>：<code>SchemaVersion != 5</code> 直接抛「不支持该方案格式；需要 SchemaVersion 5。」；<b>无迁移、无转换</b>（<code>SolutionFormatPolicy.cs:20-26</code>）</td><td>策略不同且是<b>规则决定</b>（不考虑旧格式兼容）；VM 的"旧版本可升级"我们<b>没有</b>对应能力</td></tr>
+<tr><td>方案容器</td><td>ZIP + <code>SolutionFile\</code> 前缀 + <code>MoudleFrame</code>(二进制) + <code>UiParamData</code>(逐模块) + <code>VmServer.xml</code>(结构)</td><td>单 JSON 文件（<code>SolutionDocumentWriter</code>，<code>SchemaVersion</code>+<code>Version</code>+<code>Workflows</code>…）</td><td>不兼容，无需兼容</td></tr>
+<tr><td>"上次另存目录"记忆</td><td><code>App.ini/SaveSol</code>（另存成功回写父目录；<code>OpenSol</code> 同理）</td><td><b>本次未核</b>（不在取证范围；需我方自查是否有等价 UX）</td><td>待自查</td></tr>
+<tr><td>UI 参数与结构分离</td><td>是（<code>UiParamData</code> 单独 entry + <code>IsUiChunkDataMapWhenLoad</code>/<code>UiChunkDataThreshold</code>）</td><td>否（同一定义对象内）</td><td>可选借鉴点，非必须</td></tr>
+<tr><td>安装目录外数据</td><td>无必需数据（<code>%APPDATA%</code> 两目录均为安装残留）</td><td>数据根可在任意位置（<code>dataRoot</code>）</td><td>我方更灵活</td></tr>
+</table>
+
+<div class="note"><b>直接回答团队关注的焦点：</b>"首次启动选择软件数据目录"在 VM 4.4 里<b>没有对应能力，也没有可迁移的原件</b>。我方该功能是<b>平台必要能力</b>（多版本并存、共享数据根、安装目录不可写时的落地），应在文档中明确标注为<b>自研设计</b>，不要写成"对齐 VM"或"VM 迁移"。同类的还有：<code>schemaVersion</code> 协商、<code>dataId</code> 目录身份、拒绝安装目录 —— VM 侧均无等价物（VM 连 <code>AppData.dat</code> 都没有版本号）。</div>
+
+<h2>B. 工具层逆向材料盘点</h2>
+
+<p class="small">盘点范围：<code>docs\04-工具设计\架构对照\...\references\vm-control-library-20261026</code>（4 项）+ <code>docs\collaboration\evidence</code>（577 文件，按前缀归类：O06=93、B08=124、BLOB=74、VM=32、C09=10、S1=15、I2=8、C17/C07/C08/C13/C14 若干、OTHER=108）。<b>说明：</b>表中"规模"为实测字节数；<b>977 KB / 1.07 MB / 216 KB 等大文件本次只核了 schema 头与 coverage 段，未逐条遍历</b>，凡我未逐条读的均在"缺口/限度"列注明。</p>
+
+<table>
+<tr><th>#</th><th>材料</th><th>规模</th><th>覆盖的 VM 原件范围</th><th>证据类型</th><th>能直接支撑实现？</th><th>缺口 / 限度</th></tr>
+
+<tr><td>1</td><td><code>references\vm-control-library-20261026\VM控件库目标清单.json</code><br><span class="small">schema <code>vm-tool-layer-control-targets/v1</code></span></td><td>973 KB</td>
+<td><b>工具层控件目标全集</b>：<code>uniqueControlTargets=194</code>（模块自有 152 + 直接引用共享 42），69 个模块有控件证据，模块程序集出现 424 次，TypeRef 出现 19201 次；分组 windows 35 / composite 113 / basic 4 / usage 11 / unresolved 31</td>
+<td>PE/CLI 元数据 + XAML <code>x:Class</code> + 图片资源 SHA-256；<b>非</b>运行时像素截图</td>
+<td>可定位"某工具该有哪些控件、出处是哪个程序集/MVID/类型"</td>
+<td>TypeRef ≠ 实例化；29 项目前只有类型元数据；31 项 unresolved；<b>不等于迁移完成率</b>；主窗/画布/通用页面/SDK 镜像被有意排除</td></tr>
+
+<tr><td>2</td><td><code>VM控件库逆向目标.html</code></td><td>818 KB</td>
+<td>同 1 的可读报告，四节：Blob 控件外观 / 控件目标清单 / 工具模块外部 XAML 模板 / 未闭合证据边界</td>
+<td>静态报告 + 资源 SHA</td><td>可作人工查源入口</td><td>同上；"模块外部 XAML 模板"结论为 <b>0 条</b>（工具模块不在外部定义模板）</td></tr>
+
+<tr><td>3</td><td><code>VM控件库Blob外观证据.json</code><br><span class="small">schema <code>vm-blob-control-appearance-evidence/v1</code></span></td><td>83 KB</td>
+<td>Blob 单工具外观证据：<code>IMVSBlobFindModuAlgorithmTab.xml</code>(SHA <code>34a0cc54…</code>)、<code>IMVSBlobFindModu.dll</code>(<code>4de695d8…</code>，原生 PE，<b>无 CLI 目录</b>)、<code>IMVSBlobFindModuCs.dll</code>(<code>3106af2e…</code>，托管但"不是独立的 Blob WPF 控件程序集")、<code>Apps.XmlUI.dll</code>(<code>639d0fb9…</code>，共享参数编辑器)</td>
+<td>文件 SHA + REA evidence id + 内嵌资源名</td><td><b>是</b>——外观与承载方已能精确到程序集/资源</td><td>像素级外观仍需用户截图（见 #9）；主题差异未穷尽</td></tr>
+
+<tr><td>4</td><td><code>reference-manifest.json</code></td><td>3 KB</td>
+<td>归档身份与边界：产品 <code>V4.4.0 Build20250516@1555331</code>、<code>VersionInfo.config</code> 466 B/SHA <code>d82cd1e7…</code>；四份源文件逐字节归档</td>
+<td>清单 + SHA</td><td><b>是</b>——取证可复现性的根</td><td>声明"未执行扫描器、未加载厂商程序集"</td></tr>
+
+<tr><td>5</td><td><code>MetadataScanner\Program.cs</code></td><td>9 KB</td>
+<td>扫描器源码（MetadataScanner 生成 #1/#3）</td><td>代码证据</td><td>可作为"如何重新生成"的参考</td><td>"不代表可独立运行的完整工程"</td></tr>
+
+<tr><td>6</td><td><code>VM_S3_BlobTool_decompiled_20261025.cs.txt</code><br><code>VM_S3_FRAMEWORK_AND_OWNERSHIP_20261025.md</code><br><code>VM_S3_EVIDENCE_ADOPTION_20261025.json</code><br><code>VM_S3_MANAGED_DEPENDENCIES_20261025.json</code></td><td>1.7 KB<br>11 KB<br>2.5 KB<br>66 KB</td>
+<td><b>工具执行链核心</b>：<code>IMVSBlobFindModuTool</code> 全源码（<code>Run()</code> 23 字节 IL → <code>SyncSelfRun(ID)</code>）、框架加载链 <code>VmSolution.LoadModules → VmModuleSet.CreatModuleByInfo → CreateModuleToolRe → LoadModuleDLL</code>（<code>${ModuleName}Cs.dll</code> 必需、<code>${ModuleName}Control.dll</code> 独立可选、缺失回退 <code>VM.Core.VmModule</code>）、结果所有权（deep-copy vs callback 原始指针）</td>
+<td><b>反编译源码 + 汇编 SHA/MVID + IL SHA + REA evidence id</b></td>
+<td><b>是</b>——工具壳入口、可选编辑器、结果内存语义可据此设计</td>
+<td>native 半段未闭合（见缺口清单 G1/G2）；<code>Control.dll</code> 有/无对照未做运行验证（G3）</td></tr>
+
+<tr><td>7</td><td><code>BLOB_WHOLE_TOOL_*</code>（7 件）：<code>THREE_PAGE_MATRIX_CANDIDATE</code> 551 KB、<code>RUN_PARAMETER_BASELINE</code> 20 KB、<code>GUI_CANDIDATE</code> 23 KB、<code>BACKGROUND_CANDIDATE</code> 28 KB、<code>EXECUTABLE_DESIGN</code> 9.6 KB、<code>MIGRATION_DESIGN</code> 7.2 KB、<code>MATRIX_REVIEW</code> 3.3 KB</td><td>合计 ≈ 640 KB</td>
+<td><b>Blob 整工具逐项</b>：96 直接项（基本 8 / 运行 46 / 结果 42）+ 8 共享组 + 递归展开 54 个带 Name 结构成员；每项带证据确定度、整批决定、测试入口 ID、缺失验收</td>
+<td>静态 XML 声明 + 矩阵（我方设计侧字段）</td>
+<td><b>是</b>——逐字段实施与验收映射的直接输入</td>
+<td><code>MATRIX_REVIEW</code> 自述：原阈值相等/像素边界、量化比较、筛选排序限数、填孔顺序、空集聚合、绘制图像素/Domain、角度轴长、<b>原生内存所有权</b>均未由矩阵证明（G4）</td></tr>
+
+<tr><td>8</td><td><code>BLOB_B0x_*_AUDIT_20261029/30</code>（B01 布尔、B02 枚举、B03 整数单选、B05 浮点、B06 文本、B07 颜色、B08 引用）+ <code>C07/C13/C17</code>（扩展引用 / 文本 UI / 十字链）</td><td>≈ 20 件 / 0.2 MB</td>
+<td>各<b>参数类型</b>的原件控件行为与数据结构</td><td>静态审计 + 局部用户截图</td><td><b>是</b>——控件族行为对齐</td><td>逐类型"运行等价"未验；B08 引用类 27 KB 审计只覆盖 Blob 场景</td></tr>
+
+<tr><td>9</td><td><code>VM_BLOB_UI_SOURCE_BASELINE_20261026.json</code> 216 KB、<code>VM_CONTROL_LIBRARY_INVENTORY_20261026.json</code> 1.07 MB、<code>VM_BLOB_USER_UI_SS01/03/04/05/06/07/08.png</code>（8 张）、<code>VM_BLOB_*_USER_20261026.png</code>（7 张）、<code>VM_BLOB_USER_SCREENSHOT_MANIFEST</code></td><td>≈ 1.4 MB</td>
+<td>Blob UI 原貌：源码基线 + 全量控件清单 + <b>真实用户截图</b>（输入源、局部值、范围滑块、未聚焦范围、单滑块、订阅、切换范围布局等）</td>
+<td><b>运行时截图</b>（唯一具备"运行外观"档的材料）+ 资源 SHA</td>
+<td><b>是</b>——外观/状态对齐的最强材料</td><td>截图集合非穷尽；主题（3 套 ColorStyle）差异未覆盖；截图是他人环境，未绑定本机 DPI/主题（G5）</td></tr>
+
+<tr><td>10</td><td><code>O06_*</code>（93 件 / 3.3 MB）：<code>BLOB_NATIVE_BETWEEN/BOX/NUMBER/PALETTE/RING/SECTOR/TREE_CHECKPOINT</code>、<code>ADVANCED_PARAMETER</code>、<code>ALGORITHM_IMPLEMENTATION/RESOURCE(.zip)/TRANSFER</code>、<code>ASSIST_GLOBAL_FORMAL</code> 等</td><td>93 件</td>
+<td>Blob <b>原生控件逐项</b>（区间、方框、数值、调色板、环形、扇区、树）+ 算法实现/资源移交 + 原生工具编辑器候选</td>
+<td>静态反编译 + 截图 + 资源 zip + 逐项 checkpoint</td><td><b>是</b>——控件级实现的直接依据</td><td>checkpoint 是"当时状态"快照，需与最新产品源码重新对齐；原生控件运行行为仍未验</td></tr>
+
+<tr><td>11</td><td><code>VM_EDITOR_OPEN_LIFECYCLE_ORIGINAL_20261103.md</code></td><td>8 KB</td>
+<td><b>工具参数窗完整开窗链</b>：<code>diagramitemtemplate.xaml:1798</code> 双击 → <code>DiagramArea.xaml.cs:346-370</code> → <code>ProcedureConfigControl.xaml.cs:613-705</code>（<code>CanOpenConfigurationInterface</code> 权限准入 → 先 <code>Close()</code> 再开）→ <code>:708-780 OpenParamsTabControl</code>（校验 <code>模块.xml</code>/<code>AlgorithmTab.xml</code>/<code>Display.xml</code>）→ <code>:804-829 GetExternTabWin</code>（<code>ModuleTypeName+Control</code> 程序集 → 首个 <code>TabWinBase</code> 子类，否则 <code>ParamsTabControlBase</code>）→ <code>Show()</code>；<code>ParamsConfigControlBase.xaml.cs:206-265</code> 参数根/DataContext/DoIniter；<code>VmModuleExtern.GetParamRoot:28-35</code> 根缓存以 <code>ModuleParam.Data</code> 为宿主</td>
+<td><b>反编译源码行号 + 程序集 SHA/MVID</b></td>
+<td><b>是</b>——编辑器开窗时序与"可选专用编辑器"架构可直接迁移</td>
+<td>未闭合项（原作者自述）：<code>Window.Close</code> 可否取消及重入、构造到首帧的 WPF 模板实例化时序、<code>GetParamRoot</code> 缓存失效全部入口、Blob 实际加载的 Control/程序集、同机分段耗时、原厂后台线程栈（G3/G6）</td></tr>
+
+<tr><td>12</td><td><code>VM_BLOB_ALGORITHM_DEPENDENCY_AUDIT_20261026.md</code>、<code>VM_BLOB_PROCESSING_FLOW_20261026.md</code>、<code>VM_BLOB_RUNTIME_WPF_STRUCTURE_20261026.{json,md}</code>、<code>VM_BLOB_UI_ROLE_RECONCILIATION</code>、<code>VM_BLOB_UI_STATIC_SUPPLEMENT</code>、<code>VM_S4_FIELD_TEMPLATE_REUSE</code>、<code>VM_RESULT_PANEL_USER_COMPARISON</code>、<code>BLOB_S1_UI_ACCEPTANCE_INDEX</code>(41 KB)、<code>BLOB_S3_ALGORITHM_BASELINE</code></td><td>≈ 15 件 / 0.15 MB</td>
+<td>Blob 算法依赖、处理流程、运行期 WPF 结构、UI 角色调和、字段模板复用、结果面板对照、S1 验收索引、算法基线</td>
+<td>静态审计 + 结构 dump + 索引</td><td>部分可直接用（结构/索引）；算法基线仅"基线声明"</td><td><b>算法侧不做等价承诺</b>：本法只有 schema 与结构，<b>没有</b>算法函数体恢复（G4）</td></tr>
+
+<tr><td>13</td><td><code>B08_*</code>（124 件，最大 <code>THREE_PAGE</code> 之外含 <code>REFERENCE_*</code>、<code>NUMERIC_*</code>、<code>NAVIGATION</code>、<code>ORIGINAL_*</code> 系列）</td><td>124 件 / 1.6 MB</td>
+<td><b>Blob B08 引用/数值参数</b>的深度专题：绑定顺序、引用偏好边界、索引协议、SDK 序列化、数值一致性与原始边界、失败与 UI 边界、代理路径修正、REA metadata 限制</td>
+<td>反编译源码 + REA metadata + 逐项设计/验证 json</td><td><b>是</b>——数值/引用类字段的最深材料</td>
+<td>部分文件为"某日某候选状态"，需按当前源码重核；<code>B08_PROBE_REA_METADATA_LIMIT</code> 记录了 REA 能力边界</td></tr>
+
+<tr><td>14</td><td><code>唯一工具配置与方案会话准入整链设计-20261103.html</code></td><td>56 KB</td>
+<td><b>我方设计</b>：ToolConfiguration / DocumentSession / 准入视图；<code>OpenScope</code> 四步校验、正式运行 vs 私有草稿双协议、SchemaVersion4→（现行 5）拒绝旧 3、消费者单次切换</td>
+<td>我方源码签名 + 设计正文（<b>非原件证据</b>）</td><td><b>是</b>（作为我方设计基线）</td><td>文中"待主线冻结"的签名不是现网 API；需与实际代码对齐后使用</td></tr>
+
+<tr><td>15</td><td><code>可信工具目录与元数据唯一入口整体设计-20261104.html</code>（21 KB）<br><code>工具独立开发的公开合同与分发边界-20261103.html</code>（9 KB）<br><code>工具箱全目录与加载状态整批方案-20261102.html</code>（11 KB）<br><code>公共控件中立映射-20261103.json</code>、<code>公共控件消费者中立映射-20261103.json</code>、<code>公共控件未编译资料索引-20261103.html</code></td><td>≈ 45 KB</td>
+<td><b>我方设计与中立化映射</b>：工具目录唯一入口、加载状态、公开合同/分发边界、公共控件中立命名与消费者闭包</td>
+<td>我方源码/路径/SHA（<b>非原件</b>）</td><td><b>是</b>（作为我方基线）</td><td>分发边界文档自述是"公开合同边界"，<b>VM 侧无对应机制</b>可迁移（见 G7）</td></tr>
+
+<tr><td>16</td><td><code>六测量原件静态批次核收与实施影响-20261104.html</code> + <code>六测量原件资源批次快照-20261104.json</code>、<code>变量管理器原件与迁移覆盖清单-20261104.json</code>、<code>相机原件控件整链接入-20261103.html</code>、<code>图像源与Blob编辑宿主原件窗证据-20261102.html</code>、<code>图像源与Blob编辑宿主整体替换设计-20261102.html</code></td><td>≈ 40 KB</td>
+<td>其他工具族（六测量、变量管理器、相机、图像源）的原件静态核收与实施影响</td><td>静态核收 + 资源快照 + 宿主证据</td><td>部分（核收结论可直接引用）</td><td>覆盖深度低于 Blob；测量族只到"静态批次核收"级</td></tr>
+</table>
+
+<h3>B2｜哪些工具层问题有原件证据 / 哪些完全没有</h3>
+
+<h4>已有原件证据（可直接支撑实现，证据档：静态强证）</h4>
+<table>
+<tr><th>问题</th><th>证据落点</th></tr>
+<tr><td>工具模块如何被加载（托管侧）</td><td><code>VmSolution.LoadModules → VmModuleSet.CreatModuleByInfo → CreateModuleToolRe → LoadModuleDLL</code>；目录 <code>Module(sp)\x64\&lt;Category&gt;\&lt;ModuleName&gt;</code>；<code>${ModuleName}Cs.dll</code> 必需、<code>${ModuleName}Control.dll</code> 可选、缺失回退 <code>VM.Core.VmModule</code>（材料 #6、#11）</td></tr>
+<tr><td>工具执行入口与结果查询</td><td><code>IMVSBlobFindModuTool.Run()</code> 23 B IL → <code>SyncSelfRun(ID)</code>；<code>ModuResult</code> → <code>QueryModuleOneResult</code> → <code>IMVS_QueryModuleHistoryResult</code> → <code>ModuleResultManager.SetModuleResult</code>（#6）</td></tr>
+<tr><td>专用参数编辑器是否必需</td><td><b>不是</b>。<code>GetExternTabWin</code> 找不到 <code>TabWinBase</code> 就用通用 <code>ParamsTabControlBase</code>（#6 结论 3、#11）</td></tr>
+<tr><td>参数窗开窗/关闭/权限时序</td><td><code>CanOpenConfigurationInterface</code> → 先 <code>Close()</code> → <code>OpenParamsTabControl</code> → 文件门槛（<code>模块.xml</code>/<code>AlgorithmTab.xml</code>/<code>Display.xml</code>）→ <code>Show()</code>；关闭后 <code>CurTabControlBase_Closed:830-846</code> 清窗口/Tag/IsOpenParams（#11）</td></tr>
+<tr><td>工具参数根缓存语义</td><td><code>VmModuleExtern.GetParamRoot</code>：<code>ModuleParam.Data==null</code> 才创建，否则返回缓存；<code>AlgorithmTabRoot.Dispose</code> <b>不清</b> <code>ModuleParam.Data</code>（#11）</td></tr>
+<tr><td>工具目录与元数据组织（VM 侧）</td><td><code>AppData.ModulesDir</code> 一级目录 + <code>ToolGroup.xml</code> 决定分类、<code>Global</code>/<code>UserTools</code>/<code>GroupTools</code>；每工具 <code>ToolItemInfo.xml</code>；普通分类由 <code>ToolBox.OnMouseEnter</code> 按需 <code>UpdateLoad</code>（<code>ToolBoxData.cs:266-325,77-120</code>；<code>ToolBox.xaml.cs:185-199</code>，见 START-RE-01 报告）</td></tr>
+<tr><td>工具层控件目标全集与外观</td><td>194 项目标 + 152 项精确 <code>x:Class</code> + 86 项原图资源 + Blob 8 张真实截图（#1/#3/#9）</td></tr>
+<tr><td>结果内存语义（托管层）</td><td><code>ModuleResultManager.SetModuleResult</code> 默认 <code>Memory_Deep_Copy</code>；Blob async 回调分支<b>不</b>深复制并随即 <code>Results.Clear()</code>（#6 结论 7-8）</td></tr>
+<tr><td>工具参数 XML 契约</td><td><code>AlgorithmTab.xml</code>/<code>Display.xml</code>/<code>Group.xml</code>/<code>Combination.xml</code>/<code>ShapePropertyConfig.xml</code> 结构与 Blob 具体 SHA（#3/#7）</td></tr>
+<tr><td>方案升级时工具参数如何迁移</td><td><code>CompatibleTool.xml</code> 模块 IO 重命名白名单（本文 A3）</td></tr>
+</table>
+
+<h4>完全没有原件证据（本批确认缺口，需另立取证）</h4>
+<table>
+<tr><th>ID</th><th>缺口</th><th>为什么没有</th><th>解除条件</th></tr>
+<tr><td>G1</td><td><b>native SDK 内部</b>如何由模块名解析/装载算法 DLL（<code>IMVS_AddOneModule</code> 之后）、版本校验与错误分支</td><td>REA <code>search_procedures</code> 返回 <code>provider_unavailable</code>：ghidra 未配 <code>GHIDRA_INSTALL_DIR</code>，Hopper/IDA 不可用；本机 REA MCP 未注册</td><td>配置可用的原生反汇编 provider（Ghidra 或 IDA），或厂商文档</td></tr>
+<tr><td>G2</td><td><b>native 结果 <code>pData</code> 的所有权与释放时点</b></td><td>托管代码只看得到指针转结构，无 release 调用</td><td>受控同版本进程探针（记录结果到期/释放）或 native 函数体</td></tr>
+<tr><td>G3</td><td><b>原机运行对照</b>：Blob <code>Control.dll</code> 有/无对执行的影响；参数窗首帧耗时；分段计时</td><td>需真实 VM 运行 + 控制组/实验组</td><td>原机同版本实测（授权范围另定）</td></tr>
+<tr><td>G4</td><td><b>工具算法语义</b>：阈值相等边界、像素边界、量化后比较、筛选排序限数、填孔顺序、空集聚合、绘制图像素/Domain、角度轴长</td><td>只有 schema 与结构，无算法函数体；<code>IMVSBlobFindModu.dll</code> 为原生 PE 无 CLI 目录</td><td>native 反汇编 + 与 HALCON 对标实验</td></tr>
+<tr><td>G5</td><td>外观在<b>不同主题/DPI</b>下的表现（VM 有 3 套 <code>ColorStyle</code>）</td><td>现有截图是单一环境</td><td>多主题原机截图</td></tr>
+<tr><td>G6</td><td><code>Window.Close</code> 可否取消及重入、构造→首帧的 WPF 模板实例化时序、<code>GetParamRoot</code> 缓存失效全部入口</td><td>静态源码未闭合（原作者明确列为未闭合）</td><td>定向静态追代码 + 运行探针</td></tr>
+<tr><td>G7</td><td><b>VM 是否存在"工具插件独立分发/授权/版本协商"机制</b>（对应我方"工具独立开发公开合同"）</td><td><b>已于 2026-11-05 收口（见 B3 节）：结论为"没有插件级机制"</b>，只有产品/加密狗级许可、用户角色权限、算法库整包版本切换、方案级版本迁移。剩余未知仅"native 内是否有按模块 ID 的 feature 位图"，需 native 反汇编</td><td>仅剩 native 位图粒度一项（成本高、优先级低）</td></tr>
+<tr><td>G8</td><td>工具"元数据唯一入口"的<b>运行时装配</b>细节（工具优先级、语言、隐藏规则、<code>IsDisplayInMenu</code>/<code>IsShowSeparator</code> 的最终生效）</td><td>只有 <code>ToolGroup.xml</code>/<code>ToolItemInfo.xml</code> 静态结构与 <code>ToolBoxData</code> 读取链</td><td>运行期探针或更完整反编译 <code>VMControls.Data/ToolBoxData</code> 消费者</td></tr>
+</table>
+
+<div class="note"><b>对后续实施的一句话判断：</b>工具层<b>架构级</b>问题（模块如何加载、编辑器是否必需、参数根如何缓存、控件目标有哪些）<b>已有可支撑实现的原件证据</b>；工具层<b>行为/算法级</b>问题（native 装载、内存所有权、算法边界、运行等价）<b>完全没有</b>。前者可以现在动手，后者必须先补取证，不能用"结构相似"冒充等价。</div>
+
+<h2>B3. G7 专项：VM 是否有插件授权 / 版本协商（2026-11-05 追加）</h2>
+
+<div class="note"><b>先做一处公开更正。</b>D2 汇报里我把 <code>Server\PlatformManager.dll</code>(9.3 MB) 与 <code>Server\PlugAuthorization.dll</code>(7.0 MB) 写成"都是托管程序集，ILSpy 即可"——<b>这个判断是错的</b>。实测两者均为<b>原生 PE</b>（无 CLI 数据目录）。因此 G7 无法用 ILSpy 闭合；本节改用「PE 字符串 + 导出/依赖形状 + 配置 + 托管侧反向引用 + 模块目录实物」五路旁证，把能定的定死，把不能定的单列。</div>
+
+<h3>B3-0｜程序集性质校正（对照组实验）</h3>
+<table>
+<tr><th>程序集</th><th>大小</th><th><code>BSJB</code>（CLI 元数据签名）</th><th><code>_CorDllMain</code></th><th><code>mscoree.dll</code></th><th>判定</th></tr>
+<tr><td><code>Server\PlatformManager.dll</code></td><td>9,264,128</td><td>False</td><td>False</td><td>False</td><td><b>原生 PE</b></td></tr>
+<tr><td><code>Server\PlugAuthorization.dll</code></td><td>7,028,224</td><td>False</td><td>False</td><td>False</td><td><b>原生 PE</b></td></tr>
+<tr><td><code>Server\PlugMonitorResource.dll</code></td><td>267,776</td><td>False</td><td>False</td><td>False</td><td><b>原生 PE</b></td></tr>
+<tr><td><code>ModuleProxy\x64\ModuleProxy.dll</code></td><td>1,727,488</td><td>False</td><td>False</td><td>False</td><td><b>原生 PE</b></td></tr>
+<tr><td><code>myLibs\VM.Core.dll</code>（对照组）</td><td>436,736</td><td><b>True</b></td><td><b>True</b></td><td><b>True</b></td><td>托管</td></tr>
+</table>
+<p class="small">对照组证明判定方法有效：托管程序集必含 <code>BSJB</code> 与 <code>mscoree.dll</code> 引用，上述四个 Server/ModuleProxy 件全部缺失。命令见文末"自验方法"。</p>
+
+<h3>B3-1｜<code>PlugAuthorization.dll</code> 的 "Plug" 指<b>加密锁</b>，不是插件</h3>
+<p><span class="obs">观察到</span>　该 DLL 内 3092 条唯一可读 ASCII 串里，授权词汇<b>全部</b>是深思数盾（Virbox）加密锁 SDK 的厂商标识与错误码，例如：</p>
+<pre>The Virbox License Service found is local service.
+Virbox License Service is not running.
+Dongle entry version is too low.
+Dongle reads data error from mikey.
+Dongle send data error to mikey.
+The master lock version is low and the new lock must be replaced.
+Pairing need authorized. / Authorized code error.
+The PIN is not activated. Please modify the initial PIN.
+Developer certificate already exists. / Parse certificate error. / Certificates revoked
+There is no signed content in D2C package.
+SOFTWARE\Microsoft\Cryptography
+License module not exist. / License data verify failed. / Can not find the license.
+License need to activate online.
+Update Package version low
+</pre>
+<p>与 <code>Server\ServerAuthConfig.ini</code> 完全吻合：</p>
+<pre># Authorize type, 0:virbox dongle[default], 1:sentinel soft authorize, 2:virbox soft authorize,
+#                3:virbox network dongle, 4:check all of virbox type[include 0,2,3]
+AuthorizeType = 0</pre>
+<p><b>结论：</b>这里的授权是<b>整机产品许可</b>（加密锁 / 软授权 / 网络锁），与"某个工具插件是否被授权"无关。</p>
+
+<h3>B3-2｜<code>PlatformManager.dll</code> 同样内嵌授权模块，且无插件语义</h3>
+<p><span class="obs">观察到</span>　10691 条唯一 ASCII 串中，命中授权语义的<b>全部</b>与 B3-1 属同一套 Virbox 串（<code>Virbox License Service</code>、<code>Dongle entry version is too low</code>、<code>License module not exist</code>…），即 PlatformManager 静态链接了同一授权模块。其"版本"相关串只有两类：</p>
+<ul>
+<li>Protocol Buffers 运行时版本校验提示（第三方库自带）</li>
+<li>Virbox 的 <code>Update Package version low</code>、<code>Virbox user tool version is too low</code>、<code>Exchange certificate failed …certificate upgrade compatibility error</code></li>
+</ul>
+<p><b>结论：</b>PlatformManager 里<b>没有</b>"插件清单/插件版本/插件签名"语汇；它的职责是模块请求转发（既有证据 <code>analysis\vm-framework-architecture-20261030\platformmanager-moduleproxy-boundary-evidence.md</code> 已确认它动态解析 <code>VM_PROXY_RecvServerCommand</code> 转发到 <code>ModuleProxy</code>）。<span class="unk">未知</span>：其内部是否存在按模块 ID 的 feature 位图，需 native 反汇编。</p>
+
+<h3>B3-3｜授权是"产品级 + 功能级"，不是"插件级"</h3>
+<p><span class="obs">观察到</span>　SDK 的授权错误码族（<code>VM.PlatformSDKCS.Audit\VM.PlatformSDKCS\ImvsSdkDefine.cs</code> 约 13730–13860 行）明确区分了层级：</p>
+<table>
+<tr><th>错误码</th><th>中/英注释</th><th>粒度</th></tr>
+<tr><td><code>IMVS_EC_ENCRYPT_NO_DONGLE</code> 系列</td><td>加密狗未检测到或检测异常 / No dongle detected or detection exception</td><td>整机</td></tr>
+<tr><td><code>IMVS_EC_ENCRYPT_SOFT_NOT_ACTIVATED</code> -536869115</td><td>产品授权未激活 / Product authorization not activated</td><td>产品</td></tr>
+<tr><td><code>IMVS_EC_ENCRYPT_SOFT_OUTDATE</code> -536869116</td><td>（授权过期）</td><td>产品</td></tr>
+<tr><td><code>IMVS_EC_ENCRYPT_SOFT_FEATURE_EXPIRE</code> -536869113</td><td><b>授权的功能已过期</b> / The authorized feature has expired</td><td><b>功能</b></td></tr>
+<tr><td><code>IMVS_EC_ENCRYPT_SOFT_FEATURE_FORBIDDEN</code> -536869101</td><td>机器不满足授权要求而被禁用 / feature is forbiddened for the machine</td><td><b>功能</b></td></tr>
+<tr><td><code>IMVS_EC_ENCRYPT_SOFT_ABILITY_OR_RESOURCE</code> -536869102</td><td>（能力或资源）</td><td><b>能力</b></td></tr>
+<tr><td>「没有开发狗权限」</td><td>Without development authority</td><td>开发者狗</td></tr>
+<tr><td>「相机模块数量超出限制」</td><td>The number of camera modules is out of limit</td><td>数量配额</td></tr>
+</table>
+<p>SDK 侧入口：<code>iMVS_6000PlatformSDKCS\ImvsPlatformSDK_API.cs:141</code> <code>IMVS_PF_GetDongleAuthority_CS(IntPtr handle)</code>「获取加密狗权限信息 / Get the dongle authorization information」。<br>
+另有本地许可期限模型 <code>VisionMaster\EncryptDefine.cs</code>：<code>AUTH_LOCALHOST_LICENSE_PERPETUAL / _LIMIT_VALUE</code>、<code>nAvailableDay</code>、<code>nAvailableCount</code>、<code>AUTH_LOCAL_MACHINE / AUTH_REMOTE_MACHINE</code>。</p>
+<p><b>结论：</b>授权粒度是「产品 / 加密狗 / 功能位 / 配额」。<b>没有任何证据</b>表明这些"功能位"与具体工具模块目录或 <code>ToolItemInfo.xml</code> 绑定；<span class="unk">未知</span>：功能位是否恰好按算法模块划分（需 native 位图或厂商文档）。</p>
+
+<h3>B3-4｜托管层完全看不到授权程序集（授权在原生侧闭环）</h3>
+<p><span class="obs">观察到</span>　对 <code>myLibs</code> 全部 82 个托管 DLL + <code>VisionMaster.exe</code> 做 ASCII 引用检索，<code>PlugAuthorization</code>、<code>PlatformManager</code>、<code>PlugMonitorResource</code>、<code>IsActiveAlgorithmEnabled</code> <b>命中数均为 0</b>。即：<b>没有任何托管程序集引用授权/平台管理程序集</b>，托管侧只能通过 SDK 句柄间接感知授权结果。</p>
+<p><span class="obs">观察到</span>　托管层另有一套<b>用户角色</b>授权，与插件无关：<code>VisionMaster\AccessManager.cs</code> 订阅 <code>CodeManager.OnAccessEnableCallBack</code>，按 <code>AccessUser</code> 枚举切 <code>Lang_Role_Admin</code>/<code>_Tech</code>/<code>_Operator</code>，并提供 <code>ChangeLoginUserCommand</code> → <code>new LoginWindow().ShowDialog()</code>（<code>:112-141, 102-110</code>）。该角色随后影响工具参数窗准入（<code>ProcedureConfigControl.CanOpenConfigurationInterface</code> 读登录角色 / <code>ConfigAvailable</code> / <code>ConfigCheck</code>，见 <code>VM_EDITOR_OPEN_LIFECYCLE_ORIGINAL_20261103.md:8</code>）。</p>
+
+<h3>B3-5｜工具模块实物：松散目录 + 4 字段元数据，无清单/无签名/无版本</h3>
+<p><span class="obs">观察到</span>　以 <code>Module(sp)\x64\Location\IMVSBlobFindModu\</code> 为例，一个工具的完整实物是 11 个平铺文件：</p>
+<pre>IMVSBlobFindModu.dll              248832   原生算法
+IMVSBlobFindModu.xml               15873   模块参数根（ServerRepAddress / ModuleName / IsLoalModule / ModuleViewMode / ModuleDisplayName / ModuleHelp）
+IMVSBlobFindModuAlgorithm.xml      10827
+IMVSBlobFindModuAlgorithmTab.xml  123949   参数页定义
+IMVSBlobFindModuCs.dll             37376   托管壳
+IMVSBlobFindModuCs.xml             42157   XML 文档注释（不是清单）
+IMVSBlobFindModuDisplay.xml        10611
+IMVSBlobFindModuImageEnable.png     1716   分类图标
+IMVSBlobFindModu_NormalLogo.png      692
+IMVSBlobFindModu_StateLogo.png       476
+ToolItemInfo.xml                     242   工具项元数据</pre>
+<p><code>ToolItemInfo.xml</code> 全文仅 4 个字段，<b>无版本、无依赖、无签名、无授权 ID</b>：</p>
+<pre>&lt;ToolBoxItemData&gt;
+    &lt;name&gt;IMVSBlobFindModu&lt;/name&gt;
+    &lt;priority&gt;6&lt;/priority&gt;
+    &lt;toolTip&gt;IMVSBlobFindModu_Tip&lt;/toolTip&gt;
+    &lt;helpUrl&gt;GUID-F5B9D37D-90C6-45DE-8880-DADBE017C0CC&lt;/helpUrl&gt;
+&lt;/ToolBoxItemData&gt;</pre>
+<p><b>全量统计（<code>Module(sp)</code> 2155 个文件）</b>：</p>
+<table>
+<tr><th>扩展名</th><th>.xml</th><th>.dll</th><th>.png</th><th>.Config</th><th>.ini</th><th>.exp</th><th>.lib</th><th>.py</th><th>.cs</th><th>.txt</th><th>.cfg</th><th>.bat</th></tr>
+<tr><td>数量</td><td>985</td><td>596</td><td>494</td><td>26</td><td>8</td><td>8</td><td>8</td><td>7</td><td>5</td><td>4</td><td>3</td><td>2</td></tr>
+</table>
+<p><strong>签名/清单类扩展名（<code>.sig .cat .manifest .pkg .ver .json .hash .sha .cer .pfx</code>）命中数 = 0</strong>；文件名含 <code>Version|Manifest|Signature|License|Auth|Package</code> 的命中数 = 0。</p>
+<p><span class="inf">推断（强）</span>：在 VM 里"安装一个工具"= <b>把一个目录拷进 <code>Module(sp)\x64\&lt;分类&gt;\&lt;模块名&gt;\</code></b>；"启用/出现在工具箱"= 该目录存在且含 <code>ToolItemInfo.xml</code>/<code>ToolGroup.xml</code>（读取链见 <code>ToolBoxData.LoadData</code> 与 <code>START-RE-01.md:18</code>）。没有安装包、没有版本声明、没有签名校验、没有授权绑定。</p>
+
+<h3>B3-6｜"版本"机制有三条，全部不是插件级</h3>
+<table>
+<tr><th>机制</th><th>作用对象</th><th>证据</th><th>是否插件级</th></tr>
+<tr><td><code>VersionInfo.config</code> 版本表</td><td>整套产品 + 算法 SDK + 相机标准</td><td><code>Applications\VersionInfo.config</code>：<code>VM=V4.4.0 Build20250516@1555331</code>、<code>MVDAlgorithmSDK_2D=V4.4.1 …</code>、<code>MVS_STD=3.4.1</code>、<code>MVS_Drive=4.5.1.1</code></td><td>否（产品级）</td></tr>
+<tr><td>算法库<b>整包</b>版本切换</td><td>MVD 2D 算法库</td><td><code>Tools\AlgorithmVersionSwitchingTool\AlgorithmVersionSwitchingTool.exe</code> 字符串：<code>SOFTWARE\MVDAlgorithmSDK</code>、版本列表 <code>4.0.0/4.1.0/4.2.0/4.3.0/4.2.21/4.2.30</code>、<code>{0}\Runtime\x64\MVD_Algorithm.dll</code>、<code>VersionInfo.config</code>；<code>VisionMaster.cfg</code> 的 <code>AlgoVersionInfo</code> 记录 17 个 <code>MVB_*</code> 库版本</td><td>否（算法库整包）</td></tr>
+<tr><td>方案级版本判定 + 迁移</td><td>用户方案文件</td><td>A3 节：<code>IMVS_GetSolutionVersion</code> + <code>CompatibleTool.exe</code>（<code>CompatibleTool.xml</code> 按模块 IO 名迁移）</td><td>否（方案级，但<b>触及模块参数名</b>）</td></tr>
+<tr><td>算法模块激活工具</td><td>MVD 算法</td><td><code>Tools\ActivationTool\ActivationTool.exe</code>（托管）：<code>IsActiveAlgorithmEnabled</code>、<code>{0}\MVDAlgorithmSDK\MVDTools\ActivationTool\AlgorithmActivationTool.exe</code>、<code>4.2.0</code></td><td>否（算法 SDK）</td></tr>
+<tr><td>文件关联注册器</td><td><code>.sol</code> 双击打开</td><td><code>ToolsOfInternal\VMRegister.exe</code>（托管）：<code>\OpenWithProgids</code>、<code>\shell\open\command</code>、<code>-register</code>/<code>-unregister</code>、<code>.exe" "%1"</code></td><td>否（OS 关联）</td></tr>
+</table>
+<p>唯一与插件有交集的是 `CompatibleTool.xml`：它按 <code>ModuleInfo/TypeName</code> 声明旧参数/输出名到新名的映射（<code>MinWidth→MinWidths</code>、<code>ROI→DetectROIs</code> 等）。这是<b>方案升级期的参数名迁移表</b>，不是模块版本协商协议。</p>
+
+<h3>B3-7｜结论（三档）</h3>
+<table>
+<tr><th>问题</th><th>结论</th><th>档次</th></tr>
+<tr><td>VM 是否有"工具插件独立分发"机制（安装包/清单/版本/签名）</td><td><b>没有。</b>工具 = 松散目录 + 最大 4 字段的 <code>ToolItemInfo.xml</code>；2155 个模块文件中签名/清单类文件 0 个</td><td class="obs">观察到</td></tr>
+<tr><td>VM 是否有"插件级授权"</td><td><b>没有。</b>授权是产品/加密狗/功能位/配额四层，全部由原生 <code>PlugAuthorization</code>（Virbox）+ <code>PlatformManager</code> 内嵌模块处理，托管层零引用</td><td class="obs">观察到</td></tr>
+<tr><td>VM 是否有"插件级版本协商"</td><td><b>没有。</b>版本作用于产品、算法库整包、方案文件三个层级</td><td class="obs">观察到</td></tr>
+<tr><td>是否存在与工具模块绑定的用户级权限</td><td>存在<b>用户角色</b>（Admin/Tech/Operator）+ 参数窗准入（<code>CanOpenConfigurationInterface</code>），粒度是"人"而非"插件"</td><td class="obs">观察到</td></tr>
+<tr><td>native 内是否有按模块 ID 的 feature 位图</td><td>不能确定。<code>IMVS_EC_ENCRYPT_SOFT_FEATURE_*</code> 与 <code>..._ABILITY_OR_RESOURCE</code> 暗示"功能位"存在，但其划分单位（产品功能／算法库／模块）未知</td><td class="unk">未知</td></tr>
+</table>
+
+<h3>B3-8｜对我方设计的直接影响</h3>
+<ul>
+<li><b>我方"工具独立开发的公开合同 / 分发边界"是平台自建设计，没有 VM 原件可对齐。</b>VM 的对应物是"目录约定 + 松散文件"，比我方弱得多（无清单、无版本、无签名、无授权绑定）。</li>
+<li>我方已有的 <code>release-payload.json</code>（<code>payloadSchemaVersion=2</code>）、<code>ToolGroups.xml</code>（<code>SchemaVersion=1</code>）、<code>ToolDirectoryCatalog</code>（<code>src\Plugin.Infrastructure\Managers\Plugin\ToolDirectoryCatalog.cs:53</code> 校验 <code>SchemaVersion != 1</code> 即抛）属于<b>比原件更严格的自建合同</b>。</li>
+<li>因此文档口径必须是「<b>平台必要能力/自建设计</b>」，<b>不能</b>写成"对齐 VM"或"VM 迁移"；否则后续会被质疑"原件没有这个，为何要加"或反过来被要求"按原件简化掉"。</li>
+<li>反过来，如果确实需要对标 VM，方向是<b>简化</b>（目录约定即可），不是增强——这个取舍需要 lead 明确记录，不能默默把自建合同当迁移成果。</li>
+<li>授权/许可方面：我方若将来要接加密锁或功能位授权，VM 的粒度参考是「产品 → 加密狗 → 功能位 → 配额」，且<b>授权判定在原生侧、托管侧只看结果</b>；这条架构边界可借鉴。</li>
+</ul>
+
+<h2>C. 待补证据清单</h2>
+
+<table>
+<tr><th>分类</th><th>待补项</th><th>需要什么</th><th>影响</th></tr>
+<tr><td rowspan="3">需 REA 深挖</td><td><code>IMVS_AddOneModule</code> 之后的模块名→算法 DLL 解析链、版本校验、错误码</td><td>可用 Ghidra（配 <code>GHIDRA_INSTALL_DIR</code>）或 IDA；或 REA provider 注册</td><td>决定工具加载失败诊断与错误上报能否对齐原件（G1）</td></tr>
+<tr><td>native 结果 <code>pData</code> 释放时点与 lifetime</td><td>同上 + 受控探针</td><td>决定我方图像/结果资源释放策略安全性（G2）</td></tr>
+<tr><td><code>Server\PlatformManager.dll</code>(9.3 MB)、<code>PlugAuthorization.dll</code>(7.0 MB) 是否含插件授权/版本协商</td><td>托管反编译（这两个是托管程序集，ILSpy 即可）</td><td>决定"工具独立分发"是否真有原件依据或纯自建（G7）</td></tr>
+<tr><td rowspan="2">需实机</td><td>Blob <code>Control.dll</code> 控制组/实验组对照执行</td><td>原机 + 同版本 solution + 设备/虚拟相机</td><td>"专用编辑器可选"从静态强证升级为运行确认（G3）</td></tr>
+<tr><td>参数窗分段计时（准入→构造→根解析→DoIniter→模板→首帧）与主题/DPI 外观</td><td>原机 + 计时插桩 + 多主题截图</td><td>我方性能与外观对齐目标（G3/G5）</td></tr>
+<tr><td rowspan="3">需厂商文档</td><td><code>.sol</code> 完整 schema（<code>MoudleFrame</code> 序列化格式、<code>UiParamData</code> 字段语义）</td><td>海康开发者文档 / SDK 手册</td><td>仅在需要读取旧方案时有用；按现行规则<b>不做兼容</b>，优先级低</td></tr>
+<tr><td>工具模块版本升级矩阵（4.0→4.4 完整迁移规则）</td><td>厂商升级说明</td><td>同上，低</td></tr>
+<tr><td>工具插件是否官方支持第三方独立部署</td><td>VM 二次开发文档</td><td>决定"独立分发"是否需要对标（G7）</td></tr>
+<tr><td>需我方自查</td><td>"上次另存/打开目录"的 UX 记忆我方是否已有等价实现</td><td>读我方另存/打开对话框代码</td><td>若缺，可作为低优先 UX 补齐项；<b>不是</b>数据目录问题</td></tr>
+</table>
+
+<h2>D. 边界声明</h2>
+<ul>
+<li>本批<b>只新增本文档</b>；未改 <code>src</code>/<code>tools</code>/<code>tests</code>，未 <code>git commit</code>/<code>push</code>。</li>
+<li>未启动 <code>VisionMaster.exe</code>、未加载厂商程序集、未写注册表、未修改 <code>D:\Program Files\VisionMaster4.4.0</code> 下任何文件（全部只读）。</li>
+<li>未使用 <code>D:\MyWork\参考项目\VisionMaster</code>（HeBianGu 开源示例）作为任何结论的依据。</li>
+<li>标注体系：<span class="obs">观察到</span>＝有直接文件/源码证据且可复核；<span class="inf">推断</span>＝由多条证据合理推出但缺一项直接验证；<span class="unk">未知</span>＝本批未取证或无法取证。凡"未验证"不写作"已通过"。</li>
+<li>引用 REA 归档反编译源码（<code>D:\MyWork\REA逆向测试\analysis\decompiled</code>）时给出了文件与行号；该目录不随本仓 git 分发，复现需本机存在同一份 REA 归档。</li>
+</ul>
+<h2>E. 自验命令（可直接照抄）</h2>
+
+<h3>E1｜程序集性质：native 还是托管</h3>
+<pre>$app="D:\Program Files\VisionMaster4.4.0\Applications"
+$enc=[Text.Encoding]::GetEncoding(28591)   # WinPS 5.1 无 Latin1，用 28591 等价
+foreach($f in @("Server\PlatformManager.dll","Server\PlugAuthorization.dll","Server\PlugMonitorResource.dll","ModuleProxy\x64\ModuleProxy.dll","myLibs\VM.Core.dll")){
+  $b=[IO.File]::ReadAllBytes((Join-Path $app $f)); $s=$enc.GetString($b)
+  "{0,-38} BSJB={1,-5} mscoree={2}" -f $f,$s.Contains("BSJB"),$s.Contains("mscoree.dll")
+}
+# 期望：前四个 BSJB=False（原生）；VM.Core 为 True（对照组）</pre>
+
+<h3>E2｜PlugAuthorization 的授权词汇</h3>
+<pre>$app="D:\Program Files\VisionMaster4.4.0\Applications"; $enc=[Text.Encoding]::GetEncoding(28591)
+$b=[IO.File]::ReadAllBytes((Join-Path $app "Server\PlugAuthorization.dll")); $s=$enc.GetString($b)
+$sb=New-Object Text.StringBuilder; foreach($c in $s.ToCharArray()){ if([int]$c -ge 32 -and [int]$c -lt 127){[void]$sb.Append($c)}else{[void]$sb.Append("`n")} }
+$sb.ToString() -split "`n" | Where-Object { $_ -match 'Virbox|Dongle|License' } | Select-Object -Unique -First 20</pre>
+
+<h3>E3｜授权错误码层级</h3>
+<pre>Select-String -Path "D:\MyWork\REA逆向测试\analysis\decompiled\VM.PlatformSDKCS.Audit\VM.PlatformSDKCS\ImvsSdkDefine.cs" -Pattern 'IMVS_EC_ENCRYPT_SOFT_(FEATURE|ABLE|NOT)' -Context 1,0
+Select-String -Path "D:\MyWork\REA逆向测试\analysis\decompiled\iMVS-6000PlatformSDKCS.PublicAudit\iMVS_6000PlatformSDKCS\ImvsPlatformSDK_API.cs" -Pattern 'GetDongleAuthority' -Context 2,3</pre>
+
+<h3>E4｜工具模块实物：无清单/无签名/无版本</h3>
+<pre>$app="D:\Program Files\VisionMaster4.4.0\Applications"
+Get-ChildItem (Join-Path $app "Module(sp)\x64\Location\IMVSBlobFindModu") -File | Select-Object Name,Length
+Get-Content (Join-Path $app "Module(sp)\x64\Location\IMVSBlobFindModu\ToolItemInfo.xml")
+$all=Get-ChildItem (Join-Path $app "Module(sp)") -Recurse -File
+$all | Where-Object { $_.Extension -match '^\.(sig|cat|manifest|pkg|ver|json|hash|sha|cer|pfx)$' -or $_.Name -match 'Version|Manifest|Signature|License|Auth|Package' } | Measure-Object
+# 期望：Count = 0</pre>
+
+<h3>E5｜托管层零引用授权程序集</h3>
+<pre>$app="D:\Program Files\VisionMaster4.4.0\Applications"; $enc=[Text.Encoding]::GetEncoding(28591)
+@(Get-ChildItem (Join-Path $app "myLibs") -Filter *.dll -File) + @(Get-Item (Join-Path $app "VisionMaster.exe")) |
+  ForEach-Object { $s=$enc.GetString([IO.File]::ReadAllBytes($_.FullName)); if($s.Contains("PlugAuthorization") -or $s.Contains("PlatformManager")){ $_.Name } }
+# 期望：无输出</pre>
+
+<h2>F. G7 批次追加边界</h2>
+<ul>
+<li>G7 批（B3 节）在 D. 边界声明之外<b>额外遵守</b>：只读安装目录，未运行 <code>PlatformManager.dll</code>/<code>PlugAuthorization.dll</code> 或任何导出函数，未做 native 反汇编。</li>
+<li>本文 B3 节含一处<b>对我方先前汇报错误的公开更正</b>（把原生 <code>PlatformManager.dll</code>/<code>PlugAuthorization.dll</code> 误判为托管程序集），更正依据为 B3-0 对照组实验；原误判记录保留、不做静默改写。</li>
+<li>G7 结论的强度：<b>"没有插件级分发/授权/版本协商"为观察到</b>（基于模块目录实物、元数据字段、授权码层级、托管零引用四路证据）；<b>"native 内是否存在按模块 ID 的 feature 位图"为未知</b>，不得以本节结论代替该未知项。</li>
+</ul>
+<h2>G. 《原件依据 vs 平台自建》总表（D4 收尾）</h2>
+
+<div class="note"><b>本表用途：</b>把 A（应用层）、B（工具层材料）、B3（G7 插件分发/授权）三批结论合并成一张可直接引用的判断表。后续任何文档、方案或评审涉及下列机制时，<b>先查本表的「建议口径」列</b>，再决定能不能写"对齐 VM"。</div>
+
+<h3>G-0｜三种口径标签（硬定义）</h3>
+<table>
+<tr><th>标签</th><th>含义</th><th>文档允许的写法</th><th>禁止的写法</th></tr>
+<tr><td><b>【原件可迁移】</b></td><td>VM 有等价物，且已有可复核原件证据（源码/行号/SHA 或实物文件）</td><td>"按 VM 原件迁移"、"原件语义为…"、"证据见 …"</td><td>"参考 VM 大致如此"（无证据时的模糊说法）</td></tr>
+<tr><td><b>【平台必要能力/自建】</b></td><td>VM <b>没有</b>对应机制（或只有极弱的隐含约定）</td><td>"本平台自建能力"、"平台必要能力，非 VM 迁移"、"独立设计取舍"</td><td><b>"对齐 VM"、"VM 迁移"、"按原件设计"</b>（这三句一律禁止）</td></tr>
+<tr><td><b>【策略差异】</b></td><td>VM 有机制但<b>我们主动选择不同策略</b>（含我们有而 VM 弱、VM 有而我们拒绝）</td><td>"VM 做法为 X，我方选择 Y，理由…"</td><td>把差异写成"等价"或把拒绝写成"未实现"</td></tr>
+</table>
+
+<h3>G-1｜总表</h3>
+<table>
+<tr><th>#</th><th>我方机制</th><th>VM 是否有等价物</th><th>证据</th><th>建议口径</th></tr>
+
+<tr><td>1</td><td><b>选数据目录</b>（首次/切换，<code>data-location.json</code>）</td><td><b>没有</b>。VM 数据根硬编码为安装目录，无定位文件、无解析器、无 UI 入口</td><td>VM：<code>Program.cs:63</code> <code>Directory.SetCurrentDirectory(BaseDirectory)</code>；<code>VM.AppData.dll</code> 全部相对常量；关键词 <code>DataPath</code>/<code>数据目录</code>/<code>首次</code> 命中 0<br>我方：<code>ApplicationDataLocationService.cs:10-21</code></td><td><b>【平台必要能力/自建】</b></td></tr>
+
+<tr><td>2</td><td><b>目录身份 <code>dataId</code></b>（GUID + 标记文件 <code>SunEyeVisionData</code>）</td><td><b>没有</b>。VM 靠安装路径天然唯一，无身份概念</td><td>VM：<code>AppData.dat</code> 仅 15 个布尔/字符串字段（<code>IsNeutral</code>/<code>CustomName</code>/<code>IsRightLayout</code>…），无 id/version<br>我方：<code>ApplicationDataPaths.cs:8,20-25</code></td><td><b>【平台必要能力/自建】</b></td></tr>
+
+<tr><td>3</td><td><b><code>schemaVersion</code> 协商</b>（不匹配即抛 <code>应用目录定位格式不受支持</code>）</td><td><b>没有</b>。<code>AppData.dat</code> 无版本号；VM 只有产品版本表 <code>VersionInfo.config</code></td><td>VM：<code>Applications\AppData.dat</code> 全文无 version 字段<br>我方：<code>ApplicationDataLocationService.cs:18-19</code>；<code>ApplicationDataPaths.cs:8,22-25</code></td><td><b>【平台必要能力/自建】</b></td></tr>
+
+<tr><td>4</td><td><b>数据根位置</b>（可重定位，含拒绝安装目录）</td><td><b>相反</b>：VM 数据根<b>只能</b>是安装目录</td><td>VM：A1 三路证据（CWD 强制 + 相对常量 + RevertSource 还原副本）<br>我方：<code>ApplicationDataLocationService.cs:36-40</code>（<code>CheckWritable</code> + 目录写入探测）；隔离根覆盖 <code>App.xaml.cs:249-251</code></td><td><b>【策略差异】</b>：VM=固定安装目录；我方=可重定位 + 拒绝安装目录（我方明确更严）</td></tr>
+
+<tr><td>5</td><td><b>方案格式版本策略</b>（<code>SchemaVersion != 5</code> 直接抛）</td><td><b>有机制，策略不同</b>：VM = <code>&lt;V4.0.0</code> 拒 / 旧版走 <code>CompatibleTool.exe</code> <b>转出新文件</b></td><td>VM：<code>ProjectManager.cs:559,603-611,670-702</code>；<code>Lang_version=V4.4.0</code>、<code>Lang_SolVersion_OutOfDate</code>、<code>CompatibleTool.xml</code> IO 改名白名单<br>我方：<code>SolutionFormatPolicy.cs:20-26</code>；<code>SolutionDocumentWriter.cs:19</code></td><td><b>【策略差异】</b>：我方不做旧格式兼容与转换（项目规则已定：不考虑旧格式兼容），<b>不得写成"VM 有升级、我方未实现"</b>，应写"我方明确不做迁移桥"</td></tr>
+
+<tr><td>6</td><td><b>方案容器</b>（单 JSON，<code>SchemaVersion</code>+<code>Version</code>+<code>Workflows</code>）</td><td>ZIP 容器（<code>SolutionFile\VmServer.xml</code> + <code>MoudleFrame</code> + <code>UiParamData\…</code>），<b>UI 参数与结构分离</b></td><td>VM：<code>Desktop\test.sol</code> 15 entry 实测<br>我方：<code>SolutionDocumentWriter.cs:16-30</code></td><td><b>【策略差异】</b>；VM 的"UI 数据分文件 + <code>IsUiChunkDataMapWhenLoad</code>/<code>UiChunkDataThreshold</code>"可作为<b>可选借鉴点</b>，不是必须迁移项</td></tr>
+
+<tr><td>7</td><td><b>工具插件独立分发 / 分发边界</b></td><td><b>没有</b>。VM 工具 = 松散目录（11 个平铺文件），无安装包/清单/签名</td><td>VM：<code>Module(sp)\x64\Location\IMVSBlobFindModu\</code> 11 文件；<code>ToolItemInfo.xml</code> 242 B；2155 模块文件签名类 0 个<br>我方：<code>release-payload.json</code> + admission（<code>PluginManager.cs:154-158</code>）</td><td><b>【平台必要能力/自建】</b>（最需要标注的一条）</td></tr>
+
+<tr><td>8</td><td><b>插件级授权</b></td><td><b>没有</b>。VM 授权是产品/加密狗/功能位/配额四层，托管层零引用授权程序集</td><td>VM：<code>PlugAuthorization.dll</code>/<code>PlatformManager.dll</code> 均原生 PE（BSJB=False），内嵌 Virbox 串；<code>ServerAuthConfig.ini: AuthorizeType=0</code>；<code>ImvsSdkDefine.cs:13730-13860</code> 错误码族；<code>ImvsPlatformSDK_API.cs:141</code> <code>IMVS_PF_GetDongleAuthority_CS</code></td><td><b>【平台必要能力/自建】</b>；若将来接授权，可参考 VM 的<b>粒度分层</b>与"判定在原生侧、托管只看结果"的边界</td></tr>
+
+<tr><td>9</td><td><b>插件级版本协商</b></td><td><b>没有</b>。版本只在产品 / 算法库整包 / 方案文件三层</td><td>VM：<code>VersionInfo.config</code>；<code>AlgorithmVersionSwitchingTool.exe</code>（<code>SOFTWARE\MVDAlgorithmSDK</code>、4.0.0~4.3.0）；<code>VisionMaster.cfg AlgoVersionInfo</code>（17 个 MVB_* 库）；方案级见 #5</td><td><b>【平台必要能力/自建】</b></td></tr>
+
+<tr><td>10</td><td><b><code>release-payload.json</code></b>（<code>payloadSchemaVersion=2</code>，含 <code>buildId</code>/<code>sourceCommit</code>/<code>artifactVersion</code>/<code>entries[].sha256</code>）</td><td><b>没有</b>任何对应物。VM 发布物无来源提交、无产物版本、无逐文件哈希</td><td>我方实物：<code>Release\SunEyeVision_v1.0.0\SunEyeVision\release-payload.json</code>（156,155 B，<code>payloadSchemaVersion=2</code>、<code>buildId=development-c0fec77f…</code>、<code>sourceCommit=b895d697…</code>、<code>artifactVersion=2.0.0.8_alpha</code>、<code>productComponents[]</code>、587 条 <code>sha256</code>）<br>校验：<code>ReleasePayloadAuthority.cs:33-39,59-63</code></td><td><b>【平台必要能力/自建】</b>，且<b>明显强于原件</b></td></tr>
+
+<tr><td>11</td><td><b><code>ToolGroups.xml</code></b>（<code>SchemaVersion="1"</code>，Group Name/Order/Icon/HoverIcon/IconKey）</td><td><b>部分有</b>：VM 也有 <code>ToolGroup.xml</code> 决定工具箱分类（同名不同拼写），但只有分类，无 SchemaVersion</td><td>VM：<code>ToolBoxData.LoadData</code> 枚举 <code>AppData.ModulesDir</code> 一级目录、只有 <code>ToolGroup.xml</code> 或 <code>Global</code> 进分类（<code>ToolBoxData.cs:266-325</code>，见 <code>START-RE-01.md:18</code>）<br>我方：<code>src\Plugin.SDK\Metadata\ToolGroups.xml:1</code>；<code>ToolDirectoryCatalog.cs:49-56</code></td><td><b>【策略差异】</b>：分类职责<b>可称"按 VM 分类模型迁移"</b>；但 <code>SchemaVersion</code> 校验是<b>我方增加</b>，属自建</td></tr>
+
+<tr><td>12</td><td><b><code>ToolDirectoryCatalog</code> 校验</b>（SchemaVersion=1 / 分类不重复 / 工具分类必须存在 / 非 Runtime 类型拒绝 / 空目录拒绝）</td><td><b>没有</b>。VM 目录读取无任何校验，<code>UpdateLoad</code> 连 try/catch 都没有（原文记录）</td><td>我方：<code>ToolDirectoryCatalog.cs:26-43,49-56</code><br>VM：<code>ToolBoxData.cs:77-120</code> 无局部异常隔离（见 <code>START-RE-01.md:24</code>）</td><td><b>【平台必要能力/自建】</b>；且是<b>对原件缺陷的有意识修补</b>（原件单工具损坏会拖垮整个工具箱展开）</td></tr>
+
+<tr><td>13</td><td><b>工具模块清单</b>（我方：代码声明 + <code>ToolMetadata</code> + 目录+发布清单三方交叉）</td><td><b>极弱</b>：VM 单工具清单 = <code>ToolItemInfo.xml</code> 4 字段（<code>name</code>/<code>priority</code>/<code>toolTip</code>/<code>helpUrl</code>），无版本/依赖/签名/授权</td><td>VM：<code>ToolItemInfo.xml</code> 全文 242 B（B3-5）<br>我方：<code>src\Plugin.SDK\Metadata\ToolMetadata.cs</code>；<code>PluginManager.cs:154-158</code>（catalog+admission 组合）</td><td><b>【平台必要能力/自建】</b></td></tr>
+
+<tr><td>14</td><td><b>工具执行入口</b>（工具 Runtime 实现自有入口）</td><td><b>有且可迁移</b>：VM <code>VmModule</code> 子类 + <code>SyncSelfRun(ID)</code>，结果经 <code>QueryModuleOneResult</code></td><td>VM：<code>VM_S3_BlobTool_decompiled_20261025.cs.txt</code>（<code>IMVSBlobFindModuTool.Run()</code> 23 B IL）；<code>VM_S3_FRAMEWORK_AND_OWNERSHIP_20261025.md:8,11,16</code></td><td><b>【原件可迁移】</b>（执行入口语义）</td></tr>
+
+<tr><td>15</td><td><b>专用工具编辑器可选</b>（无专用 Control 时回退通用参数页）</td><td><b>有且可迁移</b>：VM <code>GetExternTabWin</code> 找不到 <code>TabWinBase</code> 就回退 <code>ParamsTabControlBase</code></td><td>VM：<code>VM_EDITOR_OPEN_LIFECYCLE_ORIGINAL_20261103.md:10</code>；<code>VM_S3_FRAMEWORK_AND_OWNERSHIP_20261025.md:9</code></td><td><b>【原件可迁移】</b></td></tr>
+
+<tr><td>16</td><td><b>工具参数根缓存</b>（<code>ModuleParam.Data</code> 为宿主；Dispose 不清 Data）</td><td><b>有</b>，但<b>时效性与失效入口未闭合</b>（G6）</td><td>VM：<code>VM_EDITOR_OPEN_LIFECYCLE_ORIGINAL_20261103.md:16,32</code></td><td><b>【原件可迁移（限定范围）】</b>：只可称"缓存宿主语义已证"，<b>不得</b>称"缓存策略已对齐"</td></tr>
+
+<tr><td>17</td><td><b>用户角色权限</b>（Admin/Tech/Operator + 参数窗准入）</td><td><b>有</b>：<code>AccessManager</code> + <code>CodeManager.OnAccessEnableCallBack</code> + <code>LoginWindow</code> + <code>CanOpenConfigurationInterface</code></td><td>VM：<code>VisionMaster\AccessManager.cs:67-71,102-141</code>；<code>ProcedureConfigControl.xaml.cs:649-705</code>（见 <code>VM_EDITOR_OPEN_LIFECYCLE_ORIGINAL_20261103.md:8</code>）</td><td><b>【原件可迁移】</b>（角色分级与准入时机）</td></tr>
+
+<tr><td>18</td><td><b>数据目录内布局</b>（Config / Solutions / Log / Recovery 子目录）</td><td><b>形态不同</b>：VM 把 <code>log</code>/<code>TempFiles</code>/<code>Temporary</code>/<code>ImageTemp</code> 等直接摊在安装目录</td><td>VM：A4 表（<code>log</code>=33、<code>Temporary</code>=16、<code>GwLoadSolution</code>=12）；<code>ProjectManager.cs:384-389</code><br>我方：<code>ApplicationDataLocationService.cs:37-38</code></td><td><b>【策略差异】</b>：职责分类可借鉴，目录形态不必照搬</td></tr>
+</table>
+
+<h3>G-2｜硬口径（后续文档必须遵守）</h3>
+<ol>
+<li><b>下列机制一律写「平台必要能力/自建」，禁止写"对齐 VM"、"VM 迁移"、"按原件设计"：</b><br>
+选数据目录 · <code>data-location.json</code> · <code>dataId</code> 目录身份 · 数据目录 <code>schemaVersion</code> 协商 · 工具插件独立分发与分发边界 · 插件级授权 · 插件级版本协商 · <code>release-payload.json</code> · <code>ToolDirectoryCatalog</code> 校验 · 逐工具完整元数据清单</li>
+<li><b>下列可写「原件可迁移」，但必须带证据锚点（文件:行号 或 SHA）：</b><br>
+工具执行入口（<code>SyncSelfRun</code>/结果查询）· 专用编辑器可选与回退 · 用户角色与参数窗准入时机 · 工具箱分类模型（<code>ToolGroup(s).xml</code>）</li>
+<li><b>凡"VM 有、我方选择不同"必须写「策略差异」并给出理由</b>，尤其：方案旧格式<b>不做</b>迁移桥（VM 用 <code>CompatibleTool.exe</code> 转换）。不得写成"未实现"或"待补齐"。</li>
+<li><b>不得用原件结论反推我方实现正确性。</b>我方这些机制<b>比原件更严格</b>（有 SchemaVersion、有逐文件 SHA、有准入校验、有分类唯一性检查）；"比原件严"是设计选择，不是"证明与原件等价"，也不是"证明更正确"——收益与代价（工具作者负担、发布流程成本）应在方案中显式列出。</li>
+<li><b>原件有缺陷的地方不得被"迁移"话术掩盖。</b>例：VM <code>ToolBoxData.UpdateLoad</code> 无局部异常隔离（单工具损坏可拖垮展开）而我方有校验；此类差异必须在文档中标注为<b>我方有意识修补</b>，而非"原件如此所以我们也如此"。</li>
+<li><b>未知项不得被本文结论覆盖。</b>仍为未知的有：native 模块名→算法 DLL 解析链（G1）、native <code>pData</code> 生命周期（G2）、native 是否按模块 ID 建 feature 位图（G7 残余）、算法语义边界（G4）、原机运行对照（G3/G5/G6）。这些不因本表"没有等价物/有等价物"的判定而消失。</li>
+</ol>
+</html>

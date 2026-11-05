@@ -1,10 +1,32 @@
+# SunEyeVision_V2 当前任务账本
+
+## 2026-11-05 统一开发基线建立；数据目录门禁退出转入实施
+
+main 已指到合并提交b895d697e（双父f5e6b8fde工作流重构分支codex/workflow-toolbox-dataflow＋d44904f38旧main，164个旧提交历史全保留），内容取重构分支为骨架。回退点backup/main-before-sync=d44904f38，origin/main仍9a0834ef8。判定依据：两线自共同祖先4431cfa02（2026-11-02 19:05）分叉3天，main 164提交/分支325提交；git merge预演2012个冲突，其中1719个为同一批VM原件被两边改成不同名字（1106个改名后内容完全相同）。分支承载框架重构（Workflow 39＋Application 55＋Domain 19＋tests 202提交），main承载控件原件迁移（55个代码提交）＋验证夹具（72提交）。定案：以分支为骨架统一，main控件成果按原件映射表分批回补，不做逐文件人工合并。
+
+环境补齐：libs\halcon\runtime\x64-win64\原为空目录（被gitignore屏蔽），Directory.Build.targets:262强制要求存在；已从SunEyeVision_Dev-camera复制25个native dll（369 MB）。唯一解决方案SunEyeVision.slnx（61工程）统一基线全量构建已核实：dotnet build SunEyeVision.slnx -c Release --no-incremental → 0错误/6150警告/2:36.35，与历史全量口径一致（此前738系增量构建读数，已作废），日志.codebuddy\tmp\build-d1-full.log，产物Release\SunEyeVision_v1.0.0\SunEyeVision\SunEyeVision.UI.exe。工具插件新布局为dll直接落根目录，不再有plugins\<Tool>\子目录。前一批对f03 Release的冻结随统一基线切换结束（该冻结仅针对f03旧产物，不适用于统一基线新产物）。
+
+启动门禁事件（只记录，代码未修）：用户首次启动统一基线被「选择软件数据目录」窗口阻断，报「应用目录定位格式不受支持。」。根因是本机%LOCALAPPDATA%\SunEyeVision\data-location.json与D:\SunEyeVisionData\suneyevision-data.json仍为schemaVersion:1（旧main于2026-11-05 11:08写入），基线要求2。临时处置：两处手改为2（原值备份.codebuddy\tmp\*.bak），解决方案文件4.solution的SchemaVersion字段＝2（与节点配置格式版本无关）可读；v2不再读Config\user-settings.json，主题/窗口布局/KnownSolutions偏好会丢一次。该手改属环境处置，不代表门禁已解决。data-location.json／suneyevision-data.json marker／schemaVersion 协商／dataId 目录身份均为我方自建；门禁整体退出的依据是原厂无「选数据目录」环节。
+
+计划依据与分工：门禁退出是既有待办不是新需求（本文件「App数据目录门禁仍未实施退出」「数据目录旧Locate/选择窗/Remember门禁须整体退出」，重构计划「旧统一数据目录启动门禁纳入退出」）。2026-11-05起：rea-investigator负责VM应用层逆向取证＋工具层材料盘点（只写docs\collaboration\evidence\）；framework-refactor负责框架重构，第一批即数据目录门禁整体退出（只改src/tests）；doc-keeper只维护文档。
+
+VM逆向取证实况：本机确认原厂D:\Program Files\VisionMaster4.4.0（此前探测漏检）。Applications\App.ini仅[DefaultSection] SaveSol=C:\Users\houzhongjie\Desktop；AppData.dat为XML产品标识；程序数据全在安装目录（data/ProjectParam/PublicFile/ColorStyle/Lang/Resources/Tools/platforms/myLibs），用户目录仅%APPDATA%\VisionMaster4.4.0\res；VisionMaster.exe字符串SaveSol命中8次，DataPath/UserData/WorkingDirectory/data-location均0次；.sol方案由用户自存（桌面5个），安装目录内无。初步结论：原厂VM无「选择软件数据目录」环节、无数据目录版本协商。注意D:\MyWork\参考项目\VisionMaster是HeBianGu开源示例，不是原厂VM，不作原件证据。
+
+数据根定案（已定案，实施中，非已完成）：数据根写在程序目录App.ini的[Data] Root，不对用户弹窗（原厂VM 4.4的Applications\App.ini全文只有[DefaultSection]与SaveSol=C:\Users\houzhongjie\Desktop，路径配在程序目录ini）。规则：缺省%LocalAppData%\SunEyeVision；配置缺失用缺省并记Info日志；配置存在但读不出直接抛异常、不兜底（rule-015）；本机配Root=D:\SunEyeVisionData，现有方案/日志零迁移。同时退出：不读data-location.json、不读suneyevision-data.json marker、不做schemaVersion协商、不弹「选择软件数据目录」窗。今天的启动拦截是schemaVersion 1≠2造成的真实拦截，仅手工改现场两个文件应急，代码层未修，不得记述为门禁已修复或启动问题已解决。`[Data] Root` 与数据根概念为我方自建，仅借用「配置放程序目录 ini」这一形式；原厂 App.ini 只有 `[DefaultSection] SaveSol`。
+
+工具身份合同（发布态与开发态强弱不同）：发布态才有 release-payload.json ＋ ToolGroups.xml 的强准入；开发态 dev\Debug\plugins\<Tool>\ 实测仅 dll/pdb/deps.json，无任何清单，形态接近原厂松散目录，不得据此认为每个工具目录都有清单。
+
+版本口径：当前方案格式版本＝V5（历史 V3→V4→V5，本文件旧段出现的 V3/V4 为当时冻结值）。解决方案文件 4.solution 的 SchemaVersion 字段＝2，与节点配置格式版本无关。
+
+状态分列：已通过＝统一基线Release全量构建0错误、产物已出；临时处置＝本机两处数据目录标记手改schemaVersion（原值备份.codebuddy\tmp\*.bak）；实施中＝数据目录门禁整体退出（数据根已定案：程序目录App.ini的[Data] Root，本机Root=D:\SunEyeVisionData且方案/日志零迁移；退出data-location.json/suneyevision-data.json marker/schemaVersion协商/选择目录窗）、main控件原件分批回补；未验＝统一基线真实程序人工验收、VS设计器、真实相机/硬件、VM动态差分、主仓推送（未commit/push）。
+
 ## 2026-11-04 用户明确整条生产链贯通
 
 工具UI、交互、工作流、图像源与Blob作为同一原型联动实施及自测；工具箱/节点连线/参数引用/正式与私有执行/同次图像结果/历史保存重开/取消关闭释放全部贯通后才签本次批完成。原主方案、矩阵及本批HTML已同步；缺基础保护，不以局部测试替代生产链。
 
 ## 2026-11-04 独立框架集成候选已接日志，构建在途
 
-根设计固定984da7d45。新独立树D:/MyWork/line-aiproject/platform-framework-unified-20261104，分支codex/framework-unified-20261104，以984为基线；B日志d14/e174/6a三提交分别接成ce0d56e48/576b77e92/7d5d2e1a2，仅CURRENT/原主HTML冲突按根最新保留，B独立设计及最终JSON回执完整保留；产品冲突0。候选locked restore自然0，日志framework-unified-restore-20261104.log；候选全量Release已自然退出0：6216警告/0错误，2:28.76，日志framework-unified-logging-build-20261104.log；session25112已终态。候选Diagnostics16/File6/Footer7通过0fail0skip，日志framework-unified-{diagnostics,file-logging,footer}-20261104.log；尚非完整主窗/两工具联动自测通过。根Release未变。B正在只读核总监新Blob数值状态/结果显示消费者，根尚未接Blob新判断批；App数据目录门禁仍未实施退出，不能把日志整合说成启动问题已解决。A冻结其它工具扩展准备交接，C共享唯一草稿/动态输入与公共ROI批仍在途。
+根设计固定984da7d45。新独立树D:/MyWork/line-aiproject/platform-framework-unified-20261104，分支codex/framework-unified-20261104，以984为基线；B日志d14/e174/6a三提交分别接成ce0d56e48/576b77e92/7d5d2e1a2，仅CURRENT/原主HTML冲突按根最新保留，B独立设计及最终JSON回执完整保留；产品冲突0。候选locked restore自然0，日志framework-unified-restore-20261104.log；候选全量Release已自然退出0：6216警告/0错误，2:28.76，日志framework-unified-logging-build-20261104.log；session25112已终态。候选Diagnostics16/File6/Footer7通过0fail0skip，日志framework-unified-{diagnostics,file-logging,footer}-20261104.log；尚非完整主窗/两工具联动自测通过（独立候选树，非根）。根Release未变。B正在只读核总监新Blob数值状态/结果显示消费者，根尚未接Blob新判断批；App数据目录门禁仍未实施退出，不能把日志整合说成启动问题已解决。A冻结其它工具扩展准备交接，C共享唯一草稿/动态输入与公共ROI批仍在途。
 ## 2026-11-04 已核收框架消息；先两工具原型统一基线
 
 已读原版架构新增tool-layer-new-development-20261104及方案管理静态报告（7633D791…6039E6），总监交接81837f48a及产品ce64已接收，尚未统一到根f03。先现有图像源＋Blob打通新Session：正式Schema/Storage/空态、真实窗口、唯一草稿与历史保存、执行和私有调试快照、同次结果与图像区域reader释放。其它工具在途保留停止扩展；原全平台范围保留，Group/新循环暂停。禁止整仓恢复旧SDK/Workflow/主窗；两Blob候选未提交测试及设计修改原地保护。新主窗空态GetNodeSchema、运行publication.Schema、引用RootPort.Storage已核源码，新Int32状态/Float32总面积消费者仍待整批验证。

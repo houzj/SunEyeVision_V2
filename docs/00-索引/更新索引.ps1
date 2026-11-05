@@ -41,5 +41,5 @@ $header = @'
 | --- | --- | --- | --- | --- |
 '@
 $body = ($rows | ForEach-Object { "| $($_.Path) | $($_.Type) | $($_.Cd) | $($_.Lu) | $($_.Sum) |" }) -join "`n"
-[System.IO.File]::WriteAllText((Join-Path $idxDir '文档索引.md'), $header + $body, [System.Text.UTF8Encoding]::new($true))
+[System.IO.File]::WriteAllText((Join-Path $idxDir '文档索引.md'), $header + $body, [System.Text.UTF8Encoding]::new($false))
 "索引已生成，共 $($rows.Count) 条。" | Write-Output

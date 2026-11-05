@@ -52,18 +52,26 @@ public sealed class ApplicationDataPaths
     /// 文件缺失或未配置该键时使用缺省根并在来源中说明；读不出或值非法直接抛异常。
     /// </summary>
     public static ApplicationDataPaths OpenConfigured()
+        => OpenConfigured(Path.Combine(AppContext.BaseDirectory, ConfigurationFileName), DefaultRoot);
+
+    /// <summary>
+    /// 读取指定配置文件并打开数据根。语义与无参版本一致：文件缺失或未配置该键用 <paramref name="defaultRoot"/>，
+    /// 读不出或值非法直接抛异常，不回退。
+    /// </summary>
+    public static ApplicationDataPaths OpenConfigured(string configurationFile, string defaultRoot)
     {
-        var file = Path.Combine(AppContext.BaseDirectory, ConfigurationFileName);
-        if (!File.Exists(file))
-            return Open(DefaultRoot, $"缺省根（程序目录没有 {ConfigurationFileName}）");
+        ArgumentException.ThrowIfNullOrWhiteSpace(configurationFile);
+        var fileName = Path.GetFileName(configurationFile);
+        if (!File.Exists(configurationFile))
+            return Open(defaultRoot, $"缺省根（程序目录没有 {fileName}）");
         string[] lines;
-        try { lines = File.ReadAllLines(file); }
+        try { lines = File.ReadAllLines(configurationFile); }
         catch (Exception failure) when (failure is IOException or UnauthorizedAccessException)
-        { throw new IOException($"无法读取程序目录配置：{file}", failure); }
-        var configured = ReadConfiguredRoot(lines, file);
+        { throw new IOException($"无法读取程序目录配置：{configurationFile}", failure); }
+        var configured = ReadConfiguredRoot(lines, configurationFile);
         return configured is null
-            ? Open(DefaultRoot, $"缺省根（{ConfigurationFileName} 未配置 [{ConfigurationSection}] {ConfigurationKey}）")
-            : Open(ValidateRoot(configured, file), $"{ConfigurationFileName} [{ConfigurationSection}] {ConfigurationKey}");
+            ? Open(defaultRoot, $"缺省根（{fileName} 未配置 [{ConfigurationSection}] {ConfigurationKey}）")
+            : Open(ValidateRoot(configured, configurationFile), $"{fileName} [{ConfigurationSection}] {ConfigurationKey}");
     }
 
     /// <summary>建立数据根及其子目录，并立即验证根可写。</summary>

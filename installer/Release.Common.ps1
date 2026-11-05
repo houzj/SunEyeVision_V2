@@ -282,7 +282,9 @@ function New-ReleasePayload {
     $directoryGroups.Save((Join-Path $appRoot 'ToolGroups.xml'))
     $entries=@(Get-ChildItem -LiteralPath $appRoot -Recurse -File | Sort-Object FullName | ForEach-Object {
         $relative=[IO.Path]::GetRelativePath($appRoot,$_.FullName).Replace('\','/')
-        if($relative -ne 'release-payload.json') {
+        # App.ini 是运维可改的数据根配置（原厂同样把路径配置放程序目录 ini）：只校验二进制与资源，
+        # 不把可配置项绑进完整性清单，否则改一次配置就要重新封包才能启动。
+        if($relative -ne 'release-payload.json' -and $relative -ne 'App.ini') {
             $entry=[ordered]@{path=$relative;sha256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash}
             if($_.Extension -in '.dll','.exe') {
                 try {

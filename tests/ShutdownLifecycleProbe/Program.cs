@@ -80,7 +80,7 @@ internal static class Program
         typeof(App).GetField("_desktopDirectoryPin",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(app,pin);
         var paths=ApplicationDataPaths.Open(root);
         typeof(App).GetField("_dataPaths",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(app,paths);
-        ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(paths,admission.Runtime);
+        ServiceInitializer.ConfigureDataPaths(paths);ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(paths,admission.Runtime);
         Console.WriteLine("probe: services initialized");
         var theme=new ThemeManager(() => app.StartPreferences.Theme, value => app.StartPreferences.Theme=value);theme.Initialize();ServiceLocator.Instance.Register(theme);
         var session=scenario=="empty"?null:ServiceInitializer.SolutionManager.CreateNew("主窗生命周期定位");

@@ -239,3 +239,5 @@ UI Release 封签后再次运行 RuntimeEditorProductionProbe：ImageLoad 绑定
 验证收口：BlobAnalysis xUnit 在正式 Release 重新封签后，以 `BuildProjectReferences=false` 编译测试、`--no-build` 执行，37/37 通过。PluginDevKit `build-sdk.ps1 -Configuration Release` 与 `validate-components.ps1` 均通过，SDK DLL 已从当前 Release 重建复制。证据：`docs/collaboration/evidence/Blob-VM参数映射冒烟-20261108.txt`、`docs/collaboration/evidence/PluginDevKit模板引用回归-20261108.txt`。
 
 最终封签后生产探针再次通过：ImageLoad 绑定 801ms、首显 1596ms；BlobAnalysis 绑定 813ms、首显 341ms；第2/3页首次切换 212/265ms，重复切换 18/26ms。两工具完整链 PASS。
+
+本批源码与证据已固定提交 `033fc093d`（中文提交标题）。该提交只包含 ImageSource/BlobAnalysis 重构、参数页生成层、PluginDevKit 模板/SDK、测试和本批证据；其他 CodeBuddy 未归类改动仍留在工作树，未混入提交。

@@ -21,3 +21,10 @@ PluginDevKit 外部工程隔离验收 2026-11-08
 - runtime/release-payload.json 存在，ToolGroups.xml 存在，SunEyeVision.UI.exe 已更新。
 - 在 PluginDevKit/runtime 工作目录启动 SunEyeVision.UI.exe，等待 8 秒进程保持存活，随后由验收脚本结束进程。
 - 结果：宿主进程可启动并通过发布目录准入，未观察到启动即退。该检查覆盖正式宿主进程启动，不替代 Visual Studio 启动或附加调试人工验收。
+
+正式载荷准入与插件发现探针（2026-11-08）
+- 将 AdmissionLifecycleProbe 的入口程序集放入与 release-payload.json 同一 runtime 根目录运行，避免探针自身输出目录抢先加载 Foundation。
+- 探针完整通过，包含 BlobAnalysis/ImageLoad 运行组件发现、组件身份/Schema 唯一性、保存重开、运行、调试准入、跨代回调、结果 reader 保留、旧代拒绝和释放排空。
+- 关键输出：probe: admitted runtime metadata and schema identities are unique；probe: production workflow result reader；Desktop admission and production workflow reader drain checks passed。
+- 直接从探针项目输出目录启动会因 Foundation 先加载自有副本而触发 payload SHA mismatch。该问题属于测试启动布局，已用正式 runtime 根目录布局复验通过。
+- 该探针证明正式载荷的插件发现和生命周期准入，不替代 Visual Studio 启动或附加调试人工验收。

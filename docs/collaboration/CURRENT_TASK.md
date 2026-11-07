@@ -293,3 +293,7 @@ CodeBuddy 的“数据树 + 模板 + 页面复用”方向已作为候选重构�
 ## 2026-11-08 PluginDevKit 正式宿主启动检查
 
 已用当前 Release 重新准备 `PluginDevKit/runtime`，确认 `release-payload.json` 与 `ToolGroups.xml` 存在。启动 `SunEyeVision.UI.exe` 后进程保持运行 8 秒，随后安全结束。该结果补齐了外部 SDK 的正式宿主进程启动检查。Visual Studio 启动或附加调试仍未验收，不能与本次进程启动混称完成。
+
+## 2026-11-08 正式载荷插件发现与生命周期探针
+
+将 `AdmissionLifecycleProbe` 入口程序集放入 `PluginDevKit/runtime` 正式载荷根目录运行后完整通过。验证了 BlobAnalysis 与 ImageLoad 的运行组件发现、Schema 唯一性、保存重开、运行、调试准入、跨代回调、结果 reader 保留、旧代拒绝和释放排空。直接从探针自身输出目录启动会因 Foundation 先加载自有副本触发 SHA mismatch，已确认是测试布局问题，正式 runtime 根目录运行通过。Visual Studio 启动或附加调试仍单独列为未验收。

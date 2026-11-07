@@ -125,7 +125,8 @@ internal sealed class BlobUiComposition : IDisposable
             // selected page is completed on the first idle turn, then the host
             // exposes its ready task. Other pages are queued afterwards and do
             // not delay the first frame or the selected page.
-            _editor.Dispatcher.BeginInvoke(DispatcherPriority.SystemIdle,new Action(() =>
+            var priority=_composedPages.Count==0?DispatcherPriority.SystemIdle:DispatcherPriority.ApplicationIdle;
+            _editor.Dispatcher.BeginInvoke(priority,new Action(() =>
             {
                 if(_disposed||!ReferenceEquals(_pageHost,fields)||!StringComparer.Ordinal.Equals(_activePage,page)||!IsCurrentPage(page))
                 {

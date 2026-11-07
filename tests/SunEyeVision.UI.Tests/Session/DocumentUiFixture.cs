@@ -50,24 +50,28 @@ internal static class UiRuntime
         }
     }
     internal static void Run(Action action)=>SunEyeVision.TestShared.WpfTestDispatcher.Invoke(action);
-    internal static void Pump()
+    internal static void Pump(DispatcherPriority priority=DispatcherPriority.ApplicationIdle)
     {
-        var frame=new DispatcherFrame();Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle,new Action(()=>frame.Continue=false));Dispatcher.PushFrame(frame);
+        var frame=new DispatcherFrame();Dispatcher.CurrentDispatcher.BeginInvoke(priority,new Action(()=>frame.Continue=false));Dispatcher.PushFrame(frame);
     }
     internal static void Await(Task task)
     {
+        Await(task,DispatcherPriority.ApplicationIdle);
+    }
+    internal static void Await(Task task,DispatcherPriority priority)
+    {
         var deadline=DateTime.UtcNow.AddSeconds(35);
-        while(!task.IsCompleted){if(DateTime.UtcNow>deadline)throw new TimeoutException("实际UI异步操作未排空。");Pump();Thread.Sleep(1);}
+        while(!task.IsCompleted){if(DateTime.UtcNow>deadline)throw new TimeoutException("实际UI异步操作未排空。");Pump(priority);Thread.Sleep(1);}
         task.GetAwaiter().GetResult();Pump();
     }
     internal static void AwaitEditorReady(SunEyeVision.UI.Services.Editing.RuntimeToolEditorWindow window)
     {
-        Await(window.AssemblyReadyTask);
+        Await(window.AssemblyReadyTask,DispatcherPriority.SystemIdle);
         var deadline=DateTime.UtcNow.AddSeconds(35);
         while(!window.Editor.CanDebug)
         {
             if(DateTime.UtcNow>deadline)throw new TimeoutException("实际参数页未进入可调试状态。");
-            Pump();Thread.Sleep(1);
+            Pump(DispatcherPriority.SystemIdle);Thread.Sleep(1);
         }
     }
     internal static object? Call(object target,string method,params object?[] args)

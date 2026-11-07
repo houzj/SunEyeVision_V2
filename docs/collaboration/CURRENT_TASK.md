@@ -301,3 +301,7 @@ CodeBuddy 的“数据树 + 模板 + 页面复用”方向已作为候选重构�
 ## 2026-11-08 外部 SDK VS 附加准备
 
 当前机器没有 `devenv.exe` 或 `vswhere.exe`，无法执行真实 Visual Studio 附加。已增强 `PluginDevKit/scripts/launch-debug.ps1`，支持 `-Detach` 和会话回执，分离启动测试通过，回执包含 PID、宿主路径、运行根目录和附加范围。README 已补充使用方式。该脚本为外部 VS 附加提供可复现入口，不能代替 VS 实际附加验收。
+
+## 2026-11-08 VM Blob 原件结果桥接补证
+
+REA 已确认 `IMVSBlobFindModuCs.dll` 只负责 `BlobFindResult` 容器初始化和 `Run → serverSDKManager → SyncSelfRun` 转发，真实结果值由 native `IMVSBlobFindModu.dll` 产生。当前 Windows 环境未配置 Ghidra/IDA，Hopper 不支持该主机，native 函数级追踪暂无法继续。10 个剩余结果成员继续保持 `Unavailable`，没有按名称近似实现。证据：`docs/collaboration/evidence/Blob-VM原件结果桥接证据-20261108.txt`。

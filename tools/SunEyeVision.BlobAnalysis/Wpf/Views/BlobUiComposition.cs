@@ -121,10 +121,11 @@ internal sealed class BlobUiComposition : IDisposable
         _activePage=page;
         if(_pendingPages.Add(page))
         {
-            // The selected page must be ready before the host's normal ApplicationIdle
-            // pump returns. Other pages remain background-prewarmed below, so this
-            // does not reintroduce full-window eager composition.
-            _editor.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle,new Action(() =>
+            // The window's first frame is independent from page readiness. The
+            // selected page is completed on the first idle turn, then the host
+            // exposes its ready task. Other pages are queued afterwards and do
+            // not delay the first frame or the selected page.
+            _editor.Dispatcher.BeginInvoke(DispatcherPriority.SystemIdle,new Action(() =>
             {
                 if(_disposed||!ReferenceEquals(_pageHost,fields)||!StringComparer.Ordinal.Equals(_activePage,page)||!IsCurrentPage(page))
                 {

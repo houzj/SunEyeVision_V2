@@ -1,15 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.Models.Visualization;
-using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Models;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Results;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
+using SunEyeVision.Plugin.Editing.Wpf.Models.Geometry;
+using SunEyeVision.Plugin.Editing.Wpf.Models.Visualization;
+using SunEyeVision.Plugin.Editing.Wpf.UI.Controls.RoiEditor.Models;
 using Xunit;
 
 namespace SunEyeVision.Tool.Subroutine.Tests;
@@ -23,7 +23,7 @@ public class SubroutineToolDisplayContractTests
     private static SubroutineParameters MakeParams(Action<SubroutineParameters> configure, GenericToolResults internalResult)
     {
         // 源节点必须标记为执行成功，ParameterResolver 才会返回其属性值（IsSuccess 检查）
-        internalResult.Status = SunEyeVision.Plugin.SDK.Execution.Results.ExecutionStatus.Success;
+        internalResult.Status = SunEyeVision.Plugin.Editing.Wpf.Execution.Results.ExecutionStatus.Success;
 
         var parameters = new SubroutineParameters
         {
@@ -313,7 +313,7 @@ public class SubroutineToolDisplayContractTests
     public void Loop_text_arrays_accumulate_elements_while_ordinary_display_keeps_last_round()
     {
         var count = 0;
-        var parent = new GenericToolResults { Status = SunEyeVision.Plugin.SDK.Execution.Results.ExecutionStatus.Success };
+        var parent = new GenericToolResults { Status = SunEyeVision.Plugin.Editing.Wpf.Execution.Results.ExecutionStatus.Success };
         parent.AddResultItem("Start", 0); parent.AddResultItem("End", 3);
         var accumulatedStyle = new TextStyle { PositionX = 10 };
         var lastStyle = new TextStyle { PositionX = 20 };
@@ -326,7 +326,7 @@ public class SubroutineToolDisplayContractTests
             ExecuteSubWorkflowAsync = (_, _, _) =>
             {
                 count++;
-                var values = new GenericToolResults { Status = SunEyeVision.Plugin.SDK.Execution.Results.ExecutionStatus.Success };
+                var values = new GenericToolResults { Status = SunEyeVision.Plugin.Editing.Wpf.Execution.Results.ExecutionStatus.Success };
                 values.AddResultItem("Content", new[] { count + "a", count + "b" });
                 return Task.FromResult(new ExecutionResult { Success = true,
                     NodeResults = new Dictionary<string, NodeExecutionResult> { ["internalNode"] = new() { Result = values } } });
@@ -356,7 +356,7 @@ public class SubroutineToolDisplayContractTests
     public void Accumulated_geometry_keeps_configured_style_without_per_iteration_replacement(int rounds)
     {
         var count = 0;
-        var parent = new GenericToolResults { Status = SunEyeVision.Plugin.SDK.Execution.Results.ExecutionStatus.Success };
+        var parent = new GenericToolResults { Status = SunEyeVision.Plugin.Editing.Wpf.Execution.Results.ExecutionStatus.Success };
         parent.AddResultItem("Start", 0); parent.AddResultItem("End", rounds);
         var style = new GraphicsStyle { Name = "自定义", OkColor = System.Windows.Media.Color.FromArgb(143, 203, 21, 95),
             NgColor = System.Windows.Media.Colors.Purple, LineWidth = 4, Opacity = 0.65, CrossSize = 13 };
@@ -372,7 +372,7 @@ public class SubroutineToolDisplayContractTests
             ExecuteSubWorkflowAsync = (_, _, _) =>
             {
                 count++;
-                var values = new GenericToolResults { Status = SunEyeVision.Plugin.SDK.Execution.Results.ExecutionStatus.Success };
+                var values = new GenericToolResults { Status = SunEyeVision.Plugin.Editing.Wpf.Execution.Results.ExecutionStatus.Success };
                 values.AddResultItem("Circles", new[] { new Circle2d(count, 10, 5), new Circle2d(count, 20, 7) });
                 values.AddResultItem("Lines", new[] { new Line2d(new Point(count, 30), new Vector(1, 0)) });
                 return Task.FromResult(new ExecutionResult { Success = true,
@@ -391,7 +391,7 @@ public class SubroutineToolDisplayContractTests
             var item = Assert.Single(items, geometry => geometry.Type == GraphicsType.Circle);
             var lines = Assert.Single(items, geometry => geometry.Type == GraphicsType.Line);
             Assert.Same(style, lines.Style); Assert.Equal(rounds, lines.Geometries.Length);
-            Assert.All(lines.Geometries, geometry => Assert.IsType<SunEyeVision.Plugin.SDK.Models.Visualization.LineSegment>(geometry));
+            Assert.All(lines.Geometries, geometry => Assert.IsType<SunEyeVision.Plugin.Editing.Wpf.Models.Visualization.LineSegment>(geometry));
             Assert.Same(style, item.Style); Assert.Equal(rounds * 2, item.Geometries.Length);
             Assert.Equal(Enumerable.Range(1, rounds).SelectMany(i => new[] { (double)i, i }),
                 item.Geometries.Cast<Circle2d>().Select(circle => circle.Center.X));

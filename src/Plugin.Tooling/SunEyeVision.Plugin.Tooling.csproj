@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>SunEyeVision.Plugin.Tooling</RootNamespace>
+    <AssemblyName>SunEyeVision.Plugin.Tooling</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <Description>工具集成层：工具参数/结果/几何模型与算法后端（Halcon/OpenCV）之间的桥接。算法适配层只依赖契约，不反向依赖本层。</Description>
+  </PropertyGroup>
+
+  <!-- 依赖方向：Tooling → (Editing.Wpf 模型层) + (HalAdapter 算法层)。HalAdapter 不引用本层，保证算子库零上层依赖。 -->
+  <ItemGroup>
+    <ProjectReference Include="../Plugin.Editing.Wpf/SunEyeVision.Plugin.Editing.Wpf.csproj" />
+    <ProjectReference Include="../Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj" />
+    <ProjectReference Include="../Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" />
+    <ProjectReference Include="../Foundation/SunEyeVision.Foundation.csproj" />
+    <ProjectReference Include="../SunEyeVision.HalAdapter/SunEyeVision.HalAdapter.csproj" />
+    <ProjectReference Include="../SunEyeVision.CvAdapter/SunEyeVision.CvAdapter.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="halcondotnetxl">
+      <HintPath>..\..\libs\halcon\net\halcondotnetxl.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

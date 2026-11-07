@@ -5,7 +5,7 @@ using SunEyeVision.Application.Editing;
 using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Infrastructure.ImageSources;
-using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using SunEyeVision.Plugin.Contracts.Vision;
 using SunEyeVision.UI.Services.Images;
 using SunEyeVision.UI.Services;
 using SunEyeVision.UI.Shared;
@@ -41,7 +41,7 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
   Func<bool> isCurrent, Func<bool> canEdit, Func<bool> canNavigate, Action<DocumentEditReceipt>? accepted = null,
   Func<ImageSourceActivation, Task>? activate = null, Dispatcher? dispatcher = null,
   Func<ImageSourceEditProposal, SourceDisplayPreservationScope?>? prepareDisplay = null,
-  Action<string, Exception>? reportPresentationError = null)
+  Action<string, Exception>? reportPresentationError = null, bool providesImageImport = false)
  {
   _session = session ?? throw new ArgumentNullException(nameof(session));
   _root = root ?? throw new ArgumentNullException(nameof(root));
@@ -62,7 +62,8 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
    _isLocal = initial.SourceKind == ImageSourceKind.Local;
    Source.IsReadOnly = !_isLocal || !Current() || !_canEdit();
    Source.AttachFormalOwner(); Source.ConfigurationWriter = AcceptEdit;
-   Strip = new ImageSourceStripSession(Source, Current, () => CanActivate, ActivateAsync, _dispatcher, () => _dialogOwner?.Invoke());
+   Strip = new ImageSourceStripSession(Source, Current, () => CanActivate, ActivateAsync, _dispatcher, () => _dialogOwner?.Invoke(),
+    providesImageImport);
    _session.Changed += OnDocumentChanged;
   }
   catch(Exception failure)

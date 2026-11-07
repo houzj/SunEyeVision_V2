@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using System.Collections.Generic;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Results;
+using SunEyeVision.Plugin.Contracts.Vision;
 using Xunit;
 
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 
 /// <summary>
 /// 契约测试：GenericToolResults 必须把动态 AddResultItem 结果项暴露为输出变量契约（SSOT）。

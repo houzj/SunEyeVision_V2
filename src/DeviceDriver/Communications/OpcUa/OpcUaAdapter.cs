@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Buffers.Binary;
@@ -17,8 +17,8 @@ using InvalidDataException = System.IO.InvalidDataException;
 using Opc.Ua;
 using Opc.Ua.Client;
 using Opc.Ua.Configuration;
-using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.Plugin.SDK.Devices.Communication;
+using SunEyeVision.Foundation.Logging;
+using SunEyeVision.Plugin.Contracts.Communication;
 using Communication = SunEyeVision.DeviceDriver.Communications.CommunicationDeviceSnapshot;
 
 namespace SunEyeVision.DeviceDriver.Communications;

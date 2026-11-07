@@ -22,7 +22,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
     /// </remarks>
     internal static class PluginAssemblyPolicy
     {
-        /// <summary>框架程序集前缀：一律回落宿主（含 Plugin.SDK / Core / HalAdapter / CvAdapter 等）。</summary>
+        /// <summary>框架程序集前缀：一律回落宿主（含 Plugin.Contracts / Plugin.Runtime / Core / HalAdapter / CvAdapter 等）。</summary>
         private const string FrameworkAssemblyPrefix = "SunEyeVision.";
 
         /// <summary>
@@ -61,12 +61,8 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
             if (string.IsNullOrEmpty(simpleName))
                 return false;
 
-            // ① 契约程序集：只留一份。这是插件能被识别为 IToolPlugin 的前提
-            //    （接口类型身份必须与宿主一致，否则 IsAssignableFrom 恒 false）。
-            if (string.Equals(simpleName, SunEyeVision.Plugin.SDK.Core.ToolContract.AssemblyName, StringComparison.Ordinal))
-                return true;
-
-            // ② 框架模块与宿主自身程序集：用前缀而非白名单 —— 新增框架模块无需改这里；
+            // ① 框架模块与宿主自身程序集（含契约程序集 Plugin.Contracts/Plugin.Runtime）：
+            //    用前缀而非白名单 —— 新增框架模块无需改这里，也不存在"契约程序集漏登记"的分叉可能；
             //    而「工具引用了宿主专属程序集」本应属分层违规，由编译期暴露（rule-008 报错优先）。
             if (simpleName.StartsWith(FrameworkAssemblyPrefix, StringComparison.Ordinal))
                 return true;

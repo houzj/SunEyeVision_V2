@@ -109,17 +109,17 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     private string AcceptedText()
     {
         if(!HasPendingReference&&!_state.ReferenceCleared&&_state.Accepted is ConstantSetting number)
+        {
+            // 原件切换到订阅模式后不再回显常量：文本框清空，等用户选定来源（ButtonSelecter 里取消订阅即 CurValueA=null）。
+            if(_state.IsReferenceMode)return "";
             return number.Value switch{long integer=>integer.ToString(CultureInfo.InvariantCulture),double real when NumericStorageRules.Effective(_state.Port.Type,_state.Port.Storage)==NumericStorage.Float32=>((float)real).ToString("R",CultureInfo.InvariantCulture),double real=>real.ToString("R",CultureInfo.InvariantCulture),_=>AppLocalizationService.GetLang("Lang_ConstantValue","已设置常量")};
+        }
         if(DisplaySetting is not {} source)return "";
         var label=Label(source);var selection=ReferenceSettingParts.Selection(source);
-        return ProjectedType(source)?.Shape!=ValueShape.Sequence&&selection is BindingSelection.AllItems?label:label+" ["+(selection switch
-        {
-            BindingSelection.AtConstant index=>index.Index.ToString(CultureInfo.InvariantCulture),
-            BindingSelection.AtField index=>_format?.Invoke(index.Reference)??index.Reference.NodeId+" · "+index.Reference.PortId,
-            BindingSelection.AtVariable index=>_indexVariables.FirstOrDefault(item=>ReferenceSettingParts.SameSource(item.Reference,index.Reference)) is {} item
-                ?AppLocalizationService.GetLang("Lang_GlobalVariable","全局变量")+"."+item.Name:_options.FormatVariable?.Invoke(index.Reference)??"已选择索引变量",
-            _=>""
-        })+"]";
+        return label+ReferenceText.IndexSuffix(ProjectedType(source),selection,source is ReferenceSetting,
+            index=>_format?.Invoke(index)??index.NodeId+"."+index.PortId,
+            index=>_indexVariables.FirstOrDefault(item=>ReferenceSettingParts.SameSource(item.Reference,index)) is {} item
+                ?AppLocalizationService.GetLang("Lang_GlobalVariable","全局变量")+"."+item.Name:_options.FormatVariable?.Invoke(index)??"已选择索引变量");
     }
     private static TypeRef? ProjectedType(ParameterSetting reference)
     {

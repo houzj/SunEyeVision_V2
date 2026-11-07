@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using OpenCvSharp;
 using SunEyeVision.CvEngine;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Results;
+using SunEyeVision.Plugin.Editing.Wpf.Models.Geometry;
 
 namespace SunEyeVision.CvAdapter
 {

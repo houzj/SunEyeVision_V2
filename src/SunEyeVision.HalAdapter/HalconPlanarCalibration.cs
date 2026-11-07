@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using HalconDotNet;
-using SunEyeVision.Plugin.SDK.Models.Calibration;
+using SunEyeVision.Plugin.Editing.Wpf.Models.Calibration;
 
 namespace SunEyeVision.HalAdapter;
 

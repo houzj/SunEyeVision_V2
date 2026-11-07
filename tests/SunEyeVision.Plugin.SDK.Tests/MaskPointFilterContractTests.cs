@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Windows;
 using SunEyeVision.HalAdapter;
-using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Results;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
+using SunEyeVision.Plugin.Editing.Wpf.Models.Geometry;
 using Xunit;
 
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-namespace SunEyeVision.Plugin.SDK.Tests;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 
 /// <summary>
 /// 屏蔽点集过滤契约测试（ToolRegionHelper.FilterPointsOutOfMaskRois）。

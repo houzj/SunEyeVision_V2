@@ -1,7 +1,7 @@
 using SunEyeVision.Plugin.Runtime;
 using System.Collections.ObjectModel;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Results;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Services;
 

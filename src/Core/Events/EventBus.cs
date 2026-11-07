@@ -2,7 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 
 namespace SunEyeVision.Core.Events
 {

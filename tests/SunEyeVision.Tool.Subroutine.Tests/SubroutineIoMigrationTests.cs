@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Results;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
 using SunEyeVision.Tool.Subroutine.ViewModels;
 using Xunit;
 
@@ -111,9 +111,9 @@ public sealed class SubroutineIoMigrationTests
     [Fact]
     public void Imported_image_array_keeps_collection_schema_and_child_resource_lease_until_Group_result_release()
     {
-        var image=NSubstitute.Substitute.For<SunEyeVision.Plugin.SDK.Vision.Contracts.IVisionImage>();var owner=new ReleaseProbe();
+        var image=NSubstitute.Substitute.For<SunEyeVision.Plugin.Contracts.Vision.IVisionImage>();var owner=new ReleaseProbe();
         var values=new GenericToolResults{Status=ExecutionStatus.Success};values.AddResultItem("Images",new[]{image});values.RegisterOutputResource(owner);
-        var source=Source("inside","Images",typeof(SunEyeVision.Plugin.SDK.Vision.Contracts.IVisionImage[]),"child");
+        var source=Source("inside","Images",typeof(SunEyeVision.Plugin.Contracts.Vision.IVisionImage[]),"child");
         var p=new SubroutineParameters{SubroutineId="child",ExecuteSubWorkflowAsync=(_,_,_)=>
         {
             var execution=new ExecutionResult{Success=true,NodeResults=new System.Collections.Generic.Dictionary<string,NodeExecutionResult>{["inside"]=new(){Result=values}}};
@@ -127,7 +127,7 @@ public sealed class SubroutineIoMigrationTests
             {
                 Assert.True(result.IsSuccess,result.ErrorMessage);Assert.Equal(0,owner.Count);
                 var output=Assert.Single(result.GetOutputVariables(),v=>v.Name=="Images");Assert.True(output.IsCollection);Assert.NotNull(output.ValueDeclaration);
-                Assert.Same(image,Assert.Single(Assert.IsType<SunEyeVision.Plugin.SDK.Vision.Contracts.IVisionImage[]>(result.ResolvedOutputValues["Images"])));
+                Assert.Same(image,Assert.Single(Assert.IsType<SunEyeVision.Plugin.Contracts.Vision.IVisionImage[]>(result.ResolvedOutputValues["Images"])));
             }
             finally{result.Resources?.Dispose();}
             Assert.Equal(1,owner.Count);
@@ -144,7 +144,7 @@ public sealed class SubroutineIoMigrationTests
         var p=new SubroutineParameters{SubroutineId="child",ExecuteSubWorkflowAsync=(_,_,_)=>Task.FromResult(new ExecutionResult{Success=true,NodeResults=new System.Collections.Generic.Dictionary<string,NodeExecutionResult>{["inside"]=new(){Result=values}}})};
         p.DisplayConfigs.Add(new(){DisplayName="计数",DisplayType=SubroutineDisplayType.Text,BoundDataSource=source,TextStyle=new()});
         var result=new SubroutineTool().Run(p);
-        try{Assert.True(result.IsSuccess,result.ErrorMessage);var text=Assert.IsType<SunEyeVision.Plugin.SDK.Models.Visualization.TextDisplayItem>(Assert.Single(result.Display.Items));Assert.Equal("7",Assert.Single(text.Texts).Content);}
+        try{Assert.True(result.IsSuccess,result.ErrorMessage);var text=Assert.IsType<SunEyeVision.Plugin.Editing.Wpf.Models.Visualization.TextDisplayItem>(Assert.Single(result.Display.Items));Assert.Equal("7",Assert.Single(text.Texts).Content);}
         finally{result.Resources?.Dispose();values.Resources?.Dispose();}
     }
 

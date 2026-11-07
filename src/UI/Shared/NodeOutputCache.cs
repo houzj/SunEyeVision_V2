@@ -6,8 +6,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Media.Imaging;
-using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Models.Imaging;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Results;
+using SunEyeVision.Plugin.Editing.Wpf.Models.Imaging;
 using SunEyeVision.UI.Services.Thumbnail;
 
 namespace SunEyeVision.UI.Shared

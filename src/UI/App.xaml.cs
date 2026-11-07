@@ -18,10 +18,10 @@ using SunEyeVision.UI.Shell.Windows;
 using SunEyeVision.UI.Features.Dialogs;
 using System.Runtime.InteropServices;
 
-using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
 using SunEyeVision.UI.Services;
 using SunEyeVision.UI.Services.Monitoring;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 using System.Windows.Media;
 using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Services.Interaction;
@@ -124,7 +124,7 @@ public partial class App : System.Windows.Application
                     channel = SunEyeVision.Foundation.Versioning.AppVersionInfo.Channel,
                     releaseDate = SunEyeVision.Foundation.Versioning.AppVersionInfo.ReleaseDate,
                     commit = SunEyeVision.Foundation.Versioning.AppVersionInfo.Commit,
-                    toolContract = SunEyeVision.Plugin.SDK.Core.ToolContract.Version,
+                    toolContract = SunEyeVision.Plugin.Editing.Wpf.Core.ToolContract.Version,
                     defaultTheme = Services.ThemeManager.DefaultTheme.ToString(),
                     startupWindowBackground = (TryFindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.WindowBackgroundBrush) as SolidColorBrush)?.Color.ToString(),
                     toolboxCategories = toolbox?.Categories.Select(c => new { name = c.Name, icon = c.Icon, count = c.ToolCount }).ToArray(),

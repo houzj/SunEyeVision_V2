@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 using SunEyeVision.Plugin.SDK.Models.Communication;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 

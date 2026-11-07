@@ -8,11 +8,11 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using SunEyeVision.DeviceDriver.Communications;
-using SunEyeVision.Plugin.SDK.Models.Communication;
+using SunEyeVision.Plugin.Editing.Wpf.Models.Communication;
 using SunEyeVision.Domain.Solutions;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Runtime;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
 
 namespace SunEyeVision.UI.Services.Communication;
 

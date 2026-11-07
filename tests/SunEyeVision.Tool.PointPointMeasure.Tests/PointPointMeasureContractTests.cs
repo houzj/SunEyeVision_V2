@@ -3,12 +3,12 @@ using System.Linq;
 using System.Text.Json;
 using NSubstitute;
 using SunEyeVision.Core.Services.Serialization;
-using SunEyeVision.Plugin.SDK.Core;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models;
-using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using SunEyeVision.Plugin.Editing.Wpf.Core;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
+using SunEyeVision.Plugin.Editing.Wpf.Models.Geometry;
+using SunEyeVision.Plugin.Editing.Wpf.UI.Controls.Measure.Models;
+using SunEyeVision.Plugin.Contracts.Vision;
 using Xunit;
 
 namespace SunEyeVision.Tool.PointPointMeasure.Tests;

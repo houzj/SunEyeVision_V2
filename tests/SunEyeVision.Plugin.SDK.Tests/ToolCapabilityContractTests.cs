@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Results;
 using Xunit;
 
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 
 /// <summary>
 /// 守卫契约测试：能力声明 ↔ 框架契约 一致性（方案 P0.6-1/2/3/5/6，决策 10/11/12）。

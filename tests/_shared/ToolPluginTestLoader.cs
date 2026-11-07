@@ -38,7 +38,7 @@ namespace SunEyeVision.TestShared;
 internal static class ToolPluginTestLoader
 {
     private const string HostDebugRootKey = "HostDebugRoot";
-    private const string HostMarkerDll = "SunEyeVision.Plugin.SDK.dll";
+    private const string HostMarkerDll = "SunEyeVision.Plugin.Editing.Wpf.dll";
     private const string TestSuffix = ".Tests";
     private const string ToolPrefix = "SunEyeVision.Tool.";
 
@@ -149,7 +149,7 @@ internal static class ToolPluginTestLoader
         };
     }
 
-    /// <summary>回退定位：从测试运行目录向上找含 SunEyeVision.Plugin.SDK.dll 的目录（旧布局，无 AssemblyMetadata 时）。</summary>
+    /// <summary>回退定位：从测试运行目录向上找含 SunEyeVision.Plugin.Editing.Wpf.dll 的目录（旧布局，无 AssemblyMetadata 时）。</summary>
     private static string LocateDebugRootByProbing()
     {
         var dir = new DirectoryInfo(AppContext.BaseDirectory);

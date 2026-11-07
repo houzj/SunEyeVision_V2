@@ -5,10 +5,10 @@ using System.Collections.ObjectModel;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls;
-using SunEyeVision.Plugin.SDK.UI.Controls.RoiEditor.Views;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
+using SunEyeVision.Plugin.Editing.Wpf.UI.Controls;
+using SunEyeVision.Plugin.Editing.Wpf.UI.Controls.RoiEditor.Views;
 using SunEyeVision.Workflow;
 
 namespace SunEyeVision.UI.Services.Editing;

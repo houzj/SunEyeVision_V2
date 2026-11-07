@@ -1,12 +1,12 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Windows;
 using HalconDotNet;
 using SunEyeVision.HalAdapter;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
 using Xunit;
 
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 
 /// <summary>
 /// HalconRegionPipeline 契约测试（v1.4 纯 ROI 管线）。
@@ -47,7 +47,7 @@ public class HalconRegionPipelineContractTests
     public void EnabledRegion_YieldsNonEmptyRoi()
     {
         using var scope = HalconRegionPipeline.Resolve(1000, 800,
-            new[] { MakeRegion("insp", new SunEyeVision.Plugin.SDK.Models.Geometry.RotatedRect2d(200, 175, 200, 150, 0)) },
+            new[] { MakeRegion("insp", new SunEyeVision.Plugin.Editing.Wpf.Models.Geometry.RotatedRect2d(200, 175, 200, 150, 0)) },
             [], null, null);
 
         Assert.NotNull(scope.RoiRegion);
@@ -58,7 +58,7 @@ public class HalconRegionPipelineContractTests
     public void RoiScope_DisposeIsIdempotent()
     {
         var scope = HalconRegionPipeline.Resolve(200, 200,
-            new[] { MakeRegion("insp", new SunEyeVision.Plugin.SDK.Models.Geometry.RotatedRect2d(35, 35, 50, 50, 0)) },
+            new[] { MakeRegion("insp", new SunEyeVision.Plugin.Editing.Wpf.Models.Geometry.RotatedRect2d(35, 35, 50, 50, 0)) },
             [], null, null);
 
         scope.Dispose();

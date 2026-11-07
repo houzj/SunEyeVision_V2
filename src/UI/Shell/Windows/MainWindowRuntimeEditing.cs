@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Windows;
+using System.Windows.Threading;
 using SunEyeVision.Application;
 using SunEyeVision.Application.Editing;
 using SunEyeVision.Domain.Workflows;
@@ -36,6 +37,8 @@ public partial class MainWindowViewModel
     private long _editorOpenGeneration;
     private async System.Threading.Tasks.Task OpenFormalNodeEditor(NodeDefinition node)
     {
+        // PROBE-KEEP：窗口打开分段计时，仅超阈值时输出（见 PerfProbe）。
+        using var perf=SunEyeVision.UI.Services.Performance.PerfProbe.Begin("open",node.Name);
         var opening=++_editorOpenGeneration;
         if(_documentHostReleased||IsRunning||_solutionTransitionPrepared||_transitionPreparationInProgress)
             throw new InvalidOperationException("当前主窗正在运行、切换或关闭，不能打开参数页。");
@@ -53,12 +56,14 @@ public partial class MainWindowViewModel
         if (!ReferenceEquals(DocumentManager.CurrentSession,session) || !OwnsSelectedDocumentNode(node))
             throw new InvalidOperationException("关闭旧窗口期间方案或节点已变化。");
         SelectedNode=node;
+        perf.Mark("前置");
         var control=new RuntimeNodeConfigurationControl();
         var window=new RuntimeToolEditorWindow(control) {Title=node.Name};
         if (ResolveSolutionDialogOwner(null) is {} owner) window.Owner=owner;
         _openDebugWindow=window;
+        perf.Mark("构造");
         window.Closed+=(_,_)=>{if(ReferenceEquals(_openDebugWindow,window))_openDebugWindow=null;};
-        try { InitializeRuntimeEditor(window,node); }
+        try { InitializeRuntimeEditor(window,node); perf.Mark("初始化"); }
         catch { control.Dispose(); window.Close(); if(ReferenceEquals(_openDebugWindow,window))_openDebugWindow=null; throw; }
     }
     private bool InitializeRuntimeEditor(object target,NodeDefinition node)
@@ -96,10 +101,25 @@ public partial class MainWindowViewModel
                 if(ReferenceEquals(_editorDebugControl,control)){_editorDebugControl=null;_editorDebugContext=null;RefreshEditorDebugResult();}
             };
             window.SetRunAvailability(()=>Current()&&!IsRunning&&!_solutionTransitionPrepared&&!_transitionPreparationInProgress);
-            control.BindDraft(context.PreparedDraft);
-            var preview=InstallResultDisplayPreview(session,node,context,control);context.Deactivated+=preview.Dispose;
             TrackProductionEditor(_productionEditors,context,window);
-            window.Show();return true;
+            window.SetAssemblyPending();
+            window.Show();
+            window.Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+            {
+                if (!context.IsValid || !window.IsCurrent) return;
+                try
+                {
+                    control.BindDraft(context.PreparedDraft);
+                    var preview=InstallResultDisplayPreview(session,node,context,control);context.Deactivated+=preview.Dispose;
+                    window.SetAssemblyReady();
+                }
+                catch (Exception error)
+                {
+                    Foundation.Logging.PluginLogger.Error(error.Message,nameof(MainWindowViewModel),error);
+                    context.Discard();
+                }
+            }));
+            return true;
         }
         catch { context.Discard(); throw; }
     }

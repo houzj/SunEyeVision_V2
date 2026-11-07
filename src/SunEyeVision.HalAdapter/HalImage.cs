@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using HalconDotNet;
-using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using SunEyeVision.Plugin.Contracts.Vision;
+using SunEyeVision.Plugin.Runtime.Vision;
 
 namespace SunEyeVision.HalAdapter
 {

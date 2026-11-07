@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Results;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
 using Xunit;
 
 namespace SunEyeVision.Tool.Subroutine.Tests;
@@ -51,7 +51,7 @@ public sealed class SubroutineLoopMigrationTests
     {
         using var cancellation=new CancellationTokenSource();var count=0;
         var p=Parameters("int",99L,i=>(long)i,i=>{count=i;cancellation.Cancel();});
-        p.SetExecutionContext(new SunEyeVision.Plugin.SDK.Execution.Parameters.ExecutionContext(cancellationToken:cancellation.Token));
+        p.SetExecutionContext(new SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters.ExecutionContext(cancellationToken:cancellation.Token));
         Assert.ThrowsAny<OperationCanceledException>(()=>new SubroutineTool().Run(p));Assert.Equal(1,count);
     }
     [Fact]
@@ -67,7 +67,7 @@ public sealed class SubroutineLoopMigrationTests
     {
         using var cancellation=new CancellationTokenSource();var entered=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var p=Parameters("int",99L,i=>(long)i,_=>entered.TrySetResult());p.LoopConfig.LoopInterval=10000;
-        p.SetExecutionContext(new SunEyeVision.Plugin.SDK.Execution.Parameters.ExecutionContext(cancellationToken:cancellation.Token));
+        p.SetExecutionContext(new SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters.ExecutionContext(cancellationToken:cancellation.Token));
         var run=Task.Run(()=>new SubroutineTool().Run(p));await entered.Task.WaitAsync(TimeSpan.FromSeconds(3));await Task.Delay(80);cancellation.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async()=>await run.WaitAsync(TimeSpan.FromSeconds(3)));
     }

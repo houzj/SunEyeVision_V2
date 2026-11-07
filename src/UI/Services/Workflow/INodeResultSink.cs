@@ -1,6 +1,6 @@
 using SunEyeVision.Plugin.Runtime;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Results;
 
 using SunEyeVision.UI.Shell.Windows;
 

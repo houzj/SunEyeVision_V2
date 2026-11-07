@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using Opc.Ua;
 using SunEyeVision.DeviceDriver.Communications;
-using SunEyeVision.Plugin.SDK.Models.Communication;
+using SunEyeVision.Plugin.Editing.Wpf.Models.Communication;
 
 namespace SunEyeVision.UI.Features.CommunicationManager;
 

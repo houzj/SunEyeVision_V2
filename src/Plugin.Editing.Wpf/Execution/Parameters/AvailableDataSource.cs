@@ -1,0 +1,488 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
+using System.Text.Json.Serialization;
+using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Runtime;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
+
+namespace SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters
+{
+    public sealed record SourceTypeContract(string Vocabulary, bool IsArray);
+    /// <summary>
+    /// 可用数据源模型
+    /// </summary>
+    /// <remarks>
+    /// 表示一个可供绑定的数据源，通常是父节点的某个输出属性。
+    /// 用于在参数绑定界面中展示可选的数据源列表。
+    /// 
+    /// 核心功能：
+    /// 1. 描述数据源的基本信息
+    /// 2. 支持类型过滤
+    /// 3. 支持分组显示
+    /// 
+    /// 设计分层：
+    /// - 身份层（Binding）：中立声明的作用域、端口或变量与选择共同定义身份，
+    ///   相等比较基于完整中立引用，确保 WPF 控件能正确匹配选中项
+    /// - 展示层（SourceNodeName, DisplayName 等）：UI 显示辅助
+    /// - 状态层（CurrentValue, HasExecuted 等）：随执行变化
+    /// 
+    /// 使用示例：
+    /// <code>
+    /// // 获取可用数据源列表
+    /// var dataSources = dataQueryService.GetAvailableDataSources(nodeId, typeof(double));
+    /// 
+    /// // 显示在UI中
+    /// foreach (var source in dataSources)
+    /// {
+    ///     // 绑定到属性面板显示: source.DisplayName, source.PropertyType, source.CurrentValue
+    /// }
+    /// </code>
+    /// </remarks>
+    [TypeConverter(typeof(AvailableDataSourceConverter))]
+    public class AvailableDataSource : IEquatable<AvailableDataSource>
+    {
+        /// <summary>Candidate navigation only; never part of persisted binding identity.</summary>
+        [JsonIgnore] public string? CandidateSection { get; set; }
+        /// <summary>Only host-created connection defaults carry ownership; user picks are explicit.</summary>
+        private ParameterSetting _binding = null!;
+        public required ParameterSetting Binding
+        {
+            get => _binding;
+            init => _binding = value switch
+            {
+                ReferenceSetting { Reference: { ScopeId: { Length: > 0 } } } => value,
+                VariableSetting { Reference: not null } => value,
+                _ => throw new ArgumentException("来源必须是具有作用域的节点引用或有效变量引用。", nameof(value))
+            };
+        }
+        public string? AutomaticConnectionId => (Binding as ReferenceSetting)?.OriginId is { } origin && origin.StartsWith("connection:", StringComparison.Ordinal) ? origin[11..] : null;
+        public string? SourceWorkflowId => (Binding as ReferenceSetting)?.Reference.ScopeId;
+        public AvailableDataSource WithConnectionOwnership(string? connectionId)
+        {
+            if (Binding is not ReferenceSetting reference) throw new InvalidOperationException("变量来源不能拥有连接来源。");
+            var copy = (AvailableDataSource)MemberwiseClone(); copy._binding = reference with { OriginId = connectionId is null ? null : "connection:" + connectionId }; return copy;
+        }
+        /// <summary>A detached runtime value; candidate and editor objects keep their original values.</summary>
+        public AvailableDataSource WithRuntimeValue(object? value)
+        {
+            if (value is not (null or bool or byte or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal or string))
+                throw new InvalidOperationException("来源候选不能持有借用资源或复合运行值。");
+            var copy = (AvailableDataSource)MemberwiseClone(); copy.CurrentValue = value; return copy;
+        }
+        public AvailableDataSource WithCandidateSection(string? section)
+        {
+            var copy = (AvailableDataSource)MemberwiseClone(); copy.CandidateSection = section; return copy;
+        }
+        /// <summary>
+        /// 源节点ID（身份字段，构造后不可变）
+        /// </summary>
+        public string SourceNodeId => (Binding as ReferenceSetting)?.Reference.NodeId ?? string.Empty;
+
+/// <summary>
+        /// 源节点名称
+        /// </summary>
+        public string SourceNodeName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 源节点类型
+        /// </summary>
+        public string? SourceNodeType { get; set; }
+
+        /// <summary>
+        /// 属性名称（身份字段，构造后不可变）
+        /// </summary>
+        /// <remarks>
+        /// 结果对象中的属性路径。
+        /// 示例: "Radius", "Center.X", "CircleFound.Radius"
+        /// </remarks>
+        public string PropertyName => (Binding as ReferenceSetting)?.Reference.PortId ?? string.Empty;
+
+/// <summary>
+        /// 显示名称
+        /// </summary>
+        /// <remarks>
+        /// 用于UI显示的友好名称。
+        /// 示例: "半径", "圆心X坐标", "检测到的圆半径"
+        /// </remarks>
+        public string DisplayName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 叶子显示名（中文，由构造方**声明**，显示名 SSOT 的载体）。
+        /// </summary>
+        /// <remarks>
+        /// 合成叶子（几何字段叶 / ROI 字段叶 / 类型集合叶）常需要比 <see cref="DisplayName"/>
+        /// 更完整的名字（如父名 + 字段名 "圆心.X"）。为空时回退 <see cref="DisplayName"/>。
+        /// ★ 显示名只允许由构造方声明；格式化层不得再从来源表达式形态推断。
+        /// </remarks>
+        public string? LeafDisplayName { get; set; }
+
+        /// <summary>
+        /// 绑定结果的数组语义（显示时追加 "[]"）。
+        /// </summary>
+        /// <remarks>
+        /// - <c>null</c>（未声明）→ 按 <see cref="PropertyType"/>.IsArray 推断；
+        /// - 显式 <c>true</c>/<c>false</c> → 以声明为准。
+        /// 合成字段叶（如几何数组的 "圆心X"）值类型是标量，但语义是"该数组全部元素的该字段"，
+        /// 属集合语义，必须显式声明为 true。
+        /// </remarks>
+        public bool? IsArraySemantics { get; set; }
+
+        /// <summary>
+        /// 属性类型
+        /// </summary>
+        [JsonIgnore]
+        public Type PropertyType { get; set; } = typeof(object);
+
+        public SourceTypeContract TypeContract
+        {
+            get => new(SdkTypeVocabulary.ToTypeVocabulary(PropertyType) ?? "Object", PropertyType.IsArray);
+            set
+            {
+                var type = SdkTypeVocabulary.ToSystemType(value.Vocabulary) ?? typeof(object);
+                PropertyType = value.IsArray ? type.IsArray ? type : type.MakeArrayType() : type.IsArray ? type.GetElementType()! : type;
+            }
+        }
+
+        /// <summary>
+        /// 全局变量类型名称（SdkTypeVocabulary 词汇，如 "Image"/"Double"/"Circle"）。
+        /// 取代 PropertyType 驱动的 CLR 类型过滤与 imageTypeNames 字符串 hack。
+        /// </summary>
+        public string? VariableType { get; set; }
+
+        /// <summary>
+        /// 类型名称（用于显示）
+        /// </summary>
+        public string TypeName => PropertyType.Name;
+
+        /// <summary>
+        /// 完整类型名称
+        /// </summary>
+        public string FullTypeName => PropertyType.FullName ?? PropertyType.Name;
+
+        /// <summary>
+        /// 当前值
+        /// </summary>
+        /// <remarks>
+        /// 如果节点已执行，则包含当前属性的值。
+        /// 用于预览和验证。
+        /// </remarks>
+        [JsonIgnore]
+        private object? _currentValue;
+        public object? CurrentValue
+        {
+            get => _currentValue;
+            set => _currentValue = value is null or bool or byte or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal or string
+                ? value : throw new InvalidOperationException("来源候选不能持有借用资源或复合运行值。");
+        }
+
+        /// <summary>
+        /// 值的字符串表示
+        /// </summary>
+        public string? ValueString => CurrentValue?.ToString();
+
+        /// <summary>
+        /// 单位
+        /// </summary>
+        public string? Unit { get; set; }
+
+        /// <summary>
+        /// 描述信息
+        /// </summary>
+        public string? Description { get; set; }
+
+        /// <summary>
+        /// 分组名称
+        /// </summary>
+        /// <remarks>
+        /// 用于在UI中分组显示数据源。
+        /// 示例: "圆形检测", "边缘检测", "测量结果"
+        /// </remarks>
+        public string? GroupName { get; set; }
+
+        /// <summary>
+        /// 树节点（用于支持多层树形结构）
+        /// </summary>
+        /// <remarks>
+        /// 关联的树节点对象，用于支持完整的树形结构导航。
+        /// </remarks>
+        [JsonIgnore]
+        public TreeNodeData? TreeNode { get; set; }
+
+        /// <summary>
+        /// 子数据源列表（数组属性暴露 [i] 子节点时使用）
+        /// </summary>
+        /// <remarks>
+        /// 数组属性（Circle2d[]/double[] 等）会附带一个 [i] 子数据源，
+        /// 用于绑定路径显式取单个元素（决策1）。
+        /// </remarks>
+        [JsonIgnore]
+        public List<AvailableDataSource>? Children { get; set; }
+
+        /// <summary>
+        /// 下拉显示文本（中文，用于界面显示）
+        /// </summary>
+        /// <remarks>
+        /// 格式: "节点名.属性名"
+        /// 示例: "图像阈值化4.输出图像", "图像载入1.宽度"
+        /// </remarks>
+        public string DropdownDisplayText => GetBindingDisplayName(SourceNodeName);
+
+        /// <summary>
+        /// 叶子显示名的有效值：构造方声明优先，未声明时回退 <see cref="DisplayName"/>。
+        /// </summary>
+        public string EffectiveLeafDisplayName
+            => string.IsNullOrEmpty(LeafDisplayName) ? DisplayName : LeafDisplayName!;
+
+        /// <summary>
+        /// 有效的数组语义：构造方声明优先，未声明时按 <see cref="PropertyType"/> 推断。
+        /// </summary>
+        public bool EffectiveArraySemantics
+            => IsArraySemantics ?? (PropertyType?.IsArray == true);
+
+        /// <summary>
+        /// 绑定显示名 —— **全项目唯一显示文本入口**（显示名 SSOT）。
+        /// </summary>
+        /// <param name="rootName">根节点显示名（节点名）；为空时只返回叶子名。</param>
+        /// <remarks>
+        /// 格式：<c>{根节点名}.{叶子显示名}{"[]"?}</c>，例："圆查找1.圆心.X[]"。
+        /// ★ 显示规则（中文名 + 数组语义标记）在此**唯一**定义；控件层（ParamBinding /
+        ///   ConfigSetting / 图像源选择器等）一律走本方法，不得各自拼接、不得按路径形态推断。
+        /// </remarks>
+        public string GetBindingDisplayName(string? rootName)
+        {
+            var leaf = EffectiveLeafDisplayName;
+            if (EffectiveArraySemantics)
+                leaf += "[]";
+            return string.IsNullOrEmpty(rootName) ? leaf : $"{rootName}.{leaf}";
+        }
+
+        /// <summary>
+        /// 是否与目标类型兼容
+        /// </summary>
+        public bool IsCompatible { get; set; } = true;
+
+        /// <summary>
+        /// 兼容性说明
+        /// </summary>
+        /// <remarks>
+        /// 如果不兼容，说明原因。
+        /// </remarks>
+        public string? CompatibilityNote { get; set; }
+
+        /// <summary>
+        /// 是否为设计时推断
+        /// </summary>
+        /// <remarks>
+        /// 标识此数据源是否通过反射从 ResultType 推断而来，
+        /// 而非从实际执行结果中提取。
+        /// 
+        /// 设计时推断的特点：
+        /// - CurrentValue 为 null（未执行）
+        /// - PropertyType 准确（从类型定义获取）
+        /// - 在 UI 中可能显示为灰色或特殊标记
+        /// </remarks>
+        public bool IsDesignTime { get; set; } = false;
+
+        /// <summary>
+        /// 距离当前节点的距离（0=当前节点，1=直接父节点，以此类推）
+        /// </summary>
+        public int Distance { get; set; }
+
+        /// <summary>
+        /// 节点是否已执行
+        /// </summary>
+        public bool HasExecuted { get; set; } = true;
+
+        /// <summary>
+        /// 是否有效
+        /// </summary>
+        public bool IsValid => Binding is ReferenceSetting or VariableSetting;
+
+        /// <summary>
+        /// 创建绑定路径
+        /// </summary>
+        /// <returns>绑定路径字符串，数组类型追加 []</returns>
+        public string GetBindingPath()
+        {
+            return Binding switch { ReferenceSetting r => SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(r.Reference), VariableSetting v => SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(v.Reference), _ => throw new InvalidOperationException("来源缺少中立身份。") };
+        }
+
+        /// <summary>
+        /// 获取显示文本
+        /// </summary>
+        /// <returns>格式化的显示文本</returns>
+        public string GetDisplayText()
+        {
+            var text = GetBindingDisplayName(SourceNodeName);
+            if (!string.IsNullOrEmpty(Unit))
+                text += $" ({Unit})";
+            return text;
+        }
+
+        /// <summary>
+        /// 获取详细信息
+        /// </summary>
+        /// <returns>详细信息字符串</returns>
+        public string GetDetailedInfo()
+        {
+            var info = $"{GetDisplayText()}\n";
+            info += $"类型: {TypeName}\n";
+            if (CurrentValue != null)
+                info += $"当前值: {CurrentValue}\n";
+            if (!string.IsNullOrEmpty(Description))
+                info += $"说明: {Description}";
+            return info.TrimEnd('\n');
+        }
+
+        /// <summary>
+        /// 获取描述字符串
+        /// </summary>
+        public override string ToString()
+        {
+            return GetBindingPath();
+        }
+
+        /// <summary>
+        /// 创建数据源
+        /// </summary>
+        #region 值相等（基于身份字段）
+
+        /// <summary>
+        /// 基于完整中立引用判断值相等
+        /// </summary>
+        /// <remarks>
+        /// 不同创建点产生的 AvailableDataSource 实例可能引用不同，但身份相同（同一个数据源）。
+        /// WPF 控件（如 ListBox.SelectedItem）依赖 Equals 匹配选中项，
+        /// 实现值相等确保跨创建点的实例能被正确匹配。
+        /// </remarks>
+        public bool Equals(AvailableDataSource? other)
+        {
+            if (other is null) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return Binding.GetType() == other.Binding.GetType() && string.Equals(GetBindingPath(), other.GetBindingPath(), StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// 基于身份字段判断值相等
+        /// </summary>
+        public override bool Equals(object? obj) => Equals(obj as AvailableDataSource);
+
+        /// <summary>
+        /// 基于身份字段计算哈希值
+        /// </summary>
+        /// <remarks>
+        /// Binding 使用 init setter，构造后不可变，
+        /// 因此 GetHashCode 在对象生命周期内保持稳定，可安全用于字典和集合。
+        /// </remarks>
+        public override int GetHashCode() => HashCode.Combine(Binding.GetType(), GetBindingPath());
+
+        /// <summary>
+        /// 相等运算符
+        /// </summary>
+        public static bool operator ==(AvailableDataSource? left, AvailableDataSource? right)
+            => left?.Equals(right) ?? right is null;
+
+        /// <summary>
+        /// 不等运算符
+        /// </summary>
+        public static bool operator !=(AvailableDataSource? left, AvailableDataSource? right)
+            => !(left == right);
+
+        #endregion
+    }
+
+    /// <summary>
+    /// AvailableDataSource 类型转换器，支持 string ↔ AvailableDataSource 的 WPF 绑定转换。
+    /// 格式：中立绑定引用的序列化表达式
+    /// </summary>
+    public class AvailableDataSourceConverter : TypeConverter
+    {
+        /// <summary>
+        /// 判断是否可以从指定源类型转换为 AvailableDataSource
+        /// </summary>
+        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
+        {
+            return sourceType == typeof(string) || base.CanConvertFrom(context, sourceType);
+        }
+
+        /// <summary>
+        /// 从字符串转换（格式：中立绑定引用的序列化表达式）
+        /// </summary>
+        public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
+        {
+            if (value is string empty && string.IsNullOrWhiteSpace(empty)) return null;
+            if (value is string str && !string.IsNullOrEmpty(str))
+            {
+                try { return new AvailableDataSource { Binding = new ReferenceSetting(SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Deserialize(str)) }; }
+                catch (System.Text.Json.JsonException) { return new AvailableDataSource { Binding = new VariableSetting(SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.DeserializeVariable(str)) }; }
+            }
+            return base.ConvertFrom(context, culture, value);
+        }
+
+        /// <summary>
+        /// 判断是否可以转换为指定目标类型
+        /// </summary>
+        public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
+        {
+            return destinationType == typeof(string) || base.CanConvertTo(context, destinationType);
+        }
+
+        /// <summary>
+        /// 转换为字符串
+        /// </summary>
+        public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
+        {
+            if (destinationType == typeof(string) && value == null) return string.Empty;
+            if (destinationType == typeof(string) && value is AvailableDataSource ds)
+            {
+                return ds.GetBindingPath();
+            }
+            return base.ConvertTo(context, culture, value, destinationType);
+        }
+    }
+
+    /// <summary>
+    /// 数据源分组
+    /// </summary>
+    /// <remarks>
+    /// 用于在UI中分组显示数据源。
+    /// </remarks>
+    public class DataSourceGroup
+    {
+        /// <summary>
+        /// 分组名称
+        /// </summary>
+        public string Name { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 分组显示顺序
+        /// </summary>
+        public int Order { get; set; }
+
+        /// <summary>
+        /// 分组图标
+        /// </summary>
+        public string? Icon { get; set; }
+
+        /// <summary>
+        /// 分组中的数据源
+        /// </summary>
+        public List<AvailableDataSource> DataSources { get; set; } = new List<AvailableDataSource>();
+
+        /// <summary>
+        /// 数据源数量
+        /// </summary>
+        public int Count => DataSources.Count;
+
+        /// <summary>
+        /// 添加数据源
+        /// </summary>
+        public void AddDataSource(AvailableDataSource dataSource)
+        {
+            dataSource.GroupName = Name;
+            DataSources.Add(dataSource);
+        }
+    }
+}

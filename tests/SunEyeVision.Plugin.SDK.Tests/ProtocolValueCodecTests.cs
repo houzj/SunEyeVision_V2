@@ -1,9 +1,9 @@
 using SunEyeVision.Plugin.Contracts;
 using System;
-using SunEyeVision.Plugin.SDK.Models.Communication;
+using SunEyeVision.Plugin.Editing.Wpf.Models.Communication;
 using Xunit;
 
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 
 public sealed class ProtocolValueCodecTests
 {

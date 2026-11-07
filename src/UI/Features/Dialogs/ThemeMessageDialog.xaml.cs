@@ -1,7 +1,7 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Media;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 using SunEyeVision.UI.Themes.Base;
 
 namespace SunEyeVision.UI.Features.Dialogs

@@ -47,8 +47,8 @@ namespace SunEyeVision.UI.Converters.Node
                 if (_lastBackgroundLogKey != logKey)
                 {
                     _lastBackgroundLogKey = logKey;
-                    Plugin.SDK.Logging.VisionLogger.Instance?.Log(
-                        Plugin.SDK.Logging.LogLevel.Info,
+                    Foundation.Logging.VisionLogger.Instance?.Log(
+                        Foundation.Logging.LogLevel.Info,
                         $"节点背景色解析: {logKey}",
                         "NodeBackgroundColorConverter");
                 }

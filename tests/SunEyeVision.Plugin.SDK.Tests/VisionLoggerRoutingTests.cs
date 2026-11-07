@@ -1,8 +1,8 @@
-﻿using System.Collections.Concurrent;
-using SunEyeVision.Plugin.SDK.Logging;
+using System.Collections.Concurrent;
+using SunEyeVision.Foundation.Logging;
 using Xunit;
 
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 
 /// <summary>
 /// 验证 VisionLogger 多通道日志路由的正确性。

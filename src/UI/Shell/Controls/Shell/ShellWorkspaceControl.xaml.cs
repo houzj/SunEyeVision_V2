@@ -7,9 +7,9 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Logging;
-using SubroutineOutputChange = SunEyeVision.Plugin.SDK.Models.SubroutineOutputChange;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Foundation.Logging;
+using SubroutineOutputChange = SunEyeVision.Plugin.Editing.Wpf.Models.SubroutineOutputChange;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Services.Canvas;
 using SunEyeVision.UI.Core;
@@ -672,7 +672,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             var context=_viewModel.CreateGroupEditorContext(parentWorkflowId,nodeId,subroutineId,
                 draft=>editor?.BindParameters(draft,draftQuery),out var queryService);
             draftQuery=queryService;
-            SunEyeVision.Plugin.SDK.UI.Windows.DefaultDebugWindow? debugWindow=null;
+            SunEyeVision.Plugin.Editing.Wpf.UI.Windows.DefaultDebugWindow? debugWindow=null;
             IDisposable? registration=null;
             try
             {

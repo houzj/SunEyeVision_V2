@@ -3,7 +3,7 @@ using System.Text.Json.Serialization.Metadata;
 using SunEyeVision.Infrastructure.Persistence;
 using SunEyeVision.Persistence;
 using SunEyeVision.Persistence.Variables;
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 internal sealed class VariableCodecScope : IDisposable
 {
     private readonly DecodedResourcesScope _scope = new();

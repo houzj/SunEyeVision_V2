@@ -4,7 +4,7 @@ using SunEyeVision.Plugin.Contracts;
 using Xunit;
 
 [assembly: PluginContract(FoundationContract.Major, FoundationContract.Minor)]
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 public class ToolContractVersionContractTests
 {
     [Fact] public void Null_assembly_is_rejected() => Assert.Throws<ArgumentNullException>(() => FoundationContract.RequireCurrent(null!));

@@ -197,7 +197,7 @@ public class ScriptSnapshotIdentityTests
     public void Warmup_DoesNotConstructUserInstance_AndExecutionReportsSeparateTimings()
     {
         var path = Path.Combine(Path.GetTempPath(), "s1-constructor-" + Guid.NewGuid().ToString("N"));
-        var user = "using SunEyeVision.Plugin.SDK.Scripting;\npublic class SideEffectScript : Script { " +
+        var user = "using SunEyeVision.Plugin.Editing.Wpf.Scripting;\npublic class SideEffectScript : Script { " +
             "public SideEffectScript() { System.IO.File.WriteAllText(@\"" + path + "\", \"constructed\"); } " +
             "public override void Init() {} public override void Process() {} }";
         var manager = Activator.CreateInstance(Engine("ScriptLifecycleManager"))!;

@@ -6,7 +6,7 @@ using SunEyeVision.UI.Shell;
 using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Services.Logging;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 
 namespace SunEyeVision.UI.Core
 {

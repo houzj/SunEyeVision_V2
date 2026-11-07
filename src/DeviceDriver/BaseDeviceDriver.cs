@@ -1,6 +1,6 @@
 using System;
 using OpenCvSharp;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 using SunEyeVision.Core.Models;
 
 namespace SunEyeVision.DeviceDriver

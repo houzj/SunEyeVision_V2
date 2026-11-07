@@ -1,8 +1,8 @@
 using System;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
 using Xunit;
 
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 
 /// <summary>
 /// 配对广播契约测试（方案 §6 向量化核心契约 / 6d）。

@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 
 namespace SunEyeVision.UI.Shell.Controls.Toolbox;
 public partial class ToolboxControl : UserControl

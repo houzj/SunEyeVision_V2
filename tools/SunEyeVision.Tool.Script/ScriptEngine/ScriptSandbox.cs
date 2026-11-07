@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using ScriptBase = SunEyeVision.Plugin.SDK.Scripting.Script;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 
 namespace SunEyeVision.Tool.Script.ScriptEngine
 {

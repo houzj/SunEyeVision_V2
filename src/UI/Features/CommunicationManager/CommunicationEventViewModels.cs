@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.UI.Core;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
 
 namespace SunEyeVision.UI.Features.CommunicationManager;
 

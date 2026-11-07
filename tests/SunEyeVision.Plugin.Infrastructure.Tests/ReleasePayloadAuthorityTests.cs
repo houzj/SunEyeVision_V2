@@ -46,7 +46,7 @@ public sealed class ReleasePayloadAuthorityTests
         using var fixture=new PayloadFixture();
         var core=Path.Combine(fixture.Root,"SunEyeVision.Foundation.dll");
         if(corruption=="bytes")File.AppendAllText(core,"different-approved-copy");
-        if(corruption=="identity")File.Copy(typeof(SunEyeVision.Plugin.SDK.Core.ToolAttribute).Assembly.Location,core,true);
+        if(corruption=="identity")File.Copy(typeof(SunEyeVision.Plugin.Editing.Wpf.Core.ToolAttribute).Assembly.Location,core,true);
         fixture.Write();
         if(corruption=="missing") {
             var path=Path.Combine(fixture.Root,"release-payload.json");

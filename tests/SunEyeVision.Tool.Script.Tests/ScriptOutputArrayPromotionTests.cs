@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Execution.Results;
+using System.Collections.Generic;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Results;
 using SunEyeVision.Tool.Script.Models;
 using Xunit;
 

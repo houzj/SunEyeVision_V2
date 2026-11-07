@@ -1,6 +1,6 @@
 using SunEyeVision.Application.Editing;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
 
 namespace SunEyeVision.UI.Services.Editing;
 

@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Threading;
 using OpenCvSharp;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 using SunEyeVision.Core.Models;
 using Events = SunEyeVision.Core.Events;
 

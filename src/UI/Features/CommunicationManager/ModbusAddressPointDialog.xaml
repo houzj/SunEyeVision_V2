@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:themeWindows="clr-namespace:SunEyeVision.UI.Shell.Windows"
         xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
-        xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK"
+        xmlns:controls="clr-namespace:SunEyeVision.Plugin.Editing.Wpf.UI.Controls;assembly=SunEyeVision.Plugin.Editing.Wpf"
         Title="设备管理" Width="430" Height="620" MinWidth="390" MinHeight="500"
         WindowStartupLocation="CenterOwner" ResizeMode="CanResize"
         Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}">

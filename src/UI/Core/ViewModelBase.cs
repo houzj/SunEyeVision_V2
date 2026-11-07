@@ -1,5 +1,5 @@
-using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
+using SunEyeVision.Foundation.Logging;
 using System.Collections.ObjectModel;
 using System.Windows;
 

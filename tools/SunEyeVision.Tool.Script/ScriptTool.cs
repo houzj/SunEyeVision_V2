@@ -6,7 +6,7 @@ using System.Windows;
 using CommonControl;
 using SunEyeVision.Plugin.SDK.Core;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Tool.Script.Models;
 using SunEyeVision.Tool.Script.ScriptEngine;

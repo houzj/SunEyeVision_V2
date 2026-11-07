@@ -1,11 +1,11 @@
 using System;
 using System.Windows;
-using SunEyeVision.Plugin.SDK.Execution.Helpers;
-using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Helpers;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Results;
+using SunEyeVision.Plugin.Editing.Wpf.Models.Geometry;
 using Xunit;
 
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 
 /// <summary>
 /// 位置修正矩阵形状语义契约测试（无向形状：中心完整修正 + 朝向不旋转；有向形状：完整跟随）。

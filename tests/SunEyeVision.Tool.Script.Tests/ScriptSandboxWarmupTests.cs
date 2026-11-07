@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -33,7 +33,7 @@ public class ScriptSandboxWarmupTests
         var debugDir = ToolPluginTestLoader.HostDebugRoot;
 
         // 宿主 DLL 已在默认 ALC（由共享 Loader Resolving 兜底或 ScriptEngineRegressionTests 加载），此处确保就位
-        foreach (var dll in new[] { "SunEyeVision.Plugin.SDK.dll", "SunEyeVision.CvEngine.dll" })
+        foreach (var dll in new[] { "SunEyeVision.Plugin.Editing.Wpf.dll", "SunEyeVision.CvEngine.dll" })
         {
             var path = Path.Combine(debugDir, dll);
             if (!File.Exists(path))

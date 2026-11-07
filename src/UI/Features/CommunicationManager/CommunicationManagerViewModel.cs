@@ -10,9 +10,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Windows.Input;
-using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Plugin.SDK.Devices.Communication;
+using SunEyeVision.Foundation.Logging;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
+using SunEyeVision.Plugin.Contracts.Communication;
 using SunEyeVision.UI.Core;
 using SunEyeVision.Workflow;
 using SunEyeVision.DeviceDriver.Communications;
@@ -232,7 +232,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             ScheduleOpcUaReceiveReplay(SelectedReceiveEvent);
         }
 
-        private static SunEyeVision.Plugin.SDK.Execution.Parameters.AvailableDataSource CreateCompareInputDataSource(
+        private static SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters.AvailableDataSource CreateCompareInputDataSource(
             CommunicationCompareInputViewModel input) => new()
             {
                 SourceNodeId = "ReceiveEventInputs",
@@ -265,7 +265,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
 
                 var index = definition.CompareInputDataSources.IndexOf(source);
                 definition.CompareInputDataSources.RemoveAt(index);
-                definition.CompareInputDataSources.Insert(index, new SunEyeVision.Plugin.SDK.Execution.Parameters.AvailableDataSource
+                definition.CompareInputDataSources.Insert(index, new SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters.AvailableDataSource
                 {
                     SourceNodeId = source.SourceNodeId,
                     SourceNodeName = source.SourceNodeName,
@@ -504,7 +504,7 @@ namespace SunEyeVision.UI.Features.CommunicationManager
             {
                 var sourceIndex = owner.CompareInputDataSources.IndexOf(source);
                 var oldPath = source.GetBindingPath();
-                var replacement = new SunEyeVision.Plugin.SDK.Execution.Parameters.AvailableDataSource
+                var replacement = new SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters.AvailableDataSource
                 {
                     SourceNodeId = source.SourceNodeId,
                     SourceNodeName = source.SourceNodeName,

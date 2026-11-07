@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Windows;
 using OpenCvSharp;
 using SunEyeVision.CvEngine;
-using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Contracts.Vision;
 using CvRegion = SunEyeVision.CvEngine.CvRegion;
 using WpfRect = System.Windows.Rect;
 using WpfPoint = System.Windows.Point;
@@ -36,16 +37,16 @@ namespace SunEyeVision.CvAdapter
             }
         }
 
-        public WpfRect BoundingBox
+        public Rect2 BoundingBox
         {
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
                 var mask = _region.Mask;
                 if (mask == null || mask.Empty())
-                    return WpfRect.Empty;
+                    return Rect2.Empty;
                 var rect = Cv2.BoundingRect(mask);
-                return new WpfRect(rect.X, rect.Y, rect.Width, rect.Height);
+                return new Rect2(rect.X, rect.Y, rect.Width, rect.Height);
             }
         }
 
@@ -58,16 +59,16 @@ namespace SunEyeVision.CvAdapter
             }
         }
 
-        public WpfPoint[] GetContour()
+        public Point2[] GetContour()
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
             var mask = _region.Mask;
             if (mask == null || mask.Empty())
-                return Array.Empty<WpfPoint>();
+                return Array.Empty<Point2>();
             var contours = Cv2.FindContoursAsArray(mask, RetrievalModes.External, ContourApproximationModes.ApproxNone);
             if (contours.Length == 0)
-                return Array.Empty<WpfPoint>();
-            return contours[0].Select(p => new WpfPoint(p.X, p.Y)).ToArray();
+                return Array.Empty<Point2>();
+            return contours[0].Select(p => new Point2(p.X, p.Y)).ToArray();
         }
 
         public byte[] GetMaskData()

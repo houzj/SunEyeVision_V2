@@ -4,13 +4,13 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 using SunEyeVision.UI.Core;
 
 using SunEyeVision.UI.Features.WorkflowUI;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 using SunEyeVision.UI.Features.GlobalVariableManager;
-using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
 using SunEyeVision.Domain.Solutions;
 
 using SunEyeVision.UI.Shell.Windows;

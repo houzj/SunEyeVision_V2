@@ -1,9 +1,9 @@
 using System;
 using System.Windows;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
+using SunEyeVision.Plugin.Editing.Wpf.Models.Geometry;
 using Xunit;
 
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 
 /// <summary>
 /// HalconArcAdapter 契约测试（WPF 弧/圆 ↔ HALCON metrology 角度参数的唯一转换出口）。

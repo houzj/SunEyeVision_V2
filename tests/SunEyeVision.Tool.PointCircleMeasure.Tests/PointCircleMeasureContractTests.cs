@@ -2,11 +2,11 @@ using System;
 using System.Linq;
 using System.Text.Json;
 using SunEyeVision.Core.Services.Serialization;
-using SunEyeVision.Plugin.SDK.Core;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models;
+using SunEyeVision.Plugin.Editing.Wpf.Core;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
+using SunEyeVision.Plugin.Editing.Wpf.Models.Geometry;
+using SunEyeVision.Plugin.Editing.Wpf.UI.Controls.Measure.Models;
 using Xunit;
 
 namespace SunEyeVision.Tool.PointCircleMeasure.Tests;

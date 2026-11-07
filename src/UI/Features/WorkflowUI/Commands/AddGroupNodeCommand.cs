@@ -1,6 +1,6 @@
 using SunEyeVision.Workflow;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
 using Flow=SunEyeVision.Workflow.Workflow;
 namespace SunEyeVision.UI.Features.WorkflowUI.Commands;
 /// <summary>新Group节点和独占定义作为同一图片段加入；撤销/重做保持双方身份。</summary>

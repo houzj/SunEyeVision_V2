@@ -9,7 +9,7 @@ using System.Windows.Media.Imaging;
 using SunEyeVision.DeviceDriver.Cameras;
 using SunEyeVision.DeviceDriver.Cameras.Contracts;
 using SunEyeVision.Plugin.Contracts.Acquisition;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 using SunEyeVision.Plugin.Contracts;
 using System.Windows.Media;
 

@@ -32,6 +32,33 @@ public readonly record struct Point2
     public double Y { get; }
 }
 
+/// <summary>
+/// Neutral axis-aligned rectangle in a coordinate frame; no WPF, editor state or backend handle.
+/// </summary>
+public readonly record struct Rect2
+{
+    public Rect2(double x, double y, double width, double height)
+    {
+        if (!double.IsFinite(x) || !double.IsFinite(y) || !double.IsFinite(width) || !double.IsFinite(height))
+            throw new ArgumentException("Rectangle values must be finite.");
+        if (width < 0 || height < 0)
+            throw new ArgumentOutOfRangeException(nameof(width), "Rectangle extents must not be negative.");
+        X=x; Y=y; Width=width; Height=height;
+    }
+    public double X { get; }
+    public double Y { get; }
+    public double Width { get; }
+    public double Height { get; }
+    public double Left => X;
+    public double Top => Y;
+    public double Right => X + Width;
+    public double Bottom => Y + Height;
+    public bool IsEmpty => Width == 0 || Height == 0;
+
+    /// <summary>Empty extent at the origin. Callers must test <see cref="IsEmpty"/> instead of comparing to a sentinel.</summary>
+    public static Rect2 Empty { get; } = new(0, 0, 0, 0);
+}
+
 /// <summary>Closed, immutable geometric data; no WPF, editor state or backend handle.</summary>
 public abstract class GeometryValue
 {

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using SunEyeVision.Plugin.SDK;
 
 namespace SunEyeVision.Plugin.Infrastructure.Infrastructure
 {

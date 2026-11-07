@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using SunEyeVision.DeviceDriver.Cameras;
 using SunEyeVision.DeviceDriver.Cameras.Contracts;
 using SunEyeVision.Plugin.Contracts.Acquisition;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 
 using SunEyeVision.UI.Core;
 

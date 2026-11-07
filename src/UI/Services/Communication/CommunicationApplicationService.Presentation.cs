@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using SunEyeVision.Plugin.SDK.Devices.Communication;
+using SunEyeVision.Plugin.Contracts.Communication;
 
 namespace SunEyeVision.UI.Services.Communication;
 

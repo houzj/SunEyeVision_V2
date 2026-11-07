@@ -1,6 +1,9 @@
 using System;
 using System.IO;
-using SunEyeVision.Plugin.SDK.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using SunEyeVision.Foundation;
+using SunEyeVision.Foundation.Logging;
 using SunEyeVision.UI.Services.Logging;
 using SunEyeVision.Infrastructure.Persistence.ApplicationData;
 using SunEyeVision.DeviceDriver.Cameras;
@@ -263,7 +266,20 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
             InitializeUILogWriter();
 
             // 设置 PluginLogger 的提供者
-            Plugin.SDK.Logging.PluginLogger.SetProvider(logger);
+            Foundation.Logging.PluginLogger.SetProvider(logger);
+
+            // 日志改走 VM 同款范式（ILogService + log4net）。过渡期与 FileLogWriter 双写，
+            // 待自研队列与 Writer 体系下线后移除双写（见架构基线方案 R1）。
+            ServiceHost.Build(services =>
+            {
+                services.AddSingleton(Options.Create(new LogOptions
+                {
+                    Directory = logRoot,
+                    MinimumLevel = "Info"
+                }));
+                services.AddSingleton<ILogService, Log4netLogService>();
+            });
+            VisionLogger.AttachService(ServiceHost.GetRequired<ILogService>());
 
             // 测试日志
             logger.Info("日志系统初始化完成", "ServiceInitializer");

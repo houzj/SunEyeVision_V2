@@ -5,7 +5,7 @@ using SunEyeVision.Application.Editing;
 using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Infrastructure.ImageSources;
-using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using SunEyeVision.Plugin.Contracts.Vision;
 using SunEyeVision.UI.Services.Images;
 using SunEyeVision.UI.Services;
 using SunEyeVision.UI.Shared;
@@ -45,7 +45,9 @@ public partial class MainWindowViewModel
    SetActiveImageSourceBinding(new ImageSourceProjectionBinding(session, root, source, Current,
     () => CanEditRootWorkspace && !IsRunning, () => ImageSourceCanNavigate?.Invoke() == true,
     ImageSourceEditAccepted, ImageSourceActivate,
-    prepareDisplay: ImageSourcePrepareDisplay, reportPresentationError: ImageSourcePresentationError));
+    prepareDisplay: ImageSourcePrepareDisplay, reportPresentationError: ImageSourcePresentationError,
+    // 只有选中的就是图像源模块本身时才提供增删图入口；选中下游模块只是呈现它引用的上游图像源。
+    providesImageImport: ReferenceEquals(source, selected)));
   }
   catch (Exception error)
   {

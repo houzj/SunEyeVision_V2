@@ -15,9 +15,9 @@ public static class NativeInputFactory
     public static ComboBox Enumeration()
     {
         var combo=new ComboBox{Height=30,IsEditable=false,HorizontalAlignment=HorizontalAlignment.Stretch};
-        combo.Resources.MergedDictionaries.Add(OriginalThemeResources.Create());
-        foreach(var name in new[]{"SourceScrollBars.xaml","SourceComboBoxes.xaml"})
-            combo.Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri(Root+"Themes/Native/Input/VisionUi/"+name,UriKind.Relative)});
+        combo.Resources.MergedDictionaries.Add(OriginalThemeResources.Shared);
+        foreach(var name in new[]{"Themes/Native/Input/VisionUi/SourceScrollBars.xaml","Themes/Native/Input/VisionUi/SourceComboBoxes.xaml"})
+            combo.Resources.MergedDictionaries.Add(OriginalThemeResources.NativeInput(name));
         combo.SetResourceReference(FrameworkElement.StyleProperty,"ListViewComboBoxStyle");
         combo.SetValue(EnumerationTextScopeProperty,new NativeEnumerationTextScope(combo));
         return combo;

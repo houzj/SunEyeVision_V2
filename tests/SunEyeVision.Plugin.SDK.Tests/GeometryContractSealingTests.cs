@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Text.Json;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Models.Geometry;
 using Xunit;
 
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 
 /// <summary>
 /// 契约封口守卫：几何值只允许 <c>Models.Geometry</c> 契约类型（方案 P0-2/P0-5 封口 + 5e 守卫）。

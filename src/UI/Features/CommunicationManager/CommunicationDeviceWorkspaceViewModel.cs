@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
-using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
 using SunEyeVision.UI.Core;
 using SunEyeVision.Workflow;
 using SunEyeVision.DeviceDriver.Communications;

@@ -1,9 +1,9 @@
-﻿using System;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
+using System;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Models.Geometry;
 using Xunit;
 
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 
 /// <summary>
 /// 「抠几何」契约测试（方案 P1 改动 1）：ROI 容器（<c>RoiShape[]</c>）按目标几何类型提取真几何数组。

@@ -2,12 +2,12 @@ using SunEyeVision.Plugin.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Results;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
 using Xunit;
 
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 
 /// <summary>P0 contract probe only; it does not register a production communication tool.</summary>
 public sealed class CommunicationToolchainContractProbeTests

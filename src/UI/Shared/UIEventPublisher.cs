@@ -1,6 +1,6 @@
 using System;
 using SunEyeVision.Core.Events;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 using SunEyeVision.UI.Shared.Events;
 using SunEyeVision.UI.Services.Interaction;
 using SunEyeVision.UI.Shell;

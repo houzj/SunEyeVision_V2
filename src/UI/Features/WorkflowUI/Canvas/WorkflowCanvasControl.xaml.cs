@@ -28,13 +28,13 @@ using SunEyeVision.UI.Services.Rendering;
 
 using SunEyeVision.UI.Services.Path;
 using SunEyeVision.UI.Services.PathCalculators;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 using SunEyeVision.UI.Services.Canvas;
 using SunEyeVision.UI.Converters.Path;
 
 using SunEyeVision.UI.Shell.Windows;
 
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 
 using WpfCanvas = System.Windows.Controls.Canvas;
 
@@ -1856,9 +1856,9 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
 
 
-            Plugin.SDK.Logging.VisionLogger.Instance?.Log(
+            Foundation.Logging.VisionLogger.Instance?.Log(
 
-                Plugin.SDK.Logging.LogLevel.Info,
+                Foundation.Logging.LogLevel.Info,
 
                 $"[Canvas_GotFocus] 画布获得焦点 - 节点数: {_viewModel?.WorkflowTabViewModel?.SelectedTab?.WorkflowNodes.Count ?? 0}",
 
@@ -1875,9 +1875,9 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         {
 
-            Plugin.SDK.Logging.VisionLogger.Instance?.Log(
+            Foundation.Logging.VisionLogger.Instance?.Log(
 
-                Plugin.SDK.Logging.LogLevel.Warning,
+                Foundation.Logging.LogLevel.Warning,
 
                 $"[Canvas_LostFocus] 画布失去焦点 - 节点数: {_viewModel?.WorkflowTabViewModel?.SelectedTab?.WorkflowNodes.Count ?? 0}",
 

@@ -12,7 +12,7 @@ public static class RuntimeComponentAdmission
         var type=component.EntryType;
         if(component.Metadata.Role!=ToolComponentRole.Runtime || type.IsAbstract || type.GetConstructor(Type.EmptyTypes) is null)
             throw new InvalidOperationException("A concrete parameterless runtime entry is required.");
-        if(type.Assembly.GetReferencedAssemblies().Any(a=>a.Name is "SunEyeVision.UI" or "SunEyeVision.Plugin.SDK" or "PresentationFramework" or "PresentationCore" or "WindowsBase" or "System.Xaml"))
+        if(type.Assembly.GetReferencedAssemblies().Any(a=>a.Name is "SunEyeVision.UI" or "SunEyeVision.Plugin.Editing.Wpf" or "PresentationFramework" or "PresentationCore" or "WindowsBase" or "System.Xaml"))
             throw new InvalidOperationException("Neutral runtime component cannot depend on UI/SDK/WPF.");
         if(Activator.CreateInstance(type) is not IToolDefinition definition)
             throw new InvalidOperationException("Runtime must implement the neutral tool definition.");

@@ -1,5 +1,5 @@
 using SunEyeVision.Plugin.Contracts.Acquisition;
-using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
 
 namespace SunEyeVision.UI.Features.Camera;
 

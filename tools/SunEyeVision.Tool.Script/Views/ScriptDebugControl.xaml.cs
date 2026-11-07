@@ -37,7 +37,7 @@ using SunEyeVision.Tool.Script.Completion;
 using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.UI.Themes;
 using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 using LogEntry = SunEyeVision.Tool.Script.Models.LogEntry;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Tool.Script.Models;

@@ -10,7 +10,7 @@ using Opc.Ua;
 using SunEyeVision.DeviceDriver.Communications;
 using SunEyeVision.UI.Features.CommunicationManager;
 
-using SunEyeVision.Plugin.SDK.Devices.Communication;
+using SunEyeVision.Plugin.Contracts.Communication;
 using ConfiguredCommunication = SunEyeVision.Domain.Solutions.Communication;
 
 namespace SunEyeVision.UI.Services.Communication;

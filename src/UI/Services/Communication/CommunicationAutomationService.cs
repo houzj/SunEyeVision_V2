@@ -7,7 +7,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using SunEyeVision.DeviceDriver.Communications;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 using SunEyeVision.UI.Features.CommunicationManager;
 using SunEyeVision.Domain.Solutions;
 using ConfiguredCommunication = SunEyeVision.Domain.Solutions.Communication;
@@ -97,7 +97,7 @@ public sealed class CommunicationAutomationService : IAsyncDisposable
         }
     }
 
-    public void ProcessRaw(string deviceId, byte[] data, DateTimeOffset timestamp, SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveSample? receiveSample = null)
+    public void ProcessRaw(string deviceId, byte[] data, DateTimeOffset timestamp, SunEyeVision.Plugin.Editing.Wpf.Models.Communication.CommunicationReceiveSample? receiveSample = null)
     {
         lock (_gate)
         {
@@ -116,7 +116,7 @@ public sealed class CommunicationAutomationService : IAsyncDisposable
         }
     }
 
-    public void ProcessModbus(ModbusPollResult sample, SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveSample? receiveSample = null)
+    public void ProcessModbus(ModbusPollResult sample, SunEyeVision.Plugin.Editing.Wpf.Models.Communication.CommunicationReceiveSample? receiveSample = null)
     {
         lock (_gate)
         {
@@ -152,7 +152,7 @@ public sealed class CommunicationAutomationService : IAsyncDisposable
         }
     }
 
-    public void ProcessOpcUa(OpcUaPointValueEventArgs sample, SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveSample? receiveSample = null)
+    public void ProcessOpcUa(OpcUaPointValueEventArgs sample, SunEyeVision.Plugin.Editing.Wpf.Models.Communication.CommunicationReceiveSample? receiveSample = null)
     {
         lock (_gate)
         {

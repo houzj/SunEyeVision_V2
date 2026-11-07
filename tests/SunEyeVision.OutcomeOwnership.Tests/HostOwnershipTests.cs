@@ -1,7 +1,7 @@
 using System.IO;
 using System.Diagnostics;
 using Xunit;
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 public sealed class HostOwnershipTests
 {
     [Fact]

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -102,7 +102,7 @@ public class MetadataReferenceProviderTests
     {
         var (_, paths) = GetHostReferences();
         // Script 基类所在 SDK 必须引用
-        Assert.Contains(paths, p => string.Equals(p, "SunEyeVision.Plugin.SDK.dll", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(paths, p => string.Equals(p, "SunEyeVision.Plugin.Editing.Wpf.dll", StringComparison.OrdinalIgnoreCase));
         // halcon / OpenCvSharp 不再无条件注入基线（基线最小化）
         Assert.DoesNotContain(paths, p => string.Equals(p, "halcondotnetxl.dll", StringComparison.OrdinalIgnoreCase));
         Assert.DoesNotContain(paths, p => string.Equals(p, "OpenCvSharp.dll", StringComparison.OrdinalIgnoreCase));

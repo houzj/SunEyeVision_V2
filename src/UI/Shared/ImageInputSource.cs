@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
 using SunEyeVision.UI.Services.Thumbnail;
 using SunEyeVision.Infrastructure.ImageSources;
 
@@ -20,7 +20,7 @@ public sealed class ImageSourceSelectionEventArgs(long version,ImageInfo image,i
 }
 
 /// <summary>One source's display projection. Formal edits are accepted before any live view mutation.</summary>
-public sealed class ImageInputSource : SunEyeVision.Plugin.SDK.Models.ObservableObject, INotifyCollectionChanged, IDisposable
+public sealed class ImageInputSource : SunEyeVision.Plugin.Editing.Wpf.Models.ObservableObject, INotifyCollectionChanged, IDisposable
 {
     private sealed class Entries : ObservableCollection<ImageInfo>
     {

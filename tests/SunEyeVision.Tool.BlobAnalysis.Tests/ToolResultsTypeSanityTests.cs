@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
-using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
 using SunEyeVision.Tool.BlobAnalysis.Runtime;
 using Xunit;
 
@@ -27,7 +27,7 @@ public class ToolResultsTypeSanityTests
         var ns = type.Namespace ?? string.Empty;
 
         // 具体实现/UI 专属命名空间：拦截（含数组/泛型元素的同名命名空间判断由调用方完成）
-        if (ns.StartsWith("OpenCvSharp") || ns.StartsWith("HalconDotNet") || ns.StartsWith("SunEyeVision.Plugin.SDK") ||
+        if (ns.StartsWith("OpenCvSharp") || ns.StartsWith("HalconDotNet") || ns.StartsWith("SunEyeVision.Plugin.Editing.Wpf") ||
             ns.StartsWith("System.Windows.Media") ||
             ns.StartsWith("System.Drawing") ||
             ns.StartsWith("System.Windows.Media.Imaging"))

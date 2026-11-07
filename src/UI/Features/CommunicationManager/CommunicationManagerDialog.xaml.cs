@@ -5,7 +5,6 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using SunEyeVision.UI.Shell.Windows;
-using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Workflow;
 
 namespace SunEyeVision.UI.Features.CommunicationManager

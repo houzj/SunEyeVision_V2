@@ -21,10 +21,10 @@ using AIStudio.Wpf.DiagramDesigner;
 using AIStudio.Wpf.DiagramDesigner.ViewModels;
 using SunEyeVision.UI.Services.Canvas;
 using SunEyeVision.UI.Converters.Path;
-using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Foundation.Logging;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Results;
 using SunEyeVision.UI.Features.WorkflowUI;
 
 using SunEyeVision.UI.Shell.Windows;

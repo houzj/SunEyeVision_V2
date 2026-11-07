@@ -1,5 +1,5 @@
-using SunEyeVision.Plugin.SDK.Vision.Contracts;
-using SunEyeVision.Plugin.SDK.Vision.Hosting;
+using SunEyeVision.Plugin.Contracts.Vision;
+using SunEyeVision.Plugin.Runtime.Vision;
 
 namespace SunEyeVision.HalAdapter
 {

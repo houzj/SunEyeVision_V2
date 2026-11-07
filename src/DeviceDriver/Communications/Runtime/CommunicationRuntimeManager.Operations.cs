@@ -3,8 +3,8 @@ using System.IO;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using SunEyeVision.Plugin.SDK.Devices.Communication;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Plugin.Contracts.Communication;
+using SunEyeVision.Foundation.Logging;
 
 namespace SunEyeVision.DeviceDriver.Communications;
 

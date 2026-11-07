@@ -19,14 +19,14 @@ using SunEyeVision.UI.Services.Monitoring;
 using SunEyeVision.Plugin.Wpf.Presenters.Results;
 
 
-using SunEyeVision.Plugin.SDK;
-using SunEyeVision.Plugin.SDK.Validation;
-using SunEyeVision.Plugin.SDK.Core;
-using SunEyeVision.Plugin.SDK.Metadata;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using SunEyeVision.Plugin.Editing.Wpf;
+using SunEyeVision.Plugin.Editing.Wpf.Validation;
+using SunEyeVision.Plugin.Editing.Wpf.Core;
+using SunEyeVision.Plugin.Editing.Wpf.Metadata;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Results;
+using SunEyeVision.Plugin.Contracts.Vision;
 using SunEyeVision.UI;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 using SunEyeVision.UI.Features.Dialogs;
@@ -43,7 +43,7 @@ using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Features.WorkflowUI;
 using SunEyeVision.UI.Converters.Path;
 using SunEyeVision.UI.Services.Logging;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 
 using SunEyeVision.UI.Shell.Controls.Toolbox;
 
@@ -1320,7 +1320,7 @@ SplitterPosition = position;
         private void AddImageSourceItem(string name, string nodeId)
         {
             var nodeName = ResolveSubroutineNodeName(nodeId);
-            var sysType = SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToSystemType("Image") ?? typeof(object);
+            var sysType = SunEyeVision.Plugin.Editing.Wpf.Models.SdkTypeVocabulary.ToSystemType("Image") ?? typeof(object);
             DisplayImageSources.Add(new AvailableDataSource
             {
                 SourceNodeId = nodeId,
@@ -1422,7 +1422,7 @@ SplitterPosition = position;
 
             var groupName = isImage ? "图像" : (group ?? "其他");
             var parent = EnsureGroupPath(root, groupName);
-            var clrType = SunEyeVision.Plugin.SDK.Models.SdkTypeVocabulary.ToSystemType(typeName) ?? typeof(object);
+            var clrType = SunEyeVision.Plugin.Editing.Wpf.Models.SdkTypeVocabulary.ToSystemType(typeName) ?? typeof(object);
 
             parent.Children.Add(new ModuleResultNode
             {
@@ -1792,7 +1792,7 @@ SplitterPosition = position;
         /// <summary>
         /// 更新计算结果（支持 ResultItem 列表）
         /// </summary>
-        public void UpdateCalculationResults(IReadOnlyList<SunEyeVision.Plugin.SDK.Execution.Results.ResultItem> resultItems)
+        public void UpdateCalculationResults(IReadOnlyList<SunEyeVision.Plugin.Editing.Wpf.Execution.Results.ResultItem> resultItems)
         {
             CalculationResults.Clear();
 
@@ -1945,17 +1945,17 @@ SplitterPosition = position;
         /// <summary>
         /// 格式化结果项值
         /// </summary>
-        private string FormatResultValue(SunEyeVision.Plugin.SDK.Execution.Results.ResultItem item)
+        private string FormatResultValue(SunEyeVision.Plugin.Editing.Wpf.Execution.Results.ResultItem item)
         {
             if (item.Value == null) return "null";
 
             return item.Type switch
             {
-                SunEyeVision.Plugin.SDK.Execution.Results.ResultItemType.Numeric => item.Unit != null
+                SunEyeVision.Plugin.Editing.Wpf.Execution.Results.ResultItemType.Numeric => item.Unit != null
                     ? $"{item.Value} {item.Unit}"
                     : item.Value?.ToString() ?? "",
-                SunEyeVision.Plugin.SDK.Execution.Results.ResultItemType.Boolean => (bool)item.Value ? "✓ 是" : "✗ 否",
-                SunEyeVision.Plugin.SDK.Execution.Results.ResultItemType.Text => item.Value?.ToString() ?? "",
+                SunEyeVision.Plugin.Editing.Wpf.Execution.Results.ResultItemType.Boolean => (bool)item.Value ? "✓ 是" : "✗ 否",
+                SunEyeVision.Plugin.Editing.Wpf.Execution.Results.ResultItemType.Text => item.Value?.ToString() ?? "",
                 _ => item.Value?.ToString() ?? ""
             };
         }

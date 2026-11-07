@@ -3,10 +3,10 @@ using System;
 using System.Linq;
 using System.Windows;
 using SunEyeVision.Workflow;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.UI.Controls;
-using SunEyeVision.Plugin.SDK.UI.Windows;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Results;
+using SunEyeVision.Plugin.Editing.Wpf.UI.Controls;
+using SunEyeVision.Plugin.Editing.Wpf.UI.Windows;
 using SunEyeVision.UI.Services.Editing;
 namespace SunEyeVision.UI.Shell.Windows;
 public partial class MainWindowViewModel

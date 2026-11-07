@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.SDK.Devices.Communication;
+using SunEyeVision.Plugin.Contracts.Communication;
 
 namespace SunEyeVision.DeviceDriver.Communications;
 

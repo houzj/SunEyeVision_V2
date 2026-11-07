@@ -12,7 +12,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         /// <summary>
         /// 支持的分类
         /// </summary>
-        public string[] SupportedCategories => new[] { SunEyeVision.Plugin.SDK.Core.ToolCategories.Location };
+        public string[] SupportedCategories => new[] { SunEyeVision.Plugin.Editing.Wpf.Core.ToolCategories.Location };
 
         public string GetDisplayText(CanvasNodeProjection node)
         {

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using SunEyeVision.DeviceDriver.Cameras;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 using SunEyeVision.Plugin.Contracts.Acquisition;
 
 using SunEyeVision.UI.Core;
@@ -16,7 +16,7 @@ namespace SunEyeVision.UI.Features.Camera
     /// <summary>
     /// 相机设备模型
     /// </summary>
-    public class CameraDevice : SunEyeVision.Plugin.SDK.Models.ObservableObject
+    public class CameraDevice : SunEyeVision.Plugin.Editing.Wpf.Models.ObservableObject
     {
         private string _name;
         private string _transport;

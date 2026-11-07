@@ -1,6 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 using SunEyeVision.TestShared;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
 using SunEyeVision.UI.Shell.Controls.Shell;

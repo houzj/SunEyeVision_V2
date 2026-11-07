@@ -137,8 +137,8 @@ public sealed class PreviewBitmapCache
         catch (OperationCanceledException) { return null; }
         catch (Exception ex)
         {
-            SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance.Log(
-                SunEyeVision.Plugin.SDK.Logging.LogLevel.Warning, $"缩略图加载失败 | {key.Path} | {ex.Message}", "PreviewBitmapCache");
+            SunEyeVision.Foundation.Logging.VisionLogger.Instance.Log(
+                SunEyeVision.Foundation.Logging.LogLevel.Warning, $"缩略图加载失败 | {key.Path} | {ex.Message}", "PreviewBitmapCache");
             return null;
         }
         finally

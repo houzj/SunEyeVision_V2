@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Results;
 using SunEyeVision.Tool.Condition.Models;
 using Xunit;
 

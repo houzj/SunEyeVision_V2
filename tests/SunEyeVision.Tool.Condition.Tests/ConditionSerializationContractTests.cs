@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Text.Json;
 using SunEyeVision.Core.Services.Serialization;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
 using SunEyeVision.Tool.Condition.Models;
 using Xunit;
 

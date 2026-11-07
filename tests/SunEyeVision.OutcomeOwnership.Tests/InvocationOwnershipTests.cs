@@ -2,7 +2,7 @@ using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Runtime;
 using Xunit;
 
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 
 public sealed class InvocationOwnershipTests
 {

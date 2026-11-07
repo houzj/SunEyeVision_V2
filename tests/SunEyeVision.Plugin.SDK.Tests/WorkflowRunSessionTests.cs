@@ -8,7 +8,7 @@ using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Infrastructure.ImageSources;
 using SunEyeVision.Plugin.Runtime;
 using Xunit;
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 public class WorkflowRunSessionTests
 {
     private sealed class GateFactory : IHostInputFactory, IDisposable

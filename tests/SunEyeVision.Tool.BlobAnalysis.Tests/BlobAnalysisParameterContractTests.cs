@@ -18,7 +18,7 @@ public sealed class BlobAnalysisParameterContractTests
         Assert.Equal(62,tool.SettingsSchema.Inputs.Count);
         Assert.Contains(tool.SettingsSchema.Presentation!.Fields,field=>field.DisplayName==BlobParameterDefinition.Instance.Label(nameof(BlobSettings.FilterAreaMin)));
         var references=typeof(BlobTool).Assembly.GetReferencedAssemblies().Select(a=>a.Name).ToArray();
-        Assert.DoesNotContain("SunEyeVision.Plugin.SDK",references);
+        Assert.DoesNotContain("SunEyeVision.Plugin.Editing.Wpf",references);
         Assert.DoesNotContain("PresentationFramework",references);
         Assert.DoesNotContain("SunEyeVision.UI",references);
     }

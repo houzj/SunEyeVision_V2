@@ -1,7 +1,7 @@
 using OpenCvSharp;
 using SunEyeVision.CvAdapter;
-using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
+using SunEyeVision.Plugin.Contracts.Vision;
 using Xunit;
 
 namespace SunEyeVision.CvEngine.Tests;

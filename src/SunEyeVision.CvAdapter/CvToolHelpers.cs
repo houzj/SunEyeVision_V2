@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using OpenCvSharp;
 using SunEyeVision.CvEngine;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Vision.Contracts;
-using SunEyeVision.Plugin.SDK.Vision.Hosting;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Contracts.Vision;
+using SunEyeVision.Plugin.Runtime.Vision;
 using CvImage = SunEyeVision.CvEngine.CvImage;
 
 namespace SunEyeVision.CvAdapter

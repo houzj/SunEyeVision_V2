@@ -61,9 +61,6 @@
   <Folder Name="/Src/Plugin.Infrastructure/">
     <Project Path="Src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj" />
   </Folder>
-  <Folder Name="/Src/Plugin.SDK/">
-    <Project Path="Src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj" />
-  </Folder>
   <Folder Name="/Src/SunEyeVision.CvEngine/">
     <Project Path="Src/SunEyeVision.CvEngine/SunEyeVision.CvEngine.csproj" />
   </Folder>

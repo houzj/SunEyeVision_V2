@@ -15,7 +15,7 @@ public sealed class ProductIdentityTests
         using var f=new Fixture();
         Assert.Single(new ReleasePayloadAuthority(f.Root).ExpectedTools);
         Assert.Equal("SunEyeVision.Foundation",typeof(AppVersionInfo).Assembly.GetName().Name);
-        Assert.DoesNotContain(typeof(AppVersionInfo).Assembly.GetReferencedAssemblies(),a=>a.Name is "PresentationFramework" or "PresentationCore" or "WindowsBase" or "System.Xaml" or "SunEyeVision.Plugin.SDK");
+        Assert.DoesNotContain(typeof(AppVersionInfo).Assembly.GetReferencedAssemblies(),a=>a.Name is "PresentationFramework" or "PresentationCore" or "WindowsBase" or "System.Xaml" or "SunEyeVision.Plugin.Editing.Wpf");
     }
     [Theory][InlineData("sourceCommit")][InlineData("artifactVersion")]
     public void Header_must_match_approved_anchor(string field)

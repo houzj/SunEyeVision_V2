@@ -3,7 +3,7 @@ using SunEyeVision.DeviceDriver.Cameras.Simulation;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Contracts.Acquisition;
 using Xunit;
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 public sealed class CameraContractTests
 {
  [Fact] public async Task CameraLease_DisposeIsIdempotent_AndReaderSurvives()

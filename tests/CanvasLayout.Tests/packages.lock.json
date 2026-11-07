@@ -58,6 +58,14 @@
         "resolved": "2.14.1",
         "contentHash": "lQKvtaTDOXnoVJ20ibTuSIOf2i0uO0MPbDhd1jm238I+U/2ZnRENj0cktKZhtchBMtCUSRQ5v4xBCUbKNmyVMw=="
       },
+      "log4net": {
+        "type": "Transitive",
+        "resolved": "2.0.17",
+        "contentHash": "qnnDf/ubJzwm2i1xH7nRMjEDoD+ctse7nZDqb+p7L1PvZc6ykpMoEesWr1/9hFqlsbII2v9e8yyQHJhoDQh7ZA==",
+        "dependencies": {
+          "System.Configuration.ConfigurationManager": "4.5.0"
+        }
+      },
       "Microsoft.CodeAnalysis.Analyzers": {
         "type": "Transitive",
         "resolved": "3.3.4",
@@ -1689,7 +1697,7 @@
           "Microsoft.CodeAnalysis.CSharp": "[4.12.0, )",
           "Microsoft.CodeAnalysis.CSharp.Features": "[4.12.0, )",
           "Microsoft.CodeAnalysis.Features": "[4.12.0, )",
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )"
+          "SunEyeVision.Foundation": "[2.0.0-alpha.8, )"
         }
       },
       "suneyevision.application": {
@@ -1710,7 +1718,7 @@
           "OpenCvSharp4.Extensions": "[4.13.0.20260222, )",
           "OpenCvSharp4.runtime.win": "[4.13.0.20260222, )",
           "SunEyeVision.Foundation": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Editing.Wpf": "[2.0.0-alpha.8, )",
           "System.Text.Json": "[10.0.3, )"
         }
       },
@@ -1750,7 +1758,12 @@
         }
       },
       "suneyevision.foundation": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection": "[9.0.0, )",
+          "Microsoft.Extensions.Options": "[9.0.0, )",
+          "log4net": "[2.0.17, )"
+        }
       },
       "suneyevision.infrastructure.imagesources": {
         "type": "Project",
@@ -1778,7 +1791,13 @@
         "type": "Project"
       },
       "suneyevision.plugin.editing.wpf": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Foundation": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Tool.Kernels": "[2.0.0-alpha.8, )"
+        }
       },
       "suneyevision.plugin.infrastructure": {
         "type": "Project",
@@ -1788,7 +1807,7 @@
           "OpenCvSharp4.runtime.win": "[4.13.0.20260222, )",
           "SunEyeVision.Application": "[2.0.0-alpha.8, )",
           "SunEyeVision.Core": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Editing.Wpf": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )"
         }
       },
@@ -1797,13 +1816,6 @@
         "dependencies": {
           "SunEyeVision.Foundation": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
-        }
-      },
-      "suneyevision.plugin.sdk": {
-        "type": "Project",
-        "dependencies": {
-          "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Tool.Kernels": "[2.0.0-alpha.8, )"
         }
       },
       "suneyevision.plugin.wpf": {
@@ -1846,7 +1858,6 @@
           "SunEyeVision.Infrastructure.Persistence": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Editing.Wpf": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Infrastructure": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Plugin.SDK": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )",
           "Vortice.DXGI": "[3.8.2, )",
           "Vortice.Direct2D1": "[3.8.2, )",

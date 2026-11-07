@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using SunEyeVision.CvEngine;
-using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using SunEyeVision.Plugin.Contracts.Vision;
 using CvImage = SunEyeVision.CvEngine.CvImage;
 
 namespace SunEyeVision.CvAdapter

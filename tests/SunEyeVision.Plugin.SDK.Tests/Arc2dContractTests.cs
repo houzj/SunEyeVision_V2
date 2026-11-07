@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Windows;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
+using SunEyeVision.Plugin.Editing.Wpf.Models.Geometry;
 using Xunit;
 
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 
 /// <summary>
 /// 圆弧两点+半径参数化契约测试（对齐 VisionMaster 模型）。

@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SunEyeVision.DeviceDriver.Communications;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 using SunEyeVision.UI.Features.CommunicationManager;
 using SunEyeVision.Domain.Solutions;
 using ConfiguredCommunication = SunEyeVision.Domain.Solutions.Communication;
@@ -128,7 +128,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
     public CommunicationRuntimeComposition Composition { get; }
     public CommunicationHeartbeatService Heartbeats { get; }
     public CommunicationAutomationService Automation { get; }
-    public SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveService Receives { get; } = new();
+    public SunEyeVision.Plugin.Editing.Wpf.Models.Communication.CommunicationReceiveService Receives { get; } = new();
     public WorkflowCommunicationSendService Sends { get; }
 
     public CommunicationApplicationService(SunEyeVision.Application.DocumentSession session, CommunicationRuntimeComposition composition)
@@ -186,7 +186,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
 
     private void ConfigureReceiveSources(SolutionDefinition? solution, bool reset = false)
     {
-        var sources = new List<SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveSource>();
+        var sources = new List<SunEyeVision.Plugin.Editing.Wpf.Models.Communication.CommunicationReceiveSource>();
         foreach (var device in solution?.Communications.Where(d => d.IsEnabled) ?? Enumerable.Empty<ConfiguredCommunication>())
         {
             var signature = ReceiveConfigurationKey(device);
@@ -208,21 +208,21 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
         config.Remove(nameof(ConfiguredCommunication.Description));
         return config.ToJsonString();
     }
-    private void OnReceiveStatus(object? sender, SunEyeVision.Plugin.SDK.Devices.Communication.CommunicationStatusSnapshot status)
+    private void OnReceiveStatus(object? sender, SunEyeVision.Plugin.Contracts.Communication.CommunicationStatusSnapshot status)
     {
         // During teardown these events still belong to the old runtime generation.
         // Runtime publishes synchronously under its state gate. Do not acquire the
         // application gate here: policy cancellation may hold it while invalidating
         // that runtime. Teardown drains the runtime before enabling the next epoch.
         if (!_connectionsReady) return;
-        if (status.State == SunEyeVision.Plugin.SDK.Devices.Communication.CommunicationState.Connected)
+        if (status.State == SunEyeVision.Plugin.Contracts.Communication.CommunicationState.Connected)
             _connectionErrors.TryRemove(status.Device.Value, out _);
         else if (!string.IsNullOrWhiteSpace(status.LastError?.Message))
             _connectionErrors[status.Device.Value] = status.LastError.Message;
-        if (status.State == SunEyeVision.Plugin.SDK.Devices.Communication.CommunicationState.Connected)
+        if (status.State == SunEyeVision.Plugin.Contracts.Communication.CommunicationState.Connected)
             Receives.MarkConnected(status.Device.Value);
-        if (status.State is SunEyeVision.Plugin.SDK.Devices.Communication.CommunicationState.Disconnected
-            or SunEyeVision.Plugin.SDK.Devices.Communication.CommunicationState.Faulted)
+        if (status.State is SunEyeVision.Plugin.Contracts.Communication.CommunicationState.Disconnected
+            or SunEyeVision.Plugin.Contracts.Communication.CommunicationState.Faulted)
         {
             Composition.Polling.Stop(status.Device.Value);
             Receives.InvalidateDevice(status.Device.Value);
@@ -230,7 +230,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
     }
 
     private async Task<(object Value, DateTimeOffset? SourceTime)> ReadCurrentDeviceAsync(
-        SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveSource source, CancellationToken token)
+        SunEyeVision.Plugin.Editing.Wpf.Models.Communication.CommunicationReceiveSource source, CancellationToken token)
     {
         using var operation=EnterOperation();
         ConfiguredCommunication device; int start = 0, count = 0; string nodeId = "";
@@ -265,7 +265,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
         var value = await Composition.Runtime.ReadOpcUaValueAsync(device.Id, nodeId, token).ConfigureAwait(false);
         if (!Opc.Ua.StatusCode.IsGood(value.StatusCode) || value.Value == null) throw new InvalidOperationException("数据点质量无效或值为空。");
         ValidateCurrentConfiguration();
-        return (SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveService.Normalize(value.Value),
+        return (SunEyeVision.Plugin.Editing.Wpf.Models.Communication.CommunicationReceiveService.Normalize(value.Value),
             value.SourceTimestamp == DateTime.MinValue ? null : new DateTimeOffset(DateTime.SpecifyKind(value.SourceTimestamp, DateTimeKind.Utc)));
         void ValidateCurrentConfiguration()
         {
@@ -276,28 +276,28 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
                     throw new InvalidOperationException("读取期间来源配置已变化。");
         }
     }
-    private IReadOnlyList<SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource> GetCurrentVariables()
+    private IReadOnlyList<SunEyeVision.Plugin.Editing.Wpf.Models.Communication.ReceiveVariableSource> GetCurrentVariables()
     {
         lock (_gate) lock (GlobalVariable.ValueGate)
             return (_activeSolution?.GlobalVariables ?? Array.Empty<GlobalVariable>()).Where(v => v.Type is "String" or "Integer" or "Double" or "Boolean" or "Binary")
-                .Select(v => new SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableSource(v.Id,v.Name,v.Group,v.Type,
+                .Select(v => new SunEyeVision.Plugin.Editing.Wpf.Models.Communication.ReceiveVariableSource(v.Id,v.Name,v.Group,v.Type,
                     v.ProducerBinding is not null || !string.IsNullOrEmpty(v.RebindingReason) || !string.IsNullOrEmpty(v.BindingValidationPending),
                     v.ProducerBinding?.SourceReference.NodeId ?? "",v.ProducerBinding?.SourceReference.PortId ?? "",v.ProducerBinding?.SourceReference.ScopeId ?? "")).ToArray();
     }
-    private IReadOnlyDictionary<string, SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableValue> ReadCurrentVariables(IReadOnlyList<string> ids)
+    private IReadOnlyDictionary<string, SunEyeVision.Plugin.Editing.Wpf.Models.Communication.ReceiveVariableValue> ReadCurrentVariables(IReadOnlyList<string> ids)
     {
         lock (_gate) lock (GlobalVariable.ValueGate)
         {
             if (_disposed || _activeSolution == null) throw new InvalidOperationException("当前方案不可用。");
-            var result = new Dictionary<string, SunEyeVision.Plugin.SDK.Models.Communication.ReceiveVariableValue>();
+            var result = new Dictionary<string, SunEyeVision.Plugin.Editing.Wpf.Models.Communication.ReceiveVariableValue>();
             foreach (var id in ids.Distinct())
             {
                 var v = _activeSolution.GlobalVariables.FirstOrDefault(v => v.Id == id) ?? throw new InvalidOperationException("所选变量已删除。");
                 if (!string.IsNullOrEmpty(v.RebindingReason)) throw new InvalidOperationException(v.RebindingReason);
                 if (!string.IsNullOrEmpty(v.BindingValidationPending)) throw new InvalidOperationException(v.BindingValidationPending);
                 if (v.ProducerBinding != null) throw new InvalidOperationException("所选变量有生产者，请在生产者成功后的方案运行中读取，不使用设计初值。");
-                var value = SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveService.Normalize(v.Value ?? throw new InvalidOperationException("变量为空。"));
-                if (SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveService.ValueType(value) != v.Type) throw new InvalidOperationException("变量声明与实际类型不匹配。");
+                var value = SunEyeVision.Plugin.Editing.Wpf.Models.Communication.CommunicationReceiveService.Normalize(v.Value ?? throw new InvalidOperationException("变量为空。"));
+                if (SunEyeVision.Plugin.Editing.Wpf.Models.Communication.CommunicationReceiveService.ValueType(value) != v.Type) throw new InvalidOperationException("变量声明与实际类型不匹配。");
                 result[id] = new(new(v.Id, v.Name, v.Group, v.Type), value);
             }
             return result;
@@ -540,9 +540,9 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
             eventLifetime = _switchCancellation?.Token ?? CancellationToken.None;
         }
         if (Composition.Runtime.IsConnected(e.CommunicationId)) return;
-        var state = Composition.Runtime.GetStatus(new SunEyeVision.Plugin.SDK.Devices.Communication.CommunicationDeviceRef(e.CommunicationId)).State;
-        if (state is SunEyeVision.Plugin.SDK.Devices.Communication.CommunicationState.Connecting or
-            SunEyeVision.Plugin.SDK.Devices.Communication.CommunicationState.Disconnecting) return;
+        var state = Composition.Runtime.GetStatus(new SunEyeVision.Plugin.Contracts.Communication.CommunicationDeviceRef(e.CommunicationId)).State;
+        if (state is SunEyeVision.Plugin.Contracts.Communication.CommunicationState.Connecting or
+            SunEyeVision.Plugin.Contracts.Communication.CommunicationState.Disconnecting) return;
         ConfiguredCommunication? device;
         CancellationToken token;
         lock (_gate)
@@ -1097,7 +1097,7 @@ public sealed partial class CommunicationApplicationService : IAsyncDisposable
             _observedDevices.Clear();
             Heartbeats.Runner.Update(Array.Empty<CommunicationHeartbeatJob>());
             Automation.Reset(null);
-            Receives.Configure(Array.Empty<SunEyeVision.Plugin.SDK.Models.Communication.CommunicationReceiveSource>(), reset: true);
+            Receives.Configure(Array.Empty<SunEyeVision.Plugin.Editing.Wpf.Models.Communication.CommunicationReceiveSource>(), reset: true);
             Composition.Runtime.DataReceived -= OnAutomationData;
             Composition.Runtime.OpcUaPointValueChanged -= OnAutomationOpcUa;
             Composition.Polling.BatchReceived -= OnAutomationModbus;

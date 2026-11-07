@@ -1,6 +1,6 @@
 using BindingCompatibility = SunEyeVision.Plugin.Contracts.BindingCompatibility;
 using System.Text.Json;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
 using SunEyeVision.Tool.Script.Models;
 using SunEyeVision.Workflow;
 using Xunit;
@@ -10,14 +10,14 @@ namespace SunEyeVision.Tool.Script.Tests;
 public sealed class ScriptBindingContractB2Tests
 {
     [Theory]
-    [InlineData(typeof(SunEyeVision.Plugin.SDK.Vision.Contracts.IVisionImage), "Image")]
+    [InlineData(typeof(SunEyeVision.Plugin.Contracts.Vision.IVisionImage), "Image")]
     [InlineData(typeof(double), "Double")]
     [InlineData(typeof(string), "String")]
     public void Output_source_uses_vocabulary_in_script_and_subroutine_persisted_contracts(Type type, string vocabulary)
     {
         var source = new AvailableDataSource { SourceNodeId = "source", PropertyName = "value", PropertyType = type, VariableType = vocabulary };
         var script = new ScriptOutputConfig { Name = "out", Source = source };
-        var sub = new SunEyeVision.Plugin.SDK.Models.SubroutineOutputConfig { Name = "out", Source = source };
+        var sub = new SunEyeVision.Plugin.Editing.Wpf.Models.SubroutineOutputConfig { Name = "out", Source = source };
         Assert.Equal(vocabulary, script.TypeName); Assert.Equal(vocabulary, sub.TypeName);
         Assert.NotNull(script.ParamType); Assert.NotNull(sub.ParamType);
         Assert.Contains("out", script.GenerateFieldCode());
@@ -33,9 +33,9 @@ public sealed class ScriptBindingContractB2Tests
 
     public sealed class ImageContractParameters : ToolParameters, IOutputContractProvider
     {
-        public IReadOnlyList<SunEyeVision.Plugin.SDK.Execution.Results.OutputVariable> GetOutputContract() => new[] {
-            new SunEyeVision.Plugin.SDK.Execution.Results.OutputVariable { Name = "OutputImage", VariableType = "Image",
-                DeclaredType = typeof(SunEyeVision.Plugin.SDK.Vision.Contracts.IVisionImage), IsCollection = false, FixedCount = 1 } };
+        public IReadOnlyList<SunEyeVision.Plugin.Editing.Wpf.Execution.Results.OutputVariable> GetOutputContract() => new[] {
+            new SunEyeVision.Plugin.Editing.Wpf.Execution.Results.OutputVariable { Name = "OutputImage", VariableType = "Image",
+                DeclaredType = typeof(SunEyeVision.Plugin.Contracts.Vision.IVisionImage), IsCollection = false, FixedCount = 1 } };
     }
 
     [Fact]
@@ -58,11 +58,11 @@ public sealed class ScriptBindingContractB2Tests
         var frozen = new SunEyeVision.Workflow.Workflow("f", "f"); frozen.Nodes.Add(source); frozen.Nodes.Add(frozenTarget);
         frozen.Connections.Add(new WorkflowConnection("source-target", source.Id, frozenTarget.Id));
         OutputBindingChangeService.EnsureExecutable(frozen);
-        Assert.Equal(typeof(SunEyeVision.Plugin.SDK.Vision.Contracts.IVisionImage), BindingRelationCatalog.Describe(frozenTarget).Single(i => i.Key == "input1").AllowedTypes.Single());
+        Assert.Equal(typeof(SunEyeVision.Plugin.Contracts.Vision.IVisionImage), BindingRelationCatalog.Describe(frozenTarget).Single(i => i.Key == "input1").AllowedTypes.Single());
     }
 
     [Theory]
-    [InlineData(typeof(SunEyeVision.Plugin.SDK.Vision.Contracts.IVisionImage), "Image")]
+    [InlineData(typeof(SunEyeVision.Plugin.Contracts.Vision.IVisionImage), "Image")]
     [InlineData(typeof(string), "String")]
     [InlineData(typeof(double), "Double")]
     [InlineData(typeof(bool), "Boolean")]
@@ -78,7 +78,7 @@ public sealed class ScriptBindingContractB2Tests
         var p = new ScriptParameters(); p.Inputs.Clear(); p.Inputs.Add(copy);
         var frozen = ToolParameterSnapshot.Create(p);
         var input = BindingInputCatalog.Describe(frozen).Single(i => i.Name == "input1");
-        var contract = new[] { new SunEyeVision.Plugin.SDK.Execution.Results.OutputVariable {
+        var contract = new[] { new SunEyeVision.Plugin.Editing.Wpf.Execution.Results.OutputVariable {
             Name = "value", VariableType = vocabulary, DeclaredType = type, IsCollection = false, FixedCount = 1 } };
         Assert.Equal(BindingCompatibility.Compatible, BindingContractValidator.Validate(contract, "value", input.AllowedTypes).State);
         Assert.Equal("source.value", input.Read());

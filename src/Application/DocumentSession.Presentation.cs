@@ -19,6 +19,12 @@ public sealed partial class DocumentSession
         lock (_gate) return FindNode(OpenScope(workflowId), nodeId)?.Configuration.DisplaySchema;
     }
 
+    /// <summary>真实节点的输出声明，用于把已保存的引用还原成与选择时一致的显示文本。</summary>
+    public ToolSchema? GetNodeOutputSchema(string workflowId, string nodeId)
+    {
+        lock (_gate) return FindNode(OpenScope(workflowId), nodeId)?.Configuration.Schema;
+    }
+
     /// <summary>Admit the actual node, not a caller-supplied directory or tool-ID pair.
     /// A committed field edit does not replace that node's presentation identity.</summary>
     public ToolPresentationAdmission AdmitPresentation(string workflowId, string nodeId)

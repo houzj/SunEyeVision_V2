@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using HalconDotNet;
-using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Contracts.Vision;
 
 namespace SunEyeVision.HalAdapter
 {
@@ -32,13 +33,13 @@ namespace SunEyeVision.HalAdapter
             }
         }
 
-        public Rect BoundingBox
+        public Rect2 BoundingBox
         {
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
                 HOperatorSet.SmallestRectangle1(_region, out var r1, out var c1, out var r2, out var c2);
-                return new Rect(c1.L, r1.L, c2.L - c1.L + 1, r2.L - r1.L + 1);
+                return new Rect2(c1.L, r1.L, c2.L - c1.L + 1, r2.L - r1.L + 1);
             }
         }
 
@@ -51,15 +52,15 @@ namespace SunEyeVision.HalAdapter
             }
         }
 
-        public Point[] GetContour()
+        public Point2[] GetContour()
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
             HOperatorSet.GetRegionContour(_region, out var rows, out var cols);
             if (rows == null || cols == null || rows.Length == 0)
-                return Array.Empty<Point>();
-            var points = new Point[rows.Length];
+                return Array.Empty<Point2>();
+            var points = new Point2[rows.Length];
             for (int i = 0; i < rows.Length; i++)
-                points[i] = new Point(cols.LArr[i], rows.LArr[i]);
+                points[i] = new Point2(cols.LArr[i], rows.LArr[i]);
             return points;
         }
 

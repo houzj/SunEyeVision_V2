@@ -1,6 +1,6 @@
 using System.Windows;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.SDK.Models.Visualization;
+using SunEyeVision.Plugin.Editing.Wpf.Models.Visualization;
 
 namespace SunEyeVision.UI.Services.Rendering;
 

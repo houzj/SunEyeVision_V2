@@ -7,7 +7,7 @@ using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 using SunEyeVision.UI.Services.Connection;
 using SunEyeVision.UI.Services.Performance;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 
 using SunEyeVision.UI.Features.WorkflowUI;
 

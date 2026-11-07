@@ -1,7 +1,7 @@
 <UserControl x:Class="SunEyeVision.UI.Features.CommunicationManager.CommunicationTriggersView"
  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
  xmlns:comm="clr-namespace:SunEyeVision.UI.Features.CommunicationManager" xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
- xmlns:controls="clr-namespace:SunEyeVision.Plugin.SDK.UI.Controls;assembly=SunEyeVision.Plugin.SDK">
+ xmlns:controls="clr-namespace:SunEyeVision.Plugin.Editing.Wpf.UI.Controls;assembly=SunEyeVision.Plugin.Editing.Wpf">
 <UserControl.Resources><ResourceDictionary>
 <ResourceDictionary.MergedDictionaries><ResourceDictionary Source="CommunicationUiResources.xaml"/></ResourceDictionary.MergedDictionaries>
 <comm:OneBasedIndexConverter x:Key="Ordinal"/>

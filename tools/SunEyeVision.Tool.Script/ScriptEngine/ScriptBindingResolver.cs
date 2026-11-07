@@ -7,7 +7,7 @@ using SunEyeVision.Plugin.SDK.Execution.Parameters;
 using SunEyeVision.Plugin.SDK.Execution.Results;
 using SunEyeVision.Tool.Script.Models;
 using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 
 namespace SunEyeVision.Tool.Script.ScriptEngine
 {

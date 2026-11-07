@@ -47,11 +47,13 @@ public sealed partial class ImageSourceStripSession : IImageSourceStripSession, 
     private long _refreshGeneration;
     private string? _status;
     public ImageSourceStripSession(ImageInputSource source, Func<bool> isCurrent, Func<bool> canNavigate,
-        Func<ImageInfo, int, long, Task>? activate = null, Dispatcher? dispatcher = null, Func<Window?>? dialogOwner = null)
+        Func<ImageInfo, int, long, Task>? activate = null, Dispatcher? dispatcher = null, Func<Window?>? dialogOwner = null,
+        bool providesImageImport = false)
     {
         _source = source ?? throw new ArgumentNullException(nameof(source));
         _isCurrent = isCurrent ?? throw new ArgumentNullException(nameof(isCurrent));
         _canNavigate = canNavigate ?? throw new ArgumentNullException(nameof(canNavigate));
+        ProvidesImageImport = providesImageImport;
         _activate = activate; _dispatcher = dispatcher ?? System.Windows.Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
         _dialogOwner = dialogOwner; _dispatcher.VerifyAccess();
         try
@@ -72,6 +74,7 @@ public sealed partial class ImageSourceStripSession : IImageSourceStripSession, 
     public long Version => _source.EditVersion;
     public int DisplayIndex => _source.CurrentIndex;
     public int ConfiguredStartIndex => _configuredStartIndex;
+    public bool ProvidesImageImport { get; }
     public bool CanEdit => !_disposed && !_source.IsReadOnly && OwnerIsCurrent();
     public bool CanNavigate => !_disposed && !IsImporting && _activate is not null && OwnerIsCurrent() && _canNavigate() && OwnerIsCurrent();
     public bool IsReadOnly => !CanEdit;

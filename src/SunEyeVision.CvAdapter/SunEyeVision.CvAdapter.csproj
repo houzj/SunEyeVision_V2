@@ -19,7 +19,7 @@
 
   <!-- 适配层：依赖 SDK 契约 + CvEngine 算法库（与 HalAdapter 对称，两者互不引用） -->
   <ItemGroup>
-    <ProjectReference Include="..\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
+    <ProjectReference Include="..\Plugin.Editing.Wpf\SunEyeVision.Plugin.Editing.Wpf.csproj" />
     <ProjectReference Include="..\SunEyeVision.CvEngine\SunEyeVision.CvEngine.csproj" />
   </ItemGroup>
 </Project>

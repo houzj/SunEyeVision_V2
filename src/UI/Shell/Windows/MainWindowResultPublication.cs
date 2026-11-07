@@ -1,6 +1,6 @@
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Results;
 using SunEyeVision.Plugin.Wpf.Presenters.Results;
 using SunEyeVision.UI.Services.Monitoring;
 

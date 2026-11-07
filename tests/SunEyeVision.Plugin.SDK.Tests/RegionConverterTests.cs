@@ -2,11 +2,12 @@ using System;
 using System.Linq;
 using System.Windows;
 using SunEyeVision.HalAdapter;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using SunEyeVision.Plugin.Editing.Wpf.Models.Geometry;
+using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Contracts.Vision;
 using Xunit;
 
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 
 /// <summary>
 /// RegionConverter 契约测试：Region↔RoI 桥接（方案 D8 + 验收 #6）。
@@ -31,9 +32,9 @@ public class RegionConverterTests
         }
 
         public int PixelCount => _pixelCount;
-        public Rect BoundingBox => _bbox;
+        public Rect2 BoundingBox => new(_bbox.X, _bbox.Y, _bbox.Width, _bbox.Height);
         public bool IsEmpty => false;
-        public Point[] GetContour() => _contour;
+        public Point2[] GetContour() => _contour.Select(p => new Point2(p.X, p.Y)).ToArray();
         public byte[] GetMaskData() => Array.Empty<byte>();
         public IVisionRegion Clone() => this;
         public void Dispose() { }
@@ -110,9 +111,9 @@ public class RegionConverterTests
     private sealed class FakeEmptyRegion : IVisionRegion
     {
         public int PixelCount => 0;
-        public Rect BoundingBox => Rect.Empty;
+        public Rect2 BoundingBox => Rect2.Empty;
         public bool IsEmpty => true;
-        public Point[] GetContour() => Array.Empty<Point>();
+        public Point2[] GetContour() => Array.Empty<Point2>();
         public byte[] GetMaskData() => Array.Empty<byte>();
         public IVisionRegion Clone() => this;
         public void Dispose() { }
@@ -141,11 +142,13 @@ public class RegionConverterTests
     {
         var region = new FakeRegion(SquareContour(10, 20, 100), new Rect(10, 20, 100, 100), 10000);
         var roi = RegionConverter.RegionToRoi(region, "fit-bbox");
-        var r = Assert.IsType<Rect>(roi.Geometry);
-        Assert.Equal(10, r.X);
-        Assert.Equal(20, r.Y);
+        // 矩形几何恒为 RotatedRect2d（轴对齐，角度 0），保证 RoiToRegion 可回栅格化。
+        var r = Assert.IsType<RotatedRect2d>(roi.Geometry);
+        Assert.Equal(60, r.CenterX);
+        Assert.Equal(70, r.CenterY);
         Assert.Equal(100, r.Width);
         Assert.Equal(100, r.Height);
+        Assert.Equal(0, r.Angle);
     }
 
     #endregion

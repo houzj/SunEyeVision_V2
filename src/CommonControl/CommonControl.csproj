@@ -28,7 +28,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
+    <!-- 编辑器内核只消费 Foundation 的日志契约（SunEyeVision.Foundation.Logging），不依赖插件层。 -->
+    <ProjectReference Include="..\Foundation\SunEyeVision.Foundation.csproj" />
   </ItemGroup>
 
   <!-- 过渡期：脚本工具 ScriptDebugControl 的补全/签名帮助逻辑尚未完全迁入内核，

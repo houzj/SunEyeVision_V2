@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Media;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
 using SunEyeVision.UI.Features.Dialogs;
 
 namespace SunEyeVision.UI.Services.Editing;
@@ -20,12 +20,12 @@ internal sealed class GroupRunParametersControl : UserControl, ISubroutineRunPar
     private readonly TextBlock _error=new(){Foreground=Brushes.OrangeRed,TextWrapping=TextWrapping.Wrap,Margin=new Thickness(8,2,8,4)};
     private readonly Button _edit=new(){Content="编辑",Width=80,Height=28};
     private bool _rebuilding;
-    private readonly Func<SunEyeVision.Plugin.SDK.UI.Controls.ImageControl?>? _image;
+    private readonly Func<SunEyeVision.Plugin.Editing.Wpf.UI.Controls.ImageControl?>? _image;
     private GroupRegionParameterControl? _region;
     private GroupRunParameterConfigWindow? _configurationWindow;
     private TreeViewItem? _previous;
     private object? Selection => (_tree.SelectedItem as TreeViewItem)?.Tag;
-    internal GroupRunParametersControl(GroupRunParameterSession session,Func<SunEyeVision.Plugin.SDK.UI.Controls.ImageControl?>? image=null)
+    internal GroupRunParametersControl(GroupRunParameterSession session,Func<SunEyeVision.Plugin.Editing.Wpf.UI.Controls.ImageControl?>? image=null)
     {
         Session=session;_image=image;
         SetResourceReference(Control.ForegroundProperty,"ThemeTextPrimaryBrush");

@@ -1,9 +1,9 @@
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using NSubstitute;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Results;
+using SunEyeVision.Plugin.Editing.Wpf.UI.Controls.Measure.Views;
 using SunEyeVision.Tool.CircleCircleMeasure;
 using SunEyeVision.Tool.CircleCircleMeasure.Views;
 using Xunit;
@@ -20,7 +20,7 @@ public class CorrectionPreviewLifecycleTests
             E2CenterX = 300, E2CenterY = 80, E2Radius = 20, E1NumMeasures = 8, E2NumMeasures = 12 };
         var result = new CircleCircleMeasureResults();
         string Geometry() => System.Text.Json.JsonSerializer.Serialize(result.Display.Items
-            .OfType<SunEyeVision.Plugin.SDK.Models.Visualization.GraphicsDisplayItem>()
+            .OfType<SunEyeVision.Plugin.Editing.Wpf.Models.Visualization.GraphicsDisplayItem>()
             .Select(i => i.Geometries).ToArray());
         result.FillDisplay(true, p);
         var original = Geometry();
@@ -32,11 +32,11 @@ public class CorrectionPreviewLifecycleTests
         Assert.Equal(original, Geometry());
         p.ResultPresentation.GetGraphicsStyle("guide-circle1").IsVisible = false;
         result.FillDisplay(true, p);
-        Assert.False(result.Display.Items.OfType<SunEyeVision.Plugin.SDK.Models.Visualization.GraphicsDisplayItem>()
+        Assert.False(result.Display.Items.OfType<SunEyeVision.Plugin.Editing.Wpf.Models.Visualization.GraphicsDisplayItem>()
             .Single(i => i.Style?.PresentationKey == "guide-circle1").IsVisible);
         var next = new CircleCircleMeasureResults(); next.FillDisplay(true, p);
-        Assert.Equal(999, next.Display.Items.OfType<SunEyeVision.Plugin.SDK.Models.Visualization.GraphicsDisplayItem>()
-            .SelectMany(i => i.Geometries).OfType<SunEyeVision.Plugin.SDK.Models.Geometry.Circle2d>().First().Center.X);
+        Assert.Equal(999, next.Display.Items.OfType<SunEyeVision.Plugin.Editing.Wpf.Models.Visualization.GraphicsDisplayItem>()
+            .SelectMany(i => i.Geometries).OfType<SunEyeVision.Plugin.Editing.Wpf.Models.Geometry.Circle2d>().First().Center.X);
     }
 
     [Fact]
@@ -48,8 +48,8 @@ public class CorrectionPreviewLifecycleTests
             PositionCorrectionBindingSource = new AvailableDataSource { SourceNodeId = "match", PropertyName = "Matrices", CurrentValue = new[] { matrix } } };
         var result = new CircleCircleMeasureResults();
         result.FillDisplay(true, p);
-        double GuideX() => result.Display.Items.OfType<SunEyeVision.Plugin.SDK.Models.Visualization.GraphicsDisplayItem>()
-            .SelectMany(i => i.Geometries).OfType<SunEyeVision.Plugin.SDK.Models.Geometry.Circle2d>().First().Center.X;
+        double GuideX() => result.Display.Items.OfType<SunEyeVision.Plugin.Editing.Wpf.Models.Visualization.GraphicsDisplayItem>()
+            .SelectMany(i => i.Geometries).OfType<SunEyeVision.Plugin.Editing.Wpf.Models.Geometry.Circle2d>().First().Center.X;
         Assert.Equal(150, GuideX());
         matrix.OffsetX = 999; p.IsPositionCorrectionEnabled = false;
         result.FillDisplay(true, p); Assert.Equal(150, GuideX());

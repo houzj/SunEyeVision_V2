@@ -110,8 +110,8 @@ namespace SunEyeVision.UI.Services.Rendering
                 if (_lastBackgroundLogKey != logKey)
                 {
                     _lastBackgroundLogKey = logKey;
-                    SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance?.Log(
-                        SunEyeVision.Plugin.SDK.Logging.LogLevel.Info,
+                    SunEyeVision.Foundation.Logging.VisionLogger.Instance?.Log(
+                        SunEyeVision.Foundation.Logging.LogLevel.Info,
                         $"节点背景色解析(缓存转换器): {logKey}",
                         "CachedNodeBackgroundConverter");
                 }

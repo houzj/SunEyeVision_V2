@@ -157,8 +157,8 @@ public partial class CameraPreviewWindow : ThemeDialogWindow
         try { await CloseResourcesAsync(); }
         catch (Exception failure)
         {
-            SunEyeVision.Plugin.SDK.Logging.VisionLogger.Instance.Log(SunEyeVision.Plugin.SDK.Logging.LogLevel.Error,
-                failure.Message, "CameraPreviewTrace", failure, SunEyeVision.Plugin.SDK.Logging.LogTarget.All);
+            SunEyeVision.Foundation.Logging.VisionLogger.Instance.Log(SunEyeVision.Foundation.Logging.LogLevel.Error,
+                failure.Message, "CameraPreviewTrace", failure, SunEyeVision.Foundation.Logging.LogTarget.All);
             if (ReferenceEquals(_viewModel.SelectedCamera, _camera)) _viewModel.ReportOperationStatus(failure.Message);
         }
         finally { base.OnClosed(e); }

@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.UI.Controls;
-using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
+using SunEyeVision.Plugin.Editing.Wpf.Models.Geometry;
+using SunEyeVision.Plugin.Editing.Wpf.UI.Controls;
+using SunEyeVision.Plugin.Contracts.Vision;
 using Xunit;
 
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 
 /// <summary>
 /// 契约测试：子程序显示项 ParamType 必须按 DisplayType 映射到对应数据源类型，
@@ -70,7 +70,7 @@ public class SubroutineDisplayItemTypeContractTests
         var display = new SubroutineDisplayItem { DisplayName="文本", DisplayType=SubroutineDisplayType.Text, TextStyle=new() };
         p.DisplayConfigs.Add(display);
         var input = BindingInputCatalog.Describe(p).Single(i => i.Key=="Display:"+display.FieldId);
-        var contract = new[] { new SunEyeVision.Plugin.SDK.Execution.Results.OutputVariable
+        var contract = new[] { new SunEyeVision.Plugin.Editing.Wpf.Execution.Results.OutputVariable
         { Name="Value", DeclaredType=type, VariableType=SdkTypeVocabulary.ToTypeVocabulary(type)!, IsCollection=type.IsArray } };
         var result = BindingContractValidator.Validate(contract,type.IsArray?"Value[]":"Value",input.AllowedTypes);
         Assert.Equal(accepted,result.State is SunEyeVision.Plugin.Contracts.BindingCompatibility.Compatible or SunEyeVision.Plugin.Contracts.BindingCompatibility.Conditional);

@@ -3,7 +3,7 @@
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
- xmlns:logging="clr-namespace:SunEyeVision.Plugin.SDK.Logging;assembly=SunEyeVision.Plugin.SDK"
+ xmlns:logging="clr-namespace:SunEyeVision.Foundation.Logging;assembly=SunEyeVision.Foundation"
  mc:Ignorable="d" d:DesignHeight="28" d:DesignWidth="600">
  <Border Height="28" Background="{DynamicResource ThemeStatusBarBackgroundBrush}"
          BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="0,1,0,0">

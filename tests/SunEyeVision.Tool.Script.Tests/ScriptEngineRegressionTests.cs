@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
@@ -34,7 +34,7 @@ public class ScriptEngineRegressionTests
         // 缺失则明确报错（rule-008 报错优先，不静默跳过）。
         var hostDlls = new[]
         {
-            "SunEyeVision.Plugin.SDK.dll",
+            "SunEyeVision.Plugin.Editing.Wpf.dll",
             "SunEyeVision.CvEngine.dll",
             "SunEyeVision.Workflow.dll",
             "halcondotnetxl.dll",

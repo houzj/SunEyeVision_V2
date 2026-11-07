@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -63,8 +63,8 @@ public class HalconScriptCompileTests
         const string scriptCode = @"
 using System;
 using HalconDotNet;
-using SunEyeVision.Plugin.SDK.Scripting;
-using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using SunEyeVision.Plugin.Editing.Wpf.Scripting;
+using SunEyeVision.Plugin.Contracts.Vision;
 public partial class UserScript : Script
 {
     public override void Init() { }

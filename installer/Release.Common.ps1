@@ -53,7 +53,7 @@ function Assert-ReleaseFileVersionAdvance {
 
 function Assert-ReleasePayload {
     param([string]$Path, [string]$FileVersion, [object[]]$ProductComponents, [string]$IconSourceRoot)
-    foreach ($file in 'SunEyeVision.UI.exe', 'SunEyeVision.Core.dll', 'SunEyeVision.Foundation.dll', 'SunEyeVision.Plugin.SDK.dll', 'halcondotnetxl.dll', 'halconxl.dll', 'Icons/suneyevision.ico', 'Icons/solution.ico') {
+    foreach ($file in 'SunEyeVision.UI.exe', 'SunEyeVision.Core.dll', 'SunEyeVision.Foundation.dll', 'SunEyeVision.Plugin.Editing.Wpf.dll', 'halcondotnetxl.dll', 'halconxl.dll', 'Icons/suneyevision.ico', 'Icons/solution.ico') {
         if (!(Test-Path (Join-Path $Path $file))) { throw "载荷缺失：$file" }
     }
     if ($IconSourceRoot) {
@@ -271,12 +271,10 @@ function New-ReleasePayload {
     if($ArtifactVersion -cne $actualArtifact){throw 'Payload artifactVersion differs from the Foundation PE product identity.'}
     $appRoot=(Resolve-Path -LiteralPath $AppPath).Path
     if(Test-Path -LiteralPath (Join-Path $appRoot 'plugins')){throw 'Retired SDK deployment directories must not enter a release payload.'}
-    $sdkPath=Join-Path $appRoot 'SunEyeVision.Plugin.SDK.dll'
-    if(!(Test-Path -LiteralPath $sdkPath) -and !$NeutralHost){throw 'Desktop payload lacks the SDK assembly.'}
-    if($NeutralHost -and (Test-Path -LiteralPath $sdkPath)){throw 'Neutral payload cannot include the SDK assembly.'}
-    $sdkIdentity=if(Test-Path -LiteralPath $sdkPath){[Reflection.AssemblyName]::GetAssemblyName($sdkPath).FullName}else{$null}
+    $retiredSdkPath=Join-Path $appRoot 'SunEyeVision.Plugin.SDK.dll'
+    if(Test-Path -LiteralPath $retiredSdkPath){throw 'Retired Plugin.SDK assembly must not enter a release payload.'}
     $contractsIdentity=[Reflection.AssemblyName]::GetAssemblyName((Join-Path $appRoot 'SunEyeVision.Plugin.Contracts.dll')).FullName
-    [xml]$directoryGroups=Get-Content (Join-Path $PSScriptRoot '../src/Plugin.SDK/Metadata/ToolGroups.xml') -Raw
+    [xml]$directoryGroups=Get-Content (Join-Path $PSScriptRoot '../src/Plugin.Editing.Wpf/Metadata/ToolGroups.xml') -Raw
     # 分类只描述共享分组，工具生产者只由产品组件清单和PE声明确定。
     if(@($directoryGroups.SelectNodes('/ToolGroups/Tool')).Count){throw '分类资源包含旧工具生产者'}
     $directoryGroups.Save((Join-Path $appRoot 'ToolGroups.xml'))
@@ -290,7 +288,6 @@ function New-ReleasePayload {
                 try {
                     $entry.assemblyIdentity=[Reflection.AssemblyName]::GetAssemblyName($_.FullName).FullName
                     $entry.components=@([SunEyeVision.ReleaseToolMetadataReader]::ReadComponents($_.FullName,$contractsIdentity)|ForEach-Object{[ordered]@{componentId=$_.ComponentId;toolId=$_.ToolId;role=$_.Role;contractMajor=$_.ContractMajor;contractMinor=$_.ContractMinor;entryType=$_.EntryType;companionToolId=$_.CompanionToolId}})
-                    if(@([SunEyeVision.ReleaseToolMetadataReader]::Read($_.FullName,$sdkIdentity)).Count){throw ('Retired SDK tool producer in payload: '+$relative)}
                 }
                 catch [BadImageFormatException] { } # Native binaries have hashes, not managed identities.
             }

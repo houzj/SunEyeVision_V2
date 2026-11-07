@@ -4,8 +4,8 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using SunEyeVision.HalAdapter;
-using SunEyeVision.Plugin.SDK.Core;
-using SunEyeVision.Plugin.SDK.Models.Calibration;
+using SunEyeVision.Plugin.Editing.Wpf.Core;
+using SunEyeVision.Plugin.Editing.Wpf.Models.Calibration;
 using Xunit;
 
 namespace SunEyeVision.Tool.NPointCalibration.Tests;

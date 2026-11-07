@@ -2,9 +2,9 @@ using System;
 using System.Linq;
 using System.Text.Json;
 using SunEyeVision.Core.Services.Serialization;
-using SunEyeVision.Plugin.SDK.Core;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.Editing.Wpf.Core;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
 using Xunit;
 
 namespace SunEyeVision.Tool.CircleCircleMeasure.Tests;

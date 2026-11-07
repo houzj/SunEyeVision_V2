@@ -2,10 +2,10 @@ using System.Collections.Concurrent;
 using NSubstitute;
 using SunEyeVision.Plugin.Infrastructure.Infrastructure;
 using SunEyeVision.Plugin.Infrastructure.Managers.Tool;
-using SunEyeVision.Plugin.SDK.Core;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Plugin.Editing.Wpf.Core;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Results;
+using SunEyeVision.Foundation.Logging;
 using SunEyeVision.Workflow;
 using Xunit;
 

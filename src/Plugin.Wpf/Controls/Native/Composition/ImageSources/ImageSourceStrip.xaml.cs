@@ -54,6 +54,8 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     public string AutoSwitchText => SunEyeVision.Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang("RunParam_Auto Switch", "自动切换");
     public string AutoSwitchToolTip => SunEyeVision.Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang("Switch to next image every run", "每次执行后会自动切换至下一张图片");
     public bool IsImporting => Session?.IsImporting ?? false;
+    /// <summary>是否展示「添加图片/添加目录/清空图片」：只有图像源模块自身才拥有这些入口。</summary>
+    public bool ProvidesImageImport => Session?.ProvidesImageImport == true;
     public bool CanEdit => Session?.CanEdit == true && !IsImporting;
     public bool CanNavigate => Session?.CanNavigate == true && !IsImporting;
     public bool CanUseList => CanEdit || CanNavigate;
@@ -148,7 +150,7 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
             SetCurrentValue(AutoSwitchEnabledProperty, session?.AutoSwitchEnabled ?? false);
             if (!Current()) return;
             foreach (var name in new[] { nameof(Items), nameof(DisplayIndex), nameof(DisplayNumber), nameof(ImageCount), nameof(IsReadOnly),
-                nameof(IsSelectMode), nameof(ModeIndex), nameof(AutoSwitchEnabled), nameof(AutoSwitchText), nameof(AutoSwitchToolTip), nameof(IsImporting), nameof(CanEdit), nameof(CanNavigate), nameof(CanUseList), nameof(IsFirstResetActive), nameof(ExpandedVisibility), nameof(FirstVisibility), nameof(Status) })
+                nameof(IsSelectMode), nameof(ModeIndex), nameof(AutoSwitchEnabled), nameof(AutoSwitchText), nameof(AutoSwitchToolTip), nameof(IsImporting), nameof(CanEdit), nameof(CanNavigate), nameof(CanUseList), nameof(IsFirstResetActive), nameof(ExpandedVisibility), nameof(FirstVisibility), nameof(ProvidesImageImport), nameof(Status) })
             {
                 if(!Current())return;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));

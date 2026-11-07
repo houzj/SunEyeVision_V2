@@ -84,7 +84,7 @@ namespace SunEyeVision.Tool.Script.Views
         /// </summary>
         public void RefreshFromSource()
         {
-            SunEyeVision.Plugin.SDK.Logging.PluginLogger.Info($"[ScriptVariableTab] RefreshFromSource 被调用, _isInput={_isInput}", nameof(ScriptVariableTab));
+            SunEyeVision.Foundation.Logging.PluginLogger.Info($"[ScriptVariableTab] RefreshFromSource 被调用, _isInput={_isInput}", nameof(ScriptVariableTab));
             SyncValuesFromSource();
         }
 
@@ -95,7 +95,7 @@ namespace SunEyeVision.Tool.Script.Views
         private void SyncValuesFromSource()
         {
             var source = ValueSource;
-            SunEyeVision.Plugin.SDK.Logging.PluginLogger.Info($"[ScriptVariableTab] SyncValuesFromSource: _isInput={_isInput}, source={(source == null ? "null" : $"Count={source.Count}")}, MonitorNodes.Count={MonitorNodes.Count}", nameof(ScriptVariableTab));
+            SunEyeVision.Foundation.Logging.PluginLogger.Info($"[ScriptVariableTab] SyncValuesFromSource: _isInput={_isInput}, source={(source == null ? "null" : $"Count={source.Count}")}, MonitorNodes.Count={MonitorNodes.Count}", nameof(ScriptVariableTab));
 
             if (source == null)
             {
@@ -107,7 +107,7 @@ namespace SunEyeVision.Tool.Script.Views
 
             foreach (var node in MonitorNodes)
             {
-                SunEyeVision.Plugin.SDK.Logging.PluginLogger.Info($"[ScriptVariableTab]   node='{node.Name}', source.TryGetValue={source.TryGetValue(node.Name, out _)}", nameof(ScriptVariableTab));
+                SunEyeVision.Foundation.Logging.PluginLogger.Info($"[ScriptVariableTab]   node='{node.Name}', source.TryGetValue={source.TryGetValue(node.Name, out _)}", nameof(ScriptVariableTab));
 
                 if (!source.TryGetValue(node.Name, out var value))
                 {

@@ -1,11 +1,11 @@
 using System;
 using System.Linq;
 using System.Windows;
-using SunEyeVision.Plugin.SDK.Execution.Helpers;
-using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Helpers;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Results;
 using Xunit;
 
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 
 /// <summary>
 /// 旋转矩形显示语义自洽契约：无论位置修正矩阵旋转角多大，

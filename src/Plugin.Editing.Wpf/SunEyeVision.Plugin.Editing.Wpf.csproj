@@ -1,1 +1,38 @@
-<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net9.0-windows</TargetFramework><UseWPF>true</UseWPF><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings></PropertyGroup></Project>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>SunEyeVision.Plugin.Editing.Wpf</RootNamespace>
+    <AssemblyName>SunEyeVision.Plugin.Editing.Wpf</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <Description>WPF 工具编辑模型层：参数/结果/几何/显示模型与工具编辑契约，承接原 Plugin.SDK 的非纯契约部分。</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 分层：本身是 WPF 层，只向下依赖 UI-free 契约与运行时，不反向依赖宿主或呈现层。 -->
+    <ProjectReference Include="../Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj" />
+    <ProjectReference Include="../Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" />
+    <ProjectReference Include="../Foundation/SunEyeVision.Foundation.csproj" />
+    <!-- 算法内核是最底层纯数学库（零上层依赖），模型层依赖它方向正确。 -->
+    <ProjectReference Include="../Tool.Kernels/SunEyeVision.Tool.Kernels.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Group/循环迁移暂停，源码保留但不纳入产品编译（与迁移前一致）。 -->
+    <Compile Remove="Execution/Parameters/SubroutineParameters.cs;Execution/Parameters/ISubroutineDebugService.cs;Execution/Parameters/SubroutineDebugServiceProvider.cs;Models/SubroutineLoopConfig.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Metadata\ToolGroups.xml" LogicalName="SunEyeVision.Plugin.Editing.Wpf.Metadata.ToolGroups.xml" />
+  </ItemGroup>
+
+  <!-- 过渡期：脚本工具仍访问内核 internal 类型（与迁移前一致）。 -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="SunEyeVision.Tool.Script" />
+  </ItemGroup>
+</Project>

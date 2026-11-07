@@ -44,6 +44,9 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
     private ImageSourceDraftContent? _imageSourceContent;
     private ReferenceWindowOwner? _referenceOwner;
     private readonly List<DeclaredFieldEditor> _inputs = new();
+    /// <summary>引用来源快照按字段缓存：一次参数页构建只抓一次图，字段刷新与切页不再重走前驱与准入校验。</summary>
+    private readonly Dictionary<string, ReferenceSelections> _referenceCache = new(StringComparer.Ordinal);
+    private long _referenceRevision = -1;
     private long _generation, _syncedRevision;
     private bool _disposed, _capturing;
     private string _captureError = "";
@@ -60,22 +63,32 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
     public void BindDraft(NodeConfigurationEditDraft draft)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        using var assemblyTrace = ToolWindowAssemblyTrace.Begin("BindDraft", draft.Node.Id.ToString());
         var context = ToolEditorCommit.GetDraftContext(this) as ProductionEditorContext ?? throw new InvalidOperationException("参数页未绑定正式编辑范围。");
         if (!context.IsValid || !ReferenceEquals(context.PreparedDraft, draft)) throw new InvalidOperationException("草稿不属于当前参数页。");
         _debug?.InvalidateDraft(); ReleaseView(); _context = context;
         var generation = ++_generation;
         bool Current() => !_disposed && generation == _generation && context.IsValid && ReferenceEquals(_context, context);
         var admission = context.Session.AdmitPresentation(draft.WorkflowId, draft.Node.Id);
+        using var presentationTrace = ToolWindowAssemblyTrace.Begin("CreatePresentation", draft.Node.Id.ToString());
         _referenceOwner = new ReferenceWindowOwner(this, Current, context.ReferencePreference, context.ReferencePreference.PreferExpanded);
         ReferenceSelections Selection(Port port)
-        { if (!Current()) throw new InvalidOperationException("引用选择已失效。"); return context.Session.CaptureReferenceSelections(draft.WorkflowId, draft.Node, port.Id); }
+        {
+            if (!Current()) throw new InvalidOperationException("引用选择已失效。");
+            var revision = context.Session.ChangeRevision;
+            if (revision != _referenceRevision) { _referenceCache.Clear(); _referenceRevision = revision; }
+            if (_referenceCache.TryGetValue(port.Id, out var cached)) return cached;
+            var captured = context.Session.CaptureReferenceSelections(draft.WorkflowId, draft.Node, port.Id);
+            _referenceCache[port.Id] = captured;
+            return captured;
+        }
         IReadOnlyList<DeclaredReferenceCandidate> Candidates(ReferenceSelections selection)
         {
             var result = new List<DeclaredReferenceCandidate>();
             foreach (var source in selection.Outputs)
                 foreach (var output in source.Schema.Outputs)
                 {
-                    var candidates=DeclaredReferenceCandidateBuilder.Build(source.Schema,output,source.Actual.Id,draft.WorkflowId,source.Actual.Name);
+                    var candidates=DeclaredReferenceCandidateBuilder.Build(source.Schema,output,source.Actual.Id,draft.WorkflowId,ModuleName(source.Actual),ReferenceText.ModuleNumber(source.Actual.GlobalIndex));
                     var manual=selection.FieldKind==ReferenceSelectionFieldKind.Settings&&selection.TargetPort.Type.Shape==ValueShape.Scalar
                         &&selection.TargetPort.Type.Scalar is ScalarKind.Int64 or ScalarKind.Float64;
                     result.AddRange(manual?candidates.Where(candidate=>
@@ -134,7 +147,8 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
         try
         {
             candidate = DesktopToolPresentation.CreateSettingsView(admission, draft.Configuration.Fields.Select(editorPorts),
-                new ToolSettingsViewOptions(references, FormatReference, inputSchema.Presentation?.Fields.FirstOrDefault()?.Layout?.Page, inputContent, ValidateComposition:group=>ValidateChanges(group.Changes), TextExpressions:textExpressions, RoiFrames:_roiFrames, InputContentFactory:inputFactory));
+                new ToolSettingsViewOptions(references, FormatReference, inputSchema.Presentation?.Fields.FirstOrDefault()?.Layout?.Page, inputContent, ValidateComposition:group=>ValidateChanges(group.Changes), TextExpressions:textExpressions, RoiFrames:_roiFrames, InputContentFactory:inputFactory,
+                    PageBuilt:(page,_,_)=>ToolWindowAssemblyTrace.Event("PageBuilt", $"{draft.Node.Id}:{page}")));
             if (!Current()) throw new InvalidOperationException("参数页创建期间节点已失效。");
             _view = candidate; _acceptedFields=candidate.CaptureAcceptedFields(); _syncedRevision = candidate.AcceptedRevision; _captureError = "";
             candidate.Changed += Changed; Content = candidate.View;
@@ -152,8 +166,16 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
     {
         var context = CurrentContext();
         var source = context.Session.GetNodes(context.PreparedDraft.WorkflowId).SingleOrDefault(node => node.Id == reference.NodeId);
-        return (source?.Name ?? "已选择来源") + " · " + reference.PortId;
+        if (source is null) throw new InvalidOperationException("引用的来源节点已不在当前工作流中。");
+        var schema = context.Session.GetNodeOutputSchema(context.PreparedDraft.WorkflowId, source.Id)
+            ?? throw new InvalidOperationException("引用的来源节点输出声明已不可用。");
+        var display = schema.FindOutputDisplay(reference.PortId);
+        var caption = string.IsNullOrWhiteSpace(display?.DisplayName) ? reference.PortId : display.DisplayName;
+        return ReferenceText.Format(ReferenceText.ModuleNumber(source.GlobalIndex), ModuleName(source), caption,
+            reference.MemberFieldPath, DeclaredReferenceCandidateBuilder.MemberNames(display, reference.MemberFieldPath));
     }
+    private static string ModuleName(NodeDefinition node)
+        => string.IsNullOrWhiteSpace(node.DispName) ? node.Name : node.DispName;
     private void Changed()
     {
         if (_disposed || _capturing || _view is not { } view) return;
@@ -252,9 +274,10 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
     internal void RefreshRoiFrame() => _roiFrames?.Refresh();
     private void ReleaseView()
     {
+        ToolWindowAssemblyTrace.Event("ReleaseView", (_context?.FormalNode as NodeDefinition)?.Id.ToString() ?? "none");
         var view = _view; _view = null; _acceptedFields=null; _imageSourceContent=null; Content = null; _inputs.Clear();
         try { if (view is not null) { view.Changed -= Changed; view.Dispose(); } }
-        finally { _referenceOwner?.Dispose(); _referenceOwner = null; }
+        finally { _referenceOwner?.Dispose(); _referenceOwner = null; _referenceCache.Clear(); _referenceRevision = -1; }
     }
     public void Dispose() { if (_disposed) return; _disposed = true; _generation++; _ = CloseDebugAsync(); ReleaseView(); _context = null; }
 }

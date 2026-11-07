@@ -1,6 +1,6 @@
 using System.Windows;
 using HalconDotNet;
-using SunEyeVision.Plugin.SDK.Models.Visualization;
+using SunEyeVision.Plugin.Editing.Wpf.Models.Visualization;
 
 namespace SunEyeVision.HalAdapter
 {

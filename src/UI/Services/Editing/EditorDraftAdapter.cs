@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
 
 namespace SunEyeVision.UI.Services.Editing;
 
@@ -45,11 +45,11 @@ public sealed class EditorDraftAdapter
     internal static bool Supports(ToolParameters? parameters) => parameters?.GetType().FullName is
         "SunEyeVision.Tool.ProtocolParse.ProtocolParseParameters" or "SunEyeVision.Tool.ImageThreshold.ImageThresholdParameters" or
         "SunEyeVision.Tool.SendData.SendDataParameters" or
-        "SunEyeVision.Plugin.SDK.Execution.Parameters.SubroutineParameters";
+        "SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters.SubroutineParameters";
 
     public static EditorDraftAdapter ForProduction(ToolParameters parameters) => parameters.GetType().FullName switch
     {
-        "SunEyeVision.Plugin.SDK.Execution.Parameters.SubroutineParameters" => ForSubroutine((SubroutineParameters)parameters),
+        "SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters.SubroutineParameters" => ForSubroutine((SubroutineParameters)parameters),
         "SunEyeVision.Tool.ProtocolParse.ProtocolParseParameters" => ForProtocolParse(parameters),
         "SunEyeVision.Tool.SendData.SendDataParameters" => ForSendData(parameters),
         "SunEyeVision.Tool.ImageThreshold.ImageThresholdParameters" => ForImageThreshold(parameters),

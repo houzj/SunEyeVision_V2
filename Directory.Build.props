@@ -25,6 +25,7 @@
          $(MSBuildThisFileDirectory) 恒等于 worktree 根, 与项目层级无关,
          天然满足"各 worktree 输出到各自 dev/"的设计意图, 故原 WorktreeName 分支冗余已删。 -->
     <WorktreeBasePath>$(MSBuildThisFileDirectory)</WorktreeBasePath>
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(WorktreeBasePath)build_temp\**</DefaultItemExcludes>
     <!-- 独立候选工作区可共用只读依赖源；产物仍由各工作区正常构建部署。 -->
     <HalconSourceRoot Condition="'$(HalconSourceRoot)'==''">$(WorktreeBasePath)libs\halcon\</HalconSourceRoot>
     
@@ -79,6 +80,12 @@
     <DebugSymbols Condition="'$(Configuration)'=='Release'">true</DebugSymbols>
     <DebugType Condition="'$(Configuration)'=='Debug'">full</DebugType>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="$(WorktreeBasePath)build_temp\**" />
+    <EmbeddedResource Remove="$(WorktreeBasePath)build_temp\**" />
+    <None Remove="$(WorktreeBasePath)build_temp\**" />
+  </ItemGroup>
 
   <!-- 版本统一注入（rule-022）：version.json 是已提交发布声明。
        维护者声明产品版本、渠道序号和 Windows fileRevision；打包只读。

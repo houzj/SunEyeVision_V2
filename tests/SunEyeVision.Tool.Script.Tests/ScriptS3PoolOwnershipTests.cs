@@ -1,6 +1,6 @@
 using System.Reflection;
-using SunEyeVision.Plugin.SDK.Core;
-using SunEyeVision.Plugin.SDK.Execution.Results;
+using SunEyeVision.Plugin.Editing.Wpf.Core;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Results;
 using SunEyeVision.Tool.Script.Models;
 using SunEyeVision.Workflow;
 using Xunit;

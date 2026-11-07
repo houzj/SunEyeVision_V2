@@ -2,7 +2,7 @@ using System.IO;
 using SunEyeVision.Application;
 using SunEyeVision.Plugin.Runtime;
 using Xunit;
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 public class WorkflowRunRequestTests
 {
     private sealed class CountingLease(IDisposable inner) : IDisposable

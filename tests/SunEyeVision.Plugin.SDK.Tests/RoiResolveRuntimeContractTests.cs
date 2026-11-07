@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Results;
+using SunEyeVision.Plugin.Editing.Wpf.Models.Geometry;
 using Xunit;
 
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 
 /// <summary>
 /// Roi 统一运行时解析出口契约测试：本地 / 整对象订阅 / 参数拼装三态归一为 RoiShape[]。
@@ -113,7 +113,7 @@ public class RoiResolveRuntimeContractTests
         // 显式声明宽高与角度，不依赖未声明的旧默认值。
         // P0-2 后矩形几何统一为 RotatedRect2d，WPF Rect 已从契约层退场，故断言中心 + 尺寸 + 角度。
         Assert.Single(resolved);
-        var rect = Assert.IsType<SunEyeVision.Plugin.SDK.Models.Geometry.RotatedRect2d>(resolved[0].Geometry);
+        var rect = Assert.IsType<SunEyeVision.Plugin.Editing.Wpf.Models.Geometry.RotatedRect2d>(resolved[0].Geometry);
         Assert.Equal(200, rect.Center.X, 6);
         Assert.Equal(150, rect.Center.Y, 6);
         Assert.Equal(100, rect.Width, 6);

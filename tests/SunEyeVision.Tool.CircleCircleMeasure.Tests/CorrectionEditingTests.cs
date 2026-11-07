@@ -1,10 +1,10 @@
 using System.Runtime.ExceptionServices;
 using System.Windows;
 using System.Windows.Controls;
-using SunEyeVision.Plugin.SDK.Execution.Results;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Models;
-using SunEyeVision.Plugin.SDK.UI.Controls.Measure.Views;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Results;
+using SunEyeVision.Plugin.Editing.Wpf.Models.Geometry;
+using SunEyeVision.Plugin.Editing.Wpf.UI.Controls.Measure.Models;
+using SunEyeVision.Plugin.Editing.Wpf.UI.Controls.Measure.Views;
 using Xunit;
 
 namespace SunEyeVision.Tool.CircleCircleMeasure.Tests;
@@ -68,7 +68,7 @@ public class CorrectionEditingTests
     [Fact]
     public void Replacing_display_image_rolls_back_drag_and_cleanup_unsubscribes() => Sta(() =>
     {
-        var image = new SunEyeVision.Plugin.SDK.UI.Controls.ImageControl();
+        var image = new SunEyeVision.Plugin.Editing.Wpf.UI.Controls.ImageControl();
         var elements = new MeasureElementsEditorControl();
         elements.SetMainImageControl(image);
         var editor = elements.Element1;
@@ -93,7 +93,7 @@ public class CorrectionEditingTests
     {
         var p = new SunEyeVision.Tool.CircleCircleMeasure.CircleCircleMeasureParameters
         { E1CenterX = 100, E1CenterY = 80, E1Radius = 40, IsPositionCorrectionEnabled = true };
-        var query = NSubstitute.Substitute.For<SunEyeVision.Plugin.SDK.Execution.Parameters.IDataSourceQueryService>();
+        var query = NSubstitute.Substitute.For<SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters.IDataSourceQueryService>();
         NSubstitute.SubstituteExtensions.Returns(query.GetPropertyValue("a", "Matrices"), AffineMatrix.Identity);
         NSubstitute.SubstituteExtensions.Returns(query.GetPropertyValue("b", "Matrices"), AffineMatrix.Identity);
         p.PositionCorrectionBindingSource = new() { SourceNodeId = "a", PropertyName = "Matrices" };
@@ -117,25 +117,25 @@ public class CorrectionEditingTests
 
     private sealed class FrameResult : ToolResults
     {
-        public SunEyeVision.Plugin.SDK.Vision.Contracts.IVisionImage? Image { get; set; }
-        public override Dictionary<string, SunEyeVision.Plugin.SDK.Vision.Contracts.IVisionImage?> GetDisplayImages()
+        public SunEyeVision.Plugin.Contracts.Vision.IVisionImage? Image { get; set; }
+        public override Dictionary<string, SunEyeVision.Plugin.Contracts.Vision.IVisionImage?> GetDisplayImages()
             => new() { ["Image"] = Image };
     }
 
     [Fact]
     public void Real_editor_blocks_known_old_frame_then_recovers_after_current_frame_match() => Sta(() =>
     {
-        var oldImage = NSubstitute.Substitute.For<SunEyeVision.Plugin.SDK.Vision.Contracts.IVisionImage>();
-        var currentImage = NSubstitute.Substitute.For<SunEyeVision.Plugin.SDK.Vision.Contracts.IVisionImage>();
-        SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFrameProvenance.RecordResult(new FrameResult { Image = oldImage }, null,
-            SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy.NewFrame);
-        SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFrameProvenance.RecordResult(new FrameResult { Image = currentImage }, null,
-            SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFramePolicy.NewFrame);
+        var oldImage = NSubstitute.Substitute.For<SunEyeVision.Plugin.Contracts.Vision.IVisionImage>();
+        var currentImage = NSubstitute.Substitute.For<SunEyeVision.Plugin.Contracts.Vision.IVisionImage>();
+        SunEyeVision.Plugin.Editing.Wpf.Execution.Helpers.ImageFrameProvenance.RecordResult(new FrameResult { Image = oldImage }, null,
+            SunEyeVision.Plugin.Editing.Wpf.Execution.Helpers.ImageFramePolicy.NewFrame);
+        SunEyeVision.Plugin.Editing.Wpf.Execution.Helpers.ImageFrameProvenance.RecordResult(new FrameResult { Image = currentImage }, null,
+            SunEyeVision.Plugin.Editing.Wpf.Execution.Helpers.ImageFramePolicy.NewFrame);
         var match = new FrameResult { Status = ExecutionStatus.Success };
-        SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFrameProvenance.RecordResult(match,
-            SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFrameProvenance.CaptureInput(oldImage));
-        var context = new SunEyeVision.Plugin.SDK.Execution.Parameters.NodeExecutionContext { Result = match };
-        var query = NSubstitute.Substitute.For<SunEyeVision.Plugin.SDK.Execution.Parameters.IDataSourceQueryService>();
+        SunEyeVision.Plugin.Editing.Wpf.Execution.Helpers.ImageFrameProvenance.RecordResult(match,
+            SunEyeVision.Plugin.Editing.Wpf.Execution.Helpers.ImageFrameProvenance.CaptureInput(oldImage));
+        var context = new SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters.NodeExecutionContext { Result = match };
+        var query = NSubstitute.Substitute.For<SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters.IDataSourceQueryService>();
         NSubstitute.SubstituteExtensions.Returns(query.GetNodeContext("match"), context);
         NSubstitute.SubstituteExtensions.Returns(query.GetPropertyValue("match", "Matrices"), AffineMatrix.Identity);
         NSubstitute.SubstituteExtensions.Returns(query.GetPropertyValue("input", "Image"), currentImage);
@@ -149,11 +149,11 @@ public class CorrectionEditingTests
             control.SetParameters(p); control.SetDataProvider(query);
             var elements = (MeasureElementsEditorControl)control.FindName("ElementsEditor");
             Assert.False(elements.IsEnabled);
-            Assert.Equal(SunEyeVision.Plugin.SDK.Execution.Helpers.PositionCorrectionState.ImageFrameMismatch, control.CorrectionPreview!.State);
+            Assert.Equal(SunEyeVision.Plugin.Editing.Wpf.Execution.Helpers.PositionCorrectionState.ImageFrameMismatch, control.CorrectionPreview!.State);
             Assert.Equal(100, p.E1CenterX);
             var fresh = new FrameResult { Status = ExecutionStatus.Success };
-            SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFrameProvenance.RecordResult(fresh,
-                SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFrameProvenance.CaptureInput(currentImage));
+            SunEyeVision.Plugin.Editing.Wpf.Execution.Helpers.ImageFrameProvenance.RecordResult(fresh,
+                SunEyeVision.Plugin.Editing.Wpf.Execution.Helpers.ImageFrameProvenance.CaptureInput(currentImage));
             context.Result = fresh; control.OnExternalResultArrived();
             Assert.True(elements.IsEnabled); Assert.True(control.CorrectionPreview!.FramePairingVerified);
             Assert.Equal(100, p.E1CenterX);
@@ -161,23 +161,23 @@ public class CorrectionEditingTests
             {
                 var bitmap = System.Windows.Media.Imaging.BitmapSource.Create(1, 1, 96, 96,
                     System.Windows.Media.PixelFormats.Gray8, null, new byte[] { 0 }, 1);
-                SunEyeVision.Plugin.SDK.UI.Controls.PreviewFrameProvenance.Attach(bitmap, frame);
+                SunEyeVision.Plugin.Editing.Wpf.UI.Controls.PreviewFrameProvenance.Attach(bitmap, frame);
                 return bitmap;
             }
-            var preview = new SunEyeVision.Plugin.SDK.UI.Controls.ImageControl
-            { SourceImage = Bitmap(SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFrameProvenance.CaptureInput(currentImage)) };
+            var preview = new SunEyeVision.Plugin.Editing.Wpf.UI.Controls.ImageControl
+            { SourceImage = Bitmap(SunEyeVision.Plugin.Editing.Wpf.Execution.Helpers.ImageFrameProvenance.CaptureInput(currentImage)) };
             control.SetMainImageControl(preview);
             Assert.True(elements.IsEnabled);
             Assert.True(elements.Element1.ProcessMouseDown(new Point(140, 80)));
             elements.Element1.ProcessMouseMove(new Point(150, 80));
             Assert.Equal(110, p.E1CenterX);
-            preview.SourceImage = Bitmap(SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFrameProvenance.CaptureInput(oldImage));
+            preview.SourceImage = Bitmap(SunEyeVision.Plugin.Editing.Wpf.Execution.Helpers.ImageFrameProvenance.CaptureInput(oldImage));
             Assert.False(elements.IsEnabled); Assert.Equal(100, p.E1CenterX);
             Assert.False(elements.Element1.IsAnyInteractionInProgress);
-            Assert.Equal(SunEyeVision.Plugin.SDK.Execution.Helpers.PositionCorrectionState.ImageFrameMismatch, control.CorrectionPreview!.State);
+            Assert.Equal(SunEyeVision.Plugin.Editing.Wpf.Execution.Helpers.PositionCorrectionState.ImageFrameMismatch, control.CorrectionPreview!.State);
             preview.SourceImage = Bitmap(null);
             Assert.True(elements.IsEnabled); Assert.False(control.CorrectionPreview!.FramePairingVerified);
-            preview.SourceImage = Bitmap(SunEyeVision.Plugin.SDK.Execution.Helpers.ImageFrameProvenance.CaptureInput(currentImage));
+            preview.SourceImage = Bitmap(SunEyeVision.Plugin.Editing.Wpf.Execution.Helpers.ImageFrameProvenance.CaptureInput(currentImage));
             Assert.True(elements.IsEnabled); Assert.True(control.CorrectionPreview!.FramePairingVerified);
             preview.SourceImage = null;
             Assert.False(elements.IsEnabled); Assert.Equal(100, p.E1CenterX);

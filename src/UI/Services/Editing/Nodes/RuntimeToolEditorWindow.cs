@@ -26,14 +26,14 @@ public sealed class RuntimeToolEditorWindow : BaseWindow, INativeToolCommands
     private readonly NativeToolEditorFrame _frame;
     private readonly TextBlock _message = new() { TextWrapping = TextWrapping.Wrap, Visibility = Visibility.Collapsed };
     private IDisposable? _commands;
-    private bool _closed, _running, _closing, _closeAllowed;
+    private bool _closed, _running, _closing, _closeAllowed, _assemblyReady;
     private Task<bool>? _closeTask;
     private Func<bool> _canRun = () => false;
     public RuntimeNodeConfigurationControl Editor { get; }
     public event EventHandler<RuntimeToolExecutionEventArgs>? ToolExecutionCompleted;
     public event EventHandler? Changed;
     public bool IsCurrent => !_closed;
-    public NativeToolCommandState State => new(false, _running || Editor.IsDebugBusy, !_closing && !_running && Editor.CanDebug && _canRun(), true);
+    public NativeToolCommandState State => new(false, _running || Editor.IsDebugBusy, !_closing && _assemblyReady && !_running && Editor.CanDebug && _canRun(), true);
     public ICommand StartContinuous { get; }
     public ICommand Stop { get; }
     public ICommand ExecuteOnce { get; }
@@ -50,8 +50,8 @@ public sealed class RuntimeToolEditorWindow : BaseWindow, INativeToolCommands
         Content = _frame;
         StartContinuous = new ActionCommand(() => { }, () => false);
         Stop = new ActionCommand(editor.StopDebug, () => !_closed && Editor.IsDebugBusy);
-        ExecuteOnce = new ActionCommand(() => _ = RunOnceAsync(), () => !_closed && !_closing && !_running && Editor.CanDebug && _canRun());
-        Confirm = new ActionCommand(ConfirmEditor, () => !_closed && !_closing && !_running);
+        ExecuteOnce = new ActionCommand(() => _ = RunOnceAsync(), () => !_closed && !_closing && _assemblyReady && !_running && Editor.CanDebug && _canRun());
+        Confirm = new ActionCommand(ConfirmEditor, () => !_closed && !_closing && _assemblyReady && !_running);
         editor.ExecutionCompleted += ForwardResult;
         editor.DebugStateChanged += Notify;
         Closing += ClosingEditor;
@@ -60,7 +60,7 @@ public sealed class RuntimeToolEditorWindow : BaseWindow, INativeToolCommands
         Closed += (_, _) =>
         {
             _closed = true;
-            void Release(Action action) { try { action(); } catch (Exception error) { Plugin.SDK.Logging.PluginLogger.Error(error.Message, nameof(RuntimeToolEditorWindow), error); } }
+            void Release(Action action) { try { action(); } catch (Exception error) { Foundation.Logging.PluginLogger.Error(error.Message, nameof(RuntimeToolEditorWindow), error); } }
             Release(() => editor.ExecutionCompleted -= ForwardResult);
             Release(() => editor.DebugStateChanged -= Notify);
             Release(editor.Dispose);
@@ -76,7 +76,11 @@ public sealed class RuntimeToolEditorWindow : BaseWindow, INativeToolCommands
         ToolExecutionCompleted?.Invoke(this, args);
     }
     private void Notify() { Changed?.Invoke(this, EventArgs.Empty); CommandManager.InvalidateRequerySuggested(); }
-    private void PageChanged(object sender, SelectionChangedEventArgs args) => RefreshResetVisibility();
+    private void PageChanged(object sender, SelectionChangedEventArgs args)
+    {
+        ToolWindowAssemblyTrace.Event("TabChanged", Title ?? "unknown");
+        RefreshResetVisibility();
+    }
     private void RefreshResetVisibility()
     {
         if (_closed) return;
@@ -86,13 +90,15 @@ public sealed class RuntimeToolEditorWindow : BaseWindow, INativeToolCommands
         _frame.ResetVisibility = (tabs?.SelectedItem as TabItem)?.Header as string == "运行参数" ? Visibility.Visible : Visibility.Collapsed;
     }
     internal void SetRunAvailability(Func<bool> canRun) { _canRun = canRun ?? throw new ArgumentNullException(nameof(canRun)); Notify(); }
+    internal void SetAssemblyPending() { if (_closed) return; _assemblyReady = false; _message.Text = "正在组装参数页…"; _message.Visibility = Visibility.Visible; Notify(); }
+    internal void SetAssemblyReady() { if (_closed) return; _assemblyReady = true; _message.Text = ""; _message.Visibility = Visibility.Collapsed; Notify(); }
     internal void RefreshRunAvailability() { if (!_closed) Notify(); }
     private async Task RunOnceAsync()
     {
         if (_closed || _closing || _running || !Editor.CanDebug || !_canRun()) return;
         _running = true; Notify();
         try { await Editor.RunDebugAsync(); }
-        catch (Exception error) { Plugin.SDK.Logging.PluginLogger.Error(error.Message, nameof(RuntimeToolEditorWindow), error); }
+        catch (Exception error) { Foundation.Logging.PluginLogger.Error(error.Message, nameof(RuntimeToolEditorWindow), error); }
         finally { _running = false; if (!_closed) Notify(); }
     }
     public Task<bool> CloseAndDrainAsync()
@@ -103,6 +109,7 @@ public sealed class RuntimeToolEditorWindow : BaseWindow, INativeToolCommands
     }
     private void ClosingEditor(object? sender,System.ComponentModel.CancelEventArgs args)
     {
+        ToolWindowAssemblyTrace.Event("CloseRequested", Title ?? "unknown");
         if (_closeAllowed) return;
         _closing=true; Notify();
         var drain=Editor.CloseDebugAsync();
@@ -112,11 +119,11 @@ public sealed class RuntimeToolEditorWindow : BaseWindow, INativeToolCommands
     }
     private async Task<bool> FinishClosingAsync(Task drain)
     {
-        try { await drain; _closeAllowed=true; Close(); return _closed; }
+        try { await drain; _closeAllowed=true; Close(); ToolWindowAssemblyTrace.Event("CloseCompleted", Title ?? "unknown"); return _closed; }
         catch(Exception error)
         {
             _message.Text="调试资源尚未释放："+error.Message;_message.Visibility=Visibility.Visible;
-            Plugin.SDK.Logging.PluginLogger.Error(error.Message,nameof(RuntimeToolEditorWindow),error);
+            Foundation.Logging.PluginLogger.Error(error.Message,nameof(RuntimeToolEditorWindow),error);
             return false;
         }
     }
@@ -127,7 +134,7 @@ public sealed class RuntimeToolEditorWindow : BaseWindow, INativeToolCommands
     }
     public bool TryConfirm(out string error)
     {
-        if (_closed || _closing || _running) { error = "编辑器正在关闭或执行。"; return false; }
+        if (_closed || _closing || _running || !_assemblyReady) { error = "参数页仍在组装，请稍候。"; return false; }
         if (!ToolEditorCommit.TryCommit(Editor, out error)) return false;
         Close();
         if (_closed) return true;

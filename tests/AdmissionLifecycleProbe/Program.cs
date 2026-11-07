@@ -1,8 +1,8 @@
 using System.IO;
-using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.Plugin.SDK.Core;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Metadata;
+using SunEyeVision.Foundation.Logging;
+using SunEyeVision.Plugin.Editing.Wpf.Core;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Metadata;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Contracts.Results.Presentation;

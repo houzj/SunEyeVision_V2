@@ -21,7 +21,7 @@
     <PackageReference Include="NSubstitute" Version="5.3.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../../src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj" />
+    <ProjectReference Include="../../src/Plugin.Editing.Wpf/SunEyeVision.Plugin.Editing.Wpf.csproj" />
     <ProjectReference Include="../../src/Infrastructure.ImageSources/SunEyeVision.Infrastructure.ImageSources.csproj" /><ProjectReference Include="../../src/DeviceDriver.Camera/SunEyeVision.DeviceDriver.Camera.csproj" /><ProjectReference Include="../../src/Application/SunEyeVision.Application.csproj" />
     <ProjectReference Include="../../src/Execution/SunEyeVision.Execution.csproj" />
     <ProjectReference Include="../../src/Plugin.Infrastructure/SunEyeVision.Plugin.Infrastructure.csproj" />

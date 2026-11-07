@@ -1,6 +1,6 @@
 using Xunit;
 
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 
 /// <summary>
 /// Placeholder test - created automatically as part of test project scaffolding.

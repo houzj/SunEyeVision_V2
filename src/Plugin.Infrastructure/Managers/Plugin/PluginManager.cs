@@ -5,8 +5,8 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using SunEyeVision.Plugin.Runtime;
-using SunEyeVision.Plugin.SDK.Logging;
-using SunEyeVision.Plugin.SDK.Core;
+using SunEyeVision.Foundation.Logging;
+using SunEyeVision.Plugin.Editing.Wpf.Core;
 using SunEyeVision.Plugin.Infrastructure.Infrastructure;
 
 namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin

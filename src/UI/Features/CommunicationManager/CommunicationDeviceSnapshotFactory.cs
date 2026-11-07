@@ -1,7 +1,7 @@
 using SunEyeVision.Application.Communications;
 using SunEyeVision.Domain.Solutions;
 using SunEyeVision.DeviceDriver.Communications;
-using SunEyeVision.Plugin.SDK.Devices.Communication;
+using SunEyeVision.Plugin.Contracts.Communication;
 
 
 namespace SunEyeVision.UI.Features.CommunicationManager;

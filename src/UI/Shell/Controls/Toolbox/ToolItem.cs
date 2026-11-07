@@ -1,5 +1,5 @@
 using System;
-using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
 
 namespace SunEyeVision.UI.Shell.Controls.Toolbox
 {

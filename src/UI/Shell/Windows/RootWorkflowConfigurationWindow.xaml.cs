@@ -1,10 +1,11 @@
 using SunEyeVision.Plugin.Wpf;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Fields;
 using SunEyeVision.UI.Services.Editing;
 using SunEyeVision.Domain.Workflows;
@@ -72,8 +73,13 @@ public partial class RootWorkflowConfigurationWindow:ThemeDialogWindow
  }
  private string FormatReference(OutputReference reference)
  {
-  var node=_context.Root.Nodes.FirstOrDefault(n=>n.Id==reference.NodeId);var output=_context.GetSchema(reference.NodeId)?.FindOutputDisplay(reference.PortId);
-  return (node?.DispName??reference.NodeId)+" · "+(output?.DisplayName??reference.PortId)+(reference.MemberFieldPath.Count==0?"":" / "+string.Join(" / ",DeclaredReferenceCandidateBuilder.MemberNames(output,reference.MemberFieldPath)));
+  var node=_context.Root.Nodes.FirstOrDefault(n=>n.Id==reference.NodeId);
+  if(node is null)throw new InvalidOperationException("引用的来源节点已不在当前工作流中。");
+  var output=_context.GetSchema(reference.NodeId)?.FindOutputDisplay(reference.PortId);
+  var caption=string.IsNullOrWhiteSpace(output?.DisplayName)?reference.PortId:output.DisplayName;
+  return ReferenceText.Format(ReferenceText.ModuleNumber(node.GlobalIndex),
+   string.IsNullOrWhiteSpace(node.DispName)?node.Name:node.DispName,caption,
+   reference.MemberFieldPath,DeclaredReferenceCandidateBuilder.MemberNames(output,reference.MemberFieldPath));
  }
  private void EditParametersClick(object sender,RoutedEventArgs e)=>Safe(()=>
  {

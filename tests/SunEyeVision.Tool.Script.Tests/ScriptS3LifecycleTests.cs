@@ -1,7 +1,7 @@
 using System.IO;
 using System.Reflection;
-using SunEyeVision.Plugin.SDK.Core;
-using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using SunEyeVision.Plugin.Editing.Wpf.Core;
+using SunEyeVision.Plugin.Contracts.Vision;
 using SunEyeVision.Tool.Script.Models;
 using Xunit;
 
@@ -136,9 +136,9 @@ public class ScriptS3LifecycleTests
             ExecutionOwner = owner, NodeId = "prepare-failure", RunId = Guid.NewGuid(),
             GlobalVariables = new Dictionary<string, object?> { ["unsupported"] = original }
         };
-        var executor = new ToolExecutor(new SunEyeVision.Plugin.SDK.Execution.Parameters.ParameterResolver());
+        var executor = new ToolExecutor(new SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters.ParameterResolver());
         var result = await executor.ExecuteAsync(new ScriptTool(), request);
-        Assert.Equal(SunEyeVision.Plugin.SDK.Execution.Results.ExecutionStatus.Failed, result.Status);
+        Assert.Equal(SunEyeVision.Plugin.Editing.Wpf.Execution.Results.ExecutionStatus.Failed, result.Status);
         Assert.NotNull(result.ExecutionIdentity);
         Assert.Same(request.ExecutionIdentity, result.ExecutionIdentity);
         Assert.True(result.ExecutionIdentity.IsCurrent);

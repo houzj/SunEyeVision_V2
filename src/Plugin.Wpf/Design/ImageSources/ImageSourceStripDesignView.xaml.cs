@@ -20,15 +20,16 @@ public partial class ImageSourceStripDesignView : UserControl
         EditableStrip.Session = CreateSampleSession(false, false, intent => LastIntent.Text = intent);
         ReadOnlyStrip.Session = CreateSampleSession(true, false, intent => LastIntent.Text = intent);
         EmptyStrip.Session = CreateSampleSession(false, true, intent => LastIntent.Text = intent);
+        ReferencedStrip.Session = CreateSampleSession(false, false, intent => LastIntent.Text = intent, providesImageImport: false);
     }
-    internal static IImageSourceStripSession CreateSampleSession(bool readOnly=false,bool empty=false,Action<string>? report=null)
-        =>new SampleSession(readOnly,empty,report??(_=>{}));
+    internal static IImageSourceStripSession CreateSampleSession(bool readOnly=false,bool empty=false,Action<string>? report=null,bool providesImageImport=true)
+        =>new SampleSession(readOnly,empty,report??(_=>{}),providesImageImport);
     private sealed class SampleSession : IImageSourceStripSession
     {
         private readonly Action<string> _report;
-        public SampleSession(bool readOnly, bool empty, Action<string> report)
+        public SampleSession(bool readOnly, bool empty, Action<string> report, bool providesImageImport)
         {
-            IsReadOnly = readOnly; IsSelectMode = readOnly; _report = report;
+            IsReadOnly = readOnly; IsSelectMode = readOnly; _report = report; ProvidesImageImport = providesImageImport;
             var pixels = new byte[72 * 52];
             for (int y = 0; y < 52; y++) for (int x = 0; x < 72; x++) pixels[y * 72 + x] = (byte)((x / 8 + y / 8) % 2 == 0 ? 90 : 170);
             var thumbnail = BitmapSource.Create(72, 52, 96, 96, PixelFormats.Gray8, null, pixels, 72); thumbnail.Freeze();
@@ -47,6 +48,7 @@ public partial class ImageSourceStripDesignView : UserControl
         public bool IsReadOnly { get; }
         public bool CanEdit => !IsReadOnly;
         public bool CanNavigate => !IsReadOnly;
+        public bool ProvidesImageImport { get; }
         public bool IsSelectMode { get; private set; }
         public bool AutoSwitchEnabled { get; private set; }
         public bool IsImporting => false;

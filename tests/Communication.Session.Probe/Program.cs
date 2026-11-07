@@ -41,8 +41,8 @@ try
  if(session.Document.CommunicationResponses.WorkflowIdentifiers.Count!=0)throw new Exception("启动时通信服务静默修改了方案响应编号");
  using var peer=accepted.WaitAsync(TimeSpan.FromSeconds(10)).GetAwaiter().GetResult();
  if(!runtime.Runtime.IsConnected(device.Id))throw new Exception("真实 TCP 回环未连接");
- var request=new SunEyeVision.Plugin.SDK.Models.Communication.CommunicationSendRequest("Device",device.Id,"",
-    new[]{new SunEyeVision.Plugin.SDK.Models.Communication.CommunicationSendInput(Guid.NewGuid(),"","PING","String")},new());
+ var request=new SunEyeVision.Plugin.Editing.Wpf.Models.Communication.CommunicationSendRequest("Device",device.Id,"",
+    new[]{new SunEyeVision.Plugin.Editing.Wpf.Models.Communication.CommunicationSendInput(Guid.NewGuid(),"","PING","String")},new());
  var send=service.Sends.PrepareAsync(request).WaitAsync(TimeSpan.FromSeconds(10)).GetAwaiter().GetResult();
  var buffer=new byte[4]; var read=peer.GetStream().ReadAsync(buffer).AsTask();
  if(send.SubmitAsync().WaitAsync(TimeSpan.FromSeconds(10)).GetAwaiter().GetResult()<=0 || read.WaitAsync(TimeSpan.FromSeconds(10)).GetAwaiter().GetResult()!=4 || System.Text.Encoding.ASCII.GetString(buffer)!="PING")throw new Exception("真实 TCP 发送失败");

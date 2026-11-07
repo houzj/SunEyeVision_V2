@@ -24,7 +24,7 @@ internal static class Program
             var forbidden = AppDomain.CurrentDomain.GetAssemblies()
                 .Select(assembly => assembly.GetName().Name)
                 .Where(name => name is "PresentationFramework" or "PresentationCore" or "WindowsBase" or "System.Xaml"
-                    or "SunEyeVision.Plugin.Wpf" or "SunEyeVision.UI" or "SunEyeVision.Plugin.SDK"
+                    or "SunEyeVision.Plugin.Wpf" or "SunEyeVision.UI" or "SunEyeVision.Plugin.Editing.Wpf"
                     or "SunEyeVision.Tool.ImageSource.Wpf" or "SunEyeVision.Tool.BlobAnalysis.Wpf")
                 .OrderBy(name => name, StringComparer.Ordinal).ToArray();
             if (forbidden.Length != 0)

@@ -37,7 +37,37 @@ internal static class Program
     using var context=new ProductionEditorContext(session,flow.Id,node,()=>true,control.BindDraft);
     ToolEditorCommit.AttachDraftContext(control,context);context.PrepareView=()=>control.TryCapture(out var error)?null:error;
     context.HasPendingViewEdits=()=>control.HasPendingEdits;context.PreserveViewAfterRebase=control.AdoptRebasedDraft;
-    control.BindDraft(context.PreparedDraft);window.Show();Pump();
+    var bindClock=System.Diagnostics.Stopwatch.StartNew();
+    control.BindDraft(context.PreparedDraft);
+    bindClock.Stop();
+    Console.WriteLine($"[TIMING] {toolId} 参数页绑定返回 {bindClock.ElapsedMilliseconds}ms");
+    var showClock=System.Diagnostics.Stopwatch.StartNew();window.Show();Pump();showClock.Stop();
+    Console.WriteLine($"[TIMING] {toolId} 窗口首次呈现与首个页面组装 {showClock.ElapsedMilliseconds}ms");
+    for(var sample=0;sample<3;sample++)
+    {
+     var resourceClock=System.Diagnostics.Stopwatch.StartNew();
+     var parsed=SunEyeVision.Plugin.Wpf.EditorResources.Create();
+     resourceClock.Stop();
+     Console.WriteLine($"[TIMING] {toolId} 主题字典解析 第{sample+1}次 {resourceClock.ElapsedMilliseconds}ms 字典{parsed.MergedDictionaries.Count}合并");
+    }
+    var tabs=Descendants<System.Windows.Controls.TabControl>(control).FirstOrDefault();
+    if(tabs is not null)
+    {
+     for(var index=0;index<tabs.Items.Count;index++)
+     {
+      var tabClock=System.Diagnostics.Stopwatch.StartNew();
+      tabs.SelectedIndex=index;Pump();tabClock.Stop();
+      Console.WriteLine($"[TIMING] {toolId} 切到第{index+1}页 {tabClock.ElapsedMilliseconds}ms");
+     }
+     tabs.SelectedIndex=0;Pump();
+     for(var index=0;index<tabs.Items.Count;index++)
+     {
+      var repeatClock=System.Diagnostics.Stopwatch.StartNew();
+      tabs.SelectedIndex=index;Pump();repeatClock.Stop();
+      Console.WriteLine($"[TIMING] {toolId} 重复切到第{index+1}页 {repeatClock.ElapsedMilliseconds}ms");
+     }
+     tabs.SelectedIndex=0;Pump();
+    }
     if(control.Content is null||!control.IsLoaded)throw new Exception(toolId+"真实控件未加载");
     if(!context.TryValidateEditor(out var error))throw new Exception(toolId+"参数页校验失败："+error);
     if(toolId=="ImageLoad")

@@ -1,7 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Workflow;
 namespace SunEyeVision.UI.Features.CommunicationManager;
 public partial class CommunicationResponsesView : UserControl

@@ -53,6 +53,11 @@ public interface IImageSourceStripSession : INotifyPropertyChanged
     int ConfiguredStartIndex { get; }
     bool CanEdit { get; }
     bool CanNavigate { get; }
+    /// <summary>
+    /// 当前会话是否就是所选模块自己的图像源。只有拥有方给出「添加图片/添加目录/清空图片」入口；
+    /// 选中下游模块时这里只呈现它引用的上游图像源，不提供增删图能力。
+    /// </summary>
+    bool ProvidesImageImport { get; }
     bool IsReadOnly { get; }
     bool IsSelectMode { get; }
     bool AutoSwitchEnabled { get; }

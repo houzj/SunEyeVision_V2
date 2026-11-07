@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
+using System.Windows.Threading;
 using System.Collections.ObjectModel;
 using NativeHost=SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamListView;
 using SunEyeVision.Plugin.Wpf.Presenters.References;
@@ -356,7 +357,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
     var item=new DeclaredFieldAccess(states[field.Port.Id],CurrentGroup);access.Add(field.Port.Id,item);_fields.Add(item);item.Changed+=UpdateVisibility;
    }
    var tabs=_tabs=new TabControl {BorderThickness=new Thickness(0),Padding=new Thickness(0),Background=Background};
-   tabs.Resources.MergedDictionaries.Add(OriginalThemeResources.Create());
+   tabs.Resources.MergedDictionaries.Add(OriginalThemeResources.Shared);
    _tabTextScope=new NativeTabHeaderTextScope(tabs);
    tabs.SetResourceReference(StyleProperty,"TabControlStyle");
    var pageGroups=all.GroupBy(field=>field.Presentation.Layout?.Page??field.Presentation.Group).ToArray();
@@ -459,7 +460,16 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
    Content=tabs;
    if(selectedPageIndex<0||selectedPageIndex>=tabs.Items.Count)throw new ArgumentOutOfRangeException(nameof(selectedPageIndex));
    tabs.SelectedIndex=selectedPageIndex;
-   if(tabs.SelectedItem is TabItem first&&_numericTabPages.TryGetValue(first,out var firstPage))_pageBuilders[firstPage]();
+   if(tabs.SelectedItem is TabItem first&&_numericTabPages.TryGetValue(first,out var firstPage))
+   {
+    // Let the window enter the dispatcher before constructing the selected page.
+    // The tab item and resource dictionaries are already available, so the host can
+    // show the window while the first page is assembled at Loaded priority.
+    Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+    {
+     if(!_disposed)_pageBuilders[firstPage]();
+    }));
+   }
    UpdateVisibility();
   }
   catch(Exception failure){try{Dispose();}catch(Exception cleanup){throw new AggregateException("参数宿主构造与清理均失败。",failure,cleanup);}throw;}

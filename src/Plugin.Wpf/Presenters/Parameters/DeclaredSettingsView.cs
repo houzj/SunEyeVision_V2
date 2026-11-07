@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Fields;
 using SunEyeVision.Plugin.Wpf.Adapters.Text;
@@ -215,7 +216,21 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
             candidate.PageChanged+=OnPageChanged;
             _fields=candidate;_inputContent=createdInput;
             Content=candidate;
-            if(Current()&&ReferenceEquals(_fields,candidate))ReadNumericModels(NumericModelReadScope.All);
+            if(Current()&&ReferenceEquals(_fields,candidate))
+            {
+                // Synchronizing every numeric model, including hidden pages, is not
+                // part of composing the visible settings view. Defer that host read
+                // until the dispatcher is idle so opening and first-page layout can
+                // complete first. The generation guard preserves rebind/dispose
+                // semantics, while explicit callers can still request an immediate
+                // All read through the public contract.
+                var scheduledGeneration=generation;
+                Dispatcher.BeginInvoke(DispatcherPriority.SystemIdle, new Action(() =>
+                {
+                    if(!_disposed&&scheduledGeneration==_generation&&ReferenceEquals(_fields,candidate))
+                        ReadNumericModels(NumericModelReadScope.All);
+                }));
+            }
         }
         catch(Exception failure)
         {

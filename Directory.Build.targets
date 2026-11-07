@@ -1,6 +1,6 @@
 <Project>
   <Target Name="RejectRetiredSdkToolBuild" BeforeTargets="PrepareForBuild"
-          Condition="'$(IsToolPlugin)'=='true' And '$(DesignTimeBuild)'!='true'">
+          Condition="'$(IsToolPlugin)'=='true' And '$(PluginDevKitBuild)'!='true' And '$(DesignTimeBuild)'!='true'">
     <Error Text="旧SDK工具已退出当前产品构建。源码仅供查阅；完成新Runtime/Wpf整链迁移并加入product/ToolComponents.props后方可准入。" />
   </Target>
   <!-- 角色组件不另建工具目录；打包时也须部署到实际宿主根，尤其是无静态引用的可选编辑器。 -->
@@ -51,16 +51,8 @@
              Importance="high" Condition="'@(_StaleRuntimeHost)'!=''" />
   </Target>
 
-  <!-- 所有工具插件显式写入契约元数据。宿主在加载前读取该元数据，
-       不再把 SDK 的 AssemblyVersion 当成契约版本。 -->
-  <ItemGroup Condition="'$(IsToolPlugin)'=='true'">
-    <AssemblyAttribute Include="SunEyeVision.Plugin.SDK.Core.ToolContractVersionAttribute">
-      <_Parameter1>global::SunEyeVision.Plugin.SDK.Core.ToolContract.Major</_Parameter1>
-      <_Parameter1_IsLiteral>true</_Parameter1_IsLiteral>
-      <_Parameter2>global::SunEyeVision.Plugin.SDK.Core.ToolContract.Minor</_Parameter2>
-      <_Parameter2_IsLiteral>true</_Parameter2_IsLiteral>
-    </AssemblyAttribute>
-  </ItemGroup>
+  <!-- 旧 Plugin.SDK 契约版本注入已随旧工具一起退场：
+       现行契约版本由 Plugin.Contracts.FoundationContract 承载，经 ToolComponentAttribute 写入程序集元数据。 -->
 
   <!-- 工具插件拦截: 6 步清理 plugins/ 输出目录污染
        适用条件: csproj 设置 <IsToolPlugin>true</IsToolPlugin>。
@@ -254,7 +246,7 @@
        去重: 用 $(OutDir) 路径作为 Key 防止 sln 多 csproj 链式构建时重复执行
        (Plugin.SDK/Core/Workflow/各测试项目 都会触发本 Target, SkipUnchangedFiles 仅跳过 IO 不会跳过 Target 自身,
        首个 csproj 完成复制后其余 csproj 因 .lock 文件存在直接 return)。-->
-  <Target Name="CopyHalconNativeRuntimes" AfterTargets="Build" Condition="'$(IsToolPlugin)'!='true'">
+  <Target Name="CopyHalconNativeRuntimes" AfterTargets="Build" Condition="'$(IsToolPlugin)'!='true' And '$(PluginDevKitBuild)'!='true'">
     <PropertyGroup>
       <_HalconSrcDir>$([MSBuild]::EnsureTrailingSlash('$(HalconSourceRoot)'))runtime\x64-win64\</_HalconSrcDir>
       <_HalconLockFile>$(OutDir).halcon-native-deployed</_HalconLockFile>
@@ -270,7 +262,7 @@
 
   <!-- HALCON 托管包装层必须与宿主位于同一目录。工具插件被明确剔除该依赖，
        因此 Release 包缺少它会在首次使用 HALCON 工具时发生 FileNotFoundException。 -->
-  <Target Name="CopyHalconManagedAssembly" AfterTargets="Build" Condition="'$(IsToolPlugin)'!='true'">
+  <Target Name="CopyHalconManagedAssembly" AfterTargets="Build" Condition="'$(IsToolPlugin)'!='true' And '$(PluginDevKitBuild)'!='true'">
     <PropertyGroup>
       <_HalconManagedAssembly>$([MSBuild]::EnsureTrailingSlash('$(HalconSourceRoot)'))net\halcondotnetxl.dll</_HalconManagedAssembly>
     </PropertyGroup>

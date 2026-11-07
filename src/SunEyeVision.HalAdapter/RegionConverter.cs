@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Windows;
 using HalconDotNet;
-using SunEyeVision.Plugin.SDK.Execution.Parameters;
-using SunEyeVision.Plugin.SDK.Models.Geometry;
-using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using SunEyeVision.Plugin.Editing.Wpf.Execution.Parameters;
+using SunEyeVision.Plugin.Editing.Wpf.Models.Geometry;
+using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Contracts.Vision;
 
 namespace SunEyeVision.HalAdapter;
 
@@ -35,20 +36,34 @@ public static class RegionConverter
         if (region.IsEmpty)
             throw new ArgumentException("区域为空，无法转换为 RoI", nameof(region));
 
-        var contour = region.GetContour();
-        if (contour.Length == 0)
+        var contractContour = region.GetContour();
+        if (contractContour.Length == 0)
             throw new ArgumentException("区域无轮廓数据，无法转换为 RoI", nameof(region));
+
+        // 契约层 IVisionRegion 返回 UI-free 的 Point2；旧 SDK 几何模型（Polygon2d 与拟合）用 WPF Point。
+        // 转换责任在适配层，契约层不引入 System.Windows。
+        var contour = new Point[contractContour.Length];
+        for (int i = 0; i < contractContour.Length; i++)
+            contour[i] = new Point(contractContour[i].X, contractContour[i].Y);
 
         return fitMode switch
         {
             "exact" => new RoiShape { Geometry = new Polygon2d(contour, isClosed: true) },
             "fit-circle" => new RoiShape { Geometry = FitCircle(contour) },
             "fit-rect" => new RoiShape { Geometry = FitRotatedRect(contour) },
-            "fit-bbox" => new RoiShape { Geometry = region.BoundingBox },
+            // fit-bbox 必须产出下游 RoiToRegion 能消费的 RoI 几何：矩形几何恒为 RotatedRect2d（角度 0）。
+            // 契约层 Rect2 是 UI-free 中性类型，不是 RoI 几何；直接塞入会让 RoiToRegion 报"不支持的几何类型"。
+            "fit-bbox" => new RoiShape { Geometry = ToRotatedRect(region.BoundingBox) },
             _ => throw new NotSupportedException(
                 $"不支持的 fitMode: '{fitMode}'（支持: exact / fit-circle / fit-rect / fit-bbox）")
         };
     }
+
+    /// <summary>
+    /// 契约层中性外接矩形 → RoI 矩形几何（轴对齐，角度 0）。
+    /// </summary>
+    private static RotatedRect2d ToRotatedRect(Rect2 bounds)
+        => new(bounds.X + bounds.Width / 2, bounds.Y + bounds.Height / 2, bounds.Width, bounds.Height, 0);
 
     /// <summary>
     /// 将 RoI 栅格化为算法区域（零失真，用户认可的易方向）。

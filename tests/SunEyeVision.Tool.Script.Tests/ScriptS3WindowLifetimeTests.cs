@@ -2,8 +2,8 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Threading;
 using CommonControl;
-using SunEyeVision.Plugin.SDK.Core;
-using SunEyeVision.Plugin.SDK.UI.Windows;
+using SunEyeVision.Plugin.Editing.Wpf.Core;
+using SunEyeVision.Plugin.Editing.Wpf.UI.Windows;
 using SunEyeVision.Tool.Script.Models;
 using SunEyeVision.Tool.Script.Views;
 using Xunit;
@@ -43,7 +43,7 @@ public class ScriptS3WindowLifetimeTests
             var owner = new ToolExecutionOwner();
             var identity = owner.Begin("node", Guid.NewGuid(), "contract");
             var released = 0; var published = 0;
-            using var resources = new SunEyeVision.Plugin.SDK.Execution.Results.ResultResourceOwner(() => released++);
+            using var resources = new SunEyeVision.Plugin.Editing.Wpf.Execution.Results.ResultResourceOwner(() => released++);
             var lease = resources.Retain();
             var operation = Dispatcher.CurrentDispatcher.InvokeAsync(() =>
             {

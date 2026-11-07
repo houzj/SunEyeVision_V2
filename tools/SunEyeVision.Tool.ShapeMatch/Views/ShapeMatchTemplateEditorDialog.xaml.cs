@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 using HalconDotNet;
 using Microsoft.Win32;
 using SunEyeVision.Plugin.SDK.Vision.Contracts;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 using SunEyeVision.Plugin.SDK.UI.Controls;
 using SunEyeVision.Plugin.SDK.UI.Windows;
 using SunEyeVision.Plugin.SDK.UI.Themes;

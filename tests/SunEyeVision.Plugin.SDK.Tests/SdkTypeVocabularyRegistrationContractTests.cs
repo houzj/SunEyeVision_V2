@@ -1,8 +1,8 @@
-using SunEyeVision.Plugin.SDK.Models;
-using SunEyeVision.Plugin.SDK.Vision.Contracts;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
+using SunEyeVision.Plugin.Contracts.Vision;
 using Xunit;
 
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 
 /// <summary>
 /// S1 注册契约测试（方案 D1/AC-5 前置）：

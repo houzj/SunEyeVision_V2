@@ -1,8 +1,8 @@
 using System.Windows;
-using SunEyeVision.Plugin.SDK.Models.Visualization;
+using SunEyeVision.Plugin.Editing.Wpf.Models.Visualization;
 using Xunit;
 
-namespace SunEyeVision.Plugin.SDK.Tests;
+namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 
 public sealed class DeclaredContourAddressTests
 {

@@ -19,7 +19,7 @@ internal static class DeclaredReferenceCandidateBuilder
         return names.AsReadOnly();
     }
 
-    internal static IReadOnlyList<DeclaredReferenceCandidate> Build(ToolSchema schema, Port port, string nodeId, string? scope, string nodeName)
+    internal static IReadOnlyList<DeclaredReferenceCandidate> Build(ToolSchema schema, Port port, string nodeId, string? scope, string nodeName, int moduleNumber)
     {
         if (string.IsNullOrWhiteSpace(scope)) throw new InvalidOperationException("来源缺少工作流作用域。");
         var display = schema.FindOutputDisplay(port.Id);
@@ -28,7 +28,7 @@ internal static class DeclaredReferenceCandidateBuilder
         void Add(TypeRef type, IReadOnlyList<string> path)
         {
             var names = MemberNames(display, path);
-            candidates.Add(new(nodeName + " · " + caption + (names.Count == 0 ? "" : " / " + string.Join(" / ", names)), nodeId, scope, port, path)
+            candidates.Add(new(ReferenceText.Format(moduleNumber, nodeName, caption, path, names), nodeId, scope, port, path)
                 { NodeDisplayName = nodeName, OutputDisplayName = caption, MemberDisplayNames = names });
             while (type.Shape == ValueShape.Sequence) type = type.Element!;
             if (type.Shape == ValueShape.Record)

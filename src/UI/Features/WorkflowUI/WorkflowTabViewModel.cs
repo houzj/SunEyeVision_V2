@@ -6,7 +6,7 @@ using System.Windows;
 using System.Windows.Media;
 using SunEyeVision.Application;
 using SunEyeVision.Domain.Workflows;
-using SunEyeVision.Plugin.SDK.Models;
+using SunEyeVision.Plugin.Editing.Wpf.Models;
 using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 namespace SunEyeVision.UI.Features.WorkflowUI;

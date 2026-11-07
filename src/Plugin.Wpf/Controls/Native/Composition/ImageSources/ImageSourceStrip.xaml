@@ -252,7 +252,7 @@
       </ControlTemplate>
     </ResourceDictionary>
   </UserControl.Resources>
-<StackPanel><Grid Height="40" Background="{DynamicResource ImageSources.Background}"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="130"/><ColumnDefinition Width="36"/></Grid.ColumnDefinitions>
+<StackPanel><Grid Height="40" Background="{DynamicResource ImageSources.Background}"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="36"/></Grid.ColumnDefinitions>
 <StackPanel Grid.Column="1" Height="40" HorizontalAlignment="Right" IsEnabled="{Binding CanEdit, ElementName=ImagePanel}" Orientation="Horizontal" Visibility="{Binding ExpandedVisibility, ElementName=ImagePanel}">
   <TextBlock Text="{Binding AutoSwitchText, ElementName=ImagePanel}" ToolTip="{Binding AutoSwitchToolTip, ElementName=ImagePanel}" Foreground="{DynamicResource ImageSources.Foreground}" FontSize="14" VerticalAlignment="Center" Margin="5,1,-5,0"/>
   <ContentControl Margin="20,0,0,0">
@@ -263,7 +263,8 @@
   </ContentControl>
 </StackPanel>
 <ComboBox Style="{StaticResource ListViewComboBoxGrayStyle}" x:Name="Mode" DisplayMemberPath="DisplayName" SelectedValuePath="Value" ToolTip="{Binding SelectedItem.DisplayName, RelativeSource={RelativeSource Self}}" IsEnabled="{Binding CanEdit, ElementName=ImagePanel}" Grid.Column="2" Width="90" Margin="20,5" SelectedIndex="{Binding ModeIndex, ElementName=ImagePanel, Mode=OneWay}" SelectionChanged="ModeChanged" Visibility="{Binding ExpandedVisibility, ElementName=ImagePanel}"></ComboBox>
-<DockPanel Grid.Column="0" Height="28" Margin="100,5,0,5" LastChildFill="True"><DockPanel.Style><Style TargetType="DockPanel"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding IsImporting, ElementName=ImagePanel}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></DockPanel.Style><Button DockPanel.Dock="Right" Content="取消导入" Click="CancelImportClick"/><TextBlock Foreground="{DynamicResource ImageSources.Foreground}" Text="{Binding Status, ElementName=ImagePanel}" TextTrimming="CharacterEllipsis"/></DockPanel><ToggleButton Grid.Column="4" Style="{StaticResource DisplayHideBtnStyle}" IsChecked="{Binding IsExpanded, ElementName=ImagePanel, Mode=TwoWay}"/>
+<DockPanel Grid.Column="0" Height="28" Margin="100,5,0,5" LastChildFill="True"><DockPanel.Style><Style TargetType="DockPanel"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding IsImporting, ElementName=ImagePanel}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></DockPanel.Style><Button DockPanel.Dock="Right" Content="取消导入" Click="CancelImportClick"/><TextBlock Foreground="{DynamicResource ImageSources.Foreground}" Text="{Binding Status, ElementName=ImagePanel}" TextTrimming="CharacterEllipsis"/></DockPanel><ToggleButton x:Name="ExpandToggle" Grid.Column="4" Style="{StaticResource DisplayHideBtnStyle}" IsChecked="{Binding IsExpanded, ElementName=ImagePanel, Mode=TwoWay}"/>
+<Border x:Name="ImportSlot" Grid.Column="3"><Border.Style><Style TargetType="{x:Type Border}"><Setter Property="Width" Value="0"/><Style.Triggers><DataTrigger Binding="{Binding ProvidesImageImport, ElementName=ImagePanel}" Value="True"><Setter Property="Width" Value="130"/></DataTrigger></Style.Triggers></Style></Border.Style></Border>
 </Grid><Grid Margin="5,-40,5,5">  <Grid Name="imageListGrid">
     <Button IsEnabled="{Binding CanEdit, ElementName=ImagePanel}" Height="54" Width="18" Margin="1,41,1,1" VerticalAlignment="Top" HorizontalAlignment="Left" ToolTip="{DynamicResource Lang_FirstImage}" Visibility="{Binding FirstVisibility, ElementName=ImagePanel}" Click="FirstImage_Click">
       <Control.Template>
@@ -438,6 +439,7 @@
           <Style.Triggers>
             <MultiDataTrigger>
               <MultiDataTrigger.Conditions>
+                <Condition Value="True" Binding="{Binding ProvidesImageImport, ElementName=ImagePanel}" />
                 <Condition Value="False" Binding="{Binding IsReadOnly, ElementName=ImagePanel}" />
                 <Condition Value="True" Binding="{Binding IsExpanded, ElementName=ImagePanel}" />
                 <Condition Value="False" Binding="{Binding IsImporting, ElementName=ImagePanel}" />

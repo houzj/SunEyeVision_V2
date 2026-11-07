@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using HalconDotNet;
 using Microsoft.CodeAnalysis;
 using OpenCvSharp;
-using SunEyeVision.Plugin.SDK.Logging;
+using SunEyeVision.Foundation.Logging;
 
 namespace SunEyeVision.Tool.Script.ScriptEngine
 {

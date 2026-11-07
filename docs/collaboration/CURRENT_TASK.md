@@ -270,4 +270,4 @@ CodeBuddy 的“数据树 + 模板 + 页面复用”方向已作为候选重构�
 
 基于 VM `BlobFindResult` 结果声明和现有 HALCON Blob 区域，已把 `MinGrayValue`、`MaxGrayValue`、`GrayContrast` 接入 `BlobMeasurement`、`BlobVmResultProjection` 和生产执行链。投影只在每个保留 Blob 都有真实值时发布数组，否则继续保留 `Unavailable`，没有用默认值填充原件结果。证据为 `docs/collaboration/evidence/Blob-VM结果投影-灰度统计-20261108.txt`。
 
-验证结果：BlobAnalysis xUnit 38/38 通过；UI Release 构建 0 错误并重新封签；RuntimeEditorProductionProbe 通过，ImageLoad 绑定 721ms、首显 1301ms，BlobAnalysis 绑定 830ms、首显 337ms，第 2/3 页首次切换 231/279ms，重复切换 17/26ms。当前 Blob 结果投影仍有 10 个 VM 成员待接入，具体为最大内接矩形、Score、ROI、ROIAnnulus、ContourInfo、BlindPolygon 三项、OutputMask 和 ModuStatus。该批不扩展未被原件证据闭合的语义。
+验证结果：BlobAnalysis xUnit 38/38 通过；UI Release 构建 0 错误并重新封签；RuntimeEditorProductionProbe 通过，ImageLoad 绑定 721ms、首显 1301ms，BlobAnalysis 绑定 830ms、首显 337ms，第 2/3 页首次切换 231/279ms，重复切换 17/26ms。当前 Blob 结果投影仍有 10 个 VM 成员待接入，具体为最大内接矩形、Score、ROI、ROIAnnulus、ContourInfo、BlindPolygon 三项、OutputMask 和 ModuStatus。该批不扩展未被原件证据闭合的语义。本轮代码、测试、证据和架构回填固定于提交 `e571842cd`。

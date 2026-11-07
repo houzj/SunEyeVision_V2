@@ -242,3 +242,7 @@ build_validation/
 
 # 本机发布工具位置，不随仓库共享
 installer/Release.Local.props
+
+# ??????????????
+/_validation/
+/.codebuddy/tmp/

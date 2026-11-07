@@ -1,13 +1,20 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
-    [string]$MappingPath = (Join-Path $PSScriptRoot '..\..\docs\collaboration\evidence\PluginSDK消费者源级映射-20261108.json'),
+    [string]$MappingPath,
     [switch]$ReportOnly
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$mapping = Get-Content -LiteralPath (Resolve-Path $MappingPath) -Raw | ConvertFrom-Json
+if ([string]::IsNullOrWhiteSpace($MappingPath)) {
+    $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+    $MappingPath = Join-Path $scriptRoot '..\..\docs\collaboration\evidence\PluginSDK消费者源级映射-20261108.json'
+}
+
+$mappingPathResolved = (Resolve-Path $MappingPath).Path
+$mappingJson = [System.IO.File]::ReadAllText($mappingPathResolved, [System.Text.Encoding]::UTF8)
+$mapping = $mappingJson | ConvertFrom-Json
 $consumers = @($mapping.Consumers)
 $direct = @($consumers | Where-Object {
     @($_.ProjectReferences) -match 'src[\\/]Plugin\.SDK[\\/]'

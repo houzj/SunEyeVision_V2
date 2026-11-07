@@ -60,6 +60,8 @@
 
 下一实施批固定从 ImageFilter、ImageThreshold、Morphology 中选择一条完整 Runtime/WPF 链，先补齐新参数树、图像预览、结果呈现和统一窗口生命周期，再按组迁移通信、测量、控制流/脚本和标定/匹配工具。每个项目的 ProjectReference、XAML 命名空间、资源 URI、旧基类和测试引用清零后，才从旧 SDK 退役门禁移除。
 
+旧 SDK 退役门禁已修正为显式 UTF-8 读取映射 JSON，并保留 UTF-8 BOM，Windows PowerShell 5.1 与 pwsh 均可执行。`-ReportOnly` 实测列出 20 个直接消费者，正式门禁实测以 20 个项目阻断删除，`src/Plugin.SDK` 目录条目为 0。该阻断是当前正确状态，表示旧工具尚未迁移完成，不能删除或恢复兼容程序集。脚本位置为 `scripts/verification/Test-PluginSdkRetirementGate.ps1`，执行输出作为本批门禁证据。
+
 
 ## 2026-11-05 统一开发基线建立；数据目录门禁退出转入实施
 

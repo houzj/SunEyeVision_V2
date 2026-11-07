@@ -202,7 +202,13 @@ internal sealed class BlobUiComposition : IDisposable
         void Queue(int index)
         {
             if(_disposed||!ReferenceEquals(_pageHost,fields)||index>=pages.Length)return;
-            _editor.Dispatcher.BeginInvoke(DispatcherPriority.Background,new Action(() =>
+            // VM's first frame is assembled from the selected page only.  The
+            // remaining pages use the same registered templates, but their
+            // first materialization must wait until the first idle turn.  A
+            // Background callback still runs before the ApplicationIdle pump
+            // used by the host's first-frame boundary and therefore makes the
+            // window pay for every page before it is visible.
+            _editor.Dispatcher.BeginInvoke(DispatcherPriority.SystemIdle,new Action(() =>
             {
                 if(_disposed||!ReferenceEquals(_pageHost,fields))return;
                 var page=pages[index];

@@ -46,6 +46,14 @@
 
 数据树已修正同名分组的高级/普通状态拆分，避免改变既有布局语义。修正后 Plugin.Wpf Release 构建 0 错误，生产探针继续通过 ImageLoad/BlobAnalysis 的捕获、回执、重复切换和释放；当前一次读数为 Blob 首屏 433ms，第 2/3 页 1316ms/1546ms，重复切换 25ms/44ms。
 
+## 2026-11-08 两工具首帧调度与空闲预热收口（当前有效批次）
+
+探针逐段对照确认，上一版首显仍把非当前页的 Blob 运行参数和结果控件放在 `DispatcherPriority.Background`，而宿主首帧边界使用 `ApplicationIdle`，因此首帧会等待全部页面组合。已将非当前页预热延后到 `DispatcherPriority.SystemIdle`。当前页仍按 VM 参数树和模板入口组装，其他页在首帧之后一次性创建并缓存，重复切换只刷新状态。
+
+本批验证：全量 `dotnet build SunEyeVision.slnx -c Release --no-restore -p:UseSharedCompilation=false` 0 错误；ImageSource Runtime 31/31；BlobAnalysis Runtime 38/38；`RuntimeEditorProductionProbe` 通过两个真实节点的参数绑定、窗口首显、三页切换、重复切换、捕获、回执和关闭释放。最新读数为 ImageLoad 绑定 336ms、首显 1165ms；BlobAnalysis 绑定 869ms、首显 1423ms；Blob 第 2/3 页首次切换 194ms/289ms，重复切换 13ms/21ms。证据保存在 `docs/collaboration/evidence/ImageSource-Blob-VM首帧调度空闲预热回归-20261108.txt`。
+
+这次调整把 Blob 首显从同一环境下约 4.6 秒降到约 1.4 秒，首次 Tab 切换维持在约 0.2–0.3 秒，证明首帧阻塞主要来自非当前页预热调度，不是 Tab 控件切换本身。仍未取得 VM 同机动态耗时，不能据此宣称已经达到原厂数值；Blob ROI 组合约 1.07 秒、运行参数字段树约 1.22 秒、结果显示组合约 0.78 秒仍是本方下一轮控件模板复用和视觉树构造的主要成本。
+
 
 ## 2026-11-05 统一开发基线建立；数据目录门禁退出转入实施
 

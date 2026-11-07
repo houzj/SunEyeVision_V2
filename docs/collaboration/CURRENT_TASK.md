@@ -281,3 +281,9 @@ CodeBuddy 的“数据树 + 模板 + 页面复用”方向已作为候选重构�
 ## 2026-11-08 清理生产探针旧 SDK 锁文件
 
 `tests/RuntimeEditorProductionProbe` 的项目引用已经是新合同，但旧 `packages.lock.json` 仍残留 `SunEyeVision.Plugin.SDK`。本批重新评估锁文件，改为 `SunEyeVision.Plugin.Editing.Wpf`，探针 Release 构建 0 错误，`MSB9008` 旧 SDK 项目缺失警告消失。20 个旧工具消费者仍按退役门禁冻结，本次只清理探针工程的过期锁文件。证据已追加到 `docs/collaboration/evidence/PluginSDK退役门禁-20261108.txt`。
+
+## 2026-11-08 CodeBuddy 窗口入口冲突纠偏
+
+审查未提交 CodeBuddy 改动时发现 `MainWindowRuntimeEditing` 被改成同步完成 `BindDraft` 后才 `Show` 窗口。该顺序会把约 780ms 的参数组装放到窗口首次可见之前，与 VM 流畅打开目标和现行“先显示窗口壳、再按生命周期装配”合同冲突。已恢复该入口到固定基线，保留探针代码作为定位材料，不把该候选实现纳入正式重构。
+
+恢复后 UI Release 构建 0 错误并重新封签。未提交的 `RuntimeNodeConfigurationControl` 探针、`RuntimeEditorProductionProbe` 输出扩展、工具预览文档和脚本改动仍保持独立，未混入正式基线。

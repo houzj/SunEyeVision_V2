@@ -271,3 +271,9 @@ CodeBuddy 的“数据树 + 模板 + 页面复用”方向已作为候选重构�
 基于 VM `BlobFindResult` 结果声明和现有 HALCON Blob 区域，已把 `MinGrayValue`、`MaxGrayValue`、`GrayContrast` 接入 `BlobMeasurement`、`BlobVmResultProjection` 和生产执行链。投影只在每个保留 Blob 都有真实值时发布数组，否则继续保留 `Unavailable`，没有用默认值填充原件结果。证据为 `docs/collaboration/evidence/Blob-VM结果投影-灰度统计-20261108.txt`。
 
 验证结果：BlobAnalysis xUnit 38/38 通过；UI Release 构建 0 错误并重新封签；RuntimeEditorProductionProbe 通过，ImageLoad 绑定 721ms、首显 1301ms，BlobAnalysis 绑定 830ms、首显 337ms，第 2/3 页首次切换 231/279ms，重复切换 17/26ms。当前 Blob 结果投影仍有 10 个 VM 成员待接入，具体为最大内接矩形、Score、ROI、ROIAnnulus、ContourInfo、BlindPolygon 三项、OutputMask 和 ModuStatus。该批不扩展未被原件证据闭合的语义。本轮代码、测试、证据和架构回填固定于提交 `e571842cd`。
+
+## 2026-11-08 清理未使用自研标签控件
+
+已确认 `src/Plugin.Wpf/Controls/LabeledControl.cs` 仅是自研标签容器，ImageSource、BlobAnalysis 和 `DeclaredFieldEditor` 没有引用它。实际参数编辑器使用 `Plugin.Wpf.Native.Composition.ParameterPresentation` 下的逆向控件。已删除该类型，主题资源中的对应样式同步移除。
+
+验证：`dotnet build src/UI/SunEyeVision.UI.csproj -c Release --no-restore` 0 错误并重新封签；`RuntimeEditorProductionProbe` 通过，ImageLoad 绑定 797ms、首显 1216ms，BlobAnalysis 绑定 780ms、首显 315ms，第 2/3 页首次切换 204/254ms，重复切换 15/24ms。两个工具完整 Session、参数控件、捕获/回执、关闭释放 PASS。

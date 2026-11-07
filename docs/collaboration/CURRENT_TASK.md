@@ -249,3 +249,19 @@ PluginDevKit 外部工程隔离验收已通过：复制 SDK DLL/XML、模板及�
 
 
 新增 scripts/verification/Test-PluginSdkRetirementGate.ps1，ReportOnly 列出 20 个直接消费者，正常模式按预期阻断旧 SDK 删除。ImageSource/BlobAnalysis 无旧 SDK 消费。证据：docs/collaboration/evidence/PluginSDK退役门禁-20261108.txt。
+
+## 2026-11-08 CodeBuddy 方案对齐与首批收口
+
+CodeBuddy 的“数据树 + 模板 + 页面复用”方向已作为候选重构方案采用，但其原始评估中的静态性能结论、VM ≤80/100ms 预算和“零构建”表述均不作为已确认事实。`docs/01-方案设计/2026/11/07/参数窗对齐VM数据树模板化优化方案-20261107-153655.html` 已补充评审结论，区分历史基线、实施回归和未确认 VM 动态机制。
+
+本批以已有 VM BlobFind 参数/结果/工具逆向代码和 REA 本地图像源/Blob 实现为输入，已完成 ImageSource 与 BlobAnalysis 的代码级完整链。当前固定生产回归读数为 ImageLoad 绑定约 801ms、首显约 1596ms；BlobAnalysis 绑定约 813ms、首显约 341ms；第 2/3 页首次切换约 212/265ms，重复切换约 18/26ms。BlobAnalysis xUnit 37/37 通过，两个工具 Session、参数控件、捕获/回执、Tab、关闭释放均通过。该结果证明本方重复组装瓶颈已被页面缓存和 VM 参数树入口显著收敛，不证明已达到 VM 原厂同机性能。
+
+当前执行计划固定为：
+
+1. 继续以 ImageSource→BlobAnalysis 作为标准链，补齐 VM 同场景动态窗口证据和时间线对照，禁止把本方实现推定成 VM 机制。
+2. 只在两工具范围内收口未映射的 VM 结果成员和资源接缝，保留已确认的图像资源、节点身份、执行、保存和释放宿主边界。
+3. 20 个旧 Plugin.SDK 消费者保持冻结。`scripts/verification/Test-PluginSdkRetirementGate.ps1` 已建立删除门禁，只有消费者迁移并通过完整链路回归后才允许删除历史引用。
+4. PluginDevKit 的发布 DLL、模板和干净目录构建已通过，外部 VS 启动/附加正式宿主仍列为未验收项。
+5. 工作区中 `docs/08-工具预览/ui`、脚本和其它 CodeBuddy 未归类改动不属于本批固定基线，必须单独审查，不与已提交源码混合。
+
+当前固定源码基线为分支 `feature/param-window-datatree`，提交链 `033fc093d`、`53c5084dc`、`cb3d63ffc`、`1229f21de`、`27752cd20`。交接或继续实施前以该提交链和本节为准。

@@ -243,3 +243,6 @@ UI Release 封签后再次运行 RuntimeEditorProductionProbe：ImageLoad 绑定
 本批源码与证据已固定提交 `033fc093d`（中文提交标题）。该提交只包含 ImageSource/BlobAnalysis 重构、参数页生成层、PluginDevKit 模板/SDK、测试和本批证据；其他 CodeBuddy 未归类改动仍留在工作树，未混入提交。
 
 最终固定基线：当前分支 `feature/param-window-datatree`，本批提交链为 `033fc093d`（源码/测试/证据）、`53c5084dc`（任务账本）、`cb3d63ffc`（VM字段与消费者映射）。完整 BlobAnalysis 回归 37/37 通过，最终生产探针和 PluginDevKit SDK/组件验证均通过。当前未提交内容仅为其他文档预览和 CodeBuddy 未归类改动，不属于本批源码基线。
+
+
+PluginDevKit 外部工程隔离验收已通过：复制 SDK DLL/XML、模板及开发包自带 Directory.Build.props/targets 到 artifacts/validation/ExternalSdkAcceptance-20261108，Runtime/WPF 模板 Release 构建 0 错误，Runtime/Editor ToolComponent 身份校验 PASS。证据：docs/collaboration/evidence/PluginDevKit外部工程隔离验收-20261108.txt。仍未完成 Visual Studio 启动或附加正式产品宿主人工验收。

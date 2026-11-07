@@ -1,0 +1,17 @@
+PluginDevKit 外部工程隔离验收 2026-11-08
+
+验收目录：artifacts/validation/ExternalSdkAcceptance-20261108
+来源：PluginDevKit/sdk/net9.0、PluginDevKit/templates、PluginDevKit/Directory.Build.props、PluginDevKit/Directory.Build.targets
+
+步骤：
+1. 只复制发布 SDK DLL/XML、两个模板和开发包自己的 Directory.Build.props/targets 到隔离目录。
+2. 在隔离目录执行 dotnet restore。
+3. 分别执行 RuntimePlugin.Template 与 WpfTool.Template 的 Release 构建。
+4. 使用 validate-components.ps1 读取隔离产物的 ToolComponentAttribute，并检查 Runtime/Editor 同 ToolId 配对。
+
+结果：
+- Runtime 模板 0 错误，产物位于 artifacts/validation/ExternalSdkAcceptance-20261108/runtime/plugins/RuntimePlugin.Template/net9.0-windows/。
+- WPF 模板 0 错误，产物位于 artifacts/validation/ExternalSdkAcceptance-20261108/runtime/plugins/WpfTool.Template/net9.0-windows/。
+- 组件身份校验 PASS：Runtime=ExternalRuntimePlugin.Runtime，Editor=ExternalRuntimePlugin.Editor，ToolId=ExternalRuntimePlugin，合同版本 6.0。
+
+边界：验收目录位于本仓库树内，若缺少开发包自己的 Directory.Build.props/targets，MSBuild 会向上继承产品构建规则并把模板误拦截或输出到正式 Release。复制开发包自带构建文件后隔离构建通过。真实仓库外目录不应继承主仓规则。尚未执行 Visual Studio 启动或附加正式产品宿主的人工验收。

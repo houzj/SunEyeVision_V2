@@ -332,3 +332,9 @@ REA 已确认 `IMVSBlobFindModuCs.dll` 只负责 `BlobFindResult` 容器初始�
 
 本批阶段提交前保持未提交的 CodeBuddy 工具预览 HTML、生成脚本和迁移清单变更隔离，不混入上述正式源码基线。
 
+
+## 2026-11-08 REA Blob 原厂证据迁移补证
+
+在 D:\MyWork\REA逆向测试\docs\joint-audit 发现并迁入此前被标为缺失的 8 份 Blob 原厂证据，索引与 SHA-256 见 docs/collaboration/evidence/Blob-原厂证据迁移清单-20261108.md。补证明确了 VM 参数窗口的 AlgorithmTabRoot 组装链、参数恢复与关闭入口、Blob 参数合同、4/8 连通参数入口、形状量化校验、BinaryImage/BlobImage 独立输出声明，以及 Result List 的 Angle/BlobAngle 映射。
+
+补证没有证明填孔和阈值边界、4/8 连通的对角行为、形状最终比较公式、双图像像素与 Domain、长短轴半长/全长或动态原机差分。上述项继续保持未确认，不把 HALCON 结果冒充 VM 等价。下一步可依据已迁移的组装和参数证据继续代码落地，不再把“证据文件未迁入”作为阻塞理由。

@@ -42,3 +42,5 @@ WPF 工程从 `WpfTool.Template` 开始，使用 `IToolPresentationFactory`、`D
 
 外部工程验收需要在干净目录完成以下链路：编译、加载、参数快照、执行、结果发布、重复打开、Tab 切换、关闭释放，以及从 Visual Studio 启动或附加 Debug 外部开发宿主调试。正式 Release 宿主继续按发布清单准入，不把外部开发组件写入产品清单。验收记录必须包含 SDK DLL 清单、版本合同、宿主版本、依赖和运行日志。
 
+准备附加调试时可使用 `scripts/launch-debug.ps1 -Detach`。脚本会启动正式宿主并写出 `runtime/external-debug-session.json`，其中包含 PID、宿主路径和附加根目录。该回执用于 Visual Studio 附加定位，脚本自身的启动通过不代表 VS 已完成附加验收。
+

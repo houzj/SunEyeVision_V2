@@ -297,3 +297,7 @@ CodeBuddy 的“数据树 + 模板 + 页面复用”方向已作为候选重构�
 ## 2026-11-08 正式载荷插件发现与生命周期探针
 
 将 `AdmissionLifecycleProbe` 入口程序集放入 `PluginDevKit/runtime` 正式载荷根目录运行后完整通过。验证了 BlobAnalysis 与 ImageLoad 的运行组件发现、Schema 唯一性、保存重开、运行、调试准入、跨代回调、结果 reader 保留、旧代拒绝和释放排空。直接从探针自身输出目录启动会因 Foundation 先加载自有副本触发 SHA mismatch，已确认是测试布局问题，正式 runtime 根目录运行通过。Visual Studio 启动或附加调试仍单独列为未验收。
+
+## 2026-11-08 外部 SDK VS 附加准备
+
+当前机器没有 `devenv.exe` 或 `vswhere.exe`，无法执行真实 Visual Studio 附加。已增强 `PluginDevKit/scripts/launch-debug.ps1`，支持 `-Detach` 和会话回执，分离启动测试通过，回执包含 PID、宿主路径、运行根目录和附加范围。README 已补充使用方式。该脚本为外部 VS 附加提供可复现入口，不能代替 VS 实际附加验收。

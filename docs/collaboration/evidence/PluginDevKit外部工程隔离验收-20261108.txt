@@ -28,3 +28,9 @@ PluginDevKit 外部工程隔离验收 2026-11-08
 - 关键输出：probe: admitted runtime metadata and schema identities are unique；probe: production workflow result reader；Desktop admission and production workflow reader drain checks passed。
 - 直接从探针项目输出目录启动会因 Foundation 先加载自有副本而触发 payload SHA mismatch。该问题属于测试启动布局，已用正式 runtime 根目录布局复验通过。
 - 该探针证明正式载荷的插件发现和生命周期准入，不替代 Visual Studio 启动或附加调试人工验收。
+
+VS 附加准备脚本检查（2026-11-08）
+- 当前机器未发现 devenv.exe 或 vswhere.exe，无法执行真实 Visual Studio 附加。
+- 已增强 PluginDevKit/scripts/launch-debug.ps1，支持 -Detach 和 -ReceiptPath。
+- 分离启动测试通过，脚本写出 PID、SunEyeVision.UI.exe 路径、runtime 根目录和附加范围回执，宿主进程可保持运行。
+- README 已补充附加使用方式。脚本启动通过不计作 Visual Studio 已附加。

@@ -2,7 +2,9 @@
 # 使用方法: .\launch-debug.ps1
 
 param(
-    [string]$PluginName = ""
+    [string]$PluginName = "",
+    [switch]$Detach,
+    [string]$ReceiptPath = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -58,9 +60,29 @@ if ($PluginName -ne "") {
 }
 
 # 启动程序
-Push-Location $RuntimeDir
+$process = Start-Process -FilePath $ExePath -WorkingDirectory $RuntimeDir -PassThru
+$receipt = [ordered]@{
+    pid = $process.Id
+    executable = $ExePath
+    runtimeRoot = $RuntimeDir
+    startedAt = [DateTimeOffset]::Now.ToString("O")
+    pluginName = $PluginName
+    scope = "外部开发宿主启动与 VS 附加准备，不代表 VS 已附加"
+}
+$receiptFile = if ([string]::IsNullOrWhiteSpace($ReceiptPath)) {
+    Join-Path $RuntimeDir "external-debug-session.json"
+} else {
+    $ReceiptPath
+}
+$receipt | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $receiptFile -Encoding utf8
+Write-Host ("调试宿主 PID: {0}" -f $process.Id) -ForegroundColor Green
+Write-Host ("附加根目录: {0}" -f $RuntimeDir) -ForegroundColor Green
+Write-Host ("会话回执: {0}" -f $receiptFile) -ForegroundColor Green
+if ($Detach) {
+    return
+}
 try {
-    & $ExePath
+    $process.WaitForExit()
 } finally {
-    Pop-Location
+    Remove-Item -LiteralPath $receiptFile -Force -ErrorAction SilentlyContinue
 }

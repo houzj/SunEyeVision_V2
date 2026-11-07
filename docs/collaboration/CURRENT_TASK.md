@@ -346,3 +346,7 @@ REA 已确认 `IMVSBlobFindModuCs.dll` 只负责 `BlobFindResult` 容器初始�
 Blob 引用输入修正 DeleteTextBox 的空文本清理路径。WPF 绑定在目标与源都为空时可能跳过 setter，现由逆向引用控件的 Delete 键直接调用同一 ReferenceFieldSession 清理路径，正式字段会提交 UnsetSetting，位置修正视图随之退订和隐藏。
 
 验证结果：窗口、调试、Blob 三页、连续运行和释放相关 UI 回归 16/16 通过。ImageSource Runtime 31/31、BlobAnalysis Runtime 38/38、RuntimeEditorProductionProbe 和生产 ImageLoad→Blob 链继续通过。
+
+## 2026-11-08 Blob 结果角度来源修正
+
+依据迁移的 Result List 证据，BlobVmResultProjection 不再把外接矩形角度误投影为 BlobAngle。BlobSession 现在使用 HALCON OrientationRegion 取得主轴角度，OrientedBounds.AngleDegrees 保留外接矩形角度来源，BlobAngle 单独发布。长短轴的半长/全长语义仍保持未确认，不做额外倍乘或缩放假设。

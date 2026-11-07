@@ -193,6 +193,10 @@ public sealed class BlobSessionChainRegressionTests
         Assert.Equal(1f,result.MinGrayValue[0]);
         Assert.Equal(255f,result.MaxGrayValue[0]);
         Assert.Equal(254f,result.GrayContrast[0]);
+        Assert.NotNull(result.BlobAngle);
+        Assert.Single(result.BlobAngle!);
+        Assert.Equal((float)output.Measurements[0].BlobAngleDegrees!.Value,result.BlobAngle![0]);
+        Assert.DoesNotContain(nameof(BlobVmResultProjection.BlobAngle),result.Unavailable);
         Assert.DoesNotContain(nameof(BlobVmResultProjection.MinGrayValue),result.Unavailable);
         Assert.DoesNotContain(nameof(BlobVmResultProjection.MaxGrayValue),result.Unavailable);
         Assert.DoesNotContain(nameof(BlobVmResultProjection.GrayContrast),result.Unavailable);

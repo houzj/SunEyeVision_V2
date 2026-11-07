@@ -41,7 +41,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         catch(Exception e) { return ValueTask.FromResult(ToolOutcome<BlobOutput>.Failed("BLOB_EXECUTION_FAILED",e.Message)); }
     }
     private sealed record Candidate(int RegionIndex,int ComponentLabel, double Area, double Perimeter, double X, double Y,
-        double Circularity, double Rectangularity, BlobBounds Bounds, BlobOrientedBounds OrientedBounds, Point2[] Corners, bool IsPass);
+        double Circularity, double Rectangularity, BlobBounds Bounds, BlobOrientedBounds OrientedBounds, double BlobAngleDegrees, Point2[] Corners, bool IsPass);
 
     public BlobOutput Execute(BlobSettings settings, IReadOnlyImage input, IOutputResources resources, IReadOnlyRegion? inspection = null,
         IReadOnlyRegion? mask = null, RecordValue? pose = null, CancellationToken cancellation = default,
@@ -147,7 +147,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
                 using (minGray) using (maxGray) using (grayRange)
                 measurements.Add(new(item.ComponentLabel, measurements.Count + 1, item.Area, item.Perimeter, item.X, item.Y, item.Circularity,
                     item.Rectangularity, item.Bounds, item.OrientedBounds, Array.AsReadOnly(item.Corners), Array.AsReadOnly(boundary), region, item.IsPass,
-                    minGray.D, maxGray.D, grayRange.D));
+                    minGray.D, maxGray.D, grayRange.D, item.BlobAngleDegrees));
             }
             using var finalRegions = SelectRegions(connected, ordered.Select(x => x.Candidate.RegionIndex).ToArray());
             using var okRegions = SelectRegions(connected, ordered.Where(x => x.Candidate.IsPass).Select(x => x.Candidate.RegionIndex).ToArray());
@@ -280,6 +280,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         using var circularity = regions.Circularity(); using var rectangularity = regions.Rectangularity(); using var perimeter = regions.Contlength();
         HOperatorSet.SmallestRectangle2(regions, out var rr, out var rc, out var phi, out var length1, out var length2);
         using var rrr = rr; using var rrc = rc; using var ph = phi; using var l1 = length1; using var l2 = length2;
+        HOperatorSet.OrientationRegion(regions, out var blobAngle); using var ba = blobAngle;
         var result = new List<Candidate>();
         for (int i = 0; i < areas.Length; i++)
         {
@@ -296,6 +297,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
             result.Add(new(i + 1,i + 1, areas[i].D, perimeter[i].D, cols[i].D, rows[i].D, circ, rect,
                 new(c1[i].D, r1[i].D, c2[i].D - c1[i].D + 1, r2[i].D - r1[i].D + 1),
                 new(rc[i].D,rr[i].D,2*length1[i].D,2*length2[i].D,length1[i].D==0&&length2[i].D==0?0:-phi[i].D*180/Math.PI),
+                blobAngle[i].D*180/Math.PI,
                 BuildRotatedRectangle(rr[i].D, rc[i].D, phi[i].D, length1[i].D, length2[i].D), pass));
         }
         return result.ToArray();

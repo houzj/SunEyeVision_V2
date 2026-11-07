@@ -24,7 +24,7 @@ public sealed record BlobVmResultProjection(
     IReadOnlyList<float> BlobRectUpLeftY,
     IReadOnlyList<float> BlobRectBottomRightX,
     IReadOnlyList<float> BlobRectBottomRightY,
-    IReadOnlyList<float> BlobAngle,
+    IReadOnlyList<float>? BlobAngle,
     IReadOnlyList<float> Perimeter,
     IReadOnlyList<float> LongAxis,
     IReadOnlyList<float> ShortAxis,
@@ -55,9 +55,11 @@ public sealed record BlobVmResultProjection(
         var minGray=OptionalSequence(ordered.Select(item=>item.MinGrayValue));
         var maxGray=OptionalSequence(ordered.Select(item=>item.MaxGrayValue));
         var grayContrast=OptionalSequence(ordered.Select(item=>item.GrayContrast));
+        var blobAngle=OptionalSequence(ordered.Select(item=>item.BlobAngleDegrees));
         if(minGray is null) unavailable.Add(nameof(MinGrayValue));
         if(maxGray is null) unavailable.Add(nameof(MaxGrayValue));
         if(grayContrast is null) unavailable.Add(nameof(GrayContrast));
+        if(blobAngle is null) unavailable.Add(nameof(BlobAngle));
         var contourCount=ordered.Sum(item=>item.Boundary.Sum(path=>path.Points.Count));
         return new(
             ModuStatus:null,
@@ -73,7 +75,7 @@ public sealed record BlobVmResultProjection(
             BlobRectUpLeftY:Array.AsReadOnly(ordered.Select(item=>(float)item.Bounds.Y).ToArray()),
             BlobRectBottomRightX:Array.AsReadOnly(ordered.Select(item=>(float)(item.Bounds.X+item.Bounds.Width)).ToArray()),
             BlobRectBottomRightY:Array.AsReadOnly(ordered.Select(item=>(float)(item.Bounds.Y+item.Bounds.Height)).ToArray()),
-            BlobAngle:Array.AsReadOnly(ordered.Select(item=>(float)item.OrientedBounds.AngleDegrees).ToArray()),
+            BlobAngle:blobAngle,
             Perimeter:Array.AsReadOnly(ordered.Select(item=>(float)item.Perimeter).ToArray()),
             LongAxis:Array.AsReadOnly(ordered.Select(item=>(float)Math.Max(item.OrientedBounds.Width,item.OrientedBounds.Height)).ToArray()),
             ShortAxis:Array.AsReadOnly(ordered.Select(item=>(float)Math.Min(item.OrientedBounds.Width,item.OrientedBounds.Height)).ToArray()),

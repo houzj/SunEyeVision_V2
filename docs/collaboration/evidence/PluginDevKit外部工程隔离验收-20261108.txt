@@ -15,3 +15,9 @@ PluginDevKit 外部工程隔离验收 2026-11-08
 - 组件身份校验 PASS：Runtime=ExternalRuntimePlugin.Runtime，Editor=ExternalRuntimePlugin.Editor，ToolId=ExternalRuntimePlugin，合同版本 6.0。
 
 边界：验收目录位于本仓库树内，若缺少开发包自己的 Directory.Build.props/targets，MSBuild 会向上继承产品构建规则并把模板误拦截或输出到正式 Release。复制开发包自带构建文件后隔离构建通过。真实仓库外目录不应继承主仓规则。尚未执行 Visual Studio 启动或附加正式产品宿主的人工验收。
+
+正式 Release 宿主启动检查（2026-11-08）
+- 通过 PluginDevKit/scripts/build-runtime.ps1 -Configuration Release 从当前 Release 重新准备 runtime。
+- runtime/release-payload.json 存在，ToolGroups.xml 存在，SunEyeVision.UI.exe 已更新。
+- 在 PluginDevKit/runtime 工作目录启动 SunEyeVision.UI.exe，等待 8 秒进程保持存活，随后由验收脚本结束进程。
+- 结果：宿主进程可启动并通过发布目录准入，未观察到启动即退。该检查覆盖正式宿主进程启动，不替代 Visual Studio 启动或附加调试人工验收。

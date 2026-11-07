@@ -289,3 +289,7 @@ CodeBuddy 的“数据树 + 模板 + 页面复用”方向已作为候选重构�
 恢复后 UI Release 构建 0 错误并重新封签。未提交的 `RuntimeNodeConfigurationControl` 探针、`RuntimeEditorProductionProbe` 输出扩展、工具预览文档和脚本改动仍保持独立，未混入正式基线。
 
 当前最新固定提交链追加为 `e571842cd`（灰度结果投影）、`5f13e011d`（移除未使用自研标签控件）、`1d78d7ea5`（清理生产探针旧 SDK 锁文件）、`682a782dc`（纠偏同步显示入口）和 `c6f5e7d2b`（固定窗口分段探针）。
+
+## 2026-11-08 PluginDevKit 正式宿主启动检查
+
+已用当前 Release 重新准备 `PluginDevKit/runtime`，确认 `release-payload.json` 与 `ToolGroups.xml` 存在。启动 `SunEyeVision.UI.exe` 后进程保持运行 8 秒，随后安全结束。该结果补齐了外部 SDK 的正式宿主进程启动检查。Visual Studio 启动或附加调试仍未验收，不能与本次进程启动混称完成。

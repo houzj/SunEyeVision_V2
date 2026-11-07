@@ -287,3 +287,5 @@ CodeBuddy 的“数据树 + 模板 + 页面复用”方向已作为候选重构�
 审查未提交 CodeBuddy 改动时发现 `MainWindowRuntimeEditing` 被改成同步完成 `BindDraft` 后才 `Show` 窗口。该顺序会把约 780ms 的参数组装放到窗口首次可见之前，与 VM 流畅打开目标和现行“先显示窗口壳、再按生命周期装配”合同冲突。已恢复该入口到固定基线，保留探针代码作为定位材料，不把该候选实现纳入正式重构。
 
 恢复后 UI Release 构建 0 错误并重新封签。未提交的 `RuntimeNodeConfigurationControl` 探针、`RuntimeEditorProductionProbe` 输出扩展、工具预览文档和脚本改动仍保持独立，未混入正式基线。
+
+当前最新固定提交链追加为 `e571842cd`（灰度结果投影）、`5f13e011d`（移除未使用自研标签控件）、`1d78d7ea5`（清理生产探针旧 SDK 锁文件）、`682a782dc`（纠偏同步显示入口）和 `c6f5e7d2b`（固定窗口分段探针）。

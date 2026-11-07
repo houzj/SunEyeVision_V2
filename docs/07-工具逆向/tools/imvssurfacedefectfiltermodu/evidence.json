@@ -1,0 +1,24 @@
+{
+  "stableToolId": "imvssurfacedefectfiltermodu",
+  "originalPlugin": "IMVSSurfaceDefectFilterModu",
+  "displayName": "表面缺陷滤波",
+  "originalCategory": "DefectDetection",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSSurfaceDefectFilterModu",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "status": "inventory-only",
+  "evidenceState": "unknown",
+  "resourceCount": 6,
+  "parameterCount": 12,
+  "inputCount": 5,
+  "outputCount": 6,
+  "uiControlCount": 20,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ]
+}

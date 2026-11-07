@@ -1,0 +1,24 @@
+{
+  "stableToolId": "imvsgraymatchmoduva",
+  "originalPlugin": "IMVSGrayMatchModuVA",
+  "displayName": "灰度匹配",
+  "originalCategory": "Location",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSGrayMatchModuVA",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "status": "inventory-only",
+  "evidenceState": "unknown",
+  "resourceCount": 6,
+  "parameterCount": 33,
+  "inputCount": 3,
+  "outputCount": 13,
+  "uiControlCount": 39,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ]
+}

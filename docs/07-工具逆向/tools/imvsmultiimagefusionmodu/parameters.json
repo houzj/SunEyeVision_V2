@@ -1,0 +1,1205 @@
+{
+  "toolId": "imvsmultiimagefusionmodu",
+  "parameters": [
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "ResultType",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "3",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "KernelSize",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "2",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "EnhanceEnable",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "False",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "Brightness",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "128",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "ContrastCoef",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "100",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "DirEnhanceType",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "0",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "DirEnhanceLevel",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "1",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "HalationRemoveLevel",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "0",
+          "children": []
+        }
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "InputImage",
+        "Style": "ACQUIMAGE",
+        "IsArray": "false"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "ImageCount",
+                "ValueType": "int",
+                "IsForce": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "InImage0",
+                "Style": "IMAGE",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage0Image",
+                        "ValueType": "image",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage0Width",
+                        "ValueType": "int",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage0Height",
+                        "ValueType": "int",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage0PixelFormat",
+                        "ValueType": "int",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImage0Distribution",
+                "ValueType": "float",
+                "IsForce": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImage0Irradiation",
+                "ValueType": "float",
+                "IsForce": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "InImage1",
+                "Style": "IMAGE",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage1Image",
+                        "ValueType": "image",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage1Width",
+                        "ValueType": "int",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage1Height",
+                        "ValueType": "int",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage1PixelFormat",
+                        "ValueType": "int",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImage1Distribution",
+                "ValueType": "float",
+                "IsForce": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImage1Irradiation",
+                "ValueType": "float",
+                "IsForce": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "InImage2",
+                "Style": "IMAGE",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage2Image",
+                        "ValueType": "image",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage2Width",
+                        "ValueType": "int",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage2Height",
+                        "ValueType": "int",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage2PixelFormat",
+                        "ValueType": "int",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImage2Distribution",
+                "ValueType": "float",
+                "IsForce": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImage2Irradiation",
+                "ValueType": "float",
+                "IsForce": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "InImage3",
+                "Style": "IMAGE",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage3Image",
+                        "ValueType": "image",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage3Width",
+                        "ValueType": "int",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage3Height",
+                        "ValueType": "int",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage3PixelFormat",
+                        "ValueType": "int",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImage3Distribution",
+                "ValueType": "float",
+                "IsForce": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImage3Irradiation",
+                "ValueType": "float",
+                "IsForce": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "InImage4",
+                "Style": "IMAGE",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage4Image",
+                        "ValueType": "image",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage4Width",
+                        "ValueType": "int",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage4Height",
+                        "ValueType": "int",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage4PixelFormat",
+                        "ValueType": "int",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImage4Distribution",
+                "ValueType": "float",
+                "IsForce": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImage4Irradiation",
+                "ValueType": "float",
+                "IsForce": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "InImage5",
+                "Style": "IMAGE",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage5Image",
+                        "ValueType": "image",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage5Width",
+                        "ValueType": "int",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage5Height",
+                        "ValueType": "int",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage5PixelFormat",
+                        "ValueType": "int",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImage5Distribution",
+                "ValueType": "float",
+                "IsForce": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImage5Irradiation",
+                "ValueType": "float",
+                "IsForce": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "InImage6",
+                "Style": "IMAGE",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage6Image",
+                        "ValueType": "image",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage6Width",
+                        "ValueType": "int",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage6Height",
+                        "ValueType": "int",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage6PixelFormat",
+                        "ValueType": "int",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImage6Distribution",
+                "ValueType": "float",
+                "IsForce": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImage6Irradiation",
+                "ValueType": "float",
+                "IsForce": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "InImage7",
+                "Style": "IMAGE",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage7Image",
+                        "ValueType": "image",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage7Width",
+                        "ValueType": "int",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage7Height",
+                        "ValueType": "int",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "InImage7PixelFormat",
+                        "ValueType": "int",
+                        "IsForce": "true",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImage7Distribution",
+                "ValueType": "float",
+                "IsForce": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImage7Irradiation",
+                "ValueType": "float",
+                "IsForce": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "InputROI",
+        "Style": "ROIBOX"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "ROI CenterPoint",
+                "Style": "POINT"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "roicenterx",
+                        "ValueType": "float",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "roicentery",
+                        "ValueType": "float",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "roiwidth",
+                "ValueType": "float",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "roiheight",
+                "ValueType": "float",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "roiangle",
+                "ValueType": "float",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "ModuRunTime",
+        "ValueType": "float",
+        "IsForce": "true",
+        "IsArray": "false"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "ModuStatus",
+        "ValueType": "int",
+        "IsForce": "true"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "ImageNum",
+        "ValueType": "int",
+        "IsForce": "true"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "ImageWidth",
+        "ValueType": "int",
+        "IsForce": "false"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "ImageHeight",
+        "ValueType": "int",
+        "IsForce": "false"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "AlbedoImageCom",
+        "Style": "IMAGE"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "AlbedoImage",
+                "ValueType": "image",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "AlbedoImageWidth",
+                "ValueType": "int",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "AlbedoImageHeight",
+                "ValueType": "int",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "AlbedoImagePixelFormat",
+                "ValueType": "int",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "ShadingImageCom",
+        "Style": "IMAGE"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "ShadingImage",
+                "ValueType": "image",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "ShadingImageWidth",
+                "ValueType": "int",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "ShadingImageHeight",
+                "ValueType": "int",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "ShadingImagePixelFormat",
+                "ValueType": "int",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "ROI",
+        "Style": "ROIBOX",
+        "IsArray": "false"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "DetectRectCenterPoint",
+                "Style": "POINT",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "DetectCenterX",
+                        "ValueType": "float",
+                        "IsForce": "false",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "DetectCenterY",
+                        "ValueType": "float",
+                        "IsForce": "false",
+                        "IsArray": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "DetectWidth",
+                "ValueType": "float",
+                "IsForce": "false",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "DetectHeight",
+                "ValueType": "float",
+                "IsForce": "false",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "DetectAngle",
+                "ValueType": "float",
+                "IsForce": "false",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "bindings": [],
+  "conditions": [],
+  "status": "not-started"
+}

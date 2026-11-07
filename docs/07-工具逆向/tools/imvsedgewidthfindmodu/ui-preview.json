@@ -1,0 +1,192 @@
+{
+  "controls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Integer",
+      "name": "HalfKernelSize"
+    },
+    {
+      "type": "Integer",
+      "name": "ContrastTH"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Edge0Polarity"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Edge1Polarity"
+    },
+    {
+      "type": "Integer",
+      "name": "Maximum"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SortType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FindMode"
+    },
+    {
+      "type": "Integer",
+      "name": "IdeaWidth"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FindOrient"
+    },
+    {
+      "type": "Float",
+      "name": "MinScore"
+    },
+    {
+      "type": "Boolean",
+      "name": "NumLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "NumAngleLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "EdgeWidthLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeEdgeWidthLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "Edge0PointXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangEdge0PointXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "Edge0PointYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangEdge0PointYLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "Edge1PointXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangEdge1PointXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "Edge1PointYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangEdge1PointYLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Calib0Filed"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Calib1Filed"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CalibPoint0Filed"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CalibPoint1Filed"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CalibLineFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvsedgewidthfindmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSEdgeWidthFindModu\\IMVSEdgeWidthFindModu.xml",
+      "sha256": "6bd7fb0cc4d9f64edb511f05846a06078941ed38a6b0927c1b04289b5149791d",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSEdgeWidthFindModu\\IMVSEdgeWidthFindModuAlgorithm.xml",
+      "sha256": "4a06add00d5fa4209d8a21c4a568c18e3c7a72c59e7fa5b142dd8a97b80392cb",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSEdgeWidthFindModu\\IMVSEdgeWidthFindModuAlgorithmTab.xml",
+      "sha256": "e6afd299c47822c63c43df4d8b1142357b78e19473efd7378edb11c01bcf7fd5",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSEdgeWidthFindModu\\IMVSEdgeWidthFindModuCs.xml",
+      "sha256": "9c28dceaa18abb12ed6b73d5fb2490a02df78c86cb878221554523b80b67d81f",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSEdgeWidthFindModu\\IMVSEdgeWidthFindModuDisplay.xml",
+      "sha256": "8d9f08e93e91ce64dda103a87693ca986c7bbf3d588e3593de77e354a9b51be4",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSEdgeWidthFindModu\\ToolItemInfo.xml",
+      "sha256": "6c5362d9589bbb70152c794eaae8f2d4f795f9a98d2d62eebca56252cfc03965",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "间距检测",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

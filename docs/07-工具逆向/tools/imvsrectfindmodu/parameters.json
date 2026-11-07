@@ -1,0 +1,1515 @@
+{
+  "toolId": "imvsrectfindmodu",
+  "parameters": [
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "AngleLimitLow",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "-180",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "RejectDist",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "5",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "IdeaHeight",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "10",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "ProjectLen",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "5",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "CenterXLimitEnable",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "False",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "RectWidthLimitHigh",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "99999",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "RectHeightLimitHigh",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "99999",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "EdgeStrength",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "5",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "CenterXLimitHigh",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "99999",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "AngleLimitEnable",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "False",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "RectHeightLimitEnable",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "False",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "FitInitType",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "2",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "EdgeLeftPolarity",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "3",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "RectWidthLimitEnable",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "False",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "EdgeUpPolarity",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "3",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "CenterXLimitLow",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "-99999",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "FitFun",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "2",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "RectHeightLimitLow",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "1",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "EdgeDownPolarity",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "3",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "RectWidthLimitLow",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "1",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "RejectNum",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "0",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "CenterYLimitLow",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "-99999",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "EdgeType",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "3",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "CenterYLimitHigh",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "99999",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "KernelSize",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "1",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "EdgeRightPolarity",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "3",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "CenterYLimitEnable",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "False",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "AngleLimitHigh",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "180",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "IdeaWidth",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "10",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "CaliperNum",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "30",
+          "children": []
+        }
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "InputImage",
+        "Style": "IMAGE"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImage",
+                "ValueType": "image",
+                "IsForce": "true"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImageWidth",
+                "ValueType": "int",
+                "IsForce": "true"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImageHeight",
+                "ValueType": "int",
+                "IsForce": "true"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImagePixelFormat",
+                "ValueType": "int",
+                "IsForce": "true"
+              },
+              "text": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "InputMask",
+        "Style": "IMAGE"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InMask",
+                "ValueType": "image",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InMaskWidth",
+                "ValueType": "int",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InMaskHeight",
+                "ValueType": "int",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InMaskPixelFormat",
+                "ValueType": "int",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "InputROI",
+        "Style": "ROIBOX"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "ROI CenterPoint",
+                "Style": "POINT"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "roicenterx",
+                        "ValueType": "float",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "roicentery",
+                        "ValueType": "float",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "roiwidth",
+                "ValueType": "float",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "roiheight",
+                "ValueType": "float",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "roiangle",
+                "ValueType": "float",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "Position Correction Info",
+        "Style": "FIXTURE"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "Fixtured Point",
+                "Style": "POINT"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "FixtureInitPointX",
+                        "ValueType": "float",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "FixtureInitPointY",
+                        "ValueType": "float",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "FixtureInitAngle",
+                "ValueType": "float",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "FixtureInitScaleX",
+                "ValueType": "float",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "FixtureInitScaleY",
+                "ValueType": "float",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "Unfixtured Point",
+                "Style": "POINT"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "FixtureRunPointX",
+                        "ValueType": "float",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "FixtureRunPointY",
+                        "ValueType": "float",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "FixtureRunAngle",
+                "ValueType": "float",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "FixtureRunScaleX",
+                "ValueType": "float",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "FixtureRunScaleY",
+                "ValueType": "float",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "InputBlindPolygonString",
+        "ValueType": "string",
+        "IsForce": "false"
+      },
+      "text": "",
+      "children": []
+    }
+  ],
+  "outputs": [
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "ModuRunTime",
+        "ValueType": "float",
+        "IsForce": "true",
+        "IsArray": "false"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "ModuStatus",
+        "ValueType": "int",
+        "IsForce": "true"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "DetectStatus",
+        "ValueType": "int",
+        "IsForce": "true"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "OutputMask",
+        "Style": "IMAGE",
+        "IsArray": "false"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "OutMask",
+                "ValueType": "image",
+                "IsForce": "false",
+                "AllowAutoSubscribeByOther": "False",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "OutMaskWidth",
+                "ValueType": "int",
+                "IsForce": "false",
+                "AllowAutoSubscribeByOther": "False",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "OutMaskHeight",
+                "ValueType": "int",
+                "IsForce": "false",
+                "AllowAutoSubscribeByOther": "False",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "OutMaskPixelFormat",
+                "ValueType": "int",
+                "IsForce": "false",
+                "AllowAutoSubscribeByOther": "False",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "RectBox",
+        "Style": "ROIBOX"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "Rectangular Certral Point",
+                "Style": "POINT"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "RectCenterX",
+                        "ValueType": "float",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "RectCenterY",
+                        "ValueType": "float",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "RectWidth",
+                "ValueType": "float",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "RectHeight",
+                "ValueType": "float",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "RectAngle",
+                "ValueType": "float",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "Contour Point",
+        "Style": "POINT",
+        "IsArray": "true"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "EdgePointX",
+                "ValueType": "float",
+                "IsForce": "false",
+                "AutoSubscribe": "false",
+                "IsArray": "true"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "EdgePointY",
+                "ValueType": "float",
+                "IsForce": "false",
+                "AutoSubscribe": "false",
+                "IsArray": "true"
+              },
+              "text": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "EdgePointNum",
+        "ValueType": "int",
+        "IsForce": "false",
+        "AutoSubscribe": "false"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "EdgePointStatus",
+        "ValueType": "int",
+        "IsForce": "false",
+        "AutoSubscribe": "false",
+        "IsArray": "true"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "ROI",
+        "Style": "ROIBOX"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "DetectRectCenterPoint",
+                "Style": "POINT"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "DetectCenterX",
+                        "ValueType": "float",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "DetectCenterY",
+                        "ValueType": "float",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "DetectWidth",
+                "ValueType": "float",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "DetectHeight",
+                "ValueType": "float",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "DetectAngle",
+                "ValueType": "float",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "BlindPolygon",
+        "Style": "ROIPOLYGON",
+        "IsArray": "true"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "BlindPolygonPointNum",
+                "ValueType": "int",
+                "IsForce": "false",
+                "IsArray": "true"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "BlindPolygonPoints",
+                "Style": "POINT",
+                "IsArray": "true"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "BlindPolygonPointsX",
+                        "ValueType": "float",
+                        "IsForce": "false",
+                        "IsArray": "true"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "BlindPolygonPointsY",
+                        "ValueType": "float",
+                        "IsForce": "false",
+                        "IsArray": "true"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "BlindPolygonString",
+        "ValueType": "string",
+        "IsForce": "false",
+        "IsArray": "true"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "Output Position Correction Info",
+        "Style": "FIXTURE",
+        "Visible": "false"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "Output Fixtured Point",
+                "Style": "POINT",
+                "Visible": "false"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "OutputFixtureInitPointX",
+                        "ValueType": "float",
+                        "IsForce": "false",
+                        "Visible": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "OutputFixtureInitPointY",
+                        "ValueType": "float",
+                        "IsForce": "false",
+                        "Visible": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "OutputFixtureInitAngle",
+                "ValueType": "float",
+                "IsForce": "false",
+                "Visible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "OutputFixtureInitScaleX",
+                "ValueType": "float",
+                "IsForce": "false",
+                "Visible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "OutputFixtureInitScaleY",
+                "ValueType": "float",
+                "IsForce": "false",
+                "Visible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "Output Unfixtured Point",
+                "Style": "POINT",
+                "Visible": "false"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "OutputFixtureRunPointX",
+                        "ValueType": "float",
+                        "IsForce": "false",
+                        "Visible": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "OutputFixtureRunPointY",
+                        "ValueType": "float",
+                        "IsForce": "false",
+                        "Visible": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "OutputFixtureRunAngle",
+                "ValueType": "float",
+                "IsForce": "false",
+                "Visible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "OutputFixtureRunScaleX",
+                "ValueType": "float",
+                "IsForce": "false",
+                "Visible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "OutputFixtureRunScaleY",
+                "ValueType": "float",
+                "IsForce": "false",
+                "Visible": "false"
+              },
+              "text": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "bindings": [],
+  "conditions": [],
+  "status": "not-started"
+}

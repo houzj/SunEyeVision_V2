@@ -1,0 +1,376 @@
+{
+  "toolId": "imvsboxmergemodu",
+  "parameters": [
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "MergeMethod",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "1",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "OverlapThresh",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "50",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "DxThresh",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "50",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "DyThresh",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "50",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "PrioritySortType",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "2",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "BoxMergeType",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "3",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "SplitChar",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "1",
+          "children": []
+        }
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "InputBOX",
+        "Style": "ROIBOX"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "ROI CenterPoint",
+                "Style": "POINT"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "roicenterx",
+                        "ValueType": "float",
+                        "IsForce": "true"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "roicentery",
+                        "ValueType": "float",
+                        "IsForce": "true"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "roiwidth",
+                "ValueType": "float",
+                "IsForce": "true"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "roiheight",
+                "ValueType": "float",
+                "IsForce": "true"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "roiangle",
+                "ValueType": "float",
+                "IsForce": "true"
+              },
+              "text": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "BoxLabel",
+        "ValueType": "string",
+        "IsForce": "false"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "FlawPriority",
+        "ValueType": "string",
+        "IsForce": "false"
+      },
+      "text": "",
+      "children": []
+    }
+  ],
+  "outputs": [
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "ModuRunTime",
+        "ValueType": "float",
+        "IsForce": "true",
+        "IsArray": "false"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "ModuStatus",
+        "ValueType": "int",
+        "IsForce": "true"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "MergeBoxNum",
+        "ValueType": "int",
+        "IsForce": "true"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "MergeBoxLabel",
+        "ValueType": "string",
+        "IsForce": "true",
+        "IsArray": "true"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "MergeBox",
+        "Style": "ROIBOX",
+        "IsArray": "true"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "MergeBoxCenter",
+                "Style": "POINT"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "MergeBoxCenterX",
+                        "ValueType": "float",
+                        "IsForce": "true"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "MergeBoxCenterY",
+                        "ValueType": "float",
+                        "IsForce": "true"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "MergeBoxWidth",
+                "ValueType": "float",
+                "IsForce": "true"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "MergeBoxHeight",
+                "ValueType": "float",
+                "IsForce": "true"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "MergeBoxAngle",
+                "ValueType": "float",
+                "IsForce": "true"
+              },
+              "text": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "bindings": [],
+  "conditions": [],
+  "status": "not-started"
+}

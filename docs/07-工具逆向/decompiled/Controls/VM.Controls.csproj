@@ -1,0 +1,222 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>VM.Controls</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net45</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace />
+  </PropertyGroup>
+  <ItemGroup>
+    <Page Remove="controls\buttonspinner\themes\aero2.normalcolor.xaml" />
+    <Page Remove="controls\buttonspinner\themes\generic.xaml" />
+    <Page Remove="controls\chromes\themes\aero2.normalcolor.xaml" />
+    <Page Remove="controls\chromes\themes\generic.xaml" />
+    <Page Remove="controls\collectioncontrol\themes\aero2.normalcolor.xaml" />
+    <Page Remove="controls\collectioncontrol\themes\generic.xaml" />
+    <Page Remove="controls\colorcanvas\themes\aero2.normalcolor.xaml" />
+    <Page Remove="controls\colorcanvas\themes\generic.xaml" />
+    <Page Remove="controls\colorpicker\themes\aero2.normalcolor.xaml" />
+    <Page Remove="controls\colorpicker\themes\generic.xaml" />
+    <Page Remove="controls\datetimepicker\themes\aero2.normalcolor.xaml" />
+    <Page Remove="controls\datetimepicker\themes\generic.xaml" />
+    <Page Remove="controls\datetimeupdown\themes\aero2.normalcolor.xaml" />
+    <Page Remove="controls\datetimeupdown\themes\generic.xaml" />
+    <Page Remove="controls\multilinetexteditor\themes\aero2.normalcolor.xaml" />
+    <Page Remove="controls\multilinetexteditor\themes\generic.xaml" />
+    <Page Remove="controls\numericupdown\themes\aero2.normalcolor.xaml" />
+    <Page Remove="controls\numericupdown\themes\generic.xaml" />
+    <Page Remove="controls\propertygrid\themes\aero2.normalcolor.xaml" />
+    <Page Remove="controls\propertygrid\themes\generic.xaml" />
+    <Page Remove="controls\themes\aero.normalcolor.xaml" />
+    <Page Remove="controls\themes\aero2.normalcolor.xaml" />
+    <Page Remove="controls\themes\aero2\brushes.xaml" />
+    <Page Remove="controls\themes\aero2\buttons.xaml" />
+    <Page Remove="controls\themes\aero2\common.xaml" />
+    <Page Remove="controls\themes\aero2\glyphs.xaml" />
+    <Page Remove="controls\themes\aero\brushes_normalcolor.xaml" />
+    <Page Remove="controls\themes\aero\buttons_normalcolor.xaml" />
+    <Page Remove="controls\themes\classic.xaml" />
+    <Page Remove="controls\themes\common.xaml" />
+    <Page Remove="controls\themes\generic.xaml" />
+    <Page Remove="controls\themes\generic\brushes.xaml" />
+    <Page Remove="controls\themes\generic\buttons.xaml" />
+    <Page Remove="controls\themes\generic\glyphs.xaml" />
+    <Page Remove="controls\themes\luna.homestead.xaml" />
+    <Page Remove="controls\themes\luna.metallic.xaml" />
+    <Page Remove="controls\themes\luna.normalcolor.xaml" />
+    <Page Remove="controls\themes\royale.normalcolor.xaml" />
+    <Page Remove="controls\timepicker\themes\aero2.normalcolor.xaml" />
+    <Page Remove="controls\timepicker\themes\generic.xaml" />
+    <Page Remove="controls\timespanupdown\themes\aero2.normalcolor.xaml" />
+    <Page Remove="controls\timespanupdown\themes\generic.xaml" />
+    <Page Remove="controls\watermarktextbox\themes\aero2.normalcolor.xaml" />
+    <Page Remove="controls\watermarktextbox\themes\generic.xaml" />
+    <Page Remove="styles\basewindowstyle.xaml" />
+    <Page Remove="styles\buttonsstyle.xaml" />
+    <Page Remove="styles\editabletextblockstyle.xaml" />
+    <Page Remove="styles\expanderbutton.xaml" />
+    <Page Remove="styles\iconmenustyle.xaml" />
+    <Page Remove="styles\menuitemstyle.xaml" />
+    <Page Remove="styles\scrollbarstyle.xaml" />
+    <Page Remove="styles\scrollviewstyle.xaml" />
+    <Page Remove="styles\tabcontrol.xaml" />
+    <Page Remove="themes\generic.xaml" />
+    <Page Remove="VM.Controls\CollectionControlDialog.xaml" />
+    <Page Remove="VM.Controls\HikMessageBox.xaml" />
+    <Page Include="controls\buttonspinner\themes\aero2.normalcolor.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/buttonspinner/themes/aero2.normalcolor.xaml" />
+    <Page Include="controls\buttonspinner\themes\generic.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/buttonspinner/themes/generic.xaml" />
+    <Page Include="controls\chromes\themes\aero2.normalcolor.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/chromes/themes/aero2.normalcolor.xaml" />
+    <Page Include="controls\chromes\themes\generic.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/chromes/themes/generic.xaml" />
+    <Page Include="controls\collectioncontrol\themes\aero2.normalcolor.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/collectioncontrol/themes/aero2.normalcolor.xaml" />
+    <Page Include="controls\collectioncontrol\themes\generic.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/collectioncontrol/themes/generic.xaml" />
+    <Page Include="controls\colorcanvas\themes\aero2.normalcolor.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/colorcanvas/themes/aero2.normalcolor.xaml" />
+    <Page Include="controls\colorcanvas\themes\generic.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/colorcanvas/themes/generic.xaml" />
+    <Page Include="controls\colorpicker\themes\aero2.normalcolor.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/colorpicker/themes/aero2.normalcolor.xaml" />
+    <Page Include="controls\colorpicker\themes\generic.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/colorpicker/themes/generic.xaml" />
+    <Page Include="controls\datetimepicker\themes\aero2.normalcolor.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/datetimepicker/themes/aero2.normalcolor.xaml" />
+    <Page Include="controls\datetimepicker\themes\generic.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/datetimepicker/themes/generic.xaml" />
+    <Page Include="controls\datetimeupdown\themes\aero2.normalcolor.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/datetimeupdown/themes/aero2.normalcolor.xaml" />
+    <Page Include="controls\datetimeupdown\themes\generic.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/datetimeupdown/themes/generic.xaml" />
+    <Page Include="controls\multilinetexteditor\themes\aero2.normalcolor.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/multilinetexteditor/themes/aero2.normalcolor.xaml" />
+    <Page Include="controls\multilinetexteditor\themes\generic.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/multilinetexteditor/themes/generic.xaml" />
+    <Page Include="controls\numericupdown\themes\aero2.normalcolor.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/numericupdown/themes/aero2.normalcolor.xaml" />
+    <Page Include="controls\numericupdown\themes\generic.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/numericupdown/themes/generic.xaml" />
+    <Page Include="controls\propertygrid\themes\aero2.normalcolor.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/propertygrid/themes/aero2.normalcolor.xaml" />
+    <Page Include="controls\propertygrid\themes\generic.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/propertygrid/themes/generic.xaml" />
+    <Page Include="controls\themes\aero.normalcolor.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/themes/aero.normalcolor.xaml" />
+    <Page Include="controls\themes\aero2.normalcolor.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/themes/aero2.normalcolor.xaml" />
+    <Page Include="controls\themes\aero2\brushes.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/themes/aero2/brushes.xaml" />
+    <Page Include="controls\themes\aero2\buttons.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/themes/aero2/buttons.xaml" />
+    <Page Include="controls\themes\aero2\common.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/themes/aero2/common.xaml" />
+    <Page Include="controls\themes\aero2\glyphs.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/themes/aero2/glyphs.xaml" />
+    <Page Include="controls\themes\aero\brushes_normalcolor.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/themes/aero/brushes_normalcolor.xaml" />
+    <Page Include="controls\themes\aero\buttons_normalcolor.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/themes/aero/buttons_normalcolor.xaml" />
+    <Page Include="controls\themes\classic.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/themes/classic.xaml" />
+    <Page Include="controls\themes\common.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/themes/common.xaml" />
+    <Page Include="controls\themes\generic.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/themes/generic.xaml" />
+    <Page Include="controls\themes\generic\brushes.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/themes/generic/brushes.xaml" />
+    <Page Include="controls\themes\generic\buttons.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/themes/generic/buttons.xaml" />
+    <Page Include="controls\themes\generic\glyphs.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/themes/generic/glyphs.xaml" />
+    <Page Include="controls\themes\luna.homestead.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/themes/luna.homestead.xaml" />
+    <Page Include="controls\themes\luna.metallic.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/themes/luna.metallic.xaml" />
+    <Page Include="controls\themes\luna.normalcolor.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/themes/luna.normalcolor.xaml" />
+    <Page Include="controls\themes\royale.normalcolor.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/themes/royale.normalcolor.xaml" />
+    <Page Include="controls\timepicker\themes\aero2.normalcolor.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/timepicker/themes/aero2.normalcolor.xaml" />
+    <Page Include="controls\timepicker\themes\generic.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/timepicker/themes/generic.xaml" />
+    <Page Include="controls\timespanupdown\themes\aero2.normalcolor.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/timespanupdown/themes/aero2.normalcolor.xaml" />
+    <Page Include="controls\timespanupdown\themes\generic.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/timespanupdown/themes/generic.xaml" />
+    <Page Include="controls\watermarktextbox\themes\aero2.normalcolor.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/watermarktextbox/themes/aero2.normalcolor.xaml" />
+    <Page Include="controls\watermarktextbox\themes\generic.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/watermarktextbox/themes/generic.xaml" />
+    <Page Include="styles\basewindowstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="styles/basewindowstyle.xaml" />
+    <Page Include="styles\buttonsstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="styles/buttonsstyle.xaml" />
+    <Page Include="styles\editabletextblockstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="styles/editabletextblockstyle.xaml" />
+    <Page Include="styles\expanderbutton.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="styles/expanderbutton.xaml" />
+    <Page Include="styles\iconmenustyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="styles/iconmenustyle.xaml" />
+    <Page Include="styles\menuitemstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="styles/menuitemstyle.xaml" />
+    <Page Include="styles\scrollbarstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="styles/scrollbarstyle.xaml" />
+    <Page Include="styles\scrollviewstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="styles/scrollviewstyle.xaml" />
+    <Page Include="styles\tabcontrol.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="styles/tabcontrol.xaml" />
+    <Page Include="themes\generic.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="themes/generic.xaml" />
+    <Page Include="VM.Controls\CollectionControlDialog.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/collectioncontrol/implementation/collectioncontroldialog.xaml" />
+    <Page Include="VM.Controls\HikMessageBox.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/hikmessagebox.xaml" />
+    <Resource Remove="controls\collectioncontrol\images\delete16.png" />
+    <Resource Remove="controls\multilinetexteditor\images\notes16.png" />
+    <Resource Remove="controls\propertygrid\images\advancedproperties11.png" />
+    <Resource Remove="controls\propertygrid\images\categorize16.png" />
+    <Resource Remove="controls\propertygrid\images\clearfilter16.png" />
+    <Resource Remove="controls\propertygrid\images\database11.png" />
+    <Resource Remove="controls\propertygrid\images\inheritance11.png" />
+    <Resource Remove="controls\propertygrid\images\local11.png" />
+    <Resource Remove="controls\propertygrid\images\resource11.png" />
+    <Resource Remove="controls\propertygrid\images\sortascending16.png" />
+    <Resource Remove="controls\propertygrid\images\style11.png" />
+    <Resource Remove="resources\arrow_down.png" />
+    <Resource Remove="resources\arrow_left.png" />
+    <Resource Remove="resources\ask.png" />
+    <Resource Remove="resources\close.png" />
+    <Resource Remove="resources\close_dis.png" />
+    <Resource Remove="resources\default.png" />
+    <Resource Remove="resources\error.png" />
+    <Resource Remove="resources\ic_log_fold_click.png" />
+    <Resource Remove="resources\ic_log_fold_disable.png" />
+    <Resource Remove="resources\ic_log_fold_normal.png" />
+    <Resource Remove="resources\max.png" />
+    <Resource Remove="resources\max_dis.png" />
+    <Resource Remove="resources\min.png" />
+    <Resource Remove="resources\min_dis.png" />
+    <Resource Remove="resources\msg_close_click.png" />
+    <Resource Remove="resources\msg_close_normal.png" />
+    <Resource Remove="resources\ok.png" />
+    <Resource Remove="resources\waring.png" />
+    <Resource Remove="resources\windowbg_click.png" />
+    <Resource Remove="resources\windowbg_hover.png" />
+    <Resource Remove="resources\windowclose.png" />
+    <Resource Remove="resources\windowshift_ic_maximize.png" />
+    <Resource Remove="resources\windowshift_ic_minimize.png" />
+    <Resource Remove="resources\windowshift_ic_normal.png" />
+    <Resource Remove="resources\win_close_hov.png" />
+    <Resource Remove="resources\win_close_sel.png" />
+    <Resource Remove="resources\win_max_hov.png" />
+    <Resource Remove="resources\win_max_sel.png" />
+    <Resource Remove="resources\win_min_hov.png" />
+    <Resource Remove="resources\win_min_sel.png" />
+    <Resource Include="controls\collectioncontrol\images\delete16.png" LogicalName="controls/collectioncontrol/images/delete16.png" />
+    <Resource Include="controls\multilinetexteditor\images\notes16.png" LogicalName="controls/multilinetexteditor/images/notes16.png" />
+    <Resource Include="controls\propertygrid\images\advancedproperties11.png" LogicalName="controls/propertygrid/images/advancedproperties11.png" />
+    <Resource Include="controls\propertygrid\images\categorize16.png" LogicalName="controls/propertygrid/images/categorize16.png" />
+    <Resource Include="controls\propertygrid\images\clearfilter16.png" LogicalName="controls/propertygrid/images/clearfilter16.png" />
+    <Resource Include="controls\propertygrid\images\database11.png" LogicalName="controls/propertygrid/images/database11.png" />
+    <Resource Include="controls\propertygrid\images\inheritance11.png" LogicalName="controls/propertygrid/images/inheritance11.png" />
+    <Resource Include="controls\propertygrid\images\local11.png" LogicalName="controls/propertygrid/images/local11.png" />
+    <Resource Include="controls\propertygrid\images\resource11.png" LogicalName="controls/propertygrid/images/resource11.png" />
+    <Resource Include="controls\propertygrid\images\sortascending16.png" LogicalName="controls/propertygrid/images/sortascending16.png" />
+    <Resource Include="controls\propertygrid\images\style11.png" LogicalName="controls/propertygrid/images/style11.png" />
+    <Resource Include="resources\arrow_down.png" LogicalName="resources/arrow_down.png" />
+    <Resource Include="resources\arrow_left.png" LogicalName="resources/arrow_left.png" />
+    <Resource Include="resources\ask.png" LogicalName="resources/ask.png" />
+    <Resource Include="resources\close.png" LogicalName="resources/close.png" />
+    <Resource Include="resources\close_dis.png" LogicalName="resources/close_dis.png" />
+    <Resource Include="resources\default.png" LogicalName="resources/default.png" />
+    <Resource Include="resources\error.png" LogicalName="resources/error.png" />
+    <Resource Include="resources\ic_log_fold_click.png" LogicalName="resources/ic_log_fold_click.png" />
+    <Resource Include="resources\ic_log_fold_disable.png" LogicalName="resources/ic_log_fold_disable.png" />
+    <Resource Include="resources\ic_log_fold_normal.png" LogicalName="resources/ic_log_fold_normal.png" />
+    <Resource Include="resources\max.png" LogicalName="resources/max.png" />
+    <Resource Include="resources\max_dis.png" LogicalName="resources/max_dis.png" />
+    <Resource Include="resources\min.png" LogicalName="resources/min.png" />
+    <Resource Include="resources\min_dis.png" LogicalName="resources/min_dis.png" />
+    <Resource Include="resources\msg_close_click.png" LogicalName="resources/msg_close_click.png" />
+    <Resource Include="resources\msg_close_normal.png" LogicalName="resources/msg_close_normal.png" />
+    <Resource Include="resources\ok.png" LogicalName="resources/ok.png" />
+    <Resource Include="resources\waring.png" LogicalName="resources/waring.png" />
+    <Resource Include="resources\windowbg_click.png" LogicalName="resources/windowbg_click.png" />
+    <Resource Include="resources\windowbg_hover.png" LogicalName="resources/windowbg_hover.png" />
+    <Resource Include="resources\windowclose.png" LogicalName="resources/windowclose.png" />
+    <Resource Include="resources\windowshift_ic_maximize.png" LogicalName="resources/windowshift_ic_maximize.png" />
+    <Resource Include="resources\windowshift_ic_minimize.png" LogicalName="resources/windowshift_ic_minimize.png" />
+    <Resource Include="resources\windowshift_ic_normal.png" LogicalName="resources/windowshift_ic_normal.png" />
+    <Resource Include="resources\win_close_hov.png" LogicalName="resources/win_close_hov.png" />
+    <Resource Include="resources\win_close_sel.png" LogicalName="resources/win_close_sel.png" />
+    <Resource Include="resources\win_max_hov.png" LogicalName="resources/win_max_hov.png" />
+    <Resource Include="resources\win_max_sel.png" LogicalName="resources/win_max_sel.png" />
+    <Resource Include="resources\win_min_hov.png" LogicalName="resources/win_min_hov.png" />
+    <Resource Include="resources\win_min_sel.png" LogicalName="resources/win_min_sel.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Windows.Interactivity" />
+    <Reference Include="System.Management" />
+    <Reference Include="VM.Utility" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="Apps.ColorFun" />
+  </ItemGroup>
+</Project>

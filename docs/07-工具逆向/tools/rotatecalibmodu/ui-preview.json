@@ -1,0 +1,88 @@
+{
+  "controls": [
+    {
+      "type": "RadioSelecter",
+      "name": "InputWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ImagePoints"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ImagePointXs"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ImagePointYs"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "WorldRotateAngles"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RotNums"
+    },
+    {
+      "type": "Boolean",
+      "name": "RevOutputFlag"
+    },
+    {
+      "type": "OpenFileForCalibDialog",
+      "name": "FilePath"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RefreshSignal"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "rotatecalibmodu",
+  "status": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\RotateCalibModu\\RotateCalibModu.xml",
+      "sha256": "ebfee94c61ef36eaf7ccacbe75c2ef4ad14c9f5fef8cc50d1b00388bf8d4909d",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\RotateCalibModu\\RotateCalibModuAlgorithm.xml",
+      "sha256": "a364af2cf2c8b8ed40e21dc84fcb6bb7c1e88ec25a01ba362cd366f4331a0442",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\RotateCalibModu\\RotateCalibModuAlgorithmTab.xml",
+      "sha256": "a6d2e3c283597ac044ec49d572a50c743f5221e0b858488f2a14d559e432e73e",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\RotateCalibModu\\RotateCalibModuCs.xml",
+      "sha256": "045f39cf57b6ced9d0d05b5086422ba20441c9d979162dbc3fd86efc8e9fe339",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\RotateCalibModu\\RotateCalibModuDisplay.xml",
+      "sha256": "0d197a40f4f998dca798f987fa1e09bbfc4b296ec83334ea19b7a03ba7e1a652",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\RotateCalibModu\\ToolItemInfo.xml",
+      "sha256": "d409c5001fda6d473dae330c3e60d9aff84c7870a2c2e1b2f06a4bb72d3b8e9e",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "旋转标定",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>IMVSMarkFindModuControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="datatemplate\paramusercontroldatatemplate.xaml" />
+    <Page Remove="IMVSMarkFindModuControl\MarkFindConfigPanal.xaml" />
+    <Page Remove="IMVSMarkFindModuControl\MarkFindDialogUI.xaml" />
+    <Page Include="datatemplate\paramusercontroldatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="datatemplate/paramusercontroldatatemplate.xaml" />
+    <Page Include="IMVSMarkFindModuControl\MarkFindConfigPanal.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="markfindconfigpanal.xaml" />
+    <Page Include="IMVSMarkFindModuControl\MarkFindDialogUI.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="markfinddialogui.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Apps.XmlParser" />
+    <Reference Include="VMControls.Interface" />
+    <Reference Include="VM.ModuleControl" />
+    <Reference Include="Apps.Data" />
+    <Reference Include="VM.PcUI" />
+    <Reference Include="VM.ExternalCall" />
+    <Reference Include="VM.Xml" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="VM.Controls" />
+    <Reference Include="VM.PlatformSDKCS" />
+    <Reference Include="Apps.Interface" />
+    <Reference Include="VM.Utility" />
+    <Reference Include="Apps.Log" />
+    <Reference Include="Apps.BaseLog" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Apps.ErrorCode" />
+    <Reference Include="VM.Util" />
+    <Reference Include="Apps.ColorFun" />
+    <Reference Include="Apps.UIHelper" />
+    <Reference Include="ModelCommonHelper" />
+  </ItemGroup>
+</Project>

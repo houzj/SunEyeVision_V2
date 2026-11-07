@@ -1,0 +1,284 @@
+{
+  "toolId": "imvsedgepairflawinspmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePairFlawInspModu\\IMVSEdgePairFlawInspModu.xml",
+      "sha256": "0de30f1fc30a4133eba8f9ac573310f8bcf9dbddd024377efb30eedc63b8f9ae",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePairFlawInspModu\\IMVSEdgePairFlawInspModuAlgorithm.xml",
+      "sha256": "0e8aa1fcb36e6b0f74c2360c6c09627e5370e811db2c81c5e577e1bce7d3f407",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePairFlawInspModu\\IMVSEdgePairFlawInspModuAlgorithmTab.xml",
+      "sha256": "88164850f0e4212be014c8285029762a9e2c7fee6f153d5d5c283b7eb3556534",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePairFlawInspModu\\IMVSEdgePairFlawInspModuCs.xml",
+      "sha256": "7170fe2712db294982b6c4c9c12c101fe1d3407c22c9db89992eceb20368aa12",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePairFlawInspModu\\IMVSEdgePairFlawInspModuDisplay.xml",
+      "sha256": "7eb1f029fc99242642fe1109a7477b4c7e909da6eb2b85c2d85e4d5cb8d85bd1",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePairFlawInspModu\\ToolItemInfo.xml",
+      "sha256": "32668037f2ad56a890f94f781e119096642b257c27ed852565ba7578e900cdac",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Edge Model",
+      "IsGenerate": "False"
+    },
+    {
+      "Name": "EdgepatMatchTab"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "RadioSelecter",
+      "name": "RoiSelect"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Panel_EdgePairpatMatch",
+      "name": "EdgePairFlawInspModel"
+    },
+    {
+      "type": "Command",
+      "name": "CreateAutoTraj"
+    },
+    {
+      "type": "CircleSelector",
+      "name": "StartIndicate"
+    },
+    {
+      "type": "Boolean",
+      "name": "AutoTrajAutoCfg"
+    },
+    {
+      "type": "Integer",
+      "name": "AutoTrajStartIdeaWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "AutoTrajStartEdgeStrength"
+    },
+    {
+      "type": "Enumeration",
+      "name": "AutoTrajStartEdge0Polarity"
+    },
+    {
+      "type": "Enumeration",
+      "name": "AutoTrajStartEdge1Polarity"
+    },
+    {
+      "type": "Integer",
+      "name": "AutoTrajMaxWidthBias"
+    },
+    {
+      "type": "Integer",
+      "name": "AutoTrajSmoCoef"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ModEdgePairFindMode"
+    },
+    {
+      "type": "Integer",
+      "name": "ModCaliperDistCourse"
+    },
+    {
+      "type": "Integer",
+      "name": "ModCaliperHeight"
+    },
+    {
+      "type": "Integer",
+      "name": "ModCaliperWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "ModEdgePairIdealWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "ModEdgeStrength"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ModEdgePairEdge0Polarity"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ModEdgePairEdge1Polarity"
+    },
+    {
+      "type": "Expand",
+      "name": null
+    },
+    {
+      "type": "Boolean",
+      "name": "ModFineEdgeEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "ModHalfKernelSize"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePairFindMode"
+    },
+    {
+      "type": "Integer",
+      "name": "CaliperHeight"
+    },
+    {
+      "type": "Integer",
+      "name": "CaliperWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgePairIdealWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeStrength"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePairEdge0Polarity"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePairEdge1Polarity"
+    },
+    {
+      "type": "Boolean",
+      "name": "MidPointEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "LenThresh"
+    },
+    {
+      "type": "Boolean",
+      "name": "WidthEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "WidthOffset"
+    },
+    {
+      "type": "Boolean",
+      "name": "OffsetEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "OffsetThresh"
+    },
+    {
+      "type": "Boolean",
+      "name": "CrackEnable"
+    },
+    {
+      "type": "Boolean",
+      "name": "GradEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "GradThresh"
+    },
+    {
+      "type": "Integer",
+      "name": "GradLen"
+    },
+    {
+      "type": "Boolean",
+      "name": "BubbleEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangBubbleOffset"
+    },
+    {
+      "type": "Integer",
+      "name": "BubbleChangeThresh"
+    },
+    {
+      "type": "Integer",
+      "name": "BubbleLen"
+    },
+    {
+      "type": "Integer",
+      "name": "BubbleGrayChangeNum"
+    },
+    {
+      "type": "Expand",
+      "name": null
+    },
+    {
+      "type": "Boolean",
+      "name": "GrayTrackEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "HalfKernelSize"
+    },
+    {
+      "type": "Integer",
+      "name": "GrayTrackDistol"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FlawResult"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CaliperResult"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Edge0Location"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Edge1Location"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "AssistGroup",
+    "TextDisplayGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

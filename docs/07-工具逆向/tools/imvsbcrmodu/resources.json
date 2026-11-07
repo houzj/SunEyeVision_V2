@@ -1,0 +1,183 @@
+{
+  "toolId": "imvsbcrmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Recognition\\IMVSBcrModu\\IMVSBcrModu.xml",
+      "sha256": "8b3dcce31116abfa7193569ceca21b1f62f7f05f4652dbde856b145f4029892a",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Recognition\\IMVSBcrModu\\IMVSBcrModuAlgorithm.xml",
+      "sha256": "54facbbb310aca697d5d8167fc0fd8f5de76f030bc62563d1778d80114908628",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Recognition\\IMVSBcrModu\\IMVSBcrModuAlgorithmTab.xml",
+      "sha256": "8c3b7df179a3d7671c44e0173d4f50ed9c78617e312b10f616807c633ea0e5ea",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Recognition\\IMVSBcrModu\\IMVSBcrModuCs.xml",
+      "sha256": "b15ffd7841fa5e4bdc05c7e48344e90b3dd2b79e9e03542384735c21ea263bc1",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Recognition\\IMVSBcrModu\\IMVSBcrModuDisplay.xml",
+      "sha256": "c62dc63ab72163d1200b64802da58e48502d079e36ff2dcaf9ed17d6933366a6",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Recognition\\IMVSBcrModu\\ToolItemInfo.xml",
+      "sha256": "1d39798ae632d35314ee189b1dd8eeb29691624408adf87cb5b07a262eb7574a",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Boolean",
+      "name": "CODE39"
+    },
+    {
+      "type": "Boolean",
+      "name": "CODE128"
+    },
+    {
+      "type": "Boolean",
+      "name": "CODABAR"
+    },
+    {
+      "type": "Boolean",
+      "name": "EAN"
+    },
+    {
+      "type": "Boolean",
+      "name": "ITF25"
+    },
+    {
+      "type": "Boolean",
+      "name": "CODE93"
+    },
+    {
+      "type": "Integer",
+      "name": "BarNum"
+    },
+    {
+      "type": "Integer",
+      "name": "PreSampleLevel"
+    },
+    {
+      "type": "Integer",
+      "name": "LocWinSize"
+    },
+    {
+      "type": "Integer",
+      "name": "SegQuietW"
+    },
+    {
+      "type": "Expand",
+      "name": null
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangDfkSize"
+    },
+    {
+      "type": "Integer",
+      "name": "WaitingTime"
+    },
+    {
+      "type": "Boolean",
+      "name": "NumLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangeNumLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "VerifyEnable"
+    },
+    {
+      "type": "Boolean",
+      "name": "NumVerifyEnable"
+    },
+    {
+      "type": "Boolean",
+      "name": "SmallAlphabetVerify"
+    },
+    {
+      "type": "Boolean",
+      "name": "BigAlphabetVerify"
+    },
+    {
+      "type": "Boolean",
+      "name": "SpecialCharVerify"
+    },
+    {
+      "type": "Boolean",
+      "name": "UserStringVerify"
+    },
+    {
+      "type": "String",
+      "name": "UserString"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlobShow"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "RoiSelectGroup",
+    "InheritWayGroup",
+    "AssistGroup",
+    "TextDisplayGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

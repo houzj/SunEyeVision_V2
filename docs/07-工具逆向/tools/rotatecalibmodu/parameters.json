@@ -1,0 +1,306 @@
+{
+  "toolId": "rotatecalibmodu",
+  "parameters": [
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "FilePath",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "",
+          "children": []
+        }
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "Image Point",
+        "Style": "POINT"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "ImagePointX",
+                "ValueType": "float",
+                "IsForce": "true",
+                "isShow": "true"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "ImagePointY",
+                "ValueType": "float",
+                "IsForce": "true",
+                "isShow": "true"
+              },
+              "text": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "WorldRotateAngle",
+        "ValueType": "float",
+        "IsForce": "true",
+        "isShow": "true"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "RotNum",
+        "ValueType": "int",
+        "IsForce": "true",
+        "isShow": "true"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "RefreshSignal",
+        "ValueType": "int",
+        "IsForce": "false",
+        "AutoSubscribe": "false"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "InputImage",
+        "Style": "IMAGE"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImage",
+                "ValueType": "image",
+                "IsForce": "true",
+                "isShow": "true"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImageWidth",
+                "ValueType": "int",
+                "IsForce": "true",
+                "isShow": "true"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImageHeight",
+                "ValueType": "int",
+                "IsForce": "true",
+                "isShow": "true"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImagePixelFormat",
+                "ValueType": "int",
+                "IsForce": "true",
+                "isShow": "true"
+              },
+              "text": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "ModuRunTime",
+        "ValueType": "float",
+        "IsForce": "true",
+        "IsArray": "false"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "ModuStatus",
+        "StructName": "ModuStatus",
+        "ValueType": "int",
+        "IsForce": "true",
+        "isShow": "true"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "remainCount",
+        "ValueType": "int",
+        "IsForce": "true",
+        "isShow": "true"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "RotAxisPoint",
+        "Style": "POINT",
+        "IsArray": "false"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "RotCenterImageX",
+                "ValueType": "float",
+                "IsForce": "true",
+                "isShow": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "RotCenterImageY",
+                "ValueType": "float",
+                "IsForce": "true",
+                "isShow": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "RotPhysicalPoint",
+        "Style": "POINT",
+        "IsArray": "false"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "RotCenterWorldX",
+                "ValueType": "float",
+                "IsForce": "true",
+                "isShow": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "RotCenterWorldY",
+                "ValueType": "float",
+                "IsForce": "true",
+                "isShow": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "RotError",
+        "ValueType": "float",
+        "IsForce": "true",
+        "AddUpInLoop": "false",
+        "IsArray": "false"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "RotWorldError",
+        "ValueType": "float",
+        "IsForce": "true",
+        "AddUpInLoop": "false",
+        "IsArray": "false"
+      },
+      "text": "",
+      "children": []
+    }
+  ],
+  "bindings": [],
+  "conditions": [],
+  "status": "not-started"
+}

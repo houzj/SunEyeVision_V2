@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="DataAssembleModuleControl.ProtocolIn" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:DataAssembleModuleControl" xmlns:system="clr-namespace:System;assembly=mscorlib" xmlns:Diagram="clr-namespace:DataAssembleModuleControl" x:Name="inParamCtrl" Height="183" Width="360">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/NormalButtonStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ScrollBarStyle/RecScrollBarStyle.xaml" />
+        <ResourceDictionary Source="/Apps.XmlUI;component/Styles/ParamUserControlDataTemplate.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ItemsControlStyle/ItemsControlStyle.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter" />
+      <DataTemplate x:Key="ProtocolInputParam_Item">
+        <Grid Margin="0,0,0,6" Height="32" Width="Auto" Visibility="{Binding CustomVisibleA, Converter={StaticResource bool2VisibilityConverter}}">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="70" />
+            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="50" />
+          </Grid.ColumnDefinitions>
+          <TextBlock Grid.Column="0" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding IndexA}" />
+          <ContentControl Grid.Column="1" Margin="20,0,6,0" ContentTemplate="{StaticResource ButtonSelecter_sub}" Content="{Binding FilterSelecter}" />
+          <Button Grid.Column="2" Margin="20,0,5,0" Style="{StaticResource BaseImage_ButtonStyle}" Command="{Binding DeleteCommand}">
+            <Image Stretch="None" Source="/Apps.Style;component/Resources/delete_normal.png" />
+            <FrameworkElement.Tag>
+              <Image Stretch="None" Source="/Apps.Style;component/Resources/delete_click.png" />
+            </FrameworkElement.Tag>
+          </Button>
+        </Grid>
+      </DataTemplate>
+      <DataTemplate x:Key="ProtocolInputParam_Container">
+        <Grid Margin="10,0,0,0">
+          <StackPanel>
+            <ItemsControl Name="listVarItems" MaxHeight="151" ItemTemplate="{StaticResource ProtocolInputParam_Item}" Style="{StaticResource ScrollItemsControlStyle}" ItemsSource="{Binding ItemsA}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel Orientation="Vertical" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+            </ItemsControl>
+            <Button Margin="22,10,0,3" HorizontalAlignment="Left" Style="{StaticResource BaseImage_ButtonStyle}" Command="{Binding AddCommand}">
+              <Image Stretch="None" Source="/Apps.Style;component/Resources/add_normal.png" />
+              <FrameworkElement.Tag>
+                <Image Stretch="None" Source="/Apps.Style;component/Resources/add_click.png" />
+              </FrameworkElement.Tag>
+            </Button>
+          </StackPanel>
+        </Grid>
+      </DataTemplate>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid>
+    <ContentControl ContentTemplate="{StaticResource ProtocolInputParam_Container}" Content="{Binding DataContext, ElementName=inParamCtrl}" />
+  </Grid>
+</UserControl>

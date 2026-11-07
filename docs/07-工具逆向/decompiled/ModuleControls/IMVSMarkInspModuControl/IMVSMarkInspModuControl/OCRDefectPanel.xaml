@@ -1,0 +1,105 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="IMVSMarkInspModuControl.OCRDefectPanel" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:local="clr-namespace:IMVSMarkInspModuControl" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization">
+  <Border Padding="18,0" Background="#00FFFFFF">
+    <Grid UseLayoutRounding="True">
+      <FrameworkElement.Resources>
+        <ResourceDictionary>
+          <ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary Source="/Apps.XmlUI;component/Styles/ParamUserControlDataTemplate.xaml" />
+          </ResourceDictionary.MergedDictionaries>
+          <local:ItemsConverter x:Key="itemsCvt" />
+          <Style x:Key="sp1" TargetType="{x:Type ItemsControl}">
+            <Style.Triggers>
+              <DataTrigger Value="true" Binding="{Binding RelativeSource={x:Static RelativeSource.Self}, Path=ItemsSource, Converter={StaticResource itemsCvt}}">
+                <Setter Property="Template">
+                  <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ItemsControl}">
+                      <Grid Background="#FCFCFC">
+                        <Grid.RowDefinitions>
+                          <RowDefinition Height="0.6*" />
+                          <RowDefinition Height="auto" />
+                          <RowDefinition Height="auto" />
+                          <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="*" />
+                          <ColumnDefinition Width="auto" />
+                          <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Image Grid.Row="1" Grid.Column="1" Source="/Apps.XmlUI;component/Resources/pic_颜色识别.png" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{DynamicResource 请添加模型}" FontFamily="Microsoft YaHei UI" FontSize="12" Foreground="#666666" />
+                      </Grid>
+                    </ControlTemplate>
+                  </Setter.Value>
+                </Setter>
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </ResourceDictionary>
+      </FrameworkElement.Resources>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="40" />
+        <RowDefinition />
+      </Grid.RowDefinitions>
+      <Button Name="TrainButton" Grid.Row="0" Width="100" Margin="0,4,5,0" VerticalAlignment="Center" HorizontalAlignment="Left" Style="{StaticResource BottomButtonStyle}" Click="ModelTrain_Click">
+        <StackPanel Orientation="Horizontal">
+          <Image VerticalAlignment="Center" Margin="0,0,5,0">
+            <FrameworkElement.Style>
+              <Style TargetType="{x:Type Image}">
+                <Setter Property="Source" Value="/Apps.XmlUI;component/Resources/btn_新建模板_normal.png" />
+                <Style.Triggers>
+                  <DataTrigger Value="True" Binding="{Binding ElementName=Button, Path=IsPressed}">
+                    <Setter Property="Source" Value="/Apps.XmlUI;component/Resources/btn_新建模板_click.png" />
+                  </DataTrigger>
+                  <DataTrigger Value="True" Binding="{Binding ElementName=Button, Path=IsMouseOver}">
+                    <Setter Property="Source" Value="/Apps.XmlUI;component/Resources/btn_新建模板_click.png" />
+                  </DataTrigger>
+                  <DataTrigger Value="False" Binding="{Binding ElementName=Button, Path=IsEnabled}">
+                    <Setter Property="Source" Value="/Apps.XmlUI;component/Resources/btn_新建模板 _disable.png" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+          </Image>
+          <ContentControl VerticalAlignment="Center" Content="{DynamicResource Lang_OCRDefect_TrainModel}" />
+        </StackPanel>
+      </Button>
+      <Menu Name="Menu" Grid.Row="0" HorizontalAlignment="Right" Background="#00FFFFFF" Height="32">
+        <controls:IconMenuItem ToolTip="{DynamicResource 导入}" Margin="0,8,0,0" ShowMask="False" Height="24" Width="30" NormalIcon="/Apps.XmlUI;component/Resources/ic_导入_normal.png" HoverIcon="/Apps.XmlUI;component/Resources/ic_导入_click.png" ClickIcon="/Apps.XmlUI;component/Resources/ic_导入_click.png" Click="LoadModel_Click" />
+        <controls:IconMenuItem ToolTip="{DynamicResource 导出}" Margin="0,8,0,0" ShowMask="False" Height="24" Width="30" NormalIcon="/Apps.XmlUI;component/Resources/ic_导出2_normal.png" HoverIcon="/Apps.XmlUI;component/Resources/ic_导出2_click.png" ClickIcon="/Apps.XmlUI;component/Resources/ic_导出2_click.png" DisableIcon="/Apps.XmlUI;component/Resources/ic_导出2_disable.png" Click="ExportModel_Click">
+          <FrameworkElement.Style>
+            <Style TargetType="{x:Type controls:IconMenuItem}">
+              <Setter Property="IsEnabled" Value="True" />
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding ItemsSource, ElementName=ItemsControl}" Value="{x:Null}">
+                  <Setter Property="IsEnabled" Value="False" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkElement.Style>
+        </controls:IconMenuItem>
+        <controls:IconMenuItem ToolTip="{DynamicResource Clear}" Margin="0,8,0,0" ShowMask="False" Height="24" Width="30" NormalIcon="/Apps.XmlUI;component/Resources/ic_清空图片_normal.png" HoverIcon="/Apps.XmlUI;component/Resources/ic_清空图片_click.png" ClickIcon="/Apps.XmlUI;component/Resources/ic_清空图片_click.png" Click="ClearModel_Click" />
+      </Menu>
+      <Border Grid.Row="1" BorderBrush="#E0DFDE" BorderThickness="1" Margin="0,8,0,14">
+        <FrameworkElement.Resources>
+          <ResourceDictionary>
+            <ItemsPanelTemplate x:Key="ItemsPanelTemplate">
+              <WrapPanel IsItemsHost="True" HorizontalAlignment="Center" Width="{Binding (FrameworkElement.ActualWidth), RelativeSource={RelativeSource AncestorType=ScrollContentPresenter}}" />
+            </ItemsPanelTemplate>
+            <DataTemplate x:Key="DataTemplate">
+              <Border BorderBrush="#00FFFFFF" BorderThickness="2" Margin="5">
+                <StackPanel Orientation="Vertical">
+                  <Image Width="38" Height="54" Stretch="Uniform" HorizontalAlignment="Center" Source="{Binding Source}" />
+                  <TextBlock Margin="0,3,0,0" HorizontalAlignment="Center" Foreground="#666666" FontSize="14" FontFamily="Microsoft YaHei" Text="{Binding Name}" />
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ResourceDictionary>
+        </FrameworkElement.Resources>
+        <ScrollViewer Name="ScrollViewer" Style="{StaticResource RecScrollViewer}" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+          <ItemsControl Name="ItemsControl" Style="{StaticResource sp1}" ItemsPanel="{DynamicResource ItemsPanelTemplate}" ItemTemplate="{DynamicResource DataTemplate}" Background="#FCFCFC" />
+        </ScrollViewer>
+      </Border>
+    </Grid>
+  </Border>
+</UserControl>

@@ -1,0 +1,59 @@
+{
+  "toolId": "formatmodule",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\FormatModule\\FormatModule.xml",
+      "sha256": "1ed23d3becac694e7924f54016d05004dedc1d0915ec6ccd5cc0538e7196fcc4",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\FormatModule\\FormatModuleAlgorithm.xml",
+      "sha256": "53caad6d43561f0dd7847769c3511708b138ba82565619693f4587e1c089dccf",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\FormatModule\\FormatModuleAlgorithmTab.xml",
+      "sha256": "4075d3199f94abb6a5e952829233f848b4ae82eff9771a3d7da0316eeebc868a",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\FormatModule\\FormatModuleCs.xml",
+      "sha256": "f4c3583962b72cbe1b3c2f8d69e4e9a6861f17d4d62f888fc86aecd4597e7ed5",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\FormatModule\\FormatModuleDisplay.xml",
+      "sha256": "aca1df260ce0662594470b36458b3c089e60eabfc50adca5be046a787c0bfec9",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\FormatModule\\ToolItemInfo.xml",
+      "sha256": "b9e67c315ed9fca3a1bc50c9f8c2d285cbb781a4283aceb88f41df88617ce68c",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "Format",
+      "name": "StringInput"
+    }
+  ],
+  "sharedUiGroups": [
+    "TextDisplayGroup"
+  ],
+  "status": "inventory-only"
+}

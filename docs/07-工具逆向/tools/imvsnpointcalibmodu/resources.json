@@ -1,0 +1,206 @@
+{
+  "toolId": "imvsnpointcalibmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\IMVSNPointCalibModu.xml",
+      "sha256": "246014967abd4311c77a904fbf02636f557bf61c25beca8f051243dc0c07c25f",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\IMVSNPointCalibModuAlgorithm.xml",
+      "sha256": "f2c29eddc36d9ec23e5a1c8e107a1a53f2d1a14489b10f9ce0c148cb9e62ced2",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\IMVSNPointCalibModuAlgorithmTab.xml",
+      "sha256": "a3e49f17109e49d6c26775bdb2fe956df0af1db1fbcbf5a111dbc2ba6a749435",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\IMVSNPointCalibModuCs.xml",
+      "sha256": "dc255752d8040d063a4416a93fb3b69ca29c2d1cabe648a3e0fd84ddb9719ec3",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\IMVSNPointCalibModuDisplay.xml",
+      "sha256": "88de08e7d5881777e9c2096b7ba9d7dab826f62f547da129352991866f2cb0d9",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu\\ToolItemInfo.xml",
+      "sha256": "7417fa1d475304e53f7622877d22c9cc7eab7e2a82b73e252d2ae492a1f326da",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "Enumeration",
+      "name": "CalibPointGet"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "CalibPointInput"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PicPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PicPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PicPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PhyPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PhyPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PhyPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ImageRotateAngle"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "WorldRotateAngle"
+    },
+    {
+      "type": "Integer",
+      "name": "CalibPointTotalNum"
+    },
+    {
+      "type": "EditButton_Calib",
+      "name": "RotPointTotalNum"
+    },
+    {
+      "type": "Boolean",
+      "name": "TeachEnable"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Trigger"
+    },
+    {
+      "type": "String",
+      "name": "TeachFlag"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TeachFlagInput"
+    },
+    {
+      "type": "Float",
+      "name": "BasePointX"
+    },
+    {
+      "type": "Float",
+      "name": "BasePointY"
+    },
+    {
+      "type": "Float",
+      "name": "MoveAlignX"
+    },
+    {
+      "type": "Float",
+      "name": "MoveAlignY"
+    },
+    {
+      "type": "Enumeration",
+      "name": "MoveFirstType"
+    },
+    {
+      "type": "Integer",
+      "name": "ChangeDirectionMoveTime"
+    },
+    {
+      "type": "Float",
+      "name": "BaseAngle"
+    },
+    {
+      "type": "Float",
+      "name": "MoveAngle"
+    },
+    {
+      "type": "Boolean",
+      "name": "UseRelativeCoordinates"
+    },
+    {
+      "type": "Integer",
+      "name": "CalibOrigin"
+    },
+    {
+      "type": "Boolean",
+      "name": "RefreshFileEnable"
+    },
+    {
+      "type": "SaveFileDialog",
+      "name": "SaveCalibPath"
+    },
+    {
+      "type": "OpenFileForCalibDialog",
+      "name": "CalibPathName"
+    },
+    {
+      "type": "Enumeration",
+      "name": "CameraMode"
+    },
+    {
+      "type": "Enumeration",
+      "name": "HomoFreedom"
+    },
+    {
+      "type": "Expand",
+      "name": null
+    },
+    {
+      "type": "Enumeration",
+      "name": "WeightFun"
+    },
+    {
+      "type": "Integer",
+      "name": "WeightFactor"
+    },
+    {
+      "type": "Integer",
+      "name": "DistThreshold"
+    },
+    {
+      "type": "Integer",
+      "name": "SampleRatio"
+    },
+    {
+      "type": "Command",
+      "name": "Clear"
+    }
+  ],
+  "sharedUiGroups": [
+    "TextDisplayGroup"
+  ],
+  "status": "inventory-only"
+}

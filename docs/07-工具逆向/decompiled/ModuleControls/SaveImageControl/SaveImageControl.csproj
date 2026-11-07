@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>SaveImageControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="datatemplate\paramusercontroldatatemplate.xaml" />
+    <Page Include="datatemplate\paramusercontroldatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="datatemplate/paramusercontroldatatemplate.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Apps.XmlParser" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="VM.Core" />
+    <Reference Include="Apps.Interface" />
+    <Reference Include="Apps.UIHelper" />
+    <Reference Include="VM.Xml" />
+    <Reference Include="System.Core" />
+    <Reference Include="Apps.Log" />
+    <Reference Include="Apps.BaseLog" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="SaveImageCs" />
+    <Reference Include="VM.Controls" />
+    <Reference Include="VMControls.Interface" />
+  </ItemGroup>
+</Project>

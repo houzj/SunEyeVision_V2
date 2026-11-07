@@ -1,0 +1,8 @@
+namespace Apps.XmlParser.ParamTab;
+
+public enum PARAM_VALUE_TYPE
+{
+	PARAM_VALUE_TYPE_INT,
+	PARAM_VALUE_TYPE_FLOAT,
+	PARAM_VALUE_TYPE_STRING
+}

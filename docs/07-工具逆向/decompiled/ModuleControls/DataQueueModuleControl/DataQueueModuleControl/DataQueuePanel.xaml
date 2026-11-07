@@ -1,0 +1,134 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="DataQueueModuleControl.DataQueuePanel" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:listView="clr-namespace:HikPcUI.ListView;assembly=VM.PcUI" xmlns:system="clr-namespace:System;assembly=mscorlib" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:dataQueueCenter="clr-namespace:DataQueueModuleControl" x:Name="source" MouseDown="Source_MouseDown">
+  <Grid Background="#F2F3F3">
+    <FrameworkElement.Resources>
+      <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+          <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/NormalButtonStyle.xaml" />
+          <ResourceDictionary Source="/Apps.Style;component/TextBlockStyle/TextBlockStyle.xaml" />
+          <ResourceDictionary Source="/Apps.Style;component/ScrollBarStyle/RecScrollBarStyle.xaml" />
+          <ResourceDictionary Source="/Apps.Style;component/ComboBoxStyle/ListViewComboBoxStyle.xaml" />
+          <ResourceDictionary Source="/Apps.Style;component/TextBoxStyle/TextBoxStyle.xaml" />
+          <ResourceDictionary Source="/Apps.XmlUI;component/Styles/ParamUserControlDataTemplate.xaml" />
+        </ResourceDictionary.MergedDictionaries>
+        <Style x:Key="{x:Type TextBlock}" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource CategoryHeader}" />
+        <Style x:Key="{x:Type Button}" TargetType="{x:Type Button}" BasedOn="{StaticResource addButton}" />
+        <Style x:Key="label" TargetType="{x:Type TextBlock}">
+          <Setter Property="HorizontalAlignment" Value="Left" />
+          <Setter Property="VerticalAlignment" Value="Center" />
+          <Setter Property="FontFamily" Value="Microsoft YaHei" />
+          <Setter Property="Foreground" Value="#666666" />
+          <Setter Property="FontSize" Value="14px" />
+        </Style>
+        <Style x:Key="{x:Type ComboBox}" TargetType="{x:Type ComboBox}" BasedOn="{StaticResource ListViewComboBoxStyle}" />
+        <Style x:Key="delete" TargetType="{x:Type Button}" BasedOn="{StaticResource deleteButton}">
+          <EventSetter Event="Click" Handler="Delete_OnHandler" />
+        </Style>
+        <Style x:Key="{x:Type ItemsControl}" TargetType="{x:Type ItemsControl}">
+          <Setter Property="FrameworkElement.UseLayoutRounding" Value="True" />
+          <Setter Property="ItemsPanel">
+            <Setter.Value>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Vertical" />
+              </ItemsPanelTemplate>
+            </Setter.Value>
+          </Setter>
+          <Setter Property="ItemTemplate">
+            <Setter.Value>
+              <DataTemplate DataType="dataQueueCenter:DataQueueItem">
+                <Border BorderBrush="#FFFF0000" Padding="0,1" BorderThickness="{Binding BorderThicknessA}">
+                  <Grid Margin="0,3,10,3">
+                    <FrameworkElement.Resources>
+                      <ResourceDictionary>
+                        <Style x:Key="{x:Type TextBox}" TargetType="{x:Type TextBox}" BasedOn="{StaticResource input}" />
+                      </ResourceDictionary>
+                    </FrameworkElement.Resources>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="1.2*" />
+                      <ColumnDefinition Width="2*" />
+                      <ColumnDefinition Width="4*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock VerticalAlignment="Center" Margin="10,0" HorizontalAlignment="Left" Foreground="#666666" FontSize="14" FontFamily="Microsoft YaHei" Text="{Binding Index}" />
+                    <ComboBox Height="32" Grid.Column="1" HorizontalAlignment="Stretch" Margin="0,0,10,0" SelectedItem="{Binding Type}">
+                      <system:String>int</system:String>
+                      <system:String>float</system:String>
+                      <system:String>string</system:String>
+                      <system:String>IMAGE</system:String>
+                    </ComboBox>
+                    <Grid Column="2" VerticalAlignment="Center">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="4*" />
+                        <ColumnDefinition Width="1*" />
+                      </Grid.ColumnDefinitions>
+                      <TextBox HorizontalAlignment="Stretch" Margin="0,0,10,0" Text="{Binding Name}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Self}}" />
+                      <Button Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource delete}" />
+                    </Grid>
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </Setter.Value>
+          </Setter>
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type ItemsControl}">
+                <ScrollViewer Tag="1" Style="{StaticResource RecScrollViewer}">
+                  <ItemsPresenter SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+                </ScrollViewer>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+      </ResourceDictionary>
+    </FrameworkElement.Resources>
+    <Grid Margin="18,0,14,0">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="34" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="32" />
+        <RowDefinition Height="44" />
+        <RowDefinition Height="36" />
+      </Grid.RowDefinitions>
+      <Border BorderThickness="0,0,0,1" BorderBrush="#E0DFDE">
+        <TextBlock Text="{DynamicResource Lang_DataQueueColumnCount}" />
+      </Border>
+      <Border BorderThickness="0,0,0,1" Grid.Row="2" BorderBrush="#E0DFDE">
+        <TextBlock Text="{DynamicResource Lang_DataQueueRowCount}" />
+      </Border>
+      <Grid Row="3" VerticalAlignment="Center">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <TextBlock Style="{StaticResource label}" Text="{DynamicResource Lang_DataQueueCacheRowCount}" ToolTip="{DynamicResource Lang_DataQueueCacheRowCountTip}" />
+        <listView:SliderArrange Grid.Column="1" Margin="6,0,0,0" HorizontalAlignment="Stretch" Height="32" TBtnBgNormal="/VM.PcUI;component/Resources/inputbox_ic_triangle_top_normal.png" TBtnBgHover="/VM.PcUI;component/Resources/inputbox_ic_triangle_top_click.png" FontSize="14" FontFamily="Microsoft YaHei" Foreground="#808080" TBackground="#FCFCFC" TBorderBrush="#CCCCCD" SliderTickFrequency="1" Minimum="1" Maximum="256" StartValue="{Binding ElementName=source, Path=CacheRowCount, Mode=TwoWay}" />
+      </Grid>
+      <Grid Row="4" VerticalAlignment="Top" Margin="0,-2,0,0">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <TextBlock Style="{StaticResource label}" Text="{DynamicResource Lang_ImageQueueRowCount}" ToolTip="{DynamicResource Lang_ImageQueueRowCount}" />
+        <listView:SliderArrange Grid.Column="1" Margin="6,0,0,0" HorizontalAlignment="Stretch" Height="32" TBtnBgNormal="/VM.PcUI;component/Resources/inputbox_ic_triangle_top_normal.png" TBtnBgHover="/VM.PcUI;component/Resources/inputbox_ic_triangle_top_click.png" FontSize="14" FontFamily="Microsoft YaHei" Foreground="#808080" TBackground="#FCFCFC" TBorderBrush="#CCCCCD" SliderTickFrequency="1" Minimum="1" Maximum="20" StartValue="{Binding ElementName=source, Path=ImageCacheCount, Mode=TwoWay}" />
+      </Grid>
+      <Grid Row="1" VerticalAlignment="Top">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="36" />
+          <RowDefinition Height="*" />
+          <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid Row="0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1.2*" />
+            <ColumnDefinition Width="2*" />
+            <ColumnDefinition Width="4*" />
+          </Grid.ColumnDefinitions>
+          <TextBlock Grid.Column="0" Text="{DynamicResource Number}" />
+          <TextBlock Grid.Column="1" Text="{DynamicResource LabelValueType}" />
+          <TextBlock Grid.Column="2" Text="{DynamicResource Lang_DataQueueCName}" />
+        </Grid>
+        <ItemsControl Name="controlitem" Grid.Row="1" ItemsSource="{Binding ElementName=source, Path=Items}" />
+        <Button Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,3,0,0" Click="AddItem_OnClick" />
+      </Grid>
+    </Grid>
+  </Grid>
+</UserControl>

@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>IMVSEdgePairFlawInspModuControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="datatemplate\paramusercontroldatatemplate.xaml" />
+    <Page Remove="IMVSEdgePairFlawInspModuControl\EdgepatMatchConfigPanel.xaml" />
+    <Page Remove="IMVSEdgePairFlawInspModuControl\EdgepatMatchDialogWindow.xaml" />
+    <Page Include="datatemplate\paramusercontroldatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="datatemplate/paramusercontroldatatemplate.xaml" />
+    <Page Include="IMVSEdgePairFlawInspModuControl\EdgepatMatchConfigPanel.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="edgepatmatchconfigpanel.xaml" />
+    <Page Include="IMVSEdgePairFlawInspModuControl\EdgepatMatchDialogWindow.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="edgepatmatchdialogwindow.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Apps.XmlParser" />
+    <Reference Include="VM.PcUI" />
+    <Reference Include="Mvvm" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="VM.PlatformSDKCS" />
+    <Reference Include="VM.ModuleControl" />
+    <Reference Include="Apps.Data" />
+    <Reference Include="VM.Xml" />
+    <Reference Include="System.Xml" />
+    <Reference Include="VMControls.Interface" />
+    <Reference Include="VM.Controls" />
+    <Reference Include="System.Core" />
+    <Reference Include="Apps.ErrorCode" />
+    <Reference Include="Apps.Log" />
+    <Reference Include="VM.Utility" />
+    <Reference Include="Apps.Interface" />
+    <Reference Include="ModelCommonHelper" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="VM.ExternalCall" />
+    <Reference Include="VM.Core" />
+  </ItemGroup>
+</Project>

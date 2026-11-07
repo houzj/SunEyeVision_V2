@@ -1,0 +1,45 @@
+{
+  "stableToolId": "imvsc2cmeasuremodu",
+  "originalPlugin": "IMVSC2CMeasureModu",
+  "displayName": "圆圆测量",
+  "originalCategory": "Measurement",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSC2CMeasureModu",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "resourceCount": 6,
+  "parameterCount": 46,
+  "inputCount": 5,
+  "outputCount": 15,
+  "uiControlCount": 70,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/C2CMeasureModuTool.cs",
+      "evidenceType": "decompiled managed source"
+    },
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/C2CMeasureModuParams.cs",
+      "evidenceType": "decompiled managed source"
+    },
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/C2CMeasureResult.cs",
+      "evidenceType": "decompiled managed source"
+    }
+  ],
+  "managedMembers": [
+    "C2CMeasureModuTool constructor/Clone/Dispose",
+    "C2CMeasureModuParams CircleChoose/find/edge/fit/limit ParamItems",
+    "C2CMeasureResult detect-region buffer copy/finalizer"
+  ],
+  "unknowns": [
+    "native circle fitting/caliper algorithm and Process/ProcessAlg ABI",
+    "input circle/ROI mapping and threshold semantics",
+    "measurement output/status fields",
+    "UI bindings/theme",
+    "save/reload/stop runtime behavior"
+  ]
+}

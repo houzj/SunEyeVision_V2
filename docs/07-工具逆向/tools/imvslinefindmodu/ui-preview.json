@@ -1,0 +1,192 @@
+{
+  "controls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FindMode"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePolarity"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeStrength"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelSize"
+    },
+    {
+      "type": "Integer_CircleFind",
+      "name": "RayNum"
+    },
+    {
+      "type": "Boolean",
+      "name": "RevertFindOrient"
+    },
+    {
+      "type": "Boolean",
+      "name": "AngleNormalization"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectNum"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectDist"
+    },
+    {
+      "type": "Integer",
+      "name": "RegionWidth"
+    },
+    {
+      "type": "Enumeration",
+      "name": "InitType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FitFun"
+    },
+    {
+      "type": "Boolean",
+      "name": "LineAngleEnable"
+    },
+    {
+      "type": "Float",
+      "name": "ExpectAngle"
+    },
+    {
+      "type": "Float",
+      "name": "RotateTolerance"
+    },
+    {
+      "type": "Boolean",
+      "name": "FitPointsLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangFitPointsLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "AngleLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangAngleLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "ScoreLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangScoreLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ThroughLine"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "OutlinePoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CaliperBox"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "DetectCaliperBox"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvslinefindmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSLineFindModu\\IMVSLineFindModu.xml",
+      "sha256": "830f49282c0214ba251e907a55502ce84b695b6986b52a190faae99a904f6393",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSLineFindModu\\IMVSLineFindModuAlgorithm.xml",
+      "sha256": "e2a9599a4c2376a16b64c75bd02e151f70d1d47e7916e1765299d9ca187d133c",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSLineFindModu\\IMVSLineFindModuAlgorithmTab.xml",
+      "sha256": "b5944653ef94ad477e6784393365139da7e432a2a9aa1c7d3d9180a4febb7120",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSLineFindModu\\IMVSLineFindModuCs.xml",
+      "sha256": "60a628fe0cc4e827ccfd636a4cf804e42531e91d9ae574c304ebe41ae29127c0",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSLineFindModu\\IMVSLineFindModuDisplay.xml",
+      "sha256": "c971ca2387f3acf832b490d9b5a6ac32076fdfaa3541199e01496ad9f9fb9886",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSLineFindModu\\ToolItemInfo.xml",
+      "sha256": "e5da88ce34f1f16c495c8009f5c8ea852ac26c32e5a711b4d0346029cbcb871e",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "直线查找",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

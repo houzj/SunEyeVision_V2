@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Control x:Class="IMVSPixelCountModuVAControl.UI.RangeConfigListPanel" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:IMVSPixelCountModuVAControl.UI" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:PCUI="clr-namespace:Apps.PcUI.Controls;assembly=Apps.PcUI">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/BottomButtonStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ItemsControlStyle/ItemsControlStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ComboBoxStyle/ListViewComboBoxStyle.xaml" />
+        <ResourceDictionary Source="/Apps.XmlUI;component/Styles/ParamUserControlDataTemplate.xaml" />
+        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+        <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Control.Template>
+    <ControlTemplate>
+      <Grid Background="#f2f3f5" Focusable="True" MouseDown="Grid_MouseDown">
+        <Grid Margin="10" VerticalAlignment="Top">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="32" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+          </Grid.RowDefinitions>
+          <TextBlock VerticalAlignment="Center" Margin="5,0,0,0" Text="{DynamicResource Threshold Range}" FontWeight="Bold" FontSize="14" FontFamily="Microsoft YaHei" Foreground="{DynamicResource Col_ModuleConfig_Title_Foreground}" />
+          <ItemsControl Name="itemControl" Grid.Row="1" MaxHeight="233" Style="{StaticResource ScrollItemsControlStyle}" ItemsSource="{Binding ConfigList, IsAsync=True}" ItemTemplate="{Binding ItemTemplate, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+          <StackPanel Grid.Row="2" Orientation="Horizontal">
+            <Button Margin="7,6,0,0" Style="{StaticResource BaseImage_ButtonStyle}" HorizontalAlignment="Left" Command="{Binding AddCommand}">
+              <Image Stretch="None" Source="/Apps.Style;component/Resources/add_normal.png" />
+              <FrameworkElement.Tag>
+                <Image Stretch="None" Source="/Apps.Style;component/Resources/add_click.png" />
+              </FrameworkElement.Tag>
+            </Button>
+            <Button Margin="4,4,0,0" Grid.Column="1" Style="{StaticResource BaseImage_ButtonStyle}" Visibility="{Binding DelEnable, Converter={StaticResource bool2VisibilityConverter}}" Command="{Binding DeleteCommand}">
+              <Image Stretch="None" Source="/Apps.Style;component/Resources/delete_normal.png" />
+              <FrameworkElement.Tag>
+                <Image Stretch="None" Source="/Apps.Style;component/Resources/delete_click.png" />
+              </FrameworkElement.Tag>
+            </Button>
+          </StackPanel>
+        </Grid>
+        <PCUI:ProgressMask Name="Pro" Visibility="Collapsed" IsShowProgressBar="False" Message="{DynamicResource 正在加载数据}" />
+      </Grid>
+      <ControlTemplate.Triggers>
+        <DataTrigger Binding="{Binding ItemsSource, ElementName=itemControl}" Value="{x:Null}">
+          <Setter TargetName="Pro" Property="UIElement.Visibility" Value="Visible" />
+        </DataTrigger>
+      </ControlTemplate.Triggers>
+    </ControlTemplate>
+  </Control.Template>
+</Control>

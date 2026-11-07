@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>FeatureMatchCommonControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="base\featurematchconfigpanal.xaml" />
+    <Page Remove="datatemplate\paramusercontroldatatemplate.xaml" />
+    <Page Remove="themes\generic.xaml" />
+    <Page Include="base\featurematchconfigpanal.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/featurematchconfigpanal.xaml" />
+    <Page Include="datatemplate\paramusercontroldatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="datatemplate/paramusercontroldatatemplate.xaml" />
+    <Page Include="themes\generic.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="themes/generic.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="VMControls.Interface" />
+    <Reference Include="Apps.BaseData" />
+    <Reference Include="Apps.XmlParser" />
+    <Reference Include="Apps.Data" />
+    <Reference Include="VM.ModuleControl" />
+    <Reference Include="VM.PcUI" />
+    <Reference Include="System.Core" />
+    <Reference Include="VM.CommonData" />
+    <Reference Include="Mvvm" />
+    <Reference Include="VM.Utility" />
+    <Reference Include="Apps.Log" />
+    <Reference Include="Apps.BaseLog" />
+    <Reference Include="VM.Xml" />
+    <Reference Include="VM.Util" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="VM.ExternalCall" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="VM.Controls" />
+  </ItemGroup>
+</Project>

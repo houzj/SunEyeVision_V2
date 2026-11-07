@@ -1,0 +1,471 @@
+{
+  "toolId": "imvsimagefixturemodu",
+  "parameters": [],
+  "inputs": [
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "InputImage",
+        "Style": "IMAGE"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImage",
+                "ValueType": "image",
+                "IsForce": "true"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImageWidth",
+                "ValueType": "int",
+                "IsForce": "true"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImageHeight",
+                "ValueType": "int",
+                "IsForce": "true"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "InImagePixelFormat",
+                "ValueType": "int",
+                "IsForce": "true"
+              },
+              "text": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "Position Correction Info",
+        "Style": "FIXTURE"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "Fixtured Point",
+                "Style": "POINT"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "FixtureInitPointX",
+                        "ValueType": "float",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "FixtureInitPointY",
+                        "ValueType": "float",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "FixtureInitAngle",
+                "ValueType": "float",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "FixtureInitScaleX",
+                "ValueType": "float",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "FixtureInitScaleY",
+                "ValueType": "float",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "Unfixtured Point",
+                "Style": "POINT"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "FixtureRunPointX",
+                        "ValueType": "float",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "FixtureRunPointY",
+                        "ValueType": "float",
+                        "IsForce": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "FixtureRunAngle",
+                "ValueType": "float",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "FixtureRunScaleX",
+                "ValueType": "float",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "FixtureRunScaleY",
+                "ValueType": "float",
+                "IsForce": "false"
+              },
+              "text": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "ModuRunTime",
+        "ValueType": "float",
+        "IsForce": "true",
+        "IsArray": "false"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "ModuStatus",
+        "ValueType": "int",
+        "IsForce": "true",
+        "IsArray": "false"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "OutputImage",
+        "Style": "IMAGE",
+        "IsArray": "false"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "OutImage",
+                "ValueType": "image",
+                "IsForce": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "OutImageWidth",
+                "ValueType": "int",
+                "IsForce": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "OutImageHeight",
+                "ValueType": "int",
+                "IsForce": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "OutImagePixelFormat",
+                "ValueType": "int",
+                "IsForce": "true",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "Output Position Correction Info",
+        "Style": "FIXTURE",
+        "Visible": "false"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "Output Fixtured Point",
+                "Style": "POINT",
+                "Visible": "false"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "OutputFixtureInitPointX",
+                        "ValueType": "float",
+                        "IsForce": "false",
+                        "Visible": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "OutputFixtureInitPointY",
+                        "ValueType": "float",
+                        "IsForce": "false",
+                        "Visible": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "OutputFixtureInitAngle",
+                "ValueType": "float",
+                "IsForce": "false",
+                "Visible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "OutputFixtureInitScaleX",
+                "ValueType": "float",
+                "IsForce": "false",
+                "Visible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "OutputFixtureInitScaleY",
+                "ValueType": "float",
+                "IsForce": "false",
+                "Visible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Combination",
+              "attributes": {
+                "Name": "Output Unfixtured Point",
+                "Style": "POINT",
+                "Visible": "false"
+              },
+              "text": "",
+              "children": [
+                {
+                  "type": "Filters",
+                  "attributes": {},
+                  "text": "",
+                  "children": [
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "OutputFixtureRunPointX",
+                        "ValueType": "float",
+                        "IsForce": "false",
+                        "Visible": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    },
+                    {
+                      "type": "Filter",
+                      "attributes": {
+                        "Name": "OutputFixtureRunPointY",
+                        "ValueType": "float",
+                        "IsForce": "false",
+                        "Visible": "false"
+                      },
+                      "text": "",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "OutputFixtureRunAngle",
+                "ValueType": "float",
+                "IsForce": "false",
+                "Visible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "OutputFixtureRunScaleX",
+                "ValueType": "float",
+                "IsForce": "false",
+                "Visible": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "OutputFixtureRunScaleY",
+                "ValueType": "float",
+                "IsForce": "false",
+                "Visible": "false"
+              },
+              "text": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "bindings": [],
+  "conditions": [],
+  "status": "not-started",
+  "evidenceSource": [
+    "docs/plugins/inventory.json"
+  ],
+  "evidenceStatus": "原件声明快照；行为与生命周期未由此证明"
+}

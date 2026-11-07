@@ -1,0 +1,36 @@
+{
+  "stableToolId": "imvscalibtransformmodu",
+  "originalPlugin": "IMVSCalibTransformModu",
+  "displayName": "标定转换",
+  "originalCategory": "Calculation",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSCalibTransformModu",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "resourceCount": 6,
+  "parameterCount": 2,
+  "inputCount": 5,
+  "outputCount": 12,
+  "uiControlCount": 11,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [
+    {
+      "path": "docs/plugins/inventory.json",
+      "evidenceType": "source report or decompiled managed source"
+    },
+    {
+      "path": "docs/plugins/IMVS-CALIB-TRANSFORM.md",
+      "evidenceType": "source report or decompiled managed source"
+    }
+  ],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "专属 Process/ProcessAlg 或原生 ABI 仍未完整恢复",
+    "XML/XAML 绑定、显隐和主题状态仍未完整恢复",
+    "Save/Load、Stop/Cancel、DeInit/DestroyModule 仍需逐成员取证",
+    "原厂 VM 运行时差分尚未完成"
+  ]
+}

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>VM 插件准入与工具身份链</title>
+<style>
+:root{--bg:#0b1524;--bg2:#111f33;--bd:#24405f;--tx:#dbe7f5;--tx2:#9fb4cc;--obs:#3fb950;--inf:#d29922;--unk:#8b949e;--warn:#f85149;--note:#58a6ff}
+*{box-sizing:border-box}
+body{margin:0;padding:30px 38px 70px;background:var(--bg);color:var(--tx);font:15px/1.7 "Segoe UI","Microsoft YaHei",sans-serif}
+h1{font-size:25px;margin:0 0 6px;color:#fff}
+h2{font-size:19px;margin:32px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--bd);color:#fff}
+h3{font-size:15.5px;margin:22px 0 8px;color:#cfe3f7}
+.meta{color:var(--tx2);font-size:13px;margin-bottom:22px;line-height:1.85}.meta b{color:var(--tx)}
+table{width:100%;border-collapse:collapse;margin:10px 0 16px;font-size:13px;background:var(--bg2)}
+th,td{border:1px solid var(--bd);padding:6px 9px;text-align:left;vertical-align:top}
+th{background:#16273d;color:#fff;font-weight:600;white-space:nowrap}
+td code,p code,li code{background:#0a1420;border:1px solid #1d3350;border-radius:3px;padding:1px 4px;font:12.5px/1.5 Consolas,monospace;color:#a9d3ff}
+tr:nth-child(even) td{background:#0f1c2e}
+code.block{display:block;background:#07101b;border:1px solid #1d3350;border-radius:5px;padding:11px 13px;margin:9px 0;white-space:pre;overflow-x:auto;color:#a9d3ff;font-size:12.5px}
+.obs,.inf,.unk{display:inline-block;padding:0 5px;border-radius:3px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.obs{background:rgba(63,185,80,.16);color:var(--obs);border:1px solid rgba(63,185,80,.45)}
+.inf{background:rgba(210,153,34,.16);color:var(--inf);border:1px solid rgba(210,153,34,.45)}
+.unk{background:rgba(139,148,158,.16);color:var(--unk);border:1px solid rgba(139,148,158,.45)}
+.warn,.note{border-left:3px solid var(--warn);background:rgba(248,81,73,.08);padding:9px 13px;margin:12px 0;border-radius:0 4px 4px 0;font-size:13.5px}
+.note{border-left-color:var(--note);background:rgba(88,166,255,.08)}
+.warn b{color:var(--warn)}.note b{color:var(--note)}
+ul,ol{margin:7px 0 12px;padding-left:22px}li{margin:3px 0}
+.k{color:#7ee787;font-weight:600}.r{color:#ff7b72;font-weight:600}
+.small{font-size:12.5px;color:var(--tx2)}
+footer{margin-top:40px;padding-top:12px;border-top:1px solid var(--bd);color:var(--tx2);font-size:12.5px}
+</style>
+</head>
+<body>
+
+<h1>VM 插件准入与工具身份链</h1>
+<div class="meta">
+取证日：<b>2026-11-05</b>　｜　对象：<b>VisionMaster 4.4.0</b>，安装目录只读<br>
+用途：校正我方 <code>release-payload.json</code> 与 <code>src/Plugin.SDK/Metadata/ToolGroups.xml</code> 的<b>定位表述</b>（哪些是原厂机制、哪些是自建）<br>
+证据源：15 个 <code>ToolGroup.xml</code>（129–208 B）、159 个 <code>ToolItemInfo.xml</code>、<code>ModulePathGenerate.txt</code>(191 行)、<code>ProcedureInfo.xml</code> 的 <code>ModuleBase</code><br>
+标注：<span class="obs">观察到</span> 直读　<span class="inf">推断</span> 由结构推得　<span class="unk">未知</span> 无证据
+</div>
+
+<h2>0 结论摘要</h2>
+<table>
+<tr><th style="width:23%">问题</th><th style="width:8%">档位</th><th>结论</th></tr>
+<tr><td>准入元数据有几层</td><td><span class="obs">观察到</span></td>
+<td><b>三层，粒度不同、作用不同</b>：<br>
+① <b>分类级</b> <code>&lt;分类&gt;\ToolGroup.xml</code>（15 个，129–208 B）：<code>name</code> / <code>priority</code> / 可选 <code>priorityStrategyInfo</code>；<br>
+② <b>工具级</b> <code>&lt;模块&gt;\ToolItemInfo.xml</code>（159 个，约 228–317 B）：<code>name</code> / <code>priority</code> / <code>toolTip</code> / <code>helpUrl</code>；<br>
+③ <b>清单级</b> <code>Applications\ModulePathGenerate.txt</code>（191 行）：<code>模块名 # 路径 # 类型</code>。</td></tr>
+<tr><td>什么决定"能拖出来"</td><td><span class="obs">观察到</span></td>
+<td><b><code>ToolItemInfo.xml</code></b>。反例两个：<code>DefectDetection\IMVSMarkInspModu</code>（18 MB dll、有 <code>Control.dll</code>、无 TI）与 <code>Global\ProcedureComm</code>（4 文件、无 TI）<br>
+→ 文件全 ≠ 能上工具箱；<b>只有 TI 才是工具箱准入凭证</b>。</td></tr>
+<tr><td>分类显示名与目录名一致吗</td><td><span class="obs">观察到</span></td>
+<td><b>不一致，三处</b>：目录 <code>Location</code> → 显示 <b><code>Locating</code></b>；<code>Logic</code> → <b><code>LogicTools</code></b>；<code>DefectDetection</code> → <b><code>Defect Detection</code></b>（带空格）。<br>
+→ 目录名是技术身份，<code>ToolGroup.xml/name</code> 是用户可见名，<b>两者解耦</b>。</td></tr>
+<tr><td>分类顺序怎么定的</td><td><span class="obs">观察到</span></td>
+<td><code>priority</code> 值 1–14 + 20：Collection 1 / Location 2 / Measurement 3 / Recognition 4 / DefectDetection 5 / <b>6 空位</b> / Calibration 7 / Calculation 8 / ImageProcessing 9 / ColorProcessing 10 / SplitCombination 11 / ImageGeneration 12 / Logic 13 / Communication 14 / <b>GroupTools 与 UserTools 均 20</b>。</td></tr>
+<tr><td>还有场景权重？</td><td><span class="obs">观察到</span></td>
+<td><b>有，且只 4 个分类带</b>：Calculation=<code>Position:3.5;Recognition:4.5</code>、DefectDetection=<code>Defect:1.5</code>、ImageProcessing=<code>Defect:1.75</code>、Recognition=<code>Recognition:1.5</code>。<br>
+格式 <code>场景名:浮点权重</code>，分号分隔。<span class="inf">推断</span> 用于按场景调整工具箱内的推荐排序（同一分类在不同场景下不同权重）。</td></tr>
+<tr><td>工具身份靠什么</td><td><span class="obs">观察到</span></td>
+<td>方案文件 <code>ProcedureInfo.xml</code> 的 <code>Module</code> 节点同时带 <b><code>Index</code>（序号）+ <code>Guid</code>（32 位无连字符实例号）+ <code>Name</code>（类型名=目录名）</b>：<br>
+<code>&lt;Module Index="0" Name="ImageSourceModule" Type="0" IsSlave="0" ServerAddr="" ModuleFile="" DisplayName="图像源1" EnableModule="1" EnableCallBack="1" Guid="48D45181B7A444AF926E032F9E142D57"/&gt;</code></td></tr>
+<tr><td>加载前有校验吗</td><td><span class="inf">推断</span></td>
+<td><b>未见独立校验清单/校验文件</b>（无 hash 清单、无签名清单文件）。存在的准入门槛是：<code>Server\PlugAuthorization.dll</code>(7.0 MB)、<code>EncRuntime\</code>、三种授权安装脚本（狗/远程狗/软授权）。<br>
+→ <span class="inf">推断</span> 准入以<b>授权 + 文件存在性</b>为准，不做逐模块签名校验。</td></tr>
+<tr><td>加载失败怎么表现</td><td><span class="obs">观察到</span></td>
+<td>方案级：<code>WARN  Load Warning，Failed Module Num:4</code> 后<b>继续</b>（见方案版本文档 §1.4）。<br>
+进程级：崩溃时落 <code>&lt;exe&gt;-时间-序号.txt</code> 文本栈（见启动时序文档 §1.5）。<br>
+模块级（单个 dll 加载失败的具体日志行）<b>本批未取证</b>。</td></tr>
+<tr><td><code>GroupTools</code>/<code>UserTools</code> 是什么</td><td><span class="obs">观察到</span></td>
+<td><b>空分类</b>：两目录下各有 <code>ToolGroup.xml</code>（priority=20），但<b>子目录 0 个</b>，且<b>不在</b> <code>ModulePathGenerate.txt</code> 里。<br>
+→ 是<b>用户扩展入口</b>（预留分类位），不是内置工具分类。</td></tr>
+<tr><td>我方 <code>ToolGroups.xml</code> 算原厂机制吗</td><td><span class="obs">观察到</span></td>
+<td><b>不算。</b> 机制是自建的（单文件、复数名、带 <code>SchemaVersion</code>、含 <code>Icon</code>/<code>HoverIcon</code>/<code>IconKey</code>，原厂没有这些字段）。<br>
+但<b>顺序值有原件依据</b>：我方 <code>Order</code> = 1,2,3,4,5,7,8,9,10,11,12,13,14,20,20，与原厂 <code>priority</code> <b>逐一相同（含"6 缺位"）</b> → 分类顺序可标"与原厂一致"，<b>文件格式不可标"原厂依据"</b>。</td></tr>
+<tr><td>我方 <code>release-payload.json</code> 对应原厂什么</td><td><span class="obs">观察到</span></td>
+<td>功能上最接近 <code>ModulePathGenerate.txt</code>（都是"应存在哪些模块"的清单），但<b>语义相反</b>：<br>
+原厂清单是<b>产品全目录</b>（191，含未安装），我方 <code>expectedPluginAssemblies</code>(22) 是<b>必须存在</b>的强校验。<b>不能互相套用</b>（把 191 当期望值会误判 29 个为缺失）。</td></tr>
+</table>
+
+<h2>1 逐条论证</h2>
+
+<h3>1.1 分类级：15 个 <code>ToolGroup.xml</code> 全表 <span class="obs">观察到</span></h3>
+<table>
+<tr><th>目录名</th><th><code>name</code>（显示名）</th><th><code>priority</code></th><th><code>priorityStrategyInfo</code></th><th>子目录</th><th>有 TI</th></tr>
+<tr><td>Collection</td><td>Collection</td><td>1</td><td>—</td><td>5</td><td>5</td></tr>
+<tr><td>Location</td><td><b>Locating</b></td><td>2</td><td>—</td><td>29</td><td>27</td></tr>
+<tr><td>Measurement</td><td>Measurement</td><td>3</td><td>—</td><td>11</td><td>11</td></tr>
+<tr><td>Recognition</td><td>Recognition</td><td>4</td><td><b>Recognition:1.5</b></td><td>4</td><td>4</td></tr>
+<tr><td>DefectDetection</td><td><b>Defect Detection</b></td><td>5</td><td><b>Defect:1.5</b></td><td>14</td><td>13</td></tr>
+<tr><td colspan="6" class="small"><b>priority 6 无对应目录</b>（保留空位，与"6 个分类"无关，仅编号跳号）</td></tr>
+<tr><td>Calibration</td><td>Calibration</td><td>7</td><td>—</td><td>10</td><td>10</td></tr>
+<tr><td>Calculation</td><td>Calculation</td><td>8</td><td><b>Position:3.5;Recognition:4.5</b></td><td>11</td><td>11</td></tr>
+<tr><td>ImageProcessing</td><td>ImageProcessing</td><td>9</td><td><b>Defect:1.75</b></td><td>21</td><td>21</td></tr>
+<tr><td>ColorProcessing</td><td>ColorProcessing</td><td>10</td><td>—</td><td>6</td><td>6</td></tr>
+<tr><td>SplitCombination</td><td>SplitCombination</td><td>11</td><td>—</td><td>6</td><td>6</td></tr>
+<tr><td>ImageGeneration</td><td>ImageGeneration</td><td>12</td><td>—</td><td>4</td><td>4</td></tr>
+<tr><td>Logic</td><td><b>LogicTools</b></td><td>13</td><td>—</td><td>20</td><td>20</td></tr>
+<tr><td>Communication</td><td>Communication</td><td>14</td><td>—</td><td>5</td><td>5</td></tr>
+<tr><td>GroupTools</td><td>GroupTools</td><td><b>20</b></td><td>—</td><td><b>0</b></td><td>0</td></tr>
+<tr><td>UserTools</td><td>UserTools</td><td><b>20</b></td><td>—</td><td><b>0</b></td><td>0</td></tr>
+</table>
+<p><b>原文形态</b>（两种，差异仅在有无 <code>priorityStrategyInfo</code>）：</p>
+<code class="block">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;ToolBoxItemData&gt;
+    &lt;name&gt;Locating&lt;/name&gt;
+    &lt;priority&gt;2&lt;/priority&gt;
+&lt;/ToolBoxItemData&gt;
+
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;ToolBoxItemData&gt;
+    &lt;name&gt;Calculation&lt;/name&gt;
+    &lt;priority&gt;8&lt;/priority&gt;
+    &lt;priorityStrategyInfo&gt;Position:3.5;Recognition:4.5&lt;/priorityStrategyInfo&gt;
+&lt;/ToolBoxItemData&gt;</code>
+<div class="note">
+<b>关键区分（供文档线引用）</b>：<br>
+① 分类的<b>显示名</b>来自 <code>ToolGroup.xml/name</code>，<b>不是</b>目录名，也<b>不是</b> <code>ModulePathGenerate.txt</code> 里的名字；<br>
+② <code>priorityStrategyInfo</code> 是<b>场景权重</b>（4 个分类有），与 <code>priority</code>（固定排序）是<b>两个不同维度</b>，不能混为一谈；<br>
+③ <code>GroupTools</code>/<code>UserTools</code> 是<b>空分类 + 最高 priority 值 20</b>，含义是"排在最后且由用户填充"。
+</div>
+
+<h3>1.2 工具级：<code>ToolItemInfo.xml</code> 四字段 <span class="obs">观察到</span></h3>
+<code class="block">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;ToolBoxItemData&gt;
+  &lt;name&gt;IMVSBinaryModu&lt;/name&gt;
+  &lt;priority&gt;0&lt;/priority&gt;
+  &lt;toolTip&gt;IMVSBinaryModu&lt;/toolTip&gt;
+  &lt;helpUrl&gt;GUID-DBCA7DED-F21F-44EB-BA0A-1D61CB7CDE45&lt;/helpUrl&gt;
+&lt;/ToolBoxItemData&gt;</code>
+<table>
+<tr><th>字段</th><th>取值规律</th><th>用途</th></tr>
+<tr><td><code>name</code></td><td>= 目录名（= 模块类型名）</td><td>工具箱条目名 / 方案 <code>Module@Name</code></td></tr>
+<tr><td><code>priority</code></td><td>分类内序号，<b>非全局唯一</b>；同一分类内可重复（如 Logic 多个 100）</td><td>分类内排序</td></tr>
+<tr><td><code>toolTip</code></td><td>多为 <code>&lt;模块名&gt;</code>，少数带后缀 <code>_Tip</code>（如 <code>IMVSImageFilterModu_Tip</code>、<code>Image Buffer</code>、<code>Light</code>）</td><td>悬停提示（<b>值可以是本地化键</b>，非纯文本）</td></tr>
+<tr><td><code>helpUrl</code></td><td><code>GUID-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</code>（8-4-4-4-12）</td><td>指向官方帮助索引（<b>不是 URL</b>，是 GUID 键）</td></tr>
+</table>
+<p class="small"><b>priority 非唯一性的实证</b>：Logic 分类里 <code>DataClassificationModule</code>/<code>DataFilterModule</code>/<code>DataSortModule</code> 均为 100；Global 里 <code>ImageCollectDalsaModu</code>/<code>ImageCollectIKModu</code>/<code>DynamicParamCameraModule</code> 均为 100。<span class="inf">推断</span> 同值时的次序由目录枚举或名称决定，<span class="unk">未知</span>。</p>
+
+<h3>1.3 准入凭证与两个反例 <span class="obs">观察到</span></h3>
+<table>
+<tr><th>模块</th><th>dll</th><th><code>Control.dll</code></th><th><code>ToolItemInfo.xml</code></th><th>判定</th></tr>
+<tr><td><code>IMVSMarkInspModuVA</code></td><td>310,272</td><td>✓</td><td>✓ (priority=1)</td><td>上工具箱</td></tr>
+<tr><td><code>IMVSMarkInspModu</code></td><td><b>18,897,408</b></td><td>✓</td><td><b class="r">✗</b></td><td><b>不上工具箱</b></td></tr>
+<tr><td><code>Global\ProcedureComm</code></td><td>—（4 文件）</td><td>✗</td><td><b class="r">✗</b></td><td><b>不上工具箱</b></td></tr>
+<tr><td><code>Global\SolutionModule</code></td><td>—（6 文件）</td><td>✓</td><td>✓ 但<b>priority 为空</b></td><td>上工具箱，排序未定义</td></tr>
+</table>
+<div class="warn">
+<b>三件事互不蕴含（重要）</b>：<br>
+① <b>可加载</b>（有 <code>*Cs.dll</code> + <code>*Cs.xml</code>）；<br>
+② <b>可上工具箱</b>（有 <code>ToolItemInfo.xml</code>）；<br>
+③ <b>有专用编辑器</b>（有 <code>*Control.dll</code>）。<br>
+本批的 <code>IMVSMarkInspModu</code> 同时具备 ①③ 而缺 ②，<b>反证不能用文件数或 dll 体积推断准入</b>。<br>
+另：<code>SolutionModule</code> 的 <code>priority</code> 为空 → 说明该字段<b>可以缺值</b>，缺失时的排序行为 <span class="unk">未知</span>。
+</div>
+
+<h3>1.4 清单级：<code>ModulePathGenerate.txt</code> 与两个空分类 <span class="obs">观察到</span></h3>
+<table>
+<tr><th>清单</th><th>覆盖</th><th>含未安装</th><th>含空分类</th><th>用途（据证据）</th></tr>
+<tr><td><code>ModulePathGenerate.txt</code></td><td>16 分类 / 191 模块</td><td><b>是</b>（28 个未装）</td><td><b>否</b>（不含 GroupTools/UserTools）</td><td>模块类型全目录 + 相对路径 + 类型标记 <code>NORMAL</code></td></tr>
+<tr><td><code>ToolGroup.xml</code> × 15</td><td>分类显示名与排序</td><td>—</td><td><b>是</b>（GroupTools/UserTools 有文件无模块）</td><td>分类准入</td></tr>
+<tr><td><code>ToolItemInfo.xml</code> × 159</td><td>单个工具</td><td>—</td><td>—</td><td>工具准入</td></tr>
+</table>
+<p>本机实测：<code>Module(sp)\x64</code> 下 <b>17 个目录</b>（16 分类 + <code>.CommonControl</code>），其中 <code>GroupTools</code>/<code>UserTools</code> 仅有 <code>ToolGroup.xml</code>。</p>
+
+<h3>1.5 工具身份链（跨"方案 ↔ 元数据"） <span class="obs">观察到</span></h3>
+<table>
+<tr><th>层级</th><th>身份载体</th><th>样例</th><th>稳定性</th></tr>
+<tr><td>类型身份</td><td><b>目录名 = 模块类型名</b></td><td><code>ImageSourceModule</code></td><td>跨方案稳定；改名即断（改名的解法是映射表，见方案版本文档 §1.5）</td></tr>
+<tr><td>实例身份</td><td>方案内 <code>Module@Guid</code>（32 位无连字符）</td><td><code>48D45181B7A444AF926E032F9E142D57</code></td><td>每实例唯一，复制粘贴需重新生成</td></tr>
+<tr><td>图位置</td><td>方案内 <code>Module@Index</code>（序号）</td><td><code>0..3</code></td><td>与 <code>ModuleCommonConnect</code> / <code>ModuleSubscribe</code> / <code>UiParamData</code> 文件名同时引用</td></tr>
+<tr><td>用户可见名</td><td><code>Module@DisplayName</code></td><td><code>图像源1</code>（可含中文与序号）</td><td>可改，不参与身份</td></tr>
+<tr><td>工具箱排序</td><td><code>ToolItemInfo.xml/priority</code></td><td><code>0</code>..<code>100</code></td><td>分类内序号，跨分类不唯一</td></tr>
+</table>
+<div class="note"><b>同一条链的四处引用</b>：<code>Module@Index=0</code> 同时出现在
+① <code>ModuleCommonConnect/Module Index="0"</code>、
+② <code>ModuleSubscribe@Relation</code> 的第 1 段（如 <code>1 . InImage ...</code> 中源模块 1）、
+③ ZIP 条目名 <code>_&lt;流程号&gt;+0+ImageSourceModule</code>。
+→ 改 <code>Index</code> 需要<b>三处同步</b>，这是原件的耦合点。</div>
+
+<h3>1.6 加载前校验：有的与没有的 <span class="inf">推断</span></h3>
+<table>
+<tr><th>环节</th><th>证据</th><th>强度</th></tr>
+<tr><td>授权准入</td><td><code>Server\PlugAuthorization.dll</code>(7,028,224 B)、<code>EncRuntime\</code> 目录、<code>Install4Dongle.bat</code>/<code>Install4RemoteDongle.bat</code>/<code>Install4Soft.bat</code>/<code>Install4SoftOld.bat</code></td><td><span class="obs">观察到</span>（文件存在）</td></tr>
+<tr><td>模块清单准入</td><td><code>ModulePathGenerate.txt</code> 存在但<b>无 hash / 无签名列</b>（只有 名字/路径/类型）</td><td><span class="obs">观察到</span></td></tr>
+<tr><td>逐模块签名校验</td><td><b>未发现</b>任何 <code>.sig</code>/<code>.manifest</code>/hash 清单文件</td><td><span class="unk">未知</span>（未发现 ≠ 不存在；可能在 dll 内校验）</td></tr>
+<tr><td>加载失败表现</td><td>方案级 <code>WARN Load Warning，Failed Module Num:4</code> 后继续；进程级文本栈</td><td><span class="obs">观察到</span></td></tr>
+<tr><td>单个 dll 加载失败的日志行</td><td><b>本批未取证</b>（<code>log\ModuleProxy\ModuleProxy.log</code> 3.6 MB 未读）</td><td><span class="unk">未知</span></td></tr>
+</table>
+
+<h2>2 原件 vs 我方对照（定位校正）</h2>
+<table>
+<tr><th style="width:19%">项</th><th style="width:23%">原件</th><th style="width:26%">我方</th><th>定位结论</th></tr>
+<tr><td>分类元数据</td><td>每分类一个 <code>ToolGroup.xml</code>（name/priority/可选 strategy）</td><td><code>src/Plugin.SDK/Metadata/ToolGroups.xml</code> 单文件 <code>&lt;ToolGroups SchemaVersion="1"&gt;</code>，14 个 <code>&lt;Group Name Order Icon HoverIcon IconKey/&gt;</code></td><td><b>机制自建</b>。可标"顺序与原厂一致"，<b>不可</b>标"格式源自原厂"（我方多出 <code>Icon/HoverIcon/IconKey/SchemaVersion</code>，原厂无）</td></tr>
+<tr><td>分类顺序值</td><td><code>priority</code>：1,2,3,4,5,<b>7</b>,8,9,10,11,12,13,14,20,20（缺 6）</td><td><code>Order</code>：1,2,3,4,5,<b>7</b>,8,9,10,11,12,13,14,20,20（缺 6）</td><td><b>逐一相同，含"6 缺位"这一非平凡特征</b> → 可确认为<b>有原件依据</b>的顺序对齐（<span class="obs">观察到的字面一致</span>）</td></tr>
+<tr><td>分类显示名</td><td><code>Locating</code> / <code>LogicTools</code> / <code>Defect Detection</code>（英文，且≠目录名）</td><td>中文：定位 / 逻辑工具 / 缺陷检测</td><td><b>取值不同，语义对应</b>。表述应为"分类语义与原厂对应，显示名为我方中文本地化"，<b>不能</b>写成"沿用原厂分类名"</td></tr>
+<tr><td>空分类</td><td><code>GroupTools</code>/<code>UserTools</code>：有 ToolGroup.xml、0 模块、priority 20</td><td>"自定义组工具"/"自定义工具"，Order 20</td><td><b>对齐</b>（含 order 20 与"无内置模块"两点），可标注</td></tr>
+<tr><td>工具级元数据</td><td><code>ToolItemInfo.xml</code> 4 字段（name/priority/toolTip/helpUrl GUID）</td><td><code>ToolAttribute</code>（代码特性，随程序集编译）</td><td><b>载体不同</b>：原件元数据<b>可在不重编译下改</b>（改 XML 即生效）；我方须改代码重编。<b>不是缺陷</b>，但"运维可调性"是原件的优势，文档中应如实写差异而非"等价"</td></tr>
+<tr><td>帮助链接</td><td><code>helpUrl</code> = <code>GUID-...</code> 键，指向官方帮助</td><td>无对应</td><td>我方<b>无</b>此能力，<b>不要</b>说"已对齐"</td></tr>
+<tr><td>模块清单</td><td><code>ModulePathGenerate.txt</code>：产品全目录 191，含未安装</td><td><code>release-payload.json</code>：<code>payloadSchemaVersion:1</code> + <code>expectedPluginAssemblies</code> 22 个 + <code>runtimeFrameworks</code></td><td><b>语义相反</b>：原厂=全量参考清单（不承诺都存在，191 vs 实物 162）；我方=发布强校验清单（缺一即失败）。<b>禁止</b>把 191 当我方期望值（会误判 29 个缺失）；也<b>禁止</b>说我方 <code>release-payload.json</code> 是"对齐原厂清单"</td></tr>
+<tr><td><code>payloadSchemaVersion</code></td><td>无对应字段（原厂无 payload 概念）</td><td>整数 1</td><td><b>纯自建</b>，与原厂 <code>CurrentVersion="V4.4.0"</code>（产品串）不是同层概念，<b>不可互相引证</b></td></tr>
+<tr><td>实例身份</td><td><code>Guid</code> + <code>Index</code> <b>并存</b></td><td><b>本批未核对我方</b>节点身份实现</td><td><b>待核</b>：若我方只有序号，则复制/合并会撞号（原件的 Guid 正是为此）</td></tr>
+</table>
+<div class="warn">
+<b>给文档线的三条硬结论（可直接引用）</b><br>
+① <b>可标"原厂依据"</b>：分类顺序值（含 6 缺位）、空分类 order=20、分类语义集合（14 个内置 + 2 个用户扩展）；<br>
+② <b>只能标"自建"</b>：<code>ToolGroups.xml</code> 的文件形态与字段、<code>release-payload.json</code> 全部内容、<code>ToolAttribute</code> 载体；<br>
+③ <b>不得标"已对齐"</b>：<code>helpUrl</code> 帮助键、工具级元数据的热可改（不重编译）、实例 <code>Guid</code>（未核）。
+</div>
+
+<h2>3 待补证据</h2>
+<h3>3.1 需更深取证（静态）</h3>
+<table><tr><th>编号</th><th>缺口</th><th>影响</th></tr>
+<tr><td>A1</td><td><code>log\ModuleProxy\ModuleProxy.log</code>(3.6 MB) 与 <code>ModuleFrame.log</code>(5.0 MB) 中单个模块加载失败/被跳过的日志行</td><td>"加载失败怎么表现"的模块级答案（当前只有方案级 WARN）</td></tr>
+<tr><td>A2</td><td><code>priority</code> 同值（多个 100）时的实际排序规则</td><td>工具箱顺序复刻</td></tr>
+<tr><td>A3</td><td><code>priority</code> 为空（<code>SolutionModule</code>）时的排序位置</td><td>同上</td></tr>
+<tr><td>A4</td><td><code>priorityStrategyInfo</code> 的消费方（哪个 UI 用它、怎么用）</td><td>场景化推荐是否值得复刻</td></tr>
+<tr><td>A5</td><td><code>ToolItemInfo.xml/toolTip</code> 的 <code>_Tip</code> 后缀是否本地化键（对应 <code>Lang\</code> 目录）</td><td>提示文案来源</td></tr>
+</table>
+<h3>3.2 需实机验证（需用户授权开原机窗口）</h3>
+<table><tr><th>编号</th><th>验证项</th></tr>
+<tr><td>B1</td><td>把某模块的 <code>ToolItemInfo.xml</code> 改名/删除后重启，工具箱是否立刻消失（验证 TI 是唯一准入）</td></tr>
+<tr><td>B2</td><td><code>SolutionModule</code>（priority 空）在工具箱中的实际位置</td></tr>
+<tr><td>B3</td><td><code>priorityStrategyInfo</code> 切换场景（定位/识别/缺陷）时工具箱顺序是否变化</td></tr>
+<tr><td>B4</td><td>复制一个模块实例后 <code>Guid</code> 是否重新生成</td></tr>
+</table>
+<h3>3.3 需厂商文档</h3>
+<table><tr><th>编号</th><th>缺口</th></tr>
+<tr><td>C1</td><td><code>ToolItemInfo.xml/helpUrl</code> 的 GUID 与官方帮助页的映射规则</td></tr>
+<tr><td>C2</td><td><code>priorityStrategyInfo</code> 的场景名全集（当前只见 Position / Recognition / Defect）</td></tr>
+<tr><td>C3</td><td><code>GroupTools</code>/<code>UserTools</code> 的填充方式（用户如何投放自定义工具）</td></tr>
+</table>
+
+<h2>4 自验命令（PowerShell 5.1，只读）</h2>
+<code class="block">$m="D:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\x64"
+
+# ① 15 个分类元数据（期望 priority 含 6 缺位、两处 20）
+foreach($c in (Get-ChildItem $m -Directory)){
+  $g=Join-Path $c.FullName "ToolGroup.xml"; if(!(Test-Path $g)){continue}
+  $t=[xml][IO.File]::ReadAllText($g,[Text.Encoding]::UTF8)
+  "{0,-18} name={1,-20} pri={2,-3} strategy={3}" -f $c.Name,$t.ToolBoxItemData.name,$t.ToolBoxItemData.priority,$t.ToolBoxItemData.priorityStrategyInfo }
+
+# ② 空分类（期望 GroupTools / UserTools 子目录 0）
+foreach($c in "GroupTools","UserTools"){ "$c dirs=" + (Get-ChildItem (Join-Path $m $c) -Directory).Count }
+
+# ③ TI 是唯一准入：找有 dll 无 TI 的模块（期望 IMVSMarkInspModu、ProcedureComm）
+foreach($c in (Get-ChildItem $m -Directory)){
+  foreach($d in (Get-ChildItem $c.FullName -Directory)){
+    if((Test-Path (Join-Path $d.FullName ($d.Name+".dll"))) -and -not (Test-Path (Join-Path $d.FullName "ToolItemInfo.xml"))){
+      "NO-TI $($c.Name)\$($d.Name)" } } }
+
+# ④ ToolItemInfo 四字段 + priority 非唯一性（期望出现多个 100）
+foreach($c in (Get-ChildItem $m -Directory)){
+  foreach($d in (Get-ChildItem $c.FullName -Directory)){
+    $ti=Join-Path $d.FullName "ToolItemInfo.xml"; if(!(Test-Path $ti)){continue}
+    $t=[xml][IO.File]::ReadAllText($ti,[Text.Encoding]::UTF8)
+    if($t.ToolBoxItemData.priority -eq "100"){ "PRI100 $($c.Name)\$($d.Name)" } } }
+
+# ⑤ 我方顺序值与原厂 priority 对照（我方文件只读）
+[xml]$g=[IO.File]::ReadAllText("d:\MyWork\SunEyeVision_V2\src\Plugin.SDK\Metadata\ToolGroups.xml",[Text.Encoding]::UTF8)
+$g.ToolGroups.Group | %{ "{0,-14} Order={1}" -f $_.Name,$_.Order }   # 期望 1..5,7..14,20,20</code>
+
+<h2>5 边界声明</h2>
+<ul>
+<li><b>未启动</b> <code>VisionMaster.exe</code>；结论全部来自只读文件解析。</li>
+<li><b>未改动</b> 安装目录、<code>src/</code>、<code>tests/</code> 任何文件；对我方两个文件（<code>ToolGroups.xml</code>、<code>release-payload.json</code>）<b>仅只读</b>。</li>
+<li><b>未 commit / 未 push</b>。</li>
+<li>§1.6 的"逐模块签名校验未发现"是<b>未发现</b>而非"确认不存在"，已标 <span class="unk">未知</span>；模块级加载失败日志行本批<b>未读</b>（A1）。</li>
+<li>§2 的"我方节点身份实现"一项<b>本批未核对源码</b>，标"待核"，<b>不构成</b>对我方实现的判断。</li>
+<li>本文件<b>不构成</b>任何代码改动建议的批准；<code>ToolGroups.xml</code>/<code>release-payload.json</code> 的表述修订由文档线执行，本文件只提供校正依据。</li>
+</ul>
+
+<footer>
+VM 应用层 · 插件准入与工具身份链 · 2026-11-05 · 只读取证<br>
+关联：<code>VM方案格式版本与兼容迁移-20261105.html</code>（身份链的 <code>Module</code> 节点与改名映射）、<code>VM工具逆向批次R4/R5</code>（TI 缺失与改名实例）
+</footer>
+</body>
+</html>

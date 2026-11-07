@@ -1,0 +1,132 @@
+{
+  "toolId": "imvsparallelcalculatemodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSParallelCalculateModu\\IMVSParallelCalculateModu.xml",
+      "sha256": "709ed6e7004f4c518acb87610d5ea5c2de43d8338d8d6ff562522b4e67c6ea83",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSParallelCalculateModu\\IMVSParallelCalculateModuAlgorithm.xml",
+      "sha256": "571c117c18f0ee46367342d2e41ac973b73319223f5a24a35d10f29ebb8a75f6",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSParallelCalculateModu\\IMVSParallelCalculateModuAlgorithmTab.xml",
+      "sha256": "fb5670b88b9ff1d3d76190d7e04b78fdc4fbf1cee9e1d1a7603dda2ce8fda51f",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSParallelCalculateModu\\IMVSParallelCalculateModuCs.xml",
+      "sha256": "f8198a5051d31a97344bc12084279accabd82ad3d17f77b07aacb6bf830caffe",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSParallelCalculateModu\\IMVSParallelCalculateModuDisplay.xml",
+      "sha256": "5d2038288b4af9af6971d09939112b08c1719114228aafcbaa6e3e8c74396005",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSParallelCalculateModu\\ToolItemInfo.xml",
+      "sha256": "4d9b2560dc58d88228a76be02d830f1c13d3d5fa6d03ddf6527d1b30a3c8fe73",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "Enumeration",
+      "name": "WayToChoose"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "InputWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "OriginPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PointY"
+    },
+    {
+      "type": "RadioSelecter3",
+      "name": "InputWay2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "LINE"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointY"
+    },
+    {
+      "type": "Float",
+      "name": "LineLength"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineInput"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "PointInput"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineResult"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineResult1"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineResult2"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

@@ -1,0 +1,63 @@
+{
+  "toolId": "datasortmodule",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSortModule\\DataSortModule.xml",
+      "sha256": "ae894507e55b49e118a8944254d7680f919f25b71e6dec2109054a2b841c8ff1",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSortModule\\DataSortModuleAlgorithm.xml",
+      "sha256": "985704a0c914bb1f2fbce86448d97983602e75779c7548b8356d57ecdadd9d13",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSortModule\\DataSortModuleAlgorithmTab.xml",
+      "sha256": "50395af7a22cf8224c38e4abd76fb88135c0b2458aa207713a873f5e6c634bdf",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSortModule\\DataSortModuleCs.xml",
+      "sha256": "9938370ee72a6da9104982dc4a1423d6e58f5d7f3f2da8a07f5c01ed19f2ef3d",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSortModule\\DataSortModuleDisplay.xml",
+      "sha256": "ac948cd07a9ef710f201a67ae381a126ba5fa7281543142626c47bd2872b0966",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSortModule\\ToolItemInfo.xml",
+      "sha256": "8143799926bd2fe276a9e328dd1e7087566d8bcd8ff9b7964593262cfb2ac66d",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "SortSetting"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "DataSortParam",
+      "name": "LogicalMode"
+    },
+    {
+      "type": "DataSortConfig",
+      "name": "LogicalMo2de"
+    }
+  ],
+  "sharedUiGroups": [
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

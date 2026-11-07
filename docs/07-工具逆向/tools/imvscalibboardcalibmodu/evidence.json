@@ -1,0 +1,30 @@
+{
+  "stableToolId": "imvscalibboardcalibmodu",
+  "originalPlugin": "IMVSCalibBoardCalibModu",
+  "displayName": "标定板标定",
+  "originalCategory": "Calibration",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCalibBoardCalibModu",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "resourceCount": 6,
+  "parameterCount": 16,
+  "inputCount": 1,
+  "outputCount": 16,
+  "uiControlCount": 26,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ],
+  "sourceReports": [
+    "docs/plugins/CALIBRATION-BOARD-A1-SOURCE-CHAIN.md",
+    "docs/plugins/CALIBRATION-BOARD-WHOLE-TOOL-EXIT.md",
+    "docs/plugins/CALIBRATION-BOARD-A4-PARAMETER-SOURCE.md"
+  ],
+  "note": "标定板入口、参数、ROI、结果和整工具退出矩阵已有专项记录。"
+}

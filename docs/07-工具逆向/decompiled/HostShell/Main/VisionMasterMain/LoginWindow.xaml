@@ -1,0 +1,137 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Window x:Class="VisionMasterMain.LoginWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:input="clr-namespace:System.Windows.Input;assembly=PresentationCore" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" x:Name="loginWindow" Title="LoginWindow" Height="250" Width="360" WindowStartupLocation="CenterScreen" AllowsTransparency="True" WindowStyle="None" OpacityMask="#FFFFFFFF" Background="#00FFFFFF" xmlns:visionmastermain="clr-namespace:VisionMasterMain;assembly=VisionMasterMain">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Apps.Style;component/PasswordBoxStyle/PasswordBoxStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/ToggleButtonStyle.xaml" />
+        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+      </ResourceDictionary.MergedDictionaries>
+      <Style x:Key="ImageButton" TargetType="{x:Type Button}">
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Button}">
+              <ContentPresenter Content="{TemplateBinding ContentControl.Content}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter Property="FrameworkElement.Cursor" Value="Hand" />
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                  <Setter Property="Background" Value="#FFC8C9CD" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="BottomButtonStyle" TargetType="{x:Type Button}">
+        <Setter Property="Height" Value="24" />
+        <Setter Property="Width" Value="66" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Button}">
+              <Border Name="bd" BorderBrush="#B8B6B6" BorderThickness="1" CornerRadius="2" Background="#D6D5D4">
+                <TextBlock Name="tb" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{TemplateBinding ContentControl.Content}" Foreground="#666666" />
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="IsPressed" Value="True">
+                  <Setter TargetName="bd" Value="{DynamicResource Col_Theme}" Property="Border.Background" />
+                  <Setter TargetName="bd" Value="{DynamicResource Col_Theme}" Property="Border.BorderBrush" />
+                  <Setter TargetName="tb" Property="TextBlock.Foreground" Value="#FCFCFC" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="{x:Type RadioButton}" TargetType="{x:Type RadioButton}">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Foreground" Value="#808080" />
+        <Setter Property="BorderBrush" Value="#CCCCCC" />
+        <Setter Property="Background" Value="#FCFCFC" />
+        <Setter Property="UIElement.SnapsToDevicePixels" Value="True" />
+        <Setter Property="FrameworkElement.OverridesDefaultStyle" Value="True" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type RadioButton}">
+              <Grid Background="#00FFFFFF">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="24" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Image Name="icon" Width="24" Height="24" VerticalAlignment="Center" HorizontalAlignment="Center" Source="/VisionMasterMain;component/Resources/check-box_off.png" />
+                <ContentPresenter Name="presenter" Margin="3,0,0,0" Focusable="False" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" />
+              </Grid>
+              <ControlTemplate.Triggers>
+                <Trigger Property="ToggleButton.IsChecked" Value="True">
+                  <Setter TargetName="icon" Property="Image.Source" Value="/VisionMasterMain;component/Resources/check-box_on.png" />
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                  <Setter TargetName="icon" Property="Image.Source" Value="/VisionMasterMain;component/Resources/radiobtn_off_disable.png" />
+                  <Setter TargetName="presenter" Property="UIElement.Opacity" Value="0.4" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <LinearGradientBrush x:Key="TextBoxBorder" StartPoint="0,0" MappingMode="Absolute" EndPoint="0,20">
+        <GradientStop Color="#ABADB3" Offset="0.05" />
+        <GradientStop Color="#E2E3EA" Offset="0.07" />
+        <GradientStop Color="#E3E9EF" Offset="1" />
+      </LinearGradientBrush>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid>
+    <Border Background="{DynamicResource Col_SubForm_Background}" BorderThickness="1" BorderBrush="{DynamicResource Col_SubForm_BorderBrush}" CornerRadius="4" Margin="0,40,0,0">
+      <Grid>
+        <Rectangle Height="2" VerticalAlignment="Top" RadiusX="4" RadiusY="4" Stroke="{DynamicResource Col_Theme}" />
+        <Image Name="imgLogo" Stretch="None" Source="/VisionMasterMain;component/Resources/logo.png" VerticalAlignment="Top" Margin="-37" MouseMove="Image_MouseMove" />
+        <Button Width="32" Height="32" Style="{StaticResource ImageButton}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="5" Click="ButtonCose_Click">
+          <Image Stretch="None" Source="/VisionMasterMain;component/Resources/ic_Shut-down.png" />
+        </Button>
+        <StackPanel Width="300" Margin="0,48,0,0">
+          <UniformGrid Columns="3" Height="28">
+            <RadioButton Name="radioAmin" Content="{DynamicResource Lang_Role_Admin}" IsChecked="True" Click="RadioUser_Click" />
+            <RadioButton Name="radioTech" Content="{DynamicResource Lang_Role_Tech}" Click="RadioUser_Click" />
+            <RadioButton Name="radioOperator" Content="{DynamicResource Lang_Role_Operator}" Click="RadioUser_Click" />
+          </UniformGrid>
+          <Border Height="42" Margin="2,16,2,0" Background="#FFFFFFFF" CornerRadius="2" BorderBrush="#B8B6B6" BorderThickness="1">
+            <Grid>
+              <Grid>
+                <PasswordBox Name="userCode" Margin="0" Style="{StaticResource textCodeBoxStyle}" Tag="{DynamicResource 请输入密码}" Width="294" Height="40" BorderThickness="0" input:InputMethod.IsInputMethodEnabled="False" PreviewTextInput="tb_PreviewTextInput" PreviewKeyDown="text_PreviewKeyDown">
+                  <UIElement.CommandBindings>
+                    <input:CommandBinding Command="ApplicationCommands.Paste" CanExecute="CommandBinding_CanExecute" />
+                    <input:CommandBinding Command="ApplicationCommands.Cut" CanExecute="CommandBinding_CanExecute" />
+                    <input:CommandBinding Command="ApplicationCommands.Copy" CanExecute="CommandBinding_CanExecute" />
+                  </UIElement.CommandBindings>
+                </PasswordBox>
+                <TextBox Name="textBoxUserCode" Margin="0" VerticalAlignment="Top" Width="294" Height="40" BorderThickness="0" Visibility="Collapsed" Style="{StaticResource textBoxStyle}" Tag="{DynamicResource 请输入密码}" input:InputMethod.IsInputMethodEnabled="False" Text="{Binding ElementName=userCode, Path=Password, Mode=TwoWay}" PreviewTextInput="tb_PreviewTextInput" PreviewKeyDown="text_PreviewKeyDown">
+                  <UIElement.CommandBindings>
+                    <input:CommandBinding Command="ApplicationCommands.Paste" CanExecute="CommandBinding_CanExecute" />
+                    <input:CommandBinding Command="ApplicationCommands.Cut" CanExecute="CommandBinding_CanExecute" />
+                    <input:CommandBinding Command="ApplicationCommands.Copy" CanExecute="CommandBinding_CanExecute" />
+                  </UIElement.CommandBindings>
+                </TextBox>
+              </Grid>
+              <ToggleButton Style="{StaticResource eyeToggleButton}" Width="40" Margin="250,0,0,0" IsChecked="{Binding ElementName=loginWindow, Path=IfShowPassword, Mode=TwoWay}" />
+            </Grid>
+          </Border>
+          <Border Height="24" Margin="2,0,2,0">
+            <Grid>
+              <TextBlock Name="codeErrorTips" VerticalAlignment="Center" Foreground="#FFFF1A1A" Visibility="Collapsed" Text="{DynamicResource 密码输入错误}" />
+              <TextBlock Name="codeEmptyTips" VerticalAlignment="Center" Foreground="#FFFF1A1A" Visibility="Collapsed" Text="{DynamicResource 密码为空}" />
+            </Grid>
+          </Border>
+          <Button Height="36" Width="296" Style="{StaticResource BottomButtonStyle}" FontSize="16" Content="{DynamicResource 登录}" Click="ButtonLogin_Click" />
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Grid>
+</Window>

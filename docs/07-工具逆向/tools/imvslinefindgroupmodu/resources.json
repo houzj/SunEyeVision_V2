@@ -1,0 +1,213 @@
+{
+  "toolId": "imvslinefindgroupmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSLineFindGroupModu\\IMVSLineFindGroupModu.xml",
+      "sha256": "9876d0aaefd2621f75b745a3250831713a98a1daea43ad8c71b8f27263e1309a",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSLineFindGroupModu\\IMVSLineFindGroupModuAlgorithm.xml",
+      "sha256": "ff042d329339f1237ec93edad3f43f7d5e3cd632eacbd01c544df999e4ad5e5a",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSLineFindGroupModu\\IMVSLineFindGroupModuAlgorithmTab.xml",
+      "sha256": "235a73fa5d3153a07562c919421fde9befffc39a4206fbcd2f8146d7bb6d1905",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSLineFindGroupModu\\IMVSLineFindGroupModuCs.xml",
+      "sha256": "bd27a317834335940ac2d9eb4adf4d9606db45c4401a6c19d0716c3e19354495",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSLineFindGroupModu\\IMVSLineFindGroupModuDisplay.xml",
+      "sha256": "9ad6619354f4fad74716523366ef7126e7e7da8c599d9f6fb4b09f8cfcc9b0cd",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSLineFindGroupModu\\ToolItemInfo.xml",
+      "sha256": "ea15a583202be62c61b7c6e658231a153f5f8962cf1a2d0dd873e2fe032d390f",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params",
+      "IsGenerate": "False"
+    },
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "AddList_EdgeInspGroup",
+      "name": "LineFindGroupList"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FindMode"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePolarity"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeStrength"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelSize"
+    },
+    {
+      "type": "Integer_CircleFind",
+      "name": "RayNum"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectNum"
+    },
+    {
+      "type": "Expand",
+      "name": null
+    },
+    {
+      "type": "Integer",
+      "name": "RejectDist"
+    },
+    {
+      "type": "Integer",
+      "name": "RegionWidth"
+    },
+    {
+      "type": "Enumeration",
+      "name": "InitType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FitFun"
+    },
+    {
+      "type": "Combination",
+      "name": "InputROI"
+    },
+    {
+      "type": "Combination",
+      "name": "Position Correction Info"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectNum"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectDist"
+    },
+    {
+      "type": "Expand",
+      "name": null
+    },
+    {
+      "type": "Enumeration",
+      "name": "InitType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "WeightFunc"
+    },
+    {
+      "type": "Integer",
+      "name": "MaxIters"
+    },
+    {
+      "type": "Boolean",
+      "name": "NumLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangNumLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "AngleLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangAngleLimit"
+    },
+    {
+      "type": "Expand",
+      "name": null
+    },
+    {
+      "type": "Boolean",
+      "name": "ScoreLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangScoreLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FittedCircle"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ThroughLine"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "InputPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "DetectCaliperBox"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "RoiSelectGroup",
+    "InheritWayGroup",
+    "AssistGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

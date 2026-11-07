@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>VM 工具调试窗口原件链首批回执</title>
+<style>body{font:15px/1.7 Arial,'Microsoft YaHei',sans-serif;max-width:1200px;margin:28px auto;color:#243447}table{border-collapse:collapse;width:100%;margin:14px 0}th,td{border:1px solid #aebdca;padding:9px;vertical-align:top}th{background:#eaf1f6}.ok{color:#176b3a}.warn{color:#9a5b00}.bad{color:#9b2020}code{background:#f2f4f6;padding:1px 4px}</style>
+</head>
+<body>
+<h1>VM 工具调试窗口原件链：首批证据回执</h1>
+<p><strong>取证日期：</strong>2026-11-06　<strong>性质：</strong>现有静态材料集中回执，不是新启动 VM/SDK，也不是本项目运行验收。</p>
+<p><strong>范围：</strong>工具调试窗口首次打开、参数页组装、Tab/节点切换、命令绑定、关闭和资源释放；主题切换与“控件多时仍流畅”的原因单独列为未确认项。</p>
+
+<h2>证据来源与身份</h2>
+<table><tr><th>来源</th><th>可确认内容</th><th>限制</th></tr>
+<tr><td><code>docs/07-工具逆向/decompiled/WpfControls/VMControls.WPF/ProcedureConfigControl.xaml(.cs)</code></td><td>流程配置控件、Tab 集合、增删/选择处理入口；历史索引记录文件存在。</td><td>当前工作区仅保留索引及交接摘录，未把该历史路径当作当前安装件身份；MVID/文件哈希需由逆向统筹回件复核。</td></tr>
+<tr><td><code>docs/07-工具逆向/decompiled/Apps.XmlUI/VisionMaster.ParamTab/ParamsTabControl.xaml(.cs)</code>、<code>ParamsTabUserControl.xaml</code></td><td>参数窗口属于 <code>BaseWindow → ParamsTabUserControl → 参数内容/外部槽/底栏</code> 组装链；窗口 Owner 指向主窗口的静态证据已登记。</td><td>缺少原机首次打开、换节点、关闭时序；不能仅凭 XAML 证明复用或释放。</td></tr>
+<tr><td><code>图像源与Blob编辑宿主原件窗证据-20261102.html</code></td><td>图像源/Blob 通过 <code>IToolPresentationFactory</code> 返回 <code>IToolSettingsView</code>；当前页明确生产宿主尚未接入完整原件链。</td><td>该页明确“未进行实机验证”。</td></tr>
+<tr><td><code>实际参数窗私有调试完整链设计与验收-20261103.html</code></td><td>本方私有调试会话的设计与测试结果：Stop/Closing/换窗等待、代次拒写、结果私有化。</td><td>这是本方适配设计/自测，不能反向证明 VM 原件行为。</td></tr>
+<tr><td><code>流程Tab与复制原件补证核收-20261104.html</code></td><td>静态反编译确认 Tab 集合 Add/Remove/Replace/Reset 处理；所查 <code>Move</code> 明确未实现；根流程复制链有局部入口。</td><td>未启动原机；不证明所有版本或外部入口都没有排序。</td></tr>
+</table>
+
+<h2>已确认的静态调用链</h2>
+<table><tr><th>阶段</th><th>静态链</th><th>证据等级</th></tr>
+<tr><td>首次打开</td><td>主窗/方案入口 → 工具或流程配置入口 → <code>BaseWindow</code> → <code>ParamsTabUserControl</code> → 参数内容、外部槽、底栏；工具呈现工厂返回 <code>IToolSettingsView</code>。</td><td class="ok">静态已确认（局部）</td></tr>
+<tr><td>参数/Tab</td><td><code>ProcedureConfigControl</code> 以 <code>DecoratedProcedures</code> 作为 Tab ItemsSource；Add/Remove/Replace/Reset 有处理；HeadText 鼠标处理只调整选择，所查 Move 抛 <code>NotImplementedException</code>。</td><td class="ok">静态已确认（所查版本/路径）</td></tr>
+<tr><td>绑定/命令</td><td>参数页存在底栏命令与外部内容槽；本方证据记录四命令由宿主负责，VM 具体命令回调和异步边界仍需沿 <code>ParamsTabControl.xaml.cs</code>、<code>BottomCommands</code> 继续闭合。</td><td class="warn">部分确认</td></tr>
+<tr><td>换节点/关闭</td><td>已有证据要求区分确认提交失败、系统关闭取消、成功关闭取消调试/退订/释放视图和结果 reader；当前材料没有 VM 运行时闭环。</td><td class="bad">未确认</td></tr>
+<tr><td>Tab 复用</td><td>静态材料只证明集合和选择处理，未证明同节点切 Tab 是否保留同一视图/模型实例，也未证明换节点是否销毁旧实例。</td><td class="bad">未确认</td></tr>
+</table>
+
+<h2>主题与性能结论</h2>
+<ul>
+<li><strong>主题：</strong>当前回执未找到 VM 运行时主题切换证据。历史材料包含颜色资源字典和主题审计，但不能据此证明 VM 支持运行时切换；因此 SunEyeVision 删除主题切换属于产品架构决定，不能写成 VM 已证事实，须保留“VM 无运行时主题切换：待逆向统筹用程序入口/命令/资源加载证据确认”。</li>
+<li><strong>性能：</strong>现有材料没有证明 VM 采用缓存、异步、虚拟化或延迟加载。窗口控件多时仍流畅的真实机制尚未确认；在取得构造/切换/释放时序、实例计数、UI 线程和资源加载日志前，不得把这些机制写入目标实现。</li>
+</ul>
+
+<h2>本批未确认项与下一步取证</h2>
+<ol>
+<li>固定 VM 安装版本，补齐上述程序集/资源的路径、MVID、SHA-256 和来源许可；复核反编译文件是否对应同一身份。</li>
+<li>沿 <code>ParamsTabControl</code>、<code>ParamsTabUserControl</code>、<code>BottomCommands</code> 的构造器、Loaded/Closing、DataContext、命令回调和异步回调闭合入口到退出。</li>
+<li>最小运行场景：首次打开同一节点、切换 Tab、切换到另一节点、返回原节点、关闭窗口；记录视图/模型实例是否复用、释放顺序和迟到回调。</li>
+<li>在同一场景观察主题命令/资源重载入口及 UI 线程耗时；若无入口，交付“静态已查范围 + 未发现可追入口”，不得写成绝对不存在。</li>
+</ol>
+
+<p><strong>采用边界：</strong>本回执可支持“原件窗口组装入口和局部 Tab 集合行为”的设计审查；不能支持删除旧模型、承诺 Tab 复用、解释性能、或宣称 VM 完整生命周期已闭合。</p>
+<h2>第二次静态核对：生命周期与程序集身份</h2>
+<p><strong>重要归属：</strong>以下窗口关闭、调试会话、执行作用域代码摘录来自 <code>docs/07-工具逆向/历史-REA逆向测试/framework-architecture.html</code> 中标注为 <em>independent-implementation</em> 或 <em>not revalidated in this slice</em> 的材料。它们可作为本方实现的生命周期审计参考，不能冒称 VisionMaster 原件运行证据。</p>
+<table><tr><th>对象/路径</th><th>静态摘录与哈希</th><th>可确认范围</th></tr>
+<tr><td><code>src/VisionFramework/ToolDebugSession.cs</code></td><td>SHA-256 <code>8e9030cc070fb8c9ec6263452f73b936287a87f0bae0456e913a1d531ada0211</code>；<code>active/cancellation/closing/state</code>，<code>Execute</code> finally 清取消源并更新状态，<code>StopAsync</code> 取消并等待 active。</td><td>可审计本方调试会话字段与停止顺序；不证明 VM 同构。</td></tr>
+<tr><td><code>src/VisionEditor/ToolEditorHost.cs</code></td><td>SHA-256 <code>452e7aff9f62299ed5f6ff8a00705acd1ee9d775d6b7db414573c16202d77fb3</code>；<code>BindToolEditorLifetime</code> 在 Closing 取消事件、等待 <code>Session.DisposeAsync</code>，随后移除 session 并重新 Close；Closed 再移除。</td><td>本方关闭顺序的静态证据；未确认 VM 原件是否采用同样事件退订/复用策略。</td></tr>
+<tr><td><code>src/VisionFramework/ModuleExecutionScope.cs</code></td><td>SHA-256 <code>fe6b2880402886f3a3e40e8a1bb93b5e180c17364899f1c520b0c587daed2b1b</code>；关闭先 Cancel，待 leases=0 才 Release，清 states/services 并 Dispose 可释放对象。</td><td>本方 scope 资源所有权参考；不能证明 VM 资源释放时刻或 native 图像 reader 已归零。</td></tr>
+<tr><td><code>src/VisionEditor/MainWindow.xaml.cs</code> / <code>WorkflowExecution.cs</code></td><td>SHA-256 <code>034c0dae3e04a9b592031d87e1c1349c23b14091b04564c295267a97fcaa1b4a</code>、<code>62dfe19e6836de7c116f3c89a6c17521d64b252d14dd137116987aadc9a666d4</code>；主窗关闭等待 activeRun 换出、关闭 owner/回调队列并 Dispose scope。</td><td>本方关闭/切方案审计材料；明确指出 workflowSessions/results 等外部容器不必然同步清零。</td></tr>
+<tr><td><code>docs/07-工具逆向/decompiled/README.md</code></td><td>VisionMaster 4.4.0 Build20250516@1555331；首批源 DLL SHA：VM.Controls <code>D36462…ADB222</code>、VMControls.WPF <code>99FFA4…1C97D</code>、VMBaseControls <code>D3ED7C…52555</code>、VM.PcUI <code>87D210…3C92B42</code>；Apps.XmlUI <code>639D0F…B04FD</code>、Apps.Style <code>8980A9…DB63</code>、Apps.ColorFun <code>22C277…D8688</code>。</td><td>可固定控件/资源反编译来源版本与文件身份；README 明确第一批部分材料继承未逐行复验。</td></tr>
+</table>
+<h2>生命周期结论分级</h2>
+<ul>
+<li class="ok"><strong>静态已确认（本方材料）：</strong>关闭事件可先取消 Closing、等待调试会话结束，再移除会话并重新关闭；执行作用域存在 lease 门禁；结果记录、配置结果、窗口 session 是不同持有者。</li>
+<li class="warn"><strong>静态部分确认：</strong>参数模板、资源字典和底栏命令来源已入库；具体 DataContext、Loaded/Unloaded、命令回调的完整 VM 消费链仍未从同一版本原件闭合。</li>
+<li class="bad"><strong>运行未确认：</strong>同节点 Tab 切换是否复用同一视图/模型、换节点是否先退订再释放、结果 reader/图像租约最后读者何时退出、重复打开是否共享窗口，均没有 VM 原机运行记录。</li>
+<li class="bad"><strong>性能未确认：</strong>没有 VM 证据证明缓存、异步、虚拟化或延迟加载；不能用本方静态实现中的字段或测试解释“控件多仍流畅”。</li>
+</ul>
+<h2>需回填现行架构文档的边界</h2>
+<p>可回填 <code>docs/09-现行文档/框架架构总览.html</code>：① VisionMaster 4.4.0 控件反编译材料的版本与 SHA 锚点；②参数窗口静态组装入口；③“VM 调试窗口完整生命周期、Tab 复用、主题无运行时切换、性能机制”均待原机证据，不得写成已完成结论。当前不应据此删除旧 SDK/模型或把本方调试会话实现标为 VM 原件等价。</p>
+</body></html>

@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>IMVSInspectModuControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="datatemplate\paramusercontroldatatemplate.xaml" />
+    <Page Remove="IMVSInspectModuControl\BatchTrainPage.xaml" />
+    <Page Remove="IMVSInspectModuControl\ImageView.xaml" />
+    <Page Remove="IMVSInspectModuControl\InspectPanel.xaml" />
+    <Page Remove="IMVSInspectModuControl\LocationModelPage.xaml" />
+    <Page Remove="IMVSInspectModuControl\ModelTrainDialog.xaml" />
+    <Page Remove="IMVSInspectModuControl\TrainRegionPage.xaml" />
+    <Page Include="datatemplate\paramusercontroldatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="datatemplate/paramusercontroldatatemplate.xaml" />
+    <Page Include="IMVSInspectModuControl\BatchTrainPage.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="subpage/batchtrainpage.xaml" />
+    <Page Include="IMVSInspectModuControl\ImageView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="common/imageview.xaml" />
+    <Page Include="IMVSInspectModuControl\InspectPanel.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="inspectpanel.xaml" />
+    <Page Include="IMVSInspectModuControl\LocationModelPage.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="subpage/locationmodelpage.xaml" />
+    <Page Include="IMVSInspectModuControl\ModelTrainDialog.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="modeltraindialog.xaml" />
+    <Page Include="IMVSInspectModuControl\TrainRegionPage.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="subpage/trainregionpage.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Apps.XmlParser" />
+    <Reference Include="Apps.Data" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="VMControls.Interface" />
+    <Reference Include="VM.Xml" />
+    <Reference Include="VM.ModuleControl" />
+    <Reference Include="VM.PcUI" />
+    <Reference Include="Apps.Interface" />
+    <Reference Include="VM.PlatformSDKCS" />
+    <Reference Include="VM.Controls" />
+    <Reference Include="OpenCvSharp" />
+    <Reference Include="VM.Core" />
+    <Reference Include="Mvvm" />
+    <Reference Include="VMBaseControls" />
+    <Reference Include="Apps.XmlUI" />
+    <Reference Include="VM.Util" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="Apps.ErrorCode" />
+    <Reference Include="Apps.Log" />
+    <Reference Include="Apps.BaseLog" />
+    <Reference Include="VM.Utility" />
+    <Reference Include="ModelCommonHelper" />
+    <Reference Include="VMControls.RenderInterface" />
+    <Reference Include="System.Core" />
+    <Reference Include="VM.ExternalCall" />
+  </ItemGroup>
+</Project>

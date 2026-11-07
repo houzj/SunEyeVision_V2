@@ -1,0 +1,108 @@
+{
+  "toolId": "imvsboxoverlapcalculationmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxOverlapCalculationModu\\IMVSBoxOverlapCalculationModu.xml",
+      "sha256": "b9cdd1fa15267156ed072ec22bf52bfb6ae280143847b88a5b662a938fbb2930",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxOverlapCalculationModu\\IMVSBoxOverlapCalculationModuAlgorithm.xml",
+      "sha256": "ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxOverlapCalculationModu\\IMVSBoxOverlapCalculationModuAlgorithmTab.xml",
+      "sha256": "ea154249bd0d0685bd8ffdfb4e69c868f7e012f94bb3a382d29586fae92fa0aa",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxOverlapCalculationModu\\IMVSBoxOverlapCalculationModuCs.xml",
+      "sha256": "922c0d9d8f0cfe84a02638c8d88dcb138306f6b8909891657fc1b275a9bbfed1",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxOverlapCalculationModu\\IMVSBoxOverlapCalculationModuDisplay.xml",
+      "sha256": "cbc9e40d6be72b4930009eef9ac75fa861b0a87b87ad2833266143f3a2f896cb",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxOverlapCalculationModu\\ToolItemInfo.xml",
+      "sha256": "e6a6084382d6cdee0447e89ae4dcf10f80c1d483a465fbeeaa33672d045ce344",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "RadioSelecter",
+      "name": "InheritWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RunParam_Region1"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI1CenterX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI1CenterY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI1Width"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI1Height"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI1Angle"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RunParam_Region2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI2CenterX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI2CenterY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI2Width"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI2Height"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI2Angle"
+    }
+  ],
+  "sharedUiGroups": [
+    "TextDisplayGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

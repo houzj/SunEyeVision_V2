@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>通讯工具链 · 现行文档</title>
+<link rel="stylesheet" href="../00-索引/assets/doc.css">
+</head>
+<body>
+<div class="wrap">
+
+<nav class="crumbs">
+    <a href="../00-索引/主题台账.html">主题台账</a>
+    <a href="../00-索引/文档索引.html">文档索引</a>
+    <a href="README.html">现行文档说明</a>
+</nav>
+
+<header class="doc-header">
+    <h1>通讯工具链<span class="badge partial">部分未实施</span></h1>
+    <p class="doc-meta">最后更新：2026-11-05<span class="sep">·</span>状态：部分未实施<span class="sep">·</span>代码基线：<code>71da36329</code><span class="sep">·</span>合并来源：21 篇历史方案（清单见文末「历史演进」）</p>
+</header>
+
+<section class="card lead">
+    <h2>一句话结论</h2>
+        <p>通讯分成<strong>两条互不合并的路径</strong>：设备收发在「通信管理」里配事件、流程内用「接收数据 / 协议解析 / 协议组装 / 发送数据」四个工具拼链。核心链路（TCP 四工具闭环）已跑通并部署 Release；被动报文已改为<strong>一条报文只能被同一节点成功接收一次</strong>，不再复用最新报文。统一变量传递（U1~U3）与六项设计优化<strong>未实施</strong>，排在工具链之后。</p>
+</section>
+
+<section class="card">
+    <h2>改前用户看到什么</h2>
+        <ul>
+            <li>同一个接收节点连续执行，<strong>反复读到同一条最新报文</strong>，看起来"有数据"，其实早就是上一条；对端不再发新数据时无法区分「没数据」和「有数据」。</li>
+            <li>等待期间继续显示<strong>上一轮的成功结果</strong>，看不出这一轮还在等。</li>
+            <li>接收到的原始字节被当成字符串 Hex 显示，字符串、字节两种输入混在一起，配置时不知道该选哪个。</li>
+            <li>变量绑定和接收订阅各记一份，界面上改了绑定，编译器用的还是旧的。</li>
+            <li>直接绑定全局变量时，等待时机对了但取到的是<strong>启动时的初值</strong>，不是本轮结果。</li>
+        </ul>
+</section>
+
+<section class="card">
+    <h2>改后应该是什么样</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>场景</th>
+                    <th>期望行为</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>第二轮不再发数据</td>
+                    <td>接收节点保持执行中等待，<strong>不复用上一轮报文</strong></td>
+                </tr>
+                <tr>
+                    <td>第二轮发同样的值（连发两次 7）</td>
+                    <td>识别为两条新报文，分别满足两次接收</td>
+                </tr>
+                <tr>
+                    <td>执行前已到达两条</td>
+                    <td>按顺序各取一条，不是只留最新</td>
+                </tr>
+                <tr>
+                    <td>等待中</td>
+                    <td>节点显示「等待中」，<strong>不把上轮结果显示成本轮有效结果</strong></td>
+                </tr>
+                <tr>
+                    <td>下游解析/组装/发送失败</td>
+                    <td>不自动回滚消费、不重放旧报文，避免重复业务副作用</td>
+                </tr>
+                <tr>
+                    <td>缓冲溢出或坏报文</td>
+                    <td>明确报告缺口/失败，<strong>不静默跳过后仍宣称逐条交付</strong></td>
+                </tr>
+                <tr>
+                    <td>接收原始数据</td>
+                    <td>TCP/UDP/串口与 Modbus 都输出 <code>BinaryPayload</code>，Hex 只是显示</td>
+                </tr>
+                <tr>
+                    <td>OPC UA 读数值</td>
+                    <td>保留原生 Integer/Double，可直接绑定下游，不必先转字符串</td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+<section class="card">
+    <h2>关键结构</h2>
+        <h3>两条路径（不合并）</h3>
+        <figure class="diagram">
+            <div class="d-fan">
+                <div class="d-node accent">通信设备 / 地址<small>同一份连接配置被两条路径共用</small></div>
+                <div class="d-arrow down">↓</div>
+                <div class="d-branches">
+                    <div class="d-branch">
+                    <div class="d-node">通信管理 · 接收事件<small>流程外：解析 / 比较 / 组装</small></div>
+                    <div class="d-arrow down">↓</div>
+                    <div class="d-node">事件 out<small>身份 = EventId / FieldId</small></div>
+                    <div class="d-arrow down">↓</div>
+                    <div class="d-node plain">触发条件<small>流程输入 / 运行参数赋值</small></div>
+                </div>
+                <div class="d-branch">
+                    <div class="d-node">工作流 · 接收数据工具<small>流程内：取本次载荷</small></div>
+                    <div class="d-arrow down">↓</div>
+                    <div class="d-node">接收节点 out<small>身份 = NodeId / 稳定字段键</small></div>
+                    <div class="d-arrow down">↓</div>
+                    <div class="d-node">协议解析 → 协议组装<small>文本 / 字节；String / Integer / Double</small></div>
+                    <div class="d-arrow down">↓</div>
+                    <div class="d-node ok">模块结果 / 数据分析 / 下游绑定</div>
+                </div>
+            </div>
+            <figcaption>两条路径并存且不合并：事件路径靠 EventId / FieldId 身份触发流程，工具路径靠 NodeId / 字段键在流程内取本次载荷。</figcaption>
+        </figure>
+        <p><strong>同名 <code>out1</code> 不表示同一字段</strong>，两条路径不隐式复制。事件只决定流程是否启动；工具按所选来源在节点执行时取数。两者共用底层解析核心与网络连接，不建第二套连接、不争抢数据。</p>
+        <h3>各来源的执行契约</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>来源</th>
+                    <th>每次执行的取数方式</th>
+                    <th>无新数据 / 异常</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>TCP / UDP / 串口</td>
+                    <td>顺序取本节点<strong>尚未消费</strong>的完整报文</td>
+                    <td>无未消费报文 → 保持执行中；来源失效 → 明确失败</td>
+                </tr>
+                <tr>
+                    <td>Modbus / OPC UA 主动读</td>
+                    <td>复用连接实际读一次当前值，相同值仍有效</td>
+                    <td>按协议超时/质量/错误规则处理</td>
+                </tr>
+                <tr>
+                    <td>无生产者的全局变量</td>
+                    <td>读节点执行时的当前集合</td>
+                    <td>校验存在性与类型</td>
+                </tr>
+                <tr>
+                    <td>有生产者的全局变量</td>
+                    <td>取生产者本轮成功结果</td>
+                    <td>不回退上轮值或设计初值</td>
+                </tr>
+            </tbody>
+        </table>
+        <h3>被动报文的消费身份</h3>
+        <figure class="diagram">
+            <div class="d-chain-v">
+                <div class="d-node accent">完整业务报文到达</div>
+                <div class="d-arrow down">↓</div>
+                <div class="d-node">有界缓冲<small>每来源 ≤256 条 / 4 MiB</small></div>
+                <div class="d-arrow down">↓</div>
+                <div class="d-node decision">本节点游标：下一条未消费？</div>
+            </div>
+            <div class="d-fan">
+                <div class="d-arrow down">↓</div>
+                <div class="d-branches">
+                    <div class="d-branch">
+                        <span class="d-edge">有</span>
+                        <div class="d-arrow down">↓</div>
+                        <div class="d-node ok">校验 → 发布本次输出<small>+ 推进游标（同一提交边界）</small></div>
+                        <div class="d-arrow down">↓</div>
+                        <div class="d-node">下游共用本轮固定输出</div>
+                    </div>
+                    <div class="d-branch">
+                        <span class="d-edge">无</span>
+                        <div class="d-arrow down">↓</div>
+                        <div class="d-node plain">异步等待<small>可取消，不占计算名额</small></div>
+                    </div>
+                </div>
+            </div>
+            <figcaption>被动报文按节点游标消费：有未消费报文就发布并推进游标（同一提交边界），没有就异步等待且不占计算名额。</figcaption>
+        </figure>
+        <ul>
+            <li>消费身份 = 稳定工作流 ID + 稳定调用节点路径 + 子流程 ID；<strong>不用显示名、不用每轮 RunId</strong></li>
+            <li>报文新旧依据<strong>会话 + 递增序号</strong>，不看载荷内容</li>
+            <li>各节点是独立订阅关系：一个节点消费不推进别人的游标</li>
+            <li>消费者上限 4096；新身份不继承其他节点进度</li>
+        </ul>
+</section>
+
+<section class="card">
+    <h2>关键决策与理由</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>决策</th>
+                    <th>理由</th>
+                    <th>依据</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>事件与工具<strong>不合并</strong>为一条路径</td>
+                    <td>输出身份（EventId/FieldId vs NodeId/字段键）、执行时机、用途都不同，合并会引入隐式复制</td>
+                    <td>20261012 基线</td>
+                </tr>
+                <tr>
+                    <td>被动报文改为<strong>逐次消费</strong></td>
+                    <td>复用最新报文会让"没数据"伪装成"有数据"，无法判断真实触发</td>
+                    <td>20261014 方案（取代旧规则）</td>
+                </tr>
+                <tr>
+                    <td>原始载荷统一 <code>BinaryPayload</code>，Hex 仅展示</td>
+                    <td>TCP 传的是字节，不保证是字符串；提前转 String 会丢原始信息并误导配置</td>
+                    <td>20261012 §3</td>
+                </tr>
+                <tr>
+                    <td>解析输入同时接受 String 与 Binary</td>
+                    <td>上游可能是接收节点的 Binary，也可能是原生 String，过滤掉任一类都会断链</td>
+                    <td>20261012 §3</td>
+                </tr>
+                <tr>
+                    <td>取消「报文年龄」参数与隐藏超时</td>
+                    <td>年龄限制会静默丢数据，且与"等新报文"语义冲突</td>
+                    <td>20261014</td>
+                </tr>
+                <tr>
+                    <td>坏报文<strong>不静默跳过</strong></td>
+                    <td>跳过等于吞数据，用户无法知道丢了什么</td>
+                    <td>20261014 §4</td>
+                </tr>
+                <tr>
+                    <td>一个变量只有<strong>一个生产来源</strong></td>
+                    <td>多生产者会产生不确定的赋值顺序，冲突必须提示而非覆盖</td>
+                    <td>20261012 变量传递</td>
+                </tr>
+                <tr>
+                    <td>字节编号 0 基、区间闭合</td>
+                    <td>与配准一致性，避免 0/1 基歧义</td>
+                    <td>20261012 §4</td>
+                </tr>
+                <tr>
+                    <td>默认数值规则：1~3 字节非负、4 字节有符号，可显式覆盖</td>
+                    <td>贴近常见 PLC 约定，同时允许工程覆盖</td>
+                    <td>20261012 §4</td>
+                </tr>
+                <tr>
+                    <td>接收成功后下游失败<strong>不回滚消费</strong></td>
+                    <td>回滚重放会造成重复业务副作用（例如重复写 PLC）</td>
+                    <td>20261014 §4</td>
+                </tr>
+                <tr>
+                    <td>事件 ASCII 与模块 ASCII 解释<strong>刻意不同</strong></td>
+                    <td>事件先严格校验 ASCII 字节再按二进制字段规则；模块按字符转换（字符 <code>1</code> 得到 49 和 1）。这是项目定义，<strong>不冒充复现 VM 内部算法</strong></td>
+                    <td>20261012 §5</td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+<section class="card">
+    <h2>实施与验证状态</h2>
+        <h3>已做</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>能力</th>
+                    <th>状态</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>BinaryPayload</code> / <code>Binary</code> 统一输出</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>协议解析：文本 / 字节双模式，String / Binary 双输入</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>协议组装：String / Integer / Double 候选过滤</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>接收数据首版：当前值服务、设备/目标分层、变量多行、生产者依赖</td>
+                    <td>已实施（R3）</td>
+                </tr>
+                <tr>
+                    <td>共用无 UI 解析核心、通信管理能力缺口修正</td>
+                    <td>已实施（R1 / R2 首批）</td>
+                </tr>
+                <tr>
+                    <td>额外 UI 参数收拢与条件显示</td>
+                    <td>已实施（R4，先于 R3 交付）</td>
+                </tr>
+                <tr>
+                    <td>发送数据首批（P4）</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>被动报文逐次消费（有界缓冲、独立游标、提交边界）</td>
+                    <td>已实施并部署 Release</td>
+                </tr>
+                <tr>
+                    <td>每轮展示重置（等待中不显示上轮结果）</td>
+                    <td>2026-10-14 补齐</td>
+                </tr>
+                <tr>
+                    <td>TCP 四工具闭环</td>
+                    <td>已验证</td>
+                </tr>
+            </tbody>
+        </table>
+        <h3>未做</h3>
+        <ul>
+            <li>解析内容控件收窄到约 <strong>260 WPF 逻辑单位</strong>（现仍填满整行）</li>
+            <li>文本 Binary 的<strong>编码条件设置</strong>（当前固定 UTF-8，ASCII 选项未做 UI）</li>
+            <li>客户端级隔离</li>
+            <li><strong>队列</strong>来源（属计划，未接通；不提供可运行占位）</li>
+            <li><strong>S7 / CIP</strong> 目标适配（未适配前不宣称可用）</li>
+            <li><strong>U1 关系编译 / U2 快照取值 / U3 范围等待</strong>（统一变量传递，工具链完成后做）</li>
+            <li>六项设计优化：单一绑定事实、等待与取值同源、同一配置冻结、稳定身份、成功发布边界、统一范围诊断</li>
+            <li>分支发布专项（流程整体成功但某生产节点未执行 → 标「本次未产生」，只阻断真正依赖它的消费者）</li>
+            <li>删除节点后的逐个自动回收（当前需重载方案）</li>
+            <li>溢出后的自动跳过/丢弃入口（当前只有明确缺口报告）</li>
+        </ul>
+        <h3>未验</h3>
+        <ul>
+            <li>真实画布、模块结果页、设计器（Visual Studio）、高 DPI 的<strong>人工验收</strong></li>
+            <li>3 项扩展自动化用例此前失败，<strong>至今未解决</strong></li>
+            <li>真实设备回环（现只验证到模拟协议数据与模块结果，未做真实设备写回）</li>
+        </ul>
+</section>
+
+<section class="card">
+    <h2>风险与遗留</h2>
+        <ol>
+            <li><strong>逐次消费是运行时状态，不写回设计参数。</strong> 程序重启或方案重载后不恢复旧报文，用户会看到"重启后要重新发数据"，属预期行为，需在帮助里写清。</li>
+            <li><strong>坏报文会一直阻挡该消费者。</strong> 这是刻意的（不静默跳过），但没有显式"丢弃并继续"入口，现场遇到持续坏帧会卡住，需要后续补一个明确的丢弃/调试入口。</li>
+            <li><strong>溢出恢复只能重载方案。</strong> 达到消费者上限（4096）或缓冲容量后没有优雅恢复路径。</li>
+            <li><strong>事件 out 仍不会自动变成节点输出</strong>，用事件触发流程时若要在流程里用同一份数据，需要走接收工具另取一次，可能取到不同报文。</li>
+            <li><strong>U1~U3 未实施</strong>，所以「直接绑定」与「接收入口」两条取值路径行为仍不完全一致：等待时机可能正确但读到初值。</li>
+            <li>官方帮助只确认来源与轮询行为，<strong>未披露 VM 内部的依赖、快照与等待实现</strong>。本项目规则是自定契约，不能当作 VM 行为的证据。</li>
+        </ol>
+</section>
+
+<section class="card">
+    <h2>历史演进</h2>
+        <p>按时间倒序，全部保留在 <code>01-方案设计</code>，只作演进证据：</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>文档</th>
+                    <th>本篇采信内容</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2026-10-14</td>
+                    <td><a href="../01-方案设计/2026/10/被动报文逐次消费优化方案-20261014.md">被动报文逐次消费优化方案</a></td>
+                    <td><strong>取代</strong>旧"可重复读取"规则；有界缓冲、游标、提交边界、每轮展示重置</td>
+                </tr>
+                <tr>
+                    <td>2026-10-12</td>
+                    <td><a href="../01-方案设计/2026/10/通信接收与协议解析优化基线-20261012.md">通信接收与协议解析优化基线</a></td>
+                    <td>两条路径、来源契约、解析规则、变量生产/消费关系、六项优化</td>
+                </tr>
+                <tr>
+                    <td>2026-10-12</td>
+                    <td><a href="../01-方案设计/2026/10/接收数据工具方案与沟通基线-20261010.md">接收数据工具方案</a></td>
+                    <td>接收工具 UI 与当前值契约</td>
+                </tr>
+                <tr>
+                    <td>2026-10-12</td>
+                    <td><a href="../01-方案设计/2026/10/协议解析工具方案与沟通基线-20261010.md">协议解析工具方案</a></td>
+                    <td>解析双模式 UI 与字段规则</td>
+                </tr>
+                <tr>
+                    <td>2026-10-12</td>
+                    <td><a href="../01-方案设计/2026/10/协议组装工具方案与沟通基线-20261010.md">协议组装工具方案</a></td>
+                    <td>组装来源与联合验证</td>
+                </tr>
+                <tr>
+                    <td>2026-10-12</td>
+                    <td><a href="../01-方案设计/2026/10/发送数据工具方案与沟通基线-20261010.md">发送数据工具方案</a></td>
+                    <td>发送首批</td>
+                </tr>
+                <tr>
+                    <td>2026-10-10</td>
+                    <td><a href="../01-方案设计/2026/10/通讯事件条件与动作条件及参数绑定优化基线-20261010.md">通讯事件条件与动作条件及参数绑定优化基线</a></td>
+                    <td>事件条件模型</td>
+                </tr>
+                <tr>
+                    <td>2026-10-10</td>
+                    <td><a href="../01-方案设计/2026/10/通信工具链实施计划-20261010.md">通信工具链实施计划</a></td>
+                    <td>P4~P6 顺序</td>
+                </tr>
+                <tr>
+                    <td>2026-10-10</td>
+                    <td><a href="../01-方案设计/2026/10/通信工具链模块结果与数据分析统一约定-20261010.md">通信工具链模块结果与数据分析统一约定</a></td>
+                    <td>结果与展示口径</td>
+                </tr>
+                <tr>
+                    <td>2026-10-08</td>
+                    <td><a href="../01-方案设计/2026/10/通讯触发响应与心跳事实基线方案-20261008.md">通讯触发响应与心跳事实基线方案</a></td>
+                    <td>触发与心跳</td>
+                </tr>
+                <tr>
+                    <td>2026-09-30</td>
+                    <td><a href="../01-方案设计/2026/09/通讯接收来源与目标绑定最终方案-20260930.md">通讯接收来源与目标绑定最终方案</a></td>
+                    <td>来源/目标绑定</td>
+                </tr>
+                <tr>
+                    <td>2026-09-29</td>
+                    <td><a href="../01-方案设计/2026/09/VisionMaster4.4通信管理参考与差异分析-20260929.md">VisionMaster4.4 通信管理参考与差异分析</a></td>
+                    <td>官方依据</td>
+                </tr>
+                <tr>
+                    <td>2026-09-29</td>
+                    <td><a href="../01-方案设计/2026/09/通讯解析字段与统一绑定模型实施计划-20260929.md">通讯解析字段与统一绑定模型实施计划</a></td>
+                    <td>字段身份</td>
+                </tr>
+                <tr>
+                    <td>2026-09-29</td>
+                    <td><a href="../01-方案设计/2026/09/通讯解析字段与统一绑定模型最终优化方案-20260929.md">通讯解析字段与统一绑定模型最终优化方案</a></td>
+                    <td>绑定模型</td>
+                </tr>
+                <tr>
+                    <td>2026-09-28</td>
+                    <td><a href="../01-方案设计/2026/09/OPC-UA数据点表与匿名联调优化方案-20260928.md">OPC-UA 数据点表与匿名联调优化方案</a></td>
+                    <td>OPC UA 接通</td>
+                </tr>
+                <tr>
+                    <td>2026-09-27</td>
+                    <td><a href="../01-方案设计/2026/09/通讯管理最终架构与持久化方案-20260927.md">通讯管理最终架构与持久化方案</a></td>
+                    <td>持久化</td>
+                </tr>
+                <tr>
+                    <td>2026-09-26</td>
+                    <td><a href="../01-方案设计/2026/09/通讯管理器Modbus地址空间最终优化方案-20260926.md">通讯管理器 Modbus 地址空间最终优化方案</a></td>
+                    <td>地址空间定稿</td>
+                </tr>
+                <tr>
+                    <td>2026-09-24</td>
+                    <td><a href="../01-方案设计/2026/09/通讯管理器Modbus地址空间与调试最终优化方案-20260924.md">通讯管理器 Modbus 地址空间与调试最终优化方案</a></td>
+                    <td>地址空间演进</td>
+                </tr>
+                <tr>
+                    <td>2026-09-23</td>
+                    <td><a href="../01-方案设计/2026/09/通讯管理器按设备解耦与收发调试优化方案-20260923.md">通讯管理器按设备解耦与收发调试优化方案</a></td>
+                    <td>设备解耦</td>
+                </tr>
+                <tr>
+                    <td>2026-09-23</td>
+                    <td><a href="../01-方案设计/2026/09/通讯管理器运行时架构与协议扩展最终设计方案-20260923.md">通讯管理器运行时架构与协议扩展最终设计方案</a></td>
+                    <td>运行时架构</td>
+                </tr>
+                <tr>
+                    <td>2026-09-21</td>
+                    <td><a href="../01-方案设计/2026/09/通讯管理器与通讯工具完整设计方案-20260921.md">通讯管理器与通讯工具完整设计方案</a></td>
+                    <td>初版完整设计</td>
+                </tr>
+            </tbody>
+        </table>
+        <p><strong>被本篇取代、不要再当结论用的说法</strong>：</p>
+        <ul>
+            <li>「当前连接最新报文可重复读取」→ 已被 20261014 逐次消费取代</li>
+            <li>「接收数据设备模式必须选事件 out」→ 无官方依据，已撤回</li>
+        </ul>
+</section>
+
+<nav class="doc-nav">
+    <a class="primary" href="../00-索引/主题台账.html">主题台账</a>
+    <a href="../00-索引/文档索引.html">文档索引</a>
+    <a href="README.html">现行文档说明</a>
+</nav>
+
+</div>
+</body>
+</html>

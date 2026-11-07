@@ -1,0 +1,69 @@
+{
+  "toolId": "imvsscaletransformmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSScaleTransformModu\\IMVSScaleTransformModu.xml",
+      "sha256": "6a40a53325d644a4a0a123a6c2230367a2897e391199bea22d64e8dc26703082",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSScaleTransformModu\\IMVSScaleTransformModuAlgorithm.xml",
+      "sha256": "53836702215c393a45b2d42394dfc97a901cbe23bffa87e101bc51ef641dfd8a",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSScaleTransformModu\\IMVSScaleTransformModuAlgorithmTab.xml",
+      "sha256": "e29aa3f7e61ef655878094223365483f754a4dd430f88c4cf27a4fbd0ad387da",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSScaleTransformModu\\IMVSScaleTransformModuCs.xml",
+      "sha256": "e6df23ba545ba32eb11e5191a144cd9aed17dbb97ff580a5d18e596362a1940c",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSScaleTransformModu\\IMVSScaleTransformModuDisplay.xml",
+      "sha256": "5b3811cb8fdf5b8e525b515593d1219180d1aae7cdd23e9837792597e8dcf018",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSScaleTransformModu\\ToolItemInfo.xml",
+      "sha256": "abc6a98d4d611e6517c1a039aa5450b703670f89e900100c0e7034d7126f30fd",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "ButtonSelecter",
+      "name": "TransferParam"
+    },
+    {
+      "type": "OpenFileForCalibDialog",
+      "name": "LoadCalibPath"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RefreshSignal"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "CorrectInfo"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

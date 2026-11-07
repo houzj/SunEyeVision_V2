@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="IMVSColorRecognitionModuControl.HikHsiList" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:IMVSColorRecognitionModuControl" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:controls="clr-namespace:HikPcUI.Controls;assembly=VM.PcUI" x:Name="us" Width="Auto" Height="Auto">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Apps.Style;component/DataGridStyle/DataGridStyle.xaml" />
+        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid Width="Auto" Height="Auto">
+    <DataGrid Name="m_DataGrid" Grid.Row="3" ColumnWidth="Auto" Background="#46494D" GridLinesVisibility="All" CanUserResizeColumns="False" CellStyle="{StaticResource dgCellCenterAlignmentStyle}" Style="{StaticResource ModuleViewDataGridStyle}" ItemsSource="{Binding ModuleResultInfoList, ElementName=us}" LayoutUpdated="DataGrid_LayoutUpdated">
+      <DataGrid.Columns>
+        <DataGridTemplateColumn MinWidth="83" Width="*">
+          <DataGridColumn.Header>
+            <TextBlock Text="{DynamicResource Region}" ToolTip="{DynamicResource Region}" VerticalAlignment="Center" />
+          </DataGridColumn.Header>
+          <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate>
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Name="m_AreaType" Tag="AreaType" TextTrimming="CharacterEllipsis" Width="76" TextAlignment="Center" Text="{Binding Name}" ToolTip="{Binding Name}" />
+              </StackPanel>
+            </DataTemplate>
+          </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+        <DataGridTemplateColumn MinWidth="90" Width="*">
+          <DataGridColumn.Header>
+            <TextBlock Text="{DynamicResource 色相}" ToolTip="{DynamicResource 色相}" VerticalAlignment="Center" />
+          </DataGridColumn.Header>
+          <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate>
+              <StackPanel Orientation="Horizontal">
+                <controls:HikHistogramSingle Name="HueHist" Tag="HueHist" Height="52" Width="78" OuterHeight="52" InnerHeight="48" DataPoints="{Binding HData}" />
+              </StackPanel>
+            </DataTemplate>
+          </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+        <DataGridTemplateColumn MinWidth="90" Width="*">
+          <DataGridColumn.Header>
+            <TextBlock Text="{DynamicResource 饱和度}" ToolTip="{DynamicResource 饱和度}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+          </DataGridColumn.Header>
+          <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate>
+              <StackPanel Orientation="Horizontal">
+                <controls:HikHistogramSingle Name="SaturationHist" Tag="SaturationHist" Height="52" Width="78" OuterHeight="52" InnerHeight="48" DataPoints="{Binding SData}" />
+              </StackPanel>
+            </DataTemplate>
+          </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+        <DataGridTemplateColumn MinWidth="90" Width="*">
+          <DataGridColumn.Header>
+            <TextBlock Text="{DynamicResource Intensity}" ToolTip="{DynamicResource Intensity}" VerticalAlignment="Center" />
+          </DataGridColumn.Header>
+          <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate>
+              <StackPanel Orientation="Horizontal">
+                <controls:HikHistogramSingle Name="IntensityHist" Tag="IntensityHist" Height="52" Width="78" OuterHeight="52" InnerHeight="48" DataPoints="{Binding IData}" />
+              </StackPanel>
+            </DataTemplate>
+          </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+      </DataGrid.Columns>
+      <DataGrid.RowStyle>
+        <Style TargetType="{x:Type DataGridRow}">
+          <Setter Property="Height" Value="65.5" />
+          <Setter Property="Background" Value="#46494D" />
+        </Style>
+      </DataGrid.RowStyle>
+    </DataGrid>
+  </Grid>
+</UserControl>

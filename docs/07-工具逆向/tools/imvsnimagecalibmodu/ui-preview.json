@@ -1,0 +1,188 @@
+{
+  "controls": [
+    {
+      "type": "EnumerationG",
+      "name": "ImageSource"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "CalibPointInput"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PhyPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "MovePhysicalPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "MovePhysicalPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RotateAngle"
+    },
+    {
+      "type": "Integer",
+      "name": "CalibPointTotalNum"
+    },
+    {
+      "type": "Integer",
+      "name": "RotPointTotalNum"
+    },
+    {
+      "type": "Float",
+      "name": "BasePointX"
+    },
+    {
+      "type": "Float",
+      "name": "BasePointY"
+    },
+    {
+      "type": "Float",
+      "name": "MoveAlignX"
+    },
+    {
+      "type": "Float",
+      "name": "MoveAlignY"
+    },
+    {
+      "type": "Enumeration",
+      "name": "MoveFirstType"
+    },
+    {
+      "type": "Integer",
+      "name": "ChangeDirectionMoveTime"
+    },
+    {
+      "type": "Float",
+      "name": "BaseAngle"
+    },
+    {
+      "type": "Float",
+      "name": "MoveAngle"
+    },
+    {
+      "type": "Boolean",
+      "name": "HomoFixEnable"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "InputMode"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Image Point"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Physical Point"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PicPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PicPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PhysicalPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PhysicalPointY"
+    },
+    {
+      "type": "Boolean",
+      "name": "RefreshFileEnable"
+    },
+    {
+      "type": "SaveFileDialog",
+      "name": "SaveCalibPath"
+    },
+    {
+      "type": "OpenFileForCalibDialog",
+      "name": "CalibPathName"
+    },
+    {
+      "type": "Boolean",
+      "name": "CareraMove"
+    },
+    {
+      "type": "Enumeration",
+      "name": "CalibBoardType"
+    },
+    {
+      "type": "Integer",
+      "name": "GrayContrast"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FilterStatus"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SubpixelWinAuto"
+    },
+    {
+      "type": "Integer",
+      "name": "SubPixelWindowSize"
+    },
+    {
+      "type": "Command",
+      "name": "Clear"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvsnimagecalibmodu",
+  "status": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNImageCalibModu\\IMVSNImageCalibModu.xml",
+      "sha256": "dac2aa0c023f712dd0e693ce285fa66de1e77dc4dd121060c573706a430e88ff",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNImageCalibModu\\IMVSNImageCalibModuAlgorithm.xml",
+      "sha256": "cf38042199b0d27f2fe922fbf44984e1ea7ac1b3fad0e71a97d11f232d24fa17",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNImageCalibModu\\IMVSNImageCalibModuAlgorithmTab.xml",
+      "sha256": "a83474fec309e81eaed70366ad813a2d5a06a02a8dcc9f12d398079e16e5c3c3",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNImageCalibModu\\IMVSNImageCalibModuCs.xml",
+      "sha256": "1bfad9340d64bc7eeb1fef00882ec6e326701a1186603749b09b811f0e1b6354",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNImageCalibModu\\IMVSNImageCalibModuDisplay.xml",
+      "sha256": "89a9d3665d9a90cfb751008da7559f1bd179dba84a15f134d5117795a62014e8",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNImageCalibModu\\ToolItemInfo.xml",
+      "sha256": "77f5dfbca4bb2959a59a1d0c4d2e9a0eb90b7bb711ec44c9705e32e53ab1d3ce",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "N图像标定",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

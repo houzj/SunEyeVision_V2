@@ -1,0 +1,64 @@
+{
+    "stableToolId":  "imvscalipermodu",
+    "originalPlugin":  "IMVSCaliperModu",
+    "displayName":  "卡尺工具",
+    "originalCategory":  "Location",
+    "originalSourcePath":  "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCaliperModu",
+    "uiCategory":  "result-view",
+    "priority":  "P2",
+    "status":  "source-partial",
+    "evidenceState":  "source-partial",
+    "resourceCount":  6,
+    "parameterCount":  98,
+    "inputCount":  4,
+    "outputCount":  27,
+    "uiControlCount":  95,
+    "sourceInventory":  "docs/plugins/inventory.json",
+    "sourceEvidence":  [
+                           {
+                               "path":  "docs/07-工具逆向/decompiled/Managed/Caliper/IMVSCaliperModuCs/CaliperParam.cs",
+                               "sha256":  "386E2BE02D54C19DDDD9CB14E8256C2C4EDA736366006D1D2F39E22FADE523E4",
+                               "symbol":  "托管参数模型：参数名、类型、枚举定义（CaliperParam）",
+                               "lines":  "1-2040",
+                               "confirmable":  "托管层源码直读：可确认类结构、成员、枚举与调用关系；不含算法本体（算法在原生 \u003cPlugin\u003e.dll）"
+                           },
+                           {
+                               "path":  "docs/07-工具逆向/decompiled/Managed/Caliper/IMVSCaliperModuCs/CaliperResult.cs",
+                               "sha256":  "AC59BC733C81007115BAF653AAB511DE3C7B9AE7C834DA9D83331B7A60B0517E",
+                               "symbol":  "托管结果模型：输出字段与状态（CaliperResult）",
+                               "lines":  "1-141",
+                               "confirmable":  "托管层源码直读：可确认类结构、成员、枚举与调用关系；不含算法本体（算法在原生 \u003cPlugin\u003e.dll）"
+                           },
+                           {
+                               "path":  "docs/07-工具逆向/decompiled/Managed/Caliper/IMVSCaliperModuCs/CaliperRoiManager.cs",
+                               "sha256":  "DD6C5C64F46A9ED6EC6A5C9B09708FEE7398AAADCE1CC42CA884411F805EF2F2",
+                               "symbol":  "托管 ROI 管理：ROI 形状与生命周期（CaliperRoiManager）",
+                               "lines":  "1-45",
+                               "confirmable":  "托管层源码直读：可确认类结构、成员、枚举与调用关系；不含算法本体（算法在原生 \u003cPlugin\u003e.dll）"
+                           },
+                           {
+                               "path":  "docs/07-工具逆向/decompiled/Managed/Caliper/IMVSCaliperModuCs/IMVSCaliperModuTool.cs",
+                               "sha256":  "FADC569E98FF4C62E5F4A9C526039A0F92FA8330159A69F76630F4C9F8B6938B",
+                               "symbol":  "托管工具类：构造、ModuParams、ModuResult、Run(SyncSelfRun)（IMVSCaliperModuTool）",
+                               "lines":  "1-64",
+                               "confirmable":  "托管层源码直读：可确认类结构、成员、枚举与调用关系；不含算法本体（算法在原生 \u003cPlugin\u003e.dll）"
+                           }
+                       ],
+    "managedMembers":  [
+                           "CaliperParam",
+                           "CaliperResult",
+                           "CaliperRoiManager",
+                           "IMVSCaliperModuTool"
+                       ],
+    "nativeFunctions":  [
+
+                        ],
+    "runtimeObservations":  [
+
+                            ],
+    "unknowns":  [
+                     "原生算法本体未取证：nativeFunctions 为空，算法在原生 IMVSCaliperModu.dll，未反汇编",
+                     "无运行时观测：runtimeObservations 为空，实际执行结果、耗时与失败表现未知",
+                     "98 项 XML 参数与托管 CaliperParam 成员的逐项对应未核（当前只确认类结构、枚举与 95 条 UI 控件声明）"
+                 ]
+}

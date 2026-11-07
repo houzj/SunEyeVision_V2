@@ -1,0 +1,89 @@
+{
+  "toolId": "imvsboxfiltermodule",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxFilterModule\\IMVSBoxFilterModule.xml",
+      "sha256": "80c271b5e51be45cd23e1fcde46f8bba24f70a115dada8d1fd6fd9d2aa143dc7",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxFilterModule\\IMVSBoxFilterModuleAlgorithm.xml",
+      "sha256": "2c2bb501b99d7f5c7b6c4ef2f5324610c857ec87caca74d856670b10211ac9e0",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxFilterModule\\IMVSBoxFilterModuleAlgorithmTab.xml",
+      "sha256": "5a672281ec6e2f8268662270e46b5106240a1143f0d597648c761fac6329a705",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxFilterModule\\IMVSBoxFilterModuleCs.xml",
+      "sha256": "bbe8b68f7fb20e7f5284507c0f198d787a7d7e0d877ab97518b4c307f7663ef8",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxFilterModule\\IMVSBoxFilterModuleDisplay.xml",
+      "sha256": "73d8882dfc8a5182f6d06edf37417fc90e83f7a185bd8d3f15e3ba5f60fca458",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxFilterModule\\ToolItemInfo.xml",
+      "sha256": "f11903dc1a003c62bb6bce96115eb6655685e8184ee675aab5f8b904865d1842",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "RadioSelecter",
+      "name": "InheritWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Region"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROICenterX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROICenterY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROIWidth"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROIHeight"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROIAngle"
+    },
+    {
+      "type": "Float",
+      "name": "MinOverlap"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "TextDisplayGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

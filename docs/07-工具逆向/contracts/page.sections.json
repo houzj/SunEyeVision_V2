@@ -1,0 +1,139 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "工具对照页章节契约",
+  "schemaVersion": "1.1",
+  "updated": "2026-11-05",
+  "description": "定义 docs/07-工具逆向/pages/ 下每个工具 HTML 页的固定章节与枚举。页面由卡片数据生成，手写页面不接受。同类工具共用同一骨架，只有工具体特有章节按 uiCategory 扩展。",
+  "pageNaming": "<uiCategoryPascal>-<originalPlugin>.html",
+  "sectionRule": "全部 sections 必须出现；缺数据时渲染为空状态并标注，不允许省略章节",
+  "sections": [
+    {
+      "id": "header",
+      "title": "页头",
+      "required": true,
+      "fields": ["displayName", "uiCategory", "originalPlugin", "status"],
+      "rule": "必须显示状态徽章与否定性声明：不证明注册、加载、执行或完成"
+    },
+    {
+      "id": "uiPreview",
+      "title": "调试窗预览",
+      "required": true,
+      "source": "docs/08-工具预览/preview/<原件分类>-<原件模块>.html",
+      "rule": "有控件级预览给可点击入口；只有外壳页标注「待升级」；无文件显示「无预览」且不得渲染可点击链接。SVG 只作控件树证据，不作预览图"
+    },
+    {
+      "id": "originalEvidence",
+      "title": "原版入口与证据",
+      "required": true,
+      "source": "evidence.json.sourceEvidence[] + resources.json.xmlEvidence[]",
+      "rule": "每条证据显示 路径 + SHA-256 前 12 位 + 行号/根节点 + 可确认范围；继承自 Codex 的标 origin=codex"
+    },
+    {
+      "id": "currentImplementation",
+      "title": "当前实现与差异",
+      "required": true,
+      "source": "evidence.json.currentImplementation",
+      "rule": "仅描述我方 SunEyeVision 真实状态；继承卡缺失时渲染为「我方未核对」，禁止沿用 Codex 的 VisionReplica 描述"
+    },
+    {
+      "id": "analysisStages",
+      "title": "分析环节",
+      "required": true,
+      "source": "卡片 7 个环节状态",
+      "rule": "7 个环节全列，缺状态显示 unknown"
+    },
+    {
+      "id": "algorithmSemantics",
+      "title": "算法语义链",
+      "required": true,
+      "source": "algorithm-semantics.md 9 步",
+      "rule": "9 步全列，顺序不可变，每步显示 conclusion 徽章"
+    },
+    {
+      "id": "algorithmComparison",
+      "title": "算法对照",
+      "required": true,
+      "source": "7 维对照",
+      "rule": "未建立对比一律渲染 not-established，并给出缺什么"
+    },
+    {
+      "id": "unknowns",
+      "title": "未知与待补",
+      "required": true,
+      "source": "evidence.json.unknowns[] + ui-preview.json.missing[]",
+      "rule": "必须非空；空数组视为未取证"
+    },
+    {
+      "id": "notice",
+      "title": "对比范围与未知",
+      "required": true,
+      "fixedText": "本页只记录原版事实、当前实现、拟议设计与未知，四者分列。不证明该工具在原厂已注册、加载、执行或完成；UI 例证、XML 参数数量、目录映射或编译测试均不替代数值基线。"
+    }
+  ],
+  "analysisStages": [
+    { "id": "ui", "name": "UI入口与窗口", "covers": "入口按钮、窗口组装、页签、控件树" },
+    { "id": "common", "name": "公共模板/配置框架", "covers": "共享模板、配置对话框、资源字典" },
+    { "id": "parametersRoi", "name": "参数与ROI", "covers": "参数读写、默认值、显隐条件、ROI 类型与几何" },
+    { "id": "execution", "name": "执行与结果", "covers": "Process/ProcessAlg、输入准备、结果写回、判定" },
+    { "id": "display", "name": "图形/文字显示", "covers": "DisplayType、结果视图、通知链" },
+    { "id": "storage", "name": "持久化/重开", "covers": "序列化键、版本迁移、重绑" },
+    { "id": "native", "name": "native/ABI", "covers": "P/Invoke、调用约定、二进制容器" }
+  ],
+  "algorithmDimensions": [
+    { "id": "originalAlgorithm", "name": "原版具体算法/入口" },
+    { "id": "currentCalculation", "name": "当前计算路径" },
+    { "id": "defaultsPrePost", "name": "参数默认与前后处理" },
+    { "id": "boundariesCoordinatesTypes", "name": "边界/坐标/类型" },
+    { "id": "pixelNumerics", "name": "像素/数值差异与误差" },
+    { "id": "nativeAbi", "name": "原native/ABI" },
+    { "id": "validationInputs", "name": "验证输入/基线" }
+  ],
+  "semanticSteps": [
+    { "step": "init", "name": "工具创建/初始化", "needs": "构造函数、注册表、资源绑定" },
+    { "step": "parameters", "name": "参数读取与条件显隐", "needs": "参数对象、绑定路径、触发器" },
+    { "step": "inputsRoi", "name": "输入/ROI/变量准备", "needs": "输入节点、所有权、reader 生命周期" },
+    { "step": "process", "name": "Process/ProcessAlg/原生桥", "needs": "函数体、调用约定、返回码" },
+    { "step": "branchFailure", "name": "分支、失败与取消", "needs": "谓词、错误码、停止路径" },
+    { "step": "resultWrite", "name": "结果写回与判定", "needs": "结果结构、状态码、判定链" },
+    { "step": "displayPublish", "name": "图形/文本显示发布", "needs": "结果视图、DisplayType、通知链" },
+    { "step": "persistence", "name": "保存恢复", "needs": "序列化键、版本迁移、重绑" },
+    { "step": "release", "name": "DeInit/Destroy/释放", "needs": "对象所有权、reader lease、释放顺序" }
+  ],
+  "statusBadges": {
+    "inventory-only": "仅有清单",
+    "source-indexed": "源码已定位",
+    "source-partial": "源码部分恢复",
+    "source-confirmed": "环节级已确认",
+    "unknown": "未知",
+    "partial": "部分",
+    "done": "已确认",
+    "deferred": "暂缓",
+    "not-established": "未建立对比",
+    "established": "已建立",
+    "inferred": "推断",
+    "confirmed": "已确认"
+  },
+  "categoryExtensions": {
+    "image-roi": ["ROI 形状集合", "图像源模式（本地/相机/订阅）", "图像条与预览"],
+    "measurement": ["卡尺 ROI", "测量算法参数", "结果几何类型"],
+    "logic": ["分支谓词", "条件表达式", "循环边界"],
+    "calibration": ["标定板/标定点", "坐标系变换", "精度参数"],
+    "calculation": ["输入变量绑定", "表达式语法", "输出类型"],
+    "result-view": ["结果视图控件与显示项", "结果列表字段映射", "图像输出（二值图/结果图）", "判定与 LimitJudge 的关系"],
+    "declarative-parameters": ["参数页签与控件树", "控件类型与条件显隐", "默认值来源与引用组"],
+    "compound-control": ["复合控件内嵌子控件", "动态参数键与规则列表", "控件与宿主流程的接缝"]
+  },
+  "generationRule": {
+    "command": "pwsh -File scripts/08-tool-reverse/generate-pages.ps1",
+    "validateCommand": "pwsh -File scripts/08-tool-reverse/validate-cards.ps1",
+    "hardFail": [
+      "卡片缺必需文件",
+      "evidence.json 缺必需字段",
+      "unknowns 为空数组",
+      "sha256 格式不合法",
+      "stableToolId 与目录名不一致",
+      "algorithm-semantics.md 步骤数不等于 9"
+    ],
+    "noSilentFallback": "任一硬失败必须退出非零并打印具体文件与字段，禁止补默认值继续"
+  }
+}

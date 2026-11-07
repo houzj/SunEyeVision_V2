@@ -1,0 +1,325 @@
+{
+  "toolId": "imvsmarkinspmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSMarkInspModu\\IMVSMarkInspModu.xml",
+      "sha256": "d4970a3ca30a909edcb12089f8365c8b72adad2c8fe94922863a5f7cfed0eba8",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSMarkInspModu\\IMVSMarkInspModuAlgorithm.xml",
+      "sha256": "20430f5e47a1a25ccd8ef65d7ecac19a30e9c99df23b9e8419beac94872e05b4",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSMarkInspModu\\IMVSMarkInspModuAlgorithmTab.xml",
+      "sha256": "6afabe18546d6b984ede8898b3d26592f083a3dd888717cadfa12f0a87d683cf",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSMarkInspModu\\IMVSMarkInspModuCs.xml",
+      "sha256": "4dcabfdeae1cb9748aadd8e75cb8f9ee2129c77a080cd765d07c48158487f5a8",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSMarkInspModu\\IMVSMarkInspModuDisplay.xml",
+      "sha256": "fcbf896b38b770468b474d646bc838e30c179dbf0411ff79d653bda58545f740",
+      "root": "ParamRoot",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Character Model",
+      "IsGenerate": "False"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "MarkInspData",
+      "name": null
+    },
+    {
+      "type": "Integer",
+      "name": "MarkAreaMin"
+    },
+    {
+      "type": "Integer",
+      "name": "GrayThresh"
+    },
+    {
+      "type": "Boolean",
+      "name": "BinaryImageShow"
+    },
+    {
+      "type": "Enumeration",
+      "name": "MarkPolar"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "MarkWidth"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "MarkHeighth"
+    },
+    {
+      "type": "Boolean",
+      "name": "MarkMergeFlag"
+    },
+    {
+      "type": "Integer",
+      "name": "WidthIncVal"
+    },
+    {
+      "type": "Integer",
+      "name": "HeightIncVal"
+    },
+    {
+      "type": "Enumeration",
+      "name": "PyramidscaleFlag"
+    },
+    {
+      "type": "Float",
+      "name": "PyramidscaleFine"
+    },
+    {
+      "type": "Float",
+      "name": "PyramidscaleRough"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ModelThresholdFlag"
+    },
+    {
+      "type": "Integer",
+      "name": "ModelThreshold"
+    },
+    {
+      "type": "Float",
+      "name": "MatchMinScore"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangMatchAngle"
+    },
+    {
+      "type": "Enumeration",
+      "name": "MatchPolarity"
+    },
+    {
+      "type": "Float",
+      "name": "MatchMarkMinScore"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "MatchMarkAngle"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ExactThresholdFlag"
+    },
+    {
+      "type": "Integer",
+      "name": "ExactThreshold"
+    },
+    {
+      "type": "Integer",
+      "name": "MatchToleranceX"
+    },
+    {
+      "type": "Enumeration",
+      "name": "NormlizeType"
+    },
+    {
+      "type": "FloatSum",
+      "name": "RangClipPercent"
+    },
+    {
+      "type": "Enumeration",
+      "name": "MarkModelType"
+    },
+    {
+      "type": "Integer",
+      "name": "CorreScore"
+    },
+    {
+      "type": "Integer",
+      "name": "BlockNumX"
+    },
+    {
+      "type": "Integer",
+      "name": "BlockNumY"
+    },
+    {
+      "type": "Float",
+      "name": "HighScale"
+    },
+    {
+      "type": "Float",
+      "name": "HighOffset"
+    },
+    {
+      "type": "Float",
+      "name": "LowScale"
+    },
+    {
+      "type": "Float",
+      "name": "LowOffset"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FlawType"
+    },
+    {
+      "type": "Boolean",
+      "name": "ToleranceFlag"
+    },
+    {
+      "type": "Integer",
+      "name": "ToleranceValue"
+    },
+    {
+      "type": "Integer",
+      "name": "AreaThresh"
+    },
+    {
+      "type": "Expand",
+      "name": null
+    },
+    {
+      "type": "HeadBar",
+      "name": "ExactHead"
+    },
+    {
+      "type": "Float",
+      "name": "MatchMarkMinScore"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "MatchMarkAngle"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ExactThresholdFlag"
+    },
+    {
+      "type": "Integer",
+      "name": "ExactThreshold"
+    },
+    {
+      "type": "Boolean",
+      "name": "MatchMarkRoughFlag"
+    },
+    {
+      "type": "Float",
+      "name": "MatchMarkRoughThresh"
+    },
+    {
+      "type": "Boolean",
+      "name": "MatchCorrectFlag"
+    },
+    {
+      "type": "Integer",
+      "name": "MatchToleranceX"
+    },
+    {
+      "type": "Integer",
+      "name": "MatchToleranceY"
+    },
+    {
+      "type": "HeadBar",
+      "name": "RoughHead"
+    },
+    {
+      "type": "Float",
+      "name": "MatchMinScore"
+    },
+    {
+      "type": "Enumeration",
+      "name": "MatchPolarity"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangMatchAngle"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangMatchScale"
+    },
+    {
+      "type": "Enumeration",
+      "name": "MatchThresholdFlag"
+    },
+    {
+      "type": "Integer",
+      "name": "MatchThreshold"
+    },
+    {
+      "type": "Boolean",
+      "name": "MatchRoughFlag"
+    },
+    {
+      "type": "Float",
+      "name": "MatchRoughThresh"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "RoiSelectGroup",
+    "InheritWayGroup",
+    "ExternROITypeGroup",
+    "AssistGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

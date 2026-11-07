@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>Apps.XmlParser</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup />
+  <ItemGroup>
+    <Reference Include="VM.PcUI" />
+    <Reference Include="Mvvm" />
+    <Reference Include="System.Core" />
+    <Reference Include="VM.Xml" />
+    <Reference Include="Apps.Interface" />
+    <Reference Include="Apps.BaseData">
+      <HintPath>..\..\..\..\..\..\Program Files\VisionMaster4.4.0\Applications\myLibs\Apps.BaseData.dll</HintPath>
+    </Reference>
+    <Reference Include="VMControls.RenderInterface" />
+    <Reference Include="System.Xml" />
+    <Reference Include="VM.Core" />
+    <Reference Include="VMControls.Interface" />
+    <Reference Include="VM.PlatformSDKCS" />
+    <Reference Include="Apps.UIHelper" />
+    <Reference Include="Apps.Data" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="VM.Utility" />
+    <Reference Include="DirectoryBrowser">
+      <HintPath>..\..\..\..\..\..\Program Files\VisionMaster4.4.0\Applications\myLibs\DirectoryBrowser.dll</HintPath>
+    </Reference>
+    <Reference Include="VM.Controls" />
+    <Reference Include="GateWayServer" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="Apps.Log" />
+    <Reference Include="VM.Util" />
+    <Reference Include="Apps.ErrorCode">
+      <HintPath>..\..\..\..\..\..\Program Files\VisionMaster4.4.0\Applications\myLibs\Apps.ErrorCode.dll</HintPath>
+    </Reference>
+    <Reference Include="VM.ExternalCall" />
+    <Reference Include="Apps.BaseLog" />
+    <Reference Include="VM.WatchDog">
+      <HintPath>..\..\..\..\..\..\Program Files\VisionMaster4.4.0\Applications\myLibs\VM.WatchDog.dll</HintPath>
+    </Reference>
+    <Reference Include="Apps.ColorFun" />
+  </ItemGroup>
+</Project>

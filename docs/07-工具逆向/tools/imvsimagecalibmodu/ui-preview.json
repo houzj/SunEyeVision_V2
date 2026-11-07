@@ -1,0 +1,168 @@
+{
+  "controls": [
+    {
+      "type": "EnumerationG",
+      "name": "ImageSource"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "SaveFileDialog",
+      "name": "SaveCalibPath"
+    },
+    {
+      "type": "OpenFileForCalibDialog",
+      "name": "CalibPathName"
+    },
+    {
+      "type": "Boolean",
+      "name": "RefreshFileEnable"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "CorrectCenterPointInput"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "CorrectCenterPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "CorrectCenterPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "CorrectCenterPointY"
+    },
+    {
+      "type": "Enumeration",
+      "name": "CorrectModel"
+    },
+    {
+      "type": "Boolean",
+      "name": "DistortionEvaluationEnable"
+    },
+    {
+      "type": "Boolean",
+      "name": "OutputPostCorrectionEnable"
+    },
+    {
+      "type": "Float",
+      "name": "PointErrorThreshold"
+    },
+    {
+      "type": "Enumeration",
+      "name": "CalibBoardType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "HomoFreedom"
+    },
+    {
+      "type": "Integer",
+      "name": "GrayContrast"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FilterStatus"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SubpixelWinAuto"
+    },
+    {
+      "type": "Integer",
+      "name": "SubPixelWindowSize"
+    },
+    {
+      "type": "Integer",
+      "name": "Circularity"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "EdgeThresh"
+    },
+    {
+      "type": "Enumeration",
+      "name": "CircleBoardCircleMode"
+    },
+    {
+      "type": "Enumeration",
+      "name": "CalibBoardWeightFun"
+    },
+    {
+      "type": "Integer",
+      "name": "WeightFactor"
+    },
+    {
+      "type": "Integer",
+      "name": "DistThreshold"
+    },
+    {
+      "type": "Integer",
+      "name": "SampleRatio"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CalibPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ErrorText"
+    },
+    {
+      "type": "FloatConfig",
+      "name": "ErrorTextFontSize"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvsimagecalibmodu",
+  "status": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSImageCalibModu\\IMVSImageCalibModu.xml",
+      "sha256": "05dc2a50457cbf63ad387092a0dfc77d52e0b892c192b1c7830c624b6bc98eaa",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSImageCalibModu\\IMVSImageCalibModuAlgorithm.xml",
+      "sha256": "3465ac282043ea3baf5abbb56c9c8488b1494a97209613cb8c24c1da0be2764e",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSImageCalibModu\\IMVSImageCalibModuAlgorithmTab.xml",
+      "sha256": "e7199e70b3d4de810610f95fe70a8ff3462df8dd2310800b003e794c07826e6c",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSImageCalibModu\\IMVSImageCalibModuCs.xml",
+      "sha256": "31bc5f953a99763fcc8041115fb316533164d4ebdd0ec57798cfc1231d75b9ce",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSImageCalibModu\\IMVSImageCalibModuDisplay.xml",
+      "sha256": "b63f5bd17daebfe62d004bc963d58fb74cc86cc8cf113644271f86f27cdff7e7",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSImageCalibModu\\ToolItemInfo.xml",
+      "sha256": "a010f2ff5b5733c10a74ca13d437f37a6d61e274c0e0ac321c3813d63bf050da",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "畸变标定",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

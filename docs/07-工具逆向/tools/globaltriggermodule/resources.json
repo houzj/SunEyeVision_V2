@@ -1,0 +1,45 @@
+{
+  "toolId": "globaltriggermodule",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalTriggerModule\\GlobalTriggerModule.xml",
+      "sha256": "70d8e53f68bd78ce4f349da115c9de6b37ea3c32607c2e944cac23a3d21a99e3",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalTriggerModule\\GlobalTriggerModuleAlgorithm.xml",
+      "sha256": "ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalTriggerModule\\GlobalTriggerModuleAlgorithmTab.xml",
+      "sha256": "b7e35d0086d577023d93903f9826c368fc5ad8849165184272e5b8b1cea509f2",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalTriggerModule\\GlobalTriggerModuleCs.xml",
+      "sha256": "98e397fdcc5d74fb01a387baaef2f1d91372cdac9a97b036b12f3abf7e63654e",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalTriggerModule\\GlobalTriggerModuleDisplay.xml",
+      "sha256": "79cbe23b4d730c8580b3fbff1f4e4264388728b8e54b58800713022f61e1f6d6",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalTriggerModule\\ToolItemInfo.xml",
+      "sha256": "5c955c38fefc10f8e428f2eb7b359d8dc6902f66405abc883488a7790f693ca7",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [],
+  "uiControls": [],
+  "sharedUiGroups": [],
+  "status": "inventory-only"
+}

@@ -1,0 +1,60 @@
+{
+  "controls": [
+    {
+      "type": "RadioSelecter",
+      "name": "InputWay"
+    },
+    {
+      "type": "PointPair",
+      "name": "Data1"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvssinglepointalignmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSSinglePointAlignModu\\IMVSSinglePointAlignModu.xml",
+      "sha256": "e690562fcd1fdd38ea3fa6149cb2a921a1da865435917096f21d81d589a735b5",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSSinglePointAlignModu\\IMVSSinglePointAlignModuAlgorithm.xml",
+      "sha256": "be2ed298999a90635ad4ae1ed4216729b08a2dd4c6f366fb11f5b2cbc4fbbcc5",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSSinglePointAlignModu\\IMVSSinglePointAlignModuAlgorithmTab.xml",
+      "sha256": "c2220cfdb5580f66704861c458ede0441ea44eec33c7034405180810894d4b8c",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSSinglePointAlignModu\\IMVSSinglePointAlignModuCs.xml",
+      "sha256": "381c5074d765533b80dc18ac94421ee89a739854fc5a96b086f74aa5d3704319",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSSinglePointAlignModu\\IMVSSinglePointAlignModuDisplay.xml",
+      "sha256": "09cd144565d1807598d37b10adac66f7bc086ada4c40104c329d9529c38b749a",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSSinglePointAlignModu\\ToolItemInfo.xml",
+      "sha256": "e115f8a8a6c846dc010ffcaf33e540dd83463b5277978da80a741a93fa18e44e",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "单点对位",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

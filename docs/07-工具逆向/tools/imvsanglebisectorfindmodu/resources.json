@@ -1,0 +1,140 @@
+{
+  "toolId": "imvsanglebisectorfindmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSAngleBisectorFindModu\\IMVSAngleBisectorFindModu.xml",
+      "sha256": "ca86a0f28c9e59e1935f2a2a9982760bcf565145651622722e5cc487eb3f27e5",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSAngleBisectorFindModu\\IMVSAngleBisectorFindModuAlgorithm.xml",
+      "sha256": "ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSAngleBisectorFindModu\\IMVSAngleBisectorFindModuAlgorithmTab.xml",
+      "sha256": "ec395e678f304764cee22d74fa264166ed9865ff6588a74dbd034ac0cd52fc5d",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSAngleBisectorFindModu\\IMVSAngleBisectorFindModuCs.xml",
+      "sha256": "635d1bdadb0b585d032a2fb6e1ff6eea3c3e0aef3fb6201ef566ca864b01ada8",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSAngleBisectorFindModu\\IMVSAngleBisectorFindModuDisplay.xml",
+      "sha256": "3bfba57e332a930df25526c0295803823d9e922be3bd6186a495e3c6abc40a96",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSAngleBisectorFindModu\\ToolItemInfo.xml",
+      "sha256": "d35868ec15360900dfd8741d206e255a34440628dc071d0e2894a6f10efa41df",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "RadioSelecter3",
+      "name": "InputWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "LINE"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointY"
+    },
+    {
+      "type": "RadioSelecter3",
+      "name": "InputWay2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "LINE2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPoint2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPoint2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointX2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointY2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointX2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointY2"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineInput1"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineInput1"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "InterPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineResult"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlAngle"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

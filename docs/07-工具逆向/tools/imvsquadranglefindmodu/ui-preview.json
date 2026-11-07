@@ -1,0 +1,500 @@
+{
+  "controls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "OutputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter_Fix",
+      "name": "RoiType"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "InheritWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Region0"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROIWidth"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROIHeight"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROICenterX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROICenterY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROIAngle"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Region1"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI1Width"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI1Height"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI1CenterX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI1CenterY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI1Angle"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Region2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI2Width"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI2Height"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI2CenterX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI2CenterY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI2Angle"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Region3"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI3Width"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI3Height"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI3CenterX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI3CenterY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI3Angle"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "LineChoose"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FindMode0"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePolarity0"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeThreshold0"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelSize0"
+    },
+    {
+      "type": "Integer",
+      "name": "CaliperNum0"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectNum0"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectDist0"
+    },
+    {
+      "type": "Integer",
+      "name": "RegionWidth0"
+    },
+    {
+      "type": "Enumeration",
+      "name": "InitType0"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FitFun0"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FindMode1"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePolarity1"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeThreshold1"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelSize1"
+    },
+    {
+      "type": "Integer",
+      "name": "CaliperNum1"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectNum1"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectDist1"
+    },
+    {
+      "type": "Integer",
+      "name": "RegionWidth1"
+    },
+    {
+      "type": "Enumeration",
+      "name": "InitType1"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FitFun1"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FindMode2"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePolarity2"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeThreshold2"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelSize2"
+    },
+    {
+      "type": "Integer",
+      "name": "CaliperNum2"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectNum2"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectDist2"
+    },
+    {
+      "type": "Integer",
+      "name": "RegionWidth2"
+    },
+    {
+      "type": "Enumeration",
+      "name": "InitType2"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FitFun2"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FindMode3"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePolarity3"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeThreshold3"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelSize3"
+    },
+    {
+      "type": "Integer",
+      "name": "CaliperNum3"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectNum3"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectDist3"
+    },
+    {
+      "type": "Integer",
+      "name": "RegionWidth3"
+    },
+    {
+      "type": "Enumeration",
+      "name": "InitType3"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FitFun3"
+    },
+    {
+      "type": "Boolean",
+      "name": "CentralPointXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCentralPointXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "CentralPointYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCentralPointYLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "AngleLimitFirstEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangAngleLimitFirst"
+    },
+    {
+      "type": "Boolean",
+      "name": "AngleLimitSecondEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangAngleLimitSecond"
+    },
+    {
+      "type": "Boolean",
+      "name": "AngleLimitThirdEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangAngleLimitThird"
+    },
+    {
+      "type": "Boolean",
+      "name": "AngleLimitFourthEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangAngleLimitFourth"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CentralPointFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "DiagonalLineIntersection"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "MedianLineIntersection"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "AngleBisectorIntersection"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Line0Result"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Line1Result"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Line2Result"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Line3Result"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Line0Point"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Line1Point"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Line2Point"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Line3Point"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "DiagonalLine0"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "DiagonalLine1"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "MedianLine0"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "MedianLine1"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "AngleBisector0"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "AngleBisector1"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Vertex0"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Vertex1"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Vertex2"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Vertex3"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone0"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone1"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone2"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone3"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvsquadranglefindmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSQuadrangleFindModu\\IMVSQuadrangleFindModu.xml",
+      "sha256": "91a2a92266c4f02546a220b3d002b1153bc80d22ff7f9dee4ec028fa0fe35f2f",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSQuadrangleFindModu\\IMVSQuadrangleFindModuAlgorithm.xml",
+      "sha256": "eb3c7ac7206e4a88a46252da1c665d1510778abc1fb77b97e4f05867de97e31b",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSQuadrangleFindModu\\IMVSQuadrangleFindModuAlgorithmTab.xml",
+      "sha256": "c1fc1a572ba658118e10088a06c9e2a6c6b3b5ed7c63f15fd2571ca28f2610cc",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSQuadrangleFindModu\\IMVSQuadrangleFindModuCs.xml",
+      "sha256": "20ca2bc23aec188fe1c5fce63d9e5ad3410c933bbb990b5ea2907021d26c605a",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSQuadrangleFindModu\\IMVSQuadrangleFindModuDisplay.xml",
+      "sha256": "3179480bdb7b2f06a976e1834f03b4f4a423b8cd5b92076cb2603999ae85c014",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSQuadrangleFindModu\\ToolItemInfo.xml",
+      "sha256": "352e84b895ddf32d405fb01756138525b0181fc250de5fac7f3d16c19855025c",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "四边形查找",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

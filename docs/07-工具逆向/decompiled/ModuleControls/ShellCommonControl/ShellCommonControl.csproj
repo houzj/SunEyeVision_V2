@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>ShellCommonControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup />
+  <ItemGroup>
+    <Reference Include="VM.Core" />
+    <Reference Include="Apps.XmlParser" />
+    <Reference Include="VM.PlatformSDKCS" />
+    <Reference Include="VM.Util" />
+    <Reference Include="System.Core" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="Apps.Log" />
+    <Reference Include="Apps.BaseLog" />
+    <Reference Include="VM.Xml" />
+  </ItemGroup>
+</Project>

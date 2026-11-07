@@ -1,0 +1,24 @@
+{
+  "stableToolId": "imvsedgepostrendanalymodu",
+  "originalPlugin": "IMVSEdgePosTrendAnalyModu",
+  "displayName": "边缘位置趋势分析",
+  "originalCategory": "DefectDetection",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePosTrendAnalyModu",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "status": "inventory-only",
+  "evidenceState": "unknown",
+  "resourceCount": 6,
+  "parameterCount": 10,
+  "inputCount": 3,
+  "outputCount": 21,
+  "uiControlCount": 19,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ]
+}

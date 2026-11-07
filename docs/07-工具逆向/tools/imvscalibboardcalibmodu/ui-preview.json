@@ -1,0 +1,152 @@
+{
+  "controls": [
+    {
+      "type": "EnumerationG",
+      "name": "ImageSource"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "OpenFileForCalibDialog",
+      "name": "CalibPathName"
+    },
+    {
+      "type": "Boolean",
+      "name": "RefreshFileEnable"
+    },
+    {
+      "type": "Float",
+      "name": "OriginX"
+    },
+    {
+      "type": "Float",
+      "name": "OriginY"
+    },
+    {
+      "type": "Float",
+      "name": "RotationAngle"
+    },
+    {
+      "type": "Enumeration",
+      "name": "CoordinateMode"
+    },
+    {
+      "type": "Float",
+      "name": "PhysicalSize"
+    },
+    {
+      "type": "Enumeration",
+      "name": "CalibBoardType"
+    },
+    {
+      "type": "SaveFileDialog",
+      "name": "SaveCalibPath"
+    },
+    {
+      "type": "Enumeration",
+      "name": "HomoFreedom"
+    },
+    {
+      "type": "Integer",
+      "name": "GrayContrast"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FilterStatus"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SubpixelWinAuto"
+    },
+    {
+      "type": "Integer",
+      "name": "SubPixelWindowSize"
+    },
+    {
+      "type": "Integer",
+      "name": "Circularity"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "EdgeThresh"
+    },
+    {
+      "type": "Enumeration",
+      "name": "CircleBoardCircleMode"
+    },
+    {
+      "type": "Enumeration",
+      "name": "CalibBoardWeightFun"
+    },
+    {
+      "type": "Integer",
+      "name": "WeightFactor"
+    },
+    {
+      "type": "Integer",
+      "name": "DistThreshold"
+    },
+    {
+      "type": "Integer",
+      "name": "SampleRatio"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CalibPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CalibOrignPoint"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvscalibboardcalibmodu",
+  "status": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCalibBoardCalibModu\\IMVSCalibBoardCalibModu.xml",
+      "sha256": "19227e4fcdf800ba38447445bf3561be07f40a9afa6610e198f536600dfc19ff",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCalibBoardCalibModu\\IMVSCalibBoardCalibModuAlgorithm.xml",
+      "sha256": "f3686bb776ae7765a33d1a071a42c3360adad5e6f8035db1a8a17d8ca60e3cb8",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCalibBoardCalibModu\\IMVSCalibBoardCalibModuAlgorithmTab.xml",
+      "sha256": "76c9cd661a359216041b902cce8fae115566726707e749cc42c0bb9722bcbf91",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCalibBoardCalibModu\\IMVSCalibBoardCalibModuCs.xml",
+      "sha256": "164e27c21db021d7160dce07e1ce8bebe0217daf67a06d05cf2d163ac10a439e",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCalibBoardCalibModu\\IMVSCalibBoardCalibModuDisplay.xml",
+      "sha256": "01b6aa734e09bb8284f09cd13cdcabd02115e26b01c0ba218a01dbc960f041d6",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCalibBoardCalibModu\\ToolItemInfo.xml",
+      "sha256": "f8ecfc757ca9af9eac94474be24b406d34d427fad42d5d50f7cb273214cf49e3",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "标定板标定",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

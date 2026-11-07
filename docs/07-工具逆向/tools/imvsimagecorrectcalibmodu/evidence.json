@@ -1,0 +1,46 @@
+{
+  "stableToolId": "imvsimagecorrectcalibmodu",
+  "originalPlugin": "IMVSImageCorrectCalibModu",
+  "displayName": "畸变校正",
+  "originalCategory": "ImageProcessing",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageCorrectCalibModu",
+  "uiCategory": "image-roi",
+  "priority": "P1",
+  "resourceCount": 6,
+  "parameterCount": 1,
+  "inputCount": 2,
+  "outputCount": 3,
+  "uiControlCount": 3,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/ImageCorrectModuTool.cs",
+      "evidenceType": "decompiled managed source"
+    },
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/ImageCorrectModuParams.cs",
+      "evidenceType": "decompiled managed source"
+    },
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/ImageCorrectResult.cs",
+      "evidenceType": "decompiled managed source"
+    }
+  ],
+  "managedMembers": [
+    "ImageCorrectModuTool constructor/Clone/Dispose",
+    "ImageCorrectModuParams.LoadCalibPath",
+    "ImageCorrectModuParams.CorrectModel",
+    "ImageCorrectResult image buffer copy/finalizer"
+  ],
+  "unknowns": [
+    "native correction algorithm and Process/ProcessAlg ABI",
+    "calibration file schema and model parameters",
+    "input/output image ownership and status codes",
+    "UI bindings/theme",
+    "save/reload/stop runtime behavior"
+  ]
+}

@@ -1,0 +1,124 @@
+{
+  "toolId": "imvsgluepathconductmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSGluePathConductModu\\IMVSGluePathConductModu.xml",
+      "sha256": "42cb4663ca7fb33c6158f50e3c447d100d399cf004a3d8ccf4dcb808a2ae90b3",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSGluePathConductModu\\IMVSGluePathConductModuAlgorithm.xml",
+      "sha256": "1abd4c8331093c31c448b3f0f4687115a6c62c0c689642b24c74edbd25efc3f9",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSGluePathConductModu\\IMVSGluePathConductModuAlgorithmTab.xml",
+      "sha256": "72bdab5f2b4f87f60cb001823883f3934c31c5623f698730c3a69b2be56e7fe0",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSGluePathConductModu\\IMVSGluePathConductModuCs.xml",
+      "sha256": "94e91eb772be420f42e61137cb7730f9940d8b792060e9207e822775dc4e1d89",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSGluePathConductModu\\IMVSGluePathConductModuDisplay.xml",
+      "sha256": "facc885c93ed943d49bde05955e42134927acfe492c8f08d6f20a999410ee6fb",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSGluePathConductModu\\ToolItemInfo.xml",
+      "sha256": "45093d52e95163aa1f9251287d098c06d1520de28793c523a6d134c99745bdf9",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Model configuration",
+      "IsGenerate": "False"
+    },
+    {
+      "Name": "PathGuidTab"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "PathDrawingGuide",
+      "name": "Path"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ModEdgePointFindMode"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ModEdgePointPolarity"
+    },
+    {
+      "type": "Integer",
+      "name": "ModEdgeStrength"
+    },
+    {
+      "type": "Integer",
+      "name": "ModCaliperHeight"
+    },
+    {
+      "type": "Integer",
+      "name": "ModCaliperWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "ModHalfKernelSize"
+    },
+    {
+      "type": "Integer",
+      "name": "ModMaxPointNum"
+    },
+    {
+      "type": "Integer",
+      "name": "ModPointOffsetLen"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ModPointMode"
+    },
+    {
+      "type": "Boolean",
+      "name": "ArcParamEnable"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "EdgeLocation"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "AssistGroup",
+    "TextDisplayGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

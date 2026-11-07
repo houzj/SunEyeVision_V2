@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>相机 IO 通信工具逆向主文档</title><style>*{box-sizing:border-box}
+body{margin:0;background:#f6f7f9;color:#1d2129;font:14px/1.7 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:24px 20px 60px}
+.crumbs{font-size:13px;margin-bottom:14px}
+.crumbs a{color:#2563eb;text-decoration:none}
+.card{background:#fff;border:1px solid #e4e7ec;border-radius:10px;padding:26px 30px}
+h1,h2,h3,h4{line-height:1.4}
+h1{font-size:20px}h2{font-size:17px;margin-top:26px}h3{font-size:15px}
+table{border-collapse:collapse;margin:12px 0;width:100%;font-size:13px}
+td,th{border:1px solid #e4e7ec;padding:6px 10px;vertical-align:top}
+tr:nth-child(even) td{background:#fafbfc}
+code{background:#f1f3f5;border-radius:3px;padding:1px 5px;font-size:12.5px;font-family:Consolas,Menlo,monospace;color:#c7254e}
+pre{background:#282c34;color:#abb2bf;border-radius:6px;padding:14px 16px;overflow:auto;font-size:12.5px;line-height:1.6;font-family:Consolas,Menlo,monospace}
+pre code{background:none;color:inherit;padding:0}
+ul{padding-left:22px}
+blockquote{border-left:3px solid #d0d5da;margin:10px 0;padding:4px 14px;color:#5a636b;background:#fafbfc}
+hr{border:0;border-top:1px solid #e4e7ec;margin:18px 0}
+p{margin:8px 0}</style></head><body><div class="wrap"><nav class="crumbs"><a href="../../index.html">&#8592; 宸ュ叿绱㈠紩</a> &middot; <code>cameraiomodule</code></nav><div class="card"><h1>相机 IO 通信工具逆向主文档</h1><ul><li>工具 ID：cameraiomodule</li><li>原厂工具：CameraIOModule</li><li>组装类别：扩展控件与专属面板</li><li>取证优先级：C1（通信管理与测量/标定链前置）</li><li>当前状态：source-partial</li><h2>已确认语义</h2><li>CameraIOModuTool 构造时创建 CameraIOModuParams；Clone 返回新工具；Dispose 方法体为空。</li><li>参数包含 CameraType（Common/Smart）、IODurationTime、IOEnableElectricalLevel（High/Low）和 IOOutType（Ok/Ng）。</li><li>CameraIOResult 携带基础模块结果和原生相机 IO 结果结构。</li><li>GlobalCommunicationMgr 是单例管理器，GetData/CloseComm/ClearAll/ResetParamStateFlag 转发到主界面通信入口。</li><li>GlobalCommunication 暴露方案加载、流程控制、相机响应三类通信设备选择，并通过 AlgorithmTabRoot 从模块参数装配。</li><h2>证据路径</h2><li>analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/CameraIOModuTool.cs</li><li>analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/CameraIOModuParams.cs</li><li>analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/CameraIOResult.cs</li><li>analysis/decompiled/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCommunicationMgr.cs</li><li>analysis/decompiled/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCommunication.xaml.cs</li><h2>未决</h2><li>Process/ProcessAlg、网关协议、连接/重连/触发时序、物理 IO 行为和释放链仍需继续取证。</li></div></div></body></html>

@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>亮度测量 VM 算法语义</title><style>*{box-sizing:border-box}
+body{margin:0;background:#f6f7f9;color:#1d2129;font:14px/1.7 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:24px 20px 60px}
+.crumbs{font-size:13px;margin-bottom:14px}
+.crumbs a{color:#2563eb;text-decoration:none}
+.card{background:#fff;border:1px solid #e4e7ec;border-radius:10px;padding:26px 30px}
+h1,h2,h3,h4{line-height:1.4}
+h1{font-size:20px}h2{font-size:17px;margin-top:26px}h3{font-size:15px}
+table{border-collapse:collapse;margin:12px 0;width:100%;font-size:13px}
+td,th{border:1px solid #e4e7ec;padding:6px 10px;vertical-align:top}
+tr:nth-child(even) td{background:#fafbfc}
+code{background:#f1f3f5;border-radius:3px;padding:1px 5px;font-size:12.5px;font-family:Consolas,Menlo,monospace;color:#c7254e}
+pre{background:#282c34;color:#abb2bf;border-radius:6px;padding:14px 16px;overflow:auto;font-size:12.5px;line-height:1.6;font-family:Consolas,Menlo,monospace}
+pre code{background:none;color:inherit;padding:0}
+ul{padding-left:22px}
+blockquote{border-left:3px solid #d0d5da;margin:10px 0;padding:4px 14px;color:#5a636b;background:#fafbfc}
+hr{border:0;border-top:1px solid #e4e7ec;margin:18px 0}
+p{margin:8px 0}</style></head><body><div class="wrap"><nav class="crumbs"><a href="../../index.html">&#8592; 宸ュ叿绱㈠紩</a> &middot; <code>imvsintensitymeasuremodu</code></nav><div class="card"><h1>亮度测量 VM 算法语义</h1><ul><li>当前状态：source-partial；capturePriority=C0。</li><h2>已证实</h2><li>工具实例创建参数对象。</li><li>五类统计指标的启用/范围参数通过 ParamItem 读写。</li><li>结果对象携带基本结果和原生统计结构。</li><h2>未证实</h2><table><tbody><tr><td>步骤</td><td>状态</td><td>下一条证据</td></tr><tr><td>图像/ROI采样和统计计算</td><td>unknown</td><td>输入绑定、Process/ProcessAlg和运行时</td></tr><tr><td>OK/NG判定与状态码</td><td>unknown</td><td>结果结构、错误码和显示链</td></tr><tr><td>保存恢复、停止和释放</td><td>unknown</td><td>序列化和主机生命周期</td></tr><p>证据：IntensityMeasureModuTool.cs、IntensityMeasureModuParams.cs、IntensityMeasureResult.cs。</p></div></div></body></html>

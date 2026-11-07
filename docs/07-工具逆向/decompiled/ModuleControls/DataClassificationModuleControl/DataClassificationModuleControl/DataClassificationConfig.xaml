@@ -1,0 +1,280 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Control x:Class="DataClassificationModuleControl.DataClassificationConfig" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:DataClassificationModuleControl" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:core="clr-namespace:VM.Core;assembly=VM.Core" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:UIHelper="clr-namespace:Apps.UIHelper.Extern;assembly=Apps.UIHelper" xmlns:appxmlUI="clr-namespace:Apps.XmlUI;assembly=Apps.XmlUI" x:Name="control">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Apps.Style;component/ScrollBarStyle/RecScrollBarStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/NormalButtonStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ItemsControlStyle/ItemsControlStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ComboBoxStyle/ListViewComboBoxStyle.xaml" />
+        <ResourceDictionary Source="/Apps.XmlUI;component/Styles/ParamUserControlDataTemplate.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/CheckBoxStyle/CheckBoxStyle.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <local:TypeFloatToVisibilityConvert x:Key="floatToVisibility" />
+      <local:TypeIntToVisibilityConvert x:Key="intToVisibility" />
+      <local:ConditionConvert x:Key="conditionConvert" />
+      <local:BoolToVisibilityConvert x:Key="boolToVisibility" />
+      <DataTemplate x:Key="ClassificationItem">
+        <Grid Margin="0">
+          <StackPanel Orientation="Horizontal">
+            <TextBlock FontSize="14" Width="20" Height="25" Foreground="#666666" Margin="5,7,0,0" Text="{Binding Seq}" />
+            <TextBlock FontSize="14" Width="100" Height="25" Foreground="#666666" Margin="5,7,0,0" Text="{Binding ClassificationName}" />
+            <Button Name="btn_up" Height="20" Width="20" CommandParameter="up" Command="{Binding SortClassificationCommand}" IsEnabled="{Binding isCanUp}">
+              <Control.Template>
+                <ControlTemplate TargetType="{x:Type Button}">
+                  <Image Name="ImageBackground" Width="24" Height="24" Source="/Apps.Style;component/Resources/特征模板_ic_排序上_normal.png" />
+                  <ControlTemplate.Triggers>
+                    <Trigger Property="UIElement.IsMouseOver" Value="True">
+                      <Setter TargetName="ImageBackground" Property="Image.Source" Value="/Apps.Style;component/Resources/特征模板_ic_排序上_click.png" />
+                    </Trigger>
+                    <Trigger Property="ButtonBase.IsPressed" Value="True">
+                      <Setter TargetName="ImageBackground" Property="Image.Source" Value="/Apps.Style;component/Resources/特征模板_ic_排序上_click.png" />
+                    </Trigger>
+                    <Trigger Property="UIElement.IsEnabled" Value="False">
+                      <Setter TargetName="ImageBackground" Property="Image.Source" Value="/Apps.Style;component/Resources/特征模板_ic_排序上_disable.png" />
+                    </Trigger>
+                  </ControlTemplate.Triggers>
+                </ControlTemplate>
+              </Control.Template>
+            </Button>
+            <Button Name="btn_down" Height="20" Width="20" CommandParameter="down" Command="{Binding SortClassificationCommand}" IsEnabled="{Binding isCanDown}">
+              <Control.Template>
+                <ControlTemplate TargetType="{x:Type Button}">
+                  <Image Name="ImageBackground" Width="24" Height="24" Source="/Apps.Style;component/Resources/特征模板_ic_排序下_normal.png" />
+                  <ControlTemplate.Triggers>
+                    <Trigger Property="UIElement.IsMouseOver" Value="True">
+                      <Setter TargetName="ImageBackground" Property="Image.Source" Value="/Apps.Style;component/Resources/特征模板_ic_排序下_click.png" />
+                    </Trigger>
+                    <Trigger Property="ButtonBase.IsPressed" Value="True">
+                      <Setter TargetName="ImageBackground" Property="Image.Source" Value="/Apps.Style;component/Resources/特征模板_ic_排序下_click.png" />
+                    </Trigger>
+                    <Trigger Property="UIElement.IsEnabled" Value="False">
+                      <Setter TargetName="ImageBackground" Property="Image.Source" Value="/Apps.Style;component/Resources/特征模板_ic_排序下_disable.png" />
+                    </Trigger>
+                  </ControlTemplate.Triggers>
+                </ControlTemplate>
+              </Control.Template>
+            </Button>
+            <Button Name="Del" Grid.Column="4" Style="{StaticResource BaseImage_ButtonStyle}" Command="{Binding DeleteClassificationCommand}">
+              <Image Stretch="None" Source="/Apps.Style;component/Resources/delete_normal.png" />
+              <FrameworkElement.Tag>
+                <Image Stretch="None" Source="/Apps.Style;component/Resources/delete_click.png" />
+              </FrameworkElement.Tag>
+            </Button>
+          </StackPanel>
+        </Grid>
+      </DataTemplate>
+      <DataTemplate x:Key="ConditionGroupItem">
+        <StackPanel Orientation="Horizontal">
+          <TextBlock FontSize="14" Width="110" Height="25" Foreground="#666666" Margin="10,7,0,0" Text="{Binding ConditionGroupName}" />
+          <Button Name="Del" Margin="0,0,10,0" HorizontalAlignment="Right" Style="{StaticResource BaseImage_ButtonStyle}" Command="{Binding DeleteConditionGroupCommand}" CommandParameter="{Binding}">
+            <Image Stretch="None" Source="/Apps.Style;component/Resources/delete_normal.png" />
+            <FrameworkElement.Tag>
+              <Image Stretch="None" Source="/Apps.Style;component/Resources/delete_click.png" />
+            </FrameworkElement.Tag>
+          </Button>
+        </StackPanel>
+      </DataTemplate>
+      <DataTemplate x:Key="ConditionItem">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="1" />
+          </Grid.RowDefinitions>
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="25*" />
+              <ColumnDefinition Width="50*" />
+              <ColumnDefinition Width="15*" />
+            </Grid.ColumnDefinitions>
+            <ContentControl Grid.Column="0" Margin="0,1,0,0" Width="132" Height="32" ContentTemplate="{StaticResource ButtonSelecter_sub}" Content="{Binding ClassificationSelecter}" />
+            <ContentControl Grid.Column="1" Margin="10,0,0,0" Width="300" Height="32" ContentTemplate="{StaticResource FloatBettween_sub}" Content="{Binding ClassificationBettween}" Visibility="{Binding TypeName, Converter={StaticResource floatToVisibility}}" />
+            <ContentControl Grid.Column="1" Margin="10,0,0,0" Width="300" Height="32" ContentTemplate="{StaticResource IntegerBettween_Sub}" Content="{Binding IntegerBettween}" Visibility="{Binding TypeName, Converter={StaticResource intToVisibility}}" />
+            <Button Grid.Column="2" Style="{StaticResource BaseImage_ButtonStyle}" Command="{Binding DeleteConditionItemCommand}" CommandParameter="{Binding}">
+              <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/delete_normal.png" />
+              <FrameworkElement.Tag>
+                <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/delete_click.png" />
+              </FrameworkElement.Tag>
+            </Button>
+          </Grid>
+          <Grid Name="bottomline" Row="1" />
+        </Grid>
+      </DataTemplate>
+      <Style x:Key="ListViewStyle" TargetType="{x:Type ListView}">
+        <Setter Property="UIElement.SnapsToDevicePixels" Value="True" />
+        <Setter Property="FrameworkElement.OverridesDefaultStyle" Value="True" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ListView}">
+              <Border Name="Border" BorderThickness="1" Background="{x:Null}">
+                <ScrollViewer Style="{StaticResource RecScrollViewer}">
+                  <ItemsPresenter />
+                </ScrollViewer>
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="ListViewItemStyle" TargetType="{x:Type ListViewItem}">
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ListViewItem}">
+              <Border Background="{TemplateBinding Control.Background}">
+                <Grid>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="1" />
+                  </Grid.RowDefinitions>
+                  <ContentPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" TextBlock.Foreground="{TemplateBinding Control.Foreground}" />
+                  <Grid Row="1" Height="1" Background="#F76900" Visibility="{TemplateBinding IsSelected, Converter={StaticResource boolToVisibility}}" />
+                </Grid>
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+          <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+            <Setter Property="Background" Value="#D8D8D8" />
+          </Trigger>
+          <Trigger Property="UIElement.IsMouseOver" Value="True">
+            <Setter Property="Background" Value="#E7E5E4" />
+          </Trigger>
+          <Trigger Property="ListBoxItem.IsSelected" Value="True">
+            <Setter Property="Background" Value="#E7E5E4" />
+          </Trigger>
+        </Style.Triggers>
+      </Style>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Control.Template>
+    <ControlTemplate>
+      <Grid>
+        <Border BorderThickness="1" Width="900" Height="352" BorderBrush="#E0DFDE">
+          <Grid Background="#FFFFFFFF">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="205" />
+              <ColumnDefinition Width="1" />
+              <ColumnDefinition Width="165" />
+              <ColumnDefinition Width="1" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid Column="0">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="48" />
+                <RowDefinition Height="40" />
+                <RowDefinition Height="*" />
+              </Grid.RowDefinitions>
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="50" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{DynamicResource Lang_Classification}" FontWeight="Black" Margin="5,10,0,0" Width="133" TextAlignment="Left" FontFamily="Microsoft YaHei" FontSize="14" />
+                <Button Grid.Column="1" Style="{StaticResource BaseImage_ButtonStyle}" Margin="0,0,15,10" HorizontalAlignment="Right" Command="{Binding AddClassificationItemCommand}">
+                  <Image Stretch="None" Source="/Apps.Style;component/Resources/add_normal.png" />
+                  <FrameworkElement.Tag>
+                    <Image Stretch="None" Source="/Apps.Style;component/Resources/add_click.png" />
+                  </FrameworkElement.Tag>
+                </Button>
+              </Grid>
+              <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="10,0,0,10">
+                <Label Content="{DynamicResource Lang_OpenMutex}" FontWeight="Black" FontFamily="Microsoft YaHei" FontSize="14" />
+                <ContentControl ContentTemplate="{StaticResource Boolean_sub}" Content="{Binding BooleanData}" />
+              </StackPanel>
+              <ListView Name="lv_classification" Grid.Row="2" BorderThickness="0" Style="{StaticResource ListViewStyle}" ItemContainerStyle="{StaticResource ListViewItemStyle}" ItemTemplate="{StaticResource ClassificationItem}" SelectedItem="{Binding SelectedClassificationItem}" ItemsSource="{Binding ClassificationItems}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+              </ListView>
+            </Grid>
+            <Grid Column="1" Background="#E0DFDE" />
+            <Grid Column="2" DataContext="{Binding SelectedItem, ElementName=lv_classification}">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="48" />
+                <RowDefinition Height="*" />
+              </Grid.RowDefinitions>
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="50" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="{DynamicResource Lang_ConditionListOR}" FontWeight="Black" Margin="8,10,0,0" Width="133" TextAlignment="Left" FontFamily="Microsoft YaHei" FontSize="14" />
+                <Button Grid.Column="1" Style="{StaticResource BaseImage_ButtonStyle}" Margin="0,0,15,10" HorizontalAlignment="Right" Command="{Binding AddConditionGroupItemCommand}">
+                  <Image Stretch="None" Source="/Apps.Style;component/Resources/add_normal.png" />
+                  <FrameworkElement.Tag>
+                    <Image Stretch="None" Source="/Apps.Style;component/Resources/add_click.png" />
+                  </FrameworkElement.Tag>
+                </Button>
+              </Grid>
+              <ListView Name="lv_group" Grid.Row="1" BorderThickness="0" Style="{StaticResource ListViewStyle}" ItemContainerStyle="{StaticResource ListViewItemStyle}" ItemTemplate="{StaticResource ConditionGroupItem}" SelectedItem="{Binding SelectedConditionGroupItem}" ItemsSource="{Binding ConditionGroupItems}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+              </ListView>
+            </Grid>
+            <Grid Column="3" Background="#E0DFDE" />
+            <Grid Column="4" DataContext="{Binding SelectedItem, ElementName=lv_group}">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="40" />
+                <RowDefinition Height="42" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="30" />
+              </Grid.RowDefinitions>
+              <TextBlock Text="{DynamicResource Lang_LogicContentAND}" Margin="15,14,0,7" Foreground="#999999" FontSize="12" />
+              <Grid Row="1">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="25*" />
+                  <ColumnDefinition Width="55*" />
+                  <ColumnDefinition Width="10*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{DynamicResource RunParam_Content}" Grid.Column="0" Foreground="#4C4C4C" FontSize="14" FontWeight="Black" Margin="15,7" />
+                <TextBlock Text="{DynamicResource Range}" Grid.Column="1" Foreground="#4C4C4C" FontSize="14" FontWeight="Black" Margin="15,7" />
+              </Grid>
+              <Grid Row="2">
+                <Grid Name="g3" Margin="5,0,0,0">
+                  <ScrollViewer Name="scrollcondition" Grid.Row="1" Style="{StaticResource RecScrollViewer}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                    <StackPanel>
+                      <ItemsControl Name="listVarItems" ItemTemplate="{StaticResource ConditionItem}" ItemsSource="{Binding ConditionItems}">
+                        <ItemsControl.ItemsPanel>
+                          <ItemsPanelTemplate>
+                            <StackPanel Orientation="Vertical" />
+                          </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                      </ItemsControl>
+                      <StackPanel Orientation="Horizontal" Margin="0, 5, 0, 0" Visibility="{Binding SelectedItem, ElementName=lv_group, Converter={StaticResource conditionConvert}}">
+                        <ComboBox Style="{StaticResource ListViewComboBoxNTStyle}" Width="68" Height="32" Margin="10,0" SelectedIndex="{Binding SelectTypeIndex}">
+                          <ComboBoxItem Content="Int" />
+                          <ComboBoxItem Content="Float" />
+                        </ComboBox>
+                        <Button Margin="5" Style="{StaticResource BaseImage_ButtonStyle}" Command="{Binding AddConditionItemCommand}">
+                          <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/add_normal.png" />
+                          <FrameworkElement.Tag>
+                            <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/add_click.png" />
+                          </FrameworkElement.Tag>
+                        </Button>
+                      </StackPanel>
+                    </StackPanel>
+                    <i:Interaction.Triggers>
+                      <i:EventTrigger EventName="PreviewMouseWheel">
+                        <i:InvokeCommandAction Command="{Binding PreviewMouseWheelCommand}" CommandParameter="{Binding ElementName=scrollcondition}" />
+                      </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                  </ScrollViewer>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Grid>
+        </Border>
+      </Grid>
+    </ControlTemplate>
+  </Control.Template>
+</Control>

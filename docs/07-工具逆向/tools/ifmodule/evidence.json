@@ -1,0 +1,27 @@
+{
+  "stableToolId": "ifmodule",
+  "originalPlugin": "IfModule",
+  "displayName": "条件检测",
+  "originalCategory": "Logic",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfModule",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "status": "source-indexed",
+  "evidenceState": "source-indexed",
+  "resourceCount": 7,
+  "parameterCount": 1,
+  "inputCount": 0,
+  "outputCount": 6,
+  "uiControlCount": 3,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ],
+  "sourceReports": [
+    "docs/plugins/IF-MODULE-NATIVE-IFTEXT-SETTER.md"
+  ]
+}

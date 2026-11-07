@@ -1,0 +1,126 @@
+{
+  "toolId": "imvsimagesharpnessmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageSharpnessModu\\IMVSImageSharpnessModu.xml",
+      "sha256": "5db49fa8a64db41ab5e05d574587e8537dde7039a0facfde38fcf96c10fb2f6e",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageSharpnessModu\\IMVSImageSharpnessModuAlgorithm.xml",
+      "sha256": "4c5ebcc022821db5fa7e449948f0765b130766ca8e57881d6bd8010a41835386",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageSharpnessModu\\IMVSImageSharpnessModuAlgorithmTab.xml",
+      "sha256": "de4982f52182d9a993ca8f428280f4b6c5005a9b688b8942d698d43e88669709",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageSharpnessModu\\IMVSImageSharpnessModuCs.xml",
+      "sha256": "f4904adf989b74931590843b2be67bf0f641ca0517764fb1079850b9df302de9",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageSharpnessModu\\IMVSImageSharpnessModuDisplay.xml",
+      "sha256": "9b0e5c391ce2606800016f2a2306cec1fe1d0c94fc37355bfb183592e7cd4cf1",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageSharpnessModu\\ToolItemInfo.xml",
+      "sha256": "02c6cac5b0b742afc07f7a82067e1770edc3bfb4ef48766fa56c04cc4f027320",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "OutputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SharpnessMode"
+    },
+    {
+      "type": "Integer",
+      "name": "NoiseLevel"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZoneAnnular"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "OutputMaskImageGroup",
+    "InputMaskImageGroup",
+    "RoiSelectGroup",
+    "InheritWayGroup2",
+    "ExternROITypeGroup",
+    "AssistGroup",
+    "TextDisplayGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

@@ -1,0 +1,45 @@
+{
+  "stableToolId": "imvsintensitymeasuremodu",
+  "originalPlugin": "IMVSIntensityMeasureModu",
+  "displayName": "亮度测量",
+  "originalCategory": "Measurement",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSIntensityMeasureModu",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "resourceCount": 6,
+  "parameterCount": 15,
+  "inputCount": 5,
+  "outputCount": 12,
+  "uiControlCount": 21,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/IntensityMeasureModuTool.cs",
+      "evidenceType": "decompiled managed source"
+    },
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/IntensityMeasureModuParams.cs",
+      "evidenceType": "decompiled managed source"
+    },
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/IntensityMeasureResult.cs",
+      "evidenceType": "decompiled managed source"
+    }
+  ],
+  "managedMembers": [
+    "IntensityMeasureModuTool constructor/Clone/Dispose",
+    "Max/Min/Mean/Std/Contrast limit ParamItems",
+    "IntensityMeasureResult basic/native result fields"
+  ],
+  "unknowns": [
+    "native intensity statistics algorithm and Process/ProcessAlg ABI",
+    "image/ROI input mapping",
+    "judgment/result status fields",
+    "UI bindings/theme",
+    "save/reload/stop runtime behavior"
+  ]
+}

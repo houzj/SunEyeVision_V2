@@ -1,0 +1,168 @@
+{
+  "controls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Boolean",
+      "name": "QRCode"
+    },
+    {
+      "type": "Boolean",
+      "name": "DMCode"
+    },
+    {
+      "type": "Integer",
+      "name": "LocCodeNum"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Polarity"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgeType"
+    },
+    {
+      "type": "Integer",
+      "name": "SampleLevel"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangeBarSize"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Mirror"
+    },
+    {
+      "type": "Enumeration",
+      "name": "DistortionFlag"
+    },
+    {
+      "type": "Integer",
+      "name": "WaitingTime"
+    },
+    {
+      "type": "Enumeration",
+      "name": "AppMode"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Rectangle"
+    },
+    {
+      "type": "Boolean",
+      "name": "NumLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangeNumLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "VerifyEnable"
+    },
+    {
+      "type": "Boolean",
+      "name": "NumVerifyEnable"
+    },
+    {
+      "type": "Boolean",
+      "name": "SmallAlphabetVerify"
+    },
+    {
+      "type": "Boolean",
+      "name": "BigAlphabetVerify"
+    },
+    {
+      "type": "Boolean",
+      "name": "SpecialCharVerify"
+    },
+    {
+      "type": "Boolean",
+      "name": "UserStringVerify"
+    },
+    {
+      "type": "String",
+      "name": "UserString"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlobShow"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvs2dbcrmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Recognition\\IMVS2dBcrModu\\IMVS2dBcrModu.xml",
+      "sha256": "b0c0ed699c80afbe114370018afa8a3bff89b9198ebc618a04962c5a4913c4cb",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Recognition\\IMVS2dBcrModu\\IMVS2dBcrModuAlgorithm.xml",
+      "sha256": "a4fca898b17e89ddf9cb80c2047011e32c3c5a0912445d76748c78bafd90ac6a",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Recognition\\IMVS2dBcrModu\\IMVS2dBcrModuAlgorithmTab.xml",
+      "sha256": "8f390b7959bef40197ddab49e22061fdf95591aa0c3fe55133467d5f8ad08e4a",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Recognition\\IMVS2dBcrModu\\IMVS2dBcrModuCs.xml",
+      "sha256": "7c77c69907319779140d29e9bf9c9e51499636af2551580720813094391ff379",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Recognition\\IMVS2dBcrModu\\IMVS2dBcrModuDisplay.xml",
+      "sha256": "121912e3d9437eb940e676d72133a67330e407866dfb1ea07e5a05e8fe105804",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Recognition\\IMVS2dBcrModu\\ToolItemInfo.xml",
+      "sha256": "0d23b48a1fa6738f4218566f6c03bd65d04d8e6f5c5fe3d3b7175f8cad1d8b78",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "二维码识别",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

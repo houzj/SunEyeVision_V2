@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>imagesourcemodule 路 evidence.json</title><style>*{box-sizing:border-box}
+body{margin:0;background:#f6f7f9;color:#1d2129;font:14px/1.7 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:24px 20px 60px}
+.crumbs{font-size:13px;margin-bottom:14px}
+.crumbs a{color:#2563eb;text-decoration:none}
+.card{background:#fff;border:1px solid #e4e7ec;border-radius:10px;padding:26px 30px}
+h1,h2,h3,h4{line-height:1.4}
+h1{font-size:20px}h2{font-size:17px;margin-top:26px}h3{font-size:15px}
+table{border-collapse:collapse;margin:12px 0;width:100%;font-size:13px}
+td,th{border:1px solid #e4e7ec;padding:6px 10px;vertical-align:top}
+tr:nth-child(even) td{background:#fafbfc}
+code{background:#f1f3f5;border-radius:3px;padding:1px 5px;font-size:12.5px;font-family:Consolas,Menlo,monospace;color:#c7254e}
+pre{background:#282c34;color:#abb2bf;border-radius:6px;padding:14px 16px;overflow:auto;font-size:12.5px;line-height:1.6;font-family:Consolas,Menlo,monospace}
+pre code{background:none;color:inherit;padding:0}
+ul{padding-left:22px}
+blockquote{border-left:3px solid #d0d5da;margin:10px 0;padding:4px 14px;color:#5a636b;background:#fafbfc}
+hr{border:0;border-top:1px solid #e4e7ec;margin:18px 0}
+p{margin:8px 0}</style></head><body><div class="wrap"><nav class="crumbs"><a href="../../index.html">&#8592; 宸ュ叿绱㈠紩</a> &middot; <code>imagesourcemodule</code></nav><div class="card"><h2>evidence.json</h2><pre>{
+  &quot;stableToolId&quot;: &quot;imagesourcemodule&quot;,
+  &quot;originalPlugin&quot;: &quot;ImageSourceModule&quot;,
+  &quot;displayName&quot;: &quot;图像源&quot;,
+  &quot;originalCategory&quot;: &quot;Collection&quot;,
+  &quot;originalSourcePath&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule&quot;,
+  &quot;uiCategory&quot;: &quot;image-roi&quot;,
+  &quot;priority&quot;: &quot;P1&quot;,
+  &quot;status&quot;: &quot;source-partial&quot;,
+  &quot;evidenceState&quot;: &quot;source-partial&quot;,
+  &quot;resourceCount&quot;: 6,
+  &quot;parameterCount&quot;: 23,
+  &quot;inputCount&quot;: 5,
+  &quot;outputCount&quot;: 11,
+  &quot;uiControlCount&quot;: 25,
+  &quot;sourceInventory&quot;: &quot;docs/plugins/inventory.json&quot;,
+  &quot;origin&quot;: &quot;suneyevision&quot;,
+  &quot;rewriteNote&quot;: &quot;2026-11-05 回填图像源条五项取证：新增 sourceEvidence 5 条、currentImplementation 与具体 unknowns；其余字段沿用 Codex 原卡。&quot;,
+  &quot;sourceEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;docs/07-工具逆向/decompiled/WpfControls/VMControls.WPF/ImageListPanelBase.cs&quot;,
+      &quot;sha256&quot;: &quot;DF02FAA325BABECCDAC3F44D3ED1D750B59874DA466BC0FDF033F997898D4B79&quot;,
+      &quot;symbol&quot;: &quot;ImageListPanelBase.CurImageIndexT&quot;,
+      &quot;lines&quot;: &quot;216-230&quot;,
+      &quot;confirmable&quot;: &quot;计数分子：CurImageIndex+1，对外 1-based；未选中为 0&quot;
+    },
+    {
+      &quot;path&quot;: &quot;docs/07-工具逆向/decompiled/WpfControls/VMControls.WPF/ImageListPanelBase.cs&quot;,
+      &quot;sha256&quot;: &quot;DF02FAA325BABECCDAC3F44D3ED1D750B59874DA466BC0FDF033F997898D4B79&quot;,
+      &quot;symbol&quot;: &quot;ImageListPanelBase.GetVMModule / 取图循环&quot;,
+      &quot;lines&quot;: &quot;647-660, 442-475&quot;,
+      &quot;confirmable&quot;: &quot;图像列表来自 AlgorithmTabRoot.Owner 模块的 Params[ImageNumber/ImagePath{i}]，不继承上游来源&quot;
+    },
+    {
+      &quot;path&quot;: &quot;docs/07-工具逆向/decompiled/WpfControls/VMControls.WPF/ImageListPanel.xaml&quot;,
+      &quot;sha256&quot;: &quot;A5AC5A8101E7CCCB036A2430E6C1766EC3B4CAEC18010580DB178EC88937C7CF&quot;,
+      &quot;symbol&quot;: &quot;计数 MultiBinding / 条内按钮&quot;,
+      &quot;lines&quot;: &quot;244-253, 190-337&quot;,
+      &quot;confirmable&quot;: &quot;计数格式「图像源 (N/M)」；条内仅 6 个按钮：删除、加图、加文件夹、加远程文件夹、清空、列表&quot;
+    },
+    {
+      &quot;path&quot;: &quot;docs/07-工具逆向/decompiled/WpfControls/VMControls.WPF/LocalImageListView.xaml.cs&quot;,
+      &quot;sha256&quot;: &quot;D887A0C8D363E9C6257977650AB3807B0A58547D91F424C93A369E9566451006&quot;,
+      &quot;symbol&quot;: &quot;LocalImageListView.ImageModes / AutoPlay / Interval / OnRootChanged&quot;,
+      &quot;lines&quot;: &quot;119-141, 143-187, 224-257, 259-291&quot;,
+      &quot;confirmable&quot;: &quot;运行全部/运行选中是一个 ComboBox 两选项（写 ExecuteType 1/2）；自动切换=AutoPlay；取图间隔=Interval；换 Root 清缓存重解析&quot;
+    },
+    {
+      &quot;path&quot;: &quot;docs/07-工具逆向/decompiled/WpfControls/VMControls.WPF/LocalImageListView.xaml&quot;,
+      &quot;sha256&quot;: &quot;D22C8A3F7FCE0D94E966A22FCE9865C91DE629471D4F1AD0F93BAA2CF6B19883&quot;,
+      &quot;symbol&quot;: &quot;三控件可见条件 / 高度&quot;,
+      &quot;lines&quot;: &quot;36-83, 89-98&quot;,
+      &quot;confirmable&quot;: &quot;开关按 IsExpanded 显隐；ComboBox 按 IsExpanded 且非订阅文件夹显隐；仅 130px 占位块按 IsImageSourceModule 判定；高度 125/40&quot;
+    },
+    {
+      &quot;path&quot;: &quot;docs/07-工具逆向/decompiled/HostShell/ExeEntry/resources/zh-cn.xaml&quot;,
+      &quot;sha256&quot;: &quot;C3AD9209618D7B36FA3F59C6AF2103FB2DEFB7066A03804E8DE80E992471610E&quot;,
+      &quot;symbol&quot;: &quot;RunParam_Auto Switch / Switch to next image every run&quot;,
+      &quot;lines&quot;: &quot;资源键定义&quot;,
+      &quot;confirmable&quot;: &quot;「自动切换」语义=每次执行后自动切换至下一张图片&quot;
+    }
+  ],
+  &quot;currentImplementation&quot;: {
+    &quot;moduleId&quot;: null,
+    &quot;implPath&quot;: &quot;src/Plugin.Wpf/Controls/Native/Input/WorkspaceControls/WorkspaceControls/ImageListPanelBase.cs.pending&quot;,
+    &quot;verifiedAt&quot;: null,
+    &quot;differences&quot;: [
+      &quot;我方镜像副本仍为 .pending，未纳入编译，行为未经运行时核对&quot;,
+      &quot;我方当前只实现显示/隐藏两态，原件是「按 Root 整体重解析数据源」，缺少的是重建数据源而非补按钮&quot;,
+      &quot;原件条高 125px，我方 ResultWorkspaceShell.xaml:156 施加 MaxHeight=110，会裁切滚动条&quot;,
+      &quot;原件「运行全部/运行选中」是 ComboBox 写 ExecuteType；「自动切换」是推进游标的 AutoPlay 开关，两者语义需按原件实现&quot;,
+      &quot;原件另有「取图间隔 Interval」控件，我方未见对应实现&quot;
+    ]
+  },
+  &quot;analysisStages&quot;: [
+    {
+      &quot;id&quot;: &quot;ui&quot;,
+      &quot;status&quot;: &quot;partial&quot;,
+      &quot;detail&quot;: &quot;ImageListPanel.xaml 与 LocalImageListView.xaml 已直读：条内 6 个按钮（删除、加图、加文件夹、加远程文件夹、清空、列表）、三个运行控件与 125/40 两档高度。缺主题状态、悬停/折叠与运行时尺寸；选中下游节点时的实际视觉表现需原机窗口。&quot;,
+      &quot;links&quot;: [
+        &quot;ImageListPanel.xaml:190-337&quot;,
+        &quot;LocalImageListView.xaml:36-98&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;common&quot;,
+      &quot;status&quot;: &quot;unknown&quot;,
+      &quot;detail&quot;: &quot;未单独取证共享参数组与配置框架。图像源条通过 AlgorithmTabRoot.Owner 拿模块，本身不承载共享模板。&quot;,
+      &quot;links&quot;: []
+    },
+    {
+      &quot;id&quot;: &quot;parametersRoi&quot;,
+      &quot;status&quot;: &quot;done&quot;,
+      &quot;detail&quot;: &quot;参数读写已直读：LocalImageListView.xaml.cs:143-187 解析 AutoPlay / Interval / CurrentImagePath；ImageListPanelBase.cs:1234-1236 把 Params[\&quot;AutoPlay\&quot;] 回写 UI 节点；取图用 ImageNumber、ImagePath{i}、CurImagePath.Value。图像源是图像提供者，不适用 ROI。&quot;,
+      &quot;links&quot;: [
+        &quot;LocalImageListView.xaml.cs:143-187&quot;,
+        &quot;ImageListPanelBase.cs:442-475, 1234-1236&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;execution&quot;,
+      &quot;status&quot;: &quot;partial&quot;,
+      &quot;detail&quot;: &quot;取图循环与执行模式（UserStringData[\&quot;ExecuteType\&quot;] 1=运行全部 / 2=运行选中）已证；模块 Process 实现与原生回调体未证，只在 ImageListPanelBase.cs:417-427 见到 IMVS_ALGORITHM_INIT_RESULT_INFO（nType=268439552）订阅。&quot;,
+      &quot;links&quot;: [
+        &quot;ImageListPanelBase.cs:442-475, 417-427&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;display&quot;,
+      &quot;status&quot;: &quot;done&quot;,
+      &quot;detail&quot;: &quot;计数格式「图像源 (N/M)」由 ImageListPanel.xaml:244-253 的 MultiBinding 给出，分子是 CurImageIndexT = CurImageIndex+1（未选中为 0）；缩略图 ListBox 在 :190，虚拟化与选中样式在 :220-243。&quot;,
+      &quot;links&quot;: [
+        &quot;ImageListPanel.xaml:244-253, 190, 220-243&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;storage&quot;,
+      &quot;status&quot;: &quot;partial&quot;,
+      &quot;detail&quot;: &quot;执行模式存 Root.UserStringData[\&quot;ExecuteType\&quot;]（LocalImageListView.xaml.cs:243,276-289）；AutoPlay / Interval / CurrentImagePath 存模块 Params。缺版本迁移与重绑规则。&quot;,
+      &quot;links&quot;: [
+        &quot;LocalImageListView.xaml.cs:243, 276-289&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;native&quot;,
+      &quot;status&quot;: &quot;unknown&quot;,
+      &quot;detail&quot;: &quot;未取到原生导出函数、调用约定或二进制容器；模块程序集未入库。&quot;,
+      &quot;links&quot;: []
+    }
+  ],
+  &quot;semanticChain&quot;: [
+    {
+      &quot;step&quot;: &quot;init&quot;,
+      &quot;conclusion&quot;: &quot;unknown&quot;,
+      &quot;originalEvidence&quot;: &quot;ImageSourceModule 模块类未入库，构造函数与注册链未取证&quot;,
+      &quot;unknown&quot;: &quot;模块类、注册链与资源绑定&quot;
+    },
+    {
+      &quot;step&quot;: &quot;parameters&quot;,
+      &quot;conclusion&quot;: &quot;confirmed&quot;,
+      &quot;originalEvidence&quot;: &quot;LocalImageListView.xaml.cs:143-187 从 Root.FindBaseNodeByName 解析 AutoPlay / Interval / CurrentImagePath；LocalImageListView.xaml:45-81 三处 MultiDataTrigger 控制显隐；ImageListPanelBase.cs:1234-1236 回写 Params[\&quot;AutoPlay\&quot;]&quot;,
+      &quot;unknown&quot;: &quot;&quot;
+    },
+    {
+      &quot;step&quot;: &quot;inputsRoi&quot;,
+      &quot;conclusion&quot;: &quot;confirmed&quot;,
+      &quot;originalEvidence&quot;: &quot;ImageListPanelBase.cs:442-475 取图循环：Params[\&quot;ImageNumber\&quot;] 定数量，Params[\&quot;ImagePath\&quot;+i] 逐个取路径，Params[\&quot;CurImagePath.Value\&quot;] 取当前图&quot;,
+      &quot;unknown&quot;: &quot;&quot;
+    },
+    {
+      &quot;step&quot;: &quot;process&quot;,
+      &quot;conclusion&quot;: &quot;unknown&quot;,
+      &quot;originalEvidence&quot;: &quot;模块 Process 实现未取证；仅在 ImageListPanelBase.cs:417-427 见到 IMVS_ALGORITHM_INIT_RESULT_INFO（nType=268439552）回调订阅&quot;,
+      &quot;unknown&quot;: &quot;Process/ProcessAlg 函数体与原生桥&quot;
+    },
+    {
+      &quot;step&quot;: &quot;branchFailure&quot;,
+      &quot;conclusion&quot;: &quot;partial&quot;,
+      &quot;originalEvidence&quot;: &quot;仅见 RunCheck 前置校验（ImageListPanelBase.cs:1339-1344）&quot;,
+      &quot;unknown&quot;: &quot;失败路径、错误码与取消处理&quot;
+    },
+    {
+      &quot;step&quot;: &quot;resultWrite&quot;,
+      &quot;conclusion&quot;: &quot;partial&quot;,
+      &quot;originalEvidence&quot;: &quot;ImageListPanelBase.cs:1336 写 Params[\&quot;CurrentImagePath\&quot;]；:1649 读 Params[\&quot;GetAllExecutePic\&quot;] 拆分已执行图集合&quot;,
+      &quot;unknown&quot;: &quot;判定链与失败结果写回&quot;
+    },
+    {
+      &quot;step&quot;: &quot;displayPublish&quot;,
+      &quot;conclusion&quot;: &quot;confirmed&quot;,
+      &quot;originalEvidence&quot;: &quot;ImageListPanel.xaml:244-253 计数绑定、:190 缩略图 ListBox、:220-243 虚拟化与选中样式&quot;,
+      &quot;unknown&quot;: &quot;&quot;
+    },
+    {
+      &quot;step&quot;: &quot;persistence&quot;,
+      &quot;conclusion&quot;: &quot;partial&quot;,
+      &quot;originalEvidence&quot;: &quot;LocalImageListView.xaml.cs:243,276-289 把执行模式存 Root.UserStringData[\&quot;ExecuteType\&quot;]；AutoPlay / Interval / CurrentImagePath 存模块 Params&quot;,
+      &quot;unknown&quot;: &quot;版本迁移与重开后的重绑规则&quot;
+    },
+    {
+      &quot;step&quot;: &quot;release&quot;,
+      &quot;conclusion&quot;: &quot;unknown&quot;,
+      &quot;originalEvidence&quot;: &quot;缩略图后台刷新线程（ImageListPanelBase.cs:339-353，IsBackground=true）已见创建，退出路径未取证&quot;,
+      &quot;unknown&quot;: &quot;线程退出顺序与 reader 释放顺序&quot;
+    }
+  ],
+  &quot;algorithmComparison&quot;: [
+    {
+      &quot;id&quot;: &quot;originalAlgorithm&quot;,
+      &quot;status&quot;: &quot;partial&quot;,
+      &quot;evidence&quot;: [
+        &quot;取图循环 ImageListPanelBase.cs:442-475；执行模式 ExecuteType 1=运行全部 / 2=运行选中；AutoPlay 语义为每次执行后切下一张&quot;
+      ],
+      &quot;unknown&quot;: &quot;图像解码、像素处理与像素格式转换主体未证&quot;
+    },
+    {
+      &quot;id&quot;: &quot;currentCalculation&quot;,
+      &quot;status&quot;: &quot;partial&quot;,
+      &quot;evidence&quot;: [
+        &quot;我方镜像副本 src/Plugin.Wpf/Controls/Native/Input/WorkspaceControls/WorkspaceControls/ImageListPanelBase.cs.pending 仍为 .pending，未纳入编译&quot;
+      ],
+      &quot;unknown&quot;: &quot;无运行时对照；镜像副本能否编译与行为是否一致未验证&quot;
+    },
+    {
+      &quot;id&quot;: &quot;defaultsPrePost&quot;,
+      &quot;status&quot;: &quot;partial&quot;,
+      &quot;evidence&quot;: [
+        &quot;CurImageIndexT = CurImageIndex+1，对外 1-based，未选中为 0；删除当前图（:589）与清空（:698）都把计数打回 0&quot;
+      ],
+      &quot;unknown&quot;: &quot;AutoPlay 默认值、Interval 合法范围与默认间隔未证&quot;
+    },
+    {
+      &quot;id&quot;: &quot;boundariesCoordinatesTypes&quot;,
+      &quot;status&quot;: &quot;not-established&quot;,
+      &quot;evidence&quot;: [],
+      &quot;unknown&quot;: &quot;无坐标语义对照；像素格式（PixelFormat）与输出 Mono8 的边界处理未证&quot;
+    },
+    {
+      &quot;id&quot;: &quot;pixelNumerics&quot;,
+      &quot;status&quot;: &quot;not-established&quot;,
+      &quot;evidence&quot;: [],
+      &quot;unknown&quot;: &quot;无像素级证据；未做原机取图与自研取图的逐像素比对&quot;
+    },
+    {
+      &quot;id&quot;: &quot;nativeAbi&quot;,
+      &quot;status&quot;: &quot;not-established&quot;,
+      &quot;evidence&quot;: [],
+      &quot;unknown&quot;: &quot;未取到原生导出函数与调用约定&quot;
+    },
+    {
+      &quot;id&quot;: &quot;validationInputs&quot;,
+      &quot;status&quot;: &quot;partial&quot;,
+      &quot;evidence&quot;: [
+        &quot;条内 6 个按钮与三个运行控件的可见条件已直读，可直接作为 UI 验收基线&quot;
+      ],
+      &quot;unknown&quot;: &quot;无原机窗口差分；ExecuteType=2 运行选中时勾选集合的逐张行为需运行观察&quot;
+    }
+  ],
+  &quot;managedMembers&quot;: [],
+  &quot;nativeFunctions&quot;: [],
+  &quot;runtimeObservations&quot;: [],
+  &quot;unknowns&quot;: [
+    &quot;多上游图像源汇入时的选择规则（需 VM.Core 或流程执行器）&quot;,
+    &quot;选中下游节点时条内的实际视觉表现（需原机窗口）&quot;,
+    &quot;ExecuteType=2 运行选中时勾选集合的逐张执行行为（需运行观察）&quot;,
+    &quot;ImageSourceModule 模块类的构造函数与注册链（模块程序集未入库）&quot;,
+    &quot;图像解码、像素处理与 ROI 语义（算法本体）&quot;,
+    &quot;缩略图后台刷新线程的退出与 reader 释放顺序&quot;
+  ],
+  &quot;sourceReports&quot;: [
+    &quot;docs/plugins/IMAGE-SOURCE.md&quot;,
+    &quot;docs/plugins/IMAGE-SOURCE-CONFIGURATION.md&quot;,
+    &quot;docs/collaboration/evidence/VM图像源条节点语义-20261105.html&quot;
+  ],
+  &quot;note&quot;: &quot;原厂资源、Process、参数读写、列表函数和受控运行记录已有证据；条内五项语义（计数、按节点数据源、随节点重解析、自动切换、三控件形态）已于 2026-11-05 由反编译源码直读确认，余项见 unknowns。&quot;
+}</pre></div></div></body></html>

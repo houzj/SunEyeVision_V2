@@ -1,0 +1,70 @@
+{
+  "toolId": "datarecordmodule",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataRecordModule\\DataRecordModule.xml",
+      "sha256": "48d4906680d1550b5259c0a6eae46fa858527005615c0f50e6cc38c5c4a066ef",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataRecordModule\\DataRecordModuleAlgorithm.xml",
+      "sha256": "ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataRecordModule\\DataRecordModuleAlgorithmTab.xml",
+      "sha256": "036107cb151075f510a46804893d43fb6d8220bf130a70286856f60ec85be7c0",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataRecordModule\\DataRecordModuleControl.xml",
+      "sha256": "2fe8da7bd08f021c8faaea0f31eae1742f3fa1f3732a626026bbe56bc1c34419",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataRecordModule\\DataRecordModuleCs.xml",
+      "sha256": "c0f0ca266f47585dcd885e3093c7a91c7abac385e5de4694718664ab7a2cc461",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataRecordModule\\DataRecordModuleDisplay.xml",
+      "sha256": "acc19397811644f701445996b3607a3aca6a310e6e201f5d829a2a993e46450b",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataRecordModule\\ToolItemInfo.xml",
+      "sha256": "56abce3680028a6c9f8723b939560149d47a1d4aa785a83359636f8f6fd44bcd",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "ButtonSelecter",
+      "name": "ClearSignal"
+    },
+    {
+      "type": "HeadBar",
+      "name": "FiledHead"
+    },
+    {
+      "type": "ButtonSelecter_IOVar_Record",
+      "name": "DataRecordFields"
+    }
+  ],
+  "sharedUiGroups": [
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

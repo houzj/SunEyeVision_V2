@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>图像源条按节点语义 · 五项取证</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--line:#e4e7ec;--text:#1d2129;--muted:#646a73;--accent:#2563eb;--warn:#b45309;--ok:#15803d;--bad:#b91c1c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.7 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:28px 20px 64px}
+h1{font-size:26px;margin:0 0 8px;line-height:1.35}
+.sub{color:var(--muted);font-size:13px;margin:0 0 22px}
+h2{font-size:17px;margin:34px 0 12px;padding-bottom:8px;border-bottom:2px solid var(--line)}
+h3{font-size:14px;margin:20px 0 8px;color:#374151}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin:14px 0}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:#fafbfc;font-weight:600;font-size:12px;color:#374151}
+tr:last-child td{border-bottom:none}
+code{font-family:Consolas,Monaco,monospace;font-size:12px;background:#f2f4f7;padding:1px 5px;border-radius:4px;word-break:break-all}
+pre{background:#f8f9fb;border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow:auto;font-size:12px;line-height:1.6}
+pre code{background:none;padding:0}
+.badge{display:inline-block;font-size:11px;padding:2px 9px;border-radius:999px;font-weight:600;white-space:nowrap}
+.b-obs{background:#dcfce7;color:#166534}
+.b-read{background:#dbeafe;color:#1e40af}
+.b-inf{background:#e0f2fe;color:#075985}
+.b-skip{background:#fee2e2;color:#991b1b}
+.lede{background:#fffbeb;border-left:4px solid #f59e0b;padding:12px 16px;border-radius:0 8px 8px 0;margin:16px 0;font-size:13.5px;color:#78350f}
+.lede b{color:#92400e}
+ul{padding-left:22px;margin:8px 0}
+li{margin:4px 0}
+.kv{font-size:13px}
+.kv th{width:22%}
+.small{font-size:12px;color:var(--muted)}
+footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>图像源条「按节点差异」语义 —— 五项取证</h1>
+<p class="sub">取证日期 2026-11-05 ｜ 原件 VisionMaster 4.4.0（Build20250516@1555331）｜ 反编译源码库 <code>docs/07-工具逆向/decompiled/WpfControls/VMControls.WPF/</code>｜ 完整卡片 <code>docs/07-工具逆向/tools/imagesourcemodule/</code></p>
+
+<div class="lede">
+<b>三条纠偏，会影响实现方式：</b><br>
+1. 「自动切换 / 运行全部 / 运行」<b>不是三个按钮</b>：「运行全部 / 运行选中」是<b>一个 ComboBox 的两个选项</b>，「自动切换」是<b>一个开关</b>，两者都属于模块参数，不是主工具栏命令。<br>
+2. 条内显示的图<b>不是"上游来源的图"</b>，而是<b>当前参数页所属模块自己的图像参数</b>（<code>Root.FindBaseNodeByName("CurrentImagePath")</code>）。<br>
+3. 计数 <code>0/0</code> 不是"当前序号/总数"这么简单：<b>前一个数未选中时为 0，后一个数是列表项数</b>，删除当前图或清空会把它打回 0。
+</div>
+
+<h2>结论摘要</h2>
+<table>
+<thead><tr><th style="width:6%">问</th><th style="width:30%">问题</th><th style="width:11%">档位</th><th>结论</th></tr></thead>
+<tbody>
+<tr>
+<td>1</td><td>选中图像源节点时条内显示什么；<code>0/0</code> 两个数字含义</td>
+<td><span class="badge b-read">直读</span></td>
+<td>条头文字 = 「图像源 (N/M)」。<b>N = <code>CurImageIndexT</code></b>（当前图序号，内部 0-based，对外 +1；<b>未选中为 0</b>）；<b>M = <code>lst.Items.Count</code></b>（图像列表项数）。<code>0/0</code> = 未选中且列表为空。</td>
+</tr>
+<tr>
+<td>2</td><td>选中下游节点（Blob）时，条隐藏还是显示父来源图</td>
+<td><span class="badge b-read">直读</span></td>
+<td><b>显示的是「该参数页所属模块自己」的图像参数，不是上游来源图。</b>数据源 = <code>Root.FindBaseNodeByName("CurrentImagePath")</code>，模块 = <code>AlgorithmTabRoot.Owner as IVmModule</code>。Blob 模块无这些参数 → 列表空、计数 <code>0/0</code>，不是"保留父来源图"。</td>
+</tr>
+<tr>
+<td>3</td><td>多上游来源汇入时的选择规则</td>
+<td><span class="badge b-skip">未证</span></td>
+<td>条内控件本身<b>不含多来源选择逻辑</b>（全部按单模块参数取图）。多来源归属应发生在流程/执行层的输入绑定，需 <code>VM.Core</code> 或流程执行器源码，本轮未取证。</td>
+</tr>
+<tr>
+<td>4</td><td>条内内容是否随选中节点变化；运行前后如何变</td>
+<td><span class="badge b-read">直读</span></td>
+<td><b>随节点变</b>：宿主换 <code>Root</code> → 清空 <code>AutoPlay/Interval/CurrentImagePath</code> 缓存并重新解析。<b>运行前</b>：<code>AutoPlay</code> 决定取第一张或最后一张。<b>运行后</b>：<code>AutoPlay</code> 开启时<b>每次执行后自动切下一张</b>（本地化原文可证），计数 N 递增。</td>
+</tr>
+<tr>
+<td>5</td><td>非图像源节点上三个控件的可用性</td>
+<td><span class="badge b-read">直读</span></td>
+<td><b>不按节点类型灰掉，按展开状态与订阅模式显隐。</b>开关 <code>AutoPlay</code>：<code>IsExpanded</code> 为真才可见。ComboBox：<code>IsExpanded && !IsSubscribeFolderMode</code> 才可见。<b>唯一按模块类型判的</b>是中间 130px 占位块：<code>IsImageSourceModule</code> 为真才占位。</td>
+</tr>
+</tbody>
+</table>
+
+<h2>问 1 · 计数 0/0 的两个数字</h2>
+<div class="card">
+<h3>依据一：XAML 的 MultiBinding 格式</h3>
+<p class="small">文件 <code>decompiled/WpfControls/VMControls.WPF/ImageListPanel.xaml:244-253</code></p>
+<pre><code>&lt;StackPanel Orientation="Horizontal" ... IsHitTestVisible="False"&gt;
+  &lt;TextBlock Text="{DynamicResource Lang_ImgSoc}" ... /&gt;      &lt;!-- 前缀「图像源」 --&gt;
+  &lt;TextBlock ...&gt;
+    &lt;TextBlock.Text&gt;
+      &lt;MultiBinding StringFormat=" ({0}/{1})"&gt;
+        &lt;Binding Path="CurImageIndexT" ElementName="ImagePanel" /&gt;   &lt;!-- {0} 当前序号 --&gt;
+        &lt;Binding Path="Items.Count" ElementName="lst" /&gt;             &lt;!-- {1} 列表项数 --&gt;
+      &lt;/MultiBinding&gt;
+    &lt;/TextBlock.Text&gt;
+  &lt;/TextBlock&gt;
+&lt;/StackPanel&gt;</code></pre>
+
+<h3>依据二：CurImageIndexT 是 1-based 的对外投影</h3>
+<p class="small">文件 <code>ImageListPanelBase.cs:216-230</code></p>
+<pre><code>/// &lt;summary&gt;
+/// 当前图像序号
+/// &lt;/summary&gt;
+public int CurImageIndexT
+{
+    get { return CurImageIndex + 1; }        // 内部 0-based，对外 +1
+    set { CurImageIndex = value - 1; NotifyPropertyChanged("CurImageIndexT"); }
+}</code></pre>
+
+<h3>依据三：什么情况下回到 0</h3>
+<table>
+<thead><tr><th style="width:22%">时机</th><th style="width:16%">位置</th><th>行为</th></tr></thead>
+<tbody>
+<tr><td>删除当前图像</td><td><code>ImageListPanelBase.cs:587-590</code></td><td><code>if (CurImageIndex == num) CurImageIndexT = 0;</code> → 删除的正是当前图时回到「无选中」</td></tr>
+<tr><td>删除左侧图像</td><td><code>ImageListPanelBase.cs:602-605</code></td><td><code>if (num &lt; CurImageIndex) CurImageIndexT--;</code> → 序号前移一位</td></tr>
+<tr><td>清空列表</td><td><code>ImageListPanelBase.cs:697-698</code></td><td><code>ImageList.Clear(); CurImageIndexT = 0;</code></td></tr>
+<tr><td>选中项变化</td><td><code>ImageListPanelBase.cs:1316</code></td><td><code>CurImageIndexT = CurSelectedIndex + 1;</code></td></tr>
+</tbody>
+</table>
+<p><b>结论</b>：N 是「当前第几张（人类从 1 数）」，<b>没有任何选中时显示 0</b>；M 是列表实际项数。用户看到 <code>0/0</code> 表示「列表里没图，也没选中」。看到 <code>0/10</code> 表示「有 10 张但一张都没选中」。</p>
+</div>
+
+<h2>问 2 · 选中下游节点时条显示谁</h2>
+<div class="card">
+<h3>依据一：列表的 DataContext 是「当前参数页的 CurrentImagePath 节点」</h3>
+<p class="small">文件 <code>decompiled/WpfControls/VMControls.WPF/LocalImageListView.xaml:84</code></p>
+<pre><code>&lt;local:ImageListPanel x:Name="list" Margin="5,-40,5,5"
+    CurSelectedModule="{Binding DataContext.DecorateSource, ElementName=UserControl}"
+    TargetValue="{Binding CurValueA, Mode=TwoWay}"
+    IsSelectMode="{Binding IsSelectMode, Mode=TwoWay, ElementName=UserControl}"
+    DataContext="{Binding CurrentImagePath, ElementName=UserControl}"
+    IsExpanded="{Binding IsExpanded, ElementName=UserControl}"
+    DoFreshImageList="{Binding FreshImageListFlag}" /&gt;</code></pre>
+
+<h3>依据二：CurrentImagePath 从 Root 解析，Root 换了就清缓存重解析</h3>
+<p class="small">文件 <code>LocalImageListView.xaml.cs:173-187</code> 与 <code>:224-257</code></p>
+<pre><code>/// 当前图像
+public object CurrentImagePath
+{
+    get
+    {
+        if (_CurrentImagePath == null &amp;&amp; Root != null)
+        {
+            _CurrentImagePath = Root.FindBaseNodeByName("CurrentImagePath");
+            (_CurrentImagePath as NameValueItem)?.GetParamUnit();
+        }
+        return _CurrentImagePath;
+    }
+}
+
+private static void OnRootChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+{
+    ...
+    if (algorithmTabRoot != null)   // 旧 Root 离开
+    {
+        localImageListView._AutoPlay = null;
+        localImageListView._CurrentImagePath = null;
+        localImageListView._Interval = null;
+    }
+    ...
+    localImageListView.OnPropertyChanged("AutoPlay");
+    localImageListView.OnPropertyChanged("Interval");
+    localImageListView.OnPropertyChanged("CurrentImagePath");
+}</code></pre>
+
+<h3>依据三：面板取图只认「自己所在模块」的参数</h3>
+<p class="small">文件 <code>ImageListPanelBase.cs:647-660</code>、<code>:442-475</code></p>
+<pre><code>public IVmModule GetVMModule()
+{
+    if (OwnerModule == null)
+    {
+        AlgorithmTabRoot algorithmTabRoot = GetRoot();
+        if (algorithmTabRoot == null) return null;
+        OwnerModule = algorithmTabRoot.Owner as IVmModule;   // ← 参数页根节点的 Owner 模块
+        return OwnerModule;
+    }
+    return OwnerModule;
+}
+
+// 取图：全部来自该模块的参数
+string value = ((IUserStringData)GetVMModule().Params)["ImageNumber"];
+for (int i = 0; i &lt; num; i++)
+{
+    string text = ((IUserStringData)GetVMModule().Params)["ImagePath" + i];
+    AddImageToList(text);
+}</code></pre>
+
+<p><b>结论</b>：条不"继承父来源"，它是<b>按参数页所在模块取参</b>。选中 Blob 节点时，若其参数页也放了该控件，<code>Root</code> 指向 Blob 模块，而 Blob 模块没有 <code>ImageNumber / ImagePath0..N / CurrentImagePath</code> 这些参数 → 列表为空，显示 <code>0/0</code>，开关与下拉都无内容。<br>
+<b>这不是 bug，而是"哪个模块的参数页，就显示哪个模块的图"。</b>若要实现"选中下游节点时显示其上游图像源的图"，需要我方额外做一层「向上游解析图像源」的逻辑，原件没有这层。</p>
+<p class="small">补充：<code>ImageListPanelBase.cs:182</code> 的 <code>IsImageSourceModule</code> 只用于判定「当前模块本身或其沉淀模块是否为图像源节点」，用途是控制 130px 占位块与图像名悬停按钮的显隐，<b>不改变取图来源</b>。</p>
+</div>
+
+<h2>问 3 · 多来源汇入时的选择规则</h2>
+<div class="card">
+<p><span class="badge b-skip">未证</span> 本轮<b>没有</b>拿到证据，不给结论。</p>
+<h3>已排除的部分</h3>
+<p>条内两个控件（<code>ImageListPanel</code> / <code>LocalImageListView</code>）的全量代码里，取图路径只有一条：<code>GetVMModule().Params["ImagePath"+i]</code>。<b>控件内部没有任何"在多个上游中挑一个"的分支</b>。<code>DecorateSource</code> 是宿主注入的单一对象，不是候选集合。</p>
+<h3>缺口与再取证路径</h3>
+<ul>
+<li>需要 <code>VM.Core</code>（114 份）或流程执行器源码，看模块输入绑定在多个上游来源时如何取值</li>
+<li>需要确认是否存在「运行时输入冲突」提示或「显示来源选择」入口</li>
+<li>该程序集尚未入库，本轮按计划不擅自扩大</li>
+</ul>
+</div>
+
+<h2>问 4 · 随选中节点变化 / 运行前后变化</h2>
+<div class="card">
+<h3>随选中节点变化（已证）</h3>
+<p>见问 2 依据二：<code>OnRootChanged</code> 会清空三个参数缓存并重新 <code>FindBaseNodeByName</code>。所以<b>节点一换，条内图列表、计数、开关状态全部重新解析</b>，不是增量更新。</p>
+
+<h3>运行前（已证）</h3>
+<table>
+<thead><tr><th style="width:26%">AutoPlay</th><th style="width:30%">位置</th><th>取哪张</th></tr></thead>
+<tbody>
+<tr><td><code>false</code></td><td><code>ImageListPanelBase.cs:1714-1723</code></td><td>取 <code>ImageList[0]</code>（第一张）</td></tr>
+<tr><td><code>true</code></td><td><code>ImageListPanelBase.cs:1704-1711</code></td><td>取 <code>list[list.Count - 1]</code>（最后一张）</td></tr>
+</tbody>
+</table>
+
+<h3>运行后（已证，本地化原文）</h3>
+<p class="small">文件 <code>decompiled/HostShell/ExeEntry/resources/zh-cn.xaml</code></p>
+<pre><code>&lt;sys:String x:Key="RunParam_Auto Switch"&gt;自动切换&lt;/sys:String&gt;
+&lt;sys:String x:Key="Switch to next image every run"&gt;每次执行后会自动切换至下一张图片&lt;/sys:String&gt;</code></pre>
+<p><b>「自动切换」的字面语义就是「每次执行后切到下一张」</b>，实现载体是模块参数 <code>AutoPlay</code>（<code>ImageListPanelBase.cs:1234-1236</code> 把 <code>Params["AutoPlay"]</code> 回写到 UI 节点）。所以运行后计数 N 会递增，到末尾后行为由 <code>AutoPlay</code> 与 <code>ExecuteType</code> 组合决定。</p>
+
+<h3>执行模式（已证）</h3>
+<p class="small">文件 <code>LocalImageListView.xaml.cs:243</code> 与 <code>:259-291</code></p>
+<pre><code>// ExecuteType: "1" = 运行全部, "2" = 运行选中
+localImageListView.IsSelectMode = ((IUserStringData)algorithmTabRoot2.UserStringData)["ExecuteType"] == "2";
+...
+((IUserStringData)Root.UserStringData)["ExecuteType"] = "2";   // 切到运行选中
+((IUserStringData)Root.UserStringData)["ExecuteType"] = "1";   // 切到运行全部</code></pre>
+</div>
+
+<h2>问 5 · 非图像源节点上的控件状态</h2>
+<div class="card">
+<h3>依据一：三个控件真实形态</h3>
+<p class="small">文件 <code>LocalImageListView.xaml.cs:119-141</code></p>
+<pre><code>public List&lt;object&gt; ImageModes
+{
+    get
+    {
+        if (imageModes == null)
+        {
+            imageModes = new List&lt;object&gt;
+            {
+                new TempClass { Value = false, DisplayName = AppLocalizationService.GetLang("运行全部") },
+                new TempClass { Value = true,  DisplayName = AppLocalizationService.GetLang("运行选中") }
+            };
+        }
+        return imageModes;
+    }
+}</code></pre>
+<p class="small">文件 <code>LocalImageListView.xaml.cs:143-171</code></p>
+<pre><code>/// 自动切换
+public object AutoPlay { get { _AutoPlay = Root.FindBaseNodeByName("AutoPlay"); ... } }
+
+/// 取图间隔
+public object Interval { get { _Interval = Root.FindBaseNodeByName("Interval"); ... } }</code></pre>
+
+<h3>依据二：可见性条件（XAML 原文）</h3>
+<p class="small">文件 <code>LocalImageListView.xaml:36-83</code></p>
+<table>
+<thead><tr><th style="width:14%">列</th><th style="width:24%">元素</th><th>可见/生效条件</th></tr></thead>
+<tbody>
+<tr><td>0</td><td>自动切换开关（<code>AutoPlay</code>）</td><td><code>IsExpanded == True</code></td></tr>
+<tr><td>1</td><td>ComboBox（运行全部 / 运行选中）</td><td>默认 <code>Collapsed</code>；<code>IsExpanded == True</code> <b>且</b> <code>IsSubscribeFolderMode.CurValueA == False</code> 时 <code>Visible</code></td></tr>
+<tr><td>2</td><td>占位 Border</td><td>默认 <code>Width=0</code>；<b><code>IsImageSourceModule == True</code></b> 且非订阅文件夹时 <code>Width=130</code></td></tr>
+<tr><td>3</td><td>展开/收起 ToggleButton</td><td>始终显示</td></tr>
+</tbody>
+</table>
+
+<h3>依据三：整体高度</h3>
+<p class="small">文件 <code>LocalImageListView.xaml:89-98</code>：<code>IsExpanded=true</code> → 125px；<code>false</code> → 40px。</p>
+
+<p><b>结论</b>：这三个控件<b>不会因为"当前不是图像源节点"而被灰掉或隐藏</b>。它们按「是否展开」「是否订阅文件夹模式」显隐。真正按模块类型判定的只有中间 130px 占位块。<br>
+非图像源节点上出现该控件时，因为 <code>Root.FindBaseNodeByName("AutoPlay")</code> 取不到节点，开关会绑定到 <code>null</code>（视觉上无内容），ComboBox 仍可见但切换后写的是该模块 <code>UserStringData["ExecuteType"]</code> —— <b>这是原件行为，不是我方理解偏差</b>。</p>
+</div>
+
+<h2>对我方现状的直接影响（不做设计，只列事实）</h2>
+<div class="card">
+<table>
+<thead><tr><th style="width:28%">原件事实</th><th>我方现状需要核对的点</th></tr></thead>
+<tbody>
+<tr><td>条内容由 <code>Root</code>（参数页根）决定，随节点整体重解析</td><td>我方若做成「显示/隐藏两态」，缺少的是<b>按节点重建数据源</b>，不是补两个按钮</td></tr>
+<tr><td>计数 = <code>CurImageIndexT</code>(1-based, 未选中为 0) / <code>Items.Count</code></td><td>核对两个数字的取值与「未选中显示 0」这两个细节</td></tr>
+<tr><td>「运行全部/运行选中」是 ComboBox，值写 <code>ExecuteType</code>(1/2)</td><td>不是两个按钮；状态存模块 <code>UserStringData</code>，参与保存</td></tr>
+<tr><td>「自动切换」是 <code>AutoPlay</code> 开关，语义=执行后切下一张</td><td>不要实现成"自动选中第一张"，语义是<b>推进游标</b></td></tr>
+<tr><td>「取图间隔」是 <code>Interval</code> 参数</td><td>team-lead 未提及，但原件条上存在，需一并确认是否迁移</td></tr>
+<tr><td>130px 占位块按 <code>IsImageSourceModule</code></td><td>非图像源节点上留白宽度不同，是视觉差异来源之一</td></tr>
+<tr><td>高度 125/40 两档</td><td>我方 <code>ResultWorkspaceShell.xaml:156</code> 施加 <code>MaxHeight=110</code>，与 125 冲突，会裁掉滚动条</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>证据档位与未闭合项</h2>
+<div class="card">
+<table>
+<thead><tr><th style="width:30%">项</th><th style="width:14%">档位</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>计数两个数字与归零时机</td><td><span class="badge b-read">直读</span></td><td>XAML 绑定 + 属性 getter + 四处赋值点</td></tr>
+<tr><td>条的数据源是所在模块参数</td><td><span class="badge b-read">直读</span></td><td>DataContext 绑定 + GetVMModule 实现 + 取图循环</td></tr>
+<tr><td>随节点整体重解析</td><td><span class="badge b-read">直读</span></td><td>OnRootChanged 清三个缓存字段</td></tr>
+<tr><td>自动切换语义</td><td><span class="badge b-read">直读</span></td><td>本地化资源原文 + AutoPlay 回写</td></tr>
+<tr><td>三个控件形态与可见条件</td><td><span class="badge b-read">直读</span></td><td>XAML 列定义与 MultiDataTrigger 原文</td></tr>
+<tr><td><b>多上游来源冲突规则</b></td><td><span class="badge b-skip">未证</span></td><td>需 <code>VM.Core</code> 或流程执行器，本轮未入库</td></tr>
+<tr><td><b>选中下游节点时的实际视觉表现</b></td><td><span class="badge b-skip">未证</span></td><td>需原机窗口观察；静态只能给「数据源指向该模块参数」这一机制结论</td></tr>
+<tr><td><b>「运行选中」批量执行的运行时行为</b></td><td><span class="badge b-skip">未证</span></td><td>需运行观察 <code>ExecuteType=2</code> 时勾选集合如何逐张执行</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>复跑命令（只读）</h2>
+<div class="card">
+<pre><code># 计数绑定
+Select-String -Path "docs\07-工具逆向\decompiled\WpfControls\VMControls.WPF\ImageListPanel.xaml" -Pattern "CurImageIndexT|Items.Count" -Encoding UTF8
+
+# 数据源与模块解析
+Select-String -Path "docs\07-工具逆向\decompiled\WpfControls\VMControls.WPF\LocalImageListView.xaml","LocalImageListView.xaml.cs" -Pattern "CurrentImagePath|AutoPlay|ImageModes" -Encoding UTF8
+
+# 三个控件的可见条件
+Select-String -Path "docs\07-工具逆向\decompiled\WpfControls\VMControls.WPF\LocalImageListView.xaml" -Pattern "IsImageSourceModule|IsSubscribeFolderMode|IsExpanded" -Encoding UTF8</code></pre>
+</div>
+
+<footer>
+取证方式：只读解析反编译重建源码与本地化资源，未启动原厂程序、未写注册表、未改安装目录。<br>
+完整卡片与 9 步语义链：<code>docs/07-工具逆向/tools/imagesourcemodule/</code> ｜ 对照页：<code>docs/07-工具逆向/pages/ImageRoi-ImageSourceModule.html</code><br>
+结论档位：直读 = 源码/资源原文可指到文件与行号；未证 = 无证据，不给结论。<b>本页不证明该工具在原厂已运行或已完成。</b>
+</footer>
+
+</div></body></html>

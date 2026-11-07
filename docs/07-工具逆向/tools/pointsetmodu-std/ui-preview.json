@@ -1,0 +1,128 @@
+{
+  "controls": [
+    {
+      "type": "PointSet",
+      "name": "Data1"
+    },
+    {
+      "type": "PointSet",
+      "name": "Data2"
+    },
+    {
+      "type": "PointSet",
+      "name": "Data3"
+    },
+    {
+      "type": "PointSet",
+      "name": "Data4"
+    },
+    {
+      "type": "PointSet",
+      "name": "Data5"
+    },
+    {
+      "type": "PointSet",
+      "name": "Data6"
+    },
+    {
+      "type": "PointSet",
+      "name": "Data7"
+    },
+    {
+      "type": "PointSet",
+      "name": "Data8"
+    },
+    {
+      "type": "PointSet",
+      "name": "Data9"
+    },
+    {
+      "type": "PointSet",
+      "name": "Data10"
+    },
+    {
+      "type": "PointSet",
+      "name": "Data11"
+    },
+    {
+      "type": "PointSet",
+      "name": "Data12"
+    },
+    {
+      "type": "PointSet",
+      "name": "Data13"
+    },
+    {
+      "type": "PointSet",
+      "name": "Data14"
+    },
+    {
+      "type": "PointSet",
+      "name": "Data15"
+    },
+    {
+      "type": "PointSet",
+      "name": "Data16"
+    },
+    {
+      "type": "AddButton_PointSet",
+      "name": "AddButton"
+    },
+    {
+      "type": "Boolean",
+      "name": "LoopEnabled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "GeometryPrint"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "pointsetmodu-std",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PointSetMODU_STD\\PointSetMODU_STD.xml",
+      "sha256": "86ca96fa92e62e5763f140b0ae3342eb21ca72a9bd4f4b9f811a06955160e2e4",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PointSetMODU_STD\\PointSetMODU_STDAlgorithm.xml",
+      "sha256": "b6d2a77a2ecc29c274bc20c83d5d492a6bccc938f26982977e47e3a0b42fad75",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PointSetMODU_STD\\PointSetMODU_STDAlgorithmTab.xml",
+      "sha256": "40e69142a920ea7f691e1186bb0e85d2e5133f73f30cfee4390ff191e20c0ffa",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PointSetMODU_STD\\PointSetMODU_STDCs.xml",
+      "sha256": "a9e10b82e3208a89dab3f1bfd01cf1f7d263fefd8a3dd8cecbb0bf8e419f81f0",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PointSetMODU_STD\\PointSetMODU_STDDisplay.xml",
+      "sha256": "37e587bc65d8d168be7a31ab8e1379ebdeff2df7b734f9a165cb02587fbae8ee",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PointSetMODU_STD\\ToolItemInfo.xml",
+      "sha256": "7ba5153d6ebb0512a4361137705756ced9aeed7cbad1ef432dd72c6ef3e21f7c",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "点集",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

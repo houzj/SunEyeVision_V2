@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="FormatModuleControl.FormatMessageBox" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:local="clr-namespace:FormatModuleControl" Height="54" Width="240">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <local:Bool2IconImageConverter x:Key="bool2IconImage" />
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Border BorderThickness="1" BorderBrush="#D0D0D0" CornerRadius="3">
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+      <Image Name="Icon" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Center" Source="{Binding Result, Converter={StaticResource bool2IconImage}}" />
+      <TextBlock Name="MessageInfo" VerticalAlignment="Center" FontFamily="Microsoft YaHei" FontSize="16px" Margin="10,0,0,0" Foreground="#333333" Text="{Binding Message}" />
+    </StackPanel>
+  </Border>
+</UserControl>

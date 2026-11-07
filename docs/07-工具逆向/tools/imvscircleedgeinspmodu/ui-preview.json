@@ -1,0 +1,204 @@
+{
+  "controls": [
+    {
+      "type": "Boolean",
+      "name": "StandardInput"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "InputWay2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Circle"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "CenterPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "CenterPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "InnerRadius"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "OuterRadius"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartAngle"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "AngleExtend"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FindMode"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePolarity"
+    },
+    {
+      "type": "Integer",
+      "name": "HalfKernelSize"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeStrength"
+    },
+    {
+      "type": "Integer",
+      "name": "CaliperHeight"
+    },
+    {
+      "type": "Integer",
+      "name": "CaliperWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "CaliperDistTraj"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FlawPolarityEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "RoughMinDis"
+    },
+    {
+      "type": "Boolean",
+      "name": "SizeEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "RoughMinSize"
+    },
+    {
+      "type": "Boolean",
+      "name": "AreaEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "RoughMinArea"
+    },
+    {
+      "type": "Expand",
+      "name": "FitParamExpand"
+    },
+    {
+      "type": "Integer",
+      "name": "CircleCaliperNum"
+    },
+    {
+      "type": "Integer",
+      "name": "FitRejectNum"
+    },
+    {
+      "type": "Integer",
+      "name": "FitRejectDist"
+    },
+    {
+      "type": "Integer",
+      "name": "TrackDistTol"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "SensorFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FlawResult"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "EdgeLocation"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "StandardCircle"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvscircleedgeinspmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSCircleEdgeInspModu\\IMVSCircleEdgeInspModu.xml",
+      "sha256": "1213366cddbc4fcf26b6f2931747d107b96c0aa29788f9f2e1988c8508a1ab91",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSCircleEdgeInspModu\\IMVSCircleEdgeInspModuAlgorithm.xml",
+      "sha256": "6fdcae494e10938fb17df0fc969e9ea33484a6d6530f7703be736a61b5822cc5",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSCircleEdgeInspModu\\IMVSCircleEdgeInspModuAlgorithmTab.xml",
+      "sha256": "31607b674fdc623d346d671a6bc3b1dceec43514ae055fad2cb44a487aa67c49",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSCircleEdgeInspModu\\IMVSCircleEdgeInspModuCs.xml",
+      "sha256": "20541f9b0299be704a79ad420109da3069a1d530a8dc6ddb33233a3783735d55",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSCircleEdgeInspModu\\IMVSCircleEdgeInspModuDisplay.xml",
+      "sha256": "8778bfb73235ffaa8d885d74d36debdfaf147b4b11d6dd59b701bb515f9caad5",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSCircleEdgeInspModu\\ToolItemInfo.xml",
+      "sha256": "fa4baf30b29852a7efcc671cc956ef320395bef7d8401bccab21d8aff2d4a0b7",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "圆弧边缘缺陷检测",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

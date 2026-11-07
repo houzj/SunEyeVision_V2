@@ -1,0 +1,31 @@
+{
+  "stableToolId": "calculatormodule",
+  "originalPlugin": "CalculatorModule",
+  "displayName": "变量计算",
+  "authority": "inventory XML and shipped resource hashes",
+  "algorithmParameters": [],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "ButtonSelecter_CalculatorPro",
+      "name": "CalculatorPro"
+    },
+    {
+      "type": "Command",
+      "name": "command#restvalue"
+    }
+  ],
+  "sourceInventory": "docs/plugins/inventory.json",
+  "unknowns": [
+    "parameter getter/setter bodies",
+    "Process/ProcessAlg body and ABI",
+    "runtime reader/lease"
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "controls": [
+    {
+      "type": "RadioSelecter3",
+      "name": "InputWay"
+    },
+    {
+      "type": "LinePair",
+      "name": "Data1"
+    },
+    {
+      "type": "LinePair",
+      "name": "Data2"
+    },
+    {
+      "type": "LinePair",
+      "name": "Data3"
+    },
+    {
+      "type": "LinePair",
+      "name": "Data4"
+    },
+    {
+      "type": "LinePair",
+      "name": "Data5"
+    },
+    {
+      "type": "LinePair",
+      "name": "Data6"
+    },
+    {
+      "type": "LinePair",
+      "name": "Data7"
+    },
+    {
+      "type": "LinePair",
+      "name": "Data8"
+    },
+    {
+      "type": "AddButton_LinePair",
+      "name": "AddButton"
+    },
+    {
+      "type": "Enumeration",
+      "name": "AlignMode"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvslinealignmodu",
+  "status": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSLineAlignModu\\IMVSLineAlignModu.xml",
+      "sha256": "55675b745834aaead3b2826e0500644a5dcdef09b94b3c52cba4e9df06c7091a",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSLineAlignModu\\IMVSLineAlignModuAlgorithm.xml",
+      "sha256": "87155a5be4e6f0e647c8300d0a455773887d31dae9d0b9694ef8823c1eceaf56",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSLineAlignModu\\IMVSLineAlignModuAlgorithmTab.xml",
+      "sha256": "cd03f094e97f621b18cc73ebac0c5e97e7dee81514804f8652bc13670e27be2e",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSLineAlignModu\\IMVSLineAlignModuCs.xml",
+      "sha256": "f812a99bf9c0261f0812582402d4674ea2e0b75f9d1bcd97fc086e73e41a2bda",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSLineAlignModu\\IMVSLineAlignModuDisplay.xml",
+      "sha256": "09cd144565d1807598d37b10adac66f7bc086ada4c40104c329d9529c38b749a",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSLineAlignModu\\ToolItemInfo.xml",
+      "sha256": "6efdf273be7103ae9081d46878b5f57c2641f5712e7acb011f0ea1645b3672f5",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "线对位",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

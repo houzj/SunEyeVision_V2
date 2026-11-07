@@ -1,0 +1,253 @@
+{
+  "toolId": "imagecollecthikmodu",
+  "parameters": [
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "CfFilePath",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "AcquisitionName",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "CameraName",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "TriggerSelector",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "0",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "TriggerSource",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "7",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "TriggerMode",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "1",
+          "children": []
+        }
+      ]
+    }
+  ],
+  "inputs": [],
+  "outputs": [
+    {
+      "type": "Combination",
+      "attributes": {
+        "Name": "ImageData",
+        "Style": "IMAGE",
+        "AccessMode": "RW",
+        "IsArray": "false",
+        "VisibleInResultTree": "false"
+      },
+      "text": "",
+      "children": [
+        {
+          "type": "Filters",
+          "attributes": {},
+          "text": "",
+          "children": [
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "Image",
+                "ValueType": "image",
+                "IsForce": "true",
+                "IsShow": "true",
+                "AccessMode": "RW",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "Width",
+                "ValueType": "int",
+                "IsForce": "true",
+                "IsShow": "true",
+                "AccessMode": "RW",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "Height",
+                "ValueType": "int",
+                "IsForce": "true",
+                "IsShow": "true",
+                "AccessMode": "RW",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "Filter",
+              "attributes": {
+                "Name": "PixelFormat",
+                "ValueType": "int",
+                "IsForce": "true",
+                "IsShow": "true",
+                "AccessMode": "RW",
+                "IsArray": "false"
+              },
+              "text": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "FrameNum",
+        "ValueType": "int",
+        "IsForce": "true",
+        "IsShow": "true",
+        "AccessMode": "RW",
+        "IsArray": "false",
+        "VisibleInResultTree": "false"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "LostFrameCount",
+        "ValueType": "int",
+        "IsForce": "true",
+        "IsShow": "true",
+        "AccessMode": "RW",
+        "IsArray": "false",
+        "VisibleInResultTree": "false"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "LostPacketCount",
+        "ValueType": "int",
+        "IsForce": "true",
+        "IsShow": "true",
+        "AccessMode": "RW",
+        "IsArray": "false",
+        "VisibleInResultTree": "false"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "Port",
+        "ValueType": "int",
+        "IsForce": "true",
+        "IsShow": "true",
+        "AccessMode": "RW",
+        "IsArray": "false",
+        "VisibleInResultTree": "false"
+      },
+      "text": "",
+      "children": []
+    }
+  ],
+  "bindings": [],
+  "conditions": [],
+  "status": "not-started"
+}

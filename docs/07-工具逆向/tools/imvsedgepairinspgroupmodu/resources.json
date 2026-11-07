@@ -1,0 +1,457 @@
+{
+  "toolId": "imvsedgepairinspgroupmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePairInspGroupModu\\IMVSEdgePairInspGroupModu.xml",
+      "sha256": "f86429aba06b54330d119ce3f8b94270ab2bcca760211ee40a72ca6e8e0c60b0",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePairInspGroupModu\\IMVSEdgePairInspGroupModuAlgorithm.xml",
+      "sha256": "8c46de44f85964f0c43ff3db91b7d599e0b34d75e8762f99332a9d2cd22d2675",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePairInspGroupModu\\IMVSEdgePairInspGroupModuAlgorithmTab.xml",
+      "sha256": "0011105236e6248d18c23def691d3951499a709110ac1dca5242109ecde76802",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePairInspGroupModu\\IMVSEdgePairInspGroupModuCs.xml",
+      "sha256": "8b84f3f1e2d479efe62f39a3013c36e9e83319e31ec2d6edc46d85c4388af5ed",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePairInspGroupModu\\IMVSEdgePairInspGroupModuDisplay.xml",
+      "sha256": "863729973a517d9935c4f1904af9a993aa49e101ac06413844c937297fc0cc02",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePairInspGroupModu\\ToolItemInfo.xml",
+      "sha256": "f05a210a4002e38651bd91de553161c73364db3fd50f78abafef7a9c7a6813b3",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Boolean",
+      "name": "MidPointEnable"
+    },
+    {
+      "type": "AddList_EdgeInspGroup",
+      "name": "InspGoupList"
+    },
+    {
+      "type": "Boolean",
+      "name": "StandardInput"
+    },
+    {
+      "type": "RadioSelecter3",
+      "name": "InputWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "LINE"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointY"
+    },
+    {
+      "type": "RadioSelecter3",
+      "name": "InputWay2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "LINE2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPoint2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPoint2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointX2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointY2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointX2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointY2"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FindMode"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Edge0Polarity"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Edge1Polarity"
+    },
+    {
+      "type": "Integer",
+      "name": "HalfKernelSize"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeStrength"
+    },
+    {
+      "type": "Integer",
+      "name": "IdeaWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "CaliperHeight"
+    },
+    {
+      "type": "Integer",
+      "name": "CaliperWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "CaliperDistTraj"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RoughDis"
+    },
+    {
+      "type": "Boolean",
+      "name": "SizeEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "RoughMinSize"
+    },
+    {
+      "type": "Boolean",
+      "name": "AreaEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "RoughMinArea"
+    },
+    {
+      "type": "Expand",
+      "name": "FitParamExpand"
+    },
+    {
+      "type": "Integer",
+      "name": "LineCaliperNum"
+    },
+    {
+      "type": "Integer",
+      "name": "FitRejectNum"
+    },
+    {
+      "type": "Integer",
+      "name": "FitRejectDist"
+    },
+    {
+      "type": "Integer",
+      "name": "AngleTol"
+    },
+    {
+      "type": "Integer",
+      "name": "TrackDistTol"
+    },
+    {
+      "type": "Combination",
+      "name": "InputLine1"
+    },
+    {
+      "type": "Combination",
+      "name": "InputLine2"
+    },
+    {
+      "type": "Combination",
+      "name": "InputROI"
+    },
+    {
+      "type": "Boolean",
+      "name": "StandardInput"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "InputWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Circle1"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "CenterPointX1"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "CenterPointY1"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "InnerRadius1"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "OuterRadius1"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartAngle1"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "AngleExtend1"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "InputWay2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Circle2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "CenterPointX2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "CenterPointY2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "InnerRadius2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "OuterRadius2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartAngle2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "AngleExtend2"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FindMode"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Edge0Polarity"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Edge1Polarity"
+    },
+    {
+      "type": "Integer",
+      "name": "HalfKernelSize"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeStrength"
+    },
+    {
+      "type": "Integer",
+      "name": "IdeaWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "CaliperHeight"
+    },
+    {
+      "type": "Integer",
+      "name": "CaliperWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "CaliperDistTraj"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RoughDis"
+    },
+    {
+      "type": "Boolean",
+      "name": "SizeEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "RoughMinSize"
+    },
+    {
+      "type": "Boolean",
+      "name": "AreaEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "RoughMinArea"
+    },
+    {
+      "type": "Expand",
+      "name": "FitParamExpand2"
+    },
+    {
+      "type": "Integer",
+      "name": "FitCaliperNum"
+    },
+    {
+      "type": "Integer",
+      "name": "FitRejectNum"
+    },
+    {
+      "type": "Integer",
+      "name": "FitRejectDist"
+    },
+    {
+      "type": "Integer",
+      "name": "FitConcentricTol"
+    },
+    {
+      "type": "Integer",
+      "name": "TrackDistTol"
+    },
+    {
+      "type": "Combination",
+      "name": "InputAnnulus1"
+    },
+    {
+      "type": "Combination",
+      "name": "InputAnnulus2"
+    },
+    {
+      "type": "Combination",
+      "name": "InputROIAnnulus"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FlawResult"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Edge0Point"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Edge1Point"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "StandardCircle"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "EdgeLocation"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "AssistGroup",
+    "RoiSelectGroup",
+    "InheritWayGroup",
+    "RoiSelectGroup3",
+    "InheritWayGroup3",
+    "TextDisplayGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

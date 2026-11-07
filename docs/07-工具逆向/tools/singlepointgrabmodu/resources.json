@@ -1,0 +1,140 @@
+{
+  "toolId": "singlepointgrabmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointGrabModu\\SinglePointGrabModu.xml",
+      "sha256": "4e35042aeaf574dc0f3cf491ad66f77749bff1877a435a68685776022776024b",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointGrabModu\\SinglePointGrabModuAlgorithm.xml",
+      "sha256": "9f9881edd1473b0289e6bc841b6137d864e912d2cd74f022e6714ab5ff5f32c5",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointGrabModu\\SinglePointGrabModuAlgorithmTab.xml",
+      "sha256": "1dae15e7c38d493c1b4b699bea4412ff2b570700aefd9789d83372e2e924331a",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointGrabModu\\SinglePointGrabModuCs.xml",
+      "sha256": "ba1bd06e09f1dfdc5fc42b7d32226264e6e438ca803e5684e4f8dbc82e9f611a",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointGrabModu\\SinglePointGrabModuDisplay.xml",
+      "sha256": "bde6b5f5d1b2d7a189b24eed98ff86d5f804ed820bb9248b0cbef48268cacace",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointGrabModu\\ToolItemInfo.xml",
+      "sha256": "28a84f738e4bd4388ccc529fae1744885e7d77c1308c9a467b4996dd38458f95",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "Command",
+      "name": "BasicInit"
+    },
+    {
+      "type": "Enumeration",
+      "name": "CalibType"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "InputMode"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ImagePoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ImagePointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ImagePointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ImagePointA"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TeachPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TeachPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TeachPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TeachPointA"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TeachSnapPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TeachSnapPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TeachSnapPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TeachSnapPointA"
+    },
+    {
+      "type": "Boolean",
+      "name": "SnapPointRotateEnable"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "SnapPointDeltaAngle"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "CalibLoadType"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "CalibMatrix"
+    },
+    {
+      "type": "OpenFileForCalibDialog",
+      "name": "FilePath"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RefreshSignal"
+    }
+  ],
+  "sharedUiGroups": [
+    "TextDisplayGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

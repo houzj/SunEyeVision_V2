@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GlobalVariableModule · 参数面板</title>
+<!-- suneye:tool-ui-v2 algorithm-tab tool=globalvariablemodule plugin=GlobalVariableModule -->
+<style>:root{
+  --label:#666666;--title:#3D3D3D;--divider:#E0DFDE;--panel:#F2F3F5;--theme:#E76900;
+  --combo-bd:#CCC7C6;--combo-bg:#FFFFFF;--bd:#CCC7C6;--muted:#9AA0A6;
+  --row:32px;--labelw:90px;--fs:14px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#DEE1E6;color:#333;font:14px/1.4 "Microsoft YaHei","Segoe UI",sans-serif}
+.page{max-width:1000px;margin:0 auto;padding:18px 16px 40px}
+.cap{font-size:12px;color:#5B6472;margin:0 0 10px}
+.cap a{color:#2563eb;text-decoration:none}
+.cap code{background:#EEF0F3;border:1px solid #E1E4E9;border-radius:3px;padding:0 4px;font-size:11px}
+.cap .sp{color:#98A0AA}
+
+.win{width:420px;background:#fff;border:1px solid #B9BEC5;border-radius:3px;box-shadow:0 8px 26px rgba(0,0,0,.18);overflow:hidden}
+.win .tb{height:30px;background:#3D3D3D;display:flex;align-items:center;gap:7px;padding:0 8px}
+.win .tb i{font-style:normal;color:#FF8C1A;font-weight:700;font-size:13px}
+.win .tb b{color:#fff;font-size:13px;font-weight:700}
+.win .tb .q{width:14px;height:14px;border-radius:50%;border:1px solid #FF8C1A;color:#FF8C1A;font-size:10px;line-height:12px;text-align:center}
+.win .tb .x{margin-left:auto;color:#D5D8DD;font-size:13px;line-height:1}
+
+.tabs{display:flex;height:28px;background:#fff;border-bottom:1px solid var(--divider);padding-left:6px;overflow:hidden}
+.tabs .tab{position:relative;display:flex;align-items:center;padding:0 14px;font-size:14px;color:#666;cursor:pointer;white-space:nowrap}
+.tabs .tab.on{color:#1F2733;font-weight:700}
+.tabs .tab.on:after{content:"";position:absolute;left:6px;right:6px;bottom:0;height:2px;background:var(--theme)}
+
+.pane{display:none;background:var(--panel);padding:2px 8px 8px;overflow:auto}
+.pane.on{display:block}
+
+.cat{margin:0 0 5px}
+.cat .ln{height:1px;background:var(--divider);margin-right:18px}
+.cat h3{margin:20px 0 0;font-size:var(--fs);font-weight:700;color:var(--title);line-height:20px}
+.cat.nohd .ln{display:none}
+.cat.nohd h3{display:none}
+
+.row{display:flex;align-items:center;min-height:var(--row)}
+.row>.lb{flex:0 0 var(--labelw);width:var(--labelw);font-size:var(--fs);color:var(--label);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:2px}
+.row>.lb.raw{border-bottom:1px dotted #E5484D}
+.row>.ct{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:0}
+.row.hid{display:none}
+body.showhid .row.hid{display:flex;opacity:.55}
+.row.dis>.lb{color:#B4B8BF}
+.ct.full{margin-left:2px}
+
+/* Boolean：原件 swith_on/off.png */
+.sw{width:32px;height:16px}
+/* BooleanCheck：原件 check2-box_on/off.png 置于左列 30px */
+.row.chkrow>.lb{flex:0 0 auto;width:auto;padding-left:2px}
+.row.chkrow>.ct{flex:0 0 30px;width:30px;justify-content:flex-start}
+
+/* RadioSelecter：24px check-box_off/on.png + 3px 间距 + 文字 */
+.radio{display:flex;align-items:center;height:var(--row);margin-right:2px;color:var(--label);font-size:var(--fs);white-space:nowrap}
+.radio img{margin-right:3px}
+
+/* 数值：NumericControl */
+.num{display:flex;align-items:center;flex:1 1 auto;min-width:0;height:28px;border:1px solid var(--bd);border-radius:2px;background:#fff}
+.num .v{flex:1 1 auto;min-width:0;border:0;background:transparent;font:var(--fs) "Microsoft YaHei";color:var(--label);padding:0 4px 0 7px;height:26px;outline:none}
+.num .sp{flex:0 0 20px;width:20px;height:26px;border-left:1px solid #E9E9E9;display:flex;flex-direction:column}
+.num .sp span{flex:1;display:flex;align-items:center;justify-content:center}
+.num .sp b{width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;display:block}
+.num .sp .up b{border-bottom:5px solid #5A5A5A}
+.num .sp .dn b{border-top:5px solid #5A5A5A}
+
+/* 关联（ButtonSelecter_sub 右列 32px） */
+.link{flex:0 0 32px;width:32px;height:32px;margin-left:2px;border:1px solid var(--bd);border-radius:2px;background:#FBFBFC;display:flex;align-items:center;justify-content:center;padding:0}
+
+/* ComboBox */
+.combo{display:flex;align-items:center;flex:1 1 auto;min-width:0;height:30px;border:1px solid var(--combo-bd);border-radius:2px;background:var(--combo-bg);position:relative}
+.combo .v{flex:1 1 auto;min-width:0;padding:0 22px 0 6px;font-size:var(--fs);color:var(--label);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.combo img{position:absolute;right:2px;bottom:1px}
+
+/* 文本 */
+.txt{display:flex;align-items:center;flex:1 1 auto;min-width:0;height:28px;border:1px solid var(--bd);border-radius:2px;background:#fff}
+.txt .v{flex:1;border:0;background:transparent;font:var(--fs) "Microsoft YaHei";color:var(--label);padding:0 6px;height:26px;outline:none;min-width:0}
+
+/* 颜色弹层按钮 (ImageViewConfig 第二列) */
+.colorbtn{flex:0 0 24px;width:24px;height:24px;border:1px solid var(--bd);border-radius:2px;background:linear-gradient(135deg,#ff7900 0 33%,#3b82f6 33% 66%,#22c55e 66% 100%)}
+
+/* ROI 形状按钮：按钮 36x34；间距按原件面板截图实测约 6px（样式文件里的 27px 是 ROI 工具栏变体） */
+.roiwrap{display:flex;flex-wrap:nowrap;align-items:center;gap:0;overflow:hidden}
+.roibtn{flex:0 0 36px;width:36px;height:34px;margin-right:6px;border:0;background:transparent;padding:0;display:flex;align-items:center;justify-content:center}
+.roibtn.on{background:#fff3e6;outline:1px solid var(--theme)}
+.roimax{font-size:12px;color:var(--muted)}
+
+/* 高级参数 / ROI参数 折叠按钮：ExpandButtonStyle 高 22 */
+.expander{display:flex;justify-content:flex-end;padding-right:40px;height:30px;align-items:center}
+.expander button{display:flex;align-items:center;gap:0;height:22px;border:1px solid transparent;border-radius:1px;background:transparent;font:12px "Microsoft YaHei";color:#808080;padding:0 6px 0 6px}
+
+/* HeadBar：30 高列头 */
+.headbar{display:flex;align-items:center;height:30px;padding-left:12px;font-size:var(--fs);font-weight:700;color:#666}
+
+/* PointPair 三行网格 */
+.pp{margin:2px 0}
+.pp .h{display:flex;align-items:center;gap:4px;height:32px;padding-left:18px;font-size:var(--fs);color:#666}
+.pp .grid{display:grid;grid-template-columns:140px 18px 140px;align-items:center;row-gap:5px}
+.pp .grid .lbx{font-size:14px;color:#666;text-align:right}
+.pp .grid .sep{height:1px;background:#CECCCB;margin:0 3px}
+
+/* ---------------------------------------------------------------------------
+   工具自带复合控件：尺寸/列宽/底色取自原件 ModuleControls/*Panel.xaml
+   （原有 9 种在 XML 里只有一行声明，界面在工具自己的控件程序集里）
+   --------------------------------------------------------------------------- */
+.cmp{width:100%;margin:2px 0 6px;border:1px solid var(--divider);border-radius:2px;background:#fff;overflow:hidden}
+.cmp>.src{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#F7F8FA;border-bottom:1px solid var(--divider);padding:4px 8px;font-size:11px;color:#5B6472}
+.cmp>.src code{background:#EEF0F3;border:1px solid #E1E4E9;border-radius:3px;padding:0 4px;font-size:11px}
+.cmp>.src .nt{color:#98A0AA}
+.cmp .ft{display:flex;align-items:center;gap:6px;padding:6px 8px}
+.cmp .ft .ib{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px}
+.cmp .sep{flex:0 0 12px;text-align:center;color:#808080}
+.cmp .hint{padding:12px;font-size:12px;color:#98A0AA;line-height:1.7}
+
+/* ThresholdAreaList：表头 1.2* / 1.5* / 4.8* / 1.6*，行高 32，末列删除 */
+.cth{padding:2px 8px 4px}
+.cth .cr{display:grid;grid-template-columns:1.2fr 1.5fr 4.8fr 1.6fr 28px;align-items:center;min-height:34px;column-gap:6px}
+.cth .cr.hd{min-height:30px;font-size:14px;color:#666}
+.cth .cr>.c0{font-size:14px;color:#666}
+.cth .cr>.c1,.cth .cr>.c2{display:flex;align-items:center;min-width:0}
+.cth .cr>.c3{display:flex;align-items:center;justify-content:center}
+
+/* ImageSourceList：固定高 133 的滚动区，行 = 90px 标签 + 下拉（原件 Margin 0,0,-12,0） */
+.cimg{height:133px;overflow:auto;padding:4px 8px}
+.cimg .rowline{display:flex;align-items:center;height:32px}
+.cimg .rowline .lbx{flex:0 0 90px;width:90px;font-size:14px;color:#666}
+.cimg .rowline .combo{flex:1 1 auto;margin-right:-12px}
+
+/* PixelModuRangeConfigList：灰底 #f2f3f5，标题 32 高，列表 MaxHeight 233，底部 add/delete */
+.crg{background:#f2f3f5;padding:10px}
+.crg .ttl{height:32px;line-height:32px;padding-left:5px;font-size:14px;font-weight:700;color:#3D3D3D}
+.crg .lst{max-height:233px;overflow:auto;background:#fff;border:1px solid var(--divider);border-radius:2px;min-height:64px}
+.crg .ft{padding:4px 0 0}
+
+/* TimeConfig：80px 名称 + 两个 200x32 下拉 + 50px 删除，底部新增 */
+.ctm{padding:4px 8px}
+.ctm .r{display:grid;grid-template-columns:80px 1fr 50px;align-items:center;min-height:72px;column-gap:4px}
+.ctm .r .nm{font-size:14px;color:#4C4C4C}
+.ctm .r .sel{display:flex;flex-direction:column;gap:4px;align-items:center}
+.ctm .r .sel .combo{width:200px;height:32px}
+.ctm .r .del{display:flex;align-items:center;justify-content:center}
+
+/* 模型类面板（PathDrawingGuide / Panel_EdgepatMatch / Panel_EdgePairpatMatch）：工具条 + 1px 边框示意区 */
+.cmd .tb{display:flex;align-items:center;gap:6px;min-height:44px}
+.cmd .tb .btn{display:inline-flex;align-items:center;gap:4px;height:34px;padding:0 10px;border:1px solid var(--bd);border-radius:2px;background:#fff;font-size:14px;color:#666}
+.cmd .tb .btn.r{margin-left:auto;height:26px;font-size:13px}
+.cmd .tb .ic{display:inline-flex;align-items:center;gap:2px}
+.cmd .cv{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:120px;background:#FCFCFC;border:1px solid #E0DFDE;border-radius:1px;font-size:12px;color:#98A0AA}
+
+/* ReadFileConfigData：单 ListBox，行形态按 DisplayType 动态选模板 */
+.cfl{padding:6px 8px}
+.cfl .lst{background:#fff;border:1px solid var(--divider);border-radius:2px;min-height:72px}
+
+/* 文本型提示 */
+.note-line{margin:6px 0;color:#999;font-size:13px}
+.unknown{margin:2px 0;padding:2px 6px;border-left:3px solid #E5484D;background:#FDF0F0;color:#8A1F1F;font-size:12px}
+.emptyctl{margin:2px 0;padding:2px 6px;border-left:3px solid #B4B8BF;background:#EDEFF2;color:#5B6472;font-size:12px}
+/* 我方主动不采用的原件控件（厂商专属） */
+.notadopted{margin:2px 0;padding:2px 6px;border-left:3px solid #93C5FD;background:#EFF6FF;color:#1E3A8A;font-size:12px;line-height:1.6}
+.notadopted b{color:#1D4ED8}
+.notadopted .rp{color:#3B82F6}
+
+/* 底部命令条 */
+.foot{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:5px 8px;background:#F2F3F5;border-top:1px solid var(--divider)}
+.foot .l,.foot .r{display:flex;gap:5px}
+.foot button{height:26px;min-width:64px;padding:0 12px;border:1px solid #CCC7C6;border-radius:2px;background:#fff;font:13px "Microsoft YaHei";color:#666}
+.foot .r button:last-child{border-color:var(--theme);color:var(--theme)}
+.nofoot{font-size:12px;color:var(--muted);padding:4px 10px;background:#F2F3F5;border-top:1px solid var(--divider)}
+
+/* 图例与说明 */
+.meta{font-size:12px;color:#5B6472;margin:10px 0 0}
+.meta b{color:#333}
+/* 与原件形态不同的自研设计（相机等品类） */
+.diff{margin:0 0 10px;max-width:820px;border-left:3px solid #2563EB;background:#EFF6FF;color:#1E3A8A;font-size:12px;padding:9px 12px;border-radius:0 4px 4px 0;line-height:1.75}
+.diff b{color:#1E40AF}
+.diff ul{margin:6px 0 0;padding-left:18px}
+.diff li{margin:2px 0}
+details{margin-top:10px;background:#fff;border:1px solid #D6DAE0;border-radius:4px;padding:8px 12px}
+details summary{cursor:pointer;font-size:13px;color:#374151;font-weight:600}
+details ul{margin:8px 0 0;padding-left:18px}
+details li{font-size:12px;color:#4B5563;line-height:1.8}
+details code{background:#F1F3F5;border:1px solid #E3E6EA;border-radius:3px;padding:0 3px;font-size:11px}
+.iconmiss{display:inline-block;width:16px;height:16px;line-height:16px;text-align:center;border:1px dashed #E5484D;color:#E5484D;font-size:11px}</style></head><body>
+<div class="page">
+<div class="cap"><a href="index.html">工具参数面板 · 索引</a> <span class="sp">/</span> 卡片 <a href="../../07-工具逆向/tools/globalvariablemodule/evidence.html"><code>globalvariablemodule</code></a> <span class="sp">/</span> 分类 Global
+</div>
+<div class="meta">窗口 <b>420x560</b> · 页签 <b>0</b> · 分类 <b>0</b> · 参数行 <b>0</b> · 初始隐藏 <b>0</b> · 共用组 <b>0</b> · 无中文 <b>0</b> · 未还原类型 <b>0</b> <label style="margin-left:12px;cursor:pointer"><input type="checkbox" id="showhid"> 显示初始隐藏项</label></div>
+<div class="win" style="margin-top:10px;width:420px">
+<div class="tb"><i>1</i><b>GlobalVariableModule</b><span class="q">?</span><span class="x">&#10005;</span></div>
+<div class="tabs">
+</div>
+<div class="nofoot">原件未声明底部命令按钮</div>
+</div>
+<details><summary>这页按哪些原件材料还原（点开看）</summary><ul>
+<li>结构：<code>GlobalVariableModuleAlgorithmTab.xml</code> 的 <code>Tabs/Tab/Categorys/Category/Items</code>，顺序与原件一致。</li>
+<li>行容器：<code>LeftRightControl.xaml</code>，左列 <code>ChildLeftWidth=90</code>（<code>LeftWidthConverter</code> 中文值），行高 32，标签 14px <code>#666666</code>。</li>
+<li>控件：<code>styles/ParamUserControlDataTemplate.xaml</code> 的类型分发表 + <code>Apps.Style</code> 各 Style（单选 24px、下拉 30px、折叠 22px、ROI 36x34、眼睛 32x32）。</li>
+<li>图标：<code>Apps.XmlUI/resources</code>、<code>Apps.Style/resources</code> 原件 PNG，逐张复制到 <code>ui/assets/icons/</code>。</li>
+<li>主题色：<code>Apps.ColorFun/colorstyle1.xaml</code>（主题色 <code>#E76900</code>、面板底 <code>#F2F3F5</code>、分隔线 <code>#E0DFDE</code>）。</li>
+<li>共用组：<code>Group.xml</code> 的 <code>GroupInfoItem</code> 就地展开。</li>
+<li>中文：<code>Lang/zh-cn.xaml</code> 等三份语言字典；查不到的中文按原件英文键显示，标签带红色虚线下划线。</li>
+</ul></details>
+<details><summary>没有还原的部分（不要当成原件等价物）</summary><ul>
+<li>弹层内容（下拉候选、颜色选择、滑杆展开态、订阅树）未还原，只画收起态。</li>
+<li>显隐只按当前取值的 Triggers 求初始状态，运行期由代码改的显隐不在此列。</li>
+<li>像素级误差仍在：字体渲染、控件内边距、部分样式的 hover/按下态未逐项对齐。</li>
+<li>不执行算法，不含运行结果与 ROI 交互。</li>
+</ul></details>
+</div>
+<script>(function(){
+  var tabs=document.querySelectorAll('.tab');
+  Array.prototype.forEach.call(tabs,function(t){
+    t.onclick=function(){
+      var idx=t.getAttribute('data-tab');
+      Array.prototype.forEach.call(document.querySelectorAll('.tab'),function(x){x.classList.remove('on');});
+      Array.prototype.forEach.call(document.querySelectorAll('.pane'),function(p){p.classList.toggle('on',p.getAttribute('data-tab')===idx);});
+      t.classList.add('on');
+    };
+  });
+  var cb=document.getElementById('showhid');
+  if(cb){cb.onchange=function(){document.body.classList.toggle('showhid',cb.checked);};}
+})();</script>
+</body></html>

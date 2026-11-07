@@ -1,0 +1,24 @@
+{
+  "stableToolId": "imvsmarkinspmodu",
+  "originalPlugin": "IMVSMarkInspModu",
+  "displayName": "IMVSMarkInspModu",
+  "originalCategory": "DefectDetection",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSMarkInspModu",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "status": "inventory-only",
+  "evidenceState": "unknown",
+  "resourceCount": 5,
+  "parameterCount": 50,
+  "inputCount": 3,
+  "outputCount": 11,
+  "uiControlCount": 66,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ]
+}

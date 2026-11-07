@@ -1,0 +1,76 @@
+{
+  "controls": [
+    {
+      "type": "ButtonSelecter",
+      "name": "Region"
+    },
+    {
+      "type": "Integer",
+      "name": "ArrayRowsNum"
+    },
+    {
+      "type": "Integer",
+      "name": "ArrayColsNum"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixResult"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "MinRowResult"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvs2darraycorrectmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVS2dArrayCorrectModu\\IMVS2dArrayCorrectModu.xml",
+      "sha256": "3b15a9fc94a360b24acaab28b7ea2eeb0da83d396d88ae420cc612fb7aabc3ad",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVS2dArrayCorrectModu\\IMVS2dArrayCorrectModuAlgorithm.xml",
+      "sha256": "f4a07e6166f954c1e6b2025835652949f60b7a526c2b86b98b0c48e4078690ee",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVS2dArrayCorrectModu\\IMVS2dArrayCorrectModuAlgorithmTab.xml",
+      "sha256": "561561cad257a126a2e5d17e9301e6daeb6093bde22e3d2cc065c3de690a2e15",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVS2dArrayCorrectModu\\IMVS2dArrayCorrectModuCs.xml",
+      "sha256": "2e6fdce2b398e1e598f4e6c6954aa2eace62282258a0c3fc24ee7d43087740a8",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVS2dArrayCorrectModu\\IMVS2dArrayCorrectModuDisplay.xml",
+      "sha256": "b7921312ca85c72d07437d35be5fbdd29a073305f37984f860958262eef3749b",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVS2dArrayCorrectModu\\ToolItemInfo.xml",
+      "sha256": "52e98533e869888f38b0aa6889e959bdd44ad8d7ff7808f9c8587f349ec82d36",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "二维阵列",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

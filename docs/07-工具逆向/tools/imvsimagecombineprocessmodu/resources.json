@@ -1,0 +1,240 @@
+{
+  "toolId": "imvsimagecombineprocessmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageCombineProcessModu\\IMVSImageCombineProcessModu.xml",
+      "sha256": "7731bdc7519a5a80faf502da5751b87c82ce399b4b8e7818be45caf283ac8bfe",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageCombineProcessModu\\IMVSImageCombineProcessModuAlgorithm.xml",
+      "sha256": "ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageCombineProcessModu\\IMVSImageCombineProcessModuAlgorithmTab.xml",
+      "sha256": "8e6b817aae672929505a05ba951c5ab8e9c641c1cd436c9d3a93a25674421d21",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageCombineProcessModu\\IMVSImageCombineProcessModuDisplay.xml",
+      "sha256": "efcee37e71aaaf73414bbf7b696d8aef89e4c64547729827646c5ce38d5be837",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageCombineProcessModu\\ToolItemInfo.xml",
+      "sha256": "77dd61e906adb5326eb09bc5e79e689f0bda96449d57a085f657a95ea48962db",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params",
+      "IsGenerate": "False"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "OutputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "ImageCombineProcessData",
+      "name": null
+    },
+    {
+      "type": "Enumeration",
+      "name": "BinaryType"
+    },
+    {
+      "type": "Integer",
+      "name": "LowThreshold"
+    },
+    {
+      "type": "Integer",
+      "name": "HighThreshold"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelHeight"
+    },
+    {
+      "type": "Integer",
+      "name": "GaussKernelSize"
+    },
+    {
+      "type": "Float",
+      "name": "GaussSigma"
+    },
+    {
+      "type": "Enumeration",
+      "name": "CompareType"
+    },
+    {
+      "type": "Integer",
+      "name": "ThresholdOffset"
+    },
+    {
+      "type": "Enumeration",
+      "name": "MorphType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "MorphShape"
+    },
+    {
+      "type": "Integer",
+      "name": "MorphIterNum"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelHeight"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FilterType"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelHeight"
+    },
+    {
+      "type": "Integer",
+      "name": "GaussKernelSize"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "EdegThreshold"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EnhanceType"
+    },
+    {
+      "type": "Integer",
+      "name": "SharpenStrength"
+    },
+    {
+      "type": "Integer",
+      "name": "SharpenKernelSize"
+    },
+    {
+      "type": "Integer",
+      "name": "ContrastFactor"
+    },
+    {
+      "type": "Float",
+      "name": "GammaVal"
+    },
+    {
+      "type": "Integer",
+      "name": "BrightGain"
+    },
+    {
+      "type": "Integer",
+      "name": "BrightOffset"
+    },
+    {
+      "type": "Integer",
+      "name": "Ratio"
+    },
+    {
+      "type": "Integer",
+      "name": "Gain"
+    },
+    {
+      "type": "Integer",
+      "name": "Offset"
+    },
+    {
+      "type": "Integer",
+      "name": "Noise"
+    },
+    {
+      "type": "Expand",
+      "name": null
+    },
+    {
+      "type": "Enumeration",
+      "name": "Direction"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZoneAnnular"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "OutputMaskImageGroup",
+    "InputMaskImageGroup",
+    "RoiSelectGroup",
+    "InheritWayGroup2",
+    "ExternROITypeGroup",
+    "AssistGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

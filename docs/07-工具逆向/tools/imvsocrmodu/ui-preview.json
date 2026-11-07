@@ -1,0 +1,212 @@
+{
+  "controls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "OpenDialogF",
+      "name": "FontTrain"
+    },
+    {
+      "type": "OpenDialogF",
+      "name": "FontFilter"
+    },
+    {
+      "type": "Boolean",
+      "name": "FontFilterEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "FontFilterNum"
+    },
+    {
+      "type": "String",
+      "name": "FontFilterInfo"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Polarity"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangCharWidth"
+    },
+    {
+      "type": "Enumeration",
+      "name": "WidthType"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangCharHeight"
+    },
+    {
+      "type": "Integer",
+      "name": "BinaryCoef"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangCharArea"
+    },
+    {
+      "type": "Integer",
+      "name": "AcceptThreshold"
+    },
+    {
+      "type": "Integer",
+      "name": "MainLineDistThresh"
+    },
+    {
+      "type": "Enumeration",
+      "name": "IgnoreBorderFragmentEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "OrientHalfRange"
+    },
+    {
+      "type": "Integer",
+      "name": "SlantHalfRange"
+    },
+    {
+      "type": "Integer",
+      "name": "MinInterCharGap"
+    },
+    {
+      "type": "Integer",
+      "name": "MinInterTextGap"
+    },
+    {
+      "type": "Integer",
+      "name": "MaxLengthWidthRatio"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ClassMethod"
+    },
+    {
+      "type": "Enumeration",
+      "name": "StrokeFilterEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangStrokeWidth"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SimilarFun"
+    },
+    {
+      "type": "Boolean",
+      "name": "NumLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangeNumLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "VerifyEnable"
+    },
+    {
+      "type": "Boolean",
+      "name": "NumVerifyEnable"
+    },
+    {
+      "type": "Boolean",
+      "name": "SmallAlphabetVerify"
+    },
+    {
+      "type": "Boolean",
+      "name": "BigAlphabetVerify"
+    },
+    {
+      "type": "Boolean",
+      "name": "SpecialCharVerify"
+    },
+    {
+      "type": "Boolean",
+      "name": "UserStringVerify"
+    },
+    {
+      "type": "String",
+      "name": "UserString"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlobShow"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "extension-panels",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P3",
+  "themeStates": "unknown",
+  "toolId": "imvsocrmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Recognition\\IMVSOcrModu\\IMVSOcrModu.xml",
+      "sha256": "c23ebaaf76578d6e8c16dfb72288a5269c7c5a500d846ed53844b9c6c87033e0",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Recognition\\IMVSOcrModu\\IMVSOcrModuAlgorithm.xml",
+      "sha256": "307336de19409029c5b5b16c8be67a31b02e715eb4415ef3564178cb7e177e90",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Recognition\\IMVSOcrModu\\IMVSOcrModuAlgorithmTab.xml",
+      "sha256": "58282407c02bf4dd09d4b7b1c7ea3b81bc2082f80ee3ba39a827edbb961df6f7",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Recognition\\IMVSOcrModu\\IMVSOcrModuCs.xml",
+      "sha256": "85c60669c8cdd8312e86230e981da689403dea7ed571a147ece876ffdf74474e",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Recognition\\IMVSOcrModu\\IMVSOcrModuDisplay.xml",
+      "sha256": "1cfb5451979d552370e5856aac3c1963f62864b2e1a2aa2f9ea1ad9140d5dae5",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Recognition\\IMVSOcrModu\\ToolItemInfo.xml",
+      "sha256": "0a8c4b32bcfdd942b0503cbc69ca3cf1b6fc7268913918d22cdd6be4f45131a6",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "字符识别",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

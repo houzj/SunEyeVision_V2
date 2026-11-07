@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>TranslationCalibModuControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="datatemplate\paramusercontroldatatemplate.xaml" />
+    <Page Remove="TranslationCalibModuControl\NPointList.xaml" />
+    <Page Include="datatemplate\paramusercontroldatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="datatemplate/paramusercontroldatatemplate.xaml" />
+    <Page Include="TranslationCalibModuControl\NPointList.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="npointlist.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Apps.XmlParser" />
+    <Reference Include="VM.Xml" />
+    <Reference Include="Apps.Interface" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="VMControls.Interface" />
+    <Reference Include="VM.Utility" />
+    <Reference Include="VM.PcUI" />
+    <Reference Include="VM.Controls" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="Apps.Log" />
+  </ItemGroup>
+</Project>

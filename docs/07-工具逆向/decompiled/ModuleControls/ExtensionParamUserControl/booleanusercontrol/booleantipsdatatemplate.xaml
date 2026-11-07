@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:localcontrol="clr-namespace:Apps.XmlUI.ParamTabControl;assembly=Apps.XmlUI" xmlns:localParamTab="clr-namespace:Apps.XmlUI.ParamTab;assembly=Apps.XmlUI" xmlns:extensionControl="clr-namespace:Apps.XmlParser.ParamTab" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/Apps.Style;component/ComboBoxStyle/ListViewComboBoxStyle.xaml" />
+    <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/BottomButtonStyle.xaml" />
+    <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/NormalButtonStyle.xaml" />
+    <ResourceDictionary Source="/Apps.Style;component/ScrollBarStyle/RecScrollBarStyle.xaml" />
+    <ResourceDictionary Source="/Apps.Style;component/RadioButtonStyle/RadioButtonStyle.xaml" />
+    <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/ToggleButtonStyle.xaml" />
+    <ResourceDictionary Source="/Apps.Style;component/TextBlockStyle/TextBlockStyle.xaml" />
+    <ResourceDictionary Source="/Apps.Style;component/TextBoxStyle/TextBoxStyle.xaml" />
+    <ResourceDictionary Source="/Apps.PcUI;component/Styles/PcUIStyle.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+  <DataTemplate x:Key="BooleanTips" DataType="{x:Type extensionControl:BooleanTips}">
+    <localParamTab:LeftRightControl FrameworkElement.Height="32" FrameworkElement.Margin="{Binding MarginA}">
+      <localParamTab:LeftRightControl.RightContent>
+        <ContentControl Content="{Binding}">
+          <ContentControl.ContentTemplate>
+            <DataTemplate>
+              <StackPanel Orientation="Horizontal">
+                <localcontrol:BooleanControl FrameworkElement.HorizontalAlignment="Left" ToggleButton.IsChecked="{Binding CurValueA, Mode=TwoWay}">
+                  <localcontrol:BooleanControl.OffContent>
+                    <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/swith_off.png" />
+                  </localcontrol:BooleanControl.OffContent>
+                  <localcontrol:BooleanControl.OnContent>
+                    <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/swith_on.png" />
+                  </localcontrol:BooleanControl.OnContent>
+                  <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="OnCheckedChange">
+                      <i:InvokeCommandAction Command="{Binding ValueChangedCommand}" />
+                    </i:EventTrigger>
+                  </i:Interaction.Triggers>
+                </localcontrol:BooleanControl>
+                <TextBlock Margin="5,0,0,0" Foreground="{DynamicResource Col_Theme}" TextTrimming="CharacterEllipsis" FontSize="12" MaxWidth="150" VerticalAlignment="Center" Text="{Lang:ResourceBinding MessageTips, Mode=TwoWay}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Mode=Self}}" />
+              </StackPanel>
+            </DataTemplate>
+          </ContentControl.ContentTemplate>
+        </ContentControl>
+      </localParamTab:LeftRightControl.RightContent>
+    </localParamTab:LeftRightControl>
+  </DataTemplate>
+</ResourceDictionary>

@@ -1,0 +1,156 @@
+{
+  "toolId": "imvsp2pmeasuremodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2PMeasureModu\\IMVSP2PMeasureModu.xml",
+      "sha256": "014f7e34a9184d3f6782c1ed2310eff022621a7372a3a51a3f4a7168a89cc3cd",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2PMeasureModu\\IMVSP2PMeasureModuAlgorithm.xml",
+      "sha256": "020a33bf9d63ea99ce33155fff6542a4f62adf29e14e0f1ca05a6ca3f1eaad89",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2PMeasureModu\\IMVSP2PMeasureModuAlgorithmTab.xml",
+      "sha256": "061456dcf089c1f85f4ea205c3bdad5ee72210dc12840771d4c720e6c6a6fe0d",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2PMeasureModu\\IMVSP2PMeasureModuCs.xml",
+      "sha256": "ff1a07811111649e0079e34ad48c6b1514dbea2b57422166981bc9c0556bc643",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2PMeasureModu\\IMVSP2PMeasureModuDisplay.xml",
+      "sha256": "0d21eb38c2eb7448f05a69b96b192e24475ba6d77d9a2db3931babeeec4f377a",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2PMeasureModu\\ToolItemInfo.xml",
+      "sha256": "8d74b458744b9d22f87c1bcde80492e77fcc64f6c9f747ffed61439fd551af40",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "RadioSelecter",
+      "name": "InputWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "OriginPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "OriginPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "OriginPointY"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "InputWay1"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointY"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ChooseCoordinate"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "OriginPoint"
+    },
+    {
+      "type": "Enumeration",
+      "name": "OutputAngleRange"
+    },
+    {
+      "type": "Boolean",
+      "name": "AngleLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangAngleLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "DistLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangDistLimit"
+    },
+    {
+      "type": "Expand",
+      "name": null
+    },
+    {
+      "type": "Boolean",
+      "name": "MidXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangMidXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "MidYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangMidYLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineResult"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "OriginPointInput"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "EndPointInput"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "TextDisplayGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:UIHelper="clr-namespace:Apps.UIHelper.Extern;assembly=Apps.UIHelper" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:local="clr-namespace:DataSetModuleControl;assembly=DataSetModuleControl" xmlns:localParamTab="clr-namespace:Apps.XmlUI.ParamTab;assembly=Apps.XmlUI" xmlns:VmControls="clr-namespace:VM.Controls.Core.Converters;assembly=VM.Controls" xmlns:VmCore="clr-namespace:VM.Core;assembly=VM.Core">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/Apps.XmlUI;component/Styles/ParamUserControlDataTemplate.xaml" />
+    <ResourceDictionary Source="/Apps.Style;component/ComboBoxStyle/ListViewComboBoxStyle.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+  <VmControls:InverseBoolConverter x:Key="InverseBoolConverter" />
+  <DataTemplate x:Key="EnumerationVarBasicType">
+    <ComboBox Name="cb" Height="32" Style="{StaticResource ListViewComboBoxStyle}" ItemsSource="{Binding SelectValueBasicTypes}" Text="{Binding ValueTypeA, Mode=TwoWay}" />
+  </DataTemplate>
+  <DataTemplate x:Key="ButtonSelecter_IOVar_Item">
+    <Grid Margin="0,0,0,6" Height="32" Width="Auto" Visibility="{Binding CustomVisibleA, Converter={StaticResource bool2VisibilityConverter}}">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="70" />
+        <ColumnDefinition Width="68" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="42" />
+      </Grid.ColumnDefinitions>
+      <Border Grid.Column="0" BorderBrush="#CCCCCC" BorderThickness="1" Margin="0,0,6,0" CornerRadius="2">
+        <TextBox Name="txtName" BorderThickness="0" Padding="12,0,0,0" VerticalContentAlignment="Center" TextWrapping="NoWrap" FontWeight="Normal" FontFamily="Microsoft YaHei" FontSize="14" Foreground="#808080" Background="#00FFFFFF" Text="{Lang:ResourceBinding NameA, Mode=OneWay}" MaxLength="{Binding LengthA}" IsEnabled="{Binding ContinuousRunEnable, Source={x:Static VmCore:VmSolution.Instance}, Mode=OneWay, Converter={StaticResource InverseBoolConverter}}">
+          <i:Interaction.Triggers>
+            <i:EventTrigger EventName="LostFocus">
+              <UIHelper:ParamsEventCommand Command="{Binding TextChangedCommand}" CommandParameter="{Binding Text, ElementName=txtName}" />
+            </i:EventTrigger>
+          </i:Interaction.Triggers>
+        </TextBox>
+      </Border>
+      <ContentControl Grid.Column="1" Margin="0,0,6,0" ContentTemplate="{StaticResource EnumerationVarBasicType}" Content="{Binding}" IsEnabled="{Binding ContinuousRunEnable, Source={x:Static VmCore:VmSolution.Instance}, Mode=OneWay, Converter={StaticResource InverseBoolConverter}}" />
+      <ContentControl Grid.Column="2" Margin="0,0,6,0" ContentTemplate="{StaticResource ButtonSelecter_sub}" Content="{Binding FilterSelecter}" IsEnabled="{Binding ContinuousRunEnable, Source={x:Static VmCore:VmSolution.Instance}, Mode=OneWay, Converter={StaticResource InverseBoolConverter}}" />
+      <Button Grid.Column="3" Margin="0,0,10,0" Style="{StaticResource BaseImage_ButtonStyle}" Command="{Binding DeleteCommand}" IsEnabled="{Binding ContinuousRunEnable, Source={x:Static VmCore:VmSolution.Instance}, Mode=OneWay, Converter={StaticResource InverseBoolConverter}}">
+        <Image Stretch="None" Source="/Apps.Style;component/Resources/delete_normal.png" />
+        <FrameworkElement.Tag>
+          <Image Stretch="None" Source="/Apps.Style;component/Resources/delete_click.png" />
+        </FrameworkElement.Tag>
+      </Button>
+    </Grid>
+  </DataTemplate>
+  <DataTemplate x:Key="ButtonSelecter_IOVar_Container">
+    <Grid Margin="18,0,0,0">
+      <StackPanel>
+        <ItemsControl Name="listVarItems" ItemTemplate="{StaticResource ButtonSelecter_IOVar_Item}" ItemsSource="{Binding ItemsA}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Vertical" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+        </ItemsControl>
+        <Button Margin="0,10,0,3" HorizontalAlignment="Left" Style="{StaticResource BaseImage_ButtonStyle}" Command="{Binding AddCommand}" IsEnabled="{Binding ContinuousRunEnable, Source={x:Static VmCore:VmSolution.Instance}, Mode=OneWay, Converter={StaticResource InverseBoolConverter}}">
+          <Image Stretch="None" Source="/Apps.Style;component/Resources/add_normal.png" />
+          <FrameworkElement.Tag>
+            <Image Stretch="None" Source="/Apps.Style;component/Resources/add_click.png" />
+          </FrameworkElement.Tag>
+        </Button>
+      </StackPanel>
+    </Grid>
+  </DataTemplate>
+  <DataTemplate x:Key="ButtonSelecter_IOVar">
+    <Grid>
+      <ContentControl Name="ButtonSelecter_IOVar" ContentTemplate="{StaticResource ButtonSelecter_IOVar_Container}" Content="{Binding BridgeObjA}" />
+      <i:Interaction.Triggers>
+        <i:EventTrigger EventName="PreviewMouseWheel">
+          <i:InvokeCommandAction Command="{Binding PreviewMouseWheelCommand}" CommandParameter="{Binding ElementName=ButtonSelecter_IOVar}" />
+        </i:EventTrigger>
+      </i:Interaction.Triggers>
+    </Grid>
+  </DataTemplate>
+</ResourceDictionary>

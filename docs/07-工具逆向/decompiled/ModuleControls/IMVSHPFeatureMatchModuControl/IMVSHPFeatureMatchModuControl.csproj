@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>IMVSHPFeatureMatchModuControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="datatemplate\paramusercontroldatatemplate.xaml" />
+    <Page Remove="hpfeaturepatmatchdialoguibasestyle.xaml" />
+    <Page Remove="hpfeaturepatmatchdialoguistyle.xaml" />
+    <Page Remove="paramstabcontrol4hpfeaturematch.xaml" />
+    <Page Remove="themes\generic.xaml" />
+    <Page Include="datatemplate\paramusercontroldatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="datatemplate/paramusercontroldatatemplate.xaml" />
+    <Page Include="hpfeaturepatmatchdialoguibasestyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="hpfeaturepatmatchdialoguibasestyle.xaml" />
+    <Page Include="hpfeaturepatmatchdialoguistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="hpfeaturepatmatchdialoguistyle.xaml" />
+    <Page Include="paramstabcontrol4hpfeaturematch.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="paramstabcontrol4hpfeaturematch.xaml" />
+    <Page Include="themes\generic.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="themes/generic.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="FeatureMatchCommonControl" />
+    <Reference Include="VM.ModuleControl" />
+    <Reference Include="VMControls.Interface" />
+    <Reference Include="System.Xml" />
+    <Reference Include="VM.PlatformSDKCS" />
+    <Reference Include="VM.Controls" />
+    <Reference Include="System.Core" />
+    <Reference Include="Apps.XmlParser" />
+    <Reference Include="VMControls.RenderInterface" />
+    <Reference Include="VM.Xml" />
+    <Reference Include="VM.PcUI" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="VMBaseControls" />
+    <Reference Include="Apps.Data" />
+    <Reference Include="Apps.BaseData" />
+    <Reference Include="VMControls.WPF" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="ModelCommonHelper" />
+    <Reference Include="Apps.ErrorCode" />
+    <Reference Include="Apps.Log" />
+    <Reference Include="VM.Utility" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Apps.BaseLog" />
+    <Reference Include="Apps.UIHelper" />
+    <Reference Include="Apps.ColorFun" />
+    <Reference Include="Apps.Interface" />
+    <Reference Include="Mvvm" />
+    <Reference Include="VM.ExternalCall" />
+    <Reference Include="VM.Util" />
+  </ItemGroup>
+</Project>

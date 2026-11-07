@@ -1,0 +1,336 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VM 工具逆向批次 R1 — 在研与流程控制（19 模块）</title><style>:root{color-scheme:dark;background:#0b1524;color:#e5eff9;font:15px/1.7 'Microsoft YaHei UI',sans-serif}body{max-width:1440px;margin:auto;padding:28px}a{color:#98ceff}h1{font-size:26px;border-bottom:2px solid #3c5364;padding-bottom:12px}h2{font-size:20px;color:#87d9ff;border-bottom:1px solid #3c5364;padding-bottom:6px;margin-top:34px}h3{font-size:16px;color:#a8e6a3;margin-top:22px}h4{font-size:15px;color:#c9d9a8;margin-top:18px}table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13.5px}td,th{border:1px solid #415263;padding:7px;vertical-align:top}th{background:#263949;text-align:left}code{background:#202c36;color:#d1f5d1;padding:1px 5px;border-radius:4px;font:13px Consolas,monospace}pre{background:#091728;padding:14px;white-space:pre-wrap;overflow-wrap:anywhere;font:12.5px/1.6 Consolas,monospace;border:1px solid #33506a;border-radius:6px}.obs{color:#7ee787;font-weight:600}.inf{color:#e3b341;font-weight:600}.unk{color:#ff7b72;font-weight:600}.note{border-left:5px solid #f3aa49;background:#302d28;padding:12px 16px;margin:16px 0}.small{color:#9fb3c6;font-size:13px}ul,ol{padding-left:24px}</style>
+
+<h1>VM 工具逆向批次 R1 — 在研与流程控制（19 模块）</h1>
+
+<p class="small">取证日：2026-11-05 ｜ 批次：<b>R1（P0）</b> ｜ 原件基线：VisionMaster <code>V4.4.0 Build20250516@1555331</code> ｜ 安装根：<code>D:\Program Files\VisionMaster4.4.0</code>（只读，未启动）<br>
+深度：深挖（清点 + 契约 + 准入/身份链 + 编辑器宿主 + 非 Blob 代表工具整链）<br>
+复用的上游章节：<code>VM4.4应用层数据目录与工具层逆向证据-20261105.html</code> 的 B3-5（模块实物 11 文件 / <code>ToolItemInfo.xml</code> 4 字段 / 零签名）、G-1 第 7/13/14 行（工具分发与执行入口口径）、<code>VM_EDITOR_OPEN_LIFECYCLE_ORIGINAL_20261103.md</code>（专用编辑器可选与回退）、<code>START-RE-01.md</code>（ToolBox 读取链）</p>
+
+<h2>0. 结论摘要</h2>
+
+<table>
+<tr><th>#</th><th>问题</th><th>结论</th><th>档次</th></tr>
+<tr><td>1</td><td>R1 的 19 个模块是否都有托管壳？</td><td><b>全部有</b> <code>*Cs.dll</code>（19/19），且都 <code>: VmModule</code> 派生，执行入口统一为 <code>SyncSelfRun(ID)</code></td><td class="obs">观察到</td></tr>
+<tr><td>2</td><td>多少工具有专用编辑器程序集 <code>*Control.dll</code>？</td><td><b>12/19 = 63%</b>。无 Control 的 7 个：<code>IMVSBlobFindModu</code> + 六测量（P2P/P2L/P2C/L2L/L2C/C2C）→ 这些工具参数页全部由共享 XML 驱动</td><td class="obs">观察到</td></tr>
+<tr><td>3</td><td>工具元数据两级如何分工？</td><td>分类级 <code>ToolGroup.xml</code> = 分类显示名 + 排序（抽验 Location：<code>Locating</code>/<code>priority=2</code>）；工具级 <code>ToolItemInfo.xml</code> = 4 字段（name/priority/toolTip/helpUrl）。<b>两者都不是工具清单全集</b>，清单来自目录存在性</td><td class="obs">观察到</td></tr>
+<tr><td>4</td><td>工具端口契约在哪定义？</td><td>模块目录下的 <code>&lt;模块名&gt;.xml</code>（<code>ParamRoot</code>）：<code>Base</code>/<code>Input</code>/<code>Output</code>/<code>TransmitInfo</code> 四类；端口用 <code>Combination(Style=IMAGE|POINT)</code> + <code>Filter(ValueType/IsPrefer/IsForce/IsArray/Visible)</code> 声明，<b>点被展开为 X/Y 两个标量 Filter</b></td><td class="obs">观察到</td></tr>
+<tr><td>5</td><td>参数默认值有几个真相源？</td><td><b>两个</b>：托管壳构造函数里的 <code>new ParamItem(name, max, min)</code> 与同目录 <code>&lt;模块名&gt;Algorithm.xml</code> 的 <code>DefaultValue</code>。两处数值一致但<b>需要分别维护</b></td><td class="obs">观察到</td></tr>
+<tr><td>6</td><td>参数页是代码绘制还是数据驱动？</td><td><b>数据驱动</b>：<code>&lt;模块名&gt;AlgorithmTab.xml</code>（Tabs → Categorys → Items → 控件元素）+ <code>Triggers</code>（<code>VisibleOperation</code>/<code>HiddenOperation</code>/<code>DoInitOperaion</code> 等 26 种操作）</td><td class="obs">观察到</td></tr>
+<tr><td>7</td><td>结果显示是代码绘制还是声明映射？</td><td><b>声明映射</b>：<code>&lt;模块名&gt;Display.xml</code> 的 <code>Object(Type=image|line…)</code> + <code>Feature Mapping=输出字段名</code>，带 okcolor/ngcolor/linetype/linewidth/arrowsize</td><td class="obs">观察到</td></tr>
+<tr><td>8</td><td>Blob 单工具结论能否外推到其他工具？</td><td><b>能</b>（结构级）：非 Blob 的 P2P 测量在「执行入口 / 结果查询 / 参数对象 / 四类 ParamRoot / 双默认值 / 声明式显示」上与 Blob 完全同构；差异只在<b>是否带专用编辑器</b>与<b>参数页规模</b></td><td class="obs">观察到（结构）<br>未验（运行）</td></tr>
+<tr><td>9</td><td>无 Control.dll 时是否回退通用参数页？</td><td>推断为<b>是</b>：<code>GetExternTabWin</code> 找不到 <code>TabWinBase</code> 即回退 <code>ParamsTabControlBase</code>（上游已证），且 7 个无 Control 的模块仍带完整 AlgorithmTab.xml</td><td class="inf">推断（强）</td></tr>
+<tr><td>10</td><td>priority 缺字段时如何排序？</td><td><b>未知</b>。<code>IMVSGrayMatchModu</code> 的 <code>ToolItemInfo.xml</code> 无 <code>&lt;priority&gt;</code> 节点，其排序行为需运行或反编译 <code>ToolBoxData</code> 消费者确认</td><td class="unk">未知</td></tr>
+</table>
+
+<h2>1. 逐条论证</h2>
+
+<h3>1.1 R1 十九模块结构清点（<span class="obs">观察到</span>）</h3>
+<p class="small">口径：目录内平铺文件计数；<code>Cs</code>=含 <code>*Cs.dll</code>；<code>Ctl</code>=含 <code>*Control.dll</code>；<code>AlgTab</code>/<code>Disp</code>=对应 xml 字节数；<code>prio</code>=<code>ToolItemInfo.xml</code> 的 <code>&lt;priority&gt;</code>。</p>
+
+<table>
+<tr><th>模块</th><th>分类</th><th>文件</th><th>Cs</th><th>Ctl</th><th>AlgTab</th><th>Disp</th><th>prio</th><th>png</th><th>额外扩展 / 子目录</th></tr>
+<tr><td>IMVSBlobFindModu</td><td>Location</td><td>11</td><td>Y</td><td><b>N</b></td><td>123,949</td><td>10,611</td><td>6</td><td>3</td><td>—</td></tr>
+<tr><td>IMVSBlobFindLabelsModu</td><td>Location</td><td>12</td><td>Y</td><td>Y</td><td>92,211</td><td>9,535</td><td>7</td><td>3</td><td>—</td></tr>
+<tr><td>IMVSContourMatchModu</td><td>Location</td><td>14</td><td>Y</td><td>Y</td><td>62,130</td><td>9,696</td><td>0</td><td>3</td><td>.Config .ini</td></tr>
+<tr><td>IMVSFastFeatureMatchModu</td><td>Location</td><td>14</td><td>Y</td><td>Y</td><td>47,202</td><td>8,441</td><td>2</td><td>3</td><td>.Config .txt</td></tr>
+<tr><td>IMVSHPFeatureMatchModu</td><td>Location</td><td>14</td><td>Y</td><td>Y</td><td>57,756</td><td>9,645</td><td>1</td><td>3</td><td>.Config .txt</td></tr>
+<tr><td>IMVSGrayMatchModu</td><td>Location</td><td>12</td><td>Y</td><td>Y</td><td>38,573</td><td>7,957</td><td><b>(缺)</b></td><td>3</td><td>.Config</td></tr>
+<tr><td>IMVSP2PMeasureModu</td><td>Measurement</td><td>11</td><td>Y</td><td><b>N</b></td><td>30,343</td><td>4,478</td><td>5</td><td>3</td><td>—</td></tr>
+<tr><td>IMVSP2LMeasureModu</td><td>Measurement</td><td>11</td><td>Y</td><td><b>N</b></td><td>46,669</td><td>6,319</td><td>3</td><td>3</td><td>—</td></tr>
+<tr><td>IMVSP2CMeasureModu</td><td>Measurement</td><td>11</td><td>Y</td><td><b>N</b></td><td>37,773</td><td>5,564</td><td>2</td><td>3</td><td>—</td></tr>
+<tr><td>IMVSL2LMeasureModu</td><td>Measurement</td><td>11</td><td>Y</td><td><b>N</b></td><td>80,313</td><td>10,844</td><td>4</td><td>3</td><td>—</td></tr>
+<tr><td>IMVSL2CMeasureModu</td><td>Measurement</td><td>11</td><td>Y</td><td><b>N</b></td><td>94,613</td><td>9,499</td><td>0</td><td>3</td><td>—</td></tr>
+<tr><td>IMVSC2CMeasureModu</td><td>Measurement</td><td>11</td><td>Y</td><td><b>N</b></td><td>92,125</td><td>10,171</td><td>1</td><td>3</td><td>—</td></tr>
+<tr><td>BranchModule_STD</td><td>Logic</td><td>12</td><td>Y</td><td>Y</td><td>5,236</td><td>694</td><td>1</td><td>3</td><td>—</td></tr>
+<tr><td>IfBranchModule</td><td>Logic</td><td>12</td><td>Y</td><td>Y</td><td>2,266</td><td>624</td><td>0</td><td>3</td><td>—</td></tr>
+<tr><td>IfModule</td><td>Logic</td><td>13</td><td>Y</td><td>Y</td><td><b>181,617</b></td><td>1,295</td><td>0</td><td>3</td><td>—</td></tr>
+<tr><td>ShellModule</td><td>Logic</td><td><b>217</b></td><td>Y</td><td>Y</td><td>3,100</td><td>689</td><td>9</td><td>3</td><td>.bat .config .cs .exe .ini .properties .tlb .txt；子目录 <code>DLL</code>+<code>UserScript</code></td></tr>
+<tr><td>PyShellModule</td><td>Logic</td><td>20</td><td>Y</td><td>Y</td><td>2,448</td><td>689</td><td>9</td><td>3</td><td>.py .pyd .Config</td></tr>
+<tr><td>ImageSourceModule</td><td>Collection</td><td>14</td><td>Y</td><td>Y</td><td>30,802</td><td>2,105</td><td>0</td><td>3</td><td>.Config .ini</td></tr>
+<tr><td>ImageAcquisitionModule</td><td>Collection</td><td>12</td><td>Y</td><td>Y</td><td>7,769</td><td>6,053</td><td>1</td><td>3</td><td>—</td></tr>
+</table>
+
+<p><b>由表直接得出的分布（<span class="obs">观察到</span>）：</b></p>
+<ul>
+<li>托管壳覆盖率 <b>19/19 = 100%</b>；专用编辑器覆盖率 <b>12/19 = 63%</b>。</li>
+<li>priority 取值散布 <code>0,0,0,0,1,1,1,1,1,2,2,3,4,5,6,7,9,9</code>（18 个有值 + 1 个缺失）；<b>同一分类内不连续、不唯一</b>（Location 内 6/7/0/2/1/缺），说明 priority 只在分类内影响排序，非全局唯一键。</li>
+<li>非 11 文件的模块只有 4 类：带 <code>Control.dll</code> 且带 <code>.Config/.ini/.txt</code> 的匹配族（12–14 文件）、<code>IfModule</code>（13，AlgTab 181 KB）、<code>PyShellModule</code>（20，含 .py/.pyd）、<code>ShellModule</code>（217，含脚本运行时与 <code>.tlb</code> 类型库）。</li>
+<li>所有 19 个模块都恰好 3 张 png（<code>*ImageEnable.png</code> + <code>*_NormalLogo.png</code> + <code>*_StateLogo.png</code>），图标契约统一。</li>
+</ul>
+
+<h3>1.2 参数页规模与控件族（<span class="obs">观察到（枚举所得）</span>）</h3>
+<p class="small">口径：对 <code>&lt;模块名&gt;AlgorithmTab.xml</code> 做元素名正则直方图，<b>非 XSD/schema 校验</b>，同名元素在不同层级语义可能不同，故下方按语义再分三组；<code>Tabs/Cats/ItemBlocks</code> 为 <code>&lt;Tab</code>/<code>&lt;Category</code>/<code>&lt;Items&gt;</code> 计数。</p>
+
+<table>
+<tr><th>模块</th><th>Tabs</th><th>Category</th><th>Items 块</th><th>AlgTab 字节</th></tr>
+<tr><td>IfModule</td><td>2</td><td>1</td><td>2</td><td>181,613</td></tr>
+<tr><td>IMVSBlobFindModu</td><td>3</td><td>5</td><td>5</td><td>123,779</td></tr>
+<tr><td>IMVSL2CMeasureModu</td><td>3</td><td>7</td><td>7</td><td>94,613</td></tr>
+<tr><td>IMVSBlobFindLabelsModu</td><td>3</td><td>5</td><td>5</td><td>92,197</td></tr>
+<tr><td>IMVSC2CMeasureModu</td><td>3</td><td>7</td><td>7</td><td>92,125</td></tr>
+<tr><td>IMVSL2LMeasureModu</td><td>3</td><td>7</td><td>7</td><td>80,313</td></tr>
+<tr><td>IMVSContourMatchModu</td><td>4</td><td>4</td><td>5</td><td>62,089</td></tr>
+<tr><td>IMVSHPFeatureMatchModu</td><td>4</td><td>4</td><td>5</td><td>57,718</td></tr>
+<tr><td>IMVSFastFeatureMatchModu</td><td>4</td><td>4</td><td>5</td><td>47,164</td></tr>
+<tr><td>IMVSP2LMeasureModu</td><td>3</td><td>5</td><td>5</td><td>46,669</td></tr>
+<tr><td>IMVSGrayMatchModu</td><td>4</td><td>4</td><td>5</td><td>38,535</td></tr>
+<tr><td>IMVSP2CMeasureModu</td><td>3</td><td>5</td><td>5</td><td>37,773</td></tr>
+<tr><td>ImageSourceModule</td><td>1</td><td>3</td><td>3</td><td>30,712</td></tr>
+<tr><td>IMVSP2PMeasureModu</td><td>3</td><td>5</td><td>5</td><td>30,343</td></tr>
+<tr><td>ImageAcquisitionModule</td><td>1</td><td>1</td><td>2</td><td>7,769</td></tr>
+<tr><td>BranchModule_STD</td><td>1</td><td>2</td><td>2</td><td>5,236</td></tr>
+<tr><td>ShellModule</td><td>1</td><td>0</td><td>1</td><td>2,966</td></tr>
+<tr><td>PyShellModule</td><td>1</td><td>0</td><td>1</td><td>2,387</td></tr>
+<tr><td>IfBranchModule</td><td>1</td><td>0</td><td>1</td><td>2,254</td></tr>
+</table>
+
+<p><b>控件族（跨 R1 合计，按语义分组）</b></p>
+
+<h4>A. 参数输入控件（决定"工具需要哪些控件能力"）</h4>
+<table>
+<tr><th>元素</th><th>次数</th><th>语义</th></tr>
+<tr><td><code>Float</code></td><td>346</td><td>单浮点输入</td></tr>
+<tr><td><code>Floats</code></td><td>171</td><td>浮点数组（多值）</td></tr>
+<tr><td><code>Boolean</code></td><td>155</td><td>布尔</td></tr>
+<tr><td><code>Integer</code></td><td>130</td><td>整型输入</td></tr>
+<tr><td><code>FloatBettween</code></td><td>107</td><td><b>区间（上限/下限）</b>控件</td></tr>
+<tr><td><code>ImageViewConfig</code></td><td>101</td><td>图像显示配置</td></tr>
+<tr><td><code>ButtonSelecter</code></td><td>86</td><td>按钮选择器（弹窗选择）</td></tr>
+<tr><td><code>InnerButtonSelecter</code></td><td>64</td><td>内嵌按钮选择器</td></tr>
+<tr><td><code>Enumeration</code></td><td>62</td><td>枚举下拉</td></tr>
+<tr><td><code>Integers</code> / <code>IntegerBettween</code></td><td>26 / 26</td><td>整型数组 / 整型区间</td></tr>
+<tr><td><code>RadioSelecter</code></td><td>11</td><td>单选组</td></tr>
+<tr><td><code>ROISelection</code> / <code>ROISelecter</code> / <code>ROISelecter_Com</code></td><td>7 / 7 / 3</td><td>ROI 选择</td></tr>
+<tr><td><code>EnumerationCameraForImage</code> / <code>EnumerationCameraForAcq</code> / <code>Enumeration_IfModule</code> / <code>EnumerationObj_sub</code></td><td>1/1/1/2</td><td>领域专用枚举</td></tr>
+<tr><td><code>OpenFileForAcquisition</code> / <code>OpenFolderDialog</code></td><td>1 / 1</td><td>文件/目录选择</td></tr>
+<tr><td><code>ThresholdAreaList</code> / <code>LocalImageList</code> / <code>ListParam</code></td><td>1 / 1 / 1</td><td>列表型复合参数</td></tr>
+<tr><td><code>Textinshell</code> / <code>StrValue</code></td><td>2 / 2</td><td>脚本文本</td></tr>
+</table>
+
+<h4>B. 触发与状态属性（不是控件，是驱动机制）</h4>
+<table>
+<tr><th>元素</th><th>次数</th><th>说明</th></tr>
+<tr><td><code>IncValue</code></td><td>679</td><td>增量步长（数值控件属性）</td></tr>
+<tr><td><code>CustomVisible</code> / <code>Visibility</code> / <code>PanVisible</code></td><td>439 / 239 / 27</td><td>可见性控制（数据驱动显隐）</td></tr>
+<tr><td><code>Condition</code> / <code>Conditions</code> / <code>RangeConditionF</code></td><td>197 / 99 / 64</td><td>条件表达式（联动/使能）</td></tr>
+<tr><td><code>IsImplemented</code></td><td>196</td><td>功能是否实现（<b>原件自带能力开关</b>）</td></tr>
+<tr><td><code>Initers</code></td><td>155</td><td>初始化操作声明</td></tr>
+<tr><td><code>DropOpenSetter</code> / <code>BrigdgeSetter</code> / <code>CommandSetter</code></td><td>150 / 103 / 10</td><td>下拉展开 / 桥接 / 命令 Setter</td></tr>
+<tr><td><code>MultiTrigger</code></td><td>99</td><td>多条件触发器</td></tr>
+</table>
+
+<h4>C. 布局与框架元素</h4>
+<p><code>BottomExcuteButtons</code>(18)、<code>Expand</code>(18)、<code>HeadItem</code>(16)、<code>Width</code>(16)、<code>HeadBar</code>(4)、<code>RadioSelecter3</code>(4)、<code>CategoryNoHead</code>(9)、<code>TabType</code>(9)、<code>BottomCommand</code>(5)、<code>Button_ResetAlgoParams</code>(9)、<code>ExternPanal/ConfigPanal/ExternPanalFullName</code>(3/2/3)、<code>CustomTabWidth/Height</code>、<code>ZHCustomTabWidth</code>(5)、<code>ENCustomTabWidth</code>(4) 等。</p>
+<p class="small"><span class="inf">推断</span>：<code>ZHCustom*</code> / <code>ENCustom*</code> 前缀对应中文与英文两套界面尺寸微调（<code>ZH</code>=中文，<code>EN</code>=英文）；此判断基于命名，未在任何文档中确认，故仅作推断。</p>
+
+<h3>1.3 触发器操作词汇（26 种，<span class="obs">观察到</span>）</h3>
+<table>
+<tr><th>OperationName</th><th>次数</th><th>OperationName</th><th>次数</th></tr>
+<tr><td><code>VisibleOperation</code></td><td>365</td><td><code>HiddenOperation</code></td><td>138</td></tr>
+<tr><td><code>GetFrontFilterTreeOperation</code></td><td>130</td><td><code>GetSelectedFilterOperation</code></td><td>130</td></tr>
+<tr><td><code>SetFilterSourceOperation</code></td><td>130</td><td><code>GetDisplayObjectOperation</code></td><td>101</td></tr>
+<tr><td><code>DoInitOperaion</code>（原件拼写如此）</td><td>76</td><td><code>GetSelectedCombinationOperation</code></td><td>20</td></tr>
+<tr><td><code>SetCombinationSourceOperation</code></td><td>20</td><td><code>GetFrontCombinationTreeOperation</code></td><td>20</td></tr>
+<tr><td><code>SetDisplayObjectPropertyOperation</code></td><td>18</td><td><code>ExcuteMethodOperation</code></td><td>11</td></tr>
+<tr><td><code>CategoryHiddenOperation</code></td><td>6</td><td><code>UpdateModuleStateOperation</code></td><td>4</td></tr>
+<tr><td><code>RoiDisplayOperation</code></td><td>3</td><td><code>CategoryVisibleOperation</code></td><td>3</td></tr>
+<tr><td><code>DisEnableOperation</code></td><td>2</td><td><code>GetCategoryOperation</code></td><td>2</td></tr>
+<tr><td><code>GetGlobalModuleListOperation</code></td><td>2</td><td><code>GeneralParamListHiddenOperation</code></td><td>2</td></tr>
+<tr><td><code>ExcuteParentMethodOperation</code></td><td>2</td><td><code>GetProEventsOperation</code></td><td>1</td></tr>
+<tr><td><code>SetFilterForcePropertyOperation</code></td><td>1</td><td><code>TUpdateImageConfigOperation</code></td><td>1</td></tr>
+<tr><td><code>FUpdateImageConfigOperation</code></td><td>1</td><td><code>GetParentPropertyOperation</code></td><td>1</td></tr>
+<tr><td><code>GeneralParamListVisibleOperation</code></td><td>1</td><td>—</td><td>—</td></tr>
+</table>
+<p><b>关键含义（<span class="obs">观察到</span>）：</b>界面显隐、滤镜来源、组合来源、显示对象属性、方法调用、父级属性读取<b>全部由 XML 声明 + 命名字符串操作</b>驱动，而不是各工具写代码。这是一套<b>可枚举的操作词汇表</b>，也是我方言明式绑定可以对齐的原件先例（对应 rule-016 数据驱动优先）。</p>
+
+<h3>1.4 非 Blob 代表工具整链：<code>IMVSP2PMeasureModu</code>（<span class="obs">观察到</span>）</h3>
+<p>选型理由：我方 <code>T-P2P</code> 为在研测量工具、该模块<b>无专用编辑器</b>（可验证回退路径）、参数与输出都不同于 Blob（纯数值+点几何）。反编译对象：<code>Module(sp)\x64\Measurement\IMVSP2PMeasureModu\IMVSP2PMeasureModuCs.dll</code>（11,264 B，托管，<code>ilspycmd 11.1.0.9782</code>，输出 480 行）。</p>
+
+<h4>① 目录构成（11 文件，与 Blob 完全同构）</h4>
+<pre>IMVSP2PMeasureModu.dll               97,280   原生算法（PE，无 CLI）
+IMVSP2PMeasureModu.xml                3,567   端口/模块契约 ParamRoot
+IMVSP2PMeasureModuAlgorithm.xml       1,436   算法参数默认值 14 项
+IMVSP2PMeasureModuAlgorithmTab.xml   30,343   参数页 3 Tabs / 5 Categories
+IMVSP2PMeasureModuCs.dll             11,264   托管壳（VmModule 派生）
+IMVSP2PMeasureModuCs.xml              8,519   XML 文档注释（**不是清单**）
+IMVSP2PMeasureModuDisplay.xml         4,478   显示对象声明
+IMVSP2PMeasureModuImageEnable.png     1,333   分类/启用图标
+IMVSP2PMeasureModu_NormalLogo.png       228
+IMVSP2PMeasureModu_StateLogo.png        197
+ToolItemInfo.xml                        250   元数据 4 字段（priority=5）</pre>
+
+<h4>② 执行入口与结果（源码锚点）</h4>
+<pre>public class IMVSP2PMeasureModuTool : VmModule          // Cs.dll:32
+{
+    private CModuleResultBase _result;                  // :35
+    public P2PMeasureResult ModuResult                  // :40
+    {
+        get {
+            _result = new P2PMeasureResult();                                    // :44 每次新建
+            ... = mModuleManager.QueryModuleOneResult(ID);                        // :45
+            if (HasValue) mModuleResultManager.SetModuleResult(
+                ref stModuleResult, ref _result, ModuResultMemType);              // :49 深拷贝/回调由该枚举决定
+            return (P2PMeasureResult)_result;
+        }
+    }
+    public P2PMeasureParam ModuParams { get; set; }      // :58
+    public new void Run() => mModuleManager.SyncSelfRun(ID);   // :81-84
+}</pre>
+
+<h4>③ 参数对象（四个输入口 + 十五个参数项）</h4>
+<pre>public class P2PMeasureParam : CModuleParamBase          // Cs.dll:91
+{
+    inputImage   = new InputItem(this, INPUT_TYPE_IMAGE,
+                     new[]{"InImage","InImageWidth","InImageHeight","InImagePixelFormat"});  // :408
+    inputPoint1  = new InputItem(this, INPUT_TYPE_POINT, new[]{"Point1X","Point1Y"});        // :409
+    inputPoint2  = new InputItem(this, INPUT_TYPE_POINT, new[]{"Point2X","Point2Y"});        // :410
+    calibMatrix  = new InputItem(this, INPUT_TYPE_FLOAT, new[]{"CalibMatrix"});              // :411
+    chooseCoordinate  = new ParamItem(this, "ChooseCoordinate");                            // :412
+    angleLimitLow     = new ParamItem(this, "AngleLimitLow", 180.0, -180.0);                 // :415  (max,min)
+    distLimitLow      = new ParamItem(this, "DistLimitLow", 99999.0);                        // :418
+    midXLimitLow      = new ParamItem(this, "MidXLimitLow", 99999.0, -99999.0);              // :421
+    ... 共 15 个 ParamItem
+}</pre>
+<p><b>要点（<span class="obs">观察到</span>）：</b><code>InputItem</code> 携带<b>字段名数组</b>，即"一个输入端口展开为 N 个可绑定标量字段"；<code>ParamItem(name, max, min)</code> 把取值范围写在代码里，而 <code>Algorithm.xml</code> 又写了一层默认值。</p>
+
+<h4>④ 端口契约 <code>IMVSP2PMeasureModu.xml</code>（ParamRoot，节选）</h4>
+<pre>&lt;ParamRoot&gt;&lt;Categorys&gt;
+  &lt;Category Name="Base"&gt;    ServerRepAddress=tcp://127.0.0.1:5555 / ModuleName / IsLoalModule=0
+                            ModuleViewMode=1 / ModuleDisplayName / ModuleHelp=Reserve / IsSaveTabXml=False
+  &lt;Category Name="Input"&gt;
+    &lt;Combination Name="InputImage" Style="IMAGE"&gt;  Filter: InImage(image) InImageWidth(int)
+                                                   InImageHeight(int) InImagePixelFormat(int)  IsPrefer=true
+    &lt;Combination Name="InputPoint1" Style="POINT"&gt;  Filter: Point1X/Point1Y  float IsForce=true
+    &lt;Filter Name="CalibMatrix" ValueType="float" IsForce="false" IsArray="true"/&gt;
+  &lt;Category Name="Output"&gt;
+    &lt;Filter Name="ModuRunTime" ValueType="float" IsForce="true"/&gt;
+    &lt;Filter Name="ModuStatus" ValueType="int" IsForce="true"/&gt;
+    &lt;Combination Name="MeasurePoint1" Style="POINT"&gt; Filter: InputPoint1X/InputPoint1Y
+    &lt;Combination Name="Midpoint" Style="POINT"&gt;     Filter: PointMidX/PointMidY
+    &lt;Filter Name="P2P1Angle"/&gt; &lt;Filter Name="P2P1Dist"/&gt;
+    &lt;Filter Name="MeasureCalibMatrix" ... Visible="false"/&gt;   ← 隐藏输出
+  &lt;Category Name="TransmitInfo"&gt;&lt;/Category&gt;
+&lt;/Categorys&gt;&lt;/ParamRoot&gt;</pre>
+<p><b>三处细节（<span class="obs">观察到</span>，均属"原件缺陷/不一致"，不得当成设计范例迁移）：</b></p>
+<ul>
+<li>输出端口 <code>MeasurePoint1</code> 的内部 Filter 名是 <code>InputPoint1X/InputPoint1Y</code>（输出名里嵌 <code>Input</code>），与结果类 <code>MeasurePoint1</code> 字段不对应。</li>
+<li><code>Base/ServerRepAddress</code> 写死 <code>tcp://127.0.0.1:5555</code>，而 <code>Server\ServerConfiguration.ini</code> 的服务端监听是 <code>5556</code>。两者用途不同（模块代理由 ModuleProxy 承载），<b>不据此推断冲突</b>，仅记录。</li>
+<li><code>MeasureCalibMatrix</code> 标 <code>Visible="false"</code>：存在"可计算但不展示/不可绑定默认"的输出项。</li>
+</ul>
+
+<h4>⑤ 参数默认值双真源</h4>
+<pre>&lt;AlgorithmParamList&gt;            IMVSP2PMeasureModuAlgorithm.xml，14 项
+  &lt;ParamItem&gt;&lt;Name&gt;ChooseCoordinate&lt;/Name&gt;&lt;DefaultValue&gt;0x1&lt;/DefaultValue&gt;
+  &lt;ParamItem&gt;&lt;Name&gt;AngleLimitHigh&lt;/Name&gt;&lt;DefaultValue&gt;180&lt;/DefaultValue&gt;
+  ...
+</pre>
+<p>与 Cs 构造函数（<code>:412-425</code>）的 <code>ParamItem</code> 声明并存：<b>同一参数在 XML 与代码里各有一份缺省</b>。<span class="unk">未知</span>：加载时以谁为准（需运行或反编译 <code>CModuleParamBase</code> 的初始化顺序）；<span class="inf">推断</span>：XML 为"设计期缺省"，代码为"运行期初值"，两者应保持一致，实际是否校验未知。</p>
+
+<h4>⑥ 显示声明（<code>Display.xml</code>，节选）</h4>
+<pre>&lt;Category Name="Display" okcolor="#7cfc00" ngcolor="#ff0000"&gt;
+  &lt;Object Name="InImage" Type="image" okcolor="#66ff00" linetype="1" linewidth="1" IsDisplay="true"&gt;
+    &lt;Features&gt;&lt;Feature Name="Image" Mapping="InImage" Value="{0}"/&gt;
+              &lt;Feature Name="Height" Mapping="InImageHeight"/&gt; ... &lt;/Features&gt;
+  &lt;Object Name="Line Result" Type="line" okcolor="#66ff00" linewidth="2"
+          NeedLabel="true" arrowsize="10" UseConvertMatrix="true"&gt;
+    &lt;Features&gt;&lt;Feature Name="StartLineX" Mapping="InputPoint1X"/&gt; ... &lt;/Features&gt;</pre>
+<p><b>结论：</b>结果显示 = <b>对象类型 + 特征映射 + 样式常量</b>的声明，工具代码不写绘制。这与我方"显示采集器/绘制器"的设计是同类问题的两种解法。</p>
+
+<h4>⑦ 编辑器回退</h4>
+<p>该模块<b>无 <code>*Control.dll</code></b>，但带完整 <code>AlgorithmTab.xml</code>（3 Tabs / 5 Categories）。结合上游 <code>VM_EDITOR_OPEN_LIFECYCLE_ORIGINAL_20261103.md:10</code>：<code>GetExternTabWin</code> 按 <code>ModuleTypeName+Control</code> 找 <code>TabWinBase</code> 子类，找不到即用通用 <code>ParamsTabControlBase</code>。<span class="inf">推断（强）</span>：P2P 走通用参数页，专用编辑器<b>不是必需</b>。</p>
+
+<h3>1.5 两级元数据与身份链（<span class="obs">观察到</span>）</h3>
+<table>
+<tr><th>层级</th><th>文件</th><th>实测内容</th><th>作用</th></tr>
+<tr><td>分类级</td><td><code>Module(sp)\x64\&lt;分类&gt;\ToolGroup.xml</code></td><td>抽验 <code>Location</code>：全文仅 <code>&lt;name&gt;Locating&lt;/name&gt;</code> + <code>&lt;priority&gt;2&lt;/priority&gt;</code></td><td>分类的<b>显示名与排序</b>，<b>不是</b>工具清单</td></tr>
+<tr><td>工具级</td><td><code>&lt;模块&gt;\ToolItemInfo.xml</code></td><td>P2P：<code>name=IMVSP2PMeasureModu</code> / <code>priority=5</code> / <code>toolTip=…_Tip</code> / <code>helpUrl=GUID-352A1EEE-F832-4B5E-8129-8E0F914694B3</code>（250 B）</td><td>工具在分类内的排序、提示与帮助锚点</td></tr>
+<tr><td>模块契约</td><td><code>&lt;模块&gt;\&lt;模块&gt;.xml</code></td><td><code>ParamRoot</code> 四类 Category（见 1.4④）</td><td>端口、数据类型、强制/偏好绑定、隐藏项</td></tr>
+<tr><td>参数页</td><td><code>&lt;模块&gt;AlgorithmTab.xml</code></td><td>Tabs/Categorys/Items + Triggers</td><td>界面结构与联动</td></tr>
+<tr><td>算法缺省</td><td><code>&lt;模块&gt;Algorithm.xml</code></td><td><code>AlgorithmParamList</code> 14 项</td><td>算法参数默认值</td></tr>
+<tr><td>显示</td><td><code>&lt;模块&gt;Display.xml</code></td><td><code>Object</code> + <code>Features/Feature Mapping</code></td><td>结果显示映射与样式</td></tr>
+<tr><td>文档</td><td><code>&lt;模块&gt;Cs.xml</code></td><td><code>&lt;doc&gt;&lt;members&gt;</code>（P2P 8,519 B）</td><td><b>XML 文档注释</b>，非清单（易误判，须标注）</td></tr>
+</table>
+<p><b>身份链结论（<span class="obs">观察到</span> + <span class="inf">推断</span>）：</b>工具的身份 = <b>目录名 + <code>ToolItemInfo.xml/name</code> + <code>ToolGroup.xml</code> 存在于分类目录</b>；没有版本、没有依赖、没有签名（上游 B3-5 已证 2155 文件零签名）。加载准入 = <b>目录里有没有 <code>*Cs.dll</code></b>（19/19 都有，缺则回退 <code>VM.Core.VmModule</code>，上游 <code>VM_S3_FRAMEWORK_AND_OWNERSHIP_20261025.md:16</code>）。<span class="unk">未知</span>：<code>priority</code> 缺失（GrayMatch）时的排序行为；<code>IsForce/IsPrefer</code> 在运行期是否真的阻断执行。</p>
+
+<h2>2. 原件 vs 我方对照</h2>
+
+<table>
+<tr><th>维度</th><th>VM 原件（本批实测）</th><th>我方现状（只读）</th><th>建议口径</th></tr>
+<tr><td>工具加载单位</td><td>模块目录（11 文件起）+ 目录名作身份</td><td><code>plugin.json</code> <b>已废弃</b>（<code>src/Core/SunEyeVision.Core.csproj:16</code> <code>&lt;Compile Remove="Services/PluginManager.cs" /&gt;</code>）；现行为 = 程序集 + <code>ToolGroups.xml</code> + 发布态 <code>release-payload.json</code></td><td>【策略差异】我方更严，<b>不得写"对齐原厂"</b></td></tr>
+<tr><td>工具元数据字段</td><td>4 字段（name/priority/toolTip/helpUrl）</td><td><code>ToolMetadata.cs:27-100</code>：Id/DisplayName/Description/Icon/Order(DeclaredOrder→ToolAttribute.Order→1000)/Category/ToolType/DebugWindowType/DebugWindowStyle/NodeStyleType + <code>Validate()</code>（Id 非空）</td><td>【平台必要能力/自建】；我方 10 字段 ⊃ 原件 4 字段，但<b>缺</b> <code>helpUrl</code>（帮助锚点 GUID）等价物</td></tr>
+<tr><td>分类与排序</td><td>分类级 <code>ToolGroup.xml</code>(name+priority)；工具级 <code>ToolItemInfo/priority</code>；同分类内 priority 可重复、可缺失</td><td><code>ToolGroups.xml:1</code> <code>SchemaVersion="1"</code>（Group Name/Order/Icon/HoverIcon/IconKey）+ <code>ToolDirectoryCatalog.cs:49-56</code> 校验分类唯一/工具分类必须存在</td><td>【策略差异】分类职责可称"按原件分类模型迁移"；<code>SchemaVersion</code> 与唯一性校验是我方加严</td></tr>
+<tr><td>端口/数据类型词目</td><td><code>Filter ValueType</code>：<code>image</code>/<code>int</code>/<code>float</code> + <code>IsArray</code>；<code>Combination Style</code>：<code>IMAGE</code>/<code>POINT</code>；点是 <b>X/Y 双标量</b></td><td><code>SdkTypeVocabulary.cs:31-48</code>：Integer/Double/String/Boolean/Binary/Transform/Image/ROI/Circle/RotatedRect/Point/Polygon/Line/Annulus/Arc（全数组语义，单值=长1数组）</td><td>【策略差异】我方词目<b>明显更宽</b>（几何 7 类 + ROI + Binary + Transform）；VM 用 <code>float[IsArray]</code> 表达标定矩阵，我方用强类型 <code>Transform</code>。<b>不得声称等价</b></td></tr>
+<tr><td>点/几何表示</td><td>点 = 两个标量 Filter（X/Y）+ <code>Style="POINT"</code> 组合</td><td><code>Point2d[]</code> 结构体数组</td><td>【策略差异】影响绑定粒度：VM 可按 X 单独绑定，我方按点整体绑定</td></tr>
+<tr><td>参数页</td><td><code>AlgorithmTab.xml</code> 数据驱动，26 种命名操作（见 1.3）</td><td>WPF 控件 + 工具自有 UI；公共控件在 <code>src/Plugin.Wpf/</code></td><td>【策略差异】原件"界面即数据"的方向可借鉴；我方当前不是 XML 驱动</td></tr>
+<tr><td>参数默认值</td><td><b>双真源</b>（Cs 构造 + Algorithm.xml）</td><td>单一来源（工具参数模型初值）</td><td>【我方更严】；<b>不要把双真源当范例迁移</b></td></tr>
+<tr><td>结果显示</td><td><code>Display.xml</code> 声明映射（Object/Features/okcolor/linetype）</td><td>显示采集器 + 绘制器（代码）</td><td>【策略差异】</td></tr>
+<tr><td>专用编辑器</td><td>可选：<code>*Control.dll</code> 有则用，无则回退通用参数页（12/19 有）</td><td><code>ToolMetadata.DebugWindowType</code> 可空，空则默认调试窗（<code>ToolMetadata.cs:70-90</code>）</td><td><b>【原件可迁移】</b>语义同构：可选 + 回退</td></tr>
+<tr><td>执行入口</td><td><code>VmModule</code> 派生 + <code>Run()→SyncSelfRun(ID)</code></td><td>工具实现自有入口（<code>IToolPlugin</code>）</td><td><b>【原件可迁移】</b>（语义层）</td></tr>
+<tr><td>结果取用</td><td>每次 getter 新建结果对象 + <code>QueryModuleOneResult</code> + <code>ModuResultMemType</code> 决定拷贝方式</td><td>结果对象由执行层产出并发布</td><td>【策略差异】；<b>深拷贝/回调语义</b>属我方应自证的部分（G2 未知）</td></tr>
+</table>
+
+<h2>3. 待补证据</h2>
+
+<h3>3.1 需要更深反汇编（本机不可闭合）</h3>
+<table>
+<tr><th>缺口</th><th>本批证据状态</th><th>影响</th></tr>
+<tr><td>native 如何由模块名找到算法 DLL（G1）</td><td>只见目录约定与 <code>Cs.dll</code>；<code>IMVSP2PMeasureModu.dll</code> 为原生 PE 无 CLI</td><td>加载失败诊断无法对齐</td></tr>
+<tr><td><code>pData</code> 所有权与释放时点（G2）</td><td><code>ModuResultMemType</code> 只见枚举传入，未见释放点</td><td>结果/图像资源释放安全性</td></tr>
+<tr><td>算法语义（G4）</td><td>本批只有参数名与范围（如 <code>AngleLimit[‑180,180]</code>、<code>DistLimit[0,99999]</code>），<b>无算法函数体</b></td><td>数值等价不可承诺</td></tr>
+<tr><td><code>IsForce/IsPrefer/Visible=false</code> 的运行期强制力</td><td>只见 XML 声明</td><td>绑定校验强度设计</td></tr>
+<tr><td><code>priority</code> 缺失时的排序</td><td>仅见 GrayMatch 无节点</td><td>工具箱排序兼容</td></tr>
+</table>
+
+<h3>3.2 需要实机</h3>
+<ul>
+<li>无 Control.dll 的 7 个模块在参数窗首次打开时是否真的无差异（G3 对照）。</li>
+<li><code>AlgorithmTab.xml</code> 三类控件（<code>FloatBettween</code>/<code>ButtonSelecter</code>/<code>ROISelection</code>）的实际渲染与交互（G5 主题/DPI 也在内）。</li>
+<li><code>ShellModule</code> 217 文件中 <code>DLL/</code> 与 <code>UserScript/</code> 的加载时机与失败表现。</li>
+</ul>
+
+<h3>3.3 需要厂商文档</h3>
+<ul>
+<li><code>Combination Style</code> 与 <code>Filter ValueType</code> 的<b>完整枚举</b>（本批仅见 image/int/float + IMAGE/POINT，未穷尽）。</li>
+<li>26 种 <code>OperationName</code> 的官方语义与参数约定（<code>DoInitOperaion</code> 原件拼写错误是否需兼容）。</li>
+<li><code>helpUrl</code>（<code>GUID-…</code>）与帮助系统的映射规则。</li>
+</ul>
+
+<h2>4. 自验命令</h2>
+
+<h3>4.1 结构清点（19 模块）</h3>
+<pre>$app="D:\Program Files\VisionMaster4.4.0\Applications"
+Get-ChildItem (Join-Path $app "Module(sp)\x64\Measurement\IMVSP2PMeasureModu") -File | Select Name,Length
+Get-Content (Join-Path $app "Module(sp)\x64\Measurement\IMVSP2PMeasureModu\ToolItemInfo.xml")
+# Control.dll 覆盖率：R1 19 个中应为 12 个
+@("Location\IMVSBlobFindModu","Location\IMVSBlobFindLabelsModu","Location\IMVSContourMatchModu",
+  "Measurement\IMVSP2PMeasureModu","Logic\ShellModule") | ForEach-Object {
+  $p=Join-Path $app ("Module(sp)\x64\" + $_); "{0,-40} Ctl={1}" -f $_,(Test-Path (Join-Path $p ((Split-Path $_ -Leaf)+"Control.dll"))) }</pre>
+
+<h3>4.2 参数页元素直方图</h3>
+<pre>$p="D:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\x64\Measurement\IMVSP2PMeasureModu\IMVSP2PMeasureModuAlgorithmTab.xml"
+$t=[IO.File]::ReadAllText($p,[Text.Encoding]::UTF8)
+[regex]::Matches($t,'<([A-Za-z_][\w\.]*)') | ForEach-Object { $_.Groups[1].Value } | Group-Object | Sort Count -Descending | Select -First 15
+[regex]::Matches($t,'<OperationName>([^<]+)</OperationName>') | ForEach-Object { $_.Groups[1].Value } | Group-Object | Sort Count -Descending</pre>
+
+<h3>4.3 P2P 托管壳反编译</h3>
+<pre>$tmp="$env:TEMP\vm-r1-p2p"; New-Item -ItemType Directory -Force -Path $tmp | Out-Null
+& "D:\MyWork\REA逆向测试\.tools\ilspycmd.exe" -o $tmp `
+  "D:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\x64\Measurement\IMVSP2PMeasureModu\IMVSP2PMeasureModuCs.dll"
+Select-String -Path (Join-Path $tmp "IMVSP2PMeasureModuCs.decompiled.cs") -Pattern "SyncSelfRun|QueryModuleOneResult|ParamItem\(this" | Select -First 10</pre>
+
+<h3>4.4 参数根与双默认值</h3>
+<pre>$d="D:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\x64\Measurement\IMVSP2PMeasureModu"
+Select-String -Path (Join-Path $d "IMVSP2PMeasureModu.xml") -Pattern "Combination|Filter Name" | Select -First 12
+Select-String -Path (Join-Path $d "IMVSP2PMeasureModuAlgorithm.xml") -Pattern "ParamItem|DefaultValue" | Select -First 8</pre>
+
+<h2>5. 边界声明</h2>
+<ul>
+<li>本批<b>只新增本文档</b>；未改 <code>src</code>/<code>tools</code>/<code>tests</code>，未改同目录其他 evidence 文件，未 <code>git commit</code>/<code>push</code>。</li>
+<li>未启动 <code>VisionMaster.exe</code>、未加载厂商程序集、未写注册表、未修改安装目录任何文件（全部只读）。反编译仅读取 <code>*Cs.dll</code> 并把产物写入 <code>%TEMP%</code>，未进入仓库。</li>
+<li>未使用 <code>D:\MyWork\参考项目\VisionMaster</code>（HeBianGu 开源示例）作为任何结论依据。</li>
+<li>标注体系：<span class="obs">观察到</span>＝有直接文件/源码证据且可复核；<span class="inf">推断</span>＝多条证据合理推出但缺一项直接验证；<span class="unk">未知</span>＝本批未取证或无法取证。凡"未验证"不写作"已通过"。</li>
+<li>本批控件族统计为<b>元素名正则直方图（枚举所得）</b>，非 schema 校验结果；同名元素在不同层级语义可能不同，已在 1.2 按语义分组并注明。</li>
+<li>分类级 <code>ToolGroup.xml</code> 仅抽验 <code>Location</code> 一份，其余分类未逐一读取，故"分类级只有 name+priority"为<b>抽验结论</b>，不外推为全部 16 分类的定论。</li>
+<li>本批<b>不外推</b>到 R2–R5 的 172 个模块；Blob 结论向 P2P 的可复制性仅限结构层（执行入口/结果查询/契约文件构成/双默认值/声明式显示），<b>不含</b>算法与运行行为。</li>
+</ul>
+</html>

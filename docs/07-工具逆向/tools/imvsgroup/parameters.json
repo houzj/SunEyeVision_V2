@@ -1,0 +1,198 @@
+{
+  "toolId": "imvsgroup",
+  "parameters": [
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "LoopTimeGap",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "0",
+          "children": []
+        },
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "StartIndex",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "0",
+          "children": []
+        },
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "EndIndex",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "1",
+          "children": []
+        },
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "EnableLoop",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "0",
+          "children": []
+        }
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "StartIndex",
+        "ValueType": "int",
+        "IsForce": "false",
+        "CustomVisible": "false",
+        "Visible": "false"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "EndIndex",
+        "ValueType": "int",
+        "IsForce": "false",
+        "CustomVisible": "false",
+        "Visible": "false"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "CmpSrcInt",
+        "ValueType": "int",
+        "IsForce": "false",
+        "CustomVisible": "false",
+        "Visible": "false"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "CmpSrcFloat",
+        "ValueType": "float",
+        "IsForce": "false",
+        "CustomVisible": "false",
+        "Visible": "false"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "CmpSrcStr",
+        "ValueType": "string",
+        "IsForce": "false",
+        "CustomVisible": "false",
+        "Visible": "false"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "CmpDstInt",
+        "ValueType": "int",
+        "IsForce": "false",
+        "CustomVisible": "false",
+        "Visible": "false"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "CmpDstFloat",
+        "ValueType": "float",
+        "IsForce": "false",
+        "CustomVisible": "false",
+        "Visible": "false"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "CmpDstStr",
+        "ValueType": "string",
+        "IsForce": "false",
+        "CustomVisible": "false",
+        "Visible": "false"
+      },
+      "text": "",
+      "children": []
+    }
+  ],
+  "outputs": [
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "ModuRunTime",
+        "ValueType": "float",
+        "IsForce": "true",
+        "IsArray": "false"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "ModuStatus",
+        "ValueType": "int",
+        "IsForce": "false",
+        "CustomVisible": "false"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "LoopIndex",
+        "ValueType": "int",
+        "IsForce": "false",
+        "CustomVisible": "false",
+        "IsPrivate": "True",
+        "VisibleInResultTree": "false"
+      },
+      "text": "",
+      "children": []
+    }
+  ],
+  "bindings": [],
+  "conditions": [],
+  "status": "not-started"
+}

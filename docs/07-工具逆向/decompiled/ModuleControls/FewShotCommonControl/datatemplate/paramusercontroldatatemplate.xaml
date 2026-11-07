@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:FewShotCommonControl">
+  <DataTemplate x:Key="FewShotModelData">
+    <local:FewShotPanel ParentNode="{Binding}" />
+  </DataTemplate>
+  <DataTemplate x:Key="EdgeLearningModelData">
+    <local:FewShotEdgeLearningPanel ParentNode="{Binding}" CurModelGUID="{Binding CurValue, Mode=TwoWay}" />
+  </DataTemplate>
+</ResourceDictionary>

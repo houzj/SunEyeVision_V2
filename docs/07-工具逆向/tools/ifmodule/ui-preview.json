@@ -1,0 +1,69 @@
+{
+  "controls": [
+    {
+      "type": "Enumeration_IfModule",
+      "name": "LogicalMode"
+    },
+    {
+      "type": "HeadBar",
+      "name": "ListHead"
+    },
+    {
+      "type": "ButtonSelecter_RangeConF",
+      "name": "RangeConFFields"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "ifmodule",
+  "status": "source-indexed",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfModule\\IfBranchModuleCs.xml",
+      "sha256": "30f9499dc5730dfdfb2199c1a1a0ea00c0c3e8c379c24e9fc4254488e3d7f061",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfModule\\IfModule.xml",
+      "sha256": "21bc3eb04e1291141addc6605921d8a122f7fb049c387c3da6ed2b2f4b3b26ec",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfModule\\IfModuleAlgorithm.xml",
+      "sha256": "9bfd984b137294d79e241afee32761f66dfd39b319b9242535fdcd96de054fc1",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfModule\\IfModuleAlgorithmTab.xml",
+      "sha256": "9972c9e2cefa70cf51bc7c8237b57e93b363aa1bbce931d134e72c70dc36f1e9",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfModule\\IfModuleCs.xml",
+      "sha256": "2ffe91433be41093b057c007de5276b1c5b9d6e24914049cc37ed50e7e843aba",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfModule\\IfModuleDisplay.xml",
+      "sha256": "1e6ba4c7e8aa56dc4d8410c2eebea182cd72157d34f50da9dbee7c6a598c09e0",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfModule\\ToolItemInfo.xml",
+      "sha256": "f6dbf1bbdc43696f42ff8c899f1316d365a3230cd91c231c5168c39271f90caf",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "条件检测",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

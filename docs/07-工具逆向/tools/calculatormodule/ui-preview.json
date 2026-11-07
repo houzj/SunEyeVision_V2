@@ -1,0 +1,16 @@
+{
+  "stableToolId": "calculatormodule",
+  "displayName": "变量计算",
+  "kind": "schema-preview",
+  "svg": "ui-preview.svg",
+  "inputCount": 0,
+  "outputCount": 4,
+  "controlCount": 2,
+  "source": "XML declaration inventory",
+  "runtimeRendered": false,
+  "unknowns": [
+    "native desktop appearance",
+    "runtime display publication",
+    "pixel parity"
+  ]
+}

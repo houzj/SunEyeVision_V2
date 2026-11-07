@@ -1,0 +1,268 @@
+{
+  "controls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "OutputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "FeaturepatMatchConfigPanalData",
+      "name": "HPMatchPat"
+    },
+    {
+      "type": "Boolean",
+      "name": "UseMatchAllMode"
+    },
+    {
+      "type": "Float",
+      "name": "MinScore"
+    },
+    {
+      "type": "Integer",
+      "name": "MaxMatchNum"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Polarity"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangAngle"
+    },
+    {
+      "type": "RadioSelecterEx2",
+      "name": "RangeScaleType"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangScale"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangScaleX"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangScaleY"
+    },
+    {
+      "type": "Integer",
+      "name": "MaxOverlap"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SortType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "MatchThresholdFlag"
+    },
+    {
+      "type": "Integer",
+      "name": "MatchThresholdHigh"
+    },
+    {
+      "type": "Boolean",
+      "name": "SpotterFlag"
+    },
+    {
+      "type": "Integer",
+      "name": "MatchExtentRate"
+    },
+    {
+      "type": "Integer",
+      "name": "TimeOut"
+    },
+    {
+      "type": "Boolean",
+      "name": "OutLineEnable"
+    },
+    {
+      "type": "Boolean",
+      "name": "OKWhenNumIsZero"
+    },
+    {
+      "type": "Boolean",
+      "name": "NumLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "NumAngleLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "AngleLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeAngleLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "ScaleLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeScaleLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "ScaleXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeScaleXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "ScaleYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeScaleYLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "ScoreLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeScoreLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "MatchPointXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeMatchPointXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "MatchPointYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeMatchPointYLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "BoxPointXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeBoxPointXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "BoxPointYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeBoxPointYLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "SensorFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "MatchResults"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "MatchLocation"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "MatchOutlinePoints"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvshpfeaturematchmodu",
+  "status": "source-indexed",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSHPFeatureMatchModu\\IMVSHPFeatureMatchModu.xml",
+      "sha256": "2cb1a1f43a9dce4d27b47875101a879beb896d5db921ac4aea9332ef0f0ceed8",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSHPFeatureMatchModu\\IMVSHPFeatureMatchModuAlgorithm.xml",
+      "sha256": "48a68cf0024aef99bc7f753eee98801efb3d22095207d7bfc13cefd8069c1c16",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSHPFeatureMatchModu\\IMVSHPFeatureMatchModuAlgorithmTab.xml",
+      "sha256": "a5aedd2dab06db19682b3e8a4a5822d0cef09bae4372e93fecdeca55c701cf0d",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSHPFeatureMatchModu\\IMVSHPFeatureMatchModuCs.xml",
+      "sha256": "c29ab4f13b1591bbe989b7b111b30c244865e03978365f2ef11086d3ba15f9b9",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSHPFeatureMatchModu\\IMVSHPFeatureMatchModuDisplay.xml",
+      "sha256": "0f29d5b2916e4159922b08e7a9bc4b790fdda9eaba62224d1effdbe62b7f35d6",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSHPFeatureMatchModu\\ToolItemInfo.xml",
+      "sha256": "2fcc49b21a5958bb4c88ec5b13323a9463f9fba8d0d7245e553404343f2518bb",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "高精度匹配",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

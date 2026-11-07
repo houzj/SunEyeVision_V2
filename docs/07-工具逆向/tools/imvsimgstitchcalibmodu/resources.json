@@ -1,0 +1,150 @@
+{
+  "toolId": "imvsimgstitchcalibmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImgStitchCalibModu\\IMVSImgStitchCalibModu.xml",
+      "sha256": "000cdee9d768c64c0a89154b6aa1a7e5eef82302b087f98ab760349cd86350c1",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImgStitchCalibModu\\IMVSImgStitchCalibModuAlgorithm.xml",
+      "sha256": "ce5e9e62fd40294002ff356fe2418cda35a032abe49e523e33632208cdf0f99e",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImgStitchCalibModu\\IMVSImgStitchCalibModuAlgorithmTab.xml",
+      "sha256": "d17896c3030e3ff58aec6d7ff6b9c0bd8646cfa305c4b8892213d3c399dc5792",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImgStitchCalibModu\\IMVSImgStitchCalibModuCs.xml",
+      "sha256": "2f17615d63a995ad9363c2e39027cacd0c59138101e742cca1ec58b0e733d5b6",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImgStitchCalibModu\\IMVSImgStitchCalibModuDisplay.xml",
+      "sha256": "c4294c3abc85b5ef666e63e0d3b84b732812c7bff33420295e91ab79def0bb8d",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImgStitchCalibModu\\ToolItemInfo.xml",
+      "sha256": "c36ed1786e9a776267d6a32c3a4d6bf9e3aa6a090cbbbcd31969b4ff80d9b750",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Stitch Model"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ROI参数"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "RadioSelecterEx2",
+      "name": "InputType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "StitchType"
+    },
+    {
+      "type": "ImgStitchInteger",
+      "name": "ImageNum"
+    },
+    {
+      "type": "ImgStitchInteger",
+      "name": "HardImageNum"
+    },
+    {
+      "type": "NumberMultiply",
+      "name": "ImageMatrix"
+    },
+    {
+      "type": "Enumeration",
+      "name": "StitchDirection"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "FirstImageFlag"
+    },
+    {
+      "type": "EnumerationG",
+      "name": "ImageSource"
+    },
+    {
+      "type": "ImageSourceList",
+      "name": "ImageSourceList"
+    },
+    {
+      "type": "Pannel_ImgStitch",
+      "name": "StitchModelPanel"
+    },
+    {
+      "type": "Enumeration",
+      "name": "MergeType"
+    },
+    {
+      "type": "Integer",
+      "name": "CutRatio"
+    },
+    {
+      "type": "Integer",
+      "name": "CutRatioX"
+    },
+    {
+      "type": "Integer",
+      "name": "CutRatioY"
+    },
+    {
+      "type": "Boolean",
+      "name": "AutoClear"
+    },
+    {
+      "type": "Boolean",
+      "name": "AutoFill"
+    },
+    {
+      "type": "AddList_ImageStitch",
+      "name": "ImageRoiList"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "Combination",
+      "name": "InputROI"
+    }
+  ],
+  "sharedUiGroups": [
+    "RoiSelectGroup",
+    "InheritWayGroup",
+    "TextDisplayGroup"
+  ],
+  "status": "inventory-only"
+}

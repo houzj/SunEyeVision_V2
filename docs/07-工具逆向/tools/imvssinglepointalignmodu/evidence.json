@@ -1,0 +1,24 @@
+{
+  "stableToolId": "imvssinglepointalignmodu",
+  "originalPlugin": "IMVSSinglePointAlignModu",
+  "displayName": "单点对位",
+  "originalCategory": "Calculation",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSSinglePointAlignModu",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "status": "inventory-only",
+  "evidenceState": "unknown",
+  "resourceCount": 6,
+  "parameterCount": 0,
+  "inputCount": 4,
+  "outputCount": 5,
+  "uiControlCount": 2,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ]
+}

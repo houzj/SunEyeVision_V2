@@ -1,0 +1,152 @@
+{
+  "toolId": "singlepointmapalignmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointMapAlignModu\\SinglePointMapAlignModu.xml",
+      "sha256": "752187ef1f81d3f4603f5343413207365c0a0d9bd55c53e29ce972a72bf93579",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointMapAlignModu\\SinglePointMapAlignModuAlgorithm.xml",
+      "sha256": "4ac3f7a42264b8abb37d77421789300799329a7f6824a25864a84b079d3e4613",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointMapAlignModu\\SinglePointMapAlignModuAlgorithmTab.xml",
+      "sha256": "bdd93655ff7781a8a5e557100a816d8ca1cf038fa69f2b6309e31e11a3468992",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointMapAlignModu\\SinglePointMapAlignModuCs.xml",
+      "sha256": "516672770cf6b2a65359e2e0c6c9f3f2a4afd28c9cd56bec0f868674db76095a",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointMapAlignModu\\SinglePointMapAlignModuDisplay.xml",
+      "sha256": "2b5bd3022a99e3dd9c1783aa27fa086a888742149d4691da2ea18e232e1c1d6d",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointMapAlignModu\\ToolItemInfo.xml",
+      "sha256": "8e4e2523e0f1db913ecb3e8fa28d002f79bcc85d16d521c0f57525dbef0c18fb",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "RadioSelecter",
+      "name": "InputMode"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ObjImagePoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ObjImagePointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ObjImagePointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ObjImagePointA"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TarImagePoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TarImagePointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TarImagePointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TarImageLineS"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TarImageLineSX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TarImageLineSY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TarImageLineE"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TarImageLineEX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TarImageLineEY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TeachPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TeachPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TeachPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TeachPointA"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "CalibLoadType"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "NPointCalibMatrix"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "MapCalibMatrix"
+    },
+    {
+      "type": "OpenFileForCalibDialog",
+      "name": "FilePath"
+    },
+    {
+      "type": "OpenFileForCalibDialog",
+      "name": "FilePathMap"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RefreshSignal"
+    }
+  ],
+  "sharedUiGroups": [
+    "TextDisplayGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

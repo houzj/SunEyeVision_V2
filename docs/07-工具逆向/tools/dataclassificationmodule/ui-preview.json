@@ -1,0 +1,60 @@
+{
+  "controls": [
+    {
+      "type": "DataClassificationParam",
+      "name": "DataClassificationParamTab"
+    },
+    {
+      "type": "DataClassificationConfig",
+      "name": "DataClassificationConfigTab"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "declarative-parameters",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P0",
+  "themeStates": "unknown",
+  "toolId": "dataclassificationmodule",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataClassificationModule\\DataClassificationModule.xml",
+      "sha256": "8a0d6b7e3b7548fb30df7439f34b966585f6685445df56eb96ba29c8c007cf06",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataClassificationModule\\DataClassificationModuleAlgorithm.xml",
+      "sha256": "985704a0c914bb1f2fbce86448d97983602e75779c7548b8356d57ecdadd9d13",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataClassificationModule\\DataClassificationModuleAlgorithmTab.xml",
+      "sha256": "cdbca5cce0faf14580468e7a9782a6b56e58517561660f941073174d4986a924",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataClassificationModule\\DataClassificationModuleCs.xml",
+      "sha256": "d20afb9ecde3700d00ad528e2bae976afd4faff9c65361cf4aa82e50a2e4affd",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataClassificationModule\\DataClassificationModuleDisplay.xml",
+      "sha256": "9d9ff06bcda7abe62d23e81531f26d6d8cb670dcbee98eb6d3bd47ef847dda2d",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataClassificationModule\\ToolItemInfo.xml",
+      "sha256": "6e06178e6b0266dbcbbee231dfb256de7718efa48861cb1bbb415664240f15d3",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "数据分类",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

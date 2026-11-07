@@ -1,0 +1,144 @@
+{
+  "controls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FindMode"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Edge0Polarity"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Edge1Polarity"
+    },
+    {
+      "type": "Integer",
+      "name": "HalfKernelSize"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeStrength"
+    },
+    {
+      "type": "Integer",
+      "name": "IdeaWid"
+    },
+    {
+      "type": "Integer",
+      "name": "CaliperCount"
+    },
+    {
+      "type": "Enumeration",
+      "name": "DetechOrient"
+    },
+    {
+      "type": "Integer",
+      "name": "ProjectionLength"
+    },
+    {
+      "type": "Integer",
+      "name": "DistLow"
+    },
+    {
+      "type": "Boolean",
+      "name": "DistHighIsAutoEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "DistHigh"
+    },
+    {
+      "type": "Boolean",
+      "name": "MidPointEnable"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "SensorFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "EdgeLocation"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "EdgeLocation"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "MinDistLine"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "MaxDistLine"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvsedgepairpostrendanalymodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePairPosTrendAnalyModu\\IMVSEdgePairPosTrendAnalyModu.xml",
+      "sha256": "9472a91db3aab1e1e441b53635fde748948c8862309d45b1131b1f0ff6b4cd10",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePairPosTrendAnalyModu\\IMVSEdgePairPosTrendAnalyModuAlgorithm.xml",
+      "sha256": "52adc896b259e0f9e037869031ee20ef58889c727ac4f78c6d52cd44dd5b761f",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePairPosTrendAnalyModu\\IMVSEdgePairPosTrendAnalyModuAlgorithmTab.xml",
+      "sha256": "8e7ec970d63c2e5c4410f161147dff3bd8fbe4f1cd86151615416e85a9b7e6b1",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePairPosTrendAnalyModu\\IMVSEdgePairPosTrendAnalyModuCs.xml",
+      "sha256": "4dc6cd70a54cce0964653742ff03920cac899b1995304c132908678deab6a9a1",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePairPosTrendAnalyModu\\IMVSEdgePairPosTrendAnalyModuDisplay.xml",
+      "sha256": "6381d4dc8284bc083512ec7593bc9a04d5cbcb868607c6378b3b17e3ef985fd4",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePairPosTrendAnalyModu\\ToolItemInfo.xml",
+      "sha256": "9784537dea5d93de091c18d8a606147cee846d5c79178d0fad394466144d8bce",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "边缘对位置趋势分析",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

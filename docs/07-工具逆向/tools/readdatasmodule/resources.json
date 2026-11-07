@@ -1,0 +1,90 @@
+{
+  "toolId": "readdatasmodule",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\ReadDatasModule\\ReadDatasModule.xml",
+      "sha256": "cf7e7279aeb7e6d9f61fbc67a863ad73bc2545398d20f08c47d4cb25207c23b6",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\ReadDatasModule\\ReadDatasModuleAlgorithm.xml",
+      "sha256": "04419e8d7323b0582d194faa4a2942a109750ab882628460745c8c12bc2977cd",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\ReadDatasModule\\ReadDatasModuleAlgorithmTab.xml",
+      "sha256": "d756b8f018b7d8859f26e3cd8ed359b888cecbe8a293a74edc6866c3ff79b289",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\ReadDatasModule\\ReadDatasModuleCs.xml",
+      "sha256": "7561c2da603965d641e27b23b2e03fc931b3fd964e807c61724ecf31fb665f82",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\ReadDatasModule\\ReadDatasModuleDisplay.xml",
+      "sha256": "11958a3d38425cde8f8c68789d87492b3bc2af70fe4b0ea15682e9e98a4dcf82",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\ReadDatasModule\\ToolItemInfo.xml",
+      "sha256": "2b8eeab5bf93b97dba193fc0d8be1118dd4b514c0b5642feafc93b66e73e9446",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "RadioSelecterEx3",
+      "name": "OutputType"
+    },
+    {
+      "type": "EnumerationDataCenter",
+      "name": "DataCenter"
+    },
+    {
+      "type": "Integer",
+      "name": "RowNum"
+    },
+    {
+      "type": "EnumerationCommunication",
+      "name": "CommunicationModuleID"
+    },
+    {
+      "type": "HeadBar",
+      "name": "QueueHead"
+    },
+    {
+      "type": "QueueItemOut",
+      "name": "QueueItemList"
+    },
+    {
+      "type": "GlobalVarItemOut",
+      "name": "GlobalVarList"
+    },
+    {
+      "type": "CommunicationItemReceive",
+      "name": "CommunicationItemList"
+    },
+    {
+      "type": "ModbusItemReceive",
+      "name": "ModbusReveive"
+    },
+    {
+      "type": "PLCItemReceive",
+      "name": "PLCReveive"
+    }
+  ],
+  "sharedUiGroups": [],
+  "status": "inventory-only"
+}

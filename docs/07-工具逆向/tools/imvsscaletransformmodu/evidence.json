@@ -1,0 +1,28 @@
+{
+  "stableToolId": "imvsscaletransformmodu",
+  "originalPlugin": "IMVSScaleTransformModu",
+  "displayName": "单位转换",
+  "originalCategory": "Calculation",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSScaleTransformModu",
+  "uiCategory": "declarative-parameters",
+  "priority": "P0",
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "resourceCount": 6,
+  "parameterCount": 1,
+  "inputCount": 4,
+  "outputCount": 11,
+  "uiControlCount": 4,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [
+    {"path":"analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/ScaleTransformModuParams.cs","members":["ScaleTransformModuParams::.ctor","LoadCalibPath","ParamItem.GetStringValue","ParamItem.SetStringValue"]},
+    {"path":"analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/ScaleTransformModuTool.cs","members":["ScaleTransformModuTool::.ctor","Clone","Dispose"]},
+    {"path":"analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/ScaleTransformResult.cs","members":["stBasicModuInfo","stScaleTransformModule"]},
+    {"path":"analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/ScaleTransformResultIn.cs","members":["ModuStatus","PixelScale","PhyDist","PixDist"]},
+    {"path":"analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/CProcess.cs","members":["RunOnce","StopRun","ContinousRun"]}
+  ],
+  "managedMembers": ["ScaleTransformModuParams.LoadCalibPath","ScaleTransformModuTool.Clone","ScaleTransformModuTool.Dispose","ScaleTransformResultIn.ModuStatus","ScaleTransformResultIn.PixelScale","ScaleTransformResultIn.PhyDist","ScaleTransformResultIn.PixDist"],
+  "nativeFunctions": ["IMVS_PF_ExecuteOnce_V30_CS (generic CProcess evidence only)"],
+  "runtimeObservations": [],
+  "unknowns": ["native Process/ProcessAlg ABI and computation","XML event/binding and save/restore path","native result ownership and release timing","original VM runtime behavior"]
+}

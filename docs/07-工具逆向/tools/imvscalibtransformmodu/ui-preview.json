@@ -1,0 +1,96 @@
+{
+  "controls": [
+    {
+      "type": "RadioSelecter",
+      "name": "InputMode"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PicPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PicPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PicPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PicPointA"
+    },
+    {
+      "type": "Enumeration",
+      "name": "CoordType"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "CalibLoadType"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "CalibMatrix"
+    },
+    {
+      "type": "OpenFileForCalibDialog",
+      "name": "LoadCalibPath"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RefreshSignal"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "TransPoint"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvscalibtransformmodu",
+  "status": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSCalibTransformModu\\IMVSCalibTransformModu.xml",
+      "sha256": "754a99668d773812511f5a821e78c19891f38b8958b4665078d82ae2c9ec6c64",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSCalibTransformModu\\IMVSCalibTransformModuAlgorithm.xml",
+      "sha256": "a1555a0e2b2e2e543cec81f15532e817a9e125bbf456127aa77f6ac5d4690963",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSCalibTransformModu\\IMVSCalibTransformModuAlgorithmTab.xml",
+      "sha256": "1c7b04b5d24a3f09df87ee8b94a2b15d8b6ba89f3cb4e608181a29c58e401b58",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSCalibTransformModu\\IMVSCalibTransformModuCs.xml",
+      "sha256": "e97dcef107f1f5857745fa135875bb18c4ab0bb0d9bd83c0a054fe2781ae1584",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSCalibTransformModu\\IMVSCalibTransformModuDisplay.xml",
+      "sha256": "3d9e142086b7d5c8d370dc279afe53b982ecd7a036ccc69d2e3d1a0f37c7449e",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSCalibTransformModu\\ToolItemInfo.xml",
+      "sha256": "46da5d8cc211bfd5c08f7d8e525a626e731b8cd68fa07832a03fcd6799c2486a",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "标定转换",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

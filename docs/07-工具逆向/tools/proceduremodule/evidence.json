@@ -1,0 +1,24 @@
+{
+  "stableToolId": "proceduremodule",
+  "originalPlugin": "ProcedureModule",
+  "displayName": "ProcedureModule",
+  "originalCategory": "Global",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ProcedureModule",
+  "uiCategory": "compound-control",
+  "priority": "P4",
+  "status": "inventory-only",
+  "evidenceState": "unknown",
+  "resourceCount": 5,
+  "parameterCount": 0,
+  "inputCount": 0,
+  "outputCount": 1,
+  "uiControlCount": 5,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ]
+}

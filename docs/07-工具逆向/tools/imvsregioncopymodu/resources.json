@@ -1,0 +1,111 @@
+{
+  "toolId": "imvsregioncopymodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSRegionCopyModu\\IMVSRegionCopyModu.xml",
+      "sha256": "1f4566dd7e81b1313445db0bf2cd33f9accf72df1867da431e41c4149156bd7f",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSRegionCopyModu\\IMVSRegionCopyModuAlgorithm.xml",
+      "sha256": "798819bebd9a65923e4a6e6b7c92da235495e012e10182915c44f8eeb0f6e6ca",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSRegionCopyModu\\IMVSRegionCopyModuAlgorithmTab.xml",
+      "sha256": "ecf913482bd9450bf7c0680af6e0ce18468f73e115d7ec529b7cc41c3f9b53aa",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSRegionCopyModu\\IMVSRegionCopyModuCs.xml",
+      "sha256": "2747bb4200af89f4d7d4877a83dbcef078bbdc55ec9f4225571a05bd3748d96e",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSRegionCopyModu\\IMVSRegionCopyModuDisplay.xml",
+      "sha256": "169e7cecbc7daa351af58632647192a1a7290a9135fb571c22d49245dc75f95b",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSRegionCopyModu\\ToolItemInfo.xml",
+      "sha256": "138e279951c4d85b2dee5ec6b0795dc4106fdb34191f4b0ca2c418b85e4b3eaf",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "OutputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "RegionType"
+    },
+    {
+      "type": "Integer",
+      "name": "FillVal"
+    },
+    {
+      "type": "Integer",
+      "name": "ExtFillVal"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZoneAnnular"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "OutputMaskImageGroup",
+    "RoiSelectGroup",
+    "InheritWayGroup2",
+    "AssistGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

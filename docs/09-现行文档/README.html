@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>现行文档层（09）</title>
+<link rel="stylesheet" href="../00-索引/assets/doc.css">
+</head>
+<body>
+<div class="wrap">
+
+<nav class="crumbs">
+    <a href="../00-索引/主题台账.html">主题台账</a>
+    <a href="../00-索引/文档索引.html">文档索引</a>
+</nav>
+
+<header class="doc-header">
+    <h1>现行文档层（09）</h1>
+    <p class="doc-meta">最后更新：2026-11-05</p>
+</header>
+
+<section class="card lead">
+    <blockquote>
+        <p>本目录回答一个问题：<strong>这件事现在是什么样、为什么这样、还没做什么。</strong></p>
+        <p>每个主题一篇，不按日期下沉，不叠版本。</p>
+    </blockquote>
+</section>
+
+<section class="card">
+    <h2>一、这一层解决什么问题</h2>
+        <p><code>docs/01</code>~<code>06</code> 是按「类型 + 日期」记的一次性文档：同一个事（相机、通讯、测量、渲染）被写成 10 到 50 篇按日期递增的方案，读者不知道该信哪一篇，也没人做过合并。</p>
+        <p>本目录把「现在是什么」抽出来，<strong>每主题一篇</strong>。历史文档原样保留在 <code>01-06</code>，作为演进证据，不再当现行结论使用。</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>层</th>
+                    <th>目录</th>
+                    <th>定位</th>
+                    <th>能不能当结论</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>索引层</td>
+                    <td><code>00-索引</code></td>
+                    <td>文档索引 + 主题台账</td>
+                    <td>只指路</td>
+                </tr>
+                <tr>
+                    <td>历史层</td>
+                    <td><code>01-方案设计</code> ~ <code>06-指南参考</code></td>
+                    <td>按日期的一次性记录</td>
+                    <td><strong>不能</strong>，只作演进证据</td>
+                </tr>
+                <tr>
+                    <td>工具证据层</td>
+                    <td><code>07-工具逆向</code> / <code>08-工具预览</code></td>
+                    <td>原件证据与调试窗预览</td>
+                    <td>能作证据，不作设计结论</td>
+                </tr>
+                <tr>
+                    <td><strong>现行层</strong></td>
+                    <td><strong><code>09-现行文档</code></strong></td>
+                    <td><strong>每主题唯一权威说明</strong></td>
+                    <td><strong>能</strong></td>
+                </tr>
+                <tr>
+                    <td>协作层</td>
+                    <td><code>collaboration</code></td>
+                    <td>交接、决策、证据、账本</td>
+                    <td>流程凭据</td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+<section class="card">
+    <h2>二、统一骨架（每篇都必须有这 8 节）</h2>
+        <pre><code># 主题名
+
+&gt; 最后更新：YYYY-MM-DD ｜ 状态：现行 / 部分未实施 ｜ 代码基线：commit
+
+## 一句话结论
+## 改前用户看到什么
+## 改后应该是什么样
+## 关键结构（图 + 表）
+## 关键决策与理由
+## 实施与验证状态（已做 / 未做 / 未验）
+## 风险与遗留
+## 历史演进（链接到 01-06 各版本）</code></pre>
+        <p>硬性要求：</p>
+        <ul>
+            <li><strong>开头 10 行内说清「这是什么、现在怎么样」</strong>，不铺垫背景。</li>
+            <li><strong>至少一张结构图</strong>（纯 HTML/CSS，零依赖，双击 <code>file://</code> 可读）+ <strong>至少一张决策表</strong>。纯文字大段不算合格。</li>
+            <li><strong>「实施与验证状态」必须三分</strong>：已做 / 未做 / 未验。没验的写未验，不写「已完成」。</li>
+            <li><strong>「历史演进」列出被合并的每一篇</strong>，读者要能追到原始方案。</li>
+            <li><strong>不复制历史正文</strong>，只写合并后的结论与理由。</li>
+        </ul>
+</section>
+
+<section class="card">
+    <h2>三、怎么读</h2>
+        <ol>
+            <li>先看 <code>docs/00-索引/主题台账.html</code>，按主题找到对应现行文档</li>
+            <li>打开本目录对应篇，看「一句话结论」判断是不是你要的</li>
+            <li>需要原始证据时，从「历史演进」跳回 <code>01-06</code> 的具体篇</li>
+        </ol>
+</section>
+
+<section class="card">
+    <h2>四、怎么维护</h2>
+        <ul>
+            <li><strong>已有主题</strong>：改本目录对应篇，<strong>不新建日期文档</strong>。</li>
+            <li><strong>新主题</strong>：若属已有主题范畴，并入该篇；确实是新主题，才在 <code>01-方案设计</code> 新建日期文档，然后在本目录补一篇现行说明。</li>
+            <li>改完跑 <code>docs/00-索引/生成主题台账.ps1</code> 与 <code>更新索引.ps1</code>，台账「整合状态」会从「未整合」变「已整合」。</li>
+            <li>状态口径：<code>现行</code> = 代码与文档一致；<code>部分未实施</code> = 方案已定、代码未全做；<code>已废弃</code> = 方向已改，保留仅为追溯。</li>
+        </ul>
+</section>
+
+<section class="card">
+    <h2>五、当前覆盖</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>主题</th>
+                    <th>现行文档</th>
+                    <th>状态</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>框架架构总览</td>
+                    <td><code>框架架构总览.html</code></td>
+                    <td>见该篇</td>
+                </tr>
+                <tr>
+                    <td>相机与采集</td>
+                    <td><code>相机与采集.html</code></td>
+                    <td>见该篇</td>
+                </tr>
+                <tr>
+                    <td>通讯工具链</td>
+                    <td><code>通讯工具链.html</code></td>
+                    <td>见该篇</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>其余主题仍在 <code>01-06</code> 历史层，台账中标记为「未整合」。</p>
+</section>
+
+<nav class="doc-nav">
+    <a class="primary" href="../00-索引/主题台账.html">主题台账</a>
+    <a href="../00-索引/文档索引.html">文档索引</a>
+</nav>
+
+</div>
+</body>
+</html>

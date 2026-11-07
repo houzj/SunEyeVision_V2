@@ -1,0 +1,68 @@
+{
+  "stableToolId": "dataanalysismodule",
+  "originalPlugin": "DataAnalysisModule",
+  "displayName": "协议解析",
+  "originalCategory": "Communication",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule",
+  "uiCategory": "declarative-parameters",
+  "priority": "P0",
+  "resourceCount": 6,
+  "parameterCount": 2,
+  "inputCount": 1,
+  "outputCount": 2,
+  "uiControlCount": 8,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/DataAnalysisModuParams.cs",
+      "members": [
+        "constructor",
+        "Clone",
+        "Dispose",
+        "result members"
+      ]
+    },
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/DataAnalysisModuTool.cs",
+      "members": [
+        "constructor",
+        "Clone",
+        "Dispose",
+        "result members"
+      ]
+    },
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/DataAnalysisResult.cs",
+      "members": [
+        "constructor",
+        "Clone",
+        "Dispose",
+        "result members"
+      ]
+    },
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/DataAnalysisResultIn.cs",
+      "members": [
+        "constructor",
+        "Clone",
+        "Dispose",
+        "result members"
+      ]
+    }
+  ],
+  "managedMembers": [
+    "managed parameter/result/UI members recovered"
+  ],
+  "nativeFunctions": [
+    "IMVS_PF_ExecuteOnce_V30_CS (generic CProcess evidence only)"
+  ],
+  "runtimeObservations": [],
+  "unknowns": [
+    "native Process/ProcessAlg ABI and algorithm",
+    "XML UI binding/conditions",
+    "save/restore serialization",
+    "original VM runtime behavior"
+  ]
+}

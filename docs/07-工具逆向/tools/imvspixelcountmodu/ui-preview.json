@@ -1,0 +1,124 @@
+{
+  "controls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "OutputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Integer",
+      "name": "LowThresh"
+    },
+    {
+      "type": "Integer",
+      "name": "HighThresh"
+    },
+    {
+      "type": "Boolean",
+      "name": "CountLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangCountLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "RatioLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangRatioLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "BinaryEnable"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZoneAnnular"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvspixelcountmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSPixelCountModu\\IMVSPixelCountModu.xml",
+      "sha256": "a7b5a0eb8bf36ebcf2b4eaf59d033ae9e4578d099482c0553d6807f04373af66",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSPixelCountModu\\IMVSPixelCountModuAlgorithm.xml",
+      "sha256": "e61a0bc2c6a4fc4b5b09cc19cca93a82e28f369da0ebe2c2693428e377cec039",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSPixelCountModu\\IMVSPixelCountModuAlgorithmTab.xml",
+      "sha256": "dda095dcbf12a3cb73ece43c9bea2e32b1578659c4205140f8e8eaadda6e1912",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSPixelCountModu\\IMVSPixelCountModuCs.xml",
+      "sha256": "67cbdf0a3deb0120734b9bb122a6676d7747353de4bbbdcb6980e23ea143d567",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSPixelCountModu\\IMVSPixelCountModuDisplay.xml",
+      "sha256": "3ca7706bbfcbe2a1948dbe33957462aaf24113dce33056e61142810336d4a98a",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSPixelCountModu\\ToolItemInfo.xml",
+      "sha256": "09315565351a8bb21f8ecad9ec1220ecb14f0d80f24893babb2528f2a0dd08b4",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "像素统计",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

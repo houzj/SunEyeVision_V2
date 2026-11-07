@@ -1,0 +1,424 @@
+{
+  "controls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "OutputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ThresholdType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Polarity"
+    },
+    {
+      "type": "Integer",
+      "name": "LowThreshold"
+    },
+    {
+      "type": "Integer",
+      "name": "HightThreshold"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "ThresholdRangArea"
+    },
+    {
+      "type": "Integer",
+      "name": "Softness"
+    },
+    {
+      "type": "Integer",
+      "name": "SoftLeftRatio"
+    },
+    {
+      "type": "Integer",
+      "name": "SoftRightRatio"
+    },
+    {
+      "type": "Integer",
+      "name": "SoftLowRatio"
+    },
+    {
+      "type": "Integer",
+      "name": "SoftHighRatio"
+    },
+    {
+      "type": "Integer",
+      "name": "FindNum"
+    },
+    {
+      "type": "Integer",
+      "name": "HoleMinArea"
+    },
+    {
+      "type": "Boolean",
+      "name": "SelectByArea"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangArea"
+    },
+    {
+      "type": "Enumeration",
+      "name": "BlobContourType"
+    },
+    {
+      "type": "Boolean",
+      "name": "BolbImageEnable"
+    },
+    {
+      "type": "Boolean",
+      "name": "BinaryImageEnable"
+    },
+    {
+      "type": "Expand",
+      "name": "Expert"
+    },
+    {
+      "type": "Boolean",
+      "name": "SelectByHistInfo"
+    },
+    {
+      "type": "Boolean",
+      "name": "SelectByBoxAngle"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangBoxAngle"
+    },
+    {
+      "type": "Boolean",
+      "name": "SelectByRectWidth"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangRectWidth"
+    },
+    {
+      "type": "Boolean",
+      "name": "SelectByRectHeight"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangRectHeight"
+    },
+    {
+      "type": "Boolean",
+      "name": "SelectByPerimeter"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangPerimeter"
+    },
+    {
+      "type": "Boolean",
+      "name": "SelectByShortAxis"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangShortAxis"
+    },
+    {
+      "type": "Boolean",
+      "name": "SelectByLongAxis"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangLongAxis"
+    },
+    {
+      "type": "Boolean",
+      "name": "SelectByCircularuty"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCircularity"
+    },
+    {
+      "type": "Boolean",
+      "name": "SelectByRectangularity"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangRectangularity"
+    },
+    {
+      "type": "Boolean",
+      "name": "SelectByCentraBias"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCenterBias"
+    },
+    {
+      "type": "Boolean",
+      "name": "AxisRatioEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "AxisRatioRange"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SortFeature"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SortMode"
+    },
+    {
+      "type": "Enumeration",
+      "name": "connectivity"
+    },
+    {
+      "type": "Integer",
+      "name": "MaxAreaInnerRectNum"
+    },
+    {
+      "type": "Integer",
+      "name": "OverlapRatio"
+    },
+    {
+      "type": "Boolean",
+      "name": "MaxOutPixelNumEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "MaxOutPixelNum"
+    },
+    {
+      "type": "Boolean",
+      "name": "OKWhenNumIsZero"
+    },
+    {
+      "type": "Boolean",
+      "name": "BlobNumLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangBlobNumLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "BlobAreaLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangBlobAreaLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "BlobTotalAreaLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangBlobTotalAreaLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "CentroidXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCentroidXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "CentroidYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCentroidYLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "AngleLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangAngleLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "CenterXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCenterXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "CenterYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCenterYLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "BoxHeightLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "BoxHeightLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "BoxWidthLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "BoxWidthLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "PerimeterLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangPerimeterLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "LongAxisLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangLongAxisLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "ShortAxisLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangShortAxisLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "CircularityLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCircularityLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "RectangularityLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangRectangularityLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlobFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlobMaxAreaInnerRect"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "MatchLocation"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZoneAnnular"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvsblobfindmodu",
+  "status": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModu.xml",
+      "sha256": "f1b2f279717dce3ec61c11c41f858bd100359095bcf13672422a3c73efe47f6c",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithm.xml",
+      "sha256": "d5de2d5888d0767552c3077457eadd796171b4447f1c92f93bc9bb60854a7b2b",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "sha256": "34a0cc5423a3d66b92dc272e0f50b013310e5180e801c648005383c3adddfdec",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuCs.xml",
+      "sha256": "c3c46d0dd1cf4765034791783b6085478f26928f2d86bf5c50ab8d5fd3b205f4",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuDisplay.xml",
+      "sha256": "b3bc63e6cf7c8ca120baf5b632bbe1359843138cf77cb5a64fc698ef22465112",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\ToolItemInfo.xml",
+      "sha256": "014ba2ed410f030748f83fed87a0ce7acde5dfa68b9e98cb0bc43aa31b074f95",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "Blob分析",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

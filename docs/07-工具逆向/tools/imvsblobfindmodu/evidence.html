@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>imvsblobfindmodu 路 evidence.json</title><style>*{box-sizing:border-box}
+body{margin:0;background:#f6f7f9;color:#1d2129;font:14px/1.7 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:24px 20px 60px}
+.crumbs{font-size:13px;margin-bottom:14px}
+.crumbs a{color:#2563eb;text-decoration:none}
+.card{background:#fff;border:1px solid #e4e7ec;border-radius:10px;padding:26px 30px}
+h1,h2,h3,h4{line-height:1.4}
+h1{font-size:20px}h2{font-size:17px;margin-top:26px}h3{font-size:15px}
+table{border-collapse:collapse;margin:12px 0;width:100%;font-size:13px}
+td,th{border:1px solid #e4e7ec;padding:6px 10px;vertical-align:top}
+tr:nth-child(even) td{background:#fafbfc}
+code{background:#f1f3f5;border-radius:3px;padding:1px 5px;font-size:12.5px;font-family:Consolas,Menlo,monospace;color:#c7254e}
+pre{background:#282c34;color:#abb2bf;border-radius:6px;padding:14px 16px;overflow:auto;font-size:12.5px;line-height:1.6;font-family:Consolas,Menlo,monospace}
+pre code{background:none;color:inherit;padding:0}
+ul{padding-left:22px}
+blockquote{border-left:3px solid #d0d5da;margin:10px 0;padding:4px 14px;color:#5a636b;background:#fafbfc}
+hr{border:0;border-top:1px solid #e4e7ec;margin:18px 0}
+p{margin:8px 0}</style></head><body><div class="wrap"><nav class="crumbs"><a href="../../index.html">&#8592; 宸ュ叿绱㈠紩</a> &middot; <code>imvsblobfindmodu</code></nav><div class="card"><h2>evidence.json</h2><pre>{
+    &quot;stableToolId&quot;:  &quot;imvsblobfindmodu&quot;,
+    &quot;originalPlugin&quot;:  &quot;IMVSBlobFindModu&quot;,
+    &quot;displayName&quot;:  &quot;Blob分析&quot;,
+    &quot;originalCategory&quot;:  &quot;Location&quot;,
+    &quot;originalSourcePath&quot;:  &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu&quot;,
+    &quot;uiCategory&quot;:  &quot;result-view&quot;,
+    &quot;priority&quot;:  &quot;P2&quot;,
+    &quot;resourceCount&quot;:  6,
+    &quot;parameterCount&quot;:  105,
+    &quot;inputCount&quot;:  39,
+    &quot;outputCount&quot;:  95,
+    &quot;uiControlCount&quot;:  94,
+    &quot;sourceInventory&quot;:  &quot;docs/plugins/inventory.json&quot;,
+    &quot;status&quot;:  &quot;source-partial&quot;,
+    &quot;evidenceState&quot;:  &quot;source-partial&quot;,
+    &quot;origin&quot;:  &quot;suneyevision&quot;,
+    &quot;rewriteNote&quot;:  &quot;2026-11-05 按库内既有 B08 证据链回填：原 sourceEvidence 为空、unknowns 只有一句「尚未开始」，属未取证形态。本次补 8 条带 SHA-256 的证据、7 环节 / 9 步 / 7 维三组结构、我方当前实现与差异，并把 inputCount/outputCount 从 6/33 改为整工具活动节点 39/95（原值为 Codex 的叶项计数口径）。&quot;,
+    &quot;sourceEvidence&quot;:  [
+                           {
+                               &quot;path&quot;:  &quot;docs/07-工具逆向/decompiled/Managed/BlobFind/IMVSBlobFindModuCs/BlobFindParam.cs&quot;,
+                               &quot;sha256&quot;:  &quot;3A3F9ECCD86DBBE8EBE5DD14FA691E9D88CE3A0730FBE0FFBB3ED6FEABBB2ED1&quot;,
+                               &quot;symbol&quot;:  &quot;托管参数模型：参数名、类型、枚举定义（BlobFindParam）&quot;,
+                               &quot;lines&quot;:  &quot;1-2065&quot;,
+                               &quot;confirmable&quot;:  &quot;托管层源码直读：可确认类结构、成员、枚举与调用关系；不含算法本体（算法在原生 \u003cPlugin\u003e.dll）&quot;
+                           },
+                           {
+                               &quot;path&quot;:  &quot;docs/07-工具逆向/decompiled/Managed/BlobFind/IMVSBlobFindModuCs/BlobFindResult.cs&quot;,
+                               &quot;sha256&quot;:  &quot;57943553EFF950C1EF27EF91A48DC7A9096D266FA6DAF83CDCD7F4AE03C09B34&quot;,
+                               &quot;symbol&quot;:  &quot;托管结果模型：输出字段与状态（BlobFindResult）&quot;,
+                               &quot;lines&quot;:  &quot;1-219&quot;,
+                               &quot;confirmable&quot;:  &quot;托管层源码直读：可确认类结构、成员、枚举与调用关系；不含算法本体（算法在原生 \u003cPlugin\u003e.dll）&quot;
+                           },
+                           {
+                               &quot;path&quot;:  &quot;docs/07-工具逆向/decompiled/Managed/BlobFind/IMVSBlobFindModuCs/BlobFindRoiManager.cs&quot;,
+                               &quot;sha256&quot;:  &quot;709AE39382107A5AD7F46F3C9436AB417A20CC4C21B2486079382ED1EE929C33&quot;,
+                               &quot;symbol&quot;:  &quot;托管 ROI 管理：ROI 形状与生命周期（BlobFindRoiManager）&quot;,
+                               &quot;lines&quot;:  &quot;1-90&quot;,
+                               &quot;confirmable&quot;:  &quot;托管层源码直读：可确认类结构、成员、枚举与调用关系；不含算法本体（算法在原生 \u003cPlugin\u003e.dll）&quot;
+                           },
+                           {
+                               &quot;path&quot;:  &quot;docs/07-工具逆向/decompiled/Managed/BlobFind/IMVSBlobFindModuCs/IMVSBlobFindModuTool.cs&quot;,
+                               &quot;sha256&quot;:  &quot;08AF033551889B440AD4CBCCF1921C5C1C6144C2547B77F3A39A6FECC6BF1F74&quot;,
+                               &quot;symbol&quot;:  &quot;托管工具类：构造、ModuParams、ModuResult、Run(SyncSelfRun)（IMVSBlobFindModuTool）&quot;,
+                               &quot;lines&quot;:  &quot;1-64&quot;,
+                               &quot;confirmable&quot;:  &quot;托管层源码直读：可确认类结构、成员、枚举与调用关系；不含算法本体（算法在原生 \u003cPlugin\u003e.dll）&quot;
+                           },
+                           {
+                               &quot;path&quot;:  &quot;docs/collaboration/evidence/BLOB_WHOLE_TOOL_VM_20261031/原厂整工具证据链.md&quot;,
+                               &quot;sha256&quot;:  &quot;1EA1DCABCC31D5A37D3383E571BAC0DC4F3AA3BDAA41639F07487D08A97215CF&quot;,
+                               &quot;symbol&quot;:  &quot;整工具证据链：身份、8 段调用边、迁移边界&quot;,
+                               &quot;lines&quot;:  &quot;1-53&quot;,
+                               &quot;confirmable&quot;:  &quot;5 份原厂资源与 3 个原生 DLL 的 SHA-256；Process@18001fa80 → ProcessAlg@18001fec0 → LimitJudge → ProcessOutput@180020310 的已核成功分支；每段均标注已证/条件推断/缺口&quot;
+                           },
+                           {
+                               &quot;path&quot;:  &quot;docs/collaboration/evidence/BLOB_WHOLE_TOOL_VM_20261031/原厂输入输出声明.json&quot;,
+                               &quot;sha256&quot;:  &quot;002530E7881394C6026295066F20DBA979CE304236EF697BC74822F0CD2528CC&quot;,
+                               &quot;symbol&quot;:  &quot;活动输入/输出节点声明（含类型与组合层次）&quot;,
+                               &quot;lines&quot;:  &quot;39 输入节点 / 95 输出节点&quot;,
+                               &quot;confirmable&quot;:  &quot;静态 XML 声明，含组合与叶项；不是运行时完整列表，也不是互不重叠的输出值个数&quot;
+                           },
+                           {
+                               &quot;path&quot;:  &quot;docs/collaboration/evidence/BLOB_WHOLE_TOOL_VM_20261031/原厂参数资源索引.json&quot;,
+                               &quot;sha256&quot;:  &quot;999B170188E1F1311F4E5F465B7FF4F20E361340392B8969DBB85C6E1F725EE4&quot;,
+                               &quot;symbol&quot;:  &quot;96 项参数声明与 8 个引用组&quot;,
+                               &quot;lines&quot;:  &quot;全量索引&quot;,
+                               &quot;confirmable&quot;:  &quot;参数名、默认值、取值范围与条件显隐的静态声明；不代表已打开实例的运行值&quot;
+                           },
+                           {
+                               &quot;path&quot;:  &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModu.dll&quot;,
+                               &quot;sha256&quot;:  &quot;4DE695D8C3051045C9010739686F94C32D66A36EE486207FE749FB183FFF4C9A&quot;,
+                               &quot;symbol&quot;:  &quot;原生模块 IMVSBlobFindModu&quot;,
+                               &quot;lines&quot;:  &quot;Process@18001fa80 / ProcessAlg@18001fec0 / ProcessOutput@180020310 / 构造 18001e230&quot;,
+                               &quot;confirmable&quot;:  &quot;原生模块身份与已核函数入口偏移；函数内部逐条分支不等于全量闭合&quot;
+                           },
+                           {
+                               &quot;path&quot;:  &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml&quot;,
+                               &quot;sha256&quot;:  &quot;34A0CC5423A3D66B92DC272E0F50B013310E5180E801C648005383C3ADDDFDEC&quot;,
+                               &quot;symbol&quot;:  &quot;参数页、选项与触发器声明&quot;,
+                               &quot;lines&quot;:  &quot;AlgorithmTabRoot&quot;,
+                               &quot;confirmable&quot;:  &quot;3 个页签与 94 条控件别名声明；6 种阈值模式各自的参数分组；CustomVisible 条件&quot;
+                           },
+                           {
+                               &quot;path&quot;:  &quot;docs/collaboration/evidence/B08_BINDING_ORDER_20261031/B08参数绑定执行顺序原生证据-20261031.md&quot;,
+                               &quot;sha256&quot;:  &quot;B2D5E39B33EE1592B22B8FD095DD750A214B2306BED58615EB3D19A6E6D5C5BB&quot;,
+                               &quot;symbol&quot;:  &quot;ModuleFrame 绑定登记与执行顺序&quot;,
+                               &quot;lines&quot;:  &quot;1800bd110 登记 / 1800b98c0 按执行链逐项处理&quot;,
+                               &quot;confirmable&quot;:  &quot;绑定登记与按执行链表处理的顺序，失败即停止；重绑特定分支删除旧项后尾插&quot;
+                           },
+                           {
+                               &quot;path&quot;:  &quot;docs/collaboration/evidence/B08_BINDING_ORDER_20261031/B08绑定序列化及重载顺序-20261031.md&quot;,
+                               &quot;sha256&quot;:  &quot;3419634ECA07DA505E7BEB99D6B2095E5AD65B5E9F98026DDC50493153798ECE&quot;,
+                               &quot;symbol&quot;:  &quot;保存树遍历与导入顺序&quot;,
+                               &quot;lines&quot;:  &quot;1800bf230 / 1800bf800&quot;,
+                               &quot;confirmable&quot;:  &quot;保存树遍历与按记录顺序导入；单绑定原样本已证保存后读回绑定&quot;
+                           },
+                           {
+                               &quot;path&quot;:  &quot;docs/collaboration/evidence/B08_NATIVE_DECISION_20261030/B08-Blob低阈值原生参数对象追踪-20261030.md&quot;,
+                               &quot;sha256&quot;:  &quot;83C94AB916E68906E2E645ECC505A9924833A2E4EC8AC0F4C29D183C2B408E1D&quot;,
+                               &quot;symbol&quot;:  &quot;LowThreshold 参数原生读写路径&quot;,
+                               &quot;lines&quot;:  &quot;模块对象 +0x15eb8 → 包装 vtable +0x58/+0x60 → MVD_Algorithm_Get/SetValueByString&quot;,
+                               &quot;confirmable&quot;:  &quot;单个参数的 Get/Set 真实路径；不能推广到每个参数&quot;
+                           }
+                       ],
+    &quot;analysisStages&quot;:  [
+                           {
+                               &quot;id&quot;:  &quot;ui&quot;,
+                               &quot;status&quot;:  &quot;partial&quot;,
+                               &quot;detail&quot;:  &quot;参数页由 AlgorithmTabRoot 驱动：ParamsConfigControlBase.OnParamsConfigChanged 加载模块控件 DLL、检查 XmlPath、取 TabsA/TabIndex 后绑定 DataContext；3 个页签（Tab_Basic Params / Tab_Run Params / ResultShow）与 94 条控件别名已从 XML 取得。缺具体控件模板与初始化异常恢复条件。&quot;,
+                               &quot;links&quot;:  [
+                                             &quot;原厂整工具证据链.md §二 模块与界面入口&quot;,
+                                             &quot;resources.json uiTabs / uiControls&quot;
+                                         ]
+                           },
+                           {
+                               &quot;id&quot;:  &quot;common&quot;,
+                               &quot;status&quot;:  &quot;partial&quot;,
+                               &quot;detail&quot;:  &quot;9 个共享参数组（ImageSourceGroup、InputMaskImageGroup、OutputMaskImageGroup、RoiSelectGroup、InheritWayGroup2、ExternROITypeGroup、AssistGroup、TextDisplayGroup、BottomCommandGroup）由 Group.xml 声明；ImageSourceGroup 组内操作为 GetFrontParamItemsOperation(IMAGE)、GetSelectedCombinationOperation、SetCombinationSourceOperation。缺组控件的实际模板与宿主编排顺序。&quot;,
+                               &quot;links&quot;:  [
+                                             &quot;Group.xml 9129B82A0F9906DD…&quot;,
+                                             &quot;resources.json sharedUiGroups&quot;
+                                         ]
+                           },
+                           {
+                               &quot;id&quot;:  &quot;parametersRoi&quot;,
+                               &quot;status&quot;:  &quot;partial&quot;,
+                               &quot;detail&quot;:  &quot;96 项参数与 8 个引用组已机器可读索引；ThresholdType 默认 2，6 种阈值模式各显示不同 Polarity / 高低阈值 / 软阈值参数；connectivity 默认 8（选项 8/4）；HoleMinArea 默认 0、整数范围 0–999999999；ROI 侧声明 RoiType、InputROI、InputROIAnnulus、InputMask。缺 CustomVisible 与运行触发交互后的最终显隐，以及 ROI 与掩膜的合并顺序。&quot;,
+                               &quot;links&quot;:  [
+                                             &quot;原厂参数资源索引.json&quot;,
+                                             &quot;B08-填充面积阈值静态证据-20261031.md（未随库迁入）&quot;,
+                                             &quot;B08-连通方式静态证据-20261031.md（未随库迁入）&quot;
+                                         ]
+                           },
+                           {
+                               &quot;id&quot;:  &quot;execution&quot;,
+                               &quot;status&quot;:  &quot;partial&quot;,
+                               &quot;detail&quot;:  &quot;CVmAlgModuleBase::Process@180010840 的已核成功路径先经 18000e810、180010a70、180013cc0，再调 Blob Process@18001fa80 → ProcessAlg@18001fec0；成功分支再 LimitJudge → ProcessOutput@180020310。参数注入经 ModuleFrame 绑定链。缺 180013cc0 失败后仍继续的分支逐一核实。&quot;,
+                               &quot;links&quot;:  [
+                                             &quot;原厂整工具证据链.md §二 执行与参数装配&quot;,
+                                             &quot;B08参数绑定执行顺序原生证据-20261031.md&quot;
+                                         ]
+                           },
+                           {
+                               &quot;id&quot;:  &quot;display&quot;,
+                               &quot;status&quot;:  &quot;partial&quot;,
+                               &quot;detail&quot;:  &quot;9 个 ImageViewConfig 视图项（BlobFiled、BlobMaxAreaInnerRect、CheckZone、CheckZoneAnnular、MatchLocation、FixtureInitPoint、FixtureRunPoint、ResutlText、BlindZone）已声明；ProcessOutput 有条件取得 BinaryImage 与 BlobImage 并分别写名称/宽高/格式。缺 DisplayType 选择、输出动态生产者与失效通知、两图像的像素与 Domain。&quot;,
+                               &quot;links&quot;:  [
+                                             &quot;B08-Blob图像与二值图输出静态证据-20261031.md（未随库迁入）&quot;,
+                                             &quot;B08结果列表角度与长短轴映射-20261031.md（未随库迁入）&quot;
+                                         ]
+                           },
+                           {
+                               &quot;id&quot;:  &quot;storage&quot;,
+                               &quot;status&quot;:  &quot;partial&quot;,
+                               &quot;detail&quot;:  &quot;1800bf230 / 1800bf800 已核保存树遍历与按记录顺序导入；单绑定原样本已证保存后读回绑定；重绑特定分支删除旧项后尾插。缺多绑定、索引位以及导入失败后的最终状态。&quot;,
+                               &quot;links&quot;:  [
+                                             &quot;B08绑定序列化及重载顺序-20261031.md&quot;
+                                         ]
+                           },
+                           {
+                               &quot;id&quot;:  &quot;native&quot;,
+                               &quot;status&quot;:  &quot;partial&quot;,
+                               &quot;detail&quot;:  &quot;ProcessAlg 经包装 vtable +0x78 → MVDBlobFindCpp!180003540 → MVD_Algorithm_Process(handle,0x12d,…) → 句柄 vtable +0x18 / 18003f940 → 1800414f0 → 1805fd2c0 静态可达；圆度、矩形度等四项量化 0–100（含端点）的参数校验已追到。缺 1805fd2c0 的产出（既有定点取体超时），阈值等号、填孔、连通、特征公式、排序与 ROI 作用均未由该校验证明。&quot;,
+                               &quot;links&quot;:  [
+                                             &quot;原厂整工具证据链.md §二 原生算法&quot;,
+                                             &quot;B08形状筛选执行与量化值校验-20261031.md（未随库迁入）&quot;
+                                         ]
+                           }
+                       ],
+    &quot;semanticChain&quot;:  [
+                          {
+                              &quot;step&quot;:  &quot;init&quot;,
+                              &quot;conclusion&quot;:  &quot;inferred&quot;,
+                              &quot;originalEvidence&quot;:  &quot;Blob 构造 18001e230 写模块 vtable；模块控件由 ParamsConfigControlBase 加载模块 DLL 并按 AlgorithmTabRoot 绑定&quot;,
+                              &quot;unknown&quot;:  &quot;模块构造函数完整体、注册链与初始化异常分支未逐条核&quot;
+                          },
+                          {
+                              &quot;step&quot;:  &quot;parameters&quot;,
+                              &quot;conclusion&quot;:  &quot;confirmed&quot;,
+                              &quot;originalEvidence&quot;:  &quot;96 项参数与 8 个引用组的机器可读索引；ThresholdType 默认 2、connectivity 默认 8、HoleMinArea 默认 0 范围 0–999999999；绑定由 ModuleFrame!1800bd110 登记、1800b98c0 按执行链逐项处理&quot;,
+                              &quot;unknown&quot;:  &quot;&quot;
+                          },
+                          {
+                              &quot;step&quot;:  &quot;inputsRoi&quot;,
+                              &quot;conclusion&quot;:  &quot;inferred&quot;,
+                              &quot;originalEvidence&quot;:  &quot;InputImage 含 InImage/Width/Height/PixelFormat 四个强制叶，另声明 InputROI、InputROIAnnulus、InputMask；前驱由 VmModule.LoadNextAndPreModules 从 SDK 连接表构建，GetFrontParamItems 递归去重&quot;,
+                              &quot;unknown&quot;:  &quot;Domain、坐标变换、掩膜合并顺序、像素格式转换与空值错误未证&quot;
+                          },
+                          {
+                              &quot;step&quot;:  &quot;process&quot;,
+                              &quot;conclusion&quot;:  &quot;confirmed&quot;,
+                              &quot;originalEvidence&quot;:  &quot;CVmAlgModuleBase::Process@180010840 → 18000e810 / 180010a70 / 180013cc0 → Blob Process@18001fa80 → ProcessAlg@18001fec0，调用边静态可达&quot;,
+                              &quot;unknown&quot;:  &quot;&quot;
+                          },
+                          {
+                              &quot;step&quot;:  &quot;branchFailure&quot;,
+                              &quot;conclusion&quot;:  &quot;inferred&quot;,
+                              &quot;originalEvidence&quot;:  &quot;180013cc0 失败后仍继续的分支按原证据保留；执行链逐项处理失败即停止&quot;,
+                              &quot;unknown&quot;:  &quot;失败码集合、取消与连续运行停止路径、异常分支未逐条核&quot;
+                          },
+                          {
+                              &quot;step&quot;:  &quot;resultWrite&quot;,
+                              &quot;conclusion&quot;:  &quot;confirmed&quot;,
+                              &quot;originalEvidence&quot;:  &quot;成功分支 LimitJudge → ProcessOutput@180020310；39 输入 / 95 输出节点静态声明；默认 Result List 的 Angle 对应外接矩形角度而非 BlobAngle&quot;,
+                              &quot;unknown&quot;:  &quot;&quot;
+                          },
+                          {
+                              &quot;step&quot;:  &quot;displayPublish&quot;,
+                              &quot;conclusion&quot;:  &quot;inferred&quot;,
+                              &quot;originalEvidence&quot;:  &quot;ProcessOutput 有条件取 BinaryImage 与 BlobImage 并分别写名称/宽高/格式；9 个 ImageViewConfig 视图项已声明&quot;,
+                              &quot;unknown&quot;:  &quot;DisplayType 选择、输出动态生产者与失效通知、两输出图像的像素与 Domain 未证&quot;
+                          },
+                          {
+                              &quot;step&quot;:  &quot;persistence&quot;,
+                              &quot;conclusion&quot;:  &quot;confirmed&quot;,
+                              &quot;originalEvidence&quot;:  &quot;1800bf230 / 1800bf800 保存树遍历与按记录顺序导入；单绑定原样本已证保存后读回绑定&quot;,
+                              &quot;unknown&quot;:  &quot;&quot;
+                          },
+                          {
+                              &quot;step&quot;:  &quot;release&quot;,
+                              &quot;conclusion&quot;:  &quot;inferred&quot;,
+                              &quot;originalEvidence&quot;:  &quot;Window_Closed 关闭连续自执行状态、注销列出的相机等委托并调 AlgorithmTabRoot.Dispose/DoFinish；VM_M_CloseSolution → 180047570 → 180046b20 → 180108c30 的已核分支停止等待并清理部分管理器关系&quot;,
+                              &quot;unknown&quot;:  &quot;Blob 算法句柄、图像缓冲、全部订阅与事件、异常路径的释放顺序未证&quot;
+                          }
+                      ],
+    &quot;algorithmComparison&quot;:  [
+                                {
+                                    &quot;id&quot;:  &quot;originalAlgorithm&quot;,
+                                    &quot;status&quot;:  &quot;partial&quot;,
+                                    &quot;evidence&quot;:  [
+                                                     &quot;MVD_Algorithm_Process(handle,0x12d,…) → 句柄 vtable +0x18 → 18003f940 → 1800414f0 → 1805fd2c0 静态可达&quot;
+                                                 ],
+                                    &quot;unknown&quot;:  &quot;1805fd2c0 未取到产出，具体处理步骤（阈值等号、填孔、4/8 连通、特征公式、排序、ROI 作用）均未证&quot;
+                                },
+                                {
+                                    &quot;id&quot;:  &quot;currentCalculation&quot;,
+                                    &quot;status&quot;:  &quot;partial&quot;,
+                                    &quot;evidence&quot;:  [
+                                                     &quot;我方 tools/SunEyeVision.BlobAnalysis/Runtime/Algorithms/BlobSession.cs + BlobThresholdTransform.cs + BlobCandidateSelection.cs 走 HALCON 阈值、连通与特征筛选；BlobTool 的 Capabilities 声明 \&quot;halcon\&quot;&quot;
+                                                 ],
+                                    &quot;unknown&quot;:  &quot;与原版尚未做同图同参数值对齐；HALCON 管线不能当作原函数等价&quot;
+                                },
+                                {
+                                    &quot;id&quot;:  &quot;defaultsPrePost&quot;,
+                                    &quot;status&quot;:  &quot;partial&quot;,
+                                    &quot;evidence&quot;:  [
+                                                     &quot;ThresholdType 默认 2；connectivity 默认 8（选项 8/4）；HoleMinArea 默认 0、范围 0–999999999；圆度/矩形度等四项量化 0–100 含端点校验&quot;
+                                                 ],
+                                    &quot;unknown&quot;:  &quot;软阈值四参数（Softness / SoftLeftRatio / SoftRightRatio / SoftLowRatio / SoftHighRatio）默认值与前后处理关系未知&quot;
+                                },
+                                {
+                                    &quot;id&quot;:  &quot;boundariesCoordinatesTypes&quot;,
+                                    &quot;status&quot;:  &quot;not-established&quot;,
+                                    &quot;evidence&quot;:  [
+
+                                                 ],
+                                    &quot;unknown&quot;:  &quot;坐标基准、ROI 与掩膜合并顺序、像素格式转换、输出几何基准均未证&quot;
+                                },
+                                {
+                                    &quot;id&quot;:  &quot;pixelNumerics&quot;,
+                                    &quot;status&quot;:  &quot;not-established&quot;,
+                                    &quot;evidence&quot;:  [
+
+                                                 ],
+                                    &quot;unknown&quot;:  &quot;无同图同参差分；BinaryImage 与 BlobImage 的原始字节、像素格式、尺寸、筛选关系与 Domain 未取&quot;
+                                },
+                                {
+                                    &quot;id&quot;:  &quot;nativeAbi&quot;,
+                                    &quot;status&quot;:  &quot;partial&quot;,
+                                    &quot;evidence&quot;:  [
+                                                     &quot;IMVSBlobFindModu.dll 4DE695D8…；MVDBlobFindCpp.dll D819529A…；MVD_Algorithm.dll 85D17ECC…；ModuleFrame.dll 45C57BC4…；LowThreshold 经模块对象 +0x15eb8 → 包装 vtable +0x58/+0x60 → MVD_Algorithm_Get/SetValueByString&quot;
+                                                 ],
+                                    &quot;unknown&quot;:  &quot;其余参数的原生读写路径未逐个证，单参数路径不能推广；输入虚表 +0x20 与 IMvdImage::GetPixelFormat 的对应仍依赖头文件与运行对象 ABI 一致&quot;
+                                },
+                                {
+                                    &quot;id&quot;:  &quot;validationInputs&quot;,
+                                    &quot;status&quot;:  &quot;not-established&quot;,
+                                    &quot;evidence&quot;:  [
+
+                                                 ],
+                                    &quot;unknown&quot;:  &quot;原机差分未执行（无隔离 Windows 环境）；既有 attempt03 只是有限单绑定材料，不构成阈值边界、ROI、输出像素与生命周期的全套差分&quot;
+                                }
+                            ],
+    &quot;currentImplementation&quot;:  {
+                                  &quot;moduleId&quot;:  &quot;BlobAnalysis&quot;,
+                                  &quot;implPath&quot;:  &quot;tools/SunEyeVision.BlobAnalysis/Runtime/BlobTool.cs（Runtime 层）+ Wpf/Views/BlobUiComposition.cs（界面层）&quot;,
+                                  &quot;verifiedAt&quot;:  &quot;2026-11-05（静态读码，未运行对照）&quot;,
+                                  &quot;differences&quot;:  [
+                                                      &quot;原版是 XML 参数树 + 原生 Process 链；我方是 IToolDefinition\u003cBlobSettings,BlobOutput\u003e 强类型定义 + HALCON 执行，参数由 BlobParameterDefinition 的 Schema 描述而非资源 XML&quot;,
+                                                      &quot;输入口不同：原版 InputImage / InputROI / InputROIAnnulus / InputMask / 位置修正信息；我方 input.image / input.inspection.region / input.mask.region / input.pose 加 BlobLocalRoi，名字与层次都不同，需要适配层而不是逐字段照抄&quot;,
+                                                      &quot;阈值模式尚未全覆盖：BlobThresholdCapabilities.IsSupported 对未完成原厂语义对齐的模式直接报 BLOB_MODE_NOT_READY，属显式拒绝而非静默降级&quot;,
+                                                      &quot;结果结构我方是 BlobSchema 定义的输出端口加 blob 表（含 oriented-bounds/center/width/height/angle）；原版是 95 个活动输出节点，字段命名与组合层次不同&quot;,
+                                                      &quot;原版默认 Result List 的 Angle 对应外接矩形角度，我方 angle-degrees 在 oriented-bounds 成员上，语义一致但承载位置不同，需在对照基线中固定&quot;,
+                                                      &quot;原版 ROI 走 InheritWayGroup2/ExternROITypeGroup 继承与外部 ROI 类型；我方由 BlobRoiInheritance 声明继承端口与校验，机制不同&quot;
+                                                  ]
+                              },
+    &quot;managedMembers&quot;:  [
+                           &quot;BlobFindParam&quot;,
+                           &quot;BlobFindResult&quot;,
+                           &quot;BlobFindRoiManager&quot;,
+                           &quot;IMVSBlobFindModuTool&quot;
+                       ],
+    &quot;nativeFunctions&quot;:  [
+                            &quot;IMVSBlobFindModu!Process@18001fa80&quot;,
+                            &quot;IMVSBlobFindModu!ProcessAlg@18001fec0&quot;,
+                            &quot;IMVSBlobFindModu!ProcessOutput@180020310&quot;,
+                            &quot;MVDBlobFindCpp!180003540&quot;,
+                            &quot;MVD_Algorithm_Process(handle,0x12d,…)&quot;
+                        ],
+    &quot;runtimeObservations&quot;:  [
+
+                            ],
+    &quot;unknowns&quot;:  [
+                     &quot;六份被引用的 B08 细项证据未随库迁入，结论已记但原始文件缺失：VM-Blob参数窗口组装与界面实施证据-20261029.md、B08-填充面积阈值静态证据-20261031.md、B08-连通方式静态证据-20261031.md、B08执行订阅注入边界-20261030.md、B08形状筛选执行与量化值校验-20261031.md、B08-Blob图像与二值图输出静态证据-20261031.md、B08结果列表角度与长短轴映射-20261031.md、B08与图像源受控探针隔离审计-20261030.md&quot;,
+                     &quot;具体算法步骤未证：阈值等号取闭或开、填孔 T-1/T/T+1、4/8 连通的对角接触、特征公式、组件排序顺序、ROI 与掩膜作用方式&quot;,
+                     &quot;1805fd2c0 大函数的产出未取到（既有定点取体超时）&quot;,
+                     &quot;两路输出图像（BinaryImage / BlobImage）的像素、像素格式、尺寸、筛选关系与 Domain&quot;,
+                     &quot;动态 IO 的平台/代理生产链（SDK 180626c60 → 18066f910 → PF_M_GetBinaryData 返回生成端）&quot;,
+                     &quot;原机差分未执行：无隔离 Windows 环境，阈值边界、ROI 非矩形 Domain、输出数值、绑定生命周期均未差分&quot;,
+                     &quot;我方 HALCON 实现与原版的数值等价性未建立基线&quot;
+                 ],
+    &quot;sourceReports&quot;:  [
+                          &quot;docs/collaboration/evidence/BLOB_WHOLE_TOOL_VM_20261031/原厂整工具证据链.md&quot;,
+                          &quot;docs/collaboration/evidence/BLOB_WHOLE_TOOL_VM_20261031/原厂参数资源索引.json&quot;,
+                          &quot;docs/collaboration/evidence/BLOB_WHOLE_TOOL_VM_20261031/原厂输入输出声明.json&quot;,
+                          &quot;docs/collaboration/evidence/B08_BINDING_ORDER_20261031/B08参数绑定执行顺序原生证据-20261031.md&quot;,
+                          &quot;docs/collaboration/evidence/B08_BINDING_ORDER_20261031/B08绑定序列化及重载顺序-20261031.md&quot;,
+                          &quot;docs/collaboration/evidence/B08_SOURCE_QUALIFICATION_20261031/B08-Blob来源资格和动态元数据-20261031.md&quot;,
+                          &quot;docs/collaboration/evidence/B08_PARAMETER_FAILURE_AND_UI_BOUNDARIES_20261030/B08界面解绑生命周期和类型边界-20261030.md&quot;,
+                          &quot;docs/collaboration/evidence/B08_NATIVE_DECISION_20261030/B08-Blob低阈值原生参数对象追踪-20261030.md&quot;
+                      ],
+    &quot;note&quot;:  &quot;原卡是 Codex 继承的清单级卡片（sourceEvidence 为空、unknowns 一句）。本次改为按库内 B08 证据链回填，每段结论都指向本仓库真实存在的文件并带 SHA-256；未随库迁入的细项证据在 unknowns 首条列明，不假装它们仍在。&quot;
+}</pre></div></div></body></html>

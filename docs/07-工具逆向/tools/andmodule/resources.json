@@ -1,0 +1,60 @@
+{
+  "toolId": "andmodule",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\AndModule\\AndModule.xml",
+      "sha256": "cb1ea1e4e761f2f8b23f73eacc12e4bd551928fd7953a4d9e1acd2b018b490f0",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\AndModule\\AndModuleAlgorithm.xml",
+      "sha256": "6312436f20346f200a6689e1b29b0fa23b3337292293bcc0b181bcbfeeb0f284",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\AndModule\\AndModuleAlgorithmTab.xml",
+      "sha256": "198dcb319f6926d6165556de9c3ed424cb7223bfc4c6572e0b049d2f069d6767",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\AndModule\\AndModuleCs.xml",
+      "sha256": "958543ac3efe80b0f22463572ac283f57312902d262c486bbb50383074c6a6dc",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\AndModule\\AndModuleDisplay.xml",
+      "sha256": "95aba79b5d2afc8a1233c32dee15524a78cb2f7959eccccc653559b3d86844b0",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\AndModule\\ToolItemInfo.xml",
+      "sha256": "aa2769894285815b38935a43e7366bb24d8b6b744c5ead302293826540ff39d4",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "EnumerationLogicType",
+      "name": "LogicalMode"
+    },
+    {
+      "type": "ButtonSelecter_LogicItem",
+      "name": "LogicItemFields"
+    }
+  ],
+  "sharedUiGroups": [
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

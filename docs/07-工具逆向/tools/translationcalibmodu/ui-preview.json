@@ -1,0 +1,144 @@
+{
+  "controls": [
+    {
+      "type": "Enumeration",
+      "name": "CalibType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "CalibPointGet"
+    },
+    {
+      "type": "Enumeration",
+      "name": "CameraMode"
+    },
+    {
+      "type": "Enumeration",
+      "name": "HomoFreedom"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "CalibPointInput"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PicPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PicPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PicPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PhyPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PhyPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PhyPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ImageRotateAngle"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "WorldRotateAngle"
+    },
+    {
+      "type": "EditButton_Calib",
+      "name": "CalibPointTotalNum"
+    },
+    {
+      "type": "Integer",
+      "name": "RotPointTotalNum"
+    },
+    {
+      "type": "Boolean",
+      "name": "UnionCalibEnable"
+    },
+    {
+      "type": "Boolean",
+      "name": "TeachEnable"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Trigger"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TeachFlag"
+    },
+    {
+      "type": "Command",
+      "name": "Clear"
+    },
+    {
+      "type": "Boolean",
+      "name": "RefreshFileEnable"
+    },
+    {
+      "type": "SaveFileDialog",
+      "name": "SaveCalibPath"
+    },
+    {
+      "type": "OpenFileForCalibDialog",
+      "name": "CalibPathName"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "translationcalibmodu",
+  "status": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\TranslationCalibModu\\ToolItemInfo.xml",
+      "sha256": "1be9c3277af6915b6865189cf6ce8628e52d980b1c1b430ad78d7d4ecc36bc2d",
+      "root": "ToolBoxItemData"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\TranslationCalibModu\\TranslationCalibModu.xml",
+      "sha256": "ebe8dd996875914ed971dc8c8488405fdda94c15c0a30dbf1a4813c999c1a45e",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\TranslationCalibModu\\TranslationCalibModuAlgorithm.xml",
+      "sha256": "41ed538e604929216390b864f3b7c7134e5a25a3efa3054a5c9f0caa0928f207",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\TranslationCalibModu\\TranslationCalibModuAlgorithmTab.xml",
+      "sha256": "3d626213bab65b7192fc27cfe3b0d5a2e13e595b5f349424adc327fe2aead062",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\TranslationCalibModu\\TranslationCalibModuCs.xml",
+      "sha256": "8290c4d617f6def49b1b2588ee7a5f2655a9d0a8d750c01fedf527b91182e25b",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\TranslationCalibModu\\TranslationCalibModuDisplay.xml",
+      "sha256": "f0944125563d2d01dc13fe2759e5f378f4a5121789653e1c25cb49067c6675fc",
+      "root": "ParamRoot"
+    }
+  ],
+  "displayName": "平移旋转标定",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

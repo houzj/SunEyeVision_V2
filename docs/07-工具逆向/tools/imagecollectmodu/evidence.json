@@ -1,0 +1,24 @@
+{
+  "stableToolId": "imagecollectmodu",
+  "originalPlugin": "ImageCollectModu",
+  "displayName": "ImageCollectModu",
+  "originalCategory": "Global",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectModu",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "status": "inventory-only",
+  "evidenceState": "unknown",
+  "resourceCount": 7,
+  "parameterCount": 9,
+  "inputCount": 2,
+  "outputCount": 5,
+  "uiControlCount": 14,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ]
+}

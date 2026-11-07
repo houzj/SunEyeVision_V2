@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>方案与版本管理 · 现行文档</title>
+<link rel="stylesheet" href="../00-索引/assets/doc.css">
+</head>
+<body>
+<div class="wrap">
+
+<nav class="crumbs">
+    <a href="../00-索引/主题台账.html">主题台账</a>
+    <a href="../00-索引/文档索引.html">文档索引</a>
+    <a href="README.html">现行文档说明</a>
+</nav>
+
+<header class="doc-header">
+    <h1>方案与版本管理<span class="badge current">现行</span></h1>
+    <p class="doc-meta">最后更新：2026-11-05<span class="sep">·</span>状态：现行<span class="sep">·</span>代码基线：<code>71da36329</code><span class="sep">·</span>合并来源：22 篇历史方案（清单见文末「历史演进」）</p>
+</header>
+
+<section class="card lead">
+    <h2>一句话结论</h2>
+        <p>两件事分开说。<strong>版本</strong>：交付版本号只有一个真源 <code>version.json</code>，所有产物（主程序、SDK、全部工具）的 <code>FileVersion</code> / <code>InformationalVersion</code> 都等于它；<code>AssemblyVersion</code> <strong>恒定 <code>2.0.0.0</code></strong>，只作程序集绑定身份，绝不跟交付版本走。<strong>方案</strong>：方案文件必须能独立传递（任意路径可载入），资源文件单独传、单独重配，旧数据有迁移路径。</p>
+</section>
+
+<section class="card">
+    <h2>改前用户看到什么</h2>
+        <ul>
+            <li>资源管理器里打开安装包，主程序是 <code>2.0.0.1</code>，SDK 是 <code>1.0.0.0</code>，工具各有各的版本号，<strong>售后问"客户装的是哪版"没法回答</strong>。</li>
+            <li>某次改了版本注入之后，<strong>工具箱直接空了</strong>：18 个插件全部"契约不兼容"被拒载，日志 <code>成功 0 个，未加载 18 个</code>。</li>
+            <li>方案拷到另一台机器打不开，因为它<strong>依赖固定路径</strong>下的资源文件。</li>
+            <li>方案里引用的图片丢了之后，<strong>每次打开都报错</strong>，没有任何清理入口。</li>
+            <li>关闭窗口时<strong>方案没落盘</strong>，或者状态（打开/关闭）记错了。</li>
+        </ul>
+</section>
+
+<section class="card">
+    <h2>改后应该是什么样</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>场景</th>
+                    <th>期望行为</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>看安装包里任意一个 dll 的版本</td>
+                    <td>都是同一个交付版本号（如 <code>2.0.0.1</code>）</td>
+                </tr>
+                <tr>
+                    <td>排查"这是哪次构建"</td>
+                    <td><code>InformationalVersion</code> 带提交短 SHA</td>
+                </tr>
+                <tr>
+                    <td>主程序大版本升级</td>
+                    <td><strong>不要求 18 个工具全部重编</strong></td>
+                </tr>
+                <tr>
+                    <td>方案拷到任意路径 / 另一台机器</td>
+                    <td>能打开</td>
+                </tr>
+                <tr>
+                    <td>资源文件缺失</td>
+                    <td>有明确提示与清理入口，不每次报错</td>
+                </tr>
+                <tr>
+                    <td>关闭窗口</td>
+                    <td>按明确规则落盘，状态正确</td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+<section class="card">
+    <h2>关键结构</h2>
+        <h3>三个"版本"互不推导</h3>
+        <figure class="diagram">
+            <div class="d-layers">
+                <div class="d-layer">
+                    <div class="layer-name">交付版本</div>
+                    <div class="layer-body">
+                        <div class="d-node accent">version.json<small>唯一真源：2.0.0.1</small></div>
+                        <div class="d-arrow right">→</div>
+                        <div class="d-node">FileVersion = 2.0.0.1<small>主程序 / SDK / 全部工具</small></div>
+                        <div class="d-node">InformationalVersion = 2.0.0.1+sha</div>
+                    </div>
+                </div>
+                <div class="d-layer">
+                    <div class="layer-name">契约编号</div>
+                    <div class="layer-body">
+                        <div class="d-node accent">ToolContractVersionAttribute<small>契约编号 2.0</small></div>
+                        <div class="d-arrow right">→</div>
+                        <div class="d-node">插件放行判定<small>只看契约编号</small></div>
+                    </div>
+                </div>
+                <div class="d-layer">
+                    <div class="layer-name">绑定身份</div>
+                    <div class="layer-body">
+                        <div class="d-node plain">Directory.Build.props<small>AssemblyVersion 2.0.0.0（2.x 恒定）</small></div>
+                        <div class="d-arrow right">→</div>
+                        <div class="d-node plain">CLR 程序集绑定</div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-loop">插件放行判定不读 AssemblyVersion</div>
+            <figcaption>三个「版本」各走一条链、互不推导：交付版本从 version.json 注入，契约编号只判放行，绑定身份由 CLR 恒定。</figcaption>
+        </figure>
+        <table>
+            <thead>
+                <tr>
+                    <th>词</th>
+                    <th>大白话</th>
+                    <th>持有者</th>
+                    <th>变不变</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>交付版本</strong></td>
+                    <td>这批货是第几版（<code>2.0.0.1</code>）</td>
+                    <td><code>version.json</code></td>
+                    <td>每次打包第 4 位 +1</td>
+                </tr>
+                <tr>
+                    <td><strong>契约编号</strong></td>
+                    <td>接口标准是第几版（<code>2.0</code>）</td>
+                    <td><code>ToolContractVersionAttribute</code> + <code>ToolContract</code></td>
+                    <td>仅接口不兼容时变</td>
+                </tr>
+                <tr>
+                    <td><strong>绑定身份</strong></td>
+                    <td>程序集的身份证号（<code>2.0.0.0</code>）</td>
+                    <td><code>Directory.Build.props</code></td>
+                    <td>2.x 内恒定</td>
+                </tr>
+            </tbody>
+        </table>
+        <p><strong>三者互不推导</strong>，唯一接触点是"宿主按契约编号决定放行/拒绝插件"。</p>
+        <h3>一个 dll 里三个字段各放各的</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>字段</th>
+                    <th>放什么</th>
+                    <th>谁看它</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>FileVersion</code></td>
+                    <td><strong>交付版本</strong> <code>2.0.0.1</code></td>
+                    <td>人：资源管理器、关于窗口、售后</td>
+                </tr>
+                <tr>
+                    <td><code>InformationalVersion</code></td>
+                    <td><strong>交付版本 + 提交 SHA</strong> <code>2.0.0.1+4bfe67c5</code></td>
+                    <td>人：排查"哪次构建"</td>
+                </tr>
+                <tr>
+                    <td><code>AssemblyVersion</code></td>
+                    <td><strong>绑定身份</strong> <code>2.0.0.0</code></td>
+                    <td>机器：CLR 程序集绑定</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>⇒ <strong>"统一"指前两个字段统一成产品版本；第三个恒定不动。</strong> 不是把三个合成一个。</p>
+        <h3>方案文件与资源</h3>
+        <figure class="diagram">
+            <div class="d-fan">
+                <div class="d-node accent">方案文件<small>可独立传递，任意路径载入</small></div>
+                <div class="d-arrow down">↓</div>
+                <div class="d-branches">
+                    <div class="d-branch">
+                        <span class="d-edge">内嵌</span>
+                        <div class="d-arrow down">↓</div>
+                        <div class="d-node ok">配置数据<small>工作流 / 绑定 / 变量</small></div>
+                    </div>
+                    <div class="d-branch">
+                        <span class="d-edge">外部引用</span>
+                        <div class="d-arrow down">↓</div>
+                        <div class="d-node">资源引用<small>指向图片等外部文件</small></div>
+                        <div class="d-arrow down">↓</div>
+                        <div class="d-node">资源文件<small>需单独传递</small></div>
+                        <div class="d-arrow down">↓</div>
+                        <div class="d-node warn">图像预览器可清理失效文件<small>缺失时不再让方案每次报错</small></div>
+                    </div>
+                </div>
+            </div>
+            <figcaption>方案文件自带配置、只引用外部资源：配置可随方案走，资源必须单独传递，缺失时有人工清理入口。</figcaption>
+        </figure>
+        <table>
+            <thead>
+                <tr>
+                    <th>归属</th>
+                    <th>规则</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>方案文件</td>
+                    <td>必须能独立传递；任意路径可载入；不依赖固定安装路径</td>
+                </tr>
+                <tr>
+                    <td>资源文件</td>
+                    <td>单独传递、单独重配；方案里存引用而不是内嵌二进制</td>
+                </tr>
+                <tr>
+                    <td>失效引用</td>
+                    <td>允许清理，不每次打开都报错</td>
+                </tr>
+                <tr>
+                    <td>旧数据</td>
+                    <td>有迁移路径，不做静默丢字段</td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+<section class="card">
+    <h2>关键决策与理由</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>决策</th>
+                    <th>理由</th>
+                    <th>依据</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>交付版本<strong>只有 <code>version.json</code> 一个真源</strong></td>
+                    <td>多处写版本必然漂移；发布流程要能自动推导</td>
+                    <td>20260918 / 20260919</td>
+                </tr>
+                <tr>
+                    <td><code>AssemblyVersion</code> <strong>恒定 <code>2.0.0.0</code></strong></td>
+                    <td>事故实证：把产品版本注入 <code>AssemblyVersion</code> 使 SDK 主版本 1→2，<strong>18 个插件全部被拒载</strong></td>
+                    <td>20260919 §4</td>
+                </tr>
+                <tr>
+                    <td>插件放行只看<strong>显式契约编号</strong>，不读 <code>AssemblyVersion</code></td>
+                    <td>否则主程序每次大版本升级都要求所有工具重编，"工具可独立迭代"失效</td>
+                    <td>20260919 §4</td>
+                </tr>
+                <tr>
+                    <td>工具与 SDK 版本<strong>默认跟随产品</strong></td>
+                    <td>单安装包单版本，售后一句话能说清</td>
+                    <td>20260919 §6</td>
+                </tr>
+                <tr>
+                    <td>单产物打包、自动推导</td>
+                    <td>手工改版本号必然出错</td>
+                    <td>20260919（承接 20260918）</td>
+                </tr>
+                <tr>
+                    <td>方案文件可独立传递</td>
+                    <td>方案是要交付给客户/另一台机器的产物，不是本地缓存</td>
+                    <td>20261008 §2</td>
+                </tr>
+                <tr>
+                    <td>资源单独传、单独重配</td>
+                    <td>内嵌资源让方案体积膨胀且难以替换</td>
+                    <td>20261008 §3</td>
+                </tr>
+                <tr>
+                    <td>允许清理失效资源引用</td>
+                    <td>缺失资源若每次报错，用户无法自救</td>
+                    <td>20261008 §4</td>
+                </tr>
+                <tr>
+                    <td>保存与恢复机制<strong>保持简单</strong></td>
+                    <td>过度设计的持久化会引入新的不一致</td>
+                    <td>20261008 §7</td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+<section class="card">
+    <h2>实施与验证状态</h2>
+        <h3>已做</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>能力</th>
+                    <th>状态</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>version.json</code> 单一真源 + 构建注入（<code>FileVersion</code> / <code>InformationalVersion</code>）</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td><code>AssemblyVersion</code> 恒定 <code>2.0.0.0</code></td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>契约编号 <code>ToolContractVersionAttribute(2,0)</code> 显式声明</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>插件放行改读契约编号（不再读 SDK 程序集版本）</td>
+                    <td>已实施（事故修复）</td>
+                </tr>
+                <tr>
+                    <td>工具与 SDK 版本跟随产品</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>单产物打包与自动推导</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>方案管理器（目录与配置归属、界面与操作语义）</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>方案文件任意路径载入</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>资源单独传递与重配</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>图像预览器清理失效文件</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>关闭窗口持久化</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>解决方案事件系统</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>旧数据迁移</td>
+                    <td>已实施</td>
+                </tr>
+            </tbody>
+        </table>
+        <h3>未做 / 待确认</h3>
+        <ul>
+            <li><code>20260919</code> 方案 §8 列为"单独立项、不在本次范围"的项未跟进。</li>
+            <li>方案打开状态指示器、卡片状态等界面细节的<strong>覆盖完整性</strong>未逐条核对。</li>
+        </ul>
+        <h3>未验</h3>
+        <ul>
+            <li>版本号在<strong>全部 20 个产物</strong>（主程序 + SDK + 18 工具 + 其他）上的一致性，未看到逐文件核对记录。</li>
+            <li>方案跨机器传递的实际验收（拷到另一台装同一版本的机器打开）未记录。</li>
+            <li>旧数据迁移在真实历史方案上的验证未记录。</li>
+        </ul>
+</section>
+
+<section class="card">
+    <h2>风险与遗留</h2>
+        <ol>
+            <li><strong><code>AssemblyVersion</code> 是最容易被"顺手统一"的坑。</strong> 任何人为了"版本看起来一致"把交付版本注入 <code>AssemblyVersion</code>，都会重演 18 个插件被拒载。这条必须写进发布检查项。</li>
+            <li><strong>契约编号变更需要人判断。</strong> 什么算"接口不兼容"没有机械判据，判错会导致老工具被放行或新工具被拒。</li>
+            <li><strong>方案文件"可独立传递"依赖资源引用的相对化。</strong> 只要还有一处写死绝对路径，跨机器就断。</li>
+            <li><strong>失效资源清理是手动入口。</strong> 用户不清理就会持续看到缺失提示。</li>
+            <li><strong>发布流程与版本注入的具体实现分散在构建脚本里</strong>，改打包脚本时要同时检查 <code>version.json</code>、<code>Directory.Build.props</code> 与各 csproj 是否还有本地版本声明。</li>
+        </ol>
+</section>
+
+<section class="card">
+    <h2>历史演进</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>文档</th>
+                    <th>本篇采信</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2026-10-08</td>
+                    <td><a href="../01-方案设计/2026/10/08/解决方案管理器最终优化方案-20261008.md">解决方案管理器最终优化方案</a></td>
+                    <td><strong>方案管理主要来源</strong>：目录归属、独立传递、资源重配、失效清理、迁移</td>
+                </tr>
+                <tr>
+                    <td>2026-09-19</td>
+                    <td><a href="../01-方案设计/2026/09/19/版本体系最终方案-20260919-141853.md">版本体系最终方案</a></td>
+                    <td><strong>版本主要来源</strong>：三词分层、三字段分工、事故与结论</td>
+                </tr>
+                <tr>
+                    <td>2026-09-19</td>
+                    <td><a href="../01-方案设计/2026/09/19/版本管理再设计与单产物方案-20260919-111620.md">版本管理再设计与单产物方案</a></td>
+                    <td>真源、自动推导打包、单产物（<strong>部分被取代</strong>）</td>
+                </tr>
+                <tr>
+                    <td>2026-09-18</td>
+                    <td><a href="../01-方案设计/2026/09/18/内测版发布与版本管理最终方案-20260918-112404.md">内测版发布与版本管理最终方案</a></td>
+                    <td>内测发布流程</td>
+                </tr>
+                <tr>
+                    <td>2026-04-01</td>
+                    <td><a href="../06-指南参考/guides/2026/04/解决方案内容备份还原可参考-20260401.md">解决方案内容备份还原</a></td>
+                    <td>备份还原</td>
+                </tr>
+                <tr>
+                    <td>2026-03-26</td>
+                    <td><a href="../06-指南参考/guides/2026/03/guides_solution_config_dialog_optimization_20260326.md">解决方案配置对话框优化</a></td>
+                    <td>配置对话框</td>
+                </tr>
+                <tr>
+                    <td>2026-03-19</td>
+                    <td><a href="../01-方案设计/2026/03/解决方案参数同步与保存机制优化方案-20260319.md">解决方案参数同步与保存机制优化方案</a></td>
+                    <td>参数同步与保存</td>
+                </tr>
+                <tr>
+                    <td>2026-03-18</td>
+                    <td><a href="../02-实施总结/2026/03/解决方案系统架构重新设计-完成总结-20260318.md">解决方案系统架构重新设计-完成总结</a></td>
+                    <td>架构重设计结果</td>
+                </tr>
+                <tr>
+                    <td>2026-03-18</td>
+                    <td><a href="../02-实施总结/2026/03/关闭窗口持久化解决方案功能报告-20260318.md">关闭窗口持久化解决方案功能报告</a></td>
+                    <td>关闭持久化</td>
+                </tr>
+                <tr>
+                    <td>2026-03-18</td>
+                    <td><a href="../05-框架架构/2026/03/解决方案系统架构重新设计方案-20260318.md">解决方案系统架构重新设计方案</a></td>
+                    <td>架构设计</td>
+                </tr>
+                <tr>
+                    <td>2026-03-18</td>
+                    <td><a href="../02-实施总结/2026/03/解决方案卡片打开状态指示器实施报告-20260318.md">解决方案卡片打开状态指示器实施报告</a></td>
+                    <td>状态指示器</td>
+                </tr>
+                <tr>
+                    <td>2026-03-18</td>
+                    <td><a href="../06-指南参考/guides/2026/03/解决方案事件系统重构实施指南（简化版）-20260318.md">解决方案事件系统重构实施指南（简化版）</a></td>
+                    <td>事件系统</td>
+                </tr>
+                <tr>
+                    <td>2026-03-18</td>
+                    <td><a href="../02-实施总结/2026/03/解决方案系统架构重新设计实施报告-20260318.md">解决方案系统架构重新设计实施报告</a></td>
+                    <td>实施结果</td>
+                </tr>
+                <tr>
+                    <td>2026-03-18</td>
+                    <td><a href="../01-方案设计/2026/03/解决方案事件系统重构实施方案-20260318.md">解决方案事件系统重构实施方案</a></td>
+                    <td>事件系统方案</td>
+                </tr>
+                <tr>
+                    <td>2026-03-16</td>
+                    <td><a href="../01-方案设计/2026/03/解决方案系统-实施方案-20260316.md">解决方案系统-实施方案</a></td>
+                    <td>实施计划</td>
+                </tr>
+                <tr>
+                    <td>2026-03-16</td>
+                    <td><a href="../01-方案设计/2026/03/工作流保存加载完整实施方案-20260316.md">工作流保存加载完整实施方案</a></td>
+                    <td>保存加载</td>
+                </tr>
+                <tr>
+                    <td>2026-03-16</td>
+                    <td><a href="../01-方案设计/2026/03/UI设计方案-解决方案系统集成-20260316.md">UI 设计方案-解决方案系统集成</a></td>
+                    <td>UI 集成</td>
+                </tr>
+                <tr>
+                    <td>2026-03-16</td>
+                    <td><a href="../02-实施总结/2026/03/工作流保存加载实施总结-20260316.md">工作流保存加载实施总结</a></td>
+                    <td>保存加载结果</td>
+                </tr>
+                <tr>
+                    <td>2026-03-15</td>
+                    <td><a href="../01-方案设计/2026/03/JSON序列化配置不一致问题分析与优化方案-20260315.md">JSON 序列化配置不一致问题分析与优化方案</a></td>
+                    <td>序列化配置</td>
+                </tr>
+                <tr>
+                    <td>2026-03-14</td>
+                    <td><a href="../02-实施总结/2026/03/实施进度报告-20260314.md">实施进度报告</a></td>
+                    <td>进度</td>
+                </tr>
+                <tr>
+                    <td>2026-03-12</td>
+                    <td><a href="../01-方案设计/2026/03/解决方案系统设计方案-20260312.md">解决方案系统设计方案</a></td>
+                    <td>早期设计</td>
+                </tr>
+                <tr>
+                    <td>2026-03-11</td>
+                    <td><a href="../01-方案设计/2026/03/解决方案系统及数据持久化设计-20260311.md">解决方案系统及数据持久化设计</a></td>
+                    <td>持久化初版</td>
+                </tr>
+            </tbody>
+        </table>
+        <p><strong>已被取代的说法</strong>（不要再用）：</p>
+        <ul>
+            <li>「<code>AssemblyVersion</code> 跟交付版本统一」——20260919 §4 事故实证否决。</li>
+            <li>「插件兼容性读 SDK 程序集版本」——已改为读显式契约编号。</li>
+            <li>「工具各自维护独立版本号」——已改为跟随产品版本。</li>
+        </ul>
+</section>
+
+<nav class="doc-nav">
+    <a class="primary" href="../00-索引/主题台账.html">主题台账</a>
+    <a href="../00-索引/文档索引.html">文档索引</a>
+    <a href="README.html">现行文档说明</a>
+</nav>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,88 @@
+{
+  "controls": [
+    {
+      "type": "OpenFileDialog",
+      "name": "CfFilePath"
+    },
+    {
+      "type": "EnumerationHikLx",
+      "name": "AcquisitionName"
+    },
+    {
+      "type": "EnumerationLx",
+      "name": "CameraName"
+    },
+    {
+      "type": "IntegerBx",
+      "name": "Width"
+    },
+    {
+      "type": "IntegerBx",
+      "name": "Height"
+    },
+    {
+      "type": "IntegerBx",
+      "name": "UserOutputValueAll"
+    },
+    {
+      "type": "EnumerationBx",
+      "name": "TriggerSource"
+    },
+    {
+      "type": "EnumerationBx",
+      "name": "TriggerSelector"
+    },
+    {
+      "type": "EnumerationBx",
+      "name": "TriggerMode"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imagecollecthikmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectHikModu\\ImageCollectHikModu.xml",
+      "sha256": "ee096320d2ffdfb74857e1944e76f0189bccd0c37f72d6417c38e249e8d6bac7",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectHikModu\\ImageCollectHikModuAlgorithm.xml",
+      "sha256": "13e3d63a7954321263aad52dfe733bb547eb41a08be61a10480ee71417c55d4e",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectHikModu\\ImageCollectHikModuAlgorithmTab.xml",
+      "sha256": "85907aea22a83c1f1ec48b39f82184bb2a517030430ee0a6b8758dc8d4dfeb36",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectHikModu\\ImageCollectHikModuCs.xml",
+      "sha256": "73fa4ed01f5e3da7ee278cec48200ca312370f84e00152fe574d8ba43fdb2d8f",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectHikModu\\ImageCollectHikModuDisplay.xml",
+      "sha256": "e6ccbb71a25fc46f62de084bc412d1cced9f4336b9516014726fe433c929b4f5",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectHikModu\\ToolItemInfo.xml",
+      "sha256": "796e769f85009766e42e65b50d64bf0478e9c77a5c5fdb6c71a45407994a11b7",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "ImageCollectHikModu",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

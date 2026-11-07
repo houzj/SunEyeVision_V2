@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>dynamicparamcameramodule 路 evidence.json</title><style>*{box-sizing:border-box}
+body{margin:0;background:#f6f7f9;color:#1d2129;font:14px/1.7 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:24px 20px 60px}
+.crumbs{font-size:13px;margin-bottom:14px}
+.crumbs a{color:#2563eb;text-decoration:none}
+.card{background:#fff;border:1px solid #e4e7ec;border-radius:10px;padding:26px 30px}
+h1,h2,h3,h4{line-height:1.4}
+h1{font-size:20px}h2{font-size:17px;margin-top:26px}h3{font-size:15px}
+table{border-collapse:collapse;margin:12px 0;width:100%;font-size:13px}
+td,th{border:1px solid #e4e7ec;padding:6px 10px;vertical-align:top}
+tr:nth-child(even) td{background:#fafbfc}
+code{background:#f1f3f5;border-radius:3px;padding:1px 5px;font-size:12.5px;font-family:Consolas,Menlo,monospace;color:#c7254e}
+pre{background:#282c34;color:#abb2bf;border-radius:6px;padding:14px 16px;overflow:auto;font-size:12.5px;line-height:1.6;font-family:Consolas,Menlo,monospace}
+pre code{background:none;color:inherit;padding:0}
+ul{padding-left:22px}
+blockquote{border-left:3px solid #d0d5da;margin:10px 0;padding:4px 14px;color:#5a636b;background:#fafbfc}
+hr{border:0;border-top:1px solid #e4e7ec;margin:18px 0}
+p{margin:8px 0}</style></head><body><div class="wrap"><nav class="crumbs"><a href="../../index.html">&#8592; 宸ュ叿绱㈠紩</a> &middot; <code>dynamicparamcameramodule</code></nav><div class="card"><h2>evidence.json</h2><pre>{
+  &quot;stableToolId&quot;: &quot;dynamicparamcameramodule&quot;,
+  &quot;originalPlugin&quot;: &quot;DynamicParamCameraModule&quot;,
+  &quot;displayName&quot;: &quot;DynamicParamCameraModule&quot;,
+  &quot;originalCategory&quot;: &quot;Global&quot;,
+  &quot;originalSourcePath&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DynamicParamCameraModule&quot;,
+  &quot;uiCategory&quot;: &quot;extension-panels&quot;,
+  &quot;priority&quot;: &quot;P3&quot;,
+  &quot;status&quot;: &quot;inventory-only&quot;,
+  &quot;evidenceState&quot;: &quot;unknown&quot;,
+  &quot;resourceCount&quot;: 5,
+  &quot;parameterCount&quot;: 3,
+  &quot;inputCount&quot;: 4,
+  &quot;outputCount&quot;: 5,
+  &quot;uiControlCount&quot;: 7,
+  &quot;sourceInventory&quot;: &quot;docs/plugins/inventory.json&quot;,
+  &quot;sourceEvidence&quot;: [],
+  &quot;managedMembers&quot;: [],
+  &quot;nativeFunctions&quot;: [],
+  &quot;runtimeObservations&quot;: [],
+  &quot;currentImplementation&quot;: {
+    &quot;moduleId&quot;: &quot;dynamicparamcameramodule&quot;,
+    &quot;implPath&quot;: &quot;src/DeviceDriver.Camera/Cameras/&quot;,
+    &quot;verifiedAt&quot;: &quot;2026-11-06&quot;,
+    &quot;differences&quot;: [
+      &quot;原件把「动态参数」实现成海康 MVS 的 CameraName 枚举 + ClockSource + MvsFeatureTree + CameraPreview 预览 + RealTimeImgAcq 命令组合，只对海康相机成立。&quot;,
+      &quot;我方同一用途由 schema 驱动：DynamicCameraParamList 对应的「按设备动态生成的参数表」取自 ICameraAdapter.GetParameterSchemaAsync()，不绑定厂商。&quot;,
+      &quot;预览（CameraPreview）按 ICameraFrameSink 的帧所有权与共享连接会话渲染：预览与工作流同时用同一台相机时复用同一会话，不重复打开。&quot;,
+      &quot;时钟源 / 触发源取设备枚举符号名并归一化；符号名缺失或未识别时拒绝采集并报错，不猜、不静默降级。&quot;,
+      &quot;相机身份按 DeviceId（序列号 / MAC）绑定，改名不影响恢复。&quot;,
+      &quot;可复用部分仍按原件：常用参数 / 自定义参数两页签划分、实时采集命令与抓图状态的交互顺序。&quot;
+    ],
+    &quot;notAdopted&quot;: [
+      {
+        &quot;type&quot;: &quot;CameraPreview&quot;,
+        &quot;reason&quot;: &quot;原件把实时预览实现在参数面板里，且与海康 MVS 取流绑定；我方取流由会话与帧所有权统一管，面板不再承载画面。&quot;,
+        &quot;replacement&quot;: &quot;ICameraFrameSink 接收帧、相机管理器/预览窗口显示；面板只留开关与状态行。&quot;
+      },
+      {
+        &quot;type&quot;: &quot;MvsFeatureTree&quot;,
+        &quot;reason&quot;: &quot;海康 MVS 私有相机特性树，多品牌下不存在同名同义的树。&quot;,
+        &quot;replacement&quot;: &quot;ICameraAdapter.GetParameterSchemaAsync() 返回的通用参数 schema 树。&quot;
+      },
+      {
+        &quot;type&quot;: &quot;ClockSource&quot;,
+        &quot;reason&quot;: &quot;原件按海康时钟源硬编码选项；不同厂商/接口的时钟源枚举与符号名不一致。&quot;,
+        &quot;replacement&quot;: &quot;取设备枚举符号名并按 schema 生成选项；符号名缺失或未识别时拒绝采集并报错。&quot;
+      }
+    ]
+  },
+  &quot;unknowns&quot;: [
+    &quot;尚未开始该工具的源码级闭环逆向&quot;
+  ]
+}</pre></div></div></body></html>

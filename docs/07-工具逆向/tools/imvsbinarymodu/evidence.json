@@ -1,0 +1,28 @@
+{
+  "stableToolId": "imvsbinarymodu",
+  "originalPlugin": "IMVSBinaryModu",
+  "displayName": "图像二值化",
+  "originalCategory": "ImageProcessing",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSBinaryModu",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "resourceCount": 6,
+  "parameterCount": 15,
+  "inputCount": 6,
+  "outputCount": 11,
+  "uiControlCount": 27,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ],
+  "sourceReports": [
+    "docs/plugins/IMAGE-BINARY-SOURCE-AUDIT.md"
+  ],
+  "note": "原厂 Init、ProcessAlg、参数进入 SDK 算法对象、结果回传和释放已有证据，SDK 内部算法仍有明确未知。"
+}

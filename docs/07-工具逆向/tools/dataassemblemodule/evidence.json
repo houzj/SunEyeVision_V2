@@ -1,0 +1,79 @@
+{
+  "stableToolId": "dataassemblemodule",
+  "originalPlugin": "DataAssembleModule",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule",
+  "displayName": "协议组装",
+  "authority": "shipped XML/PE inventory; no original VM execution",
+  "sourcePaths": [
+    "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule",
+    "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModule.xml",
+    "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleAlgorithm.xml",
+    "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleAlgorithmTab.xml",
+    "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleCs.xml",
+    "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleDisplay.xml",
+    "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\ToolItemInfo.xml"
+  ],
+  "inputNames": [],
+  "outputNames": [
+    "ModuRunTime",
+    "ModuStatus",
+    "AssembleResult",
+    "AssembleResultHex"
+  ],
+  "parameterNames": [],
+  "uiControls": [
+    "AssembleType",
+    "Separator",
+    "PyScriptPath",
+    "FiledHead",
+    "InputParams"
+  ],
+  "executionEntry": "unknown: tool-specific Process entry body not recovered",
+  "resultPublication": "unknown: output writer and reader chain not recovered",
+  "verdict": "unknown: success/failure predicates not recovered",
+  "saveRestore": "unknown: tool-specific Save/Load chain not recovered",
+  "release": "unknown: DeInit/Destroy ownership not recovered",
+  "originalVmExecuted": false,
+  "unknowns": [
+    "XML schema is not behavioral proof",
+    "generic SDK declarations do not prove module call path"
+  ],
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule",
+      "evidenceType": "shipped XML/PE/resource inventory"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModule.xml",
+      "sha256": "FFA54880C17B3001E99C92CF9E766BC2293767B727538CBFA6FB7B8C8C1C96E6",
+      "evidenceType": "shipped XML/PE/resource inventory"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleAlgorithm.xml",
+      "sha256": "7FFB1A2C07DEA7AC4354FE572438DCC1D3244D30EF63867D2D832760E74841FE",
+      "evidenceType": "shipped XML/PE/resource inventory"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleAlgorithmTab.xml",
+      "sha256": "D755510DA015C662DCDD4247325E90A0C9EC21C431C95983AFB1EE9BF1763646",
+      "evidenceType": "shipped XML/PE/resource inventory"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleCs.xml",
+      "sha256": "E43D389185224444DEAB32D7D2D1B836C36071E61CAD8EE762E9E1747995BB83",
+      "evidenceType": "shipped XML/PE/resource inventory"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleDisplay.xml",
+      "sha256": "2C28E74DB44A96056FFE7AB9D28CFC212BDC907FBBEDA6CA3853991F3D454308",
+      "evidenceType": "shipped XML/PE/resource inventory"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\ToolItemInfo.xml",
+      "sha256": "9BE6D5250244250E704B80005B5F5219DEC8C24973C66DE7A79A537506F8DEA2",
+      "evidenceType": "shipped XML/PE/resource inventory"
+    }
+  ]
+}

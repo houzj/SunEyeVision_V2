@@ -1,0 +1,27 @@
+{
+  "stableToolId": "imvshpfeaturematchmodu",
+  "originalPlugin": "IMVSHPFeatureMatchModu",
+  "displayName": "高精度匹配",
+  "originalCategory": "Location",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSHPFeatureMatchModu",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "status": "source-indexed",
+  "evidenceState": "source-indexed",
+  "resourceCount": 6,
+  "parameterCount": 52,
+  "inputCount": 5,
+  "outputCount": 19,
+  "uiControlCount": 56,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ],
+  "sourceReports": [
+    "docs/plugins/IMVSHPFEATUREMATCHMODU-SOURCE-INVENTORY.md"
+  ]
+}

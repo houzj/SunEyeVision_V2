@@ -1,0 +1,16 @@
+{
+  "stableToolId": "imvscolorimagegenerationmodu",
+  "displayName": "彩图生成",
+  "kind": "schema-preview",
+  "svg": "ui-preview.svg",
+  "inputCount": 15,
+  "outputCount": 7,
+  "controlCount": 4,
+  "source": "XML declaration inventory",
+  "runtimeRendered": false,
+  "unknowns": [
+    "native desktop appearance",
+    "runtime display publication",
+    "pixel parity"
+  ]
+}

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>四边形查找 · 调试窗预览</title>
+<!-- suneye:preview-level=control tool=imvsquadranglefindmodu -->
+<style>:root{--win:#fff;--bar:#f2f3f5;--line:#dcdfe4;--text:#1d2129;--muted:#6b7280;--accent:#ff7900;--field:#fff;--bg:#e9ecf0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:12px/1.5 "Microsoft YaHei","Segoe UI",sans-serif}
+.pagewrap{max-width:1220px;margin:0 auto;padding:18px 16px 40px}
+.pagehead{font-size:12px;color:var(--muted);margin-bottom:10px}
+.pagehead a{color:#2563eb;text-decoration:none}
+.pagehead a:hover{text-decoration:underline}
+.win{background:var(--win);border:1px solid var(--line);border-radius:4px;box-shadow:0 4px 16px rgba(0,0,0,.10);display:flex;flex-direction:column;height:780px;overflow:hidden}
+.titlebar{height:32px;background:var(--bar);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:0 10px;flex:0 0 32px}
+.titlebar .nm{font-weight:700;font-size:13px}
+.titlebar .mod{color:var(--muted);font-size:11px}
+.titlebar .sp{flex:1}
+.titlebar .btns span{display:inline-block;width:24px;text-align:center;color:#555}
+.toolbar{height:42px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:6px;padding:0 10px;flex:0 0 42px}
+.toolbar button{height:26px;padding:0 12px;font-size:12px;border:1px solid #cfd3d8;background:#fbfbfc;border-radius:2px;cursor:default;font-family:inherit}
+.toolbar button .ico{width:15px;height:15px;vertical-align:-3px;margin-right:5px}
+.roibar .b .ico{width:14px;height:14px;vertical-align:-2px;margin-right:3px}
+.toolbar button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.toolbar .sep{width:1px;height:20px;background:var(--line);margin:0 6px}
+.toolbar .tag{font-size:11px;color:#8a5a00;background:#fff4e0;border:1px solid #ffd9a0;border-radius:10px;padding:1px 9px}
+.toolbar .hint{font-size:11px;color:var(--muted);margin-left:8px}
+.tabs{height:34px;background:#fafafc;border-bottom:1px solid var(--line);display:flex;align-items:stretch;flex:0 0 34px;padding-left:6px;overflow:hidden}
+.tabs .tab{display:flex;align-items:center;padding:0 16px;font-size:12px;color:#374151;border-bottom:2px solid transparent;white-space:nowrap}
+.tabs .tab.on{background:#fff;border-bottom-color:var(--accent);font-weight:600}
+.tabs .tab.na{color:#b0b4bb}
+.body{flex:1;display:flex;min-height:0}
+.col{display:flex;flex-direction:column;min-height:0}
+.col-left{width:330px;border-right:1px solid var(--line);background:#fff}
+.col-mid{flex:1;background:#f7f8fa;border-right:1px solid var(--line)}
+.col-right{width:330px;background:#fff}
+.sect{font-size:11px;font-weight:700;color:#4b5563;background:#f5f6f8;border-bottom:1px solid var(--line);padding:6px 10px;letter-spacing:.02em;display:flex;justify-content:space-between}
+.sect .cnt{font-weight:400;color:var(--muted)}
+.scroll{overflow:auto;flex:1;padding:6px 10px 12px}
+.grp{margin:10px 0 4px;font-size:11px;font-weight:700;color:#6b7280;border-bottom:1px dashed var(--line);padding-bottom:3px;display:flex;align-items:center;gap:6px}
+.grp .ic{color:var(--accent)}
+.grp .ty{font-weight:400;color:#9aa0a6;font-size:10px}
+.row{display:flex;align-items:center;gap:8px;min-height:26px;padding:1px 0}
+.row>label{flex:0 0 52%;text-align:right;color:#4b5563;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .ctl{flex:1;display:flex;align-items:center;gap:4px;min-width:0}
+.row select,.row input[type=text],.row input[type=number]{height:24px;width:100%;border:1px solid #cfd3d8;border-radius:2px;background:var(--field);font:12px/1 "Microsoft YaHei",sans-serif;padding:0 6px;color:var(--text)}
+.row select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,#777 50%),linear-gradient(135deg,#777 50%,transparent 50%);background-position:calc(100% - 12px) 10px,calc(100% - 8px) 10px;background-size:4px 4px,4px 4px;background-repeat:no-repeat;padding-right:22px}
+.row input[type=checkbox]{width:14px;height:14px;accent-color:var(--accent)}
+.row .btn{height:24px;flex:1;border:1px solid #cfd3d8;background:#fbfbfc;border-radius:2px;font:12px "Microsoft YaHei",sans-serif;color:#374151;padding:0 6px;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .btn.ell:after{content:"…";float:right;color:#888}
+.row .tild{color:#9aa0a6}
+.row .mini{flex:0 0 24px;height:24px;border:1px solid #cfd3d8;background:#fbfbfc;border-radius:2px;font:12px "Microsoft YaHei";color:#555;padding:0}
+.row .mini:hover{background:#f0f1f3}
+.row .swatch{width:14px;height:14px;border:1px solid #c9ccd1;background:linear-gradient(135deg,#ff7900,#3b82f6 60%,#22c55e);flex:0 0 14px}
+.row.disabled>label{color:#b0b4bb}
+.typechip{font-size:10px;color:#9aa0a6;border:1px solid #e3e6ea;border-radius:3px;padding:0 4px;flex:0 0 auto}
+.canvas{flex:1;display:flex;align-items:center;justify-content:center;padding:16px;background-image:linear-gradient(#eef0f3 1px,transparent 1px),linear-gradient(90deg,#eef0f3 1px,transparent 1px);background-size:20px 20px}
+.ph{max-width:420px;text-align:center;color:#8a9199;line-height:1.9;border:1px dashed #ccd2d9;border-radius:6px;padding:26px 22px;background:#fff}
+.ph b{color:#5f6771}
+.roibar{height:30px;border-top:1px solid var(--line);display:flex;align-items:center;gap:6px;padding:0 8px;background:#fbfbfc}
+.roibar .b{height:22px;padding:0 9px;border:1px solid #d5d9de;background:#fff;border-radius:2px;font-size:11px;color:#555;display:inline-flex;align-items:center}
+.statusbar{height:28px;border-top:1px solid var(--line);background:#f5f6f8;display:flex;align-items:center;gap:12px;padding:0 10px;font-size:11px;color:var(--muted);flex:0 0 28px}
+.statusbar .sp{flex:1}
+.statusbar a{color:#2563eb;text-decoration:none}
+.showrow{display:flex;align-items:center;gap:6px;min-height:22px;font-size:12px}
+.showrow .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.showrow .t2{font-size:10px;color:#9aa0a6;flex:0 0 auto}
+.showrow input{width:13px;height:13px;accent-color:var(--accent)}
+.showrow .swatch{width:13px;height:13px;border:1px solid #c9ccd1;background:linear-gradient(135deg,#ff7900,#3b82f6 60%,#22c55e);flex:0 0 13px}
+.outrow{display:flex;align-items:center;gap:6px;min-height:22px;font-size:12px}
+.outrow .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.outrow .t2{font-size:10px;color:#9aa0a6;flex:0 0 auto}
+.outrow input{width:13px;height:13px;accent-color:var(--accent)}
+.note{margin-top:14px;border-left:3px solid #f59e0b;background:#fffbeb;color:#78350f;font-size:12px;padding:10px 14px;border-radius:0 6px 6px 0}
+.note b{color:#92400e}
+.note ul{margin:6px 0 0;padding-left:20px}
+.note li{margin:2px 0}</style></head><body>
+<div class="pagewrap">
+<div class="pagehead"><a href="../index.html">&larr; 工具预览索引</a> &nbsp;·&nbsp; <a href="../../07-工具逆向/index.html">逆向证据库</a> &nbsp;·&nbsp; 卡片 <code>imvsquadranglefindmodu</code></div>
+<div class="win">
+<div class="titlebar"><span class="nm">四边形查找</span><span class="mod">IMVSQuadrangleFindModu</span><span class="sp"></span><span class="btns"><span>&minus;</span><span>&#9633;</span><span>&times;</span></span></div>
+<div class="toolbar"><button class="primary"><img class="ico" src="../assets/icons/run.png" alt="">运行</button><button><img class="ico" src="../assets/icons/runbar.png" alt="">连续运行</button><button><img class="ico" src="../assets/icons/stop.png" alt="">停止</button><span class="sep"></span><button>确认</button><button>取消</button><span class="sep"></span><span class="tag">Location</span><span class="hint">静态还原：控件形态与顺序按原件资源声明，不执行算法</span></div>
+<div class="tabs">
+<span class="tab on">Tab_Basic Params</span>
+<span class="tab na">Tab_Run Params（归属未取证）</span>
+<span class="tab na">ResultShow（归属未取证）</span>
+</div>
+<div class="body">
+<div class="col col-left">
+<div class="sect">参数<span class="cnt">控件 83 · 默认值 59</span></div>
+<div class="scroll">
+<div class="grp"><span class="ic">&#9662;</span>OutputMaskImageGroup<span class="ty">GroupLinkItem</span></div>
+<div class="grp"><span class="ic">&#9662;</span>RoiSelectGroup<span class="ty">GroupLinkItem</span></div>
+<div class="row"><label title="RoiType">RoiType</label><div class="ctl"><select><option></option></select><button class="btn" style="flex:0 0 34px;text-align:center">&#9633;</button></div></div>
+<div class="row"><label title="InheritWay">InheritWay</label><div class="ctl"><input type="radio" name="InheritWay"><input type="radio" name="InheritWay"></div></div>
+<div class="row"><label title="Region0">Region0</label><div class="ctl"><input type="text" value=""><button class="mini" title="选择绑定">&#8943;</button></div></div>
+<div class="row"><label title="ROIWidth">ROIWidth</label><div class="ctl"><input type="text" value=""><button class="mini" title="选择绑定">&#8943;</button></div></div>
+<div class="row"><label title="ROIHeight">ROIHeight</label><div class="ctl"><input type="text" value=""><button class="mini" title="选择绑定">&#8943;</button></div></div>
+<div class="row"><label title="ROICenterX">ROICenterX</label><div class="ctl"><input type="text" value=""><button class="mini" title="选择绑定">&#8943;</button></div></div>
+<div class="row"><label title="ROICenterY">ROICenterY</label><div class="ctl"><input type="text" value=""><button class="mini" title="选择绑定">&#8943;</button></div></div>
+<div class="row"><label title="ROIAngle">ROIAngle</label><div class="ctl"><input type="text" value=""><button class="mini" title="选择绑定">&#8943;</button></div></div>
+<div class="row"><label title="Region1">Region1</label><div class="ctl"><input type="text" value=""><button class="mini" title="选择绑定">&#8943;</button></div></div>
+<div class="row"><label title="ROI1Width">ROI1Width</label><div class="ctl"><input type="text" value=""><button class="mini" title="选择绑定">&#8943;</button></div></div>
+<div class="row"><label title="ROI1Height">ROI1Height</label><div class="ctl"><input type="text" value=""><button class="mini" title="选择绑定">&#8943;</button></div></div>
+<div class="row"><label title="ROI1CenterX">ROI1CenterX</label><div class="ctl"><input type="text" value=""><button class="mini" title="选择绑定">&#8943;</button></div></div>
+<div class="row"><label title="ROI1CenterY">ROI1CenterY</label><div class="ctl"><input type="text" value=""><button class="mini" title="选择绑定">&#8943;</button></div></div>
+<div class="row"><label title="ROI1Angle">ROI1Angle</label><div class="ctl"><input type="text" value=""><button class="mini" title="选择绑定">&#8943;</button></div></div>
+<div class="row"><label title="Region2">Region2</label><div class="ctl"><input type="text" value=""><button class="mini" title="选择绑定">&#8943;</button></div></div>
+<div class="row"><label title="ROI2Width">ROI2Width</label><div class="ctl"><input type="text" value=""><button class="mini" title="选择绑定">&#8943;</button></div></div>
+<div class="row"><label title="ROI2Height">ROI2Height</label><div class="ctl"><input type="text" value=""><button class="mini" title="选择绑定">&#8943;</button></div></div>
+<div class="row"><label title="ROI2CenterX">ROI2CenterX</label><div class="ctl"><input type="text" value=""><button class="mini" title="选择绑定">&#8943;</button></div></div>
+<div class="row"><label title="ROI2CenterY">ROI2CenterY</label><div class="ctl"><input type="text" value=""><button class="mini" title="选择绑定">&#8943;</button></div></div>
+<div class="row"><label title="ROI2Angle">ROI2Angle</label><div class="ctl"><input type="text" value=""><button class="mini" title="选择绑定">&#8943;</button></div></div>
+<div class="row"><label title="Region3">Region3</label><div class="ctl"><input type="text" value=""><button class="mini" title="选择绑定">&#8943;</button></div></div>
+<div class="row"><label title="ROI3Width">ROI3Width</label><div class="ctl"><input type="text" value=""><button class="mini" title="选择绑定">&#8943;</button></div></div>
+<div class="row"><label title="ROI3Height">ROI3Height</label><div class="ctl"><input type="text" value=""><button class="mini" title="选择绑定">&#8943;</button></div></div>
+<div class="row"><label title="ROI3CenterX">ROI3CenterX</label><div class="ctl"><input type="text" value=""><button class="mini" title="选择绑定">&#8943;</button></div></div>
+<div class="row"><label title="ROI3CenterY">ROI3CenterY</label><div class="ctl"><input type="text" value=""><button class="mini" title="选择绑定">&#8943;</button></div></div>
+<div class="row"><label title="ROI3Angle">ROI3Angle</label><div class="ctl"><input type="text" value=""><button class="mini" title="选择绑定">&#8943;</button></div></div>
+<div class="grp"><span class="ic">&#9662;</span>ExternROITypeGroup<span class="ty">GroupLinkItem</span></div>
+<div class="grp"><span class="ic">&#9662;</span>AssistGroup<span class="ty">GroupLinkItem</span></div>
+<div class="row"><label title="LineChoose">LineChoose</label><div class="ctl"><select><option>0</option></select></div></div>
+<div class="row"><label title="FindMode0">FindMode0</label><div class="ctl"><select><option>1</option></select></div></div>
+<div class="row"><label title="EdgePolarity0">EdgePolarity0</label><div class="ctl"><select><option>3</option></select></div></div>
+<div class="row"><label title="EdgeThreshold0">EdgeThreshold0</label><div class="ctl"><input type="text" value="15"></div></div>
+<div class="row"><label title="KernelSize0">KernelSize0</label><div class="ctl"><input type="text" value="2"></div></div>
+<div class="row"><label title="CaliperNum0">CaliperNum0</label><div class="ctl"><input type="text" value="20"></div></div>
+<div class="row"><label title="RejectNum0">RejectNum0</label><div class="ctl"><input type="text" value="0"></div></div>
+<div class="row"><label title="RejectDist0">RejectDist0</label><div class="ctl"><input type="text" value="5"></div></div>
+<div class="row"><label title="RegionWidth0">RegionWidth0</label><div class="ctl"><input type="text" value="5"></div></div>
+<div class="row"><label title="InitType0">InitType0</label><div class="ctl"><select><option>2</option></select></div></div>
+<div class="row"><label title="FitFun0">FitFun0</label><div class="ctl"><select><option>2</option></select></div></div>
+<div class="row"><label title="FindMode1">FindMode1</label><div class="ctl"><select><option>1</option></select></div></div>
+<div class="row"><label title="EdgePolarity1">EdgePolarity1</label><div class="ctl"><select><option>3</option></select></div></div>
+<div class="row"><label title="EdgeThreshold1">EdgeThreshold1</label><div class="ctl"><input type="text" value="15"></div></div>
+<div class="row"><label title="KernelSize1">KernelSize1</label><div class="ctl"><input type="text" value="2"></div></div>
+<div class="row"><label title="CaliperNum1">CaliperNum1</label><div class="ctl"><input type="text" value="20"></div></div>
+<div class="row"><label title="RejectNum1">RejectNum1</label><div class="ctl"><input type="text" value="0"></div></div>
+<div class="row"><label title="RejectDist1">RejectDist1</label><div class="ctl"><input type="text" value="5"></div></div>
+<div class="row"><label title="RegionWidth1">RegionWidth1</label><div class="ctl"><input type="text" value="5"></div></div>
+<div class="row"><label title="InitType1">InitType1</label><div class="ctl"><select><option>2</option></select></div></div>
+<div class="row"><label title="FitFun1">FitFun1</label><div class="ctl"><select><option>2</option></select></div></div>
+<div class="row"><label title="FindMode2">FindMode2</label><div class="ctl"><select><option>1</option></select></div></div>
+<div class="row"><label title="EdgePolarity2">EdgePolarity2</label><div class="ctl"><select><option>3</option></select></div></div>
+<div class="row"><label title="EdgeThreshold2">EdgeThreshold2</label><div class="ctl"><input type="text" value="15"></div></div>
+<div class="row"><label title="KernelSize2">KernelSize2</label><div class="ctl"><input type="text" value="2"></div></div>
+<div class="row"><label title="CaliperNum2">CaliperNum2</label><div class="ctl"><input type="text" value="20"></div></div>
+<div class="row"><label title="RejectNum2">RejectNum2</label><div class="ctl"><input type="text" value="0"></div></div>
+<div class="row"><label title="RejectDist2">RejectDist2</label><div class="ctl"><input type="text" value="5"></div></div>
+<div class="row"><label title="RegionWidth2">RegionWidth2</label><div class="ctl"><input type="text" value="5"></div></div>
+<div class="row"><label title="InitType2">InitType2</label><div class="ctl"><select><option>2</option></select></div></div>
+<div class="row"><label title="FitFun2">FitFun2</label><div class="ctl"><select><option>2</option></select></div></div>
+<div class="row"><label title="FindMode3">FindMode3</label><div class="ctl"><select><option>1</option></select></div></div>
+<div class="row"><label title="EdgePolarity3">EdgePolarity3</label><div class="ctl"><select><option>3</option></select></div></div>
+<div class="row"><label title="EdgeThreshold3">EdgeThreshold3</label><div class="ctl"><input type="text" value="15"></div></div>
+<div class="row"><label title="KernelSize3">KernelSize3</label><div class="ctl"><input type="text" value="2"></div></div>
+<div class="row"><label title="CaliperNum3">CaliperNum3</label><div class="ctl"><input type="text" value="20"></div></div>
+<div class="row"><label title="RejectNum3">RejectNum3</label><div class="ctl"><input type="text" value="0"></div></div>
+<div class="row"><label title="RejectDist3">RejectDist3</label><div class="ctl"><input type="text" value="5"></div></div>
+<div class="row"><label title="RegionWidth3">RegionWidth3</label><div class="ctl"><input type="text" value="5"></div></div>
+<div class="row"><label title="InitType3">InitType3</label><div class="ctl"><select><option>2</option></select></div></div>
+<div class="row"><label title="FitFun3">FitFun3</label><div class="ctl"><select><option>2</option></select></div></div>
+<div class="row"><label title="CentralPointXLimitEnable">CentralPointXLimitEnable</label><div class="ctl"><input type="checkbox"></div></div>
+<div class="row"><label title="RangCentralPointXLimit">RangCentralPointXLimit</label><div class="ctl"><input type="text" value="" style="max-width:72px"><span class="tild">~</span><input type="text" value="" style="max-width:72px"></div></div>
+<div class="row"><label title="CentralPointYLimitEnable">CentralPointYLimitEnable</label><div class="ctl"><input type="checkbox"></div></div>
+<div class="row"><label title="RangCentralPointYLimit">RangCentralPointYLimit</label><div class="ctl"><input type="text" value="" style="max-width:72px"><span class="tild">~</span><input type="text" value="" style="max-width:72px"></div></div>
+<div class="row"><label title="AngleLimitFirstEnable">AngleLimitFirstEnable</label><div class="ctl"><input type="checkbox"></div></div>
+<div class="row"><label title="RangAngleLimitFirst">RangAngleLimitFirst</label><div class="ctl"><input type="text" value="" style="max-width:72px"><span class="tild">~</span><input type="text" value="" style="max-width:72px"></div></div>
+<div class="row"><label title="AngleLimitSecondEnable">AngleLimitSecondEnable</label><div class="ctl"><input type="checkbox"></div></div>
+<div class="row"><label title="RangAngleLimitSecond">RangAngleLimitSecond</label><div class="ctl"><input type="text" value="" style="max-width:72px"><span class="tild">~</span><input type="text" value="" style="max-width:72px"></div></div>
+<div class="row"><label title="AngleLimitThirdEnable">AngleLimitThirdEnable</label><div class="ctl"><input type="checkbox"></div></div>
+<div class="row"><label title="RangAngleLimitThird">RangAngleLimitThird</label><div class="ctl"><input type="text" value="" style="max-width:72px"><span class="tild">~</span><input type="text" value="" style="max-width:72px"></div></div>
+<div class="row"><label title="AngleLimitFourthEnable">AngleLimitFourthEnable</label><div class="ctl"><input type="checkbox"></div></div>
+<div class="row"><label title="RangAngleLimitFourth">RangAngleLimitFourth</label><div class="ctl"><input type="text" value="" style="max-width:72px"><span class="tild">~</span><input type="text" value="" style="max-width:72px"></div></div>
+</div>
+<div class="sect">输入<span class="cnt">8 项</span></div>
+<div class="scroll" style="flex:0 0 auto;max-height:190px">
+<div class="row"><label title="InputImage">InputImage</label><div class="ctl"><span class="typechip">Combination</span>IMAGE</div></div>
+<div class="row"><label title="InputMask">InputMask</label><div class="ctl"><span class="typechip">Combination</span>IMAGE</div></div>
+<div class="row"><label title="InputROI0">InputROI0</label><div class="ctl"><span class="typechip">Combination</span>ROIBOX</div></div>
+<div class="row"><label title="InputROI1">InputROI1</label><div class="ctl"><span class="typechip">Combination</span>ROIBOX</div></div>
+<div class="row"><label title="InputROI2">InputROI2</label><div class="ctl"><span class="typechip">Combination</span>ROIBOX</div></div>
+<div class="row"><label title="InputROI3">InputROI3</label><div class="ctl"><span class="typechip">Combination</span>ROIBOX</div></div>
+<div class="row"><label title="Position Correction Info">Position Correction Info</label><div class="ctl"><span class="typechip">Combination</span>FIXTURE</div></div>
+<div class="row"><label title="InputBlindPolygonString">InputBlindPolygonString</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+</div>
+</div>
+<div class="col col-mid">
+<div class="sect">图像<span class="cnt">画布占位</span></div>
+<div class="canvas"><div class="ph"><b>四边形查找</b> 的调试窗<br>左侧控件按原件 <code>AlgorithmTabRoot</code> 声明还原<br><span style="color:#a0a6ad">图像、ROI 交互与运行结果需实机执行，本页不含</span></div></div>
+<div class="roibar"><span class="b"><img class="ico" src="../assets/icons/original.png" alt="">适应</span><span class="b">1:1</span><span class="b">ROI</span><span class="b">屏蔽</span><span class="b">十字</span><span style="flex:1"></span><span class="b"><img class="ico" src="../assets/icons/zoomin.png" alt=""></span><span class="b"><img class="ico" src="../assets/icons/zoomout.png" alt=""></span></div>
+</div>
+<div class="col col-right">
+<div class="sect">显示项<span class="cnt">29 项 · 结果视图开关</span></div>
+<div class="scroll" style="flex:0 0 132px">
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="CentralPointFiled">CentralPointFiled</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="DiagonalLineIntersection">DiagonalLineIntersection</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="MedianLineIntersection">MedianLineIntersection</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="AngleBisectorIntersection">AngleBisectorIntersection</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="Line0Result">Line0Result</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="Line1Result">Line1Result</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="Line2Result">Line2Result</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="Line3Result">Line3Result</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="Line0Point">Line0Point</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="Line1Point">Line1Point</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="Line2Point">Line2Point</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="Line3Point">Line3Point</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="DiagonalLine0">DiagonalLine0</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="DiagonalLine1">DiagonalLine1</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="MedianLine0">MedianLine0</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="MedianLine1">MedianLine1</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="AngleBisector0">AngleBisector0</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="AngleBisector1">AngleBisector1</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="Vertex0">Vertex0</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="Vertex1">Vertex1</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="Vertex2">Vertex2</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="Vertex3">Vertex3</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="CheckZone0">CheckZone0</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="CheckZone1">CheckZone1</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="CheckZone2">CheckZone2</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="CheckZone3">CheckZone3</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="FixtureInitPoint">FixtureInitPoint</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="FixtureRunPoint">FixtureRunPoint</span><span class="t2">ImageViewConfig</span></div>
+<div class="showrow"><input type="checkbox" checked><span class="swatch"></span><span class="nm" title="BlindZone">BlindZone</span><span class="t2">ImageViewConfig</span></div>
+</div>
+<div class="sect">结果 / 输出<span class="cnt">62 项</span></div>
+<div class="scroll">
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="ModuRunTime">ModuRunTime</span><span class="t2">float</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="ModuStatus">ModuStatus</span><span class="t2">int</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="LineStatusFirst">LineStatusFirst</span><span class="t2">int</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="LineStatusSecond">LineStatusSecond</span><span class="t2">int</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="LineStatusThird">LineStatusThird</span><span class="t2">int</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="LineStatusFourth">LineStatusFourth</span><span class="t2">int</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="EdgeLine1">EdgeLine1</span><span class="t2"></span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="Line1Angle">Line1Angle</span><span class="t2">float</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="EdgeLine2">EdgeLine2</span><span class="t2"></span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="Line2Angle">Line2Angle</span><span class="t2">float</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="EdgeLine3">EdgeLine3</span><span class="t2"></span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="Line3Angle">Line3Angle</span><span class="t2">float</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="EdgeLine4">EdgeLine4</span><span class="t2"></span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="Line4Angle">Line4Angle</span><span class="t2">float</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="Line1FitError">Line1FitError</span><span class="t2">float</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="Line2FitError">Line2FitError</span><span class="t2">float</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="Line3FitError">Line3FitError</span><span class="t2">float</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="Line4FitError">Line4FitError</span><span class="t2">float</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="Line1ContourPoint">Line1ContourPoint</span><span class="t2">[]</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="Edge1PointNum">Edge1PointNum</span><span class="t2">int</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="Edge1PointStatus">Edge1PointStatus</span><span class="t2">int[]</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="Line2ContourPoint">Line2ContourPoint</span><span class="t2">[]</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="Edge2PointNum">Edge2PointNum</span><span class="t2">int</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="Edge2PointStatus">Edge2PointStatus</span><span class="t2">int[]</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="Line3ContourPoint">Line3ContourPoint</span><span class="t2">[]</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="Edge3PointNum">Edge3PointNum</span><span class="t2">int</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="Edge3PointStatus">Edge3PointStatus</span><span class="t2">int[]</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="Line4ContourPoint">Line4ContourPoint</span><span class="t2">[]</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="Edge4PointNum">Edge4PointNum</span><span class="t2">int</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="Edge4PointStatus">Edge4PointStatus</span><span class="t2">int[]</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="OutputMask">OutputMask</span><span class="t2"></span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="ROI1">ROI1</span><span class="t2"></span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="ROI2">ROI2</span><span class="t2"></span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="ROI3">ROI3</span><span class="t2"></span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="ROI4">ROI4</span><span class="t2"></span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="DiagonalLine1">DiagonalLine1</span><span class="t2"></span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="DiagonalLine1Angle">DiagonalLine1Angle</span><span class="t2">float</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="DiagonalLine2">DiagonalLine2</span><span class="t2"></span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="DiagonalLine2Angle">DiagonalLine2Angle</span><span class="t2">float</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="MedianLine1">MedianLine1</span><span class="t2"></span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="MedianLine1Angle">MedianLine1Angle</span><span class="t2">float</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="MedianLine2">MedianLine2</span><span class="t2"></span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="MedianLine2Angle">MedianLine2Angle</span><span class="t2">float</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="LineIntersectionAngle1">LineIntersectionAngle1</span><span class="t2">float</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="LineIntersectionAngle2">LineIntersectionAngle2</span><span class="t2">float</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="LineIntersectionAngle3">LineIntersectionAngle3</span><span class="t2">float</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="LineIntersectionAngle4">LineIntersectionAngle4</span><span class="t2">float</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="Vertex1">Vertex1</span><span class="t2"></span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="Vertex2">Vertex2</span><span class="t2"></span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="Vertex3">Vertex3</span><span class="t2"></span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="Vertex4">Vertex4</span><span class="t2"></span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="DiagonalLineIntersection">DiagonalLineIntersection</span><span class="t2"></span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="MedianLineIntersection">MedianLineIntersection</span><span class="t2"></span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="CentralPoint">CentralPoint</span><span class="t2"></span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="AngleBisectorIntersection">AngleBisectorIntersection</span><span class="t2"></span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="AngleBisector1">AngleBisector1</span><span class="t2"></span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="AngleBisector1Angle">AngleBisector1Angle</span><span class="t2">float</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="AngleBisector2">AngleBisector2</span><span class="t2"></span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="AngleBisector2Angle">AngleBisector2Angle</span><span class="t2">float</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="BlindPolygon">BlindPolygon</span><span class="t2">[]</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="BlindPolygonString">BlindPolygonString</span><span class="t2">string[]</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="Output Position Correction Info">Output Position Correction Info</span><span class="t2"></span></div>
+</div>
+<div class="sect">共享组<span class="cnt">6</span></div>
+<div class="scroll" style="max-height:120px">
+<div class="outrow"><span class="nm">ImageSourceGroup</span></div>
+<div class="outrow"><span class="nm">OutputMaskImageGroup</span></div>
+<div class="outrow"><span class="nm">RoiSelectGroup</span></div>
+<div class="outrow"><span class="nm">ExternROITypeGroup</span></div>
+<div class="outrow"><span class="nm">AssistGroup</span></div>
+<div class="outrow"><span class="nm">BottomCommandGroup</span></div>
+</div>
+</div>
+</div>
+<div class="statusbar"><span>未运行</span><span>模块 IMVSQuadrangleFindModu</span><span>参数 59 / 输入 8 / 输出 62</span><span class="sp"></span><span>状态 inventory-only</span><a href="../index.html">工具预览索引</a></div>
+</div>
+<div class="note"><b>还原边界</b><ul>
+<li><b>已还原</b>：页签、参数控件形态与声明顺序、参数默认值、输入输出声明、共享组、分类与状态徽章</li>
+<li><b>未还原</b>：像素级样式（颜色/字号/间距）、控件到页签的归属、显隐与可用条件、值联动、ROI 绘制交互、运行结果</li>
+<li>控件形态由 <code>resources.json.uiControls[].type</code> 推断，未归类类型按文本框显示并保留原始类型标签；不做外形臆测</li>
+<li>本页不证明该工具在原厂已注册、加载、执行或完成</li>
+</ul></div>
+</div></body></html>

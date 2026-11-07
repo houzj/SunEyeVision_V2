@@ -1,0 +1,41 @@
+{
+  "stableToolId": "imvsgraymatchmodu",
+  "originalPlugin": "IMVSGrayMatchModu",
+  "displayName": "IMVSGrayMatchModu",
+  "originalCategory": "Location",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSGrayMatchModu",
+  "uiCategory": "result-view",
+  "priority": "P1",
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "resourceCount": 5,
+  "parameterCount": 31,
+  "inputCount": 3,
+  "outputCount": 13,
+  "uiControlCount": 39,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [
+    "docs/plugins/GRAY-MATCH-IDENTITY-SOURCE-INVENTORY.md",
+    "docs/plugins/GRAY-MATCH-MODULE-FIRST-CALLER-SOURCE.md",
+    "docs/plugins/GRAY-MATCH-PARAMETER-MODEL-CORE-CHAIN.md"
+  ],
+  "managedMembers": [
+    "Run",
+    "get_ModuResult"
+  ],
+  "nativeFunctions": [
+    "Process",
+    "ProcessAlg",
+    "ProcessOutput",
+    "DeInit",
+    "DestroyModule"
+  ],
+  "runtimeObservations": [],
+  "unknowns": [
+    "原生方法体和实际 SDK 调用顺序未恢复",
+    "算法/阈值/排序及失败输出语义未恢复",
+    "图像/ROI/Mask/结果所有权与释放顺序未恢复",
+    "未运行原厂 VM 或设备宿主"
+  ],
+  "note": "目标证据为 IMVSGrayModuVA；托管 Run/结果桥、输入/ROI/Fixture 声明与原生入口已索引；算法 call chain、失败输出和释放仍未知。"
+}

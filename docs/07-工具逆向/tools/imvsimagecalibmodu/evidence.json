@@ -1,0 +1,29 @@
+{
+  "stableToolId": "imvsimagecalibmodu",
+  "originalPlugin": "IMVSImageCalibModu",
+  "displayName": "畸变标定",
+  "originalCategory": "Calibration",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSImageCalibModu",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "resourceCount": 6,
+  "parameterCount": 15,
+  "inputCount": 2,
+  "outputCount": 10,
+  "uiControlCount": 30,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ],
+  "sourceReports": [
+    "docs/plugins/DISTORTION-CALIBRATION-CLOSURE-SELF-AUDIT.md",
+    "docs/plugins/DISTORTION-CALIBRATION-C1-WORKSPACE-LIFECYCLE.md"
+  ],
+  "note": "图像标定工作区、ROI、配置、显示、保存和生命周期已有专项记录。"
+}

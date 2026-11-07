@@ -1,0 +1,133 @@
+{
+  "toolId": "imvsimagenormlizemodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageNormlizeModu\\IMVSImageNormlizeModu.xml",
+      "sha256": "0bf2f6aa14660d59945b353287c20f1c93a0a67d73105e8efecf8ad38b09de04",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageNormlizeModu\\IMVSImageNormlizeModuAlgorithm.xml",
+      "sha256": "e12d4da4aa59c2a4edcb74091d16aa10c7f3b21b5c774db93aa310b967cc3cdc",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageNormlizeModu\\IMVSImageNormlizeModuAlgorithmTab.xml",
+      "sha256": "27b6094b2da5a1a6405ee7bef02b98c7a86dd6df5b108bf4927cee740d7ec096",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageNormlizeModu\\IMVSImageNormlizeModuCs.xml",
+      "sha256": "cdefb05a545474845d6e24ea25b9d497e71926d64ed3ca4209dd482b99447d71",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageNormlizeModu\\IMVSImageNormlizeModuDisplay.xml",
+      "sha256": "3a69d13217ce8a249f4cc2d8489010f3919442d93e4f70b2063639c1c1871415",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageNormlizeModu\\ToolItemInfo.xml",
+      "sha256": "4f665122855536d5751b17b486d215978f47506b13a052668d0593c213d9fb46",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "OutputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "NormlizeType"
+    },
+    {
+      "type": "Float",
+      "name": "MeanVal"
+    },
+    {
+      "type": "Float",
+      "name": "StdVal"
+    },
+    {
+      "type": "FloatSum",
+      "name": "RangClipPercent"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangGrayValue"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZoneAnnular"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "OutputMaskImageGroup",
+    "InputMaskImageGroup",
+    "RoiSelectGroup",
+    "InheritWayGroup2",
+    "ExternROITypeGroup",
+    "AssistGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

@@ -1,0 +1,160 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Control x:Class="DynamicObjectConfigControl.CommunicationParamConfigControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:DynamicObjectConfigControl" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:BaseData="clr-namespace:Apps.BaseData;assembly=Apps.BaseData" xmlns:appxmlUI="clr-namespace:Apps.XmlUI;assembly=Apps.XmlUI" xmlns:paramTab="clr-namespace:Apps.XmlParser.ParamTab" xmlns:xmlData="clr-namespace:DynamicObjectConfigControl.XmlData" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:UIHelper="clr-namespace:Apps.UIHelper.Extern;assembly=Apps.UIHelper">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/NormalButtonStyle.xaml" />
+        <ResourceDictionary Source="/Apps.XmlUI;component/ResourceDictionaries/GlobalResources.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/TreeViewStyle/TreeViewStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/TextBlockStyle/TextBlockStyle.xaml" />
+        <ResourceDictionary Source="/Apps.XmlUI;component/Styles/ParamUserControlDataTemplate.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <appxmlUI:ItemCheckConverter x:Key="CheckConverter" />
+      <BooleanToVisibilityConverter x:Key="bv" />
+      <Style x:Key="TextBlockBold" TargetType="{x:Type TextBlock}">
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="FontFamily" Value="Microsoft YaHei-Bold" />
+        <Setter Property="Foreground" Value="#4C4C4C" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="Bold" />
+      </Style>
+      <DataTemplate x:Key="RegularSend">
+        <Border BorderThickness="1" BorderBrush="#d7d7d7" Margin="5">
+          <Grid Margin="5" TextBlock.FontFamily="Microsoft YaHei" TextBlock.FontSize="14" Height="auto" Width="auto">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="40" />
+              <RowDefinition Height="40" />
+              <RowDefinition Height="40" />
+              <RowDefinition Height="40" />
+              <RowDefinition Height="40" />
+              <RowDefinition Height="40" />
+              <RowDefinition Height="40" />
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+              <TextBlock Margin="5,0,0,0" Text="通信" HorizontalAlignment="Left" Style="{StaticResource TextBlockBold}" />
+              <TextBlock Style="{StaticResource TextBlockBold}" Text="{Binding DisplayIndex}" />
+              <Border BorderThickness="1" BorderBrush="#d3d2d2" CornerRadius="2" Margin="280,0,0,0">
+                <Button Name="Del" Margin="0,0,0,0" HorizontalAlignment="Right" Style="{StaticResource BaseImageConfig_DeleteButtonStyle}" Command="{Binding DeleteCommand}" CommandParameter="{Binding}" />
+              </Border>
+            </StackPanel>
+            <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center" Grid.ColumnSpan="2">
+              <Label Width="120" Content="时间间隔（ms）" />
+              <ContentControl Width="240" Height="32" ContentTemplate="{StaticResource Integer_Sub}" Content="{Binding SetInterval}" />
+            </StackPanel>
+            <StackPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Center" Grid.ColumnSpan="2">
+              <Label Width="120" Content="发送对象" />
+              <ContentControl Width="240" Height="32" ContentTemplate="{StaticResource EnumerationBx_sub}" Content="{Binding CommDevices}" />
+            </StackPanel>
+            <StackPanel Grid.Row="3" Orientation="Horizontal" Grid.ColumnSpan="2">
+              <Label Width="120" Content="条件判断" />
+              <ContentControl Width="240" Height="32" ContentTemplate="{StaticResource ButtonSelecter_sub}" Content="{Binding IfJudge.FilterSelecter}" />
+            </StackPanel>
+            <StackPanel Grid.Row="4" Orientation="Horizontal" VerticalAlignment="Center" Grid.ColumnSpan="2">
+              <Label Width="120" Content="OK发送" />
+              <ContentControl Width="240" Height="32" ContentTemplate="{StaticResource ButtonSelecter_sub}" Content="{Binding OKInput.FilterSelecter}" />
+            </StackPanel>
+            <StackPanel Grid.Row="5" Orientation="Horizontal" VerticalAlignment="Center" Grid.ColumnSpan="2">
+              <Label Width="120" Content="NG发送" />
+              <ContentControl Width="240" Height="32" ContentTemplate="{StaticResource ButtonSelecter_sub}" Content="{Binding NGInput.FilterSelecter}" />
+            </StackPanel>
+            <StackPanel Grid.Row="6" Orientation="Horizontal" VerticalAlignment="Center" Grid.ColumnSpan="2">
+              <Label Width="120" Content="超时发送" />
+              <ContentControl Width="240" Height="32" ContentTemplate="{StaticResource ButtonSelecter_sub}" Content="{Binding TimeoutSend.FilterSelecter}" />
+            </StackPanel>
+          </Grid>
+        </Border>
+      </DataTemplate>
+      <DataTemplate x:Key="EndSend">
+        <Border BorderThickness="1" BorderBrush="#d7d7d7" Margin="5">
+          <Grid Margin="5" TextBlock.FontFamily="Microsoft YaHei" TextBlock.FontSize="14" Height="auto" Width="auto">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="40" />
+              <RowDefinition Height="40" />
+              <RowDefinition Height="40" />
+              <RowDefinition Height="40" />
+              <RowDefinition Height="40" />
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+              <TextBlock Margin="5,0,0,0" Text="通信" HorizontalAlignment="Left" Style="{StaticResource TextBlockBold}" />
+              <TextBlock Style="{StaticResource TextBlockBold}" Text="{Binding DisplayIndex}" />
+              <Border BorderThickness="1" BorderBrush="#d3d2d2" CornerRadius="2" Margin="280,0,0,0">
+                <Button Name="Del" Margin="0,0,0,0" HorizontalAlignment="Right" Style="{StaticResource BaseImageConfig_DeleteButtonStyle}" Command="{Binding DeleteCommand}" />
+              </Border>
+            </StackPanel>
+            <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center">
+              <Label Width="120" Content="发送对象" />
+              <ContentControl Width="240" Height="32" ContentTemplate="{StaticResource EnumerationBx_sub}" Content="{Binding CommDevices}" />
+            </StackPanel>
+            <StackPanel Grid.Row="2" Orientation="Horizontal" Grid.ColumnSpan="2">
+              <Label Width="120" Content="条件判断" />
+              <ContentControl Width="240" Height="32" ContentTemplate="{StaticResource ButtonSelecter_sub}" Content="{Binding IfJudge.FilterSelecter}" />
+            </StackPanel>
+            <StackPanel Grid.Row="3" Orientation="Horizontal" VerticalAlignment="Center" Grid.ColumnSpan="2">
+              <Label Width="120" Content="OK发送" />
+              <ContentControl Width="240" Height="32" ContentTemplate="{StaticResource ButtonSelecter_sub}" Content="{Binding OKInput.FilterSelecter}" />
+            </StackPanel>
+            <StackPanel Grid.Row="4" Orientation="Horizontal" VerticalAlignment="Center">
+              <Label Width="120" Content="NG发送" />
+              <ContentControl Width="240" Height="32" ContentTemplate="{StaticResource ButtonSelecter_sub}" Content="{Binding NGInput.FilterSelecter}" />
+            </StackPanel>
+          </Grid>
+        </Border>
+      </DataTemplate>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Control.Template>
+    <ControlTemplate>
+      <Grid Background="#FCFCFC">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="44" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Margin="30,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Text="发送方式" FontSize="14" FontFamily="Microsoft YaHei" />
+          <RadioButton Grid.Column="1" Content="定时发送" VerticalAlignment="Center" Margin="50,0,0,0" IsChecked="{Binding IsRegularChecked}" />
+          <RadioButton Name="EndSendRadioButton" Grid.Column="1" Content="流程结束时发送" Margin="60,0,0,0" VerticalAlignment="Center" IsChecked="{Binding IsEndChecked}" />
+        </StackPanel>
+        <Grid Row="1" Margin="18,0,2,0" VerticalAlignment="Top">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+          <ItemsControl Style="{StaticResource ScrollItemsControlStyle}" ItemsSource="{Binding ItemsA}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Vertical" Margin="0,5,0,0" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <ContentControl Content="{Binding}">
+                  <FrameworkElement.Style>
+                    <Style TargetType="{x:Type ContentControl}">
+                      <Setter Property="ContentTemplate" Value="{StaticResource RegularSend}" />
+                      <Style.Triggers>
+                        <DataTrigger Value="True" Binding="{Binding IsChecked, ElementName=EndSendRadioButton}">
+                          <Setter Property="ContentTemplate" Value="{StaticResource EndSend}" />
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </FrameworkElement.Style>
+                </ContentControl>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <StackPanel Name="AddStack" Orientation="Horizontal" Grid.Row="1" Margin="0,6">
+            <Button Margin="7,6,0,0" Style="{StaticResource BaseImage_ButtonStyle}" HorizontalAlignment="Left" Command="{Binding AddCommand}">
+              <Image Stretch="None" Source="/Apps.Style;component/Resources/add_normal.png" />
+              <FrameworkElement.Tag>
+                <Image Stretch="None" Source="/Apps.Style;component/Resources/add_click.png" />
+              </FrameworkElement.Tag>
+            </Button>
+          </StackPanel>
+        </Grid>
+      </Grid>
+    </ControlTemplate>
+  </Control.Template>
+</Control>

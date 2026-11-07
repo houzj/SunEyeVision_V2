@@ -1,0 +1,24 @@
+{
+  "stableToolId": "imvsmapcalibmodu",
+  "originalPlugin": "IMVSMapCalibModu",
+  "displayName": "映射标定",
+  "originalCategory": "Calibration",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSMapCalibModu",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "status": "inventory-only",
+  "evidenceState": "unknown",
+  "resourceCount": 6,
+  "parameterCount": 6,
+  "inputCount": 9,
+  "outputCount": 17,
+  "uiControlCount": 36,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ]
+}

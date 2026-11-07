@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>VM 工具逆向批次 R4 — 缺陷检测/识别/颜色（清单级）</title>
+<style>
+:root{
+  --bg:#0b1524; --bg2:#111f33; --bd:#24405f; --tx:#dbe7f5; --tx2:#9fb4cc;
+  --obs:#3fb950; --inf:#d29922; --unk:#8b949e; --warn:#f85149; --note:#58a6ff;
+}
+*{box-sizing:border-box}
+body{margin:0;padding:32px 40px 80px;background:var(--bg);color:var(--tx);
+  font:15px/1.75 "Segoe UI","Microsoft YaHei",sans-serif;}
+h1{font-size:26px;margin:0 0 6px;color:#fff;letter-spacing:.3px}
+h2{font-size:20px;margin:38px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--bd);color:#fff}
+h3{font-size:16px;margin:26px 0 10px;color:#cfe3f7}
+.meta{color:var(--tx2);font-size:13px;margin-bottom:26px;line-height:1.9}
+.meta b{color:var(--tx)}
+table{width:100%;border-collapse:collapse;margin:12px 0 18px;font-size:13px;background:var(--bg2)}
+th,td{border:1px solid var(--bd);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#16273d;color:#fff;font-weight:600;white-space:nowrap}
+td code,p code,li code{background:#0a1420;border:1px solid #1d3350;border-radius:3px;
+  padding:1px 5px;font:12.5px/1.5 Consolas,"Cascadia Mono",monospace;color:#a9d3ff}
+tr:nth-child(even) td{background:#0f1c2e}
+code.block{display:block;background:#07101b;border:1px solid #1d3350;border-radius:5px;
+  padding:12px 14px;margin:10px 0;white-space:pre;overflow-x:auto;color:#a9d3ff;font-size:12.5px}
+.obs,.inf,.unk{display:inline-block;padding:0 6px;border-radius:3px;font-size:11.5px;
+  font-weight:600;letter-spacing:.5px;white-space:nowrap}
+.obs{background:rgba(63,185,80,.16);color:var(--obs);border:1px solid rgba(63,185,80,.45)}
+.inf{background:rgba(210,153,34,.16);color:var(--inf);border:1px solid rgba(210,153,34,.45)}
+.unk{background:rgba(139,148,158,.16);color:var(--unk);border:1px solid rgba(139,148,158,.45)}
+.warn,.note{border-left:3px solid var(--warn);background:rgba(248,81,73,.08);
+  padding:10px 14px;margin:14px 0;border-radius:0 4px 4px 0;font-size:13.5px}
+.note{border-left-color:var(--note);background:rgba(88,166,255,.08)}
+.warn b{color:var(--warn)} .note b{color:var(--note)}
+ul,ol{margin:8px 0 14px;padding-left:24px} li{margin:4px 0}
+.k{color:#7ee787;font-weight:600}
+.r{color:#ff7b72;font-weight:600}
+.small{font-size:12.5px;color:var(--tx2)}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--bd);color:var(--tx2);font-size:12.5px}
+</style>
+</head>
+<body>
+
+<h1>VM 工具逆向批次 R4 — 缺陷检测 / 识别 / 颜色（清单级）</h1>
+<div class="meta">
+取证日期：<b>2026-11-05</b>　｜　取证对象：<b>VisionMaster 4.4.0（V4.4.0 Build20250516@1555331）</b>，安装目录只读<br>
+取证范围：<code>DefectDetection</code>(14) / <code>Recognition</code>(4/12) / <code>DeepLearning</code>(<b>0/14</b>) / <code>RegisterLearning</code>(<b>0/6</b>) / <code>ColorProcessing</code>(6)<br>
+深度：<b>清单级</b> —— 结构清点 + 端口/结果契约摘要；<b>不做</b>算法语义、不做整链、不做 ROI/卡尺深挖<br>
+标注口径：<span class="obs">观察到</span> 直接读自文件　<span class="inf">推断</span> 由结构推得　<span class="unk">未知</span> 无静态证据
+</div>
+
+<h2>0 结论摘要</h2>
+<table>
+<tr><th style="width:26%">问题</th><th style="width:9%">档位</th><th>结论</th></tr>
+<tr><td>R4 实物有多少</td><td><span class="obs">观察到</span></td>
+<td>清单声明 <b>52</b>，实物 <b>24</b>（DefectDetection 14 + Recognition 4 + DeepLearning <b>0</b> + RegisterLearning <b>0</b> + ColorProcessing 6）。<br>
+缺口 <b>28</b> 个全部集中在深度学习系（DeepLearning 14 + RegisterLearning 6 + Recognition 里 8 个 <code>Cnn*/OcrDl</code>）。</td></tr>
+
+<tr><td>为什么差这么多</td><td><span class="inf">推断</span></td>
+<td>清单里这 20 个深度学习模块的类型列都是 <code>NORMAL</code>（与已安装模块相同），但 <code>DeepLearning</code>/<code>RegisterLearning</code> 两个分类目录<b>整目录不存在</b>，全盘也搜不到任何 <code>*Cnn*</code> 目录。<br>
+→ 结论：<b>清单是"完整产品目录"</b>（含按授权/选装裁剪的部件），<b>不是"本机已安装清单"</b>。这与 R2 记录的"声明≠实物"是同一件事的<b>正确解释</b>。</td></tr>
+
+<tr><td>工具箱准入判据是什么</td><td><span class="obs">观察到</span></td>
+<td><b><code>ToolItemInfo.xml</code></b>。本批唯一反例：<code>IMVSMarkInspModu</code> 有 11 个文件、<code>Control.dll</code>、18 MB 的 <code>.dll</code>，<b>却没有 <code>ToolItemInfo.xml</code></b> → 不进工具箱。<br>
+其"VA"版 <code>IMVSMarkInspModuVA</code> 有 <code>ToolItemInfo.xml</code>(priority=1) → 进工具箱。<br>
+因此 R4 计数分两层：<b>模块目录有效 24 / 工具箱条目有效 23</b>。</td></tr>
+
+<tr><td>专用编辑器比例</td><td><span class="obs">观察到</span></td>
+<td>带 <code>*Control.dll</code> 的 <b>10/24 = 41.7%</b>，是 R3（20.6%）的两倍。<br>
+按分类：Color 3/6=50%、Recognition 2/4=50%、Defect 5/14=36%、ImageProcessing(R3) 5/21=24%、SplitCombination(R3) 0/6=0%。<br>
+→ <b>越偏"算法专有"，越倾向写专用编辑器</b>；越偏"通用图像算符"，越靠参数页。</td></tr>
+
+<tr><td>缺陷结果的公共字段族</td><td><span class="obs">观察到</span></td>
+<td>DefectDetection 12 个模块（除 Group/趋势类）统一输出：<code>FlawNum</code>、<code>DefectType</code>、<code>DefectSize</code>、<code>DefectArea</code>、<code>CaliperStart</code>、<code>CaliperEnd</code>、<code>EdgePointStatus/Num</code>，多数还带 <code>BlindPolygonString</code>。<br>
+→ 这 8 个字段构成"<b>缺陷判定标准结果族</b>"，跨工具同构。</td></tr>
+
+<tr><td>成对边缘范式</td><td><span class="obs">观察到</span></td>
+<td>EdgePair 系列统一输出 <code>Edge0Point</code>/<code>Edge1Point</code>/<code>EdgeMiddlePoint</code> + 宽度统计 <code>WidthPairNum</code>/<code>MaxWidth</code>/<code>MinWidth</code>/<code>AvgWidth</code>/<code>EdgePairWidth</code>。<br>
+→ "双边缘对"是缺陷检测的原厂主模型，单边缘（LineEdge/CircleEdge）是其退化形态。</td></tr>
+
+<tr><td>输出端口是否有"泄漏"</td><td><span class="obs">观察到</span></td>
+<td><b>有，且集中在 2 个趋势分析模块</b>：<code>IMVSEdgePosTrendAnalyModu</code>/<code>IMVSEdgePairPosTrendAnalyModu</code> 的结果里混入算法参数：<br>
+<code>Edge_Polarity</code>、<code>EdgeDist</code>、<code>Edge_Score</code>、<code>Edge_Point_Search_Status</code>、<code>RunParam_EdgePoint0</code>（端口命名也用下划线）。<br>
+→ 这是"<b>参数直接当结果暴露</b>"，与我方 <code>OutputVariable</code>（业务结果 ≠ 参数）的设计<b>相反</b>，属反面案例。</td></tr>
+
+<tr><td>全局 Style 库核对</td><td><span class="obs">观察到</span></td>
+<td>本批复核 <code>Combination.xml</code> 唯一 Style = <b>44</b>（R2 记 45，差 1，<b>原因未定位</b>，以本批可复跑命令为准，R5 收口时统一）。<br>
+本批用到但<b>全局库没有</b>的 Style：<code>GENERALINFO</code>（<b>0 命中</b>）、<code>DEBUG</code>（0，R3 已记）；<code>CLASSINFO</code> 则<b>在库中</b>（2 命中）。</td></tr>
+
+<tr><td>颜色工具的形状能力</td><td><span class="obs">观察到</span></td>
+<td>Color 6 个模块里 4 个支持 <code>InputROI/ROIBOX</code> + <code>InputROIAnnulus/ROIANNULUS</code> 双 ROI；<code>ColorSegment</code> 输出 <code>ClassInfo/CLASSINFO</code>（分类信息组合端口），<code>ColorMeasure</code> 固定输出 C1/C2/C3 三通道统计。</td></tr>
+
+<tr><td>本批对我方的可用度</td><td><span class="obs">观察到</span></td>
+<td><b>低</b>。我方 <code>tools/</code> 现有 24 个工具中，缺陷检测 / 识别（OCR/条码）/ 颜色测量三类<b>完全没有</b>对应实现。<br>
+本批价值在于：先固定"缺陷结果族"与"成对边缘"两个数据模型口径，等真要建这批工具时不用重新取证。</td></tr>
+</table>
+
+<h2>1 逐条论证</h2>
+
+<h3>1.1 分母：声明 52 vs 实物 24 <span class="obs">观察到</span></h3>
+<table>
+<tr><th>分类</th><th>声明</th><th>实物目录</th><th>缺失明细</th><th>状态</th></tr>
+<tr><td><code>DefectDetection</code></td><td>14</td><td><b>14</b></td><td>—</td><td>完全齐备</td></tr>
+<tr><td><code>Recognition</code></td><td>12</td><td><b>4</b></td><td>缺 8：<code>IMVSCnnCharDetectModu</code>、<code>IMVSCnnCharDetectModuC</code>、<code>IMVSCnnCodeRecgModu</code>、<code>IMVSCnnCodeRecgModuC</code>、<code>IMVSCnnSingleCharDetectModu</code>、<code>IMVSCnnSingleCharDetectModuC</code>、<code>IMVSOcrDlModu</code>、<code>IMVSOcrDlModuC</code></td><td>缺的<b>全是 Cnn/Dl 系</b></td></tr>
+<tr><td><code>DeepLearning</code></td><td>14</td><td><b>0</b></td><td>整分类目录不存在</td><td>未安装</td></tr>
+<tr><td><code>RegisterLearning</code></td><td>6</td><td><b>0</b></td><td>整分类目录不存在</td><td>未安装</td></tr>
+<tr><td><code>ColorProcessing</code></td><td>6</td><td><b>6</b></td><td>—</td><td>完全齐备</td></tr>
+<tr><th colspan="2">合计</th><th>24</th><th>缺 28</th><th>—</th></tr>
+</table>
+<p><b>排除"路径写错"的可能</b>（下列核查均已完成）：</p>
+<ul>
+<li>顶层 <code>Module(sp)\x64</code> 共 17 个目录：<code>.CommonControl</code>、<code>Calculation</code>、<code>Calibration</code>、<code>Collection</code>、<code>ColorProcessing</code>、<code>Communication</code>、<code>DefectDetection</code>、<code>Global</code>、<code>GroupTools</code>、<code>ImageGeneration</code>、<code>ImageProcessing</code>、<code>Location</code>、<code>Logic</code>、<code>Measurement</code>、<code>Recognition</code>、<code>SplitCombination</code>、<code>UserTools</code>。<b>无</b> <code>DeepLearning</code>、<b>无</b> <code>RegisterLearning</code>。</li>
+<li>在 <code>Applications</code> 全目录递归搜目录名含 <code>Cnn</code>：<b>0 命中</b>。</li>
+<li>权威清单 <code>Applications\ModulePathGenerate.txt</code>（15,229 B / 191 行）中，这 20 个模块的<b>类型列均为 <code>NORMAL</code></b>，与已安装模块标记一致，<b>清单本身没有任何"选装/未安装"标记</b>。</li>
+</ul>
+<div class="warn">
+<b>对前批的更正</b>：R2 文档写"清单与实物不一致，后续以实物为分母"。方向对，但原因表述需更正 ——
+不是"清单不准"，而是 <b>清单 = 完整产品目录（191），实物 = 本机安装子集</b>。清单没有"是否安装"字段，所以拿它当分母<b>必然偏大</b>。
+R5 收口时必须把"清单 191 / 实物 162 / 本批有效 24"三列并列，而不是把 191 当"应有数量"。
+</div>
+
+<h3>1.2 工具箱准入判据：<code>ToolItemInfo.xml</code> <span class="obs">观察到</span></h3>
+<code class="block">D:\...\x64\DefectDetection\IMVSMarkInspModu\        (11 个文件)
+  IMVSMarkInspModu.dll            18,897,408   ← 全批最大
+  IMVSMarkInspModu.xml                 7,882
+  IMVSMarkInspModuAlgorithm.xml        4,820
+  IMVSMarkInspModuAlgorithmTab.xml    64,677
+  IMVSMarkInspModuControl.dll        211,456   ← 有专用编辑器
+  IMVSMarkInspModuCs.dll              17,408
+  IMVSMarkInspModuCs.xml              18,635
+  IMVSMarkInspModuDisplay.xml          6,390
+  + 3 个 png
+  ✗ 没有 ToolItemInfo.xml
+
+D:\...\x64\DefectDetection\IMVSMarkInspModuVA\      (13 个文件)
+  ... 同结构 + Librarys.Config + ✓ ToolItemInfo.xml (priority=1)</code>
+<table>
+<tr><th>判定</th><th>依据</th><th>后果</th></tr>
+<tr><td>模块可加载</td><td>有 <code>*Cs.dll</code> + <code>*Cs.xml</code></td><td>可被方案引用、可被框架实例化</td></tr>
+<tr><td><b>工具可上工具箱</b></td><td><b>有 <code>ToolItemInfo.xml</code></b></td><td>用户能在工具箱里拖出来</td></tr>
+<tr><td>有专用编辑器</td><td>有 <code>*Control.dll</code></td><td>双击打开自定义 UI</td></tr>
+</table>
+<div class="note">
+<b>三件事互不蕴含</b>：<code>MarkInspModu</code> = 可加载 + 有编辑器 + <b>不上工具箱</b>；
+R3 的 <code>IMVSImageCombineProcessModu</code> = 可加载 + 有编辑器 + 上工具箱 + 缺 <code>*Cs.xml</code>。
+所以<b>不能用文件数、不能用单个文件的存在</b>推断任何一项，必须分三项独立判定。
+</div>
+<p class="small">对 R5 的含义：R1–R3 判"有效模块"用的是"有 xml + ToolItemInfo"，<b>口径一致</b>（R3 的 34 个全部取到了 <code>priority</code>）。
+本批首次出现"<b>有完整模块但无 ToolItemInfo</b>"的情况，因此新增第 3 列计数（工具箱条目 23），不改动前批已发布的数字。</p>
+
+<h3>1.3 逐模块清点（24 个） <span class="obs">观察到</span></h3>
+<p><b>DefectDetection（14）</b></p>
+<table>
+<tr><th>模块</th><th>文件</th><th>Control</th><th>TI</th><th>pri</th><th>输入端口</th><th>输出端口（组合）</th><th>结果要点</th></tr>
+<tr><td>IMVSSurfaceDefectFilterModu</td><td>13</td><td>—</td><td>✓</td><td>0</td><td>Image / ROI / FIXTURE / Mask</td><td>OutputImage / ROI / BlindPolygon</td><td>仅 ModuRunTime/Status + BlindPolygonString（纯过滤）</td></tr>
+<tr><td>IMVSMarkInspModuVA</td><td>13</td><td>✓</td><td>✓</td><td>1</td><td>Image / Mask / ROI / FIXTURE / Inherit Run Point</td><td>MarkBox / ROI / MatchRect / FlawBox / MarkFlawImage / BlindPolygon / OutputMask / FIXTURE</td><td>MatchStatus/MarkStatus/MarkBoxNum/FlawNum + BlindPolygonString</td></tr>
+<tr><td>IMVSInspectModu</td><td>13</td><td>✓</td><td>✓</td><td>2</td><td>Image / ROI / Mask</td><td>InspROI / DefectBox / MatchRect</td><td>InspectStatus/InspectLabel/InspectScore/DetectRoiNum/MatchStatus</td></tr>
+<tr><td>IMVSEdgeFlawInspModu</td><td>13</td><td>✓</td><td>✓</td><td>3</td><td>Image / FIXTURE</td><td>DefectBox / CaliperBox / EdgePoint / CaliperIdeaPoint / FIXTURE</td><td><b>缺陷结果族</b>：FlawNum/DefectType/FlawLen/DefectCaliperStart/End/EdgePointStatus/Num</td></tr>
+<tr><td>IMVSEdgePairFlawInspModu</td><td>13</td><td>✓</td><td>✓</td><td>4</td><td>Image / FIXTURE</td><td>CaliperBox / DefectBox / Edge0Point / Edge1Point / EdgeMiddlePoint / IdeaEdge0/1Point / CalTrajPoint / IdeaTrajPoint / IdeaTrajCaliper / FIXTURE</td><td><b>成对边缘 + 宽度族</b>：WidthPairNum/MaxWidth/MinWidth/AvgWidth/EdgePairWidth/CalTrajFlag</td></tr>
+<tr><td>IMVSLineEdgeInspModu</td><td>11</td><td>—</td><td>✓</td><td>5</td><td>Image / <b>Input Line</b> / ROI / FIXTURE</td><td>FlawRect / DetectROIs / ROI / EdgePoints / Caliper Point / CaliperBox / StandardLine / BlindPolygon / FIXTURE</td><td>FlawNums(数组)/FlawRectIndex/StandardLineAngle/BlindPolygonString</td></tr>
+<tr><td>IMVSLineEdgePairInspModu</td><td>11</td><td>—</td><td>✓</td><td>6</td><td>Image / <b>InputLine1</b> / <b>InputLine2</b> / ROI / FIXTURE</td><td>FlawRect / DetectROIs / ROI / Edge0/1Point / Caliper Point / StandardLine / <b>DefectGeneralInfos/DefectGeneralInfo</b>(GENERALINFO) / BlindPolygon / FIXTURE</td><td>与上行同族 + Edge0/1PointNum</td></tr>
+<tr><td>IMVSCircleEdgePairInspModu</td><td>11</td><td>—</td><td>✓</td><td>7</td><td>Image / InputAnnulus1 / InputAnnulus2 / InputROIAnnulus / FIXTURE</td><td>DetectROIAnnulus / DetectAnnulus / FlawRect / DetectROIs / ROI / Edge0/1Point / Caliper Point / StandardCircle / StandardAnnulus / DefectGeneralInfos/Info / BlindPolygon / FIXTURE</td><td>圆/环版成对边缘</td></tr>
+<tr><td>IMVSCircleEdgeInspModu</td><td>11</td><td>—</td><td>✓</td><td>8</td><td>Image / InputAnnulus / InputROIAnnulus / FIXTURE</td><td>DetectROIAnnulus / DetectAnnulus / FlawRect / DetectROIs / ROI / EdgePoints / Caliper Point / StandardCircle / StandardAnnulus / BlindPolygon / FIXTURE</td><td>圆/环版单边缘</td></tr>
+<tr><td>IMVSEdgeInspGroupModu</td><td>11</td><td>—</td><td>✓</td><td>9</td><td>Image / FIXTURE</td><td>FlawRect / EdgePoints / Caliper Point / StandardCircle / StandardAnnulus / <b>StandardLine</b> / FIXTURE</td><td>FlawNum/DefectSize/Area + StandardLineAngle（<b>无 BlindPolygon</b>）</td></tr>
+<tr><td>IMVSEdgePairInspGroupModu</td><td>11</td><td>—</td><td>✓</td><td>10</td><td>Image / FIXTURE</td><td>FlawRect / Edge0/1/MiddlePoint / Caliper Point / StandardCircle / StandardAnnulus / StandardLine / DefectGeneralInfo / FIXTURE</td><td>EdgeMidPointNum/CalipIdeaPointNum</td></tr>
+<tr><td>IMVSEdgePosTrendAnalyModu</td><td>11</td><td>—</td><td>✓</td><td>11</td><td>Image / ROI / FIXTURE</td><td>EdgePosMinDistIndexPoint / EdgePosMaxDistIndexPoint / <b>RunParam_EdgePoint</b> / ROI / FIXTURE</td><td><b>参数泄漏</b>：Edge_Score/EdgePolarity/EdgeDist/Edge_Point_Search_Status</td></tr>
+<tr><td>IMVSEdgePairPosTrendAnalyModu</td><td>11</td><td>—</td><td>✓</td><td>12</td><td>Image / ROI / FIXTURE</td><td>MinDistMatchedLine / MaxDistMatchedLine / <b>RunParam_EdgePoint0/1</b> / EdgeMiddlePoint / ROI / FIXTURE</td><td><b>参数泄漏</b>：Edge0/1_Polarity、Sel* 系列统计</td></tr>
+<tr><td>IMVSMarkInspModu</td><td>11</td><td>✓</td><td><b class="r">✗</b></td><td>—</td><td>Image / ROI / FIXTURE</td><td>MarkBox / ROI / MatchRect / FlawBox / MarkFlawImage（<b>无 FIXTURE 输出</b>）</td><td>MatchStatus/MarkStatus/MarkBoxNum/FlawNum（<b>无 BlindPolygonString</b>）</td></tr>
+</table>
+
+<p><b>Recognition（4，缺 8）</b></p>
+<table>
+<tr><th>模块</th><th>文件</th><th>Control</th><th>pri</th><th>输入</th><th>输出</th><th>结果要点</th></tr>
+<tr><td>IMVSBcrModu</td><td>11</td><td>—</td><td>2</td><td>Image / ROI / FIXTURE</td><td>Rect / ROI / <b>DebugInfo/DEBUG</b> / FIXTURE</td><td>CodeNum/CodeStatus/CodeStr/CodeType/CodeAngle/PPM</td></tr>
+<tr><td>IMVS2dBcrModu</td><td>11</td><td>—</td><td>3</td><td>Image / ROI / FIXTURE</td><td>Rect / ROI / DebugInfo/DEBUG / FIXTURE</td><td>CodeNum/CodeStatus/CodeStr/CodePosAngle/PPM/EstVersion（无 CodeType）</td></tr>
+<tr><td>IMVSMachineLearningClassifierModu</td><td>12</td><td>✓</td><td>100</td><td>Image / ROI / FIXTURE</td><td>ROI / FIXTURE</td><td>PredictNum/<b>LabelsIndex:int</b>/<b>LabelName:string</b>（分类结果简）</td></tr>
+<tr><td>IMVSOcrModu</td><td>13</td><td>✓</td><td>10</td><td>Image / ROI / FIXTURE</td><td>CharRect / ROI / FIXTURE</td><td>Text/SecondText/CharScore/Confidence + <b>硬编码 Char0..Char1</b>（<code>Char0:string</code>、<code>Char0Score:float</code>、<code>Char1...</code>）</td></tr>
+</table>
+<div class="note">
+<b><code>IMVSOcrModu</code> 的 <code>Char0/Char1</code> 是"固定槽位"表达</b>：不提供 <code>Char[]</code> 数组，而是把手写展开的 0/1 两槽当独立结果。
+这与 R1 记录的"<code>IsArray=true</code> 才是真数组"形成对照 —— <b>原件内部并不统一</b>：有的用 <code>IsArray</code>，有的用固定槽位展开（如 R3 的 <code>ImageBufferModule</code> 15 路）。
+我方若做 OCR/识别工具，<b>应统一用数组</b>，不要跟随固定槽位（固定槽位是"上限写死"的表达，扩展即破接口）。
+</div>
+
+<p><b>ColorProcessing（6）</b></p>
+<table>
+<tr><th>模块</th><th>文件</th><th>Control</th><th>pri</th><th>输入</th><th>输出</th><th>结果要点</th></tr>
+<tr><td>IMVSColorExtractModu</td><td>12</td><td>✓</td><td>0</td><td>Image / ROI / ROIAnnulus / FIXTURE</td><td>OutputImage / ROI / ROIAnnulus / FIXTURE</td><td>TotalArea</td></tr>
+<tr><td>IMVSColorMeasureModu</td><td>11</td><td>—</td><td>1</td><td>Image / ROI / ROIAnnulus / FIXTURE</td><td>ROI / ROIAnnulus / FIXTURE</td><td><b>C1/C2/C3 三通道固定</b>：每通道 Min/Max/Mean/Std/Hist（各 5 字段，共 15）</td></tr>
+<tr><td>IMVSColorTransformModu</td><td>11</td><td>—</td><td>2</td><td>Image</td><td>OutputImage</td><td>无业务结果</td></tr>
+<tr><td>IMVSColorRecognitionModu</td><td>13</td><td>✓</td><td>3</td><td>Image / ROI / FIXTURE</td><td>ROI / BlindPolygon / FIXTURE</td><td>Confidence/TopTypeName/TopScore/ColorTypeName/ColorScore + <b>Model*/Sample* H,S,I 各 3 值</b></td></tr>
+<tr><td>IMVSColorSegmentModu</td><td>13</td><td>✓</td><td>5</td><td>Image / ROI / ROIAnnulus / FIXTURE</td><td><b>ClassInfo/CLASSINFO</b> / OutputImage / <b>OutRenderImage</b> / ROI / ROIAnnulus / FIXTURE</td><td>TotalArea</td></tr>
+<tr><td>IMVSColorImageGenerationModu</td><td>12</td><td>—</td><td>6</td><td>Image / InputImage1 / InputImage2</td><td>OutputImage</td><td>无业务结果（<b>无 ROI、无 FIXTURE</b>，纯三图合成）</td></tr>
+</table>
+
+<h3>1.4 Style 使用情况：全局库外 3 个 <span class="obs">观察到</span></h3>
+<p>全局 <code>Combination.xml</code> 唯一 Style 全集（<b>44</b>，按字母序）：</p>
+<code class="block">3DRectBox, ANNULUS, Array5, BBOX3D, BOX3D, CIRCLE, CLASSINFO, CONTOURPOINTS, CvxHull, CVXHULL3D,
+ELLIPSE, ExtInfoData, FIXTURE, FIXTURE3D, IMAGE, INSTRINC, LINE, LINE3D, Matrix3, Matrix4, ORIENTBOX3D,
+PARACOE, PathPoint3D, PCDEXTINFO, PIXELIMAGE, PLANE3D, POINT, POINT3D, POINTCLOUD, POSEINFO, POSTURE,
+Quat, RANGE_ATTRIBUTE, Rect, RECTPT3D, RGBD_InnerParam, RING3D, ROBOTVISION, ROIANNULUS, ROIBOX,
+ROIPOLYGON, SIZE_I, STEREOIMAGE, TRANS</code>
+<table>
+<tr><th>本批新用到的 Style</th><th>是否在全局库</th><th>出现处</th><th>含义</th></tr>
+<tr><td><code>GENERALINFO</code></td><td><b class="r">否（0 命中）</b></td><td><code>IMVSEdgePairInspGroupModu</code>、<code>IMVSLineEdgePairInspModu</code>、<code>IMVSCircleEdgePairInspModu</code> 的 <code>DefectGeneralInfo</code>/<code>DefectGeneralInfos</code></td><td><span class="inf">推断</span> "缺陷通用信息"组合（多字段聚合），模块内联定义</td></tr>
+<tr><td><code>CLASSINFO</code></td><td><b>是（2 命中）</b></td><td><code>IMVSColorSegmentModu</code> 的 <code>ClassInfo</code></td><td>分类信息组合端口</td></tr>
+<tr><td><code>DEBUG</code></td><td>否（R3 已记）</td><td><code>IMVSBcrModu</code>/<code>IMVS2dBcrModu</code> 的 <code>DebugInfo</code></td><td>调试信息（State/Size/Addr 三字段）</td></tr>
+</table>
+<div class="warn">
+<b>全局 Style 库计数差异需记账</b>：R2 文档记 45，本批复核 44。两次统计命令不同（R2 对 <code>&lt;Combination ... Style="X"&gt;</code> 全文正则、本批对全部 <code>Style="X"</code> 去重），
+<b>差 1 的原因本批未定位</b>。不掩盖、不猜测，留待 R5 总表用同一命令重跑后统一。在统一前，<b>不得</b>在任何方案里引用"45 种 Style"这个数字。
+</div>
+
+<h3>1.5 缺陷结果族：跨 12 个模块的同构字段 <span class="obs">观察到</span></h3>
+<table>
+<tr><th>字段</th><th>类型</th><th>出现模块数</th><th>语义（据命名，未验证算法）</th></tr>
+<tr><td><code>ModuRunTime</code> / <code>ModuStatus</code></td><td>float / int</td><td>24/24</td><td>运行态（R3 已记的统一约定，本批 100% 覆盖）</td></tr>
+<tr><td><code>FlawNum</code></td><td>int</td><td>12</td><td>缺陷数量</td></tr>
+<tr><td><code>FlawNums</code></td><td>int（<code>IsArray</code>）</td><td>4（Line/Circle 系）</td><td>逐 ROI 的缺陷数</td></tr>
+<tr><td><code>FlawRectIndex</code></td><td>int</td><td>4</td><td>缺陷框索引</td></tr>
+<tr><td><code>DefectType</code></td><td>int</td><td>9</td><td>缺陷类型枚举</td></tr>
+<tr><td><code>DefectSize</code> / <code>DefectArea</code></td><td>float</td><td>7</td><td>缺陷尺寸/面积</td></tr>
+<tr><td><code>CaliperStart</code> / <code>CaliperEnd</code>（或 <code>DefectCaliperStart/End</code>）</td><td>int</td><td>9</td><td>缺陷在卡尺序列中的起止序号</td></tr>
+<tr><td><code>EdgePointStatus</code> / <code>EdgePointNum</code>（+<code>EdgePointNums</code>）</td><td>int</td><td>10 / 6</td><td>边缘点检出状态与数量</td></tr>
+<tr><td><code>CalipIdeaPointStatus/Num/Nums</code></td><td>int</td><td>6</td><td>"理想"卡尺点（拟合基准）状态与数量</td></tr>
+<tr><td><code>BlindPolygonString</code></td><td>string（<b>单值，非数组</b>）</td><td>7</td><td>盲区多边形文本（R3 记为 <code>string[]</code>，<b>本批为单 string → 批次间不一致</b>）</td></tr>
+<tr><td><code>DefectGeneralInfo(s)</code></td><td>GENERALINFO</td><td>3</td><td>缺陷通用信息聚合</td></tr>
+</table>
+<div class="warn">
+<b><code>BlindPolygonString</code> 类型在批次间不一致</b>：R3（ImageProcessing 8 个模块）为 <code>string[]</code>（<code>IsArray</code>），
+R4（DefectDetection 7 个模块）为 <code>string</code> 单值。两者都已逐字核对过 <code>ValueType</code> + <code>IsArray</code> 属性，<b>不是笔误</b>。
+→ 结论：<b>同一名字的结果字段，在不同分类里类型不同</b>。任何跨分类的"统一结果模型"都必须按分类区分，不能按字段名归一。R5 总表将单列此项。
+</div>
+
+<h3>1.6 参数泄漏到输出端口（反面案例） <span class="obs">观察到</span></h3>
+<code class="block">IMVSEdgePosTrendAnalyModu 结果：
+  ModuRunTime, ModuStatus, EdgePointNum, EdgePosDetectCount,
+  EdgePosMinDistance, EdgePosMaxDistance, EdgePosAverageDistance,
+  SelEdgePosCount, SelEdgePosMinDistance, SelEdgePosMaxDistance, SelEdgePosAverageDistance,
+  EdgePosCaliperCount,
+  Edge_Score, EdgePolarity, EdgeDist, Edge_Point_Search_Status      ← 算法参数/调试量
+
+IMVSEdgePairPosTrendAnalyModu 结果：同构，另有 RunParam_EdgePoint0 / RunParam_EdgePoint1 端口</code>
+<p>证据特征：①命名风格混用（<code>PascalCase</code> 与 <code>Snake_Case</code> 并存）；②<code>Sel*</code>（筛选后）与未筛选值并列输出；
+③<code>RunParam_*</code> 直接作为<b>输出图形端口名</b>。</p>
+<div class="note">
+<b>对我方</b>：这是"参数当结果暴露"的典型。我方 <code>OutputVariable</code> 的设计前提是"输出 = 业务结果，参数 = 输入侧"。
+本批<b>不构成</b>修改我方设计的理由，只作为<b>反例留存</b>：如果将来要支持"运行后可回读实际生效参数"，应走独立的诊断通道，而不是把参数塞进输出端口。
+</div>
+
+<h3>1.7 专用编辑器比例的横向对比 <span class="obs">观察到</span></h3>
+<table>
+<tr><th>分类</th><th>模块数</th><th>带 Control.dll</th><th>比例</th><th>来源</th></tr>
+<tr><td><code>SplitCombination</code></td><td>6</td><td>0</td><td>0%</td><td>R3</td></tr>
+<tr><td><code>ImageProcessing</code></td><td>21</td><td>5</td><td>23.8%</td><td>R3</td></tr>
+<tr><td><code>ImageGeneration</code></td><td>4</td><td>0</td><td>0%</td><td>R3</td></tr>
+<tr><td><code>DefectDetection</code></td><td>14</td><td>5</td><td>35.7%</td><td>R4</td></tr>
+<tr><td><code>Recognition</code></td><td>4</td><td>2</td><td>50.0%</td><td>R4</td></tr>
+<tr><td><code>ColorProcessing</code></td><td>6</td><td>3</td><td>50.0%</td><td>R4</td></tr>
+</table>
+<p><span class="inf">推断</span> 专用编辑器与"是否需要可视化建模/交互式调参"强相关：颜色识别（选色区）、识别（模型/码制）、
+Mark 检测（标记训练）、仿射/拼图/存图（几何或渲染设置）都需要专用交互；而纯算符（滤波/形态/二值/拆分）用参数页足够。</p>
+<div class="note">
+<b>对我方的直接用法</b>：新建工具时判断"要不要写专用调试窗"，可用这条作为先验 ——
+<b>纯算子类 → 默认调试窗 + 参数页</b>（我方 <code>ImageFilter</code>/<code>Morphology</code> 已验证可行）；
+<b>需要选样/建模/几何标注 → 专用编辑器</b>（<code>DebugWindowType</code> 给具体类型）。
+</div>
+
+<h3>1.8 结构化异步/多值表达的三种口径并存 <span class="obs">观察到</span></h3>
+<table>
+<tr><th>表达方式</th><th>示例</th><th>我方对应</th></tr>
+<tr><td><code>IsArray="true"</code>（真数组）</td><td>R3 的 <code>BlindPolygonPointNum:int[]</code>、<code>FlawNums:int</code>（R4）</td><td><code>OutputVariable</code> 数组 + <code>OutputVariableArrayPromoter</code> ✔ 可对齐</td></tr>
+<tr><td>固定槽位展开</td><td><code>IMVSOcrModu</code> 的 <code>Char0</code>/<code>Char1</code>；R3 <code>ImageBufferModule</code> 的 <code>OutImage0..14</code>；R4 <code>ColorMeasure</code> 的 <code>C1..C3</code></td><td><b>不使用</b>（我方用数组 + 索引绑定）</td></tr>
+<tr><td>组合端口（Style 承载结构）</td><td><code>ClassInfo/CLASSINFO</code>、<code>DefectGeneralInfo/GENERALINFO</code></td><td><code>RoiShape[]</code> 之外的"复合结果类型"目前<b>无对应</b>（我方结果以标量/数组/几何为主）<span class="unk">未知</span> 是否需要</td></tr>
+</table>
+
+<h2>2 原件 vs 我方对照</h2>
+<table>
+<tr><th style="width:22%">原件事实</th><th style="width:24%">我方现状</th><th>结论 / 建议动作</th><th style="width:9%">优先级</th></tr>
+<tr><td>缺陷检测 / 识别 / 颜色 三类共 24 个模块</td><td><code>tools/</code> 24 个工具中<b>无</b>任何缺陷检测、OCR/条码、颜色测量工具</td><td><b>能力缺口</b>，本批只提供契约依据，不构成实施计划。<span class="unk">未知</span> 是否在交付范围</td><td>P2</td></tr>
+<tr><td>缺陷结果族 8 字段（FlawNum/DefectType/Size/Area/CaliperStart/End/EdgePointStatus/Num）跨 12 模块同构</td><td>无对应结果模型</td><td>若将来建缺陷工具，<b>先固定这 8 个字段作为公共结果</b>，再各自加专有字段；不要每个工具自造</td><td>P2（预置口径）</td></tr>
+<tr><td>成对边缘范式（Edge0/Edge1/EdgeMiddle + 宽度族）</td><td>无</td><td>同上，作为<b>数据模型先验</b>记录。单边缘 = 成对边缘的退化，不需要两套模型</td><td>P2</td></tr>
+<tr><td><code>ToolItemInfo.xml</code> 才是工具箱准入</td><td>我方工具靠 <code>ToolAttribute</code>（名称/分类/排序）进工具箱，无独立"准入文件"</td><td><b>不需要</b>学这套文件机制；但我方应保证"可加载"与"可显示"两件事都成立（当前由插件扫描 + <code>ToolAttribute</code> 一次决定，反例风险低）</td><td>—</td></tr>
+<tr><td>专用编辑器 41.7%（缺陷/识别/颜色）vs 20.6%（图像处理）</td><td><code>DebugWindowType</code> 可空 + 默认调试窗</td><td><b>策略已足够</b>，无需新增机制；仅作为"何时写专用窗"的判断依据</td><td>—</td></tr>
+<tr><td><code>BlindPolygonString</code> 在 R3 是 <code>string[]</code>、R4 是 <code>string</code></td><td>无盲区概念</td><td><b>不得</b>按字段名建统一模型；如要引入，必须按分类区分类型</td><td>P2</td></tr>
+<tr><td><code>Edge_Polarity</code>/<code>RunParam_*</code> 等参数进输出端口</td><td><code>OutputVariable</code> 只装业务结果</td><td><b>反面案例</b>，保持我方设计；若需回读生效参数，走独立诊断通道</td><td>—</td></tr>
+<tr><td>固定槽位（<code>Char0/Char1</code>、<code>C1..C3</code>、<code>OutImage0..14</code>）</td><td>数组 + 索引绑定</td><td><b>保持我方做法</b>；固定槽位是扩展即破接口的表达</td><td>—</td></tr>
+<tr><td>全局 Style 库 44（R2 记 45）</td><td>无对应概念（我方用 <code>SdkTypeVocabulary</code> 词目）</td><td>差异留待 R5 用同一命令统一，<b>在此之前不引用具体数字</b></td><td>—</td></tr>
+</table>
+
+<h2>3 待补证据</h2>
+<h3>3.1 需更深反汇编</h3>
+<table>
+<tr><th>编号</th><th>缺口</th><th>影响</th></tr>
+<tr><td>R4-A1</td><td><code>DefectType</code> 的枚举值含义（各模块是否共用一套）</td><td>决定缺陷类型能否跨工具统一</td></tr>
+<tr><td>R4-A2</td><td><code>CaliperStart/CaliperEnd</code> 与卡尺序号的对应规则</td><td>决定缺陷定位回原图的方式</td></tr>
+<tr><td>R4-A3</td><td><code>GENERALINFO</code> 的内部字段集</td><td>决定"缺陷通用信息"能否归一</td></tr>
+<tr><td>R4-A4</td><td><code>CLASSINFO</code> 的内部字段集</td><td>同上</td></tr>
+<tr><td>R4-A5</td><td><code>ModelHData/SData/IData</code> 与 <code>SampleHData/...</code> 的物理含义（ColorRecognition）</td><td>决定颜色识别结果可否复刻</td></tr>
+<tr><td>R4-A6</td><td>深度学习 20 个模块的接口（本机无实物）</td><td><b>无法</b>取证，需带授权/完整安装的原件机</td></tr>
+</table>
+<h3>3.2 需实机验证</h3>
+<table>
+<tr><th>编号</th><th>验证项</th></tr>
+<tr><td>R4-B1</td><td><code>IMVSMarkInspModu</code>（无 ToolItemInfo）能否从工具箱拖出 —— 验证准入判据</td></tr>
+<tr><td>R4-B2</td><td><code>FlawNums</code>(int, IsArray) 与 <code>FlawNum</code> 的联动语义（逐 ROI vs 总数）</td></tr>
+<tr><td>R4-B3</td><td>趋势分析模块的 <code>RunParam_EdgePoint</code> 端口在下游绑定时是否可见/可连</td></tr>
+<tr><td>R4-B4</td><td><code>IMVSOcrModu</code> 字符超过 2 个时 <code>Char0/Char1</code> 如何表达（溢出/截断/不输出）</td></tr>
+<tr><td>R4-B5</td><td><code>IMVSColorMeasureModu</code> 的 C1/C2/C3 是否对应 RGB 通道顺序</td></tr>
+</table>
+<h3>3.3 需厂商文档 / 授权信息</h3>
+<table>
+<tr><th>编号</th><th>缺口</th></tr>
+<tr><td>R4-C1</td><td><b>深度学习 20 个模块的安装/授权条件</b> —— 决定"清单 191 vs 实物 162"能否给出官方解释</td></tr>
+<tr><td>R4-C2</td><td><code>ToolItemInfo.xml</code> 缺失是否等价于"内部模块/被 VA 版取代"（无官方说明）</td></tr>
+<tr><td>R4-C3</td><td><code>GENERALINFO</code>/<code>DEBUG</code>/<code>ACQUIMAGE</code> 这类内联 Style 是否有官方命名规范</td></tr>
+</table>
+
+<h2>4 自验命令（PowerShell 5.1 可直接复跑）</h2>
+<code class="block">$app="D:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\x64"
+$txt="D:\Program Files\VisionMaster4.4.0\Applications\ModulePathGenerate.txt"   # 注意：不在 Module(sp) 下
+
+# 1) 声明 vs 实物
+$l=Get-Content $txt -Encoding UTF8
+foreach($c in @("DefectDetection","Recognition","DeepLearning","RegisterLearning","ColorProcessing")){
+  $dec=($l|?{$_ -match [regex]::Escape("\"+$c+"\")}).Count
+  $p=Join-Path $app $c
+  $real=if(Test-Path $p){(Get-ChildItem $p -Directory).Count}else{"MISSING"}
+  "$c declared=$dec real=$real" }
+# 期望 14/14  12/4  14/MISSING  6/MISSING  6/6
+
+# 2) 工具箱准入判据（期望：MarkInspModu 无 TI，其余 23 个有）
+foreach($c in @("DefectDetection","Recognition","ColorProcessing")){
+  foreach($d in (Get-ChildItem (Join-Path $app $c) -Directory)){
+    $ti=Test-Path (Join-Path $d.FullName "ToolItemInfo.xml")
+    $ctl=Test-Path (Join-Path $d.FullName ($d.Name+"Control.dll"))
+    if(-not $ti -or $ctl){ "$($d.Name) TI=$ti CTL=$ctl" } } }
+
+# 3) 全局 Style 全集数（本批 44；R2 记 45，差异未定位）
+$m="D:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\Combination.xml"
+$st=[regex]::Matches(([IO.File]::ReadAllText($m,[Text.Encoding]::UTF8)),'Style="([^"]+)"')|
+    %{$_.Groups[1].Value}|Sort-Object -Unique
+$st.Count
+$st -contains "GENERALINFO"   # 期望 False（模块内联）
+$st -contains "CLASSINFO"     # 期望 True
+
+# 4) BlindPolygonString 批次间类型不一致（期望 R3 为数组、R4 为单值）
+foreach($c in @("ImageProcessing","DefectDetection")){
+  foreach($d in (Get-ChildItem (Join-Path $app $c) -Directory)){
+    $x=Join-Path $d.FullName ($d.Name+".xml"); if(!(Test-Path $x)){continue}
+    $doc=[xml][IO.File]::ReadAllText($x,[Text.Encoding]::UTF8)
+    foreach($cc in $doc.ParamRoot.Categorys.Category){
+      if($cc.Name -ne "Output"){continue}
+      foreach($f in @($cc.Items.Filter)){
+        if($f.Name -eq "BlindPolygonString"){ "$c/$($d.Name) type=$($f.ValueType) array=$($f.IsArray)" } } } } }
+
+# 5) 运行态输出覆盖（R4 期望 24/24）
+# 6) 专用编辑器比例
+foreach($c in @("DefectDetection","Recognition","ColorProcessing")){
+  $t=(Get-ChildItem (Join-Path $app $c) -Directory).Count
+  $k=(Get-ChildItem (Join-Path $app $c) -Directory|?{Test-Path (Join-Path $_.FullName ($_.Name+"Control.dll"))}).Count
+  "$c $k/$t" }</code>
+
+<h2>5 边界声明</h2>
+<ul>
+<li><b>未改动</b> <code>src/</code>、<code>tools/</code>、<code>tests/</code>；本批对 <code>tools/</code> 仅列目录名，未读任何源码。</li>
+<li><b>未改动</b> 其它 evidence 文件；本批只新增本文件（R2/R3 已发布数字<b>不回改</b>，差异在 R5 收口时统一记账）。</li>
+<li><b>未执行</b> <code>git commit</code> / <code>git push</code>。</li>
+<li><b>未启动</b> <code>VisionMaster.exe</code>，<b>未写注册表</b>，安装目录全程<b>只读</b>。</li>
+<li><b>未做</b> 反编译；未对 20 个未安装的深度学习模块做任何推断性描述（只记"目录不存在"这一事实）。</li>
+<li>本批为<b>清单级</b>：不含算法语义、不含 ROI/卡尺整链、不含 UI 交互，这些是本批明确<b>未覆盖</b>的范围（见 3.1–3.3 与 1.7）。</li>
+<li>三档标注逐条给出；<code>DefectType</code> 枚举、<code>GENERALINFO</code> 内字段、<code>Model/Sample HSI</code> 语义等均标 <span class="unk">未知</span>，<b>未</b>以命名猜测补全。</li>
+</ul>
+
+<footer>
+VM 工具逆向批次 R4 · 2026-11-05 · 只读取证 · 声明 52 / 实物 24 / 工具箱条目 23<br>
+关联：<code>VM工具逆向批次R1-在研与流程控制-20261105.html</code>、<code>R2-查找与卡尺</code>、<code>R3-图像处理与拼合</code>
+</footer>
+</body>
+</html>

@@ -1,0 +1,115 @@
+{
+  "toolId": "imvsimagemathmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageMathModu\\IMVSImageMathModu.xml",
+      "sha256": "c05c7d4856074d31ff05528e0ae15cc270f7af47432db2cc933551186b1eacf8",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageMathModu\\IMVSImageMathModuAlgorithm.xml",
+      "sha256": "cf2e09df77ca7b15535e52745782682bdd88ba795c65c99b2900b5d732627c30",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageMathModu\\IMVSImageMathModuAlgorithmTab.xml",
+      "sha256": "864760a84c284417da4baf557cfb0ac47f86bf4e417cc91c8299031c16c06d7d",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageMathModu\\IMVSImageMathModuCs.xml",
+      "sha256": "66b6377bc59ff4733cdf0a6f5a4e7e17bb409c1c9f4fa965b431ea2289df45da",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageMathModu\\IMVSImageMathModuDisplay.xml",
+      "sha256": "3821b9062cfbf7a4a8e03158e7c7146ff246605a2ba2b128f47903b4767fd29c",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageMathModu\\ToolItemInfo.xml",
+      "sha256": "371e9c277d0a8dfdb706a0b995b15f5f84ed36ddf967561c5af819334c408bcb",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "EnumerationG",
+      "name": "ImageSource1"
+    },
+    {
+      "type": "EnumerationG",
+      "name": "ImageSource2"
+    },
+    {
+      "type": "Expand",
+      "name": null
+    },
+    {
+      "type": "Float",
+      "name": "ImageWeight1"
+    },
+    {
+      "type": "Float",
+      "name": "ImageOffset1"
+    },
+    {
+      "type": "Float",
+      "name": "ImageWeight2"
+    },
+    {
+      "type": "Float",
+      "name": "ImageOffset2"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ArithmeticType"
+    },
+    {
+      "type": "Float",
+      "name": "ImageK1"
+    },
+    {
+      "type": "Float",
+      "name": "ImageK2"
+    },
+    {
+      "type": "Float",
+      "name": "ImageC"
+    }
+  ],
+  "sharedUiGroups": [
+    "RoiSelectGroup",
+    "InheritWayGroup",
+    "AssistGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

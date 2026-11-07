@@ -1,0 +1,42 @@
+{
+  "toolId": "solutionmodule",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\SolutionModule\\SolutionModule.xml",
+      "sha256": "052294ab085b84f5fbfbeb38daf72b27545cda960c0662dfca14c8b093941124",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\SolutionModule\\SolutionModuleAlgorithmTab.xml",
+      "sha256": "90b875f3b69c4500efd912b57e954b4b4f11af203df8bb2a485c74a9dcc0021a",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\SolutionModule\\SolutionModuleDisplay.xml",
+      "sha256": "a3d2be07bafeef6658c41058019420aea1e4ee70a8175ba8784e3c3e9df818ab",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\SolutionModule\\ToolItemInfo.xml",
+      "sha256": "57bb198ab0e643d86a7f98224170332e83fa9fd6961fd925c050792b762e256f",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Run Params"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "GlobalRunParam",
+      "name": "Tab_Run Params"
+    }
+  ],
+  "sharedUiGroups": [],
+  "status": "inventory-only"
+}

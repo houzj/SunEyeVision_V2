@@ -1,0 +1,24 @@
+{
+  "stableToolId": "imvsp2lmeasuremodu",
+  "originalPlugin": "IMVSP2LMeasureModu",
+  "displayName": "点线测量",
+  "originalCategory": "Measurement",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2LMeasureModu",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "status": "inventory-only",
+  "evidenceState": "unknown",
+  "resourceCount": 6,
+  "parameterCount": 20,
+  "inputCount": 4,
+  "outputCount": 11,
+  "uiControlCount": 34,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ]
+}

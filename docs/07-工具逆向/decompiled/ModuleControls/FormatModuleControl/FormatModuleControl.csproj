@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>FormatModuleControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="datatemplate\paramusercontroldatatemplate.xaml" />
+    <Page Remove="FormatModuleControl\FormatConfigPanel.xaml" />
+    <Page Remove="FormatModuleControl\FormatMessageBox.xaml" />
+    <Page Remove="FormatModuleControl\FormatTextBox.xaml" />
+    <Page Remove="FormatModuleControl\InsertArrayWindow.xaml" />
+    <Page Remove="FormatModuleControl\ParamsTabControl4Format.xaml" />
+    <Page Include="datatemplate\paramusercontroldatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="datatemplate/paramusercontroldatatemplate.xaml" />
+    <Page Include="FormatModuleControl\FormatConfigPanel.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="formatconfigpanel.xaml" />
+    <Page Include="FormatModuleControl\FormatMessageBox.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="formatmessagebox.xaml" />
+    <Page Include="FormatModuleControl\FormatTextBox.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="formattextbox.xaml" />
+    <Page Include="FormatModuleControl\InsertArrayWindow.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="insertarraywindow.xaml" />
+    <Page Include="FormatModuleControl\ParamsTabControl4Format.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="paramstabcontrol4format.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Mvvm" />
+    <Reference Include="Apps.XmlParser" />
+    <Reference Include="VM.Core" />
+    <Reference Include="Apps.UIHelper" />
+    <Reference Include="VM.PlatformSDKCS" />
+    <Reference Include="System.Core" />
+    <Reference Include="VMControls.Interface" />
+    <Reference Include="VMControls.WPF" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="VM.PcUI" />
+    <Reference Include="Apps.Data" />
+    <Reference Include="VM.Controls" />
+    <Reference Include="Apps.Json" />
+    <Reference Include="VM.Xml" />
+    <Reference Include="VM.Util" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="VM.Utility" />
+  </ItemGroup>
+</Project>

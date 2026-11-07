@@ -1,0 +1,67 @@
+{
+  "controls": [
+    {
+      "type": "GroupInputParam",
+      "name": "GroupInputParam"
+    },
+    {
+      "type": "GroupOutputParam",
+      "name": "GroupOutputParam"
+    },
+    {
+      "type": "GroupRunParam",
+      "name": "Tab_Run Params"
+    },
+    {
+      "type": "GroupDisplayParam",
+      "name": "GroupDisplayParam"
+    },
+    {
+      "type": "GroupCommunicationParam",
+      "name": "GroupCommunicationParam"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "compound-control",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P4",
+  "themeStates": "unknown",
+  "toolId": "proceduremodule",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ProcedureModule\\ProcedureModule.xml",
+      "sha256": "bda739355c340fc3a9928d3a73b7075a107bdc6902bb8a92f8a67ddb472742e1",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ProcedureModule\\ProcedureModuleAlgorithmTab.xml",
+      "sha256": "abb7d979f3fb32dadc91c75291b232416daaecf92265ee79092a882807058964",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ProcedureModule\\ProcedureModuleCs.xml",
+      "sha256": "d3ad1876d01ecd2a9f2932d37f90192ee1fc0becf278360396204ba4cd5aa012",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ProcedureModule\\ProcedureModuleDisplay.xml",
+      "sha256": "70e1f4088b3e9817077acf7ef3a95b3a28a21017ec0ad9c96681a7da26dd02ea",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ProcedureModule\\ToolItemInfo.xml",
+      "sha256": "d737bac32c21d278add607bae9df587da84618f985529a51a602105e36ded0c3",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "ProcedureModule",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

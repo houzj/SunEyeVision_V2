@@ -1,0 +1,149 @@
+{
+  "toolId": "imvsrotatecalculatemodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSRotateCalculateModu\\IMVSRotateCalculateModu.xml",
+      "sha256": "75036f759810163bb6f1818afc45ac6749d8d475005ac47a276b7ece68ac6cb6",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSRotateCalculateModu\\IMVSRotateCalculateModuAlgorithm.xml",
+      "sha256": "69632ad7893a631badcb82c633e12cecd0be42f1dfd5ef4ddbbca19f1604ec95",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSRotateCalculateModu\\IMVSRotateCalculateModuAlgorithmTab.xml",
+      "sha256": "8be4b4dffeadf411a088c09f5e7c3d395dbe6b76ac99a301169e56e4c18399f5",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSRotateCalculateModu\\IMVSRotateCalculateModuCs.xml",
+      "sha256": "7bb190fc37aaabb906f1c858721e1aba8e6e99b59d6a396acf5245fa044d535c",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSRotateCalculateModu\\IMVSRotateCalculateModuDisplay.xml",
+      "sha256": "1635ca8ba57a5b6a0b27055b580bb94d48238708fdeea5dab5eeee0b070e0c01",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSRotateCalculateModu\\ToolItemInfo.xml",
+      "sha256": "ddd8273b4f6cc2be4f072cf777cc7a263d5e528cca04c44ddf97f4ea055edb31",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "RadioSelecter",
+      "name": "InputType"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "InputWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "OriginPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PointY"
+    },
+    {
+      "type": "RadioSelecter3",
+      "name": "InputWay2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "LINE"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointY"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "InputWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RotateCenter"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RotatePointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RotatePointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RotateAngle"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "InputPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "InputLine"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "RotatePoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "OutputPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "OutputLine"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "TextDisplayGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

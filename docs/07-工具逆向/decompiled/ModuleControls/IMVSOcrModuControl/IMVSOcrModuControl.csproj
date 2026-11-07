@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>IMVSOcrModuControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="IMVSOcrModuControl\GetTrainCharacter.xaml" />
+    <Page Remove="IMVSOcrModuControl\OCRSubCollection.xaml" />
+    <Page Remove="IMVSOcrModuControl\OCRTrainUI.xaml" />
+    <Page Include="IMVSOcrModuControl\GetTrainCharacter.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="gettraincharacter.xaml" />
+    <Page Include="IMVSOcrModuControl\OCRSubCollection.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ocrsubcollection.xaml" />
+    <Page Include="IMVSOcrModuControl\OCRTrainUI.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ocrtrainui.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="VM.Controls" />
+    <Reference Include="VM.PcUI" />
+    <Reference Include="Apps.Data" />
+    <Reference Include="Apps.Interface" />
+    <Reference Include="VM.Xml" />
+    <Reference Include="Apps.XmlParser" />
+    <Reference Include="VM.ExternalCall" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="VM.PlatformSDKCS" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="Apps.PcUI" />
+    <Reference Include="VMControls.Interface" />
+    <Reference Include="System.Core" />
+    <Reference Include="Apps.Log" />
+    <Reference Include="ModelCommonHelper" />
+    <Reference Include="Apps.ErrorCode" />
+    <Reference Include="VM.Core" />
+    <Reference Include="VM.Utility" />
+  </ItemGroup>
+</Project>

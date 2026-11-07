@@ -1,0 +1,212 @@
+{
+  "controls": [
+    {
+      "type": "Boolean",
+      "name": "StandardInput"
+    },
+    {
+      "type": "RadioSelecter3",
+      "name": "InputWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "LINE"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointY"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FindMode"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePolarity"
+    },
+    {
+      "type": "Integer",
+      "name": "HalfKernelSize"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeStrength"
+    },
+    {
+      "type": "Integer",
+      "name": "CaliperHeight"
+    },
+    {
+      "type": "Integer",
+      "name": "CaliperWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "CaliperDistTraj"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FlawPolarityEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "RoughMinDis"
+    },
+    {
+      "type": "Boolean",
+      "name": "SizeEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "RoughMinSize"
+    },
+    {
+      "type": "Boolean",
+      "name": "AreaEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "RoughMinArea"
+    },
+    {
+      "type": "Expand",
+      "name": "FitParamExpand"
+    },
+    {
+      "type": "Integer",
+      "name": "LineCaliperNum"
+    },
+    {
+      "type": "Integer",
+      "name": "FitRejectNum"
+    },
+    {
+      "type": "Integer",
+      "name": "FitRejectDist"
+    },
+    {
+      "type": "Integer",
+      "name": "TrackDistTol"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "SensorFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FlawResult"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "EdgeLocation"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "EdgeLocation"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Standard ThroughLine"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CaliperBox"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvslineedgeinspmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSLineEdgeInspModu\\IMVSLineEdgeInspModu.xml",
+      "sha256": "c0186750522cb156bc9e9b528389037b9432dd9122b710f09d9479ab8d04272e",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSLineEdgeInspModu\\IMVSLineEdgeInspModuAlgorithm.xml",
+      "sha256": "2152415dbd0e542d013a106ee38a14010ff773006ee3641df3f79ac547d293cd",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSLineEdgeInspModu\\IMVSLineEdgeInspModuAlgorithmTab.xml",
+      "sha256": "e56977e49f2d2efb39cc8473ce7ad26baf3db0bb02a1da2b2071e750fc88cccb",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSLineEdgeInspModu\\IMVSLineEdgeInspModuCs.xml",
+      "sha256": "ebcbdc23e88276f2ac2ea57fab53a98cbd6d9aa6fb047c5cb4f212f705018b49",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSLineEdgeInspModu\\IMVSLineEdgeInspModuDisplay.xml",
+      "sha256": "d20ef68f34e1698542a913d0546ed6964b1049690f98fd154756432366d5fe73",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSLineEdgeInspModu\\ToolItemInfo.xml",
+      "sha256": "9740729ca18cd15b51037f2d130716cf378ba2b436de9393932d62df5ed400a1",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "直线边缘缺陷检测",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

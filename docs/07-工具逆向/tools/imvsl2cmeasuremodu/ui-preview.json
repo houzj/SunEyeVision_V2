@@ -1,0 +1,324 @@
+{
+  "controls": [
+    {
+      "type": "RadioSelecter",
+      "name": "SourceSelect"
+    },
+    {
+      "type": "RadioSelecter3",
+      "name": "InputWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "LINE"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointY"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "InputWay2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Circle"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "CenterPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "CenterPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Radius"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "InnerRadius"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartAngle"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "AngleExtend"
+    },
+    {
+      "type": "ROISelecter_Com",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ChooseCoordinate"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "OriginPoint"
+    },
+    {
+      "type": "Enumeration",
+      "name": "OutputAngleRange"
+    },
+    {
+      "type": "Enumeration",
+      "name": "LineChoose"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FindMode1"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePolarity1"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeThreshold1"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelSize1"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectNum1"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectDist1"
+    },
+    {
+      "type": "Enumeration",
+      "name": "InitType1"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FitFun1"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FindMode2"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePolarity2"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeThresh2"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeWidth2"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectNum2"
+    },
+    {
+      "type": "Boolean",
+      "name": "CoarseDetectFlag2"
+    },
+    {
+      "type": "Integer",
+      "name": "CCDSampleScale2"
+    },
+    {
+      "type": "Integer",
+      "name": "CCDCircleThresh2"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectDist2"
+    },
+    {
+      "type": "Enumeration",
+      "name": "InitType2"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FitFun2"
+    },
+    {
+      "type": "Boolean",
+      "name": "AngleLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangAngleLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "DistLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangDistLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "Inter1XLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangInter1XLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "Inter1YLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangInter1YLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "Inter2XLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangInter2XLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "Inter2YLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangInter2YLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "ProjXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangProjXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "ProjYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangProjYLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineInput"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ThroughLineInput"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CircleInput"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CenterPointInput"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "VerticalLine"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "DetectCaliperBox1"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "DetectCaliperBox2"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvsl2cmeasuremodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2CMeasureModu\\IMVSL2CMeasureModu.xml",
+      "sha256": "46a8ad3a89711c0da6811a2005caab1507d23abccb602375582fa8cebd3c44e7",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2CMeasureModu\\IMVSL2CMeasureModuAlgorithm.xml",
+      "sha256": "01ff03e64d417f5da6595c8d6c7ad83e25b8f6320977a74405ab06947ae17378",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2CMeasureModu\\IMVSL2CMeasureModuAlgorithmTab.xml",
+      "sha256": "f2805778e979e3a742bc152cee8e9bf91c58816eaa2244c6cc3836dfdc87dcc2",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2CMeasureModu\\IMVSL2CMeasureModuCs.xml",
+      "sha256": "7862569f0d3b2ecfbc054a3d671d02dc3ac3c8f6b5384cad9c0e567b94e3613d",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2CMeasureModu\\IMVSL2CMeasureModuDisplay.xml",
+      "sha256": "afcff7aa7b8bd1d90fa375d1d3250b39830667c98e27404670c937ee8ad9448e",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2CMeasureModu\\ToolItemInfo.xml",
+      "sha256": "605915b5f60a4960098e13a08c6c74836fb613e48eeac99e7918f0b1fcc4ab6b",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "线圆测量",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

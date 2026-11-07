@@ -1,0 +1,45 @@
+{
+  "stableToolId": "imvsp2pmeasuremodu",
+  "originalPlugin": "IMVSP2PMeasureModu",
+  "displayName": "点点测量",
+  "originalCategory": "Measurement",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2PMeasureModu",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "resourceCount": 6,
+  "parameterCount": 14,
+  "inputCount": 4,
+  "outputCount": 8,
+  "uiControlCount": 24,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/P2PMeasureModuTool.cs",
+      "evidenceType": "decompiled managed source"
+    },
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/P2PMeasureModuParams.cs",
+      "evidenceType": "decompiled managed source"
+    },
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/P2PMeasureResult.cs",
+      "evidenceType": "decompiled managed source"
+    }
+  ],
+  "managedMembers": [
+    "P2PMeasureModuTool constructor/Clone/Dispose",
+    "Angle/Dist/MidX/MidY limit ParamItems",
+    "P2PMeasureResult basic/native result fields"
+  ],
+  "unknowns": [
+    "point input mapping and distance/angle algorithm",
+    "native Process/ProcessAlg ABI",
+    "judgment/result status/display",
+    "UI bindings/theme",
+    "save/reload/stop runtime behavior"
+  ]
+}

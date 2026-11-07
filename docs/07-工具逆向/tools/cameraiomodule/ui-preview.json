@@ -1,0 +1,96 @@
+{
+  "controls": [
+    {
+      "type": "ButtonSelecter",
+      "name": "IO0InputString"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "IO1InputString"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "IO2InputString"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "IO3InputString"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "IO4InputString"
+    },
+    {
+      "type": "Enumeration_CameraSelector",
+      "name": "CameraID"
+    },
+    {
+      "type": "Enumeration",
+      "name": "CameraType"
+    },
+    {
+      "type": "Boolean",
+      "name": "DurationTimeEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "IODurationTime"
+    },
+    {
+      "type": "Enumeration",
+      "name": "IOEnableElectricalLevel"
+    },
+    {
+      "type": "Enumeration",
+      "name": "IOOutType"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "extension-panels",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P3",
+  "themeStates": "unknown",
+  "toolId": "cameraiomodule",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\CameraIOModule\\CameraIOModule.xml",
+      "sha256": "79ca9770178e74d32ff40370619c5404ce0456c284b6d4c7763aca69f84f9253",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\CameraIOModule\\CameraIOModuleAlgorithm.xml",
+      "sha256": "c85bebb817bcd1ad3e3b0838ec946b188b8734ee49623b61e43bf25db640d65e",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\CameraIOModule\\CameraIOModuleAlgorithmTab.xml",
+      "sha256": "da49390872463d5384952a857e3ea9f6906181a9ccdfefd112d587e665336340",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\CameraIOModule\\CameraIOModuleCs.xml",
+      "sha256": "92548b1ffa2eb1f3cc756de3e88c2e123f8c19a52f20c005a07d31d4873a0381",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\CameraIOModule\\CameraIOModuleDisplay.xml",
+      "sha256": "4abd93995f958af53edaf7af6e1118cf9635c9890f766d6273064f499fd7ffff",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\CameraIOModule\\ToolItemInfo.xml",
+      "sha256": "181fbae6363d3aeaea4bd35cc62e084b768e6afba0d2e1990fd033dfdd2be7db",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "相机IO通信",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

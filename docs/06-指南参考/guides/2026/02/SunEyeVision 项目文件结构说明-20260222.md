@@ -167,7 +167,6 @@ SunEyeVision.UI/
 
 ```
 Plugins/[PluginName]/
-├── （plugin.json 已废弃，不再需要该文件）
 ├── [PluginName].csproj             # 项目文件
 ├── [PluginName]Plugin.cs           # 插件主类（实现IPlugin）
 ├── Nodes/                           # 节点实现（如果适用）

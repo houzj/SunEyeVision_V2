@@ -1,0 +1,196 @@
+{
+  "toolId": "imvsedgeflawinspmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgeFlawInspModu\\IMVSEdgeFlawInspModu.xml",
+      "sha256": "aed58796871f968d0758785db082fe980e3832d852f0586198a68288ca82ef89",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgeFlawInspModu\\IMVSEdgeFlawInspModuAlgorithm.xml",
+      "sha256": "574ace470928da8687954a448436c421fc3a9ed8fca5921111c5b17421b10aef",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgeFlawInspModu\\IMVSEdgeFlawInspModuAlgorithmTab.xml",
+      "sha256": "2422ef4aac0626778f9470c77b82219ca15de8d9338a823865728032713e0a74",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgeFlawInspModu\\IMVSEdgeFlawInspModuCs.xml",
+      "sha256": "4d7e6c4736b6615178fdfd37df57f430670ab3e4d754064762165ba2a45346a7",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgeFlawInspModu\\IMVSEdgeFlawInspModuDisplay.xml",
+      "sha256": "d3959adb391fd0221f1be12fd9281ab6a43e8ac7341c0a4dd55c705e3f7758cc",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgeFlawInspModu\\ToolItemInfo.xml",
+      "sha256": "83ff007233ff6709983e001b5c85970d013256580bb6215fa9deb0fbbd91ceec",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Edge Model",
+      "IsGenerate": "False"
+    },
+    {
+      "Name": "EdgepatMatchTab"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "RadioSelecter",
+      "name": "RoiSelect"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Panel_EdgepatMatch",
+      "name": "EdgeFlawInspModel"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ModEdgePointFindMode"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ModEdgePointEdgePolarity"
+    },
+    {
+      "type": "Integer",
+      "name": "ModEdgeStrength"
+    },
+    {
+      "type": "Integer",
+      "name": "ModCaliperHeight"
+    },
+    {
+      "type": "Integer",
+      "name": "ModCaliperWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "ModCaliperDist"
+    },
+    {
+      "type": "Expand",
+      "name": null
+    },
+    {
+      "type": "Boolean",
+      "name": "ModFineEdgeEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "ModHalfKernelSize"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePointFindMode"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePointPolarity"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeStrength"
+    },
+    {
+      "type": "Integer",
+      "name": "CaliperHeight"
+    },
+    {
+      "type": "Integer",
+      "name": "CaliperWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "LenThresh"
+    },
+    {
+      "type": "Boolean",
+      "name": "OffsetEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "OffsetThresh"
+    },
+    {
+      "type": "Boolean",
+      "name": "CrackEnable"
+    },
+    {
+      "type": "Boolean",
+      "name": "GradEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "GradThresh"
+    },
+    {
+      "type": "Integer",
+      "name": "GradLen"
+    },
+    {
+      "type": "Expand",
+      "name": null
+    },
+    {
+      "type": "Boolean",
+      "name": "GrayTrackEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "HalfKernelSize"
+    },
+    {
+      "type": "Integer",
+      "name": "GrayTrackDistol"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FlawResult"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CaliperResult"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "EdgeLocation"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "AssistGroup",
+    "TextDisplayGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

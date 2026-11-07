@@ -1,0 +1,28 @@
+{
+  "stableToolId": "imagebuffermodule",
+  "originalPlugin": "ImageBufferModule",
+  "displayName": "缓存图像",
+  "originalCategory": "Collection",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageBufferModule",
+  "uiCategory": "image-roi",
+  "priority": "P1",
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "resourceCount": 6,
+  "parameterCount": 0,
+  "inputCount": 3,
+  "outputCount": 17,
+  "uiControlCount": 2,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ],
+  "sourceReports": [
+    "docs/plugins/IMAGE-BUFFER.md"
+  ],
+  "note": "原厂 FIFO 边界、刷新/裁剪、输出顺序、格式保留、保存重载和会话清理已有专项证据。"
+}

@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>IMVSImgStitchCalibModuControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="datatemplate\paramusercontroldatatemplate.xaml" />
+    <Page Remove="IMVSImgStitchCalibModuControl\ImageSourceListView.xaml" />
+    <Page Remove="IMVSImgStitchCalibModuControl\ImgStitchDialog.xaml" />
+    <Page Remove="IMVSImgStitchCalibModuControl\ImgStitchPannel.xaml" />
+    <Page Remove="IMVSImgStitchCalibModuControl\StitchImageView.xaml" />
+    <Page Include="datatemplate\paramusercontroldatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="datatemplate/paramusercontroldatatemplate.xaml" />
+    <Page Include="IMVSImgStitchCalibModuControl\ImageSourceListView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imagesourcelistview.xaml" />
+    <Page Include="IMVSImgStitchCalibModuControl\ImgStitchDialog.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imgstitchdialog.xaml" />
+    <Page Include="IMVSImgStitchCalibModuControl\ImgStitchPannel.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imgstitchpannel.xaml" />
+    <Page Include="IMVSImgStitchCalibModuControl\StitchImageView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="stitchimageview.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Apps.XmlParser" />
+    <Reference Include="Apps.Interface" />
+    <Reference Include="VM.Core" />
+    <Reference Include="VMControls.Interface" />
+    <Reference Include="VM.PlatformSDKCS" />
+    <Reference Include="VM.Xml" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Apps.Data" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="VM.ExternalCall" />
+    <Reference Include="Apps.PcUI" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="VM.Controls" />
+    <Reference Include="Apps.BaseData" />
+    <Reference Include="Apps.ErrorCode" />
+    <Reference Include="System.Core" />
+    <Reference Include="Apps.Log" />
+    <Reference Include="VM.PcUI" />
+    <Reference Include="VM.Utility" />
+    <Reference Include="VMControls.RenderInterface" />
+    <Reference Include="Apps.ColorFun" />
+    <Reference Include="ModelCommonHelper" />
+  </ItemGroup>
+</Project>

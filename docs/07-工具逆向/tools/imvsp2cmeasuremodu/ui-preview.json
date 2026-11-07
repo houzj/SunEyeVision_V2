@@ -1,0 +1,164 @@
+{
+  "controls": [
+    {
+      "type": "RadioSelecter",
+      "name": "InputWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "OriginPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "OriginPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "OriginPointY"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "InputWay2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Circle"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "CenterPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "CenterPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Radius"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "InnerRadius"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartAngle"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "AngleExtend"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ChooseCoordinate"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "OriginPoint"
+    },
+    {
+      "type": "Enumeration",
+      "name": "OutputAngleRange"
+    },
+    {
+      "type": "Boolean",
+      "name": "AngleLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangAngleLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "DistCenterLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangDistCenterLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "DistClosestLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangDistClosestLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "DistFarthestLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangDistFarthestLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineInput"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "PointInput"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineResult"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineResult"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvsp2cmeasuremodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2CMeasureModu\\IMVSP2CMeasureModu.xml",
+      "sha256": "bdbd3100366ef42c210cb391df92eb0afdd4fc8ba229a2ea5e10730444abfe08",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2CMeasureModu\\IMVSP2CMeasureModuAlgorithm.xml",
+      "sha256": "55f86cb620e09a6e515432210a825122b72ef6f7fee5654af4be47e940619f04",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2CMeasureModu\\IMVSP2CMeasureModuAlgorithmTab.xml",
+      "sha256": "242efc4716449e1c845b434026510183c30a9372ba36f9d40b1f4cce175f8b6f",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2CMeasureModu\\IMVSP2CMeasureModuCs.xml",
+      "sha256": "fb0a06c99d4964f9ff72ec067cbee2216b0b7176444b5fa19f27f13e5b73d8f9",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2CMeasureModu\\IMVSP2CMeasureModuDisplay.xml",
+      "sha256": "b5034a3979ded01827b64ab7c8a3423a2dc9be49dafec3e01e11d0237a591fd9",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2CMeasureModu\\ToolItemInfo.xml",
+      "sha256": "181a5e58a1a93650514887d7fc0bfd61f13e1e90cd440d387baa0c945567b7ff",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "点圆测量",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

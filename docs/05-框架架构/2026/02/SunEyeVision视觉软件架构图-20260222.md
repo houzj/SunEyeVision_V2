@@ -522,6 +522,8 @@ graph TB
 
 ## 七、部署架构图
 
+> 归属口径：图中「数据目录」不再是独立的选择目录机制——数据根由程序目录 `App.ini` 的 `[Data] Root` 指定（我方自建，见 2026-11-05 定案）；选目录窗／`data-location.json`／marker／`schemaVersion` 协商／数据目录校验已在 `cd2da5762` 物理删除。
+
 ```mermaid
 graph TB
     subgraph "开发环境"

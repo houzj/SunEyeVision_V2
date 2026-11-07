@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Wpf:TabWinBase x:Class="IMVSGroupControl.ParamsTabControl4Group" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:IMVSGroupControl" xmlns:Wpf="clr-namespace:VMControls.WPF;assembly=VMControls.WPF" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:dynamicControl="clr-namespace:DynamicObjectConfigControl;assembly=DynamicObjectConfigControl" x:Name="win" IsCustomPosition="True">
+  <Window.Title>
+    <MultiBinding StringFormat="{}{0} {1}">
+      <Binding Path="AlgorithmTabRoot.Owner.ID" ElementName="dynamicTab" Mode="TwoWay" />
+      <Lang:ResourceBinding Path="AlgorithmTabRoot.OwnerTypeName" ElementName="dynamicTab" Mode="TwoWay" />
+    </MultiBinding>
+  </Window.Title>
+  <dynamicControl:DynamicParamsTabControl Name="dynamicTab" IsExecute="False" ROIPartUI="{Binding ROIPartUI, ElementName=win, Mode=OneWay}" IsEditState="{Binding IsEditState, ElementName=win, Mode=OneWay}">
+    <!--Unknown connection ID: 2-->
+  </dynamicControl:DynamicParamsTabControl>
+</Wpf:TabWinBase>

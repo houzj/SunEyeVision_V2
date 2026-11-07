@@ -1,0 +1,213 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>VMBaseControls</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace />
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="VMBaseControls.Resources.鼠标双向箭头.png" />
+    <None Remove="VMBaseControls.Resources.鼠标旋转箭头.png" />
+    <None Remove="VMBaseControls.Resources.旋转光标.png" />
+    <EmbeddedResource Include="VMBaseControls.Resources.鼠标双向箭头.png" LogicalName="VMBaseControls.Resources.鼠标双向箭头.png" />
+    <EmbeddedResource Include="VMBaseControls.Resources.鼠标旋转箭头.png" LogicalName="VMBaseControls.Resources.鼠标旋转箭头.png" />
+    <EmbeddedResource Include="VMBaseControls.Resources.旋转光标.png" LogicalName="VMBaseControls.Resources.旋转光标.png" />
+    <Page Remove="base\imageview\imageviewitemspagestyle.xaml" />
+    <Page Remove="base\imageview\normalizedroi\normalizedcirclecaliperroi\normalizedcirclecaliperroistyle.xaml" />
+    <Page Remove="base\imageview\normalizedroi\normalizedcirclemesroi\normalizedcirclemesroistyle.xaml" />
+    <Page Remove="base\imageview\normalizedroi\normalizedcircleroi\normalizedcircleroistyle.xaml" />
+    <Page Remove="base\imageview\normalizedroi\normalizedlinecaliperroi\normalizedlinecaliperroistyle.xaml" />
+    <Page Remove="base\imageview\normalizedroi\normalizedlineroi\normalizedlineroistyle.xaml" />
+    <Page Remove="base\imageview\normalizedroi\normalizedmatrixcircleroi\normalizedmatrixcircleroistyle.xaml" />
+    <Page Remove="base\imageview\normalizedroi\normalizedoversectorroi\normalizedoversectorroistyle.xaml" />
+    <Page Remove="base\imageview\normalizedroi\normalizedpointroi\normalizedpointroistyle.xaml" />
+    <Page Remove="base\imageview\normalizedroi\normalizedpolygonroi\normalizedpolygonroistyle.xaml" />
+    <Page Remove="base\imageview\normalizedroi\normalizedrectroi\normalizedrectroistyle.xaml" />
+    <Page Remove="base\imageview\normalizedroi\normalizedsectorcaliperroi\normalizedsectorcaliperroistyle.xaml" />
+    <Page Remove="base\imageview\normalizedroi\normalizedsectorroi\normalizedsectorroistyle.xaml" />
+    <Page Remove="base\imageview\roi\circlecaliperroi\circlecaliperroistyle.xaml" />
+    <Page Remove="base\imageview\roi\circlemesroi\circlemesroistyle.xaml" />
+    <Page Remove="base\imageview\roi\circleroi\circleroistyle.xaml" />
+    <Page Remove="base\imageview\roi\coordinateroi\coordinateroistyle.xaml" />
+    <Page Remove="base\imageview\roi\ellipseroi\ellipseroistyle.xaml" />
+    <Page Remove="base\imageview\roi\linecaliperroi\linecaliperroistyle.xaml" />
+    <Page Remove="base\imageview\roi\lineroi\lineroistyle.xaml" />
+    <Page Remove="base\imageview\roi\multilineroi\multilineroistyle.xaml" />
+    <Page Remove="base\imageview\roi\oversectorroi\oversectorroistyle.xaml" />
+    <Page Remove="base\imageview\roi\pointroi\pointroistyle.xaml" />
+    <Page Remove="base\imageview\roi\polygonroi\polygonroistyle.xaml" />
+    <Page Remove="base\imageview\roi\polylineroi\polylineroistyle.xaml" />
+    <Page Remove="base\imageview\roi\rectroi\rectroistyle.xaml" />
+    <Page Remove="base\imageview\roi\roicontrolbasestyle.xaml" />
+    <Page Remove="base\imageview\roi\roiitemspagestyle.xaml" />
+    <Page Remove="base\imageview\roi\roundedrectroi\roundedrectroistyle.xaml" />
+    <Page Remove="base\imageview\roi\sectorcaliperroi\sectorcaliperroistyle.xaml" />
+    <Page Remove="base\imageview\roi\sectorroi\sectorroistyle.xaml" />
+    <Page Remove="base\imageview\roi\subroiitemspagestyle.xaml" />
+    <Page Remove="base\imageview\shape\annularsectorshape\annularsectorshapestyle.xaml" />
+    <Page Remove="base\imageview\shape\arrowpathshape\arrowpathshapestyle.xaml" />
+    <Page Remove="base\imageview\shape\circleshape\circelshapestyle.xaml" />
+    <Page Remove="base\imageview\shape\coordinateshape\coordinateshapestyle.xaml" />
+    <Page Remove="base\imageview\shape\crossshape\crossshapestyle.xaml" />
+    <Page Remove="base\imageview\shape\lineangleshape\lineangleshapestyle.xaml" />
+    <Page Remove="base\imageview\shape\lineshape\lineshapestyle.xaml" />
+    <Page Remove="base\imageview\shape\multipointshape\multipointshapestyle.xaml" />
+    <Page Remove="base\imageview\shape\pointshape\pointshapestyle.xaml" />
+    <Page Remove="base\imageview\shape\polygonshape\polygonshapestyle.xaml" />
+    <Page Remove="base\imageview\shape\polylineshape\polylinestyle.xaml" />
+    <Page Remove="base\imageview\shape\rectshape\rectshapestyle.xaml" />
+    <Page Remove="base\imageview\shape\shapecontainerstyle.xaml" />
+    <Page Remove="base\imageview\shape\shapecontrolbasestyle.xaml" />
+    <Page Remove="base\imageview\shape\shapeitemspagestyle.xaml" />
+    <Page Remove="base\imageview\shape\textshape\textshapestyle.xaml" />
+    <Page Remove="base\imageview\specialroi\crossroi\crossroistyle.xaml" />
+    <Page Remove="themes\generic.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\AreaLeft.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\AreaLeftRect.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\AreaLeftTop.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\AreaLeftTopRect.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\AreaRightTop.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\AreaRightTopRect.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\AreaTop.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\AreaTopRect.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\BottomLeftRotateArea.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\BottomRightRotateArea.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\CircleCaliperROISubstitute.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\CircleROISubstitute.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\EditRoundedWindow.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\EllipseROISubstitute.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\LineCaliperROISubstitute.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\LineROISubstitute.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\MartrixCircleBackControl.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\MoveArea.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\MoveAreaPage.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\MultiLineROISubstitute.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\PolygonROISubstitute.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\PolylineROISubstitute.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\RectROISubstitute.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\RightRotateArea.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\SectorCaliperROISubstitute.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\SectorROISubstitute.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\TopLeftRotateArea.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.ROI\TopRightRotateArea.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.Shape\CrossControl.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView.Shape\LineAndAngle.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView\ContainerItem.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView\ROIItem.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView\RubberControl.xaml" />
+    <Page Remove="VMBaseControls.Base.ImageView\ShapeItem.xaml" />
+    <Page Remove="VMBaseControls\ImageViewBox.xaml" />
+    <Page Include="base\imageview\imageviewitemspagestyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/imageviewitemspagestyle.xaml" />
+    <Page Include="base\imageview\normalizedroi\normalizedcirclecaliperroi\normalizedcirclecaliperroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/normalizedroi/normalizedcirclecaliperroi/normalizedcirclecaliperroistyle.xaml" />
+    <Page Include="base\imageview\normalizedroi\normalizedcirclemesroi\normalizedcirclemesroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/normalizedroi/normalizedcirclemesroi/normalizedcirclemesroistyle.xaml" />
+    <Page Include="base\imageview\normalizedroi\normalizedcircleroi\normalizedcircleroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/normalizedroi/normalizedcircleroi/normalizedcircleroistyle.xaml" />
+    <Page Include="base\imageview\normalizedroi\normalizedlinecaliperroi\normalizedlinecaliperroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/normalizedroi/normalizedlinecaliperroi/normalizedlinecaliperroistyle.xaml" />
+    <Page Include="base\imageview\normalizedroi\normalizedlineroi\normalizedlineroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/normalizedroi/normalizedlineroi/normalizedlineroistyle.xaml" />
+    <Page Include="base\imageview\normalizedroi\normalizedmatrixcircleroi\normalizedmatrixcircleroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/normalizedroi/normalizedmatrixcircleroi/normalizedmatrixcircleroistyle.xaml" />
+    <Page Include="base\imageview\normalizedroi\normalizedoversectorroi\normalizedoversectorroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/normalizedroi/normalizedoversectorroi/normalizedoversectorroistyle.xaml" />
+    <Page Include="base\imageview\normalizedroi\normalizedpointroi\normalizedpointroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/normalizedroi/normalizedpointroi/normalizedpointroistyle.xaml" />
+    <Page Include="base\imageview\normalizedroi\normalizedpolygonroi\normalizedpolygonroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/normalizedroi/normalizedpolygonroi/normalizedpolygonroistyle.xaml" />
+    <Page Include="base\imageview\normalizedroi\normalizedrectroi\normalizedrectroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/normalizedroi/normalizedrectroi/normalizedrectroistyle.xaml" />
+    <Page Include="base\imageview\normalizedroi\normalizedsectorcaliperroi\normalizedsectorcaliperroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/normalizedroi/normalizedsectorcaliperroi/normalizedsectorcaliperroistyle.xaml" />
+    <Page Include="base\imageview\normalizedroi\normalizedsectorroi\normalizedsectorroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/normalizedroi/normalizedsectorroi/normalizedsectorroistyle.xaml" />
+    <Page Include="base\imageview\roi\circlecaliperroi\circlecaliperroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/circlecaliperroi/circlecaliperroistyle.xaml" />
+    <Page Include="base\imageview\roi\circlemesroi\circlemesroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/circlemesroi/circlemesroistyle.xaml" />
+    <Page Include="base\imageview\roi\circleroi\circleroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/circleroi/circleroistyle.xaml" />
+    <Page Include="base\imageview\roi\coordinateroi\coordinateroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/coordinateroi/coordinateroistyle.xaml" />
+    <Page Include="base\imageview\roi\ellipseroi\ellipseroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/ellipseroi/ellipseroistyle.xaml" />
+    <Page Include="base\imageview\roi\linecaliperroi\linecaliperroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/linecaliperroi/linecaliperroistyle.xaml" />
+    <Page Include="base\imageview\roi\lineroi\lineroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/lineroi/lineroistyle.xaml" />
+    <Page Include="base\imageview\roi\multilineroi\multilineroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/multilineroi/multilineroistyle.xaml" />
+    <Page Include="base\imageview\roi\oversectorroi\oversectorroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/oversectorroi/oversectorroistyle.xaml" />
+    <Page Include="base\imageview\roi\pointroi\pointroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/pointroi/pointroistyle.xaml" />
+    <Page Include="base\imageview\roi\polygonroi\polygonroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/polygonroi/polygonroistyle.xaml" />
+    <Page Include="base\imageview\roi\polylineroi\polylineroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/polylineroi/polylineroistyle.xaml" />
+    <Page Include="base\imageview\roi\rectroi\rectroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/rectroi/rectroistyle.xaml" />
+    <Page Include="base\imageview\roi\roicontrolbasestyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/roicontrolbasestyle.xaml" />
+    <Page Include="base\imageview\roi\roiitemspagestyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/roiitemspagestyle.xaml" />
+    <Page Include="base\imageview\roi\roundedrectroi\roundedrectroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/roundedrectroi/roundedrectroistyle.xaml" />
+    <Page Include="base\imageview\roi\sectorcaliperroi\sectorcaliperroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/sectorcaliperroi/sectorcaliperroistyle.xaml" />
+    <Page Include="base\imageview\roi\sectorroi\sectorroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/sectorroi/sectorroistyle.xaml" />
+    <Page Include="base\imageview\roi\subroiitemspagestyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/subroiitemspagestyle.xaml" />
+    <Page Include="base\imageview\shape\annularsectorshape\annularsectorshapestyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/shape/annularsectorshape/annularsectorshapestyle.xaml" />
+    <Page Include="base\imageview\shape\arrowpathshape\arrowpathshapestyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/shape/arrowpathshape/arrowpathshapestyle.xaml" />
+    <Page Include="base\imageview\shape\circleshape\circelshapestyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/shape/circleshape/circelshapestyle.xaml" />
+    <Page Include="base\imageview\shape\coordinateshape\coordinateshapestyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/shape/coordinateshape/coordinateshapestyle.xaml" />
+    <Page Include="base\imageview\shape\crossshape\crossshapestyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/shape/crossshape/crossshapestyle.xaml" />
+    <Page Include="base\imageview\shape\lineangleshape\lineangleshapestyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/shape/lineangleshape/lineangleshapestyle.xaml" />
+    <Page Include="base\imageview\shape\lineshape\lineshapestyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/shape/lineshape/lineshapestyle.xaml" />
+    <Page Include="base\imageview\shape\multipointshape\multipointshapestyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/shape/multipointshape/multipointshapestyle.xaml" />
+    <Page Include="base\imageview\shape\pointshape\pointshapestyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/shape/pointshape/pointshapestyle.xaml" />
+    <Page Include="base\imageview\shape\polygonshape\polygonshapestyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/shape/polygonshape/polygonshapestyle.xaml" />
+    <Page Include="base\imageview\shape\polylineshape\polylinestyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/shape/polylineshape/polylinestyle.xaml" />
+    <Page Include="base\imageview\shape\rectshape\rectshapestyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/shape/rectshape/rectshapestyle.xaml" />
+    <Page Include="base\imageview\shape\shapecontainerstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/shape/shapecontainerstyle.xaml" />
+    <Page Include="base\imageview\shape\shapecontrolbasestyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/shape/shapecontrolbasestyle.xaml" />
+    <Page Include="base\imageview\shape\shapeitemspagestyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/shape/shapeitemspagestyle.xaml" />
+    <Page Include="base\imageview\shape\textshape\textshapestyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/shape/textshape/textshapestyle.xaml" />
+    <Page Include="base\imageview\specialroi\crossroi\crossroistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/specialroi/crossroi/crossroistyle.xaml" />
+    <Page Include="themes\generic.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="themes/generic.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\AreaLeft.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/cursor/arealeft.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\AreaLeftRect.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/cursor/arealeftrect.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\AreaLeftTop.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/cursor/arealefttop.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\AreaLeftTopRect.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/cursor/arealefttoprect.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\AreaRightTop.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/cursor/arearighttop.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\AreaRightTopRect.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/cursor/arearighttoprect.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\AreaTop.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/cursor/areatop.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\AreaTopRect.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/cursor/areatoprect.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\BottomLeftRotateArea.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/rectroi/bottomleftrotatearea.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\BottomRightRotateArea.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/rectroi/bottomrightrotatearea.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\CircleCaliperROISubstitute.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/circlecaliperroi/circlecaliperroisubstitute.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\CircleROISubstitute.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/circleroi/circleroisubstitute.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\EditRoundedWindow.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/roundedrectroi/editroundedwindow.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\EllipseROISubstitute.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/ellipseroi/ellipseroisubstitute.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\LineCaliperROISubstitute.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/linecaliperroi/linecaliperroisubstitute.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\LineROISubstitute.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/lineroi/lineroisubstitute.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\MartrixCircleBackControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/matrixcircleroi/matrixcirclebackcontrol.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\MoveArea.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/movearea.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\MoveAreaPage.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/moveareapage.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\MultiLineROISubstitute.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/multilineroi/multilineroisubstitute.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\PolygonROISubstitute.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/polygonroi/polygonroisubstitute.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\PolylineROISubstitute.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/polylineroi/polylineroisubstitute.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\RectROISubstitute.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/rectroi/rectroisubstitute.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\RightRotateArea.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/ellipseroi/rightrotatearea.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\SectorCaliperROISubstitute.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/sectorcaliperroi/sectorcaliperroisubstitute.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\SectorROISubstitute.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/sectorroi/sectorroisubstitute.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\TopLeftRotateArea.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/rectroi/topleftrotatearea.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.ROI\TopRightRotateArea.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/rectroi/toprightrotatearea.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.Shape\CrossControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/shape/crossshape/crosscontrol.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView.Shape\LineAndAngle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/shape/lineangleshape/lineandangle.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView\ContainerItem.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/containeritem.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView\ROIItem.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/roi/roiitem.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView\RubberControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/rubbercontrol.xaml" />
+    <Page Include="VMBaseControls.Base.ImageView\ShapeItem.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="base/imageview/shape/shapeitem.xaml" />
+    <Page Include="VMBaseControls\ImageViewBox.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageviewbox.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="VMControls.Interface" />
+    <Reference Include="VMControls.RenderInterface" />
+    <Reference Include="Apps.UIHelper" />
+    <Reference Include="Apps.BaseData">
+      <HintPath>..\..\..\..\..\Program Files\VisionMaster4.4.0\Applications\myLibs\Apps.BaseData.dll</HintPath>
+    </Reference>
+    <Reference Include="Mvvm" />
+    <Reference Include="Apps.Data" />
+    <Reference Include="System.Core" />
+    <Reference Include="VM.PcUI" />
+    <Reference Include="VM.Controls" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="VM.Utility" />
+    <Reference Include="WriteableBitmapEx.Wpf">
+      <HintPath>..\..\..\..\..\Program Files\VisionMaster4.4.0\Applications\myLibs\WriteableBitmapEx.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="Apps.Log" />
+  </ItemGroup>
+</Project>

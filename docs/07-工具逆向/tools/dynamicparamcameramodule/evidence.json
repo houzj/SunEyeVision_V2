@@ -1,0 +1,54 @@
+{
+  "stableToolId": "dynamicparamcameramodule",
+  "originalPlugin": "DynamicParamCameraModule",
+  "displayName": "DynamicParamCameraModule",
+  "originalCategory": "Global",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DynamicParamCameraModule",
+  "uiCategory": "extension-panels",
+  "priority": "P3",
+  "status": "inventory-only",
+  "evidenceState": "unknown",
+  "resourceCount": 5,
+  "parameterCount": 3,
+  "inputCount": 4,
+  "outputCount": 5,
+  "uiControlCount": 7,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "currentImplementation": {
+    "moduleId": "dynamicparamcameramodule",
+    "implPath": "src/DeviceDriver.Camera/Cameras/",
+    "verifiedAt": "2026-11-06",
+    "differences": [
+      "原件把「动态参数」实现成海康 MVS 的 CameraName 枚举 + ClockSource + MvsFeatureTree + CameraPreview 预览 + RealTimeImgAcq 命令组合，只对海康相机成立。",
+      "我方同一用途由 schema 驱动：DynamicCameraParamList 对应的「按设备动态生成的参数表」取自 ICameraAdapter.GetParameterSchemaAsync()，不绑定厂商。",
+      "预览（CameraPreview）按 ICameraFrameSink 的帧所有权与共享连接会话渲染：预览与工作流同时用同一台相机时复用同一会话，不重复打开。",
+      "时钟源 / 触发源取设备枚举符号名并归一化；符号名缺失或未识别时拒绝采集并报错，不猜、不静默降级。",
+      "相机身份按 DeviceId（序列号 / MAC）绑定，改名不影响恢复。",
+      "可复用部分仍按原件：常用参数 / 自定义参数两页签划分、实时采集命令与抓图状态的交互顺序。"
+    ],
+    "notAdopted": [
+      {
+        "type": "CameraPreview",
+        "reason": "原件把实时预览实现在参数面板里，且与海康 MVS 取流绑定；我方取流由会话与帧所有权统一管，面板不再承载画面。",
+        "replacement": "ICameraFrameSink 接收帧、相机管理器/预览窗口显示；面板只留开关与状态行。"
+      },
+      {
+        "type": "MvsFeatureTree",
+        "reason": "海康 MVS 私有相机特性树，多品牌下不存在同名同义的树。",
+        "replacement": "ICameraAdapter.GetParameterSchemaAsync() 返回的通用参数 schema 树。"
+      },
+      {
+        "type": "ClockSource",
+        "reason": "原件按海康时钟源硬编码选项；不同厂商/接口的时钟源枚举与符号名不一致。",
+        "replacement": "取设备枚举符号名并按 schema 生成选项；符号名缺失或未识别时拒绝采集并报错。"
+      }
+    ]
+  },
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ]
+}

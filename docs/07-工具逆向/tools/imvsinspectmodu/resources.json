@@ -1,0 +1,180 @@
+{
+  "toolId": "imvsinspectmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSInspectModu\\IMVSInspectModu.xml",
+      "sha256": "b2ffdbbf5ace09b138d6138159c939389bfef31f9cec5ac70107d5249470dfae",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSInspectModu\\IMVSInspectModuAlgorithm.xml",
+      "sha256": "6a9ca40d99c590d062ca4a9efd1b3d7c6b8c060a1c58ba4e8fa810a88a7785b1",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSInspectModu\\IMVSInspectModuAlgorithmTab.xml",
+      "sha256": "7d335d07f33a54290dde72352a90eb85e4a42efb09ac447898bb546377c4f351",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSInspectModu\\IMVSInspectModuCs.xml",
+      "sha256": "87ce56c042e8eb895612d1f10594c38717984d6cb98def3dccb36b09b7cd8330",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSInspectModu\\IMVSInspectModuDisplay.xml",
+      "sha256": "e41ca67e6542ee6dceeace9cb4dab4af0568b6900a5cc25d8b67a7048dba0a84",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSInspectModu\\ToolItemInfo.xml",
+      "sha256": "af5d38c0ddd9d5987761911d0dfb06a8ebcfae51d85142a6a04bd0c462ba94e3",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Defect Model",
+      "IsGenerate": "false"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "InspectData",
+      "name": null
+    },
+    {
+      "type": "Enumeration",
+      "name": "AutoBlockFlag"
+    },
+    {
+      "type": "Integer",
+      "name": "BlockNum"
+    },
+    {
+      "type": "Enumeration",
+      "name": "BGNoiseRestrainType"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "BGNoiseRestrainRegion"
+    },
+    {
+      "type": "Float",
+      "name": "RestrainThreshold"
+    },
+    {
+      "type": "Integer",
+      "name": "DownSampleRate"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FeatureType"
+    },
+    {
+      "type": "Float",
+      "name": "MatchMinScore"
+    },
+    {
+      "type": "Enumeration",
+      "name": "MatchPolarity"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangMatchAngle"
+    },
+    {
+      "type": "Enumeration",
+      "name": "MatchThresholdFlag"
+    },
+    {
+      "type": "Integer",
+      "name": "MatchThreshold"
+    },
+    {
+      "type": "Float",
+      "name": "InspectScore"
+    },
+    {
+      "type": "Expand",
+      "name": "FeatureMatchExpand"
+    },
+    {
+      "type": "Float",
+      "name": "MatchMinScore"
+    },
+    {
+      "type": "Enumeration",
+      "name": "MatchPolarity"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangMatchAngle"
+    },
+    {
+      "type": "RadioSelecterEx2",
+      "name": "RangeScaleType"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangScale"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangScaleX"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangScaleY"
+    },
+    {
+      "type": "Enumeration",
+      "name": "MatchThresholdFlag"
+    },
+    {
+      "type": "Integer",
+      "name": "MatchThreshold"
+    },
+    {
+      "type": "Integer",
+      "name": "MatchExtentRate"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "MatchBox"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "DefectBox"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "TextDisplayGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

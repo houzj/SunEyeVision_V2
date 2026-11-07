@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>光源 工具逆向主文档</title><style>*{box-sizing:border-box}
+body{margin:0;background:#f6f7f9;color:#1d2129;font:14px/1.7 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:24px 20px 60px}
+.crumbs{font-size:13px;margin-bottom:14px}
+.crumbs a{color:#2563eb;text-decoration:none}
+.card{background:#fff;border:1px solid #e4e7ec;border-radius:10px;padding:26px 30px}
+h1,h2,h3,h4{line-height:1.4}
+h1{font-size:20px}h2{font-size:17px;margin-top:26px}h3{font-size:15px}
+table{border-collapse:collapse;margin:12px 0;width:100%;font-size:13px}
+td,th{border:1px solid #e4e7ec;padding:6px 10px;vertical-align:top}
+tr:nth-child(even) td{background:#fafbfc}
+code{background:#f1f3f5;border-radius:3px;padding:1px 5px;font-size:12.5px;font-family:Consolas,Menlo,monospace;color:#c7254e}
+pre{background:#282c34;color:#abb2bf;border-radius:6px;padding:14px 16px;overflow:auto;font-size:12.5px;line-height:1.6;font-family:Consolas,Menlo,monospace}
+pre code{background:none;color:inherit;padding:0}
+ul{padding-left:22px}
+blockquote{border-left:3px solid #d0d5da;margin:10px 0;padding:4px 14px;color:#5a636b;background:#fafbfc}
+hr{border:0;border-top:1px solid #e4e7ec;margin:18px 0}
+p{margin:8px 0}</style></head><body><div class="wrap"><nav class="crumbs"><a href="../../index.html">&#8592; 宸ュ叿绱㈠紩</a> &middot; <code>lightmodule</code></nav><div class="card"><h1>光源 工具逆向主文档</h1><ul><li>稳定工具 ID：<code>lightmodule</code></li><li>原厂工具：<code>LightModule</code></li><li>原厂类别：Collection</li><li>UI 组装类别：图像与 ROI</li><li>逆向优先级：P1</li><li>当前状态：source-partial；资源、参数、图像/ROI声明及 Light 专项托管证据已登记，Process/设备与释放体未闭合</li><li>原厂目录：<code>D:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\x64\Collection\LightModule</code></li><h2>逆向范围</h2><p>资源身份、UI 组装、参数与绑定、输入输出、Process/ProcessAlg、结果与判定、保存恢复、停止释放、运行宿主和自研接入映射。</p><h2>已登记清单</h2><p>参数 32 项，输入 7 项，输出 26 项，UI 控件 58 项，XML 资源 6 项。具体数据见同目录 JSON 附件。</p><h2>当前证据状态（2026-11-05）</h2><p><code>docs/plugins/LIGHT.md</code>、<code>light-evidence.json</code>、<code>light-managed-evidence.json</code> 已确认原目录资源身份、XML 参数/输入/输出声明、托管配置/执行边界及 Light 结果字段。输入为图像/ROI相关组合，输出含运行状态与光源结果；具体字段以本卡 <code>parameters.json</code>/<code>resources.json</code> 为准。</p><p>已确认：资源和 UI 声明来自原件清单；托管层存在配置与结果桥的独立证据；工具属于设备/光源侧，不能将图像源模块行为代替其执行语义。</p><p>未知：原生 Process/ProcessAlg 的设备调用、图像/ROI 实参、失败/超时与重连分支，结果缓存与跨轮清理，方案保存恢复以及 DeInit/Destroy 的设备句柄和结果释放顺序。未运行原厂设备或 VM。</p><h2>证据索引</h2><li><code>docs/plugins/LIGHT.md</code></li><li><code>docs/plugins/light-evidence.json</code></li><li><code>docs/plugins/light-managed-evidence.json</code></li></div></div></body></html>

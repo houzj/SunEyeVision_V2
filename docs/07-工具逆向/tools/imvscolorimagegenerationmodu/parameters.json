@@ -1,0 +1,59 @@
+{
+  "stableToolId": "imvscolorimagegenerationmodu",
+  "originalPlugin": "IMVSColorImageGenerationModu",
+  "displayName": "彩图生成",
+  "authority": "inventory XML and shipped resource hashes",
+  "algorithmParameters": [
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "ImageFormat",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "200",
+          "children": []
+        }
+      ]
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "EnumerationG",
+      "name": "ImageSource"
+    },
+    {
+      "type": "EnumerationG",
+      "name": "ImageSource1"
+    },
+    {
+      "type": "EnumerationG",
+      "name": "ImageSource2"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ImageFormat"
+    }
+  ],
+  "sourceInventory": "docs/plugins/inventory.json",
+  "unknowns": [
+    "parameter getter/setter bodies",
+    "Process/ProcessAlg body and ABI",
+    "runtime reader/lease"
+  ]
+}

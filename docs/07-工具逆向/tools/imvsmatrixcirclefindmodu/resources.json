@@ -1,0 +1,218 @@
+{
+  "toolId": "imvsmatrixcirclefindmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSMatrixCircleFindModu\\IMVSMatrixCircleFindModu.xml",
+      "sha256": "1548d29dfb4bbc9af448b6f0933a0821f3c5ed6f7c5f4bd506a9dabf43d1c439",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSMatrixCircleFindModu\\IMVSMatrixCircleFindModuAlgorithm.xml",
+      "sha256": "2d5b69c17d201ee7c393d3fe51cc1f7d66cc48a1c7edbbad00a4fdeecdc5513b",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSMatrixCircleFindModu\\IMVSMatrixCircleFindModuAlgorithmTab.xml",
+      "sha256": "fe659aaea8c6f7cee8dc611b9754705249abe969f5cf3d0bd7482af8ae33513c",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSMatrixCircleFindModu\\IMVSMatrixCircleFindModuCs.xml",
+      "sha256": "56edab32f8ff41352eaa700d1de5a68acf846b06d007c03eae2954b12f6175b6",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSMatrixCircleFindModu\\IMVSMatrixCircleFindModuDisplay.xml",
+      "sha256": "88d5d154707de79b8d092a4f4b7f9edab16c9676529b631a552b686490de4236",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSMatrixCircleFindModu\\ToolItemInfo.xml",
+      "sha256": "0a3f3dec13ee79af9b848dd16a3dbc2b1c9d5419829273fd4253c2a9e22068a7",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "IntegerBettween_CircleFind",
+      "name": "RangRadius"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FindMode"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePolarity"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeThresh"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeWidth"
+    },
+    {
+      "type": "Float",
+      "name": "RadWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "RadNum"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectNum"
+    },
+    {
+      "type": "Boolean",
+      "name": "CoarseDetectFlag"
+    },
+    {
+      "type": "Integer",
+      "name": "CCDSampleScale"
+    },
+    {
+      "type": "Integer",
+      "name": "CCDCircleThresh"
+    },
+    {
+      "type": "Expand",
+      "name": null
+    },
+    {
+      "type": "Integer",
+      "name": "RejectDist"
+    },
+    {
+      "type": "Integer",
+      "name": "ProLength"
+    },
+    {
+      "type": "Enumeration",
+      "name": "InitType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FitFun"
+    },
+    {
+      "type": "Boolean",
+      "name": "OutputCoutourPoint"
+    },
+    {
+      "type": "Boolean",
+      "name": "RadiusLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangRadiusLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "OutputCircleNumEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "OutputCircleNumLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "FitErrorLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangFitErrorLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "FitPointsLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangFitPointsLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CircleFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CenterPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "OutlinePoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CaliperBox"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "DetectCaliperBox"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZoneAnnular"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "ExternROITypeGroup",
+    "AssistGroup",
+    "TextDisplayGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

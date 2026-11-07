@@ -1,0 +1,56 @@
+{
+  "toolId": "triggermodule",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\TriggerModule\\ToolItemInfo.xml",
+      "sha256": "261fd79dc15c2b0e3da7c042ff552b241c7f50627f53df66478d13daab1cd8e1",
+      "root": "ToolBoxItemData",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\TriggerModule\\TriggerModule.xml",
+      "sha256": "2bda0484a3f7abf08f1192547d3244d6671dff3d991c791bb64b3dc537eb518f",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\TriggerModule\\TriggerModuleAlgorithm.xml",
+      "sha256": "f2d64816abbb63423967963739e7e3dcedfbddf92bfc01fa4ce4e3f2d22d746b",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\TriggerModule\\TriggerModuleAlgorithmTab.xml",
+      "sha256": "51d47e8bba220619e3138e29161df43f209d59773acffac41b9f29b8bd2747ff",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\TriggerModule\\TriggerModuleCs.xml",
+      "sha256": "2bef8bb4a66515fed24c61852f168f76c2c20f804bbd3b71a9cee3e7daa5c661",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\TriggerModule\\TriggerModuleDisplay.xml",
+      "sha256": "0ce3fed17e9eb3892050191c8204f4ddd7271602248b3a6e2358cb5031d49691",
+      "root": "ParamRoot",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "EnumerationTrigger",
+      "name": "TriggerProcedureID"
+    }
+  ],
+  "sharedUiGroups": [
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

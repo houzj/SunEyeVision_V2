@@ -1,0 +1,56 @@
+{
+  "controls": [
+    {
+      "type": "ButtonSelecter",
+      "name": "ClassIndexs"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "declarative-parameters",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P0",
+  "themeStates": "unknown",
+  "toolId": "imvsmultilabelfiltermodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSMultiLabelFilterModu\\IMVSMultiLabelFilterModu.xml",
+      "sha256": "62729350982815220c6097bc5f120c77065375048b2d15e87665728dab6fee3b",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSMultiLabelFilterModu\\IMVSMultiLabelFilterModuAlgorithm.xml",
+      "sha256": "403251e0f7fd681bc24e49ff0c370d3e6f2f5b5714b8b03276f2c2f1487c7f02",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSMultiLabelFilterModu\\IMVSMultiLabelFilterModuAlgorithmTab.xml",
+      "sha256": "2d51e424b5373cbc9bd9846ae3215143e354ccea440383d83b0827f0ded9cbb4",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSMultiLabelFilterModu\\IMVSMultiLabelFilterModuCs.xml",
+      "sha256": "29079811e8aac0f63ed0d5c36997cc0fd2d00114ea216095380138c7a17cd01f",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSMultiLabelFilterModu\\IMVSMultiLabelFilterModuDisplay.xml",
+      "sha256": "f017aa08e524918931f0c9f760eb683ab414973b36e211fae6b95cc60ca58427",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSMultiLabelFilterModu\\ToolItemInfo.xml",
+      "sha256": "58e2f3d58b2a7c5fd8324e32dec68c805f5f7e1eeec31d6161758488ed820f9f",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "多标签筛选",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

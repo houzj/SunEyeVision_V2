@@ -1,0 +1,24 @@
+{
+  "stableToolId": "branchstringcpml",
+  "originalPlugin": "BranchStringCpmL",
+  "displayName": "分支字符",
+  "originalCategory": "Logic",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchStringCpmL",
+  "uiCategory": "compound-control",
+  "priority": "P4",
+  "status": "inventory-only",
+  "evidenceState": "unknown",
+  "resourceCount": 6,
+  "parameterCount": 1,
+  "inputCount": 1,
+  "outputCount": 4,
+  "uiControlCount": 3,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ]
+}

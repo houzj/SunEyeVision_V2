@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Control x:Class="DynamicObjectConfigControl.DynamicRunParamConfigControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:DynamicObjectConfigControl" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:BaseData="clr-namespace:Apps.BaseData;assembly=Apps.BaseData" xmlns:appxmlUI="clr-namespace:Apps.XmlUI;assembly=Apps.XmlUI" xmlns:paramTab="clr-namespace:Apps.XmlParser.ParamTab" xmlns:xmlData="clr-namespace:DynamicObjectConfigControl.XmlData" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:UIHelper="clr-namespace:Apps.UIHelper.Extern;assembly=Apps.UIHelper">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/NormalButtonStyle.xaml" />
+        <ResourceDictionary Source="/Apps.XmlUI;component/ResourceDictionaries/GlobalResources.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/TreeViewStyle/TreeViewStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/TextBlockStyle/TextBlockStyle.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <appxmlUI:ItemCheckConverter x:Key="CheckConverter" />
+      <BooleanToVisibilityConverter x:Key="bv" />
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Control.Template>
+    <ControlTemplate>
+      <Grid Background="#FCFCFC">
+        <Grid.RowDefinitions>
+          <RowDefinition Name="row0" Height="44" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock Margin="10,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Text="{DynamicResource Tab_Run Params}" FontWeight="Bold" FontSize="14" FontFamily="Microsoft YaHei" Foreground="{DynamicResource TitleColor}" />
+        <Button Name="bt" Margin="5" Height="28" Width="80" Style="{StaticResource TextButtonStyle}" Content="{DynamicResource 编辑}" HorizontalAlignment="Right" VerticalAlignment="Top" Command="{Binding ConfigCommand}" CommandParameter="{Binding EditRunParamMethod, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+        <TreeView Style="{StaticResource GlobalParamTreeViewStyle}" Grid.Row="1" HorizontalContentAlignment="Stretch" BorderThickness="0" Background="#00FFFFFF" ItemsSource="{Binding GroupCollection}">
+          <FrameworkElement.Resources>
+            <ResourceDictionary>
+              <HierarchicalDataTemplate x:Key="{DataTemplateKey {x:Type xmlData:DynamicNameValueItemOfGroupCategory}}" DataType="{x:Type xmlData:DynamicNameValueItemOfGroupCategory}" ItemsSource="{Binding Collection}">
+                <TextBlock VerticalAlignment="Center" HorizontalAlignment="Left" Style="{StaticResource TitleTextBlock}" Text="{Binding}" ToolTip="{Binding Text, RelativeSource={RelativeSource Mode=Self}}" />
+              </HierarchicalDataTemplate>
+              <HierarchicalDataTemplate x:Key="{DataTemplateKey {x:Type paramTab:DynamicNameValueItemOfGroup}}" DataType="{x:Type paramTab:DynamicNameValueItemOfGroup}" ItemsSource="{Binding Collection}">
+                <ContentControl ContentTemplate="{StaticResource ParamItemTemplate}" Content="{Binding}" />
+              </HierarchicalDataTemplate>
+            </ResourceDictionary>
+          </FrameworkElement.Resources>
+          <i:Interaction.Triggers>
+            <i:EventTrigger EventName="SelectedItemChanged">
+              <UIHelper:ParamsEventCommand Command="{Binding SelectedCommand}" CommandParameter="{Binding SelectedItem, RelativeSource={RelativeSource AncestorType={x:Type TreeView}}}" />
+            </i:EventTrigger>
+          </i:Interaction.Triggers>
+        </TreeView>
+      </Grid>
+      <ControlTemplate.Triggers>
+        <DataTrigger Value="false" Binding="{Binding IsEditState, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=appxmlUI:ParamsTabUserControl}}">
+          <Setter TargetName="bt" Property="UIElement.Visibility" Value="Collapsed" />
+          <Setter TargetName="row0" Property="RowDefinition.Height" Value="0" />
+        </DataTrigger>
+      </ControlTemplate.Triggers>
+    </ControlTemplate>
+  </Control.Template>
+</Control>

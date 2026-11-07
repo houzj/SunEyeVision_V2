@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>VM 工具逆向批次 R3 — 图像处理/生成/拼合/采集辅助</title>
+<style>
+:root{
+  --bg:#0b1524; --bg2:#111f33; --bd:#24405f; --tx:#dbe7f5; --tx2:#9fb4cc;
+  --obs:#3fb950; --inf:#d29922; --unk:#8b949e; --warn:#f85149; --note:#58a6ff;
+}
+*{box-sizing:border-box}
+body{margin:0;padding:32px 40px 80px;background:var(--bg);color:var(--tx);
+  font:15px/1.75 "Segoe UI","Microsoft YaHei",sans-serif;}
+h1{font-size:26px;margin:0 0 6px;color:#fff;letter-spacing:.3px}
+h2{font-size:20px;margin:38px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--bd);color:#fff}
+h3{font-size:16px;margin:26px 0 10px;color:#cfe3f7}
+.meta{color:var(--tx2);font-size:13px;margin-bottom:26px;line-height:1.9}
+.meta b{color:var(--tx)}
+table{width:100%;border-collapse:collapse;margin:12px 0 18px;font-size:13px;background:var(--bg2)}
+th,td{border:1px solid var(--bd);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#16273d;color:#fff;font-weight:600;white-space:nowrap}
+td code,p code,li code{background:#0a1420;border:1px solid #1d3350;border-radius:3px;
+  padding:1px 5px;font:12.5px/1.5 Consolas,"Cascadia Mono",monospace;color:#a9d3ff}
+tr:nth-child(even) td{background:#0f1c2e}
+code.block{display:block;background:#07101b;border:1px solid #1d3350;border-radius:5px;
+  padding:12px 14px;margin:10px 0;white-space:pre;overflow-x:auto;color:#a9d3ff;font-size:12.5px}
+.obs,.inf,.unk{display:inline-block;padding:0 6px;border-radius:3px;font-size:11.5px;
+  font-weight:600;letter-spacing:.5px;white-space:nowrap}
+.obs{background:rgba(63,185,80,.16);color:var(--obs);border:1px solid rgba(63,185,80,.45)}
+.inf{background:rgba(210,153,34,.16);color:var(--inf);border:1px solid rgba(210,153,34,.45)}
+.unk{background:rgba(139,148,158,.16);color:var(--unk);border:1px solid rgba(139,148,158,.45)}
+.warn,.note{border-left:3px solid var(--warn);background:rgba(248,81,73,.08);
+  padding:10px 14px;margin:14px 0;border-radius:0 4px 4px 0;font-size:13.5px}
+.note{border-left-color:var(--note);background:rgba(88,166,255,.08)}
+.warn b{color:var(--warn)} .note b{color:var(--note)}
+ul,ol{margin:8px 0 14px;padding-left:24px} li{margin:4px 0}
+.k{color:#7ee787;font-weight:600}
+.r{color:#ff7b72;font-weight:600}
+.small{font-size:12.5px;color:var(--tx2)}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--bd);color:var(--tx2);font-size:12.5px}
+</style>
+</head>
+<body>
+
+<h1>VM 工具逆向批次 R3 — 图像处理 / 图像生成 / 拆分拼合 / 采集辅助</h1>
+<div class="meta">
+取证日期：<b>2026-11-05</b>　｜　取证对象：<b>VisionMaster 4.4.0（V4.4.0 Build20250516@1555331）</b>，安装目录只读<br>
+取证范围：<code>Module(sp)\x64\ImageProcessing</code>(21) / <code>ImageGeneration</code>(4) / <code>SplitCombination</code>(6) / <code>Collection</code>(3 个新增，另 2 个属 R1)<br>
+方法：静态元数据读取（模块 XML / AlgorithmTab XML / Display XML / ToolItemInfo / 全局 Combination.xml），<b>不做反编译、不启动原厂程序、不写注册表</b><br>
+标注口径：<span class="obs">观察到</span> 直接读自文件　<span class="inf">推断</span> 由结构/一致性推得　<span class="unk">未知</span> 无静态证据
+</div>
+
+<h2>0 结论摘要</h2>
+<table>
+<tr><th style="width:26%">问题</th><th style="width:9%">档位</th><th>结论</th></tr>
+<tr><td>R3 实物模块数</td><td><span class="obs">观察到</span></td>
+<td><b>34</b> 个有效模块目录，与批次计划的 34 完全一致（ImageProcessing 21 / ImageGeneration 4 / SplitCombination 6 / Collection 3）。<br>
+Collection 下另有 <code>ImageSourceModule</code>、<code>ImageAcquisitionModule</code> 两个模块，已在 R1 计数，本批不重复计入，仅作对照。<br>
+本批<b>无空目录</b>，与 R2 出现 1 个空目录的情况不同。</td></tr>
+
+<tr><td>专用编辑器是否普遍</td><td><span class="obs">观察到</span></td>
+<td>带 <code>*Control.dll</code> 的仅 <b>7/34 = 20.6%</b>：AffineTransform、FrameMean、ImageCombineProcess、Normlize、ImgStitchCalib、LightModule、SaveImage。<br>
+图像处理的"滤镜族"（Enhance/Filter/Morph/Sharpness/ShadeCorrect/Binary）<b>全部没有</b>专有控件 —— 它们靠同一套"图像+ROI+参数页"通用壳驱动。</td></tr>
+
+<tr><td>端口是否统一</td><td><span class="obs">观察到</span></td>
+<td>统一三层结构：<code>Base</code>(固定 7 项) → <code>Input</code> → <code>Output</code> → <code>TransmitInfo</code>(1 个无名节点)。<br>
+<b>几乎每个模块</b>的输出都自带 <code>ModuRunTime:float</code> + <code>ModuStatus:int</code> 这对"运行态"字段；<b>图像处理族</b>额外统一输出 <code>BlindPolygonString:string[]</code>。</td></tr>
+
+<tr><td>ROI 形状能力来自哪里</td><td><span class="obs">观察到</span></td>
+<td>来自 <b><code>AlgorithmTab.xml</code> 的 <code>&lt;ROISelecter&gt;</code> 元素</b>，不是来自端口。原文示例：<br>
+<code>&lt;ROISelection&gt;Box SectorRing Polygon Sector&lt;/ROISelection&gt;</code> / <code>&lt;RoiMaxNum&gt;16&lt;/RoiMaxNum&gt;</code> / <code>&lt;SelectType&gt;Mul&lt;/SelectType&gt;</code>。<br>
+即：<b>形状集合、数量上限、单选/多选，是每个工具的独立声明</b>。</td></tr>
+
+<tr><td>形状词目有几种</td><td><span class="obs">观察到</span></td>
+<td>本批共出现 <b>9 种</b>：<code>Box</code>、<code>UroBox</code>、<code>SectorRing</code>、<code>Sector</code>、<code>OverSector</code>、<code>Polygon</code>、<code>Point</code>、<code>Line</code>、<code>CircleMes</code>。<br>
+后 4 种仅出现在 <code>GeometryCreate</code> 的"几何创建类型"选择器 <code>GeometryType</code>（上限 128、多选），<b>不是 ROI 形状</b>，不可混用。</td></tr>
+
+<tr><td>我方形状词目够不够</td><td><span class="obs">观察到</span></td>
+<td>我方 <code>ShapeType</code> 有 7 种（Point/Line/Circle/RotatedRectangle/Polygon/Annulus/Arc）。<br>
+<b class="r">缺 2 个</b>：<code>Sector</code>（扇形，与 SectorRing 扇环并列声明，不可互相替代）、<code>OverSector</code>（PolarUnwarp 专用）。<br>
+<b class="k">多 1 个</b>：<code>Arc</code> —— 原件没有独立弧 ROI，弧用 <code>ROIANNULUS</code>（扇环）表达。</td></tr>
+
+<tr><td>Style 是否有唯一 schema</td><td><span class="obs">观察到</span></td>
+<td><b>没有。</b> <code>Style</code> 只约束"形状种类/字段基数"，字段名由各模块内联决定，且<b>同一 Style 在不同模块字段名不同</b>：<br>
+全局库 <code>ROIANNULUS</code> 用 <code>DetectAnnulus*</code> 前缀；<code>IMVSBinaryModu</code> 内联用 <code>roiAnnulus*</code> 前缀。<br>
+→ 绑定<b>不能按键名硬映射</b>，只能按 Style 语义 + 顺序或显式映射表。</td></tr>
+
+<tr><td>全局库是否封闭</td><td><span class="obs">观察到</span></td>
+<td>不封闭。本批出现 2 个<b>全局 <code>Combination.xml</code> 里不存在</b>的 Style：<code>ACQUIMAGE</code>(17 字段)、<code>DEBUG</code>(3 字段)，均由模块 XML 内联定义。<br>
+即：全局库是<b>可复用模板集合</b>，不是封闭枚举。</td></tr>
+
+<tr><td>参数页怎么分</td><td><span class="obs">观察到</span></td>
+<td>三段式页签：<code>Tab_Basic Params</code> / <code>Tab_Run Params</code> / <code>ResultShow</code>。页内用 <code>Category</code> + <code>GroupLinkItem</code> 做分组，<code>GroupLinkItem</code> 通过 <code>&lt;LinkName&gt;</code> 引用同名共享分组。<br>
+例外：GeometryCreate 无 Run Params；LightModule 只有 1 页；SaveImage 换成 <code>Tab_Render Parameters</code>/<code>Tab_Render Settings</code>。</td></tr>
+
+<tr><td>本批对我方的最大校正</td><td><span class="obs">观察到</span></td>
+<td>三处：①<code>Annulus</code> 的角用 <b>起始角 + 角跨度</b>（<code>AngleExtend</code>），不是起止角；②<code>Line</code> 原件用<b>两端点</b>，我方用<b>点 + 方向向量</b>；③<code>UroBox</code>（声明为无旋转矩形）的端口仍给 <code>roiangle</code> 字段 —— <b>声明与端口不同步</b>，不能拿声明当字段依据。</td></tr>
+</table>
+
+<h2>1 逐条论证</h2>
+
+<h3>1.1 分母与实物清单 <span class="obs">观察到</span></h3>
+<p>四个分类目录逐个子目录枚举，并核对"目录存在"与"文件非空"两件事：</p>
+<table>
+<tr><th>分类目录</th><th>子目录数</th><th>空目录</th><th>有效模块</th><th>计划声明</th><th>对齐</th></tr>
+<tr><td><code>ImageProcessing</code></td><td>21</td><td>0</td><td>21</td><td>21</td><td>一致</td></tr>
+<tr><td><code>ImageGeneration</code></td><td>4</td><td>0</td><td>4</td><td>4</td><td>一致</td></tr>
+<tr><td><code>SplitCombination</code></td><td>6</td><td>0</td><td>6</td><td>6</td><td>一致</td></tr>
+<tr><td><code>Collection</code></td><td>5</td><td>0</td><td>3（新增）+ 2（R1）</td><td>3</td><td>一致</td></tr>
+<tr><th colspan="3">R3 合计</th><th>34</th><th>34</th><th>一致</th></tr>
+</table>
+<div class="note">
+<b>与 R2 的差别</b>：R2 的分类目录（Location/Measurement）声明 33 而实物仅 27，出现 1 个 0 字节空目录。
+R3 全部分类<b>实物齐备、无空目录</b>。这说明 <code>ModulePathGenerate.txt</code> 清单的"声明 ≠ 实物"是<b>分类级现象</b>，不是全局性偏差 ——
+不能反过来推断"清单整体不可信"。R5 收口时仍以实物为准逐项对齐。
+</div>
+
+<h3>1.2 模块构成与专用编辑器判别式 <span class="obs">观察到</span></h3>
+<p>基准构成 11 个文件（34 个模块中 24 个严格等于 11 个）：</p>
+<table>
+<tr><th>文件</th><th>作用（据文件形态）</th></tr>
+<tr><td><code>&lt;M&gt;.dll</code></td><td>算法实现（native 桥接宿主）</td></tr>
+<tr><td><code>&lt;M&gt;.xml</code></td><td>端口 + 参数默认值（<code>&lt;ParamRoot&gt;</code>）</td></tr>
+<tr><td><code>&lt;M&gt;Algorithm.xml</code></td><td>算法参数透传表（本批 63 B – 4494 B）</td></tr>
+<tr><td><code>&lt;M&gt;AlgorithmTab.xml</code></td><td>参数页布局（本批 12 KB – 56 KB）</td></tr>
+<tr><td><code>&lt;M&gt;Cs.dll</code></td><td>托管侧封装</td></tr>
+<tr><td><code>&lt;M&gt;Cs.xml</code></td><td>托管侧端口/结果声明；<b>2 个模块缺此文件</b></td></tr>
+<tr><td><code>&lt;M&gt;Display.xml</code></td><td>结果叠加显示样式（1.1 KB – 9.9 KB）</td></tr>
+<tr><td><code>&lt;M&gt;ImageEnable.png</code> / <code>_NormalLogo.png</code> / <code>_StateLogo.png</code></td><td>工具箱与节点图标</td></tr>
+<tr><td><code>ToolItemInfo.xml</code></td><td>工具箱条目（4 字段，见 1.3）</td></tr>
+</table>
+<table>
+<tr><th>文件数</th><th>模块</th><th>多出/缺失的件</th><th>专用编辑器</th></tr>
+<tr><td>10</td><td>IMVSMultiImageFusionModu</td><td><b>缺 <code>*Cs.xml</code></b></td><td>无</td></tr>
+<tr><td>11</td><td>其余 24 个</td><td>—</td><td>无</td></tr>
+<tr><td>11</td><td>IMVSImageCombineProcessModu</td><td><b>有 <code>Control.dll</code>、缺 <code>*Cs.xml</code></b>（净数仍 11）</td><td><b>有</b></td></tr>
+<tr><td>12</td><td>AffineTransform / FrameMean / Normlize / ImageAcquisition / LightModule</td><td><code>*Control.dll</code></td><td><b>有</b></td></tr>
+<tr><td>13</td><td>IMVSImgStitchCalibModu</td><td><code>Control.dll</code> + <code>Librarys.Config</code></td><td><b>有</b></td></tr>
+<tr><td>14</td><td>ImageSourceModule / SaveImage</td><td><code>Control.dll</code> + <code>Librarys.Config</code>(或 2 个 .otf 字体 8 MB×2)</td><td><b>有</b></td></tr>
+</table>
+<div class="warn">
+<b>判别式必须修正</b>：R1/R2 记的"文件数 &gt; 11 者必带 <code>Control.dll</code>"在本批出现反例 ——
+<code>IMVSImageCombineProcessModu</code> 只有 11 个文件，却带 <code>Control.dll</code>（代价是缺 <code>*Cs.xml</code>）。
+正确判别式：<b>直接检测 <code>&lt;M&gt;Control.dll</code> 是否存在</b>，不要用文件总数反推。
+</div>
+
+<h3>1.3 端口契约：三层 Category + 统一运行态输出 <span class="obs">观察到</span></h3>
+<p>34 个模块的 <code>&lt;ParamRoot&gt;&lt;Categorys&gt;</code> 结构高度一致：</p>
+<table>
+<tr><th>Category</th><th>内容</th><th>示例</th></tr>
+<tr><td><code>Base</code></td><td>固定 7 项：<code>ServerRepAddress</code>=<code>tcp://127.0.0.1:5555</code>、<code>ModuleName</code>、<code>IsLoalModule</code>=0、<code>ModuleViewMode</code>=1、<code>ModuleDisplayName</code>、<code>ModuleHelp</code>=<code>Reserve</code>、<code>IsSaveTabXml</code>=<code>False</code></td>
+<td>LightModule 为 6 项、ImageSourceModule 为 9 项</td></tr>
+<tr><td><code>Input</code></td><td><code>&lt;Combination&gt;</code> 组合端口（图像/ROI/位置修正/掩膜）</td><td><code>InputImage/IMAGE</code>、<code>InputROI/ROIBOX</code></td></tr>
+<tr><td><code>Output</code></td><td><code>&lt;Combination&gt;</code> 输出图形 + 标量 <code>&lt;Filter&gt;</code> 结果</td><td><code>OutputImage/IMAGE</code>、<code>ModuStatus:int</code></td></tr>
+<tr><td><code>TransmitInfo</code></td><td>1 个无名子节点（非 Combination），无 Style</td><td>全模块均有（MultiImageFusion 无）</td></tr>
+</table>
+<p><b>运行态输出是统一约定</b>，不是个别模块自定义：</p>
+<ul>
+<li><code>ModuRunTime:float</code> + <code>ModuStatus:int</code>：本批 <b>32/34</b> 模块成对出现。</li>
+<li>例外 2 个：<code>ImageAcquisitionModule</code>（只有 <code>ModuRunTime</code>，状态改用 4 个采集统计量 <code>FrameNum</code>/<code>LostFrameCount</code>/<code>LostPacketCount</code>/<code>GetCameraFailCount</code>）、<code>ImageSourceModule</code>（<code>ModuStatus</code> 在前，无 BlindPolygon）。</li>
+<li><b>图像处理族独有</b> <code>BlindPolygonString:string[]</code>：8 个模块（Binary / ImageCombineProcess / Enhance / Filter / Morph / Normlize / Sharpness / ShadeCorrect）。</li>
+</ul>
+<div class="note">
+<b>对我方的直接含义</b>：<code>ModuRunTime</code>/<code>ModuStatus</code> 是"每个工具的固有输出"，不是业务输出。
+我方若逐工具手写这两个字段会重复 34 次。应作为<b>框架统一注入的隐式输出</b>（与业务 <code>OutputVariable</code> 分离），
+否则每个新工具都要记得补，漏了就是不一致。
+</div>
+
+<h3>1.4 Style 与形状：全局模板 vs 模块内联 <span class="obs">观察到</span></h3>
+<p>全局 <code>Combination.xml</code>（SHA256 前 16 位 <code>7A2B369154AC05EE</code>，170,889 B）中，本批涉及的关键 Style 结构已逐层展开如下：</p>
+<table>
+<tr><th>Style（全局模板名）</th><th>直接 Filter</th><th>嵌套 Combination</th><th>展开标量数</th><th>数组能力</th></tr>
+<tr><td><code>POINT</code>（<code>Point</code>）</td><td><code>pointx</code>,<code>pointy</code> (float)</td><td>—</td><td>2</td><td>—</td></tr>
+<tr><td><code>LINE</code>（<code>OutputLine</code>）</td><td>—</td><td><code>LineStartPoint</code>(POINT 2)、<code>LineEndPoint</code>(POINT 2)</td><td>4</td><td>—</td></tr>
+<tr><td><code>CIRCLE</code>（<code>Circle</code>）</td><td><code>radius</code></td><td><code>Center Point</code>(2)</td><td>3</td><td>—</td></tr>
+<tr><td><code>ELLIPSE</code>（<code>Ellipse</code>）</td><td><code>MajorRadius</code>,<code>MinorRadius</code>,<code>Angle</code></td><td><code>Center Point</code>(2)</td><td>5</td><td>—</td></tr>
+<tr><td><code>ROIBOX</code>（<code>InputROI</code>）</td><td><code>roiwidth</code>,<code>roiheight</code>,<code>roiangle</code></td><td><code>ROI CenterPoint</code>(<code>roicenterx</code>,<code>roicentery</code>)</td><td>5</td><td>—</td></tr>
+<tr><td><code>ROIANNULUS</code>（<code>ROIAnnulus</code>）</td><td><code>DetectAnnulusInnerRadius</code>,<code>OuterRadius</code>,<code>StartAngle</code>,<code>AngleExtend</code></td><td><code>DetectAnnulusCenterPoint</code>(2)</td><td>6</td><td>—</td></tr>
+<tr><td><code>ROIPOLYGON</code>（<code>BlindPolygon</code>）</td><td><code>BlindPolygonPointNum</code> (int[])</td><td><code>BlindPolygonPoints</code>(POINT, <b>数组</b>)</td><td>3 / 多边形</td><td><b>双层数组</b>（Combination 级 <code>IsArray</code> + Filter 级 <code>IsArray</code>）</td></tr>
+<tr><td><code>FIXTURE</code>（<code>Position Correction Info</code>）</td><td><code>FixtureInitAngle</code>,<code>InitScaleX</code>,<code>InitScaleY</code>,<code>FixtureRunAngle</code>,<code>RunScaleX</code>,<code>RunScaleY</code></td><td><code>Fixtured Point</code>(2)、<code>Unfixtured Point</code>(2)</td><td>10</td><td><code>FixtureScaleX/Y</code> 有 <code>IsArray</code></td></tr>
+</table>
+<p><b>关键结构性事实：同名 Style 在不同模块内字段名不同。</b></p>
+<code class="block">全局 Combination.xml   &lt;Combination Name="ROIAnnulus" Style="ROIANNULUS"&gt;
+                        Filter: DetectAnnulusCenterX / DetectAnnulusInnerRadius / DetectAnnulusStartAngle ...
+
+IMVSBinaryModu.xml:60  &lt;Combination Name="InputROIAnnulus" Style="ROIANNULUS"&gt;
+                        Filter: roiAnnulusCenterX / roiAnnulusInnerRadius / roiAnnulusStartAngle ...</code>
+<p>两者 <code>Style</code> 相同、字段<b>语义</b>相同、字段<b>名</b>不同。同样现象见 <code>CIRCLE</code>（全局 <code>centerx/centery</code>，模块内联 <code>CenterX/CenterY</code>）、<code>LINE</code>（全局 <code>LineStartPointX</code>，模块用 <code>...</code>）。</p>
+<div class="warn">
+<b>结论（对绑定契约致命）</b>：<code>Style</code> 是"几何种类 + 基数"的声明，<b>不是字段名 schema</b>。
+任何依赖"按字段名跨模块对齐 ROI 字段"的设计都会在原件上失败。
+正确做法是按 Style + <b>位置序</b>，或为每个模块维护显式映射 —— 与我方 <code>RoiFieldSchema</code> 按 <code>ShapeType</code> 生成固定路径（<code>Center.X</code>/<code>Radius</code>）的做法<b>方向不同</b>：我方是"内部统一模型"，
+对<b>我方自己的工具</b>成立；一旦要读原件的 ROI 值，必须先按 Style 做一次<b>语义归一</b>。
+</div>
+<p><b>全局库不封闭</b>：<code>ACQUIMAGE</code>(17) 与 <code>DEBUG</code>(3) 在 <code>Combination.xml</code> 中<b>检索为 0 命中</b>，均由模块内联定义：</p>
+<code class="block">IMVSMultiImageFusionModu.xml  InputImage/ACQUIMAGE =>
+  ImageCount:int, InImage0Distribution:float, InImage0Irradiation:float, ... InImage7Irradiation:float   (共 17)
+
+SaveImage.xml                 InDebugInfo/DEBUG =>
+  InDebugInfoState:int, InDebugInfoSize:int, InDebugInfoAddr:string                                          (共 3)</code>
+<p class="small"><span class="inf">推断</span> <code>ACQUIMAGE</code> = 一次采集产出的"多路光分布图 + 照射图"复合端口（8 路 × (Distribution, Irradiation) + 计数）。
+<code>ImageAcquisitionModule</code> 的 <code>OutImage/ACQUIMAGE(17)</code> 与 <code>IMVSMultiImageFusionModu</code> 的 <code>InputImage/ACQUIMAGE(17)</code> <b>字段完全同构</b>，
+说明二者是配套的"采集→多光融合"数据链。该推断不排除其它生产者。</p>
+
+<h3>1.5 ROI 形状能力：来自 AlgorithmTab，逐工具声明 <span class="obs">观察到</span></h3>
+<p><code>&lt;ROISelecter&gt;</code>（注意原件拼写为 <code>Selecter</code>）元素原文（<code>IMVSBinaryModuAlgorithmTab.xml:20-30</code>，文件 SHA256 前 16 位 <code>08AE81E7C8BC57B4</code>）：</p>
+<code class="block">&lt;ROISelecter Name="RoiType"&gt;
+  &lt;Description&gt;Shape&lt;/Description&gt;
+  &lt;DisplayName&gt;Shape&lt;/DisplayName&gt;
+  &lt;AccessMode&gt;RW&lt;/AccessMode&gt;
+  &lt;FullScreenEnable&gt;True&lt;/FullScreenEnable&gt;
+  &lt;SelectType&gt;Mul&lt;/SelectType&gt;
+  &lt;!-- &lt;ROISelection&gt;Box SectorRing Polygon Sector&lt;/ROISelection&gt; --&gt;   ← 原件内保留的注释行
+  &lt;ROISelection&gt;Box SectorRing Polygon Sector&lt;/ROISelection&gt;
+  &lt;RoiMaxNum&gt;16&lt;/RoiMaxNum&gt;
+&lt;/ROISelecter&gt;</code>
+<table>
+<tr><th>模块</th><th>选择器</th><th>ROISelection（形状集合）</th><th>RoiMaxNum</th><th>SelectType</th></tr>
+<tr><td>IMVSBinaryModu</td><td>RoiType</td><td>Box SectorRing Polygon <b>Sector</b></td><td><b>16</b></td><td><b>Mul</b></td></tr>
+<tr><td>IMVSImageNormlizeModu</td><td>RoiType</td><td>Box SectorRing Polygon Sector</td><td>—</td><td>Single</td></tr>
+<tr><td>IMVSRegionCopyModu</td><td>RoiType</td><td>Box SectorRing Polygon Sector</td><td>—</td><td>Single</td></tr>
+<tr><td>IMVSShadeCorrectModu</td><td>RoiType</td><td>Box SectorRing Polygon Sector</td><td>—</td><td>Single</td></tr>
+<tr><td>ImageCombineProcess / Enhance / Filter / Morph / Sharpness</td><td>RoiType</td><td>Box SectorRing Polygon</td><td>—</td><td>Single</td></tr>
+<tr><td>IMVSAffineTransformModu / ImgStitchCalib / DivideImage</td><td>RoiType</td><td>Box</td><td>—</td><td>Single</td></tr>
+<tr><td>IMVSImageMathModu / MultiImageFusion</td><td>RoiType</td><td><b>UroBox</b></td><td>—</td><td>Single</td></tr>
+<tr><td>IMVSImageResizeModu</td><td>RoiType</td><td>Box <b>UroBox</b></td><td>—</td><td>Single</td></tr>
+<tr><td>IMVSPolarUnwarpModu</td><td>RoiType</td><td>SectorRing <b>OverSector</b></td><td>—</td><td>Single</td></tr>
+<tr><td>GeometryCreate</td><td>GeometryType</td><td>Point Line <b>CircleMes</b> Box</td><td><b>128</b></td><td><b>Mul</b></td></tr>
+<tr><td colspan="5" class="small">无 <code>ROISelecter</code>（13 个）：FrameMean、GeometricTransform、ImageCorrectCalib、ImageCorrectManual、ImageFixture、InverseAffineTransform、CircleFit、EllipseFit、LineFit、2dArrayCorrect、BoxFilter、BoxMerge、BoxOverlapCalculation、MultiLabelFilter、ImageBuffer、Light、SaveImage、ImageAcquisition、ImageSource</td></tr>
+</table>
+<p><b>词目语义</b>（据同目录 <code>ShapePropertyConfig.xml</code> SHA256 <code>A67E685C63C75FA0</code> 的 11 个形状 Tab 交叉印证）：</p>
+<table>
+<tr><th>词目</th><th>语义</th><th>本批出现处</th><th>我方对应</th></tr>
+<tr><td><code>Box</code></td><td>可旋转矩形（含角）</td><td>Affine / ImgStitch / Divide / Binary …</td><td><code>RotatedRectangle</code> ✔</td></tr>
+<tr><td><code>UroBox</code></td><td><span class="inf">推断</span>无旋转矩形（Un-rotated Box）</td><td>ImageMath / MultiImageFusion / ImageResize</td><td>无独立类型（用 <code>RotatedRectangle</code> + Angle=0）</td></tr>
+<tr><td><code>SectorRing</code></td><td>扇环（带内半径，起止角）</td><td>多数图像处理工具</td><td><code>Annulus</code> ✔（角度语义需改，见 1.7）</td></tr>
+<tr><td><code>Sector</code></td><td>扇形（实心，无内半径）</td><td>Binary / Normlize / RegionCopy / ShadeCorrect</td><td><b class="r">缺</b></td></tr>
+<tr><td><code>OverSector</code></td><td><span class="unk">未知</span>（仅 PolarUnwarp，与 SectorRing 并列；疑为"超 180°/整环扇区"）</td><td>PolarUnwarp</td><td><b class="r">缺</b></td></tr>
+<tr><td><code>Polygon</code></td><td>任意多边形</td><td>多数图像处理工具</td><td><code>Polygon</code> ✔</td></tr>
+<tr><td><code>Point</code>/<code>Line</code>/<code>CircleMes</code></td><td>几何创建目标（非 ROI）</td><td>仅 GeometryCreate</td><td>Point/Line/Circle ✔（语义域不同，不可复用为 ROI 形状）</td></tr>
+</table>
+
+<h3>1.6 形状声明与端口字段不同步 <span class="obs">观察到</span></h3>
+<p><code>UroBox</code> 声称"无旋转矩形"，但对应模块的 <code>InputROI</code> 端口<b>仍然完整提供 <code>roiangle</code></b>：</p>
+<code class="block">IMVSImageMathModu.xml        InputROI/ROIBOX => roiwidth:float | roiheight:float | roiangle:float | {ROI CenterPoint}(roicenterx, roicentery)
+IMVSImageResizeModu.xml      InputROI/ROIBOX => roiwidth:float | roiheight:float | roiangle:float | {ROI CenterPoint}(roicenterx, roicentery)
+IMVSMultiImageFusionModu.xml InputROI/ROIBOX => roiwidth:float | roiheight:float | roiangle:float | {ROI CenterPoint}(roicenterx, roicentery)</code>
+<div class="warn">
+<b>不要据此改造我方模型</b>。这只是"UI 允许的形状集合"与"端口字段集合"未同步的原件现象 ——
+<span class="inf">推断</span> 上层的形状选择器在运行期把 <code>roiangle</code> 置 0 或忽略。
+我方不存在这种双份真相：<code>ShapeType</code> 单一决定字段表（<code>RoiFieldSchema</code>），因此<b>不需要</b>引入 <code>UroBox</code> 类型。
+若要读取原件已存方案中的 <code>UroBox</code> ROI，按 <code>RotatedRectangle</code> 解析并忽略角即可。
+</div>
+
+<h3>1.7 角度语义：<code>AngleExtend</code> 而非起止角 <span class="obs">观察到</span></h3>
+<table>
+<tr><th>来源</th><th>字段</th><th>我方 <code>RoiFieldSchema.Annulus</code></th></tr>
+<tr><td><code>ROIANNULUS</code>（全局与模块内联一致）</td>
+<td><code>...InnerRadius</code>、<code>...OuterRadius</code>、<code>...StartAngle</code>、<b><code>...AngleExtend</code></b></td>
+<td><code>Center.X/Y</code>、<code>InnerRadius</code>、<code>OuterRadius</code>、<code>StartAngle</code>、<b><code>EndAngle</code></b></td></tr>
+</table>
+<p>原件是<b>起始角 + 角跨度</b>，我方是<b>起始角 + 终止角</b>。换算：<code>EndAngle = StartAngle + AngleExtend</code>。</p>
+<div class="warn">
+<span class="unk">未知</span>：<code>AngleExtend</code> 的<b>符号约定</b>（负值是否表示反向扫掠）与<b>单位</b>（度/弧度）在静态文件里没有声明，无 <code>Description</code>/单位注释。
+R2 已列为待补证据 G4 的一部分；本批<b>未解除</b>。在拿到实机或反汇编证据前，不得按"负值=反向"或"单位=度"写死换算。
+</div>
+
+<h3>1.8 BlindPolygon 盲区机制 <span class="obs">观察到</span></h3>
+<p>8 个图像处理模块同时提供 <code>BlindPolygon/ROIPOLYGON</code> 输出端口与 <code>BlindPolygonString:string[]</code> 结果：</p>
+<table>
+<tr><th>项</th><th>内容</th></tr>
+<tr><td>图形输出</td><td><code>BlindPolygon/ROIPOLYGON</code>，<b>Combination 级 <code>IsArray="true"</code></b>，内部 <code>BlindPolygonPointNum:int[]</code> + <code>BlindPolygonPoints</code>(POINT，<code>IsArray="true"</code>)</td></tr>
+<tr><td>标量输出</td><td><code>BlindPolygonString:string[]</code></td></tr>
+<tr><td>出现模块</td><td>Binary、ImageCombineProcess、Enhance、Filter、Morph、Normlize、Sharpness、ShadeCorrect（8 个）</td></tr>
+<tr><td>不出现</td><td>FrameMean、GeometricTransform、Correct(Calib/Manual)、ImageFixture、ImageMath、Resize、ImgStitchCalib、InverseAffine、MultiImageFusion、PolarUnwarp、RegionCopy（13 个）</td></tr>
+</table>
+<p><span class="inf">推断</span> 该机制用于把"被屏蔽/无效区域"（遮挡、反光、无料区）以多边形列表形式向下游传递，供后续工具或显示层规避。
+<span class="unk">未知</span> <code>BlindPolygonString</code> 的字符串格式（点序列编码方式）。</p>
+<div class="note">
+<b>与我方的关系</b>：我方目前没有"盲区多边形集合"这一输出概念。若后续要做多工序级联（上游屏蔽区传给下游），
+<code>BlindPolygon</code> 可作为<b>参照实现</b>：几何用 <code>RoiShape[]</code>（Polygon 数组），文本用 <code>string[]</code> 冗余一份便于协议下发。
+不需要为此新建类型 —— <code>RoiShape[]</code> + <code>string[]</code> 已够。
+</div>
+
+<h3>1.9 参数页：三段式 + 共享分组引用 <span class="obs">观察到</span></h3>
+<p><code>AlgorithmTabRoot/Tabs/Tab</code>，<code>Tab</code> 的 <code>Name</code> 同时充当页签标识与显示文案（含空格，如 <code>Tab_Basic Params</code>）。</p>
+<table>
+<tr><th>模块</th><th>页签序列</th><th>页内分组（<code>GroupLinkItem</code> / <code>Category</code>）</th></tr>
+<tr><td>IMVSBinaryModu</td><td>Tab_Basic Params / Tab_Run Params / ResultShow</td>
+<td><code>ImageSourceGroup</code>、<code>OutputMaskImageGroup</code>、<code>InputMaskImageGroup</code>、<code>RoiSelectGroup</code>、<code>InheritWayGroup</code>→LinkName <code>InheritWayGroup2</code>、<code>ExternROITypeGroup</code>、<code>AssistGroup</code> + Category <code>Tab_ROI Area</code>(CanTriggerRun=TRUE)、<code>Tab_Run Params</code>、<code>Tab_Image Display</code></td></tr>
+<tr><td>IMVSImageMathModu</td><td>Tab_Basic Params / ResultShow</td><td><code>RoiSelectGroup</code>、<code>InheritWayGroup</code>、<code>AssistGroup</code> + Category <code>Tab_Image Input</code>、<code>Tab_ROI Area</code>、<code>Tab_Image Math</code></td></tr>
+<tr><td>IMVSDivideImageModu</td><td>Tab_Basic Params / Tab_Run Params</td><td><code>ImageSourceGroup</code>、<code>RoiSelectGroup</code>、<code>InheritWayGroup</code>、<code>AssistGroup</code> + <code>Tab_ROI Area</code></td></tr>
+<tr><td>ImageBufferModule</td><td>Tab_Basic Params</td><td><code>ImageSourceGroup</code> + <code>Tab_Cache Set</code></td></tr>
+<tr><td>GeometryCreate</td><td>Tab_Basic Params / ResultShow</td><td>（无 Run Params）</td></tr>
+<tr><td>LightModule</td><td>Tab_Basic Params</td><td>（单页）</td></tr>
+<tr><td>SaveImage</td><td>Tab_Basic Params / Tab_Render Parameters / Tab_Render Settings</td><td>（渲染专用两页）</td></tr>
+</table>
+<p>可复用的<b>共享分组名</b>（跨模块同名同义，靠 <code>&lt;LinkName&gt;</code> 指向共享定义而非各自复制）：</p>
+<ul>
+<li><code>ImageSourceGroup</code> — 图像来源选择</li>
+<li><code>RoiSelectGroup</code> — ROI 形状/数量选择（配 <code>ROISelecter</code>）</li>
+<li><code>InheritWayGroup</code> / <code>InheritWayGroup2</code> — ROI 继承方式</li>
+<li><code>ExternROITypeGroup</code> — 外部 ROI 类型</li>
+<li><code>AssistGroup</code> — 辅助项</li>
+<li><code>InputMaskImageGroup</code> / <code>OutputMaskImageGroup</code> — 掩膜开关</li>
+</ul>
+<p class="small">另见 <code>Category Name="Tab_ROI Area" CanTriggerRun="TRUE"</code>：ROI 参数区<b>允许触发运行</b>（改 ROI 即可重跑），与"仅保存不运行"的参数区区分。<span class="unk">未知</span> <code>CanTriggerRun</code> 的确切交互语义（是改完即跑，还是允许在 ROI 页手动点运行）。</p>
+
+<h3>1.10 异构模块：不能套统一壳 <span class="obs">观察到</span></h3>
+<table>
+<tr><th>模块</th><th>异构点</th><th>处理建议</th></tr>
+<tr><td><code>LightModule</code></td><td><b>无任何图像端口</b>。Input 7 个参数节点、Output 26 个标量全为灯通道状态：<code>Channel1..6</code> × {<code>Enable</code>,<code>Brightness</code>,<code>LightState</code>,<code>EdgeType</code>(仅 1-4),<code>DurationTime</code>(仅 1-4)} + <code>ModuRunTime</code> + <code>ModuStatus</code></td><td>纯设备控制工具，与"图像流"族互斥。我方 <code>ImageSource</code> 类工具若要接灯控，应作为<b>独立工具</b>而非图像工具的参数页</td></tr>
+<tr><td><code>ImageBufferModule</code></td><td>固定 15 路输出 <code>OutImage0..OutImage14</code>（每路 <code>IMAGE</code> 4 字段），加 <code>Tab_Cache Set</code> 页</td><td>缓冲队列的"静态 15 路"表达 —— 不是数组端口，是<b>15 个独立端口</b>。<span class="inf">推断</span>上限写死</td></tr>
+<tr><td><code>ImageAcquisitionModule</code></td><td>Input Category 下<b>无 Combination</b>（仅 1 个参数节点）；输出走 <code>ACQUIMAGE</code>；<b>无 <code>ModuStatus</code></b></td><td>采集源，输入全靠参数页（相机选择）</td></tr>
+<tr><td><code>ImageSourceModule</code></td><td>在 R1 已覆盖；本批仅作参照：输出 <code>ImageData/IMAGE</code> + <code>ImageDataMono8/IMAGE</code>，结果含 <code>CurImagePath</code>/<code>CurImageName</code>/<code>SNCode</code></td><td>与 <code>ACQUIMAGE</code> 不同——相机走 <code>ACQUIMAGE</code>，文件源走 <code>IMAGE</code></td></tr>
+<tr><td><code>SaveImage</code></td><td>输入 <code>InDebugInfo/DEBUG</code>(3 字段，全局库无此 Style)；输出仅 <code>OutputImage</code> 透传；结果含 <code>OriginImageSavePath/Name</code>、<code>RenderImageSavePath/Name</code>、<code>BigFile</code>；目录内附 2 个 8 MB 字体</td><td>唯一带"渲染参数/渲染设置"两页的工具；<b>原图与渲染图分开落盘</b></td></tr>
+<tr><td><code>IMVSMultiImageFusionModu</code></td><td>全批唯一 <b>10 文件</b>（缺 <code>*Cs.xml</code>）、唯一<b>无 <code>TransmitInfo</code></b> 的模块；输入用 <code>ACQUIMAGE</code></td><td>输出 <code>AlbedoImageCom</code>(反照率) + <code>ShadingImageCom</code>(着色) + <code>ROI</code>，结果带 <code>ImageNum/ImageWidth/ImageHeight</code></td></tr>
+</table>
+
+<h3>1.11 异常与缺陷候选 <span class="obs">观察到</span></h3>
+<table>
+<tr><th>现象</th><th>证据</th><th>判定</th></tr>
+<tr><td>输出端口重复</td><td><code>IMVSImageSharpnessModu</code> 的 Output 中 <code>Output Position Correction Info/FIXTURE(6)</code> <b>出现两次</b>（同名同 Style）</td><td><span class="unk">未知</span> 是有意（两套坐标系）还是复制粘贴缺陷。任何按名字取端口的客户端在此模块上会拿到哪一个，<b>需实机确认</b></td></tr>
+<tr><td>有 Control 却无 Cs.xml</td><td><code>IMVSImageCombineProcessModu</code>：文件 11 个、含 <code>Control.dll</code>、无 <code>*Cs.xml</code></td><td><span class="inf">推断</span> 托管侧声明内联进主 <code>.xml</code>，非缺陷</td></tr>
+<tr><td>缺 Cs.xml</td><td><code>IMVSMultiImageFusionModu</code> 同时缺 <code>Cs.xml</code> 与 <code>TransmitInfo</code></td><td><span class="inf">推断</span> 该模块由另一条（较新/较特殊）代码路径接入</td></tr>
+<tr><td>Display 文件字节完全相同</td><td>Enhance / Filter / Morph / Binary 的 <code>*Display.xml</code> 均为 <b>5953 B</b>；Resize / InverseAffine 均为 <b>3678 B</b></td><td><span class="inf">推断</span> 同一显示模板的副本分发，不是各工具独立绘制</td></tr>
+<tr><td>Algorithm.xml 极小</td><td><code>IMVSImageCombineProcessModu</code> 83 B、<code>IMVSMultiLabelFilterModu</code> 63 B、<code>IMVSBoxOverlapCalculationModu</code> 83 B、<code>ImageBufferModule</code> 83 B、<code>IMVSImageFixtureModu</code> 84 B</td><td><span class="inf">推断</span> 这几项算法参数很少或全部由参数页直接传给 DLL，未走 XML 透传表</td></tr>
+</table>
+
+<h2>2 原件 vs 我方对照</h2>
+<p>我方落点均经源码核对（文件真实存在，非推测）：</p>
+<table>
+<tr><th style="width:22%">原件事实</th><th style="width:26%">我方现状</th><th>差异与建议动作</th><th style="width:9%">优先级</th></tr>
+<tr><td><code>ROISelecter</code> 逐工具声明形状集合 + 上限 + 单选/多选（<code>Mul</code>+16、<code>Mul</code>+128）</td>
+<td><code>Plugin.SDK/Execution/Parameters/RoiInput.cs</code>、<code>RoiShape.cs</code>；形状收敛在 <code>ShapeTypeVocabulary.cs</code>（按<b>值词目</b>收敛，非按<b>工具</b>收敛）</td>
+<td><b>收敛维度不同</b>：我方按"目标数据类型"收敛（<code>Point</code> 只出点），原件按"工具能力"收敛（Binary 提供 4 种、Resize 提供 2 种）。<br>
+若要有"工具只能选它支持的形状"，需要<b>工具级声明</b>（新增元数据），<code>ShapeTypeVocabulary</code> 管不到这一层。<b>本批只记录差异，不建议仓促改造</b></td><td>P2</td></tr>
+
+<tr><td>形状词目 9 种，含 <code>Sector</code>、<code>OverSector</code></td>
+<td><code>ShapeType</code> 7 种（Point/Line/Circle/RotatedRectangle/Polygon/Annulus/Arc）</td>
+<td><b>缺 <code>Sector</code></b>（扇形，与扇环并列声明，若映射到 <code>Annulus</code> 会丢失"实心"语义 → 遮罩计算错误）。<br>
+<code>OverSector</code> 语义未知，<b>不得凭名猜测</b>补充。<br>
+<b><code>Arc</code> 是多余的</b>：原件无独立弧 ROI，弧用 <code>ROIANNULUS</code> 表达。是否保留我方 <code>Arc</code> 取决于我方是否自建弧工具（我方目前无），<b>不建议现在删</b>（有工具依赖），但要记录"这不是对齐原件的形状"</td><td>P1（<code>Sector</code> 缺失）</td></tr>
+
+<tr><td><code>Annulus</code> 用 <code>StartAngle</code> + <b><code>AngleExtend</code></b></td>
+<td><code>RoiFieldSchema.Annulus</code> 用 <code>StartAngle</code> + <code>EndAngle</code></td>
+<td><b>语义不等价</b>，读原件数据时必须换算 <code>EndAngle = StartAngle + AngleExtend</code>。<b>符号与单位未确认</b>（1.7），换算代码需带明确的待确认标记，不可默认正值/度</td><td>P1（读取原件方案时）</td></tr>
+
+<tr><td><code>LINE</code> = 起点 + 终点（<code>LineStartPoint</code>/<code>LineEndPoint</code>）</td>
+<td><code>RoiFieldSchema.Line</code> = 起点 + <b>方向向量</b>（<code>Point.X/Y</code> + <code>Direction.X/Y</code>）</td>
+<td><b>表达不同</b>：端点 ↔ 点+方向。互转需要"长度"信息，而原件 LINE <b>没有长度字段</b>（只有两点）。因此<b>我方方向向量无法无损转成原件 LINE</b>（缺终点距离）；反向可转（方向 = 终点 − 起点，需归一化）。<br>
+<span class="inf">推断</span> 我方"方向"是<b>单位方向</b>（无长度），故信息量更少。若要双向互通需补长度字段</td><td>P1</td></tr>
+
+<tr><td><code>UroBox</code> 声明无旋转，端口仍给 <code>roiangle</code></td>
+<td>无轴对齐矩形类型（P0 已删 <code>ShapeType.Rectangle</code>，统一 <code>RotatedRect2d</code>）</td>
+<td><b>方向正确，不需改</b>；读原件 <code>UroBox</code> 时按 <code>RotatedRectangle</code> 解析、忽略角</td><td>—</td></tr>
+
+<tr><td><b>每工具统一输出</b> <code>ModuRunTime</code> + <code>ModuStatus</code>（32/34）</td>
+<td>无框架级统一注入；运行态由各工具/执行层各自处理</td>
+<td><b>建议</b>：作为执行层统一注入的隐式输出或不进输出的运行态（取决于是否需要绑定），避免 34 个工具重复声明。<b>本批不实施</b></td><td>P2</td></tr>
+
+<tr><td><code>BlindPolygon</code>（多边形数组）+ <code>BlindPolygonString:string[]</code>（8 模块）</td>
+<td>无盲区概念</td>
+<td>若要做级联屏蔽，参照实现 = <code>RoiShape[]</code>(Polygon) + <code>string[]</code>，<b>无需新类型</b></td><td>P2</td></tr>
+
+<tr><td>三段式参数页 + 共享分组 <code>&lt;LinkName&gt;</code></td>
+<td>工具 UI 由 <code>Plugin.Wpf</code> 公共控件 + 各工具自组装参数页；无"共享分组引用"机制</td>
+<td><b>可借鉴点</b>只有"共享分组"这个思想（<code>RoiSelectGroup</code>/<code>InheritWayGroup</code> 等被多工具复用）。我方已用公共控件达到类似效果，<b>不需要</b>引入 <code>GroupLinkItem</code> 这套 XML 间接层</td><td>—</td></tr>
+
+<tr><td><code>ACQUIMAGE</code>（17 字段，采集侧多光数据）</td>
+<td>无对应；我方 <code>SunEyeVision.ImageSource</code> 输出普通图像</td>
+<td>多光融合（Distribution/Irradiation）属于我方<b>未覆盖</b>的能力。<span class="unk">未知</span> 是否属于当前交付范围，不列入 R3 结论</td><td>P2</td></tr>
+
+<tr><td>专用编辑器 7/34 = 20.6%（滤镜族 0 个）</td>
+<td><code>DebugWindowType</code> 可空 + 默认调试窗；现有 <code>ImageFilter</code>/<code>Morphology</code>/<code>ImageThreshold</code> 工具</td>
+<td><b>验证了我方策略</b>：原件"图像处理"这一族普遍不写专有控件，靠通用壳 + 参数页。<br>我方 <code>ImageFilter</code>/<code>Morphology</code> 用默认调试窗 + 参数页是与原件一致的做法</td><td>—</td></tr>
+</table>
+
+<h3>2.1 我方已覆盖 vs R3 未覆盖</h3>
+<table>
+<tr><th>原件分类</th><th>我方现有工具</th><th>覆盖判断</th></tr>
+<tr><td>ImageProcessing 图像滤波/形态学</td><td><code>SunEyeVision.Tool.ImageFilter</code>、<code>SunEyeVision.Tool.Morphology</code></td><td>部分覆盖（具体支持哪些滤波器/形态算子<b>本批未逐个核对</b>，需专项）</td></tr>
+<tr><td>ImageProcessing 阈值/二值</td><td><code>SunEyeVision.Tool.ImageThreshold</code>、<code>SunEyeVision.BlobAnalysis</code></td><td>部分覆盖（原件 <code>IMVSBinaryModu</code> 是独立二值化工具）</td></tr>
+<tr><td>其余 ImageProcessing（仿射/校正/增强/归一化/锐度/曝光校正/极坐标展开/区域复制/多图融合/拼图）</td><td>—</td><td><b>未覆盖</b>（10 项）</td></tr>
+<tr><td>ImageGeneration（几何创建、圆/椭圆/直线拟合）</td><td>—</td><td><b>未覆盖</b>（4 项）</td></tr>
+<tr><td>SplitCombination（拆图/拼框/框滤波/框合并/重叠率/标签过滤）</td><td>—</td><td><b>未覆盖</b>（6 项）</td></tr>
+<tr><td>Collection 辅助（图像缓存、灯控、存图）</td><td><code>SunEyeVision.ImageSource</code>（采集侧）</td><td>缓存/灯控/存图<b>未覆盖</b>（3 项）</td></tr>
+</table>
+
+<h2>3 待补证据</h2>
+<h3>3.1 需更深反汇编（native 侧）</h3>
+<table>
+<tr><th>编号</th><th>缺口</th><th>影响</th></tr>
+<tr><td>R3-A1</td><td><code>AngleExtend</code> 的符号与单位、<code>UroBox</code> 运行期是否强制 <code>roiangle</code>=0</td><td>决定读原件 ROI 的换算是否正确（影响前景/后景误判）</td></tr>
+<tr><td>R3-A2</td><td><code>Sector</code> 与 <code>SectorRing</code> 的算法差别（内半径=0 是否等价）</td><td>决定我方能否用 <code>Annulus</code>+<code>InnerRadius=0</code> 代替 <code>Sector</code>，还是必须新增类型</td></tr>
+<tr><td>R3-A3</td><td><code>OverSector</code> 语义</td><td>Unknown 词目，影响 PolarUnwarp 复刻</td></tr>
+<tr><td>R3-A4</td><td><code>BlindPolygonString</code> 字符串编码格式</td><td>影响级联屏蔽数据互通</td></tr>
+<tr><td>R3-A5</td><td><code>ACQUIMAGE</code> 的 Distribution/Irradiation 物理量与采集时序</td><td>影响多光融合能力评估</td></tr>
+<tr><td>R3-A6</td><td><code>IMVSImageSharpnessModu</code> 重复 FIXTURE 端口的实际区别</td><td>影响该模块端口读取正确性</td></tr>
+</table>
+
+<h3>3.2 需实机验证</h3>
+<table>
+<tr><th>编号</th><th>验证项</th><th>方法</th></tr>
+<tr><td>R3-B1</td><td><code>Mul</code> + <code>RoiMaxNum=16</code> 时多 ROI 的运行语义（逐个跑还是合并跑、结果是否成数组）</td><td>实机建 Binary 工具，连 3 个 Box ROI，观察输出数组长度</td></tr>
+<tr><td>R3-B2</td><td><code>Category CanTriggerRun="TRUE"</code> 的交互（改 ROI 是否自动重跑）</td><td>实机改 ROI 观察是否触发运行</td></tr>
+<tr><td>R3-B3</td><td><code>UroBox</code> 工具上 <code>roiangle</code> 是否真的无效</td><td>实机给角 30° 看输出是否变化</td></tr>
+<tr><td>R3-B4</td><td>Sharpness 两个 FIXTURE 端口绑定表现</td><td>实机连接下游看取到哪个</td></tr>
+<tr><td>R3-B5</td><td><code>ImageBufferModule</code> 15 路是否固定上限</td><td>实机查看是否可增删</td></tr>
+</table>
+
+<h3>3.3 需厂商文档</h3>
+<table>
+<tr><th>编号</th><th>缺口</th></tr>
+<tr><td>R3-C1</td><td><code>ToolItemInfo.xml</code> 的 <code>helpUrl</code>（GUID 形式）指向的官方帮助页 —— 若能定位，可一次性解释 9 种形状词目与 45 种 Style</td></tr>
+<tr><td>R3-C2</td><td><code>ROISelecter</code> 的 <code>RoiMaxNum</code> / <code>SelectType</code> 官方定义（16 与 128 是否与具体算法有关）</td></tr>
+<tr><td>R3-C3</td><td><code>ACQUIMAGE</code>/<code>DEBUG</code> 这类模块内联 Style 是否有官方命名约定</td></tr>
+</table>
+
+<h2>4 自验命令（PowerShell 5.1 可直接复跑）</h2>
+<p>全部只读；<code>$app</code> 为安装目录，本机为 <code>D:\Program Files\VisionMaster4.4.0\Applications\Module(sp)</code>。</p>
+<code class="block"># 1) 分母：四个分类的子目录数与空目录
+$app="D:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\x64"
+foreach($c in @("ImageProcessing","ImageGeneration","SplitCombination","Collection")){
+  $p=Join-Path $app $c; $dirs=Get-ChildItem $p -Directory
+  $empty=($dirs|?{ (Get-ChildItem $_.FullName -File).Count -eq 0 }).Count
+  "$c dirs=$($dirs.Count) empty=$empty" }        # 期望 21/0  4/0  6/0  5/0
+
+# 2) 专用编辑器判别式（直接检测 Control.dll，勿用文件数反推）
+foreach($c in @("ImageProcessing","ImageGeneration","SplitCombination","Collection")){
+  foreach($d in (Get-ChildItem (Join-Path $app $c) -Directory)){
+    if(Test-Path (Join-Path $d.FullName ($d.Name+"Control.dll"))){ "CTL $($d.Name)" } } }
+# 期望 9 行（含 R1 的 ImageSource/ImageAcquisition）；R3 内 7 个
+
+# 3) ROI 形状声明全量
+foreach($c in @("ImageProcessing","ImageGeneration","SplitCombination","Collection")){
+  foreach($d in (Get-ChildItem (Join-Path $app $c) -Directory)){
+    $tab=Join-Path $d.FullName ($d.Name+"AlgorithmTab.xml"); if(!(Test-Path $tab)){continue}
+    $doc=[xml][IO.File]::ReadAllText($tab,[Text.Encoding]::UTF8)
+    foreach($r in $doc.SelectNodes("//ROISelecter")){ "$($d.Name) :: $($r.ROISelection) max=$($r.RoiMaxNum) $($r.SelectType)" } } }
+# 期望：9 种词目 Box/UroBox/SectorRing/Sector/OverSector/Polygon/Point/Line/CircleMes
+
+# 4) 全局库是否含 ACQUIMAGE / DEBUG（期望 0，证明是模块内联）
+$m="D:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\Combination.xml"
+$c=[IO.File]::ReadAllText($m,[Text.Encoding]::UTF8)
+([regex]::Matches($c,'Style="ACQUIMAGE"')).Count
+([regex]::Matches($c,'Style="DEBUG"')).Count
+
+# 5) 运行态输出覆盖面（期望 32/34 同时含 ModuRunTime 与 ModuStatus）
+foreach($c in @("ImageProcessing","ImageGeneration","SplitCombination","Collection")){
+  foreach($d in (Get-ChildItem (Join-Path $app $c) -Directory)){
+    $x=Join-Path $d.FullName ($d.Name+".xml"); if(!(Test-Path $x)){continue}
+    $doc=[xml][IO.File]::ReadAllText($x,[Text.Encoding]::UTF8)
+    $oc=$doc.ParamRoot.Categorys.Category|?{$_.Name -eq "Output"}
+    $n=@($oc.Items.Filter|%{$_.Name})
+    "$($d.Name) RT=$($n -contains 'ModuRunTime') ST=$($n -contains 'ModuStatus') BL=$($n -contains 'BlindPolygonString')" } }
+
+# 6) 关键文件指纹（本批锚点）
+foreach($f in @("Combination.xml","ShapePropertyConfig.xml",
+  "x64\ImageProcessing\IMVSBinaryModu\IMVSBinaryModu.xml",
+  "x64\ImageProcessing\IMVSBinaryModu\IMVSBinaryModuAlgorithmTab.xml")){
+  $p=Join-Path $app $f; "{0} {1}" -f (Get-FileHash $p -Algorithm SHA256).Hash.Substring(0,16),(Get-Item $p).Length }</code>
+
+<h2>5 边界声明</h2>
+<ul>
+<li><b>未改动</b> <code>src/</code>、<code>tools/</code>、<code>tests/</code> 任何文件；本批对这三处<b>仅只读</b>（<code>ShapeTypeVocabulary.cs</code>、<code>RoiFieldSchema.cs</code>、<code>tools/</code> 目录清单）。</li>
+<li><b>未改动</b> 其它 evidence 文件；本批只新增本文件。</li>
+<li><b>未执行</b> <code>git commit</code> / <code>git push</code>。</li>
+<li><b>未启动</b> <code>VisionMaster.exe</code>，<b>未写注册表</b>，安装目录全程<b>只读</b>。</li>
+<li><b>未做</b> 新的反编译/IL 分析；结论全部来自 XML/配置文件静态读取。</li>
+<li>三档标注已逐条给出；<span class="unk">未知</span> 项<b>未</b>用推测补齐（<code>OverSector</code>、<code>AngleExtend</code> 符号、<code>BlindPolygonString</code> 格式、Sharpness 重复端口）。</li>
+<li>本批<b>不构成</b>我方任何工具"已对齐原件"的结论：R3 覆盖的 30 项能力中，我方当前<b>无</b>对应工具（见 2.1），本批只提供契约与对照依据。</li>
+</ul>
+
+<footer>
+VM 工具逆向批次 R3 · 2026-11-05 · 只读取证 · 34 个有效模块 / 4 个分类<br>
+关联：<code>VM工具逆向批次R1-在研与流程控制-20261105.html</code>、<code>VM工具逆向批次R2-查找与卡尺-20261105.html</code>
+</footer>
+</body>
+</html>

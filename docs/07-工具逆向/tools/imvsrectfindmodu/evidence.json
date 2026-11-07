@@ -1,0 +1,24 @@
+{
+  "stableToolId": "imvsrectfindmodu",
+  "originalPlugin": "IMVSRectFindModu",
+  "displayName": "矩形检测",
+  "originalCategory": "Location",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSRectFindModu",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "status": "inventory-only",
+  "evidenceState": "unknown",
+  "resourceCount": 6,
+  "parameterCount": 30,
+  "inputCount": 5,
+  "outputCount": 12,
+  "uiControlCount": 39,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ]
+}

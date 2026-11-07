@@ -1,0 +1,116 @@
+{
+  "controls": [
+    {
+      "type": "RadioSelecter",
+      "name": "InputWay"
+    },
+    {
+      "type": "PointPair",
+      "name": "Data1"
+    },
+    {
+      "type": "PointPair",
+      "name": "Data2"
+    },
+    {
+      "type": "PointPair",
+      "name": "Data3"
+    },
+    {
+      "type": "PointPair",
+      "name": "Data4"
+    },
+    {
+      "type": "PointPair",
+      "name": "Data5"
+    },
+    {
+      "type": "PointPair",
+      "name": "Data6"
+    },
+    {
+      "type": "PointPair",
+      "name": "Data7"
+    },
+    {
+      "type": "PointPair",
+      "name": "Data8"
+    },
+    {
+      "type": "AddButton_PointPair",
+      "name": "AddButton"
+    },
+    {
+      "type": "SaveFileDialog",
+      "name": "SaveCalibPath"
+    },
+    {
+      "type": "OpenFileForCalibDialog",
+      "name": "CalibPathName"
+    },
+    {
+      "type": "Boolean",
+      "name": "RefreshFileEnable"
+    },
+    {
+      "type": "Enumeration",
+      "name": "HomoFreedom"
+    },
+    {
+      "type": "Enumeration",
+      "name": "WeightFun"
+    },
+    {
+      "type": "Integer",
+      "name": "WeightFactor"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "extension-panels",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P3",
+  "themeStates": "unknown",
+  "toolId": "imvscameramapmodu",
+  "status": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCameraMapModu\\IMVSCameraMapModu.xml",
+      "sha256": "8488358d302d4b48c6c08207380db8d0bd2bdc7566ed8f00ece8fdd299b7fd61",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCameraMapModu\\IMVSCameraMapModuAlgorithm.xml",
+      "sha256": "aa20749ac0f295e37ffbccdcde8a44e4878769147d4ddf2f4559b695446f580f",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCameraMapModu\\IMVSCameraMapModuAlgorithmTab.xml",
+      "sha256": "9832e201bc27e31413bd54bd92d55464b35c0657f681f7ca0059a695e0a77dfb",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCameraMapModu\\IMVSCameraMapModuCs.xml",
+      "sha256": "5e82de61111682be142ce22247fb96f365f03844e1acd742c80299f29c612e75",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCameraMapModu\\IMVSCameraMapModuDisplay.xml",
+      "sha256": "35338987b8ed83b93cefbda952c218e19b9cc0497ed920ad9d170f36c11c9e97",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCameraMapModu\\ToolItemInfo.xml",
+      "sha256": "cff353a8376ed3d4c29234429171fcee24203f489c22170e9df0c7cd26bc6cf6",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "相机映射",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

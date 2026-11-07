@@ -1,0 +1,118 @@
+{
+  "toolId": "imvscolorsegmentmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorSegmentModu\\IMVSColorSegmentModu.xml",
+      "sha256": "ea0f597527dfc93f4cd7a9ce9e3fa2cef1c88089ec2da2b755ed63e6d4d6977d",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorSegmentModu\\IMVSColorSegmentModuAlgorithm.xml",
+      "sha256": "5c5579f075da045fdc5398fa1b90a49634e1b2041ddcc0111186307197b9a9a0",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorSegmentModu\\IMVSColorSegmentModuAlgorithmTab.xml",
+      "sha256": "eaa63c42bd5fdebc8fa4dfe1008755a73583d153b015f40557e6ac0215ea0dbc",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorSegmentModu\\IMVSColorSegmentModuCs.xml",
+      "sha256": "bf064392d832bc018257350f705ff6cc13004f70a8e1c374c738c1b3683abc65",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorSegmentModu\\IMVSColorSegmentModuDisplay.xml",
+      "sha256": "96109b91ccd7a7556df02ac847368ae18f187d1c9175efa8c980f343bae85ad9",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorSegmentModu\\ToolItemInfo.xml",
+      "sha256": "21c91b0bdf8dc4c83baab32cb64694cf47b5675a6972778a8b6b9d68a1f734eb",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Segment Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "ColorSegmentList",
+      "name": "InputColorRange"
+    },
+    {
+      "type": "Integer",
+      "name": "HoleArea"
+    },
+    {
+      "type": "Integer",
+      "name": "ClutterArea"
+    },
+    {
+      "type": "Boolean",
+      "name": "AreaLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeAreaLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZoneAnnular"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "RoiSelectGroup",
+    "InheritWayGroup2",
+    "AssistGroup",
+    "TextDisplayGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

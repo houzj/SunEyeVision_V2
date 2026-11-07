@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ifbranchmodule 路 evidence.json</title><style>*{box-sizing:border-box}
+body{margin:0;background:#f6f7f9;color:#1d2129;font:14px/1.7 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:24px 20px 60px}
+.crumbs{font-size:13px;margin-bottom:14px}
+.crumbs a{color:#2563eb;text-decoration:none}
+.card{background:#fff;border:1px solid #e4e7ec;border-radius:10px;padding:26px 30px}
+h1,h2,h3,h4{line-height:1.4}
+h1{font-size:20px}h2{font-size:17px;margin-top:26px}h3{font-size:15px}
+table{border-collapse:collapse;margin:12px 0;width:100%;font-size:13px}
+td,th{border:1px solid #e4e7ec;padding:6px 10px;vertical-align:top}
+tr:nth-child(even) td{background:#fafbfc}
+code{background:#f1f3f5;border-radius:3px;padding:1px 5px;font-size:12.5px;font-family:Consolas,Menlo,monospace;color:#c7254e}
+pre{background:#282c34;color:#abb2bf;border-radius:6px;padding:14px 16px;overflow:auto;font-size:12.5px;line-height:1.6;font-family:Consolas,Menlo,monospace}
+pre code{background:none;color:inherit;padding:0}
+ul{padding-left:22px}
+blockquote{border-left:3px solid #d0d5da;margin:10px 0;padding:4px 14px;color:#5a636b;background:#fafbfc}
+hr{border:0;border-top:1px solid #e4e7ec;margin:18px 0}
+p{margin:8px 0}</style></head><body><div class="wrap"><nav class="crumbs"><a href="../../index.html">&#8592; 宸ュ叿绱㈠紩</a> &middot; <code>ifbranchmodule</code></nav><div class="card"><h2>evidence.json</h2><pre>{
+  &quot;stableToolId&quot;: &quot;ifbranchmodule&quot;,
+  &quot;originalPlugin&quot;: &quot;IfBranchModule&quot;,
+  &quot;displayName&quot;: &quot;条件分支&quot;,
+  &quot;originalCategory&quot;: &quot;Logic&quot;,
+  &quot;originalSourcePath&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule&quot;,
+  &quot;uiCategory&quot;: &quot;compound-control&quot;,
+  &quot;priority&quot;: &quot;P4&quot;,
+  &quot;resourceCount&quot;: 6,
+  &quot;parameterCount&quot;: 0,
+  &quot;inputCount&quot;: 0,
+  &quot;outputCount&quot;: 3,
+  &quot;uiControlCount&quot;: 2,
+  &quot;sourceInventory&quot;: &quot;docs/plugins/inventory.json&quot;,
+  &quot;status&quot;: &quot;inventory-only&quot;,
+  &quot;evidenceState&quot;: &quot;inventory-only&quot;,
+  &quot;origin&quot;: &quot;codex&quot;,
+  &quot;rewriteNote&quot;: &quot;2026-11-05 复核：原卡 sourceEvidence 指向 analysis/decompiled/IfBranchModule.WorkflowAudit/ 下三份反编译源码，但该路径在本仓库不存在，属无法复查的引用。本次把状态从 source-partial 降为 inventory-only（本库内无任何原件源码），保留 Codex 记录的事实并标注「未复验」，补齐 7 环节 / 9 步 / 7 维三组结构与「引用但缺文件」清单。&quot;,
+  &quot;sourceEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;docs/07-工具逆向/_reference-codex/site/工具/Logic-IfBranchModule-caf95b67.html&quot;,
+      &quot;sha256&quot;: &quot;D675B6C7F761A470E525CFC9F69AEA36F5660D240B897692C6479BA3B2F28C2E&quot;,
+      &quot;symbol&quot;: &quot;Codex 对 IfBranchModule 的逆向记录（工具页）&quot;,
+      &quot;lines&quot;: &quot;整页&quot;,
+      &quot;confirmable&quot;: &quot;只证明 Codex 记过这些结论，且该页在本库可读；页面描述的是 VisionReplica 状态，不是我方状态，也不是我方复验过的原件事实&quot;
+    }
+  ],
+  &quot;referencedButMissing&quot;: [
+    &quot;analysis/decompiled/IfBranchModule.WorkflowAudit/IfBranchModuleCs/IfBranchModuleTool.cs&quot;,
+    &quot;analysis/decompiled/IfBranchModule.WorkflowAudit/IfBranchModuleCs/IfBranchParam.cs&quot;,
+    &quot;analysis/decompiled/IfBranchModule.WorkflowAudit/IfBranchModuleCs/IfBranchResult.cs&quot;
+  ],
+  &quot;analysisStages&quot;: [
+    {
+      &quot;id&quot;: &quot;ui&quot;,
+      &quot;status&quot;: &quot;partial&quot;,
+      &quot;detail&quot;: &quot;XML 声明层面已取到：1 个页签 Tab_Basic Params、2 条控件（HeadBar/ListHead、ButtonSelecter_IfBranch/RangeConFFields）与共享组 BottomCommandGroup，6 份 XML 均带 SHA-256。缺原件 XAML、逐控件绑定与显隐条件；Codex 原页描述的是 VisionReplica 组装状态，不能当我方或原件界面证据。&quot;,
+      &quot;links&quot;: [
+        &quot;resources.json uiTabs / uiControls&quot;,
+        &quot;IfBranchModuleAlgorithmTab.xml 298E3423…&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;common&quot;,
+      &quot;status&quot;: &quot;partial&quot;,
+      &quot;detail&quot;: &quot;仅 BottomCommandGroup 一个共享组由 XML 声明。缺共享模板、配置对话框与资源字典的实际内容。&quot;,
+      &quot;links&quot;: [
+        &quot;resources.json sharedUiGroups&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;parametersRoi&quot;,
+      &quot;status&quot;: &quot;partial&quot;,
+      &quot;detail&quot;: &quot;XML 声明 6 份资源（含 ParamRoot / AlgorithmParamList / AlgorithmTabRoot）；Codex 记录条件边界以 name_Min / name_Max / name_State 动态存放（IfBranchParam），说明参数是动态键而非固定 Schema。缺参数逐项取值与显隐条件；本工具无 ROI。&quot;,
+      &quot;links&quot;: [
+        &quot;resources.json xmlEvidence&quot;,
+        &quot;referencedButMissing[2] IfBranchParam.cs&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;execution&quot;,
+      &quot;status&quot;: &quot;unknown&quot;,
+      &quot;detail&quot;: &quot;Codex 记录 Run 调用 SyncSelfRun 执行判定。专属 Process/ProcessAlg 与判定函数体未证；本库无可复查源码。&quot;,
+      &quot;links&quot;: [
+        &quot;referencedButMissing[1] IfBranchModuleTool.cs&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;display&quot;,
+      &quot;status&quot;: &quot;unknown&quot;,
+      &quot;detail&quot;: &quot;未取证：条件标签、命中高亮与结果视图的显示发布。&quot;,
+      &quot;links&quot;: []
+    },
+    {
+      &quot;id&quot;: &quot;storage&quot;,
+      &quot;status&quot;: &quot;unknown&quot;,
+      &quot;detail&quot;: &quot;Codex 记录 GetModel/ImportModel 传输 IfBranchText 字节，Paste 把条件引用从旧 ID 重映射到 NewIdList。序列化格式与版本迁移未证。&quot;,
+      &quot;links&quot;: [
+        &quot;referencedButMissing[1] IfBranchModuleTool.cs&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;native&quot;,
+      &quot;status&quot;: &quot;unknown&quot;,
+      &quot;detail&quot;: &quot;未取到原生模块与导出函数；Codex 卡片的 nativeFunctions 也为空。&quot;,
+      &quot;links&quot;: []
+    }
+  ],
+  &quot;semanticChain&quot;: [
+    {
+      &quot;step&quot;: &quot;init&quot;,
+      &quot;conclusion&quot;: &quot;inferred&quot;,
+      &quot;originalEvidence&quot;: &quot;Codex 记录 IfBranchModuleTool 为 dynamic 且内嵌 model，说明实例携带动态参数对象&quot;,
+      &quot;unknown&quot;: &quot;构造函数、注册链与资源绑定未证；原始反编译源码未随库迁入，我方未复验&quot;
+    },
+    {
+      &quot;step&quot;: &quot;parameters&quot;,
+      &quot;conclusion&quot;: &quot;inferred&quot;,
+      &quot;originalEvidence&quot;: &quot;Codex 记录 IfBranchParam 以 name_Min / name_Max / name_State 动态存放条件边界&quot;,
+      &quot;unknown&quot;: &quot;参数对象结构、XML 绑定路径与条件显隐未证；name_State 的取值集合未知&quot;
+    },
+    {
+      &quot;step&quot;: &quot;inputsRoi&quot;,
+      &quot;conclusion&quot;: &quot;inferred&quot;,
+      &quot;originalEvidence&quot;: &quot;条件值取自上游模块结果；我方对应实现由 ConditionInputResolver 解析「节点GUID.属性名」绑定表达式或常量字面量&quot;,
+      &quot;unknown&quot;: &quot;原版上游取值路径、类型转换与空值规则未证；本工具无 ROI&quot;
+    },
+    {
+      &quot;step&quot;: &quot;process&quot;,
+      &quot;conclusion&quot;: &quot;inferred&quot;,
+      &quot;originalEvidence&quot;: &quot;Codex 记录 Run 调用 SyncSelfRun 完成条件判定&quot;,
+      &quot;unknown&quot;: &quot;Process/ProcessAlg 与判定函数体未证；判定是逐条全量评估还是遇命中即返回，原版未证&quot;
+    },
+    {
+      &quot;step&quot;: &quot;branchFailure&quot;,
+      &quot;conclusion&quot;: &quot;inferred&quot;,
+      &quot;originalEvidence&quot;: &quot;Codex 记录结果同时暴露 ModuStatus 与 BranchMatch，说明命中与状态分开承载&quot;,
+      &quot;unknown&quot;: &quot;未命中、失败、取消三条路径的错误码与剪枝行为未证&quot;
+    },
+    {
+      &quot;step&quot;: &quot;resultWrite&quot;,
+      &quot;conclusion&quot;: &quot;inferred&quot;,
+      &quot;originalEvidence&quot;: &quot;原版写 ModuStatus 与 BranchMatch；我方写 IsMatched / NextNodeIds / MatchedRuleNames，并经 IControlFlowResult 强类型暴露给引擎&quot;,
+      &quot;unknown&quot;: &quot;BranchMatch 是否支持多命中、类型是索引还是节点 ID 未证；多选并行是否与原版一致未证&quot;
+    },
+    {
+      &quot;step&quot;: &quot;displayPublish&quot;,
+      &quot;conclusion&quot;: &quot;unknown&quot;,
+      &quot;originalEvidence&quot;: &quot;未取证：条件标签、命中高亮与结果视图的显示发布路径&quot;,
+      &quot;unknown&quot;: &quot;没有任何显示侧的原件证据，不能由其他环节推断&quot;
+    },
+    {
+      &quot;step&quot;: &quot;persistence&quot;,
+      &quot;conclusion&quot;: &quot;inferred&quot;,
+      &quot;originalEvidence&quot;: &quot;Codex 记录 GetModel/ImportModel 传输 IfBranchText 字节；Paste 把条件引用从旧 ID 重映射到 NewIdList&quot;,
+      &quot;unknown&quot;: &quot;序列化格式、版本迁移与复制粘贴的完整重映射规则未证&quot;
+    },
+    {
+      &quot;step&quot;: &quot;release&quot;,
+      &quot;conclusion&quot;: &quot;unknown&quot;,
+      &quot;originalEvidence&quot;: &quot;未取证：Stop / DeInit / Destroy 的调用链&quot;,
+      &quot;unknown&quot;: &quot;无释放侧证据；条件分支是否持有订阅或事件未证&quot;
+    }
+  ],
+  &quot;algorithmComparison&quot;: [
+    {
+      &quot;id&quot;: &quot;originalAlgorithm&quot;,
+      &quot;status&quot;: &quot;partial&quot;,
+      &quot;evidence&quot;: [
+        &quot;Codex 记录：IfBranchModuleTool 为 dynamic 且内嵌 model，Run 调 SyncSelfRun；判定入口不是独立的 Process/ProcessAlg&quot;
+      ],
+      &quot;unknown&quot;: &quot;判定函数体、条件比较的端点语义（含/不含）与短路行为未证；我方未复验 Codex 结论&quot;
+    },
+    {
+      &quot;id&quot;: &quot;currentCalculation&quot;,
+      &quot;status&quot;: &quot;partial&quot;,
+      &quot;evidence&quot;: [
+        &quot;我方 ConditionTool.ExecuteCore 遍历 ConditionParameters.Rules，逐条经 ConditionInputResolver 解析 InputText 后由 TryMatchRule 判定，命中即收集 NextNodeIds（多选并行，不遇命中即返回）&quot;
+      ],
+      &quot;unknown&quot;: &quot;未与原版逐条同参对照；原版是否同样全量评估多条规则未证&quot;
+    },
+    {
+      &quot;id&quot;: &quot;defaultsPrePost&quot;,
+      &quot;status&quot;: &quot;partial&quot;,
+      &quot;evidence&quot;: [
+        &quot;原版条件边界用 name_Min / name_Max / name_State 动态存储；我方 ConditionRule.MinValue 默认 0、MaxValue 默认 1000、Judgment 默认 OK、RuleType 默认 Int&quot;
+      ],
+      &quot;unknown&quot;: &quot;原版默认边界值、name_State 取值集合与规则条数上限未证；我方默认 1000 是自己定的，没有原件依据&quot;
+    },
+    {
+      &quot;id&quot;: &quot;boundariesCoordinatesTypes&quot;,
+      &quot;status&quot;: &quot;partial&quot;,
+      &quot;evidence&quot;: [
+        &quot;原版结果暴露 ModuStatus 与 BranchMatch；我方 ConditionResults 暴露 IsMatched / NextNodeIds / MatchedRuleNames&quot;
+      ],
+      &quot;unknown&quot;: &quot;BranchMatch 的类型与语义未证；本工具无坐标语义，故该维度只剩结果类型对照&quot;
+    },
+    {
+      &quot;id&quot;: &quot;pixelNumerics&quot;,
+      &quot;status&quot;: &quot;not-established&quot;,
+      &quot;evidence&quot;: [],
+      &quot;unknown&quot;: &quot;本工具不处理图像。数值比较的端点规则原版未证；我方为闭区间（&gt;= 且 &lt;=），Specified 是我方定义而非原件语义&quot;
+    },
+    {
+      &quot;id&quot;: &quot;nativeAbi&quot;,
+      &quot;status&quot;: &quot;not-established&quot;,
+      &quot;evidence&quot;: [],
+      &quot;unknown&quot;: &quot;未取到原生模块、导出函数或 P/Invoke 约定&quot;
+    },
+    {
+      &quot;id&quot;: &quot;validationInputs&quot;,
+      &quot;status&quot;: &quot;not-established&quot;,
+      &quot;evidence&quot;: [],
+      &quot;unknown&quot;: &quot;无原机差分。空规则、未配置目标节点、类型不匹配三条路径的期望行为只有我方单方定义&quot;
+    }
+  ],
+  &quot;currentImplementation&quot;: {
+    &quot;moduleId&quot;: &quot;Condition&quot;,
+    &quot;implPath&quot;: &quot;tools/SunEyeVision.Tool.Condition/ConditionTool.cs + Models/ConditionParameters.cs + Models/ConditionResults.cs&quot;,
+    &quot;verifiedAt&quot;: &quot;2026-11-05（静态读码，未与原版对照运行）&quot;,
+    &quot;differences&quot;: [
+      &quot;参数模型不同：原版是 dynamic + 内嵌 model，条件边界以 name_Min/name_Max/name_State 动态键存放；我方是强类型 ConditionRule（Name/RuleType/InputText/MinValue/MaxValue/Judgment/ExpectedText/ExecutionModuleId）&quot;,
+      &quot;结果模型不同：原版暴露 ModuStatus 与 BranchMatch（疑似单命中）；我方 ConditionResults 输出 NextNodeIds 列表 + MatchedRuleNames，支持多条规则同时命中并剪枝未命中分支&quot;,
+      &quot;条件表达式承载不同：原版条件通过 IfBranchText 字节与模型传输；我方 InputText 是唯一真相源（节点GUID.属性名 或 常量字面量），不设第二存储位&quot;,
+      &quot;控制信号契约是我方新增：IControlFlowResult 让引擎强类型读取 NextNodeIds，取代反射取 NextNodeId；原版无此接口，属我方宿主适配&quot;,
+      &quot;复制粘贴：原版 Paste 把条件引用从旧 ID 重映射到 NewIdList；我方依赖宿主的节点 ID 重映射机制，条件规则内的 ExecutionModuleId 是否同步重映射未在本工具内实现&quot;,
+      &quot;类型支持范围：我方只支持 Int / Double / String，其余 RuleType 直接抛 NotSupportedException（显式拒绝，不静默）；原版可选类型集合未证&quot;
+    ]
+  },
+  &quot;managedMembers&quot;: [],
+  &quot;nativeFunctions&quot;: [],
+  &quot;runtimeObservations&quot;: [],
+  &quot;unknowns&quot;: [
+    &quot;原卡引用的三份反编译源码（IfBranchModuleTool.cs / IfBranchParam.cs / IfBranchResult.cs）不在本仓库，全部结论只能标为「Codex 记录、我方未复验」&quot;,
+    &quot;专属 Process/ProcessAlg 与判定函数体、条件比较端点语义、多条规则是否短路&quot;,
+    &quot;BranchMatch 的类型、语义与是否支持多命中&quot;,
+    &quot;name_Min / name_Max / name_State 的取值集合与原版默认边界&quot;,
+    &quot;完整 XML/XAML 绑定、条件显隐与主题状态；本库无该工具任何原件资源&quot;,
+    &quot;显示发布与释放链完全没有证据&quot;,
+    &quot;原厂运行时差分：空输入、未配置目标节点、失败、取消与嵌套分支生命周期&quot;
+  ],
+  &quot;sourceReports&quot;: [
+    &quot;docs/07-工具逆向/_reference-codex/site/工具/Logic-IfBranchModule-caf95b67.html&quot;,
+    &quot;docs/01-方案设计/2026/08/26/条件分支多选与整条剪枝执行方案-20260826-161849.md&quot;,
+    &quot;docs/01-方案设计/2026/08/10/条件分支工具完整实现方案-20260810-110406.md&quot;
+  ],
+  &quot;note&quot;: &quot;状态从 source-partial 降为 inventory-only 是纠偏：原状态来自 Codex 读过的反编译源码，但该源码未随库迁入，本库无法复查。方案设计文档只支撑我方 currentImplementation，不能当作原件证据。&quot;
+}</pre></div></div></body></html>

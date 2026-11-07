@@ -1,0 +1,247 @@
+{
+  "toolId": "imvscalipercornermodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCaliperCornerModu\\IMVSCaliperCornerModu.xml",
+      "sha256": "f293db72ef997f062dbd970edfb356d50d4f6b722194d14489a0b95a8593ba85",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCaliperCornerModu\\IMVSCaliperCornerModuAlgorithm.xml",
+      "sha256": "7b29095ae6290b2493d04b30fce6dcb0f12b8180627c13ebda0c4e1af58b9692",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCaliperCornerModu\\IMVSCaliperCornerModuAlgorithmTab.xml",
+      "sha256": "b3271f726a76189c5f180fde1c9c477e904bb761bd20e39cb9172451871644c4",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCaliperCornerModu\\IMVSCaliperCornerModuCs.xml",
+      "sha256": "572067787f30fdcf70ed802fd0e33838e0d79a9b02f02e18ac248c6add582851",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCaliperCornerModu\\IMVSCaliperCornerModuDisplay.xml",
+      "sha256": "5c543fc614c7f19ef9701f5228d43c3c89e7e515393fc15693484515e88434e0",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCaliperCornerModu\\ToolItemInfo.xml",
+      "sha256": "b29456fc8adadf6a4b8dd5c7637a01acdf687924a59e953745ce9e172417e6c3",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "OutputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "InheritWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Region1"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI1Width"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI1Height"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI1CenterX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI1CenterY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI1Angle"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Region2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI2Width"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI2Height"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI2CenterX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI2CenterY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROI2Angle"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Edge0Type"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Edge0Polarity"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Edge1Type"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Edge1Polarity"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeStrength"
+    },
+    {
+      "type": "Integer",
+      "name": "CaliperNum"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelSize"
+    },
+    {
+      "type": "Integer",
+      "name": "ProjectLen"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectNum"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectDist"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FitInitType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FitFun"
+    },
+    {
+      "type": "Boolean",
+      "name": "CornerPointXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCornerPointXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "CornerPointYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCornerPointYLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "CornerAngleLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCornerAngleLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CaliperPointFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Line0Result"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Line1Result"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Line0Point"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Line1Point"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone1"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone2"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "OutputMaskImageGroup",
+    "RoiSelectGroup",
+    "ExternROITypeGroup",
+    "AssistGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

@@ -1,0 +1,84 @@
+{
+  "controls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Integer",
+      "name": "NumX"
+    },
+    {
+      "type": "Integer",
+      "name": "NumY"
+    },
+    {
+      "type": "Integer",
+      "name": "OverlaprateX"
+    },
+    {
+      "type": "Integer",
+      "name": "OverlaprateY"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "image-roi",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P1",
+  "themeStates": "unknown",
+  "toolId": "imvsdivideimagemodu",
+  "status": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSDivideImageModu\\IMVSDivideImageModu.xml",
+      "sha256": "897918654c43ba97a8d0dc6bf84f55395ae3d0b7d3de9dbeffc71fa571bd726d",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSDivideImageModu\\IMVSDivideImageModuAlgorithm.xml",
+      "sha256": "fb4651736891c1bc4c1436d9f0dcbbf925f206f593ff91c1479b27e45d793748",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSDivideImageModu\\IMVSDivideImageModuAlgorithmTab.xml",
+      "sha256": "72a8ef897b1fc5afd8c71198601ea0907b89f812d2a30374ce71f4034683e16b",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSDivideImageModu\\IMVSDivideImageModuCs.xml",
+      "sha256": "9789bb64eae7f724e6dd4f1957e6d05441044f55ca9bcf30e31ea9f7bc9e9d51",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSDivideImageModu\\IMVSDivideImageModuDisplay.xml",
+      "sha256": "65de77a4b5501f964eb9e75449d17f0056268cc0b0a1fa56b87be024a3cc3fcd",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSDivideImageModu\\ToolItemInfo.xml",
+      "sha256": "6e7bacb31cd19c3eec5118afd8b251580f8431785a3af770eae3f206c957c642",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "划片拆分",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

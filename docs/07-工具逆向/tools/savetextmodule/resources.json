@@ -1,0 +1,522 @@
+{
+  "toolId": "savetextmodule",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\SaveTextModule\\SaveTextModule.xml",
+      "sha256": "d6e6bff663b5b3a6f2f354c8074146ea05409bad3d847d32bebb7368385d13de",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\SaveTextModule\\SaveTextModuleAlgorithm.xml",
+      "sha256": "e4f28fa0613a040cd1c8a5127493958e40e6c2502d9e7724d9b514bb55412e13",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\SaveTextModule\\SaveTextModuleAlgorithmTab.xml",
+      "sha256": "93391a3b26e9b4b97f67376645fe37e07e1fb5c9cd3af3a54860327ed182f2a1",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\SaveTextModule\\SaveTextModuleCs.xml",
+      "sha256": "6d5436e1050539c78f131f1a0bac462a57f688eec5c224cb8e8823e07c0be500",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\SaveTextModule\\SaveTextModuleDisplay.xml",
+      "sha256": "2a3caf158fdfa3fcf7c2ff413904904b1a497ea98f15997dc986b7809bedc3bc",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\SaveTextModule\\ToolItemInfo.xml",
+      "sha256": "71a62a92d234e2983ea1570e67788f3e99e0c79914b09164e38b841ab83873b1",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "RadioSelecterEx2",
+      "name": "OutputType"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TextInput"
+    },
+    {
+      "type": "HeadBar",
+      "name": "GlobalVarHead"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar1"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar2"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar3"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar4"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar5"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar6"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar7"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar8"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar9"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar10"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar11"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar12"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar13"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar14"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar15"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar16"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar17"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar18"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar19"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar20"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar21"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar22"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar23"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar24"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar25"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar26"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar27"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar28"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar29"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar30"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar31"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar32"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar33"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar34"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar35"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar36"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar37"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar38"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar39"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar40"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar41"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar42"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar43"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar44"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar45"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar46"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar47"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar48"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar49"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar50"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar51"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar52"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar53"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar54"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar55"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar56"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar57"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar58"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar59"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar60"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar61"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar62"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar63"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar64"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar65"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar66"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar67"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar68"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar69"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar70"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar71"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar72"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar73"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar74"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar75"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar76"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar77"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar78"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar79"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar80"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar81"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar82"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar83"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar84"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar85"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar86"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar87"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar88"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar89"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar90"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar91"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar92"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar93"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar94"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar95"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar96"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar97"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar98"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar99"
+    },
+    {
+      "type": "SaveTextItem",
+      "name": "GlobalVar100"
+    },
+    {
+      "type": "AddButton_SaveText",
+      "name": "btnAddGlobalVar"
+    },
+    {
+      "type": "Boolean",
+      "name": "SaveColumnNames"
+    },
+    {
+      "type": "Boolean",
+      "name": "AsynSave"
+    },
+    {
+      "type": "Boolean",
+      "name": "SaveTrigger"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "SaveTriggerCondition"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SaveCondition"
+    },
+    {
+      "type": "OpenFolderDialog",
+      "name": "Path"
+    },
+    {
+      "type": "Integer",
+      "name": "FileCount"
+    },
+    {
+      "type": "Integer",
+      "name": "FileLen"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SaveType"
+    },
+    {
+      "type": "String",
+      "name": "TimeStamp"
+    },
+    {
+      "type": "Boolean",
+      "name": "SaveByDateTrigger"
+    },
+    {
+      "type": "Integer",
+      "name": "MaxDayCount"
+    },
+    {
+      "type": "StringName",
+      "name": "NameType"
+    },
+    {
+      "type": "Boolean",
+      "name": "RealTimeSave"
+    }
+  ],
+  "sharedUiGroups": [],
+  "status": "source-partial"
+}

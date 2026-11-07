@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/ROI/ROIItemsPageStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/ROI/SubROIItemsPageStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/Shape/ShapeItemsPageStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/ROI/LineCaliperROI/LineCaliperROIStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/ROI/RectROI/RectROIStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/ROI/CircleROI/CircleROIStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/ROI/EllipseROI/EllipseROIStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/ROI/PolygonROI/PolygonROIStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/ROI/SectorROI/SectorROIStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/ROI/OverSectorROI/OverSectorROIStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/ROI/CircleCaliperROI/CircleCaliperROIStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/ROI/SectorCaliperROI/SectorCaliperROIStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/ROI/PointROI/PointROIStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/ROI/LineROI/LineROIStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/ROI/CircleMesROI/CircleMesROIStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/ROI/CoordinateROI/CoordinateROIStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/ROI/MultiLineROI/MultiLineROIStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/SpecialROI/CrossROI/CrossROIStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/Shape/RectShape/RectShapeStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/Shape/CircleShape/CircelShapeStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/Shape/PolygonShape/PolygonShapeStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/Shape/LineShape/LineShapeStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/Shape/PointShape/PointShapeStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/Shape/ArrowPathShape/ArrowPathShapeStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/Shape/CoordinateShape/CoordinateShapeStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/Shape/TextShape/TextShapeStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/Shape/LineAngleShape/LineAngleShapeStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/Shape/AnnularSectorShape/AnnularSectorShapeStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/Shape/CrossShape/CrossShapeStyle.xaml" />
+    <ResourceDictionary Source="/VMBaseControls;component/Base/ImageView/Shape/MultiPointShape/MultiPointShapeStyle.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

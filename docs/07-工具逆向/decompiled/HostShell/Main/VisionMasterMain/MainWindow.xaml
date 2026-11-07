@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VMControl:BaseWindow x:Class="VisionMasterMain.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:local="clr-namespace:VisionMasterMain" xmlns:localApp="clr-namespace:VisionMasterMain.AppMainWindow" xmlns:VMControl="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:VMWpf="clr-namespace:VMControls.WPF.Release;assembly=VMControls.WPF.Release" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:UIHelper="clr-namespace:Apps.UIHelper.Extern;assembly=Apps.UIHelper" xmlns:PCUICommon="clr-namespace:HikPcUI.Commom;assembly=VM.PcUI" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:user="clr-namespace:VM.User;assembly=VM.User" WindowStyle="SingleBorderWindow" Title="VisionMaster" Height="768" Width="1366" MinWidth="800" MinHeight="600" ResizeMode="CanResize" FontSize="13" FontFamily="Microsoft YaHei" ShowInTaskbar="True" SizeAble="True" CloseButtonVisibility="Collapsed" MinButtonVisibility="Collapsed" MaxButtonVisibility="Collapsed" BorderThickness="0" Closed="Window_Closed" PreviewKeyDown="BaseWindow_PreviewKeyDown" Closing="BaseWindow_Closing">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <PCUICommon:NegateConverter x:Key="negateConverter" />
+      <Style x:Key="WindowMainPanelStyle" TargetType="{x:Type Panel}">
+        <Setter Property="Margin" Value="0" />
+        <Style.Triggers>
+          <DataTrigger Value="Maximized" Binding="{Binding Path=WindowState, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}">
+            <Setter Property="Margin" Value="0,0,0,7" />
+          </DataTrigger>
+        </Style.Triggers>
+      </Style>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <VMControl:BaseWindow.TitleBar>
+    <Border BorderThickness="1" Margin="-1" BorderBrush="{DynamicResource Col_SubForm_BorderBrush}">
+      <localApp:TitleBar x:Name="m_TitleMy" IsButtonClickEnabled="{Binding IsShowProgressMask, ElementName=MainView, Mode=OneWay, Converter={StaticResource negateConverter}}">
+        <UIElement.Effect>
+          <DropShadowEffect BlurRadius="5" Direction="270" Opacity="0.40" ShadowDepth="2" Color="#FF0F1010" />
+        </UIElement.Effect>
+      </localApp:TitleBar>
+    </Border>
+  </VMControl:BaseWindow.TitleBar>
+  <Grid Name="PART_View" Style="{StaticResource WindowMainPanelStyle}">
+    <Border BorderThickness="1" BorderBrush="{DynamicResource Col_SubForm_BorderBrush}">
+      <VMWpf:VmMainViewConfigControl Name="MainView" IsParamsEditState="{Binding IsAdmin, Source={x:Static user:CodeManager.Instance}}" SelectedModule="{Binding SelectedModule, Mode=TwoWay}" IsLockWorkArea="{Binding IsWorkAreaLocking, Mode=OneWay}" IsOpenParams="{Binding IsOpenParams, Mode=TwoWay}" ZoomIndex="{Binding ConfigZoomIndex, Mode=TwoWay}">
+        <i:Interaction.Triggers>
+          <i:EventTrigger EventName="SectionChanged">
+            <UIHelper:ParamsEventCommand Command="{Binding SelectionChangedCommand}" />
+          </i:EventTrigger>
+        </i:Interaction.Triggers>
+      </VMWpf:VmMainViewConfigControl>
+    </Border>
+  </Grid>
+</VMControl:BaseWindow>

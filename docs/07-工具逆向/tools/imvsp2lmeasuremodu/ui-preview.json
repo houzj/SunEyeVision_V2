@@ -1,0 +1,184 @@
+{
+  "controls": [
+    {
+      "type": "RadioSelecter",
+      "name": "InputWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "OriginPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PointY"
+    },
+    {
+      "type": "RadioSelecter3",
+      "name": "InputWay2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "LINE"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointY"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ChooseCoordinate"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "OriginPoint"
+    },
+    {
+      "type": "Enumeration",
+      "name": "OutputAngleRange"
+    },
+    {
+      "type": "Boolean",
+      "name": "AngleLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangAngleLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "DistPerpendLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangDistPerpendLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "ProjXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangProjXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "ProjYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangProjYLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "DistMinLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangDistMinLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "DistMaxLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangDistMaxLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineInput"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ThroughLineInput"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "PointInput"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineResult"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CZPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvsp2lmeasuremodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2LMeasureModu\\IMVSP2LMeasureModu.xml",
+      "sha256": "f705b185358713281239c2d8b6ac413c166838775e19088183f8b7e8cd75599f",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2LMeasureModu\\IMVSP2LMeasureModuAlgorithm.xml",
+      "sha256": "887e61a84e95a4ab7fb546fc1fa7abadfc3e027e709eb7a7f162873615efbd94",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2LMeasureModu\\IMVSP2LMeasureModuAlgorithmTab.xml",
+      "sha256": "57e3986cf25cfab8a9fcb9920eacbbf05036b86ad6e409de5abf93bffbbbfb4b",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2LMeasureModu\\IMVSP2LMeasureModuCs.xml",
+      "sha256": "f7d16282d9813fda14f8650a017a553ba38a5705e9cf02580c541d388a76d407",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2LMeasureModu\\IMVSP2LMeasureModuDisplay.xml",
+      "sha256": "b3752c99042387c836cedd20e980741ff09eed0e3d3d600c3515a80bbca6a759",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSP2LMeasureModu\\ToolItemInfo.xml",
+      "sha256": "afa0112dd19395961bf097e9bb82d5b1c0e65b35e30d5841b686fa8593336cd1",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "点线测量",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

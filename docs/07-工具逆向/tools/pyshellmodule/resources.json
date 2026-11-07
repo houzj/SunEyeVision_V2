@@ -1,0 +1,54 @@
+{
+  "toolId": "pyshellmodule",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PyShellModule\\PyShellModule.xml",
+      "sha256": "fc5ac8ed8d9345d424be95bdb05fb2f010c4205882757b406ec61e1289353fdf",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PyShellModule\\PyShellModuleAlgorithm.xml",
+      "sha256": "ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PyShellModule\\PyShellModuleAlgorithmTab.xml",
+      "sha256": "c4dc338156b7ce9a4bae45a72a88ceabd0d3b8c474a1d8ea273691603a8dd1d0",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PyShellModule\\PyShellModuleCs.xml",
+      "sha256": "d35bf70195211de654f1336fe064d70d2632b1019be3d10944ddb17dc1ad77f4",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PyShellModule\\PyShellModuleDisplay.xml",
+      "sha256": "584b5981eb3c430384cd9e254fe85aa2efe3d3eb80fc398f5d195799a57d7b64",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\PyShellModule\\ToolItemInfo.xml",
+      "sha256": "2aacc746d42178306ef09263d4ddcb10ab07f18ce4c30829daf27d7fd1f79bc5",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "ButtonSelecter_PyShell",
+      "name": "ShellContent"
+    }
+  ],
+  "sharedUiGroups": [],
+  "status": "inventory-only"
+}

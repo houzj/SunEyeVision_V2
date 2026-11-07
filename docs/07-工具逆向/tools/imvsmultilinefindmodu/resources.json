@@ -1,0 +1,179 @@
+{
+  "toolId": "imvsmultilinefindmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSMultiLineFindModu\\IMVSMultiLineFindModu.xml",
+      "sha256": "d48f95e54b65381281dcf443506b3bac3725a2fadc08b7d3c88ec6cfe17294c8",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSMultiLineFindModu\\IMVSMultiLineFindModuAlgorithm.xml",
+      "sha256": "27d4b69b24946bf6550cba60e1abe4e9710a9f8a7d18acfb114ed72951cc41ee",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSMultiLineFindModu\\IMVSMultiLineFindModuAlgorithmTab.xml",
+      "sha256": "1832ba9b57693a7f819380a9f07b3b524d0c42e5a32e3e31e9efafd4bd772596",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSMultiLineFindModu\\IMVSMultiLineFindModuCs.xml",
+      "sha256": "f367b0a20be8989c796875c5f0ef676e4b2393d7906c8bc00a94db9a4a7a47fe",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSMultiLineFindModu\\IMVSMultiLineFindModuDisplay.xml",
+      "sha256": "e20692915f656d4de4151f75c09f0d28037899178b86bf3a80ca77c5b7ca7b18",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSMultiLineFindModu\\ToolItemInfo.xml",
+      "sha256": "3c3c47ce37bcc034857b3c9f040f8874a52ed5f193c1e0cb9a3500cca47a2aee",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Integer",
+      "name": "GradientFieldSize"
+    },
+    {
+      "type": "Integer",
+      "name": "ProjectionLength"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeThreshold"
+    },
+    {
+      "type": "Integer",
+      "name": "NormalContrast"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePolarity"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeAngleTolerance"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeDistTolerance"
+    },
+    {
+      "type": "Integer",
+      "name": "LineMaxNum"
+    },
+    {
+      "type": "Integer",
+      "name": "LineCoverage"
+    },
+    {
+      "type": "Integer",
+      "name": "LineRotationTolerance"
+    },
+    {
+      "type": "Enumeration",
+      "name": "LineFitFun"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SortType"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgesNumMax"
+    },
+    {
+      "type": "Boolean",
+      "name": "EdgePointsNumLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "EdgePointsNumLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "LineNumLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "LineNumLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ThroughLine"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "OutlinePoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "RoiSelectGroup",
+    "InheritWayGroup",
+    "ExternROITypeGroup",
+    "AssistGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

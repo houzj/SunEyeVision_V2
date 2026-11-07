@@ -1,0 +1,56 @@
+{
+  "controls": [
+    {
+      "type": "TimeConfig",
+      "name": "TimeConfigPage"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "timestatisticmodule",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\TimeStatisticModule\\TimeStatisticModule.xml",
+      "sha256": "185500f6c15055dd1b03b59460791b4a93354757d8adb7151d099d3c195c0f78",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\TimeStatisticModule\\TimeStatisticModuleAlgorithm.xml",
+      "sha256": "6e7d872d5f7c0de80fd8b17cf54c1fe672275b5c83af3e2c5520ebcef11efc57",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\TimeStatisticModule\\TimeStatisticModuleAlgorithmTab.xml",
+      "sha256": "fb03fd50bff6a7c1dd01106fd3ab283b7a9bb04cd1938090717f1999dfb62300",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\TimeStatisticModule\\TimeStatisticModuleCs.xml",
+      "sha256": "9480649e261d2871792b8e2e3457ea19d349087d129fdfb34762cc8e2f46bca8",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\TimeStatisticModule\\TimeStatisticModuleDisplay.xml",
+      "sha256": "5bf333e22c5e2b5c2ee6112fb33adadfad642803a95a0e4c82306db0bfa14340",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\TimeStatisticModule\\ToolItemInfo.xml",
+      "sha256": "70a1b9c6367bf18b3de22757b60d5f80ebc3843f04415189be2780f39013b7b0",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "耗时统计",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

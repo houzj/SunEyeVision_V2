@@ -1,0 +1,48 @@
+{
+  "toolId": "datarecordmodule",
+  "parameters": [],
+  "inputs": [
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "ClearSignal",
+        "ValueType": "int",
+        "IsForce": "false",
+        "Visible": "false",
+        "AutoSubscribe": "false",
+        "CustomVisible": "false"
+      },
+      "text": "",
+      "children": []
+    }
+  ],
+  "outputs": [
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "ModuRunTime",
+        "ValueType": "float",
+        "IsForce": "true",
+        "CustomVisible": "false",
+        "IsArray": "false"
+      },
+      "text": "",
+      "children": []
+    },
+    {
+      "type": "Filter",
+      "attributes": {
+        "Name": "ModuStatus",
+        "ValueType": "int",
+        "IsForce": "false",
+        "CustomVisible": "false",
+        "IsArray": "false"
+      },
+      "text": "",
+      "children": []
+    }
+  ],
+  "bindings": [],
+  "conditions": [],
+  "status": "not-started"
+}

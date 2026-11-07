@@ -1,0 +1,243 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<controls:BaseWindow x:Class="VisionMaster.AppMainWindow.ModeSelectionWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:input="clr-namespace:System.Windows.Input;assembly=PresentationCore" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:local="clr-namespace:VisionMaster.AppMainWindow" x:Name="modeSelect" Height="470" Width="698" CloseButtonVisibility="Collapsed" ResizeMode="NoResize" BorderThickness="1,0,1,1" CornerRadius="4" BorderBrush="{DynamicResource FouerColorBorderBB}" TopBorderBrush="{DynamicResource FouerColorBorderBB}" ShowInTaskbar="True">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Apps.Style;component/PasswordBoxStyle/PasswordBoxStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ProgressBarStyle/ProgressBarStyle.xaml" />
+        <ResourceDictionary Source="/VM.Controls;component/Styles/BaseWindowStyle.xaml" />
+        <ResourceDictionary Source="/Apps.XmlUI;component/Styles/ParamUserControlDataTemplate.xaml" />
+        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+      </ResourceDictionary.MergedDictionaries>
+      <BooleanToVisibilityConverter x:Key="BoolToVisibilityCvt" />
+      <Style x:Key="{x:Type ToggleButton}" TargetType="{x:Type ToggleButton}">
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ToggleButton}">
+              <StackPanel Orientation="Horizontal" Background="#00FFFFFF">
+                <Image Name="Image" Source="/VisionMasterMain;component/Resources/guide_check-box_off.png" Cursor="Hand" Stretch="None" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                <ContentPresenter Content="{TemplateBinding ContentControl.Content}" Margin="6,0,0,0" ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}" VerticalAlignment="Center" HorizontalAlignment="Left" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+              </StackPanel>
+              <ControlTemplate.Triggers>
+                <Trigger Property="ToggleButton.IsChecked" Value="True">
+                  <Setter TargetName="Image" Property="Image.Source" Value="/VisionMasterMain;component/Resources/guide_check-box_on.png" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="{x:Type RadioButton}" TargetType="{x:Type RadioButton}" BasedOn="{StaticResource NormalRadioButton}" />
+      <Style x:Key="PasswordBoxStyle" TargetType="{x:Type PasswordBox}" BasedOn="{StaticResource CommonPasswordBoxStyle}">
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="BorderBrush" Value="#FF242526" />
+        <Setter Property="Foreground" Value="#FF686868" />
+        <Setter Property="Background" Value="#3A3B3B" />
+        <Setter Property="Padding" Value="5,0" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Margin" Value="14,3,0,3" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="FrameworkElement.ToolTip" Value="{Binding Path=Tag, RelativeSource={RelativeSource Mode=Self}}" />
+      </Style>
+      <Style x:Key="{x:Type ProgressBar}" TargetType="{x:Type ProgressBar}" BasedOn="{StaticResource ProgressBarStyle}">
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Foreground">
+          <Setter.Value>
+            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+              <GradientStop Color="#FC8921" Offset="0" />
+              <GradientStop Color="#D45F0F" Offset="1" />
+            </LinearGradientBrush>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="{x:Type ComboBox}" TargetType="{x:Type ComboBox}" BasedOn="{StaticResource IpComboBoxStyle}">
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ComboBox}">
+              <Grid Background="{TemplateBinding Control.Background}">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="16" />
+                </Grid.ColumnDefinitions>
+                <Popup Name="Popup" Grid.Column="0" Grid.ColumnSpan="2" IsOpen="{TemplateBinding ComboBox.IsDropDownOpen}" Placement="Bottom" Focusable="False" AllowsTransparency="True" PopupAnimation="Slide">
+                  <Grid>
+                    <Border Name="DropDown" Margin="4" MaxHeight="{TemplateBinding ComboBox.MaxDropDownHeight}" MinWidth="{TemplateBinding FrameworkElement.ActualWidth}" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="0,6,0,6" Background="{DynamicResource ComboBoxBorderS}">
+                      <UIElement.Effect>
+                        <DropShadowEffect Color="#CCCCCD" BlurRadius="4" ShadowDepth="4" Opacity="0.4" />
+                      </UIElement.Effect>
+                      <UIElement.RenderTransform>
+                        <TranslateTransform X="-4" />
+                      </UIElement.RenderTransform>
+                      <ScrollViewer Style="{DynamicResource RecScrollViewer}" Focusable="False" Background="#00FFFFFF" MaxHeight="{TemplateBinding ComboBox.MaxDropDownHeight}" SnapsToDevicePixels="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" CanContentScroll="True">
+                        <Grid Background="#00FFFFFF">
+                          <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="2" />
+                          </Grid.RowDefinitions>
+                          <StackPanel IsItemsHost="True" input:KeyboardNavigation.DirectionalNavigation="Contained" Background="#00FFFFFF" />
+                        </Grid>
+                      </ScrollViewer>
+                    </Border>
+                  </Grid>
+                </Popup>
+                <ToggleButton Name="toggle" Focusable="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" Grid.ColumnSpan="2" ClickMode="Press" Style="{StaticResource ComboxStyleBtn}" IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" />
+                <TextBox Name="PART_EditableTextBox" IsHitTestVisible="True" BorderThickness="0" Padding="5,0" CaretBrush="#A0FFFFFF" Margin="{TemplateBinding Control.Padding}" Height="{TemplateBinding FrameworkElement.Height}" Width="{TemplateBinding FrameworkElement.Width}" Background="#00FFFFFF" Foreground="{TemplateBinding Control.Foreground}" Text="{TemplateBinding ComboBox.Text}" VerticalContentAlignment="Center" VerticalAlignment="Center" HorizontalAlignment="Left" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+                <Border Name="Border" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="1" BorderBrush="{TemplateBinding Control.BorderBrush}" CornerRadius="2" />
+              </Grid>
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="Border" Value="{DynamicResource Col_Theme}" Property="Border.BorderBrush" />
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                  <Setter Value="{DynamicResource ResultGridBaground}" Property="Background" />
+                  <Setter TargetName="Border" Value="{DynamicResource TabForgroundNormal}" Property="Border.BorderBrush" />
+                </Trigger>
+                <DataTrigger Value="True" Binding="{Binding IsOpen, ElementName=Popup}">
+                  <Setter TargetName="Border" Value="{DynamicResource Col_Theme}" Property="Border.BorderBrush" />
+                </DataTrigger>
+                <DataTrigger Value="False" Binding="{Binding ElementName=modeSelect, Path=IsLegalIP}">
+                  <Setter TargetName="Border" Property="Border.BorderBrush" Value="#FF0000" />
+                </DataTrigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="InputTextBox" TargetType="{x:Type TextBox}">
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type TextBox}">
+              <Border Background="{TemplateBinding Control.Background}" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" CornerRadius="2">
+                <ScrollViewer Name="PART_ContentHost" VerticalContentAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="EditImageButton" TargetType="{x:Type Button}">
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Button}">
+              <Border Background="{TemplateBinding Control.Background}" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}">
+                <Image Name="Image" HorizontalAlignment="Center" VerticalAlignment="Center" Source="pack://application:,,,/Apps.Style;component/Resources/ic_btn_edit_normal.png" />
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="Image" Property="Image.Source" Value="pack://application:,,,/Apps.Style;component/Resources/ic_btn_edit_click.png" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <controls:BaseWindow.TitleBar>
+    <controls:FouerColorBorder Height="80" Background="#FF2D2E2F" BorderThickness="1,2,2,0" BorderBrush="{DynamicResource FouerColorBorderBB}" CornerRadius="4,4,0,0">
+      <Grid>
+        <Border BorderThickness="0,2,0,0" BorderBrush="{DynamicResource Col_Window_TopFill}" />
+        <Image Name="titleLogo" Source="/VisionMasterMain;component/Resources/logo_VM.png" Stretch="Uniform" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="30,20,0,0" />
+        <TextBlock VerticalAlignment="Top" HorizontalAlignment="Left" Margin="150,50,0,0" FontFamily="Consolas" Text="{DynamicResource Lang_version}" FontStyle="Italic" Foreground="{DynamicResource TextBlockFg}" />
+        <Button WindowChrome.IsHitTestVisibleInChrome="True" Height="32" Width="32" HorizontalAlignment="Right" Style="{DynamicResource WinCloseBtnStyle}" Click="Close_OnClick">
+          <UIElement.RenderTransform>
+            <TranslateTransform Y="4" />
+          </UIElement.RenderTransform>
+        </Button>
+      </Grid>
+    </controls:FouerColorBorder>
+  </controls:BaseWindow.TitleBar>
+  <Border SnapsToDevicePixels="True" UseLayoutRounding="True" Background="#FF2D2E2F">
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="70" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <StackPanel Grid.Row="0" Orientation="Vertical" Visibility="Visible">
+        <StackPanel Orientation="Horizontal">
+          <Rectangle Height="20" Width="2" Fill="{DynamicResource Col_Theme}" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="0" Margin="78,18,0,0" />
+          <TextBlock Name="ModeDescribeTextBlock" Margin="12,18,0,0" FontSize="20" Foreground="{DynamicResource GuideWindowTextBlockFg}" VerticalAlignment="Center" HorizontalAlignment="Left">
+            <TextBlock>
+              <FrameworkElement.Style>
+                <Style TargetType="{x:Type TextBlock}">
+                  <Style.Triggers>
+                    <DataTrigger Value="True" Binding="{Binding ElementName=modeSelect, Path=IsOpenNativeMode}">
+                      <Setter Property="Text" Value="{DynamicResource Lang_SelectServerSetting}" />
+                    </DataTrigger>
+                    <DataTrigger Value="False" Binding="{Binding ElementName=modeSelect, Path=IsOpenNativeMode}">
+                      <Setter Property="Text" Value="{DynamicResource Lang_RemoteServerSetting}" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </FrameworkElement.Style>
+            </TextBlock>
+          </TextBlock>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Margin="80,10,80,0" Visibility="{Binding ElementName=modeSelect, Path=IsOpenNativeMode, Converter={StaticResource BoolToVisibilityCvt}}">
+          <RadioButton Name="localRadio" Foreground="#BFBFBF" FontSize="14" FontWeight="Bold" GroupName="ModeRadioButton" Content="{DynamicResource Lang_LocalServerMode}" IsChecked="False" />
+          <TextBlock Foreground="#A6A6A6" FontSize="12" Margin="15,0,0,0" VerticalAlignment="Center" Text="{DynamicResource Lang_NativeTips}" TextTrimming="CharacterEllipsis" MaxWidth="400" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Mode=Self}}" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Margin="80,10,80,0" Visibility="{Binding ElementName=modeSelect, Path=IsOpenNativeMode, Converter={StaticResource BoolToVisibilityCvt}}">
+          <RadioButton Name="remoteRadio" Foreground="#BFBFBF" FontSize="14" FontWeight="Bold" GroupName="ModeRadioButton" Content="{DynamicResource Lang_RemoteServerMode}" IsChecked="{Binding ElementName=modeSelect, Path=IsRemoteMode}" />
+          <TextBlock Foreground="#A6A6A6" FontSize="12" Margin="15,0,0,0" VerticalAlignment="Center" Text="{DynamicResource Lang_RemoteTips}" TextTrimming="CharacterEllipsis" MaxWidth="400" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Mode=Self}}" />
+        </StackPanel>
+        <Image Name="Image" Source="/VisionMasterMain;component/Resources/img_模式选择.png" Cursor="Hand" Stretch="None" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="{Binding ElementName=localRadio, Path=IsChecked, Converter={StaticResource bool2VisibilityConverter}}" />
+      </StackPanel>
+      <Grid Row="1" Margin="80,40,80,0" Visibility="{Binding ElementName=remoteRadio, Path=IsChecked, Converter={StaticResource bool2VisibilityConverter}}">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="30" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="2" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="48" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Row="0" Grid.Column="0" FontSize="14" Text="{DynamicResource Lang_SelectServerIpAddress}" Foreground="{DynamicResource GuideWindowTextBlockFg}" VerticalAlignment="Center" HorizontalAlignment="Left" />
+        <ComboBox Name="IpComboBox" Grid.Row="0" Grid.Column="1" Height="32" Foreground="#FF686868" Background="#664D4D4D" BorderThickness="1" BorderBrush="#FF242526" Margin="6,0,0,0" ItemsSource="{Binding ElementName=modeSelect, Path=Servers}" Text="{Binding ElementName=modeSelect, Path=ServerIp, Mode=TwoWay}" Visibility="{Binding ElementName=enumRadio, Path=IsChecked, Converter={StaticResource bool2VisibilityConverter}}" DropDownOpened="IpComboBox_DropDownOpened" />
+        <Button Name="ModifyIpButton" Grid.Row="0" Grid.Column="2" Width="28" Height="28" HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource EditImageButton}" ToolTip="修改IP" Visibility="{Binding ElementName=modeSelect, Path=IsEnumIp, Converter={StaticResource bool2VisibilityConverter}}" Click="ModifyIpButton_Click" />
+        <TextBlock Grid.Row="0" Grid.Column="3" FontSize="14" Text="{DynamicResource Lang_RemoteServerPort}" Foreground="{DynamicResource GuideWindowTextBlockFg}" VerticalAlignment="Center" HorizontalAlignment="Left" />
+        <TextBox Grid.Row="0" Grid.Column="4" Visibility="Visible" IsEnabled="True" BorderBrush="#FF242526" Foreground="#FF686868" Background="#664D4D4D" Height="32" FontSize="14" Padding="5,0" Margin="6,0,0,0" Style="{StaticResource InputTextBox}" Tag="{DynamicResource Lang_RemoteServerPortTips}" input:InputMethod.IsInputMethodEnabled="False" Text="{Binding ElementName=modeSelect, Path=ServerPort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+        <TextBlock Grid.Row="2" Grid.Column="0" FontSize="14" Text="{DynamicResource Lang_InformationVerification}" Foreground="{DynamicResource GuideWindowTextBlockFg}" VerticalAlignment="Center" HorizontalAlignment="Left" Visibility="{Binding ElementName=CheckButton, Path=Visibility}" />
+        <Button Name="CheckButton" Grid.Row="2" Grid.Column="1" Height="30" Margin="6,0,0,0" Content="{DynamicResource 校验}" Background="#FF4D4D4D" Foreground="#FFC0C0C0" Style="{StaticResource BottomButtonStyle}" HorizontalAlignment="Left" Click="CheckButton_Click" />
+        <TextBlock Name="InputTextBlock" Grid.Row="2" Grid.Column="0" FontSize="14" Text="{DynamicResource Lang_SetScriptPassword}" Foreground="{DynamicResource GuideWindowTextBlockFg}" VerticalAlignment="Center" HorizontalAlignment="Left" Visibility="{Binding ElementName=InputPasswordBox, Path=Visibility}" />
+        <PasswordBox Name="InputPasswordBox" Grid.Row="2" Grid.Column="1" Margin="6,0,0,0" Tag="{DynamicResource Lang_PasswordTips}" Style="{StaticResource PasswordBoxStyle}" Visibility="{Binding ElementName=modeSelect, Path=IsNeedInputPasswordBox, Converter={StaticResource bool2VisibilityConverter}}" PasswordChanged="PasswordBox_PasswordChanged" />
+        <TextBlock Grid.Row="2" Grid.Column="3" FontSize="14" Text="{DynamicResource 确认密码}" Foreground="{DynamicResource GuideWindowTextBlockFg}" VerticalAlignment="Center" HorizontalAlignment="Left" Visibility="{Binding ElementName=ConfirmPasswordBox, Path=Visibility}" />
+        <PasswordBox Name="ConfirmPasswordBox" Grid.Row="2" Grid.Column="4" Margin="6,0,0,0" Tag="{DynamicResource Lang_PasswordTips}" Style="{StaticResource PasswordBoxStyle}" Visibility="{Binding ElementName=modeSelect, Path=IsNeedConfirmPasswordBox, Converter={StaticResource bool2VisibilityConverter}}" PasswordChanged="PasswordBox_PasswordChanged" />
+        <TextBlock Grid.Row="4" Grid.Column="1" FontSize="12" Foreground="#FFFF0000" Margin="6,0,0,0" Text="{Binding ElementName=modeSelect, Path=PasswordTips}" />
+        <TextBlock Grid.Row="4" Grid.Column="4" Margin="6,0,0,0" Foreground="#FFFF0000" Text="{Binding ElementName=modeSelect, Path=ConfirmPasswordTips}" />
+        <TextBlock Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="5" Margin="6,0,0,0" Foreground="#FFFF0000" FontSize="14" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Mode=Self}}" Text="{Binding ElementName=modeSelect, Path=CountDownTime}" />
+      </Grid>
+      <StackPanel Grid.Row="2" Orientation="Vertical" Margin="60,0">
+        <Rectangle Height="1" Fill="#FF373737" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="0,5,0,16" />
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="100" />
+            <ColumnDefinition Width="16" />
+            <ColumnDefinition Width="100" />
+          </Grid.ColumnDefinitions>
+          <ToggleButton Name="buttonShow" Grid.Column="0" WindowChrome.IsHitTestVisibleInChrome="True" Content="{DynamicResource Lang_RememberTips}" Foreground="{DynamicResource ToggleButtonFg}" FontSize="14" Margin="0,-20,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" VerticalAlignment="Center" HorizontalAlignment="Left" ToolTip="{Binding ElementName=buttonShow, Path=Content}" IsChecked="{Binding ElementName=modeSelect, Path=IsRememberChecked}">
+            <UIElement.RenderTransform>
+              <TranslateTransform Y="10" />
+            </UIElement.RenderTransform>
+          </ToggleButton>
+          <Button Name="ConfirmButton" Grid.Column="1" Height="30" Background="#FF4D4D4D" Foreground="#FFC0C0C0" Content="{DynamicResource 确定}" VerticalAlignment="Center" HorizontalAlignment="Right" Style="{StaticResource BottomButtonStyle}" IsDefault="True" Click="Confirm_Click" />
+          <Button Grid.Column="3" Height="30" VerticalAlignment="Center" HorizontalAlignment="Right" Style="{StaticResource BottomButtonStyle}" Background="#FF4D4D4D" Foreground="#FFC0C0C0" Content="{DynamicResource 取消}" Click="Cancel_Click" />
+        </Grid>
+      </StackPanel>
+      <ProgressBar Name="ProgressBar" Grid.Row="3" VerticalAlignment="Bottom" Height="2" Margin="0,0" IsIndeterminate="True" Visibility="{Binding ElementName=modeSelect, Path=ProgressBarVisibility}" />
+      <Border Grid.Row="0" Background="#666666" Grid.RowSpan="3" Opacity="0.6" Visibility="{Binding ElementName=ProgressBar, Path=Visibility}" />
+    </Grid>
+  </Border>
+</controls:BaseWindow>

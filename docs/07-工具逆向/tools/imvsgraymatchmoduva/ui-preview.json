@@ -1,0 +1,200 @@
+{
+  "controls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "OutputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "GrayMatchVAConfigPanalData",
+      "name": "GrayMatchPat"
+    },
+    {
+      "type": "Boolean",
+      "name": "UseMatchAllMode"
+    },
+    {
+      "type": "Float",
+      "name": "MinScore"
+    },
+    {
+      "type": "Integer",
+      "name": "MaxMatchNum"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangAngle"
+    },
+    {
+      "type": "Integer",
+      "name": "MaxOverlap"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SortType"
+    },
+    {
+      "type": "Integer",
+      "name": "Polarity"
+    },
+    {
+      "type": "Enumeration",
+      "name": "MatchingPolarity"
+    },
+    {
+      "type": "Integer",
+      "name": "TimeOut"
+    },
+    {
+      "type": "Integer",
+      "name": "EndPyramidLevel"
+    },
+    {
+      "type": "Boolean",
+      "name": "OKWhenNumIsZero"
+    },
+    {
+      "type": "Boolean",
+      "name": "NumLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "NumAngleLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "AngleLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeAngleLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "ScoreLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeScoreLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "MatchPointXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeMatchPointXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "MatchPointYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeMatchPointYLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "BoxPointXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeBoxPointXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "BoxPointYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeBoxPointYLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "MatchResults"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "MatchLocation"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvsgraymatchmoduva",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSGrayMatchModuVA\\IMVSGrayMatchModuVA.xml",
+      "sha256": "4adfba1c01c9c6d37008cb1c16a776e99e4eb2c4cc20fac53df7bbea2ac4cd72",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSGrayMatchModuVA\\IMVSGrayMatchModuVAAlgorithm.xml",
+      "sha256": "de105a1f87db60ca3dcb9d3e29e1ff1366324b4623d4bd0aa82177450857796a",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSGrayMatchModuVA\\IMVSGrayMatchModuVAAlgorithmTab.xml",
+      "sha256": "b92119e39976d8487c53dcba163d653be456fbd30a42be97e741f838a73a3af5",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSGrayMatchModuVA\\IMVSGrayMatchModuVACs.xml",
+      "sha256": "ec081a2e6771ab6cc243c4765de975afa0935c6c90b6125252920e9d2f1aa19b",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSGrayMatchModuVA\\IMVSGrayMatchModuVADisplay.xml",
+      "sha256": "9c005c9e0b32d4c8012445f1ccc27e80a7e6eb2123b91994a3ff7a55b256480a",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSGrayMatchModuVA\\ToolItemInfo.xml",
+      "sha256": "f091f4e45fb0e87c995f92aebe83ae2958e802da195b462749004f4973b7b3d8",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "灰度匹配",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

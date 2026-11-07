@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VM 对标全量重构架构基线方案</title>
+<link rel="stylesheet" href="../../../../00-索引/assets/doc.css">
+</head>
+<body>
+<div class="wrap">
+
+<nav class="crumbs">
+    <a href="../../../../00-索引/主题台账.html">主题台账</a>
+    <a href="../../../../00-索引/文档索引.html">文档索引</a>
+    <a href="../../../../09-现行文档/框架架构总览.html">框架架构总览（现行）</a>
+</nav>
+
+<header class="doc-header">
+    <h1>VM 对标全量重构架构基线方案<span class="badge partial">待评审</span></h1>
+    <p class="doc-meta">创建：2026-11-05 22:32<span class="sep">·</span>代码基线：<code>71da36329</code>（main）<span class="sep">·</span>对标对象：<code>D:\MyWork\参考项目\VisionMaster\Source</code><span class="sep">·</span>现行结论落点：<code>09-现行文档/框架架构总览.html</code></p>
+</header>
+
+<section class="card lead">
+    <h2>一句话结论</h2>
+    <p>重构目标是<strong>与 VisionMaster 原件的四层一一对应</strong>，不是按现有工程名继续加固。已核实的结论是：<strong>接口三分层（<code>Plugin.Contracts</code> / <code>Plugin.Runtime</code> / <code>Plugin.Wpf</code>）和工具两段式（Runtime + Wpf）方向正确，不需要推翻</strong>；不对标的地方只有三处——<strong>①算法层反向依赖旧 <code>Plugin.SDK</code></strong>、<strong>②节点/参数/结果模型存在新老两份</strong>、<strong>③UI 平台被打散在四处</strong>。因此第一批要做的不是继续迁工具，而是<strong>让旧 <code>Plugin.SDK</code> 整体退场</strong>；它不退，后面每个工具的迁移都会做两遍。</p>
+</section>
+
+<section class="card">
+    <h2>改前用户看到什么</h2>
+    <ul>
+        <li>工具箱里<strong>只有两个工具是新的</strong>（图像加载、Blob 分析），其余 18 个仍是旧形态，界面风格与操作手感不一致。</li>
+        <li>开发一个新工具时，明明只想调算法，却<strong>必须同时处理旧 SDK 的模型</strong>，因为算法适配层（<code>CvAdapter</code>）就建在旧 SDK 上。</li>
+        <li>同一个"参数/结果"在不同工具里<strong>长得不一样、字段也不完全对得上</strong>，因为底层有两份等价模型。</li>
+        <li>公共控件的行为<strong>取决于它落在哪个界面里</strong>——控件分散在四个工程，样式来源不止一处。</li>
+        <li>第三方想独立开发工具，<strong>拿不到一份干净、稳定、只含必要依赖的 SDK</strong>。</li>
+    </ul>
+</section>
+
+<section class="card">
+    <h2>改后应该是什么样</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>场景</th>
+                <th>期望行为</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>开发一个新工具</td>
+                <td>只需引用 <code>Plugin.Contracts</code> + 所需算子库，<strong>不需要知道旧 SDK 存在</strong></td>
+            </tr>
+            <tr>
+                <td>新增一种参数或结果</td>
+                <td>只改一处模型，工具箱、参数页、结果页、保存重开<strong>全部跟着生效</strong></td>
+            </tr>
+            <tr>
+                <td>原件控件升级</td>
+                <td>改 <code>Plugin.Wpf</code> 一处，所有界面<strong>同时生效</strong></td>
+            </tr>
+            <tr>
+                <td>用 CvEngine 写算法</td>
+                <td><strong>不会被动拖入</strong>设备驱动、脚本、旧 UI 之类无关依赖</td>
+            </tr>
+            <tr>
+                <td>第三方独立开发</td>
+                <td>仅凭发布 DLL + 模板工程即可构建、部署、外部附加调试</td>
+            </tr>
+        </tbody>
+    </table>
+    <p><strong>依据</strong>：VM 原件 <code>Source/</code> 下 <code>Zoo.*</code> 算子库不依赖 UI 平台与应用；<code>WPF-Control</code> 是唯一 UI 平台且自带 <code>NugetTemplates</code>；<code>NodeData</code> 是唯一节点数据模型。三条都由工程清单实测，不是推断。</p>
+</section>
+
+<section class="card">
+    <h2>判据：什么叫"设计正确"</h2>
+    <p>后续任何改动都用这五条判定，不满足就先补设计，不做优化：</p>
+    <ol>
+        <li><strong>依赖单向无环</strong>：层与层之间只允许向下依赖，禁止出现"算法层反过来依赖 SDK / 宿主"。</li>
+        <li><strong>算子库独立</strong>：算子库只暴露算子语义，不依赖 UI、不依赖应用、不依赖工具插件模型。</li>
+        <li><strong>模型单份</strong>：同一个业务概念（参数、结果、几何、节点数据）在全仓只有一处定义。</li>
+        <li><strong>工具隔离</strong>：工具 Runtime 不碰 WPF、不碰 UI、不碰持久化；工具编辑器只依赖自身 Runtime + 公共控件。</li>
+        <li><strong>UI 平台唯一</strong>：公共控件、模板、样式只有一处来源，宿主只做组装。</li>
+    </ol>
+</section>
+
+<section class="card">
+    <h2>两套架构实证</h2>
+
+    <h3>VM 原件：4 层 + 算子库旁挂（依赖方向按 csproj 实测）</h3>
+    <figure class="diagram">
+        <div class="d-layers">
+            <div class="d-layer">
+                <div class="layer-name">① 应用</div>
+                <div class="layer-body">
+                    <div class="d-node plain">H.App.VisionMaster<small>主程序</small></div>
+                    <div class="d-node plain">H.App.VisionMaster.OpenCV<small>OpenCV 版应用</small></div>
+                </div>
+            </div>
+            <div class="d-arrow down">↓</div>
+            <div class="d-layer">
+                <div class="layer-name">② 业务节点（模型 + 呈现器同包）</div>
+                <div class="layer-body">
+                    <div class="d-node accent">NodeData<small>含 PropertyPresenters / ROIPresenters / ResultImages / HelpPresenters</small></div>
+                    <div class="d-node">NodeGroup · DiagramData · Network</div>
+                    <div class="d-node">Project · ResultPresenter · OpenCV</div>
+                </div>
+            </div>
+            <div class="d-arrow down">↓</div>
+            <div class="d-layer">
+                <div class="layer-name">③ 呈现宿主控件库</div>
+                <div class="layer-body">
+                    <div class="d-node accent">WPF-Control<small>18 模块 / 4373 cs / NugetTemplates</small></div>
+                    <div class="d-node">H.Controls.Form.PropertyItem · ROIBox · Diagram.Presenter</div>
+                    <div class="d-node">H.Windows.* · H.Modules.* · H.Presenters.* · H.Services.*</div>
+                </div>
+            </div>
+            <div class="d-arrow down">↓</div>
+            <div class="d-layer">
+                <div class="layer-name">④ 基础</div>
+                <div class="layer-body">
+                    <div class="d-node">H.Extensions.* · H.Mvvm · H.ValueConverter</div>
+                    <div class="d-node">H.Style · H.Theme</div>
+                </div>
+            </div>
+        </div>
+        <div class="d-edges">
+            <span>箭头一律向下：<strong>业务节点依赖控件库</strong>，控件库不认识业务</span>
+            <span>实测：NodeData → H.Controls.Form.PropertyItem / ROIBox / H.Services.Message</span>
+            <span>实测：NodeGroup / DiagramData → 控件库 + NodeData + NodeGroup</span>
+            <span>实测：Project → DiagramData + H.Modules.Project + H.Services.Project</span>
+            <span>旁挂：算子库（Zoo.Halcon / Zoo.Images / Zoo.Videos）<strong>零工程引用</strong>，被应用与 NodeDatas.Zoo 直接使用</span>
+            <span>应用 → 全部业务 + 算子库 + H.Windows.Main</span>
+        </div>
+        <figcaption>依据 13 个 csproj 的 <code>ProjectReference</code> 实测。<strong>证据强度提示</strong>：参考库为部分还原，<code>Zoo.Halcon</code> 仅 1 个 .cs、<code>NodeData/NodeDatas/</code> 为空目录，业务层与算子层内部细节不足以定实现。</figcaption>
+    </figure>
+
+    <h3>我们的现状：22 个 src 工程 + 20 个工具</h3>
+    <figure class="diagram">
+        <div class="d-layers">
+            <div class="d-layer">
+                <div class="layer-name">UI 平台（四散）</div>
+                <div class="layer-body">
+                    <div class="d-node accent">Plugin.Wpf<small>原件控件，正确</small></div>
+                    <div class="d-node warn">CommonControl<small>→ 旧 SDK</small></div>
+                    <div class="d-node warn">Plugin.Editing.Wpf</div>
+                    <div class="d-node warn">UI/Shell/Controls</div>
+                </div>
+            </div>
+            <div class="d-arrow down">↓</div>
+            <div class="d-layer">
+                <div class="layer-name">节点数据与方案（双份）</div>
+                <div class="layer-body">
+                    <div class="d-node accent">Plugin.Contracts<small>正确</small></div>
+                    <div class="d-node warn">Plugin.SDK / Models / Execution<small>重复一份</small></div>
+                    <div class="d-node">Domain / Persistence</div>
+                </div>
+            </div>
+            <div class="d-arrow down">↓</div>
+            <div class="d-layer">
+                <div class="layer-name">算子库（三层不一致）</div>
+                <div class="layer-body">
+                    <div class="d-node ok">CvEngine<small>无依赖</small></div>
+                    <div class="d-node ok">HalAdapter.Runtime<small>→ Contracts</small></div>
+                    <div class="d-node warn">CvAdapter / HalAdapter<small>→ 旧 SDK（方向反了）</small></div>
+                </div>
+            </div>
+        </div>
+        <div class="d-edges">
+            <span>CvAdapter → Plugin.SDK + CvEngine</span>
+            <span>HalAdapter → Plugin.SDK + HalAdapter.Runtime</span>
+            <span>Core → Plugin.SDK + Foundation</span>
+            <span>Plugin.Infrastructure → Core + Application + Plugin.SDK + Plugin.Wpf</span>
+            <span>CommonControl → Plugin.SDK</span>
+            <span>Plugin.Wpf → Plugin.Contracts（唯一干净边界）</span>
+        </div>
+        <figcaption>依据：<code>src/**/*.csproj</code> 实测项目引用。<code>Plugin.SDK</code> 内部含 <code>UI</code>、<code>Scripting</code>、<code>Devices</code>、<code>Models</code>、<code>Validation</code>、<code>Commands</code> 等已退出职责。</figcaption>
+    </figure>
+</section>
+
+<section class="card">
+    <h2>逐层处置清单</h2>
+    <p>处置只有三种：<strong>保留 / 重写（改依赖或改实现）/ 退出（迁移后删除）</strong>。删除前必须按三类引用核实：源码引用、反射字符串、配置或工具箱字符串常量。</p>
+
+    <h3>第一层：算子库</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>工程</th>
+                <th>现状</th>
+                <th>处置</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>SunEyeVision.CvEngine</code></td>
+                <td>无项目依赖</td>
+                <td><strong>保留</strong>，作为算子库形态参照</td>
+            </tr>
+            <tr>
+                <td><code>SunEyeVision.HalAdapter.Runtime</code></td>
+                <td>→ <code>Plugin.Contracts</code> + <code>Plugin.Runtime</code></td>
+                <td><strong>保留</strong>，两段式的算法侧基准</td>
+            </tr>
+            <tr>
+                <td><code>SunEyeVision.HalAdapter</code></td>
+                <td>→ <code>Plugin.SDK</code> + <code>HalAdapter.Runtime</code></td>
+                <td><strong>重写依赖</strong>：去掉 <code>Plugin.SDK</code>，在用的类型改由 <code>Plugin.Contracts</code> 提供</td>
+            </tr>
+            <tr>
+                <td><code>SunEyeVision.CvAdapter</code></td>
+                <td>→ <code>Plugin.SDK</code>（<code>Vision.Hosting</code>/<code>Models</code>/<code>Execution.*</code>）+ <code>CvEngine</code></td>
+                <td><strong>重写依赖</strong>：算法宿主接口下沉到算子层或 <code>Plugin.Contracts</code>；<code>CvAdapter</code> 不得再认旧 SDK</td>
+            </tr>
+            <tr>
+                <td><code>SunEyeVision.Tool.Kernels</code></td>
+                <td>被 <code>Plugin.SDK</code> 依赖（方向反了）</td>
+                <td><strong>重写依赖方向</strong>：内核不背 SDL；由算子层引用它，而不是它挂在 SDK 下</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>第二层：节点数据与方案</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>对象</th>
+                <th>现状</th>
+                <th>处置</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>Plugin.Contracts</code></td>
+                <td>新契约，无依赖</td>
+                <td><strong>保留</strong>，成为唯一模型源</td>
+            </tr>
+            <tr>
+                <td><code>Plugin.SDK/Models</code>、<code>Plugin.SDK/Execution</code></td>
+                <td>与 <code>Plugin.Contracts</code> 存在等价参数/结果/几何模型</td>
+                <td><strong>退出</strong>：在用类型逐个迁入 <code>Plugin.Contracts</code>，迁完删除</td>
+            </tr>
+            <tr>
+                <td><code>Plugin.SDK/Logging</code></td>
+                <td>被 <code>Core</code>、<code>Plugin.Infrastructure</code>、<code>CommonControl</code> 使用</td>
+                <td><strong>退出</strong>：归位到 <code>Foundation</code></td>
+            </tr>
+            <tr>
+                <td><code>Plugin.SDK/UI</code></td>
+                <td>已明令由 <code>Plugin.Wpf</code> 取代</td>
+                <td><strong>退出（直接删除）</strong>，核实无消费者后移除</td>
+            </tr>
+            <tr>
+                <td><code>Plugin.SDK/Scripting</code>、<code>Devices</code>、<code>Commands</code>、<code>Extensions</code>、<code>Metadata</code>、<code>Validation</code></td>
+                <td>旧工具仍在用</td>
+                <td><strong>随工具迁移退出</strong>；对应能力迁入脚本工具、设备驱动、插件基础设施</td>
+            </tr>
+            <tr>
+                <td><code>Domain</code> / <code>Persistence</code> / <code>Infrastructure.Persistence</code></td>
+                <td>各自依赖 <code>Plugin.Contracts</code></td>
+                <td><strong>保留</strong>，对标 <code>Project</code> / <code>DiagramData</code></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>第三层：节点实现（工具）</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>对象</th>
+                <th>现状</th>
+                <th>处置</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>tools/SunEyeVision.BlobAnalysis/{Runtime,Wpf}</code></td>
+                <td>两段式，Runtime 只依 <code>Contracts</code> + <code>HalAdapter.Runtime</code></td>
+                <td><strong>保留</strong>，作为迁移范式基准</td>
+            </tr>
+            <tr>
+                <td><code>tools/SunEyeVision.ImageSource/{Runtime,Wpf}</code></td>
+                <td>同上</td>
+                <td><strong>保留</strong></td>
+            </tr>
+            <tr>
+                <td>18 个旧工具单工程（<code>IsToolPlugin=true</code>）</td>
+                <td><code>net9.0-windows</code>、依赖旧 <code>Plugin.SDK</code>、被构建门禁拒绝</td>
+                <td><strong>逐个拆 Runtime/Wpf 迁移</strong>，迁完<strong>删除旧工程</strong>，不留双轨</td>
+            </tr>
+            <tr>
+                <td><code>product/ToolComponents.props</code></td>
+                <td>唯一准入真相源，当前仅 2 个工具</td>
+                <td><strong>保留</strong>，每迁一个登记一次</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>第四层：UI 平台</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>工程</th>
+                <th>现状</th>
+                <th>处置</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>Plugin.Wpf</code></td>
+                <td>只依赖 <code>Plugin.Contracts</code>；已迁入原件控件、字段呈现、ROI、结果呈现</td>
+                <td><strong>保留</strong>，成为唯一公共控件平台</td>
+            </tr>
+            <tr>
+                <td><code>CommonControl</code></td>
+                <td>脚本编辑器专用控件，依赖旧 <code>Plugin.SDK.Logging</code></td>
+                <td><strong>收拢</strong>：作为脚本工具专属控件迁入 <code>tools/SunEyeVision.Tool.Script/Wpf</code>，不作为公共库</td>
+            </tr>
+            <tr>
+                <td><code>Plugin.Editing.Wpf</code></td>
+                <td>被 <code>UI</code> 引用，职责与 <code>Plugin.Wpf</code> 重叠</td>
+                <td><strong>核实归并</strong>：能并入 <code>Plugin.Wpf</code> 的不保留第二处</td>
+            </tr>
+            <tr>
+                <td><code>UI/Shell/Controls</code>、<code>UI/Resources/Styles</code></td>
+                <td>宿主自造控件与样式，66 个宿主 XAML 中仅 8 个引用原件控件</td>
+                <td><strong>逐步替换为原件</strong>；宿主只保留组装与业务字段</td>
+            </tr>
+            <tr>
+                <td><code>UI</code> 对 <code>Plugin.SDK.UI.Controls</code> / <code>UI.Windows</code> / <code>UI.Controls.RoiEditor</code> 的直接引用</td>
+                <td>宿主<strong>仍在直接消费旧 SDK 可视控件</strong>；<code>UI</code> 共引用旧 SDK 的 17 个命名空间（含 <code>Core</code>、<code>Metadata</code>、<code>Validation</code>、<code>Vision.Contracts</code>、<code>Models.*</code>、<code>Execution.*</code>）</td>
+                <td><strong>退出</strong>：可视控件改由 <code>Plugin.Wpf</code> 提供，宿主不保留旧可视控件入口；这直接违反"工具 UI 不再使用 Plugin.SDK 层可视控件"的既有决定</td>
+            </tr>
+            <tr>
+                <td><code>UI</code></td>
+                <td>应用外壳</td>
+                <td><strong>保留</strong>，对标 <code>H.App.VisionMaster.OpenCV</code></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>确定可删的构建残渣（与架构无关，随批清理）</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>对象</th>
+                <th>证据</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>tools/**/*_wpftmp.csproj</code>（10 个，各约 32 KB）</td>
+                <td>WPF 临时构建工程残留</td>
+            </tr>
+            <tr>
+                <td><code>src/Plugin.Wpf/*_wpftmp.csproj</code>（3 个）</td>
+                <td>同上</td>
+            </tr>
+            <tr>
+                <td><code>build_temp</code> / <code>build_validation</code> 目录</td>
+                <td>出现在 <code>src/UI</code>、<code>src/CommonControl</code>、<code>src/Plugin.SDK</code> 下</td>
+            </tr>
+            <tr>
+                <td><code>GenericParameterPanel</code> / <code>GenericPropertyGrid</code></td>
+                <td>零消费方：全仓只有自身 xaml/cs 引用，已被原件 <code>DeclaredFieldsView</code> 链取代</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+<section class="card">
+    <h2>证据分级与不卡死机制</h2>
+    <p>重构必然遇到原件证据不足。原则是<strong>证据只影响实现细节，不影响接口与结构</strong>，因此任何一级都不阻塞主线。</p>
+    <table>
+        <thead>
+            <tr>
+                <th>级别</th>
+                <th>判定</th>
+                <th>处置</th>
+                <th>阻塞主线</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>A 充分</strong></td>
+                <td>原件源码可读、行为可核对</td>
+                <td>直接按原件实现</td>
+                <td>否</td>
+            </tr>
+            <tr>
+                <td><strong>B 部分</strong></td>
+                <td>有契约 / 依赖 / 资源，缺实现细节</td>
+                <td>按契约实现，内部标注「待原件核对」</td>
+                <td>否</td>
+            </tr>
+            <tr>
+                <td><strong>C 不足</strong></td>
+                <td>只有名称或空目录</td>
+                <td><strong>先定接口</strong>，实现最小可用并标「未实现」</td>
+                <td>否</td>
+            </tr>
+            <tr>
+                <td><strong>D 缺失</strong></td>
+                <td>参考库无此程序集</td>
+                <td>按本方业务需求设计，记录决策依据</td>
+                <td>否</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>三条硬规则</h3>
+    <ol>
+        <li><strong>接口先行</strong>：C/D 级也先冻结公共契约（签名、数据形状、错误语义）。补证回来后<strong>只改内部实现、不改接口</strong>，因此不返工。</li>
+        <li><strong>占位可见</strong>：未实现的功能保留明确入口，界面或日志至少一处标注「未实现」，不得静默可用、不得计为完成。</li>
+        <li><strong>补证集中化</strong>：所有缺口汇成一个队列一次索取，等待期间照常推进 A 级工作，<strong>不设等待门</strong>。</li>
+    </ol>
+
+    <h3>当前补证队列与替代方案</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>缺口</th>
+                <th>影响</th>
+                <th>现在用什么替代</th>
+                <th>补证方式</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>Zoo.Halcon</code> 仅 1 个 .cs</td>
+                <td>测量工具的算子组织方式</td>
+                <td><code>CvEngine</code> + Halcon 本地官方文档范式</td>
+                <td>要完整源码或反编译算子目录</td>
+            </tr>
+            <tr>
+                <td><code>NodeData/NodeDatas/</code> 空目录</td>
+                <td>工具节点数据如何组织</td>
+                <td>用已准入的 <code>BlobAnalysis</code> / <code>ImageSource</code> 反推参数模型</td>
+                <td>读已还原的 38 个 .cs</td>
+            </tr>
+            <tr>
+                <td><code>Project</code> 3 个 / <code>DiagramData</code> 6 个 .cs</td>
+                <td>方案与流程数据模型</td>
+                <td>用现有 <code>Domain</code> / <code>Persistence</code> 实现对照</td>
+                <td>读现有还原件</td>
+            </tr>
+            <tr>
+                <td>参考库缺 <code>H.App.VisionMaster</code></td>
+                <td>主程序组织方式</td>
+                <td>现有 <code>UI</code> 已可运行，非关键</td>
+                <td>非必要</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>批次计划</h2>
+    <p>顺序按"设计正确性依赖"排，不按工作量排。前两批不做完，后面的工具迁移会返工。</p>
+    <table>
+        <thead>
+            <tr>
+                <th>批次</th>
+                <th>目标</th>
+                <th>完成判据</th>
+                <th>依赖</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>R1 旧 SDK 退场</strong></td>
+                <td>把 <code>Plugin.SDK</code> 中被框架层真实使用的类型归位（模型 → <code>Plugin.Contracts</code>，日志 → <code>Foundation</code>），使 <code>Core</code> / <code>Plugin.Infrastructure</code> / <code>CommonControl</code> / <code>DeviceDriver</code> / <strong><code>UI</code></strong> 不再引用它</td>
+                <td>全部宿主工程对 <code>Plugin.SDK</code> 的引用清零（含 <code>UI</code> 对 <code>SDK.UI.Controls</code> 的直接引用）；全量 Release 0 错误</td>
+                <td>无（前置）</td>
+            </tr>
+            <tr>
+                <td><strong>R2 算法层解耦</strong></td>
+                <td><code>CvAdapter</code>、<code>HalAdapter</code> 去掉 <code>Plugin.SDK</code>；<code>Tool.Kernels</code> 依赖方向纠正</td>
+                <td>算法层只依赖 <code>Plugin.Contracts</code> / <code>Plugin.Runtime</code> / 算子引擎；两个已准入工具执行结果与改前一致</td>
+                <td>R1</td>
+            </tr>
+            <tr>
+                <td><strong>R3 UI 平台收拢</strong></td>
+                <td><code>CommonControl</code> 迁入脚本工具；<code>Plugin.Editing.Wpf</code> 归并核实；宿主自造控件逐步换原件</td>
+                <td>公共控件来源唯一；宿主 XAML 引用原件比例提升并记录</td>
+                <td>R1</td>
+            </tr>
+            <tr>
+                <td><strong>R4 工具分族迁移</strong></td>
+                <td>18 个旧工具按族拆 Runtime/Wpf 迁入新链，迁完删旧工程</td>
+                <td>每族：工具箱可见、拖入画布、执行出结果、保存重开、取消释放</td>
+                <td>R2</td>
+            </tr>
+            <tr>
+                <td><strong>R5 开发包与最终目录树</strong></td>
+                <td><code>PluginDevKit</code> 模板与 SDK 由源码同步；旧入口与旧命名清零</td>
+                <td>第三方仅凭发布 DLL 可构建、部署、外部附加调试</td>
+                <td>R3 + R4</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+<section class="card">
+    <h2>验收方式</h2>
+    <ul>
+        <li><strong>每批必做</strong>：<code>dotnet build SunEyeVision.slnx -c Release</code> 0 错误，记录警告数与耗时。</li>
+        <li><strong>依赖判据可机检</strong>：每批结束用项目引用导出核对五条判据，任一违反即该批不通过。</li>
+        <li><strong>功能链验收</strong>（R3/R4 适用）：工具箱出现 → 拖入画布 → 执行出结果 → 保存重开 → 取消与释放。</li>
+        <li><strong>不混淆三种状态</strong>：代码同步、构建通过、人工验收分别记录，不互相替代。</li>
+    </ul>
+</section>
+
+<section class="card">
+    <h2>未取证缺口（不臆造）</h2>
+    <ul>
+        <li><code>WPF-Control</code> 18 个模块中，哪些是平台必需、哪些是 VM 业务专用——尚未逐个读码。</li>
+        <li><code>Zoo.Halcon</code> 内部算子组织方式（是否按功能族分文件、是否统一算子抽象）——决定测量工具怎么写，未读。</li>
+        <li><code>Domain</code> / <code>Workflow</code> / <code>Persistence</code> 与 VM 的 <code>Project</code> / <code>DiagramData</code> / <code>NodeData</code> 是否职责等价——只比了工程名，未比类型清单。</li>
+        <li><code>Plugin.SDK</code> 各子目录的真实消费者清单——只核到命名空间级，未到类型级。</li>
+    </ul>
+</section>
+
+<section class="card">
+    <h2>风险与对策</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>风险</th>
+                <th>影响</th>
+                <th>对策</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>归位时误删仍被反射或配置引用的类型</td>
+                <td>运行时功能缺失且编译不报错</td>
+                <td>删除前做源码引用 + 反射字符串 + 配置常量三类核实，结论入报告</td>
+            </tr>
+            <tr>
+                <td>算法层解耦改动公共签名</td>
+                <td>两个已准入工具执行行为变化</td>
+                <td>R2 完成后对 ImageSource / BlobAnalysis 做执行结果对比</td>
+            </tr>
+            <tr>
+                <td>UI 收拢与工具迁移并行冲突</td>
+                <td>共享文件互相覆盖</td>
+                <td>共享文件单写者；工具目录独占可并行</td>
+            </tr>
+            <tr>
+                <td>把"引用清零"当成架构完成</td>
+                <td>行为未验证却宣称完成</td>
+                <td>以功能链验收为准，引用清零只是必要条件</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+<section class="card">
+    <h2>与现行文档的关系</h2>
+    <p>本方案是<strong>过程文档</strong>，负责处置判定与批次；架构结论以 <a href="../../../../09-现行文档/框架架构总览.html">09-现行文档/框架架构总览</a> 为准。R1 完成后需回写该文档的「实施与验证状态」，把"旧 SDK 退场"从未做移入已做，并附代码依据。</p>
+</section>
+
+</div>
+</body>
+</html>

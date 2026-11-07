@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:local="clr-namespace:DataFilterModuleControl">
+  <DataTemplate x:Key="DataFilterParam">
+    <local:DataFilterParam />
+  </DataTemplate>
+  <DataTemplate x:Key="DataFilterConfig">
+    <local:DataFilterConfig />
+  </DataTemplate>
+</ResourceDictionary>

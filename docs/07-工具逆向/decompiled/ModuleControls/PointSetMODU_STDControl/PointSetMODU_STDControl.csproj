@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>PointSetMODU_STDControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="datatemplate\paramusercontroldatatemplate.xaml" />
+    <Page Include="datatemplate\paramusercontroldatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="datatemplate/paramusercontroldatatemplate.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Apps.XmlParser" />
+    <Reference Include="Mvvm" />
+    <Reference Include="VM.Xml" />
+    <Reference Include="System.Xml" />
+    <Reference Include="VM.Core" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="System.Core" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="VM.Controls" />
+    <Reference Include="VM.PlatformSDKCS" />
+    <Reference Include="Apps.Data" />
+  </ItemGroup>
+</Project>

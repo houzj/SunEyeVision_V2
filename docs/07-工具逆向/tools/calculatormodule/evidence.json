@@ -1,0 +1,76 @@
+{
+  "stableToolId": "calculatormodule",
+  "originalPlugin": "CalculatorModule",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule",
+  "displayName": "变量计算",
+  "authority": "shipped XML/PE inventory; no original VM execution",
+  "sourcePaths": [
+    "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule",
+    "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModule.xml",
+    "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModuleAlgorithm.xml",
+    "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModuleAlgorithmTab.xml",
+    "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModuleCs.xml",
+    "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModuleDisplay.xml",
+    "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\ToolItemInfo.xml"
+  ],
+  "inputNames": [],
+  "outputNames": [
+    "ModuRunTime",
+    "ResultShow",
+    "ModuStatus",
+    "%var0%"
+  ],
+  "parameterNames": [],
+  "uiControls": [
+    "CalculatorPro",
+    "command#restvalue"
+  ],
+  "executionEntry": "unknown: tool-specific Process entry body not recovered",
+  "resultPublication": "unknown: output writer and reader chain not recovered",
+  "verdict": "unknown: success/failure predicates not recovered",
+  "saveRestore": "unknown: tool-specific Save/Load chain not recovered",
+  "release": "unknown: DeInit/Destroy ownership not recovered",
+  "originalVmExecuted": false,
+  "unknowns": [
+    "XML schema is not behavioral proof",
+    "generic SDK declarations do not prove module call path"
+  ],
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule",
+      "evidenceType": "shipped XML/PE/resource inventory"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModule.xml",
+      "sha256": "C1C5DDC7DB3F55D844851919DE2FE3B0FCC1B256268AB89EFCE2BFEEF3F16399",
+      "evidenceType": "shipped XML/PE/resource inventory"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModuleAlgorithm.xml",
+      "sha256": "CA782FB6F21FAE89A0AB17A82A3BF6FF6ABECFAC1C2934F2B27995D5B720EB22",
+      "evidenceType": "shipped XML/PE/resource inventory"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModuleAlgorithmTab.xml",
+      "sha256": "BB60499A373BBCC422DF837F59FAE8A2765ECAD74866373C57E924033AB5A31B",
+      "evidenceType": "shipped XML/PE/resource inventory"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModuleCs.xml",
+      "sha256": "2174230D20A400CCE913D9994C745C2C9D8C1EB3BFE45F9AD1DBE1BB155D2D5D",
+      "evidenceType": "shipped XML/PE/resource inventory"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModuleDisplay.xml",
+      "sha256": "E5312BDC1C4D6EE41F54F52372B00C0303A4181F74C4A565CB835422E18ED0CB",
+      "evidenceType": "shipped XML/PE/resource inventory"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\ToolItemInfo.xml",
+      "sha256": "961BAA665C8FE1F0DD07450CC8BA09C79DEBA0C3D307E7F8C9146E8B6C72BA7F",
+      "evidenceType": "shipped XML/PE/resource inventory"
+    }
+  ]
+}

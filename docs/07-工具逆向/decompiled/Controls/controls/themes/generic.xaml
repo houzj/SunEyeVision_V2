@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="Generic/Brushes.xaml" />
+    <ResourceDictionary Source="Generic/Buttons.xaml" />
+    <ResourceDictionary Source="../Chromes/Themes/Generic.xaml" />
+    <ResourceDictionary Source="../ButtonSpinner/Themes/Generic.xaml" />
+    <ResourceDictionary Source="../WatermarkTextBox/Themes/Generic.xaml" />
+    <ResourceDictionary Source="../PropertyGrid/Themes/Generic.xaml" />
+    <ResourceDictionary Source="../ColorCanvas/Themes/Generic.xaml" />
+    <ResourceDictionary Source="../ColorPicker/Themes/Generic.xaml" />
+    <ResourceDictionary Source="../CollectionControl/Themes/Generic.xaml" />
+    <ResourceDictionary Source="../DateTimeUpDown/Themes/Generic.xaml" />
+    <ResourceDictionary Source="../DateTimePicker/Themes/Generic.xaml" />
+    <ResourceDictionary Source="../MultiLineTextEditor/Themes/Generic.xaml" />
+    <ResourceDictionary Source="../NumericUpDown/Themes/Generic.xaml" />
+    <ResourceDictionary Source="../TimePicker/Themes/Generic.xaml" />
+    <ResourceDictionary Source="../TimeSpanUpDown/Themes/Generic.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

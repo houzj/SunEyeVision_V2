@@ -1,0 +1,95 @@
+{
+  "controls": [
+    {
+      "type": "EnumerationG",
+      "name": "ImageSource"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ResultType"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelSize"
+    },
+    {
+      "type": "Boolean",
+      "name": "EnhanceEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "Brightness"
+    },
+    {
+      "type": "Integer",
+      "name": "ContrastCoef"
+    },
+    {
+      "type": "Integer",
+      "name": "HalationRemoveLevel"
+    },
+    {
+      "type": "Expand",
+      "name": "Expert"
+    },
+    {
+      "type": "Enumeration",
+      "name": "DirEnhanceType"
+    },
+    {
+      "type": "Integer",
+      "name": "DirEnhanceLevel"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvsmultiimagefusionmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSMultiImageFusionModu\\IMVSMultiImageFusionModu.xml",
+      "sha256": "07c23c86852304ed52d0114e339ae591c1bb612980e8951f4e377ebf4421fc5e",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSMultiImageFusionModu\\IMVSMultiImageFusionModuAlgorithm.xml",
+      "sha256": "adcc5252a9880300d28c98874095ddaa5602ae1a5874feae97a9bb56c73655e7",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSMultiImageFusionModu\\IMVSMultiImageFusionModuAlgorithmTab.xml",
+      "sha256": "3058a282eeabe1d77c304989166ed019c977c6c6b905708c82b97c5a42d4008e",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSMultiImageFusionModu\\IMVSMultiImageFusionModuDisplay.xml",
+      "sha256": "cdae570c0759dc8ea2993827eeaae4d8504c571406cd8dbc9138c01a1291e49b",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSMultiImageFusionModu\\ToolItemInfo.xml",
+      "sha256": "f8a94a412de549fa27f8c371d2cf3ec90ca5f64e5d03944ff2477b56cfff6dbd",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "多图融合",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

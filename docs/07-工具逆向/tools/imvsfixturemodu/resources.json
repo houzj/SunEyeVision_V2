@@ -1,0 +1,95 @@
+{
+  "toolId": "imvsfixturemodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSFixtureModu\\IMVSFixtureModu.xml",
+      "sha256": "577a67c5bc661a4c314c6eb1879caed1c82789f91d33d04b256b1fbceb585ac6",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSFixtureModu\\IMVSFixtureModuAlgorithm.xml",
+      "sha256": "604234628908f3303686538d5d50915a01e06c496ca194f546bdacd0ae470b38",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSFixtureModu\\IMVSFixtureModuAlgorithmTab.xml",
+      "sha256": "d02fce808ef14b2ba8e94908bf12d9f864fa4c9873f01929744bb5ace925e172",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSFixtureModu\\IMVSFixtureModuCs.xml",
+      "sha256": "358c3f51111f74bf96ce07e62d21ebcccc2b55465839a37d7f59a7d47c87d17c",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSFixtureModu\\IMVSFixtureModuDisplay.xml",
+      "sha256": "b004c659464b0021256b3cf2ae7fc2a69286091f434a79d5a32adbfef93ae5ab",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSFixtureModu\\ToolItemInfo.xml",
+      "sha256": "37e25c62a5b551f64f225f313d563de9dae0a2697370c363de762e21bb8dc8c3",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "RadioSelecter",
+      "name": "Select"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StandPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StandPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StandPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StandAngle"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ScaleX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ScaleY"
+    },
+    {
+      "type": "Command_FixtureModule",
+      "name": "FixtureInit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "StandPoints"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "RunPoints"
+    }
+  ],
+  "sharedUiGroups": [
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

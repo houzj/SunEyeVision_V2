@@ -1,0 +1,144 @@
+{
+  "controls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Integer",
+      "name": "HalfKernelSize"
+    },
+    {
+      "type": "Integer",
+      "name": "ContrastTH"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePolarity"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FindMode"
+    },
+    {
+      "type": "Integer",
+      "name": "Maximum"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SortType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FindOrient"
+    },
+    {
+      "type": "Float",
+      "name": "MinScore"
+    },
+    {
+      "type": "Boolean",
+      "name": "NumLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "NumAngleLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "EdgePointXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangEdgePointXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "EdgePointYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangEdgePointYLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CircleLine"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CirclePointFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvscaliperedgemodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCaliperEdgeModu\\IMVSCaliperEdgeModu.xml",
+      "sha256": "6054e744e90ba0e41f43bfb1ca040af1b36bb8fc0d99ecfe15ff57d15d9a6be6",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCaliperEdgeModu\\IMVSCaliperEdgeModuAlgorithm.xml",
+      "sha256": "5a4cc3a8ddfa2de59540b61af089018551cd20a6b4b6ddae128555f8e37aab72",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCaliperEdgeModu\\IMVSCaliperEdgeModuAlgorithmTab.xml",
+      "sha256": "ff7a2228497aa942abfac435bc82d363a20f5622abb9a9f8f1d2ce1bec470659",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCaliperEdgeModu\\IMVSCaliperEdgeModuCs.xml",
+      "sha256": "db14ea0ff846853e1b0fc60fd238c0df61d9614d29fc445ecddb22a6419aa391",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCaliperEdgeModu\\IMVSCaliperEdgeModuDisplay.xml",
+      "sha256": "0251a9a509b8cd589adb974172bb1e569a632db9b6359e6abd9cdf178b9a11fc",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCaliperEdgeModu\\ToolItemInfo.xml",
+      "sha256": "7ddea9b0c9736fc15139e4081d6b5a8a447848bc26a19ba5e446b190aff63fe7",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "边缘查找",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

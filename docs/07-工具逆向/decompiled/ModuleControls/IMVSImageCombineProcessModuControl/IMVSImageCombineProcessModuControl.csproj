@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>IMVSImageCombineProcessModuControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="datatemplate\paramusercontroldatatemplate.xaml" />
+    <Page Remove="IMVSImageCombineProcessModuControl\ImageProcessPanel.xaml" />
+    <Page Include="datatemplate\paramusercontroldatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="datatemplate/paramusercontroldatatemplate.xaml" />
+    <Page Include="IMVSImageCombineProcessModuControl\ImageProcessPanel.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageprocesspanel.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Apps.XmlParser" />
+    <Reference Include="VMControls.Interface" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="Apps.Interface" />
+    <Reference Include="VM.Utility" />
+    <Reference Include="System.Core" />
+    <Reference Include="VM.Xml" />
+    <Reference Include="Apps.Localization" />
+  </ItemGroup>
+</Project>

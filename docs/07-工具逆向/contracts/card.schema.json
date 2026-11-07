@@ -1,0 +1,321 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "工具逆向卡片契约",
+  "schemaVersion": "1.5",
+  "updated": "2026-11-07",
+  "description": "定义 docs/07-工具逆向/tools/<toolid>/ 下七件套的字段契约。v1.2 按 162 张真实卡片的实测形态建模：evidence.json 字段分 core/standard/deep 三级，ui-preview.json 分三种形态，algorithm-semantics.md 的 9 步齐全度降为提示。v1.3 增加 extendedSections（analysisStages / semanticChain / algorithmComparison），让 7 环节、9 步语义链、7 维对照由卡片数据驱动而不是页面写死。v1.4 增加 currentImplementation.notAdopted：用于「原件厂商专属、我方设计明确不采用」的控件类型，避免把主动不采用算成未还原欠账。缺失按级别报硬失败或提示，禁止静默补默认值。v1.5 把 evidenceState / priority 的 unknown 纳入合法枚举：实测 114 张卡的 evidenceState、3 张卡的 priority 取值为 unknown，含义是「该维度尚未定档」，此前枚举未收录导致契约校验把诚实标注判成违规；unknown 是显式标注，不是缺省填充。同批把 uiPreviewKind 的 evidence-layout 纳入枚举（实测 4 张卡使用该形态，此前同样被判为违规）。",
+  "requiredFiles": [
+    "{toolid}-reverse.md",
+    "evidence.json",
+    "parameters.json",
+    "resources.json",
+    "ui-preview.json",
+    "ui-preview.svg",
+    "algorithm-semantics.md"
+  ],
+  "originRule": {
+    "field": "origin",
+    "values": ["codex", "suneyevision"],
+    "default": "codex",
+    "description": "缺失 origin 视为继承自 Codex；我方改写必须填 suneyevision 并在 rewriteNote 说明改了什么"
+  },
+  "observedBaseline": {
+    "date": "2026-11-05",
+    "toolCards": 162,
+    "evidenceProfiles": { "standard": 159, "deep": 3, "deepTools": ["calculatormodule", "dataassemblemodule", "imvscolorimagegenerationmodu"] },
+    "uiPreviewKinds": { "resource-control-evidence": 155, "evidence-layout": 4, "schema-preview": 3, "empty": 0 },
+    "uiPreviewKindHistory": {
+      "note": "三张空卡片已于 2026-11-05 补齐，empty 归零。globalvariablemodule 的控件级证据改取自已入库反编译 XAML，不再依赖无控件声明的模块 XML。",
+      "formerEmptyTools": ["dataanalysismodule", "globalvariablemodule", "imvsgeometrictransformmodu"]
+    }
+  },
+  "enums": {
+    "status": ["inventory-only", "source-indexed", "source-partial", "source-confirmed"],
+    "evidenceState": ["inventory-only", "source-indexed", "source-partial", "source-confirmed", "unknown"],
+    "priority": ["P0", "P1", "P2", "P3", "P4", "deferred", "unknown"],
+    "uiCategory": [
+      "result-view",
+      "declarative-parameters",
+      "image-roi",
+      "extension-panels",
+      "compound-control",
+      "measurement",
+      "calibration",
+      "calculation",
+      "logic",
+      "communication",
+      "collection",
+      "unknown"
+    ],
+    "uiCategoryObserved": { "result-view": 107, "declarative-parameters": 23, "image-roi": 11, "extension-panels": 10, "compound-control": 8 },
+    "priorityObserved": { "P0": 23, "P1": 13, "P2": 105, "P3": 10, "P4": 8 },
+    "uiPreviewKind": ["resource-control-evidence", "schema-preview", "evidence-layout", "empty"],
+    "stageStatus": ["unknown", "partial", "done", "deferred", "not-established"],
+    "dimensionStatus": ["not-established", "partial", "established"],
+    "semanticConclusion": ["unknown", "partial", "inferred", "confirmed"]
+  },
+  "files": {
+    "evidence.json": {
+      "profileRule": "含 authority 字段判为 deep，否则 standard",
+      "fieldTiers": {
+        "core": {
+          "severity": "error",
+          "description": "162 张卡全具备的身份与状态字段",
+          "fields": ["stableToolId", "originalPlugin", "displayName", "status", "evidenceState", "sourceEvidence", "unknowns"]
+        },
+        "standard": {
+          "severity": "error",
+          "appliesTo": "standard 档案",
+          "observedCount": 159,
+          "fields": [
+            "originalCategory",
+            "originalSourcePath",
+            "uiCategory",
+            "priority",
+            "resourceCount",
+            "parameterCount",
+            "inputCount",
+            "outputCount",
+            "uiControlCount",
+            "sourceInventory",
+            "managedMembers",
+            "nativeFunctions"
+          ]
+        },
+        "deep": {
+          "severity": "error",
+          "appliesTo": "deep 档案",
+          "observedCount": 3,
+          "description": "直接对应 9 步语义链的具名答案，是卡片演进方向",
+          "fields": [
+            "authority",
+            "sourcePaths",
+            "inputNames",
+            "outputNames",
+            "parameterNames",
+            "uiControls",
+            "executionEntry",
+            "resultPublication",
+            "verdict",
+            "saveRestore",
+            "release",
+            "originalVmExecuted"
+          ]
+        },
+        "optional": {
+          "severity": "info",
+          "fields": ["note", "sourceReports", "runtimeObservations", "origin", "rewriteNote", "currentImplementation"]
+        }
+      },
+      "properties": {
+        "stableToolId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*$", "description": "必须与目录名一致" },
+        "originalPlugin": { "type": "string" },
+        "originalCategory": { "type": "string" },
+        "originalSourcePath": { "type": "string" },
+        "status": { "enum": ["inventory-only", "source-indexed", "source-partial", "source-confirmed"] },
+        "evidenceState": { "enum": ["inventory-only", "source-indexed", "source-partial", "source-confirmed", "unknown"] },
+        "priority": { "enum": ["P0", "P1", "P2", "P3", "P4", "deferred", "unknown"] },
+        "uiCategory": {
+          "enum": [
+            "result-view",
+            "declarative-parameters",
+            "image-roi",
+            "extension-panels",
+            "compound-control",
+            "measurement",
+            "calibration",
+            "calculation",
+            "logic",
+            "communication",
+            "collection",
+            "unknown"
+          ]
+        },
+        "resourceCount": { "type": "integer", "minimum": 0 },
+        "parameterCount": { "type": "integer", "minimum": 0 },
+        "inputCount": { "type": "integer", "minimum": 0 },
+        "outputCount": { "type": "integer", "minimum": 0 },
+        "uiControlCount": { "type": "integer", "minimum": 0 },
+        "sourceEvidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["path", "sha256"],
+            "properties": {
+              "path": { "type": "string" },
+              "sha256": { "type": "string", "pattern": "^[A-Fa-f0-9]{64}$" },
+              "symbol": { "type": "string" },
+              "lines": { "type": "string" },
+              "confirmable": { "type": "string" }
+            }
+          }
+        },
+        "unknowns": { "type": "array", "items": { "type": "string" }, "minItems": 1, "description": "空数组视为未取证，不允许" },
+        "currentImplementation": {
+          "type": "object",
+          "description": "我方现状，仅 suneyevision 改写时填；继承卡缺失代表未核对",
+          "properties": {
+            "moduleId": { "type": ["string", "null"] },
+            "implPath": { "type": ["string", "null"] },
+            "verifiedAt": { "type": ["string", "null"] },
+            "differences": { "type": "array", "items": { "type": "string" } },
+            "notAdopted": {
+              "type": "array",
+              "description": "原件控件类型中我方主动不采用的部分。登记后页面渲染「我方不采用」而不是「未还原」，且不计入未还原欠账；必须写清原因与替代方案。",
+              "items": {
+                "type": "object",
+                "required": ["type", "reason", "replacement"],
+                "properties": {
+                  "type": { "type": "string", "description": "原件 AlgorithmTab.xml 里的节点名" },
+                  "reason": { "type": "string", "description": "为什么不用（厂商专属、被新合同取代等），不接受「暂不做」这种说法" },
+                  "replacement": { "type": "string", "description": "我方用什么替代，写到合同/接口或页面位置" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "ui-preview.json": {
+      "kindRule": "优先按 previewKind 字段判定；无 previewKind 但有 kind 判为 schema-preview；空对象 {} 判为 empty",
+      "kinds": {
+        "resource-control-evidence": {
+          "observedCount": 152,
+          "severity": "error",
+          "required": ["displayName", "controls", "missing", "status"],
+          "idField": "toolId 或 stableToolId 二者之一",
+          "controls": {
+            "type": "array",
+            "items": { "required": ["type", "name"] },
+            "minItems": 1
+          },
+          "missing": { "type": "array", "minItems": 1, "description": "空数组视为伪装完整" }
+        },
+        "evidence-layout": {
+          "observedCount": 4,
+          "observedTools": ["globaltriggermodule", "lightcontrol", "localvariablemodule", "procedurecomm"],
+          "severity": "error",
+          "required": ["displayName", "controls", "missing", "status", "previewKind"],
+          "rule": "controls 允许空数组，但 missing 必须非空并显式写明控件级证据缺失。这是诚实标注，不是缺陷",
+          "missing": { "type": "array", "minItems": 1 }
+        },
+        "schema-preview": {
+          "observedCount": 3,
+          "severity": "error",
+          "required": ["stableToolId", "displayName", "kind", "svg", "controlCount", "source", "unknowns"],
+          "description": "只有 XML 声明计数与 SVG 引用，没有控件级证据；如实反映即可"
+        },
+        "empty": {
+          "observedCount": 0,
+          "severity": "error",
+          "observedTools": [],
+          "description": "文件内容为 {}，属真实缺失，必须报错要求补，不得当作通过。当前 0 张，历史三张已于 2026-11-05 补齐"
+        }
+      }
+    },
+    "resources.json": {
+      "required": ["toolId", "xmlEvidence", "uiTabs", "uiControls", "sharedUiGroups", "status"],
+      "properties": {
+        "xmlEvidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["path", "sha256", "root"],
+            "properties": {
+              "path": { "type": "string" },
+              "sha256": { "type": "string", "pattern": "^[A-Fa-f0-9]{64}$" },
+              "root": { "type": "string" },
+              "error": { "type": ["string", "null"] }
+            }
+          }
+        },
+        "uiTabs": { "type": "array", "items": { "type": "object", "properties": { "Name": { "type": "string" } } } },
+        "uiControls": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type", "name"],
+            "properties": { "type": { "type": "string" }, "name": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "parameters.json": {
+      "required": ["toolId", "parameters"],
+      "properties": {
+        "parameters": {
+          "type": "array",
+          "description": "原厂 XML 参数树，保持原结构不二次加工",
+          "items": {
+            "type": "object",
+            "required": ["type", "children"],
+            "properties": {
+              "type": { "type": "string" },
+              "attributes": { "type": "object" },
+              "text": { "type": "string" },
+              "children": { "type": "array" }
+            }
+          }
+        }
+      }
+    }
+  },
+  "extendedSections": {
+    "schemaVersion": "1.3",
+    "description": "v1.3 新增三项卡片级结构，写入 evidence.json，由页面生成器直接渲染。缺字段时页面渲染 unknown/not-established；字段存在时必须整组齐全，不允许只填一半（半组会把「未取证」伪装成「部分取证」）。",
+    "fields": {
+      "analysisStages": {
+        "severity": "error",
+        "whenPresent": "数组长度必须等于 7，且 id 与 contracts/page.sections.json 的 analysisStages 完全一致",
+        "itemRequired": ["id", "status", "detail"],
+        "statusEnum": ["unknown", "partial", "done", "deferred", "not-established"],
+        "detailRule": "写清已达到哪一级证据（XML 声明 / 反编译源码 / 受控运行）与还缺什么，不允许只写「已完成」"
+      },
+      "semanticChain": {
+        "severity": "error",
+        "whenPresent": "数组长度必须等于 9，顺序与 contracts/page.sections.json 的 semanticSteps 一致",
+        "itemRequired": ["step", "conclusion", "originalEvidence"],
+        "conclusionEnum": ["unknown", "partial", "inferred", "confirmed"],
+        "unknownRule": "conclusion 非 confirmed 时必须在 unknown 写明缺什么证据",
+        "evidenceRule": "只接受原厂反编译源码、资源、汇编/ABI 或受控运行；自研实现与截图不能算 originalEvidence"
+      },
+      "algorithmComparison": {
+        "severity": "error",
+        "whenPresent": "数组长度必须等于 7，id 与 contracts/page.sections.json 的 algorithmDimensions 一致",
+        "itemRequired": ["id", "status", "evidence", "unknown"],
+        "statusEnum": ["not-established", "partial", "established"],
+        "unknownRule": "status 非 established 时 unknown 必须非空"
+      }
+    }
+  },
+  "markdownRules": {
+    "{toolid}-reverse.md": {
+      "requiredHeadings": ["逆向范围", "已登记清单", "当前证据状态", "已有逆向证据"],
+      "severity": "warning",
+      "rule": "标题结构是理想模板；实测多种组织方式并存，缺失只提示不阻断。但每条结论必须能追到文件路径 + 行号/偏移 + SHA-256 + 可确认范围"
+    },
+    "algorithm-semantics.md": {
+      "requiredStepCount": 9,
+      "severity": "warning",
+      "severityReason": "实测 162 卡中存在三种组织方式：标准 9 步表格、已确认/未确认双段、已确认执行链编号列表。9 步齐全只是理想模板，缺步骤提示升级而不阻断",
+      "matchRule": "steps[].match 任一关键词在文件中出现即视为该步骤存在；中文名与英文 id 都可",
+      "steps": [
+        { "id": "init", "nameZh": "工具创建/初始化", "match": ["工具创建", "初始化", "创建", "init"] },
+        { "id": "parameters", "nameZh": "参数读取与条件显隐", "match": ["参数读取", "条件显隐", "参数", "parameters"] },
+        { "id": "inputsRoi", "nameZh": "输入/ROI/变量准备", "match": ["输入/ROI", "变量准备", "输入", "inputsRoi"] },
+        { "id": "process", "nameZh": "Process/ProcessAlg/原生桥", "match": ["Process/ProcessAlg", "原生桥", "Process", "process"] },
+        { "id": "branchFailure", "nameZh": "分支、失败与取消", "match": ["分支、失败", "分支/失败", "失败", "取消", "branchFailure"] },
+        { "id": "resultWrite", "nameZh": "结果写回与判定", "match": ["结果写回", "结果", "判定", "resultWrite"] },
+        { "id": "displayPublish", "nameZh": "图形/文本显示发布", "match": ["图形/文本", "显示发布", "显示", "displayPublish"] },
+        { "id": "persistence", "nameZh": "保存恢复", "match": ["保存恢复", "保存", "恢复", "persistence"] },
+        { "id": "release", "nameZh": "DeInit/Destroy/释放", "match": ["DeInit", "Destroy", "释放", "关闭", "release"] }
+      ],
+      "contentRule": {
+        "severity": "error",
+        "description": "不管采用哪种组织方式（中文双段、英文 Confirmed/unknown、或极简说明），文件必须明确标出已证实与未证实状态，不允许只写结论不标未知",
+        "anyOf": ["已证实", "未证实", "已确认", "未确认", "未知", "Confirmed", "unknown"]
+      },
+      "rule": "只接受原厂反编译源码、资源、汇编/ABI 或受控运行证据；产品意图、截图、自研实现不能单独证明算法语义"
+    }
+  }
+}

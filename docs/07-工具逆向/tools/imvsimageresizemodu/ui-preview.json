@@ -1,0 +1,96 @@
+{
+  "controls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Integer",
+      "name": "WidthValue"
+    },
+    {
+      "type": "Integer",
+      "name": "HeightValue"
+    },
+    {
+      "type": "Enumeration",
+      "name": "InterType"
+    },
+    {
+      "type": "Boolean",
+      "name": "AntiAliasing"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvsimageresizemodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageResizeModu\\IMVSImageResizeModu.xml",
+      "sha256": "cd9ec689d71c6a73531669c0c74312685755859e5f1d8d08f23c4fc9f96d9254",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageResizeModu\\IMVSImageResizeModuAlgorithm.xml",
+      "sha256": "3f765fb96d041c4fd57024eb5e5360155c06198ac927151280024fa3920b7033",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageResizeModu\\IMVSImageResizeModuAlgorithmTab.xml",
+      "sha256": "031acc10bf62d9a137cfde8a7105774365b89aae829ee2053cde0c567310e3e7",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageResizeModu\\IMVSImageResizeModuCs.xml",
+      "sha256": "fc433e382995995d7f50d1429fbf797a323d9941274c37861c22ecf8a251140a",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageResizeModu\\IMVSImageResizeModuDisplay.xml",
+      "sha256": "5a841dbfa2f4904693bb56fa88d2b2b89f0fce032176e960211ba3dce473cdf7",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageResizeModu\\ToolItemInfo.xml",
+      "sha256": "c00f67754569bff83750d9b78003de2afdaf6825c6c3d329f9086874c6f59e16",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "图像缩放",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

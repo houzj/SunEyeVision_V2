@@ -1,0 +1,116 @@
+{
+  "controls": [
+    {
+      "type": "RadioSelecter",
+      "name": "InheritWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RunParam_Region"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROICenterX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROICenterY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROIWidth"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROIHeight"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROIAngle"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "BoxLabel"
+    },
+    {
+      "type": "Enumeration",
+      "name": "MergeMethod"
+    },
+    {
+      "type": "Integer",
+      "name": "OverlapThresh"
+    },
+    {
+      "type": "Float",
+      "name": "DxThresh"
+    },
+    {
+      "type": "Float",
+      "name": "DyThresh"
+    },
+    {
+      "type": "Enumeration",
+      "name": "BoxMergeType"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "FlawPriority"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SplitChar"
+    },
+    {
+      "type": "Enumeration",
+      "name": "PrioritySortType"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvsboxmergemodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxMergeModu\\IMVSBoxMergeModu.xml",
+      "sha256": "df23ccdcd6410dea2c7d6bd1b52814738e4f61749789c4be7acee766efba15b4",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxMergeModu\\IMVSBoxMergeModuAlgorithm.xml",
+      "sha256": "dfdf2903d514241eaff74b7a07a83e4fef666fe18f0768a951e06480c86b6ae2",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxMergeModu\\IMVSBoxMergeModuAlgorithmTab.xml",
+      "sha256": "217f157f36fd605dde6e308f4ec05b6664b5ab967912d6957457a78be35e5f91",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxMergeModu\\IMVSBoxMergeModuCs.xml",
+      "sha256": "37d930fd4fa3467815978ec69a74fcae8fb8686eaf75ec6a726251a4619f4b86",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxMergeModu\\IMVSBoxMergeModuDisplay.xml",
+      "sha256": "3217099a3cd48ec248fda43ca4390ea79ba21f1bb4f34c50e4c91b33ad4887b5",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\SplitCombination\\IMVSBoxMergeModu\\ToolItemInfo.xml",
+      "sha256": "fc2a24ff36c0e8f68469e6ebc2d49126fb3c6b5546470d6925a7d2eb55ed7923",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "Box融合",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

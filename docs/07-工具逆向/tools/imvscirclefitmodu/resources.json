@@ -1,0 +1,155 @@
+{
+  "toolId": "imvscirclefitmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageGeneration\\IMVSCircleFitModu\\IMVSCircleFitModu.xml",
+      "sha256": "39463cded161fe5ff3e13f28e6665906a2d337cd26cb8dc0a0deaa9e9d27cea9",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageGeneration\\IMVSCircleFitModu\\IMVSCircleFitModuAlgorithm.xml",
+      "sha256": "b0686ab1406319092454a3eaf9e7baaa538c8a9501f474adb69f3e8568fe6b24",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageGeneration\\IMVSCircleFitModu\\IMVSCircleFitModuAlgorithmTab.xml",
+      "sha256": "6fffc943ac8b1fdfe96c834506e4bb61eb002d6508efe1e1d33f4704896e378c",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageGeneration\\IMVSCircleFitModu\\IMVSCircleFitModuCs.xml",
+      "sha256": "67fb7aaff7ce74214388fc354d57175c3f898b4c8f470ab979115854b704f742",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageGeneration\\IMVSCircleFitModu\\IMVSCircleFitModuDisplay.xml",
+      "sha256": "136b7583e206e3a7aaddfb3923069ba930a7ff72d0d89ba1a25d84fbe9259718",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageGeneration\\IMVSCircleFitModu\\ToolItemInfo.xml",
+      "sha256": "f3d3e4861a1a279d854db3135ff9adfbaa5bfc157965eef743623fdec527cfd4",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "RadioSelecter",
+      "name": "InputWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "FittingPoints"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "FittingPointsX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "FittingPointsY"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectNum"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectDist"
+    },
+    {
+      "type": "Expand",
+      "name": null
+    },
+    {
+      "type": "Enumeration",
+      "name": "InitType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "WeightFunc"
+    },
+    {
+      "type": "Integer",
+      "name": "MaxIters"
+    },
+    {
+      "type": "Boolean",
+      "name": "NumLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangNumLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "RadiusLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangRadiusLimit"
+    },
+    {
+      "type": "Expand",
+      "name": null
+    },
+    {
+      "type": "Boolean",
+      "name": "CenterXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCenterXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "CenterYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCenterYLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "ScoreLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangScoreLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FittedCircle"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CenterPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "InputPoint"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

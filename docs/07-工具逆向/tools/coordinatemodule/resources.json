@@ -1,0 +1,85 @@
+{
+  "toolId": "coordinatemodule",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\CoordinateModule\\CoordinateModule.xml",
+      "sha256": "116d4bcb2cdfef0e2e380c527b6666f1f11c7d1b4f6d5640b1c281e2745e9218",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\CoordinateModule\\CoordinateModuleAlgorithm.xml",
+      "sha256": "7994366ec98616f29fdd149c0076389b56a2b549680246b87360a725aeb5d7b7",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\CoordinateModule\\CoordinateModuleAlgorithmTab.xml",
+      "sha256": "c1760ffeaf852e4b663f93965fa1a167b75f134d5a1dfee960092b98a23e1f5c",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\CoordinateModule\\CoordinateModuleCs.xml",
+      "sha256": "494d27da414d70868c436cc8936b9f63c05599efb495ab30d5c816544375ba47",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\CoordinateModule\\CoordinateModuleDisplay.xml",
+      "sha256": "db489d4738f31a133e8c198ea9b6c7756de5f68c47de1c04b68cb2f39c860b83",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\CoordinateModule\\ToolItemInfo.xml",
+      "sha256": "6303225602808a38aec35bdea5eb470000172743ce2f3a05013e4f17dab47108",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "RadioSelecterEx2",
+      "name": "CordinateCreate"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "RadioSelecterEx3",
+      "name": "InputWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "SrcInputPoints"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "SrcInputPointsX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "SrcInputPointsY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "SrcInputAngle"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "SrcInputMatrix"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

@@ -1,0 +1,80 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>VisionMaster</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <OutputType>WinExe</OutputType>
+    <UseWPF>True</UseWPF>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net461</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <ApplicationConfig Remove="VisionMaster.exe.config" />
+    <ApplicationConfig Include="VisionMaster.exe.config" />
+    <Page Remove="resources\en-us.xaml" />
+    <Page Remove="resources\zh-cn.xaml" />
+    <Page Remove="resources\zh-tw.xaml" />
+    <Page Include="resources\en-us.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="resources/en-us.xaml" />
+    <Page Include="resources\zh-cn.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="resources/zh-cn.xaml" />
+    <Page Include="resources\zh-tw.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="resources/zh-tw.xaml" />
+    <Resource Remove="menuitems.xml" />
+    <Resource Remove="resources\logo.ico" />
+    <Resource Include="menuitems.xml" LogicalName="menuitems.xml" />
+    <Resource Include="resources\logo.ico" LogicalName="resources/logo.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Apps.Data" />
+    <Reference Include="VM.Utility" />
+    <Reference Include="VisionMasterMain" />
+    <Reference Include="VM.User" />
+    <Reference Include="Apps.XmlUI" />
+    <Reference Include="VM.PlatformSDKCS" />
+    <Reference Include="VM.Controls" />
+    <Reference Include="VMControls.Interface" />
+    <Reference Include="VM.AppData" />
+    <Reference Include="Mvvm" />
+    <Reference Include="Apps.UIHelper" />
+    <Reference Include="VM.Core" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.ServiceProcess" />
+    <Reference Include="Apps.PcUI" />
+    <Reference Include="VM.CostomDialog" />
+    <Reference Include="DirectoryBrowser" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xml" />
+    <Reference Include="VM.Xml" />
+    <Reference Include="UIVersionControlManager" />
+    <Reference Include="ModuleParamTool" />
+    <Reference Include="Apps.XmlParser" />
+    <Reference Include="Microsoft.WindowsAPICodePack.Shell" />
+    <Reference Include="Interop.TaskScheduler" />
+    <Reference Include="VMControls.WPF" />
+    <Reference Include="GlobalScriptUI" />
+    <Reference Include="VM.CalibGuide" />
+    <Reference Include="PasswordWindowUI" />
+    <Reference Include="FrontendUI.Design" />
+    <Reference Include="Frontend.Base" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="Apps.Log" />
+    <Reference Include="Apps.BaseLog" />
+    <Reference Include="Apps.ErrorCode" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="VM.WatchDog" />
+    <Reference Include="VMControls.Data" />
+    <Reference Include="VMBaseControls" />
+    <Reference Include="Apps.ColorFun" />
+    <Reference Include="VMControls.RenderInterface" />
+    <Reference Include="VM.Util" />
+    <Reference Include="Apps.Json" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+</Project>

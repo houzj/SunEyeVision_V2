@@ -1,0 +1,212 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>VM.PcUI</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace />
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="VM.PcUI.Resources.鼠标旋转箭头.png" />
+    <None Remove="VM.PcUI.Resources.鼠标双向箭头.png" />
+    <EmbeddedResource Include="VM.PcUI.Resources.鼠标旋转箭头.png" LogicalName="VM.PcUI.Resources.鼠标旋转箭头.png" />
+    <EmbeddedResource Include="VM.PcUI.Resources.鼠标双向箭头.png" LogicalName="VM.PcUI.Resources.鼠标双向箭头.png" />
+    <Page Remove="controls\commomdictionary.xaml" />
+    <Page Remove="HikPcUI.Commom\SuperImageButton.xaml" />
+    <Page Remove="HikPcUI.Commom\SuperRadioButton.xaml" />
+    <Page Remove="HikPcUI.Common\ArrowRadioButton.xaml" />
+    <Page Remove="HikPcUI.Common\AssistCrossRadioButton.xaml" />
+    <Page Remove="HikPcUI.Common\ClearImageButton.xaml" />
+    <Page Remove="HikPcUI.Common\CrossRadioButton.xaml" />
+    <Page Remove="HikPcUI.Common\ImageViewController.xaml" />
+    <Page Remove="HikPcUI.Common\RectRadioButton.xaml" />
+    <Page Remove="HikPcUI.Common\XYRadioButton.xaml" />
+    <Page Remove="HikPcUI.Controls\ArrowTreeViewControl.xaml" />
+    <Page Remove="HikPcUI.Controls\ChromaticDiagram.xaml" />
+    <Page Remove="HikPcUI.Controls\CrossLine.xaml" />
+    <Page Remove="HikPcUI.Controls\HikCheckBox.xaml" />
+    <Page Remove="HikPcUI.Controls\HikHistogram.xaml" />
+    <Page Remove="HikPcUI.Controls\HikHistogramSingle.xaml" />
+    <Page Remove="HikPcUI.Controls\ImageButton.xaml" />
+    <Page Remove="HikPcUI.Controls\LightnessBar.xaml" />
+    <Page Remove="HikPcUI.Controls\LineAndAngle.xaml" />
+    <Page Remove="HikPcUI.Controls\NumericUpDown.xaml" />
+    <Page Remove="HikPcUI.Controls\PopupButton.xaml" />
+    <Page Remove="HikPcUI.Controls\ResultOverviewPopupButton.xaml" />
+    <Page Remove="HikPcUI.ImageView\CircleArea.xaml" />
+    <Page Remove="HikPcUI.ImageView\HikCircleArc.xaml" />
+    <Page Remove="HikPcUI.ImageView\HikCircleCaliper.xaml" />
+    <Page Remove="HikPcUI.ImageView\HikCircleMeasure.xaml" />
+    <Page Remove="HikPcUI.ImageView\HikCover.xaml" />
+    <Page Remove="HikPcUI.ImageView\HikCoverCircle.xaml" />
+    <Page Remove="HikPcUI.ImageView\HikCoverCircle2.xaml" />
+    <Page Remove="HikPcUI.ImageView\HikCoverHollow.xaml" />
+    <Page Remove="HikPcUI.ImageView\HikCross.xaml" />
+    <Page Remove="HikPcUI.ImageView\HikCruciform.xaml" />
+    <Page Remove="HikPcUI.ImageView\HikDoubleCover.xaml" />
+    <Page Remove="HikPcUI.ImageView\HikImageView.xaml" />
+    <Page Remove="HikPcUI.ImageView\HikIndexPoint.xaml" />
+    <Page Remove="HikPcUI.ImageView\HikLine.xaml" />
+    <Page Remove="HikPcUI.ImageView\HikLineCaliper.xaml" />
+    <Page Remove="HikPcUI.ImageView\HikPaster.xaml" />
+    <Page Remove="HikPcUI.ImageView\HikPath.xaml" />
+    <Page Remove="HikPcUI.ImageView\HikPoint.xaml" />
+    <Page Remove="HikPcUI.ImageView\HikPolygon.xaml" />
+    <Page Remove="HikPcUI.ImageView\HikQuadraCover.xaml" />
+    <Page Remove="HikPcUI.ImageView\HikShowCross.xaml" />
+    <Page Remove="HikPcUI.ImageView\HikXY.xaml" />
+    <Page Remove="HikPcUI.ImageView\MoveArea.xaml" />
+    <Page Remove="HikPcUI.ImageView\RectangleArea.xaml" />
+    <Page Remove="HikPcUI.ImageView\Rubber2.xaml" />
+    <Page Remove="HikPcUI.ImageView\SpinArea.xaml" />
+    <Page Remove="HikPcUI.ImageView\SquareArea.xaml" />
+    <Page Remove="HikPcUI.ListView\AdvancedColorPickerDialog.xaml" />
+    <Page Remove="HikPcUI.ListView\BooleanControl.xaml" />
+    <Page Remove="HikPcUI.ListView\ColorPickerControlView.xaml" />
+    <Page Remove="HikPcUI.ListView\ColorPickerFirstItem.xaml" />
+    <Page Remove="HikPcUI.ListView\ColorPickerSecondItem.xaml" />
+    <Page Remove="HikPcUI.ListView\IPTextBox.xaml" />
+    <Page Remove="HikPcUI.ListView\NumericControl.xaml" />
+    <Page Remove="HikPcUI.ListView\SliderArrange.xaml" />
+    <Page Remove="HikPcUI.ListView\SliderArrangeDictionary.xaml" />
+    <Page Remove="HikPcUI.ListView\SliderArrangeFloat.xaml" />
+    <Page Remove="imageview\roidictionary.xaml" />
+    <Page Remove="themes\generic.xaml" />
+    <Page Include="controls\commomdictionary.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/commomdictionary.xaml" />
+    <Page Include="HikPcUI.Commom\SuperImageButton.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="commom/superimagebutton.xaml" />
+    <Page Include="HikPcUI.Commom\SuperRadioButton.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="commom/superradiobutton.xaml" />
+    <Page Include="HikPcUI.Common\ArrowRadioButton.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageviewcontroller/arrowradiobutton.xaml" />
+    <Page Include="HikPcUI.Common\AssistCrossRadioButton.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageviewcontroller/assistcrossradiobutton.xaml" />
+    <Page Include="HikPcUI.Common\ClearImageButton.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageviewcontroller/clearimagebutton.xaml" />
+    <Page Include="HikPcUI.Common\CrossRadioButton.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageviewcontroller/crossradiobutton.xaml" />
+    <Page Include="HikPcUI.Common\ImageViewController.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageviewcontroller/imageviewcontroller.xaml" />
+    <Page Include="HikPcUI.Common\RectRadioButton.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageviewcontroller/rectradiobutton.xaml" />
+    <Page Include="HikPcUI.Common\XYRadioButton.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageviewcontroller/xyradiobutton.xaml" />
+    <Page Include="HikPcUI.Controls\ArrowTreeViewControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/arrowtreeview/arrowtreeviewcontrol.xaml" />
+    <Page Include="HikPcUI.Controls\ChromaticDiagram.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/chromaticdiagram.xaml" />
+    <Page Include="HikPcUI.Controls\CrossLine.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/crossline.xaml" />
+    <Page Include="HikPcUI.Controls\HikCheckBox.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/hikcheckbox.xaml" />
+    <Page Include="HikPcUI.Controls\HikHistogram.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/hikhistogram.xaml" />
+    <Page Include="HikPcUI.Controls\HikHistogramSingle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/hikhistogramsingle.xaml" />
+    <Page Include="HikPcUI.Controls\ImageButton.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/imagebutton.xaml" />
+    <Page Include="HikPcUI.Controls\LightnessBar.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/lightnessbar.xaml" />
+    <Page Include="HikPcUI.Controls\LineAndAngle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/lineandangle.xaml" />
+    <Page Include="HikPcUI.Controls\NumericUpDown.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/numericupdown.xaml" />
+    <Page Include="HikPcUI.Controls\PopupButton.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/popupbutton.xaml" />
+    <Page Include="HikPcUI.Controls\ResultOverviewPopupButton.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/resultoverviewpopupbutton.xaml" />
+    <Page Include="HikPcUI.ImageView\CircleArea.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/circlearea.xaml" />
+    <Page Include="HikPcUI.ImageView\HikCircleArc.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/hikcirclearc.xaml" />
+    <Page Include="HikPcUI.ImageView\HikCircleCaliper.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/hikcirclecaliper.xaml" />
+    <Page Include="HikPcUI.ImageView\HikCircleMeasure.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/hikcirclemeasure.xaml" />
+    <Page Include="HikPcUI.ImageView\HikCover.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/hikcover.xaml" />
+    <Page Include="HikPcUI.ImageView\HikCoverCircle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/hikcovercircle.xaml" />
+    <Page Include="HikPcUI.ImageView\HikCoverCircle2.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/hikcovercircle2.xaml" />
+    <Page Include="HikPcUI.ImageView\HikCoverHollow.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/hikcoverhollow.xaml" />
+    <Page Include="HikPcUI.ImageView\HikCross.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/hikcross.xaml" />
+    <Page Include="HikPcUI.ImageView\HikCruciform.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/hikcruciform.xaml" />
+    <Page Include="HikPcUI.ImageView\HikDoubleCover.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/hikdoublecover.xaml" />
+    <Page Include="HikPcUI.ImageView\HikImageView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/hikimageview.xaml" />
+    <Page Include="HikPcUI.ImageView\HikIndexPoint.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/hikindexpoint.xaml" />
+    <Page Include="HikPcUI.ImageView\HikLine.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/hikline.xaml" />
+    <Page Include="HikPcUI.ImageView\HikLineCaliper.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/hiklinecaliper.xaml" />
+    <Page Include="HikPcUI.ImageView\HikPaster.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/hikpaster.xaml" />
+    <Page Include="HikPcUI.ImageView\HikPath.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/hikpath.xaml" />
+    <Page Include="HikPcUI.ImageView\HikPoint.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/hikpoint.xaml" />
+    <Page Include="HikPcUI.ImageView\HikPolygon.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/hikpolygon.xaml" />
+    <Page Include="HikPcUI.ImageView\HikQuadraCover.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/hikquadruplecover.xaml" />
+    <Page Include="HikPcUI.ImageView\HikShowCross.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/hikshowcross.xaml" />
+    <Page Include="HikPcUI.ImageView\HikXY.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/hikxy.xaml" />
+    <Page Include="HikPcUI.ImageView\MoveArea.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/movearea.xaml" />
+    <Page Include="HikPcUI.ImageView\RectangleArea.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/rectanglearea.xaml" />
+    <Page Include="HikPcUI.ImageView\Rubber2.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/rubber2.xaml" />
+    <Page Include="HikPcUI.ImageView\SpinArea.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/spinarea.xaml" />
+    <Page Include="HikPcUI.ImageView\SquareArea.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/squarearea.xaml" />
+    <Page Include="HikPcUI.ListView\AdvancedColorPickerDialog.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="listview/colorpicker/advancedcolorpickerdialog.xaml" />
+    <Page Include="HikPcUI.ListView\BooleanControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="listview/booleancontrol.xaml" />
+    <Page Include="HikPcUI.ListView\ColorPickerControlView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="listview/colorpicker/colorpickercontrolview.xaml" />
+    <Page Include="HikPcUI.ListView\ColorPickerFirstItem.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="listview/colorpicker/colorpickerfirstitem.xaml" />
+    <Page Include="HikPcUI.ListView\ColorPickerSecondItem.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="listview/colorpicker/colorpickerseconditem.xaml" />
+    <Page Include="HikPcUI.ListView\IPTextBox.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="listview/iptextbox.xaml" />
+    <Page Include="HikPcUI.ListView\NumericControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="listview/numericcontrol.xaml" />
+    <Page Include="HikPcUI.ListView\SliderArrange.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="listview/sliderarrange.xaml" />
+    <Page Include="HikPcUI.ListView\SliderArrangeDictionary.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="listview/sliderarrangedictionary.xaml" />
+    <Page Include="HikPcUI.ListView\SliderArrangeFloat.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="listview/sliderarrangefloat.xaml" />
+    <Page Include="imageview\roidictionary.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imageview/roidictionary.xaml" />
+    <Page Include="themes\generic.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="themes/generic.xaml" />
+    <Resource Remove="resources\colorchart.png" />
+    <Resource Remove="resources\combo_ic_bottom_click.png" />
+    <Resource Remove="resources\combo_ic_bottom_normal.png" />
+    <Resource Remove="resources\combo_ic_top_click.png" />
+    <Resource Remove="resources\combo_ic_top_normal.png" />
+    <Resource Remove="resources\gridbrushimg.png" />
+    <Resource Remove="resources\ic_save-the-rendering_normal.png" />
+    <Resource Remove="resources\ic_save_normal.png" />
+    <Resource Remove="resources\ic_view-the-rendering_normal.png" />
+    <Resource Remove="resources\imagebg.bmp" />
+    <Resource Remove="resources\inputbox_ic_triangle_top_click.png" />
+    <Resource Remove="resources\inputbox_ic_triangle_top_normal.png" />
+    <Resource Remove="resources\microup.png" />
+    <Resource Remove="resources\microup_click.png" />
+    <Resource Remove="resources\swith_off_dark.png" />
+    <Resource Remove="resources\swith_on_dark.png" />
+    <Resource Remove="resources\view-original-image-_normal.png" />
+    <Resource Remove="resources\zoomin.png" />
+    <Resource Remove="resources\zoomin_1.png" />
+    <Resource Remove="resources\zoomout.png" />
+    <Resource Remove="resources\zoomout_1.png" />
+    <Resource Remove="resources\滑块_click.png" />
+    <Resource Remove="resources\滑块_normal.png" />
+    <Resource Include="resources\colorchart.png" LogicalName="resources/colorchart.png" />
+    <Resource Include="resources\combo_ic_bottom_click.png" LogicalName="resources/combo_ic_bottom_click.png" />
+    <Resource Include="resources\combo_ic_bottom_normal.png" LogicalName="resources/combo_ic_bottom_normal.png" />
+    <Resource Include="resources\combo_ic_top_click.png" LogicalName="resources/combo_ic_top_click.png" />
+    <Resource Include="resources\combo_ic_top_normal.png" LogicalName="resources/combo_ic_top_normal.png" />
+    <Resource Include="resources\gridbrushimg.png" LogicalName="resources/gridbrushimg.png" />
+    <Resource Include="resources\ic_save-the-rendering_normal.png" LogicalName="resources/ic_save the rendering_normal.png" />
+    <Resource Include="resources\ic_save_normal.png" LogicalName="resources/ic_save_normal.png" />
+    <Resource Include="resources\ic_view-the-rendering_normal.png" LogicalName="resources/ic_view the rendering_normal.png" />
+    <Resource Include="resources\imagebg.bmp" LogicalName="resources/imagebg.bmp" />
+    <Resource Include="resources\inputbox_ic_triangle_top_click.png" LogicalName="resources/inputbox_ic_triangle_top_click.png" />
+    <Resource Include="resources\inputbox_ic_triangle_top_normal.png" LogicalName="resources/inputbox_ic_triangle_top_normal.png" />
+    <Resource Include="resources\microup.png" LogicalName="resources/microup.png" />
+    <Resource Include="resources\microup_click.png" LogicalName="resources/microup_click.png" />
+    <Resource Include="resources\swith_off_dark.png" LogicalName="resources/swith_off_dark.png" />
+    <Resource Include="resources\swith_on_dark.png" LogicalName="resources/swith_on_dark.png" />
+    <Resource Include="resources\view-original-image-_normal.png" LogicalName="resources/view original image _normal.png" />
+    <Resource Include="resources\zoomin.png" LogicalName="resources/zoomin.png" />
+    <Resource Include="resources\zoomin_1.png" LogicalName="resources/zoomin_1.png" />
+    <Resource Include="resources\zoomout.png" LogicalName="resources/zoomout.png" />
+    <Resource Include="resources\zoomout_1.png" LogicalName="resources/zoomout_1.png" />
+    <Resource Include="resources\滑块_click.png" LogicalName="resources/滑块_click.png" />
+    <Resource Include="resources\滑块_normal.png" LogicalName="resources/滑块_normal.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="VM.Controls" />
+    <Reference Include="VMControls.Interface" />
+    <Reference Include="Apps.Data" />
+    <Reference Include="Mvvm" />
+    <Reference Include="VMControls.RenderInterface" />
+    <Reference Include="Apps.Interface" />
+    <Reference Include="VM.Xml" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Apps.PcUI" />
+    <Reference Include="System.Windows.Interactivity" />
+    <Reference Include="VM.Utility" />
+    <Reference Include="VM.ExternalCall" />
+    <Reference Include="System.Core" />
+    <Reference Include="WriteableBitmapEx.Wpf">
+      <HintPath>..\..\..\..\..\Program Files\VisionMaster4.4.0\Applications\myLibs\WriteableBitmapEx.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="Apps.Localization" />
+    <Reference Include="Apps.Log" />
+    <Reference Include="VM.PlatformSDKCS" />
+  </ItemGroup>
+</Project>

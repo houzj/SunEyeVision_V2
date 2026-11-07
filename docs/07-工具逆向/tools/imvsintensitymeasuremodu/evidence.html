@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>imvsintensitymeasuremodu 路 evidence.json</title><style>*{box-sizing:border-box}
+body{margin:0;background:#f6f7f9;color:#1d2129;font:14px/1.7 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:24px 20px 60px}
+.crumbs{font-size:13px;margin-bottom:14px}
+.crumbs a{color:#2563eb;text-decoration:none}
+.card{background:#fff;border:1px solid #e4e7ec;border-radius:10px;padding:26px 30px}
+h1,h2,h3,h4{line-height:1.4}
+h1{font-size:20px}h2{font-size:17px;margin-top:26px}h3{font-size:15px}
+table{border-collapse:collapse;margin:12px 0;width:100%;font-size:13px}
+td,th{border:1px solid #e4e7ec;padding:6px 10px;vertical-align:top}
+tr:nth-child(even) td{background:#fafbfc}
+code{background:#f1f3f5;border-radius:3px;padding:1px 5px;font-size:12.5px;font-family:Consolas,Menlo,monospace;color:#c7254e}
+pre{background:#282c34;color:#abb2bf;border-radius:6px;padding:14px 16px;overflow:auto;font-size:12.5px;line-height:1.6;font-family:Consolas,Menlo,monospace}
+pre code{background:none;color:inherit;padding:0}
+ul{padding-left:22px}
+blockquote{border-left:3px solid #d0d5da;margin:10px 0;padding:4px 14px;color:#5a636b;background:#fafbfc}
+hr{border:0;border-top:1px solid #e4e7ec;margin:18px 0}
+p{margin:8px 0}</style></head><body><div class="wrap"><nav class="crumbs"><a href="../../index.html">&#8592; 宸ュ叿绱㈠紩</a> &middot; <code>imvsintensitymeasuremodu</code></nav><div class="card"><h2>evidence.json</h2><pre>{
+  &quot;stableToolId&quot;: &quot;imvsintensitymeasuremodu&quot;,
+  &quot;originalPlugin&quot;: &quot;IMVSIntensityMeasureModu&quot;,
+  &quot;displayName&quot;: &quot;亮度测量&quot;,
+  &quot;originalCategory&quot;: &quot;Measurement&quot;,
+  &quot;originalSourcePath&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSIntensityMeasureModu&quot;,
+  &quot;uiCategory&quot;: &quot;result-view&quot;,
+  &quot;priority&quot;: &quot;P2&quot;,
+  &quot;resourceCount&quot;: 6,
+  &quot;parameterCount&quot;: 15,
+  &quot;inputCount&quot;: 5,
+  &quot;outputCount&quot;: 12,
+  &quot;uiControlCount&quot;: 21,
+  &quot;sourceInventory&quot;: &quot;docs/plugins/inventory.json&quot;,
+  &quot;nativeFunctions&quot;: [],
+  &quot;runtimeObservations&quot;: [],
+  &quot;status&quot;: &quot;source-partial&quot;,
+  &quot;evidenceState&quot;: &quot;source-partial&quot;,
+  &quot;sourceEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/IntensityMeasureModuTool.cs&quot;,
+      &quot;evidenceType&quot;: &quot;decompiled managed source&quot;
+    },
+    {
+      &quot;path&quot;: &quot;analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/IntensityMeasureModuParams.cs&quot;,
+      &quot;evidenceType&quot;: &quot;decompiled managed source&quot;
+    },
+    {
+      &quot;path&quot;: &quot;analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/IntensityMeasureResult.cs&quot;,
+      &quot;evidenceType&quot;: &quot;decompiled managed source&quot;
+    }
+  ],
+  &quot;managedMembers&quot;: [
+    &quot;IntensityMeasureModuTool constructor/Clone/Dispose&quot;,
+    &quot;Max/Min/Mean/Std/Contrast limit ParamItems&quot;,
+    &quot;IntensityMeasureResult basic/native result fields&quot;
+  ],
+  &quot;unknowns&quot;: [
+    &quot;native intensity statistics algorithm and Process/ProcessAlg ABI&quot;,
+    &quot;image/ROI input mapping&quot;,
+    &quot;judgment/result status fields&quot;,
+    &quot;UI bindings/theme&quot;,
+    &quot;save/reload/stop runtime behavior&quot;
+  ]
+}</pre></div></div></body></html>

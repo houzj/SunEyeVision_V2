@@ -1,0 +1,107 @@
+{
+  "toolId": "imvscolorextractmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorExtractModu\\IMVSColorExtractModu.xml",
+      "sha256": "5a7dace5893fd41ead1ec6cb69872b6def013a58ddab27b31c7bbc6cf02789f8",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorExtractModu\\IMVSColorExtractModuAlgorithm.xml",
+      "sha256": "cc640ed399e77201a7e9773526065725a7e04ff3a0396a3999526d871433e571",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorExtractModu\\IMVSColorExtractModuAlgorithmTab.xml",
+      "sha256": "ac4167ac08e8083aa2bbd2aedcf0aa24ea9d5aadd130cd18f8d6cab0366a8a42",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorExtractModu\\IMVSColorExtractModuCs.xml",
+      "sha256": "d9febb7aed406f98428b9553f356d5b8d90a95f3ff5e4dc55efe2d67a540631d",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorExtractModu\\IMVSColorExtractModuDisplay.xml",
+      "sha256": "1f62712bd57fef3d71f3a1924a0a0086aed775b479980c46e59a894e963e70ed",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorExtractModu\\ToolItemInfo.xml",
+      "sha256": "c56b715e92c089a872f29bf37d0b95999f3db687ec86fe644dad45bded43abb4",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "ColorExtractList",
+      "name": "InputColorRange"
+    },
+    {
+      "type": "Boolean",
+      "name": "AreaLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeAreaLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZoneAnnular"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "RoiSelectGroup",
+    "InheritWayGroup2",
+    "AssistGroup",
+    "TextDisplayGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

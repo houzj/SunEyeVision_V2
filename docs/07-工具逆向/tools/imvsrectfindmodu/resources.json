@@ -1,0 +1,221 @@
+{
+  "toolId": "imvsrectfindmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSRectFindModu\\IMVSRectFindModu.xml",
+      "sha256": "c2a20e0986afced758ca914f5e2a24b6caf8522f1180770abf6fc6882394ecd8",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSRectFindModu\\IMVSRectFindModuAlgorithm.xml",
+      "sha256": "7b2f58ca27458cc2c4f8ff8316868a389c6d95eb52251f3d8406ced49e081cbc",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSRectFindModu\\IMVSRectFindModuAlgorithmTab.xml",
+      "sha256": "fcf6ca5363827452a0992fd2f6509a69004f73cb5791fcf9974a5e762037c5d5",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSRectFindModu\\IMVSRectFindModuCs.xml",
+      "sha256": "018e676f6a9e906de4dc29aa3c2355116711f3098e4c2fd499fee6934eaa229a",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSRectFindModu\\IMVSRectFindModuDisplay.xml",
+      "sha256": "5e4783779c07d9f07552ea975b1e72df15134f2293c5cd083f38edb9f0a7adf1",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSRectFindModu\\ToolItemInfo.xml",
+      "sha256": "47492280aa77201becae25ca615e8f3e73f294d89b06ead765d4b0264248852f",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "OutputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgeType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgeUpPolarity"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgeDownPolarity"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgeLeftPolarity"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgeRightPolarity"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeStrength"
+    },
+    {
+      "type": "Integer",
+      "name": "CaliperNum"
+    },
+    {
+      "type": "Integer",
+      "name": "IdeaWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "IdeaHeight"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelSize"
+    },
+    {
+      "type": "Integer",
+      "name": "ProjectLen"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectNum"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectDist"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FitInitType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FitFun"
+    },
+    {
+      "type": "Boolean",
+      "name": "AngleLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangAngleLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "CenterXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCenterXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "CenterYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCenterYLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "RectHeightLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RectHeightLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "RectWidthLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RectWidthLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "RectFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "RectCenterPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "OutlinePoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "OutputMaskImageGroup",
+    "InputMaskImageGroup",
+    "RoiSelectGroup",
+    "InheritWayGroup",
+    "ExternROITypeGroup",
+    "AssistGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

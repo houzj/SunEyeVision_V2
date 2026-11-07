@@ -1,0 +1,28 @@
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+
+namespace VM.Utility.Convert;
+
+public static class TreeViewItemExtensions
+{
+	public static int GetDepth(this TreeViewItem item)
+	{
+		TreeViewItem parent;
+		if ((parent = GetParent(item)) != null)
+		{
+			return parent.GetDepth() + 1;
+		}
+		return 0;
+	}
+
+	private static TreeViewItem GetParent(TreeViewItem item)
+	{
+		DependencyObject parent = VisualTreeHelper.GetParent(item);
+		while (!(parent is TreeViewItem) && !(parent is TreeView))
+		{
+			parent = VisualTreeHelper.GetParent(parent);
+		}
+		return parent as TreeViewItem;
+	}
+}

@@ -1,0 +1,96 @@
+{
+  "controls": [
+    {
+      "type": "Boolean",
+      "name": "CorrectEnable"
+    },
+    {
+      "type": "RadioSelecter3",
+      "name": "InputWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ActualCenterPoints"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ActualCenterPointsX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ActualCenterPointsY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "DicingWidth"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "DicingHeight"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "InputWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "SrcInputPoints"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "SrcInputPointsX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "SrcInputPointsY"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "declarative-parameters",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P0",
+  "themeStates": "unknown",
+  "toolId": "coordinatetransform",
+  "status": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CoordinateTransform\\CoordinateTransform.xml",
+      "sha256": "146414f684197693ea8290e75a37450b26fec068981f65c76bb272b26edfba5a",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CoordinateTransform\\CoordinateTransformAlgorithm.xml",
+      "sha256": "c1afe6c1965b7e5a34b56bac8674640ea00024280710d6ddabbb4449a7834c67",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CoordinateTransform\\CoordinateTransformAlgorithmTab.xml",
+      "sha256": "5ad5382fbcb2efaa5eac3cd284e95d7961d6cdab7f2e66e6560f52e78b0b41f3",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CoordinateTransform\\CoordinateTransformCs.xml",
+      "sha256": "c6bd018a1e4d715062d3346fab07c75ac6f168d406103f0b1a4bff5dbbccb3c3",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CoordinateTransform\\CoordinateTransformDisplay.xml",
+      "sha256": "d32cc3742ebe7bada19934666b68e13222326b3a72bbe1ff3f7b0f62687fbaf4",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CoordinateTransform\\ToolItemInfo.xml",
+      "sha256": "a5ae3c07f9738d324d10ae1c5b2a85f743b004ed78aeb94d5baec96bdade1e22",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "坐标转换",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

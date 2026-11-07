@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>脚本工具 · 现行文档</title>
+<link rel="stylesheet" href="../00-索引/assets/doc.css">
+</head>
+<body>
+<div class="wrap">
+
+<nav class="crumbs">
+    <a href="../00-索引/主题台账.html">主题台账</a>
+    <a href="../00-索引/文档索引.html">文档索引</a>
+    <a href="README.html">现行文档说明</a>
+</nav>
+
+<header class="doc-header">
+    <h1>脚本工具<span class="badge unverified">部分未验</span></h1>
+    <p class="doc-meta">最后更新：2026-11-05<span class="sep">·</span>状态：部分未验<span class="sep">·</span>代码基线：<code>71da36329</code><span class="sep">·</span>合并来源：14 篇历史方案（其中 2 篇实为误聚类，见文末说明）</p>
+</header>
+
+<section class="card lead">
+    <h2>一句话结论</h2>
+        <p>脚本工具是「编译 → 常驻沙箱 → 每次新建实例」的执行模型：脚本代码编译一次后程序集<strong>常驻不卸载</strong>，每次执行只新建实例，从而让首次与后续执行耗时接近。引用用 BCL 白名单 + 宿主 API 类型锚定，不靠运行时反查。编辑器是 <code>ScriptEditorCore</code>（语义高亮 + 分析管道 + 补全）放在 <code>CommonControl</code>，工具侧只组装。<strong>能力已落地，但性能目标与人工验收没有记录。</strong></p>
+</section>
+
+<section class="card">
+    <h2>改前用户看到什么</h2>
+        <ul>
+            <li>同一段脚本，<strong>第一次执行 74ms，之后 2ms</strong>，差 70 多毫秒。工作流里脚本节点一多，第一轮明显卡。</li>
+            <li>脚本里用 <code>HOperatorSet</code> / <code>Mat</code>，编译报 <strong>CS0246 找不到类型</strong>，或 <strong>CS0012 需要 mscorlib 引用</strong>。</li>
+            <li>打字时编辑器<strong>一顿一顿</strong>，光标跟不上手；补全弹窗挡住正在写的代码。</li>
+            <li>脚本的输入输出全是英文变量名，界面上看不出哪个是"圆心X"、哪个是"OK/NG"，改脚本时对不上号。</li>
+        </ul>
+</section>
+
+<section class="card">
+    <h2>改后应该是什么样</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>场景</th>
+                    <th>期望行为</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>连续执行同一脚本</td>
+                    <td>首次与后续耗時接近（目标差异 ≤ 5ms）</td>
+                </tr>
+                <tr>
+                    <td>改脚本代码后再执行</td>
+                    <td>新代码生效，旧程序集被隔离，不混用</td>
+                </tr>
+                <tr>
+                    <td>多个脚本节点（不同代码/引用）</td>
+                    <td>各自独立沙箱，互不干扰</td>
+                </tr>
+                <tr>
+                    <td>并发执行同一脚本</td>
+                    <td>实例彼此隔离，结果不串</td>
+                </tr>
+                <tr>
+                    <td>长时间运行</td>
+                    <td>沙箱数量有上限，不无限增长</td>
+                </tr>
+                <tr>
+                    <td>脚本里用 Halcon / OpenCvSharp 类型</td>
+                    <td>编译通过，运行正确</td>
+                </tr>
+                <tr>
+                    <td>打字</td>
+                    <td>高亮与补全在后台增量计算，不阻塞输入</td>
+                </tr>
+                <tr>
+                    <td>配置输入输出</td>
+                    <td>变量名旁显示中文名，界面可读</td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+<section class="card">
+    <h2>关键结构</h2>
+        <h3>执行链</h3>
+        <figure class="diagram">
+            <div class="d-chain-v">
+                <div class="d-node accent">脚本代码 + 输入配置</div>
+                <div class="d-arrow down">↓</div>
+                <div class="d-node">ScriptCompiler<small>编译；命中缓存则 0ms</small></div>
+                <div class="d-arrow down">↓</div>
+                <div class="d-node">缓存键<small>codeHash | 宿主指纹 | 引用指纹</small></div>
+                <div class="d-arrow down">↓</div>
+                <div class="d-node decision">ScriptSandboxPool 命中？<small>常驻沙箱，上限 16，LRU</small></div>
+            </div>
+            <div class="d-fan">
+                <div class="d-arrow down">↓</div>
+                <div class="d-branches">
+                    <div class="d-branch">
+                        <span class="d-edge">命中</span>
+                        <div class="d-arrow down">↓</div>
+                        <div class="d-node ok">复用已有 ALC + 程序集</div>
+                    </div>
+                    <div class="d-branch">
+                        <span class="d-edge">未命中</span>
+                        <div class="d-arrow down">↓</div>
+                        <div class="d-node warn">新建 ScriptSandbox</div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-chain-v">
+                <div class="d-arrow down">↓</div>
+                <div class="d-node">每次执行：CreateScriptInstance<small>新实例，状态干净</small></div>
+                <div class="d-arrow down">↓</div>
+                <div class="d-node">Init → Process → Release<small>反射设输入 / 读输出</small></div>
+            </div>
+            <div class="d-loop">沙箱不卸载，回到池中复用</div>
+            <figcaption>执行链：编译结果按三维缓存键复用沙箱，命中即省编译；每次执行都新建实例，执行完沙箱回池不销毁。</figcaption>
+        </figure>
+        <p><strong>隔离单元是沙箱（ALC），不是实例。</strong> 程序集常驻，实例每次新建。代码变化 → 缓存键变化 → 新沙箱；旧沙箱等 LRU 淘汰，无需显式失效。</p>
+        <h3>引用装配</h3>
+        <figure class="diagram">
+            <div class="d-layers">
+                <div class="d-layer">
+                    <div class="layer-name">三类来源</div>
+                    <div class="layer-body">
+                        <div class="d-node accent">BCL 白名单<small>System.* / netstandard / mscorlib facade</small></div>
+                        <div class="d-node accent">宿主 API 类型锚定<small>typeof(Script) / typeof(HOperatorSet) / typeof(Mat)</small></div>
+                        <div class="d-node accent">用户自定义引用<small>AssemblyReferenceDialog</small></div>
+                    </div>
+                </div>
+                <div class="d-arrow down">↓</div>
+                <div class="d-layer">
+                    <div class="layer-name">合并</div>
+                    <div class="layer-body">
+                        <div class="d-node">MetadataReference 集合</div>
+                    </div>
+                </div>
+                <div class="d-arrow down">↓</div>
+                <div class="d-layer">
+                    <div class="layer-name">编译</div>
+                    <div class="layer-body">
+                        <div class="d-node ok">Roslyn 编译</div>
+                    </div>
+                </div>
+            </div>
+            <figcaption>引用装配三源合一：BCL 白名单保证基础类型，类型锚定保证宿主 API（含 Halcon / OpenCvSharp）可解析，用户引用补第三方。</figcaption>
+        </figure>
+        <ul>
+            <li><strong>不用运行时反查已加载程序集</strong>。CLR 惰性加载时那些程序集可能还没加载，反查会落空。</li>
+            <li><code>mscorlib.dll</code> 必须显式引用：<code>halcondotnetxl.dll</code> 是 .NET Framework 时代程序集，元数据引用 <code>mscorlib 2.0.0.0</code>；它不在 TPA 里，必须从 <code>RuntimeEnvironment.GetRuntimeDirectory()</code> 定位后 <code>CreateFromFile</code>。</li>
+        </ul>
+        <h3>编辑器分层</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>层</th>
+                    <th>位置</th>
+                    <th>职责</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>编辑器控件</td>
+                    <td><code>CommonControl/ScriptEditorCore.xaml</code></td>
+                    <td>文本编辑、渲染</td>
+                </tr>
+                <tr>
+                    <td>语义高亮</td>
+                    <td><code>CommonControl/SemanticHighlighter.cs</code></td>
+                    <td>词法/语义着色</td>
+                </tr>
+                <tr>
+                    <td>分析调度</td>
+                    <td><code>CommonControl/ScriptAnalysisScheduler.cs</code></td>
+                    <td>增量、防抖、异步</td>
+                </tr>
+                <tr>
+                    <td>补全</td>
+                    <td><code>Tool.Script/Completion/GlyphMapping.cs</code></td>
+                    <td>图标 + 补全项</td>
+                </tr>
+                <tr>
+                    <td>工具组装</td>
+                    <td><code>ScriptDebugControl</code> / <code>ScriptVariableTab</code></td>
+                    <td>输入输出配置、监控树</td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+<section class="card">
+    <h2>关键决策与理由</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>决策</th>
+                    <th>理由</th>
+                    <th>依据</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>沙箱按<strong>编译缓存键</strong>分组常驻</td>
+                    <td>每次新建 ALC 会让用户代码 JIT 重新发生，这是 72ms 差异的主因</td>
+                    <td>20260825</td>
+                </tr>
+                <tr>
+                    <td><strong>程序集常驻、实例新建</strong></td>
+                    <td>常驻省掉加载与 JIT；实例新建保证状态干净、并发安全</td>
+                    <td>20260825</td>
+                </tr>
+                <tr>
+                    <td>缓存键 = <code>codeHash|宿主指纹|引用指纹</code></td>
+                    <td>三维都变才需要新沙箱，改代码不误用旧程序集</td>
+                    <td>20260825</td>
+                </tr>
+                <tr>
+                    <td>LRU 上限 16</td>
+                    <td>常驻必然占内存，加边界防泄漏</td>
+                    <td>20260825</td>
+                </tr>
+                <tr>
+                    <td>宿主引用用<strong>类型锚定</strong>而非运行时反查</td>
+                    <td>CLR 惰性加载，反查依赖"恰好已加载"，不可靠</td>
+                    <td>20260824（后修正）</td>
+                </tr>
+                <tr>
+                    <td><code>mscorlib</code> facade 显式引用</td>
+                    <td>Halcon 程序集元数据依赖它做类型统一，缺了必报 CS0012</td>
+                    <td>实施期修复</td>
+                </tr>
+                <tr>
+                    <td>分析管道异步化</td>
+                    <td>同步高亮在大脚本上阻塞输入线程，表现为打字卡顿</td>
+                    <td>20260819~21</td>
+                </tr>
+                <tr>
+                    <td>编辑器内核放 <code>CommonControl</code></td>
+                    <td>编辑器是被复用的控件能力，不该塞进单个工具</td>
+                    <td>架构分层</td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+<section class="card">
+    <h2>实施与验证状态</h2>
+        <h3>已做</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>能力</th>
+                    <th>证据</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>ScriptSandboxPool</code>（常驻沙箱 + LRU）</td>
+                    <td><code>ScriptEngine/ScriptSandboxPool.cs</code> 存在（6.4 KB）</td>
+                </tr>
+                <tr>
+                    <td>编译缓存与缓存键</td>
+                    <td><code>ScriptCompiler.cs</code> + <code>ScriptCompilationCoordinator.cs</code></td>
+                </tr>
+                <tr>
+                    <td>启动全量预编译</td>
+                    <td>方案已实施（预编译命中 <code>Compile: 0ms</code>）</td>
+                </tr>
+                <tr>
+                    <td>引用管理（BCL 白名单 + 类型锚定 + mscorlib facade）</td>
+                    <td><code>MetadataReferenceProvider.cs</code>（17.4 KB）</td>
+                </tr>
+                <tr>
+                    <td>脚本输入/输出契约快照</td>
+                    <td><code>ScriptIoContractSnapshot.cs</code> / <code>ScriptReferenceSnapshot.cs</code> / <code>ScriptOutputSnapshot.cs</code></td>
+                </tr>
+                <tr>
+                    <td>绑定解析</td>
+                    <td><code>ScriptBindingResolver.cs</code>（17.8 KB）</td>
+                </tr>
+                <tr>
+                    <td>语义高亮重构（IHighlighter 架构 + 分析管道 + 异步）</td>
+                    <td><code>CommonControl/SemanticHighlighter.cs</code> / <code>ScriptAnalysisScheduler.cs</code></td>
+                </tr>
+                <tr>
+                    <td>补全弹窗与图标映射</td>
+                    <td><code>Completion/GlyphMapping.cs</code>（9.4 KB）</td>
+                </tr>
+                <tr>
+                    <td>输入/输出显示名（双名列）</td>
+                    <td><code>ScriptInputConfig.DisplayName</code> + <code>ScriptVariableTab</code> EditGrid</td>
+                </tr>
+                <tr>
+                    <td>监控树（显示名优先、回退变量名）</td>
+                    <td><code>MonitorNode.DisplayTitle</code></td>
+                </tr>
+                <tr>
+                    <td>脚本调试窗</td>
+                    <td><code>ScriptDebugControl</code>（39.7 KB，1080×650）</td>
+                </tr>
+            </tbody>
+        </table>
+        <h3>未做</h3>
+        <ul>
+            <li>本表基于代码存在性核对，<strong>没有逐项对照各方案的验收清单</strong>。以下能力未在代码中确认：
+                <ul>
+                    <li>沙箱池的 LRU 上限实际取值与淘汰策略是否按 16 执行</li>
+                    <li><code>ScriptSandbox</code> 的"同 key 换新程序集"热替换路径是否实现</li>
+                    <li>沙箱获取/加载异常时的临时沙箱回退是否保留</li>
+                </ul>
+            </li>
+        </ul>
+        <h3>未验</h3>
+        <ul>
+            <li><strong>性能目标未验</strong>：方案目标是「首次 ≈ 后续，差异 ≤ 5ms（74ms → ~3ms）」，<strong>没有找到实测记录</strong>。</li>
+            <li>沙箱数量上限下的长时间运行内存观察未做。</li>
+            <li>并发执行同一节点的正确性未记录。</li>
+            <li>脚本用 Halcon / OpenCvSharp 的真实执行结果（不只是编译通过）未做端到端验收。</li>
+            <li>编辑器高亮/补全的目视验收（深浅主题下可读性）未记录。</li>
+            <li>已知遗留：<code>Script.Tests</code> 曾有 10 个用例失败（<code>AvalonEditTextContainer</code> 命名空间迁移、<code>SemanticHighlighter</code> 源码路径），<strong>修复状态未确认</strong>。</li>
+        </ul>
+</section>
+
+<section class="card">
+    <h2>风险与遗留</h2>
+        <ol>
+            <li><strong>性能目标与实现脱节。</strong> 代码已经常驻复用，但没有任何实测数据说明"首次与后续接近"。在补上实测前，不能对用户宣称"脚本执行时间一致"。</li>
+            <li><strong>常驻沙箱是内存换速度。</strong> 16 个沙箱各带一份程序集与 JIT 结果，长时间运行、多脚本节点的方案需要观察实际内存。</li>
+            <li><strong>缓存键含"宿主指纹"。</strong> 宿主 DLL 更新后旧沙箱应失效，但如果指纹计算没有覆盖到具体程序集版本，可能用到旧宿主类型，表现为"改了宿主代码但脚本行为没变"。</li>
+            <li><strong>引用装配依赖编译期类型锚定。</strong> 宿主新增可被脚本使用的公开类型时，必须同步在 <code>MetadataReferenceProvider</code> 里加锚点，否则脚本编译不到——这是个需要写进开发规范的隐性耦合。</li>
+            <li><strong>编辑器跨项目共享。</strong> <code>ScriptEditorCore</code> 在 <code>CommonControl</code>，脚本工具与可能存在的其他编辑场景共用，改动影响面比"只是个工具"大。</li>
+        </ol>
+</section>
+
+<section class="card">
+    <h2>历史演进</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>文档</th>
+                    <th>本篇采信</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2026-08-25</td>
+                    <td><a href="../01-方案设计/2026/08/25/脚本沙箱常驻复用优化方案-20260825-114000.md">脚本沙箱常驻复用优化方案</a></td>
+                    <td><strong>主要来源</strong>：沙箱池模型、缓存键、LRU、验收指标</td>
+                </tr>
+                <tr>
+                    <td>2026-08-24</td>
+                    <td><a href="../01-方案设计/2026/08/24/脚本工具程序集引用管理优化方案-20260824-093620.md">脚本工具程序集引用管理优化方案</a></td>
+                    <td>引用装配（后被类型锚定取代）</td>
+                </tr>
+                <tr>
+                    <td>2026-08-24</td>
+                    <td><a href="../01-方案设计/2026/08/24/脚本工具启动全量预编译优化方案-20260824-183000.md">脚本工具启动全量预编译优化方案</a></td>
+                    <td>预编译</td>
+                </tr>
+                <tr>
+                    <td>2026-08-21</td>
+                    <td><a href="../01-方案设计/2026/08/21/脚本编辑器语义高亮重构方案-20260821-095048.md">脚本编辑器语义高亮重构方案</a></td>
+                    <td>IHighlighter 架构</td>
+                </tr>
+                <tr>
+                    <td>2026-08-21</td>
+                    <td><a href="../01-方案设计/2026/08/21/编辑器内核异步架构优化方案-20260821-110924.md">编辑器内核异步架构优化方案</a></td>
+                    <td>异步分析</td>
+                </tr>
+                <tr>
+                    <td>2026-08-20</td>
+                    <td><a href="../01-方案设计/2026/08/20/脚本编辑器语义着色与补全性能优化方案-20260820-101507.md">脚本编辑器语义着色与补全性能优化方案</a></td>
+                    <td>着色与补全性能</td>
+                </tr>
+                <tr>
+                    <td>2026-08-20</td>
+                    <td><a href="../01-方案设计/2026/08/20/脚本编辑器语义着色优化与全局脚本方案-20260820-171500.md">脚本编辑器语义着色优化与全局脚本方案</a></td>
+                    <td>全局脚本</td>
+                </tr>
+                <tr>
+                    <td>2026-08-20</td>
+                    <td><a href="../01-方案设计/2026/08/20/脚本编辑器IHighlighter架构重构方案-20260820-134939.md">脚本编辑器 IHighlighter 架构重构方案</a></td>
+                    <td>IHighlighter（前版）</td>
+                </tr>
+                <tr>
+                    <td>2026-08-20</td>
+                    <td><a href="../01-方案设计/2026/08/20/脚本编辑器分析管道重构方案-20260820-125058.md">脚本编辑器分析管道重构方案</a></td>
+                    <td>分析管道</td>
+                </tr>
+                <tr>
+                    <td>2026-08-19</td>
+                    <td><a href="../01-方案设计/2026/08/19/脚本工具专业级启动预热优化方案-20260819-091454.md">脚本工具专业级启动预热优化方案</a></td>
+                    <td>启动预热</td>
+                </tr>
+                <tr>
+                    <td>2026-08-19</td>
+                    <td><a href="../01-方案设计/2026/08/19/脚本编辑器连续打字卡顿优化方案-20260819-115500.md">脚本编辑器连续打字卡顿优化方案</a></td>
+                    <td>打字卡顿</td>
+                </tr>
+                <tr>
+                    <td>2026-08-19</td>
+                    <td><a href="../01-方案设计/2026/08/19/补全弹窗体验优化方案-20260819-164405.md">补全弹窗体验优化方案</a></td>
+                    <td>补全弹窗</td>
+                </tr>
+            </tbody>
+        </table>
+        <p><strong>误聚类说明（2 篇，不属脚本主题）</strong>：</p>
+        <p>台账按关键词把下面 2 篇算进了本主题，实际内容与脚本无关，归区域/测量范畴，查阅时请看 <code>测量与交互.html</code>：</p>
+        <ul>
+            <li><code>01-方案设计/2026/05/多边形方案设计-20260502.md</code>（区域多边形）</li>
+            <li><code>04-工具设计/查找工具/2026/05/区域编辑器卡尺ROI扩展方案-20260508.md</code>（卡尺 ROI 扩展）</li>
+        </ul>
+</section>
+
+<nav class="doc-nav">
+    <a class="primary" href="../00-索引/主题台账.html">主题台账</a>
+    <a href="../00-索引/文档索引.html">文档索引</a>
+    <a href="README.html">现行文档说明</a>
+</nav>
+
+</div>
+</body>
+</html>

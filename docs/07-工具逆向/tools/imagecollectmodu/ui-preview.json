@@ -1,0 +1,113 @@
+{
+  "controls": [
+    {
+      "type": "OpenFileForCameraDialog",
+      "name": "DcfPath"
+    },
+    {
+      "type": "EnumerationLx",
+      "name": "CameraName"
+    },
+    {
+      "type": "String",
+      "name": "CameraType"
+    },
+    {
+      "type": "FloatBx",
+      "name": "AcquisitionFrameRate"
+    },
+    {
+      "type": "FloatBx",
+      "name": "AcquisitionFrameRateAbs"
+    },
+    {
+      "type": "StringBx",
+      "name": "ResultingFrameRate"
+    },
+    {
+      "type": "StringBx",
+      "name": "ResultingFrameRateAbs"
+    },
+    {
+      "type": "FloatBx",
+      "name": "AcquisitionLineRate"
+    },
+    {
+      "type": "StringBx",
+      "name": "ResultingLineRate"
+    },
+    {
+      "type": "FloatBx",
+      "name": "ExposureTime"
+    },
+    {
+      "type": "FloatBx",
+      "name": "ExposureTimeAbs"
+    },
+    {
+      "type": "FloatBx",
+      "name": "Gain"
+    },
+    {
+      "type": "EnumerationBx",
+      "name": "GainAuto"
+    },
+    {
+      "type": "EnumerationGain",
+      "name": "PreampGain"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imagecollectmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectModu\\ImageCollect.xml",
+      "sha256": "5be8a6c1127ffb8e2c91d49e63392c1ce2e4b84cf8f16666b2e23a21c3f8bde2",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectModu\\ImageCollectModu.xml",
+      "sha256": "1c9ca8f1a1414d20a17ce3afbdd46612447deabf1f294e8862ceb5f82e6cee62",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectModu\\ImageCollectModuAlgorithm.xml",
+      "sha256": "578428c0cd1af61ebea178da29d3a2ef33d30cf57fc5fe3c9a75e7bcb9fa2ad0",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectModu\\ImageCollectModuAlgorithmTab.xml",
+      "sha256": "6d4bfb6278dbfd74853b8b053ce46da1579abe32157038addf9ea88af73fa278",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectModu\\ImageCollectModuCs.xml",
+      "sha256": "12d71d4d139387261ad3c55ddf5dc03c4e11f7b9c2768c5516fad269c0d87673",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectModu\\ImageCollectModuDisplay.xml",
+      "sha256": "9ce896bf2465a8d58babd7425063b690f0a1844e5bd2ecd8dd2f9edc6a5d8516",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectModu\\ToolItemInfo.xml",
+      "sha256": "5d8d1ee4e5f529b590207245255f5b61cc42fec2bc68c70fd87612732dc011b5",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "ImageCollectModu",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

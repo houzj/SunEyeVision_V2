@@ -1,0 +1,251 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<controls:BaseWindow x:Class="CalculatorModuleControl.CalculatorWindow" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero" xmlns:paramTab="clr-namespace:Apps.XmlUI.ParamTab;assembly=Apps.XmlUI" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" x:Name="Window" Height="448" Width="504" Background="#F2F3F3" xmlns:calculatormodulecontrol="clr-namespace:CalculatorModuleControl;assembly=CalculatorModuleControl" Title="{Binding Name}" DataContext="{Binding Path=CalculatorItem, RelativeSource={RelativeSource Self}}">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+        <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+      </ResourceDictionary.MergedDictionaries>
+      <Style x:Key="ButtonStyle" TargetType="{x:Type Button}">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Background" Value="#D6D5D4" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="#B8B6B6" />
+        <Setter Property="Foreground" Value="#666666" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Button}">
+              <Grid>
+                <Border BorderBrush="{TemplateBinding Control.BorderBrush}" Background="{TemplateBinding Control.Background}" BorderThickness="{TemplateBinding Control.BorderThickness}" CornerRadius="2" />
+                <ContentPresenter RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+              </Grid>
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter Value="{DynamicResource Col_Theme}" Property="BorderBrush" />
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                  <Setter Value="{DynamicResource Col_Theme}" Property="BorderBrush" />
+                  <Setter Value="{DynamicResource Col_Theme}" Property="Background" />
+                  <Setter Property="Foreground" Value="#FCFCFC" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="switchButonon" TargetType="{x:Type ToggleButton}">
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Width" Value="48" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ToggleButton}">
+              <Image Name="icon" Stretch="None" Source="/Apps.XmlUI;component/Resources/swith_off.png" />
+              <ControlTemplate.Triggers>
+                <Trigger Property="ToggleButton.IsChecked" Value="True">
+                  <Setter TargetName="icon" Property="Image.Source" Value="/Apps.XmlUI;component/Resources/swith_on.png" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="{x:Type Button}" TargetType="{x:Type Button}">
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Width" Value="40" />
+        <Setter Property="Margin" Value="2" />
+        <Setter Property="Foreground" Value="#666666" />
+        <Setter Property="FontSize" Value="14px" />
+        <Setter Property="FontFamily" Value="Arial" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Button}">
+              <Border Name="bd" BorderBrush="#C6C6C7" BorderThickness="1" CornerRadius="2">
+                <Border.Background>
+                  <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Offset="0.00" Color="#F7F7F8" />
+                    <GradientStop Offset="1.00" Color="#ECECEE" />
+                  </LinearGradientBrush>
+                </Border.Background>
+                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="bd" Property="Border.BorderBrush" Value="#8B8B8C" />
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                  <Setter TargetName="bd" Value="{DynamicResource Col_Theme}" Property="Border.BorderBrush" />
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                  <Setter TargetName="bd" Property="Border.Background" Value="#FFD3D3D3" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+        <EventSetter Event="Click" Handler="Button_Click" />
+      </Style>
+      <Style x:Key="{x:Type TextBox}" TargetType="{x:Type TextBox}">
+        <Setter Property="Foreground" Value="#808080" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="BorderBrush" Value="#cccccd" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Background" Value="#fcfcfc" />
+        <Setter Property="FrameworkElement.ContextMenu">
+          <Setter.Value>
+            <controls:HikContextMenu>
+              <controls:HikMenuItem Command="Copy" />
+              <controls:HikMenuItem Command="Cut" />
+              <controls:HikMenuItem Command="Paste" />
+            </controls:HikContextMenu>
+          </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type TextBox}">
+              <Border Name="Bd" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" Background="{TemplateBinding Control.Background}" CornerRadius="2">
+                <themes:ListBoxChrome Background="#00FFFFFF" BorderThickness="0" RenderMouseOver="{TemplateBinding UIElement.IsMouseOver}" RenderFocused="{TemplateBinding UIElement.IsKeyboardFocusWithin}" UIElement.SnapsToDevicePixels="True">
+                  <ScrollViewer Name="PART_ContentHost" Background="#00FFFFFF" BorderThickness="0" Margin="{TemplateBinding Control.Padding}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+                </themes:ListBoxChrome>
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="Bd" Property="Border.BorderBrush" Value="#8B8B8C" />
+                </Trigger>
+                <Trigger Property="UIElement.IsFocused" Value="True">
+                  <Setter TargetName="Bd" Property="Border.BorderBrush" Value="#8B8B8C" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="{x:Type ToggleButton}" TargetType="{x:Type ToggleButton}">
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Width" Value="32" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ToggleButton}">
+              <Border BorderBrush="#B8B6B6" BorderThickness="1" CornerRadius="2">
+                <Image Name="icon" Height="32" Width="32" Source="/Apps.XmlUI;component/Resources/combo_ic_关联_normal.png" />
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="icon" Property="Image.Source" Value="/Apps.XmlUI;component/Resources/combo_ic_关联_hover.png" />
+                </Trigger>
+                <Trigger Property="ToggleButton.IsChecked" Value="True">
+                  <Setter TargetName="icon" Property="Image.Source" Value="/Apps.XmlUI;component/Resources/combo_ic_关联_click.png" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid Background="#F2F3F5">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="32" />
+    </Grid.RowDefinitions>
+    <StackPanel Orientation="Vertical" Margin="12,0">
+      <StackPanel Orientation="Horizontal" Height="118" Margin="0,20,0,0">
+        <TextBox Name="ExpressBox" Background="#FCFCFC" TextWrapping="Wrap" Height="118" Width="432" Padding="6,5,0,0" Text="{Binding Expression, Mode=TwoWay}" SelectionChanged="ExpressBox_OnSelectionChanged" />
+        <ToggleButton Name="PopupBtn" HorizontalAlignment="Right" Margin="8,0,0,0" VerticalAlignment="Top" Click="PopupBtn_OnClick" />
+        <Popup Name="Popup" AllowsTransparency="True" StaysOpen="False" Closed="Popup_Closed">
+          <StackPanel Orientation="Vertical">
+            <StackPanel Height="4" />
+            <Border BorderBrush="#CCCCCD" BorderThickness="1" CornerRadius="4" Padding="0,6,0,6">
+              <Border.Background>
+                <LinearGradientBrush>
+                  <GradientStop Offset="0.0" Color="#FCFCFC" />
+                  <GradientStop Offset="0.15" Color="#FCFCFC" />
+                  <GradientStop Offset="1" Color="#F7F7F7" />
+                </LinearGradientBrush>
+              </Border.Background>
+              <paramTab:SubTreeView Name="SubTreeView" FrameworkElement.Width="180" FrameworkElement.Height="180" FrameworkElement.DataContext="{Binding ElementName=Window}">
+                <!--Unknown connection ID: 6-->
+              </paramTab:SubTreeView>
+            </Border>
+          </StackPanel>
+        </Popup>
+      </StackPanel>
+      <StackPanel Margin="0,14" Orientation="Horizontal">
+        <WrapPanel Width="176" Margin="-1,0,0,0">
+          <Button IsEnabled="{Binding CanEdit}">&lt;</Button>
+          <Button IsEnabled="{Binding CanEdit}">&amp;</Button>
+          <Button IsEnabled="{Binding CanEdit}">||</Button>
+          <Button IsEnabled="{Binding CanEdit}">^</Button>
+          <Button IsEnabled="{Binding CanEdit}">&gt;</Button>
+          <Button>(</Button>
+          <Button>)</Button>
+          <Button IsEnabled="{Binding CanEdit}">%</Button>
+          <Button IsEnabled="{Binding CanEdit}">!=</Button>
+          <Button>7</Button>
+          <Button>8</Button>
+          <Button>9</Button>
+          <Button IsEnabled="{Binding CanEdit}">==</Button>
+          <Button>4</Button>
+          <Button>5</Button>
+          <Button>6</Button>
+          <Button>*</Button>
+          <Button>1</Button>
+          <Button>2</Button>
+          <Button>3</Button>
+          <Button IsEnabled="{Binding CanEdit}">/</Button>
+          <Button Width="128">0</Button>
+        </WrapPanel>
+        <WrapPanel Width="46">
+          <Button Height="28">.</Button>
+          <Button Height="28" IsEnabled="{Binding CanEdit}">,</Button>
+          <Button Height="60">+</Button>
+          <Button Height="60">-</Button>
+        </WrapPanel>
+        <WrapPanel Width="220" Margin="28,0,0,0">
+          <Button Width="216">
+            <Image Source="/Apps.XmlUI;component/Resources/ic_backspace.png" Stretch="None" />
+          </Button>
+          <Button Width="40" IsEnabled="{Binding CanEdit}">sin</Button>
+          <Button Width="40" IsEnabled="{Binding CanEdit}">asin</Button>
+          <Button Width="40" IsEnabled="{Binding CanEdit}">sinh</Button>
+          <Button Width="40" IsEnabled="{Binding CanEdit}">asinh</Button>
+          <Button Width="40" IsEnabled="{Binding CanEdit}">exp</Button>
+          <Button Width="40" IsEnabled="{Binding CanEdit}">cos</Button>
+          <Button Width="40" IsEnabled="{Binding CanEdit}">acos</Button>
+          <Button Width="40" IsEnabled="{Binding CanEdit}">cosh</Button>
+          <Button Width="40" IsEnabled="{Binding CanEdit}">acosh</Button>
+          <Button Width="40" IsEnabled="{Binding CanEdit}">sqrt</Button>
+          <Button Width="40" IsEnabled="{Binding CanEdit}">tan</Button>
+          <Button Width="40" IsEnabled="{Binding CanEdit}">atan</Button>
+          <Button Width="40" IsEnabled="{Binding CanEdit}">tanh</Button>
+          <Button Width="40" IsEnabled="{Binding CanEdit}">atanh</Button>
+          <Button Width="40" IsEnabled="{Binding CanEdit}">trunc</Button>
+          <Button Width="40" IsEnabled="{Binding CanEdit}">max</Button>
+          <Button Width="40" IsEnabled="{Binding CanEdit}">min</Button>
+          <Button Width="40" IsEnabled="{Binding CanEdit}">round</Button>
+          <Button Width="40" IsEnabled="{Binding CanEdit}">log</Button>
+          <Button Width="40" IsEnabled="{Binding CanEdit}">floor</Button>
+          <Button Width="40" IsEnabled="{Binding CanEdit}">pow</Button>
+          <Button Width="40" IsEnabled="{Binding CanEdit}">abs</Button>
+          <Button Width="40" IsEnabled="{Binding CanEdit}">ceil</Button>
+          <Button Width="40" IsEnabled="{Binding CanEdit}">log10</Button>
+        </WrapPanel>
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" Margin="0,-10,0,0" IsEnabled="{Binding CanEdit}">
+        <TextBlock FontSize="14" Foreground="#666666" Text="{DynamicResource Lang_CalculatorCValue}" VerticalAlignment="Center" />
+        <TextBox Width="102" Height="30" Margin="12,0,0,0" Padding="6,0,0,0" VerticalContentAlignment="Center" Text="{Binding Initial, Mode=TwoWay}" />
+        <TextBlock FontSize="14" Foreground="#666666" Text="{DynamicResource Lang_CalculatorCInitial}" Margin="104,0,0,0" VerticalAlignment="Center" />
+        <ToggleButton Margin="3,0,0,0" Style="{StaticResource switchButonon}" IsChecked="{Binding Summation, Mode=TwoWay}" />
+      </StackPanel>
+    </StackPanel>
+    <Border Grid.Row="2" Background="#e4e5e5" BorderBrush="#C8C4C4" BorderThickness="0,1,0,0">
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,14,0">
+        <Button Style="{StaticResource ButtonStyle}" Width="70" Height="25" Content="{DynamicResource 校验公式}" Margin="0,0,10,0" IsEnabled="{Binding ElementName=Window, Path=ButtonEnable}" Click="Verify_OnClick" />
+        <Button Style="{StaticResource ButtonStyle}" Width="70" Height="25" Content="{DynamicResource Lang_Msg_Cancel}" Margin="0,0,10,0" IsEnabled="{Binding ElementName=Window, Path=ButtonEnable}" Click="Cancel_OnClick" />
+        <Button Style="{StaticResource ButtonStyle}" Width="70" Height="25" Content="{DynamicResource Save}" IsEnabled="{Binding ElementName=Window, Path=ButtonEnable}" Click="Ok_OnClick" />
+      </StackPanel>
+    </Border>
+  </Grid>
+</controls:BaseWindow>

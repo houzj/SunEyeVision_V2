@@ -1,0 +1,98 @@
+{
+  "stableToolId": "dataassemblemodule",
+  "originalPlugin": "DataAssembleModule",
+  "displayName": "协议组装",
+  "authority": "inventory XML and shipped resource hashes",
+  "algorithmParameters": [
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "AssembleType",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "0",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "Separator",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": ",",
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "ParamItem",
+      "attributes": {},
+      "text": "",
+      "children": [
+        {
+          "type": "Name",
+          "attributes": {},
+          "text": "SubscribeField",
+          "children": []
+        },
+        {
+          "type": "DefaultValue",
+          "attributes": {},
+          "text": "",
+          "children": []
+        }
+      ]
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "RadioSelecterEx2",
+      "name": "AssembleType"
+    },
+    {
+      "type": "ComboxEditDataAssembly",
+      "name": "Separator"
+    },
+    {
+      "type": "OpenFileForDataShellDialog",
+      "name": "PyScriptPath"
+    },
+    {
+      "type": "HeadBar",
+      "name": "FiledHead"
+    },
+    {
+      "type": "ProtocolInputParam",
+      "name": "InputParams"
+    }
+  ],
+  "sourceInventory": "docs/plugins/inventory.json",
+  "unknowns": [
+    "parameter getter/setter bodies",
+    "Process/ProcessAlg body and ABI",
+    "runtime reader/lease"
+  ]
+}

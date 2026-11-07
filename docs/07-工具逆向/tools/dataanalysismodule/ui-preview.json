@@ -1,0 +1,87 @@
+{
+  "toolId": "dataanalysismodule",
+  "displayName": "协议解析",
+  "previewKind": "resource-control-evidence",
+  "category": "declarative-parameters",
+  "priority": "P0",
+  "status": "source-partial",
+  "uiTabs": [
+    "Tab_Basic Params"
+  ],
+  "controls": [
+    {
+      "type": "RadioSelecterAnaly",
+      "name": "AnalysisType"
+    },
+    {
+      "type": "ButtonSelecterAnaly",
+      "name": "AnalyticText"
+    },
+    {
+      "type": "ComboxEditDataAnalysis",
+      "name": "Separator"
+    },
+    {
+      "type": "OpenFileForDataShellDialogAnaly",
+      "name": "PyScriptPath"
+    },
+    {
+      "type": "BooleanInt",
+      "name": "AsciiToHex"
+    },
+    {
+      "type": "ProtocolOutputParam",
+      "name": "txtOutputParams"
+    },
+    {
+      "type": "ProtocolOutputParam_Shell",
+      "name": "shellOutputParams"
+    },
+    {
+      "type": "ProtocolOutputParam_Byte",
+      "name": "byteOutputParams"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "bindings": "控件类型与名称来自 DataAnalysisModuleAlgorithmTab.xml 别名声明；绑定表达式与显隐触发条件未取证",
+  "themeStates": "unknown",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定表达式",
+    "AnalysisType 切换时其余控件的显隐触发条件",
+    "脚本路径、分隔符、十六进制转换之间的参数联动",
+    "主题/悬停/折叠状态与运行时尺寸"
+  ],
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\DataAnalysisModuleAlgorithmTab.xml",
+      "sha256": "c8c4944b170355e4cff2d6c5cf79cd511295a38eb89335864a01df709f33b3d6",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\DataAnalysisModule.xml",
+      "sha256": "4783f7d837427da7f89dbe28f245c7563947d02cddb05d3c62db110dfbb5fa49",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\DataAnalysisModuleAlgorithm.xml",
+      "sha256": "3d993e96e7ee868a8c12f6bedca37e777196a16c8d2cef0714c444183dadfc3c",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\DataAnalysisModuleDisplay.xml",
+      "sha256": "0ce3fed17e9eb3892050191c8204f4ddd7271602248b3a6e2358cb5031d49691",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\DataAnalysisModuleCs.xml",
+      "sha256": "5457052eaff6838a59a10f9999aeeffc740f4821dcc9de9cce5daefd39aae6f1",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\ToolItemInfo.xml",
+      "sha256": "968296d7b1888979a9e7b47f842635e45184db0f2164e73016fb31cd7933ddf0",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "note": "补自 2026-11-05：原先此文件为 {}，属真实缺失。现按 DataAnalysisModuleAlgorithmTab.xml 的控件别名声明恢复 8 个控件条目，只证明存在与类型，不证明绑定、显隐与外观。此 SVG 是证据布局预览，不代表原厂像素级外观。"
+}

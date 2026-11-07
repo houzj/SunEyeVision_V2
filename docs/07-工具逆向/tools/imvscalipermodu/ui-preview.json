@@ -1,0 +1,428 @@
+{
+  "controls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgeMode"
+    },
+    {
+      "type": "Integer",
+      "name": "HalfKernelSize"
+    },
+    {
+      "type": "Integer",
+      "name": "ContrastTH"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePolarity"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Edge1Polarity"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgePairWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "Maximum"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SortType"
+    },
+    {
+      "type": "Boolean",
+      "name": "ContrastEnable"
+    },
+    {
+      "type": "Boolean",
+      "name": "ContrastPairEnable"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ContrastDrop"
+    },
+    {
+      "type": "Integer",
+      "name": "ContrastX0"
+    },
+    {
+      "type": "Integer",
+      "name": "ContrastX1"
+    },
+    {
+      "type": "Integer",
+      "name": "ContrastXC"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "ContrastY"
+    },
+    {
+      "type": "Boolean",
+      "name": "GrayscaleEnable"
+    },
+    {
+      "type": "Enumeration",
+      "name": "GrayscaleDrop"
+    },
+    {
+      "type": "Integer",
+      "name": "GrayscaleX0"
+    },
+    {
+      "type": "Integer",
+      "name": "GrayscaleX1"
+    },
+    {
+      "type": "Integer",
+      "name": "GrayscaleXC"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "GrayscaleY"
+    },
+    {
+      "type": "Boolean",
+      "name": "PositionEnable"
+    },
+    {
+      "type": "Enumeration",
+      "name": "PositionDrop"
+    },
+    {
+      "type": "Integer",
+      "name": "PositionX0"
+    },
+    {
+      "type": "Integer",
+      "name": "PositionX1"
+    },
+    {
+      "type": "Integer",
+      "name": "PositionXC"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "PositionY"
+    },
+    {
+      "type": "Boolean",
+      "name": "PositionNegEnable"
+    },
+    {
+      "type": "Enumeration",
+      "name": "PositionNegDrop"
+    },
+    {
+      "type": "Integer",
+      "name": "PositionNegX0"
+    },
+    {
+      "type": "Integer",
+      "name": "PositionNegX1"
+    },
+    {
+      "type": "Integer",
+      "name": "PositionNegXC"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "PositionNegY"
+    },
+    {
+      "type": "Boolean",
+      "name": "PositionNormEnable"
+    },
+    {
+      "type": "Enumeration",
+      "name": "PositionNormDrop"
+    },
+    {
+      "type": "Integer",
+      "name": "PositionNormX0"
+    },
+    {
+      "type": "Integer",
+      "name": "PositionNormX1"
+    },
+    {
+      "type": "Integer",
+      "name": "PositionNormXC"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "PositionNormY"
+    },
+    {
+      "type": "Boolean",
+      "name": "PositionNormNegEnable"
+    },
+    {
+      "type": "Enumeration",
+      "name": "PositionNormNegDrop"
+    },
+    {
+      "type": "Integer",
+      "name": "PositionNormNegX0"
+    },
+    {
+      "type": "Integer",
+      "name": "PositionNormNegX1"
+    },
+    {
+      "type": "Integer",
+      "name": "PositionNormNegXC"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "PositionNormNegY"
+    },
+    {
+      "type": "Boolean",
+      "name": "SizeNormEnable"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SizeNormDrop"
+    },
+    {
+      "type": "Integer",
+      "name": "SizeNormX0"
+    },
+    {
+      "type": "Integer",
+      "name": "SizeNormX1"
+    },
+    {
+      "type": "Integer",
+      "name": "SizeNormXC"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "SizeNormY"
+    },
+    {
+      "type": "Boolean",
+      "name": "SizeDiffNormEnable"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SizeDiffNormDrop"
+    },
+    {
+      "type": "Integer",
+      "name": "SizeDiffNormX0"
+    },
+    {
+      "type": "Integer",
+      "name": "SizeDiffNormX1"
+    },
+    {
+      "type": "Integer",
+      "name": "SizeDiffNormXC"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "SizeDiffNormY"
+    },
+    {
+      "type": "Boolean",
+      "name": "SizeDiffNormAsymEnable"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SizeDiffNormAsymDrop"
+    },
+    {
+      "type": "Integer",
+      "name": "SizeDiffNormAsymX0"
+    },
+    {
+      "type": "Integer",
+      "name": "SizeDiffNormAsymX1"
+    },
+    {
+      "type": "Integer",
+      "name": "SizeDiffNormAsymXC"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "SizeDiffNormAsymY"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SizeDiffNormAsymDropH"
+    },
+    {
+      "type": "Integer",
+      "name": "SizeDiffNormAsymX0H"
+    },
+    {
+      "type": "Integer",
+      "name": "SizeDiffNormAsymX1H"
+    },
+    {
+      "type": "Integer",
+      "name": "SizeDiffNormAsymXCH"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "SizeDiffNormAsymYH"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ProjectionType"
+    },
+    {
+      "type": "Boolean",
+      "name": "FuzzyedgeFlag"
+    },
+    {
+      "type": "Boolean",
+      "name": "NumLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "NumLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "EdgeWidthLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "EdgeWidthLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "Edge0PointXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangEdge0PointXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "Edge0PointYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangEdge0PointYLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "Edge1PointXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangEdge1PointXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "Edge1PointYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangEdge1PointYLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Edge0Result"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Edge1Result"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "EdgePoint0Result"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "EdgePoint1Result"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "EdgeLineResult"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvscalipermodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCaliperModu\\IMVSCaliperModu.xml",
+      "sha256": "69c9499c5f0852357ce31b2214d097aed0d05a5810f2584ec5e9ee2c1b081038",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCaliperModu\\IMVSCaliperModuAlgorithm.xml",
+      "sha256": "113e9371e7d1e197ba5a2cf1c53c409bbd189208d487094fe0ec0851e4d5af46",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCaliperModu\\IMVSCaliperModuAlgorithmTab.xml",
+      "sha256": "327632db51a558f9bc339086a904052861a0c30ee33dd536db309a02d11e7293",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCaliperModu\\IMVSCaliperModuCs.xml",
+      "sha256": "efe201da9c98b9b05ef0eb333815d465a03b86818de441bbdb9022d631adbe6e",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCaliperModu\\IMVSCaliperModuDisplay.xml",
+      "sha256": "161749bfa7d4f93a5f8db5dd64406cd5a17b9d1bdfcdcd6a5345bbde50cd1d8e",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCaliperModu\\ToolItemInfo.xml",
+      "sha256": "a6a162c8174af6d160f3a9b554f66ed624080c3e0e9afd7559cf0c59687149dc",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "卡尺工具",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

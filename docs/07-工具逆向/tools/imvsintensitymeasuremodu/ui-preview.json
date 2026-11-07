@@ -1,0 +1,136 @@
+{
+  "controls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "OutputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Boolean",
+      "name": "MaxValueLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangMaxValueLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "MinValueLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangMinValueLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "MeanLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangMeanLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "StdLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangStdLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "ContrastLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "ContrastLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "SensorFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZoneAnnular"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvsintensitymeasuremodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSIntensityMeasureModu\\IMVSIntensityMeasureModu.xml",
+      "sha256": "48da34f293b8abe777c16170862bd71aef7e8c23c18e1b82ceaa91c78b22ebc0",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSIntensityMeasureModu\\IMVSIntensityMeasureModuAlgorithm.xml",
+      "sha256": "10f43e426d8bf75a34a68221d864d89805eb1b9387d29344554e1b88c1eb70f5",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSIntensityMeasureModu\\IMVSIntensityMeasureModuAlgorithmTab.xml",
+      "sha256": "f66d5a2967ac87c45d59aa7e124a672925bffb9dee87eee516572f5b7144c19e",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSIntensityMeasureModu\\IMVSIntensityMeasureModuCs.xml",
+      "sha256": "4c9d903e928194b0901948d42a2946737d609de51ee258789668add55208c086",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSIntensityMeasureModu\\IMVSIntensityMeasureModuDisplay.xml",
+      "sha256": "a43aace3eea2c46feda6092200e563aaa674fd2da20d1fe0bc1ba5bb3ab659d6",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSIntensityMeasureModu\\ToolItemInfo.xml",
+      "sha256": "0122bace66ac9851a62ec223ccdc03ea8f8d34b1bdfae63a13634d88dd649c19",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "亮度测量",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

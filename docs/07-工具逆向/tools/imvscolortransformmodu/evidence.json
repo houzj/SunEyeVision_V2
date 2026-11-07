@@ -1,0 +1,28 @@
+{
+  "stableToolId": "imvscolortransformmodu",
+  "originalPlugin": "IMVSColorTransformModu",
+  "displayName": "颜色转换",
+  "originalCategory": "ColorProcessing",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorTransformModu",
+  "uiCategory": "declarative-parameters",
+  "priority": "P0",
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "resourceCount": 6,
+  "parameterCount": 9,
+  "inputCount": 1,
+  "outputCount": 3,
+  "uiControlCount": 10,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [
+    {"path":"analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/ColorTransformModuParams.cs","members":["ColorTransformTypeEnum","ShowChannelEnum","RGB2GrayTypeEnum","ColorTransformType","ShowChannel","RGB2GrayType","Rratio","Gratio","Bratio","ColorTransformModuParams::.ctor"]},
+    {"path":"analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/ColorTransformModuTool.cs","members":["ColorTransformModuTool::.ctor","Clone","Dispose"]},
+    {"path":"analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/ColorTransformResult.cs","members":["ColorTransformResult::.ctor","Marshal.AllocHGlobal","Marshal.FreeHGlobal","~ColorTransformResult"]},
+    {"path":"analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/ColorTransformResultIn.cs","members":["ModuStatus","OutImage"]},
+    {"path":"analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/CProcess.cs","members":["RunOnce","StopRun","ContinousRun"]}
+  ],
+  "managedMembers": ["ColorTransformModuParams.ColorTransformType","ColorTransformModuParams.ShowChannel","ColorTransformModuParams.RGB2GrayType","ColorTransformModuParams.Rratio","ColorTransformModuParams.Gratio","ColorTransformModuParams.Bratio","ColorTransformResultIn.OutImage"],
+  "nativeFunctions": ["IMVS_PF_ExecuteOnce_V30_CS (generic CProcess evidence only)"],
+  "runtimeObservations": [],
+  "unknowns": ["native Process/ProcessAlg ABI and color algorithm","RRatioNs/GRatioNs/BRatioNs managed binding","XML event/condition and save/restore path","native image ownership beyond managed result copy","original VM runtime behavior"]
+}

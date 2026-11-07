@@ -1,0 +1,51 @@
+{
+  "controls": [],
+  "visibilityConditions": "unknown",
+  "category": "declarative-parameters",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "unknown",
+  "previewKind": "evidence-layout",
+  "priority": "P0",
+  "themeStates": "unknown",
+  "toolId": "lightcontrol",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\LightControl\\LightControl.xml",
+      "sha256": "7d9b593ad8209e83101f8653b014f1eb23868e1a6eba686e613600c6458a10e7",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\LightControl\\LightControlAlgorithm.xml",
+      "sha256": "ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\LightControl\\LightControlAlgorithmTab.xml",
+      "sha256": "bdb475c3f4c5698e901976179d141e34b99e7f511e9c0d832bb5eed9ab6180b0",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\LightControl\\LightControlCs.xml",
+      "sha256": "ad7f4fc081ee31fff5bd64ec71957f6e2e4199e60c0fefc69f610cc638f664df",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\LightControl\\LightControlDisplay.xml",
+      "sha256": "79cbe23b4d730c8580b3fbff1f4e4264388728b8e54b58800713022f61e1f6d6",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\LightControl\\ToolItemInfo.xml",
+      "sha256": "c58202a5642c718a197cd099edcc317ee7abc034042952827a37514c1e9bf10f",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "LightControl",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

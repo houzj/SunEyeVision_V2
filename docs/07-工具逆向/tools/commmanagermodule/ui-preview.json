@@ -1,0 +1,152 @@
+{
+  "controls": [
+    {
+      "type": "Boolean",
+      "name": "LoadSolution"
+    },
+    {
+      "type": "EnumeraionComDevice",
+      "name": "SolCommunicationModuleID"
+    },
+    {
+      "type": "Integer",
+      "name": "SolutionTimeOut"
+    },
+    {
+      "type": "ComboxEdit",
+      "name": "SolValueType"
+    },
+    {
+      "type": "Boolean",
+      "name": "IsSolEndChar"
+    },
+    {
+      "type": "ComboxEdit",
+      "name": "SolEndChar"
+    },
+    {
+      "type": "String",
+      "name": "SolutionTrigger"
+    },
+    {
+      "type": "Boolean",
+      "name": "ProcessControl"
+    },
+    {
+      "type": "EnumeraionComDevice",
+      "name": "ProcCommunicationModuleID"
+    },
+    {
+      "type": "ComboxEdit",
+      "name": "PrcValueType"
+    },
+    {
+      "type": "Boolean",
+      "name": "IsPrcEndChar"
+    },
+    {
+      "type": "ComboxEdit",
+      "name": "PrcEndChar"
+    },
+    {
+      "type": "ComboxEdit",
+      "name": "ProSeparator"
+    },
+    {
+      "type": "String",
+      "name": "ProcessFreeTrigger"
+    },
+    {
+      "type": "String",
+      "name": "ProcessBusyTrigger"
+    },
+    {
+      "type": "Boolean",
+      "name": "CameraRespnseControl"
+    },
+    {
+      "type": "EnumeraionComDevice",
+      "name": "CamCommunicationModuleID"
+    },
+    {
+      "type": "ComboxEdit",
+      "name": "CameraValueType"
+    },
+    {
+      "type": "Boolean",
+      "name": "IsCameraEndChar"
+    },
+    {
+      "type": "ComboxEdit",
+      "name": "CameraEndChar"
+    },
+    {
+      "type": "ComboxEdit",
+      "name": "CameraSeparator"
+    },
+    {
+      "type": "String",
+      "name": "ConnectTrigger"
+    },
+    {
+      "type": "String",
+      "name": "DisConnectTrigger"
+    },
+    {
+      "type": "TextNormal",
+      "name": "SampleSeparatorTip"
+    },
+    {
+      "type": "TextNormal",
+      "name": "CameraSeparatorTip"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "declarative-parameters",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P0",
+  "themeStates": "unknown",
+  "toolId": "commmanagermodule",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\CommManagerModule\\CommManagerModule.xml",
+      "sha256": "78333c100b4b2f89b913e909b6def500b5a0a1410d945fc8a1e9012f57c91640",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\CommManagerModule\\CommManagerModuleAlgorithm.xml",
+      "sha256": "2eec08b4ed8889d8505a5b63bf2199d299c4f95cb809519e8cf40c5725d25592",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\CommManagerModule\\CommManagerModuleAlgorithmTab.xml",
+      "sha256": "f51b6c17aed8905d4aa10b2397385008f883adcc622daaa59570dfec5d854e11",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\CommManagerModule\\CommManagerModuleCs.xml",
+      "sha256": "d855300e0eca32a165b04abd3962a2cbd911be1468b88fc744256305aed3124f",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\CommManagerModule\\CommManagerModuleDisplay.xml",
+      "sha256": "79cbe23b4d730c8580b3fbff1f4e4264388728b8e54b58800713022f61e1f6d6",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\CommManagerModule\\ToolItemInfo.xml",
+      "sha256": "b1ee98375a2237e163e8f10f678cca0df7c031f54a6a6af38e620803b94636b2",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "CommManagerModule",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

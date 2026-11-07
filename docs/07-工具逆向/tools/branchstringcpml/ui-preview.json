@@ -1,0 +1,64 @@
+{
+  "controls": [
+    {
+      "type": "ButtonSelecter",
+      "name": "TextInput"
+    },
+    {
+      "type": "HeadBar",
+      "name": "ValueIndexHead"
+    },
+    {
+      "type": "ListParamStr",
+      "name": "ModuleInfoList"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "compound-control",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P4",
+  "themeStates": "unknown",
+  "toolId": "branchstringcpml",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchStringCpmL\\BranchStringCpmL.xml",
+      "sha256": "ddeaa24b66ead5f9fa4684df27e5c89f1f04d4b3a9b3c0050857c2b61ec92624",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchStringCpmL\\BranchStringCpmLAlgorithm.xml",
+      "sha256": "1af9755e8b51ba290d44f715d24402ee7b193c1914416b7e15875dcbbd53eca9",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchStringCpmL\\BranchStringCpmLAlgorithmTab.xml",
+      "sha256": "692fcc08022cac759f4f6130b4409eabb3659a9341c58a6d9b5cd0ee129e8224",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchStringCpmL\\BranchStringCpmLCs.xml",
+      "sha256": "e18a89033c994b2bbdd52229b3047fd9bf5baf79570210beb41ea3076388ff3b",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchStringCpmL\\BranchStringCpmLDisplay.xml",
+      "sha256": "c9f451053521b2640ca220f1d74af2bd996b1c675a97b1dad145109db6c7876c",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchStringCpmL\\ToolItemInfo.xml",
+      "sha256": "3650cccf4a710f796b66921ecec3d3e6fd6265228b5e4da03dd01d7b0d6cd394",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "分支字符",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

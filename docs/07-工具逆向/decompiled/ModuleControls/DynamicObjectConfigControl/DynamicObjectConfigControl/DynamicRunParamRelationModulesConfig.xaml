@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Control x:Class="DynamicObjectConfigControl.DynamicRunParamRelationModulesConfig" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:DynamicObjectConfigControl" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:paramtab="clr-namespace:Apps.XmlUI.ParamTab;assembly=Apps.XmlUI" xmlns:localXmlParserTab="clr-namespace:Apps.XmlParser.ParamTab;assembly=Apps.XmlParser" Height="420" Width="370">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/NormalButtonStyle.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Control.Template>
+    <ControlTemplate>
+      <Grid>
+        <FrameworkElement.Resources>
+          <ResourceDictionary>
+            <HierarchicalDataTemplate x:Key="{DataTemplateKey {x:Type localXmlParserTab:Holder}}" DataType="{x:Type localXmlParserTab:Holder}" ItemsSource="{Binding EnumEntrysA}">
+              <TextBlock VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="14" Text="{Lang:ResourceBinding Name}" ToolTip="{Binding Text, RelativeSource={RelativeSource Mode=Self}}" />
+            </HierarchicalDataTemplate>
+          </ResourceDictionary>
+        </FrameworkElement.Resources>
+        <paramtab:CheckBoxConfigTreeView Name="outputConfigTreeView" FrameworkElement.VerticalAlignment="Top" FrameworkElement.Margin="2,5,2,3" FrameworkElement.HorizontalAlignment="Stretch" IsExpanded="True" ItemsSource="{Binding ItemsSource, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+      </Grid>
+    </ControlTemplate>
+  </Control.Template>
+</Control>

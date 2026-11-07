@@ -1,0 +1,132 @@
+{
+  "controls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "InputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FilterMode"
+    },
+    {
+      "type": "Integer",
+      "name": "kerWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "kerHeight"
+    },
+    {
+      "type": "Integer",
+      "name": "kerNum"
+    },
+    {
+      "type": "Integer",
+      "name": "sigma"
+    },
+    {
+      "type": "Integer",
+      "name": "offset"
+    },
+    {
+      "type": "Float",
+      "name": "Weight0"
+    },
+    {
+      "type": "Float",
+      "name": "Weight1"
+    },
+    {
+      "type": "Float",
+      "name": "Weight2"
+    },
+    {
+      "type": "Float",
+      "name": "Weight3"
+    },
+    {
+      "type": "Float",
+      "name": "Weight4"
+    },
+    {
+      "type": "Float",
+      "name": "Weight5"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvssurfacedefectfiltermodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSSurfaceDefectFilterModu\\IMVSSurfaceDefectFilterModu.xml",
+      "sha256": "70ea31babfd2e107e3507b8b6357530ea4429370ce37605b0524c178c7367805",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSSurfaceDefectFilterModu\\IMVSSurfaceDefectFilterModuAlgorithm.xml",
+      "sha256": "d54b6b70b76cd564625a7249219e9474c5cfee800d0e2ef83dffb9cecfdd394c",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSSurfaceDefectFilterModu\\IMVSSurfaceDefectFilterModuAlgorithmTab.xml",
+      "sha256": "fe233ef5576f91c2df617ea1cc3e57306cd9e1f9b2828fd6055fb63828320623",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSSurfaceDefectFilterModu\\IMVSSurfaceDefectFilterModuCs.xml",
+      "sha256": "671689f23be0050ca483814ee877756766e362970eec335be190d42da0104fc5",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSSurfaceDefectFilterModu\\IMVSSurfaceDefectFilterModuDisplay.xml",
+      "sha256": "c5d92e550bbc6297ad0c1275fa3ce48a0afbdb431e559c3b333223ded830cc81",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSSurfaceDefectFilterModu\\ToolItemInfo.xml",
+      "sha256": "ca15d98126846a2a33c2f09603e8d285213fee84473d2fd561d493298e9abf4a",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "表面缺陷滤波",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

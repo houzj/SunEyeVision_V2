@@ -1,0 +1,28 @@
+{
+  "stableToolId": "imageacquisitionmodule",
+  "originalPlugin": "ImageAcquisitionModule",
+  "displayName": "多图采集",
+  "originalCategory": "Collection",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageAcquisitionModule",
+  "uiCategory": "image-roi",
+  "priority": "P1",
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "resourceCount": 6,
+  "parameterCount": 7,
+  "inputCount": 0,
+  "outputCount": 6,
+  "uiControlCount": 6,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ],
+  "sourceReports": [
+    "docs/plugins/IMAGE-ACQUISITION.md"
+  ],
+  "note": "原厂构造默认、Process/ProcessLocalImage、参数写入、逐槽输出、失败位置游标、保存重载和受控运行已有专项证据。"
+}

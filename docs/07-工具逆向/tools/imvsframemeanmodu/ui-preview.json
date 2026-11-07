@@ -1,0 +1,60 @@
+{
+  "controls": [
+    {
+      "type": "CommandSelecter_Frame",
+      "name": "ProcStep"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvsframemeanmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSFrameMeanModu\\IMVSFrameMeanModu.xml",
+      "sha256": "304585b9fa564a94c8b3a12d9a1429a292afa8492e338baa3f928147b881f7f3",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSFrameMeanModu\\IMVSFrameMeanModuAlgorithm.xml",
+      "sha256": "3082421e15d37e0e48227d73148069f0cc50f188834f23c7e895c74fb5639c83",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSFrameMeanModu\\IMVSFrameMeanModuAlgorithmTab.xml",
+      "sha256": "a03430aa3fcd14dc66175400769fcd6a787f3864b0670ba0da121e2c2b355c51",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSFrameMeanModu\\IMVSFrameMeanModuCs.xml",
+      "sha256": "189dfd6a3d7947479f29252bc61138d9a11fef89acb9929392db92bf9267f392",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSFrameMeanModu\\IMVSFrameMeanModuDisplay.xml",
+      "sha256": "acb30e682c62b5c90e92584b3810b7ebf07f347833f587dde86236083e0c26bf",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSFrameMeanModu\\ToolItemInfo.xml",
+      "sha256": "52ff42fea174f6aee420bb3c141231c1c3097ec63fb939b3a1e388e717042ea6",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "帧平均",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

@@ -1,0 +1,27 @@
+{
+  "toolId": "procedurecomm",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ProcedureComm\\ProcedureComm.xml",
+      "sha256": "bd597ffbd3bc2b3621f252b79d957334a008499d24e178be88e04d1966c321e4",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ProcedureComm\\ProcedureCommAlgorithm.xml",
+      "sha256": "ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ProcedureComm\\ProcedureCommAlgorithmTab.xml",
+      "sha256": "b7e35d0086d577023d93903f9826c368fc5ad8849165184272e5b8b1cea509f2",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    }
+  ],
+  "uiTabs": [],
+  "uiControls": [],
+  "sharedUiGroups": [],
+  "status": "inventory-only"
+}

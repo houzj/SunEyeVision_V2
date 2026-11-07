@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>ExtensionParamUserControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="booleanusercontrol\booleantipsdatatemplate.xaml" />
+    <Page Remove="booleanusercontrol\togglebooleandatatemplate.xaml" />
+    <Page Remove="datatemplate\paramusercontroldatatemplate.xaml" />
+    <Page Include="booleanusercontrol\booleantipsdatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="booleanusercontrol/booleantipsdatatemplate.xaml" />
+    <Page Include="booleanusercontrol\togglebooleandatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="booleanusercontrol/togglebooleandatatemplate.xaml" />
+    <Page Include="datatemplate\paramusercontroldatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="datatemplate/paramusercontroldatatemplate.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Apps.XmlParser" />
+  </ItemGroup>
+</Project>

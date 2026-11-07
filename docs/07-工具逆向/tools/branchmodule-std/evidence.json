@@ -1,0 +1,40 @@
+{
+  "stableToolId": "branchmodule-std",
+  "originalPlugin": "BranchModule_STD",
+  "displayName": "分支模块",
+  "originalCategory": "Logic",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchModule_STD",
+  "uiCategory": "compound-control",
+  "priority": "P4",
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "resourceCount": 6,
+  "parameterCount": 2,
+  "inputCount": 1,
+  "outputCount": 4,
+  "uiControlCount": 5,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [
+    {
+      "path": "analysis/decompiled/BranchModule_STD.WorkflowAudit/BranchModule_STDCs/BranchModule_STDTool.cs",
+      "evidenceType": "source report or decompiled managed source"
+    },
+    {
+      "path": "analysis/decompiled/BranchModule_STD.WorkflowAudit/BranchModule_STDCs/BranchParam.cs",
+      "evidenceType": "source report or decompiled managed source"
+    },
+    {
+      "path": "analysis/decompiled/BranchModule_STD.WorkflowAudit/BranchModule_STDCs/BranchResult.cs",
+      "evidenceType": "source report or decompiled managed source"
+    }
+  ],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "专属 Process/ProcessAlg 或原生 ABI 仍未完整恢复",
+    "XML/XAML 绑定、显隐和主题状态仍未完整恢复",
+    "Save/Load、Stop/Cancel、DeInit/DestroyModule 仍需逐成员取证",
+    "原厂 VM 运行时差分尚未完成"
+  ]
+}

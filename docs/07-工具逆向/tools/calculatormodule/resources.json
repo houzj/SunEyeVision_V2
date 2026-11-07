@@ -1,0 +1,81 @@
+{
+  "stableToolId": "calculatormodule",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModule.xml",
+      "sha256": "c1c5ddc7db3f55d844851919de2fe3b0fcc1b256268ab89efce2bfeef3f16399",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModuleAlgorithm.xml",
+      "sha256": "ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModuleAlgorithmTab.xml",
+      "sha256": "bb60499a373bbcc422df837f59fae8a2765ecad74866373c57e924033ab5a31b",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModuleCs.xml",
+      "sha256": "2174230d20a400cce913d9994c745c2c9d8c1eb3bfe45f9ad1dbe1bb155d2d5d",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModuleDisplay.xml",
+      "sha256": "e5312bdc1c4d6ee41f54f52372b00c0303a4181f74c4a565cb835422e18ed0cb",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\ToolItemInfo.xml",
+      "sha256": "961baa665c8fe1f0dd07450cc8ba09c79deba0c3d307e7f8c9146e8b6c72ba7f",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "binaryEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModule.dll",
+      "sha256": "e69aee9cd6d9096004fb117a3ea69b8b5f6346c238ab22bfcfa5253dccff154a",
+      "kind": "native-PE",
+      "size": 449536
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModuleControl.dll",
+      "sha256": "5f581bedc50103b53fd223ae447d77d3872e634f6e8dc7415b89d1df4d1419a0",
+      "kind": "managed-CLI",
+      "size": 66560
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModuleCs.dll",
+      "sha256": "8e388d50a2c9541a14e5a751c5614ff5ff75878dcbb43f24db9c4651f7602c38",
+      "kind": "managed-CLI",
+      "size": 15872
+    }
+  ],
+  "resourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModule_NormalLogo.png",
+      "sha256": "2222bf1a2ca0702aa0583a4bd7fea8a5611de3d7d326540903cf4661effcd759"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModule_StateLogo.png",
+      "sha256": "8371882932e1828453a064e8c63033668ed2f405f254ac5eb733809939c4e7b1"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CalculatorModule\\CalculatorModuleImageEnable.png",
+      "sha256": "c631b865131e2c583fe8525bd21ac17f6be3933610ade8d319fd71e57503b50b"
+    }
+  ],
+  "catalogIcon": "catalog/CalculatorModuleImageEnable.png",
+  "unknowns": [
+    "resource load order",
+    "runtime template styling",
+    "resource ownership"
+  ]
+}

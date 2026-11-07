@@ -1,0 +1,68 @@
+{
+  "toolId": "imvsgeometrictransformmodu",
+  "displayName": "几何变换",
+  "previewKind": "resource-control-evidence",
+  "category": "declarative-parameters",
+  "priority": "P0",
+  "status": "source-partial",
+  "uiTabs": [
+    "Tab_Basic Params",
+    "Tab_Run Params"
+  ],
+  "controls": [
+    {
+      "type": "Enumeration",
+      "name": "MirrorOrientation"
+    },
+    {
+      "type": "Enumeration",
+      "name": "RotateAngle"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "BottomCommandGroup"
+  ],
+  "visibilityConditions": "unknown",
+  "bindings": "控件类型与名称来自 IMVSGeometricTransformModuAlgorithmTab.xml 别名声明；镜像方向与旋转角度的取值集合及互斥联动未取证",
+  "themeStates": "unknown",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定表达式",
+    "镜像方向枚举的完整取值与默认项",
+    "旋转角度取值范围、单位与是否允许自由输入",
+    "两个控件与输入图像组的联动，以及运行参数页的控件清单"
+  ],
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSGeometricTransformModu\\IMVSGeometricTransformModuAlgorithmTab.xml",
+      "sha256": "2fa02a97c95e8419ac44c13ba76adb0c77840ff94dd851123c38a66cd2f38de2",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSGeometricTransformModu\\IMVSGeometricTransformModu.xml",
+      "sha256": "07c1d3491bf05efe65949697fb311fdb21fbf1937dd41c228ed7b080270bb6f2",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSGeometricTransformModu\\IMVSGeometricTransformModuAlgorithm.xml",
+      "sha256": "8823c7173ab5611bafb2e3f0321714a9c63b65441e40205ebd0d5e0c95fdf610",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSGeometricTransformModu\\IMVSGeometricTransformModuDisplay.xml",
+      "sha256": "b523eb439634a40d6aa817e215003216851e663b21f62f298d242313826618c1",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSGeometricTransformModu\\IMVSGeometricTransformModuCs.xml",
+      "sha256": "2235d2f78f69615dccdae0703c9ed0377d8fb021e0983a913d919f3c35bbdc36",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSGeometricTransformModu\\ToolItemInfo.xml",
+      "sha256": "d173ac32c4ed123fabb0d603f659cf0128e4d409b369492955cc6abf393cf35b",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "note": "补自 2026-11-05：原先此文件为 {}，属真实缺失。现按 IMVSGeometricTransformModuAlgorithmTab.xml 的控件别名声明恢复 2 个控件与 2 个页签，只证明存在与类型，不证明取值、联动与外观。此 SVG 是证据布局预览，不代表原厂像素级外观。"
+}

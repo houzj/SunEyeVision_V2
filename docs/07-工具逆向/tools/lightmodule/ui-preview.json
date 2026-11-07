@@ -1,0 +1,284 @@
+{
+  "controls": [
+    {
+      "type": "EnumerationLightForLight",
+      "name": "LightDevice"
+    },
+    {
+      "type": "Enumeration",
+      "name": "LightDeviceParamGet"
+    },
+    {
+      "type": "Enumeration",
+      "name": "OutputType"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "InputString"
+    },
+    {
+      "type": "Integer",
+      "name": "TriggerTime"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "InputType"
+    },
+    {
+      "type": "Boolean",
+      "name": "Channel1Enable"
+    },
+    {
+      "type": "Integer",
+      "name": "Channel1Brightness"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Channel1BrightnessSub"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Channel1LightState"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Channel1LightStateVB"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Channel1EdgeType"
+    },
+    {
+      "type": "Integer",
+      "name": "Channel1DurationTime"
+    },
+    {
+      "type": "Boolean",
+      "name": "Channel2Enable"
+    },
+    {
+      "type": "Integer",
+      "name": "Channel2Brightness"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Channel2BrightnessSub"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Channel2LightState"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Channel2LightStateVB"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Channel2EdgeType"
+    },
+    {
+      "type": "Integer",
+      "name": "Channel2DurationTime"
+    },
+    {
+      "type": "Boolean",
+      "name": "Channel3Enable"
+    },
+    {
+      "type": "Integer",
+      "name": "Channel3Brightness"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Channel3BrightnessSub"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Channel3LightState"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Channel3EdgeType"
+    },
+    {
+      "type": "Integer",
+      "name": "Channel3DurationTime"
+    },
+    {
+      "type": "Boolean",
+      "name": "Channel4Enable"
+    },
+    {
+      "type": "Integer",
+      "name": "Channel4Brightness"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Channel4BrightnessSub"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Channel4LightState"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Channel4EdgeType"
+    },
+    {
+      "type": "Integer",
+      "name": "Channel4DurationTime"
+    },
+    {
+      "type": "Boolean",
+      "name": "Channel5Enable"
+    },
+    {
+      "type": "Integer",
+      "name": "Channel5Brightness"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Channel5BrightnessSub"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Channel5LightState"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Channel5LightStateVB"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Channel5EdgeType"
+    },
+    {
+      "type": "Integer",
+      "name": "Channel5DurationTime"
+    },
+    {
+      "type": "Boolean",
+      "name": "Channel6Enable"
+    },
+    {
+      "type": "Integer",
+      "name": "Channel6Brightness"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Channel6BrightnessSub"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Channel6LightState"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Channel6LightStateVB"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Channel6EdgeType"
+    },
+    {
+      "type": "Integer",
+      "name": "Channel6DurationTime"
+    },
+    {
+      "type": "Boolean",
+      "name": "Channel7Enable"
+    },
+    {
+      "type": "Integer",
+      "name": "Channel7Brightness"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Channel7BrightnessSub"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Channel7LightState"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Channel7EdgeType"
+    },
+    {
+      "type": "Integer",
+      "name": "Channel7DurationTime"
+    },
+    {
+      "type": "Boolean",
+      "name": "Channel8Enable"
+    },
+    {
+      "type": "Integer",
+      "name": "Channel8Brightness"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Channel8BrightnessSub"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Channel8LightState"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Channel8EdgeType"
+    },
+    {
+      "type": "Integer",
+      "name": "Channel8DurationTime"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "image-roi",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P1",
+  "themeStates": "unknown",
+  "toolId": "lightmodule",
+  "status": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\LightModule\\LightModule.xml",
+      "sha256": "881b9b8f357d72e238d2cdb3c4857c76cdabbd35622d0e4a9c577c2096526918",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\LightModule\\LightModuleAlgorithm.xml",
+      "sha256": "526f9517050ba1208a5dda3f70eff9576c4189e6d36d7e22a909f296265900c7",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\LightModule\\LightModuleAlgorithmTab.xml",
+      "sha256": "1aacb70f8eb9cabc9a614f690afab5cf2e00ec87b43de3fbc10be15dd233c54b",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\LightModule\\LightModuleCs.xml",
+      "sha256": "77cca3af2ae9a3ff07c5ad6d305394c73aa654a4aa2cbbe8d6246639d78a4ec9",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\LightModule\\LightModuleDisplay.xml",
+      "sha256": "cb935e081c8a731ddf10006c3931aac949c7e44a3712437db725b16e212b0bb0",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\LightModule\\ToolItemInfo.xml",
+      "sha256": "8652febfe8831fd00e3e986251816ee1aaa8ac4bd9e6ebd3cd1875094caf70a2",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "光源",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

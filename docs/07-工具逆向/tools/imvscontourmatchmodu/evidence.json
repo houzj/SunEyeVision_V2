@@ -1,0 +1,37 @@
+{
+  "stableToolId": "imvscontourmatchmodu",
+  "originalPlugin": "IMVSContourMatchModu",
+  "displayName": "轮廓匹配",
+  "originalCategory": "Location",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSContourMatchModu",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "resourceCount": 6,
+  "parameterCount": 56,
+  "inputCount": 5,
+  "outputCount": 22,
+  "uiControlCount": 60,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ],
+  "sourceReports": [
+    "docs/plugins/IMVSCONTOURMATCHMODU-SOURCE-INVENTORY.md",
+    "docs/plugins/IMVSCONTOURMATCHMODU-PARAMETER-PROVIDER.md",
+    "docs/plugins/IMVSCONTOURMATCHMODU-CORE-ENTRY-CHAIN.md",
+    "docs/plugins/IMVSCONTOURMATCHMODU-MODEL-STORAGE.md",
+    "docs/plugins/IMVSCONTOURMATCHMODU-NATIVE-RUNTIME-CHAIN.md",
+    "docs/plugins/IMVSCONTOURMATCHMODU-SDK-DISPATCH.md",
+    "docs/plugins/IMVSCONTOURMATCHMODU-SHARED-DISPLAY-REQUEST.md",
+    "docs/plugins/IMVSCONTOURMATCHMODU-TRAINING-ENTRY.md",
+    "docs/plugins/IMVSCONTOURMATCHMODU-TRAINING-HELPERS.md",
+    "docs/plugins/IMVSCONTOURMATCHMODU-TRAINING-PLANE.md"
+  ],
+  "note": "原生 Process、ProcessAlg、ProcessOutput 入口和参数提供者已有索引，算法和失败清理链仍待闭合."
+}

@@ -1,0 +1,136 @@
+{
+  "controls": [
+    {
+      "type": "RadioSelecter",
+      "name": "InputWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "FittingPoints"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "FittingPointsX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "FittingPointsY"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectNum"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectDist"
+    },
+    {
+      "type": "Enumeration",
+      "name": "InitType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "WeightFunc"
+    },
+    {
+      "type": "Integer",
+      "name": "MaxIters"
+    },
+    {
+      "type": "Boolean",
+      "name": "LineAngleEnable"
+    },
+    {
+      "type": "Float",
+      "name": "ExpectLineAngle"
+    },
+    {
+      "type": "Float",
+      "name": "RotateTolerance"
+    },
+    {
+      "type": "Boolean",
+      "name": "NumLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangNumLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "AngleLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangAngleLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "ScoreLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangScoreLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ThroughLine"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FittedCircle"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "InputPoint"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvslinefitmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageGeneration\\IMVSLineFitModu\\IMVSLineFitModu.xml",
+      "sha256": "73dd4ba6c0c5518b35934bc59538bfa30fd2cb6f2dda8f768f6dfbb44d76498b",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageGeneration\\IMVSLineFitModu\\IMVSLineFitModuAlgorithm.xml",
+      "sha256": "6c191466c33d829dde3c11f339f1c3db990d5314c030ffe391f9a7e1b84f0ec5",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageGeneration\\IMVSLineFitModu\\IMVSLineFitModuAlgorithmTab.xml",
+      "sha256": "3173d4a046c7123b74aa9f0a128104b8a446b33fdf9314321c1f231c8e75313e",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageGeneration\\IMVSLineFitModu\\IMVSLineFitModuCs.xml",
+      "sha256": "b34b8edd188800f5365b042829c989b0e47ab519da2d73a1bf42d7c3d9ed4e83",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageGeneration\\IMVSLineFitModu\\IMVSLineFitModuDisplay.xml",
+      "sha256": "32d5dfbf83de86100ca75bb2f2d88410c0e3c1e6f2a689328c4ad4c33c5ab7f5",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageGeneration\\IMVSLineFitModu\\ToolItemInfo.xml",
+      "sha256": "0bd7bd1f942122f8af7b00d2ba004925d99dd4b4d7b52919cc23ed3bf9b13f70",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "直线拟合",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

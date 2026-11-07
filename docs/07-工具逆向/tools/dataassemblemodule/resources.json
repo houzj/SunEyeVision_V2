@@ -1,0 +1,81 @@
+{
+  "stableToolId": "dataassemblemodule",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModule.xml",
+      "sha256": "ffa54880c17b3001e99c92cf9e766bc2293767b727538cbfa6fb7b8c8c1c96e6",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleAlgorithm.xml",
+      "sha256": "7ffb1a2c07dea7ac4354fe572438dcc1d3244d30ef63867d2d832760e74841fe",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleAlgorithmTab.xml",
+      "sha256": "d755510da015c662dcdd4247325e90a0c9ec21c431c95983afb1ee9bf1763646",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleCs.xml",
+      "sha256": "e43d389185224444deab32d7d2d1b836c36071e61cad8ee762e9e1747995bb83",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleDisplay.xml",
+      "sha256": "2c28e74db44a96056ffe7ab9d28cfc212bdc907fbbeda6ca3853991f3d454308",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\ToolItemInfo.xml",
+      "sha256": "9be6d5250244250e704b80005b5f5219dec8c24973c66de7a79a537506f8dea2",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "binaryEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModule.dll",
+      "sha256": "faa81b8e44f64b0ca3a5550e48dfff2843aac2cf94bd012d9bcda86956b0e952",
+      "kind": "native-PE",
+      "size": 109056
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleControl.dll",
+      "sha256": "54ace39b3e769f910c2d2b58ee842a23ce4246a548560e30200868ddf13ee62e",
+      "kind": "managed-CLI",
+      "size": 16896
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleCs.dll",
+      "sha256": "168aac5c1ee0f43583e683f44ec93c75df569a2f92989094e50e7a5de5689ef8",
+      "kind": "managed-CLI",
+      "size": 7168
+    }
+  ],
+  "resourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModule_NormalLogo.png",
+      "sha256": "fbf558b11c6786dd61be2123c77eb366b12232d02ec5b239838fd5886228aa76"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModule_StateLogo.png",
+      "sha256": "26fd52d3907421d3c608233643dd6e3273af1d39795b5147b3e4f84918e6c514"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAssembleModule\\DataAssembleModuleImageEnable.png",
+      "sha256": "0aa8e9f19de77c65adb2ff4d77435fb19e8ac3b02e144e9b7e74bf854382ec6c"
+    }
+  ],
+  "catalogIcon": "catalog/DataAssembleModuleImageEnable.png",
+  "unknowns": [
+    "resource load order",
+    "runtime template styling",
+    "resource ownership"
+  ]
+}

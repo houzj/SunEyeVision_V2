@@ -1,0 +1,93 @@
+{
+  "toolId": "imvscolortransformmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorTransformModu\\IMVSColorTransformModu.xml",
+      "sha256": "b566a165a81f2cd2907a66226e83d68101f090bbe6f8992787b6420fd8ea25f7",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorTransformModu\\IMVSColorTransformModuAlgorithm.xml",
+      "sha256": "4905c22006f62e9da3b17678d483ec80cd3b776638521f03389e75377d2ec298",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorTransformModu\\IMVSColorTransformModuAlgorithmTab.xml",
+      "sha256": "65f194d4f6845857996273f355aa9898f320bb8b16c42e163bc2ad9528a81a8b",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorTransformModu\\IMVSColorTransformModuCs.xml",
+      "sha256": "e7fe8fd0699f6e0aee7a79ee39e091a6f9e7c4128ccccf98eac1e9d513ce94fa",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorTransformModu\\IMVSColorTransformModuDisplay.xml",
+      "sha256": "71055d6672a3b5fc79ed29306637865a133d02d6277469321dec86658e9f8b1f",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorTransformModu\\ToolItemInfo.xml",
+      "sha256": "fba40a64773b3f62799469f1790e9add483078a77b21138fed3356ef4a98717b",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "Enumeration",
+      "name": "ColorTransformType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ShowChannel"
+    },
+    {
+      "type": "Expand",
+      "name": "ExpertParam"
+    },
+    {
+      "type": "Enumeration",
+      "name": "RGB2GrayType"
+    },
+    {
+      "type": "Integer",
+      "name": "Rratio"
+    },
+    {
+      "type": "Integer",
+      "name": "Gratio"
+    },
+    {
+      "type": "Integer",
+      "name": "Bratio"
+    },
+    {
+      "type": "Float",
+      "name": "RRatioNs"
+    },
+    {
+      "type": "Float",
+      "name": "GRatioNs"
+    },
+    {
+      "type": "Float",
+      "name": "BRatioNs"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

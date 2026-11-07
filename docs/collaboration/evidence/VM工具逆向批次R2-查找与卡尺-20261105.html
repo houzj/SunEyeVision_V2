@@ -1,0 +1,231 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VM 工具逆向批次 R2 — 查找与卡尺（33 声明 / 27 有效）</title><style>:root{color-scheme:dark;background:#0b1524;color:#e5eff9;font:15px/1.7 'Microsoft YaHei UI',sans-serif}body{max-width:1440px;margin:auto;padding:28px}a{color:#98ceff}h1{font-size:26px;border-bottom:2px solid #3c5364;padding-bottom:12px}h2{font-size:20px;color:#87d9ff;border-bottom:1px solid #3c5364;padding-bottom:6px;margin-top:34px}h3{font-size:16px;color:#a8e6a3;margin-top:22px}h4{font-size:15px;color:#c9d9a8;margin-top:18px}table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13.5px}td,th{border:1px solid #415263;padding:7px;vertical-align:top}th{background:#263949;text-align:left}code{background:#202c36;color:#d1f5d1;padding:1px 5px;border-radius:4px;font:13px Consolas,monospace}pre{background:#091728;padding:14px;white-space:pre-wrap;overflow-wrap:anywhere;font:12.5px/1.6 Consolas,monospace;border:1px solid #33506a;border-radius:6px}.obs{color:#7ee787;font-weight:600}.inf{color:#e3b341;font-weight:600}.unk{color:#ff7b72;font-weight:600}.warn{border-left:5px solid #ff7b72;background:#33211f;padding:12px 16px;margin:16px 0}.note{border-left:5px solid #f3aa49;background:#302d28;padding:12px 16px;margin:16px 0}.small{color:#9fb3c6;font-size:13px}ul,ol{padding-left:24px}</style>
+
+<h1>VM 工具逆向批次 R2 — 查找与卡尺（33 声明 / 27 有效）</h1>
+
+<p class="small">取证日：2026-11-05 ｜ 批次：<b>R2（P1）</b> ｜ 原件基线：VisionMaster <code>V4.4.0 Build20250516@1555331</code> ｜ 安装根：<code>D:\Program Files\VisionMaster4.4.0</code>（只读）<br>
+深度：深挖（清点 + 卡尺/查找族契约 + ROI 语义 + 我方三类卡尺待办可支撑部分）<br>
+复用的上游章节：R1（<code>VM工具逆向批次R1-在研与流程控制-20261105.html</code>）的模块构成范式、ParamRoot 四类 Category、双默认值、<code>ToolItemInfo.xml</code> 4 字段；主报告 B3-5（零签名）、G-1 第 11/14 行（分类模型与执行入口口径）</p>
+
+<h2>0. 结论摘要</h2>
+
+<table>
+<tr><th>#</th><th>问题</th><th>结论</th><th>档次</th></tr>
+<tr><td>1</td><td><code>ModulePathGenerate.txt</code> 能否直接当分母？</td><td><b>不能</b>。该清单声明 191 个模块，实物只有 <b>163 个分类目录</b>（14 个分类存在）；<b>DeepLearning(14) 与 RegisterLearning(6) 整个分类目录不存在</b>，Location 声明 34 实际 29（5 个全盘搜不到 + 1 个空目录），Recognition 声明 12 实际 4，而 Global 实物 17 &gt; 声明 13、Calibration 10 &gt; 9。x86 侧只有空壳（无任何分类目录）</td><td class="obs">观察到</td></tr>
+<tr><td>2</td><td>R2 声明的 33 个模块实际能取证多少？</td><td><b>27 个</b>：Location 28 声明 −5 不存在 −1 空目录 = 22；Measurement 5 全部存在</td><td class="obs">观察到</td></tr>
+<tr><td>3</td><td>查找/卡尺族是否普遍带专用编辑器？</td><td><b>否，只有 6/27 = 22%</b>（<code>IMVSFixtureModu</code>/<code>IMVSGluePathConductModu</code>/<code>IMVSGrayMatchModuVA</code>/<code>IMVSMarkFindModu</code>/<code>IMVSTargetTrackModu</code>/<code>IMVSPixelCountModuVA</code>）。R1+R2 累计 <b>18/46 = 39%</b> → 专用编辑器是少数派</td><td class="obs">观察到</td></tr>
+<tr><td>4</td><td>priority 是什么粒度？</td><td><b>分类内序号</b>。Location 内 R1 占 0/1/2/6/7(+缺)，R2 占 <b>3–26 连续编号</b>；分类之间重复取值（Measurement 也是 0–9）。不是全局唯一键</td><td class="obs">观察到</td></tr>
+<tr><td>5</td><td>三种卡尺是三个模块吗？</td><td><b>不是</b>。<code>IMVSCaliperModu</code> 一个模块通过 <b>两种 ROI 形态</b>覆盖：<code>InputROI Style="ROIBOX"</code>（直线卡尺）与 <code>InputROIAnnulus Style="ROIANNULUS"</code>（弧形/环形卡尺）；另有独立 <code>IMVSCaliperEdgeModu</code>（23 KB）与 <code>IMVSCaliperCornerModu</code>（52 KB）</td><td class="obs">观察到</td></tr>
+<tr><td>6</td><td>ROI 在契约里怎么表达？</td><td><b>每种 ROI 形态 = 一组标量 Filter</b>。ROIBOX → <code>roicenterx/y/roiwidth/roiheight/roiangle</code>；ROIANNULUS → <code>roiAnnulusCenterX/Y/InnerRadius/OuterRadius/StartAngle/AngleExtend</code>，全部 <code>IsForce="false"</code>（可绑定、非强制）</td><td class="obs">观察到</td></tr>
+<tr><td>7</td><td>位置修正（标定/夹具）如何进契约？</td><td><code>Combination Style="FIXTURE"</code>，内含 <code>Fixtured Point</code>（<code>FixtureInit{X,Y,Angle,ScaleX,ScaleY}</code>）与 <code>Unfixtured Point</code>（<code>FixtureRun{...}</code>）两组各 5 个标量</td><td class="obs">观察到</td></tr>
+<tr><td>8</td><td>VM 的 ROI 形状种类有哪些？</td><td><code>ShapePropertyConfig.xml</code> 定义 <b>11 个形状 Tab</b>：default / circle / point / microPoint / rect / line / outlinepoint / polygon / annularsector / ellipse / text；每类可链接 <code>ColorDisplayGroup</code>、<code>StrokeThicknessDisplayGroup</code>，circle 额外 <code>IsFill</code>，text 有字号 6–72 与位置 X/Y 绑定</td><td class="obs">观察到</td></tr>
+<tr><td>9</td><td>VM 的端口组合类型有多少种？</td><td><code>Combination.xml</code> 定义 <b>150 个 Combination / 1020 个 Filter / 45 种 Style</b>（2D 形状、3D 点云/平面/包围盒、矩阵/四元数、双目/RGBD、机器人视觉、夹具等）</td><td class="obs">观察到</td></tr>
+<tr><td>10</td><td>对我方三类卡尺待办有直接启示吗？</td><td><b>有</b>：原件用「一个卡尺工具 + ROI 形态切换」覆盖直线/弧形卡尺，我方 <code>T-LINECALIPER/T-CIRCLECALIPER/T-ARCCALIPER</code> 拆三个工具<b>需要明确理由</b>，否则应按 ROI 形态统一</td><td class="inf">推断（强）</td></tr>
+</table>
+
+<div class="warn"><b>分母重大校正（影响 R3–R5 的批次数量）。</b>此前计划按 <code>ModulePathGenerate.txt</code> 声明数 191 划分批次（R4=52、R5=53）。实测该项清单与实物<b>不一致</b>：实物 163 目录（1 个空）→ <b>有效 162</b>。R4 的 DeepLearning(14)+RegisterLearning(6)+Recognition 缺 8 = <b>28 个模块根本不存在</b>，R4 实际约 24 个；R5 的 Global/Calibration 反而各多 4/1 个。后续批次数量将以「实物有效目录」为准并在 R5 总表收口时全量对齐，<b>不再引用声明数作为分母</b>。</div>
+
+<h2>1. 逐条论证</h2>
+
+<h3>1.1 分母校正：清单声明 vs 实物目录（<span class="obs">观察到</span>）</h3>
+<table>
+<tr><th>分类</th><th>清单声明</th><th>实物目录</th><th>空目录</th><th>差</th><th>说明</th></tr>
+<tr><td>Calculation</td><td>11</td><td>11</td><td>0</td><td>0</td><td>一致</td></tr>
+<tr><td>Calibration</td><td>9</td><td>10</td><td>0</td><td><b>+1</b></td><td>实物多 1 个，清单未登记</td></tr>
+<tr><td>Collection</td><td>5</td><td>5</td><td>0</td><td>0</td><td>一致</td></tr>
+<tr><td>ColorProcessing</td><td>6</td><td>6</td><td>0</td><td>0</td><td>一致</td></tr>
+<tr><td>Communication</td><td>5</td><td>5</td><td>0</td><td>0</td><td>一致</td></tr>
+<tr><td>DeepLearning</td><td>14</td><td colspan="2"><b>分类目录不存在</b></td><td>−14</td><td>未安装/未授权，全盘搜 <code>IMVSCnnClassifyModu</code>/<code>IMVSCnnFlawModu</code> 命中 0</td></tr>
+<tr><td>DefectDetection</td><td>14</td><td>14</td><td>0</td><td>0</td><td>一致</td></tr>
+<tr><td>Global</td><td>13</td><td><b>17</b></td><td>0</td><td><b>+4</b></td><td>实物多 4 个，清单未登记</td></tr>
+<tr><td>ImageGeneration</td><td>4</td><td>4</td><td>0</td><td>0</td><td>一致</td></tr>
+<tr><td>ImageProcessing</td><td>21</td><td>21</td><td>0</td><td>0</td><td>一致</td></tr>
+<tr><td>Location</td><td>34</td><td><b>29</b></td><td>1</td><td><b>−5</b></td><td>5 个模块全盘不存在（见下）；<code>IMVSStringLocationModu</code> 为空目录</td></tr>
+<tr><td>Logic</td><td>20</td><td>20</td><td>0</td><td>0</td><td>一致</td></tr>
+<tr><td>Measurement</td><td>11</td><td>11</td><td>0</td><td>0</td><td>一致</td></tr>
+<tr><td>Recognition</td><td>12</td><td><b>4</b></td><td>0</td><td><b>−8</b></td><td>缺的 8 个均为 <code>IMVSCnn*</code> 深度学习类</td></tr>
+<tr><td>RegisterLearning</td><td>6</td><td colspan="2"><b>分类目录不存在</b></td><td>−6</td><td>全为 <code>IMVSCnnRegister*</code></td></tr>
+<tr><td>SplitCombination</td><td>6</td><td>6</td><td>0</td><td>0</td><td>一致</td></tr>
+<tr><td><b>合计</b></td><td><b>191</b></td><td><b>163</b></td><td><b>1</b></td><td><b>−28</b></td><td>有效（非空）目录 <b>162</b></td></tr>
+</table>
+
+<p><b>Location 中「清单有、实物无」的 5 个（全盘 <code>Module(sp)</code> 递归搜索确认，x86 亦无）：</b><br>
+<code>IMVSCellLocationModu</code>、<code>IMVSGridLocationModu</code>、<code>IMVSHoughCircleFindModu</code>、<code>IMVSMultiLineGradFindModu</code>、<code>IMVSMultiRectangleFindModu</code></p>
+<p><b>空目录 1 个：</b><code>Module(sp)\x64\Location\IMVSStringLocationModu</code>（存在目录，0 文件、无 <code>.xml</code>、无 <code>ToolItemInfo.xml</code>）→ 反证「工具身份并非仅靠目录存在性」，还必须有 <code>*Cs.dll</code> 与元数据。</p>
+<p><b>x86 侧：</b><code>Module(sp)\x86</code> 目录存在但<b>没有任何分类子目录</b>，全空。</p>
+<p class="small"><span class="unk">未知</span>：<code>ModulePathGenerate.txt</code> 由 <code>ToolsOfInternal\GenerateModulePath.exe</code> 生成（上游 A5 已记录该工具存在），它为何包含未安装模块（可能是安装器预生成全量清单）——需读该工具或安装日志才能定论，本批未取证。</p>
+
+<h3>1.2 R2 二十七有效模块结构（<span class="obs">观察到</span>）</h3>
+<table>
+<tr><th>模块</th><th>分类</th><th>文件</th><th>Ctl</th><th>AlgTab</th><th>prio</th><th>Style 标签数</th></tr>
+<tr><td>IMVSAngleBisectorFindModu</td><td>Location</td><td>11</td><td>N</td><td>32,778</td><td>21</td><td>22</td></tr>
+<tr><td>IMVSCaliperCornerModu</td><td>Location</td><td>11</td><td>N</td><td>51,589</td><td>14</td><td>21</td></tr>
+<tr><td>IMVSCaliperEdgeModu</td><td>Location</td><td>11</td><td>N</td><td>23,435</td><td>23</td><td>10</td></tr>
+<tr><td><b>IMVSCaliperModu</b></td><td>Location</td><td>11</td><td>N</td><td><b>102,910</b></td><td>22</td><td>17</td></tr>
+<tr><td>IMVSCircleFindModu</td><td>Location</td><td>11</td><td>N</td><td>37,054</td><td>8</td><td>17</td></tr>
+<tr><td>IMVSEllipseFindModu</td><td>Location</td><td>11</td><td>N</td><td>18,134</td><td>9</td><td>11</td></tr>
+<tr><td>IMVSFixtureModu</td><td>Location</td><td>12</td><td><b>Y</b></td><td>11,783</td><td>5</td><td>3</td></tr>
+<tr><td>IMVSGluePathConductModu</td><td>Location</td><td>13</td><td><b>Y</b></td><td>15,596</td><td>25</td><td>17</td></tr>
+<tr><td>IMVSGrayMatchModuVA</td><td>Location</td><td>15</td><td><b>Y</b></td><td>38,625</td><td>3</td><td>11</td></tr>
+<tr><td>IMVSLineFindGroupModu</td><td>Location</td><td>11</td><td>N</td><td>37,251</td><td>12</td><td>7</td></tr>
+<tr><td>IMVSLineFindModu</td><td>Location</td><td>11</td><td>N</td><td>27,633</td><td>11</td><td>15</td></tr>
+<tr><td>IMVSMarkFindModu</td><td>Location</td><td>13</td><td><b>Y</b></td><td>54,530</td><td>4</td><td>15</td></tr>
+<tr><td>IMVSMatrixCircleFindModu</td><td>Location</td><td>11</td><td>N</td><td>37,951</td><td>10</td><td>14</td></tr>
+<tr><td>IMVSMedianLineFindModu</td><td>Location</td><td>11</td><td>N</td><td>30,362</td><td>19</td><td>16</td></tr>
+<tr><td>IMVSMultiLineFindModu</td><td>Location</td><td>11</td><td>N</td><td>20,968</td><td>13</td><td>12</td></tr>
+<tr><td>IMVSPairLineModu</td><td>Location</td><td>11</td><td>N</td><td>30,937</td><td>16</td><td>22</td></tr>
+<tr><td>IMVSParallelCalculateModu</td><td>Location</td><td>11</td><td>N</td><td>45,641</td><td>17</td><td>18</td></tr>
+<tr><td>IMVSPeakFindModu</td><td>Location</td><td>11</td><td>N</td><td>18,063</td><td>24</td><td>12</td></tr>
+<tr><td>IMVSQuadrangleFindModu</td><td>Location</td><td>11</td><td>N</td><td><b>126,589</b></td><td>15</td><td><b>58</b></td></tr>
+<tr><td>IMVSRectFindModu</td><td>Location</td><td>11</td><td>N</td><td>35,091</td><td>18</td><td>12</td></tr>
+<tr><td><s>IMVSStringLocationModu</s></td><td>Location</td><td><b>0</b></td><td>—</td><td><b>0</b></td><td>—</td><td>—</td><td><b>空目录，不计入有效</b></td></tr>
+<tr><td>IMVSTargetTrackModu</td><td>Location</td><td>12</td><td><b>Y</b></td><td>17,230</td><td>26</td><td>10</td></tr>
+<tr><td>IMVSVerticalLineFindModu</td><td>Location</td><td>11</td><td>N</td><td>44,330</td><td>20</td><td>13</td></tr>
+<tr><td>IMVSEdgeWidthFindModu</td><td>Measurement</td><td>11</td><td>N</td><td>42,943</td><td>9</td><td>16</td></tr>
+<tr><td>IMVSHistToolModu</td><td>Measurement</td><td>11</td><td>N</td><td>25,362</td><td>10</td><td>11</td></tr>
+<tr><td>IMVSIntensityMeasureModu</td><td>Measurement</td><td>11</td><td>N</td><td>18,030</td><td>8</td><td>11</td></tr>
+<tr><td>IMVSPixelCountModu</td><td>Measurement</td><td>11</td><td>N</td><td>12,447</td><td>9</td><td>12</td></tr>
+<tr><td>IMVSPixelCountModuVA</td><td>Measurement</td><td>12</td><td><b>Y</b></td><td>11,481</td><td>9</td><td>11</td></tr>
+</table>
+<p class="small">「Style 标签数」＝该模块 <code>&lt;模块&gt;.xml</code> 中 <code>Style="…"</code> 出现次数，用于粗略衡量端口组合复杂度，<b>不是参数个数</b>。</p>
+
+<p><b>由表得出的分布：</b></p>
+<ul>
+<li>文件数集中在 11（22/27），多于 11 的 5 个全部带 <code>Control.dll</code> → <b>「多出来的第 12/13/15 个文件」正是 <code>*Control.dll</code></b>。</li>
+<li><code>IMVSQuadrangleFindModu</code> 是 R2 参数最重的模块（AlgTab 126,589 B、Style 标签 58 处），接近 R1 的 <code>IfModule</code>(181,617 B)。</li>
+<li>卡尺族三个模块 Tabs/Cats/Items 结构完全相同（3/4/4），差异全在<b>内容规模</b>（102,910 / 51,589 / 23,435 B）。</li>
+</ul>
+
+<h3>1.3 卡尺族：一个工具 + 两种 ROI 形态（<span class="obs">观察到</span>）</h3>
+<p><code>IMVSCaliperModu.xml</code> 的 Input 类 Category 实测（逐行取自原件）：</p>
+<pre>&lt;Category Name="Input"&gt;
+  &lt;Combination Name="InputImage" Style="IMAGE"&gt;
+      Filter InImage(image, IsForce=true) InImageWidth(int) InImageHeight(int) InImagePixelFormat(int)
+  &lt;Combination Name="InputROI" Style="ROIBOX"&gt;                    ← 直线卡尺形态
+    &lt;Combination Name="ROI CenterPoint" Style="POINT"&gt;
+        roicenterx / roicentery / roiwidth / roiheight / roiangle     (全部 float, IsForce=false)
+  &lt;Combination Name="InputROIAnnulus" Style="ROIANNULUS"&gt;          ← 弧形/环形卡尺形态
+    &lt;Combination Name="ROI Annulus CenterPoint" Style="POINT"&gt;
+        roiAnnulusCenterX / roiAnnulusCenterY / roiAnnulusInnerRadius
+        roiAnnulusOuterRadius / roiAnnulusStartAngle / roiAnnulusAngleExtend
+  &lt;Combination Name="Position Correction Info" Style="FIXTURE"&gt;
+    &lt;Combination Name="Fixtured Point" Style="POINT"&gt;
+        FixtureInitPointX / FixtureInitPointY / FixtureInitAngle
+        FixtureInitScaleX / FixtureInitScaleY                        (期望位姿)
+    &lt;Combination Name="Unfixtured Point" Style="POINT"&gt;
+        FixtureRunPointX / FixtureRunPointY / FixtureRunAngle
+        FixtureRunScaleX / FixtureRunScaleY                          (运行位姿)
+&lt;Category Name="Output"&gt;
+    ModuRunTime(float) ModuStatus(int) EdgeStatus(int, IsArray=true) CaliperEdgeNum(int)</pre>
+
+<p><b>三条可直接用于我方设计的结论：</b></p>
+<ol>
+<li><b>ROI 形态用 Style 区分，不用独立工具</b>：<code>ROIBOX</code> 与 <code>ROIANNULUS</code> 同时挂在同一个卡尺工具上，由绑定哪一组决定"直线卡尺"还是"弧形卡尺"。对我方 <code>T-LINECALIPER/T-CIRCLECALIPER/T-ARCCALIPER</code> 三个待办工具的直接启示：<b>先论证为什么拆三个</b>；若沿用原件思路，应做「一个卡尺工具 + ROI 形态（矩形/环形/扇形）」。</li>
+<li><b>ROI 是"标量字段集合"而非不透明对象</b>：矩形 roi 展开为 5 个 <code>float</code>，环形展开为 6 个 <code>float</code>，全部 <code>IsForce="false"</code>（可绑定也可不绑定）。这与我方 <code>RoiShape[]</code> 抽象形成对照：原件按<b>字段</b>绑定粒度更细（可只绑 <code>roiangle</code>）。</li>
+<li><b>位置修正用独立 <code>FIXTURE</code> 端口 + 期望/运行两组位姿</b>：<code>FixtureInit*</code>（标定期望）与 <code>FixtureRun*</code>（运行时实际），各含 X/Y/Angle/ScaleX/ScaleY。这解释了我方"标定板/夹具/仿射"为何在原件里是<b>工具输入</b>而不是全局设置。</li>
+</ol>
+
+<h3>1.4 ROI 形状属性页：11 种形状（<span class="obs">观察到</span>）</h3>
+<p><code>Module(sp)\ShapePropertyConfig.xml</code>（6.6 KB，全文已读）定义形状属性 Tab：</p>
+<table>
+<tr><th>Tab</th><th>链接的显示组</th><th>额外配置项</th></tr>
+<tr><td><code>default</code></td><td>ColorDisplayGroup</td><td>—</td></tr>
+<tr><td><code>circle</code></td><td>ColorDisplayGroup + StrokeThicknessDisplayGroup</td><td><code>BoolConfig "Target Solid Circle"</code>（PropertyName=<code>IsFill</code>，Visibility=Beginner，AccessMode=O，经 <code>GetObjectParentOperation</code> 桥接）</td></tr>
+<tr><td><code>point</code></td><td>ColorDisplayGroup</td><td>—</td></tr>
+<tr><td><code>microPoint</code></td><td>ColorDisplayGroup</td><td>—</td></tr>
+<tr><td><code>rect</code></td><td>ColorDisplayGroup + StrokeThickness</td><td>—</td></tr>
+<tr><td><code>line</code></td><td>ColorDisplayGroup + StrokeThickness</td><td>—</td></tr>
+<tr><td><code>outlinepoint</code></td><td>ColorDisplayGroup</td><td>—</td></tr>
+<tr><td><code>polygon</code></td><td>ColorDisplayGroup + StrokeThickness</td><td>—</td></tr>
+<tr><td><code>annularsector</code></td><td>ColorDisplayGroup + StrokeThickness</td><td>—</td></tr>
+<tr><td><code>ellipse</code></td><td>ColorDisplayGroup + StrokeThickness</td><td>—</td></tr>
+<tr><td><code>text</code></td><td>ColorDisplayGroup</td><td><code>FloatConfig CharacterSize</code>（Min 6 / Max 72 / Inc 1，经 <code>GetFeatureParentOperation</code> 绑 FontSize）+ <code>ButtonSelecter PositionX/PositionY</code>（经 <code>GetInsideAndSelfInputFilterTreeOperation</code> 提供 <code>int;float</code> 候选，经 <code>SetFeatureRelatedIOOperation</code> 写回）</td></tr>
+</table>
+<p><b>要点：</b>① ROI 形状种类<b>不是</b>按工具分，而是<b>全局一份</b>；② 每个形状的"可编辑属性"由 <code>*Config</code> 元素 + <code>BrigdgeSetter</code>（原件拼写）+ <code>OperationName</code> 声明，而不是代码；③ <code>text</code> 形状证明显示对象可以绑定<b>输入变量</b>（PositionX/Y 选 int/float 来源），不只是画静态图形。</p>
+
+<h3>1.5 全局组合类型库：45 种 Style（<span class="obs">观察到</span>）</h3>
+<p><code>Module(sp)\Combination.xml</code>（169 KB）：<code>CombinRoot</code> → <code>Items</code> → <b>150 个 <code>Combination</code></b> / <b>150 个 <code>Filters</code></b> / <b>1020 个 <code>Filter</code></b>，覆盖 45 种 Style：</p>
+<table>
+<tr><th>族</th><th>Style（出现次数）</th></tr>
+<tr><td>2D 图像/几何</td><td>IMAGES(13)、PIXELIMAGE(1)、STEREOIMAGE(2)、POINT(19)、POINT3D(22)、Rect(1)、CIRCLE(1)、LINE(1)、LINE3D(1)、ELLIPSE(1)、ANNULUS(1)、ROIANNULUS(1)、ROIBOX(1)、ROIPOLYGON(1)、CvxHull(4)、CVXHULL3D(2)、CONTOURPOINTS(1)</td></tr>
+<tr><td>3D</td><td>PLANE3D(3)、BOX3D(3)、BBOX3D(2)、RING3D(2)、RECTPT3D(2)、ORIENTBOX3D(2)、3DRectBox(1)、PathPoint3D(1)、POINTCLOUD(1)、PCDEXTINFO(2)</td></tr>
+<tr><td>矩阵/姿态</td><td>Matrix4(24)、Matrix3(4)、Array5(7)、Quat(1)、TRANS(1)、PARACOE(1)、POSEINFO(1)、POSTURE(1)</td></tr>
+<tr><td>领域</td><td>FIXTURE(1)、FIXTURE3D(1)、RGBD_InnerParam(3)、INSTRINC(2)、ROBOTVISION(1)、CLASSINFO(2)、RANGE_ATTRIBUTE(3)、ExtInfoData(3)、SIZE_I(2)</td></tr>
+</table>
+<p class="small"><b>对照提醒：</b>这 45 种是<b>端口组合类型</b>（一个 Combination 可含多个 Filter），不是我方 <code>SdkTypeVocabulary</code> 的 15 个<b>变量值词目</b>。两者层级不同，<b>不能直接算覆盖率</b>；可比的只有「单标量/图像/点/线/圆/矩形/环形/多边形/椭圆」这一层。</p>
+
+<h3>1.6 我方三类卡尺待办的可支撑结论</h3>
+<table>
+<tr><th>我方待办</th><th>原件对应</th><th>可支撑的实施判断</th><th>仍缺</th></tr>
+<tr><td><code>T-LINECALIPER</code> 直线卡尺</td><td><code>IMVSCaliperModu</code> + <code>InputROI Style=ROIBOX</code>（5 标量）</td><td>ROI 字段集：center X/Y、width、height、angle；输出含 <code>EdgeStatus[]</code>（逐边状态数组）与 <code>CaliperEdgeNum</code></td><td>卡尺内部投影/边缘极性算法（G4）</td></tr>
+<tr><td><code>T-ARCCALIPER</code> 弧形卡尺</td><td>同一模块 + <code>InputROIAnnulus Style=ROIANNULUS</code>（6 标量：中心 X/Y、内外半径、起始角、角度跨度）</td><td><b>不需要独立模块</b>，只需换 ROI 形态与字段集</td><td>同上；另 <code>AngleExtend</code> 的符号/范围语义未知</td></tr>
+<tr><td><code>T-CIRCLECALIPER</code> 圆卡尺</td><td><b>无直接对应</b>。原件有 <code>IMVSCircleFindModu</code>(37 KB)、<code>IMVSMatrixCircleFindModu</code>(38 KB)、<code>IMVSHoughCircleFindModu</code>(<b>不存在</b>)</td><td>圆卡尺可能应参照「圆查找 + 环形 ROI」组合，而非卡尺模块</td><td>需 R3/R4 或厂商文档确认；<b>本批不臆定</b></td></tr>
+<tr><td>位置修正/夹具</td><td><code>Style="FIXTURE"</code>（Init/Run 各 5 标量）</td><td>夹具应作为<b>工具输入端口</b>（期望位姿 + 运行位姿），不是我方全局配置</td><td>Angle/Scale 的复合顺序（先旋后缩？）未知</td></tr>
+</table>
+
+<h2>2. 原件 vs 我方对照</h2>
+<table>
+<tr><th>维度</th><th>VM 原件（R2 实测）</th><th>我方现状（只读）</th><th>建议口径</th></tr>
+<tr><td>卡尺工具划分</td><td>1 个 <code>IMVSCaliperModu</code> + ROI 形态（ROIBOX/ROIANNULUS）；另有 Edge/Corner 两个细分模块</td><td>计划中 <code>T-LINECALIPER</code>/<code>T-CIRCLECALIPER</code>/<code>T-ARCCALIPER</code> 三个工具（P4 todo）</td><td><b>【策略差异，需论证】</b>拆三个属我方选择；若要贴近原件应按 ROI 形态统一。<b>不能写"对齐原厂"</b></td></tr>
+<tr><td>ROI 表达</td><td>字段级标量（ROIBOX 5 个 / ROIANNULUS 6 个），<code>IsForce=false</code> 可绑可不绑</td><td><code>SdkTypeVocabulary</code>：<code>ROI</code> → <code>RoiShape[]</code>（整体一个词目，内部再分形状）</td><td>【策略差异】我方按形状整体绑定，原件按字段绑定；影响"只绑某个字段"的场景，需在方案中显式取舍</td></tr>
+<tr><td>ROI 形状种类</td><td>11 种（default/circle/point/microPoint/rect/line/outlinepoint/polygon/annularsector/ellipse/text），全局一份 <code>ShapePropertyConfig.xml</code></td><td>我方 <code>RoiShape</code> 体系（形状集合需自查代码确认数量）</td><td>【可对比】11 种是原件下限，可作我方形状清单核对基准</td></tr>
+<tr><td>端口组合类型</td><td>45 种 Style / 150 Combination / 1020 Filter（含 3D、矩阵、双目、机器人）</td><td>15 个值词目 + 几何 7 类</td><td>【策略差异】层级不同不可直接比；我方不做 3D/点云为当前范围决定</td></tr>
+<tr><td>位置修正</td><td><code>FIXTURE</code> 端口（Init/Run 各 5 标量）</td><td>标定/变换作为 <code>Transform</code> 值类型</td><td>【策略差异】</td></tr>
+<tr><td>专用编辑器</td><td>查找/卡尺族 6/27 = 22%；累计 18/46 = 39%</td><td><code>DebugWindowType</code> 可空 + 默认调试窗</td><td><b>【原件可迁移】</b>「多数工具不需要专用编辑器」这一事实，直接支撑我方默认调试窗策略</td></tr>
+<tr><td>priority</td><td>分类内序号（Location 3–26 连续，跨分类重复）</td><td><code>Order</code>（DeclaredOrder→ToolAttribute.Order→1000）</td><td>【策略差异】我方是全局数值序，原件是分类内序</td></tr>
+</table>
+
+<h2>3. 待补证据</h2>
+<h3>3.1 需要更深反汇编 / 运行</h3>
+<table>
+<tr><th>缺口</th><th>现状</th><th>影响</th></tr>
+<tr><td>卡尺边缘检测算法语义（极性、阈值比较、亚像素）</td><td>只有参数名与 ROI 字段（G4）</td><td>不可承诺数值等价</td></tr>
+<tr><td><code>roiAnnulusAngleExtend</code> 的正负号与取值范围</td><td>只见 <code>float</code>、<code>IsForce=false</code></td><td>弧形卡尺角度语义</td></tr>
+<tr><td><code>FIXTURE</code> 复合顺序（旋转/缩放/平移）</td><td>只见字段集</td><td>坐标变换正确性</td></tr>
+<tr><td><code>IMVSStringLocationModu</code> 空目录是否安装损坏</td><td>目录存在、0 文件</td><td>是否属安装缺陷（影响实物分母）</td></tr>
+<tr><td><code>ModulePathGenerate.txt</code> 为何含未安装模块</td><td>清单 191 / 实物 163</td><td>分母口径与批次数量</td></tr>
+</table>
+<h3>3.2 需要实机</h3>
+<ul>
+<li><code>IMVSCaliperModu</code> 在只绑 <code>ROIBOX</code> 与只绑 <code>ROIANNULUS</code> 时的参数页形态差异（是否自动隐藏另一组）。</li>
+<li><code>ShapePropertyConfig.xml</code> 的 <code>Visibility=Beginner</code>/<code>AccessMode=O</code> 与用户角色（Admin/Tech/Operator）的实际对应关系。</li>
+<li><code>text</code> 形状绑定输入变量的交互。</li>
+</ul>
+<h3>3.3 需要厂商文档</h3>
+<ul>
+<li>45 种组合 Style 的官方清单与字段定义（本批仅从 <code>Combination.xml</code> 反推）。</li>
+<li><code>IsForce</code> / <code>IsPrefer</code> 的官方语义（强制绑定 / 优先候选）。</li>
+<li>11 种 ROI 形状的官方几何定义（尤其 <code>outlinepoint</code>、<code>annularsector</code>）。</li>
+</ul>
+
+<h2>4. 自验命令</h2>
+<h3>4.1 分母核对（清单 vs 实物）</h3>
+<pre>$app="D:\Program Files\VisionMaster4.4.0\Applications"
+foreach($c in @("Calculation","Calibration","Collection","ColorProcessing","Communication","DeepLearning",
+  "DefectDetection","Global","ImageGeneration","ImageProcessing","Location","Logic","Measurement",
+  "Recognition","RegisterLearning","SplitCombination")){
+  $p=Join-Path $app ("Module(sp)\x64\" + $c)
+  "{0,-18} {1}" -f $c, $(if(Test-Path $p){ (Get-ChildItem $p -Directory).Count } else { "目录不存在" })
+}
+(Get-ChildItem (Join-Path $app "Module(sp)\x86") -Directory).Count   # 期望 0
+Get-ChildItem (Join-Path $app "Module(sp)\x64\Location\IMVSStringLocationModu") -File | Measure-Object   # 期望 Count 0</pre>
+
+<h3>4.2 卡尺双 ROI 形态</h3>
+<pre>Select-String -Path "D:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\x64\Location\IMVSCaliperModu\IMVSCaliperModu.xml" `
+  -Pattern 'Combination Name|Filter Name' | Select -First 30</pre>
+
+<h3>4.3 ROI 形状与组合类型</h3>
+<pre>[regex]::Matches([IO.File]::ReadAllText("D:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\ShapePropertyConfig.xml",[Text.Encoding]::UTF8),'<Tab Name="([^"]+)"') | % { $_.Groups[1].Value }
+$c=[IO.File]::ReadAllText("D:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\Combination.xml",[Text.Encoding]::UTF8)
+"Combination=" + ([regex]::Matches($c,'<Combination ')).Count + " Filter=" + ([regex]::Matches($c,'<Filter ')).Count
+[regex]::Matches($c,'Style="([^"]+)"') | % { $_.Groups[1].Value } | Sort -Unique | Measure-Object   # 45</pre>
+
+<h2>5. 边界声明</h2>
+<ul>
+<li>本批只新增本文档；未改 <code>src</code>/<code>tools</code>/<code>tests</code>，未动其他 evidence 文件，未 <code>git commit</code>/<code>push</code>。</li>
+<li>未启动 <code>VisionMaster.exe</code>、未加载厂商程序集、未写注册表、未修改安装目录（全部只读）。本批<b>未做新的反编译</b>（R1 已完成代表工具反编译，R2 结论来自 XML 与目录实物）。</li>
+<li>三档标注：<span class="obs">观察到</span> / <span class="inf">推断</span> / <span class="unk">未知</span>；凡未验证不写作已通过。</li>
+<li><b>分母声明</b>：本文的 163/162 为实测目录数；此前计划中的 191/52/53 为清单声明数，<b>已在本批作废</b>，R3–R5 将以实物为准并在 R5 收口。</li>
+<li><b>不外推</b>：R2 结论只覆盖这 27 个有效模块；<code>IMVSHoughCircleFindModu</code> 等 5 个不存在模块的语义<b>未取证且不可推测</b>。</li>
+<li>「45 种 Style / 150 Combination / 1020 Filter」为 <code>Combination.xml</code> 的静态计数，<b>等于</b>可用端口组合类型上限，<b>不等于</b>任一工具实际使用数。</li>
+</ul>
+</html>

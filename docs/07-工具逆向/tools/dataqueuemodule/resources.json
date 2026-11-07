@@ -1,0 +1,71 @@
+{
+  "toolId": "dataqueuemodule",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DataQueueModule\\DataQueueConfig.xml",
+      "sha256": "77910b516054b4db9665bbe14d9f367cdb20de8104f20eea39bde3b938d0fa09",
+      "root": "ParamConfig",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DataQueueModule\\DataQueueModule.xml",
+      "sha256": "e347f27b20088e1d3936d1e2983b522e911c4632229e7b35a59291749c2191d0",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DataQueueModule\\DataQueueModuleAlgorithm.xml",
+      "sha256": "a900a63d8118918587c937acb045df3c8750f19d6157a751b54b0fe460c98d17",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DataQueueModule\\DataQueueModuleAlgorithmTab.xml",
+      "sha256": "5d56fd74912873a4b934148bcc5b5dd8e3dd16db222772e3101f30e82a593474",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DataQueueModule\\DataQueueModuleCs.xml",
+      "sha256": "d2ac90b1a3a29dabaa17324e15c87e27b0bf9592c1287cdc1ecf462ee519e8e8",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DataQueueModule\\DataQueueModuleDisplay.xml",
+      "sha256": "79cbe23b4d730c8580b3fbff1f4e4264388728b8e54b58800713022f61e1f6d6",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DataQueueModule\\ToolItemInfo.xml",
+      "sha256": "91a5edaeba21eb4f90e4a8ed60a811af5a823d1a5d5ac011968e5f14f30a7808",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Queue Settings"
+    },
+    {
+      "Name": "Tab_Trigger Procedure"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "DataQueueData",
+      "name": null
+    },
+    {
+      "type": "Command",
+      "name": "Clear"
+    },
+    {
+      "type": "TriggerProcedureData",
+      "name": null
+    }
+  ],
+  "sharedUiGroups": [],
+  "status": "inventory-only"
+}

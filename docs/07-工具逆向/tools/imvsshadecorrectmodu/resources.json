@@ -1,0 +1,137 @@
+{
+  "toolId": "imvsshadecorrectmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSShadeCorrectModu\\IMVSShadeCorrectModu.xml",
+      "sha256": "9f1cc533ddda46f2619f8d613a9921397963254078aaab90b224648cef0cf2e1",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSShadeCorrectModu\\IMVSShadeCorrectModuAlgorithm.xml",
+      "sha256": "2b0bde1e2494111c918a82899a2436350b2620995ca55d12c0a41349df51a1ee",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSShadeCorrectModu\\IMVSShadeCorrectModuAlgorithmTab.xml",
+      "sha256": "09bdf20a0dd4de06389a25f77a7e504eb3b06546ef9c0e801369b173487f8808",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSShadeCorrectModu\\IMVSShadeCorrectModuCs.xml",
+      "sha256": "0abb34db1de05e3d658abe434fa7d27d60d92db00fec92a685290a2b5eadd56f",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSShadeCorrectModu\\IMVSShadeCorrectModuDisplay.xml",
+      "sha256": "41b3058f3789dfe02436e33506e407c4d569688a23729be9fe39891e6da81187",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSShadeCorrectModu\\ToolItemInfo.xml",
+      "sha256": "b52108b95fed9a50b2ff800f5013edb36709458542fe374fb3ae83df21777d7d",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "OutputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Integer",
+      "name": "Ratio"
+    },
+    {
+      "type": "Integer",
+      "name": "Gain"
+    },
+    {
+      "type": "Integer",
+      "name": "Offset"
+    },
+    {
+      "type": "Integer",
+      "name": "Noise"
+    },
+    {
+      "type": "Expand",
+      "name": null
+    },
+    {
+      "type": "Enumeration",
+      "name": "Direction"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZoneAnnular"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "OutputMaskImageGroup",
+    "InputMaskImageGroup",
+    "RoiSelectGroup",
+    "InheritWayGroup2",
+    "ExternROITypeGroup",
+    "AssistGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

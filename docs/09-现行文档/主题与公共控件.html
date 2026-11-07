@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>主题与公共控件 · 现行文档</title>
+<link rel="stylesheet" href="../00-索引/assets/doc.css">
+</head>
+<body>
+<div class="wrap">
+
+<nav class="crumbs">
+    <a href="../00-索引/主题台账.html">主题台账</a>
+    <a href="../00-索引/文档索引.html">文档索引</a>
+    <a href="README.html">现行文档说明</a>
+</nav>
+
+<header class="doc-header">
+    <h1>主题与公共控件<span class="badge current">现行</span></h1>
+    <p class="doc-meta">最后更新：2026-11-05<span class="sep">·</span>状态：现行<span class="sep">·</span>代码基线：<code>71da36329</code><span class="sep">·</span>合并来源：18 篇历史方案与测试报告（清单见文末「历史演进」）</p>
+</header>
+
+<section class="card lead">
+    <h2>一句话结论</h2>
+        <p>主题只有<strong>一条装配链</strong>：<code>AppResources.xaml</code> 合并一次 SDK <code>Generic.xaml</code>，<code>ThemeManager</code> 把 Light/Dark 追加到 <code>Application.MergedDictionaries</code> <strong>末尾</strong>，所有主题化属性一律 <code>DynamicResource</code>。工具和 SDK 控件<strong>禁止</strong>在自己元素级再合并 <code>Generic</code>——那是过去"外层暗色、内部亮色"拼接界面的根因。设计器靠 <code>DesignTimeThemeResourceDictionary</code>（运行时为空）单独拿样式。此链已闭环，并有人工验收确认。</p>
+</section>
+
+<section class="card">
+    <h2>改前用户看到什么</h2>
+        <ul>
+            <li>切到暗色主题，<strong>工具调试窗里一块亮一块暗</strong>：外层面板是暗的，里面的 ROI 工具栏、输入框、分隔线还是亮的。</li>
+            <li>Visual Studio 里打开工具调试窗设计器，<strong>一片 XDG 错误</strong>（找不到 <code>ThemeDividerBrushBrush</code>、<code>SegmentedToggleStyle</code>），控件看不见。</li>
+            <li>有的工具图标和按钮在暗色下<strong>几乎看不见</strong>（浅灰画在浅底上）。</li>
+            <li>弹窗标题栏还是系统默认样式，和其他界面不像一套东西。</li>
+            <li>各处零散 <code>MessageBox.Show</code>，样式不统一，也没法统一改。</li>
+        </ul>
+</section>
+
+<section class="card">
+    <h2>改后应该是什么样</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>场景</th>
+                    <th>期望行为</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>切换 Light / Dark</td>
+                    <td>整窗立即重解析，不出现明暗拼接</td>
+                </tr>
+                <tr>
+                    <td>打开工具调试窗设计器</td>
+                    <td>无 XDG 错误，图标与样式可见</td>
+                </tr>
+                <tr>
+                    <td>暗色下 ROI 工具栏</td>
+                    <td>面板/边框/文字/按钮跟着暗，<strong>检测蓝和屏蔽橙保持业务语义色</strong></td>
+                </tr>
+                <tr>
+                    <td>新建工具 XAML</td>
+                    <td>用 <code>SdkThemeKeys</code> 的 <code>DynamicResource</code>，不写死颜色</td>
+                </tr>
+                <tr>
+                    <td>弹窗</td>
+                    <td>标题栏接入主题，与主界面同一套外观</td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+<section class="card">
+    <h2>关键结构</h2>
+        <h3>装配链（唯一）</h3>
+        <figure class="diagram">
+            <div class="d-chain-v">
+                <div class="d-row">
+                    <div class="d-node accent">Plugin.SDK
+                        <small>SdkThemeKeys.cs（Key 契约）</small>
+                        <small>Themes/Generic.xaml（样式 / 模板 / 图标）</small>
+                        <small>UI/Themes/DefaultTheme.xaml（无宿主兜底）</small>
+                    </div>
+                    <div class="d-node plain">ThemeManager
+                        <small>Light / Dark 追加到末尾</small>
+                    </div>
+                </div>
+                <div class="d-arrow down">↓</div>
+                <span class="d-edge">Generic 内部合并一次</span>
+                <div class="d-node accent">主程序 Application.Resources
+                    <small>只合并一次 Generic，不重复合并</small>
+                </div>
+                <div class="d-arrow down">↓</div>
+                <span class="d-edge">解析</span>
+                <div class="d-node ok">工具 / SDK 控件
+                    <small>DynamicResource + SdkThemeKeys 取资源</small>
+                </div>
+            </div>
+            <figcaption>装配合并只有这一条链：SDK 的 Generic 内部先合并，主程序只合并一次，主题切换追加在末尾，控件一律按 Key 解析。</figcaption>
+        </figure>
+        <p>资源优先级（顺序决定一切）：</p>
+        <pre><code>Application 末尾  Light / Dark     ← 覆盖
+        ↓
+Application 中    Generic → DefaultTheme  ← 兜底
+        ↓
+SDK 控件          DynamicResource 取值</code></pre>
+        <h3>设计时与运行时分离</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>时机</th>
+                    <th>机制</th>
+                    <th>规则</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Visual Studio 设计器</td>
+                    <td>工具根显式合并 <code>DesignTimeThemeResourceDictionary</code>；SDK 独立控件由 <code>DesignTimeThemeLoader</code> 注入</td>
+                    <td>该字典<strong>运行时为空</strong>，不建立局部作用域</td>
+                </tr>
+                <tr>
+                    <td>独立设计宿主（无 <code>Application</code>）</td>
+                    <td>同上，固定 <code>DefaultTheme</code></td>
+                    <td>不依赖基类构造时机</td>
+                </tr>
+                <tr>
+                    <td>运行时</td>
+                    <td>宿主 Light/Dark 覆盖</td>
+                    <td>禁止运行时 <code>OnInitialized</code> 注入 <code>Generic</code></td>
+                </tr>
+            </tbody>
+        </table>
+        <h3>Key 命名规则</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>类型</th>
+                    <th>后缀</th>
+                    <th>例</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Color</td>
+                    <td><code>*Color</code></td>
+                    <td><code>ThemeDividerColor</code></td>
+                </tr>
+                <tr>
+                    <td>Brush</td>
+                    <td><code>*Brush</code></td>
+                    <td><code>ThemeDividerBrush</code></td>
+                </tr>
+                <tr>
+                    <td>Style</td>
+                    <td><code>*Style</code></td>
+                    <td><code>SegmentedToggleStyle</code></td>
+                </tr>
+                <tr>
+                    <td>Geometry</td>
+                    <td><code>*Path</code> / <code>*Geometry</code></td>
+                    <td><code>LinkIconPath</code></td>
+                </tr>
+            </tbody>
+        </table>
+        <p><strong>Color 与 Brush 不得共用同一 Key，不得出现 <code>BrushBrush</code>。</strong></p>
+</section>
+
+<section class="card">
+    <h2>关键决策与理由</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>决策</th>
+                    <th>理由</th>
+                    <th>依据</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>只允许<strong>一个</strong> <code>Generic.xaml</code> 装配入口</td>
+                    <td>多个入口 + 元素级合并会让元素资源优先于 Application 资源，暗色被亮色兜底覆盖</td>
+                    <td>20260915 §1</td>
+                </tr>
+                <tr>
+                    <td>工具与 SDK 控件<strong>禁止</strong>元素级合并 <code>Generic</code></td>
+                    <td>正是这条造成明暗拼接；元素级资源优先级高于 Application</td>
+                    <td>20260915 §1/§9</td>
+                </tr>
+                <tr>
+                    <td>Light/Dark <strong>追加到末尾</strong>而不是替换整个字典</td>
+                    <td>WPF 合并字典后写覆盖前写，顺序决定覆盖关系</td>
+                    <td>20260915 §4</td>
+                </tr>
+                <tr>
+                    <td>一律 <code>DynamicResource</code>，不用 <code>StaticResource</code> 跨字典</td>
+                    <td>跨字典 <code>StaticResource</code> 在 XAML 解析阶段求值，此时资源可能还没装配</td>
+                    <td>20260915 §3.7</td>
+                </tr>
+                <tr>
+                    <td>同一 <code>Generic</code> 字典内部允许 <code>StaticResource</code></td>
+                    <td>定义顺序明确、同一解析作用域，安全</td>
+                    <td>20260915 §3.8</td>
+                </tr>
+                <tr>
+                    <td>Key 必须表达资源类型，且<strong>不留旧名兼容别名</strong></td>
+                    <td>新旧名并存会让"到底该用哪个"永久存在</td>
+                    <td>20260915 §5</td>
+                </tr>
+                <tr>
+                    <td>设计期字典在运行时为空</td>
+                    <td>若运行时也生效，会破坏宿主主题优先级</td>
+                    <td>20260915 §3.3</td>
+                </tr>
+                <tr>
+                    <td>业务语义色（检测蓝/屏蔽橙）不跟主题</td>
+                    <td>它们是语义而不是外观，跟着主题变会失去辨识</td>
+                    <td>20260915 §4.4</td>
+                </tr>
+                <tr>
+                    <td>工具根必须在 XAML 里显式声明面板背景与主文字色</td>
+                    <td>实测 15 个工具根背景透明、文字未绑定，才导致明暗拼接</td>
+                    <td>20260915 复验补充</td>
+                </tr>
+                <tr>
+                    <td>加自动测试守卫而非只写规范</td>
+                    <td>规范靠人守不住，用测试禁止局部合并、跨字典静态引用、旧 Key 残留</td>
+                    <td>20260915 §6.7</td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+<section class="card">
+    <h2>实施与验证状态</h2>
+        <h3>已做</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>能力</th>
+                    <th>状态</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>删除 ROI / 测量 / 公共工具栏 7 处元素级 <code>Generic</code> 合并</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>删除 <code>AppResources</code> 对 <code>DefaultTheme</code> 的重复合并</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td><code>ThemeDividerBrush</code>（原 Color）→ <code>ThemeDividerColor</code>；<code>ThemeDividerBrushBrush</code> → <code>ThemeDividerBrush</code></td>
+                    <td>已实施，SDK/Light/Dark/主 UI/4 个算法工具同步</td>
+                </tr>
+                <tr>
+                    <td><code>SelectableShapeButtonStyle</code> 等共享样式</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>ROI 分段按钮、形状工具栏、绘制参数标签改动态引用</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>Blob / CircleDetect / LineDetect / Threshold 分隔线改用 <code>SdkThemeKeys.DividerBrush</code></td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>主窗口、顶部栏、日志面板规范化 <code>ThemeKeys.DividerBrush</code></td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>设计器专用早期加载器 + 两级作用域</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>删除 <code>ToolDebugControlBase.OnInitialized</code> 的 Generic 注入</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>15 个工具根显式声明 <code>PanelBackgroundBrush</code> / <code>TextPrimaryBrush</code></td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td><code>ImageControl</code> 全屏背景改用 <code>ImageAreaBackgroundBrush</code>（三套主题同步）</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>全量审计 27 个工具 XAML + 16 个 SDK 共享控件 XAML</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>自动测试守卫（禁止局部合并 / 跨字典静态样式 / 旧 Key 残留 / 单一装配入口 / 三套主题键闭环）</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>弹窗标题栏接入主题</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td><code>MessageBox</code> 收敛</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>工具箱分类排序与图标基线</td>
+                    <td>已建立基线</td>
+                </tr>
+                <tr>
+                    <td>画布节点样式与状态体系</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>主界面产品级重构</td>
+                    <td>已实施</td>
+                </tr>
+            </tbody>
+        </table>
+        <h3>未做</h3>
+        <ul>
+            <li>本表未逐条核对各方案的"后续项"。已知没有独立结论的：<code>MessageBox</code> 收敛的<strong>完整替换清单</strong>、工具箱图标的<strong>覆盖率</strong>（是否 162 个工具都有图标资源）。</li>
+        </ul>
+        <h3>未验</h3>
+        <ul>
+            <li><strong>已人工验收</strong>：设计时与运行时主题（用户确认"目前主题在设计时和运行时的表现都正常了"）。这是本主题唯一有明确人工验收结论的部分。</li>
+            <li>未验：深浅主题下<strong>全部 162 个工具</strong>逐页目视（当时审计覆盖 27 个工具 XAML）。</li>
+            <li>未验：高 DPI 下的主题表现。</li>
+        </ul>
+</section>
+
+<section class="card">
+    <h2>风险与遗留</h2>
+        <ol>
+            <li><strong>架构守卫靠自动测试，测试本身就是维护点。</strong> 新增主题 Key 或新控件时如果没跑守卫测试，明暗拼接会复发——这条已被修复过一次（15 个工具根背景透明）。</li>
+            <li><strong><code>Generic.xaml</code> 是单点。</strong> 它是所有 SDK 控件样式的唯一来源，改错影响全部工具。</li>
+            <li><strong>设计期与运行时用不同装配路径</strong>，这是必要的（设计器没有宿主主题），但也意味着"设计器看着对"不等于"运行时对"，两个都要看。</li>
+            <li><strong>业务语义色与主题色的边界需要人判断。</strong> 什么算"语义色"（检测蓝、屏蔽橙）没有机械规则，新增控件时容易误把装饰色当语义色保留。</li>
+            <li><strong>审计覆盖不等于全量覆盖。</strong> 27 个工具 XAML 审计过，但 <code>tools/</code> 下有 24 个项目，<strong>不等同于</strong>全部插件与全部控件页都验过。</li>
+        </ol>
+</section>
+
+<section class="card">
+    <h2>历史演进</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>文档</th>
+                    <th>本篇采信</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2026-10-16</td>
+                    <td><a href="../04-工具设计/标定工具/2026/10/16/HALCON原生9加3标定算法与界面实施基线-20261016.md">HALCON 原生 9+3 标定算法与界面实施基线</a></td>
+                    <td>标定工具界面（属工具专项）</td>
+                </tr>
+                <tr>
+                    <td>2026-10-12</td>
+                    <td><a href="../01-方案设计/2026/10/工具箱分类排序与图标基线-20261012.md">工具箱分类排序与图标基线</a></td>
+                    <td>分类与图标规范</td>
+                </tr>
+                <tr>
+                    <td>2026-09-15</td>
+                    <td><a href="../01-方案设计/2026/09/15/主题系统整合设计与实施记录-20260915.md">主题系统整合设计与实施记录</a></td>
+                    <td><strong>主要来源</strong>：唯一装配链、设计时策略、Key 规则、守卫</td>
+                </tr>
+                <tr>
+                    <td>2026-09-15</td>
+                    <td><a href="../03-测试报告/2026/09/15/工具UI主题全量审计报告-20260915.md">工具 UI 主题全量审计报告</a></td>
+                    <td>审计结论</td>
+                </tr>
+                <tr>
+                    <td>2026-09-15</td>
+                    <td><a href="../01-方案设计/2026/09/15/总体架构与工具主题设计期优化方案-20260915.md">总体架构与工具主题设计期优化方案</a></td>
+                    <td>设计期架构</td>
+                </tr>
+                <tr>
+                    <td>2026-08-29</td>
+                    <td><a href="../01-方案设计/2026/08/29/MessageBox收敛实施清单-20260829-152019.md">MessageBox 收敛实施清单</a></td>
+                    <td>弹窗收敛</td>
+                </tr>
+                <tr>
+                    <td>2026-08-15</td>
+                    <td><a href="../01-方案设计/2026/08/15/弹窗标题栏接入主题系统方案-20260815-124510.md">弹窗标题栏接入主题系统方案</a></td>
+                    <td>标题栏主题化</td>
+                </tr>
+                <tr>
+                    <td>2026-08-15</td>
+                    <td><a href="../03-测试报告/2026/08/15/测试报告-SDK层UI控件主题化改造-20260815-140915.md">测试报告-SDK 层 UI 控件主题化改造</a></td>
+                    <td>SDK 控件主题化验证</td>
+                </tr>
+                <tr>
+                    <td>2026-08-15</td>
+                    <td><a href="../01-方案设计/2026/08/15/工具调试界面硬编码色主题化收敛方案-20260815-151429.md">工具调试界面硬编码色主题化收敛方案</a></td>
+                    <td>硬编码色收敛</td>
+                </tr>
+                <tr>
+                    <td>2026-08-15</td>
+                    <td><a href="../01-方案设计/2026/08/15/SDK层UI主题化收官方案-20260815-143355.md">SDK 层 UI 主题化收官方案</a></td>
+                    <td>收官</td>
+                </tr>
+                <tr>
+                    <td>2026-08-15</td>
+                    <td><a href="../01-方案设计/2026/08/15/SDK层UI控件主题化改造方案-20260815-133352.md">SDK 层 UI 控件主题化改造方案</a></td>
+                    <td>改造方案</td>
+                </tr>
+                <tr>
+                    <td>2026-08-14</td>
+                    <td><a href="../01-方案设计/2026/08/14/方案管理界面优化-20260814-110957.md">方案管理界面优化</a></td>
+                    <td>方案管理界面</td>
+                </tr>
+                <tr>
+                    <td>2026-08-13</td>
+                    <td><a href="../01-方案设计/2026/08/13/主题系统架构优化方案-20260813-164212.md">主题系统架构优化方案</a></td>
+                    <td>主题架构</td>
+                </tr>
+                <tr>
+                    <td>2026-08-13</td>
+                    <td><a href="../01-方案设计/2026/08/13/主题系统管理优化-20260813-095313.md">主题系统管理优化</a></td>
+                    <td>主题管理</td>
+                </tr>
+                <tr>
+                    <td>2026-08-12</td>
+                    <td><a href="../02-实施总结/2026/08/12/主界面产品级重构-实施总结-20260812-182455.md">主界面产品级重构实施总结</a></td>
+                    <td>主界面重构结果</td>
+                </tr>
+                <tr>
+                    <td>2026-08-11</td>
+                    <td><a href="../01-方案设计/2026/08/11/主界面产品级重构方案-最终版-20260811-134458.md">主界面产品级重构方案（最终版）</a></td>
+                    <td>主界面设计</td>
+                </tr>
+                <tr>
+                    <td>2026-08-11</td>
+                    <td><a href="../01-方案设计/2026/08/11/画布节点样式与状态体系优化方案-20260811-103552.md">画布节点样式与状态体系优化方案</a></td>
+                    <td>节点状态样式</td>
+                </tr>
+                <tr>
+                    <td>2026-04-05</td>
+                    <td><a href="../01-方案设计/2026/04/主题颜色优化总结-20260405.md">主题颜色优化总结</a></td>
+                    <td>早期配色</td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+<nav class="doc-nav">
+    <a class="primary" href="../00-索引/主题台账.html">主题台账</a>
+    <a href="../00-索引/文档索引.html">文档索引</a>
+    <a href="README.html">现行文档说明</a>
+</nav>
+
+</div>
+</body>
+</html>

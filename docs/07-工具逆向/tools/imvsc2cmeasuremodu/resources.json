@@ -1,0 +1,341 @@
+{
+  "toolId": "imvsc2cmeasuremodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSC2CMeasureModu\\IMVSC2CMeasureModu.xml",
+      "sha256": "e595b30aeb99943b1f07d795944e844f8cbbcc667bd70427fa32c41053759f60",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSC2CMeasureModu\\IMVSC2CMeasureModuAlgorithm.xml",
+      "sha256": "a4a8de1efc68f48903bd544ec93e6b17cff06ed2231d686f0009eb9c32f771ea",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSC2CMeasureModu\\IMVSC2CMeasureModuAlgorithmTab.xml",
+      "sha256": "2a0bd781508ca53f7bdbbe9b5f13c69964616f3aa0eb9e0c81e093aa17f7a637",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSC2CMeasureModu\\IMVSC2CMeasureModuCs.xml",
+      "sha256": "3b4cd853dfd374bcd018ccba501b4061c89d1588fddc6f7a03cba00929c8f5bf",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSC2CMeasureModu\\IMVSC2CMeasureModuDisplay.xml",
+      "sha256": "e7a2a419e49ebfe7b083fea46d563c7fc88e0ed73c47b4dedb7cf7d05ca1286e",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSC2CMeasureModu\\ToolItemInfo.xml",
+      "sha256": "53bfb4f46adb47a9b8cf674a6985f040bab4d3bdf8861fd8087cedd245e1e390",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "RadioSelecter",
+      "name": "SourceSelect"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "InputWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Circle"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "CenterPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "CenterPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Radius"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "InnerRadius"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartAngle"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "AngleExtend"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "InputWay2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Circle2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "CenterPointX2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "CenterPointY2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Radius2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "InnerRadius2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartAngle2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "AngleExtend2"
+    },
+    {
+      "type": "ROISelecter_Com",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ChooseCoordinate"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "OriginPoint"
+    },
+    {
+      "type": "Enumeration",
+      "name": "OutputAngleRange"
+    },
+    {
+      "type": "Enumeration",
+      "name": "CircleChoose"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FindMode1"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePolarity1"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeThresh1"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeWidth1"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectNum1"
+    },
+    {
+      "type": "Boolean",
+      "name": "CoarseDetectFlag1"
+    },
+    {
+      "type": "Integer",
+      "name": "CCDSampleScale1"
+    },
+    {
+      "type": "Integer",
+      "name": "CCDCircleThresh1"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectDist1"
+    },
+    {
+      "type": "Enumeration",
+      "name": "InitType1"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FitFun1"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FindMode2"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePolarity2"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeThresh2"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeWidth2"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectNum2"
+    },
+    {
+      "type": "Boolean",
+      "name": "CoarseDetectFlag2"
+    },
+    {
+      "type": "Integer",
+      "name": "CCDSampleScale2"
+    },
+    {
+      "type": "Integer",
+      "name": "CCDCircleThresh2"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectDist2"
+    },
+    {
+      "type": "Enumeration",
+      "name": "InitType2"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FitFun2"
+    },
+    {
+      "type": "Boolean",
+      "name": "AngleLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangAngleLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "DistLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeDistLimit"
+    },
+    {
+      "type": "Expand",
+      "name": null
+    },
+    {
+      "type": "Boolean",
+      "name": "Inter1XLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangInter1XLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "Inter1YLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangInter1YLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "Inter2XLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangInter2XLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "Inter2YLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangInter2YLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineResult"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "IntersectionPoint1"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "IntersectionPoint2"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CircleInput1"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CircleCenterPoint1"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CircleInput2"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CircleCenterPoint2"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "DetectCaliperBox1"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "DetectCaliperBox2"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "AssistGroup",
+    "TextDisplayGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

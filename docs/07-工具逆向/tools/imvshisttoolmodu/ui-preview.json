@@ -1,0 +1,160 @@
+{
+  "controls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "OutputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Boolean",
+      "name": "CountLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangCountLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "MaxValueLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangMaxValueLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "MinValueLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangMinValueLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "MeanLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangMeanLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "StdLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangStdLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "MedianValueLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangMedianValueLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "ModeValueLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangModeValueLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "ContrastLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "ContrastLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZoneAnnular"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvshisttoolmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSHistToolModu\\IMVSHistToolModu.xml",
+      "sha256": "0c22971ae3ed05571d3c8adcf69293e60a100ff3d6f74f06065fe6bce8635492",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSHistToolModu\\IMVSHistToolModuAlgorithm.xml",
+      "sha256": "2803f3fdcc84b446d7fa15aebd8c88a4974a91a55f574a9834a25681d09c073b",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSHistToolModu\\IMVSHistToolModuAlgorithmTab.xml",
+      "sha256": "6e9bd69f43df2f0c42f73f459c6a831b2731921102f195c7e72bf4da93f56eba",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSHistToolModu\\IMVSHistToolModuCs.xml",
+      "sha256": "add01acdcad2b09833e38a8b3244e77947a17e1ca54fdb72a16315b1fd117a45",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSHistToolModu\\IMVSHistToolModuDisplay.xml",
+      "sha256": "713169b93a3c8b4c504bda26725018c7da56cd2f9f3100bb6dc3751938efa14c",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSHistToolModu\\ToolItemInfo.xml",
+      "sha256": "a6deae89a6a621671e96504ee246c34e33bf7553ff5ccc6623f66c538e14be11",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "直方图工具",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:IMVSHPFeatureMatchModuControl" xmlns:BaseLocal="clr-namespace:Apps.XmlUI;assembly=Apps.XmlUI" xmlns:VMInterface="clr-namespace:VMControls.Interface;assembly=VMControls.Interface" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/BottomButtonStyle.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+  <DataTemplate x:Key="FeaturepatMatch_GroupControl">
+    <Grid Width="380" Height="420">
+      <BaseLocal:ParamUserControl FrameworkElement.DataContext="{Binding Path=(VMInterface:IDecorate.DecorateSource)}" />
+    </Grid>
+  </DataTemplate>
+</ResourceDictionary>

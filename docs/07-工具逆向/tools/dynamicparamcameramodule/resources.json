@@ -1,0 +1,75 @@
+{
+  "toolId": "dynamicparamcameramodule",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DynamicParamCameraModule\\DynamicParamCameraModule.xml",
+      "sha256": "7af64c68315857540cddb7f7e0cba9bd90a2caff159b4155a495ec839fa29f06",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DynamicParamCameraModule\\DynamicParamCameraModuleAlgorithm.xml",
+      "sha256": "77a6620d4fb600b0169afe2fe72ca488d6e2fa6cbf4617edeeeeefed640e44e4",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DynamicParamCameraModule\\DynamicParamCameraModuleAlgorithmTab.xml",
+      "sha256": "5314f8438fdae6ee1afc360af033f6861cfe2c5c0433587650bb300c8d42dc61",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DynamicParamCameraModule\\DynamicParamCameraModuleDisplay.xml",
+      "sha256": "c157827b3de8c961c1bd98f7f1d7978b44959f43b78fee792f6ea070add8db88",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\DynamicParamCameraModule\\ToolItemInfo.xml",
+      "sha256": "42c2a8459d8d8f10e00fec8b1bc4b9039657e602bcad6416666aa9decad841d0",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Common Params"
+    },
+    {
+      "Name": "Tab_Custom Params"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "EnumerationLxN",
+      "name": "CameraName"
+    },
+    {
+      "type": "ClockSource",
+      "name": "ClockSource2"
+    },
+    {
+      "type": "BooleanBxTips",
+      "name": "GrabStatus"
+    },
+    {
+      "type": "MvsFeatureTree",
+      "name": "CamerParam"
+    },
+    {
+      "type": "CameraPreview",
+      "name": "RealTimeImgAcq"
+    },
+    {
+      "type": "CommandWithTip",
+      "name": "RealTimeImgAcqCmd"
+    },
+    {
+      "type": "DynamicCameraParamList",
+      "name": "DynamiceList"
+    }
+  ],
+  "sharedUiGroups": [],
+  "status": "inventory-only"
+}

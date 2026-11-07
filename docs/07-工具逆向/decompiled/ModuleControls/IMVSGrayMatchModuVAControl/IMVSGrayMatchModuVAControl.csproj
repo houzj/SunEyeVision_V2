@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>IMVSGrayMatchModuVAControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="datatemplate\paramusercontroldatatemplate.xaml" />
+    <Page Remove="graymatchvadialoguistyle.xaml" />
+    <Page Remove="paramstabcontrol4garymatch.xaml" />
+    <Page Remove="themes\generic.xaml" />
+    <Page Include="datatemplate\paramusercontroldatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="datatemplate/paramusercontroldatatemplate.xaml" />
+    <Page Include="graymatchvadialoguistyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="graymatchvadialoguistyle.xaml" />
+    <Page Include="paramstabcontrol4garymatch.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="paramstabcontrol4garymatch.xaml" />
+    <Page Include="themes\generic.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="themes/generic.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="IMVSHPFeatureMatchModuControl" />
+    <Reference Include="VM.ModuleControl" />
+    <Reference Include="System.Core" />
+    <Reference Include="VMControls.WPF" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Apps.Data" />
+    <Reference Include="VM.Controls" />
+  </ItemGroup>
+</Project>

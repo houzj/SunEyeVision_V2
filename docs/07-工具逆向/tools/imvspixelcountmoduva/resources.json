@@ -1,0 +1,125 @@
+{
+  "toolId": "imvspixelcountmoduva",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSPixelCountModuVA\\IMVSPixelCountModuVA.xml",
+      "sha256": "93b4a18e81d8e5e51608a9714de90b642d6fc3ed07478eedc10ac34bab2a2600",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSPixelCountModuVA\\IMVSPixelCountModuVAAlgorithm.xml",
+      "sha256": "bf33a761b8ec4ada77122ab7e663ee715909d0bd9fe3c026eefb024400a77a56",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSPixelCountModuVA\\IMVSPixelCountModuVAAlgorithmTab.xml",
+      "sha256": "dba1afb9012ca71fa06335d590c699d08aef63fd849e6996f55d756216fdb7cd",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSPixelCountModuVA\\IMVSPixelCountModuVACs.xml",
+      "sha256": "0738bdf3dd9b767beab8a3ffca7f1274b8c6d09fe43c9d39d106f19520c9781d",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSPixelCountModuVA\\IMVSPixelCountModuVADisplay.xml",
+      "sha256": "078a43ab72a1360bb483c7c031f04cc844387f230357005ea64dc733a091936d",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSPixelCountModuVA\\ToolItemInfo.xml",
+      "sha256": "8db07f178759e3482ab74aa3550dac7d2913573c9810d3f7a5a65d8abb3a24f7",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "OutputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "PixelModuRangeConfigList",
+      "name": "PixelModuRangeConfigList"
+    },
+    {
+      "type": "Boolean",
+      "name": "CountLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangCountLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "RatioLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangRatioLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "OutputMaskImageGroup",
+    "InputMaskImageGroup",
+    "RoiSelectGroup",
+    "InheritWayGroup2",
+    "AssistGroup",
+    "TextDisplayGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

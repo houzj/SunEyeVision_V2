@@ -1,0 +1,61 @@
+{
+  "toolId": "imagebuffermodule",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageBufferModule\\ImageBufferModule.xml",
+      "sha256": "6676d8846f590310081dfb32c586596cef1df7406e7f395c833cfb7996bce163",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageBufferModule\\ImageBufferModuleAlgorithm.xml",
+      "sha256": "ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageBufferModule\\ImageBufferModuleAlgorithmTab.xml",
+      "sha256": "80e59379d3eaa22679c22474d0b810fcbcaa93f9d97217e18654f704f8d0e824",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageBufferModule\\ImageBufferModuleCs.xml",
+      "sha256": "564aac9c070a7a9bfd9d22d7673daa91dcdd36fd82eeee40fec8d3aed91eef90",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageBufferModule\\ImageBufferModuleDisplay.xml",
+      "sha256": "d0ebc853812dbbe8afa84d5046ccdbf0add2a9642520609f18c09a45445dc2d9",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageBufferModule\\ToolItemInfo.xml",
+      "sha256": "ab1106b4f787f3dc13225373479dc9a4d9539fb58a6f7ed3656ab02b656dc3f5",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "ButtonSelecter",
+      "name": "CacheEnable"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "BufferCount"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

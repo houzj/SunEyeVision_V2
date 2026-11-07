@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>globalcameramodule 路 ui-preview.json</title><style>*{box-sizing:border-box}
+body{margin:0;background:#f6f7f9;color:#1d2129;font:14px/1.7 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:24px 20px 60px}
+.crumbs{font-size:13px;margin-bottom:14px}
+.crumbs a{color:#2563eb;text-decoration:none}
+.card{background:#fff;border:1px solid #e4e7ec;border-radius:10px;padding:26px 30px}
+h1,h2,h3,h4{line-height:1.4}
+h1{font-size:20px}h2{font-size:17px;margin-top:26px}h3{font-size:15px}
+table{border-collapse:collapse;margin:12px 0;width:100%;font-size:13px}
+td,th{border:1px solid #e4e7ec;padding:6px 10px;vertical-align:top}
+tr:nth-child(even) td{background:#fafbfc}
+code{background:#f1f3f5;border-radius:3px;padding:1px 5px;font-size:12.5px;font-family:Consolas,Menlo,monospace;color:#c7254e}
+pre{background:#282c34;color:#abb2bf;border-radius:6px;padding:14px 16px;overflow:auto;font-size:12.5px;line-height:1.6;font-family:Consolas,Menlo,monospace}
+pre code{background:none;color:inherit;padding:0}
+ul{padding-left:22px}
+blockquote{border-left:3px solid #d0d5da;margin:10px 0;padding:4px 14px;color:#5a636b;background:#fafbfc}
+hr{border:0;border-top:1px solid #e4e7ec;margin:18px 0}
+p{margin:8px 0}</style></head><body><div class="wrap"><nav class="crumbs"><a href="../../index.html">&#8592; 宸ュ叿绱㈠紩</a> &middot; <code>globalcameramodule</code></nav><div class="card"><h2>ui-preview.json</h2><pre>{
+  &quot;controls&quot;: [
+    {
+      &quot;type&quot;: &quot;BooleanBx&quot;,
+      &quot;name&quot;: &quot;UseGenTL&quot;
+    },
+    {
+      &quot;type&quot;: &quot;OpenFileForCameraDialog&quot;,
+      &quot;name&quot;: &quot;GenTLPath&quot;
+    },
+    {
+      &quot;type&quot;: &quot;RadioSelecter&quot;,
+      &quot;name&quot;: &quot;Type&quot;
+    },
+    {
+      &quot;type&quot;: &quot;EnumerationLxN&quot;,
+      &quot;name&quot;: &quot;CameraName&quot;
+    },
+    {
+      &quot;type&quot;: &quot;EnumerationIP&quot;,
+      &quot;name&quot;: &quot;LocalIP&quot;
+    },
+    {
+      &quot;type&quot;: &quot;IPString&quot;,
+      &quot;name&quot;: &quot;CameraIP&quot;
+    },
+    {
+      &quot;type&quot;: &quot;BooleanLx&quot;,
+      &quot;name&quot;: &quot;ConnectIP&quot;
+    },
+    {
+      &quot;type&quot;: &quot;Boolean&quot;,
+      &quot;name&quot;: &quot;AutoConnect&quot;
+    },
+    {
+      &quot;type&quot;: &quot;BooleanBx&quot;,
+      &quot;name&quot;: &quot;LoadUserset1&quot;
+    },
+    {
+      &quot;type&quot;: &quot;Integer&quot;,
+      &quot;name&quot;: &quot;LoadUserset1Delay&quot;
+    },
+    {
+      &quot;type&quot;: &quot;CommandWithTip&quot;,
+      &quot;name&quot;: &quot;RealTimeImgAcqCmd&quot;
+    },
+    {
+      &quot;type&quot;: &quot;ClockSource&quot;,
+      &quot;name&quot;: &quot;ClockSource2&quot;
+    },
+    {
+      &quot;type&quot;: &quot;MvsFeatureTree&quot;,
+      &quot;name&quot;: &quot;CamerParam&quot;
+    },
+    {
+      &quot;type&quot;: &quot;CameraPreview&quot;,
+      &quot;name&quot;: &quot;RealTimeImgAcq&quot;
+    },
+    {
+      &quot;type&quot;: &quot;String&quot;,
+      &quot;name&quot;: &quot;CameraType&quot;
+    },
+    {
+      &quot;type&quot;: &quot;String&quot;,
+      &quot;name&quot;: &quot;ManufacturerName&quot;
+    },
+    {
+      &quot;type&quot;: &quot;Command&quot;,
+      &quot;name&quot;: &quot;SaveParams&quot;
+    },
+    {
+      &quot;type&quot;: &quot;BooleanBxTips&quot;,
+      &quot;name&quot;: &quot;GrabStatus&quot;
+    },
+    {
+      &quot;type&quot;: &quot;EnumerationBx&quot;,
+      &quot;name&quot;: &quot;TriggerSelector&quot;
+    },
+    {
+      &quot;type&quot;: &quot;EnumerationBx&quot;,
+      &quot;name&quot;: &quot;TriggerMode&quot;
+    },
+    {
+      &quot;type&quot;: &quot;EnumerationBx&quot;,
+      &quot;name&quot;: &quot;TriggerSource&quot;
+    },
+    {
+      &quot;type&quot;: &quot;EnumerationBx&quot;,
+      &quot;name&quot;: &quot;TriggerSource_Basler&quot;
+    },
+    {
+      &quot;type&quot;: &quot;FloatBx&quot;,
+      &quot;name&quot;: &quot;TriggerDelay&quot;
+    },
+    {
+      &quot;type&quot;: &quot;FloatBx&quot;,
+      &quot;name&quot;: &quot;TriggerDelayAbs&quot;
+    },
+    {
+      &quot;type&quot;: &quot;Integer&quot;,
+      &quot;name&quot;: &quot;ConditionalTriggerNumber&quot;
+    },
+    {
+      &quot;type&quot;: &quot;Integer&quot;,
+      &quot;name&quot;: &quot;ConditionalTriggerTimeOut&quot;
+    },
+    {
+      &quot;type&quot;: &quot;IntegerBx&quot;,
+      &quot;name&quot;: &quot;Width&quot;
+    },
+    {
+      &quot;type&quot;: &quot;IntegerBx&quot;,
+      &quot;name&quot;: &quot;Height&quot;
+    },
+    {
+      &quot;type&quot;: &quot;EnumerationBx&quot;,
+      &quot;name&quot;: &quot;PixelFormat&quot;
+    },
+    {
+      &quot;type&quot;: &quot;Enumeration&quot;,
+      &quot;name&quot;: &quot;BayerCvtType&quot;
+    },
+    {
+      &quot;type&quot;: &quot;FloatBx&quot;,
+      &quot;name&quot;: &quot;AcquisitionFrameRate&quot;
+    },
+    {
+      &quot;type&quot;: &quot;FloatBx&quot;,
+      &quot;name&quot;: &quot;AcquisitionFrameRateAbs&quot;
+    },
+    {
+      &quot;type&quot;: &quot;StringBx&quot;,
+      &quot;name&quot;: &quot;ResultingFrameRate&quot;
+    },
+    {
+      &quot;type&quot;: &quot;StringBx&quot;,
+      &quot;name&quot;: &quot;ResultingFrameRateAbs&quot;
+    },
+    {
+      &quot;type&quot;: &quot;EnumerationBx&quot;,
+      &quot;name&quot;: &quot;ExposureAuto&quot;
+    },
+    {
+      &quot;type&quot;: &quot;FloatBx&quot;,
+      &quot;name&quot;: &quot;ExposureTime&quot;
+    },
+    {
+      &quot;type&quot;: &quot;FloatBx&quot;,
+      &quot;name&quot;: &quot;ExposureTimeAbs&quot;
+    },
+    {
+      &quot;type&quot;: &quot;FloatBx&quot;,
+      &quot;name&quot;: &quot;Gain&quot;
+    },
+    {
+      &quot;type&quot;: &quot;FloatBx&quot;,
+      &quot;name&quot;: &quot;Gain_CH250&quot;
+    },
+    {
+      &quot;type&quot;: &quot;EnumerationGain&quot;,
+      &quot;name&quot;: &quot;PreampGain&quot;
+    },
+    {
+      &quot;type&quot;: &quot;EnumerationBx&quot;,
+      &quot;name&quot;: &quot;PreampGain_CH250&quot;
+    },
+    {
+      &quot;type&quot;: &quot;ClockSource&quot;,
+      &quot;name&quot;: &quot;ClockSource1&quot;
+    },
+    {
+      &quot;type&quot;: &quot;EnumerationBx&quot;,
+      &quot;name&quot;: &quot;GainAuto&quot;
+    },
+    {
+      &quot;type&quot;: &quot;FloatBx&quot;,
+      &quot;name&quot;: &quot;AutoGainLowerLimit&quot;
+    },
+    {
+      &quot;type&quot;: &quot;FloatBx&quot;,
+      &quot;name&quot;: &quot;AutoGainUpperLimit&quot;
+    },
+    {
+      &quot;type&quot;: &quot;FloatBx&quot;,
+      &quot;name&quot;: &quot;GainRaw&quot;
+    },
+    {
+      &quot;type&quot;: &quot;FloatBx&quot;,
+      &quot;name&quot;: &quot;AutoGainRawLowerLimit&quot;
+    },
+    {
+      &quot;type&quot;: &quot;FloatBx&quot;,
+      &quot;name&quot;: &quot;AutoGainRawUpperLimit&quot;
+    },
+    {
+      &quot;type&quot;: &quot;BooleanBx&quot;,
+      &quot;name&quot;: &quot;GammaEnable&quot;
+    },
+    {
+      &quot;type&quot;: &quot;BooleanBx&quot;,
+      &quot;name&quot;: &quot;GammaEnabled&quot;
+    },
+    {
+      &quot;type&quot;: &quot;FloatBx&quot;,
+      &quot;name&quot;: &quot;Gamma&quot;
+    },
+    {
+      &quot;type&quot;: &quot;FloatBx&quot;,
+      &quot;name&quot;: &quot;Gamma_Smart&quot;
+    },
+    {
+      &quot;type&quot;: &quot;EnumerationBx&quot;,
+      &quot;name&quot;: &quot;GammaSelector&quot;
+    },
+    {
+      &quot;type&quot;: &quot;IntegerBx&quot;,
+      &quot;name&quot;: &quot;AcquisitionLineRate&quot;
+    },
+    {
+      &quot;type&quot;: &quot;StringBx&quot;,
+      &quot;name&quot;: &quot;ResultingLineRate&quot;
+    },
+    {
+      &quot;type&quot;: &quot;Enumeration&quot;,
+      &quot;name&quot;: &quot;CameraMold&quot;
+    },
+    {
+      &quot;type&quot;: &quot;Enumeration&quot;,
+      &quot;name&quot;: &quot;IOEnableElectricalLevel&quot;
+    },
+    {
+      &quot;type&quot;: &quot;Integer&quot;,
+      &quot;name&quot;: &quot;ReconnectTime&quot;
+    },
+    {
+      &quot;type&quot;: &quot;Integer&quot;,
+      &quot;name&quot;: &quot;SoftTriggerWaitTime&quot;
+    },
+    {
+      &quot;type&quot;: &quot;Integer&quot;,
+      &quot;name&quot;: &quot;ImageCacheNum&quot;
+    },
+    {
+      &quot;type&quot;: &quot;BooleanBx&quot;,
+      &quot;name&quot;: &quot;IsSendMsg2SDK&quot;
+    },
+    {
+      &quot;type&quot;: &quot;Integer&quot;,
+      &quot;name&quot;: &quot;WaitForConnectingTime&quot;
+    },
+    {
+      &quot;type&quot;: &quot;EnumerationBx&quot;,
+      &quot;name&quot;: &quot;LineSelector&quot;
+    },
+    {
+      &quot;type&quot;: &quot;EnumerationBx&quot;,
+      &quot;name&quot;: &quot;LineMode&quot;
+    },
+    {
+      &quot;type&quot;: &quot;EnumerationBx&quot;,
+      &quot;name&quot;: &quot;LineSelector_Smart&quot;
+    },
+    {
+      &quot;type&quot;: &quot;EnumerationBx&quot;,
+      &quot;name&quot;: &quot;LineSource&quot;
+    },
+    {
+      &quot;type&quot;: &quot;BooleanBx&quot;,
+      &quot;name&quot;: &quot;LineInverter&quot;
+    },
+    {
+      &quot;type&quot;: &quot;Command&quot;,
+      &quot;name&quot;: &quot;TriggerSoftware1&quot;
+    },
+    {
+      &quot;type&quot;: &quot;IntegerBx&quot;,
+      &quot;name&quot;: &quot;Strobe0Delay&quot;
+    },
+    {
+      &quot;type&quot;: &quot;IntegerBx&quot;,
+      &quot;name&quot;: &quot;Strobe1Delay&quot;
+    },
+    {
+      &quot;type&quot;: &quot;IntegerBx&quot;,
+      &quot;name&quot;: &quot;Strobe2Delay&quot;
+    },
+    {
+      &quot;type&quot;: &quot;IntegerBx&quot;,
+      &quot;name&quot;: &quot;Strobe0PulseWidth&quot;
+    },
+    {
+      &quot;type&quot;: &quot;IntegerBx&quot;,
+      &quot;name&quot;: &quot;Strobe1PulseWidth&quot;
+    },
+    {
+      &quot;type&quot;: &quot;IntegerBx&quot;,
+      &quot;name&quot;: &quot;Strobe2PulseWidth&quot;
+    },
+    {
+      &quot;type&quot;: &quot;BooleanBx&quot;,
+      &quot;name&quot;: &quot;FlashEnable&quot;
+    },
+    {
+      &quot;type&quot;: &quot;EnumerationBx&quot;,
+      &quot;name&quot;: &quot;LightMode&quot;
+    },
+    {
+      &quot;type&quot;: &quot;IntegerBx&quot;,
+      &quot;name&quot;: &quot;FlashTime&quot;
+    },
+    {
+      &quot;type&quot;: &quot;IntegerBx&quot;,
+      &quot;name&quot;: &quot;FlashDelay&quot;
+    },
+    {
+      &quot;type&quot;: &quot;IntegerBx&quot;,
+      &quot;name&quot;: &quot;FlashAhead&quot;
+    },
+    {
+      &quot;type&quot;: &quot;DynamicCameraParamList&quot;,
+      &quot;name&quot;: &quot;DynamiceList&quot;
+    }
+  ],
+  &quot;visibilityConditions&quot;: &quot;unknown&quot;,
+  &quot;category&quot;: &quot;extension-panels&quot;,
+  &quot;missing&quot;: [
+    &quot;原厂 UI 资源或 XAML 的逐控件绑定&quot;,
+    &quot;显隐触发器&quot;,
+    &quot;主题/悬停/折叠状态&quot;,
+    &quot;运行时尺寸与布局&quot;
+  ],
+  &quot;bindings&quot;: &quot;control names recovered; full binding expressions remain per algorithm/UI evidence&quot;,
+  &quot;previewKind&quot;: &quot;resource-control-evidence&quot;,
+  &quot;priority&quot;: &quot;P3&quot;,
+  &quot;themeStates&quot;: &quot;unknown&quot;,
+  &quot;toolId&quot;: &quot;globalcameramodule&quot;,
+  &quot;status&quot;: &quot;pending&quot;,
+  &quot;sourceEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalCameraModule\\GlobalCameraModule.xml&quot;,
+      &quot;sha256&quot;: &quot;8fa17298691dc1cbd2bba154797a21136458bdc29d0909b36bb199490b62af1f&quot;,
+      &quot;root&quot;: &quot;ParamRoot&quot;
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalCameraModule\\GlobalCameraModuleAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;09ccedef14ebf5ccf357139ece0f40e58589fcbe62f55409a60302fc4f44efe2&quot;,
+      &quot;root&quot;: &quot;AlgorithmParamList&quot;
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalCameraModule\\GlobalCameraModuleAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;130709b2773af7aa1a842dbadf2990eb4040c0ebdd32f511895a3b082bde9a5c&quot;,
+      &quot;root&quot;: &quot;AlgorithmTabRoot&quot;
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalCameraModule\\GlobalCameraModuleCs.xml&quot;,
+      &quot;sha256&quot;: &quot;04946097fd0f40a7d40c5e7c68b0633df66f0e87f9bc61dd9bb2329f33914c67&quot;,
+      &quot;root&quot;: &quot;doc&quot;
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalCameraModule\\GlobalCameraModuleDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;e6ccbb71a25fc46f62de084bc412d1cced9f4336b9516014726fe433c929b4f5&quot;,
+      &quot;root&quot;: &quot;ParamRoot&quot;
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalCameraModule\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;43f3e717bd9db5a425d38d0b2dd2876a53115edd30294b4bd6a0246f42279d8f&quot;,
+      &quot;root&quot;: &quot;ToolBoxItemData&quot;
+    }
+  ],
+  &quot;displayName&quot;: &quot;GlobalCameraModule&quot;,
+  &quot;note&quot;: &quot;此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。&quot;
+}</pre></div></div></body></html>

@@ -1,0 +1,1526 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>Apps.Style</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="buttonstyle\bottombuttonstyle.xaml" />
+    <Page Remove="buttonstyle\normalbuttonstyle.xaml" />
+    <Page Remove="buttonstyle\radiobuttonstyle.xaml" />
+    <Page Remove="buttonstyle\togglebuttonstyle.xaml" />
+    <Page Remove="checkboxstyle\checkboxstyle.xaml" />
+    <Page Remove="classicdatagridstyle\classicdatagridstyle.xaml" />
+    <Page Remove="comboboxstyle\comboboxstyle.xaml" />
+    <Page Remove="comboboxstyle\listviewcomboboxstyle.xaml" />
+    <Page Remove="datagridstyle\datagridstyle.xaml" />
+    <Page Remove="expanderstyle\expanderstyle.xaml" />
+    <Page Remove="itemscontrolstyle\itemscontrolstyle.xaml" />
+    <Page Remove="listboxstyle\listboxstyle.xaml" />
+    <Page Remove="listviewstyle\listviewstyle.xaml" />
+    <Page Remove="menustyle\menustyle.xaml" />
+    <Page Remove="passwordboxstyle\passwordboxstyle.xaml" />
+    <Page Remove="progressbarstyle\progressbarstyle.xaml" />
+    <Page Remove="radiobuttonstyle\classicalradiobutton.xaml" />
+    <Page Remove="radiobuttonstyle\radiobuttonstyle.xaml" />
+    <Page Remove="resourcedictionaries\globalresources.xaml" />
+    <Page Remove="scrollbarstyle\recscrollbarstyle.xaml" />
+    <Page Remove="scrollbarstyle\scrollbarstyle.xaml" />
+    <Page Remove="searchtextbox\searchtextboxstyle.xaml" />
+    <Page Remove="separatorstyle\separatorstyle.xaml" />
+    <Page Remove="tabcontrolstyle\tabcontrolstyle.xaml" />
+    <Page Remove="textblockstyle\textblockstyle.xaml" />
+    <Page Remove="textboxstyle\textboxstyle.xaml" />
+    <Page Remove="treeviewstyle\treeviewstyle.xaml" />
+    <Page Include="buttonstyle\bottombuttonstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="buttonstyle/bottombuttonstyle.xaml" />
+    <Page Include="buttonstyle\normalbuttonstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="buttonstyle/normalbuttonstyle.xaml" />
+    <Page Include="buttonstyle\radiobuttonstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="buttonstyle/radiobuttonstyle.xaml" />
+    <Page Include="buttonstyle\togglebuttonstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="buttonstyle/togglebuttonstyle.xaml" />
+    <Page Include="checkboxstyle\checkboxstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="checkboxstyle/checkboxstyle.xaml" />
+    <Page Include="classicdatagridstyle\classicdatagridstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="classicdatagridstyle/classicdatagridstyle.xaml" />
+    <Page Include="comboboxstyle\comboboxstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="comboboxstyle/comboboxstyle.xaml" />
+    <Page Include="comboboxstyle\listviewcomboboxstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="comboboxstyle/listviewcomboboxstyle.xaml" />
+    <Page Include="datagridstyle\datagridstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="datagridstyle/datagridstyle.xaml" />
+    <Page Include="expanderstyle\expanderstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="expanderstyle/expanderstyle.xaml" />
+    <Page Include="itemscontrolstyle\itemscontrolstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="itemscontrolstyle/itemscontrolstyle.xaml" />
+    <Page Include="listboxstyle\listboxstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="listboxstyle/listboxstyle.xaml" />
+    <Page Include="listviewstyle\listviewstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="listviewstyle/listviewstyle.xaml" />
+    <Page Include="menustyle\menustyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="menustyle/menustyle.xaml" />
+    <Page Include="passwordboxstyle\passwordboxstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="passwordboxstyle/passwordboxstyle.xaml" />
+    <Page Include="progressbarstyle\progressbarstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="progressbarstyle/progressbarstyle.xaml" />
+    <Page Include="radiobuttonstyle\classicalradiobutton.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="radiobuttonstyle/classicalradiobutton.xaml" />
+    <Page Include="radiobuttonstyle\radiobuttonstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="radiobuttonstyle/radiobuttonstyle.xaml" />
+    <Page Include="resourcedictionaries\globalresources.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="resourcedictionaries/globalresources.xaml" />
+    <Page Include="scrollbarstyle\recscrollbarstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="scrollbarstyle/recscrollbarstyle.xaml" />
+    <Page Include="scrollbarstyle\scrollbarstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="scrollbarstyle/scrollbarstyle.xaml" />
+    <Page Include="searchtextbox\searchtextboxstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="searchtextbox/searchtextboxstyle.xaml" />
+    <Page Include="separatorstyle\separatorstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="separatorstyle/separatorstyle.xaml" />
+    <Page Include="tabcontrolstyle\tabcontrolstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="tabcontrolstyle/tabcontrolstyle.xaml" />
+    <Page Include="textblockstyle\textblockstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="textblockstyle/textblockstyle.xaml" />
+    <Page Include="textboxstyle\textboxstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="textboxstyle/textboxstyle.xaml" />
+    <Page Include="treeviewstyle\treeviewstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="treeviewstyle/treeviewstyle.xaml" />
+    <Resource Remove="resources\11.png" />
+    <Resource Remove="resources\1l.png" />
+    <Resource Remove="resources\1u.png" />
+    <Resource Remove="resources\2l1.png" />
+    <Resource Remove="resources\2l2.png" />
+    <Resource Remove="resources\2u1.png" />
+    <Resource Remove="resources\2u2.png" />
+    <Resource Remove="resources\4l.png" />
+    <Resource Remove="resources\4u.png" />
+    <Resource Remove="resources\6l1.png" />
+    <Resource Remove="resources\6l2.png" />
+    <Resource Remove="resources\6u1.png" />
+    <Resource Remove="resources\6u2.png" />
+    <Resource Remove="resources\add_click.png" />
+    <Resource Remove="resources\add_normal.png" />
+    <Resource Remove="resources\arrow_right.png" />
+    <Resource Remove="resources\arrow_up.png" />
+    <Resource Remove="resources\bg_painting_focus.png" />
+    <Resource Remove="resources\bottombar_abnormal.png" />
+    <Resource Remove="resources\bottombar_config.png" />
+    <Resource Remove="resources\bottombar_run.png" />
+    <Resource Remove="resources\btnbg_click.png" />
+    <Resource Remove="resources\btnbg_hover.png" />
+    <Resource Remove="resources\btn_combine_click.png" />
+    <Resource Remove="resources\btn_combine_disable.png" />
+    <Resource Remove="resources\btn_combine_normal.png" />
+    <Resource Remove="resources\btn_help.png" />
+    <Resource Remove="resources\btn_split_click.png" />
+    <Resource Remove="resources\btn_split_disable.png" />
+    <Resource Remove="resources\btn_split_normal.png" />
+    <Resource Remove="resources\btn_新建模板-_disable.png" />
+    <Resource Remove="resources\btn_新建模板_click.png" />
+    <Resource Remove="resources\btn_新建模板_normal.png" />
+    <Resource Remove="resources\btn_高级参数_downarrow.png" />
+    <Resource Remove="resources\btn_高级参数_uparrow.png" />
+    <Resource Remove="resources\check-box_half.png" />
+    <Resource Remove="resources\check-box_off.png" />
+    <Resource Remove="resources\check-box_on.png" />
+    <Resource Remove="resources\check2-box_off.png" />
+    <Resource Remove="resources\check2-box_on.png" />
+    <Resource Remove="resources\chexiao.png" />
+    <Resource Remove="resources\chexiao_hover.png" />
+    <Resource Remove="resources\combo_ic_triangle_click.png" />
+    <Resource Remove="resources\combo_ic_triangle_normal.png" />
+    <Resource Remove="resources\combo_ic_关联_click.png" />
+    <Resource Remove="resources\combo_ic_关联_hover.png" />
+    <Resource Remove="resources\combo_ic_关联_normal.png" />
+    <Resource Remove="resources\combo_list_ic_downarrow.png" />
+    <Resource Remove="resources\combo_list_ic_rightarrow.png" />
+    <Resource Remove="resources\copy.png" />
+    <Resource Remove="resources\copy_click.png" />
+    <Resource Remove="resources\delete_click.png" />
+    <Resource Remove="resources\delete_normal.png" />
+    <Resource Remove="resources\delete_orange.png" />
+    <Resource Remove="resources\edit_click.png" />
+    <Resource Remove="resources\edit_disable.png" />
+    <Resource Remove="resources\edit_normal.png" />
+    <Resource Remove="resources\fine-tuning-box_up_disable.png" />
+    <Resource Remove="resources\fine-tuning-box_up_focus.png" />
+    <Resource Remove="resources\fine-tuning-box_up_normal.png" />
+    <Resource Remove="resources\frontend\back_click.png" />
+    <Resource Remove="resources\frontend\back_normal.png" />
+    <Resource Remove="resources\frontend\ic_custom_click.png" />
+    <Resource Remove="resources\frontend\ic_custom_disable.png" />
+    <Resource Remove="resources\frontend\ic_custom_normal.png" />
+    <Resource Remove="resources\frontend\ic_delete_click.png" />
+    <Resource Remove="resources\frontend\ic_delete_normal.png" />
+    <Resource Remove="resources\frontend\ic_fronted_上一层_click.png" />
+    <Resource Remove="resources\frontend\ic_fronted_上一层_disable.png" />
+    <Resource Remove="resources\frontend\ic_fronted_上一层_normal.png" />
+    <Resource Remove="resources\frontend\ic_fronted_下一层_click.png" />
+    <Resource Remove="resources\frontend\ic_fronted_下一层_disable.png" />
+    <Resource Remove="resources\frontend\ic_fronted_下一层_normal.png" />
+    <Resource Remove="resources\frontend\ic_fronted_保存_click.png" />
+    <Resource Remove="resources\frontend\ic_fronted_保存_disable.png" />
+    <Resource Remove="resources\frontend\ic_fronted_保存_normal.png" />
+    <Resource Remove="resources\frontend\ic_fronted_保存为模版_click.png" />
+    <Resource Remove="resources\frontend\ic_fronted_保存为模版_disable.png" />
+    <Resource Remove="resources\frontend\ic_fronted_保存为模版_normal.png" />
+    <Resource Remove="resources\frontend\ic_fronted_分布方式_click.png" />
+    <Resource Remove="resources\frontend\ic_fronted_分布方式_disable.png" />
+    <Resource Remove="resources\frontend\ic_fronted_分布方式_normal.png" />
+    <Resource Remove="resources\frontend\ic_fronted_对齐方式_click.png" />
+    <Resource Remove="resources\frontend\ic_fronted_对齐方式_disable.png" />
+    <Resource Remove="resources\frontend\ic_fronted_对齐方式_normal.png" />
+    <Resource Remove="resources\frontend\ic_fronted_布局设置_click.png" />
+    <Resource Remove="resources\frontend\ic_fronted_布局设置_disable.png" />
+    <Resource Remove="resources\frontend\ic_fronted_布局设置_normal.png" />
+    <Resource Remove="resources\frontend\ic_fronted_底层_click.png" />
+    <Resource Remove="resources\frontend\ic_fronted_底层_disable.png" />
+    <Resource Remove="resources\frontend\ic_fronted_底层_normal.png" />
+    <Resource Remove="resources\frontend\ic_fronted_撤销_click.png" />
+    <Resource Remove="resources\frontend\ic_fronted_撤销_disable.png" />
+    <Resource Remove="resources\frontend\ic_fronted_撤销_normal.png" />
+    <Resource Remove="resources\frontend\ic_fronted_文件_click.png" />
+    <Resource Remove="resources\frontend\ic_fronted_文件_disable.png" />
+    <Resource Remove="resources\frontend\ic_fronted_文件_normal.png" />
+    <Resource Remove="resources\frontend\ic_fronted_方案模版_click.png" />
+    <Resource Remove="resources\frontend\ic_fronted_方案模版_disable.png" />
+    <Resource Remove="resources\frontend\ic_fronted_方案模版_normal.png" />
+    <Resource Remove="resources\frontend\ic_fronted_清空_click.png" />
+    <Resource Remove="resources\frontend\ic_fronted_清空_disable.png" />
+    <Resource Remove="resources\frontend\ic_fronted_清空_normal.png" />
+    <Resource Remove="resources\frontend\ic_fronted_适合像素_click.png" />
+    <Resource Remove="resources\frontend\ic_fronted_适合像素_disable.png" />
+    <Resource Remove="resources\frontend\ic_fronted_适合像素_normal.png" />
+    <Resource Remove="resources\frontend\ic_fronted_重做_click.png" />
+    <Resource Remove="resources\frontend\ic_fronted_重做_disable.png" />
+    <Resource Remove="resources\frontend\ic_fronted_重做_normal.png" />
+    <Resource Remove="resources\frontend\ic_fronted_顶层_click.png" />
+    <Resource Remove="resources\frontend\ic_fronted_顶层_disable.png" />
+    <Resource Remove="resources\frontend\ic_fronted_顶层_normal.png" />
+    <Resource Remove="resources\frontend\ic_home-page切换_click.png" />
+    <Resource Remove="resources\frontend\ic_home-page切换_normal.png" />
+    <Resource Remove="resources\frontend\ic_propertyedit.png" />
+    <Resource Remove="resources\frontend\ic_propertyedit_highlight.png" />
+    <Resource Remove="resources\frontend\ic_topbar_运行fronted_click.png" />
+    <Resource Remove="resources\frontend\ic_topbar_运行fronted_normal.png" />
+    <Resource Remove="resources\frontend\ic_上一层_click.png" />
+    <Resource Remove="resources\frontend\ic_上一层_normal.png" />
+    <Resource Remove="resources\frontend\ic_下一层_click.png" />
+    <Resource Remove="resources\frontend\ic_下一层_normal.png" />
+    <Resource Remove="resources\frontend\ic_右对齐.png" />
+    <Resource Remove="resources\frontend\ic_右对齐_frontend.png" />
+    <Resource Remove="resources\frontend\ic_右对齐_frontend_click.png" />
+    <Resource Remove="resources\frontend\ic_垂直居中.png" />
+    <Resource Remove="resources\frontend\ic_垂直居中对齐.png" />
+    <Resource Remove="resources\frontend\ic_垂直居中对齐_frontend.png" />
+    <Resource Remove="resources\frontend\ic_垂直居中对齐_frontend_click.png" />
+    <Resource Remove="resources\frontend\ic_对齐方式_click.png" />
+    <Resource Remove="resources\frontend\ic_对齐方式_normal.png" />
+    <Resource Remove="resources\frontend\ic_左对齐.png" />
+    <Resource Remove="resources\frontend\ic_左对齐_frontend.png" />
+    <Resource Remove="resources\frontend\ic_左对齐_frontend_click.png" />
+    <Resource Remove="resources\frontend\ic_底层_click.png" />
+    <Resource Remove="resources\frontend\ic_底层_normal.png" />
+    <Resource Remove="resources\frontend\ic_底部对齐.png" />
+    <Resource Remove="resources\frontend\ic_底部对齐_frontend.png" />
+    <Resource Remove="resources\frontend\ic_底部对齐_frontend_click.png" />
+    <Resource Remove="resources\frontend\ic_水平居中.png" />
+    <Resource Remove="resources\frontend\ic_水平居中对齐.png" />
+    <Resource Remove="resources\frontend\ic_水平居中对齐_frontend.png" />
+    <Resource Remove="resources\frontend\ic_水平居中对齐_frontend_click.png" />
+    <Resource Remove="resources\frontend\ic_顶层_click.png" />
+    <Resource Remove="resources\frontend\ic_顶层_normal.png" />
+    <Resource Remove="resources\frontend\ic_顶部对齐.png" />
+    <Resource Remove="resources\frontend\ic_顶部对齐_frontend.png" />
+    <Resource Remove="resources\frontend\ic_顶部对齐_frontend_click.png" />
+    <Resource Remove="resources\frontend\inputbox_combo_ic_triangle_focus.png" />
+    <Resource Remove="resources\frontend\inputbox_combo_ic_triangle_normal.png" />
+    <Resource Remove="resources\frontend\menu_normal.png" />
+    <Resource Remove="resources\frontend\notstayontop_click.png" />
+    <Resource Remove="resources\frontend\notstayontop_disable.png" />
+    <Resource Remove="resources\frontend\notstayontop_normal.png" />
+    <Resource Remove="resources\frontend\ok和ng.png" />
+    <Resource Remove="resources\frontend\preview_click.png" />
+    <Resource Remove="resources\frontend\preview_normal.png" />
+    <Resource Remove="resources\frontend\stayontop_click.png" />
+    <Resource Remove="resources\frontend\stayontop_disable.png" />
+    <Resource Remove="resources\frontend\stayontop_normal.png" />
+    <Resource Remove="resources\frontend\关联性.png" />
+    <Resource Remove="resources\frontend\图像.png" />
+    <Resource Remove="resources\frontend\图像运行_图片.png" />
+    <Resource Remove="resources\frontend\图片.png" />
+    <Resource Remove="resources\frontend\按钮.png" />
+    <Resource Remove="resources\frontend\文本框.png" />
+    <Resource Remove="resources\frontend\点击效果.png" />
+    <Resource Remove="resources\frontend\矩形.png" />
+    <Resource Remove="resources\frontend\表格.png" />
+    <Resource Remove="resources\frontend\运行控制.png" />
+    <Resource Remove="resources\frontend\运行控制_停止运行.png" />
+    <Resource Remove="resources\frontend\运行控制_多次运行.png" />
+    <Resource Remove="resources\frontend\运行控制单次_运行.png" />
+    <Resource Remove="resources\frontend\运行状态.png" />
+    <Resource Remove="resources\frontend\运行状态_图标.png" />
+    <Resource Remove="resources\frontend\适配分辨率_normal.png" />
+    <Resource Remove="resources\frontend\适配分辨率_点击.png" />
+    <Resource Remove="resources\fullscreen.png" />
+    <Resource Remove="resources\geometry_circle_clickoff.png" />
+    <Resource Remove="resources\geometry_circle_clickon.png" />
+    <Resource Remove="resources\geometry_line_clickoff.png" />
+    <Resource Remove="resources\geometry_line_clickon.png" />
+    <Resource Remove="resources\geometry_point_clickoff.png" />
+    <Resource Remove="resources\geometry_point_clickon.png" />
+    <Resource Remove="resources\gridbrushimg.png" />
+    <Resource Remove="resources\group_bg.png" />
+    <Resource Remove="resources\group_bg_focus.png" />
+    <Resource Remove="resources\group_bg_forbidden.png" />
+    <Resource Remove="resources\group_bg_load_fail.png" />
+    <Resource Remove="resources\group_异常.png" />
+    <Resource Remove="resources\group_异常选中.png" />
+    <Resource Remove="resources\group_正常.png" />
+    <Resource Remove="resources\group_正常选中.png" />
+    <Resource Remove="resources\ic_1-1_normal.png" />
+    <Resource Remove="resources\ic_add-list_click.png" />
+    <Resource Remove="resources\ic_add-list_disable.png" />
+    <Resource Remove="resources\ic_add-list_normal.png" />
+    <Resource Remove="resources\ic_add_click.png" />
+    <Resource Remove="resources\ic_add_disable.png" />
+    <Resource Remove="resources\ic_add_list_click.png" />
+    <Resource Remove="resources\ic_add_list_disable.png" />
+    <Resource Remove="resources\ic_add_list_normal.png" />
+    <Resource Remove="resources\ic_add_normal.png" />
+    <Resource Remove="resources\ic_align_bottom_normal.png" />
+    <Resource Remove="resources\ic_align_center_normal.png" />
+    <Resource Remove="resources\ic_align_left_normal.png" />
+    <Resource Remove="resources\ic_align_middle_normal.png" />
+    <Resource Remove="resources\ic_align_right_normal.png" />
+    <Resource Remove="resources\ic_align_top_normal.png" />
+    <Resource Remove="resources\ic_bottom-bar_flow-view_click.png" />
+    <Resource Remove="resources\ic_bottom-bar_flow-view_disable.png" />
+    <Resource Remove="resources\ic_bottom-bar_flow-view_normal.png" />
+    <Resource Remove="resources\ic_btn_delete_click.png" />
+    <Resource Remove="resources\ic_btn_delete_disable.png" />
+    <Resource Remove="resources\ic_btn_delete_normal.png" />
+    <Resource Remove="resources\ic_btn_edit_click.png" />
+    <Resource Remove="resources\ic_btn_edit_disable.png" />
+    <Resource Remove="resources\ic_btn_edit_normal.png" />
+    <Resource Remove="resources\ic_btn_edit切换_click.png" />
+    <Resource Remove="resources\ic_btn_edit切换_disable.png" />
+    <Resource Remove="resources\ic_btn_edit切换_normal.png" />
+    <Resource Remove="resources\ic_btn_export_click.png" />
+    <Resource Remove="resources\ic_btn_export_disable.png" />
+    <Resource Remove="resources\ic_btn_export_normal.png" />
+    <Resource Remove="resources\ic_btn_initialize_click.png" />
+    <Resource Remove="resources\ic_btn_initialize_normal.png" />
+    <Resource Remove="resources\ic_btn_link切换_click.png" />
+    <Resource Remove="resources\ic_btn_link切换_disable.png" />
+    <Resource Remove="resources\ic_btn_link切换_normal.png" />
+    <Resource Remove="resources\ic_btn_toolbar_add_disable.png" />
+    <Resource Remove="resources\ic_btn_toolbar_add_normal.png" />
+    <Resource Remove="resources\ic_btn_toolbar_add_select.png" />
+    <Resource Remove="resources\ic_btn_toolbar_delete_disable.png" />
+    <Resource Remove="resources\ic_btn_toolbar_delete_normal.png" />
+    <Resource Remove="resources\ic_btn_toolbar_delete_select.png" />
+    <Resource Remove="resources\ic_camera-settings_click.png" />
+    <Resource Remove="resources\ic_camera-settings_disable.png" />
+    <Resource Remove="resources\ic_camera-settings_normal.png" />
+    <Resource Remove="resources\ic_character-filter_click.png" />
+    <Resource Remove="resources\ic_character-filter_disable.png" />
+    <Resource Remove="resources\ic_character-filter_normal.png" />
+    <Resource Remove="resources\ic_check_box_off.png" />
+    <Resource Remove="resources\ic_check_box_on.png" />
+    <Resource Remove="resources\ic_closegrey32_click.png" />
+    <Resource Remove="resources\ic_closegrey32_normal.png" />
+    <Resource Remove="resources\ic_copy_click.png" />
+    <Resource Remove="resources\ic_copy_normal.png" />
+    <Resource Remove="resources\ic_custom_focus.png" />
+    <Resource Remove="resources\ic_custom_normal.png" />
+    <Resource Remove="resources\ic_cycle_right.png" />
+    <Resource Remove="resources\ic_cycle_right_disable.png" />
+    <Resource Remove="resources\ic_dashboard.png" />
+    <Resource Remove="resources\ic_dashboard_异常.png" />
+    <Resource Remove="resources\ic_delete-line_click.png" />
+    <Resource Remove="resources\ic_delete_click.png" />
+    <Resource Remove="resources\ic_delete_disable.png" />
+    <Resource Remove="resources\ic_delete_normal.png" />
+    <Resource Remove="resources\ic_dialog_allfold_click.png" />
+    <Resource Remove="resources\ic_dialog_allfold_disable.png" />
+    <Resource Remove="resources\ic_dialog_allfold_normal.png" />
+    <Resource Remove="resources\ic_dialog_allunfold_click.png" />
+    <Resource Remove="resources\ic_dialog_allunfold_disable.png" />
+    <Resource Remove="resources\ic_dialog_allunfold_normal.png" />
+    <Resource Remove="resources\ic_dialog_expandarrows_click.png" />
+    <Resource Remove="resources\ic_dialog_expandarrows_disable.png" />
+    <Resource Remove="resources\ic_dialog_expandarrows_normal.png" />
+    <Resource Remove="resources\ic_dialog_ftpcheck_click.png" />
+    <Resource Remove="resources\ic_dialog_ftpcheck_normal.png" />
+    <Resource Remove="resources\ic_dialog_ftplink_disable.png" />
+    <Resource Remove="resources\ic_dialog_image_draw-sector_click.png" />
+    <Resource Remove="resources\ic_dialog_image_draw-sector_disable.png" />
+    <Resource Remove="resources\ic_dialog_image_draw-sector_normal.png" />
+    <Resource Remove="resources\ic_dialog_mark_disable.png" />
+    <Resource Remove="resources\ic_dialog_mark_normal.png" />
+    <Resource Remove="resources\ic_dialog_roi_阵列圆_disable.png" />
+    <Resource Remove="resources\ic_dialog_roi_阵列圆_focus.png" />
+    <Resource Remove="resources\ic_dialog_roi_阵列圆_normal.png" />
+    <Resource Remove="resources\ic_dialog_sync_click.png" />
+    <Resource Remove="resources\ic_dialog_sync_disable.png" />
+    <Resource Remove="resources\ic_dialog_sync_normal.png" />
+    <Resource Remove="resources\ic_dialog_tabadd_click.png" />
+    <Resource Remove="resources\ic_dialog_tabadd_disable.png" />
+    <Resource Remove="resources\ic_dialog_tabadd_normal.png" />
+    <Resource Remove="resources\ic_dialog_坐标系_click.png" />
+    <Resource Remove="resources\ic_dialog_坐标系_disable.png" />
+    <Resource Remove="resources\ic_dialog_坐标系_normal.png" />
+    <Resource Remove="resources\ic_down_click.png" />
+    <Resource Remove="resources\ic_down_disable.png" />
+    <Resource Remove="resources\ic_down_normal.png" />
+    <Resource Remove="resources\ic_edit2_click.png" />
+    <Resource Remove="resources\ic_edit2_disable.png" />
+    <Resource Remove="resources\ic_edit2_normal.png" />
+    <Resource Remove="resources\ic_edit_click.png" />
+    <Resource Remove="resources\ic_edit_disable.png" />
+    <Resource Remove="resources\ic_edit_normal.png" />
+    <Resource Remove="resources\ic_empty.png" />
+    <Resource Remove="resources\ic_empty_click.png" />
+    <Resource Remove="resources\ic_empty_disable.png" />
+    <Resource Remove="resources\ic_empty_normal.png" />
+    <Resource Remove="resources\ic_execute-to-ng_click.png" />
+    <Resource Remove="resources\ic_execute-to-ng_disable.png" />
+    <Resource Remove="resources\ic_execute-to-ng_normal.png" />
+    <Resource Remove="resources\ic_execute_hover.png" />
+    <Resource Remove="resources\ic_expand_click.png" />
+    <Resource Remove="resources\ic_expand_disable.png" />
+    <Resource Remove="resources\ic_expand_normal.png" />
+    <Resource Remove="resources\ic_file-export_click.png" />
+    <Resource Remove="resources\ic_file-export_disable.png" />
+    <Resource Remove="resources\ic_file-export_normal.png" />
+    <Resource Remove="resources\ic_flow_group_notice.png" />
+    <Resource Remove="resources\ic_four_focus.png" />
+    <Resource Remove="resources\ic_four_normal.png" />
+    <Resource Remove="resources\ic_group_configuration_click.png" />
+    <Resource Remove="resources\ic_group_configuration_disable.png" />
+    <Resource Remove="resources\ic_group_configuration_normal.png" />
+    <Resource Remove="resources\ic_hu_add_click.png" />
+    <Resource Remove="resources\ic_hu_add_disable.png" />
+    <Resource Remove="resources\ic_hu_add_hover.png" />
+    <Resource Remove="resources\ic_hu_add_normal.png" />
+    <Resource Remove="resources\ic_image-fold_click.png" />
+    <Resource Remove="resources\ic_image-fold_disable.png" />
+    <Resource Remove="resources\ic_image-fold_normal.png" />
+    <Resource Remove="resources\ic_image-unfold_click.png" />
+    <Resource Remove="resources\ic_image-unfold_disable.png" />
+    <Resource Remove="resources\ic_image-unfold_normal.png" />
+    <Resource Remove="resources\ic_image_checked.png" />
+    <Resource Remove="resources\ic_image_unchecked.png" />
+    <Resource Remove="resources\ic_image_单画幅_click.png" />
+    <Resource Remove="resources\ic_image_单画幅_disable.png" />
+    <Resource Remove="resources\ic_image_单画幅_normal.png" />
+    <Resource Remove="resources\ic_image_双画幅_click.png" />
+    <Resource Remove="resources\ic_image_双画幅_disable.png" />
+    <Resource Remove="resources\ic_image_双画幅_normal.png" />
+    <Resource Remove="resources\ic_item_add_disable.png" />
+    <Resource Remove="resources\ic_item_add_focus.png" />
+    <Resource Remove="resources\ic_item_add_hover.png" />
+    <Resource Remove="resources\ic_item_add_normal.png" />
+    <Resource Remove="resources\ic_item_more_disable.png" />
+    <Resource Remove="resources\ic_item_more_focus.png" />
+    <Resource Remove="resources\ic_item_more_hover.png" />
+    <Resource Remove="resources\ic_item_more_normal.png" />
+    <Resource Remove="resources\ic_light-off_click.png" />
+    <Resource Remove="resources\ic_light-off_disable.png" />
+    <Resource Remove="resources\ic_light-off_normal.png" />
+    <Resource Remove="resources\ic_light-open_click.png" />
+    <Resource Remove="resources\ic_light-open_disable.png" />
+    <Resource Remove="resources\ic_light-open_normal.png" />
+    <Resource Remove="resources\ic_link_click.png" />
+    <Resource Remove="resources\ic_link_normal.png" />
+    <Resource Remove="resources\ic_local-variable_click.png" />
+    <Resource Remove="resources\ic_local-variable_disable.png" />
+    <Resource Remove="resources\ic_local-variable_hover.png" />
+    <Resource Remove="resources\ic_local-variable_normal.png" />
+    <Resource Remove="resources\ic_lock.png" />
+    <Resource Remove="resources\ic_lock_disable.png" />
+    <Resource Remove="resources\ic_lock_hover.png" />
+    <Resource Remove="resources\ic_lock_normal.png" />
+    <Resource Remove="resources\ic_log_delete_click.png" />
+    <Resource Remove="resources\ic_log_delete_disable.png" />
+    <Resource Remove="resources\ic_log_delete_normal.png" />
+    <Resource Remove="resources\ic_log_fold_click.png" />
+    <Resource Remove="resources\ic_log_fold_disable.png" />
+    <Resource Remove="resources\ic_log_fold_normal.png" />
+    <Resource Remove="resources\ic_log_unfold_click.png" />
+    <Resource Remove="resources\ic_log_unfold_disable.png" />
+    <Resource Remove="resources\ic_log_unfold_normal.png" />
+    <Resource Remove="resources\ic_loop-execution_hover.png" />
+    <Resource Remove="resources\ic_modal_communication_click.png" />
+    <Resource Remove="resources\ic_modal_communication_disable.png" />
+    <Resource Remove="resources\ic_modal_communication_normal.png" />
+    <Resource Remove="resources\ic_modal_视觉控制器_click.png" />
+    <Resource Remove="resources\ic_modal_视觉控制器_disable.png" />
+    <Resource Remove="resources\ic_modal_视觉控制器_normal.png" />
+    <Resource Remove="resources\ic_more--option_click.png" />
+    <Resource Remove="resources\ic_more--option_disable.png" />
+    <Resource Remove="resources\ic_more--option_nor.png" />
+    <Resource Remove="resources\ic_more_focus.png" />
+    <Resource Remove="resources\ic_more_normal.png" />
+    <Resource Remove="resources\ic_new-application.png" />
+    <Resource Remove="resources\ic_new-application_click.png" />
+    <Resource Remove="resources\ic_new-application_hover.png" />
+    <Resource Remove="resources\ic_note_bottom_click.png" />
+    <Resource Remove="resources\ic_note_bottom_disable.png" />
+    <Resource Remove="resources\ic_note_bottom_normal.png" />
+    <Resource Remove="resources\ic_note_drawnotebox_click.png" />
+    <Resource Remove="resources\ic_note_drawnotebox_normal.png" />
+    <Resource Remove="resources\ic_note_edit_click.png" />
+    <Resource Remove="resources\ic_note_edit_hover.png" />
+    <Resource Remove="resources\ic_note_edit_normal.png" />
+    <Resource Remove="resources\ic_note_search_click.png" />
+    <Resource Remove="resources\ic_note_search_hover.png" />
+    <Resource Remove="resources\ic_note_search_normal.png" />
+    <Resource Remove="resources\ic_note_top_click.png" />
+    <Resource Remove="resources\ic_note_top_disable.png" />
+    <Resource Remove="resources\ic_note_top_normal.png" />
+    <Resource Remove="resources\ic_one_focus.png" />
+    <Resource Remove="resources\ic_one_normal.png" />
+    <Resource Remove="resources\ic_operate_more_click.png" />
+    <Resource Remove="resources\ic_operate_more_disable.png" />
+    <Resource Remove="resources\ic_operate_more_normal.png" />
+    <Resource Remove="resources\ic_picselected.png" />
+    <Resource Remove="resources\ic_play_多流程_click.png" />
+    <Resource Remove="resources\ic_play_多流程_disable.png" />
+    <Resource Remove="resources\ic_play_多流程_hover.png" />
+    <Resource Remove="resources\ic_play_多流程_normal.png" />
+    <Resource Remove="resources\ic_product-solution_disable.png" />
+    <Resource Remove="resources\ic_product-solution_focus.png" />
+    <Resource Remove="resources\ic_product-solution_normal.png" />
+    <Resource Remove="resources\ic_rendering_disable.png" />
+    <Resource Remove="resources\ic_rendering_focus.png" />
+    <Resource Remove="resources\ic_rendering_normal.png" />
+    <Resource Remove="resources\ic_retract_click.png" />
+    <Resource Remove="resources\ic_retract_disable.png" />
+    <Resource Remove="resources\ic_retract_normal.png" />
+    <Resource Remove="resources\ic_rightarrow32_click.png" />
+    <Resource Remove="resources\ic_rightarrow32_normal.png" />
+    <Resource Remove="resources\ic_save_click.png" />
+    <Resource Remove="resources\ic_save_normal.png" />
+    <Resource Remove="resources\ic_screen_click.png" />
+    <Resource Remove="resources\ic_screen_disable.png" />
+    <Resource Remove="resources\ic_screen_normal.png" />
+    <Resource Remove="resources\ic_search_click.png" />
+    <Resource Remove="resources\ic_search_disable.png" />
+    <Resource Remove="resources\ic_search_hover.png" />
+    <Resource Remove="resources\ic_search_normal.png" />
+    <Resource Remove="resources\ic_senddata_click.png" />
+    <Resource Remove="resources\ic_senddata_disable.png" />
+    <Resource Remove="resources\ic_senddata_normal.png" />
+    <Resource Remove="resources\ic_six2_focus.png" />
+    <Resource Remove="resources\ic_six2_normal.png" />
+    <Resource Remove="resources\ic_six_focus.png" />
+    <Resource Remove="resources\ic_six_normal.png" />
+    <Resource Remove="resources\ic_stopgrab_hover.png" />
+    <Resource Remove="resources\ic_tab_downarrow_click.png" />
+    <Resource Remove="resources\ic_tab_downarrow_disable.png" />
+    <Resource Remove="resources\ic_tab_downarrow_hover.png" />
+    <Resource Remove="resources\ic_tab_downarrow_normal.png" />
+    <Resource Remove="resources\ic_tab_group_configuration_click.png" />
+    <Resource Remove="resources\ic_tab_group_configuration_disable.png" />
+    <Resource Remove="resources\ic_tab_group_configuration_hover.png" />
+    <Resource Remove="resources\ic_tab_group_configuration_normal.png" />
+    <Resource Remove="resources\ic_toolbar_crosshelperline_disable.png" />
+    <Resource Remove="resources\ic_toolbar_crosshelperline_focus.png" />
+    <Resource Remove="resources\ic_toolbar_crosshelperline_normal.png" />
+    <Resource Remove="resources\ic_toolbar_empty_disable.png" />
+    <Resource Remove="resources\ic_toolbar_empty_focus.png" />
+    <Resource Remove="resources\ic_toolbar_empty_normal.png" />
+    <Resource Remove="resources\ic_toolbar_hide_disable.png" />
+    <Resource Remove="resources\ic_toolbar_hide_focus.png" />
+    <Resource Remove="resources\ic_toolbar_hide_normal.png" />
+    <Resource Remove="resources\ic_toolbar_see_disable.png" />
+    <Resource Remove="resources\ic_toolbar_see_focus.png" />
+    <Resource Remove="resources\ic_toolbar_see_normal.png" />
+    <Resource Remove="resources\ic_topbar_execute_disable.png" />
+    <Resource Remove="resources\ic_topbar_execute_normal.png" />
+    <Resource Remove="resources\ic_topbar_folder_dis.png" />
+    <Resource Remove="resources\ic_topbar_folder_disable.png" />
+    <Resource Remove="resources\ic_topbar_folder_disable_ng.png" />
+    <Resource Remove="resources\ic_topbar_folder_disable_ok.png" />
+    <Resource Remove="resources\ic_topbar_folder_nor.png" />
+    <Resource Remove="resources\ic_topbar_folder_normal.png" />
+    <Resource Remove="resources\ic_topbar_folder_normal_ng.png" />
+    <Resource Remove="resources\ic_topbar_folder_normal_ok.png" />
+    <Resource Remove="resources\ic_topbar_folder_sel.png" />
+    <Resource Remove="resources\ic_topbar_framechange_disable.png" />
+    <Resource Remove="resources\ic_topbar_framechange_normal.png" />
+    <Resource Remove="resources\ic_topbar_loop-execution_disable.png" />
+    <Resource Remove="resources\ic_topbar_loop-execution_normal.png" />
+    <Resource Remove="resources\ic_topbar_see_disable.png" />
+    <Resource Remove="resources\ic_topbar_see_normal.png" />
+    <Resource Remove="resources\ic_topbar_stopgrab_disable.png" />
+    <Resource Remove="resources\ic_topbar_stopgrab_normal.png" />
+    <Resource Remove="resources\ic_topbar_vm-see_normal.png" />
+    <Resource Remove="resources\ic_top_click.png" />
+    <Resource Remove="resources\ic_top_disable.png" />
+    <Resource Remove="resources\ic_top_normal.png" />
+    <Resource Remove="resources\ic_triggering_disable.png" />
+    <Resource Remove="resources\ic_triggering_focus.png" />
+    <Resource Remove="resources\ic_triggering_normal.png" />
+    <Resource Remove="resources\ic_two2_disable.png" />
+    <Resource Remove="resources\ic_two2_focus.png" />
+    <Resource Remove="resources\ic_two2_normal.png" />
+    <Resource Remove="resources\ic_two_focus.png" />
+    <Resource Remove="resources\ic_two_normal.png" />
+    <Resource Remove="resources\ic_unlock_disable.png" />
+    <Resource Remove="resources\ic_unlock_hover.png" />
+    <Resource Remove="resources\ic_unlock_normal.png" />
+    <Resource Remove="resources\ic_up_click.png" />
+    <Resource Remove="resources\ic_up_disable.png" />
+    <Resource Remove="resources\ic_up_normal.png" />
+    <Resource Remove="resources\ic_vm-result_click.png" />
+    <Resource Remove="resources\ic_vm-result_disable.png" />
+    <Resource Remove="resources\ic_vm-result_normal.png" />
+    <Resource Remove="resources\ic_vm_click.png" />
+    <Resource Remove="resources\ic_vm_disable.png" />
+    <Resource Remove="resources\ic_vm_normal.png" />
+    <Resource Remove="resources\ic_workspace_tabadd_normal.png" />
+    <Resource Remove="resources\ic_上一步_click.png" />
+    <Resource Remove="resources\ic_上一步_disable.png" />
+    <Resource Remove="resources\ic_上一步_normal.png" />
+    <Resource Remove="resources\ic_下一步_click.png" />
+    <Resource Remove="resources\ic_下一步_disable.png" />
+    <Resource Remove="resources\ic_下一步_normal.png" />
+    <Resource Remove="resources\ic_中心定位_click.png" />
+    <Resource Remove="resources\ic_中心定位_disable.png" />
+    <Resource Remove="resources\ic_中心定位_normal.png" />
+    <Resource Remove="resources\ic_停止运行_多流程_click.png" />
+    <Resource Remove="resources\ic_停止运行_多流程_disable.png" />
+    <Resource Remove="resources\ic_停止运行_多流程_hover.png" />
+    <Resource Remove="resources\ic_停止运行_多流程_normal.png" />
+    <Resource Remove="resources\ic_全画幅_normal.png" />
+    <Resource Remove="resources\ic_关闭权限_click.png" />
+    <Resource Remove="resources\ic_关闭权限_disable.png" />
+    <Resource Remove="resources\ic_关闭权限_normal.png" />
+    <Resource Remove="resources\ic_启用权限_click.png" />
+    <Resource Remove="resources\ic_启用权限_disable.png" />
+    <Resource Remove="resources\ic_启用权限_normal.png" />
+    <Resource Remove="resources\ic_响应配置_click.png" />
+    <Resource Remove="resources\ic_响应配置_disable.png" />
+    <Resource Remove="resources\ic_响应配置_normal.png" />
+    <Resource Remove="resources\ic_图像源配置_click.png" />
+    <Resource Remove="resources\ic_图像源配置_disable.png" />
+    <Resource Remove="resources\ic_图像源配置_normal.png" />
+    <Resource Remove="resources\ic_图形配置_click.png" />
+    <Resource Remove="resources\ic_图形配置_hover.png" />
+    <Resource Remove="resources\ic_图形配置_normal.png" />
+    <Resource Remove="resources\ic_多次运行_多流程_click.png" />
+    <Resource Remove="resources\ic_多次运行_多流程_disable.png" />
+    <Resource Remove="resources\ic_多次运行_多流程_hover.png" />
+    <Resource Remove="resources\ic_多次运行_多流程_normal.png" />
+    <Resource Remove="resources\ic_导出2_click.png" />
+    <Resource Remove="resources\ic_导出2_disable.png" />
+    <Resource Remove="resources\ic_导出2_normal.png" />
+    <Resource Remove="resources\ic_导出_click.png" />
+    <Resource Remove="resources\ic_导出_disable.png" />
+    <Resource Remove="resources\ic_导出_normal.png" />
+    <Resource Remove="resources\ic_展开_click.png" />
+    <Resource Remove="resources\ic_展开_normal.png" />
+    <Resource Remove="resources\ic_已标定.png" />
+    <Resource Remove="resources\ic_放大_normal.png" />
+    <Resource Remove="resources\ic_放大镜.png" />
+    <Resource Remove="resources\ic_数据中心_disable.png" />
+    <Resource Remove="resources\ic_数据中心_focus.png" />
+    <Resource Remove="resources\ic_数据中心_normal.png" />
+    <Resource Remove="resources\ic_文件路径_click.png" />
+    <Resource Remove="resources\ic_文件路径_hover.png" />
+    <Resource Remove="resources\ic_文件路径_normal.png" />
+    <Resource Remove="resources\ic_新子流程_disable.png" />
+    <Resource Remove="resources\ic_新子流程_focus.png" />
+    <Resource Remove="resources\ic_新子流程_normal.png" />
+    <Resource Remove="resources\ic_查看_click.png" />
+    <Resource Remove="resources\ic_查看_disable.png" />
+    <Resource Remove="resources\ic_查看_normal.png" />
+    <Resource Remove="resources\ic_橡皮擦2_click.png" />
+    <Resource Remove="resources\ic_橡皮擦2_normal.png" />
+    <Resource Remove="resources\ic_清空图片_click.png" />
+    <Resource Remove="resources\ic_清空图片_disable.png" />
+    <Resource Remove="resources\ic_清空图片_normal.png" />
+    <Resource Remove="resources\ic_点击.png" />
+    <Resource Remove="resources\ic_生成学习模板_click.png" />
+    <Resource Remove="resources\ic_生成学习模板_disable.png" />
+    <Resource Remove="resources\ic_生成学习模板_normal.png" />
+    <Resource Remove="resources\ic_箭头_click.png" />
+    <Resource Remove="resources\ic_箭头_disable.png" />
+    <Resource Remove="resources\ic_箭头_normal.png" />
+    <Resource Remove="resources\ic_绘制圆_click.png" />
+    <Resource Remove="resources\ic_绘制圆_disable.png" />
+    <Resource Remove="resources\ic_绘制圆_normal.png" />
+    <Resource Remove="resources\ic_绘制坐标_click.png" />
+    <Resource Remove="resources\ic_绘制坐标_disable.png" />
+    <Resource Remove="resources\ic_绘制坐标_normal.png" />
+    <Resource Remove="resources\ic_绘制多边形_click.png" />
+    <Resource Remove="resources\ic_绘制多边形_disable.png" />
+    <Resource Remove="resources\ic_绘制多边形_normal.png" />
+    <Resource Remove="resources\ic_绘制矩形_click.png" />
+    <Resource Remove="resources\ic_绘制矩形_disable.png" />
+    <Resource Remove="resources\ic_绘制矩形_normal.png" />
+    <Resource Remove="resources\ic_缩小_normal.png" />
+    <Resource Remove="resources\ic_路径查询_hover.png" />
+    <Resource Remove="resources\ic_路径查询_normal.png" />
+    <Resource Remove="resources\ic_辅助线_click.png" />
+    <Resource Remove="resources\ic_辅助线_disable.png" />
+    <Resource Remove="resources\ic_辅助线_normal.png" />
+    <Resource Remove="resources\imagebg.bmp" />
+    <Resource Remove="resources\leftarrow_disabled.png" />
+    <Resource Remove="resources\leftarrow_hover.png" />
+    <Resource Remove="resources\leftarrow_normal.png" />
+    <Resource Remove="resources\leftarrow_press.png" />
+    <Resource Remove="resources\list_ic_add_gray.png" />
+    <Resource Remove="resources\list_ic_delete_gray.png" />
+    <Resource Remove="resources\list_ic_eye-close_gray.png" />
+    <Resource Remove="resources\list_ic_eye-open_gray.png" />
+    <Resource Remove="resources\list_ic_reduce_gray.png" />
+    <Resource Remove="resources\locked.png" />
+    <Resource Remove="resources\lock_click.png" />
+    <Resource Remove="resources\lock_disable.png" />
+    <Resource Remove="resources\lock_normal.png" />
+    <Resource Remove="resources\logout_click.png" />
+    <Resource Remove="resources\modal_fold_click.png" />
+    <Resource Remove="resources\modal_fold_disable.png" />
+    <Resource Remove="resources\modal_fold_normal.png" />
+    <Resource Remove="resources\modal_右箭头_click.png" />
+    <Resource Remove="resources\modal_右箭头_disable.png" />
+    <Resource Remove="resources\modal_右箭头_normal.png" />
+    <Resource Remove="resources\more_click.png" />
+    <Resource Remove="resources\more_normal.png" />
+    <Resource Remove="resources\msg_close_click.png" />
+    <Resource Remove="resources\msg_close_normal.png" />
+    <Resource Remove="resources\no-camera-big.png" />
+    <Resource Remove="resources\not-see_normal.png" />
+    <Resource Remove="resources\not-_see_click.png" />
+    <Resource Remove="resources\notstayontop_click.png" />
+    <Resource Remove="resources\notstayontop_disable.png" />
+    <Resource Remove="resources\notstayontop_normal.png" />
+    <Resource Remove="resources\operation_icon.png" />
+    <Resource Remove="resources\radiobtn_off_disable.png" />
+    <Resource Remove="resources\result_pack-up_normal.png" />
+    <Resource Remove="resources\roi_circle_click.png" />
+    <Resource Remove="resources\roi_circle_normal.png" />
+    <Resource Remove="resources\roi_doublebox_click.png" />
+    <Resource Remove="resources\roi_doublebox_normal.png" />
+    <Resource Remove="resources\roi_full-screen_click.png" />
+    <Resource Remove="resources\roi_full-screen_normal.png" />
+    <Resource Remove="resources\roi_polygon_click.png" />
+    <Resource Remove="resources\roi_polygon_normal.png" />
+    <Resource Remove="resources\roi_quadrabox_click.png" />
+    <Resource Remove="resources\roi_quadrabox_normal.png" />
+    <Resource Remove="resources\roi_retangle_click.png" />
+    <Resource Remove="resources\roi_retangle_normal.png" />
+    <Resource Remove="resources\roi_ring_click.png" />
+    <Resource Remove="resources\roi_ring_disable.png" />
+    <Resource Remove="resources\roi_ring_normal.png" />
+    <Resource Remove="resources\roi_圆弧卡尺_click.png" />
+    <Resource Remove="resources\roi_圆弧卡尺_disable.png" />
+    <Resource Remove="resources\roi_圆弧卡尺_normal.png" />
+    <Resource Remove="resources\roi_圆形卡尺_click.png" />
+    <Resource Remove="resources\roi_圆形卡尺_disable.png" />
+    <Resource Remove="resources\roi_圆形卡尺_normal.png" />
+    <Resource Remove="resources\roi_多边形卡尺_click.png" />
+    <Resource Remove="resources\roi_多边形卡尺_normal.png" />
+    <Resource Remove="resources\roi_屏蔽circle_click.png" />
+    <Resource Remove="resources\roi_屏蔽circle_disable.png" />
+    <Resource Remove="resources\roi_屏蔽circle_normal.png" />
+    <Resource Remove="resources\roi_屏蔽polygon_click.png" />
+    <Resource Remove="resources\roi_屏蔽polygon_disable.png" />
+    <Resource Remove="resources\roi_屏蔽polygon_normal.png" />
+    <Resource Remove="resources\roi_屏蔽retangle_click.png" />
+    <Resource Remove="resources\roi_屏蔽retangle_disable.png" />
+    <Resource Remove="resources\roi_屏蔽retangle_normal.png" />
+    <Resource Remove="resources\roi_扇形_click.png" />
+    <Resource Remove="resources\roi_扇形_disable.png" />
+    <Resource Remove="resources\roi_扇形_normal.png" />
+    <Resource Remove="resources\roi_直线卡尺_click.png" />
+    <Resource Remove="resources\roi_直线卡尺_disable.png" />
+    <Resource Remove="resources\roi_直线卡尺_normal.png" />
+    <Resource Remove="resources\roi_选中但未绘制_bg.png" />
+    <Resource Remove="resources\searchicon.png" />
+    <Resource Remove="resources\see_click.png" />
+    <Resource Remove="resources\see_normal.png" />
+    <Resource Remove="resources\stayontop_click.png" />
+    <Resource Remove="resources\stayontop_disable.png" />
+    <Resource Remove="resources\stayontop_normal.png" />
+    <Resource Remove="resources\swith_off.png" />
+    <Resource Remove="resources\swith_off_dark.png" />
+    <Resource Remove="resources\swith_on.png" />
+    <Resource Remove="resources\swith_on_dark.png" />
+    <Resource Remove="resources\tabbar_ic_remove_click.png" />
+    <Resource Remove="resources\tabbar_ic_remove_disable.png" />
+    <Resource Remove="resources\tabbar_ic_remove_normal.png" />
+    <Resource Remove="resources\tab_ic_back_click.png" />
+    <Resource Remove="resources\tab_ic_back_disable.png" />
+    <Resource Remove="resources\tab_ic_back_hover.png" />
+    <Resource Remove="resources\tab_ic_back_normal.png" />
+    <Resource Remove="resources\toolbarrunrepeat_disable.png" />
+    <Resource Remove="resources\toolbarrunrepeat_normal.png" />
+    <Resource Remove="resources\toolbarstart_disable.png" />
+    <Resource Remove="resources\toolbarstart_normal.png" />
+    <Resource Remove="resources\toolbarstop_disable.png" />
+    <Resource Remove="resources\toolbarstop_n.png" />
+    <Resource Remove="resources\toolbartriangleopen_click.png" />
+    <Resource Remove="resources\toolbartriangleopen_normal.png" />
+    <Resource Remove="resources\toolbar_universal5.png" />
+    <Resource Remove="resources\toolbar_universal5_disable.png" />
+    <Resource Remove="resources\toolgroupcali_f.png" />
+    <Resource Remove="resources\toolgroupcali_n.png" />
+    <Resource Remove="resources\tool_right_ic_1比1_click.png" />
+    <Resource Remove="resources\tool_right_ic_1比1_hover.png" />
+    <Resource Remove="resources\tool_right_ic_full-screen_click.png" />
+    <Resource Remove="resources\tool_right_ic_full-screen_hover.png" />
+    <Resource Remove="resources\u1076_selected.png" />
+    <Resource Remove="resources\u1096.png" />
+    <Resource Remove="resources\u166.png" />
+    <Resource Remove="resources\u752.png" />
+    <Resource Remove="resources\unlock.png" />
+    <Resource Remove="resources\unlock_click.png" />
+    <Resource Remove="resources\unlock_disable.png" />
+    <Resource Remove="resources\unlock_hover.png" />
+    <Resource Remove="resources\unlock_normal.png" />
+    <Resource Remove="resources\user.png" />
+    <Resource Remove="resources\user_u.png" />
+    <Resource Remove="resources\windowauz.png" />
+    <Resource Remove="resources\windowbg_click.png" />
+    <Resource Remove="resources\windowbg_hover.png" />
+    <Resource Remove="resources\windowclose.png" />
+    <Resource Remove="resources\windowmin.png" />
+    <Resource Remove="resources\windowshift_ic_maximize.png" />
+    <Resource Remove="resources\windowshift_ic_normal.png" />
+    <Resource Remove="resources\window_roi_lock_click.png" />
+    <Resource Remove="resources\window_roi_lock_normal.png" />
+    <Resource Remove="resources\window_roi_unlock_click.png" />
+    <Resource Remove="resources\window_roi_unlock_normal.png" />
+    <Resource Remove="resources\window_shieldpolygon_click.png" />
+    <Resource Remove="resources\window_shieldpolygon_disable.png" />
+    <Resource Remove="resources\window_shieldpolygon_normal.png" />
+    <Resource Remove="resources\zoomin.png" />
+    <Resource Remove="resources\zoomin_1.png" />
+    <Resource Remove="resources\zoomout.png" />
+    <Resource Remove="resources\zoomout_1.png" />
+    <Resource Remove="resources\特征模板_ic_排序上_click.png" />
+    <Resource Remove="resources\特征模板_ic_排序上_disable.png" />
+    <Resource Remove="resources\特征模板_ic_排序上_normal.png" />
+    <Resource Remove="resources\特征模板_ic_排序下_click.png" />
+    <Resource Remove="resources\特征模板_ic_排序下_disable.png" />
+    <Resource Remove="resources\特征模板_ic_排序下_normal.png" />
+    <Resource Remove="resources\编辑click.png" />
+    <Resource Remove="resources\编辑normal.png" />
+    <Resource Remove="resources\自动生成_click.png" />
+    <Resource Remove="resources\自动生成_normal.png" />
+    <Resource Include="resources\11.png" LogicalName="resources/11.png" />
+    <Resource Include="resources\1l.png" LogicalName="resources/1l.png" />
+    <Resource Include="resources\1u.png" LogicalName="resources/1u.png" />
+    <Resource Include="resources\2l1.png" LogicalName="resources/2l1.png" />
+    <Resource Include="resources\2l2.png" LogicalName="resources/2l2.png" />
+    <Resource Include="resources\2u1.png" LogicalName="resources/2u1.png" />
+    <Resource Include="resources\2u2.png" LogicalName="resources/2u2.png" />
+    <Resource Include="resources\4l.png" LogicalName="resources/4l.png" />
+    <Resource Include="resources\4u.png" LogicalName="resources/4u.png" />
+    <Resource Include="resources\6l1.png" LogicalName="resources/6l1.png" />
+    <Resource Include="resources\6l2.png" LogicalName="resources/6l2.png" />
+    <Resource Include="resources\6u1.png" LogicalName="resources/6u1.png" />
+    <Resource Include="resources\6u2.png" LogicalName="resources/6u2.png" />
+    <Resource Include="resources\add_click.png" LogicalName="resources/add_click.png" />
+    <Resource Include="resources\add_normal.png" LogicalName="resources/add_normal.png" />
+    <Resource Include="resources\arrow_right.png" LogicalName="resources/arrow_right.png" />
+    <Resource Include="resources\arrow_up.png" LogicalName="resources/arrow_up.png" />
+    <Resource Include="resources\bg_painting_focus.png" LogicalName="resources/bg_painting_focus.png" />
+    <Resource Include="resources\bottombar_abnormal.png" LogicalName="resources/bottombar_abnormal.png" />
+    <Resource Include="resources\bottombar_config.png" LogicalName="resources/bottombar_config.png" />
+    <Resource Include="resources\bottombar_run.png" LogicalName="resources/bottombar_run.png" />
+    <Resource Include="resources\btnbg_click.png" LogicalName="resources/btnbg_click.png" />
+    <Resource Include="resources\btnbg_hover.png" LogicalName="resources/btnbg_hover.png" />
+    <Resource Include="resources\btn_combine_click.png" LogicalName="resources/btn_combine_click.png" />
+    <Resource Include="resources\btn_combine_disable.png" LogicalName="resources/btn_combine_disable.png" />
+    <Resource Include="resources\btn_combine_normal.png" LogicalName="resources/btn_combine_normal.png" />
+    <Resource Include="resources\btn_help.png" LogicalName="resources/btn_help.png" />
+    <Resource Include="resources\btn_split_click.png" LogicalName="resources/btn_split_click.png" />
+    <Resource Include="resources\btn_split_disable.png" LogicalName="resources/btn_split_disable.png" />
+    <Resource Include="resources\btn_split_normal.png" LogicalName="resources/btn_split_normal.png" />
+    <Resource Include="resources\btn_新建模板-_disable.png" LogicalName="resources/btn_新建模板 _disable.png" />
+    <Resource Include="resources\btn_新建模板_click.png" LogicalName="resources/btn_新建模板_click.png" />
+    <Resource Include="resources\btn_新建模板_normal.png" LogicalName="resources/btn_新建模板_normal.png" />
+    <Resource Include="resources\btn_高级参数_downarrow.png" LogicalName="resources/btn_高级参数_downarrow.png" />
+    <Resource Include="resources\btn_高级参数_uparrow.png" LogicalName="resources/btn_高级参数_uparrow.png" />
+    <Resource Include="resources\check-box_half.png" LogicalName="resources/check-box_half.png" />
+    <Resource Include="resources\check-box_off.png" LogicalName="resources/check-box_off.png" />
+    <Resource Include="resources\check-box_on.png" LogicalName="resources/check-box_on.png" />
+    <Resource Include="resources\check2-box_off.png" LogicalName="resources/check2-box_off.png" />
+    <Resource Include="resources\check2-box_on.png" LogicalName="resources/check2-box_on.png" />
+    <Resource Include="resources\chexiao.png" LogicalName="resources/chexiao.png" />
+    <Resource Include="resources\chexiao_hover.png" LogicalName="resources/chexiao_hover.png" />
+    <Resource Include="resources\combo_ic_triangle_click.png" LogicalName="resources/combo_ic_triangle_click.png" />
+    <Resource Include="resources\combo_ic_triangle_normal.png" LogicalName="resources/combo_ic_triangle_normal.png" />
+    <Resource Include="resources\combo_ic_关联_click.png" LogicalName="resources/combo_ic_关联_click.png" />
+    <Resource Include="resources\combo_ic_关联_hover.png" LogicalName="resources/combo_ic_关联_hover.png" />
+    <Resource Include="resources\combo_ic_关联_normal.png" LogicalName="resources/combo_ic_关联_normal.png" />
+    <Resource Include="resources\combo_list_ic_downarrow.png" LogicalName="resources/combo_list_ic_downarrow.png" />
+    <Resource Include="resources\combo_list_ic_rightarrow.png" LogicalName="resources/combo_list_ic_rightarrow.png" />
+    <Resource Include="resources\copy.png" LogicalName="resources/copy.png" />
+    <Resource Include="resources\copy_click.png" LogicalName="resources/copy_click.png" />
+    <Resource Include="resources\delete_click.png" LogicalName="resources/delete_click.png" />
+    <Resource Include="resources\delete_normal.png" LogicalName="resources/delete_normal.png" />
+    <Resource Include="resources\delete_orange.png" LogicalName="resources/delete_orange.png" />
+    <Resource Include="resources\edit_click.png" LogicalName="resources/edit_click.png" />
+    <Resource Include="resources\edit_disable.png" LogicalName="resources/edit_disable.png" />
+    <Resource Include="resources\edit_normal.png" LogicalName="resources/edit_normal.png" />
+    <Resource Include="resources\fine-tuning-box_up_disable.png" LogicalName="resources/fine-tuning box_up_disable.png" />
+    <Resource Include="resources\fine-tuning-box_up_focus.png" LogicalName="resources/fine-tuning box_up_focus.png" />
+    <Resource Include="resources\fine-tuning-box_up_normal.png" LogicalName="resources/fine-tuning box_up_normal.png" />
+    <Resource Include="resources\frontend\back_click.png" LogicalName="resources/frontend/back_click.png" />
+    <Resource Include="resources\frontend\back_normal.png" LogicalName="resources/frontend/back_normal.png" />
+    <Resource Include="resources\frontend\ic_custom_click.png" LogicalName="resources/frontend/ic_custom_click.png" />
+    <Resource Include="resources\frontend\ic_custom_disable.png" LogicalName="resources/frontend/ic_custom_disable.png" />
+    <Resource Include="resources\frontend\ic_custom_normal.png" LogicalName="resources/frontend/ic_custom_normal.png" />
+    <Resource Include="resources\frontend\ic_delete_click.png" LogicalName="resources/frontend/ic_delete_click.png" />
+    <Resource Include="resources\frontend\ic_delete_normal.png" LogicalName="resources/frontend/ic_delete_normal.png" />
+    <Resource Include="resources\frontend\ic_fronted_上一层_click.png" LogicalName="resources/frontend/ic_fronted_上一层_click.png" />
+    <Resource Include="resources\frontend\ic_fronted_上一层_disable.png" LogicalName="resources/frontend/ic_fronted_上一层_disable.png" />
+    <Resource Include="resources\frontend\ic_fronted_上一层_normal.png" LogicalName="resources/frontend/ic_fronted_上一层_normal.png" />
+    <Resource Include="resources\frontend\ic_fronted_下一层_click.png" LogicalName="resources/frontend/ic_fronted_下一层_click.png" />
+    <Resource Include="resources\frontend\ic_fronted_下一层_disable.png" LogicalName="resources/frontend/ic_fronted_下一层_disable.png" />
+    <Resource Include="resources\frontend\ic_fronted_下一层_normal.png" LogicalName="resources/frontend/ic_fronted_下一层_normal.png" />
+    <Resource Include="resources\frontend\ic_fronted_保存_click.png" LogicalName="resources/frontend/ic_fronted_保存_click.png" />
+    <Resource Include="resources\frontend\ic_fronted_保存_disable.png" LogicalName="resources/frontend/ic_fronted_保存_disable.png" />
+    <Resource Include="resources\frontend\ic_fronted_保存_normal.png" LogicalName="resources/frontend/ic_fronted_保存_normal.png" />
+    <Resource Include="resources\frontend\ic_fronted_保存为模版_click.png" LogicalName="resources/frontend/ic_fronted_保存为模版_click.png" />
+    <Resource Include="resources\frontend\ic_fronted_保存为模版_disable.png" LogicalName="resources/frontend/ic_fronted_保存为模版_disable.png" />
+    <Resource Include="resources\frontend\ic_fronted_保存为模版_normal.png" LogicalName="resources/frontend/ic_fronted_保存为模版_normal.png" />
+    <Resource Include="resources\frontend\ic_fronted_分布方式_click.png" LogicalName="resources/frontend/ic_fronted_分布方式_click.png" />
+    <Resource Include="resources\frontend\ic_fronted_分布方式_disable.png" LogicalName="resources/frontend/ic_fronted_分布方式_disable.png" />
+    <Resource Include="resources\frontend\ic_fronted_分布方式_normal.png" LogicalName="resources/frontend/ic_fronted_分布方式_normal.png" />
+    <Resource Include="resources\frontend\ic_fronted_对齐方式_click.png" LogicalName="resources/frontend/ic_fronted_对齐方式_click.png" />
+    <Resource Include="resources\frontend\ic_fronted_对齐方式_disable.png" LogicalName="resources/frontend/ic_fronted_对齐方式_disable.png" />
+    <Resource Include="resources\frontend\ic_fronted_对齐方式_normal.png" LogicalName="resources/frontend/ic_fronted_对齐方式_normal.png" />
+    <Resource Include="resources\frontend\ic_fronted_布局设置_click.png" LogicalName="resources/frontend/ic_fronted_布局设置_click.png" />
+    <Resource Include="resources\frontend\ic_fronted_布局设置_disable.png" LogicalName="resources/frontend/ic_fronted_布局设置_disable.png" />
+    <Resource Include="resources\frontend\ic_fronted_布局设置_normal.png" LogicalName="resources/frontend/ic_fronted_布局设置_normal.png" />
+    <Resource Include="resources\frontend\ic_fronted_底层_click.png" LogicalName="resources/frontend/ic_fronted_底层_click.png" />
+    <Resource Include="resources\frontend\ic_fronted_底层_disable.png" LogicalName="resources/frontend/ic_fronted_底层_disable.png" />
+    <Resource Include="resources\frontend\ic_fronted_底层_normal.png" LogicalName="resources/frontend/ic_fronted_底层_normal.png" />
+    <Resource Include="resources\frontend\ic_fronted_撤销_click.png" LogicalName="resources/frontend/ic_fronted_撤销_click.png" />
+    <Resource Include="resources\frontend\ic_fronted_撤销_disable.png" LogicalName="resources/frontend/ic_fronted_撤销_disable.png" />
+    <Resource Include="resources\frontend\ic_fronted_撤销_normal.png" LogicalName="resources/frontend/ic_fronted_撤销_normal.png" />
+    <Resource Include="resources\frontend\ic_fronted_文件_click.png" LogicalName="resources/frontend/ic_fronted_文件_click.png" />
+    <Resource Include="resources\frontend\ic_fronted_文件_disable.png" LogicalName="resources/frontend/ic_fronted_文件_disable.png" />
+    <Resource Include="resources\frontend\ic_fronted_文件_normal.png" LogicalName="resources/frontend/ic_fronted_文件_normal.png" />
+    <Resource Include="resources\frontend\ic_fronted_方案模版_click.png" LogicalName="resources/frontend/ic_fronted_方案模版_click.png" />
+    <Resource Include="resources\frontend\ic_fronted_方案模版_disable.png" LogicalName="resources/frontend/ic_fronted_方案模版_disable.png" />
+    <Resource Include="resources\frontend\ic_fronted_方案模版_normal.png" LogicalName="resources/frontend/ic_fronted_方案模版_normal.png" />
+    <Resource Include="resources\frontend\ic_fronted_清空_click.png" LogicalName="resources/frontend/ic_fronted_清空_click.png" />
+    <Resource Include="resources\frontend\ic_fronted_清空_disable.png" LogicalName="resources/frontend/ic_fronted_清空_disable.png" />
+    <Resource Include="resources\frontend\ic_fronted_清空_normal.png" LogicalName="resources/frontend/ic_fronted_清空_normal.png" />
+    <Resource Include="resources\frontend\ic_fronted_适合像素_click.png" LogicalName="resources/frontend/ic_fronted_适合像素_click.png" />
+    <Resource Include="resources\frontend\ic_fronted_适合像素_disable.png" LogicalName="resources/frontend/ic_fronted_适合像素_disable.png" />
+    <Resource Include="resources\frontend\ic_fronted_适合像素_normal.png" LogicalName="resources/frontend/ic_fronted_适合像素_normal.png" />
+    <Resource Include="resources\frontend\ic_fronted_重做_click.png" LogicalName="resources/frontend/ic_fronted_重做_click.png" />
+    <Resource Include="resources\frontend\ic_fronted_重做_disable.png" LogicalName="resources/frontend/ic_fronted_重做_disable.png" />
+    <Resource Include="resources\frontend\ic_fronted_重做_normal.png" LogicalName="resources/frontend/ic_fronted_重做_normal.png" />
+    <Resource Include="resources\frontend\ic_fronted_顶层_click.png" LogicalName="resources/frontend/ic_fronted_顶层_click.png" />
+    <Resource Include="resources\frontend\ic_fronted_顶层_disable.png" LogicalName="resources/frontend/ic_fronted_顶层_disable.png" />
+    <Resource Include="resources\frontend\ic_fronted_顶层_normal.png" LogicalName="resources/frontend/ic_fronted_顶层_normal.png" />
+    <Resource Include="resources\frontend\ic_home-page切换_click.png" LogicalName="resources/frontend/ic_home page切换_click.png" />
+    <Resource Include="resources\frontend\ic_home-page切换_normal.png" LogicalName="resources/frontend/ic_home page切换_normal.png" />
+    <Resource Include="resources\frontend\ic_propertyedit.png" LogicalName="resources/frontend/ic_propertyedit.png" />
+    <Resource Include="resources\frontend\ic_propertyedit_highlight.png" LogicalName="resources/frontend/ic_propertyedit_highlight.png" />
+    <Resource Include="resources\frontend\ic_topbar_运行fronted_click.png" LogicalName="resources/frontend/ic_topbar_运行fronted_click.png" />
+    <Resource Include="resources\frontend\ic_topbar_运行fronted_normal.png" LogicalName="resources/frontend/ic_topbar_运行fronted_normal.png" />
+    <Resource Include="resources\frontend\ic_上一层_click.png" LogicalName="resources/frontend/ic_上一层_click.png" />
+    <Resource Include="resources\frontend\ic_上一层_normal.png" LogicalName="resources/frontend/ic_上一层_normal.png" />
+    <Resource Include="resources\frontend\ic_下一层_click.png" LogicalName="resources/frontend/ic_下一层_click.png" />
+    <Resource Include="resources\frontend\ic_下一层_normal.png" LogicalName="resources/frontend/ic_下一层_normal.png" />
+    <Resource Include="resources\frontend\ic_右对齐.png" LogicalName="resources/frontend/ic_右对齐.png" />
+    <Resource Include="resources\frontend\ic_右对齐_frontend.png" LogicalName="resources/frontend/ic_右对齐_frontend.png" />
+    <Resource Include="resources\frontend\ic_右对齐_frontend_click.png" LogicalName="resources/frontend/ic_右对齐_frontend_click.png" />
+    <Resource Include="resources\frontend\ic_垂直居中.png" LogicalName="resources/frontend/ic_垂直居中.png" />
+    <Resource Include="resources\frontend\ic_垂直居中对齐.png" LogicalName="resources/frontend/ic_垂直居中对齐.png" />
+    <Resource Include="resources\frontend\ic_垂直居中对齐_frontend.png" LogicalName="resources/frontend/ic_垂直居中对齐_frontend.png" />
+    <Resource Include="resources\frontend\ic_垂直居中对齐_frontend_click.png" LogicalName="resources/frontend/ic_垂直居中对齐_frontend_click.png" />
+    <Resource Include="resources\frontend\ic_对齐方式_click.png" LogicalName="resources/frontend/ic_对齐方式_click.png" />
+    <Resource Include="resources\frontend\ic_对齐方式_normal.png" LogicalName="resources/frontend/ic_对齐方式_normal.png" />
+    <Resource Include="resources\frontend\ic_左对齐.png" LogicalName="resources/frontend/ic_左对齐.png" />
+    <Resource Include="resources\frontend\ic_左对齐_frontend.png" LogicalName="resources/frontend/ic_左对齐_frontend.png" />
+    <Resource Include="resources\frontend\ic_左对齐_frontend_click.png" LogicalName="resources/frontend/ic_左对齐_frontend_click.png" />
+    <Resource Include="resources\frontend\ic_底层_click.png" LogicalName="resources/frontend/ic_底层_click.png" />
+    <Resource Include="resources\frontend\ic_底层_normal.png" LogicalName="resources/frontend/ic_底层_normal.png" />
+    <Resource Include="resources\frontend\ic_底部对齐.png" LogicalName="resources/frontend/ic_底部对齐.png" />
+    <Resource Include="resources\frontend\ic_底部对齐_frontend.png" LogicalName="resources/frontend/ic_底部对齐_frontend.png" />
+    <Resource Include="resources\frontend\ic_底部对齐_frontend_click.png" LogicalName="resources/frontend/ic_底部对齐_frontend_click.png" />
+    <Resource Include="resources\frontend\ic_水平居中.png" LogicalName="resources/frontend/ic_水平居中.png" />
+    <Resource Include="resources\frontend\ic_水平居中对齐.png" LogicalName="resources/frontend/ic_水平居中对齐.png" />
+    <Resource Include="resources\frontend\ic_水平居中对齐_frontend.png" LogicalName="resources/frontend/ic_水平居中对齐_frontend.png" />
+    <Resource Include="resources\frontend\ic_水平居中对齐_frontend_click.png" LogicalName="resources/frontend/ic_水平居中对齐_frontend_click.png" />
+    <Resource Include="resources\frontend\ic_顶层_click.png" LogicalName="resources/frontend/ic_顶层_click.png" />
+    <Resource Include="resources\frontend\ic_顶层_normal.png" LogicalName="resources/frontend/ic_顶层_normal.png" />
+    <Resource Include="resources\frontend\ic_顶部对齐.png" LogicalName="resources/frontend/ic_顶部对齐.png" />
+    <Resource Include="resources\frontend\ic_顶部对齐_frontend.png" LogicalName="resources/frontend/ic_顶部对齐_frontend.png" />
+    <Resource Include="resources\frontend\ic_顶部对齐_frontend_click.png" LogicalName="resources/frontend/ic_顶部对齐_frontend_click.png" />
+    <Resource Include="resources\frontend\inputbox_combo_ic_triangle_focus.png" LogicalName="resources/frontend/inputbox_combo_ic_triangle_focus.png" />
+    <Resource Include="resources\frontend\inputbox_combo_ic_triangle_normal.png" LogicalName="resources/frontend/inputbox_combo_ic_triangle_normal.png" />
+    <Resource Include="resources\frontend\menu_normal.png" LogicalName="resources/frontend/menu_normal.png" />
+    <Resource Include="resources\frontend\notstayontop_click.png" LogicalName="resources/frontend/notstayontop_click.png" />
+    <Resource Include="resources\frontend\notstayontop_disable.png" LogicalName="resources/frontend/notstayontop_disable.png" />
+    <Resource Include="resources\frontend\notstayontop_normal.png" LogicalName="resources/frontend/notstayontop_normal.png" />
+    <Resource Include="resources\frontend\ok和ng.png" LogicalName="resources/frontend/ok和ng.png" />
+    <Resource Include="resources\frontend\preview_click.png" LogicalName="resources/frontend/preview_click.png" />
+    <Resource Include="resources\frontend\preview_normal.png" LogicalName="resources/frontend/preview_normal.png" />
+    <Resource Include="resources\frontend\stayontop_click.png" LogicalName="resources/frontend/stayontop_click.png" />
+    <Resource Include="resources\frontend\stayontop_disable.png" LogicalName="resources/frontend/stayontop_disable.png" />
+    <Resource Include="resources\frontend\stayontop_normal.png" LogicalName="resources/frontend/stayontop_normal.png" />
+    <Resource Include="resources\frontend\关联性.png" LogicalName="resources/frontend/关联性.png" />
+    <Resource Include="resources\frontend\图像.png" LogicalName="resources/frontend/图像.png" />
+    <Resource Include="resources\frontend\图像运行_图片.png" LogicalName="resources/frontend/图像运行_图片.png" />
+    <Resource Include="resources\frontend\图片.png" LogicalName="resources/frontend/图片.png" />
+    <Resource Include="resources\frontend\按钮.png" LogicalName="resources/frontend/按钮.png" />
+    <Resource Include="resources\frontend\文本框.png" LogicalName="resources/frontend/文本框.png" />
+    <Resource Include="resources\frontend\点击效果.png" LogicalName="resources/frontend/点击效果.png" />
+    <Resource Include="resources\frontend\矩形.png" LogicalName="resources/frontend/矩形.png" />
+    <Resource Include="resources\frontend\表格.png" LogicalName="resources/frontend/表格.png" />
+    <Resource Include="resources\frontend\运行控制.png" LogicalName="resources/frontend/运行控制.png" />
+    <Resource Include="resources\frontend\运行控制_停止运行.png" LogicalName="resources/frontend/运行控制_停止运行.png" />
+    <Resource Include="resources\frontend\运行控制_多次运行.png" LogicalName="resources/frontend/运行控制_多次运行.png" />
+    <Resource Include="resources\frontend\运行控制单次_运行.png" LogicalName="resources/frontend/运行控制单次_运行.png" />
+    <Resource Include="resources\frontend\运行状态.png" LogicalName="resources/frontend/运行状态.png" />
+    <Resource Include="resources\frontend\运行状态_图标.png" LogicalName="resources/frontend/运行状态_图标.png" />
+    <Resource Include="resources\frontend\适配分辨率_normal.png" LogicalName="resources/frontend/适配分辨率_normal.png" />
+    <Resource Include="resources\frontend\适配分辨率_点击.png" LogicalName="resources/frontend/适配分辨率_点击.png" />
+    <Resource Include="resources\fullscreen.png" LogicalName="resources/fullscreen.png" />
+    <Resource Include="resources\geometry_circle_clickoff.png" LogicalName="resources/geometry_circle_clickoff.png" />
+    <Resource Include="resources\geometry_circle_clickon.png" LogicalName="resources/geometry_circle_clickon.png" />
+    <Resource Include="resources\geometry_line_clickoff.png" LogicalName="resources/geometry_line_clickoff.png" />
+    <Resource Include="resources\geometry_line_clickon.png" LogicalName="resources/geometry_line_clickon.png" />
+    <Resource Include="resources\geometry_point_clickoff.png" LogicalName="resources/geometry_point_clickoff.png" />
+    <Resource Include="resources\geometry_point_clickon.png" LogicalName="resources/geometry_point_clickon.png" />
+    <Resource Include="resources\gridbrushimg.png" LogicalName="resources/gridbrushimg.png" />
+    <Resource Include="resources\group_bg.png" LogicalName="resources/group_bg.png" />
+    <Resource Include="resources\group_bg_focus.png" LogicalName="resources/group_bg_focus.png" />
+    <Resource Include="resources\group_bg_forbidden.png" LogicalName="resources/group_bg_forbidden.png" />
+    <Resource Include="resources\group_bg_load_fail.png" LogicalName="resources/group_bg_load_fail.png" />
+    <Resource Include="resources\group_异常.png" LogicalName="resources/group_异常.png" />
+    <Resource Include="resources\group_异常选中.png" LogicalName="resources/group_异常选中.png" />
+    <Resource Include="resources\group_正常.png" LogicalName="resources/group_正常.png" />
+    <Resource Include="resources\group_正常选中.png" LogicalName="resources/group_正常选中.png" />
+    <Resource Include="resources\ic_1-1_normal.png" LogicalName="resources/ic_1：1_normal.png" />
+    <Resource Include="resources\ic_add-list_click.png" LogicalName="resources/ic_add list_click.png" />
+    <Resource Include="resources\ic_add-list_disable.png" LogicalName="resources/ic_add list_disable.png" />
+    <Resource Include="resources\ic_add-list_normal.png" LogicalName="resources/ic_add list_normal.png" />
+    <Resource Include="resources\ic_add_click.png" LogicalName="resources/ic_add_click.png" />
+    <Resource Include="resources\ic_add_disable.png" LogicalName="resources/ic_add_disable.png" />
+    <Resource Include="resources\ic_add_list_click.png" LogicalName="resources/ic_add_list_click.png" />
+    <Resource Include="resources\ic_add_list_disable.png" LogicalName="resources/ic_add_list_disable.png" />
+    <Resource Include="resources\ic_add_list_normal.png" LogicalName="resources/ic_add_list_normal.png" />
+    <Resource Include="resources\ic_add_normal.png" LogicalName="resources/ic_add_normal.png" />
+    <Resource Include="resources\ic_align_bottom_normal.png" LogicalName="resources/ic_align_bottom_normal.png" />
+    <Resource Include="resources\ic_align_center_normal.png" LogicalName="resources/ic_align_center_normal.png" />
+    <Resource Include="resources\ic_align_left_normal.png" LogicalName="resources/ic_align_left_normal.png" />
+    <Resource Include="resources\ic_align_middle_normal.png" LogicalName="resources/ic_align_middle_normal.png" />
+    <Resource Include="resources\ic_align_right_normal.png" LogicalName="resources/ic_align_right_normal.png" />
+    <Resource Include="resources\ic_align_top_normal.png" LogicalName="resources/ic_align_top_normal.png" />
+    <Resource Include="resources\ic_bottom-bar_flow-view_click.png" LogicalName="resources/ic_bottom bar_flow view_click.png" />
+    <Resource Include="resources\ic_bottom-bar_flow-view_disable.png" LogicalName="resources/ic_bottom bar_flow view_disable.png" />
+    <Resource Include="resources\ic_bottom-bar_flow-view_normal.png" LogicalName="resources/ic_bottom bar_flow view_normal.png" />
+    <Resource Include="resources\ic_btn_delete_click.png" LogicalName="resources/ic_btn_delete_click.png" />
+    <Resource Include="resources\ic_btn_delete_disable.png" LogicalName="resources/ic_btn_delete_disable.png" />
+    <Resource Include="resources\ic_btn_delete_normal.png" LogicalName="resources/ic_btn_delete_normal.png" />
+    <Resource Include="resources\ic_btn_edit_click.png" LogicalName="resources/ic_btn_edit_click.png" />
+    <Resource Include="resources\ic_btn_edit_disable.png" LogicalName="resources/ic_btn_edit_disable.png" />
+    <Resource Include="resources\ic_btn_edit_normal.png" LogicalName="resources/ic_btn_edit_normal.png" />
+    <Resource Include="resources\ic_btn_edit切换_click.png" LogicalName="resources/ic_btn_edit切换_click.png" />
+    <Resource Include="resources\ic_btn_edit切换_disable.png" LogicalName="resources/ic_btn_edit切换_disable.png" />
+    <Resource Include="resources\ic_btn_edit切换_normal.png" LogicalName="resources/ic_btn_edit切换_normal.png" />
+    <Resource Include="resources\ic_btn_export_click.png" LogicalName="resources/ic_btn_export_click.png" />
+    <Resource Include="resources\ic_btn_export_disable.png" LogicalName="resources/ic_btn_export_disable.png" />
+    <Resource Include="resources\ic_btn_export_normal.png" LogicalName="resources/ic_btn_export_normal.png" />
+    <Resource Include="resources\ic_btn_initialize_click.png" LogicalName="resources/ic_btn_initialize_click.png" />
+    <Resource Include="resources\ic_btn_initialize_normal.png" LogicalName="resources/ic_btn_initialize_normal.png" />
+    <Resource Include="resources\ic_btn_link切换_click.png" LogicalName="resources/ic_btn_link切换_click.png" />
+    <Resource Include="resources\ic_btn_link切换_disable.png" LogicalName="resources/ic_btn_link切换_disable.png" />
+    <Resource Include="resources\ic_btn_link切换_normal.png" LogicalName="resources/ic_btn_link切换_normal.png" />
+    <Resource Include="resources\ic_btn_toolbar_add_disable.png" LogicalName="resources/ic_btn_toolbar_add_disable.png" />
+    <Resource Include="resources\ic_btn_toolbar_add_normal.png" LogicalName="resources/ic_btn_toolbar_add_normal.png" />
+    <Resource Include="resources\ic_btn_toolbar_add_select.png" LogicalName="resources/ic_btn_toolbar_add_select.png" />
+    <Resource Include="resources\ic_btn_toolbar_delete_disable.png" LogicalName="resources/ic_btn_toolbar_delete_disable.png" />
+    <Resource Include="resources\ic_btn_toolbar_delete_normal.png" LogicalName="resources/ic_btn_toolbar_delete_normal.png" />
+    <Resource Include="resources\ic_btn_toolbar_delete_select.png" LogicalName="resources/ic_btn_toolbar_delete_select.png" />
+    <Resource Include="resources\ic_camera-settings_click.png" LogicalName="resources/ic_camera settings_click.png" />
+    <Resource Include="resources\ic_camera-settings_disable.png" LogicalName="resources/ic_camera settings_disable.png" />
+    <Resource Include="resources\ic_camera-settings_normal.png" LogicalName="resources/ic_camera settings_normal .png" />
+    <Resource Include="resources\ic_character-filter_click.png" LogicalName="resources/ic_character filter_click.png" />
+    <Resource Include="resources\ic_character-filter_disable.png" LogicalName="resources/ic_character filter_disable.png" />
+    <Resource Include="resources\ic_character-filter_normal.png" LogicalName="resources/ic_character filter_normal.png" />
+    <Resource Include="resources\ic_check_box_off.png" LogicalName="resources/ic_check_box_off.png" />
+    <Resource Include="resources\ic_check_box_on.png" LogicalName="resources/ic_check_box_on.png" />
+    <Resource Include="resources\ic_closegrey32_click.png" LogicalName="resources/ic_closegrey32_click.png" />
+    <Resource Include="resources\ic_closegrey32_normal.png" LogicalName="resources/ic_closegrey32_normal.png" />
+    <Resource Include="resources\ic_copy_click.png" LogicalName="resources/ic_copy_click.png" />
+    <Resource Include="resources\ic_copy_normal.png" LogicalName="resources/ic_copy_normal.png" />
+    <Resource Include="resources\ic_custom_focus.png" LogicalName="resources/ic_custom_focus.png" />
+    <Resource Include="resources\ic_custom_normal.png" LogicalName="resources/ic_custom_normal.png" />
+    <Resource Include="resources\ic_cycle_right.png" LogicalName="resources/ic_cycle_right.png" />
+    <Resource Include="resources\ic_cycle_right_disable.png" LogicalName="resources/ic_cycle_right_disable.png" />
+    <Resource Include="resources\ic_dashboard.png" LogicalName="resources/ic_dashboard.png" />
+    <Resource Include="resources\ic_dashboard_异常.png" LogicalName="resources/ic_dashboard_异常.png" />
+    <Resource Include="resources\ic_delete-line_click.png" LogicalName="resources/ic_delete-line_click.png" />
+    <Resource Include="resources\ic_delete_click.png" LogicalName="resources/ic_delete_click.png" />
+    <Resource Include="resources\ic_delete_disable.png" LogicalName="resources/ic_delete_disable.png" />
+    <Resource Include="resources\ic_delete_normal.png" LogicalName="resources/ic_delete_normal.png" />
+    <Resource Include="resources\ic_dialog_allfold_click.png" LogicalName="resources/ic_dialog_allfold_click.png" />
+    <Resource Include="resources\ic_dialog_allfold_disable.png" LogicalName="resources/ic_dialog_allfold_disable.png" />
+    <Resource Include="resources\ic_dialog_allfold_normal.png" LogicalName="resources/ic_dialog_allfold_normal.png" />
+    <Resource Include="resources\ic_dialog_allunfold_click.png" LogicalName="resources/ic_dialog_allunfold_click.png" />
+    <Resource Include="resources\ic_dialog_allunfold_disable.png" LogicalName="resources/ic_dialog_allunfold_disable.png" />
+    <Resource Include="resources\ic_dialog_allunfold_normal.png" LogicalName="resources/ic_dialog_allunfold_normal.png" />
+    <Resource Include="resources\ic_dialog_expandarrows_click.png" LogicalName="resources/ic_dialog_expandarrows_click.png" />
+    <Resource Include="resources\ic_dialog_expandarrows_disable.png" LogicalName="resources/ic_dialog_expandarrows_disable.png" />
+    <Resource Include="resources\ic_dialog_expandarrows_normal.png" LogicalName="resources/ic_dialog_expandarrows_normal.png" />
+    <Resource Include="resources\ic_dialog_ftpcheck_click.png" LogicalName="resources/ic_dialog_ftpcheck_click.png" />
+    <Resource Include="resources\ic_dialog_ftpcheck_normal.png" LogicalName="resources/ic_dialog_ftpcheck_normal.png" />
+    <Resource Include="resources\ic_dialog_ftplink_disable.png" LogicalName="resources/ic_dialog_ftplink_disable.png" />
+    <Resource Include="resources\ic_dialog_image_draw-sector_click.png" LogicalName="resources/ic_dialog_image_draw sector_click.png" />
+    <Resource Include="resources\ic_dialog_image_draw-sector_disable.png" LogicalName="resources/ic_dialog_image_draw sector_disable.png" />
+    <Resource Include="resources\ic_dialog_image_draw-sector_normal.png" LogicalName="resources/ic_dialog_image_draw sector_normal.png" />
+    <Resource Include="resources\ic_dialog_mark_disable.png" LogicalName="resources/ic_dialog_mark_disable.png" />
+    <Resource Include="resources\ic_dialog_mark_normal.png" LogicalName="resources/ic_dialog_mark_normal.png" />
+    <Resource Include="resources\ic_dialog_roi_阵列圆_disable.png" LogicalName="resources/ic_dialog_roi_阵列圆_disable.png" />
+    <Resource Include="resources\ic_dialog_roi_阵列圆_focus.png" LogicalName="resources/ic_dialog_roi_阵列圆_focus.png" />
+    <Resource Include="resources\ic_dialog_roi_阵列圆_normal.png" LogicalName="resources/ic_dialog_roi_阵列圆_normal.png" />
+    <Resource Include="resources\ic_dialog_sync_click.png" LogicalName="resources/ic_dialog_sync_click.png" />
+    <Resource Include="resources\ic_dialog_sync_disable.png" LogicalName="resources/ic_dialog_sync_disable.png" />
+    <Resource Include="resources\ic_dialog_sync_normal.png" LogicalName="resources/ic_dialog_sync_normal.png" />
+    <Resource Include="resources\ic_dialog_tabadd_click.png" LogicalName="resources/ic_dialog_tabadd_click.png" />
+    <Resource Include="resources\ic_dialog_tabadd_disable.png" LogicalName="resources/ic_dialog_tabadd_disable.png" />
+    <Resource Include="resources\ic_dialog_tabadd_normal.png" LogicalName="resources/ic_dialog_tabadd_normal.png" />
+    <Resource Include="resources\ic_dialog_坐标系_click.png" LogicalName="resources/ic_dialog_坐标系_click.png" />
+    <Resource Include="resources\ic_dialog_坐标系_disable.png" LogicalName="resources/ic_dialog_坐标系_disable.png" />
+    <Resource Include="resources\ic_dialog_坐标系_normal.png" LogicalName="resources/ic_dialog_坐标系_normal.png" />
+    <Resource Include="resources\ic_down_click.png" LogicalName="resources/ic_down_click.png" />
+    <Resource Include="resources\ic_down_disable.png" LogicalName="resources/ic_down_disable.png" />
+    <Resource Include="resources\ic_down_normal.png" LogicalName="resources/ic_down_normal.png" />
+    <Resource Include="resources\ic_edit2_click.png" LogicalName="resources/ic_edit2_click.png" />
+    <Resource Include="resources\ic_edit2_disable.png" LogicalName="resources/ic_edit2_disable.png" />
+    <Resource Include="resources\ic_edit2_normal.png" LogicalName="resources/ic_edit2_normal.png" />
+    <Resource Include="resources\ic_edit_click.png" LogicalName="resources/ic_edit_click.png" />
+    <Resource Include="resources\ic_edit_disable.png" LogicalName="resources/ic_edit_disable.png" />
+    <Resource Include="resources\ic_edit_normal.png" LogicalName="resources/ic_edit_normal.png" />
+    <Resource Include="resources\ic_empty.png" LogicalName="resources/ic_empty.png" />
+    <Resource Include="resources\ic_empty_click.png" LogicalName="resources/ic_empty_click.png" />
+    <Resource Include="resources\ic_empty_disable.png" LogicalName="resources/ic_empty_disable.png" />
+    <Resource Include="resources\ic_empty_normal.png" LogicalName="resources/ic_empty_normal.png" />
+    <Resource Include="resources\ic_execute-to-ng_click.png" LogicalName="resources/ic_execute to ng_click.png" />
+    <Resource Include="resources\ic_execute-to-ng_disable.png" LogicalName="resources/ic_execute to ng_disable.png" />
+    <Resource Include="resources\ic_execute-to-ng_normal.png" LogicalName="resources/ic_execute to ng_normal.png" />
+    <Resource Include="resources\ic_execute_hover.png" LogicalName="resources/ic_execute_hover.png" />
+    <Resource Include="resources\ic_expand_click.png" LogicalName="resources/ic_expand_click.png" />
+    <Resource Include="resources\ic_expand_disable.png" LogicalName="resources/ic_expand_disable.png" />
+    <Resource Include="resources\ic_expand_normal.png" LogicalName="resources/ic_expand_normal.png" />
+    <Resource Include="resources\ic_file-export_click.png" LogicalName="resources/ic_file export_click.png" />
+    <Resource Include="resources\ic_file-export_disable.png" LogicalName="resources/ic_file export_disable.png" />
+    <Resource Include="resources\ic_file-export_normal.png" LogicalName="resources/ic_file export_normal.png" />
+    <Resource Include="resources\ic_flow_group_notice.png" LogicalName="resources/ic_flow_group_notice.png" />
+    <Resource Include="resources\ic_four_focus.png" LogicalName="resources/ic_four_focus.png" />
+    <Resource Include="resources\ic_four_normal.png" LogicalName="resources/ic_four_normal.png" />
+    <Resource Include="resources\ic_group_configuration_click.png" LogicalName="resources/ic_group_configuration_click.png" />
+    <Resource Include="resources\ic_group_configuration_disable.png" LogicalName="resources/ic_group_configuration_disable.png" />
+    <Resource Include="resources\ic_group_configuration_normal.png" LogicalName="resources/ic_group_configuration_normal.png" />
+    <Resource Include="resources\ic_hu_add_click.png" LogicalName="resources/ic_hu_add_click.png" />
+    <Resource Include="resources\ic_hu_add_disable.png" LogicalName="resources/ic_hu_add_disable.png" />
+    <Resource Include="resources\ic_hu_add_hover.png" LogicalName="resources/ic_hu_add_hover.png" />
+    <Resource Include="resources\ic_hu_add_normal.png" LogicalName="resources/ic_hu_add_normal.png" />
+    <Resource Include="resources\ic_image-fold_click.png" LogicalName="resources/ic_image fold_click.png" />
+    <Resource Include="resources\ic_image-fold_disable.png" LogicalName="resources/ic_image fold_disable.png" />
+    <Resource Include="resources\ic_image-fold_normal.png" LogicalName="resources/ic_image fold_normal.png" />
+    <Resource Include="resources\ic_image-unfold_click.png" LogicalName="resources/ic_image unfold_click.png" />
+    <Resource Include="resources\ic_image-unfold_disable.png" LogicalName="resources/ic_image unfold_disable.png" />
+    <Resource Include="resources\ic_image-unfold_normal.png" LogicalName="resources/ic_image unfold_normal.png" />
+    <Resource Include="resources\ic_image_checked.png" LogicalName="resources/ic_image_checked.png" />
+    <Resource Include="resources\ic_image_unchecked.png" LogicalName="resources/ic_image_unchecked.png" />
+    <Resource Include="resources\ic_image_单画幅_click.png" LogicalName="resources/ic_image_单画幅_click.png" />
+    <Resource Include="resources\ic_image_单画幅_disable.png" LogicalName="resources/ic_image_单画幅_disable.png" />
+    <Resource Include="resources\ic_image_单画幅_normal.png" LogicalName="resources/ic_image_单画幅_normal.png" />
+    <Resource Include="resources\ic_image_双画幅_click.png" LogicalName="resources/ic_image_双画幅_click.png" />
+    <Resource Include="resources\ic_image_双画幅_disable.png" LogicalName="resources/ic_image_双画幅_disable.png" />
+    <Resource Include="resources\ic_image_双画幅_normal.png" LogicalName="resources/ic_image_双画幅_normal.png" />
+    <Resource Include="resources\ic_item_add_disable.png" LogicalName="resources/ic_item_add_disable.png" />
+    <Resource Include="resources\ic_item_add_focus.png" LogicalName="resources/ic_item_add_focus.png" />
+    <Resource Include="resources\ic_item_add_hover.png" LogicalName="resources/ic_item_add_hover.png" />
+    <Resource Include="resources\ic_item_add_normal.png" LogicalName="resources/ic_item_add_normal.png" />
+    <Resource Include="resources\ic_item_more_disable.png" LogicalName="resources/ic_item_more_disable.png" />
+    <Resource Include="resources\ic_item_more_focus.png" LogicalName="resources/ic_item_more_focus.png" />
+    <Resource Include="resources\ic_item_more_hover.png" LogicalName="resources/ic_item_more_hover.png" />
+    <Resource Include="resources\ic_item_more_normal.png" LogicalName="resources/ic_item_more_normal.png" />
+    <Resource Include="resources\ic_light-off_click.png" LogicalName="resources/ic_light off_click.png" />
+    <Resource Include="resources\ic_light-off_disable.png" LogicalName="resources/ic_light off_disable.png" />
+    <Resource Include="resources\ic_light-off_normal.png" LogicalName="resources/ic_light off_normal.png" />
+    <Resource Include="resources\ic_light-open_click.png" LogicalName="resources/ic_light open_click.png" />
+    <Resource Include="resources\ic_light-open_disable.png" LogicalName="resources/ic_light open_disable.png" />
+    <Resource Include="resources\ic_light-open_normal.png" LogicalName="resources/ic_light open_normal.png" />
+    <Resource Include="resources\ic_link_click.png" LogicalName="resources/ic_link_click.png" />
+    <Resource Include="resources\ic_link_normal.png" LogicalName="resources/ic_link_normal.png" />
+    <Resource Include="resources\ic_local-variable_click.png" LogicalName="resources/ic_local variable_click.png" />
+    <Resource Include="resources\ic_local-variable_disable.png" LogicalName="resources/ic_local variable_disable.png" />
+    <Resource Include="resources\ic_local-variable_hover.png" LogicalName="resources/ic_local variable_hover.png" />
+    <Resource Include="resources\ic_local-variable_normal.png" LogicalName="resources/ic_local variable_normal.png" />
+    <Resource Include="resources\ic_lock.png" LogicalName="resources/ic_lock.png" />
+    <Resource Include="resources\ic_lock_disable.png" LogicalName="resources/ic_lock_disable.png" />
+    <Resource Include="resources\ic_lock_hover.png" LogicalName="resources/ic_lock_hover.png" />
+    <Resource Include="resources\ic_lock_normal.png" LogicalName="resources/ic_lock_normal.png" />
+    <Resource Include="resources\ic_log_delete_click.png" LogicalName="resources/ic_log_delete_click.png" />
+    <Resource Include="resources\ic_log_delete_disable.png" LogicalName="resources/ic_log_delete_disable.png" />
+    <Resource Include="resources\ic_log_delete_normal.png" LogicalName="resources/ic_log_delete_normal.png" />
+    <Resource Include="resources\ic_log_fold_click.png" LogicalName="resources/ic_log_fold_click.png" />
+    <Resource Include="resources\ic_log_fold_disable.png" LogicalName="resources/ic_log_fold_disable.png" />
+    <Resource Include="resources\ic_log_fold_normal.png" LogicalName="resources/ic_log_fold_normal.png" />
+    <Resource Include="resources\ic_log_unfold_click.png" LogicalName="resources/ic_log_unfold_click.png" />
+    <Resource Include="resources\ic_log_unfold_disable.png" LogicalName="resources/ic_log_unfold_disable.png" />
+    <Resource Include="resources\ic_log_unfold_normal.png" LogicalName="resources/ic_log_unfold_normal.png" />
+    <Resource Include="resources\ic_loop-execution_hover.png" LogicalName="resources/ic_loop execution_hover.png" />
+    <Resource Include="resources\ic_modal_communication_click.png" LogicalName="resources/ic_modal_communication_click.png" />
+    <Resource Include="resources\ic_modal_communication_disable.png" LogicalName="resources/ic_modal_communication_disable.png" />
+    <Resource Include="resources\ic_modal_communication_normal.png" LogicalName="resources/ic_modal_communication_normal.png" />
+    <Resource Include="resources\ic_modal_视觉控制器_click.png" LogicalName="resources/ic_modal_视觉控制器_click.png" />
+    <Resource Include="resources\ic_modal_视觉控制器_disable.png" LogicalName="resources/ic_modal_视觉控制器_disable.png" />
+    <Resource Include="resources\ic_modal_视觉控制器_normal.png" LogicalName="resources/ic_modal_视觉控制器_normal.png" />
+    <Resource Include="resources\ic_more--option_click.png" LogicalName="resources/ic_more  option_click.png" />
+    <Resource Include="resources\ic_more--option_disable.png" LogicalName="resources/ic_more  option_disable.png" />
+    <Resource Include="resources\ic_more--option_nor.png" LogicalName="resources/ic_more  option_nor.png" />
+    <Resource Include="resources\ic_more_focus.png" LogicalName="resources/ic_more_focus.png" />
+    <Resource Include="resources\ic_more_normal.png" LogicalName="resources/ic_more_normal.png" />
+    <Resource Include="resources\ic_new-application.png" LogicalName="resources/ic_new-application.png" />
+    <Resource Include="resources\ic_new-application_click.png" LogicalName="resources/ic_new-application_click.png" />
+    <Resource Include="resources\ic_new-application_hover.png" LogicalName="resources/ic_new-application_hover.png" />
+    <Resource Include="resources\ic_note_bottom_click.png" LogicalName="resources/ic_note_bottom_click.png" />
+    <Resource Include="resources\ic_note_bottom_disable.png" LogicalName="resources/ic_note_bottom_disable.png" />
+    <Resource Include="resources\ic_note_bottom_normal.png" LogicalName="resources/ic_note_bottom_normal.png" />
+    <Resource Include="resources\ic_note_drawnotebox_click.png" LogicalName="resources/ic_note_drawnotebox_click.png" />
+    <Resource Include="resources\ic_note_drawnotebox_normal.png" LogicalName="resources/ic_note_drawnotebox_normal.png" />
+    <Resource Include="resources\ic_note_edit_click.png" LogicalName="resources/ic_note_edit_click.png" />
+    <Resource Include="resources\ic_note_edit_hover.png" LogicalName="resources/ic_note_edit_hover.png" />
+    <Resource Include="resources\ic_note_edit_normal.png" LogicalName="resources/ic_note_edit_normal.png" />
+    <Resource Include="resources\ic_note_search_click.png" LogicalName="resources/ic_note_search_click.png" />
+    <Resource Include="resources\ic_note_search_hover.png" LogicalName="resources/ic_note_search_hover.png" />
+    <Resource Include="resources\ic_note_search_normal.png" LogicalName="resources/ic_note_search_normal.png" />
+    <Resource Include="resources\ic_note_top_click.png" LogicalName="resources/ic_note_top_click.png" />
+    <Resource Include="resources\ic_note_top_disable.png" LogicalName="resources/ic_note_top_disable.png" />
+    <Resource Include="resources\ic_note_top_normal.png" LogicalName="resources/ic_note_top_normal.png" />
+    <Resource Include="resources\ic_one_focus.png" LogicalName="resources/ic_one_focus.png" />
+    <Resource Include="resources\ic_one_normal.png" LogicalName="resources/ic_one_normal.png" />
+    <Resource Include="resources\ic_operate_more_click.png" LogicalName="resources/ic_operate_more_click.png" />
+    <Resource Include="resources\ic_operate_more_disable.png" LogicalName="resources/ic_operate_more_disable.png" />
+    <Resource Include="resources\ic_operate_more_normal.png" LogicalName="resources/ic_operate_more_normal.png" />
+    <Resource Include="resources\ic_picselected.png" LogicalName="resources/ic_picselected.png" />
+    <Resource Include="resources\ic_play_多流程_click.png" LogicalName="resources/ic_play_多流程_click.png" />
+    <Resource Include="resources\ic_play_多流程_disable.png" LogicalName="resources/ic_play_多流程_disable.png" />
+    <Resource Include="resources\ic_play_多流程_hover.png" LogicalName="resources/ic_play_多流程_hover.png" />
+    <Resource Include="resources\ic_play_多流程_normal.png" LogicalName="resources/ic_play_多流程_normal.png" />
+    <Resource Include="resources\ic_product-solution_disable.png" LogicalName="resources/ic_product solution_disable.png" />
+    <Resource Include="resources\ic_product-solution_focus.png" LogicalName="resources/ic_product solution_focus.png" />
+    <Resource Include="resources\ic_product-solution_normal.png" LogicalName="resources/ic_product solution_normal.png" />
+    <Resource Include="resources\ic_rendering_disable.png" LogicalName="resources/ic_rendering_disable.png" />
+    <Resource Include="resources\ic_rendering_focus.png" LogicalName="resources/ic_rendering_focus.png" />
+    <Resource Include="resources\ic_rendering_normal.png" LogicalName="resources/ic_rendering_normal.png" />
+    <Resource Include="resources\ic_retract_click.png" LogicalName="resources/ic_retract_click.png" />
+    <Resource Include="resources\ic_retract_disable.png" LogicalName="resources/ic_retract_disable.png" />
+    <Resource Include="resources\ic_retract_normal.png" LogicalName="resources/ic_retract_normal.png" />
+    <Resource Include="resources\ic_rightarrow32_click.png" LogicalName="resources/ic_rightarrow32_click.png" />
+    <Resource Include="resources\ic_rightarrow32_normal.png" LogicalName="resources/ic_rightarrow32_normal.png" />
+    <Resource Include="resources\ic_save_click.png" LogicalName="resources/ic_save_click.png" />
+    <Resource Include="resources\ic_save_normal.png" LogicalName="resources/ic_save_normal.png" />
+    <Resource Include="resources\ic_screen_click.png" LogicalName="resources/ic_screen_click.png" />
+    <Resource Include="resources\ic_screen_disable.png" LogicalName="resources/ic_screen_disable.png" />
+    <Resource Include="resources\ic_screen_normal.png" LogicalName="resources/ic_screen_normal.png" />
+    <Resource Include="resources\ic_search_click.png" LogicalName="resources/ic_search_click.png" />
+    <Resource Include="resources\ic_search_disable.png" LogicalName="resources/ic_search_disable.png" />
+    <Resource Include="resources\ic_search_hover.png" LogicalName="resources/ic_search_hover.png" />
+    <Resource Include="resources\ic_search_normal.png" LogicalName="resources/ic_search_normal.png" />
+    <Resource Include="resources\ic_senddata_click.png" LogicalName="resources/ic_senddata_click.png" />
+    <Resource Include="resources\ic_senddata_disable.png" LogicalName="resources/ic_senddata_disable.png" />
+    <Resource Include="resources\ic_senddata_normal.png" LogicalName="resources/ic_senddata_normal.png" />
+    <Resource Include="resources\ic_six2_focus.png" LogicalName="resources/ic_six2_focus.png" />
+    <Resource Include="resources\ic_six2_normal.png" LogicalName="resources/ic_six2_normal.png" />
+    <Resource Include="resources\ic_six_focus.png" LogicalName="resources/ic_six_focus.png" />
+    <Resource Include="resources\ic_six_normal.png" LogicalName="resources/ic_six_normal.png" />
+    <Resource Include="resources\ic_stopgrab_hover.png" LogicalName="resources/ic_stopgrab_hover.png" />
+    <Resource Include="resources\ic_tab_downarrow_click.png" LogicalName="resources/ic_tab_downarrow_click.png" />
+    <Resource Include="resources\ic_tab_downarrow_disable.png" LogicalName="resources/ic_tab_downarrow_disable.png" />
+    <Resource Include="resources\ic_tab_downarrow_hover.png" LogicalName="resources/ic_tab_downarrow_hover.png" />
+    <Resource Include="resources\ic_tab_downarrow_normal.png" LogicalName="resources/ic_tab_downarrow_normal.png" />
+    <Resource Include="resources\ic_tab_group_configuration_click.png" LogicalName="resources/ic_tab_group_configuration_click.png" />
+    <Resource Include="resources\ic_tab_group_configuration_disable.png" LogicalName="resources/ic_tab_group_configuration_disable.png" />
+    <Resource Include="resources\ic_tab_group_configuration_hover.png" LogicalName="resources/ic_tab_group_configuration_hover.png" />
+    <Resource Include="resources\ic_tab_group_configuration_normal.png" LogicalName="resources/ic_tab_group_configuration_normal.png" />
+    <Resource Include="resources\ic_toolbar_crosshelperline_disable.png" LogicalName="resources/ic_toolbar_crosshelperline_disable.png" />
+    <Resource Include="resources\ic_toolbar_crosshelperline_focus.png" LogicalName="resources/ic_toolbar_crosshelperline_focus.png" />
+    <Resource Include="resources\ic_toolbar_crosshelperline_normal.png" LogicalName="resources/ic_toolbar_crosshelperline_normal.png" />
+    <Resource Include="resources\ic_toolbar_empty_disable.png" LogicalName="resources/ic_toolbar_empty_disable.png" />
+    <Resource Include="resources\ic_toolbar_empty_focus.png" LogicalName="resources/ic_toolbar_empty_focus.png" />
+    <Resource Include="resources\ic_toolbar_empty_normal.png" LogicalName="resources/ic_toolbar_empty_normal.png" />
+    <Resource Include="resources\ic_toolbar_hide_disable.png" LogicalName="resources/ic_toolbar_hide_disable.png" />
+    <Resource Include="resources\ic_toolbar_hide_focus.png" LogicalName="resources/ic_toolbar_hide_focus.png" />
+    <Resource Include="resources\ic_toolbar_hide_normal.png" LogicalName="resources/ic_toolbar_hide_normal.png" />
+    <Resource Include="resources\ic_toolbar_see_disable.png" LogicalName="resources/ic_toolbar_see_disable.png" />
+    <Resource Include="resources\ic_toolbar_see_focus.png" LogicalName="resources/ic_toolbar_see_focus.png" />
+    <Resource Include="resources\ic_toolbar_see_normal.png" LogicalName="resources/ic_toolbar_see_normal.png" />
+    <Resource Include="resources\ic_topbar_execute_disable.png" LogicalName="resources/ic_topbar_execute_disable.png" />
+    <Resource Include="resources\ic_topbar_execute_normal.png" LogicalName="resources/ic_topbar_execute_normal.png" />
+    <Resource Include="resources\ic_topbar_folder_dis.png" LogicalName="resources/ic_topbar_folder_dis.png" />
+    <Resource Include="resources\ic_topbar_folder_disable.png" LogicalName="resources/ic_topbar_folder_disable.png" />
+    <Resource Include="resources\ic_topbar_folder_disable_ng.png" LogicalName="resources/ic_topbar_folder_disable_ng.png" />
+    <Resource Include="resources\ic_topbar_folder_disable_ok.png" LogicalName="resources/ic_topbar_folder_disable_ok.png" />
+    <Resource Include="resources\ic_topbar_folder_nor.png" LogicalName="resources/ic_topbar_folder_nor.png" />
+    <Resource Include="resources\ic_topbar_folder_normal.png" LogicalName="resources/ic_topbar_folder_normal.png" />
+    <Resource Include="resources\ic_topbar_folder_normal_ng.png" LogicalName="resources/ic_topbar_folder_normal_ng.png" />
+    <Resource Include="resources\ic_topbar_folder_normal_ok.png" LogicalName="resources/ic_topbar_folder_normal_ok.png" />
+    <Resource Include="resources\ic_topbar_folder_sel.png" LogicalName="resources/ic_topbar_folder_sel.png" />
+    <Resource Include="resources\ic_topbar_framechange_disable.png" LogicalName="resources/ic_topbar_framechange_disable.png" />
+    <Resource Include="resources\ic_topbar_framechange_normal.png" LogicalName="resources/ic_topbar_framechange_normal.png" />
+    <Resource Include="resources\ic_topbar_loop-execution_disable.png" LogicalName="resources/ic_topbar_loop execution_disable.png" />
+    <Resource Include="resources\ic_topbar_loop-execution_normal.png" LogicalName="resources/ic_topbar_loop execution_normal.png" />
+    <Resource Include="resources\ic_topbar_see_disable.png" LogicalName="resources/ic_topbar_see_disable.png" />
+    <Resource Include="resources\ic_topbar_see_normal.png" LogicalName="resources/ic_topbar_see_normal.png" />
+    <Resource Include="resources\ic_topbar_stopgrab_disable.png" LogicalName="resources/ic_topbar_stopgrab_disable.png" />
+    <Resource Include="resources\ic_topbar_stopgrab_normal.png" LogicalName="resources/ic_topbar_stopgrab_normal.png" />
+    <Resource Include="resources\ic_topbar_vm-see_normal.png" LogicalName="resources/ic_topbar_vm-see_normal.png" />
+    <Resource Include="resources\ic_top_click.png" LogicalName="resources/ic_top_click.png" />
+    <Resource Include="resources\ic_top_disable.png" LogicalName="resources/ic_top_disable.png" />
+    <Resource Include="resources\ic_top_normal.png" LogicalName="resources/ic_top_normal.png" />
+    <Resource Include="resources\ic_triggering_disable.png" LogicalName="resources/ic_triggering_disable.png" />
+    <Resource Include="resources\ic_triggering_focus.png" LogicalName="resources/ic_triggering_focus.png" />
+    <Resource Include="resources\ic_triggering_normal.png" LogicalName="resources/ic_triggering_normal.png" />
+    <Resource Include="resources\ic_two2_disable.png" LogicalName="resources/ic_two2_disable.png" />
+    <Resource Include="resources\ic_two2_focus.png" LogicalName="resources/ic_two2_focus.png" />
+    <Resource Include="resources\ic_two2_normal.png" LogicalName="resources/ic_two2_normal.png" />
+    <Resource Include="resources\ic_two_focus.png" LogicalName="resources/ic_two_focus.png" />
+    <Resource Include="resources\ic_two_normal.png" LogicalName="resources/ic_two_normal.png" />
+    <Resource Include="resources\ic_unlock_disable.png" LogicalName="resources/ic_unlock_disable.png" />
+    <Resource Include="resources\ic_unlock_hover.png" LogicalName="resources/ic_unlock_hover.png" />
+    <Resource Include="resources\ic_unlock_normal.png" LogicalName="resources/ic_unlock_normal.png" />
+    <Resource Include="resources\ic_up_click.png" LogicalName="resources/ic_up_click.png" />
+    <Resource Include="resources\ic_up_disable.png" LogicalName="resources/ic_up_disable.png" />
+    <Resource Include="resources\ic_up_normal.png" LogicalName="resources/ic_up_normal.png" />
+    <Resource Include="resources\ic_vm-result_click.png" LogicalName="resources/ic_vm result_click.png" />
+    <Resource Include="resources\ic_vm-result_disable.png" LogicalName="resources/ic_vm result_disable.png" />
+    <Resource Include="resources\ic_vm-result_normal.png" LogicalName="resources/ic_vm result_normal .png" />
+    <Resource Include="resources\ic_vm_click.png" LogicalName="resources/ic_vm_click.png" />
+    <Resource Include="resources\ic_vm_disable.png" LogicalName="resources/ic_vm_disable.png" />
+    <Resource Include="resources\ic_vm_normal.png" LogicalName="resources/ic_vm_normal .png" />
+    <Resource Include="resources\ic_workspace_tabadd_normal.png" LogicalName="resources/ic_workspace_tabadd_normal.png" />
+    <Resource Include="resources\ic_上一步_click.png" LogicalName="resources/ic_上一步_click.png" />
+    <Resource Include="resources\ic_上一步_disable.png" LogicalName="resources/ic_上一步_disable.png" />
+    <Resource Include="resources\ic_上一步_normal.png" LogicalName="resources/ic_上一步_normal.png" />
+    <Resource Include="resources\ic_下一步_click.png" LogicalName="resources/ic_下一步_click.png" />
+    <Resource Include="resources\ic_下一步_disable.png" LogicalName="resources/ic_下一步_disable.png" />
+    <Resource Include="resources\ic_下一步_normal.png" LogicalName="resources/ic_下一步_normal.png" />
+    <Resource Include="resources\ic_中心定位_click.png" LogicalName="resources/ic_中心定位_click.png" />
+    <Resource Include="resources\ic_中心定位_disable.png" LogicalName="resources/ic_中心定位_disable.png" />
+    <Resource Include="resources\ic_中心定位_normal.png" LogicalName="resources/ic_中心定位_normal.png" />
+    <Resource Include="resources\ic_停止运行_多流程_click.png" LogicalName="resources/ic_停止运行_多流程_click.png" />
+    <Resource Include="resources\ic_停止运行_多流程_disable.png" LogicalName="resources/ic_停止运行_多流程_disable.png" />
+    <Resource Include="resources\ic_停止运行_多流程_hover.png" LogicalName="resources/ic_停止运行_多流程_hover.png" />
+    <Resource Include="resources\ic_停止运行_多流程_normal.png" LogicalName="resources/ic_停止运行_多流程_normal.png" />
+    <Resource Include="resources\ic_全画幅_normal.png" LogicalName="resources/ic_全画幅_normal.png" />
+    <Resource Include="resources\ic_关闭权限_click.png" LogicalName="resources/ic_关闭权限_click.png" />
+    <Resource Include="resources\ic_关闭权限_disable.png" LogicalName="resources/ic_关闭权限_disable.png" />
+    <Resource Include="resources\ic_关闭权限_normal.png" LogicalName="resources/ic_关闭权限_normal.png" />
+    <Resource Include="resources\ic_启用权限_click.png" LogicalName="resources/ic_启用权限_click.png" />
+    <Resource Include="resources\ic_启用权限_disable.png" LogicalName="resources/ic_启用权限_disable.png" />
+    <Resource Include="resources\ic_启用权限_normal.png" LogicalName="resources/ic_启用权限_normal.png" />
+    <Resource Include="resources\ic_响应配置_click.png" LogicalName="resources/ic_响应配置_click.png" />
+    <Resource Include="resources\ic_响应配置_disable.png" LogicalName="resources/ic_响应配置_disable.png" />
+    <Resource Include="resources\ic_响应配置_normal.png" LogicalName="resources/ic_响应配置_normal.png" />
+    <Resource Include="resources\ic_图像源配置_click.png" LogicalName="resources/ic_图像源配置_click.png" />
+    <Resource Include="resources\ic_图像源配置_disable.png" LogicalName="resources/ic_图像源配置_disable.png" />
+    <Resource Include="resources\ic_图像源配置_normal.png" LogicalName="resources/ic_图像源配置_normal.png" />
+    <Resource Include="resources\ic_图形配置_click.png" LogicalName="resources/ic_图形配置_click.png" />
+    <Resource Include="resources\ic_图形配置_hover.png" LogicalName="resources/ic_图形配置_hover.png" />
+    <Resource Include="resources\ic_图形配置_normal.png" LogicalName="resources/ic_图形配置_normal.png" />
+    <Resource Include="resources\ic_多次运行_多流程_click.png" LogicalName="resources/ic_多次运行_多流程_click.png" />
+    <Resource Include="resources\ic_多次运行_多流程_disable.png" LogicalName="resources/ic_多次运行_多流程_disable.png" />
+    <Resource Include="resources\ic_多次运行_多流程_hover.png" LogicalName="resources/ic_多次运行_多流程_hover.png" />
+    <Resource Include="resources\ic_多次运行_多流程_normal.png" LogicalName="resources/ic_多次运行_多流程_normal.png" />
+    <Resource Include="resources\ic_导出2_click.png" LogicalName="resources/ic_导出2_click.png" />
+    <Resource Include="resources\ic_导出2_disable.png" LogicalName="resources/ic_导出2_disable.png" />
+    <Resource Include="resources\ic_导出2_normal.png" LogicalName="resources/ic_导出2_normal.png" />
+    <Resource Include="resources\ic_导出_click.png" LogicalName="resources/ic_导出_click.png" />
+    <Resource Include="resources\ic_导出_disable.png" LogicalName="resources/ic_导出_disable.png" />
+    <Resource Include="resources\ic_导出_normal.png" LogicalName="resources/ic_导出_normal.png" />
+    <Resource Include="resources\ic_展开_click.png" LogicalName="resources/ic_展开_click.png" />
+    <Resource Include="resources\ic_展开_normal.png" LogicalName="resources/ic_展开_normal.png" />
+    <Resource Include="resources\ic_已标定.png" LogicalName="resources/ic_已标定.png" />
+    <Resource Include="resources\ic_放大_normal.png" LogicalName="resources/ic_放大_normal.png" />
+    <Resource Include="resources\ic_放大镜.png" LogicalName="resources/ic_放大镜.png" />
+    <Resource Include="resources\ic_数据中心_disable.png" LogicalName="resources/ic_数据中心_disable.png" />
+    <Resource Include="resources\ic_数据中心_focus.png" LogicalName="resources/ic_数据中心_focus.png" />
+    <Resource Include="resources\ic_数据中心_normal.png" LogicalName="resources/ic_数据中心_normal.png" />
+    <Resource Include="resources\ic_文件路径_click.png" LogicalName="resources/ic_文件路径_click.png" />
+    <Resource Include="resources\ic_文件路径_hover.png" LogicalName="resources/ic_文件路径_hover.png" />
+    <Resource Include="resources\ic_文件路径_normal.png" LogicalName="resources/ic_文件路径_normal.png" />
+    <Resource Include="resources\ic_新子流程_disable.png" LogicalName="resources/ic_新子流程_disable.png" />
+    <Resource Include="resources\ic_新子流程_focus.png" LogicalName="resources/ic_新子流程_focus.png" />
+    <Resource Include="resources\ic_新子流程_normal.png" LogicalName="resources/ic_新子流程_normal.png" />
+    <Resource Include="resources\ic_查看_click.png" LogicalName="resources/ic_查看_click.png" />
+    <Resource Include="resources\ic_查看_disable.png" LogicalName="resources/ic_查看_disable.png" />
+    <Resource Include="resources\ic_查看_normal.png" LogicalName="resources/ic_查看_normal.png" />
+    <Resource Include="resources\ic_橡皮擦2_click.png" LogicalName="resources/ic_橡皮擦2_click.png" />
+    <Resource Include="resources\ic_橡皮擦2_normal.png" LogicalName="resources/ic_橡皮擦2_normal.png" />
+    <Resource Include="resources\ic_清空图片_click.png" LogicalName="resources/ic_清空图片_click.png" />
+    <Resource Include="resources\ic_清空图片_disable.png" LogicalName="resources/ic_清空图片_disable.png" />
+    <Resource Include="resources\ic_清空图片_normal.png" LogicalName="resources/ic_清空图片_normal.png" />
+    <Resource Include="resources\ic_点击.png" LogicalName="resources/ic_点击.png" />
+    <Resource Include="resources\ic_生成学习模板_click.png" LogicalName="resources/ic_生成学习模板_click.png" />
+    <Resource Include="resources\ic_生成学习模板_disable.png" LogicalName="resources/ic_生成学习模板_disable.png" />
+    <Resource Include="resources\ic_生成学习模板_normal.png" LogicalName="resources/ic_生成学习模板_normal.png" />
+    <Resource Include="resources\ic_箭头_click.png" LogicalName="resources/ic_箭头_click.png" />
+    <Resource Include="resources\ic_箭头_disable.png" LogicalName="resources/ic_箭头_disable.png" />
+    <Resource Include="resources\ic_箭头_normal.png" LogicalName="resources/ic_箭头_normal.png" />
+    <Resource Include="resources\ic_绘制圆_click.png" LogicalName="resources/ic_绘制圆_click.png" />
+    <Resource Include="resources\ic_绘制圆_disable.png" LogicalName="resources/ic_绘制圆_disable.png" />
+    <Resource Include="resources\ic_绘制圆_normal.png" LogicalName="resources/ic_绘制圆_normal.png" />
+    <Resource Include="resources\ic_绘制坐标_click.png" LogicalName="resources/ic_绘制坐标_click.png" />
+    <Resource Include="resources\ic_绘制坐标_disable.png" LogicalName="resources/ic_绘制坐标_disable.png" />
+    <Resource Include="resources\ic_绘制坐标_normal.png" LogicalName="resources/ic_绘制坐标_normal.png" />
+    <Resource Include="resources\ic_绘制多边形_click.png" LogicalName="resources/ic_绘制多边形_click.png" />
+    <Resource Include="resources\ic_绘制多边形_disable.png" LogicalName="resources/ic_绘制多边形_disable.png" />
+    <Resource Include="resources\ic_绘制多边形_normal.png" LogicalName="resources/ic_绘制多边形_normal.png" />
+    <Resource Include="resources\ic_绘制矩形_click.png" LogicalName="resources/ic_绘制矩形_click.png" />
+    <Resource Include="resources\ic_绘制矩形_disable.png" LogicalName="resources/ic_绘制矩形_disable.png" />
+    <Resource Include="resources\ic_绘制矩形_normal.png" LogicalName="resources/ic_绘制矩形_normal.png" />
+    <Resource Include="resources\ic_缩小_normal.png" LogicalName="resources/ic_缩小_normal.png" />
+    <Resource Include="resources\ic_路径查询_hover.png" LogicalName="resources/ic_路径查询_hover.png" />
+    <Resource Include="resources\ic_路径查询_normal.png" LogicalName="resources/ic_路径查询_normal.png" />
+    <Resource Include="resources\ic_辅助线_click.png" LogicalName="resources/ic_辅助线_click.png" />
+    <Resource Include="resources\ic_辅助线_disable.png" LogicalName="resources/ic_辅助线_disable.png" />
+    <Resource Include="resources\ic_辅助线_normal.png" LogicalName="resources/ic_辅助线_normal.png" />
+    <Resource Include="resources\imagebg.bmp" LogicalName="resources/imagebg.bmp" />
+    <Resource Include="resources\leftarrow_disabled.png" LogicalName="resources/leftarrow_disabled.png" />
+    <Resource Include="resources\leftarrow_hover.png" LogicalName="resources/leftarrow_hover.png" />
+    <Resource Include="resources\leftarrow_normal.png" LogicalName="resources/leftarrow_normal.png" />
+    <Resource Include="resources\leftarrow_press.png" LogicalName="resources/leftarrow_press.png" />
+    <Resource Include="resources\list_ic_add_gray.png" LogicalName="resources/list_ic_add_gray.png" />
+    <Resource Include="resources\list_ic_delete_gray.png" LogicalName="resources/list_ic_delete_gray.png" />
+    <Resource Include="resources\list_ic_eye-close_gray.png" LogicalName="resources/list_ic_eye-close_gray.png" />
+    <Resource Include="resources\list_ic_eye-open_gray.png" LogicalName="resources/list_ic_eye-open_gray.png" />
+    <Resource Include="resources\list_ic_reduce_gray.png" LogicalName="resources/list_ic_reduce_gray.png" />
+    <Resource Include="resources\locked.png" LogicalName="resources/locked.png" />
+    <Resource Include="resources\lock_click.png" LogicalName="resources/lock_click.png" />
+    <Resource Include="resources\lock_disable.png" LogicalName="resources/lock_disable.png" />
+    <Resource Include="resources\lock_normal.png" LogicalName="resources/lock_normal.png" />
+    <Resource Include="resources\logout_click.png" LogicalName="resources/logout_click.png" />
+    <Resource Include="resources\modal_fold_click.png" LogicalName="resources/modal_fold_click.png" />
+    <Resource Include="resources\modal_fold_disable.png" LogicalName="resources/modal_fold_disable.png" />
+    <Resource Include="resources\modal_fold_normal.png" LogicalName="resources/modal_fold_normal.png" />
+    <Resource Include="resources\modal_右箭头_click.png" LogicalName="resources/modal_右箭头_click.png" />
+    <Resource Include="resources\modal_右箭头_disable.png" LogicalName="resources/modal_右箭头_disable.png" />
+    <Resource Include="resources\modal_右箭头_normal.png" LogicalName="resources/modal_右箭头_normal.png" />
+    <Resource Include="resources\more_click.png" LogicalName="resources/more_click.png" />
+    <Resource Include="resources\more_normal.png" LogicalName="resources/more_normal.png" />
+    <Resource Include="resources\msg_close_click.png" LogicalName="resources/msg_close_click.png" />
+    <Resource Include="resources\msg_close_normal.png" LogicalName="resources/msg_close_normal.png" />
+    <Resource Include="resources\no-camera-big.png" LogicalName="resources/no-camera-big.png" />
+    <Resource Include="resources\not-see_normal.png" LogicalName="resources/not-see_normal.png" />
+    <Resource Include="resources\not-_see_click.png" LogicalName="resources/not-_see_click.png" />
+    <Resource Include="resources\notstayontop_click.png" LogicalName="resources/notstayontop_click.png" />
+    <Resource Include="resources\notstayontop_disable.png" LogicalName="resources/notstayontop_disable.png" />
+    <Resource Include="resources\notstayontop_normal.png" LogicalName="resources/notstayontop_normal.png" />
+    <Resource Include="resources\operation_icon.png" LogicalName="resources/operation_icon.png" />
+    <Resource Include="resources\radiobtn_off_disable.png" LogicalName="resources/radiobtn_off_disable.png" />
+    <Resource Include="resources\result_pack-up_normal.png" LogicalName="resources/result_pack up_normal.png" />
+    <Resource Include="resources\roi_circle_click.png" LogicalName="resources/roi_circle_click.png" />
+    <Resource Include="resources\roi_circle_normal.png" LogicalName="resources/roi_circle_normal.png" />
+    <Resource Include="resources\roi_doublebox_click.png" LogicalName="resources/roi_doublebox_click.png" />
+    <Resource Include="resources\roi_doublebox_normal.png" LogicalName="resources/roi_doublebox_normal.png" />
+    <Resource Include="resources\roi_full-screen_click.png" LogicalName="resources/roi_full-screen_click.png" />
+    <Resource Include="resources\roi_full-screen_normal.png" LogicalName="resources/roi_full-screen_normal.png" />
+    <Resource Include="resources\roi_polygon_click.png" LogicalName="resources/roi_polygon_click.png" />
+    <Resource Include="resources\roi_polygon_normal.png" LogicalName="resources/roi_polygon_normal.png" />
+    <Resource Include="resources\roi_quadrabox_click.png" LogicalName="resources/roi_quadrabox_click.png" />
+    <Resource Include="resources\roi_quadrabox_normal.png" LogicalName="resources/roi_quadrabox_normal.png" />
+    <Resource Include="resources\roi_retangle_click.png" LogicalName="resources/roi_retangle_click.png" />
+    <Resource Include="resources\roi_retangle_normal.png" LogicalName="resources/roi_retangle_normal.png" />
+    <Resource Include="resources\roi_ring_click.png" LogicalName="resources/roi_ring_click.png" />
+    <Resource Include="resources\roi_ring_disable.png" LogicalName="resources/roi_ring_disable.png" />
+    <Resource Include="resources\roi_ring_normal.png" LogicalName="resources/roi_ring_normal.png" />
+    <Resource Include="resources\roi_圆弧卡尺_click.png" LogicalName="resources/roi_圆弧卡尺_click.png" />
+    <Resource Include="resources\roi_圆弧卡尺_disable.png" LogicalName="resources/roi_圆弧卡尺_disable.png" />
+    <Resource Include="resources\roi_圆弧卡尺_normal.png" LogicalName="resources/roi_圆弧卡尺_normal.png" />
+    <Resource Include="resources\roi_圆形卡尺_click.png" LogicalName="resources/roi_圆形卡尺_click.png" />
+    <Resource Include="resources\roi_圆形卡尺_disable.png" LogicalName="resources/roi_圆形卡尺_disable.png" />
+    <Resource Include="resources\roi_圆形卡尺_normal.png" LogicalName="resources/roi_圆形卡尺_normal.png" />
+    <Resource Include="resources\roi_多边形卡尺_click.png" LogicalName="resources/roi_多边形卡尺_click.png" />
+    <Resource Include="resources\roi_多边形卡尺_normal.png" LogicalName="resources/roi_多边形卡尺_normal.png" />
+    <Resource Include="resources\roi_屏蔽circle_click.png" LogicalName="resources/roi_屏蔽circle_click.png" />
+    <Resource Include="resources\roi_屏蔽circle_disable.png" LogicalName="resources/roi_屏蔽circle_disable.png" />
+    <Resource Include="resources\roi_屏蔽circle_normal.png" LogicalName="resources/roi_屏蔽circle_normal.png" />
+    <Resource Include="resources\roi_屏蔽polygon_click.png" LogicalName="resources/roi_屏蔽polygon_click.png" />
+    <Resource Include="resources\roi_屏蔽polygon_disable.png" LogicalName="resources/roi_屏蔽polygon_disable.png" />
+    <Resource Include="resources\roi_屏蔽polygon_normal.png" LogicalName="resources/roi_屏蔽polygon_normal.png" />
+    <Resource Include="resources\roi_屏蔽retangle_click.png" LogicalName="resources/roi_屏蔽retangle_click.png" />
+    <Resource Include="resources\roi_屏蔽retangle_disable.png" LogicalName="resources/roi_屏蔽retangle_disable.png" />
+    <Resource Include="resources\roi_屏蔽retangle_normal.png" LogicalName="resources/roi_屏蔽retangle_normal.png" />
+    <Resource Include="resources\roi_扇形_click.png" LogicalName="resources/roi_扇形_click.png" />
+    <Resource Include="resources\roi_扇形_disable.png" LogicalName="resources/roi_扇形_disable.png" />
+    <Resource Include="resources\roi_扇形_normal.png" LogicalName="resources/roi_扇形_normal.png" />
+    <Resource Include="resources\roi_直线卡尺_click.png" LogicalName="resources/roi_直线卡尺_click.png" />
+    <Resource Include="resources\roi_直线卡尺_disable.png" LogicalName="resources/roi_直线卡尺_disable.png" />
+    <Resource Include="resources\roi_直线卡尺_normal.png" LogicalName="resources/roi_直线卡尺_normal.png" />
+    <Resource Include="resources\roi_选中但未绘制_bg.png" LogicalName="resources/roi_选中但未绘制_bg.png" />
+    <Resource Include="resources\searchicon.png" LogicalName="resources/searchicon.png" />
+    <Resource Include="resources\see_click.png" LogicalName="resources/see_click.png" />
+    <Resource Include="resources\see_normal.png" LogicalName="resources/see_normal.png" />
+    <Resource Include="resources\stayontop_click.png" LogicalName="resources/stayontop_click.png" />
+    <Resource Include="resources\stayontop_disable.png" LogicalName="resources/stayontop_disable.png" />
+    <Resource Include="resources\stayontop_normal.png" LogicalName="resources/stayontop_normal.png" />
+    <Resource Include="resources\swith_off.png" LogicalName="resources/swith_off.png" />
+    <Resource Include="resources\swith_off_dark.png" LogicalName="resources/swith_off_dark.png" />
+    <Resource Include="resources\swith_on.png" LogicalName="resources/swith_on.png" />
+    <Resource Include="resources\swith_on_dark.png" LogicalName="resources/swith_on_dark.png" />
+    <Resource Include="resources\tabbar_ic_remove_click.png" LogicalName="resources/tabbar_ic_remove_click.png" />
+    <Resource Include="resources\tabbar_ic_remove_disable.png" LogicalName="resources/tabbar_ic_remove_disable.png" />
+    <Resource Include="resources\tabbar_ic_remove_normal.png" LogicalName="resources/tabbar_ic_remove_normal.png" />
+    <Resource Include="resources\tab_ic_back_click.png" LogicalName="resources/tab_ic_back_click.png" />
+    <Resource Include="resources\tab_ic_back_disable.png" LogicalName="resources/tab_ic_back_disable.png" />
+    <Resource Include="resources\tab_ic_back_hover.png" LogicalName="resources/tab_ic_back_hover.png" />
+    <Resource Include="resources\tab_ic_back_normal.png" LogicalName="resources/tab_ic_back_normal.png" />
+    <Resource Include="resources\toolbarrunrepeat_disable.png" LogicalName="resources/toolbarrunrepeat_disable.png" />
+    <Resource Include="resources\toolbarrunrepeat_normal.png" LogicalName="resources/toolbarrunrepeat_normal.png" />
+    <Resource Include="resources\toolbarstart_disable.png" LogicalName="resources/toolbarstart_disable.png" />
+    <Resource Include="resources\toolbarstart_normal.png" LogicalName="resources/toolbarstart_normal.png" />
+    <Resource Include="resources\toolbarstop_disable.png" LogicalName="resources/toolbarstop_disable.png" />
+    <Resource Include="resources\toolbarstop_n.png" LogicalName="resources/toolbarstop_n.png" />
+    <Resource Include="resources\toolbartriangleopen_click.png" LogicalName="resources/toolbartriangleopen_click.png" />
+    <Resource Include="resources\toolbartriangleopen_normal.png" LogicalName="resources/toolbartriangleopen_normal.png" />
+    <Resource Include="resources\toolbar_universal5.png" LogicalName="resources/toolbar_universal5.png" />
+    <Resource Include="resources\toolbar_universal5_disable.png" LogicalName="resources/toolbar_universal5_disable.png" />
+    <Resource Include="resources\toolgroupcali_f.png" LogicalName="resources/toolgroupcali_f.png" />
+    <Resource Include="resources\toolgroupcali_n.png" LogicalName="resources/toolgroupcali_n.png" />
+    <Resource Include="resources\tool_right_ic_1比1_click.png" LogicalName="resources/tool_right_ic_1比1_click.png" />
+    <Resource Include="resources\tool_right_ic_1比1_hover.png" LogicalName="resources/tool_right_ic_1比1_hover.png" />
+    <Resource Include="resources\tool_right_ic_full-screen_click.png" LogicalName="resources/tool_right_ic_full-screen_click.png" />
+    <Resource Include="resources\tool_right_ic_full-screen_hover.png" LogicalName="resources/tool_right_ic_full-screen_hover.png" />
+    <Resource Include="resources\u1076_selected.png" LogicalName="resources/u1076_selected.png" />
+    <Resource Include="resources\u1096.png" LogicalName="resources/u1096.png" />
+    <Resource Include="resources\u166.png" LogicalName="resources/u166.png" />
+    <Resource Include="resources\u752.png" LogicalName="resources/u752.png" />
+    <Resource Include="resources\unlock.png" LogicalName="resources/unlock.png" />
+    <Resource Include="resources\unlock_click.png" LogicalName="resources/unlock_click.png" />
+    <Resource Include="resources\unlock_disable.png" LogicalName="resources/unlock_disable.png" />
+    <Resource Include="resources\unlock_hover.png" LogicalName="resources/unlock_hover.png" />
+    <Resource Include="resources\unlock_normal.png" LogicalName="resources/unlock_normal.png" />
+    <Resource Include="resources\user.png" LogicalName="resources/user.png" />
+    <Resource Include="resources\user_u.png" LogicalName="resources/user_u.png" />
+    <Resource Include="resources\windowauz.png" LogicalName="resources/windowauz.png" />
+    <Resource Include="resources\windowbg_click.png" LogicalName="resources/windowbg_click.png" />
+    <Resource Include="resources\windowbg_hover.png" LogicalName="resources/windowbg_hover.png" />
+    <Resource Include="resources\windowclose.png" LogicalName="resources/windowclose.png" />
+    <Resource Include="resources\windowmin.png" LogicalName="resources/windowmin.png" />
+    <Resource Include="resources\windowshift_ic_maximize.png" LogicalName="resources/windowshift_ic_maximize.png" />
+    <Resource Include="resources\windowshift_ic_normal.png" LogicalName="resources/windowshift_ic_normal.png" />
+    <Resource Include="resources\window_roi_lock_click.png" LogicalName="resources/window_roi_lock_click.png" />
+    <Resource Include="resources\window_roi_lock_normal.png" LogicalName="resources/window_roi_lock_normal.png" />
+    <Resource Include="resources\window_roi_unlock_click.png" LogicalName="resources/window_roi_unlock_click.png" />
+    <Resource Include="resources\window_roi_unlock_normal.png" LogicalName="resources/window_roi_unlock_normal.png" />
+    <Resource Include="resources\window_shieldpolygon_click.png" LogicalName="resources/window_shieldpolygon_click.png" />
+    <Resource Include="resources\window_shieldpolygon_disable.png" LogicalName="resources/window_shieldpolygon_disable.png" />
+    <Resource Include="resources\window_shieldpolygon_normal.png" LogicalName="resources/window_shieldpolygon_normal.png" />
+    <Resource Include="resources\zoomin.png" LogicalName="resources/zoomin.png" />
+    <Resource Include="resources\zoomin_1.png" LogicalName="resources/zoomin_1.png" />
+    <Resource Include="resources\zoomout.png" LogicalName="resources/zoomout.png" />
+    <Resource Include="resources\zoomout_1.png" LogicalName="resources/zoomout_1.png" />
+    <Resource Include="resources\特征模板_ic_排序上_click.png" LogicalName="resources/特征模板_ic_排序上_click.png" />
+    <Resource Include="resources\特征模板_ic_排序上_disable.png" LogicalName="resources/特征模板_ic_排序上_disable.png" />
+    <Resource Include="resources\特征模板_ic_排序上_normal.png" LogicalName="resources/特征模板_ic_排序上_normal.png" />
+    <Resource Include="resources\特征模板_ic_排序下_click.png" LogicalName="resources/特征模板_ic_排序下_click.png" />
+    <Resource Include="resources\特征模板_ic_排序下_disable.png" LogicalName="resources/特征模板_ic_排序下_disable.png" />
+    <Resource Include="resources\特征模板_ic_排序下_normal.png" LogicalName="resources/特征模板_ic_排序下_normal.png" />
+    <Resource Include="resources\编辑click.png" LogicalName="resources/编辑click.png" />
+    <Resource Include="resources\编辑normal.png" LogicalName="resources/编辑normal.png" />
+    <Resource Include="resources\自动生成_click.png" LogicalName="resources/自动生成_click.png" />
+    <Resource Include="resources\自动生成_normal.png" LogicalName="resources/自动生成_normal.png" />
+  </ItemGroup>
+  <ItemGroup />
+</Project>

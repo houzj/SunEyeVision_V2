@@ -1,0 +1,167 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="ShellModuleControl.ShellRun" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:control="clr-namespace:ShellModuleControl" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:controls1="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:hikCompletion="clr-namesapce:VM.CodeCompletion;assemblye=VM.CodeCompletion" xmlns:AppPcUI="clr-namespace:Apps.PcUI.Controls;assembly=Apps.PcUI" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:release="clr-namespace:VMControls.WPF.Release;assembly=VMControls.WPF.Release" x:Name="ShellControl" Margin="-4,-4,-4,0" Unloaded="ShellControl_Unloaded">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/BottomButtonStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/ToggleButtonStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ScrollBarStyle/RecScrollBarStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/TabControlStyle/TabControlStyle.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter" />
+      <SolidColorBrush x:Key="GridSplitterBackground" Color="#FFE0DFDE" />
+      <Style x:Key="PasswordBoxStyle" TargetType="{x:Type PasswordBox}">
+        <Setter Property="Foreground" Value="#FF666666" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Style.Triggers>
+          <MultiDataTrigger>
+            <MultiDataTrigger.Conditions>
+              <Condition Value="False" Binding="{Binding IsFocused, RelativeSource={RelativeSource Self}}" />
+              <Condition Value="False" Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+            </MultiDataTrigger.Conditions>
+            <Setter Property="Background">
+              <Setter.Value>
+                <VisualBrush AlignmentX="Left" AlignmentY="Center" Stretch="None">
+                  <VisualBrush.Visual>
+                    <TextBlock Padding="5,2" Background="#00FFFFFF" Foreground="#FFBFBFBF" Text="请输入密码" />
+                  </VisualBrush.Visual>
+                </VisualBrush>
+              </Setter.Value>
+            </Setter>
+          </MultiDataTrigger>
+        </Style.Triggers>
+      </Style>
+      <Style x:Key="TabItemTextStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="Foreground" Value="#4D4D4D" />
+        <Setter Property="FontSize" Value="12px" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontFamily" Value="Microsoft YaHei" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+      </Style>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Border Margin="0" BorderThickness="0" BorderBrush="#FFFF0000">
+    <Grid Margin="0,0,0,8">
+      <FrameworkElement.Resources>
+        <ResourceDictionary>
+          <Style x:Key="borderStyle" TargetType="{x:Type Border}">
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="#A5D1D5DA" />
+          </Style>
+          <Style x:Key="borderStyleInText" TargetType="{x:Type Border}">
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="#A5D1D5DA" />
+            <Setter Property="Background" Value="#FFFFFFFF" />
+          </Style>
+        </ResourceDictionary>
+      </FrameworkElement.Resources>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="350*" MinWidth="300" />
+        <ColumnDefinition Width="1" />
+        <ColumnDefinition MinWidth="400" Width="{Binding CodeImageControlWidth, ElementName=ShellControl}" />
+      </Grid.ColumnDefinitions>
+      <Grid Column="0" Background="{DynamicResource GlobalHeadGrid}">
+        <TabControl Name="tabControl" BorderThickness="0,1,0,0" BorderBrush="#E0DFDE" SelectedIndex="{Binding SelectedTabIndex}">
+          <TabItem Height="37" Style="{StaticResource NorTablItemStyle}" Width="{Binding TabItemWidth, ElementName=ShellControl}" Visibility="{Binding IsInputParamTabVisible, Converter={StaticResource bool2VisibilityConverter}}">
+            <HeaderedContentControl.Header>
+              <Grid VerticalAlignment="Center">
+                <TextBlock Text="{DynamicResource Tab_Input Params}" Style="{StaticResource TabItemTextStyle}" />
+              </Grid>
+            </HeaderedContentControl.Header>
+            <control:InputParam x:Name="inputParamCtrl" Background="#00FFFFFF" DataContext="{Binding ShellInVarContainerA}" Visibility="{Binding IsInputParamTabVisible, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource AncestorType=TabControl}}" />
+          </TabItem>
+          <TabItem Height="37" Style="{StaticResource NorTablItemStyle}" Width="{Binding TabItemWidth, ElementName=ShellControl}" Visibility="{Binding IsOutputParamTabVisible, Converter={StaticResource bool2VisibilityConverter}}">
+            <HeaderedContentControl.Header>
+              <Grid VerticalAlignment="Center">
+                <TextBlock Text="{DynamicResource Tab_Output Params}" Style="{StaticResource TabItemTextStyle}" />
+              </Grid>
+            </HeaderedContentControl.Header>
+            <control:OutParam x:Name="outParamCtrl" Background="#00FFFFFF" DataContext="{Binding ShellOutVarContainerA}" Visibility="{Binding IsOutputParamTabVisible, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource AncestorType=TabControl}}" />
+          </TabItem>
+          <TabItem Height="37" Style="{StaticResource NorTablItemStyle}" Width="{Binding TabItemWidth, ElementName=ShellControl}" Visibility="{Binding IsDisplayParamTabVisible, Converter={StaticResource bool2VisibilityConverter}}">
+            <HeaderedContentControl.Header>
+              <Grid VerticalAlignment="Center">
+                <TextBlock Text="{DynamicResource Tab_Display Params}" Style="{StaticResource TabItemTextStyle}" />
+              </Grid>
+            </HeaderedContentControl.Header>
+            <control:DisplayConfig DataContext="{Binding ShellDisplayContainerA}" Visibility="{Binding IsDisplayParamTabVisible, Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource AncestorType=TabControl}}" />
+          </TabItem>
+        </TabControl>
+      </Grid>
+      <GridSplitter Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="{StaticResource GridSplitterBackground}" Margin="-1,0,-1,0" />
+      <Grid Column="2" Margin="0" Visibility="{Binding ElementName=ShellControl, Path=IsEditCode, Converter={StaticResource bool2VisibilityConverter}}">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="376*" MinHeight="100" />
+          <RowDefinition Height="1" />
+          <RowDefinition Height="160*" MinHeight="100" />
+        </Grid.RowDefinitions>
+        <Grid Row="0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="586*" MinWidth="200" />
+            <ColumnDefinition Width="1" />
+            <ColumnDefinition Width="{Binding ImageControlWidth, ElementName=ShellControl}" MinWidth="{Binding ImageControlMinWidth, ElementName=ShellControl}" />
+          </Grid.ColumnDefinitions>
+          <Grid Column="0" Margin="0">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="39" />
+              <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Border Grid.Row="0" Margin="0,4,0,0" Style="{StaticResource borderStyle}" Background="#F5F7FA">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="3*" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal">
+                  <Button Name="btnInportCode" FontSize="12" Style="{StaticResource Orange_ButtonStyle}" Content="{DynamicResource 导入}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="24" Width="80" Margin="10,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Click="btnInportCode_Click" />
+                  <Button Name="btnExportCode" FontSize="12" Style="{StaticResource Orange_ButtonStyle}" Content="{DynamicResource 导出}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="24" Width="80" Margin="10,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Click="btnExportCode_Click" />
+                  <Button Name="btnEditRefrences" FontSize="12" Style="{StaticResource Orange_ButtonStyle}" Content="{DynamicResource Lang_EditAssembly}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="24" Width="84" Margin="10,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Click="EditRefrences_OnClick" />
+                  <Button Name="btnExportSoluion" FontSize="12" Style="{StaticResource Orange_ButtonStyle}" Content="{DynamicResource Lang_ExportProject}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="24" Width="84" Margin="10,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Click="BtnExportSoluion_Click" />
+                </StackPanel>
+                <Grid Column="1" Margin="0,0,10,0">
+                  <Button Name="btnEnablePermissions" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center" ToolTip="{DynamicResource Lang_EnablePermissions}" Style="{StaticResource EnablePermissions_ButtonStyle}" Visibility="{Binding ElementName=ShellControl, Path=IsPasswordUnEnabled, Mode=TwoWay, Converter={StaticResource bool2VisibilityConverter}}" Click="btnEnablePermissions_Click" />
+                  <Button Name="btnCancelPermissions" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center" ToolTip="{DynamicResource Lang_CancelPermissions}" Style="{StaticResource CancelPermissions_ButtonStyle}" Visibility="{Binding ElementName=ShellControl, Path=IsPasswordEnabled, Mode=TwoWay, Converter={StaticResource bool2VisibilityConverter}}" Click="btnCancelPermissions_Click" />
+                </Grid>
+              </Grid>
+            </Border>
+            <Grid Row="1" Margin="0,0,0,0">
+              <Border Style="{StaticResource borderStyleInText}">
+                <control:ShellCodeEditor Name="textEditorControl" TextChanged="textEditorControl_TextChanged" Control.FontFamily="Consolas" Control.FontSize="10pt" TextEditor.ShowLineNumbers="True" TextEditor.IsReadOnly="False" xmlns:avalonedit="clr-namespace:ICSharpCode.AvalonEdit;assembly=ICSharpCode.AvalonEdit" avalonedit:TextEditor.VerticalScrollBarVisibility="Auto" avalonedit:TextEditor.HorizontalScrollBarVisibility="Auto" avalonedit:TextEditor.SyntaxHighlighting="C#" />
+              </Border>
+            </Grid>
+            <Border Style="{StaticResource borderStyle}" Grid.Row="1" />
+          </Grid>
+          <GridSplitter Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="{StaticResource GridSplitterBackground}" Margin="-1,0,-1,0" />
+          <release:VmRenderControl Name="renderControl" Grid.Column="2" Background="#FF000000" IImageSource="{Binding CurImage, ElementName=ShellControl}" Visibility="{Binding ElementName=ShellControl, Path=IsShowImage, Mode=TwoWay, Converter={StaticResource bool2VisibilityConverter}}" />
+        </Grid>
+        <GridSplitter Grid.Row="1" Margin="0,-1,0,-1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{StaticResource GridSplitterBackground}" />
+        <ScrollViewer Name="CompileResult" Grid.Row="2" Style="{StaticResource RecScrollViewer}" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
+          <TextBox Name="textBoxCompile" Margin="1" TextWrapping="Wrap" Padding="18,20,18,20" IsReadOnly="True" FontWeight="Normal" FontFamily="Microsoft YaHei" FontSize="12" Foreground="#666666" BorderThickness="0" Text="{Binding CompileResultA}">
+            <FrameworkElement.ContextMenu>
+              <controls1:HikContextMenu>
+                <MenuItem Header="{DynamicResource Lang_Clear}" Click="ClearRichText_OnClick" />
+              </controls1:HikContextMenu>
+            </FrameworkElement.ContextMenu>
+          </TextBox>
+        </ScrollViewer>
+      </Grid>
+      <Grid Column="2" Background="#FFFFFFFF">
+        <FrameworkElement.Style>
+          <Style TargetType="{x:Type Grid}">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+              <DataTrigger Value="False" Binding="{Binding IsEditCode, ElementName=ShellControl}">
+                <Setter Property="Visibility" Value="Visible" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </FrameworkElement.Style>
+        <Button FontSize="14" Style="{StaticResource Orange_ButtonStyle}" Content="{DynamicResource Lang_EditCode}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="36" Width="120" HorizontalAlignment="Center" VerticalAlignment="Center" Click="btnEditCode_Click" />
+      </Grid>
+      <AppPcUI:ProgressMask Name="windowShadow" Grid.ColumnSpan="3" Message="{DynamicResource Lang_ExportSol}" IsShowProgressBar="False" Visibility="{Binding IsShowProcessbar, ElementName=ShellControl}" />
+    </Grid>
+  </Border>
+</UserControl>

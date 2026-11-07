@@ -1,0 +1,132 @@
+{
+  "controls": [
+    {
+      "type": "GroupInputParam",
+      "name": "GroupInputParam"
+    },
+    {
+      "type": "GroupOutputParam",
+      "name": "GroupOutputParam"
+    },
+    {
+      "type": "GroupRunParam",
+      "name": "Tab_Run Params"
+    },
+    {
+      "type": "GroupDisplayParam",
+      "name": "GroupDisplayParam"
+    },
+    {
+      "type": "Boolean",
+      "name": "EnableLoop"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "LoopStartCount"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "LoopEndCount"
+    },
+    {
+      "type": "Integer",
+      "name": "LoopTimeGap"
+    },
+    {
+      "type": "Boolean",
+      "name": "EnableBreak"
+    },
+    {
+      "type": "Enumeration",
+      "name": "DataType"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "BaseX1"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "BaseX2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "BaseX3"
+    },
+    {
+      "type": "Enumeration",
+      "name": "CmpType"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "BaseX1b"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "BaseX2b"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "BaseX3b"
+    },
+    {
+      "type": "ButtonSelecter_LoopControl",
+      "name": "BaseX1T"
+    },
+    {
+      "type": "ButtonSelecter_LoopControl",
+      "name": "BaseX2T"
+    },
+    {
+      "type": "ButtonSelecter_LoopControl",
+      "name": "BaseX3T"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "compound-control",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P4",
+  "themeStates": "unknown",
+  "toolId": "imvsgroup",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IMVSGroup\\IMVSGroup.xml",
+      "sha256": "3f0fe8154fd8b0a396b85d3b503fed11bc37f213c53441d613b429388e702adc",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IMVSGroup\\IMVSGroupAlgorithm.xml",
+      "sha256": "17c5397aad036713205b2af45420bb925e1ac2937a26093672c1653d9989ae48",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IMVSGroup\\IMVSGroupAlgorithmTab.xml",
+      "sha256": "2e15b6a20e2ab2e5ed40a12d943001dbc531cf28adc9763821840505c2679c7b",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IMVSGroup\\IMVSGroupCs.xml",
+      "sha256": "96bb963f60ba5d0142c33ba1a1d8ec147a9f44881110c7c69e3e8ebd867b0875",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IMVSGroup\\IMVSGroupDisplay.xml",
+      "sha256": "aa56da3d573a730981b759113756a1544eaafa8387407da5f415a38053c46fc9",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IMVSGroup\\ToolItemInfo.xml",
+      "sha256": "aa91bc16aa4e9c534ca97486794b1692e5dd7adfa62558c633ceb770d624471d",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "Group",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

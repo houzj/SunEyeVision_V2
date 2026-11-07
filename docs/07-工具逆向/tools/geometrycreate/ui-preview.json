@@ -1,0 +1,244 @@
+{
+  "controls": [
+    {
+      "type": "RadioSelecter",
+      "name": "InputType"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "GeometryType"
+    },
+    {
+      "type": "RadioSelecter3",
+      "name": "ElementType"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "SubInputPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "OriginPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "OriginPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "OriginPointY"
+    },
+    {
+      "type": "RadioSelecter3",
+      "name": "SubInputLine"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "LINE"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointY"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "SubInputCircle"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Circle"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "CenterPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "CenterPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Radius"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "SubInputBox"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Box"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "BoxCenterX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "BoxCenterY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "BoxWidth"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "BoxHeight"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "BoxAngle"
+    },
+    {
+      "type": "Boolean",
+      "name": "Assist0"
+    },
+    {
+      "type": "RadioSelecter3",
+      "name": "SelectWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "CorrectInfo"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "InitPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "InitPointBaseX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "InitPointBaseY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "InitAngle"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ScaleX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ScaleY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RunPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RunPointBaseX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RunPointBaseY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RunAngle"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RunScaleX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RunScaleY"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BoxFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "PointFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CircleFiled"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "geometrycreate",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageGeneration\\GeometryCreate\\GeometryCreate.xml",
+      "sha256": "b92de970f901b0ac74881066287bf520492cf3d34163eee7f61767cb96de3e40",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageGeneration\\GeometryCreate\\GeometryCreateAlgorithm.xml",
+      "sha256": "f2c8c61b1f3b956c6a7ddda2702437ee4306fafd496386a2b2563872c3b3e73a",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageGeneration\\GeometryCreate\\GeometryCreateAlgorithmTab.xml",
+      "sha256": "7b4182583440643aef6fcd08d32016f002acd8624559a9635211ff39fd4f09a3",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageGeneration\\GeometryCreate\\GeometryCreateCs.xml",
+      "sha256": "a9045666891b44471480086a49a24d048d7152e35f51d43471c96751a8c72e45",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageGeneration\\GeometryCreate\\GeometryCreateDisplay.xml",
+      "sha256": "5dba3d93a3094c6979c3c06fc58f4c39fb2e1997fd5cc834d1ad9ee0761ecc0d",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageGeneration\\GeometryCreate\\ToolItemInfo.xml",
+      "sha256": "ac36c1deeade342d3bde356d39f8b27b8b00d17604756fcb64986cb5bdf11384",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "几何创建",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Grid x:Class="StringCompareModuleControl.LeftRightControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:StringCompareModuleControl" xmlns:xmlui="clr-namespace:Apps.XmlUI;assembly=Apps.XmlUI" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" x:Name="UserControl" Margin="{Binding ChildMargin, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type xmlui:ParamListView}}}">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Apps.XmlUI;component/ResourceDictionaries/GlobalResources.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid.ColumnDefinitions>
+    <ColumnDefinition Width="{Binding ChildLeftWidth, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LeftRightControl}}}" />
+    <ColumnDefinition Width="*" />
+  </Grid.ColumnDefinitions>
+  <ContentControl FontSize="14" Foreground="#FF666666" VerticalContentAlignment="Center" Content="{Binding LeftContent, ElementName=UserControl}" />
+  <ContentControl Grid.Column="1" FontSize="14" Foreground="#FF808080" VerticalContentAlignment="Center" Content="{Binding RightContent, ElementName=UserControl}" />
+</Grid>

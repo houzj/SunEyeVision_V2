@@ -1,0 +1,116 @@
+{
+  "controls": [
+    {
+      "type": "RadioSelecter",
+      "name": "InputWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "FittingPoints"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "FittingPointsX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "FittingPointsY"
+    },
+    {
+      "type": "Integer",
+      "name": "ErrorTolerance"
+    },
+    {
+      "type": "Boolean",
+      "name": "NumLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangNumLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "CenterXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCenterXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "CenterYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCenterYLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "ScoreLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangScoreLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FittedEllipse"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CenterPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FitPoint"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvsellipsefitmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageGeneration\\IMVSEllipseFitModu\\IMVSEllipseFitModu.xml",
+      "sha256": "d3bd92d4ad3990b727babcfe074896d6932a12ad5e268438e956a7b4026ba200",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageGeneration\\IMVSEllipseFitModu\\IMVSEllipseFitModuAlgorithm.xml",
+      "sha256": "a604a68651ec47efcdba626322b70f3f89b504e5a0e33928adeffd34eeeaf9c5",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageGeneration\\IMVSEllipseFitModu\\IMVSEllipseFitModuAlgorithmTab.xml",
+      "sha256": "32b1bb7b4cf7f963bc1b833513b33098d96652761333479163936e306e9e94e7",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageGeneration\\IMVSEllipseFitModu\\IMVSEllipseFitModuCs.xml",
+      "sha256": "f9160ce5d5b2492c1ad6efd080e804cc376f25d92b6eeb1884ca1028b4219432",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageGeneration\\IMVSEllipseFitModu\\IMVSEllipseFitModuDisplay.xml",
+      "sha256": "314a8b77749fd4fd64eff096f26cd8d888cb601e2254ce93bcbe07a5e2b53553",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageGeneration\\IMVSEllipseFitModu\\ToolItemInfo.xml",
+      "sha256": "8f5a076a0c68ed6548134492d2db747f7408ff6552f88dc42135fd0c927a7363",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "椭圆拟合",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

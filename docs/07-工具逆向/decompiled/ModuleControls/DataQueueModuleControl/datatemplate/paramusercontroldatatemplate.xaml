@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:DataQueueModuleControl">
+  <DataTemplate x:Key="DataQueueData">
+    <local:DataQueuePanel ParentNode="{Binding Data}" />
+  </DataTemplate>
+  <DataTemplate x:Key="TriggerProcedureData">
+    <local:TriggerProcedurePanel ParentNode="{Binding Data}" />
+  </DataTemplate>
+</ResourceDictionary>

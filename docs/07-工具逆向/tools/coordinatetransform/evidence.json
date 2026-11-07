@@ -1,0 +1,28 @@
+{
+  "stableToolId": "coordinatetransform",
+  "originalPlugin": "CoordinateTransform",
+  "displayName": "坐标转换",
+  "originalCategory": "Calculation",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\CoordinateTransform",
+  "uiCategory": "declarative-parameters",
+  "priority": "P0",
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "resourceCount": 6,
+  "parameterCount": 1,
+  "inputCount": 4,
+  "outputCount": 3,
+  "uiControlCount": 11,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ],
+  "sourceReports": [
+    "docs/plugins/COORDINATE-MODULE-IMPLEMENTATION-MATRIX.md"
+  ],
+  "note": "现有矩阵提供输入、参数、结果和实现映射入口，原厂执行分支需继续按工具卡闭合。"
+}

@@ -1,0 +1,104 @@
+{
+  "toolId": "commdevicemodule",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\CommDeviceModule\\CommDeviceModule.xml",
+      "sha256": "c78c1f72aa66aaf4edda35a4e808365a06113bf9325460b92329e70b2488b1a4",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\CommDeviceModule\\CommDeviceModuleAlgorithm.xml",
+      "sha256": "7d33046b3d4c246b5316a5926b0106e22ba2f1b6c444aaeb29c2ec488a1772d5",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\CommDeviceModule\\CommDeviceModuleAlgorithmTab.xml",
+      "sha256": "8e57bb5a70abe0b6f7d5fd11efb521f512630aa923a48f092d32b1caf171eec1",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\CommDeviceModule\\CommDeviceModuleDisplay.xml",
+      "sha256": "79cbe23b4d730c8580b3fbff1f4e4264388728b8e54b58800713022f61e1f6d6",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\CommDeviceModule\\ToolItemInfo.xml",
+      "sha256": "c281f731c84dd810009e8a5f1ba6d2c90a78679fbac731db423d492080de9611",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "Boolean",
+      "name": "LoadSolution"
+    },
+    {
+      "type": "EnumeraionComDevice",
+      "name": "SolCommunicationModuleID"
+    },
+    {
+      "type": "String",
+      "name": "SolutionTrigger"
+    },
+    {
+      "type": "Boolean",
+      "name": "ProcessControl"
+    },
+    {
+      "type": "EnumeraionComDevice",
+      "name": "ProcCommunicationModuleID"
+    },
+    {
+      "type": "ComboxEdit",
+      "name": "ProSeparator"
+    },
+    {
+      "type": "String",
+      "name": "ProcessFreeTrigger"
+    },
+    {
+      "type": "String",
+      "name": "ProcessBusyTrigger"
+    },
+    {
+      "type": "Boolean",
+      "name": "CameraRespnseControl"
+    },
+    {
+      "type": "EnumeraionComDevice",
+      "name": "CamCommunicationModuleID"
+    },
+    {
+      "type": "ComboxEdit",
+      "name": "CameraSeparator"
+    },
+    {
+      "type": "String",
+      "name": "ConnectTrigger"
+    },
+    {
+      "type": "String",
+      "name": "DisConnectTrigger"
+    },
+    {
+      "type": "TextNormal",
+      "name": "SampleSeparatorTip"
+    },
+    {
+      "type": "TextNormal",
+      "name": "CameraSeparatorTip"
+    }
+  ],
+  "sharedUiGroups": [],
+  "status": "inventory-only"
+}

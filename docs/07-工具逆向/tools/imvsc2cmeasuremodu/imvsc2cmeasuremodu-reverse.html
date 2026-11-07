@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>圆圆测量工具逆向主文档</title><style>*{box-sizing:border-box}
+body{margin:0;background:#f6f7f9;color:#1d2129;font:14px/1.7 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:24px 20px 60px}
+.crumbs{font-size:13px;margin-bottom:14px}
+.crumbs a{color:#2563eb;text-decoration:none}
+.card{background:#fff;border:1px solid #e4e7ec;border-radius:10px;padding:26px 30px}
+h1,h2,h3,h4{line-height:1.4}
+h1{font-size:20px}h2{font-size:17px;margin-top:26px}h3{font-size:15px}
+table{border-collapse:collapse;margin:12px 0;width:100%;font-size:13px}
+td,th{border:1px solid #e4e7ec;padding:6px 10px;vertical-align:top}
+tr:nth-child(even) td{background:#fafbfc}
+code{background:#f1f3f5;border-radius:3px;padding:1px 5px;font-size:12.5px;font-family:Consolas,Menlo,monospace;color:#c7254e}
+pre{background:#282c34;color:#abb2bf;border-radius:6px;padding:14px 16px;overflow:auto;font-size:12.5px;line-height:1.6;font-family:Consolas,Menlo,monospace}
+pre code{background:none;color:inherit;padding:0}
+ul{padding-left:22px}
+blockquote{border-left:3px solid #d0d5da;margin:10px 0;padding:4px 14px;color:#5a636b;background:#fafbfc}
+hr{border:0;border-top:1px solid #e4e7ec;margin:18px 0}
+p{margin:8px 0}</style></head><body><div class="wrap"><nav class="crumbs"><a href="../../index.html">&#8592; 宸ュ叿绱㈠紩</a> &middot; <code>imvsc2cmeasuremodu</code></nav><div class="card"><h1>圆圆测量工具逆向主文档</h1><ul><li>工具 ID：imvsc2cmeasuremodu</li><li>原厂工具：IMVSC2CMeasureModu</li><li>取证优先级：C0（测量链）</li><li>当前状态：source-partial</li><h2>已确认</h2><li>工具构造、Clone、Dispose 入口存在，参数对象为 C2CMeasureModuParams。</li><li>参数包含圆选择、两组边缘搜索/极性/阈值/宽度/拟合和多项角度/距离/交点限制 ParamItem。</li><li>结果构造从原生结构复制两组 caliper region 指针数组，析构释放两组分配缓冲。</li><h2>证据路径</h2><li>analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/C2CMeasureModuTool.cs</li><li>analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/C2CMeasureModuParams.cs</li><li>analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/C2CMeasureResult.cs</li><h2>未决</h2><li>圆拟合、卡尺采样、交点/距离输出、Process/ProcessAlg、UI/保存/释放仍需补证。</li></div></div></body></html>

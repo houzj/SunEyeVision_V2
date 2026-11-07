@@ -1,0 +1,60 @@
+{
+  "toolId": "ifbranchmodule",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\IfBranchModule.xml",
+      "sha256": "02e29a8daeb22a67071f5e0e537672f1f3d4565bcdf31dc85f13efb2793ae2a3",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\IfBranchModuleAlgorithm.xml",
+      "sha256": "39d15cde07aa24c7fd4fe27f6e3e1d5dd842d127e489cfef1a0cc8c9370e067a",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\IfBranchModuleAlgorithmTab.xml",
+      "sha256": "298e34234c6ac2ca3530819bad9451bd2d89baf0f1874e0853f0c61729e20da1",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\IfBranchModuleCs.xml",
+      "sha256": "30f9499dc5730dfdfb2199c1a1a0ea00c0c3e8c379c24e9fc4254488e3d7f061",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\IfBranchModuleDisplay.xml",
+      "sha256": "e73ebb3a1ac33e83a19072575259128d86c162fa64f1b164c3b75b6483b88245",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\ToolItemInfo.xml",
+      "sha256": "9fcb4a517306d063ab2cecfa605655bb5d94a9688db08f30857a776dd6c0f9de",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "HeadBar",
+      "name": "ListHead"
+    },
+    {
+      "type": "ButtonSelecter_IfBranch",
+      "name": "RangeConFFields"
+    }
+  ],
+  "sharedUiGroups": [
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

@@ -1,0 +1,175 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>VisionMasterMain</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="appmainwindow\softwareset\styles\solcontrolstyle.xaml" />
+    <Page Remove="VisionMaster.AppMainWindow\AboutMessageBox.xaml" />
+    <Page Remove="VisionMaster.AppMainWindow\GuideWindow.xaml" />
+    <Page Remove="VisionMaster.AppMainWindow\ModeSelectionWindow.xaml" />
+    <Page Remove="VisionMasterMain.AppMainWindow.SoftwareSet\RemoteServerVerification.xaml" />
+    <Page Remove="VisionMasterMain.AppMainWindow.SoftwareSet\ReSetPassCommonWindow.xaml" />
+    <Page Remove="VisionMasterMain.AppMainWindow\CloseSetDlg.xaml" />
+    <Page Remove="VisionMasterMain.AppMainWindow\LockDlg.xaml" />
+    <Page Remove="VisionMasterMain.AppMainWindow\ModifyIpWindow.xaml" />
+    <Page Remove="VisionMasterMain.AppMainWindow\TitleBar.xaml" />
+    <Page Remove="VisionMasterMain.AppMainWindow\TitleToolBar.xaml" />
+    <Page Remove="VisionMasterMain\AccessCodeSet.xaml" />
+    <Page Remove="VisionMasterMain\AccessModuleManager.xaml" />
+    <Page Remove="VisionMasterMain\AccessPage.xaml" />
+    <Page Remove="VisionMasterMain\AccesssCodeCheck.xaml" />
+    <Page Remove="VisionMasterMain\CollectionPage.xaml" />
+    <Page Remove="VisionMasterMain\LoginWindow.xaml" />
+    <Page Remove="VisionMasterMain\MainWindow.xaml" />
+    <Page Remove="VisionMasterMain\ProcedureRunPage.xaml" />
+    <Page Remove="VisionMasterMain\ReSetPassCode.xaml" />
+    <Page Remove="VisionMasterMain\SoftwarePage.xaml" />
+    <Page Remove="VisionMasterMain\SoftwareSetDlg.xaml" />
+    <Page Remove="VisionMasterMain\SolPage.xaml" />
+    <Page Remove="VisionMasterMain\SolutionManagerDialog.xaml" />
+    <Page Remove="VisionMasterMain\WelcomeDialog.xaml" />
+    <Page Remove="VisionMaster\AccessManagerWin.xaml" />
+    <Page Include="appmainwindow\softwareset\styles\solcontrolstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="appmainwindow/softwareset/styles/solcontrolstyle.xaml" />
+    <Page Include="VisionMaster.AppMainWindow\AboutMessageBox.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="appmainwindow/aboutmessagebox.xaml" />
+    <Page Include="VisionMaster.AppMainWindow\GuideWindow.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="appmainwindow/guidewindow.xaml" />
+    <Page Include="VisionMaster.AppMainWindow\ModeSelectionWindow.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="appmainwindow/modeselectionwindow.xaml" />
+    <Page Include="VisionMasterMain.AppMainWindow.SoftwareSet\RemoteServerVerification.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="appmainwindow/softwareset/remoteserververification.xaml" />
+    <Page Include="VisionMasterMain.AppMainWindow.SoftwareSet\ReSetPassCommonWindow.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="appmainwindow/softwareset/resetpasscommonwindow.xaml" />
+    <Page Include="VisionMasterMain.AppMainWindow\CloseSetDlg.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="appmainwindow/closeset/closesetdlg.xaml" />
+    <Page Include="VisionMasterMain.AppMainWindow\LockDlg.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="appmainwindow/lockdlg/lockdlg.xaml" />
+    <Page Include="VisionMasterMain.AppMainWindow\ModifyIpWindow.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="appmainwindow/modifyipwindow.xaml" />
+    <Page Include="VisionMasterMain.AppMainWindow\TitleBar.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="appmainwindow/titlebar.xaml" />
+    <Page Include="VisionMasterMain.AppMainWindow\TitleToolBar.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="appmainwindow/titletoolbar.xaml" />
+    <Page Include="VisionMasterMain\AccessCodeSet.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="accessmanager/accesscodeset.xaml" />
+    <Page Include="VisionMasterMain\AccessModuleManager.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="accessmanager/accessmodulemanager.xaml" />
+    <Page Include="VisionMasterMain\AccessPage.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="appmainwindow/softwareset/accesspage.xaml" />
+    <Page Include="VisionMasterMain\AccesssCodeCheck.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="accessmanager/accessscodecheck.xaml" />
+    <Page Include="VisionMasterMain\CollectionPage.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="appmainwindow/softwareset/collectionpage.xaml" />
+    <Page Include="VisionMasterMain\LoginWindow.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="accessmanager/loginwindow.xaml" />
+    <Page Include="VisionMasterMain\MainWindow.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="mainwindow.xaml" />
+    <Page Include="VisionMasterMain\ProcedureRunPage.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="appmainwindow/softwareset/procedurerunpage.xaml" />
+    <Page Include="VisionMasterMain\ReSetPassCode.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="appmainwindow/softwareset/resetpasscode.xaml" />
+    <Page Include="VisionMasterMain\SoftwarePage.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="appmainwindow/softwareset/softwarepage.xaml" />
+    <Page Include="VisionMasterMain\SoftwareSetDlg.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="appmainwindow/softwareset/softwaresetdlg.xaml" />
+    <Page Include="VisionMasterMain\SolPage.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="appmainwindow/softwareset/solpage.xaml" />
+    <Page Include="VisionMasterMain\SolutionManagerDialog.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="appmainwindow/softwareset/solutionmanagerdialog.xaml" />
+    <Page Include="VisionMasterMain\WelcomeDialog.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="welcomedialog/welcomedialog.xaml" />
+    <Page Include="VisionMaster\AccessManagerWin.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="accessmanager/accessmanagerwin.xaml" />
+    <Resource Remove="resources\check-box_off.png" />
+    <Resource Remove="resources\check-box_on.png" />
+    <Resource Remove="resources\combo_ic_triangle.png" />
+    <Resource Remove="resources\combo_ic_triangle_click.png" />
+    <Resource Remove="resources\delete_click.png" />
+    <Resource Remove="resources\guide_check-box_off.png" />
+    <Resource Remove="resources\guide_check-box_on.png" />
+    <Resource Remove="resources\guide_defect.png" />
+    <Resource Remove="resources\guide_defect_click.png" />
+    <Resource Remove="resources\guide_general.png" />
+    <Resource Remove="resources\guide_general_click.png" />
+    <Resource Remove="resources\guide_logo.png" />
+    <Resource Remove="resources\guide_open_click.png" />
+    <Resource Remove="resources\guide_open_normal.png" />
+    <Resource Remove="resources\guide_position.png" />
+    <Resource Remove="resources\guide_position_click.png" />
+    <Resource Remove="resources\guide_recognition.png" />
+    <Resource Remove="resources\guide_recognition_click.png" />
+    <Resource Remove="resources\ic_1_click.png" />
+    <Resource Remove="resources\ic_1_normal.png" />
+    <Resource Remove="resources\ic_2_click.png" />
+    <Resource Remove="resources\ic_2_normal.png" />
+    <Resource Remove="resources\ic_3_click.png" />
+    <Resource Remove="resources\ic_3_normal.png" />
+    <Resource Remove="resources\ic_shut-down.png" />
+    <Resource Remove="resources\ic_文件路径_hover2.png" />
+    <Resource Remove="resources\ic_文件路径_normal.png" />
+    <Resource Remove="resources\img_模式选择.png" />
+    <Resource Remove="resources\logo.png" />
+    <Resource Remove="resources\logo_vm.png" />
+    <Resource Remove="resources\radiobtn_off_disable.png" />
+    <Resource Remove="resources\swith_off.png" />
+    <Resource Remove="resources\swith_on.png" />
+    <Resource Remove="resources\windowauz.png" />
+    <Resource Include="resources\check-box_off.png" LogicalName="resources/check-box_off.png" />
+    <Resource Include="resources\check-box_on.png" LogicalName="resources/check-box_on.png" />
+    <Resource Include="resources\combo_ic_triangle.png" LogicalName="resources/combo_ic_triangle.png" />
+    <Resource Include="resources\combo_ic_triangle_click.png" LogicalName="resources/combo_ic_triangle_click.png" />
+    <Resource Include="resources\delete_click.png" LogicalName="resources/delete_click.png" />
+    <Resource Include="resources\guide_check-box_off.png" LogicalName="resources/guide_check-box_off.png" />
+    <Resource Include="resources\guide_check-box_on.png" LogicalName="resources/guide_check-box_on.png" />
+    <Resource Include="resources\guide_defect.png" LogicalName="resources/guide_defect.png" />
+    <Resource Include="resources\guide_defect_click.png" LogicalName="resources/guide_defect_click.png" />
+    <Resource Include="resources\guide_general.png" LogicalName="resources/guide_general.png" />
+    <Resource Include="resources\guide_general_click.png" LogicalName="resources/guide_general_click.png" />
+    <Resource Include="resources\guide_logo.png" LogicalName="resources/guide_logo.png" />
+    <Resource Include="resources\guide_open_click.png" LogicalName="resources/guide_open_click .png" />
+    <Resource Include="resources\guide_open_normal.png" LogicalName="resources/guide_open_normal.png" />
+    <Resource Include="resources\guide_position.png" LogicalName="resources/guide_position.png" />
+    <Resource Include="resources\guide_position_click.png" LogicalName="resources/guide_position_click.png" />
+    <Resource Include="resources\guide_recognition.png" LogicalName="resources/guide_recognition.png" />
+    <Resource Include="resources\guide_recognition_click.png" LogicalName="resources/guide_recognition_click.png" />
+    <Resource Include="resources\ic_1_click.png" LogicalName="resources/ic_1_click.png" />
+    <Resource Include="resources\ic_1_normal.png" LogicalName="resources/ic_1_normal.png" />
+    <Resource Include="resources\ic_2_click.png" LogicalName="resources/ic_2_click.png" />
+    <Resource Include="resources\ic_2_normal.png" LogicalName="resources/ic_2_normal.png" />
+    <Resource Include="resources\ic_3_click.png" LogicalName="resources/ic_3_click.png" />
+    <Resource Include="resources\ic_3_normal.png" LogicalName="resources/ic_3_normal.png" />
+    <Resource Include="resources\ic_shut-down.png" LogicalName="resources/ic_shut-down.png" />
+    <Resource Include="resources\ic_文件路径_hover2.png" LogicalName="resources/ic_文件路径_hover2.png" />
+    <Resource Include="resources\ic_文件路径_normal.png" LogicalName="resources/ic_文件路径_normal.png" />
+    <Resource Include="resources\img_模式选择.png" LogicalName="resources/img_模式选择.png" />
+    <Resource Include="resources\logo.png" LogicalName="resources/logo.png" />
+    <Resource Include="resources\logo_vm.png" LogicalName="resources/logo_vm.png" />
+    <Resource Include="resources\radiobtn_off_disable.png" LogicalName="resources/radiobtn_off_disable.png" />
+    <Resource Include="resources\swith_off.png" LogicalName="resources/swith_off.png" />
+    <Resource Include="resources\swith_on.png" LogicalName="resources/swith_on.png" />
+    <Resource Include="resources\windowauz.png" LogicalName="resources/windowauz.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="VM.Controls" />
+    <Reference Include="VM.User">
+      <HintPath>..\..\..\..\..\Program Files\VisionMaster4.4.0\Applications\myLibs\VM.User.dll</HintPath>
+    </Reference>
+    <Reference Include="VM.AppData">
+      <HintPath>..\..\..\..\..\Program Files\VisionMaster4.4.0\Applications\myLibs\VM.AppData.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="Frontend.Base" />
+    <Reference Include="VM.Core" />
+    <Reference Include="System.Core" />
+    <Reference Include="VM.CostomDialog">
+      <HintPath>..\..\..\..\..\Program Files\VisionMaster4.4.0\Applications\myLibs\VM.CostomDialog.dll</HintPath>
+    </Reference>
+    <Reference Include="VM.PcUI" />
+    <Reference Include="Apps.XmlUI">
+      <HintPath>..\..\..\..\..\Program Files\VisionMaster4.4.0\Applications\myLibs\Apps.XmlUI.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="VM.PlatformSDKCS" />
+    <Reference Include="VM.Utility" />
+    <Reference Include="Apps.PcUI" />
+    <Reference Include="VMControls.WPF.Release" />
+    <Reference Include="VMControls.WPF" />
+    <Reference Include="MvCameraControl.Net" />
+    <Reference Include="VMControls.Interface" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="Apps.Log" />
+    <Reference Include="Apps.Data" />
+    <Reference Include="VM.Util" />
+    <Reference Include="Apps.ErrorCode">
+      <HintPath>..\..\..\..\..\Program Files\VisionMaster4.4.0\Applications\myLibs\Apps.ErrorCode.dll</HintPath>
+    </Reference>
+    <Reference Include="FrontendUI.Design">
+      <HintPath>..\..\..\..\..\Program Files\VisionMaster4.4.0\Applications\myLibs\FrontendUI.Design.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

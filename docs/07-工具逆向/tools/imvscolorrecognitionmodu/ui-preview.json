@@ -1,0 +1,108 @@
+{
+  "controls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Integer",
+      "name": "KnnK"
+    },
+    {
+      "type": "Enumeration",
+      "name": "KnnDistance"
+    },
+    {
+      "type": "Integer",
+      "name": "TimeOut"
+    },
+    {
+      "type": "Boolean",
+      "name": "ColorType"
+    },
+    {
+      "type": "String",
+      "name": "TopTypeName"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvscolorrecognitionmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorRecognitionModu\\IMVSColorRecognitionModu.xml",
+      "sha256": "6fca59885317147d5282192d0b45464c3ef37d412330b3395b28bc058644f72d",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorRecognitionModu\\IMVSColorRecognitionModuAlgorithm.xml",
+      "sha256": "c4eda58e4ab1290eb7ca244b3b4408833cad503f1d1b431045ae52730b8ec96f",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorRecognitionModu\\IMVSColorRecognitionModuAlgorithmTab.xml",
+      "sha256": "30b9612f32ec9773cbd5e96b6a74b91bc16f339c96ee22f1fa759b4e428a282e",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorRecognitionModu\\IMVSColorRecognitionModuCs.xml",
+      "sha256": "c42296226a1b9b5f4558e76210beb5919d470635855a3e1a1eec769718426b30",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorRecognitionModu\\IMVSColorRecognitionModuDisplay.xml",
+      "sha256": "c48b399963e213fd6d5851cf0ce7ad20fef6aa90c8ff95a581cc775e8f1436f6",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorRecognitionModu\\ToolItemInfo.xml",
+      "sha256": "2a7387e3bf442e5eacb819a8f4ac7ffd94c1d218997fdd68207eeb3d516343e6",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "颜色识别",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

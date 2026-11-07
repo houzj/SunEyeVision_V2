@@ -1,0 +1,196 @@
+{
+  "controls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "OutputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgeType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Edge0Polarity"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Edge1Polarity"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeStrength"
+    },
+    {
+      "type": "Integer",
+      "name": "CaliperNum"
+    },
+    {
+      "type": "Integer",
+      "name": "IdeaWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "AngleTol"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectNum"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectDist"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelSize"
+    },
+    {
+      "type": "Integer",
+      "name": "ProjectLen"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FitInitType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FitFun"
+    },
+    {
+      "type": "Boolean",
+      "name": "LineWidthLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangLineWidthLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "Angle0LimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangAngle0Limit"
+    },
+    {
+      "type": "Boolean",
+      "name": "Angle1LimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangAngle1Limit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Line0Result"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Line1Result"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Line1Result"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Line0Point"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Line1Point"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "Line1Point"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvspairlinemodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSPairLineModu\\IMVSPairLineModu.xml",
+      "sha256": "60c8618d92918118e83b07ff635d966498f86f3c12c176ca4bf58e00b2aa6052",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSPairLineModu\\IMVSPairLineModuAlgorithm.xml",
+      "sha256": "6f672599df96a0ce345317957010fda62050cb0c3bf8ef00106d7a07e87a9c15",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSPairLineModu\\IMVSPairLineModuAlgorithmTab.xml",
+      "sha256": "5cbde8ceee8b4995ee54407157c90b348c31fa39154d5c5d87367d8039723079",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSPairLineModu\\IMVSPairLineModuCs.xml",
+      "sha256": "036d87c261c256ea2ab827abc35cec46b834f2155d572d4ed88bd49be784d8c1",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSPairLineModu\\IMVSPairLineModuDisplay.xml",
+      "sha256": "663277f968ba6b8bd0ceb4125faad125f26b70d538aec4b5ad03be24a9e8bf66",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSPairLineModu\\ToolItemInfo.xml",
+      "sha256": "a5c06cd60525acda87ea4e77c68e00423b5cb5fb75cb3cc503181b7b62a55573",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "平行线查找",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

@@ -1,0 +1,68 @@
+{
+  "stableToolId": "imvsgeometrictransformmodu",
+  "originalPlugin": "IMVSGeometricTransformModu",
+  "displayName": "几何变换",
+  "originalCategory": "ImageProcessing",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSGeometricTransformModu",
+  "uiCategory": "declarative-parameters",
+  "priority": "P0",
+  "resourceCount": 6,
+  "parameterCount": 2,
+  "inputCount": 1,
+  "outputCount": 3,
+  "uiControlCount": 2,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/GeometricTransformModuParams.cs",
+      "members": [
+        "constructor",
+        "Clone",
+        "Dispose",
+        "result members"
+      ]
+    },
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/GeometricTransformModuTool.cs",
+      "members": [
+        "constructor",
+        "Clone",
+        "Dispose",
+        "result members"
+      ]
+    },
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/GeometricTransformResult.cs",
+      "members": [
+        "constructor",
+        "Clone",
+        "Dispose",
+        "result members"
+      ]
+    },
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/GeometricTransformResultIn.cs",
+      "members": [
+        "constructor",
+        "Clone",
+        "Dispose",
+        "result members"
+      ]
+    }
+  ],
+  "managedMembers": [
+    "managed parameter/result/UI members recovered"
+  ],
+  "nativeFunctions": [
+    "IMVS_PF_ExecuteOnce_V30_CS (generic CProcess evidence only)"
+  ],
+  "runtimeObservations": [],
+  "unknowns": [
+    "native Process/ProcessAlg ABI and algorithm",
+    "XML UI binding/conditions",
+    "save/restore serialization",
+    "original VM runtime behavior"
+  ]
+}

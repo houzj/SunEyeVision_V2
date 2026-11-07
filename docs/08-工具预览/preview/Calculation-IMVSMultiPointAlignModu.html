@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>点集对位 · 调试窗预览</title>
+<!-- suneye:preview-level=control tool=imvsmultipointalignmodu -->
+<style>:root{--win:#fff;--bar:#f2f3f5;--line:#dcdfe4;--text:#1d2129;--muted:#6b7280;--accent:#ff7900;--field:#fff;--bg:#e9ecf0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:12px/1.5 "Microsoft YaHei","Segoe UI",sans-serif}
+.pagewrap{max-width:1220px;margin:0 auto;padding:18px 16px 40px}
+.pagehead{font-size:12px;color:var(--muted);margin-bottom:10px}
+.pagehead a{color:#2563eb;text-decoration:none}
+.pagehead a:hover{text-decoration:underline}
+.win{background:var(--win);border:1px solid var(--line);border-radius:4px;box-shadow:0 4px 16px rgba(0,0,0,.10);display:flex;flex-direction:column;height:780px;overflow:hidden}
+.titlebar{height:32px;background:var(--bar);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:0 10px;flex:0 0 32px}
+.titlebar .nm{font-weight:700;font-size:13px}
+.titlebar .mod{color:var(--muted);font-size:11px}
+.titlebar .sp{flex:1}
+.titlebar .btns span{display:inline-block;width:24px;text-align:center;color:#555}
+.toolbar{height:42px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:6px;padding:0 10px;flex:0 0 42px}
+.toolbar button{height:26px;padding:0 12px;font-size:12px;border:1px solid #cfd3d8;background:#fbfbfc;border-radius:2px;cursor:default;font-family:inherit}
+.toolbar button .ico{width:15px;height:15px;vertical-align:-3px;margin-right:5px}
+.roibar .b .ico{width:14px;height:14px;vertical-align:-2px;margin-right:3px}
+.toolbar button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.toolbar .sep{width:1px;height:20px;background:var(--line);margin:0 6px}
+.toolbar .tag{font-size:11px;color:#8a5a00;background:#fff4e0;border:1px solid #ffd9a0;border-radius:10px;padding:1px 9px}
+.toolbar .hint{font-size:11px;color:var(--muted);margin-left:8px}
+.tabs{height:34px;background:#fafafc;border-bottom:1px solid var(--line);display:flex;align-items:stretch;flex:0 0 34px;padding-left:6px;overflow:hidden}
+.tabs .tab{display:flex;align-items:center;padding:0 16px;font-size:12px;color:#374151;border-bottom:2px solid transparent;white-space:nowrap}
+.tabs .tab.on{background:#fff;border-bottom-color:var(--accent);font-weight:600}
+.tabs .tab.na{color:#b0b4bb}
+.body{flex:1;display:flex;min-height:0}
+.col{display:flex;flex-direction:column;min-height:0}
+.col-left{width:330px;border-right:1px solid var(--line);background:#fff}
+.col-mid{flex:1;background:#f7f8fa;border-right:1px solid var(--line)}
+.col-right{width:330px;background:#fff}
+.sect{font-size:11px;font-weight:700;color:#4b5563;background:#f5f6f8;border-bottom:1px solid var(--line);padding:6px 10px;letter-spacing:.02em;display:flex;justify-content:space-between}
+.sect .cnt{font-weight:400;color:var(--muted)}
+.scroll{overflow:auto;flex:1;padding:6px 10px 12px}
+.grp{margin:10px 0 4px;font-size:11px;font-weight:700;color:#6b7280;border-bottom:1px dashed var(--line);padding-bottom:3px;display:flex;align-items:center;gap:6px}
+.grp .ic{color:var(--accent)}
+.grp .ty{font-weight:400;color:#9aa0a6;font-size:10px}
+.row{display:flex;align-items:center;gap:8px;min-height:26px;padding:1px 0}
+.row>label{flex:0 0 52%;text-align:right;color:#4b5563;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .ctl{flex:1;display:flex;align-items:center;gap:4px;min-width:0}
+.row select,.row input[type=text],.row input[type=number]{height:24px;width:100%;border:1px solid #cfd3d8;border-radius:2px;background:var(--field);font:12px/1 "Microsoft YaHei",sans-serif;padding:0 6px;color:var(--text)}
+.row select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,#777 50%),linear-gradient(135deg,#777 50%,transparent 50%);background-position:calc(100% - 12px) 10px,calc(100% - 8px) 10px;background-size:4px 4px,4px 4px;background-repeat:no-repeat;padding-right:22px}
+.row input[type=checkbox]{width:14px;height:14px;accent-color:var(--accent)}
+.row .btn{height:24px;flex:1;border:1px solid #cfd3d8;background:#fbfbfc;border-radius:2px;font:12px "Microsoft YaHei",sans-serif;color:#374151;padding:0 6px;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .btn.ell:after{content:"…";float:right;color:#888}
+.row .tild{color:#9aa0a6}
+.row .mini{flex:0 0 24px;height:24px;border:1px solid #cfd3d8;background:#fbfbfc;border-radius:2px;font:12px "Microsoft YaHei";color:#555;padding:0}
+.row .mini:hover{background:#f0f1f3}
+.row .swatch{width:14px;height:14px;border:1px solid #c9ccd1;background:linear-gradient(135deg,#ff7900,#3b82f6 60%,#22c55e);flex:0 0 14px}
+.row.disabled>label{color:#b0b4bb}
+.typechip{font-size:10px;color:#9aa0a6;border:1px solid #e3e6ea;border-radius:3px;padding:0 4px;flex:0 0 auto}
+.canvas{flex:1;display:flex;align-items:center;justify-content:center;padding:16px;background-image:linear-gradient(#eef0f3 1px,transparent 1px),linear-gradient(90deg,#eef0f3 1px,transparent 1px);background-size:20px 20px}
+.ph{max-width:420px;text-align:center;color:#8a9199;line-height:1.9;border:1px dashed #ccd2d9;border-radius:6px;padding:26px 22px;background:#fff}
+.ph b{color:#5f6771}
+.roibar{height:30px;border-top:1px solid var(--line);display:flex;align-items:center;gap:6px;padding:0 8px;background:#fbfbfc}
+.roibar .b{height:22px;padding:0 9px;border:1px solid #d5d9de;background:#fff;border-radius:2px;font-size:11px;color:#555;display:inline-flex;align-items:center}
+.statusbar{height:28px;border-top:1px solid var(--line);background:#f5f6f8;display:flex;align-items:center;gap:12px;padding:0 10px;font-size:11px;color:var(--muted);flex:0 0 28px}
+.statusbar .sp{flex:1}
+.statusbar a{color:#2563eb;text-decoration:none}
+.showrow{display:flex;align-items:center;gap:6px;min-height:22px;font-size:12px}
+.showrow .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.showrow .t2{font-size:10px;color:#9aa0a6;flex:0 0 auto}
+.showrow input{width:13px;height:13px;accent-color:var(--accent)}
+.showrow .swatch{width:13px;height:13px;border:1px solid #c9ccd1;background:linear-gradient(135deg,#ff7900,#3b82f6 60%,#22c55e);flex:0 0 13px}
+.outrow{display:flex;align-items:center;gap:6px;min-height:22px;font-size:12px}
+.outrow .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.outrow .t2{font-size:10px;color:#9aa0a6;flex:0 0 auto}
+.outrow input{width:13px;height:13px;accent-color:var(--accent)}
+.note{margin-top:14px;border-left:3px solid #f59e0b;background:#fffbeb;color:#78350f;font-size:12px;padding:10px 14px;border-radius:0 6px 6px 0}
+.note b{color:#92400e}
+.note ul{margin:6px 0 0;padding-left:20px}
+.note li{margin:2px 0}</style></head><body>
+<div class="pagewrap">
+<div class="pagehead"><a href="../index.html">&larr; 工具预览索引</a> &nbsp;·&nbsp; <a href="../../07-工具逆向/index.html">逆向证据库</a> &nbsp;·&nbsp; 卡片 <code>imvsmultipointalignmodu</code></div>
+<div class="win">
+<div class="titlebar"><span class="nm">点集对位</span><span class="mod">IMVSMultiPointAlignModu</span><span class="sp"></span><span class="btns"><span>&minus;</span><span>&#9633;</span><span>&times;</span></span></div>
+<div class="toolbar"><button class="primary"><img class="ico" src="../assets/icons/run.png" alt="">运行</button><button><img class="ico" src="../assets/icons/runbar.png" alt="">连续运行</button><button><img class="ico" src="../assets/icons/stop.png" alt="">停止</button><span class="sep"></span><button>确认</button><button>取消</button><span class="sep"></span><span class="tag">Calculation</span><span class="hint">静态还原：控件形态与顺序按原件资源声明，不执行算法</span></div>
+<div class="tabs">
+<span class="tab on">Tab_Basic Params</span>
+<span class="tab na">ResultShow（归属未取证）</span>
+</div>
+<div class="body">
+<div class="col col-left">
+<div class="sect">参数<span class="cnt">控件 10 · 默认值 2</span></div>
+<div class="scroll">
+<div class="row"><label title="InputWay">InputWay</label><div class="ctl"><input type="radio" name="InputWay"><input type="radio" name="InputWay"></div></div>
+<div class="row"><label title="Data1">Data1</label><div class="ctl"><button class="btn ell">Data1#1</button></div></div>
+<div class="row"><label title="Data2">Data2</label><div class="ctl"><button class="btn ell">Data2#1</button></div></div>
+<div class="row"><label title="Data3">Data3</label><div class="ctl"><button class="btn ell"></button></div></div>
+<div class="row"><label title="Data4">Data4</label><div class="ctl"><button class="btn ell"></button></div></div>
+<div class="row"><label title="Data5">Data5</label><div class="ctl"><button class="btn ell"></button></div></div>
+<div class="row"><label title="Data6">Data6</label><div class="ctl"><button class="btn ell"></button></div></div>
+<div class="row"><label title="Data7">Data7</label><div class="ctl"><button class="btn ell"></button></div></div>
+<div class="row"><label title="Data8">Data8</label><div class="ctl"><button class="btn ell"></button></div></div>
+<div class="row"><label title="AddButton">AddButton</label><div class="ctl"><button class="btn ell"></button></div></div>
+</div>
+<div class="sect">输入<span class="cnt">16 项</span></div>
+<div class="scroll" style="flex:0 0 auto;max-height:190px">
+<div class="row"><label title="TargetPointInput1">TargetPointInput1</label><div class="ctl"><span class="typechip">Combination</span>POINT</div></div>
+<div class="row"><label title="ObjectPointInput1">ObjectPointInput1</label><div class="ctl"><span class="typechip">Combination</span>POINT</div></div>
+<div class="row"><label title="TargetPointInput2">TargetPointInput2</label><div class="ctl"><span class="typechip">Combination</span>POINT</div></div>
+<div class="row"><label title="ObjectPointInput2">ObjectPointInput2</label><div class="ctl"><span class="typechip">Combination</span>POINT</div></div>
+<div class="row"><label title="TargetInput3">TargetInput3</label><div class="ctl"><span class="typechip">Combination</span>POINT</div></div>
+<div class="row"><label title="ObjectInput3">ObjectInput3</label><div class="ctl"><span class="typechip">Combination</span>POINT</div></div>
+<div class="row"><label title="TargetInput4">TargetInput4</label><div class="ctl"><span class="typechip">Combination</span>POINT</div></div>
+<div class="row"><label title="ObjectInput4">ObjectInput4</label><div class="ctl"><span class="typechip">Combination</span>POINT</div></div>
+<div class="row"><label title="TargetInput5">TargetInput5</label><div class="ctl"><span class="typechip">Combination</span>POINT</div></div>
+<div class="row"><label title="ObjectInput5">ObjectInput5</label><div class="ctl"><span class="typechip">Combination</span>POINT</div></div>
+<div class="row"><label title="TargetInput6">TargetInput6</label><div class="ctl"><span class="typechip">Combination</span>POINT</div></div>
+<div class="row"><label title="ObjectInput6">ObjectInput6</label><div class="ctl"><span class="typechip">Combination</span>POINT</div></div>
+<div class="row"><label title="TargetInput7">TargetInput7</label><div class="ctl"><span class="typechip">Combination</span>POINT</div></div>
+<div class="row"><label title="ObjectInput7">ObjectInput7</label><div class="ctl"><span class="typechip">Combination</span>POINT</div></div>
+<div class="row"><label title="TargetInput8">TargetInput8</label><div class="ctl"><span class="typechip">Combination</span>POINT</div></div>
+<div class="row"><label title="ObjectInput8">ObjectInput8</label><div class="ctl"><span class="typechip">Combination</span>POINT</div></div>
+</div>
+</div>
+<div class="col col-mid">
+<div class="sect">图像<span class="cnt">画布占位</span></div>
+<div class="canvas"><div class="ph"><b>点集对位</b> 的调试窗<br>左侧控件按原件 <code>AlgorithmTabRoot</code> 声明还原<br><span style="color:#a0a6ad">图像、ROI 交互与运行结果需实机执行，本页不含</span></div></div>
+<div class="roibar"><span class="b"><img class="ico" src="../assets/icons/original.png" alt="">适应</span><span class="b">1:1</span><span class="b">ROI</span><span class="b">屏蔽</span><span class="b">十字</span><span style="flex:1"></span><span class="b"><img class="ico" src="../assets/icons/zoomin.png" alt=""></span><span class="b"><img class="ico" src="../assets/icons/zoomout.png" alt=""></span></div>
+</div>
+<div class="col col-right">
+<div class="sect">结果 / 输出<span class="cnt">5 项</span></div>
+<div class="scroll">
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="ModuRunTime">ModuRunTime</span><span class="t2">float</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="ModuStatus">ModuStatus</span><span class="t2">int</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="DeltaX">DeltaX</span><span class="t2">float</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="DeltaY">DeltaY</span><span class="t2">float</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="DeltaTheta">DeltaTheta</span><span class="t2">float</span></div>
+</div>
+<div class="sect">共享组<span class="cnt">2</span></div>
+<div class="scroll" style="max-height:120px">
+<div class="outrow"><span class="nm">TextDisplayGroup</span></div>
+<div class="outrow"><span class="nm">BottomCommandGroup</span></div>
+</div>
+</div>
+</div>
+<div class="statusbar"><span>未运行</span><span>模块 IMVSMultiPointAlignModu</span><span>参数 2 / 输入 16 / 输出 5</span><span class="sp"></span><span>状态 source-partial</span><a href="../index.html">工具预览索引</a></div>
+</div>
+<div class="note"><b>还原边界</b><ul>
+<li><b>已还原</b>：页签、参数控件形态与声明顺序、参数默认值、输入输出声明、共享组、分类与状态徽章</li>
+<li><b>未还原</b>：像素级样式（颜色/字号/间距）、控件到页签的归属、显隐与可用条件、值联动、ROI 绘制交互、运行结果</li>
+<li>控件形态由 <code>resources.json.uiControls[].type</code> 推断，未归类类型按文本框显示并保留原始类型标签；不做外形臆测</li>
+<li>本页不证明该工具在原厂已注册、加载、执行或完成</li>
+</ul></div>
+</div></body></html>

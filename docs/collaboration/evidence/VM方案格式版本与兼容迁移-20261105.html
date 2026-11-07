@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>VM 方案文件格式版本与兼容迁移机制</title>
+<style>
+:root{--bg:#0b1524;--bg2:#111f33;--bd:#24405f;--tx:#dbe7f5;--tx2:#9fb4cc;--obs:#3fb950;--inf:#d29922;--unk:#8b949e;--warn:#f85149;--note:#58a6ff}
+*{box-sizing:border-box}
+body{margin:0;padding:30px 38px 70px;background:var(--bg);color:var(--tx);font:15px/1.7 "Segoe UI","Microsoft YaHei",sans-serif}
+h1{font-size:25px;margin:0 0 6px;color:#fff}
+h2{font-size:19px;margin:32px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--bd);color:#fff}
+h3{font-size:15.5px;margin:22px 0 8px;color:#cfe3f7}
+.meta{color:var(--tx2);font-size:13px;margin-bottom:22px;line-height:1.85}.meta b{color:var(--tx)}
+table{width:100%;border-collapse:collapse;margin:10px 0 16px;font-size:13px;background:var(--bg2)}
+th,td{border:1px solid var(--bd);padding:6px 9px;text-align:left;vertical-align:top}
+th{background:#16273d;color:#fff;font-weight:600;white-space:nowrap}
+td code,p code,li code{background:#0a1420;border:1px solid #1d3350;border-radius:3px;padding:1px 4px;font:12.5px/1.5 Consolas,monospace;color:#a9d3ff}
+tr:nth-child(even) td{background:#0f1c2e}
+code.block{display:block;background:#07101b;border:1px solid #1d3350;border-radius:5px;padding:11px 13px;margin:9px 0;white-space:pre;overflow-x:auto;color:#a9d3ff;font-size:12.5px}
+.obs,.inf,.unk{display:inline-block;padding:0 5px;border-radius:3px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.obs{background:rgba(63,185,80,.16);color:var(--obs);border:1px solid rgba(63,185,80,.45)}
+.inf{background:rgba(210,153,34,.16);color:var(--inf);border:1px solid rgba(210,153,34,.45)}
+.unk{background:rgba(139,148,158,.16);color:var(--unk);border:1px solid rgba(139,148,158,.45)}
+.warn,.note{border-left:3px solid var(--warn);background:rgba(248,81,73,.08);padding:9px 13px;margin:12px 0;border-radius:0 4px 4px 0;font-size:13.5px}
+.note{border-left-color:var(--note);background:rgba(88,166,255,.08)}
+.warn b{color:var(--warn)}.note b{color:var(--note)}
+ul,ol{margin:7px 0 12px;padding-left:22px}li{margin:3px 0}
+.k{color:#7ee787;font-weight:600}.r{color:#ff7b72;font-weight:600}
+.small{font-size:12.5px;color:var(--tx2)}
+footer{margin-top:40px;padding-top:12px;border-top:1px solid var(--bd);color:var(--tx2);font-size:12.5px}
+</style>
+</head>
+<body>
+
+<h1>VM 方案文件格式版本与兼容迁移机制</h1>
+<div class="meta">
+取证日：<b>2026-11-05</b>　｜　对象：<b>VisionMaster 4.4.0</b>（V4.4.0 Build20250516@1555331），安装目录只读<br>
+证据源：<code>CalibGuideSample\{static,static_en,dynamic,dynamic_en,reflect}.prc</code>、<code>log\UI\CompatiableTool.log</code>(2,967 B 全文)、<code>CompatibleTool.xml</code>(14,915 B)<br>
+用途：为我方 <code>ValidateSchema</code>「缺版本允许 / 版本≠1 拒绝」提供原件依据<br>
+标注：<span class="obs">观察到</span> 直读　<span class="inf">推断</span> 由结构推得　<span class="unk">未知</span> 无证据
+</div>
+
+<h2>0 结论摘要</h2>
+<table>
+<tr><th style="width:23%">问题</th><th style="width:8%">档位</th><th>结论</th></tr>
+<tr><td>方案里有版本字段吗</td><td><span class="obs">观察到</span></td>
+<td><b>有，且是产品版本字符串，不是整数 schema 号</b>：<code>&lt;SoftVersion&gt;&lt;Version CurrentVersion="V4.4.0" /&gt;&lt;/SoftVersion&gt;</code>，位于方案包内 <code>ProcFile\ProcedureInfo.xml</code> 的第 2 个元素。</td></tr>
+<tr><td>方案是什么容器</td><td><span class="obs">观察到</span></td>
+<td><b>ZIP 包</b>（头 <code>50 4B 03 04</code>），7 个条目、内部路径用反斜杠：<code>ProcFile\ProcedureInfo.xml</code>（明文 XML）、<code>ProcFile\ProcedureMoudleFrame</code>（二进制，<b>原文拼写 Moudle</b>）、<code>ProcFile\UiParamData\_&lt;流程号&gt;+&lt;模块号&gt;+&lt;模块类型名&gt;</code>（每模块一条二进制参数）。</td></tr>
+<tr><td>版本不匹配怎么办</td><td><span class="obs">观察到</span></td>
+<td><b>不是拒绝，是显式迁移</b>：<code>CompatibleTool.exe</code> 读 <code>当前方案版本：V4.3.0</code> → 5 阶段升级 → <code>SaveAs</code> 另存为 <code>..._V4.4.0_1.sol</code>，<b>原文件保留</b>。</td></tr>
+<tr><td>缺模块能打开吗</td><td><span class="obs">观察到</span></td>
+<td><b>能</b>。<code>WARN  Load Warning，Failed Module Num:4</code> 之后<b>继续升级、继续另存</b>。待转换列表里还出现本机未装的 <code>IMVSCnnCodeRecgModuC</code> → 缺模块<b>只计数不阻断</b>。</td></tr>
+<tr><td>迁移分几步</td><td><span class="obs">观察到</span></td>
+<td>固定 5 段：<code>FrontendUI Upgrade</code> → <code>DynamicIO Upgrade</code> → <code>GlobalVar Upgrade</code> → <code>CustomizedHandleModule Upgrade</code> → <code>SaveAs</code>。</td></tr>
+<tr><td>字段改名靠什么</td><td><span class="obs">观察到</span></td>
+<td>靠映射表 <code>CompatibleTool.xml</code> 的 <code>&lt;IOInfo SrcName="MinWidth" DstName="MinWidths"/&gt;</code>，逐字段旧名→新名。这解释了 R4/R5 观察到的 <code>SortModule→DataSortModule</code> 与结果字段复数化。</td></tr>
+<tr><td>全局变量怎么迁</td><td><span class="obs">观察到</span></td>
+<td>单独一轮：<code>GlobalVarToVM4_4: get all var</code> → <code>update module param binding</code> → <code>update module result binding</code>。<b>参数绑定与结果绑定分开重写</b>。</td></tr>
+<tr><td>扩展名是什么</td><td><span class="obs">观察到</span></td>
+<td><b><code>.sol</code></b> 是方案（日志实录 <code>一拖一.sol</code>）；<code>.prc</code> 是流程/子流程文件，与方案同构（同为 ZIP + <code>ProcFile\</code>）。</td></tr>
+<tr><td>我方该怎么改</td><td><span class="inf">推断</span></td>
+<td>原件语义＝「版本是产品串、不匹配走迁移、结果另存、失败计数可见」。我方「版本≠1 硬拒」会让用户<b>既打不开也迁不了</b>，且把"格式不兼容"误判为"文件损坏"。<b>建议</b>：保留整数版本做内部结构校验（缺→允许合理），不符时改为「只读打开 + 明确提示 + 另存新文件」。<b>需中心裁决，本文件不实施</b>。</td></tr>
+<tr><td>能否闭合</td><td><span class="obs">观察到</span></td>
+<td><b>六项已闭</b>（版本字段存在／迁移流程／失败容忍／改名映射／<code>.sol</code> 与 <code>.prc</code> 同构／映射表全量规模），2026-11-06 补见于 §1.7。仍开两项：迁移<b>失败</b>只补到「崩溃形态」这一层（无符号、无方案路径），方案版本<b>高于</b>软件时的表现仍无证据。</td></tr>
+</table>
+
+<h2>1 逐条论证</h2>
+
+<h3>1.1 容器：ZIP + 反斜杠内部路径 <span class="obs">观察到</span></h3>
+<p><code>static.prc</code>（214,629 B）前 80 字节：</p>
+<code class="block">50 4B 03 04 2D 00 00 08 08 00 00 00 20 00 0B 7B 21 DD 46 00 00 00 41 00 00 00 30 00 14 00
+50 72 6F 63 46 69 6C 65 5C 55 69 50 61 72 61 6D 44 61 74 61 5C 5F 31 30 30 30 30 2B 31 2B 49 4D 56 53 50 72 6F 63 65 73 73 43 6F 6E 74 72 6F 6C
+ascii: PK..-....... ..{!.F...A...0...ProcFile\UiParamData\_10000+1+IMVSProcessControl</code>
+<table>
+<tr><th>条目</th><th>未压缩</th><th>压缩后</th><th>判断</th></tr>
+<tr><td><code>ProcFile\UiParamData\_10000+1+IMVSProcessControl</code></td><td>65</td><td>70</td><td>流程节点参数（二进制）</td></tr>
+<tr><td><code>ProcFile\UiParamData\_0+0+ImageSourceModule</code></td><td>170</td><td>175</td><td>模块 0 参数</td></tr>
+<tr><td><code>ProcFile\UiParamData\_1+0+IMVSCalibBoardCalibModu</code></td><td>132</td><td>137</td><td>模块 1 参数</td></tr>
+<tr><td><code>ProcFile\UiParamData\_2+0+DataAssembleModule</code></td><td>132</td><td>137</td><td>模块 2 参数</td></tr>
+<tr><td><code>ProcFile\UiParamData\_3+0+SendDatasModule</code></td><td>89</td><td>94</td><td>模块 3 参数</td></tr>
+<tr><td><code>ProcFile\ProcedureInfo.xml</code></td><td>3,102</td><td>3,107</td><td><b>方案结构（明文 XML）</b></td></tr>
+<tr><td><code>ProcFile\ProcedureMoudleFrame</code></td><td>209,630</td><td>209,655</td><td>模块框架二进制</td></tr>
+</table>
+<p class="small">条目命名规则：<code>_&lt;ProcedureIndex&gt;+&lt;ModuleIndex&gt;+&lt;ModuleTypeName&gt;</code>。<code>_10000+1+IMVSProcessControl</code> 对应 XML 中 <code>ExportProcedureInfo/Procedure Index="10000"</code> ✔。
+<code>UiParamData</code> 条目内容为<b>二进制</b>（可见 <code>fU3"</code> 头 + 中英文混排字段名如 <code>SourceIndex</code>/<code>TargetIndex</code>/<code>CheckItemParamReady</code>/<code>IsReady</code>），<b>不是 XML</b> —— 模块参数是私有序列化，不可按文本解析。</p>
+
+<h3>1.2 方案结构全文骨架 <span class="obs">观察到</span></h3>
+<code class="block">&lt;Root&gt;
+  &lt;SoftVersion&gt;&lt;Version CurrentVersion="V4.4.0" /&gt;&lt;/SoftVersion&gt;        ← 版本字段
+  &lt;SaveInfo&gt;&lt;SaveInfo Time="2023-11-06 14:38:20" Name="CompatibleTool.exe" /&gt;&lt;/SaveInfo&gt;
+  &lt;MainInterfaceInfo&gt;&lt;MainInterface FileName="ProcedureInterface" /&gt;&lt;/MainInterfaceInfo&gt;
+  &lt;GlobalModuleInfo /&gt;                                                  ← 本方案无全局模块
+  &lt;ExportProcedureInfo&gt;
+    &lt;Procedure Index="10000" DisplayName="静态标定" ShieldGlobalCtrl="0"
+               ContinueExecuteTimGap="100" Guid="38532451F7754429B621CFF94CE03B0A"
+               StopWhenNG="0" RunTimeout="0" /&gt;
+  &lt;/ExportProcedureInfo&gt;
+  &lt;ModulesInfo&gt;
+    &lt;ModuleBase&gt;
+      &lt;Module Index="0" Name="ImageSourceModule" Type="0" IsSlave="0" ServerAddr=""
+              ModuleFile="" DisplayName="图像源1" EnableModule="1" EnableCallBack="1"
+              Guid="48D45181B7A444AF926E032F9E142D57" /&gt;
+      ...（Index 1/2/3 同构）
+    &lt;/ModuleBase&gt;
+    &lt;ModuleCommonConnect&gt; ... &lt;Front Index="0"/&gt; &lt;Following Index="1"/&gt; ... &lt;/ModuleCommonConnect&gt;
+    &lt;ModuleSubscribe&gt;
+      &lt;Subscribe Relation="1 . InImage . 0 . Image . 0 . 0 . All . 1" /&gt;
+      &lt;Subscribe Relation="2 . %in0% . 2 . T . 1 . 0 . All . 1" /&gt;
+    &lt;/ModuleSubscribe&gt;
+  &lt;/ModulesInfo&gt;
+&lt;/Root&gt;</code>
+<table>
+<tr><th>区段</th><th>字段</th><th>语义</th></tr>
+<tr><td><code>SoftVersion</code></td><td><code>Version@CurrentVersion</code></td><td><b>方案格式/软件版本</b>（字符串，本样例 <code>V4.4.0</code>）</td></tr>
+<tr><td><code>SaveInfo</code></td><td><code>Time</code>, <code>Name</code></td><td>最后保存时间 + <b>保存者程序名</b>（样例为 <code>CompatibleTool.exe</code>，不是 VisionMaster）</td></tr>
+<tr><td><code>ExportProcedureInfo</code></td><td><code>Index</code> <code>DisplayName</code> <code>Guid</code></td><td>流程身份</td></tr>
+<tr><td>同上</td><td><code>ShieldGlobalCtrl</code> <code>StopWhenNG</code> <code>RunTimeout</code> <code>ContinueExecuteTimGap</code></td><td>流程级运行策略：屏蔽全局控制／NG 停止／运行超时／连续执行间隔(100，单位未标)</td></tr>
+<tr><td><code>ModuleBase/Module</code></td><td><code>Index</code> <code>Name</code> <code>Type</code> <code>IsSlave</code> <code>ServerAddr</code> <code>ModuleFile</code> <code>DisplayName</code> <code>EnableModule</code> <code>EnableCallBack</code> <code>Guid</code></td><td><b>模块身份链</b>（详见 §1.4）</td></tr>
+<tr><td><code>ModuleCommonConnect</code></td><td><code>Front</code>/<code>Following</code> 按 <code>Index</code> 引用</td><td>模块前后继（有向图）</td></tr>
+<tr><td><code>ModuleSubscribe</code></td><td><code>Subscribe@Relation</code></td><td><b>绑定关系，8 段点分字符串</b>（详见 §1.5）</td></tr>
+</table>
+
+<h3>1.3 5 份样例的版本一致性 <span class="obs">观察到</span></h3>
+<table>
+<tr><th>文件</th><th>CurrentVersion</th><th>SaveInfo Time</th><th>SaveInfo Name</th><th>流程</th><th>模块数</th><th>Info.xml 长度</th></tr>
+<tr><td>static.prc</td><td>V4.4.0</td><td>2023-11-06 14:38:20</td><td>CompatibleTool.exe</td><td>10000 / 静态标定</td><td>4</td><td>3,102</td></tr>
+<tr><td>static_en.prc</td><td>V4.4.0</td><td>2023-11-06 14:38:24</td><td>CompatibleTool.exe</td><td>10000 / Static</td><td>4</td><td>3,102</td></tr>
+<tr><td>dynamic.prc</td><td>V4.4.0</td><td>2023-11-06 14:38:01</td><td>CompatibleTool.exe</td><td>10000 / 动态标定</td><td>16</td><td>5,197</td></tr>
+<tr><td>dynamic_en.prc</td><td>V4.4.0</td><td>2023-11-06 14:38:06</td><td>CompatibleTool.exe</td><td>10000 / Dynamic</td><td>16</td><td>5,265</td></tr>
+<tr><td>reflect.prc</td><td>V4.4.0</td><td>2023-11-06 14:38:11</td><td>CompatibleTool.exe</td><td>10000 / 映射标定</td><td>14</td><td>5,583</td></tr>
+</table>
+<p><span class="inf">推断</span> 保存时间全是 2023-11-06（旧），但版本串全为 V4.4.0（2025 版）→ <b>版本串是"被升级后写入"的，不是"当初保存时的版本"</b>。即 <code>SaveInfo.Time</code> 与 <code>CurrentVersion</code> <b>不保证同源</b>，不能拿 Time 推断版本，也不能拿版本推断保存时间。</p>
+
+<h3>1.4 版本不匹配 = 显式迁移（关键证据） <span class="obs">观察到</span></h3>
+<p><code>log\UI\CompatiableTool.log</code> 全文 2,967 B（注意文件名拼写 <b>CompatiableTool</b>，与 exe 名 <code>CompatibleTool.exe</code> 不一致），逐行：</p>
+<code class="block">2026-09-28 13:49:22 INFO  开始升级...
+2026-09-28 13:49:23 INFO  参数：VMSolution;C:\Users\houzhongjie\Desktop\引导案例\一拖一\一拖一.sol;;C:\...\一拖一_V4.4.0_1.sol;V4.4.0
+2026-09-28 13:49:23 INFO  当前方案版本：V4.3.0
+2026-09-28 13:49:23 INFO  Begin load solution
+2026-09-28 13:49:25 INFO  Original path:...\一拖一.sol , New Path:...\一拖一_V4.4.0_1.sol
+2026-09-28 13:49:25 WARN  Load Warning，Failed Module Num:4
+2026-09-28 13:49:25 INFO  Begin FrontendUI Upgrade      → End FrontendUI Upgrade
+2026-09-28 13:49:25 INFO  Begin DynamicIO Upgrade       → finished convert dynamicIO → End
+2026-09-28 13:49:26 INFO  Begin GlobalVar Upgrade       → get all var → update param binding → update result binding → End
+2026-09-28 13:49:26 INFO  Begin CustomizedHandleModule Upgrade → End
+2026-09-28 13:49:26 INFO  Begin SaveAs  → End SaveAs
+2026-09-28 13:49:27 INFO  导出成功到：...\一拖一_V4.4.0_1.sol
+2026-09-28 13:49:28 INFO  关闭方案</code>
+<table>
+<tr><th>事实</th><th>含义</th></tr>
+<tr><td>命令行 4 段：<code>VMSolution;源路径;;目标路径;V4.4.0</code></td><td>迁移是<b>独立可执行工具 + 命令行参数</b>，不是主程序内嵌逻辑；第 3 段为空（疑似密码位）</td></tr>
+<tr><td><code>当前方案版本：V4.3.0</code></td><td>方案里确实带版本；<b>能读出不匹配的旧版本</b></td></tr>
+<tr><td><code>WARN Load Warning，Failed Module Num:4</code></td><td><b>缺模块/加载失败只计 WARN 并继续</b>——不是拒绝</td></tr>
+<tr><td>待转换模块列表含 <code>IMVSCnnCodeRecgModuC</code></td><td>本机未安装的深度学习模块出现在列表里，说明<b>迁移器不要求模块已安装</b></td></tr>
+<tr><td><code>Original path / New Path</code> + <code>SaveAs</code></td><td><b>另存为新文件</b>，原方案不动（可回退）</td></tr>
+<tr><td>GlobalVar 阶段三行</td><td>全局变量迁移<b>分参数绑定与结果绑定两遍</b></td></tr>
+</table>
+<div class="note"><b>这是本项最硬的证据</b>：它同时回答了"拒绝/迁移/静默降级"三选一 —— <b>是迁移（migrate）</b>，且迁移过程<b>可见（WARN）、可回退（原件不动）、可计数（Failed Module Num）</b>。
+我方 <code>ValidateSchema</code> 的"版本≠1 拒绝"在原件的这条链上<b>找不到对应行为</b>。</div>
+
+<h3>1.5 字段改名映射表 <span class="obs">观察到</span></h3>
+<code class="block">&lt;InfoList&gt;
+  &lt;ModuleInfoList&gt;
+    &lt;ModuleInfo&gt;
+      &lt;TypeName&gt;IMVSCircleEdgePairInspModu&lt;/TypeName&gt;
+      &lt;IOItems&gt;
+        &lt;IOInfo SrcName="MinWidth"              DstName="MinWidths"/&gt;
+        &lt;IOInfo SrcName="MaxWidth"              DstName="MaxWidths"/&gt;
+        &lt;IOInfo SrcName="AverageWidth"          DstName="AverageWidths"/&gt;
+        &lt;IOInfo SrcName="ApproximateArea"       DstName="ApproximateAreas"/&gt;
+        &lt;IOInfo SrcName="MinEdgePoint0"         DstName="MinEdgePoint0s"/&gt;
+        &lt;IOInfo SrcName="MinEdgePolarity0"      DstName="MinEdgePolarity0s"/&gt;
+        &lt;IOInfo SrcName="MinEdgeScore"          DstName="MinEdgeScores"/&gt;
+        &lt;IOInfo SrcName="MinEdgeDistance"       DstName="MinEdgeDistances"/&gt;
+        ...</code>
+<p>结构：<code>InfoList → ModuleInfoList → ModuleInfo{ TypeName, IOItems{ IOInfo@SrcName,@DstName } }</code>。
+<b>按模块类型名分组</b>，每个模块给一组字段改名对。<span class="inf">推断</span> 这正是 R4 观察到的"标量→数组"演进（<code>MinWidth</code>→<code>MinWidths</code>）的迁移通道 —— 老方案的标量字段在新版本变数组，靠此表接上。</p>
+<div class="warn"><b>衍生结论</b>：R4/R5 发现的"同一字段在不同分类类型不同"（<code>BlindPolygonString</code> 在 R3 是 <code>string[]</code>、R4 是 <code>string</code>）与"模块改名"（<code>SortModule</code>→<code>DataSortModule</code>）<b>不是笔误，是版本演进 + 有映射表兜底</b>。任何跨版本读取都必须考虑这层映射。</div>
+
+<h3>1.6 模块身份链与绑定格式 <span class="obs">观察到</span>（同时服务 T-0005 第 2 项）</h3>
+<table>
+<tr><th>字段</th><th>样例值</th><th>语义</th></tr>
+<tr><td><code>Module@Index</code></td><td><code>0</code>..<code>3</code></td><td>方案内<b>序号</b>（不是类型 id）；与 <code>UiParamData\_&lt;流程号&gt;+&lt;Index&gt;+&lt;类型名&gt;</code> 对应</td></tr>
+<tr><td><code>Module@Name</code></td><td><code>ImageSourceModule</code></td><td>模块<b>类型名</b>（= 目录名）</td></tr>
+<tr><td><code>Module@Guid</code></td><td><code>48D45181B7A444AF926E032F9E142D57</code></td><td><b>实例唯一标识</b>（32 位无连字符十六进制）；绑定与订阅靠它或 Index 定位</td></tr>
+<tr><td><code>Module@DisplayName</code></td><td><code>图像源1</code></td><td>用户可见名（含中文与序号后缀）</td></tr>
+<tr><td><code>Module@Type</code> / <code>IsSlave</code> / <code>ServerAddr</code> / <code>ModuleFile</code></td><td><code>0</code> / <code>0</code> / 空 / 空</td><td>模块种类、是否从属、远端地址、外部模块文件（本样例全为本地）</td></tr>
+<tr><td><code>Module@EnableModule</code> / <code>EnableCallBack</code></td><td><code>1</code> / <code>1</code></td><td>启用状态 / 是否启用回调</td></tr>
+</table>
+<p><b>绑定（Subscribe）是 8 段点分字符串</b>：</p>
+<code class="block">1 . InImage . 0 . Image . 0 . 0 . All . 1      ← 源模块1.源字段InImage . ? . 目标字段Image . ? . ? . All . 1
+2 . %in0% . 2 . T . 1 . 0 . All . 1            ← 动态 IO：字段名可为 %in0% 占位
+2 . %in1% . 1 . ModuStatus . 0 . 0 . All . 1</code>
+<p class="small">第 2 段出现 <code>%in0%</code>/<code>%in1%</code> 占位 → <b>动态 IO</b>（对应 <code>DynamicIO Upgrade</code> 阶段）。<span class="unk">未知</span> 第 4/5/6/8 段的确切语义（本批只有 3 个样例，字段值分布不足以推断）。</p>
+
+<h3>1.7 方案 / 流程包同构性与映射表规模 <span class="obs">观察到</span>（2026-11-06 补证）</h3>
+<p>补 A1（<code>.sol</code> 与 <code>.prc</code> 是否同构）、A2（映射表全量）与 A5（失败表现）。样本：<code>.prc</code> 6 份（<code>CalibGuideSample</code>）、<code>.sol</code> 11 份（安装目录 <code>Samples</code>）+ <code>D:\MyWork</code> 下 29 份（含逆向 fixture 与运行产物）。全程 <code>ZipFile.OpenRead</code> 只读。</p>
+
+<p class="note"><b>结论</b>：容器与组织方式<b>完全同构</b>，差异只在外层三段命名；<code>.sol</code> 额外带脚本与附件。因此「方案 vs 流程」不是两种格式，而是同一容器的两种载荷。</p>
+
+<table>
+<tr><th style="width:16%">维度</th><th style="width:32%">.prc（流程）</th><th style="width:34%">.sol（方案）</th><th>判断</th></tr>
+<tr><td>容器</td><td><code>50 4B 03 04</code> ZIP</td><td><code>50 4B 03 04</code> ZIP</td><td>同构</td></tr>
+<tr><td>加密</td><td colspan="2">通用位标记 <code>0x002D</code> 含 encrypted 位，但条目可直接读出明文 XML → <b>厂商滥用了位标记，实际未加密</b></td><td>同构（均未加密）</td></tr>
+<tr><td>目录前缀</td><td><code>ProcFile\</code></td><td><code>SolutionFile\</code></td><td>命名不同，层级同</td></tr>
+<tr><td>主索引 XML</td><td><code>ProcFile\ProcedureInfo.xml</code></td><td><code>SolutionFile\VmServer.xml</code></td><td>不同文件名，同一 <code>&lt;Root&gt;</code> 骨架</td></tr>
+<tr><td>主 XML 身份区段</td><td><code>ExportProcedureInfo/Procedure</code>（Index / DisplayName / Guid / ShieldGlobalCtrl / StopWhenNG / RunTimeout / ContinueExecuteTimGap）</td><td><code>SolutionInfo/Solution</code> + <code>ModulesInfo/ModuleBase/Module</code></td><td>语义不同（流程 vs 方案），骨架同</td></tr>
+<tr><td>每模块参数</td><td><code>UiParamData\_&lt;流程号&gt;+&lt;模块号&gt;+&lt;类型名&gt;</code></td><td>同左</td><td><b>完全同构</b></td></tr>
+<tr><td>模块帧</td><td><code>ProcedureMoudleFrame</code></td><td><code>MoudleFrame</code></td><td>命名不同（原文拼写 Moudle），同为二进制</td></tr>
+<tr><td>独有条目</td><td>—</td><td><code>GlobalScript_0</code>、<code>ModuleAttachments\*.bmp</code>、<code>UiParamData\_70000+100+solution</code></td><td><code>.sol</code> 多出脚本与附件</td></tr>
+</table>
+
+<p class="small">两边 <code>SaveInfo@Name</code> 实录 <code>CompatibleTool.exe</code>（.prc，2023-11-06）与 <code>VisionMaster.exe</code>（.sol，2023-12-18）—— <b><code>CalibGuideSample</code> 的 <code>.prc</code> 本身就是兼容工具产出物</b>，可直接当我方转换结果的对拍基准。</p>
+
+<p><b><code>UiParamData</code> 是私有二进制 TLV</b>（细化 §1.1 的「二进制」判断）：</p>
+<code class="block">66 55 33 22                          ← 魔数 "fU3\""（小端 0x22335566），全部条目一致
+00 00 00 01                          ← 格式版本
+00 00 00 04 | 00 00 00 08 | Position | 00 00 00 10 | 两个 double
+00 00 00 07 | IsReady    | 00 00 00 01 | 01
+... DESIGNERBUFFER + XAML 文本 ...    ← 前端窗口布局直接以 XAML 串存在参数里</code>
+<p class="small">即 <code>长度 + 名称 + 类型 + 值</code> 循环，字段名与字符串值按 UTF-8 明文存放（所以字段名可检索、值布局不可按文本解析）。<code>_70000+100+solution</code> 内含 <code>DESIGNERBUFFER</code> 与完整 <code>FrontendWindow</code> XAML，说明<b>界面布局随方案持久化</b>。</p>
+
+<p><b>改名映射表全量规模</b>（关 A2）：</p>
+<table>
+<tr><th style="width:26%">项</th><th>值</th></tr>
+<tr><td>根节点</td><td><code>InfoList</code>，仅 1 个子节点 <code>ModuleInfoList</code> —— <b>没有模块改名区段</b></td></tr>
+<tr><td>模块类型数</td><td>14</td></tr>
+<tr><td><code>IOInfo</code> 映射条数</td><td>190（合计）</td></tr>
+<tr><td>同模块内 <code>SrcName</code> 重复</td><td>0（无冲突）</td></tr>
+<tr><td><code>Dst</code> 命名规律</td><td><code>Src+s</code> 复数化 64 条（34%）；其余 126 条为加前缀/换词（如 <code>ROI→DetectROIs</code>、<code>DetectAnnulus→DetectROIAnnulus</code>）</td></tr>
+<tr><td>覆盖模块</td><td>仅边缘检测与 CNN 系列：<code>IMVSCircleEdgePairInspModu</code> 41、<code>IMVSLineEdgePairInspModu</code> 33、CNN 四组各 12–13、其余 7</td></tr>
+</table>
+<p class="small"><b>结论</b>：这张表<b>只管结果输出字段改名</b>，不含模块改名、不含参数改名。所以 <code>SortModule→DataSortModule</code> 的模块改名<b>不在表内</b>（A2 关闭），另找依据。</p>
+
+<p><b>迁移失败的表现</b>（A5，弱证据）：安装目录留有 <code>CompatibleTool.exe-20260928-134928-0813.dmp</code>（1,553,820 B）及同名 txt 摘要。</p>
+<code class="block">ExceptionCode : CLR_CCR_EXCEPTION
+Frame 0    : KERNELBASE.dll! RaiseException
+Frame 1-2  : clr.dll! LogHelp_NoGuiOnAssert
+Frame 3-41 : Unknow.dll! Unknow        ← 无符号</code>
+<table>
+<tr><th style="width:26%">项</th><th>实测</th></tr>
+<tr><td>崩溃形态</td><td><code>CLR_CCR_EXCEPTION</code> —— CLR 内部快速失败，不是普通托管异常</td></tr>
+<tr><td>符号化程度</td><td>摘要 41 帧仅 3 帧有符号，其余 <code>Unknow.dll</code>；<b>无法定位到具体阶段或模块</b></td></tr>
+<tr><td>dump 内可读串</td><td>1,942 条 ASCII + 4,406 条 UTF-16；<b>不含任何 <code>.sol</code>/<code>.prc</code> 路径，不含异常消息</b></td></tr>
+<tr><td>可确认的加载范围</td><td>崩溃时已加载几乎全部 <code>Module(sp)</code> 模块 pdb，以及 <code>C:\Program Files (x86)\Common Files\MVS\Runtime\Win64_x64\</code> 全部相机运行库（含 <code>XmlParser_MD_VC120_v3_0_MV.dll</code>）→ 兼容工具是<b>全量加载模块</b>后统一解析，不是按需加载单个模块</td></tr>
+<tr><td>原厂源码树线索</td><td>pdb 路径暴露 <code>...\Public_Release\Module(sp)\x64\...</code> 与 <code>...\VisionMasterMain\project\VisionMaster\Tools\...</code></td></tr>
+</table>
+<p class="warn"><b>诚实边界</b>：这份 dump 只证明「兼容工具在转换过程中以 CLR 内部失败终止」，<b>不能</b>证明失败发生在第几阶段、是否写坏了半个文件、用户界面看到什么提示。要闭合必须用 WinDbg 配同版本 pdb 做符号化，或复现时抓托管异常 —— <b>本批未做，仍标 <span class="unk">未知</span></b>。</p>
+
+<h2>2 原件 vs 我方对照</h2>
+<table>
+<tr><th style="width:20%">原件事实</th><th style="width:24%">我方现状</th><th>结论与建议</th><th style="width:8%">优先级</th></tr>
+<tr><td>版本字段是产品串 <code>CurrentVersion="V4.4.0"</code></td><td><code>ValidateSchema</code> 用<b>整数</b> schema 版本（≠1 拒绝）</td><td><b>两者不是同一概念</b>，不能互证。原件的串用于"选哪条迁移路径"，我方的整数用于"结构能否解析"。<b>建议</b>：整数版本继续管结构；若将来要记产品兼容性，另加一个独立字段，<b>不要</b>把两者混成一个数</td><td>P1</td></tr>
+<tr><td>版本不符 → <b>迁移 + 另存</b>，原件保留</td><td>版本不符 → <b>拒绝</b></td><td><b>核心分歧</b>。原件给用户留了退路（另存新文件、原文件不动）；我方硬拒后用户无路。建议改为「只读打开 + 提示 + 另存」，并保留失败计数可见</td><td><b>P0 待裁决</b></td></tr>
+<tr><td>缺模块 → <code>WARN + Failed Module Num:4</code> 继续</td><td>缺工具时行为<b>本批未核对</b></td><td>建议我方也走"计数 + 继续 + 可见"，而不是"整方案打不开"</td><td>P1</td></tr>
+<tr><td>字段改名靠 <code>CompatibleTool.xml</code> 映射表</td><td>无对应机制</td><td><span class="unk">未知</span> 我方是否已有版本演进需求。<b>现在不必建</b>，但方案格式一旦发布就要预留"字段改名"通道，否则将来只能硬断</td><td>P2</td></tr>
+<tr><td>模块实例身份 = <code>Guid</code>(32 位无连字符) + <code>Index</code>(序号)</td><td>节点身份机制<b>本批未核对</b></td><td>原件<b>两者并存</b>：Index 用于图连接，Guid 用于跨引用。我方需确认是否只用了其中之一（若只有序号，复制粘贴/合并会撞号）</td><td>P1（专项）</td></tr>
+<tr><td><code>UiParamData</code> 是<b>私有二进制</b>，与 <code>ProcedureInfo.xml</code> 分离</td><td>我方参数与方案结构一样用 JSON（同文件）</td><td>原件的分离带来的好处：结构可明文 diff、参数体积不膨胀 XML。<b>不建议</b>照搬二进制（反调试、不可审计），但"结构 vs 大量参数分离"值得借鉴</td><td>P2</td></tr>
+<tr><td>流程级有 <code>RunTimeout</code>/<code>StopWhenNG</code>/<code>ShieldGlobalCtrl</code>/<code>ContinueExecuteTimGap</code></td><td>超时与 NG 策略<b>本批未核对</b></td><td>这 4 项是"产线连续运行"的必需要素。建议核对方案持久化里是否已有对应字段</td><td>P2</td></tr>
+</table>
+
+<h2>3 待补证据</h2>
+<h3>3.1 需更深取证（静态）</h3>
+<table>
+<tr><th style="width:7%">编号</th><th>缺口</th><th>影响</th><th style="width:14%">状态</th></tr>
+<tr><td>A1</td><td><code>.sol</code> 包内条目是否与 <code>.prc</code> 完全同构（本批只解了 <code>.prc</code>）</td><td>方案 vs 流程的关系表述</td><td><span class="obs">已补 §1.7</span></td></tr>
+<tr><td>A2</td><td><code>CompatibleTool.xml</code> 剩余 14 KB 是否还含模块<b>改名</b>（不止字段改名）</td><td>确认 <code>SortModule→DataSortModule</code> 是否也在此表</td><td><span class="obs">已补 §1.7</span></td></tr>
+<tr><td>A3</td><td><code>ProcedureMoudleFrame</code>(209 KB) 内部结构</td><td>图/布局是否也在包内</td><td><span class="unk">未补</span></td></tr>
+<tr><td>A4</td><td><code>Subscribe@Relation</code> 第 4/5/6/8 段语义</td><td>绑定契约</td><td><span class="unk">未补</span></td></tr>
+<tr><td>A5</td><td>迁移<b>失败</b>时的日志与产物（本批只有成功样例）</td><td>"失败怎么表现"这一半</td><td><span class="inf">部分补 §1.7</span></td></tr>
+</table>
+<h3>3.2 需实机验证（需用户授权开原机窗口）</h3>
+<table>
+<tr><th>编号</th><th>验证项</th></tr>
+<tr><td>B1</td><td>用 VisionMaster 打开 <code>V4.3.0</code> 方案时，是否<b>自动</b>提示迁移还是静默提示；主程序是否有内置迁移入口</td></tr>
+<tr><td>B2</td><td>方案版本<b>高于</b>当前软件（如 V4.5 方案在 4.4 上打开）时的表现 —— 本批<b>无证据</b>，这是"降级打开"的关键缺口</td></tr>
+<tr><td>B3</td><td>缺 4 个模块的方案实际打开后，那 4 个模块在画布上怎么显示（红/灰/占位）</td></tr>
+</table>
+<h3>3.3 需厂商文档</h3>
+<table><tr><th>编号</th><th>缺口</th></tr>
+<tr><td>C1</td><td>方案格式版本升级策略（是否承诺"向前兼容 N 个版本"）</td></tr>
+<tr><td>C2</td><td><code>CompatibleTool.exe</code> 命令行参数的完整定义（第 3 段空位是否为密码）</td></tr>
+</table>
+
+<h2>4 自验命令（PowerShell 5.1，只读）</h2>
+<code class="block">Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+# ① 容器是 ZIP + 条目清单
+$f="D:\Program Files\VisionMaster4.4.0\Applications\CalibGuideSample\static.prc"
+$b=[IO.File]::ReadAllBytes($f); ($b[0..3] | %{ $_.ToString("X2") }) -join " "   # 期望 50 4B 03 04
+$z=[IO.Compression.ZipFile]::OpenRead($f); $z.Entries | Select FullName,Length; $z.Dispose()   # 期望 7 条
+
+# ② 版本字段
+$z=[IO.Compression.ZipFile]::OpenRead($f)
+$e=$z.GetEntry("ProcFile\ProcedureInfo.xml"); $r=New-Object IO.StreamReader($e.Open(),[Text.Encoding]::UTF8)
+$t=$r.ReadToEnd(); $r.Close(); $z.Dispose()
+([regex]::Match($t,'<Version CurrentVersion="([^"]*)"')).Groups[1].Value    # 期望 V4.4.0
+
+# ③ 5 份样例版本一致（期望全部 V4.4.0）
+foreach($n in "static","static_en","dynamic","dynamic_en","reflect"){
+  $z=[IO.Compression.ZipFile]::OpenRead("...\CalibGuideSample\$n.prc")
+  $e=$z.GetEntry("ProcFile\ProcedureInfo.xml"); $r=New-Object IO.StreamReader($e.Open(),[Text.Encoding]::UTF8)
+  $t=$r.ReadToEnd(); $r.Close(); $z.Dispose()
+  "$n = " + ([regex]::Match($t,'CurrentVersion="([^"]*)"')).Groups[1].Value }
+
+# ④ 迁移日志（期望含"当前方案版本：V4.3.0"与"Failed Module Num"）
+Select-String -Path "D:\Program Files\VisionMaster4.4.0\Applications\log\UI\CompatiableTool.log" `
+  -Pattern "当前方案版本|Failed Module|Begin |SaveAs" -Encoding UTF8
+
+# ⑤ 改名映射表规模
+$c=[IO.File]::ReadAllText("D:\Program Files\VisionMaster4.4.0\Applications\CompatibleTool.xml",[Text.Encoding]::UTF8)
+([regex]::Matches($c,'<TypeName>')).Count      # 涉及的模块类型数
+([regex]::Matches($c,'<IOInfo ')).Count        # 字段映射对数</code>
+
+<h2>5 边界声明</h2>
+<ul>
+<li><b>未启动</b> <code>VisionMaster.exe</code> / <code>CompatibleTool.exe</code>；全部结论来自<b>只读</b>文件解析（ZIP 解包读文本、读日志、读配置）。</li>
+<li><b>未改动</b> 安装目录任何文件；<b>未解包落盘</b>（<code>ZipFile.OpenRead</code> 只在内存读）。</li>
+<li><b>未改动</b> <code>src/</code>、<code>tests/</code>、其它 docs；本文件为新增。</li>
+<li><b>未 commit / 未 push</b>。</li>
+<li>§2 的"我方现状"中，<code>ValidateSchema</code> 的语义由中心提供（"缺版本允许、版本≠1 拒绝"），本批<b>未读我方源码</b>核实；节点身份、超时策略、缺工具行为三项<b>本批未核对我方实现</b>，均标"未核对"。</li>
+<li>迁移<b>失败</b>路径：2026-11-06 补到 <code>CompatibleTool.exe</code> 崩溃 dump（§1.7），可确认<b>崩溃形态、加载范围、无方案路径可追</b>，但因无符号、无异常消息，<b>具体失败阶段仍标 <span class="unk">未知</span></b>；方案版本<b>高于</b>软件时的行为本批<b>仍无任何证据</b>，未用推测补齐。</li>
+<li>本文件<b>不构成</b>任何代码改动建议的批准；§2 的 P0 分歧点需中心与用户裁决。</li>
+</ul>
+
+<footer>
+VM 应用层 · 方案格式版本与兼容迁移 · 2026-11-05 建档，2026-11-06 补 §1.7 · 只读取证<br>
+关联：<code>VM启动时序与失败表现矩阵-20261105.html</code>（首次发现 <code>CompatibleTool.exe</code>）、<code>VM工具逆向批次R4/R5</code>（改名与字段类型差异）<br>
+本批补证手段：<code>ZipFile.OpenRead</code> 只读列举 <code>.sol</code>/<code>.prc</code> 条目、<code>XmlDocument</code> 统计映射表、dump 字节级可打印串提取（ASCII 1,942 条 / UTF-16LE 4,406 条）；<b>未启动</b>兼容工具、<b>未解包落盘</b>、<b>未改安装目录任何文件</b>
+</footer>
+</body>
+</html>

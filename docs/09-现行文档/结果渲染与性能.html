@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>结果渲染与性能 · 现行文档</title>
+<link rel="stylesheet" href="../00-索引/assets/doc.css">
+</head>
+<body>
+<div class="wrap">
+
+<nav class="crumbs">
+    <a href="../00-索引/主题台账.html">主题台账</a>
+    <a href="../00-索引/文档索引.html">文档索引</a>
+    <a href="README.html">现行文档说明</a>
+</nav>
+
+<header class="doc-header">
+    <h1>结果渲染与性能<span class="badge partial">部分未实施</span></h1>
+    <p class="doc-meta">最后更新：2026-11-05<span class="sep">·</span>状态：部分未实施<span class="sep">·</span>代码基线：<code>71da36329</code><span class="sep">·</span>合并来源：28 篇历史方案与实施总结（清单见文末「历史演进」）</p>
+</header>
+
+<section class="card lead">
+    <h2>一句话结论</h2>
+        <p>结果呈现走的是<strong>契约驱动</strong>路线：插件通过 <code>ResultDisplayDescriptor</code> / <code>ResultProjectionDescriptor</code> / <code>ResultGeometrySnapshot</code> 描述"该怎么显示"，UI 侧 <code>ResultWorkspacePresenter</code> / <code>ResultPresentationPresenter</code> / <code>ResultDispatchQueue</code> 负责渲染与调度。<strong>但 2026-09 那批「统一空间索引 + 批量 Geometry 提交 + Tile 候选索引」的大批量渲染方案，在当前工作区没有对应实现</strong>——<code>ResultRenderLayer</code>、<code>ContourRecord</code>、<code>RenderGeneration</code>、Tile 索引均 0 命中。性能指标也没有实测记录。</p>
+</section>
+
+<section class="card">
+    <h2>改前用户看到什么</h2>
+        <ul>
+            <li>结果图形一多（几千条轮廓）就<strong>卡、掉帧</strong>，缩放平移明显滞后。</li>
+            <li>调试预览的结果和正式工作流的结果<strong>混在一起</strong>，清掉调试预览后正式结果也没了。</li>
+            <li>同一份结果在<strong>不同窗口显示不一致</strong>（工具调试窗、结果视图、全屏预览各画一套）。</li>
+            <li>切换图像或重新执行时，<strong>旧结果图形还留在画面上</strong>一会儿。</li>
+        </ul>
+</section>
+
+<section class="card">
+    <h2>改后应该是什么样</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>场景</th>
+                    <th>期望行为</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>几千条轮廓</td>
+                    <td>缩放/平移无卡顿；同一轮廓一次渲染只画一次</td>
+                </tr>
+                <tr>
+                    <td>一次结果刷新</td>
+                    <td>只启动<strong>一次</strong>有效缓存构建，不因连续两次 Set 触发两轮</td>
+                </tr>
+                <tr>
+                    <td>调试预览 vs 正式结果</td>
+                    <td>分开管理；清理调试预览后正式结果仍可恢复</td>
+                </tr>
+                <tr>
+                    <td>结果呈现</td>
+                    <td>各窗口读同一份描述符，不各自解释</td>
+                </tr>
+                <tr>
+                    <td>缓存未完成时</td>
+                    <td>不静默回退到逐轮廓阻塞路径</td>
+                </tr>
+                <tr>
+                    <td>图像/轮次不匹配</td>
+                    <td>明确不混帧、不混轮次</td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+<section class="card">
+    <h2>关键结构</h2>
+        <h3>契约 → 呈现（当前实现）</h3>
+        <figure class="diagram">
+            <div class="d-chain-v">
+                <div class="d-node accent">工具插件<small>只产出描述符，不碰 WPF 控件</small></div>
+                <div class="d-arrow down">↓</div>
+                <span class="d-edge">ResultDisplayDescriptor · ResultProjectionDescriptor · ResultGeometrySnapshot</span>
+                <div class="d-node accent">Plugin.Contracts<small>Results / Presentation</small></div>
+                <div class="d-arrow down">↓</div>
+                <div class="d-node">Plugin.Runtime<small>ResultDisplaySourceSet · ResultDisplayTextLease · ResultDisplayBindingScope</small></div>
+                <div class="d-arrow down">↓</div>
+                <div class="d-node">UI · ResultDispatchQueue / ResultDispatchLease<small>结果分发与租约</small></div>
+            </div>
+            <div class="d-fan">
+                <div class="d-arrow down">↓</div>
+                <div class="d-branches">
+                    <div class="d-branch">
+                        <div class="d-node">ResultWorkspacePresenter<small>工作区结果</small></div>
+                        <div class="d-arrow down">↓</div>
+                        <div class="d-node ok">ResultImagePane / 结果视口<small>ResultViewportFullscreenScope</small></div>
+                    </div>
+                    <div class="d-branch">
+                        <div class="d-node">ResultPresentationPresenter<small>监视 / 结果呈现</small></div>
+                    </div>
+                    <div class="d-branch">
+                        <div class="d-node">MainWindowResultPublication<small>主窗发布</small></div>
+                    </div>
+                </div>
+            </div>
+            <figcaption>契约到呈现的单向链：工具只给描述符，契约与运行时承接，UI 的分发队列按租约投递到三个呈现出口。</figcaption>
+        </figure>
+        <table>
+            <thead>
+                <tr>
+                    <th>层</th>
+                    <th>关键类型</th>
+                    <th>职责</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>契约</td>
+                    <td><code>IToolResultPresentationProvider</code></td>
+                    <td>工具声明如何呈现结果</td>
+                </tr>
+                <tr>
+                    <td>契约</td>
+                    <td><code>ResultDisplayDescriptor</code></td>
+                    <td>显示项描述（类型、样式、内容引用）</td>
+                </tr>
+                <tr>
+                    <td>契约</td>
+                    <td><code>ResultProjectionDescriptor</code></td>
+                    <td>投影描述</td>
+                </tr>
+                <tr>
+                    <td>契约</td>
+                    <td><code>ResultGeometrySnapshot</code></td>
+                    <td>几何快照（历史结果不随当前参数变化）</td>
+                </tr>
+                <tr>
+                    <td>运行时</td>
+                    <td><code>ResultDisplaySourceSet</code> / <code>ResultDisplayTextLease</code></td>
+                    <td>来源集合与文本租约</td>
+                </tr>
+                <tr>
+                    <td>UI</td>
+                    <td><code>ResultDispatchQueue</code> / <code>ResultDispatchLease</code></td>
+                    <td>结果分发排队与生命周期</td>
+                </tr>
+                <tr>
+                    <td>UI</td>
+                    <td><code>ResultWorkspacePresenter.*</code></td>
+                    <td>工作区结果（含 <code>.Display</code> / <code>.RoiEditing</code> 分部）</td>
+                </tr>
+                <tr>
+                    <td>UI</td>
+                    <td><code>ResultViewportFullscreenScope</code></td>
+                    <td>全屏结果视口</td>
+                </tr>
+            </tbody>
+        </table>
+        <h3>方案设计的目标模型（<strong>未落地</strong>）</h3>
+        <p>设计中的统一渲染链是：</p>
+        <pre><code>结果提交 → 建立 ContourRecord + 空间索引 → 视口查询候选
+        → 按 ID 去重 → 按 OK/NG·颜色·线宽·填充分组
+        → 每组合并 StreamGeometry → 少量 DrawGeometry</code></pre>
+        <p>核心思想：<strong>Tile 只负责找轮廓，Geometry Batch 负责合并，DrawingContext 只提交少量批次，全视口与局部视口共用同一套逻辑。</strong></p>
+        <p>当前工作区实测：<code>ResultRenderLayer</code>、<code>ContourRecord</code>、<code>RenderGeneration</code>、<code>TileKey</code>、<code>SetDisplayCollector</code>、<code>SetRegionItems</code> <strong>全部不存在</strong>。存在的 <code>UI/Services/Rendering/</code> 只有画布相关：<code>CanvasRenderer</code>（工作流画布节点/连线）、<code>GeometryOptimizer</code>（连线几何缓存）。</p>
+</section>
+
+<section class="card">
+    <h2>关键决策与理由</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>决策</th>
+                    <th>理由</th>
+                    <th>依据</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>结果呈现用<strong>描述符 + 快照</strong>契约，而不是让工具直接画</td>
+                    <td>工具不该依赖 WPF；同一份结果要能在多个窗口显示</td>
+                    <td>结果呈现契约</td>
+                </tr>
+                <tr>
+                    <td>历史结果携带<strong>几何快照</strong></td>
+                    <td>否则改当前参数会让历史结果跟着变，看起来像"测量不稳"</td>
+                    <td>20261014 / <code>ResultGeometrySnapshot</code></td>
+                </tr>
+                <tr>
+                    <td>调试预览与正式结果<strong>分开管理</strong></td>
+                    <td>混在一起时清理调试预览会误删正式结果</td>
+                    <td>20260921</td>
+                </tr>
+                <tr>
+                    <td>结果分发走<strong>队列 + 租约</strong></td>
+                    <td>直接回调会在 UI 线程堆叠，且难以取消</td>
+                    <td><code>ResultDispatchQueue</code> / <code>ResultDispatchLease</code></td>
+                </tr>
+                <tr>
+                    <td>缓存构建按<strong>代次</strong>取消旧任务</td>
+                    <td>连续两次 Set 会启动两轮构建，前一轮白做</td>
+                    <td>20260922 §5</td>
+                </tr>
+                <tr>
+                    <td>Tile 只做候选索引，不做绘制单位</td>
+                    <td>以几何块为绘制单位时，视口只要覆盖一小块就整块绘制</td>
+                    <td>20260922 §2</td>
+                </tr>
+                <tr>
+                    <td>全视口与局部视口<strong>共用</strong>同一套查询/去重/分组</td>
+                    <td>两套算法必然行为不一致</td>
+                    <td>20260922 最终原则</td>
+                </tr>
+                <tr>
+                    <td>暂不引入 GPU 后端</td>
+                    <td>先用空间索引和提交次数解决量级问题，再按真实数据决定 Direct2D/D3D11</td>
+                    <td>20260922 §9</td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+<section class="card">
+    <h2>实施与验证状态</h2>
+        <h3>已做</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>能力</th>
+                    <th>状态</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>结果呈现契约（描述符 / 投影 / 几何快照 / Provider 接口）</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>结果运行时（来源集合 / 文本租约 / 绑定作用域）</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>UI 结果分发（队列 + 租约）</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>工作区结果呈现（含 ROI 编辑分部）</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>结果呈现 / 主窗发布 / 全屏视口</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>画布连线几何缓存（<code>GeometryOptimizer</code>）</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>结果几何快照（历史结果不随参数变）</td>
+                    <td>已实施</td>
+                </tr>
+            </tbody>
+        </table>
+        <h3>未做</h3>
+        <p>以下均为 2026-09 系列方案的核心内容，<strong>当前工作区未找到实现</strong>：</p>
+        <ul>
+            <li><code>ResultRenderLayer</code> 统一渲染层</li>
+            <li><code>ContourRecord</code> + <code>TileKey → ContourId</code> 空间索引</li>
+            <li><code>RenderGeneration</code> 代次取消与合并刷新</li>
+            <li>按 OK/NG / 颜色 / 线宽 / 填充<strong>分组合并 Geometry</strong></li>
+            <li>少量 <code>DrawGeometry</code> 批量提交</li>
+            <li>点/十字/矩形/圆/文字的轻量空间索引</li>
+            <li><code>SetDisplayCollector</code> / <code>SetRegionItems</code> 刷新合并（这两个 API 本身也不存在）</li>
+        </ul>
+        <blockquote>
+            <p>这些方案可能落在其他 worktree（例如 20261014 文档提到的 <code>SunEyeVision_V2-comm</code>）或已被后来的契约化路线取代。<strong>在确认之前，不能把"批量渲染已优化"当结论。</strong></p>
+        </blockquote>
+        <h3>未验</h3>
+        <ul>
+            <li>3000 / 10000 条轮廓在适配窗口、放大、缩小、平移、切图像时<strong>无明卡顿</strong>——无实测记录。</li>
+            <li>候选轮廓数 / 去重后轮廓数 / 最终批次数 / 缓存命中率 / 绘制耗时<strong>没有指标输出</strong>。</li>
+            <li>双渲染层幂律缩放治理的最终效果无复测记录。</li>
+            <li>GPU 相关方案（D2D/D3D11）仅为评估，无结论。</li>
+        </ul>
+</section>
+
+<section class="card">
+    <h2>风险与遗留</h2>
+        <ol>
+            <li><strong>方案与代码脱节（最高）。</strong> 28 篇文档里最核心的一批（空间索引、批量提交、代次取消）在当前基线找不到实现。任何基于这些文档的"性能已优化"判断都不成立，必须先确认代码在哪个分支。</li>
+            <li><strong>结果呈现分散在多个 Presenter。</strong> <code>ResultWorkspacePresenter</code>、<code>ResultPresentationPresenter</code>、<code>MainWindowResultPublication</code>、<code>ResultImagePane</code> 各自处理一段，容易出现"某个窗口没跟上新契约"。</li>
+            <li><strong>几何快照是逐工具接入的。</strong> 圆—圆已冻结引导与卡尺几何，其他工具是否都产出快照没有逐个确认，未接入的工具改参数仍会让历史结果变化。</li>
+            <li><strong>调试预览隔离依赖队列与租约的正确使用。</strong> 绕过队列直接发布的结果不受生命周期管理。</li>
+            <li><strong>没有性能指标。</strong> 没有耗时/批次/命中率输出，就无法判断是"已经够快"还是"还没优化"。</li>
+        </ol>
+</section>
+
+<section class="card">
+    <h2>历史演进</h2>
+        <h3>渲染架构与性能（14 篇）</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>文档</th>
+                    <th>本篇采信</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2026-09-22</td>
+                    <td><a href="../01-方案设计/2026/09/22/结果渲染统一空间索引与批量提交优化方案-20260922.md">结果渲染统一空间索引与批量提交优化方案</a></td>
+                    <td><strong>目标模型主要来源</strong>（未落地）</td>
+                </tr>
+                <tr>
+                    <td>2026-09-21</td>
+                    <td><a href="../01-方案设计/2026/09/21/结果渲染视口语义修正方案-20260921-172621.md">结果渲染视口语义修正方案</a></td>
+                    <td>视口语义</td>
+                </tr>
+                <tr>
+                    <td>2026-09-21</td>
+                    <td><a href="../01-方案设计/2026/09/21/结果渲染性能优化方案-20260921-181702.md">结果渲染性能优化方案</a></td>
+                    <td>性能目标</td>
+                </tr>
+                <tr>
+                    <td>2026-09-21</td>
+                    <td><a href="../01-方案设计/2026/09/21/统一WPF结果渲染分层实施设计-20260921-113636.md">统一 WPF 结果渲染分层实施设计</a></td>
+                    <td>分层实施</td>
+                </tr>
+                <tr>
+                    <td>2026-09-21</td>
+                    <td><a href="../01-方案设计/2026/09/21/统一WPF结果渲染与调试预览分层优化方案-20260921.md">统一 WPF 结果渲染与调试预览分层优化方案</a></td>
+                    <td>调试预览隔离</td>
+                </tr>
+                <tr>
+                    <td>2026-09-21</td>
+                    <td><a href="../01-方案设计/2026/09/21/统一WPF结果渲染分层实施设计-审核意见-20260921.md">统一 WPF 结果渲染分层实施设计-审核意见</a></td>
+                    <td>审核意见</td>
+                </tr>
+                <tr>
+                    <td>2026-09-19</td>
+                    <td><a href="../01-方案设计/2026/09/19/大批量结果渲染架构基线-20260919.md">大批量结果渲染架构基线</a></td>
+                    <td>基线</td>
+                </tr>
+                <tr>
+                    <td>2026-09-03</td>
+                    <td><a href="../01-方案设计/2026/09/03/双渲染层幂律缩放治理方案-20260903-132423.md">双渲染层幂律缩放治理方案</a></td>
+                    <td>缩放治理</td>
+                </tr>
+                <tr>
+                    <td>2026-09-03</td>
+                    <td><a href="../03-测试报告/2026/09/03/测试报告-双渲染层幂律缩放治理-20260903-133550.md">测试报告-双渲染层幂律缩放治理</a></td>
+                    <td>治理验证</td>
+                </tr>
+                <tr>
+                    <td>2026-08-18</td>
+                    <td><a href="../01-方案设计/2026/08/18/图像预览器缩略图渲染治本方案-20260818-113000.md">图像预览器缩略图渲染治本方案</a></td>
+                    <td>缩略图渲染</td>
+                </tr>
+                <tr>
+                    <td>2026-08-06</td>
+                    <td><a href="../01-方案设计/2026/08/06/图形绘制到渲染链路梳理与优化方案-20260806.md">图形绘制到渲染链路梳理与优化方案</a></td>
+                    <td>绘制链路</td>
+                </tr>
+                <tr>
+                    <td>2026-03-16</td>
+                    <td><a href="../06-指南参考/configs/2026/03/configs_perf_debug_guide_v4_20260316.md">性能调试指南 v4</a></td>
+                    <td>性能诊断方法</td>
+                </tr>
+                <tr>
+                    <td>2026-02-22</td>
+                    <td><a href="../06-指南参考/guides/2026/02/虚拟化渲染实现指南-20260222.md">虚拟化渲染实现指南</a></td>
+                    <td>虚拟化渲染</td>
+                </tr>
+                <tr>
+                    <td>2026-02-22</td>
+                    <td><a href="../03-测试报告/2026/02/GPU加速测试结果分析-20260222.md">GPU 加速测试结果分析</a></td>
+                    <td>GPU 测试结论</td>
+                </tr>
+            </tbody>
+        </table>
+        <h3>早期图像性能（14 篇，2026-02 系列）</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>文档</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2026-03-05</td>
+                    <td><a href="../02-实施总结/2026/03/图像处理器方案实施总结-20260305.md">图像处理器方案实施总结</a></td>
+                </tr>
+                <tr>
+                    <td>2026-02-22</td>
+                    <td><a href="../06-指南参考/guides/2026/02/GPU解码方案完整实施指南-20260222.md">GPU 解码方案完整实施指南</a></td>
+                </tr>
+                <tr>
+                    <td>2026-02-22</td>
+                    <td><a href="../06-指南参考/guides/2026/02/GPU加速测试指南-20260222.md">GPU 加速测试指南</a></td>
+                </tr>
+                <tr>
+                    <td>2026-02-22</td>
+                    <td><a href="../06-指南参考/guides/2026/02/GPU解码方案快速测试指南-20260222.md">GPU 解码方案快速测试指南</a></td>
+                </tr>
+                <tr>
+                    <td>2026-02-22</td>
+                    <td><a href="../02-实施总结/2026/02/GPU解码方案实施总结-20260222.md">GPU 解码方案实施总结</a></td>
+                </tr>
+                <tr>
+                    <td>2026-02-22</td>
+                    <td><a href="../02-实施总结/2026/02/图像加载性能优化-四大策略实施总结-20260222.md">图像加载性能优化-四大策略实施总结</a></td>
+                </tr>
+                <tr>
+                    <td>2026-02-22</td>
+                    <td><a href="../02-实施总结/2026/02/图像预览GPU加速优化实施总结-20260222.md">图像预览 GPU 加速优化实施总结</a></td>
+                </tr>
+                <tr>
+                    <td>2026-02-22</td>
+                    <td><a href="../01-方案设计/2026/02/清除缓存并测试GPU-20260222.md">清除缓存并测试 GPU</a></td>
+                </tr>
+                <tr>
+                    <td>2026-02-22</td>
+                    <td><a href="../02-实施总结/2026/02/图像预览UI更新性能优化实施总结-20260222.md">图像预览 UI 更新性能优化实施总结</a></td>
+                </tr>
+                <tr>
+                    <td>2026-02-22</td>
+                    <td><a href="../02-实施总结/2026/02/视野内缩略图显示性能优化实施总结-20260222.md">视野内缩略图显示性能优化实施总结</a></td>
+                </tr>
+                <tr>
+                    <td>2026-02-22</td>
+                    <td><a href="../02-实施总结/2026/02/阶段一完成总结-20260222.md">阶段一完成总结</a></td>
+                </tr>
+                <tr>
+                    <td>2026-02-22</td>
+                    <td><a href="../02-实施总结/2026/02/图像预览器性能优化实施总结-20260222.md">图像预览器性能优化实施总结</a></td>
+                </tr>
+                <tr>
+                    <td>2026-02-22</td>
+                    <td><a href="../02-实施总结/2026/02/图像预览缓存性能优化实施总结-20260222.md">图像预览缓存性能优化实施总结</a></td>
+                </tr>
+                <tr>
+                    <td>2026-02-22</td>
+                    <td><a href="../06-指南参考/configs/2026/02/configs_tab_switching_optimization_completed_20260222.md">标签页切换优化完成记录</a></td>
+                </tr>
+            </tbody>
+        </table>
+        <p><strong>重要提醒</strong>：2026-02 系列是早期 GPU/缓存优化，与当前契约化结果呈现<strong>不是同一条线</strong>，不要混引。</p>
+</section>
+
+<nav class="doc-nav">
+    <a class="primary" href="../00-索引/主题台账.html">主题台账</a>
+    <a href="../00-索引/文档索引.html">文档索引</a>
+    <a href="README.html">现行文档说明</a>
+</nav>
+
+</div>
+</body>
+</html>

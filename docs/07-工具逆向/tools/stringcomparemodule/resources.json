@@ -1,0 +1,62 @@
+{
+  "toolId": "stringcomparemodule",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\StringCompareModule\\StringCompareModule.xml",
+      "sha256": "ff6f9a97daab3d5e3ccb21d17efabc1ee21e2b6a770ddc0fca2dce98987ef7e0",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\StringCompareModule\\StringCompareModuleAlgorithm.xml",
+      "sha256": "d6ce2836aed526bb55d1089dfb1f74795768ace44fc24f2d70237c91179f4faf",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\StringCompareModule\\StringCompareModuleAlgorithmTab.xml",
+      "sha256": "df48decd2c1ab1b85abfdea286fbb466476f2101ee97a3aca6bfcb388233f08d",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\StringCompareModule\\StringCompareModuleCs.xml",
+      "sha256": "3a70d86df43b1dad692cc2d4fbd9b6f65c2e0983e9d36d6def3e85da93c0dae9",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\StringCompareModule\\StringCompareModuleDisplay.xml",
+      "sha256": "a1a23bc458e4df81912d95bffb337aaccd3c94310bf69556dd534a676bb463f5",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\StringCompareModule\\ToolItemInfo.xml",
+      "sha256": "0d4b667ba3067f55d1f2df338f664957e79c475c83fccd8ca1660029ddf760af",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "ButtonSelecter",
+      "name": "TextInput"
+    },
+    {
+      "type": "HeadBar",
+      "name": "ListHead"
+    },
+    {
+      "type": "ButtonSelecter_StringComp",
+      "name": "StringCompareFields"
+    }
+  ],
+  "sharedUiGroups": [],
+  "status": "source-partial"
+}

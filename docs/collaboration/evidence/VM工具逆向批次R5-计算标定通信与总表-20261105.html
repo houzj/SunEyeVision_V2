@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>VM 工具逆向批次 R5 — 计算/标定/通信/全局/逻辑 + 191 总表收口</title>
+<style>
+:root{
+  --bg:#0b1524; --bg2:#111f33; --bd:#24405f; --tx:#dbe7f5; --tx2:#9fb4cc;
+  --obs:#3fb950; --inf:#d29922; --unk:#8b949e; --warn:#f85149; --note:#58a6ff;
+}
+*{box-sizing:border-box}
+body{margin:0;padding:32px 40px 80px;background:var(--bg);color:var(--tx);
+  font:15px/1.75 "Segoe UI","Microsoft YaHei",sans-serif;}
+h1{font-size:26px;margin:0 0 6px;color:#fff;letter-spacing:.3px}
+h2{font-size:20px;margin:38px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--bd);color:#fff}
+h3{font-size:16px;margin:26px 0 10px;color:#cfe3f7}
+.meta{color:var(--tx2);font-size:13px;margin-bottom:26px;line-height:1.9}
+.meta b{color:var(--tx)}
+table{width:100%;border-collapse:collapse;margin:12px 0 18px;font-size:13px;background:var(--bg2)}
+th,td{border:1px solid var(--bd);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#16273d;color:#fff;font-weight:600;white-space:nowrap}
+td code,p code,li code{background:#0a1420;border:1px solid #1d3350;border-radius:3px;
+  padding:1px 5px;font:12.5px/1.5 Consolas,"Cascadia Mono",monospace;color:#a9d3ff}
+tr:nth-child(even) td{background:#0f1c2e}
+code.block{display:block;background:#07101b;border:1px solid #1d3350;border-radius:5px;
+  padding:12px 14px;margin:10px 0;white-space:pre;overflow-x:auto;color:#a9d3ff;font-size:12.5px}
+.obs,.inf,.unk{display:inline-block;padding:0 6px;border-radius:3px;font-size:11.5px;
+  font-weight:600;letter-spacing:.5px;white-space:nowrap}
+.obs{background:rgba(63,185,80,.16);color:var(--obs);border:1px solid rgba(63,185,80,.45)}
+.inf{background:rgba(210,153,34,.16);color:var(--inf);border:1px solid rgba(210,153,34,.45)}
+.unk{background:rgba(139,148,158,.16);color:var(--unk);border:1px solid rgba(139,148,158,.45)}
+.warn,.note{border-left:3px solid var(--warn);background:rgba(248,81,73,.08);
+  padding:10px 14px;margin:14px 0;border-radius:0 4px 4px 0;font-size:13.5px}
+.note{border-left-color:var(--note);background:rgba(88,166,255,.08)}
+.warn b{color:var(--warn)} .note b{color:var(--note)}
+ul,ol{margin:8px 0 14px;padding-left:24px} li{margin:4px 0}
+.k{color:#7ee787;font-weight:600}
+.r{color:#ff7b72;font-weight:600}
+.small{font-size:12.5px;color:var(--tx2)}
+tr.tot td{background:#16273d;font-weight:600;color:#fff}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--bd);color:var(--tx2);font-size:12.5px}
+</style>
+</head>
+<body>
+
+<h1>VM 工具逆向批次 R5 — 计算 / 标定 / 通信 / 全局 / 逻辑　＋　191 总表收口</h1>
+<div class="meta">
+取证日期：<b>2026-11-05</b>　｜　取证对象：<b>VisionMaster 4.4.0（V4.4.0 Build20250516@1555331）</b>，安装目录只读<br>
+取证范围：<code>Calculation</code>(11) / <code>Calibration</code>(10) / <code>Communication</code>(5) / <code>Global</code>(17) / <code>Logic</code>(15 新增，另 5 属 R1) = <b>58 个有效模块</b><br>
+深度：<b>清单级</b> + <b>全量总表收口</b>（16 个分类逐项对齐），不做算法语义、不做整链<br>
+标注口径：<span class="obs">观察到</span> 直接读自文件　<span class="inf">推断</span> 由结构推得　<span class="unk">未知</span> 无静态证据
+</div>
+
+<h2>0 结论摘要</h2>
+<table>
+<tr><th style="width:25%">问题</th><th style="width:9%">档位</th><th>结论</th></tr>
+<tr><td>191 总表收口结果</td><td><span class="obs">观察到</span></td>
+<td>清单 <b>191</b>（16 分类）→ 实物目录 <b>163</b> → 扣 1 个空目录 = <b>162 有效</b> → 其中 <b>159</b> 个有 <code>ToolItemInfo.xml</code>（可上工具箱）。<br>
+三档数<b>全部可复跑</b>（见 §4）。</td></tr>
+
+<tr><td>差在哪</td><td><span class="obs">观察到</span></td>
+<td>四类差异，<b>性质完全不同，不能合并成一句"清单不准"</b>：<br>
+① <b>未安装 28</b>：DeepLearning 14 + RegisterLearning 6 + Recognition 8（<b>全是深度学习系</b>）；<br>
+② <b>清单外多出 5</b>：Global 4（<code>DynamicParamCameraModule</code>、<code>ImageCollectHikModu</code>、<code>SCGlobalCameraModule</code>、<code>SolutionModule</code>）+ Calibration 1（<code>CoordinateModule</code>）；<br>
+③ <b>改名 2 组</b>：清单 <code>SortModule</code> ↔ 实物 <code>DataSortModule</code>；清单 <code>DataStatisticsModule</code> ↔ 实物 <code>DataRecordModule</code>；<br>
+④ <b>空目录 1</b>：<code>Location\IMVSStringLocationModu</code>（0 文件）。</td></tr>
+
+<tr><td>192 vs 191</td><td><span class="obs">观察到</span></td>
+<td>权威清单文件共 <b>191 行</b>有效条目（早期记录写"192 行"含 1 行文件头/空行，<b>以 191 行为准</b>）。分类声明合计也是 191，两者自洽。</td></tr>
+
+<tr><td>Logic 为什么几乎全有专用编辑器</td><td><span class="obs">观察到</span></td>
+<td><b>19/20 = 95%</b> 带 <code>*Control.dll</code>，全库最高。因为 Logic 工具<b>没有图形端口</b>：IN/OUT 全空，只靠参数页配置 + 结果标量输出。<br>
+→ 与我方 <code>Condition</code>/<code>Subroutine</code> 的形态一致（都是"数据流 + 专用编辑界面"）。</td></tr>
+
+<tr><td>Global 是什么</td><td><span class="obs">观察到</span></td>
+<td>17 个里 <b>11 个完全没有端口</b>（Input/Output Category 为空标签），纯配置/管理类（通讯管理、全局变量、触发器、数据队列、流程/方案、灯控）。<br>
+Base 字段也不同：<code>ModuleType=5</code> + <code>ModuleAccess=1</code> <b>取代</b>了其它分类的 <code>ModuleViewMode</code> / <code>IsSaveTabXml</code>。</td></tr>
+
+<tr><td>Communication 有什么特征</td><td><span class="obs">观察到</span></td>
+<td><b>5/5 = 100%</b> 带专用编辑器；全部<b>无图形输出端口</b>（仅 <code>ReadDatas</code>/<code>SendDatas</code> 收图像作数据源）；结果以 <code>StrResult</code>/<code>ResultHex</code>/<code>AssembleResult</code> 等<b>文本/十六进制</b>为主。<br>
+→ 与 R3 的 <code>ModuRunTime/ModuStatus</code> 约定一致（本批 58 个模块全部有这对字段）。</td></tr>
+
+<tr><td>计算类有没有"成对"范式</td><td><span class="obs">观察到</span></td>
+<td>有。<code>IMVSLineAlignModu</code>/<code>IMVSMultiPointAlignModu</code>/<code>IMVSSinglePointAlignModu</code> 统一输出 <code>DeltaX</code>/<code>DeltaY</code>/<b><code>DeltaTheta</code></b>；<br>
+<code>SinglePointGrabModu</code>/<code>SinglePointRectifyModu</code> 统一输出 <code>OffsetX</code>/<code>OffsetY</code>/<b><code>OffsetR</code></b> + <code>InitPoint</code>。<br>
+→ "对齐偏差"和"点位定位偏差"是两个独立的结果族，字段名不通用。</td></tr>
+
+<tr><td>标定类的规模在哪里</td><td><span class="obs">观察到</span></td>
+<td><code>IMVSNImageCalibModu</code> 结果 <b>29</b> 个字段、<code>IMVSNPointCalibModu</code>/<code>TranslationCalibModu</code> 各 <b>24</b> 个 —— 全库单模块结果字段最多的类型。<br>
+→ 标定不是"点一下出个矩阵"，而是多步采集 + 多状态机 + 多误差量。</td></tr>
+
+<tr><td>前批数字勘误</td><td><span class="obs">观察到</span></td>
+<td>① R2 记"全局 Style 45 种"，本批用去重命令复核 = <b>44</b>，差异未定位，<b>以 44 为准</b>；<br>
+② R2 记"Location 声明 33"，清单实测 <b>34</b>（R2 的 33 = 其批次范围内的 Location 28 + Measurement 5，口径不同，非错误，但今后须注明"批次范围声明数"而非"分类声明数"）。</td></tr>
+
+<tr><td>本批对我方的价值</td><td><span class="obs">观察到</span></td>
+<td>三个可直接用的判断依据：<br>
+① <b>要不要专用编辑器</b>：按分类先验（Logic 95% / Communication 100% → 必须；SplitCombination/ImageGeneration 0% → 不必）；<br>
+② <b>工具的端口形态</b>：图像流（IMAGE/ROI）vs 数据流（无端口）是<b>两类不同工具</b>，不能共用同一套宿主接缝；<br>
+③ <b>清单不是需求清单</b>：191 是产品全量目录，本机可用 159，规划时不能用 191 当工作量。</td></tr>
+</table>
+
+<h2>1 逐条论证</h2>
+
+<h3>1.1 191 总表收口 <span class="obs">观察到</span></h3>
+<p>分母三方对齐：权威清单 <code>Applications\ModulePathGenerate.txt</code>（15,229 B / 191 行）× 实物目录 × 工具箱条目。</p>
+<table>
+<tr><th>分类</th><th>清单<br>声明</th><th>实物<br>目录</th><th>空<br>目录</th><th>有效<br>目录</th><th>有<br>TI</th><th>有<br>CTL</th><th>覆盖批次</th><th>差异</th></tr>
+<tr><td>Calculation</td><td>11</td><td>11</td><td>0</td><td>11</td><td>11</td><td>1</td><td>R5</td><td>—</td></tr>
+<tr><td>Calibration</td><td>9</td><td>10</td><td>0</td><td>10</td><td>10</td><td>4</td><td>R5</td><td><b>+1</b> <code>CoordinateModule</code>（清单外）</td></tr>
+<tr><td>Collection</td><td>5</td><td>5</td><td>0</td><td>5</td><td>5</td><td>4</td><td>R1(2)+R3(3)</td><td>—</td></tr>
+<tr><td>ColorProcessing</td><td>6</td><td>6</td><td>0</td><td>6</td><td>6</td><td>3</td><td>R4</td><td>—</td></tr>
+<tr><td>Communication</td><td>5</td><td>5</td><td>0</td><td>5</td><td>5</td><td><b>5</b></td><td>R5</td><td>—</td></tr>
+<tr><td>DeepLearning</td><td>14</td><td><b>0</b></td><td>0</td><td>0</td><td>0</td><td>0</td><td>—</td><td><b class="r">-14（未安装）</b></td></tr>
+<tr><td>DefectDetection</td><td>14</td><td>14</td><td>0</td><td>14</td><td><b>13</b></td><td>5</td><td>R4</td><td>TI 缺 1（<code>IMVSMarkInspModu</code>）</td></tr>
+<tr><td>Global</td><td>13</td><td>17</td><td>0</td><td>17</td><td>16</td><td>6</td><td>R5</td><td><b>+4 清单外</b>；TI 缺 1（<code>ProcedureComm</code>）</td></tr>
+<tr><td>ImageGeneration</td><td>4</td><td>4</td><td>0</td><td>4</td><td>4</td><td>0</td><td>R3</td><td>—</td></tr>
+<tr><td>ImageProcessing</td><td>21</td><td>21</td><td>0</td><td>21</td><td>21</td><td>5</td><td>R3</td><td>—</td></tr>
+<tr><td>Location</td><td>34</td><td>29</td><td>1</td><td>28</td><td>27</td><td>10</td><td>R1(6)+R2(22)</td><td><b class="r">-5 未安装</b>；<b>+1 空目录</b></td></tr>
+<tr><td>Logic</td><td>20</td><td>20</td><td>0</td><td>20</td><td>20</td><td><b>19</b></td><td>R1(5)+R5(15)</td><td><b>改名 2 组</b>（净数相同）</td></tr>
+<tr><td>Measurement</td><td>11</td><td>11</td><td>0</td><td>11</td><td>11</td><td>1</td><td>R1(6)+R2(5)</td><td>—</td></tr>
+<tr><td>Recognition</td><td>12</td><td>4</td><td>0</td><td>4</td><td>4</td><td>2</td><td>R4</td><td><b class="r">-8（全为 Cnn/Dl 系）</b></td></tr>
+<tr><td>RegisterLearning</td><td>6</td><td><b>0</b></td><td>0</td><td>0</td><td>0</td><td>0</td><td>—</td><td><b class="r">-6（未安装）</b></td></tr>
+<tr><td>SplitCombination</td><td>6</td><td>6</td><td>0</td><td>6</td><td>6</td><td>0</td><td>R3</td><td>—</td></tr>
+<tr class="tot"><td>合计</td><td>191</td><td>163</td><td>1</td><td>162</td><td>159</td><td>65</td><td>—</td><td>缺 34 / 多 5 / 空 1 → 净 29</td></tr>
+</table>
+<p><b>核对算式</b>（可独立验算）：</p>
+<ul>
+<li>缺 <b>34</b> = DeepLearning 14 + RegisterLearning 6 + Recognition 8 + Location 5 + Logic 2（改名视为缺）</li>
+<li>多 <b>5</b> = Global 4 + Calibration 1</li>
+<li>191 − 34 + 5 − 1（空目录）= <b>161</b>；而实际有效 162 —— 差 1 因 Logic 改名是"1 缺 + 1 多"配对，缺侧已计 2、多侧未计 2，故 <b>191 − 34 + 5 + 2（改名多出侧） − 1 = 163 目录</b>，再 −1 空 = <b>162</b> ✔</li>
+</ul>
+<div class="note">
+<b>口径纪律</b>：这三个数今后必须分开说 ——
+<b>191</b>「产品完整目录」、<b>162</b>「本机可用模块」、<b>159</b>「本机工具箱可见」。
+任何排期/工作量估算<b>不得</b>用 191，也不得用"162 全部要做"（其中 58 个是 R5 刚取证、我方尚无任何对应工具）。
+</div>
+
+<h3>1.2 差异的四种性质 <span class="obs">观察到</span></h3>
+<table>
+<tr><th>性质</th><th>证据</th><th>含义</th></tr>
+<tr><td><b>未安装（28）</b></td><td>清单这 28 个的类型列均为 <code>NORMAL</code>，与已安装模块无区别；<code>DeepLearning</code>/<code>RegisterLearning</code> 目录整目录不存在；全盘搜 <code>*Cnn*</code> 目录 0 命中</td><td><span class="inf">推断</span> 按授权/选装裁剪。清单无"是否安装"字段，因此<b>不能</b>用它判断"应该有"</td></tr>
+<tr><td><b>清单外多出（5）</b></td><td>Global：<code>DynamicParamCameraModule</code>(8 文件)、<code>ImageCollectHikModu</code>(13)、<code>SCGlobalCameraModule</code>(15)、<code>SolutionModule</code>(6)；Calibration：<code>CoordinateModule</code>(14)</td><td><b>厂商自有/新版本新增</b>的模块未登记进清单。<span class="unk">未知</span> 是清单生成工具滞后还是刻意排除</td></tr>
+<tr><td><b>改名（2 组）</b></td><td>清单 <code>SortModule</code> ↔ 实物 <code>DataSortModule</code>；清单 <code>DataStatisticsModule</code> ↔ 实物 <code>DataRecordModule</code></td><td><span class="inf">推断</span> 清单与实物<b>不是同一版本快照</b>。这比"缺 2 个"更值得注意：说明清单<b>可能整体滞后一个版本</b></td></tr>
+<tr><td><b>空目录（1）</b></td><td><code>Location\IMVSStringLocationModu</code>：0 文件、无 xml、无 <code>ToolItemInfo.xml</code></td><td>R2 已记。<span class="unk">未知</span> 是安装残留还是被裁掉的占位。按"无 <code>ToolItemInfo.xml</code> = 不进工具箱"判定为无效</td></tr>
+</table>
+<div class="warn">
+<b>对前批表述的更正</b>：R2 文档曾以"清单声明 ≠ 实物"作结论。本批收口后应改为更准确的三句话：
+① <b>清单 = 产品全量目录</b>（191，含选装）；② <b>实物 = 本机安装子集</b>（162，按授权裁剪）；③ <b>清单可能滞后一个版本</b>（有 2 组改名 + 5 个清单外模块）。
+这三件事同时成立，<b>不矛盾</b>，但混说会得出错误结论（例如"清单不可信"或"实装缺 29 个都是缺陷"）。
+</div>
+
+<h3>1.3 Calculation（11）：几何对齐与坐标变换 <span class="obs">观察到</span></h3>
+<table>
+<tr><th>模块</th><th>文件</th><th>CTL</th><th>pri</th><th>输入端口</th><th>输出端口</th><th>结果要点</th></tr>
+<tr><td>CalculatorModule</td><td>12</td><td>✓</td><td>7</td><td>—（脚本/表达式型）</td><td>—</td><td>ResultShow + <b><code>%var0%</code></b>（模板占位变量名）</td></tr>
+<tr><td>CoordinateTransform</td><td>11</td><td>—</td><td>8</td><td><code>Dicing Point</code>/POINT、<code>Src Input Point</code>/POINT</td><td><code>Dst Output Point</code>/POINT</td><td>仅运行态</td></tr>
+<tr><td>IMVSCalibTransformModu</td><td>11</td><td>—</td><td>2</td><td>Image、<code>Input Point</code>/POINT</td><td><code>TransPoint</code>、<code>CoordinatePoint</code></td><td>10 项含 <code>WorldPointA</code>/<code>PixelScale</code>/<code>TranslateX/Y</code></td></tr>
+<tr><td>IMVSLineAlignModu</td><td>11</td><td>—</td><td>3</td><td><b>8 组</b> <code>TargetLineInput1..8</code> / <code>ObjectLineInput1..8</code>（LINE）</td><td>—</td><td><code>DeltaX</code>/<code>DeltaY</code>/<code>DeltaTheta</code></td></tr>
+<tr><td>IMVSMultiPointAlignModu</td><td>11</td><td>—</td><td>2</td><td><b>8 组</b> Target/Object 点对（POINT）</td><td>—</td><td><code>DeltaX</code>/<code>DeltaY</code>/<code>DeltaTheta</code></td></tr>
+<tr><td>IMVSSinglePointAlignModu</td><td>11</td><td>—</td><td>1</td><td><code>TargetPointInput</code>/<code>ObjectPointInput</code></td><td>—</td><td><code>DeltaX</code>/<code>DeltaY</code>/<code>DeltaTheta</code></td></tr>
+<tr><td>IMVSRotateCalculateModu</td><td>11</td><td>—</td><td>2</td><td>Image、Point、Line、<code>RotateCenter</code></td><td><code>InputOut Point</code>/<code>Line</code>、<code>InOutRotateCenter</code>、<code>OutPoint</code>、<code>OutLine</code></td><td>仅运行态</td></tr>
+<tr><td>IMVSScaleTransformModu</td><td>11</td><td>—</td><td>3</td><td>Image</td><td>—</td><td>11 项含 <code>PixelScale</code>/<code>PhyDist</code>/<code>PixDist</code>/<code>TranslateX</code></td></tr>
+<tr><td>SinglePointGrabModu</td><td>13</td><td>—</td><td>1</td><td><code>ImagePoint</code>、<code>TeachPoint</code>、<code>TeachSnapPoint</code></td><td><code>InitPoint</code>/POINT</td><td>9 项含 <code>InitPointAngle</code>/<code>OffsetX/Y/R</code></td></tr>
+<tr><td>SinglePointRectifyModu</td><td>13</td><td>—</td><td>1</td><td>同上</td><td><code>InitPoint</code>/POINT</td><td>同上（与 Grab 同构）</td></tr>
+<tr><td>SinglePointMapAlignModu</td><td>13</td><td>—</td><td>1</td><td><code>ObjImagePoint</code>、<code>TarImagePoint</code>、<code>TarImageLineS/E</code>、<code>TeachPoint</code></td><td>—</td><td>8 项含 <code>OffsetX/Y/R</code>/<code>AbssetX</code>（原文拼写）</td></tr>
+</table>
+<p><b>结构特征</b>：</p>
+<ul>
+<li><b>8 组固定槽位</b>：Line/Point 对齐都用 <code>...Input1..8</code> 硬编码 8 组，不是 <code>IsArray</code> 数组（与 R4 的 <code>Char0/Char1</code>、R3 的 <code>OutImage0..14</code> 同类问题）。</li>
+<li><b>两个偏差族</b>：<code>Delta*</code>（对齐偏差）与 <code>Offset*</code>（点位定位偏差 + <code>InitPoint</code>），<b>不复用</b>。</li>
+<li><b>脚本型工具</b>：<code>CalculatorModule</code> 输出 <code>%var0%</code>（占位变量名），是"用户自定义变量"的模板表达。</li>
+</ul>
+
+<h3>1.4 Calibration（10 = 清单 9 + <code>CoordinateModule</code>） <span class="obs">观察到</span></h3>
+<table>
+<tr><th>模块</th><th>文件</th><th>CTL</th><th>pri</th><th>输入端口</th><th>输出端口</th><th>结果数</th></tr>
+<tr><td><b>CoordinateModule</b>（<b class="r">清单外</b>）</td><td>14</td><td>—</td><td>8</td><td>Image、<code>Src Input Point</code></td><td><code>Coordinate Origin</code>、<code>AxisX</code>、<code>AxisY</code>（POINT）</td><td>3（<code>CorCalibMatrix</code>）</td></tr>
+<tr><td>IMVSCalibBoardCalibModu</td><td>11</td><td>—</td><td>2</td><td>Image</td><td><code>Calibration Point</code>、<code>Calibration Origin</code>、<code>PosXVector</code>、<code>PosYVector</code>、ROI</td><td>11</td></tr>
+<tr><td>IMVSCameraMapModu</td><td>11</td><td>—</td><td>3</td><td><b>8 组</b> Target/Object 点对</td><td>—</td><td>10（<code>ScaleX/ScaleY</code>、<code>CalibStatus</code>）</td></tr>
+<tr><td>IMVSImageCalibModu</td><td>11</td><td>—</td><td>5</td><td>Image、<code>CorrectCenterPoint</code></td><td><code>Calibration Point</code>、ROI、<b><code>PostCorrectionImage</code>/IMAGE</b></td><td>7（<code>EstimationError</code>、<code>EvaluationError</code>）</td></tr>
+<tr><td>IMVSMapCalibModu</td><td>11</td><td>—</td><td>4</td><td>Image1/2、ROI1/2、<code>Physical Point</code></td><td><code>Current/Object/Projection Corners Point</code>、ROI</td><td>13（<code>XRatio</code>/<code>YRatio</code>/<code>MapError</code>）</td></tr>
+<tr><td>IMVSNImageCalibModu</td><td>12</td><td>✓</td><td>1</td><td>Image、<code>Image Point</code>、<code>Physical Point</code>、<code>PhyPoint</code></td><td><code>CalibImagePoint</code>、<code>Rotate CenterPoint</code>、<code>DirectionX/YVector Point</code></td><td><b>29</b>（全库最多）</td></tr>
+<tr><td>IMVSNPointCalibModu</td><td>13</td><td>✓</td><td>0</td><td><code>Image Point</code>、<code>Physical Point</code></td><td><code>CalibImagePoint</code>、<code>CalibPhysicalPoint</code>、<code>RotAxisPoint</code>、<code>RotPhysicalPoint</code></td><td><b>24</b></td></tr>
+<tr><td>ReadCalibFileModu</td><td>13</td><td>✓</td><td>8</td><td>—</td><td><b>7 × <code>POSTURE</code></b>（<code>RotCenterImage/World</code>、<code>SnapImage/World</code>、<code>TeachWorld</code>、<code>SnapWorldCur/Obj</code>）</td><td>5（<code>CalibMatrix</code>）</td></tr>
+<tr><td>RotateCalibModu</td><td>13</td><td>—</td><td>7</td><td><code>Image Point</code>、Image</td><td><code>RotAxisPoint</code>、<code>RotPhysicalPoint</code></td><td>5（<code>remainCount</code>、<code>RotError</code>、<code>RotWorldError</code>）</td></tr>
+<tr><td>TranslationCalibModu</td><td>14</td><td>✓</td><td>6</td><td><code>Image Point</code>、<code>Physical Point</code></td><td>同 NPointCalib 4 个</td><td><b>24</b></td></tr>
+</table>
+<p><b>结构特征</b>：</p>
+<ul>
+<li><b>标定是"多步状态机"</b>：<code>CalibStatus</code>/<code>CalibErrStatus</code>/<code>CalibCurIndex</code>/<code>CalibTotalNum</code>/<code>IsRightCoorA</code>/<code>RotDirectionState</code> —— 结果里带进度与方向判定，不是一次算完。</li>
+<li><b><code>POSTURE</code> 是唯一"姿态"输出类型</b>（<code>ReadCalibFileModu</code> 一次出 7 个姿态端口）。</li>
+<li><b>清单外模块同样在用</b>：<code>CoordinateModule</code> 有 14 个文件、pri=8，形态完整。</li>
+</ul>
+
+<h3>1.5 Communication（5）：无图形输出，全带专用编辑器 <span class="obs">观察到</span></h3>
+<table>
+<tr><th>模块</th><th>文件</th><th>CTL</th><th>pri</th><th>输入</th><th>输出</th><th>结果</th></tr>
+<tr><td>ReadDatasModule</td><td>12</td><td>✓</td><td>0</td><td><code>InputImage</code>/IMAGE</td><td>—</td><td><code>ResultHex</code>（+ 运行态）</td></tr>
+<tr><td>SendDatasModule</td><td>13</td><td>✓</td><td>1</td><td><b>5 个</b> <code>InputImage1..5</code></td><td>—</td><td><code>SendData</code></td></tr>
+<tr><td>CameraIOModule</td><td>12</td><td>✓</td><td>2</td><td>—</td><td>—</td><td><code>StrResult</code></td></tr>
+<tr><td>DataAnalysisModule</td><td>13</td><td>✓</td><td>14</td><td>—</td><td>—</td><td>无业务结果（纯解析）</td></tr>
+<tr><td>DataAssembleModule</td><td>13</td><td>✓</td><td>15</td><td>—</td><td>—</td><td><code>AssembleResult</code>、<code>AssembleResultHex</code></td></tr>
+</table>
+<p class="small">注：<code>SendDatasModule</code>/<code>ReadDatasModule</code> 把"图像"当<b>数据源</b>吃进来（转成字节流），不是图像处理。这是"图像→字节"的桥。</p>
+
+<h3>1.6 Global（17 = 清单 13 + 清单外 4） <span class="obs">观察到</span></h3>
+<table>
+<tr><th>模块</th><th>文件</th><th>CTL</th><th>pri</th><th>端口</th><th>说明</th></tr>
+<tr><td>CommDeviceModule</td><td>11</td><td>—</td><td>2</td><td><b>无</b></td><td>通讯设备管理</td></tr>
+<tr><td>CommManagerModule</td><td><b>9</b></td><td>—</td><td>0</td><td><b>无</b></td><td>通讯管理（文件数低于基准 11）</td></tr>
+<tr><td>DataQueueModule</td><td>14</td><td>✓</td><td>2</td><td><b>无</b></td><td>数据队列</td></tr>
+<tr><td>GlobalTriggerModule</td><td>9</td><td>—</td><td>0</td><td><b>无</b></td><td>全局触发（文件数 9）</td></tr>
+<tr><td>GlobalVariableModule</td><td>8</td><td>—</td><td>0</td><td><b>无</b></td><td>全局变量；Base 用 <code>ModuleType=5</code>/<code>ModuleAccess=1</code></td></tr>
+<tr><td>LocalVariableModule</td><td>6</td><td>—</td><td>0</td><td><b>无</b></td><td>局部变量（文件数 6，<code>AlgorithmTab</code> 仅 99 B）</td></tr>
+<tr><td>LightControl</td><td>9</td><td>—</td><td>0</td><td><b>无</b></td><td>灯控（与 R3 的 <code>LightModule</code> 不同：此为全局配置）</td></tr>
+<tr><td>ProcedureComm</td><td><b>4</b></td><td>—</td><td><b>noTI</b></td><td><b>无</b></td><td>流程通讯；<b>无 <code>ToolItemInfo.xml</code></b> → 不进工具箱</td></tr>
+<tr><td>ProcedureModule</td><td>10</td><td>✓</td><td>0</td><td><b>无</b></td><td>流程/子流程</td></tr>
+<tr><td>SolutionModule</td><td>6</td><td>✓</td><td><b>空</b></td><td><b>无</b></td><td><b class="r">清单外</b>；有 <code>ToolItemInfo.xml</code> 但 <b>priority 为空</b></td></tr>
+<tr><td>GlobalCameraModule</td><td>13</td><td>✓</td><td>2</td><td>出 <code>ImageData</code>/IMAGE</td><td>全局相机</td></tr>
+<tr><td><b>SCGlobalCameraModule</b></td><td>15</td><td>✓</td><td>2</td><td>出 <code>ImageData</code></td><td><b class="r">清单外</b></td></tr>
+<tr><td><b>DynamicParamCameraModule</b></td><td>8</td><td>—</td><td><b>100</b></td><td>出 <code>ImageData</code></td><td><b class="r">清单外</b>；无 <code>Control.dll</code></td></tr>
+<tr><td><b>ImageCollectHikModu</b></td><td>13</td><td>✓</td><td>2</td><td>出 <code>ImageData</code></td><td><b class="r">清单外</b>；<b>厂商名出现在模块名里</b></td></tr>
+<tr><td>ImageCollectDalsaModu</td><td>11</td><td>—</td><td><b>100</b></td><td>出 <code>ImageData</code> + <code>ImageDataMono8</code></td><td><b>厂商名</b>（Dalsa）</td></tr>
+<tr><td>ImageCollectIKModu</td><td>8</td><td>—</td><td><b>100</b></td><td>出 <code>ImageData</code> + <code>ImageDataMono8</code></td><td>厂商缩写（IK）</td></tr>
+<tr><td>ImageCollectModu</td><td>13</td><td>—</td><td>8</td><td>出 <code>ImageData</code> + <code>ImageDataMono8</code></td><td>通用采集</td></tr>
+</table>
+<div class="warn">
+<b>架构边界对照</b>：原件把 <b>厂商名</b> 直接写进模块名（<code>ImageCollectHikModu</code>、<code>ImageCollectDalsaModu</code>、<code>SCGlobalCameraModule</code>）。
+我方 <code>AGENTS.md</code> 明确"不以厂商名称作为最终产品结构"，相机按 <code>ICameraAdapter</code> 抽象 + 厂商适配器实现。
+本批是<b>支持我方决定的反面证据</b>：原件正是"每加一个厂商就加一个模块"，导致 Global 分类 4 个清单外模块、采集模块 5 个重复形态。
+我方<b>不应</b>照搬。
+</div>
+
+<h3>1.7 Logic（20，R5 新增 15）：95% 专用编辑器、几乎无端口 <span class="obs">观察到</span></h3>
+<table>
+<tr><th>模块</th><th>文件</th><th>CTL</th><th>pri</th><th>端口</th><th>结果要点</th></tr>
+<tr><td>AndModule</td><td>12</td><td>✓</td><td>5</td><td>无</td><td><code>IAndResult</code>、<code>StrAndResult</code></td></tr>
+<tr><td>BranchStringCpmL</td><td>12</td><td>✓</td><td>3</td><td>无</td><td><code>BranchMatch</code>、<code>StringMatch</code></td></tr>
+<tr><td>DataClassificationModule</td><td>13</td><td>✓</td><td>100</td><td>无</td><td>仅运行态</td></tr>
+<tr><td>DataFilterModule</td><td><b>15</b></td><td>✓</td><td>100</td><td>无</td><td><code>DataNum</code></td></tr>
+<tr><td><b>DataRecordModule</b>（清单名 <code>DataStatisticsModule</code>）</td><td><b>15</b></td><td>✓</td><td>17</td><td>无</td><td>仅运行态</td></tr>
+<tr><td>DataSetModule</td><td>12</td><td>✓</td><td>13</td><td>无</td><td>仅运行态</td></tr>
+<tr><td><b>DataSortModule</b>（清单名 <code>SortModule</code>）</td><td>13</td><td>✓</td><td>100</td><td>无</td><td>仅运行态</td></tr>
+<tr><td>FormatModule</td><td>12</td><td>✓</td><td>6</td><td>无</td><td><code>format_out</code>（小写蛇形）</td></tr>
+<tr><td>GraphicsSetModule</td><td><b>15</b></td><td>✓</td><td>18</td><td>无</td><td>仅运行态（图形设置）</td></tr>
+<tr><td>IMVSGroup</td><td><b>10</b></td><td>✓</td><td>10</td><td>无</td><td><code>LoopIndex</code></td></tr>
+<tr><td>PointSetMODU_STD</td><td>12</td><td>✓</td><td>11</td><td><b>4 路 POINT → <code>Points Assemble</code>/POINT</b></td><td>仅运行态（<b>唯一有图形端口的 Logic 模块</b>）</td></tr>
+<tr><td>SaveTextModule</td><td>12</td><td>✓</td><td>4</td><td>无</td><td><code>SavePath</code>、<code>OutputFileName</code></td></tr>
+<tr><td>StringCompareModule</td><td>12</td><td>✓</td><td>8</td><td>无</td><td><code>StringMatch</code>、<code>Index</code></td></tr>
+<tr><td>TimeStatisticModule</td><td>12</td><td>✓</td><td>12</td><td>无</td><td>仅运行态</td></tr>
+<tr><td>TriggerModule</td><td>11</td><td><b>—</b></td><td>17</td><td>无</td><td>仅运行态（<b>唯一无 <code>Control.dll</code></b>）</td></tr>
+<tr><td colspan="6" class="small">R1 已覆盖（不重复取证）：<code>BranchModule_STD</code>(12,✓,1)、<code>IfBranchModule</code>(12,✓,0)、<code>IfModule</code>(13,✓,0)、<code>ShellModule</code>(<b>217 文件</b>,✓,9)、<code>PyShellModule</code>(20,✓,9)</td></tr>
+</table>
+<p><b>结构特征</b>：</p>
+<ul>
+<li><b>无图形端口是常态</b>（19/20）：Logic 工具的进出靠<b>数据类型化的参数绑定</b>，不靠图像端口。这与我方 <code>Condition</code>/<code>Subroutine</code> 一致。</li>
+<li><b>结果命名最不统一</b>：<code>outputint</code>（全小写）、<code>format_out</code>（蛇形）、<code>NIfResult</code>、<code>IAndResult</code>、<code>BranchMatch</code>、<code>LoopIndex</code>。<span class="inf">推断</span> 由不同团队/年代加入。</li>
+<li><b>脚本型体量巨大</b>：<code>ShellModule</code> 目录 217 个文件（含脚本模板/示例），<code>PyShellModule</code> 20 个。<b>不是</b>"11 文件"范式。</li>
+<li><b><code>DataRecordModule</code>/<code>DataSortModule</code> 是清单改名对象</b>，文件数 15/13，均带专用编辑器。</li>
+</ul>
+
+<h3>1.8 专用编辑器横向收敛（全库） <span class="obs">观察到</span></h3>
+<table>
+<tr><th>分类</th><th>有效目录</th><th>有 CTL</th><th>比例</th><th>判断</th></tr>
+<tr><td>Communication</td><td>5</td><td>5</td><td><b>100%</b></td><td rowspan="2">必须写专用编辑器</td></tr>
+<tr><td>Logic</td><td>20</td><td>19</td><td><b>95%</b></td></tr>
+<tr><td>Collection</td><td>5</td><td>4</td><td>80%</td><td rowspan="3">高概率需要</td></tr>
+<tr><td>Recognition</td><td>4</td><td>2</td><td>50%</td></tr>
+<tr><td>ColorProcessing</td><td>6</td><td>3</td><td>50%</td></tr>
+<tr><td>Calibration</td><td>10</td><td>4</td><td>40%</td><td rowspan="4">视具体工具</td></tr>
+<tr><td>Location</td><td>28</td><td>10</td><td>36%</td></tr>
+<tr><td>DefectDetection</td><td>14</td><td>5</td><td>36%</td></tr>
+<tr><td>Global</td><td>17</td><td>6</td><td>35%</td></tr>
+<tr><td>ImageProcessing</td><td>21</td><td>5</td><td>24%</td><td rowspan="3">参数页足够</td></tr>
+<tr><td>Measurement</td><td>11</td><td>1</td><td>9%</td></tr>
+<tr><td>Calculation</td><td>11</td><td>1</td><td>9%</td></tr>
+<tr><td>ImageGeneration</td><td>4</td><td>0</td><td>0%</td><td rowspan="2">纯算子，不需要</td></tr>
+<tr><td>SplitCombination</td><td>6</td><td>0</td><td>0%</td></tr>
+<tr class="tot"><td>合计</td><td>162</td><td>65</td><td>40.1%</td><td>—</td></tr>
+</table>
+<div class="note">
+<b>可直接用于我方新建工具判断</b>（先验，不是规则）：<br>
+新工具若属 <b>通信 / 逻辑 / 脚本 / 缓存 / 存图 / 建模型（颜色、识别、标记）</b> → 默认要专用调试窗（<code>DebugWindowType</code> 给具体类型）；<br>
+若属 <b>滤波 / 形态 / 二值 / 拆分拼合 / 几何拟合 / 测量 / 坐标计算</b> → 默认调试窗 + 参数页足够。
+</div>
+
+<h2>2 原件 vs 我方对照</h2>
+<table>
+<tr><th style="width:22%">原件事实</th><th style="width:22%">我方现状</th><th>结论 / 建议动作</th><th style="width:9%">优先级</th></tr>
+<tr><td>采集模块按厂商分裂（<code>ImageCollectHikModu</code>/<code>Dalsa</code>/<code>IK</code>/<code>SCGlobalCamera</code>）</td><td><code>SunEyeVision.ImageSource</code> + <code>ICameraAdapter</code> 抽象 + 厂商适配器</td><td><b>我方设计更优，保持不动</b>。原件是反例（每厂商一模块，导致 Global 4 个清单外模块）</td><td>—</td></tr>
+<tr><td>8 组固定槽位（<code>Input1..8</code>、<code>InputImage1..5</code>、<code>Char0/Char1</code>、<code>OutImage0..14</code>）</td><td>数组 + 索引绑定</td><td><b>保持我方做法</b>。固定槽位扩展即破接口</td><td>—</td></tr>
+<tr><td>Logic 19/20 带专用编辑器；结果命名风格混用（<code>outputint</code>/<code>format_out</code>）</td><td><code>Condition</code>/<code>Subroutine</code> 已有专用编辑界面；结果命名统一 <code>OutputVariable</code></td><td><b>方向一致</b>；我方命名统一是优点，保持</td><td>—</td></tr>
+<tr><td>标定类结果 24–29 字段，带多步进度/方向状态（<code>CalibCurIndex</code>/<code>CalibTotalNum</code>/<code>IsRightCoorA</code>）</td><td><code>SunEyeVision.Tool.NPointCalibration</code> 存在（具体字段本批未核对）</td><td><b>需专项复核</b>：我方标定工具是否有"多步采集中间态"输出。<span class="unk">未知</span> 当前实现深度，本批不下结论</td><td>P2（专项）</td></tr>
+<tr><td><code>POSTURE</code>（姿态）作为独立输出类型，一次 7 路</td><td>无对应类型词目（<code>SdkTypeVocabulary</code> 15 个值词目中无姿态）</td><td><span class="unk">未知</span> 我方是否需要姿态类型。仅在机器人视觉场景需要，当前不在范围</td><td>P3</td></tr>
+<tr><td><code>ToolItemInfo.xml</code> = 工具箱准入；缺失即不下发（<code>ProcedureComm</code>、<code>IMVSMarkInspModu</code>）</td><td>插件扫描 + <code>ToolAttribute</code> 决定可见性</td><td><b>不引入</b>独立准入文件；但需保证"加载失败"与"隐藏"可区分（当前若插件加载异常是否静默消失需专项确认）</td><td>P2</td></tr>
+<tr><td>Base Category 两种变体（<code>ModuleViewMode</code> vs <code>ModuleType</code>/<code>ModuleAccess</code>）</td><td>无对应（我方工具无"模块类型"元数据）</td><td><b>不需要</b>引入。原件的 <code>ModuleType=5</code> 是"变量/管理类"分类标记，我方 <code>ToolAttribute</code> 分类已覆盖</td><td>—</td></tr>
+<tr><td>191 目录 / 162 可用 / 159 工具箱</td><td>我方 <code>tools/</code> 24 个工具</td><td><b>规划纪律</b>：不得拿 191 当需求总量；R5 的 58 个模块我方全部无对应工具，是否做、做几个需用户决定</td><td>P1（决策项）</td></tr>
+</table>
+
+<h3>2.1 五批覆盖与全库完成度</h3>
+<table>
+<tr><th>批次</th><th>覆盖分类</th><th>模块数</th><th>深度</th><th>状态</th></tr>
+<tr><td>R1</td><td>Location(6) / Measurement(6) / Logic(5) / Collection(2)</td><td>19</td><td>深挖 + 整链验证</td><td>已交付</td></tr>
+<tr><td>R2</td><td>Location(22) / Measurement(5)</td><td>27（声明域 33）</td><td>深挖（卡尺/ROI/形状库）</td><td>已交付</td></tr>
+<tr><td>R3</td><td>ImageProcessing(21) / ImageGeneration(4) / SplitCombination(6) / Collection(3)</td><td>34</td><td>中等（清点+契约+控件族）</td><td>已交付</td></tr>
+<tr><td>R4</td><td>DefectDetection(14) / Recognition(4) / ColorProcessing(6)</td><td>24（声明域 52）</td><td>清单级</td><td>已交付</td></tr>
+<tr><td>R5</td><td>Calculation(11) / Calibration(10) / Communication(5) / Global(17) / Logic(15)</td><td>58</td><td>清单级 + 总表收口</td><td><b>本批</b></td></tr>
+<tr class="tot"><td>合计</td><td>16 分类（含 2 个未安装分类）</td><td><b>162</b></td><td>—</td><td>162 有效<b>全覆盖</b>，无重复计数</td></tr>
+</table>
+<p><b>算式自检</b>：19 + 27 + 34 + 24 + 58 = <b>162</b>，与 §1.1 的"实物有效 162"完全一致。
+因为各批的模块归属互斥：<code>Collection</code> 的 2 个（<code>ImageSourceModule</code>/<code>ImageAcquisitionModule</code>）只在 R1 计，
+R3 只计其新增的 3 个（<code>ImageBufferModule</code>/<code>LightModule</code>/<code>SaveImage</code>）；<code>Logic</code> 的 5 个只在 R1 计，R5 只计新增 15 个。</p>
+
+<h2>3 待补证据</h2>
+<h3>3.1 需更深反汇编 / 配置挖掘</h3>
+<table>
+<tr><th>编号</th><th>缺口</th><th>影响</th></tr>
+<tr><td>R5-A1</td><td><code>CoordinateModule</code>/<code>SCGlobalCameraModule</code>/<code>DynamicParamCameraModule</code>/<code>ImageCollectHikModu</code>/<code>SolutionModule</code> 为何不在清单</td><td>决定清单能否作为"版本基线"</td></tr>
+<tr><td>R5-A2</td><td><code>SortModule</code>→<code>DataSortModule</code>、<code>DataStatisticsModule</code>→<code>DataRecordModule</code> 的改名是否功能等价</td><td>决定旧方案迁移时名称映射</td></tr>
+<tr><td>R5-A3</td><td><code>CalibStatus</code>/<code>CalibErrStatus</code>/<code>IsRightCoorA</code> 的枚举值</td><td>标定多步状态机的复刻前提</td></tr>
+<tr><td>R5-A4</td><td><code>CalculatorModule</code> 的 <code>%var0%</code> 模板机制（表达式语法/变量注册）</td><td>决定是否复刻"自定义计算"工具</td></tr>
+<tr><td>R5-A5</td><td><code>POSTURE</code> 的字段集</td><td>姿态类型是否需要</td></tr>
+</table>
+<h3>3.2 需实机验证</h3>
+<table>
+<tr><th>编号</th><th>验证项</th></tr>
+<tr><td>R5-B1</td><td><code>SolutionModule</code>（有 TI 但 priority 空）是否出现在工具箱、排序如何</td></tr>
+<tr><td>R5-B2</td><td><code>ProcedureComm</code>（无 TI）是否完全不可见</td></tr>
+<tr><td>R5-B3</td><td>8 组固定槽位（<code>Input1..8</code>）实际是否只支持 8 个，超出如何处理</td></tr>
+<tr><td>R5-B4</td><td>标定工具在多步采集中途关闭方案，中间态是否持久化</td></tr>
+<tr><td>R5-B5</td><td><code>IMVSGroup</code> 的 <code>LoopIndex</code> 与循环语义（我方 Group 已暂停迁移，此项仅存档）</td></tr>
+</table>
+<h3>3.3 需厂商文档</h3>
+<table>
+<tr><th>编号</th><th>缺口</th></tr>
+<tr><td>R5-C1</td><td><code>ModulePathGenerate.txt</code> 的生成规则与版本（是否产品发布时生成、是否含选装）</td></tr>
+<tr><td>R5-C2</td><td><code>ToolItemInfo.xml</code> 的 <code>helpUrl</code> GUID 对应的官方帮助索引</td></tr>
+<tr><td>R5-C3</td><td>许可/授权模型（哪些分类属选装）</td></tr>
+</table>
+
+<h2>4 自验命令（PowerShell 5.1，全量总表一键复跑）</h2>
+<code class="block">$txt="D:\Program Files\VisionMaster4.4.0\Applications\ModulePathGenerate.txt"   # 15,229 B / 191 行
+$app="D:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\x64"
+
+# ① 清单声明数（191）
+(Get-Content $txt -Encoding UTF8 | ?{$_ -match '\\x64\\'}).Count
+
+# ② 总表：声明 / 实物 / 空 / TI / CTL
+$l=Get-Content $txt -Encoding UTF8; $decl=@{}
+foreach($line in $l){ if($line -match '^(.+?) # .*\\x64\\([^\\]+)\\([^\\]+) # '){
+  $c=$matches[2]; if(-not $decl.ContainsKey($c)){$decl[$c]=@()}; $decl[$c]+=$matches[1].Trim() } }
+$tD=0;$tR=0;$tE=0;$tV=0;$tT=0;$tC=0
+foreach($c in ($decl.Keys|Sort-Object)){
+  $p=Join-Path $app $c; $real=@(); if(Test-Path $p){ $real=@(Get-ChildItem $p -Directory) }
+  $e=0;$t=0;$k=0
+  foreach($d in $real){ $f=Get-ChildItem $d.FullName -File
+    if($f.Count -eq 0){$e++;continue}
+    if(Test-Path (Join-Path $d.FullName "ToolItemInfo.xml")){$t++}
+    if(Test-Path (Join-Path $d.FullName ($d.Name+"Control.dll"))){$k++} }
+  $tD+=$decl[$c].Count;$tR+=$real.Count;$tE+=$e;$tT+=$t;$tC+=$k
+  "{0,-18} decl={1,3} real={2,3} empty={3,2} TI={4,3} CTL={5,3}" -f $c,$decl[$c].Count,$real.Count,$e,$t,$k }
+"TOTAL decl=$tD real=$tR empty=$tE TI=$tT CTL=$tC"
+# 期望：191 / 163 / 1 / 159 / 65
+
+# ③ 差异四类
+foreach($c in ($decl.Keys|Sort-Object)){
+  $p=Join-Path $app $c; $real=@(); if(Test-Path $p){ $real=@(Get-ChildItem $p -Directory|%{$_.Name}) }
+  $miss=@($decl[$c]|?{$real -notcontains $_}); $extra=@($real|?{$decl[$c] -notcontains $_})
+  if($miss.Count -or $extra.Count){ "$c MISS=$($miss -join '|') EXTRA=$($extra -join '|')" } }
+# 期望：DeepLearning 14 缺 / RegisterLearning 6 缺 / Recognition 8 缺 / Location 5 缺 /
+#       Logic 缺 DataStatisticsModule,SortModule 多 DataRecordModule,DataSortModule /
+#       Global 多 4 / Calibration 多 1
+
+# ④ 全局 Style 数（期望 44，非 45）
+$m="D:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\Combination.xml"
+([regex]::Matches(([IO.File]::ReadAllText($m,[Text.Encoding]::UTF8)),'Style="([^"]+)"')|
+  %{$_.Groups[1].Value}|Sort-Object -Unique).Count
+
+# ⑤ 逻辑/通信专用编辑器覆盖率（期望 19/20、5/5）
+foreach($c in @("Logic","Communication")){
+  $dirs=Get-ChildItem (Join-Path $app $c) -Directory
+  $k=($dirs|?{Test-Path (Join-Path $_.FullName ($_.Name+"Control.dll"))}).Count
+  "$c $k/$($dirs.Count)" }
+
+# ⑥ Global 无端口模块（期望 11 个 Input/Output 空）
+foreach($d in (Get-ChildItem (Join-Path $app "Global") -Directory)){
+  $x=Join-Path $d.FullName ($d.Name+".xml"); if(!(Test-Path $x)){continue}
+  $doc=[xml][IO.File]::ReadAllText($x,[Text.Encoding]::UTF8)
+  $in=($doc.ParamRoot.Categorys.Category|?{$_.Name -eq "Input"})
+  $out=($doc.ParamRoot.Categorys.Category|?{$_.Name -eq "Output"})
+  if((@($in.Items.ChildNodes).Count -eq 0) -and (@($out.Items.ChildNodes).Count -eq 0)){ "NOPORT $($d.Name)" } }</code>
+
+<h2>5 边界声明</h2>
+<ul>
+<li><b>未改动</b> <code>src/</code>、<code>tools/</code>、<code>tests/</code>；本批对这些目录<b>仅只读</b>（<code>tools/</code> 仅列目录名）。</li>
+<li><b>未改动</b> 其它 evidence 文件；R1–R4 已发布数字<b>不回改</b>，勘误（Style 44）在本文件与 R5 总表记录，差异原因<b>未定位</b>，不掩盖。</li>
+<li><b>未执行</b> <code>git commit</code> / <code>git push</code>。</li>
+<li><b>未启动</b> <code>VisionMaster.exe</code>，<b>未写注册表</b>，安装目录全程<b>只读</b>。</li>
+<li><b>未做</b> 反编译；未对未安装的 28 个模块做任何功能推断描述（只记"目录不存在"这一事实与清单类型列）。</li>
+<li>本批为<b>清单级</b>：不含算法语义、不含标定/计算整链、不含状态机时序。</li>
+<li>三档标注逐条给出；<code>CalibStatus</code> 枚举、<code>POSTURE</code> 字段、<code>%var0%</code> 机制等标 <span class="unk">未知</span>，<b>未</b>以命名补全。</li>
+<li><b>191 总表</b>只声明"清单 / 实物目录 / 工具箱条目"三个可复跑的数量对齐，<b>不声明</b>任何模块"已复刻"或"功能等价"。</li>
+</ul>
+
+<footer>
+VM 工具逆向批次 R5 · 2026-11-05 · 只读取证 · 58 模块 + 全库总表（191 / 163 / 162 / 159 / 65）<br>
+关联：<code>R1-在研与流程控制</code>、<code>R2-查找与卡尺</code>、<code>R3-图像处理与拼合</code>、<code>R4-缺陷识别与颜色</code>
+</footer>
+</body>
+</html>

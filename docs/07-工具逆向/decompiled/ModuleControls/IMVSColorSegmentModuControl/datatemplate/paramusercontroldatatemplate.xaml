@@ -1,0 +1,387 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:IMVSColorSegmentModuControl" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:xmlUi="clr-namespace:Apps.XmlUI.ParamTab;assembly=Apps.XmlUI" xmlns:PControl="clr-namespace:HikPcUI.Controls;assembly=VM.PcUI" xmlns:localcontrol="clr-namespace:Apps.XmlUI.ParamTabControl;assembly=Apps.XmlUI" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:localParserTab="clr-namespace:Apps.XmlParser.ParamTab;assembly=Apps.XmlParser" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:PCommom="clr-namespace:HikPcUI.Commom;assembly=VM.PcUI">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/Apps.XmlUI;component/Styles/ParamUserControlDataTemplate.xaml" />
+    <ResourceDictionary Source="/Apps.Style;component/ScrollBarStyle/RecScrollBarStyle.xaml" />
+    <ResourceDictionary Source="/Apps.Style;component/ScrollBarStyle/ScrollBarStyle.xaml" />
+    <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/BottomButtonStyle.xaml" />
+    <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/NormalButtonStyle.xaml" />
+    <ResourceDictionary Source="/Apps.Style;component/ComboBoxStyle/ListViewComboBoxStyle.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+  <Style x:Key="LightRecScrollViewer" TargetType="{x:Type ScrollViewer}">
+    <Setter Property="FrameworkElement.OverridesDefaultStyle" Value="True" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type ScrollViewer}">
+          <Border BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" SnapsToDevicePixels="True">
+            <Grid Background="#00FFFFFF" Margin="0">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+              </Grid.RowDefinitions>
+              <ScrollContentPresenter Name="expandGrid" Grid.Column="0" Cursor="{TemplateBinding FrameworkElement.Cursor}" Margin="{TemplateBinding Control.Padding}" Grid.ColumnSpan="1" Grid.RowSpan="1" ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}" />
+              <ScrollBar Name="PART_VerticalScrollBar" Tag="{TemplateBinding FrameworkElement.Tag}" Background="#00FFFFFF" Orientation="Vertical" Grid.Row="0" Grid.Column="1" Margin="-12,0,2,0" Value="{TemplateBinding ScrollViewer.VerticalOffset}" Maximum="{TemplateBinding ScrollViewer.ScrollableHeight}" ViewportSize="{TemplateBinding ScrollViewer.ViewportHeight}" Visibility="{TemplateBinding ScrollViewer.ComputedVerticalScrollBarVisibility}" Style="{StaticResource LightRecScrollBarStyle}" />
+              <ScrollBar Name="PART_HorizontalScrollBar" Background="#00FFFFFF" Tag="{TemplateBinding FrameworkElement.Tag}" Orientation="Horizontal" Grid.Row="1" Grid.Column="0" Margin="0,-12,0,2" Value="{TemplateBinding ScrollViewer.HorizontalOffset}" Maximum="{TemplateBinding ScrollViewer.ScrollableWidth}" ViewportSize="{TemplateBinding ScrollViewer.ViewportWidth}" Visibility="{TemplateBinding ScrollViewer.ComputedHorizontalScrollBarVisibility}" Style="{StaticResource LightRecScrollBarStyle}" />
+            </Grid>
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <DataTemplate x:Key="ColorSegmentList">
+    <Grid Background="#F2F3F5">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="18" />
+        <RowDefinition Height="92" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+      <TextBlock Grid.Row="0" Text="{DynamicResource ColorRangeList}" Foreground="#666666" FontSize="14" FontWeight="Bold" Margin="32,0,0,0" />
+      <Border Grid.Row="1" Margin="32,10,10,0" Height="82" BorderThickness="1" BorderBrush="#FFD3D3D3" Background="#FCFCFC">
+        <local:UserScrollView />
+      </Border>
+      <ScrollViewer Grid.Row="2" Padding="2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Style="{StaticResource LightRecScrollViewer}">
+        <StackPanel>
+          <TextBlock Text="{DynamicResource ColorRangeSetting}" Foreground="#666666" FontSize="14" FontWeight="Bold" Margin="32,16,0,0" />
+          <StackPanel Orientation="Vertical" Margin="32,5,0,0">
+            <xmlUi:LeftRightControl FrameworkElement.Height="32" ChildLeftWidth="150">
+              <xmlUi:LeftRightControl.LeftContent>
+                <TextBlock VerticalAlignment="Center" Text="{DynamicResource Color Space}" ToolTip="{DynamicResource Color Space}" />
+              </xmlUi:LeftRightControl.LeftContent>
+              <xmlUi:LeftRightControl.RightContent>
+                <ComboBox DisplayMemberPath="DisplayNameALang" SelectedValuePath="ValueA" Width="182" HorizontalAlignment="Left" Style="{StaticResource GlobalItemComboBoxStyle}" ItemsSource="{Binding SelectedRange.ColorTypes.EnumEntrysA, Mode=OneWay}" SelectedValue="{Binding SelectedRange.ColorTypes.CurValueA, Mode=TwoWay}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Self}}">
+                  <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="SelectionChanged">
+                      <i:InvokeCommandAction Command="{Binding SelectedRange.SelectionChangedCommand}" CommandParameter="{Binding SelectedItem, RelativeSource={RelativeSource AncestorType=ComboBox}}" />
+                    </i:EventTrigger>
+                  </i:Interaction.Triggers>
+                </ComboBox>
+              </xmlUi:LeftRightControl.RightContent>
+            </xmlUi:LeftRightControl>
+            <localcontrol:RoiSelectControl FrameworkElement.DataContext="{Binding}" />
+            <xmlUi:LeftRightControl FrameworkElement.Height="32" ChildLeftWidth="150">
+              <xmlUi:LeftRightControl.LeftContent>
+                <TextBlock VerticalAlignment="Center" Text="{DynamicResource AutoSet}" ToolTip="{DynamicResource AutoSet}" />
+              </xmlUi:LeftRightControl.LeftContent>
+              <xmlUi:LeftRightControl.RightContent>
+                <localcontrol:BooleanControl FrameworkElement.HorizontalAlignment="Left" ToggleButton.IsChecked="{Binding SelectedRange.IsAutoSet, Mode=TwoWay}">
+                  <localcontrol:BooleanControl.OffContent>
+                    <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/swith_off.png" />
+                  </localcontrol:BooleanControl.OffContent>
+                  <localcontrol:BooleanControl.OnContent>
+                    <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/swith_on.png" />
+                  </localcontrol:BooleanControl.OnContent>
+                </localcontrol:BooleanControl>
+              </xmlUi:LeftRightControl.RightContent>
+              <FrameworkElement.Resources>
+                <ResourceDictionary>
+                  <Style x:Key="{x:Type xmlUi:LeftRightControl}" TargetType="{x:Type xmlUi:LeftRightControl}">
+                    <Setter Property="UIElement.Visibility" Value="Visible" />
+                    <Style.Triggers>
+                      <DataTrigger Value="1" Binding="{Binding SelectedRange.ColorTypes.CurValueA, Mode=OneWay}">
+                        <Setter Property="UIElement.Visibility" Value="Collapsed" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </ResourceDictionary>
+              </FrameworkElement.Resources>
+            </xmlUi:LeftRightControl>
+            <xmlUi:LeftRightControl FrameworkElement.Height="140" FrameworkElement.Margin="0,10,0,0" ChildLeftWidth="190">
+              <xmlUi:LeftRightControl.LeftContent>
+                <StackPanel Orientation="Vertical">
+                  <Border BorderThickness="0" BorderBrush="#FFD3D3D3" Height="140" Width="190">
+                    <PControl:ChromaticDiagram HRange="{Binding SelectedRange.C1Point, Mode=TwoWay}" SRange="{Binding SelectedRange.C2Point, Mode=TwoWay}" BgImage="{Binding ChromaticDiagramImag}" DataPoints="{Binding SelectedRange.ChromaticDiagramPoints}">
+                      <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="OnStartValueChange">
+                          <i:InvokeCommandAction Command="{Binding SelectedRange.StartValueChangeCommand}" />
+                        </i:EventTrigger>
+                      </i:Interaction.Triggers>
+                    </PControl:ChromaticDiagram>
+                    <FrameworkElement.Resources>
+                      <ResourceDictionary>
+                        <Style x:Key="{x:Type Border}" TargetType="{x:Type Border}">
+                          <Setter Property="Visibility" Value="Visible" />
+                          <Style.Triggers>
+                            <DataTrigger Value="1" Binding="{Binding SelectedRange.ColorTypes.CurValueA, Mode=OneWay}">
+                              <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </ResourceDictionary>
+                    </FrameworkElement.Resources>
+                  </Border>
+                  <Border BorderThickness="0" BorderBrush="#FFD3D3D3" Height="64" Width="190">
+                    <PControl:HikHistogramSingle InnerHeight="60" Width="130" DataPoints="{Binding SelectedRange.DataPoints1}" />
+                    <FrameworkElement.Resources>
+                      <ResourceDictionary>
+                        <Style x:Key="{x:Type Border}" TargetType="{x:Type Border}">
+                          <Setter Property="Visibility" Value="Collapsed" />
+                          <Style.Triggers>
+                            <DataTrigger Value="1" Binding="{Binding SelectedRange.ColorTypes.CurValueA, Mode=OneWay}">
+                              <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </ResourceDictionary>
+                    </FrameworkElement.Resources>
+                  </Border>
+                  <Border BorderThickness="0" BorderBrush="#FFD3D3D3" Height="64" Width="190" Margin="0,4,0,0">
+                    <PControl:HikHistogramSingle InnerHeight="60" Width="130" DataPoints="{Binding SelectedRange.DataPoints2}" />
+                    <FrameworkElement.Resources>
+                      <ResourceDictionary>
+                        <Style x:Key="{x:Type Border}" TargetType="{x:Type Border}">
+                          <Setter Property="Visibility" Value="Collapsed" />
+                          <Style.Triggers>
+                            <DataTrigger Value="1" Binding="{Binding SelectedRange.ColorTypes.CurValueA, Mode=OneWay}">
+                              <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </ResourceDictionary>
+                    </FrameworkElement.Resources>
+                  </Border>
+                </StackPanel>
+              </xmlUi:LeftRightControl.LeftContent>
+              <xmlUi:LeftRightControl.RightContent>
+                <StackPanel Orientation="Vertical">
+                  <TextBlock HorizontalAlignment="Left" Margin="26,0,0,0">
+                    <FrameworkElement.Resources>
+                      <ResourceDictionary>
+                        <Style x:Key="{x:Type TextBlock}" TargetType="{x:Type TextBlock}">
+                          <Setter Property="Text" Value="{DynamicResource Hue}" />
+                          <Setter Property="FrameworkElement.ToolTip" Value="{DynamicResource Hue}" />
+                          <Style.Triggers>
+                            <DataTrigger Value="1" Binding="{Binding SelectedRange.ColorTypes.CurValueA, Mode=OneWay}">
+                              <Setter Property="Text" Value="{DynamicResource Channel R}" />
+                              <Setter Property="FrameworkElement.ToolTip" Value="{DynamicResource Channel R}" />
+                            </DataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </ResourceDictionary>
+                    </FrameworkElement.Resources>
+                  </TextBlock>
+                  <Grid Width="150" Margin="26,0,0,0" HorizontalAlignment="Left">
+                    <StackPanel Orientation="Horizontal">
+                      <localcontrol:SliderArrange localcontrol:SliderArrangeBase.SliderTickFrequency="1" localcontrol:SliderArrangeBase.Minimum="0" localcontrol:SliderArrangeBase.Maximum="255" FrameworkElement.Width="60" localcontrol:SliderArrangeBase.StartValue="{Binding SelectedRange.C1LowTo, Mode=TwoWay}">
+                        <i:Interaction.Triggers>
+                          <i:EventTrigger EventName="OnStartValueChange">
+                            <i:InvokeCommandAction Command="{Binding SelectedRange.StartValueChangeCommand}" />
+                          </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                      </localcontrol:SliderArrange>
+                      <Grid Width="30">
+                        <Label Visibility="Visible" HorizontalAlignment="Center" VerticalAlignment="Center" Content="—" FontStretch="Expanded" Foreground="#FFCECCCB" />
+                      </Grid>
+                      <localcontrol:SliderArrange localcontrol:SliderArrangeBase.SliderTickFrequency="1" localcontrol:SliderArrangeBase.Minimum="0" localcontrol:SliderArrangeBase.Maximum="255" FrameworkElement.Width="60" localcontrol:SliderArrangeBase.StartValue="{Binding SelectedRange.C1HighTo, Mode=TwoWay}">
+                        <i:Interaction.Triggers>
+                          <i:EventTrigger EventName="OnStartValueChange">
+                            <i:InvokeCommandAction Command="{Binding SelectedRange.StartValueChangeCommand}" />
+                          </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                      </localcontrol:SliderArrange>
+                    </StackPanel>
+                  </Grid>
+                  <TextBlock HorizontalAlignment="Left" Margin="26,17,0,0">
+                    <FrameworkElement.Resources>
+                      <ResourceDictionary>
+                        <Style x:Key="{x:Type TextBlock}" TargetType="{x:Type TextBlock}">
+                          <Setter Property="Text" Value="{DynamicResource 饱和度}" />
+                          <Setter Property="FrameworkElement.ToolTip" Value="{DynamicResource 饱和度}" />
+                          <Style.Triggers>
+                            <DataTrigger Value="1" Binding="{Binding SelectedRange.ColorTypes.CurValueA, Mode=OneWay}">
+                              <Setter Property="Text" Value="{DynamicResource Channel G}" />
+                              <Setter Property="FrameworkElement.ToolTip" Value="{DynamicResource Channel G}" />
+                            </DataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </ResourceDictionary>
+                    </FrameworkElement.Resources>
+                  </TextBlock>
+                  <Grid Width="150" Margin="26,0,0,0" HorizontalAlignment="Left">
+                    <localcontrol:SliderArrange localcontrol:SliderArrangeBase.SliderTickFrequency="1" localcontrol:SliderArrangeBase.SliderType="between" localcontrol:SliderArrangeBase.Minimum="0" localcontrol:SliderArrangeBase.Maximum="255" localcontrol:SliderArrangeBase.MinimumLeft="0" localcontrol:SliderArrangeBase.MaximumLeft="255" localcontrol:SliderArrangeBase.MinimumRight="0" localcontrol:SliderArrangeBase.MaximumRight="255" localcontrol:SliderArrangeBase.StartValue="{Binding SelectedRange.C2LowTo, Mode=TwoWay}" localcontrol:SliderArrangeBase.EndValue="{Binding SelectedRange.C2HighTo, Mode=TwoWay}">
+                      <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="OnStartValueChange">
+                          <i:InvokeCommandAction Command="{Binding SelectedRange.StartValueChangeCommand}" />
+                        </i:EventTrigger>
+                        <i:EventTrigger EventName="OnEndValueChange">
+                          <i:InvokeCommandAction Command="{Binding SelectedRange.StartValueChangeCommand}" />
+                        </i:EventTrigger>
+                      </i:Interaction.Triggers>
+                    </localcontrol:SliderArrange>
+                  </Grid>
+                </StackPanel>
+              </xmlUi:LeftRightControl.RightContent>
+            </xmlUi:LeftRightControl>
+            <xmlUi:LeftRightControl FrameworkElement.Height="64" ChildLeftWidth="190">
+              <xmlUi:LeftRightControl.LeftContent>
+                <StackPanel Orientation="Vertical">
+                  <Border BorderThickness="0" BorderBrush="#FFD3D3D3" Height="64" Width="190" Margin="0,0,0,0">
+                    <PControl:LightnessBar IRange="{Binding SelectedRange.C3Point, Mode=TwoWay}" BgImage="{Binding LightnessBarImg}" DataPoints="{Binding SelectedRange.LightnessBarPoints}">
+                      <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="OnStartValueChange">
+                          <i:InvokeCommandAction Command="{Binding SelectedRange.StartValueChangeCommand}" />
+                        </i:EventTrigger>
+                      </i:Interaction.Triggers>
+                    </PControl:LightnessBar>
+                    <FrameworkElement.Resources>
+                      <ResourceDictionary>
+                        <Style x:Key="{x:Type Border}" TargetType="{x:Type Border}">
+                          <Setter Property="Visibility" Value="Visible" />
+                          <Style.Triggers>
+                            <DataTrigger Value="1" Binding="{Binding SelectedRange.ColorTypes.CurValueA, Mode=OneWay}">
+                              <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </ResourceDictionary>
+                    </FrameworkElement.Resources>
+                  </Border>
+                  <Border BorderThickness="0" BorderBrush="#FFD3D3D3" Height="64" Width="190" VerticalAlignment="Center">
+                    <PControl:HikHistogramSingle InnerHeight="60" Width="130" DataPoints="{Binding SelectedRange.DataPoints3}" />
+                    <FrameworkElement.Resources>
+                      <ResourceDictionary>
+                        <Style x:Key="{x:Type Border}" TargetType="{x:Type Border}">
+                          <Setter Property="Visibility" Value="Collapsed" />
+                          <Style.Triggers>
+                            <DataTrigger Value="1" Binding="{Binding SelectedRange.ColorTypes.CurValueA, Mode=OneWay}">
+                              <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </ResourceDictionary>
+                    </FrameworkElement.Resources>
+                  </Border>
+                </StackPanel>
+              </xmlUi:LeftRightControl.LeftContent>
+              <xmlUi:LeftRightControl.RightContent>
+                <StackPanel Orientation="Vertical">
+                  <TextBlock HorizontalAlignment="Left" Margin="26,0,0,0" Height="32">
+                    <FrameworkElement.Resources>
+                      <ResourceDictionary>
+                        <Style x:Key="{x:Type TextBlock}" TargetType="{x:Type TextBlock}">
+                          <Setter Property="Text" Value="{DynamicResource Intensity}" />
+                          <Setter Property="FrameworkElement.ToolTip" Value="{DynamicResource Intensity}" />
+                          <Style.Triggers>
+                            <DataTrigger Value="1" Binding="{Binding SelectedRange.ColorTypes.CurValueA, Mode=OneWay}">
+                              <Setter Property="Text" Value="{DynamicResource Channel B}" />
+                              <Setter Property="FrameworkElement.ToolTip" Value="{DynamicResource Channel B}" />
+                            </DataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </ResourceDictionary>
+                    </FrameworkElement.Resources>
+                  </TextBlock>
+                  <Grid Width="150" Margin="26,0,0,0" HorizontalAlignment="Left">
+                    <localcontrol:SliderArrange localcontrol:SliderArrangeBase.SliderTickFrequency="1" localcontrol:SliderArrangeBase.SliderType="between" localcontrol:SliderArrangeBase.Minimum="0" localcontrol:SliderArrangeBase.Maximum="255" localcontrol:SliderArrangeBase.MinimumLeft="0" localcontrol:SliderArrangeBase.MaximumLeft="255" localcontrol:SliderArrangeBase.MinimumRight="0" localcontrol:SliderArrangeBase.MaximumRight="255" localcontrol:SliderArrangeBase.StartValue="{Binding SelectedRange.C3LowTo, Mode=TwoWay}" localcontrol:SliderArrangeBase.EndValue="{Binding SelectedRange.C3HighTo, Mode=TwoWay}">
+                      <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="OnStartValueChange">
+                          <i:InvokeCommandAction Command="{Binding SelectedRange.StartValueChangeCommand}" />
+                        </i:EventTrigger>
+                        <i:EventTrigger EventName="OnEndValueChange">
+                          <i:InvokeCommandAction Command="{Binding SelectedRange.StartValueChangeCommand}" />
+                        </i:EventTrigger>
+                      </i:Interaction.Triggers>
+                    </localcontrol:SliderArrange>
+                  </Grid>
+                </StackPanel>
+              </xmlUi:LeftRightControl.RightContent>
+            </xmlUi:LeftRightControl>
+            <xmlUi:LeftRightControl FrameworkElement.Height="32" ChildLeftWidth="150">
+              <xmlUi:LeftRightControl.LeftContent>
+                <TextBlock VerticalAlignment="Center" Text="{DynamicResource ColorInversion}" ToolTip="{DynamicResource ColorInversion}" />
+              </xmlUi:LeftRightControl.LeftContent>
+              <xmlUi:LeftRightControl.RightContent>
+                <localcontrol:BooleanControl FrameworkElement.HorizontalAlignment="Left" ToggleButton.IsChecked="{Binding SelectedRange.IsColorInversion, Mode=TwoWay}">
+                  <localcontrol:BooleanControl.OffContent>
+                    <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/swith_off.png" />
+                  </localcontrol:BooleanControl.OffContent>
+                  <localcontrol:BooleanControl.OnContent>
+                    <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/swith_on.png" />
+                  </localcontrol:BooleanControl.OnContent>
+                </localcontrol:BooleanControl>
+              </xmlUi:LeftRightControl.RightContent>
+            </xmlUi:LeftRightControl>
+            <xmlUi:LeftRightControl FrameworkElement.Height="32" ChildLeftWidth="150">
+              <xmlUi:LeftRightControl.LeftContent>
+                <TextBlock VerticalAlignment="Center" Text="{DynamicResource UseIndependentAreaParams}" ToolTip="{DynamicResource UseIndependentAreaParams}" />
+              </xmlUi:LeftRightControl.LeftContent>
+              <xmlUi:LeftRightControl.RightContent>
+                <localcontrol:BooleanControl FrameworkElement.HorizontalAlignment="Left" ToggleButton.IsChecked="{Binding SelectedRange.IsUseSelfAreaParam, Mode=TwoWay}">
+                  <localcontrol:BooleanControl.OffContent>
+                    <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/swith_off.png" />
+                  </localcontrol:BooleanControl.OffContent>
+                  <localcontrol:BooleanControl.OnContent>
+                    <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/swith_on.png" />
+                  </localcontrol:BooleanControl.OnContent>
+                </localcontrol:BooleanControl>
+              </xmlUi:LeftRightControl.RightContent>
+            </xmlUi:LeftRightControl>
+            <xmlUi:LeftRightControl FrameworkElement.Height="32" ChildLeftWidth="150">
+              <xmlUi:LeftRightControl.LeftContent>
+                <TextBlock VerticalAlignment="Center" Text="{DynamicResource RunParam_HoleArea}" ToolTip="{DynamicResource RunParam_HoleArea}" />
+              </xmlUi:LeftRightControl.LeftContent>
+              <xmlUi:LeftRightControl.RightContent>
+                <localcontrol:SliderArrange localcontrol:SliderArrangeBase.SliderTickFrequency="1" localcontrol:SliderArrangeBase.Minimum="0" localcontrol:SliderArrangeBase.Maximum="10000000" FrameworkElement.Margin="0,0,10,0" localcontrol:SliderArrangeBase.StartValue="{Binding SelectedRange.SelfHoleArea, Mode=TwoWay}">
+                  <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="OnStartValueChange">
+                      <i:InvokeCommandAction Command="{Binding SelectedRange.StartValueChangeCommand}" />
+                    </i:EventTrigger>
+                  </i:Interaction.Triggers>
+                </localcontrol:SliderArrange>
+              </xmlUi:LeftRightControl.RightContent>
+              <FrameworkElement.Resources>
+                <ResourceDictionary>
+                  <Style x:Key="{x:Type xmlUi:LeftRightControl}" TargetType="{x:Type xmlUi:LeftRightControl}">
+                    <Setter Property="UIElement.Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                      <DataTrigger Value="true" Binding="{Binding SelectedRange.IsUseSelfAreaParam, Mode=OneWay}">
+                        <Setter Property="UIElement.Visibility" Value="Visible" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </ResourceDictionary>
+              </FrameworkElement.Resources>
+            </xmlUi:LeftRightControl>
+            <xmlUi:LeftRightControl FrameworkElement.Height="32" ChildLeftWidth="150">
+              <xmlUi:LeftRightControl.LeftContent>
+                <TextBlock VerticalAlignment="Center" Text="{DynamicResource RunParam_ClutterArea}" ToolTip="{DynamicResource RunParam_ClutterArea}" />
+              </xmlUi:LeftRightControl.LeftContent>
+              <xmlUi:LeftRightControl.RightContent>
+                <localcontrol:SliderArrange localcontrol:SliderArrangeBase.SliderTickFrequency="1" localcontrol:SliderArrangeBase.Minimum="0" localcontrol:SliderArrangeBase.Maximum="10000000" FrameworkElement.Margin="0,0,10,0" localcontrol:SliderArrangeBase.StartValue="{Binding SelectedRange.SelfClutterArea, Mode=TwoWay}">
+                  <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="OnStartValueChange">
+                      <i:InvokeCommandAction Command="{Binding SelectedRange.StartValueChangeCommand}" />
+                    </i:EventTrigger>
+                  </i:Interaction.Triggers>
+                </localcontrol:SliderArrange>
+              </xmlUi:LeftRightControl.RightContent>
+              <FrameworkElement.Resources>
+                <ResourceDictionary>
+                  <Style x:Key="{x:Type xmlUi:LeftRightControl}" TargetType="{x:Type xmlUi:LeftRightControl}">
+                    <Setter Property="UIElement.Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                      <DataTrigger Value="true" Binding="{Binding SelectedRange.IsUseSelfAreaParam, Mode=OneWay}">
+                        <Setter Property="UIElement.Visibility" Value="Visible" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </ResourceDictionary>
+              </FrameworkElement.Resources>
+            </xmlUi:LeftRightControl>
+            <xmlUi:LeftRightControl FrameworkElement.Height="32" ChildLeftWidth="150">
+              <xmlUi:LeftRightControl.LeftContent>
+                <TextBlock VerticalAlignment="Center" Text="{DynamicResource ClassName}" ToolTip="{DynamicResource ClassName}" />
+              </xmlUi:LeftRightControl.LeftContent>
+              <xmlUi:LeftRightControl.RightContent>
+                <TextBox MaxLength="16" Height="28" VerticalContentAlignment="Center" Margin="0,0,10,0" Text="{Binding SelectedRange.ClassName, Mode=TwoWay}" />
+              </xmlUi:LeftRightControl.RightContent>
+            </xmlUi:LeftRightControl>
+          </StackPanel>
+        </StackPanel>
+      </ScrollViewer>
+    </Grid>
+  </DataTemplate>
+</ResourceDictionary>

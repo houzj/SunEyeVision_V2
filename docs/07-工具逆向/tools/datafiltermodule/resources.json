@@ -1,0 +1,63 @@
+{
+  "toolId": "datafiltermodule",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataFilterModule\\DataFilterModule.xml",
+      "sha256": "055071a1d942fcc3ec2e33331c20a7fe298e863c39c5a8dfe5e40d5f8c035792",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataFilterModule\\DataFilterModuleAlgorithm.xml",
+      "sha256": "985704a0c914bb1f2fbce86448d97983602e75779c7548b8356d57ecdadd9d13",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataFilterModule\\DataFilterModuleAlgorithmTab.xml",
+      "sha256": "3f0e016d7d4b8b3f4779d30a00ddd422d6aa49621786c6f8a5f566bf9e2032f5",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataFilterModule\\DataFilterModuleCs.xml",
+      "sha256": "fdd4e91d8be143c06f6fd41633600c2614cace57e093986fe5c841b9b6fc0edc",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataFilterModule\\DataFilterModuleDisplay.xml",
+      "sha256": "51e03f15ab29c2eafa41b00511f352fc3e477e0e3d8d5dd452375542bcf16d78",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataFilterModule\\ToolItemInfo.xml",
+      "sha256": "448e423d24e32cc13acdb7e8d67630b8f50c046685cb6561eb35c0f7b02f09ec",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "FilterSetting"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "DataFilterParam",
+      "name": "LogicalMode"
+    },
+    {
+      "type": "DataFilterConfig",
+      "name": "LogicalMo2de"
+    }
+  ],
+  "sharedUiGroups": [
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

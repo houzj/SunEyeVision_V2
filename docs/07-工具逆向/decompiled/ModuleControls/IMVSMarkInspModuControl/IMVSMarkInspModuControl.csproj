@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>IMVSMarkInspModuControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="datatemplate\paramusercontroldatatemplate.xaml" />
+    <Page Remove="IMVSMarkInspModuControl\ImageView.xaml" />
+    <Page Remove="IMVSMarkInspModuControl\OCRDefectPanel.xaml" />
+    <Page Remove="IMVSMarkInspModuControl\OCRLocationModelPage.xaml" />
+    <Page Remove="IMVSMarkInspModuControl\OCRModelTrainDialog.xaml" />
+    <Page Remove="IMVSMarkInspModuControl\OCRStatisticsTrainPage.xaml" />
+    <Page Remove="IMVSMarkInspModuControl\OCRTrainRegionPage.xaml" />
+    <Page Remove="IMVSMarkInspModuControl\OCRTrainTargetPage.xaml" />
+    <Page Include="datatemplate\paramusercontroldatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="datatemplate/paramusercontroldatatemplate.xaml" />
+    <Page Include="IMVSMarkInspModuControl\ImageView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="common/imageview.xaml" />
+    <Page Include="IMVSMarkInspModuControl\OCRDefectPanel.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ocrdefectpanel.xaml" />
+    <Page Include="IMVSMarkInspModuControl\OCRLocationModelPage.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="subpage/ocrlocationmodelpage.xaml" />
+    <Page Include="IMVSMarkInspModuControl\OCRModelTrainDialog.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ocrmodeltraindialog.xaml" />
+    <Page Include="IMVSMarkInspModuControl\OCRStatisticsTrainPage.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="subpage/ocrstatisticstrainpage.xaml" />
+    <Page Include="IMVSMarkInspModuControl\OCRTrainRegionPage.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="subpage/ocrtrainregionpage.xaml" />
+    <Page Include="IMVSMarkInspModuControl\OCRTrainTargetPage.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="subpage/ocrtraintargetpage.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Apps.XmlParser" />
+    <Reference Include="Apps.Data" />
+    <Reference Include="VM.ModuleControl" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="VMControls.Interface" />
+    <Reference Include="VM.Xml" />
+    <Reference Include="VM.PcUI" />
+    <Reference Include="Apps.Interface" />
+    <Reference Include="VM.PlatformSDKCS" />
+    <Reference Include="VM.Controls" />
+    <Reference Include="Apps.XmlUI" />
+    <Reference Include="VM.ExternalCall" />
+    <Reference Include="Mvvm" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="VM.Utility" />
+    <Reference Include="Apps.ErrorCode" />
+    <Reference Include="VM.Util" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+</Project>

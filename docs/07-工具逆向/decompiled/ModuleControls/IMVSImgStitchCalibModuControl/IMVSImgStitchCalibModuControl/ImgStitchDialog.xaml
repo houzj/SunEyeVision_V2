@@ -1,0 +1,345 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="IMVSImgStitchCalibModuControl.ImgStitchDialog" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:local="clr-namespace:IMVSImgStitchCalibModuControl" xmlns:paramcontrol="clr-namespace:Apps.XmlUI.ParamTab;assembly=Apps.XmlUI" x:Name="modelDlg" Loaded="UserControl_Loaded">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Apps.XmlUI;component/ResourceDictionaries/GlobalResources.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/BottomButtonStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/ToggleButtonStyle.xaml" />
+        <ResourceDictionary Source="/Apps.XmlUI;component/Styles/ParamUserControlDataTemplate.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <DataTemplate x:Key="MyInteger">
+        <paramcontrol:LeftRightControl FrameworkElement.Height="32" ChildLeftWidth="{Binding LeftTextWidth, ElementName=modelDlg}">
+          <paramcontrol:LeftRightControl.RightContent>
+            <ContentControl ContentTemplate="{StaticResource Integer_Sub}" Content="{Binding}" />
+          </paramcontrol:LeftRightControl.RightContent>
+        </paramcontrol:LeftRightControl>
+      </DataTemplate>
+      <DataTemplate x:Key="MyEnumeration">
+        <paramcontrol:LeftRightControl FrameworkElement.Height="32" ChildLeftWidth="{Binding LeftTextWidth, ElementName=modelDlg}">
+          <paramcontrol:LeftRightControl.LeftContent>
+            <Control Template="{StaticResource TextLeft}" />
+          </paramcontrol:LeftRightControl.LeftContent>
+          <paramcontrol:LeftRightControl.RightContent>
+            <ContentControl ContentTemplate="{StaticResource Enumeration_Sub}" Content="{Binding}" />
+          </paramcontrol:LeftRightControl.RightContent>
+        </paramcontrol:LeftRightControl>
+      </DataTemplate>
+      <Style x:Key="RadioButton" TargetType="{x:Type RadioButton}">
+        <Setter Property="Background" Value="#FAFAFC" />
+        <Setter Property="BorderBrush" Value="#CCCCCC" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Foreground" Value="#4D4D4D" />
+        <Setter Property="FontFamily" Value="Microsoft YaHei" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Width" Value="66" />
+        <Setter Property="Height" Value="24" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type RadioButton}">
+              <Border BorderBrush="{TemplateBinding Control.BorderBrush}" Background="{TemplateBinding Control.Background}" BorderThickness="{TemplateBinding Control.BorderThickness}" CornerRadius="2">
+                <ContentPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter Property="Background" Value="#15F76900" />
+                  <Setter Property="BorderBrush" Value="#F76900" />
+                  <Setter Property="Foreground" Value="#F76900" />
+                </Trigger>
+                <Trigger Property="ToggleButton.IsChecked" Value="True">
+                  <Setter Property="Background" Value="#15F76900" />
+                  <Setter Property="BorderBrush" Value="#F76900" />
+                  <Setter Property="Foreground" Value="#F76900" />
+                  <Setter Property="Panel.ZIndex" Value="100" />
+                </Trigger>
+                <DataTrigger Value="True" Binding="{Binding IsGetingImage}">
+                  <Setter Property="IsEnabled" Value="False" />
+                </DataTrigger>
+                <DataTrigger Value="False" Binding="{Binding ImageFixtureEnable}">
+                  <Setter Property="IsEnabled" Value="False" />
+                </DataTrigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid Name="mainGrid">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*" />
+      <RowDefinition Height="35" />
+    </Grid.RowDefinitions>
+    <Grid Row="0" Background="#F2F3F5">
+      <Border Padding="10">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="32" />
+            <RowDefinition Height="*" />
+          </Grid.RowDefinitions>
+          <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
+            <Button Name="BtnCurImg" Width="100" Margin="4,0" VerticalAlignment="Center" Click="CurImg_Click">
+              <FrameworkElement.Style>
+                <Style BasedOn="{StaticResource BottomButtonStyle}" TargetType="{x:Type Button}">
+                  <Setter Property="Content" Value="{DynamicResource Lang_SelectCurrentImage}" />
+                  <Setter Property="FrameworkElement.ToolTip" Value="{DynamicResource Lang_SelectCurrentImage}" />
+                  <Style.Triggers>
+                    <DataTrigger Value="True" Binding="{Binding IsGetingImage}">
+                      <Setter Property="Content" Value="{DynamicResource 停止取图}" />
+                      <Setter Property="FrameworkElement.ToolTip" Value="{DynamicResource 停止取图}" />
+                    </DataTrigger>
+                    <DataTrigger Value="True" Binding="{Binding IsActualImage, ElementName=modelDlg}">
+                      <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </FrameworkElement.Style>
+            </Button>
+            <Button Width="100" Margin="4,0" VerticalAlignment="Center" Content="{DynamicResource Lang_SelectOtherImage}" ToolTip="{DynamicResource Lang_SelectOtherImage}" Click="OtherImg_Click">
+              <FrameworkElement.Style>
+                <Style BasedOn="{StaticResource BottomButtonStyle}" TargetType="{x:Type Button}">
+                  <Style.Triggers>
+                    <DataTrigger Value="True" Binding="{Binding IsGetingImage}">
+                      <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </FrameworkElement.Style>
+            </Button>
+            <Button Name="BtnImageClear" ToolTip="{DynamicResource 清空图像}" Height="34" Width="34" IsEnabled="{Binding IsItemsDataNotNull}" Click="BtnImageClear_Click">
+              <Control.Template>
+                <ControlTemplate TargetType="{x:Type Button}">
+                  <Image Name="ImageBackground" Width="34" Height="34" Source="/Apps.XmlUI;component/Resources/ic_清空图片_normal.png" />
+                  <ControlTemplate.Triggers>
+                    <Trigger Property="UIElement.IsMouseOver" Value="True">
+                      <Setter TargetName="ImageBackground" Property="Image.Source" Value="/Apps.XmlUI;component/Resources/ic_清空图片_click.png" />
+                    </Trigger>
+                    <Trigger Property="ButtonBase.IsPressed" Value="True">
+                      <Setter TargetName="ImageBackground" Property="Image.Source" Value="/Apps.XmlUI;component/Resources/ic_清空图片_click.png" />
+                    </Trigger>
+                    <Trigger Property="UIElement.IsEnabled" Value="False">
+                      <Setter TargetName="ImageBackground" Property="Image.Source" Value="/Apps.XmlUI;component/Resources/ic_清空图片_disable.png" />
+                    </Trigger>
+                  </ControlTemplate.Triggers>
+                </ControlTemplate>
+              </Control.Template>
+            </Button>
+            <Rectangle StrokeThickness="0" Width="1" Fill="#FFA9A9A9" Margin="6,3" />
+            <TextBlock Text="{DynamicResource Lang_StitchFixture}" Margin="6,0" VerticalAlignment="Center" FontSize="12" Foreground="#FF666666" />
+            <ToggleButton Name="togBtn" Width="48" VerticalAlignment="Center" IsChecked="{Binding ImageFixtureEnable}" Unchecked="tbnEnable_Unchecked" Checked="togBtn_Checked">
+              <FrameworkElement.Style>
+                <Style BasedOn="{StaticResource SwitchButton}" TargetType="{x:Type ToggleButton}">
+                  <Style.Triggers>
+                    <DataTrigger Value="True" Binding="{Binding IsGetingImage}">
+                      <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </FrameworkElement.Style>
+            </ToggleButton>
+            <Label Content="{DynamicResource Lang_StitchModelTip}" ToolTip="{DynamicResource Lang_StitchModelTip}" FontSize="12" ToolTipService.ShowDuration="10000" Foreground="#999999" Height="32" VerticalContentAlignment="Center" />
+          </StackPanel>
+          <Grid Row="1">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="760" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" BorderBrush="#E0DFDE" BorderThickness="1" Margin="4,4,0,4" Background="#FFFFFF">
+              <Grid>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="40" />
+                  <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <DockPanel>
+                  <UniformGrid Name="ZoomUniform" DockPanel.Dock="Right" Columns="3" HorizontalAlignment="Right">
+                    <Button Name="BtnZoomIn" Width="34" Height="34" Click="BtnZoomIn_Click">
+                      <Control.Template>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                          <Image Name="ImageBackground" Width="34" Height="34" Source="/VM.PcUI;component/Resources/ZoomIn.png" />
+                          <ControlTemplate.Triggers>
+                            <Trigger Property="UIElement.IsMouseOver" Value="True">
+                              <Setter TargetName="ImageBackground" Property="Image.Source" Value="/VM.PcUI;component/Resources/ZoomIn_1.png" />
+                            </Trigger>
+                            <Trigger Property="ButtonBase.IsPressed" Value="True">
+                              <Setter TargetName="ImageBackground" Property="Image.Source" Value="/VM.PcUI;component/Resources/ZoomIn_1.png" />
+                            </Trigger>
+                            <Trigger Property="UIElement.IsEnabled" Value="False">
+                              <Setter TargetName="ImageBackground" Property="Image.Source" Value="/VM.PcUI;component/Resources/ZoomIn.png" />
+                            </Trigger>
+                          </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                      </Control.Template>
+                    </Button>
+                    <Button Name="BtnZoomOut" Width="34" Height="34" Click="BtnZoomOut_Click">
+                      <Control.Template>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                          <Image Name="ImageBackground" Width="34" Height="34" Source="/VM.PcUI;component/Resources/ZoomOut.png" />
+                          <ControlTemplate.Triggers>
+                            <Trigger Property="UIElement.IsMouseOver" Value="True">
+                              <Setter TargetName="ImageBackground" Property="Image.Source" Value="/VM.PcUI;component/Resources/ZoomOut_1.png" />
+                            </Trigger>
+                            <Trigger Property="ButtonBase.IsPressed" Value="True">
+                              <Setter TargetName="ImageBackground" Property="Image.Source" Value="/VM.PcUI;component/Resources/ZoomOut_1.png" />
+                            </Trigger>
+                            <Trigger Property="UIElement.IsEnabled" Value="False">
+                              <Setter TargetName="ImageBackground" Property="Image.Source" Value="/VM.PcUI;component/Resources/ZoomOut.png" />
+                            </Trigger>
+                          </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                      </Control.Template>
+                    </Button>
+                    <Button Name="Btn11" Width="34" Height="34" Click="Btn11_Click">
+                      <Control.Template>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                          <Image Name="ImageBackground" Width="34" Height="34" Source="/Apps.Style;component/Resources/11.png" />
+                          <ControlTemplate.Triggers>
+                            <Trigger Property="UIElement.IsMouseOver" Value="True">
+                              <Setter TargetName="ImageBackground" Property="Image.Source" Value="/Apps.Style;component/Resources/tool_right_ic_1比1_hover.png" />
+                            </Trigger>
+                            <Trigger Property="ButtonBase.IsPressed" Value="True">
+                              <Setter TargetName="ImageBackground" Property="Image.Source" Value="/Apps.Style;component/Resources/tool_right_ic_1比1_click.png" />
+                            </Trigger>
+                          </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                      </Control.Template>
+                    </Button>
+                  </UniformGrid>
+                  <RadioButton Name="rbnStitch" GroupName="m" DockPanel.Dock="Left" Margin="5,0,-2,0" Content="{DynamicResource Lang_Stitch}" VerticalAlignment="Center" HorizontalAlignment="Left">
+                    <FrameworkElement.Style>
+                      <Style BasedOn="{StaticResource RadioButton}" TargetType="{x:Type RadioButton}">
+                        <Style.Triggers>
+                          <DataTrigger Value="False" Binding="{Binding ImageFixtureEnable}">
+                            <Setter Property="ToggleButton.IsChecked" Value="True" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </FrameworkElement.Style>
+                  </RadioButton>
+                  <RadioButton Name="rbnCorrect" GroupName="m" Style="{StaticResource RadioButton}" DockPanel.Dock="Left" Margin="0" Content="{DynamicResource Lang_Fixture}" VerticalAlignment="Center" HorizontalAlignment="Left" Visibility="{Binding ImageFixtureEnable, Converter={StaticResource bool2VisibilityConverter}}" IsChecked="{Binding IsActualImage, ElementName=modelDlg}" />
+                  <TextBlock Margin="5,0" Foreground="#666666" VerticalAlignment="Center" HorizontalAlignment="Right" Text="{Binding SuccessRate}" />
+                </DockPanel>
+                <Grid Row="1" Background="#D9D9D9" Margin="1">
+                  <ScrollViewer Style="{StaticResource RecScrollViewer}" Tag="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                    <UniformGrid Name="UniformImage" Rows="{Binding RowsA}" Columns="{Binding ColumnsA}" />
+                  </ScrollViewer>
+                </Grid>
+                <local:StitchImageView x:Name="LargeImage" Grid.Row="1" Visibility="Collapsed" DisplayImageWidth="750" DisplayImageHeight="540" IsActualImage="{Binding IsActualImage, ElementName=modelDlg}" CalibImage="{Binding ImageDataA}" ActualImage="{Binding ActualImageDataA}" />
+              </Grid>
+            </Border>
+            <Border Grid.Column="1" BorderBrush="#E0DFDE" BorderThickness="0,1,1,1" Margin="0,4,4,4" Background="#FFFFFF">
+              <Grid>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="34" />
+                  <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Label Content="{DynamicResource Lang_ParamSet}" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" />
+                <Grid Row="1">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="40" />
+                    <RowDefinition Height="1" />
+                    <RowDefinition Height="*" />
+                  </Grid.RowDefinitions>
+                  <ContentControl Margin="20,4" ContentTemplate="{StaticResource MyEnumeration}" Content="{Binding CalibBoardTypeA}" />
+                  <Rectangle Grid.Row="1" Margin="20,0" Height="1" Fill="#E0DFDE" />
+                  <ScrollViewer Grid.Row="2" Style="{StaticResource RecScrollViewer}" VerticalScrollBarVisibility="Auto" Tag="1">
+                    <StackPanel DataContext="{Binding SelectedItemA}">
+                      <Grid Margin="20,4">
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="{Binding LeftTextWidth, ElementName=modelDlg}" />
+                          <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="{DynamicResource 中值滤波使能}" FontSize="14" Foreground="#FF666666" ToolTip="{DynamicResource 中值滤波使能}" />
+                        <ToggleButton Grid.Column="1" Style="{StaticResource booleanToggleButton}" HorizontalAlignment="Left" Margin="-4,0,0,0" IsChecked="{Binding FilteringEnabledA}" />
+                      </Grid>
+                      <Button Name="BtnReplace" Margin="20,4" Style="{StaticResource BottomButtonStyle}" Width="92" Height="28" HorizontalAlignment="Right" Content="{DynamicResource 一键替换参数}" ToolTip="{DynamicResource Lang_ReplaceImgParam}" Click="BtnReplace_Click" />
+                      <FrameworkElement.Style>
+                        <Style TargetType="{x:Type StackPanel}">
+                          <Style.Triggers>
+                            <Trigger Property="FrameworkElement.DataContext" Value="{x:Null}">
+                              <Setter Property="Visibility" Value="Collapsed" />
+                            </Trigger>
+                          </Style.Triggers>
+                        </Style>
+                      </FrameworkElement.Style>
+                    </StackPanel>
+                  </ScrollViewer>
+                  <FrameworkElement.Style>
+                    <Style TargetType="{x:Type Grid}">
+                      <Style.Triggers>
+                        <DataTrigger Value="True" Binding="{Binding IsActualImage, ElementName=modelDlg}">
+                          <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                        <DataTrigger Value="True" Binding="{Binding IsChecked, ElementName=rbnCorrect}">
+                          <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </FrameworkElement.Style>
+                </Grid>
+                <StackPanel Grid.Row="1">
+                  <ContentControl Margin="20,4" ContentTemplate="{StaticResource MyEnumeration}" Content="{Binding ModelOptMethodFlagA}" />
+                  <ContentControl Margin="20,4" ContentTemplate="{StaticResource MyInteger}" Content="{Binding ModelOptSampleNumA}" />
+                  <ContentControl Margin="20,4" ContentTemplate="{StaticResource MyInteger}" Content="{Binding ModelOptXNegativeA}" />
+                  <ContentControl Margin="20,4" ContentTemplate="{StaticResource MyInteger}" Content="{Binding ModelOptXPositiveA}" />
+                  <ContentControl Margin="20,4" ContentTemplate="{StaticResource MyInteger}" Content="{Binding ModelOptYNegativeA}" />
+                  <ContentControl Margin="20,4" ContentTemplate="{StaticResource MyInteger}" Content="{Binding ModelOptYPositiveA}" />
+                  <StackPanel DataContext="{Binding SelectedItemA}">
+                    <ContentControl Margin="20,4" ContentTemplate="{StaticResource MyInteger}" Content="{Binding OffsetXA}" />
+                    <ContentControl Margin="20,4" ContentTemplate="{StaticResource MyInteger}" Content="{Binding OffsetYA}" />
+                    <FrameworkElement.Style>
+                      <Style TargetType="{x:Type StackPanel}">
+                        <Style.Triggers>
+                          <Trigger Property="FrameworkElement.DataContext" Value="{x:Null}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </Trigger>
+                        </Style.Triggers>
+                      </Style>
+                    </FrameworkElement.Style>
+                  </StackPanel>
+                  <FrameworkElement.Style>
+                    <Style TargetType="{x:Type StackPanel}">
+                      <Style.Triggers>
+                        <Trigger Property="FrameworkElement.DataContext" Value="{x:Null}">
+                          <Setter Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <DataTrigger Value="False" Binding="{Binding IsActualImage, ElementName=modelDlg}">
+                          <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </FrameworkElement.Style>
+                </StackPanel>
+              </Grid>
+            </Border>
+          </Grid>
+        </Grid>
+      </Border>
+    </Grid>
+    <Border Grid.Row="1" BorderBrush="#C2C2C2" BorderThickness="0,1,0,0">
+      <Grid Background="#E6E6E6">
+        <DockPanel LastChildFill="False">
+          <TextBlock Text="{DynamicResource Lang_ModelError}" VerticalAlignment="Center" Margin="14,0,0,0" Foreground="#666666" />
+          <TextBlock VerticalAlignment="Center" Foreground="#666666">
+            <FrameworkElement.Style>
+              <Style TargetType="{x:Type TextBlock}">
+                <Setter Property="Text" Value="{Binding ModelError}" />
+                <Style.Triggers>
+                  <DataTrigger Value="False" Binding="{Binding HasModel}">
+                    <Setter Property="Text" Value="--" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+          </TextBlock>
+          <Image Margin="2,0,0,0" Height="18" Width="18" Source="/Apps.XmlUI;component/Resources/ic_help_normal.png" ToolTip="{DynamicResource Lang_ModelErrorTip}" />
+          <Button Name="BtnCreate" Style="{StaticResource BottomButtonStyle}" Width="95" DockPanel.Dock="Right" Content="{DynamicResource 创建模型}" Margin="20,0" Click="BtnCreate_Click" />
+          <Button Name="BtnPreview" Style="{StaticResource BottomButtonStyle}" Width="95" DockPanel.Dock="Right" Content="{DynamicResource 拼接预览}" IsEnabled="{Binding HasModel}" Click="BtnPreview_Click" />
+          <Button Name="BtnFeature" Style="{StaticResource BottomButtonStyle}" Width="95" DockPanel.Dock="Right" Content="{DynamicResource 提取特征}" Margin="20,0" Click="BtnFeature_Click" />
+          <Button Name="BtnRun" IsEnabled="False" Style="{StaticResource BottomButtonStyle}" Width="95" DockPanel.Dock="Right" Content="{DynamicResource Execute}" Click="BtnRun_Click" />
+        </DockPanel>
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>

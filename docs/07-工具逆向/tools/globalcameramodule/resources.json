@@ -1,0 +1,376 @@
+{
+  "toolId": "globalcameramodule",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalCameraModule\\GlobalCameraModule.xml",
+      "sha256": "8fa17298691dc1cbd2bba154797a21136458bdc29d0909b36bb199490b62af1f",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalCameraModule\\GlobalCameraModuleAlgorithm.xml",
+      "sha256": "09ccedef14ebf5ccf357139ece0f40e58589fcbe62f55409a60302fc4f44efe2",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalCameraModule\\GlobalCameraModuleAlgorithmTab.xml",
+      "sha256": "130709b2773af7aa1a842dbadf2990eb4040c0ebdd32f511895a3b082bde9a5c",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalCameraModule\\GlobalCameraModuleCs.xml",
+      "sha256": "04946097fd0f40a7d40c5e7c68b0633df66f0e87f9bc61dd9bb2329f33914c67",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalCameraModule\\GlobalCameraModuleDisplay.xml",
+      "sha256": "e6ccbb71a25fc46f62de084bc412d1cced9f4336b9516014726fe433c929b4f5",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalCameraModule\\ToolItemInfo.xml",
+      "sha256": "43f3e717bd9db5a425d38d0b2dd2876a53115edd30294b4bd6a0246f42279d8f",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Common Params"
+    },
+    {
+      "Name": "Tab_DeviceControl"
+    },
+    {
+      "Name": "Tab_Custom Params"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "BooleanBx",
+      "name": "UseGenTL"
+    },
+    {
+      "type": "OpenFileForCameraDialog",
+      "name": "GenTLPath"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "Type"
+    },
+    {
+      "type": "EnumerationLxN",
+      "name": "CameraName"
+    },
+    {
+      "type": "EnumerationIP",
+      "name": "LocalIP"
+    },
+    {
+      "type": "IPString",
+      "name": "CameraIP"
+    },
+    {
+      "type": "BooleanLx",
+      "name": "ConnectIP"
+    },
+    {
+      "type": "Boolean",
+      "name": "AutoConnect"
+    },
+    {
+      "type": "BooleanBx",
+      "name": "LoadUserset1"
+    },
+    {
+      "type": "Integer",
+      "name": "LoadUserset1Delay"
+    },
+    {
+      "type": "CommandWithTip",
+      "name": "RealTimeImgAcqCmd"
+    },
+    {
+      "type": "ClockSource",
+      "name": "ClockSource2"
+    },
+    {
+      "type": "MvsFeatureTree",
+      "name": "CamerParam"
+    },
+    {
+      "type": "CameraPreview",
+      "name": "RealTimeImgAcq"
+    },
+    {
+      "type": "String",
+      "name": "CameraType"
+    },
+    {
+      "type": "String",
+      "name": "ManufacturerName"
+    },
+    {
+      "type": "Command",
+      "name": "SaveParams"
+    },
+    {
+      "type": "BooleanBxTips",
+      "name": "GrabStatus"
+    },
+    {
+      "type": "EnumerationBx",
+      "name": "TriggerSelector"
+    },
+    {
+      "type": "EnumerationBx",
+      "name": "TriggerMode"
+    },
+    {
+      "type": "EnumerationBx",
+      "name": "TriggerSource"
+    },
+    {
+      "type": "EnumerationBx",
+      "name": "TriggerSource_Basler"
+    },
+    {
+      "type": "FloatBx",
+      "name": "TriggerDelay"
+    },
+    {
+      "type": "FloatBx",
+      "name": "TriggerDelayAbs"
+    },
+    {
+      "type": "Integer",
+      "name": "ConditionalTriggerNumber"
+    },
+    {
+      "type": "Integer",
+      "name": "ConditionalTriggerTimeOut"
+    },
+    {
+      "type": "IntegerBx",
+      "name": "Width"
+    },
+    {
+      "type": "IntegerBx",
+      "name": "Height"
+    },
+    {
+      "type": "EnumerationBx",
+      "name": "PixelFormat"
+    },
+    {
+      "type": "Enumeration",
+      "name": "BayerCvtType"
+    },
+    {
+      "type": "FloatBx",
+      "name": "AcquisitionFrameRate"
+    },
+    {
+      "type": "FloatBx",
+      "name": "AcquisitionFrameRateAbs"
+    },
+    {
+      "type": "StringBx",
+      "name": "ResultingFrameRate"
+    },
+    {
+      "type": "StringBx",
+      "name": "ResultingFrameRateAbs"
+    },
+    {
+      "type": "EnumerationBx",
+      "name": "ExposureAuto"
+    },
+    {
+      "type": "FloatBx",
+      "name": "ExposureTime"
+    },
+    {
+      "type": "FloatBx",
+      "name": "ExposureTimeAbs"
+    },
+    {
+      "type": "FloatBx",
+      "name": "Gain"
+    },
+    {
+      "type": "FloatBx",
+      "name": "Gain_CH250"
+    },
+    {
+      "type": "EnumerationGain",
+      "name": "PreampGain"
+    },
+    {
+      "type": "EnumerationBx",
+      "name": "PreampGain_CH250"
+    },
+    {
+      "type": "ClockSource",
+      "name": "ClockSource1"
+    },
+    {
+      "type": "EnumerationBx",
+      "name": "GainAuto"
+    },
+    {
+      "type": "FloatBx",
+      "name": "AutoGainLowerLimit"
+    },
+    {
+      "type": "FloatBx",
+      "name": "AutoGainUpperLimit"
+    },
+    {
+      "type": "FloatBx",
+      "name": "GainRaw"
+    },
+    {
+      "type": "FloatBx",
+      "name": "AutoGainRawLowerLimit"
+    },
+    {
+      "type": "FloatBx",
+      "name": "AutoGainRawUpperLimit"
+    },
+    {
+      "type": "BooleanBx",
+      "name": "GammaEnable"
+    },
+    {
+      "type": "BooleanBx",
+      "name": "GammaEnabled"
+    },
+    {
+      "type": "FloatBx",
+      "name": "Gamma"
+    },
+    {
+      "type": "FloatBx",
+      "name": "Gamma_Smart"
+    },
+    {
+      "type": "EnumerationBx",
+      "name": "GammaSelector"
+    },
+    {
+      "type": "IntegerBx",
+      "name": "AcquisitionLineRate"
+    },
+    {
+      "type": "StringBx",
+      "name": "ResultingLineRate"
+    },
+    {
+      "type": "Enumeration",
+      "name": "CameraMold"
+    },
+    {
+      "type": "Enumeration",
+      "name": "IOEnableElectricalLevel"
+    },
+    {
+      "type": "Integer",
+      "name": "ReconnectTime"
+    },
+    {
+      "type": "Integer",
+      "name": "SoftTriggerWaitTime"
+    },
+    {
+      "type": "Integer",
+      "name": "ImageCacheNum"
+    },
+    {
+      "type": "BooleanBx",
+      "name": "IsSendMsg2SDK"
+    },
+    {
+      "type": "Integer",
+      "name": "WaitForConnectingTime"
+    },
+    {
+      "type": "EnumerationBx",
+      "name": "LineSelector"
+    },
+    {
+      "type": "EnumerationBx",
+      "name": "LineMode"
+    },
+    {
+      "type": "EnumerationBx",
+      "name": "LineSelector_Smart"
+    },
+    {
+      "type": "EnumerationBx",
+      "name": "LineSource"
+    },
+    {
+      "type": "BooleanBx",
+      "name": "LineInverter"
+    },
+    {
+      "type": "Command",
+      "name": "TriggerSoftware1"
+    },
+    {
+      "type": "IntegerBx",
+      "name": "Strobe0Delay"
+    },
+    {
+      "type": "IntegerBx",
+      "name": "Strobe1Delay"
+    },
+    {
+      "type": "IntegerBx",
+      "name": "Strobe2Delay"
+    },
+    {
+      "type": "IntegerBx",
+      "name": "Strobe0PulseWidth"
+    },
+    {
+      "type": "IntegerBx",
+      "name": "Strobe1PulseWidth"
+    },
+    {
+      "type": "IntegerBx",
+      "name": "Strobe2PulseWidth"
+    },
+    {
+      "type": "BooleanBx",
+      "name": "FlashEnable"
+    },
+    {
+      "type": "EnumerationBx",
+      "name": "LightMode"
+    },
+    {
+      "type": "IntegerBx",
+      "name": "FlashTime"
+    },
+    {
+      "type": "IntegerBx",
+      "name": "FlashDelay"
+    },
+    {
+      "type": "IntegerBx",
+      "name": "FlashAhead"
+    },
+    {
+      "type": "DynamicCameraParamList",
+      "name": "DynamiceList"
+    }
+  ],
+  "sharedUiGroups": [],
+  "status": "inventory-only"
+}

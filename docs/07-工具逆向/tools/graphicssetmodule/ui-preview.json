@@ -1,0 +1,66 @@
+{
+  "controls": [
+    {
+      "type": "GroupDisplayParamForGraphicsSet",
+      "name": "GroupDisplayParamForGraphicsSet"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "declarative-parameters",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P0",
+  "themeStates": "unknown",
+  "toolId": "graphicssetmodule",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\GraphicsSetModule\\GraphicsSetModule.xml",
+      "sha256": "b67671669f5bfafbaa3b8f79dadb282e09004c469e22e1d99c6b24079721c6cf",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\GraphicsSetModule\\GraphicsSetModuleAlgorithm.xml",
+      "sha256": "a0b78f802cb0140bac05bf4cd44e353233f1864b1cfa69715809a1e4d381f72d",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\GraphicsSetModule\\GraphicsSetModuleAlgorithmTab.xml",
+      "sha256": "788a286b7a78d2e1b6ccc4ce987d1fcb4b737a4a65ef264ee86a8de771a62364",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\GraphicsSetModule\\GraphicsSetModuleCs.xml",
+      "sha256": "2de8b9d890fb650e5d355b77085374f46454b67473e73807b51b92707764c707",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\GraphicsSetModule\\GraphicsSetModuleDisplay.xml",
+      "sha256": "cb320232b19c7aa84e8cc411728b9d058a865f939a463c734863740aa68eb2bc",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\GraphicsSetModule\\IoCombination.xml",
+      "sha256": "9cda261e4b72a3eced575d8d2783857ded559548c2712862ba566a1e7e13c2a4",
+      "root": "CombinRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\GraphicsSetModule\\Relate.xml",
+      "sha256": "18ee7ef9dd5dac87c07af189b5b25e169ff3e4f299b385dae7285952012f840c",
+      "root": "RelateRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\GraphicsSetModule\\ToolItemInfo.xml",
+      "sha256": "9e187b41c658250886b43df414b980ab63d4ee8052c7cbfaa32c36b8cc6706fb",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "图形收集",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

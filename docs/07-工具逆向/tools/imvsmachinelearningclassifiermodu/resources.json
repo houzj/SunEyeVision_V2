@@ -1,0 +1,126 @@
+{
+  "toolId": "imvsmachinelearningclassifiermodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Recognition\\IMVSMachineLearningClassifierModu\\IMVSMachineLearningClassifierModu.xml",
+      "sha256": "62865e8f6f6df07a8d6dff2bde0c9f512df265977ac4959cc7ff3fb0c57e4837",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Recognition\\IMVSMachineLearningClassifierModu\\IMVSMachineLearningClassifierModuAlgorithm.xml",
+      "sha256": "8b9be399b6c529556e85d680864a3f3d03f8f7bcfde89373bb62bf0cff137ee3",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Recognition\\IMVSMachineLearningClassifierModu\\IMVSMachineLearningClassifierModuAlgorithmTab.xml",
+      "sha256": "05609c3f445b7899c8e901d0df5d5355af41cb1d488158c4288c491a2764c3a2",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Recognition\\IMVSMachineLearningClassifierModu\\IMVSMachineLearningClassifierModuCs.xml",
+      "sha256": "83b22f3a31fc82741977236f17c2ce977cf1e7abf361b07a56b77b277968c68a",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Recognition\\IMVSMachineLearningClassifierModu\\IMVSMachineLearningClassifierModuDisplay.xml",
+      "sha256": "fb0c70ff71dd91dc41876b636e26c5282b5951051a962696e08113a6f418cdc0",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Recognition\\IMVSMachineLearningClassifierModu\\ToolItemInfo.xml",
+      "sha256": "c7ec74ab627cfaa92c1090d7690e565a90d9bda25e8900e4394bb9e205edcc48",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "ClassifierTrain"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "MLClassifyData",
+      "name": "RegisterClassify"
+    },
+    {
+      "type": "OpenFileForCNNDialog",
+      "name": "LoadModelPath"
+    },
+    {
+      "type": "Boolean",
+      "name": "SaveModelDataEnable"
+    },
+    {
+      "type": "Boolean",
+      "name": "NumLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangeNumLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "LabelNameLimitEnable"
+    },
+    {
+      "type": "String",
+      "name": "LabelNameLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResultText"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "RoiSelectGroup",
+    "InheritWayGroup",
+    "AssistGroup",
+    "TextDisplayGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

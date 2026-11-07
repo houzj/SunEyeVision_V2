@@ -1,0 +1,256 @@
+{
+  "controls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "OutputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Float",
+      "name": "MinScore"
+    },
+    {
+      "type": "Integer",
+      "name": "MaxMatchNum"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Polarity"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangAngle"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangScale"
+    },
+    {
+      "type": "Expand",
+      "name": "Expand"
+    },
+    {
+      "type": "Enumeration",
+      "name": "MarkLocationType"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangScaleX"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangScaleY"
+    },
+    {
+      "type": "Integer",
+      "name": "MaxOverlap"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SortType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "MatchThresholdFlag"
+    },
+    {
+      "type": "Integer",
+      "name": "MatchThresholdHigh"
+    },
+    {
+      "type": "Boolean",
+      "name": "SpotterFlag"
+    },
+    {
+      "type": "Integer",
+      "name": "MatchExtentRate"
+    },
+    {
+      "type": "Integer",
+      "name": "TimeOut"
+    },
+    {
+      "type": "Boolean",
+      "name": "OutLineEnable"
+    },
+    {
+      "type": "Boolean",
+      "name": "NumLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "NumAngleLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "AngleLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeAngleLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "ScaleXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeScaleXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "ScaleYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeScaleYLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "ScoreLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeScoreLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "MatchPointXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeMatchPointXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "MatchPointYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeMatchPointYLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "BoxPointXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeBoxPointXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "BoxPointYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeBoxPointYLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "SensorFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "MatchResults"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "MatchLocation"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "MatchOutlinePoints"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvsmarkfindmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSMarkFindModu\\IMVSMarkFindModu.xml",
+      "sha256": "8fff01379324e314a114f4b03910a3b0f6bf6c4054a5dfc7b7efb19732fa0dfc",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSMarkFindModu\\IMVSMarkFindModuAlgorithm.xml",
+      "sha256": "1423b501e1c18021ac2cc27d1ca59f689f45d3ac236610948833b2854b988a04",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSMarkFindModu\\IMVSMarkFindModuAlgorithmTab.xml",
+      "sha256": "b5d313ad0ecaf9b04f720b319671e4490f3a71b5845706bf9e737133416c2084",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSMarkFindModu\\IMVSMarkFindModuCs.xml",
+      "sha256": "3d3cc2590096fc07a2e58ec6494c1a81dd4b6440e4d192806322d1ad57af9dd1",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSMarkFindModu\\IMVSMarkFindModuDisplay.xml",
+      "sha256": "b8cd39130fcd99d8433b3a916c052686e26bb896474ab0c72cce3ce4ae30334b",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSMarkFindModu\\ToolItemInfo.xml",
+      "sha256": "f3791d7f76a901f871d843e70fa27d706caf9aae6fc9dcb2301bf5401214400c",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "图形定位",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

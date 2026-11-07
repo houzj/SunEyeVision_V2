@@ -1,0 +1,212 @@
+{
+  "controls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "IntegerBettween_CircleFind",
+      "name": "RangRadius"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FindMode"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePolarity"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeThresh"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeWidth"
+    },
+    {
+      "type": "Integer_CircleFind",
+      "name": "RadNum"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectNum"
+    },
+    {
+      "type": "Boolean",
+      "name": "CoarseDetectFlag"
+    },
+    {
+      "type": "Integer",
+      "name": "CCDSampleScale"
+    },
+    {
+      "type": "Integer",
+      "name": "CCDCircleThresh"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectDist"
+    },
+    {
+      "type": "Integer",
+      "name": "ProLength"
+    },
+    {
+      "type": "Enumeration",
+      "name": "InitType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FitFun"
+    },
+    {
+      "type": "Boolean",
+      "name": "RadiusLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangRadiusLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "CenterXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCenterXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "CenterYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCenterYLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "FitErrorLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangFitErrorLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "FitPointsLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangFitPointsLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CircleFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CenterPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "OutlinePoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CaliperBox"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "DetectCaliperBox"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZoneAnnular"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvscirclefindmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCircleFindModu\\IMVSCircleFindModu.xml",
+      "sha256": "fbe559fffcd72ad5522e575ace409742e6a61ecfaae94959d9a1fa6af506b63a",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCircleFindModu\\IMVSCircleFindModuAlgorithm.xml",
+      "sha256": "04964c4c83e75e90c43677fa87cf0f3b36186c54a1fc1613be7e2ad8b2b7bbc0",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCircleFindModu\\IMVSCircleFindModuAlgorithmTab.xml",
+      "sha256": "7dc7ff2b9c5a8e35e665f3e566c225dd71f1c52055207dc7a3188f183ce9a5b5",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCircleFindModu\\IMVSCircleFindModuCs.xml",
+      "sha256": "3fa76e37541ab3a1d75d6550625e0abd9be973a8421220141e4932910d9083c4",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCircleFindModu\\IMVSCircleFindModuDisplay.xml",
+      "sha256": "34f0d33493139f28991c04a28c05655939480dfac949bda87cbba653e3eca3cc",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCircleFindModu\\ToolItemInfo.xml",
+      "sha256": "0152c1eb851a1f992dcee076eede6d545e9e8045da6a23c68521570c19f50842",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "圆查找",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

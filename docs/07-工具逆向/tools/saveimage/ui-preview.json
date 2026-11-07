@@ -1,0 +1,252 @@
+{
+  "controls": [
+    {
+      "type": "Boolean",
+      "name": "OutputEnable"
+    },
+    {
+      "type": "Boolean",
+      "name": "SaveImageEnable"
+    },
+    {
+      "type": "Boolean",
+      "name": "ImageSaveTrigger"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ImageSaveTriggerCondition"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ImageSaveCondition"
+    },
+    {
+      "type": "Boolean",
+      "name": "DebugInfoSave"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "DebugInfo"
+    },
+    {
+      "type": "Boolean",
+      "name": "GenerateDir"
+    },
+    {
+      "type": "Boolean",
+      "name": "SynchronousStorage"
+    },
+    {
+      "type": "Integer",
+      "name": "StorageInterval"
+    },
+    {
+      "type": "Boolean",
+      "name": "RenderImgEnable"
+    },
+    {
+      "type": "OpenFolderDialogEx",
+      "name": "RenderImgPath"
+    },
+    {
+      "type": "OpenFolderDialogEx",
+      "name": "RenderOKPath"
+    },
+    {
+      "type": "OpenFolderDialogEx",
+      "name": "RenderNGPath"
+    },
+    {
+      "type": "StringImgName_Selecter",
+      "name": "RenderImgSuffix"
+    },
+    {
+      "type": "Integer",
+      "name": "RenderImgCache"
+    },
+    {
+      "type": "Boolean",
+      "name": "OriginImgEnable"
+    },
+    {
+      "type": "OpenFolderDialogEx",
+      "name": "OriginImgPath"
+    },
+    {
+      "type": "OpenFolderDialogEx",
+      "name": "OriginOKPath"
+    },
+    {
+      "type": "OpenFolderDialogEx",
+      "name": "OriginNGPath"
+    },
+    {
+      "type": "StringImgName_Selecter",
+      "name": "OriginImgSuffix"
+    },
+    {
+      "type": "Integer",
+      "name": "OriginImgCache"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ImageSaveType"
+    },
+    {
+      "type": "Integer",
+      "name": "DiskFreespace"
+    },
+    {
+      "type": "Enumeration",
+      "name": "DiskUnit"
+    },
+    {
+      "type": "Integer",
+      "name": "ImageMemoryDay"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ImageType"
+    },
+    {
+      "type": "Integer",
+      "name": "ImageCompressionRation"
+    },
+    {
+      "type": "Boolean",
+      "name": "FTPEnable"
+    },
+    {
+      "type": "Boolean_SaveImage",
+      "name": "ConnectEnable"
+    },
+    {
+      "type": "IPString",
+      "name": "ServerIP"
+    },
+    {
+      "type": "Integer",
+      "name": "ServerPort"
+    },
+    {
+      "type": "String",
+      "name": "UserName"
+    },
+    {
+      "type": "PasswordString",
+      "name": "Password"
+    },
+    {
+      "type": "Enumeration",
+      "name": "CodingFormat"
+    },
+    {
+      "type": "String",
+      "name": "FTPPath"
+    },
+    {
+      "type": "Enumeration",
+      "name": "PixelFormat"
+    },
+    {
+      "type": "Enumeration",
+      "name": "GraphRateType"
+    },
+    {
+      "type": "Integer",
+      "name": "LineWidthRate"
+    },
+    {
+      "type": "Integer",
+      "name": "FontSizeRate"
+    },
+    {
+      "type": "Enumeration",
+      "name": "LineType"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TextInput"
+    },
+    {
+      "type": "ColorConfigEx",
+      "name": "TextColor"
+    },
+    {
+      "type": "Float",
+      "name": "CharacterSize"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PositionX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PositionY"
+    },
+    {
+      "type": "AddList_SaveImage",
+      "name": "InfoConfig"
+    },
+    {
+      "type": "String",
+      "name": "InputListInfo"
+    },
+    {
+      "type": "String",
+      "name": "DisplayInfo"
+    },
+    {
+      "type": "String",
+      "name": "SetSaveStatus"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "extension-panels",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P3",
+  "themeStates": "unknown",
+  "toolId": "saveimage",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\SaveImage\\SaveImage.xml",
+      "sha256": "6093584fe8b73d28345c9a51f27b8f2d36994c3fa2dee7ada2705ee8c0cb92bb",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\SaveImage\\SaveImageAlgorithm.xml",
+      "sha256": "4938dec0b3e9ef938abd3116398f9a8b1c63605d328daa3d9f6b70d0c51904b5",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\SaveImage\\SaveImageAlgorithmTab.xml",
+      "sha256": "77b8d10a710c011ee042063d45600484ed48b8cf8ed538917a177cf86bd2ccda",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\SaveImage\\SaveImageCs.xml",
+      "sha256": "ce2f08a51f2b425e3d1372ec1f47048b485abc29cffa335db04b85bd550f0378",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\SaveImage\\SaveImageDisplay.xml",
+      "sha256": "29629a14b0c60a003e65f012b2c5e68b4155e151914763fd0c601e09c2454a3d",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\SaveImage\\ToolItemInfo.xml",
+      "sha256": "0728d4cb52a3cab53ac05181ae8d4a8c4bc14c56afe679ff9a434f956a9b8324",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "输出图像",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

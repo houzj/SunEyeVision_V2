@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="IMVSMachineLearningClassifierModuControl.MLClassifyPanel" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:local="clr-namespace:IMVSMachineLearningClassifierModuControl" x:Name="classifyPanel">
+  <Border Padding="18,0" Background="#00FFFFFF">
+    <Grid UseLayoutRounding="True">
+      <FrameworkElement.Resources>
+        <ResourceDictionary>
+          <ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary Source="/Apps.XmlUI;component/Styles/ParamUserControlDataTemplate.xaml" />
+          </ResourceDictionary.MergedDictionaries>
+          <Style x:Key="sp1" TargetType="{x:Type ItemsControl}">
+            <Style.Triggers>
+              <DataTrigger Value="False" Binding="{Binding IsExistCategory, ElementName=classifyPanel}">
+                <Setter Property="Template">
+                  <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ItemsControl}">
+                      <Grid Background="{DynamicResource ListViewComboBoxBackground}">
+                        <Grid.RowDefinitions>
+                          <RowDefinition Height="0.6*" />
+                          <RowDefinition Height="auto" />
+                          <RowDefinition Height="auto" />
+                          <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="*" />
+                          <ColumnDefinition Width="auto" />
+                          <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Image Grid.Row="1" Grid.Column="1" Source="/Apps.XmlUI;component/Resources/pic_颜色识别.png" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{DynamicResource Lang_PleaseRegisterImage}" FontFamily="Microsoft YaHei UI" FontSize="12" Foreground="#666666" />
+                      </Grid>
+                    </ControlTemplate>
+                  </Setter.Value>
+                </Setter>
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </ResourceDictionary>
+      </FrameworkElement.Resources>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="40" />
+        <RowDefinition />
+      </Grid.RowDefinitions>
+      <Button Grid.Row="0" Margin="0,4,5,0" VerticalAlignment="Center" HorizontalAlignment="Left" Style="{StaticResource BottomButtonStyle}" Width="{Binding RegisterButtonWidth, ElementName=classifyPanel}" Click="RegisterImage_Click">
+        <StackPanel Orientation="Horizontal">
+          <Image VerticalAlignment="Center" Margin="0,0,5,0">
+            <FrameworkElement.Style>
+              <Style TargetType="{x:Type Image}">
+                <Setter Property="Source" Value="/Apps.XmlUI;component/Resources/btn_新建模板_normal.png" />
+                <Style.Triggers>
+                  <DataTrigger Value="True" Binding="{Binding ElementName=Button, Path=IsPressed}">
+                    <Setter Property="Source" Value="/Apps.XmlUI;component/Resources/btn_新建模板_click.png" />
+                  </DataTrigger>
+                  <DataTrigger Value="True" Binding="{Binding ElementName=Button, Path=IsMouseOver}">
+                    <Setter Property="Source" Value="/Apps.XmlUI;component/Resources/btn_新建模板_click.png" />
+                  </DataTrigger>
+                  <DataTrigger Value="False" Binding="{Binding ElementName=Button, Path=IsEnabled}">
+                    <Setter Property="Source" Value="/Apps.XmlUI;component/Resources/btn_新建模板 _disable.png" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+          </Image>
+          <ContentControl VerticalAlignment="Center" Content="{DynamicResource 训练}" />
+        </StackPanel>
+      </Button>
+      <Menu Name="Menu" Grid.Row="0" HorizontalAlignment="Right" Background="#00FFFFFF" Height="32">
+        <controls:IconMenuItem ToolTip="{DynamicResource 导入}" Margin="0,8,0,0" ShowMask="False" Height="24" Width="30" NormalIcon="/Apps.XmlUI;component/Resources/ic_导入_normal.png" HoverIcon="/Apps.XmlUI;component/Resources/ic_导入_click.png" ClickIcon="/Apps.XmlUI;component/Resources/ic_导入_click.png" Click="LoadModel_Click" />
+        <controls:IconMenuItem ToolTip="{DynamicResource 导出}" Margin="0,8,0,0" ShowMask="False" Height="24" Width="30" HoverIcon="/Apps.XmlUI;component/Resources/ic_导出2_click.png" ClickIcon="/Apps.XmlUI;component/Resources/ic_导出2_click.png" Click="ExportModel_Click">
+          <FrameworkElement.Style>
+            <Style TargetType="{x:Type controls:IconMenuItem}">
+              <Setter Property="IsEnabled" Value="True" />
+              <Setter Property="controls:IconMenuItem.NormalIcon" Value="/Apps.XmlUI;component/Resources/ic_导出2_normal.png" />
+              <Style.Triggers>
+                <DataTrigger Value="False" Binding="{Binding IsExistCategory, ElementName=classifyPanel}">
+                  <Setter Property="IsEnabled" Value="False" />
+                  <Setter Property="controls:IconMenuItem.NormalIcon" Value="/Apps.XmlUI;component/Resources/ic_导出2_disable.png" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkElement.Style>
+        </controls:IconMenuItem>
+        <controls:IconMenuItem ToolTip="{DynamicResource Clear}" Margin="0,8,0,0" Visibility="Collapsed" ShowMask="False" Height="24" Width="30" NormalIcon="/Apps.XmlUI;component/Resources/ic_清空图片_normal.png" HoverIcon="/Apps.XmlUI;component/Resources/ic_清空图片_click.png" ClickIcon="/Apps.XmlUI;component/Resources/ic_清空图片_click.png" Click="ClearModel_Click" />
+      </Menu>
+      <Border Grid.Row="1" BorderBrush="{DynamicResource GlobalRectFill}" BorderThickness="1" Margin="0,8,0,14">
+        <Grid>
+          <ItemsControl Name="ItemsControl" Style="{StaticResource sp1}" Background="{DynamicResource ListViewComboBoxBackground}" />
+          <Grid Margin="5">
+            <ScrollViewer Style="{StaticResource RecScrollViewer}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" CanContentScroll="True" PreviewMouseWheel="CategoryList_PreviewMouseWheel">
+              <ListView Background="#00FFFFFF" BorderBrush="#00FFFFFF" SelectionMode="Single" ItemsSource="{Binding CategoryList, ElementName=classifyPanel}">
+                <FrameworkElement.Resources>
+                  <ResourceDictionary>
+                    <Style x:Key="{x:Type ListViewItem}" TargetType="{x:Type ListViewItem}">
+                      <Style.Resources>
+                        <ResourceDictionary>
+                          <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent" />
+                          <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="Transparent" />
+                        </ResourceDictionary>
+                      </Style.Resources>
+                    </Style>
+                  </ResourceDictionary>
+                </FrameworkElement.Resources>
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <WrapPanel IsItemsHost="True" HorizontalAlignment="Center" Width="{Binding (FrameworkElement.ActualWidth), RelativeSource={RelativeSource AncestorType=ScrollContentPresenter}}" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Grid Margin="{Binding SampleImageSpace, ElementName=classifyPanel}">
+                      <Grid.RowDefinitions>
+                        <RowDefinition Height="20" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="26" />
+                      </Grid.RowDefinitions>
+                      <Grid Row="0" Width="90" Background="{DynamicResource TreeTabItemBoBaground}">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                          <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_图像检索_图片.png" Margin="2,0" />
+                          <TextBlock ToolTip="{DynamicResource Lang_RegisterImageNum}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="10" FontFamily="Microsoft YaHei" Foreground="#FFFFFF" Text="{Binding StrRegisteredNum}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Visibility="Collapsed">
+                          <Button Style="{StaticResource BaseImage_ButtonStyle}" Margin="0,0,2,0" ToolTip="{DynamicResource Lang_Delet}" Click="DeleteCategory_OnClick">
+                            <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_图像检索_清空_normal.png" />
+                            <FrameworkElement.Tag>
+                              <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_图像检索_清空_click.png" />
+                            </FrameworkElement.Tag>
+                          </Button>
+                        </StackPanel>
+                      </Grid>
+                      <Image Grid.Row="1" Width="90" Height="58" Stretch="Fill" Source="{Binding ImageSource, Mode=OneWay}" />
+                      <TextBlock Grid.Row="2" MaxWidth="90" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="14" FontFamily="Microsoft YaHei" Foreground="{DynamicResource ModuleForeground}" Text="{Binding CategoryName}" ToolTip="{Binding CategoryName}" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ListView>
+            </ScrollViewer>
+            <FrameworkElement.Style>
+              <Style TargetType="{x:Type Grid}">
+                <Setter Property="Visibility" Value="Collapsed" />
+                <Style.Triggers>
+                  <DataTrigger Value="True" Binding="{Binding IsExistCategory, ElementName=classifyPanel}">
+                    <Setter Property="Visibility" Value="Visible" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+          </Grid>
+        </Grid>
+      </Border>
+    </Grid>
+  </Border>
+</UserControl>

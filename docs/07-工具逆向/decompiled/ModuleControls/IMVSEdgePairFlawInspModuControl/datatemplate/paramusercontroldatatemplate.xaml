@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:IMVSEdgePairFlawInspModuControl" xmlns:paramtab="clr-namespace:Apps.XmlUI.ParamTab;assembly=Apps.XmlUI" xmlns:paramtabcontrol="clr-namespace:Apps.XmlUI.ParamTabControl;assembly=Apps.XmlUI" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:PCImage="clr-namespace:HikPcUI.ImageView;assembly=VM.PcUI" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/BottomButtonStyle.xaml" />
+    <ResourceDictionary Source="/Apps.Style;component/ResourceDictionaries/GlobalResources.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+  <Style x:Key="CircleRadioBtnStyle" TargetType="{x:Type RadioButton}">
+    <Setter Property="Height" Value="34" />
+    <Setter Property="Width" Value="36" />
+    <Setter Property="Margin" Value="0,0,27,0" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type RadioButton}">
+          <Grid Background="#00FFFFFF">
+            <Image Name="bg" Width="36" Height="34" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Hidden" Source="/Apps.XmlUI;component/Resources/ROI_选中但未绘制_bg.png" />
+            <Image Name="icon" Width="32" Height="32" VerticalAlignment="Center" HorizontalAlignment="Center" Source="/Apps.XmlUI;component/Resources/Geometry_circle_clickoff.png" />
+          </Grid>
+          <ControlTemplate.Triggers>
+            <DataTrigger Value="True" Binding="{Binding CircleSelectedA}">
+              <Setter TargetName="icon" Property="Image.Source" Value="/Apps.XmlUI;component/Resources/Geometry_circle_clickon.png" />
+            </DataTrigger>
+            <DataTrigger Value="True" Binding="{Binding IfCircleMesA}">
+              <Setter TargetName="bg" Property="Visibility" Value="Visible" />
+            </DataTrigger>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+              <Setter TargetName="bg" Property="Visibility" Value="Visible" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <DataTemplate x:Key="Panel_EdgePairpatMatch">
+    <local:EdgepatMatchConfigPanel ParentNode="{Binding}" TabSource="{Binding SubAlgorithmTabRootA.TabsA[0]}" />
+  </DataTemplate>
+  <ControlTemplate x:Key="TextLeft" TargetType="{x:Type Control}">
+    <TextBlock VerticalAlignment="Center" Text="{Lang:ResourceBinding DisplayNameA}" ToolTip="{Lang:ResourceBinding DescriptionA}" />
+  </ControlTemplate>
+  <DataTemplate x:Key="CircleSelector">
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="auto" />
+        <RowDefinition Height="auto" />
+        <RowDefinition Height="auto" />
+      </Grid.RowDefinitions>
+      <paramtab:LeftRightControl Grid.Row="0">
+        <paramtab:LeftRightControl.LeftContent>
+          <Control Template="{StaticResource TextLeft}" />
+        </paramtab:LeftRightControl.LeftContent>
+        <paramtab:LeftRightControl.RightContent>
+          <StackPanel Orientation="Horizontal">
+            <RadioButton Focusable="True" IsEnabled="True" Background="#00FFFFFF" Style="{StaticResource CircleRadioBtnStyle}" IsChecked="{Binding IfCircleMesA, Mode=TwoWay}">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Checked">
+                  <i:InvokeCommandAction CommandParameter="2" Command="{Binding ValueChangedCommand}" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </RadioButton>
+          </StackPanel>
+        </paramtab:LeftRightControl.RightContent>
+      </paramtab:LeftRightControl>
+      <Grid Row="1">
+        <ToggleButton Name="expand" IsChecked="False" Height="30" Margin="0,0,40,0" HorizontalAlignment="Right" Padding="6,0,0,0" VerticalContentAlignment="Center" Content="{DynamicResource ROI参数}">
+          <FrameworkElement.Style>
+            <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource ExpandButtonStyle}" />
+          </FrameworkElement.Style>
+        </ToggleButton>
+      </Grid>
+      <StackPanel Grid.Row="2" Visibility="{Binding IsChecked, ElementName=expand, Converter={StaticResource bool2VisibilityConverter}}">
+        <paramtab:LeftRightControl FrameworkElement.Height="32">
+          <paramtab:LeftRightControl.LeftContent>
+            <TextBlock VerticalAlignment="Center" Text="{DynamicResource Circle Center X}" ToolTip="{DynamicResource Circle Center X}" />
+          </paramtab:LeftRightControl.LeftContent>
+          <paramtab:LeftRightControl.RightContent>
+            <paramtabcontrol:SliderArrangeFloat paramtabcontrol:SliderArrangeBase.SliderTickFrequency="1" UIElement.IsEnabled="False" paramtabcontrol:SliderArrangeBase.Minimum="-10000" paramtabcontrol:SliderArrangeBase.Maximum="10000" paramtabcontrol:SliderArrangeBase.StartValue="{Binding Circle.CenterPoint.X, Mode=TwoWay}" />
+          </paramtab:LeftRightControl.RightContent>
+        </paramtab:LeftRightControl>
+        <paramtab:LeftRightControl FrameworkElement.Height="32">
+          <paramtab:LeftRightControl.LeftContent>
+            <TextBlock VerticalAlignment="Center" Text="{DynamicResource Circle Center Y}" ToolTip="{DynamicResource Circle Center Y}" />
+          </paramtab:LeftRightControl.LeftContent>
+          <paramtab:LeftRightControl.RightContent>
+            <paramtabcontrol:SliderArrangeFloat paramtabcontrol:SliderArrangeBase.SliderTickFrequency="1" UIElement.IsEnabled="False" paramtabcontrol:SliderArrangeBase.Minimum="-10000" paramtabcontrol:SliderArrangeBase.Maximum="10000" paramtabcontrol:SliderArrangeBase.StartValue="{Binding Circle.CenterPoint.Y, Mode=TwoWay}" />
+          </paramtab:LeftRightControl.RightContent>
+        </paramtab:LeftRightControl>
+        <paramtab:LeftRightControl FrameworkElement.Height="32">
+          <paramtab:LeftRightControl.LeftContent>
+            <TextBlock VerticalAlignment="Center" Text="{DynamicResource radius}" ToolTip="{DynamicResource radius}" />
+          </paramtab:LeftRightControl.LeftContent>
+          <paramtab:LeftRightControl.RightContent>
+            <paramtabcontrol:SliderArrangeFloat paramtabcontrol:SliderArrangeBase.SliderTickFrequency="1" paramtabcontrol:SliderArrangeBase.Minimum="0" paramtabcontrol:SliderArrangeBase.Maximum="{x:Static PCImage:HikCoverCircle2.MaxRadius}" paramtabcontrol:SliderArrangeBase.StartValue="{Binding Circle.Radius, Mode=TwoWay}" />
+          </paramtab:LeftRightControl.RightContent>
+        </paramtab:LeftRightControl>
+      </StackPanel>
+    </Grid>
+  </DataTemplate>
+</ResourceDictionary>

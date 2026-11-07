@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>imvslinefindmodu 路 evidence.json</title><style>*{box-sizing:border-box}
+body{margin:0;background:#f6f7f9;color:#1d2129;font:14px/1.7 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:24px 20px 60px}
+.crumbs{font-size:13px;margin-bottom:14px}
+.crumbs a{color:#2563eb;text-decoration:none}
+.card{background:#fff;border:1px solid #e4e7ec;border-radius:10px;padding:26px 30px}
+h1,h2,h3,h4{line-height:1.4}
+h1{font-size:20px}h2{font-size:17px;margin-top:26px}h3{font-size:15px}
+table{border-collapse:collapse;margin:12px 0;width:100%;font-size:13px}
+td,th{border:1px solid #e4e7ec;padding:6px 10px;vertical-align:top}
+tr:nth-child(even) td{background:#fafbfc}
+code{background:#f1f3f5;border-radius:3px;padding:1px 5px;font-size:12.5px;font-family:Consolas,Menlo,monospace;color:#c7254e}
+pre{background:#282c34;color:#abb2bf;border-radius:6px;padding:14px 16px;overflow:auto;font-size:12.5px;line-height:1.6;font-family:Consolas,Menlo,monospace}
+pre code{background:none;color:inherit;padding:0}
+ul{padding-left:22px}
+blockquote{border-left:3px solid #d0d5da;margin:10px 0;padding:4px 14px;color:#5a636b;background:#fafbfc}
+hr{border:0;border-top:1px solid #e4e7ec;margin:18px 0}
+p{margin:8px 0}</style></head><body><div class="wrap"><nav class="crumbs"><a href="../../index.html">&#8592; 宸ュ叿绱㈠紩</a> &middot; <code>imvslinefindmodu</code></nav><div class="card"><h2>evidence.json</h2><pre>{
+  &quot;stableToolId&quot;: &quot;imvslinefindmodu&quot;,
+  &quot;originalPlugin&quot;: &quot;IMVSLineFindModu&quot;,
+  &quot;displayName&quot;: &quot;直线查找&quot;,
+  &quot;originalCategory&quot;: &quot;Location&quot;,
+  &quot;originalSourcePath&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSLineFindModu&quot;,
+  &quot;uiCategory&quot;: &quot;result-view&quot;,
+  &quot;priority&quot;: &quot;P2&quot;,
+  &quot;status&quot;: &quot;source-partial&quot;,
+  &quot;evidenceState&quot;: &quot;source-partial&quot;,
+  &quot;origin&quot;: &quot;suneyevision&quot;,
+  &quot;resourceCount&quot;: 6,
+  &quot;parameterCount&quot;: 24,
+  &quot;inputCount&quot;: 4,
+  &quot;outputCount&quot;: 15,
+  &quot;uiControlCount&quot;: 36,
+  &quot;sourceInventory&quot;: &quot;docs/plugins/inventory.json&quot;,
+  &quot;rewriteNote&quot;: &quot;2026-11-05 第一批（定位核心）升级：用 ilspycmd 反编译 IMVSLineFindModuCs.dll 入库，从 Param/Result/Tool/RoiManager 四个类直读参数、枚举、默认值范围与结果字段。状态从 inventory-only 升为 source-partial。原厂 DLL 是原生 C++（无托管元数据），算法体仍未证。&quot;,
+  &quot;sourceEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;docs/07-工具逆向/decompiled/Managed/LineFind/IMVSLineFindModuCs/IMVSLineFindModuTool.cs&quot;,
+      &quot;sha256&quot;: &quot;05F408C830CFAACE6ECE2956FB2004450B52B7523ABBCD7AEEDA7D23B1B6BD7C&quot;,
+      &quot;symbol&quot;: &quot;托管工具类：构造、ModuParams、ModuResult、Run(SyncSelfRun)（IMVSLineFindModuTool）&quot;,
+      &quot;lines&quot;: &quot;1-64（构造 L40-55，ModuResult L19-32，Run L60-63）&quot;,
+      &quot;confirmable&quot;: &quot;已证：三个构造函数都执行 ModuParams = new LineFindParam(ID)；Run 只调 ServerSDKManager.mModuleManager.SyncSelfRun(ID)，托管层不承载算法；ModuResult 经 QueryModuleOneResult + SetModuleResult 回填&quot;
+    },
+    {
+      &quot;path&quot;: &quot;docs/07-工具逆向/decompiled/Managed/LineFind/IMVSLineFindModuCs/LineFindParam.cs&quot;,
+      &quot;sha256&quot;: &quot;EDD9C96F51FC0116D84DD33BC24E95C0E2E5790DF0B99997436A8818CDD2545D&quot;,
+      &quot;symbol&quot;: &quot;托管参数模型：24 个 ParamItem、4 个枚举、ROI 管理器（LineFindParam）&quot;,
+      &quot;lines&quot;: &quot;1-543（枚举 FindModeEnum L13-31 / EdgePolarityEnum L36-50 / InitTypeEnum L55-65 / FitFunEnum L70-84；构造函数 L513-543）&quot;,
+      &quot;confirmable&quot;: &quot;已证：24 个参数的名称与取值范围、图像输入四个强制叶（InImage / InImageWidth / InImageHeight / InImagePixelFormat）、ROI 管理器形参为 'RoiType' 与 'LineCaliper'；ParamItem 第三/四参数的语义未证&quot;
+    },
+    {
+      &quot;path&quot;: &quot;docs/07-工具逆向/decompiled/Managed/LineFind/IMVSLineFindModuCs/LineFindResult.cs&quot;,
+      &quot;sha256&quot;: &quot;0E4FF45929949A781A5B44D855E7E7D956372B761AB83240130BF32ACCC067CD&quot;,
+      &quot;symbol&quot;: &quot;托管结果模型：输出字段与状态（LineFindResult）&quot;,
+      &quot;lines&quot;: &quot;1-&quot;,
+      &quot;confirmable&quot;: &quot;已证：ModuStatus、OutputLine、Midpoint、LineAngle、LineFitError、LinearContourPoint、EdgePointNum、EdgePointStatus、ROI、CaliperBox、DetectCaliperBox、BlindPolygonPointNum、BlindPolygonPoints、BlindPolygonString&quot;
+    },
+    {
+      &quot;path&quot;: &quot;docs/07-工具逆向/decompiled/Managed/LineFind/IMVSLineFindModuCs/LineFindRoiManager.cs&quot;,
+      &quot;sha256&quot;: &quot;C4AA751AEC123C51409F853F55B6FF66E9BAF0DA591B7911211B6E77D2BDE87A&quot;,
+      &quot;symbol&quot;: &quot;托管 ROI 管理：ROI 形状与生命周期（LineFindRoiManager）&quot;,
+      &quot;lines&quot;: &quot;1-&quot;,
+      &quot;confirmable&quot;: &quot;已证：该工具使用名为 LineCaliper 的 ROI 类型，由 LineFindRoiManager 承载&quot;
+    }
+  ],
+  &quot;analysisStages&quot;: [
+    {
+      &quot;id&quot;: &quot;ui&quot;,
+      &quot;status&quot;: &quot;partial&quot;,
+      &quot;detail&quot;: &quot;AlgorithmTab XML 声明 36 条控件，托管层只有参数模型，不含界面布局。缺原件 XAML、逐控件绑定与像素样式。&quot;,
+      &quot;links&quot;: [
+        &quot;resources.json uiControls 36 条&quot;,
+        &quot;Managed/LineFind 无界面类&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;common&quot;,
+      &quot;status&quot;: &quot;partial&quot;,
+      &quot;detail&quot;: &quot;共享组由 XML 声明；托管层可见 ROI 管理器与 ParamItem 机制，但共享模板与配置框架不在本程序集。&quot;,
+      &quot;links&quot;: [
+        &quot;resources.json sharedUiGroups&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;parametersRoi&quot;,
+      &quot;status&quot;: &quot;done&quot;,
+      &quot;detail&quot;: &quot;24 个参数已从 LineFindParam 构造函数直读，含枚举取值（FindModeEnum 最强/第一条/最后一条/接近中线；EdgePolarityEnum 黑到白/白到黑/任意；InitTypeEnum 全局 ALS/局部 LLS；FitFunEnum 最小二乘/Huber/Tukey）与数值范围（EdgeStrength 255 下限 1、KernelSize 50、RayNum 1000 下限 2、RegionWidth 100、RejectDist 1000、ExpectAngle ±180、FitPointsLimit 99999 下限 2、ScoreLimit 9999）。ROI 类型 LineCaliper。&quot;,
+      &quot;links&quot;: [
+        &quot;LineFindParam.cs L13-84 枚举&quot;,
+        &quot;LineFindParam.cs L513-543 构造&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;execution&quot;,
+      &quot;status&quot;: &quot;partial&quot;,
+      &quot;detail&quot;: &quot;托管入口已证：Run() 只调 SyncSelfRun(ID)，ModuResult 经 QueryModuleOneResult 取回。算法体在原生 IMVSLineFindModu.dll（无托管元数据），未反汇编。&quot;,
+      &quot;links&quot;: [
+        &quot;IMVSLineFindModuTool.cs L60-63&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;display&quot;,
+      &quot;status&quot;: &quot;partial&quot;,
+      &quot;detail&quot;: &quot;结果模型携带显示所需数据：LinearContourPoint（轮廓点）、CaliperBox / DetectCaliperBox（卡尺框）、BlindPolygon*（屏蔽多边形）、EdgePointStatus（逐点状态）。Display.xml 的视图项未逐项核对。&quot;,
+      &quot;links&quot;: [
+        &quot;LineFindResult.cs&quot;,
+        &quot;IMVSLineFindModuDisplay.xml&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;storage&quot;,
+      &quot;status&quot;: &quot;partial&quot;,
+      &quot;detail&quot;: &quot;已证：参数以 ParamItem(this, name, ...) 绑定模块 ID，由平台统一持久化。未证：本 Cs 程序集不含 GetModel / ImportModel，序列化格式与版本迁移未取（原记 inferred，2026-11-07 按 stageStatus 枚举改为 partial，推断语义保留在 detail 内）。&quot;,
+      &quot;links&quot;: [
+        &quot;LineFindParam.cs 构造&quot;
+      ]
+    },
+    {
+      &quot;id&quot;: &quot;native&quot;,
+      &quot;status&quot;: &quot;unknown&quot;,
+      &quot;detail&quot;: &quot;原生 IMVSLineFindModu.dll 213 KB，无托管元数据，未反汇编；导出函数、调用约定与算法体均未取。&quot;,
+      &quot;links&quot;: []
+    }
+  ],
+  &quot;semanticChain&quot;: [
+    {
+      &quot;step&quot;: &quot;init&quot;,
+      &quot;conclusion&quot;: &quot;confirmed&quot;,
+      &quot;originalEvidence&quot;: &quot;IMVSLineFindModuTool 的三个构造函数（无参 / object param / ISubjectModel proxyModule）都执行 ModuParams = new LineFindParam(ID)，Tool.cs L40-55&quot;,
+      &quot;unknown&quot;: &quot;&quot;
+    },
+    {
+      &quot;step&quot;: &quot;parameters&quot;,
+      &quot;conclusion&quot;: &quot;confirmed&quot;,
+      &quot;originalEvidence&quot;: &quot;LineFindParam 构造函数 L513-543 创建 24 个 ParamItem 并给出数值范围；四个枚举定义在 L13-84&quot;,
+      &quot;unknown&quot;: &quot;&quot;
+    },
+    {
+      &quot;step&quot;: &quot;inputsRoi&quot;,
+      &quot;conclusion&quot;: &quot;confirmed&quot;,
+      &quot;originalEvidence&quot;: &quot;inputImage = InputItem(this, INPUT_TYPE_IMAGE, [InImage, InImageWidth, InImageHeight, InImagePixelFormat])；ModuRoiManager = new LineFindRoiManager(this, \&quot;RoiType\&quot;, \&quot;LineCaliper\&quot;)&quot;,
+      &quot;unknown&quot;: &quot;&quot;
+    },
+    {
+      &quot;step&quot;: &quot;process&quot;,
+      &quot;conclusion&quot;: &quot;inferred&quot;,
+      &quot;originalEvidence&quot;: &quot;Run() 调 ServerSDKManager.mModuleManager.SyncSelfRun(ID)（Tool.cs L60-63），说明托管层不做计算；算法在原生 DLL&quot;,
+      &quot;unknown&quot;: &quot;原生算法体未反汇编，射线数、核宽、边缘强度如何参与计算未证&quot;
+    },
+    {
+      &quot;step&quot;: &quot;branchFailure&quot;,
+      &quot;conclusion&quot;: &quot;inferred&quot;,
+      &quot;originalEvidence&quot;: &quot;LineFindResult 暴露 ModuStatus 作为状态位&quot;,
+      &quot;unknown&quot;: &quot;ModuStatus 的取值表与失败分支未证；取消与连续运行中断路径未证&quot;
+    },
+    {
+      &quot;step&quot;: &quot;resultWrite&quot;,
+      &quot;conclusion&quot;: &quot;partial&quot;,
+      &quot;originalEvidence&quot;: &quot;ModuResult getter：QueryModuleOneResult(ID) 取 IMVS_MODULE_RESULT_INFO_LIST_EX，非空则 mModuleResultManager.SetModuleResult(ref st, ref _result, ModuResultMemType)，Tool.cs L19-32&quot;,
+      &quot;unknown&quot;: &quot;各字段的填充分支（无结果时是否置空、部分失败是否保留旧值）未证&quot;
+    },
+    {
+      &quot;step&quot;: &quot;displayPublish&quot;,
+      &quot;conclusion&quot;: &quot;inferred&quot;,
+      &quot;originalEvidence&quot;: &quot;结果模型自带 LinearContourPoint / CaliperBox / DetectCaliperBox / BlindPolygonPoints / EdgePointStatus，显示层可直接消费&quot;,
+      &quot;unknown&quot;: &quot;Display.xml 的视图项与颜色、选择显示项的默认值未证&quot;
+    },
+    {
+      &quot;step&quot;: &quot;persistence&quot;,
+      &quot;conclusion&quot;: &quot;inferred&quot;,
+      &quot;originalEvidence&quot;: &quot;参数均以 ParamItem(this, 名称, ...) 绑定模块 ID，由平台持久化&quot;,
+      &quot;unknown&quot;: &quot;序列化格式、版本迁移、复制粘贴的重映射规则未证&quot;
+    },
+    {
+      &quot;step&quot;: &quot;release&quot;,
+      &quot;conclusion&quot;: &quot;unknown&quot;,
+      &quot;originalEvidence&quot;: &quot;托管层未见 Dispose / DeInit 覆写&quot;,
+      &quot;unknown&quot;: &quot;释放由 VmModule 基类完成，实际顺序与图像缓冲释放未证&quot;
+    }
+  ],
+  &quot;algorithmComparison&quot;: [
+    {
+      &quot;id&quot;: &quot;originalAlgorithm&quot;,
+      &quot;status&quot;: &quot;partial&quot;,
+      &quot;evidence&quot;: [
+        &quot;托管层已证：Run→SyncSelfRun，无算法体&quot;,
+        &quot;参数显示为射线 + 核宽 + 边缘强度 + 拟合方式（LS/Huber/Tukey）+ 剔除点数与距离 + 区域宽度&quot;
+      ],
+      &quot;unknown&quot;: &quot;原生 IMVSLineFindModu.dll 未反汇编，边缘提取与拟合的数值实现未证&quot;
+    },
+    {
+      &quot;id&quot;: &quot;currentCalculation&quot;,
+      &quot;status&quot;: &quot;partial&quot;,
+      &quot;evidence&quot;: [
+        &quot;我方 LineDetectParameters 基于 HALCON 2D Metrology：两点引导线 + 自动测量带阵列 + 1D 边缘 + 拟合直线（LineDetectParameters.cs L49-54 注释）&quot;,
+        &quot;我方参数：MeasureLength1=20、MeasureLength2=5、NumMeasures=10、Sigma=1、Threshold=30、DistanceThreshold=5&quot;
+      ],
+      &quot;unknown&quot;: &quot;与原版射线模型不是同一实现；未做同图同参差分，不能声称等价&quot;
+    },
+    {
+      &quot;id&quot;: &quot;defaultsPrePost&quot;,
+      &quot;status&quot;: &quot;partial&quot;,
+      &quot;evidence&quot;: [
+        &quot;原版默认：EdgeStrength 255（下限 1）、KernelSize 50、RayNum 1000（下限 2）、RegionWidth 100、RejectNum 998、RejectDist 1000、ExpectAngle ±180、RotateTolerance 180、FitPointsLimit 99999（下限 2）、ScoreLimit 9999&quot;,
+        &quot;我方默认：MeasureLength1=20、MeasureLength2=5、NumMeasures=10、Sigma=1.0、Threshold=30.0、DistanceThreshold=5.0&quot;
+      ],
+      &quot;unknown&quot;: &quot;ParamItem(name, a, b) 第三/四参数是默认值与下限，还是上限与默认值，签名不在本程序集，未证；两侧数值不可直接换算&quot;
+    },
+    {
+      &quot;id&quot;: &quot;boundariesCoordinatesTypes&quot;,
+      &quot;status&quot;: &quot;partial&quot;,
+      &quot;evidence&quot;: [
+        &quot;原版输出：OutputLine、Midpoint、LineAngle、LineFitError、LinearContourPoint、ROI、CaliperBox、DetectCaliperBox&quot;,
+        &quot;我方输出：拟合直线 + 轮廓点 + 判据（edge-point-count / angle / rmse）&quot;
+      ],
+      &quot;unknown&quot;: &quot;角度基准与符号约定（原版 ExpectAngle 取 ±180）未对齐；坐标原点与 ROI 局部坐标系未证&quot;
+    },
+    {
+      &quot;id&quot;: &quot;pixelNumerics&quot;,
+      &quot;status&quot;: &quot;not-established&quot;,
+      &quot;evidence&quot;: [],
+      &quot;unknown&quot;: &quot;无同图同参差分；边缘位置与拟合残差的数值偏差未测&quot;
+    },
+    {
+      &quot;id&quot;: &quot;nativeAbi&quot;,
+      &quot;status&quot;: &quot;not-established&quot;,
+      &quot;evidence&quot;: [],
+      &quot;unknown&quot;: &quot;原生 IMVSLineFindModu.dll 无托管元数据，未反汇编；导出名与调用约定未取&quot;
+    },
+    {
+      &quot;id&quot;: &quot;validationInputs&quot;,
+      &quot;status&quot;: &quot;partial&quot;,
+      &quot;evidence&quot;: [
+        &quot;我方判据：edge-point-count 5–1000、angle ±180、rmse 0–1&quot;,
+        &quot;我方图形项 7 个：contour-point、diagnostic-point、excluded-point、halcon-band、fit-result、guide&quot;
+      ],
+      &quot;unknown&quot;: &quot;无原机差分；原版 ScoreLimit / AngleLimit 的判定时机（参数层还是输出后）未证&quot;
+    }
+  ],
+  &quot;currentImplementation&quot;: {
+    &quot;moduleId&quot;: &quot;LineDetect&quot;,
+    &quot;implPath&quot;: &quot;tools/SunEyeVision.Tool.LineDetect/LineDetectTool.cs + LineDetectParameters.cs&quot;,
+    &quot;verifiedAt&quot;: &quot;2026-11-05（静态读码，未与原版对照运行）&quot;,
+    &quot;differences&quot;: [
+      &quot;参数规模：原版 24 个 ParamItem；我方 9 个强类型属性（LineStartPoint / LineEndPoint / MeasureLength1 / MeasureLength2 / NumMeasures / Sigma / Threshold / Transition / Select / DistanceThreshold）&quot;,
+      &quot;边缘选取：原版 FindModeEnum 4 值（Best 最强 / First 第一条 / Last 最后一条 / Mid 接近中线）；我方 EdgeSelect 3 值（All / First / Last）——原版有 Best 与 Mid，我方无；我方有 All，原版无&quot;,
+      &quot;极性：原版 EdgePolarityEnum（BlackToWhite / WhiteToBlack / Both）；我方 EdgeTransition（All / Positive / Negative）。Positive 对应黑到白，语义可映射但枚举名与第三值语义不同&quot;,
+      &quot;边缘强度：原版 EdgeStrength 默认 255、下限 1；我方 Threshold 默认 30。两者不可直接换算&quot;,
+      &quot;测量实例：原版 RayNum 默认 1000、下限 2；我方 NumMeasures 默认 10，量级差约 100 倍，模型不同（射线 vs 测量带实例）&quot;,
+      &quot;核宽：原版 KernelSize 单值 50；我方拆成 MeasureLength1=20 + MeasureLength2=5 + Sigma=1。HALCON 的带长/带宽语义与原版核宽不对应&quot;,
+      &quot;稳健拟合：原版 FitFun 可选 LS / Huber / Tukey；我方用 HALCON metrology 固定拟合，无稳健拟合选项&quot;,
+      &quot;缺失项：原版 RevertFindOrient、AngleNormalization、LineAngleEnable / ExpectAngle / RotateTolerance、RegionWidth、InitType（ALS/LLS 自适应阈值）、FitPointsLimitLow/High、ScoreLimitLow/High 在我方无对应&quot;,
+      &quot;判定位置：原版把 AngleLimit / ScoreLimit 放在参数层；我方放在 Judgments 层（edge-point-count / angle / rmse），语义相等但交互位置不同&quot;,
+      &quot;ROI 模型：原版用 LineFindRoiManager 承载 LineCaliper 类型 ROI；我方用 RoiParameters + 两点引导线（LineStartPoint / LineEndPoint）&quot;
+    ]
+  },
+  &quot;managedMembers&quot;: [
+    &quot;IMVSLineFindModuTool&quot;,
+    &quot;LineFindParam&quot;,
+    &quot;LineFindResult&quot;,
+    &quot;LineFindRoiManager&quot;
+  ],
+  &quot;nativeFunctions&quot;: [],
+  &quot;runtimeObservations&quot;: [],
+  &quot;unknowns&quot;: [
+    &quot;原生 IMVSLineFindModu.dll（213 KB，无托管元数据）未反汇编：算法体、导出函数、调用约定均未取&quot;,
+    &quot;ParamItem(name, a, b) 第三/四参数语义未证，数值范围的解释需要基类定义&quot;,
+    &quot;ModuStatus 的状态码取值表与失败分支&quot;,
+    &quot;Display.xml 视图项、颜色与默认显示选择&quot;,
+    &quot;序列化格式、版本迁移、复制粘贴重映射&quot;,
+    &quot;无原机差分：阈值边界、ROI 非矩形 Domain、角度基准、输出数值均未比对&quot;
+  ],
+  &quot;sourceReports&quot;: [],
+  &quot;note&quot;: &quot;本卡是「定位核心」第一批的样板：托管层（Cs.dll）已被 ilspycmd 反编译入库，参数与结果字段是直读而非推测；算法体仍缺，因为原厂模块 DLL 是原生 C++，需要汇编级分析。&quot;
+}</pre></div></div></body></html>

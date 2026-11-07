@@ -1,0 +1,24 @@
+{
+  "stableToolId": "scglobalcameramodule",
+  "originalPlugin": "SCGlobalCameraModule",
+  "displayName": "SCGlobalCameraModule",
+  "originalCategory": "Global",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\SCGlobalCameraModule",
+  "uiCategory": "extension-panels",
+  "priority": "P3",
+  "status": "inventory-only",
+  "evidenceState": "unknown",
+  "resourceCount": 6,
+  "parameterCount": 5,
+  "inputCount": 0,
+  "outputCount": 5,
+  "uiControlCount": 4,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ]
+}

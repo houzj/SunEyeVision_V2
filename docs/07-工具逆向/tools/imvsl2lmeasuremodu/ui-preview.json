@@ -1,0 +1,284 @@
+{
+  "controls": [
+    {
+      "type": "RadioSelecter",
+      "name": "SourceSelect"
+    },
+    {
+      "type": "RadioSelecter3",
+      "name": "InputWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "LINE"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointY"
+    },
+    {
+      "type": "RadioSelecter3",
+      "name": "InputWay2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "LINE2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPoint2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPoint2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointX2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointY2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointX2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointY2"
+    },
+    {
+      "type": "ROISelecter_Com",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ChooseCoordinate"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "OriginPoint"
+    },
+    {
+      "type": "Enumeration",
+      "name": "LineChoose"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FindMode1"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePolarity1"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeThreshold1"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelSize1"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectNum1"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectDist1"
+    },
+    {
+      "type": "Enumeration",
+      "name": "InitType1"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FitFun1"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FindMode2"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePolarity2"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeThreshold2"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelSize2"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectNum2"
+    },
+    {
+      "type": "Integer",
+      "name": "RejectDist2"
+    },
+    {
+      "type": "Enumeration",
+      "name": "InitType2"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FitFun2"
+    },
+    {
+      "type": "Enumeration",
+      "name": "OutputAngleRange"
+    },
+    {
+      "type": "Boolean",
+      "name": "AngleLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangAngleLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "DistLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangDistLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "InterXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangInterXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "InterYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangInterYLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineInput1"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineInput1"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ThroughLine1"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ThroughLine2"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "InterPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlAngle"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "DetectCaliperBox1"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "DetectCaliperBox2"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvsl2lmeasuremodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2LMeasureModu\\IMVSL2LMeasureModu.xml",
+      "sha256": "f72faaaa2ab9a0c73335b6e1d42310cc6210dc3f313c25365150d0f9226dc0e0",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2LMeasureModu\\IMVSL2LMeasureModuAlgorithm.xml",
+      "sha256": "11739a3240b6942ada5a3241a4be3ae7e6516933555bcc32d789832344a3c5d7",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2LMeasureModu\\IMVSL2LMeasureModuAlgorithmTab.xml",
+      "sha256": "9594d5ca9bd29e1ef8440c97278b14e9c641cec4baabd798cbd7c8a4c605dcfd",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2LMeasureModu\\IMVSL2LMeasureModuCs.xml",
+      "sha256": "081ac1a3af79a6b3dc1a6e2affe11aa7418b1158d2de80c7a27042d6c86cbff3",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2LMeasureModu\\IMVSL2LMeasureModuDisplay.xml",
+      "sha256": "8ee8d8fa10ccef38e5cad8a6f8226f1c6429526832a99371dd474bd915e53cfd",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Measurement\\IMVSL2LMeasureModu\\ToolItemInfo.xml",
+      "sha256": "e048ef1bc5270d63574001a4ee494188653d78021e67be41a308971ae04dc363",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "线线测量",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

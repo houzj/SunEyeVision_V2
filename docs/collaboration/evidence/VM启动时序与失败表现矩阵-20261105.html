@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>VM 应用层 — 启动时序与失败表现矩阵</title>
+<style>
+:root{
+  --bg:#0b1524; --bg2:#111f33; --bd:#24405f; --tx:#dbe7f5; --tx2:#9fb4cc;
+  --obs:#3fb950; --inf:#d29922; --unk:#8b949e; --warn:#f85149; --note:#58a6ff;
+}
+*{box-sizing:border-box}
+body{margin:0;padding:32px 40px 80px;background:var(--bg);color:var(--tx);
+  font:15px/1.75 "Segoe UI","Microsoft YaHei",sans-serif;}
+h1{font-size:26px;margin:0 0 6px;color:#fff;letter-spacing:.3px}
+h2{font-size:20px;margin:38px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--bd);color:#fff}
+h3{font-size:16px;margin:26px 0 10px;color:#cfe3f7}
+.meta{color:var(--tx2);font-size:13px;margin-bottom:26px;line-height:1.9}
+.meta b{color:var(--tx)}
+table{width:100%;border-collapse:collapse;margin:12px 0 18px;font-size:13px;background:var(--bg2)}
+th,td{border:1px solid var(--bd);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#16273d;color:#fff;font-weight:600;white-space:nowrap}
+td code,p code,li code{background:#0a1420;border:1px solid #1d3350;border-radius:3px;
+  padding:1px 5px;font:12.5px/1.5 Consolas,"Cascadia Mono",monospace;color:#a9d3ff}
+tr:nth-child(even) td{background:#0f1c2e}
+code.block{display:block;background:#07101b;border:1px solid #1d3350;border-radius:5px;
+  padding:12px 14px;margin:10px 0;white-space:pre;overflow-x:auto;color:#a9d3ff;font-size:12.5px}
+.obs,.inf,.unk{display:inline-block;padding:0 6px;border-radius:3px;font-size:11.5px;
+  font-weight:600;letter-spacing:.5px;white-space:nowrap}
+.obs{background:rgba(63,185,80,.16);color:var(--obs);border:1px solid rgba(63,185,80,.45)}
+.inf{background:rgba(210,153,34,.16);color:var(--inf);border:1px solid rgba(210,153,34,.45)}
+.unk{background:rgba(139,148,158,.16);color:var(--unk);border:1px solid rgba(139,148,158,.45)}
+.warn,.note{border-left:3px solid var(--warn);background:rgba(248,81,73,.08);
+  padding:10px 14px;margin:14px 0;border-radius:0 4px 4px 0;font-size:13.5px}
+.note{border-left-color:var(--note);background:rgba(88,166,255,.08)}
+.warn b{color:var(--warn)} .note b{color:var(--note)}
+ul,ol{margin:8px 0 14px;padding-left:24px} li{margin:4px 0}
+.k{color:#7ee787;font-weight:600} .r{color:#ff7b72;font-weight:600}
+.small{font-size:12.5px;color:var(--tx2)}
+.flow{background:#07101b;border:1px solid #1d3350;border-radius:5px;padding:14px 16px;
+  margin:12px 0;font:12.5px/1.85 Consolas,"Cascadia Mono",monospace;color:#a9d3ff;white-space:pre;overflow-x:auto}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--bd);color:var(--tx2);font-size:12.5px}
+</style>
+</head>
+<body>
+
+<h1>VM 4.4.0 应用层 — 启动时序与失败表现矩阵</h1>
+<div class="meta">
+取证日期：<b>2026-11-05</b>　｜　对象：<b>VisionMaster 4.4.0（V4.4.0 Build20250516@1555331）</b>，安装目录只读<br>
+性质：<b>文件系统 + 配置证据重建</b>（<b>未启动原厂程序</b>，因此时序为结构推断，见 §5 边界）<br>
+范围：进程/组件、配置落盘、失败表现分类、自动加载与崩溃报告<br>
+标注：<span class="obs">观察到</span> 直读文件　<span class="inf">推断</span> 由结构推得　<span class="unk">未知</span> 无证据
+</div>
+
+<h2>0 结论摘要</h2>
+<table>
+<tr><th style="width:25%">问题</th><th style="width:9%">档位</th><th>结论</th></tr>
+<tr><td>有几个进程/子系统</td><td><span class="obs">观察到</span></td>
+<td>至少 <b>4 个可执行入口</b>：<code>VisionMaster.exe</code>(1,425,920 B，主程序)、<code>CompatibleTool.exe</code>(103,936 B，兼容性工具)、
+<code>ErrorCode\ErrorCodeTool.exe</code>、<code>ErrorCode\LanguageTool.exe</code>（均为独立小工具，非运行期必需）。<br>
+运行期由 <b>11 个日志子系统</b>反证至少 11 个逻辑组件并行（UI / Server / SDK / ModuleProxy / Modules / GateWay / GateWayUI / GlobalScript / FrontendUI / ModuleUI / Exception）。</td></tr>
+
+<tr><td>启动读哪些文件</td><td><span class="obs">观察到</span></td>
+<td>根配置 <b>4 个</b>：<code>App.ini</code>（方案保存目录）、<code>VersionInfo.config</code>（6 个版本键）、<code>VisionMaster.exe.config</code>(9,187 B)、<code>paraCfg.xml</code>（<b>GBK 编码</b>，IO 引脚映射）。<br>
+运行期配置 <b>2 个</b>：<code>Server\AutoLoadSolution.cfg</code>（自动加载方案）、<code>Server\DynamicParameter.ini</code>（<b>模块数上限 1024</b>）。</td></tr>
+
+<tr><td>版本不是一个数</td><td><span class="obs">观察到</span></td>
+<td><code>VersionInfo.config</code> 有 <b>6 个独立版本键</b>：<code>VM</code>=V4.4.0 Build20250516@1555331、<code>MVDAlgorithmSDK_2D</code>=<b>V4.4.1</b> Build20250516@<b>1555175</b>、<code>MVS_STD</code>=3.4.1、<code>MVS_Drive</code>=4.5.1.1 Build20250506，以及 2 个 Patch 位、<br>
+<code>MVDAlgorithmSDK_DeepLearning</code>=<b>空字符串</b>。<br>
+→ <b>产品版本(V4.4.0) 与算法 SDK 版本(V4.4.1) 不同</b>，同一天 Build 但序列号不同。</td></tr>
+
+<tr><td>深度学习未安装有官方证据吗</td><td><span class="obs">观察到</span></td>
+<td><b>有</b>。<code>MVDAlgorithmSDK_DeepLearning</code> 值为空 → 与 R4 记录的"<code>DeepLearning</code>/<code>RegisterLearning</code> 目录不存在、Recognition 缺 8 个 Cnn 系"<b>三处互相印证</b>。<br>
+R4 此前的判断是 <span class="inf">推断</span>，本文件把它<b>升级为 <span class="obs">观察到</span></b>：深度学习组件未部署，且系统自己记录了"空版本"。</td></tr>
+
+<tr><td>启动能不能"直接跑方案"</td><td><span class="obs">观察到</span></td>
+<td>能，由 <code>Server\AutoLoadSolution.cfg</code> 控制：<br>
+<code>&lt;Solution IsAutoLoad="0" Path="" Password="" SoluExecuteState="1" /&gt;</code><br>
+→ 4 个字段：<b>是否自动加载</b>、<b>方案路径</b>、<b>方案密码</b>、<b>加载后执行状态</b>。本机为关闭状态（<code>IsAutoLoad=0</code>、<code>Path</code> 空）。</td></tr>
+
+<tr><td>崩溃后留下什么</td><td><span class="obs">观察到</span></td>
+<td>安装根目录下生成 <code>&lt;exe名&gt;-yyyyMMdd-HHmmss-mmmm.txt</code>，内容为纯文本迷你调用栈：<br>
+头部列出各模块版本时间（<code>ModuleProxy</code>/<code>PlatformManager</code>/<code>clr</code>/<code>iMVS-6000PlatformSDK</code>），<br>
+然后 <code>ExceptionCode : STACK_OVERFLOW</code> + <code>CallStack:</code> + <code>Frame 0: ModuleProxy.dll!  VM_PROXY_SetSDKCallBack</code>……</td></tr>
+
+<tr><td>失败有几种可识别形态</td><td><span class="inf">推断</span></td>
+<td>据证据可归 <b>7 类</b>（§1.4 逐条给依据）。其中只有 3 类有直接文件证据（崩溃报告 / 空版本键 / 授权脚本与 <code>PlugAuthorization.dll</code>），
+另 4 类为结构推断，<b>不得</b>当作已观察事实使用。</td></tr>
+
+<tr><td>模块数有硬上限</td><td><span class="obs">观察到</span></td>
+<td><code>Server\DynamicParameter.ini</code> 一行：<code>ManageModuleMaxCount = 1024</code>。<br>
+<span class="unk">未知</span> 该值是"同时管理的模块实例数"还是"模块类型数"，文件里<b>无注释</b>。</td></tr>
+
+<tr><td>本方最该拿走什么</td><td><span class="obs">观察到</span></td>
+<td>三点：①<b>版本要分键存</b>（产品/算法 SDK/驱动各自一个），不能只有一个 <code>Version</code>；<br>
+②<b>启动自动加载方案要带"密码 + 执行状态"</b>，不只是路径；<br>
+③<b>崩溃要留可读的文本栈</b>（不是只有 <code>.dmp</code> 二进制），运维能直接看。</td></tr>
+</table>
+
+<h2>1 逐条论证</h2>
+
+<h3>1.1 应用层目录与组件清单 <span class="obs">观察到</span></h3>
+<p>根目录 <code>Applications\</code> 下 <b>31 个目录</b>（按名称）：<code>3rdLib</code>、<code>ApplicationTemplate</code>、<code>ApplyModule</code>、<code>ApplyTemplate</code>、<code>CalibGuideSample</code>、<code>ColorCFG</code>、<code>ColorStyle</code>、<code>data</code>、<code>EncRuntime</code>、<code>ErrorCode</code>、<code>GateWay</code>、<code>GlobalScript</code>、<code>GwLoadSolution</code>、<code>Help</code>、<code>ImageTemp</code>、<code>Lang</code>、<code>LangCFG</code>、<code>log</code>、<code>Module(sp)</code>、<code>ModuleProxy</code>、<code>myLibs</code>、<code>platforms</code>、<code>ProjectParam</code>、<code>PublicFile</code>、<code>Resources</code>、<code>Server</code>、<code>ServerApp</code>、<code>ServerExportFile</code>、<code>TempImage</code>、<code>Temporary</code>、<code>Tools</code>、<code>ToolsOfInternal</code>、<code>UiMapFile</code>。</p>
+<table>
+<tr><th>目录</th><th>据证据判断的职责</th><th>依据</th></tr>
+<tr><td><code>Server</code></td><td>平台服务端/主控（授权、平台管理、方案自动加载）</td><td>含 <code>PlatformManager.dll</code>(9,264,128 B)、<code>PlugAuthorization.dll</code>(7,028,224 B)、<code>AutoLoadSolution.cfg</code>、<code>Install4Dongle.bat</code>/<code>Install4Soft.bat</code>/<code>Install4RemoteDongle.bat</code></td></tr>
+<tr><td><code>GateWay</code></td><td>网关（对外协议/压缩/JSON），自带日志框架</td><td>含 <code>Apps.BaseLog.config</code>/<code>Apps.BaseLog.dll</code>/<code>Apps.Json.dll</code>/<code>GateWay.Compress.dll</code> + <code>Lang</code>/<code>Module</code>/<code>PublicFile</code> 子目录</td></tr>
+<tr><td><code>ModuleProxy</code></td><td>模块代理（隔离子进程）</td><td>日志子系统 <code>ModuleProxy</code>（<code>ModuleFrame.log</code>、<code>ModuleProxy.log</code>）；崩溃栈中出现 <code>ModuleProxy.dll! VM_PROXY_SetSDKCallBack</code></td></tr>
+<tr><td><code>Module(sp)</code></td><td>工具模块根（R1–R5 全部证据来源）</td><td>16 分类 + 全局 <code>Combination.xml</code>/<code>ShapePropertyConfig.xml</code></td></tr>
+<tr><td><code>GlobalScript</code></td><td>全局脚本宿主（自带日志配置）</td><td>含 <code>Apps.BaseLog.config</code>，日志 <code>GlobalScript.log</code> / <code>UserGlobalScript.log</code></td></tr>
+<tr><td><code>myLibs</code></td><td>UI 侧私有库（UI 日志配置在此）</td><td>其 <code>Apps.BaseLog.config</code> 指向 <code>.\log\UI\Ui.log</code></td></tr>
+<tr><td><code>data</code> / <code>ProjectParam</code> / <code>UiMapFile</code></td><td>数据、项目参数、UI 映射（按实例号分目录）</td><td><code>data\options</code>；<code>ProjectParam\Designer</code>；<code>UiMapFile\32616</code>、<code>ImageTemp\VM32616ImgSrcTemp</code>（同为 <code>32616</code> 实例号）</td></tr>
+<tr><td><code>Temporary</code> / <code>TempImage</code> / <code>ImageTemp</code></td><td>临时文件（不清理、按索引命名）</td><td><code>Temporary\FeaturepatMatch_0..15+.xml</code>（特征匹配中间结果）；<code>TempImage\OU3LNB8Q</code>（随机名目录）</td></tr>
+<tr><td><code>ErrorCode</code></td><td>错误码 → 多语言文案</td><td><code>zh-cn.xaml</code>(250,905 B)、<code>zh-tw.xaml</code>(188,651 B)、<code>en-us.xaml</code>(283,028 B)；<code>ResultError.log</code> 仅 3 B</td></tr>
+<tr><td><code>EncRuntime</code> / <code>platforms</code> / <code>3rdLib</code></td><td>加密运行库 / 平台依赖 / 第三方</td><td>目录命名（<span class="inf">推断</span>：<code>EncRuntime</code> 与授权/加密相关，未读内容）</td></tr>
+<tr><td><code>Tools</code> / <code>ToolsOfInternal</code></td><td>独立小工具（非运行期必需）</td><td><code>Tools\LogLevelAdjustmentTool</code>、<code>Tools\AuthActiveTool</code>（含 <code>Log4j.Config</code>）、<code>Tools\VMCollector</code></td></tr>
+<tr><td><code>GwLoadSolution</code></td><td>网关加载方案（与 <code>AutoLoadSolution.cfg</code> 呼应）</td><td>目录命名 + <code>Server\AutoLoadSolution.cfg</code> 的存在（<span class="inf">推断</span> 两者协作）</td></tr>
+</table>
+
+<h3>1.2 启动阶段重建 <span class="inf">推断</span></h3>
+<div class="warn">
+<b>本节全部是结构推断，不是实机观察。</b>依据仅有：①各组件目录与配置文件的存在；②11 个子系统日志文件名与最后写入时间；③崩溃栈里出现的模块顺序线索。
+<b>未启动原厂程序</b>，因此<b>阶段先后顺序不可作为"已验证"使用</b>。要验证必须实机抓启动日志（见 §3.2）。
+</div>
+<div class="flow">阶段 0  进程创建
+        VisionMaster.exe  (1,425,920 B)
+        └─ 读 VisionMaster.exe.config (9,187 B)          ← .NET 运行时/绑定重定向
+        └─ 读 App.ini → [DefaultSection] SaveSol=C:\Users\houzhongjie\Desktop
+
+阶段 1  版本与授权自检
+        └─ 读 VersionInfo.config → 6 个版本键
+               VM=V4.4.0 Build20250516@1555331
+               MVDAlgorithmSDK_2D=V4.4.1 Build20250516@1555175
+               MVDAlgorithmSDK_DeepLearning=""        ← 空 = 深度学习组件未部署
+               MVS_STD=3.4.1 / MVS_Drive=4.5.1.1
+        └─ Server\PlatformManager.dll (9.2 MB) + PlugAuthorization.dll (7.0 MB)
+        └─ 授权来源三选一（由 3 个安装脚本反证）：加密狗 / 远程狗 / 软授权
+               Install4Dongle.bat / Install4RemoteDongle.bat / Install4Soft.bat
+
+阶段 2  服务端与网关
+        └─ Server\  → log\Server\Server.log + Monitor.log
+        └─ GateWay\  → log\GateWay\hkrmq.log     （自带 Apps.BaseLog，level=all）
+        └─ 读 Server\DynamicParameter.ini → ManageModuleMaxCount = 1024
+
+阶段 3  模块代理与 SDK
+        └─ ModuleProxy\ → log\ModuleProxy\ModuleFrame.log + ModuleProxy.log
+        └─ SDK\         → log\SDK\PlatformSDK.log
+        └─ 读 Module(sp)\ModulePathGenerate.txt（191 行产品目录）
+        └─ 扫描 Module(sp)\x64\&lt;分类&gt;\&lt;模块&gt;\，按 ToolItemInfo.xml 决定入工具箱
+
+阶段 4  UI 与前端
+        └─ myLibs\Apps.BaseLog.config → log\UI\Ui.log
+        └─ FrontendUI → log\FrontendUI\FrontendUI.log
+        └─ ModuleUI    → log\ModuleUI\ModuleUI.log
+        └─ GlobalScript\ → log\GlobalScript\GlobalScript.log + UserGlobalScript.log
+        └─ 读 UiMapFile\&lt;实例号&gt;\、ProjectParam\Designer\
+
+阶段 5  方案加载（可选）
+        └─ Server\AutoLoadSolution.cfg
+               IsAutoLoad="0"    ← 本机为关闭
+               Path=""           ← 自动加载的方案文件
+               Password=""       ← 方案密码
+               SoluExecuteState="1"  ← 加载后是否直接执行
+
+阶段 X  失败兜底
+        └─ log\Exception\Exception.log         (466,486 B)
+        └─ &lt;exe名&gt;-yyyyMMdd-HHmmss-mmmm.txt    (崩溃迷你栈)</div>
+<p class="small">证据强度：<b>阶段 1 的 6 个版本键</b>与<b>阶段 5 的 4 个字段</b>是<span class="obs">观察到</span>；
+<b>阶段先后顺序</b>整体是<span class="inf">推断</span>（唯一顺序线索：崩溃栈中 <code>ModuleProxy</code> 先于 SDK 回调）。</p>
+
+<h3>1.3 各阶段落盘清单 <span class="obs">观察到</span></h3>
+<table>
+<tr><th>落点</th><th>文件</th><th>大小</th><th>读/写</th><th>说明</th></tr>
+<tr><td>安装根</td><td><code>App.ini</code></td><td>56 B</td><td>读</td><td>仅 <code>[DefaultSection] SaveSol=&lt;桌面路径&gt;</code> —— 方案默认保存目录<b>存在这里</b></td></tr>
+<tr><td>安装根</td><td><code>VersionInfo.config</code></td><td>494 B</td><td>读</td><td>6 个版本键（见下）</td></tr>
+<tr><td>安装根</td><td><code>VisionMaster.exe.config</code></td><td>9,187 B</td><td>读</td><td>另有 <code>_temp</code> 同尺寸副本（9,187 B）→ <span class="inf">推断</span> 升级时的替换模板</td></tr>
+<tr><td>安装根</td><td><code>paraCfg.xml</code></td><td>2,306 B</td><td>读</td><td><b>GBK 编码</b>（非 UTF-8）；IO 卡 GPI(7)/GPO(16) 引脚映射，含 VC3000 启用段 + VT3000 注释段</td></tr>
+<tr><td>安装根</td><td><code>ModulePathGenerate.txt</code></td><td>15,229 B</td><td>读</td><td>191 行模块产品目录（R5 总表分母）</td></tr>
+<tr><td><code>Server\</code></td><td><code>AutoLoadSolution.cfg</code></td><td>204 B</td><td>读/写</td><td>自动加载方案（4 字段）</td></tr>
+<tr><td><code>Server\</code></td><td><code>DynamicParameter.ini</code></td><td>29 B</td><td>读</td><td><code>ManageModuleMaxCount = 1024</code></td></tr>
+<tr><td><code>data\</code></td><td><code>options</code>（目录）</td><td>—</td><td>读写</td><td>用户选项</td></tr>
+<tr><td><code>ProjectParam\Designer\</code></td><td>目录</td><td>—</td><td>读写</td><td>设计器项目参数</td></tr>
+<tr><td><code>UiMapFile\32616\</code></td><td>目录</td><td>—</td><td>读写</td><td>按<b>实例号</b>分目录（与 <code>ImageTemp\VM32616ImgSrcTemp</code> 同号）</td></tr>
+<tr><td><code>Temporary\</code></td><td><code>FeaturepatMatch_0..15+.xml</code></td><td>~1.5–3 KB/个</td><td>写</td><td>特征匹配中间结果，<b>按序号无限追加</b>（实测到 _15）</td></tr>
+<tr><td><code>TempImage\</code> / <code>ImageTemp\</code></td><td>随机名目录</td><td>—</td><td>写</td><td><code>OU3LNB8Q</code>（8 位大写字母数字）、<code>VM32616ImgSrcTemp</code>（实例号前缀）</td></tr>
+<tr><td><code>log\</code></td><td>11 子系统日志</td><td>见另一份文档</td><td>写</td><td>详见 <code>VM日志落点保留与文件级机制-20261105.html</code></td></tr>
+<tr><td><code>ServerExportFile\</code></td><td>目录</td><td>—</td><td>写</td><td>服务端导出（<span class="unk">未知</span> 具体内容，未列文件）</td></tr>
+</table>
+<p><b>版本键全量</b>（<code>VersionInfo.config</code> 逐字）：</p>
+<code class="block">&lt;VersionInfo Key="VM"                          Value="V4.4.0 Build20250516@1555331" /&gt;
+&lt;VersionInfo Key="VM_Patch"                    Value="" /&gt;
+&lt;VersionInfo Key="MVDAlgorithmSDK_2D"          Value="V4.4.1 Build20250516@1555175" /&gt;
+&lt;VersionInfo Key="MVDAlgorithmSDK_Patch"       Value="" /&gt;
+&lt;VersionInfo Key="MVDAlgorithmSDK_DeepLearning" Value="" /&gt;     ← 空
+&lt;VersionInfo Key="MVS_STD"                     Value="3.4.1" /&gt;
+&lt;VersionInfo Key="MVS_Drive"                   Value="4.5.1.1 Build20250506" /&gt;</code>
+<div class="note">
+<b>三个可直接用的结论</b>：<br>
+① <b>产品版本 ≠ 算法版本</b>：UI/产品是 4.4.0，2D 算法 SDK 是 <b>4.4.1</b>，两者同日 Build 但序列号（1555331 vs 1555175）不同。任何"版本号"讨论必须先说清是哪一个。<br>
+② <b>空字符串是"未安装"的表达</b>：<code>MVDAlgorithmSDK_DeepLearning</code> 为空而非缺失键 —— 方案版本兼容性检查可以据此判定能力缺失。<br>
+③ <b>两个 Patch 位独立</b>：<code>VM_Patch</code> 与 <code>MVDAlgorithmSDK_Patch</code> 分开，说明补丁也可能只打其中一侧。
+</div>
+
+<h3>1.4 七类失败表现矩阵 <span class="inf">推断</span>（逐条给证据强度）</h3>
+<table>
+<tr><th style="width:5%">#</th><th style="width:17%">失败类别</th><th style="width:34%">可识别表现（据证据）</th><th style="width:30%">证据</th><th style="width:9%">强度</th></tr>
+<tr><td>F1</td><td><b>组件未部署</b>（选装/授权裁剪）</td>
+<td>对应分类目录整目录不存在；<code>VersionInfo</code> 对应键为空；工具箱里<b>看不到</b>该类工具，但程序其余部分正常</td>
+<td><code>MVDAlgorithmSDK_DeepLearning=""</code> + <code>DeepLearning</code>/<code>RegisterLearning</code> 目录不存在（R4/R5 已核实）</td>
+<td><span class="obs">观察到</span></td></tr>
+
+<tr><td>F2</td><td><b>模块不可见但文件在</b></td>
+<td>模块目录完整、DLL 存在、有 <code>Control.dll</code>，但工具箱里<b>没有</b>该工具</td>
+<td><code>IMVSMarkInspModu</code>（11 文件、18 MB dll、无 <code>ToolItemInfo.xml</code>）、<code>Global\ProcedureComm</code>（4 文件、无 TI）</td>
+<td><span class="obs">观察到</span>（文件事实）/ <span class="unk">未知</span>（实机是否真的不可见）</td></tr>
+
+<tr><td>F3</td><td><b>授权失败</b></td>
+<td>启动后功能受限或提示授权。授权来源有三种安装脚本，暗示三种授权形态</td>
+<td><code>Server\Install4Dongle.bat</code>(290 B)、<code>Install4RemoteDongle.bat</code>(288 B)、<code>Install4Soft.bat</code>(290 B)、<code>Install4SoftOld.bat</code>(400 B)；<code>PlugAuthorization.dll</code>(7.0 MB)</td>
+<td><span class="obs">观察到</span>（文件存在）/ <span class="unk">未知</span>（失败时的具体提示文案与行为）</td></tr>
+
+<tr><td>F4</td><td><b>崩溃（进程级）</b></td>
+<td>生成 <code>&lt;exe名&gt;-yyyyMMdd-HHmmss-mmmm.txt</code>；含模块时间表 + <code>ExceptionCode</code> + 文本 <code>CallStack</code>；同时 <code>log\Exception\Exception.log</code> 增长</td>
+<td>实机存在 <code>VisionMaster.exe-20260520-104419-0446.txt</code>(1,360 B)、<code>CompatibleTool.exe-20260928-134928-0813.txt</code>(1,522 B)；其中一枚为 <code>STACK_OVERFLOW</code>，栈指向 <code>ModuleProxy.dll! VM_PROXY_SetSDKCallBack</code></td>
+<td><span class="obs">观察到</span></td></tr>
+
+<tr><td>F5</td><td><b>模块数超限</b></td>
+<td>超过 <code>ManageModuleMaxCount</code>(1024) 后的行为</td>
+<td><code>Server\DynamicParameter.ini</code> 单行配置；<span class="unk">未知</span> 超限表现（拒绝新增？静默失败？）</td>
+<td><span class="obs">观察到</span>（配置存在）/ <span class="unk">未知</span>（行为）</td></tr>
+
+<tr><td>F6</td><td><b>临时文件堆积</b></td>
+<td><code>Temporary\FeaturepatMatch_N.xml</code> 按序号递增不清理；<code>TempImage</code>/<code>ImageTemp</code> 随机目录累积</td>
+<td>实测 <code>_0.._15</code> 连续存在；<code>TempImage\OU3LNB8Q</code>；<span class="unk">未知</span> 是否有清理策略与上限</td>
+<td><span class="obs">观察到</span>（堆积事实）/ <span class="unk">未知</span>（清理机制）</td></tr>
+
+<tr><td>F7</td><td><b>编码/本地化不一致</b></td>
+<td><code>paraCfg.xml</code> 声明 <code>encoding='GBK'</code>，注释为 GBK 中文；同目录其它配置均为 UTF-8</td>
+<td><code>paraCfg.xml</code> 首行 + 注释乱码（以 UTF-8 读则显示为乱码，以 GBK 读正常）；<code>ErrorCode\zh-cn.xaml</code> 与 <code>en-us.xaml</code> 为 XAML 资源</td>
+<td><span class="obs">观察到</span></td></tr>
+</table>
+<div class="warn">
+<b>F7 的实操提醒</b>：读 <code>paraCfg.xml</code> 必须用 GBK（<code>[Text.Encoding]::GetEncoding(936)</code>），
+用 UTF-8 读会得到乱码 —— 本次取证中该文件注释区确实呈现为乱码，是<b>文件本身 GBK</b>，不是读取错误。
+<b>不能</b>据此判断"原厂文件损坏"。
+</div>
+
+<h3>1.5 崩溃报告格式逐字段 <span class="obs">观察到</span></h3>
+<p>文件名：<code>&lt;进程名&gt;-&lt;yyyyMMdd&gt;-&lt;HHmmss&gt;-&lt;4位序号&gt;.txt</code>（例：<code>VisionMaster.exe-20260520-104419-0446.txt</code>）。<br>
+内容结构（前 12 行原文）：</p>
+<code class="block">ModuleProxy                     2025-03-31 15:09:51
+PlatformManager                 2025-04-23 19:47:22
+clr                             2025-03-20 07:09:23
+iMVS-6000PlatformSDK            2025-04-29 13:55:54
+
+ExceptionCode : STACK_OVERFLOW
+
+CallStack:
+
+Frame 0: ModuleProxy.dll!  VM_PROXY_SetSDKCallBack
+
+Frame 1: ModuleProxy.dll!  VM_PROXY_SetSDKCallBack
+...</code>
+<table>
+<tr><th>区段</th><th>含义</th><th>价值</th></tr>
+<tr><td>头部 4 行 <code>模块名\t\t\t时间</code></td><td>崩溃瞬间各模块的<b>编译/加载时间戳</b>（不是发生时间）</td><td>可直接判断"用户是否混用了不同版本的 DLL"（时间戳不一致即为混装）</td></tr>
+<tr><td><code>ExceptionCode :</code></td><td>异常类别（本机实例为 <code>STACK_OVERFLOW</code>）</td><td>栈溢出 ≠ 空引用，定位方向完全不同</td></tr>
+<tr><td><code>CallStack:</code> + <code>Frame N: dll! 符号</code></td><td><b>纯文本调用栈，无需 pdb 与调试器</b></td><td>运维/现场可直接回传；这是最有价值的差异点</td></tr>
+</table>
+<div class="note">
+<b>对本方的直接借鉴</b>：我方现有日志体系（<code>LogInfo/LogError</code> + 文件）覆盖"运行期事件"，但<b>没有</b>"崩溃时落一份可读文本栈"的机制。
+建议：<code>AppDomain.CurrentDomain.UnhandledException</code> + <code>Dispatcher.UnhandledException</code> + <code>TaskScheduler.UnobservedTaskException</code> 三处统一写一份
+<code>&lt;exe&gt;-yyyyMMdd-HHmmss-####.txt</code>（含程序集版本表 + 异常类型 + <code>Exception.StackTrace</code> 文本）。<b>不需要</b>生成 <code>.dmp</code>。
+</div>
+
+<h3>1.6 自动加载方案的四个字段 <span class="obs">观察到</span></h3>
+<code class="block">&lt;?xml version="1.0" encoding="UTF-8" standalone="yes" ?&gt;
+&lt;Root&gt;
+    &lt;AutoLoadSolutionInfo&gt;
+        &lt;Solution IsAutoLoad="0" Path="" Password="" SoluExecuteState="1" /&gt;
+    &lt;/AutoLoadSolutionInfo&gt;
+&lt;/Root&gt;</code>
+<table>
+<tr><th>字段</th><th>本机值</th><th>含义</th><th>为什么值得学</th></tr>
+<tr><td><code>IsAutoLoad</code></td><td><code>0</code></td><td>启动是否自动加载方案</td><td>开关与路径分离，关掉不必清空路径</td></tr>
+<tr><td><code>Path</code></td><td>空</td><td>方案文件路径</td><td>可为空 = 未配置</td></tr>
+<tr><td><code>Password</code></td><td>空</td><td><b>方案密码</b></td><td><b>关键</b>：原厂方案可带密码，自动加载必须能提供。我方方案格式若无密码概念，则"开机自动运行"场景无法对齐</td></tr>
+<tr><td><code>SoluExecuteState</code></td><td><code>1</code></td><td>加载后是否直接执行</td><td>把"加载"与"运行"分开配置 —— 这正是我方 <code>AGENTS.md</code> 里"运行/停止不进撤销历史、加载 ≠ 执行"的同一思想</td></tr>
+</table>
+
+<h3>1.7 起始页 / 方案版本 / 恢复回收 的文件级机制 <span class="obs">观察到</span></h3>
+<table>
+<tr><th>机制</th><th>落点</th><th>证据</th><th>状态</th></tr>
+<tr><td><b>起始页</b>（默认打开什么）</td><td><code>Server\AutoLoadSolution.cfg</code> 的 <code>Path</code></td><td>Path 为空 = 无自动方案；配合 UI 侧的最近方案列表（<span class="unk">未知</span> 存储位置，见 §3.1）</td><td>部分<br>（自动加载路径已定，最近列表未定位）</td></tr>
+<tr><td><b>方案默认保存目录</b></td><td><code>App.ini</code> → <code>SaveSol</code></td><td>本机 <code>C:\Users\houzhongjie\Desktop</code></td><td><b>已定位</b></td></tr>
+<tr><td><b>方案版本</b></td><td><code>VersionInfo.config</code>（6 键）<br>+ 方案文件内部版本（<span class="unk">未知</span> 字段名）</td><td>产品/算法/驱动的版本键已确认；<b>方案文件自身的格式版本字段未取证</b></td><td>部分</td></tr>
+<tr><td><b>恢复回收</b>（崩溃后恢复）</td><td><code>Temporary\</code>、<code>TempImage\</code>、<code>ImageTemp\</code>、<code>ProjectParam\Designer\</code></td><td>临时文件<b>按序号/随机名累积不清理</b></td><td><span class="unk">未知</span> 是否有"下次启动恢复未保存方案"的机制（未见对应配置文件）</td></tr>
+<tr><td><b>错误码文案</b></td><td><code>ErrorCode\zh-cn.xaml</code> 等 3 语言</td><td>250–283 KB/语言</td><td><b>已定位</b></td></tr>
+<tr><td><b>UI 布局/映射</b></td><td><code>UiMapFile\&lt;实例号&gt;\</code></td><td>实例号 <code>32616</code> 与 <code>ImageTemp\VM32616ImgSrcTemp</code> 同号</td><td><b>已定位</b></td></tr>
+</table>
+
+<h2>2 原件 vs 我方对照</h2>
+<table>
+<tr><th style="width:22%">原件事实</th><th style="width:24%">我方现状</th><th>结论 / 动作</th><th style="width:9%">优先级</th></tr>
+<tr><td>版本分 6 键（产品/2D SDK/深度学习/Patch×2/驱动），且允许空值表示"未安装"</td><td><code>version.json</code> 单一真源（rule-022），无"算法 SDK 版本"与"能力缺失"表达</td><td><b>值得借鉴</b>：在 <code>version.json</code> 里增加"可选组件版本"段（每项可空），用于<b>能力自检</b>而非产品版本。需用户确认是否纳入（涉及 rule-022 单一真源边界）</td><td>P2（待确认）</td></tr>
+
+<tr><td>启动自动加载方案含 <code>Password</code> + <code>SoluExecuteState</code></td><td>方案无密码概念；加载与运行已分离</td><td><b>"加载≠运行"我方已对齐</b>；<b>方案密码</b>我方无 → 若要做"开机自动生产"需先定方案加密与密码存储位置。<span class="unk">未知</span> 是否在需求内</td><td>P2（待确认）</td></tr>
+
+<tr><td>崩溃留纯文本栈 <code>&lt;exe&gt;-时间-序号.txt</code></td><td>有日志（<code>LogError</code>），无崩溃文本栈落盘</td><td><b>建议实施</b>：三处未处理异常钩子写文本栈（版本表 + 异常类型 + StackTrace）。成本低、现场收益高。<b>本批不实施</b></td><td>P1</td></tr>
+
+<tr><td>模块不可见由 <code>ToolItemInfo.xml</code> 决定（F2）</td><td>插件扫描 + <code>ToolAttribute</code></td><td>我方形同"一次决定"，反例风险低；但需确认<b>插件加载失败时是否静默消失</b>（若是，则比原件的"明确不下发"更差）</td><td>P2（专项确认）</td></tr>
+
+<tr><td>临时文件按序号无限累积（<code>FeaturepatMatch_N.xml</code>）</td><td>我方临时文件策略<b>未核对</b></td><td><b>反例</b>：不要学。应在启动时清理超期临时文件并设上限</td><td>P2</td></tr>
+
+<tr><td><code>paraCfg.xml</code> 用 GBK</td><td>我方 rule-013 统一 UTF-8 无 BOM</td><td><b>不学</b>。仅当<b>读取原件</b>该文件时用 GBK</td><td>—</td></tr>
+
+<tr><td><code>ManageModuleMaxCount=1024</code></td><td>无对应上限</td><td><span class="unk">未知</span> 我方是否需要。当前工具规模 24，暂不需要</td><td>P3</td></tr>
+
+<tr><td>日志目录写在安装目录内（Program Files）</td><td>我方日志落点见另一份文档</td><td>原件这样做的代价是<b>需要管理员权限写 Program Files</b>（UAC/虚拟化风险）。我方应避免</td><td>P2</td></tr>
+</table>
+
+<h2>3 待补证据</h2>
+<h3>3.1 需更深取证（配置/注册表级）</h3>
+<table>
+<tr><th>编号</th><th>缺口</th><th>阻塞什么</th></tr>
+<tr><td>A1</td><td>"最近打开的方案"列表存储位置（未见配置文件；可能在 <code>data\options</code> 或注册表）</td><td>起始页机制无法完整复原</td></tr>
+<tr><td>A2</td><td>方案文件内的"格式版本"字段名与取值</td><td>方案版本迁移/兼容判定</td></tr>
+<tr><td>A3</td><td>是否有"崩溃后恢复未保存方案"机制（临时文件是否被读取）</td><td>恢复回收结论</td></tr>
+<tr><td>A4</td><td><code>VisionMaster.exe.config</code> 全文（本批只确认尺寸与 <code>_temp</code> 副本存在）</td><td>绑定重定向/运行时设置</td></tr>
+<tr><td>A5</td><td><code>ManageModuleMaxCount</code> 超限行为</td><td>规模上限评估</td></tr>
+</table>
+<h3>3.2 需实机验证（必须启动原厂程序，本批禁止）</h3>
+<table>
+<tr><th>编号</th><th>验证项</th><th>方法</th></tr>
+<tr><td>B1</td><td><b>真实启动阶段顺序</b></td><td>启动后按时间戳排序各子系统日志首行，得到实际阶段序（本批 §1.2 全部为推断）</td></tr>
+<tr><td>B2</td><td>F2 是否确实不可见</td><td>打开工具箱搜 <code>IMVSMarkInspModu</code>（非 VA 版）</td></tr>
+<tr><td>B3</td><td>F3 授权失败的提示文案与降级范围</td><td>拔狗/停软授权后启动</td></tr>
+<tr><td>B4</td><td>F4 崩溃报告的生成时机（是否阻塞退出）</td><td>复现一次崩溃观察</td></tr>
+<tr><td>B5</td><td>方案密码的实际作用（打开时校验？执行时校验？）</td><td>设密码 → 自动加载</td></tr>
+</table>
+<h3>3.3 需厂商文档</h3>
+<table><tr><th>编号</th><th>缺口</th></tr>
+<tr><td>C1</td><td>授权/许可模型说明（三种安装脚本对应什么授权形态）</td></tr>
+<tr><td>C2</td><td><code>VersionInfo.config</code> 各键的语义定义（尤其 <code>MVS_STD</code>/<code>MVS_Drive</code> 归属）</td></tr>
+<tr><td>C3</td><td>崩溃报告格式的官方说明（是否可配置输出目录）</td></tr>
+</table>
+
+<h2>4 自验命令（PowerShell 5.1，只读）</h2>
+<code class="block">$a="D:\Program Files\VisionMaster4.4.0\Applications"
+
+# ① 可执行入口
+Get-ChildItem $a -Filter *.exe -File | Select-Object Name,Length
+Get-ChildItem $a -Filter *.exe -Recurse -Depth 2 | Select-Object FullName
+
+# ② 版本键（期望 6 个有效 + 2 个空 Patch + 1 个空 DeepLearning）
+[xml]$v=[IO.File]::ReadAllText("$a\VersionInfo.config",[Text.Encoding]::UTF8)
+$v.VersionInfos.VersionInfo | %{ "{0,-32} = '{1}'" -f $_.Key,$_.Value }
+
+# ③ 自动加载方案（期望 IsAutoLoad=0 Path='' Password='' SoluExecuteState=1）
+[xml]$s=[IO.File]::ReadAllText("$a\Server\AutoLoadSolution.cfg",[Text.Encoding]::UTF8)
+$s.Root.AutoLoadSolutionInfo.Solution | Format-List
+
+# ④ 模块数上限
+Get-Content "$a\Server\DynamicParameter.ini" -Encoding UTF8      # ManageModuleMaxCount = 1024
+
+# ⑤ 崩溃报告（期望存在 VisionMaster.exe-*.txt）
+Get-ChildItem $a -Filter "*.exe-*.txt" -File | Select-Object Name,Length
+
+# ⑥ GBK 文件（必须用 936 读，否则乱码）
+[IO.File]::ReadAllText("$a\paraCfg.xml",[Text.Encoding]::GetEncoding(936)) |
+  Select-String -Pattern "<root>|GPO1" -Context 0,0
+
+# ⑦ 临时文件堆积（期望 FeaturepatMatch_N 连续编号）
+Get-ChildItem "$a\Temporary" -File | Measure-Object
+Get-ChildItem "$a\Temporary" -File | Select-Object -First 5 Name,Length</code>
+
+<h2>5 边界声明</h2>
+<ul>
+<li><b>未启动</b> <code>VisionMaster.exe</code>（本批任务约束）。因此 <b>§1.2 启动阶段顺序全部为结构推断</b>，已在正文标注，<b>不得</b>当作已验证时序引用。</li>
+<li><b>未写注册表</b>、<b>未改安装目录任何文件</b>（全程只读 <code>ReadAllText</code> / <code>Get-ChildItem</code> / <code>Get-FileHash</code>）。</li>
+<li><b>未改动</b> <code>src/</code>、<code>tools/</code>、<code>tests/</code>、其它 evidence 文件；本批只新增本文件。</li>
+<li><b>未执行</b> <code>git commit</code> / <code>git push</code>。</li>
+<li><b>未做</b> 反编译；组件职责由目录名、文件名、日志子系统名推断，已在表中标注 <span class="inf">推断</span>。未读取的目录（如 <code>EncRuntime</code>、<code>3rdLib</code>、<code>platforms</code>）内容未作任何描述。</li>
+<li>F1–F7 中仅 F1/F2/F3/F4/F7 有直接文件证据；<b>F5（超限行为）、F6（清理机制）</b>的<b>行为</b>部分为 <span class="unk">未知</span>，未编造。</li>
+<li>本文件与 <code>VM日志落点保留与文件级机制-20261105.html</code> 互补：本文件讲"什么时候读什么"，那份讲"什么时候写什么、写多少、留多久"。</li>
+</ul>
+
+<footer>
+VM 应用层 · 启动时序与失败表现矩阵 · 2026-11-05 · 只读取证（未启动原厂程序）<br>
+关联：<code>VM日志落点保留与文件级机制-20261105.html</code>、<code>VM工具逆向批次R4/R5</code>（F1 深度学习未安装的三方印证）
+</footer>
+</body>
+</html>

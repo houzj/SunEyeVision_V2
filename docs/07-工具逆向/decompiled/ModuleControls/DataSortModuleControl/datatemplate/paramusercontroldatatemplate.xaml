@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:DataSortModuleControl">
+  <DataTemplate x:Key="DataSortParam">
+    <local:DataSortParam />
+  </DataTemplate>
+  <DataTemplate x:Key="DataSortConfig">
+    <local:DataSortConfig />
+  </DataTemplate>
+</ResourceDictionary>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="360" viewBox="0 0 860 360">
+<rect width="860" height="360" fill="#101827"/>
+<rect x="20" y="20" width="820" height="54" rx="8" fill="#1e3a5f"/>
+<text x="42" y="55" fill="#ffffff" font-size="22" font-family="Segoe UI,Microsoft YaHei">单点映射对位</text>
+<text x="650" y="53" fill="#b8d7ff" font-size="14" font-family="Segoe UI,Microsoft YaHei">pending</text>
+<rect x="20" y="92" width="250" height="240" rx="8" fill="#172235" stroke="#6aa8ff"/>
+<text x="40" y="125" fill="#d9e9ff" font-size="17" font-family="Segoe UI,Microsoft YaHei">Tab / host · result-view</text>
+<text x="40" y="160" fill="#9fb9d8" font-size="14" font-family="Segoe UI,Microsoft YaHei">controls: 24</text>
+<text x="40" y="190" fill="#9fb9d8" font-size="14" font-family="Segoe UI,Microsoft YaHei">parameters: 2</text>
+<text x="40" y="220" fill="#9fb9d8" font-size="14" font-family="Segoe UI,Microsoft YaHei">inputs / outputs: 10 / 8</text>
+<text x="40" y="262" fill="#9fb9d8" font-size="13" font-family="Segoe UI,Microsoft YaHei">status: pending</text>
+<rect x="300" y="92" width="540" height="240" rx="8" fill="#2b1c23" stroke="#d49a66"/>
+<text x="325" y="122" fill="#ffd9b0" font-size="18" font-family="Segoe UI,Microsoft YaHei">PENDING 原厂 UI 预览</text>
+<text x="325" y="145" fill="#f2c9a4" font-size="14" font-family="Segoe UI,Microsoft YaHei">RadioSelecter: InputMode</text>
+<text x="325" y="167" fill="#f2c9a4" font-size="14" font-family="Segoe UI,Microsoft YaHei">ButtonSelecter: ObjImagePoint</text>
+<text x="325" y="189" fill="#f2c9a4" font-size="14" font-family="Segoe UI,Microsoft YaHei">ButtonSelecter: ObjImagePointX</text>
+<text x="325" y="211" fill="#f2c9a4" font-size="14" font-family="Segoe UI,Microsoft YaHei">ButtonSelecter: ObjImagePointY</text>
+<text x="325" y="233" fill="#f2c9a4" font-size="14" font-family="Segoe UI,Microsoft YaHei">ButtonSelecter: ObjImagePointA</text>
+<text x="325" y="255" fill="#f2c9a4" font-size="14" font-family="Segoe UI,Microsoft YaHei">ButtonSelecter: TarImagePoint</text>
+<text x="325" y="277" fill="#f2c9a4" font-size="14" font-family="Segoe UI,Microsoft YaHei">ButtonSelecter: TarImagePointX</text>
+<text x="325" y="299" fill="#f2c9a4" font-size="14" font-family="Segoe UI,Microsoft YaHei">ButtonSelecter: TarImagePointY</text>
+<text x="325" y="320" fill="#f2c9a4" font-size="12" font-family="Segoe UI,Microsoft YaHei">完整绑定/主题/运行时尺寸仍按 algorithm-semantics.md 取证</text>
+</svg>

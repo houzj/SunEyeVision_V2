@@ -1,0 +1,29 @@
+{
+  "stableToolId": "imvsnimagecalibmodu",
+  "originalPlugin": "IMVSNImageCalibModu",
+  "displayName": "N图像标定",
+  "originalCategory": "Calibration",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNImageCalibModu",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "resourceCount": 6,
+  "parameterCount": 3,
+  "inputCount": 5,
+  "outputCount": 33,
+  "uiControlCount": 34,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ],
+  "sourceReports": [
+    "docs/plugins/N-IMAGE-CALIBRATION.md",
+    "docs/plugins/N-IMAGE-INPUT-ORDER-SOURCE-AUDIT.md"
+  ],
+  "note": "N图像参数、输入顺序、保留结果和自审证据已有专项记录。"
+}

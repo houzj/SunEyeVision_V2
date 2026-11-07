@@ -1,0 +1,120 @@
+{
+  "controls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "OutputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FilterType"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelHeight"
+    },
+    {
+      "type": "Integer",
+      "name": "GaussKernelSize"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangEdegThreshold"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZoneAnnular"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvsimagefiltermodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageFilterModu\\IMVSImageFilterModu.xml",
+      "sha256": "4b27be13eaf04a56e92364b3712c1ef63afa441afea28bf276f504c1381733f3",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageFilterModu\\IMVSImageFilterModuAlgorithm.xml",
+      "sha256": "82ab98a80cbc2f0e807ce430174ef634ae5a1088b96a6ef64ef29cbd4b7ca55d",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageFilterModu\\IMVSImageFilterModuAlgorithmTab.xml",
+      "sha256": "10f0cc4d88bdb8b487fe9703191f3b0c728abae1f4e63ee77e4fcb73bf8bca41",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageFilterModu\\IMVSImageFilterModuCs.xml",
+      "sha256": "616f40d7ccd259bcd23a3199213f27ffc50314de367652239c7089b6c340d3f5",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageFilterModu\\IMVSImageFilterModuDisplay.xml",
+      "sha256": "86ef93ca21cf4af0257d520b5bfb218044035f34f721a5d7e443b831dc5eaf1d",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageFilterModu\\ToolItemInfo.xml",
+      "sha256": "f7bc0b00b91aae955aff77c3773906a5bcac2c0f78ee32ae407847baa1b7a48d",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "图像滤波",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

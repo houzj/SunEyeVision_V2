@@ -1,0 +1,38 @@
+{
+  "stableToolId": "lightmodule",
+  "originalPlugin": "LightModule",
+  "displayName": "光源",
+  "originalCategory": "Collection",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\LightModule",
+  "uiCategory": "image-roi",
+  "priority": "P1",
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "resourceCount": 6,
+  "parameterCount": 32,
+  "inputCount": 7,
+  "outputCount": 26,
+  "uiControlCount": 58,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [
+    "docs/plugins/LIGHT.md",
+    "docs/plugins/light-evidence.json",
+    "docs/plugins/light-managed-evidence.json"
+  ],
+  "managedMembers": [],
+  "nativeFunctions": [
+    "Process",
+    "ProcessAlg",
+    "ProcessOutput",
+    "DeInit",
+    "DestroyModule"
+  ],
+  "runtimeObservations": [],
+  "unknowns": [
+    "Process/ProcessAlg/ProcessOutput 方法体与实际调用顺序未恢复",
+    "图像/ROI 输入、结果集合及失败语义未恢复",
+    "保存恢复、跨轮缓存和释放所有权未恢复",
+    "未运行原厂 VM、设备或 DLL"
+  ],
+  "note": "声明级/专项证据已补齐；原生执行、算法与释放链仍未知。"
+}

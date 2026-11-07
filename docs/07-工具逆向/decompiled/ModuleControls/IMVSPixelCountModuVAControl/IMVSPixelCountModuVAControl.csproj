@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>IMVSPixelCountModuVAControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="datatemplate\paramusercontroldatatemplate.xaml" />
+    <Page Remove="IMVSPixelCountModuVAControl.UI\RangeConfigListPanel.xaml" />
+    <Page Remove="themes\generic.xaml" />
+    <Page Include="datatemplate\paramusercontroldatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="datatemplate/paramusercontroldatatemplate.xaml" />
+    <Page Include="IMVSPixelCountModuVAControl.UI\RangeConfigListPanel.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ui/rangeconfiglistpanel.xaml" />
+    <Page Include="themes\generic.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="themes/generic.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Apps.XmlParser" />
+    <Reference Include="VMControls.Interface" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="VM.PlatformSDKCS" />
+    <Reference Include="VM.Xml" />
+    <Reference Include="Mvvm" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="VM.Controls" />
+    <Reference Include="Apps.UIHelper" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,72 @@
+{
+  "toolId": "branchmodule-std",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchModule_STD\\BranchModule_STD.xml",
+      "sha256": "db4179ded7075902bfedfb1e2bc385801c0d7202f986e784ef438629a5fab068",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchModule_STD\\BranchModule_STDAlgorithm.xml",
+      "sha256": "428d9e140d51100e4a7c7d785f01f7e1d954b424f6ed631721e40d1b25ab9e91",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchModule_STD\\BranchModule_STDAlgorithmTab.xml",
+      "sha256": "1c990c3c7751e60bfb290375bf7b25057063af11a24f18a6fa85d9c7b259f517",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchModule_STD\\BranchModule_STDCs.xml",
+      "sha256": "8d26a02a0535bd79b63fcd22c32006c7c8b50c53dc4f0cb318287d9ecb011fe3",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchModule_STD\\BranchModule_STDDisplay.xml",
+      "sha256": "964a421a48b315ade80be6bff084d9c3252fead6ea9238f6ebbbfe54b3bc732c",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\BranchModule_STD\\ToolItemInfo.xml",
+      "sha256": "aa914ba80064936b1da3f90a266a3e32ec2d1694369ff393063e1948f282d280",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "ButtonSelecter",
+      "name": "ConditionInput"
+    },
+    {
+      "type": "RadioSelecter_Branch",
+      "name": "IndexUserSet"
+    },
+    {
+      "type": "HeadBar",
+      "name": "ValueIndexHead"
+    },
+    {
+      "type": "HeadBar",
+      "name": "BitIndexHead"
+    },
+    {
+      "type": "ListParam",
+      "name": "ModuleInfoList"
+    }
+  ],
+  "sharedUiGroups": [
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

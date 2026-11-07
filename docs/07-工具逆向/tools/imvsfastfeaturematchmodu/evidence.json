@@ -1,0 +1,98 @@
+{
+    "stableToolId":  "imvsfastfeaturematchmodu",
+    "originalPlugin":  "IMVSFastFeatureMatchModu",
+    "displayName":  "快速匹配",
+    "originalCategory":  "Location",
+    "originalSourcePath":  "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSFastFeatureMatchModu",
+    "uiCategory":  "result-view",
+    "priority":  "P1",
+    "status":  "source-partial",
+    "evidenceState":  "source-partial",
+    "resourceCount":  6,
+    "parameterCount":  41,
+    "inputCount":  5,
+    "outputCount":  17,
+    "uiControlCount":  49,
+    "sourceInventory":  "docs/plugins/inventory.json",
+    "sourceEvidence":  [
+                           {
+                               "path":  "docs/07-工具逆向/decompiled/Managed/FastFeatureMatch/IMVSFastFeatureMatchModuCs/FastFeatureMatchParam.cs",
+                               "sha256":  "8E3168462DEC41FD21896D0D026C04BE1E4A70B614CE2D733A91E2CEBA447C44",
+                               "symbol":  "托管参数模型：参数名、类型、枚举定义（FastFeatureMatchParam）",
+                               "lines":  "1-867",
+                               "confirmable":  "托管层源码直读：可确认类结构、成员、枚举与调用关系；不含算法本体（算法在原生 \u003cPlugin\u003e.dll）"
+                           },
+                           {
+                               "path":  "docs/07-工具逆向/decompiled/Managed/FastFeatureMatch/IMVSFastFeatureMatchModuCs/FastFeatureMatchResult.cs",
+                               "sha256":  "83CCC7E873C6C8ABC59E5A455FD542432582260888F8855B9BDEE65E9A7BE99C",
+                               "symbol":  "托管结果模型：输出字段与状态（FastFeatureMatchResult）",
+                               "lines":  "1-117",
+                               "confirmable":  "托管层源码直读：可确认类结构、成员、枚举与调用关系；不含算法本体（算法在原生 \u003cPlugin\u003e.dll）"
+                           },
+                           {
+                               "path":  "docs/07-工具逆向/decompiled/Managed/FastFeatureMatch/IMVSFastFeatureMatchModuCs/FastFeatureMatchRoiManager.cs",
+                               "sha256":  "1112991CB53F1BC362172478493580D5114BCFB990944D38C3703D3AA24372B0",
+                               "symbol":  "托管 ROI 管理：ROI 形状与生命周期（FastFeatureMatchRoiManager）",
+                               "lines":  "1-54",
+                               "confirmable":  "托管层源码直读：可确认类结构、成员、枚举与调用关系；不含算法本体（算法在原生 \u003cPlugin\u003e.dll）"
+                           },
+                           {
+                               "path":  "docs/07-工具逆向/decompiled/Managed/FastFeatureMatch/IMVSFastFeatureMatchModuCs/IMVSFastFeatureMatchModelData.cs",
+                               "sha256":  "C87CB16DF0D5ACF8BF73FDAEBAD32CBD0B99018D2C86FA82D8A2AC1B42C68912",
+                               "symbol":  "托管模型数据：模板模型载体（IMVSFastFeatureMatchModelData）",
+                               "lines":  "1-15",
+                               "confirmable":  "托管层源码直读：可确认类结构、成员、枚举与调用关系；不含算法本体（算法在原生 \u003cPlugin\u003e.dll）"
+                           },
+                           {
+                               "path":  "docs/07-工具逆向/decompiled/Managed/FastFeatureMatch/IMVSFastFeatureMatchModuCs/IMVSFastFeatureMatchModuTool.cs",
+                               "sha256":  "4AEE498B1271D6CED992A94058B1B20A60587F6872905AEA92733104057469A6",
+                               "symbol":  "托管工具类：构造、ModuParams、ModuResult、Run(SyncSelfRun)（IMVSFastFeatureMatchModuTool）",
+                               "lines":  "1-265",
+                               "confirmable":  "托管层源码直读：可确认类结构、成员、枚举与调用关系；不含算法本体（算法在原生 \u003cPlugin\u003e.dll）"
+                           },
+                           {
+                               "path":  "docs/07-工具逆向/decompiled/Managed/FastFeatureMatch/IMVSFastFeatureMatchModuCs/IMVSFeatureMatchModelData.cs",
+                               "sha256":  "BB168A3480E3C11FA79FDBBF35DAC954F10E7EC5641D2F2D8131F806A77148F3",
+                               "symbol":  "托管模型数据：模板模型载体（IMVSFeatureMatchModelData）",
+                               "lines":  "1-10",
+                               "confirmable":  "托管层源码直读：可确认类结构、成员、枚举与调用关系；不含算法本体（算法在原生 \u003cPlugin\u003e.dll）"
+                           },
+                           {
+                               "path":  "docs/07-工具逆向/decompiled/Managed/FastFeatureMatch/IMVSFastFeatureMatchModuCs/IMVSFeatureMatchUIData.cs",
+                               "sha256":  "98CC0CF09B6C95C4ACB9D17593CDDFA7D7506E816C81F9427497ADCD76D5EEC2",
+                               "symbol":  "托管 UI 数据：界面共享状态（IMVSFeatureMatchUIData）",
+                               "lines":  "1-16",
+                               "confirmable":  "托管层源码直读：可确认类结构、成员、枚举与调用关系；不含算法本体（算法在原生 \u003cPlugin\u003e.dll）"
+                           },
+                           "docs/plugins/IMVSFASTFEATUREMATCHMODU-SOURCE-INVENTORY.md"
+                       ],
+    "managedMembers":  [
+                           "FastFeatureMatchParam",
+                           "FastFeatureMatchResult",
+                           "FastFeatureMatchRoiManager",
+                           "IMVSFastFeatureMatchModelData",
+                           "IMVSFastFeatureMatchModuTool",
+                           "IMVSFeatureMatchModelData",
+                           "IMVSFeatureMatchUIData"
+                       ],
+    "nativeFunctions":  [
+                            "Process",
+                            "ProcessAlg",
+                            "ProcessOutput",
+                            "DeInit",
+                            "DestroyModule"
+                        ],
+    "runtimeObservations":  [
+
+                            ],
+    "unknowns":  [
+                     "原生方法体和实际 SDK 调用顺序未恢复",
+                     "算法/阈值/排序及失败输出语义未恢复",
+                     "图像/ROI/Mask/结果所有权与释放顺序未恢复",
+                     "未运行原厂 VM 或设备宿主"
+                 ],
+    "note":  "托管 Run/结果桥、资源哈希、图像/ROI/Mask 与原生入口导出已索引；Process/ProcessAlg/Output 方法体、算法、释放与原厂运行仍未知。",
+    "sourceReports":  [
+                          "docs/plugins/IMVSFASTFEATUREMATCHMODU-SOURCE-INVENTORY.md"
+                      ]
+}

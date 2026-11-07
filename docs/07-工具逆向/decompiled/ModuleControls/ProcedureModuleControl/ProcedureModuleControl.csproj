@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>ProcedureModuleControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="ProcedureModuleControl\ParamsTabControl4Procedure.xaml" />
+    <Page Include="ProcedureModuleControl\ParamsTabControl4Procedure.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="window/paramstabcontrol4procedure.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="VMControls.WPF" />
+    <Reference Include="DynamicObjectConfigControl" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="Apps.PcUI" />
+    <Reference Include="VM.Controls" />
+    <Reference Include="Apps.XmlParser" />
+  </ItemGroup>
+</Project>

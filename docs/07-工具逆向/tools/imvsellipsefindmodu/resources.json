@@ -1,0 +1,156 @@
+{
+  "toolId": "imvsellipsefindmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSEllipseFindModu\\IMVSEllipseFindModu.xml",
+      "sha256": "cac29b79ea0df6e02f77825f4424bcfdbd123961b177a53cbd92932474f2dae7",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSEllipseFindModu\\IMVSEllipseFindModuAlgorithm.xml",
+      "sha256": "d023cafe625366b199de7c76252d9ae3deb3eda084628fb636305a09e825a7c9",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSEllipseFindModu\\IMVSEllipseFindModuAlgorithmTab.xml",
+      "sha256": "3a504f0d1dddebc4ef49a4369a6e043fdf2932336124da8d21905fa858ab3629",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSEllipseFindModu\\IMVSEllipseFindModuCs.xml",
+      "sha256": "c700add1d9c0bb67d0cfc61f35025aa4fa665ee22bece9d2522f25ed9a837e56",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSEllipseFindModu\\IMVSEllipseFindModuDisplay.xml",
+      "sha256": "b1bab90d34ce68abfed4c2eb6411c9dd46cd61f0aeca1706b9e0839c3d62e96c",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSEllipseFindModu\\ToolItemInfo.xml",
+      "sha256": "8299660ed8fec47b5bc63db95f52d13e377e8adabc1e918e69772efa226988c6",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangZoom"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EllipseFindMode"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePolarity"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeThresh"
+    },
+    {
+      "type": "Integer",
+      "name": "RaysNum"
+    },
+    {
+      "type": "Expand",
+      "name": null
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "RegionWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "FitErrorTolerance"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "EllipseFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "EllipseRingFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CenterPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "OutlinePoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "RoiSelectGroup",
+    "InheritWayGroup",
+    "ExternROITypeGroup",
+    "AssistGroup",
+    "TextDisplayGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

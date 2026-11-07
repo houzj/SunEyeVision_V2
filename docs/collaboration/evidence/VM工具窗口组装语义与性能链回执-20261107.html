@@ -1,0 +1,29 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>VM 工具窗口组装语义与性能链回执</title><style>body{font:15px/1.7 Arial,'Microsoft YaHei',sans-serif;max-width:1200px;margin:28px auto;color:#243447}table{border-collapse:collapse;width:100%}th,td{border:1px solid #aebdca;padding:9px;vertical-align:top}th{background:#eaf1f6}.ok{color:#176b3a}.warn{color:#9a5b00}.bad{color:#9b2020}code{background:#f2f4f6;padding:1px 4px}</style></head><body>
+<h1>VM 工具窗口组装语义与性能链回执</h1>
+<p><strong>日期：</strong>2026-11-07　<strong>性质：</strong>复用已有静态反编译、XML、资源与哈希材料；未启动原 VM/SDK，未把本方实现当作 VM 证据。</p>
+<h2>当前可定位的原件组装链</h2>
+<pre>工具入口选择
+  → 工具模块配置/呈现入口
+  → ModuleParam / AlgorithmTabRoot
+  → ParamsConfigControlBase
+  → ParamsTabUserControl
+  → ParamListView / ParamUserControl
+  → UserTempConverter + paramusercontroldatatemplate.xaml
+  → Tab 内容、GroupLinkItem 展开、底部命令与外部槽</pre>
+<p>该链来自 <code>docs/07-工具逆向/历史-REA逆向测试/FRAMEWORK-RECONSTRUCTION.md</code>；材料明确说明普通模块链与宽屏 <code>ParamsConfigWithRenderControlBase</code> 是不同宿主，不能把宽屏布局当作所有节点默认窗口。</p>
+<table><tr><th>阶段</th><th>现有证据</th><th>结论级别</th></tr>
+<tr><td>入口与呈现工厂</td><td><code>图像源与Blob编辑宿主原件窗证据-20261102.html</code> 记录图像源/Blob 通过 <code>IToolPresentationFactory → IToolSettingsView</code>；当前页明确生产宿主未接入完整原件链。</td><td class="warn">静态入口已知，跨主窗消费未闭合</td></tr>
+<tr><td>参数模型</td><td><code>FRAMEWORK-RECONSTRUCTION.md</code> 记录 <code>AlgorithmTabRoot</code> 承载页签、分组、外部参数、左右/底部命令、选中页、窗口尺寸、订阅与 ROI 桥接；<code>GroupLinkItem</code> 克隆公共组内容并设置父链。</td><td class="ok">静态职责已确认</td></tr>
+<tr><td>模板/资源</td><td><code>docs/07-工具逆向/decompiled/XmlUi/styles/paramusercontroldatatemplate.xaml</code> 记录 202 个参数类型到真实 DataTemplate 的分发；<code>decompiled/Groups/Group.xml</code> 展开 GroupLinkItem；<code>decompiled/XmlUi/ParamsTabUserControl.xaml</code> 是页签、内容和底部按钮骨架；资源身份与 SHA 汇总在 <code>decompiled/README.md</code>。</td><td class="ok">声明和资源来源已知</td></tr>
+<tr><td>动态显隐/绑定</td><td>工具逆向进度明确：XML/Group 中的 Triggers、父级 Category、CustomVisible 等参与显隐；但进度页明确不覆盖完整绑定、显隐、值联动和 ROI 交互。</td><td class="warn">静态局部，运行未确认</td></tr>
+<tr><td>首帧与切换</td><td>现有页面只有 XML 声明顺序、控件形态和默认值预览；不含算法执行、首帧计时或实例创建观测。</td><td class="bad">未确认</td></tr>
+<tr><td>关闭/释放</td><td>已有 ParamsTab 页面要求继续核对 Loaded/Closing；现有完整关闭/lease 代码摘录属于 independent-implementation，不能当 VM 原件链。</td><td class="bad">VM 运行未确认</td></tr>
+</table>
+<h2>程序集与资源身份</h2>
+<p><code>docs/07-工具逆向/decompiled/README.md</code> 固定版本为 VisionMaster 4.4.0 Build20250516@1555331。已登记：VM.Controls SHA <code>D36462C981F1DB26A377C84A7E0C7DE26F0F14EEF92E41A4ED0ACC24E4ADB222</code>；VMControls.WPF <code>99FFA401C8784472913AD43813D68A8A5577890C00E149506E3E5664FA61C97D</code>；VMBaseControls <code>D3ED7CE6CCA860AC89D671DC0FE4EE239A97063D18BED94D3AD97595D5D52555</code>；VM.PcUI <code>87D21004FD3807213247623212F93C5F15A784DA78C4BC2C890A7906C3C92B42</code>；Apps.XmlUI <code>639D0FB9DFCA81E38DF690E201B73874CE006D1361B689DDC6D5F41F7B0B04FD</code>；Apps.Style <code>8980A9964C8C530511AE79FE04CF19534DC14377CDC73FFE03F26921F7D0DB63</code>；Apps.ColorFun <code>22C277C4E2D384593265EE0D40830252F8317C60A7EBE782D31AEE426C5D8688</code>。README 同时注明第一批材料继承自其他逆向项目、未逐行复验；因此这些哈希固定来源身份，不自动证明所有调用语义。</p>
+<h2>性能链：能解释什么，不能解释什么</h2>
+<ul><li class="ok"><strong>可确认：</strong>参数 UI 是声明驱动的；类型到 DataTemplate 的映射、GroupLinkItem 的公共组展开、父链与 Trigger 声明会影响装配工作量。不同工具 XML 控件数量差异是可测的潜在线索。</li><li class="warn"><strong>可推断但未证：</strong>首次打开慢可能来自 XML/Group 展开、DataTemplate 选择、控件树构造和资源合并；只能作为待测假设，不能写成 VM 真实优化机制。</li><li class="bad"><strong>未知：</strong>是否一次性创建、同节点是否复用视图/模型、Tab 切换是否按需装配、跨节点是否先销毁旧树、是否存在缓存/异步/虚拟化、首帧瓶颈究竟在 XAML、绑定、资源还是算法，当前均无 VM 运行证据。</li></ul>
+<h2>对当前 SunEyeVision 设计的直接影响</h2>
+<ol><li>可以采用“入口→呈现工厂→AlgorithmTabRoot/模型→ParamsTabUserControl→DataTemplate/GroupLinkItem→绑定/命令”的适配检查框架。</li><li>不能预先实现或宣称缓存、异步、虚拟化、延迟加载；也不能因本方 Tab 复用设计而称 VM 同态。</li><li>现行架构文档可登记上述 VM 静态组装链、版本/SHA 和明确未知边界；删除旧模型或改变窗口所有权前仍需同版本构造/切换/关闭运行证据。</li></ol>
+<p><strong>下一项最小动态取证：</strong>固定一个普通 XML 工具和一个含 GroupLinkItem 工具，记录首次打开、同节点 Tab 切换、跨节点切换、返回原节点、关闭时的窗口/视图/模型实例数、Loaded/Unloaded、绑定回调、资源加载和首帧时间；不预设任何缓存或异步机制。</p>
+</body></html>

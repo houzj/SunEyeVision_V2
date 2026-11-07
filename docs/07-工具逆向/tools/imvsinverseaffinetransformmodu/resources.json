@@ -1,0 +1,112 @@
+{
+  "toolId": "imvsinverseaffinetransformmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSInverseAffineTransformModu\\IMVSInverseAffineTransformModu.xml",
+      "sha256": "906e310452b784a24002d097f4efe24978b23590fe3566d01bbac49a2333bf9c",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSInverseAffineTransformModu\\IMVSInverseAffineTransformModuAlgorithm.xml",
+      "sha256": "ba22af4d25f586be67eb1d05474b82912a136b854ac19eaf3f86f5d0e554962e",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSInverseAffineTransformModu\\IMVSInverseAffineTransformModuAlgorithmTab.xml",
+      "sha256": "828e7d7b54965564cf2cc9efdd2295b19f5fafccecf55dfe05cbf183000e6f99",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSInverseAffineTransformModu\\IMVSInverseAffineTransformModuCs.xml",
+      "sha256": "0f02ae1b10fa3856654cc501912331b208cd8e8e4b1a7aaa03b9aff4bc81468a",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSInverseAffineTransformModu\\IMVSInverseAffineTransformModuDisplay.xml",
+      "sha256": "5a841dbfa2f4904693bb56fa88d2b2b89f0fce032176e960211ba3dce473cdf7",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSInverseAffineTransformModu\\ToolItemInfo.xml",
+      "sha256": "6500719b81f00f66119e80ad32cf4527073f75e650946a42089e90e75ca85b92",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "RadioSelecter",
+      "name": "InputType"
+    },
+    {
+      "type": "EnumerationG",
+      "name": "ImageSourceBack"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ImageWidth"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ImageHeight"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "InheritWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Region"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROICenterX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROICenterY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROIWidth"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROIHeight"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ROIAngle"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

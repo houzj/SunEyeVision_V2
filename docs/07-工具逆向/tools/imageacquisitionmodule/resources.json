@@ -1,0 +1,74 @@
+{
+  "toolId": "imageacquisitionmodule",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageAcquisitionModule\\ImageAcquisitionModule.xml",
+      "sha256": "11b17cbb5af4132669ea6821984d4e470d322e3db0fab94446ab065b356f2bac",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageAcquisitionModule\\ImageAcquisitionModuleAlgorithm.xml",
+      "sha256": "10e821b9178936f63f0571da1751ddc14898a13621b1851c264bd8979860e455",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageAcquisitionModule\\ImageAcquisitionModuleAlgorithmTab.xml",
+      "sha256": "ecbb91e8c71995571bcbc0d2bba855164b818a4564fa44207fca969b5fc0fb02",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageAcquisitionModule\\ImageAcquisitionModuleCs.xml",
+      "sha256": "61e79eb2a668b2f93f69dead2c8d0a780ed8638c2697f09479a331edaa36132c",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageAcquisitionModule\\ImageAcquisitionModuleDisplay.xml",
+      "sha256": "15f05429e406f014862ac17fdfa4db4d381eb5be6c7dea14ba569650679d4599",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageAcquisitionModule\\ToolItemInfo.xml",
+      "sha256": "54688d1169a57e70115cb58a961119e42c687cf0a2c298f1ae3f9f2d12a64679",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "Enumeration",
+      "name": "ImageSourceType"
+    },
+    {
+      "type": "EnumerationCameraForAcq",
+      "name": "CameraID"
+    },
+    {
+      "type": "Integer",
+      "name": "Interval"
+    },
+    {
+      "type": "Integer",
+      "name": "ImageCount"
+    },
+    {
+      "type": "OpenFileForAcquisition",
+      "name": "ImageDir"
+    },
+    {
+      "type": "ImageConfig",
+      "name": "ImageConfig"
+    }
+  ],
+  "sharedUiGroups": [],
+  "status": "inventory-only"
+}

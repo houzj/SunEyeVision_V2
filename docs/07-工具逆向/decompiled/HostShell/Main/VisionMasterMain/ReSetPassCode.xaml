@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<controls:BaseWindow x:Class="VisionMasterMain.ReSetPassCode" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:input="clr-namespace:System.Windows.Input;assembly=PresentationCore" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" x:Name="ReSetPassWordWindow" WindowStartupLocation="CenterScreen" Title="{DynamicResource Lang_EditPassword}" Height="216" Width="370" xmlns:visionmastermain="clr-namespace:VisionMasterMain;assembly=VisionMasterMain">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Apps.Style;component/PasswordBoxStyle/PasswordBoxStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/BottomButtonStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/ToggleButtonStyle.xaml" />
+        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid>
+    <StackPanel Orientation="Vertical" VerticalAlignment="Top" Margin="46,20,0,0">
+      <StackPanel Orientation="Horizontal" Height="Auto" VerticalAlignment="Top">
+        <Label Content="{DynamicResource 旧密码}" Width="84" Height="30px" FontSize="14" Foreground="#FF666666" VerticalAlignment="Top" HorizontalAlignment="Left" />
+        <StackPanel Orientation="Vertical" VerticalAlignment="Top" Margin="8,0,0,0" Height="32">
+          <PasswordBox Name="adminOldCode" Style="{StaticResource textCodeBoxStyle}" Tag="{DynamicResource 请输入密码}" Width="182" input:InputMethod.IsInputMethodEnabled="False" PreviewTextInput="tb_PreviewTextInput" PreviewKeyDown="text_PreviewKeyDown">
+            <UIElement.CommandBindings>
+              <input:CommandBinding Command="ApplicationCommands.Paste" CanExecute="CommandBinding_CanExecute" />
+              <input:CommandBinding Command="ApplicationCommands.Copy" CanExecute="CommandBinding_CanExecute" />
+              <input:CommandBinding Command="ApplicationCommands.Cut" CanExecute="CommandBinding_CanExecute" />
+            </UIElement.CommandBindings>
+          </PasswordBox>
+          <TextBox Name="textBoxOldCode" Width="182" VerticalAlignment="Center" HorizontalAlignment="Left" VerticalContentAlignment="Center" Visibility="Collapsed" Style="{StaticResource textBoxStyle}" Tag="{DynamicResource 请输入密码}" input:InputMethod.IsInputMethodEnabled="False" Text="{Binding ElementName=adminOldCode, Path=Password, Mode=TwoWay}" PreviewTextInput="tb_PreviewTextInput" PreviewKeyDown="text_PreviewKeyDown">
+            <UIElement.CommandBindings>
+              <input:CommandBinding Command="ApplicationCommands.Paste" CanExecute="CommandBinding_CanExecute" />
+              <input:CommandBinding Command="ApplicationCommands.Copy" CanExecute="CommandBinding_CanExecute" />
+              <input:CommandBinding Command="ApplicationCommands.Cut" CanExecute="CommandBinding_CanExecute" />
+            </UIElement.CommandBindings>
+          </TextBox>
+        </StackPanel>
+        <ToggleButton Style="{StaticResource eyeToggleButton}" Width="40" Margin="-40,0,10,0" IsChecked="{Binding ElementName=ReSetPassWordWindow, Path=IfShowOldCode, Mode=TwoWay}" />
+      </StackPanel>
+      <TextBlock Name="oldCodeTips" Text="{DynamicResource 管理员旧密码有误}" Margin="138,0,0,0" Height="20" FontSize="12" Foreground="#FFFF1A1A" Visibility="Collapsed" />
+      <StackPanel Orientation="Horizontal" Height="Auto" VerticalAlignment="Top" Margin="0,6,0,0">
+        <Label Content="{DynamicResource 新密码}" Width="84" Height="30px" FontSize="14" Foreground="#FF666666" VerticalAlignment="Center" HorizontalAlignment="Left" />
+        <StackPanel Orientation="Vertical" VerticalAlignment="Top" Margin="8,0,0,0" Height="32">
+          <PasswordBox Name="adminNewCode" Style="{StaticResource textCodeBoxStyle}" Tag="{DynamicResource 请输入3~15位密码}" Width="182" input:InputMethod.IsInputMethodEnabled="False" PreviewTextInput="tb_PreviewTextInput" PreviewKeyDown="text_PreviewKeyDown">
+            <UIElement.CommandBindings>
+              <input:CommandBinding Command="ApplicationCommands.Paste" CanExecute="CommandBinding_CanExecute" />
+              <input:CommandBinding Command="ApplicationCommands.Copy" CanExecute="CommandBinding_CanExecute" />
+              <input:CommandBinding Command="ApplicationCommands.Cut" CanExecute="CommandBinding_CanExecute" />
+            </UIElement.CommandBindings>
+          </PasswordBox>
+          <TextBox Name="textBoxNewCode" Width="182" VerticalAlignment="Center" VerticalContentAlignment="Center" Visibility="Collapsed" Style="{StaticResource textBoxStyle}" Tag="{DynamicResource 请输入3~15位密码}" input:InputMethod.IsInputMethodEnabled="False" Text="{Binding ElementName=adminNewCode, Path=Password, Mode=TwoWay}" PreviewTextInput="tb_PreviewTextInput" PreviewKeyDown="text_PreviewKeyDown">
+            <UIElement.CommandBindings>
+              <input:CommandBinding Command="ApplicationCommands.Paste" CanExecute="CommandBinding_CanExecute" />
+              <input:CommandBinding Command="ApplicationCommands.Copy" CanExecute="CommandBinding_CanExecute" />
+              <input:CommandBinding Command="ApplicationCommands.Cut" CanExecute="CommandBinding_CanExecute" />
+            </UIElement.CommandBindings>
+          </TextBox>
+        </StackPanel>
+        <ToggleButton Style="{StaticResource eyeToggleButton}" Width="40" Margin="-40,0,10,0" IsChecked="{Binding ElementName=ReSetPassWordWindow, Path=IfShowNewCode, Mode=TwoWay}" />
+      </StackPanel>
+      <TextBlock Name="newCodeTips" Text="{DynamicResource 密码格式不正确}" Margin="138,0,0,0" Height="20" FontSize="12" Foreground="#FFFF1A1A" Visibility="Collapsed" />
+      <StackPanel Orientation="Horizontal" Height="Auto" VerticalAlignment="Top" Margin="0,6,0,0">
+        <Label Content="{DynamicResource 确认密码}" Width="84" Height="30px" FontSize="14" Foreground="#FF666666" VerticalAlignment="Center" HorizontalAlignment="Left" />
+        <StackPanel Orientation="Vertical" VerticalAlignment="Top" Margin="8,0,0,0" Height="32">
+          <PasswordBox Name="adminCheckCode" Style="{StaticResource textCodeBoxStyle}" Tag="{DynamicResource 请输入密码}" Width="182" input:InputMethod.IsInputMethodEnabled="False" PreviewTextInput="tb_PreviewTextInput" PreviewKeyDown="text_PreviewKeyDown">
+            <UIElement.CommandBindings>
+              <input:CommandBinding Command="ApplicationCommands.Paste" CanExecute="CommandBinding_CanExecute" />
+              <input:CommandBinding Command="ApplicationCommands.Copy" CanExecute="CommandBinding_CanExecute" />
+              <input:CommandBinding Command="ApplicationCommands.Cut" CanExecute="CommandBinding_CanExecute" />
+            </UIElement.CommandBindings>
+          </PasswordBox>
+          <TextBox Name="textBoxCheckCode" Width="182" VerticalAlignment="Center" VerticalContentAlignment="Center" Visibility="Collapsed" Style="{StaticResource textBoxStyle}" Tag="{DynamicResource 请输入密码}" input:InputMethod.IsInputMethodEnabled="False" Text="{Binding ElementName=adminCheckCode, Path=Password, Mode=TwoWay}" PreviewTextInput="tb_PreviewTextInput" PreviewKeyDown="text_PreviewKeyDown">
+            <UIElement.CommandBindings>
+              <input:CommandBinding Command="ApplicationCommands.Paste" CanExecute="CommandBinding_CanExecute" />
+              <input:CommandBinding Command="ApplicationCommands.Copy" CanExecute="CommandBinding_CanExecute" />
+              <input:CommandBinding Command="ApplicationCommands.Cut" CanExecute="CommandBinding_CanExecute" />
+            </UIElement.CommandBindings>
+          </TextBox>
+        </StackPanel>
+        <ToggleButton Style="{StaticResource eyeToggleButton}" Width="40" Margin="-40,0,10,0" IsChecked="{Binding ElementName=ReSetPassWordWindow, Path=IfShowCheckCode, Mode=TwoWay}" />
+      </StackPanel>
+      <TextBlock Name="checkCodeTips" Text="{DynamicResource 两次密码不一致}" Margin="138,0,0,0" Height="20" FontSize="12" Foreground="#FFFF1A1A" Visibility="Collapsed" />
+    </StackPanel>
+    <Border Height="33" Background="#E4E5E7" BorderThickness="1" BorderBrush="#B8B6B6" VerticalAlignment="Bottom">
+      <Button Content="{DynamicResource Confirm}" VerticalAlignment="Center" HorizontalAlignment="Right" Width="64" Height="24" Margin="0,0,13,0" Style="{DynamicResource Orange_ButtonStyle}" Click="Apply_OnClick" />
+    </Border>
+  </Grid>
+</controls:BaseWindow>

@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>SolutionModuleControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="SolutionModuleControl\ParamsTabControl4Solution.xaml" />
+    <Page Include="SolutionModuleControl\ParamsTabControl4Solution.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="window/paramstabcontrol4solution.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="VMControls.WPF" />
+    <Reference Include="VM.Utility" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="Apps.PcUI" />
+    <Reference Include="VM.Controls" />
+  </ItemGroup>
+</Project>

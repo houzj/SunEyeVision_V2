@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:Apps.XmlParser.ParamTab" xmlns:localAppsXmlUI="clr-namespace:Apps.XmlUI.ParamTab;assembly=Apps.XmlUI" xmlns:PCListView="clr-namespace:HikPcUI.ListView;assembly=VM.PcUI" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/Apps.Style;component/ComboBoxStyle/ListViewComboBoxStyle.xaml" />
+    <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+    <ResourceDictionary Source="/Apps.XmlUI;component/Styles/ParamUserControlDataTemplate.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+  <DataTemplate x:Key="Integer_SubAffine">
+    <PCListView:SliderArrange SubscribeTemplate="{StaticResource ButtonSelecter_sub}" SliderTickFrequency="{Binding IncValueA}" StartValue="{Binding CurValueA, Mode=TwoWay}" Minimum="{Binding MinValueA}" Maximum="{Binding MaxValueA}" IsSubscribeLeft="{Binding IsSubA}" SubscribeDataLeft="{Binding SubData}" IsSubscribeVisible="{Binding SubscribeVisibleA, Converter={StaticResource bool2VisibilityConverter}}">
+      <i:Interaction.Triggers>
+        <i:EventTrigger EventName="OnStartValueChange">
+          <i:InvokeCommandAction Command="{Binding ValueChangedCommand}" />
+        </i:EventTrigger>
+        <i:EventTrigger EventName="OnLeftTypeChange">
+          <i:InvokeCommandAction Command="{Binding TypeChangeCommand}" />
+        </i:EventTrigger>
+      </i:Interaction.Triggers>
+    </PCListView:SliderArrange>
+  </DataTemplate>
+  <DataTemplate x:Key="Integer">
+    <localAppsXmlUI:LeftRightControl FrameworkElement.Height="32" UIElement.IsEnabled="{Binding EnableA}">
+      <localAppsXmlUI:LeftRightControl.RightContent>
+        <ContentControl ContentTemplate="{StaticResource Integer_SubAffine}" Content="{Binding}" />
+      </localAppsXmlUI:LeftRightControl.RightContent>
+    </localAppsXmlUI:LeftRightControl>
+  </DataTemplate>
+</ResourceDictionary>

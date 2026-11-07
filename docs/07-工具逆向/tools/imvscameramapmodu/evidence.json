@@ -1,0 +1,28 @@
+{
+  "stableToolId": "imvscameramapmodu",
+  "originalPlugin": "IMVSCameraMapModu",
+  "displayName": "相机映射",
+  "originalCategory": "Calibration",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSCameraMapModu",
+  "uiCategory": "extension-panels",
+  "priority": "P3",
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "resourceCount": 6,
+  "parameterCount": 7,
+  "inputCount": 16,
+  "outputCount": 10,
+  "uiControlCount": 16,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ],
+  "sourceReports": [
+    "docs/plugins/CAMERA-MAPPING-B1-SOLVE-SOURCE.md"
+  ],
+  "note": "相机映射 ProcessAlg、算法包装和求解链已有专项入口。"
+}

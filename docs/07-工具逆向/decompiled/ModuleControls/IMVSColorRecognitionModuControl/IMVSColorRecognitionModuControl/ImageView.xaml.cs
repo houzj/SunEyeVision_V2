@@ -1,0 +1,29 @@
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
+
+namespace IMVSColorRecognitionModuControl;
+
+public partial class ImageView : UserControl, IComponentConnector
+{
+	public ImageView()
+	{
+		InitializeComponent();
+		LstItemPanel.Visibility = Visibility.Hidden;
+	}
+
+	private void Image_MouseLeave(object sender, MouseEventArgs e)
+	{
+		LstItemPanel.Visibility = Visibility.Hidden;
+	}
+
+	private void Image_MouseEnter(object sender, MouseEventArgs e)
+	{
+		LstItemPanel.Visibility = Visibility.Visible;
+	}
+
+	private void BtnDelete_Click(object sender, RoutedEventArgs e)
+	{
+	}
+}

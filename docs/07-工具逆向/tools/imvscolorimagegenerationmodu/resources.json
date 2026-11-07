@@ -1,0 +1,81 @@
+{
+  "stableToolId": "imvscolorimagegenerationmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu\\IMVSColorImageGenerationModu.xml",
+      "sha256": "366b1f3a9da27ca3707e61e7a859d4cd52e74d138c84d9efb51309606effb981",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu\\IMVSColorImageGenerationModuAlgorithm.xml",
+      "sha256": "c263668cb37557d3ac5c98152edb1b8d3716ea9b2a3d6aec43ba92d4be9910ca",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu\\IMVSColorImageGenerationModuAlgorithmTab.xml",
+      "sha256": "87f78094b7d0f9ee0629eb8429f97336c85fa3696dc7d4094d6a18eaadd856cb",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu\\IMVSColorImageGenerationModuCs.xml",
+      "sha256": "73e6153537936bf0d1329d7a13215d8bb3add0f1fc6f3f14ba9348eecf9ceee9",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu\\IMVSColorImageGenerationModuDisplay.xml",
+      "sha256": "965a23a18cdfe9fe973e9471aaa9780a83aec4efbcf656fdaa0afc0379aece70",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu\\ToolItemInfo.xml",
+      "sha256": "45e03a037af6ab8856f77a9c03c166b928281426010971e22a1baabfc609be6a",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "binaryEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu\\IMVSColorImageGenerationModu.dll",
+      "sha256": "e1fe81085eb71e1e2ff1b76431a73d48c25b98229b51192870c920cd14d4bd9f",
+      "kind": "native-PE",
+      "size": 224768
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu\\IMVSColorImageGenerationModuCpp.dll",
+      "sha256": "312f081e16148f237eafcb8b9cd1cced62429018c54861f31faec67c0b21a9e2",
+      "kind": "native-PE",
+      "size": 34304
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu\\IMVSColorImageGenerationModuCs.dll",
+      "sha256": "2d9b36cc649d2e1f68ea235788dc31c86616d442ff003069e7beceb970a219d3",
+      "kind": "managed-CLI",
+      "size": 8192
+    }
+  ],
+  "resourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu\\IMVSColorImageGenerationModu_NormalLogo.png",
+      "sha256": "cca86c7ddbfc66849f915b840387a73ce1077921924d0cde4fbdbdca24c131bd"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu\\IMVSColorImageGenerationModu_StateLogo.png",
+      "sha256": "0830c570b23534581db55449ec51904471b47ef6920ba3487688b6e19355c9ff"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu\\IMVSColorImageGenerationModuImageEnable.png",
+      "sha256": "8ebb59b115fbc49e30fea648407cf37bd50e443f81f239fb09e29b65d2aa8c81"
+    }
+  ],
+  "catalogIcon": "catalog/IMVSColorImageGenerationModuImageEnable.png",
+  "unknowns": [
+    "resource load order",
+    "runtime template styling",
+    "resource ownership"
+  ]
+}

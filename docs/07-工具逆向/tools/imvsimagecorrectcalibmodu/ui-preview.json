@@ -1,0 +1,64 @@
+{
+  "controls": [
+    {
+      "type": "OpenFileForCalibDialog",
+      "name": "CalibPath"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RefreshSignal"
+    },
+    {
+      "type": "Enumeration",
+      "name": "CorrectModel"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "image-roi",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P1",
+  "themeStates": "unknown",
+  "toolId": "imvsimagecorrectcalibmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageCorrectCalibModu\\IMVSImageCorrectCalibModu.xml",
+      "sha256": "526181b2af247a5db224c102691748a5b05fae8f3998bf5e780d2a620bf10cd0",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageCorrectCalibModu\\IMVSImageCorrectCalibModuAlgorithm.xml",
+      "sha256": "cf57112317628e9d128aaed9bb7b0496b02b0ce436ce05481f91454b719cb108",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageCorrectCalibModu\\IMVSImageCorrectCalibModuAlgorithmTab.xml",
+      "sha256": "f7e3f4b183fd26872f7663002d1f4b1f1b9d7719e5083c84494ff6a45e725116",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageCorrectCalibModu\\IMVSImageCorrectCalibModuCs.xml",
+      "sha256": "bdeb85dc97d114cca6c2367b169d1307e972b38355b12a45ee5e3bbf3f21f31f",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageCorrectCalibModu\\IMVSImageCorrectCalibModuDisplay.xml",
+      "sha256": "f1e2f19dde9091715efb33611764a8139440556a9a36f2b40d2221f63744cb3c",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageCorrectCalibModu\\ToolItemInfo.xml",
+      "sha256": "6493c5527117d8ec1a0350e7d9d1fd725d31419e54cc19d44ade352109fa7aa3",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "畸变校正",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

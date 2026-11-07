@@ -1,0 +1,120 @@
+{
+  "controls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "OutputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "MorphType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "MorphShape"
+    },
+    {
+      "type": "Integer",
+      "name": "MorphIterNum"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelHeight"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZoneAnnular"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvsimagemorphmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageMorphModu\\IMVSImageMorphModu.xml",
+      "sha256": "423dbec0fe84f068794cab3a1aae82df7dc13bbd2c8d8a597eefc20ca1bd689c",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageMorphModu\\IMVSImageMorphModuAlgorithm.xml",
+      "sha256": "2363c49a7114ad3f63833cb254aed180c41fd1c0100ecf4004fdf1742041e6fa",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageMorphModu\\IMVSImageMorphModuAlgorithmTab.xml",
+      "sha256": "3114392281f500531dd914ad56400d2e4d9e9d1bce721d30b5d3fe9d621aef07",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageMorphModu\\IMVSImageMorphModuCs.xml",
+      "sha256": "1c897e7ad7a554f3ee16de0a55ce18a4b087519d3def2cfb7a90f768aec0e80e",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageMorphModu\\IMVSImageMorphModuDisplay.xml",
+      "sha256": "3a197e18ac0058e1860dc8ff3670f77bdde465088dfe1487a69018d72fe1dff4",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageMorphModu\\ToolItemInfo.xml",
+      "sha256": "c4dbeb59b70e3992fa62f10bce604bad63684051ea90c4905c8900cd7af2bdad",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "形态学处理",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

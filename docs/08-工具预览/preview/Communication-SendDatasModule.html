@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>发送数据 · 调试窗预览</title>
+<!-- suneye:preview-level=control tool=senddatasmodule -->
+<style>:root{--win:#fff;--bar:#f2f3f5;--line:#dcdfe4;--text:#1d2129;--muted:#6b7280;--accent:#ff7900;--field:#fff;--bg:#e9ecf0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:12px/1.5 "Microsoft YaHei","Segoe UI",sans-serif}
+.pagewrap{max-width:1220px;margin:0 auto;padding:18px 16px 40px}
+.pagehead{font-size:12px;color:var(--muted);margin-bottom:10px}
+.pagehead a{color:#2563eb;text-decoration:none}
+.pagehead a:hover{text-decoration:underline}
+.win{background:var(--win);border:1px solid var(--line);border-radius:4px;box-shadow:0 4px 16px rgba(0,0,0,.10);display:flex;flex-direction:column;height:780px;overflow:hidden}
+.titlebar{height:32px;background:var(--bar);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:0 10px;flex:0 0 32px}
+.titlebar .nm{font-weight:700;font-size:13px}
+.titlebar .mod{color:var(--muted);font-size:11px}
+.titlebar .sp{flex:1}
+.titlebar .btns span{display:inline-block;width:24px;text-align:center;color:#555}
+.toolbar{height:42px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:6px;padding:0 10px;flex:0 0 42px}
+.toolbar button{height:26px;padding:0 12px;font-size:12px;border:1px solid #cfd3d8;background:#fbfbfc;border-radius:2px;cursor:default;font-family:inherit}
+.toolbar button .ico{width:15px;height:15px;vertical-align:-3px;margin-right:5px}
+.roibar .b .ico{width:14px;height:14px;vertical-align:-2px;margin-right:3px}
+.toolbar button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.toolbar .sep{width:1px;height:20px;background:var(--line);margin:0 6px}
+.toolbar .tag{font-size:11px;color:#8a5a00;background:#fff4e0;border:1px solid #ffd9a0;border-radius:10px;padding:1px 9px}
+.toolbar .hint{font-size:11px;color:var(--muted);margin-left:8px}
+.tabs{height:34px;background:#fafafc;border-bottom:1px solid var(--line);display:flex;align-items:stretch;flex:0 0 34px;padding-left:6px;overflow:hidden}
+.tabs .tab{display:flex;align-items:center;padding:0 16px;font-size:12px;color:#374151;border-bottom:2px solid transparent;white-space:nowrap}
+.tabs .tab.on{background:#fff;border-bottom-color:var(--accent);font-weight:600}
+.tabs .tab.na{color:#b0b4bb}
+.body{flex:1;display:flex;min-height:0}
+.col{display:flex;flex-direction:column;min-height:0}
+.col-left{width:330px;border-right:1px solid var(--line);background:#fff}
+.col-mid{flex:1;background:#f7f8fa;border-right:1px solid var(--line)}
+.col-right{width:330px;background:#fff}
+.sect{font-size:11px;font-weight:700;color:#4b5563;background:#f5f6f8;border-bottom:1px solid var(--line);padding:6px 10px;letter-spacing:.02em;display:flex;justify-content:space-between}
+.sect .cnt{font-weight:400;color:var(--muted)}
+.scroll{overflow:auto;flex:1;padding:6px 10px 12px}
+.grp{margin:10px 0 4px;font-size:11px;font-weight:700;color:#6b7280;border-bottom:1px dashed var(--line);padding-bottom:3px;display:flex;align-items:center;gap:6px}
+.grp .ic{color:var(--accent)}
+.grp .ty{font-weight:400;color:#9aa0a6;font-size:10px}
+.row{display:flex;align-items:center;gap:8px;min-height:26px;padding:1px 0}
+.row>label{flex:0 0 52%;text-align:right;color:#4b5563;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .ctl{flex:1;display:flex;align-items:center;gap:4px;min-width:0}
+.row select,.row input[type=text],.row input[type=number]{height:24px;width:100%;border:1px solid #cfd3d8;border-radius:2px;background:var(--field);font:12px/1 "Microsoft YaHei",sans-serif;padding:0 6px;color:var(--text)}
+.row select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,#777 50%),linear-gradient(135deg,#777 50%,transparent 50%);background-position:calc(100% - 12px) 10px,calc(100% - 8px) 10px;background-size:4px 4px,4px 4px;background-repeat:no-repeat;padding-right:22px}
+.row input[type=checkbox]{width:14px;height:14px;accent-color:var(--accent)}
+.row .btn{height:24px;flex:1;border:1px solid #cfd3d8;background:#fbfbfc;border-radius:2px;font:12px "Microsoft YaHei",sans-serif;color:#374151;padding:0 6px;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .btn.ell:after{content:"…";float:right;color:#888}
+.row .tild{color:#9aa0a6}
+.row .mini{flex:0 0 24px;height:24px;border:1px solid #cfd3d8;background:#fbfbfc;border-radius:2px;font:12px "Microsoft YaHei";color:#555;padding:0}
+.row .mini:hover{background:#f0f1f3}
+.row .swatch{width:14px;height:14px;border:1px solid #c9ccd1;background:linear-gradient(135deg,#ff7900,#3b82f6 60%,#22c55e);flex:0 0 14px}
+.row.disabled>label{color:#b0b4bb}
+.typechip{font-size:10px;color:#9aa0a6;border:1px solid #e3e6ea;border-radius:3px;padding:0 4px;flex:0 0 auto}
+.canvas{flex:1;display:flex;align-items:center;justify-content:center;padding:16px;background-image:linear-gradient(#eef0f3 1px,transparent 1px),linear-gradient(90deg,#eef0f3 1px,transparent 1px);background-size:20px 20px}
+.ph{max-width:420px;text-align:center;color:#8a9199;line-height:1.9;border:1px dashed #ccd2d9;border-radius:6px;padding:26px 22px;background:#fff}
+.ph b{color:#5f6771}
+.roibar{height:30px;border-top:1px solid var(--line);display:flex;align-items:center;gap:6px;padding:0 8px;background:#fbfbfc}
+.roibar .b{height:22px;padding:0 9px;border:1px solid #d5d9de;background:#fff;border-radius:2px;font-size:11px;color:#555;display:inline-flex;align-items:center}
+.statusbar{height:28px;border-top:1px solid var(--line);background:#f5f6f8;display:flex;align-items:center;gap:12px;padding:0 10px;font-size:11px;color:var(--muted);flex:0 0 28px}
+.statusbar .sp{flex:1}
+.statusbar a{color:#2563eb;text-decoration:none}
+.showrow{display:flex;align-items:center;gap:6px;min-height:22px;font-size:12px}
+.showrow .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.showrow .t2{font-size:10px;color:#9aa0a6;flex:0 0 auto}
+.showrow input{width:13px;height:13px;accent-color:var(--accent)}
+.showrow .swatch{width:13px;height:13px;border:1px solid #c9ccd1;background:linear-gradient(135deg,#ff7900,#3b82f6 60%,#22c55e);flex:0 0 13px}
+.outrow{display:flex;align-items:center;gap:6px;min-height:22px;font-size:12px}
+.outrow .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.outrow .t2{font-size:10px;color:#9aa0a6;flex:0 0 auto}
+.outrow input{width:13px;height:13px;accent-color:var(--accent)}
+.note{margin-top:14px;border-left:3px solid #f59e0b;background:#fffbeb;color:#78350f;font-size:12px;padding:10px 14px;border-radius:0 6px 6px 0}
+.note b{color:#92400e}
+.note ul{margin:6px 0 0;padding-left:20px}
+.note li{margin:2px 0}</style></head><body>
+<div class="pagewrap">
+<div class="pagehead"><a href="../index.html">&larr; 工具预览索引</a> &nbsp;·&nbsp; <a href="../../07-工具逆向/index.html">逆向证据库</a> &nbsp;·&nbsp; 卡片 <code>senddatasmodule</code></div>
+<div class="win">
+<div class="titlebar"><span class="nm">发送数据</span><span class="mod">SendDatasModule</span><span class="sp"></span><span class="btns"><span>&minus;</span><span>&#9633;</span><span>&times;</span></span></div>
+<div class="toolbar"><button class="primary"><img class="ico" src="../assets/icons/run.png" alt="">运行</button><button><img class="ico" src="../assets/icons/runbar.png" alt="">连续运行</button><button><img class="ico" src="../assets/icons/stop.png" alt="">停止</button><span class="sep"></span><button>确认</button><button>取消</button><span class="sep"></span><span class="tag">Communication</span><span class="hint">静态还原：控件形态与顺序按原件资源声明，不执行算法</span></div>
+<div class="tabs">
+<span class="tab on">Tab_Basic Params</span>
+<span class="tab na">ResultShow（归属未取证）</span>
+</div>
+<div class="body">
+<div class="col col-left">
+<div class="sect">参数<span class="cnt">控件 59 · 默认值 98</span></div>
+<div class="scroll">
+<div class="row"><label title="OutputType">OutputType</label><div class="ctl"><input type="radio" name="OutputType"><input type="radio" name="OutputType"></div></div>
+<div class="row"><label title="DataCenter">DataCenter</label><div class="ctl"><select><option></option></select></div></div>
+<div class="row"><label title="CommunicationModuleID">CommunicationModuleID</label><div class="ctl"><select><option></option></select></div></div>
+<div class="row"><label title="FunctionCode">FunctionCode</label><div class="ctl"><select><option>4</option></select></div></div>
+<div class="row"><label title="IODeviceID">IODeviceID</label><div class="ctl"><select><option></option></select></div></div>
+<div class="row"><label title="VisionDeviceType">VisionDeviceType</label><div class="ctl"><select><option>2</option></select></div></div>
+<div class="row"><label title="SendEventId">SendEventId</label><div class="ctl"><select><option>-1</option></select></div></div>
+<div class="row"><label title="IgnoreDuration">IgnoreDuration</label><div class="ctl"><input type="checkbox"></div></div>
+<div class="row"><label title="IgnoreErroneousDataEnable">IgnoreErroneousDataEnable</label><div class="ctl"><input type="checkbox"></div></div>
+<div class="row"><label title="HexSend">HexSend</label><div class="ctl"><input type="checkbox"></div></div>
+<div class="row"><label title="InputString_Comm">InputString_Comm</label><div class="ctl"><input type="text" value=""><button class="mini" title="选择绑定">&#8943;</button></div></div>
+<div class="row"><label title="EndEnable">EndEnable</label><div class="ctl"><input type="checkbox"></div></div>
+<div class="row"><label title="EndInfo">EndInfo</label><div class="ctl"><select><option></option></select></div></div>
+<div class="row"><label title="SplitEnable">SplitEnable</label><div class="ctl"><input type="checkbox"></div></div>
+<div class="row"><label title="SplitInfo">SplitInfo</label><div class="ctl"><select><option>,</option></select></div></div>
+<div class="row"><label title="IOSendData20">IOSendData20</label><div class="ctl"><input type="text" value=""><span class="typechip">IOSendData20</span></div></div>
+<div class="row"><label title="IOSendData16">IOSendData16</label><div class="ctl"><input type="text" value=""><span class="typechip">IOSendData16</span></div></div>
+<div class="row"><label title="IOSendData8">IOSendData8</label><div class="ctl"><input type="text" value="SendData1#SendData2#SendData3#SendData4#SendData5#SendData6#SendData7#SendData8"><span class="typechip">IOSendData8</span></div></div>
+<div class="row"><label title="IOSendData7">IOSendData7</label><div class="ctl"><input type="text" value=""><span class="typechip">IOSendData7</span></div></div>
+<div class="row"><label title="IOSendData4">IOSendData4</label><div class="ctl"><input type="text" value=""><span class="typechip">IOSendData4</span></div></div>
+<div class="row"><label title="SendEventItem">SendEventItem</label><div class="ctl"><input type="text" value=""><span class="typechip">GateWaySendEventItem</span></div></div>
+<div class="row"><label title="ModbusSend">ModbusSend</label><div class="ctl"><input type="text" value=""><span class="typechip">ModbusItemsSend</span></div></div>
+<div class="row"><label title="BasicSend">BasicSend</label><div class="ctl"><input type="text" value=""><span class="typechip">BasicItemsSend</span></div></div>
+<div class="grp"><span class="ic">&#9642;</span>QueueHead</div>
+<div class="row"><label title="Data1">Data1</label><div class="ctl"><button class="btn">Data1#SendData1#1#0</button></div></div>
+<div class="row"><label title="Data2">Data2</label><div class="ctl"><button class="btn">Data2#SendData2#0#0</button></div></div>
+<div class="row"><label title="Data3">Data3</label><div class="ctl"><button class="btn">Data3#SendData3#0#0</button></div></div>
+<div class="row"><label title="Data4">Data4</label><div class="ctl"><button class="btn">Data4#SendData4#0#0</button></div></div>
+<div class="row"><label title="Data5">Data5</label><div class="ctl"><button class="btn">Data5#SendData5#0#0</button></div></div>
+<div class="row"><label title="Data6">Data6</label><div class="ctl"><button class="btn">Data6#SendData6#0#0</button></div></div>
+<div class="row"><label title="Data7">Data7</label><div class="ctl"><button class="btn">Data7#SendData7#0#0</button></div></div>
+<div class="row"><label title="Data8">Data8</label><div class="ctl"><button class="btn">Data8#SendData8#0#0</button></div></div>
+<div class="row"><label title="Data9">Data9</label><div class="ctl"><button class="btn">Data9#SendData9#0#0</button></div></div>
+<div class="row"><label title="Data10">Data10</label><div class="ctl"><button class="btn">Data10#SendData10#0#0</button></div></div>
+<div class="row"><label title="Data11">Data11</label><div class="ctl"><button class="btn">Data11#SendData11#0#0</button></div></div>
+<div class="row"><label title="Data12">Data12</label><div class="ctl"><button class="btn">Data12#SendData12#0#0</button></div></div>
+<div class="row"><label title="Data13">Data13</label><div class="ctl"><button class="btn">Data13#SendData13#0#0</button></div></div>
+<div class="row"><label title="Data14">Data14</label><div class="ctl"><button class="btn">Data14#SendData14#0#0</button></div></div>
+<div class="row"><label title="Data15">Data15</label><div class="ctl"><button class="btn">Data15#SendData15#0#0</button></div></div>
+<div class="row"><label title="Data16">Data16</label><div class="ctl"><button class="btn">Data16#SendData16#0#0</button></div></div>
+<div class="row"><label title="AddButton">AddButton</label><div class="ctl"><input type="text" value=""><span class="typechip">AddButton_QueueItem</span></div></div>
+<div class="grp"><span class="ic">&#9642;</span>GlobalVarHead</div>
+<div class="row"><label title="GlobalVar1">GlobalVar1</label><div class="ctl"><button class="btn">GlobalVar1#SendData1#1#0</button></div></div>
+<div class="row"><label title="GlobalVar2">GlobalVar2</label><div class="ctl"><button class="btn">GlobalVar2#SendData2#0#0</button></div></div>
+<div class="row"><label title="GlobalVar3">GlobalVar3</label><div class="ctl"><button class="btn">GlobalVar3#SendData3#0#0</button></div></div>
+<div class="row"><label title="GlobalVar4">GlobalVar4</label><div class="ctl"><button class="btn">GlobalVar4#SendData4#0#0</button></div></div>
+<div class="row"><label title="GlobalVar5">GlobalVar5</label><div class="ctl"><button class="btn">GlobalVar5#SendData5#0#0</button></div></div>
+<div class="row"><label title="GlobalVar6">GlobalVar6</label><div class="ctl"><button class="btn">GlobalVar6#SendData6#0#0</button></div></div>
+<div class="row"><label title="GlobalVar7">GlobalVar7</label><div class="ctl"><button class="btn">GlobalVar7#SendData7#0#0</button></div></div>
+<div class="row"><label title="GlobalVar8">GlobalVar8</label><div class="ctl"><button class="btn">GlobalVar8#SendData8#0#0</button></div></div>
+<div class="row"><label title="GlobalVar9">GlobalVar9</label><div class="ctl"><button class="btn">GlobalVar9#SendData9#0#0</button></div></div>
+<div class="row"><label title="GlobalVar10">GlobalVar10</label><div class="ctl"><button class="btn">GlobalVar10#SendData10#0#0</button></div></div>
+<div class="row"><label title="GlobalVar11">GlobalVar11</label><div class="ctl"><button class="btn">GlobalVar11#SendData11#0#0</button></div></div>
+<div class="row"><label title="GlobalVar12">GlobalVar12</label><div class="ctl"><button class="btn">GlobalVar12#SendData12#0#0</button></div></div>
+<div class="row"><label title="GlobalVar13">GlobalVar13</label><div class="ctl"><button class="btn">GlobalVar13#SendData13#0#0</button></div></div>
+<div class="row"><label title="GlobalVar14">GlobalVar14</label><div class="ctl"><button class="btn">GlobalVar14#SendData14#0#0</button></div></div>
+<div class="row"><label title="GlobalVar15">GlobalVar15</label><div class="ctl"><button class="btn">GlobalVar15#SendData15#0#0</button></div></div>
+<div class="row"><label title="GlobalVar16">GlobalVar16</label><div class="ctl"><button class="btn">GlobalVar16#SendData16#0#0</button></div></div>
+<div class="row"><label title="btnAddGlobalVar">btnAddGlobalVar</label><div class="ctl"><input type="text" value=""><span class="typechip">AddButton_GlobalVar</span></div></div>
+</div>
+<div class="sect">输入<span class="cnt">48 项</span></div>
+<div class="scroll" style="flex:0 0 auto;max-height:190px">
+<div class="row"><label title="SendData1">SendData1</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData2">SendData2</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData3">SendData3</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData4">SendData4</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData5">SendData5</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData6">SendData6</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData7">SendData7</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData8">SendData8</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData9">SendData9</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData10">SendData10</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData11">SendData11</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData12">SendData12</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData13">SendData13</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData14">SendData14</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData15">SendData15</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData16">SendData16</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData17">SendData17</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData18">SendData18</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData19">SendData19</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData20">SendData20</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData21">SendData21</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData22">SendData22</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData23">SendData23</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData24">SendData24</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData25">SendData25</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData26">SendData26</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData27">SendData27</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData28">SendData28</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData29">SendData29</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData30">SendData30</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData31">SendData31</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="SendData32">SendData32</label><div class="ctl"><span class="typechip">Filter</span>string</div></div>
+<div class="row"><label title="InputImage1">InputImage1</label><div class="ctl"><span class="typechip">Combination</span>IMAGE</div></div>
+<div class="row"><label title="InputImage2">InputImage2</label><div class="ctl"><span class="typechip">Combination</span>IMAGE</div></div>
+<div class="row"><label title="InputImage3">InputImage3</label><div class="ctl"><span class="typechip">Combination</span>IMAGE</div></div>
+<div class="row"><label title="InputImage4">InputImage4</label><div class="ctl"><span class="typechip">Combination</span>IMAGE</div></div>
+<div class="row"><label title="InputImage5">InputImage5</label><div class="ctl"><span class="typechip">Combination</span>IMAGE</div></div>
+<div class="row"><label title="InputImage6">InputImage6</label><div class="ctl"><span class="typechip">Combination</span>IMAGE</div></div>
+<div class="row"><label title="InputImage7">InputImage7</label><div class="ctl"><span class="typechip">Combination</span>IMAGE</div></div>
+<div class="row"><label title="InputImage8">InputImage8</label><div class="ctl"><span class="typechip">Combination</span>IMAGE</div></div>
+<div class="row"><label title="InputImage9">InputImage9</label><div class="ctl"><span class="typechip">Combination</span>IMAGE</div></div>
+<div class="row"><label title="InputImage10">InputImage10</label><div class="ctl"><span class="typechip">Combination</span>IMAGE</div></div>
+<div class="row"><label title="InputImage11">InputImage11</label><div class="ctl"><span class="typechip">Combination</span>IMAGE</div></div>
+<div class="row"><label title="InputImage12">InputImage12</label><div class="ctl"><span class="typechip">Combination</span>IMAGE</div></div>
+<div class="row"><label title="InputImage13">InputImage13</label><div class="ctl"><span class="typechip">Combination</span>IMAGE</div></div>
+<div class="row"><label title="InputImage14">InputImage14</label><div class="ctl"><span class="typechip">Combination</span>IMAGE</div></div>
+<div class="row"><label title="InputImage15">InputImage15</label><div class="ctl"><span class="typechip">Combination</span>IMAGE</div></div>
+<div class="row"><label title="InputImage16">InputImage16</label><div class="ctl"><span class="typechip">Combination</span>IMAGE</div></div>
+</div>
+</div>
+<div class="col col-mid">
+<div class="sect">图像<span class="cnt">画布占位</span></div>
+<div class="canvas"><div class="ph"><b>发送数据</b> 的调试窗<br>左侧控件按原件 <code>AlgorithmTabRoot</code> 声明还原<br><span style="color:#a0a6ad">图像、ROI 交互与运行结果需实机执行，本页不含</span></div></div>
+<div class="roibar"><span class="b"><img class="ico" src="../assets/icons/original.png" alt="">适应</span><span class="b">1:1</span><span class="b">ROI</span><span class="b">屏蔽</span><span class="b">十字</span><span style="flex:1"></span><span class="b"><img class="ico" src="../assets/icons/zoomin.png" alt=""></span><span class="b"><img class="ico" src="../assets/icons/zoomout.png" alt=""></span></div>
+</div>
+<div class="col col-right">
+<div class="sect">结果 / 输出<span class="cnt">3 项</span></div>
+<div class="scroll">
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="ModuRunTime">ModuRunTime</span><span class="t2">float</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="SendData">SendData</span><span class="t2">string</span></div>
+<div class="outrow"><input type="checkbox" checked><span class="nm" title="ModuStatus">ModuStatus</span><span class="t2">int</span></div>
+</div>
+<div class="sect">共享组<span class="cnt">1</span></div>
+<div class="scroll" style="max-height:120px">
+<div class="outrow"><span class="nm">TextDisplayGroup</span></div>
+</div>
+</div>
+</div>
+<div class="statusbar"><span>未运行</span><span>模块 SendDatasModule</span><span>参数 98 / 输入 48 / 输出 3</span><span class="sp"></span><span>状态 inventory-only</span><a href="../index.html">工具预览索引</a></div>
+</div>
+<div class="note"><b>还原边界</b><ul>
+<li><b>已还原</b>：页签、参数控件形态与声明顺序、参数默认值、输入输出声明、共享组、分类与状态徽章</li>
+<li><b>未还原</b>：像素级样式（颜色/字号/间距）、控件到页签的归属、显隐与可用条件、值联动、ROI 绘制交互、运行结果</li>
+<li>控件形态由 <code>resources.json.uiControls[].type</code> 推断，未归类类型按文本框显示并保留原始类型标签；不做外形臆测</li>
+<li>本页不证明该工具在原厂已注册、加载、执行或完成</li>
+</ul></div>
+</div></body></html>

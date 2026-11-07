@@ -1,0 +1,24 @@
+{
+  "stableToolId": "imvsimagemathmodu",
+  "originalPlugin": "IMVSImageMathModu",
+  "displayName": "图像运算",
+  "originalCategory": "ImageProcessing",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageMathModu",
+  "uiCategory": "image-roi",
+  "priority": "P1",
+  "status": "inventory-only",
+  "evidenceState": "unknown",
+  "resourceCount": 6,
+  "parameterCount": 8,
+  "inputCount": 5,
+  "outputCount": 5,
+  "uiControlCount": 15,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ]
+}

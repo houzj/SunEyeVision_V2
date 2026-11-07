@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>rotatecalibmodu 路 parameters.json</title><style>*{box-sizing:border-box}
+body{margin:0;background:#f6f7f9;color:#1d2129;font:14px/1.7 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:24px 20px 60px}
+.crumbs{font-size:13px;margin-bottom:14px}
+.crumbs a{color:#2563eb;text-decoration:none}
+.card{background:#fff;border:1px solid #e4e7ec;border-radius:10px;padding:26px 30px}
+h1,h2,h3,h4{line-height:1.4}
+h1{font-size:20px}h2{font-size:17px;margin-top:26px}h3{font-size:15px}
+table{border-collapse:collapse;margin:12px 0;width:100%;font-size:13px}
+td,th{border:1px solid #e4e7ec;padding:6px 10px;vertical-align:top}
+tr:nth-child(even) td{background:#fafbfc}
+code{background:#f1f3f5;border-radius:3px;padding:1px 5px;font-size:12.5px;font-family:Consolas,Menlo,monospace;color:#c7254e}
+pre{background:#282c34;color:#abb2bf;border-radius:6px;padding:14px 16px;overflow:auto;font-size:12.5px;line-height:1.6;font-family:Consolas,Menlo,monospace}
+pre code{background:none;color:inherit;padding:0}
+ul{padding-left:22px}
+blockquote{border-left:3px solid #d0d5da;margin:10px 0;padding:4px 14px;color:#5a636b;background:#fafbfc}
+hr{border:0;border-top:1px solid #e4e7ec;margin:18px 0}
+p{margin:8px 0}</style></head><body><div class="wrap"><nav class="crumbs"><a href="../../index.html">&#8592; 宸ュ叿绱㈠紩</a> &middot; <code>rotatecalibmodu</code></nav><div class="card"><h2>parameters.json</h2><pre>{
+  &quot;toolId&quot;: &quot;rotatecalibmodu&quot;,
+  &quot;parameters&quot;: [
+    {
+      &quot;type&quot;: &quot;ParamItem&quot;,
+      &quot;attributes&quot;: {},
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: [
+        {
+          &quot;type&quot;: &quot;Name&quot;,
+          &quot;attributes&quot;: {},
+          &quot;text&quot;: &quot;FilePath&quot;,
+          &quot;children&quot;: []
+        },
+        {
+          &quot;type&quot;: &quot;DefaultValue&quot;,
+          &quot;attributes&quot;: {},
+          &quot;text&quot;: &quot;&quot;,
+          &quot;children&quot;: []
+        }
+      ]
+    }
+  ],
+  &quot;inputs&quot;: [
+    {
+      &quot;type&quot;: &quot;Combination&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;Image Point&quot;,
+        &quot;Style&quot;: &quot;POINT&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: [
+        {
+          &quot;type&quot;: &quot;Filters&quot;,
+          &quot;attributes&quot;: {},
+          &quot;text&quot;: &quot;&quot;,
+          &quot;children&quot;: [
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;ImagePointX&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;true&quot;,
+                &quot;isShow&quot;: &quot;true&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;ImagePointY&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;true&quot;,
+                &quot;isShow&quot;: &quot;true&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      &quot;type&quot;: &quot;Filter&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;WorldRotateAngle&quot;,
+        &quot;ValueType&quot;: &quot;float&quot;,
+        &quot;IsForce&quot;: &quot;true&quot;,
+        &quot;isShow&quot;: &quot;true&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: []
+    },
+    {
+      &quot;type&quot;: &quot;Filter&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;RotNum&quot;,
+        &quot;ValueType&quot;: &quot;int&quot;,
+        &quot;IsForce&quot;: &quot;true&quot;,
+        &quot;isShow&quot;: &quot;true&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: []
+    },
+    {
+      &quot;type&quot;: &quot;Filter&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;RefreshSignal&quot;,
+        &quot;ValueType&quot;: &quot;int&quot;,
+        &quot;IsForce&quot;: &quot;false&quot;,
+        &quot;AutoSubscribe&quot;: &quot;false&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: []
+    },
+    {
+      &quot;type&quot;: &quot;Combination&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;InputImage&quot;,
+        &quot;Style&quot;: &quot;IMAGE&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: [
+        {
+          &quot;type&quot;: &quot;Filters&quot;,
+          &quot;attributes&quot;: {},
+          &quot;text&quot;: &quot;&quot;,
+          &quot;children&quot;: [
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;InImage&quot;,
+                &quot;ValueType&quot;: &quot;image&quot;,
+                &quot;IsForce&quot;: &quot;true&quot;,
+                &quot;isShow&quot;: &quot;true&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;InImageWidth&quot;,
+                &quot;ValueType&quot;: &quot;int&quot;,
+                &quot;IsForce&quot;: &quot;true&quot;,
+                &quot;isShow&quot;: &quot;true&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;InImageHeight&quot;,
+                &quot;ValueType&quot;: &quot;int&quot;,
+                &quot;IsForce&quot;: &quot;true&quot;,
+                &quot;isShow&quot;: &quot;true&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;InImagePixelFormat&quot;,
+                &quot;ValueType&quot;: &quot;int&quot;,
+                &quot;IsForce&quot;: &quot;true&quot;,
+                &quot;isShow&quot;: &quot;true&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  &quot;outputs&quot;: [
+    {
+      &quot;type&quot;: &quot;Filter&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;ModuRunTime&quot;,
+        &quot;ValueType&quot;: &quot;float&quot;,
+        &quot;IsForce&quot;: &quot;true&quot;,
+        &quot;IsArray&quot;: &quot;false&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: []
+    },
+    {
+      &quot;type&quot;: &quot;Filter&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;ModuStatus&quot;,
+        &quot;StructName&quot;: &quot;ModuStatus&quot;,
+        &quot;ValueType&quot;: &quot;int&quot;,
+        &quot;IsForce&quot;: &quot;true&quot;,
+        &quot;isShow&quot;: &quot;true&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: []
+    },
+    {
+      &quot;type&quot;: &quot;Filter&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;remainCount&quot;,
+        &quot;ValueType&quot;: &quot;int&quot;,
+        &quot;IsForce&quot;: &quot;true&quot;,
+        &quot;isShow&quot;: &quot;true&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: []
+    },
+    {
+      &quot;type&quot;: &quot;Combination&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;RotAxisPoint&quot;,
+        &quot;Style&quot;: &quot;POINT&quot;,
+        &quot;IsArray&quot;: &quot;false&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: [
+        {
+          &quot;type&quot;: &quot;Filters&quot;,
+          &quot;attributes&quot;: {},
+          &quot;text&quot;: &quot;&quot;,
+          &quot;children&quot;: [
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;RotCenterImageX&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;true&quot;,
+                &quot;isShow&quot;: &quot;true&quot;,
+                &quot;IsArray&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;RotCenterImageY&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;true&quot;,
+                &quot;isShow&quot;: &quot;true&quot;,
+                &quot;IsArray&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      &quot;type&quot;: &quot;Combination&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;RotPhysicalPoint&quot;,
+        &quot;Style&quot;: &quot;POINT&quot;,
+        &quot;IsArray&quot;: &quot;false&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: [
+        {
+          &quot;type&quot;: &quot;Filters&quot;,
+          &quot;attributes&quot;: {},
+          &quot;text&quot;: &quot;&quot;,
+          &quot;children&quot;: [
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;RotCenterWorldX&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;true&quot;,
+                &quot;isShow&quot;: &quot;true&quot;,
+                &quot;IsArray&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;RotCenterWorldY&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;true&quot;,
+                &quot;isShow&quot;: &quot;true&quot;,
+                &quot;IsArray&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      &quot;type&quot;: &quot;Filter&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;RotError&quot;,
+        &quot;ValueType&quot;: &quot;float&quot;,
+        &quot;IsForce&quot;: &quot;true&quot;,
+        &quot;AddUpInLoop&quot;: &quot;false&quot;,
+        &quot;IsArray&quot;: &quot;false&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: []
+    },
+    {
+      &quot;type&quot;: &quot;Filter&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;RotWorldError&quot;,
+        &quot;ValueType&quot;: &quot;float&quot;,
+        &quot;IsForce&quot;: &quot;true&quot;,
+        &quot;AddUpInLoop&quot;: &quot;false&quot;,
+        &quot;IsArray&quot;: &quot;false&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: []
+    }
+  ],
+  &quot;bindings&quot;: [],
+  &quot;conditions&quot;: [],
+  &quot;status&quot;: &quot;not-started&quot;
+}</pre></div></div></body></html>

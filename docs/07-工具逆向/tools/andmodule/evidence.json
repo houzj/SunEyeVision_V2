@@ -1,0 +1,24 @@
+{
+  "stableToolId": "andmodule",
+  "originalPlugin": "AndModule",
+  "displayName": "逻辑",
+  "originalCategory": "Logic",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\AndModule",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "status": "inventory-only",
+  "evidenceState": "unknown",
+  "resourceCount": 6,
+  "parameterCount": 2,
+  "inputCount": 0,
+  "outputCount": 4,
+  "uiControlCount": 2,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ]
+}

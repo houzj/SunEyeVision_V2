@@ -1,0 +1,24 @@
+{
+  "stableToolId": "imvsmarkinspmoduva",
+  "originalPlugin": "IMVSMarkInspModuVA",
+  "displayName": "字符缺陷检测",
+  "originalCategory": "DefectDetection",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSMarkInspModuVA",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "status": "inventory-only",
+  "evidenceState": "unknown",
+  "resourceCount": 6,
+  "parameterCount": 41,
+  "inputCount": 9,
+  "outputCount": 15,
+  "uiControlCount": 67,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ]
+}

@@ -1,0 +1,288 @@
+{
+  "controls": [
+    {
+      "type": "RadioSelecterEx3",
+      "name": "OutputType"
+    },
+    {
+      "type": "EnumerationDataCenter",
+      "name": "DataCenter"
+    },
+    {
+      "type": "EnumerationCommunication",
+      "name": "CommunicationModuleID"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FunctionCode"
+    },
+    {
+      "type": "EnumerationLightForSendData",
+      "name": "IODeviceID"
+    },
+    {
+      "type": "Enumeration",
+      "name": "VisionDeviceType"
+    },
+    {
+      "type": "EnumerationSendEvent",
+      "name": "SendEventId"
+    },
+    {
+      "type": "Boolean",
+      "name": "IgnoreDuration"
+    },
+    {
+      "type": "Boolean",
+      "name": "IgnoreErroneousDataEnable"
+    },
+    {
+      "type": "BooleanTip",
+      "name": "HexSend"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "InputString_Comm"
+    },
+    {
+      "type": "Boolean",
+      "name": "EndEnable"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EndInfo"
+    },
+    {
+      "type": "Boolean",
+      "name": "SplitEnable"
+    },
+    {
+      "type": "ComboxEditSendData",
+      "name": "SplitInfo"
+    },
+    {
+      "type": "IOSendData20",
+      "name": "IOSendData20"
+    },
+    {
+      "type": "IOSendData16",
+      "name": "IOSendData16"
+    },
+    {
+      "type": "IOSendData8",
+      "name": "IOSendData8"
+    },
+    {
+      "type": "IOSendData7",
+      "name": "IOSendData7"
+    },
+    {
+      "type": "IOSendData4",
+      "name": "IOSendData4"
+    },
+    {
+      "type": "GateWaySendEventItem",
+      "name": "SendEventItem"
+    },
+    {
+      "type": "ModbusItemsSend",
+      "name": "ModbusSend"
+    },
+    {
+      "type": "BasicItemsSend",
+      "name": "BasicSend"
+    },
+    {
+      "type": "HeadBar",
+      "name": "QueueHead"
+    },
+    {
+      "type": "QueueItemIn",
+      "name": "Data1"
+    },
+    {
+      "type": "QueueItemIn",
+      "name": "Data2"
+    },
+    {
+      "type": "QueueItemIn",
+      "name": "Data3"
+    },
+    {
+      "type": "QueueItemIn",
+      "name": "Data4"
+    },
+    {
+      "type": "QueueItemIn",
+      "name": "Data5"
+    },
+    {
+      "type": "QueueItemIn",
+      "name": "Data6"
+    },
+    {
+      "type": "QueueItemIn",
+      "name": "Data7"
+    },
+    {
+      "type": "QueueItemIn",
+      "name": "Data8"
+    },
+    {
+      "type": "QueueItemIn",
+      "name": "Data9"
+    },
+    {
+      "type": "QueueItemIn",
+      "name": "Data10"
+    },
+    {
+      "type": "QueueItemIn",
+      "name": "Data11"
+    },
+    {
+      "type": "QueueItemIn",
+      "name": "Data12"
+    },
+    {
+      "type": "QueueItemIn",
+      "name": "Data13"
+    },
+    {
+      "type": "QueueItemIn",
+      "name": "Data14"
+    },
+    {
+      "type": "QueueItemIn",
+      "name": "Data15"
+    },
+    {
+      "type": "QueueItemIn",
+      "name": "Data16"
+    },
+    {
+      "type": "AddButton_QueueItem",
+      "name": "AddButton"
+    },
+    {
+      "type": "HeadBar",
+      "name": "GlobalVarHead"
+    },
+    {
+      "type": "GlobalVarItemIn",
+      "name": "GlobalVar1"
+    },
+    {
+      "type": "GlobalVarItemIn",
+      "name": "GlobalVar2"
+    },
+    {
+      "type": "GlobalVarItemIn",
+      "name": "GlobalVar3"
+    },
+    {
+      "type": "GlobalVarItemIn",
+      "name": "GlobalVar4"
+    },
+    {
+      "type": "GlobalVarItemIn",
+      "name": "GlobalVar5"
+    },
+    {
+      "type": "GlobalVarItemIn",
+      "name": "GlobalVar6"
+    },
+    {
+      "type": "GlobalVarItemIn",
+      "name": "GlobalVar7"
+    },
+    {
+      "type": "GlobalVarItemIn",
+      "name": "GlobalVar8"
+    },
+    {
+      "type": "GlobalVarItemIn",
+      "name": "GlobalVar9"
+    },
+    {
+      "type": "GlobalVarItemIn",
+      "name": "GlobalVar10"
+    },
+    {
+      "type": "GlobalVarItemIn",
+      "name": "GlobalVar11"
+    },
+    {
+      "type": "GlobalVarItemIn",
+      "name": "GlobalVar12"
+    },
+    {
+      "type": "GlobalVarItemIn",
+      "name": "GlobalVar13"
+    },
+    {
+      "type": "GlobalVarItemIn",
+      "name": "GlobalVar14"
+    },
+    {
+      "type": "GlobalVarItemIn",
+      "name": "GlobalVar15"
+    },
+    {
+      "type": "GlobalVarItemIn",
+      "name": "GlobalVar16"
+    },
+    {
+      "type": "AddButton_GlobalVar",
+      "name": "btnAddGlobalVar"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "senddatasmodule",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\SendDatasModule\\SendDatasModule.xml",
+      "sha256": "955062500d4bbe45e5d2124602412482112087d963fa7a81e0f79852900cdb3b",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\SendDatasModule\\SendDatasModuleAlgorithm.xml",
+      "sha256": "da7cb5182d8f320c59f159d0dad421cc8b9c456a2c06650031dbfda68f775b82",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\SendDatasModule\\SendDatasModuleAlgorithmTab.xml",
+      "sha256": "e3191ccc1687e6904096fef59a5c87fb9d8b8c0c7f45f8f89593996acf3864c2",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\SendDatasModule\\SendDatasModuleCs.xml",
+      "sha256": "da1c7213ed034e52a625d30fb6ed8386d24760916e8546b919175b2db92bf9eb",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\SendDatasModule\\SendDatasModuleDisplay.xml",
+      "sha256": "f7abad56abfbfdcb11c187b24a61e8f15968496faae80f624f7539cd6faacba9",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\SendDatasModule\\ToolItemInfo.xml",
+      "sha256": "a04c090a9337e7ccc00b3008aff175d783422a51839be7c2249741a02bc0c448",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "发送数据",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

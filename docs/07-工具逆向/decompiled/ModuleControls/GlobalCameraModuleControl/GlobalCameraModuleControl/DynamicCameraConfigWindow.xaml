@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<pcUI:ConfirmBaseWindow x:Class="GlobalCameraModuleControl.DynamicCameraConfigWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:GlobalCameraModuleControl" xmlns:pcUI="clr-namespace:Apps.PcUI.Common;assembly=Apps.PcUI" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" CancelVisible="Collapsed" ConfirmVisible="Collapsed" Title="{DynamicResource Lang_SetCnfg}" Width="800" Height="680">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+        <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid>
+    <local:DynamicCameraParamConfigControl />
+    <Grid Name="windowShadow" Margin="0,-50" Visibility="Collapsed" Background="#55F0F4F9" />
+  </Grid>
+</pcUI:ConfirmBaseWindow>

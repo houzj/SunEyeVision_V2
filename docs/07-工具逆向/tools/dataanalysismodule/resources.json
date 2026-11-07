@@ -1,0 +1,82 @@
+{
+  "toolId": "dataanalysismodule",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\DataAnalysisModule.xml",
+      "sha256": "4783f7d837427da7f89dbe28f245c7563947d02cddb05d3c62db110dfbb5fa49",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\DataAnalysisModuleAlgorithm.xml",
+      "sha256": "3d993e96e7ee868a8c12f6bedca37e777196a16c8d2cef0714c444183dadfc3c",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\DataAnalysisModuleAlgorithmTab.xml",
+      "sha256": "c8c4944b170355e4cff2d6c5cf79cd511295a38eb89335864a01df709f33b3d6",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\DataAnalysisModuleCs.xml",
+      "sha256": "5457052eaff6838a59a10f9999aeeffc740f4821dcc9de9cce5daefd39aae6f1",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\DataAnalysisModuleDisplay.xml",
+      "sha256": "0ce3fed17e9eb3892050191c8204f4ddd7271602248b3a6e2358cb5031d49691",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\DataAnalysisModule\\ToolItemInfo.xml",
+      "sha256": "968296d7b1888979a9e7b47f842635e45184db0f2164e73016fb31cd7933ddf0",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "RadioSelecterAnaly",
+      "name": "AnalysisType"
+    },
+    {
+      "type": "ButtonSelecterAnaly",
+      "name": "AnalyticText"
+    },
+    {
+      "type": "ComboxEditDataAnalysis",
+      "name": "Separator"
+    },
+    {
+      "type": "OpenFileForDataShellDialogAnaly",
+      "name": "PyScriptPath"
+    },
+    {
+      "type": "BooleanInt",
+      "name": "AsciiToHex"
+    },
+    {
+      "type": "ProtocolOutputParam",
+      "name": "txtOutputParams"
+    },
+    {
+      "type": "ProtocolOutputParam_Shell",
+      "name": "shellOutputParams"
+    },
+    {
+      "type": "ProtocolOutputParam_Byte",
+      "name": "byteOutputParams"
+    }
+  ],
+  "sharedUiGroups": [],
+  "status": "source-partial"
+}

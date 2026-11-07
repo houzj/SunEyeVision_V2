@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:IMVSEdgeFlawInspModuControl">
+  <DataTemplate x:Key="Panel_EdgepatMatch">
+    <local:EdgepatMatchConfigPanel ParentNode="{Binding}" TabSource="{Binding SubAlgorithmTabRootA.TabsA[0]}" />
+  </DataTemplate>
+</ResourceDictionary>

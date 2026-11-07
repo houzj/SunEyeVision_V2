@@ -1,0 +1,64 @@
+{
+  "controls": [
+    {
+      "type": "ButtonSelecter",
+      "name": "ClearSignal"
+    },
+    {
+      "type": "HeadBar",
+      "name": "FiledHead"
+    },
+    {
+      "type": "ButtonSelecter_IOVar",
+      "name": "DataSetFields"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "declarative-parameters",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P0",
+  "themeStates": "unknown",
+  "toolId": "datasetmodule",
+  "status": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSetModule\\DataSetModule.xml",
+      "sha256": "12e817bbba4e2ff7c714351a7527acff34bf8682789b218e8a6a721cd7f9442b",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSetModule\\DataSetModuleAlgorithm.xml",
+      "sha256": "ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSetModule\\DataSetModuleAlgorithmTab.xml",
+      "sha256": "06aea7108901a0bab9455401e9a58ba276a4d0840c44852be012bb799b160214",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSetModule\\DataSetModuleCs.xml",
+      "sha256": "226eb15c622e7525b6c550d2e2b671045ed41a9cbf123edf007811793196ddc5",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSetModule\\DataSetModuleDisplay.xml",
+      "sha256": "acc19397811644f701445996b3607a3aca6a310e6e201f5d829a2a993e46450b",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\DataSetModule\\ToolItemInfo.xml",
+      "sha256": "20fa8b7857278ce3e1e5194f370eff4f05b95ed77df63bb6461a7f99fd807fba",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "数据集合",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

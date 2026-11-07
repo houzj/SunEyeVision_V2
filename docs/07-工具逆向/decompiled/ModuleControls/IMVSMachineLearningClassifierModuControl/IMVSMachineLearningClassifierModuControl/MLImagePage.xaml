@@ -1,0 +1,945 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="IMVSMachineLearningClassifierModuControl.MLImagePage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:sys="clr-namespace:System;assembly=mscorlib" xmlns:imageView="clr-namespace:HikPcUI.ImageView;assembly=VM.PcUI" xmlns:commomcontrol="clr-namespace:HikPcUI.Commom;assembly=VM.PcUI" xmlns:controls1="clr-namespace:HikPcUI.Controls;assembly=VM.PcUI" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:listView="clr-namespace:HikPcUI.ListView;assembly=VM.PcUI" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero" xmlns:local="clr-namespace:IMVSMachineLearningClassifierModuControl" x:Name="registerImage" Height="Auto" Width="Auto">
+  <Grid Background="#f2f3f5" UseLayoutRounding="True">
+    <FrameworkElement.Resources>
+      <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+          <ResourceDictionary Source="/Apps.XmlUI;component/Styles/ParamUserControlDataTemplate.xaml" />
+          <ResourceDictionary Source="/Apps.Style;component/ComboBoxStyle/ListViewComboBoxStyle.xaml" />
+          <ResourceDictionary Source="/Apps.Style;component/ScrollBarStyle/RecScrollBarStyle.xaml" />
+        </ResourceDictionary.MergedDictionaries>
+        <SolidColorBrush x:Key="SolidColorBrush" Color="#E0DFDE" />
+        <SolidColorBrush x:Key="FocusBrush" Color="#CF9F81" />
+        <local:LabelToBooleanConvert x:Key="LabelToBooleanConvert" />
+        <local:BoolToVisibilityConvert x:Key="boolToVisibility" />
+        <Style x:Key="MoreToggleButtonStyle" TargetType="{x:Type ToggleButton}">
+          <Setter Property="Height" Value="32" />
+          <Setter Property="Width" Value="32" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type ToggleButton}">
+                <Grid>
+                  <Image Name="icon" Stretch="None" Source="/Apps.Style;component/Resources/ic_add_normal.png" />
+                  <Popup Name="Popup" Placement="Bottom" Focusable="False" AllowsTransparency="True" PopupAnimation="Slide" StaysOpen="False" IsOpen="{Binding IsChecked, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                    <Border Background="#303033" MinWidth="140" MinHeight="60" CornerRadius="4" BorderThickness="1" BorderBrush="#66666666">
+                      <ItemsControl Margin="5" ItemsSource="{Binding MoreOptions, ElementName=registerImage}">
+                        <FrameworkElement.Style>
+                          <Style TargetType="{x:Type ItemsControl}">
+                            <Setter Property="ItemsPanel">
+                              <Setter.Value>
+                                <ItemsPanelTemplate>
+                                  <StackPanel Orientation="Vertical" />
+                                </ItemsPanelTemplate>
+                              </Setter.Value>
+                            </Setter>
+                            <Setter Property="ItemTemplate">
+                              <Setter.Value>
+                                <DataTemplate>
+                                  <Grid>
+                                    <FrameworkElement.Resources>
+                                      <ResourceDictionary>
+                                        <Style x:Key="{x:Type Button}" TargetType="{x:Type Button}">
+                                          <Setter Property="Foreground" Value="#E6E6E6" />
+                                          <Setter Property="FontSize" Value="14px" />
+                                          <Setter Property="FontFamily" Value="Microsoft YaHei" />
+                                          <Setter Property="HorizontalAlignment" Value="Center" />
+                                          <Setter Property="VerticalAlignment" Value="Center" />
+                                          <Setter Property="Template">
+                                            <Setter.Value>
+                                              <ControlTemplate TargetType="{x:Type Button}">
+                                                <Grid>
+                                                  <Grid.RowDefinitions>
+                                                    <RowDefinition />
+                                                    <RowDefinition Height="1" />
+                                                  </Grid.RowDefinitions>
+                                                  <Border Name="Border" Background="#00FFFFFF" Padding="24,0">
+                                                    <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" />
+                                                  </Border>
+                                                  <Border Name="bd" Grid.Row="1" Background="{DynamicResource Col_Theme}" Visibility="Hidden" />
+                                                </Grid>
+                                                <ControlTemplate.Triggers>
+                                                  <Trigger Property="UIElement.IsMouseOver" Value="True">
+                                                    <Setter TargetName="Border" Property="Border.Background" Value="#4C4E53" />
+                                                    <Setter TargetName="bd" Property="Visibility" Value="Visible" />
+                                                  </Trigger>
+                                                </ControlTemplate.Triggers>
+                                              </ControlTemplate>
+                                            </Setter.Value>
+                                          </Setter>
+                                        </Style>
+                                      </ResourceDictionary>
+                                    </FrameworkElement.Resources>
+                                    <Button HorizontalAlignment="Stretch" Height="30" Content="{Binding}">
+                                      <interactivity:Interaction.Triggers xmlns:interactivity="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity">
+                                        <interactivity:EventTrigger xmlns:interactivity="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" EventName="Click">
+                                          <commomcontrol:ParamsEventCommand Command="{Binding ClickCommand, ElementName=registerImage}" CommandParameter="{Binding}" />
+                                          <core:ChangePropertyAction xmlns:core="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" PropertyName="IsOpen" Value="false" interactivity:TargetedTriggerAction.TargetObject="{Binding ElementName=Popup}" />
+                                        </interactivity:EventTrigger>
+                                      </interactivity:Interaction.Triggers>
+                                    </Button>
+                                  </Grid>
+                                </DataTemplate>
+                              </Setter.Value>
+                            </Setter>
+                          </Style>
+                        </FrameworkElement.Style>
+                      </ItemsControl>
+                    </Border>
+                  </Popup>
+                </Grid>
+                <ControlTemplate.Triggers>
+                  <Trigger Property="UIElement.IsMouseOver" Value="True">
+                    <Setter TargetName="icon" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_add_click.png" />
+                  </Trigger>
+                  <Trigger Property="ToggleButton.IsChecked" Value="True">
+                    <Setter TargetName="icon" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_add_click.png" />
+                  </Trigger>
+                  <Trigger Property="IsEnabled" Value="False">
+                    <Setter TargetName="icon" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_add_disable.png" />
+                  </Trigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+        <Style x:Key="ListViewStyle1" TargetType="{x:Type ListView}">
+          <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" />
+          <Setter Property="BorderBrush" Value="{DynamicResource ListBorder}" />
+          <Setter Property="BorderThickness" Value="1" />
+          <Setter Property="Foreground" Value="#FF042271" />
+          <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+          <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+          <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+          <Setter Property="ScrollViewer.PanningMode" Value="Both" />
+          <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
+          <Setter Property="VerticalContentAlignment" Value="Center" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type ListView}">
+                <Themes:ListBoxChrome Name="Bd" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" Background="{TemplateBinding Control.Background}" UIElement.SnapsToDevicePixels="True">
+                  <ScrollViewer Tag="1" Style="{StaticResource RecScrollViewer}">
+                    <ItemsPresenter SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+                  </ScrollViewer>
+                </Themes:ListBoxChrome>
+                <ControlTemplate.Triggers>
+                  <Trigger Property="IsEnabled" Value="False">
+                    <Setter TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Property="Themes:ListBoxChrome.Background" />
+                  </Trigger>
+                  <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                      <Condition Property="ItemsControl.IsGrouping" Value="True" />
+                      <Condition Property="VirtualizingPanel.IsVirtualizingWhenGrouping" Value="False" />
+                    </MultiTrigger.Conditions>
+                    <Setter Property="ScrollViewer.CanContentScroll" Value="False" />
+                  </MultiTrigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+        <Style x:Key="CategoryHeader" TargetType="{x:Type TextBlock}">
+          <Setter Property="HorizontalAlignment" Value="Left" />
+          <Setter Property="VerticalAlignment" Value="Center" />
+          <Setter Property="FontFamily" Value="Microsoft YaHei" />
+          <Setter Property="Foreground" Value="#4C4C4C" />
+          <Setter Property="FontSize" Value="14px" />
+          <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+        <Style x:Key="BottomLineButtonStyle" TargetType="{x:Type Button}">
+          <Setter Property="Foreground" Value="#666666" />
+          <Setter Property="FontFamily" Value="Microsoft YaHei" />
+          <Setter Property="Background" Value="#F2F2F2" />
+          <Setter Property="BorderBrush" Value="#CCCCCC" />
+          <Setter Property="FontSize" Value="12px" />
+          <Setter Property="Width" Value="150" />
+          <Setter Property="Height" Value="28" />
+          <Setter Property="HorizontalContentAlignment" Value="Center" />
+          <Setter Property="VerticalAlignment" Value="Center" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type Button}">
+                <controls:FouerColorBorder Name="Border" CornerRadius="2" BottomBorderBrush="{DynamicResource Col_Theme}" Padding="{TemplateBinding Control.Padding}" Margin="0" Background="{TemplateBinding Control.Background}" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="1,1,1,1">
+                  <ContentPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+                </controls:FouerColorBorder>
+                <ControlTemplate.Triggers>
+                  <Trigger Property="UIElement.IsMouseOver" Value="True">
+                    <Setter Property="FrameworkElement.Cursor" Value="Hand" />
+                  </Trigger>
+                  <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#FFF76900" />
+                    <Setter Property="Foreground" Value="#FFFFFF" />
+                  </Trigger>
+                  <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="#80F2F2F2" />
+                    <Setter Property="Foreground" Value="#80666666" />
+                    <Setter Property="BorderBrush" Value="#80CCCCCC" />
+                    <Setter TargetName="Border" Property="controls:FouerColorBorder.BottomBorderBrush" Value="#80F76900" />
+                  </Trigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+        <Style x:Key="Btn_StyleLeft" TargetType="{x:Type Button}">
+          <Setter Property="FrameworkElement.FocusVisualStyle" Value="{x:Null}" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type Button}">
+                <Image Name="ImageBackground" Width="26" Height="54" Source="/Apps.XmlUI;component/Resources/leftarrow_normal.png" />
+                <ControlTemplate.Triggers>
+                  <Trigger Property="UIElement.IsMouseOver" Value="True">
+                    <Setter TargetName="ImageBackground" Property="Image.Source" Value="/Apps.XmlUI;component/Resources/leftarrow_hover.png" />
+                  </Trigger>
+                  <Trigger Property="IsPressed" Value="True">
+                    <Setter TargetName="ImageBackground" Property="Image.Source" Value="/Apps.XmlUI;component/Resources/leftarrow_press.png" />
+                  </Trigger>
+                  <Trigger Property="IsEnabled" Value="False">
+                    <Setter TargetName="ImageBackground" Property="Image.Source" Value="/Apps.XmlUI;component/Resources/leftarrow_disabled.png" />
+                  </Trigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+        <Style x:Key="FullScreenRoiBtnStyle" TargetType="{x:Type ToggleButton}">
+          <Setter Property="Height" Value="34" />
+          <Setter Property="Width" Value="36" />
+          <Setter Property="Margin" Value="5,0" />
+          <Setter Property="HorizontalAlignment" Value="Left" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type ToggleButton}">
+                <Grid Background="#00FFFFFF">
+                  <Image Name="bg" Width="36" Height="34" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Hidden" Source="/Apps.XmlUI;component/Resources/ROI_选中但未绘制_bg.png" />
+                  <Image Name="icon" Width="32" Height="32" VerticalAlignment="Center" HorizontalAlignment="Center" Source="/Apps.XmlUI;component/Resources/ROI_full-screen_normal.png" />
+                </Grid>
+                <ControlTemplate.Triggers>
+                  <DataTrigger Value="False" Binding="{Binding RectEnable, ElementName=registerImage}">
+                    <Setter TargetName="icon" Property="Image.Source" Value="/Apps.XmlUI;component/Resources/ROI_full-screen_click.png" />
+                  </DataTrigger>
+                  <Trigger Property="UIElement.IsMouseOver" Value="True">
+                    <Setter TargetName="bg" Property="Visibility" Value="Visible" />
+                  </Trigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+        <Style x:Key="RectRoiBtnStyle" TargetType="{x:Type ToggleButton}">
+          <Setter Property="Height" Value="34" />
+          <Setter Property="Width" Value="36" />
+          <Setter Property="Margin" Value="0,0,10,0" />
+          <Setter Property="HorizontalAlignment" Value="Left" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type ToggleButton}">
+                <Grid Background="#00FFFFFF">
+                  <Image Name="bg" Width="36" Height="34" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Hidden" Source="/Apps.XmlUI;component/Resources/ROI_选中但未绘制_bg.png" />
+                  <Image Name="icon" Width="32" Height="32" VerticalAlignment="Center" HorizontalAlignment="Center" Source="/Apps.XmlUI;component/Resources/ROI_retangle_normal.png" />
+                </Grid>
+                <ControlTemplate.Triggers>
+                  <DataTrigger Value="True" Binding="{Binding RectEnable, ElementName=registerImage}">
+                    <Setter TargetName="icon" Property="Image.Source" Value="/Apps.XmlUI;component/Resources/ROI_retangle_click.png" />
+                  </DataTrigger>
+                  <DataTrigger Value="True" Binding="{Binding IsDrawRect, ElementName=registerImage}">
+                    <Setter TargetName="bg" Property="Visibility" Value="Visible" />
+                  </DataTrigger>
+                  <Trigger Property="UIElement.IsMouseOver" Value="True">
+                    <Setter TargetName="bg" Property="Visibility" Value="Visible" />
+                  </Trigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+        <Style x:Key="textBoxStyle" TargetType="{x:Type TextBox}">
+          <Setter Property="TextBox.MaxLength" Value="256" />
+          <Setter Property="FontSize" Value="14" />
+          <Setter Property="Height" Value="32" />
+          <Setter Property="BorderThickness" Value="1" />
+          <Setter Property="BorderBrush" Value="#CCCCCD" />
+          <Setter Property="Background" Value="#FCFCFC" />
+          <Setter Property="Foreground" Value="#666666" />
+          <Setter Property="HorizontalContentAlignment" Value="Left" />
+          <Setter Property="VerticalContentAlignment" Value="Center" />
+          <Setter Property="VerticalAlignment" Value="Center" />
+          <Setter Property="HorizontalAlignment" Value="Left" />
+          <Setter Property="FontFamily" Value="Microsoft YaHei" />
+          <Setter Property="Grid.ColumnSpan" Value="2" />
+          <Setter Property="Padding" Value="6,0,32,0" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type TextBox}">
+                <Grid>
+                  <Border Name="Bd" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" Background="{TemplateBinding Control.Background}" SnapsToDevicePixels="True" CornerRadius="2" Width="{Binding SearchBorderWidth, ElementName=registerImage}">
+                    <Grid>
+                      <ScrollViewer Name="PART_ContentHost" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+                      <TextBlock Name="Message" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="#80808080" Padding="8,0,0,0" Text="{DynamicResource Lang_CategoryNameEmpty}" Visibility="Hidden" Width="{Binding SearchTextWidth, ElementName=registerImage}" FontSize="{Binding TagFontSize, ElementName=registerImage}" />
+                    </Grid>
+                  </Border>
+                </Grid>
+                <ControlTemplate.Triggers>
+                  <Trigger Property="Text" Value="">
+                    <Setter TargetName="Message" Property="Visibility" Value="Visible" />
+                  </Trigger>
+                  <Trigger Property="IsEnabled" Value="False">
+                    <Setter TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Property="Border.Background" />
+                    <Setter Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" Property="Foreground" />
+                  </Trigger>
+                  <Trigger Property="UIElement.IsMouseOver" Value="True">
+                    <Setter TargetName="Bd" Value="{DynamicResource Col_Theme}" Property="Border.BorderBrush" />
+                  </Trigger>
+                  <Trigger Property="UIElement.IsFocused" Value="True">
+                    <Setter TargetName="Bd" Value="{DynamicResource Col_Theme}" Property="Border.BorderBrush" />
+                  </Trigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+        <Style x:Key="ComboxStyleNormal" TargetType="{x:Type ComboBox}">
+          <Setter Property="Foreground" Value="#808080" />
+          <Setter Property="BorderBrush" Value="#CCCCCC" />
+          <Setter Property="Background" Value="#FCFCFC" />
+          <Setter Property="UIElement.SnapsToDevicePixels" Value="True" />
+          <Setter Property="FrameworkElement.OverridesDefaultStyle" Value="True" />
+          <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+          <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+          <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+          <Setter Property="FontSize" Value="14" />
+          <Setter Property="HorizontalContentAlignment" Value="Left" />
+          <Setter Property="VerticalContentAlignment" Value="Center" />
+          <Setter Property="Height" Value="30" />
+          <Setter Property="ItemContainerStyle">
+            <Setter.Value>
+              <Style TargetType="{x:Type ComboBoxItem}">
+                <Setter Property="Template">
+                  <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                      <Border Name="Back" Background="#00FFFFFF" Height="30" Margin="2,0,2,0" Focusable="False">
+                        <Grid>
+                          <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition Width="*" />
+                          </Grid.ColumnDefinitions>
+                          <ContentPresenter Focusable="False" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                        </Grid>
+                      </Border>
+                      <ControlTemplate.Triggers>
+                        <Trigger Property="UIElement.IsMouseOver" Value="True">
+                          <Setter TargetName="Back" Property="Border.Background" Value="#E7E5E4" />
+                        </Trigger>
+                        <Trigger Property="ListBoxItem.IsSelected" Value="True">
+                          <Setter TargetName="Back" Property="Border.Background" Value="#E7E5E4" />
+                          <Setter Property="Foreground" Value="#4D4D4D" />
+                        </Trigger>
+                      </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                  </Setter.Value>
+                </Setter>
+              </Style>
+            </Setter.Value>
+          </Setter>
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type ComboBox}">
+                <Grid Background="{TemplateBinding Control.Background}">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="16" />
+                  </Grid.ColumnDefinitions>
+                  <Popup Name="Popup" Grid.Column="0" Grid.ColumnSpan="2" IsOpen="{TemplateBinding ComboBox.IsDropDownOpen}" Placement="Bottom" Focusable="False" AllowsTransparency="True" PopupAnimation="Slide">
+                    <Grid>
+                      <Border Name="DropDown" Margin="4" MaxHeight="{TemplateBinding ComboBox.MaxDropDownHeight}" MinWidth="{TemplateBinding FrameworkElement.ActualWidth}" BorderBrush="#CCCCCD" BorderThickness="1" CornerRadius="4" Padding="0,6,0,6">
+                        <Border.Background>
+                          <LinearGradientBrush>
+                            <GradientStop Offset="0.0" Color="#FCFCFC" />
+                            <GradientStop Offset="0.15" Color="#FCFCFC" />
+                            <GradientStop Offset="1" Color="#F7F7F7" />
+                          </LinearGradientBrush>
+                        </Border.Background>
+                        <UIElement.Effect>
+                          <DropShadowEffect Color="#CCCCCD" BlurRadius="4" ShadowDepth="4" Opacity="0.4" />
+                        </UIElement.Effect>
+                        <UIElement.RenderTransform>
+                          <TranslateTransform X="-4" />
+                        </UIElement.RenderTransform>
+                        <ScrollViewer Style="{DynamicResource RecScrollViewer}" Focusable="False" Background="#00FFFFFF" MaxHeight="{TemplateBinding ComboBox.MaxDropDownHeight}" SnapsToDevicePixels="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" CanContentScroll="True">
+                          <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" Background="#00FFFFFF" />
+                        </ScrollViewer>
+                      </Border>
+                    </Grid>
+                  </Popup>
+                  <ToggleButton Name="toggle" Focusable="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" Grid.ColumnSpan="2" ClickMode="Press" Style="{StaticResource ComboxStyleBtn}" IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" />
+                  <Grid Column="0" Margin="11,0,0,0">
+                    <ContentPresenter Name="ContentPresenter" IsHitTestVisible="False" Margin="{TemplateBinding Control.Padding}" Content="{TemplateBinding ComboBox.SelectionBoxItem}" ContentTemplate="{TemplateBinding ComboBox.SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemsControl.ItemTemplateSelector}" ContentStringFormat="{TemplateBinding ComboBox.SelectionBoxItemStringFormat}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+                  </Grid>
+                  <Border Name="Border" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="1" BorderBrush="{TemplateBinding Control.BorderBrush}" CornerRadius="2" />
+                </Grid>
+                <ControlTemplate.Triggers>
+                  <Trigger Property="UIElement.IsMouseOver" Value="True">
+                    <Setter TargetName="Border" Value="{DynamicResource Col_Theme}" Property="Border.BorderBrush" />
+                  </Trigger>
+                  <DataTrigger Value="True" Binding="{Binding IsOpen, ElementName=Popup}">
+                    <Setter TargetName="Border" Value="{DynamicResource Col_Theme}" Property="Border.BorderBrush" />
+                  </DataTrigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+        <ControlTemplate x:Key="switchbutton" TargetType="{x:Type ToggleButton}">
+          <Image Name="icon" Source="/Apps.Style;component/Resources/swith_off.png" Stretch="None" />
+          <ControlTemplate.Triggers>
+            <Trigger Property="ToggleButton.IsChecked" Value="True">
+              <Setter TargetName="icon" Property="Image.Source" Value="/Apps.Style;component/Resources/swith_on.png" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+        <Style x:Key="ListViewStyle" TargetType="{x:Type ListView}">
+          <Setter Property="UIElement.SnapsToDevicePixels" Value="True" />
+          <Setter Property="FrameworkElement.OverridesDefaultStyle" Value="True" />
+          <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+          <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+          <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+          <Setter Property="VerticalContentAlignment" Value="Center" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="{x:Type ListView}">
+                <Border Name="Border" BorderThickness="1" Background="{x:Null}">
+                  <ScrollViewer Style="{StaticResource RecScrollViewer}">
+                    <ItemsPresenter />
+                  </ScrollViewer>
+                </Border>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+      </ResourceDictionary>
+    </FrameworkElement.Resources>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+    <Border Background="#FFFFFFFF" BorderThickness="1" BorderBrush="{DynamicResource SolidColorBrush}" Width="{Binding PageLeftWidth, ElementName=registerImage}">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="36" />
+          <RowDefinition Height="*" />
+          <RowDefinition Height="130" />
+        </Grid.RowDefinitions>
+        <Grid>
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Visibility="Collapsed">
+            <ToggleButton Name="fullScreenRoi" ToolTip="{DynamicResource 全屏}" Style="{StaticResource FullScreenRoiBtnStyle}" Click="FullScreen_Click" />
+            <ToggleButton Name="rectRoi" ToolTip="{DynamicResource Box}" Style="{StaticResource RectRoiBtnStyle}" Click="RectROI_Click" />
+          </StackPanel>
+          <UniformGrid Columns="4" Width="150" HorizontalAlignment="Right">
+            <controls1:ZoomOutButton Width="34" Height="34" Content="{DynamicResource 放大}" HookHikImageView="{Binding ElementName=imageView}" />
+            <controls1:ZoomInButton Width="34" Height="34" Content="{DynamicResource 缩小}" HookHikImageView="{Binding ElementName=imageView}" />
+            <Button Name="BtnToolRegionScale" Width="34" Height="34" Style="{StaticResource ClientOriginScaleBtn}" Content="1:1" Click="zoomOrgBtn_Click" />
+            <Button Name="BtnToolFullScreen" Width="34" Height="34" Style="{StaticResource ClientFullScreenBtn}" Content="{DynamicResource 全屏}" Click="zoomFullBtn_Click" />
+          </UniformGrid>
+        </Grid>
+        <Grid Name="viewGrid" Row="1">
+          <imageView:HikImageView Name="imageView" NeedLargePoints="True" ROITypeUI="Transparent" OnRoi_Click="imageView_ROIClick" ImageDataSource="{Binding CurImage, ElementName=registerImage}" RoiList="{Binding RectRois, ElementName=registerImage}" MouseLeftButtonUp="imageView_MouseLeftButtonUp" />
+          <Button Name="btnLeft" HorizontalAlignment="Left" VerticalAlignment="Center" Width="26" Height="54" Style="{StaticResource Btn_StyleLeft}" Click="front_Click">
+            <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/leftarrow_normal.png" />
+          </Button>
+          <Button Name="btnRight" HorizontalAlignment="Right" VerticalAlignment="Center" Height="54" Width="26" Style="{StaticResource Btn_StyleLeft}" RenderTransformOrigin="0.5,0.5" Click="next_Click">
+            <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/leftarrow_normal.png" />
+            <UIElement.RenderTransform>
+              <ScaleTransform ScaleX="-1" />
+            </UIElement.RenderTransform>
+          </Button>
+        </Grid>
+        <Grid Height="76" Row="1" VerticalAlignment="Bottom" Background="#808080" DataContext="{Binding SelectedBox, ElementName=registerImage}">
+          <FrameworkElement.Style>
+            <Style TargetType="{x:Type Grid}">
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding SelectedBox, ElementName=registerImage}" Value="{x:Null}">
+                  <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkElement.Style>
+          <FrameworkElement.Resources>
+            <ResourceDictionary>
+              <Style x:Key="{x:Type TextBlock}" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource CategoryHeader}">
+                <Setter Property="Foreground" Value="#FFFFFFFF" />
+                <Setter Property="FontWeight" Value="Normal" />
+                <Setter Property="Margin" Value="5,0" />
+                <Setter Property="Width" Value="60" />
+                <Setter Property="FlowDirection" Value="RightToLeft" />
+              </Style>
+              <Style x:Key="{x:Type listView:SliderArrangeFloat}" TargetType="{x:Type listView:SliderArrangeFloat}">
+                <Setter Property="Margin" Value="0,0,5,0" />
+                <Setter Property="Width" Value="100" />
+                <Setter Property="Height" Value="32" />
+                <Setter Property="listView:SliderArrangeBase.TBtnBgNormal" Value="/Apps.XmlUI;component/Resources/inputbox_ic_triangle_top_normal.png" />
+                <Setter Property="listView:SliderArrangeBase.TBtnBgHover" Value="/Apps.XmlUI;component/Resources/inputbox_ic_triangle_top_click.png" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="FontFamily" Value="Microsoft YaHei" />
+                <Setter Property="Foreground" Value="#808080" />
+                <Setter Property="listView:SliderArrangeBase.TBackground" Value="#FCFCFC" />
+                <Setter Property="listView:SliderArrangeBase.TBorderBrush" Value="#CCCCCD" />
+                <Setter Property="listView:SliderArrangeBase.SliderTickFrequency" Value="1" />
+                <Setter Property="listView:SliderArrangeBase.Minimum" Value="0" />
+                <Setter Property="listView:SliderArrangeBase.Maximum" Value="9999" />
+              </Style>
+            </ResourceDictionary>
+          </FrameworkElement.Resources>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+          </Grid.RowDefinitions>
+          <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <TextBlock Text="{DynamicResource Lang_Width}" ToolTip="{DynamicResource Lang_Width}" />
+            <listView:SliderArrangeFloat StartValue="{Binding Width, Mode=TwoWay}" OnStartValueChange="Roi_StartValueChange" />
+            <TextBlock Text="{DynamicResource Lang_Height}" ToolTip="{DynamicResource Lang_Height}" />
+            <listView:SliderArrangeFloat StartValue="{Binding Height, Mode=TwoWay}" OnStartValueChange="Roi_StartValueChange" />
+          </StackPanel>
+          <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <TextBlock Text="{DynamicResource CenterX}" ToolTip="{DynamicResource CenterX}" />
+            <listView:SliderArrangeFloat StartValue="{Binding CenterX, Mode=TwoWay}" OnStartValueChange="Roi_StartValueChange" />
+            <TextBlock Text="{DynamicResource CenterY}" ToolTip="{DynamicResource CenterY}" />
+            <listView:SliderArrangeFloat StartValue="{Binding CenterY, Mode=TwoWay}" OnStartValueChange="Roi_StartValueChange" />
+            <TextBlock Text="{DynamicResource Angle}" ToolTip="{DynamicResource Angle}" />
+            <listView:SliderArrangeFloat Minimum="-360" Maximum="360" StartValue="{Binding Angle, Mode=TwoWay}" OnStartValueChange="Roi_StartValueChange" />
+          </StackPanel>
+        </Grid>
+        <Grid Row="2">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="22*" />
+            <ColumnDefinition Width="69*" />
+            <ColumnDefinition Width="420*" />
+          </Grid.ColumnDefinitions>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="30" />
+            <RowDefinition Height="*" />
+          </Grid.RowDefinitions>
+          <Grid Row="0" ColumnSpan="3">
+            <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" Margin="8,0">
+              <ComboBox Name="m_ImageType" Style="{StaticResource ListViewComboBoxStyle}" Width="120" Height="28" SelectedIndex="0" Margin="0,0,12,0" ItemsSource="{Binding ComboOptions, ElementName=registerImage}" IsEnabled="{Binding IsEnable, ElementName=registerImage}" SelectionChanged="ImageListType_SelectionChanged" />
+              <TextBlock VerticalAlignment="Center" FontSize="14" Foreground="{DynamicResource ParamsTabForeground}" Text="{DynamicResource Lang_Current}" />
+              <TextBlock VerticalAlignment="Center" FontSize="14" Foreground="{DynamicResource ParamsTabForeground}" Text="{Binding CurIndex, ElementName=registerImage}" />
+              <TextBlock VerticalAlignment="Center" FontSize="14" Foreground="{DynamicResource ParamsTabForeground}">/</TextBlock>
+              <TextBlock VerticalAlignment="Center" FontSize="14" Foreground="{DynamicResource ParamsTabForeground}" Text="{Binding DisplayImageCount, ElementName=registerImage}" />
+            </StackPanel>
+            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Margin="8,0">
+              <TextBlock VerticalAlignment="Center" FontSize="14" Foreground="{DynamicResource ParamsTabForeground}" Text="{DynamicResource 已标注}" />
+              <TextBlock VerticalAlignment="Center" FontSize="14" Foreground="{DynamicResource ParamsTabForeground}" Text="{Binding MarkNum, ElementName=registerImage}" />
+              <TextBlock VerticalAlignment="Center" FontSize="14" Foreground="{DynamicResource ParamsTabForeground}">/</TextBlock>
+              <TextBlock VerticalAlignment="Center" FontSize="14" Foreground="{DynamicResource ParamsTabForeground}" Text="{Binding AllImageCount, ElementName=registerImage}" />
+              <Rectangle Width="1" Height="15" Fill="#FFD9D9D9" Margin="10,0" />
+              <ToggleButton Style="{StaticResource MoreToggleButtonStyle}" Command="{Binding FreshOptionsCommand, ElementName=registerImage}" />
+              <commomcontrol:SuperImageButton Name="Del" ToolTip="{DynamicResource Lang_ClearMarkData}" IsEnabled="{Binding IsEnable, ElementName=registerImage}" Click="ClearMarkData_Click">
+                <commomcontrol:SuperImageButton.NormalConnent>
+                  <Image Source="/Apps.XmlUI;component/Resources/ic_清空_normal.png" Stretch="None" />
+                </commomcontrol:SuperImageButton.NormalConnent>
+                <commomcontrol:SuperImageButton.DisableConnent>
+                  <Image Source="/Apps.XmlUI;component/Resources/ic_清空_disable.png" Stretch="None" />
+                </commomcontrol:SuperImageButton.DisableConnent>
+                <commomcontrol:SuperImageButton.PressedConnent>
+                  <Image Source="/Apps.XmlUI;component/Resources/ic_清空_click.png" Stretch="None" />
+                </commomcontrol:SuperImageButton.PressedConnent>
+                <commomcontrol:SuperImageButton.MOverConnent>
+                  <Image Source="/Apps.XmlUI;component/Resources/ic_清空_click.png" Stretch="None" />
+                </commomcontrol:SuperImageButton.MOverConnent>
+              </commomcontrol:SuperImageButton>
+              <commomcontrol:SuperImageButton ToolTip="{DynamicResource 清空图像}" IsEnabled="{Binding IsEnable, ElementName=registerImage}" Click="DelAllImage_Click">
+                <commomcontrol:SuperImageButton.NormalConnent>
+                  <Image Source="/Apps.XmlUI;component/Resources/ic_清空图片_normal.png" Stretch="None" />
+                </commomcontrol:SuperImageButton.NormalConnent>
+                <commomcontrol:SuperImageButton.DisableConnent>
+                  <Image Source="/Apps.XmlUI;component/Resources/ic_清空图片_disable.png" Stretch="None" />
+                </commomcontrol:SuperImageButton.DisableConnent>
+                <commomcontrol:SuperImageButton.PressedConnent>
+                  <Image Source="/Apps.XmlUI;component/Resources/ic_清空图片_click.png" Stretch="None" />
+                </commomcontrol:SuperImageButton.PressedConnent>
+                <commomcontrol:SuperImageButton.MOverConnent>
+                  <Image Source="/Apps.XmlUI;component/Resources/ic_清空图片_click.png" Stretch="None" />
+                </commomcontrol:SuperImageButton.MOverConnent>
+              </commomcontrol:SuperImageButton>
+            </StackPanel>
+          </Grid>
+          <ScrollViewer Name="listScroll" Grid.Row="1" Tag="1" Style="{StaticResource RecScrollViewer}" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Auto" Grid.ColumnSpan="3" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel" ScrollChanged="listScroll_ScrollChanged">
+            <ListView Name="lst" Grid.Row="1" Background="#3b3e41" BorderBrush="#3b3e41" Style="{StaticResource ListViewStyle1}" Margin="1" Height="100" SelectionMode="Single" ItemsSource="{Binding DisplayImageList, ElementName=registerImage}" SelectionChanged="lst_SelectionChanged">
+              <FrameworkElement.Resources>
+                <ResourceDictionary>
+                  <Style x:Key="{x:Type ListViewItem}" TargetType="{x:Type ListViewItem}">
+                    <Style.Resources>
+                      <ResourceDictionary>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#F76900" />
+                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#F76900" />
+                      </ResourceDictionary>
+                    </Style.Resources>
+                  </Style>
+                </ResourceDictionary>
+              </FrameworkElement.Resources>
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <WrapPanel IsItemsHost="True" VerticalAlignment="Top" Height="90" Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Grid Name="grid">
+                    <local:ImageView PreviewMouseLeftButtonDown="ImageClick" Width="100" Height="80" Margin="2" Tag="{Binding}" />
+                    <TextBlock VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="50" Height="20" FontSize="14" TextAlignment="Center" Margin="0,0,2,2" Text="{Binding ImageLabel}" ToolTip="{Binding ImageLabel}">
+                      <FrameworkElement.Style>
+                        <Style TargetType="{x:Type TextBlock}">
+                          <Setter Property="Visibility" Value="Visible" />
+                          <Setter Property="Background" Value="#FCFCFC" />
+                          <Setter Property="Foreground" Value="#808080" />
+                          <Style.Triggers>
+                            <DataTrigger Value="True" Binding="{Binding ImageLabel, Converter={StaticResource LabelToBooleanConvert}}">
+                              <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                            <MultiDataTrigger>
+                              <MultiDataTrigger.Conditions>
+                                <Condition Value="True" Binding="{Binding IsCalibrated}" />
+                                <Condition Value="True" Binding="{Binding IsOKCalibrated}" />
+                              </MultiDataTrigger.Conditions>
+                              <Setter Property="Background" Value="{DynamicResource OKColor}" />
+                              <Setter Property="Foreground" Value="#FFFFFF" />
+                            </MultiDataTrigger>
+                            <MultiDataTrigger>
+                              <MultiDataTrigger.Conditions>
+                                <Condition Value="True" Binding="{Binding IsCalibrated}" />
+                                <Condition Value="False" Binding="{Binding IsOKCalibrated}" />
+                              </MultiDataTrigger.Conditions>
+                              <Setter Property="Background" Value="{DynamicResource NGColor}" />
+                              <Setter Property="Foreground" Value="#FFFFFF" />
+                            </MultiDataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </FrameworkElement.Style>
+                    </TextBlock>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ListView>
+          </ScrollViewer>
+        </Grid>
+      </Grid>
+    </Border>
+    <Border Grid.Column="1" Background="#FFFFFFFF" BorderThickness="0,1,1,1" BorderBrush="{DynamicResource SolidColorBrush}">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*" />
+          <RowDefinition Height="1" />
+          <RowDefinition Height="45" />
+        </Grid.RowDefinitions>
+        <Grid Row="0">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="0" />
+            <RowDefinition Height="38" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="10" />
+            <RowDefinition Height="*" />
+          </Grid.RowDefinitions>
+          <TextBlock Grid.Row="0" Style="{StaticResource CategoryHeader}" Text="{DynamicResource ClassLabels}" Margin="10,0" />
+          <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,5,0,0">
+            <Button Width="70" Height="32" Margin="10,0,5,0" VerticalAlignment="Center" HorizontalAlignment="Left" Style="{StaticResource BottomButtonStyle}" Click="AddCategory_Click">
+              <StackPanel Orientation="Horizontal">
+                <Image VerticalAlignment="Center">
+                  <FrameworkElement.Style>
+                    <Style TargetType="{x:Type Image}">
+                      <Setter Property="Source" Value="/Apps.XmlUI;component/Resources/btn_新建模板_normal.png" />
+                      <Style.Triggers>
+                        <DataTrigger Value="True" Binding="{Binding ElementName=Button, Path=IsPressed}">
+                          <Setter Property="Source" Value="/Apps.XmlUI;component/Resources/btn_新建模板_click.png" />
+                        </DataTrigger>
+                        <DataTrigger Value="True" Binding="{Binding ElementName=Button, Path=IsMouseOver}">
+                          <Setter Property="Source" Value="/Apps.XmlUI;component/Resources/btn_新建模板_click.png" />
+                        </DataTrigger>
+                        <DataTrigger Value="False" Binding="{Binding ElementName=Button, Path=IsEnabled}">
+                          <Setter Property="Source" Value="/Apps.XmlUI;component/Resources/btn_新建模板 _disable.png" />
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </FrameworkElement.Style>
+                </Image>
+                <ContentControl VerticalAlignment="Center" Content="{DynamicResource 添加}" ToolTip="{DynamicResource Lang_AddNewCategory}" />
+              </StackPanel>
+            </Button>
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="{Binding SearchTextWidth, ElementName=registerImage}" />
+                <ColumnDefinition Width="32" />
+              </Grid.ColumnDefinitions>
+              <TextBox Style="{StaticResource textBoxStyle}" Text="{Binding CategoryWord, ElementName=registerImage}" TextChanged="CategoryWord_TextChanged" />
+              <commomcontrol:SuperImageButton Grid.Column="1" Margin="-3,-1,1,0">
+                <commomcontrol:SuperImageButton.NormalConnent>
+                  <Image Source="/Apps.XmlUI;component/Resources/ic_search_normal.png" Stretch="None" />
+                </commomcontrol:SuperImageButton.NormalConnent>
+                <commomcontrol:SuperImageButton.PressedConnent>
+                  <Image Source="/Apps.XmlUI;component/Resources/ic_search_click.png" Stretch="None" />
+                </commomcontrol:SuperImageButton.PressedConnent>
+                <commomcontrol:SuperImageButton.MOverConnent>
+                  <Image Source="/Apps.XmlUI;component/Resources/ic_search_hover.png" Stretch="None" />
+                </commomcontrol:SuperImageButton.MOverConnent>
+              </commomcontrol:SuperImageButton>
+            </Grid>
+            <ComboBox Style="{StaticResource ListViewComboBoxStyle}" Width="80" Height="32" Margin="3,0,5,0" SelectedIndex="{Binding CategorySortIndex, ElementName=registerImage}" ItemsSource="{Binding SortOptions, ElementName=registerImage}" />
+          </StackPanel>
+          <ListView Grid.Row="2" MaxHeight="300" Style="{StaticResource ListViewStyle}" Margin="10,14,5,0" Background="#00FFFFFF" BorderBrush="#00FFFFFF" SelectionMode="Single" ItemsSource="{Binding DisplayCategoryList, ElementName=registerImage}" SelectedItem="{Binding SelectedCategory, ElementName=registerImage}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel IsItemsHost="True" HorizontalAlignment="Center" Width="{Binding (FrameworkElement.ActualWidth), RelativeSource={RelativeSource AncestorType=ScrollContentPresenter}}" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid MouseLeftButtonUp="Category_MouseLeftButtonUp">
+                  <Grid Height="43" Width="328" Margin="3">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="7" />
+                      <ColumnDefinition Width="245" />
+                      <ColumnDefinition Width="68" />
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" CornerRadius="4,0,0,4" Background="{Binding CategoryBrush}" />
+                    <Grid Column="1">
+                      <Panel.Background>
+                        <LinearGradientBrush Opacity="0.2" StartPoint="0,0" EndPoint="1,1">
+                          <GradientStop Color="#578EF5" Offset="0" />
+                          <GradientStop Color="#EEEEEE" Offset="1" />
+                        </LinearGradientBrush>
+                      </Panel.Background>
+                      <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock MaxWidth="80" Margin="5" Foreground="#4C4C4C" FontSize="14px" FontWeight="Black" Text="{Binding CategoryName}" ToolTip="{Binding CategoryName}" />
+                        <TextBlock Text="{DynamicResource 训练图}" Foreground="#666666" FontSize="12px" VerticalAlignment="Center" Margin="10,0,0,0" />
+                        <TextBlock ToolTip="{DynamicResource Lang_RegisterImageNum}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="10" FontFamily="Microsoft YaHei" Foreground="#666666" Text="{Binding StrRegisteredNum}" />
+                        <TextBlock Text=" / " HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="10" FontFamily="Microsoft YaHei" Foreground="#666666" />
+                        <TextBlock ToolTip="{DynamicResource Lang_CalibrateImageNum}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="10" FontFamily="Microsoft YaHei" Foreground="#666666" Text="{Binding StrCalibratedNum}" />
+                      </StackPanel>
+                    </Grid>
+                    <Grid HorizontalAlignment="Right" Column="1" Visibility="{Binding IsMouseOver, Converter={StaticResource boolToVisibility}, RelativeSource={RelativeSource AncestorType=ListViewItem}}">
+                      <StackPanel Orientation="Horizontal">
+                        <Button Style="{StaticResource BaseImage_ButtonStyle}" Visibility="Collapsed" Margin="0,0,2,0" Command="{Binding UpdateCategoryNameCommond}" CommandParameter="{Binding ElementName=registerImage}">
+                          <Image Stretch="None" Source="/Apps.Style;component/Resources/ic_edit_normal.png" />
+                          <FrameworkElement.Tag>
+                            <Image Stretch="None" Source="/Apps.Style;component/Resources/ic_edit_click.png" />
+                          </FrameworkElement.Tag>
+                        </Button>
+                        <Button Style="{StaticResource BaseImage_ButtonStyle}" Margin="0,0,2,0" ToolTip="{DynamicResource Lang_Delet}" Click="DeleteCategory_OnClick">
+                          <Image Stretch="None" Source="/Apps.Style;component/Resources/ic_清空图片_normal.png" />
+                          <FrameworkElement.Tag>
+                            <Image Stretch="None" Source="/Apps.Style;component/Resources/ic_清空图片_click.png" />
+                          </FrameworkElement.Tag>
+                        </Button>
+                      </StackPanel>
+                    </Grid>
+                    <Border Name="back" Background="#F0F1F2" CornerRadius="5" Grid.Column="2">
+                      <StackPanel Name="btnimg1" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <Image Name="tagImg" Width="20" Height="20" Source="/Apps.Style;component/Resources/ic_dialog_mark_normal.png" Margin="0,5,0,0">
+                          <FrameworkElement.Style>
+                            <Style TargetType="{x:Type Image}">
+                              <Style.Triggers>
+                                <DataTrigger Value="True" Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListViewItem}}">
+                                  <Setter Property="UIElement.Opacity" Value="0.8" />
+                                </DataTrigger>
+                              </Style.Triggers>
+                            </Style>
+                          </FrameworkElement.Style>
+                        </Image>
+                        <Label Name="tagText" Foreground="#555555" Opacity="1" FontSize="10px" Content="{Binding MarkLableText}">
+                          <FrameworkElement.Style>
+                            <Style TargetType="{x:Type Label}">
+                              <Style.Triggers>
+                                <DataTrigger Value="True" Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListViewItem}}">
+                                  <Setter Property="UIElement.Opacity" Value="0.8" />
+                                </DataTrigger>
+                              </Style.Triggers>
+                            </Style>
+                          </FrameworkElement.Style>
+                        </Label>
+                      </StackPanel>
+                    </Border>
+                  </Grid>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+            <ItemsControl.ItemContainerStyle>
+              <Style TargetType="{x:Type ListViewItem}">
+                <Setter Property="Padding" Value="1" />
+                <Setter Property="Template">
+                  <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ListViewItem}">
+                      <Grid SnapsToDevicePixels="True" Width="330">
+                        <Border Name="Border" Background="{TemplateBinding Control.Background}" CornerRadius="4" />
+                        <ContentPresenter />
+                      </Grid>
+                      <ControlTemplate.Triggers>
+                        <Trigger Property="ListBoxItem.IsSelected" Value="True">
+                          <Setter TargetName="Border" Value="{DynamicResource Col_Theme}" Property="Border.BorderBrush" />
+                          <Setter TargetName="Border" Property="Border.BorderThickness" Value="2" />
+                          <Setter Property="UIElement.Opacity" Value="0.6" />
+                        </Trigger>
+                        <Trigger Property="UIElement.IsMouseOver" Value="True">
+                          <Setter Property="UIElement.Opacity" Value="0.8" />
+                        </Trigger>
+                      </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                  </Setter.Value>
+                </Setter>
+              </Style>
+            </ItemsControl.ItemContainerStyle>
+          </ListView>
+          <Grid Height="1" Background="#FF808080" Row="3" />
+          <ScrollViewer Grid.Row="4" MaxHeight="300" Style="{StaticResource RecScrollViewer}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="5,10,10,5">
+            <Grid>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="80" />
+                <RowDefinition Height="*" />
+              </Grid.RowDefinitions>
+              <Grid Row="0">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="10" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid Column="0">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="30" />
+                    <RowDefinition Height="30" />
+                  </Grid.RowDefinitions>
+                  <StackPanel Orientation="Horizontal" Grid.Row="0">
+                    <TextBlock Text="{DynamicResource RunParam_SvmMaxIter}" Foreground="{DynamicResource ParamsTabForeground}" FontFamily="Microsoft YaHei" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Width="{Binding ParamTextWidth, ElementName=registerImage}" />
+                    <listView:SliderArrange Width="80" SliderTickFrequency="1" Minimum="10" Maximum="100000" StartValue="{Binding SvmMaxIterValue, ElementName=registerImage, Mode=TwoWay}" />
+                  </StackPanel>
+                  <StackPanel Orientation="Horizontal" Grid.Row="1">
+                    <TextBlock Text="{DynamicResource RunParam_SvmEsp}" Foreground="{DynamicResource ParamsTabForeground}" FontFamily="Microsoft YaHei" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Width="{Binding ParamTextWidth, ElementName=registerImage}" />
+                    <listView:SliderArrange Width="80" SliderTickFrequency="1" Minimum="1" Maximum="100000" StartValue="{Binding SvmEspValue, ElementName=registerImage, Mode=TwoWay}" />
+                  </StackPanel>
+                </Grid>
+                <Grid Column="2">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="30" />
+                    <RowDefinition Height="30" />
+                  </Grid.RowDefinitions>
+                  <StackPanel Orientation="Horizontal" Grid.Row="0">
+                    <TextBlock Text="{DynamicResource RunParam_ClassifyType}" Foreground="{DynamicResource ParamsTabForeground}" FontFamily="Microsoft YaHei" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Width="{Binding ParamTextWidth, ElementName=registerImage}" />
+                    <ComboBox Name="ComboBoxChainFlag" Width="80" Style="{StaticResource ComboxStyleNormal}" SelectedIndex="{Binding ClassifyTypeValue, ElementName=registerImage, Mode=TwoWay}">
+                      <ComboBoxItem Content="{DynamicResource RunParam_SVM}" />
+                      <ComboBoxItem Content="{DynamicResource RunParam_RF}" />
+                    </ComboBox>
+                  </StackPanel>
+                </Grid>
+              </Grid>
+              <Grid Row="1">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="10" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid Column="0">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="30" />
+                    <RowDefinition Height="*" />
+                  </Grid.RowDefinitions>
+                  <TextBlock Grid.Row="0" Text="{DynamicResource Tab_Texture Params}" />
+                  <Grid Row="1">
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="30" />
+                      <RowDefinition Height="30" />
+                      <RowDefinition Height="30" />
+                      <RowDefinition Height="30" />
+                      <RowDefinition Height="30" />
+                      <RowDefinition Height="30" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Orientation="Horizontal" Grid.Row="0">
+                      <TextBlock Text="{DynamicResource RunParam_TextureFeature}" Foreground="{DynamicResource ParamsTabForeground}" FontFamily="Microsoft YaHei" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Width="{Binding ParamTextWidth, ElementName=registerImage}" />
+                      <ToggleButton Name="TextureFeature" Tag="Texture" Template="{StaticResource switchbutton}" Width="50" Margin="-5,0,0,0" IsChecked="{Binding TextureFeatureValue, ElementName=registerImage}" Checked="TrainParam_Checked" Unchecked="TrainParam_Checked" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="1" Visibility="{Binding IsChecked, ElementName=TextureFeature, Converter={StaticResource bool2VisibilityConverter}}">
+                      <TextBlock Text="{DynamicResource RunParam_HogFeature}" Foreground="{DynamicResource ParamsTabForeground}" FontFamily="Microsoft YaHei" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Width="{Binding ParamTextWidth, ElementName=registerImage}" />
+                      <ToggleButton Name="HogFeature" Tag="Texture" Template="{StaticResource switchbutton}" Width="50" Margin="-5,0,0,0" IsChecked="{Binding HogFeatureValue, ElementName=registerImage}" Checked="TrainParam_Checked" Unchecked="TrainParam_Checked" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="2" Visibility="{Binding IsChecked, ElementName=TextureFeature, Converter={StaticResource bool2VisibilityConverter}}">
+                      <TextBlock Text="{DynamicResource RunParam_LbpFeature}" Foreground="{DynamicResource ParamsTabForeground}" FontFamily="Microsoft YaHei" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Width="{Binding ParamTextWidth, ElementName=registerImage}" />
+                      <ToggleButton Name="LbpFeature" Tag="Texture" Template="{StaticResource switchbutton}" Width="50" Margin="-5,0,0,0" IsChecked="{Binding LbpFeatureValue, ElementName=registerImage}" Checked="TrainParam_Checked" Unchecked="TrainParam_Checked" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="3" Visibility="{Binding IsChecked, ElementName=TextureFeature, Converter={StaticResource bool2VisibilityConverter}}">
+                      <TextBlock Text="{DynamicResource RunParam_GlcmFeature}" Foreground="{DynamicResource ParamsTabForeground}" FontFamily="Microsoft YaHei" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Width="{Binding ParamTextWidth, ElementName=registerImage}" />
+                      <ToggleButton Name="GlcmFeature" Tag="Texture" Template="{StaticResource switchbutton}" Width="50" Margin="-5,0,0,0" IsChecked="{Binding GlcmFeatureValue, ElementName=registerImage}" Checked="TrainParam_Checked" Unchecked="TrainParam_Checked" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="4" Visibility="{Binding IsChecked, ElementName=TextureFeature, Converter={StaticResource bool2VisibilityConverter}}">
+                      <TextBlock Text="{DynamicResource RunParam_EdgeFeature}" Foreground="{DynamicResource ParamsTabForeground}" FontFamily="Microsoft YaHei" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Width="{Binding ParamTextWidth, ElementName=registerImage}" />
+                      <ToggleButton Name="EdgeFeature" Tag="Texture" Template="{StaticResource switchbutton}" Width="50" Margin="-5,0,0,0" IsChecked="{Binding EdgeFeatureValue, ElementName=registerImage}" Checked="TrainParam_Checked" Unchecked="TrainParam_Checked" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="5" Visibility="{Binding IsChecked, ElementName=TextureFeature, Converter={StaticResource bool2VisibilityConverter}}">
+                      <TextBlock Text="{DynamicResource RunParam_PolarFeature}" Foreground="{DynamicResource ParamsTabForeground}" FontFamily="Microsoft YaHei" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Width="{Binding ParamTextWidth, ElementName=registerImage}" />
+                      <ToggleButton Name="PolarFeature" Tag="Texture" Template="{StaticResource switchbutton}" Width="50" Margin="-5,0,0,0" IsChecked="{Binding PolarFeatureValue, ElementName=registerImage}" Checked="TrainParam_Checked" Unchecked="TrainParam_Checked" />
+                    </StackPanel>
+                  </Grid>
+                </Grid>
+                <Grid Column="2">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="30" />
+                    <RowDefinition Height="*" />
+                  </Grid.RowDefinitions>
+                  <TextBlock Grid.Row="0" Text="{DynamicResource Tab_Gray Params}" />
+                  <Grid Row="1">
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="30" />
+                      <RowDefinition Height="30" />
+                      <RowDefinition Height="30" />
+                      <RowDefinition Height="30" />
+                      <RowDefinition Height="30" />
+                      <RowDefinition Height="30" />
+                      <RowDefinition Height="30" />
+                      <RowDefinition Height="30" />
+                      <RowDefinition Height="30" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Orientation="Horizontal" Grid.Row="0">
+                      <TextBlock Text="{DynamicResource RunParam_GrayFeature}" Foreground="{DynamicResource ParamsTabForeground}" FontFamily="Microsoft YaHei" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Width="{Binding ParamTextWidth, ElementName=registerImage}" />
+                      <ToggleButton Name="GrayFeature" Tag="Gray" Template="{StaticResource switchbutton}" Width="50" Margin="-5,0,0,0" IsChecked="{Binding GrayFeatureValue, ElementName=registerImage}" Checked="TrainParam_Checked" Unchecked="TrainParam_Checked" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="1" Visibility="{Binding IsChecked, ElementName=GrayFeature, Converter={StaticResource bool2VisibilityConverter}}">
+                      <TextBlock Text="{DynamicResource RunParam_GrayRangeFeature}" Foreground="{DynamicResource ParamsTabForeground}" FontFamily="Microsoft YaHei" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Width="{Binding ParamTextWidth, ElementName=registerImage}" />
+                      <ToggleButton Name="GrayRangeFeature" Tag="Gray" Template="{StaticResource switchbutton}" Width="50" Margin="-5,0,0,0" IsChecked="{Binding GrayRangeFeatureValue, ElementName=registerImage}" Checked="TrainParam_Checked" Unchecked="TrainParam_Checked" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="2" Visibility="{Binding IsChecked, ElementName=GrayFeature, Converter={StaticResource bool2VisibilityConverter}}">
+                      <TextBlock Text="{DynamicResource RunParam_GrayMeanFeature}" Foreground="{DynamicResource ParamsTabForeground}" FontFamily="Microsoft YaHei" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Width="{Binding ParamTextWidth, ElementName=registerImage}" />
+                      <ToggleButton Name="GrayMeanFeature" Tag="Gray" Template="{StaticResource switchbutton}" Width="50" Margin="-5,0,0,0" IsChecked="{Binding GrayMeanFeatureValue, ElementName=registerImage}" Checked="TrainParam_Checked" Unchecked="TrainParam_Checked" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="3" Visibility="{Binding IsChecked, ElementName=GrayFeature, Converter={StaticResource bool2VisibilityConverter}}">
+                      <TextBlock Text="{DynamicResource RunParam_GrayDeviationFeature}" Foreground="{DynamicResource ParamsTabForeground}" FontFamily="Microsoft YaHei" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Width="{Binding ParamTextWidth, ElementName=registerImage}" />
+                      <ToggleButton Name="GrayDeviationFeature" Tag="Gray" Template="{StaticResource switchbutton}" Width="50" Margin="-5,0,0,0" IsChecked="{Binding GrayDeviationFeatureValue, ElementName=registerImage}" Checked="TrainParam_Checked" Unchecked="TrainParam_Checked" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="4" Visibility="{Binding IsChecked, ElementName=GrayFeature, Converter={StaticResource bool2VisibilityConverter}}">
+                      <TextBlock Text="{DynamicResource RunParam_GrayEntropyFeature}" Foreground="{DynamicResource ParamsTabForeground}" FontFamily="Microsoft YaHei" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Width="{Binding ParamTextWidth, ElementName=registerImage}" />
+                      <ToggleButton Name="GrayEntropyFeature" Tag="Gray" Template="{StaticResource switchbutton}" Width="50" Margin="-5,0,0,0" IsChecked="{Binding GrayEntropyFeatureValue, ElementName=registerImage}" Checked="TrainParam_Checked" Unchecked="TrainParam_Checked" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="5" Visibility="{Binding IsChecked, ElementName=GrayFeature, Converter={StaticResource bool2VisibilityConverter}}">
+                      <TextBlock Text="{DynamicResource RunParam_GrayAnisotropyFeature}" Foreground="{DynamicResource ParamsTabForeground}" FontFamily="Microsoft YaHei" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Width="{Binding ParamTextWidth, ElementName=registerImage}" />
+                      <ToggleButton Name="GrayAnisotropyFeature" Tag="Gray" Template="{StaticResource switchbutton}" Width="50" Margin="-5,0,0,0" IsChecked="{Binding GrayAnisotropyFeatureValue, ElementName=registerImage}" Checked="TrainParam_Checked" Unchecked="TrainParam_Checked" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="6" Visibility="{Binding IsChecked, ElementName=GrayFeature, Converter={StaticResource bool2VisibilityConverter}}">
+                      <TextBlock Text="{DynamicResource RunParam_GrayProjHorFeature}" Foreground="{DynamicResource ParamsTabForeground}" FontFamily="Microsoft YaHei" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Width="{Binding ParamTextWidth, ElementName=registerImage}" />
+                      <ToggleButton Name="GrayProjHorFeature" Tag="Gray" Template="{StaticResource switchbutton}" Width="50" Margin="-5,0,0,0" IsChecked="{Binding GrayProjHorFeatureValue, ElementName=registerImage}" Checked="TrainParam_Checked" Unchecked="TrainParam_Checked" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="7" Visibility="{Binding IsChecked, ElementName=GrayFeature, Converter={StaticResource bool2VisibilityConverter}}">
+                      <TextBlock Text="{DynamicResource RunParam_GrayProjVertFeature}" Foreground="{DynamicResource ParamsTabForeground}" FontFamily="Microsoft YaHei" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Width="{Binding ParamTextWidth, ElementName=registerImage}" />
+                      <ToggleButton Name="GrayProjVertFeature" Tag="Gray" Template="{StaticResource switchbutton}" Width="50" Margin="-5,0,0,0" IsChecked="{Binding GrayProjVertFeatureValue, ElementName=registerImage}" Checked="TrainParam_Checked" Unchecked="TrainParam_Checked" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="8" Visibility="{Binding IsChecked, ElementName=GrayFeature, Converter={StaticResource bool2VisibilityConverter}}">
+                      <TextBlock Text="{DynamicResource RunParam_GrayHis}" Foreground="{DynamicResource ParamsTabForeground}" FontFamily="Microsoft YaHei" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Width="{Binding ParamTextWidth, ElementName=registerImage}" />
+                      <ToggleButton Name="GrayHis" Tag="Gray" Template="{StaticResource switchbutton}" Width="50" Margin="-5,0,0,0" IsChecked="{Binding GrayHisValue, ElementName=registerImage}" Checked="TrainParam_Checked" Unchecked="TrainParam_Checked" />
+                    </StackPanel>
+                    <StackPanel />
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+          </ScrollViewer>
+        </Grid>
+        <Rectangle Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Stretch" Height="1" Fill="{DynamicResource SolidColorBrush}" StrokeThickness="0" Margin="10,0" />
+        <Grid Row="2">
+          <Button HorizontalAlignment="Right" Style="{StaticResource BottomLineButtonStyle}" Content="{DynamicResource 训练}" ToolTip="{DynamicResource 训练}" Margin="0,0,20,0" IsEnabled="{Binding IsEnable, ElementName=registerImage}" Click="Register_OnClick" />
+        </Grid>
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>

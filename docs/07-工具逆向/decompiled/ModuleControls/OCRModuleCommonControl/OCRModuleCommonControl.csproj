@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>OCRModuleCommonControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="datatemplate\paramusercontroldatatemplate.xaml" />
+    <Page Remove="OCRModuleCommonControl\MultiROIFilterUI.xaml" />
+    <Page Include="datatemplate\paramusercontroldatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="datatemplate/paramusercontroldatatemplate.xaml" />
+    <Page Include="OCRModuleCommonControl\MultiROIFilterUI.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/multiroifilterui.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Apps.Interface" />
+    <Reference Include="VM.Xml" />
+    <Reference Include="Apps.XmlParser" />
+    <Reference Include="VM.ModuleControl" />
+    <Reference Include="VM.PlatformSDKCS" />
+    <Reference Include="Apps.Data" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="Mvvm" />
+    <Reference Include="Apps.ErrorCode" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="VM.Controls" />
+    <Reference Include="Apps.Log" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+</Project>

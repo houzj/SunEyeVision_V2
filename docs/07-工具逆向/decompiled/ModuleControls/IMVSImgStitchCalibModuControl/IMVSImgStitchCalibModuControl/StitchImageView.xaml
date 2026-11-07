@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="IMVSImgStitchCalibModuControl.StitchImageView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:local="clr-namespace:IMVSImgStitchCalibModuControl" x:Name="us" Loaded="us_Loaded">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid Background="#FCFCFC" Margin="1" MouseEnter="ImageGrid_MouseEnter" MouseLeave="ImageGrid_MouseLeave">
+    <Border Name="Bd" Background="#FBFBFB">
+      <Grid Margin="2">
+        <Canvas Name="CvsIndex" ZIndex="5">
+          <Ellipse Width="20" Height="20" Opacity="0.5" Fill="#666666" />
+          <TextBlock Foreground="#FFFFFFFF" Width="20" Height="15" TextAlignment="Center" Margin="0,2,0,0" Text="{Binding Index, ElementName=us}" />
+        </Canvas>
+        <Grid Name="EmptyGrid" MouseLeftButtonDown="EmptyGrid_Click">
+          <Image Source="/Apps.XmlUI;component/Resources/ic_add image.png" MaxWidth="48" MaxHeight="48" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Grid>
+        <Grid Name="ImageGrid" Visibility="Collapsed" MouseLeftButtonDown="ImageGrid_MouseLeftButtonDown">
+          <Viewbox>
+            <Grid>
+              <Image Name="image" RenderOptions.BitmapScalingMode="NearestNeighbor" Width="500" />
+              <Canvas Name="mView" ClipToBounds="True" />
+            </Grid>
+          </Viewbox>
+          <Button Name="BtnNewImage" ToolTip="{DynamicResource 替换图片}" HorizontalAlignment="Right" VerticalAlignment="Top" Width="24" Height="24" Visibility="Collapsed" Click="BtnNewImage_Click">
+            <Control.Template>
+              <ControlTemplate TargetType="{x:Type Button}">
+                <Image Name="ImageBackground" Width="20" Height="20" Source="/Apps.XmlUI;component/Resources/ic_替换图片_normal.png" />
+                <ControlTemplate.Triggers>
+                  <Trigger Property="UIElement.IsMouseOver" Value="True">
+                    <Setter TargetName="ImageBackground" Property="Image.Source" Value="/Apps.XmlUI;component/Resources/ic_替换图片_click.png" />
+                  </Trigger>
+                  <Trigger Property="UIElement.IsEnabled" Value="False">
+                    <Setter TargetName="ImageBackground" Property="Image.Source" Value="/Apps.XmlUI;component/Resources/ic_替换图片_disable.png" />
+                  </Trigger>
+                  <DataTrigger Value="True" Binding="{Binding DataContext.IsGetingImage, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UniformGrid}}">
+                    <Setter Property="UIElement.IsEnabled" Value="False" />
+                  </DataTrigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Control.Template>
+          </Button>
+          <Polygon Name="PlgStatus" Points="0,0 0,20 20,20" VerticalAlignment="Bottom">
+            <FrameworkElement.Style>
+              <Style TargetType="{x:Type Polygon}">
+                <Setter Property="Fill" Value="#8F8B88" />
+                <Style.Triggers>
+                  <DataTrigger Value="True" Binding="{Binding IsReadyA}">
+                    <Setter Property="Fill" Value="#0ABF3D" />
+                  </DataTrigger>
+                  <DataTrigger Value="True" Binding="{Binding IsActualImage, ElementName=us}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+          </Polygon>
+        </Grid>
+      </Grid>
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type Border}">
+          <Setter Property="BorderBrush" Value="#CCCCCC" />
+          <Setter Property="BorderThickness" Value="1" />
+          <Style.Triggers>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+              <Setter Property="BorderBrush" Value="{DynamicResource Col_Theme}" />
+            </Trigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </Border>
+    <Border>
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type Border}">
+          <Setter Property="BorderBrush" Value="{DynamicResource Col_Theme}" />
+          <Setter Property="BorderThickness" Value="2" />
+          <Setter Property="UIElement.Opacity" Value="0" />
+          <Style.Triggers>
+            <DataTrigger Value="True" Binding="{Binding IsSelectedA}">
+              <Setter Property="UIElement.Opacity" Value="1" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </Border>
+  </Grid>
+</UserControl>

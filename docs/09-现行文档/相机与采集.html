@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>相机与采集 · 现行文档</title>
+<link rel="stylesheet" href="../00-索引/assets/doc.css">
+</head>
+<body>
+<div class="wrap">
+
+<nav class="crumbs">
+    <a href="../00-索引/主题台账.html">主题台账</a>
+    <a href="../00-索引/文档索引.html">文档索引</a>
+    <a href="README.html">现行文档说明</a>
+</nav>
+
+<header class="doc-header">
+    <h1>相机与采集<span class="badge partial">部分未实施</span></h1>
+    <p class="doc-meta">最后更新：2026-11-05<span class="sep">·</span>状态：部分未实施<span class="sep">·</span>代码基线：<code>71da36329</code><span class="sep">·</span>合并来源：14 篇历史方案（清单见文末「历史演进」）</p>
+</header>
+
+<section class="card lead">
+    <h2>一句话结论</h2>
+        <p>相机走<strong>五层分离</strong>：<code>Plugin.SDK</code> 只定契约，<code>DeviceDriver.Camera</code> 实现厂商对接，<code>App</code> 负责装配，<code>UI</code> 只管管理和展示，<code>Workflow</code> 只用统一采集服务。当前实际只有<strong>一条工业相机通道</strong>（内部对接海康 MVS，<code>#if MVS_SDK_AVAILABLE</code> 条件编译），模拟相机只在测试里用。新增第二家厂商只需加适配器，不动上层。</p>
+</section>
+
+<section class="card">
+    <h2>改前用户看到什么</h2>
+        <ul>
+            <li>相机管理、预览、工作流各自持有设备对象，<strong>同一台相机被重复打开</strong>，第二个入口报占用失败。</li>
+            <li>关掉设备管理器或预览窗口，<strong>连接莫名其妙断了</strong>，正在跑的工作流取不到图。</li>
+            <li>保存方案重启后，相机<strong>按名称匹配</strong>重新绑定，改名或换台同型号机器就绑错。</li>
+            <li>参数一律当字符串/布尔处理，<code>PixelFormat</code> 这类枚举被 <code>Convert.ToBoolean</code> 弄错。</li>
+            <li>换一家厂商的相机，要改 UI、改工作流、改业务流程。</li>
+        </ul>
+</section>
+
+<section class="card">
+    <h2>改后应该是什么样</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>场景</th>
+                    <th>期望行为</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>同一台相机被预览和工作流同时使用</td>
+                    <td>复用<strong>同一个连接会话</strong>，不重复打开</td>
+                </tr>
+                <tr>
+                    <td>关闭设备管理器 / 预览窗口</td>
+                    <td>连接<strong>保持</strong>，只有退出、切方案、主动断开、删除设备才释放</td>
+                </tr>
+                <tr>
+                    <td>保存方案后重启</td>
+                    <td>按 <code>DeviceId</code> / 序列号 / MAC <strong>重新绑定</strong>，改名不影响</td>
+                </tr>
+                <tr>
+                    <td>相机离线或 SDK 缺失</td>
+                    <td>明确报错，主界面照常进入（不卡启动）</td>
+                </tr>
+                <tr>
+                    <td>参数读写</td>
+                    <td>按声明类型（Boolean / Integer / Float / String / Enumeration / Command），不猜</td>
+                </tr>
+                <tr>
+                    <td>触发源枚举</td>
+                    <td>读当前值 + 设备枚举符号名归一化；符号名缺失或未识别<strong>拒绝采集</strong>，不猜</td>
+                </tr>
+                <tr>
+                    <td>新增厂商</td>
+                    <td>只加发现器 + 适配器 + 工厂，UI 和工作流零改动</td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+<section class="card">
+    <h2>关键结构</h2>
+        <h3>五层依赖</h3>
+        <figure class="diagram">
+            <div class="d-layers">
+                <div class="d-layer">
+                    <div class="layer-name">契约</div>
+                    <div class="layer-body">
+                        <div class="d-node accent">Plugin.SDK<small>只定契约，不含厂商类型</small></div>
+                    </div>
+                </div>
+                <div class="d-arrow down">↓</div>
+                <div class="d-layer">
+                    <div class="layer-name">实现</div>
+                    <div class="layer-body">
+                        <div class="d-node accent">DeviceDriver.Camera<small>发现 / 适配 / 参数映射 / 会话</small></div>
+                    </div>
+                </div>
+                <div class="d-arrow down">↓</div>
+                <div class="d-layer">
+                    <div class="layer-name">装配</div>
+                    <div class="layer-body">
+                        <div class="d-node">App<small>CameraRuntimeComposition 装配</small></div>
+                    </div>
+                </div>
+                <div class="d-arrow down">↓</div>
+                <div class="d-layer">
+                    <div class="layer-name">使用方</div>
+                    <div class="layer-body">
+                        <div class="d-node plain">UI<small>设备列表 / 连接开关 / 预览</small></div>
+                        <div class="d-node plain">Workflow<small>按 CameraDeviceRef 取图</small></div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-edges">
+                <span>UI → Plugin.SDK（只调统一服务，虚线）</span>
+                <span>Workflow → Plugin.SDK（只调统一服务，虚线）</span>
+            </div>
+            <figcaption>五层依赖自下而上：契约不含厂商类型，驱动层实现，App 装配，UI 与工作流只经统一服务调相机。</figcaption>
+        </figure>
+        <p><strong>契约层不保存厂商 SDK 句柄、线程、连接对象或厂商类型。</strong></p>
+        <h3>运行时对象</h3>
+        <figure class="diagram">
+            <div class="d-fan">
+                <div class="d-node accent">CameraRuntimeComposition<small>唯一装配入口</small></div>
+                <div class="d-arrow down">↓</div>
+                <div class="d-branches">
+                    <div class="d-branch">
+                        <div class="d-node">CameraDiscoveryCoordinator<small>并行发现 + DeviceId 去重</small></div>
+                        <div class="d-arrow down">↓</div>
+                        <div class="d-node plain">ICameraDiscoveryProvider[]</div>
+                    </div>
+                    <div class="d-branch">
+                        <div class="d-node">CameraRuntimeManager<small>注册 / 选工厂 / 开关会话</small></div>
+                        <div class="d-arrow down">↓</div>
+                        <div class="d-row">
+                            <div class="d-node plain">ICameraAdapterFactory[]</div>
+                            <div class="d-node ok">CameraSession<small>一个连接 + 一个适配器</small></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <figcaption>运行时对象只有两个协调者：发现侧负责去重，管理侧负责选工厂与会话，一台设备只开一个会话。</figcaption>
+        </figure>
+        <p>当前装配只注册一套：</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>项</th>
+                    <th>实际实现</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>发现器</td>
+                    <td><code>IndustrialCameraDiscoveryProvider</code></td>
+                    <td>工业相机（内部对接海康 MVS）</td>
+                </tr>
+                <tr>
+                    <td>适配器工厂</td>
+                    <td><code>IndustrialCameraAdapterFactory</code></td>
+                    <td>同上</td>
+                </tr>
+                <tr>
+                    <td>模拟相机</td>
+                    <td><code>SimulatedCameraDiscoveryProvider</code> / <code>SimulatedCameraAdapter</code></td>
+                    <td><strong>不装配到运行时</strong>，仅供测试</td>
+                </tr>
+            </tbody>
+        </table>
+        <blockquote>
+            <p>命名已中立化：旧文档里的 <code>MvsCameraDiscoveryProvider</code> / <code>MvsCameraAdapterFactory</code> 现为 <code>Industrial*</code>，不再以厂商名做产品结构命名。</p>
+        </blockquote>
+        <h3>方案加载时序</h3>
+        <figure class="diagram">
+            <table class="d-seq">
+                <tbody>
+                    <tr>
+                        <td>打开方案</td>
+                        <td><span class="who">用户</span>触发加载</td>
+                    </tr>
+                    <tr>
+                        <td>读持久化相机列表</td>
+                        <td><span class="who">App</span>取出身份 + 配置</td>
+                    </tr>
+                    <tr>
+                        <td>重新发现真实设备</td>
+                        <td><span class="who">App → 发现器</span>按当前连接的真实设备枚举</td>
+                    </tr>
+                    <tr>
+                        <td>回传设备描述</td>
+                        <td><span class="who">发现器 → App</span>返回 <code>CameraDescriptor</code> 列表</td>
+                    </tr>
+                    <tr>
+                        <td>按身份重绑</td>
+                        <td><span class="who">App</span>按 <code>DeviceId</code> / 序列号 / MAC 匹配</td>
+                    </tr>
+                    <tr>
+                        <td>注册运行时描述</td>
+                        <td><span class="who">App → CameraRuntimeManager</span>登记设备描述</td>
+                    </tr>
+                    <tr>
+                        <td>恢复连接</td>
+                        <td><span class="who">App → CameraRuntimeManager</span>按 <code>AutoConnect</code> + <code>IsEnabled</code> 尝试连接</td>
+                    </tr>
+                    <tr>
+                        <td>不阻塞进主界面</td>
+                        <td><span class="who">App</span>成功 / 失败 / 最多等 10 秒，之后都继续</td>
+                    </tr>
+                </tbody>
+            </table>
+            <figcaption>方案加载时序：先按身份重绑，再恢复连接；连接失败或超时都不阻塞进入主界面。</figcaption>
+        </figure>
+        <h3>持久化什么、不持久化什么</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>持久化（方案里）</th>
+                    <th>不持久化（运行时）</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>DeviceId</code>、序列号、MAC、IP</td>
+                    <td>SDK 连接对象、句柄</td>
+                </tr>
+                <tr>
+                    <td>厂商、型号、传输方式</td>
+                    <td>连接状态、流状态</td>
+                </tr>
+                <tr>
+                    <td>用户名称、<code>IsEnabled</code>、<code>AutoConnect</code></td>
+                    <td>线程、会话</td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+<section class="card">
+    <h2>关键决策与理由</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>决策</th>
+                    <th>理由</th>
+                    <th>依据</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>契约层不出现任何厂商类型</td>
+                    <td>一旦泄漏厂商类型，UI/工作流就会被绑死，新增厂商必须改上层</td>
+                    <td>20260925</td>
+                </tr>
+                <tr>
+                    <td>同一 <code>CameraDeviceRef</code> 只允许一个会话</td>
+                    <td>预览、工作流、管理器共用一台相机，重复打开必然冲突</td>
+                    <td>20260925 §3</td>
+                </tr>
+                <tr>
+                    <td>关闭视图<strong>不</strong>释放方案级连接</td>
+                    <td>视图是临时的，连接是方案级的；旧行为导致关窗口断流</td>
+                    <td>20260925 §2.4</td>
+                </tr>
+                <tr>
+                    <td>持久化只存身份 + 配置</td>
+                    <td>连接对象不可序列化，且状态属于运行时</td>
+                    <td>20260925 §4.2</td>
+                </tr>
+                <tr>
+                    <td>重新发现后按 <code>DeviceId</code>/序列号/MAC 重绑</td>
+                    <td>名称会变，IP 会变，只有硬件身份稳定</td>
+                    <td>20260925 §4.3</td>
+                </tr>
+                <tr>
+                    <td>加载时最多等 10 秒</td>
+                    <td>相机离线不能卡死启动</td>
+                    <td>20260925 §4.3</td>
+                </tr>
+                <tr>
+                    <td>参数必须带明确类型</td>
+                    <td><code>17301505</code> 是 <code>PixelFormat=Mono8</code> 的枚举值，不是布尔值</td>
+                    <td>20260925 §6</td>
+                </tr>
+                <tr>
+                    <td>枚举数字不能写死跨厂商语义</td>
+                    <td>信捷 <code>TriggerSource=0</code> 是 <code>Software</code>，另一台设备的 <code>0</code> 可能是 <code>Line0</code></td>
+                    <td>20260925 §6</td>
+                </tr>
+                <tr>
+                    <td>符号名缺失或未识别 → <strong>拒绝采集</strong></td>
+                    <td>猜错触发源会得到错误图像，比报错更危险</td>
+                    <td>20260925 §6</td>
+                </tr>
+                <tr>
+                    <td>运行中改触发/采集拓扑：停旧流 → 写入 → 回读 → 新配置启动</td>
+                    <td>直接改参数会让流与实际配置不一致</td>
+                    <td>20260925 §6</td>
+                </tr>
+                <tr>
+                    <td>新增厂商先同项目加目录，不急着拆项目</td>
+                    <td>拆项目会带来 SDK 版本冲突与部署成本，等到真需要再拆</td>
+                    <td>20260925 §7</td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+<section class="card">
+    <h2>实施与验证状态</h2>
+        <h3>已做</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>能力</th>
+                    <th>状态</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>契约层（<code>CameraDescriptor</code> / <code>CameraDeviceRef</code> / <code>ICameraAdapter</code> / <code>ICameraAdapterFactory</code> / <code>ICameraDiscoveryProvider</code> / <code>ICameraCaptureService</code> / <code>CameraFrame</code>）</td>
+                    <td>已定义</td>
+                </tr>
+                <tr>
+                    <td><code>DeviceDriver.Camera</code> 项目（发现 / 适配 / 工厂 / 参数映射 / 会话）</td>
+                    <td>已实现</td>
+                </tr>
+                <tr>
+                    <td><code>IndustrialCameraAdapter</code>（海康 MVS，<code>#if MVS_SDK_AVAILABLE</code>）</td>
+                    <td>已实现</td>
+                </tr>
+                <tr>
+                    <td><code>SimulatedCameraAdapter</code></td>
+                    <td>已实现，<strong>仅测试用</strong></td>
+                </tr>
+                <tr>
+                    <td><code>CameraRuntimeComposition</code> 装配</td>
+                    <td>已实现，只装 Industrial 一套</td>
+                </tr>
+                <tr>
+                    <td>发现去重（按稳定 <code>DeviceId</code>）</td>
+                    <td>已实现</td>
+                </tr>
+                <tr>
+                    <td>单会话独占</td>
+                    <td>已实现</td>
+                </tr>
+                <tr>
+                    <td>方案持久化与重绑（DeviceId / 序列号 / MAC）</td>
+                    <td>已实现</td>
+                </tr>
+                <tr>
+                    <td>连接状态与视图生命周期解耦</td>
+                    <td>已实现</td>
+                </tr>
+                <tr>
+                    <td>参数强类型模型与枚举符号名归一化</td>
+                    <td>已实现</td>
+                </tr>
+                <tr>
+                    <td>相机管理 UI（列表 / 添加 / 删除 / 重命名 / 连接开关 / 状态显示 / 打开预览）</td>
+                    <td>已实现</td>
+                </tr>
+            </tbody>
+        </table>
+        <h3>未做</h3>
+        <ul>
+            <li><strong>第二家厂商未接入</strong>：工业相机只有一条通道（海康 MVS）。旧方案以 Basler 为例写过扩展路径，实际未实现，也没有 Daheng。</li>
+            <li><strong>多厂商并行发现未验证</strong>：<code>CameraDiscoveryCoordinator</code> 支持 <code>ICameraDiscoveryProvider[]</code>，但当前只注册一个，并行去重只在单厂商下跑过。</li>
+            <li><strong>驱动项目拆分未做</strong>：<code>SunEyeVision.DeviceDriver.Abstractions</code> / <code>.Hikvision</code> / <code>.Basler</code> 等独立项目不存在，仍是单项目内分目录。</li>
+            <li><strong>按授权或产品版本选择驱动</strong>（拆项目的触发条件之一）未做。</li>
+        </ul>
+        <h3>未验</h3>
+        <ul>
+            <li>真实相机诊断测试与适配器单元测试（旧方案列了 12 项验收：发现、去重、连接/断开/重复连接、单次/连续采集、软触发与超时、参数读写、关管理器不断连、关预览不改变连接、保存重启恢复、SDK 缺失/离线/占用报错、加载失败仍进主界面、诊断测试通过）——<strong>没有逐项记录结论</strong>。</li>
+            <li>预览窗口、设备管理器的高 DPI 与主题目视验收未记录。</li>
+            <li>未装 MVS SDK 时的降级表现（<code>MVS_SDK_AVAILABLE</code> 未定义）没有验收记录。</li>
+        </ul>
+</section>
+
+<section class="card">
+    <h2>风险与遗留</h2>
+        <ol>
+            <li><strong><code>#if MVS_SDK_AVAILABLE</code> 是编译期开关。</strong> 未定义时适配器行为需要明确：必须报"未启用工业相机支持"这类可辨识错误，不能表现成"扫描不到任何相机"让用户以为设备坏了。当前文档未记录该分支的实际表现，属待验项。</li>
+            <li><strong>只有一条厂商通道，没有第二家验证中立性。</strong> 现在的"契约中立"是设计上的，没有第二家厂商跑过，可能仍有隐藏的厂商假设（例如参数默认值、传输方式枚举）。</li>
+            <li><strong>加载等待 10 秒是固定值。</strong> 相机数量多或网络慢时会拖慢启动；反之设备很快连上也要等满才继续（若实现是串行等待）。需要按实际体验确认是否改成并行 + 提前返回。</li>
+            <li><strong>方案重绑依赖三种身份之一。</strong> 若某厂商既不提供稳定序列号也没有 MAC（例如纯 IP 连接的虚拟相机），重绑会退回不稳定匹配，需明确该场景的策略而不是默默按名称。</li>
+            <li><strong>模拟相机不在装配中。</strong> 想在无相机环境演示，需要改代码注册 <code>SimulatedCameraDiscoveryProvider</code>，没有配置开关。</li>
+        </ol>
+</section>
+
+<section class="card">
+    <h2>历史演进</h2>
+        <p>按时间倒序，全部保留在 <code>01-方案设计</code> / <code>05-框架架构</code> / <code>06-指南参考</code>：</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>文档</th>
+                    <th>本篇采信内容</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2026-09-25</td>
+                    <td><a href="../05-框架架构/2026/09/25/相机实现与开发说明-20260925.md">相机实现与开发说明</a></td>
+                    <td><strong>主要来源</strong>：五层分层、运行时对象、生命周期、参数类型、扩展与验收</td>
+                </tr>
+                <tr>
+                    <td>2026-09-25</td>
+                    <td><a href="../01-方案设计/2026/09/25/相机与解决方案启动流程最终优化方案-20260925.md">相机与解决方案启动流程最终优化方案</a></td>
+                    <td>方案加载时序、10 秒等待</td>
+                </tr>
+                <tr>
+                    <td>2026-09-24</td>
+                    <td><a href="../01-方案设计/2026/09/相机设备管理持久化方案-20260924.md">相机设备管理持久化方案</a></td>
+                    <td>持久化字段与重绑策略</td>
+                </tr>
+                <tr>
+                    <td>2026-09-24</td>
+                    <td><a href="../01-方案设计/2026/09/相机管理器最终重构方案-20260924.md">相机管理器最终重构方案</a></td>
+                    <td>管理器职责边界、单会话</td>
+                </tr>
+                <tr>
+                    <td>2026-09-23</td>
+                    <td><a href="../01-方案设计/2026/09/相机管理器与预览调参界面最终优化方案-20260923.md">相机管理器与预览调参界面最终优化方案</a></td>
+                    <td>管理 UI 与预览解耦</td>
+                </tr>
+                <tr>
+                    <td>2026-09-19</td>
+                    <td><a href="../01-方案设计/2026/09/相机采集架构整改实施计划-20260919.md">相机采集架构整改实施计划</a></td>
+                    <td>分层整改步骤</td>
+                </tr>
+                <tr>
+                    <td>2026-09-19</td>
+                    <td><a href="../01-方案设计/2026/09/19/相机采集架构实施评审与整改方案-20260919-134250.md">相机采集架构实施评审与整改方案</a></td>
+                    <td>评审结论</td>
+                </tr>
+                <tr>
+                    <td>2026-09-18</td>
+                    <td><a href="../01-方案设计/2026/09/相机采集架构与设备管理最终方案-20260918.md">相机采集架构与设备管理最终方案</a></td>
+                    <td>初版架构</td>
+                </tr>
+                <tr>
+                    <td>2026-04-23</td>
+                    <td><a href="../06-指南参考/configs/2026/04/configs_camera_manager_style_optimization_20260423.md">相机管理器样式优化</a></td>
+                    <td>界面样式</td>
+                </tr>
+                <tr>
+                    <td>2026-04-23</td>
+                    <td><a href="../06-指南参考/configs/2026/04/configs_camera_manager_test_20260423.md">相机管理器测试</a></td>
+                    <td>测试口径</td>
+                </tr>
+                <tr>
+                    <td>2026-04-23</td>
+                    <td><a href="../06-指南参考/configs/2026/04/configs_camera_manager_fix_20260423.md">相机管理器修复</a></td>
+                    <td>早期缺陷</td>
+                </tr>
+                <tr>
+                    <td>2026-04-23</td>
+                    <td><a href="../06-指南参考/configs/2026/04/configs_camera_discovery_implementation_20260423.md">相机发现实现</a></td>
+                    <td>发现器初版</td>
+                </tr>
+                <tr>
+                    <td>2026-04-23</td>
+                    <td><a href="../06-指南参考/configs/2026/04/configs_camera_migration_summary_20260423.md">相机迁移总结</a></td>
+                    <td>迁移记录</td>
+                </tr>
+                <tr>
+                    <td>2026-04-09</td>
+                    <td><a href="../06-指南参考/configs/2026/04/configs_camera_driver_implementation_20260409.md">相机驱动实现</a></td>
+                    <td>最早驱动实现</td>
+                </tr>
+            </tbody>
+        </table>
+        <p><strong>需要修正的历史说法</strong>：</p>
+        <ul>
+            <li>旧文档中的 <code>MvsCameraDiscoveryProvider</code> / <code>MvsCameraAdapterFactory</code> / <code>MvsCameraAdapter</code> 已改名为 <code>Industrial*</code>，按厂商名命名的结构不再作为产品命名。</li>
+            <li>旧文档中 <code>src/DeviceDriver/Cameras/</code> 的路径现为独立项目 <code>src/DeviceDriver.Camera/Cameras/</code>。</li>
+        </ul>
+</section>
+
+<nav class="doc-nav">
+    <a class="primary" href="../00-索引/主题台账.html">主题台账</a>
+    <a href="../00-索引/文档索引.html">文档索引</a>
+    <a href="README.html">现行文档说明</a>
+</nav>
+
+</div>
+</body>
+</html>

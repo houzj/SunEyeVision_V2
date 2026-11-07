@@ -1,0 +1,84 @@
+{
+  "stableToolId": "cameraiomodule",
+  "originalPlugin": "CameraIOModule",
+  "displayName": "相机IO通信",
+  "originalCategory": "Communication",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Communication\\CameraIOModule",
+  "uiCategory": "extension-panels",
+  "priority": "P3",
+  "resourceCount": 6,
+  "parameterCount": 5,
+  "inputCount": 5,
+  "outputCount": 3,
+  "uiControlCount": 11,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/CameraIOModuTool.cs",
+      "members": [
+        "CameraIOModuTool()",
+        "Clone()",
+        "Dispose()"
+      ],
+      "evidenceType": "decompiled managed source"
+    },
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/CameraIOModuParams.cs",
+      "members": [
+        "CameraType",
+        "IODurationTime",
+        "IOEnableElectricalLevel",
+        "IOOutType"
+      ],
+      "evidenceType": "decompiled managed source"
+    },
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/CameraIOResult.cs",
+      "members": [
+        "stBasicModuInfo",
+        "stCameraIOModule"
+      ],
+      "evidenceType": "decompiled managed source"
+    },
+    {
+      "path": "analysis/decompiled/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCommunicationMgr.cs",
+      "members": [
+        "GetData",
+        "CloseComm",
+        "ClearAll",
+        "ResetParamStateFlag"
+      ],
+      "evidenceType": "decompiled managed source"
+    },
+    {
+      "path": "analysis/decompiled/VMControls.WPF/VMControls.WPF.GlobalUI/GlobalCommunication.xaml.cs",
+      "members": [
+        "SolCommunicationModuleID",
+        "ProcCommunicationModuleID",
+        "CamCommunicationModuleID",
+        "GlobalCommunication"
+      ],
+      "evidenceType": "decompiled managed source"
+    }
+  ],
+  "managedMembers": [
+    "CameraIOModuTool constructor",
+    "CameraIOModuTool.Clone",
+    "CameraIOModuTool.Dispose",
+    "CameraIOModuParams enum ParamItems",
+    "CameraIOResult basic/native result fields",
+    "GlobalCommunicationMgr.CloseComm/GetData/ClearAll/ResetParamStateFlag",
+    "GlobalCommunication device selectors"
+  ],
+  "unknowns": [
+    "CameraIO Process/ProcessAlg and native trigger ABI",
+    "gateway protocol/connection/retry behavior",
+    "full UI binding/theme and main-window event chain",
+    "save/reload and cross-solution lifecycle",
+    "physical camera/IO runtime behavior"
+  ]
+}

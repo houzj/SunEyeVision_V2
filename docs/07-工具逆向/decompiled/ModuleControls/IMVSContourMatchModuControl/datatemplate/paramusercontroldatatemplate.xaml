@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:IMVSContourMatchModuControl" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/BottomButtonStyle.xaml" />
+    <ResourceDictionary Source="/IMVSHPFeatureMatchModuControl;component/DataTemplate/ParamUserControlDataTemplate.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+  <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter" />
+  <DataTemplate x:Key="HPPyramidBottomCommand">
+    <Button Width="auto" MinWidth="66" Margin="2.5,0" Padding="10,0,10,0" Content="{Lang:ResourceBinding DisplayNameA}" Visibility="{Binding CustomVisibleA, Converter={StaticResource bool2VisibilityConverter}}">
+      <FrameworkElement.Style>
+        <Style BasedOn="{StaticResource BottomButtonStyle}" TargetType="{x:Type Button}">
+          <Setter Property="Command" Value="{Binding ClickCommand}" />
+        </Style>
+      </FrameworkElement.Style>
+    </Button>
+  </DataTemplate>
+</ResourceDictionary>

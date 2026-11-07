@@ -1,0 +1,104 @@
+{
+  "controls": [
+    {
+      "type": "OpenFileDialog4ReadFile",
+      "name": "FilePath"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RefreshSignal"
+    },
+    {
+      "type": "Boolean",
+      "name": "SaveCalibDataEnable"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "SnapImagePointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "SnapImagePointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "SnapImageR"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "SnapWorldPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "SnapWorldPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "SnapWorldR"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TeachWorldPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TeachWorldPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TeachWorldR"
+    },
+    {
+      "type": "ReadFileConfigData",
+      "name": "CalibInputParam"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "readcalibfilemodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\ReadCalibFileModu\\ReadCalibFileModu.xml",
+      "sha256": "d51dd352c7e7ca03781876625e0473aaf2be74fc276761e588b85ac922d4cb14",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\ReadCalibFileModu\\ReadCalibFileModuAlgorithm.xml",
+      "sha256": "fd34fe90b74c63e7e2e98220447b9e6fb51e395363b4b8d4bdd218b9d7ed95fb",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\ReadCalibFileModu\\ReadCalibFileModuAlgorithmTab.xml",
+      "sha256": "5e23fde5efd772431940a33ad44f8898b9dc5aef1a84f5fad590dc2688f44863",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\ReadCalibFileModu\\ReadCalibFileModuCs.xml",
+      "sha256": "8e42089bdb51794f99e4dae3ec142e93f4de6f09f1916c32e60a88d64ef35745",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\ReadCalibFileModu\\ReadCalibFileModuDisplay.xml",
+      "sha256": "2cefa54d36374dd83e15742afd18574c64a04dc0603b2d77177ead9ea5f29df1",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\ReadCalibFileModu\\ToolItemInfo.xml",
+      "sha256": "1581e184aa571c7e3d15c1639742d0ceba7094d5f6c5215765b136fac055bcc2",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "标定加载",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

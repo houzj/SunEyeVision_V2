@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>订阅绑定与 ROI 几何 · 现行文档</title>
+<link rel="stylesheet" href="../00-索引/assets/doc.css">
+</head>
+<body>
+<div class="wrap">
+
+<nav class="crumbs">
+    <a href="../00-索引/主题台账.html">主题台账</a>
+    <a href="../00-索引/文档索引.html">文档索引</a>
+    <a href="README.html">现行文档说明</a>
+</nav>
+
+<header class="doc-header">
+    <h1>订阅绑定与 ROI 几何<span class="badge partial">部分未实施</span></h1>
+    <p class="doc-meta">最后更新：2026-11-05<span class="sep">·</span>状态：部分未实施<span class="sep">·</span>代码基线：<code>71da36329</code><span class="sep">·</span>合并来源：18 篇历史方案（清单见文末「历史演进」）</p>
+</header>
+
+<section class="card lead">
+    <h2>一句话结论</h2>
+        <p>绑定只认<strong>稳定身份</strong>（工作流 ID + 节点 ID + 输出字段 ID + 属性路径），不认名称、序号、显示文字或当前值。上游发生<strong>真的不适配</strong>变化时，直接解除受影响输入并要求重绑；改个名、挪个位置、值变了都不解绑。判定统一为三态：适配→保留，不适配→解绑，信息不足→保留但标记待校验并<strong>阻止执行</strong>。B1、B2 与 B3 核心已落地；<strong>B3 尚未接入窗口和执行入口，B4 增量索引未做</strong>。</p>
+</section>
+
+<section class="card">
+    <h2>改前用户看到什么</h2>
+        <ul>
+            <li>上游工具改了输出类型，下游那个输入还显示着原来的字段名，<strong>执行时找不到就回显一串 GUID</strong>，用户不知道发生了什么。</li>
+            <li>上游删了字段再新建一个同名字段，下游<strong>自动"接上"了</strong>，但其实两个字段毫无关系，跑出来是错的。</li>
+            <li>改个节点名或者换个字段顺序，绑定全红、要求重新配一遍。</li>
+            <li>接收工具从「设备模式」切到「变量模式」，两个模式各自有一个 <code>out0</code>，<strong>下游绑定悄悄指到另一个 out0 上了</strong>。</li>
+            <li>删掉一条画布连线，<strong>用户手工设置的显式绑定跟着没了</strong>。</li>
+            <li>关掉工具窗口再打开，<strong>失效的旧引用被控件又写回参数</strong>，解绑白做了。</li>
+        </ul>
+</section>
+
+<section class="card">
+    <h2>改后应该是什么样</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>变化</th>
+                    <th>期望行为</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>当前值 / 报文内容变了</td>
+                    <td>保留绑定，下次执行取新值</td>
+                </tr>
+                <tr>
+                    <td>节点名、字段名改了，或字段重排</td>
+                    <td>保留绑定，只刷新显示</td>
+                </tr>
+                <tr>
+                    <td>同一逻辑输出换了来源但消费规则仍适配</td>
+                    <td>保留绑定，刷新类型与来源信息</td>
+                </tr>
+                <tr>
+                    <td>类型、形状、元素路径、解释方式变了且不适配</td>
+                    <td><strong>解除所有受影响输入</strong>，要求重新绑定</td>
+                </tr>
+                <tr>
+                    <td>字段删除 / 身份被替换 / 节点删除</td>
+                    <td>解除该旧身份的全部绑定</td>
+                </tr>
+                <tr>
+                    <td>删除后又新建同名字段</td>
+                    <td><strong>新身份，不自动恢复旧绑定</strong></td>
+                </tr>
+                <tr>
+                    <td>连接新增 / 删除 / 替换</td>
+                    <td>按连接语义处理；删除连线只清它自己产生的自动来源，不动显式绑定</td>
+                </tr>
+                <tr>
+                    <td>节点禁用或分支跳过</td>
+                    <td>只更新本次执行有效性，不当作字段删除</td>
+                </tr>
+                <tr>
+                    <td>契约信息不足、无法确认</td>
+                    <td>保留引用 + 标记「已绑定（待校验）」，<strong>阻止执行</strong>，不是可执行兜底</td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+<section class="card">
+    <h2>关键结构</h2>
+        <h3>三态判定与影响传播</h3>
+        <figure class="diagram">
+            <div class="d-chain-v">
+                <div class="d-node accent">变化来源<small>上游输出定义 / 下游输入要求 / 连接拓扑变化</small></div>
+                <div class="d-arrow down">↓</div>
+                <div class="d-node">契约差异比较<small>存在性 / 作用域 / 类型 / 形状 / 元素路径 / 解释 / 拓扑约束</small></div>
+            </div>
+            <div class="d-fan">
+                <div class="d-arrow down">↓</div>
+                <div class="d-branches">
+                    <div class="d-branch">
+                        <span class="d-edge">已确认适配</span>
+                        <div class="d-arrow down">↓</div>
+                        <div class="d-node ok">保留绑定，刷新显示</div>
+                    </div>
+                    <div class="d-branch">
+                        <span class="d-edge">已确认不适配</span>
+                        <div class="d-arrow down">↓</div>
+                        <div class="d-node warn">解除受影响输入，标记待重配</div>
+                        <div class="d-arrow down">↓</div>
+                        <div class="d-node">引用索引<small>定位受影响消费者</small></div>
+                    </div>
+                    <div class="d-branch">
+                        <span class="d-edge">契约缺失 / 信息不足</span>
+                        <div class="d-arrow down">↓</div>
+                        <div class="d-node">保留 + 待校验，阻止执行</div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-loop">引用索引回指契约差异比较，继续下一轮影响传播</div>
+            <figcaption>三态判定：能适配就保留，确定不适配才解绑并回溯消费者，信息不足时不动绑定但阻止执行。</figcaption>
+        </figure>
+        <p><strong>不得隐式转换、拼接、截断或修改解析模式</strong>来"让它适配"。</p>
+        <h3>身份构成</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>对象</th>
+                    <th>身份</th>
+                    <th>明确<strong>不</strong>参与身份</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>来源</td>
+                    <td>工作流 ID + 节点 ID + 输出字段 ID + 属性/元素路径</td>
+                    <td>显示名、序号、控件文字</td>
+                </tr>
+                <tr>
+                    <td>目标</td>
+                    <td>工作流 ID + 节点 ID + 输入参数/输入行 ID</td>
+                    <td>同上</td>
+                </tr>
+                <tr>
+                    <td>全局变量</td>
+                    <td>稳定变量身份</td>
+                    <td>可修改的变量名</td>
+                </tr>
+                <tr>
+                    <td>连接自动绑定</td>
+                    <td>额外记录关联连接身份（<code>AutomaticConnectionId</code>）</td>
+                    <td>第一候选来源</td>
+                </tr>
+            </tbody>
+        </table>
+        <h3>配置版本与执行快照</h3>
+        <figure class="diagram">
+            <div class="d-chain-v">
+                <div class="d-node accent">编辑草稿<small>深拷贝 + 保留稳定身份，不含运行结果</small></div>
+                <div class="d-arrow down">↓</div>
+                <div class="d-node decision">校验通过？</div>
+            </div>
+            <div class="d-fan">
+                <div class="d-arrow down">↓</div>
+                <div class="d-branches">
+                    <div class="d-branch">
+                        <span class="d-edge">通过</span>
+                        <div class="d-arrow down">↓</div>
+                        <div class="d-node ok">原子发布<small>配置 + 绑定关系 + 索引 + 依赖版本，同时递增版本</small></div>
+                        <div class="d-arrow down">↓</div>
+                        <div class="d-node">执行开始<small>从同一版本生成参数与关系快照</small></div>
+                        <div class="d-arrow down">↓</div>
+                        <div class="d-node">运行中结果空间<small>期间的设计变更不改写本轮</small></div>
+                    </div>
+                    <div class="d-branch">
+                        <span class="d-edge">失败</span>
+                        <div class="d-arrow down">↓</div>
+                        <div class="d-node warn">旧正式配置不变<small>用户草稿保留</small></div>
+                    </div>
+                </div>
+            </div>
+            <figcaption>草稿与正式配置分离：校验通过才原子发布并起步快照，失败时旧版本不动、草稿不丢。</figcaption>
+        </figure>
+</section>
+
+<section class="card">
+    <h2>关键决策与理由</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>决策</th>
+                    <th>理由</th>
+                    <th>依据</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>绑定跟随<strong>稳定字段身份</strong></td>
+                    <td>名称会改、顺序会变、值会变，只有身份稳定</td>
+                    <td>20261013 最终规则</td>
+                </tr>
+                <tr>
+                    <td>不适配时<strong>直接解绑</strong>，不留失效引用</td>
+                    <td>保留失效引用会让用户以为还能用，且会导致执行期找不到字段</td>
+                    <td>20261013（取代早先"保留并要求修复"的建议）</td>
+                </tr>
+                <tr>
+                    <td>解绑<strong>只清受影响输入</strong>，不清空其他合法绑定</td>
+                    <td>一改就全红会让用户不敢动配置</td>
+                    <td>20261013</td>
+                </tr>
+                <tr>
+                    <td>只清受影响输入，<strong>不按同名字段自动重连</strong></td>
+                    <td>同名不同身份，自动重连等于猜</td>
+                    <td>20261013</td>
+                </tr>
+                <tr>
+                    <td>三态里"信息不足"必须<strong>阻止执行</strong></td>
+                    <td>待校验不是兜底，放行会产生不可解释结果</td>
+                    <td>20261013（对齐禁止静默兜底原则）</td>
+                </tr>
+                <tr>
+                    <td>删除连线<strong>不清显式绑定</strong></td>
+                    <td>连线与绑定是两件事，合并处理会误删用户配置</td>
+                    <td>20261013 §连接与数据绑定</td>
+                </tr>
+                <tr>
+                    <td>连接自动产生的绑定失去合法来源时<strong>清除而非换源</strong></td>
+                    <td>换第一个候选是猜测，用户无法预期</td>
+                    <td>20261013 B1</td>
+                </tr>
+                <tr>
+                    <td>显式数据绑定<strong>本身建立执行依赖</strong></td>
+                    <td>只靠画布连线决定执行顺序时，删线就断数据</td>
+                    <td>20261013</td>
+                </tr>
+                <tr>
+                    <td>拒绝候选变更时<strong>保持旧正式配置</strong>，不为消环删其他合法绑定</td>
+                    <td>消环的代价不应是用户数据</td>
+                    <td>20261013</td>
+                </tr>
+                <tr>
+                    <td>引用索引是<strong>派生查询</strong>，不是第二套配置</td>
+                    <td>两套存储必然不同步</td>
+                    <td>20261013 §引用索引</td>
+                </tr>
+                <tr>
+                    <td>撤销重做恢复<strong>整个已接受配置</strong>，不只画布</td>
+                    <td>只恢复节点/连线会让绑定与配置错位</td>
+                    <td>20261013 B3</td>
+                </tr>
+                <tr>
+                    <td>恢复产生<strong>新版本</strong>，旧版本不重新成为当前</td>
+                    <td>版本回退会破坏"运行中快照不变"</td>
+                    <td>20261013 B3</td>
+                </tr>
+                <tr>
+                    <td>接收节点<strong>统一维护逻辑输出行</strong>，切模式保留 <code>FieldId</code></td>
+                    <td>两套 <code>out0</code> 是身份混乱的根因</td>
+                    <td>20261013 §接收输出身份优化</td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+<section class="card">
+    <h2>实施与验证状态</h2>
+        <h3>已做</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>阶段</th>
+                    <th>内容</th>
+                    <th>判定</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>首批</td>
+                    <td><code>OutputBindingChangeService</code>：扫描方案全部节点生成消费者解绑计划</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td><strong>B1</strong></td>
+                    <td>输入与连接正确性：下游输入要求变化<strong>对称检查</strong>原来源；取消宿主/图像选择器自动换源；连接关联来源失效不换源；重绑与显式常量有效性检查</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td><strong>B2</strong></td>
+                    <td>统一关系描述：<code>BindingInputCatalog</code> + <code>BindingRelationCatalog</code>，候选/适配/依赖读同一来源；作用域、静态契约、待校验、形状声明齐全</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td><strong>B3 核心</strong></td>
+                    <td><code>BindingConfigurationStore</code>：独立配置草稿、深拷贝保留身份、候选副本校验、成功后原子发布配置+依赖版本；核心撤销/重做恢复完整配置</td>
+                    <td>已实施（核心）</td>
+                </tr>
+                <tr>
+                    <td><strong>B3 宿主网关</strong></td>
+                    <td><code>NodeConfigurationEditHost</code>：节点编辑持独立草稿、提交前检查并行修改、冲突拒绝覆盖、投影异常回滚</td>
+                    <td>已实施（网关）</td>
+                </tr>
+                <tr>
+                    <td>类型契约快照</td>
+                    <td><code>TypeContract</code>（类型词汇 + 数组形状），剔除运行值与 UI 树</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>未知契约</td>
+                    <td><code>BindingValidationPending</code>，普通与异步工具请求均预检拦截</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>接收输出身份</td>
+                    <td>逻辑输出行统一，设备/变量模式切换保留 <code>FieldId</code></td>
+                    <td>已实施</td>
+                </tr>
+            </tbody>
+        </table>
+        <h3>未做</h3>
+        <ul>
+            <li><strong>B3 宿主整体接入</strong>：窗口与执行入口<strong>尚未调用</strong>网关。<code>Default</code> / <code>Custom</code> 窗口的统一执行与关闭校验、提交后草稿重绑、失效编辑器提示、<code>CommandManager</code> 事务历史都未接。</li>
+            <li><strong>B4 增量索引</strong>：当前复查仍是<strong>扫描模型</strong>，不是带版本的增量索引。</li>
+            <li><strong>B5 完整验收</strong>：全入口、全生命周期、UI 人工验收未做。</li>
+            <li>外部拓扑或变量编辑尚未纳入网关。</li>
+            <li>结果版本统一失效未做（设计结果与运行结果空间的版本联动）。</li>
+        </ul>
+        <h3>未验</h3>
+        <ul>
+            <li>Visual Studio 设计器、高 DPI 目视验收。</li>
+            <li>用户多入口实际操作（单节点、工作流、主界面、图像预览四种触发）。</li>
+            <li>真实旧方案兼容（不要求重建方案）。</li>
+            <li>关闭窗口失败时"继续编辑 / 放弃未提交编辑"的实际交互体验。</li>
+        </ul>
+</section>
+
+<section class="card">
+    <h2>风险与遗留</h2>
+        <ol>
+            <li><strong>最大风险：能力做了但没接上。</strong> B3 的核心与网关都有测试（135 项 + 127 项专项），但<strong>窗口和执行入口还没调用</strong>。这意味着用户当前体验到的是 B2 行为，不是 B3。任何"绑定原子性已解决"的说法都要先看这个接入是否完成。</li>
+            <li><strong>实时写入架构下没有真正的草稿取消。</strong> 已写入参数的内容不会回滚，退出提示必须说明这个边界，不能自称"完整草稿取消"。</li>
+            <li><strong>待校验态会让节点无法执行。</strong> 这是刻意设计（宁可拦住不猜），但需要可读的提示，否则用户会以为工具坏了。</li>
+            <li><strong>候选列表为空 ≠ 字段已删除。</strong> 上游没执行、设备断线都可能让候选为空，据此解绑是错的。这条在实现里已有区分，但容易被后续改动破坏。</li>
+            <li><strong>接收工具的模式切换身份</strong>已优化，但<strong>已失效的旧工程引用不会按 <code>out0</code> 名称自动迁移</strong>，开发期需用当前契约重新确认。</li>
+            <li><strong>扫描式复查在方案变大后会变慢。</strong> B4 未做，节点数多的方案每次提交都要全扫。</li>
+        </ol>
+</section>
+
+<section class="card">
+    <h2>历史演进</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>文档</th>
+                    <th>本篇采信</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2026-10-13</td>
+                    <td><a href="../01-方案设计/2026/10/上游输出变更与下游自动解绑优化方案-20261013.md">上游输出变更与下游自动解绑优化方案</a></td>
+                    <td><strong>主要来源</strong>：最终规则、三态、B1~B5、身份构成</td>
+                </tr>
+                <tr>
+                    <td>2026-10-13</td>
+                    <td><a href="../01-方案设计/2026/10/工具参数编辑提交与执行快照优化方案-20261013.md">工具参数编辑提交与执行快照优化方案</a></td>
+                    <td>编辑提交与快照边界</td>
+                </tr>
+                <tr>
+                    <td>2026-09-18</td>
+                    <td><a href="../01-方案设计/2026/09/18/全局变量运行快照端到端验证方案-20260918.md">全局变量运行快照端到端验证方案</a></td>
+                    <td>变量快照验证</td>
+                </tr>
+                <tr>
+                    <td>2026-09-18</td>
+                    <td><a href="../03-测试报告/2026/09/18/测试报告-全局变量运行快照端到端验证-20260918-135112.md">测试报告-全局变量运行快照端到端验证</a></td>
+                    <td>验证结果</td>
+                </tr>
+                <tr>
+                    <td>2026-09-17</td>
+                    <td><a href="../01-方案设计/2026/09/17/参数契约与工具插件分层最终方案-20260917-165734.md">参数契约与工具插件分层最终方案</a></td>
+                    <td>参数契约分层</td>
+                </tr>
+                <tr>
+                    <td>2026-09-17</td>
+                    <td><a href="../01-方案设计/2026/09/17/目标参数与全局变量绑定UI优化方案-20260917-144020.md">目标参数与全局变量绑定 UI 优化方案</a></td>
+                    <td>绑定 UI</td>
+                </tr>
+                <tr>
+                    <td>2026-09-10</td>
+                    <td><a href="../01-方案设计/2026/09/10/工作流真异步与全局变量方案-20260910-225012.md">工作流真异步与全局变量方案</a></td>
+                    <td>异步与变量</td>
+                </tr>
+                <tr>
+                    <td>2026-09-10</td>
+                    <td><a href="../01-方案设计/2026/09/10/按图形绑定优化方案-20260910-163600.md">按图形绑定优化方案</a></td>
+                    <td>几何绑定</td>
+                </tr>
+                <tr>
+                    <td>2026-09-09</td>
+                    <td><a href="../01-方案设计/2026/09/09/订阅模型Source激活与几何测量工具基座方案-20260909-152136.md">订阅模型 Source 激活与几何测量工具基座方案</a></td>
+                    <td>订阅 Source 激活</td>
+                </tr>
+                <tr>
+                    <td>2026-09-09</td>
+                    <td><a href="../01-方案设计/2026/09/09/绑定树DataType定型优化方案-20260909-102644.md">绑定树 DataType 定型优化方案</a></td>
+                    <td>类型定型</td>
+                </tr>
+                <tr>
+                    <td>2026-09-08</td>
+                    <td><a href="../01-方案设计/2026/09/08/ROI几何单一数据源归一化重构-20260908-112436.md">ROI 几何单一数据源归一化重构</a></td>
+                    <td>ROI 单一数据源</td>
+                </tr>
+                <tr>
+                    <td>2026-09-08</td>
+                    <td><a href="../03-测试报告/2026/09/08/测试报告-ROI几何单一数据源归一化重构-20260908-120816.md">测试报告-ROI 几何单一数据源归一化重构</a></td>
+                    <td>验证结果</td>
+                </tr>
+                <tr>
+                    <td>2026-09-07</td>
+                    <td><a href="../01-方案设计/2026/09/07/订阅链路单模型重构方案-20260907-102336.md">订阅链路单模型重构方案</a></td>
+                    <td>单模型</td>
+                </tr>
+                <tr>
+                    <td>2026-09-07</td>
+                    <td><a href="../01-方案设计/2026/09/07/四概念边界与订阅单模型重构最终方案-20260907-103754.md">四概念边界与订阅单模型重构最终方案</a></td>
+                    <td>四概念边界</td>
+                </tr>
+                <tr>
+                    <td>2026-08-17</td>
+                    <td><a href="../01-方案设计/2026/08/17/全局变量管理器样式对齐子程序方案-20260817-182815.md">全局变量管理器样式对齐子程序方案</a></td>
+                    <td>变量管理器 UI</td>
+                </tr>
+                <tr>
+                    <td>2026-08-07</td>
+                    <td><a href="../01-方案设计/2026/08/07/绑定树显示名与路径双轨模型方案-20260807.md">绑定树显示名与路径双轨模型方案</a></td>
+                    <td>显示名/路径双轨</td>
+                </tr>
+                <tr>
+                    <td>2026-04-23</td>
+                    <td><a href="../06-指南参考/guides/2026/04/guides_regionsubscribepanel_availabledatasources_solution_20260423.md">RegionSubscribePanel 可用数据源方案</a></td>
+                    <td>订阅面板</td>
+                </tr>
+                <tr>
+                    <td>2026-04-23</td>
+                    <td><a href="../06-指南参考/guides/2026/04/guides_design_time_binding_solution_20260423.md">设计时绑定方案</a></td>
+                    <td>设计时绑定</td>
+                </tr>
+            </tbody>
+        </table>
+        <p><strong>已取代的旧结论</strong>：</p>
+        <ul>
+            <li>「保留失效引用并要求用户修复」→ 改为<strong>直接解绑</strong>。</li>
+            <li>「候选为空即可判定字段删除」→ 候选不可用不等于身份删除。</li>
+            <li>「只恢复画布的撤销」→ 必须恢复整份配置。</li>
+        </ul>
+</section>
+
+<nav class="doc-nav">
+    <a class="primary" href="../00-索引/主题台账.html">主题台账</a>
+    <a href="../00-索引/文档索引.html">文档索引</a>
+    <a href="README.html">现行文档说明</a>
+</nav>
+
+</div>
+</body>
+</html>

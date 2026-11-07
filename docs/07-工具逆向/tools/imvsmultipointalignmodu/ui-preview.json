@@ -1,0 +1,92 @@
+{
+  "controls": [
+    {
+      "type": "RadioSelecter",
+      "name": "InputWay"
+    },
+    {
+      "type": "PointPair",
+      "name": "Data1"
+    },
+    {
+      "type": "PointPair",
+      "name": "Data2"
+    },
+    {
+      "type": "PointPair",
+      "name": "Data3"
+    },
+    {
+      "type": "PointPair",
+      "name": "Data4"
+    },
+    {
+      "type": "PointPair",
+      "name": "Data5"
+    },
+    {
+      "type": "PointPair",
+      "name": "Data6"
+    },
+    {
+      "type": "PointPair",
+      "name": "Data7"
+    },
+    {
+      "type": "PointPair",
+      "name": "Data8"
+    },
+    {
+      "type": "AddButton_PointPair",
+      "name": "AddButton"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvsmultipointalignmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSMultiPointAlignModu\\IMVSMultiPointAlignModu.xml",
+      "sha256": "68c538c34eeb479693c0bab88a41073f5fc111228233b6e9bbd5be76499e133d",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSMultiPointAlignModu\\IMVSMultiPointAlignModuAlgorithm.xml",
+      "sha256": "b3df4492c98493a196c18e4ed2c2153003e0b774c44c6fd6a8d227b042916e74",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSMultiPointAlignModu\\IMVSMultiPointAlignModuAlgorithmTab.xml",
+      "sha256": "0789c12a91fbdd3303ed1666360a7a915a0130e4e28690b66e003f72d91b45ee",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSMultiPointAlignModu\\IMVSMultiPointAlignModuCs.xml",
+      "sha256": "d0a7f50d818780c61300c8436fa4a6f3d18036fc59224a135fa032a6cae3c6cf",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSMultiPointAlignModu\\IMVSMultiPointAlignModuDisplay.xml",
+      "sha256": "09cd144565d1807598d37b10adac66f7bc086ada4c40104c329d9529c38b749a",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\IMVSMultiPointAlignModu\\ToolItemInfo.xml",
+      "sha256": "25f95b3eb719505f2332eab643a374ff73d7c640923e8103d27138dbdd2e9378",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "点集对位",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

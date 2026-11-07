@@ -1,0 +1,62 @@
+{
+  "toolId": "imagecollectdalsamodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectDalsaModu\\ImageCollectDalsaModu.xml",
+      "sha256": "30cb9082872c6a283a8eb82c5a95afb7e9f9396cb6755ce929d36543ea3b469b",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectDalsaModu\\ImageCollectDalsaModuAlgorithm.xml",
+      "sha256": "77a6620d4fb600b0169afe2fe72ca488d6e2fa6cbf4617edeeeeefed640e44e4",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectDalsaModu\\ImageCollectDalsaModuAlgorithmTab.xml",
+      "sha256": "6fcbbb8512ef144106f99773cf0db8427ec26cb071cbd7a4c267051c8f4d72b0",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectDalsaModu\\ImageCollectDalsaModuCs.xml",
+      "sha256": "c68f3bbdb6944e68af59d0ba809a8262521b40387a3d6e893dbda02495c14151",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectDalsaModu\\ImageCollectDalsaModuDisplay.xml",
+      "sha256": "c157827b3de8c961c1bd98f7f1d7978b44959f43b78fee792f6ea070add8db88",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectDalsaModu\\ToolItemInfo.xml",
+      "sha256": "a70652fbafdceac6828d75d1bc98a56556405ac128bdb4295d8edc8959fe90d1",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "EnumerationLx",
+      "name": "CameraName"
+    },
+    {
+      "type": "OpenFileForCameraDialog",
+      "name": "CcfPath"
+    },
+    {
+      "type": "Integer",
+      "name": "ImageCacheNum"
+    }
+  ],
+  "sharedUiGroups": [],
+  "status": "inventory-only"
+}

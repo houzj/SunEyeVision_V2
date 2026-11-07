@@ -1,0 +1,218 @@
+{
+  "toolId": "imvsgraymatchmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSGrayMatchModu\\IMVSGrayMatchModu.xml",
+      "sha256": "d261794d63a1c1b4d08c22a7adb612c9ddba0d8f2cb034b13bc49a7eef5a3b21",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSGrayMatchModu\\IMVSGrayMatchModuAlgorithm.xml",
+      "sha256": "b90cb7699917a726d0ca4c6729facfb62d5ae6e6151723638215ee3dbefa32ec",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSGrayMatchModu\\IMVSGrayMatchModuAlgorithmTab.xml",
+      "sha256": "7a3ab28b68dc074aa4c86245ee80738055f441504360c800be8a324a03ed8457",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSGrayMatchModu\\IMVSGrayMatchModuCs.xml",
+      "sha256": "b372eade6f3e2b503e3adc9b70bf43b346fb3a46c99cea00d0057ac61268f4d6",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSGrayMatchModu\\IMVSGrayMatchModuDisplay.xml",
+      "sha256": "0419d70123d5823b10d2c98a516ae199078492691a1cedd9b4e6fe8866a96746",
+      "root": "ParamRoot",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Gray Scale Template"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "OutputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "GrayMatchConfigPanalData",
+      "name": "GrayMatchPat"
+    },
+    {
+      "type": "Float",
+      "name": "MinScore"
+    },
+    {
+      "type": "Integer",
+      "name": "MaxMatchNum"
+    },
+    {
+      "type": "Integer",
+      "name": "AngleStep"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangAngle"
+    },
+    {
+      "type": "Expand",
+      "name": null
+    },
+    {
+      "type": "Integer",
+      "name": "MaxOverlap"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SortType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Polarity"
+    },
+    {
+      "type": "Integer",
+      "name": "TimeOut"
+    },
+    {
+      "type": "Boolean",
+      "name": "OKWhenNumIsZero"
+    },
+    {
+      "type": "Boolean",
+      "name": "NumLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "NumAngleLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "AngleLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeAngleLimit"
+    },
+    {
+      "type": "Expand",
+      "name": null
+    },
+    {
+      "type": "Boolean",
+      "name": "ScoreLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeScoreLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "MatchPointXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeMatchPointXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "MatchPointYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeMatchPointYLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "BoxPointXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeBoxPointXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "BoxPointYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeBoxPointYLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "MatchResults"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "MatchLocation"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "OutputMaskImageGroup",
+    "RoiSelectGroup",
+    "InheritWayGroup",
+    "ExternROITypeGroup",
+    "AssistGroup",
+    "TextDisplayGroup",
+    "BottomCommandGroup2"
+  ],
+  "status": "inventory-only"
+}

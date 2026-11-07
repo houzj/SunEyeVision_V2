@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="IMVSMachineLearningClassifierModuControl.ImageView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" xmlns:commomcontrol="clr-namespace:HikPcUI.Commom;assembly=VM.PcUI" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:local="clr-namespace:IMVSMachineLearningClassifierModuControl">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+      </ResourceDictionary.MergedDictionaries>
+      <local:LabelToBooleanConvert x:Key="LabelToBooleanConvert" />
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid>
+    <Grid Name="TempGrid">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type Grid}">
+          <Style.Triggers>
+            <DataTrigger Value="False" Binding="{Binding ImageLabel, Converter={StaticResource LabelToBooleanConvert}}">
+              <Setter Property="FrameworkElement.ContextMenu">
+                <Setter.Value>
+                  <controls:HikContextMenu>
+                    <MenuItem Header="{DynamicResource Lang_DeleteTag}">
+                      <interactivity:Interaction.Triggers xmlns:interactivity="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity">
+                        <interactivity:EventTrigger xmlns:interactivity="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" EventName="Click">
+                          <core:CallMethodAction xmlns:core="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" MethodName="DeleteTag_Click" TargetObject="{Binding PlacementTarget.Parent.Parent, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type controls:HikContextMenu}}}" />
+                        </interactivity:EventTrigger>
+                      </interactivity:Interaction.Triggers>
+                    </MenuItem>
+                  </controls:HikContextMenu>
+                </Setter.Value>
+              </Setter>
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+      <Image Name="ImageItem" Stretch="Fill" Source="{Binding ImageSource, Mode=OneWay}" MouseEnter="Image_MouseEnter" MouseLeave="Image_MouseLeave" />
+      <StackPanel Name="LstItemPanel" VerticalAlignment="Top" Background="#FF000000" Opacity="0.6" Visibility="Collapsed" Orientation="Horizontal" HorizontalAlignment="Right" MouseEnter="Image_MouseEnter" MouseLeave="Image_MouseLeave">
+        <TextBlock Foreground="#FFFFFFFF" Height="20" HorizontalAlignment="Center" FontSize="12" Text="{Binding ImageName}" ToolTip="{Binding ImagePath}" />
+        <commomcontrol:SuperImageButton ToolTip="{DynamicResource Lang_Delet}" HorizontalAlignment="Right" VerticalAlignment="Top" Click="DelImage_Click">
+          <commomcontrol:SuperImageButton.NormalConnent>
+            <Image Source="/Apps.XmlUI;component/Resources/ic_selected_delete_normal.png" Stretch="None" />
+          </commomcontrol:SuperImageButton.NormalConnent>
+          <commomcontrol:SuperImageButton.DisableConnent>
+            <Image Source="/Apps.XmlUI;component/Resources/ic_selected_delete_disable.png" Stretch="None" />
+          </commomcontrol:SuperImageButton.DisableConnent>
+          <commomcontrol:SuperImageButton.PressedConnent>
+            <Image Source="/Apps.XmlUI;component/Resources/ic_selected_delete_click.png" Stretch="None" />
+          </commomcontrol:SuperImageButton.PressedConnent>
+          <commomcontrol:SuperImageButton.MOverConnent>
+            <Image Source="/Apps.XmlUI;component/Resources/ic_selected_delete_hover.png" Stretch="None" />
+          </commomcontrol:SuperImageButton.MOverConnent>
+        </commomcontrol:SuperImageButton>
+      </StackPanel>
+    </Grid>
+  </Grid>
+</UserControl>

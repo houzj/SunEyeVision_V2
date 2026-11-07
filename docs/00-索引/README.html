@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>索引目录（00）</title>
+<link rel="stylesheet" href="assets/doc.css">
+</head>
+<body>
+<div class="wrap">
+
+<nav class="crumbs">
+    <a href="主题台账.html">主题台账</a>
+    <a href="文档索引.html">文档索引</a>
+    <a href="../09-现行文档/README.html">现行文档说明</a>
+</nav>
+
+<header class="doc-header">
+    <h1>索引目录（00）</h1>
+    <p class="doc-meta">最后更新：2026-11-05</p>
+</header>
+
+<section class="card lead">
+    <blockquote>
+        <p>本目录是 <code>docs/</code> 的唯一入口。<strong>你不需要翻 <code>01-06</code> 的日期目录</strong>，先从这里找到你需要的答案。</p>
+    </blockquote>
+</section>
+
+<section class="card">
+    <h2>一、先看哪张表</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>你想知道</th>
+                    <th>打开哪个</th>
+                    <th>规模</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>这件事现在是怎么定的？</strong> 有没有权威说明？</td>
+                    <td><a href="主题台账.html"><code>主题台账.html</code></a></td>
+                    <td>16 个主题 / 356 篇历史</td>
+                </tr>
+                <tr>
+                    <td>某个具体文件在哪？什么时候建的？</td>
+                    <td><a href="文档索引.html"><code>文档索引.html</code></a></td>
+                    <td>全量文件清单</td>
+                </tr>
+                <tr>
+                    <td>现在在做什么、卡在哪？</td>
+                    <td><a href="../collaboration/CURRENT_TASK.md"><code>../collaboration/CURRENT_TASK.md</code></a></td>
+                    <td>当前批次</td>
+                </tr>
+                <tr>
+                    <td>某件事以前怎么演进的？</td>
+                    <td><code>主题台账.html</code> 里对应主题的「历史版本」</td>
+                    <td>356 篇</td>
+                </tr>
+            </tbody>
+        </table>
+        <p><strong>绝大多数情况先看 <code>主题台账.html</code>。</strong> 它一行告诉你：这个主题有没有现行文档、合并了多少篇历史、整合状态是什么。</p>
+</section>
+
+<section class="card">
+    <h2>二、主题台账怎么读</h2>
+        <pre><code>| 主题 | 现行文档 | 历史版本 | 最近日期 | 整合状态 |
+| 相机与采集 | 09-现行文档/相机与采集.html | 14 | 2026-09-25 | 已整合 |</code></pre>
+        <ul>
+            <li><strong>现行文档</strong>：点开就是「这件事现在是什么样、为什么这样、还没做什么」</li>
+            <li><strong>历史版本</strong>：这个主题被合并了多少篇按日期的旧文档</li>
+            <li><strong>整合状态</strong>：
+                <ul>
+                    <li><code>已整合</code> = 有 <code>09-现行文档</code> 权威篇，可直接看</li>
+                    <li><code>未整合</code> = 只有 <code>01-06</code> 的日期文档，需要顺着清单自己读，且<strong>不知道哪篇是准的</strong></li>
+                </ul>
+            </li>
+        </ul>
+</section>
+
+<section class="card">
+    <h2>三、四个脚本（都由脚本生成，禁止手改产物）</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>脚本</th>
+                    <th>产物</th>
+                    <th>什么时候跑</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>更新索引.ps1</code></td>
+                    <td><code>文档索引.html</code></td>
+                    <td>保存/迁移任何文档后</td>
+                </tr>
+                <tr>
+                    <td><code>生成主题台账.ps1</code></td>
+                    <td><code>主题台账.html</code></td>
+                    <td>保存/迁移任何文档后，或改完 <code>09-现行文档</code></td>
+                </tr>
+                <tr>
+                    <td><code>生成工具预览.ps1</code></td>
+                    <td><code>../08-工具预览/</code>（162 页）</td>
+                    <td>工具参数或调试窗变化后</td>
+                </tr>
+                <tr>
+                    <td><code>拆分任务账本.ps1</code></td>
+                    <td><code>../collaboration/history/</code> 分卷</td>
+                    <td>任务账本积累过多批次后</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>运行方式（PowerShell 5.1）：</p>
+        <pre><code>powershell -NoProfile -ExecutionPolicy Bypass -File "docs/00-索引/更新索引.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File "docs/00-索引/生成主题台账.ps1"</code></pre>
+        <blockquote>
+            <p>脚本内以 <code>$PSScriptRoot</code> 定位 <code>docs</code> 根，<strong>与当前工作目录无关</strong>，在任何目录执行都正确。</p>
+            <p>产物统一 UTF-8 无 BOM；脚本源码中 <code>生成主题台账.ps1</code> / <code>更新索引.ps1</code> 若含中文需带 BOM。</p>
+        </blockquote>
+</section>
+
+<section class="card">
+    <h2>四、主题台账的口径</h2>
+        <ul>
+            <li><strong>主题归属</strong>：先按文件名与首行标题的关键词匹配，匹配不到按所在目录兜底</li>
+            <li><strong>日期</strong>：文件名日期 &gt; 路径 <code>年/月/日</code> &gt; 文件修改时间（三级兜底，避免把「搬运时间」当文档日期）</li>
+            <li><strong>不参与统计</strong>：<code>archive/</code> 归档目录、各目录下的 <code>README.md</code> 说明文件</li>
+            <li><strong>已知局限</strong>：纯关键词聚类会误判。已发现 2 篇（多边形方案、区域编辑器卡尺 ROI 扩展）被归到「脚本工具」，实际属区域/测量；这类误判在各现行文档的「历史演进」末尾有过说明</li>
+        </ul>
+</section>
+
+<section class="card">
+    <h2>五、维护规则</h2>
+        <ol>
+            <li><strong>改完文档就跑两个索引脚本</strong>，否则台账的整合状态不会更新</li>
+            <li><strong>不要手改 <code>文档索引.html</code>、<code>主题台账.html</code></strong>——下次运行会被覆盖</li>
+            <li><strong>已有主题不要再新建日期文档</strong>，改 <code>09-现行文档/&lt;主题&gt;.html</code>（见 rule-006 与「文档保存」技能）</li>
+            <li>新增主题时，先确认它真的不属现有 16 个主题之一</li>
+        </ol>
+</section>
+
+<nav class="doc-nav">
+    <a class="primary" href="主题台账.html">主题台账</a>
+    <a href="文档索引.html">文档索引</a>
+    <a href="../09-现行文档/README.html">现行文档说明</a>
+</nav>
+
+</div>
+</body>
+</html>

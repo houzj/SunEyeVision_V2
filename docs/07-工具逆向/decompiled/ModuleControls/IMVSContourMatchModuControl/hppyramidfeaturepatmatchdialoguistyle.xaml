@@ -1,0 +1,936 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:IMVSContourMatchModuControl" xmlns:commomcontrol="clr-namespace:HikPcUI.Commom;assembly=VM.PcUI" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:moduleLayout="clr-namespace:VM.ModuleControl;assembly=VM.ModuleControl" xmlns:pcUiControl="clr-namespace:HikPcUI.Controls;assembly=VM.PcUI" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" xmlns:pcuicontrol="clr-namespace:HikPcUI.ListView;assembly=VM.PcUI" xmlns:localcontrol="clr-namespace:HikPcUI.ImageView;assembly=VM.PcUI" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:imagecontrol="clr-namespace:VMBaseControls;assembly=VMBaseControls" xmlns:Interface="clr-namespace:VMControls.RenderInterface;assembly=VMControls.RenderInterface" xmlns:UIHelper="clr-namespace:Apps.UIHelper.Extern;assembly=Apps.UIHelper" xmlns:baseData="clr-namespace:FeatureMatchCommonControl;assembly=FeatureMatchCommonControl" xmlns:appUI="clr-namespace:Apps.PcUI.Controls;assembly=Apps.PcUI" xmlns:polygonProperty="clr-namespace:VMBaseControls.Base.ImageView.ROI;assembly=VMBaseControls" xmlns:s="clr-namespace:System;assembly=mscorlib">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/IMVSHPFeatureMatchModuControl;component/HPFeaturepatMatchDialogUIBaseStyle.xaml" />
+    <ResourceDictionary Source="/Apps.XmlUI;component/Styles/ParamUserControlDataTemplate.xaml" />
+    <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+    <ResourceDictionary>
+      <s:Boolean x:Key="True">True</s:Boolean>
+      <local:DoubleToFloatConvert x:Key="cvtDoubleToFloat" />
+      <local:FloatToIntConvert x:Key="cvtFloatToInt" />
+      <local:SelectedIndexToBoolConverter x:Key="cvtBoolToInt" />
+      <Style x:Key="ComboxStyleBtnSign" TargetType="{x:Type ToggleButton}">
+        <Setter Property="FrameworkElement.OverridesDefaultStyle" Value="True" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="ButtonBase.ClickMode" Value="Press" />
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate>
+              <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="#00FFFFFF">
+                <Image Name="icon" Height="8" Width="8" Source="/Apps.XmlUI;component/Resources/ic_掩膜类型_unfold_normal.png" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+              </Grid>
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="icon" Property="Image.Source" Value="/Apps.XmlUI;component/Resources/ic_掩膜类型_unfold_select.png" />
+                </Trigger>
+                <DataTrigger Value="True" Binding="{Binding IsChecked, RelativeSource={RelativeSource Self}}">
+                  <Setter TargetName="icon" Property="Image.Source" Value="/Apps.XmlUI;component/Resources/ic_掩膜类型_unfold_select.png" />
+                </DataTrigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="ComboxStyleBtn" TargetType="{x:Type ToggleButton}">
+        <Setter Property="FrameworkElement.OverridesDefaultStyle" Value="True" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="ButtonBase.ClickMode" Value="Press" />
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ToggleButton}">
+              <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="#00FFFFFF">
+                <Image Name="icon" Height="14" Width="14" Source="/Apps.XmlUI;component/Resources/combo_ic_triangle_normal.png" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+              </Grid>
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="icon" Property="Image.Source" Value="/Apps.XmlUI;component/Resources/combo_ic_triangle_click.png" />
+                </Trigger>
+                <DataTrigger Value="True" Binding="{Binding IsChecked, RelativeSource={RelativeSource Self}}">
+                  <Setter TargetName="icon" Property="Image.Source" Value="/Apps.XmlUI;component/Resources/combo_ic_triangle_click.png" />
+                </DataTrigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="ComboxStyleNormal" TargetType="{x:Type ComboBox}">
+        <Setter Property="Foreground" Value="#808080" />
+        <Setter Property="BorderBrush" Value="#CCCCCC" />
+        <Setter Property="Background" Value="#FCFCFC" />
+        <Setter Property="UIElement.SnapsToDevicePixels" Value="True" />
+        <Setter Property="FrameworkElement.OverridesDefaultStyle" Value="True" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="ItemContainerStyle">
+          <Setter.Value>
+            <Style TargetType="{x:Type ComboBoxItem}">
+              <Setter Property="Template">
+                <Setter.Value>
+                  <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                    <Border Name="Back" Background="#00FFFFFF" Height="30" Margin="2,0,2,0" Focusable="False">
+                      <Grid>
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="10" />
+                          <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <ContentPresenter Focusable="False" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                      </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                      <Trigger Property="UIElement.IsMouseOver" Value="True">
+                        <Setter TargetName="Back" Property="Border.Background" Value="#E7E5E4" />
+                      </Trigger>
+                      <Trigger Property="ListBoxItem.IsSelected" Value="True">
+                        <Setter TargetName="Back" Property="Border.Background" Value="#E7E5E4" />
+                        <Setter Property="Foreground" Value="#4D4D4D" />
+                      </Trigger>
+                    </ControlTemplate.Triggers>
+                  </ControlTemplate>
+                </Setter.Value>
+              </Setter>
+            </Style>
+          </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ComboBox}">
+              <Grid Background="{TemplateBinding Control.Background}">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="16" />
+                </Grid.ColumnDefinitions>
+                <Popup Name="Popup" Grid.Column="0" Grid.ColumnSpan="2" IsOpen="{TemplateBinding ComboBox.IsDropDownOpen}" Placement="Bottom" Focusable="False" AllowsTransparency="True" PopupAnimation="Slide">
+                  <Grid>
+                    <Border Name="DropDown" Margin="4" MaxHeight="{TemplateBinding ComboBox.MaxDropDownHeight}" MinWidth="{TemplateBinding FrameworkElement.ActualWidth}" BorderBrush="#CCCCCD" BorderThickness="1" CornerRadius="4" Padding="0,6,0,6">
+                      <Border.Background>
+                        <LinearGradientBrush>
+                          <GradientStop Offset="0.0" Color="#FCFCFC" />
+                          <GradientStop Offset="0.15" Color="#FCFCFC" />
+                          <GradientStop Offset="1" Color="#F7F7F7" />
+                        </LinearGradientBrush>
+                      </Border.Background>
+                      <UIElement.Effect>
+                        <DropShadowEffect Color="#CCCCCD" BlurRadius="4" ShadowDepth="4" Opacity="0.4" />
+                      </UIElement.Effect>
+                      <UIElement.RenderTransform>
+                        <TranslateTransform X="-4" />
+                      </UIElement.RenderTransform>
+                      <ScrollViewer Style="{DynamicResource RecScrollViewer}" Focusable="False" Background="#00FFFFFF" MaxHeight="{TemplateBinding ComboBox.MaxDropDownHeight}" SnapsToDevicePixels="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" CanContentScroll="True">
+                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" Background="#00FFFFFF" />
+                      </ScrollViewer>
+                    </Border>
+                  </Grid>
+                </Popup>
+                <ToggleButton Name="toggle" Focusable="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" Grid.ColumnSpan="2" ClickMode="Press" Style="{StaticResource ComboxStyleBtn}" IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" />
+                <Grid Column="0" Margin="11,0,0,0">
+                  <ContentPresenter Name="ContentPresenter" IsHitTestVisible="False" Margin="{TemplateBinding Control.Padding}" Content="{TemplateBinding ComboBox.SelectionBoxItem}" ContentTemplate="{TemplateBinding ComboBox.SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemsControl.ItemTemplateSelector}" ContentStringFormat="{TemplateBinding ComboBox.SelectionBoxItemStringFormat}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+                </Grid>
+                <Border Name="Border" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="1" BorderBrush="{TemplateBinding Control.BorderBrush}" CornerRadius="2" />
+              </Grid>
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="Border" Value="{DynamicResource Col_Theme}" Property="Border.BorderBrush" />
+                </Trigger>
+                <DataTrigger Value="True" Binding="{Binding IsOpen, ElementName=Popup}">
+                  <Setter TargetName="Border" Value="{DynamicResource Col_Theme}" Property="Border.BorderBrush" />
+                </DataTrigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="ComboBoxSignList" TargetType="{x:Type ComboBox}">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Foreground" Value="#808080" />
+        <Setter Property="BorderBrush" Value="#00FFFFFF" />
+        <Setter Property="UIElement.SnapsToDevicePixels" Value="True" />
+        <Setter Property="FrameworkElement.OverridesDefaultStyle" Value="True" />
+        <Setter Property="FontFamily" Value="Microsoft YaHei" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="ItemContainerStyle">
+          <Setter.Value>
+            <Style TargetType="{x:Type ComboBoxItem}">
+              <Setter Property="Template">
+                <Setter.Value>
+                  <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                    <Border Name="Back" Background="#00FFFFFF" Height="30">
+                      <Grid>
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="24" />
+                          <ColumnDefinition Width="*" />
+                          <ColumnDefinition Width="6" />
+                        </Grid.ColumnDefinitions>
+                        <Image Grid.Column="0" Focusable="False" Height="24" Width="24" VerticalAlignment="Center" HorizontalAlignment="Left" Stretch="None">
+                          <FrameworkElement.Style>
+                            <Style TargetType="{x:Type Image}">
+                              <Setter Property="Source" Value="{Binding ComboxItemImgNormal}" />
+                              <Style.Triggers>
+                                <DataTrigger Value="True" Binding="{Binding IsSelected, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ComboBoxItem}}">
+                                  <Setter Property="Source" Value="{Binding ComboxItemImgSelect}" />
+                                </DataTrigger>
+                                <DataTrigger Value="False" Binding="{Binding IsEnabled, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ComboBoxItem}}">
+                                  <Setter Property="Source" Value="{Binding ComboxItemImgDisable}" />
+                                </DataTrigger>
+                              </Style.Triggers>
+                            </Style>
+                          </FrameworkElement.Style>
+                        </Image>
+                        <TextBlock Margin="2,0,0,0" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Text="{Binding DisplayValue}" />
+                        <Rectangle Name="Rect" Grid.ColumnSpan="3" Height="0" StrokeThickness="1" Stroke="{DynamicResource Col_Theme}" VerticalAlignment="Bottom" />
+                      </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                      <Trigger Property="UIElement.IsMouseOver" Value="True">
+                        <Setter TargetName="Back" Property="Border.Background" Value="#E7E5E4" />
+                        <Setter TargetName="Rect" Property="Height" Value="1" />
+                      </Trigger>
+                      <Trigger Property="ListBoxItem.IsSelected" Value="True">
+                        <Setter Value="{DynamicResource Col_Theme}" Property="Foreground" />
+                      </Trigger>
+                    </ControlTemplate.Triggers>
+                  </ControlTemplate>
+                </Setter.Value>
+              </Setter>
+            </Style>
+          </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ComboBox}">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="auto" />
+                </Grid.ColumnDefinitions>
+                <Border Name="Border" Background="#00FFFFFF" Grid.ColumnSpan="2" BorderThickness="0" BorderBrush="#00FFFFFF" />
+                <Image Grid.Column="0" Height="24" Width="24" Focusable="False" VerticalAlignment="Center" HorizontalAlignment="Left">
+                  <FrameworkElement.Style>
+                    <Style TargetType="{x:Type Image}">
+                      <Setter Property="Source" Value="{Binding SelectedItem.ComboxImgNormal, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ComboBox}}" />
+                      <Style.Triggers>
+                        <DataTrigger Value="True" Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ComboBox}}">
+                          <Setter Property="Source" Value="{Binding SelectedItem.ComboxImgSelect, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ComboBox}}" />
+                        </DataTrigger>
+                        <DataTrigger Value="True" Binding="{Binding IsEnable, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ComboBox}}">
+                          <Setter Property="Source" Value="{Binding SelectedItem.ComboxImgDisable, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ComboBox}}" />
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </FrameworkElement.Style>
+                </Image>
+                <ToggleButton Name="toggle" Focusable="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" Grid.ColumnSpan="2" ClickMode="Press" Style="{StaticResource ComboxStyleBtnSign}" IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" />
+                <Popup Name="Popup" VerticalOffset="3" IsOpen="{TemplateBinding ComboBox.IsDropDownOpen}" Placement="Bottom" Focusable="False" AllowsTransparency="True" PopupAnimation="Slide">
+                  <Grid>
+                    <Border Name="DropDown" Height="Auto" MinWidth="{TemplateBinding FrameworkElement.ActualWidth}" BorderBrush="#CCCCCD" BorderThickness="1" CornerRadius="2" Padding="5,6,5,6">
+                      <Border.Background>
+                        <LinearGradientBrush>
+                          <GradientStop Offset="0" Color="#FCFCFC" />
+                          <GradientStop Offset="1" Color="#FCFCFC" />
+                        </LinearGradientBrush>
+                      </Border.Background>
+                      <UIElement.Effect>
+                        <DropShadowEffect Color="#000000" BlurRadius="5" ShadowDepth="5" Opacity="0.16" />
+                      </UIElement.Effect>
+                      <StackPanel IsItemsHost="True" Focusable="False" SnapsToDevicePixels="True" KeyboardNavigation.DirectionalNavigation="Contained" Background="#00FFFFFF" />
+                    </Border>
+                  </Grid>
+                </Popup>
+              </Grid>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="ImageButtonStyle" TargetType="{x:Type Button}">
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Button}">
+              <Border Name="iBorder" Padding="{TemplateBinding Control.Padding}" Margin="0" Background="{TemplateBinding Control.Background}" BorderBrush="#00FFFFFF" BorderThickness="0">
+                <ContentPresenter />
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="iBorder" Property="FrameworkElement.Cursor" Value="Hand" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="ImageButtonStyleK" TargetType="{x:Type Button}">
+        <Setter Property="Width" Value="28px" />
+        <Setter Property="Height" Value="28px" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Button}">
+              <Border Name="iBorder" Padding="{TemplateBinding Control.Padding}" Margin="0" Background="{TemplateBinding Control.Background}" BorderBrush="#00FFFFFF" BorderThickness="0">
+                <ContentPresenter />
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="iBorder" Property="FrameworkElement.Cursor" Value="Hand" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="ImageButtonStyle3" TargetType="{x:Type Button}">
+        <Setter Property="Width" Value="32" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Button}">
+              <Border Name="iBorder" Padding="{TemplateBinding Control.Padding}" Margin="-4" Background="#00FFFFFF" BorderBrush="#00FFFFFF" BorderThickness="0">
+                <ContentPresenter Name="con" />
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="iBorder" Property="FrameworkElement.Cursor" Value="Hand" />
+                  <Setter TargetName="con" Property="ContentPresenter.Content" Value="{Binding Path=Tag, RelativeSource={RelativeSource TemplatedParent}}" />
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                  <Setter TargetName="con" Property="ContentPresenter.Content" Value="{Binding Path=Tag, RelativeSource={RelativeSource TemplatedParent}}" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="EditButton" TargetType="{x:Type Button}">
+        <Setter Property="Width" Value="28" />
+        <Setter Property="Height" Value="18" />
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Button}">
+              <Border Name="iBorder" Padding="{TemplateBinding Control.Padding}" Margin="-4" Background="#00FFFFFF" BorderBrush="#00FFFFFF" BorderThickness="0">
+                <ContentPresenter Name="con" />
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="iBorder" Property="FrameworkElement.Cursor" Value="Hand" />
+                  <Setter TargetName="con" Property="ContentPresenter.Content">
+                    <Setter.Value>
+                      <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/edit_click.png" />
+                    </Setter.Value>
+                  </Setter>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                  <Setter TargetName="con" Property="ContentPresenter.Content" Value="{Binding Path=Tag, RelativeSource={RelativeSource TemplatedParent}}" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="showCrossToggleButtonStyle" TargetType="{x:Type ToggleButton}">
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ToggleButton}">
+              <Border Name="iBorder" Background="#00FFFFFF" BorderBrush="#00FFFFFF" BorderThickness="0">
+                <ContentPresenter Name="con" HorizontalAlignment="Center" VerticalAlignment="Center" />
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="iBorder" Property="FrameworkElement.Cursor" Value="Hand" />
+                  <Setter TargetName="con" Property="ContentPresenter.Content" Value="{Binding Path=Tag, RelativeSource={RelativeSource TemplatedParent}}" />
+                </Trigger>
+                <Trigger Property="ToggleButton.IsChecked" Value="True">
+                  <Setter TargetName="con" Property="ContentPresenter.Content" Value="{Binding Path=Tag, RelativeSource={RelativeSource TemplatedParent}}" />
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                  <Setter TargetName="con" Property="ContentPresenter.Content">
+                    <Setter.Value>
+                      <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_橡皮擦2_disable.png" />
+                    </Setter.Value>
+                  </Setter>
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+        <Setter Property="ButtonBase.ClickMode" Value="Press" />
+      </Style>
+      <Style x:Key="showCrossToggleButtonStyle2" TargetType="{x:Type ToggleButton}">
+        <Setter Property="Width" Value="28px" />
+        <Setter Property="Height" Value="28px" />
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="FrameworkElement.UseLayoutRounding" Value="True" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ToggleButton}">
+              <Border Name="iBorder" Padding="{TemplateBinding Control.Padding}" Background="#00FFFFFF" BorderBrush="#00FFFFFF" BorderThickness="0">
+                <ContentPresenter Name="con" />
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="iBorder" Property="FrameworkElement.Cursor" Value="Hand" />
+                </Trigger>
+                <Trigger Property="ToggleButton.IsChecked" Value="False">
+                  <Setter TargetName="con" Property="ContentPresenter.Content" Value="{Binding Path=Tag, RelativeSource={RelativeSource TemplatedParent}}" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+        <Setter Property="ButtonBase.ClickMode" Value="Press" />
+      </Style>
+      <Style x:Key="TextButtonStyle" TargetType="{x:Type Button}">
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Button}">
+              <Border Name="iBorder" CornerRadius="2" Padding="{TemplateBinding Control.Padding}" Margin="0" Background="{TemplateBinding Control.Background}" BorderBrush="#CCCCCC" BorderThickness="1">
+                <ContentPresenter Margin="10,0,10,0" />
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="iBorder" Property="FrameworkElement.Cursor" Value="Hand" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="ListViewStyle1" TargetType="{x:Type ListView}">
+        <Setter Property="Background" Value="#FCFFFFFF" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ListBorder}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+        <Setter Property="ScrollViewer.PanningMode" Value="Both" />
+        <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ListView}">
+              <Border Name="Bd" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" Background="{TemplateBinding Control.Background}" Padding="0" SnapsToDevicePixels="True">
+                <ScrollViewer Focusable="False" Padding="{TemplateBinding Control.Padding}" Style="{StaticResource shrinkScrollViewer}">
+                  <ItemsPresenter SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+                </ScrollViewer>
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                  <Setter TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Property="Border.Background" />
+                </Trigger>
+                <MultiTrigger>
+                  <MultiTrigger.Conditions>
+                    <Condition Property="ItemsControl.IsGrouping" Value="True" />
+                    <Condition Property="VirtualizingPanel.IsVirtualizingWhenGrouping" Value="False" />
+                  </MultiTrigger.Conditions>
+                  <Setter Property="ScrollViewer.CanContentScroll" Value="False" />
+                </MultiTrigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="setCrossToggleButtonStyle" TargetType="{x:Type ToggleButton}">
+        <Setter Property="FrameworkElement.FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Width" Value="12" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ToggleButton}">
+              <Border Name="iBorder" Padding="{TemplateBinding Control.Padding}" Margin="0" Background="#00FFFFFF" BorderBrush="#00FFFFFF" BorderThickness="0">
+                <Image Name="ImageBackground" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" />
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="iBorder" Property="FrameworkElement.Cursor" Value="Hand" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="AppToolButtonStyle" TargetType="{x:Type Button}">
+        <Setter Property="Width" Value="32" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Button}">
+              <Border Name="iBorder" Padding="{TemplateBinding Control.Padding}" Margin="-4" Background="#00FFFFFF" BorderBrush="#00FFFFFF" BorderThickness="0">
+                <ContentPresenter Name="con" />
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter TargetName="iBorder" Property="FrameworkElement.Cursor" Value="Hand" />
+                  <Setter TargetName="con" Property="ContentPresenter.Content" Value="{Binding Path=Tag, RelativeSource={RelativeSource TemplatedParent}}" />
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                  <Setter TargetName="con" Property="ContentPresenter.Content" Value="{Binding Path=Tag, RelativeSource={RelativeSource TemplatedParent}}" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <ControlTemplate x:Key="switchbutton" TargetType="{x:Type ToggleButton}">
+        <Image Name="icon" Source="/Apps.Style;component/Resources/swith_off.png" Stretch="None" />
+        <ControlTemplate.Triggers>
+          <Trigger Property="ToggleButton.IsChecked" Value="True">
+            <Setter TargetName="icon" Property="Image.Source" Value="/Apps.Style;component/Resources/swith_on.png" />
+          </Trigger>
+        </ControlTemplate.Triggers>
+      </ControlTemplate>
+    </ResourceDictionary>
+  </ResourceDictionary.MergedDictionaries>
+  <Style x:Key="{x:Type local:HPPyramidFeaturepatMatchDialogUI}" TargetType="{x:Type local:HPPyramidFeaturepatMatchDialogUI}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate>
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="*" />
+              <RowDefinition Height="35" />
+            </Grid.RowDefinitions>
+            <Grid Row="0" Background="#f2f3f4">
+              <Border Padding="10">
+                <Grid>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="40" />
+                    <RowDefinition Height="*" />
+                  </Grid.RowDefinitions>
+                  <Border Grid.Row="0" Padding="2">
+                    <Grid>
+                      <StackPanel Grid.Column="0" HorizontalAlignment="Left" Orientation="Horizontal">
+                        <Button Name="BtnCurImage" Width="95" Margin="0,7,8,6" Content="{DynamicResource Lang_SelectCurrentImage}" Style="{StaticResource Orange_ButtonStyle}" Command="{Binding SelectCurImageCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+                        <Button Width="95" Margin="0,7,5,6" Content="{DynamicResource Lang_SelectOtherImage}" Style="{StaticResource Orange_ButtonStyle}" Command="{Binding SelectOtherImageCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+                        <StackPanel Orientation="Horizontal">
+                          <TextBlock Text="{DynamicResource 模板存图}" Foreground="{DynamicResource ParamsTabForeground}" FontFamily="Microsoft YaHei" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                          <ToggleButton Name="cbIsSaveImage" Width="80" IsChecked="True" Margin="-5,0,0,0" Template="{StaticResource switchbutton}" />
+                        </StackPanel>
+                        <commomcontrol:SuperImageButton Name="Save" Width="30" ToolTip="{DynamicResource 保存模型工程}" Command="{Binding SaveCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+                          <commomcontrol:SuperImageButton.NormalConnent>
+                            <Image Source="/Apps.XmlUI;component/Resources/ic_导出_normal.png" />
+                          </commomcontrol:SuperImageButton.NormalConnent>
+                          <commomcontrol:SuperImageButton.DisableConnent>
+                            <Image Source="/Apps.XmlUI;component/Resources/ic_导出_disable.png" />
+                          </commomcontrol:SuperImageButton.DisableConnent>
+                          <commomcontrol:SuperImageButton.PressedConnent>
+                            <Image Source="/Apps.XmlUI;component/Resources/ic_导出_click.png" />
+                          </commomcontrol:SuperImageButton.PressedConnent>
+                          <commomcontrol:SuperImageButton.MOverConnent>
+                            <Image Source="/Apps.XmlUI;component/Resources/ic_导出_click.png" />
+                          </commomcontrol:SuperImageButton.MOverConnent>
+                        </commomcontrol:SuperImageButton>
+                        <StackPanel Orientation="Horizontal" Margin="55,0,0,0">
+                          <TextBlock Text="{DynamicResource 全部屏蔽}" Foreground="{DynamicResource ParamsTabForeground}" FontFamily="Microsoft YaHei" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                          <ToggleButton Name="cbIsUsePen" Width="80" Margin="-5,0,0,0" Template="{StaticResource switchbutton}" IsChecked="{Binding IsUsePen, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                            <i:Interaction.Triggers>
+                              <i:EventTrigger EventName="Checked">
+                                <UIHelper:ParamsEventCommand Command="{Binding IsUsePenCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Control}}" />
+                              </i:EventTrigger>
+                              <i:EventTrigger EventName="Unchecked">
+                                <UIHelper:ParamsEventCommand Command="{Binding IsUsePenCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Control}}" />
+                              </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                          </ToggleButton>
+                        </StackPanel>
+                      </StackPanel>
+                    </Grid>
+                  </Border>
+                  <Grid Row="1">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="20*" />
+                      <ColumnDefinition Width="7*" />
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" BorderBrush="#E6E6E6" BorderThickness="1" Margin="0,5,5,0">
+                      <Grid>
+                        <Grid.RowDefinitions>
+                          <RowDefinition Height="40" />
+                          <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Border BorderBrush="#E6E6E6" BorderThickness="0,0,0,1" UseLayoutRounding="True" SnapsToDevicePixels="True">
+                          <Grid Row="0" Background="#fcfcfc">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                              <StackPanel Orientation="Horizontal">
+                                <RadioButton Name="Arrow" GroupName="ty" IsChecked="True" Background="#00FFFFFF" ToolTip="{DynamicResource 移动图像}" Style="{StaticResource showCrossToggleButtonStyle}">
+                                  <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_箭头_normal.png" />
+                                  <FrameworkElement.Tag>
+                                    <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_箭头_click.png" />
+                                  </FrameworkElement.Tag>
+                                </RadioButton>
+                                <RadioButton Name="hikSector" GroupName="ty" IsEnabled="True" Background="#00FFFFFF" ToolTip="{DynamicResource 创建扇形掩膜}" Style="{StaticResource showCrossToggleButtonStyle}">
+                                  <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_绘制扇形_normal.png" />
+                                  <FrameworkElement.Tag>
+                                    <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_绘制扇形_click.png" />
+                                  </FrameworkElement.Tag>
+                                  <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="Checked">
+                                      <UIHelper:ParamsEventCommand Command="{Binding RadioButtonCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Control}}" />
+                                    </i:EventTrigger>
+                                    <i:EventTrigger EventName="Unchecked">
+                                      <UIHelper:ParamsEventCommand Command="{Binding RadioButtonCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Control}}" />
+                                    </i:EventTrigger>
+                                  </i:Interaction.Triggers>
+                                </RadioButton>
+                                <RadioButton Name="hikCoverCircle" GroupName="ty" IsEnabled="True" Background="#00FFFFFF" ToolTip="{DynamicResource 创建扇圆形掩膜}" Style="{StaticResource showCrossToggleButtonStyle}">
+                                  <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_绘制圆_normal.png" />
+                                  <FrameworkElement.Tag>
+                                    <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_绘制圆_click.png" />
+                                  </FrameworkElement.Tag>
+                                  <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="Checked">
+                                      <UIHelper:ParamsEventCommand Command="{Binding RadioButtonCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Control}}" />
+                                    </i:EventTrigger>
+                                    <i:EventTrigger EventName="Unchecked">
+                                      <UIHelper:ParamsEventCommand Command="{Binding RadioButtonCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Control}}" />
+                                    </i:EventTrigger>
+                                  </i:Interaction.Triggers>
+                                </RadioButton>
+                                <RadioButton Name="hikCruciform" GroupName="ty" IsEnabled="True" Background="#00FFFFFF" ToolTip="{DynamicResource 创建扇圆形掩膜}" Visibility="Collapsed" Style="{StaticResource showCrossToggleButtonStyle}">
+                                  <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_绘制圆_normal.png" />
+                                  <FrameworkElement.Tag>
+                                    <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_绘制圆_click.png" />
+                                  </FrameworkElement.Tag>
+                                  <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="Checked">
+                                      <UIHelper:ParamsEventCommand Command="{Binding RadioButtonCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Control}}" />
+                                    </i:EventTrigger>
+                                    <i:EventTrigger EventName="Unchecked">
+                                      <UIHelper:ParamsEventCommand Command="{Binding RadioButtonCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Control}}" />
+                                    </i:EventTrigger>
+                                  </i:Interaction.Triggers>
+                                </RadioButton>
+                                <RadioButton Name="hikFrame" GroupName="ty" Background="#00FFFFFF" ToolTip="{DynamicResource 创建矩形掩膜}" Style="{StaticResource showCrossToggleButtonStyle}">
+                                  <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_绘制矩形_normal.png" />
+                                  <FrameworkElement.Tag>
+                                    <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_绘制矩形_click.png" />
+                                  </FrameworkElement.Tag>
+                                  <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="Checked">
+                                      <UIHelper:ParamsEventCommand Command="{Binding RadioButtonCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Control}}" />
+                                    </i:EventTrigger>
+                                    <i:EventTrigger EventName="Unchecked">
+                                      <UIHelper:ParamsEventCommand Command="{Binding RadioButtonCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Control}}" />
+                                    </i:EventTrigger>
+                                  </i:Interaction.Triggers>
+                                </RadioButton>
+                                <RadioButton Name="hikPolygon" GroupName="ty" Background="#00FFFFFF" ToolTip="{DynamicResource 创建多边形掩膜}" Style="{StaticResource showCrossToggleButtonStyle}">
+                                  <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_绘制多边形_normal.png" />
+                                  <FrameworkElement.Tag>
+                                    <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_绘制多边形_click.png" />
+                                  </FrameworkElement.Tag>
+                                  <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="Checked">
+                                      <UIHelper:ParamsEventCommand Command="{Binding RadioButtonCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Control}}" />
+                                    </i:EventTrigger>
+                                    <i:EventTrigger EventName="Unchecked">
+                                      <UIHelper:ParamsEventCommand Command="{Binding RadioButtonCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Control}}" />
+                                    </i:EventTrigger>
+                                  </i:Interaction.Triggers>
+                                </RadioButton>
+                                <RadioButton Name="hikCross" GroupName="ty" Background="#00FFFFFF" ToolTip="{DynamicResource 选择模板匹配中心}" Style="{StaticResource showCrossToggleButtonStyle}">
+                                  <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_中心定位_normal.png" />
+                                  <FrameworkElement.Tag>
+                                    <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_中心定位_click.png" />
+                                  </FrameworkElement.Tag>
+                                  <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="Checked">
+                                      <UIHelper:ParamsEventCommand Command="{Binding RadioButtonCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Control}}" />
+                                    </i:EventTrigger>
+                                    <i:EventTrigger EventName="Unchecked">
+                                      <UIHelper:ParamsEventCommand Command="{Binding RadioButtonCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Control}}" />
+                                    </i:EventTrigger>
+                                  </i:Interaction.Triggers>
+                                </RadioButton>
+                                <Path Grid.Column="10" Data="M0,0 L0,1" Stretch="Fill" Height="15" Stroke="#FFD3D3D3" StrokeThickness="1" Margin="5,8,5,8" />
+                                <Button Name="Match" Background="#00FFFFFF" ToolTip="{DynamicResource 生成模型}" Style="{StaticResource ImageButtonStyle3}" CommandParameter="{StaticResource True}" Command="{Binding MatchCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+                                  <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_生成学习模板_normal.png" />
+                                  <FrameworkElement.Tag>
+                                    <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_生成学习模板_click.png" />
+                                  </FrameworkElement.Tag>
+                                </Button>
+                                <Canvas Name="iBack" HorizontalAlignment="Center" VerticalAlignment="Center" Height="32" Width="32">
+                                  <RadioButton Name="fun2" GroupName="ty" ToolTip="{DynamicResource 擦除轮廓点}" Canvas.Left="0" Canvas.Top="0" Width="32" Height="32" Style="{StaticResource showCrossToggleButtonStyle}" IsEnabled="{Binding EditOutlinePointsEnable}">
+                                    <Image Source="/Apps.XmlUI;component/Resources/ic_橡皮擦2_normal.png" />
+                                    <FrameworkElement.Tag>
+                                      <Image Source="/Apps.XmlUI;component/Resources/ic_橡皮擦2_click.png" />
+                                    </FrameworkElement.Tag>
+                                    <i:Interaction.Triggers>
+                                      <i:EventTrigger EventName="Checked">
+                                        <UIHelper:ParamsEventCommand Command="{Binding Rubber2Command, RelativeSource={RelativeSource Mode=TemplatedParent}}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Control}}" />
+                                      </i:EventTrigger>
+                                      <i:EventTrigger EventName="Unchecked">
+                                        <UIHelper:ParamsEventCommand Command="{Binding Rubber2Command, RelativeSource={RelativeSource Mode=TemplatedParent}}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Control}}" />
+                                      </i:EventTrigger>
+                                    </i:Interaction.Triggers>
+                                  </RadioButton>
+                                  <pcUiControl:ResultOverviewPopupButton Name="setBtn" ToolTip="{DynamicResource 调整橡皮擦大小}" Canvas.Left="20" Canvas.Top="0" Width="12" Height="32" HorizontalOffsetVal="-45" VerticalOffsetVal="18" ButtonStyle="{StaticResource setCrossToggleButtonStyle}" DataContext="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}">
+                                    <pcUiControl:ResultOverviewPopupButton.SubContent>
+                                      <ContentControl>
+                                        <moduleLayout:PxSlider Value="{Binding PanRectWidth, Mode=TwoWay}">
+                                          <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="OnThumbMouseLeftButtonDown">
+                                              <core:CallMethodAction xmlns:core="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" MethodName="ThumbMouseLeftButtonDown" TargetObject="{Binding}" />
+                                            </i:EventTrigger>
+                                            <i:EventTrigger EventName="OnThumbMouseLeftButtonUp">
+                                              <CallMethodAction MethodName="ThumbMouseLeftButtonUp" TargetObject="{Binding}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+                                            </i:EventTrigger>
+                                          </i:Interaction.Triggers>
+                                        </moduleLayout:PxSlider>
+                                      </ContentControl>
+                                    </pcUiControl:ResultOverviewPopupButton.SubContent>
+                                    <FrameworkElement.Style>
+                                      <Style TargetType="{x:Type UserControl}">
+                                        <Setter Property="UIElement.IsHitTestVisible" Value="False" />
+                                        <Style.Triggers>
+                                          <DataTrigger Value="true" Binding="{Binding ElementName=fun2, Path=IsChecked}">
+                                            <Setter Property="UIElement.IsHitTestVisible" Value="True" />
+                                          </DataTrigger>
+                                        </Style.Triggers>
+                                      </Style>
+                                    </FrameworkElement.Style>
+                                  </pcUiControl:ResultOverviewPopupButton>
+                                </Canvas>
+                                <Canvas Name="iPen" Margin="0,0,5,0" HorizontalAlignment="Center" VerticalAlignment="Center" Height="32" Width="32" Visibility="Collapsed">
+                                  <RadioButton Name="fun" GroupName="ty" ToolTip="{DynamicResource 绘制感兴趣区域}" Canvas.Left="0" Canvas.Top="0" Width="32" Height="32" Style="{StaticResource showCrossToggleButtonStyle}">
+                                    <Image Source="/Apps.XmlUI;component/Resources/window_brush_normal.png" />
+                                    <FrameworkElement.Tag>
+                                      <Image Source="/Apps.XmlUI;component/Resources/window_brush_click.png" />
+                                    </FrameworkElement.Tag>
+                                    <i:Interaction.Triggers>
+                                      <i:EventTrigger EventName="Checked">
+                                        <UIHelper:ParamsEventCommand Command="{Binding RubberCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Control}}" />
+                                      </i:EventTrigger>
+                                      <i:EventTrigger EventName="Unchecked">
+                                        <UIHelper:ParamsEventCommand Command="{Binding RubberCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Control}}" />
+                                      </i:EventTrigger>
+                                    </i:Interaction.Triggers>
+                                  </RadioButton>
+                                  <pcUiControl:ResultOverviewPopupButton Name="setBtn2" ToolTip="{DynamicResource 调整画笔大小}" Canvas.Left="20" Canvas.Top="0" Width="12" Height="32" HorizontalOffsetVal="-45" VerticalOffsetVal="18" ButtonStyle="{StaticResource setCrossToggleButtonStyle}" DataContext="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}">
+                                    <pcUiControl:ResultOverviewPopupButton.SubContent>
+                                      <ContentControl>
+                                        <moduleLayout:PxSlider Value="{Binding PanRectWidth2, Mode=TwoWay}">
+                                          <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="OnThumbMouseLeftButtonDown">
+                                              <CallMethodAction MethodName="ThumbMouseLeftButtonDown" TargetObject="{Binding}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+                                            </i:EventTrigger>
+                                            <i:EventTrigger EventName="OnThumbMouseLeftButtonUp">
+                                              <CallMethodAction MethodName="ThumbMouseLeftButtonUp" TargetObject="{Binding}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+                                            </i:EventTrigger>
+                                          </i:Interaction.Triggers>
+                                        </moduleLayout:PxSlider>
+                                      </ContentControl>
+                                    </pcUiControl:ResultOverviewPopupButton.SubContent>
+                                    <FrameworkElement.Style>
+                                      <Style TargetType="{x:Type UserControl}">
+                                        <Setter Property="UIElement.IsHitTestVisible" Value="False" />
+                                        <Style.Triggers>
+                                          <DataTrigger Value="true" Binding="{Binding ElementName=fun, Path=IsChecked}">
+                                            <Setter Property="UIElement.IsHitTestVisible" Value="True" />
+                                          </DataTrigger>
+                                        </Style.Triggers>
+                                      </Style>
+                                    </FrameworkElement.Style>
+                                  </pcUiControl:ResultOverviewPopupButton>
+                                </Canvas>
+                                <Button Name="clear" Background="#00FFFFFF" ToolTip="{DynamicResource Clear}" Style="{StaticResource AppToolButtonStyle}" Command="{Binding ClearCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+                                  <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_清空图片_normal.png" />
+                                  <FrameworkElement.Tag>
+                                    <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_清空图片_click.png" />
+                                  </FrameworkElement.Tag>
+                                </Button>
+                                <Button Name="BackStep" Background="#00FFFFFF" ToolTip="{DynamicResource 撤销}" Style="{StaticResource AppToolButtonStyle}" Command="{Binding BackStepCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}" IsEnabled="{Binding BackEnable, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+                                  <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_上一步_normal.png" />
+                                  <FrameworkElement.Tag>
+                                    <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_上一步_click.png" />
+                                  </FrameworkElement.Tag>
+                                </Button>
+                                <Button Name="ForwardStep" Background="#00FFFFFF" ToolTip="{DynamicResource Lang_Redo}" Style="{StaticResource AppToolButtonStyle}" Command="{Binding ForwardStepCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}" IsEnabled="{Binding ForwardEnable, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+                                  <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_下一步_normal.png" />
+                                  <FrameworkElement.Tag>
+                                    <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/ic_下一步_click.png" />
+                                  </FrameworkElement.Tag>
+                                </Button>
+                              </StackPanel>
+                            </StackPanel>
+                            <UniformGrid Grid.Row="0" Columns="4" Width="150" HorizontalAlignment="Right">
+                              <pcUiControl:ZoomOutButton Width="34" Height="34" Content="{DynamicResource 放大}" HookImageViewBox="{Binding ElementName=imageViewBox}" />
+                              <pcUiControl:ZoomInButton Width="34" Height="34" Content="{DynamicResource 缩小}" HookImageViewBox="{Binding ElementName=imageViewBox}" />
+                              <Button Name="BtnToolRegionScale" Width="34" Height="34" Content="%1:1%" Style="{StaticResource ClientOriginScaleBtn}" Command="{Binding ZoomOrgBtnCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+                              <Button Name="BtnToolFullScreen" Width="34" Height="34" Content="{DynamicResource 全屏}" Style="{StaticResource ClientFullScreenBtn}" Command="{Binding ZoomFullBtnCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+                            </UniformGrid>
+                          </Grid>
+                        </Border>
+                        <Grid Name="viewGrid" Row="1">
+                          <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="12*" />
+                            <ColumnDefinition Width="131*" />
+                          </Grid.ColumnDefinitions>
+                          <imagecontrol:ImageViewBox Name="imageViewBox" ROITypeUI="True" polygonProperty:PolygonROIAttach.CustomMaxPointNum="64" Grid.ColumnSpan="2" ImageDataSource="{Binding ImageDataSource, RelativeSource={RelativeSource Mode=TemplatedParent}}" DrawROIType="{Binding DrawROIType}" IsStateForDrawROI="{Binding IsStateForDrawROI}" RoiAddCommand="{Binding AddROICommand}" SelectedSubROIList="{Binding SelectedROIList}" ROIList="{Binding ROILists}" ShapeList="{Binding ShapeList}" />
+                          <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="MouseLeftButtonDown">
+                              <UIHelper:ParamsEventCommand Command="{Binding GirdMouseDownCommand}" />
+                            </i:EventTrigger>
+                          </i:Interaction.Triggers>
+                        </Grid>
+                      </Grid>
+                    </Border>
+                    <Border Grid.Column="1" BorderBrush="#e6e6e6" BorderThickness="0" Margin="0,5,0,0">
+                      <Grid Background="#FCFFFFFF">
+                        <Grid.RowDefinitions>
+                          <RowDefinition Height="38" />
+                          <RowDefinition Height="*" />
+                          <RowDefinition Height="auto" />
+                          <RowDefinition Height="auto" />
+                        </Grid.RowDefinitions>
+                        <Grid Row="0" Background="#FCFFFFFF">
+                          <TextBlock Text="{DynamicResource 列表}" Margin="14,10,0,9" Foreground="#4C4C4C" FontFamily="Microsoft YaHei" VerticalAlignment="Center" FontSize="14" FontWeight="Bold" />
+                        </Grid>
+                        <ListView Name="listView" Grid.Row="1" BorderBrush="#e6e6e6" SelectionMode="Single" Style="{StaticResource ListViewStyle1}" ItemsSource="{Binding ItemsData}">
+                          <ItemsControl.ItemContainerStyle>
+                            <Style TargetType="{x:Type ListViewItem}">
+                              <Style.Setters>
+                                <Setter Property="ListBoxItem.IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                                <Setter Property="Template">
+                                  <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type ListViewItem}">
+                                      <Border Name="bd" BorderThickness="0" BorderBrush="#e6e6e6" SnapsToDevicePixels="True" Background="#FCFFFFFF" Height="28px">
+                                        <Grid>
+                                          <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="50*" />
+                                            <ColumnDefinition Width="50*" />
+                                          </Grid.ColumnDefinitions>
+                                          <Grid Column="0" HorizontalAlignment="Left">
+                                            <Grid.ColumnDefinitions>
+                                              <ColumnDefinition Width="14px" />
+                                              <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="1" HorizontalAlignment="Left" FontSize="14px" Foreground="#666666" FontFamily="Microsoft YaHei" VerticalAlignment="Center" Text="{Lang:ResourceBinding Name}" />
+                                          </Grid>
+                                          <Grid Column="1" HorizontalAlignment="Right">
+                                            <Grid.ColumnDefinitions>
+                                              <ColumnDefinition Width="28px" />
+                                              <ColumnDefinition Width="4px" />
+                                              <ColumnDefinition Width="24px" />
+                                              <ColumnDefinition Width="2px" />
+                                              <ColumnDefinition Width="24px" />
+                                              <ColumnDefinition Width="8px" />
+                                            </Grid.ColumnDefinitions>
+                                            <ToggleButton Name="Eye" Grid.Column="0" Background="#00FFFFFF" Style="{StaticResource showCrossToggleButtonStyle2}" IsChecked="{Binding Path=(Interface:IROIVisible.IsVisible), Mode=TwoWay}">
+                                              <Image Source="/Apps.XmlUI;component/Resources/window_visible_normal.png" Height="24" Width="24" />
+                                              <FrameworkElement.Tag>
+                                                <Image Source="/Apps.XmlUI;component/Resources/window_invisible_normal.png" Height="24" Width="24" />
+                                              </FrameworkElement.Tag>
+                                            </ToggleButton>
+                                            <ComboBox Name="Sign" Grid.Column="2" Background="#00FFFFFF" Style="{StaticResource ComboBoxSignList}" ItemsSource="{Binding SignList, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=baseData:FeaturepatMatchDialogUIBase}}" SelectedIndex="{Binding Sign, Converter={StaticResource cvtBoolToInt}}" SelectedItem="{Binding SelectedSignItem, Mode=TwoWay}" />
+                                            <Button Name="Delete" Grid.Column="4" Background="#00FFFFFF" Style="{StaticResource ImageButtonStyleK}" Tag="{Binding}" Command="{Binding DeleteCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=baseData:FeaturepatMatchDialogUIBase}}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}">
+                                              <Image Margin="0" Source="/Apps.XmlUI;component/Resources/window_cross_normal.png" Height="24" Width="24" />
+                                            </Button>
+                                          </Grid>
+                                        </Grid>
+                                      </Border>
+                                      <ControlTemplate.Triggers>
+                                        <Trigger Property="UIElement.IsMouseOver" Value="True">
+                                          <Setter TargetName="bd" Property="Border.Background" Value="#FFE8E4E4" />
+                                        </Trigger>
+                                        <Trigger Property="ListBoxItem.IsSelected" Value="True">
+                                          <Setter TargetName="bd" Property="Border.Background" Value="#FFE8E4E4" />
+                                        </Trigger>
+                                      </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                  </Setter.Value>
+                                </Setter>
+                              </Style.Setters>
+                            </Style>
+                          </ItemsControl.ItemContainerStyle>
+                        </ListView>
+                        <Separator Grid.Row="2" Margin="10" BorderThickness="1" BorderBrush="#E0DFDE" />
+                        <GroupBox Name="FeatureConfig" Grid.Row="3" Background="#FCFFFFFF" BorderBrush="#00FFFFFF" Height="260">
+                          <HeaderedContentControl.HeaderTemplate>
+                            <DataTemplate>
+                              <TextBlock Name="txtHeader" Text="{DynamicResource Tab_Match Params}" Margin="3,0,0,0" Foreground="#4C4C4C" FontFamily="Microsoft YaHei" FontSize="14" FontWeight="Bold" />
+                            </DataTemplate>
+                          </HeaderedContentControl.HeaderTemplate>
+                          <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Padding="5,0" Style="{StaticResource shrinkScrollViewer}">
+                            <Grid>
+                              <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                              </Grid.ColumnDefinitions>
+                              <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                              </Grid.RowDefinitions>
+                              <TextBlock Grid.Row="0" Grid.Column="0" FontFamily="Microsoft YaHei" Foreground="#666666" VerticalAlignment="Center" FontSize="12" Text="{DynamicResource PyramidScaleFlag}" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                              <TextBlock Grid.Row="1" Grid.Column="0" FontFamily="Microsoft YaHei" Foreground="#666666" VerticalAlignment="Center" FontSize="12" Text="{DynamicResource PyramidScaleLevel}" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                              <TextBlock Grid.Row="2" Grid.Column="0" FontFamily="Microsoft YaHei" Foreground="#666666" VerticalAlignment="Center" FontSize="12" Text="{DynamicResource PyramidScaleRLevel}" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                              <TextBlock Grid.Row="3" Grid.Column="0" FontFamily="Microsoft YaHei" Foreground="#666666" VerticalAlignment="Center" FontSize="12" Text="{DynamicResource Thresh Mode}" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                              <TextBlock Grid.Row="4" Grid.Column="0" FontFamily="Microsoft YaHei" Foreground="#666666" VerticalAlignment="Center" FontSize="12" Text="{DynamicResource EdgeThreshold}" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                              <TextBlock Grid.Row="5" Grid.Column="0" FontFamily="Microsoft YaHei" Foreground="#666666" VerticalAlignment="Center" FontSize="12" Text="{DynamicResource ChainFlag}" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                              <TextBlock Grid.Row="6" Grid.Column="0" FontFamily="Microsoft YaHei" Foreground="#666666" VerticalAlignment="Center" FontSize="12" Text="{DynamicResource MinChainLen}" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                              <TextBlock Grid.Row="7" Grid.Column="0" FontFamily="Microsoft YaHei" Foreground="#666666" VerticalAlignment="Center" FontSize="12" Text="{DynamicResource MaskModelFlag}" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                              <ComboBox Name="ComboBoxPyramidScaleFlag" Grid.Row="0" Grid.Column="1" Width="100" Margin="0,0,10,0" Style="{StaticResource ComboxStyleNormal}" SelectedIndex="{Binding PyramidScaleFlag, Mode=TwoWay}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Self}}">
+                                <ComboBoxItem Content="{DynamicResource Mannual}" />
+                                <ComboBoxItem Content="{DynamicResource RunParam_Auto}" />
+                              </ComboBox>
+                              <pcuicontrol:SliderArrange Grid.Row="1" Grid.Column="1" Width="100" Margin="0,0,10,0" SliderTickFrequency="1" Minimum="1" Maximum="10" StartValue="{Binding PyramidScaleLevel, Mode=TwoWay}" IsEnabled="{Binding ElementName=ComboBoxPyramidScaleFlag, Path=SelectedIndex, Converter={x:Static local:PyramidModeToEnableCvt.Cvt}}" />
+                              <pcuicontrol:SliderArrange Grid.Row="2" Grid.Column="1" Width="100" Margin="0,0,10,0" SliderTickFrequency="1" Minimum="1" Maximum="10" StartValue="{Binding PyramidScaleRLevel, Mode=TwoWay}" IsEnabled="{Binding ElementName=ComboBoxPyramidScaleFlag, Path=SelectedIndex, Converter={x:Static local:PyramidModeToEnableCvt.Cvt}}" />
+                              <ComboBox Name="ComboBoxEdgeThresholdFlag" Grid.Row="3" Grid.Column="1" Width="100" Margin="0,0,10,0" Style="{StaticResource ComboxStyleNormal}" SelectedIndex="{Binding EdgeThresholdFlag, Mode=TwoWay}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Self}}">
+                                <ComboBoxItem Content="{DynamicResource Mannual}" />
+                                <ComboBoxItem Content="{DynamicResource RunParam_Auto}" />
+                              </ComboBox>
+                              <pcuicontrol:SliderArrange Grid.Row="4" Grid.Column="1" Width="100" Margin="0,0,10,0" SliderTickFrequency="1" Minimum="1" Maximum="255" StartValue="{Binding EdgeThreshold, Mode=TwoWay}" IsEnabled="{Binding ElementName=ComboBoxEdgeThresholdFlag, Path=SelectedIndex, Converter={x:Static local:PyramidModeToEnableCvt.Cvt}}" />
+                              <ComboBox Name="ComboBoxChainFlag" Grid.Row="5" Grid.Column="1" Width="100" Margin="0,0,10,0" Style="{StaticResource ComboxStyleNormal}" SelectedIndex="{Binding ChainFlag, Mode=TwoWay}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Self}}">
+                                <ComboBoxItem Content="{DynamicResource Mannual}" />
+                                <ComboBoxItem Content="{DynamicResource RunParam_Auto}" />
+                              </ComboBox>
+                              <pcuicontrol:SliderArrange Grid.Row="6" Grid.Column="1" Width="100" Margin="0,0,10,0" SliderTickFrequency="1" Minimum="2" Maximum="1000" StartValue="{Binding MinChainLen, Mode=TwoWay}" IsEnabled="{Binding ElementName=ComboBoxChainFlag, Path=SelectedIndex, Converter={x:Static local:PyramidModeToEnableCvt.Cvt}}" />
+                              <ComboBox Grid.Row="7" Grid.Column="1" Width="100" Margin="0,0,10,0" Style="{StaticResource ComboxStyleNormal}" SelectedIndex="{Binding MaskModelFlag, Mode=TwoWay}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Self}}">
+                                <ComboBoxItem Content="{Lang:LangResource 全轮廓}" />
+                                <ComboBoxItem Content="{Lang:LangResource 外轮廓}" />
+                              </ComboBox>
+                            </Grid>
+                          </ScrollViewer>
+                        </GroupBox>
+                      </Grid>
+                    </Border>
+                  </Grid>
+                </Grid>
+              </Border>
+            </Grid>
+            <ContentControl Grid.Row="1" ContentTemplate="{StaticResource BottomBorder}" Content="{Binding}" />
+            <ContentControl Name="windowShadow" Margin="-50,-50,-50,-50" Visibility="Collapsed" ContentTemplate="{StaticResource Shadow}" />
+          </Grid>
+          <ControlTemplate.Triggers>
+            <DataTrigger Value="True" Binding="{Binding IsUsePen}">
+              <Setter TargetName="hikCoverCircle" Property="UIElement.Visibility" Value="Collapsed" />
+              <Setter TargetName="hikSector" Property="UIElement.Visibility" Value="Collapsed" />
+              <Setter TargetName="hikFrame" Property="UIElement.Visibility" Value="Collapsed" />
+              <Setter TargetName="hikPolygon" Property="UIElement.Visibility" Value="Collapsed" />
+              <Setter TargetName="iBack" Property="UIElement.Visibility" Value="Collapsed" />
+              <Setter TargetName="iPen" Property="UIElement.Visibility" Value="Visible" />
+            </DataTrigger>
+            <DataTrigger Value="True" Binding="{Binding MatchPointLock}">
+              <Setter TargetName="hikCross" Property="UIElement.Visibility" Value="Collapsed" />
+            </DataTrigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

@@ -1,0 +1,128 @@
+{
+  "toolId": "imvstargettrackmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSTargetTrackModu\\IMVSTargetTrackModu.xml",
+      "sha256": "d44cd3c257dd6772f00d35939e7c2baa3ab053b9a95e679dab158c7038e0d3db",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSTargetTrackModu\\IMVSTargetTrackModuAlgorithm.xml",
+      "sha256": "789faba5535475990ce71ba05c13ccaa2ae59a8df491583dee96a01004a24cd4",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSTargetTrackModu\\IMVSTargetTrackModuAlgorithmTab.xml",
+      "sha256": "e60200f97df2fab96c3567589144da3fbf9836eccbd66a24287994b46aad06aa",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSTargetTrackModu\\IMVSTargetTrackModuCs.xml",
+      "sha256": "966481e402bd5d73341d4091b46352fac15608dff91f98a0b08c76f0e364f4e5",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSTargetTrackModu\\IMVSTargetTrackModuDisplay.xml",
+      "sha256": "d7d20ae51fc16d5e895328bde9fdf5e95a7cee6769e65c9275d26af4102f5575",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSTargetTrackModu\\ToolItemInfo.xml",
+      "sha256": "50f865d13b438b2567a7aed559673ee7c59f36fff5668d822713725ff9020c09",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "ButtonSelecter",
+      "name": "InputBoxSelecter"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "Float",
+      "name": "TrackSpeedX"
+    },
+    {
+      "type": "Float",
+      "name": "TrackSpeedY"
+    },
+    {
+      "type": "Integer",
+      "name": "FrameNum"
+    },
+    {
+      "type": "Integer",
+      "name": "TrackOverlap"
+    },
+    {
+      "type": "Boolean",
+      "name": "CountNumLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangCountNumLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "ObjNumLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangObjNumLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "SingleCountLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "SingleCountLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ObjFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "RectFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResultText"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResultText"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "TextDisplayGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

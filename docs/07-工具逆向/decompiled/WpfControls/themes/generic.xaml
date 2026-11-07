@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/VMControls.WPF;component/Base/DiagramItemTemplate.xaml" />
+    <ResourceDictionary Source="/VMControls.WPF;component/Base/Connection/ConnectionStyle.xaml" />
+    <ResourceDictionary Source="/VMControls.WPF;component/Base/RectDragPanalBaseStyle.xaml" />
+    <ResourceDictionary Source="/VMControls.WPF;component/Base/CommentBoxStyle.xaml" />
+    <ResourceDictionary Source="/VMControls.WPF;component/Base/ItemsPage.xaml" />
+    <ResourceDictionary Source="/VMControls.WPF;component/Base/SearchModulePopup/SearchDryPopup.xaml" />
+    <ResourceDictionary Source="/VMControls.WPF;component/Base/CommentBoxSetting/CommentSetting.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

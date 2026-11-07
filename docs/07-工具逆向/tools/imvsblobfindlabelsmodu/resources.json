@@ -1,0 +1,370 @@
+{
+  "toolId": "imvsblobfindlabelsmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindLabelsModu\\IMVSBlobFindLabelsModu.xml",
+      "sha256": "e12ad2148f80ac6d5d2d0383e5b6cf639f54a8e7a8d74322c723cd681d8d4388",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindLabelsModu\\IMVSBlobFindLabelsModuAlgorithm.xml",
+      "sha256": "daac71acf58bd272bf75cd25cbaa1a5110827dadd88f377c847645b0ca5c1629",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindLabelsModu\\IMVSBlobFindLabelsModuAlgorithmTab.xml",
+      "sha256": "8fa4cb4efe25196ac022565b3b9e04c46cf61439bbc1055591da992463515b06",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindLabelsModu\\IMVSBlobFindLabelsModuCs.xml",
+      "sha256": "a487fcaf2f3aacf74cea9134d98c5577319c14f11202527962544f5b50a64ffc",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindLabelsModu\\IMVSBlobFindLabelsModuDisplay.xml",
+      "sha256": "ded89ea50f76df05aef05a3c648efae471f16cfc6b2ed5c312c3e2847a2b8253",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindLabelsModu\\ToolItemInfo.xml",
+      "sha256": "8f6d920ec7200a40ac2e18203c4b5d5e6235d58eccb3d05e96154caf7c70faa6",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "OutputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ClassName"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "GrayValue"
+    },
+    {
+      "type": "Boolean",
+      "name": "LabelWiseAreaSelectEnable"
+    },
+    {
+      "type": "ThresholdAreaList",
+      "name": "ThresholdAreaList"
+    },
+    {
+      "type": "Integer",
+      "name": "FindNum"
+    },
+    {
+      "type": "Boolean",
+      "name": "SelectByArea"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangArea"
+    },
+    {
+      "type": "Boolean",
+      "name": "BolbOutLineEnable"
+    },
+    {
+      "type": "Boolean",
+      "name": "BolbImageEnable"
+    },
+    {
+      "type": "Expand",
+      "name": "Expert"
+    },
+    {
+      "type": "Boolean",
+      "name": "SelectByPerimeter"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangPerimeter"
+    },
+    {
+      "type": "Boolean",
+      "name": "SelectByShortAxis"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangShortAxis"
+    },
+    {
+      "type": "Boolean",
+      "name": "SelectByLongAxis"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangLongAxis"
+    },
+    {
+      "type": "Boolean",
+      "name": "SelectByCircularuty"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCircularity"
+    },
+    {
+      "type": "Boolean",
+      "name": "SelectByRectangularity"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangRectangularity"
+    },
+    {
+      "type": "Boolean",
+      "name": "SelectByCentraBias"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCenterBias"
+    },
+    {
+      "type": "Boolean",
+      "name": "AxisRatioEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "AxisRatioRange"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SortFeature"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SortMode"
+    },
+    {
+      "type": "Enumeration",
+      "name": "connectivity"
+    },
+    {
+      "type": "Integer",
+      "name": "OverlapRatio"
+    },
+    {
+      "type": "Boolean",
+      "name": "MaxOutPixelNumEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "MaxOutPixelNum"
+    },
+    {
+      "type": "Boolean",
+      "name": "BlobNumLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangBlobNumLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "BlobAreaLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangBlobAreaLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "BlobTotalAreaLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangBlobTotalAreaLimit"
+    },
+    {
+      "type": "Expand",
+      "name": null
+    },
+    {
+      "type": "Boolean",
+      "name": "CentroidXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCentroidXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "CentroidYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCentroidYLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "AngleLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangAngleLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "CenterXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCenterXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "CenterYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCenterYLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "BoxHeightLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "BoxHeightLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "BoxWidthLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "BoxWidthLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "PerimeterLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangPerimeterLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "LongAxisLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangLongAxisLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "ShortAxisLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangShortAxisLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "CircularityLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangCircularityLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "RectangularityLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangRectangularityLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlobFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "MatchLocation"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZoneAnnular"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "OutputMaskImageGroup",
+    "InputMaskImageGroup",
+    "RoiSelectGroup",
+    "InheritWayGroup2",
+    "ExternROITypeGroup",
+    "AssistGroup",
+    "TextDisplayGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

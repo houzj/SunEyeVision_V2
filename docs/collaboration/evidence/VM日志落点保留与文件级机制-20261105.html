@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>VM 日志落点与保留策略 + 文件级机制三件</title>
+<style>
+:root{--bg:#0b1524;--bg2:#111f33;--bd:#24405f;--tx:#dbe7f5;--tx2:#9fb4cc;--obs:#3fb950;--inf:#d29922;--unk:#8b949e;--warn:#f85149;--note:#58a6ff}
+*{box-sizing:border-box}
+body{margin:0;padding:30px 38px 70px;background:var(--bg);color:var(--tx);font:15px/1.7 "Segoe UI","Microsoft YaHei",sans-serif}
+h1{font-size:25px;margin:0 0 6px;color:#fff}
+h2{font-size:19px;margin:32px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--bd);color:#fff}
+h3{font-size:15.5px;margin:22px 0 8px;color:#cfe3f7}
+.meta{color:var(--tx2);font-size:13px;margin-bottom:22px;line-height:1.85}.meta b{color:var(--tx)}
+table{width:100%;border-collapse:collapse;margin:10px 0 16px;font-size:13px;background:var(--bg2)}
+th,td{border:1px solid var(--bd);padding:6px 9px;text-align:left;vertical-align:top}
+th{background:#16273d;color:#fff;font-weight:600;white-space:nowrap}
+td code,p code,li code{background:#0a1420;border:1px solid #1d3350;border-radius:3px;padding:1px 4px;font:12.5px/1.5 Consolas,monospace;color:#a9d3ff}
+tr:nth-child(even) td{background:#0f1c2e}
+code.block{display:block;background:#07101b;border:1px solid #1d3350;border-radius:5px;padding:11px 13px;margin:9px 0;white-space:pre;overflow-x:auto;color:#a9d3ff;font-size:12.5px}
+.obs,.inf,.unk{display:inline-block;padding:0 5px;border-radius:3px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.obs{background:rgba(63,185,80,.16);color:var(--obs);border:1px solid rgba(63,185,80,.45)}
+.inf{background:rgba(210,153,34,.16);color:var(--inf);border:1px solid rgba(210,153,34,.45)}
+.unk{background:rgba(139,148,158,.16);color:var(--unk);border:1px solid rgba(139,148,158,.45)}
+.warn,.note{border-left:3px solid var(--warn);background:rgba(248,81,73,.08);padding:9px 13px;margin:12px 0;border-radius:0 4px 4px 0;font-size:13.5px}
+.note{border-left-color:var(--note);background:rgba(88,166,255,.08)}
+.warn b{color:var(--warn)}.note b{color:var(--note)}
+ul,ol{margin:7px 0 12px;padding-left:22px}li{margin:3px 0}
+.k{color:#7ee787;font-weight:600}.r{color:#ff7b72;font-weight:600}
+.small{font-size:12.5px;color:var(--tx2)}
+footer{margin-top:40px;padding-top:12px;border-top:1px solid var(--bd);color:var(--tx2);font-size:12.5px}
+</style>
+</head>
+<body>
+
+<h1>VM 日志落点与保留策略 ＋ 文件级机制三件（偏好 / 方案版本 / 恢复）</h1>
+<div class="meta">
+取证日：<b>2026-11-05</b>　｜　对象：<b>VisionMaster 4.4.0</b>，安装目录只读<br>
+用途：T-0005 的「日志落点与保留」「偏好机制」「恢复目录」三项；方案格式版本见另份文档<br>
+证据源：<code>Applications\log\</code> 全量枚举、6 个 <code>Apps.BaseLog.config</code>、<code>App.ini</code>、<code>Server\AutoLoadSolution.cfg</code>、<code>data\</code>/<code>Temporary\</code>/<code>TempImage\</code>/<code>ImageTemp\</code>/<code>ProjectParam\</code>/<code>UiMapFile\</code><br>
+标注：<span class="obs">观察到</span> 直读　<span class="inf">推断</span> 由结构推得　<span class="unk">未知</span> 无证据
+</div>
+
+<h2>0 结论摘要</h2>
+<table>
+<tr><th style="width:24%">问题</th><th style="width:8%">档位</th><th>结论</th></tr>
+<tr><td>日志写在哪</td><td><span class="obs">观察到</span></td>
+<td><b>安装目录内</b> <code>Applications\log\</code>，按<b>子系统分 11 个目录</b>（不是单一大文件）：<code>Exception</code> / <code>FrontendUI</code> / <code>GateWay</code> / <code>GateWayUI</code> / <code>GlobalScript</code> / <code>ModuleProxy</code> / <code>Modules</code> / <code>ModuleUI</code> / <code>SDK</code> / <code>Server</code> / <code>UI</code>。</td></tr>
+<tr><td>保留多久、多大</td><td><span class="obs">观察到</span></td>
+<td>本机实测总量 <b>≈293 MB</b>。滚动<b>按大小</b>（<code>RollingStyle=Size</code>），<b>不按日期</b>（尽管配置里留了 <code>DatePattern</code> 参数）。<br>
+阈值分档：<b>10 MB</b>（GateWayUI / UI）、<b>20 MB</b>（Modules / Server / ModuleProxy）、<b>40 MB</b>（SDK）。</td></tr>
+<tr><td>配置从哪来</td><td><span class="obs">观察到</span></td>
+<td><b>每个子系统各自的 <code>Apps.BaseLog.config</code></b>，框架是自研的 <code>Apps.BaseLog</code>（log4net 风格 API）。目录内找到 6 份日志配置，<b>其余子系统没有外置配置</b>（阈值不同，说明在 DLL 内或别处）。</td></tr>
+<tr><td>配置与实测对得上吗</td><td><span class="obs">观察到</span></td>
+<td><b>对得上，这是最有力的交叉验证</b>：<code>GateWay\Apps.BaseLog.config</code> 写 <code>MaximumFileSize="10MB"</code> + <code>MaxSizeRollBackups="5"</code>，实测 <code>GateWay.log</code> + <code>.1</code>..<code>.5</code> 共 6 个、大文件恰好 10,485,xxx B。</td></tr>
+<tr><td>日志级别怎么定</td><td><span class="obs">观察到</span></td>
+<td><b>每子系统独立</b>：<code>GateWay</code>=<code>all</code>（最低门槛，全记）、<code>GlobalScript</code>=<code>info</code>；另有独立工具 <code>Tools\LogLevelAdjustmentTool</code> 用于调级别。</td></tr>
+<tr><td>日志格式</td><td><span class="obs">观察到</span></td>
+<td><code>%date{yyyy-MM-dd HH:mm:ss.fff} %-5level [%thread] [%class::%method@%L] %message%newline%newline</code><br>
+→ 含毫秒、级别、线程、<b>类::方法@行号</b>；<b>每条消息后跟两个换行</b>（条目间空一行）。</td></tr>
+<tr><td>偏好（默认保存目录）</td><td><span class="obs">观察到</span></td>
+<td><code>App.ini</code> 全文只有一段一条：<code>[DefaultSection] SaveSol=C:\Users\houzhongjie\Desktop</code>。<b>INI 格式、无注释、无版本号</b>。</td></tr>
+<tr><td>偏好（自动加载方案）</td><td><span class="obs">观察到</span></td>
+<td><code>Server\AutoLoadSolution.cfg</code>：<code>IsAutoLoad="0" Path="" Password="" SoluExecuteState="1"</code> —— <b>开关 / 路径 / 密码 / 加载后是否执行</b>。</td></tr>
+<tr><td>方案版本</td><td><span class="obs">观察到</span></td>
+<td>方案包内 <code>ProcFile\ProcedureInfo.xml</code> 的 <code>&lt;Version CurrentVersion="V4.4.0" /&gt;</code>（产品串）。详见 <code>VM方案格式版本与兼容迁移-20261105.html</code>。</td></tr>
+<tr><td>恢复回收有吗</td><td><span class="unk">未知</span></td>
+<td><b>未发现</b>"下次启动恢复未保存方案"的配置或索引文件。可见的是 <b>4 处临时目录只写不清</b>：<code>Temporary\FeaturepatMatch_0..15+.xml</code>（按序号递增）、<code>TempImage\OU3LNB8Q</code>（8 位随机名）、<code>ImageTemp\VM32616ImgSrcTemp</code>（实例号前缀）、<code>ProjectParam\Designer\</code>。<br>
+→「有临时文件」≠「有恢复机制」，两件事本批<b>未能闭合后者</b>。</td></tr>
+<tr><td>我方最该拿走的</td><td><span class="inf">推断</span></td>
+<td>三点：①<b>按子系统分目录 + 每目录独立滚动</b>（一条业务链出问题只看一个目录）；②<b>大小滚动 + 备份数上限</b>（不按日期，磁盘可控）；③<b>格式里带类::方法@行号</b>（现场可定位到代码行）。<br>
+不该学的：<b>日志写在 Program Files 内</b>（需管理员权限）、<b>临时文件永不清理</b>。</td></tr>
+</table>
+
+<h2>1 逐条论证</h2>
+
+<h3>1.1 日志落点全表 <span class="obs">观察到</span></h3>
+<table>
+<tr><th>子系统目录</th><th>文件数</th><th>总量</th><th>主要文件</th><th>实测大文件体积</th><th>最大备份号</th></tr>
+<tr><td><code>Exception</code></td><td>1</td><td>0.4 MB</td><td><code>Exception.log</code>(466,486 B)</td><td>—</td><td>0（<b>不滚动</b>）</td></tr>
+<tr><td><code>FrontendUI</code></td><td>1</td><td>0.0 MB</td><td><code>FrontendUI.log</code>(13,733 B)</td><td>—</td><td>0</td></tr>
+<tr><td><code>GateWay</code></td><td>1</td><td>5.8 MB</td><td><code>hkrmq.log</code>(6,132,443 B)</td><td>5.8 MB</td><td>0</td></tr>
+<tr><td><code>GateWayUI</code></td><td>6</td><td>56.5 MB</td><td><code>GateWay.log</code> + <code>.1</code>..<code>.5</code></td><td><b>10 MB</b>（多个）</td><td>5</td></tr>
+<tr><td><code>GlobalScript</code></td><td>2</td><td>1.6 MB</td><td><code>GlobalScript.log</code>(806,287)、<code>UserGlobalScript.log</code>(859,440)</td><td>—</td><td>0</td></tr>
+<tr><td><code>ModuleProxy</code></td><td>3</td><td>28.2 MB</td><td><code>ModuleFrame.log</code>(4,998,982)、<code>ModuleProxy.log</code>(3,613,937)、<code>ModuleFrame.10.log</code>(20,971,312)</td><td><b>20 MB</b></td><td><b>10</b></td></tr>
+<tr><td><code>Modules</code></td><td>3</td><td>44.6 MB</td><td><code>Modules.log</code>(4,861,833)、<code>Modules.1.log</code>(20,971,480)、<code>Modules.10.log</code>(20,971,461)</td><td><b>20 MB</b></td><td><b>10</b></td></tr>
+<tr><td><code>ModuleUI</code></td><td>1</td><td>0.0 MB</td><td><code>ModuleUI.log</code>(1,233 B)</td><td>—</td><td>0</td></tr>
+<tr><td><code>SDK</code></td><td>2</td><td>54.6 MB</td><td><code>PlatformSDK.log</code>(15,273,603)、<code>PlatformSDK.17.log</code>(41,942,991)</td><td><b>40 MB</b></td><td><b>17</b></td></tr>
+<tr><td><code>Server</code></td><td>4</td><td>45.2 MB</td><td><code>Server.log</code>(1,869,858)、<code>Monitor.log</code>(3,610,204)、<code>Server.1.log</code>(20,971,510)、<code>Server.10.log</code>(20,971,425)</td><td><b>20 MB</b></td><td><b>10</b></td></tr>
+<tr><td><code>UI</code></td><td>9</td><td>56.5 MB</td><td><code>Ui.log</code>(6,499,366)、<code>CompatiableTool.log</code>(2,967)、<code>SystemLog.log</code>(295,142)、<code>ResultError.log</code>(<b>3 B</b>)</td><td><b>10 MB</b> / 6.2 MB</td><td>见 §1.3</td></tr>
+<tr><td colspan="2"><b>合计</b></td><td><b>≈293 MB</b></td><td colspan="3">11 个子系统，<b>同目录内多个 appender 并存</b>（如 <code>UI</code> 同时有 UI 日志、系统日志、错误日志、兼容工具日志）</td></tr>
+</table>
+<div class="note">
+<b>两种备份命名并存</b>（不能只按一种正则匹配，否则会漏数）：<br>
+① <code>&lt;Name&gt;.log.1</code> … <code>.log.5</code>（GateWayUI、UI）<br>
+② <code>&lt;Name&gt;.1.log</code> … <code>.10.log</code>（Modules、Server、ModuleProxy）、<code>.17.log</code>（SDK）<br>
+→ 说明<b>不同 appender 实现的滚动命名规则不同</b>，但配置文件里写的是同一套参数名（<code>MaxSizeRollBackups</code>/<code>MaximumFileSize</code>）。
+</div>
+
+<h3>1.2 权威配置：<code>GateWay\Apps.BaseLog.config</code> 全文 <span class="obs">观察到</span></h3>
+<code class="block">&lt;configuration&gt;
+  &lt;configSections&gt;&lt;section name="Apps.BaseLog" type="Apps.BaseLog.Config.Log4NetConfigurationSectionHandler, Apps.BaseLog"/&gt;&lt;/configSections&gt;
+  &lt;Apps.BaseLog&gt;
+    &lt;appender name="RollingLogFileAppender" type="Apps.BaseLog.Appender.RollingFileAppender"&gt;
+      &lt;!--日志路径--&gt;        &lt;param name="File"               value=".\log\GateWayUI\GateWay.log"/&gt;
+      &lt;!--是否追加--&gt;        &lt;param name="AppendToFile"       value="true"/&gt;
+      &lt;!--编码--&gt;            &lt;param name="Encoding"           value="utf-8"/&gt;
+      &lt;!--log保留天数--&gt;     &lt;param name="MaxSizeRollBackups" value="5"/&gt;
+      &lt;!--文件名固定--&gt;      &lt;param name="StaticLogFileName"  value="true"/&gt;
+      &lt;!--文件名格式--&gt;      &lt;param name="DatePattern"        value="yyyy-MM-dd&quot;.log&quot;"/&gt;
+      &lt;!--按大小滚动--&gt;      &lt;param name="RollingStyle"       value="Size"/&gt;
+      &lt;param name="MaximumFileSize" value="10MB"/&gt;
+      &lt;layout type="Apps.BaseLog.Layout.PatternLayout"&gt;
+        &lt;conversionPattern value="%date{yyyy-MM-dd HH:mm:ss.fff} %-5level [%thread] [%class::%method@%L] %message%newline%newline"/&gt;
+      &lt;/layout&gt;
+    &lt;/appender&gt;
+    &lt;root&gt;
+      &lt;!--(高) OFF &gt; FATAL &gt; ERROR &gt; WARN &gt; INFO &gt; DEBUG &gt; ALL (低) --&gt;
+      &lt;level value="all"/&gt;
+      &lt;appender-ref ref="RollingLogFileAppender"/&gt;
+    &lt;/root&gt;
+  &lt;/Apps.BaseLog&gt;
+&lt;/configuration&gt;</code>
+<table>
+<tr><th>参数</th><th>值</th><th>实测吻合</th><th>说明</th></tr>
+<tr><td><code>File</code></td><td><code>.\log\GateWayUI\GateWay.log</code></td><td>✔ 文件存在</td><td><b>相对路径</b>（相对 exe 工作目录），因此日志必然落在安装目录</td></tr>
+<tr><td><code>AppendToFile</code></td><td><code>true</code></td><td>✔</td><td>追加，不覆盖</td></tr>
+<tr><td><code>Encoding</code></td><td><code>utf-8</code></td><td>✔ 可正常按 UTF-8 读</td><td>与 <code>paraCfg.xml</code> 的 GBK 形成对比</td></tr>
+<tr><td><code>MaxSizeRollBackups</code></td><td><code>5</code></td><td><b>✔ 实测 <code>.1</code>..<code>.5</code> 共 5 个</b></td><td><b>注释写"log保留天数"但实际按个数</b>——注释与语义不符</td></tr>
+<tr><td><code>StaticLogFileName</code></td><td><code>true</code></td><td>✔</td><td>主文件名固定，不随时间变</td></tr>
+<tr><td><code>DatePattern</code></td><td><code>yyyy-MM-dd.log</code></td><td><b>✘ 未生效</b></td><td><code>RollingStyle=Size</code> → 日期模式被忽略（<b>配了但不用</b>）</td></tr>
+<tr><td><code>RollingStyle</code></td><td><code>Size</code></td><td>✔</td><td>按大小滚动</td></tr>
+<tr><td><code>MaximumFileSize</code></td><td><code>10MB</code></td><td><b>✔ 实测 10,485,760 B</b></td><td>1 MB = 1,048,576 → 10 MB = 10,485,760 ✔</td></tr>
+<tr><td><code>level</code></td><td><code>all</code></td><td>—</td><td>最低门槛，<b>全量记录</b>；注释给出了完整级别序</td></tr>
+<tr><td><code>conversionPattern</code></td><td>见上</td><td>—</td><td>毫秒 + 级别 + 线程 + 类::方法@行号；<b>双 <code>%newline</code></b></td></tr>
+</table>
+<div class="warn"><b>注释与语义不符两处（读配置时易误判）</b>：①<code>MaxSizeRollBackups</code> 注释为"log保留天数"，实际是<b>备份文件个数</b>；②<code>DatePattern</code> 配了但 <code>RollingStyle=Size</code> 使其<b>不生效</b>。看配置不能只看注释。</div>
+
+<h3>1.3 6 份日志配置对比 <span class="obs">观察到</span></h3>
+<table>
+<tr><th>配置文件</th><th><code>File</code></th><th>Size</th><th>备份</th><th>Style</th><th>Level</th></tr>
+<tr><td><code>GateWay\Apps.BaseLog.config</code></td><td><code>.\log\GateWayUI\GateWay.log</code></td><td>10MB</td><td>5</td><td>Size</td><td><b>all</b></td></tr>
+<tr><td><code>GlobalScript\Apps.BaseLog.config</code></td><td>（未填）</td><td>10MB</td><td>5</td><td>Size</td><td><b>info</b></td></tr>
+<tr><td><code>myLibs\Apps.BaseLog.config</code></td><td><code>.\log\UI\Ui.log</code></td><td>10MB</td><td>5</td><td>Size</td><td>（未填）</td></tr>
+<tr><td><code>Tools\VMCollector\Resouces\Apps.BaseLog.config</code></td><td><code>.\log\VMCollector.log</code></td><td>10MB</td><td>5</td><td>Size</td><td>（未填）</td></tr>
+<tr><td><code>Tools\AuthActiveTool\Log4j.Config</code></td><td>—</td><td>—</td><td>—</td><td>—</td><td><b>DEBUG</b></td></tr>
+<tr><td><code>Tools\LogLevelAdjustmentTool\*.exe.config</code></td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+</table>
+<div class="warn">
+<b>关键缺口</b>：<code>Modules</code>(20MB/10)、<code>Server</code>(20MB/10)、<code>ModuleProxy</code>(20MB/10)、<code>SDK</code>(40MB/17) 这 4 个高频大流量的子系统，
+<b>在 <code>Applications\</code> 下找不到外置日志配置</b>（本批按 <code>*Log*.config</code> 递深 3 层搜）。<br>
+→ <span class="inf">推断</span> 它们的 appender 配置写在 DLL 内或其它位置；<span class="unk">未知</span> 具体位置。<b>不能</b>因为"没找到配置"就说"没有配置"。
+</div>
+<p><b>另一处细节</b>：<code>VMCollector</code> 的配置目录名拼写为 <code>Resouces</code>（缺 <code>r</code>，应为 Resources），与 <code>CompatiableTool.log</code>（兼容工具日志名）一样存在拼写不一致 —— 原文如此，不是我方笔误。</p>
+
+<h3>1.4 日志内容的可定位性 <span class="obs">观察到</span></h3>
+<p>格式串含 <code>[%class::%method@%L]</code> → 每条日志自带<b>类 :: 方法 @ 行号</b>。例（迁移日志实际行）：</p>
+<code class="block">2026-09-28 13:49:25 WARN  Load Warning，Failed Module Num:4
+2026-09-28 13:49:26 INFO  GlobalVarToVM4_4: update module param binding start</code>
+<p>结合 <code>log\UI\ResultError.log</code> 仅 <b>3 B</b>、<code>ModuleUI.log</code> 1,233 B、<code>FrontendUI.log</code> 13,733 B —— 说明<b>日志是按子系统真实流量分配的</b>，不是每个子系统都狂写。</p>
+
+<h3>1.5 文件级机制三件 <span class="obs">观察到</span></h3>
+<table>
+<tr><th>机制</th><th>落点</th><th>实际内容</th><th>闭合度</th></tr>
+<tr><td><b>① 偏好：默认保存目录</b></td><td><code>Applications\App.ini</code></td><td><code>[DefaultSection]</code> / <code>SaveSol=C:\Users\houzhongjie\Desktop</code></td><td><b>已闭</b></td></tr>
+<tr><td><b>① 偏好：自动加载方案</b></td><td><code>Server\AutoLoadSolution.cfg</code></td><td><code>IsAutoLoad="0"</code> / <code>Path=""</code> / <code>Password=""</code> / <code>SoluExecuteState="1"</code></td><td><b>已闭</b></td></tr>
+<tr><td><b>① 偏好：用户选项</b></td><td><code>data\options\</code></td><td>目录存在（未逐文件读）</td><td>位置已定位，<b>内容未取证</b></td></tr>
+<tr><td><b>① 偏好：最近方案列表</b></td><td><span class="r">未定位</span></td><td>不在 <code>App.ini</code>、不在 <code>AutoLoadSolution.cfg</code>；<span class="unk">未知</span> 在 <code>data\options</code> 还是注册表</td><td><b>未闭</b></td></tr>
+<tr><td><b>② 方案版本</b></td><td>方案包内 <code>ProcFile\ProcedureInfo.xml</code></td><td><code>&lt;SoftVersion&gt;&lt;Version CurrentVersion="V4.4.0" /&gt;&lt;/SoftVersion&gt;</code></td><td><b>已闭</b>（详见方案版本文档）</td></tr>
+<tr><td><b>② 产品/算法版本</b></td><td><code>Applications\VersionInfo.config</code></td><td>6 键（含 2 个空 Patch、1 个空 DeepLearning）</td><td><b>已闭</b></td></tr>
+<tr><td><b>③ 恢复：临时目录</b></td><td><code>Temporary\</code>、<code>TempImage\</code>、<code>ImageTemp\</code>、<code>ProjectParam\Designer\</code></td><td><code>FeaturepatMatch_0..15+.xml</code>（序号递增）、<code>OU3LNB8Q</code>（8 位随机）、<code>VM32616ImgSrcTemp</code>（实例号前缀）</td><td>写入已闭，<b>回收未闭</b></td></tr>
+<tr><td><b>③ 恢复：崩溃现场</b></td><td>安装根 <code>&lt;exe&gt;-yyyyMMdd-HHmmss-mmmm.txt</code></td><td>模块时间表 + <code>ExceptionCode</code> + 文本 <code>CallStack</code></td><td><b>已闭</b>（详见启动时序文档 §1.5）</td></tr>
+<tr><td><b>③ 恢复：未保存方案回填</b></td><td><span class="r">未发现</span></td><td>无对应配置/索引；临时文件是否被读取<b>无证据</b></td><td><b class="r">未闭</b></td></tr>
+</table>
+<div class="note">
+<b>关于"恢复回收"的准确表述</b>：可确证的只有「<b>存在多个只写不清的临时目录</b>」；
+「崩溃后有恢复提示」这件事<b>没有任何证据</b>（既无配置文件、也无日志子系统名指向它）。<br>
+文档与方案里<b>不得</b>写"原件有崩溃恢复机制"——只能说"原件保留了临时现场，是否用于恢复未取证"。
+</div>
+
+<h3>1.6 临时目录的膨胀特征 <span class="obs">观察到</span></h3>
+<table>
+<tr><th>目录</th><th>命名规律</th><th>清理证据</th></tr>
+<tr><td><code>Temporary\FeaturepatMatch_N.xml</code></td><td><code>_0</code>…<code>_15</code> 连续，每个 1.5–3.1 KB</td><td><b>无</b>（序号连续说明从不删除，只追加）</td></tr>
+<tr><td><code>TempImage\OU3LNB8Q</code></td><td>8 位大写字母+数字随机名</td><td><b>无</b></td></tr>
+<tr><td><code>ImageTemp\VM32616ImgSrcTemp</code></td><td><code>VM&lt;实例号&gt;ImgSrcTemp</code></td><td><b>无</b>（按实例号固定，不随时间新建）</td></tr>
+<tr><td><code>ProjectParam\Designer\</code></td><td>固定子目录</td><td><b>无</b></td></tr>
+</table>
+<p><span class="inf">推断</span> <code>Temporary\FeaturepatMatch_N.xml</code> 的 <code>N</code> 是<b>特征匹配工具的实例序号</b>（每个实例一份中间结果），因此数量随工具实例数增长而非时间增长 —— 这也解释了为什么序号是连续小整数而非时间戳。</p>
+
+<h2>2 原件 vs 我方对照</h2>
+<table>
+<tr><th style="width:20%">原件事实</th><th style="width:24%">我方现状</th><th>结论 / 建议</th><th style="width:8%">优先级</th></tr>
+<tr><td>日志按<b>子系统分目录</b>（11 个），各自滚动</td><td>我方统一 <code>LogInfo/LogError</code> 单通道 + 单文件（本批未核对我方具体落点）</td><td><b>值得借鉴</b>：至少把「UI / 执行引擎 / 插件 / 通信」分开，出问题只看一个目录。但<b>不必</b>做 11 个，按我方实际子系统划分即可</td><td>P2</td></tr>
+<tr><td>滚动：<code>Size</code> + <code>MaximumFileSize</code> + <code>MaxSizeRollBackups</code></td><td>本批未核对</td><td><b>建议采用"大小 + 个数"双限</b>（不用日期），磁盘占用可算：<code>Size × (备份数+1)</code></td><td>P2</td></tr>
+<tr><td>格式含 <code>[%class::%method@%L]</code></td><td>我方 <code>LogInfo</code> 是否带调用方信息本批未核</td><td><b>建议</b>：日志带类/方法/行号，否则现场只能靠猜</td><td>P2</td></tr>
+<tr><td>日志目录在 <b>Program Files 内</b></td><td>我方数据根可配置（<code>App.ini</code> 的 <code>[Data]</code>，见 T-0002）</td><td><b>不要学</b>。Program Files 需管理员权限写，UAC/虚拟化会带来"日志神秘丢失"</td><td>—</td></tr>
+<tr><td>临时文件<b>永不清理</b>（序号无上限增长）</td><td>本批未核对</td><td><b>反例</b>。应设上限 + 启动清理超期项，且清理失败要记 Warning（与 T-0001 的 C2/C4 同向）</td><td>P2</td></tr>
+<tr><td><code>App.ini</code> 极简（1 段 1 键，INI 无版本）</td><td>我方 <code>App.ini</code> 有 <code>[Data]</code> 段、要求写错即抛 <code>InvalidDataException</code>（T-0002 验收）</td><td><b>我方更严</b>，保持。原件的宽容（静默用缺省）正是 T-0002 要防的反面</td><td>—</td></tr>
+<tr><td>自动加载方案含 <code>Password</code> 与 <code>SoluExecuteState</code></td><td>我方无方案密码；加载/运行已分离</td><td>"加载≠运行"<b>已对齐</b>；方案密码<b>无</b>，若要做无人值守生产需先定密码存储</td><td>P2（待确认）</td></tr>
+<tr><td>用户选项在 <code>data\options\</code>、UI 映射按<b>实例号</b>分目录 <code>UiMapFile\32616\</code></td><td>我方偏好存储位置本批未核</td><td>原件把"用户偏好"与"实例相关 UI 状态"<b>分开存</b>（前者全局、后者按实例）。建议核对：我方是否把两者混在一个配置里（会导致换实例后 UI 状态串味）</td><td>P2</td></tr>
+<tr><td>未发现"崩溃恢复未保存方案"机制</td><td>我方是否有类似机制本批未核</td><td><b>不得</b>声称原件有此能力；若我方要做，属<b>自建</b>，需自行设计落点与清理</td><td>—</td></tr>
+</table>
+
+<h2>3 待补证据</h2>
+<h3>3.1 需更深取证（静态）</h3>
+<table><tr><th>编号</th><th>缺口</th><th>影响</th></tr>
+<tr><td>A1</td><td><code>Modules</code>/<code>Server</code>/<code>ModuleProxy</code>/<code>SDK</code> 四个子系统的日志配置真实位置（20MB/40MB 与 10/17 备份的来源）</td><td>保留策略只能部分还原</td></tr>
+<tr><td>A2</td><td><code>data\options\</code> 内容（用户偏好全集）</td><td>"偏好机制"只闭了 2 条（保存目录、自动加载）</td></tr>
+<tr><td>A3</td><td>"最近打开方案"列表存储位置（文件 or 注册表）</td><td>起始页机制</td></tr>
+<tr><td>A4</td><td>临时文件是否在启动时被读取（有无恢复逻辑）</td><td>恢复回收结论</td></tr>
+<tr><td>A5</td><td><code>Tools\LogLevelAdjustmentTool</code> 调整的级别写到哪里（是否回写 <code>Apps.BaseLog.config</code>）</td><td>现场调日志级别的可行性</td></tr>
+</table>
+<h3>3.2 需实机验证（需用户授权开原机窗口）</h3>
+<table><tr><th>编号</th><th>验证项</th></tr>
+<tr><td>B1</td><td>把 <code>GateWay.log</code> 改成只读后长时间运行，滚动失败时的表现（是否静默丢日志）</td></tr>
+<tr><td>B2</td><td>崩溃后重启，是否提示"恢复上次方案"</td></tr>
+<tr><td>B3</td><td>最近方案列表的实际来源与清空方式</td></tr>
+<tr><td>B4</td><td><code>UiMapFile\&lt;实例号&gt;</code> 换实例号后 UI 状态是否隔离</td></tr>
+</table>
+<h3>3.3 需厂商文档</h3>
+<table><tr><th>编号</th><th>缺口</th></tr>
+<tr><td>C1</td><td>各子系统日志级别与保留策略的官方建议值（原件自己都不统一：10/20/40 MB 混用）</td></tr>
+<tr><td>C2</td><td>日志目录是否支持重定向到其它盘（配置里是相对路径，未见重定向开关）</td></tr>
+</table>
+
+<h2>4 自验命令（PowerShell 5.1，只读）</h2>
+<code class="block">$log="D:\Program Files\VisionMaster4.4.0\Applications\log"
+
+# ① 11 个子系统目录与体量
+foreach($d in (Get-ChildItem $log -Directory)){
+  $f=Get-ChildItem $d.FullName -File
+  "{0,-14} files={1,3} MB={2,8:N1}" -f $d.Name,$f.Count,(($f|Measure-Object Length -Sum).Sum/1MB) }
+
+# ② 两种备份命名都要匹配（否则漏数）
+Get-ChildItem $log -Recurse -File | ?{ $_.Name -match '\.log\.\d+$|\.\d+\.log$' } |
+  Select-Object Name,Length | Sort-Object Name
+
+# ③ 权威配置与实测是否吻合（期望 10MB=10485760 且 .1..5 共 5 个）
+[IO.File]::ReadAllText("$log\..\GateWay\Apps.BaseLog.config",[Text.Encoding]::UTF8) |
+  Select-String -Pattern 'MaximumFileSize|MaxSizeRollBackups|RollingStyle|level value'
+Get-ChildItem "$log\GateWayUI" -File | Select-Object Name,Length
+
+# ④ 所有日志配置
+Get-ChildItem "D:\Program Files\VisionMaster4.4.0\Applications" -Filter "*Log*.config" -Recurse -Depth 3 |
+  Select-Object FullName,Length
+
+# ⑤ 偏好三件
+[IO.File]::ReadAllText("D:\Program Files\VisionMaster4.4.0\Applications\App.ini",[Text.Encoding]::UTF8)
+[xml]$s=[IO.File]::ReadAllText("D:\Program Files\VisionMaster4.4.0\Applications\Server\AutoLoadSolution.cfg",[Text.Encoding]::UTF8)
+$s.Root.AutoLoadSolutionInfo.Solution | Format-List
+
+# ⑥ 临时目录只写不清（期望 FeaturepatMatch 序号连续）
+Get-ChildItem "D:\Program Files\VisionMaster4.4.0\Applications\Temporary" -File | Measure-Object</code>
+
+<h2>5 边界声明</h2>
+<ul>
+<li><b>未启动</b> <code>VisionMaster.exe</code>；全部结论来自只读目录枚举与配置文件读取。</li>
+<li><b>未改动</b> 安装目录、<code>src/</code>、<code>tests/</code>、其它 docs；本文件为新增。</li>
+<li><b>未 commit / 未 push</b>。</li>
+<li><b>未读</b>日志内容（只统计体积/数量与读了 2 个极小文件：<code>CompatiableTool.log</code>、崩溃报告），因此"日志里记录了什么"不作断言。</li>
+<li>“恢复回收”仅闭到「临时目录只写不清」这一层；<b>崩溃后是否有恢复提示无任何证据</b>，标 <span class="unk">未知</span>，未用推测补齐。</li>
+<li>“最近方案列表”“<code>data\options</code> 内容”“4 个子系统的日志配置”三项<b>未取证</b>，已列入 §3.1。</li>
+<li>§2 中我方现状（日志落点、滚动策略、临时文件清理、偏好存储、方案密码）<b>本批未核对我方实现</b>，均按"未核对"处理，<b>不构成</b>对我方现状的判断。</li>
+</ul>
+
+<footer>
+VM 应用层 · 日志落点保留与文件级机制 · 2026-11-05 · 只读取证<br>
+关联：<code>VM启动时序与失败表现矩阵-20261105.html</code>（读什么）、<code>VM方案格式版本与兼容迁移-20261105.html</code>（方案版本字段）
+</footer>
+</body>
+</html>

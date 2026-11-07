@@ -1,0 +1,195 @@
+{
+  "toolId": "imvscolormeasuremodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorMeasureModu\\IMVSColorMeasureModu.xml",
+      "sha256": "304a0c15d6aa2fd2ec41a5871a05f312728fa2a59168475e15b5fa7a7262de8d",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorMeasureModu\\IMVSColorMeasureModuAlgorithm.xml",
+      "sha256": "42c702f2be51d96723c5cff25a06a8252b29b487ead85fe1665469fad6460da3",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorMeasureModu\\IMVSColorMeasureModuAlgorithmTab.xml",
+      "sha256": "47adc60cb5f45704d77f2e14c2d7c470f1c7bc39833e81131027162eb4fd6e9a",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorMeasureModu\\IMVSColorMeasureModuCs.xml",
+      "sha256": "46b2f8ddf729b5e016dbdfd5a3519680ab6f24d983ef09d1f2e754b8b6c3792b",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorMeasureModu\\IMVSColorMeasureModuDisplay.xml",
+      "sha256": "c92f382746ffbfef2e422599b892addbe2bf9b0a6b930c6a150d9becc9ab1097",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorMeasureModu\\ToolItemInfo.xml",
+      "sha256": "b0a2507b014f9be84c03cf91bea13e640fbef4f0b038193df4f4ea4356e5151e",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ColorSpace"
+    },
+    {
+      "type": "Boolean",
+      "name": "C1MaxValueLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangC1MaxValueLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "C1MinValueLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangC1MinValueLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "C1MeanLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangC1MeanLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "C1StdLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangC1StdLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "C2MaxValueLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangC2MaxValueLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "C2MinValueLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangC2MinValueLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "C2MeanLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangC2MeanLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "C2StdLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangC2StdLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "C3MaxValueLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangC3MaxValueLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "C3MinValueLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangC3MinValueLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "C3MeanLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangC3MeanLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "C3StdLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangC3StdLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "RoiSelectGroup",
+    "InheritWayGroup2",
+    "AssistGroup",
+    "TextDisplayGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

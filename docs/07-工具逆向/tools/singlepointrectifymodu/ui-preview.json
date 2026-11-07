@@ -1,0 +1,120 @@
+{
+  "controls": [
+    {
+      "type": "Command",
+      "name": "BasicInit"
+    },
+    {
+      "type": "Enumeration",
+      "name": "CalibType"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "InputMode"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ImagePoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ImagePointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ImagePointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ImagePointA"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TeachPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TeachPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TeachPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TeachPointA"
+    },
+    {
+      "type": "Boolean",
+      "name": "SnapPointRotateEnable"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "SnapPointDeltaAngle"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "CalibLoadType"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "CalibMatrix"
+    },
+    {
+      "type": "OpenFileForCalibDialog",
+      "name": "FilePath"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RefreshSignal"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "singlepointrectifymodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointRectifyModu\\SinglePointRectifyModu.xml",
+      "sha256": "13c56f29948c42675255cbe05c8e76d53f462aea4f663d383c001d67af937874",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointRectifyModu\\SinglePointRectifyModuAlgorithm.xml",
+      "sha256": "9f9881edd1473b0289e6bc841b6137d864e912d2cd74f022e6714ab5ff5f32c5",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointRectifyModu\\SinglePointRectifyModuAlgorithmTab.xml",
+      "sha256": "9790fe15151dcde3231c04917fa4b0880fb2bb7ccac539bec5695e00881d03de",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointRectifyModu\\SinglePointRectifyModuCs.xml",
+      "sha256": "13be366a0c1345e3ba9cf60d1ea3e1bbb6a84268cec6a9424b251c253426aefc",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointRectifyModu\\SinglePointRectifyModuDisplay.xml",
+      "sha256": "2b5bd3022a99e3dd9c1783aa27fa086a888742149d4691da2ea18e232e1c1d6d",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calculation\\SinglePointRectifyModu\\ToolItemInfo.xml",
+      "sha256": "9373560b4fac163f8a3195d64351694046cd4df47be99e528635dfef32ea465f",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "单点纠偏",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

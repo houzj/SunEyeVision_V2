@@ -1,0 +1,68 @@
+{
+  "stableToolId": "stringcomparemodule",
+  "originalPlugin": "StringCompareModule",
+  "displayName": "字符比较",
+  "originalCategory": "Logic",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\StringCompareModule",
+  "uiCategory": "declarative-parameters",
+  "priority": "P0",
+  "resourceCount": 6,
+  "parameterCount": 1,
+  "inputCount": 1,
+  "outputCount": 4,
+  "uiControlCount": 3,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/StringCompareModuParams.cs",
+      "members": [
+        "constructor",
+        "Clone",
+        "Dispose",
+        "result members"
+      ]
+    },
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/StringCompareModuTool.cs",
+      "members": [
+        "constructor",
+        "Clone",
+        "Dispose",
+        "result members"
+      ]
+    },
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/StringCompareResult.cs",
+      "members": [
+        "constructor",
+        "Clone",
+        "Dispose",
+        "result members"
+      ]
+    },
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/StringCompareResultIn.cs",
+      "members": [
+        "constructor",
+        "Clone",
+        "Dispose",
+        "result members"
+      ]
+    }
+  ],
+  "managedMembers": [
+    "managed parameter/result types recovered"
+  ],
+  "nativeFunctions": [
+    "IMVS_PF_ExecuteOnce_V30_CS (generic CProcess evidence only)"
+  ],
+  "runtimeObservations": [],
+  "unknowns": [
+    "native Process/ProcessAlg ABI and algorithm",
+    "XML UI binding/conditions",
+    "save/restore serialization",
+    "original VM runtime behavior"
+  ]
+}

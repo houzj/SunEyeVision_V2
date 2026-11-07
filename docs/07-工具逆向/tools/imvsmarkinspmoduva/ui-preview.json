@@ -1,0 +1,312 @@
+{
+  "controls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "OutputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RunPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RunPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RunAngle"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RunScaleX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RunScaleY"
+    },
+    {
+      "type": "Integer",
+      "name": "MinCharArea"
+    },
+    {
+      "type": "Integer",
+      "name": "MinCharWidth"
+    },
+    {
+      "type": "Float",
+      "name": "BinarizeScale"
+    },
+    {
+      "type": "Integer",
+      "name": "BinarizeWinSize"
+    },
+    {
+      "type": "Integer",
+      "name": "HardThreshold"
+    },
+    {
+      "type": "Boolean",
+      "name": "BinaryImageShow"
+    },
+    {
+      "type": "Enumeration",
+      "name": "TextPolarity"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SegmentMode"
+    },
+    {
+      "type": "Enumeration",
+      "name": "PyramidScaleFlag"
+    },
+    {
+      "type": "Float",
+      "name": "PyramidScaleFine"
+    },
+    {
+      "type": "Float",
+      "name": "PyramidScaleRough"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgeThresholdFlag"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeThreshold"
+    },
+    {
+      "type": "Float",
+      "name": "RoughMatchMinScore"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RoughMatchAngleRang"
+    },
+    {
+      "type": "Enumeration",
+      "name": "RoughMatchPolarity"
+    },
+    {
+      "type": "Float",
+      "name": "ExactMatchMinScore"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "ExactMatchAngleRang"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ExactMatchMatchThresholdFlag"
+    },
+    {
+      "type": "Integer",
+      "name": "ExactMatchMatchThresholdHigh"
+    },
+    {
+      "type": "Boolean",
+      "name": "ExactMatchCorrectFlag"
+    },
+    {
+      "type": "Float",
+      "name": "ExactMatchToleranceX"
+    },
+    {
+      "type": "Float",
+      "name": "ExactMatchToleranceY"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FlawType"
+    },
+    {
+      "type": "Integer",
+      "name": "BrightThreshold"
+    },
+    {
+      "type": "Integer",
+      "name": "DarkThreshold"
+    },
+    {
+      "type": "Float",
+      "name": "BrightVarScale"
+    },
+    {
+      "type": "Float",
+      "name": "DarkVarScale"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeTolerance"
+    },
+    {
+      "type": "Integer",
+      "name": "BlobMinArea"
+    },
+    {
+      "type": "HeadBar",
+      "name": "ExactHead"
+    },
+    {
+      "type": "Float",
+      "name": "ExactMatchMinScore"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "ExactMatchAngleRang"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "ExactMatchScaleXRang"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "ExactMatchScaleYRang"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ExactMatchMatchThresholdFlag"
+    },
+    {
+      "type": "Integer",
+      "name": "ExactMatchMatchThresholdHigh"
+    },
+    {
+      "type": "Boolean",
+      "name": "ExactMatchCorrectFlag"
+    },
+    {
+      "type": "Float",
+      "name": "ExactMatchToleranceX"
+    },
+    {
+      "type": "Float",
+      "name": "ExactMatchToleranceY"
+    },
+    {
+      "type": "HeadBar",
+      "name": "RoughHead"
+    },
+    {
+      "type": "Float",
+      "name": "RoughMatchMinScore"
+    },
+    {
+      "type": "Enumeration",
+      "name": "RoughMatchPolarity"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RoughMatchAngleRang"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RoughMatchScaleXRang"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RoughMatchScaleYRang"
+    },
+    {
+      "type": "Enumeration",
+      "name": "RoughMatchMatchThresholdFlag"
+    },
+    {
+      "type": "Integer",
+      "name": "RoughMatchMatchThresholdHigh"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvsmarkinspmoduva",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSMarkInspModuVA\\IMVSMarkInspModuVA.xml",
+      "sha256": "a756218a87b43466e3c02504028827ec405006de8bd70acbfc2bb5b08751598e",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSMarkInspModuVA\\IMVSMarkInspModuVAAlgorithm.xml",
+      "sha256": "17ec68ca64636649f803abe3456ef29031cf54731126ce5c1048cff505217e9a",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSMarkInspModuVA\\IMVSMarkInspModuVAAlgorithmTab.xml",
+      "sha256": "6901f27d52589a3bc2da0de23b41223bc8d62a5e9df27a3af8c31adc200504ea",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSMarkInspModuVA\\IMVSMarkInspModuVACs.xml",
+      "sha256": "fcf66386c327ed1976709ddf26a60a98b760cfd8c6b95e2665bf4d5fd972a5bf",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSMarkInspModuVA\\IMVSMarkInspModuVADisplay.xml",
+      "sha256": "71e7d1121a5cbf10be9679384fbe339104cbddd0fea71b540618bf652d3f100c",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSMarkInspModuVA\\ToolItemInfo.xml",
+      "sha256": "c96430ac237a60a2dbcbe41929347610eb28c0af1f76b3d942a8a3e82005e438",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "字符缺陷检测",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

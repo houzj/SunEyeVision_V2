@@ -1,0 +1,103 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:DataAnalysisModuleControl" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" xmlns:localParamTab="clr-namespace:Apps.XmlUI.ParamTab;assembly=Apps.XmlUI" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/Apps.Style;component/ComboBoxStyle/ListViewComboBoxStyle.xaml" />
+    <ResourceDictionary Source="/Apps.XmlUI;component/Styles/ParamUserControlDataTemplate.xaml" />
+    <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+  </ResourceDictionary.MergedDictionaries>
+  <DataTemplate x:Key="RadioSelecterAnaly">
+    <localParamTab:LeftRightControl>
+      <localParamTab:LeftRightControl.LeftContent>
+        <Control Template="{StaticResource TextLeft}" />
+      </localParamTab:LeftRightControl.LeftContent>
+      <localParamTab:LeftRightControl.RightContent>
+        <WrapPanel VerticalAlignment="Center">
+          <RadioButton Focusable="True" Margin="2,0,0,0" Style="{StaticResource NormalRadioButton}" Content="{Binding EnumEntrysA[0].DisplayNameALang}">
+            <ToggleButton.IsChecked>
+              <MultiBinding Mode="OneWay" Converter="{StaticResource equalConverter}">
+                <Binding Path="CurValueA" />
+                <Binding Path="EnumEntrysA[0].ValueA" />
+              </MultiBinding>
+            </ToggleButton.IsChecked>
+            <i:Interaction.Triggers>
+              <i:EventTrigger EventName="Checked">
+                <i:InvokeCommandAction Command="{Binding ValueChangedCommand}" CommandParameter="{Binding EnumEntrysA[0].ValueA}" />
+              </i:EventTrigger>
+            </i:Interaction.Triggers>
+          </RadioButton>
+          <RadioButton Focusable="True" Margin="2,0,0,0" Style="{StaticResource NormalRadioButton}" Content="{Binding EnumEntrysA[1].DisplayNameALang}">
+            <ToggleButton.IsChecked>
+              <MultiBinding Mode="OneWay" Converter="{StaticResource equalConverter}">
+                <Binding Path="CurValueA" />
+                <Binding Path="EnumEntrysA[1].ValueA" />
+              </MultiBinding>
+            </ToggleButton.IsChecked>
+            <i:Interaction.Triggers>
+              <i:EventTrigger EventName="Checked">
+                <i:InvokeCommandAction Command="{Binding ValueChangedCommand}" CommandParameter="{Binding EnumEntrysA[1].ValueA}" />
+              </i:EventTrigger>
+            </i:Interaction.Triggers>
+          </RadioButton>
+          <RadioButton Focusable="True" Margin="2,0,0,0" Style="{StaticResource NormalRadioButton}" Content="{Binding EnumEntrysA[2].DisplayNameALang}">
+            <ToggleButton.IsChecked>
+              <MultiBinding Mode="OneWay" Converter="{StaticResource equalConverter}">
+                <Binding Path="CurValueA" />
+                <Binding Path="EnumEntrysA[2].ValueA" />
+              </MultiBinding>
+            </ToggleButton.IsChecked>
+            <i:Interaction.Triggers>
+              <i:EventTrigger EventName="Checked">
+                <i:InvokeCommandAction Command="{Binding ValueChangedCommand}" CommandParameter="{Binding EnumEntrysA[2].ValueA}" />
+              </i:EventTrigger>
+            </i:Interaction.Triggers>
+          </RadioButton>
+        </WrapPanel>
+      </localParamTab:LeftRightControl.RightContent>
+    </localParamTab:LeftRightControl>
+  </DataTemplate>
+  <DataTemplate x:Key="ButtonSelecterAnaly">
+    <localParamTab:LeftRightControl FrameworkElement.Height="32">
+      <localParamTab:LeftRightControl.LeftContent>
+        <Control Template="{StaticResource TextLeft}" />
+      </localParamTab:LeftRightControl.LeftContent>
+      <localParamTab:LeftRightControl.RightContent>
+        <ContentControl Width="200" HorizontalAlignment="Left" ContentTemplate="{StaticResource ButtonSelecter_sub}" Content="{Binding}" />
+      </localParamTab:LeftRightControl.RightContent>
+    </localParamTab:LeftRightControl>
+  </DataTemplate>
+  <DataTemplate x:Key="OpenFileForDataShellDialogAnaly">
+    <localParamTab:LeftRightControl FrameworkElement.Height="34">
+      <localParamTab:LeftRightControl.LeftContent>
+        <TextBlock VerticalAlignment="Center" Text="{Lang:ResourceBinding DisplayNameA}" ToolTip="{Lang:ResourceBinding DescriptionA}" />
+      </localParamTab:LeftRightControl.LeftContent>
+      <localParamTab:LeftRightControl.RightContent>
+        <ContentControl Width="200" HorizontalAlignment="Left" ContentTemplate="{StaticResource OpenFileDialog_sub}" Content="{Binding}" />
+      </localParamTab:LeftRightControl.RightContent>
+    </localParamTab:LeftRightControl>
+  </DataTemplate>
+  <DataTemplate x:Key="ProtocolOutputParam">
+    <Grid>
+      <local:ProtocolOut HorizontalAlignment="Left" Background="#00FFFFFF" DataContext="{Binding BridgeObjA}" />
+    </Grid>
+  </DataTemplate>
+  <DataTemplate x:Key="ProtocolOutputParam_Shell">
+    <Grid>
+      <local:ProtocolOutShell HorizontalAlignment="Left" Background="#00FFFFFF" DataContext="{Binding BridgeObjA}" />
+    </Grid>
+  </DataTemplate>
+  <DataTemplate x:Key="ProtocolOutputParam_Byte">
+    <Grid>
+      <local:ProtocolOutByte HorizontalAlignment="Left" Background="#00FFFFFF" DataContext="{Binding BridgeObjA}" />
+    </Grid>
+  </DataTemplate>
+  <DataTemplate x:Key="ComboxEditDataAnalysis">
+    <localParamTab:LeftRightControl FrameworkElement.Height="34">
+      <localParamTab:LeftRightControl.LeftContent>
+        <Control Template="{StaticResource TextLeft}" />
+      </localParamTab:LeftRightControl.LeftContent>
+      <localParamTab:LeftRightControl.RightContent>
+        <ContentControl Width="100" HorizontalAlignment="Left" ContentTemplate="{StaticResource ComboxEdit_sub}" Content="{Binding}" />
+      </localParamTab:LeftRightControl.RightContent>
+    </localParamTab:LeftRightControl>
+  </DataTemplate>
+</ResourceDictionary>

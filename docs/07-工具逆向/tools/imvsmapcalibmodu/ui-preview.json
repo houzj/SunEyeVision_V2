@@ -1,0 +1,192 @@
+{
+  "controls": [
+    {
+      "type": "RadioSelecterEx2",
+      "name": "InputType"
+    },
+    {
+      "type": "EnumerationG",
+      "name": "ImageSource_0"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType_0"
+    },
+    {
+      "type": "EnumerationG",
+      "name": "ImageSource_1"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType_1"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "CalibPointInput"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PhyPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PhyPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PhyPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "WorldRotateAngle"
+    },
+    {
+      "type": "Boolean",
+      "name": "TeachEnable"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Trigger"
+    },
+    {
+      "type": "String",
+      "name": "TeachFlag"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TeachFlagInput"
+    },
+    {
+      "type": "OpenFileDialog",
+      "name": "CalibPath0"
+    },
+    {
+      "type": "OpenFileDialog",
+      "name": "CalibPath1"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RefreshSignal"
+    },
+    {
+      "type": "SaveFileDialog",
+      "name": "SaveCalibPath"
+    },
+    {
+      "type": "OpenFileForCalibDialog",
+      "name": "CalibPathName"
+    },
+    {
+      "type": "Boolean",
+      "name": "RefreshFileEnable"
+    },
+    {
+      "type": "Enumeration",
+      "name": "CalibBoardType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "HomoFreedom"
+    },
+    {
+      "type": "Enumeration",
+      "name": "WeightFun"
+    },
+    {
+      "type": "Integer",
+      "name": "WeightFactor"
+    },
+    {
+      "type": "Integer",
+      "name": "GrayContrast"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FilterStatus"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SubpixelWinAuto"
+    },
+    {
+      "type": "Integer",
+      "name": "SubPixelWindowSize"
+    },
+    {
+      "type": "Integer",
+      "name": "GrayContrast2"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FilterStatus2"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SubpixelWinAuto2"
+    },
+    {
+      "type": "Integer",
+      "name": "SubPixelWindowSize2"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CurCornersPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ObjCornersPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ProCornersPoint"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvsmapcalibmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSMapCalibModu\\IMVSMapCalibModu.xml",
+      "sha256": "228bf45a24691c0cd13c2201e516941f20e6b1e5352478ccb60ed01c774b4f5f",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSMapCalibModu\\IMVSMapCalibModuAlgorithm.xml",
+      "sha256": "f4dfc100a8bd320576bf55c631202704d3b72d0dfd4d2adb57ae98e0681d53cc",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSMapCalibModu\\IMVSMapCalibModuAlgorithmTab.xml",
+      "sha256": "cc91e61790265b3dad51ec37bb87cf65edd6b1fad718630253b390ddc0a46bf2",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSMapCalibModu\\IMVSMapCalibModuCs.xml",
+      "sha256": "4f07627a6883ea0ac233dc402ace74337e955299ea1463b3753346ef13ba5738",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSMapCalibModu\\IMVSMapCalibModuDisplay.xml",
+      "sha256": "d630451cd94d6d6eb4b1a69f5b9204707b18b083799b6218e4493a84700ca0a4",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSMapCalibModu\\ToolItemInfo.xml",
+      "sha256": "b646e9df02a3493fb70dc834287035a7cde88b6d49e2f966ed4ed6cb3ae24d4c",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "映射标定",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

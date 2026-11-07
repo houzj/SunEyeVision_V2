@@ -1,0 +1,240 @@
+{
+  "controls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "OutputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "FastFeaturepatMatchConfigPanalData",
+      "name": "FastMatchPat"
+    },
+    {
+      "type": "Boolean",
+      "name": "UseMatchAllMode"
+    },
+    {
+      "type": "Float",
+      "name": "MinScore"
+    },
+    {
+      "type": "Integer",
+      "name": "MaxMatchNum"
+    },
+    {
+      "type": "Enumeration",
+      "name": "Polarity"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "RangAngle"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangScale"
+    },
+    {
+      "type": "Integer",
+      "name": "MaxOverlap"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SortType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "MatchThresholdFlag"
+    },
+    {
+      "type": "Integer",
+      "name": "MatchThresholdHigh"
+    },
+    {
+      "type": "Boolean",
+      "name": "SpotterFlag"
+    },
+    {
+      "type": "Integer",
+      "name": "MatchExtentRate"
+    },
+    {
+      "type": "Integer",
+      "name": "TimeOut"
+    },
+    {
+      "type": "Boolean",
+      "name": "OutLineEnable"
+    },
+    {
+      "type": "Boolean",
+      "name": "OKWhenNumIsZero"
+    },
+    {
+      "type": "Boolean",
+      "name": "NumLimitEnable"
+    },
+    {
+      "type": "IntegerBettween",
+      "name": "NumAngleLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "AngleLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeAngleLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "ScaleLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeScaleLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "ScoreLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeScoreLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "MatchPointXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeMatchPointXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "MatchPointYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeMatchPointYLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "BoxPointXLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeBoxPointXLimit"
+    },
+    {
+      "type": "Boolean",
+      "name": "BoxPointYLimitEnable"
+    },
+    {
+      "type": "FloatBettween",
+      "name": "RangeBoxPointYLimit"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "MatchResults"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "MatchLocation"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "MatchOutlinePoints"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "result-view",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P2",
+  "themeStates": "unknown",
+  "toolId": "imvsfastfeaturematchmodu",
+  "status": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSFastFeatureMatchModu\\IMVSFastFeatureMatchModu.xml",
+      "sha256": "f23548d831273b14f8a8bfa2466f66c9ac2b512c6e804232a98f653000365d24",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSFastFeatureMatchModu\\IMVSFastFeatureMatchModuAlgorithm.xml",
+      "sha256": "2051f8aec00e9299a1233e09dc11b4f813d26c9552a1342c378c9b48404534d0",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSFastFeatureMatchModu\\IMVSFastFeatureMatchModuAlgorithmTab.xml",
+      "sha256": "122b713fb0298999effee72ed812471ea1684b0b5408c0f0a2ebb91ec20aa32c",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSFastFeatureMatchModu\\IMVSFastFeatureMatchModuCs.xml",
+      "sha256": "04356141ab48b864d1235dcb369e4cbc72f4c263186ac55edb0e49b1b552c1c1",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSFastFeatureMatchModu\\IMVSFastFeatureMatchModuDisplay.xml",
+      "sha256": "f92b0f5f57492350abf2bbc40b3fe0fa27b595b9d53db583226dc4a4c13a40f8",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSFastFeatureMatchModu\\ToolItemInfo.xml",
+      "sha256": "7e3575ca31766d56953d9b9aec702cb14437d0baa9efd2a3a914619737e58286",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "快速匹配",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

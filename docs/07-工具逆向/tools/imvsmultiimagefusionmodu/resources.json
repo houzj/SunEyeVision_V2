@@ -1,0 +1,100 @@
+{
+  "toolId": "imvsmultiimagefusionmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSMultiImageFusionModu\\IMVSMultiImageFusionModu.xml",
+      "sha256": "07c23c86852304ed52d0114e339ae591c1bb612980e8951f4e377ebf4421fc5e",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSMultiImageFusionModu\\IMVSMultiImageFusionModuAlgorithm.xml",
+      "sha256": "adcc5252a9880300d28c98874095ddaa5602ae1a5874feae97a9bb56c73655e7",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSMultiImageFusionModu\\IMVSMultiImageFusionModuAlgorithmTab.xml",
+      "sha256": "3058a282eeabe1d77c304989166ed019c977c6c6b905708c82b97c5a42d4008e",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSMultiImageFusionModu\\IMVSMultiImageFusionModuDisplay.xml",
+      "sha256": "cdae570c0759dc8ea2993827eeaae4d8504c571406cd8dbc9138c01a1291e49b",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSMultiImageFusionModu\\ToolItemInfo.xml",
+      "sha256": "f8a94a412de549fa27f8c371d2cf3ec90ca5f64e5d03944ff2477b56cfff6dbd",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "EnumerationG",
+      "name": "ImageSource"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "ResultType"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelSize"
+    },
+    {
+      "type": "Boolean",
+      "name": "EnhanceEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "Brightness"
+    },
+    {
+      "type": "Integer",
+      "name": "ContrastCoef"
+    },
+    {
+      "type": "Integer",
+      "name": "HalationRemoveLevel"
+    },
+    {
+      "type": "Expand",
+      "name": "Expert"
+    },
+    {
+      "type": "Enumeration",
+      "name": "DirEnhanceType"
+    },
+    {
+      "type": "Integer",
+      "name": "DirEnhanceLevel"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    }
+  ],
+  "sharedUiGroups": [
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

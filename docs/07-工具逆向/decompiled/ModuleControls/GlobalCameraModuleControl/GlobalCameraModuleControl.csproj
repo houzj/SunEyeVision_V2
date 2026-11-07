@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>GlobalCameraModuleControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="datatemplate\paramusercontroldatatemplate.xaml" />
+    <Page Remove="GlobalCameraModuleControl\DynamicCameraConfigWindow.xaml" />
+    <Page Remove="GlobalCameraModuleControl\DynamicCameraParamConfig.xaml" />
+    <Page Remove="GlobalCameraModuleControl\DynamicCameraParamConfigControl.xaml" />
+    <Page Remove="GlobalCameraModuleControl\EnumerationLxControl.xaml" />
+    <Page Remove="GlobalCameraModuleControl\FrequentlyParamListView.xaml" />
+    <Page Remove="GlobalCameraModuleControl\PreviewWindow.xaml" />
+    <Page Include="datatemplate\paramusercontroldatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="datatemplate/paramusercontroldatatemplate.xaml" />
+    <Page Include="GlobalCameraModuleControl\DynamicCameraConfigWindow.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="dynamiccameraconfigwindow.xaml" />
+    <Page Include="GlobalCameraModuleControl\DynamicCameraParamConfig.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="dynamiccameraparamconfig.xaml" />
+    <Page Include="GlobalCameraModuleControl\DynamicCameraParamConfigControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="dynamiccameraparamconfigcontrol.xaml" />
+    <Page Include="GlobalCameraModuleControl\EnumerationLxControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="enumerationlxcontrol.xaml" />
+    <Page Include="GlobalCameraModuleControl\FrequentlyParamListView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="frequentlyparamlistview.xaml" />
+    <Page Include="GlobalCameraModuleControl\PreviewWindow.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="previewwindow.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Apps.XmlParser" />
+    <Reference Include="VM.Core" />
+    <Reference Include="Mvvm" />
+    <Reference Include="System.Xml" />
+    <Reference Include="VM.PlatformSDKCS" />
+    <Reference Include="VMControls.Interface" />
+    <Reference Include="Apps.BaseData" />
+    <Reference Include="VM.Xml" />
+    <Reference Include="MvCameraControl.Net" />
+    <Reference Include="Apps.Data" />
+    <Reference Include="Apps.PcUI" />
+    <Reference Include="Apps.Interface" />
+    <Reference Include="VM.Controls" />
+    <Reference Include="VM.PcUI" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="System.Core" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="VM.ExternalCall" />
+    <Reference Include="Apps.Log" />
+    <Reference Include="Apps.ErrorCode" />
+  </ItemGroup>
+</Project>

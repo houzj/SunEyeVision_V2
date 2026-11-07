@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>测量与交互 · 现行文档</title>
+<link rel="stylesheet" href="../00-索引/assets/doc.css">
+</head>
+<body>
+<div class="wrap">
+
+<nav class="crumbs">
+    <a href="../00-索引/主题台账.html">主题台账</a>
+    <a href="../00-索引/文档索引.html">文档索引</a>
+    <a href="README.html">现行文档说明</a>
+</nav>
+
+<header class="doc-header">
+    <h1>测量与交互<span class="badge partial">部分未实施</span></h1>
+    <p class="doc-meta">最后更新：2026-11-05<span class="sep">·</span>状态：部分未实施<span class="sep">·</span>代码基线：<code>71da36329</code><span class="sep">·</span>合并来源：58 篇历史方案与测试报告（清单见文末「历史演进」）</p>
+</header>
+
+<section class="card lead">
+    <h2>一句话结论</h2>
+        <p>测量是<strong>6 张独立工具卡</strong>（点-点 / 点-线 / 点-圆 / 线-线 / 线-圆 / 圆-圆），每张卡固定 2 个卡尺槽，卡尺各自独立配置、默认绘制模式、可订阅上游几何。工具本身<strong>不调 Halcon / OpenCV</strong>，只做纯 C# 几何运算。位置修正是测量的地基：<strong>绑定不改坐标、切图不改坐标、只有用户真正编辑图形才逆变换写回参数</strong>。工程链已跑通，但<strong>运行轮次 / 基准版本、统一撤销历史、其他 ROI 编辑器推广尚未完成</strong>。</p>
+</section>
+
+<section class="card">
+    <h2>改前用户看到什么</h2>
+        <ul>
+            <li>量点距、点线距、线线夹角、圆心距，要靠写脚本或串多个检测工具再人工换算，没有统一 UI，没有 OK/NG，也没有可视化。</li>
+            <li>位置修正场景下：<strong>打开工具窗口、什么都不改、直接点执行，结果就错位</strong>。同一个工具走工作流入口是对的，走工具调试入口是错的。</li>
+            <li>先绑定位置修正再画 ROI，图形会突然跳走；先画再绑定，坐标也被偷偷改了。</li>
+            <li>已经跑完的历史结果，改了当前参数之后<strong>重新绘制，历史结果跟着变</strong>，看起来像"测量结果不稳定"。</li>
+            <li>顺时针 / 逆时针、旋转 90 度、2 倍缩放的圆，拖动中心会落到错误位置（要 X=360 却落到 330）。</li>
+        </ul>
+</section>
+
+<section class="card">
+    <h2>改后应该是什么样</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>场景</th>
+                    <th>期望行为</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>量点距 / 圆心距 / 线线夹角</td>
+                    <td>选卡片、图上画两个图形（或订阅上游）、直接出数值 + OK/NG</td>
+                </tr>
+                <tr>
+                    <td>先绑位置修正再绘制</td>
+                    <td>在<strong>当前图像</strong>绘制，按矩阵逆变换存为参考坐标，画面不跳</td>
+                </tr>
+                <tr>
+                    <td>先绘制再绑定</td>
+                    <td>保留已画的位置参数作为参考坐标，按当前矩阵更新显示；<strong>不弹转换选择、不自动逆转换</strong></td>
+                </tr>
+                <tr>
+                    <td>打开窗口 / 刷新 / 切图</td>
+                    <td><strong>不改</strong>任何 ROI 位置参数（中心、角度、尺寸全都不动）</td>
+                </tr>
+                <tr>
+                    <td>用户拖动图形</td>
+                    <td>才按逆变换写回参考参数，且整体事务提交、失败全不变</td>
+                </tr>
+                <tr>
+                    <td>上下游矩阵更新</td>
+                    <td>更新运行上下文，<strong>不迁移参数</strong></td>
+                </tr>
+                <tr>
+                    <td>临时关闭位置修正</td>
+                    <td>保留参考 ROI，显示未修正位置，开启后恢复</td>
+                </tr>
+                <tr>
+                    <td>矩阵无效 / 未匹配 / 图像帧不匹配</td>
+                    <td>明确拒绝修正编辑并说明原因，<strong>不用单位矩阵或旧矩阵伪装有效</strong></td>
+                </tr>
+                <tr>
+                    <td>改当前参数重绘历史结果</td>
+                    <td>历史结果几何<strong>不变</strong>（引导圆、卡尺半宽/半长/数量已冻结）</td>
+                </tr>
+                <tr>
+                    <td>拖动中切图或换基准</td>
+                    <td>取消未提交编辑，不出现按下一套矩阵、松手另一套</td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+<section class="card">
+    <h2>关键结构</h2>
+        <h3>测量卡片形态</h3>
+        <figure class="diagram">
+            <div class="d-layers">
+                <div class="d-layer">
+                    <div class="layer-name">输入</div>
+                    <div class="layer-body">
+                        <div class="d-node accent">上游检测工具<small>LineDetect / CircleDetect / ShapeMatch …</small></div>
+                        <div class="d-node accent">绘制<small>图上直接放线 / 圆 / 弧</small></div>
+                    </div>
+                </div>
+                <div class="d-arrow down">↓</div>
+                <div class="d-layer">
+                    <div class="layer-name">订阅</div>
+                    <div class="layer-body">
+                        <div class="d-node">订阅<small>按图形类型 / 按图形参数；几何走 SDK 契约 Line2d / Circle2d / Point2d</small></div>
+                    </div>
+                </div>
+                <div class="d-arrow down">↓</div>
+                <div class="d-layer">
+                    <div class="layer-name">卡尺</div>
+                    <div class="layer-body">
+                        <div class="d-node">卡尺 1<small>模式 / 订阅 / 绘制 / 序列化 各自独立</small></div>
+                        <div class="d-node">卡尺 2<small>模式 / 订阅 / 绘制 / 序列化 各自独立</small></div>
+                    </div>
+                </div>
+                <div class="d-arrow down">↓</div>
+                <div class="d-layer">
+                    <div class="layer-name">测量</div>
+                    <div class="layer-body">
+                        <div class="d-node">几何测量工具<small>点-点 / 点-线 / 点-圆 / 线-线 / 线-圆 / 圆-圆</small></div>
+                    </div>
+                </div>
+                <div class="d-arrow down">↓</div>
+                <div class="d-layer">
+                    <div class="layer-name">输出</div>
+                    <div class="layer-body">
+                        <div class="d-node ok">数值 + OK / NG + 可视化叠加<small>纯像素；物理单位交给坐标转换工具</small></div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-edges">
+                <span>绘制 → 卡尺 1 / 卡尺 2（不经订阅，直接进测量）</span>
+            </div>
+            <figcaption>测量卡片的主链：上游几何经订阅进卡尺，两把卡尺各自独立，测量结果只出像素与判定，不做单位换算。</figcaption>
+        </figure>
+        <table>
+            <thead>
+                <tr>
+                    <th>卡片</th>
+                    <th>ToolId 项目</th>
+                    <th>输入</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>点-点</td>
+                    <td><code>SunEyeVision.Tool.PointPointMeasure</code></td>
+                    <td>点 + 点（<strong>点只走订阅，不可绘制</strong>）</td>
+                </tr>
+                <tr>
+                    <td>点-线</td>
+                    <td><code>SunEyeVision.Tool.PointLineMeasure</code></td>
+                    <td>点（订阅）+ 线（订阅/绘制）</td>
+                </tr>
+                <tr>
+                    <td>点-圆</td>
+                    <td><code>SunEyeVision.Tool.PointCircleMeasure</code></td>
+                    <td>点（订阅）+ 圆（订阅/绘制）</td>
+                </tr>
+                <tr>
+                    <td>线-线</td>
+                    <td><code>SunEyeVision.Tool.LineLineMeasure</code></td>
+                    <td>线 + 线</td>
+                </tr>
+                <tr>
+                    <td>线-圆</td>
+                    <td><code>SunEyeVision.Tool.LineCircleMeasure</code></td>
+                    <td>线 + 圆</td>
+                </tr>
+                <tr>
+                    <td>圆-圆</td>
+                    <td><code>SunEyeVision.Tool.CircleCircleMeasure</code></td>
+                    <td>圆 + 圆</td>
+                </tr>
+            </tbody>
+        </table>
+        <h3>ROI 坐标三层归属（核心契约）</h3>
+        <figure class="diagram">
+            <div class="d-layers">
+                <div class="d-layer">
+                    <div class="layer-name">参数与本轮</div>
+                    <div class="layer-body">
+                        <div class="d-node accent">参考几何<small>保存在参数里，永不因绑定 / 切图而变</small></div>
+                        <div class="d-node accent">运行矩阵<small>参考 → 当前图像，每轮来自本轮上游结果</small></div>
+                    </div>
+                </div>
+                <div class="d-arrow down">↓</div>
+                <div class="d-layer">
+                    <div class="layer-name">当前图像</div>
+                    <div class="layer-body">
+                        <div class="d-node">当前图像几何<small>显示 / 命中 / 卡尺 / 手柄</small></div>
+                        <div class="d-node ok">拟合结果 / 测点<small>已属当前图像坐标，禁止再次修正</small></div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-edges">
+                <span>参考几何 → 当前图像几何（正向变换）</span>
+                <span>当前图像几何 → 参考几何（逆变换，仅用户实际编辑时）</span>
+                <span>运行矩阵 → 当前图像几何</span>
+                <span>运行矩阵 → 拟合结果 / 测点</span>
+            </div>
+            <figcaption>坐标三层归属：参数里存参考几何，矩阵每轮从上游来，当前图像几何与结果不得二次修正。</figcaption>
+        </figure>
+        <p>三个不变量（违反任一条就是 bug）：</p>
+        <ol>
+            <li><strong>绑定不改</strong> ROI 位置参数</li>
+            <li><strong>打开窗口、刷新、切图不改</strong> ROI 位置参数</li>
+            <li><strong>只有用户实际编辑图形</strong>才通过逆变换更新参考参数</li>
+        </ol>
+        <p>位置参数包含中心、角度、尺寸及相关几何数据，<strong>不只是 X/Y</strong>。</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>对象</th>
+                    <th>归属与转换</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>未启用位置修正的 ROI</td>
+                    <td>按原参数直接显示和使用；关闭修正不转换数值</td>
+                </tr>
+                <tr>
+                    <td>已建立修正关系的 ROI</td>
+                    <td>保存参考坐标 + 参考关系身份</td>
+                </tr>
+                <tr>
+                    <td>算法使用的区域 / 引导</td>
+                    <td>参考几何经<strong>本轮有效矩阵</strong>转换到当前图像</td>
+                </tr>
+                <tr>
+                    <td>交互图形、卡尺、手柄、命中</td>
+                    <td>同一上下文与形状规则</td>
+                </tr>
+                <tr>
+                    <td>鼠标编辑写回</td>
+                    <td>当前图像坐标<strong>逆变换</strong>为参考坐标</td>
+                </tr>
+                <tr>
+                    <td>拟合结果、测点</td>
+                    <td>已属当前图像坐标，<strong>禁止再次修正</strong></td>
+                </tr>
+                <tr>
+                    <td>视口缩放 / 平移</td>
+                    <td>独立显示变换，不写入 ROI 参数</td>
+                </tr>
+            </tbody>
+        </table>
+        <h3>执行侧取证口径（最容易出错的地方）</h3>
+        <figure class="diagram">
+            <div class="d-chain-v">
+                <div class="d-node accent">绑定对象<small>只表示引用，不持有几何</small></div>
+                <div class="d-arrow down">↓</div>
+                <div class="d-node">执行时从本轮 NodeResults 解析矩阵 + 帧身份</div>
+                <div class="d-arrow down">↓</div>
+                <div class="d-node ok">矩阵值与帧身份取自同一份本轮结果快照</div>
+            </div>
+            <div class="d-edges">
+                <span>备用（虚线）：调试 / 编辑侧 AvailableDataSource.CurrentValue 可能落后一轮，仅当无源结果时兼容回退</span>
+            </div>
+            <figcaption>取证的唯一口径是「本轮 NodeResults」：矩阵与帧身份必须同源，调试侧的值只能作为无源结果时的回退。</figcaption>
+        </figure>
+        <ul>
+            <li><strong>预览值不作执行权威数据</strong>。圆查找曾经的错位根因就是：工作流入口执行前主动填了 <code>CurrentValue</code>，而调试入口从绑定恢复的对象<strong>只有路径、没有当前值</strong>，算法把「启用的修正」当成「无修正」静默执行。</li>
+            <li>图像帧谱系由 SDK 以弱关联保存（帧标识 + 结果实际输入帧标识），不序列化、不加可绑定输出、不持有图像。它是<strong>帧谱系</strong>，不是运行轮次也不是模板版本。</li>
+            <li>帧身份不一致 → <code>ImageFrameMismatch</code>，禁止修正编辑与算法执行并提示重新匹配；来源结果在查询中被替换则等待，不接受跨代值。</li>
+        </ul>
+</section>
+
+<section class="card">
+    <h2>关键决策与理由</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>决策</th>
+                    <th>理由</th>
+                    <th>依据</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>6 张独立工具卡，各自独立项目</td>
+                    <td>与 VisionMaster「测量」分组形态一致，单卡单职责，便于独立发布</td>
+                    <td>20260824 / 20260907</td>
+                </tr>
+                <tr>
+                    <td>每卡<strong>固定 2 个卡尺</strong>，各自独立控制</td>
+                    <td>两个几何输入是测量语义的固有结构；仅"绘制互斥激活"和"Run 联合消费"两处耦合</td>
+                    <td>20260907 D2/D3</td>
+                </tr>
+                <tr>
+                    <td>UI 默认态 = <strong>绘制</strong></td>
+                    <td>现场多数是直接画，订阅属少数场景；默认订阅会让新手无从下手</td>
+                    <td>20260907 D4</td>
+                </tr>
+                <tr>
+                    <td><strong>点只走订阅</strong>，线/圆/弧可订阅可绘制</td>
+                    <td>点来自上游输出，没有固定几何形态可画</td>
+                    <td>20260907 D6/D7</td>
+                </tr>
+                <tr>
+                    <td><strong>覆盖式重绘</strong></td>
+                    <td>卡尺本质是"一个几何槽"，追加会得到无法解释的多余图形</td>
+                    <td>20260907 D8</td>
+                </tr>
+                <tr>
+                    <td>输出纯像素</td>
+                    <td>物理单位涉及标定，应由独立的坐标转换工具负责，避免测量工具背标定责任</td>
+                    <td>20260907 D11</td>
+                </tr>
+                <tr>
+                    <td>测量工具<strong>不引 Halcon/OpenCV</strong></td>
+                    <td>换 CV 后端时测量工具零改动；引擎只提供上游几何</td>
+                    <td>20260907 D12/D14</td>
+                </tr>
+                <tr>
+                    <td>首次绑定<strong>不</strong>弹"保持当前画面位置"、不自动逆转换</td>
+                    <td>两个选项都让用户难以预测结果；统一"参数不动、显示跟矩阵走"最好解释</td>
+                    <td>20261014（该项设计已取消）</td>
+                </tr>
+                <tr>
+                    <td>绑定引用 / 参考几何 / 运行矩阵<strong>三者分离</strong></td>
+                    <td>混在一起就必然出现"绑一下坐标变了"</td>
+                    <td>20261014 §3</td>
+                </tr>
+                <tr>
+                    <td>历史结果冻结引导与卡尺几何</td>
+                    <td>否则改当前参数会让历史结果看起来变化，像测量不稳</td>
+                    <td>20261014 §14</td>
+                </tr>
+                <tr>
+                    <td>不为不支持的仿射变换做单一 <code>ScaleFactor</code> 近似</td>
+                    <td>圆在非等比缩放下不再保持圆，静默近似会产生错误几何</td>
+                    <td>20261014 §3</td>
+                </tr>
+                <tr>
+                    <td>新增无 WPF 依赖的公共解析契约</td>
+                    <td>三层（执行/交互/结果）各选矩阵必然不一致</td>
+                    <td>20261014 §6</td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+<section class="card">
+    <h2>实施与验证状态</h2>
+        <h3>已做</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>能力</th>
+                    <th>状态</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>6 张几何测量工具卡（点-点/点-线/点-圆/线-线/线-圆/圆-圆）</td>
+                    <td>项目均已存在</td>
+                </tr>
+                <tr>
+                    <td>卡尺1/卡尺2 独立配置 + 订阅/绘制双模式 + 覆盖式重绘</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td><code>MeasureEditorControl</code> 单引导编辑器（绘制/手柄编辑）</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>OK/NG 判定与可视化叠加</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>SDK <code>PositionCorrectionResolution</code>（区分未启用/有效/未绑定/等待来源/空匹配/无效矩阵/不支持变换）</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>圆—圆基础修复：空矩阵、旧矩阵不再静默当无修正</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>共享测量编辑器逆编辑修复（完整逆矩阵用于中心与整体位移；半径/卡尺手柄保持无向形状策略）</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>图像替换 / 绑定变更时取消未完成编辑并回滚</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>圆—圆历史引导与卡尺几何快照冻结</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>可信帧谱系（弱关联帧标识、<code>ImageFrameMismatch</code> 门禁）</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>主预览 <code>BitmapSource</code> 帧桥接（<code>IVisionImage</code> → Bitmap 存帧身份）</td>
+                    <td>已实施（2026-10-15）</td>
+                </tr>
+                <tr>
+                    <td>正式执行矩阵改从本轮 <code>NodeResults</code> + <code>OutputVariableResolver</code> 解析</td>
+                    <td>已实施（2026-10-15）</td>
+                </tr>
+                <tr>
+                    <td>圆查找（CircleDetect）执行入口错位修复</td>
+                    <td>已实施（2026-10-15）</td>
+                </tr>
+                <tr>
+                    <td>全工具入口统一（23 个插件项目 / 24 个 ToolId，共用 <code>ToolExecutionPreparation</code> / <code>ToolExecutor</code>）</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>卡尺几何与 Halcon 对齐（直线卡尺/圆环卡尺/弧形卡尺）</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>测量引导（直线参数化、三点定弧、圆弧半径手柄）</td>
+                    <td>已实施</td>
+                </tr>
+                <tr>
+                    <td>工具栏与交互状态机通用化</td>
+                    <td>已实施</td>
+                </tr>
+            </tbody>
+        </table>
+        <h3>未做</h3>
+        <ul>
+            <li><strong>运行轮次与模板基准版本</strong>：结果只带帧谱系，没有轮次身份与基准版本，同一帧不同轮的结果无法区分。</li>
+            <li><strong>统一事务历史（撤销/重做）</strong>：目前只有"编辑中矩阵变化就回滚"这一局部保护，<strong>不是</strong>统一撤销栈；多 ROI 编辑的事务提交未闭环。</li>
+            <li><strong>R4 完整参考几何与图像/轮次上下文</strong>：圆—圆只补齐了引导/卡尺片段。</li>
+            <li><strong>R5 推广</strong>：共享 <code>MeasureEditorControl</code> 的不可用保护当前<strong>只有圆—圆接入</strong>，检测区、屏蔽区与其他 ROI 编辑器仍按旧逻辑。</li>
+            <li>把所有拟合输出改为不可变类型。</li>
+            <li>历史结果图层的混帧治理（当前编辑与历史结果不混帧已做，跨工具推广未做）。</li>
+            <li>非等比缩放/剪切的明确拒绝<strong>在全部工具上</strong>落地（目前是契约层要求）。</li>
+            <li>正式执行在无源结果时的兼容回退（读绑定缓存）<strong>未移除</strong>，属已知残留路径。</li>
+        </ul>
+        <h3>未验</h3>
+        <ul>
+            <li>真实旧方案兼容验收（旧文档无坐标归属时保留原数值）。</li>
+            <li>真实设备 / 真实图像场景验收。</li>
+            <li>Visual Studio 设计器、高 DPI、深浅主题目视验收。</li>
+            <li>此前记录的 <strong>3 项扩展自动化用例失败仍未解决</strong>，后续批次未重跑。</li>
+            <li>2026-10-15 记录过一次 Release 全量构建因 <code>build_temp/obj</code> 与 NuGet 资产缓存写入拒绝而失败（无源码编译错误），<strong>该写入问题是否彻底解决没有独立结论</strong>。</li>
+        </ul>
+</section>
+
+<section class="card">
+    <h2>风险与遗留</h2>
+        <ol>
+            <li><strong>"跑通了"不等于"三层同源"。</strong> 多轮批次都是"圆—圆先行验证"，其他 ROI 编辑器尚未接入公共保护入口。看到圆—圆正确就认为测量全体正确是误判。</li>
+            <li><strong>预览与执行是两条取值路径。</strong> 已用同一份 <code>NodeResults</code> 快照收敛，但调试侧仍走实时查询、且保留了无源结果时回退绑定缓存的兼容分支。这条回退是旧矩阵误配的入口，需要后续清理。</li>
+            <li><strong>帧谱系不等于运行轮次。</strong> 同一帧被两轮使用时，现有机制无法区分，历史结果可能被误解为同一轮。</li>
+            <li><strong>直接 <code>Bitmap</code> 旁路与未接入谱系的插件不在保障范围。</strong> 这类插件仍可能出现"显示的图和参数里的图不是一张"。</li>
+            <li><strong>无统一撤销。</strong> 多 ROI 编辑取消、失败的原子性依赖各编辑器局部实现，跨工具行为可能不一致。</li>
+            <li><strong>构建环境问题曾经卡住验收。</strong> 中间目录写入拒绝这类环境问题会被误当成代码问题，需要单独记录排查入口（隔离 <code>WorktreeBasePath</code>、关 XML 文档生成）。</li>
+        </ol>
+</section>
+
+<section class="card">
+    <h2>历史演进</h2>
+        <h3>方案设计（26 篇）</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>文档</th>
+                    <th>本篇采信</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2026-10-14</td>
+                    <td><a href="../01-方案设计/2026/10/ROI坐标归属与位置修正三层一致性优化方案-20261014.md">ROI 坐标归属与位置修正三层一致性优化方案</a></td>
+                    <td><strong>主要来源</strong>：坐标契约、三不变量、统一上下文、帧谱系</td>
+                </tr>
+                <tr>
+                    <td>2026-09-21</td>
+                    <td><a href="../01-方案设计/2026/09/21/全视口大视口GPU几何批处理渲染优化方案-20260921.md">全视口大视口 GPU 几何批处理渲染优化方案</a></td>
+                    <td>几何渲染性能</td>
+                </tr>
+                <tr>
+                    <td>2026-09-19</td>
+                    <td><a href="../01-方案设计/2026/09/19/大规模区域批量渲染优化方案-20260919.md">大规模区域批量渲染优化方案</a></td>
+                    <td>区域批渲染</td>
+                </tr>
+                <tr>
+                    <td>2026-09-05</td>
+                    <td><a href="../01-方案设计/2026/09/05/图像处理工具区域管线重构优化方案-20260905-191640.md">图像处理工具区域管线重构优化方案</a></td>
+                    <td>区域管线</td>
+                </tr>
+                <tr>
+                    <td>2026-09-04</td>
+                    <td><a href="../01-方案设计/2026/09/04/位置修正ROI图形手柄算法三态一致无向剥离旋转优化方案-20260904-235949.md">位置修正 ROI 图形手柄算法三态一致无向剥离旋转优化方案</a></td>
+                    <td>手柄形状策略</td>
+                </tr>
+                <tr>
+                    <td>2026-09-03</td>
+                    <td><a href="../01-方案设计/2026/09/03/交互层冷几何轻量渲染方案评估-20260903-141242.md">交互层冷几何轻量渲染方案评估</a></td>
+                    <td>冷几何渲染</td>
+                </tr>
+                <tr>
+                    <td>2026-09-03</td>
+                    <td><a href="../01-方案设计/2026/09/03/直线卡尺主卡尺方向显示方案-20260903-114110.md">直线卡尺主卡尺方向显示方案</a></td>
+                    <td>卡尺方向显示</td>
+                </tr>
+                <tr>
+                    <td>2026-09-03</td>
+                    <td><a href="../01-方案设计/2026/09/03/圆查找直线查找屏蔽区域点集过滤鲁棒拟合优化方案-20260903-224307.md">圆查找直线查找屏蔽区域点集过滤鲁棒拟合优化方案</a></td>
+                    <td>屏蔽区过滤</td>
+                </tr>
+                <tr>
+                    <td>2026-09-02</td>
+                    <td><a href="../01-方案设计/2026/09/02/卡尺几何Halcon对齐优化方案-20260902-213915.md">卡尺几何 Halcon 对齐优化方案</a></td>
+                    <td>卡尺几何对齐</td>
+                </tr>
+                <tr>
+                    <td>2026-09-01</td>
+                    <td><a href="../01-方案设计/2026/09/01/命中逻辑与光标管理架构优化方案-20260901-084526.md">命中逻辑与光标管理架构优化方案</a></td>
+                    <td>命中与光标</td>
+                </tr>
+                <tr>
+                    <td>2026-08-31</td>
+                    <td><a href="../01-方案设计/2026/08/31/测量工具链优化方案-20260831-130428.md">测量工具链优化方案</a></td>
+                    <td>工具链整体</td>
+                </tr>
+                <tr>
+                    <td>2026-08-30</td>
+                    <td><a href="../01-方案设计/2026/08/30/测量工具链优化方案-20260830-182319.md">测量工具链优化方案</a></td>
+                    <td>前一版工具链</td>
+                </tr>
+                <tr>
+                    <td>2026-08-28</td>
+                    <td><a href="../01-方案设计/2026/08/28/测量引导与屏蔽区域统一编排架构方案-20260828-153301.md">测量引导与屏蔽区域统一编排架构方案</a></td>
+                    <td>引导与屏蔽编排</td>
+                </tr>
+                <tr>
+                    <td>2026-08-28</td>
+                    <td><a href="../01-方案设计/2026/08/28/几何交互策略化解耦方案-20260828-114129.md">几何交互策略化解耦方案</a></td>
+                    <td>交互策略</td>
+                </tr>
+                <tr>
+                    <td>2026-08-28</td>
+                    <td><a href="../01-方案设计/2026/08/28/工具栏与交互状态机通用化重构方案-20260828-111543.md">工具栏与交互状态机通用化重构方案</a></td>
+                    <td>状态机</td>
+                </tr>
+                <tr>
+                    <td>2026-08-27</td>
+                    <td><a href="../01-方案设计/2026/08/27/测量工具栏优化方案-20260827-091109.md">测量工具栏优化方案</a></td>
+                    <td>工具栏</td>
+                </tr>
+                <tr>
+                    <td>2026-08-27</td>
+                    <td><a href="../01-方案设计/2026/08/27/测量引导直线参数化与交互完善方案-20260827-114332.md">测量引导直线参数化与交互完善方案</a></td>
+                    <td>直线参数化</td>
+                </tr>
+                <tr>
+                    <td>2026-08-27</td>
+                    <td><a href="../01-方案设计/2026/08/27/测量引导交互优化方案-20260827-102111.md">测量引导交互优化方案</a></td>
+                    <td>引导交互</td>
+                </tr>
+                <tr>
+                    <td>2026-08-27</td>
+                    <td><a href="../01-方案设计/2026/08/27/圆弧引导参数化优化方案-20260827-110341.md">圆弧引导参数化优化方案</a></td>
+                    <td>圆弧参数化</td>
+                </tr>
+                <tr>
+                    <td>2026-08-27</td>
+                    <td><a href="../01-方案设计/2026/08/27/圆弧三点定弧模型方案-20260827-133307.md">圆弧三点定弧模型方案</a></td>
+                    <td>三点定弧</td>
+                </tr>
+                <tr>
+                    <td>2026-08-27</td>
+                    <td><a href="../01-方案设计/2026/08/27/圆弧半径手柄交互优化方案-20260827-130422.md">圆弧半径手柄交互优化方案</a></td>
+                    <td>半径手柄</td>
+                </tr>
+                <tr>
+                    <td>2026-08-27</td>
+                    <td><a href="../01-方案设计/2026/08/27/圆弧引导交互最终优化方案-20260827-163627.md">圆弧引导交互最终优化方案</a></td>
+                    <td>圆弧引导定稿</td>
+                </tr>
+                <tr>
+                    <td>2026-08-26</td>
+                    <td><a href="../01-方案设计/2026/08/26/子程序节点设置按钮图标可见性优化方案-20260826-110959.md">子程序节点设置按钮图标可见性优化方案</a></td>
+                    <td>节点设置按钮</td>
+                </tr>
+                <tr>
+                    <td>2026-08-06</td>
+                    <td><a href="../01-方案设计/2026/08/06/Region到RoI概念对齐迁移方案-20260806.md">Region 到 RoI 概念对齐迁移方案</a></td>
+                    <td>概念对齐</td>
+                </tr>
+                <tr>
+                    <td>2026-07-16</td>
+                    <td><a href="../01-方案设计/2026/07/几何类型三层分离与工具层全链路优化方案-20260716.md">几何类型三层分离与工具层全链路优化方案</a></td>
+                    <td>几何三层分离</td>
+                </tr>
+                <tr>
+                    <td>2026-04-14</td>
+                    <td><a href="../01-方案设计/2026/04/区域管理系统优化方案_完整版-20260414.md">区域管理系统优化方案（完整版）</a></td>
+                    <td>区域管理</td>
+                </tr>
+            </tbody>
+        </table>
+        <h3>工具设计（11 篇）</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>文档</th>
+                    <th>本篇采信</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2026-09-07</td>
+                    <td><a href="../04-工具设计/测量工具/2026/09/07/几何测量工具集6独立工具设计方案-20260907-090216.md">几何测量工具集 6 独立工具设计方案</a></td>
+                    <td>6 卡形态 v1.0</td>
+                </tr>
+                <tr>
+                    <td>2026-09-07</td>
+                    <td><a href="../04-工具设计/测量工具/2026/09/07/几何测量工具集最终方案-v2.0-20260907-092207.md">几何测量工具集最终方案 v2.0</a></td>
+                    <td><strong>工具形态主要来源</strong>（D1~D14）</td>
+                </tr>
+                <tr>
+                    <td>2026-08-24</td>
+                    <td><a href="../04-工具设计/测量工具/2026/08/24/几何测量工具设计方案-20260824-093820.md">几何测量工具设计方案</a></td>
+                    <td>早期设计</td>
+                </tr>
+                <tr>
+                    <td>2026-05-08</td>
+                    <td><a href="../04-工具设计/测量工具/2026/05/点线测量工具UI设计方案-20260508.md">点线测量工具 UI 设计方案</a></td>
+                    <td>点线 UI</td>
+                </tr>
+                <tr>
+                    <td>2026-05-08</td>
+                    <td><a href="../04-工具设计/测量工具/2026/05/点线测量工具核心算法设计方案-20260508.md">点线测量工具核心算法设计方案</a></td>
+                    <td>点线算法</td>
+                </tr>
+                <tr>
+                    <td>2026-05-08</td>
+                    <td><a href="../04-工具设计/测量工具/2026/05/点点测量工具UI设计方案-20260508.md">点点测量工具 UI 设计方案</a></td>
+                    <td>点点 UI</td>
+                </tr>
+                <tr>
+                    <td>2026-05-08</td>
+                    <td><a href="../04-工具设计/测量工具/2026/05/点点测量工具核心算法设计方案-20260508.md">点点测量工具核心算法设计方案</a></td>
+                    <td>点点算法</td>
+                </tr>
+                <tr>
+                    <td>2026-05-08</td>
+                    <td><a href="../04-工具设计/测量工具/2026/05/线线测量工具UI设计方案-20260508.md">线线测量工具 UI 设计方案</a></td>
+                    <td>线线 UI</td>
+                </tr>
+                <tr>
+                    <td>2026-05-08</td>
+                    <td><a href="../04-工具设计/测量工具/2026/05/线线测量工具核心算法设计方案-20260508.md">线线测量工具核心算法设计方案</a></td>
+                    <td>线线算法</td>
+                </tr>
+                <tr>
+                    <td>2026-05-08</td>
+                    <td><a href="../04-工具设计/测量工具/2026/05/线圆测量工具UI设计方案-20260508.md">线圆测量工具 UI 设计方案</a></td>
+                    <td>线圆 UI</td>
+                </tr>
+                <tr>
+                    <td>2026-05-08</td>
+                    <td><a href="../04-工具设计/测量工具/2026/05/线圆测量工具核心算法设计方案-20260508.md">线圆测量工具核心算法设计方案</a></td>
+                    <td>线圆算法</td>
+                </tr>
+                <tr>
+                    <td>2026-05-08</td>
+                    <td><a href="../04-工具设计/测量工具/2026/05/点圆测量工具UI设计方案-20260508.md">点圆测量工具 UI 设计方案</a></td>
+                    <td>点圆 UI</td>
+                </tr>
+                <tr>
+                    <td>2026-05-08</td>
+                    <td><a href="../04-工具设计/测量工具/2026/05/点圆测量工具核心算法设计方案-20260508.md">点圆测量工具核心算法设计方案</a></td>
+                    <td>点圆算法</td>
+                </tr>
+                <tr>
+                    <td>2026-05-08</td>
+                    <td><a href="../04-工具设计/测量工具/2026/05/圆圆测量工具UI设计方案-20260508.md">圆圆测量工具 UI 设计方案</a></td>
+                    <td>圆圆 UI</td>
+                </tr>
+                <tr>
+                    <td>2026-05-08</td>
+                    <td><a href="../04-工具设计/测量工具/2026/05/圆圆测量工具核心算法设计方案-20260508.md">圆圆测量工具核心算法设计方案</a></td>
+                    <td>圆圆算法</td>
+                </tr>
+                <tr>
+                    <td>2026-05-08</td>
+                    <td><a href="../04-工具设计/查找工具/2026/05/圆查找工具UI设计方案-20260508.md">圆查找工具 UI 设计方案</a></td>
+                    <td>圆查找</td>
+                </tr>
+                <tr>
+                    <td>2026-05-08</td>
+                    <td><a href="../04-工具设计/查找工具/2026/05/圆环卡尺工具UI设计方案-20260508.md">圆环卡尺工具 UI 设计方案</a></td>
+                    <td>圆环卡尺</td>
+                </tr>
+                <tr>
+                    <td>2026-05-08</td>
+                    <td><a href="../04-工具设计/查找工具/2026/05/弧形卡尺工具UI设计方案-20260508.md">弧形卡尺工具 UI 设计方案</a></td>
+                    <td>弧形卡尺</td>
+                </tr>
+                <tr>
+                    <td>2026-05-08</td>
+                    <td><a href="../04-工具设计/查找工具/2026/05/直线卡尺工具UI设计方案-20260508.md">直线卡尺工具 UI 设计方案</a></td>
+                    <td>直线卡尺</td>
+                </tr>
+            </tbody>
+        </table>
+        <h3>测试报告与指南（13 篇）</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>文档</th>
+                    <th>本篇采信</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2026-09-10</td>
+                    <td><a href="../03-测试报告/2026/09/10/测试报告-几何测量工具集P2六工具与SDK判定基座-20260910-145650.md">测试报告-几何测量工具集 P2 六工具与 SDK 判定基座</a></td>
+                    <td>六工具验收</td>
+                </tr>
+                <tr>
+                    <td>2026-09-02</td>
+                    <td><a href="../03-测试报告/2026/09/02/测试报告-卡尺几何Halcon对齐-20260902-222309.md">测试报告-卡尺几何 Halcon 对齐</a></td>
+                    <td>卡尺对齐验证</td>
+                </tr>
+                <tr>
+                    <td>2026-08-27</td>
+                    <td><a href="../03-测试报告/2026/08/27/测试报告-测量引导交互优化-20260827-103112.md">测试报告-测量引导交互优化</a></td>
+                    <td>引导交互验证</td>
+                </tr>
+                <tr>
+                    <td>2026-08-27</td>
+                    <td><a href="../03-测试报告/2026/08/27/测试报告-测量引导直线参数化与交互完善-20260827-115814.md">测试报告-测量引导直线参数化与交互完善</a></td>
+                    <td>直线参数化验证</td>
+                </tr>
+                <tr>
+                    <td>2026-08-27</td>
+                    <td><a href="../03-测试报告/2026/08/27/测试报告-圆弧半径手柄交互优化-20260827-131017.md">测试报告-圆弧半径手柄交互优化</a></td>
+                    <td>半径手柄验证</td>
+                </tr>
+                <tr>
+                    <td>2026-08-27</td>
+                    <td><a href="../03-测试报告/2026/08/27/测试报告-圆弧三点定弧模型-20260827-134510.md">测试报告-圆弧三点定弧模型</a></td>
+                    <td>三点定弧验证</td>
+                </tr>
+                <tr>
+                    <td>2026-08-27</td>
+                    <td><a href="../03-测试报告/2026/08/27/测试报告-圆弧引导参数化优化-20260827-111946.md">测试报告-圆弧引导参数化优化</a></td>
+                    <td>圆弧参数化验证</td>
+                </tr>
+                <tr>
+                    <td>2026-08-27</td>
+                    <td><a href="../03-测试报告/2026/08/27/测试报告-测量工具栏优化-20260827-093426.md">测试报告-测量工具栏优化</a></td>
+                    <td>工具栏验证</td>
+                </tr>
+                <tr>
+                    <td>2026-05-08</td>
+                    <td><a href="../06-指南参考/guides/2026/05/区域序列化问题诊断指南-20260508.md">区域序列化问题诊断指南</a></td>
+                    <td>序列化诊断</td>
+                </tr>
+                <tr>
+                    <td>2026-05-08</td>
+                    <td><a href="../02-实施总结/2026/05/阈值工具区域管理系统优化实施总结-20260508.md">阈值工具区域管理系统优化实施总结</a></td>
+                    <td>区域管理实施</td>
+                </tr>
+                <tr>
+                    <td>2026-05-08</td>
+                    <td><a href="../02-实施总结/2026/05/区域管理系统优化方案_实施总结-20260508.md">区域管理系统优化方案实施总结</a></td>
+                    <td>区域管理总结</td>
+                </tr>
+                <tr>
+                    <td>2026-03-16</td>
+                    <td><a href="../06-指南参考/guides/2026/03/guides_roieditor_migration_guide_20260316.md">RoI 编辑器迁移指南</a></td>
+                    <td>编辑器迁移</td>
+                </tr>
+                <tr>
+                    <td>2026-02-22</td>
+                    <td><a href="../02-实施总结/2026/02/图像预览可视区域动态加载优化实施总结-20260222.md">图像预览可视区域动态加载优化实施总结</a></td>
+                    <td>预览加载</td>
+                </tr>
+            </tbody>
+        </table>
+        <p><strong>已取消 / 已取代的设计（不要再按它实现）</strong>：</p>
+        <ul>
+            <li>「首次绑定提供『保持当前画面位置』选项 + 自动逆转换」——20261014 明确取消。</li>
+            <li>「用单一 <code>ScaleFactor</code> 近似非等比缩放」——明确改为拒绝不支持的变换。</li>
+            <li>「位置修正缓存矩阵可复用上一轮」——已由帧谱系与同快照解析取代。</li>
+        </ul>
+</section>
+
+<nav class="doc-nav">
+    <a class="primary" href="../00-索引/主题台账.html">主题台账</a>
+    <a href="../00-索引/文档索引.html">文档索引</a>
+    <a href="README.html">现行文档说明</a>
+</nav>
+
+</div>
+</body>
+</html>

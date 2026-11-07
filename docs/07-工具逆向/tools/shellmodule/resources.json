@@ -1,0 +1,60 @@
+{
+  "toolId": "shellmodule",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\DLL\\HikAlgorithmTool.xml",
+      "sha256": "42e8e36ead94adefd61951c0e74c4936cf5094e073191ad5641a02fd2b879f2c",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\ShellModule.xml",
+      "sha256": "3b37b920da3de8fdabb4c62ee0ff8483b511f29da8991913819f6b5e6e462df4",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\ShellModuleAlgorithm.xml",
+      "sha256": "ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\ShellModuleAlgorithmTab.xml",
+      "sha256": "617cff239cdcc548dfa038b584a7ff530990917cd62f954c88d92f8e3e159e8f",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\ShellModuleCs.xml",
+      "sha256": "e8962f09161a1f6d38c45fb4384598b01440078b72d2dfa2bfd84114a2b37be1",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\ShellModuleDisplay.xml",
+      "sha256": "584b5981eb3c430384cd9e254fe85aa2efe3d3eb80fc398f5d195799a57d7b64",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\ShellModule\\ToolItemInfo.xml",
+      "sha256": "e06b9e160cb0799d3be037462ac287cc5ea4297c945867a2047f45de41102b0f",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "ButtonSelecter_Shell",
+      "name": "ShellContent"
+    }
+  ],
+  "sharedUiGroups": [],
+  "status": "inventory-only"
+}

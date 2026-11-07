@@ -1,0 +1,10 @@
+namespace Apps.XmlParser.ParamTab;
+
+public enum GW_ORDER_TYPE
+{
+	ORDER_TYPE_INVALID,
+	ORDER_TYPE_ABCD,
+	ORDER_TYPE_BADC,
+	ORDER_TYPE_DCBA,
+	ORDER_TYPE_CDAB
+}

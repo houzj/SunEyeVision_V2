@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>IMVSColorSegmentModuControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="datatemplate\paramusercontroldatatemplate.xaml" />
+    <Page Remove="IMVSColorSegmentModuControl\UserScrollView.xaml" />
+    <Page Include="datatemplate\paramusercontroldatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="datatemplate/paramusercontroldatatemplate.xaml" />
+    <Page Include="IMVSColorSegmentModuControl\UserScrollView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="userscrollview.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Apps.XmlParser" />
+    <Reference Include="Mvvm" />
+    <Reference Include="Apps.UIHelper" />
+    <Reference Include="VMControls.RenderInterface" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="Apps.Data" />
+    <Reference Include="VM.Xml" />
+    <Reference Include="System.Core" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="VM.Controls" />
+    <Reference Include="Apps.Log" />
+    <Reference Include="VM.ExternalCall" />
+    <Reference Include="Apps.BaseData" />
+  </ItemGroup>
+</Project>

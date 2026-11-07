@@ -1,0 +1,24 @@
+{
+  "stableToolId": "imvsinverseaffinetransformmodu",
+  "originalPlugin": "IMVSInverseAffineTransformModu",
+  "displayName": "逆仿射变换",
+  "originalCategory": "ImageProcessing",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSInverseAffineTransformModu",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "status": "inventory-only",
+  "evidenceState": "unknown",
+  "resourceCount": 6,
+  "parameterCount": 2,
+  "inputCount": 6,
+  "outputCount": 5,
+  "uiControlCount": 14,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ]
+}

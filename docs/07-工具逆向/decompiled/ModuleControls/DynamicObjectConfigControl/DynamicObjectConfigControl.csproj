@@ -1,0 +1,87 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>DynamicObjectConfigControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="datatemplate\paramusercontroldatatemplate.xaml" />
+    <Page Remove="DynamicObjectConfigControl.UI\ShapePropertyConfig.xaml" />
+    <Page Remove="DynamicObjectConfigControl.UI\ShapePropertyConfigWin.xaml" />
+    <Page Remove="DynamicObjectConfigControl.UI\ShowChildWin.xaml" />
+    <Page Remove="DynamicObjectConfigControl\CommunicationParamConfigControl.xaml" />
+    <Page Remove="DynamicObjectConfigControl\ComprehensiveConfigControl.xaml" />
+    <Page Remove="DynamicObjectConfigControl\DynamicDisplayObjectConfigControl.xaml" />
+    <Page Remove="DynamicObjectConfigControl\DynamicIOConfigControl.xaml" />
+    <Page Remove="DynamicObjectConfigControl\DynamicParamsTabControl.xaml" />
+    <Page Remove="DynamicObjectConfigControl\DynamicResultView.xaml" />
+    <Page Remove="DynamicObjectConfigControl\DynamicRunParamConfigControl.xaml" />
+    <Page Remove="DynamicObjectConfigControl\DynamicRunParamConfigPanal.xaml" />
+    <Page Remove="DynamicObjectConfigControl\DynamicRunParamConfigWin.xaml" />
+    <Page Remove="DynamicObjectConfigControl\DynamicRunParamRelationModulesConfig.xaml" />
+    <Page Remove="DynamicObjectConfigControl\DynamicRunParamRelationModulesConfigWin.xaml" />
+    <Page Remove="DynamicObjectConfigControl\GlobalParamConfigPanal.xaml" />
+    <Page Remove="DynamicObjectConfigControl\GlobalParamConfigWindow.xaml" />
+    <Page Remove="DynamicObjectConfigControl\ModuleROIConfigControl.xaml" />
+    <Page Remove="DynamicObjectConfigControl\Picker.xaml" />
+    <Page Remove="DynamicObjectConfigControl\ResultChoosePanel.xaml" />
+    <Page Remove="DynamicObjectConfigControl\ResultChooseWindow.xaml" />
+    <Page Include="datatemplate\paramusercontroldatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="datatemplate/paramusercontroldatatemplate.xaml" />
+    <Page Include="DynamicObjectConfigControl.UI\ShapePropertyConfig.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ui/shapepropertyconfig.xaml" />
+    <Page Include="DynamicObjectConfigControl.UI\ShapePropertyConfigWin.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ui/shapepropertyconfigwin.xaml" />
+    <Page Include="DynamicObjectConfigControl.UI\ShowChildWin.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ui/showchildwin.xaml" />
+    <Page Include="DynamicObjectConfigControl\CommunicationParamConfigControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ui/communicationparam/communicationparamconfigcontrol.xaml" />
+    <Page Include="DynamicObjectConfigControl\ComprehensiveConfigControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="globalconfig/control/comprehensiveconfigcontrol.xaml" />
+    <Page Include="DynamicObjectConfigControl\DynamicDisplayObjectConfigControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ui/dynamicdisplayobjectconfigcontrol.xaml" />
+    <Page Include="DynamicObjectConfigControl\DynamicIOConfigControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ui/dynamicioconfigcontrol.xaml" />
+    <Page Include="DynamicObjectConfigControl\DynamicParamsTabControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ui/dynamicparamstabcontrol.xaml" />
+    <Page Include="DynamicObjectConfigControl\DynamicResultView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="globalconfig/control/dynamicresultview.xaml" />
+    <Page Include="DynamicObjectConfigControl\DynamicRunParamConfigControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ui/dynamicrunparam/dynamicrunparamconfigcontrol.xaml" />
+    <Page Include="DynamicObjectConfigControl\DynamicRunParamConfigPanal.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ui/dynamicrunparam/dynamicrunparamconfigpanal.xaml" />
+    <Page Include="DynamicObjectConfigControl\DynamicRunParamConfigWin.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ui/dynamicrunparam/dynamicrunparamconfigwin.xaml" />
+    <Page Include="DynamicObjectConfigControl\DynamicRunParamRelationModulesConfig.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ui/dynamicrunparam/dynamicrunparamrelationmodulesconfig.xaml" />
+    <Page Include="DynamicObjectConfigControl\DynamicRunParamRelationModulesConfigWin.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ui/dynamicrunparam/dynamicrunparamrelationmodulesconfigwin.xaml" />
+    <Page Include="DynamicObjectConfigControl\GlobalParamConfigPanal.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="globalconfig/control/globalparamconfigpanel.xaml" />
+    <Page Include="DynamicObjectConfigControl\GlobalParamConfigWindow.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="globalconfig/dialog/globalparamconfigwindow.xaml" />
+    <Page Include="DynamicObjectConfigControl\ModuleROIConfigControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ui/displayforgroupcontrol/moduleroiconfigcontrol.xaml" />
+    <Page Include="DynamicObjectConfigControl\Picker.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ui/picker.xaml" />
+    <Page Include="DynamicObjectConfigControl\ResultChoosePanel.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="globalconfig/control/resultchoosepanel.xaml" />
+    <Page Include="DynamicObjectConfigControl\ResultChooseWindow.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="globalconfig/dialog/resultchoosewindow.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Apps.Data" />
+    <Reference Include="VMControls.Interface" />
+    <Reference Include="Apps.XmlParser" />
+    <Reference Include="VM.Core" />
+    <Reference Include="Apps.BaseData" />
+    <Reference Include="VMControls.RenderInterface" />
+    <Reference Include="VM.CommonData" />
+    <Reference Include="Mvvm" />
+    <Reference Include="VM.Xml" />
+    <Reference Include="VM.PlatformSDKCS" />
+    <Reference Include="VMControls.WPF" />
+    <Reference Include="Apps.Interface" />
+    <Reference Include="GateWayServer" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="Apps.PcUI" />
+    <Reference Include="VM.ModuleControl" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="VM.Controls" />
+    <Reference Include="Apps.XmlUI" />
+    <Reference Include="System.Core" />
+    <Reference Include="VM.ExternalCall" />
+    <Reference Include="Apps.Log" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="Apps.ErrorCode" />
+    <Reference Include="VM.Utility" />
+    <Reference Include="Apps.UIHelper" />
+    <Reference Include="Apps.BaseLog" />
+  </ItemGroup>
+</Project>

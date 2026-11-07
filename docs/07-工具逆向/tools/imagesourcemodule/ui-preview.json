@@ -1,0 +1,152 @@
+{
+  "controls": [
+    {
+      "type": "Enumeration",
+      "name": "ImageSourceType"
+    },
+    {
+      "type": "ButtonSelecter_ImageList",
+      "name": "CurrentImagePath"
+    },
+    {
+      "type": "Enumeration",
+      "name": "PixelFormat"
+    },
+    {
+      "type": "BooleanTips",
+      "name": "SolSaveImageData"
+    },
+    {
+      "type": "Boolean",
+      "name": "ShowImageName"
+    },
+    {
+      "type": "EnumerationCameraForImage",
+      "name": "CameraID"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ExposureTimeInput"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "GainInput"
+    },
+    {
+      "type": "Integer",
+      "name": "InitialSN"
+    },
+    {
+      "type": "Integer",
+      "name": "PathCache"
+    },
+    {
+      "type": "Boolean",
+      "name": "OutMono8"
+    },
+    {
+      "type": "Boolean",
+      "name": "StitchEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "StitchStartHeight"
+    },
+    {
+      "type": "Integer",
+      "name": "StitchHeight"
+    },
+    {
+      "type": "Boolean",
+      "name": "ClearTrigger"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ClearTriggerCondition"
+    },
+    {
+      "type": "Boolean",
+      "name": "AutoPlay"
+    },
+    {
+      "type": "Boolean",
+      "name": "AutoStop"
+    },
+    {
+      "type": "Boolean",
+      "name": "TriggerStringEnable"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TriggerString"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "TriggerFilter"
+    },
+    {
+      "type": "Boolean",
+      "name": "IsSubscribeFolderMode"
+    },
+    {
+      "type": "OpenFolderDialog",
+      "name": "SubscribeFolderPath"
+    },
+    {
+      "type": "Boolean",
+      "name": "RefreshImage"
+    },
+    {
+      "type": "Boolean",
+      "name": "TriggerProcessRun"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "image-roi",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P1",
+  "themeStates": "unknown",
+  "toolId": "imagesourcemodule",
+  "status": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModule.xml",
+      "sha256": "0598746f0603bf6de66dfa34e74c69f382e98f58437496ee5e598a3b88f6cd64",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModuleAlgorithm.xml",
+      "sha256": "c9177bf6d0365eab0f12e65fdf3e8be51bf7833f69e3d7ac8eed8bb7961787c8",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModuleAlgorithmTab.xml",
+      "sha256": "001a57675192867594d3bbc7efa94462c19f056583659d759ceb5648e55091e0",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModuleCs.xml",
+      "sha256": "886c21abaa52160653c52b557db9ceafc02233feb83c5c235a1a38396a93af28",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModuleDisplay.xml",
+      "sha256": "d2f3129c6d3cf86c5e935277b67004043bb98976b4e845a4492451d78a607ae5",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ToolItemInfo.xml",
+      "sha256": "0e8ee15a8907363644ce294c686a11b2f9ac183be8dd073f78eb07a4bd8676da",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "图像源",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

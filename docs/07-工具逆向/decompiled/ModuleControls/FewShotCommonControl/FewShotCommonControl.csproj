@@ -1,0 +1,64 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>FewShotCommonControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="datatemplate\paramusercontroldatatemplate.xaml" />
+    <Page Remove="FewShotCommonControl\AddCategoryDialog.xaml" />
+    <Page Remove="FewShotCommonControl\EditCategoryDialog.xaml" />
+    <Page Remove="FewShotCommonControl\FewShotEdgeLearningModelDialog.xaml" />
+    <Page Remove="FewShotCommonControl\FewShotEdgeLearningPanel.xaml" />
+    <Page Remove="FewShotCommonControl\FewShotModelDialog.xaml" />
+    <Page Remove="FewShotCommonControl\FewShotPanel.xaml" />
+    <Page Remove="FewShotCommonControl\ImageView1.xaml" />
+    <Page Remove="FewShotCommonControl\RegisterImageDialog.xaml" />
+    <Page Include="datatemplate\paramusercontroldatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="datatemplate/paramusercontroldatatemplate.xaml" />
+    <Page Include="FewShotCommonControl\AddCategoryDialog.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ui/addcategorydialog.xaml" />
+    <Page Include="FewShotCommonControl\EditCategoryDialog.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ui/editcategorydialog.xaml" />
+    <Page Include="FewShotCommonControl\FewShotEdgeLearningModelDialog.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ui/fewshotedgelearningmodeldialog.xaml" />
+    <Page Include="FewShotCommonControl\FewShotEdgeLearningPanel.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ui/fewshotedgelearningpanel.xaml" />
+    <Page Include="FewShotCommonControl\FewShotModelDialog.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ui/fewshotmodeldialog.xaml" />
+    <Page Include="FewShotCommonControl\FewShotPanel.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ui/fewshotpanel.xaml" />
+    <Page Include="FewShotCommonControl\ImageView1.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ui/imageview.xaml" />
+    <Page Include="FewShotCommonControl\RegisterImageDialog.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ui/registerimagedialog.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Apps.XmlParser" />
+    <Reference Include="VM.PcUI" />
+    <Reference Include="VMControls.RenderInterface" />
+    <Reference Include="Apps.Data" />
+    <Reference Include="VMControls.WPF" />
+    <Reference Include="VMControls.Interface" />
+    <Reference Include="Mvvm" />
+    <Reference Include="VM.PlatformSDKCS" />
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.WindowsAPICodePack.Shell" />
+    <Reference Include="Apps.BaseData" />
+    <Reference Include="VM.Core" />
+    <Reference Include="VM.Controls" />
+    <Reference Include="Apps.PcUI" />
+    <Reference Include="VMBaseControls" />
+    <Reference Include="VM.ModuleControl" />
+    <Reference Include="VM.Xml" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="Apps.Log" />
+    <Reference Include="Apps.ErrorCode" />
+    <Reference Include="VM.ExternalCall" />
+    <Reference Include="VM.Utility" />
+    <Reference Include="Apps.UIHelper" />
+    <Reference Include="Apps.BaseLog" />
+    <Reference Include="Apps.Interface" />
+    <Reference Include="VM.Util" />
+  </ItemGroup>
+</Project>

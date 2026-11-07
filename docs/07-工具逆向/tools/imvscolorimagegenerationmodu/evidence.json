@@ -1,0 +1,97 @@
+{
+  "stableToolId": "imvscolorimagegenerationmodu",
+  "originalPlugin": "IMVSColorImageGenerationModu",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu",
+  "displayName": "彩图生成",
+  "authority": "shipped XML/PE inventory; no original VM execution",
+  "sourcePaths": [
+    "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu",
+    "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu\\IMVSColorImageGenerationModu.xml",
+    "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu\\IMVSColorImageGenerationModuAlgorithm.xml",
+    "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu\\IMVSColorImageGenerationModuAlgorithmTab.xml",
+    "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu\\IMVSColorImageGenerationModuCs.xml",
+    "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu\\IMVSColorImageGenerationModuDisplay.xml",
+    "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu\\ToolItemInfo.xml"
+  ],
+  "inputNames": [
+    "InputImage",
+    "InImage",
+    "InImageWidth",
+    "InImageHeight",
+    "InImagePixelFormat",
+    "InputImage1",
+    "InImage1",
+    "InImageWidth1",
+    "InImageHeight1",
+    "InImagePixelFormat1",
+    "InputImage2",
+    "InImage2",
+    "InImageWidth2",
+    "InImageHeight2",
+    "InImagePixelFormat2"
+  ],
+  "outputNames": [
+    "ModuRunTime",
+    "ModuStatus",
+    "OutputImage",
+    "OutImage",
+    "OutImageWidth",
+    "OutImageHeight",
+    "OutImagePixelFormat"
+  ],
+  "parameterNames": [],
+  "uiControls": [
+    "ImageSource",
+    "ImageSource1",
+    "ImageSource2",
+    "ImageFormat"
+  ],
+  "executionEntry": "unknown: tool-specific Process entry body not recovered",
+  "resultPublication": "unknown: output writer and reader chain not recovered",
+  "verdict": "unknown: success/failure predicates not recovered",
+  "saveRestore": "unknown: tool-specific Save/Load chain not recovered",
+  "release": "unknown: DeInit/Destroy ownership not recovered",
+  "originalVmExecuted": false,
+  "unknowns": [
+    "XML schema is not behavioral proof",
+    "generic SDK declarations do not prove module call path"
+  ],
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu",
+      "evidenceType": "shipped XML/PE/resource inventory"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu\\IMVSColorImageGenerationModu.xml",
+      "sha256": "366B1F3A9DA27CA3707E61E7A859D4CD52E74D138C84D9EFB51309606EFFB981",
+      "evidenceType": "shipped XML/PE/resource inventory"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu\\IMVSColorImageGenerationModuAlgorithm.xml",
+      "sha256": "C263668CB37557D3AC5C98152EDB1B8D3716EA9B2A3D6AEC43BA92D4BE9910CA",
+      "evidenceType": "shipped XML/PE/resource inventory"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu\\IMVSColorImageGenerationModuAlgorithmTab.xml",
+      "sha256": "87F78094B7D0F9EE0629EB8429F97336C85FA3696DC7D4094D6A18EAADD856CB",
+      "evidenceType": "shipped XML/PE/resource inventory"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu\\IMVSColorImageGenerationModuCs.xml",
+      "sha256": "73E6153537936BF0D1329D7A13215D8BB3ADD0F1FC6F3F14BA9348EECF9CEEE9",
+      "evidenceType": "shipped XML/PE/resource inventory"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu\\IMVSColorImageGenerationModuDisplay.xml",
+      "sha256": "965A23A18CDFE9FE973E9471AAA9780A83AEC4EFBCF656FDAA0AFC0379AECE70",
+      "evidenceType": "shipped XML/PE/resource inventory"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ColorProcessing\\IMVSColorImageGenerationModu\\ToolItemInfo.xml",
+      "sha256": "45E03A037AF6AB8856F77A9C03C166B928281426010971E22A1BAABFC609BE6A",
+      "evidenceType": "shipped XML/PE/resource inventory"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>Apps.ColorFun</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net45</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="colorstyle.xaml" />
+    <Page Include="colorstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="colorstyle.xaml" />
+    <Resource Remove="colorstyle1.xaml" />
+    <Resource Remove="colorstyle2.xaml" />
+    <Resource Remove="colorstyle3.xaml" />
+    <Resource Include="colorstyle1.xaml" LogicalName="colorstyle1.xaml" />
+    <Resource Include="colorstyle2.xaml" LogicalName="colorstyle2.xaml" />
+    <Resource Include="colorstyle3.xaml" LogicalName="colorstyle3.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Core" />
+    <Reference Include="Apps.UIData" />
+    <Reference Include="Apps.Log" />
+    <Reference Include="Apps.BaseLog" />
+    <Reference Include="System.Xml" />
+    <Reference Include="VM.Utility" />
+  </ItemGroup>
+</Project>

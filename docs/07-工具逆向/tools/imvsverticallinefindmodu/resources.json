@@ -1,0 +1,124 @@
+{
+  "toolId": "imvsverticallinefindmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSVerticalLineFindModu\\IMVSVerticalLineFindModu.xml",
+      "sha256": "184a92088b533ffb64e96f99f101e094ed3556b6cf813f84c90cdd74c33b6db7",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSVerticalLineFindModu\\IMVSVerticalLineFindModuAlgorithm.xml",
+      "sha256": "d47a7d077e5b344fd9d474e854cc8f0cb6b92d29710dd764091beeef51ecda43",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSVerticalLineFindModu\\IMVSVerticalLineFindModuAlgorithmTab.xml",
+      "sha256": "0cd87759dae853b472222f7735bb3154d07489cdde74b3ce507c1d228ded1182",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSVerticalLineFindModu\\IMVSVerticalLineFindModuCs.xml",
+      "sha256": "34a0339f8586bbc1c5dc97dbdbf2ff40058c4b2a499212a5a64d06507c8271d7",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSVerticalLineFindModu\\IMVSVerticalLineFindModuDisplay.xml",
+      "sha256": "13d9a632d3f3eef294d2ccc2b5c6d8e98b980af66a2726a2c4e2a54884d1b271",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSVerticalLineFindModu\\ToolItemInfo.xml",
+      "sha256": "f330d3807c4eeab050797b0bc24db2741640dfe240b88d3bfe22716b3ef30955",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "RadioSelecter",
+      "name": "Type"
+    },
+    {
+      "type": "RadioSelecter",
+      "name": "InputWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "OriginPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "PointY"
+    },
+    {
+      "type": "RadioSelecter3",
+      "name": "InputWay2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "LINE"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointY"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineInput"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "PointInput"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineResult"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CZPoint"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

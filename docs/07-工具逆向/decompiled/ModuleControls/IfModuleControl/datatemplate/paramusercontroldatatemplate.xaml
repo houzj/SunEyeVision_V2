@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:localParamTab="clr-namespace:Apps.XmlUI.ParamTab;assembly=Apps.XmlUI" xmlns:data="clr-namespace:Apps.XmlParser.ParamTab" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/Apps.Style;component/ComboBoxStyle/ListViewComboBoxStyle.xaml" />
+    <ResourceDictionary Source="/Apps.XmlUI;component/Styles/ParamUserControlDataTemplate.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+  <DataTemplate x:Key="RangeConditionF">
+    <Grid Visibility="{Binding CustomVisibleA, Converter={StaticResource bool2VisibilityConverter}}">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="25*" />
+        <ColumnDefinition Width="75*" />
+        <ColumnDefinition Width="45*" />
+        <ColumnDefinition Width="100*" />
+        <ColumnDefinition Width="10*" />
+      </Grid.ColumnDefinitions>
+      <TextBlock Grid.Column="0" Margin="0,0,0,0" Width="50" Height="32" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="14" Text="{Binding RealNameA}" />
+      <TextBox Grid.Column="1" HorizontalAlignment="Stretch" Style="{StaticResource input}" Text="{Binding RemarkInfo}" ToolTip="{Binding RemarkInfo}" />
+      <ContentControl Grid.Column="2" Margin="0,1,0,0" Width="132" Height="32" ContentTemplate="{StaticResource ButtonSelecter_sub}" Content="{Binding FilterSelecterIf}" />
+      <ContentControl Name="BettweenContentControl" Grid.Column="3" Margin="10,0,0,0" Width="300" Height="32" ContentTemplate="{StaticResource FloatBettween_sub}" Content="{Binding Floatbetween}" />
+      <Button Grid.Column="4" Style="{StaticResource BaseImage_ButtonStyle}" Command="{Binding DeleteCommand}">
+        <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/delete_normal.png" />
+        <FrameworkElement.Tag>
+          <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/delete_click.png" />
+        </FrameworkElement.Tag>
+      </Button>
+    </Grid>
+    <DataTemplate.Triggers>
+      <DataTrigger Value="int" Binding="{Binding SelectType}">
+        <Setter TargetName="BettweenContentControl" Property="ContentControl.ContentTemplate" Value="{StaticResource IntegerBettween_Sub}" />
+        <Setter TargetName="BettweenContentControl" Property="ContentControl.Content" Value="{Binding IntegerBettween}" />
+      </DataTrigger>
+    </DataTemplate.Triggers>
+  </DataTemplate>
+  <DataTemplate x:Key="ButtonSelecter_RnageConF_Container">
+    <Grid Margin="5,0,0,0">
+      <StackPanel>
+        <ItemsControl Name="listVarItems" ItemTemplate="{StaticResource RangeConditionF}" ItemsSource="{Binding ItemsA}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Vertical" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+        </ItemsControl>
+        <StackPanel Orientation="Horizontal" Margin="0, 5, 0, 0">
+          <ComboBox DisplayMemberPath="DisplayNameALang" Width="68" Height="32" Margin="10,0" Style="{StaticResource ListViewComboBoxStyle}" ItemsSource="{Binding EnumEntrysA}" SelectedIndex="{Binding SelectTypeIndex}" />
+          <Button Margin="5" Style="{StaticResource BaseImage_ButtonStyle}" Command="{Binding AddCommand}">
+            <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/add_normal.png" />
+            <FrameworkElement.Tag>
+              <Image Stretch="None" Source="/Apps.XmlUI;component/Resources/add_click.png" />
+            </FrameworkElement.Tag>
+          </Button>
+        </StackPanel>
+      </StackPanel>
+    </Grid>
+  </DataTemplate>
+  <DataTemplate x:Key="ButtonSelecter_RangeConF">
+    <Grid>
+      <ContentControl Name="bsRangeConF" ContentTemplate="{StaticResource ButtonSelecter_RnageConF_Container}" Content="{Binding BridgeObjA}" />
+      <i:Interaction.Triggers>
+        <i:EventTrigger EventName="PreviewMouseWheel">
+          <i:InvokeCommandAction Command="{Binding PreviewMouseWheelCommand}" CommandParameter="{Binding ElementName=bsRangeConF}" />
+        </i:EventTrigger>
+      </i:Interaction.Triggers>
+    </Grid>
+  </DataTemplate>
+</ResourceDictionary>

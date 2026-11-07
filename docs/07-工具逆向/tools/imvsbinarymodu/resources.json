@@ -1,0 +1,173 @@
+{
+  "toolId": "imvsbinarymodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSBinaryModu\\IMVSBinaryModu.xml",
+      "sha256": "30c47a31236e4ea48f6c30da4fcba33b03e17b5c3cd470c0a89c2247470dbb86",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSBinaryModu\\IMVSBinaryModuAlgorithm.xml",
+      "sha256": "eebee2e22c782dc0247dd5f3c62c96f27e542271b681a2d60aacd1400df07900",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSBinaryModu\\IMVSBinaryModuAlgorithmTab.xml",
+      "sha256": "08ae81e7c8bc57b4e095ae2d0b98f08d8afe8f34ebb065b928dd4336ef87fdd7",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSBinaryModu\\IMVSBinaryModuCs.xml",
+      "sha256": "80df3ce60b1386f705c77425cde34d0e15f4fb216fe749f400e7452de5a50443",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSBinaryModu\\IMVSBinaryModuDisplay.xml",
+      "sha256": "0d0c41cfcf7897b61041aef0b3fe8035a468c19c892054852001e7ee085f1c8b",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSBinaryModu\\ToolItemInfo.xml",
+      "sha256": "1d5200c180cdcf0e1283e366f52cc78ab61826985406a9391f9f0536129a1834",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "OutputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InputMaskImageGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "ExternROITypeGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "NonROIPrcType"
+    },
+    {
+      "type": "Enumeration",
+      "name": "BinaryType"
+    },
+    {
+      "type": "Integer",
+      "name": "LowThreshold"
+    },
+    {
+      "type": "Integer",
+      "name": "HighThreshold"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "KernelHeight"
+    },
+    {
+      "type": "Integer",
+      "name": "GaussKernelSize"
+    },
+    {
+      "type": "Float",
+      "name": "GaussSigma"
+    },
+    {
+      "type": "Enumeration",
+      "name": "CompareType"
+    },
+    {
+      "type": "Integer",
+      "name": "ThresholdOffset"
+    },
+    {
+      "type": "Float",
+      "name": "SauvolaAdjustCoef"
+    },
+    {
+      "type": "Float",
+      "name": "SauvolaRange"
+    },
+    {
+      "type": "Enumeration",
+      "name": "SauvolaSegType"
+    },
+    {
+      "type": "Integer",
+      "name": "SauvolaWinWidth"
+    },
+    {
+      "type": "Integer",
+      "name": "SauvolaWinHeight"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureInitPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "FixtureRunPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "BlindZone"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "CheckZoneAnnular"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "OutputMaskImageGroup",
+    "InputMaskImageGroup",
+    "RoiSelectGroup",
+    "InheritWayGroup2",
+    "ExternROITypeGroup",
+    "AssistGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

@@ -1,0 +1,60 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>ShellModuleControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="datatemplate\paramusercontroldatatemplate.xaml" />
+    <Page Remove="ShellModuleControl\DisplayConfig.xaml" />
+    <Page Remove="ShellModuleControl\InputParam.xaml" />
+    <Page Remove="ShellModuleControl\OutParam.xaml" />
+    <Page Remove="ShellModuleControl\ShellRun.xaml" />
+    <Page Include="datatemplate\paramusercontroldatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="datatemplate/paramusercontroldatatemplate.xaml" />
+    <Page Include="ShellModuleControl\DisplayConfig.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="displayconfig.xaml" />
+    <Page Include="ShellModuleControl\InputParam.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="inputparam.xaml" />
+    <Page Include="ShellModuleControl\OutParam.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="outparam.xaml" />
+    <Page Include="ShellModuleControl\ShellRun.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="shellrun.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Apps.XmlParser" />
+    <Reference Include="VMControls.Interface" />
+    <Reference Include="DynamicObjectConfigControl" />
+    <Reference Include="VM.Core" />
+    <Reference Include="GlobalScriptUI" />
+    <Reference Include="VM.PlatformSDKCS" />
+    <Reference Include="Apps.Interface" />
+    <Reference Include="Apps.UIHelper" />
+    <Reference Include="VM.CodeCompletion" />
+    <Reference Include="VM.Controls" />
+    <Reference Include="ICSharpCode.AvalonEdit" />
+    <Reference Include="ICSharpCode.NRefactory" />
+    <Reference Include="Script.Render">
+      <HintPath>..\..\..\..\..\..\Program Files\VisionMaster4.4.0\Applications\Module(sp)\x64\Logic\ShellModule\Script.Render.dll</HintPath>
+    </Reference>
+    <Reference Include="Apps.Log" />
+    <Reference Include="ShellCommonControl" />
+    <Reference Include="VM.Util" />
+    <Reference Include="Apps.Data" />
+    <Reference Include="VMControls.WPF.Release" />
+    <Reference Include="Apps.PcUI" />
+    <Reference Include="PasswordWindowUI" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="Apps.Json">
+      <HintPath>..\..\..\..\..\..\Program Files\VisionMaster4.4.0\Applications\Module(sp)\x64\Logic\ShellModule\Apps.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="VM.Xml" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="VM.Utility" />
+    <Reference Include="Apps.BaseLog" />
+  </ItemGroup>
+</Project>

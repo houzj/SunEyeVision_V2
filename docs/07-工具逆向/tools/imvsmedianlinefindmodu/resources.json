@@ -1,0 +1,132 @@
+{
+  "toolId": "imvsmedianlinefindmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSMedianLineFindModu\\IMVSMedianLineFindModu.xml",
+      "sha256": "8ebb0b023f1cf00b150ebb3bf460de6cc6b8c88022b9679fb08e490bc429f1ad",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSMedianLineFindModu\\IMVSMedianLineFindModuAlgorithm.xml",
+      "sha256": "ca782fb6f21fae89a0ab17a82a3bf6ff6abecfac1c2934f2b27995d5b720eb22",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSMedianLineFindModu\\IMVSMedianLineFindModuAlgorithmTab.xml",
+      "sha256": "de200cafe14f7e8bfa0d0d7f682ff8b995edf8d0510f46f05010429b3459c008",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSMedianLineFindModu\\IMVSMedianLineFindModuCs.xml",
+      "sha256": "fd074bb623d938c53117863cdb578b1bad7991599e4189e6c27d2cd99a4619aa",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSMedianLineFindModu\\IMVSMedianLineFindModuDisplay.xml",
+      "sha256": "0f904b8914c3ee97e80cc5737db7d56633618a6412d03f28485a49a5bd40335c",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSMedianLineFindModu\\ToolItemInfo.xml",
+      "sha256": "3944f5f5a152b548d3e540f22ba5360a279670151320cf54a98f9eaec6eda7a4",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "RadioSelecter3",
+      "name": "InputWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "LINE"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointY"
+    },
+    {
+      "type": "RadioSelecter3",
+      "name": "InputWay2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "LINE2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPoint2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPoint2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointX2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "StartPointY2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointX2"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "EndPointY2"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineInput1"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineInput2"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "LineResult"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

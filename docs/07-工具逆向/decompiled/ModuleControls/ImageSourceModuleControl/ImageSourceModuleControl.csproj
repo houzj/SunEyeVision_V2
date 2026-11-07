@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>ImageSourceModuleControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="datatemplate\paramusercontroldatatemplate.xaml" />
+    <Page Remove="ImageSourceModuleControl\ImageListPanel.xaml" />
+    <Page Remove="ImageSourceModuleControl\LocalImageListView.xaml" />
+    <Page Include="datatemplate\paramusercontroldatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="datatemplate/paramusercontroldatatemplate.xaml" />
+    <Page Include="ImageSourceModuleControl\ImageListPanel.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="imagelistpanel.xaml" />
+    <Page Include="ImageSourceModuleControl\LocalImageListView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="localimagelistview.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Apps.XmlParser" />
+    <Reference Include="VM.Xml" />
+    <Reference Include="System.Xml" />
+    <Reference Include="VMControls.Interface" />
+    <Reference Include="VMControls.WPF" />
+    <Reference Include="VM.Core" />
+    <Reference Include="Apps.Data" />
+    <Reference Include="VM.PlatformSDKCS" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="VMControls.BaseInterface" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>图像源 · 工具对照</title>
+<style>:root{--bg:#f6f7f9;--card:#ffffff;--line:#e4e7ec;--text:#1d2129;--muted:#646a73;--accent:#2563eb;--warn:#b45309;--ok:#15803d;--bad:#b91c1c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.65 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+.wrap{max-width:1120px;margin:0 auto;padding:26px 20px 60px}
+nav.crumbs{font-size:13px;color:var(--muted);margin-bottom:16px}
+nav.crumbs a{color:var(--accent);text-decoration:none;margin-right:16px}
+nav.crumbs a:hover{text-decoration:underline}
+header.top{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+h1{font-size:25px;margin:0 0 10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;line-height:1.3}
+.badge{font-size:12px;padding:3px 11px;border-radius:999px;font-weight:600;white-space:nowrap}
+.badge.inventory-only{background:#eef1f5;color:#475569}
+.badge.source-indexed{background:#e0f2fe;color:#075985}
+.badge.source-partial{background:#fef3c7;color:#92400e}
+.badge.source-confirmed{background:#dcfce7;color:#166534}
+.badge.unknown,.badge.not-established,.badge.deferred{background:#f1f2f4;color:#6b7280}
+.badge.partial{background:#fef3c7;color:#92400e}
+.badge.done,.badge.established,.badge.confirmed{background:#dcfce7;color:#166534}
+.badge.inferred{background:#e0f2fe;color:#075985}
+.meta{font-size:13px;color:var(--muted);margin:0}
+.meta code{background:#eef1f5;padding:1px 6px;border-radius:4px;font-size:12px}
+.notice{margin:14px 0 0;padding:10px 14px;background:#fffbeb;border-left:3px solid #f59e0b;color:#78350f;font-size:13px;border-radius:0 6px 6px 0}
+section.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin-bottom:18px}
+section.card>h2{font-size:16px;margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+section.card>h2 .tag{font-size:11px;font-weight:500;color:var(--muted);background:#f1f2f4;padding:2px 8px;border-radius:4px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:#fafbfc;font-weight:600;color:#374151;font-size:12px;letter-spacing:.02em}
+tr:last-child td{border-bottom:none}
+code.mono{font-family:Consolas,Monaco,monospace;font-size:12px;background:#f5f6f8;padding:1px 5px;border-radius:4px;word-break:break-all}
+.sha{color:#6b7280;font-size:11px}
+.empty{color:var(--muted);font-size:13px;padding:4px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.item{border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:#fcfcfd}
+.item .hd{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.item .nm{font-weight:600;font-size:13px}
+.item .dt{font-size:12px;color:var(--muted)}
+.item .nd{font-size:12px;color:var(--muted);margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)}
+ul.plain{margin:6px 0 0;padding-left:20px;font-size:13px;color:#374151}
+ul.plain li{margin:3px 0}
+footer{margin-top:30px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+a{color:var(--accent)}
+.links{font-size:12px;line-height:1.9;white-space:nowrap}
+.links a{text-decoration:none}
+.links a:hover{text-decoration:underline}
+.links .sep{color:#d1d5db;margin:0 3px}
+.cta{display:inline-block;padding:8px 18px;background:var(--accent);color:#fff!important;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600}
+.cta:hover{filter:brightness(.94);text-decoration:none!important}
+.thumb{display:block;max-width:100%;height:auto;margin:12px 0;border:1px solid var(--line);border-radius:8px;background:#101827}
+.offline{margin:14px 0 0;padding:10px 14px;background:#ecfdf5;border-left:3px solid #10b981;color:#065f46;font-size:13px;border-radius:0 6px 6px 0}</style>
+</head><body><div class="wrap">
+<nav class="crumbs"><a href="../index.html">&larr; 工具索引</a><a href="../_reference-codex/site/index.html">Codex 原站（只读）</a><a href="../../collaboration/evidence/">证据目录</a></nav>
+<nav class="crumbs links">证据直达<span class="sep">｜</span><a href="../tools/imagesourcemodule/imagesourcemodule-reverse.md">逆向记录</a><span class="sep">｜</span><a href="../tools/imagesourcemodule/evidence.json">证据索引</a><span class="sep">｜</span><a href="../tools/imagesourcemodule/parameters.json">参数全量</a><span class="sep">｜</span><a href="../tools/imagesourcemodule/resources.json">资源清单</a><span class="sep">｜</span><a href="../tools/imagesourcemodule/ui-preview.json">UI 描述</a><span class="sep">｜</span><a href="../tools/imagesourcemodule/ui-preview.svg">布局图</a><span class="sep">｜</span><a href="../tools/imagesourcemodule/algorithm-semantics.md">算法语义</a></nav>
+<header class="top">
+<h1>图像源<span class="badge source-partial">源码部分恢复</span></h1>
+<p class="meta">toolId <code>imagesourcemodule</code> &nbsp;·&nbsp; 原件 <code>ImageSourceModule</code> &nbsp;·&nbsp; 分类 Collection &nbsp;·&nbsp; uiCategory <code>image-roi</code> &nbsp;·&nbsp; 优先级 P1 &nbsp;·&nbsp; 档案 standard &nbsp;·&nbsp; 来源 suneyevision</p>
+<p class="notice">本页不证明该工具在原厂已注册、加载、执行或完成。</p>
+</header><main>
+<section class="card" id="uiPreview"><h2>调试窗预览<span class="tag">控件级还原</span></h2>
+<p class="meta">按原件 <code class="mono">AlgorithmTabRoot</code> 的控件声明还原：页签、控件形态、声明顺序、参数默认值与输入输出声明。不执行算法，不含运行结果。</p>
+<p class="links"><a class="cta" href="../../08-工具预览/preview/Collection-ImageSourceModule.html">打开调试窗预览</a></p>
+<p class="meta">控件树证据（非预览图）：<code class="mono">tools/imagesourcemodule/ui-preview.svg</code>，描述控件树与分区，属证据性布局。</p>
+<p class="meta">previewKind <code>resource-control-evidence</code> &nbsp;·&nbsp; 控件 25 项 &nbsp;·&nbsp; 缺失项 4 条</p>
+<p class="links"><a href="../tools/imagesourcemodule/ui-preview.html">控件树 JSON</a><span class="sep">｜</span><a href="../tools/imagesourcemodule/ui-preview.svg">SVG 布局证据</a></p>
+</section>
+<section class="card" id="originalEvidence"><h2>原版入口与证据<span class="tag">originalEvidence</span></h2>
+<p class="meta" style="margin-bottom:12px">原件路径 <code class="mono">D:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\x64\Collection\ImageSourceModule</code></p>
+<table><thead><tr><th style="width:36%">符号 / 文件</th><th style="width:14%">行号</th><th style="width:16%">SHA-256</th><th>可确认范围</th></tr></thead><tbody>
+<tr><td><code class="mono">ImageListPanelBase.CurImageIndexT</code><br><span class="sha">docs/07-工具逆向/decompiled/WpfControls/VMControls.WPF/ImageListPanelBase.cs</span></td><td>216-230</td><td><span class="sha">DF02FAA325BA</span></td><td>计数分子：CurImageIndex+1，对外 1-based；未选中为 0</td></tr>
+<tr><td><code class="mono">ImageListPanelBase.GetVMModule / 取图循环</code><br><span class="sha">docs/07-工具逆向/decompiled/WpfControls/VMControls.WPF/ImageListPanelBase.cs</span></td><td>647-660, 442-475</td><td><span class="sha">DF02FAA325BA</span></td><td>图像列表来自 AlgorithmTabRoot.Owner 模块的 Params[ImageNumber/ImagePath{i}]，不继承上游来源</td></tr>
+<tr><td><code class="mono">计数 MultiBinding / 条内按钮</code><br><span class="sha">docs/07-工具逆向/decompiled/WpfControls/VMControls.WPF/ImageListPanel.xaml</span></td><td>244-253, 190-337</td><td><span class="sha">A5AC5A8101E7</span></td><td>计数格式「图像源 (N/M)」；条内仅 6 个按钮：删除、加图、加文件夹、加远程文件夹、清空、列表</td></tr>
+<tr><td><code class="mono">LocalImageListView.ImageModes / AutoPlay / Interval / OnRootChanged</code><br><span class="sha">docs/07-工具逆向/decompiled/WpfControls/VMControls.WPF/LocalImageListView.xaml.cs</span></td><td>119-141, 143-187, 224-257, 259-291</td><td><span class="sha">D887A0C8D363</span></td><td>运行全部/运行选中是一个 ComboBox 两选项（写 ExecuteType 1/2）；自动切换=AutoPlay；取图间隔=Interval；换 Root 清缓存重解析</td></tr>
+<tr><td><code class="mono">三控件可见条件 / 高度</code><br><span class="sha">docs/07-工具逆向/decompiled/WpfControls/VMControls.WPF/LocalImageListView.xaml</span></td><td>36-83, 89-98</td><td><span class="sha">D22C8A3F7FCE</span></td><td>开关按 IsExpanded 显隐；ComboBox 按 IsExpanded 且非订阅文件夹显隐；仅 130px 占位块按 IsImageSourceModule 判定；高度 125/40</td></tr>
+<tr><td><code class="mono">RunParam_Auto Switch / Switch to next image every run</code><br><span class="sha">docs/07-工具逆向/decompiled/HostShell/ExeEntry/resources/zh-cn.xaml</span></td><td>资源键定义</td><td><span class="sha">C3AD9209618D</span></td><td>「自动切换」语义=每次执行后自动切换至下一张图片</td></tr>
+</tbody></table>
+<h2 style="margin-top:20px">资源与 XML 证据</h2>
+<table><thead><tr><th style="width:60%">文件</th><th style="width:14%">根节点</th><th>SHA-256</th></tr></thead><tbody>
+<tr><td><span class="sha">D:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\x64\Collection\ImageSourceModule\ImageSourceModule.xml</span></td><td><code class="mono">ParamRoot</code></td><td><span class="sha">0598746F0603</span></td></tr>
+<tr><td><span class="sha">D:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\x64\Collection\ImageSourceModule\ImageSourceModuleAlgorithm.xml</span></td><td><code class="mono">AlgorithmParamList</code></td><td><span class="sha">C9177BF6D036</span></td></tr>
+<tr><td><span class="sha">D:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\x64\Collection\ImageSourceModule\ImageSourceModuleAlgorithmTab.xml</span></td><td><code class="mono">AlgorithmTabRoot</code></td><td><span class="sha">001A57675192</span></td></tr>
+<tr><td><span class="sha">D:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\x64\Collection\ImageSourceModule\ImageSourceModuleCs.xml</span></td><td><code class="mono">doc</code></td><td><span class="sha">886C21ABAA52</span></td></tr>
+<tr><td><span class="sha">D:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\x64\Collection\ImageSourceModule\ImageSourceModuleDisplay.xml</span></td><td><code class="mono">ParamRoot</code></td><td><span class="sha">D2F3129C6D3C</span></td></tr>
+<tr><td><span class="sha">D:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\x64\Collection\ImageSourceModule\ToolItemInfo.xml</span></td><td><code class="mono">ToolBoxItemData</code></td><td><span class="sha">0E8EE15A8907</span></td></tr>
+</tbody></table>
+</section>
+<section class="card" id="currentImplementation"><h2>当前实现与差异<span class="tag">currentImplementation</span></h2>
+<table><tbody>
+<tr><th style="width:24%">ModuleId</th><td></td></tr>
+<tr><th>实现路径</th><td><code class="mono">src/Plugin.Wpf/Controls/Native/Input/WorkspaceControls/WorkspaceControls/ImageListPanelBase.cs.pending</code></td></tr>
+<tr><th>核对时间</th><td></td></tr>
+<tr><th>差异</th><td><ul class="plain">
+<li>我方镜像副本仍为 .pending，未纳入编译，行为未经运行时核对</li>
+<li>我方当前只实现显示/隐藏两态，原件是「按 Root 整体重解析数据源」，缺少的是重建数据源而非补按钮</li>
+<li>原件条高 125px，我方 ResultWorkspaceShell.xaml:156 施加 MaxHeight=110，会裁切滚动条</li>
+<li>原件「运行全部/运行选中」是 ComboBox 写 ExecuteType；「自动切换」是推进游标的 AutoPlay 开关，两者语义需按原件实现</li>
+<li>原件另有「取图间隔 Interval」控件，我方未见对应实现</li>
+</ul></td></tr>
+</tbody></table>
+</section>
+<section class="card" id="analysisStages"><h2>分析环节<span class="tag">7 环节</span></h2><div class="grid">
+<div class="item"><div class="hd"><span class="nm">UI入口与窗口</span><span class="badge partial">部分</span></div><div class="dt">ImageListPanel.xaml 与 LocalImageListView.xaml 已直读：条内 6 个按钮（删除、加图、加文件夹、加远程文件夹、清空、列表）、三个运行控件与 125/40 两档高度。缺主题状态、悬停/折叠与运行时尺寸；选中下游节点时的实际视觉表现需原机窗口。</div><div class="nd" style="color:#2563eb">ImageListPanel.xaml:190-337 ｜ LocalImageListView.xaml:36-98</div></div>
+<div class="item"><div class="hd"><span class="nm">公共模板/配置框架</span><span class="badge unknown">未知</span></div><div class="dt">未单独取证共享参数组与配置框架。图像源条通过 AlgorithmTabRoot.Owner 拿模块，本身不承载共享模板。</div></div>
+<div class="item"><div class="hd"><span class="nm">参数与ROI</span><span class="badge done">已确认</span></div><div class="dt">参数读写已直读：LocalImageListView.xaml.cs:143-187 解析 AutoPlay / Interval / CurrentImagePath；ImageListPanelBase.cs:1234-1236 把 Params[&quot;AutoPlay&quot;] 回写 UI 节点；取图用 ImageNumber、ImagePath{i}、CurImagePath.Value。图像源是图像提供者，不适用 ROI。</div><div class="nd" style="color:#2563eb">LocalImageListView.xaml.cs:143-187 ｜ ImageListPanelBase.cs:442-475, 1234-1236</div></div>
+<div class="item"><div class="hd"><span class="nm">执行与结果</span><span class="badge partial">部分</span></div><div class="dt">取图循环与执行模式（UserStringData[&quot;ExecuteType&quot;] 1=运行全部 / 2=运行选中）已证；模块 Process 实现与原生回调体未证，只在 ImageListPanelBase.cs:417-427 见到 IMVS_ALGORITHM_INIT_RESULT_INFO（nType=268439552）订阅。</div><div class="nd" style="color:#2563eb">ImageListPanelBase.cs:442-475, 417-427</div></div>
+<div class="item"><div class="hd"><span class="nm">图形/文字显示</span><span class="badge done">已确认</span></div><div class="dt">计数格式「图像源 (N/M)」由 ImageListPanel.xaml:244-253 的 MultiBinding 给出，分子是 CurImageIndexT = CurImageIndex+1（未选中为 0）；缩略图 ListBox 在 :190，虚拟化与选中样式在 :220-243。</div><div class="nd" style="color:#2563eb">ImageListPanel.xaml:244-253, 190, 220-243</div></div>
+<div class="item"><div class="hd"><span class="nm">持久化/重开</span><span class="badge partial">部分</span></div><div class="dt">执行模式存 Root.UserStringData[&quot;ExecuteType&quot;]（LocalImageListView.xaml.cs:243,276-289）；AutoPlay / Interval / CurrentImagePath 存模块 Params。缺版本迁移与重绑规则。</div><div class="nd" style="color:#2563eb">LocalImageListView.xaml.cs:243, 276-289</div></div>
+<div class="item"><div class="hd"><span class="nm">native/ABI</span><span class="badge unknown">未知</span></div><div class="dt">未取到原生导出函数、调用约定或二进制容器；模块程序集未入库。</div></div>
+</div><p class="empty" style="margin-top:12px">环节状态默认 unknown；卡片未记录逐环节证据时不得标 done。状态来源：<code class="mono">tools/imagesourcemodule/evidence.json</code> 的 analysisStages。</p></section>
+<section class="card" id="algorithmSemantics"><h2>算法语义链<span class="tag">9 步</span></h2><table><thead><tr><th style="width:22%">步骤</th><th style="width:12%">状态</th><th>原版证据 / 说明</th><th style="width:24%">仍需补什么</th></tr></thead><tbody>
+<tr><td>工具创建/初始化</td><td><span class="badge unknown">未知</span></td><td>ImageSourceModule 模块类未入库，构造函数与注册链未取证</td><td class="empty">模块类、注册链与资源绑定</td></tr>
+<tr><td>参数读取与条件显隐</td><td><span class="badge confirmed">已确认</span></td><td>LocalImageListView.xaml.cs:143-187 从 Root.FindBaseNodeByName 解析 AutoPlay / Interval / CurrentImagePath；LocalImageListView.xaml:45-81 三处 MultiDataTrigger 控制显隐；ImageListPanelBase.cs:1234-1236 回写 Params[&quot;AutoPlay&quot;]</td><td class="empty"></td></tr>
+<tr><td>输入/ROI/变量准备</td><td><span class="badge confirmed">已确认</span></td><td>ImageListPanelBase.cs:442-475 取图循环：Params[&quot;ImageNumber&quot;] 定数量，Params[&quot;ImagePath&quot;+i] 逐个取路径，Params[&quot;CurImagePath.Value&quot;] 取当前图</td><td class="empty"></td></tr>
+<tr><td>Process/ProcessAlg/原生桥</td><td><span class="badge unknown">未知</span></td><td>模块 Process 实现未取证；仅在 ImageListPanelBase.cs:417-427 见到 IMVS_ALGORITHM_INIT_RESULT_INFO（nType=268439552）回调订阅</td><td class="empty">Process/ProcessAlg 函数体与原生桥</td></tr>
+<tr><td>分支、失败与取消</td><td><span class="badge partial">部分</span></td><td>仅见 RunCheck 前置校验（ImageListPanelBase.cs:1339-1344）</td><td class="empty">失败路径、错误码与取消处理</td></tr>
+<tr><td>结果写回与判定</td><td><span class="badge partial">部分</span></td><td>ImageListPanelBase.cs:1336 写 Params[&quot;CurrentImagePath&quot;]；:1649 读 Params[&quot;GetAllExecutePic&quot;] 拆分已执行图集合</td><td class="empty">判定链与失败结果写回</td></tr>
+<tr><td>图形/文本显示发布</td><td><span class="badge confirmed">已确认</span></td><td>ImageListPanel.xaml:244-253 计数绑定、:190 缩略图 ListBox、:220-243 虚拟化与选中样式</td><td class="empty"></td></tr>
+<tr><td>保存恢复</td><td><span class="badge partial">部分</span></td><td>LocalImageListView.xaml.cs:243,276-289 把执行模式存 Root.UserStringData[&quot;ExecuteType&quot;]；AutoPlay / Interval / CurrentImagePath 存模块 Params</td><td class="empty">版本迁移与重开后的重绑规则</td></tr>
+<tr><td>DeInit/Destroy/释放</td><td><span class="badge unknown">未知</span></td><td>缩略图后台刷新线程（ImageListPanelBase.cs:339-353，IsBackground=true）已见创建，退出路径未取证</td><td class="empty">线程退出顺序与 reader 释放顺序</td></tr>
+</tbody></table><p class="empty" style="margin-top:10px">「推断」表示语义文件提到了该步骤，但未达到源码级确认。原始语义文件：<code class="mono">tools/imagesourcemodule/algorithm-semantics.md</code></p></section>
+<section class="card" id="algorithmComparison"><h2>算法对照<span class="tag">7 维</span></h2><table><thead><tr><th style="width:22%">维度</th><th style="width:12%">状态</th><th>已取得的对比证据</th><th style="width:24%">缺什么</th></tr></thead><tbody>
+<tr><td>原版具体算法/入口</td><td><span class="badge partial">部分</span></td><td>取图循环 ImageListPanelBase.cs:442-475；执行模式 ExecuteType 1=运行全部 / 2=运行选中；AutoPlay 语义为每次执行后切下一张</td><td class="empty">图像解码、像素处理与像素格式转换主体未证</td></tr>
+<tr><td>当前计算路径</td><td><span class="badge partial">部分</span></td><td>我方镜像副本 src/Plugin.Wpf/Controls/Native/Input/WorkspaceControls/WorkspaceControls/ImageListPanelBase.cs.pending 仍为 .pending，未纳入编译</td><td class="empty">无运行时对照；镜像副本能否编译与行为是否一致未验证</td></tr>
+<tr><td>参数默认与前后处理</td><td><span class="badge partial">部分</span></td><td>CurImageIndexT = CurImageIndex+1，对外 1-based，未选中为 0；删除当前图（:589）与清空（:698）都把计数打回 0</td><td class="empty">AutoPlay 默认值、Interval 合法范围与默认间隔未证</td></tr>
+<tr><td>边界/坐标/类型</td><td><span class="badge not-established">未建立对比</span></td><td>卡片未记录该维度对照，需补</td><td class="empty">无坐标语义对照；像素格式（PixelFormat）与输出 Mono8 的边界处理未证</td></tr>
+<tr><td>像素/数值差异与误差</td><td><span class="badge not-established">未建立对比</span></td><td>卡片未记录该维度对照，需补</td><td class="empty">无像素级证据；未做原机取图与自研取图的逐像素比对</td></tr>
+<tr><td>原native/ABI</td><td><span class="badge not-established">未建立对比</span></td><td>卡片未记录该维度对照，需补</td><td class="empty">未取到原生导出函数与调用约定</td></tr>
+<tr><td>验证输入/基线</td><td><span class="badge partial">部分</span></td><td>条内 6 个按钮与三个运行控件的可见条件已直读，可直接作为 UI 验收基线</td><td class="empty">无原机窗口差分；ExecuteType=2 运行选中时勾选集合的逐张行为需运行观察</td></tr>
+</tbody></table><p class="empty" style="margin-top:10px">UI 例证、XML 参数数量、目录映射或编译通过均不替代数值基线。</p></section>
+<section class="card" id="categoryExtension"><h2>同类特有条目<span class="tag">image-roi</span></h2><ul class="plain">
+<li>ROI 形状集合</li>
+<li>图像源模式（本地/相机/订阅）</li>
+<li>图像条与预览</li>
+</ul><p class="empty" style="margin-top:10px">本清单由 <code class="mono">contracts/page.sections.json</code> 的 categoryExtensions 按 uiCategory 决定，同类工具共用同一组条目；具体取值仍需在该工具的 7 环节与 9 步中逐项取证。</p></section>
+<section class="card" id="unknowns"><h2>未知与待补<span class="tag">unknowns</span></h2>
+<h2 style="margin:0 0 8px;font-size:13px;border:none;padding:0">证据未知项</h2><ul class="plain">
+<li>多上游图像源汇入时的选择规则（需 VM.Core 或流程执行器）</li>
+<li>选中下游节点时条内的实际视觉表现（需原机窗口）</li>
+<li>ExecuteType=2 运行选中时勾选集合的逐张执行行为（需运行观察）</li>
+<li>ImageSourceModule 模块类的构造函数与注册链（模块程序集未入库）</li>
+<li>图像解码、像素处理与 ROI 语义（算法本体）</li>
+<li>缩略图后台刷新线程的退出与 reader 释放顺序</li>
+</ul>
+<h2 style="margin:14px 0 8px;font-size:13px;border:none;padding:0">UI 缺失项</h2><ul class="plain">
+<li>原厂 UI 资源或 XAML 的逐控件绑定</li>
+<li>显隐触发器</li>
+<li>主题/悬停/折叠状态</li>
+<li>运行时尺寸与布局</li>
+</ul>
+</section>
+<section class="card" id="notice"><h2>对比范围与未知<span class="tag">notice</span></h2><p class="empty">本页只记录原版事实、当前实现、拟议设计与未知，四者分列。不证明该工具在原厂已注册、加载、执行或完成；UI 例证、XML 参数数量、目录映射或编译测试均不替代数值基线。</p></section>
+</main>
+<footer>由 <code class="mono">scripts/tool-reverse/generate-pages.ps1</code> 从卡片数据生成。修改请改卡片，不要直接改本页。生成时间 2026-11-07 15:43</footer>
+</div></body></html>

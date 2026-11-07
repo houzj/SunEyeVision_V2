@@ -1,0 +1,64 @@
+{
+    "stableToolId":  "imvscirclefindmodu",
+    "originalPlugin":  "IMVSCircleFindModu",
+    "displayName":  "圆查找",
+    "originalCategory":  "Location",
+    "originalSourcePath":  "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSCircleFindModu",
+    "uiCategory":  "result-view",
+    "priority":  "P2",
+    "status":  "source-partial",
+    "evidenceState":  "source-partial",
+    "resourceCount":  6,
+    "parameterCount":  28,
+    "inputCount":  5,
+    "outputCount":  16,
+    "uiControlCount":  41,
+    "sourceInventory":  "docs/plugins/inventory.json",
+    "sourceEvidence":  [
+                           {
+                               "path":  "docs/07-工具逆向/decompiled/Managed/CircleFind/IMVSCircleFindModuCs/CircleFindParam.cs",
+                               "sha256":  "DE870AFF32C31A4D0790599CE48C1F81C12869DD610B7BAD5006F3F34811BB86",
+                               "symbol":  "托管参数模型：参数名、类型、枚举定义（CircleFindParam）",
+                               "lines":  "1-647",
+                               "confirmable":  "托管层源码直读：可确认类结构、成员、枚举与调用关系；不含算法本体（算法在原生 \u003cPlugin\u003e.dll）"
+                           },
+                           {
+                               "path":  "docs/07-工具逆向/decompiled/Managed/CircleFind/IMVSCircleFindModuCs/CircleFindResult.cs",
+                               "sha256":  "34CAB4B620F86CA45D7CC871D62BE281DB9ED74C66D64CF1D47D9DDA145900BB",
+                               "symbol":  "托管结果模型：输出字段与状态（CircleFindResult）",
+                               "lines":  "1-111",
+                               "confirmable":  "托管层源码直读：可确认类结构、成员、枚举与调用关系；不含算法本体（算法在原生 \u003cPlugin\u003e.dll）"
+                           },
+                           {
+                               "path":  "docs/07-工具逆向/decompiled/Managed/CircleFind/IMVSCircleFindModuCs/CircleFindRoiManager.cs",
+                               "sha256":  "B463C7071A8051B2E4A744C2EAD2BF723F7CE042E0034726149B517C870CD665",
+                               "symbol":  "托管 ROI 管理：ROI 形状与生命周期（CircleFindRoiManager）",
+                               "lines":  "1-54",
+                               "confirmable":  "托管层源码直读：可确认类结构、成员、枚举与调用关系；不含算法本体（算法在原生 \u003cPlugin\u003e.dll）"
+                           },
+                           {
+                               "path":  "docs/07-工具逆向/decompiled/Managed/CircleFind/IMVSCircleFindModuCs/IMVSCircleFindModuTool.cs",
+                               "sha256":  "0A9B12DE496C7DA9D348FC5A78724D6B2B9F03D97330CCC4EE0AA2F26A3F4AF1",
+                               "symbol":  "托管工具类：构造、ModuParams、ModuResult、Run(SyncSelfRun)（IMVSCircleFindModuTool）",
+                               "lines":  "1-64",
+                               "confirmable":  "托管层源码直读：可确认类结构、成员、枚举与调用关系；不含算法本体（算法在原生 \u003cPlugin\u003e.dll）"
+                           }
+                       ],
+    "managedMembers":  [
+                           "CircleFindParam",
+                           "CircleFindResult",
+                           "CircleFindRoiManager",
+                           "IMVSCircleFindModuTool"
+                       ],
+    "nativeFunctions":  [
+
+                        ],
+    "runtimeObservations":  [
+
+                            ],
+    "unknowns":  [
+                     "原生算法本体未取证：nativeFunctions 为空，算法在原生 IMVSCircleFindModu.dll，未反汇编",
+                     "无运行时观测：runtimeObservations 为空，实际执行结果、耗时与失败表现未知",
+                     "28 项 XML 参数与托管 CircleFindParam 成员的逐项对应未核（当前只确认类结构、枚举与 41 条 UI 控件声明）"
+                 ]
+}

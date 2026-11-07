@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>imvsgeometrictransformmodu 路 ui-preview.json</title><style>*{box-sizing:border-box}
+body{margin:0;background:#f6f7f9;color:#1d2129;font:14px/1.7 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:24px 20px 60px}
+.crumbs{font-size:13px;margin-bottom:14px}
+.crumbs a{color:#2563eb;text-decoration:none}
+.card{background:#fff;border:1px solid #e4e7ec;border-radius:10px;padding:26px 30px}
+h1,h2,h3,h4{line-height:1.4}
+h1{font-size:20px}h2{font-size:17px;margin-top:26px}h3{font-size:15px}
+table{border-collapse:collapse;margin:12px 0;width:100%;font-size:13px}
+td,th{border:1px solid #e4e7ec;padding:6px 10px;vertical-align:top}
+tr:nth-child(even) td{background:#fafbfc}
+code{background:#f1f3f5;border-radius:3px;padding:1px 5px;font-size:12.5px;font-family:Consolas,Menlo,monospace;color:#c7254e}
+pre{background:#282c34;color:#abb2bf;border-radius:6px;padding:14px 16px;overflow:auto;font-size:12.5px;line-height:1.6;font-family:Consolas,Menlo,monospace}
+pre code{background:none;color:inherit;padding:0}
+ul{padding-left:22px}
+blockquote{border-left:3px solid #d0d5da;margin:10px 0;padding:4px 14px;color:#5a636b;background:#fafbfc}
+hr{border:0;border-top:1px solid #e4e7ec;margin:18px 0}
+p{margin:8px 0}</style></head><body><div class="wrap"><nav class="crumbs"><a href="../../index.html">&#8592; 宸ュ叿绱㈠紩</a> &middot; <code>imvsgeometrictransformmodu</code></nav><div class="card"><h2>ui-preview.json</h2><pre>{
+  &quot;toolId&quot;: &quot;imvsgeometrictransformmodu&quot;,
+  &quot;displayName&quot;: &quot;几何变换&quot;,
+  &quot;previewKind&quot;: &quot;resource-control-evidence&quot;,
+  &quot;category&quot;: &quot;declarative-parameters&quot;,
+  &quot;priority&quot;: &quot;P0&quot;,
+  &quot;status&quot;: &quot;source-partial&quot;,
+  &quot;uiTabs&quot;: [
+    &quot;Tab_Basic Params&quot;,
+    &quot;Tab_Run Params&quot;
+  ],
+  &quot;controls&quot;: [
+    {
+      &quot;type&quot;: &quot;Enumeration&quot;,
+      &quot;name&quot;: &quot;MirrorOrientation&quot;
+    },
+    {
+      &quot;type&quot;: &quot;Enumeration&quot;,
+      &quot;name&quot;: &quot;RotateAngle&quot;
+    }
+  ],
+  &quot;sharedUiGroups&quot;: [
+    &quot;ImageSourceGroup&quot;,
+    &quot;BottomCommandGroup&quot;
+  ],
+  &quot;visibilityConditions&quot;: &quot;unknown&quot;,
+  &quot;bindings&quot;: &quot;控件类型与名称来自 IMVSGeometricTransformModuAlgorithmTab.xml 别名声明；镜像方向与旋转角度的取值集合及互斥联动未取证&quot;,
+  &quot;themeStates&quot;: &quot;unknown&quot;,
+  &quot;missing&quot;: [
+    &quot;原厂 UI 资源或 XAML 的逐控件绑定表达式&quot;,
+    &quot;镜像方向枚举的完整取值与默认项&quot;,
+    &quot;旋转角度取值范围、单位与是否允许自由输入&quot;,
+    &quot;两个控件与输入图像组的联动，以及运行参数页的控件清单&quot;
+  ],
+  &quot;sourceEvidence&quot;: [
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSGeometricTransformModu\\IMVSGeometricTransformModuAlgorithmTab.xml&quot;,
+      &quot;sha256&quot;: &quot;2fa02a97c95e8419ac44c13ba76adb0c77840ff94dd851123c38a66cd2f38de2&quot;,
+      &quot;root&quot;: &quot;AlgorithmTabRoot&quot;
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSGeometricTransformModu\\IMVSGeometricTransformModu.xml&quot;,
+      &quot;sha256&quot;: &quot;07c1d3491bf05efe65949697fb311fdb21fbf1937dd41c228ed7b080270bb6f2&quot;,
+      &quot;root&quot;: &quot;ParamRoot&quot;
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSGeometricTransformModu\\IMVSGeometricTransformModuAlgorithm.xml&quot;,
+      &quot;sha256&quot;: &quot;8823c7173ab5611bafb2e3f0321714a9c63b65441e40205ebd0d5e0c95fdf610&quot;,
+      &quot;root&quot;: &quot;AlgorithmParamList&quot;
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSGeometricTransformModu\\IMVSGeometricTransformModuDisplay.xml&quot;,
+      &quot;sha256&quot;: &quot;b523eb439634a40d6aa817e215003216851e663b21f62f298d242313826618c1&quot;,
+      &quot;root&quot;: &quot;ParamRoot&quot;
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSGeometricTransformModu\\IMVSGeometricTransformModuCs.xml&quot;,
+      &quot;sha256&quot;: &quot;2235d2f78f69615dccdae0703c9ed0377d8fb021e0983a913d919f3c35bbdc36&quot;,
+      &quot;root&quot;: &quot;doc&quot;
+    },
+    {
+      &quot;path&quot;: &quot;D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSGeometricTransformModu\\ToolItemInfo.xml&quot;,
+      &quot;sha256&quot;: &quot;d173ac32c4ed123fabb0d603f659cf0128e4d409b369492955cc6abf393cf35b&quot;,
+      &quot;root&quot;: &quot;ToolBoxItemData&quot;
+    }
+  ],
+  &quot;note&quot;: &quot;补自 2026-11-05：原先此文件为 {}，属真实缺失。现按 IMVSGeometricTransformModuAlgorithmTab.xml 的控件别名声明恢复 2 个控件与 2 个页签，只证明存在与类型，不证明取值、联动与外观。此 SVG 是证据布局预览，不代表原厂像素级外观。&quot;
+}</pre></div></div></body></html>

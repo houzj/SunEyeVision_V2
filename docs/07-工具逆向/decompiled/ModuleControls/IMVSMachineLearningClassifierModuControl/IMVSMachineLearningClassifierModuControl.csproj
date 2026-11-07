@@ -1,0 +1,84 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>IMVSMachineLearningClassifierModuControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="datatemplate\paramusercontroldatatemplate.xaml" />
+    <Page Remove="IMVSMachineLearningClassifierModuControl\AddCategoryDialog.xaml" />
+    <Page Remove="IMVSMachineLearningClassifierModuControl\EditCategoryDialog.xaml" />
+    <Page Remove="IMVSMachineLearningClassifierModuControl\ImageView.xaml" />
+    <Page Remove="IMVSMachineLearningClassifierModuControl\MLClassifyPanel.xaml" />
+    <Page Remove="IMVSMachineLearningClassifierModuControl\MLImageDialog.xaml" />
+    <Page Remove="IMVSMachineLearningClassifierModuControl\MLImagePage.xaml" />
+    <Page Include="datatemplate\paramusercontroldatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="datatemplate/paramusercontroldatatemplate.xaml" />
+    <Page Include="IMVSMachineLearningClassifierModuControl\AddCategoryDialog.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="dialog/addcategorydialog.xaml" />
+    <Page Include="IMVSMachineLearningClassifierModuControl\EditCategoryDialog.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="dialog/editcategorydialog.xaml" />
+    <Page Include="IMVSMachineLearningClassifierModuControl\ImageView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="common/imageview.xaml" />
+    <Page Include="IMVSMachineLearningClassifierModuControl\MLClassifyPanel.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="mlclassifypanel.xaml" />
+    <Page Include="IMVSMachineLearningClassifierModuControl\MLImageDialog.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="dialog/mlimagedialog.xaml" />
+    <Page Include="IMVSMachineLearningClassifierModuControl\MLImagePage.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="mlimagepage.xaml" />
+    <Resource Remove="resources\btn_删除模型_click.png" />
+    <Resource Remove="resources\btn_删除模型_disable.png" />
+    <Resource Remove="resources\btn_删除模型_normal.png" />
+    <Resource Remove="resources\btn_导入_click.png" />
+    <Resource Remove="resources\btn_导入_disabkle.png" />
+    <Resource Remove="resources\btn_导入_normal.png" />
+    <Resource Remove="resources\btn_导出_click.png" />
+    <Resource Remove="resources\btn_导出_disable.png" />
+    <Resource Remove="resources\btn_导出_normal.png" />
+    <Resource Remove="resources\btn_新建模型_click.png" />
+    <Resource Remove="resources\btn_新建模型_disable.png" />
+    <Resource Remove="resources\btn_新建模型_normal.png" />
+    <Resource Remove="resources\btn_编辑模型_click.png" />
+    <Resource Remove="resources\btn_编辑模型_disable.png" />
+    <Resource Remove="resources\btn_编辑模型_normal.png" />
+    <Resource Remove="resources\空模型.png" />
+    <Resource Include="resources\btn_删除模型_click.png" LogicalName="resources/btn_删除模型_click.png" />
+    <Resource Include="resources\btn_删除模型_disable.png" LogicalName="resources/btn_删除模型_disable.png" />
+    <Resource Include="resources\btn_删除模型_normal.png" LogicalName="resources/btn_删除模型_normal.png" />
+    <Resource Include="resources\btn_导入_click.png" LogicalName="resources/btn_导入_click.png" />
+    <Resource Include="resources\btn_导入_disabkle.png" LogicalName="resources/btn_导入_disabkle.png" />
+    <Resource Include="resources\btn_导入_normal.png" LogicalName="resources/btn_导入_normal.png" />
+    <Resource Include="resources\btn_导出_click.png" LogicalName="resources/btn_导出_click.png" />
+    <Resource Include="resources\btn_导出_disable.png" LogicalName="resources/btn_导出_disable.png" />
+    <Resource Include="resources\btn_导出_normal.png" LogicalName="resources/btn_导出_normal.png" />
+    <Resource Include="resources\btn_新建模型_click.png" LogicalName="resources/btn_新建模型_click.png" />
+    <Resource Include="resources\btn_新建模型_disable.png" LogicalName="resources/btn_新建模型_disable.png" />
+    <Resource Include="resources\btn_新建模型_normal.png" LogicalName="resources/btn_新建模型_normal.png" />
+    <Resource Include="resources\btn_编辑模型_click.png" LogicalName="resources/btn_编辑模型_click.png" />
+    <Resource Include="resources\btn_编辑模型_disable.png" LogicalName="resources/btn_编辑模型_disable.png" />
+    <Resource Include="resources\btn_编辑模型_normal.png" LogicalName="resources/btn_编辑模型_normal.png" />
+    <Resource Include="resources\空模型.png" LogicalName="resources/空模型.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Apps.XmlParser" />
+    <Reference Include="VM.ModuleControl" />
+    <Reference Include="Apps.Data" />
+    <Reference Include="VMControls.Interface" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="VM.Controls" />
+    <Reference Include="Mvvm" />
+    <Reference Include="VM.PcUI" />
+    <Reference Include="VM.PlatformSDKCS" />
+    <Reference Include="VM.Xml" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="System.Core" />
+    <Reference Include="Apps.Log" />
+    <Reference Include="Apps.ErrorCode" />
+    <Reference Include="Apps.BaseLog" />
+    <Reference Include="VMControls.RenderInterface" />
+    <Reference Include="VM.Utility" />
+    <Reference Include="Apps.Interface" />
+    <Reference Include="VM.Util" />
+  </ItemGroup>
+</Project>

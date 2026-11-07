@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="clr-namespace:VM.Controls">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/VM.Controls;component/Styles/BaseWindowStyle.xaml" />
+    <ResourceDictionary Source="/VM.Controls;component/Styles/ScrollbarStyle.xaml" />
+    <ResourceDictionary Source="/VM.Controls;component/Styles/ScrollViewStyle.xaml" />
+    <ResourceDictionary Source="/VM.Controls;component/Styles/MenuItemStyle.xaml" />
+    <ResourceDictionary Source="/VM.Controls;component/Styles/EditableTextBlockStyle.xaml" />
+    <ResourceDictionary Source="/VM.Controls;component/Styles/TabControl.xaml" />
+    <ResourceDictionary Source="/VM.Controls;component/Styles/ExpanderButton.xaml" />
+    <ResourceDictionary Source="/VM.Controls;component/Styles/IconMenuStyle.xaml" />
+    <ResourceDictionary Source="/VM.Controls;component/Controls/Themes/Generic.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+  <Style x:Key="{x:Type TextBox}" TargetType="{x:Type TextBox}">
+    <Setter Property="FrameworkElement.ContextMenu">
+      <Setter.Value>
+        <controls:HikContextMenu>
+          <MenuItem Command="Copy" />
+          <MenuItem Command="Cut" />
+          <MenuItem Command="Paste" />
+        </controls:HikContextMenu>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

@@ -1,0 +1,29 @@
+{
+  "stableToolId": "imvsnpointcalibmodu",
+  "originalPlugin": "IMVSNPointCalibModu",
+  "displayName": "N点标定",
+  "originalCategory": "Calibration",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\IMVSNPointCalibModu",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "resourceCount": 6,
+  "parameterCount": 6,
+  "inputCount": 6,
+  "outputCount": 28,
+  "uiControlCount": 37,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ],
+  "sourceReports": [
+    "docs/plugins/TRANSLATION-NPOINT-PATH-FINAL-REVIEW.md",
+    "docs/plugins/NPOINT-SOURCE-INVENTORY.md"
+  ],
+  "note": "参数窗口、保存读回、运行和释放已有专项记录，原厂算法数值与全部宿主边界按专项退出矩阵管理。"
+}

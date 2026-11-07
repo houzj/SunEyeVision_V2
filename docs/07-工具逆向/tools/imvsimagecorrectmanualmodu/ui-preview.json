@@ -1,0 +1,60 @@
+{
+  "controls": [
+    {
+      "type": "Integer",
+      "name": "WarpPara"
+    },
+    {
+      "type": "Integer",
+      "name": "ZoomPara"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "image-roi",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P1",
+  "themeStates": "unknown",
+  "toolId": "imvsimagecorrectmanualmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageCorrectManualModu\\IMVSImageCorrectManualModu.xml",
+      "sha256": "fa2fa3f970d6ef38924fd0cb927967fe96fc8e7d0e7d9647323f9ddbdeefcd44",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageCorrectManualModu\\IMVSImageCorrectManualModuAlgorithm.xml",
+      "sha256": "507df7f9898e5b97a59e5e0edb0083978db7dc424c612eaa585e12da843d94de",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageCorrectManualModu\\IMVSImageCorrectManualModuAlgorithmTab.xml",
+      "sha256": "c0571d4ddc4d160ac31e8e004d94521ebd5eb432417fe358df1c615201d8db4b",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageCorrectManualModu\\IMVSImageCorrectManualModuCs.xml",
+      "sha256": "4d8da96b6ceb337161cc112f93d65e21e48ed94507ec8184abbbfce01447460d",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageCorrectManualModu\\IMVSImageCorrectManualModuDisplay.xml",
+      "sha256": "5fee928859a5df65a28621d4e212974f75e828d57d22b4d55bfcd71ed33c316e",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageCorrectManualModu\\ToolItemInfo.xml",
+      "sha256": "86e5e5a6943b71d219d24a958cf38e4323b0706fe6e80cd5bdec08515331312a",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "图像矫正",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

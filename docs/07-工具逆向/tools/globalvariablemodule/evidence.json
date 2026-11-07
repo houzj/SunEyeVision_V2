@@ -1,0 +1,59 @@
+{
+  "stableToolId": "globalvariablemodule",
+  "originalPlugin": "GlobalVariableModule",
+  "displayName": "GlobalVariableModule",
+  "originalCategory": "Global",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalVariableModule",
+  "uiCategory": "declarative-parameters",
+  "priority": "P0",
+  "resourceCount": 6,
+  "parameterCount": 0,
+  "inputCount": 0,
+  "outputCount": 0,
+  "uiControlCount": 0,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/GlobalVariableItem.cs",
+      "members": [
+        "constructor",
+        "Clone",
+        "Dispose",
+        "result members"
+      ]
+    },
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/GlobalVariableDialog.xaml.cs",
+      "members": [
+        "constructor",
+        "Clone",
+        "Dispose",
+        "result members"
+      ]
+    },
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/GlobalVariableDialog.xaml",
+      "members": [
+        "constructor",
+        "Clone",
+        "Dispose",
+        "result members"
+      ]
+    }
+  ],
+  "managedMembers": [
+    "managed parameter/result/UI members recovered"
+  ],
+  "nativeFunctions": [
+    "IMVS_PF_ExecuteOnce_V30_CS (generic CProcess evidence only)"
+  ],
+  "runtimeObservations": [],
+  "unknowns": [
+    "native Process/ProcessAlg ABI and algorithm",
+    "XML UI binding/conditions",
+    "save/restore serialization",
+    "original VM runtime behavior"
+  ]
+}

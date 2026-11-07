@@ -1,0 +1,68 @@
+{
+  "stableToolId": "savetextmodule",
+  "originalPlugin": "SaveTextModule",
+  "displayName": "文本保存",
+  "originalCategory": "Logic",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\SaveTextModule",
+  "uiCategory": "declarative-parameters",
+  "priority": "P0",
+  "resourceCount": 6,
+  "parameterCount": 114,
+  "inputCount": 103,
+  "outputCount": 4,
+  "uiControlCount": 118,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "sourceEvidence": [
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/SaveTextModuParams.cs",
+      "members": [
+        "constructor",
+        "Clone",
+        "Dispose",
+        "result members"
+      ]
+    },
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/SaveTextModuTool.cs",
+      "members": [
+        "constructor",
+        "Clone",
+        "Dispose",
+        "result members"
+      ]
+    },
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/SaveTextResult.cs",
+      "members": [
+        "constructor",
+        "Clone",
+        "Dispose",
+        "result members"
+      ]
+    },
+    {
+      "path": "analysis/decompiled/iMVS-6000PlatformSDKCS.PublicAudit/iMVS_6000PlatformSDKCS.ObjectPlatformSDKCS/SaveTextResultIn.cs",
+      "members": [
+        "constructor",
+        "Clone",
+        "Dispose",
+        "result members"
+      ]
+    }
+  ],
+  "managedMembers": [
+    "managed parameter/result types recovered"
+  ],
+  "nativeFunctions": [
+    "IMVS_PF_ExecuteOnce_V30_CS (generic CProcess evidence only)"
+  ],
+  "runtimeObservations": [],
+  "unknowns": [
+    "native Process/ProcessAlg ABI and algorithm",
+    "XML UI binding/conditions",
+    "save/restore serialization",
+    "original VM runtime behavior"
+  ]
+}

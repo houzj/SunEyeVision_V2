@@ -1,0 +1,30 @@
+{
+  "stableToolId": "coordinatemodule",
+  "originalPlugin": "CoordinateModule",
+  "displayName": "坐标系",
+  "originalCategory": "Calibration",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\CoordinateModule",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "resourceCount": 6,
+  "parameterCount": 2,
+  "inputCount": 4,
+  "outputCount": 6,
+  "uiControlCount": 8,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ],
+  "sourceReports": [
+    "docs/plugins/COORDINATE-MODULE-SOURCE-INVENTORY.md",
+    "docs/plugins/COORDINATE-MODULE-RUNTIME-SOURCE.md",
+    "docs/plugins/COORDINATE-MODULE-IMPLEMENTATION-MATRIX.md"
+  ],
+  "note": "原厂参数、ROI、Process/ProcessAlg、输出与生命周期已有专项清单，显示和数值顺序仍按矩阵补证。"
+}

@@ -1,0 +1,55 @@
+{
+  "stableToolId": "globalcameramodule",
+  "originalPlugin": "GlobalCameraModule",
+  "displayName": "GlobalCameraModule",
+  "originalCategory": "Global",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\GlobalCameraModule",
+  "uiCategory": "extension-panels",
+  "priority": "P3",
+  "status": "inventory-only",
+  "evidenceState": "unknown",
+  "resourceCount": 6,
+  "parameterCount": 62,
+  "inputCount": 4,
+  "outputCount": 5,
+  "uiControlCount": 80,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "currentImplementation": {
+    "moduleId": "globalcameramodule",
+    "implPath": "src/DeviceDriver.Camera/Cameras/",
+    "verifiedAt": "2026-11-06",
+    "differences": [
+      "原件只兼容海康：面板按 MVS SDK 固定字段摊开（CameraName 枚举、Userset、MvsFeatureTree 相机特性树、GenTL/CTI 路径、并排存在 TriggerSource_Basler / Gain_CH250 这类厂商分叉字段）。",
+      "我方按多品牌多接口设计：相机选择改为「品牌 + 接口（GigE / USB3 / CameraLink / GenTL）+ 设备列表」，由 ICameraDiscoveryProvider 发现、ICameraAdapterFactory 造适配器；新增厂商只加发现器 + 适配器 + 工厂，UI 零改动。",
+      "参数不再写死：由 ICameraAdapter.GetParameterSchemaAsync() 返回的 schema（名称 / 类型 Boolean·Integer·Float·String·Enumeration·Command / 范围 / 单位 / 枚举 / 只读）动态生成，不猜类型。",
+      "删除 MvsFeatureTree（海康特性树）与 Userset（LoadUserset1 / Load Userset1 Delay）这类厂商私有节点；等价能力进 schema 参数树与设备控制页。",
+      "按厂商分叉的重复字段（TriggerSource / TriggerSource_Basler、Gain / Gain_CH250、ResultingFrameRate / _Abs）合并为按接口与设备能力生成的一组参数。",
+      "连接与恢复用 DeviceId（序列号 / MAC）绑定，不依赖相机显示名；触发源符号名未识别时拒绝采集并报错，不静默降级。",
+      "可复用部分仍按原件：页签组织（常用参数 / 设备控制 / 自定义参数）、触发·曝光·增益·IO 的语义与命名、参数分组层级。"
+    ],
+    "notAdopted": [
+      {
+        "type": "CameraPreview",
+        "reason": "原件把实时预览实现在参数面板里，且与海康 MVS 取流绑定；我方相机取流由 DeviceDriver.Camera 的会话与帧所有权统一管，面板不再承载画面。",
+        "replacement": "ICameraFrameSink 接收帧、相机管理器/预览窗口显示；面板只留开关与状态行。"
+      },
+      {
+        "type": "MvsFeatureTree",
+        "reason": "海康 MVS 相机特性树，节点是海康 SDK 的私有能力集，多品牌下不存在同名同义的树。",
+        "replacement": "ICameraAdapter.GetParameterSchemaAsync() 返回的通用参数 schema 树（分组 + 类型 + 范围）。"
+      },
+      {
+        "type": "ClockSource",
+        "reason": "原件按海康时钟源硬编码选项；不同厂商/接口的时钟源枚举与符号名不一致。",
+        "replacement": "取设备枚举符号名并按 schema 生成选项；符号名缺失或未识别时拒绝采集并报错。"
+      }
+    ]
+  },
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ]
+}

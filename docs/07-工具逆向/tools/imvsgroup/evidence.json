@@ -1,0 +1,41 @@
+{
+  "stableToolId": "imvsgroup",
+  "originalPlugin": "IMVSGroup",
+  "displayName": "Group",
+  "originalCategory": "Logic",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IMVSGroup",
+  "uiCategory": "compound-control",
+  "priority": "P4",
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "resourceCount": 6,
+  "parameterCount": 1,
+  "inputCount": 8,
+  "outputCount": 3,
+  "uiControlCount": 20,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [
+    {
+      "path": "analysis/decompiled/IMVSGroup.WorkflowAudit/IMVSGroupCs/IMVSGroupTool.cs",
+      "evidenceType": "decompiled managed source"
+    },
+    {
+      "path": "analysis/decompiled/IMVSGroup.WorkflowAudit/IMVSGroupCs/GroupParam.cs",
+      "evidenceType": "decompiled managed source"
+    },
+    {
+      "path": "analysis/decompiled/IMVSGroup.WorkflowAudit/IMVSGroupCs/GroupResult.cs",
+      "evidenceType": "decompiled managed source"
+    }
+  ],
+  "managedMembers": [
+    "IMVSGroupTool creates GroupParam and initializes default IO; Run calls SyncSelfRun with UI response flag; result queries module result and wraps GroupResult; GroupParam exposes loop/break/data-type/compare parameters and dynamic image/string input bridges; GroupResult exposes dynamic typed output readers; Load/Save/Destroy APIs are present."
+  ],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "专属 Process/ProcessAlg 或原生算法体与 ABI",
+    "完整 XML/XAML 绑定、条件显隐和主题状态",
+    "原厂运行时差分：空输入、失败、取消和嵌套生命周期"
+  ]
+}

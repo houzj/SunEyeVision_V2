@@ -1,0 +1,1340 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>geometrycreate 路 parameters.json</title><style>*{box-sizing:border-box}
+body{margin:0;background:#f6f7f9;color:#1d2129;font:14px/1.7 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:24px 20px 60px}
+.crumbs{font-size:13px;margin-bottom:14px}
+.crumbs a{color:#2563eb;text-decoration:none}
+.card{background:#fff;border:1px solid #e4e7ec;border-radius:10px;padding:26px 30px}
+h1,h2,h3,h4{line-height:1.4}
+h1{font-size:20px}h2{font-size:17px;margin-top:26px}h3{font-size:15px}
+table{border-collapse:collapse;margin:12px 0;width:100%;font-size:13px}
+td,th{border:1px solid #e4e7ec;padding:6px 10px;vertical-align:top}
+tr:nth-child(even) td{background:#fafbfc}
+code{background:#f1f3f5;border-radius:3px;padding:1px 5px;font-size:12.5px;font-family:Consolas,Menlo,monospace;color:#c7254e}
+pre{background:#282c34;color:#abb2bf;border-radius:6px;padding:14px 16px;overflow:auto;font-size:12.5px;line-height:1.6;font-family:Consolas,Menlo,monospace}
+pre code{background:none;color:inherit;padding:0}
+ul{padding-left:22px}
+blockquote{border-left:3px solid #d0d5da;margin:10px 0;padding:4px 14px;color:#5a636b;background:#fafbfc}
+hr{border:0;border-top:1px solid #e4e7ec;margin:18px 0}
+p{margin:8px 0}</style></head><body><div class="wrap"><nav class="crumbs"><a href="../../index.html">&#8592; 宸ュ叿绱㈠紩</a> &middot; <code>geometrycreate</code></nav><div class="card"><h2>parameters.json</h2><pre>{
+  &quot;toolId&quot;: &quot;geometrycreate&quot;,
+  &quot;parameters&quot;: [],
+  &quot;inputs&quot;: [
+    {
+      &quot;type&quot;: &quot;Combination&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;InputImage&quot;,
+        &quot;Style&quot;: &quot;IMAGE&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: [
+        {
+          &quot;type&quot;: &quot;Filters&quot;,
+          &quot;attributes&quot;: {},
+          &quot;text&quot;: &quot;&quot;,
+          &quot;children&quot;: [
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;InImage&quot;,
+                &quot;ValueType&quot;: &quot;image&quot;,
+                &quot;IsForce&quot;: &quot;true&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;InImageWidth&quot;,
+                &quot;ValueType&quot;: &quot;int&quot;,
+                &quot;IsForce&quot;: &quot;true&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;InImageHeight&quot;,
+                &quot;ValueType&quot;: &quot;int&quot;,
+                &quot;IsForce&quot;: &quot;true&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;InImagePixelFormat&quot;,
+                &quot;ValueType&quot;: &quot;int&quot;,
+                &quot;IsForce&quot;: &quot;true&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      &quot;type&quot;: &quot;Combination&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;Position Correction Info&quot;,
+        &quot;Style&quot;: &quot;FIXTURE&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: [
+        {
+          &quot;type&quot;: &quot;Filters&quot;,
+          &quot;attributes&quot;: {},
+          &quot;text&quot;: &quot;&quot;,
+          &quot;children&quot;: [
+            {
+              &quot;type&quot;: &quot;Combination&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;Fixtured Point&quot;,
+                &quot;Style&quot;: &quot;POINT&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: [
+                {
+                  &quot;type&quot;: &quot;Filters&quot;,
+                  &quot;attributes&quot;: {},
+                  &quot;text&quot;: &quot;&quot;,
+                  &quot;children&quot;: [
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;FixtureInitPointX&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;false&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    },
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;FixtureInitPointY&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;false&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;FixtureInitAngle&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;FixtureInitScaleX&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;FixtureInitScaleY&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Combination&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;Unfixtured Point&quot;,
+                &quot;Style&quot;: &quot;POINT&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: [
+                {
+                  &quot;type&quot;: &quot;Filters&quot;,
+                  &quot;attributes&quot;: {},
+                  &quot;text&quot;: &quot;&quot;,
+                  &quot;children&quot;: [
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;FixtureRunPointX&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;false&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    },
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;FixtureRunPointY&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;false&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;FixtureRunAngle&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;FixtureRunScaleX&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;FixtureRunScaleY&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      &quot;type&quot;: &quot;Combination&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;Input Point&quot;,
+        &quot;Style&quot;: &quot;POINT&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: [
+        {
+          &quot;type&quot;: &quot;Filters&quot;,
+          &quot;attributes&quot;: {},
+          &quot;text&quot;: &quot;&quot;,
+          &quot;children&quot;: [
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;InputPointX&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;,
+                &quot;AutoSubscribe&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;InputPointY&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;,
+                &quot;AutoSubscribe&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      &quot;type&quot;: &quot;Combination&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;Input Line&quot;,
+        &quot;Style&quot;: &quot;LINE&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: [
+        {
+          &quot;type&quot;: &quot;Filters&quot;,
+          &quot;attributes&quot;: {},
+          &quot;text&quot;: &quot;&quot;,
+          &quot;children&quot;: [
+            {
+              &quot;type&quot;: &quot;Combination&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;LineStartPoint&quot;,
+                &quot;Style&quot;: &quot;POINT&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: [
+                {
+                  &quot;type&quot;: &quot;Filters&quot;,
+                  &quot;attributes&quot;: {},
+                  &quot;text&quot;: &quot;&quot;,
+                  &quot;children&quot;: [
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;LinePointStartX&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;false&quot;,
+                        &quot;AutoSubscribe&quot;: &quot;false&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    },
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;LinePointStartY&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;false&quot;,
+                        &quot;AutoSubscribe&quot;: &quot;false&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              &quot;type&quot;: &quot;Combination&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;LineEndPoint&quot;,
+                &quot;Style&quot;: &quot;POINT&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: [
+                {
+                  &quot;type&quot;: &quot;Filters&quot;,
+                  &quot;attributes&quot;: {},
+                  &quot;text&quot;: &quot;&quot;,
+                  &quot;children&quot;: [
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;LinePointEndX&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;false&quot;,
+                        &quot;AutoSubscribe&quot;: &quot;false&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    },
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;LinePointEndY&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;false&quot;,
+                        &quot;AutoSubscribe&quot;: &quot;false&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      &quot;type&quot;: &quot;Combination&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;Input Circle&quot;,
+        &quot;Style&quot;: &quot;ROIANNULUS&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: [
+        {
+          &quot;type&quot;: &quot;Filters&quot;,
+          &quot;attributes&quot;: {},
+          &quot;text&quot;: &quot;&quot;,
+          &quot;children&quot;: [
+            {
+              &quot;type&quot;: &quot;Combination&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;InputCenterPoint&quot;,
+                &quot;Style&quot;: &quot;POINT&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: [
+                {
+                  &quot;type&quot;: &quot;Filters&quot;,
+                  &quot;attributes&quot;: {},
+                  &quot;text&quot;: &quot;&quot;,
+                  &quot;children&quot;: [
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;InputCircleCenterX&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;false&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    },
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;InputCircleCenterY&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;false&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;InputCircleInnerRadius&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;CircleRadius&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;InputCircleStartAngle&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;InputCircleAngleExtend&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      &quot;type&quot;: &quot;Combination&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;Input Box&quot;,
+        &quot;Style&quot;: &quot;ROIBOX&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: [
+        {
+          &quot;type&quot;: &quot;Filters&quot;,
+          &quot;attributes&quot;: {},
+          &quot;text&quot;: &quot;&quot;,
+          &quot;children&quot;: [
+            {
+              &quot;type&quot;: &quot;Combination&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;InputBoxCenterPoint&quot;,
+                &quot;Style&quot;: &quot;POINT&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: [
+                {
+                  &quot;type&quot;: &quot;Filters&quot;,
+                  &quot;attributes&quot;: {},
+                  &quot;text&quot;: &quot;&quot;,
+                  &quot;children&quot;: [
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;InputBoxCenterX&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;false&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    },
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;InputBoxCenterY&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;false&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;InputBoxWidth&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;InputBoxHeight&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;InputBoxAngle&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  &quot;outputs&quot;: [
+    {
+      &quot;type&quot;: &quot;Filter&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;ModuRunTime&quot;,
+        &quot;ValueType&quot;: &quot;float&quot;,
+        &quot;IsForce&quot;: &quot;true&quot;,
+        &quot;IsArray&quot;: &quot;false&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: []
+    },
+    {
+      &quot;type&quot;: &quot;Filter&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;ModuStatus&quot;,
+        &quot;ValueType&quot;: &quot;int&quot;,
+        &quot;IsForce&quot;: &quot;false&quot;,
+        &quot;IsArray&quot;: &quot;false&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: []
+    },
+    {
+      &quot;type&quot;: &quot;Filter&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;OutputPointNum&quot;,
+        &quot;ValueType&quot;: &quot;int&quot;,
+        &quot;IsForce&quot;: &quot;false&quot;,
+        &quot;IsArray&quot;: &quot;false&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: []
+    },
+    {
+      &quot;type&quot;: &quot;Filter&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;LineNum&quot;,
+        &quot;ValueType&quot;: &quot;int&quot;,
+        &quot;IsForce&quot;: &quot;false&quot;,
+        &quot;IsArray&quot;: &quot;false&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: []
+    },
+    {
+      &quot;type&quot;: &quot;Filter&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;CircleNum&quot;,
+        &quot;ValueType&quot;: &quot;int&quot;,
+        &quot;IsForce&quot;: &quot;false&quot;,
+        &quot;IsArray&quot;: &quot;false&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: []
+    },
+    {
+      &quot;type&quot;: &quot;Filter&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;BoxNum&quot;,
+        &quot;ValueType&quot;: &quot;int&quot;,
+        &quot;IsForce&quot;: &quot;false&quot;,
+        &quot;IsArray&quot;: &quot;false&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: []
+    },
+    {
+      &quot;type&quot;: &quot;Combination&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;OutputPoint&quot;,
+        &quot;Style&quot;: &quot;POINT&quot;,
+        &quot;Visible&quot;: &quot;false&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: [
+        {
+          &quot;type&quot;: &quot;Filters&quot;,
+          &quot;attributes&quot;: {},
+          &quot;text&quot;: &quot;&quot;,
+          &quot;children&quot;: [
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;PointX&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;true&quot;,
+                &quot;Visible&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;PointY&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;true&quot;,
+                &quot;Visible&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      &quot;type&quot;: &quot;Combination&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;ListOutputPoint&quot;,
+        &quot;Style&quot;: &quot;POINT&quot;,
+        &quot;IsArray&quot;: &quot;true&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: [
+        {
+          &quot;type&quot;: &quot;Filters&quot;,
+          &quot;attributes&quot;: {},
+          &quot;text&quot;: &quot;&quot;,
+          &quot;children&quot;: [
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;ListPointX&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;true&quot;,
+                &quot;IsArray&quot;: &quot;true&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;ListPointY&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;true&quot;,
+                &quot;IsArray&quot;: &quot;true&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      &quot;type&quot;: &quot;Combination&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;OutputResultLine&quot;,
+        &quot;Style&quot;: &quot;LINE&quot;,
+        &quot;Visible&quot;: &quot;false&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: [
+        {
+          &quot;type&quot;: &quot;Filters&quot;,
+          &quot;attributes&quot;: {},
+          &quot;text&quot;: &quot;&quot;,
+          &quot;children&quot;: [
+            {
+              &quot;type&quot;: &quot;Combination&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;StartPoint&quot;,
+                &quot;Style&quot;: &quot;POINT&quot;,
+                &quot;Visible&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: [
+                {
+                  &quot;type&quot;: &quot;Filters&quot;,
+                  &quot;attributes&quot;: {},
+                  &quot;text&quot;: &quot;&quot;,
+                  &quot;children&quot;: [
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;StartX&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;true&quot;,
+                        &quot;Visible&quot;: &quot;false&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    },
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;StartY&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;true&quot;,
+                        &quot;Visible&quot;: &quot;false&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              &quot;type&quot;: &quot;Combination&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;EndPoint&quot;,
+                &quot;Style&quot;: &quot;POINT&quot;,
+                &quot;Visible&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: [
+                {
+                  &quot;type&quot;: &quot;Filters&quot;,
+                  &quot;attributes&quot;: {},
+                  &quot;text&quot;: &quot;&quot;,
+                  &quot;children&quot;: [
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;EndX&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;true&quot;,
+                        &quot;Visible&quot;: &quot;false&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    },
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;EndY&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;true&quot;,
+                        &quot;Visible&quot;: &quot;false&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      &quot;type&quot;: &quot;Filter&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;LineAngle&quot;,
+        &quot;ValueType&quot;: &quot;float&quot;,
+        &quot;IsForce&quot;: &quot;true&quot;,
+        &quot;Visible&quot;: &quot;false&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: []
+    },
+    {
+      &quot;type&quot;: &quot;Combination&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;ListOutputResultLine&quot;,
+        &quot;Style&quot;: &quot;LINE&quot;,
+        &quot;IsArray&quot;: &quot;true&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: [
+        {
+          &quot;type&quot;: &quot;Filters&quot;,
+          &quot;attributes&quot;: {},
+          &quot;text&quot;: &quot;&quot;,
+          &quot;children&quot;: [
+            {
+              &quot;type&quot;: &quot;Combination&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;ListStartPoint&quot;,
+                &quot;Style&quot;: &quot;POINT&quot;,
+                &quot;IsArray&quot;: &quot;true&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: [
+                {
+                  &quot;type&quot;: &quot;Filters&quot;,
+                  &quot;attributes&quot;: {},
+                  &quot;text&quot;: &quot;&quot;,
+                  &quot;children&quot;: [
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;ListStartX&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;true&quot;,
+                        &quot;IsArray&quot;: &quot;true&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    },
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;ListStartY&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;true&quot;,
+                        &quot;IsArray&quot;: &quot;true&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              &quot;type&quot;: &quot;Combination&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;ListEndPoint&quot;,
+                &quot;Style&quot;: &quot;POINT&quot;,
+                &quot;IsArray&quot;: &quot;true&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: [
+                {
+                  &quot;type&quot;: &quot;Filters&quot;,
+                  &quot;attributes&quot;: {},
+                  &quot;text&quot;: &quot;&quot;,
+                  &quot;children&quot;: [
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;ListEndX&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;true&quot;,
+                        &quot;IsArray&quot;: &quot;true&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    },
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;ListEndY&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;true&quot;,
+                        &quot;IsArray&quot;: &quot;true&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      &quot;type&quot;: &quot;Filter&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;ListLineAngle&quot;,
+        &quot;ValueType&quot;: &quot;float&quot;,
+        &quot;IsForce&quot;: &quot;true&quot;,
+        &quot;IsArray&quot;: &quot;true&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: []
+    },
+    {
+      &quot;type&quot;: &quot;Combination&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;OutputResultCircle&quot;,
+        &quot;Style&quot;: &quot;CIRCLE&quot;,
+        &quot;Visible&quot;: &quot;false&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: [
+        {
+          &quot;type&quot;: &quot;Filters&quot;,
+          &quot;attributes&quot;: {},
+          &quot;text&quot;: &quot;&quot;,
+          &quot;children&quot;: [
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;Radius&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;true&quot;,
+                &quot;IsArray&quot;: &quot;true&quot;,
+                &quot;Visible&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Combination&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;Center Point&quot;,
+                &quot;Style&quot;: &quot;POINT&quot;,
+                &quot;Visible&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: [
+                {
+                  &quot;type&quot;: &quot;Filters&quot;,
+                  &quot;attributes&quot;: {},
+                  &quot;text&quot;: &quot;&quot;,
+                  &quot;children&quot;: [
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;CircleCenterX&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;true&quot;,
+                        &quot;Visible&quot;: &quot;false&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    },
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;CircleCenterY&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;true&quot;,
+                        &quot;Visible&quot;: &quot;false&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      &quot;type&quot;: &quot;Combination&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;ListOutputResultCircle&quot;,
+        &quot;Style&quot;: &quot;ROIANNULUS&quot;,
+        &quot;IsArray&quot;: &quot;true&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: [
+        {
+          &quot;type&quot;: &quot;Filters&quot;,
+          &quot;attributes&quot;: {},
+          &quot;text&quot;: &quot;&quot;,
+          &quot;children&quot;: [
+            {
+              &quot;type&quot;: &quot;Combination&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;List Center Point&quot;,
+                &quot;Style&quot;: &quot;POINT&quot;,
+                &quot;IsArray&quot;: &quot;true&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: [
+                {
+                  &quot;type&quot;: &quot;Filters&quot;,
+                  &quot;attributes&quot;: {},
+                  &quot;text&quot;: &quot;&quot;,
+                  &quot;children&quot;: [
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;ListCircleCenterX&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;false&quot;,
+                        &quot;IsArray&quot;: &quot;true&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    },
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;ListCircleCenterY&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;false&quot;,
+                        &quot;IsArray&quot;: &quot;true&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;ListCircleInnerRadius&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;,
+                &quot;IsArray&quot;: &quot;true&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;ListRadius&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;,
+                &quot;IsArray&quot;: &quot;true&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;ListCircleStartAngle&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;,
+                &quot;IsArray&quot;: &quot;true&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;ListCircleAngleExtend&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;,
+                &quot;IsArray&quot;: &quot;true&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      &quot;type&quot;: &quot;Combination&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;ListOutputResultBox&quot;,
+        &quot;Style&quot;: &quot;ROIBOX&quot;,
+        &quot;IsArray&quot;: &quot;true&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: [
+        {
+          &quot;type&quot;: &quot;Filters&quot;,
+          &quot;attributes&quot;: {},
+          &quot;text&quot;: &quot;&quot;,
+          &quot;children&quot;: [
+            {
+              &quot;type&quot;: &quot;Combination&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;List Box CenterPoint&quot;,
+                &quot;Style&quot;: &quot;POINT&quot;,
+                &quot;IsArray&quot;: &quot;true&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: [
+                {
+                  &quot;type&quot;: &quot;Filters&quot;,
+                  &quot;attributes&quot;: {},
+                  &quot;text&quot;: &quot;&quot;,
+                  &quot;children&quot;: [
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;ListBoxCenterX&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;false&quot;,
+                        &quot;IsArray&quot;: &quot;true&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    },
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;ListBoxCenterY&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;false&quot;,
+                        &quot;IsArray&quot;: &quot;true&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;ListBoxWidth&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;,
+                &quot;IsArray&quot;: &quot;true&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;ListBoxHeight&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;,
+                &quot;IsArray&quot;: &quot;true&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;ListBoxAngle&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;,
+                &quot;IsArray&quot;: &quot;true&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      &quot;type&quot;: &quot;Combination&quot;,
+      &quot;attributes&quot;: {
+        &quot;Name&quot;: &quot;Output Position Correction Info&quot;,
+        &quot;Style&quot;: &quot;FIXTURE&quot;,
+        &quot;Visible&quot;: &quot;false&quot;
+      },
+      &quot;text&quot;: &quot;&quot;,
+      &quot;children&quot;: [
+        {
+          &quot;type&quot;: &quot;Filters&quot;,
+          &quot;attributes&quot;: {},
+          &quot;text&quot;: &quot;&quot;,
+          &quot;children&quot;: [
+            {
+              &quot;type&quot;: &quot;Combination&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;Output Fixtured Point&quot;,
+                &quot;Style&quot;: &quot;POINT&quot;,
+                &quot;Visible&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: [
+                {
+                  &quot;type&quot;: &quot;Filters&quot;,
+                  &quot;attributes&quot;: {},
+                  &quot;text&quot;: &quot;&quot;,
+                  &quot;children&quot;: [
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;OutputFixtureInitPointX&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;false&quot;,
+                        &quot;Visible&quot;: &quot;false&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    },
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;OutputFixtureInitPointY&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;false&quot;,
+                        &quot;Visible&quot;: &quot;false&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;OutputFixtureInitAngle&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;,
+                &quot;Visible&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;OutputFixtureInitScaleX&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;,
+                &quot;Visible&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;OutputFixtureInitScaleY&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;,
+                &quot;Visible&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Combination&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;Output Unfixtured Point&quot;,
+                &quot;Style&quot;: &quot;POINT&quot;,
+                &quot;Visible&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: [
+                {
+                  &quot;type&quot;: &quot;Filters&quot;,
+                  &quot;attributes&quot;: {},
+                  &quot;text&quot;: &quot;&quot;,
+                  &quot;children&quot;: [
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;OutputFixtureRunPointX&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;false&quot;,
+                        &quot;Visible&quot;: &quot;false&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    },
+                    {
+                      &quot;type&quot;: &quot;Filter&quot;,
+                      &quot;attributes&quot;: {
+                        &quot;Name&quot;: &quot;OutputFixtureRunPointY&quot;,
+                        &quot;ValueType&quot;: &quot;float&quot;,
+                        &quot;IsForce&quot;: &quot;false&quot;,
+                        &quot;Visible&quot;: &quot;false&quot;
+                      },
+                      &quot;text&quot;: &quot;&quot;,
+                      &quot;children&quot;: []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;OutputFixtureRunAngle&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;,
+                &quot;Visible&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;OutputFixtureRunScaleX&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;,
+                &quot;Visible&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            },
+            {
+              &quot;type&quot;: &quot;Filter&quot;,
+              &quot;attributes&quot;: {
+                &quot;Name&quot;: &quot;OutputFixtureRunScaleY&quot;,
+                &quot;ValueType&quot;: &quot;float&quot;,
+                &quot;IsForce&quot;: &quot;false&quot;,
+                &quot;Visible&quot;: &quot;false&quot;
+              },
+              &quot;text&quot;: &quot;&quot;,
+              &quot;children&quot;: []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  &quot;bindings&quot;: [],
+  &quot;conditions&quot;: [],
+  &quot;status&quot;: &quot;not-started&quot;
+}</pre></div></div></body></html>

@@ -1,0 +1,60 @@
+{
+  "controls": [
+    {
+      "type": "EnumerationLx",
+      "name": "CameraName"
+    },
+    {
+      "type": "OpenFileForCameraDialog",
+      "name": "VlcfPath"
+    }
+  ],
+  "visibilityConditions": "unknown",
+  "category": "image-roi",
+  "missing": [
+    "原厂 UI 资源或 XAML 的逐控件绑定",
+    "显隐触发器",
+    "主题/悬停/折叠状态",
+    "运行时尺寸与布局"
+  ],
+  "bindings": "control names recovered; full binding expressions remain per algorithm/UI evidence",
+  "previewKind": "resource-control-evidence",
+  "priority": "P1",
+  "themeStates": "unknown",
+  "toolId": "imagecollectikmodu",
+  "status": "pending",
+  "sourceEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectIKModu\\ImageCollectIKModu.xml",
+      "sha256": "cae855ca19a0d654ddcd1aafabd1fe949680a70f1585f4b4c83287adc906ee31",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectIKModu\\ImageCollectIKModuAlgorithm.xml",
+      "sha256": "ccfb87ba7b591e0903c9c13d93a2b36cf9f1a361362a0b2d99f2fc0c72ad36ae",
+      "root": "AlgorithmParamList"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectIKModu\\ImageCollectIKModuAlgorithmTab.xml",
+      "sha256": "fe0ab830732186d30bf94fdf4ab5580a29f8243eaef7ce40bed90e445dc9701e",
+      "root": "AlgorithmTabRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectIKModu\\ImageCollectIKModuCs.xml",
+      "sha256": "6bb1e9de744e173bb5b566bf81092dce227dfd4d01c1e0bb0d5c8e2b567c33c0",
+      "root": "doc"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectIKModu\\ImageCollectIKModuDisplay.xml",
+      "sha256": "c157827b3de8c961c1bd98f7f1d7978b44959f43b78fee792f6ea070add8db88",
+      "root": "ParamRoot"
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Global\\ImageCollectIKModu\\ToolItemInfo.xml",
+      "sha256": "a70652fbafdceac6828d75d1bc98a56556405ac128bdb4295d8edc8959fe90d1",
+      "root": "ToolBoxItemData"
+    }
+  ],
+  "displayName": "ImageCollectIKModu",
+  "note": "此 SVG 是证据布局预览，不代表原厂像素级外观；恢复原厂资源/XAML或运行时截图后替换并保留来源。"
+}

@@ -1,0 +1,24 @@
+{
+  "stableToolId": "imvsedgepairinspgroupmodu",
+  "originalPlugin": "IMVSEdgePairInspGroupModu",
+  "displayName": "边缘对组合缺陷检测",
+  "originalCategory": "DefectDetection",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePairInspGroupModu",
+  "uiCategory": "compound-control",
+  "priority": "P4",
+  "status": "inventory-only",
+  "evidenceState": "unknown",
+  "resourceCount": 6,
+  "parameterCount": 1,
+  "inputCount": 2,
+  "outputCount": 27,
+  "uiControlCount": 95,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ]
+}

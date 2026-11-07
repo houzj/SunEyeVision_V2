@@ -1,0 +1,64 @@
+{
+  "toolId": "imvsgeometrictransformmodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSGeometricTransformModu\\IMVSGeometricTransformModu.xml",
+      "sha256": "07c1d3491bf05efe65949697fb311fdb21fbf1937dd41c228ed7b080270bb6f2",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSGeometricTransformModu\\IMVSGeometricTransformModuAlgorithm.xml",
+      "sha256": "8823c7173ab5611bafb2e3f0321714a9c63b65441e40205ebd0d5e0c95fdf610",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSGeometricTransformModu\\IMVSGeometricTransformModuAlgorithmTab.xml",
+      "sha256": "2fa02a97c95e8419ac44c13ba76adb0c77840ff94dd851123c38a66cd2f38de2",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSGeometricTransformModu\\IMVSGeometricTransformModuCs.xml",
+      "sha256": "2235d2f78f69615dccdae0703c9ed0377d8fb021e0983a913d919f3c35bbdc36",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSGeometricTransformModu\\IMVSGeometricTransformModuDisplay.xml",
+      "sha256": "b523eb439634a40d6aa817e215003216851e663b21f62f298d242313826618c1",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSGeometricTransformModu\\ToolItemInfo.xml",
+      "sha256": "d173ac32c4ed123fabb0d603f659cf0128e4d409b369492955cc6abf393cf35b",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "Enumeration",
+      "name": "MirrorOrientation"
+    },
+    {
+      "type": "Enumeration",
+      "name": "RotateAngle"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "source-partial"
+}

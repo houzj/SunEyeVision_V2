@@ -1,0 +1,139 @@
+{
+  "toolId": "imvsedgepostrendanalymodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePosTrendAnalyModu\\IMVSEdgePosTrendAnalyModu.xml",
+      "sha256": "5cf2bc1eeac1e9c3b1620e28227babcc6ccf19372a5293d279ba92d3cd0d39c8",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePosTrendAnalyModu\\IMVSEdgePosTrendAnalyModuAlgorithm.xml",
+      "sha256": "b5b2e68e94148fbacf1aeb84ae21026d4a2ced59d04bec41ecd790d31cae301f",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePosTrendAnalyModu\\IMVSEdgePosTrendAnalyModuAlgorithmTab.xml",
+      "sha256": "b34b82ceed28192a0fbc60cadbdf336af98ef69aab78dd1d79eb55b49206c40d",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePosTrendAnalyModu\\IMVSEdgePosTrendAnalyModuCs.xml",
+      "sha256": "f0fc2c6c9973ebf880cdda684f62a71a398e5f08b45d55cf5b459194938a13c9",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePosTrendAnalyModu\\IMVSEdgePosTrendAnalyModuDisplay.xml",
+      "sha256": "a0347af99b4ce8b7c62677439d03677d2ed8673c239d35d36fbb5e623f472f21",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\DefectDetection\\IMVSEdgePosTrendAnalyModu\\ToolItemInfo.xml",
+      "sha256": "0aa5120f3df3ce69ad170f76b6d72a63f3d523e3a51255b2ed64f6695553649e",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    },
+    {
+      "Name": "Tab_Run Params"
+    },
+    {
+      "Name": "ResultShow"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "GroupLinkItem",
+      "name": "RoiSelectGroup"
+    },
+    {
+      "type": "ROISelecter",
+      "name": "RoiType"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "InheritWayGroup"
+    },
+    {
+      "type": "GroupLinkItem",
+      "name": "AssistGroup"
+    },
+    {
+      "type": "Enumeration",
+      "name": "FindMode"
+    },
+    {
+      "type": "Enumeration",
+      "name": "EdgePolarity"
+    },
+    {
+      "type": "Integer",
+      "name": "HalfKernelSize"
+    },
+    {
+      "type": "Integer",
+      "name": "EdgeStrength"
+    },
+    {
+      "type": "Integer",
+      "name": "CaliperCount"
+    },
+    {
+      "type": "Enumeration",
+      "name": "DetechOrient"
+    },
+    {
+      "type": "Integer",
+      "name": "ProjectionLength"
+    },
+    {
+      "type": "Integer",
+      "name": "DistLow"
+    },
+    {
+      "type": "Boolean",
+      "name": "DistHighIsAutoEnable"
+    },
+    {
+      "type": "Integer",
+      "name": "DistHigh"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "SensorFiled"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "EdgeLocation"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "EdgePosMinDistPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "EdgePosMaxDistPoint"
+    },
+    {
+      "type": "ImageViewConfig",
+      "name": "ResutlText"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "RoiSelectGroup",
+    "InheritWayGroup",
+    "AssistGroup",
+    "TextDisplayGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only"
+}

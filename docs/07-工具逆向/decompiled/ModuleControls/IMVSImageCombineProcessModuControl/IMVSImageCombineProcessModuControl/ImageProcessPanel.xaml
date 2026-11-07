@@ -1,0 +1,312 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="IMVSImageCombineProcessModuControl.ImageProcessPanel" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:IMVSImageCombineProcessModuControl" xmlns:paramTab="clr-namespace:Apps.XmlParser.ParamTab" xmlns:xmlui="clr-namespace:Apps.XmlUI;assembly=Apps.XmlUI" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun" x:Name="Control">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Apps.XmlUI;component/Styles/ParamUserControlDataTemplate.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/TextBlockStyle/TextBlockStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ScrollBarStyle/RecScrollBarStyle.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Border Padding="15,0" Background="{DynamicResource GlobalMouseOverBg}">
+    <Grid UseLayoutRounding="True">
+      <FrameworkElement.Resources>
+        <ResourceDictionary>
+          <paramTab:WidthConver x:Key="WidthConver" />
+          <Style x:Key="{x:Type ToggleButton}" TargetType="{x:Type ToggleButton}">
+            <Setter Property="Height" Value="20" />
+            <Setter Property="Width" Value="20" />
+            <Setter Property="Template">
+              <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                  <Grid>
+                    <Image Name="icon" Stretch="None" Source="/Apps.Style;component/Resources/add_normal.png" />
+                    <Popup Name="Popup" Placement="Bottom" Focusable="False" AllowsTransparency="True" PopupAnimation="Slide" StaysOpen="False" IsOpen="{Binding IsChecked, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                      <Border Background="#00FFFFFF" Padding="0,5,0,0">
+                        <Border Width="165" Background="{DynamicResource ListViewComboBoxBackground}" CornerRadius="2" BorderThickness="1" BorderBrush="{DynamicResource LogicTypeFG}">
+                          <ItemsControl ItemsSource="{Binding ElementName=Control, Path=Operators}">
+                            <FrameworkElement.Style>
+                              <Style TargetType="{x:Type ItemsControl}">
+                                <Setter Property="ItemsPanel">
+                                  <Setter.Value>
+                                    <ItemsPanelTemplate>
+                                      <StackPanel Orientation="Vertical" />
+                                    </ItemsPanelTemplate>
+                                  </Setter.Value>
+                                </Setter>
+                                <Setter Property="ItemTemplate">
+                                  <Setter.Value>
+                                    <DataTemplate DataType="ImageProcessItem">
+                                      <Grid>
+                                        <FrameworkElement.Resources>
+                                          <ResourceDictionary />
+                                        </FrameworkElement.Resources>
+                                        <Button HorizontalAlignment="Stretch" Height="30" Content="{Binding}" />
+                                      </Grid>
+                                    </DataTemplate>
+                                  </Setter.Value>
+                                </Setter>
+                              </Style>
+                            </FrameworkElement.Style>
+                          </ItemsControl>
+                        </Border>
+                      </Border>
+                    </Popup>
+                  </Grid>
+                  <ControlTemplate.Triggers>
+                    <Trigger Property="UIElement.IsMouseOver" Value="True">
+                      <Setter TargetName="icon" Property="Image.Source" Value="/Apps.Style;component/Resources/add_click.png" />
+                    </Trigger>
+                    <Trigger Property="IsPressed" Value="True">
+                      <Setter TargetName="icon" Property="Image.Source" Value="/Apps.Style;component/Resources/add_click.png" />
+                    </Trigger>
+                    <DataTrigger Value="32" Binding="{Binding ElementName=Control, Path=Items.Count}">
+                      <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                      <Setter TargetName="icon" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_add_disable.png" />
+                    </Trigger>
+                  </ControlTemplate.Triggers>
+                </ControlTemplate>
+              </Setter.Value>
+            </Setter>
+          </Style>
+          <Style x:Key="delete" TargetType="{x:Type Button}">
+            <Setter Property="Height" Value="24" />
+            <Setter Property="Width" Value="24" />
+            <Setter Property="Template">
+              <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                  <Image Name="icon" UseLayoutRounding="True" Stretch="None" Source="/Apps.Style;component/Resources/delete_normal.png" />
+                  <ControlTemplate.Triggers>
+                    <Trigger Property="UIElement.IsMouseOver" Value="True">
+                      <Setter TargetName="icon" Property="Image.Source" Value="/Apps.Style;component/Resources/delete_click.png" />
+                    </Trigger>
+                    <Trigger Property="IsPressed" Value="True">
+                      <Setter TargetName="icon" Property="Image.Source" Value="/Apps.Style;component/Resources/delete_click.png" />
+                    </Trigger>
+                  </ControlTemplate.Triggers>
+                </ControlTemplate>
+              </Setter.Value>
+            </Setter>
+          </Style>
+          <ControlTemplate x:Key="UpTemplate" TargetType="{x:Type Button}">
+            <Image Name="Image" UseLayoutRounding="True" Height="24" Width="24" Stretch="None" VerticalAlignment="Center" HorizontalAlignment="Center" Source="/Apps.Style;component/Resources/特征模板_ic_排序上_normal.png" />
+            <ControlTemplate.Triggers>
+              <Trigger Property="UIElement.IsMouseOver" Value="True">
+                <Setter TargetName="Image" Property="Image.Source" Value="/Apps.Style;component/Resources/特征模板_ic_排序上_click.png" />
+              </Trigger>
+              <Trigger Property="ButtonBase.IsPressed" Value="True">
+                <Setter TargetName="Image" Property="Image.Source" Value="/Apps.Style;component/Resources/特征模板_ic_排序上_click.png" />
+              </Trigger>
+              <Trigger Property="UIElement.IsEnabled" Value="False">
+                <Setter TargetName="Image" Property="Image.Source" Value="/Apps.Style;component/Resources/特征模板_ic_排序上_disable.png" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+          <ControlTemplate x:Key="DownTemplate" TargetType="{x:Type Button}">
+            <Image Name="Image" UseLayoutRounding="True" Height="24" Width="24" Stretch="None" VerticalAlignment="Center" HorizontalAlignment="Center" Source="/Apps.Style;component/Resources/特征模板_ic_排序下_normal.png" />
+            <ControlTemplate.Triggers>
+              <Trigger Property="UIElement.IsMouseOver" Value="True">
+                <Setter TargetName="Image" Property="Image.Source" Value="/Apps.Style;component/Resources/特征模板_ic_排序下_click.png" />
+              </Trigger>
+              <Trigger Property="ButtonBase.IsPressed" Value="True">
+                <Setter TargetName="Image" Property="Image.Source" Value="/Apps.Style;component/Resources/特征模板_ic_排序下_click.png" />
+              </Trigger>
+              <Trigger Property="UIElement.IsEnabled" Value="False">
+                <Setter TargetName="Image" Property="Image.Source" Value="/Apps.Style;component/Resources/特征模板_ic_排序下_disable.png" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+          <Style x:Key="checkBox" TargetType="{x:Type ToggleButton}">
+            <Setter Property="Height" Value="24" />
+            <Setter Property="Width" Value="24" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Template">
+              <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                  <Image Name="Image" Source="/Apps.Style;component/Resources/check2-box_off.png" />
+                  <ControlTemplate.Triggers>
+                    <Trigger Property="ToggleButton.IsChecked" Value="True">
+                      <Setter TargetName="Image" Property="Image.Source" Value="/Apps.Style;component/Resources/check2-box_on.png" />
+                    </Trigger>
+                  </ControlTemplate.Triggers>
+                </ControlTemplate>
+              </Setter.Value>
+            </Setter>
+          </Style>
+          <Style x:Key="operate" TargetType="{x:Type ToggleButton}">
+            <Setter Property="Height" Value="24" />
+            <Setter Property="Width" Value="24" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="ToggleButton.IsChecked" Value="{Binding IsPopuOpen, Mode=TwoWay}" />
+            <Setter Property="Template">
+              <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                  <Grid>
+                    <Image Name="Image" Source="/Apps.Style;component/Resources/ic_edit2_normal.png" Stretch="Uniform" />
+                    <Popup Name="Popup" Placement="Bottom" Focusable="False" AllowsTransparency="True" PopupAnimation="Slide" StaysOpen="False" IsOpen="{Binding IsPopuOpen, Mode=TwoWay}">
+                      <Border Background="#00FFFFFF" Padding="0,5,0,0">
+                        <Border MaxWidth="285" Background="{DynamicResource ListViewComboBoxBackground}" CornerRadius="2" BorderThickness="1" BorderBrush="{DynamicResource LogicTypeFG}">
+                          <ScrollViewer Style="{StaticResource RecScrollViewer}">
+                            <xmlui:ParamCategoryUI ChildLeftWidth="95" ChildMargin="0" Control.Background="#00FFFFFF" ItemsControl.ItemsSource="{Binding Category.ItemsA}" />
+                          </ScrollViewer>
+                        </Border>
+                      </Border>
+                    </Popup>
+                  </Grid>
+                  <ControlTemplate.Triggers>
+                    <Trigger Property="UIElement.IsMouseOver" Value="True">
+                      <Setter TargetName="Image" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_edit2_click.png" />
+                    </Trigger>
+                    <Trigger Property="ToggleButton.IsChecked" Value="True">
+                      <Setter TargetName="Image" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_edit2_click.png" />
+                    </Trigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                      <Setter TargetName="Image" Property="Image.Source" Value="/Apps.Style;component/Resources/ic_edit2_disable.png" />
+                    </Trigger>
+                    <DataTrigger Binding="{Binding Category}" Value="{x:Null}">
+                      <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                  </ControlTemplate.Triggers>
+                </ControlTemplate>
+              </Setter.Value>
+            </Setter>
+          </Style>
+          <Style x:Key="{x:Type ListBox}" TargetType="{x:Type ListBox}">
+            <Setter Property="ItemsPanel">
+              <Setter.Value>
+                <ItemsPanelTemplate>
+                  <StackPanel Orientation="Vertical" />
+                </ItemsPanelTemplate>
+              </Setter.Value>
+            </Setter>
+            <Setter Property="ItemTemplate">
+              <Setter.Value>
+                <DataTemplate DataType="ImageProcessItem">
+                  <Grid Width="{Binding ActualWidth, ElementName=ListBox, Converter={StaticResource WidthConver}}">
+                    <FrameworkElement.Resources>
+                      <ResourceDictionary>
+                        <Style x:Key="{x:Type TextBlock}" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource label}">
+                          <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+                        </Style>
+                      </ResourceDictionary>
+                    </FrameworkElement.Resources>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="1.6*" />
+                      <ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{Binding Index}" />
+                    <ToggleButton Grid.Column="1" HorizontalAlignment="Left" Style="{StaticResource checkBox}" IsChecked="{Binding Enable}" />
+                    <TextBlock Grid.Column="2" Text="{Binding DisplayName}" ToolTip="{Binding DisplayName}" />
+                    <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                      <ToggleButton Style="{StaticResource operate}" />
+                      <Button Height="24" Width="24" Template="{StaticResource UpTemplate}" IsEnabled="{Binding MoveUpEnable}" Command="{Binding MoveUpCommand}" />
+                      <Button Height="24" Width="24" Template="{StaticResource DownTemplate}" IsEnabled="{Binding MoveDownEnable}" Command="{Binding MoveDownCommand}" />
+                      <Button Style="{StaticResource delete}" Command="{Binding DeleteCommand}" />
+                    </StackPanel>
+                  </Grid>
+                </DataTemplate>
+              </Setter.Value>
+            </Setter>
+          </Style>
+          <Style x:Key="{x:Type ListBoxItem}" TargetType="{x:Type ListBoxItem}">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="MinHeight" Value="25" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Background" Value="#00FFFFFF" />
+            <Setter Property="Foreground" Value="{DynamicResource ParamsTabForeground}" />
+            <Setter Property="UIElement.SnapsToDevicePixels" Value="True" />
+            <Setter Property="Template">
+              <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                  <Border Name="Border" Background="{TemplateBinding Control.Background}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}">
+                    <ContentPresenter Margin="{TemplateBinding Control.Padding}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" />
+                  </Border>
+                  <ControlTemplate.Triggers>
+                    <Trigger Property="ListBoxItem.IsSelected" Value="True">
+                      <Setter TargetName="Border" Value="{DynamicResource Col_Theme}" Property="Border.Background" />
+                      <Setter Value="{DynamicResource ListViewComboBoxBackground}" Property="Foreground" />
+                    </Trigger>
+                    <Trigger Property="UIElement.IsMouseOver" Value="True">
+                      <Setter TargetName="Border" Value="{DynamicResource Col_Theme}" Property="Border.Background" />
+                      <Setter Value="{DynamicResource ListViewComboBoxBackground}" Property="Foreground" />
+                    </Trigger>
+                  </ControlTemplate.Triggers>
+                </ControlTemplate>
+              </Setter.Value>
+            </Setter>
+          </Style>
+          <Style x:Key="{x:Type Button}" TargetType="{x:Type Button}">
+            <Setter Property="Foreground" Value="{DynamicResource TextBox.Normal.Forground}" />
+            <Setter Property="FontSize" Value="14px" />
+            <Setter Property="FontFamily" Value="Microsoft YaHei" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Template">
+              <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                  <Border Name="Border" Background="#00FFFFFF" Margin="1" Padding="24,0,0,0">
+                    <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" />
+                  </Border>
+                  <ControlTemplate.Triggers>
+                    <Trigger Property="IsPressed" Value="True">
+                      <Setter Value="{DynamicResource TitleColor}" Property="Foreground" />
+                      <Setter TargetName="Border" Value="{DynamicResource ImageProcessSelectBg}" Property="Border.Background" />
+                    </Trigger>
+                    <Trigger Property="UIElement.IsMouseOver" Value="True">
+                      <Setter Value="{DynamicResource TitleColor}" Property="Foreground" />
+                      <Setter TargetName="Border" Value="{DynamicResource ImageProcessSelectBg}" Property="Border.Background" />
+                    </Trigger>
+                  </ControlTemplate.Triggers>
+                </ControlTemplate>
+              </Setter.Value>
+            </Setter>
+            <EventSetter Event="Click" Handler="AddNew_OnClick" />
+          </Style>
+        </ResourceDictionary>
+      </FrameworkElement.Resources>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="38" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+      <TextBlock Grid.Row="0" Text="{DynamicResource 处理列表}" Style="{StaticResource CategoryHeader}" />
+      <StackPanel Grid.Row="1" Orientation="Vertical">
+        <FrameworkElement.Resources>
+          <ResourceDictionary>
+            <Style x:Key="{x:Type TextBlock}" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource label}" />
+          </ResourceDictionary>
+        </FrameworkElement.Resources>
+        <Grid Width="{Binding ActualWidth, ElementName=ListBox, Converter={StaticResource WidthConver}}">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="1.6*" />
+            <ColumnDefinition Width="2*" />
+          </Grid.ColumnDefinitions>
+          <TextBlock Text="{DynamicResource Number}" />
+          <TextBlock Text="{DynamicResource Lang_Enabled}" Grid.Column="1" />
+          <TextBlock Text="{DynamicResource Lang_Type}" Grid.Column="2" />
+          <TextBlock Text="{DynamicResource Lang_Operate}" Grid.Column="3" HorizontalAlignment="Center" />
+        </Grid>
+        <ListBox Name="ListBox" MaxHeight="220" Height="Auto" Margin="0,6" UseLayoutRounding="True" MinHeight="10" Background="#00FFFFFF" BorderThickness="0" ItemsSource="{Binding ElementName=Control, Path=Items}" SelectionChanged="Selector_OnSelectionChanged" MouseRightButtonUp="Selector_OnMouseRightButtonUp">
+          <Control.Template>
+            <ControlTemplate TargetType="{x:Type ListBox}">
+              <Border Name="Border" Background="{TemplateBinding Control.Background}" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}">
+                <ScrollViewer Style="{StaticResource RecScrollViewer}" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Auto">
+                  <ItemsPresenter />
+                </ScrollViewer>
+              </Border>
+            </ControlTemplate>
+          </Control.Template>
+        </ListBox>
+        <ToggleButton Name="ToggleButton" VerticalAlignment="Center" HorizontalAlignment="Left" />
+      </StackPanel>
+    </Grid>
+  </Border>
+</UserControl>

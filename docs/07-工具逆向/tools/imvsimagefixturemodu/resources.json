@@ -1,0 +1,113 @@
+{
+  "toolId": "imvsimagefixturemodu",
+  "xmlEvidence": [
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageFixtureModu\\IMVSImageFixtureModu.xml",
+      "sha256": "05a6e9b9b25d484a6d43521a403433597fd2a486047298efa899de8c31c5dcfd",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageFixtureModu\\IMVSImageFixtureModuAlgorithm.xml",
+      "sha256": "be2ed298999a90635ad4ae1ed4216729b08a2dd4c6f366fb11f5b2cbc4fbbcc5",
+      "root": "AlgorithmParamList",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageFixtureModu\\IMVSImageFixtureModuAlgorithmTab.xml",
+      "sha256": "8bfef628d0dbc019f5fd2f518980e25a2ad3eddb7f8bcc064cc13e8b05e6c355",
+      "root": "AlgorithmTabRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageFixtureModu\\IMVSImageFixtureModuCs.xml",
+      "sha256": "06ea76f05fdd05d016271e738617a3319ca5e7b548358cb9282544136299b547",
+      "root": "doc",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageFixtureModu\\IMVSImageFixtureModuDisplay.xml",
+      "sha256": "71055d6672a3b5fc79ed29306637865a133d02d6277469321dec86658e9f8b1f",
+      "root": "ParamRoot",
+      "error": null
+    },
+    {
+      "path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\ImageProcessing\\IMVSImageFixtureModu\\ToolItemInfo.xml",
+      "sha256": "da87468fb01b9d2c14843feebd14ec331385d4a455dfc0c277fbb6369295de4d",
+      "root": "ToolBoxItemData",
+      "error": null
+    }
+  ],
+  "uiTabs": [
+    {
+      "Name": "Tab_Basic Params"
+    }
+  ],
+  "uiControls": [
+    {
+      "type": "RadioSelecter3",
+      "name": "SelectWay"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "CorrectInfo"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "OriginPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "BaseX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "BaseY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "Angle"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ScaleX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "ScaleY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RunPoint"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RunPointBaseX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RunPointBaseY"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RunAngle"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RunScaleX"
+    },
+    {
+      "type": "ButtonSelecter",
+      "name": "RunScaleY"
+    }
+  ],
+  "sharedUiGroups": [
+    "ImageSourceGroup",
+    "BottomCommandGroup"
+  ],
+  "status": "inventory-only",
+  "evidenceSource": [
+    "docs/plugins/inventory.json"
+  ],
+  "evidenceStatus": "原件声明快照；行为与生命周期未由此证明"
+}

@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>PyShellModuleControl</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace />
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="PyShellModuleControl.Python-Mode.xshd" />
+    <EmbeddedResource Include="PyShellModuleControl.Python-Mode.xshd" LogicalName="PyShellModuleControl.Python-Mode.xshd" />
+    <Page Remove="datatemplate\paramusercontroldatatemplate.xaml" />
+    <Page Remove="PyShellModuleControl\InputParam.xaml" />
+    <Page Remove="PyShellModuleControl\OutParam.xaml" />
+    <Page Remove="PyShellModuleControl\PyShellRun.xaml" />
+    <Page Include="datatemplate\paramusercontroldatatemplate.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="datatemplate/paramusercontroldatatemplate.xaml" />
+    <Page Include="PyShellModuleControl\InputParam.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="inputparam.xaml" />
+    <Page Include="PyShellModuleControl\OutParam.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="outparam.xaml" />
+    <Page Include="PyShellModuleControl\PyShellRun.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="pyshellrun.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Apps.XmlParser" />
+    <Reference Include="VM.Core" />
+    <Reference Include="GlobalScriptUI" />
+    <Reference Include="VM.PlatformSDKCS" />
+    <Reference Include="Apps.Interface" />
+    <Reference Include="Apps.UIHelper" />
+    <Reference Include="VM.CodeCompletion" />
+    <Reference Include="VM.Controls" />
+    <Reference Include="ICSharpCode.AvalonEdit" />
+    <Reference Include="ICSharpCode.NRefactory" />
+    <Reference Include="VMControls.Interface" />
+    <Reference Include="Apps.Log" />
+    <Reference Include="ShellCommonControl" />
+    <Reference Include="VM.Util" />
+    <Reference Include="System.Xml" />
+    <Reference Include="PasswordWindowUI" />
+    <Reference Include="VMControls.BaseInterface" />
+    <Reference Include="VM.Xml" />
+    <Reference Include="Apps.Localization" />
+    <Reference Include="System.Core" />
+    <Reference Include="Apps.Json" />
+    <Reference Include="VM.Utility" />
+    <Reference Include="Apps.BaseLog" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<localcontrol:ROIStackControl x:Class="Apps.XmlUI.ParamTabControl.PointROIStack" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:Apps.XmlUI.ParamTabControl" xmlns:localParamTab="clr-namespace:Apps.XmlUI.ParamTab" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:baseData="clr-namespace:Apps.BaseData;assembly=Apps.BaseData" xmlns:localcontrol="clr-namespace:Apps.XmlUI.ParamTabControl" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:Color="clr-namespace:Apps.ColorFun;assembly=Apps.ColorFun">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+        <x:StaticExtension Member="Color:ColorThemesResourceDictionary.Instance" />
+      </ResourceDictionary.MergedDictionaries>
+      <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter" />
+      <baseData:NormalMultiplicationConverter x:Key="normalMultiplicationConverter" />
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Control.Template>
+    <ControlTemplate>
+      <StackPanel>
+        <localParamTab:LeftRightControl Height="32">
+          <localParamTab:LeftRightControl.LeftContent>
+            <TextBlock VerticalAlignment="Center" Text="{DynamicResource X Coordinate}" ToolTip="{DynamicResource X Coordinate}" />
+          </localParamTab:LeftRightControl.LeftContent>
+          <localParamTab:LeftRightControl.RightContent>
+            <localcontrol:SliderArrangeFloat SliderTickFrequency="1" Minimum="{Binding ImageWidth, ConverterParameter=-0.5, Converter={StaticResource normalMultiplicationConverter}, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localcontrol:RoiSelectControl}}" Maximum="{Binding Minimum, ConverterParameter=-3, Converter={StaticResource normalMultiplicationConverter}, RelativeSource={RelativeSource Mode=Self}}" DragingChangedCommand="{Binding DragingChangedCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+              <localcontrol:SliderArrangeBase.StartValue>
+                <MultiBinding Mode="TwoWay">
+                  <MultiBinding.Converter>
+                    <baseData:RightFixdMultiplicationConverter />
+                  </MultiBinding.Converter>
+                  <Binding Path="ROIData.CenterX" Mode="TwoWay" RelativeSource="{RelativeSource Mode=TemplatedParent}" />
+                  <Binding Path="ImageWidth" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=localcontrol:IImageSizeControl}" />
+                </MultiBinding>
+              </localcontrol:SliderArrangeBase.StartValue>
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="OnStartValueChange">
+                  <i:InvokeCommandAction Command="{Binding ROIValueChangedCommand}" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </localcontrol:SliderArrangeFloat>
+          </localParamTab:LeftRightControl.RightContent>
+        </localParamTab:LeftRightControl>
+        <localParamTab:LeftRightControl Height="32">
+          <localParamTab:LeftRightControl.LeftContent>
+            <TextBlock VerticalAlignment="Center" Text="{DynamicResource Y Coordinate}" ToolTip="{DynamicResource Y Coordinate}" />
+          </localParamTab:LeftRightControl.LeftContent>
+          <localParamTab:LeftRightControl.RightContent>
+            <localcontrol:SliderArrangeFloat SliderTickFrequency="1" Minimum="{Binding ImageHeight, ConverterParameter=-0.5, Converter={StaticResource normalMultiplicationConverter}, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=localcontrol:RoiSelectControl}}" Maximum="{Binding Minimum, ConverterParameter=-3, Converter={StaticResource normalMultiplicationConverter}, RelativeSource={RelativeSource Mode=Self}}" DragingChangedCommand="{Binding DragingChangedCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+              <localcontrol:SliderArrangeBase.StartValue>
+                <MultiBinding Mode="TwoWay">
+                  <MultiBinding.Converter>
+                    <baseData:RightFixdMultiplicationConverter />
+                  </MultiBinding.Converter>
+                  <Binding Path="ROIData.CenterY" Mode="TwoWay" RelativeSource="{RelativeSource Mode=TemplatedParent}" />
+                  <Binding Path="ImageHeight" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=localcontrol:IImageSizeControl}" />
+                </MultiBinding>
+              </localcontrol:SliderArrangeBase.StartValue>
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="OnStartValueChange">
+                  <i:InvokeCommandAction Command="{Binding ROIValueChangedCommand}" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </localcontrol:SliderArrangeFloat>
+          </localParamTab:LeftRightControl.RightContent>
+        </localParamTab:LeftRightControl>
+      </StackPanel>
+    </ControlTemplate>
+  </Control.Template>
+</localcontrol:ROIStackControl>

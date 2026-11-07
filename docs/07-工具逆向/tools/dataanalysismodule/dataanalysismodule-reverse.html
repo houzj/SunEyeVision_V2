@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>协议解析 工具逆向主文档</title><style>*{box-sizing:border-box}
+body{margin:0;background:#f6f7f9;color:#1d2129;font:14px/1.7 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:24px 20px 60px}
+.crumbs{font-size:13px;margin-bottom:14px}
+.crumbs a{color:#2563eb;text-decoration:none}
+.card{background:#fff;border:1px solid #e4e7ec;border-radius:10px;padding:26px 30px}
+h1,h2,h3,h4{line-height:1.4}
+h1{font-size:20px}h2{font-size:17px;margin-top:26px}h3{font-size:15px}
+table{border-collapse:collapse;margin:12px 0;width:100%;font-size:13px}
+td,th{border:1px solid #e4e7ec;padding:6px 10px;vertical-align:top}
+tr:nth-child(even) td{background:#fafbfc}
+code{background:#f1f3f5;border-radius:3px;padding:1px 5px;font-size:12.5px;font-family:Consolas,Menlo,monospace;color:#c7254e}
+pre{background:#282c34;color:#abb2bf;border-radius:6px;padding:14px 16px;overflow:auto;font-size:12.5px;line-height:1.6;font-family:Consolas,Menlo,monospace}
+pre code{background:none;color:inherit;padding:0}
+ul{padding-left:22px}
+blockquote{border-left:3px solid #d0d5da;margin:10px 0;padding:4px 14px;color:#5a636b;background:#fafbfc}
+hr{border:0;border-top:1px solid #e4e7ec;margin:18px 0}
+p{margin:8px 0}</style></head><body><div class="wrap"><nav class="crumbs"><a href="../../index.html">&#8592; 宸ュ叿绱㈠紩</a> &middot; <code>dataanalysismodule</code></nav><div class="card"><h1>协议解析 工具逆向主文档</h1><ul><li>ID <code>dataanalysismodule</code>；证据状态 <code>source-partial</code>；P0 声明式参数页。</li><h2>Source-confirmed</h2><p><code>DataAnalysisModuParams</code> 暴露 <code>PyScriptPath</code>，通过 ParamItem 的字符串读写；Tool 构造创建 Params、Clone 返回新实例、Dispose 为空。<code>DataAnalysisResult</code> 深拷贝原生输出结果中的 int/float/string 指针并在析构释放；ResultIn 暴露 ModuStatus。XML/UI 与输入输出清单见 parameters.json/resources.json；通用执行入口为 CProcess.RunOnce→IMVS_PF_ExecuteOnce_V30_CS。</p><h2>Unknown</h2><p>协议脚本执行 ABI、输出字段语义、UI 绑定、保存恢复、错误状态和原厂 VM 行为未确认。</p></div></div></body></html>

@@ -1,0 +1,28 @@
+{
+  "stableToolId": "rotatecalibmodu",
+  "originalPlugin": "RotateCalibModu",
+  "displayName": "旋转标定",
+  "originalCategory": "Calibration",
+  "originalSourcePath": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Calibration\\RotateCalibModu",
+  "uiCategory": "result-view",
+  "priority": "P2",
+  "status": "source-partial",
+  "evidenceState": "source-partial",
+  "resourceCount": 6,
+  "parameterCount": 1,
+  "inputCount": 5,
+  "outputCount": 7,
+  "uiControlCount": 9,
+  "sourceInventory": "docs/plugins/inventory.json",
+  "sourceEvidence": [],
+  "managedMembers": [],
+  "nativeFunctions": [],
+  "runtimeObservations": [],
+  "unknowns": [
+    "尚未开始该工具的源码级闭环逆向"
+  ],
+  "sourceReports": [
+    "docs/plugins/ROTATE-CALIBRATION-FINAL-SOURCE-IMPLEMENTATION-AUDIT.md"
+  ],
+  "note": "结果生命周期、显示发布、保存恢复和 reader/释放审计已补齐，原厂桌面和 native ABI 边界保留未知。"
+}

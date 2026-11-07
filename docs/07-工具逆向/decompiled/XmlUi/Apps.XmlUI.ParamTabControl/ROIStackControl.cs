@@ -1,0 +1,62 @@
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using Mvvm.Commands;
+using VMControls.RenderInterface;
+
+namespace Apps.XmlUI.ParamTabControl;
+
+public class ROIStackControl : Control
+{
+	public static readonly DependencyProperty ROIDataProperty = DependencyProperty.Register("ROIData", typeof(IROI), typeof(ROIStackControl), new PropertyMetadata(null));
+
+	public static readonly DependencyProperty IsDragingProperty = DependencyProperty.Register("IsDraging", typeof(bool), typeof(ROIStackControl), new PropertyMetadata(false));
+
+	private ICommand _DragingChangedCommand = null;
+
+	public static readonly DependencyProperty IsShowProperty = DependencyProperty.Register("IsShow", typeof(IROI), typeof(ROIStackControl), new PropertyMetadata(null));
+
+	public IROI ROIData
+	{
+		get
+		{
+			return (IROI)GetValue(ROIDataProperty);
+		}
+		set
+		{
+			SetValue(ROIDataProperty, value);
+		}
+	}
+
+	public bool IsDraging
+	{
+		get
+		{
+			return (bool)GetValue(IsDragingProperty);
+		}
+		set
+		{
+			SetValue(IsDragingProperty, value);
+		}
+	}
+
+	public ICommand DragingChangedCommand => _DragingChangedCommand ?? (_DragingChangedCommand = (ICommand)new DelegateCommand<object>((Action<object>)DragingChangedCommandExecute));
+
+	public bool IsShow
+	{
+		get
+		{
+			return (bool)GetValue(IsShowProperty);
+		}
+		set
+		{
+			SetValue(IsShowProperty, value);
+		}
+	}
+
+	private void DragingChangedCommandExecute(object data)
+	{
+		IsDraging = (bool)data;
+	}
+}

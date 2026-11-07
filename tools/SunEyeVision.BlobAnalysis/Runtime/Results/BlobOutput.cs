@@ -9,7 +9,8 @@ public readonly record struct BlobOrientedBounds(double CenterX,double CenterY,d
 public sealed record BlobBoundaryPath(long Id, long? ParentId, string Role, IReadOnlyList<Point2> Points);
 public sealed record BlobMeasurement(long ElementId, int Label, double Area, double Perimeter,
     double CentroidX, double CentroidY, double Circularity, double Rectangularity, BlobBounds Bounds,
-    BlobOrientedBounds OrientedBounds, IReadOnlyList<Point2> RotatedBounds, IReadOnlyList<BlobBoundaryPath> Boundary, IReadOnlyRegion Region, bool JudgmentPassed);
+    BlobOrientedBounds OrientedBounds, IReadOnlyList<Point2> RotatedBounds, IReadOnlyList<BlobBoundaryPath> Boundary, IReadOnlyRegion Region, bool JudgmentPassed,
+    double? MinGrayValue = null, double? MaxGrayValue = null, double? GrayContrast = null);
 
 /// <summary>One final ordered result set. Independent resource readers can outlive this output owner.</summary>
 public sealed class BlobOutput : IToolOutput, IDisposable, IToolResultGeometryOutput

@@ -1,0 +1,24 @@
+Blob VM 结果投影灰度统计接入（2026-11-08）
+
+原厂结果声明：
+docs/collaboration/evidence/BLOB_WHOLE_TOOL_VM_20261031/原厂输入输出声明.json
+BlobFindResult.cs 的 MinGrayValue、MaxGrayValue、GrayContrast 为逐 Blob float 数组。
+
+实施：
+tools/SunEyeVision.BlobAnalysis/Runtime/Results/BlobOutput.cs
+  BlobMeasurement 新增 MinGrayValue、MaxGrayValue、GrayContrast 可空成员。
+tools/SunEyeVision.BlobAnalysis/Runtime/Algorithms/BlobSession.cs
+  对每个保留 Blob 使用 HALCON MinMaxGray(native, gray, 0) 计算最小值、最大值和范围，并随 BlobMeasurement 冻结。
+tools/SunEyeVision.BlobAnalysis/Runtime/Results/BlobVmResultProjection.cs
+  仅当每个保留 Blob 均有值时发布三个数组，否则保留 Unavailable，避免用默认值伪造结果。
+
+tests/SunEyeVision.Tool.BlobAnalysis.Tests/BlobSessionChainRegressionTests.cs
+  Blob_result_projection_publishes_gray_statistics_for_each_retained_region 验证输入 0..255 的保留区域得到 1、255、254，并确认三个成员从 Unavailable 移除。
+
+验证：
+- dotnet build tools/SunEyeVision.BlobAnalysis/Runtime/SunEyeVision.BlobAnalysis.Runtime.csproj -c Release --no-restore -p:UseSharedCompilation=false：0 错误。
+- dotnet build src/UI/SunEyeVision.UI.csproj -c Release --no-restore：0 错误，Release 载荷已重新封签。
+- BlobAnalysis xUnit：38/38 通过。
+- RuntimeEditorProductionProbe：ImageLoad 绑定 721ms、首显 1301ms；BlobAnalysis 绑定 830ms、首显 337ms；第 2/3 页首次切换 231/279ms，重复切换 17/26ms；两个工具完整 Session、参数控件、捕获/回执、关闭释放 PASS。
+
+边界：MaxAreaInnerRect、Score、ROI、ROIAnnulus、ContourInfo、BlindPolygon 三项、OutputMask、ModuStatus 共 10 个 VM 结果成员仍未映射。它们继续保留在 BlobVmResultProjection.Unavailable，不以灰度统计接入替代原件语义。

@@ -143,8 +143,11 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
                 using var native = connected.SelectObj(item.RegionIndex);
                 var region = HalconResourceBridge.CaptureRegion(native, BlobSchema.ImageFrame, frame, outputResources);
                 var boundary = boundaryRequested ? ReadBoundary(native, cancellation) : Array.Empty<BlobBoundaryPath>();
+                HOperatorSet.MinMaxGray(native, gray, 0, out var minGray, out var maxGray, out var grayRange);
+                using (minGray) using (maxGray) using (grayRange)
                 measurements.Add(new(item.ComponentLabel, measurements.Count + 1, item.Area, item.Perimeter, item.X, item.Y, item.Circularity,
-                    item.Rectangularity, item.Bounds, item.OrientedBounds, Array.AsReadOnly(item.Corners), Array.AsReadOnly(boundary), region, item.IsPass));
+                    item.Rectangularity, item.Bounds, item.OrientedBounds, Array.AsReadOnly(item.Corners), Array.AsReadOnly(boundary), region, item.IsPass,
+                    minGray.D, maxGray.D, grayRange.D));
             }
             using var finalRegions = SelectRegions(connected, ordered.Select(x => x.Candidate.RegionIndex).ToArray());
             using var okRegions = SelectRegions(connected, ordered.Where(x => x.Candidate.IsPass).Select(x => x.Candidate.RegionIndex).ToArray());

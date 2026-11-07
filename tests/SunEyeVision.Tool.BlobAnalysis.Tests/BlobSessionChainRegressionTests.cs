@@ -174,6 +174,31 @@ public sealed class BlobSessionChainRegressionTests
         Assert.Equal(expectedTable,actual);
     }
 
+    [Fact]
+    public void Blob_result_projection_publishes_gray_statistics_for_each_retained_region()
+    {
+        var pixels=Enumerable.Range(0,256).Select(i=>(byte)i).ToArray();
+        using var inputOwner=new FrozenOutputResources();
+        var input=inputOwner.CreateGray8(256,1,pixels);
+        using var resources=new FrozenOutputResources();
+        var session=new BlobSession();
+        using var output=session.Execute(Base(BlobSegmentationMode.None),input,resources);
+        var result=output.VmResult;
+        Assert.NotNull(result.MinGrayValue);
+        Assert.NotNull(result.MaxGrayValue);
+        Assert.NotNull(result.GrayContrast);
+        Assert.Single(result.MinGrayValue!);
+        Assert.Single(result.MaxGrayValue!);
+        Assert.Single(result.GrayContrast!);
+        Assert.Equal(1f,result.MinGrayValue[0]);
+        Assert.Equal(255f,result.MaxGrayValue[0]);
+        Assert.Equal(254f,result.GrayContrast[0]);
+        Assert.DoesNotContain(nameof(BlobVmResultProjection.MinGrayValue),result.Unavailable);
+        Assert.DoesNotContain(nameof(BlobVmResultProjection.MaxGrayValue),result.Unavailable);
+        Assert.DoesNotContain(nameof(BlobVmResultProjection.GrayContrast),result.Unavailable);
+        session.DisposeAsync().AsTask().GetAwaiter().GetResult();
+    }
+
     [Theory]
     [InlineData(BlobSortFeature.SortFeatureArea)] [InlineData(BlobSortFeature.SortFeaturePerimeter)]
     [InlineData(BlobSortFeature.SortFeatureCircularity)] [InlineData(BlobSortFeature.SortFeatureRect)]

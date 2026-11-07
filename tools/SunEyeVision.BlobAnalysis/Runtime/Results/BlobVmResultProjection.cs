@@ -49,10 +49,15 @@ public sealed record BlobVmResultProjection(
         var bounds=Array.AsReadOnly(ordered.Select(item=>item.Bounds).ToArray());
         var unavailable=new HashSet<string>(StringComparer.Ordinal)
         {
-            nameof(MinGrayValue), nameof(MaxGrayValue), nameof(GrayContrast),
             nameof(MaxAreaInnerRect), nameof(Score), nameof(ROI), nameof(ROIAnnulus), nameof(ContourInfo),
             nameof(BlindPolygonPointNum), nameof(BlindPolygonPoints), nameof(BlindPolygonString), nameof(OutputMask), nameof(ModuStatus)
         };
+        var minGray=OptionalSequence(ordered.Select(item=>item.MinGrayValue));
+        var maxGray=OptionalSequence(ordered.Select(item=>item.MaxGrayValue));
+        var grayContrast=OptionalSequence(ordered.Select(item=>item.GrayContrast));
+        if(minGray is null) unavailable.Add(nameof(MinGrayValue));
+        if(maxGray is null) unavailable.Add(nameof(MaxGrayValue));
+        if(grayContrast is null) unavailable.Add(nameof(GrayContrast));
         var contourCount=ordered.Sum(item=>item.Boundary.Sum(path=>path.Points.Count));
         return new(
             ModuStatus:null,
@@ -62,7 +67,7 @@ public sealed record BlobVmResultProjection(
             TotalArea:(float)ordered.Sum(item=>item.Area),
             CentroidPoint:Array.AsReadOnly(ordered.Select(item=>new Point2(item.CentroidX,item.CentroidY)).ToArray()),
             MinBoudingRect:bounds,
-            MinGrayValue:null,MaxGrayValue:null,GrayContrast:null,MaxAreaInnerRect:null,
+            MinGrayValue:minGray,MaxGrayValue:maxGray,GrayContrast:grayContrast,MaxAreaInnerRect:null,
             BlobRect:bounds,
             BlobRectUpLeftX:Array.AsReadOnly(ordered.Select(item=>(float)item.Bounds.X).ToArray()),
             BlobRectUpLeftY:Array.AsReadOnly(ordered.Select(item=>(float)item.Bounds.Y).ToArray()),
@@ -78,6 +83,13 @@ public sealed record BlobVmResultProjection(
             ROI:null,ROIAnnulus:null,ContourInfo:null,ContourNum:contourCount,
             BlindPolygonPointNum:null,BlindPolygonPoints:null,BlindPolygonString:null,OutputMask:null,
             Unavailable:unavailable);
+    }
+
+    private static IReadOnlyList<float>? OptionalSequence(IEnumerable<double?> values)
+    {
+        var items=values.ToArray();
+        if(items.Any(value=>value is null)) return items.Length==0?Array.Empty<float>():null;
+        return Array.AsReadOnly(items.Select(value=>(float)value!.Value).ToArray());
     }
 
 }

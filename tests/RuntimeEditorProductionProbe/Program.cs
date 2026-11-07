@@ -41,8 +41,11 @@ internal static class Program
     control.BindDraft(context.PreparedDraft);
     bindClock.Stop();
     Console.WriteLine($"[TIMING] {toolId} 参数页绑定返回 {bindClock.ElapsedMilliseconds}ms");
+    DumpAssemblyStages(toolId, control, "绑定后");
     var showClock=System.Diagnostics.Stopwatch.StartNew();window.Show();Pump();showClock.Stop();
     Console.WriteLine($"[TIMING] {toolId} 窗口首次呈现与首个页面组装 {showClock.ElapsedMilliseconds}ms");
+    DumpAssemblyStages(toolId, control, "首屏后");
+    Pump(DispatcherPriority.SystemIdle);DumpAssemblyStages(toolId, control, "首屏空闲后");
     for(var sample=0;sample<3;sample++)
     {
      var resourceClock=System.Diagnostics.Stopwatch.StartNew();
@@ -58,6 +61,8 @@ internal static class Program
       var tabClock=System.Diagnostics.Stopwatch.StartNew();
       tabs.SelectedIndex=index;Pump();tabClock.Stop();
       Console.WriteLine($"[TIMING] {toolId} 切到第{index+1}页 {tabClock.ElapsedMilliseconds}ms");
+      DumpAssemblyStages(toolId, control, $"第{index+1}页后");
+      Pump(DispatcherPriority.SystemIdle);DumpAssemblyStages(toolId, control, $"第{index+1}页空闲后");
      }
      tabs.SelectedIndex=0;Pump();
      for(var index=0;index<tabs.Items.Count;index++)
@@ -100,5 +105,16 @@ internal static class Program
   for(var i=0;i<System.Windows.Media.VisualTreeHelper.GetChildrenCount(value);i++)
    foreach(var child in Descendants<T>(System.Windows.Media.VisualTreeHelper.GetChild(value,i)))yield return child;
  }
- private static void Pump(){var frame=new DispatcherFrame();Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle,new Action(()=>frame.Continue=false));Dispatcher.PushFrame(frame);}
+ private static void Pump(DispatcherPriority priority=DispatcherPriority.ApplicationIdle){var frame=new DispatcherFrame();Dispatcher.CurrentDispatcher.BeginInvoke(priority,new Action(()=>frame.Continue=false));Dispatcher.PushFrame(frame);}
+ private static void DumpAssemblyStages(string toolId,DependencyObject control,string phase)
+ {
+  var fields=Descendants<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldsView>(control).FirstOrDefault();
+  if(fields is null)return;
+  var stages=string.Join(" ",fields.ConstructionStages.Select(mark=>$"{mark.Stage}={mark.Ms}ms"));
+  var pages=string.Join(" ",fields.LastBuildStageMs.Select(pair=>$"{pair.Key}[rows={pair.Value.RowsMs}ms,layout={pair.Value.LayoutMs}ms]"));
+  var fieldCosts=string.Join(" ",fields.LastFieldBuildMs.Where(pair=>pair.Value>=5).OrderByDescending(pair=>pair.Value).Take(12).Select(pair=>$"{pair.Key}={pair.Value}ms"));
+  var blob=Descendants<SunEyeVision.Tool.BlobAnalysis.Wpf.Views.BlobParameterEditor>(control).FirstOrDefault();
+  var composition=blob is null?"":string.Join(" ",blob.CompositionStageMs.Select(pair=>$"{pair.Key}={pair.Value}ms"));
+  Console.WriteLine($"[STAGE] {toolId} {phase} 构造[{stages}] 页面[{pages}] 字段[{fieldCosts}] 显隐={fields.VisibilityElapsedMs}ms/{fields.VisibilityUpdateCount}次 组合[{composition}]");
+ }
 }

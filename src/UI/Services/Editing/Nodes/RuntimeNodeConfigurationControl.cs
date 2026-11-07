@@ -26,7 +26,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
     private Task? _debugRetirement;
     internal event Action? DebugStateChanged;
     internal bool IsDebugBusy => _debug?.IsBusy == true;
-    internal bool CanDebug => !_disposed && _debug?.CanRun == true;
+    internal bool CanDebug => !_disposed && _view?.HasInvalidInput != true && _debug?.CanRun == true;
     internal Guid? DebugScopeId => _debug?.ScopeId;
     internal SunEyeVision.Plugin.Runtime.DeclaredOutputSnapshot? CurrentDebugSnapshot => _debug?.CurrentSnapshot;
     internal void ConfigureDebug(ProductionEditorContext context, Func<IHostInputFactory> factory, Func<bool> canRun, Action<string> log, Func<string,SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameLease?> borrowFrame, Action changed)
@@ -69,6 +69,8 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
         _debug?.InvalidateDraft(); ReleaseView(); _context = context;
         var generation = ++_generation;
         bool Current() => !_disposed && generation == _generation && context.IsValid && ReferenceEquals(_context, context);
+        // PROBE-KEEP：BindDraft 三段细分计时（引用准备/输入与表达式/视图创建），定位 CreatePresentation 页构建之外的开销。
+        var bindProbe=System.Diagnostics.Stopwatch.StartNew();
         var admission = context.Session.AdmitPresentation(draft.WorkflowId, draft.Node.Id);
         using var presentationTrace = ToolWindowAssemblyTrace.Begin("CreatePresentation", draft.Node.Id.ToString());
         _referenceOwner = new ReferenceWindowOwner(this, Current, context.ReferencePreference, context.ReferencePreference.PreferExpanded);
@@ -110,6 +112,9 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
             ReadCurrentValues: () => CurrentContext().ReadCurrentParameters(),
             ReadBehavior: port => (port.EditModes&(FieldEditModes.Reference|FieldEditModes.DisplayExpression))==0
                 ?ParameterReferenceBehavior.StrictExactlyOne:Selection(port).ReferenceBehavior);
+        bindProbe.Stop();
+        ToolWindowAssemblyTrace.Event("BindStage", $"{draft.Node.Id}:引用准备={bindProbe.ElapsedMilliseconds}ms");
+        bindProbe.Restart();
         var inputSchema = draft.InputSchema;
         // Resolve actual capability before constructing input content. Only one input view is built.
         var declaration = context.Session.GetNodeHostInputDeclaration(draft.WorkflowId,draft.Node);
@@ -142,17 +147,24 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
                     candidate=>candidate.NodeDisplayName+"."+candidate.OutputDisplayName+(candidate.MemberDisplayNames.Count==0?"":"."+string.Join(".",candidate.MemberDisplayNames)),
                     ()=>Current()&&context.Session.ChangeRevision==revision);
             }),StringComparer.Ordinal);
+        bindProbe.Stop();
+        ToolWindowAssemblyTrace.Event("BindStage", $"{draft.Node.Id}:输入与表达式={bindProbe.ElapsedMilliseconds}ms");
+        bindProbe.Restart();
         var editorPorts = draft.SettingsSchema.Inputs.Concat(draft.DisplaySchema.Inputs).ToArray();
         IToolSettingsView? candidate = null;
         try
         {
             candidate = DesktopToolPresentation.CreateSettingsView(admission, draft.Configuration.Fields.Select(editorPorts),
                 new ToolSettingsViewOptions(references, FormatReference, inputSchema.Presentation?.Fields.FirstOrDefault()?.Layout?.Page, inputContent, ValidateComposition:group=>ValidateChanges(group.Changes), TextExpressions:textExpressions, RoiFrames:_roiFrames, InputContentFactory:inputFactory,
-                    PageBuilt:(page,_,_)=>ToolWindowAssemblyTrace.Event("PageBuilt", $"{draft.Node.Id}:{page}")));
+                    PageBuilt:(page,built,_)=>ToolWindowAssemblyTrace.Event("PageBuilt", built.LastBuildStageMs.TryGetValue(page,out var stages)
+                        ?$"{draft.Node.Id}:{page} rows={stages.RowsMs}ms layout={stages.LayoutMs}ms 构造[{string.Join(" ",built.ConstructionStages.Select(mark=>$"{mark.Stage}={mark.Ms}ms"))}]"
+                        :$"{draft.Node.Id}:{page}")));
             if (!Current()) throw new InvalidOperationException("参数页创建期间节点已失效。");
             _view = candidate; _acceptedFields=candidate.CaptureAcceptedFields(); _syncedRevision = candidate.AcceptedRevision; _captureError = "";
             candidate.Changed += Changed; Content = candidate.View;
             ResultDisplayBound?.Invoke(draft.Node, generation);
+            bindProbe.Stop();
+            ToolWindowAssemblyTrace.Event("BindStage", $"{draft.Node.Id}:视图创建={bindProbe.ElapsedMilliseconds}ms");
         }
         catch
         {

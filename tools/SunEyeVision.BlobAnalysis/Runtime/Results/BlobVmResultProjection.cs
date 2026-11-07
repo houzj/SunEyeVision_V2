@@ -66,7 +66,7 @@ public sealed record BlobVmResultProjection(
             BlobStatus:Array.AsReadOnly(ordered.Select(item=>item.JudgmentPassed?1:0).ToArray()),
             BlobNum:ordered.Length,
             Area:Array.AsReadOnly(ordered.Select(item=>(float)item.Area).ToArray()),
-            TotalArea:(float)ordered.Sum(item=>item.Area),
+            TotalArea:(float)BlobNumericSemantics.Float32Sum(ordered.Select(item=>item.Area)),
             CentroidPoint:Array.AsReadOnly(ordered.Select(item=>new Point2(item.CentroidX,item.CentroidY)).ToArray()),
             MinBoudingRect:bounds,
             MinGrayValue:minGray,MaxGrayValue:maxGray,GrayContrast:grayContrast,MaxAreaInnerRect:null,

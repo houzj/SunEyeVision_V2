@@ -367,4 +367,8 @@ Blob 引用输入修正 DeleteTextBox 的空文本清理路径。WPF 绑定在�
 
 依据迁移的 Result List 证据，BlobVmResultProjection 不再把外接矩形角度误投影为 BlobAngle。BlobSession 现在使用 HALCON OrientationRegion 取得主轴角度，OrientedBounds.AngleDegrees 保留外接矩形角度来源，BlobAngle 单独发布。长短轴的半长/全长语义仍保持未确认，不做额外倍乘或缩放假设。
 
+## 2026-11-08 Blob 总面积单精度聚合语义落地
+
+REA 的 `B08-总面积聚合排序与判断传输链-20261104.md` 已确认总面积按结果数组顺序逐项以 float32 累加。本批新增 `BlobNumericSemantics.Float32Sum`，统一执行判断、`BlobOutput.TotalArea` 和 `BlobVmResultProjection.TotalArea`，并加入顺序累加回归用例。Runtime Release 构建通过。针对该测试的 xUnit 运行被正式载荷 SHA 门禁阻断，因为本次局部构建后的 `SunEyeVision.Application.dll` 尚未重新封签，不能绕过门禁或把该测试记为通过；正式集成时须在固定提交上重建并封签后重跑。
+
 

@@ -179,7 +179,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
             {
                 double value = rule.Key switch {
                     "output-not-empty" => ordered.Length > 0 ? 1 : 0, "white-ratio" => whiteRatio, "blob-count" => ordered.Length,
-                    "total-area" => ordered.Sum(x => x.Candidate.Area), "average-area" => ordered.Length == 0 ? 0 : ordered.Average(x => x.Candidate.Area),
+                    "total-area" => BlobNumericSemantics.Float32Sum(ordered.Select(x => x.Candidate.Area)), "average-area" => ordered.Length == 0 ? 0 : BlobNumericSemantics.Float32Sum(ordered.Select(x => x.Candidate.Area)) / ordered.Length,
                     "max-area" => ordered.Length == 0 ? 0 : ordered.Max(x => x.Candidate.Area), "min-area" => ordered.Length == 0 ? 0 : ordered.Min(x => x.Candidate.Area),
                     "average-circularity" => ordered.Length == 0 ? 0 : ordered.Average(x => x.Candidate.Circularity),
                     "average-rectangularity" => ordered.Length == 0 ? 0 : ordered.Average(x => x.Candidate.Rectangularity),
@@ -243,7 +243,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         var failures=new List<string>();
         bool Range(double value,double low,double high)=>BlobVmFindParameters.InRange(value,low,high);
         if(vm.BlobNumLimitEnable&&!Range(candidates.Length,vm.BlobNumLimitLow,vm.BlobNumLimitHigh))failures.Add("[NG] BlobNumLimit");
-        if(vm.BlobTotalAreaLimitEnable&&!Range(candidates.Sum(x=>x.Area),vm.BlobTotalAreaLimitLow,vm.BlobTotalAreaLimitHigh))failures.Add("[NG] BlobTotalAreaLimit");
+        if(vm.BlobTotalAreaLimitEnable&&!Range(BlobNumericSemantics.Float32Sum(candidates.Select(x=>x.Area)),vm.BlobTotalAreaLimitLow,vm.BlobTotalAreaLimitHigh))failures.Add("[NG] BlobTotalAreaLimit");
         if(vm.BlobAreaLimitEnable&&candidates.Any(x=>!Range(x.Area,vm.BlobAreaLimitLow,vm.BlobAreaLimitHigh)))failures.Add("[NG] BlobAreaLimit");
         if(vm.CentroidXLimitEnable&&candidates.Any(x=>!Range(x.X,vm.CentroidXLimitLow,vm.CentroidXLimitHigh)))failures.Add("[NG] CentroidXLimit");
         if(vm.CentroidYLimitEnable&&candidates.Any(x=>!Range(x.Y,vm.CentroidYLimitLow,vm.CentroidYLimitHigh)))failures.Add("[NG] CentroidYLimit");

@@ -54,7 +54,7 @@ public sealed class BlobOutput : IToolOutput, IDisposable, IToolResultGeometryOu
     public bool IsPass { get; }
     public IReadOnlyList<string> JudgmentMessages { get; }
     public int Count => Measurements.Count;
-    public double TotalArea => Measurements.Sum(x => x.Area);
+    public double TotalArea => BlobNumericSemantics.Float32Sum(Measurements.Select(x => x.Area));
     public double AverageArea => Count == 0 ? 0 : TotalArea / Count;
     public double MinimumArea => Count == 0 ? 0 : Measurements.Min(x => x.Area);
     public double MaximumArea => Count == 0 ? 0 : Measurements.Max(x => x.Area);

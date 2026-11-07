@@ -114,4 +114,18 @@ public sealed class DeclaredBlobResultTests
         Assert.Equal(1024,borrowed.CopyPixels().Length);
         second.Dispose();Assert.Throws<ObjectDisposedException>(()=>borrowed.CopyPixels());Assert.Equal(1024,host.Input.CopyPixels().Length);
     }
+
+    [Fact]
+    public void Vm_total_area_uses_ordered_float32_accumulation()
+    {
+        var measurements = new[]
+        {
+            new BlobMeasurement(1, 1, 16_777_217d, 0, 0, 0, 0, 0, new BlobBounds(0, 0, 1, 1), new BlobOrientedBounds(0, 0, 1, 1, 0), Array.Empty<Point2>(), Array.Empty<BlobBoundaryPath>(), null!, true),
+            new BlobMeasurement(2, 2, 1d, 0, 0, 0, 0, 0, new BlobBounds(0, 0, 1, 1), new BlobOrientedBounds(0, 0, 1, 1, 0), Array.Empty<Point2>(), Array.Empty<BlobBoundaryPath>(), null!, true)
+        };
+
+        var projection = BlobVmResultProjection.Create(measurements, null, null);
+
+        Assert.Equal((float)16_777_216d, projection.TotalArea);
+    }
 }

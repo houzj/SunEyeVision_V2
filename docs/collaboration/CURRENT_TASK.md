@@ -369,6 +369,6 @@ Blob 引用输入修正 DeleteTextBox 的空文本清理路径。WPF 绑定在�
 
 ## 2026-11-08 Blob 总面积单精度聚合语义落地
 
-REA 的 `B08-总面积聚合排序与判断传输链-20261104.md` 已确认总面积按结果数组顺序逐项以 float32 累加。本批新增 `BlobNumericSemantics.Float32Sum`，统一执行判断、`BlobOutput.TotalArea` 和 `BlobVmResultProjection.TotalArea`，并加入顺序累加回归用例。Runtime Release 构建通过。针对该测试的 xUnit 运行被正式载荷 SHA 门禁阻断，因为本次局部构建后的 `SunEyeVision.Application.dll` 尚未重新封签，不能绕过门禁或把该测试记为通过；正式集成时须在固定提交上重建并封签后重跑。
+REA 的 `B08-总面积聚合排序与判断传输链-20261104.md` 已确认总面积按结果数组顺序逐项以 float32 累加。本批新增 `BlobNumericSemantics.Float32Sum`，统一执行判断、`BlobOutput.TotalArea` 和 `BlobVmResultProjection.TotalArea`，并加入顺序累加回归用例。Runtime Release 构建通过。首次 xUnit 运行因局部构建后的正式载荷未重新封签而被门禁阻断，随后按产品流程以当前 Release 重新封签并用 `--no-build` 重跑，新增回归 1/1 通过。该过程保留为载荷一致性要求，不绕过正式门禁。
 
 

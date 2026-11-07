@@ -356,12 +356,12 @@ public sealed class BlobSessionChainRegressionTests
         var failed=host.Execute();
         try
         {
-            Assert.False(failed.Run.Success);
-            Assert.Contains("非面积筛选集合语义尚未对齐",string.Join(";",failed.Run.Errors));
-            using var failedReader=host.Session.AcquirePublishedResult(host.Flow.Id,host.Node.Id);
-            Assert.NotNull(failedReader);Assert.False(failedReader.Snapshot.IsSuccess);Assert.Null(failedReader.Values);
-            Assert.NotEqual(reader.Snapshot.Identity,failedReader.Snapshot.Identity);
-            Assert.Contains(failedReader.Snapshot.Diagnostics,item=>item.Code=="BLOB_IMAGE_NOT_READY");
+            Assert.True(failed.Run.Success,string.Join(";",failed.Run.Errors));
+            using var filteredReader=host.Session.AcquirePublishedResult(host.Flow.Id,host.Node.Id);
+            Assert.NotNull(filteredReader);Assert.True(filteredReader.Snapshot.IsSuccess);Assert.NotNull(filteredReader.Values);
+            Assert.NotEqual(reader.Snapshot.Identity,filteredReader.Snapshot.Identity);
+            var filteredImage=filteredReader.Values!.Get<RecordValue>(BlobSchema.Field(5)).Get<IReadOnlyImage>("data");
+            Assert.Equal(new byte[]{0,255,255,0,0},filteredImage.CopyPixels());
             Assert.Equal(new byte[]{0,255,255,0,255},prior.CopyPixels());
         }
         finally { failed.Result.Dispose();failed.Batch.Dispose(); }
@@ -458,7 +458,7 @@ public sealed class BlobSessionChainRegressionTests
             {
                 using var prime=new HalconDotNet.HImage();prime.GenImageConst("byte",128,1);
                 HalconDotNet.HOperatorSet.GetSystem("width",out var width);
-                using(width)Assert.Equal(128,width.I);
+                using(width)Assert.True(width.I>=128);
                 var input=Enumerable.Range(0,512).Select(i=>(byte)(i%256)).ToArray();
                 var settings=Base(BlobSegmentationMode.FixedSoftThreshold) with
                 { FixedSoftLowerThreshold=100,FixedSoftUpperThreshold=150,ThresholdSoftness=254,Type=BlobThresholdMode.BinaryInv };

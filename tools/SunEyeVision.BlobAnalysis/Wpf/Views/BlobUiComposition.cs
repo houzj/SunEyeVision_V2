@@ -5,6 +5,8 @@ using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using SunEyeVision.Plugin.Wpf.Presenters.Regions;
 using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using SunEyeVision.Tool.BlobAnalysis.Runtime;
+using System.Diagnostics;
+using System.Windows.Threading;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Views;
 
@@ -29,6 +31,15 @@ internal sealed class BlobUiComposition : IDisposable
     private DeclaredFieldsView? _pageHost;
     private readonly List<IDisposable> _pageSubscriptions=[];
     private readonly List<FrameworkElement> _deferredContents=[];
+    private readonly HashSet<string> _pendingPages=new(StringComparer.Ordinal);
+    private readonly HashSet<string> _composedPages=new(StringComparer.Ordinal);
+    private string? _activePage;
+    private string? _compositionError;
+    private readonly Dictionary<string,long> _stageMs=new(StringComparer.Ordinal);
+    private bool _pagePrewarmQueued;
+    internal IReadOnlyDictionary<string,long> StageMs=>_stageMs;
+    internal bool IsReady=>!_disposed&&_pendingPages.Count==0&&_compositionError is null;
+    internal string? CompositionError=>_compositionError;
     internal event Action? Changed;
     private static readonly System.ComponentModel.DependencyPropertyDescriptor PageDescriptor=
         System.ComponentModel.DependencyPropertyDescriptor.FromProperty(DeclaredSettingsView.SelectedPageIndexProperty,typeof(DeclaredSettingsView));
@@ -97,9 +108,41 @@ internal sealed class BlobUiComposition : IDisposable
         }
         return null;
     }
+    private bool IsCurrentPage(string page)
+    {
+        var pages=Draft.Schema.Presentation?.Fields.Select(field=>field.Layout?.Page??field.Group).Distinct(StringComparer.Ordinal).ToArray()??[];
+        var index=_editor.SelectedPageIndex;
+        return index>=0&&index<pages.Length&&StringComparer.Ordinal.Equals(pages[index],page);
+    }
     private void BuildPage(string page,DeclaredFieldsView fields,FrameworkElement? pageInput)
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
+        if(!ReferenceEquals(_pageHost,fields))ResetPageHost(fields);
+        _activePage=page;
+        if(_pendingPages.Add(page))
+        {
+            _editor.Dispatcher.BeginInvoke(DispatcherPriority.SystemIdle,new Action(() =>
+            {
+                if(_disposed||!ReferenceEquals(_pageHost,fields)||!StringComparer.Ordinal.Equals(_activePage,page)||!IsCurrentPage(page))
+                {
+                    _pendingPages.Remove(page);return;
+                }
+                _pendingPages.Remove(page);
+                try{BuildPageCore(page,fields,pageInput);Changed?.Invoke();}
+                catch(Exception error){_compositionError=error.Message;SunEyeVision.Foundation.Logging.PluginLogger.Error(error.Message,nameof(BlobUiComposition));Changed?.Invoke();}
+            }));
+        }
+    }
+    private void BuildPageCore(string page,DeclaredFieldsView fields,FrameworkElement? pageInput)
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);
+        if(!_composedPages.Add(page))return;
+        void Measure(string stage,Action action)
+        {
+            var clock=Stopwatch.StartNew();
+            try{action();}
+            finally{_stageMs[$"{page}:{stage}"]=clock.ElapsedMilliseconds;}
+        }
         if(!ReferenceEquals(_pageHost,fields))ResetPageHost(fields);
         var basicPage=Draft.Schema.Inputs.Count==0?null:BaseOptions.InputSection;
         if(StringComparer.Ordinal.Equals(page,basicPage)&&_roiUi is null)
@@ -107,41 +150,76 @@ internal sealed class BlobUiComposition : IDisposable
             var input=pageInput??BaseOptions.InputContent;
             if(input is DeclaredInputFieldsView inputs)
             {
-                var pose=BlobRoiUi.Add(inputs,supportedWindow:true,observe:value=>_roiUi=value);
-                _roiOwner=new BlobLocalRoiOwner(inputs,_roiUi!,BaseOptions.RoiFrames);
-                _supportedState=new BlobSupportedWindowState(Draft,inputs,_assistPointVisibility){InformationHost=pose};_supportedState.Refresh();
-                _assistUi=pose as NativeAssistUiDraftControls;
-                // Generic row/page/anchor visibility belongs to the outer layout only.
-                // The supported-state projection exclusively owns the real assist's inner visibility.
-                fields.AddAfterField("field:c95f3a26edf55097863a7ec47d17cce5",new System.Windows.Controls.Decorator{Child=pose});
-                if(_assistUi?.GraphicVisibilitySource is {} source)fields.BindFieldVisibilityTo("field:c95f3a26edf55097863a7ec47d17cce5",source);
-                if(_roiUi is not null)_pageSubscriptions.Add(_preview.Observe(()=>_roiUi.HasUiChanges,handler=>_roiUi.Changed+=handler,handler=>_roiUi.Changed-=handler));
-                if(_assistUi is {} assist)_pageSubscriptions.Add(_preview.Observe(()=>AssistIsActive(assist)&&assist.HasUiChanges,
-                    handler=>assist.Changed+=handler,handler=>assist.Changed-=handler,assist.RetireInteractions));
-                if(_roiUi is not null)_roiUi.Changed+=RefreshSupported;
-                if(_roiOwner is not null)_roiOwner.Changed+=_preview.Notify;
+                Measure("ROI组合",() =>
+                {
+                    var pose=BlobRoiUi.Add(inputs,supportedWindow:true,observe:value=>_roiUi=value);
+                    _roiOwner=new BlobLocalRoiOwner(inputs,_roiUi!,BaseOptions.RoiFrames);
+                    _supportedState=new BlobSupportedWindowState(Draft,inputs,_assistPointVisibility){InformationHost=pose};_supportedState.Refresh();
+                    _assistUi=pose as NativeAssistUiDraftControls;
+                    fields.AddAfterField("field:c95f3a26edf55097863a7ec47d17cce5",new System.Windows.Controls.Decorator{Child=pose});
+                    if(_assistUi?.GraphicVisibilitySource is {} source)fields.BindFieldVisibilityTo("field:c95f3a26edf55097863a7ec47d17cce5",source);
+                    if(_roiUi is not null)_pageSubscriptions.Add(_preview.Observe(()=>_roiUi.HasUiChanges,handler=>_roiUi.Changed+=handler,handler=>_roiUi.Changed-=handler));
+                    if(_assistUi is {} assist)_pageSubscriptions.Add(_preview.Observe(()=>AssistIsActive(assist)&&assist.HasUiChanges,
+                        handler=>assist.Changed+=handler,handler=>assist.Changed-=handler,assist.RetireInteractions));
+                    if(_roiUi is not null)_roiUi.Changed+=RefreshSupported;
+                    if(_roiOwner is not null)_roiOwner.Changed+=_preview.Notify;
+                });
             }
         }
         var runPage=Draft.Schema.Presentation!.Fields.First(field=>field.FieldId=="field:8ca20000000040008000000000000001").Layout?.Page;
         var resultPage=Draft.Schema.Presentation.Fields.First(field=>field.FieldId==SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Field(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Text,"content")).Layout?.Page;
         if(StringComparer.Ordinal.Equals(page,runPage)&&_runOptions is null)
         {
-            var baseline=PageOptions();var run=BlobRunUi.AddRows(baseline,Draft,_editor,ValidateUiState,state=>RunUi=state);
-            _runOptions=run;
-            InstallOptionsRows(fields,baseline,run);
-            RunUi!.Attach(fields);
+            var baseline=PageOptions();ToolSettingsViewOptions? run=null;
+            Measure("运行参数控件",() => run=BlobRunUi.AddRows(baseline,Draft,_editor,ValidateUiState,state=>RunUi=state));
+            _runOptions=run!;
+            Measure("运行参数挂接",() => InstallOptionsRows(fields,baseline,run!));
+            Measure("运行参数状态",() => RunUi!.Attach(fields));
             _pageSubscriptions.Add(_preview.Observe(()=>RunUi.HasUiChanges,handler=>RunUi.Changed+=handler,handler=>RunUi.Changed-=handler,
                 ()=>RunUi.RetireInteractions(),()=>RunUi.IsUnsupportedSelection));
         }
         if(StringComparer.Ordinal.Equals(page,resultPage)&&_displayOptions is null)
         {
-            var baseline=PageOptions();var display=BlobDisplayUi.AddRows(baseline,Draft.Schema,_assistPointVisibility,observe:value=>_displayUi=value,observeJudgment:value=>_judgmentUi=value);
-            _displayOptions=display;
-            InstallOptionsRows(fields,baseline,display);
+            var baseline=PageOptions();ToolSettingsViewOptions? display=null;
+            Measure("结果显示控件",() => display=BlobDisplayUi.AddRows(baseline,Draft.Schema,_assistPointVisibility,observe:value=>_displayUi=value,observeJudgment:value=>_judgmentUi=value));
+            _displayOptions=display!;
+            Measure("结果显示挂接",() => InstallOptionsRows(fields,baseline,display!));
             if(_displayUi is not null)_pageSubscriptions.Add(_preview.Observe(()=>_displayUi.HasUiChanges,handler=>_displayUi.Changed+=handler,handler=>_displayUi.Changed-=handler,()=>_displayUi.RetireInteractions()));
             if(_judgmentUi is not null)_pageSubscriptions.Add(_preview.Observe(()=>_judgmentUi.HasUiChanges,handler=>_judgmentUi.Changed+=handler,handler=>_judgmentUi.Changed-=handler,()=>_judgmentUi.RetireInteractions()));
         }
         BaseOptions.PageBuilt?.Invoke(page,fields,pageInput);
+        QueuePagePrewarm(fields,page);
+    }
+
+    private void QueuePagePrewarm(DeclaredFieldsView fields,string currentPage)
+    {
+        if(_pagePrewarmQueued||_disposed)return;
+        _pagePrewarmQueued=true;
+        var pages=fields.DeclaredPageKeys.Where(page=>!StringComparer.Ordinal.Equals(page,currentPage)).ToArray();
+        void Queue(int index)
+        {
+            if(_disposed||!ReferenceEquals(_pageHost,fields)||index>=pages.Length)return;
+            _editor.Dispatcher.BeginInvoke(DispatcherPriority.Background,new Action(() =>
+            {
+                if(_disposed||!ReferenceEquals(_pageHost,fields))return;
+                var page=pages[index];
+                try
+                {
+                    fields.RealizePage(page);
+                    var input=StringComparer.Ordinal.Equals(page,BaseOptions.InputSection)?BaseOptions.InputContent:null;
+                    BuildPageCore(page,fields,input);
+                }
+                catch(Exception error)
+                {
+                    _compositionError=error.Message;
+                    SunEyeVision.Foundation.Logging.PluginLogger.Error(error.Message,nameof(BlobUiComposition));
+                    Changed?.Invoke();
+                    return;
+                }
+                Queue(index+1);
+            }));
+        }
+        Queue(0);
     }
     private ToolSettingsViewOptions PageOptions()=>_assistUi is null?_composed:_composed with
         {AdditionalAfterContent=_assistUi,AdditionalAfterField="field:c95f3a26edf55097863a7ec47d17cce5"};
@@ -193,6 +271,7 @@ internal sealed class BlobUiComposition : IDisposable
     internal bool TryCapture(out FieldSettings fields,out string error)
     {
         fields=null!;
+        if(!IsReady){error="参数组合仍在组装，请稍候。";return false;}
         if(_preview.Validate() is {} preview){error=preview;return false;}
         if(_roiOwner is not null&&!_roiOwner.TryCapture(out error))return false;
         if(_assistUi is {IsUnimplementedMode:true} assist&&AssistIsActive(assist))
@@ -205,6 +284,7 @@ internal sealed class BlobUiComposition : IDisposable
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;Changed=null;
+        _pendingPages.Clear();_activePage=null;
         _editor.Changed-=RefreshSupported;PageDescriptor.RemoveValueChanged(_editor,OnPageChanged);_editor.IsVisibleChanged-=OnVisibility;_editor.Unloaded-=OnUnloaded;
         if(_roiOwner is not null)_roiOwner.Changed-=_preview.Notify;
         if(_roiUi is not null)_roiUi.Changed-=RefreshSupported;

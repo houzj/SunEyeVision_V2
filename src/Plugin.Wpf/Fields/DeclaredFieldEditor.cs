@@ -72,6 +72,8 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     private readonly bool _numericSequence;
     private bool _disposed;
     private long _renderGeneration;
+    // 高级页先登记状态和行，展开或交互时再创建重型输入视觉树。
+    private bool _renderDeferred;
     private string _editError => _state.EditError;
     private bool _regionSourceSelector;
     private readonly bool _allowUnboundReference;
@@ -134,6 +136,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
         _integerRadioOptions=integerRadioOptions;
         _allowUnboundReference=allowUnboundReference;
         _numericSequence=numericSequence;
+        _renderDeferred=presentation?.Layout?.Advanced==true;
         if(numericSequence&&!NativeNumericSequenceProjection.Applies(port))throw new ArgumentException("原数值序列投影需要正式浮点序列声明。");
         try
         {
@@ -162,7 +165,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
         var right=new Grid();right.ColumnDefinitions.Add(new());right.ColumnDefinitions.Add(new(){Width=GridLength.Auto});right.ColumnDefinitions.Add(new(){Width=GridLength.Auto});
         right.Children.Add(_body);Grid.SetColumn(_actions,1);right.Children.Add(_actions);Grid.SetColumn(_externalActions,2);right.Children.Add(_externalActions);
         _row.LeftContent=_label;_row.RightContent=right;Content=_row;
-        Render();
+        if(!_renderDeferred)Render();
         UpdateErrorDisplay();
         }
         catch(Exception failure)
@@ -195,6 +198,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     {
         using var sharedResourceScope=EditorResources.BeginSharedResourceScope();
         if(_disposed)return;
+        _renderDeferred=false;
         _renderGeneration++;
         var generation=_renderGeneration;
         bool CurrentRender()=>!_disposed&&generation==_renderGeneration&&IsEnabled&&_presentationVisible;
@@ -431,6 +435,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
     void IParameterVisibility.PrepareForVisibility(bool visible)
     {
         if(_disposed)return;
+        if(visible&&_renderDeferred)Render();
         _presentationVisible=visible;
         var cleanup=new List<Action>{()=>_numeric?.PrepareForVisibility(visible)};
         cleanup.Add(()=>_textPresenter?.PrepareForVisibility(visible));

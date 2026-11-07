@@ -49,11 +49,13 @@ public sealed partial class BlobParameterDefinition
         if(ids.Distinct(StringComparer.Ordinal).Count()!=ids.Length)throw new InvalidDataException("Duplicate Blob parameter identity.");
         _fields=new ReadOnlyDictionary<string,XElement>(root.Elements("Group").Elements("Parameter")
             .ToDictionary(x=>Required(x,"id"),x=>x,StringComparer.Ordinal));
-        var declared=typeof(BlobSettings).GetProperties(BindingFlags.Public|BindingFlags.Instance)
-            .Where(p=>p.Name!=nameof(BlobSettings.Judgments)).ToDictionary(p=>p.Name,p=>p.PropertyType,StringComparer.Ordinal);
-        if(!_fields.Keys.ToHashSet(StringComparer.Ordinal).SetEquals(declared.Keys))
-            throw new InvalidDataException("Blob XML fields differ from the settings model.");
-        foreach(var (id,type) in declared)
+        var settingsTypes=typeof(BlobSettings).GetProperties(BindingFlags.Public|BindingFlags.Instance)
+            .Where(p=>p.Name!=nameof(BlobSettings.Judgments)&&p.GetCustomAttribute<BlobNonFieldAttribute>() is null)
+            .ToDictionary(p=>p.Name,p=>p.PropertyType,StringComparer.Ordinal);
+        var declared=ParameterTypes();
+        if(settingsTypes.Keys.Any(id=>!_fields.ContainsKey(id))||_fields.Keys.Any(id=>!declared.ContainsKey(id)))
+            throw new InvalidDataException("Blob XML fields differ from the settings and VM parameter models.");
+        foreach(var (id,type) in _fields.Keys.Select(id=>(id,declared[id])))
         {
             var expected=type==typeof(int)?"Integer":type==typeof(double)?"Number":type==typeof(bool)?"Boolean":type.IsEnum?"Enum":throw new InvalidDataException("Unsupported Blob setting type.");
             if(Required(_fields[id],"type")!=expected)throw new InvalidDataException("Blob XML field type differs: "+id);
@@ -148,6 +150,19 @@ public sealed partial class BlobParameterDefinition
     internal static bool Boolean(XElement element,string name)=>bool.TryParse(Required(element,name),out var value)
         ?value:throw new InvalidDataException("Invalid Blob Boolean: "+name);
     public bool Contains(string id)=>_fields.ContainsKey(id);
+    internal static IReadOnlyDictionary<string,Type> ParameterTypes()
+    {
+        var settings=typeof(BlobSettings).GetProperties(BindingFlags.Public|BindingFlags.Instance)
+            .Where(p=>p.Name!=nameof(BlobSettings.Judgments)&&p.GetCustomAttribute<BlobNonFieldAttribute>() is null)
+            .ToDictionary(p=>p.Name,p=>p.PropertyType,StringComparer.Ordinal);
+        foreach(var property in typeof(BlobVmFindParameters).GetProperties(BindingFlags.Public|BindingFlags.Instance))
+            settings.TryAdd(property.Name,property.PropertyType);
+        return settings;
+    }
+    internal static PropertyInfo? SettingsProperty(string id)=>typeof(BlobSettings).GetProperty(id);
+    internal static PropertyInfo? VmProperty(string id)=>typeof(BlobVmFindParameters).GetProperty(id);
+    internal static Type ParameterType(string id)=>ParameterTypes().TryGetValue(id,out var type)?type
+        :throw new InvalidDataException("Unknown Blob parameter: "+id);
     public string WorkflowImageInputId { get; }
     public SunEyeVision.Plugin.Contracts.FieldPresentation InputPresentation(SunEyeVision.Plugin.Contracts.Port port,int order)
     {
@@ -163,7 +178,7 @@ public sealed partial class BlobParameterDefinition
     public bool Advanced(string id)=>_fields[id].Parent!.Attribute("advanced") is not null&&Boolean(_fields[id].Parent!,"advanced");
     public T Default<T>(string id)
     {
-        if(typeof(BlobSettings).GetProperty(id)?.PropertyType!=typeof(T))throw new InvalidDataException("Requested Blob default type differs: "+id);
+        if(ParameterType(id)!=typeof(T))throw new InvalidDataException("Requested Blob default type differs: "+id);
         var value=Required(_fields[id],"default");
         if(typeof(T).IsEnum)
         {

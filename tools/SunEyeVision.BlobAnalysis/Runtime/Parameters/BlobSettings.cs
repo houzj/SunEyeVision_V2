@@ -115,11 +115,24 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
     public BlobConnectivity Connectivity { get; init; }
     [JsonRequired]
     public IReadOnlyList<BlobJudgment> Judgments { get; init; }
+
+    /// <summary>
+    /// 完整 VM 参数闭包。现有 XML 字段是宿主的稳定字段合同，闭包保存 VM 已确认但尚未全部开放到公共字段树的成员。
+    /// Freeze 会用当前宿主字段覆盖对应成员，避免两个模型产生漂移。
+    /// </summary>
+    [BlobNonField]
+    public BlobVmFindParameters VmParameters { get; init; } = new();
+
+    public BlobVmFindParameters ToVmParameters() => BlobVmFindParameters.FromSettings(this);
     public BlobSettings Freeze()
     {
         if (Judgments is null || Judgments.Any(x => x is null))
             throw new ArgumentException("Blob结果判定集合及条目不能为空。", nameof(Judgments));
-        return this with { Judgments = Array.AsReadOnly(Judgments.Select(x => x with { }).ToArray()) };
+        return this with
+        {
+            Judgments = Array.AsReadOnly(Judgments.Select(x => x with { }).ToArray()),
+            VmParameters = ToVmParameters()
+        };
     }
 
     public IReadOnlyList<Diagnostic> Validate()

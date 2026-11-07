@@ -26,12 +26,15 @@ public sealed class BlobOutput : IToolOutput, IDisposable, IToolResultGeometryOu
         ThresholdMinUsed=threshold.Lower;ThresholdMaxUsed=threshold.Upper;TypeUsed=threshold.Polarity;
         SegmentationModeUsed=settings.SegmentationMode.ToString();
         Measurements = Array.AsReadOnly(measurements.ToArray()); BlobImage = blobImage; BinaryImage = binary;
+        VmResult = BlobVmResultProjection.Create(Measurements,binary,blobImage);
         Region = region; OkRegion = ok; NgRegion = ng; WhitePixelRatio = whiteRatio;
         Histogram = Array.AsReadOnly(histogram.ToArray()); ChannelMeans = Array.AsReadOnly(means.ToArray());
         IsPass = isPass; JudgmentMessages = Array.AsReadOnly(messages.ToArray()); _owned = owned.Distinct<IDisposable>(ReferenceEqualityComparer.Instance).ToArray();
     }
     public ResultGeometrySnapshot ResultGeometry {get;}
     public IReadOnlyList<BlobMeasurement> Measurements { get; }
+    /// <summary>VM BlobFindResult 的中立投影，Unavailable 中的成员没有本方等价资源。</summary>
+    public BlobVmResultProjection VmResult { get; }
     public BlobThresholdExecutionSnapshot ThresholdExecution {get;}
     public IReadOnlyList<Diagnostic> ExecutionDiagnostics {get;}
     public IReadOnlyList<BlobSelectionEntry> SelectionExecution {get;}

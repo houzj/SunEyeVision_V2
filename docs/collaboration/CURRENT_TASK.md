@@ -30,6 +30,22 @@
 
 下面按倒序排列，最早批次已归档：`history/CURRENT_TASK_ARCHIVE_2026-11.md`、`history/CURRENT_TASK_ARCHIVE_2026-10.md`。
 
+## 2026-11-07 性能与 SDK 状态纠偏（当前有效批次）
+
+本批把“窗口性能”和“旧 SDK 迁移”拆成两个可并行收口的批次。性能问题不再用连续加探针拖延，现有探针已足以确认本方的第一处真实阻塞：Blob 专用组合和字段编辑器在当前页同步创建重型 WPF 视觉树。REA 本地重建项目的源码证据显示其链路是 `AlgorithmTab` 数据树 → 模板注册表 → 统一窗口壳 → 状态刷新，不能把该项目的测试耗时直接当作原厂 VM 数值，但足以确定当前 V2 的命令式专用组装方向与目标链不同。
+
+性能批次的最快落地顺序固定为：先保留现有生命周期和字段合同，把普通字段与 Blob 专用控件统一登记到数据树和模板槽，不在 Tab 切换回调中临时拼装整组视觉树。然后交付 Blob 的一条完整链，首次显示只创建当前页可见模板，复杂 ROI、运行和结果槽按页首次激活创建一次，重复切换只刷新状态，不重建视觉树。最后以现有 `RuntimeEditorProductionProbe` 验收首帧、首次页切换、重复切换、重绑定和释放。该批独立于旧 SDK 删除，不等 SDK 全迁移才开始。
+
+状态纠偏：`src/Plugin.SDK` 目前只剩空目录，旧 SDK 源码已移除，但正式工具项目仍有直接 `ProjectReference` 和命名空间引用，构建日志已出现 `MSB9008`。因此消费者迁移仍未完成，不能把旧 SDK 退场记作完成，也不能把当前破损引用当作迁移结果。性能批次和 SDK 批次共用新的 Contracts/Runtime/Wpf 合同，但分别验收。
+
+旧 SDK 消费者迁移的新增事实：CircleCircleMeasure 等测量工具的 Runtime 仍可识别到新 `Plugin.Editing.Wpf` 中的基础执行类型，但 WPF XAML 仍直接引用旧 `ToolDebugControlBase`、Measure、ROI、ParamBinding 和 ResultPresentation 控件。旧控件源码已在历史提交 `8e76389de` 从 `src/Plugin.SDK` 删除，当前 `Plugin.Wpf` 尚未形成完整的一对一公共控件闭包。因此不能做纯命名空间替换；先迁公共控件/模板闭包，再迁工具 XAML 和生命周期。
+
+本批已落地并验证：`DeclaredFieldEditor` 对高级字段初始延迟创建输入视觉树；`Plugin.Wpf` Release 构建 0 错误；`RuntimeEditorProductionProbe` 使用当前源码运行 ImageLoad 与 BlobAnalysis 实际 Session，Blob 首屏 364ms，首次第 2/3 页 988ms/1877ms，重复切换 38ms/37ms，捕获、回执和关闭释放通过。该结果只证明第一刀没有破坏生产链，不能记作 VM 等效性能完成。
+
+随后接入 `Plugin.Contracts.ParameterPresentationTree`，通用宿主按树构造页和分组。最新探针仍通过完整 Session、回执、重复切换和释放，Blob 首屏 327ms，第 2/3 页首次切换 627ms/1419ms，重复切换 16ms/27ms。性能数据受运行环境影响，仍以生成层重构完成后的同场景回归作为验收，不把本次回归读数当作 VM 等效值。
+
+数据树已修正同名分组的高级/普通状态拆分，避免改变既有布局语义。修正后 Plugin.Wpf Release 构建 0 错误，生产探针继续通过 ImageLoad/BlobAnalysis 的捕获、回执、重复切换和释放；当前一次读数为 Blob 首屏 433ms，第 2/3 页 1316ms/1546ms，重复切换 25ms/44ms。
+
 
 ## 2026-11-05 统一开发基线建立；数据目录门禁退出转入实施
 
@@ -123,3 +139,103 @@ b927完整59工程Release0错6124warn；载荷AD5ABC601EB5C949C8EEB74D55332B5189
 - 本批已完成静态源码映射和构建验证；当前源码已重新封存 `release-payload.json`，`NeutralReleaseProbe` 已通过无 UI 装载、ImageLoad→BlobAnalysis、reader、保存重开和取消排空。标准命令已固化为 `scripts/verification/Run-NeutralReleaseProbe.ps1`。下一步进入统一 VM 窗口宿主的首开、Tab/节点切换和关闭释放接入。
 - 旧 `Plugin.SDK` 删除继续按消费者迁移门推进：先迁移图像源→Blob 完整窗口/执行链，再分批删除已无消费者目录。`n- 外部 SDK 边界已落地到 `PluginDevKit`：`sdk/net9.0` 只发布 Contracts、Runtime、Wpf、Foundation，RuntimePlugin、WpfTool 和 SamplePlugin 已独立构建通过；并在 `_validation/ExternalSdkAcceptance` 脱离主解决方案完成还原和构建。该开发包不再引用旧 `Plugin.SDK`。
 
+
+## 2026-11-07 工具窗口分层探针收敛（当前批次）
+
+已接手 CodeBuddy 的逐点探针并完成一轮分层定位。`RuntimeEditorProductionProbe` 现输出字段行、页面布局、显隐统计和 Blob 专用组合阶段。当前证据：Blob 基本参数 ROI 组合约 1.16–1.32s，运行参数专用组合约 1.10–1.18s，结果显示专用组合约 1.27–1.65s；通用字段行约0.59–1.16s，显隐约36–93ms，重复切页约20–50ms。根因收敛到工具专用组合首次实例化大量 `DeclaredFieldEditor`/原生呈现控件，不是Tab控件或显隐遍历主导。已回填 `docs/01-方案设计/2026/11/07/工具调试窗口性能取证与架构评审总结-20261107-131704.md`。新增诊断字段位于 `DeclaredFieldsView`、`BlobUiComposition` 和 `RuntimeEditorProductionProbe`，UI Release构建0错误（保留既有警告）。下一步按“数据描述 + 模板槽 + 复杂控件延迟/复用”设计 Blob 专用组合第一批，不直接删除 `DeclaredFieldsView` 或旧 Plugin.SDK。
+
+## 2026-11-07 Blob 延迟组合第一批已落地
+
+Blob 专用 ROI、运行参数、结果显示组合已从当前页同步路径移到 `DispatcherPriority.SystemIdle`。通用字段先显示，组合未完成时提交/确认/调试执行受门禁，异常显式留痕，关闭/重绑定清理待处理页面。探针显示首屏可见约0.29s，第2/3页可见约1.18s/2.03s，重复切页19–33ms，完整提交/释放回归通过。剩余瓶颈为通用 `DeclaredFieldEditor` 行创建，下一批继续做字段编辑器构造与模板复用优化，不删除 `DeclaredFieldsView`。
+
+## 2026-11-07 通用字段级探针与资源作用域优化
+
+新增 `DeclaredFieldsView.LastFieldBuildMs`，确认 Blob 页面单字段编辑器约25–103ms，页面总耗时由字段累加形成。页面构建增加 `EditorResources.BeginSharedResourceScope()`，运行参数通用字段阶段由约0.78s降至约0.61s，提交/释放回归通过。下一批按字段类型拆解 `DeclaredFieldEditor.Render`，优先数值、范围和结果显示字段。
+
+## 2026-11-07 加速执行口径
+
+按最快路径收敛为一条标准链优先：先完成 BlobAnalysis 的普通字段模板/数值范围/结果显示性能批次，固定窗口、Tab、提交、回调和释放合同，再以该合同批量迁移普通工具，最后批量迁移旧 Plugin.SDK 消费者并封存外部 SDK 验收。未接入的延迟字段实验已清理，不作为现行实现。
+
+## 2026-11-07 性能线时间盒决定
+
+本窗口问题不再阻塞全平台重构。已确认生成层设计差异和主要成本，保留已验证的首屏先显、复杂组合空闲组装、提交/释放门禁和分层探针。未验证收益的高级字段延迟实验已撤回。当前批次以 Blob 标准链行为和生命周期通过为出口，字段模板化作为独立后续批次，随后立即转入普通工具和旧 Plugin.SDK 消费者迁移。
+
+公共控件闭包门槛已回填 docs/collaboration/evidence/PluginSDK消费者迁移清单-20261107.html。测量工具迁移必须覆盖调试窗口基类、Measure/ROI 槽、ParamBinding/ConfigSetting 通用模板和 ResultPresentation 槽四组闭包，分别完成打开、Tab、提交、回绑定、回调退订和释放验收后，才可清零对应旧 SDK 消费者。
+
+公共闭包实施进展：已将无业务依赖的 `LabeledControl` 迁入 `src/Plugin.Wpf/Controls`，并接入 `Themes/Generic.xaml`。Plugin.Wpf Release 构建通过 0 错误。`ConfigSetting`、`ParamBinding`、Measure/ROI 和 ResultPresentation 仍待按完整依赖闭包迁移。
+
+归类纠正：`LabeledControl` 来源是旧 `Plugin.SDK` 的本方自研代码，不是 VM 逆向原件，也不作为 VM 控件证据。它只是公共标签布局容器的迁移基础。VM 原件控件仍须依据程序集、模板和资源证据逐项迁移。
+
+ImageSource/Blob 状态纠偏：两个工具的正式项目已经没有 `Plugin.SDK` 引用，普通参数和 XAML 外壳使用新的 `Plugin.Wpf`。但 Blob 当前仍使用 `BlobUiComposition`、`BlobRunUi`、`BlobDisplayUi`、`BlobRoiUi` 以及 `Native*UiDraftControls`、`NativeUiDraftRange` 等本方视觉组合适配器。它们只复用部分逆向迁入的底层控件，不是 VM 原件控件本身；其中纯生命周期/状态适配可保留，视觉组合必须迁到 VM 模板和原件控件闭包后才能算最终完成。该遗留正是当前性能和外观差异的主要重构对象。
+
+Blob 相关模板证据已定位：`docs/07-工具逆向/decompiled/ModuleControls/IMVSBlobFindLabelsModuControl/IMVSBlobFindLabelsModuControl/ThresholdAreaPanel.xaml` 使用 `ItemsControl`、数据模板 `ThresholdAreaItem`、`Integer_Sub` 和 `IntegerBettween_Sub`。该文件属于 `IMVSBlobFindLabelsModu`，与当前 `BlobAnalysis` 的工具身份尚未完成逐项映射，因此目前只能作为相关 VM 模板候选证据，不能直接据此替换 `NativeThresholdUiDraftControls`。下一步先完成工具身份、NodeData 和模板键映射，再实施替换。
+
+## 公开未完成项（必须按此状态汇报）
+
+以下事项均未完成，不能用“已接入新合同”“探针通过”替代：
+
+1. **Blob 不是 VM 控件全量迁移**。`BlobUiComposition`、`BlobRunUi`、`BlobDisplayUi`、`BlobRoiUi` 和多项 `Native*UiDraftControls` 仍是本方视觉组合适配器。
+2. **VM Blob UI 映射尚未闭合**。当前工具身份已确认是 `IMVSBlobFindModu`，但其完整程序集、NodeData、模板键、复合控件和释放链仍未逐项映射完成。
+3. **旧 SDK 消费者未迁移**。20 个正式工具项目仍有旧项目引用或命名空间引用。旧 SDK 源码已删除，当前存在破损引用和 `MSB9008`，不能记作成功退场。
+4. **公共控件闭包未完成**。目前只迁入少量基础控件，例如 `LabeledControl`。`ConfigSetting`、`ParamBinding`、Measure/ROI、ResultPresentation 和统一窗口宿主仍未完成。
+5. **VM 等效性能未证明**。当前探针只证明本方生命周期和回归链未被阶段性修改破坏，没有原厂 VM 同场景耗时对照，也不能宣称达到 VM 流畅度。
+6. **提交基线未固定**。当前工作区仍混有大量既有 CodeBuddy 未提交改动，本批修改未形成独立可回退提交。
+
+后续每次汇报必须分别列出“VM 已确认”“本方已实施”“本方过渡实现”“未确认/未完成”，不再把阶段性代码或本方探针结果描述为全量重构完成。
+
+## 当前阶段范围收口（用户最新决定）
+
+本阶段只收口 `ImageSource` 和 `BlobAnalysis`，20 个旧 Plugin.SDK 工具消费者暂不处理，不再占用本阶段的实现和验收路径。阶段目标是完成两个工具的 VM 原件映射、参数树/模板宿主、Tab 创建与复用、回调退订、资源释放和外部 SDK 基线。
+
+Blob 原件身份已经确认是 VM `IMVSBlobFindModu`。证据为 `docs/07-工具逆向/decompiled/Managed/BlobFind/IMVSBlobFindModuCs/BlobFindParam.cs`，其 `ThresholdTypeEnum`、`PolarityEnum`、软阈值字段、排序特征和连通性与 `tools/SunEyeVision.BlobAnalysis/Runtime/Resources/BlobParameters.xml` 对应。`IMVSBlobFindLabelsModu` 的控件模板只作相关参考，不作为当前 Blob 的直接 UI 映射。
+
+本阶段不再扩展旧工具迁移清单。只有 ImageSource/Blob 完成最终 VM 控件闭包和完整生产链验收后，才恢复旧工具消费者批次。
+
+Blob 全量性纠偏：VM `BlobFindParam.cs` 当前可见的公开参数包含阈值、极性、轮廓/图像输出、孔洞、面积、角度、矩形宽高、周长、短长轴、圆度、矩形度、质心偏移、轴比、排序、连通性、内接矩形、外部像素以及多组结果限制字段。当前 `BlobSettings.cs`/`BlobParameters.xml` 只覆盖其中一部分，并保留了本方简化的输出和判定模型。因此当前 Blob Runtime 不是 VM `BlobFindParam` 的全量重构。下一批必须先完成 Runtime 参数/NodeData 全量映射，再把已有逆向控件和模板接入 UI，不能重做控件库或只替换命名空间。
+
+已有控件成果纠偏：`f62915240` 已完成公共控件中立命名和资源迁移，`5bf65949e` 已集中接入 Blob 参数、双图结果和原件控件会话链，涉及 72 个文件、3106 行变更，并有 Blob Session 回归测试。当前缺口是 IMVSBlobFindModu 的全量数据/模板接线和过渡组合器收口，不是从零建立 Blob 控件库。
+
+## 批处理实施模式（用户最新决定）
+
+ImageSource/Blob 本阶段改为先完成代码级完整实现，再统一构建、生产链回归和 VM 对照测试。中间控件、单页、单回调和局部探针不再单独汇报，不以阶段性读数宣称完成。实施输入统一来自现有 REA 本地源码、VM 程序集/模板/资源证据、当前 `Plugin.Wpf` 逆向迁移成果和 `IMVSBlobFindModu` 参数映射。实现闭合前不再扩展 20 个旧工具消费者。
+
+本阶段逆向输入范围扩展：除 `D:\MyWork\REA逆向测试` 外，必须直接利用 `docs/07-工具逆向/decompiled` 的 VM 托管实现、编译 XAML/BAML、模板资源、程序集清单和控件代码。当前自动盘点显示 VM `IMVSBlobFindModuCs/BlobFindParam.cs` 有 112 个公开字段，V2 `BlobSettings.cs` 只有 35 个属性、`BlobParameters.xml` 只有 28 个参数项。该差异是代码级全量重构缺口，不能只靠现有本地方案或继续加探针解决。
+
+算法证据纳入本批：ImageSource 与 Blob 的 VM 托管算法、参数类、结果类和资源调用链已有逆向材料，本阶段不重新猜测算法语义，不重复做局部探针。实现以已有 VM 代码证据为迁移基线，统一完成 Runtime 参数/执行、WPF 模板/复杂槽、窗口生命周期和释放，之后一次性执行构建与生产回归。
+
+Blob 全量字段映射已生成：`docs/collaboration/evidence/Blob-IMVSBlobFindModu-字段映射-20261107.json`。当前统计为 VM 112 个公开属性、V2 `BlobSettings` 35 个属性、参数树 28 项，只有 3 项同时接入字段和参数树，93 项尚未接入。该 JSON 是本阶段 Runtime/NodeData/UI 批量实现的输入，不再逐字段凭感觉补丁。
+
+## 2026-11-08 代码级批处理第一刀（ImageSource/Blob范围）
+
+Blob Runtime 已新增 `BlobVmFindParameters`，按 `docs/07-工具逆向/decompiled/Managed/BlobFind/IMVSBlobFindModuCs/BlobFindParam.cs` 建立 VM 参数闭包，覆盖阈值、极性、轮廓、面积/几何筛选、排序、连通性、结果限制等公开参数。`BlobSettings.Freeze()` 会把现行宿主字段投影到该闭包，`BlobSession` 从冻结快照读取 VM 参数并执行新增几何筛选和结果限制，避免执行侧读入编辑中间态。当前闭包已进入代码，尚未宣称所有 VM 结果字段、内接矩形、灰度统计和原生动态接口等语义全部等价。
+
+Blob 参数页组装已补上后台逐页预热链。`DeclaredFieldsView` 暴露页身份和一次性页实现入口，`BlobUiComposition` 在当前页完成后按 Dispatcher Background 逐页建立并缓存，Tab 切换不再首次进入时同步拼装整页。该链仍需在统一 Release 产物上与 VM 同场景回归，当前构建受工作区既有 build_temp 并发/锁定影响，不能把本批构建记作通过。
+
+本批生产参数窗回归已保存到 `docs/collaboration/evidence/ImageSource-Blob-VM批处理生产参数窗回归-20261108.txt`。现有正式探针结果为 ImageLoad 绑定约 340ms、首次呈现约 1179ms，BlobAnalysis 绑定约 420ms、首次呈现约 375ms，Blob 第 2/3 页切换约 162/300ms，重复切换约 15/20ms；两个工具的实际 Session、节点、参数控件、提交/回执和关闭释放均通过。该读数是本方生产链回归，不是 VM 同机等效证明。日志仍提示 RuntimeEditorProductionProbe 的历史旧 Plugin.SDK 项目引用缺失，本阶段未处理 20 个旧工具消费者。
+
+VM 参数闭包的独立冒烟结果保存于 `docs/collaboration/evidence/Blob-VM参数映射冒烟-20261108.txt`，104 个 VM 参数属性的类型闭包和代表性阈值/面积映射通过。
+
+2026-11-08 后续批次已把 VM 运行参数接入 `BlobParameters.xml` 和 `BlobParameterDefinition` 的双模型绑定。参数树从 28 个 Parameter 节点扩展到 105 个，Runtime 参数展示字段为 139 个，104 个 VM 运行参数已经进入参数树或通过现行宿主字段映射。`BlobSettings` 仍保留宿主资源接缝，InputImage、ModuRoiManager 以及枚举类型不伪装成普通字段。新的生产回归日志为 `docs/collaboration/evidence/ImageSource-Blob-VM完整参数树生产回归-20261108.txt`，两个工具提交、回执、Tab、释放链通过；Blob 首次绑定约 720ms，后台页构建后第 2/3 页切换约 228/276ms，重复切换约 19/25ms。
+
+当前完整参数树已切断 Blob 的重复命令式运行参数组装。检测到完整 VM 元数据时 `BlobRunUi` 只保留正式字段状态适配，不再创建隐藏的 `ui-only-run.*` 控件。生产回归保存在 `docs/collaboration/evidence/ImageSource-Blob-VM正式参数树无重复组装回归-20261108.txt`，最新读数为 Blob 绑定约 808ms，后台页构建后第 2/3 页切换约 262/337ms，重复切换约 19/29ms，两个工具完整窗口链仍通过。
+
+VM `BlobFindResult` 已新增中立投影 `BlobVmResultProjection`。面积、状态、数量、质心、外接框、角度、周长、长短轴、圆形度、矩形度和二值/Blob图像已形成代码映射，灰度统计、最大内接矩形、Score、ROIAnnulus、ContourInfo、屏蔽区多边形和 OutputMask 保持明确未接入。投影冒烟证据在 `docs/collaboration/evidence/Blob-VM结果投影冒烟-20261108.txt`。
+
+旧 SDK 消费者已补充源级映射 `docs/collaboration/evidence/PluginSDK消费者源级映射-20261108.json`。扫描结果区分 20 个仍有正式 `ProjectReference` 的工具项目和 2 个只有历史命名空间字符串的宿主项目，记录每个项目的源码/XAML 闭包和新合同目标。20 个直接消费者仍冻结，未开始删除旧 SDK。
+
+
+## 2026-11-08 代码级闭环继续推进
+
+本批按 VM BlobFindParam/BlobFindResult/IMVSBlobFindModuTool 反编译源码和 REA 本地图像源/Blob 实现直接补齐 ImageSource 与 BlobAnalysis 代码。`BlobVmFindParameters`＋105 项 XML 参数树已成为单一冻结入口。BlobImage 改为从筛选后候选集合生成，Auto/RelativeSoftThreshold 按有效检测域统计，`OKWhenNumIsZero` 接入结果判定。`Directory.Build.props` 排除所有嵌套 `build_temp`，修复隔离构建产物被重新编译造成的重复程序集特性。PluginDevKit Runtime/WPF 模板加入发布 DLL 显式引用，指定 SdkPath 后可脱离主仓构建。
+
+最新生产探针通过：ImageLoad 绑定 615ms、首显 1223ms；BlobAnalysis 绑定 843ms、首显 337ms；第2/3页首次切换 227/307ms，重复切换 19/28ms；两工具实际 Session、参数控件、捕获/回执、Tab、关闭释放通过。证据：`docs/collaboration/evidence/ImageSource-Blob-VM正式参数树无重复组装回归-20261108.txt`、`docs/collaboration/evidence/PluginDevKit模板引用回归-20261108.txt`。
+
+边界仍保持：20 个旧工具消费者未迁移，旧 Plugin.SDK 未删除；VM 原厂同场景动态性能未获得；Blob 结果投影中 13 个原件成员无当前资源证据；xUnit 运行被旧 release-payload.json 与本次重建 Application SHA 不一致拒绝，需固定提交后重新封签再回归。当前工作区仍为 CodeBuddy 混合未提交基线，不得据此宣称正式集成完成。
+
+UI Release 构建已完成，0 错误，构建封签已重建。随后 BlobAnalysis xUnit 工程编译完成，但 21 项仍在 ProductRuntimeTestHost 初始化阶段因 `SunEyeVision.Execution.dll` 与 release-payload.json SHA 不一致被拒绝，未进入算法断言；需要单独隔离测试输出或在同一固定提交后重新封签，不能把该结果记为算法失败。
+
+UI Release 封签后再次运行 RuntimeEditorProductionProbe：ImageLoad 绑定 757ms、首显 1324ms；BlobAnalysis 绑定 784ms、首显 320ms；第2/3页首次切换 254/268ms，重复切换 19/28ms；两工具完整 Session、参数控件、回执、关闭释放 PASS。证据已追加到 `docs/collaboration/evidence/ImageSource-Blob-VM正式参数树无重复组装回归-20261108.txt`。
+
+验证收口：BlobAnalysis xUnit 在正式 Release 重新封签后，以 `BuildProjectReferences=false` 编译测试、`--no-build` 执行，37/37 通过。PluginDevKit `build-sdk.ps1 -Configuration Release` 与 `validate-components.ps1` 均通过，SDK DLL 已从当前 Release 重建复制。证据：`docs/collaboration/evidence/Blob-VM参数映射冒烟-20261108.txt`、`docs/collaboration/evidence/PluginDevKit模板引用回归-20261108.txt`。
+
+最终封签后生产探针再次通过：ImageLoad 绑定 801ms、首显 1596ms；BlobAnalysis 绑定 813ms、首显 341ms；第2/3页首次切换 212/265ms，重复切换 18/26ms。两工具完整链 PASS。

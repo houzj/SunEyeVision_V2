@@ -17,20 +17,35 @@ internal sealed class BlobRunUiState : IDisposable
         Low="field:43bda03261df55b88f963bd18f2ba4d9",Sort="field:8ca20000000040008000000000000004";
     private readonly IToolSettingsDraft _draft;
     private readonly DeclaredSettingsView _editor;
-    internal NativeThresholdUiDraftControls Threshold {get;}
-    private readonly DeclaredFieldEditor _sort;
+    internal NativeThresholdUiDraftControls? Threshold {get;}
+    private readonly DeclaredFieldEditor? _sort;
     private readonly IReadOnlySet<string> _supportedSort;
     private readonly IReadOnlyList<DeclaredFieldEditor> _created;
     private readonly IReadOnlyList<NativeUiDraftRange> _ranges;
     private readonly Dictionary<DeclaredFieldEditor,ParameterSetting> _baseline=[];
     private bool _attached,_disposed,_projecting;
+    private readonly bool _formalOnly;
     private string? _observedMode;
     internal event Action? Changed;
     private bool Current=>!_disposed&&_attached&&ReferenceEquals(_editor.Draft,_draft);
-    internal bool IsUnsupportedSelection=>Current&&(!BlobThresholdCapabilities.IsSupported(Threshold.SelectedMode)||_sort.Setting is not ConstantSetting{Value:string key}
-        ||!_supportedSort.Contains(key)||!Equals(_sort.Setting,_draft.CaptureFields().Read(Sort)));
-    internal bool HasUiChanges=>Current&&(Threshold.HasUiChanges||_sort.HasPendingEdits||_ranges.Any(range=>range.HasChanges)
-        ||_baseline.Any(pair=>pair.Key.HasPendingEdits||!Equals(pair.Key.Setting,pair.Value)));
+    internal bool IsUnsupportedSelection
+    {
+        get
+        {
+            if(!Current)return false;
+            if(_formalOnly)
+            {
+                var values=_draft.CaptureFields();
+                var mode=values.Read(BlobParameterDefinition.Instance.SettingsFieldId(nameof(BlobSettings.SegmentationMode))) as ConstantSetting;
+                var sort=values.Read(BlobParameterDefinition.Instance.SettingsFieldId(nameof(BlobSettings.SortFeature))) as ConstantSetting;
+                return !BlobThresholdCapabilities.IsSupported(mode?.Value as string)||sort?.Value is not string formalKey||!_supportedSort.Contains(formalKey);
+            }
+            return !BlobThresholdCapabilities.IsSupported(Threshold!.SelectedMode)||_sort!.Setting is not ConstantSetting{Value:string key}
+                ||!_supportedSort.Contains(key)||!Equals(_sort.Setting,_draft.CaptureFields().Read(Sort));
+        }
+    }
+    internal bool HasUiChanges=>Current&&(!_formalOnly&&(Threshold!.HasUiChanges||_sort!.HasPendingEdits||_ranges.Any(range=>range.HasChanges)
+        ||_baseline.Any(pair=>pair.Key.HasPendingEdits||!Equals(pair.Key.Setting,pair.Value))));
     internal BlobRunUiState(IToolSettingsDraft draft,DeclaredSettingsView editor,NativeThresholdUiDraftControls threshold,
         DeclaredFieldEditor sort,IReadOnlySet<string> supportedSort,IReadOnlyList<DeclaredFieldEditor> created,IReadOnlyList<NativeUiDraftRange> ranges)
     {
@@ -43,9 +58,14 @@ internal sealed class BlobRunUiState : IDisposable
         }
         foreach(var range in _ranges)range.Changed+=OnChanged;
     }
+    internal BlobRunUiState(IToolSettingsDraft draft,DeclaredSettingsView editor,IReadOnlySet<string> supportedSort)
+    {
+        _draft=draft;_editor=editor;_supportedSort=supportedSort;_created=Array.Empty<DeclaredFieldEditor>();_ranges=Array.Empty<NativeUiDraftRange>();_formalOnly=true;
+    }
     internal void Attach(DeclaredFieldsView fieldHost)
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
+        if(_formalOnly){_attached=true;return;}
         if(!_attached)
         {
             _attached=true;
@@ -103,13 +123,14 @@ internal sealed class BlobRunUiState : IDisposable
     internal void RetireInteractions()
     {
         if(_disposed)return;
+        if(_formalOnly)return;
         var actions=new List<Action>{Threshold.RetireInteractions};actions.AddRange(_ranges.Select(range=>(Action)range.RetireInteractions));actions.AddRange(_created.Select(field=>(Action)field.RetireInteractions));
         var errors=new List<Exception>();foreach(var action in actions)try{action();}catch(Exception error){errors.Add(error);}
         if(errors.Count!=0)throw new AggregateException("运行参数预览弹层退役失败。",errors);
     }
     public void Dispose()
     {
-        if(_disposed)return;_disposed=true;Changed=null;_editor.Changed-=OnFormalChanged;Threshold.Changed-=OnThreshold;_sort.Changed-=OnSort;
+        if(_disposed)return;_disposed=true;Changed=null;_editor.Changed-=OnFormalChanged;if(Threshold is not null)Threshold.Changed-=OnThreshold;if(_sort is not null)_sort.Changed-=OnSort;
         foreach(var range in _ranges)range.Changed-=OnChanged;
         foreach(var field in _created){field.Changed-=OnChanged;field.RemoveHandler(TextBoxBase.TextChangedEvent,new TextChangedEventHandler(OnRaw));}
     }

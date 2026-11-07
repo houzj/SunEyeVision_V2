@@ -31,7 +31,9 @@ public sealed partial class BlobParameterDefinition
         var bindings=new List<SettingBinding>();
         foreach(var item in _fields.Values)
         {
-            var name=Required(item,"id");var property=typeof(BlobSettings).GetProperty(name)!;var type=property.PropertyType;
+            var name=Required(item,"id");var type=ParameterType(name);
+            var settingsProperty=SettingsProperty(name);var vmProperty=VmProperty(name);
+            if(settingsProperty is null&&vmProperty is null)throw new InvalidDataException("Unknown Blob parameter: "+name);
             var choices=item.Elements("Choice").ToDictionary(x=>Required(x,"key"),x=>Required(x,"label"),StringComparer.Ordinal);
             var port=new Port(FieldId(item,"fieldId"),type==typeof(bool)?DataType.Boolean:type==typeof(int)?DataType.Integer:type==typeof(double)?DataType.Number:DataType.Text,
                 Storage:type==typeof(int)?NumericStorage.Int32:type==typeof(double)?NumericStorage.Float64:null,
@@ -41,7 +43,7 @@ public sealed partial class BlobParameterDefinition
             if(item.Attribute("visibleWhen") is { } visible)
             {
                 if(!_fields.TryGetValue(visible.Value,out var controller))throw new InvalidDataException("Unknown Blob editor visibility source.");
-                var controllerType=typeof(BlobSettings).GetProperty(visible.Value)!.PropertyType;
+                var controllerType=ParameterType(visible.Value);
                 var raw=Required(item,"visibleValue");
                 object value=controllerType.IsEnum?raw:controllerType==typeof(bool)?Boolean(item,"visibleValue")
                     :throw new InvalidDataException("Blob visibility requires a Boolean or enum controller.");
@@ -58,13 +60,18 @@ public sealed partial class BlobParameterDefinition
                 type.IsEnum?choices.Keys:null,type.IsEnum?choices:null){Layout=layout};
             bindings.Add(new(port,presentation,settings=>
             {
-                var value=property.GetValue(settings);
+                var value=settingsProperty is not null?settingsProperty.GetValue(settings):vmProperty!.GetValue(settings.ToVmParameters());
                 return type.IsEnum?value!.ToString():type==typeof(int)?(object)(long)(int)value!:value;
             },(settings,value)=>
             {
                 var copy=settings.Freeze();
                 object? converted=type.IsEnum?Enum.Parse(type,(string)value!,false):type==typeof(int)?checked((int)(long)value!):value;
-                property.SetValue(copy,converted);return copy;
+                if(settingsProperty is not null)settingsProperty.SetValue(copy,converted);
+                else
+                {
+                    var vm=copy.ToVmParameters();vmProperty!.SetValue(vm,converted);copy=copy with {VmParameters=vm};
+                }
+                return copy;
             }));
         }
         foreach(var item in _judgments.OrderBy(x=>Integer(x,"order",0,int.MaxValue)))

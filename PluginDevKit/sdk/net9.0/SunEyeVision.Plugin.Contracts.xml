@@ -204,6 +204,11 @@
         <member name="T:SunEyeVision.Plugin.Contracts.OutputDisplayNode">
             <summary>Immutable captions for declared output identities, independent of values and compatibility.</summary>
         </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.ParameterPresentationTree">
+            <summary>
+            UI 无关的参数展示树。工具只声明页、分组和字段身份，视觉模板由宿主注册表决定。
+            </summary>
+        </member>
         <member name="T:SunEyeVision.Plugin.Contracts.ParameterReferenceBehavior">
             <summary>Explicit consumer semantics. No tool identity or UI state is inferred.</summary>
         </member>

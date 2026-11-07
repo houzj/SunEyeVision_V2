@@ -55,6 +55,15 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed)!=0,this);
         ArgumentNullException.ThrowIfNull(settings); ArgumentNullException.ThrowIfNull(input); ArgumentNullException.ThrowIfNull(resources);
         settings = settings.Freeze();
+        // The VM parameter object is the single execution snapshot. The public
+        // host fields are projected into it by Freeze, so execution never reads
+        // a partially updated editor model.
+        var vm = settings.ToVmParameters();
+        // VM exposes contour output as a typed mode. The host still keeps the
+        // legacy Boolean output gate for existing documents, so derive one
+        // frozen gate before any result/resource path is selected.
+        if(vm.BlobContourType != BlobVmContourType.NoneContour)
+            settings = settings with { OutputBoundary = true };
         if (!BlobThresholdCapabilities.IsSupported(settings.SegmentationMode))
             throw new InvalidOperationException("BLOB_MODE_NOT_READY: 该阈值模式尚未完成原厂语义对齐。");
         var errors = settings.Validate();
@@ -106,7 +115,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
             HalconBlobExecutionScope.RequireUnlimitedConnection();
             using var connected=binary.Connection();
             HalconBlobExecutionScope.RequireUnlimitedConnection();
-            var candidates=FilterCandidates(connected,ExtractCandidates(connected,settings,cancellation),settings,cancellation);
+            var candidates=FilterCandidates(connected,ExtractCandidates(connected,settings,cancellation),vm,width,height,cancellation);
             Func<Candidate,int>? integerKey=settings.SortFeature is BlobSortFeature.SortFeatureRectX or BlobSortFeature.SortFeatureRectY?value=>SortIntegerKey(value,settings.SortFeature):null;
             var retained=BlobCandidateSelection.SelectSlots(candidates,settings.BlobCountLimit,settings.SortFeature,settings.SortMode,value=>(float)value.Area,value=>SortFloatKey(value,settings.SortFeature),integerKey,cancellation);
             var executionDiagnostics=new List<Diagnostic>();
@@ -115,19 +124,13 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
             IReadOnlyImage? blobImage=null;
             if(settings.OutputBlobImage||requested.HasFlag(BlobOutputRequest.BlobImage))
             {
-                bool available=!settings.IsCircularityFilterEnabled&&!settings.IsRectangularityFilterEnabled;
-                if(available)
-                {
-                    using var retainedRegions=SelectRegions(connected,retained.Select(value=>value.Candidate.RegionIndex).ToArray());
-                    using var candidateImage=BlobThresholdTransform.RegionImage(retainedRegions,width,height);
-                    blobImage=HalImageSnapshotSource.Capture(candidateImage,frame,BlobSchema.ImageFrame,outputResources);
-                }
-                else
-                {
-                    const string reason="Blob图像当前非面积筛选集合语义尚未对齐；本轮不以其他图像冒充。";
-                    if(requested.HasFlag(BlobOutputRequest.BlobImage))throw new BlobCapabilityException("BLOB_IMAGE_NOT_READY",reason);
-                    executionDiagnostics.Add(new("BLOB_IMAGE_NOT_READY",reason,BlobSchema.Field(5)));
-                }
+                // BlobImage is the retained candidate set after every enabled
+                // selector.  The previous gate rejected circularity and
+                // rectangularity filters even though the retained region list
+                // already represented their exact result.
+                using var retainedRegions=SelectRegions(connected,retained.Select(value=>value.Candidate.RegionIndex).ToArray());
+                using var candidateImage=BlobThresholdTransform.RegionImage(retainedRegions,width,height);
+                blobImage=HalImageSnapshotSource.Capture(candidateImage,frame,BlobSchema.ImageFrame,outputResources);
             }
             var ordered=BlobCandidateSelection.Order(retained,settings.SortMode,value=>SortFloatKey(value,settings.SortFeature),
                 integerKey,value=>value.ComponentLabel,cancellation);
@@ -162,6 +165,13 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
             }
             var messages = new List<string>();
             var isPass = ordered.All(x => x.Candidate.IsPass);
+            if (!EvaluateVmResultLimits(vm, ordered.Select(x => x.Candidate).ToArray(), whiteRatio, width, height, out var vmLimitMessages))
+            {
+                isPass = false;
+                messages.AddRange(vmLimitMessages);
+            }
+            if (vm.OKWhenNumIsZero && ordered.Length == 0)
+                isPass = true;
             foreach (var rule in settings.Judgments.Where(x => x.Enabled && !x.PerItem))
             {
                 double value = rule.Key switch {
@@ -189,17 +199,32 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         }
     }
 
-    private static Candidate[] FilterCandidates(HRegion regions,Candidate[] candidates,BlobSettings settings,CancellationToken cancellation)
+    private static Candidate[] FilterCandidates(HRegion regions,Candidate[] candidates,BlobVmFindParameters vm,int width,int height,CancellationToken cancellation)
     {
         var features=new List<string>();var minima=new List<double>();var maxima=new List<double>();
-        if(settings.IsCircularityFilterEnabled){features.Add("circularity");minima.Add(settings.FilterCircularityMin);maxima.Add(settings.FilterCircularityMax);}
-        if(settings.IsRectangularityFilterEnabled){features.Add("rectangularity");minima.Add(settings.FilterRectangularityMin);maxima.Add(settings.FilterRectangularityMax);}
+        if(vm.SelectByCircularuty){features.Add("circularity");minima.Add(vm.MinCircularity);maxima.Add(vm.MaxCircularity);}
+        if(vm.SelectByRectangularity){features.Add("rectangularity");minima.Add(vm.MinRectangularity);maxima.Add(vm.MaxRectangularity);}
         using var names=new HTuple(features.ToArray());using var lower=new HTuple(minima.ToArray());using var upper=new HTuple(maxima.ToArray());
         var accepted=new List<Candidate>();
         foreach(var candidate in candidates)
         {
             cancellation.ThrowIfCancellationRequested();
-            if(settings.IsAreaFilterEnabled&&!AreaAccepted(NativeAreaInteger(candidate.Area),settings.FilterAreaMin,settings.FilterAreaMax))continue;
+            if(vm.SelectByArea&&!AreaAccepted(NativeAreaInteger(candidate.Area),vm.MinArea,vm.MaxArea))continue;
+            var oriented=candidate.OrientedBounds;
+            var shortAxis=Math.Min(oriented.Width,oriented.Height);
+            var longAxis=Math.Max(oriented.Width,oriented.Height);
+            var axisRatio=longAxis<=0?0:shortAxis/longAxis;
+            var centerBias=Math.Sqrt(Math.Pow(candidate.X-width/2d,2)+Math.Pow(candidate.Y-height/2d,2));
+            if(vm.SelectByBoxAngle&&!InRange(oriented.AngleDegrees,vm.MinBoxAngle,vm.MaxBoxAngle))continue;
+            if(vm.SelectByRectWidth&&!InRange(oriented.Width,vm.MinRectWidth,vm.MaxRectWidth))continue;
+            if(vm.SelectByRectHeight&&!InRange(oriented.Height,vm.MinRectHeight,vm.MaxRectHeight))continue;
+            if(vm.SelectByPerimeter&&!InRange(candidate.Perimeter,vm.MinPerimeter,vm.MaxPerimeter))continue;
+            if(vm.SelectByShortAxis&&!InRange(shortAxis,vm.MinShortAxis,vm.MaxShortAxis))continue;
+            if(vm.SelectByLongAxis&&!InRange(longAxis,vm.MinLongAxis,vm.MaxLongAxis))continue;
+            if(vm.SelectByCircularuty&&!InRange(candidate.Circularity,vm.MinCircularity,vm.MaxCircularity))continue;
+            if(vm.SelectByRectangularity&&!InRange(candidate.Rectangularity,vm.MinRectangularity,vm.MaxRectangularity))continue;
+            if(vm.SelectByCentraBias&&!InRange(centerBias,vm.MinCenterBias,vm.MaxCenterBias))continue;
+            if(vm.AxisRatioEnable&&!InRange(axisRatio,vm.MinAxisRatio,vm.MaxAxisRatio))continue;
             if(features.Count!=0)
             {
                 using var original=regions.SelectObj(candidate.RegionIndex);using var filtered=original.SelectShape(names,"and",lower,upper);
@@ -209,6 +234,31 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         }
         return accepted.ToArray();
     }
+
+    private static bool EvaluateVmResultLimits(BlobVmFindParameters vm,Candidate[] candidates,double whiteRatio,int width,int height,out IReadOnlyList<string> messages)
+    {
+        var failures=new List<string>();
+        bool Range(double value,double low,double high)=>BlobVmFindParameters.InRange(value,low,high);
+        if(vm.BlobNumLimitEnable&&!Range(candidates.Length,vm.BlobNumLimitLow,vm.BlobNumLimitHigh))failures.Add("[NG] BlobNumLimit");
+        if(vm.BlobTotalAreaLimitEnable&&!Range(candidates.Sum(x=>x.Area),vm.BlobTotalAreaLimitLow,vm.BlobTotalAreaLimitHigh))failures.Add("[NG] BlobTotalAreaLimit");
+        if(vm.BlobAreaLimitEnable&&candidates.Any(x=>!Range(x.Area,vm.BlobAreaLimitLow,vm.BlobAreaLimitHigh)))failures.Add("[NG] BlobAreaLimit");
+        if(vm.CentroidXLimitEnable&&candidates.Any(x=>!Range(x.X,vm.CentroidXLimitLow,vm.CentroidXLimitHigh)))failures.Add("[NG] CentroidXLimit");
+        if(vm.CentroidYLimitEnable&&candidates.Any(x=>!Range(x.Y,vm.CentroidYLimitLow,vm.CentroidYLimitHigh)))failures.Add("[NG] CentroidYLimit");
+        if(vm.AngleLimitEnable&&candidates.Any(x=>!Range(x.OrientedBounds.AngleDegrees,vm.AngleLimitLow,vm.AngleLimitHigh)))failures.Add("[NG] AngleLimit");
+        if(vm.CenterXLimitEnable&&candidates.Any(x=>!Range(x.OrientedBounds.CenterX,vm.CenterXLimitLow,vm.CenterXLimitHigh)))failures.Add("[NG] CenterXLimit");
+        if(vm.CenterYLimitEnable&&candidates.Any(x=>!Range(x.OrientedBounds.CenterY,vm.CenterYLimitLow,vm.CenterYLimitHigh)))failures.Add("[NG] CenterYLimit");
+        if(vm.BoxHeightLimitEnable&&candidates.Any(x=>!Range(x.OrientedBounds.Height,vm.BoxHeightLimitLow,vm.BoxHeightLimitHigh)))failures.Add("[NG] BoxHeightLimit");
+        if(vm.BoxWidthLimitEnable&&candidates.Any(x=>!Range(x.OrientedBounds.Width,vm.BoxWidthLimitLow,vm.BoxWidthLimitHigh)))failures.Add("[NG] BoxWidthLimit");
+        if(vm.PerimeterLimitEnable&&candidates.Any(x=>!Range(x.Perimeter,vm.PerimeterLimitLow,vm.PerimeterLimitHigh)))failures.Add("[NG] PerimeterLimit");
+        if(vm.LongAxisLimitEnable&&candidates.Any(x=>!Range(Math.Max(x.OrientedBounds.Width,x.OrientedBounds.Height),vm.LongAxisLimitLow,vm.LongAxisLimitHigh)))failures.Add("[NG] LongAxisLimit");
+        if(vm.ShortAxisLimitEnable&&candidates.Any(x=>!Range(Math.Min(x.OrientedBounds.Width,x.OrientedBounds.Height),vm.ShortAxisLimitLow,vm.ShortAxisLimitHigh)))failures.Add("[NG] ShortAxisLimit");
+        if(vm.CircularityLimitEnable&&candidates.Any(x=>!Range(x.Circularity,vm.CircularityLimitLow,vm.CircularityLimitHigh)))failures.Add("[NG] CircularityLimit");
+        if(vm.RectangularityLimitEnable&&candidates.Any(x=>!Range(x.Rectangularity,vm.RectangularityLimitLow,vm.RectangularityLimitHigh)))failures.Add("[NG] RectangularityLimit");
+        messages=failures;
+        return failures.Count==0;
+    }
+
+    private static bool InRange(double value,double low,double high)=>BlobVmFindParameters.InRange(value,low,high);
     internal static bool AreaAccepted(int area,int minimum,int maximum)=>minimum<=maximum?area>=minimum&&area<=maximum:area>=minimum||area<=maximum;
     internal static int NativeAreaInteger(double area)
     {

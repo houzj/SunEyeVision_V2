@@ -1,0 +1,6 @@
+测试时间：2026-11-08
+对象：BlobVmResultProjection
+来源：docs/07-工具逆向/decompiled/Managed/BlobFind/IMVSBlobFindModuCs/BlobFindResult.cs
+结果：PASS
+已映射：BlobStatus、BlobNum、Area、TotalArea、CentroidPoint、BlobRect、坐标、角度、周长、长短轴、圆形度、矩形度、BinaryImageComb、BlobImageComb、ContourNum。
+明确未接入：ModuStatus、灰度统计、最大内接矩形、Score、ROIAnnulus、ContourInfo、屏蔽区多边形、OutputMask。

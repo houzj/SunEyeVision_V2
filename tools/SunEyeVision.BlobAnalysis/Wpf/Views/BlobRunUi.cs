@@ -6,6 +6,7 @@ using SunEyeVision.Plugin.Wpf.Fields;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
 using SunEyeVision.Plugin.Wpf.Presenters.Numeric;
+using SunEyeVision.Tool.BlobAnalysis.Runtime;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Views;
 
@@ -14,6 +15,23 @@ internal static class BlobRunUi
 {
     internal static ToolSettingsViewOptions AddRows(ToolSettingsViewOptions options,IToolSettingsDraft draft,DeclaredSettingsView settingsView,Func<string?> validateSupportedState,Action<BlobRunUiState>? observe=null)
     {
+        // The current VM-aligned metadata contains the full run-parameter tree.
+        // Do not add a second command-built control layer over those formal fields.
+        // The older branch remains for historical metadata that predates the VM field closure.
+        if(BlobParameterDefinition.Instance.Contains("HoleMinArea"))
+        {
+            var supported=new HashSet<string>(new[]{"SortFeatureArea","SortFeaturePerimeter","SortFeatureCircularity","SortFeatureRect","SortFeatureCentroidX","SortFeatureCentroidY","SortFeatureRectX","SortFeatureRectY"},StringComparer.Ordinal);
+            var formalState=new BlobRunUiState(draft,settingsView,supported);
+            observe?.Invoke(formalState);
+            return options with
+            {
+                ValidateUiState=() =>
+                {
+                    var previous=options.ValidateUiState?.Invoke();
+                    return string.IsNullOrEmpty(previous)?validateSupportedState():previous;
+                }
+            };
+        }
         var rows=options.AdditionalAnchoredContents?.ToList()??new List<AnchoredSettingsContent>();
         var created=new List<DeclaredFieldEditor>();
         var ranges=new List<NativeUiDraftRange>();

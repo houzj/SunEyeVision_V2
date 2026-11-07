@@ -17,20 +17,26 @@ internal static class BlobThresholdTransform
         bool histogramMode=settings.SegmentationMode is BlobSegmentationMode.AutoThreshold or BlobSegmentationMode.RelativeSoftThreshold;
         using var domainImage=RegionImage(effectiveDomain,width,height);
         var domain=ReadBytes(domainImage,width,height);
-        if(histogramMode&&domain.Any(value=>value==0))
-            throw new BlobCapabilityException("BLOB_THRESHOLD_DOMAIN_NOT_READY","自动和相对软阈值当前仅接纳完整矩形图像域；局部ROI和屏蔽统计语义尚未对齐。");
+        // VM computes data-dependent thresholds over the effective working
+        // domain.  Restrict the histogram input here instead of rejecting any
+        // ROI or mask that leaves pixels outside that domain.
+        var histogramSource=histogramMode
+            ?source.Where((value,index)=>domain[index]!=0).ToArray()
+            :Array.Empty<byte>();
+        if(histogramMode&&histogramSource.Length==0)
+            throw new BlobCapabilityException("BLOB_THRESHOLD_EMPTY_DOMAIN","有效检测区域没有可用于阈值统计的像素。");
         int low=settings.Threshold,high=settings.SegmentationMode==BlobSegmentationMode.SingleThreshold?255:settings.UpperThreshold;
         byte[]? table=null;
         string provenance="ConsumedInputEndpoints";
         switch(settings.SegmentationMode)
         {
             case BlobSegmentationMode.AutoThreshold:
-                low=high=AutoThreshold(source,cancellation);provenance="LocalScalarFormulaCalculation";break;
+                low=high=AutoThreshold(histogramSource,cancellation);provenance="LocalScalarFormulaCalculation";break;
             case BlobSegmentationMode.FixedSoftThreshold:
                 low=settings.FixedSoftLowerThreshold;high=settings.FixedSoftUpperThreshold;
                 table=SoftTable(low,high,settings.ThresholdSoftness);break;
             case BlobSegmentationMode.RelativeSoftThreshold:
-                (low,high)=RelativeThresholds(source,settings,cancellation);
+                (low,high)=RelativeThresholds(histogramSource,settings,cancellation);
                 table=SoftTable(low,high,settings.ThresholdSoftness);provenance="LocalScalarFormulaCalculation";break;
         }
         var output=new byte[count];

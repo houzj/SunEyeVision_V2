@@ -11,3 +11,9 @@ ReportOnly 结果：
 正常门禁结果：按预期阻断，原因是 20 个直接消费者仍引用旧 SDK。ImageSource 与 BlobAnalysis 不在阻断列表中。
 
 该门禁用于防止未完成消费者迁移时删除旧 SDK，不代表旧 SDK 仍应继续扩展。
+
+2026-11-08 生产探针锁文件清理
+- tests/RuntimeEditorProductionProbe 工程源码已无旧 Plugin.SDK ProjectReference。
+- 重新评估 tests/RuntimeEditorProductionProbe/packages.lock.json 后，移除过期 SunEyeVision.Plugin.SDK 依赖，改为 SunEyeVision.Plugin.Editing.Wpf。
+- RuntimeEditorProductionProbe Release 构建：0 错误，MSB9008 旧 SDK 项目缺失警告消失。
+- 20 个旧工具消费者仍保持门禁冻结，本次只清理探针工程的过期锁文件。

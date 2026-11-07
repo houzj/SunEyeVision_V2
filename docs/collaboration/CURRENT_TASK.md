@@ -277,3 +277,7 @@ CodeBuddy 的“数据树 + 模板 + 页面复用”方向已作为候选重构�
 已确认 `src/Plugin.Wpf/Controls/LabeledControl.cs` 仅是自研标签容器，ImageSource、BlobAnalysis 和 `DeclaredFieldEditor` 没有引用它。实际参数编辑器使用 `Plugin.Wpf.Native.Composition.ParameterPresentation` 下的逆向控件。已删除该类型，主题资源中的对应样式同步移除。
 
 验证：`dotnet build src/UI/SunEyeVision.UI.csproj -c Release --no-restore` 0 错误并重新封签；`RuntimeEditorProductionProbe` 通过，ImageLoad 绑定 797ms、首显 1216ms，BlobAnalysis 绑定 780ms、首显 315ms，第 2/3 页首次切换 204/254ms，重复切换 15/24ms。两个工具完整 Session、参数控件、捕获/回执、关闭释放 PASS。
+
+## 2026-11-08 清理生产探针旧 SDK 锁文件
+
+`tests/RuntimeEditorProductionProbe` 的项目引用已经是新合同，但旧 `packages.lock.json` 仍残留 `SunEyeVision.Plugin.SDK`。本批重新评估锁文件，改为 `SunEyeVision.Plugin.Editing.Wpf`，探针 Release 构建 0 错误，`MSB9008` 旧 SDK 项目缺失警告消失。20 个旧工具消费者仍按退役门禁冻结，本次只清理探针工程的过期锁文件。证据已追加到 `docs/collaboration/evidence/PluginSDK退役门禁-20261108.txt`。

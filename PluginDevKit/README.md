@@ -1,92 +1,44 @@
-# SunEyeVision Plugin Development Kit
+# SunEyeVision 外部插件开发包
 
-独立插件开发工具包，可分发给插件开发人员进行并行开发。
+PluginDevKit 是面向外部工程的发布开发包。外部项目只引用发布目录中的 Contracts、Runtime 和可选 WPF DLL，不引用主仓库源码，也不引用旧 Plugin.SDK。
 
-## 目录结构
+## 目录
 
-```
+```text
 PluginDevKit/
-├── Directory.Build.props    # 统一构建配置
-├── sdk/                     # SDK 文件（需要从主项目复制）
-│   └── net9.0/
-│       ├── SunEyeVision.Plugin.SDK.dll
-│       ├── SunEyeVision.Plugin.Abstractions.dll
-│       └── ...
-├── runtime/                 # 主程序运行时文件（用于调试）
-│   ├── SunEyeVision.exe
-│   ├── SunEyeVision.dll
-│   └── ...
-├── scripts/                 # 构建脚本
-│   ├── build-sdk.ps1        # 构建 SDK
-│   ├── build-runtime.ps1    # 构建 Runtime
-│   └── copy-sdk.ps1         # 复制 SDK 到此处
-├── samples/                 # 示例插件
-│   └── SamplePlugin/
-└── templates/               # 插件模板
-    └── MyPlugin.Template/
+├─ sdk/net9.0/                 发布合同 DLL 与 XML
+├─ runtime/                    用于外部调试的正式宿主文件
+├─ templates/
+│  ├─ RuntimePlugin.Template/  无界面 Runtime 插件
+│  └─ WpfTool.Template/        WPF 参数与结果呈现插件
+├─ samples/SamplePlugin/       新合同样例
+└─ scripts/
+   ├─ prepare-devkit.ps1
+   ├─ build-sdk.ps1
+   ├─ build-runtime.ps1
+   └─ launch-debug.ps1
 ```
 
-## 快速开始
+## 准备开发包
 
-### 1. 准备 SDK
-
-从主项目构建并复制 SDK：
+在主仓库根目录执行：
 
 ```powershell
-# 在主项目根目录执行
-.\scripts\prepare-devkit.ps1
+.\PluginDevKit\scripts\prepare-devkit.ps1 -Configuration Release
 ```
 
-### 2. 创建新插件
+脚本会构建并复制 Contracts、Runtime、WPF 和宿主。`Release` 配置复制正式发布宿主，`Debug` 配置复制 `dev/Debug` 外部开发宿主。生成的 SDK 目录至少包含：
 
-```powershell
-# 复制模板
-Copy-Item -Recurse templates\MyPlugin.Template samples\MyNewPlugin
+- `SunEyeVision.Plugin.Contracts.dll`
+- `SunEyeVision.Plugin.Runtime.dll`
+- `SunEyeVision.Plugin.Wpf.dll`
+- `SunEyeVision.Foundation.dll`
 
-# 重命名项目文件
-Rename-Item samples\MyNewPlugin\MyPlugin.Template.csproj MyNewPlugin.csproj
-```
+## 外部工程接入
 
-### 3. 构建和调试
+Runtime 工程从 `RuntimePlugin.Template` 开始，使用 `IToolDefinition<TSettings,TOutput>`、`IToolSession` 和 `ToolRuntimeExecutor`。
 
-```powershell
-# 构建插件
-dotnet build samples\MyNewPlugin
+WPF 工程从 `WpfTool.Template` 开始，使用 `IToolPresentationFactory`、`DeclaredSettingsView` 和只读结果视图。窗口打开、Tab 切换、关闭退订和资源释放由正式宿主负责。
 
-# 启动主程序进行调试
-.\scripts\launch-debug.ps1
-```
+外部工程验收需要在干净目录完成以下链路：编译、加载、参数快照、执行、结果发布、重复打开、Tab 切换、关闭释放，以及从 Visual Studio 启动或附加 Debug 外部开发宿主调试。正式 Release 宿主继续按发布清单准入，不把外部开发组件写入产品清单。验收记录必须包含 SDK DLL 清单、版本合同、宿主版本、依赖和运行日志。
 
-## 开发模式
-
-### 本地 DLL 引用（默认）
-
-直接引用 `sdk/` 目录下的 DLL 文件，适合内部开发。
-
-### NuGet 包引用
-
-设置环境变量切换到 NuGet 模式：
-
-```powershell
-$env:UseNuGet = "true"
-dotnet build
-```
-
-## 分发说明
-
-将整个 `PluginDevKit` 目录打包成 ZIP 分发给插件开发者。
-
-开发者只需要：
-1. 安装 .NET 9.0 SDK
-2. 解压到任意目录
-3. 开始插件开发
-
-## 配置说明
-
-### Directory.Build.props
-
-| 属性 | 说明 | 默认值 |
-|------|------|--------|
-| `SdkPath` | SDK 文件路径 | `sdk/net9.0/` |
-| `OutputPath` | 插件输出路径 | `runtime/plugins/` |
-| `UseNuGet` | 使用 NuGet 包 | `false` |

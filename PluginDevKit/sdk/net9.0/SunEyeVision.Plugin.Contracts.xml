@@ -1,0 +1,479 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SunEyeVision.Plugin.Contracts</name>
+    </assembly>
+    <members>
+        <member name="T:SunEyeVision.Plugin.Contracts.Acquisition.CameraCapabilities">
+            <summary>
+            相机能力摘要。具体动态参数由驱动层 Schema 提供。
+            </summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.Acquisition.CameraCaptureRequest">
+            <summary>
+            一次采集请求。参数是运行开始时解析后的本次请求值，不是可变的设备全局状态。
+            </summary>
+        </member>
+        <member name="P:SunEyeVision.Plugin.Contracts.Acquisition.CameraCaptureRequest.DiagnosticCorrelationId">
+            <summary>Optional host correlation id for joining parameter, preview, and adapter diagnostics.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.Acquisition.CameraDescriptor">
+            <summary>
+            对 Workflow、插件和 UI 公开的设备描述。
+            </summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.Acquisition.CameraDeviceRef">
+            <summary>
+            工作流和插件使用的逻辑相机引用。
+            不保存 IP、SDK 句柄或厂商类型；物理设备解析由宿主运行时完成。
+            </summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.Acquisition.CameraDeviceRef.#ctor(System.String)">
+            <summary>
+            工作流和插件使用的逻辑相机引用。
+            不保存 IP、SDK 句柄或厂商类型；物理设备解析由宿主运行时完成。
+            </summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.Acquisition.CameraDiagnosticScope">
+            <summary>
+            Carries an optional camera operation correlation id across async adapter calls for diagnostic logs.
+            </summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.Acquisition.CameraFrameRequest">
+            <summary>A request is tied either to an actual workflow invocation or to a non-workflow preview.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.Acquisition.ICameraFrameLease">
+            <summary>A successful result owns its frozen image until disposed; retained readers live independently.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.IBindingCompilationScope">
+            <summary>Actual graph/scope owner supplies visibility and cycle checks; never infer them from last results.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.IBindingReferenceQualification">
+            <summary>Optional owner policy applied to every recursively compiled reference.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.BindingPlan">
+            <summary>Immutable compiled instructions. Execution belongs to the existing parameter resolution service.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.Communication.CommunicationDataEvent">
+            <summary>Metadata for an observed transfer; payload ownership remains with the producer.</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.Communication.CommunicationDataEvent.#ctor(SunEyeVision.Plugin.Contracts.Communication.CommunicationDeviceRef,System.DateTimeOffset,SunEyeVision.Plugin.Contracts.Communication.CommunicationDataDirection,System.String,System.Int32)">
+            <summary>Metadata for an observed transfer; payload ownership remains with the producer.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.Communication.CommunicationDeviceRef">
+            <summary>Stable logical reference to a communication device in the current solution.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.Communication.CommunicationError">
+            <summary>A protocol-independent diagnostic; never contains credentials or raw secrets.</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.Communication.CommunicationError.#ctor(SunEyeVision.Plugin.Contracts.Communication.CommunicationErrorCode,System.String)">
+            <summary>A protocol-independent diagnostic; never contains credentials or raw secrets.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.Communication.ICommunicationStatusService">
+            <summary>Read-only status capability; callers cannot disconnect a shared device through it.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.DeclaredValueReader">
+            <summary>Read-only navigation over already frozen values. No raw array or borrowed resource escapes.</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.DeclaredValueReader.GetGeometry">
+            <summary>Geometry values are closed immutable data; no resource handle or mutable container escapes.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.DisplayExpressionSetting">
+            <summary>A presentation expression keeps its editable spelling and ordered, stable source identities.
+            It is never an invocation parameter or an evaluated current value.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.DisplayExpressionSlot">
+            <summary>Exactly one relative self path or explicitly scoped output reference. No resolved values or leases.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.UnsetSetting">
+            <summary>Remove an optional setting. Distinct from a present null or a present empty collection.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.ParameterEditSession">
+            <summary>UI-neutral transactional edit session. Invalid drafts never replace committed values.</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.ParameterEditSession.AcceptPublished(SunEyeVision.Plugin.Contracts.PreparedParameterEdit,System.Collections.Generic.IReadOnlyDictionary{System.String,SunEyeVision.Plugin.Contracts.ParameterSetting},SunEyeVision.Plugin.Contracts.IBindingCompilationScope,System.Boolean)">
+            <summary>Acknowledges an already published document transaction; this method itself never publishes.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.EditScopeIdentity">
+            <summary>Identity granted by the document owner. A view never creates an independent publishing scope.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.IFieldEdit">
+            <summary>Unset is Clear, distinct from a typed null or valid empty value. The scope owns the draft.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.IToolEditorContext">
+            <summary>Restricted editor capabilities. Debug freezes this scope; production execution is not exposed.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.PreparedParameterEdit">
+            <summary>A copied, immutable draft proposal. Only its creating session can acknowledge it after document publication.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.FieldCondition">
+            <summary>Finite UI-neutral layout; conditions address declared stable field IDs, never CLR paths.</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.FieldCondition.#ctor(System.String,System.Object,System.Boolean)">
+            <summary>Finite UI-neutral layout; conditions address declared stable field IDs, never CLR paths.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.FieldLayout">
+            <param name="DecimalPlaces">Fixed fractional digits, or null for an explicitly unformatted numeric text composition.</param>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.FieldLayout.#ctor(System.String,System.String,SunEyeVision.Plugin.Contracts.FieldCondition,System.String,System.Boolean,System.Nullable{System.Double},System.Nullable{System.Double},System.Nullable{System.Int32},System.Boolean,System.String,System.String,System.Boolean,System.Double)">
+            <param name="DecimalPlaces">Fixed fractional digits, or null for an explicitly unformatted numeric text composition.</param>
+        </member>
+        <member name="P:SunEyeVision.Plugin.Contracts.FieldLayout.DecimalPlaces">
+            <summary>Fixed fractional digits, or null for an explicitly unformatted numeric text composition.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.TextChoiceConstraint">
+            <summary>Immutable closed text values, enforced by ValueRules for constants and resolved references alike.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.FieldPresentation">
+            <summary>Presentation only points at declared stable fields; it never infers types or stores values.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.FieldSettings">
+            <summary>One immutable, declaration-owned configuration. Missing keys are Unset;
+            resources and resolved invocation values never belong to this snapshot.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.GeometryValueCanonical">
+            <summary>The unique JSON value representation for immutable runtime geometry.
+            Logical frames are preserved; this codec never creates physical image provenance.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.CoordinateFrame">
+            <summary>
+            Stable logical coordinate space (for example the associated input field), never a run or image-buffer ID.
+            X points right, Y points down. Angles are radians, positive toward positive Y.
+            Runtime image provenance belongs to invocation/resource identity and is checked separately by its host.
+            </summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.Rect2">
+            <summary>
+            Neutral axis-aligned rectangle in a coordinate frame; no WPF, editor state or backend handle.
+            </summary>
+        </member>
+        <member name="P:SunEyeVision.Plugin.Contracts.Rect2.Empty">
+            <summary>Empty extent at the origin. Callers must test <see cref="P:SunEyeVision.Plugin.Contracts.Rect2.IsEmpty"/> instead of comparing to a sentinel.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.GeometryValue">
+            <summary>Closed, immutable geometric data; no WPF, editor state or backend handle.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.HostInputPort">
+            <summary>One immutable input port supplied by an explicitly admitted host capability.</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.HostInputPort.#ctor(System.String,SunEyeVision.Plugin.Contracts.TypeRef)">
+            <summary>One immutable input port supplied by an explicitly admitted host capability.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.HostInputDeclaration">
+            <summary>Pure, immutable declaration; it does not acquire resources or execute a tool.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.ToolHostDeclarationRules">
+            <summary>Checks declarations against the admitted schemas and creates a deterministic identity.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.IHostInvocationGate">
+            <summary>Restricted admission gate for one invocation; an expired or cancelled identity rejects late callbacks.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.HostInputPreparationContext">
+            <summary>Frozen input preparation facts, independent of UI, workflow and hardware SDK types.</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.HostInputPreparationContext.#ctor(SunEyeVision.Plugin.Contracts.HostInputDeclaration,SunEyeVision.Plugin.Contracts.InputValues,SunEyeVision.Plugin.Contracts.RunIdentity,System.Threading.CancellationToken,SunEyeVision.Plugin.Contracts.IHostInvocationGate)">
+            <summary>Frozen input preparation facts, independent of UI, workflow and hardware SDK types.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.IHostInputPreparer">
+            <summary>A single frozen host selection. The owner disposes it even if execution never starts.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.IPreparedHostInputs">
+            <summary>Per-invocation values and restricted context capability. No output ownership is transferred.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.IToolExecutionInputs">
+            <summary>Pure selection over one immutable configuration. Unselected input settings remain
+            owned by the document for editing, copying and persistence, but are not execution dependencies.
+            The host freezes and validates the result once per configuration; settings parameters remain active.</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.IToolExecutionInputs.ValidateExecutionInputs(SunEyeVision.Plugin.Contracts.FieldSettings)">
+            <summary>Checks branch-specific required inputs without resolving any source.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.ManualReferenceSource">
+            <summary>A declared output or exact member path available for ordinary manual references.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.IToolManualReferenceSources">
+            <summary>Explicit source eligibility for ordinary manual parameter references.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.IToolParameterBindingNames">
+            <summary>Tool-declared parameter keys, separate from stable field IDs and translated labels.
+            Every referenced settings field needs an explicit key for binding record ordering.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.NumericStorage">
+            <summary>Physical numeric constraints on a semantic Int64/Float64 field; never a separate type catalog.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.OutputDisplayNode">
+            <summary>Immutable captions for declared output identities, independent of values and compatibility.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.ParameterReferenceBehavior">
+            <summary>Explicit consumer semantics. No tool identity or UI state is inferred.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.ParameterReferenceRules">
+            <summary>Pure declaration rules shared by compilation and WPF candidate projection.</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.ParameterReferenceRules.ValidateIndexSelections(SunEyeVision.Plugin.Contracts.BindingSelection,SunEyeVision.Plugin.Contracts.ParameterReferenceBehavior)">
+            <summary>Validate a model against its current consumer; construction context never grants admission.</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.ParameterReferenceRules.SelectedType(SunEyeVision.Plugin.Contracts.OutputReference)">
+            <summary>Projects the declared member/selection type without reading any runtime value.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.ParameterSettingCanonical">
+            <summary>Versioned typed binding expression; no runtime values, result cache or editor objects are persisted.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.PresentationDeclarations">
+            <summary>Finite presentation values using existing record/scalar constraints, without platform Color or brush objects.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.ResourcePurpose">
+            <summary>Read/write intent of a declared external resource reference.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.IResourcePathResolver">
+            <summary>Resolves references against one frozen document base; no UI or legacy SDK dependency.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.ImageLayout">
+            <summary>Positive stride. Copies and row reads include row padding.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.ImageFrameAddress">
+            <summary>Physical frozen provenance, distinct from logical CoordinateFrame.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.IReadOnlyImage">
+            <summary>Borrowed frozen image. Legacy adapters must provide the actual Domain, never a dimension-derived fallback.</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.IReadOnlyImage.CopyPixels">
+            <summary>Independent copy, exactly Layout.BufferLength bytes including stride padding.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.IImagePixelReadLease">
+            <summary>Independent retain of one frozen image and Domain. GetRow includes padding and is valid only until disposal.
+            All reads after disposal reject. AcquireDomainReader captures this frame, never latest.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.IReadOnlyRegion">
+            <summary>Empty runs are valid empty, never Unset. Native handles never escape.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.IRegionReadLease">
+            <summary>Independent owner/frame retain. Runs are ordered/nonoverlapping. ReadRuns returns at most maximumCount,
+            with maximumCount in [1,4096], offset in [0,RunCount]; at RunCount returns empty.
+            Data is borrowed until disposal; disposed reads reject; Dispose is idempotent.</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.IOutputResources.CreateScope">
+            <summary>Creates an independently owned output set. On success the result owns this scope;
+            on failure the producer disposes it. Already acquired readers survive scope disposal.</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.IOutputResources.CreateImage(SunEyeVision.Plugin.Contracts.ImageLayout,SunEyeVision.Plugin.Contracts.ImageFrameAddress,SunEyeVision.Plugin.Contracts.IReadOnlyRegion,System.ReadOnlySpan{System.Byte})">
+            <summary>Copies pixels and retains the explicit same-frame actual Domain. No dimensions-based inference.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.ResourceContractRules">
+            <summary>Admission checks; native implementations remain responsible for same-owner freezing and leases.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultPresentationProvider">
+            <summary>Runtime-owned result declarations, available without a WPF companion.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultDisplayProvider">
+            <summary>Presentation-only fields: persisted with the tool, never invocation inputs or algorithm parameters.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.Results.Presentation.ResultDisplayAppearance">
+            <summary>Pure immutable appearance. Its host revision is independent of invocation/run identity.</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.Results.Presentation.ResultDisplayAppearance.#ctor(SunEyeVision.Plugin.Contracts.Results.Presentation.ResultGraphicAppearance,SunEyeVision.Plugin.Contracts.Results.Presentation.ResultTextAppearance,SunEyeVision.Plugin.Contracts.Results.Presentation.ResultGraphicAppearance,SunEyeVision.Plugin.Contracts.Results.Presentation.ResultGraphicAppearance,SunEyeVision.Plugin.Contracts.Results.Presentation.ResultGraphicAppearance,System.Boolean)">
+            <summary>Pure immutable appearance. Its host revision is independent of invocation/run identity.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.Results.Presentation.ResultDisplayDescriptor">
+            <summary>Only declared same-row output paths. Does not own values, resources, callbacks or a renderer.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.Results.Presentation.ResultDisplayFields">
+            <summary>Shared declaration composition only. Does not create defaults while loading or editing.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultGeometryOutput">
+            <summary>Optional non-subscribable geometry produced by the same successful invocation as the tool output.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.Results.Presentation.ResultGeometrySnapshot">
+            <summary>Immutable pure values; the enclosing publication controls authority and resource lifetime.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.Results.Presentation.ResultFieldPath">
+            <summary>Schema-relative existing Port/record identities, not a second type system or runtime object path.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.Results.Presentation.ResultProjectionDescriptor">
+            <summary>Bounded display declaration. Reads a published snapshot; never runs an algorithm or recomputes judgments.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.RoiDeclarations">
+            <summary>The existing SDK ROI record expressed once in neutral Contracts; no second geometry store or registry.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.IToolDefinition">
+            <summary>Host entry for a discovered Runtime. Settings and outputs retain their
+            original strongly typed instances; this boundary does not create a second model.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.SpatialDeclarations">
+            <summary>Approved spatial declarations expressed entirely through the existing record/sequence type system.</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.SpatialDeclarations.ValidateAffine2D(SunEyeVision.Plugin.Contracts.RecordValue,System.String,System.String)">
+            <summary>x'=x*m11+y*m21+offset-x; y'=x*m12+y*m22+offset-y.
+            Logical frame labels do not replace same-snapshot source frame identity checks by the host.</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.SpatialDeclarations.ValidateBoundary(SunEyeVision.Plugin.Contracts.RecordValue,SunEyeVision.Plugin.Contracts.CoordinateFrame)">
+            <summary>Checks complete topology without smoothing or choosing a lossy single outer contour.
+            Identities are local to one Blob result element. Empty boundary is valid empty.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.BinaryValue">
+            <summary>An immutable, complete binary message. Both construction and reads copy bytes.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.StoredRasterLayout">
+            <summary>Layout of persistent pixels only; it carries no execution identity or domain.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.SequenceValue">
+            <summary>Immutable declared sequence. Mutable leaf arrays are copied on every read.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.RecordValue">
+            <summary>Only declared fields are traversed; arbitrary object graphs are never scanned.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.ToolCatalogDescriptor">
+            <summary>Non-visual discovery information owned by the required Runtime.
+            IconKey is a semantic key resolved by the host, never a WPF resource or URI.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.ToolComponentAttribute">
+            <summary>Physical component identity, read from the PE before entry types are published.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.ToolComponentMetadata">
+            <summary>One physical component declaration. An editor is optional and never an algorithm producer.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.RunIdentity">
+            <summary>RequestId is the original admission Guid, never a derived counter or hash.</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.RunIdentity.#ctor(System.Guid,System.Guid,System.Guid,System.String,System.Guid)">
+            <summary>RequestId is the original admission Guid, never a derived counter or hash.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.OutputValueRequest">
+            <summary>Frozen downstream demand. Visibility switches cannot suppress resources needed by a consumer.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.ILocalImageReadContext">
+            <summary>Host-provided, single-invocation capability for committing an actual
+            frozen local-image read. The returned address is the admitted entry, not a UI selection.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.IToolExecutionContext">
+            <summary>Restricted invocation capabilities; deliberately no graph, UI, arbitrary service locator or writable globals.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.IToolSettingsFields">
+            <summary>Finite editing/binding declaration over the Runtime's actual settings type.
+            Read values are canonical projections. Materialization requires the complete resolved
+            field set; it never fills missing fields from a prior/default settings object.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.IToolKnownSettingsValidation">
+            <summary>Validate known settings at admission without resolving subscriptions or inventing values.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.IToolSettingsDraft">
+            <summary>Private, model-only editor state. Applying a rejected proposal must leave
+            the current settings unchanged. Raw text and source selection remain view concerns.</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.IToolSettingsDraft.CaptureValidatedFields">
+            <summary>Capture the current private edit snapshot after complete settings validation.</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.IToolSettingsDraft.ApplyFields(System.Collections.Generic.IReadOnlyDictionary{System.String,SunEyeVision.Plugin.Contracts.ParameterSetting},System.Action{SunEyeVision.Plugin.Contracts.FieldSettings})">
+            <summary>Prepare the complete candidate, call the host once, then install it.
+            A rejected or reentrant callback leaves this draft unchanged.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.FieldSettingsDraft">
+            <summary>Atomic model-only editing of the actual declaration and one frozen field snapshot.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.TypeRef">
+            <summary>Immutable semantic declaration. A runtime value never changes this descriptor.</summary>
+        </member>
+        <member name="P:SunEyeVision.Plugin.Contracts.InputValues.Declarations">
+            <summary>Frozen declarations only. Inspecting them does not read/copy values or touch resources.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.VariableReference">
+            <summary>A solution-owned variable identity and expected pure-value declaration.
+            No node/result identity, current value, name, UI or runtime resource is persisted.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.VariableValueDeclarations">
+            <summary>Persistent value declarations; runtime ROI and spatial declarations are unchanged.</summary>
+            <summary>Single semantic declaration for variable values supported by the formal scalar binding chain.</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.VariableValueDeclarations.ValidateEditableValue(System.String,System.Object)">
+            <summary>Validates the actual CLR value accepted by the text editor, including its established array forms.</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.Vision.IMonitorable">
+            <summary>
+            监视协议 — 业务对象向监视面板暴露具名字段的自描述接口。
+            监视面板递归调用 GetMonitorFields()，将每个 (FieldName, FieldValue) 渲染为子节点。
+            字段名为中文，值可为标量/IEnumerable/IMonitorable 自身（递归）。
+            零侵入：未实现本接口的对象仍走默认 ToString() 渲染路径。
+            </summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.Vision.IMonitorable.GetMonitorFields">
+            <summary>
+            返回当前对象的监视字段列表。
+            字段名使用中文（与显示名一致）。
+            </summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.Vision.IVisionContour">
+            <summary>
+            统一轮廓数据接口 - 对齐 Halcon HXLDCont / CvContour
+            生命周期由调用方管理，使用完毕必须调用 <see cref="M:System.IDisposable.Dispose"/>
+            </summary>
+            <remarks>
+            点集使用契约层中性的 <see cref="T:SunEyeVision.Plugin.Contracts.Point2"/>，不使用 WPF 的 System.Windows.Point：
+            本程序集为 UI-free 契约层，适配层负责在自己的坐标系内转换。
+            </remarks>
+        </member>
+        <member name="P:SunEyeVision.Plugin.Contracts.Vision.IVisionContour.Points">
+            <summary>轮廓点集</summary>
+        </member>
+        <member name="P:SunEyeVision.Plugin.Contracts.Vision.IVisionContour.IsClosed">
+            <summary>是否闭合轮廓</summary>
+        </member>
+        <member name="P:SunEyeVision.Plugin.Contracts.Vision.IVisionContour.IsEmpty">
+            <summary>是否为空轮廓</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.Vision.IVisionContour.Clone">
+            <summary>深拷贝</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.Vision.IVisionImage">
+            <summary>
+            统一图像数据接口 - 对齐 Halcon HImage / OpenCV Mat / CvImage
+            生命周期由调用方管理，使用完毕必须调用 <see cref="M:System.IDisposable.Dispose"/>
+            </summary>
+        </member>
+        <member name="P:SunEyeVision.Plugin.Contracts.Vision.IVisionImage.Width">
+            <summary>图像宽度（像素）</summary>
+        </member>
+        <member name="P:SunEyeVision.Plugin.Contracts.Vision.IVisionImage.Height">
+            <summary>图像高度（像素）</summary>
+        </member>
+        <member name="P:SunEyeVision.Plugin.Contracts.Vision.IVisionImage.Channels">
+            <summary>通道数（Gray8=1, Bgr24=3, Rgb24=3）</summary>
+        </member>
+        <member name="P:SunEyeVision.Plugin.Contracts.Vision.IVisionImage.IsEmpty">
+            <summary>是否为空图像</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.Vision.IVisionImage.GetPixelData">
+            <summary>获取像素数据字节数组（用于算法处理）</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.Vision.IVisionImage.Clone">
+            <summary>深拷贝</summary>
+        </member>
+        <member name="T:SunEyeVision.Plugin.Contracts.Vision.IVisionRegion">
+            <summary>
+            统一区域数据接口 - 对齐 Halcon HRegion / CvRegion
+            生命周期由调用方管理，使用完毕必须调用 <see cref="M:System.IDisposable.Dispose"/>
+            </summary>
+            <remarks>
+            外接矩形与轮廓点集使用契约层中性的 <see cref="T:SunEyeVision.Plugin.Contracts.Rect2"/> / <see cref="T:SunEyeVision.Plugin.Contracts.Point2"/>，
+            不使用 WPF 的 System.Windows.Rect/Point：本程序集为 UI-free 契约层。
+            </remarks>
+        </member>
+        <member name="P:SunEyeVision.Plugin.Contracts.Vision.IVisionRegion.PixelCount">
+            <summary>区域有效像素数</summary>
+        </member>
+        <member name="P:SunEyeVision.Plugin.Contracts.Vision.IVisionRegion.BoundingBox">
+            <summary>区域外接矩形（图像坐标系）</summary>
+        </member>
+        <member name="P:SunEyeVision.Plugin.Contracts.Vision.IVisionRegion.IsEmpty">
+            <summary>是否为空区域</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.Vision.IVisionRegion.GetContour">
+            <summary>获取区域外轮廓点集</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.Vision.IVisionRegion.GetMaskData">
+            <summary>获取二值掩码字节数组（非零=有效像素）</summary>
+        </member>
+        <member name="M:SunEyeVision.Plugin.Contracts.Vision.IVisionRegion.Clone">
+            <summary>深拷贝</summary>
+        </member>
+    </members>
+</doc>

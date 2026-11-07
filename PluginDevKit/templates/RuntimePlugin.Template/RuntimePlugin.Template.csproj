@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>RuntimePlugin.Template</AssemblyName>
+    <IsToolPlugin>true</IsToolPlugin>
+    <ToolComponentId>ExternalRuntimePlugin.Runtime</ToolComponentId>
+    <ToolComponentToolId>ExternalRuntimePlugin</ToolComponentToolId>
+    <ToolComponentRole>Runtime</ToolComponentRole>
+    <ToolComponentEntryType>ExternalRuntimePlugin.RuntimePluginDefinition</ToolComponentEntryType>
+  </PropertyGroup>
+</Project>

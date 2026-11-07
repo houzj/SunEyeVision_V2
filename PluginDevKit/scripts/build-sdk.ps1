@@ -22,47 +22,34 @@ if (-not (Test-Path $SdkOutputDir)) {
     New-Item -ItemType Directory -Path $SdkOutputDir -Force | Out-Null
     Write-Host "创建 SDK 目录: $SdkOutputDir" -ForegroundColor Green
 }
+Get-ChildItem -LiteralPath $SdkOutputDir -Force -ErrorAction SilentlyContinue |
+    Remove-Item -Recurse -Force
 
-# 构建 SDK 项目（正确路径）
-$SdkProject = Join-Path $MainProjectDir "src\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj"
-
-if (-not (Test-Path $SdkProject)) {
-    Write-Host "SDK 项目不存在: $SdkProject" -ForegroundColor Red
-    throw "找不到 SDK 项目文件"
-}
-
-Write-Host "构建 SDK 项目..." -ForegroundColor Yellow
-dotnet build $SdkProject -c $Configuration --no-incremental
-
-if ($LASTEXITCODE -ne 0) {
-    throw "SDK 项目构建失败"
-}
-
-# 复制 SDK 文件
-$SdkBinDir = Join-Path $MainProjectDir "src\Plugin.SDK\bin\$Configuration\net9.0"
-$SdkFiles = @(
-    "SunEyeVision.Plugin.SDK.dll",
-    "SunEyeVision.Plugin.SDK.pdb",
-    "SunEyeVision.Plugin.SDK.xml",
-    "OpenCvSharp.dll",
-    "OpenCvSharp.Extensions.dll"
+$projects = @(
+    "src\Plugin.Contracts\SunEyeVision.Plugin.Contracts.csproj",
+    "src\Plugin.Runtime\SunEyeVision.Plugin.Runtime.csproj",
+    "src\Plugin.Wpf\SunEyeVision.Plugin.Wpf.csproj"
 )
+foreach ($relative in $projects) {
+    $project = Join-Path $MainProjectDir $relative
+    dotnet build $project -c $Configuration --no-restore
+    if ($LASTEXITCODE -ne 0) { throw "发布 SDK 工程构建失败：$relative" }
+}
 
+$ReleaseDir = Join-Path $MainProjectDir "Release\SunEyeVision_v1.0.0\SunEyeVision"
+$SdkFiles = @(
+    "SunEyeVision.Plugin.Contracts.dll",
+    "SunEyeVision.Plugin.Runtime.dll",
+    "SunEyeVision.Plugin.Wpf.dll",
+    "SunEyeVision.Foundation.dll"
+)
 foreach ($file in $SdkFiles) {
-    $srcPath = Join-Path $SdkBinDir $file
-    if (Test-Path $srcPath) {
-        Copy-Item $srcPath $SdkOutputDir -Force
-        Write-Host "复制: $file" -ForegroundColor Green
-    }
+    $srcPath = Join-Path $ReleaseDir $file
+    if (-not (Test-Path $srcPath)) { throw "发布 SDK 文件不存在：$srcPath" }
+    Copy-Item $srcPath $SdkOutputDir -Force
 }
-
-# 复制运行时依赖
-$RuntimeDir = Join-Path $SdkBinDir "runtimes"
-if (Test-Path $RuntimeDir) {
-    $DestRuntimeDir = Join-Path $SdkOutputDir "runtimes"
-    Copy-Item $RuntimeDir $DestRuntimeDir -Recurse -Force
-    Write-Host "复制: runtimes/" -ForegroundColor Green
-}
+$contractsXml = Join-Path $ReleaseDir 'SunEyeVision.Plugin.Contracts.xml'
+if (Test-Path $contractsXml) { Copy-Item $contractsXml $SdkOutputDir -Force }
 
 Write-Host "`n=== SDK 构建完成 ===" -ForegroundColor Cyan
 Write-Host "SDK 文件位于: $SdkOutputDir"

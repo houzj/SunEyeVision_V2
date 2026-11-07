@@ -2,11 +2,15 @@
   <PropertyGroup>
     <TargetFramework>net9.0-windows</TargetFramework>
     <PlatformTarget>x64</PlatformTarget>
-    <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>SamplePlugin</RootNamespace>
     <AssemblyName>SamplePlugin</AssemblyName>
+    <IsToolPlugin>true</IsToolPlugin>
+    <ToolComponentId>SamplePlugin.Runtime</ToolComponentId>
+    <ToolComponentToolId>SamplePlugin</ToolComponentToolId>
+    <ToolComponentRole>Runtime</ToolComponentRole>
+    <ToolComponentEntryType>SamplePlugin.SampleTool</ToolComponentEntryType>
     
     <!-- 插件元数据 -->
     <PluginId>SamplePlugin</PluginId>
@@ -16,8 +20,8 @@
     <PluginAuthor>SunEyeVision Team</PluginAuthor>
   </PropertyGroup>
 
-  <!-- 引用 SDK - 使用项目引用（内部开发模式） -->
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj" />
+    <Compile Remove="Plugin.cs" />
+    <Compile Remove="SampleTool.cs" />
   </ItemGroup>
 </Project>

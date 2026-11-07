@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>结构图样板 · 4 种模式自检</title>
+<link rel="stylesheet" href="../../docs/00-索引/assets/doc.css">
+</head>
+<body>
+<div class="wrap">
+
+<nav class="crumbs">
+    <a href="../../docs/00-索引/主题台账.html">主题台账</a>
+    <a href="../../docs/00-索引/文档索引.html">文档索引</a>
+    <a href="../../docs/09-现行文档/README.html">现行文档说明</a>
+</nav>
+
+<header class="doc-header">
+    <h1>结构图样板<span class="badge current">样式自检</span></h1>
+    <p class="doc-meta">
+        最后更新：2026-11-05
+        <span class="sep">·</span>用途：核对 <code>doc.css</code> 的 4 种结构图模式与表格样式
+        <span class="sep">·</span>本页不参与索引
+    </p>
+</header>
+
+<section class="card lead">
+    <h2>这一页是干什么的</h2>
+    <p>10 篇现行文档里有 <strong>20 张 Mermaid 图</strong>，全部要改成零依赖的 HTML/CSS 结构图。本页把 4 种模式各做一份，确认配色、间距、箭头、换行都正常之后，再把 20 张逐一替换。</p>
+</section>
+
+<section class="card">
+    <h2>模式 1 · 竖向流程链</h2>
+    <figure class="diagram">
+        <div class="d-chain-v">
+            <div class="d-node accent">结果提交<small>一次性替换三层数据</small></div>
+            <div class="d-arrow down">↓</div>
+            <div class="d-node">建立轮廓记录与空间索引</div>
+            <div class="d-arrow down">↓</div>
+            <div class="d-node">按当前视口查询候选</div>
+            <div class="d-arrow down">↓</div>
+            <div class="d-node ok">分组合并 Geometry<small>OK / NG / 颜色 / 线宽 / 填充</small></div>
+            <div class="d-arrow down">↓</div>
+            <div class="d-node plain">少量 DrawGeometry 提交</div>
+        </div>
+        <figcaption>对应原 <code>flowchart TB</code> 线性链：节点自上而下，箭头用字符实现，不用 SVG。</figcaption>
+    </figure>
+</section>
+
+<section class="card">
+    <h2>模式 2 · 横向流程链</h2>
+    <figure class="diagram">
+        <div class="d-chain-h">
+            <div class="d-node accent">完整业务报文到达</div>
+            <div class="d-arrow right">→</div>
+            <div class="d-node">有界缓冲<small>每来源 ≤256 条 / 4 MiB</small></div>
+            <div class="d-arrow right">→</div>
+            <div class="d-node warn">本节点游标<small>下一条未消费？</small></div>
+            <div class="d-arrow right">→</div>
+            <div class="d-node ok">发布本次输出<small>+ 推进游标</small></div>
+        </div>
+        <figcaption>对应原 <code>flowchart LR</code>：横向排列，窄屏自动换行。</figcaption>
+    </figure>
+</section>
+
+<section class="card">
+    <h2>模式 3 · 分层依赖</h2>
+    <figure class="diagram">
+        <div class="d-layers">
+            <div class="d-layer">
+                <div class="layer-name">基础</div>
+                <div class="layer-body">
+                    <div class="d-node plain">Foundation</div>
+                </div>
+            </div>
+            <div class="d-arrow down">↓</div>
+            <div class="d-layer">
+                <div class="layer-name">契约</div>
+                <div class="layer-body">
+                    <div class="d-node accent">Plugin.Contracts</div>
+                    <div class="d-node accent">Plugin.Runtime</div>
+                </div>
+            </div>
+            <div class="d-arrow down">↓</div>
+            <div class="d-layer">
+                <div class="layer-name">对外契约</div>
+                <div class="layer-body">
+                    <div class="d-node accent">Plugin.SDK</div>
+                    <div class="d-node">Tool.Kernels</div>
+                </div>
+            </div>
+            <div class="d-arrow down">↓</div>
+            <div class="d-layer">
+                <div class="layer-name">业务</div>
+                <div class="layer-body">
+                    <div class="d-node">Domain</div>
+                    <div class="d-node">Execution</div>
+                    <div class="d-node plain">Core / Application</div>
+                </div>
+            </div>
+            <div class="d-arrow down">↓</div>
+            <div class="d-layer">
+                <div class="layer-name">界面</div>
+                <div class="layer-body">
+                    <div class="d-node plain">UI</div>
+                    <div class="d-node plain">Plugin.Wpf</div>
+                </div>
+            </div>
+        </div>
+        <div class="d-edges">
+            <span>Foundation → Plugin.Contracts → Plugin.Runtime → Plugin.SDK</span>
+            <span>Core / Application → UI / CommonControl</span>
+            <span>Plugin.Contracts → Plugin.Wpf（跨层，向上依赖）</span>
+        </div>
+        <figcaption>对应原 <code>flowchart TB</code> 多层多箭头：每层一条浅色带，层名右对齐；层带只画主链，其余依赖边列在下方虚线分隔的清单里。</figcaption>
+    </figure>
+</section>
+
+<section class="card">
+    <h2>模式 4 · 时序</h2>
+    <figure class="diagram">
+        <table class="d-seq">
+            <tbody>
+                <tr>
+                    <td>用户打开方案</td>
+                    <td><span class="who">UI</span>触发加载</td>
+                </tr>
+                <tr>
+                    <td>读持久化相机列表</td>
+                    <td><span class="who">App</span>取出身份与配置</td>
+                </tr>
+                <tr>
+                    <td>重新发现真实设备</td>
+                    <td><span class="who">发现器</span>返回 <code>CameraDescriptor</code> 列表</td>
+                </tr>
+                <tr>
+                    <td>按身份重绑</td>
+                    <td><span class="who">App</span>按 <code>DeviceId</code> / 序列号 / MAC 匹配</td>
+                </tr>
+                <tr>
+                    <td>注册运行时描述</td>
+                    <td><span class="who">运行时</span>接受设备描述</td>
+                </tr>
+                <tr>
+                    <td>恢复连接</td>
+                    <td><span class="who">运行时</span>按 <code>AutoConnect</code> + <code>IsEnabled</code> 尝试连接，最多等 10 秒</td>
+                </tr>
+            </tbody>
+        </table>
+        <figcaption>对应原 <code>sequenceDiagram</code>：两列表格，左列步骤加粗并带蓝色左边框，右列用标签标明参与方。</figcaption>
+    </figure>
+</section>
+
+<section class="card">
+    <h2>模式 5 · 带标签边与判定节点</h2>
+    <figure class="diagram">
+        <div class="d-chain-v">
+            <div class="d-node accent">脚本代码 + 输入配置</div>
+            <div class="d-arrow down">↓</div>
+            <div class="d-node">编译<span class="d-edge">命中缓存则 0ms</span></div>
+            <div class="d-arrow down">↓</div>
+            <div class="d-node decision">沙箱池命中？</div>
+            <div class="d-arrow down">↓</div>
+            <div class="d-row">
+                <div class="d-node ok">复用已有程序集<span class="d-edge">命中</span></div>
+                <div class="d-node warn">新建沙箱<span class="d-edge">未命中</span></div>
+            </div>
+            <div class="d-arrow down">↓</div>
+            <div class="d-node plain">每次执行新建实例<small>状态干净</small></div>
+        </div>
+        <div class="d-loop">不卸载沙箱，回到沙箱池</div>
+        <figcaption>对应原 <code>flowchart TB</code> 里的 <code>{"…"}</code> 判定与 <code>--&gt;|标签|</code>：判定节点用暖色底 + <code>◇</code> 前缀，边标签用小灰 chip。</figcaption>
+    </figure>
+</section>
+
+<section class="card">
+    <h2>模式 6 · 一对多扇出与虚线说明</h2>
+    <figure class="diagram">
+        <div class="d-fan">
+            <div class="d-node accent">version.json<small>唯一真源</small></div>
+            <div class="d-arrow down">↓</div>
+            <div class="d-branches">
+                <div class="d-branch">
+                    <span class="d-edge">注入</span>
+                    <div class="d-arrow down">↓</div>
+                    <div class="d-node">FileVersion<small>主程序 / SDK / 全部工具</small></div>
+                </div>
+                <div class="d-branch">
+                    <span class="d-edge">注入</span>
+                    <div class="d-arrow down">↓</div>
+                    <div class="d-node">InformationalVersion<small>版本 + 提交 SHA</small></div>
+                </div>
+                <div class="d-branch">
+                    <span class="d-edge">不推导</span>
+                    <div class="d-arrow down">↓</div>
+                    <div class="d-node note">AssemblyVersion<small>2.x 内恒定</small></div>
+                </div>
+            </div>
+        </div>
+        <figcaption>对应原 <code>flowchart</code> 的一源多目标与虚线边：虚线框表示「非主链 / 不推导 / 兼容回退」。</figcaption>
+    </figure>
+</section>
+
+<section class="card">
+    <h2>表格样式自检</h2>
+    <p>现行文档里表格是主形态（10 篇共 726 行），重点看：表头底色、斑马纹、悬停高亮、单元格顶部对齐、长代码换行。</p>
+    <table>
+        <thead>
+            <tr><th style="width:22%">决策</th><th style="width:40%">理由</th><th style="width:20%">依据</th><th>性质</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>契约层不出现厂商类型</td>
+                <td>一旦泄漏，UI 与工作流就被绑死，新增厂商必须改上层</td>
+                <td>20260925</td>
+                <td><span class="t-ok">已实施</span></td>
+            </tr>
+            <tr>
+                <td>同一设备只允许一个连接会话</td>
+                <td>预览、工作流、管理器共用一台相机，重复打开必然冲突</td>
+                <td>20260925 §3</td>
+                <td><span class="t-ok">已实施</span></td>
+            </tr>
+            <tr>
+                <td>运行轮次与模板基准版本</td>
+                <td>结果只带帧谱系，同一帧不同轮无法区分，历史结果可能被误解为同一轮</td>
+                <td>20261014</td>
+                <td><span class="t-warn">未做</span></td>
+            </tr>
+            <tr>
+                <td>非等比缩放下的圆形保持</td>
+                <td>圆在非等比缩放下不再保持圆形，用单一 <code>ScaleFactor</code> 静默近似会产生错误几何</td>
+                <td>20261014 §3</td>
+                <td><span class="t-muted">契约要求，未逐工具验</span></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>含尖括号与管道符的内容</h3>
+    <p>原文里这些必须原样显示：<code>tools/&lt;toolId&gt;/ui-preview.svg</code>、<code>List&lt;RegionItem&gt;</code>、<code>codeHash|宿主指纹|引用指纹</code>、<code>&amp;lt;</code>。</p>
+</section>
+
+<section class="card">
+    <h2>提示条与徽章</h2>
+    <div class="offline">纯本地静态页：双击用 <code>file://</code> 打开即可，不需要启动任何本地服务。</div>
+    <div class="notice">注意：状态列里「未验」是真实未验，不是省略。不要按「已实施」理解。</div>
+    <p style="margin-top:14px">
+        <span class="badge current">现行</span>
+        <span class="badge partial">部分未实施</span>
+        <span class="badge unverified">部分未验</span>
+        <span class="badge deprecated">已废弃</span>
+        <span class="badge evidence">证据</span>
+        <span class="badge archive">归档</span>
+    </p>
+</section>
+
+<nav class="doc-nav">
+    <a class="primary" href="../../docs/00-索引/主题台账.html">主题台账</a>
+    <a href="../../docs/00-索引/文档索引.html">文档索引</a>
+    <a href="../../docs/09-现行文档/README.html">现行文档说明</a>
+</nav>
+
+</div>
+</body>
+</html>

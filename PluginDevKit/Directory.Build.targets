@@ -1,0 +1,16 @@
+<Project>
+  <!-- 外部开发包使用自身合同和输出目录，不继承主仓库的产品打包、HALCON 部署和旧 SDK 门禁。 -->
+  <ItemGroup Condition="'$(ToolComponentId)'!=''">
+    <AssemblyAttribute Include="SunEyeVision.Plugin.Contracts.ToolComponentAttribute">
+      <_Parameter1>$(ToolComponentId)</_Parameter1>
+      <_Parameter2>$(ToolComponentToolId)</_Parameter2>
+      <_Parameter3>$(ToolComponentRole)</_Parameter3>
+      <_Parameter4>global::SunEyeVision.Plugin.Contracts.FoundationContract.Major</_Parameter4>
+      <_Parameter4_IsLiteral>true</_Parameter4_IsLiteral>
+      <_Parameter5>global::SunEyeVision.Plugin.Contracts.FoundationContract.Minor</_Parameter5>
+      <_Parameter5_IsLiteral>true</_Parameter5_IsLiteral>
+      <_Parameter6>$(ToolComponentEntryType)</_Parameter6>
+      <_Parameter7 Condition="'$(ToolComponentCompanionToolId)'!=''">$(ToolComponentCompanionToolId)</_Parameter7>
+    </AssemblyAttribute>
+  </ItemGroup>
+</Project>

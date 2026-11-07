@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>WpfTool.Template</AssemblyName>
+    <IsToolPlugin>true</IsToolPlugin>
+    <ToolComponentId>ExternalRuntimePlugin.Editor</ToolComponentId>
+    <ToolComponentToolId>ExternalRuntimePlugin</ToolComponentToolId>
+    <ToolComponentRole>Editor</ToolComponentRole>
+    <ToolComponentCompanionToolId>ExternalRuntimePlugin</ToolComponentCompanionToolId>
+    <ToolComponentEntryType>ExternalWpfTool.WpfToolPresentationFactory</ToolComponentEntryType>
+  </PropertyGroup>
+</Project>

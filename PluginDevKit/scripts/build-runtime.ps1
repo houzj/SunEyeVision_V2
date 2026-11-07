@@ -48,7 +48,11 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # Copy runtime files
-$MainBinDir = Join-Path $MainProjectDir "src\UI\bin\$Configuration\net9.0-windows"
+$MainBinDir = if ($Configuration -eq 'Debug') {
+    Join-Path $MainProjectDir 'dev\Debug'
+} else {
+    Join-Path $MainProjectDir 'Release\SunEyeVision_v1.0.0\SunEyeVision'
+}
 
 Write-Host "Copying runtime files..." -ForegroundColor Yellow
 
@@ -67,6 +71,11 @@ Get-ChildItem $MainBinDir | Where-Object {
         Copy-Item $_.FullName $RuntimeOutputDir -Force
     }
     Write-Host "Copied: $($_.Name)" -ForegroundColor Green
+}
+
+if ($Configuration -eq 'Debug') {
+    Remove-Item (Join-Path $RuntimeOutputDir 'release-payload.json') -Force -ErrorAction SilentlyContinue
+    Remove-Item (Join-Path $RuntimeOutputDir 'ToolGroups.xml') -Force -ErrorAction SilentlyContinue
 }
 
 # Ensure plugins directory exists

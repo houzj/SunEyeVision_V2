@@ -1,0 +1,13 @@
+Plugin.SDK 退役门禁 2026-11-08
+
+脚本：scripts/verification/Test-PluginSdkRetirementGate.ps1
+
+ReportOnly 结果：
+- 直接项目消费者：20
+- 工具消费者：20
+- src/Plugin.SDK 目录条目：0
+- 20 个待迁移工具已逐项列出
+
+正常门禁结果：按预期阻断，原因是 20 个直接消费者仍引用旧 SDK。ImageSource 与 BlobAnalysis 不在阻断列表中。
+
+该门禁用于防止未完成消费者迁移时删除旧 SDK，不代表旧 SDK 仍应继续扩展。

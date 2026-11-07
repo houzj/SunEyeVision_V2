@@ -246,3 +246,6 @@ UI Release 封签后再次运行 RuntimeEditorProductionProbe：ImageLoad 绑定
 
 
 PluginDevKit 外部工程隔离验收已通过：复制 SDK DLL/XML、模板及开发包自带 Directory.Build.props/targets 到 artifacts/validation/ExternalSdkAcceptance-20261108，Runtime/WPF 模板 Release 构建 0 错误，Runtime/Editor ToolComponent 身份校验 PASS。证据：docs/collaboration/evidence/PluginDevKit外部工程隔离验收-20261108.txt。仍未完成 Visual Studio 启动或附加正式产品宿主人工验收。
+
+
+新增 scripts/verification/Test-PluginSdkRetirementGate.ps1，ReportOnly 列出 20 个直接消费者，正常模式按预期阻断旧 SDK 删除。ImageSource/BlobAnalysis 无旧 SDK 消费。证据：docs/collaboration/evidence/PluginSDK退役门禁-20261108.txt。

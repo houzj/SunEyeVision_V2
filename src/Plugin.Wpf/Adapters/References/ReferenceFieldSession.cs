@@ -74,7 +74,23 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     public bool IsSelectedSubscribeParam=>_expansion is {IsValid:true,HasSelection:true};
     public bool IsDropDownOpen {get=>_sourceOpen;set{if(_sourceOpen==value)return;_sourceOpen=value;if(value)_popupGeneration++;Notify(nameof(IsDropDownOpen));}}
     public bool IsTextDropDownOpen {get=>_indexOpen;set{if(_indexOpen==value)return;_indexOpen=value;if(value)_popupGeneration++;Notify(nameof(IsTextDropDownOpen));}}
-    public string CurValueA {get=>_pendingText??AcceptedText();set{ObserveText(value);if(!_suspended&&value.Length!=0&&_pendingText is not null)TryCommitPendingFromUi();}}
+    public string CurValueA
+    {
+        get=>_pendingText??AcceptedText();
+        set
+        {
+            // DeleteTextBox writes an empty string when the visible reference text
+            // is already empty. In reference mode that is still an explicit clear
+            // request for a retained constant setting.
+            if(value==CurValueA)
+            {
+                if(value.Length==0&&_state.IsReferenceMode&&_state.Accepted is ConstantSetting)ClearSource();
+                return;
+            }
+            ObserveText(value);
+            if(!_suspended&&value.Length!=0&&_pendingText is not null)TryCommitPendingFromUi();
+        }
+    }
     public ICommand DropDownCommand {get;}
     public ICommand ClickCommand {get;}
     public ICommand IndexClickCommand {get;}
@@ -324,6 +340,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         if(pendingVersion==_pendingVersion)SetPending(null);
         ParameterCleanup.Run(new Action[]{OnStateChanged,()=>{if(popupGeneration==_popupGeneration)RequestClose();}});
     }
+    internal void ClearFromUi() => ClearSource();
     private bool ClearReference()
     {
         if(_state.Port.Required){_state.ClearReference();return !_disposed&&!_state.IsDisposed&&_state.ReferenceCleared;}

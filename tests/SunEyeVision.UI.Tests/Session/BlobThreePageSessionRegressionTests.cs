@@ -37,7 +37,7 @@ public sealed class BlobThreePageSessionRegressionTests
             fixture.Fields(node,("input.pose",new ConstantSetting(pose)),
                 ("field:c95f3a26edf55097863a7ec47d17cce5",new ConstantSetting(false)));
             fixture.Main.SelectedNode=node;fixture.Main.OpenDebugWindowCommand.Execute(node);UiRuntime.Pump();
-            var window=System.Windows.Application.Current.Windows.OfType<RuntimeToolEditorWindow>().Single();
+            var window=System.Windows.Application.Current.Windows.OfType<RuntimeToolEditorWindow>().Single();UiRuntime.AwaitEditorReady(window);
             var control=window.Editor;
             var settings=Assert.Single(UiRuntime.Visuals<DeclaredSettingsView>(control));
             settings.SelectedPageIndex=0;window.UpdateLayout();UiRuntime.Pump();
@@ -91,7 +91,7 @@ public sealed class BlobThreePageSessionRegressionTests
             var original=node.Configuration;
             fixture.Main.SelectedNode=node;
             fixture.Main.OpenDebugWindowCommand.Execute(node);UiRuntime.Pump();
-            var window=System.Windows.Application.Current.Windows.OfType<RuntimeToolEditorWindow>().Single();
+            var window=System.Windows.Application.Current.Windows.OfType<RuntimeToolEditorWindow>().Single();UiRuntime.AwaitEditorReady(window);
             var control=window.Editor;
             var context=Assert.IsType<ProductionEditorContext>(ToolEditorCommit.GetDraftContext(control));
             Assert.Equal(125L,context.ReadCurrentParameter(threshold)?.Value);

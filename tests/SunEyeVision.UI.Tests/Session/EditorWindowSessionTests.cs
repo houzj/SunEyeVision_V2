@@ -31,8 +31,10 @@ public sealed class EditorWindowSessionTests
  [Fact] public void Actual_tool_editor_is_private_and_deleted_editor_cannot_publish()=>UiRuntime.Run(()=>
  {
   using var f=new DocumentUiFixture();var node=f.Add("BlobAnalysis");f.Main.SelectedNode=node;f.Main.OpenDebugWindowCommand.Execute(node);UiRuntime.Pump();
-  var window=System.Windows.Application.Current.Windows.OfType<RuntimeToolEditorWindow>().Single();var context=Assert.IsType<ProductionEditorContext>(ToolEditorCommit.GetDraftContext(window.Editor));
-  Assert.True(context.IsValid);Assert.True(window.ExecuteOnce.CanExecute(null));Assert.False(window.StartContinuous.CanExecute(null));
+  var window=System.Windows.Application.Current.Windows.OfType<RuntimeToolEditorWindow>().Single();UiRuntime.Await(window.AssemblyReadyTask);var context=Assert.IsType<ProductionEditorContext>(ToolEditorCommit.GetDraftContext(window.Editor));
+  Assert.True(context.IsValid);
+  Assert.False(window.ExecuteOnce.CanExecute(null));
+  Assert.False(window.StartContinuous.CanExecute(null));
   bool? dirtyDuringNotification=null;Exception? notificationFailure=null;
   EventHandler<SunEyeVision.Application.DocumentChangeSet> observe=(_,_)=>
   {try{dirtyDuringNotification=f.Session.HasUnsavedChanges;}catch(Exception error){notificationFailure=error;}};

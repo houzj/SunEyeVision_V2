@@ -116,6 +116,7 @@ public partial class MainWindowViewModel
                 catch (Exception error)
                 {
                     Foundation.Logging.PluginLogger.Error(error.Message,nameof(MainWindowViewModel),error);
+                    window.SetAssemblyFailure(error);
                     context.Discard();
                 }
             }));

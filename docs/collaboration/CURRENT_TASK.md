@@ -338,3 +338,11 @@ REA 已确认 `IMVSBlobFindModuCs.dll` 只负责 `BlobFindResult` 容器初始�
 在 D:\MyWork\REA逆向测试\docs\joint-audit 发现并迁入此前被标为缺失的 8 份 Blob 原厂证据，索引与 SHA-256 见 docs/collaboration/evidence/Blob-原厂证据迁移清单-20261108.md。补证明确了 VM 参数窗口的 AlgorithmTabRoot 组装链、参数恢复与关闭入口、Blob 参数合同、4/8 连通参数入口、形状量化校验、BinaryImage/BlobImage 独立输出声明，以及 Result List 的 Angle/BlobAngle 映射。
 
 补证没有证明填孔和阈值边界、4/8 连通的对角行为、形状最终比较公式、双图像像素与 Domain、长短轴半长/全长或动态原机差分。上述项继续保持未确认，不把 HALCON 结果冒充 VM 等价。下一步可依据已迁移的组装和参数证据继续代码落地，不再把“证据文件未迁入”作为阻塞理由。
+
+## 2026-11-08 窗口就绪状态与引用清空语义收口
+
+窗口宿主新增内部组装就绪任务。生产主窗仍先显示窗口，再后台绑定参数页，绑定失败会以失败任务和窗口状态报告，不回退到显示前同步构造。UI 测试等待真实就绪任务后再断言命令和参数视图。
+
+Blob 引用输入修正 DeleteTextBox 的空文本清理路径。WPF 绑定在目标与源都为空时可能跳过 setter，现由逆向引用控件的 Delete 键直接调用同一 ReferenceFieldSession 清理路径，正式字段会提交 UnsetSetting，位置修正视图随之退订和隐藏。
+
+验证结果：窗口、调试、Blob 三页、连续运行和释放相关 UI 回归 16/16 通过。ImageSource Runtime 31/31、BlobAnalysis Runtime 38/38、RuntimeEditorProductionProbe 和生产 ImageLoad→Blob 链继续通过。

@@ -60,6 +60,16 @@ internal static class UiRuntime
         while(!task.IsCompleted){if(DateTime.UtcNow>deadline)throw new TimeoutException("实际UI异步操作未排空。");Pump();Thread.Sleep(1);}
         task.GetAwaiter().GetResult();Pump();
     }
+    internal static void AwaitEditorReady(SunEyeVision.UI.Services.Editing.RuntimeToolEditorWindow window)
+    {
+        Await(window.AssemblyReadyTask);
+        var deadline=DateTime.UtcNow.AddSeconds(35);
+        while(!window.Editor.CanDebug)
+        {
+            if(DateTime.UtcNow>deadline)throw new TimeoutException("实际参数页未进入可调试状态。");
+            Pump();Thread.Sleep(1);
+        }
+    }
     internal static object? Call(object target,string method,params object?[] args)
     {
         try{return target.GetType().GetMethods(BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public).Single(item=>item.Name==method&&item.GetParameters().Length==args.Length).Invoke(target,args);}

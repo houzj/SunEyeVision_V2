@@ -27,6 +27,7 @@ public sealed class RuntimeToolEditorWindow : BaseWindow, INativeToolCommands
     private readonly TextBlock _message = new() { TextWrapping = TextWrapping.Wrap, Visibility = Visibility.Collapsed };
     private IDisposable? _commands;
     private bool _closed, _running, _closing, _closeAllowed, _assemblyReady;
+    private readonly TaskCompletionSource<bool> _assemblyCompletion = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private Task<bool>? _closeTask;
     private Func<bool> _canRun = () => false;
     public RuntimeNodeConfigurationControl Editor { get; }
@@ -38,6 +39,7 @@ public sealed class RuntimeToolEditorWindow : BaseWindow, INativeToolCommands
     public ICommand Stop { get; }
     public ICommand ExecuteOnce { get; }
     public ICommand Confirm { get; }
+    internal Task AssemblyReadyTask => _assemblyCompletion.Task;
 
     public RuntimeToolEditorWindow(RuntimeNodeConfigurationControl editor)
     {
@@ -60,6 +62,7 @@ public sealed class RuntimeToolEditorWindow : BaseWindow, INativeToolCommands
         Closed += (_, _) =>
         {
             _closed = true;
+            _assemblyCompletion.TrySetCanceled();
             void Release(Action action) { try { action(); } catch (Exception error) { Foundation.Logging.PluginLogger.Error(error.Message, nameof(RuntimeToolEditorWindow), error); } }
             Release(() => editor.ExecutionCompleted -= ForwardResult);
             Release(() => editor.DebugStateChanged -= Notify);
@@ -91,7 +94,15 @@ public sealed class RuntimeToolEditorWindow : BaseWindow, INativeToolCommands
     }
     internal void SetRunAvailability(Func<bool> canRun) { _canRun = canRun ?? throw new ArgumentNullException(nameof(canRun)); Notify(); }
     internal void SetAssemblyPending() { if (_closed) return; _assemblyReady = false; _message.Text = "正在组装参数页…"; _message.Visibility = Visibility.Visible; Notify(); }
-    internal void SetAssemblyReady() { if (_closed) return; _assemblyReady = true; _message.Text = ""; _message.Visibility = Visibility.Collapsed; Notify(); }
+    internal void SetAssemblyReady() { if (_closed) return; _assemblyReady = true; _assemblyCompletion.TrySetResult(true); _message.Text = ""; _message.Visibility = Visibility.Collapsed; Notify(); }
+    internal void SetAssemblyFailure(Exception error)
+    {
+        if (_closed) return;
+        _assemblyCompletion.TrySetException(error);
+        _message.Text = "参数页组装失败：" + error.Message;
+        _message.Visibility = Visibility.Visible;
+        Notify();
+    }
     internal void RefreshRunAvailability() { if (!_closed) Notify(); }
     private async Task RunOnceAsync()
     {

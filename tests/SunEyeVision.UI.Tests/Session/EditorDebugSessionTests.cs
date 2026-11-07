@@ -16,7 +16,7 @@ public sealed class EditorDebugSessionTests
  private static RuntimeToolEditorWindow Open(DocumentUiFixture f,NodeDefinition node)
  {
   f.Main.SelectedNode=node;f.Main.OpenDebugWindowCommand.Execute(node);UiRuntime.Pump();
-  return System.Windows.Application.Current.Windows.OfType<RuntimeToolEditorWindow>().Single();
+  var window=System.Windows.Application.Current.Windows.OfType<RuntimeToolEditorWindow>().Single();UiRuntime.AwaitEditorReady(window);return window;
  }
  private static void Run(RuntimeToolEditorWindow window)
  {
@@ -97,7 +97,7 @@ public sealed class EditorDebugSessionTests
    ToolEditorCommit.AttachDraftContext(control,Context);Context.PrepareView=()=>control.TryCapture(out var error)?null:error;Context.HasPendingViewEdits=()=>control.HasPendingEdits;Context.PreserveViewAfterRebase=control.AdoptRebasedDraft;
    control.ConfigureDebug(Context,()=>factory,()=>true,_=>{},_=>null,()=>{});Window.SetRunAvailability(()=>true);
    Context.Deactivated+=control.Dispose;Context.Deactivated+=()=>{if(Window.IsLoaded)Window.Close();};Window.Closed+=(_,_)=>Context.Discard();
-   control.BindDraft(Context.PreparedDraft);Window.Show();UiRuntime.Pump();
+   control.BindDraft(Context.PreparedDraft);Window.Show();Window.SetAssemblyReady();UiRuntime.Pump();
   }
   public void Dispose(){UiRuntime.Await(Window.CloseAndDrainAsync());Context.Discard();}
  }

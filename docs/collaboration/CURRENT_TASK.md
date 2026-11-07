@@ -50,7 +50,7 @@
 
 探针逐段对照确认，上一版首显仍把非当前页的 Blob 运行参数和结果控件放在 `DispatcherPriority.Background`，而宿主首帧边界使用 `ApplicationIdle`，因此首帧会等待全部页面组合。已将非当前页预热延后到 `DispatcherPriority.SystemIdle`。首帧先显示窗口，当前页在首个 SystemIdle 阶段按 VM 参数树和模板入口完成，其他页随后一次性创建并缓存，重复切换只刷新状态。
 
-本批验证：全量 `dotnet build SunEyeVision.slnx -c Release --no-restore -p:UseSharedCompilation=false` 0 错误；ImageSource Runtime 31/31；BlobAnalysis Runtime 38/38；`RuntimeEditorProductionProbe` 通过两个真实节点的参数绑定、窗口首显、三页切换、重复切换、捕获、回执和关闭释放。最新读数为 ImageLoad 绑定 711ms、首显 1302ms；BlobAnalysis 绑定 772ms、首显 321ms；Blob 第 2/3 页首次切换 221ms/254ms，重复切换 17ms/28ms。证据保存在 `docs/collaboration/evidence/ImageSource-Blob-VM首帧调度空闲预热回归-20261108.txt`。
+本批验证：全量 `dotnet build SunEyeVision.slnx -c Release --no-restore -p:UseSharedCompilation=false` 0 错误，UI Release 构建 0 错误；ImageSource Runtime 31/31；BlobAnalysis Runtime 38/38；窗口、调试、三页、连续运行和释放 UI 回归 16/16；`RuntimeEditorProductionProbe` 通过两个真实节点的参数绑定、窗口首显、三页切换、重复切换、捕获、回执和关闭释放。最新读数为 ImageLoad 绑定 711ms、首显 1302ms；BlobAnalysis 绑定 772ms、首显 321ms；Blob 第 2/3 页首次切换 221ms/254ms，重复切换 17ms/28ms。证据保存在 `docs/collaboration/evidence/ImageSource-Blob-VM首帧调度空闲预热回归-20261108.txt`。
 
 这次调整把 Blob 首显从同一环境下约 4.6 秒降到约 0.32 秒，首次 Tab 切换维持在约 0.22–0.25 秒，证明首帧阻塞主要来自页面同步组装和非当前页预热调度，不是 Tab 控件切换本身。仍未取得 VM 同机动态耗时，不能据此宣称已经达到原厂数值；Blob ROI 组合约 1.07 秒、运行参数字段树约 1.22 秒、结果显示组合约 0.78 秒仍是本方下一轮控件模板复用和视觉树构造的主要成本。
 

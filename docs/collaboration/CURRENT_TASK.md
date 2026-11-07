@@ -305,3 +305,30 @@ CodeBuddy 的“数据树 + 模板 + 页面复用”方向已作为候选重构�
 ## 2026-11-08 VM Blob 原件结果桥接补证
 
 REA 已确认 `IMVSBlobFindModuCs.dll` 只负责 `BlobFindResult` 容器初始化和 `Run → serverSDKManager → SyncSelfRun` 转发，真实结果值由 native `IMVSBlobFindModu.dll` 产生。当前 Windows 环境未配置 Ghidra/IDA，Hopper 不支持该主机，native 函数级追踪暂无法继续。10 个剩余结果成员继续保持 `Unavailable`，没有按名称近似实现。证据：`docs/collaboration/evidence/Blob-VM原件结果桥接证据-20261108.txt`。
+
+## 2026-11-08 两工具代码级重构收口与窗口状态机校正（当前有效批次）
+
+本批按现有 VM 逆向程序集、参数 XML、资源身份、控件模板和 REA 本地源码证据，直接收口 ImageSource 与 BlobAnalysis 的 Runtime/WPF 算法与生产链，不再以增加探针作为主要工作。20 个旧 Plugin.SDK 消费者继续冻结，旧 SDK 删除门禁不改变。
+
+已验证：
+
+- `tests/SunEyeVision.ImageSource.Runtime.Tests` 顺序运行 31/31 通过。此前 6 个失败是未设置 `S2_CASE_ROOT`，补齐验证根后通过。
+- `tests/SunEyeVision.Tool.BlobAnalysis.Tests` 顺序运行 38/38 通过。此前 22 个失败是并行构建同时写正式 Release 目录造成的 `release-payload` SHA 竞争，不是源码失败。
+- `tests/RunChainProbe` 使用最新正式 Release 载荷参数运行，ImageLoad→Blob、私有调试、连续轮次、取消、删除/撤销、保存重开、模拟相机和释放 13 项通过，并确认 Runtime 进程未加载 WPF、UI 或旧 SDK。
+- `tests/RuntimeEditorProductionProbe` 通过两个实际节点的参数绑定、首帧、Tab 复用、捕获/回执、换节点和关闭释放。最新读数为 ImageLoad 绑定 273ms、首帧 1005ms，BlobAnalysis 绑定 855ms、首帧 351ms，第 2/3 页首次切换 298/318ms，重复页切换 0/15/26ms。
+- 全量 `dotnet build SunEyeVision.slnx -c Release --no-restore` 通过，0 错误。构建必须串行执行，不能让多个测试项目同时写正式 Release 目录。
+
+实现调整：
+
+- `BlobUiComposition` 的当前页组装调度从 `SystemIdle` 提升到 `ApplicationIdle`，确保宿主正常空闲泵返回前当前页已就绪。其他页面仍由后台队列一次性构建，重复切换复用已有页面树。
+- 旧 UI 回归中仍有 6 个测试按“窗口显示后立即可调试”同步假设断言，现行窗口宿主实际有“组装中→就绪→可调试”状态。生产探针已覆盖该状态机，旧测试需要按新状态合同重写，不能为通过测试回退到窗口显示前同步构造。
+
+仍未完成：
+
+- VM 原厂 native 结果桥接只有托管 `SyncSelfRun` 入口证据，10 个结果成员不能猜测填充。
+- VM 原厂同场景 UI 线程耗时、首次页装配和跨节点运行时释放顺序仍未动态确认。本方读数不能宣称 VM 等效。
+- 20 个旧 Plugin.SDK 工具消费者未迁移，不能删除旧 SDK 或关闭迁移门禁。
+- VS 外部工程附加正式宿主、真实硬件和人工验收仍未完成。
+
+本批阶段提交前保持未提交的 CodeBuddy 工具预览 HTML、生成脚本和迁移清单变更隔离，不混入上述正式源码基线。
+

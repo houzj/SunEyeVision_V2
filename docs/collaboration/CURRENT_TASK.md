@@ -241,3 +241,5 @@ UI Release 封签后再次运行 RuntimeEditorProductionProbe：ImageLoad 绑定
 最终封签后生产探针再次通过：ImageLoad 绑定 801ms、首显 1596ms；BlobAnalysis 绑定 813ms、首显 341ms；第2/3页首次切换 212/265ms，重复切换 18/26ms。两工具完整链 PASS。
 
 本批源码与证据已固定提交 `033fc093d`（中文提交标题）。该提交只包含 ImageSource/BlobAnalysis 重构、参数页生成层、PluginDevKit 模板/SDK、测试和本批证据；其他 CodeBuddy 未归类改动仍留在工作树，未混入提交。
+
+最终固定基线：当前分支 `feature/param-window-datatree`，本批提交链为 `033fc093d`（源码/测试/证据）、`53c5084dc`（任务账本）、`cb3d63ffc`（VM字段与消费者映射）。完整 BlobAnalysis 回归 37/37 通过，最终生产探针和 PluginDevKit SDK/组件验证均通过。当前未提交内容仅为其他文档预览和 CodeBuddy 未归类改动，不属于本批源码基线。

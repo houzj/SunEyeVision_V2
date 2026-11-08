@@ -60,7 +60,7 @@ Write-Host "Copying runtime files..." -ForegroundColor Yellow
 Get-ChildItem $RuntimeOutputDir -Exclude "plugins" | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
 
 # Copy all files (exclude plugins source directory)
-$ExcludeDirs = @("plugins", "ref")
+$ExcludeDirs = @("plugins", "ref", "Help")
 Get-ChildItem $MainBinDir | Where-Object { 
     $_.Name -notin $ExcludeDirs 
 } | ForEach-Object {

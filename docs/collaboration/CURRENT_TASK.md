@@ -40,6 +40,8 @@
 
 上一版为降低首帧耗时，把 Blob 当前页组合也放入 `SystemIdle/ApplicationIdle`，形成“窗口先可见、当前页随后补挂”的跳变，并让第一次切 Tab 承担目标页首次组装成本。该时序与 VM 的可见语义不一致。现已改为：当前选中页完成组合后才允许窗口 `Show()`；首次及后续 Tab 切换在当前 UI 回调中完成目标页组合；非当前页继续在首屏之后后台预热并由 `_builtPages` 复用。新增 `IToolSettingsViewReady` 就绪合同，宿主等待 Blob 当前页就绪后再进入可调试状态。UI Release 构建 0 错误，实际运行窗口人工截图待本轮统一验收。
 
+按需编辑器加载后的 `RuntimeEditorProductionProbe` 已复测。ImageLoad 参数页绑定 682ms、首显 1320ms，BlobAnalysis 绑定 1098ms、首显 357ms，ROI 组合 1348ms，运行页首次 387ms，结果页首次空闲组装 1108ms，重复切换 0/18/55ms；两工具实际 Session、参数捕获、回执和关闭释放均通过。证据见 `docs/collaboration/evidence/ImageSource-Blob-按需编辑器加载回归-20261108.txt`。
+
 ## 2026-11-08 启动链差异审计（当前有效批次）
 
 现有启动页是对启动链过慢的补偿，不是 VM 目标设计。`src/UI/App.xaml.cs` 当前在主窗口创建前依次等待正式插件准入、数据根、服务、解决方案管理器、主题和启动决策；历史启动日志 `D:\SunEyeVisionData\Logs\2026\11\08\SunEyeVision_172710.txt` 显示主窗口 `Show` 约在启动后 60183ms，`Service.Initialize completed` 已到 54026ms，主要耗时发生在更早的插件准入/程序集扫描阶段。VM 原厂静态入口包含方案加载开始/进度/结束回调，结合用户实机观察可确认其工作区壳先进入可见状态，再在壳内推进方案和工具装配。本批先固定差异与证据，不把启动页继续当作性能方案；下一批按“壳先可见、后台准入与方案装载、状态覆盖层、失败可恢复”设计启动链，先分段测量 Plugin.Load、Service.Initialize 和方案恢复，再实施整体重构。

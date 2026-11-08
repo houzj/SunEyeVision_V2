@@ -4,7 +4,8 @@
 param(
     [string]$PluginName = "",
     [switch]$Detach,
-    [string]$ReceiptPath = ""
+    [string]$ReceiptPath = "",
+    [string]$StartupRoot = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -59,14 +60,23 @@ if ($PluginName -ne "") {
     }
 }
 
-# 启动程序
-$process = Start-Process -FilePath $ExePath -WorkingDirectory $RuntimeDir -PassThru
+# 启动程序。外部 SDK 调试可指定隔离启动根，避免占用正式用户数据目录。
+$arguments = @()
+if (-not [string]::IsNullOrWhiteSpace($StartupRoot)) {
+    $StartupRoot = [System.IO.Path]::GetFullPath($StartupRoot)
+    New-Item -ItemType Directory -Path $StartupRoot -Force | Out-Null
+    $marker = Join-Path $StartupRoot ".suneye-startup-test"
+    if (-not (Test-Path $marker)) { New-Item -ItemType File -Path $marker -Force | Out-Null }
+    $arguments += @("--startup-test-root", $StartupRoot, "--image-warmup-mode", "off")
+}
+$process = Start-Process -FilePath $ExePath -WorkingDirectory $RuntimeDir -ArgumentList $arguments -WindowStyle Normal -PassThru
 $receipt = [ordered]@{
     pid = $process.Id
     executable = $ExePath
     runtimeRoot = $RuntimeDir
     startedAt = [DateTimeOffset]::Now.ToString("O")
     pluginName = $PluginName
+    startupRoot = if ([string]::IsNullOrWhiteSpace($StartupRoot)) { $null } else { $StartupRoot }
     scope = "外部开发宿主启动与 VS 附加准备，不代表 VS 已附加"
 }
 $receiptFile = if ([string]::IsNullOrWhiteSpace($ReceiptPath)) {

@@ -1,0 +1,31 @@
+PluginDevKit 外部组件验收记录
+日期：2026-11-08
+
+已完成
+1. validate-components.ps1：通过
+   Runtime=ExternalRuntimePlugin.Runtime
+   Editor=ExternalRuntimePlugin.Editor
+   ToolId=ExternalRuntimePlugin
+2. 外部调试宿主已启动
+   PID=32868
+   可执行文件=PluginDevKit/runtime/SunEyeVision.UI.exe
+   回执=PluginDevKit/runtime/external-debug-session-vs.json
+3. 外部样例和模板使用独立输出目录构建
+   PluginDevKit/validation-out/20261108/SamplePlugin/SamplePlugin.dll
+   PluginDevKit/validation-out/20261108/RuntimePlugin.Template/RuntimePlugin.Template.dll
+   PluginDevKit/validation-out/20261108/WpfTool.Template/WpfTool.Template.dll
+   0 errors。仅有 NU1900 离线漏洞源警告，以及 WpfTool 模板未使用字段警告。
+
+未完成
+Visual Studio 进程附加尚未取得可验证回执。用户截图中的 VisionFramework.SaveRoundTripChecks.exe 和 GroupRoundLifecycleChecks.exe CLR 异常不属于当前仓库和 PluginDevKit/runtime 中的可执行文件，疑似逆向测试工作区或其他调试会话。当前 VS 自身还出现内部服务错误，因此不能把该截图当作外部 SDK 附加通过证据。
+
+下一步
+在无上述旧测试进程和 VS 内部服务错误的 VS 会话中，附加 PID 32868，并记录 Debugger Attached/Break 后的回执。
+
+附加尝试：当前 VS 以管理员权限运行，宿主以普通权限运行；普通权限 DTE 不可见。一次管理员 DTE 自动附加尝试未生成回执（UAC/交互权限未完成），因此不宣称 VS 附加通过。
+
+补充诊断与修复：
+- 外部宿主首次不可见并非默认桌面问题，实际错误为 Help/api/index.html 缺失；build-runtime.ps1 已改为保留 Help。
+- 默认正式数据根 D:\SunEyeVisionData 在当前执行会话返回 Access denied；launch-debug.ps1 新增 StartupRoot 参数，外部 SDK 可使用隔离数据根。
+- 当前隔离宿主 PID=44708，启动参数含 --startup-test-root，最终窗口标题为 SunEyeVision · 起始页，主窗口句柄=14817316。
+- 可见窗口和 VS 附加仍需在用户当前交互桌面执行，当前后台会话不代替人工附加回执。

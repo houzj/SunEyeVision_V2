@@ -10,7 +10,8 @@
 | 统一开发基线 | 已建立 | `main` 指向合并提交 `b895d697e`（双父：重构分支 `f5e6b8fde` + 旧 main `d44904f38`，164 个旧提交全保留）；回退点 `backup/main-before-sync`；`origin/main` 尚未同步 |
 | 数据目录启动门禁 | 实施中（代码未修） | 已定案：数据根写程序目录 `App.ini` 的 `[Data] Root`，不弹「选择软件数据目录」；退出 `data-location.json`、`suneyevision-data.json` marker、`schemaVersion` 协商 |
 | main 控件原件回补 | 分批进行 | 按原件映射表回补 55 个控件提交 + 72 个验证夹具提交，不做逐文件人工合并 |
-| 工具身份合同 | 已定案 | 发布态才有 `release-payload.json` + `ToolGroups.xml` 强准入；开发态 `dev\Debug\plugins\<Tool>\` 只有 dll/pdb/deps.json |
+| 工具身份合同 | 已定案 | 发布态才有 `release-payload.json` + `ToolGroups.xml` 强准入；开发态 `dev\\Debug\\plugins\\<Tool>\\` 只有 dll/pdb/deps.json |
+| 旧 Plugin.SDK 退役 | 已完成 | 现行解决方案消费者 0，工具消费者 0，源码实时扫描 0，`src/Plugin.SDK` 目录条目 0；门禁证据见 `docs/collaboration/evidence/PluginSDK退役门禁-20261108.txt` |
 
 ## 二、已定案、不要再反复讨论
 
@@ -30,7 +31,10 @@
 
 下面按倒序排列，最早批次已归档：`history/CURRENT_TASK_ARCHIVE_2026-11.md`、`history/CURRENT_TASK_ARCHIVE_2026-10.md`。
 
-## 2026-11-07 性能与 SDK 状态纠偏（当前有效批次）
+## 2026-11-08 外部 SDK 验收与旧 SDK 状态纠偏（当前有效批次）
+
+现行解决方案已不再包含旧工具项目，Plugin.SDK 退役门禁实测为现行消费者 0、工具消费者 0、源码实时扫描 0、SDK 目录条目 0，已满足删除后的最终状态。外部组件身份门禁通过，Runtime、WPF 模板和 SamplePlugin 使用独立输出目录构建通过，记录见 `docs/collaboration/evidence/PluginDevKit外部组件验收-20261108.txt`。外部宿主 PID 32868 已启动，VS 附加仍需在同一管理员会话中取得调试器附加回执。用户截图中的 `VisionFramework.SaveRoundTripChecks.exe` 与 `GroupRoundLifecycleChecks20.exe` 不属于本仓库或 PluginDevKit runtime，不能作为本项目外部 SDK 失败证据。
+## 2026-11-07 性能与 SDK 状态纠偏（历史批次，SDK 状态已由 2026-11-08 批次覆盖）
 
 本批把“窗口性能”和“旧 SDK 迁移”拆成两个可并行收口的批次。性能问题不再用连续加探针拖延，现有探针已足以确认本方的第一处真实阻塞：Blob 专用组合和字段编辑器在当前页同步创建重型 WPF 视觉树。REA 本地重建项目的源码证据显示其链路是 `AlgorithmTab` 数据树 → 模板注册表 → 统一窗口壳 → 状态刷新，不能把该项目的测试耗时直接当作原厂 VM 数值，但足以确定当前 V2 的命令式专用组装方向与目标链不同。
 
@@ -390,5 +394,3 @@ PluginDevKit 清理了 5 个被工程排除但仍引用旧 `Plugin.SDK` 的死�
 同一正式 Release 载荷下的 ImageSource Runtime 全量回归为 `31/31`，日志见 `docs/collaboration/evidence/ImageSource全量回归-20261108.log`。结合前述 BlobAnalysis `39/39`，当前两工具 Runtime 测试总计 `70/70` 通过。测试使用独立 `S2_CASE_ROOT`，没有把本机历史案例目录或人工验收状态混入结果。
 
 PluginDevKit/runtime 中一份旧产品 Help 静态站点仍展示 `IVisionPlugin`、旧工作流 API 和旧插件示例，已从生成的外部调试运行目录清理；`build-runtime.ps1` 也将 `Help` 加入外部运行目录排除项，避免下次准备开发包时回流。当前外部开发说明以 `PluginDevKit/README.md`、两个新模板和发布 DLL 合同为准。
-
-

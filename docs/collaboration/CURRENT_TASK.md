@@ -336,7 +336,7 @@ REA 已确认 `IMVSBlobFindModuCs.dll` 只负责 `BlobFindResult` 容器初始�
 
 实现调整：
 
-- `BlobUiComposition` 的当前页组装调度从 `SystemIdle` 提升到 `ApplicationIdle`，确保宿主正常空闲泵返回前当前页已就绪。其他页面仍由后台队列一次性构建，重复切换复用已有页面树。
+- 当前源码中的 `BlobUiComposition` 将当前页和后续页都提交到 `DispatcherPriority.SystemIdle`。窗口先显示壳，当前页在首个 SystemIdle 阶段完成，其他页面随后逐页一次性建立并缓存，重复切换复用已有页面树。生产探针等待真实组装就绪任务，不把窗口显示事件误当作参数页已就绪。
 - 旧 UI 回归中仍有 6 个测试按“窗口显示后立即可调试”同步假设断言，现行窗口宿主实际有“组装中→就绪→可调试”状态。生产探针已覆盖该状态机，旧测试需要按新状态合同重写，不能为通过测试回退到窗口显示前同步构造。
 
 仍未完成：

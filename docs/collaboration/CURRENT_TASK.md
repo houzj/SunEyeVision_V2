@@ -377,4 +377,6 @@ REA 的 `B08-总面积聚合排序与判断传输链-20261104.md` 已确认总�
 
 当前机器实际存在 `C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\devenv.exe`。已启动 PluginDevKit 外部正式宿主并准备调试回执，也启动过 Visual Studio 进程，但 Computer Use 未能获得可操作的 Visual Studio 窗口，附加动作没有发生，随后已关闭本次测试进程并清理临时回执。因此“VS 启动或附加正式宿主”仍是未验收项，不能把进程启动检查记作 VS 附加通过。
 
+PluginDevKit 清理了 5 个被工程排除但仍引用旧 `Plugin.SDK` 的死模板/死样例文件，并删除了无法被 `dotnet sln` 解析的旧二进制 `PluginDevKit.sln`。`prepare-devkit.ps1` 现在只提示 `RuntimePlugin.Template` 和 `WpfTool.Template`。清理后两个新模板分别 Release 构建 0 错误，`validate-components.ps1 -PackageRoot PluginDevKit` 通过，PluginDevKit 中已无旧 SDK 源码引用。
+
 

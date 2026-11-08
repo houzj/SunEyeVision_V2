@@ -23,3 +23,8 @@ ReportOnly 结果：
 - Windows PowerShell 5.1 与 pwsh 均使用显式 UTF-8 读取映射。
 - 门禁实时扫描 tools 下正式 csproj，并排除 obj/bin 及 `_wpftmp.csproj` 生成文件。
 - 映射登记 20 与源码实时扫描 20 一致，正常模式继续阻断旧 SDK 删除。
+
+2026-11-08 现行方案收口
+- 20 个旧工具已从 `SunEyeVision.slnx` 移出，保留源码和逆向材料供后续 VM 重建。
+- 活动方案消费者 0，历史移出消费者 20，活动源码实时扫描 0，SDK 目录条目 0。
+- 正常退役门禁已通过。详细收口记录见 `PluginSDK退役-现行方案收口-20261108.txt`。

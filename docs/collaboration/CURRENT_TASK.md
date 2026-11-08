@@ -383,6 +383,8 @@ PluginDevKit 清理了 5 个被工程排除但仍引用旧 `Plugin.SDK` 的死�
 
 `validate-components.ps1` 已增加模板源码退役 SDK 扫描和 SDK 合同 DLL 存在性检查。当前模板身份验证与旧 SDK 回流检查均通过。
 
+用户已确定其余 20 个旧工具从现行产品方案移除，后续按 VM 逆向重新实现。退役门禁现在只扫描 `SunEyeVision.slnx` 的活动项目，实测活动消费者 0、历史移出消费者 20、源码实时扫描 0、`src/Plugin.SDK` 目录条目 0，正常门禁已通过。旧工具目录和逆向材料保留为后续重建输入，不进入当前产品 Release。
+
 同一正式 Release 载荷下的 ImageSource Runtime 全量回归为 `31/31`，日志见 `docs/collaboration/evidence/ImageSource全量回归-20261108.log`。结合前述 BlobAnalysis `39/39`，当前两工具 Runtime 测试总计 `70/70` 通过。测试使用独立 `S2_CASE_ROOT`，没有把本机历史案例目录或人工验收状态混入结果。
 
 PluginDevKit/runtime 中一份旧产品 Help 静态站点仍展示 `IVisionPlugin`、旧工作流 API 和旧插件示例，已从生成的外部调试运行目录清理；`build-runtime.ps1` 也将 `Help` 加入外部运行目录排除项，避免下次准备开发包时回流。当前外部开发说明以 `PluginDevKit/README.md`、两个新模板和发布 DLL 合同为准。

@@ -37,7 +37,10 @@ internal sealed class BlobUiComposition : IDisposable
     private string? _compositionError;
     private readonly Dictionary<string,long> _stageMs=new(StringComparer.Ordinal);
     private bool _pagePrewarmQueued;
+    private bool _initialPageReady;
+    private readonly TaskCompletionSource<bool> _ready = new(TaskCreationOptions.RunContinuationsAsynchronously);
     internal IReadOnlyDictionary<string,long> StageMs=>_stageMs;
+    internal Task ReadyTask=>_ready.Task;
     internal bool IsReady=>!_disposed&&_pendingPages.Count==0&&_compositionError is null;
     internal string? CompositionError=>_compositionError;
     internal event Action? Changed;
@@ -121,6 +124,17 @@ internal sealed class BlobUiComposition : IDisposable
         _activePage=page;
         if(_pendingPages.Add(page))
         {
+            // After the initial page is visible, a newly selected page is
+            // assembled in the same UI turn. This prevents the first tab
+            // switch from exposing an empty/partial page while an idle callback
+            // is still waiting in the dispatcher queue.
+            if(_initialPageReady&&IsCurrentPage(page))
+            {
+                _pendingPages.Remove(page);
+                try{BuildPageCore(page,fields,pageInput);Changed?.Invoke();}
+                catch(Exception error){_compositionError=error.Message;SunEyeVision.Foundation.Logging.PluginLogger.Error(error.Message,nameof(BlobUiComposition));Changed?.Invoke();}
+                return;
+            }
             // The window's first frame is independent from page readiness. The
             // selected page is completed on the first idle turn, then the host
             // exposes its ready task. Other pages are queued afterwards and do
@@ -133,8 +147,17 @@ internal sealed class BlobUiComposition : IDisposable
                     _pendingPages.Remove(page);return;
                 }
                 _pendingPages.Remove(page);
-                try{BuildPageCore(page,fields,pageInput);Changed?.Invoke();}
-                catch(Exception error){_compositionError=error.Message;SunEyeVision.Foundation.Logging.PluginLogger.Error(error.Message,nameof(BlobUiComposition));Changed?.Invoke();}
+                try
+                {
+                    BuildPageCore(page,fields,pageInput);
+                    if(!_initialPageReady){_initialPageReady=true;_ready.TrySetResult(true);}
+                    Changed?.Invoke();
+                }
+                catch(Exception error)
+                {
+                    _compositionError=error.Message;_ready.TrySetException(error);
+                    SunEyeVision.Foundation.Logging.PluginLogger.Error(error.Message,nameof(BlobUiComposition));Changed?.Invoke();
+                }
             }));
         }
     }
@@ -295,6 +318,7 @@ internal sealed class BlobUiComposition : IDisposable
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;Changed=null;
+        if(!_ready.Task.IsCompleted)_ready.TrySetCanceled();
         _pendingPages.Clear();_activePage=null;
         _editor.Changed-=RefreshSupported;PageDescriptor.RemoveValueChanged(_editor,OnPageChanged);_editor.IsVisibleChanged-=OnVisibility;_editor.Unloaded-=OnUnloaded;
         if(_roiOwner is not null)_roiOwner.Changed-=_preview.Notify;

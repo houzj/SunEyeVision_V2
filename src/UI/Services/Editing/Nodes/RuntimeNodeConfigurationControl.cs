@@ -174,6 +174,10 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
             throw;
         }
     }
+
+    internal Task WaitForViewReadyAsync()
+        =>_view is SunEyeVision.Plugin.Wpf.Presenters.Parameters.IToolSettingsViewReady ready
+            ? ready.ReadyTask : Task.CompletedTask;
     private string FormatReference(OutputReference reference)
     {
         var context = CurrentContext();

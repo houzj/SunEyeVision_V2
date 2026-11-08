@@ -6,7 +6,7 @@ using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Views;
 
 /// <summary>Real tool view; the document owner controls execution, capture and disposal.</summary>
-public partial class BlobParameterEditor : UserControl,IToolSettingsView
+public partial class BlobParameterEditor : UserControl,IToolSettingsView,IToolSettingsViewReady
 {
     private static readonly DependencyPropertyKey SelectedPageIndexPropertyKey=DependencyProperty.RegisterReadOnly(nameof(SelectedPageIndex),typeof(int),typeof(BlobParameterEditor),new PropertyMetadata(1));
     public static readonly DependencyProperty SelectedPageIndexProperty=SelectedPageIndexPropertyKey.DependencyProperty;
@@ -14,6 +14,7 @@ public partial class BlobParameterEditor : UserControl,IToolSettingsView
     private static readonly System.ComponentModel.DependencyPropertyDescriptor PageDescriptor=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(DeclaredSettingsView.SelectedPageIndexProperty,typeof(DeclaredSettingsView));
     private BlobUiComposition? _composition;
     private BlobUiComposition? Composition=>_composition??Design.BlobDesignData.GetComposition(Editor);
+    public Task ReadyTask=>Composition?.ReadyTask??Task.CompletedTask;
     public IReadOnlyDictionary<string,long> CompositionStageMs=>Composition?.StageMs??new Dictionary<string,long>();
     private Action? _uiOnlyChanged;
     private bool _disposed;

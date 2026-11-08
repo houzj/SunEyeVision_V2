@@ -65,3 +65,9 @@ public interface IToolSettingsView : IDisposable
     event Action? Changed;
     bool TryCapture(out FieldSettings fields,out string error);
 }
+
+/// <summary>Optional readiness contract for views that assemble their selected page asynchronously.</summary>
+public interface IToolSettingsViewReady
+{
+    Task ReadyTask { get; }
+}

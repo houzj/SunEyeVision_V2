@@ -36,6 +36,14 @@
 
 外部 SDK 的 Contracts、Runtime/WPF 分层、发布 DLL 边界、模板和启动脚本继续保留，VS 外部附加和真实外部工程验收延期到产品主线完成后。当前优先完成 ImageSource→BlobAnalysis 的窗口宿主、参数模板、Tab 复用、回调退订、换节点关闭、结果 reader 和资源释放整链。外部 SDK 只维护架构能力和发布入口，不作为本阶段产品验收阻塞项。
 
+## 2026-11-08 Blob 首屏与首次切 Tab 时序纠偏（当前有效批次）
+
+上一版为降低首帧耗时，把 Blob 当前页组合也放入 `SystemIdle/ApplicationIdle`，形成“窗口先可见、当前页随后补挂”的跳变，并让第一次切 Tab 承担目标页首次组装成本。该时序与 VM 的可见语义不一致。现已改为：当前选中页完成组合后才允许窗口 `Show()`；首次及后续 Tab 切换在当前 UI 回调中完成目标页组合；非当前页继续在首屏之后后台预热并由 `_builtPages` 复用。新增 `IToolSettingsViewReady` 就绪合同，宿主等待 Blob 当前页就绪后再进入可调试状态。UI Release 构建 0 错误，实际运行窗口人工截图待本轮统一验收。
+
+## 2026-11-08 启动链差异审计（当前有效批次）
+
+现有启动页是对启动链过慢的补偿，不是 VM 目标设计。`src/UI/App.xaml.cs` 当前在主窗口创建前依次等待正式插件准入、数据根、服务、解决方案管理器、主题和启动决策；历史启动日志 `D:\SunEyeVisionData\Logs\2026\11\08\SunEyeVision_172710.txt` 显示主窗口 `Show` 约在启动后 60183ms，`Service.Initialize completed` 已到 54026ms，主要耗时发生在更早的插件准入/程序集扫描阶段。VM 原厂静态入口包含方案加载开始/进度/结束回调，结合用户实机观察可确认其工作区壳先进入可见状态，再在壳内推进方案和工具装配。本批先固定差异与证据，不把启动页继续当作性能方案；下一批按“壳先可见、后台准入与方案装载、状态覆盖层、失败可恢复”设计启动链，先分段测量 Plugin.Load、Service.Initialize 和方案恢复，再实施整体重构。
+
 ## 2026-11-08 外部 SDK 验收与旧 SDK 状态纠偏（能力已保留，验收延期）
 
 现行解决方案已不再包含旧工具项目，Plugin.SDK 退役门禁实测为现行消费者 0、工具消费者 0、源码实时扫描 0、SDK 目录条目 0，已满足删除后的最终状态。外部组件身份门禁通过，Runtime、WPF 模板和 SamplePlugin 使用独立输出目录构建通过，记录见 `docs/collaboration/evidence/PluginDevKit外部组件验收-20261108.txt`。外部宿主 PID 32868 已启动，VS 附加仍需在同一管理员会话中取得调试器附加回执。用户截图中的 `VisionFramework.SaveRoundTripChecks.exe` 与 `GroupRoundLifecycleChecks20.exe` 不属于本仓库或 PluginDevKit runtime，不能作为本项目外部 SDK 失败证据。

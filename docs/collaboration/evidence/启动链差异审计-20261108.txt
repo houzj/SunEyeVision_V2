@@ -1,0 +1,16 @@
+启动链差异审计（2026-11-08）
+
+来源：D:\SunEyeVisionData\Logs\2026\11\08\SunEyeVision_172710.txt
+
+硬证据：
+- Service.Initialize completed: +54026ms
+- SolutionManager.Initialize begin: +54363ms
+- Startup decision begin: +54401ms
+- MainWindow.Show begin: +60183ms
+- MainWindow.ContentRendered: +61016ms
+
+代码链：src/UI/App.xaml.cs OnStartup 先执行 PluginManager.LoadPluginsAsync、ApplicationDataPaths、ServiceInitializer.InitializeServices、InitializeSolutionManager、ThemeManager，再进入 HandleStartupDecisionAsync 创建 MainWindow。当前启动页在这些阶段之前显示，用于反馈等待，但主工作区壳本身尚未可见。
+
+VM对照：VMControls.WPF.Release.dll 静态成员包含 VmSolution_OnSolutionLoadBeginCallBack、VmSolution_OnSolutionLoadProgressCallBack、VmSolution_OnExecuteAfterLoadStart、VmSolution_OnExecuteAfterLoadFinally；这些确认了方案加载阶段回调存在，但不单独证明完整动态时间线。用户实机观察确认原厂启动直接进入工作区，没有本方这种长时间启动页等待。
+
+结论：启动页是当前启动链过慢的补偿，不是目标架构。下一批需在不破坏插件准入和方案生命周期的前提下，将最小工作区壳提前显示，把插件准入、服务初始化、方案恢复作为主窗口内可观测阶段推进，并先分段确认 Plugin.Load、Service.Initialize、方案恢复的真实耗时。

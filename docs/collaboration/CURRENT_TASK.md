@@ -46,7 +46,7 @@
 
 已先修正启动前一处确定的重复成本。`ReleasePayloadAuthority` 不再默认在每次启动时对全部 606 个发布条目约 834 MB 逐个做 SHA-256，正式组件及其依赖仍在实际加载路径通过 `VerifyApprovedFile` 校验，产品锚点仍在准入阶段校验；需要完整封包审计的探针可显式传入 `verifyAllFilesOnAdmission:true`。UI Release 构建通过 0 错误。首次完整启动时间线仍需在不受外部探针进程干扰的环境中复测。
 
-进一步分段确认：`--toolbox-probe` 在组件编辑器全部预加载时约 27024ms，其中 `ComponentLoading` 约 26015ms；编辑器延迟加载后总计约 4882ms，`ComponentLoading` 约 4066ms，`PayloadValidation` 约 121ms。现行 `RuntimeDirectorySnapshot` 只在启动准入时构建 Runtime 定义，WPF 编辑器按工具首次打开通过同一发布身份和依赖校验链解析。该改动已完成 UI Release 构建 0 错误，完整主程序窗口启动仍需独立环境复测。
+进一步分段确认：`--toolbox-probe` 在组件编辑器全部预加载时约 27024ms，其中 `ComponentLoading` 约 26015ms；编辑器延迟加载后总计约 4882ms，`ComponentLoading` 约 4066ms，`PayloadValidation` 约 121ms。现行 `RuntimeDirectorySnapshot` 只在启动准入时构建 Runtime 定义，WPF 编辑器按工具首次打开通过同一发布身份和依赖校验链解析。该改动已完成 UI Release 构建 0 错误，独立启动根已在约 6.4–6.8 秒进入起始页，记录见 `docs/collaboration/evidence/启动链分段回归-20261108.txt`。完整用户数据根方案恢复仍需单独复测。
 
 ## 2026-11-08 外部 SDK 验收与旧 SDK 状态纠偏（能力已保留，验收延期）
 

@@ -25,10 +25,12 @@ public sealed class ReleasePayloadAuthority
     private readonly HashSet<string> _frameworkPayloadPaths=new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _frameworkNames=new(StringComparer.Ordinal);
     private readonly string _mode;
+    private readonly bool _verifyAllFilesOnAdmission;
     public IReadOnlyDictionary<string,string> ExpectedTools=>new System.Collections.ObjectModel.ReadOnlyDictionary<string,string>(_expectedTools);
 
-    public ReleasePayloadAuthority(string appRoot)
+    public ReleasePayloadAuthority(string appRoot,bool verifyAllFilesOnAdmission=false)
     {
+        _verifyAllFilesOnAdmission=verifyAllFilesOnAdmission;
         _root=Path.TrimEndingDirectorySeparator(Path.GetFullPath(appRoot));
         using var document=JsonDocument.Parse(File.ReadAllBytes(Path.Combine(_root,"release-payload.json")));
         var payload=document.RootElement;
@@ -70,7 +72,12 @@ public sealed class ReleasePayloadAuthority
                 if(owner is null||!relative.StartsWith(owner.Path[..^4]+".",StringComparison.OrdinalIgnoreCase))throw new InvalidDataException("Invalid optional editor payload ownership.");
                 optional=true;
             }
-            if(!optional||File.Exists(path))VerifyFile(path,_entries[relative]);
+            // The manifest and product anchor are checked during admission. The
+            // remaining payload bytes are verified when their assembly is loaded
+            // through VerifyApprovedFile. Strict probes may opt into the old
+            // full-payload audit with verifyAllFilesOnAdmission=true.
+            if((!optional||File.Exists(path))&&(_verifyAllFilesOnAdmission||relative.Equals("SunEyeVision.Foundation.dll",StringComparison.OrdinalIgnoreCase)))
+                VerifyFile(path,_entries[relative]);
         }
         VerifyHostProductIdentity(payload);
         var declared = payload.GetProperty("productComponents").EnumerateArray().ToArray();

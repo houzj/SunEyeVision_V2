@@ -31,7 +31,12 @@
 
 下面按倒序排列，最早批次已归档：`history/CURRENT_TASK_ARCHIVE_2026-11.md`、`history/CURRENT_TASK_ARCHIVE_2026-10.md`。
 
-## 2026-11-08 外部 SDK 验收与旧 SDK 状态纠偏（当前有效批次）
+## 2026-11-08 产品主线优先级调整（当前有效批次）
+本轮手动验收确认当前窗口先显示空壳再组装，造成空白停留。已定位为 `MainWindowRuntimeEditing.InitializeRuntimeEditor` 先调用 `window.Show()`，再异步 `BindDraft`。代码已调整为隐藏状态完成首个参数页和结果预览后再显示，节点失效时清理隐藏窗口。VM 原件静态补证见现行架构总览，动态耗时仍未冒充已确认。
+
+外部 SDK 的 Contracts、Runtime/WPF 分层、发布 DLL 边界、模板和启动脚本继续保留，VS 外部附加和真实外部工程验收延期到产品主线完成后。当前优先完成 ImageSource→BlobAnalysis 的窗口宿主、参数模板、Tab 复用、回调退订、换节点关闭、结果 reader 和资源释放整链。外部 SDK 只维护架构能力和发布入口，不作为本阶段产品验收阻塞项。
+
+## 2026-11-08 外部 SDK 验收与旧 SDK 状态纠偏（能力已保留，验收延期）
 
 现行解决方案已不再包含旧工具项目，Plugin.SDK 退役门禁实测为现行消费者 0、工具消费者 0、源码实时扫描 0、SDK 目录条目 0，已满足删除后的最终状态。外部组件身份门禁通过，Runtime、WPF 模板和 SamplePlugin 使用独立输出目录构建通过，记录见 `docs/collaboration/evidence/PluginDevKit外部组件验收-20261108.txt`。外部宿主 PID 32868 已启动，VS 附加仍需在同一管理员会话中取得调试器附加回执。用户截图中的 `VisionFramework.SaveRoundTripChecks.exe` 与 `GroupRoundLifecycleChecks20.exe` 不属于本仓库或 PluginDevKit runtime，不能作为本项目外部 SDK 失败证据。
 ## 2026-11-07 性能与 SDK 状态纠偏（历史批次，SDK 状态已由 2026-11-08 批次覆盖）

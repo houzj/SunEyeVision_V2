@@ -103,20 +103,28 @@ public partial class MainWindowViewModel
             window.SetRunAvailability(()=>Current()&&!IsRunning&&!_solutionTransitionPrepared&&!_transitionPreparationInProgress);
             TrackProductionEditor(_productionEditors,context,window);
             window.SetAssemblyPending();
-            window.Show();
             window.Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
             {
-                if (!context.IsValid || !window.IsCurrent) return;
+                if (!context.IsValid || !window.IsCurrent)
+                {
+                    context.Discard();
+                    window.Close();
+                    return;
+                }
                 try
                 {
                     control.BindDraft(context.PreparedDraft);
                     var preview=InstallResultDisplayPreview(session,node,context,control);context.Deactivated+=preview.Dispose;
                     window.SetAssemblyReady();
+                    // VM 先完成首个可见参数页的组装，再把窗口交给桌面，
+                    // 避免用户看到空白窗口后等待内容补挂。
+                    window.Show();
                 }
                 catch (Exception error)
                 {
                     Foundation.Logging.PluginLogger.Error(error.Message,nameof(MainWindowViewModel),error);
                     window.SetAssemblyFailure(error);
+                    window.Show();
                     context.Discard();
                 }
             }));

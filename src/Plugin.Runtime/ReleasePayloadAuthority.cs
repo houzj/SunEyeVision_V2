@@ -133,7 +133,12 @@ public sealed class ReleasePayloadAuthority
     /// <summary>Prepare the complete desktop projection and runtime identities in one admitted generation.</summary>
     public RuntimeDirectorySnapshot PrepareDesktopDirectory()
     {
-        var snapshot=RuntimeDirectorySnapshot.Prepare(LoadToolComponents());
+        var runtime=LoadToolComponents(null,runtimeOnly:true);
+        var editorCache=new System.Collections.Concurrent.ConcurrentDictionary<string,ToolComponentRegistration?>(StringComparer.Ordinal);
+        ToolComponentRegistration? ResolveEditor(string toolId)
+            =>editorCache.GetOrAdd(toolId,id=>LoadToolComponents(new HashSet<string>(StringComparer.Ordinal){id},runtimeOnly:false)
+                .SingleOrDefault(component=>component.Metadata.Role==ToolComponentRole.Editor));
+        var snapshot=RuntimeDirectorySnapshot.Prepare(runtime,_components.Select(component=>component.Metadata),ResolveEditor);
         if(!snapshot.ToolIds.OrderBy(id=>id,StringComparer.Ordinal).SequenceEqual(_expectedTools.Keys.OrderBy(id=>id,StringComparer.Ordinal),StringComparer.Ordinal))
             throw new InvalidDataException("Admitted runtime directory differs from the declared release set.");
         return snapshot;

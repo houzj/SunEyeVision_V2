@@ -114,7 +114,9 @@ internal sealed class BlobUiComposition : IDisposable
     private bool IsCurrentPage(string page)
     {
         var pages=Draft.Schema.Presentation?.Fields.Select(field=>field.Layout?.Page??field.Group).Distinct(StringComparer.Ordinal).ToArray()??[];
-        var index=_editor.SelectedPageIndex;
+        // The fields TabControl changes selection before DeclaredSettingsView
+        // receives PageChanged. Read the selection from the actual page host.
+        var index=_pageHost?.SelectedPageIndex??_editor.SelectedPageIndex;
         return index>=0&&index<pages.Length&&StringComparer.Ordinal.Equals(pages[index],page);
     }
     private void BuildPage(string page,DeclaredFieldsView fields,FrameworkElement? pageInput)

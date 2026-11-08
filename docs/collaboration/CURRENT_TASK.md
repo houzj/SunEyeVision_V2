@@ -46,6 +46,8 @@
 
 已先修正启动前一处确定的重复成本。`ReleasePayloadAuthority` 不再默认在每次启动时对全部 606 个发布条目约 834 MB 逐个做 SHA-256，正式组件及其依赖仍在实际加载路径通过 `VerifyApprovedFile` 校验，产品锚点仍在准入阶段校验；需要完整封包审计的探针可显式传入 `verifyAllFilesOnAdmission:true`。UI Release 构建通过 0 错误。首次完整启动时间线仍需在不受外部探针进程干扰的环境中复测。
 
+进一步分段确认：`--toolbox-probe` 在组件编辑器全部预加载时约 27024ms，其中 `ComponentLoading` 约 26015ms；编辑器延迟加载后总计约 4882ms，`ComponentLoading` 约 4066ms，`PayloadValidation` 约 121ms。现行 `RuntimeDirectorySnapshot` 只在启动准入时构建 Runtime 定义，WPF 编辑器按工具首次打开通过同一发布身份和依赖校验链解析。该改动已完成 UI Release 构建 0 错误，完整主程序窗口启动仍需独立环境复测。
+
 ## 2026-11-08 外部 SDK 验收与旧 SDK 状态纠偏（能力已保留，验收延期）
 
 现行解决方案已不再包含旧工具项目，Plugin.SDK 退役门禁实测为现行消费者 0、工具消费者 0、源码实时扫描 0、SDK 目录条目 0，已满足删除后的最终状态。外部组件身份门禁通过，Runtime、WPF 模板和 SamplePlugin 使用独立输出目录构建通过，记录见 `docs/collaboration/evidence/PluginDevKit外部组件验收-20261108.txt`。外部宿主 PID 32868 已启动，VS 附加仍需在同一管理员会话中取得调试器附加回执。用户截图中的 `VisionFramework.SaveRoundTripChecks.exe` 与 `GroupRoundLifecycleChecks20.exe` 不属于本仓库或 PluginDevKit runtime，不能作为本项目外部 SDK 失败证据。

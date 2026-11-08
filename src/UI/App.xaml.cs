@@ -112,6 +112,7 @@ public partial class App : System.Windows.Application
                 // Optional toolbox validation loads plugins and presentation metadata only.
                 // It still exits before device/service/solution initialization.
                 var inspectToolbox = e.Args[0] == "--toolbox-probe";
+                var beforeAdmissionMs = _startupStopwatch.ElapsedMilliseconds;
                 var probePluginManager=inspectToolbox?new PluginManager():null;
                 if (inspectToolbox)
                     await probePluginManager!.LoadPluginsAsync();
@@ -120,6 +121,9 @@ public partial class App : System.Windows.Application
                 if(inspectToolbox)probePluginManager!.AssertCompleteReleaseToolSet();
                 var info = new
                 {
+                    beforeAdmissionMs,
+                    admissionStageMs = probePluginManager?.LastAdmissionStageMs,
+                    probeTotalMs = _startupStopwatch.ElapsedMilliseconds,
                     releaseVersion = SunEyeVision.Foundation.Versioning.AppVersionInfo.Product,
                     channel = SunEyeVision.Foundation.Versioning.AppVersionInfo.Channel,
                     releaseDate = SunEyeVision.Foundation.Versioning.AppVersionInfo.ReleaseDate,

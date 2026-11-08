@@ -115,6 +115,12 @@ public partial class MainWindowViewModel
                 {
                     control.BindDraft(context.PreparedDraft);
                     await control.WaitForViewReadyAsync();
+                    if (!context.IsValid || !window.IsCurrent)
+                    {
+                        context.Discard();
+                        window.Close();
+                        return;
+                    }
                     var preview=InstallResultDisplayPreview(session,node,context,control);context.Deactivated+=preview.Dispose;
                     window.SetAssemblyReady();
                     // VM 先完成首个可见参数页的组装，再把窗口交给桌面，

@@ -15,6 +15,6 @@ public sealed class DesktopToolAdmission
     public IReadOnlyList<SunEyeVision.Plugin.Contracts.ToolComponentMetadata> GetComponentMetadata()
     {
         if (!IsCurrent) throw new InvalidOperationException("桌面工具目录已退役。");
-        return Array.AsReadOnly(Runtime.Components.Select(component => component.Metadata).ToArray());
+        return Array.AsReadOnly(Runtime.ComponentMetadata.ToArray());
     }
 }

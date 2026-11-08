@@ -20,8 +20,7 @@ public sealed class ToolPresentationAdmission
         Definition = definition ?? throw new ArgumentNullException(nameof(definition));
         _isCurrent = isCurrent ?? throw new ArgumentNullException(nameof(isCurrent));
         RetirementToken = retirement;
-        EditorEntryType = directory.Components.SingleOrDefault(component => component.Metadata.Role == ToolComponentRole.Editor &&
-            component.Metadata.ToolId == definition.ToolId)?.EntryType;
+        EditorEntryType = directory.ResolveEditor(definition.ToolId)?.EntryType;
         EnsureCurrent();
     }
 

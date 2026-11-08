@@ -8,20 +8,26 @@ public sealed class RuntimeDirectorySnapshot
 {
     private sealed record Entry(ToolComponentRegistration Registration,Type SettingsType,Type OutputType,string Schema,string? SettingsSchema,ToolHostDeclarationSnapshot HostDeclarations,ToolCatalogDescriptor Catalog);
     private readonly IReadOnlyDictionary<string,Entry> _runtimes;
+    private readonly Func<string,ToolComponentRegistration?>? _editorResolver;
     private readonly object _lifetimeGate=new();
     private bool _retiring;
     private int _leases;
     private readonly TaskCompletionSource _drained=new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly CancellationTokenSource _retirementCancellation=new();
-    private RuntimeDirectorySnapshot(Dictionary<string,Entry> runtimes, ToolComponentRegistration[] components)
+    private RuntimeDirectorySnapshot(Dictionary<string,Entry> runtimes, ToolComponentRegistration[] components,
+        IReadOnlyList<ToolComponentMetadata> componentMetadata,Func<string,ToolComponentRegistration?>? editorResolver)
     {
         _runtimes=new ReadOnlyDictionary<string,Entry>(runtimes);
         Components=Array.AsReadOnly(components);
+        ComponentMetadata=Array.AsReadOnly(componentMetadata.ToArray());
+        _editorResolver=editorResolver;
         Generation=Guid.NewGuid();
     }
     public Guid Generation { get; }
     public bool IsActive => !Volatile.Read(ref _retiring);
     internal IReadOnlyList<ToolComponentRegistration> Components { get; }
+    internal IReadOnlyList<ToolComponentMetadata> ComponentMetadata { get; }
+    internal ToolComponentRegistration? ResolveEditor(string toolId)=>_editorResolver?.Invoke(toolId);
     public IReadOnlyCollection<string> ToolIds => _runtimes.Keys.ToArray();
     public bool Contains(string toolId)=>_runtimes.ContainsKey(toolId);
     public ToolCatalogDescriptor? GetCatalog(string toolId)=>_runtimes.TryGetValue(toolId,out var entry)?entry.Catalog:null;
@@ -91,7 +97,27 @@ public sealed class RuntimeDirectorySnapshot
             if(!runtimes.TryAdd(component.Metadata.ToolId,entry))throw new InvalidOperationException("Duplicate runtime tool identity.");
         }
         if(runtimes.Count==0)throw new InvalidOperationException("The admitted directory contains no runtime tools.");
-        return new RuntimeDirectorySnapshot(runtimes,all);
+        return new RuntimeDirectorySnapshot(runtimes,all,all.Select(component=>component.Metadata).ToArray(),null);
+    }
+    internal static RuntimeDirectorySnapshot Prepare(IEnumerable<ToolComponentRegistration> runtimeCandidate,
+        IEnumerable<ToolComponentMetadata> componentMetadata,Func<string,ToolComponentRegistration?> editorResolver)
+    {
+        ArgumentNullException.ThrowIfNull(runtimeCandidate);
+        ArgumentNullException.ThrowIfNull(componentMetadata);
+        ArgumentNullException.ThrowIfNull(editorResolver);
+        var all=runtimeCandidate.ToArray();
+        _=ToolComponentCatalog.Prepare(componentMetadata);
+        var runtimes=new Dictionary<string,Entry>(StringComparer.Ordinal);
+        foreach(var component in all)
+        {
+            RuntimeComponentAdmission.Validate(component);
+            var definition=(IToolDefinition)Activator.CreateInstance(component.EntryType)!;
+            var entry=new Entry(component,definition.SettingsType,definition.OutputType,definition.Describe().Fingerprint,
+                (definition as IToolSettingsFields)?.SettingsSchema.Fingerprint,ToolHostDeclarationRules.Capture(definition),((IToolCatalogProvider)definition).Catalog);
+            if(!runtimes.TryAdd(component.Metadata.ToolId,entry))throw new InvalidOperationException("Duplicate runtime tool identity.");
+        }
+        if(runtimes.Count==0)throw new InvalidOperationException("The admitted directory contains no runtime tools.");
+        return new RuntimeDirectorySnapshot(runtimes,all,componentMetadata.ToArray(),editorResolver);
     }
 }
 

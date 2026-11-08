@@ -36,6 +36,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         private int _lastRejectedCount;
         private readonly List<string> _admissionFailures=new();
         public string? LastAdmissionError {get;private set;}
+        public IReadOnlyDictionary<string,long> LastAdmissionStageMs { get; private set; } = new Dictionary<string,long>();
         public RuntimeDirectorySnapshot? RuntimeDirectory { get { lock (AdmissionGate) return AdmissionTransition is null && _current?.Desktop.Runtime.IsActive == true ? _current.Desktop.Runtime : null; } }
         public DesktopToolAdmission? DesktopAdmission
         {
@@ -117,6 +118,8 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         /// <summary>只加载当前宿主正式载荷声明的Runtime与可选编辑器。</summary>
         public async Task LoadPluginsAsync()
         {
+            var stageClock = System.Diagnostics.Stopwatch.StartNew();
+            var stages = new Dictionary<string,long>();
             long attempt=0, expectedGeneration=0;
             while(true)
             {
@@ -136,17 +139,12 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
             {
                 // Plugin constructors, schema callbacks and file IO must remain outside the gate.
                 var authority=new ReleasePayloadAuthority(AppContext.BaseDirectory);
+                stages["PayloadValidation"] = stageClock.ElapsedMilliseconds;
+                stageClock.Restart();
                 var snapshot=authority.PrepareDesktopDirectory();
+                stages["ComponentLoading"] = stageClock.ElapsedMilliseconds;
+                stageClock.Restart();
                 var components=snapshot.Components;
-                foreach (var component in components.Where(c => c.Metadata.Role == SunEyeVision.Plugin.Contracts.ToolComponentRole.Editor))
-                {
-                    var type = component.EntryType;
-                    if (type.IsAbstract || type.GetConstructor(Type.EmptyTypes) is null ||
-                        type.Assembly.GetReferencedAssemblies().Any(a => a.Name == "SunEyeVision.UI") ||
-                        !typeof(SunEyeVision.Plugin.Wpf.Presenters.Results.IToolPresentationFactory).IsAssignableFrom(type) ||
-                        typeof(IToolPlugin).IsAssignableFrom(type))
-                        throw new InvalidOperationException("桌面编辑组件必须是独立的正式呈现工厂。 "+component.Metadata.ToolId);
-                }
                 var declarations=components.Where(c=>c.Metadata.Role==SunEyeVision.Plugin.Contracts.ToolComponentRole.Runtime).Select(c=>
                 {
                     var catalog=snapshot.GetCatalog(c.Metadata.ToolId) ?? throw new InvalidOperationException("已准入工具缺少目录声明："+c.Metadata.ToolId);
@@ -154,6 +152,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                         catalog.IconKey,catalog.Description,c.EntryType.FullName!,c.EntryType.Assembly.Location,true);
                 }).ToArray();
                 var directory=new ToolDirectoryCatalog(Path.Combine(AppContext.BaseDirectory,"ToolGroups.xml"),declarations,authority.VerifyApprovedFile);
+                stages["ToolDirectory"] = stageClock.ElapsedMilliseconds;
                 var admission=new PublishedAdmission(new DesktopToolAdmission(directory,snapshot),authority,_ownerId);
                 RuntimeDirectorySnapshot? retiring;
                 Task drained;
@@ -196,6 +195,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                     if(attempt==_attempt)LastAdmissionError=failure;
                 }
             }
+            LastAdmissionStageMs = new System.Collections.ObjectModel.ReadOnlyDictionary<string,long>(stages);
             if(failure is null)_logger.LogInfo($"产品组件准入完成：{count}个工具。");
             else _logger.LogError("[发布准入] "+failure);
         }

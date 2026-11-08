@@ -138,7 +138,7 @@ public sealed class ReleasePayloadAuthority
         ToolComponentRegistration? ResolveEditor(string toolId)
             =>editorCache.GetOrAdd(toolId,id=>LoadToolComponents(new HashSet<string>(StringComparer.Ordinal){id},runtimeOnly:false)
                 .SingleOrDefault(component=>component.Metadata.Role==ToolComponentRole.Editor));
-        var snapshot=RuntimeDirectorySnapshot.Prepare(runtime,_components.Select(component=>component.Metadata),ResolveEditor);
+        var snapshot=RuntimeDirectorySnapshot.PrepareRuntimeWithEditorResolver(runtime,_components.Select(component=>component.Metadata),ResolveEditor);
         if(!snapshot.ToolIds.OrderBy(id=>id,StringComparer.Ordinal).SequenceEqual(_expectedTools.Keys.OrderBy(id=>id,StringComparer.Ordinal),StringComparer.Ordinal))
             throw new InvalidDataException("Admitted runtime directory differs from the declared release set.");
         return snapshot;

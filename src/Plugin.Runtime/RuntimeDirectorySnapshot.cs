@@ -27,7 +27,10 @@ public sealed class RuntimeDirectorySnapshot
     public bool IsActive => !Volatile.Read(ref _retiring);
     internal IReadOnlyList<ToolComponentRegistration> Components { get; }
     internal IReadOnlyList<ToolComponentMetadata> ComponentMetadata { get; }
-    internal ToolComponentRegistration? ResolveEditor(string toolId)=>_editorResolver?.Invoke(toolId);
+    internal ToolComponentRegistration? ResolveEditor(string toolId)
+        =>_editorResolver is not null
+            ? _editorResolver(toolId)
+            : Components.SingleOrDefault(component=>component.Metadata.Role==ToolComponentRole.Editor&&component.Metadata.ToolId==toolId);
     public IReadOnlyCollection<string> ToolIds => _runtimes.Keys.ToArray();
     public bool Contains(string toolId)=>_runtimes.ContainsKey(toolId);
     public ToolCatalogDescriptor? GetCatalog(string toolId)=>_runtimes.TryGetValue(toolId,out var entry)?entry.Catalog:null;
@@ -99,7 +102,7 @@ public sealed class RuntimeDirectorySnapshot
         if(runtimes.Count==0)throw new InvalidOperationException("The admitted directory contains no runtime tools.");
         return new RuntimeDirectorySnapshot(runtimes,all,all.Select(component=>component.Metadata).ToArray(),null);
     }
-    internal static RuntimeDirectorySnapshot Prepare(IEnumerable<ToolComponentRegistration> runtimeCandidate,
+    internal static RuntimeDirectorySnapshot PrepareRuntimeWithEditorResolver(IEnumerable<ToolComponentRegistration> runtimeCandidate,
         IEnumerable<ToolComponentMetadata> componentMetadata,Func<string,ToolComponentRegistration?> editorResolver)
     {
         ArgumentNullException.ThrowIfNull(runtimeCandidate);

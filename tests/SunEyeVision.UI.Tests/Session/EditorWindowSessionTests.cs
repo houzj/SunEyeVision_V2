@@ -12,7 +12,7 @@ public sealed class EditorWindowSessionTests
  [Fact] public void Actual_parameter_window_commits_private_fields_rebases_and_closes_its_participant()=>UiRuntime.Run(()=>
  {
   using var f=new DocumentUiFixture();var node=f.Add();f.Main.SelectedNode=node;f.Main.OpenDebugWindowCommand.Execute(node);UiRuntime.Pump();
-  var window=System.Windows.Application.Current.Windows.OfType<RuntimeToolEditorWindow>().Single();
+  var window=System.Windows.Application.Current.Windows.OfType<RuntimeToolEditorWindow>().Single();UiRuntime.AwaitEditorReady(window);
   var context=Assert.IsType<ProductionEditorContext>(ToolEditorCommit.GetDraftContext(window.Editor));
   Assert.Same(node,context.FormalNode);Assert.True(context.IsValid);
   var settings=UiRuntime.Visuals<DeclaredSettingsView>(window.Editor).Single();

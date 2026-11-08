@@ -5,6 +5,7 @@ Plugin.SDK 退役门禁 2026-11-08
 ReportOnly 结果：
 - 直接项目消费者：20
 - 工具消费者：20
+- 源码实时扫描项目引用：20
 - src/Plugin.SDK 目录条目：0
 - 20 个待迁移工具已逐项列出
 
@@ -17,3 +18,8 @@ ReportOnly 结果：
 - 重新评估 tests/RuntimeEditorProductionProbe/packages.lock.json 后，移除过期 SunEyeVision.Plugin.SDK 依赖，改为 SunEyeVision.Plugin.Editing.Wpf。
 - RuntimeEditorProductionProbe Release 构建：0 错误，MSB9008 旧 SDK 项目缺失警告消失。
 - 20 个旧工具消费者仍保持门禁冻结，本次只清理探针工程的过期锁文件。
+
+2026-11-08 门禁实时一致性增强
+- Windows PowerShell 5.1 与 pwsh 均使用显式 UTF-8 读取映射。
+- 门禁实时扫描 tools 下正式 csproj，并排除 obj/bin 及 `_wpftmp.csproj` 生成文件。
+- 映射登记 20 与源码实时扫描 20 一致，正常模式继续阻断旧 SDK 删除。

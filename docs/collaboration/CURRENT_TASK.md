@@ -381,6 +381,8 @@ REA 的 `B08-总面积聚合排序与判断传输链-20261104.md` 已确认总�
 
 PluginDevKit 清理了 5 个被工程排除但仍引用旧 `Plugin.SDK` 的死模板/死样例文件，并删除了无法被 `dotnet sln` 解析的旧二进制 `PluginDevKit.sln`。`prepare-devkit.ps1` 现在只提示 `RuntimePlugin.Template` 和 `WpfTool.Template`。清理后两个新模板分别 Release 构建 0 错误，`validate-components.ps1 -PackageRoot PluginDevKit` 通过，PluginDevKit 中已无旧 SDK 源码引用。
 
+`validate-components.ps1` 已增加模板源码退役 SDK 扫描和 SDK 合同 DLL 存在性检查。当前模板身份验证与旧 SDK 回流检查均通过。
+
 同一正式 Release 载荷下的 ImageSource Runtime 全量回归为 `31/31`，日志见 `docs/collaboration/evidence/ImageSource全量回归-20261108.log`。结合前述 BlobAnalysis `39/39`，当前两工具 Runtime 测试总计 `70/70` 通过。测试使用独立 `S2_CASE_ROOT`，没有把本机历史案例目录或人工验收状态混入结果。
 
 PluginDevKit/runtime 中一份旧产品 Help 静态站点仍展示 `IVisionPlugin`、旧工作流 API 和旧插件示例，已从生成的外部调试运行目录清理；`build-runtime.ps1` 也将 `Help` 加入外部运行目录排除项，避免下次准备开发包时回流。当前外部开发说明以 `PluginDevKit/README.md`、两个新模板和发布 DLL 合同为准。

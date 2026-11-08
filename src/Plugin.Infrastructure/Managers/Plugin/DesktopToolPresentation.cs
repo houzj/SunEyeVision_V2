@@ -5,6 +5,7 @@ using System.Threading;
 using System.Windows;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Contracts.Results.Presentation;
+using SunEyeVision.Plugin.Editing.Wpf.Core;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using SunEyeVision.Plugin.Wpf.Presenters.Results;

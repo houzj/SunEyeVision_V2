@@ -371,4 +371,10 @@ Blob 引用输入修正 DeleteTextBox 的空文本清理路径。WPF 绑定在�
 
 REA 的 `B08-总面积聚合排序与判断传输链-20261104.md` 已确认总面积按结果数组顺序逐项以 float32 累加。本批新增 `BlobNumericSemantics.Float32Sum`，统一执行判断、`BlobOutput.TotalArea` 和 `BlobVmResultProjection.TotalArea`，并加入顺序累加回归用例。Runtime Release 构建通过。首次 xUnit 运行因局部构建后的正式载荷未重新封签而被门禁阻断，随后按产品流程以当前 Release 重新封签并用 `--no-build` 重跑，新增回归 1/1 通过。该过程保留为载荷一致性要求，不绕过正式门禁。证据文件为 `docs/collaboration/evidence/Blob总面积单精度聚合回归-20261108.txt`。
 
+## 2026-11-08 Blob Runtime 全量回归与外部 VS 状态复核
+
+在正式 Release 重新封签后，BlobAnalysis Runtime 全量回归最终 `39/39` 通过，日志见 `docs/collaboration/evidence/BlobAnalysis全量回归-20261108.log`。这次回归覆盖参数合同、阈值模式准入、真实 HALCON Session、输出图像、结果 reader、边界和释放链；它仍不等同于 VM 原机动态差分。
+
+当前机器实际存在 `C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\devenv.exe`。已启动 PluginDevKit 外部正式宿主并准备调试回执，也启动过 Visual Studio 进程，但 Computer Use 未能获得可操作的 Visual Studio 窗口，附加动作没有发生，随后已关闭本次测试进程并清理临时回执。因此“VS 启动或附加正式宿主”仍是未验收项，不能把进程启动检查记作 VS 附加通过。
+
 

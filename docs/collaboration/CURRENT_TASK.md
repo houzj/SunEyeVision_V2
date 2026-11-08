@@ -239,6 +239,8 @@ VM `BlobFindResult` 已新增中立投影 `BlobVmResultProjection`。面积、�
 
 旧 SDK 消费者已补充源级映射 `docs/collaboration/evidence/PluginSDK消费者源级映射-20261108.json`。扫描结果区分 20 个仍有正式 `ProjectReference` 的工具项目和 2 个只有历史命名空间字符串的宿主项目，记录每个项目的源码/XAML 闭包和新合同目标。20 个直接消费者仍冻结，未开始删除旧 SDK。
 
+旧 SDK 退役门禁新增工作树实时扫描。Windows PowerShell 5.1 的 `-ReportOnly` 已核对映射登记 20、实际项目引用 20、SDK 目录条目 0，正常模式继续按 20 个项目阻断删除。映射文件与源码项目不一致时现在会先阻断，不能依赖过期清单继续推进。
+
 
 ## 2026-11-08 代码级闭环继续推进
 

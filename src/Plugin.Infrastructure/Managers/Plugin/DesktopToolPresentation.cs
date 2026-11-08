@@ -27,7 +27,7 @@ public static class DesktopToolPresentation
             var editor=admission.EditorEntryType;
             options??=new();
             inner=editor is null ? new DeclaredSettingsView(draft,options) :
-                (Activator.CreateInstance(editor) as IToolPresentationFactory??throw new InvalidOperationException("Runtime settings require a presentation factory.")).CreateSettingsView(draft,options)
+                (CreateFactory(editor)).CreateSettingsView(draft,options)
                 ??throw new InvalidOperationException("Settings view factory returned null.");
             admission.EnsureCurrent();
             lease=new SettingsLease(inner,generation,admission);
@@ -52,7 +52,7 @@ public static class DesktopToolPresentation
             if(projection.Kind is ResultProjectionKind.None or ResultProjectionKind.PropertyList){admission.EnsureCurrent();generation.Dispose();return null;}
             var editor=admission.EditorEntryType;
             inner=editor is not null ?
-                (Activator.CreateInstance(editor) as IToolPresentationFactory??throw new InvalidOperationException("Result declaration requires a presentation factory.")).CreateResultView(schema,projection)
+                CreateFactory(editor).CreateResultView(schema,projection)
                     ??throw new InvalidOperationException("Result view factory returned null.") :
                 projection.Kind switch {ResultProjectionKind.StandardTable=>new DeclaredResultTable(schema,projection),_=>throw new NotSupportedException("No result renderer is registered for: "+projection.RendererKey)};
             admission.EnsureCurrent();
@@ -61,6 +61,16 @@ public static class DesktopToolPresentation
             return lease;
         }
         catch(Exception failure){var errors=new List<Exception>{failure};if(lease is not null){try{lease.Dispose();}catch(Exception cleanup){errors.Add(cleanup);}}else{try{inner?.Dispose();}catch(Exception cleanup){errors.Add(cleanup);}try{generation.Dispose();}catch(Exception cleanup){errors.Add(cleanup);}}if(errors.Count>1)throw new AggregateException(errors);throw;}
+    }
+    private static IToolPresentationFactory CreateFactory(Type editor)
+    {
+        if(editor.IsAbstract||editor.GetConstructor(Type.EmptyTypes) is null)
+            throw new InvalidOperationException("桌面编辑组件必须提供公开无参构造且不能为抽象类型。 "+editor.FullName);
+        if(editor.Assembly.GetReferencedAssemblies().Any(a=>a.Name=="SunEyeVision.UI")||
+            typeof(IToolPlugin).IsAssignableFrom(editor)||!typeof(IToolPresentationFactory).IsAssignableFrom(editor))
+            throw new InvalidOperationException("桌面编辑组件必须是独立的正式呈现工厂。 "+editor.FullName);
+        return Activator.CreateInstance(editor) as IToolPresentationFactory
+            ??throw new InvalidOperationException("桌面编辑组件不是正式呈现工厂。 "+editor.FullName);
     }
     private sealed class SettingsLease:IToolSettingsView
     {

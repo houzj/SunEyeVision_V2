@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>视觉与交互层 · 与 VM 原件代码对照表</title>
+<style>
+:root{--ink:#1f2328;--muted:#656d76;--line:#d0d7de;--soft:#f6f8fa;--ok:#1a7f37;--bad:#cf222e;--warn:#9a6700}
+*{box-sizing:border-box}
+body{margin:0;padding:36px 22px 70px;color:var(--ink);font:15px/1.7 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+main{max-width:1120px;margin:0 auto}
+h1{font-size:26px;margin:0 0 6px}
+h2{font-size:19px;margin:38px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--line)}
+h3{font-size:15.5px;margin:22px 0 8px}
+p{margin:9px 0}
+.sub{color:var(--muted);font-size:13px;margin-bottom:22px}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th,td{border:1px solid var(--line);padding:7px 9px;vertical-align:top;text-align:left}
+th{background:var(--soft);font-weight:600}
+code{background:var(--soft);padding:1px 4px;border-radius:3px;font:12px/1.5 ui-monospace,Consolas,monospace;word-break:break-all}
+.tag{display:inline-block;padding:0 7px;border-radius:999px;font-size:12px;border:1px solid;white-space:nowrap}
+.t-ok{color:var(--ok);border-color:var(--ok);background:#e8f5ec}
+.t-no{color:var(--bad);border-color:var(--bad);background:#ffeceb}
+.t-part{color:var(--warn);border-color:var(--warn);background:#fff8e5}
+.sum{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+.sum div{flex:1;min-width:150px;border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:var(--soft)}
+.sum b{display:block;font-size:22px;line-height:1.3}
+.note{border-left:4px solid var(--bad);background:#ffeceb;padding:10px 14px;border-radius:0 6px 6px 0;margin:12px 0}
+ul,ol{margin:8px 0;padding-left:20px}
+li{margin:4px 0}
+.vm{color:#6639ba}
+.own{color:#0969da}
+</style>
+</head>
+<body>
+<main>
+
+<h1>视觉与交互层 · 与 VM 原件代码对照表</h1>
+<p class="sub">SunEyeVision V2 ｜ 2026-11-09 ｜ 基线提交 <code>17b0b8849</code> ｜ 对照方式：逐项读取两边源码取值，不依赖界面观察</p>
+
+<div class="sum">
+<div><b>6</b>完全一致（逐值相同）</div>
+<div><b>5</b>部分一致（有可描述差异）</div>
+<div><b>1</b>本项目真实缺失（已修）</div>
+<div><b>1</b>验收清单曾写错（本表已更正）</div>
+</div>
+
+<div class="note">
+结论先说：<b>端口、连线、节点填充、右键菜单、主题取值、画布规格都是逐值相同的</b>。启动链经二次核实只剩 <b>1 项真实缺失</b>（工作目录未固定，已修）；其余差异是<b>实现方式不同但能力具备</b>（遮罩、窗口记忆、单实例转发）。真正影响手感的是<b>悬停交互机制</b>：缺工作区锁定条件、端口常驻而非悬停实例化、缺悬停装饰器与节点级悬停态。
+</div>
+
+<h2>一、启动链对照</h2>
+
+<table>
+<tr><th style="width:15%">能力</th><th style="width:40%">VM 原件</th><th style="width:35%">本项目</th><th style="width:10%">结论</th></tr>
+<tr>
+<td>进程入口</td>
+<td class="vm"><code>VisionMaster.Exe.Audit\VisionMaster\Program.cs:61</code><br><code>Main(args)</code> → 设工作目录 → 单实例 → <code>new App(args); app.Run()</code></td>
+<td class="own"><code>src\UI\App.xaml.cs:84</code><br><code>OnStartup(StartupEventArgs e)</code>，含 <code>--release-probe</code>/<code>--toolbox</code> 探测分支</td>
+<td><span class="tag t-part">结构不同</span></td>
+</tr>
+<tr>
+<td>工作目录</td>
+<td class="vm"><code>Program.cs:63</code> <code>Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory)</code> —— 保证从快捷方式、文件关联、任意目录启动时相对路径都正确</td>
+<td class="own"><code>App.xaml.cs</code> 的 <code>OnStartup</code> 开头已补 <code>Directory.SetCurrentDirectory(AppContext.BaseDirectory)</code></td>
+<td><span class="tag t-ok">已修</span></td>
+</tr>
+<tr>
+<td>单实例</td>
+<td class="vm"><code>Program.cs:70</code> <code>SingleInstanceManager.Initialize(...)</code>；重复启动时把命令行回调给已有实例 <code>App.ProcessCommandLineArgs(args)</code></td>
+<td class="own"><code>ApplicationLifetimeGate.cs:9</code> 互斥 + <code>SingleInstanceCoordinator.cs:28</code> + <code>StartupLaunchContext.Parse(args)</code> 解析方案路径（含隔离实例）</td>
+<td><span class="tag t-ok">一致</span>（实现方式不同）</td>
+</tr>
+<tr>
+<td>主窗口创建</td>
+<td class="vm"><code>App.cs:354-366</code> <code>ShowMainWindow()</code>：<code>new MainWindow()</code> → 绑 <code>DataContext=Program.MainData</code> → 绑 <code>IsShowProgressMask</code>/<code>MaskMessage</code> → <code>Closing</code> → <code>Show()</code> → <code>ConfigZoomIndex()</code> → <code>RecoverMainWindowState()</code></td>
+<td class="own">MainWindow 经 Shell 直接创建，绑定工作区与状态栏</td>
+<td><span class="tag t-part">部分</span></td>
+</tr>
+<tr>
+<td>启动遮罩</td>
+<td class="vm">主窗口上 <code>IsShowProgressMask</code> 依赖属性 + <code>MaskMessage</code>，启动期由 <code>Program.MainData</code> 驱动</td>
+<td class="own"><code>MainWindow.xaml:83</code> 的 <code>SolutionLoadingOverlay</code>，配合 <code>MainWindow.xaml.cs:401/408/421</code> 的 <code>Show/Update/Hide</code>（带 stage/detail 文案）</td>
+<td><span class="tag t-ok">一致</span>（实现方式不同）</td>
+</tr>
+<tr>
+<td>窗口状态恢复</td>
+<td class="vm"><code>Program.MainData.RecoverMainWindowState(MainWindow)</code> —— 记住上次位置与大小</td>
+<td class="own"><code>LayoutConfig.cs:54</code> 的 <code>app.SaveWindowLayout(this)</code> + <code>App.xaml.cs:450</code> 的 <code>SaveWindowLayout(LayoutConfig)</code></td>
+<td><span class="tag t-ok">一致</span></td>
+</tr>
+<tr>
+<td>启动前置阶段</td>
+<td class="vm"><code>App.BeforeStartPart()</code>（<code>Program.cs:111</code>）日志 <code>---appBeforeStart--Beigin</code>、<code>SoftEncrypt()</code> 等许可/加密校验；失败时弹环境检测工具</td>
+<td class="own">轻量壳 → 插件准入 → 服务注册 → 方案管理器 → 打开方案，带 <code>LogStartupStage</code> 阶段日志</td>
+<td><span class="tag t-part">不同</span>（本方无许可阶段，属新架构）</td>
+</tr>
+</table>
+
+<h2>二、节点悬停与端口对照</h2>
+
+<table>
+<tr><th style="width:15%">项</th><th style="width:40%">VM 原件</th><th style="width:35%">本项目</th><th style="width:10%">结论</th></tr>
+<tr>
+<td>触发属性</td>
+<td class="vm"><code>DiagramItem.IsHited</code>（依赖属性），由 <code>OnPropertyChanged(IsMouseOver)</code> 在 Code-behind 驱动</td>
+<td class="own"><code>WorkflowCanvasControl.xaml</code> 中 <code>DataTrigger Binding="{Binding IsMouseOver, ElementName=HitAreaBorder}"</code></td>
+<td><span class="tag t-part">机制不同</span>（效果近似）</td>
+</tr>
+<tr>
+<td>显示条件</td>
+<td class="vm"><code>diagramitemtemplate.xaml:949-956</code> 的 MultiTrigger：<br><code>IsHited == True</code> <b>且</b> <code>IsLockWorkArea == False</code></td>
+<td class="own">仅 <code>IsMouseOver == True</code></td>
+<td><span class="tag t-no">缺锁定条件</span></td>
+</tr>
+<tr>
+<td>端口实例化</td>
+<td class="vm">4 个 <code>ContentPresenter</code> 初始 <code>Content={x:Null}</code>，悬停时才把 <code>{StaticResource left/right/top/bottom}</code> 塞进去</td>
+<td class="own">4 个 <code>ConnectionPort</code> 常驻于 <code>PortLayer</code>，只切换 <code>Visibility</code></td>
+<td><span class="tag t-part">不同</span>（本方常驻实例）</td>
+</tr>
+<tr>
+<td>端口视觉</td>
+<td class="vm"><code>Connector.xaml</code>：20×30、<code>Cursor=Cross</code>、<code>#FFFFA719</code>、<code>Margin=-5</code>、5×8、边框 <code>1,1,0,1</code> <code>#FF444444</code></td>
+<td class="own"><code>ConnectionPort.xaml</code>：逐项相同</td>
+<td><span class="tag t-ok">一致</span></td>
+</tr>
+<tr>
+<td>命中放大</td>
+<td class="vm">边框 <code>2,2,0,2</code>、<code>Margin=-8.5</code>、宽 <code>8.5</code>、高 <code>12</code></td>
+<td class="own">四项逐值相同</td>
+<td><span class="tag t-ok">一致</span></td>
+</tr>
+<tr>
+<td>四方位定位</td>
+<td class="vm">Index 0/2/1/3；Left <code>Margin=-20</code> + <code>ScaleX=-1</code>+<code>TranslateX=20</code>；Right <code>0,0,-20,0</code>；Top <code>0,-25,0,0</code>+<code>Rotate -90</code>；Bottom <code>0,0,0,-25</code>+<code>Rotate 90</code>（中心 10,15）</td>
+<td class="own">逐项相同</td>
+<td><span class="tag t-ok">一致</span></td>
+</tr>
+<tr>
+<td>悬停装饰</td>
+<td class="vm"><code>ConnectorForMouseOver.cs</code>（ExternAdorner）：为命中端口额外挂装饰层</td>
+<td class="own">无对应装饰器（文件仍在 <code>.pending</code>）</td>
+<td><span class="tag t-no">缺失</span></td>
+</tr>
+<tr>
+<td>节点级悬停态</td>
+<td class="vm"><code>IsHited</code> 同时驱动节点边框/标题态与端口显示</td>
+<td class="own">仅驱动端口显隐，节点本身无悬停态样式</td>
+<td><span class="tag t-no">缺失</span></td>
+</tr>
+</table>
+
+<h2>三、连线对照</h2>
+
+<table>
+<tr><th style="width:15%">项</th><th style="width:40%">VM 原件</th><th style="width:35%">本项目</th><th style="width:10%">结论</th></tr>
+<tr>
+<td>默认颜色</td><td class="vm"><code>Col_EditProcess_Ligature</code> = <code>#FFA70F</code></td><td class="own"><code>ConnectionNormalColor</code> = <code>#FFA70F</code></td><td><span class="tag t-ok">一致</span></td>
+</tr>
+<tr>
+<td>选中/悬停色</td><td class="vm"><code>Col_EditProcess_Selected_Ligature</code> = <code>#E76900</code></td><td class="own"><code>#E76900</code></td><td><span class="tag t-ok">一致</span></td>
+</tr>
+<tr>
+<td>线宽</td><td class="vm">默认 2、选中 3</td><td class="own">默认 2、悬停 3、选中 3</td><td><span class="tag t-ok">一致</span></td>
+</tr>
+<tr>
+<td>路径算法</td><td class="vm"><code>PathFinder.GetConnectionLine</code> 正交避障 + <code>OptimizeLinePoints2</code> 折点优化</td><td class="own">已启用同一文件，入口改纯几何签名，拖线预览调用它</td><td><span class="tag t-ok">一致</span></td>
+</tr>
+<tr>
+<td>填充</td><td class="vm"><code>Fill="{Binding Stroke, RelativeSource=Self}"</code>（线与填充同色）</td><td class="own"><code>Fill="Transparent"</code></td><td><span class="tag t-part">不同</span></td>
+</tr>
+<tr>
+<td>箭头</td><td class="vm">连线<b>无箭头</b>（Connection/connectionstyle 三个文件均无 Arrow/Triangle/Polygon）</td><td class="own">有独立 <code>ArrowPath</code> + <code>ArrowGeometry</code>（本轮已把颜色由 <code>#666666</code> 改为 <code>#FFA70F</code>）</td><td><span class="tag t-part">多出箭头</span></td>
+</tr>
+<tr>
+<td>拖线预览</td><td class="vm"><code>Col_EditProcess_Connecting_Ligature</code> + 虚线 <code>5,2.5</code></td><td class="own">同色 + <code>5,2.5</code></td><td><span class="tag t-ok">一致</span></td>
+</tr>
+</table>
+
+<h2>四、节点与画布对照</h2>
+
+<table>
+<tr><th style="width:15%">项</th><th style="width:40%">VM 原件</th><th style="width:35%">本项目</th><th style="width:10%">结论</th></tr>
+<tr>
+<td>节点填充</td><td class="vm"><code>NormalModulePathStyle</code>：<code>#FAF7F5</code>/0 → <code>#F3F6F5</code>/0.47 → <code>#ECEDF0</code>/0.82 → <code>#EBE6E2</code>/0.97 → <code>#EB6600</code>/1</td><td class="own">同五段同偏移</td><td><span class="tag t-ok">一致</span></td>
+</tr>
+<tr>
+<td>节点投影</td><td class="vm"><code>Color=#FF121111 ShadowDepth=3 Opacity=0.45</code></td><td class="own">同</td><td><span class="tag t-ok">一致</span></td>
+</tr>
+<tr>
+<td>节点圆角</td><td class="vm">Path 圆弧 <code>Size=4,4</code>（即半径 4）</td><td class="own"><code>CornerRadius=4</code></td><td><span class="tag t-ok">一致</span></td>
+</tr>
+<tr>
+<td>节点形状种类</td><td class="vm"><b>6 种</b> PathGeometry：<code>ImageModulePath</code>（胶囊 r15）、<code>IfBranchPath</code>（40 高菱形）、<code>FunctionModulePath</code>（40×40）、<code>TimerModulePath</code>（圆）、<code>ShellModulePath</code>、<code>CommuncationDataPath</code></td><td class="own">仅 <code>IMAGE</code> 用 <code>CornerRadius=15</code> 近似胶囊，其余统一卡片</td><td><span class="tag t-part">部分</span></td>
+</tr>
+<tr>
+<td>右键菜单</td><td class="vm"><code>Disconnect → Delet → Copy → Rename → Forbidden → Enabled</code></td><td class="own">断开连接 → 删除 → 复制 → 重命名 → 禁用 → 启用</td><td><span class="tag t-ok">一致</span></td>
+</tr>
+<tr>
+<td>多选菜单</td><td class="vm">删除 / 复制 / 禁用 / 启用 / 分隔 / 对齐(6) / 分布(2)</td><td class="own">同结构 + 对齐项原件图标</td><td><span class="tag t-ok">一致</span></td>
+</tr>
+<tr>
+<td>缩放档位</td><td class="vm"><code>_ZoomTicks</code> 20 档：0.1–2.0，步进 0.1</td><td class="own"><code>MinScale=0.1</code> <code>MaxScale=2.0</code>，<code>Math.Round(scale,1)</code></td><td><span class="tag t-ok">一致</span></td>
+</tr>
+<tr>
+<td>对齐辅助线</td><td class="vm"><code>Brushes.LightGreen</code>、1px、<code>5,2.5</code>、Round</td><td class="own">同色同虚线（厚度 <code>1/scale</code>，视觉等效 1px）</td><td><span class="tag t-ok">一致</span></td>
+</tr>
+<tr>
+<td>插入热区</td><td class="vm"><code>66 × 22</code>、<code>Orange</code>、不参与命中</td><td class="own">同</td><td><span class="tag t-ok">一致</span></td>
+</tr>
+<tr>
+<td>拖放透明度</td><td class="vm">拖拽跟随节点 <code>Opacity=0.7</code></td><td class="own">未见 0.7 常量（待核）</td><td><span class="tag t-part">待核</span></td>
+</tr>
+</table>
+
+<h2>五、主题配色对照</h2>
+
+<table>
+<tr><th>位置</th><th>VM 键与值</th><th>本项目键与值</th><th>结论</th></tr>
+<tr><td>主窗口</td><td><code>Col_Menubar_Background</code> #1E1E1E</td><td><code>WindowBackground</code> #1E1E1E</td><td><span class="tag t-ok">一致</span></td></tr>
+<tr><td>工具栏</td><td><code>Col_Toolbar_Backgound</code> #202023</td><td><code>ToolBarBackground</code> #202023</td><td><span class="tag t-ok">一致</span></td></tr>
+<tr><td>画布页</td><td><code>Col_EditProcess_DiagramPage_Background</code> #46474A</td><td><code>CanvasBackground</code> #46474A</td><td><span class="tag t-ok">一致</span></td></tr>
+<tr><td>结果区</td><td><code>Col_ShowResults_Background</code> #3B3E41</td><td><code>PanelBackground</code> #3B3E41</td><td><span class="tag t-ok">一致</span></td></tr>
+<tr><td>文字</td><td><code>Col_Menubar_Foreground</code> #D9D9D9</td><td><code>TextPrimary</code> #D9D9D9</td><td><span class="tag t-ok">一致</span></td></tr>
+<tr><td>主题色</td><td><code>Col_Theme</code> #E76900</td><td><code>AccentColor</code> #E76900</td><td><span class="tag t-ok">一致</span></td></tr>
+<tr><td>日志条</td><td><code>Col_LogBar_Background</code> #3B3C3F</td><td>未找到对应语义键</td><td><span class="tag t-part">待接</span></td></tr>
+<tr><td>参数子窗体</td><td><code>Col_SubForm_Background</code> #F2F3F5</td><td>由 <code>ConfigurationShell</code> 提供</td><td><span class="tag t-ok">一致</span></td></tr>
+</table>
+
+<h2>六、验收清单需要更正的地方</h2>
+
+<table>
+<tr><th style="width:10%">项</th><th>原写法</th><th>实际情况</th></tr>
+<tr><td>A1</td><td>"启动期间显示加载遮罩，不白屏"</td><td>成立。本项目用 <code>SolutionLoadingOverlay</code> 加 <code>Show/Update/Hide</code> 实现，与 VM 的 <code>IsShowProgressMask</code> 能力等价（初版对照表曾误判为缺失，已更正）。</td></tr>
+<tr><td>A2</td><td>"不再出现独立 SplashScreen"</td><td>成立。SplashScreen 已删，启动进度由 <code>SolutionLoadingOverlay</code> 承担。</td></tr>
+<tr><td>D1</td><td>"鼠标进入节点，四个端口同时出现"</td><td>成立，但缺 <code>IsLockWorkArea</code> 条件；本项目也没有"锁定工作区"这一功能，属功能缺失而非样式差异。</td></tr>
+<tr><td>D2</td><td>"端口命中放大"</td><td>成立（逐值相同）。</td></tr>
+<tr><td>新增</td><td>—</td><td>建议补两项：<b>D11</b> 工作区锁定时端口不应出现（当前无法通过，因功能未实现）；<b>D12</b> 连线不应有箭头（当前有多余箭头）。</td></tr>
+</table>
+
+<h2>七、按差异优先级的补齐顺序</h2>
+<ol>
+<li><b>启动工作目录</b> <span class="tag t-ok">已完成</span>：已在 <code>OnStartup</code> 补 <code>SetCurrentDirectory(AppContext.BaseDirectory)</code>。</li>
+<li><b>节点级悬停态</b>：把 <code>IsHited</code> 提升为节点投影属性，同时驱动端口显隐与节点边框，替代仅绑 <code>IsMouseOver</code> 的做法。</li>
+<li><b>连线去掉箭头 / 填充改同色</b>：把 <code>ArrowPath</code> 及其 16 处引用一并移除，<code>Fill</code> 改 <code>{Binding Stroke}</code>。</li>
+<li><b>拖拽跟随透明度</b>：与原件 <code>0.7</code> 核对（本项目未找到该常量，可能用别的取值）。</li>
+<li><b>其余 5 种节点形状</b>：迁入 <code>IfBranchPath</code>/<code>FunctionModulePath</code>/<code>TimerModulePath</code>/<code>ShellModulePath</code>/<code>CommuncationDataPath</code>，由 <code>NodeDisplayType</code> 选择。</li>
+</ol>
+
+</main>
+</body>
+</html>

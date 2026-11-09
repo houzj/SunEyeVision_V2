@@ -158,7 +158,7 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
             _state.EnableNumericModel(presentation?.Layout);
         _state.Changed+=OnStateChanged;
         _state.ExplicitlyAccepted+=OnExplicitlyAccepted;
-        if(!EditorResources.IsSharedResourceScopeActive)Resources.MergedDictionaries.Add(EditorResources.Create());
+        Resources.MergedDictionaries.Add(EditorResources.Shared);
         _error.Style=EditorResources.ErrorStyle();
         Tag=port.Id;Margin=new Thickness(0);MinHeight=32;
         _label.Text=label;_label.VerticalAlignment=VerticalAlignment.Center;_label.TextTrimming=TextTrimming.CharacterEllipsis;_label.ToolTip=label;_label.FontSize=14;
@@ -196,7 +196,6 @@ public sealed partial class DeclaredFieldEditor : UserControl, IDisposable,IPara
 
     private void Render()
     {
-        using var sharedResourceScope=EditorResources.BeginSharedResourceScope();
         if(_disposed)return;
         _renderDeferred=false;
         _renderGeneration++;

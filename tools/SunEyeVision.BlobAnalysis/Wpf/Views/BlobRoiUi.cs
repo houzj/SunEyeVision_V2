@@ -1,5 +1,6 @@
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using SunEyeVision.Plugin.Wpf.Presenters.Regions;
+using SunEyeVision.Plugin.Wpf.Fields;
 using System.Windows;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Tool.BlobAnalysis.Runtime;
@@ -23,11 +24,13 @@ internal static class BlobRoiUi
             }
             var rectangleLabels=new[]{"ROI中心点X","ROI中心点Y","ROI宽度","ROI高度","ROI角度"};
             var annulusLabels=new[]{"圆心点X","圆心点Y","内径","外径","起始角度","角度范围"};
+            IReadOnlyList<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor> Fields(string mode,IReadOnlyList<string> members,IReadOnlyList<string> labels)
+                =>members.Select((member,index)=>Field(BlobRoiInheritance.Leaf(mode,member),labels[index])).ToArray();
             inheritance=new(mode==BlobRoiInheritance.Local?null:Array.IndexOf(modes,mode),selected=>
                 inputs.WriteUnpresentedInput(BlobRoiInheritance.ModeId,new ConstantSetting(selected is null?BlobRoiInheritance.Local:modes[selected.Value])),
                 Field(BlobRoiInheritance.RectangleSource,"区域"),Field(BlobRoiInheritance.AnnulusSource,"区域"),
-                BlobRoiInheritance.RectangleMembers.Select((member,index)=>Field(BlobRoiInheritance.Leaf(BlobRoiInheritance.RectangleParameters,member),rectangleLabels[index])).ToArray(),
-                BlobRoiInheritance.AnnulusMembers.Select((member,index)=>Field(BlobRoiInheritance.Leaf(BlobRoiInheritance.AnnulusParameters,member),annulusLabels[index])).ToArray());
+                ()=>Fields(BlobRoiInheritance.RectangleParameters,BlobRoiInheritance.RectangleMembers,rectangleLabels),
+                ()=>Fields(BlobRoiInheritance.AnnulusParameters,BlobRoiInheritance.AnnulusMembers,annulusLabels));
         }
         var controls=new NativeRoiUiDraftControls(geometryOnlyPresentation:supportedWindow,inheritance);
         if(supportedWindow)controls.ToolTip="继承按当前输入图像的像素坐标、角度及半径只读预览；图像区域、屏蔽继承及输出掩膜尚未实现。";

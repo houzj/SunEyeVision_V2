@@ -60,7 +60,7 @@
   <DataTemplate x:Key="ImageViewConfig">
     <localParamTab:LeftRightControl Height="32" HorizontalAlignment="Left">
       <localParamTab:LeftRightControl.LeftContent>
-        <Control Template="{StaticResource TextLeft}" />
+      <Control Template="{DynamicResource TextLeft}" />
       </localParamTab:LeftRightControl.LeftContent>
       <localParamTab:LeftRightControl.RightContent>
         <UniformGrid Width="100" Columns="2">

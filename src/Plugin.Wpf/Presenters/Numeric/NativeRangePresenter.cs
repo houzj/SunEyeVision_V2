@@ -78,7 +78,7 @@ internal sealed class NativeRangePresenter : UserControl,IDisposable,IParameterV
         NativeView.PrepareBorrowedInteractions(false);
         for(var i=0;i<2;i++)NativeView.SetBinding(ValueProperty(i),new Binding(nameof(NativeNumericModel.NativeValue))
             {Source=_states[i].NumericModel,Mode=BindingMode.TwoWay,UpdateSourceTrigger=UpdateSourceTrigger.PropertyChanged});
-        if(!EditorResources.IsSharedResourceScopeActive)Resources.MergedDictionaries.Add(EditorResources.Create());_error.Style=EditorResources.ErrorStyle();
+        Resources.MergedDictionaries.Add(EditorResources.Shared);_error.Style=EditorResources.ErrorStyle();
         Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/References/ReferenceField.xaml",UriKind.Relative)});
         NativeView.SubscribeTemplate=(DataTemplate)FindResource("ButtonSelecter_sub");
         for(var i=0;i<2;i++)

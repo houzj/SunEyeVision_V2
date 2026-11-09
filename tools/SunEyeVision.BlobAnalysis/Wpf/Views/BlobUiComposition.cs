@@ -26,6 +26,7 @@ internal sealed class BlobUiComposition : IDisposable
     private NativeJudgmentUiDraftControls? _judgmentUi;
     internal BlobRunUiState? RunUi {get;private set;}
     private readonly ToolSettingsViewOptions _composed;
+    private readonly bool _eagerlyComposePages;
     private bool _disposed,_bound;
     private ToolSettingsViewOptions? _runOptions,_displayOptions;
     private DeclaredFieldsView? _pageHost;
@@ -56,8 +57,8 @@ internal sealed class BlobUiComposition : IDisposable
         const string position="field:c95f3a26edf55097863a7ec47d17cce5";
         options=options with{HeaderlessSectionAnchors=new HashSet<string>{position}};
         BaseOptions=options;
+        _eagerlyComposePages=options.EagerlyComposePages;
         _preview=new(()=>!_disposed&&ReferenceEquals(_editor.Draft,Draft));
-        using var sharedResourceScope=SunEyeVision.Plugin.Wpf.EditorResources.BeginSharedResourceScope();
         try
         {
             _composed=BlobDisplayUi.Configure(BaseOptions,draft.Schema) with {ValidateUiState=ValidateUiState,PageBuilt=BuildPage};
@@ -126,6 +127,24 @@ internal sealed class BlobUiComposition : IDisposable
         _activePage=page;
         if(_pendingPages.Add(page))
         {
+            if(_eagerlyComposePages)
+            {
+                _pendingPages.Remove(page);
+                try
+                {
+                    BuildPageCore(page,fields,pageInput);
+                    CompleteReadyIfSatisfied(fields);
+                    Changed?.Invoke();
+                }
+                catch(Exception error)
+                {
+                    _compositionError=error.Message;
+                    _ready.TrySetException(error);
+                    SunEyeVision.Foundation.Logging.PluginLogger.Error(error.Message,nameof(BlobUiComposition));
+                    Changed?.Invoke();
+                }
+                return;
+            }
             // After the initial page is visible, a newly selected page is
             // assembled in the same UI turn. This prevents the first tab
             // switch from exposing an empty/partial page while an idle callback
@@ -135,6 +154,30 @@ internal sealed class BlobUiComposition : IDisposable
                 _pendingPages.Remove(page);
                 try{BuildPageCore(page,fields,pageInput);Changed?.Invoke();}
                 catch(Exception error){_compositionError=error.Message;SunEyeVision.Foundation.Logging.PluginLogger.Error(error.Message,nameof(BlobUiComposition));Changed?.Invoke();}
+                return;
+            }
+            // The first selected page is part of the visible-window contract.
+            // Build it while the host window is still hidden so the native
+            // page, ROI slot and page-specific bindings become one atomic
+            // composition. Deferring this page to SystemIdle lets the host
+            // continuation race the template/slot callbacks and produces the
+            // observable "empty first, complete later" jump.
+            if(!_initialPageReady&&_composedPages.Count==0)
+            {
+                _pendingPages.Remove(page);
+                try
+                {
+                    BuildPageCore(page,fields,pageInput);
+                    CompleteReadyIfSatisfied(fields);
+                    Changed?.Invoke();
+                }
+                catch(Exception error)
+                {
+                    _compositionError=error.Message;
+                    _ready.TrySetException(error);
+                    SunEyeVision.Foundation.Logging.PluginLogger.Error(error.Message,nameof(BlobUiComposition));
+                    Changed?.Invoke();
+                }
                 return;
             }
             // The window's first frame is independent from page readiness. The
@@ -152,7 +195,7 @@ internal sealed class BlobUiComposition : IDisposable
                 try
                 {
                     BuildPageCore(page,fields,pageInput);
-                    if(!_initialPageReady){_initialPageReady=true;_ready.TrySetResult(true);}
+                    CompleteReadyIfSatisfied(fields);
                     Changed?.Invoke();
                 }
                 catch(Exception error)
@@ -162,6 +205,20 @@ internal sealed class BlobUiComposition : IDisposable
                 }
             }));
         }
+    }
+    private void CompleteReadyIfSatisfied(DeclaredFieldsView fields)
+    {
+        if(_initialPageReady)return;
+        // The selected page is the first-frame contract.  An explicitly eager
+        // caller may strengthen that contract to the complete declared page
+        // set; Blob uses the selected-page path so heavy later tabs do not
+        // delay the window and are prewarmed after the first frame.
+        var ready=_eagerlyComposePages
+            ? fields.DeclaredPageKeys.All(_composedPages.Contains)
+            : _activePage is { } active&&_composedPages.Contains(active);
+        if(!ready)return;
+        _initialPageReady=true;
+        _ready.TrySetResult(true);
     }
     private void BuildPageCore(string page,DeclaredFieldsView fields,FrameworkElement? pageInput)
     {
@@ -205,8 +262,11 @@ internal sealed class BlobUiComposition : IDisposable
             _runOptions=run!;
             Measure("运行参数挂接",() => InstallOptionsRows(fields,baseline,run!));
             Measure("运行参数状态",() => RunUi!.Attach(fields));
-            _pageSubscriptions.Add(_preview.Observe(()=>RunUi.HasUiChanges,handler=>RunUi.Changed+=handler,handler=>RunUi.Changed-=handler,
-                ()=>RunUi.RetireInteractions(),()=>RunUi.IsUnsupportedSelection));
+            _pageSubscriptions.Add(_preview.Observe(() => false,
+                handler => _editor.Changed += handler,
+                handler => _editor.Changed -= handler,
+                () => RunUi.RetireInteractions(),
+                () => RunUi.IsUnsupportedSelection));
         }
         if(StringComparer.Ordinal.Equals(page,resultPage)&&_displayOptions is null)
         {
@@ -223,7 +283,7 @@ internal sealed class BlobUiComposition : IDisposable
 
     private void QueuePagePrewarm(DeclaredFieldsView fields,string currentPage)
     {
-        if(_pagePrewarmQueued||_disposed)return;
+        if(_eagerlyComposePages||_pagePrewarmQueued||_disposed)return;
         _pagePrewarmQueued=true;
         var pages=fields.DeclaredPageKeys.Where(page=>!StringComparer.Ordinal.Equals(page,currentPage)).ToArray();
         void Queue(int index)

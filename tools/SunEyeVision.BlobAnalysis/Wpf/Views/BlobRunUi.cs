@@ -1,179 +1,62 @@
-using System.Windows;
+using System.IO;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.Wpf.Adapters.References;
-using SunEyeVision.Plugin.Wpf.Adapters.Fields;
-using SunEyeVision.Plugin.Wpf.Fields;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
-using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
-using SunEyeVision.Plugin.Wpf.Presenters.Numeric;
 using SunEyeVision.Tool.BlobAnalysis.Runtime;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Views;
 
-/// <summary>Original run-page UI; supported fields stay on the host draft and previews stay in this window.</summary>
+/// <summary>
+/// VM 参数树中的运行参数页接缝。
+///
+/// 运行参数已经由 BlobParameters.xml、BlobParameterDefinition 和
+/// DeclaredFieldsView 组成；这里仅挂接运行态能力，不再保留一套按代码
+/// 逐行创建的备用参数界面。这样运行参数的字段身份、模板和释放路径只有
+/// 一个来源，避免旧元数据分支重新引入旧控件组合。
+/// </summary>
 internal static class BlobRunUi
 {
-    internal static ToolSettingsViewOptions AddRows(ToolSettingsViewOptions options,IToolSettingsDraft draft,DeclaredSettingsView settingsView,Func<string?> validateSupportedState,Action<BlobRunUiState>? observe=null)
+    internal static ToolSettingsViewOptions AddRows(
+        ToolSettingsViewOptions options,
+        IToolSettingsDraft draft,
+        DeclaredSettingsView settingsView,
+        Func<string?> validateSupportedState,
+        Action<BlobRunUiState>? observe = null)
     {
-        // The current VM-aligned metadata contains the full run-parameter tree.
-        // Do not add a second command-built control layer over those formal fields.
-        // The older branch remains for historical metadata that predates the VM field closure.
-        if(BlobParameterDefinition.Instance.Contains("HoleMinArea"))
-        {
-            var supported=new HashSet<string>(new[]{"SortFeatureArea","SortFeaturePerimeter","SortFeatureCircularity","SortFeatureRect","SortFeatureCentroidX","SortFeatureCentroidY","SortFeatureRectX","SortFeatureRectY"},StringComparer.Ordinal);
-            var formalState=new BlobRunUiState(draft,settingsView,supported);
-            observe?.Invoke(formalState);
-            return options with
-            {
-                ValidateUiState=() =>
-                {
-                    var previous=options.ValidateUiState?.Invoke();
-                    return string.IsNullOrEmpty(previous)?validateSupportedState():previous;
-                }
-            };
-        }
-        var rows=options.AdditionalAnchoredContents?.ToList()??new List<AnchoredSettingsContent>();
-        var created=new List<DeclaredFieldEditor>();
-        var ranges=new List<NativeUiDraftRange>();
-        var conditionalRows=new List<NativeUiConditionalFields>();
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(draft);
+        ArgumentNullException.ThrowIfNull(settingsView);
+        ArgumentNullException.ThrowIfNull(validateSupportedState);
 
-        NativeThresholdUiDraftControls? threshold=null;BlobRunUiState? state=null;
-        try
-        {
-            DeclaredFieldEditor Create(Port port,string label,ParameterSetting initial,FieldLayout layout,
-                FieldEditorKind kind=FieldEditorKind.Scalar,IReadOnlyDictionary<string,string>? choices=null)
+        // These fields are deliberately resolved from the formal VM metadata.
+        // The guard makes a missing/partial resource fail at the current contract
+        // boundary instead of silently falling back to a second visual tree.
+        if (!BlobParameterDefinition.Instance.Contains("HoleMinArea"))
+            throw new InvalidDataException("Blob VM 运行参数元数据不完整：缺少 HoleMinArea。");
+
+        var supportedSort = new HashSet<string>(
+            new[]
             {
-                var presentation=new FieldPresentation(port.Id,label,"运行参数",0,kind,choices?.Keys,choices){Layout=layout};
-                var editor=new DeclaredFieldEditor(port,label,initial,_=>{},ReferenceFieldOptions.Empty,
-                    choiceLabels:choices,presentation:presentation)
-                    ;
-                created.Add(editor);return editor;
+                "SortFeatureArea",
+                "SortFeaturePerimeter",
+                "SortFeatureCircularity",
+                "SortFeatureRect",
+                "SortFeatureCentroidX",
+                "SortFeatureCentroidY",
+                "SortFeatureRectX",
+                "SortFeatureRectY"
+            },
+            StringComparer.Ordinal);
+
+        var formalState = new BlobRunUiState(draft, settingsView, supportedSort);
+        observe?.Invoke(formalState);
+
+        return options with
+        {
+            ValidateUiState = () =>
+            {
+                var previous = options.ValidateUiState?.Invoke();
+                return string.IsNullOrEmpty(previous) ? validateSupportedState() : previous;
             }
-            var layout=new FieldLayout("运行参数","运行参数");
-            var fill=Create(new Port("ui-only-run.hole-area",DataType.Integer,Storage:NumericStorage.Int32,
-                    EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"填充面积阈值",new ConstantSetting(0L),
-                layout with{Minimum=0,Maximum=999999999,DecimalPlaces=0,Increment=1});
-            var labels=new Dictionary<string,string>{{"NoneContour","不输出轮廓"},
-                {"NoneSequentialContour","输出无序轮廓"},{"SequentialContour","输出有序轮廓"}};
-            var contour=Create(new Port("ui-only-run.contour-type",DataType.Text,EditModes:FieldEditModes.Constant,
-                    Choices:new TextChoiceConstraint(labels.Keys)),"输出轮廓类型",new ConstantSetting("NoneContour"),
-                layout,FieldEditorKind.Choice,labels);
-            rows.Add(new("field:e748553b7cb45d1a8003c2b345b1d98f",fill,FollowAnchorVisibility:false));
-            rows.Add(new("field:fcdb01b095c25c6ea22384f993450aac",contour,FollowAnchorVisibility:false));
-            const string circleAnchor="field:7d59f57f71c65911b88bae5f90d994d9";
-            const string sortAnchor="field:cb01714e6b0b503a812fe7a99f1c815e";
-            var advanced=layout with{Section="高级",Advanced=true};
-            void Toggle(string id,string label,string anchor,bool before)
-            {
-                var editor=Create(new Port("ui-only-run."+id,DataType.Boolean,EditModes:FieldEditModes.Constant),
-                    label,new ConstantSetting(false),advanced);
-                var specification=id switch
-                {
-                    "angle"=>("角度范围",-9000d,9000d,-9000d,9000d,true),
-                    "rect-width"=>("RECT宽范围",1d,1000000d,100d,200d,true),
-                    "rect-height"=>("RECT高范围",1d,1000000d,100d,200d,true),
-                    "perimeter"=>("周长范围",1d,999999999d,10d,999999999d,true),
-                    "short-axis"=>("短轴范围",1d,999999999d,1d,999999999d,true),
-                    "long-axis"=>("长轴范围",1d,999999999d,10d,999999999d,true),
-                    "centroid-bias"=>("质心偏移范围",0d,9999999.99d,0d,9999999.99d,false),
-                    "axis-ratio"=>("轴比范围",.01d,1d,.01d,1d,false),
-                    "circularity"=>("圆度范围",0d,1d,0d,1d,false),
-                    "rectangularity"=>("矩形度范围",0d,1d,0d,1d,false),
-                    _=>default
-                };
-                FrameworkElement content=editor;
-                if(id=="outside-pixels")
-                {
-                    var value=Create(new Port("ui-only-run.outside-count",DataType.Integer,Storage:NumericStorage.Int32,
-                        EditModes:FieldEditModes.Constant|FieldEditModes.Reference),AppLocalizationService.GetLang("MaxOutPixelNum"),new ConstantSetting(0L),
-                        advanced with{Minimum=0,Maximum=9000000,DecimalPlaces=0,Increment=1});
-                    var conditional=new NativeUiConditionalFields(editor,value);conditionalRows.Add(conditional);content=conditional;
-                }
-                if(specification.Item1 is not null)
-                {
-                    var range=new NativeUiDraftRange(editor,"ui-only-run."+id,specification.Item1,specification.Item2,
-                        specification.Item3,specification.Item4,specification.Item5,specification.Item6,upperMinimum:id=="axis-ratio"?0:null);
-                    ranges.Add(range);content=range;
-                }
-                rows.Add(new(anchor,content,FollowAnchorVisibility:false,InsertBefore:before));
-            }
-            foreach(var (id,label) in new[]{("histogram","直方图信息输出"),("angle","角度使能"),
-                ("rect-width","RECT宽使能"),("rect-height","RECT高使能"),("perimeter","周长使能"),
-                ("short-axis","短轴使能"),("long-axis","长轴使能")})
-                Toggle(id,label,circleAnchor,true);
-
-            Toggle("centroid-bias","质心偏移使能","field:8ca20000000040008000000000000004",true);
-            Toggle("axis-ratio","轴比使能","field:8ca20000000040008000000000000004",true);
-            var sortFeatures=new Dictionary<string,string>(StringComparer.Ordinal);
-            foreach(var (key,resource) in new[]{("SortFeatureArea","Area"),("SortFeaturePerimeter","Perimeter"),
-                ("SortFeatureCircularity","CircleScore"),("SortFeatureRect","RectScore"),
-                ("SortFeatureCentroidX","Connectivity center X"),("SortFeatureCentroidY","Connectivity center Y"),
-                ("SortFeatureBoxAngle","box angle"),("SortFeatureBoxWidth","box width"),("SortFeatureBoxHeight","box height"),
-                ("SortFeatureRectX","Rectangle left upper x"),("SortFeatureRectY","Rectangle left upper y"),
-                ("SortFeatureAxisAngle","Two step spindle angle"),("SortFeatureAxisRatio","MinAxis / LongAxis")})
-                sortFeatures.Add(key,AppLocalizationService.GetLang(resource));
-            var sortFeatureId="field:8ca20000000040008000000000000004";
-            var sortInitial=draft.CaptureFields().Read(sortFeatureId);
-            var sortPreview=Create(new Port("ui-only-run.sort-feature",DataType.Text,EditModes:FieldEditModes.Constant,Choices:new TextChoiceConstraint(sortFeatures.Keys)),
-                "排序特征",sortInitial,advanced,FieldEditorKind.Choice,sortFeatures);
-            rows.Add(new(sortFeatureId,sortPreview,FollowAnchorVisibility:false,InsertBefore:true));
-            var inner=Create(new Port("ui-only-run.inner-count",DataType.Integer,Storage:NumericStorage.Int32,
-                EditModes:FieldEditModes.Constant|FieldEditModes.Reference),AppLocalizationService.GetLang("RunParam_MaxAreaInnerRectNum"),new ConstantSetting(0L),
-                advanced with{Minimum=0,Maximum=10,DecimalPlaces=0,Increment=1});
-            rows.Add(new("field:8ca20000000040008000000000000003",inner,FollowAnchorVisibility:false));
-            Toggle("outside-pixels",AppLocalizationService.GetLang("RunParam_MaxOutPixelNumEnable"),"field:8ca20000000040008000000000000003",false);
-            var suppressed=options.SuppressedFieldRows?.ToHashSet(StringComparer.Ordinal)??new HashSet<string>(StringComparer.Ordinal);
-
-            suppressed.Add("field:3799fbc2f80e58bf9abc7d2c0ad70067");
-
-
-
-            const string mode="field:8ca20000000040008000000000000001";
-            threshold=new NativeThresholdUiDraftControls(externalSingleFields:true,externalDoubleFields:true,externalSoftFields:true);
-            rows.Add(new(mode,threshold,FollowAnchorVisibility:false,InsertBefore:true));
-            suppressed.Add(mode);suppressed.Add(sortFeatureId);
-            var gates=options.FieldVisibilitySources?.ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal)??new Dictionary<string,FrameworkElement>(StringComparer.Ordinal);
-            gates["field:88b45ab61b965761b901670fd587903f"]=threshold.PolarityVisibilitySource;
-            gates["field:43bda03261df55b88f963bd18f2ba4d9"]=threshold.SingleOrDoubleVisibilitySource;
-            gates["field:8ca20000000040008000000000000002"]=threshold.DoubleVisibilitySource;
-            gates["field:8ca20000000040008000000000000010"]=threshold.FixedSoftVisibilitySource;
-            gates["field:8ca20000000040008000000000000011"]=threshold.FixedSoftVisibilitySource;
-            gates["field:8ca20000000040008000000000000012"]=threshold.SoftVisibilitySource;
-            foreach(var suffix in new[]{"13","14","15","16"})gates["field:8ca200000000400080000000000000"+suffix]=threshold.RelativeSoftVisibilitySource;
-            var displays=options.ChoiceDisplays?.ToDictionary(entry=>entry.Key,entry=>entry.Value,StringComparer.Ordinal)
-                ??new Dictionary<string,DeclaredChoiceDisplayOptions>(StringComparer.Ordinal);
-            var supportedFeatures=new HashSet<string>(new[]{"SortFeatureArea","SortFeaturePerimeter","SortFeatureCircularity","SortFeatureRect","SortFeatureCentroidX","SortFeatureCentroidY","SortFeatureRectX","SortFeatureRectY"},StringComparer.Ordinal);
-            displays.Add(sortFeatureId,new(sortFeatures.Select(pair=>new DeclaredChoiceDisplayItem(pair.Key,pair.Value,
-                supportedFeatures.Contains(pair.Key)?pair.Key:null,supportedFeatures.Contains(pair.Key),
-                supportedFeatures.Contains(pair.Key)?null:"该排序特征的正式数值语义尚未实现。"))));
-            displays.Add(mode,new(new[]{
-                new DeclaredChoiceDisplayItem("BinaryImage","不进行二值化","None",true),
-                new DeclaredChoiceDisplayItem("SingleThreshold","单阈值","SingleThreshold",true),
-                new DeclaredChoiceDisplayItem("DoubleThreshold","双阈值","DoubleThreshold",true),
-                new DeclaredChoiceDisplayItem("AutoThreshold","自动阈值","AutoThreshold",true),
-                new DeclaredChoiceDisplayItem("FixedSoftThreshold","软阈值（固定）","FixedSoftThreshold",true),
-                new DeclaredChoiceDisplayItem("RelativeSoftThreshold","软阈值（相对）","RelativeSoftThreshold",true)
-            }));
-            state=new BlobRunUiState(draft,settingsView,threshold,sortPreview,supportedFeatures,created,ranges);
-            observe?.Invoke(state);
-            return options with {AdditionalAnchoredContents=rows,SuppressedFieldRows=suppressed,ChoiceDisplays=displays,FieldVisibilitySources=gates,
-                ValidateUiState=()=>
-                {
-                    var previous=options.ValidateUiState?.Invoke();
-                    if(!string.IsNullOrEmpty(previous))return previous;
-                    return validateSupportedState();
-                }};
-        }
-        catch(Exception failure)
-        {
-            var errors=new List<Exception>{failure};
-            var cleanup=new Action[]{()=>state?.Dispose(),()=>threshold?.Dispose()}
-                .Concat(conditionalRows.Select(row=>(Action)row.Dispose))
-                .Concat(ranges.Select(range=>(Action)range.Dispose))
-                .Concat(created.Select(editor=>(Action)editor.Dispose));
-            foreach(var action in cleanup)try{action();}catch(Exception error){errors.Add(error);}
-            if(errors.Count>1)throw new AggregateException(errors);
-            throw;
-        }
+        };
     }
 }

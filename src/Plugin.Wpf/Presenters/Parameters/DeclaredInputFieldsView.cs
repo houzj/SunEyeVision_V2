@@ -45,10 +45,9 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
         _ownsReferenceWindowOwner=references.WindowOwner is null;_referenceWindowOwner=references.WindowOwner??new ReferenceWindowOwner(this,()=>!_disposed,new(),false);references=references with{WindowOwner=_referenceWindowOwner};
         _references=references;_formatReference=format;
         Fields=_fields.AsReadOnly();
-        using var sharedResourceScope=SunEyeVision.Plugin.Wpf.EditorResources.BeginSharedResourceScope();
         try
         {
-            Resources.MergedDictionaries.Add(SunEyeVision.Plugin.Wpf.EditorResources.Create());
+            Resources.MergedDictionaries.Add(SunEyeVision.Plugin.Wpf.EditorResources.Shared);
             var declarations=(schema.Presentation??throw new ArgumentException("Input presentation is required.")).Fields
                 .Select(field=>(Field:field,Port:schema.Inputs.Single(port=>port.Id==field.FieldId),
                     Section:field.Layout?.Section??throw new ArgumentException("Input section is required."))).ToArray();

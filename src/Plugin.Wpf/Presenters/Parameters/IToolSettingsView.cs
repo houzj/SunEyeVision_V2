@@ -40,7 +40,8 @@ public sealed record ToolSettingsViewOptions(
     SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameSource? RoiFrames=null,
     IReadOnlyList<NativeVisibilityDisplayOptions>? VisibilityDisplays=null,
     Action<string,DeclaredFieldsView,FrameworkElement?>? PageBuilt=null,
-    Func<DeclaredFieldsView,FrameworkElement>? InputContentFactory=null)
+    Func<DeclaredFieldsView,FrameworkElement>? InputContentFactory=null,
+    bool EagerlyComposePages=false)
 {
     private IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? _choiceDisplays=FreezeChoiceDisplays(ChoiceDisplays);
     public IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? ChoiceDisplays

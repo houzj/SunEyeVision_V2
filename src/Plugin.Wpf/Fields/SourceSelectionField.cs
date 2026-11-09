@@ -26,7 +26,7 @@ public sealed class SourceSelectionField : UserControl
     public SourceSelectionField(string title,Func<IReadOnlyList<SourceChoice>> catalog,Func<string> read,Func<SourceChoiceSelection?,string?> write)
     {
         (_catalog,_read,_write)=(catalog,read,write);
-        Resources.MergedDictionaries.Add(EditorResources.Create());
+        Resources.MergedDictionaries.Add(EditorResources.Shared);
         _error.Style=EditorResources.ErrorStyle();
         var panel=new StackPanel{Margin=new Thickness(0,3,0,3)};
         var row=new Grid();row.ColumnDefinitions.Add(new(){Width=new GridLength(89)});row.ColumnDefinitions.Add(new());

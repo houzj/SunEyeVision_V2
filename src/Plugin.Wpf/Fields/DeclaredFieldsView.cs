@@ -41,6 +41,9 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
  private readonly Dictionary<string,(long RowsMs,long LayoutMs)> _lastBuildStageMs=new(StringComparer.Ordinal);
  private readonly Dictionary<string,long> _lastFieldBuildMs=new(StringComparer.Ordinal);
  private readonly List<(string Stage,long Ms)> _ctorMarks=new();
+ private readonly Dictionary<string,DeclaredFieldTemplateKind> _templateKinds=new(StringComparer.Ordinal);
+ /// <summary>VM 对齐模板分类，供工具组合和生产探针复核，不保存参数值。</summary>
+ public IReadOnlyDictionary<string,DeclaredFieldTemplateKind> TemplateKinds=>_templateKinds;
  /// <summary>PROBE-KEEP：构造分段里程碑（资源/状态/访问器与页分组/收口），供宿主探针输出。活引用：页构建触发早于构造收口。</summary>
  public IReadOnlyList<(string Stage,long Ms)> ConstructionStages=>_ctorMarks;
  /// <summary>PROBE-KEEP：最近一次页构建的分段耗时（行控件创建/行装配布局），供宿主探针输出。</summary>
@@ -217,7 +220,11 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
    BindingOperations.SetBinding(native,SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamTab.LeftRightControl.ChildLeftWidthProperty,
        new Binding(nameof(NativeHost.ChildLeftWidth)){Source=page});
  }
- public void UseRegionSourceSelector(string fieldId)=>_editors[fieldId].UseRegionSourceSelector();
+ public void UseRegionSourceSelector(string fieldId)
+ {
+  if(_editors.TryGetValue(fieldId,out var editor)){editor.UseRegionSourceSelector();return;}
+  throw new KeyNotFoundException("字段尚未注册："+fieldId);
+ }
  public bool TryValidate(out string error)
  {
   if(ChoiceReadinessError() is {} unavailable){error=unavailable;return false;}
@@ -249,13 +256,13 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   IReadOnlyDictionary<string,double>? pageLabelWidths=null,
   IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? choiceDisplays=null,
   IReadOnlyList<NativeVisibilityDisplayOptions>? visibilityDisplays=null,
-  Action<string,DeclaredFieldsView>? pageBuilt=null,int selectedPageIndex=0)
+  Action<string,DeclaredFieldsView>? pageBuilt=null,int selectedPageIndex=0,bool eagerlyComposePages=false)
  {
   ArgumentNullException.ThrowIfNull(writeDraft);
   _pageBuilt=pageBuilt;
   if(references is not null){_ownsReferenceWindowOwner=references.WindowOwner is null;_referenceWindowOwner=references.WindowOwner??new ReferenceWindowOwner(this,()=>!_disposed,new(),false);references=references with{WindowOwner=_referenceWindowOwner};}
   _writeGroup=writeDraft;_validateComposition=validateComposition;_isCurrent=isCurrent;_groupReferences=references;
-  Resources.MergedDictionaries.Add(EditorResources.Create());using var sharedResourceScope=EditorResources.BeginSharedResourceScope();Background=new SolidColorBrush(Color.FromRgb(242,243,245));Foreground=new SolidColorBrush(Color.FromRgb(102,102,102));FontSize=14;FontWeight=FontWeights.Normal;
+  Resources.MergedDictionaries.Add(EditorResources.Shared);Background=new SolidColorBrush(Color.FromRgb(242,243,245));Foreground=new SolidColorBrush(Color.FromRgb(102,102,102));FontSize=14;FontWeight=FontWeights.Normal;
   try
   {
   var all=fields.OrderBy(field=>field.Presentation.Order).ToArray();
@@ -388,7 +395,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
     _pageBuilders.Add(pageNode.Key,() =>
     {
      if(_disposed||!_builtPages.Add(pageNode.Key))return;
-     using var sharedResourceScope=EditorResources.BeginSharedResourceScope();
+    
      try
      {
       var pageFields=pageNode.Fields.Select(field=>all.Single(item=>ReferenceEquals(item.Presentation,field))).ToArray();var pageIds=pageFields.Select(field=>field.Port.Id).ToHashSet(StringComparer.Ordinal);
@@ -420,6 +427,12 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
        var fieldProbe=System.Diagnostics.Stopwatch.StartNew();
        try
        {
+       var templateKind=DeclaredFieldTemplateRegistry.Resolve(
+        field.Port,
+        field.Presentation,
+        isNumericPair:field.Presentation.Layout?.PairWith is not null,
+        isDialogGroup:field.Presentation.Layout?.DialogGroup is not null);
+       _templateKinds[field.Port.Id]=templateKind;
        if(graphicIds.Contains(field.Port.Id))continue;
        if(field.Presentation.Layout?.PairWith is {} id)
        {
@@ -434,12 +447,19 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
        }
        else if(!paired.Contains(field.Port.Id))
        {
-        var editor=new DeclaredFieldEditor(states[field.Port.Id],field.Presentation.DisplayName,references,formatReference,field.Presentation.ChoiceLabels,field.Presentation,
+        DeclaredFieldEditor CreateEditor()
+        {
+         var editor=new DeclaredFieldEditor(states[field.Port.Id],field.Presentation.DisplayName,references,formatReference,field.Presentation.ChoiceLabels,field.Presentation,
           integerRadioOptions:radios.GetValueOrDefault(field.Port.Id),inlineConstantReference:_inlineConstants.Contains(field.Port.Id),choiceDisplay:_choiceDisplays.GetValueOrDefault(field.Port.Id));
-        _editors.Add(field.Port.Id,editor);_rows.Add(field.Port.Id,editor);access[field.Port.Id].AttachVisual(new(editor));
-        if(textOptions.TryGetValue(field.Port.Id,out var textOption))editor.UseTextExpressions(textOption);
-        if(imageProviders.TryGetValue(field.Port.Id,out var provider))editor.UseImageSourceSelector(() =>
-        {if(!CurrentGroup())throw new InvalidOperationException("图像来源编辑范围已失效。");var candidates=provider();if(!CurrentGroup())throw new InvalidOperationException("图像来源编辑范围已重绑。");return candidates;});
+         _editors[field.Port.Id]=editor;
+         if(textOptions.TryGetValue(field.Port.Id,out var textOption))editor.UseTextExpressions(textOption);
+         if(imageProviders.TryGetValue(field.Port.Id,out var provider))editor.UseImageSourceSelector(() =>
+         {if(!CurrentGroup())throw new InvalidOperationException("图像来源编辑范围已失效。");var candidates=provider();if(!CurrentGroup())throw new InvalidOperationException("图像来源编辑范围已重绑。");return candidates;});
+         return editor;
+        }
+        // 编辑器必须在其宿主资源作用域内构造：延迟物化会让 RoiSelectControl 等自包含控件的
+        // StaticResource（TextLeft 等）在未挂树的上下文解析失败，故统一即时创建。
+        var editor=CreateEditor();_rows.Add(field.Port.Id,editor);access[field.Port.Id].AttachVisual(new(editor));
        }
        }
        finally{_lastFieldBuildMs[$"{field.Port.Id}|{field.Presentation.DisplayName}|{field.Port.Type}"]=fieldProbe.ElapsedMilliseconds;}
@@ -490,6 +510,13 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
    if(selectedPageIndex<0||selectedPageIndex>=tabs.Items.Count)throw new ArgumentOutOfRangeException(nameof(selectedPageIndex));
    tabs.SelectedIndex=selectedPageIndex;
    UpdateVisibility();
+   if(eagerlyComposePages)
+   {
+    // VM presents a complete parameter surface before the editor window is
+    // shown.  Tab changes therefore only select an already materialized page;
+    // they never pay the first page-construction cost.
+    foreach(var page in _pageBuilders.Keys.ToArray())_pageBuilders[page]();
+   }
   }
   catch(Exception failure){try{Dispose();}catch(Exception cleanup){throw new AggregateException("参数宿主构造与清理均失败。",failure,cleanup);}throw;}
  }
@@ -566,7 +593,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   cleanup.AddRange(_fieldStates.ToArray().Select(state=>(Action)state.Dispose));
   cleanup.Add(()=>
   {
-   _numericTabPages.Clear();_numericModelPages.Clear();_parameterRows.Clear();_pages.Clear();_positions.Clear();_visibility.Clear();_advanced.Clear();_ranges.Clear();_editors.Clear();_rows.Clear();
+  _numericTabPages.Clear();_numericModelPages.Clear();_parameterRows.Clear();_pages.Clear();_positions.Clear();_visibility.Clear();_advanced.Clear();_ranges.Clear();_editors.Clear();_rows.Clear();
    _groups.Clear();_groupPageKeys.Clear();_pendingPageActions.Clear();_pendingContent.Clear();_pageBuilders.Clear();_builtPages.Clear();
    _fieldStates.Clear();_displayCompositions.Clear();_fields.Clear();_fieldConditions.Clear();_groups.Clear();
    _pairedFields.Clear();_validateComposition=null;_groupReferences=null;_isCurrent=null;_writeGroup=null!;

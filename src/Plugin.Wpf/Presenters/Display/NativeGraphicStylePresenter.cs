@@ -57,10 +57,17 @@ internal sealed class NativeGraphicStylePresenter : Decorator,IDisposable,IParam
         _host=new ContentControl{Content=new NativeGraphicTemplateData(DisplayNameA,_bridge,roles.ShowStyleButton),HorizontalContentAlignment=HorizontalAlignment.Stretch};
         try
         {
-            Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Display/GraphicStyle.xaml",UriKind.Relative)});
-            Project();_host.ContentTemplate=(DataTemplate)FindResource("ImageViewConfig");Child=_host;
+            // StaticResource lookup for a DataTemplate starts at its actual
+            // ContentControl host. Keep the VM dictionary on that host instead
+            // of relying on the outer Decorator's logical-resource walk.
+            _host.Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Display/GraphicStyle.xaml",UriKind.Relative)});
+            Project();_host.ContentTemplate=(DataTemplate)_host.FindResource("ImageViewConfig");Child=_host;
             foreach(var state in _states.Values)state.Changed+=OnState;
             Loaded+=OnLoaded;Unloaded+=OnUnloaded;IsVisibleChanged+=OnVisibility;IsEnabledChanged+=OnEnabled;KeyDown+=OnKey;
+            // The owning VM-style ItemsControl prewarms the registered row while
+            // the page is hidden. Keep the attach contract, but resolve the
+            // template dictionary from the actual ContentControl host so this
+            // eager prewarm cannot depend on an outer logical-resource walk.
             Attach();
         }
         catch(Exception failure){try{Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}throw;}

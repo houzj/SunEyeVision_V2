@@ -23,6 +23,8 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
     private readonly List<DeclaredFieldEditor> _inheritEditors=[];
     private readonly StackPanel _rectangleParameters=new(),_circleParameters=new();
     private readonly DeclaredFieldEditor _circleSource;
+    private IReadOnlyList<DeclaredFieldEditor>? _rectangleEditors,_annulusEditors;
+    private bool _rectangleParametersRealized,_circleParametersRealized;
     private readonly DeclaredFieldState _area,_detection,_inherit,_mask;
     private readonly FrameworkElement _imageInput,_detectionRadio,_inheritRadio,_maskRadio;
     private FrameworkElement _detectionShapes,_maskShapes;
@@ -45,8 +47,8 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
     public NativeRoiUiDraftControls(bool geometryOnlyPresentation,NativeRoiInheritanceBinding? inheritance)
     {
         _inheritance=inheritance;
-        if(inheritance is not null&&(inheritance.InitialMode is <0 or >3||inheritance.RectangleParameters.Count!=5||inheritance.AnnulusParameters.Count!=6))
-            throw new ArgumentException("继承组合需要四种模式、五个矩形参数和六个圆环参数。");
+        if(inheritance is not null&&(inheritance.InitialMode is <0 or >3))
+            throw new ArgumentException("继承组合需要四种模式。");
         var outputMask=new DeclaredFieldEditor(new Port("ui-only-output-mask",DataType.Boolean,EditModes:FieldEditModes.Constant),"输出掩膜",
             new ConstantSetting(false),_=>{});
         _inheritEditors.Add(outputMask);Children.Add(outputMask);
@@ -67,11 +69,7 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
             AddParameterRows(_rectangleParameters,new[]{"ROI中心点X","ROI中心点Y","ROI宽度","ROI高度","ROI角度"});
             AddParameterRows(_circleParameters,new[]{"圆心点X","圆心点Y","内径","外径","起始角度","角度范围"});
         }
-        else
-        {
-            foreach(var editor in inheritance.RectangleParameters)_rectangleParameters.Children.Add(editor);
-            foreach(var editor in inheritance.AnnulusParameters)_circleParameters.Children.Add(editor);
-        }
+        else EnsureParameterEditors(inheritance.InitialMode);
         Children.Add(_rectangleParameters);Children.Add(_circleParameters);
         (_mask,_maskRadio)=AddRadio("屏蔽区创建",new[]{"绘制","继承"});
         _maskShapes=Shape("屏蔽区",true,initialFullScreen:false);Children.Add(_maskShapes);
@@ -107,7 +105,25 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
         ProjectVisibility();
     }
     private IEnumerable<DeclaredFieldEditor> InheritanceEditors()=>_inheritance is {} binding
-        ?binding.RectangleParameters.Concat(binding.AnnulusParameters).Append(binding.RectangleSource).Append(binding.AnnulusSource):Array.Empty<DeclaredFieldEditor>();
+        ?(_rectangleEditors??Array.Empty<DeclaredFieldEditor>()).Concat(_annulusEditors??Array.Empty<DeclaredFieldEditor>()).Append(binding.RectangleSource).Append(binding.AnnulusSource):Array.Empty<DeclaredFieldEditor>();
+    private void EnsureParameterEditors(int? mode)
+    {
+        if(_inheritance is not {} binding)return;
+        if(mode==1&&!_rectangleParametersRealized)
+        {
+            _rectangleEditors=binding.RectangleParametersFactory();
+            foreach(var editor in _rectangleEditors)_rectangleParameters.Children.Add(editor);
+            _rectangleParametersRealized=true;
+            foreach(var editor in _rectangleEditors){_baseline[editor]=editor.Setting;editor.Changed+=OnUiChanged;}
+        }
+        if(mode==3&&!_circleParametersRealized)
+        {
+            _annulusEditors=binding.AnnulusParametersFactory();
+            foreach(var editor in _annulusEditors)_circleParameters.Children.Add(editor);
+            _circleParametersRealized=true;
+            foreach(var editor in _annulusEditors){_baseline[editor]=editor.Setting;editor.Changed+=OnUiChanged;}
+        }
+    }
     private (DeclaredFieldState,FrameworkElement) AddRadio(string label,string[] choices,long initial=0,Action<long>? accept=null)
     {
         var state=new DeclaredFieldState(new Port("ui-only-roi-"+_states.Count,DataType.Integer),new ConstantSetting(initial),proposal=>accept?.Invoke((long)((ConstantSetting)proposal).Value!));
@@ -141,6 +157,7 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
     {
         if(_disposed)return;
         var graphic=Value(_area)==0;var draw=Value(_detection)==0;var maskDraw=Value(_mask)==0;
+        if(graphic&&!draw)EnsureParameterEditors((int)Value(_inherit));
         _imageInput.Visibility=graphic?Visibility.Collapsed:Visibility.Visible;
         if(_detectionSource is not null)_detectionSource.Visibility=graphic&&!draw&&Value(_inherit)==0?Visibility.Visible:Visibility.Collapsed;
         _circleSource.Visibility=graphic&&!draw&&Value(_inherit)==2?Visibility.Visible:Visibility.Collapsed;
@@ -197,7 +214,6 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;
-        foreach(var editor in _inheritEditors)editor.Changed-=OnUiChanged;
         foreach(var editor in InheritanceEditors())editor.Changed-=OnUiChanged;
         if(_imageInput is NativeRow {RightContent:ComboBox image})
         {image.SelectionChanged-=OnImageSelection;image.RemoveHandler(System.Windows.Controls.Primitives.TextBoxBase.TextChangedEvent,new TextChangedEventHandler(OnImageText));}
@@ -207,6 +223,6 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
         _area.Changed-=ProjectVisibility;_detection.Changed-=ProjectVisibility;_inherit.Changed-=ProjectVisibility;_mask.Changed-=ProjectVisibility;
         _detectionSource=null;_maskSource=null;
         Children.Clear();_rectangleParameters.Children.Clear();_circleParameters.Children.Clear();
-        foreach(var editor in _inheritEditors)editor.Dispose();foreach(var radio in _radios)radio.Dispose();foreach(var state in _states)state.Dispose();
+        foreach(var editor in _inheritEditors.Concat(InheritanceEditors()).Distinct())editor.Dispose();foreach(var radio in _radios)radio.Dispose();foreach(var state in _states)state.Dispose();
     }
 }

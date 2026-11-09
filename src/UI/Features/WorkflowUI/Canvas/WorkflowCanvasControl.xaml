@@ -222,8 +222,17 @@
                             <ContextMenu Background="#FFFFFFFF"
                                          BorderBrush="#FFCCCCCC"
                                          BorderThickness="1" Padding="4">
+                                <!-- 菜单项与顺序对齐原件：断开连接 / 删除 / 复制 / 重命名 / 禁用 / 启用 -->
+                                <MenuItem Header="断开连接" Click="NodeContextMenu_Disconnect_Click"/>
+                                <MenuItem Header="删除" Click="NodeContextMenu_Delete_Click"/>
                                 <MenuItem Header="复制" Click="NodeContextMenu_Copy_Click"/>
                                 <MenuItem Header="重命名" Click="NodeContextMenu_Rename_Click"/>
+                                <MenuItem Header="禁用" Click="NodeContextMenu_ToggleEnabled_Click">
+                                    <MenuItem.Style><Style TargetType="MenuItem"><Style.Triggers><DataTrigger Binding="{Binding IsEnabled}" Value="False"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></MenuItem.Style>
+                                </MenuItem>
+                                <MenuItem Header="启用" Click="NodeContextMenu_ToggleEnabled_Click">
+                                    <MenuItem.Style><Style TargetType="MenuItem"><Style.Triggers><DataTrigger Binding="{Binding IsEnabled}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></MenuItem.Style>
+                                </MenuItem>
                             </ContextMenu>
                         </Border.ContextMenu>
                         <Grid>

@@ -2568,6 +2568,42 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
         /// <summary>
         /// 右键菜单 - 重命名节点
         /// </summary>
+        private void NodeContextMenu_Disconnect_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled=true;
+            if(!CanEditCanvas||!TryGetContextCanvasNode(sender,out var node))return;
+            var canvas=CurrentWorkflowTab?.DocumentCanvas;
+            if(canvas is null)return;
+            var edges=canvas.Connections.Where(edge=>edge.SourceNodeId==node.Id||edge.TargetNodeId==node.Id).ToArray();
+            if(edges.Length==0)return;
+            canvas.Edit("断开连接",draft=>{foreach(var edge in edges)draft.RemoveConnection(edge.Definition);});
+        }
+
+        private void NodeContextMenu_Delete_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled=true;
+            if(!CanEditCanvas||!TryGetContextCanvasNode(sender,out var node))return;
+            var canvas=CurrentWorkflowTab?.DocumentCanvas;
+            if(canvas is null)return;
+            var edges=canvas.Connections.Where(edge=>edge.SourceNodeId==node.Id||edge.TargetNodeId==node.Id).ToArray();
+            canvas.Delete(new[]{node},edges);
+        }
+
+        private void NodeContextMenu_ToggleEnabled_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled=true;
+            if(!CanEditCanvas||!TryGetContextCanvasNode(sender,out var node))return;
+            CurrentWorkflowTab?.DocumentCanvas?.SetEnabled(node,!node.IsEnabled);
+        }
+
+        private static bool TryGetContextCanvasNode(object sender,out CanvasNodeProjection node)
+        {
+            node=null!;
+            if(sender is not MenuItem{Parent:ContextMenu{PlacementTarget:FrameworkElement{DataContext:CanvasNodeProjection placementNode}}})return false;
+            node=placementNode;
+            return true;
+        }
+
         private void NodeContextMenu_Rename_Click(object sender, RoutedEventArgs e)
         {
             e.Handled=true;

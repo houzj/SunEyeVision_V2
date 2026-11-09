@@ -1,0 +1,40 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VM 与 CodeBuddy 重构计划对齐审计</title><style>body{font-family:Segoe UI,Microsoft YaHei,sans-serif;line-height:1.7;margin:32px;color:#18212b;max-width:1200px}h1{border-bottom:2px solid #2f6feb;padding-bottom:12px}h2{margin-top:28px;color:#174a7e}table{border-collapse:collapse;width:100%;margin:12px 0}th,td{border:1px solid #cbd5e1;padding:8px;vertical-align:top}th{background:#eef3f8}.confirmed{color:#176b3a;font-weight:700}.candidate{color:#8a5a00;font-weight:700}.pending{color:#a40000;font-weight:700}.meta{color:#52606d}.code{font-family:Consolas,monospace}</style></head><body>
+<h1>VM 与 CodeBuddy 重构计划对齐审计</h1>
+<p class="meta">审计日期：2026-11-09　范围：启动→方案管理器→方案加载→工具参数窗口→Tab→执行回调→换节点关闭　当前产品：ImageSource、BlobAnalysis</p>
+
+<h2>一、审计结论</h2>
+<p><strong>采用方向：</strong>VM 的参数窗口确实是“参数模型树 + WPF DataTemplate/ParamUserControl + 统一 Tab/分组宿主”。CodeBuddy 提出的数据树、模板注册和 Tab 选择复用方向可以作为目标。</p>
+<p><strong>拒绝的过度结论：</strong>不能仅凭反编译静态结构断定 VM 的动态性能预算，也不能因为本方存在命令式行装配就直接删除 <code>DeclaredFieldsView</code>。Blob 的 ROI、运行参数、结果显示和外部锚点是独立的重型组合，必须先纳入模板槽和所有权合同，再替换旧生成层；否则会把正确的 VM 控件和完整生命周期一起删掉。</p>
+<p><strong>当前落地：</strong>ImageSource 与 BlobAnalysis 已接入统一参数树、模板槽和生命周期。ImageSource 单页直接完成；Blob 首选页在隐藏状态完成后窗口才显示，其余页按 VM 证据支持的同一数据树/模板注册链在首帧后的空闲阶段逐页预热并缓存，Tab 只在未预热时承担该页的唯一首次物化，重复切换不重建。窗口等待 <code>IToolSettingsViewReady</code> 后显示，换节点沿租约、代次、退订、迟到回调拒收和 Dispose 释放。正式准入探针 722ms，其中组件加载 264ms。</p>
+
+<h2>二、VM 完整静态链与当前文件映射</h2>
+<table><tr><th>VM 原件语义</th><th>原件证据</th><th>SunEyeVision 当前落点</th><th>状态</th></tr>
+<tr><td>启动阶段先显示方案管理器，用户选择方案后才进入工作区加载</td><td><code>REA逆向测试/docs/architecture-recovery/startup-order-cil-evidence.json</code>；<code>docs/collaboration/evidence/VM启动阶段顺序静态对照-20261109.txt</code></td><td><code>src/UI/App.xaml.cs</code>：<code>ShowStartupSolutionManager</code> → 方案选择 → <code>MainWindow</code> 与连续加载覆盖层</td><td class="confirmed">代码已落地；VM 动态耗时未确认</td></tr>
+<tr><td><code>ParamsConfigControlBase</code> 在参数变化时建立/复用 <code>AlgorithmTabRoot</code>，设置语言尺寸、<code>DoIniter</code>、<code>GetItemsValueUnit</code>，再把根树设为 <code>DataContext</code></td><td><code>docs/07-工具逆向/decompiled/WpfControls/VMControls.WPF/ParamsConfigControlBase.xaml.cs</code></td><td><code>RuntimeNodeConfigurationControl</code> 创建草稿、统一参数宿主和结果接缝；<code>DeclaredSettingsView</code> 将字段声明转换为参数展示树</td><td class="confirmed">静态语义已映射</td></tr>
+<tr><td><code>ParamsTabControlPanal</code> 以 <code>VisibleTabsA</code>、<code>TabControl.ContentTemplate</code>、<code>ParamListView</code> 和 <code>ParamUserControl</code> 展示树节点</td><td><code>docs/07-工具逆向/decompiled/XmlUi/VisionMaster.ParamTab/ParamsTabControlPanal.xaml</code>；<code>XmlUi/styles/paramusercontroldatatemplate.xaml</code></td><td><code>src/Plugin.Contracts/ParameterPresentationTree.cs</code>；<code>src/Plugin.Wpf/Fields/DeclaredFieldsView.cs</code>；<code>NativeParameterPage/NativeParameterRow</code>；逆向 Native 控件资源</td><td class="candidate">数据树已存在；当前字段行仍由宿主集中组装</td></tr>
+<tr><td>公共组通过 <code>GroupLinkItem</code> 建立父链并复用声明，不把工具业务调度塞进视觉树</td><td>REA 反编译的 GroupLinkItem、AlgorithmTabRoot 父链实现</td><td>Blob 的 ROI、运行参数、结果显示通过 <code>BlobUiComposition</code> 的模板槽和锚点合同挂接；执行仍在 Runtime</td><td class="confirmed">两工具链已落地</td></tr>
+<tr><td>旧参数树、回调、订阅和资源在替换/卸载时清理</td><td><code>ParamsConfigControlBase.OnParamsConfigChanged</code>、<code>Unloaded</code>、<code>Dispose</code> 静态入口</td><td><code>ProductionEditorContext</code>、<code>SettingsLease</code>、<code>RuntimeNodeConfigurationControl</code>、<code>BlobUiComposition.Dispose</code></td><td class="candidate">本方自测闭环；VM 运行时顺序仍未动态确认</td></tr>
+</table>
+
+<h2>三、CodeBuddy 候选方案与立即调整</h2>
+<table><tr><th>CodeBuddy 结论</th><th>证据判断</th><th>立即调整</th></tr>
+<tr><td>“命令式装配是性能根因，模板化可以直接消除卡顿”</td><td class="candidate">方向合理，因果过度。WPF DataTemplate 仍会实例化视觉树；现有 Blob 专用组合也不是普通字段行。</td><td>先保留当前生产链，建立模板注册表/字段树契约和实例计数；完成 ImageSource/Blob 等价快照后，再按段替换生成层。</td></tr>
+<tr><td>立即新增 <code>DeclaredFieldTree</code>、<code>DeclaredTemplateFieldsView</code>，删除 <code>DeclaredFieldsView</code></td><td class="candidate">目标形态正确，但直接删除会断开 ROI、范围对、引用、显示组合、结果页和资源释放。</td><td>把现有 <code>ParameterPresentationTree</code> 作为唯一数据树入口；模板注册表先承接字段编辑器和重型组合，旧宿主只在迁移段保留，禁止建立第二套参数模型。</td></tr>
+<tr><td>Tab 切换只改 SelectedIndex，完全零构建</td><td class="candidate">VM 静态处理器未见主动重建，但不能证明所有视觉树在打开时已经生成。</td><td>当前 ImageSource 单页直接完成；Blob 先完成选中页，其他页在首帧后的空闲阶段沿同一模板链预热并由 <code>_builtPages</code> 缓存。未预热页首次点击仍会有一次真实物化成本，已在探针中单独记录；重复 Tab 只选择已缓存页。该策略是当前对 VM 静态证据最保守的落地，不宣称 VM 动态等效。</td></tr>
+<tr><td>把所有隐藏页放到后台/Idle 预热即可对齐 VM</td><td class="pending">没有 VM 动态证据支持；此前本方实测会造成窗口跳变或首切卡顿。</td><td>Idle 只用于首选页已就绪后的后续页预热，不承担窗口首显；首选页和所有点击中的页都有显式同步完成/错误门禁，已建页通过缓存复用。后续仍需用 VM 同场景动态证据决定是否进一步改为全量模板预建。</td></tr>
+<tr><td>旧 Plugin.SDK 应立即删除</td><td class="confirmed">活动方案消费者为 0、目录条目为 0；历史 20 个旧工具源仍保留在历史层。</td><td>当前产品可以继续不引用旧 SDK；历史工具按 VM 重建后逐批迁移，不能把历史源文件删除冒充迁移完成。</td></tr>
+</table>
+
+<h2>四、下一批代码切换点（一次成片实施）</h2>
+<ol>
+<li><strong>数据合同：</strong>扩展 <code>ParameterPresentationTree</code> 成为页、分组、字段、高级状态、显隐条件和字段身份的唯一只读树；补充字段覆盖与配对拓扑契约测试。</li>
+<li><strong>模板注册：</strong>在 <code>Plugin.Wpf</code> 建立按字段编辑类型、VM Native 控件类型和重型槽分类的模板注册表。普通字段模板直接复用逆向控件；ROI、范围对、图形/文本显示、运行/结果组合只作为显式槽，不复制 Blob 业务。</li>
+<li><strong>宿主替换：</strong>将 <code>DeclaredSettingsView</code> 的页选择和外部槽接缝切换到树/模板宿主，先覆盖 ImageSource，再覆盖 Blob；切换前固定字段 ID、结果 reader、回调和资源 Owner。</li>
+<li><strong>旧链退役：</strong>模板宿主的字段覆盖、保存重开、显隐联动、换节点关闭和迟到回调拒收通过后，才删除对应的 <code>_pageBuilders/_positions/_visibility</code> 分支；不留双轨实现。</li>
+<li><strong>统一验收：</strong>使用正式 Release 记录启动准入、方案管理器可操作、方案遮罩、节点窗口可见、首次/重复 Tab、换节点、关闭和资源释放。VM 动态时间若未取得，单独标记，不用本方读数代替。</li>
+</ol>
+
+<h2>五、当前未确认项</h2>
+<ul><li>VM 同版本首次打开、重复 Tab、跨节点切换的 UI 线程动态时间线。</li><li>VM 是否在同节点复用视觉树/模型，及其缓存边界。</li><li>VM 动态资源合并、模板实例化和结果 reader 的确切释放顺序。</li><li>VM 真实外部 SDK 发布包、模板、发布目录和外部工程接入方式。</li></ul>
+<p class="meta">本审计不把静态逆向推断写成动态事实；代码切换以现有两工具生产链为单一基线，完成一个完整宿主后再推广历史工具。</p>
+</body></html>

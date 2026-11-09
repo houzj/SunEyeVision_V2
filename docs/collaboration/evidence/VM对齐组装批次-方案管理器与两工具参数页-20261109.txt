@@ -1,0 +1,41 @@
+证据名称：VM 对齐组装批次——方案管理器与两工具参数页
+日期：2026-11-09
+
+一、目标链
+快速启动阶段 -> 方案管理器可操作 -> 用户打开/新建方案 -> 工作区加载遮罩 -> 节点配置状态 -> 隐藏状态完整组装工具窗口 -> 窗口可见 -> Tab 只切换已存在页面 -> 换节点退订、拒收迟到回调、释放资源。
+
+二、VM 输入证据
+1. 原始静态捕获：D:/MyWork/REA逆向测试/docs/architecture-recovery/startup-order-cil-evidence.json
+2. 原厂身份：VisionMaster.exe SHA-256 42e2437780ec21c9d1ade2d07ace0a26635961f5c90559934a7fde7e233e0c23；CIL 入口显示 OpenRecentSolution 位于 ShowFrontendUI/ShowMainWindow 之后。
+3. 原厂可见阶段截图由用户提供：快速品牌阶段、方案管理器、方案加载遮罩、完整工作区。
+4. VM 参数窗口静态链：AlgorithmTabRoot / ParamsConfigControlBase / ParamsTabUserControl / ParamListView / 模板和分组资源；本批只采用静态语义，不把未捕获的动态耗时写成已确认。
+
+三、本方代码落地
+1. 方案管理：src/UI/App.xaml.cs
+   默认启动先显示 StartPageWindow；用户选择后创建/显示 MainWindow，并在方案打开/新建阶段保持加载遮罩。指定文件和隐藏起始页为显式旁路。
+2. 参数页合同：src/Plugin.Wpf/Presenters/Parameters/IToolSettingsView.cs
+   ToolSettingsViewOptions 新增 EagerlyComposePages。
+3. 页面组装：src/Plugin.Wpf/Fields/DeclaredFieldsView.cs
+   eager 模式在构造阶段遍历所有声明页，完成模板、行、分组、绑定槽和页面缓存；后续 SelectionChanged 不再承担页首次构造。
+4. 统一窗口绑定：src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs
+   将 EagerlyComposePages 传递到页面宿主，保持现有代次、事件和 Dispose 合同。
+5. 图像源：tools/SunEyeVision.ImageSource/Wpf/ImageSourceEditorFactory.cs
+   工厂强制 EagerlyComposePages=true。
+6. Blob：tools/SunEyeVision.BlobAnalysis/Wpf/BlobEditorFactory.cs、Views/BlobUiComposition.cs
+   工厂强制 eager；BlobUiComposition 同步完成 ROI、运行参数、结果显示页面组合，ReadyTask 在完整组合完成后结束；SystemIdle 预热只保留给非 eager 视图。
+7. 拖放和异常 Owner：src/UI/Services/Interaction/DragDropHandler.cs、src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.xaml.cs
+   新建方案首个 Tab 的画布身份回退、宿主 Owner 和节点点击时懒绑定已补齐。
+
+四、构建与载荷
+命令：dotnet build src/UI/SunEyeVision.UI.csproj -c Release --no-restore -m:1 -p:UseSharedCompilation=false -p:RestoreIgnoreFailedSources=true -p:SelfContained=false -v:minimal
+结果：0 errors；存在既有 XML/nullable/compiler warnings 和 NU1900 网络警告。
+正式程序：D:/MyWork/SunEyeVision_V2/Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe
+清单：502 entries，逐项 SHA-256 校验 BAD=0。
+Build payload seal：D634F08042BCFB1868970EE3D922924E966583CEE0A268C375F5A6868A0DFE9
+
+五、未确认项
+1. 本批尚未把正式 Release 的人工启动、方案管理器、节点打开、Blob 三页视觉内容和首次/重复 Tab 读数写成通过。
+2. VM 动态 UI 线程耗时、实例复用计数、资源查找次数和跨节点释放顺序仍没有运行时捕获。
+3. 本批只启用 ImageSource/Blob 的 eager 路径，其他工具不参与当前产品构建，后续按 VM 原件证据逐个重建。
+
+全量构建补验：dotnet build SunEyeVision.slnx -c Release --no-restore -m:1 -p:UseSharedCompilation=false；结果 0 errors，最新载荷 seal D634F08042BCFB1868970EE3D922924E966583CEE0A268C375F5A6868A0DFE9，日志 D:/Temp/suneye-full-build-20261109.log。

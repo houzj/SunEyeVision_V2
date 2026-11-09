@@ -1,0 +1,138 @@
+VM 原厂 SDK 发布边界静态取证（2026-11-09）
+================================================
+
+取证对象
+--------
+安装根：D:\Program Files\VisionMaster4.4.0
+版本：VisionMaster 4.4.0（安装目录 Development\V4.x 与 MVDAlgorithmSDK）
+本记录只使用已安装发布文件、官方样例工程、XML/CHM 文档和 REA 托管程序集元数据；没有把本方 PluginDevKit 反推成 VM 证据。
+
+一、VM 原厂存在两条不同 SDK 产品线
+------------------------------------
+
+A. 外部应用平台 SDK（Platform SDK）
+
+发布目录：
+- Development\V4.x\ComControls\Assembly\VM.PlatformSDKCS.dll
+- Development\V4.x\ComControls\Assembly\VM.Core.dll
+- Development\V4.x\ComControls\Assembly\VMControls.*.dll
+- Development\V4.x\Libraries\AnyCPU\C#\iMVS-6000PlatformSDKCS.dll
+- Applications\PublicFile\x64\VM.PlatformSDKCS.dll
+- Applications\PublicFile\x64\iMVS-6000PlatformSDKCS.dll
+
+官方文档与样例：
+- Development\V4.x\Documentations\CH\VisionMaster算法开发平台SDK开发指南V4.4.2（.NET）.chm
+- Development\V4.x\Samples\C#\PlatformSDKSampleCS\PlatformSDKSampleCS_VS2015.sln
+- 样例：SolutionControl、SolutionControlCS_WPF、ProcessControl、GroupControl、GetResultControl、FrontendControl、CircleFind
+
+已确认的外部应用入口和能力：
+- VM.Core.VmSolution.Load(path, password) 打开方案；VmSolution.Instance 提供当前方案对象。
+- VmSolution.Instance.SolutionPath、GetSolutionVersion、HasPassword、Save、CloseSolution、Dispose。
+- 通过 VmSolution.Instance["Flow1"] 获取 VmProcedure；VmProcedure.Run、连续运行、导入/导出/删除/释放。
+- 通过路径名获取模块，如 "Flow1.Image Source1"、"Flow1.Circle Search1"；模块可 EnableResultCallback，读取 ModuResult。
+- 结果回调以 ModuleResultCallBackArrived 订阅/退订；VmSolution.Instance.DisableModulesCallback() 用于回调收口。
+- WPF/WinForms 可嵌入 VMControls.WPF.Release 或 VMControls.Winform.Release 的视图：VmMainViewConfigControl、VmFrontendControl、VmRenderControl。
+- FrontendControl 样例明确顺序：先 Load 方案，再 vmFrontendControl.LoadFrontendSource，再运行；SolutionControl 样例把配置视图嵌入宿主窗口。
+- GroupControl 样例通过 IMVSGroupTool.LoadIndependentGroup(path)，设置 vmSingleModuleSetConfigControl.ModuleSource，运行后 DestroyGroup。
+- GetResultControl 样例明确“启用回调→运行→读取结果→退订/DisableModulesCallback→释放渲染源→Dispose”。
+
+关键程序集身份（REA managed artifact）：
+- VM.PlatformSDKCS.dll
+  SHA-256 34c0c90b00cb75a701685b96670b6490f61376f62eacc0ab29d240157db401c1
+  MVID e7b3a3b0-7083-486a-8ca2-97cecec02ea2
+  Assembly 1.0.0.0，PublicKeyToken c1484a72052ee3d4，TargetFramework .NETFramework v4.5.1
+  关键引用：VMControls.RenderInterface、VMControls.BaseInterface、Apps.Localization、Apps.Log、VM.ExternalCall、VM.Utility
+- ImageSourceModuleCs.dll
+  SHA-256 1f7c52abb34eb61ec177e295aea9812b9fbc3b1c4453bef28fbc960bf35aa35c
+  MVID 0435b7cd-e965-456f-ace6-2bd83ca97a88
+  关键引用：VM.PlatformSDKCS、VM.Core、VMControls.Interface、VM.Xml
+- IMVSBlobFindModuCs.dll
+  SHA-256 3106af2e9344a97288553bfbbfa86afd81e2384188b452734f56825f63e0a78d
+  MVID 1d550689-0379-4822-8b69-8713d2324342
+  关键引用：VM.Core、VM.PlatformSDKCS
+
+B. 算子/工具作者 SDK（MVD Algorithm SDK）
+
+发布目录：
+- MVDAlgorithmSDK\ReferencedAssemblies\VMControls\MVDSDK.*.dll
+- MVDAlgorithmSDK\ReferencedAssemblies\Algorithms\MVD_Algorithm.Net.dll 及各算法 Net 程序集
+- MVDAlgorithmSDK\Includes、Libraries、Runtime
+- MVDAlgorithmSDK\MVDTools\MVDControlsWizard、DeploymentTool、ExportMVDCode
+
+官方文档与工具：
+- MVDAlgorithmSDK\Documentations\算子SDK_Windows_SDK开发指南V4.4.1（.NET）.chm
+- MVDAlgorithmSDK\Documentations\算子SDK_Windows_SDK开发指南V4.4.1（C++）.chm
+- MVDAlgorithmSDK\Samples、VisualAlgorithmXmlGenerator、AlgorithmXMLGenerator
+
+已确认的工具作者能力边界：
+- VMControls.WPF 不是外部应用 SDK 的同义词，而是算子参数/界面开发所需的控件闭包。
+- MVDSDK.VMControls.WPF.dll 依赖 MVDSDK.VM.Core、MVDSDK.VMControls.Interface、MVDSDK.VM.Controls、MVDSDK.VM.PcUI、MVDSDK.Apps.XmlUI、MVDSDK.VM.Xml 等完整 VM UI/数据层。
+- MVD_Algorithm.Net.dll 提供算法句柄、配置序列化、运行耗时、结果内存释放和 Dispose；REA 观察到 MvdAlgorithm.MVD_Algorithm_CreateHandle、Load/SaveConfigData、GetAlgorithmRunTime、ReleaseResultMemory、Dispose。
+
+关键程序集身份：
+- MVDSDK.VMControls.WPF.dll
+  SHA-256 05ecfabbe96a5b8a7c2b070e8522a618c71362a3df919ee5a55c9ed716349fc9
+  MVID ce5ed52d-0c63-45e3-b7e4-fad53773f52a
+  TargetFramework .NETFramework v4.6.1
+  关键引用：MVDSDK.VM.Core、MVDSDK.VMControls.Interface、MVDSDK.VMControls.RenderInterface、MVDSDK.VM.Controls、MVDSDK.VM.Xml、MVDSDK.Apps.XmlUI、MVDSDK.VM.PlatformSDKCS
+- MVD_Algorithm.Net.dll
+  SHA-256 274e1605451fcd529a324d535f74443677fac441c3999d92394495eb714a9b58
+  MVID acfe7162-823d-4fb7-9eb5-552175b1b246
+  Assembly 4.2.1.4，TargetFramework .NETFramework v4.0，关键引用 MVDCore.Net
+
+二、VM 外部应用完整链路（可迁移的静态事实）
+----------------------------------------------
+
+外部应用启动
+→ 引用 VM.Core + VM.PlatformSDKCS + 所需 VMControls 视图程序集
+→ VmSolution.Load(solutionPath, password)
+→ VmSolution.Instance 建立方案身份
+→ 按名称取得 VmProcedure / Module / Group
+→ 将 VmMainViewConfigControl、VmFrontendControl 或 VmRenderControl 嵌入宿主
+→ 需要结果时启用模块/流程回调并 Run
+→ 从 ModuResult/Procedure 读取图像、参数和结果
+→ 退订回调、DisableModulesCallback、解除 ModuleSource/视图绑定
+→ CloseSolution / DestroyGroup / Dispose
+
+这条链与当前 SunEyeVision 的对应关系：
+- VmSolution.Load/CloseSolution ↔ DocumentSessionManager 的打开、提交、关闭会话。
+- VmProcedure.Run ↔ Execution 的流程运行接口；输入必须是快照。
+- ModuleResultCallBackArrived ↔ 当前 ToolSession/ResultReceipt 回调；必须有代次和退订门禁。
+- VmRenderControl.ModuleSource ↔ 当前结果显示源与 ResultResourceOwner；关闭时先解除显示源再释放 reader/图像资源。
+- VM 外部 SDK 的能力应通过独立 Platform SDK 门面暴露，不把 UI、Application、Persistence 内部类型直接暴露给外部工程。
+
+三、对当前 PluginDevKit 的纠偏
+------------------------------
+
+PluginDevKit 当前只覆盖“工具作者/插件作者”方向：Contracts、Runtime、Wpf、RuntimePlugin.Template、WpfTool.Template。它不能宣称等同 VM.PlatformSDKCS，也不能以模板构建通过代替 VM 外部应用 SDK 证据。
+
+最终应拆成两个公开发布边界：
+1. SunEyeVision.PlatformSdk：外部软件控制方案、流程、节点、模块结果、回调、前端/渲染宿主的稳定门面；内部通过 Application/Execution/Persistence 适配，不公开内部实现类型。
+2. SunEyeVision.ToolSdk：工具作者使用的 Runtime/Wpf/控件模板与算法适配合同；仅在 VM MVDAlgorithmSDK 对应的模板、资源和程序集闭包完成迁移后扩展。
+
+四、当前代码落地顺序
+----------------------
+
+已落地：
+- 默认启动顺序：快速启动阶段→方案管理器可操作→选择方案→主工作区轻量壳与加载遮罩→发布准入→方案会话→节点窗口隐藏组装→首个参数页就绪→Tab 复用→关闭释放。
+- ImageSource 与 BlobAnalysis 已脱离旧 Plugin.SDK，Runtime/Wpf 单链和重复 Tab 复用已通过正式 Release 生产探针。
+- 其它旧工具不进入当前发布扫描、预加载、工具箱或启动准入。
+
+立即按本证据执行：
+- 保持现有 ToolSdk 单链，不再添加第二套参数编辑器或旧 UI 兼容桥。
+- 新增 PlatformSdk 只做外部应用门面和样例验收合同；不把 VM 具体程序集名称复制进 SunEyeVision 产品程序集。
+- PlatformSdk 先覆盖 Open/Close solution、流程 Run/Stop、模块结果订阅/退订、渲染源绑定/解除和资源释放；保存、Group、连续运行和设备控制在同一门面逐项接入。
+- 发布目录分为 sdk/platform/net9.0 与 sdk/tool/net9.0；每个目录配 manifest、依赖清单、模板和外部工程验收脚本。
+- 在真实 VS 外部启动/附加验收完成前，SDK 只记为“静态边界已确认、外部工程未闭口”。
+
+五、未确认项（不能冒充 VM 已确认）
+------------------------------------
+- VM 同版本动态 UI 线程耗时、同节点 Tab 实例复用的具体缓存边界。
+- VM 方案管理器内部异步/线程顺序及跨节点释放线程顺序。
+- MVDAlgorithmSDK 各控件模板的完整 XAML 资源闭包和许可/再发布条件。
+- VM PlatformSDK 的全部 native 依赖、授权初始化和跨版本发布兼容矩阵。
+- Visual Studio 实际启动/附加外部工程验收。
+
+结论
+----
+VM 的“外部软件二次开发 SDK”和“算子/工具作者 SDK”是两条不同产品线。当前重构不能把 PluginDevKit 继续作为唯一 SDK 结论；产品主线应先保持两工具的 VM 参数/窗口/生命周期单链，再将外部 PlatformSdk 门面按上述静态事实接入。

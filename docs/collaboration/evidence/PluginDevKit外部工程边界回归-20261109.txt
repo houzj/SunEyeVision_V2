@@ -1,0 +1,28 @@
+PluginDevKit 外部工程边界回归（2026-11-09）
+
+目的
+- 验证外部工程只引用发布 SDK DLL，不引用主仓库源码或旧 Plugin.SDK。
+- 验证 Runtime/Editor 组件身份与宿主合同一致。
+- 验证正式外部调试宿主目录可由当前 Release 载荷准备。
+
+执行
+1. `PluginDevKit/scripts/build-sdk.ps1 -Configuration Release`
+   - Contracts、Runtime、WPF 发布 DLL 重新生成，构建无错误。
+2. `PluginDevKit/scripts/build-runtime.ps1 -Configuration Release`
+   - 重新准备正式宿主和当前两工具运行目录。
+   - `release-payload.json`、`ToolGroups.xml`、`SunEyeVision.UI.exe` 均存在。
+3. `PluginDevKit/scripts/validate-components.ps1`
+   - PASS：Runtime=`ExternalRuntimePlugin.Runtime`。
+   - PASS：Editor=`ExternalRuntimePlugin.Editor`。
+   - PASS：ToolId=`ExternalRuntimePlugin`，合同版本 6.0。
+   - PASS：模板源码无 `SunEyeVision.Plugin.SDK` 或 `src/Plugin.SDK` 引用。
+4. 外部干净目录模拟
+   - 复制 `sdk/net9.0` 和两个模板到 `PluginDevKit/validation-out/external-clean-20261109`。
+   - 使用 `ImportDirectoryBuildProps=false`、`ImportDirectoryBuildTargets=false` 和绝对 `SdkPath`，避免继承仓库构建规则。
+   - `RuntimePlugin.Template` Release：0 错误。
+   - `WpfTool.Template` Release：0 错误。
+
+结论
+- 发布 DLL 边界和模板独立构建已确认。
+- 该回归不等同于 Visual Studio 实际启动/附加验收；当前机器尚未把 VS 附加动作记作通过。
+- VM 原厂 SDK 的真实发布目录和外部接入方式仍属于待补动态/安装证据，PluginDevKit 不能反向证明 VM SDK 语义。

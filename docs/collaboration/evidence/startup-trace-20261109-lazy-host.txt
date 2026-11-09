@@ -1,0 +1,27 @@
+2026-11-09T07:25:56.1794308+08:00 [StartupTrace] +233ms OnStartup.Enter | args=5
+2026-11-09T07:25:56.1828541+08:00 [StartupTrace] +241ms OnStartup.Pre warm skipped | VM-aligned startup has no generic image/thread-pool warmup
+2026-11-09T07:25:56.1834299+08:00 [StartupTrace] +241ms Application base OnStartup completed
+2026-11-09T07:25:56.4444580+08:00 [StartupTrace] +502ms MainWindow.Show begin | reason=startup shell
+2026-11-09T07:25:57.0532840+08:00 [StartupTrace] +1111ms MainWindow.Loaded | handle=0x1180E44, visible=True, visibility=Visible, state=Maximized, left=-8, top=-8, width=1936, height=1056, showInTaskbar=True, presentationSource=True
+2026-11-09T07:25:57.0695063+08:00 [StartupTrace] +1127ms MainWindow.SourceInitialized | handle=0x1180E44, visible=True, visibility=Visible, state=Maximized, left=-8, top=-8, width=1936, height=1056, showInTaskbar=True, presentationSource=True
+2026-11-09T07:25:57.0742191+08:00 [StartupTrace] +1132ms MainWindow.Activated | handle=0x1180E44, visible=True, visibility=Visible, state=Maximized, left=-8, top=-8, width=1936, height=1056, showInTaskbar=True, presentationSource=True
+2026-11-09T07:25:57.1331916+08:00 [StartupTrace] +1191ms MainWindow.after Show | handle=0x1180E44, visible=True, visibility=Visible, state=Maximized, left=-8, top=-8, width=1920, height=1040, showInTaskbar=True, presentationSource=True
+2026-11-09T07:25:57.1392577+08:00 [StartupTrace] +1197ms Plugin.Load begin | source=release-payload.productComponents
+2026-11-09T07:25:57.1831054+08:00 [StartupTrace] +1241ms MainWindow.ContentRendered | handle=0x1180E44, visible=True, visibility=Visible, state=Maximized, left=-8, top=-8, width=1920, height=1040, showInTaskbar=True, presentationSource=True
+2026-11-09T07:25:57.1859544+08:00 [StartupTrace] +1244ms MainWindow.DispatcherPriority.ApplicationIdle | handle=0x1180E44, visible=True, visibility=Visible, state=Maximized, left=-8, top=-8, width=1920, height=1040, showInTaskbar=True, presentationSource=True
+2026-11-09T07:25:57.6941236+08:00 [StartupTrace] +1752ms Plugin.Load task joined
+2026-11-09T07:25:57.6968043+08:00 [StartupTrace] +1755ms Plugin.Load stages | PayloadValidation=142ms, ComponentLoading=310ms, ComponentLoading.RuntimeAssemblies=51ms, ComponentLoading.RuntimeDefinitions=258ms, ToolDirectory=8ms
+2026-11-09T07:25:57.6975722+08:00 [StartupTrace] +1755ms Plugin.Assert begin
+2026-11-09T07:25:57.6993499+08:00 [StartupTrace] +1757ms Plugin.Assert completed
+2026-11-09T07:25:57.7001332+08:00 [StartupTrace] +1758ms Plugin.Load completed
+2026-11-09T07:25:57.7007461+08:00 [StartupTrace] +1759ms Service.Initialize begin
+2026-11-09T07:25:58.0541480+08:00 [StartupTrace] +2111ms Service.Initialize completed
+2026-11-09T07:25:58.0592079+08:00 [StartupTrace] +2116ms RuntimeIdentity | pid=28056, assembly=SunEyeVision.UI, assemblyLocation=D:\MyWork\SunEyeVision_V2\Release\SunEyeVision_v1.0.0\SunEyeVision\SunEyeVision.UI.dll, processPath=D:\MyWork\SunEyeVision_V2\Release\SunEyeVision_v1.0.0\SunEyeVision\SunEyeVision.UI.exe, informationalVersion=2.0.0.8+9b5ee5bfecab81a17285b4054e096e0b61bb455f, fileVersion=2.0.0.8, fileLastWriteUtc=2026-11-08T23:22:00.9766787Z, fileLength=185856
+2026-11-09T07:25:58.0736775+08:00 [StartupTrace] +2131ms SolutionManager.Initialize begin | defaultPath=D:\MyWork\SunEyeVision_V2\.startup-chain-20261109-lazy\Data\Solutions
+2026-11-09T07:25:58.0756426+08:00 [StartupTrace] +2133ms SolutionManager directory pinned
+2026-11-09T07:25:58.0772128+08:00 [StartupTrace] +2134ms SolutionManager.Initialize completed | elapsedMs=0.3
+2026-11-09T07:25:58.1069697+08:00 [StartupTrace] +2164ms Startup decision begin
+2026-11-09T07:25:58.4614436+08:00 [StartupTrace] +2519ms MainWindow.WorkspaceInitialized | elapsedMs=352.0
+2026-11-09T07:25:59.2784000+08:00 [StartupTrace] +3336ms Camera connection restore begin
+2026-11-09T07:25:59.2922514+08:00 [StartupTrace] +3349ms Camera connection restore completed
+2026-11-09T07:25:59.2982324+08:00 [StartupTrace] +3355ms HandleStartupDecision returned

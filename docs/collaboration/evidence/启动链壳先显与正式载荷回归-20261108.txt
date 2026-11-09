@@ -1,0 +1,39 @@
+# 启动链壳先显与正式载荷回归（2026-11-08）
+
+## 目的
+
+验证启动链是否仍在插件、服务和方案管理器完成前隐藏所有可交互窗口，并确认主窗口壳先显示后的各阶段耗时。
+
+## 运行方式
+
+- 代码输出：`C:\Users\houzhongjie\.codex\visualizations\2026\11\06\01a1ae75-37f7-7281-b9b8-51a3cf21dc1a\build-ui-serial\Release\SunEyeVision_v1.0.0\SunEyeVision`
+- 载荷基线：`D:\MyWork\SunEyeVision_V2\Release\SunEyeVision_v1.0.0\SunEyeVision`
+- 通过同卷硬链接建立临时运行目录，只替换当前构建的 `SunEyeVision.UI.dll`；未修改正式 Release 目录。
+- 为隔离夹具同步了临时载荷清单中的文件哈希和宿主身份，故本记录是代码链路回归，不是正式发布包签名验收。
+- 隔离根：`C:\Users\houzhongjie\.codex\visualizations\2026\11\06\01a1ae75-37f7-7281-b9b8-51a3cf21dc1a\startup-probe-formal5`
+
+## 实测时间线
+
+| 阶段 | 相对进程启动时间 |
+| --- | ---: |
+| `OnStartup.Enter` | 0.254 s |
+| `Splash.Show completed` | 1.352 s |
+| `MainWindow.Show begin`（最终主窗口轻量壳） | 1.772 s |
+| `MainWindow.ContentRendered` | 2.148 s |
+| `Plugin.Load begin` | 2.686 s |
+| `Plugin.Load task joined` | 6.934 s |
+| `Plugin.Assert completed` | 6.935 s |
+| `Service.Initialize completed` | 7.214 s |
+| `SolutionManager.Initialize completed` | 7.235 s（构造耗时 0.4 ms） |
+| `MainWindow.WorkspaceInitialized` | 7.338 s（注入完整 VM、工具箱和画布耗时 73.1 ms） |
+
+## 结论
+
+1. 主窗口壳已在约 2.15 秒完成渲染，插件准入和服务初始化不再阻止用户看到或移动最终窗口。
+2. 当前正式载荷链的主要启动成本是 `Plugin.Load`，约 4.25 秒；服务初始化约 0.28 秒，方案管理器约 0.4 ms，完整工作区注入约 73 ms。
+3. 旧默认根日志中约 54 秒的启动等待，来自旧链在主窗口创建前同步执行的准入/组件扫描和服务阶段；不能归因于方案管理器或 Blob 参数窗口。
+4. 该回归证明“先显示壳、再准入和注入”的方向有效，但还不能宣称达到 VM 原厂数值。正式 Release 目录需重新封包后再做一次不改清单的验收。
+
+## 证据限制
+
+本次临时载荷清单为隔离夹具调整，不能作为发布身份、签名或外部 SDK 验收证据。VM 原厂启动内部是否使用缓存、并行或其他未公开机制仍未由动态证据确认；本报告只确认可见时序和本方阶段耗时。

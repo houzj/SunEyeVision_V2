@@ -1,0 +1,54 @@
+# Platform SDK 合同边界回归（2026-11-09）
+
+## 目的
+验证依据 VM Platform SDK 静态证据新增的外部应用公开合同、宿主适配器、发布目录和模板工程，确认外部应用可以沿 VM 的 Load→枚举→Run/Continuous→Close/Dispose 主链接入当前宿主。
+
+## VM 原件基线
+- Platform SDK 程序集：`D:\Program Files\VisionMaster4.4.0\Development\V4.x\ComControls\Assembly\VM.PlatformSDKCS.dll`
+- 官方样例：`Development\V4.x\Samples\C#\PlatformSDKSampleCS\PlatformSDKSampleCS_VS2015.sln`
+- 已确认语义：`VmSolution.Load/Save/CloseSolution/Dispose`、`VmProcedure.Run`、模块结果回调订阅/退订、前端/渲染控件。
+- 完整静态身份和样例路径：`docs/collaboration/evidence/VM原厂SDK发布边界静态取证-20261109.txt`
+
+## 本方代码落点
+- 合同项目：`src/Platform.Sdk.Contracts/SunEyeVision.Platform.Sdk.Contracts.csproj`
+- 宿主适配器：`src/Platform.Sdk/SunEyeVision.Platform.Sdk.csproj`、`src/Platform.Sdk/PlatformRuntimeHost.cs`
+- 公开命名空间：`SunEyeVision.Platform.Sdk`
+- 发布目录：`PluginDevKit/sdk/platform/net9.0`
+- 模板：`PluginDevKit/templates/PlatformApplication.Template`
+- 发布脚本：`PluginDevKit/scripts/build-platform-sdk.ps1`
+
+合同包含方案、流程、节点、设备身份快照、单次/连续执行、运行状态、结果事件、退订句柄和关闭/释放边界；宿主适配器把这些合同映射到内部 `DocumentSessionManager`、执行批次、连续运行和结果回调，但不把 Application、Execution、Persistence、UI 或旧 Plugin.SDK 类型暴露给外部工程。manifest 状态为 `host-adapter-and-contract`。
+
+## 验证命令与结果
+1. `pwsh -NoProfile -ExecutionPolicy Bypass -File PluginDevKit/scripts/build-platform-sdk.ps1 -Configuration Release`
+   - 结果：合同与宿主适配器构建成功，复制 `SunEyeVision.Platform.Sdk.dll`、`SunEyeVision.Platform.Sdk.Contracts.dll`、依赖 DLL/XML 和 `platform-sdk-manifest.json`。
+   - 同一源码基线的全量 Release 构建为 0 错误；NeutralReleaseProbe 重新封签 `release-payload.json`，SHA-256 为 `F19BD7A0646955BB8197BBB12EB3596FA221CA38F14D7F5CA7BE156A9641A316`。
+2. 模板本体 `PluginDevKit/templates/PlatformApplication.Template/PlatformApplication.Template.csproj` 与干净验证工程 `PluginDevKit/_validation/ExternalPlatformSdkAcceptance/PlatformApplication.Template.csproj`
+   - `dotnet restore ... --configfile NuGet.Config -v:q`：成功，离线漏洞服务产生 NU1900 警告。
+   - `dotnet build ... -c Release --no-restore -v:q`：0 错误。
+   - `dotnet run ... -c Release --no-build -- <ReleaseRoot> <sdk-validation.solution> flow-1 continuous`：输出合同版本、方案路径、`Workflow flow-1: 0 node(s)`、`Run flow-1: success=True, nodes=0` 和 `Continuous flow-1: reason=Requested, rounds=1`；进程退出时验证 Close/Dispose。
+
+## 未完成项
+- 尚未把 `GroupControl`、真实设备连接控制和 WPF 渲染控件纳入公开合同；当前已闭合方案、流程、节点、设备身份、单次/连续执行、结果订阅和资源释放主链。
+- 尚未完成 Visual Studio 外部工程实际启动/附加验收；当前已完成外部模板编译、加载、空流程执行和释放验收。
+
+## 结果资源快照边界（2026-11-09）
+
+本批修正了结果合同的资源边界：`PlatformResultEvent.Values` 和 `PlatformNodeResult.Values` 不再把内部 `IReadOnlyImage`、`IReadOnlyRegion`、reader 或其他宿主资源句柄以 `object` 形式泄漏给外部工程。
+
+- `IReadOnlyImage` 在 owner 线程复制为 `PlatformImageFrame`（宽、高、行步长、像素格式、独立 `byte[]`、帧身份和来源身份）。
+- `IReadOnlyRegion` 在 owner 线程读取为 `PlatformRegionFrame` 与 `PlatformRegionRun` 数组；外部工程不持有内部 reader。
+- 字典、数组和嵌套集合递归复制；`Images` 属性提供去重后的图像快照索引，关闭方案后仍只保留独立数据。
+- `dotnet build src/Platform.Sdk/SunEyeVision.Platform.Sdk.csproj -c Release --no-restore`：0 错误。
+- `PluginDevKit/scripts/build-platform-sdk.ps1 -Configuration Release`：0 错误，包已更新。
+- `Run-NeutralReleaseProbe.ps1 -SkipBuild`：PASS，最终正式载荷 SHA-256：`F127B336F1E1CD8F4F441E7ACB019097C61212955BB00A7CE7FAD2D8C6C4B19D`。
+- `PluginDevKit/_validation/ExternalPlatformSdkAcceptance`：Release 构建 0 错误；干净模板运行输出 `Loaded solution`、`Workflow flow-1: 0 node(s)`、`Run ... success=True`、`Continuous ... rounds=1`，进程结束完成 Close/Dispose。
+
+该验证使用空流程，未把“有图像结果”的动态样例冒充已验收；图像/区域快照代码边界已落地，真实节点结果的外部工程回调仍需在 ImageSource→BlobAnalysis 发布方案上补一条正式验收样例。
+
+## 最终串行 Release 封签复核（2026-11-09）
+
+- `dotnet build SunEyeVision.slnx -c Release --no-restore -m:1 -p:UseSharedCompilation=false -v:q`：0 错误（6066 个既有警告）。
+- 重新执行 Platform SDK 发布脚本后，再执行 `Run-NeutralReleaseProbe.ps1 -SkipBuild`：PASS；最终 `release-payload.json` SHA-256：`F127B336F1E1CD8F4F441E7ACB019097C61212955BB00A7CE7FAD2D8C6C4B19D`。
+- 同一封签载荷下，外部模板再次输出方案加载、流程枚举、单次运行成功和连续运行一轮后停止；Plugin.SDK 退役门禁 PASS。
+

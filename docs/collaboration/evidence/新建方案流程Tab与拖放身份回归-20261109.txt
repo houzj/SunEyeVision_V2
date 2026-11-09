@@ -1,0 +1,21 @@
+新建方案流程 Tab 与拖放身份回归（2026-11-09）
+
+现象
+- 新建空方案后界面已经显示“流程1”标签。
+- 从工具箱拖放节点时提示“无法获取当前工作流，请确保已打开工作流标签页”。
+- 运行日志记录 `ThemeMessageDialog ... ownerIsNull=True`，错误框没有挂在主窗口层级。
+
+静态定位
+- `src/UI/Services/Interaction/DragDropHandler.cs`
+  - `GetCurrentWorkflowTab()` 原来只读取 `WorkflowCanvasControl.CurrentWorkflowTab`，即画布 `DataContext`。
+  - 新建方案由 `DocumentSessionManager.CreateNew` 发布正式流程后，Tab 头和画布视觉树可能跨一个 Dispatcher 周期更新，直接读取画布可能为空。
+  - 两处 `ThemeMessageDialog.Show` 原来未传递 Owner。
+
+修复
+- 拖放入口先读取画布当前 Tab；为空时从宿主 `MainWindowViewModel.WorkflowTabViewModel.SelectedTab` 读取同一正式身份，并立即补绑画布 `DataContext`。
+- 拖放失败和异常提示均使用 `Window.GetWindow(_canvasControl)` 作为 Owner。
+
+验证
+- UI Release 构建：0 错误；NU1900 仅为 NuGet 漏洞源不可达警告。
+- 正式程序：`D:\MyWork\SunEyeVision_V2\Release\SunEyeVision_v1.0.0\SunEyeVision\SunEyeVision.UI.exe`
+- 运行时人工复测尚未冒充自动通过；下一步复测新建方案后拖入 ImageSource 与 BlobAnalysis，并确认提示框层级。

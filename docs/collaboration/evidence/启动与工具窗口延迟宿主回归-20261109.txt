@@ -1,0 +1,30 @@
+启动与工具窗口延迟宿主回归（2026-11-09）
+
+实现变更
+- `MainWindow` 的 XAML 只保留 VM 启动壳、顶部栏、状态栏和布局槽位；画布 Tab 树、结果图像/结果树、工具箱分别由 `DeferredWorkspaceHostControl`、`DeferredImageResultHostControl`、`DeferredToolboxHostControl` 承载。
+- 发布准入、服务和方案会话完成后，`MainWindow.InitializeWorkspace` 只调用一次宿主 `Initialize`，随后创建现有 `ShellWorkspaceControl`、`ImageResultControl` 和 `ToolboxControl`。参数模板、Tab 复用、回调退订、关闭释放代码未复制或改写。
+- 该结构对应 VM 已确认的“方案管理器/加载遮罩先可见，编辑器视觉树随后装配”顺序；不把启动页当长耗时容器。
+
+当前 Release 启动实测
+- 程序：`Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe`
+- 隔离根：`.startup-chain-20261109-lazy`
+- 直接打开隔离 V5 空流程方案；无设备、无真实节点，故只验证启动链。
+- 本轮 `Run-NeutralReleaseProbe.ps1 -SkipBuild` 已重新封签正式载荷，SHA-256 为 `EC24E17CA96902E1B2B24964CF7EE6A8A646165F7DD1358AC6F56057D7183473`。
+- `MainWindow.Show begin`：+502ms；`MainWindow.ContentRendered`：+1244ms；`Plugin.Load task joined`：+1752ms；`Service.Initialize completed`：+2111ms；`SolutionManager.Initialize completed`：+2134ms；`MainWindow.WorkspaceInitialized`：+2519ms；`HandleStartupDecision returned`：+3355ms。
+- 与前一版同一 Release 启动基线相比，壳首帧从约 2266ms 提前到 1244ms（减少约 1.02s），完整空流程启动从约 3950ms 降到 3355ms（减少约 0.60s）。这部分时间现在发生在加载遮罩之后，不再表现为空白等待。
+- 插件准入阶段仍为约 310ms，其中 RuntimeAssemblies 51ms、RuntimeDefinitions 258ms；方案管理器初始化约 0.3ms。慢点已不在旧的 CLR 框架重复装载或方案管理器目录初始化。
+
+工具窗口回归
+- `RuntimeEditorProductionProbe` 使用当前 Release 程序集完成真实 ImageLoad、BlobAnalysis Session、正式参数视图、首显、Tab 切换、捕获/回执和关闭释放。
+- ImageLoad：参数绑定 668ms，首显 1146ms，重复切换 0ms。
+- BlobAnalysis：参数绑定 1113ms，首显 399ms；ROI 组合 1450ms，运行参数首次切页 319ms，结果显示首次切页 365ms；重复切换 0/25/41ms。
+- 结果仍说明首次复杂页视觉树物化是工具窗口剩余成本，重复 Tab 已复用，不存在每次切换重建。
+
+限制与未确认
+- 该回归没有冒充 VM 同机动态 UI 线程耗时；VM 目前有静态启动顺序和官方样例证据，尚无同版本动态计时。
+- 当前启动方案是 VM 语义对齐的延迟宿主，不是临时占位 UI；后续工具继续沿同一宿主和 Plugin.Wpf 控件合同迁移。
+
+证据
+- `docs/collaboration/evidence/startup-trace-20261109-lazy-host.txt`
+- `docs/collaboration/evidence/RuntimeEditorProductionProbe-20261109-lazy-host.txt`
+- `docs/collaboration/evidence/VM启动阶段顺序静态对照-20261109.txt`

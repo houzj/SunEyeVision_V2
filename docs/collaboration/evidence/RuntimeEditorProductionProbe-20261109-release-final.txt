@@ -1,0 +1,34 @@
+[TIMING] ImageLoad 参数页绑定返回 507ms
+[TIMING] ImageLoad 窗口首次呈现与首个页面组装 1173ms
+[STAGE] ImageLoad 首屏后 构造[] 页面[基本参数[rows=238ms,layout=14ms]] 字段[sequence.initial|SN初始值|Int64=111ms camera.timeout-ms|取帧超时(ms)|Int64=35ms local.stop-at-last|最后一张停止|Boolean=31ms source.kind|图像源|Text=29ms local.auto-switch|自动切换|Boolean=16ms output.format|像素格式|Text=13ms] 显隐=10ms/3次 组合[]
+[STAGE] ImageLoad 首屏空闲后 构造[] 页面[基本参数[rows=238ms,layout=14ms]] 字段[sequence.initial|SN初始值|Int64=111ms camera.timeout-ms|取帧超时(ms)|Int64=35ms local.stop-at-last|最后一张停止|Boolean=31ms source.kind|图像源|Text=29ms local.auto-switch|自动切换|Boolean=16ms output.format|像素格式|Text=13ms] 显隐=10ms/3次 组合[]
+[TIMING] ImageLoad 主题字典解析 第1次 3ms 字典2合并
+[TIMING] ImageLoad 主题字典解析 第2次 4ms 字典2合并
+[TIMING] ImageLoad 主题字典解析 第3次 4ms 字典2合并
+[TIMING] ImageLoad 切到第1页 0ms
+[STAGE] ImageLoad 第1页后 构造[] 页面[基本参数[rows=238ms,layout=14ms]] 字段[sequence.initial|SN初始值|Int64=111ms camera.timeout-ms|取帧超时(ms)|Int64=35ms local.stop-at-last|最后一张停止|Boolean=31ms source.kind|图像源|Text=29ms local.auto-switch|自动切换|Boolean=16ms output.format|像素格式|Text=13ms] 显隐=10ms/3次 组合[]
+[STAGE] ImageLoad 第1页空闲后 构造[] 页面[基本参数[rows=238ms,layout=14ms]] 字段[sequence.initial|SN初始值|Int64=111ms camera.timeout-ms|取帧超时(ms)|Int64=35ms local.stop-at-last|最后一张停止|Boolean=31ms source.kind|图像源|Text=29ms local.auto-switch|自动切换|Boolean=16ms output.format|像素格式|Text=13ms] 显隐=10ms/3次 组合[]
+[TIMING] ImageLoad 重复切到第1页 0ms
+PASS 实际SN文本在Prepare→回执间未解析输入保留、来源子页原实例重基、继续提交12
+PASS ImageLoad：实际Session→实际节点→正式参数控件→捕获/回执→关闭释放
+[TIMING] BlobAnalysis 参数页绑定返回 1435ms
+[TIMING] BlobAnalysis 窗口首次呈现与首个页面组装 453ms
+[STAGE] BlobAnalysis 首屏后 构造[] 页面[基本参数[rows=19ms,layout=1ms]] 字段[field:c95f3a26edf55097863a7ec47d17cce5|位置修正|Boolean=19ms] 显隐=0ms/3次 组合[]
+[STAGE] BlobAnalysis 首屏空闲后 构造[] 页面[基本参数[rows=19ms,layout=1ms]] 字段[field:c95f3a26edf55097863a7ec47d17cce5|位置修正|Boolean=19ms] 显隐=0ms/5次 组合[基本参数:ROI组合=2109ms]
+[TIMING] BlobAnalysis 主题字典解析 第1次 3ms 字典2合并
+[TIMING] BlobAnalysis 主题字典解析 第2次 3ms 字典2合并
+[TIMING] BlobAnalysis 主题字典解析 第3次 2ms 字典2合并
+[TIMING] BlobAnalysis 切到第1页 0ms
+[STAGE] BlobAnalysis 第1页后 构造[] 页面[基本参数[rows=19ms,layout=1ms]] 字段[field:c95f3a26edf55097863a7ec47d17cce5|位置修正|Boolean=19ms] 显隐=0ms/5次 组合[基本参数:ROI组合=2109ms]
+[STAGE] BlobAnalysis 第1页空闲后 构造[] 页面[基本参数[rows=19ms,layout=1ms] 运行参数[rows=2350ms,layout=22ms]] 字段[field:8ca20000000040008000000000000010|阈值范围|Int64=75ms field:8ca20000000040008000000000000012|软阈值柔和度|Int64=69ms field:13d8c5e0c7445f1087497a21f4103a5e|矩形度下限|Float64=69ms field:dd208ea5d2854009b915cf9b488f6a52|Box高度下限|Float64=66ms field:fcdb01b095c25c6ea22384f993450aac|面积下限|Int64=65ms field:8ca20000000040008000000000000015|低阈值比例|Int64=64ms field:c4a179715ea54256becbad63a76bc03e|角度下限|Int64=63ms field:d33029aed8ae4519bc0e6391f2c31ffc|短轴下限|Int64=62ms field:a205cc3f6f6d41439fb3e0ea3689cb28|矩形高下限|Int64=60ms field:8ca20000000040008000000000000014|高尾部比例|Int64=59ms field:43bda03261df55b88f963bd18f2ba4d9|低阈值|Int64=58ms field:8ca20000000040008000000000000002|高阈值|Int64=56ms] 显隐=35ms/6次 组合[基本参数:ROI组合=2109ms 运行参数:运行参数控件=13ms 运行参数:运行参数挂接=1ms 运行参数:运行参数状态=0ms]
+[TIMING] BlobAnalysis 切到第2页 385ms
+[STAGE] BlobAnalysis 第2页后 构造[] 页面[基本参数[rows=19ms,layout=1ms] 运行参数[rows=2350ms,layout=22ms]] 字段[field:8ca20000000040008000000000000010|阈值范围|Int64=75ms field:8ca20000000040008000000000000012|软阈值柔和度|Int64=69ms field:13d8c5e0c7445f1087497a21f4103a5e|矩形度下限|Float64=69ms field:dd208ea5d2854009b915cf9b488f6a52|Box高度下限|Float64=66ms field:fcdb01b095c25c6ea22384f993450aac|面积下限|Int64=65ms field:8ca20000000040008000000000000015|低阈值比例|Int64=64ms field:c4a179715ea54256becbad63a76bc03e|角度下限|Int64=63ms field:d33029aed8ae4519bc0e6391f2c31ffc|短轴下限|Int64=62ms field:a205cc3f6f6d41439fb3e0ea3689cb28|矩形高下限|Int64=60ms field:8ca20000000040008000000000000014|高尾部比例|Int64=59ms field:43bda03261df55b88f963bd18f2ba4d9|低阈值|Int64=58ms field:8ca20000000040008000000000000002|高阈值|Int64=56ms] 显隐=35ms/6次 组合[基本参数:ROI组合=2109ms 运行参数:运行参数控件=13ms 运行参数:运行参数挂接=1ms 运行参数:运行参数状态=0ms]
+[STAGE] BlobAnalysis 第2页空闲后 构造[] 页面[基本参数[rows=19ms,layout=1ms] 运行参数[rows=2350ms,layout=22ms] 结果显示[rows=1378ms,layout=6ms]] 字段[field:8ca20000000040008000000000000010|阈值范围|Int64=75ms field:8ca20000000040008000000000000012|软阈值柔和度|Int64=69ms field:13d8c5e0c7445f1087497a21f4103a5e|矩形度下限|Float64=69ms field:bb037ce3fa405b059d7cb3e696e4138c|Blob数量下限|Float64=68ms field:dd208ea5d2854009b915cf9b488f6a52|Box高度下限|Float64=66ms field:fcdb01b095c25c6ea22384f993450aac|面积下限|Int64=65ms field:8ca20000000040008000000000000015|低阈值比例|Int64=64ms field:c4a179715ea54256becbad63a76bc03e|角度下限|Int64=63ms field:d33029aed8ae4519bc0e6391f2c31ffc|短轴下限|Int64=62ms field:a205cc3f6f6d41439fb3e0ea3689cb28|矩形高下限|Int64=60ms field:8ca20000000040008000000000000014|高尾部比例|Int64=59ms field:43bda03261df55b88f963bd18f2ba4d9|低阈值|Int64=58ms] 显隐=50ms/11次 组合[基本参数:ROI组合=2109ms 运行参数:运行参数控件=13ms 运行参数:运行参数挂接=1ms 运行参数:运行参数状态=0ms 结果显示:结果显示控件=1305ms 结果显示:结果显示挂接=21ms]
+[TIMING] BlobAnalysis 切到第3页 428ms
+[STAGE] BlobAnalysis 第3页后 构造[] 页面[基本参数[rows=19ms,layout=1ms] 运行参数[rows=2350ms,layout=22ms] 结果显示[rows=1378ms,layout=6ms]] 字段[field:8ca20000000040008000000000000010|阈值范围|Int64=75ms field:8ca20000000040008000000000000012|软阈值柔和度|Int64=69ms field:13d8c5e0c7445f1087497a21f4103a5e|矩形度下限|Float64=69ms field:bb037ce3fa405b059d7cb3e696e4138c|Blob数量下限|Float64=68ms field:dd208ea5d2854009b915cf9b488f6a52|Box高度下限|Float64=66ms field:fcdb01b095c25c6ea22384f993450aac|面积下限|Int64=65ms field:8ca20000000040008000000000000015|低阈值比例|Int64=64ms field:c4a179715ea54256becbad63a76bc03e|角度下限|Int64=63ms field:d33029aed8ae4519bc0e6391f2c31ffc|短轴下限|Int64=62ms field:a205cc3f6f6d41439fb3e0ea3689cb28|矩形高下限|Int64=60ms field:8ca20000000040008000000000000014|高尾部比例|Int64=59ms field:43bda03261df55b88f963bd18f2ba4d9|低阈值|Int64=58ms] 显隐=50ms/11次 组合[基本参数:ROI组合=2109ms 运行参数:运行参数控件=13ms 运行参数:运行参数挂接=1ms 运行参数:运行参数状态=0ms 结果显示:结果显示控件=1305ms 结果显示:结果显示挂接=21ms]
+[STAGE] BlobAnalysis 第3页空闲后 构造[] 页面[基本参数[rows=19ms,layout=1ms] 运行参数[rows=2350ms,layout=22ms] 结果显示[rows=1378ms,layout=6ms]] 字段[field:8ca20000000040008000000000000010|阈值范围|Int64=75ms field:8ca20000000040008000000000000012|软阈值柔和度|Int64=69ms field:13d8c5e0c7445f1087497a21f4103a5e|矩形度下限|Float64=69ms field:bb037ce3fa405b059d7cb3e696e4138c|Blob数量下限|Float64=68ms field:dd208ea5d2854009b915cf9b488f6a52|Box高度下限|Float64=66ms field:fcdb01b095c25c6ea22384f993450aac|面积下限|Int64=65ms field:8ca20000000040008000000000000015|低阈值比例|Int64=64ms field:c4a179715ea54256becbad63a76bc03e|角度下限|Int64=63ms field:d33029aed8ae4519bc0e6391f2c31ffc|短轴下限|Int64=62ms field:a205cc3f6f6d41439fb3e0ea3689cb28|矩形高下限|Int64=60ms field:8ca20000000040008000000000000014|高尾部比例|Int64=59ms field:43bda03261df55b88f963bd18f2ba4d9|低阈值|Int64=58ms] 显隐=50ms/11次 组合[基本参数:ROI组合=2109ms 运行参数:运行参数控件=13ms 运行参数:运行参数挂接=1ms 运行参数:运行参数状态=0ms 结果显示:结果显示控件=1305ms 结果显示:结果显示挂接=21ms]
+[TIMING] BlobAnalysis 重复切到第1页 0ms
+[TIMING] BlobAnalysis 重复切到第2页 27ms
+[TIMING] BlobAnalysis 重复切到第3页 43ms
+PASS BlobAnalysis：实际Session→实际节点→正式参数控件→捕获/回执→关闭释放
+范围：本批重建实际组件直接准入与真实参数视图、正式默认资源；不是完整封包启动、主窗、算法、主题或VS设计器验收

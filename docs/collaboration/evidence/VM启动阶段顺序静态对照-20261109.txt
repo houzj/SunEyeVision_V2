@@ -1,0 +1,36 @@
+VM 启动阶段静态对照（2026-11-09）
+
+目标原件
+- D:\Program Files\VisionMaster4.4.0\Applications\VisionMaster.exe
+- SHA-256: 42e2437780ec21c9d1ade2d07ace0a26635961f5c90559934a7fde7e233e0c23
+- MVID: 77c739a5-b0ec-4834-8a1e-64dd9b618ae5
+
+证据文件（REA 既有捕获，未重复启动原厂）
+- D:\MyWork\REA逆向测试\docs\architecture-recovery\startup-order-cil-evidence.json
+- D:\MyWork\REA逆向测试\docs\architecture-recovery\startup-order-artifact-identities.json
+- D:\MyWork\REA逆向测试\docs\architecture-recovery\startup-order-review.json
+- evidence_id: ev_fbe6e3bef56ab98d6f6a7756adbe474d2b6583f820583efa489711898053e0bb
+
+已确认的调用顺序（VisionMaster.App.OnStartup）
+1. 创建并启动 animatedSplashScreenWindow 所在线程；另启动后台初始化线程。
+2. 调用 VisionMaster.Program.BeforeStartMian -> InitMainWindow，先建立主窗口基础对象。
+3. 创建 Apps.XmlUI.ParamTabControl.PreLoadPage，并等待启动信号；随后执行 AppAfterStart。
+4. 进入 ShowFrontendUI / ShowMainWindow；此处才把方案管理/主界面交给用户。
+5. 对最近方案调用 ProjectManager.OpenRecentSolution；失败时弹框并移除无效最近项。
+6. 后续再执行撤销重做、标题绑定和显示/窗口状态配置。
+
+与用户原厂截图的阶段对应
+- 品牌启动页：animatedSplashScreenWindow，通常很快经过。
+- 方案管理器：ShowFrontendUI 后可操作；此时还没有“加载解决方案”遮罩。
+- 打开方案：用户从方案管理器选择后，ProjectManager.OpenRecentSolution 进入方案加载阶段。
+- 工作区遮罩：方案加载期间显示在主工作区上，加载完成后才展示完整节点/结果。
+
+当前实现差异
+- src/UI/App.xaml.cs 旧路径在 OnStartup 先 new MainWindow、ShowMainWindow、ShowSolutionLoadingOverlay，插件准入/服务初始化/方案决策都在遮罩下执行；因此启动直接落到用户截图的第三阶段。
+- 本批已改为无直接方案参数且未隐藏起始页时，先显示 StartPageWindow（方案管理器）并保存用户选择；选择后才创建/显示 MainWindow，并保持方案加载遮罩连续到 OpenExternalSolutionAsync/NewEmptySolutionAsync 完成。
+- 直接文件启动和用户隐藏起始页仍跳过方案管理器，这是启动参数/偏好语义，不是 VM 默认交互路径。
+
+证据边界
+- 本文件证明 VM 原件的静态方法顺序和窗口阶段入口；startup-order-review.json 明确 runtimeExecuted=false。
+- 截图证明原厂阶段的用户可见顺序；未由静态 CIL 证明每个阶段的具体像素绘制或遮罩动画时长。
+- VM 的 Splash 只应作为快速过渡，不得承载插件/方案长耗时；核心对齐目标是“方案管理器先可操作，选中方案后才进入工作区加载遮罩”。

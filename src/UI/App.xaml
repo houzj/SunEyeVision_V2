@@ -13,6 +13,9 @@
                 <!-- 连接线样式资源 -->
                 <!-- VM 原件配色键（Col_*）：供原件控件与画布统一取色 -->
                 <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Palettes/colorstyle1.xaml"/>
+                <!-- VM 原件参数配置外壳与控件字典：Tabs/TabItem/分类标题/分隔线 -->
+                <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/SharedStyles/configuration/ConfigurationShell.xaml"/>
+                <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/SharedStyles/configuration/ConfigurationControls.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/ConnectionStyleResources.xaml"/>
                 <!-- Canvas样式资源 -->
                 <ResourceDictionary Source="Resources/Styles/CanvasStyleResources.xaml"/>

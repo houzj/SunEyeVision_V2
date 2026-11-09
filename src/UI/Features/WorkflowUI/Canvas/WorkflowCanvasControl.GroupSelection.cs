@@ -54,12 +54,28 @@ public partial class WorkflowCanvasControl
         if (selected.Any(node => !node.IsEnabled)) Add(menu, "启用", () => SetCanvasSelectionEnabled(true));
         menu.Items.Add(new Separator());
         var align = new MenuItem { Header = "对齐" }; menu.Items.Add(align);
-        foreach (var item in new[] { ("左对齐", NodeAlignment.Left), ("水平居中", NodeAlignment.CenterX), ("右对齐", NodeAlignment.Right),
-            ("顶部对齐", NodeAlignment.Top), ("垂直居中", NodeAlignment.CenterY), ("底部对齐", NodeAlignment.Bottom) })
-            Add(align, item.Item1, () => AlignCanvasSelection(item.Item2));
+        foreach (var item in new[] { ("左对齐", NodeAlignment.Left, "left"), ("水平居中", NodeAlignment.CenterX, "center"), ("右对齐", NodeAlignment.Right, "right"),
+            ("顶部对齐", NodeAlignment.Top, "top"), ("垂直居中", NodeAlignment.CenterY, "middle"), ("底部对齐", NodeAlignment.Bottom, "bottom") })
+        {
+            var alignItem = new MenuItem { Header = item.Item1, IsEnabled = CanEditCanvas, Icon = CreateAlignIcon(item.Item3) };
+            var alignment = item.Item2;
+            alignItem.Click += (_, _) => { if (CanEditCanvas) AlignCanvasSelection(alignment); };
+            align.Items.Add(alignItem);
+        }
         var layout = new MenuItem { Header = "分布" }; menu.Items.Add(layout);
         Add(layout, "水平分布", () => DistributeCanvasSelection(true)); Add(layout, "垂直分布", () => DistributeCanvasSelection(false));
         return menu;
+    }
+    /// <summary>原件对齐图标：从已迁入的原件资源取 16px 图标。</summary>
+    private static Image CreateAlignIcon(string name)
+    {
+        var bitmap = new System.Windows.Media.Imaging.BitmapImage();
+        bitmap.BeginInit();
+        bitmap.UriSource = new Uri($"pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/ic_align_{name}_normal.png", UriKind.Absolute);
+        bitmap.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+        bitmap.EndInit();
+        bitmap.Freeze();
+        return new Image { Source = bitmap, Width = 16, Height = 16 };
     }
     private void ApplyCanvasSelectionPositions(CanvasNodeProjection[] nodes, Point[] topLeft)
     {

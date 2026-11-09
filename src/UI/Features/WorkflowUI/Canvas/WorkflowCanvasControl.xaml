@@ -11,6 +11,7 @@
              xmlns:convertersWorkflow="clr-namespace:SunEyeVision.UI.Converters.Workflow"
              xmlns:common="clr-namespace:SunEyeVision.UI.Shell.Controls.Common"
              xmlns:rendering="clr-namespace:SunEyeVision.UI.Services.Rendering"
+             xmlns:native="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.WorkspaceControls.Base;assembly=SunEyeVision.Plugin.Wpf"
              xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
              mc:Ignorable="d"
              d:DesignHeight="800" d:DesignWidth="1000">
@@ -351,61 +352,64 @@
                             </Style.Triggers></Style>
                         </Border.Style>
                     </Border>
-                            <!-- 连接点 - 上 -->
-                            <rendering:ExecutionPortShape Name="TopPortEllipse"
-                                     Style="{DynamicResource PortEllipseStyle}" Width="30" Height="20"
-                                     HorizontalAlignment="Center"
-                                     VerticalAlignment="Top"
-                                     Margin="0,-10,0,0"
-                                     MouseLeftButtonDown="Port_MouseLeftButtonDown"
-                                     MouseLeftButtonUp="Port_MouseLeftButtonUp"
-                                     MouseMove="Port_MouseMove"
-                                     MouseEnter="Port_MouseEnter"
-                                     MouseLeave="Port_MouseLeave"
-                                     Tag="TopPort"
-                                     Visibility="Collapsed"/>
+                            <!-- 连接端口：原件 Connector 规格（20×30 命中区、5×8 橙条、命中放大 8.5×12），节点悬停时四个方位常驻显示 -->
+                            <Grid x:Name="PortLayer"
+                                  Width="{Binding VisualWidth}" Height="{Binding VisualHeight}"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Grid.Style>
+                                    <Style TargetType="Grid">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsMouseOver, ElementName=HitAreaBorder}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Grid.Style>
 
-                            <!-- 连接点 - 下 -->
-                            <rendering:ExecutionPortShape Name="BottomPortEllipse"
-                                     Style="{DynamicResource PortEllipseStyle}" Width="30" Height="20"
-                                     HorizontalAlignment="Center"
-                                     VerticalAlignment="Bottom"
-                                     Margin="0,0,0,-10"
-                                     MouseLeftButtonDown="Port_MouseLeftButtonDown"
-                                     MouseLeftButtonUp="Port_MouseLeftButtonUp"
-                                     MouseMove="Port_MouseMove"
-                                     MouseEnter="Port_MouseEnter"
-                                     MouseLeave="Port_MouseLeave"
-                                     Tag="BottomPort"
-                                     Visibility="Collapsed"/>
+                                <native:ConnectionPort x:Name="LeftPort" Index="0" Orientation="Left"
+                                                       HorizontalAlignment="Left" VerticalAlignment="Center"
+                                                       Margin="-20,0,0,0" Tag="LeftPort"
+                                                       MouseLeftButtonDown="Port_MouseLeftButtonDown"
+                                                       MouseLeftButtonUp="Port_MouseLeftButtonUp"
+                                                       MouseMove="Port_MouseMove">
+                                    <native:ConnectionPort.RenderTransform>
+                                        <TransformGroup>
+                                            <ScaleTransform ScaleX="-1" ScaleY="1"/>
+                                            <TranslateTransform X="20"/>
+                                        </TransformGroup>
+                                    </native:ConnectionPort.RenderTransform>
+                                </native:ConnectionPort>
 
-                            <!-- 连接点 - 左 -->
-                            <rendering:ExecutionPortShape Name="LeftPortEllipse"
-                                     Style="{DynamicResource PortEllipseStyle}" Width="20" Height="30"
-                                     HorizontalAlignment="Left"
-                                     VerticalAlignment="Center"
-                                     Margin="-10,0,0,0"
-                                     MouseLeftButtonDown="Port_MouseLeftButtonDown"
-                                     MouseLeftButtonUp="Port_MouseLeftButtonUp"
-                                     MouseMove="Port_MouseMove"
-                                     MouseEnter="Port_MouseEnter"
-                                     MouseLeave="Port_MouseLeave"
-                                     Tag="LeftPort"
-                                     Visibility="Collapsed"/>
+                                <native:ConnectionPort x:Name="RightPort" Index="2" Orientation="Right"
+                                                       HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                       Margin="0,0,-20,0" Tag="RightPort"
+                                                       MouseLeftButtonDown="Port_MouseLeftButtonDown"
+                                                       MouseLeftButtonUp="Port_MouseLeftButtonUp"
+                                                       MouseMove="Port_MouseMove"/>
 
-                            <!-- 连接点 - 右 -->
-                            <rendering:ExecutionPortShape Name="RightPortEllipse"
-                                     Style="{DynamicResource PortEllipseStyle}" Width="20" Height="30"
-                                     HorizontalAlignment="Right"
-                                     VerticalAlignment="Center"
-                                     Margin="0,0,-10,0"
-                                     MouseLeftButtonDown="Port_MouseLeftButtonDown"
-                                     MouseLeftButtonUp="Port_MouseLeftButtonUp"
-                                     MouseMove="Port_MouseMove"
-                                     MouseEnter="Port_MouseEnter"
-                                     MouseLeave="Port_MouseLeave"
-                                     Tag="RightPort"
-                                     Visibility="Collapsed"/>
+                                <native:ConnectionPort x:Name="TopPort" Index="1" Orientation="Top"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Top"
+                                                       Margin="0,-25,0,0" Tag="TopPort"
+                                                       MouseLeftButtonDown="Port_MouseLeftButtonDown"
+                                                       MouseLeftButtonUp="Port_MouseLeftButtonUp"
+                                                       MouseMove="Port_MouseMove">
+                                    <native:ConnectionPort.RenderTransform>
+                                        <RotateTransform Angle="-90" CenterX="10" CenterY="15"/>
+                                    </native:ConnectionPort.RenderTransform>
+                                </native:ConnectionPort>
+
+                                <native:ConnectionPort x:Name="BottomPort" Index="3" Orientation="Bottom"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                                                       Margin="0,0,0,-25" Tag="BottomPort"
+                                                       MouseLeftButtonDown="Port_MouseLeftButtonDown"
+                                                       MouseLeftButtonUp="Port_MouseLeftButtonUp"
+                                                       MouseMove="Port_MouseMove">
+                                    <native:ConnectionPort.RenderTransform>
+                                        <RotateTransform Angle="90" CenterX="10" CenterY="15"/>
+                                    </native:ConnectionPort.RenderTransform>
+                                </native:ConnectionPort>
+                            </Grid>
                         </Grid>
                     </Border>
                 </DataTemplate>

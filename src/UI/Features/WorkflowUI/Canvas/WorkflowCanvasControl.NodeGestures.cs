@@ -83,7 +83,7 @@ public partial class WorkflowCanvasControl
         if (_highlightedTargetNodeBorder != null) SetPortsVisibility(_highlightedTargetNodeBorder, false);
         _dragConnectionSourceBorder = null; _highlightedTargetNodeBorder = null;
         _canvasConnectionTarget = null; _canvasConnectionTab = null; _canvasConnectionStamp = null; _canvasConnectionConfigurationStamp = null; _canvasConnectionStarted = false;
-        foreach (var port in CanvasPorts(WorkflowCanvas)) { port.Visibility = Visibility.Collapsed; port.IsHighlighted = false; }
+        foreach (var port in CanvasPorts(WorkflowCanvas)) port.IsHited = false;
         if (_tempConnectionLine != null) _tempConnectionLine.Visibility = Visibility.Collapsed;
         _tempConnectionGeometry?.Figures.Clear();
         SelectionBox?.EndSelection();

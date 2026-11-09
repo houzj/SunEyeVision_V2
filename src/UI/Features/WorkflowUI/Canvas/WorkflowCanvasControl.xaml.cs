@@ -119,7 +119,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
     private Border? _highlightedTargetBorder = null; // 高亮的目标节点Border（用于恢复原始样式）
 
-    private ExecutionPortShape? _highlightedTargetPort = null; // 高亮的目标端口（ExecutionPortShape）
+    private ConnectionPort? _highlightedTargetPort = null; // 高亮的目标端口（ConnectionPort）
 
     private string? _lastHighlightedPort = null; // 上次高亮的端口名称
 
@@ -1014,7 +1014,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
                     if (parent == null) break;
                     portScope = parent;
                 }
-                var ellipses = WorkflowVisualHelper.FindAllVisualChildren<ExecutionPortShape>(portScope);
+                var ellipses = WorkflowVisualHelper.FindAllVisualChildren<ConnectionPort>(portScope);
 
                 foreach (var ellipse in ellipses)
 
@@ -1030,7 +1030,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
                         // Collapsed 的元素不可见且不响应鼠标事件
 
-                        ellipse.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+                        ellipse.IsHited = isVisible;
 
                     }
 
@@ -1271,7 +1271,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         private void Port_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (sender is ExecutionPortShape port && port.DataContext is CanvasNodeProjection node && port.Tag is string side)
+            if (sender is ConnectionPort port && port.DataContext is CanvasNodeProjection node && port.Tag is string side)
                 BeginCanvasConnection(node, side);
             e.Handled = true;
         }
@@ -1434,7 +1434,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         {
 
-            // 获取节点对象（支持 Border 或 ExecutionPortShape 作为 sender）
+            // 获取节点对象（支持 Border 或 ConnectionPort 作为 sender）
 
             CanvasNodeProjection? targetNode = null;
 
@@ -1448,7 +1448,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
             }
 
-            else if (sender is ExecutionPortShape ellipse && ellipse.Tag is CanvasNodeProjection clickedNodeFromEllipse)
+            else if (sender is ConnectionPort ellipse && ellipse.Tag is CanvasNodeProjection clickedNodeFromEllipse)
 
             {
 
@@ -1652,7 +1652,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
             DependencyObject? current = e.OriginalSource as DependencyObject;
             while (current != null && current != WorkflowCanvas)
             {
-                if (ReferenceEquals(current, _canvasSelectionFrame) || current is ExecutionPortShape ||
+                if (ReferenceEquals(current, _canvasSelectionFrame) || current is ConnectionPort ||
                     current is Border { Tag: CanvasNodeProjection } ||
                     current is Rectangle handle && _canvasWireHandles.Contains(handle) ||
                     current is FrameworkElement { DataContext: CanvasConnectionProjection }) return;
@@ -2227,7 +2227,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         /// </summary>
 
-        private ExecutionPortShape? GetPortElement(Border nodeBorder, string portName)
+        private ConnectionPort? GetPortElement(Border nodeBorder, string portName)
 
         {
 
@@ -2257,7 +2257,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
                 {
 
-                    return element as ExecutionPortShape;
+                    return element as ConnectionPort;
 
                 }
 

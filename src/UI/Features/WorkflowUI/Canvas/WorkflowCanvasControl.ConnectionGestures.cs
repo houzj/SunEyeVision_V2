@@ -24,12 +24,12 @@ public partial class WorkflowCanvasControl
     }
     private bool ValidCanvasConnection() => CanEditCanvas && _canvasConnectionTab != null &&
         ReferenceEquals(_viewModel?.WorkflowTabViewModel.SelectedTab, _canvasConnectionTab) && CanvasGraphStamp(_canvasConnectionTab) == _canvasConnectionStamp;
-    private static IEnumerable<ExecutionPortShape> CanvasPorts(DependencyObject parent)
+    private static IEnumerable<ConnectionPort> CanvasPorts(DependencyObject parent)
     {
         for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
         {
             var child = VisualTreeHelper.GetChild(parent, i);
-            if (child is ExecutionPortShape port) yield return port;
+            if (child is ConnectionPort port) yield return port;
             foreach (var nested in CanvasPorts(child)) yield return nested;
         }
     }
@@ -55,8 +55,7 @@ public partial class WorkflowCanvasControl
         foreach (var port in CanvasPorts(WorkflowCanvas))
         {
             var node = port.DataContext as CanvasNodeProjection;
-            port.Visibility = ReferenceEquals(node, source) || ReferenceEquals(node, _canvasConnectionTarget) ? Visibility.Visible : Visibility.Collapsed;
-            port.IsHighlighted = ReferenceEquals(node, _canvasConnectionTarget) && port.Tag as string == targetSide;
+            port.IsHited = ReferenceEquals(node, _canvasConnectionTarget) && port.Tag as string == targetSide;
         }
         if (_tempConnectionLine != null)
         {

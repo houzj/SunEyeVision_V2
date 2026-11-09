@@ -49,7 +49,9 @@ public partial class WorkflowCanvasControl
         }
         Add(menu, "删除", () => CurrentWorkflowTab?.DocumentCanvas?.Delete(CanvasSelectedNodes(), Array.Empty<CanvasConnectionProjection>()));
         Add(menu, "复制", () => _viewModel?.CopyCanvasSelection());
-        Add(menu, "禁用", () => SetCanvasSelectionEnabled(false)); Add(menu, "启用", () => SetCanvasSelectionEnabled(true));
+        var selected = CanvasSelectedNodes();
+        if (selected.Any(node => node.IsEnabled)) Add(menu, "禁用", () => SetCanvasSelectionEnabled(false));
+        if (selected.Any(node => !node.IsEnabled)) Add(menu, "启用", () => SetCanvasSelectionEnabled(true));
         menu.Items.Add(new Separator());
         var align = new MenuItem { Header = "对齐" }; menu.Items.Add(align);
         foreach (var item in new[] { ("左对齐", NodeAlignment.Left), ("水平居中", NodeAlignment.CenterX), ("右对齐", NodeAlignment.Right),

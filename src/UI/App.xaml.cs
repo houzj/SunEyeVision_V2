@@ -85,6 +85,8 @@ public partial class App : System.Windows.Application
     {
         // First-run directory dialogs may temporarily be the only window; do not exit when they close.
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
+        // 与 VM 原件一致：工作目录固定为程序目录，保证从快捷方式、文件关联或任意目录启动时相对路径可用。
+        Directory.SetCurrentDirectory(AppContext.BaseDirectory);
         try
         {
             _runningApplicationRegistration = ApplicationLifetimeGate.TryRegister();

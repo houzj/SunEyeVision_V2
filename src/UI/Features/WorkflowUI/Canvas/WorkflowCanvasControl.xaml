@@ -37,7 +37,7 @@
         <PathGeometry x:Key="ArrowGeometry" Figures="M -6,-5 L 2,0 L -6,5 Z"/>
 
         <!-- 箭头填充颜色 -->
-        <SolidColorBrush x:Key="ArrowBrush" Color="#666666"/>
+        <SolidColorBrush x:Key="ArrowBrush" Color="#FFA70F"/>
 
         <!-- 节点背景样式（保留用于转换器） -->
         <SolidColorBrush x:Key="NodeBackground" Color="#FFFFFF"/>

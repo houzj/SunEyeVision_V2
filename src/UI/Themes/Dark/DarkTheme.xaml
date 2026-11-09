@@ -79,7 +79,7 @@
     <Color x:Key="{x:Static base:ThemeKeys.TableGridLine}">#FF3E3E42</Color>
 
     <!-- ============ 工具栏 / 菜单 / 面板表头（批次2） ============ -->
-    <Color x:Key="{x:Static base:ThemeKeys.ToolBarBackground}">#FF1E1E1E</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.ToolBarBackground}">#FF202023</Color>
     <Color x:Key="{x:Static base:ThemeKeys.ContextMenuBackground}">#FF252526</Color>
     <Color x:Key="{x:Static base:ThemeKeys.ContextMenuItemHover}">#FF3C3C3C</Color>
     <Color x:Key="{x:Static base:ThemeKeys.PanelHeaderBackground}">#FF252526</Color>

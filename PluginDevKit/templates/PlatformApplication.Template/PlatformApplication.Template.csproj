@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- PluginDevKit 的父目录默认启用 WPF；Platform SDK 外部应用本身不引用 WPF，
+         但 Windows 目标框架仍与 VM 的 Windows 宿主发布边界一致。 -->
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWPF>false</UseWPF>
+    <!-- Platform SDK 工程只消费 platform 合同，不加载 PluginDevKit 的 Tool SDK 默认引用。 -->
+    <UseNuGet>true</UseNuGet>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>PlatformApplication.Template</AssemblyName>
+    <!-- 外部工程复制到干净目录后，将 SdkPath 指向发布包 sdk/platform/net9.0。 -->
+    <!-- 明确覆盖 PluginDevKit 父级默认的 tool SDK 路径，避免外部工程误引用旧工具合同。 -->
+    <SdkPath>$(MSBuildThisFileDirectory)..\..\sdk\platform\net9.0\</SdkPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="SunEyeVision.Platform.Sdk">
+      <HintPath>$(SdkPath)SunEyeVision.Platform.Sdk.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="SunEyeVision.Platform.Sdk.Contracts">
+      <HintPath>$(SdkPath)SunEyeVision.Platform.Sdk.Contracts.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SunEyeVision.Platform.Sdk</name>
+    </assembly>
+    <members>
+        <member name="T:SunEyeVision.Platform.Sdk.PlatformRuntimeHost">
+            <summary>
+            VM Platform SDK 对应的无 UI 外部宿主。方案会话、执行和结果回调统一由一个专属
+            owner 线程承载，外部调用方不需要引用 UI 或内部工作流服务。
+            </summary>
+        </member>
+        <member name="T:SunEyeVision.Platform.Sdk.PlatformValueMapper">
+            <summary>
+            把内部资源值转换为 Platform SDK 自有快照。该转换在 owner 线程完成，之后外部回调
+            只持有独立 byte[]/区域数组，不会在方案关闭后继续访问内部对象。
+            </summary>
+        </member>
+    </members>
+</doc>

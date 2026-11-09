@@ -1,0 +1,7 @@
+{
+  "implementationStatus": "host-adapter-and-contract",
+  "sdk": "SunEyeVision.Platform.Sdk",
+  "contract": "1.0",
+  "vmReference": "VM.PlatformSDKCS / VM.Core",
+  "targetFramework": "net9.0"
+}

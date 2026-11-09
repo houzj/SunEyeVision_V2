@@ -1,0 +1,368 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v9.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v9.0": {
+      "SunEyeVision.Platform.Sdk/2.0.0.8": {
+        "dependencies": {
+          "SunEyeVision.Application": "2.0.0-alpha.8",
+          "SunEyeVision.Infrastructure.Persistence": "2.0.0-alpha.8",
+          "SunEyeVision.Persistence": "2.0.0-alpha.8",
+          "SunEyeVision.Platform.Sdk.Contracts": "2.0.0-alpha.8",
+          "SunEyeVision.Plugin.Runtime": "2.0.0-alpha.8"
+        },
+        "runtime": {
+          "SunEyeVision.Platform.Sdk.dll": {}
+        }
+      },
+      "log4net/2.0.17": {
+        "dependencies": {
+          "System.Configuration.ConfigurationManager": "4.5.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/log4net.dll": {
+            "assemblyVersion": "2.0.17.0",
+            "fileVersion": "2.0.17.0"
+          }
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection/9.0.0": {
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.0"
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.Extensions.DependencyInjection.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.24.52809"
+          }
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/9.0.0": {
+        "runtime": {
+          "lib/net9.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.24.52809"
+          }
+        }
+      },
+      "Microsoft.Extensions.Options/9.0.0": {
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.0",
+          "Microsoft.Extensions.Primitives": "9.0.0"
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.Extensions.Options.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.24.52809"
+          }
+        }
+      },
+      "Microsoft.Extensions.Primitives/9.0.0": {
+        "runtime": {
+          "lib/net9.0/Microsoft.Extensions.Primitives.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.24.52809"
+          }
+        }
+      },
+      "OpenCvSharp4/4.13.0.20260222": {
+        "runtime": {
+          "lib/net8.0/OpenCvSharp.dll": {
+            "assemblyVersion": "4.13.0.0",
+            "fileVersion": "4.13.0.0"
+          }
+        }
+      },
+      "OpenCvSharp4.runtime.win/4.13.0.20260222": {
+        "runtimeTargets": {
+          "runtimes/win-x64/native/OpenCvSharpExtern.dll": {
+            "rid": "win-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x64/native/opencv_videoio_ffmpeg4130_64.dll": {
+            "rid": "win-x64",
+            "assetType": "native",
+            "fileVersion": "2025.12.0.0"
+          },
+          "runtimes/win-x86/native/OpenCvSharpExtern.dll": {
+            "rid": "win-x86",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x86/native/opencv_videoio_ffmpeg4130.dll": {
+            "rid": "win-x86",
+            "assetType": "native",
+            "fileVersion": "2025.12.0.0"
+          }
+        }
+      },
+      "System.Configuration.ConfigurationManager/4.5.0": {
+        "dependencies": {
+          "System.Security.Cryptography.ProtectedData": "4.5.0",
+          "System.Security.Permissions": "4.5.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/System.Configuration.ConfigurationManager.dll": {
+            "assemblyVersion": "4.0.1.0",
+            "fileVersion": "4.6.26515.6"
+          }
+        }
+      },
+      "System.Security.Cryptography.ProtectedData/4.5.0": {
+        "runtime": {
+          "lib/netstandard2.0/System.Security.Cryptography.ProtectedData.dll": {
+            "assemblyVersion": "4.0.3.0",
+            "fileVersion": "4.6.26515.6"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/win/lib/netstandard2.0/System.Security.Cryptography.ProtectedData.dll": {
+            "rid": "win",
+            "assetType": "runtime",
+            "assemblyVersion": "4.0.3.0",
+            "fileVersion": "4.6.26515.6"
+          }
+        }
+      },
+      "System.Security.Permissions/4.5.0": {
+        "runtime": {
+          "lib/netstandard2.0/System.Security.Permissions.dll": {
+            "assemblyVersion": "4.0.1.0",
+            "fileVersion": "4.6.26515.6"
+          }
+        }
+      },
+      "SunEyeVision.Application/2.0.0-alpha.8": {
+        "dependencies": {
+          "SunEyeVision.Domain": "2.0.0-alpha.8",
+          "SunEyeVision.Execution": "2.0.0-alpha.8",
+          "SunEyeVision.Persistence": "2.0.0-alpha.8",
+          "SunEyeVision.Plugin.Contracts": "2.0.0-alpha.8",
+          "SunEyeVision.Plugin.Runtime": "2.0.0-alpha.8"
+        },
+        "runtime": {
+          "SunEyeVision.Application.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.0.0.8"
+          }
+        }
+      },
+      "SunEyeVision.Domain/2.0.0-alpha.8": {
+        "dependencies": {
+          "SunEyeVision.Plugin.Contracts": "2.0.0-alpha.8"
+        },
+        "runtime": {
+          "SunEyeVision.Domain.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.0.0.8"
+          }
+        }
+      },
+      "SunEyeVision.Execution/2.0.0-alpha.8": {
+        "dependencies": {
+          "SunEyeVision.Domain": "2.0.0-alpha.8",
+          "SunEyeVision.Plugin.Contracts": "2.0.0-alpha.8",
+          "SunEyeVision.Plugin.Runtime": "2.0.0-alpha.8"
+        },
+        "runtime": {
+          "SunEyeVision.Execution.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.0.0.8"
+          }
+        }
+      },
+      "SunEyeVision.Foundation/2.0.0-alpha.8": {
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection": "9.0.0",
+          "Microsoft.Extensions.Options": "9.0.0",
+          "log4net": "2.0.17"
+        },
+        "runtime": {
+          "SunEyeVision.Foundation.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.0.0.8"
+          }
+        }
+      },
+      "SunEyeVision.Infrastructure.Persistence/2.0.0-alpha.8": {
+        "dependencies": {
+          "OpenCvSharp4": "4.13.0.20260222",
+          "OpenCvSharp4.runtime.win": "4.13.0.20260222",
+          "SunEyeVision.Persistence": "2.0.0-alpha.8"
+        },
+        "runtime": {
+          "SunEyeVision.Infrastructure.Persistence.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.0.0.8"
+          }
+        }
+      },
+      "SunEyeVision.Persistence/2.0.0-alpha.8": {
+        "dependencies": {
+          "SunEyeVision.Domain": "2.0.0-alpha.8",
+          "SunEyeVision.Plugin.Contracts": "2.0.0-alpha.8"
+        },
+        "runtime": {
+          "SunEyeVision.Persistence.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.0.0.8"
+          }
+        }
+      },
+      "SunEyeVision.Platform.Sdk.Contracts/2.0.0-alpha.8": {
+        "runtime": {
+          "SunEyeVision.Platform.Sdk.Contracts.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.0.0.8"
+          }
+        }
+      },
+      "SunEyeVision.Plugin.Contracts/2.0.0-alpha.8": {
+        "runtime": {
+          "SunEyeVision.Plugin.Contracts.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.0.0.8"
+          }
+        }
+      },
+      "SunEyeVision.Plugin.Runtime/2.0.0-alpha.8": {
+        "dependencies": {
+          "SunEyeVision.Foundation": "2.0.0-alpha.8",
+          "SunEyeVision.Plugin.Contracts": "2.0.0-alpha.8"
+        },
+        "runtime": {
+          "SunEyeVision.Plugin.Runtime.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.0.0.8"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "SunEyeVision.Platform.Sdk/2.0.0.8": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "log4net/2.0.17": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-qnnDf/ubJzwm2i1xH7nRMjEDoD+ctse7nZDqb+p7L1PvZc6ykpMoEesWr1/9hFqlsbII2v9e8yyQHJhoDQh7ZA==",
+      "path": "log4net/2.0.17",
+      "hashPath": "log4net.2.0.17.nupkg.sha512"
+    },
+    "Microsoft.Extensions.DependencyInjection/9.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-MCPrg7v3QgNMr0vX4vzRXvkNGgLg8vKWX0nKCWUxu2uPyMsaRgiRc1tHBnbTcfJMhMKj2slE/j2M9oGkd25DNw==",
+      "path": "microsoft.extensions.dependencyinjection/9.0.0",
+      "hashPath": "microsoft.extensions.dependencyinjection.9.0.0.nupkg.sha512"
+    },
+    "Microsoft.Extensions.DependencyInjection.Abstractions/9.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-+6f2qv2a3dLwd5w6JanPIPs47CxRbnk+ZocMJUhv9NxP88VlOcJYZs9jY+MYSjxvady08bUZn6qgiNh7DadGgg==",
+      "path": "microsoft.extensions.dependencyinjection.abstractions/9.0.0",
+      "hashPath": "microsoft.extensions.dependencyinjection.abstractions.9.0.0.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Options/9.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-y2146b3jrPI3Q0lokKXdKLpmXqakYbDIPDV6r3M8SqvSf45WwOTzkyfDpxnZXJsJQEpAsAqjUq5Pu8RCJMjubg==",
+      "path": "microsoft.extensions.options/9.0.0",
+      "hashPath": "microsoft.extensions.options.9.0.0.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Primitives/9.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-N3qEBzmLMYiASUlKxxFIISP4AiwuPTHF5uCh+2CWSwwzAJiIYx0kBJsS30cp1nvhSySFAVi30jecD307jV+8Kg==",
+      "path": "microsoft.extensions.primitives/9.0.0",
+      "hashPath": "microsoft.extensions.primitives.9.0.0.nupkg.sha512"
+    },
+    "OpenCvSharp4/4.13.0.20260222": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-mf5PaHlhU/SnO5kWy7QqJnto4EEBVN0g7vQDMeCs4mkparaMUZKYSsnx22s7yLRsif0f7eYYVnViUqUDLA8Ymw==",
+      "path": "opencvsharp4/4.13.0.20260222",
+      "hashPath": "opencvsharp4.4.13.0.20260222.nupkg.sha512"
+    },
+    "OpenCvSharp4.runtime.win/4.13.0.20260222": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-vaLtBrNb5Xnz7LlPuf8JP1Pj8n+xDoVnkcsApaqmcVz/ncuLQksLorqHRxwtlhrvRWQ7Edq8XPkx1IMWMLcFIA==",
+      "path": "opencvsharp4.runtime.win/4.13.0.20260222",
+      "hashPath": "opencvsharp4.runtime.win.4.13.0.20260222.nupkg.sha512"
+    },
+    "System.Configuration.ConfigurationManager/4.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-UIFvaFfuKhLr9u5tWMxmVoDPkFeD+Qv8gUuap4aZgVGYSYMdERck4OhLN/2gulAc0nYTEigWXSJNNWshrmxnng==",
+      "path": "system.configuration.configurationmanager/4.5.0",
+      "hashPath": "system.configuration.configurationmanager.4.5.0.nupkg.sha512"
+    },
+    "System.Security.Cryptography.ProtectedData/4.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-wLBKzFnDCxP12VL9ANydSYhk59fC4cvOr9ypYQLPnAj48NQIhqnjdD2yhP8yEKyBJEjERWS9DisKL7rX5eU25Q==",
+      "path": "system.security.cryptography.protecteddata/4.5.0",
+      "hashPath": "system.security.cryptography.protecteddata.4.5.0.nupkg.sha512"
+    },
+    "System.Security.Permissions/4.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-9gdyuARhUR7H+p5CjyUB/zPk7/Xut3wUSP8NJQB6iZr8L3XUXTMdoLeVAg9N4rqF8oIpE7MpdqHdDHQ7XgJe0g==",
+      "path": "system.security.permissions/4.5.0",
+      "hashPath": "system.security.permissions.4.5.0.nupkg.sha512"
+    },
+    "SunEyeVision.Application/2.0.0-alpha.8": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "SunEyeVision.Domain/2.0.0-alpha.8": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "SunEyeVision.Execution/2.0.0-alpha.8": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "SunEyeVision.Foundation/2.0.0-alpha.8": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "SunEyeVision.Infrastructure.Persistence/2.0.0-alpha.8": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "SunEyeVision.Persistence/2.0.0-alpha.8": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "SunEyeVision.Platform.Sdk.Contracts/2.0.0-alpha.8": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "SunEyeVision.Plugin.Contracts/2.0.0-alpha.8": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "SunEyeVision.Plugin.Runtime/2.0.0-alpha.8": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

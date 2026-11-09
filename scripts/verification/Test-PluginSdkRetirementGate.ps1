@@ -36,6 +36,17 @@ $actualDirect = @(Get-ChildItem -LiteralPath (Join-Path $repoRoot 'tools') -Recu
         $fullPath = [System.IO.Path]::GetFullPath($_.FullName)
         $fullPath.Substring($rootPrefix.Length).Replace('\','/')
     } | Where-Object { $_ -in $solutionProjects })
+$inactiveDirect = @(Get-ChildItem -LiteralPath (Join-Path $repoRoot 'tools') -Recurse -Filter '*.csproj' -File |
+    Where-Object { $_.FullName -notmatch '[\\/](obj|bin)[\\/]' -and $_.Name -notmatch '_wpftmp\.csproj$' } |
+    Where-Object {
+        $text = [System.IO.File]::ReadAllText($_.FullName, [System.Text.Encoding]::UTF8)
+        $text -match 'src[\\/]Plugin\.SDK[\\/]'
+    } |
+    ForEach-Object {
+        $rootPrefix = [System.IO.Path]::GetFullPath($repoRoot).TrimEnd('\') + '\'
+        $fullPath = [System.IO.Path]::GetFullPath($_.FullName)
+        $fullPath.Substring($rootPrefix.Length).Replace('\\','/')
+    } | Where-Object { $_ -notin $solutionProjects })
 $mappedDirect = @($activeDirect | ForEach-Object { $_.Project })
 $missingFromMapping = @($actualDirect | Where-Object { $_ -notin $mappedDirect })
 $missingFromSource = @($mappedDirect | Where-Object { $_ -notin $actualDirect })
@@ -54,7 +65,10 @@ $scopedLegacy = @($scoped | Where-Object {
     -or @($_.ConsumerFiles) -match 'Plugin\.SDK'
 })
 
-Write-Output ("Plugin.SDK 退役门禁：现行解决方案消费者 {0}，其中工具 {1}，源码实时扫描 {2}，历史移出消费者 {3}，SDK目录条目 {4}" -f $activeDirect.Count,$toolDirect.Count,$actualDirect.Count,($direct.Count-$activeDirect.Count),$sdkEntries.Count)
+Write-Output ("Plugin.SDK 退役门禁：现行解决方案消费者 {0}，其中工具 {1}，源码实时扫描 {2}，历史映射移出消费者 {3}，历史工具目录仍含旧引用 {4}，SDK目录条目 {5}" -f $activeDirect.Count,$toolDirect.Count,$actualDirect.Count,($direct.Count-$activeDirect.Count),$inactiveDirect.Count,$sdkEntries.Count)
+if ($inactiveDirect.Count -ne 0) {
+    Write-Output ("历史工具目录旧引用（不在解决方案/Release）：{0}" -f ($inactiveDirect -join ', '))
+}
 if ($scopedLegacy.Count -ne 0) {
     throw ('ImageSource/BlobAnalysis 仍存在旧 SDK 消费者：' + (($scopedLegacy | ForEach-Object Project) -join ', '))
 }

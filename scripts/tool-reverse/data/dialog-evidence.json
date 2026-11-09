@@ -1,0 +1,35 @@
+{
+  "varTree": {
+    "source": "docs/07-工具逆向/decompiled/XmlUi/Apps.XmlUI.ParamTab/SubTreeView.xaml",
+    "sourceLines": "1-145",
+    "evidenceNote": "形态取自 SubTreeView.xaml：TreeView 行高 30、复选框(NormalCheckBoxStyle)+名称、字体 14、无边框；弹层容器 180x180 圆角 4 边框 #CCCCCD 取自 CalculatorWindow.xaml Popup",
+    "tree": { "rowHeight": 30, "fontSize": 14, "indent": 14, "checkbox": "multi-check 模式下显示" },
+    "popup": { "width": 180, "height": 180, "border": "#CCCCCD", "radius": 4, "gradient": ["#FCFCFC", "#F7F7F7"] },
+    "behavior": "双击节点选中插入变量引用；预览页只还原形态，双击不联动",
+    "placeholderGroups": [
+      { "labelKey": "Lang_VariableManager", "children": [{ "label": "全局变量_1" }] },
+      { "labelKey": "前面模块", "children": [{ "label": "模块1.输出" }, { "label": "模块2.输出" }] },
+      { "labelKey": "当前模块", "children": [{ "label": "本模块.输出" }] }
+    ],
+    "placeholderNote": "候选由运行期提供"
+  },
+  "palette": {
+    "source": "docs/07-工具逆向/decompiled/XmlUi/Apps.XmlUI.ParamTabControl/ColorPickerFirstItem.xaml",
+    "sourceLines": "94-199",
+    "evidenceNote": "色值逐格取自原件 UniformGrid Buttons；单元格 13x13 边框 #D0D0D0，悬停描边 #FEAB38；表头条 #DDE7EE/#BFBFBF/字#00008B",
+    "cell": 13, "cellBorder": "#D0D0D0", "hoverBorder": "#FEAB38",
+    "headerBackground": "#DDE7EE", "headerBorder": "#BFBFBF", "headerForeground": "#00008B",
+    "themeHeaderKey": "Lang_ThemeColors",
+    "themeColors": [
+      ["#FFFFFF", "#000000", "#EEECE1", "#1F497D", "#4F81BD", "#C0504D", "#9BBB59", "#8064A2", "#4BACC6", "#F79646"],
+      ["#F2F2F2", "#7F7F7F", "#DDD9C3", "#C6D9F0", "#DBE5F1", "#F2DCDB", "#EBF1DD", "#E5E0EC", "#DBEEF3", "#FDEADA"],
+      ["#D8D8D8", "#595959", "#C4BD97", "#8DB3E2", "#B8CCE4", "#E5B9B7", "#D7E3BC", "#CCC1D9", "#B7DDE8", "#FBD5B5"],
+      ["#BFBFBF", "#3F3F3F", "#938953", "#548DD4", "#95B3D7", "#D99694", "#C3D69B", "#B2A2C7", "#92CDDC", "#FAC08F"],
+      ["#A5A5A5", "#262626", "#494429", "#17365D", "#366092", "#953734", "#76923C", "#5F497A", "#31859B", "#E36C09"],
+      ["#7F7F7F", "#0C0C0C", "#1D1B10", "#0F243E", "#244061", "#632423", "#4F6128", "#3F3151", "#205867", "#974806"]
+    ],
+    "standardHeaderKey": "Lang_StandardColors",
+    "standardColors": ["#C00000", "#FF0000", "#FFC000", "#FFFF00", "#92D050", "#00B050", "#00B0F0", "#0070C0", "#002060", "#7030A0"],
+    "noFill": { "color": "transparent", "labelKey": "Lang_NoFillColor" }
+  }
+}

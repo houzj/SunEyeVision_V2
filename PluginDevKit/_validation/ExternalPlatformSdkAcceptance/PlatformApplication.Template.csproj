@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWPF>false</UseWPF>
+    <UseNuGet>true</UseNuGet>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>PlatformApplication.Template</AssemblyName>
+    <!-- 外部工程复制到干净目录后，将 SdkPath 指向发布包 sdk/platform/net9.0。 -->
+    <SdkPath>$(MSBuildThisFileDirectory)..\..\sdk\platform\net9.0\</SdkPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="SunEyeVision.Platform.Sdk">
+      <HintPath>$(SdkPath)SunEyeVision.Platform.Sdk.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="SunEyeVision.Platform.Sdk.Contracts">
+      <HintPath>$(SdkPath)SunEyeVision.Platform.Sdk.Contracts.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

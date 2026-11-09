@@ -82,7 +82,7 @@ internal static class Program
         typeof(App).GetField("_dataPaths",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(app,paths);
         ServiceInitializer.ConfigureDataPaths(paths);ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(paths,admission.Runtime);
         Console.WriteLine("probe: services initialized");
-        var theme=new ThemeManager(() => app.StartPreferences.Theme, value => app.StartPreferences.Theme=value);theme.Initialize();ServiceLocator.Instance.Register(theme);
+       
         var session=scenario=="empty"?null:ServiceInitializer.SolutionManager.CreateNew("主窗生命周期定位");
         var file=Path.Combine(root,"main.solution");
         if(session is not null)session.SaveAs(file,Path.Combine(root,"main.recovery"),root,new SunEyeVision.Domain.Persistence.FrozenVariableTypeCatalog(Array.Empty<KeyValuePair<string,string>>()),new System.Text.Json.JsonSerializerOptions(),scope=>new SunEyeVision.Infrastructure.Persistence.ComplexVariableValueCodec(scope));

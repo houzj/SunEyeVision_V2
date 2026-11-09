@@ -12,7 +12,7 @@ internal static class Program
  {
   try
   {
-   var app=new System.Windows.Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};app.Resources.MergedDictionaries.Add(SunEyeVision.Plugin.Wpf.EditorResources.Create());
+   var app=new System.Windows.Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};app.Resources.MergedDictionaries.Add(SunEyeVision.Plugin.Wpf.EditorResources.Shared);
    var entries=new Dictionary<(string,string),Type>
    {
     [("ImageLoad","Runtime")]=typeof(SunEyeVision.Tool.ImageSource.Runtime.ImageSourceTool),
@@ -39,6 +39,12 @@ internal static class Program
     context.HasPendingViewEdits=()=>control.HasPendingEdits;context.PreserveViewAfterRebase=control.AdoptRebasedDraft;
     var bindClock=System.Diagnostics.Stopwatch.StartNew();
     control.BindDraft(context.PreparedDraft);
+    // The production host waits for the tool-specific readiness contract before
+    // showing the window.  Keep the probe on the same boundary so a later
+    // accidental idle/deferred page path cannot be mistaken for VM-aligned
+    // eager composition.
+    var blobReady=Descendants<SunEyeVision.Tool.BlobAnalysis.Wpf.Views.BlobParameterEditor>(control).FirstOrDefault();
+    blobReady?.ReadyTask.GetAwaiter().GetResult();
     bindClock.Stop();
     Console.WriteLine($"[TIMING] {toolId} 参数页绑定返回 {bindClock.ElapsedMilliseconds}ms");
     DumpAssemblyStages(toolId, control, "绑定后");
@@ -49,9 +55,9 @@ internal static class Program
     for(var sample=0;sample<3;sample++)
     {
      var resourceClock=System.Diagnostics.Stopwatch.StartNew();
-     var parsed=SunEyeVision.Plugin.Wpf.EditorResources.Create();
+     var parsed=SunEyeVision.Plugin.Wpf.EditorResources.Shared;
      resourceClock.Stop();
-     Console.WriteLine($"[TIMING] {toolId} 主题字典解析 第{sample+1}次 {resourceClock.ElapsedMilliseconds}ms 字典{parsed.MergedDictionaries.Count}合并");
+     Console.WriteLine($"[TIMING] {toolId} 主题字典获取(共享单例) 第{sample+1}次 {resourceClock.ElapsedMilliseconds}ms 字典{parsed.MergedDictionaries.Count}合并");
     }
     var tabs=Descendants<System.Windows.Controls.TabControl>(control).FirstOrDefault();
     if(tabs is not null)

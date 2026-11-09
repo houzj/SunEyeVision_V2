@@ -44,7 +44,6 @@ internal static class UiRuntime
                 _desktop=_plugins.PinDesktopHost();
                 var paths=ApplicationDataPaths.Open(Path.Combine(Cases,"Data"));
                 ServiceInitializer.ConfigureDataPaths(paths);ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(paths,_plugins.DesktopAdmission!.Runtime);
-                var theme=new ThemeManager(()=>null,_=>{});theme.Initialize();ServiceLocator.Instance.Register(theme);
             }
             return _plugins.DesktopAdmission??throw new InvalidOperationException("本树正式桌面目录未准入。");
         }

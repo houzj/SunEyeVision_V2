@@ -112,30 +112,25 @@ public sealed class BlobThreePageSessionRegressionTests
             settings.SelectedPageIndex=0;window.UpdateLayout();UiRuntime.Pump();
             var output=Path.GetFullPath(Path.Combine(UiRuntime.ProductRoot,"..","..","_validation","blob-chain","visual"));
             Directory.CreateDirectory(output);
-            var manager=ServiceLocator.Instance.GetService<ThemeManager>();
             try
             {
-                foreach(var theme in new[]{AppTheme.Dark,AppTheme.Light})
+                for(var page=0;page<3;page++)
                 {
-                    manager.ApplyTheme(theme);UiRuntime.Pump();
-                    for(var page=0;page<3;page++)
-                    {
-                        settings.SelectedPageIndex=page;window.UpdateLayout();UiRuntime.Pump();
-                        Assert.Equal(page,settings.SelectedPageIndex);
-                        var pageReads=control.ReadNumericModels(NumericModelReadScope.CurrentPage);
-                        Assert.DoesNotContain(pageReads,read=>read.Status is NumericModelReadStatus.Failed or NumericModelReadStatus.Retired);
-                        Capture(window,Path.Combine(output,$"blob-{theme}-page{page}.png"));
-                    }
-                    settings.SelectedPageIndex=1;window.UpdateLayout();UiRuntime.Pump();
-                    var advanced=UiRuntime.Visuals<NativeAdvancedPresenter>(control).FirstOrDefault(item=>item.IsVisible);
-                    Assert.NotNull(advanced);advanced.IsExpanded=true;window.UpdateLayout();UiRuntime.Pump();
-                    advanced.BringIntoView();window.UpdateLayout();UiRuntime.Pump();
-                    var scroll=UiRuntime.Visuals<ScrollViewer>(control).FirstOrDefault(item=>item.ScrollableHeight>0);
-                    Assert.NotNull(scroll);scroll.ScrollToEnd();window.UpdateLayout();UiRuntime.Pump();
-                    Assert.True(scroll.VerticalOffset>0);
-                    Capture(window,Path.Combine(output,$"blob-{theme}-advanced-bottom.png"));
-                    advanced.IsExpanded=false;
+                    settings.SelectedPageIndex=page;window.UpdateLayout();UiRuntime.Pump();
+                    Assert.Equal(page,settings.SelectedPageIndex);
+                    var pageReads=control.ReadNumericModels(NumericModelReadScope.CurrentPage);
+                    Assert.DoesNotContain(pageReads,read=>read.Status is NumericModelReadStatus.Failed or NumericModelReadStatus.Retired);
+                    Capture(window,Path.Combine(output,$"blob-page{page}.png"));
                 }
+                settings.SelectedPageIndex=1;window.UpdateLayout();UiRuntime.Pump();
+                var advanced=UiRuntime.Visuals<NativeAdvancedPresenter>(control).FirstOrDefault(item=>item.IsVisible);
+                Assert.NotNull(advanced);advanced.IsExpanded=true;window.UpdateLayout();UiRuntime.Pump();
+                advanced.BringIntoView();window.UpdateLayout();UiRuntime.Pump();
+                var scroll=UiRuntime.Visuals<ScrollViewer>(control).FirstOrDefault(item=>item.ScrollableHeight>0);
+                Assert.NotNull(scroll);scroll.ScrollToEnd();window.UpdateLayout();UiRuntime.Pump();
+                Assert.True(scroll.VerticalOffset>0);
+                Capture(window,Path.Combine(output,"blob-advanced-bottom.png"));
+                advanced.IsExpanded=false;
                 var all=control.ReadNumericModels(NumericModelReadScope.All);
                 Assert.NotEmpty(all);
                 Assert.DoesNotContain(all,read=>read.Status is NumericModelReadStatus.Failed or NumericModelReadStatus.Retired);
@@ -151,7 +146,7 @@ public sealed class BlobThreePageSessionRegressionTests
                 Assert.True(window.CloseAndDrainAsync().GetAwaiter().GetResult());UiRuntime.Pump();
                 Assert.ThrowsAny<Exception>(()=>control.ReadNumericModels(NumericModelReadScope.All));
             }
-            finally { manager.ApplyTheme(AppTheme.Dark);UiRuntime.Pump();if(window.IsVisible)window.Close(); }
+            finally { if(window.IsVisible)window.Close(); }
         });
     }
 }

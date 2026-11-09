@@ -8,9 +8,6 @@
     <Project Path="tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj" />
     <Project Path="tools/SunEyeVision.ImageSource/Wpf/SunEyeVision.ImageSource.Wpf.csproj" />
   </Folder>
-  <Folder Name="/Src/CommonControl/">
-    <Project Path="Src/CommonControl/CommonControl.csproj" />
-  </Folder>
   <Folder Name="/Src/Foundation/">
     <Project Path="Src/Foundation/SunEyeVision.Foundation.csproj" />
   </Folder>
@@ -44,6 +41,12 @@
   </Folder>
   <Folder Name="/Src/Plugin.Contracts/">
     <Project Path="Src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/Src/Platform.Sdk.Contracts/">
+    <Project Path="Src/Platform.Sdk.Contracts/SunEyeVision.Platform.Sdk.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/Src/Platform.Sdk/">
+    <Project Path="Src/Platform.Sdk/SunEyeVision.Platform.Sdk.csproj" />
   </Folder>
   <Folder Name="/Src/Plugin.Runtime/">
     <Project Path="Src/Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" />

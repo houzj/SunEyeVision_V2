@@ -3,12 +3,18 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:themeWindows="clr-namespace:SunEyeVision.UI.Shell.Windows"
         xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
-        xmlns:controls="clr-namespace:SunEyeVision.Plugin.Editing.Wpf.UI.Controls;assembly=SunEyeVision.Plugin.Editing.Wpf"
+        xmlns:controls="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Inputs;assembly=SunEyeVision.Plugin.Wpf" xmlns:numeric="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.Presentation.Controls;assembly=SunEyeVision.Plugin.Wpf"
         Title="设备管理" Width="640" Height="720" MinWidth="600" MinHeight="560"
         WindowStartupLocation="CenterOwner" ResizeMode="CanResize"
         Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}">
     <themeWindows:ThemeDialogWindow.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- 原件数值控件样式：端口与超时输入统一使用原件外观 -->
+                <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/PresentationControls/controls/numericupdown/themes/generic.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        </ResourceDictionary>
     </themeWindows:ThemeDialogWindow.Resources>
     <Grid Margin="18" TextElement.FontSize="14" TextElement.Foreground="{DynamicResource {x:Static base:ThemeKeys.TextPrimaryBrush}}">
         <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
@@ -46,7 +52,7 @@
                     <TextBlock Grid.Row="1" Text="目标IP"/><TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Host, UpdateSourceTrigger=PropertyChanged}"/>
                     <TextBlock Grid.Row="2" Text="目标端口"/><TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Port, UpdateSourceTrigger=PropertyChanged}"/>
                     <TextBlock Grid.Row="3" Text="轮询间隔(ms)"/><TextBox Grid.Row="3" Grid.Column="1" Text="{Binding PollInterval, UpdateSourceTrigger=PropertyChanged}"/>
-                    <TextBlock Grid.Row="4" Text="自动重连"/><controls:ToggleSwitch Grid.Row="4" Grid.Column="1" IsChecked="{Binding AutoReconnect, Mode=TwoWay}" SwitchWidth="42" SwitchHeight="22" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="4" Text="自动重连"/><controls:ContentToggleSwitch Grid.Row="4" Grid.Column="1" IsChecked="{Binding AutoReconnect, Mode=TwoWay}" VerticalAlignment="Center"/>
                 </Grid>
                 <Grid Visibility="{Binding IsTcpServer, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,8">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="120"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="42"/><RowDefinition Height="42"/></Grid.RowDefinitions>
@@ -72,7 +78,7 @@
                     <TextBlock Grid.Row="5" Text="停止位" Visibility="{Binding IsModbusRtu, Converter={StaticResource BooleanToVisibilityConverter}}"/><ComboBox Grid.Row="5" Grid.Column="1" ItemsSource="{Binding StopBitsOptions}" SelectedItem="{Binding StopBits}" Visibility="{Binding IsModbusRtu, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     <TextBlock Grid.Row="6" Text="站号"/><TextBox Grid.Row="6" Grid.Column="1" Text="{Binding UnitId, UpdateSourceTrigger=PropertyChanged}"/>
                     <TextBlock Grid.Row="7" Text="轮询间隔(ms)"/><TextBox Grid.Row="7" Grid.Column="1" Text="{Binding PollInterval, UpdateSourceTrigger=PropertyChanged}"/>
-                    <TextBlock Grid.Row="8" Text="自动重连"/><controls:ToggleSwitch Grid.Row="8" Grid.Column="1" IsChecked="{Binding AutoReconnect, Mode=TwoWay}" SwitchWidth="42" SwitchHeight="22" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="8" Text="自动重连"/><controls:ContentToggleSwitch Grid.Row="8" Grid.Column="1" IsChecked="{Binding AutoReconnect, Mode=TwoWay}" VerticalAlignment="Center"/>
                 </Grid>
                 <Grid Visibility="{Binding IsPlainSerial, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,8">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="120"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="42"/></Grid.RowDefinitions>
@@ -86,10 +92,10 @@
                 <Grid Visibility="{Binding IsOpcUa, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,8">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="120"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                     <TextBlock Grid.Row="0" Text="服务器地址"/><TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Host, UpdateSourceTrigger=PropertyChanged}"/>
-                    <TextBlock Grid.Row="1" Text="服务器端口"/><controls:NumericUpDown Grid.Row="1" Grid.Column="1" IntValue="{Binding Port, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="1" Maximum="65535" DecimalPlaces="0" Height="32"/>
-                    <TextBlock Grid.Row="2" Text="请求超时(ms)"/><controls:NumericUpDown Grid.Row="2" Grid.Column="1" IntValue="{Binding RequestTimeout, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="250" Maximum="120000" DecimalPlaces="0" Height="32"/>
+                    <TextBlock Grid.Row="1" Text="服务器端口"/><numeric:IntegerUpDown Grid.Row="1" Grid.Column="1" Value="{Binding Port, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="1" Maximum="65535" Height="32"/>
+                    <TextBlock Grid.Row="2" Text="请求超时(ms)"/><numeric:IntegerUpDown Grid.Row="2" Grid.Column="1" Value="{Binding RequestTimeout, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="250" Maximum="120000" Height="32"/>
                     <TextBlock Grid.Row="3" Text="端点预览"/><TextBox Grid.Row="3" Grid.Column="1" Text="{Binding OpcUaEndpointPreview, Mode=OneWay}" IsReadOnly="True"/>
-                    <TextBlock Grid.Row="4" Text="自动重连"/><controls:ToggleSwitch Grid.Row="4" Grid.Column="1" IsChecked="{Binding AutoReconnect, Mode=TwoWay}" SwitchWidth="42" SwitchHeight="22"/>
+                    <TextBlock Grid.Row="4" Text="自动重连"/><controls:ContentToggleSwitch Grid.Row="4" Grid.Column="1" IsChecked="{Binding AutoReconnect, Mode=TwoWay}"/>
                     <TextBlock Grid.Row="5" Grid.ColumnSpan="2" Text="匿名连接（None；仅适用于隔离测试网络）" FontSize="11" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" Margin="0,4,0,0"/>
                 </Grid>
                 <Grid Visibility="{Binding IsHttp, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,8">
@@ -101,11 +107,11 @@
                 <StackPanel Visibility="{Binding IsRawProtocol, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <Grid>
                         <Grid.ColumnDefinitions><ColumnDefinition Width="120"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" Text="数据上传"/><controls:ToggleSwitch Grid.Row="0" Grid.Column="1" IsChecked="{Binding EnableDataUpload, Mode=TwoWay}" SwitchWidth="42" SwitchHeight="22" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Row="1" Text="自动重连"/><controls:ToggleSwitch Grid.Row="1" Grid.Column="1" IsChecked="{Binding AutoReconnect, Mode=TwoWay}" SwitchWidth="42" SwitchHeight="22" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="0" Text="数据上传"/><controls:ContentToggleSwitch Grid.Row="0" Grid.Column="1" IsChecked="{Binding EnableDataUpload, Mode=TwoWay}" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="1" Text="自动重连"/><controls:ContentToggleSwitch Grid.Row="1" Grid.Column="1" IsChecked="{Binding AutoReconnect, Mode=TwoWay}" VerticalAlignment="Center"/>
                         <TextBlock Grid.Row="2" Text="接收结束符" Margin="0,10,0,0"/>
                         <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,8,0,0">
-                            <controls:ToggleSwitch IsChecked="{Binding EnableReceiveTerminator, Mode=TwoWay}" SwitchWidth="42" SwitchHeight="22" VerticalAlignment="Center"/>
+                            <controls:ContentToggleSwitch IsChecked="{Binding EnableReceiveTerminator, Mode=TwoWay}" VerticalAlignment="Center"/>
                             <StackPanel Margin="0,10,0,0" Visibility="{Binding EnableReceiveTerminator, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <TextBox MinHeight="68" MaxHeight="130" FontSize="15" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Top" Padding="8,6" Text="{Binding ReceiveTerminator, UpdateSourceTrigger=PropertyChanged}"/>
                                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">

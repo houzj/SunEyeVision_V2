@@ -16,6 +16,8 @@
                 <!-- VM 原件参数配置外壳与控件字典：Tabs/TabItem/分类标题/分隔线 -->
                 <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/SharedStyles/configuration/ConfigurationShell.xaml"/>
                 <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/SharedStyles/configuration/ConfigurationControls.xaml"/>
+                <!-- 原件数值控件样式：整数与小数输入统一使用原件外观 -->
+                <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/PresentationControls/controls/numericupdown/themes/generic.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/ConnectionStyleResources.xaml"/>
                 <!-- Canvas样式资源 -->
                 <ResourceDictionary Source="Resources/Styles/CanvasStyleResources.xaml"/>

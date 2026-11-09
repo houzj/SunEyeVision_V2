@@ -4,7 +4,10 @@ using System.Windows;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Input.WorkspaceControls.Base;
 
-internal class PathFinder
+/// <summary>
+/// 原件连线正交折点算法：计算锚点到落点的折线，并在必要时规避节点边界。
+/// </summary>
+public class PathFinder
 {
 	/// <summary>
 	/// 钝化程度
@@ -483,13 +486,17 @@ internal class PathFinder
 	/// <param name="sinkPoint"></param>
 	/// <param name="preferredOrientation"></param>
 	/// <returns></returns>
-	public static List<Point> GetConnectionLine(DiagramItem sourceItem, Point sinkPoint, int sourceIndex)
+	/// <summary>
+	/// 计算源节点到落点的正交连线折点，几何参数与原件的锚点、矩形和方位一一对应。
+	/// </summary>
+	public static List<Point> GetConnectionLine(Point anchorPoint, Rect itemRect, ConnectorOrientation sourceOrientation, Point sinkPoint)
 	{
 		List<Point> list = new List<Point>();
-		Point item = sourceItem.AnchorPoint(sourceIndex);
+		Point item = anchorPoint;
 		double num = 5.0;
-		Rect rectWithMargin = sourceItem.GetRectWithMargin(num);
-		Point offsetPoint = sourceItem.GetOffsetPoint(sourceIndex, num);
+		Rect rectWithMargin = itemRect;
+		rectWithMargin.Inflate(num, num);
+		Point offsetPoint = GetOffsetPoint(anchorPoint, sourceOrientation, num);
 		list.Add(offsetPoint);
 		Point fromPoint = offsetPoint;
 		if (!rectWithMargin.Contains(sinkPoint))
@@ -500,7 +507,7 @@ internal class PathFinder
 			}
 			else
 			{
-				Point nearestNeighborSource = GetNearestNeighborSource(DiagramItem.GetOrientation(sourceIndex), sinkPoint, rectWithMargin, out var flag);
+				Point nearestNeighborSource = GetNearestNeighborSource(sourceOrientation, sinkPoint, rectWithMargin, out var flag);
 				list.Add(nearestNeighborSource);
 				fromPoint = nearestNeighborSource;
 				if (IsPointVisible(fromPoint, sinkPoint, new List<Rect> { rectWithMargin }))
@@ -509,7 +516,7 @@ internal class PathFinder
 				}
 				else
 				{
-					GetOppositeCorners(DiagramItem.GetOrientation(sourceIndex), rectWithMargin, out var n, out var n2);
+					GetOppositeCorners(sourceOrientation, rectWithMargin, out var n, out var n2);
 					if (flag)
 					{
 						list.Add(n);
@@ -527,10 +534,25 @@ internal class PathFinder
 			list.Add(sinkPoint);
 		}
 		ConnectorOrientation connectorOrientation = ConnectorOrientation.Left;
-		list = ((connectorOrientation == ConnectorOrientation.None) ? OptimizeLinePoints2(list, new List<Rect> { rectWithMargin }, DiagramItem.GetOrientation(sourceIndex), GetOpositeOrientation(DiagramItem.GetOrientation(sourceIndex))) : OptimizeLinePoints2(list, new List<Rect> { rectWithMargin }, DiagramItem.GetOrientation(sourceIndex), connectorOrientation));
+		list = OptimizeLinePoints2(list, new List<Rect> { rectWithMargin }, sourceOrientation, connectorOrientation);
 		list.Insert(0, item);
 		list.Add(sinkPoint);
 		OptimizeLinePoints(list);
 		return list;
+	}
+
+	/// <summary>
+	/// 锚点按方位向外偏移一个边距，作为连线起笔点。
+	/// </summary>
+	private static Point GetOffsetPoint(Point anchorPoint, ConnectorOrientation orientation, double margin)
+	{
+		return orientation switch
+		{
+			ConnectorOrientation.Left => anchorPoint + new Vector(0.0 - margin, 0.0),
+			ConnectorOrientation.Top => anchorPoint + new Vector(0.0, 0.0 - margin),
+			ConnectorOrientation.Right => anchorPoint + new Vector(margin, 0.0),
+			ConnectorOrientation.Bottom => anchorPoint + new Vector(0.0, margin),
+			_ => anchorPoint + new Vector(0.0 - margin, 0.0)
+		};
 	}
 }

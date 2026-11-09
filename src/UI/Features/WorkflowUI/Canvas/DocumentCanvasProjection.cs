@@ -265,6 +265,8 @@ public sealed class CanvasNodeProjection : INotifyPropertyChanged, ICanvasToolIc
     public string DispName => Definition.DispName;
     public int GlobalIndex => Definition.GlobalIndex;
     public string ToolType => Definition.ToolType;
+    /// <summary>节点外观类型，由工具目录声明；未声明时按原件默认卡片呈现。</summary>
+    public string NodeDisplayType => Catalog?.NodeDisplayType ?? "DEFAULT";
     public string? SubroutineId => Definition.SubroutineId;
     public bool IsEnabled => Definition.IsEnabled;
     public double PositionX => Definition.PositionX;

@@ -18,7 +18,7 @@ public sealed class ImageSourceTool : IToolDefinition<ImageSourceSettings,ImageS
         new ResourceFieldDeclaration("local.paths", ResourcePurpose.FileRead, ResourceReferenceCardinality.Sequence),
         new ResourceFieldDeclaration("local.selected", ResourcePurpose.FileRead, ResourceReferenceCardinality.Sequence)
     });
-    public ToolCatalogDescriptor Catalog {get;}=new("图像源","本地图像或方案相机的标准图像输出","image","采集",10);
+    public ToolCatalogDescriptor Catalog {get;}=new("图像源","本地图像或方案相机的标准图像输出","image","采集",10,"IMAGE");
     public ToolSchema SettingsSchema=>ImageSourceFields.Schema;
     public ToolSchema ResultSchema {get;}=new(Array.Empty<Port>(),ImageSourceOutput.Ports,outputDisplay:ImageSourceOutput.Display);
     public ResultProjectionDescriptor ResultProjection {get;}=new(ResultProjectionKind.PropertyList,ResultCardinality.One,new[] {

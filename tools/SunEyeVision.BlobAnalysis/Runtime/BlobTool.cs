@@ -16,7 +16,7 @@ public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolR
             .Concat(new[]{"center-x","center-y","width","height","angle-degrees"}.Select(member=>new ManualReferenceSource(BlobSchema.BlobsPort,new[]{"oriented-bounds",member})))
             .Concat(new[]{5,6}.SelectMany(id=>new[]{"width","height","pixel-format"}.Select(member=>new ManualReferenceSource(BlobSchema.Field(id),new[]{member})))).ToArray());
     public string ToolId => Id;
-    public ToolCatalogDescriptor Catalog {get;}=new("Blob分析","连通域分析与特征提取","blob","定位",10);
+    public ToolCatalogDescriptor Catalog {get;}=new("Blob分析","连通域分析与特征提取","blob","定位",10,"DEFAULT");
     public ToolSchema ResultSchema => new(Array.Empty<Port>(), BlobSchema.Outputs,outputDisplay:BlobSchema.OutputDisplay);
     public ResultProjectionDescriptor ResultProjection => BlobDisplayDefinition.Instance.Table;
     public ToolSchema SettingsSchema=>BlobParameterDefinition.Instance.SettingsSchema;

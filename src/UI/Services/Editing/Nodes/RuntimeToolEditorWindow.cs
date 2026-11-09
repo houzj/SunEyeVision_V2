@@ -45,7 +45,7 @@ public sealed class RuntimeToolEditorWindow : BaseWindow, INativeToolCommands
     {
         Editor = editor ?? throw new ArgumentNullException(nameof(editor));
         Width = Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang("Language") == "English" ? 680 : 420; Height = 500;
-        Resources.MergedDictionaries.Add(Plugin.Wpf.EditorResources.Create());
+        Resources.MergedDictionaries.Add(Plugin.Wpf.EditorResources.Shared);
         Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Foundation/BaseWindow.xaml", UriKind.Relative) });
         SetResourceReference(StyleProperty, typeof(BaseWindow));
         _frame = new NativeToolEditorFrame { EditorContent = editor, ExternalContent = _message };

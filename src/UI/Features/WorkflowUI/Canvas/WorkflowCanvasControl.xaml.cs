@@ -1060,6 +1060,16 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
                 return;
 
+            // The canvas can receive input in the same dispatcher turn in which
+            // the new solution's visual tree is loaded. Resolve the host lazily
+            // so node selection/opening never dereferences a stale null owner.
+            _viewModel ??= Window.GetWindow(this)?.DataContext as MainWindowViewModel;
+            if (_viewModel is null)
+            {
+                e.Handled = true;
+                return;
+            }
+
 
 
             // 双击事件：打开调试窗口

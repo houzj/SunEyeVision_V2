@@ -51,6 +51,12 @@ public partial class App : System.Windows.Application
     private IDisposable? _desktopDirectoryPin;
     private ApplicationDataPaths? _dataPaths;
     private string? _requestedSolutionPath;
+    // VM 的启动顺序是先进入方案管理器，用户选择方案后才创建工作区并显示方案加载遮罩。
+    // 这几个字段保存早期方案管理器的选择，避免插件准入完成后再次弹出一遍起始页。
+    private bool _startupSolutionManagerShown;
+    private StartPageAction _startupSelectedAction = StartPageAction.EmptyWorkspace;
+    private string? _startupSelectedPath;
+    private bool _startupNewSolutionRequested;
     public StartPageSettings StartPreferences { get; private set; } = new();
     private string StartPreferencesFile => _dataPaths!.ConfigFile;
     // Keep the named marker rooted through shutdown cleanup; the OS closes it at process exit.
@@ -66,13 +72,8 @@ public partial class App : System.Windows.Application
     // 监控定时器
     private DispatcherTimer? _monitorTimer;
     private int _monitorReportInterval = 30; // 每30秒报告一次
-    private double _imageWarmupBlockingMs;
-    private bool _imageWarmupContentRecorded;
-    private ImageWarmupMode EffectiveImageWarmupMode => StartupLaunchContext.Current.ImageWarmupOverride ?? ImageWarmupMode.Off;
 
-    // 启动页（OnStartup 创建，HandleStartupDecision 关闭）。
-    // 用全限定名避免与 System.Windows.SplashScreen（WPF 官方类）冲突。
-    private SunEyeVision.UI.Shell.Windows.SplashScreen? _splashScreen;
+    private MainWindow? _mainWindow;
 
     static App()
     {
@@ -123,13 +124,13 @@ public partial class App : System.Windows.Application
                 {
                     beforeAdmissionMs,
                     admissionStageMs = probePluginManager?.LastAdmissionStageMs,
+                    admissionLoadSubstageMs = probePluginManager?.DesktopAdmission?.LastLoadSubstageMs,
                     probeTotalMs = _startupStopwatch.ElapsedMilliseconds,
                     releaseVersion = SunEyeVision.Foundation.Versioning.AppVersionInfo.Product,
                     channel = SunEyeVision.Foundation.Versioning.AppVersionInfo.Channel,
                     releaseDate = SunEyeVision.Foundation.Versioning.AppVersionInfo.ReleaseDate,
                     commit = SunEyeVision.Foundation.Versioning.AppVersionInfo.Commit,
                     toolContract = SunEyeVision.Plugin.Editing.Wpf.Core.ToolContract.Version,
-                    defaultTheme = Services.ThemeManager.DefaultTheme.ToString(),
                     startupWindowBackground = (TryFindResource(SunEyeVision.UI.Themes.Base.ThemeKeys.WindowBackgroundBrush) as SolidColorBrush)?.Color.ToString(),
                     toolboxCategories = toolbox?.Categories.Select(c => new { name = c.Name, icon = c.Icon, count = c.ToolCount }).ToArray(),
                     toolboxTools = toolbox?.AllTools.Select(t => new { id = t.ToolId, name = t.Name, category = t.Category, icon = t.Icon, iconSource=t.IconSource, available=t.IsAvailable }).ToArray(),
@@ -183,36 +184,48 @@ public partial class App : System.Windows.Application
         // 设置控制台编码为UTF-8，解决中文乱码问题
         Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-        // Normal startup avoids forced empty-task warmup; isolated comparisons can explicitly enable it.
-        if (EffectiveImageWarmupMode == ImageWarmupMode.On)
-        {
-            var warmupClock = Stopwatch.StartNew();
-            PrewarmThreadPool();
-            _imageWarmupBlockingMs = warmupClock.Elapsed.TotalMilliseconds;
-        }
-        _splashScreen?.UpdateStage("正在启动", 8, "运行环境准备完成");
-        LogStartupStage("OnStartup.Pre warm completed", $"mode={EffectiveImageWarmupMode}, blockingMs={_imageWarmupBlockingMs:F3}");
-
-        // 启动页：在插件加载/服务初始化/解决方案加载等耗时阶段提供品牌反馈（含进度+耗时+动画）。
-        // 显示失败不阻塞启动（try-catch 跳过，仅告警）。
-        try
-        {
-            _splashScreen = new SunEyeVision.UI.Shell.Windows.SplashScreen();
-            _splashScreen.Show();
-            _splashScreen.UpdateStage("正在启动", 2, "准备应用环境");
-            LogStartupStage("Splash.Show completed", $"visible={_splashScreen.IsVisible}, handle=0x{new WindowInteropHelper(_splashScreen).Handle.ToInt64():X}");
-        }
-        catch (Exception splashEx)
-        {
-            _splashScreen = null;
-            VisionLogger.Instance.Log(LogLevel.Warning, $"启动页显示失败（不影响启动）: {splashEx.Message}", "App");
-        }
+        LogStartupStage("OnStartup.Pre warm skipped", "VM-aligned startup has no generic image/thread-pool warmup");
 
         // 添加FirstChanceException处理 - 捕获RPC异常避免调试器中断
         AppDomain.CurrentDomain.FirstChanceException += OnFirstChanceException;
 
         base.OnStartup(e);
         LogStartupStage("Application base OnStartup completed");
+
+        // 先准备数据根和起始页偏好。方案管理器只读取最近方案目录，不依赖
+        // 插件准入、服务注册或完整工作区，因此可以在最慢的启动链之前先交给用户。
+        try
+        {
+            InitializeDataPathsAndPreferences();
+            if (_requestedSolutionPath is null && !StartPreferences.HideStartPage)
+                ShowStartupSolutionManager();
+        }
+        catch (Exception ex)
+        {
+            LogStartupStage("Startup solution manager failed", ex.ToString());
+            _startupRejected = true;
+            ThemeMessageDialog.Show("无法打开方案管理器：" + ex.Message, "启动失败", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
+            Shutdown(1);
+            return;
+        }
+
+        // 只有方案管理器完成选择后，才创建最终主窗口并显示方案加载遮罩。
+        // 直接文件启动或用户关闭/隐藏方案管理器时仍走同一轻量壳路径。
+        try
+        {
+            _mainWindow = new MainWindow();
+            AttachMainWindowDiagnostics(_mainWindow);
+            System.Windows.Application.Current.MainWindow = _mainWindow;
+            ShowMainWindow(_mainWindow, "startup shell");
+            _mainWindow.ShowSolutionLoadingOverlay("正在启动", "准备插件目录和运行环境");
+        }
+        catch (Exception ex)
+        {
+            LogStartupStage("MainWindow.Shell failed", ex.ToString());
+            _startupRejected = true;
+            ThemeMessageDialog.Show("主窗口壳创建失败：" + ex.Message, "启动失败", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
+            Shutdown(1); return;
+        }
 
         // 添加全局异常处理
         AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
@@ -222,53 +235,44 @@ public partial class App : System.Windows.Application
         if (!StartupLaunchContext.Current.IsIsolated) RegisterFileAssociation();
 
         // 工具目录必须先于实际文档准入就绪。
-        _splashScreen?.UpdateStage("正在加载模块", 10, "校验发布文件并读取工具目录");
+        _mainWindow?.UpdateSolutionLoadingOverlay("正在加载模块", "校验发布文件并读取工具目录");
         var pluginManager = new PluginManager(VisionLogger.Instance);
         _pluginManager = pluginManager;
         LogStartupStage("Plugin.Load begin", "source=release-payload.productComponents");
-        await pluginManager.LoadPluginsAsync();
+        // Admission is filesystem/assembly work and has no WPF affinity. Keep it off
+        // the dispatcher so the visible startup surface can continue to receive input
+        // while the approved runtime generation is prepared.
+        await Task.Run(() => pluginManager.LoadPluginsAsync());
+        LogStartupStage("Plugin.Load task joined");
+        LogStartupStage("Plugin.Load stages",
+            string.Join(", ", pluginManager.LastAdmissionStageMs.Select(item => $"{item.Key}={item.Value}ms")));
+        LogStartupStage("Plugin.Assert begin");
         try
         {
             pluginManager.AssertCompleteReleaseToolSet();
+            LogStartupStage("Plugin.Assert completed");
         }
         catch (Exception ex)
         {
+            LogStartupStage("Plugin.Assert failed", ex.ToString());
             _startupRejected = true;
-            _splashScreen?.CloseImmediately(); _splashScreen = null;
             ThemeMessageDialog.Show("模块加载不完整：" + ex.Message, "启动失败", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             Shutdown(1); return;
         }
-        _splashScreen?.UpdateStage("正在加载模块", 35, "工具目录读取完成");
+        _mainWindow?.UpdateSolutionLoadingOverlay("正在加载模块", "工具目录读取完成");
         LogStartupStage("Plugin.Load completed");
 
         // 2. 标记插件已加载（全局状态）
-        _splashScreen?.UpdateProgress(35);
 
-
-        // Resolve the data root before creating any persistent service. The root is configured in the
-        // product directory App.ini ([Data] Root); a missing key uses the per-user default.
-        try
-        {
-            var context = StartupLaunchContext.Current;
-            _dataPaths = context.IsIsolated
-                ? ApplicationDataPaths.Open(Path.Combine(context.IsolatedRoot!, "Data"), "隔离启动根")
-                : ApplicationDataPaths.OpenConfigured();
-            ServiceInitializer.ConfigureDataPaths(_dataPaths);
-            try { StartPreferences = StartPageSettings.Load(StartPreferencesFile); }
-            catch (Exception ex) { VisionLogger.Instance.Log(LogLevel.Warning, "起始页偏好无法读取，本次显示起始页：" + ex.Message, "App"); StartPreferences = new(); }
-        }
-        catch (Exception ex)
-        {
-            _startupRejected = true;
-            _splashScreen?.CloseImmediately(); _splashScreen = null;
-            ThemeMessageDialog.Show("无法初始化数据目录：" + ex.Message, "数据目录", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
-            Shutdown(1); return;
-        }
 
         // 3. 初始化服务（包括节点显示适配器）
-        _splashScreen?.UpdateStage("正在初始化服务", 50, "注册运行时服务和图像适配器");
+        _mainWindow?.UpdateSolutionLoadingOverlay("正在初始化服务", "注册运行时服务和图像适配器");
         LogStartupStage("Service.Initialize begin");
-        ServiceInitializer.InitializeServices();
+        // Service registration, adapter registration and log-writer admission are
+        // filesystem/static-service work. They do not create a DocumentSession or
+        // touch WPF objects, so keep them off the dispatcher while the startup
+        // surface remains visible and movable.
+        await Task.Run(() => ServiceInitializer.InitializeServices());
         LogStartupStage("Service.Initialize completed");
         // 日志系统已完成初始化，此处记录实际运行文件身份，避免启动早期埋点丢失。
         LogRuntimeIdentity();
@@ -279,28 +283,27 @@ public partial class App : System.Windows.Application
         var defaultPath = _dataPaths!.SolutionsDirectory;
 
         // 5. 初始化解决方案管理器
-        _splashScreen?.UpdateStage("正在初始化解决方案", 65, "准备方案仓库和用户设置");
+        _mainWindow?.UpdateSolutionLoadingOverlay("正在初始化解决方案", "准备方案仓库和用户设置");
         LogStartupStage("SolutionManager.Initialize begin", $"defaultPath={defaultPath}");
         var desktopAdmission=pluginManager.DesktopAdmission??throw new InvalidOperationException("缺少已准入运行目录。");
         _desktopDirectoryPin=pluginManager.PinDesktopHost();
         LogStartupStage("SolutionManager directory pinned");
-        ServiceInitializer.InitializeSolutionManager(_dataPaths!,desktopAdmission.Runtime);
+        var solutionManagerClock = Stopwatch.StartNew();
+        ServiceInitializer.InitializeSolutionManager(_dataPaths!, desktopAdmission.Runtime);
+        solutionManagerClock.Stop();
         _servicesReady = true;
-        _splashScreen?.UpdateStage("正在初始化解决方案", 70, "解决方案管理器准备完成");
-        LogStartupStage("SolutionManager.Initialize completed");
+        _mainWindow?.UpdateSolutionLoadingOverlay("正在初始化解决方案", "解决方案管理器准备完成");
+        LogStartupStage("SolutionManager.Initialize completed", $"elapsedMs={solutionManagerClock.Elapsed.TotalMilliseconds:F1}");
 
-        // 5.2 初始化主题管理器（读回持久化主题并应用语义色板）
-        InitializeThemeManager();
-
-        // 5.2.5 调试：全局 Button 悬停埋点，确认悬停触发器是否触发（排查暗色主题悬停无反应）
-        RegisterButtonHoverTrace();
+        // 5.2 校验唯一主题字典的语义键契约（VM 原件只有一套固定主题，不提供运行时切换）
+        InitializeFixedTheme();
 
         // 初始化DispatcherTimer监控
         InitializeMonitoring();
 
         // 启动决策
         LogStartupStage("Startup decision begin");
-        await HandleStartupDecisionAsync(desktopAdmission);
+        await HandleStartupDecisionAsync(desktopAdmission, _mainWindow);
         _startupActivationReady = true;
         LogStartupStage("HandleStartupDecision returned");
     }
@@ -308,31 +311,116 @@ public partial class App : System.Windows.Application
     /// <summary>
     /// 处理启动决策
     /// </summary>
-    private async Task HandleStartupDecisionAsync(SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DesktopToolAdmission desktopAdmission)
+    private async Task HandleStartupDecisionAsync(
+        SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DesktopToolAdmission desktopAdmission,
+        MainWindow? existingWindow = null)
     {
-        var mainWindow = new MainWindow(desktopAdmission);
-        AttachMainWindowDiagnostics(mainWindow);
-        System.Windows.Application.Current.MainWindow = mainWindow;
+        var mainWindow = existingWindow ?? new MainWindow();
+        var workspaceClock = Stopwatch.StartNew();
+        mainWindow.InitializeWorkspace(desktopAdmission);
+        workspaceClock.Stop();
+        LogStartupStage("MainWindow.WorkspaceInitialized", $"elapsedMs={workspaceClock.Elapsed.TotalMilliseconds:F1}");
+        if (!ReferenceEquals(_mainWindow, mainWindow))
+        {
+            _mainWindow = mainWindow;
+            AttachMainWindowDiagnostics(mainWindow);
+            System.Windows.Application.Current.MainWindow = mainWindow;
+        }
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
-        _splashScreen?.UpdateStage("正在准备工作区", 85, "启动服务已准备完成");
+        mainWindow.UpdateSolutionLoadingOverlay("正在准备工作区", "启动服务已准备完成");
         await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Render);
-        _splashScreen?.CloseImmediately(); _splashScreen = null;
+        // 方案管理器已在插件准入前完成选择；此处只把最终工作区壳交给用户，
+        // 并在已选择方案时保持加载遮罩连续可见。
+        if (!mainWindow.IsVisible)
+            ShowMainWindow(mainWindow, "workspace shell");
+        // 选择了方案时保持覆盖层连续可见，避免出现“主窗口先露出空壳、再闪回加载框”的
+        // 非 VM 跳变；只有空白工作区或关闭方案管理器才在这里撤掉覆盖层。
+        if (_requestedSolutionPath is null && !_startupNewSolutionRequested)
+            mainWindow.HideSolutionLoadingOverlay();
 
         if (_requestedSolutionPath != null)
         {
             // A file launch never routes through the browser/registration dialog.
-            if (mainWindow.DataContext is MainWindowViewModel vm && await vm.OpenExternalSolutionAsync(_requestedSolutionPath))
+            mainWindow.ShowSolutionLoadingOverlay("正在打开方案", "正在读取方案并准备工作区");
+            try
             {
-                ShowMainWindow(mainWindow, "file launch");
-                return;
+                if (mainWindow.DataContext is MainWindowViewModel vm && await vm.OpenExternalSolutionAsync(_requestedSolutionPath))
+                    return;
             }
+            finally { mainWindow.HideSolutionLoadingOverlay(); }
             // A failed file request remains recoverable via the start page, even when hidden by preference.
             await ShowStartPageAsync(mainWindow);
         }
+        else if (_startupSolutionManagerShown && _startupNewSolutionRequested)
+        {
+            // 方案管理器已完成“新建”选择；覆盖层从这里开始才出现，和 VM 的
+            // “先选方案、再进入工作区加载”时序一致。
+            mainWindow.ShowSolutionLoadingOverlay("正在创建方案", "正在准备空白方案工作区");
+            try
+            {
+                if (mainWindow.DataContext is MainWindowViewModel vm && await vm.NewEmptySolutionAsync())
+                    return;
+            }
+            finally { mainWindow.HideSolutionLoadingOverlay(); }
+        }
+        else if (_startupSolutionManagerShown)
+        {
+            // 早期方案管理器已经由用户关闭；不要在插件准入完成后再弹第二次。
+        }
         else if (StartPreferences.HideStartPage)
-            ShowMainWindow(mainWindow, "start page hidden");
+        {
+            // The shell is already visible. No second Show is needed.
+        }
         else
             await ShowStartPageAsync(mainWindow);
+    }
+
+    /// <summary>
+    /// 在插件准入之前显示方案管理器。这里仅收集用户选择，不创建工作区、工具箱
+    /// 或节点编辑器；选择完成后 OnStartup 才创建 MainWindow 并进入加载覆盖层。
+    /// </summary>
+    private void ShowStartupSolutionManager()
+    {
+        var recent = StartPreferences.BuildRecentFiles();
+        var page = new StartPageWindow(StartPreferences.HideStartPage, recent, SetStartPageHidden, RemoveRecentSolution);
+        LogStartupStage("SolutionManager.Visible", "before plugin admission");
+        System.Windows.Application.Current.MainWindow = page;
+        page.ShowDialog();
+
+        _startupSolutionManagerShown = true;
+        _startupSelectedAction = page.SelectedAction;
+        _startupSelectedPath = page.SelectedPath;
+        if (_startupSelectedAction == StartPageAction.OpenFile && !string.IsNullOrWhiteSpace(_startupSelectedPath))
+            _requestedSolutionPath = _startupSelectedPath;
+        else if (_startupSelectedAction == StartPageAction.NewSolution)
+            _startupNewSolutionRequested = true;
+
+        LogStartupStage("SolutionManager.Selection", $"action={_startupSelectedAction}; path={_startupSelectedPath ?? string.Empty}");
+    }
+
+    /// <summary>
+    /// 数据根和起始页偏好在方案管理器前准备一次。后续服务/方案管理器初始化
+    /// 复用同一实例，避免重复读取配置和重新判定根目录。
+    /// </summary>
+    private void InitializeDataPathsAndPreferences()
+    {
+        if (_dataPaths is not null)
+            return;
+
+        var context = StartupLaunchContext.Current;
+        _dataPaths = context.IsIsolated
+            ? ApplicationDataPaths.Open(Path.Combine(context.IsolatedRoot!, "Data"), "隔离启动根")
+            : ApplicationDataPaths.OpenConfigured();
+        ServiceInitializer.ConfigureDataPaths(_dataPaths);
+        try
+        {
+            StartPreferences = StartPageSettings.Load(StartPreferencesFile);
+        }
+        catch (Exception ex)
+        {
+            VisionLogger.Instance.Log(LogLevel.Warning, "起始页偏好无法读取，本次显示起始页：" + ex.Message, "App");
+            StartPreferences = new();
+        }
     }
 
     public void SetStartPageHidden(bool hidden)
@@ -487,12 +575,10 @@ public partial class App : System.Windows.Application
 
     private void ShowMainWindow(MainWindow mainWindow, string reason)
     {
-        _splashScreen?.UpdateStage("正在显示主界面", 98, "主窗口即将显示");
         LogStartupStage("MainWindow.Show begin", $"reason={reason}");
         ShutdownMode = ShutdownMode.OnMainWindowClose;
         mainWindow.Show();
         LogMainWindowState(mainWindow, "after Show");
-        _splashScreen?.UpdateStage("启动完成", 100, "主界面已显示");
 
         mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
         {
@@ -507,7 +593,6 @@ public partial class App : System.Windows.Application
         mainWindow.ContentRendered += (_, _) =>
         {
             LogMainWindowState(mainWindow, "ContentRendered");
-            RecordImageWarmupContentRendered();
         };
         mainWindow.Activated += (_, _) => LogMainWindowState(mainWindow, "Activated");
         mainWindow.StateChanged += (_, _) => LogMainWindowState(mainWindow, "StateChanged");
@@ -533,17 +618,32 @@ public partial class App : System.Windows.Application
 
     private void LogStartupStage(string stage, string? detail = null)
     {
+        var message = $"[StartupTrace] +{_startupStopwatch.ElapsedMilliseconds}ms {stage}" +
+            (string.IsNullOrWhiteSpace(detail) ? string.Empty : $" | {detail}");
         try
         {
             VisionLogger.Instance.Log(
                 LogLevel.Info,
-                $"[StartupTrace] +{_startupStopwatch.ElapsedMilliseconds}ms {stage}" +
-                (string.IsNullOrWhiteSpace(detail) ? string.Empty : $" | {detail}"),
+                message,
                 "App");
         }
         catch
         {
             // 启动早期日志系统可能尚未完成初始化，埋点不能阻断应用启动。
+        }
+
+        // 隔离启动在日志系统初始化前也必须保留时间线，否则最慢的准入/服务阶段
+        // 会被吞掉，只能看到后半段。正常用户启动不写该文件。
+        try
+        {
+            var isolatedRoot = StartupLaunchContext.Current.IsolatedRoot;
+            if (!string.IsNullOrWhiteSpace(isolatedRoot))
+                File.AppendAllText(Path.Combine(isolatedRoot, "startup-trace.txt"),
+                    $"{DateTime.Now:O} {message}{Environment.NewLine}");
+        }
+        catch
+        {
+            // 诊断文件失败不能改变启动语义。
         }
     }
 
@@ -615,6 +715,8 @@ public partial class App : System.Windows.Application
             logger.Log(LogLevel.Error, $"Dispatcher 未处理异常: {e.Exception.Message}", "App", e.Exception);
             logger.Log(LogLevel.Error, $"异常类型: {e.Exception.GetType().FullName}", "App");
             logger.Log(LogLevel.Error, $"堆栈跟踪: {e.Exception.StackTrace}", "App");
+            // 完整异常链（含内层 XamlParseException 的行号/位置与逐帧堆栈），用于定位模板资源解析失败的具体 XAML。
+            logger.Log(LogLevel.Error, $"完整异常链: {e.Exception}", "App");
             if (e.Exception.InnerException != null)
             {
                 logger.Log(LogLevel.Error, $"内部异常: {e.Exception.InnerException.Message}", "App", e.Exception.InnerException);
@@ -707,88 +809,6 @@ public partial class App : System.Windows.Application
     }
 
     /// <summary>
-    /// Thread-pool warmup retained for explicit isolated on/deferred comparisons.
-    /// This adjusts thread minima and waits for empty tasks; it does not predecode images.
-    /// </summary>
-    private void PrewarmThreadPool()
-    {
-        try
-        {
-            // 设置最小线程数，确保线程池立即可用
-            ThreadPool.GetMinThreads(out int minWorker, out int minIO);
-            ThreadPool.SetMinThreads(
-                Math.Max(minWorker, 8),  // 至少8个工作线程
-                Math.Max(minIO, 4)       // 至少4个IO线程
-            );
-
-            // 预热：启动几个空任务，强制线程池创建线程
-            var warmupTasks = new Task[4];
-            for (int i = 0; i < 4; i++)
-            {
-                warmupTasks[i] = Task.Run(() => Thread.Sleep(10));
-            }
-            Task.WaitAll(warmupTasks);
-        }
-        catch (Exception ex)
-        {
-            VisionLogger.Instance.Log(LogLevel.Warning, $"线程池预热失败: {ex.Message}", "App");
-        }
-    }
-
-    private async void RecordImageWarmupContentRendered()
-    {
-        if (_imageWarmupContentRecorded) return;
-        _imageWarmupContentRecorded = true;
-        var contentRenderedMs = _startupStopwatch.Elapsed.TotalMilliseconds;
-        var mode = EffectiveImageWarmupMode;
-        WriteImageWarmupMeasurement("content-rendered", contentRenderedMs, null, null, null);
-        if (mode != ImageWarmupMode.Deferred)
-        {
-            WriteImageWarmupMeasurement("completed", contentRenderedMs, null, null, null);
-            return;
-        }
-        var queuedMs = _startupStopwatch.Elapsed.TotalMilliseconds;
-        try
-        {
-            var timing = await Task.Run(() =>
-            {
-                var startedMs = _startupStopwatch.Elapsed.TotalMilliseconds;
-                PrewarmThreadPool();
-                return (Started: startedMs, Ended: _startupStopwatch.Elapsed.TotalMilliseconds);
-            });
-            WriteImageWarmupMeasurement("completed", contentRenderedMs, queuedMs, timing.Started, timing.Ended);
-        }
-        catch (Exception ex) { LogStartupStage("Image warmup measurement failed", ex.Message); }
-    }
-
-    private void WriteImageWarmupMeasurement(string phase, double contentRenderedMs,
-        double? queuedMs, double? workerStartedMs, double? workerEndedMs)
-    {
-        var context = StartupLaunchContext.Current;
-        if (!context.IsIsolated || context.ImageWarmupOverride == null) return;
-        try
-        {
-            ThreadPool.GetMinThreads(out var workers, out var io);
-            var data = new
-            {
-                phase, processId = Environment.ProcessId, sourceCommit = SunEyeVision.Foundation.Versioning.AppVersionInfo.Commit,
-                mode = EffectiveImageWarmupMode.ToString(), runtime = Environment.Version.ToString(),
-                startupBlockingMs = _imageWarmupBlockingMs, contentRenderedElapsedMs = contentRenderedMs,
-                backgroundQueuedElapsedMs = queuedMs, backgroundStartedElapsedMs = workerStartedMs,
-                backgroundCompletedElapsedMs = workerEndedMs,
-                backgroundWorkMs = workerEndedMs - workerStartedMs,
-                minimumWorkerThreads = workers, minimumIoThreads = io,
-                boundary = "ContentRendered is a rendered-window timestamp; it is not an input-latency assertion"
-            };
-            var path = Path.Combine(context.IsolatedRoot!, "image-warmup-" + phase + ".json");
-            var temporary = path + ".tmp";
-            File.WriteAllText(temporary, System.Text.Json.JsonSerializer.Serialize(data));
-            File.Move(temporary, path); // Each phase is created once in a fresh isolated root.
-        }
-        catch (Exception ex) { LogStartupStage("Image warmup measurement write failed", ex.Message); }
-    }
-
-    /// <summary>
     /// 注册文件关联
     /// </summary>
     private void RegisterFileAssociation()
@@ -814,57 +834,19 @@ public partial class App : System.Windows.Application
     }
 
     /// <summary>
-    /// 初始化主题管理器：创建实例、读回持久化主题并应用，注册到服务定位器供顶栏等访问。
+    /// 初始化唯一主题：Theme/DarkTheme.xaml 已在 App.xaml 静态合并，这里只做语义键契约校验并固定标题栏。
+    /// VM 原件只有一套固定主题，不提供运行时切换与用户偏好。
     /// </summary>
-    private void InitializeThemeManager()
+    private void InitializeFixedTheme()
     {
-        var themeManager = new Services.ThemeManager(() => StartPreferences.Theme, value =>
-        {
-            var previous = StartPreferences.Theme;
-            StartPreferences.Theme = value;
-            try { SaveShellPreferences(); }
-            catch { StartPreferences.Theme = previous; throw; }
-        });
-        themeManager.Initialize();
-        ServiceLocator.Instance.Register(themeManager);
-    }
-
-    /// <summary>
-    /// 调试：全局 Button 悬停埋点。确认悬停事件是否触发、IsMouseOver 触发器是否改变 Background。
-    /// 用于排查"暗色主题下按钮悬停无反应"（触发器未触发 vs 颜色变化太微弱）。
-    /// </summary>
-    private static void RegisterButtonHoverTrace()
-    {
-        try
-        {
-            EventManager.RegisterClassHandler(typeof(System.Windows.Controls.Button),
-                System.Windows.Controls.Control.MouseEnterEvent,
-                new System.Windows.Input.MouseEventHandler((sender, e) =>
-                {
-                    if (sender is not System.Windows.Controls.Button btn) return;
-                    var bg = btn.Background;
-                    VisionLogger.Instance.Log(LogLevel.Info,
-                        $"[按钮悬停] MouseEnter | Name={btn.Name} | Content={btn.Content} | " +
-                        $"Background={(bg as SolidColorBrush)?.Color.ToString() ?? bg?.ToString() ?? "null"} | " +
-                        $"HasStyle={(btn.Style != null)} | StyleKey={(btn.Style?.GetType().Name ?? "null")}",
-                        "App-BtnHover");
-                }), true);
-
-            EventManager.RegisterClassHandler(typeof(System.Windows.Controls.Button),
-                System.Windows.Controls.Control.MouseLeaveEvent,
-                new System.Windows.Input.MouseEventHandler((sender, e) =>
-                {
-                    if (sender is not System.Windows.Controls.Button btn) return;
-                    var bg = btn.Background;
-                    VisionLogger.Instance.Log(LogLevel.Info,
-                        $"[按钮悬停] MouseLeave | Name={btn.Name} | Background={(bg as SolidColorBrush)?.Color.ToString() ?? "null"}",
-                        "App-BtnHover");
-                }), true);
-        }
-        catch (Exception ex)
-        {
-            VisionLogger.Instance.Log(LogLevel.Warning, $"按钮悬停埋点注册失败: {ex.Message}", "App-BtnHover");
-        }
+        var resources = System.Windows.Application.Current?.Resources
+            ?? throw new InvalidOperationException("Application.Resources 为空，无法校验主题字典。");
+        var theme = resources.MergedDictionaries.FirstOrDefault(dictionary =>
+                dictionary.Source?.OriginalString.EndsWith("Themes/Dark/DarkTheme.xaml", StringComparison.OrdinalIgnoreCase) == true)
+            ?? throw new InvalidOperationException("主题字典 Themes/Dark/DarkTheme.xaml 未合并到 Application.Resources。");
+        SunEyeVision.UI.Themes.Base.ThemeContract.Validate(theme);
+        Services.WindowTitleBarThemer.UpdateTheme(true);
+        VisionLogger.Instance.Log(LogLevel.Info, "固定主题字典校验完成：" + theme.Source, "App");
     }
 
     /// <summary>

@@ -22,7 +22,7 @@ public partial class RootWorkflowConfigurationWindow:ThemeDialogWindow
  internal RootWorkflowConfigurationWindow(RootWorkflowConfigurationContext context,Func<Task>? run,Action? repeat,Action? stop,Func<bool>? running)
  {
   _context=context;_run=run;_repeat=repeat;_stop=stop;_running=running;
-  InitializeComponent();Resources.MergedDictionaries.Add(EditorResources.Create());Heading.Text=Title=context.Root.Name+" · 流程配置";
+  InitializeComponent();Resources.MergedDictionaries.Add(EditorResources.Shared);Heading.Text=Title=context.Root.Name+" · 流程配置";
   _context.PrepareView=()=>_fields.FirstOrDefault(f=>f.HasInvalidText)?.Error;
   _context.HasPendingView=()=>_fields.Any(f=>f.HasInvalidText);_context.Changed+=Rebuild;
   _refresh.Tick+=RefreshTick;Loaded+=(_,_)=>{Rebuild();ImageNodes.ItemsSource=_context.Root.Nodes;ImageNodes.SelectedIndex=_context.Root.Nodes.Count>0?0:-1;RefreshPublishedResults();_refresh.Start();};

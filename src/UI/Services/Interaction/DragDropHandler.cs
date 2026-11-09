@@ -271,7 +271,8 @@ LogTimestamp("Drop", "▶ Canvas_Drop 开始执行");
                     LogTimestamp("Drop", "✗ 无法获取当前工作流Tab");
 #endif
                     ThemeMessageDialog.Show("无法获取当前工作流，请确保已打开工作流标签页", "错误",
-                        MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Warning);
+                        MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Warning,
+                        Window.GetWindow(_canvasControl));
                     return;
                 }
 #if DEBUG
@@ -298,7 +299,8 @@ LogTimestamp("Drop", "▶ Canvas_Drop 开始执行");
                 LogTimestamp("Drop", $"✗✗✗ 异常: {ex.Message}");
 #endif
                 ThemeMessageDialog.Show($"拖放节点失败: {ex.Message}\n\n类型: {ex.GetType().Name}", "错误",
-                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
+                    MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error,
+                    Window.GetWindow(_canvasControl));
             }
             finally { HideTempNode(); _canvasControl.ClearCanvasPlacementFeedback(); _canvasControl.ClearCanvasInsertionWire(); }
         }
@@ -306,7 +308,25 @@ LogTimestamp("Drop", "▶ Canvas_Drop 开始执行");
         /// <summary>
         /// 获取当前选中的工作流 Tab（优先使用直接引用）
         /// </summary>
-        private WorkflowTabViewModel? GetCurrentWorkflowTab() => _canvasControl.CurrentWorkflowTab;
+        private WorkflowTabViewModel? GetCurrentWorkflowTab()
+        {
+            // The visual tab header can be present one dispatcher turn before the
+            // recycled canvas receives its DataContext after a new solution is
+            // published. Resolve the same selected-tab identity from the owner
+            // and repair the canvas binding before accepting the drop.
+            if (_canvasControl.CurrentWorkflowTab is { } current)
+                return current;
+
+            var owner = Window.GetWindow(_canvasControl);
+            if (owner?.DataContext is MainWindowViewModel viewModel
+                && viewModel.WorkflowTabViewModel.SelectedTab is { } selected)
+            {
+                _canvasControl.DataContext = selected;
+                return selected;
+            }
+
+            return null;
+        }
 
     }
 }

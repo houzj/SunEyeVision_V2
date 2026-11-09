@@ -73,13 +73,16 @@ public partial class MainWindowViewModel
   path=Path.GetFullPath(path);Services.Startup.StartupLaunchContext.Current.ValidatePath(path);
   if(!reload&&string.Equals(DocumentManager.CurrentSession?.LastWrittenSnapshot?.TargetPath,path,StringComparison.OrdinalIgnoreCase))return true;
   // Basic file/format checks precede stop/save prompts. The manager alone fully admits and installs the candidate.
-  var bytes=File.ReadAllBytes(path);ValidateDocumentCandidateBytes(bytes);
-  _=VariableVocabularyCapture.FromCandidate(bytes);
+  var bytes=await Task.Run(()=>File.ReadAllBytes(path));
+  await Task.Run(()=>ValidateDocumentCandidateBytes(bytes));
+  _=await Task.Run(()=>VariableVocabularyCapture.FromCandidate(bytes));
   if(!await PrepareSolutionTransitionAsync(reload))return false;
+  DocumentSessionManager.PreparedDocumentOpen? prepared=null;
   try
   {
    await SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.DisposeCommunicationRuntimeAsync();
-   var current=DocumentManager.Open(path,data=>{ValidateDocumentCandidateBytes(data.Span);return VariableVocabularyCapture.FromCandidate(data.Span);},scope=>new ComplexVariableValueCodec(scope),DocumentJsonOptions,discardPendingEdits:true);
+   prepared=await Task.Run(()=>DocumentManager.PrepareOpen(bytes,path,data=>VariableVocabularyCapture.FromCandidate(data.Span),scope=>new ComplexVariableValueCodec(scope),DocumentJsonOptions));
+   var current=DocumentManager.OpenPrepared(prepared,discardPendingEdits:true);
 
    UpdateCurrentSolutionInfo();
    if(DocumentManager.LastObserverError is {} observerError)throw new InvalidOperationException("方案已切换，但部分界面观察者未完成更新。",observerError);

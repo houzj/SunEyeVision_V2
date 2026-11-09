@@ -2,10 +2,11 @@
 {
     /// <summary>
     /// 语义色板 Key 常量集中定义（避免魔法字符串）。
-    /// 每个语义 Key 在 Light/Dark 主题字典中都必须成对定义：
+    /// 每个语义 Key 都必须在唯一主题字典 Themes/Dark/DarkTheme.xaml 中成对定义：
     /// - 颜色 Key（如 <see cref="WindowBackground"/>）：Color 资源
     /// - 笔刷 Key（如 <see cref="WindowBackgroundBrush"/>）：SolidColorBrush 资源
     /// 按"窗口/面板底、控件底、文字、边框分隔、品牌状态、画布专属"6 组组织。
+    /// 界面只有这一套固定主题（与 VM 原件一致），不提供运行时切换。
     /// </summary>
     public static class ThemeKeys
     {

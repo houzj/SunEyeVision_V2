@@ -50,8 +50,23 @@ namespace SunEyeVision.UI.Shell.Windows
             UseAeroCaptionButtons = false
         };
 
-        private readonly MainWindowViewModel _viewModel;
+        private MainWindowViewModel? _viewModel;
+        private bool _workspaceInitialized;
         private readonly Stopwatch _solutionLoadingStopwatch = new();
+
+        private void SolutionLoadingOverlay_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton != MouseButton.Left || e.LeftButton != MouseButtonState.Pressed)
+                return;
+
+            // The loading mask intentionally owns hit testing so the workspace cannot be edited
+            // while a solution/device transition is in progress. It must still preserve the
+            // window-level move contract; otherwise the visible shell becomes immovable exactly
+            // during the longest part of startup/opening.
+            try { DragMove(); }
+            catch (InvalidOperationException) { }
+            e.Handled = true;
+        }
 
         /// <summary>Win32 消息：查询窗口最小/最大尺寸限制</summary>
         private const int WM_GETMINMAXINFO = 0x0024;
@@ -130,12 +145,27 @@ namespace SunEyeVision.UI.Shell.Windows
             return IntPtr.Zero;
         }
 
-        public MainWindow(SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DesktopToolAdmission admission)
+        public MainWindow(SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DesktopToolAdmission? admission = null)
         {
             InitializeComponent();
+            if (admission is not null)
+                InitializeWorkspace(admission);
+        }
+
+        /// <summary>
+        /// 将完整工作区注入已经显示的轻量窗口壳。
+        /// 启动阶段只构造 XAML 壳，避免插件准入、服务注册和方案会话把窗口创建拖到最后。
+        /// </summary>
+        public void InitializeWorkspace(SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DesktopToolAdmission admission)
+        {
+            if (_workspaceInitialized)
+                return;
+
             _viewModel = new MainWindowViewModel(admission);
             _viewModel.SolutionDialogOwner = this;
             DataContext = _viewModel;
+            // 先注入轻量工具箱宿主，再按 VM 语义一次性创建工作区和结果树。
+            ToolboxContent.Initialize();
             // ★ 中间工作区注入 ViewModel 并订阅缩放事件（替代直接操作 ZoomTextBlock 的跨区域耦合）
             WorkspaceHost.Initialize(_viewModel);
             WorkspaceHost.ZoomScaleChanged += p => TopBarHost.SetZoomPercentage(p);
@@ -149,7 +179,11 @@ namespace SunEyeVision.UI.Shell.Windows
             RegisterHotkeys();
             // 后台切换到NativeDiagramControl（使用原生AIStudio.Wpf.DiagramDesigner库）
             SwitchToDefaultConfiguration();
+            RestoreLayoutConfig();
+            _workspaceInitialized = true;
         }
+
+        public bool IsWorkspaceInitialized => _workspaceInitialized;
         /// <summary>
         /// 切换到默认配置：WorkflowCanvasControl画布 + OrthogonalPathCalculator路径计算器
         /// </summary>
@@ -197,6 +231,7 @@ namespace SunEyeVision.UI.Shell.Windows
         /// </summary>
         private void RegisterHotkeys()
         {
+            if (_viewModel is null) return;
             // 文件操作快捷键
             InputBindings.Add(new KeyBinding(_viewModel.NewSolutionCommand, Key.N, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(_viewModel.OpenSolutionCommand, Key.O, ModifierKeys.Control));
@@ -228,6 +263,13 @@ namespace SunEyeVision.UI.Shell.Windows
         /// </summary>
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
+            // 启动壳尚未注入工作区时没有会话、插件消费者或保存状态，允许直接关闭。
+            if (_viewModel is null)
+            {
+                _closeApproved = true;
+                e.Cancel = false;
+                return;
+            }
             if (_closeApproved)
             {
                 // 确认弹窗已弹出，用户再次触发关闭 -> 放行（由弹窗结果决定）
@@ -261,7 +303,7 @@ namespace SunEyeVision.UI.Shell.Windows
         {
             try
             {
-                  if (await _viewModel.PrepareSolutionTransitionAsync(owner: this))
+                  if (_viewModel is not null && await _viewModel.PrepareSolutionTransitionAsync(owner: this))
                   {
                       SaveLayoutConfig();
                       (System.Windows.Application.Current as App)?.SaveShellPreferences();
@@ -340,6 +382,7 @@ namespace SunEyeVision.UI.Shell.Windows
             // release its shared consumers or start retirement after a failed close.
             if(failures.Count>0)throw new AggregateException("子窗口未能全部关闭，资源保持持有。",failures);
             _consumerReleaseStarted=true;
+            if (_viewModel is null) return;
             try { _viewModel.CloseExecutionSnapshotDetails(); } catch(Exception ex) { failures.Add(ex); }
             _viewModel.SolutionDialogOwner = null;
 
@@ -392,6 +435,8 @@ namespace SunEyeVision.UI.Shell.Windows
         }
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            if (_viewModel is null)
+                return;
             try
             {
                 // 工具插件现在通过ToolboxViewModel自动加载
@@ -431,6 +476,8 @@ namespace SunEyeVision.UI.Shell.Windows
         /// </summary>
         private void MainContentGrid_Loaded(object sender, RoutedEventArgs e)
         {
+            if (_viewModel is null)
+                return;
             // 恢复布局配置（右侧面板折叠状态 + 列宽）
             RestoreLayoutConfig();
         }

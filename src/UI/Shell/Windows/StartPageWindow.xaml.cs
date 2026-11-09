@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Microsoft.Win32;
 using SunEyeVision.UI.Services.Startup;
 
@@ -83,6 +84,33 @@ public partial class StartPageWindow : Window
     }
     private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        if (e.OriginalSource is TextBlock && e.LeftButton == MouseButtonState.Pressed) DragMove();
+        if (e.ChangedButton != MouseButton.Left || e.LeftButton != MouseButtonState.Pressed)
+            return;
+        if (IsInteractiveSource(e.OriginalSource as DependencyObject))
+            return;
+        try { DragMove(); }
+        catch (InvalidOperationException) { /* window is closing */ }
+        e.Handled = true;
+    }
+
+    private void Window_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton != MouseButton.Left || e.LeftButton != MouseButtonState.Pressed)
+            return;
+        // Borderless start page has no native caption. Let blank surface move the
+        // window, while controls retain their own click, selection and scrolling semantics.
+        if (IsInteractiveSource(e.OriginalSource as DependencyObject))
+            return;
+        try { DragMove(); }
+        catch (InvalidOperationException) { /* window is closing */ }
+        e.Handled = true;
+    }
+
+    private static bool IsInteractiveSource(DependencyObject? source)
+    {
+        for (var current = source; current is not null; current = VisualTreeHelper.GetParent(current))
+            if (current is Control)
+                return true;
+        return false;
     }
 }

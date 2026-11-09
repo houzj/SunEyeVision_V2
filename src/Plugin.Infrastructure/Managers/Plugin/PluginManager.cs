@@ -143,6 +143,8 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                 stageClock.Restart();
                 var snapshot=authority.PrepareDesktopDirectory();
                 stages["ComponentLoading"] = stageClock.ElapsedMilliseconds;
+                foreach(var item in authority.LastPreparationStageMs)
+                    stages["ComponentLoading."+item.Key]=item.Value;
                 stageClock.Restart();
                 var components=snapshot.Components;
                 var declarations=components.Where(c=>c.Metadata.Role==SunEyeVision.Plugin.Contracts.ToolComponentRole.Runtime).Select(c=>
@@ -153,7 +155,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                 }).ToArray();
                 var directory=new ToolDirectoryCatalog(Path.Combine(AppContext.BaseDirectory,"ToolGroups.xml"),declarations,authority.VerifyApprovedFile);
                 stages["ToolDirectory"] = stageClock.ElapsedMilliseconds;
-                var admission=new PublishedAdmission(new DesktopToolAdmission(directory,snapshot),authority,_ownerId);
+                var admission=new PublishedAdmission(new DesktopToolAdmission(directory,snapshot,authority.LastLoadSubstageMs),authority,_ownerId);
                 RuntimeDirectorySnapshot? retiring;
                 Task drained;
                 lock(AdmissionGate)

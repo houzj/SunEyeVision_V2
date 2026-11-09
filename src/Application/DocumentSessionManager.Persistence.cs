@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Security.Cryptography;
 using SunEyeVision.Domain.Persistence;
 using SunEyeVision.Domain.Solutions;
 using SunEyeVision.Domain.Workflows;
@@ -12,6 +13,100 @@ namespace SunEyeVision.Application;
 
 public sealed partial class DocumentSessionManager
 {
+    /// <summary>
+    /// Background-safe candidate produced before the owner thread publishes a session.
+    /// The candidate owns its decode scope until OpenPrepared transfers it or Dispose releases it.
+    /// </summary>
+    public sealed class PreparedDocumentOpen : IDisposable
+    {
+        private int _disposed;
+        internal PreparedDocumentOpen(DocumentSessionManager manager, string path, byte[] bytes,
+            IReadOnlyDictionary<string, FrozenToolDeclarations> declarations, SolutionReadCandidate candidate)
+            => (Manager, Path, Bytes, Declarations, Candidate) = (manager, path, bytes, declarations, candidate);
+        internal DocumentSessionManager Manager { get; }
+        internal string Path { get; }
+        internal byte[] Bytes { get; }
+        internal IReadOnlyDictionary<string, FrozenToolDeclarations> Declarations { get; }
+        internal SolutionReadCandidate Candidate { get; }
+        internal void MarkConsumed() => Interlocked.Exchange(ref _disposed, 1);
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref _disposed, 1) == 0)
+                Candidate.Dispose();
+        }
+    }
+
+    /// <summary>Prepare the expensive file and resource work without touching the owner-thread session.</summary>
+    public PreparedDocumentOpen PrepareOpen(ReadOnlyMemory<byte> bytes, string path,
+        Func<ReadOnlyMemory<byte>, FrozenVariableTypeCatalog> captureTypes,
+        Func<DecodedResourcesScope, IVariableValueExtensionCodec?> createCodec,
+        JsonSerializerOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(captureTypes);
+        ArgumentNullException.ThrowIfNull(createCodec);
+        ArgumentNullException.ThrowIfNull(options);
+        if (!_directory.IsActive)
+            throw new InvalidOperationException("运行目录已退役，不能准备方案候选。");
+        path = System.IO.Path.GetFullPath(path);
+        var raw = bytes.ToArray();
+        var declarations = FreezeDeclarations(raw, _directory);
+        var types = captureTypes(raw);
+        var scope = new DecodedResourcesScope();
+        try
+        {
+            var codec = createCodec(scope);
+            var candidate = SolutionDocumentReader.Read(raw, declarations, types, options, scope, codec,
+                System.IO.Path.GetDirectoryName(path));
+            return new PreparedDocumentOpen(this, path, raw, declarations, candidate);
+        }
+        catch
+        {
+            scope.Dispose();
+            throw;
+        }
+    }
+
+    /// <summary>Publish a prepared candidate on the manager's owner thread.</summary>
+    public DocumentSession OpenPrepared(PreparedDocumentOpen prepared, bool discardPendingEdits = false)
+    {
+        ArgumentNullException.ThrowIfNull(prepared);
+        EnsureAvailable();
+        if (!ReferenceEquals(prepared.Manager, this))
+            throw new InvalidOperationException("候选方案不属于当前方案管理器或运行目录。");
+
+        _busy = true;
+        DocumentSession? session = null;
+        try
+        {
+            session = DocumentSession.FromPersistenceCandidate(prepared.Candidate, _directory, prepared.Declarations);
+            try
+            {
+                var expectedHash = Convert.ToHexString(SHA256.HashData(prepared.Bytes));
+                session.SetOpenedPersistenceBaseline(prepared.Candidate.PrepareSave(
+                    prepared.Path, TargetExpectation.Match(expectedHash)));
+            }
+            catch
+            {
+                session.Dispose();
+                throw;
+            }
+
+            Install(session, discardPendingEdits);
+            prepared.MarkConsumed();
+            return session;
+        }
+        catch
+        {
+            if (session is not null && !ReferenceEquals(session, CurrentSession))
+            {
+                try { session.Dispose(); }
+                catch { /* preserve the admission failure */ }
+            }
+            throw;
+        }
+        finally { _busy = false; prepared.Dispose(); }
+    }
+
     /// <summary>Restore a fully admitted backup only to a target that is not the active document.</summary>
     public FrozenSaveReceipt RestoreInactive(string targetPath,string backupPath,string expectedTargetHash,string expectedBackupHash,
         Func<ReadOnlyMemory<byte>,FrozenVariableTypeCatalog> captureTypes,

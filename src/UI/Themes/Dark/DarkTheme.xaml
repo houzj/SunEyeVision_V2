@@ -9,10 +9,10 @@
     <!-- ============================================================ -->
 
     <!-- ============ 窗口 / 面板底色 ============ -->
-    <Color x:Key="{x:Static base:ThemeKeys.WindowBackground}">#FF1E1E1E</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.WindowBackground}">#FFF2F3F5</Color>
     <Color x:Key="{x:Static base:ThemeKeys.TitleBarBackground}">#FF1E1E1E</Color>
-    <Color x:Key="{x:Static base:ThemeKeys.PanelBackground}">#FF252526</Color>
-    <Color x:Key="{x:Static base:ThemeKeys.WorkspaceBackground}">#FF1E1E1E</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.PanelBackground}">#FFF2F3F5</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.WorkspaceBackground}">#FFF2F3F5</Color>
 
     <!-- ============ 控件底色 ============ -->
     <Color x:Key="{x:Static base:ThemeKeys.ControlBackground}">#FF2D2D2D</Color>
@@ -33,18 +33,18 @@
     <Color x:Key="{x:Static base:ThemeKeys.PrimaryButtonText}">#FFFFFFFF</Color>
 
     <!-- ============ 文字 ============ -->
-    <Color x:Key="{x:Static base:ThemeKeys.TextPrimary}">#FFE8E8E8</Color>
-    <Color x:Key="{x:Static base:ThemeKeys.TextSecondary}">#FFC0C0C0</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TextPrimary}">#FF4E5054</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.TextSecondary}">#FF666666</Color>
     <Color x:Key="{x:Static base:ThemeKeys.TextOnDark}">#FFFFFFFF</Color>
     <Color x:Key="{x:Static base:ThemeKeys.TextDisabled}">#FF6E6E6E</Color>
 
     <!-- ============ 边框 / 分隔 ============ -->
     <!-- 边框提亮：#4E4E4E 比控件底 #2D2D2D 亮 33 级，保证 1px 边线在深色背景上可辨识（之前 #3C3C3C 差 15 级几乎不可见） -->
-    <Color x:Key="{x:Static base:ThemeKeys.BorderBrushKey}">#FF4E4E4E</Color>
-    <Color x:Key="{x:Static base:ThemeKeys.DividerColor}">#FF333333</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.BorderBrushKey}">#FFE0DFDE</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.DividerColor}">#FFE4E5E7</Color>
 
     <!-- ============ 品牌 / 状态 ============ -->
-    <Color x:Key="{x:Static base:ThemeKeys.AccentColor}">#FF3794FF</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.AccentColor}">#FFE76900</Color>
     <Color x:Key="{x:Static base:ThemeKeys.SuccessColor}">#FF00CC99</Color>
     <Color x:Key="{x:Static base:ThemeKeys.WarningColor}">#FFFF9900</Color>
     <Color x:Key="{x:Static base:ThemeKeys.ErrorColor}">#FFFF5555</Color>
@@ -58,9 +58,9 @@
     <Color x:Key="{x:Static base:ThemeKeys.DataSeriesMuted}">#FFB0BEC5</Color>
 
     <!-- ============ 画布专属 ============ -->
-    <Color x:Key="{x:Static base:ThemeKeys.CanvasBackground}">#FF1E1E1E</Color>
-    <Color x:Key="{x:Static base:ThemeKeys.CanvasGridMajor}">#FF3C3C3C</Color>
-    <Color x:Key="{x:Static base:ThemeKeys.CanvasGridMinor}">#FF2D2D2D</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.CanvasBackground}">#FFF2F3F5</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.CanvasGridMajor}">#FFE4E5E7</Color>
+    <Color x:Key="{x:Static base:ThemeKeys.CanvasGridMinor}">#FFEDEFF1</Color>
     <Color x:Key="{x:Static base:ThemeKeys.CanvasNodeBorder}">#FF3794FF</Color>
 
     <!-- ============ 图像区 / 缩略图（批次2） ============ -->

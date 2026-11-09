@@ -72,9 +72,10 @@
     <!-- ======================================== -->
 
     <Style x:Key="TempConnectionLineStyle" TargetType="Path">
-        <Setter Property="Stroke" Value="{DynamicResource TempConnectionLineBrush}"/>
+        <!-- 拖线预览：颜色与虚线节奏取原件连接中连线（5,2.5） -->
+        <Setter Property="Stroke" Value="{DynamicResource Col_EditProcess_Connecting_Ligature}"/>
         <Setter Property="StrokeThickness" Value="{DynamicResource TempConnectionLineThickness}"/>
-        <Setter Property="StrokeDashArray" Value="5,5"/>
+        <Setter Property="StrokeDashArray" Value="5,2.5"/>
         <Setter Property="StrokeLineJoin" Value="Round"/>
         <Setter Property="Fill" Value="Transparent"/>
         <Setter Property="IsHitTestVisible" Value="False"/>

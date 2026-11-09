@@ -57,10 +57,10 @@
     <Color x:Key="NodeTextForeground">#333333</Color>
     <Color x:Key="NodeGlobalIndexColor">#FF9500</Color>
     
-    <!-- 连接线颜色 -->
-    <Color x:Key="ConnectionNormalColor">#666666</Color>
-    <Color x:Key="ConnectionHoverColor">#0066CC</Color>
-    <Color x:Key="ConnectionSelectedColor">#FF6600</Color>
+    <!-- 连接线颜色：取原件 Col_EditProcess_Ligature / Selected_Ligature（#FFA70F / #E76900） -->
+    <Color x:Key="ConnectionNormalColor">#FFA70F</Color>
+    <Color x:Key="ConnectionHoverColor">#E76900</Color>
+    <Color x:Key="ConnectionSelectedColor">#E76900</Color>
     
     <!-- ======================================== -->
     <!-- 笔刷资源 -->

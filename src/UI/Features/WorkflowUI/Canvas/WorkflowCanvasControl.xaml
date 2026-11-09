@@ -340,10 +340,12 @@
 
                         <Border.Style>
                             <Style TargetType="Border">
-                                <Setter Property="Background"><Setter.Value><LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#FAF7F5" Offset="0"/><GradientStop Color="#EBE6E2" Offset="1"/></LinearGradientBrush></Setter.Value></Setter>
-                                <Setter Property="BorderThickness" Value="0.7"/><Setter Property="CornerRadius" Value="4"/>
+                                <!-- 原件 NORMAL 节点填充：浅色四段渐变 + 底部橙色收边 -->
+                                <Setter Property="Background"><Setter.Value><LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#FAF7F5" Offset="0"/><GradientStop Color="#F3F6F5" Offset="0.47"/><GradientStop Color="#ECEDF0" Offset="0.82"/><GradientStop Color="#EBE6E2" Offset="0.97"/><GradientStop Color="#EB6600" Offset="1"/></LinearGradientBrush></Setter.Value></Setter>
+                                <Setter Property="BorderBrush" Value="#66F9F5F2"/>
+                                <Setter Property="BorderThickness" Value="2"/><Setter Property="CornerRadius" Value="4"/>
                                 <!-- Effect 已移至 NodeGlowBorder 装饰层（选中/悬停辉光），避免内容子树位图化导致文字/图标模糊 -->
-                                <Setter Property="Effect"><Setter.Value><DropShadowEffect BlurRadius="3" ShadowDepth="3" Opacity="0.45"/></Setter.Value></Setter>
+                                <Setter Property="Effect"><Setter.Value><DropShadowEffect BlurRadius="3" ShadowDepth="3" Opacity="0.45" Color="#FF121111"/></Setter.Value></Setter>
 
                             <Style.Triggers><DataTrigger Binding="{Binding IsEnabled}" Value="False"><Setter Property="Background"><Setter.Value><LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#D3D3D3F5" Offset="0"/><GradientStop Color="#D3D3D3E1" Offset="1"/></LinearGradientBrush></Setter.Value></Setter></DataTrigger><DataTrigger Binding="{Binding IsSelected}" Value="True"><Setter Property="BorderThickness" Value="2"/></DataTrigger><DataTrigger Binding="{Binding IsSubroutineNode}" Value="True">
                                     <Setter Property="BorderThickness" Value="0"/><Setter Property="CornerRadius" Value="0"/><Setter Property="Effect" Value="{x:Null}"/>

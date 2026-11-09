@@ -11,6 +11,8 @@
                 <!-- 节点样式资源 -->
                 <ResourceDictionary Source="Resources/Styles/NodeStyleResources.xaml"/>
                 <!-- 连接线样式资源 -->
+                <!-- VM 原件配色键（Col_*）：供原件控件与画布统一取色 -->
+                <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Palettes/colorstyle1.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/ConnectionStyleResources.xaml"/>
                 <!-- Canvas样式资源 -->
                 <ResourceDictionary Source="Resources/Styles/CanvasStyleResources.xaml"/>

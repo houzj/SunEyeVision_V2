@@ -126,7 +126,19 @@ internal sealed partial class ResultWorkspacePresenter
                             if(outlinePoints>1_000_000)throw new ArgumentException("outline-budget: 场景轮廓点超过预算。");
                             for(var pointIndex=0;pointIndex<sourcePoints.Count;pointIndex++)
                             {
-                                if(!Current())throw new InvalidOperationException("轮廓准备期间结果已失效。");
+                                if(!Current())
+                                {
+                                    // 只在失效时组装原因，避免热路径上做多余判断。
+                                    var stale=new List<string>();
+                                    if(_disposed)stale.Add("disposed");
+                                    if(epoch!=_epoch)stale.Add("epoch");
+                                    if(request!=_displayRequest)stale.Add("request");
+                                    if(attempt!=_displayAttempt)stale.Add("attempt");
+                                    if(!ReferenceEquals(publication,_main.CurrentResultPublication))stale.Add("publication-replaced");
+                                    if(publication?.IsCurrent()!=true)stale.Add("publication-retired");
+                                    if(state?.IsCurrent()!=true)stale.Add("state-stale");
+                                    throw new InvalidOperationException("轮廓准备期间结果已失效("+string.Join(",",stale)+")。");
+                                }
                                 if(sourcePoints.GetElement(pointIndex).GetGeometry() is not PointGeometry point||point.Frame!=receipt.Coordinates)
                                     throw new InvalidOperationException("轮廓点与图像坐标域不匹配。");
                                 points.Add(point.Point);

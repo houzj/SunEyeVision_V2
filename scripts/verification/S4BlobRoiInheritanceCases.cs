@@ -222,8 +222,8 @@ internal static class S2DocumentEditingCases
             });
         }
         if(Included("Model"))InheritanceModelCases();
-        SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor Input(DefaultDebugWindow w,string id)=>Logical(Control(w)).OfType<DeclaredInputFieldsView>().Single().Fields.Single(editor=>editor.FieldId==id);
-        object InputSession(SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor field)
+        SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldRow Input(DefaultDebugWindow w,string id)=>Logical(Control(w)).OfType<DeclaredInputFieldsView>().Single().Fields.Single(editor=>editor.FieldId==id);
+        object InputSession(SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldRow field)
         {_activePopup=Visual(field).OfType<AppsPopup>().Single(p=>p.Name=="rt"&&p.DataContext?.GetType().Name=="ReferenceFieldSession"&&((Port)Get(p.DataContext,"Target")).Id==field.FieldId);_activePopup.ApplyTemplate();return _activePopup.DataContext;}
         void Radio(DefaultDebugWindow w,int index,int selected)
         {
@@ -232,11 +232,11 @@ internal static class S2DocumentEditingCases
             var command=(ICommand)Get(radio,"ValueChangedCommand");Require(command.CanExecute(selected),"原radio不可操作："+index+"/"+selected);command.Execute(selected);Pump();
         }
         void SetMode(DefaultDebugWindow w,int? selected){Radio(w,1,selected is null?0:1);if(selected is not null)Radio(w,2,selected.Value);}
-        void ReferenceInput(SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor field)
+        void ReferenceInput(SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldRow field)
         {if(field.Setting is ReferenceSetting or VariableSetting)return;var toggle=Visual(field).OfType<ToggleButton>().Single(b=>BindingOperations.GetBinding(b,ToggleButton.IsCheckedProperty)?.Path?.Path=="IsSubscribeLeft");toggle.SetCurrentValue(ToggleButton.IsCheckedProperty,true);toggle.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));Pump();}
         void Populate(DefaultDebugWindow w)
         {SetMode(w,1);foreach(var pair in RectangleFields().Where(pair=>pair.Key!=BlobRoiInheritance.ModeId))Require(Input(w,pair.Key).TrySetConstant(((double[])((ConstantSetting)pair.Value).Value!)[0]),"真实数值控件拒绝："+pair.Key);}
-        TextBox NumericText(SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor field)=>(TextBox)Get(Get(field,"_numeric"),"TextEditor");
+        TextBox NumericText(SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldRow field)=>(TextBox)Get(Get(field,"_numeric"),"TextEditor");
         (int Count,double Area,bool Center,bool Corner,bool Second,bool Outside,bool RingEdge,bool FirstHole,bool FirstRingEdge) Observe(DefaultDebugWindow w)
         {
             object? trace=null;

@@ -15,7 +15,7 @@ public partial class RootWorkflowConfigurationWindow:ThemeDialogWindow
  private readonly RootWorkflowConfigurationContext _context;
  private readonly Func<Task>? _run;private readonly Action? _repeat,_stop;private readonly Func<bool>? _running;
 
- private readonly List<DeclaredFieldEditor> _fields=new();
+ private readonly List<DeclaredFieldRow> _fields=new();
  private readonly DispatcherTimer _refresh=new(){Interval=TimeSpan.FromMilliseconds(160)};
  private bool _rebuilding;
  internal RootWorkflowConfigurationContext Context=>_context;
@@ -52,7 +52,7 @@ public partial class RootWorkflowConfigurationWindow:ThemeDialogWindow
       row.Children.Add(ResourceReferenceRow(proxy,candidate));Parameters.Children.Add(row);continue;
      }
      var field=candidate.Field!;
-     var editor=new DeclaredFieldEditor(field.Port,_context.Resolve(proxy).Node.DispName+"."+proxy.DisplayName,_context.Read(proxy),setting=>_context.Write(proxy,setting),
+     var editor=new DeclaredFieldRow(field.Port,_context.Resolve(proxy).Node.DispName+"."+proxy.DisplayName,_context.Read(proxy),setting=>_context.Write(proxy,setting),
       RootWorkflowReferencePicker.Options(_context,proxy),new ConstantSetting(field.Read()),reference=>FormatReference(reference),field.Presentation.ChoiceLabels,field.Presentation);
      editor.Changed+=RefreshState;_fields.Add(editor);row.Children.Add(editor);
     }
@@ -66,7 +66,7 @@ public partial class RootWorkflowConfigurationWindow:ThemeDialogWindow
  }
  private FrameworkElement ResourceReferenceRow(RootParameterProxy proxy,RootParameterCandidate candidate)
  {
-  var editor=new DeclaredFieldEditor(candidate.Resource!.Port,candidate.Node.DispName+"."+proxy.DisplayName,
+  var editor=new DeclaredFieldRow(candidate.Resource!.Port,candidate.Node.DispName+"."+proxy.DisplayName,
    _context.Read(proxy),setting=>_context.Write(proxy,setting),RootWorkflowReferencePicker.Options(_context,proxy),
    formatReference:FormatReference,choiceLabels:candidate.Field!.Presentation.ChoiceLabels,presentation:candidate.Field.Presentation,allowUnboundReference:true);
   editor.Changed+=RefreshState;_fields.Add(editor);return editor;

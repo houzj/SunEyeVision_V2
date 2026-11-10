@@ -18,12 +18,38 @@ public partial class MainWindowViewModel
     {
         var session = DocumentManager.CurrentSession;
         var workflowId = WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId;
+        // 外部设值仍要求"当前实例"：陈旧实例必须被拒绝（外部契约不变）。
+        // 提交后重建实例的场景由内部按 Id 重绑定（FindCurrentNode）解决，不放松这里。
         try{return session is not null && workflowId is not null && session.GetNodes(workflowId).Any(actual => ReferenceEquals(actual,node));}
         catch(InvalidOperationException){return false;}
+    }
+    /// <summary>按稳定 Id 找回当前节点实例；提交后用于把选择重新绑定到新实例。</summary>
+    private NodeDefinition? FindCurrentNode(string nodeId)
+    {
+        var session = DocumentManager.CurrentSession;
+        if(session is null)return null;
+        try
+        {
+            // 优先当前流程；提交后 CurrentWorkflowId 可能瞬时变化，故回退到整方案检索，避免误判"节点已消失"。
+            var workflowId = WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId;
+            if(workflowId is not null)
+            {
+                var current = session.GetNodes(workflowId).FirstOrDefault(actual=>string.Equals(actual.Id,nodeId,StringComparison.Ordinal));
+                if(current is not null)return current;
+            }
+            foreach(var flow in session.GetWorkflows())
+                if(session.GetNodes(flow.Id).FirstOrDefault(actual=>string.Equals(actual.Id,nodeId,StringComparison.Ordinal)) is {} found)
+                    return found;
+            return null;
+        }
+        catch(InvalidOperationException){return null;}
     }
     private void RefreshFormalNodeSelection()
     {
         foreach(var editor in _productionEditors.ToArray())if(!editor.IsValid)editor.Discard();
+        // 提交会重建节点实例：先把选择重新绑定到当前实例，再走后续引用判定，避免选择被误判失效。
+        if (SelectedNode is {} stale && FindCurrentNode(stale.Id) is {} rebound && !ReferenceEquals(rebound, stale))
+        { SelectedNode = rebound; return; }
         var node = SelectedNode;
         ReleaseActiveResultView();
         ClearResultDisplay();

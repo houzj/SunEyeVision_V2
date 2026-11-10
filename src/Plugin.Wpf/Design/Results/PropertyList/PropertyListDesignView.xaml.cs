@@ -4,7 +4,7 @@ namespace SunEyeVision.Plugin.Wpf.Design.Results.PropertyList;
 public partial class PropertyListDesignView : UserControl
 {
     public PropertyListDesignView() { InitializeComponent(); Results.ItemsSource = CreateRows(); }
-    public static IReadOnlyList<SampleRow> CreateRows() => new[] { new SampleRow("示例图像源", "", 0, new[] { new SampleRow("模块状态", "成功", 1), new SampleRow("耗时（ms）", "24.4129", 1), new SampleRow("图像", "", 1, new[] { new SampleRow("图像宽度", "1280", 2), new SampleRow("图像高度", "960", 2), new SampleRow("图像像素格式", "Gray8", 2) }) }) };
+    public static IReadOnlyList<SampleRow> CreateRows() => new[] { new SampleRow("示例图像源", "", 0, new[] { new SampleRow("执行状态", "成功", 1), new SampleRow("耗时（ms）", "24.4129", 1), new SampleRow("图像", "", 1, new[] { new SampleRow("图像宽度", "1280", 2), new SampleRow("图像高度", "960", 2), new SampleRow("图像像素格式", "Gray8", 2) }) }) };
     // These objects are visual samples only. No workflow/result resource model is duplicated.
     public sealed class SampleRow
     {

@@ -141,6 +141,7 @@ public sealed class ReleasePayloadAuthority
                 throw new InvalidDataException("Framework has no managed publish winners: "+name);
         }
         if(!_frameworkNames.Contains("Microsoft.NETCore.App"))throw new InvalidDataException("Core framework declaration is missing.");
+        InstallDeferredPlatformResolver();
     }
 
     /// <summary>Prepare one complete runtime generation from the approved physical payload.</summary>
@@ -243,7 +244,8 @@ public sealed class ReleasePayloadAuthority
             _dependencyVerifyMs+=stage.ElapsedMilliseconds;
             // VM 的启动阶段只建立工具元数据和声明，不把 HALCON/OpenCV
             // 这类大平台运行库递归装入进程。它们仍在准入时完成发布身份校验，
-            // 但交给 CLR 在真正执行图像算法时按需装载，避免启动阶段承担算法库
+            // 真正执行图像算法时由宿主安装的默认上下文解析入口
+            // （InstallDeferredPlatformResolver）按需装载，避免启动阶段承担算法库
             // 的映射、静态初始化和原生依赖探测成本。
             if (IsDeferredPlatformDependency(reference.Name))
                 continue;
@@ -267,6 +269,37 @@ public sealed class ReleasePayloadAuthority
             || name.StartsWith("halcon",StringComparison.OrdinalIgnoreCase)
             || name.StartsWith("opencv",StringComparison.OrdinalIgnoreCase)
             || name.StartsWith("mv",StringComparison.OrdinalIgnoreCase);
+    }
+    // 延迟装载的平台大件以 Private=false 引用，既不进 deps.json 也不进 TPA；工具隔间按
+    // 「宿主目录可解析」把它们交回默认上下文，而默认上下文没有解析入口，于是执行首次用到
+    // HALCON/OpenCV 时必然抛 FileNotFoundException。这里按 payload 唯一真源补上该入口：
+    // 精确 PE 身份 + SHA256 校验通过后才映射，未登记的身份一律交回 CLR 默认行为。
+    private static readonly object ResolverGate=new();
+    private static readonly HashSet<string> InstalledResolverRoots=new(StringComparer.OrdinalIgnoreCase);
+    private void InstallDeferredPlatformResolver()
+    {
+        lock(ResolverGate)
+        {
+            if(!InstalledResolverRoots.Add(_root))return;
+        }
+        AssemblyLoadContext.Default.Resolving+=OnDeferredPlatformResolving;
+    }
+    private Assembly? OnDeferredPlatformResolving(AssemblyLoadContext context,AssemblyName requested)
+    {
+        if(string.IsNullOrWhiteSpace(requested.Name)||!IsDeferredPlatformDependency(requested.Name))return null;
+        var identity=requested.FullName;
+        if(identity is null)return null;
+        Entry match;
+        lock(ResolverGate)
+        {
+            var matches=_entries.Values.Where(entry=>entry.Identity==identity).ToArray();
+            if(matches.Length!=1)return null;
+            match=matches[0];
+        }
+        var path=Resolve(match.Path);
+        if(!File.Exists(path))return null;
+        VerifyFile(path,match);
+        return AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
     }
     private void VerifyHostProductIdentity(JsonElement payload)
     {

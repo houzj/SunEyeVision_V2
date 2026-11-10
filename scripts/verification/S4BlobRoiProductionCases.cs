@@ -323,7 +323,7 @@ internal static class S2DocumentEditingCases
         {if(level==SunEyeVision.Plugin.SDK.Logging.LogLevel.Error)Console.Error.WriteLine(message+" "+exception);}
     }
     private static bool SelectRadio(FrameworkElement radio,long value)=>(bool)radio.GetType().GetMethod("TrySetConstant")!.Invoke(radio,new object[]{value})!;
-    private static void SelectSource(DeclaredFieldEditor field,OutputReference? expected)
+    private static void SelectSource(DeclaredFieldRow field,OutputReference? expected)
     {
         var popup=Logical(field).Concat(Visual(field)).OfType<AppsPopup>().First(item=>item.IsVisible);popup.IsDropDownOpen=true;popup.UpdateLayout();Pump();
         var session=popup.DataContext;((ICommand)session.GetType().GetProperty("DropDownCommand")!.GetValue(session)!).Execute(null);Pump();

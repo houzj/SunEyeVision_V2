@@ -67,7 +67,12 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         if (!BlobThresholdCapabilities.IsSupported(settings.SegmentationMode))
             throw new InvalidOperationException("BLOB_MODE_NOT_READY: 该阈值模式尚未完成原厂语义对齐。");
         var errors = settings.Validate();
-        if (errors.Count != 0) throw new ArgumentException(string.Join("; ", errors.Select(x => x.Message)));
+        if (errors.Count != 0) throw new BlobCapabilityException("BLOB_SETTINGS_INVALID", string.Join("; ", errors.Select(x => x.Message)));
+        // 最大内接矩形族（最大内接矩形数量/最小重叠率/最大超界像素）尚无原厂产出链证据，
+        // 默认（关/0）不触发；一旦启用即明确拒绝，避免产出看似生效的结果。
+        if (vm.MaxAreaInnerRectNum != 0 || vm.OverlapRatio != 0 || vm.MaxOutPixelNumEnable || vm.MaxOutPixelNum != 0)
+            throw new BlobCapabilityException("BLOB_INNER_RECT_NOT_READY",
+                "最大内接矩形数量、最小重叠率、最大超界像素尚未取得原厂产出链证据，本版本不执行该组参数。");
         if ((requested & ~(BlobOutputRequest.BlobImage | BlobOutputRequest.BinaryImage | BlobOutputRequest.Boundary)) != 0)
             throw new ArgumentException("Unknown Blob output request.", nameof(requested));
         cancellation.ThrowIfCancellationRequested();
@@ -111,14 +116,19 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
             var binaryOutput=settings.OutputBinaryImage||requested.HasFlag(BlobOutputRequest.BinaryImage)
                 ?HalImageSnapshotSource.Capture(work,frame,BlobSchema.ImageFrame,outputResources):null;
             using var binary=work.Threshold(1d,255d);
+            var executionDiagnostics=new List<Diagnostic>();
+            // 填充面积阈值：0 跳过；T>0 填面积不超过 T 的封闭孔洞，填孔结果参与连通域与后续测量。
+            using var holeFilled=vm.HoleMinArea>0?FillUpHoles(binary,vm.HoleMinArea):null;
+            if(holeFilled is not null)
+                executionDiagnostics.Add(new("BLOB_HOLE_FILL_LOCAL","填充面积阈值按已核分支实现（0跳过、面积不超过阈值、贴工作区边界不填充）；原机逐像素等价未证。"));
+            var blobRegion=holeFilled??binary;
             cancellation.ThrowIfCancellationRequested();
             HalconBlobExecutionScope.RequireUnlimitedConnection();
-            using var connected=binary.Connection();
+            using var connected=blobRegion.Connection();
             HalconBlobExecutionScope.RequireUnlimitedConnection();
-            var candidates=FilterCandidates(connected,ExtractCandidates(connected,settings,cancellation),vm,width,height,cancellation);
+            var candidates=FilterCandidates(connected,ExtractCandidates(connected,cancellation),vm,width,height,cancellation);
             Func<Candidate,int>? integerKey=settings.SortFeature is BlobSortFeature.SortFeatureRectX or BlobSortFeature.SortFeatureRectY?value=>SortIntegerKey(value,settings.SortFeature):null;
             var retained=BlobCandidateSelection.SelectSlots(candidates,settings.BlobCountLimit,settings.SortFeature,settings.SortMode,value=>(float)value.Area,value=>SortFloatKey(value,settings.SortFeature),integerKey,cancellation);
-            var executionDiagnostics=new List<Diagnostic>();
             if(transformed.Receipt.Provenance=="LocalScalarFormulaCalculation")
                 executionDiagnostics.Add(new("BLOB_THRESHOLD_LOCAL_CALCULATION","本轮阈值由本方按已核原标量公式计算；原厂动态阈值对外发布接口尚未证实。",BlobSchema.Field(8)));
             IReadOnlyImage? blobImage=null;
@@ -134,9 +144,14 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
             }
             var ordered=BlobCandidateSelection.Order(retained,settings.SortMode,value=>SortFloatKey(value,settings.SortFeature),
                 integerKey,value=>value.ComponentLabel,cancellation);
+            // VM 判定组语义：启用的判定组逐 Blob 给出单项 OK/NG；筛选只决定保留集合，不等于合格。
+            var perBlobPass=VmResultLimitsPerBlob(vm,ordered.Select(x=>x.Candidate).ToArray(),out var vmLimitMessages);
+            var judged=ordered.Select((entry,index)=>entry with{Candidate=entry.Candidate with{IsPass=perBlobPass[index]}}).ToArray();
+            var messages=new List<string>(vmLimitMessages);
+            var isPass=judged.Length>0&&judged.All(x=>x.Candidate.IsPass)||judged.Length==0&&vm.OKWhenNumIsZero;
             bool boundaryRequested = settings.OutputBoundary || requested.HasFlag(BlobOutputRequest.Boundary);
-            var measurements = new List<BlobMeasurement>(ordered.Length);
-            foreach (var selection in ordered)
+            var measurements = new List<BlobMeasurement>(judged.Length);
+            foreach (var selection in judged)
             {
                 var item=selection.Candidate;
                 cancellation.ThrowIfCancellationRequested();
@@ -149,48 +164,30 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
                     item.Rectangularity, item.Bounds, item.OrientedBounds, Array.AsReadOnly(item.Corners), Array.AsReadOnly(boundary), region, item.IsPass,
                     minGray.D, maxGray.D, grayRange.D, item.BlobAngleDegrees));
             }
-            using var finalRegions = SelectRegions(connected, ordered.Select(x => x.Candidate.RegionIndex).ToArray());
-            using var okRegions = SelectRegions(connected, ordered.Where(x => x.Candidate.IsPass).Select(x => x.Candidate.RegionIndex).ToArray());
-            using var ngRegions = SelectRegions(connected, ordered.Where(x => !x.Candidate.IsPass).Select(x => x.Candidate.RegionIndex).ToArray());
+            using var finalRegions = SelectRegions(connected, judged.Select(x => x.Candidate.RegionIndex).ToArray());
+            using var okRegions = SelectRegions(connected, judged.Where(x => x.Candidate.IsPass).Select(x => x.Candidate.RegionIndex).ToArray());
+            using var ngRegions = SelectRegions(connected, judged.Where(x => !x.Candidate.IsPass).Select(x => x.Candidate.RegionIndex).ToArray());
             var regionOutput = HalconResourceBridge.CaptureRegion(finalRegions, BlobSchema.ImageFrame, frame, outputResources);
             var okOutput = HalconResourceBridge.CaptureRegion(okRegions, BlobSchema.ImageFrame, frame, outputResources);
             var ngOutput = HalconResourceBridge.CaptureRegion(ngRegions, BlobSchema.ImageFrame, frame, outputResources);
-            HOperatorSet.AreaCenter(binary, out var whiteCount, out var whiteRow, out var whiteColumn);
+            HOperatorSet.AreaCenter(blobRegion, out var whiteCount, out var whiteRow, out var whiteColumn);
             using var white = whiteCount; using var wr = whiteRow; using var wc = whiteColumn;
             double whiteRatio = whiteCount.D / ((double)width * height) * 100;
-            var histogram = new double[256]; var means = new double[] { 0 };
-            if (whiteCount.D > 0)
+            // 直方图信息输出为开关参数：未勾选不计算、不输出。
+            double[] histogram = Array.Empty<double>(); double[] means = Array.Empty<double>();
+            if (vm.SelectByHistInfo)
             {
-                HOperatorSet.GrayHisto(binary, gray, out var absolute, out var relative);
-                using (absolute) using (relative) histogram = absolute.LArr.Select(x => (double)x).ToArray();
-                HOperatorSet.Intensity(binary, gray, out var mean, out var deviation);
-                using (mean) using (deviation) means = new[] { mean.D };
+                histogram = new double[256]; means = new double[] { 0 };
+                if (whiteCount.D > 0)
+                {
+                    HOperatorSet.GrayHisto(blobRegion, gray, out var absolute, out var relative);
+                    using (absolute) using (relative) histogram = absolute.LArr.Select(x => (double)x).ToArray();
+                    HOperatorSet.Intensity(blobRegion, gray, out var mean, out var deviation);
+                    using (mean) using (deviation) means = new[] { mean.D };
+                }
             }
-            var messages = new List<string>();
-            var isPass = ordered.All(x => x.Candidate.IsPass);
-            if (!EvaluateVmResultLimits(vm, ordered.Select(x => x.Candidate).ToArray(), whiteRatio, width, height, out var vmLimitMessages))
-            {
-                isPass = false;
-                messages.AddRange(vmLimitMessages);
-            }
-            if (vm.OKWhenNumIsZero && ordered.Length == 0)
-                isPass = true;
-            foreach (var rule in settings.Judgments.Where(x => x.Enabled && !x.PerItem))
-            {
-                double value = rule.Key switch {
-                    "output-not-empty" => ordered.Length > 0 ? 1 : 0, "white-ratio" => whiteRatio, "blob-count" => ordered.Length,
-                    "total-area" => BlobNumericSemantics.Float32Sum(ordered.Select(x => x.Candidate.Area)), "average-area" => ordered.Length == 0 ? 0 : BlobNumericSemantics.Float32Sum(ordered.Select(x => x.Candidate.Area)) / ordered.Length,
-                    "max-area" => ordered.Length == 0 ? 0 : ordered.Max(x => x.Candidate.Area), "min-area" => ordered.Length == 0 ? 0 : ordered.Min(x => x.Candidate.Area),
-                    "average-circularity" => ordered.Length == 0 ? 0 : ordered.Average(x => x.Candidate.Circularity),
-                    "average-rectangularity" => ordered.Length == 0 ? 0 : ordered.Average(x => x.Candidate.Rectangularity),
-                    _ => throw new ArgumentException("Unknown overall Blob judgment: " + rule.Key)
-                };
-                bool passed = Judge(rule, value);
-                isPass &= passed; messages.Add($"[{(passed ? "OK" : "NG")}] {rule.Key}: {value}");
-            }
-            if (ordered.Any(x => !x.Candidate.IsPass)) messages.Add($"[NG] {ordered.Count(x => !x.Candidate.IsPass)} Blob未通过单项判断。");
             cancellation.ThrowIfCancellationRequested();
-            var output = new BlobOutput(settings, transformed.Receipt, executionDiagnostics, ordered.Select((entry,index)=>new BlobSelectionEntry(entry.Candidate.ComponentLabel,entry.Candidate.RegionIndex,entry.Slot,index+1)), measurements, blobImage, binaryOutput, regionOutput, okOutput, ngOutput, whiteRatio, histogram, means, isPass, messages, new[] { outputResources },
+            var output = new BlobOutput(settings, transformed.Receipt, executionDiagnostics, judged.Select((entry,index)=>new BlobSelectionEntry(entry.Candidate.ComponentLabel,entry.Candidate.RegionIndex,entry.Slot,index+1)), measurements, blobImage, binaryOutput, regionOutput, okOutput, ngOutput, whiteRatio, histogram, means, isPass, messages, new[] { outputResources },
                 BlobResultGeometry.Capture(localRoi,input,isPass,settings.IsPositionCorrectionEnabled,inspection is not null,mask is not null));
             _ = new InputValues(BlobSchema.Outputs, output.ToValues());
             return output;
@@ -200,6 +197,14 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
             try { outputResources.Dispose(); } catch (Exception cleanup) { throw new AggregateException(failure, cleanup); }
             throw;
         }
+    }
+
+    /// <summary>填充面积阈值：只填面积落在[0,T]的封闭孔洞；与图像边界连通的开口不属于孔洞，天然不填。</summary>
+    private static HRegion FillUpHoles(HRegion region,int minimumArea)
+    {
+        if(minimumArea<=0) throw new ArgumentOutOfRangeException(nameof(minimumArea),"填充面积阈值必须为正数。");
+        HOperatorSet.FillUpShape(region,out var filled,"area",0,minimumArea);
+        return new HRegion(filled);
     }
 
     private static Candidate[] FilterCandidates(HRegion regions,Candidate[] candidates,BlobVmFindParameters vm,int width,int height,CancellationToken cancellation)
@@ -238,27 +243,36 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         return accepted.ToArray();
     }
 
-    private static bool EvaluateVmResultLimits(BlobVmFindParameters vm,Candidate[] candidates,double whiteRatio,int width,int height,out IReadOnlyList<string> messages)
+    /// <summary>VM 判定组语义：数量/总面积为整体判定；其余判定组逐 Blob 给出单项 OK/NG。</summary>
+    private static bool[] VmResultLimitsPerBlob(BlobVmFindParameters vm,Candidate[] candidates,out IReadOnlyList<string> messages)
     {
         var failures=new List<string>();
-        bool Range(double value,double low,double high)=>BlobVmFindParameters.InRange(value,low,high);
-        if(vm.BlobNumLimitEnable&&!Range(candidates.Length,vm.BlobNumLimitLow,vm.BlobNumLimitHigh))failures.Add("[NG] BlobNumLimit");
-        if(vm.BlobTotalAreaLimitEnable&&!Range(BlobNumericSemantics.Float32Sum(candidates.Select(x=>x.Area)),vm.BlobTotalAreaLimitLow,vm.BlobTotalAreaLimitHigh))failures.Add("[NG] BlobTotalAreaLimit");
-        if(vm.BlobAreaLimitEnable&&candidates.Any(x=>!Range(x.Area,vm.BlobAreaLimitLow,vm.BlobAreaLimitHigh)))failures.Add("[NG] BlobAreaLimit");
-        if(vm.CentroidXLimitEnable&&candidates.Any(x=>!Range(x.X,vm.CentroidXLimitLow,vm.CentroidXLimitHigh)))failures.Add("[NG] CentroidXLimit");
-        if(vm.CentroidYLimitEnable&&candidates.Any(x=>!Range(x.Y,vm.CentroidYLimitLow,vm.CentroidYLimitHigh)))failures.Add("[NG] CentroidYLimit");
-        if(vm.AngleLimitEnable&&candidates.Any(x=>!Range(x.OrientedBounds.AngleDegrees,vm.AngleLimitLow,vm.AngleLimitHigh)))failures.Add("[NG] AngleLimit");
-        if(vm.CenterXLimitEnable&&candidates.Any(x=>!Range(x.OrientedBounds.CenterX,vm.CenterXLimitLow,vm.CenterXLimitHigh)))failures.Add("[NG] CenterXLimit");
-        if(vm.CenterYLimitEnable&&candidates.Any(x=>!Range(x.OrientedBounds.CenterY,vm.CenterYLimitLow,vm.CenterYLimitHigh)))failures.Add("[NG] CenterYLimit");
-        if(vm.BoxHeightLimitEnable&&candidates.Any(x=>!Range(x.OrientedBounds.Height,vm.BoxHeightLimitLow,vm.BoxHeightLimitHigh)))failures.Add("[NG] BoxHeightLimit");
-        if(vm.BoxWidthLimitEnable&&candidates.Any(x=>!Range(x.OrientedBounds.Width,vm.BoxWidthLimitLow,vm.BoxWidthLimitHigh)))failures.Add("[NG] BoxWidthLimit");
-        if(vm.PerimeterLimitEnable&&candidates.Any(x=>!Range(x.Perimeter,vm.PerimeterLimitLow,vm.PerimeterLimitHigh)))failures.Add("[NG] PerimeterLimit");
-        if(vm.LongAxisLimitEnable&&candidates.Any(x=>!Range(Math.Max(x.OrientedBounds.Width,x.OrientedBounds.Height),vm.LongAxisLimitLow,vm.LongAxisLimitHigh)))failures.Add("[NG] LongAxisLimit");
-        if(vm.ShortAxisLimitEnable&&candidates.Any(x=>!Range(Math.Min(x.OrientedBounds.Width,x.OrientedBounds.Height),vm.ShortAxisLimitLow,vm.ShortAxisLimitHigh)))failures.Add("[NG] ShortAxisLimit");
-        if(vm.CircularityLimitEnable&&candidates.Any(x=>!Range(x.Circularity,vm.CircularityLimitLow,vm.CircularityLimitHigh)))failures.Add("[NG] CircularityLimit");
-        if(vm.RectangularityLimitEnable&&candidates.Any(x=>!Range(x.Rectangularity,vm.RectangularityLimitLow,vm.RectangularityLimitHigh)))failures.Add("[NG] RectangularityLimit");
+        var perBlob=new bool[candidates.Length];
+        for(var i=0;i<perBlob.Length;i++)perBlob[i]=true;
+        bool Overall(bool pass,string name){if(!pass)failures.Add("[NG] "+name);return pass;}
+        void PerBlob(int index,bool pass,string name){if(!pass){perBlob[index]=false;failures.Add("[NG] "+name);}}
+        if(vm.BlobNumLimitEnable)Overall(BlobVmFindParameters.InRange(candidates.Length,vm.BlobNumLimitLow,vm.BlobNumLimitHigh),"BlobNumLimit");
+        if(vm.BlobTotalAreaLimitEnable)Overall(BlobVmFindParameters.InRange(BlobNumericSemantics.Float32Sum(candidates.Select(x=>x.Area)),vm.BlobTotalAreaLimitLow,vm.BlobTotalAreaLimitHigh),"BlobTotalAreaLimit");
+        for(var i=0;i<candidates.Length;i++)
+        {
+            var x=candidates[i];
+            var oriented=x.OrientedBounds;
+            if(vm.BlobAreaLimitEnable)PerBlob(i,BlobVmFindParameters.InRange(x.Area,vm.BlobAreaLimitLow,vm.BlobAreaLimitHigh),"BlobAreaLimit");
+            if(vm.CentroidXLimitEnable)PerBlob(i,BlobVmFindParameters.InRange(x.X,vm.CentroidXLimitLow,vm.CentroidXLimitHigh),"CentroidXLimit");
+            if(vm.CentroidYLimitEnable)PerBlob(i,BlobVmFindParameters.InRange(x.Y,vm.CentroidYLimitLow,vm.CentroidYLimitHigh),"CentroidYLimit");
+            if(vm.AngleLimitEnable)PerBlob(i,BlobVmFindParameters.InRange(oriented.AngleDegrees,vm.AngleLimitLow,vm.AngleLimitHigh),"AngleLimit");
+            if(vm.CenterXLimitEnable)PerBlob(i,BlobVmFindParameters.InRange(oriented.CenterX,vm.CenterXLimitLow,vm.CenterXLimitHigh),"CenterXLimit");
+            if(vm.CenterYLimitEnable)PerBlob(i,BlobVmFindParameters.InRange(oriented.CenterY,vm.CenterYLimitLow,vm.CenterYLimitHigh),"CenterYLimit");
+            if(vm.BoxHeightLimitEnable)PerBlob(i,BlobVmFindParameters.InRange(oriented.Height,vm.BoxHeightLimitLow,vm.BoxHeightLimitHigh),"BoxHeightLimit");
+            if(vm.BoxWidthLimitEnable)PerBlob(i,BlobVmFindParameters.InRange(oriented.Width,vm.BoxWidthLimitLow,vm.BoxWidthLimitHigh),"BoxWidthLimit");
+            if(vm.PerimeterLimitEnable)PerBlob(i,BlobVmFindParameters.InRange(x.Perimeter,vm.PerimeterLimitLow,vm.PerimeterLimitHigh),"PerimeterLimit");
+            if(vm.LongAxisLimitEnable)PerBlob(i,BlobVmFindParameters.InRange(Math.Max(oriented.Width,oriented.Height),vm.LongAxisLimitLow,vm.LongAxisLimitHigh),"LongAxisLimit");
+            if(vm.ShortAxisLimitEnable)PerBlob(i,BlobVmFindParameters.InRange(Math.Min(oriented.Width,oriented.Height),vm.ShortAxisLimitLow,vm.ShortAxisLimitHigh),"ShortAxisLimit");
+            if(vm.CircularityLimitEnable)PerBlob(i,BlobVmFindParameters.InRange(x.Circularity,vm.CircularityLimitLow,vm.CircularityLimitHigh),"CircularityLimit");
+            if(vm.RectangularityLimitEnable)PerBlob(i,BlobVmFindParameters.InRange(x.Rectangularity,vm.RectangularityLimitLow,vm.RectangularityLimitHigh),"RectangularityLimit");
+        }
         messages=failures;
-        return failures.Count==0;
+        return perBlob;
     }
 
     private static bool InRange(double value,double low,double high)=>BlobVmFindParameters.InRange(value,low,high);
@@ -271,7 +285,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         return (int)original;
     }
 
-    private static Candidate[] ExtractCandidates(HRegion regions, BlobSettings s, CancellationToken cancellation)
+    private static Candidate[] ExtractCandidates(HRegion regions, CancellationToken cancellation)
     {
         HOperatorSet.AreaCenter(regions, out var areas, out var rows, out var cols);
         using var a = areas; using var r = rows; using var c = cols;
@@ -287,27 +301,14 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
             cancellation.ThrowIfCancellationRequested();
             if (areas[i].D <= 0) continue;
             double circ = Math.Min(1, circularity[i].D), rect = Math.Min(1, rectangularity[i].D);
-            bool pass = true;
-            foreach (var rule in s.Judgments.Where(x => x.Enabled && x.PerItem))
-            {
-                double value = rule.Key switch { "per-blob-area" => areas[i].D, "per-blob-circularity" => circ, "per-blob-rectangularity" => rect,
-                    _ => throw new ArgumentException("Unknown per-Blob judgment: " + rule.Key) };
-                pass &= Judge(rule, value);
-            }
             result.Add(new(i + 1,i + 1, areas[i].D, perimeter[i].D, cols[i].D, rows[i].D, circ, rect,
                 new(c1[i].D, r1[i].D, c2[i].D - c1[i].D + 1, r2[i].D - r1[i].D + 1),
                 new(rc[i].D,rr[i].D,2*length1[i].D,2*length2[i].D,length1[i].D==0&&length2[i].D==0?0:-phi[i].D*180/Math.PI),
                 blobAngle[i].D*180/Math.PI,
-                BuildRotatedRectangle(rr[i].D, rc[i].D, phi[i].D, length1[i].D, length2[i].D), pass));
+                BuildRotatedRectangle(rr[i].D, rc[i].D, phi[i].D, length1[i].D, length2[i].D), true));
         }
         return result.ToArray();
     }
-
-    private static bool Judge(BlobJudgment rule, double value) => rule.Kind switch {
-        BlobJudgmentKind.Range => value >= rule.Minimum && value <= rule.Maximum,
-        BlobJudgmentKind.Boolean => value != 0,
-        _ => false
-    };
 
     private static float SortFloatKey(Candidate value,BlobSortFeature feature)=>(float)(feature switch
     {

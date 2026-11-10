@@ -247,8 +247,16 @@ public sealed class ResultPresentationPresenter : IDisposable
         if(_root is null)return;
         var available=state is not (ResultViewState.Declaration or ResultViewState.NotExecuted);
         _root.DisplayValue=null;
-        _summaryRows.Add(new FlatResultRow{Key="@execution/status",DisplayName="模块状态",DisplayValue=available?StatusText(state):null,Level=1});
+        // 工具自身已按原厂输出「模块状态」（ModuStatus 0/1），汇总行改用「执行状态」避免同名两行不同义。
+        _summaryRows.Add(new FlatResultRow{Key="@execution/status",DisplayName="执行状态",DisplayValue=available?StatusLabel(state):null,Level=1});
         _summaryRows.Add(new FlatResultRow{Key="@execution/elapsed",DisplayName="耗时（ms）",DisplayValue=available&&elapsed.HasValue?elapsed.Value.ToString("0.####",CultureInfo.InvariantCulture):null,Level=1});
+        if(available)
+            for(var i=0;i<_diagnostics.Count;i++)
+            {
+                var diagnostic=_diagnostics[i];
+                _summaryRows.Add(new FlatResultRow{Key="@diagnostic/"+i.ToString(CultureInfo.InvariantCulture)+":"+diagnostic.Code,
+                    DisplayName=diagnostic.Code,DisplayValue=diagnostic.Message,Level=1});
+            }
         _root.IsGroup=true;
     }
 
@@ -396,15 +404,18 @@ public sealed class ResultPresentationPresenter : IDisposable
         if (entry.More != null) visible.Add(entry.More);
     }
 
+    // 纯状态标签：用于汇总行，不携带诊断。
+    private static string StatusLabel(ResultViewState state) => state switch
+    {
+        ResultViewState.Declaration=>"未运行",ResultViewState.NotExecuted=>"未运行",ResultViewState.Running=>"运行中",
+        ResultViewState.Success=>"成功",ResultViewState.PartialSuccess=>"部分成功",
+        ResultViewState.Failed=>"失败",ResultViewState.Timeout=>"超时",
+        ResultViewState.Cancelled=>"已取消",_=>throw new ArgumentOutOfRangeException(nameof(state))
+    };
+    // 值占位使用：值不可用时需要带上原因，否则用户只看到"失败"不知道为何没有值。
     private string StatusText(ResultViewState state)
     {
-        var label=state switch
-        {
-            ResultViewState.Declaration=>"未运行",ResultViewState.NotExecuted=>"未运行",ResultViewState.Running=>"运行中",
-            ResultViewState.Success=>"成功",ResultViewState.PartialSuccess=>"部分成功",
-            ResultViewState.Failed=>"失败",ResultViewState.Timeout=>"超时",
-            ResultViewState.Cancelled=>"已取消",_=>throw new ArgumentOutOfRangeException(nameof(state))
-        };
+        var label=StatusLabel(state);
         return _diagnostics.FirstOrDefault() is {} diagnostic?label+": "+diagnostic.Message:label;
     }
 

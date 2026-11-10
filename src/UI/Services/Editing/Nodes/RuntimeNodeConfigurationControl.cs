@@ -43,7 +43,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
     private FieldSettings? _acceptedFields;
     private ImageSourceDraftContent? _imageSourceContent;
     private ReferenceWindowOwner? _referenceOwner;
-    private readonly List<DeclaredFieldEditor> _inputs = new();
+    private readonly List<DeclaredFieldRow> _inputs = new();
     /// <summary>引用来源快照按字段缓存：一次参数页构建只抓一次图，字段刷新与切页不再重走前驱与准入校验。</summary>
     private readonly Dictionary<string, ReferenceSelections> _referenceCache = new(StringComparer.Ordinal);
     private long _referenceRevision = -1;

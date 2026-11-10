@@ -8,14 +8,6 @@ public enum BlobThresholdMode { Binary, BinaryInv }
 public enum BlobSortFeature { SortFeatureArea = 1, SortFeaturePerimeter = 2, SortFeatureCircularity = 3, SortFeatureRect = 4, SortFeatureCentroidX = 5, SortFeatureCentroidY = 6, SortFeatureRectX = 10, SortFeatureRectY = 11 }
 public enum BlobSortMode { SortModeAscend = 1, SortModeDecend = 2, SortModeNotSort = 3 }
 public enum BlobSegmentationMode { SingleThreshold, DoubleThreshold, None, AutoThreshold, FixedSoftThreshold, RelativeSoftThreshold }
-public enum BlobJudgmentKind { Range, Empty, Boolean }
-public sealed record BlobJudgment(
-    [property: JsonRequired] string Key,
-    [property: JsonRequired] bool PerItem,
-    [property: JsonRequired] bool Enabled,
-    [property: JsonRequired] double Minimum,
-    [property: JsonRequired] double Maximum,
-    [property: JsonRequired] BlobJudgmentKind Kind = BlobJudgmentKind.Range);
 
 /// <summary>Business settings only: no bindings, brushes, view state, backend handles or writable globals.</summary>
 public sealed record BlobSettings : IToolSettings<BlobSettings>
@@ -23,7 +15,7 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
     public BlobSettings() : this(true) { }
     internal BlobSettings(bool initializeDefaults)
     {
-        if (!initializeDefaults) { Judgments = Array.Empty<BlobJudgment>(); return; }
+        if (!initializeDefaults) return;
         var definition=BlobParameterDefinition.Instance;
         FixedSoftLowerThreshold=definition.Default<int>(nameof(FixedSoftLowerThreshold));
         FixedSoftUpperThreshold=definition.Default<int>(nameof(FixedSoftUpperThreshold));
@@ -53,7 +45,6 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
         SortMode=definition.Default<BlobSortMode>(nameof(SortMode));
         SortFeature=definition.Default<BlobSortFeature>(nameof(SortFeature));
         Connectivity=definition.Default<BlobConnectivity>(nameof(Connectivity));
-        Judgments=definition.CreateJudgments();
     }
 
     [JsonRequired]
@@ -113,8 +104,6 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
     public BlobSortFeature SortFeature { get; init; }
     [JsonRequired]
     public BlobConnectivity Connectivity { get; init; }
-    [JsonRequired]
-    public IReadOnlyList<BlobJudgment> Judgments { get; init; }
 
     /// <summary>
     /// 完整 VM 参数闭包。现有 XML 字段是宿主的稳定字段合同，闭包保存 VM 已确认但尚未全部开放到公共字段树的成员。
@@ -124,16 +113,7 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
     public BlobVmFindParameters VmParameters { get; init; } = new();
 
     public BlobVmFindParameters ToVmParameters() => BlobVmFindParameters.FromSettings(this);
-    public BlobSettings Freeze()
-    {
-        if (Judgments is null || Judgments.Any(x => x is null))
-            throw new ArgumentException("Blob结果判定集合及条目不能为空。", nameof(Judgments));
-        return this with
-        {
-            Judgments = Array.AsReadOnly(Judgments.Select(x => x with { }).ToArray()),
-            VmParameters = ToVmParameters()
-        };
-    }
+    public BlobSettings Freeze() => this with { VmParameters = ToVmParameters() };
 
     public IReadOnlyList<Diagnostic> Validate()
     {
@@ -160,6 +140,12 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
         Number(nameof(RelativeLowerRatio),RelativeLowerRatio);
         Number(nameof(RelativeUpperRatio),RelativeUpperRatio);
         Number(nameof(BlobCountLimit), BlobCountLimit);
+        // 仅存在于VM闭包的四项参数（填充面积阈值、最大内接矩形数量、最小重叠率、最大超界像素）同样受XML上下限约束。
+        var closure = VmParameters ?? new BlobVmFindParameters();
+        Number("HoleMinArea", closure.HoleMinArea);
+        Number("MaxAreaInnerRectNum", closure.MaxAreaInnerRectNum);
+        Number("OverlapRatio", closure.OverlapRatio);
+        Number("MaxOutPixelNum", closure.MaxOutPixelNum);
         void Range(bool enabled, string minField, double min, string maxField, double max)
         {
             Number(minField, min); Number(maxField, max);
@@ -168,31 +154,6 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
         Range(IsAreaFilterEnabled, nameof(FilterAreaMin), FilterAreaMin, nameof(FilterAreaMax), FilterAreaMax);
         Range(IsCircularityFilterEnabled, nameof(FilterCircularityMin), FilterCircularityMin, nameof(FilterCircularityMax), FilterCircularityMax);
         Range(IsRectangularityFilterEnabled, nameof(FilterRectangularityMin), FilterRectangularityMin, nameof(FilterRectangularityMax), FilterRectangularityMax);
-        if (Judgments is null || Judgments.Any(x => x is null))
-        {
-            errors.Add(new("BLOB_SETTINGS_INVALID", "Blob结果判定集合及条目不能为空。", nameof(Judgments)));
-            return errors;
-        }
-        Check(Judgments.Select(x => x.Key).Distinct(StringComparer.Ordinal).Count() == Judgments.Count, "结果判定键不得重复。");
-        var declared = definition.CreateJudgments().ToDictionary(x => x.Key, StringComparer.Ordinal);
-        Check(Judgments.Select(x => x.Key).ToHashSet(StringComparer.Ordinal).SetEquals(declared.Keys), "结果判定集合必须完整对应XML声明，不能缺项或增加未知项。");
-        var metadata = definition.JudgmentMetadata.ToDictionary(x => (string)x.Attribute("key")!, StringComparer.Ordinal);
-        foreach (var rule in Judgments)
-        {
-            if (rule.Key is null || !declared.TryGetValue(rule.Key, out var expected))
-            {
-                Check(false, "未知结果判定键。");
-                continue;
-            }
-            Check(rule.Kind == expected.Kind && rule.PerItem == expected.PerItem, "结果判定类型或作用范围与XML声明不符。");
-            if (rule.Enabled && rule.Kind == BlobJudgmentKind.Range)
-            {
-                var item = metadata[rule.Key];
-                Check(double.IsFinite(rule.Minimum) && double.IsFinite(rule.Maximum) && rule.Minimum <= rule.Maximum
-                    && rule.Minimum >= BlobParameterDefinition.Finite(item, "allowedMinimum")
-                    && rule.Maximum <= BlobParameterDefinition.Finite(item, "allowedMaximum"), "结果判定范围与XML声明不符。");
-            }
-        }
         return errors;
     }
 }

@@ -13,6 +13,25 @@
 | 工具身份合同 | 已定案 | 发布态才有 `release-payload.json` + `ToolGroups.xml` 强准入；开发态 `dev\\Debug\\plugins\\<Tool>\\` 只有 dll/pdb/deps.json |
 | 旧 Plugin.SDK 退役 | 已完成 | 现行解决方案消费者 0，工具消费者 0，源码实时扫描 0，`src/Plugin.SDK` 目录条目 0；门禁证据见 `docs/collaboration/evidence/PluginSDK退役门禁-20261108.txt` |
 
+## 2026-11-10 参数页原件化重构（任务卡：一次性执行完，不再调研）
+
+**目标**：参数页行内容改为原件模板驱动（XAML DataTemplate + 模板选择器），删除自研逐字段 C# 控件构造；完成后统一验证，再交人工验收。**执行时不做新的调研与决策，照卡施工；每步构建闭环。**
+
+**已定结论（证据齐，勿重查）**：
+- 原件机制：行内容由 `MyDataTemplateSelector`（`x:Key="mydt"`）按参数类型从 `paramusercontroldatatemplate.xaml`（3995 行，键：`Default/Boolean/BooleanCheck/AddButton/TextLeft` 等）选 DataTemplate 实例化；原件列表/行壳 `ParamListView`/`ParamUserControl` 已迁移到我方 `Themes/Native/Composition/ParameterPresentation/`。
+- 我方缺陷：`DeclaredFieldEditor`（`src/Plugin.Wpf/Fields/DeclaredFieldEditor.cs`，506 行）构造即 `Render()`（:167），内建 `NativeReferencePresenter`（:208）；范围行 `NativeRangePresenter` 每组再组合两个输入。实测：编辑器 16ms/字段、范围 22ms/组；Blob 运行参数页 35 字段 rows=1076ms，结果显示 52 字段 rows=1770ms；三级计时（`LastEditorCtorMs/LastRowAssemblyMs`）可由探针复测。
+- 已完成的准备（勿回退）：判定组已归位结果显示页（F1，测试 45/45）；死代码草稿面板已删（`NativeThresholdUiDraftControls/NativeUiDraftRange`）；空闲预热已删（按原件按需建页）；`NativeDeferredContent` 已加（行内容延迟实现，模板化后删除）；`ParamListView.xaml` 已启用 Recycling 虚拟化 + 分组虚拟化；性能埋点保留（PROBE-KEEP）。
+
+**实施步骤**：
+1. 迁移 `docs/07-工具逆向/decompiled/XmlUi/styles/paramusercontroldatatemplate.xaml` → `Themes/Native/Composition/ParameterPresentation/resourcedictionaries/ParamRowDataTemplates.xaml`；先只保留 Blob 实际用到的模板族：`Default`（数字/文本）、`Boolean`/`BooleanCheck`（开关）、范围组合（IntegerBettween/FloatBettween）、枚举下拉、引用链接；其余模板不入库（YAGNI，等其它工具接入时再补）。
+2. 迁移选择器与依赖转换器：`MyDataTemplateSelector` + Blob 用到的转换器子集（`FgConverter/WidthConverter/HeightConverter/Boolean2VisibilityReverse/EqualConverter/NumCompareConverter` 等），命名空间归 `SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation`，数据上下文改绑 `DeclaredFieldState`+`FieldPresentation`（值/校验/引用提交逻辑保留在 C# 状态类，视觉全部进模板）。
+3. `DeclaredFieldsView` 行内容改由选择器生成：`BorrowRow` 的 `view` 参数改为模板宿主（ContentControl + ContentTemplateSelector），删除 `new DeclaredFieldEditor(...)`/`new NativeRangePresenter(...)` 的视觉构造调用。
+4. 删除：`DeclaredFieldEditor` 的视觉构造路径（状态/校验/提交/引用逻辑改为纯逻辑类保留）、`NativeRangePresenter` 视觉组合、`NativeDeferredContent`。不留双轨。
+5. 构建闭环：`dotnet build SunEyeVision.slnx -c Release --no-restore`（注意：测试须先构建再 `dotnet test --no-build`，否则 SHA 封签 mismatch）。
+6. 统一验证：`dotnet test`（Blob 45/45 + 全量 UI.Tests，已知既有失败白名单：EditorWindowSessionTests.Actual_tool_editor、AboutWindow/BrandingLogo 主题资源、ShellLayout 载荷根）；剖析程序复测 `dotnet run --project tests/RuntimeEditorProductionProbe -c Release --no-build -- <仓库根>`。
+
+**验收标准（人工验收前必须全过）**：单字段 ≤5ms；Blob 运行参数页 rows ≤300ms；开窗 ≤600ms；切页 ≤150ms；外观与原件截图一致（`docs/collaboration/evidence/VM_BLOB_USER_UI_SS01~08_20261026.png`）；测试白名单外 0 失败。完成后输出统一验证报告 + 人工验收清单，等用户验收，不自动进入方案测试技能。
+
 ## 2026-11-09 VM 原厂 SDK 证据收口（当前有效）
 
 已从 `D:\Program Files\VisionMaster4.4.0` 的发布目录、官方样例、XML/CHM 和 REA 元数据确认 VM 存在两条不同 SDK 产品线：`Development\V4.x` 下的 Platform SDK 面向外部应用（`VM.Core`、`VM.PlatformSDKCS`、`VMControls`、`VmSolution.Load/CloseSolution`、`VmProcedure.Run`、模块回调、前端/渲染控件）；`MVDAlgorithmSDK` 面向算子/工具作者（`MVDSDK.*`、`MVD_Algorithm.Net.dll`、参数控件、算法句柄和部署工具）。证据见 `docs/collaboration/evidence/VM原厂SDK发布边界静态取证-20261109.txt`。

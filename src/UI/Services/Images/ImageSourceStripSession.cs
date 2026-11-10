@@ -74,7 +74,7 @@ public sealed partial class ImageSourceStripSession : IImageSourceStripSession, 
     public long Version => _source.EditVersion;
     public int DisplayIndex => _source.CurrentIndex;
     public int ConfiguredStartIndex => _configuredStartIndex;
-    public bool ProvidesImageImport { get; }
+    public bool ProvidesImageImport { get; private set; }
     public bool CanEdit => !_disposed && !_source.IsReadOnly && OwnerIsCurrent();
     public bool CanNavigate => !_disposed && !IsImporting && _activate is not null && OwnerIsCurrent() && _canNavigate() && OwnerIsCurrent();
     public bool IsReadOnly => !CanEdit;
@@ -217,6 +217,14 @@ public sealed partial class ImageSourceStripSession : IImageSourceStripSession, 
         _dispatcher.VerifyAccess(); if (_disposed) return;
         foreach (var name in new[] { nameof(CanEdit), nameof(CanNavigate), nameof(IsReadOnly) })
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
+    /// <summary>投影按源节点常驻缓存后，导入入口随选中对象变化：只有选中图像源模块自身时才提供增删图入口。</summary>
+    internal void SetProvidesImageImport(bool value)
+    {
+        _dispatcher.VerifyAccess();
+        if (_disposed || ProvidesImageImport == value) return;
+        ProvidesImageImport = value;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ProvidesImageImport)));
     }
     public async Task RequestAsync(ImageSourceStripRequest request, CancellationToken cancellationToken)
     {

@@ -23,7 +23,6 @@ internal sealed class BlobUiComposition : IDisposable
     internal BlobLocalRoiOwner? _roiOwner;
     private NativeRoiUiDraftControls? _roiUi;
     internal NativeDisplayUiDraftRows? _displayUi;
-    private NativeJudgmentUiDraftControls? _judgmentUi;
     internal BlobRunUiState? RunUi {get;private set;}
     private readonly ToolSettingsViewOptions _composed;
     private readonly bool _eagerlyComposePages;
@@ -37,7 +36,7 @@ internal sealed class BlobUiComposition : IDisposable
     private string? _activePage;
     private string? _compositionError;
     private readonly Dictionary<string,long> _stageMs=new(StringComparer.Ordinal);
-    private bool _pagePrewarmQueued;
+
     private bool _initialPageReady;
     private readonly TaskCompletionSource<bool> _ready = new(TaskCreationOptions.RunContinuationsAsynchronously);
     internal IReadOnlyDictionary<string,long> StageMs=>_stageMs;
@@ -271,52 +270,14 @@ internal sealed class BlobUiComposition : IDisposable
         if(StringComparer.Ordinal.Equals(page,resultPage)&&_displayOptions is null)
         {
             var baseline=PageOptions();ToolSettingsViewOptions? display=null;
-            Measure("结果显示控件",() => display=BlobDisplayUi.AddRows(baseline,Draft.Schema,_assistPointVisibility,observe:value=>_displayUi=value,observeJudgment:value=>_judgmentUi=value));
+            Measure("结果显示控件",() => display=BlobDisplayUi.AddRows(baseline,Draft.Schema,_assistPointVisibility,observe:value=>_displayUi=value));
             _displayOptions=display!;
             Measure("结果显示挂接",() => InstallOptionsRows(fields,baseline,display!));
             if(_displayUi is not null)_pageSubscriptions.Add(_preview.Observe(()=>_displayUi.HasUiChanges,handler=>_displayUi.Changed+=handler,handler=>_displayUi.Changed-=handler,()=>_displayUi.RetireInteractions()));
-            if(_judgmentUi is not null)_pageSubscriptions.Add(_preview.Observe(()=>_judgmentUi.HasUiChanges,handler=>_judgmentUi.Changed+=handler,handler=>_judgmentUi.Changed-=handler,()=>_judgmentUi.RetireInteractions()));
         }
         BaseOptions.PageBuilt?.Invoke(page,fields,pageInput);
-        QueuePagePrewarm(fields,page);
     }
 
-    private void QueuePagePrewarm(DeclaredFieldsView fields,string currentPage)
-    {
-        if(_eagerlyComposePages||_pagePrewarmQueued||_disposed)return;
-        _pagePrewarmQueued=true;
-        var pages=fields.DeclaredPageKeys.Where(page=>!StringComparer.Ordinal.Equals(page,currentPage)).ToArray();
-        void Queue(int index)
-        {
-            if(_disposed||!ReferenceEquals(_pageHost,fields)||index>=pages.Length)return;
-            // VM's first frame is assembled from the selected page only.  The
-            // remaining pages use the same registered templates, but their
-            // first materialization must wait until the first idle turn.  A
-            // Background callback still runs before the ApplicationIdle pump
-            // used by the host's first-frame boundary and therefore makes the
-            // window pay for every page before it is visible.
-            _editor.Dispatcher.BeginInvoke(DispatcherPriority.SystemIdle,new Action(() =>
-            {
-                if(_disposed||!ReferenceEquals(_pageHost,fields))return;
-                var page=pages[index];
-                try
-                {
-                    fields.RealizePage(page);
-                    var input=StringComparer.Ordinal.Equals(page,BaseOptions.InputSection)?BaseOptions.InputContent:null;
-                    BuildPageCore(page,fields,input);
-                }
-                catch(Exception error)
-                {
-                    _compositionError=error.Message;
-                    SunEyeVision.Foundation.Logging.PluginLogger.Error(error.Message,nameof(BlobUiComposition));
-                    Changed?.Invoke();
-                    return;
-                }
-                Queue(index+1);
-            }));
-        }
-        Queue(0);
-    }
     private ToolSettingsViewOptions PageOptions()=>_assistUi is null?_composed:_composed with
         {AdditionalAfterContent=_assistUi,AdditionalAfterField="field:c95f3a26edf55097863a7ec47d17cce5"};
     private void ResetPageHost(DeclaredFieldsView next)
@@ -325,7 +286,6 @@ internal sealed class BlobUiComposition : IDisposable
         foreach(var subscription in _pageSubscriptions.ToArray())subscription.Dispose();_pageSubscriptions.Clear();
         var oldRun=RunUi;RunUi=null;
         var oldDisplay=_displayUi;_displayUi=null;
-        var oldJudgment=_judgmentUi;_judgmentUi=null;
         var oldOwner=_roiOwner;_roiOwner=null;
         var oldSupported=_supportedState;_supportedState=null;
         var oldAssist=_assistUi;_assistUi=null;
@@ -333,7 +293,7 @@ internal sealed class BlobUiComposition : IDisposable
         if(oldOwner is not null)oldOwner.Changed-=_preview.Notify;
         if(oldRoi is not null)oldRoi.Changed-=RefreshSupported;
         var errors=new List<Exception>();
-        foreach(var action in new Action[]{()=>oldRun?.Dispose(),()=>oldDisplay?.Dispose(),()=>oldJudgment?.Dispose(),()=>oldOwner?.Dispose(),()=>oldSupported?.Dispose(),()=>oldAssist?.Dispose(),()=>oldRoi?.Dispose(),DisposeDeferredContents})
+        foreach(var action in new Action[]{()=>oldRun?.Dispose(),()=>oldDisplay?.Dispose(),()=>oldOwner?.Dispose(),()=>oldSupported?.Dispose(),()=>oldAssist?.Dispose(),()=>oldRoi?.Dispose(),DisposeDeferredContents})
             try{action();}catch(Exception error){errors.Add(error);}
         _runOptions=null;_displayOptions=null;_pageHost=next;RefreshSupported();
         if(errors.Count!=0)throw new AggregateException("参数页宿主切换期间旧页清理失败。",errors);
@@ -386,7 +346,7 @@ internal sealed class BlobUiComposition : IDisposable
         if(_roiOwner is not null)_roiOwner.Changed-=_preview.Notify;
         if(_roiUi is not null)_roiUi.Changed-=RefreshSupported;
         _preview.Changed-=Notify;
-        var errors=new List<Exception>();foreach(var action in new Action[]{()=>{foreach(var subscription in _pageSubscriptions.ToArray())subscription.Dispose();_pageSubscriptions.Clear();},_preview.Dispose,()=>RunUi?.Dispose(),()=>_roiOwner?.Dispose(),()=>_supportedState?.Dispose(),()=>_displayUi?.Dispose(),()=>_judgmentUi?.Dispose(),()=>_assistUi?.Dispose(),()=>_roiUi?.Dispose(),DisposeDeferredContents,()=>{if(!_bound&&(BaseOptions.InputContent is IDisposable input))input.Dispose();}})
+        var errors=new List<Exception>();foreach(var action in new Action[]{()=>{foreach(var subscription in _pageSubscriptions.ToArray())subscription.Dispose();_pageSubscriptions.Clear();},_preview.Dispose,()=>RunUi?.Dispose(),()=>_roiOwner?.Dispose(),()=>_supportedState?.Dispose(),()=>_displayUi?.Dispose(),()=>_assistUi?.Dispose(),()=>_roiUi?.Dispose(),DisposeDeferredContents,()=>{if(!_bound&&(BaseOptions.InputContent is IDisposable input))input.Dispose();}})
             try{action();}catch(Exception error){errors.Add(error);}
         if(errors.Count!=0)throw new AggregateException("Blob界面作用域清理失败。",errors);
     }

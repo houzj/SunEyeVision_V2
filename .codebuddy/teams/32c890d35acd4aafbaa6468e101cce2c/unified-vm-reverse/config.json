@@ -1,0 +1,34 @@
+{
+  "name": "unified-vm-reverse",
+  "mainConversationId": "32c890d35acd4aafbaa6468e101cce2c",
+  "workspacePath": "d:/MyWork/SunEyeVision_V2",
+  "createdAt": "2026-11-05T03:43:56.909Z",
+  "options": {
+    "workspacePath": "d:/MyWork/SunEyeVision_V2",
+    "isAutoTeam": false
+  },
+  "isAutoTeam": false,
+  "members": [
+    {
+      "memberId": "rea-investigator@unified-vm-reverse",
+      "name": "rea-investigator",
+      "role": "VM 应用层逆向取证",
+      "sessionId": "a8c1419d47ea41d4a51eb4d04d771d85",
+      "status": "running"
+    },
+    {
+      "memberId": "framework-refactor@unified-vm-reverse",
+      "name": "framework-refactor",
+      "role": "框架重构：数据目录门禁退出",
+      "sessionId": "2cf12c6861f543f7b546cb21b72e8b2a",
+      "status": "running"
+    },
+    {
+      "memberId": "doc-keeper@unified-vm-reverse",
+      "name": "doc-keeper",
+      "role": "文档维护：统一基线记录",
+      "sessionId": "dd253da9505840fd8e3ee04423d62894",
+      "status": "running"
+    }
+  ]
+}

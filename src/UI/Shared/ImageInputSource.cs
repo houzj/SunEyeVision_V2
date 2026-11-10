@@ -37,6 +37,8 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.Editing.Wpf.Models.Ob
     private List<string> _runReferences = new();
     public string NodeId { get; }
     public long EditVersion { get; private set; }
+    /// <summary>接纳事务在途标志：writer 回调期间文档已前移而投影尚未安装，此时投影状态归在途事务所有。</summary>
+    internal bool IsAcceptingEdit => _committing;
     public string? LastNotificationError { get; private set; }
     public ReadOnlyObservableCollection<ImageInfo> Images { get; }
     /// <summary>Owner-thread acceptance gateway. Throw before acceptance to reject; never write after notification.</summary>
@@ -255,7 +257,11 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.Editing.Wpf.Models.Ob
             if(image is null||image.FilePath!=address)image=new(){SourceReference=reference,FilePath=address,Name=System.IO.Path.GetFileName(reference),ResourceError=error};
             rows.Add(image);
         }
-        var displayIndex=config.CurrentIndex!=_configuredIndex?config.CurrentIndex:RemapDisplay(rows,config.CurrentIndex);
+        // 列表非空但配置未记录当前图像时（历史方案常见），按原厂行为把第一张当作当前图像：
+        // 否则图像源条计数停在 (0/N)，图像区也没有可显示的来源。这里只规范化显示游标，
+        // 不写回文档配置（_configuredIndex 仍按 config 安装）。
+        var configured=config.CurrentIndex<0&&rows.Count>0?0:config.CurrentIndex;
+        var displayIndex=configured!=_configuredIndex?configured:RemapDisplay(rows,configured);
         Install(rows.ToArray(),config,false,displayIndex);
     }
     public void RemoveMissingImages()

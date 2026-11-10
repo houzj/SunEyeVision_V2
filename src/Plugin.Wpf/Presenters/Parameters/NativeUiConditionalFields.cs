@@ -8,10 +8,10 @@ namespace SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 /// <summary>UI-stage switch and dependent field using the original field presenters.</summary>
 public sealed class NativeUiConditionalFields : Decorator,IDisposable
 {
-    internal DeclaredFieldEditor Switch {get;}
-    internal DeclaredFieldEditor Dependent {get;}
+    internal DeclaredFieldRow Switch {get;}
+    internal DeclaredFieldRow Dependent {get;}
     private bool _disposed;
-    public NativeUiConditionalFields(DeclaredFieldEditor toggle,DeclaredFieldEditor dependent)
+    public NativeUiConditionalFields(DeclaredFieldRow toggle,DeclaredFieldRow dependent)
     {
         Switch=toggle;Dependent=dependent;
         var panel=new StackPanel();panel.Children.Add(toggle);panel.Children.Add(dependent);Child=panel;

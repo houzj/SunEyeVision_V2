@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>B1-2 参数去向与合并项清单</title>
+<style>
+:root{--ink:#1f2328;--muted:#656d76;--line:#d0d7de;--soft:#f6f8fa;--ok:#1a7f37;--warn:#9a6700;--bad:#cf222e}
+*{box-sizing:border-box}
+body{margin:0;padding:32px 22px 70px;color:var(--ink);font:15px/1.7 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+main{max-width:1240px;margin:0 auto}
+h1{font-size:24px;margin:0 0 4px}
+h2{font-size:18px;margin:28px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+p.sub{color:var(--muted);font-size:13px;margin-bottom:20px}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th,td{border:1px solid var(--line);padding:6px 9px;vertical-align:top;text-align:left}
+th{background:var(--soft);font-weight:600}
+code{background:var(--soft);padding:1px 4px;border-radius:3px;font:12px/1.5 ui-monospace,Consolas,monospace}
+.box{border:1px solid var(--line);border-radius:8px;padding:12px 16px;margin:14px 0;background:var(--soft)}
+.ok{color:var(--ok);font-weight:600}
+.warn{color:var(--warn);font-weight:600}
+</style>
+</head>
+<body>
+<main>
+<h1>B1-2 参数去向与合并项清单 · 图像源与 Blob 全链路重构</h1>
+<p class="sub">生成于 2026-11-10 ｜ 依据 B0-1/B0-4 取证结果 ｜ 只读取证，未改任何产品代码</p>
+
+<h2>B1-1 判定</h2>
+<div class="box">
+<p><span class="ok">B1-1 无需增补字段</span>。理由：<code>BlobParameters.xml</code> 已声明 105 项参数，<code>BlobVmFindParameters</code> 已承接原件 104 项（差集 0），<code>BlobSettings</code> 有 36 个宿主稳定字段并与闭包双向映射（<code>FromSettings</code> / <code>ApplyTo</code>）。计划里「41 vs 95 差集 54」的口径已被 B0-1 证伪。</p>
+<p>真正待补的是 B0-3 查出的 6 项无算子承接参数，按用户决定归入 B3-1，不在 B1 重复处理。</p>
+</div>
+
+<h2>参数去向规则（证明无静默省略）</h2>
+<table>
+<thead><tr><th style="width:22%">去向类型</th><th style="width:44%">含义</th><th style="width:34%">判定依据</th></tr></thead>
+<tbody>
+<tr><td>VM 闭包（bindingName）</td><td>XML 参数通过 <code>bindingName</code> 映射到 VM 参数名，经 <code>VmParameters</code> 序列化</td><td>XML 存在 <code>bindingName</code> 属性</td></tr>
+<tr><td>宿主字段</td><td>XML 参数 id 与 <code>BlobSettings</code> 公开字段同名，是宿主稳定字段合同</td><td>id ∈ BlobSettings 字段集</td></tr>
+<tr><td>VM 闭包（同名）</td><td>XML 参数 id 直接等于 VM 参数名，经闭包序列化</td><td>id ∈ BlobVmFindParameters 属性集</td></tr>
+<tr><td class="warn">无去向</td><td>既不在宿主字段也不在 VM 闭包</td><td>三者皆不匹配，必须为零</td></tr>
+</tbody>
+</table>
+
+<h2>逐参数去向（105 项）</h2>
+<table>
+<thead><tr><th style="width:4%">#</th><th style="width:20%">XML 参数</th><th style="width:14%">中文标签</th><th style="width:10%">类型</th><th style="width:22%">去向</th><th style="width:30%">说明</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><code>IsPositionCorrectionEnabled</code></td><td>位置修正</td><td>Boolean</td><td>host field</td><td>BlobSettings.IsPositionCorrectionEnabled</td></tr>
+<tr><td>2</td><td><code>SegmentationMode</code></td><td>阈值方式</td><td>Enum</td><td>host field</td><td>BlobSettings.SegmentationMode</td></tr>
+<tr><td>3</td><td><code>Type</code></td><td>极性</td><td>Enum</td><td>host field</td><td>BlobSettings.Type</td></tr>
+<tr><td>4</td><td><code>Threshold</code></td><td>低阈值</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = LowThreshold</td></tr>
+<tr><td>5</td><td><code>UpperThreshold</code></td><td>高阈值</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = HightThreshold</td></tr>
+<tr><td>6</td><td><code>FixedSoftLowerThreshold</code></td><td>阈值范围</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = LowSoftThreshold</td></tr>
+<tr><td>7</td><td><code>FixedSoftUpperThreshold</code></td><td>高阈值</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = HightSoftThreshold</td></tr>
+<tr><td>8</td><td><code>ThresholdSoftness</code></td><td>软阈值柔和度</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = Softness</td></tr>
+<tr><td>9</td><td><code>RelativeLeftRatio</code></td><td>低尾部比例</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = SoftLeftRatio</td></tr>
+<tr><td>10</td><td><code>RelativeRightRatio</code></td><td>高尾部比例</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = SoftRightRatio</td></tr>
+<tr><td>11</td><td><code>RelativeLowerRatio</code></td><td>低阈值比例</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = SoftLowRatio</td></tr>
+<tr><td>12</td><td><code>RelativeUpperRatio</code></td><td>高阈值比例</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = SoftHighRatio</td></tr>
+<tr><td>13</td><td><code>BlobCountLimit</code></td><td>查找个数</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = FindNum</td></tr>
+<tr><td>14</td><td><code>IsAreaFilterEnabled</code></td><td>面积使能</td><td>Boolean</td><td>host field</td><td>BlobSettings.IsAreaFilterEnabled</td></tr>
+<tr><td>15</td><td><code>FilterAreaMin</code></td><td>面积下限</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = MinArea</td></tr>
+<tr><td>16</td><td><code>FilterAreaMax</code></td><td>面积上限</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = MaxArea</td></tr>
+<tr><td>17</td><td><code>OutputBlobImage</code></td><td>Blob图像输出</td><td>Boolean</td><td>host field</td><td>BlobSettings.OutputBlobImage</td></tr>
+<tr><td>18</td><td><code>OutputBinaryImage</code></td><td>二值化图像输出</td><td>Boolean</td><td>host field</td><td>BlobSettings.OutputBinaryImage</td></tr>
+<tr><td>19</td><td><code>OutputBoundary</code></td><td>轮廓输出</td><td>Boolean</td><td>host field</td><td>BlobSettings.OutputBoundary</td></tr>
+<tr><td>20</td><td><code>HoleMinArea</code></td><td>填充面积阈值</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = HoleMinArea</td></tr>
+<tr><td>21</td><td><code>BlobContourType</code></td><td>输出轮廓类型</td><td>Enum</td><td>VM closure same name</td><td>BlobVmFindParameters.BlobContourType</td></tr>
+<tr><td>22</td><td><code>SelectByHistInfo</code></td><td>直方图信息输出</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.SelectByHistInfo</td></tr>
+<tr><td>23</td><td><code>SelectByBoxAngle</code></td><td>角度使能</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.SelectByBoxAngle</td></tr>
+<tr><td>24</td><td><code>MinBoxAngle</code></td><td>角度下限</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = MinBoxAngle</td></tr>
+<tr><td>25</td><td><code>MaxBoxAngle</code></td><td>角度上限</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = MaxBoxAngle</td></tr>
+<tr><td>26</td><td><code>SelectByRectWidth</code></td><td>矩形宽使能</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.SelectByRectWidth</td></tr>
+<tr><td>27</td><td><code>MinRectWidth</code></td><td>矩形宽下限</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = MinRectWidth</td></tr>
+<tr><td>28</td><td><code>MaxRectWidth</code></td><td>矩形宽上限</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = MaxRectWidth</td></tr>
+<tr><td>29</td><td><code>SelectByRectHeight</code></td><td>矩形高使能</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.SelectByRectHeight</td></tr>
+<tr><td>30</td><td><code>MinRectHeight</code></td><td>矩形高下限</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = MinRectHeight</td></tr>
+<tr><td>31</td><td><code>MaxRectHeight</code></td><td>矩形高上限</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = MaxRectHeight</td></tr>
+<tr><td>32</td><td><code>SelectByPerimeter</code></td><td>周长使能</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.SelectByPerimeter</td></tr>
+<tr><td>33</td><td><code>MinPerimeter</code></td><td>周长下限</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = MinPerimeter</td></tr>
+<tr><td>34</td><td><code>MaxPerimeter</code></td><td>周长上限</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = MaxPerimeter</td></tr>
+<tr><td>35</td><td><code>SelectByShortAxis</code></td><td>短轴使能</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.SelectByShortAxis</td></tr>
+<tr><td>36</td><td><code>MinShortAxis</code></td><td>短轴下限</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = MinShortAxis</td></tr>
+<tr><td>37</td><td><code>MaxShortAxis</code></td><td>短轴上限</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = MaxShortAxis</td></tr>
+<tr><td>38</td><td><code>SelectByLongAxis</code></td><td>长轴使能</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.SelectByLongAxis</td></tr>
+<tr><td>39</td><td><code>MinLongAxis</code></td><td>长轴下限</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = MinLongAxis</td></tr>
+<tr><td>40</td><td><code>MaxLongAxis</code></td><td>长轴上限</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = MaxLongAxis</td></tr>
+<tr><td>41</td><td><code>SelectByCentraBias</code></td><td>质心偏移使能</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.SelectByCentraBias</td></tr>
+<tr><td>42</td><td><code>MinCenterBias</code></td><td>质心偏移下限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = MinCenterBias</td></tr>
+<tr><td>43</td><td><code>MaxCenterBias</code></td><td>质心偏移上限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = MaxCenterBias</td></tr>
+<tr><td>44</td><td><code>AxisRatioEnable</code></td><td>轴比使能</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.AxisRatioEnable</td></tr>
+<tr><td>45</td><td><code>MinAxisRatio</code></td><td>轴比下限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = MinAxisRatio</td></tr>
+<tr><td>46</td><td><code>MaxAxisRatio</code></td><td>轴比上限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = MaxAxisRatio</td></tr>
+<tr><td>47</td><td><code>IsCircularityFilterEnabled</code></td><td>圆度使能</td><td>Boolean</td><td>host field</td><td>BlobSettings.IsCircularityFilterEnabled</td></tr>
+<tr><td>48</td><td><code>FilterCircularityMin</code></td><td>圆度下限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = MinCircularity</td></tr>
+<tr><td>49</td><td><code>FilterCircularityMax</code></td><td>圆度上限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = MaxCircularity</td></tr>
+<tr><td>50</td><td><code>IsRectangularityFilterEnabled</code></td><td>矩形度使能</td><td>Boolean</td><td>host field</td><td>BlobSettings.IsRectangularityFilterEnabled</td></tr>
+<tr><td>51</td><td><code>FilterRectangularityMin</code></td><td>矩形度下限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = MinRectangularity</td></tr>
+<tr><td>52</td><td><code>FilterRectangularityMax</code></td><td>矩形度上限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = MaxRectangularity</td></tr>
+<tr><td>53</td><td><code>SortFeature</code></td><td>排序特征</td><td>Enum</td><td>host field</td><td>BlobSettings.SortFeature</td></tr>
+<tr><td>54</td><td><code>SortMode</code></td><td>排序方式</td><td>Enum</td><td>host field</td><td>BlobSettings.SortMode</td></tr>
+<tr><td>55</td><td><code>Connectivity</code></td><td>连通性</td><td>Enum</td><td>host field</td><td>BlobSettings.Connectivity</td></tr>
+<tr><td>56</td><td><code>MaxAreaInnerRectNum</code></td><td>最大内接矩形数量</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = MaxAreaInnerRectNum</td></tr>
+<tr><td>57</td><td><code>OverlapRatio</code></td><td>最小重叠率</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = OverlapRatio</td></tr>
+<tr><td>58</td><td><code>MaxOutPixelNumEnable</code></td><td>像素超界使能</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.MaxOutPixelNumEnable</td></tr>
+<tr><td>59</td><td><code>MaxOutPixelNum</code></td><td>最大超界像素</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = MaxOutPixelNum</td></tr>
+<tr><td>60</td><td><code>OKWhenNumIsZero</code></td><td>Blob数量为零时通过</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.OKWhenNumIsZero</td></tr>
+<tr><td>61</td><td><code>BlobNumLimitEnable</code></td><td>Blob个数判断</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.BlobNumLimitEnable</td></tr>
+<tr><td>62</td><td><code>BlobNumLimitLow</code></td><td>Blob个数下限</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = BlobNumLimitLow</td></tr>
+<tr><td>63</td><td><code>BlobNumLimitHigh</code></td><td>Blob个数上限</td><td>Integer</td><td>VM closure via bindingName</td><td>bindingName = BlobNumLimitHigh</td></tr>
+<tr><td>64</td><td><code>BlobAreaLimitEnable</code></td><td>Blob面积判断</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.BlobAreaLimitEnable</td></tr>
+<tr><td>65</td><td><code>BlobAreaLimitLow</code></td><td>Blob面积下限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = BlobAreaLimitLow</td></tr>
+<tr><td>66</td><td><code>BlobAreaLimitHigh</code></td><td>Blob面积上限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = BlobAreaLimitHigh</td></tr>
+<tr><td>67</td><td><code>BlobTotalAreaLimitEnable</code></td><td>Blob总面积判断</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.BlobTotalAreaLimitEnable</td></tr>
+<tr><td>68</td><td><code>BlobTotalAreaLimitLow</code></td><td>总面积下限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = BlobTotalAreaLimitLow</td></tr>
+<tr><td>69</td><td><code>BlobTotalAreaLimitHigh</code></td><td>总面积上限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = BlobTotalAreaLimitHigh</td></tr>
+<tr><td>70</td><td><code>CentroidXLimitEnable</code></td><td>质心X判断</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.CentroidXLimitEnable</td></tr>
+<tr><td>71</td><td><code>CentroidXLimitLow</code></td><td>质心X下限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = CentroidXLimitLow</td></tr>
+<tr><td>72</td><td><code>CentroidXLimitHigh</code></td><td>质心X上限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = CentroidXLimitHigh</td></tr>
+<tr><td>73</td><td><code>CentroidYLimitEnable</code></td><td>质心Y判断</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.CentroidYLimitEnable</td></tr>
+<tr><td>74</td><td><code>CentroidYLimitLow</code></td><td>质心Y下限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = CentroidYLimitLow</td></tr>
+<tr><td>75</td><td><code>CentroidYLimitHigh</code></td><td>质心Y上限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = CentroidYLimitHigh</td></tr>
+<tr><td>76</td><td><code>AngleLimitEnable</code></td><td>Box角度判断</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.AngleLimitEnable</td></tr>
+<tr><td>77</td><td><code>AngleLimitLow</code></td><td>Box角度下限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = AngleLimitLow</td></tr>
+<tr><td>78</td><td><code>AngleLimitHigh</code></td><td>Box角度上限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = AngleLimitHigh</td></tr>
+<tr><td>79</td><td><code>CenterXLimitEnable</code></td><td>中心X判断</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.CenterXLimitEnable</td></tr>
+<tr><td>80</td><td><code>CenterXLimitLow</code></td><td>中心X下限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = CenterXLimitLow</td></tr>
+<tr><td>81</td><td><code>CenterXLimitHigh</code></td><td>中心X上限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = CenterXLimitHigh</td></tr>
+<tr><td>82</td><td><code>CenterYLimitEnable</code></td><td>中心Y判断</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.CenterYLimitEnable</td></tr>
+<tr><td>83</td><td><code>CenterYLimitLow</code></td><td>中心Y下限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = CenterYLimitLow</td></tr>
+<tr><td>84</td><td><code>CenterYLimitHigh</code></td><td>中心Y上限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = CenterYLimitHigh</td></tr>
+<tr><td>85</td><td><code>BoxHeightLimitEnable</code></td><td>Box高度判断</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.BoxHeightLimitEnable</td></tr>
+<tr><td>86</td><td><code>BoxHeightLimitLow</code></td><td>Box高度下限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = BoxHeightLimitLow</td></tr>
+<tr><td>87</td><td><code>BoxHeightLimitHigh</code></td><td>Box高度上限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = BoxHeightLimitHigh</td></tr>
+<tr><td>88</td><td><code>BoxWidthLimitEnable</code></td><td>Box宽度判断</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.BoxWidthLimitEnable</td></tr>
+<tr><td>89</td><td><code>BoxWidthLimitLow</code></td><td>Box宽度下限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = BoxWidthLimitLow</td></tr>
+<tr><td>90</td><td><code>BoxWidthLimitHigh</code></td><td>Box宽度上限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = BoxWidthLimitHigh</td></tr>
+<tr><td>91</td><td><code>PerimeterLimitEnable</code></td><td>周长判断</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.PerimeterLimitEnable</td></tr>
+<tr><td>92</td><td><code>PerimeterLimitLow</code></td><td>周长下限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = PerimeterLimitLow</td></tr>
+<tr><td>93</td><td><code>PerimeterLimitHigh</code></td><td>周长上限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = PerimeterLimitHigh</td></tr>
+<tr><td>94</td><td><code>LongAxisLimitEnable</code></td><td>长轴判断</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.LongAxisLimitEnable</td></tr>
+<tr><td>95</td><td><code>LongAxisLimitLow</code></td><td>长轴下限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = LongAxisLimitLow</td></tr>
+<tr><td>96</td><td><code>LongAxisLimitHigh</code></td><td>长轴上限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = LongAxisLimitHigh</td></tr>
+<tr><td>97</td><td><code>ShortAxisLimitEnable</code></td><td>短轴判断</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.ShortAxisLimitEnable</td></tr>
+<tr><td>98</td><td><code>ShortAxisLimitLow</code></td><td>短轴下限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = ShortAxisLimitLow</td></tr>
+<tr><td>99</td><td><code>ShortAxisLimitHigh</code></td><td>短轴上限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = ShortAxisLimitHigh</td></tr>
+<tr><td>100</td><td><code>CircularityLimitEnable</code></td><td>圆形度判断</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.CircularityLimitEnable</td></tr>
+<tr><td>101</td><td><code>CircularityLimitLow</code></td><td>圆形度下限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = CircularityLimitLow</td></tr>
+<tr><td>102</td><td><code>CircularityLimitHigh</code></td><td>圆形度上限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = CircularityLimitHigh</td></tr>
+<tr><td>103</td><td><code>RectangularityLimitEnable</code></td><td>矩形度判断</td><td>Boolean</td><td>VM closure same name</td><td>BlobVmFindParameters.RectangularityLimitEnable</td></tr>
+<tr><td>104</td><td><code>RectangularityLimitLow</code></td><td>矩形度下限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = RectangularityLimitLow</td></tr>
+<tr><td>105</td><td><code>RectangularityLimitHigh</code></td><td>矩形度上限</td><td>Number</td><td>VM closure via bindingName</td><td>bindingName = RectangularityLimitHigh</td></tr>
+</tbody>
+</table>
+</main>
+</body>
+</html>

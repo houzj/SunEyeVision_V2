@@ -23,9 +23,9 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
  private readonly Dictionary<string,string> _numericModelPages=new(StringComparer.Ordinal);
  private string[] _numericPageKeys=[];
  private readonly Dictionary<TabItem,string> _numericTabPages=[];
- private readonly Dictionary<string,DeclaredFieldEditor> _editors=new(StringComparer.Ordinal);
+ private readonly Dictionary<string,DeclaredFieldRow> _editors=new(StringComparer.Ordinal);
  private readonly Dictionary<string,FrameworkElement> _rows=new(StringComparer.Ordinal);
- private readonly List<NativeRangePresenter> _ranges=new();
+ private readonly List<DeclaredRangeRow> _ranges=new();
  private readonly List<DeclaredFieldState> _fieldStates=new();
  private readonly List<NativeGraphicStylePresenter> _displayCompositions=new();
  private bool _disposed;
@@ -40,15 +40,25 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
  private readonly Action<string,DeclaredFieldsView>? _pageBuilt;
  private readonly Dictionary<string,(long RowsMs,long LayoutMs)> _lastBuildStageMs=new(StringComparer.Ordinal);
  private readonly Dictionary<string,long> _lastFieldBuildMs=new(StringComparer.Ordinal);
+ // PROBE-KEEP：编辑器构造/选项装配二级计时，用于确认单字段成本构成（构造 vs 选项 vs 行装配）。
+ private readonly Dictionary<string,long> _editorCtorMs=new(StringComparer.Ordinal);
+ private readonly Dictionary<string,long> _editorOptionsMs=new(StringComparer.Ordinal);
+ private readonly Dictionary<string,long> _rowAssemblyMs=new(StringComparer.Ordinal);
  private readonly List<(string Stage,long Ms)> _ctorMarks=new();
- private readonly Dictionary<string,DeclaredFieldTemplateKind> _templateKinds=new(StringComparer.Ordinal);
- /// <summary>VM 对齐模板分类，供工具组合和生产探针复核，不保存参数值。</summary>
- public IReadOnlyDictionary<string,DeclaredFieldTemplateKind> TemplateKinds=>_templateKinds;
+ private readonly Dictionary<string,string> _templateKinds=new(StringComparer.Ordinal);
+ /// <summary>VM 对齐模板键（原厂 DataTemplate 键），供工具组合和生产探针复核，不保存参数值。</summary>
+ public IReadOnlyDictionary<string,string> TemplateKinds=>_templateKinds;
  /// <summary>PROBE-KEEP：构造分段里程碑（资源/状态/访问器与页分组/收口），供宿主探针输出。活引用：页构建触发早于构造收口。</summary>
  public IReadOnlyList<(string Stage,long Ms)> ConstructionStages=>_ctorMarks;
  /// <summary>PROBE-KEEP：最近一次页构建的分段耗时（行控件创建/行装配布局），供宿主探针输出。</summary>
  public IReadOnlyDictionary<string,(long RowsMs,long LayoutMs)> LastBuildStageMs=>_lastBuildStageMs;
  public IReadOnlyDictionary<string,long> LastFieldBuildMs=>_lastFieldBuildMs;
+ /// <summary>PROBE-KEEP：单字段编辑器构造耗时（含模板应用）。</summary>
+ public IReadOnlyDictionary<string,long> LastEditorCtorMs=>_editorCtorMs;
+ /// <summary>PROBE-KEEP：单字段编辑器选项装配耗时（文本表达式/图像来源）。</summary>
+ public IReadOnlyDictionary<string,long> LastEditorOptionsMs=>_editorOptionsMs;
+ /// <summary>PROBE-KEEP：单字段行装配耗时（边距绑定 + 行对象 + 入列）。</summary>
+ public IReadOnlyDictionary<string,long> LastRowAssemblyMs=>_rowAssemblyMs;
  private readonly List<(NativeParameterPage Page,NativeHost Host)> _pages=new();
  private readonly Dictionary<FrameworkElement,(NativeParameterPage Page,NativeParameterRow Row)> _positions=new();
  private readonly List<NativeAdvancedPresenter> _advanced=new();
@@ -188,41 +198,20 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
  }
  private static void BindNativeRowMargin(FrameworkElement view,NativeHost page)
  {
-  if(view is NativeJudgmentUiDraftControls judgments)
-  {
-   foreach(var child in judgments.Rows)BindNativeRowMargin(child,page);return;
-  }
-  if(view is NativeThresholdUiDraftControls threshold)
-  {
-   foreach(var child in threshold.Rows)BindNativeRowMargin(child,page);return;
-  }
-  if(view is NativeUiConditionalFields conditional)
+   if(view is NativeUiConditionalFields conditional)
   {
    BindNativeRowMargin(conditional.Switch,page);BindNativeRowMargin(conditional.Dependent,page);return;
   }
-  if(view is NativeUiDraftRange draftRange)
-  {
-   BindNativeRowMargin(draftRange.Toggle,page);BindNativeRowMargin(draftRange.Range,page);return;
-  }
-  var row=view switch
-  {
-   DeclaredFieldEditor editor=>editor.EditorBody as FrameworkElement,
-   NativeRangePresenter range=>range.Content as FrameworkElement,
-   _=>null
-  };
-  if(row is null)return;
-  var original=BindingOperations.GetBinding(row,FrameworkElement.MarginProperty);
-  if(original?.Path?.Path=="ChildMargin"&&original.RelativeSource?.Mode==RelativeSourceMode.FindAncestor
-     &&original.RelativeSource.AncestorType==typeof(NativeHost))
-   BindingOperations.SetBinding(row,FrameworkElement.MarginProperty,new Binding(nameof(NativeHost.ChildMargin)){Source=page});
-  if(row is SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamTab.LeftRightControl native
+  // 行宿主（DeclaredFieldRow/DeclaredRangeRow）的 LeftRightControl 自绑定 ChildMargin/ChildLeftWidth，无需再补绑定；
+  // 工具显式提供的 LeftRightControl 组合槽仍按原规则补齐列宽绑定。
+  if(view is SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamTab.LeftRightControl native
      &&native.ReadLocalValue(SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamTab.LeftRightControl.ChildLeftWidthProperty)==DependencyProperty.UnsetValue)
    BindingOperations.SetBinding(native,SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamTab.LeftRightControl.ChildLeftWidthProperty,
        new Binding(nameof(NativeHost.ChildLeftWidth)){Source=page});
  }
  public void UseRegionSourceSelector(string fieldId)
  {
-  if(_editors.TryGetValue(fieldId,out var editor)){editor.UseRegionSourceSelector();return;}
+  if(_editors.TryGetValue(fieldId,out var row)){row.UseRegionSourceSelector();return;}
   throw new KeyNotFoundException("字段尚未注册："+fieldId);
  }
  public bool TryValidate(out string error)
@@ -232,7 +221,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   foreach(var field in _fields.Where(field=>IsFieldActive(field.FieldId)))
   {
    var view=field.View;
-   if(view is NativeRangePresenter&&!checkedRanges.Add(view))continue;
+   if(view is DeclaredRangeRow&&!checkedRanges.Add(view))continue;
    if(!field.TryCommitPending())
    {
     error=_fields.FirstOrDefault(other=>view is not null&&ReferenceEquals(other.View,view)&&other.HasInvalidText)?.Error??field.Error;
@@ -427,39 +416,44 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
        var fieldProbe=System.Diagnostics.Stopwatch.StartNew();
        try
        {
-       var templateKind=DeclaredFieldTemplateRegistry.Resolve(
+       var templateKey=DeclaredFieldTemplateRegistry.ResolveTemplateKey(
         field.Port,
         field.Presentation,
         isNumericPair:field.Presentation.Layout?.PairWith is not null,
-        isDialogGroup:field.Presentation.Layout?.DialogGroup is not null);
-       _templateKinds[field.Port.Id]=templateKind;
+        hasIntegerRadio:radios.ContainsKey(field.Port.Id),
+        inlineConstantReference:_inlineConstants.Contains(field.Port.Id),
+        isDialogPrimary:field.Presentation.Layout?.DialogPrimary==true);
+       _templateKinds[field.Port.Id]=templateKey;
        if(graphicIds.Contains(field.Port.Id))continue;
        if(field.Presentation.Layout?.PairWith is {} id)
        {
         var other=declarations[id];var left=states[field.Port.Id];var right=states[id];
-        var range=new NativeRangePresenter(left,right,field.Presentation,other.Presentation,writeDraft,references,formatReference,SubmitRange,BeginRange);_ranges.Add(range);
+        // 范围行：视觉（SliderArrange between）由模板在实现时声明，构建期只创建轻量宿主与会话。
+        var range=new DeclaredRangeRow(left,right,field.Presentation,other.Presentation,writeDraft,references,formatReference,SubmitRange,BeginRange);
+        _ranges.Add(range);
         foreach(var (state,endpoint) in new[]{(left,0),(right,1)})
         {
-         var i=endpoint;_rows.Add(state.Port.Id,range);
+         var i=endpoint;
          access[state.Port.Id].AttachVisual(new(state.Port.Id,range,()=>state.Accepted,()=>state.HasInvalidInput,()=>range.HasPendingEdits(i),()=>state.Error,()=>range.Input(i),
           value=>range.TrySetConstant(i,value),()=>range.TryCommitPending(),handler=>state.Changed+=handler,handler=>state.Changed-=handler,()=>!state.IsDisposed));
         }
+        _rows.Add(left.Port.Id,range);_rows.Add(right.Port.Id,range);
        }
        else if(!paired.Contains(field.Port.Id))
        {
-        DeclaredFieldEditor CreateEditor()
-        {
-         var editor=new DeclaredFieldEditor(states[field.Port.Id],field.Presentation.DisplayName,references,formatReference,field.Presentation.ChoiceLabels,field.Presentation,
-          integerRadioOptions:radios.GetValueOrDefault(field.Port.Id),inlineConstantReference:_inlineConstants.Contains(field.Port.Id),choiceDisplay:_choiceDisplays.GetValueOrDefault(field.Port.Id));
-         _editors[field.Port.Id]=editor;
-         if(textOptions.TryGetValue(field.Port.Id,out var textOption))editor.UseTextExpressions(textOption);
-         if(imageProviders.TryGetValue(field.Port.Id,out var provider))editor.UseImageSourceSelector(() =>
-         {if(!CurrentGroup())throw new InvalidOperationException("图像来源编辑范围已失效。");var candidates=provider();if(!CurrentGroup())throw new InvalidOperationException("图像来源编辑范围已重绑。");return candidates;});
-         return editor;
-        }
-        // 编辑器必须在其宿主资源作用域内构造：延迟物化会让 RoiSelectControl 等自包含控件的
-        // StaticResource（TextLeft 等）在未挂树的上下文解析失败，故统一即时创建。
-        var editor=CreateEditor();_rows.Add(field.Port.Id,editor);access[field.Port.Id].AttachVisual(new(editor));
+        // 行宿主只创建行视图模型（ContentControl），视觉由模板选择器在实现时实例化；会话类逻辑在行 Loaded 后挂接。
+        var fieldId=field.Port.Id;
+        var ctorProbe=System.Diagnostics.Stopwatch.StartNew();
+        var row=new DeclaredFieldRow(states[field.Port.Id],field.Presentation.DisplayName,references,formatReference,field.Presentation.ChoiceLabels,field.Presentation,
+         integerRadioOptions:radios.GetValueOrDefault(field.Port.Id),inlineConstantReference:_inlineConstants.Contains(field.Port.Id),choiceDisplay:_choiceDisplays.GetValueOrDefault(field.Port.Id));
+        _editors[field.Port.Id]=row;
+        var ctorMs=ctorProbe.ElapsedMilliseconds;ctorProbe.Restart();
+        if(textOptions.TryGetValue(field.Port.Id,out var textOption))row.UseTextExpressions(textOption);
+        if(imageProviders.TryGetValue(field.Port.Id,out var provider))row.UseImageSourceSelector(() =>
+        {if(!CurrentGroup())throw new InvalidOperationException("图像来源编辑范围已失效。");var candidates=provider();if(!CurrentGroup())throw new InvalidOperationException("图像来源编辑范围已重绑。");return candidates;});
+        access[fieldId].AttachVisual(new(row));
+        _editorCtorMs[field.Port.Id]=ctorMs;_editorOptionsMs[field.Port.Id]=ctorProbe.ElapsedMilliseconds;
+        _rows.Add(fieldId,row);
        }
        }
        finally{_lastFieldBuildMs[$"{field.Port.Id}|{field.Presentation.DisplayName}|{field.Port.Type}"]=fieldProbe.ElapsedMilliseconds;}
@@ -480,10 +474,12 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
        foreach(var field in section)
        {
         if(rightEnds.Contains(field.Port.Id)||field.Presentation.Layout?.DialogGroup is {} dialog&&!field.Presentation.Layout.DialogPrimary)continue;
+        var rowProbe=System.Diagnostics.Stopwatch.StartNew();
         var view=_rows[field.Port.Id];BindNativeRowMargin(view,body);
         var affected=field.Presentation.Layout?.DialogGroup is {} displayGroup?section.Where(item=>item.Presentation.Layout?.DialogGroup==displayGroup).Select(item=>item.Port.Id).ToArray():
          field.Presentation.Layout?.PairWith is {} other?new[]{field.Port.Id,other}:new[]{field.Port.Id};
         var row=BorrowRow(metadata,view,()=>NativeParameterRow.ProjectState(affected.Select(id=>states[id])));pageRows.Rows.Add(row);_positions.Add(view,(pageRows,row));
+        _rowAssemblyMs[field.Port.Id]=rowProbe.ElapsedMilliseconds;
         _visibility.Add(view,(advanced,field.Presentation.Layout?.VisibleWhen));_rowGateAnchors.Add(view,field.Port.Id);
        }
       }

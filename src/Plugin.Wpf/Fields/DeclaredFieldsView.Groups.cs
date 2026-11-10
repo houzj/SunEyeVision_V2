@@ -136,7 +136,7 @@ public sealed partial class DeclaredFieldsView
                     &&state.Port.Type.Scalar is ScalarKind.Int64 or ScalarKind.Float64)
                 {
                     var presentation=_groupPresentations[change.Key];
-                    if(!_inlineConstants.Contains(change.Key)&&NativeNumberPresenter.UsesOriginalModes(state.Port,presentation))NativeNumericCommit.EnsureRepresentable(number);
+                    if(!_inlineConstants.Contains(change.Key)&&DeclaredFieldTemplateRegistry.UsesOriginalModes(state.Port,presentation,false))NativeNumericCommit.EnsureRepresentable(number);
                     var value=Convert.ToDouble(number.Value,CultureInfo.InvariantCulture);
                     if(presentation.Layout is {} layout&&(value<layout.Minimum||value>layout.Maximum))throw new ArgumentException("数值超出声明的编辑范围。");
                     if(!_inlineConstants.Contains(change.Key)&&number.Value is double real&&presentation.Layout?.DecimalPlaces is {} precision&&Math.Round(real,precision,MidpointRounding.ToEven)!=real)

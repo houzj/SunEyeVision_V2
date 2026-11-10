@@ -15,7 +15,7 @@ internal sealed partial class BlobLocalRoiOwner
     private DispatcherOperation? _previewRefresh;
     private long _previewRequest,_previewRevision;
     private bool _previewing,_previewAgain;
-    private readonly List<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor> _previewFields=new();
+    private readonly List<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldRow> _previewFields=new();
     internal string PreviewError {get;private set;}="";
     private void InitializePreview()
     {

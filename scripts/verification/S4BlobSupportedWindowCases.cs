@@ -164,7 +164,7 @@ internal static class S2DocumentEditingCases
             Require(!display.HasUiChanges,"眼睛恢复仍脏");
             var colors=Logical(display).OfType<SunEyeVision.Plugin.Wpf.Presenters.Display.NativeColorPresenter>().ToArray();
             foreach(var color in colors){var original=color.SelectedColor;color.SelectedColor=Colors.Blue;Pump();Require(display.HasUiChanges&&!control.TryCapture(out _),"文本颜色漏跟踪");color.SelectedColor=original;Pump();Require(!display.HasUiChanges,"颜色同值恢复仍脏");}
-            var content=Logical(display).OfType<DeclaredFieldEditor>().Single(field=>field.FieldId=="unavailable.text.content");
+            var content=Logical(display).OfType<DeclaredFieldRow>().Single(field=>field.FieldId=="unavailable.text.content");
             Require(content.TrySetConstant("preview"),"原内容不可编辑");Require(display.HasUiChanges&&!control.TryCapture(out _),"文本变更漏跟踪");
             Require(content.TrySetConstant("")&&!display.HasUiChanges,"文本恢复仍脏");
             var popup=Visual(graphic).OfType<AppsPopup>().First();popup.IsDropDownOpen=true;first.UpdateLayout();Pump();
@@ -288,7 +288,7 @@ internal static class S2DocumentEditingCases
         return 0;
     }
     private static bool SelectRadio(FrameworkElement radio,long value)=>(bool)radio.GetType().GetMethod("TrySetConstant")!.Invoke(radio,new object[]{value})!;
-    private static void SelectSource(DeclaredFieldEditor field,OutputReference? expected)
+    private static void SelectSource(DeclaredFieldRow field,OutputReference? expected)
     {
         var popup=Logical(field).Concat(Visual(field)).OfType<AppsPopup>().First(item=>item.IsVisible);popup.IsDropDownOpen=true;popup.UpdateLayout();Pump();
         var session=popup.DataContext;((ICommand)session.GetType().GetProperty("DropDownCommand")!.GetValue(session)!).Execute(null);Pump();

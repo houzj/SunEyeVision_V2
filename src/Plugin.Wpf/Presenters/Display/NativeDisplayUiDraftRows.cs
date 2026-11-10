@@ -25,7 +25,7 @@ public sealed class NativeDisplayUiDraftRows : NativeHost,IDisposable,IParameter
     private readonly List<DeclaredFieldState> _states=[];
     private bool _disposed;
     private readonly Dictionary<DeclaredFieldState,ParameterSetting> _baseline=[];
-    private readonly Dictionary<DeclaredFieldEditor,ParameterSetting> _fieldBaseline=[];
+    private readonly Dictionary<DeclaredFieldRow,ParameterSetting> _fieldBaseline=[];
     private readonly Dictionary<NativeColorPresenter,Color> _colorBaseline=[];
     public event Action? Changed;
     public bool HasPendingEdits=>!_disposed&&(_fieldBaseline.Keys.Any(editor=>editor.HasPendingEdits)||_contents.OfType<NativeGraphicStylePresenter>().Any(view=>_baseline.Keys.Any(state=>view.HasPendingEdits(state.Port.Id))));
@@ -110,7 +110,7 @@ public sealed class NativeDisplayUiDraftRows : NativeHost,IDisposable,IParameter
         if(includeTextSettings)AddTextSettings();
         SetRows(_rows);
         foreach(var state in _states){_baseline.Add(state,state.Accepted);state.Changed+=OnUiChanged;}
-        foreach(var editor in _contents.OfType<DeclaredFieldEditor>()){_fieldBaseline.Add(editor,editor.Setting);editor.Changed+=OnUiChanged;editor.AddHandler(TextBoxBase.TextChangedEvent,new TextChangedEventHandler(OnRawChanged));}
+        foreach(var editor in _contents.OfType<DeclaredFieldRow>()){_fieldBaseline.Add(editor,editor.Setting);editor.Changed+=OnUiChanged;editor.AddHandler(TextBoxBase.TextChangedEvent,new TextChangedEventHandler(OnRawChanged));}
         foreach(var color in _contents.OfType<NativeColorPresenter>()){_colorBaseline.Add(color,color.SelectedColor);color.SelectedColorChanged+=OnColorChanged;}
         }
         catch(Exception failure)
@@ -126,19 +126,17 @@ public sealed class NativeDisplayUiDraftRows : NativeHost,IDisposable,IParameter
         {
             var port=new Port("unavailable.text."+id,type,Required:mode==FieldEditModes.Constant,EditModes:mode);
             var presentation=new FieldPresentation(port.Id,label,"文本显示",_rows.Count,FieldEditorKind.Scalar){Layout=layout};
-            DeclaredFieldEditor editor;
+            DeclaredFieldRow editor;
             if(inline)
             {
                 var state=new DeclaredFieldState(port,initial,_=>{},allowUnboundReference:true);
                 _states.Add(state);
-                editor=new DeclaredFieldEditor(state,label,ReferenceFieldOptions.Empty,presentation:presentation,
+                editor=new DeclaredFieldRow(state,label,ReferenceFieldOptions.Empty,presentation:presentation,
                     allowUnboundReference:true,inlineConstantReference:true);
             }
-            else editor=new DeclaredFieldEditor(port,label,initial,_=>{},
+            else editor=new DeclaredFieldRow(port,label,initial,_=>{},
                 ReferenceFieldOptions.Empty,presentation:presentation,allowUnboundReference:mode==FieldEditModes.Reference);
             _contents.Add(editor);
-            // VM's StringConfig, FloatConfig and ButtonSelecter rows have a 32-DIP host.
-            ((FrameworkElement)editor.EditorBody).Height=32;
             if(text)editor.UseTextExpressions(new(()=>new(Array.Empty<DeclaredReferenceCandidate>(),_=>throw new InvalidOperationException("当前没有可用来源。"),()=>!_disposed)));
             _rows.Add(new NativeParameterRow(group,editor));
         }

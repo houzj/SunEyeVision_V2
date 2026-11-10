@@ -20,7 +20,7 @@ internal static class S2DocumentEditingCases
  static void Pump(){var f=new DispatcherFrame();Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.ContextIdle,new Action(()=>f.Continue=false));Dispatcher.PushFrame(f);}
  static IEnumerable<T> Visuals<T>(DependencyObject root)where T:DependencyObject{if(root is T item)yield return item;for(var i=0;i<VisualTreeHelper.GetChildrenCount(root);i++)foreach(var child in Visuals<T>(VisualTreeHelper.GetChild(root,i)))yield return child;}
  static object? Get(object o,string name)=>o.GetType().GetField(name,BindingFlags.Instance|BindingFlags.NonPublic)?.GetValue(o)??o.GetType().GetProperty(name,BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic)?.GetValue(o);
- static readonly Type Policy=typeof(DeclaredFieldEditor).Assembly.GetType("SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeNumericTextProjection")!;
+ static readonly Type Policy=typeof(DeclaredFieldRow).Assembly.GetType("SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeNumericTextProjection")!;
  static string Format(double value,int digits)=>(string)Policy.GetMethod("Format",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{value,digits})!;
  static double Parse(string text)=>double.Parse(text,NumberStyles.Float,CultureInfo.InvariantCulture);
  [STAThread] static int Main()
@@ -58,7 +58,7 @@ internal static class S2DocumentEditingCases
  static void Scalar(string culture,int digits)
  {
   var previous=CultureInfo.CurrentCulture;CultureInfo.CurrentCulture=CultureInfo.GetCultureInfo(culture);try{
-   var writes=0;using var field=new DeclaredFieldEditor(new Port("value",DataType.Number),"值",new ConstantSetting(20d),_=>writes++,presentation:Presentation("value",digits));var window=new Window{Content=field,Width=420,Height=200};window.Show();Pump();
+   var writes=0;using var field=new DeclaredFieldRow(new Port("value",DataType.Number),"值",new ConstantSetting(20d),_=>writes++,presentation:Presentation("value",digits));var window=new Window{Content=field,Width=420,Height=200};window.Show();Pump();
    try{var native=Visuals<Native.SliderArrangeFloat>(field).Single();var leaf=(Native.NumericControl)((ComboBox)native.FindName("CBox")).Template.FindName("T1",(ComboBox)native.FindName("CBox"));var outer=leaf.GetBindingExpression(Native.NumericControl.TextProperty);var text=(TextBox)field.InputElement!;var inner=text.GetBindingExpression(TextBox.TextProperty);
     Require(field.TrySetConstant(double.MaxValue),"单值极大值拒绝："+field.Error);Require(writes==1&&Parse(text.Text)==double.MaxValue,"单值极值未接纳");
     text.Focus();Pump();text.SelectAll();text.SelectedText=(-double.MaxValue).ToString("F"+digits,CultureInfo.InvariantCulture);Require(field.TryCommitPending(),"单值真实文本替换不能重新提交："+field.Error);Require(writes==2&&field.Setting is ConstantSetting {Value:double d}&&d==-double.MaxValue,"单值替换半写");

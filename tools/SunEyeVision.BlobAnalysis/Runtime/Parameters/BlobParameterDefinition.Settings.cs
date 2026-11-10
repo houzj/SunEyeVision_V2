@@ -7,7 +7,6 @@ namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 
 public sealed partial class BlobParameterDefinition
 {
-    private readonly string _judgmentPage,_judgmentSection;
     private readonly IReadOnlyList<SettingBinding> _bindings;
     private sealed record SettingBinding(Port Port,FieldPresentation Presentation,
         Func<BlobSettings,object?> Read,Func<BlobSettings,object?,BlobSettings> Write);
@@ -74,32 +73,6 @@ public sealed partial class BlobParameterDefinition
                 return copy;
             }));
         }
-        foreach(var item in _judgments.OrderBy(x=>Integer(x,"order",0,int.MaxValue)))
-        {
-            var key=Required(item,"key");var label=Required(item,"name");var enabled=FieldId(item,"enabledFieldId");
-            BlobJudgment Read(BlobSettings settings)=>settings.Judgments.SingleOrDefault(rule=>rule.Key==key)
-                ??throw new ArgumentException("Blob settings are missing a declared judgment: "+key);
-            BlobSettings Set(BlobSettings settings,Func<BlobJudgment,BlobJudgment> edit)=>settings with
-                {Judgments=Array.AsReadOnly(settings.Judgments.Select(rule=>rule.Key==key?edit(rule):rule).ToArray())};
-            var port=new Port(enabled,DataType.Boolean,EditModes:FieldEditModes.Constant);
-            bindings.Add(new(port,new(enabled,label,_judgmentSection,bindings.Count,FieldEditorKind.Scalar)
-                {Layout=new(_judgmentPage,_judgmentSection,AllowReference:false)},s=>Read(s).Enabled,(s,v)=>Set(s,r=>r with{Enabled=(bool)v!})));
-            if(Required(item,"kind")!="Range")
-            {
-                if(item.Attribute("minimumFieldId") is not null||item.Attribute("maximumFieldId") is not null)
-                    throw new InvalidDataException("Boolean Blob judgment cannot declare numeric editor fields.");
-                continue;
-            }
-            var minimum=FieldId(item,"minimumFieldId");var maximum=FieldId(item,"maximumFieldId");var decimals=Integer(item,"decimals",0,15);
-            foreach(var lower in new[]{true,false})
-            {
-                var number=new Port(lower?minimum:maximum,DataType.Number,EditModes:FieldEditModes.Constant);
-                bindings.Add(new(number,new(number.Id,label+(lower?"下限":"上限"),_judgmentSection,bindings.Count,FieldEditorKind.Scalar)
-                    {Layout=new(_judgmentPage,_judgmentSection,new(enabled,true),lower?maximum:null,
-                        Minimum:Finite(item,"allowedMinimum"),Maximum:Finite(item,"allowedMaximum"),DecimalPlaces:decimals,AllowReference:false,Increment:Math.Pow(10,-decimals))},
-                    s=>lower?Read(s).Minimum:Read(s).Maximum,(s,v)=>Set(s,r=>lower?r with{Minimum=(double)v!}:r with{Maximum=(double)v!})));
-            }
-        }
         if(bindings.Select(b=>b.Port.Id).Distinct(StringComparer.Ordinal).Count()!=bindings.Count)throw new InvalidDataException("Duplicate Blob editor field IDs.");
         return bindings.AsReadOnly();
     }
@@ -107,13 +80,6 @@ public sealed partial class BlobParameterDefinition
     {
         var diagnostics=settings.Validate();
         if(diagnostics.Count!=0)throw new ArgumentException(string.Join("; ",diagnostics.Select(item=>item.Message)));
-        foreach(var definition in CreateJudgments().Where(rule=>rule.Kind!=BlobJudgmentKind.Range))
-        {
-            var actual=settings.Judgments.SingleOrDefault(rule=>rule.Key==definition.Key)
-                ??throw new ArgumentException("Blob settings are missing a declared judgment: "+definition.Key);
-            if(actual.Minimum!=definition.Minimum||actual.Maximum!=definition.Maximum)
-                throw new ArgumentException("Blob Boolean judgment endpoints are fixed by XML: "+definition.Key);
-        }
         return new(SettingsSchema.Inputs,_bindings.ToDictionary(b=>b.Port.Id,b=>PrepareField(b,b.Read(settings)),StringComparer.Ordinal));
     }
     private static object? PrepareField(SettingBinding field,object? value)
@@ -130,8 +96,7 @@ public sealed partial class BlobParameterDefinition
     public BlobSettings MaterializeSettings(InputValues resolved)
     {
         var values = new InputValues(SettingsSchema.Inputs, resolved.CopyValues());
-        var result = new BlobSettings(false) { Judgments = Array.AsReadOnly(CreateJudgments().Select(rule =>
-            rule.Kind == BlobJudgmentKind.Range ? rule with { Enabled=false, Minimum=0, Maximum=0 } : rule with { Enabled=false }).ToArray()) };
+        var result = new BlobSettings(false);
         foreach (var field in _bindings) result = field.Write(result, PrepareField(field,values.Get<object?>(field.Port.Id)));
         var diagnostics = result.Validate();
         if (diagnostics.Count != 0) throw new ArgumentException(string.Join("; ", diagnostics.Select(item => item.Message)));

@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param([Parameter(Mandatory)][string]$AppPath,[string]$FrameworkOriginPath,[string]$SourceCommit,
     [string]$RuntimeConfigName = 'SunEyeVision.UI.runtimeconfig.json',[switch]$NeutralHost)
 Set-StrictMode -Version Latest

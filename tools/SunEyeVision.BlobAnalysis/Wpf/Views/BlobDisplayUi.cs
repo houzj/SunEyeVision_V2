@@ -34,7 +34,7 @@ internal static class BlobDisplayUi
             TextDisplays=new[]{new SunEyeVision.Plugin.Wpf.Fields.NativeTextDisplayOptions(Id(text,"content"),Id(text,"ok"),Id(text,"ng"),Id(text,"size"),Id(text,"opacity"),Id(text,"x"),Id(text,"y"))}};
     }
 
-    internal static ToolSettingsViewOptions AddRows(ToolSettingsViewOptions options,ToolSchema schema,FrameworkElement assistPointVisibility,Action<NativeDisplayUiDraftRows>? observe=null,Action<NativeJudgmentUiDraftControls>? observeJudgment=null)
+    internal static ToolSettingsViewOptions AddRows(ToolSettingsViewOptions options,ToolSchema schema,FrameworkElement assistPointVisibility,Action<NativeDisplayUiDraftRows>? observe=null)
     {
         options=Configure(options,schema);
         var display=new NativeDisplayUiDraftRows("图像显示",new[]{
@@ -48,15 +48,7 @@ internal static class BlobDisplayUi
         var textEye=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Field(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Text,"visible");
         rows.Add(new(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Field(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Inspection,"visible"),views[0],FollowAnchorVisibility:false,InsertBefore:true));
         foreach(var view in views.Skip(1))rows.Add(new(textEye,new PointVisibilityHost(view),FollowAnchorVisibility:false,InsertBefore:true));
-        var fields=schema.Presentation!.Fields.Where(field=>field.Group=="结果判定").ToArray();
-        var suppressed=options.SuppressedFieldRows?.ToHashSet(StringComparer.Ordinal)??new HashSet<string>(StringComparer.Ordinal);
-        foreach(var field in fields)suppressed.Add(field.FieldId);
-        if(fields.Length!=0)
-        {
-            var judgment=new NativeJudgmentUiDraftControls();observeJudgment?.Invoke(judgment);
-            rows.Add(new(fields[0].FieldId,judgment,FollowAnchorVisibility:false,InsertBefore:true));
-        }
-        return options with {AdditionalAnchoredContents=rows,SuppressedFieldRows=suppressed};
+        return options with {AdditionalAnchoredContents=rows};
     }
     // The generic row owns only this shell. Retiring it detaches the borrowed native view's logical binding.
     private sealed class PointVisibilityHost : System.Windows.Controls.Decorator,IDisposable

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<title>Blob 调试窗口 UI 对账：运行参数 / 结果显示 vs VM 原厂</title>
+<style>
+ body{font-family:"Microsoft YaHei",sans-serif;max-width:1180px;margin:24px auto;padding:0 16px;color:#222;line-height:1.6}
+ h1{font-size:22px;border-bottom:3px solid #e67e22;padding-bottom:8px}
+ h2{font-size:18px;margin-top:32px;border-left:5px solid #e67e22;padding-left:10px}
+ h3{font-size:15px;margin-top:20px}
+ table{border-collapse:collapse;width:100%;font-size:12.5px;margin:10px 0}
+ th,td{border:1px solid #ccc;padding:5px 7px;text-align:left;vertical-align:top}
+ th{background:#f5e6d3}
+ .same{background:#e8f5e9}
+ .diff{background:#fdecea}
+ .miss{background:#fff3e0}
+ .tag{display:inline-block;padding:1px 6px;border-radius:3px;font-size:11px;color:#fff}
+ .t-same{background:#2e7d32}.t-diff{background:#c62828}.t-miss{background:#ef6c00}.t-todo{background:#6a1b9a}
+ img.ev{max-width:420px;border:1px solid #bbb;margin:6px}
+ .note{background:#fffde7;border-left:4px solid #fbc02d;padding:8px 12px;margin:10px 0;font-size:13px}
+ .ev{color:#555;font-size:12px}
+ code{background:#f0f0f0;padding:0 4px;border-radius:3px;font-size:12px}
+</style>
+</head>
+<body>
+
+<h1>Blob 调试窗口 UI 对账：运行参数 / 结果显示 vs VM 原厂</h1>
+<p><b>目的</b>：按用户要求，把 Blob 分析调试窗口「运行参数」「结果显示」两个 tab 的 UI 与 VM 原厂逐项对比，差异全部列出，供圈定后统一修复（保持一致）。</p>
+<p><b>证据来源</b>（可追溯）：</p>
+<ul>
+ <li>VM 原厂参数 UI 基线（模块 UI XML 全量取证）：<code>docs/collaboration/evidence/VM_BLOB_UI_SOURCE_BASELINE_20261026.json</code>（3 个 tab、分组、字段、控件类型、默认值、Trigger 显隐条件）</li>
+ <li>VM 原厂实机截图：<code>docs/collaboration/evidence/VM_BLOB_USER_UI_SS01~08_20261026.png</code></li>
+ <li>VM 反编译源码：<code>docs/07-工具逆向/decompiled/</code>（窗口壳 ParamsConfigWithResultViewControl、参数树 AlgorithmTabRoot/Tab/Category、ParamListView、BlobFindParam.cs）</li>
+ <li>VM 参数注册（默认值/范围）：<code>docs/07-工具逆向/decompiled/Managed/BlobFind/IMVSBlobFindModuCs/BlobFindParam.cs:1955-2064</code></li>
+ <li>我方定义：<code>tools/SunEyeVision.BlobAnalysis/Runtime/Resources/BlobParameters.xml</code>；渲染：<code>DeclaredSettingsView</code>；组装：<code>tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobUiComposition.cs</code></li>
+</ul>
+
+<h2>零、结论摘要（改前 → 改后 → 依据）</h2>
+<p>改前：我方两个 tab 的字段身份大体齐全，但<b>组织方式、控件形态、判定归属与原厂不一致</b>，用户一眼能看出"不是原厂"。<br>
+改后：两个 tab 的分组、顺序、控件形态（范围一行双输入、眼睛+铅笔行、开关样式）、判定归属与原厂一致。<br>
+依据：VM 原厂 UI XML 基线 + 原厂截图（本文引用）。</p>
+<table>
+ <tr><th>#</th><th>结构性差异</th><th>影响</th></tr>
+ <tr class="diff"><td>S1</td><td><b>判定条件双轨</b>：VM 的判定（LimitEnable 组）就在「结果显示」tab 的「结果判定」分组；我方在「运行参数→高级」区有一套 LimitEnable 字段（BlobParameters.xml:103-148），结果显示页又有一套自研 Judgments（输出不为空/白色像素比例/平均面积…，:150-163）——两套判定清单还不一样</td><td>用户在原厂位置找不到判定，且两套判定语义冲突，必须集中替换为一套</td></tr>
+ <tr class="diff"><td>S2</td><td><b>范围类参数控件形态</b>：VM 用一行双输入（IntegerBettween/FloatBettween，如"面积范围 [10]—[9999999]"，截图 SS04）；我方拆成"面积下限/面积上限"两行独立字段</td><td>所有筛选/判定范围与原厂行数不一致（约 20+ 组）</td></tr>
+ <tr class="diff"><td>S3</td><td><b>高级折叠机制</b>：VM 运行参数 tab 内是 <code>Expert</code> 展开项（Expand 类型，展开后"收起 &gt;"链接，截图 SS05）；我方是独立"高级" section（advanced=true）</td><td>折叠归属与展开交互与原厂不同</td></tr>
+ <tr class="diff"><td>S4</td><td><b>图像显示分组</b>：VM 每行 = 名称 + 眼睛（显隐）+ 铅笔（样式编辑），固定 7 项（Blob/最大内接矩形/检测区域/轮廓点/文本/屏蔽区多边形/扇环检测区域，截图 SS07）；我方由 NativeDisplayUiDraftRows + GraphicDisplays 拼装，含"基准点/运行点"（VM 无此项）等，行组织不同</td><td>结果显示页第一分组外观与项清单不一致</td></tr>
+</table>
+
+<h2>一、窗口壳与 tab 结构</h2>
+<table>
+ <tr><th>项</th><th>VM 原厂</th><th>我方现状</th><th>状态</th></tr>
+ <tr><td>页签</td><td>基本参数 / 运行参数 / 结果显示（三个，截图 SS01/SS04/SS07）</td><td>基本参数 / 运行参数 / 结果显示（同）</td><td class="same"><span class="tag t-same">一致</span></td></tr>
+ <tr><td>窗口壳</td><td>左参数列 + GridSplitter + 右结果区（ParamsConfigWithResultViewControl.xaml:1-22）</td><td>调试窗口自有壳（布局待目视核对比例与分隔条）</td><td class="miss"><span class="tag t-todo">待目视核对</span></td></tr>
+ <tr><td>底部按钮</td><td>右下「连续执行 / 执行 / 确定」，左下重置图标（SS01-08 一致）</td><td>待目视核对</td><td class="miss"><span class="tag t-todo">待目视核对</span></td></tr>
+ <tr><td>tab 标题来源</td><td>模块 UI XML Name 键 + 多语言（Tab_Run Params=运行参数，zh-cn.xaml:1306）</td><td>schema Presentation 页名，一致</td><td class="same"><span class="tag t-same">一致</span></td></tr>
+</table>
+<p class="ev">原厂截图：SS01（基本参数）、SS04（运行参数上段）、SS05（运行参数 Expert 展开）、SS07/SS08（结果显示）：</p>
+<img class="ev" src="../../../collaboration/evidence/VM_BLOB_USER_UI_SS04_20261026.png" alt="VM运行参数"/>
+<img class="ev" src="../../../collaboration/evidence/VM_BLOB_USER_UI_SS07_20261026.png" alt="VM结果显示"/>
+<img class="ev" src="../../../collaboration/evidence/VM_BLOB_USER_UI_SS05_20261026.png" alt="VM Expert展开"/>
+
+<h2>二、运行参数 tab 逐项对账</h2>
+
+<h3>2.1 分组结构</h3>
+<table>
+ <tr><th>VM 原厂</th><th>我方现状</th><th>状态</th></tr>
+ <tr><td>单分组「运行参数」，其中 <code>Expert</code> 为可展开项（Expand），展开后显示圆度/矩形度/排序/连通性/内接矩形/重叠率/超界像素等（SS05「收起 &gt;」）</td><td>两个 section：「运行参数」+「高级」(advanced=true，:73-149)</td><td class="diff"><span class="tag t-diff">不一致</span> S3</td></tr>
+</table>
+
+<h3>2.2 字段对账总表（按 VM 原厂顺序）</h3>
+<p>控件类型按 VM XML：<code>Enumeration</code>=下拉、<code>Boolean</code>=开关、<code>Integer/Float</code>=数字框（带上下箭头+右侧引用图标）、<code>IntegerBettween/FloatBettween</code>=<b>一行双输入范围</b>、<code>Expand</code>=折叠展开项。</p>
+<table>
+ <tr><th>#</th><th>VM 字段</th><th>VM 控件</th><th>VM 默认/范围</th><th>我方字段</th><th>我方控件</th><th>状态</th></tr>
+ <tr><td>1</td><td>ThresholdType 阈值方式</td><td>下拉（6 项）</td><td>默认 0x2=单阈值</td><td>SegmentationMode</td><td>下拉（6 项，choices 一致）</td><td class="same"><span class="tag t-same">一致</span></td></tr>
+ <tr><td>2</td><td>Polarity 极性</td><td>下拉</td><td>默认 0</td><td>Type（亮于背景/暗于背景）</td><td>下拉</td><td class="diff"><span class="tag t-diff">显隐条件不同</span>：VM 由 ThresholdType Trigger 控制（0x1/0x2 可见）；我方 visibleWhen=SegmentationMode≠DoubleThreshold。需按 VM Trigger 逐值核对</td></tr>
+ <tr><td>3</td><td>LowThreshold 低阈值</td><td>数字</td><td>100，[0,255]</td><td>Threshold→LowThreshold</td><td>数字</td><td class="same"><span class="tag t-same">一致</span></td></tr>
+ <tr><td>4</td><td>HightThreshold 高阈值</td><td>数字</td><td>150</td><td>UpperThreshold→HightThreshold</td><td>数字</td><td class="same"><span class="tag t-same">一致</span>（显隐=双阈值，两边同）</td></tr>
+ <tr><td>5</td><td>ThresholdRangArea 阈值范围（软阈值固定）</td><td><b>一行双输入</b></td><td>10000</td><td>FixedSoftLower/UpperThreshold 两行</td><td>两行数字</td><td class="diff"><span class="tag t-diff">控件形态</span> S2</td></tr>
+ <tr><td>6</td><td>Softness 软阈值柔和度</td><td>数字</td><td>254</td><td>ThresholdSoftness→Softness</td><td>数字</td><td class="same"><span class="tag t-same">一致</span></td></tr>
+ <tr><td>7-10</td><td>SoftLeftRatio/RightRatio/LowRatio/HighRatio</td><td>数字×4</td><td>5/5/40/60</td><td>RelativeLeft/Right/Lower/UpperRatio</td><td>数字×4</td><td class="same"><span class="tag t-same">一致</span>（顺序：VM 左/右/低/高，我方同）</td></tr>
+ <tr><td>11</td><td>FindNum 查找个数</td><td>数字</td><td>100，[1,20000]</td><td>BlobCountLimit→FindNum</td><td>数字</td><td class="same"><span class="tag t-same">一致</span></td></tr>
+ <tr><td>12</td><td>HoleMinArea 填充面积阈值</td><td>数字</td><td>0</td><td>HoleMinArea</td><td>数字</td><td class="same"><span class="tag t-same">一致</span></td></tr>
+ <tr><td>13</td><td>SelectByArea 面积使能</td><td>开关</td><td>True</td><td>IsAreaFilterEnabled</td><td>开关</td><td class="same"><span class="tag t-same">一致</span></td></tr>
+ <tr><td>14</td><td>RangArea 面积范围</td><td><b>一行双输入</b></td><td>[1,999999999]</td><td>FilterAreaMin/Max 两行</td><td>两行数字</td><td class="diff"><span class="tag t-diff">控件形态</span> S2；另 VM 默认下限=10（截图 SS04 显示 10），XML 默认 10000 待核对</td></tr>
+ <tr><td>15</td><td>BlobContourType 输出轮廓类型</td><td>下拉</td><td>默认 0</td><td>BlobContourType</td><td>下拉（3 项同）</td><td class="miss"><span class="tag t-miss">默认值待核对</span>：VM 0=？（不输出轮廓/无序），我方默认 NoneContour=不输出轮廓（截图 SS04 显示"不输出轮廓"，一致可能性大）</td></tr>
+ <tr><td>16</td><td>BolbImageEnable Blob图像输出</td><td>开关</td><td>True</td><td>OutputBlobImage</td><td>开关</td><td class="same"><span class="tag t-same">一致</span></td></tr>
+ <tr><td>17</td><td>BinaryImageEnable 二值化图像输出</td><td>开关</td><td>True</td><td>OutputBinaryImage</td><td>开关</td><td class="same"><span class="tag t-same">一致</span></td></tr>
+ <tr><td>18</td><td><code>Expert</code> 展开项</td><td>Expand</td><td>收起</td><td>「高级」section</td><td>折叠区</td><td class="diff"><span class="tag t-diff">机制不同</span> S3</td></tr>
+ <tr><td>19</td><td>SelectByHistInfo 直方图信息输出</td><td>开关</td><td>False</td><td>SelectByHistInfo</td><td>开关</td><td class="same"><span class="tag t-same">一致</span></td></tr>
+ <tr><td>20</td><td>SelectByBoxAngle 角度使能</td><td>开关</td><td>False</td><td>SelectByBoxAngle</td><td>开关</td><td class="same"><span class="tag t-same">一致</span></td></tr>
+ <tr><td>21</td><td>RangBoxAngle 角度范围</td><td><b>一行双输入</b></td><td>[-9000,9000]</td><td>MinBoxAngle/MaxBoxAngle 两行</td><td>两行数字</td><td class="diff"><span class="tag t-diff">控件形态</span> S2</td></tr>
+ <tr><td>22-23</td><td>SelectByRectWidth / RangRectWidth 矩形宽</td><td>开关+一行双输入</td><td>False / [1,1000000]</td><td>SelectByRectWidth + Min/MaxRectWidth</td><td>开关+两行</td><td class="diff"><span class="tag t-diff">控件形态</span> S2</td></tr>
+ <tr><td>24-25</td><td>SelectByRectHeight / RangRectHeight 矩形高</td><td>开关+一行双输入</td><td>False / [1,1000000]</td><td>同上两行</td><td>开关+两行</td><td class="diff"><span class="tag t-diff">控件形态</span> S2</td></tr>
+ <tr><td>26-27</td><td>SelectByPerimeter / RangPerimeter 周长</td><td>开关+一行双输入</td><td>False / 默认 1000</td><td>Min/MaxPerimeter 两行，默认 1~999999999</td><td>开关+两行</td><td class="diff"><span class="tag t-diff">控件形态+默认值待核对</span></td></tr>
+ <tr><td>28-29</td><td>SelectByShortAxis / RangShortAxis 短轴</td><td>开关+一行双输入</td><td>False / 默认 1000</td><td>Min/MaxShortAxis</td><td>开关+两行</td><td class="diff"><span class="tag t-diff">控件形态</span> S2</td></tr>
+ <tr><td>30-31</td><td>SelectByLongAxis / RangLongAxis 长轴</td><td>开关+一行双输入</td><td>False</td><td>Min/MaxLongAxis</td><td>开关+两行</td><td class="diff"><span class="tag t-diff">控件形态</span> S2</td></tr>
+ <tr><td>32-33</td><td>SelectByCircularuty / RangCircularity 圆度筛选</td><td>开关+FloatBettween</td><td>False / [0,1]</td><td>IsCircularityFilterEnabled + FilterCircularityMin/Max（在「高级」区）</td><td>开关+两行</td><td class="diff"><span class="tag t-diff">归属+控件形态</span>：VM 在主列表 Expert 内；我方在高级区</td></tr>
+ <tr><td>34-35</td><td>SelectByRectangularity / RangRectangularity 矩形度筛选</td><td>开关+FloatBettween</td><td>False / [0,1]</td><td>IsRectangularityFilterEnabled + FilterRectangularityMin/Max</td><td>开关+两行</td><td class="diff"><span class="tag t-diff">归属+控件形态</span></td></tr>
+ <tr><td>36-37</td><td>SelectByCentraBias / RangCenterBias 质心偏移</td><td>开关+FloatBettween</td><td>False / 默认 10</td><td>SelectByCentraBias + Min/MaxCenterBias</td><td>开关+两行</td><td class="diff"><span class="tag t-diff">控件形态</span> S2</td></tr>
+ <tr><td>38-39</td><td>AxisRatioEnable / AxisRatioRange 轴比</td><td>开关+FloatBettween</td><td>False / [0.01,1]</td><td>AxisRatioEnable + Min/MaxAxisRatio</td><td>开关+两行</td><td class="diff"><span class="tag t-diff">控件形态</span> S2</td></tr>
+ <tr><td>40</td><td>SortFeature 排序特征（Ranking）</td><td>下拉（12 项：BlobFindParam.cs:78-132）</td><td>默认 1</td><td>SortFeature（8 项）</td><td>下拉</td><td class="diff"><span class="tag t-diff">选项清单不全</span>：VM 12 项 vs 我方 8 项，缺项需按 BlobFindParam.cs:78-132 补齐核对</td></tr>
+ <tr><td>41</td><td>SortMode 排序方式</td><td>下拉</td><td>默认 2</td><td>SortMode（升序/降序/不排序）</td><td>下拉</td><td class="same"><span class="tag t-same">一致</span>（默认值待核对：VM 2=?）</td></tr>
+ <tr><td>42</td><td>connectivity 连通性</td><td>下拉</td><td>默认 8连通</td><td>Connectivity</td><td>下拉</td><td class="same"><span class="tag t-same">一致</span></td></tr>
+ <tr><td>43</td><td>MaxAreaInnerRectNum 最大内接矩形数量</td><td>数字</td><td>XML 默认 0；BlobFindParam.cs:2014 默认 10（两处不一致，待实机核对）</td><td>MaxAreaInnerRectNum，默认 0，[0,10]</td><td>数字</td><td class="miss"><span class="tag t-miss">默认值待核对</span></td></tr>
+ <tr><td>44</td><td>OverlapRatio 最小重叠率</td><td>数字</td><td>0</td><td>OverlapRatio</td><td>数字</td><td class="same"><span class="tag t-same">一致</span></td></tr>
+ <tr><td>45</td><td>MaxOutPixelNumEnable 像素超界使能</td><td>开关</td><td>False</td><td>MaxOutPixelNumEnable</td><td>开关</td><td class="same"><span class="tag t-same">一致</span></td></tr>
+ <tr><td>46</td><td>MaxOutPixelNum 最大超界像素</td><td>数字</td><td>0</td><td>MaxOutPixelNum</td><td>数字</td><td class="same"><span class="tag t-same">一致</span>（显隐条件待核对：VM XML 无 visibleWhen 记录）</td></tr>
+ <tr><td>—</td><td>（无）</td><td></td><td></td><td>OKWhenNumIsZero + 全部判定 LimitEnable 组（:103-148）</td><td>开关+两行×15</td><td class="diff"><span class="tag t-diff">多余归属</span> S1：VM 里这些在结果显示 tab；我方塞在运行参数高级区</td></tr>
+</table>
+
+<h2>三、结果显示 tab 逐项对账</h2>
+<h3>3.1 分组结构</h3>
+<table>
+ <tr><th>VM 原厂（UI XML ResultShow tab，两个分组）</th><th>我方现状</th><th>状态</th></tr>
+ <tr>
+  <td>①「结果判定」(Tab_Check Result)：13 组判定 = OK数量为零 + 12 组「使能开关 + 一行双输入范围」<br>②「图像显示」(Tab_Image Display)：7 行 图形项（眼睛+铅笔）<br>③「文本显示」：内容/OK颜色/NG颜色/字号/透明度/位置X/位置Y（SS07/SS08）</td>
+  <td>「图像显示」（NativeDisplayUiDraftRows：最大内接矩形/基准点/运行点 + 锚定行）+「文本显示」（NativeTextDisplayOptions）+「结果判定」（自研 Judgments 12 项：输出不为空/白色像素比例/Blob数量/总面积/平均面积/最大面积/最小面积/平均圆度/平均矩形度/每个Blob×3）</td>
+  <td class="diff"><span class="tag t-diff">不一致</span></td></tr>
+</table>
+
+<h3>3.2 结果判定分组对账（VM Tab_Check Result 顺序）</h3>
+<table>
+ <tr><th>#</th><th>VM 判定组</th><th>VM 控件</th><th>我方对应</th><th>状态</th></tr>
+ <tr><td>1</td><td>OKWhenNumIsZero 数量为零时OK</td><td>开关</td><td>OKWhenNumIsZero（在运行参数高级区）</td><td class="diff"><span class="tag t-diff">归属错位</span></td></tr>
+ <tr><td>2</td><td>BlobNumLimitEnable + RangBlobNumLimit</td><td>开关+一行双输入</td><td>BlobNumLimitEnable + Low/High 两行（高级区）</td><td class="diff"><span class="tag t-diff">归属+形态</span></td></tr>
+ <tr><td>3</td><td>BlobAreaLimitEnable + RangBlobAreaLimit</td><td>开关+FloatBettween</td><td>BlobAreaLimitEnable + Low/High</td><td class="diff"><span class="tag t-diff">归属+形态</span></td></tr>
+ <tr><td>4</td><td>BlobTotalAreaLimitEnable + Range</td><td>开关+FloatBettween</td><td>同上模式</td><td class="diff"><span class="tag t-diff">归属+形态</span></td></tr>
+ <tr><td>5</td><td><i>Expand 折叠</i>（角度/中心/宽高/周长/轴/圆度/矩形度判定收在其内）</td><td>Expand</td><td>无折叠，平铺在高级区</td><td class="diff"><span class="tag t-diff">缺折叠</span></td></tr>
+ <tr><td>6-17</td><td>CentroidX/CentroidY/Angle/CenterX/CenterY/BoxHeight/BoxWidth/Perimeter/LongAxis/ShortAxis/Circularity/Rectangularity 各组 LimitEnable+Range</td><td>开关+一行双输入 ×12</td><td>字段都有（:113-148），位置在运行参数高级区</td><td class="diff"><span class="tag t-diff">归属+形态</span>：内容齐全，位置与形态不对</td></tr>
+ <tr><td>—</td><td>（VM 无）</td><td></td><td>自研 Judgments：输出不为空/白色像素比例/平均面积/最大面积/最小面积/平均圆度/平均矩形度/每个Blob面积/圆度/矩形度</td><td class="diff"><span class="tag t-diff">多余双轨</span> S1：与 VM 判定并存，语义重叠（Blob数量↔Blob个数判断等），需集中裁决去留</td></tr>
+</table>
+
+<h3>3.3 图像显示分组对账（VM Tab_Image Display 顺序）</h3>
+<table>
+ <tr><th>#</th><th>VM 项（每行=名称+眼睛+铅笔）</th><th>我方对应</th><th>状态</th></tr>
+ <tr><td>1</td><td>Blob（BlobFiled）</td><td>GraphicDisplays Blob 组</td><td class="same"><span class="tag t-same">有</span>（行组织待对齐）</td></tr>
+ <tr><td>2</td><td>最大内接矩形（BlobMaxAreaInnerRect）</td><td>NativeDisplayUiDraftRows「最大内接矩形」</td><td class="same"><span class="tag t-same">有</span></td></tr>
+ <tr><td>3</td><td>检测区域（CheckZone=ROI）</td><td>GraphicDisplays Inspection（检测区域）</td><td class="same"><span class="tag t-same">有</span></td></tr>
+ <tr><td>4</td><td>轮廓点（MatchLocation）</td><td>VisibilityDisplays Outline（轮廓）</td><td class="miss"><span class="tag t-miss">名称/形态待对齐</span></td></tr>
+ <tr><td>5</td><td>文本（ResutlText）</td><td>VisibilityDisplays Text visible</td><td class="same"><span class="tag t-same">有</span></td></tr>
+ <tr><td>6</td><td>屏蔽区多边形（BlindZone）</td><td>GraphicDisplays Mask（屏蔽区域）</td><td class="same"><span class="tag t-same">有</span></td></tr>
+ <tr><td>7</td><td>扇环检测区域（CheckZoneAnnular）</td><td>GraphicDisplays Annulus（扇环检测区域）</td><td class="same"><span class="tag t-same">有</span></td></tr>
+ <tr><td>—</td><td>（VM 无）</td><td>基准点/运行点（BlobDisplayUi.cs:42-43，随位置修正显隐）</td><td class="diff"><span class="tag t-diff">多余项</span>：VM 无此两行，需裁决（保留则记差异）</td></tr>
+</table>
+
+<h3>3.4 文本显示分组</h3>
+<table>
+ <tr><th>VM 项</th><th>我方对应</th><th>状态</th></tr>
+ <tr><td>内容（模板 "Blob面积:{面积}"）、OK颜色、NG颜色、字号、透明度、位置X、位置Y</td><td>NativeTextDisplayOptions(content/ok/ng/size/opacity/x/y) 全齐</td><td class="same"><span class="tag t-same">字段齐</span>（默认值与顺序待目视核对）</td></tr>
+</table>
+
+<h2>四、视觉与布局差异（对照截图逐条）</h2>
+<table>
+ <tr><th>#</th><th>VM 原厂（截图证据）</th><th>我方现状</th><th>状态</th></tr>
+ <tr><td>V1</td><td>分组标题：大号加粗纯文本（「运行参数」「图像显示」）</td><td>DeclaredFieldsView 分组头样式待目视核对</td><td class="miss"><span class="tag t-todo">待目视核对</span></td></tr>
+ <tr><td>V2</td><td>开关：橙色 toggle（开=橙右，关=灰左，SS04/SS05）</td><td>待目视核对</td><td class="miss"><span class="tag t-todo">待目视核对</span></td></tr>
+ <tr><td>V3</td><td>数字框：右侧上下箭头 + 引用链接图标（橙色链条，SS04）</td><td>待目视核对</td><td class="miss"><span class="tag t-todo">待目视核对</span></td></tr>
+ <tr><td>V4</td><td>范围一行双输入：[下限]—[上限]，各带引用图标，中间破折号（SS04 面积范围）</td><td>两行独立字段</td><td class="diff"><span class="tag t-diff">不一致</span> S2</td></tr>
+ <tr><td>V5</td><td>Expert 展开区：右上「收起 &gt;」文字链接（SS05）</td><td>「高级」section 折叠头</td><td class="diff"><span class="tag t-diff">不一致</span> S3</td></tr>
+ <tr><td>V6</td><td>图像显示行：名称 + 眼睛图标 + 铅笔图标（SS07）</td><td>行内控件组合待目视核对</td><td class="miss"><span class="tag t-todo">待目视核对</span></td></tr>
+ <tr><td>V7</td><td>颜色行：色块 + "102,255, 0" 文本（SS08 OK/NG颜色）</td><td>待目视核对</td><td class="miss"><span class="tag t-todo">待目视核对</span></td></tr>
+ <tr><td>V8</td><td>底部按钮区：右下「连续执行/执行/确定」，左下重置图标，灰底通栏（SS01-08）</td><td>待目视核对</td><td class="miss"><span class="tag t-todo">待目视核对</span></td></tr>
+</table>
+
+<h2>五、修复清单（请圈定）</h2>
+<table>
+ <tr><th>编号</th><th>修复项</th><th>范围</th><th>说明</th></tr>
+ <tr><td><b>F1</b></td><td>判定条件归位：判定组从「运行参数→高级」迁到「结果显示→结果判定」，删除自研 Judgments 双轨</td><td>BlobParameters.xml 重排 + 结果显示页组装</td><td>S1 治本；Judgments 中 VM 没有的项（白色像素比例/平均面积等）需用户裁决去留</td></tr>
+ <tr><td><b>F2</b></td><td>范围类参数改一行双输入控件（约 20 组）</td><td>Plugin.Wpf 公共范围控件 + BlobParameters.xml（pairWith 字段合并）</td><td>S2；阈值范围已有 NativeThresholdUiDraftControls/NativeUiDraftRange 基础可复用</td></tr>
+ <tr><td><b>F3</b></td><td>Expert 展开机制对齐（「收起 &gt;」交互，圆度/矩形度/排序等归入）</td><td>DeclaredFieldsView/高级 section 改造</td><td>S3</td></tr>
+ <tr><td><b>F4</b></td><td>图像显示分组行对齐：7 项固定顺序 + 眼睛/铅笔行样式；基准点/运行点裁决</td><td>BlobDisplayUi.cs + NativeDisplayUiDraftRows</td><td>S4</td></tr>
+ <tr><td><b>F5</b></td><td>排序特征选项补齐至 VM 12 项（BlobFindParam.cs:78-132）</td><td>BlobParameters.xml + 算法侧映射</td><td>涉及算法语义，需逐项确认 supportedSort 裁剪原因</td></tr>
+ <tr><td><b>F6</b></td><td>显隐条件按 VM Trigger 逐值核对（Polarity/阈值各分支）</td><td>BlobParameters.xml visibleWhen</td><td>以 UI XML Trigger 为唯一真源</td></tr>
+ <tr><td><b>F7</b></td><td>视觉对齐 V1-V8（分组头/开关/数字框/范围行/眼睛铅笔/颜色行/底部按钮）</td><td>Plugin.Wpf 控件模板</td><td>需先目视核对我方现状，再逐条对齐</td></tr>
+ <tr><td><b>F8</b></td><td>默认值核对：RangArea 下限（XML 10000 vs 截图 10）、BlobContourType=0、SortMode=2、MaxAreaInnerRectNum（0 vs 10）、周长/短轴范围默认 1000</td><td>BlobParameters.xml</td><td>两处证据冲突项列 F8，需实机或按 BlobFindParam.cs 裁决</td></tr>
+</table>
+
+<h2>附：证据缺口声明</h2>
+<ul>
+ <li>VM 原厂模块 UI XML 中各字段的<b>语言键→中文显示名</b>映射存在（zh-cn.xaml），本表中文列名以截图为准；未在截图中出现的字段显示名以 lang 键推断，标待核对。</li>
+ <li>VM 截图覆盖运行参数上段/Expert 展开/结果显示，<b>运行参数中段（矩形宽~轴比）无截图</b>，该段行布局以 UI XML + 通用控件形态推断。</li>
+ <li>「待目视核对」项：需启动我方 Release 后并排截图比对，属于对账后的目视验收环节。</li>
+</ul>
+
+</body>
+</html>

@@ -43,7 +43,7 @@ public sealed class BlobThreePageSessionRegressionTests
             settings.SelectedPageIndex=0;window.UpdateLayout();UiRuntime.Pump();
             var assist=Assert.Single(UiRuntime.Visuals<NativeAssistUiDraftControls>(control));
             Assert.Equal(Visibility.Visible,assist.Visibility);
-            var poseEditor=UiRuntime.Visuals<DeclaredFieldEditor>(assist).Single(item=>item.FieldId=="input.pose");
+            var poseEditor=UiRuntime.Visuals<DeclaredFieldRow>(assist).Single(item=>item.FieldId=="input.pose");
             poseEditor.BringIntoView();window.UpdateLayout();UiRuntime.Pump();
             var text=Assert.Single(UiRuntime.Visuals<DeleteTextBox>(poseEditor));
             text.Focus();UiRuntime.Pump();
@@ -98,7 +98,7 @@ public sealed class BlobThreePageSessionRegressionTests
             var settings=Assert.Single(UiRuntime.Visuals<DeclaredSettingsView>(control));
             settings.SelectedPageIndex=0;window.UpdateLayout();UiRuntime.Pump();
             const string correctionEnabled="field:c95f3a26edf55097863a7ec47d17cce5";
-            var toggle=UiRuntime.Visuals<DeclaredFieldEditor>(control).Single(item=>item.FieldId==correctionEnabled);
+            var toggle=UiRuntime.Visuals<DeclaredFieldRow>(control).Single(item=>item.FieldId==correctionEnabled);
             var assist=Assert.Single(UiRuntime.Visuals<NativeAssistUiDraftControls>(control));
             Assert.Equal(Visibility.Collapsed,assist.Visibility);
             Assert.True(toggle.TrySetConstant(true));UiRuntime.Pump();

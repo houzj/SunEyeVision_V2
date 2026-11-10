@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>Blob 参数执行承接台账 B3-1</title>
+<style>
+  :root { --ink:#1f2933; --muted:#5b6770; --line:#d8dee4; --ok:#1b7a45; --warn:#a15c00; --bg:#f7f9fa; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:32px 40px 60px; background:var(--bg); color:var(--ink);
+         font:14px/1.7 "Segoe UI","Microsoft YaHei",sans-serif; }
+  h1 { margin:0 0 6px; font-size:24px; }
+  .sub { color:var(--muted); margin-bottom:24px; }
+  .cards { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:26px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:10px; padding:14px 18px; min-width:180px; }
+  .card b { display:block; font-size:22px; }
+  .card span { color:var(--muted); font-size:12px; }
+  h2 { font-size:17px; margin:28px 0 10px; }
+  table { width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  th,td { padding:10px 12px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+  th { background:#eef2f5; font-weight:600; font-size:13px; }
+  tr:last-child td { border-bottom:none; }
+  code { background:#eef2f5; padding:1px 5px; border-radius:4px; font-size:12.5px; }
+  .done { color:var(--ok); font-weight:600; }
+  .wait { color:var(--warn); font-weight:600; }
+  .note { background:#fff; border:1px solid var(--line); border-left:4px solid #7c8b99;
+          border-radius:8px; padding:12px 16px; margin-top:14px; color:var(--muted); }
+  ul { margin:6px 0 0 18px; }
+</style>
+</head>
+<body>
+<h1>Blob 参数执行承接台账（B3-1）</h1>
+<div class="sub">批次 B3-1 · 生成日期 2026-11-10 11:12:06 · 参数来源 <code>tools/SunEyeVision.BlobAnalysis/Runtime/Resources/BlobParameters.xml</code></div>
+
+<div class="cards">
+  <div class="card"><b>6</b><span>本批处理的无承接参数</span></div>
+  <div class="card"><b>2</b><span>已接入真实执行</span></div>
+  <div class="card"><b>4</b><span>待补证（过渡拦截）</span></div>
+  <div class="card"><b>0</b><span>静默无效参数</span></div>
+</div>
+
+<h2>参数到执行位置</h2>
+<table>
+<thead>
+<tr><th>#</th><th>参数</th><th>界面标签</th><th>类型 / 范围</th><th>执行位置</th><th>语义依据</th><th>覆盖用例</th><th>状态</th></tr>
+</thead>
+<tbody>
+<tr>
+  <td>1</td><td><code>HoleMinArea</code></td><td>填充面积阈值</td><td>Integer 0–999999999</td>
+  <td><code>BlobSession.ExecuteCore</code> 填孔（<code>FillUpHoles</code>），二值化后、连通域前</td>
+  <td>已核分支：T=0 跳过；累计 T-1/T 进标记、T+1 不进（面积 ≤ T）；贴四边区间标 -1 不进内部候选</td>
+  <td><code>HoleMinArea_zero_keeps_inner_hole</code><br/><code>HoleMinArea_fills_inner_hole_within_threshold</code><br/><code>HoleMinArea_does_not_fill_gap_connected_to_border</code></td>
+  <td class="done">已实现<br/><small>原机逐像素等价未证</small></td>
+</tr>
+<tr>
+  <td>2</td><td><code>SelectByHistInfo</code></td><td>直方图信息输出</td><td>Boolean</td>
+  <td><code>BlobSession.ExecuteCore</code> 统计段（GrayHisto / Intensity 门控）</td>
+  <td>输出开关，语义自明；白色像素比例为判定输入，始终计算</td>
+  <td><code>SelectByHistInfo_gates_histogram_without_changing_white_ratio</code></td>
+  <td class="done">已实现</td>
+</tr>
+<tr>
+  <td>3</td><td><code>MaxAreaInnerRectNum</code></td><td>最大内接矩形数量</td><td>Integer 0–10</td>
+  <td><code>BlobSession.ExecuteCore</code> 冻结快照后快速失败（资源创建前）</td>
+  <td>原厂该输出缺真实生产链（历史任务记录第 908/913 行）；无对标物</td>
+  <td><code>Inner_rect_family_is_rejected_when_enabled</code></td>
+  <td class="wait">待补证<br/><small>过渡拦截</small></td>
+</tr>
+<tr>
+  <td>4</td><td><code>OverlapRatio</code></td><td>最小重叠率</td><td>Integer 0–100</td>
+  <td>同上</td>
+  <td>重叠率公式与作用位置未证</td>
+  <td>同上</td>
+  <td class="wait">待补证<br/><small>过渡拦截</small></td>
+</tr>
+<tr>
+  <td>5</td><td><code>MaxOutPixelNumEnable</code></td><td>像素超界使能</td><td>Boolean</td>
+  <td>同上</td>
+  <td>「超界」三种解释皆自洽，无消费点证据</td>
+  <td>同上</td>
+  <td class="wait">待补证<br/><small>过渡拦截</small></td>
+</tr>
+<tr>
+  <td>6</td><td><code>MaxOutPixelNum</code></td><td>最大超界像素</td><td>Integer 0–9000000</td>
+  <td>同上</td>
+  <td>同上</td>
+  <td>同上</td>
+  <td class="wait">待补证<br/><small>过渡拦截</small></td>
+</tr>
+</tbody>
+</table>
+
+<h2>过渡拦截的实际行为</h2>
+<div class="note">
+命中判据 <code>MaxAreaInnerRectNum != 0 || OverlapRatio != 0 || MaxOutPixelNumEnable || MaxOutPixelNum != 0</code>，
+在任何 HALCON 资源创建前抛出 <code>BLOB_INNER_RECT_NOT_READY</code>，
+文本为「最大内接矩形数量、最小重叠率、最大超界像素尚未取得原厂产出链证据，本版本不执行该组参数。」。
+默认（关 / 0）不触发，零回归；拿到证据后删除该拦截改为真实实现。
+</div>
+
+<h2>范围校验</h2>
+<div class="note">
+四项闭包参数在 <code>BlobSettings.Validate()</code> 中复用 XML 上下限校验，越界统一报 <code>BLOB_SETTINGS_INVALID</code>，
+并在进入算法前失败（顺序先于过渡拦截，保证越界优先报参数错误）。覆盖用例：<code>Out_of_range_closure_values_are_settings_invalid</code>。
+</div>
+
+<h2>算子语义出处</h2>
+<ul>
+  <li><code>fill_up_shape</code>：官方 24.05 文档 parameters 段——<code>feature</code> 取 <code>"area"</code>，<code>min/max</code> 决定孔洞特征需落入的区间；<code>min</code> 默认 1.0、值域 ≥0。</li>
+  <li><code>set_system</code> 的 <code>neighborhood</code>/<code>tsp_neighborhood</code>（4/8，默认 8）作用于 <code>Connection</code>、<code>FillUp</code>、<code>Contlength</code> 等邻域算子。</li>
+  <li>待证项：<code>fill_up_shape</code> 页面未明示孔洞判定的邻域类型；本批用例（孤立孔 / 贴边界开口）在两种连通下结论一致，对角仅相接场景未覆盖。</li>
+</ul>
+
+<h2>本批未做</h2>
+<ul>
+  <li>最大内接矩形族算法实现（等补证）。</li>
+  <li>B1-3 序列化回归（按用户决定跳过）。</li>
+  <li>二值化图像捕获时机调整（原始证据未定填孔前/后槽位映射）。</li>
+</ul>
+
+<h2>验证执行情况</h2>
+<div class="note">
+<strong>Release 环境实测（正式封签）：</strong><code>dotnet build SunEyeVision.slnx -c Release</code> 0 错误；
+Blob 测试项目 <strong>45 / 45 通过</strong>（含本批 6 条用例 <code>BlobParameterExecutionTests</code>）；
+Release 封签清单 <strong>517 项与 HEAD 一致</strong>（commit <code>88a1e9b</code>）。
+<br/><br/>
+<strong>顺序约束（踩过）：</strong><code>tests/_shared/ProductRuntimeTestHost.cs</code> 会校验封签清单 SHA256，而<code>dotnet test</code> 自带的构建步骤会重建产品程序集、使清单立刻失效并抛 <code>Product assembly SHA mismatch</code>。
+正确顺序是：先 <code>dotnet build -c Release</code>（构建末尾重封签），再 <code>dotnet test --no-build</code>。
+<br/><br/>
+另：<code>dev\Debug</code> 侧封签清单仍停留在 commit <code>83b83f1</code>，需 PowerShell 7（<code>Seal-ReleasePayload.ps1</code> 使用 Core 专有 API）才能重封签；本批测试改走 Release 环境，Debug 侧未执行。
+</div>
+</body>
+</html>

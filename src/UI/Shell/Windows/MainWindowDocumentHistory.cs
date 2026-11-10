@@ -21,6 +21,8 @@ public partial class MainWindowViewModel
     private void UnbindFormalSession()
     {
         if(_observedDocumentSession is {} session){session.Changed-=FormalDocumentChanged;session.RuntimeResultAvailable-=FormalResultAvailable;session.NodeDisplayNavigationChanged-=FormalDisplayNavigationChanged;session.WorkspaceNavigationChanged-=FormalWorkspaceNavigationChanged;}
+        // 会话失效即投影失效：全部常驻图像源缓存逐出，避免跨会话复用旧会话的投影。
+        ReleaseImageSourceBindings();
         _observedDocumentSession=null;
     }
     private void FormalDocumentSessionChanged(object? sender,DocumentSessionReplacement change)
@@ -68,8 +70,15 @@ public partial class MainWindowViewModel
     private void RefreshChangedDocumentViews(DocumentChangeSet change)
     {
         foreach(var editor in _productionEditors.ToArray())if(!editor.IsValid)editor.Discard();
-        if(SelectedNode is {} selected&&!OwnsSelectedDocumentNode(selected))SelectedNode=null;
-        else RefreshFormalPublishedResult();
+        // 提交会重建节点实例：无条件按稳定 Id 把选择重绑定到当前实例。
+        // 下游（ImageSourceResolver 等）仍使用引用判定，不重绑定就会被误判失效并清空图像源条。
+        if(SelectedNode is {} selected)
+        {
+            var rebound=FindCurrentNode(selected.Id);
+            if(rebound is null)SelectedNode=null;
+            else if(!ReferenceEquals(rebound,selected))SelectedNode=rebound;
+            else RefreshFormalPublishedResult();
+        }
         RefreshFormalImageSourceSelection();NotifyResultDisplayChanged();foreach(var tab in WorkflowTabViewModel.Tabs)tab.QueueRootReadiness();UpdateCurrentSolutionInfo();UpdateUndoRedoCommands();
         OnPropertyChanged(nameof(CanUndoRootWorkspace));OnPropertyChanged(nameof(CanRedoRootWorkspace));OnPropertyChanged(nameof(EditHistoryLocations));
     }

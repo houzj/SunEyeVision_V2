@@ -15,7 +15,7 @@ public sealed class BlobAnalysisParameterContractTests
             "input.roi.inheritance-mode","input.roi.rectangle","input.roi.annulus",
             "input.roi.rectangle.center-x","input.roi.rectangle.center-y","input.roi.rectangle.width","input.roi.rectangle.height","input.roi.rectangle.angle-degrees",
             "input.roi.annulus.center-x","input.roi.annulus.center-y","input.roi.annulus.inner-radius","input.roi.annulus.outer-radius","input.roi.annulus.start-degrees","input.roi.annulus.sweep-degrees"},tool.Describe().Inputs.Select(port=>port.Id));
-        Assert.Equal(139,tool.SettingsSchema.Inputs.Count);
+        Assert.Equal(105,tool.SettingsSchema.Inputs.Count);
         Assert.Contains(tool.SettingsSchema.Presentation!.Fields,field=>field.DisplayName==BlobParameterDefinition.Instance.Label(nameof(BlobSettings.FilterAreaMin)));
         var references=typeof(BlobTool).Assembly.GetReferencedAssemblies().Select(a=>a.Name).ToArray();
         Assert.DoesNotContain("SunEyeVision.Plugin.Editing.Wpf",references);

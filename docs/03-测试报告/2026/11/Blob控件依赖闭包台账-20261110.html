@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>Blob 控件依赖闭包台账（P1）</title>
+<style>
+  :root { --ink:#1f2933; --muted:#5b6770; --line:#d8dee4; --ok:#1b7a45; --warn:#a15c00; --bad:#b3261e; --bg:#f7f9fa; }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:32px 40px 60px; background:var(--bg); color:var(--ink); font:14px/1.7 "Segoe UI","Microsoft YaHei",sans-serif; }
+  h1 { margin:0 0 6px; font-size:24px; }
+  .sub { color:var(--muted); margin-bottom:24px; }
+  .cards { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:26px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:10px; padding:14px 18px; min-width:170px; }
+  .card b { display:block; font-size:22px; }
+  .card span { color:var(--muted); font-size:12px; }
+  h2 { font-size:17px; margin:30px 0 10px; }
+  table { width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  th,td { padding:10px 12px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+  th { background:#eef2f5; font-weight:600; font-size:13px; }
+  tr:last-child td { border-bottom:none; }
+  code { background:#eef2f5; padding:1px 5px; border-radius:4px; font-size:12.5px; word-break:break-all; }
+  .ok { color:var(--ok); font-weight:600; }
+  .warn { color:var(--warn); font-weight:600; }
+  .bad { color:var(--bad); font-weight:600; }
+  .note { background:#fff; border:1px solid var(--line); border-left:4px solid #7c8b99; border-radius:8px; padding:12px 16px; margin-top:14px; color:var(--muted); }
+  .warnnote { border-left-color:var(--warn); }
+  ul { margin:6px 0 0 18px; }
+</style>
+</head>
+<body>
+<h1>Blob 控件依赖闭包台账（P1）</h1>
+<div class="sub">2026-11-10 · 范围：参数页 / 结果工作区 / 图像源条三条链 · 结论基于全仓反向检索</div>
+
+<div class="cards">
+  <div class="card"><b>3</b><span>受检界面链</span></div>
+  <div class="card"><b>0</b><span>被引用的 .pending 控件</span></div>
+  <div class="card"><b>1</b><span>自研替代控件（图像源条）</span></div>
+  <div class="card"><b>55</b><span>与 Blob 无关的 ParamTab pending</span></div>
+</div>
+
+<h2>核心结论（修正此前判断）</h2>
+<div class="note warnnote">
+此前"控件基础大量缺失导致链路不通"的说法需要修正为两条独立事实：<br/>
+① <b>链路不通的原因是 HALCON 解析缺口</b>，与控件无关（已修复并验证）；<br/>
+② <b>图像源条确实没按原厂控件实现</b>，但这是"我们用自研 <code>ImageSourceStrip</code> 替代了原厂 <code>ImageListPanel</code>"，不是"引用了未迁移控件导致功能缺失"。<br/>
+判定依据：<code>.pending</code> 后缀不被 MSBuild 的 <code>*.cs</code>/<code>*.xaml</code> 默认收集，已编译代码不可能引用它们；全仓排除 <code>*.pending</code> 后检索 <code>ImageListPanel</code> 与 <code>ParameterPresentation.ParamTab.*</code> 均为 <b>0 命中</b>。
+</div>
+
+<h2>链 1：参数页</h2>
+<table>
+<thead><tr><th>控件</th><th>路径</th><th>状态</th><th>原厂依赖</th><th>结论</th></tr></thead>
+<tbody>
+<tr>
+  <td><code>DeclaredSettingsView</code></td>
+  <td><code>src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs</code></td>
+  <td class="ok">已迁移</td>
+  <td>无（仅 Plugin.Contracts + 本项目 Adapters）</td>
+  <td>三页由 <code>IToolSettingsDraft</code> schema 驱动，不实例化任何原厂参数控件。无需动作。</td>
+</tr>
+<tr>
+  <td><code>DeclaredFieldsView</code></td>
+  <td><code>src/Plugin.Wpf/Fields/DeclaredFieldsView.cs</code></td>
+  <td class="ok">已迁移</td>
+  <td>无；TabControl 样式键由自持 <code>OriginalTheme.xaml</code> 提供，0 个 <code>clr-namespace</code> 引用</td>
+  <td>无需动作。</td>
+</tr>
+<tr>
+  <td><code>ParamListView</code></td>
+  <td><code>src/Plugin.Wpf/Controls/Native/Composition/ParameterPresentation/ParameterPresentation/ParamListView.xaml.cs</code></td>
+  <td class="ok">已迁移（非 pending）</td>
+  <td>仅本地化资源</td>
+  <td>无需动作。</td>
+</tr>
+</tbody>
+</table>
+<div class="note">
+<code>ParameterPresentation.ParamTab</code> 家族共 55 个 <code>.pending</code>（<code>ParamGroup.cs</code> 44KB、各类 <code>*ROIStack</code>、<code>PageNumControl</code> 等）服务的是原厂整窗参数装配（<code>ParamsTabUserControl</code> / VisionMaster.ParamTab），本项目走声明式路线，<b>与 Blob 链无关</b>，不应纳入本批迁移。
+</div>
+
+<h2>链 2：结果工作区</h2>
+<table>
+<thead><tr><th>控件</th><th>路径</th><th>状态</th><th>结论</th></tr></thead>
+<tbody>
+<tr>
+  <td><code>ResultWorkspaceShell</code></td>
+  <td><code>src/Plugin.Wpf/Controls/Native/ResultShell/</code></td>
+  <td class="ok">已迁移</td>
+  <td>无需动作；承载图像区 / 结果树 / 图像源条三块内容。</td>
+</tr>
+<tr>
+  <td><code>PropertyListView</code></td>
+  <td><code>src/Plugin.Wpf/Controls/Native/PropertyList/</code></td>
+  <td class="ok">已迁移</td>
+  <td>无需动作；模块结果的树表由它呈现。</td>
+</tr>
+</tbody>
+</table>
+<div class="note">
+本链当前的真实缺口不是控件迁移，而是<b>结果图文发布的时序问题</b>：运行日志实锤 <code>[UI.默认] 结果图文未显示：轮廓准备期间结果已失效。</code>，即结果在轮廓准备期间被判失效，画布因此不绘制结果图形/文字。属执行—显示衔接（P4），不属控件层。
+</div>
+
+<h2>链 3：图像源条</h2>
+<table>
+<thead><tr><th>控件</th><th>路径</th><th>状态</th><th>结论</th></tr></thead>
+<tbody>
+<tr>
+  <td><code>ImageSourceStrip</code>（我方）</td>
+  <td><code>src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml(.cs)</code></td>
+  <td class="warn">自研替代品</td>
+  <td>当前实际渲染者。交互（添加文件/添加文件夹/删除/自动切换/运行全部/首图/计数）由自研会话 <code>ImageSourceStripSession</code> 驱动，与原厂行为存在差异。</td>
+</tr>
+<tr>
+  <td><code>ImageListPanelBase</code></td>
+  <td><code>src/Plugin.Wpf/Controls/Native/Input/WorkspaceControls/WorkspaceControls/ImageListPanelBase.cs.pending</code></td>
+  <td class="bad">未迁移（51.37 KB）</td>
+  <td>原厂图像源列表行为基类。依赖 <code>VM.Core</code>、<code>VM.PlatformSDKCS</code>、<code>PresentationControls.Interface</code>、<code>View.Utility</code>、<code>Apps.Data/ErrorCode/Log</code>、<code>DirectoryBrowser</code>、<code>Microsoft.WindowsAPICodePack</code>，且直接实现 <code>INotifyPropertyChanged</code>（违反 rule-001）。<b>需改写迁移</b>。</td>
+</tr>
+<tr>
+  <td><code>ImageListPanel.xaml</code></td>
+  <td><code>.../ImageListPanel.xaml.pending</code></td>
+  <td class="bad">未迁移（27.64 KB）</td>
+  <td>原厂外观与模板。引用 <code>PresentationControls.Interface</code>、<code>View.Utility</code> 与 <code>SharedStyles</code> 原厂资源程序集。<b>视觉按原件迁移、资源替换</b>。</td>
+</tr>
+<tr>
+  <td><code>ImageListPanel.xaml.cs</code></td>
+  <td><code>.../ImageListPanel.xaml.cs.pending</code></td>
+  <td class="bad">未迁移（574 B）</td>
+  <td>随 XAML 一并迁移。</td>
+</tr>
+</tbody>
+</table>
+
+<h2>建议迁移顺序</h2>
+<ul>
+  <li><b>先做 P4（结果图文时序）</b>：它是当前唯一还在断的可见链路，且不涉及控件重写，成本低、收益直接。</li>
+  <li><b>再做图像源条的原件化</b>：以 <code>ImageListPanelBase</code> 的按钮/右键菜单/首图/自动切换行为清单为基线，在 <code>ImageSourceStrip</code> 上逐项对齐，而不是直接搬 51KB 原厂代码（其依赖无法带进产品）。</li>
+  <li><b>参数页暂不动</b>：已确认走声明式 schema，不存在"缺控件"问题；参数页与原厂的差异应作为<b>参数元数据/显隐规则</b>问题处理（P3 对账），不是控件迁移。</li>
+  <li><b>ParamTab 家族 55 个 pending 明确不迁</b>：与 Blob 链无引用关系，迁了也没有消费者。</li>
+</ul>
+
+<h2>本台账不覆盖</h2>
+<ul>
+  <li>画布节点的显示适配器（节点卡片/连线）——属画布层，另立批次。</li>
+  <li>历史结果页（界面显示"历史记录未接入"）——已知未实现，本批只保留明确占位。</li>
+</ul>
+</body>
+</html>

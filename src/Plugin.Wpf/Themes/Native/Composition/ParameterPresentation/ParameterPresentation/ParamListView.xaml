@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ItemsControl x:Class="SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamListView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008"  x:Name="listViewParam" SnapsToDevicePixels="True" VirtualizingPanel.VirtualizationMode="Recycling" ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" Background="{vm_port_0:ColorResourceBinding Col_SubForm_Background}" ItemContainerStyle="{DynamicResource ParamItemStyle}" Style="{DynamicResource ParamListViewStyle}" ItemTemplate="{DynamicResource ParamItemTemplate}" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.ThemeColors">
+<ItemsControl x:Class="SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamListView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008"  x:Name="listViewParam" SnapsToDevicePixels="True" VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.IsVirtualizingWhenGrouping="True" ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" Background="{vm_port_0:ColorResourceBinding Col_SubForm_Background}" ItemContainerStyle="{DynamicResource ParamItemStyle}" Style="{DynamicResource ParamListViewStyle}" ItemTemplate="{DynamicResource ParamItemTemplate}" xmlns:vm_port_0="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Display.ThemeColors">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
@@ -9,7 +9,7 @@
   </FrameworkElement.Resources>
   <ItemsControl.ItemsPanel>
     <ItemsPanelTemplate>
-      <StackPanel IsItemsHost="True" HorizontalAlignment="Stretch" />
+      <VirtualizingStackPanel IsItemsHost="True" HorizontalAlignment="Stretch" VirtualizationMode="Recycling" />
     </ItemsPanelTemplate>
   </ItemsControl.ItemsPanel>
   <ItemsControl.GroupStyle>

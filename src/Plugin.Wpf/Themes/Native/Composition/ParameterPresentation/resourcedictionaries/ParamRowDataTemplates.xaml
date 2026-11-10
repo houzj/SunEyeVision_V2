@@ -1,0 +1,252 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:localParamTab="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamTab"
+                    xmlns:vm_port_1="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.Interaction.ListView"
+                    xmlns:localcontrol="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamTabControl"
+                    xmlns:fields="clr-namespace:SunEyeVision.Plugin.Wpf.Fields"
+                    xmlns:i="http://schemas.microsoft.com/xaml/behaviors">
+  <!--
+    原参数行模板族（迁自 VM paramusercontroldatatemplate.xaml，仅保留生产链用到的族）。
+    DataContext 是 SunEyeVision.Plugin.Wpf.Fields.FieldRowModel：标签由 LeftRightControl 的
+    PartText 经 ResourceBinding DisplayNameA 呈现；数值/订阅值由协调器与会话驱动；
+    简单字段（布尔/枚举）经 CurValueA TwoWay 绑定回行宿主校验提交。
+  -->
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/OriginalTheme.xaml"/>
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml"/>
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/IntegerRadioResources.xaml"/>
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/References/ReferenceField.xaml"/>
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Text/TextField.xaml"/>
+  </ResourceDictionary.MergedDictionaries>
+
+  <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter"/>
+  <fields:InverseBooleanToVisibilityConverter x:Key="inverseBoolToVisibilityConverter"/>
+
+  <!-- 数值输入（无滑条模式）：静态上下界/步长来自行投影，值由数值协调器驱动 -->
+  <DataTemplate x:Key="NumericField_sub">
+    <vm_port_1:NumericControl Minimum="{Binding MinValueA}" Maximum="{Binding MaxValueA}" Increment="{Binding IncValueA}"
+                              Foreground="#666666" FontSize="14" HorizontalAlignment="Stretch"/>
+  </DataTemplate>
+
+  <!-- 原厂滑条（整数/浮点）：值、订阅模板、上下界全部由数值协调器接线 -->
+  <DataTemplate x:Key="Integer_Sub">
+    <vm_port_1:SliderArrange Foreground="#666666" FontSize="14"/>
+  </DataTemplate>
+  <DataTemplate x:Key="Float_Sub">
+    <vm_port_1:SliderArrangeFloat DecimalDigits="{Binding DecimalDigitsA}" Foreground="#666666" FontSize="14"/>
+  </DataTemplate>
+
+  <!-- 未设置占位（原"未设置 + 设置"分支） -->
+  <DataTemplate x:Key="Unset_sub">
+    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+      <TextBlock Text="未设置" Opacity="0.6" VerticalAlignment="Center"/>
+      <Button Content="设置" Height="26" Margin="5,0,0,0" ToolTip="设置此可选项"
+              Visibility="{Binding SetAvailableA, Converter={StaticResource bool2VisibilityConverter}}"
+              Command="{Binding SetCommand}"/>
+    </StackPanel>
+  </DataTemplate>
+
+  <!-- Default：数值框 + 常量⇄订阅切换 + 清除，未设置时切占位 -->
+  <DataTemplate x:Key="Default">
+    <localParamTab:LeftRightControl Height="32">
+      <localParamTab:LeftRightControl.RightContent>
+        <Grid>
+          <Grid Visibility="{Binding NormalVisibilityA}">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <ContentControl ContentTemplate="{StaticResource NumericField_sub}" Content="{Binding}"
+                            Visibility="{Binding IsSubA, Converter={StaticResource inverseBoolToVisibilityConverter}}"/>
+            <ContentControl ContentTemplate="{StaticResource ButtonSelecter_sub}" Content="{Binding SubDataA}"
+                            HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                            Visibility="{Binding IsSubA, Converter={StaticResource bool2VisibilityConverter}}"/>
+            <ToggleButton Grid.Column="1" Width="26" Height="26" Margin="5,0,0,0"
+                          Style="{DynamicResource EditLinkButton}"
+                          Visibility="{Binding SubscribeVisibleA, Converter={StaticResource bool2VisibilityConverter}}"
+                          IsChecked="{Binding IsSubA, Mode=OneWay}"
+                          ToolTip="{Binding ModeToolTipA}"
+                          Command="{Binding TypeChangeCommand}"/>
+            <Button Grid.Column="2" Content="×" Width="26" Height="26" Margin="5,0,0,0" ToolTip="清除可选项"
+                    Visibility="{Binding ClearVisibleA, Converter={StaticResource bool2VisibilityConverter}}"
+                    Command="{Binding ClearCommand}"/>
+          </Grid>
+          <ContentControl ContentTemplate="{StaticResource Unset_sub}" Content="{Binding}"
+                          Visibility="{Binding UnsetVisibilityA}"/>
+        </Grid>
+      </localParamTab:LeftRightControl.RightContent>
+    </localParamTab:LeftRightControl>
+  </DataTemplate>
+
+  <!-- Integer/Float：原厂滑条行，未设置时切占位 -->
+  <DataTemplate x:Key="Integer">
+    <localParamTab:LeftRightControl Height="32">
+      <localParamTab:LeftRightControl.RightContent>
+        <Grid>
+          <ContentControl ContentTemplate="{StaticResource Integer_Sub}" Content="{Binding}"
+                          Visibility="{Binding NormalVisibilityA}"/>
+          <ContentControl ContentTemplate="{StaticResource Unset_sub}" Content="{Binding}"
+                          Visibility="{Binding UnsetVisibilityA}"/>
+        </Grid>
+      </localParamTab:LeftRightControl.RightContent>
+    </localParamTab:LeftRightControl>
+  </DataTemplate>
+  <DataTemplate x:Key="Float">
+    <localParamTab:LeftRightControl Height="32">
+      <localParamTab:LeftRightControl.RightContent>
+        <Grid>
+          <ContentControl ContentTemplate="{StaticResource Float_Sub}" Content="{Binding}"
+                          Visibility="{Binding NormalVisibilityA}"/>
+          <ContentControl ContentTemplate="{StaticResource Unset_sub}" Content="{Binding}"
+                          Visibility="{Binding UnsetVisibilityA}"/>
+        </Grid>
+      </localParamTab:LeftRightControl.RightContent>
+    </localParamTab:LeftRightControl>
+  </DataTemplate>
+
+  <!-- String：文本会话（StringConfig_sub）+ 订阅分支 + 切换/清除 -->
+  <DataTemplate x:Key="String">
+    <localParamTab:LeftRightControl Height="32">
+      <localParamTab:LeftRightControl.RightContent>
+        <Grid>
+          <Grid Visibility="{Binding NormalVisibilityA}">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Grid>
+              <ContentControl ContentTemplate="{StaticResource StringConfig_sub}" Content="{Binding SubDataA}"
+                              HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                              Visibility="{Binding IsSubA, Converter={StaticResource inverseBoolToVisibilityConverter}}"/>
+              <ContentControl ContentTemplate="{StaticResource ButtonSelecter_sub}" Content="{Binding SubDataA}"
+                              HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                              Visibility="{Binding IsSubA, Converter={StaticResource bool2VisibilityConverter}}"/>
+            </Grid>
+            <ToggleButton Grid.Column="1" Width="26" Height="26" Margin="5,0,0,0"
+                          Style="{DynamicResource EditLinkButton}"
+                          Visibility="{Binding SubscribeVisibleA, Converter={StaticResource bool2VisibilityConverter}}"
+                          IsChecked="{Binding IsSubA, Mode=OneWay}"
+                          ToolTip="{Binding ModeToolTipA}"
+                          Command="{Binding TypeChangeCommand}"/>
+            <Button Grid.Column="2" Content="×" Width="26" Height="26" Margin="5,0,0,0" ToolTip="清除可选项"
+                    Visibility="{Binding ClearVisibleA, Converter={StaticResource bool2VisibilityConverter}}"
+                    Command="{Binding ClearCommand}"/>
+          </Grid>
+          <ContentControl ContentTemplate="{StaticResource Unset_sub}" Content="{Binding}"
+                          Visibility="{Binding UnsetVisibilityA}"/>
+        </Grid>
+      </localParamTab:LeftRightControl.RightContent>
+    </localParamTab:LeftRightControl>
+  </DataTemplate>
+
+  <!-- Reference：内联常量|订阅（原 ButtonSelecter 订阅行） -->
+  <DataTemplate x:Key="Reference">
+    <localParamTab:LeftRightControl Height="32">
+      <localParamTab:LeftRightControl.RightContent>
+        <ContentControl ContentTemplate="{StaticResource ButtonSelecter_sub}" Content="{Binding SubDataA}"
+                        HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
+      </localParamTab:LeftRightControl.RightContent>
+    </localParamTab:LeftRightControl>
+  </DataTemplate>
+
+  <!-- Boolean：原厂开关 -->
+  <DataTemplate x:Key="Boolean">
+    <localParamTab:LeftRightControl Height="32">
+      <localParamTab:LeftRightControl.RightContent>
+        <Grid>
+          <Grid Visibility="{Binding NormalVisibilityA}">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <localcontrol:BooleanControl HorizontalAlignment="Left" VerticalAlignment="Center" IsThreeState="False"
+                                         IsChecked="{Binding CurValueA, Mode=TwoWay}">
+              <localcontrol:BooleanControl.OffContent>
+                <Image Stretch="None" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/ParameterPresentation/resources/swith_off.png"/>
+              </localcontrol:BooleanControl.OffContent>
+              <localcontrol:BooleanControl.OnContent>
+                <Image Stretch="None" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/ParameterPresentation/resources/swith_on.png"/>
+              </localcontrol:BooleanControl.OnContent>
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="OnCheckedChange">
+                  <i:InvokeCommandAction Command="{Binding ValueChangedCommand}"/>
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </localcontrol:BooleanControl>
+            <Button Grid.Column="1" Content="×" Width="26" Height="26" Margin="5,0,0,0" ToolTip="清除可选项"
+                    Visibility="{Binding ClearVisibleA, Converter={StaticResource bool2VisibilityConverter}}"
+                    Command="{Binding ClearCommand}"/>
+          </Grid>
+          <ContentControl ContentTemplate="{StaticResource Unset_sub}" Content="{Binding}"
+                          Visibility="{Binding UnsetVisibilityA}"/>
+        </Grid>
+      </localParamTab:LeftRightControl.RightContent>
+    </localParamTab:LeftRightControl>
+  </DataTemplate>
+
+  <!-- BooleanEye：对话组主字段（眼睛开关） -->
+  <DataTemplate x:Key="BooleanEye">
+    <localParamTab:LeftRightControl Height="32">
+      <localParamTab:LeftRightControl.RightContent>
+        <Grid>
+          <ToggleButton Width="36" Height="30" Style="{DynamicResource eyeToggleButton}" ToolTip="显示 / 隐藏"
+                        IsChecked="{Binding CurValueA, Mode=TwoWay}"
+                        Visibility="{Binding NormalVisibilityA}"/>
+          <ContentControl ContentTemplate="{StaticResource Unset_sub}" Content="{Binding}"
+                          Visibility="{Binding UnsetVisibilityA}"/>
+        </Grid>
+      </localParamTab:LeftRightControl.RightContent>
+    </localParamTab:LeftRightControl>
+  </DataTemplate>
+
+  <!-- Enumeration：原厂下拉 -->
+  <DataTemplate x:Key="Enumeration">
+    <localParamTab:LeftRightControl Height="32">
+      <localParamTab:LeftRightControl.RightContent>
+        <Grid>
+          <Grid Visibility="{Binding NormalVisibilityA}">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <ComboBox Height="30" IsEditable="False" HorizontalAlignment="Stretch"
+                      Style="{DynamicResource ListViewComboBoxStyle}"
+                      ItemsSource="{Binding EnumEntrysA}" DisplayMemberPath="DisplayNameALang" SelectedValuePath="ValueA"
+                      SelectedValue="{Binding CurValueA, Mode=TwoWay}">
+              <ComboBox.ItemContainerStyle>
+                <Style TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+                  <Setter Property="IsEnabled" Value="{Binding IsAvailable}"/>
+                  <Setter Property="ToolTip" Value="{Binding UnavailableReason}"/>
+                  <Setter Property="ToolTipService.ShowOnDisabled" Value="True"/>
+                </Style>
+              </ComboBox.ItemContainerStyle>
+            </ComboBox>
+            <Button Grid.Column="1" Content="×" Width="26" Height="26" Margin="5,0,0,0" ToolTip="清除可选项"
+                    Visibility="{Binding ClearVisibleA, Converter={StaticResource bool2VisibilityConverter}}"
+                    Command="{Binding ClearCommand}"/>
+          </Grid>
+          <ContentControl ContentTemplate="{StaticResource Unset_sub}" Content="{Binding}"
+                          Visibility="{Binding UnsetVisibilityA}"/>
+        </Grid>
+      </localParamTab:LeftRightControl.RightContent>
+    </localParamTab:LeftRightControl>
+  </DataTemplate>
+
+  <!-- 范围组合：SliderArrange SliderType=between，全部由范围行宿主接线 -->
+  <DataTemplate x:Key="IntegerBettween">
+    <localParamTab:LeftRightControl Height="32">
+      <localParamTab:LeftRightControl.RightContent>
+        <vm_port_1:SliderArrange/>
+      </localParamTab:LeftRightControl.RightContent>
+    </localParamTab:LeftRightControl>
+  </DataTemplate>
+  <DataTemplate x:Key="FloatBettween">
+    <localParamTab:LeftRightControl Height="32">
+      <localParamTab:LeftRightControl.RightContent>
+        <vm_port_1:SliderArrangeFloat/>
+      </localParamTab:LeftRightControl.RightContent>
+    </localParamTab:LeftRightControl>
+  </DataTemplate>
+</ResourceDictionary>

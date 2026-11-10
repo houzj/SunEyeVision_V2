@@ -119,6 +119,7 @@ internal static class Program
   var stages=string.Join(" ",fields.ConstructionStages.Select(mark=>$"{mark.Stage}={mark.Ms}ms"));
   var pages=string.Join(" ",fields.LastBuildStageMs.Select(pair=>$"{pair.Key}[rows={pair.Value.RowsMs}ms,layout={pair.Value.LayoutMs}ms]"));
   var fieldCosts=string.Join(" ",fields.LastFieldBuildMs.Where(pair=>pair.Value>=5).OrderByDescending(pair=>pair.Value).Take(12).Select(pair=>$"{pair.Key}={pair.Value}ms"));
+  Console.WriteLine($"[SUBCost] ctorTotal={fields.LastEditorCtorMs.Values.Sum()}ms optionsTotal={fields.LastEditorOptionsMs.Values.Sum()} rowTotal={fields.LastRowAssemblyMs.Values.Sum()} fields={fields.LastEditorCtorMs.Count}");
   var blob=Descendants<SunEyeVision.Tool.BlobAnalysis.Wpf.Views.BlobParameterEditor>(control).FirstOrDefault();
   var composition=blob is null?"":string.Join(" ",blob.CompositionStageMs.Select(pair=>$"{pair.Key}={pair.Value}ms"));
   Console.WriteLine($"[STAGE] {toolId} {phase} 构造[{stages}] 页面[{pages}] 字段[{fieldCosts}] 显隐={fields.VisibilityElapsedMs}ms/{fields.VisibilityUpdateCount}次 组合[{composition}]");

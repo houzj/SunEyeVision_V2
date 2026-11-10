@@ -142,7 +142,7 @@ internal static class S2DocumentEditingCases
         Case("Runtime窗口编辑数量上限确认发布，下游实际来源弹窗订阅最终Region",()=>
         {
             var window=Open(blob);Field(window,"BlobCountLimit").Text="1";Pump();Require(window.TryConfirm(out var error),error);
-            window=Open(downstream);var editor=Control(window);var inputField=Logical(editor).OfType<DeclaredFieldEditor>().Single(f=>f.FieldId==BlobTool.InspectionInput);
+            window=Open(downstream);var editor=Control(window);var inputField=Logical(editor).OfType<DeclaredFieldRow>().Single(f=>f.FieldId==BlobTool.InspectionInput);
             Logical(editor).OfType<TabControl>().Single().SelectedIndex=0;window.UpdateLayout();Pump();
             var popup=Visual(inputField).OfType<SunEyeVision.Plugin.Wpf.Controls.Popups.PopupButton>().Single(item=>item.Name=="rt");
             popup.ApplyTemplate();popup.Focus();popup.IsDropDownOpen=true;Pump();
@@ -269,7 +269,7 @@ internal static class S2DocumentEditingCases
         Case("真实根窗口可打开已绑定整数设置，原预检链保显式转换且旧行关闭后失效",()=>
         {
             using var f=new RootProxyFixture(true);var proxy=f.Add(f.Threshold);var window=f.Open();
-            var field=Logical(window).OfType<DeclaredFieldEditor>().Single(field=>field.FieldId==f.Threshold);
+            var field=Logical(window).OfType<DeclaredFieldRow>().Single(field=>field.FieldId==f.Threshold);
             Require(field.Setting is ReferenceSetting {Conversion:BindingConversion.Float64ToInt64Checked}&&!field.HasInvalidText,"已订阅整数代理被伪null常量备份破坏");
             Require(f.Validate(proxy,f.CheckedReference()) is null,"实际Picker预检丢显式转换");
             Require(f.Validate(proxy,f.CheckedReference() with {Conversion=BindingConversion.Automatic}) is not null,"隐式Float64到Int32未拒绝");

@@ -67,6 +67,8 @@ public sealed partial class ImageSourceStripSession
         }
         RequireCurrent(request.ExpectedVersion);
         var frozen = directories.ToArray();
+        // 回显实际扫描位置，便于区分"选的目录不对"与"目录里没有可用图像"。
+        SetStatus("正在读取文件夹：" + string.Join("；", frozen));
         await ImportCoreAsync(async token =>
         {
             var files = new System.Collections.Generic.List<string>();
@@ -114,10 +116,18 @@ public sealed partial class ImageSourceStripSession
                 if (cancellation.IsCancellationRequested || generation != _fileImportGeneration || !CanAccept(expectedVersion)) return;
                 var existing = _source.Images.Select(image => image.FilePath).ToHashSet(StringComparer.OrdinalIgnoreCase);
                 var additions = prepared.Where(image => existing.Add(image.FilePath)).ToArray();
-                if (additions.Length == 0) { SetStatus("没有找到新的可导入图像文件"); return; }
+                // 把"扫描到多少 / 新增多少"直接回显，便于区分"没扫到文件"与"被去重/被清空"。
+                if (additions.Length == 0)
+                {
+                    SetStatus(prepared.Length == 0
+                        ? "未在所选位置找到可用图像文件（支持 jpg/jpeg/png/bmp/tif/tiff，文件夹内最多向下 1 层）"
+                        : $"扫描到 {prepared.Length} 个图像，但都已存在，未新增");
+                    return;
+                }
                 // One action, one acceptance. Notifications may cancel or retire this session after acceptance;
                 // no partially accepted chunks and no rollback of already accepted references.
-                var receipt=_source.AddImages(additions);
+                // 原本没有当前图像时（空列表首次导入），导入后选中第一张，避免计数停在 (0/N)。
+                var receipt=_source.AddImages(additions,_source.CurrentIndex<0);
                 if (cancellation.IsCancellationRequested || generation != _fileImportGeneration || !OwnerIsCurrent()) return;
                 if(receipt.ExecutionError is { } failure)
                 {

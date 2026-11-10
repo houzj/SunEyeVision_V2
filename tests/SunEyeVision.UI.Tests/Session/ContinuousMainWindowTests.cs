@@ -11,7 +11,7 @@ public sealed class ContinuousMainWindowTests
  [Fact] public void Real_blob_business_ng_stops_main_window_without_replaying_history()=>UiRuntime.Run(()=>
  {
   using var f=new DocumentUiFixture();var source=f.Add();var blob=f.Add("BlobAnalysis",350,210);f.Connect(source,blob);f.ConfigureImage(source,f.Image());f.Fields(source,("local.auto-switch",new ConstantSetting(false)));
-  f.Fields(blob,("field:fa6fb37f3a3e5fde8a7f15becfbedf07",new ConstantSetting(true)),("field:bb037ce3fa405b059d7cb3e696e4138c",new ConstantSetting(2d)));
+  f.Fields(blob,("field:99a8e45eec7f406b93ab7226c73744ce",new ConstantSetting(true)),("field:4dd2475077314fc68baf68900d8d2b93",new ConstantSetting(2L)));
   var root=f.Session.Editing.Host.BeginRootEdit(f.Root.Id);root.WorkspaceSettings=root.WorkspaceSettings with{StopOnNg=true,RunIntervalMs=0};f.Session.CommitEdit(DocumentEditProposal.Prepare(f.Session.Editing.Host,roots:new[]{root}));f.Save();var history=f.Session.HistoryEntries.Count;
   f.Main.ToggleContinuousAllCommand.Execute(null);var task=Running(f);var run=UiRuntime.Field<DocumentContinuousRun>(f.Main,"_formalContinuousRun")!;var rounds=new List<ContinuousRoundSummary>();run.RoundCompleted+=rounds.Add;UiRuntime.Await(task);Until(()=>!f.Main.IsRunning);
   Assert.True(Assert.Single(Assert.Single(rounds).Workflows).HasBusinessNg);Assert.Contains("NG",f.Main.StatusText);Assert.Equal(history,f.Session.HistoryEntries.Count);Assert.False(f.Session.HasUnsavedChanges);using var result=f.Session.AcquirePublishedResult(f.Root.Id,blob.Id);Assert.True(result?.Snapshot.IsSuccess);

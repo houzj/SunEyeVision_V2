@@ -12,18 +12,18 @@ namespace SunEyeVision.Plugin.Wpf.Presenters.Regions;
 public sealed class NativeAssistUiDraftControls : StackPanel, IDisposable
 {
     private readonly DeclaredFieldState _mode;
-    private readonly NativeIntegerRadioPresenter _radio;
+    private readonly DeclaredFieldRow _radio;
     private readonly List<AssistRow> _rows=[];
-    private readonly DeclaredFieldEditor _information;
+    private readonly DeclaredFieldRow _information;
     private bool _disposed,_informationOnly;
     public FrameworkElement? GraphicVisibilitySource {get;init;}
 
-    public NativeAssistUiDraftControls(DeclaredFieldEditor information)
+    public NativeAssistUiDraftControls(DeclaredFieldRow information)
     {
         _information=information??throw new ArgumentNullException(nameof(information));
         if(information.Parent is not null)throw new ArgumentException("修正信息控件已有宿主。",nameof(information));
         _mode=new DeclaredFieldState(new Port("ui-only-assist-mode",DataType.Integer),new ConstantSetting(0L),_=>{});
-        _radio=new NativeIntegerRadioPresenter(_mode,"选择方式",new NativeIntegerRadioOptions(new[]{
+        _radio=new DeclaredFieldRow(_mode,"选择方式",integerRadioOptions:new NativeIntegerRadioOptions(new[]{
             new NativeIntegerRadioChoice(0,"按信息"),new NativeIntegerRadioChoice(1,"按点"),
             new NativeIntegerRadioChoice(2,"按坐标")},useFiveSlotTemplate:true));
         try
@@ -51,13 +51,13 @@ public sealed class NativeAssistUiDraftControls : StackPanel, IDisposable
     {
         internal string Label {get;}=label;
         internal int VisibleMode {get;}=visibleMode;
-        internal DeclaredFieldEditor? Editor {get;set;}
+        internal DeclaredFieldRow? Editor {get;set;}
     }
-    private DeclaredFieldEditor EnsureEditor(AssistRow row)
+    private DeclaredFieldRow EnsureEditor(AssistRow row)
     {
         if(row.Editor is not null)return row.Editor;
         var port=new Port("ui-only-assist-"+_rows.IndexOf(row),DataType.Number,Required:false,EditModes:FieldEditModes.Reference);
-        row.Editor=new DeclaredFieldEditor(port,row.Label,new UnsetSetting(),_=>{},ReferenceFieldOptions.Empty,allowUnboundReference:true)
+        row.Editor=new DeclaredFieldRow(port,row.Label,new UnsetSetting(),_=>{},ReferenceFieldOptions.Empty,allowUnboundReference:true)
             {ToolTip="界面试用，来源功能尚未接入。"};
         row.Editor.Changed+=OnUiChanged;
         Children.Add(row.Editor);

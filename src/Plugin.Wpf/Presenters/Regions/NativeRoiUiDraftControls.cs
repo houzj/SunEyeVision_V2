@@ -19,11 +19,11 @@ namespace SunEyeVision.Plugin.Wpf.Presenters.Regions;
 public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
 {
     private readonly List<DeclaredFieldState> _states=[];
-    private readonly List<NativeIntegerRadioPresenter> _radios=[];
-    private readonly List<DeclaredFieldEditor> _inheritEditors=[];
+    private readonly List<DeclaredFieldRow> _radios=[];
+    private readonly List<DeclaredFieldRow> _inheritEditors=[];
     private readonly StackPanel _rectangleParameters=new(),_circleParameters=new();
-    private readonly DeclaredFieldEditor _circleSource;
-    private IReadOnlyList<DeclaredFieldEditor>? _rectangleEditors,_annulusEditors;
+    private readonly DeclaredFieldRow _circleSource;
+    private IReadOnlyList<DeclaredFieldRow>? _rectangleEditors,_annulusEditors;
     private bool _rectangleParametersRealized,_circleParametersRealized;
     private readonly DeclaredFieldState _area,_detection,_inherit,_mask;
     private readonly FrameworkElement _imageInput,_detectionRadio,_inheritRadio,_maskRadio;
@@ -31,7 +31,7 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
     private FrameworkElement? _detectionSource,_maskSource;
     private bool _disposed;
     private readonly NativeRoiInheritanceBinding? _inheritance;
-    private readonly Dictionary<DeclaredFieldEditor,ParameterSetting> _baseline=[];
+    private readonly Dictionary<DeclaredFieldRow,ParameterSetting> _baseline=[];
     public event Action? Changed;
     public bool HasUiChanges=>!_disposed&&(_states.Any(state=>(_inheritance is null||state!=_detection&&state!=_inherit)&&state.Accepted is not ConstantSetting {Value:0L})
         ||_inheritEditors.Any(editor=>editor.HasPendingEdits||!DeclaredFieldState.SameSetting(editor.Setting,_baseline[editor]))
@@ -49,7 +49,7 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
         _inheritance=inheritance;
         if(inheritance is not null&&(inheritance.InitialMode is <0 or >3))
             throw new ArgumentException("继承组合需要四种模式。");
-        var outputMask=new DeclaredFieldEditor(new Port("ui-only-output-mask",DataType.Boolean,EditModes:FieldEditModes.Constant),"输出掩膜",
+        var outputMask=new DeclaredFieldRow(new Port("ui-only-output-mask",DataType.Boolean,EditModes:FieldEditModes.Constant),"输出掩膜",
             new ConstantSetting(false),_=>{});
         _inheritEditors.Add(outputMask);Children.Add(outputMask);
         (_area,_)=AddRadio("ROI区域类型",new[]{"图形类型","图像类型"});
@@ -60,7 +60,7 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
         _detectionShapes=Shape("形状",true);Children.Add(_detectionShapes);
         (_inherit, _inheritRadio)=AddRadio("继承方式",new[]{"按矩形区域","按矩形参数","按圆形区域","按圆形参数"},inheritance?.InitialMode??0,
             value=>{if(Value(_detection)==1)inheritance?.AcceptMode((int)value);});
-        _circleSource=inheritance?.AnnulusSource??new DeclaredFieldEditor(new Port("ui-only-circle-region",RoiDeclarations.Shape,Required:false,EditModes:FieldEditModes.Reference),
+        _circleSource=inheritance?.AnnulusSource??new DeclaredFieldRow(new Port("ui-only-circle-region",RoiDeclarations.Shape,Required:false,EditModes:FieldEditModes.Reference),
             "区域",new UnsetSetting(),_=>{},ReferenceFieldOptions.Empty,allowUnboundReference:true)
             {ToolTip="界面试用，来源功能尚未接入。"};
         if(inheritance is null)_inheritEditors.Add(_circleSource);Children.Add(_circleSource);
@@ -75,9 +75,9 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
         _maskShapes=Shape("屏蔽区",true,initialFullScreen:false);Children.Add(_maskShapes);
         if(geometryOnlyPresentation)
         {
-            DeclaredFieldEditor Placeholder(string id,string label,TypeRef type)
+            DeclaredFieldRow Placeholder(string id,string label,TypeRef type)
             {
-                var editor=new DeclaredFieldEditor(new Port(id,type,Required:false,EditModes:FieldEditModes.Reference),label,new UnsetSetting(),_=>{},ReferenceFieldOptions.Empty,allowUnboundReference:true)
+                var editor=new DeclaredFieldRow(new Port(id,type,Required:false,EditModes:FieldEditModes.Reference),label,new UnsetSetting(),_=>{},ReferenceFieldOptions.Empty,allowUnboundReference:true)
                     {ToolTip="仅预览，几何继承尚未接入执行。"};
                 _inheritEditors.Add(editor);return editor;
             }
@@ -104,8 +104,8 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
         var secondIndex=Children.IndexOf(_maskShapes);Children.RemoveAt(secondIndex);Children.Insert(secondIndex,mask);_maskShapes=mask;
         ProjectVisibility();
     }
-    private IEnumerable<DeclaredFieldEditor> InheritanceEditors()=>_inheritance is {} binding
-        ?(_rectangleEditors??Array.Empty<DeclaredFieldEditor>()).Concat(_annulusEditors??Array.Empty<DeclaredFieldEditor>()).Append(binding.RectangleSource).Append(binding.AnnulusSource):Array.Empty<DeclaredFieldEditor>();
+    private IEnumerable<DeclaredFieldRow> InheritanceEditors()=>_inheritance is {} binding
+        ?(_rectangleEditors??Array.Empty<DeclaredFieldRow>()).Concat(_annulusEditors??Array.Empty<DeclaredFieldRow>()).Append(binding.RectangleSource).Append(binding.AnnulusSource):Array.Empty<DeclaredFieldRow>();
     private void EnsureParameterEditors(int? mode)
     {
         if(_inheritance is not {} binding)return;
@@ -128,8 +128,8 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
     {
         var state=new DeclaredFieldState(new Port("ui-only-roi-"+_states.Count,DataType.Integer),new ConstantSetting(initial),proposal=>accept?.Invoke((long)((ConstantSetting)proposal).Value!));
         _states.Add(state);
-        var radio=new NativeIntegerRadioPresenter(state,label,
-            new NativeIntegerRadioOptions(choices.Select((value,index)=>new NativeIntegerRadioChoice(index,value)),useFiveSlotTemplate:choices.Length>2));
+        var radio=new DeclaredFieldRow(state,label,
+            integerRadioOptions:new NativeIntegerRadioOptions(choices.Select((value,index)=>new NativeIntegerRadioChoice(index,value)),useFiveSlotTemplate:choices.Length>2));
         _radios.Add(radio);Children.Add(radio);return(state,radio);
     }
     private void AddParameterRows(Panel panel,IReadOnlyList<string> labels)
@@ -137,7 +137,7 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
         foreach(var label in labels)
         {
             var port=new Port("ui-only-inherit-"+_inheritEditors.Count,DataType.Number,Required:false,EditModes:FieldEditModes.Reference);
-            var editor=new DeclaredFieldEditor(port,label,new UnsetSetting(),_=>{},ReferenceFieldOptions.Empty,allowUnboundReference:true)
+            var editor=new DeclaredFieldRow(port,label,new UnsetSetting(),_=>{},ReferenceFieldOptions.Empty,allowUnboundReference:true)
                 {ToolTip="界面试用，来源功能尚未接入。"};
             _inheritEditors.Add(editor);panel.Children.Add(editor);
         }

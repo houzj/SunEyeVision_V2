@@ -10,14 +10,13 @@ namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 public sealed partial class BlobParameterDefinition
 {
     private readonly IReadOnlyDictionary<string, XElement> _fields;
-    private readonly XElement[] _judgments;
     private readonly IReadOnlyDictionary<string,XElement> _inputs;
     public static BlobParameterDefinition Instance { get; } = Load();
     private BlobParameterDefinition(XElement root)
     {
         if(root.Name!="BlobParameters"||(string?)root.Attribute("schemaVersion")!="1")
             throw new InvalidDataException("Unsupported Blob parameter metadata.");
-        Shape(root,["schemaVersion","workflowImageInputId"],["Inputs","Group","Judgments"]);
+        Shape(root,["schemaVersion","workflowImageInputId"],["Inputs","Group"]);
         WorkflowImageInputId=Required(root,"workflowImageInputId");
         if(WorkflowImageInputId!=BlobTool.ImageInput)throw new InvalidDataException("Blob workflow image default must name its declared image input.");
         if(root.Elements("Inputs").Count()!=1)throw new InvalidDataException("Exactly one Blob input editor declaration is required.");
@@ -50,7 +49,7 @@ public sealed partial class BlobParameterDefinition
         _fields=new ReadOnlyDictionary<string,XElement>(root.Elements("Group").Elements("Parameter")
             .ToDictionary(x=>Required(x,"id"),x=>x,StringComparer.Ordinal));
         var settingsTypes=typeof(BlobSettings).GetProperties(BindingFlags.Public|BindingFlags.Instance)
-            .Where(p=>p.Name!=nameof(BlobSettings.Judgments)&&p.GetCustomAttribute<BlobNonFieldAttribute>() is null)
+            .Where(p=>p.GetCustomAttribute<BlobNonFieldAttribute>() is null)
             .ToDictionary(p=>p.Name,p=>p.PropertyType,StringComparer.Ordinal);
         var declared=ParameterTypes();
         if(settingsTypes.Keys.Any(id=>!_fields.ContainsKey(id))||_fields.Keys.Any(id=>!declared.ContainsKey(id)))
@@ -86,34 +85,6 @@ public sealed partial class BlobParameterDefinition
             catch(Exception e)when(e is FormatException or OverflowException or ArgumentException)
             {throw new InvalidDataException("Invalid Blob default: "+id,e);}
         }
-        if(root.Elements("Judgments").Count()!=1)throw new InvalidDataException("Exactly one Blob Judgments element is required.");
-        Shape(root.Element("Judgments")!,["page","section"],["Judgment"]);
-        _judgmentPage=Required(root.Element("Judgments")!,"page");_judgmentSection=Required(root.Element("Judgments")!,"section");
-        _judgments=root.Element("Judgments")?.Elements("Judgment").ToArray()
-            ??throw new InvalidDataException("Blob judgment definitions are missing.");
-        if(_judgments.Select(x=>Required(x,"key")).Distinct(StringComparer.Ordinal).Count()!=_judgments.Length)
-            throw new InvalidDataException("Duplicate Blob judgment identities.");
-        var orders=new HashSet<int>();
-        foreach(var item in _judgments)
-        {
-            Shape(item,["key","name","kind","perItem","enabled","minimum","maximum","allowedMinimum","allowedMaximum","unit","decimals","order","enabledFieldId","minimumFieldId","maximumFieldId"],[]);
-            var key=Required(item,"key");Required(item,"name");
-            var perItem=Boolean(item,"perItem");Boolean(item,"enabled");
-            if(!Enum.TryParse<BlobJudgmentKind>(Required(item,"kind"),false,out var kind)||!Enum.IsDefined(kind))
-                throw new InvalidDataException("Unknown Blob judgment kind: "+key);
-            var expectedPerItem=key is "per-blob-area" or "per-blob-circularity" or "per-blob-rectangularity";
-            var known=expectedPerItem||key is "output-not-empty" or "white-ratio" or "blob-count" or "total-area" or "average-area"
-                or "max-area" or "min-area" or "average-circularity" or "average-rectangularity";
-            if(!known||perItem!=expectedPerItem||kind!=(key=="output-not-empty"?BlobJudgmentKind.Boolean:BlobJudgmentKind.Range))
-                throw new InvalidDataException("Blob judgment identity/scope/kind mismatch: "+key);
-            var min=Finite(item,"minimum");var max=Finite(item,"maximum");
-            if(Finite(item,"allowedMinimum")>min||min>max||max>Finite(item,"allowedMaximum"))
-                throw new InvalidDataException("Invalid Blob judgment bounds: "+key);
-            Integer(item,"decimals",0,15);
-            if(!orders.Add(Integer(item,"order",0,int.MaxValue)))throw new InvalidDataException("Duplicate Blob judgment order.");
-            if(item.Attribute("unit") is null)throw new InvalidDataException("Missing Blob judgment unit: "+key);
-        }
-        if(_judgments.Length!=12)throw new InvalidDataException("Missing Blob judgment definitions.");
         _bindings=BuildSettingsBindings();
         SettingsSchema=new(_bindings.Select(x=>x.Port),Array.Empty<SunEyeVision.Plugin.Contracts.Port>(),
             new SunEyeVision.Plugin.Contracts.ToolPresentation(_bindings.Select(x=>x.Presentation)));
@@ -153,7 +124,7 @@ public sealed partial class BlobParameterDefinition
     internal static IReadOnlyDictionary<string,Type> ParameterTypes()
     {
         var settings=typeof(BlobSettings).GetProperties(BindingFlags.Public|BindingFlags.Instance)
-            .Where(p=>p.Name!=nameof(BlobSettings.Judgments)&&p.GetCustomAttribute<BlobNonFieldAttribute>() is null)
+            .Where(p=>p.GetCustomAttribute<BlobNonFieldAttribute>() is null)
             .ToDictionary(p=>p.Name,p=>p.PropertyType,StringComparer.Ordinal);
         foreach(var property in typeof(BlobVmFindParameters).GetProperties(BindingFlags.Public|BindingFlags.Instance))
             settings.TryAdd(property.Name,property.PropertyType);
@@ -199,9 +170,4 @@ public sealed partial class BlobParameterDefinition
     public double? Maximum(string id)=>Number(id,"maximum");
     public int DecimalPlaces(string id)=>_fields[id].Attribute("decimals") is null?0:Integer(_fields[id],"decimals",0,15);
     public double Increment(string id)=>Number(id,"increment")??1;
-    public IReadOnlyList<BlobJudgment> CreateJudgments()=>Array.AsReadOnly(_judgments.Select(x=>new BlobJudgment(
-        Required(x,"key"),bool.Parse(Required(x,"perItem")),bool.Parse(Required(x,"enabled")),
-        double.Parse(Required(x,"minimum"),CultureInfo.InvariantCulture),double.Parse(Required(x,"maximum"),CultureInfo.InvariantCulture),
-        Enum.Parse<BlobJudgmentKind>(Required(x,"kind")))).ToArray());
-    public IReadOnlyList<XElement> JudgmentMetadata=>Array.AsReadOnly(_judgments.Select(x=>new XElement(x)).ToArray());
 }

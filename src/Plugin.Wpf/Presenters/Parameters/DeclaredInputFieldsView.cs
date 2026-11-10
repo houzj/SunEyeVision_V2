@@ -14,8 +14,8 @@ namespace SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
 {
     private readonly NativeParameterPage _page=new();
-    private readonly List<DeclaredFieldEditor> _fields=new();
-    private readonly List<(DeclaredFieldEditor Field,Action Handler)> _handlers=new();
+    private readonly List<DeclaredFieldRow> _fields=new();
+    private readonly List<(DeclaredFieldRow Field,Action Handler)> _handlers=new();
     private readonly Dictionary<string,NativeParameterRow> _fieldRows=new(StringComparer.Ordinal);
     private readonly List<IDisposable> _additionalContents=new();
     private bool _disposed;
@@ -26,7 +26,7 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
     private readonly Func<OutputReference,string>? _formatReference;
     private readonly ReferenceWindowOwner _referenceWindowOwner;
     private readonly bool _ownsReferenceWindowOwner;
-    public IReadOnlyList<DeclaredFieldEditor> Fields {get;}
+    public IReadOnlyList<DeclaredFieldRow> Fields {get;}
     internal IReadOnlyList<NumericModelReadResult> ReadNumericModels(NumericModelReadScope scope,string? fieldId,bool pageKnown,bool currentPage,Func<bool> current,
         IReadOnlyDictionary<string,ConstantSetting?>? currentValues=null)
     {
@@ -61,7 +61,7 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
                 var metadata=new NativeParameterGroup(group.Key);
                 foreach(var (field,port,_) in group)
                 {
-                    var editor=new DeclaredFieldEditor(port with{EditModes=FieldEditModes.Reference},
+                    var editor=new DeclaredFieldRow(port with{EditModes=FieldEditModes.Reference},
                         field.DisplayName,read(port),setting=>write(port,setting),references,formatReference:format,
                         presentation:field,allowUnboundReference:!port.Required||schema.WorkflowImageInputId==port.Id);
                     _fields.Add(editor);
@@ -89,13 +89,13 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
     }
     /// <summary>Creates a real declared input editor for a tool's original composite layout.
     /// The view retains the editor and the same host write/reference callbacks; no second field owner is created.</summary>
-    public DeclaredFieldEditor ComposeInputEditor(string id,string label,bool numericSequence=false)
+    public DeclaredFieldRow ComposeInputEditor(string id,string label,bool numericSequence=false)
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
         var port=_schema.Inputs.SingleOrDefault(port=>port.Id==id)??throw new ArgumentException("输入未声明。");
         if(_fields.Any(field=>field.FieldId==id)||_schema.Presentation!.Fields.Any(field=>field.FieldId==id))
             throw new ArgumentException("输入已有编辑器。");
-        var editor=new DeclaredFieldEditor(port,label,_read(port),setting=>_write(port,setting),_references,
+        var editor=new DeclaredFieldRow(port,label,_read(port),setting=>_write(port,setting),_references,
             formatReference:_formatReference,allowUnboundReference:!port.Required,numericSequence:numericSequence);
         _fields.Add(editor);return editor;
     }
@@ -128,7 +128,7 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
         catch {row.Dispose();throw;}
     }
     /// <summary>Move an input visual to its associated settings row; this host retains its field ownership.</summary>
-    public DeclaredFieldEditor TakeField(string fieldId)
+    public DeclaredFieldRow TakeField(string fieldId)
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
         if(!_fieldRows.Remove(fieldId,out var row))throw new ArgumentException("输入字段不存在或已移出。",nameof(fieldId));

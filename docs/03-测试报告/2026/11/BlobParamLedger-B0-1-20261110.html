@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>B0-1 Blob 参数清单表</title>
+<style>
+:root{--ink:#1f2328;--muted:#656d76;--line:#d0d7de;--soft:#f6f8fa;--ok:#1a7f37;--warn:#9a6700}
+*{box-sizing:border-box}
+body{margin:0;padding:32px 22px 70px;color:var(--ink);font:15px/1.7 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+main{max-width:1200px;margin:0 auto}
+h1{font-size:24px;margin:0 0 4px}
+h2{font-size:18px;margin:28px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+p.sub{color:var(--muted);font-size:13px;margin-bottom:20px}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th,td{border:1px solid var(--line);padding:6px 9px;vertical-align:top;text-align:left}
+th{background:var(--soft);font-weight:600}
+code{background:var(--soft);padding:1px 4px;border-radius:3px;font:12px/1.5 ui-monospace,Consolas,monospace}
+.box{border:1px solid var(--line);border-radius:8px;padding:12px 16px;margin:14px 0;background:var(--soft)}
+.ok{color:var(--ok);font-weight:600}
+.warn{color:var(--warn);font-weight:600}
+</style>
+</head>
+<body>
+<main>
+<h1>B0-1 参数清单表 · 图像源与 Blob 全链路重构</h1>
+<p class="sub">生成于 2026-11-10 ｜ 依据《图像源与Blob全链路重构计划-20261110-092128》B0-1 ｜ 只读取证，未改任何产品代码</p>
+
+<h2>口径校准结论（与计划文档的 95 vs 41 不同）</h2>
+<div class="box">
+<ul>
+<li>仓库中不存在计划文档所写的 <code>BlobFindModuParams.cs</code>（1758 行 / 95 属性）。原件参数实际位于 <code>docs/07-工具逆向/decompiled/Managed/BlobFind/IMVSBlobFindModuCs/BlobFindParam.cs</code>（2065 行），提取出 106 个参数属性（另有 7 个枚举类型定义不计入）。</li>
+<li>现行代码已有 <code>tools/SunEyeVision.BlobAnalysis/Runtime/Parameters/BlobVmFindParameters.cs</code>，是原件参数的完整闭包：104 个参数属性，与原件<b>同名承接 104 / 104</b>。</li>
+<li>原件独有的 2 项 <code>InputImage</code>、<code>ModuRoiManager</code> 是宿主图像资源与 ROI 管理器，不属于业务参数，归入「不适用」。</li>
+<li><span class="ok">B0-1 差集为 0</span>：VM 参数字段没有缺失。计划里「当前 41 vs 95，差集需清零」是过期口径，B1 的真实工作不是补 VM 参数字段，而是把 <code>BlobSettings</code> 的 36 项业务设置、<code>BlobParameterDefinition</code> 的呈现声明与 104 项闭包对齐，并补齐算子承接（B3）。</li>
+<li><span class="warn">待补</span>：逐项取值范围、原件中文名与 ParamItem 特性映射需沿 2065 行原件继续提取；本表先固定「名称 / 类型 / 默认值 / 三方承接 / 分类」可核对部分。</li>
+</ul>
+</div>
+
+<h2>逐项清单（106 项）</h2>
+<table>
+<thead><tr><th style="width:4%">#</th><th style="width:24%">原件属性</th><th style="width:12%">类型</th><th style="width:12%">默认值</th><th style="width:16%">VM 参数闭包</th><th style="width:16%">BlobSettings</th><th style="width:8%">分类</th><th style="width:8%">说明</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><code>InputImage</code></td><td><code>-</code></td><td><code>-</code></td><td>no</td><td>-</td><td>not-applicable</td><td>host image / ROI</td></tr>
+<tr><td>2</td><td><code>ModuRoiManager</code></td><td><code>-</code></td><td><code>-</code></td><td>no</td><td>-</td><td>not-applicable</td><td>host image / ROI</td></tr>
+<tr><td>3</td><td><code>ThresholdType</code></td><td><code>BlobVmThresholdType</code></td><td><code>BlobVmThresholdType.SingleThreshold</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>4</td><td><code>Polarity</code></td><td><code>BlobVmPolarity</code></td><td><code>BlobVmPolarity.DarkOnBright</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>5</td><td><code>LowThreshold</code></td><td><code>int</code></td><td><code>0</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>6</td><td><code>HightThreshold</code></td><td><code>int</code></td><td><code>0</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>7</td><td><code>LowSoftThreshold</code></td><td><code>int</code></td><td><code>0</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>8</td><td><code>HightSoftThreshold</code></td><td><code>int</code></td><td><code>0</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>9</td><td><code>Softness</code></td><td><code>int</code></td><td><code>0</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>10</td><td><code>SoftLeftRatio</code></td><td><code>int</code></td><td><code>0</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>11</td><td><code>SoftRightRatio</code></td><td><code>int</code></td><td><code>0</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>12</td><td><code>SoftLowRatio</code></td><td><code>int</code></td><td><code>0</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>13</td><td><code>SoftHighRatio</code></td><td><code>int</code></td><td><code>0</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>14</td><td><code>FindNum</code></td><td><code>int</code></td><td><code>0</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>15</td><td><code>HoleMinArea</code></td><td><code>int</code></td><td><code>0</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>16</td><td><code>SelectByArea</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>17</td><td><code>MinArea</code></td><td><code>int</code></td><td><code>0</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>18</td><td><code>MaxArea</code></td><td><code>int</code></td><td><code>0</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>19</td><td><code>BolbOutLineEnable</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>20</td><td><code>BlobContourType</code></td><td><code>BlobVmContourType</code></td><td><code>BlobVmContourType.NoneContour</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>21</td><td><code>BolbImageEnable</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>22</td><td><code>BinaryImageEnable</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>23</td><td><code>SelectByHistInfo</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>24</td><td><code>SelectByBoxAngle</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>25</td><td><code>MinBoxAngle</code></td><td><code>int</code></td><td><code>-9000</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>26</td><td><code>MaxBoxAngle</code></td><td><code>int</code></td><td><code>9000</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>27</td><td><code>SelectByRectWidth</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>28</td><td><code>MinRectWidth</code></td><td><code>int</code></td><td><code>1</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>29</td><td><code>MaxRectWidth</code></td><td><code>int</code></td><td><code>1000000</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>30</td><td><code>SelectByRectHeight</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>31</td><td><code>MinRectHeight</code></td><td><code>int</code></td><td><code>1</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>32</td><td><code>MaxRectHeight</code></td><td><code>int</code></td><td><code>1000000</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>33</td><td><code>SelectByPerimeter</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>34</td><td><code>MinPerimeter</code></td><td><code>int</code></td><td><code>1</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>35</td><td><code>MaxPerimeter</code></td><td><code>int</code></td><td><code>999999999</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>36</td><td><code>SelectByShortAxis</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>37</td><td><code>MinShortAxis</code></td><td><code>int</code></td><td><code>1</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>38</td><td><code>MaxShortAxis</code></td><td><code>int</code></td><td><code>999999999</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>39</td><td><code>SelectByLongAxis</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>40</td><td><code>MinLongAxis</code></td><td><code>int</code></td><td><code>1</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>41</td><td><code>MaxLongAxis</code></td><td><code>int</code></td><td><code>999999999</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>42</td><td><code>SelectByCircularuty</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>43</td><td><code>MinCircularity</code></td><td><code>double</code></td><td><code>0d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>44</td><td><code>MaxCircularity</code></td><td><code>double</code></td><td><code>0d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>45</td><td><code>SelectByRectangularity</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>46</td><td><code>MinRectangularity</code></td><td><code>double</code></td><td><code>0d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>47</td><td><code>MaxRectangularity</code></td><td><code>double</code></td><td><code>0d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>48</td><td><code>SelectByCentraBias</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>49</td><td><code>MinCenterBias</code></td><td><code>double</code></td><td><code>0d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>50</td><td><code>MaxCenterBias</code></td><td><code>double</code></td><td><code>9999999.99d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>51</td><td><code>AxisRatioEnable</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>52</td><td><code>MinAxisRatio</code></td><td><code>double</code></td><td><code>0.01d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>53</td><td><code>MaxAxisRatio</code></td><td><code>double</code></td><td><code>1d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>54</td><td><code>SortFeature</code></td><td><code>BlobVmSortFeature</code></td><td><code>BlobVmSortFeature.SortFeatureArea</code></td><td>yes</td><td>yes</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>55</td><td><code>SortMode</code></td><td><code>BlobVmSortMode</code></td><td><code>BlobVmSortMode.SortModeDecend</code></td><td>yes</td><td>yes</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>56</td><td><code>Connectivity</code></td><td><code>BlobVmConnectivity</code></td><td><code>BlobVmConnectivity.Connected_8</code></td><td>yes</td><td>yes</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>57</td><td><code>MaxAreaInnerRectNum</code></td><td><code>int</code></td><td><code>0</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>58</td><td><code>OverlapRatio</code></td><td><code>int</code></td><td><code>0</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>59</td><td><code>MaxOutPixelNumEnable</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>60</td><td><code>MaxOutPixelNum</code></td><td><code>int</code></td><td><code>0</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>61</td><td><code>OKWhenNumIsZero</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>62</td><td><code>BlobNumLimitEnable</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>63</td><td><code>BlobNumLimitLow</code></td><td><code>int</code></td><td><code>1</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>64</td><td><code>BlobNumLimitHigh</code></td><td><code>int</code></td><td><code>99999</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>65</td><td><code>BlobAreaLimitEnable</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>66</td><td><code>BlobAreaLimitLow</code></td><td><code>double</code></td><td><code>1d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>67</td><td><code>BlobAreaLimitHigh</code></td><td><code>double</code></td><td><code>999999999d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>68</td><td><code>BlobTotalAreaLimitEnable</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>69</td><td><code>BlobTotalAreaLimitLow</code></td><td><code>double</code></td><td><code>1d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>70</td><td><code>BlobTotalAreaLimitHigh</code></td><td><code>double</code></td><td><code>999999999d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>71</td><td><code>CentroidXLimitEnable</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>72</td><td><code>CentroidXLimitLow</code></td><td><code>double</code></td><td><code>-99999</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>73</td><td><code>CentroidXLimitHigh</code></td><td><code>double</code></td><td><code>99999d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>74</td><td><code>CentroidYLimitEnable</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>75</td><td><code>CentroidYLimitLow</code></td><td><code>double</code></td><td><code>-99999</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>76</td><td><code>CentroidYLimitHigh</code></td><td><code>double</code></td><td><code>99999d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>77</td><td><code>AngleLimitEnable</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>78</td><td><code>AngleLimitLow</code></td><td><code>double</code></td><td><code>-180</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>79</td><td><code>AngleLimitHigh</code></td><td><code>double</code></td><td><code>180d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>80</td><td><code>CenterXLimitEnable</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>81</td><td><code>CenterXLimitLow</code></td><td><code>double</code></td><td><code>-99999</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>82</td><td><code>CenterXLimitHigh</code></td><td><code>double</code></td><td><code>99999d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>83</td><td><code>CenterYLimitEnable</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>84</td><td><code>CenterYLimitLow</code></td><td><code>double</code></td><td><code>-99999</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>85</td><td><code>CenterYLimitHigh</code></td><td><code>double</code></td><td><code>99999d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>86</td><td><code>BoxHeightLimitEnable</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>87</td><td><code>BoxHeightLimitLow</code></td><td><code>double</code></td><td><code>1d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>88</td><td><code>BoxHeightLimitHigh</code></td><td><code>double</code></td><td><code>99999d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>89</td><td><code>BoxWidthLimitEnable</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>90</td><td><code>BoxWidthLimitLow</code></td><td><code>double</code></td><td><code>1d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>91</td><td><code>BoxWidthLimitHigh</code></td><td><code>double</code></td><td><code>99999d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>92</td><td><code>PerimeterLimitEnable</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>93</td><td><code>PerimeterLimitLow</code></td><td><code>double</code></td><td><code>1d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>94</td><td><code>PerimeterLimitHigh</code></td><td><code>double</code></td><td><code>999999999d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>95</td><td><code>LongAxisLimitEnable</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>96</td><td><code>LongAxisLimitLow</code></td><td><code>double</code></td><td><code>1d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>97</td><td><code>LongAxisLimitHigh</code></td><td><code>double</code></td><td><code>999999999d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>98</td><td><code>ShortAxisLimitEnable</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>99</td><td><code>ShortAxisLimitLow</code></td><td><code>double</code></td><td><code>1d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>100</td><td><code>ShortAxisLimitHigh</code></td><td><code>double</code></td><td><code>999999999d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>101</td><td><code>CircularityLimitEnable</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>102</td><td><code>CircularityLimitLow</code></td><td><code>double</code></td><td><code>0d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>103</td><td><code>CircularityLimitHigh</code></td><td><code>double</code></td><td><code>1d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>104</td><td><code>RectangularityLimitEnable</code></td><td><code>bool</code></td><td><code>false</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>105</td><td><code>RectangularityLimitLow</code></td><td><code>double</code></td><td><code>0d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+<tr><td>106</td><td><code>RectangularityLimitHigh</code></td><td><code>double</code></td><td><code>1d</code></td><td>yes</td><td>-</td><td>implemented</td><td>VM closure</td></tr>
+</tbody>
+</table>
+</main>
+</body>
+</html>

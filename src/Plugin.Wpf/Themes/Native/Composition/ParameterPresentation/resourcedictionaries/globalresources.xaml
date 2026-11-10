@@ -2,6 +2,7 @@
 <ResourceDictionary.MergedDictionaries>
 <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/OriginalTheme.xaml"/>
 <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Input/VisionUi/SourceScrollBars.xaml"/>
+<ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/ParameterPresentation/resourcedictionaries/ParamRowDataTemplates.xaml"/>
 </ResourceDictionary.MergedDictionaries>
 <SolidColorBrush x:Key="ListBorder" Color="#828790"/>
 <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter"/>

@@ -164,8 +164,8 @@ internal static class S2DocumentEditingCases
             var window=Open();var control=Control(window);var owner=Owner(control);var formal=System.Text.Json.JsonSerializer.Serialize(node.RuntimeConfiguration);var position=history.Position;var bytes=File.ReadAllBytes(path);var previousPublication=Published(node.Id);
             var viewport=(SunEyeVision.Plugin.Wpf.Presenters.Display.NativeResultViewport)Get(Get(Get(resultView,"_workspacePresenter"),"OutputPane"),"Viewport");
             object Layer(){try{PumpUntil(()=>Maybe(owner,"_previewLayer") is not null);}catch{throw new Exception("预览未就绪："+Get(owner,"PreviewError"));}return Get(owner,"_previewLayer");}
-            DeclaredFieldEditor Width()=>Logical(control).OfType<SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredInputFieldsView>().Single().Fields.Single(field=>field.FieldId==ids[2]);
-            void Apply(DeclaredFieldEditor field,ParameterSetting setting){Require((bool)field.GetType().GetMethod("TryApplySetting",Flags)!.Invoke(field,new[]{setting})!,"正式字段接纳失败："+field.Error);Pump();}
+            DeclaredFieldRow Width()=>Logical(control).OfType<SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredInputFieldsView>().Single().Fields.Single(field=>field.FieldId==ids[2]);
+            void Apply(DeclaredFieldRow field,ParameterSetting setting){Require((bool)field.GetType().GetMethod("TryApplySetting",Flags)!.Invoke(field,new[]{setting})!,"正式字段接纳失败："+field.Error);Pump();}
             object Prepared(object layer)=>Get(layer,"_prepared");
             object[] Shapes(object layer)=>(object[])Get(Prepared(layer),"Items");
             Case("真实单图只读原矩形可见，打开不执行不写字段历史文件",()=>{
@@ -258,7 +258,7 @@ internal static class S2DocumentEditingCases
     static bool Contains(IReadOnlyRegion region,int x,int y)
     {using var read=region.AcquireReader();for(var i=0;i<read.RunCount;){var runs=read.ReadRuns(i,Math.Min(4096,read.RunCount-i));foreach(var run in runs.Span)if(run.Row==y&&x>=run.FirstColumn&&x<=run.LastColumnInclusive)return true;i+=runs.Length;}return false;}
     private static bool SelectRadio(FrameworkElement radio,long value)=>(bool)radio.GetType().GetMethod("TrySetConstant")!.Invoke(radio,new object[]{value})!;
-    private static void SelectSource(DeclaredFieldEditor field,OutputReference? expected)
+    private static void SelectSource(DeclaredFieldRow field,OutputReference? expected)
     {
         var popup=Logical(field).Concat(Visual(field)).OfType<AppsPopup>().First(item=>item.IsVisible);popup.IsDropDownOpen=true;popup.UpdateLayout();Pump();
         var session=popup.DataContext;((ICommand)session.GetType().GetProperty("DropDownCommand")!.GetValue(session)!).Execute(null);Pump();

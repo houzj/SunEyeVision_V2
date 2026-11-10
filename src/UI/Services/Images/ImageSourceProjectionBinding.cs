@@ -21,7 +21,8 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
 {
  private readonly DocumentSession _session;
  private readonly WorkflowDefinition _root;
- private readonly NodeDefinition _node;
+ // 提交会重建节点实例，投影持有它并随 ReadPolicy/AcceptEdit 更新到当前实例。
+ private NodeDefinition _node;
  private readonly Func<bool> _isCurrent, _canEdit, _canNavigate;
  private readonly Action<DocumentEditReceipt>? _accepted;
  private readonly Func<ImageSourceActivation, Task>? _activate;
@@ -34,8 +35,11 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
  internal ImageSourceStripSession Strip { get; }
  internal bool CanActivate => _activate is not null && _isLocal && Current() && _canNavigate() && Current();
  internal Exception? LastPresentationError { get; private set; }
+ // 身份而非引用：文档提交会重建节点/流程实例，引用判定会把仍然有效的投影误判为失效。
  internal bool Owns(DocumentSession session, WorkflowDefinition root, NodeDefinition node) =>
-  ReferenceEquals(_session, session) && ReferenceEquals(_root, root) && ReferenceEquals(_node, node) && Current();
+  _session.EditSessionId == session.EditSessionId
+  && string.Equals(_root.Id, root.Id, StringComparison.Ordinal)
+  && string.Equals(_node.Id, node.Id, StringComparison.Ordinal) && Current();
 
  internal ImageSourceProjectionBinding(DocumentSession session, WorkflowDefinition root, NodeDefinition node,
   Func<bool> isCurrent, Func<bool> canEdit, Func<bool> canNavigate, Action<DocumentEditReceipt>? accepted = null,
@@ -76,8 +80,9 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
  private bool Current()
  {
   if (_disposed || !_isCurrent() || _root.IsSubroutine) return false;
-  try { return _session.GetWorkflows().Any(flow => ReferenceEquals(flow, _root)) &&
-   _session.GetNodes(_root.Id).Any(node => ReferenceEquals(node, _node)) && !_disposed && _isCurrent(); }
+  // 流程与节点按 Id 判定存在性：提交重建实例不应让一个仍然存在的节点被判为失效。
+  try { return _session.GetWorkflows().Any(flow => string.Equals(flow.Id, _root.Id, StringComparison.Ordinal)) &&
+   _session.GetNodes(_root.Id).Any(node => string.Equals(node.Id, _node.Id, StringComparison.Ordinal)) && !_disposed && _isCurrent(); }
   catch (InvalidOperationException) { return false; }
  }
  private void EnsureCurrent(bool edit = false)
@@ -99,6 +104,9 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
  internal void RefreshFromDocument()
  {
   _dispatcher.VerifyAccess(); EnsureCurrent();
+  // 接纳事务在途时投影状态归在途 Commit 所有：文档已前移而投影尚未安装，此刻刷新必然读到
+  // 不一致快照并撞 LoadFromPolicy 门禁；在途 Commit 会在 writer 返回后自行安装同一批行，跳过即可。
+  if (Source.IsAcceptingEdit) return;
   var current = ReadPolicy();
   var displayed = Source.CapturePolicy();
   var resolver = _session.CreateResourcePathResolver();
@@ -115,7 +123,10 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
  {
   EnsureCurrent();
   var draft = _session.Editing.Host.BeginEdit(_root.Id, _node.Id);
-  if (!ReferenceEquals(draft.Node, _node)) throw new InvalidOperationException("图像源节点已被替换。");
+  // 提交会重建节点实例：按 Id 校验归属，并把投影跟到当前实例，否则后续引用比较全部失效。
+  if (!string.Equals(draft.Node.Id, _node.Id, StringComparison.Ordinal))
+   throw new InvalidOperationException("图像源节点已被替换。");
+  _node = draft.Node;
   var values = draft.Configuration.Fields.Select(draft.SettingsSchema.Inputs).Materialize(new Dictionary<string, object?>());
   return ImageSourcePolicy.ReadFields(_node.Id, values);
  }
@@ -124,7 +135,8 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
   ArgumentNullException.ThrowIfNull(proposal); EnsureCurrent(true);
   if (_ownCommit) throw new InvalidOperationException("图像源编辑不能重入。");
   var draft = _session.Editing.Host.BeginEdit(_root.Id, _node.Id);
-  if (!ReferenceEquals(draft.Node, _node)) throw new InvalidOperationException("图像源节点已被替换。");
+  if (!string.Equals(draft.Node.Id, _node.Id, StringComparison.Ordinal)) throw new InvalidOperationException("图像源节点已被替换。");
+  _node = draft.Node;
   var values = draft.Configuration.Fields.Select(draft.SettingsSchema.Inputs).Materialize(new Dictionary<string, object?>());
   var policy = ImageSourcePolicy.ReadFields(_node.Id, values);
   if (policy.SourceKind != ImageSourceKind.Local || proposal.Configuration.NodeId != _node.Id)
@@ -204,9 +216,10 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
  private void OnDocumentChanged(object? sender, DocumentChangeSet change)
  {
   if (_disposed || _ownCommit || change.EditSessionId != _session.EditSessionId) return;
-  if (!change.ChangedNodes.Any(item => ReferenceEquals(item.Node, _node) &&
+  // 提交会重建节点实例，按 Id 匹配；引用比较会让提交后的刷新完全失效。
+  if (!change.ChangedNodes.Any(item => string.Equals(item.Node.Id, _node.Id, StringComparison.Ordinal) &&
        (item.Aspects & (NodeChangedAspect.Configuration | NodeChangedAspect.Identity)) != 0) &&
-      !change.RemovedNodes.Any(item => ReferenceEquals(item.Node, _node))) return;
+      !change.RemovedNodes.Any(item => string.Equals(item.Node.Id, _node.Id, StringComparison.Ordinal))) return;
   if (_refreshQueued || _dispatcher.HasShutdownStarted) return;
   _refreshQueued = true;
   _dispatcher.BeginInvoke(DispatcherPriority.DataBind, new Action(() =>

@@ -215,6 +215,8 @@
                             Background="Transparent"
                             Tag="{Binding}"
                             x:Name="HitAreaBorder"
+                            MouseEnter="Node_MouseEnter"
+                            MouseLeave="Node_MouseLeave"
                             MouseLeftButtonDown="Node_MouseLeftButtonDown"
                             MouseLeftButtonUp="Node_MouseLeftButtonUp"
                             MouseMove="Node_MouseMove">
@@ -371,7 +373,8 @@
                                     <Style TargetType="Grid">
                                         <Setter Property="Visibility" Value="Collapsed"/>
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsMouseOver, ElementName=HitAreaBorder}" Value="True">
+                                            <!-- 端口显隐跟随节点级悬停状态（对应原件 DiagramItem.IsHited），不再依赖 ElementName 绑定在模板内的解析时机 -->
+                                            <DataTrigger Binding="{Binding IsHited}" Value="True">
                                                 <Setter Property="Visibility" Value="Visible"/>
                                             </DataTrigger>
                                         </Style.Triggers>

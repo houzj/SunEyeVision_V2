@@ -264,6 +264,9 @@ public sealed class CanvasNodeProjection : INotifyPropertyChanged, ICanvasToolIc
     public string Name => Definition.Name;
     public string DispName => Definition.DispName;
     public int GlobalIndex => Definition.GlobalIndex;
+    private bool _isHited;
+    /// <summary>节点是否被鼠标命中，对应原件 DiagramItem.IsHited；驱动四向端口显示。</summary>
+    public bool IsHited { get => _isHited; set { if(_isHited==value)return; _isHited=value; Notify(nameof(IsHited)); } }
     public string ToolType => Definition.ToolType;
     /// <summary>节点外观类型，由工具目录声明；未声明时按原件默认卡片呈现。</summary>
     public string NodeDisplayType => Catalog?.NodeDisplayType ?? "DEFAULT";

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace SunEyeVision.Plugin.Wpf.Native.Dependencies.WindowUtilities.Service;
 
@@ -36,6 +37,33 @@ public class AdornerPanel : Panel
 
     /// <summary>被装饰元素附带的标记，供具体装饰器区分用途。</summary>
     public object? AdornedTag { get; private set; }
+
+    /// <summary>被装饰元素的变换是否换算到工作区坐标。</summary>
+    public bool IsAdornedElementTransformToWorkAreaElement { get; set; } = true;
+
+    /// <summary>装饰面板相对工作区的左偏移。</summary>
+    public double Left { get; set; }
+
+    /// <summary>装饰面板相对工作区的上偏移。</summary>
+    public double Top { get; set; }
+
+    /// <summary>工作区缩放变换，供装饰内容按比例换算。</summary>
+    public Transform? Transform { get; set; }
+
+    /// <summary>子面板相对装饰面板的左偏移。</summary>
+    public double OffsetLeft { get; private set; }
+
+    /// <summary>子面板相对装饰面板的上偏移。</summary>
+    public double OffsetTop { get; private set; }
+
+    /// <summary>设置子面板偏移并重排。</summary>
+    public void SetOffsets(double left, double top)
+    {
+        OffsetLeft = left;
+        OffsetTop = top;
+        InvalidateMeasure();
+        InvalidateArrange();
+    }
 
     /// <summary>设置被装饰元素并刷新布局。</summary>
     public void SetAdornedElement(FrameworkElement element, object? tag)

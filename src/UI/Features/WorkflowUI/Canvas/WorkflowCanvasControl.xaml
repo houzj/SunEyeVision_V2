@@ -13,6 +13,7 @@
              xmlns:rendering="clr-namespace:SunEyeVision.UI.Services.Rendering"
              xmlns:native="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.WorkspaceControls.Base;assembly=SunEyeVision.Plugin.Wpf"
              xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
+             xmlns:local="clr-namespace:SunEyeVision.UI.Features.WorkflowUI.Canvas"
              mc:Ignorable="d"
              d:DesignHeight="800" d:DesignWidth="1000">
 
@@ -210,13 +211,13 @@
             </ItemsControl.ItemContainerStyle>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
+                    <!-- 节点视图宿主：对应原件 DiagramItem，命中状态由控件自身维护，端口可见性跟随它 -->
+                    <local:WorkflowNodeView>
                     <!-- HitArea Border: 用于命中测试，Position表示其中心点 -->
                     <Border Width="{Binding HitAreaWidth}" Height="{Binding HitAreaHeight}"
                             Background="Transparent"
                             Tag="{Binding}"
                             x:Name="HitAreaBorder"
-                            MouseEnter="Node_MouseEnter"
-                            MouseLeave="Node_MouseLeave"
                             MouseLeftButtonDown="Node_MouseLeftButtonDown"
                             MouseLeftButtonUp="Node_MouseLeftButtonUp"
                             MouseMove="Node_MouseMove">
@@ -374,7 +375,7 @@
                                         <Setter Property="Visibility" Value="Collapsed"/>
                                         <Style.Triggers>
                                             <!-- 端口显隐跟随节点级悬停状态（对应原件 DiagramItem.IsHited），不再依赖 ElementName 绑定在模板内的解析时机 -->
-                                            <DataTrigger Binding="{Binding IsHited}" Value="True">
+                                            <DataTrigger Binding="{Binding IsHited, RelativeSource={RelativeSource AncestorType={x:Type local:WorkflowNodeView}}}" Value="True">
                                                 <Setter Property="Visibility" Value="Visible"/>
                                             </DataTrigger>
                                         </Style.Triggers>
@@ -426,6 +427,7 @@
                             </Grid>
                         </Grid>
                     </Border>
+                    </local:WorkflowNodeView>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

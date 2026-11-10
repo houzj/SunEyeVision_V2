@@ -1052,18 +1052,6 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         /// </summary>
 
-        /// <summary>节点进入：置悬停态，端口按原件由节点级状态显示，不受鼠标移入子元素影响。</summary>
-        private void Node_MouseEnter(object sender, MouseEventArgs e)
-        {
-            if(sender is FrameworkElement{DataContext:CanvasNodeProjection node})node.IsHited=true;
-        }
-
-        /// <summary>节点离开：清除悬停态，四向端口随之隐藏。</summary>
-        private void Node_MouseLeave(object sender, MouseEventArgs e)
-        {
-            if(sender is FrameworkElement{DataContext:CanvasNodeProjection node})node.IsHited=false;
-        }
-
         private void Node_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 
         {

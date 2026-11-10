@@ -367,20 +367,10 @@
                         </Border.Style>
                     </Border>
                             <!-- 连接端口：原件 Connector 规格（20×30 命中区、5×8 橙条、命中放大 8.5×12），节点悬停时四个方位常驻显示 -->
-                            <Grid x:Name="PortLayer"
+                            <!-- 端口层：显隐由 WorkflowNodeView 代码直接控制，对应原件 DiagramItem 的端口触发器 -->
+                            <Grid x:Name="PortLayer" Visibility="Collapsed"
                                   Width="{Binding VisualWidth}" Height="{Binding VisualHeight}"
                                   HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Grid.Style>
-                                    <Style TargetType="Grid">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                        <Style.Triggers>
-                                            <!-- 端口显隐跟随节点级悬停状态（对应原件 DiagramItem.IsHited），不再依赖 ElementName 绑定在模板内的解析时机 -->
-                                            <DataTrigger Binding="{Binding IsHited, RelativeSource={RelativeSource AncestorType={x:Type local:WorkflowNodeView}}}" Value="True">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Grid.Style>
 
                                 <native:ConnectionPort x:Name="LeftPort" Index="0" Orientation="Left"
                                                        HorizontalAlignment="Left" VerticalAlignment="Center"

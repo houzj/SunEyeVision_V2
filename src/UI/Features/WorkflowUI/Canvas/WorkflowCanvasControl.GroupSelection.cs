@@ -96,6 +96,22 @@ public partial class WorkflowCanvasControl
         if (nodes.Any(n => n.IsEnabled != enabled)) CurrentWorkflowTab?.DocumentCanvas?.Edit(enabled ? "启用节点" : "禁用节点",
             draft => { foreach (var node in nodes) draft.SetNodeEnabled(node.Definition, enabled); });
     }
+    /// <summary>原件 Delete 语义：先删选中连线（Connection.xaml:4），否则删选中节点并连带关联边（DiagramItem.xaml.cs:946-952）。返回是否处理。</summary>
+    internal bool DeleteCanvasSelectionOrWire()
+    {
+        if (!CanEditCanvas) return false;
+        var wire = _canvasSelectedWire
+            ?? CurrentWorkflowTab?.DocumentCanvas?.Connections.FirstOrDefault(edge => edge.IsSelected);
+        if (wire is not null) { DeleteCanvasWire(wire); return true; }
+        var selectedNodes = CanvasSelectedNodes();
+        if (selectedNodes.Length == 0) return false;
+        var canvas = CurrentWorkflowTab?.DocumentCanvas;
+        if (canvas is null) return false;
+        var selectedIds = selectedNodes.Select(node => node.Id).ToHashSet(StringComparer.Ordinal);
+        var edges = canvas.Connections.Where(edge => selectedIds.Contains(edge.SourceNodeId) || selectedIds.Contains(edge.TargetNodeId)).ToArray();
+        canvas.Delete(selectedNodes, edges);
+        return true;
+    }
     private void InitializeCanvasSelection()
     {
         DataContextChanged += (_, _) => { _canvasBoxSelectionActive = false; ClearCanvasSelectionFrame(); };
@@ -105,9 +121,17 @@ public partial class WorkflowCanvasControl
             if (CanvasTextInputOwnsKeyboard() || !WorkflowCanvas.IsKeyboardFocusWithin || !CanEditCanvas) return;
             if ((Keyboard.Modifiers & ModifierKeys.Control) != 0 && e.Key is Key.C or Key.V)
             { if(e.Key==Key.C)_viewModel?.CopyCanvasSelection();else _viewModel?.PasteCanvasSelection(); e.Handled = true; return; }
-            if (!_canvasBoxSelectionActive) return;
-            if ((Keyboard.Modifiers & ModifierKeys.Control) != 0 && e.Key is Key.A or Key.F)
-            { SetCanvasSelectionEnabled(e.Key == Key.A); e.Handled = true; }
+            // 原件 Delete 键：DiagramItem 删节点、Connection 删连线（DiagramItem.xaml.cs:946-952、Connection.xaml:4）。
+            if (e.Key == Key.Delete)
+            { if (DeleteCanvasSelectionOrWire()) e.Handled = true; return; }
+            // 原件节点级 Ctrl+F/Ctrl+A 启停（DiagramItem.xaml:13-14）：本方按选中集投影，组选或单选/多选节点均生效。
+            if ((Keyboard.Modifiers & ModifierKeys.Control) != 0 && e.Key is Key.A or Key.F
+                && (_canvasBoxSelectionActive || CanvasSelectedNodes().Length > 0))
+            { SetCanvasSelectionEnabled(e.Key == Key.A); e.Handled = true; return; }
+            // 原件画布级 Ctrl+F：无选中节点时打开模块搜索（ItemsPage.cs:444-446）；
+            // 有选中节点时 Ctrl+F 仍是节点禁用（上方分支先命中），与原件节点/画布作用域一致。
+            if ((Keyboard.Modifiers & ModifierKeys.Control) != 0 && e.Key == Key.F)
+            { _viewModel?.RequestWorkflowSearch(); e.Handled = true; }
         };
     }
 }

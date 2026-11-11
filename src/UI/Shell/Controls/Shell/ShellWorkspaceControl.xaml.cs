@@ -87,6 +87,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             SetBinding(RootWorkspaceEditingAllowedProperty, new System.Windows.Data.Binding(nameof(MainWindowViewModel.CanEditRootWorkspace)) { Source = viewModel });
             SetBinding(SingleExecutionBusyProperty, new System.Windows.Data.Binding(nameof(MainWindowViewModel.IsRunning)) { Source = viewModel });
             WorkflowSearch.QuerySources=viewModel.SearchWorkflowNodes;WorkflowSearch.Navigate=SearchNavigate;WorkflowSearch.NavigateId=SearchNavigateId;
+            viewModel.WorkflowSearchRequested+=WorkflowSearch.BeginSearch;
             WorkflowSearch.SetBinding(WorkflowSearchControl.ScopeIdentityProperty,new System.Windows.Data.Binding("SelectedTab.CurrentWorkflowId"){Source=viewModel.WorkflowTabViewModel});
             WorkflowSearch.SetBinding(WorkflowSearchControl.DefinitionIdentityProperty,new System.Windows.Data.Binding("SelectedTab.WorkflowNodes"){Source=viewModel.WorkflowTabViewModel});
             WorkspaceStatusBar.SetBinding(WorkspaceStatusBarControl.ExecutionTextProperty,new System.Windows.Data.Binding(nameof(StatusBarViewModel.WorkflowExecutionText)){Source=viewModel.StatusBar});

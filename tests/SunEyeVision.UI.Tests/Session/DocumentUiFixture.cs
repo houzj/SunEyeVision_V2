@@ -145,9 +145,11 @@ internal sealed class DocumentUiFixture:IDisposable
     public void Dispose()
     {
         foreach(var editor in System.Windows.Application.Current.Windows.OfType<SunEyeVision.UI.Services.Editing.RuntimeToolEditorWindow>().ToArray())UiRuntime.Await(editor.CloseAndDrainAsync());
-        Results.Shutdown();Main.ReleasePluginConsumersForShutdown();Main.ReleaseDocumentHost();
+        Results.Shutdown();Main.ReleasePluginConsumersForShutdown();
+        // 与生产关闭链同序：先排空持有活动租约的通讯/相机运行时，ReleaseDocumentHost 才能关闭会话。
         UiRuntime.Await(ServiceInitializer.DisposeCommunicationRuntimeAsync().AsTask());
         UiRuntime.Await(ServiceInitializer.DisposeCameraRuntimeAsync().AsTask());
+        Main.ReleaseDocumentHost();
         Host.Content=null;Host.Close();ServiceInitializer.SolutionManager.CloseCurrent(discardPendingEdits:true);UiRuntime.Pump();
     }
 }

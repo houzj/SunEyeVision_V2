@@ -319,11 +319,19 @@ public sealed class CanvasNodeProjection : INotifyPropertyChanged, ICanvasToolIc
         Notify(nameof(HasUnconfiguredRequiredInputs));
     }
     public CanvasNodeRunState RunState { get; private set; }
+    /// <summary>原件 GroupNodeBackgroundConverter 期望的状态文本（成功/失败）；随 RunState 同步通知。</summary>
+    public string? Status => RunState switch
+    {
+        CanvasNodeRunState.Passed => "成功",
+        CanvasNodeRunState.Failed or CanvasNodeRunState.Rejected => "失败",
+        _ => null
+    };
     internal void SetRunState(CanvasNodeRunState state)
     {
         if (RunState == state) return;
         RunState = state;
         Notify(nameof(RunState));
+        Notify(nameof(Status));
     }
     public double PositionX => Definition.PositionX;
     public double PositionY => Definition.PositionY;

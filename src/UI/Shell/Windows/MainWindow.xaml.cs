@@ -403,6 +403,13 @@ namespace SunEyeVision.UI.Shell.Windows
 
             // 取消订阅图像预览事件（经图像结果区退订），防止内存泄漏
             try { ImageResultHost.Shutdown(); } catch(Exception ex) { failures.Add(ex); }
+            // VM 关闭链顺序：设备/通信服务先于会话退役解绑（DocumentSession.Dispose 要求活动租约先排空，
+            // 否则"通讯服务及驱动"租约阻断 CloseCurrent，主窗口停在"等待资源释放"）。与方案切换路径
+            // （MainWindowDocumentFiles.PrepareSolutionTransition 后 DisposeCommunicationRuntimeAsync）同序。
+            try { await SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.DisposeCommunicationRuntimeAsync(); }
+            catch(Exception ex) { failures.Add(ex); }
+            try { await SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.DisposeCameraRuntimeAsync(); }
+            catch(Exception ex) { failures.Add(ex); }
             try { _viewModel.ReleasePluginConsumersForShutdown(); } catch(Exception ex) { failures.Add(ex); }
             try { _viewModel.ReleaseDocumentHost(); } catch(Exception ex) { failures.Add(ex); }
             if(failures.Count>0)throw new AggregateException("插件消费者未能全部释放，窗口保持打开。",failures);

@@ -11,6 +11,10 @@ public partial class WorkflowCanvasControl
         var menu = new ContextMenu();
         var paste = new MenuItem { Header = "粘贴", InputGestureText = "Ctrl+V" }; menu.Items.Add(paste);
         paste.Click += (_, _) => { if(CanEditCanvas) _viewModel?.PasteCanvasSelection(_canvasPastePoint); };
+        // 原件空白右键顺序：粘贴→导入组合→模块搜索→导入流程→工具箱分组（DiagramPage.xaml:66-224）。
+        // 导入组合待 Group 范围决定，本批接"模块搜索"到现有搜索控件。
+        var search = new MenuItem { Header = "模块搜索", InputGestureText = "Ctrl+F" }; menu.Items.Add(search);
+        search.Click += (_, _) => _viewModel?.RequestWorkflowSearch();
         menu.Opened += (_, _) => {
             paste.IsEnabled=CanEditCanvas && _viewModel?.CanPasteCanvasSelection==true;
             PopulateCanvasToolContextMenu(menu,_canvasPastePoint);

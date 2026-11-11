@@ -27,6 +27,8 @@ public partial class WorkflowSearchControl:UserControl
  private void OwnerMoved(object? sender,EventArgs e){if(ResultsPopup.IsOpen){var offset=ResultsPopup.HorizontalOffset;ResultsPopup.HorizontalOffset=offset+0.1;ResultsPopup.HorizontalOffset=offset;}}
  private void OwnerDeactivated(object? sender,EventArgs e){_searchTimer.Stop();ResultsPopup.IsOpen=false;}
  internal void CloseSearch(){_idSearchWindow?.Close();_searchTimer.Stop();if(ResultsPopup==null)return;ResultsPopup.IsOpen=false;Results.ItemsSource=null;Expand.IsChecked=false;}
+ /// <summary>画布 Ctrl+F / 右键"模块搜索"的宿主落点：展开名称搜索并聚焦（VM SearchModuleView 行为对齐）。</summary>
+ internal void BeginSearch(){Expand.IsChecked=true;Query.Focus();Refresh();}
  private void ExpandChanged(object sender,RoutedEventArgs e){if(SearchFields==null)return;SearchFields.Visibility=Expand.IsChecked==true?Visibility.Visible:Visibility.Collapsed;if(Expand.IsChecked==true){Query.Focus();Refresh();}else{_searchTimer.Stop();ResultsPopup.IsOpen=false;}}
  private void QueryLostFocus(object sender,RoutedEventArgs e){_searchTimer.Stop();ResultsPopup.IsOpen=false;}
  private void QueryChanged(object sender,TextChangedEventArgs e){if(_setting||ResultsPopup==null)return;_searchTimer.Stop();if(string.IsNullOrEmpty(Query.Text)){ResultsPopup.IsOpen=false;return;}if(Expand.IsChecked==true)_searchTimer.Start();}

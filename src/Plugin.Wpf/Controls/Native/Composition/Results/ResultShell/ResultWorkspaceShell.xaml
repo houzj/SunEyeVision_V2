@@ -69,6 +69,15 @@
                         </ComboBox>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                  <!-- 原件 ModuleResultView.xaml:87-101 comcor：坐标显示三态（图像坐标/物理坐标/同时显示），
+                       直接驱动 ImageViewBox.CordinateShow（0/1/2，与原件 CorSelectIndex 语义一致，见 Cor2Pixel/PhysicalVisibleConverter）。 -->
+                  <ComboBox Name="CoordinateMode" Height="30" Width="110" Margin="0,0,6,0" VerticalAlignment="Center"
+                            ToolTip="{DynamicResource Results.Shell.坐标类型}"
+                            SelectedIndex="{Binding CordinateShow, ElementName=imageView, Mode=TwoWay}">
+                    <ComboBoxItem Content="{DynamicResource Results.Shell.图像坐标}" />
+                    <ComboBoxItem Content="{DynamicResource Results.Shell.物理坐标}" />
+                    <ComboBoxItem Content="{DynamicResource Results.Shell.两者显示}" />
+                  </ComboBox>
                   <ToggleButton Style="{StaticResource Results.Shell.DoubleImageToggleButton}" Width="35" Height="35" IsChecked="{Binding IsDoubleImage, ElementName=View, Mode=TwoWay}" />
                   <StackPanel Orientation="Horizontal">
                     <Button Name="line" ToolTip="{DynamicResource Results.Shell.辅助线}" Command="{Binding CrossLinesCommand, ElementName=View}">

@@ -221,4 +221,30 @@ public sealed class CanvasSessionTests
         Assert.Equal(2,f.Canvas.Nodes.Count(item=>item.IsSelected));Assert.True(f.Session.Undo());Assert.Equal(2,f.Canvas.Nodes.Count);
         var entry=Assert.Single(f.Main.FindWorkflowNodesById(first.Id));Assert.Same(first,entry.Node);Assert.True(f.Main.NavigateSearchResult(entry));Assert.Same(first,f.Main.SelectedNode);
     });
+    [Fact] public void Delete_key_semantics_remove_selected_wire_first_then_selected_nodes_with_their_edges()=>UiRuntime.Run(()=>
+    {
+        using var f=new DocumentUiFixture();var a=f.Add();var b=f.Add("BlobAnalysis",450,300);f.Connect(a,b);
+        // 原件 DiagramItem Delete：删除选中节点并连带关联边（DiagramItem.xaml.cs:946-952）。
+        f.Projection(a).IsSelected=true;f.Projection(b).IsSelected=true;
+        Assert.True((bool)UiRuntime.Call(f.View,"DeleteCanvasSelectionOrWire")!);
+        Assert.Empty(f.Canvas.Nodes);Assert.Empty(f.Canvas.Connections);
+        // 原件 Connection Delete：仅删除选中连线（Connection.xaml:4）。
+        var c=f.Add();var d=f.Add("BlobAnalysis",450,300);f.Connect(c,d);
+        f.Canvas.Connections.Single().IsSelected=true;
+        Assert.True((bool)UiRuntime.Call(f.View,"DeleteCanvasSelectionOrWire")!);
+        Assert.Empty(f.Canvas.Connections);Assert.Equal(2,f.Canvas.Nodes.Count);
+        // 无选中时不产生编辑。
+        var revision=f.Session.HistoryEntries.Count;
+        Assert.False((bool)UiRuntime.Call(f.View,"DeleteCanvasSelectionOrWire")!);
+        Assert.Equal(revision,f.Session.HistoryEntries.Count);
+    });
+    [Fact] public void Node_projection_exposes_original_status_text_for_group_background()=>UiRuntime.Run(()=>
+    {
+        using var f=new DocumentUiFixture();var node=f.Add();var projection=f.Projection(node);
+        Assert.Null(projection.Status);
+        projection.SetRunState(CanvasNodeRunState.Passed);Assert.Equal("成功",projection.Status);
+        projection.SetRunState(CanvasNodeRunState.Failed);Assert.Equal("失败",projection.Status);
+        projection.SetRunState(CanvasNodeRunState.Rejected);Assert.Equal("失败",projection.Status);
+        projection.SetRunState(CanvasNodeRunState.None);Assert.Null(projection.Status);
+    });
 }

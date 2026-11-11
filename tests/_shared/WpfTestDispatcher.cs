@@ -76,8 +76,22 @@ internal static class WpfTestDispatcher
   {
    if(loadShellResources&&!_shellResourcesLoaded)
    {
-    foreach(var path in new[]{"Shell/Resources/AppResources.xaml","Resources/Styles/CommonStyleResources.xaml","Themes/Dark/DarkTheme.xaml"})
-     System.Windows.Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri("/SunEyeVision.UI;component/"+path,UriKind.Relative)});
+    // 与生产 App.xaml 完全同序的资源图：测试宿主曾只合并 3 个字典，缺 Col_* 调色板/画布/图像源等键，
+    // 渲染期 DynamicResource 解析抛 ResourceReferenceKeyNotFoundException 未处理异常崩溃测试主机进程。
+    foreach(var path in new[]{
+     "/SunEyeVision.UI;component/Shell/Resources/AppResources.xaml",
+     "/SunEyeVision.UI;component/Resources/Styles/NodeStyleResources.xaml",
+     "pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Palettes/colorstyle1.xaml",
+     "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/SharedStyles/configuration/ConfigurationShell.xaml",
+     "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/SharedStyles/configuration/ConfigurationControls.xaml",
+     "/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/PresentationControls/controls/numericupdown/themes/generic.xaml",
+     "/SunEyeVision.UI;component/Resources/Styles/ConnectionStyleResources.xaml",
+     "/SunEyeVision.UI;component/Resources/Styles/CanvasStyleResources.xaml",
+     "/SunEyeVision.UI;component/Resources/Styles/CommonStyleResources.xaml",
+     "/SunEyeVision.UI;component/Resources/Styles/MenuStyleResources.xaml",
+     "/SunEyeVision.UI;component/Resources/Styles/ToolTipStyleResources.xaml",
+     "/SunEyeVision.UI;component/Themes/Dark/DarkTheme.xaml"})
+     System.Windows.Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri(path,UriKind.RelativeOrAbsolute)});
     _shellResourcesLoaded=true;
    }
    action();

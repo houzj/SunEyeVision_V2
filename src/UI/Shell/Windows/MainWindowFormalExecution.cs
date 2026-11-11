@@ -162,10 +162,14 @@ public partial class MainWindowViewModel
    ??throw new InvalidOperationException("图像源宿主能力已失效。");
   var binding=ActiveImageSourceBinding;
   if(binding is null||!binding.OwnsNavigation(activation))throw new InvalidOperationException("来源条或导航选择已替换。");
+  // 原件 lst_SelectionChanged 语义（ImageListPanelBase.cs:1314-1348）：选中变化才写 CurrentImagePath 并 Run；
+  // 重复点击当前项不触发选中变化，因此不重跑（用户运行态确认 2026-11-11）。
+  var previousIndex=binding.Source.CurrentIndex;
   FormalImageInputs.SelectIndex(context,activation.Index);
   if(!binding.TryPresentNavigation(activation))throw new InvalidOperationException("导航接纳期间来源条已变化。");
   ResultWorkspaceChanged?.Invoke();
   if(IsRunning){StatusText="图像导航已排队，当前已捕获输入保持冻结。";return;}
+  if(previousIndex==activation.Index)return;
   await RunFormalWorkflowsAsync(new[]{activation.Workflow.Id});
  }
  private void RefreshFormalImageReadReceipts(DocumentSession session)

@@ -26,9 +26,4 @@
   <sys:String x:Key="Results.Shell.放大">放大</sys:String>
   <sys:String x:Key="Results.Shell.缩小">缩小</sys:String>
   <sys:String x:Key="Results.Shell.辅助线">辅助线</sys:String>
-  <!-- 原件 ModuleResultView.xaml:87-101 comcor 坐标显示三态（Image Coord/Physical Coord/Lang_BothDisplay） -->
-  <sys:String x:Key="Results.Shell.坐标类型">坐标类型</sys:String>
-  <sys:String x:Key="Results.Shell.图像坐标">图像坐标</sys:String>
-  <sys:String x:Key="Results.Shell.物理坐标">物理坐标</sys:String>
-  <sys:String x:Key="Results.Shell.两者显示">同时显示</sys:String>
 </ResourceDictionary>

@@ -521,6 +521,10 @@
                                     {
                                         "date":  "2026-10-25",
                                         "note":  "[c7e0f288e6fe4810edf4d8b9d9ec2ede7a09cd4c] 同步：归并Blob S1方案格式迁移与保存恢复优化"
+                                    },
+                                    {
+                                        "date":  "2026-11-11",
+                                        "note":  "[bdcd7fa250b7df50ae4896a8dbdcbb0838056b9f] feat(canvas): 画布链源码对照对齐+关闭链租约顺序修复+结果区坐标三态"
                                     }
                                 ]
                     },

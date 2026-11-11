@@ -526,6 +526,7 @@ public partial class App : System.Windows.Application
         await manager.UnloadPluginsAsync();
         if (ReferenceEquals(_pluginManager, manager)) _pluginManager = null;
     }
+    internal string PluginDrainDiagnostics => _pluginManager?.RuntimeLeaseDiagnostics ?? "插件管理器不存在";
 
     private Task<InstanceActivationResult> HandleInstanceActivationAsync(InstanceActivationRequest request)
     {

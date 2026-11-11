@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Wpf.Adapters.Fields;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Presenters.Input;
 
@@ -13,14 +15,21 @@ namespace SunEyeVision.Plugin.Wpf.Fields;
 /// <summary>图像来源组合槽（卡外组合，沿用原 ComboBox/ListViewComboBoxStyle 逻辑）。</summary>
 public sealed partial class DeclaredFieldRow
 {
-    private Func<IReadOnlyList<DeclaredReferenceCandidate>>? _imageSources;
+    public sealed record ImageSourceChoice(ParameterSetting Setting, string Label, bool Enabled = true, string? ToolTip = null);
+    private Func<ReferenceCandidates>? _imageSources;
     private string _imageRefreshError => _state.SourceError;
     private Action? _detachImageSource;
+    private Action? _refreshImageSource;
+    private Action? _projectImageSourceSelection;
+    private long _imageSourceGeneration;
+    internal bool UsesImageSourceSelector => _imageSources is not null;
 
     private void DetachImageSource()
     {
         var detach = _detachImageSource;
         _detachImageSource = null;
+        _refreshImageSource = null;
+        _projectImageSourceSelection = null;
         detach?.Invoke();
     }
 
@@ -28,31 +37,60 @@ public sealed partial class DeclaredFieldRow
     /// The host supplies declarations and owns validation, draft writes and execution.</summary>
     public void UseImageSourceSelector(Func<IReadOnlyList<DeclaredReferenceCandidate>> sources)
     {
+        ArgumentNullException.ThrowIfNull(sources);
+        UseImageSourceSelector(() => new ReferenceCandidates(sources(), Array.Empty<DeclaredReferenceCandidate>()));
+    }
+
+    internal void UseImageSourceSelector(Func<ReferenceCandidates> sources)
+    {
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (_port.Type != TypeRef.ResourceOf(ResourceKind.Image) || _port.EditModes != FieldEditModes.Reference)
             throw new ArgumentException("An image source selector requires a declared image reference input.");
-        _imageSources = sources ?? throw new ArgumentNullException(nameof(sources));
-        _slotContent = CreateImageSourceSlot();
-        Content = _slotContent;
-        ContentTemplateSelector = null;
+        ArgumentNullException.ThrowIfNull(sources);
+        var generation = ++_imageSourceGeneration;
+        DetachImageSource();
+        if (_disposed || generation != _imageSourceGeneration)
+            return;
+        _imageSources = sources;
+        var slot = CreateImageSourceSlot();
+        // Candidate providers can reenter the host and replace or dispose the
+        // row. Never install the retired selector after that callback returns.
+        if (_disposed || generation != _imageSourceGeneration)
+            return;
+        _slotContent = slot;
+        if (_model.TemplateKey != DeclaredFieldTemplateRegistry.ImageSource)
+        {
+            _model.TemplateKey = DeclaredFieldTemplateRegistry.ImageSource;
+            ContentTemplateSelector = null;
+            if (_disposed || generation != _imageSourceGeneration)
+                return;
+        }
+        ContentTemplateSelector = ParameterRowTemplateSelector.Instance;
+        if (!_disposed && generation == _imageSourceGeneration)
+            _model.SetImageSourceSelector(slot);
     }
 
     private UIElement CreateImageSourceSlot()
     {
+        var generation = _imageSourceGeneration;
+        var retired = false;
+        var sources = _imageSources!;
         var combo = NativeInputFactory.Enumeration();
-        _host.AttachEnumeration(combo);
         var refreshing = false;
         var candidatesValid = false;
+        ParameterSetting? projected = null;
         long candidateRevision = 0;
-        var activationItems = new List<ComboBoxItem>();
-        void DetachItems()
-        {
-            foreach (var item in activationItems)
-                item.PreviewMouseLeftButtonDown -= OnItemActivated;
-            activationItems.Clear();
-        }
+        combo.DisplayMemberPath = nameof(ImageSourceChoice.Label);
+        combo.SelectedValuePath = nameof(ImageSourceChoice.Setting);
+        combo.SetBinding(FrameworkElement.ToolTipProperty, new Binding("SelectedItem.Label") { Source = combo });
+        var itemStyle = new Style(typeof(ComboBoxItem), combo.ItemContainerStyle);
+        itemStyle.Setters.Add(new Setter(UIElement.IsEnabledProperty, new Binding(nameof(ImageSourceChoice.Enabled))));
+        itemStyle.Setters.Add(new Setter(FrameworkElement.ToolTipProperty, new Binding(nameof(ImageSourceChoice.ToolTip))));
+        itemStyle.Setters.Add(new EventSetter(UIElement.PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(OnItemActivated)));
+        combo.ItemContainerStyle = itemStyle;
+        _host.AttachEnumeration(combo);
 
-        bool Current() => !_disposed;
+        bool Current() => !retired && !_disposed && generation == _imageSourceGeneration;
         void ChangeRefreshError(string value)
         {
             if (!Current() || _imageRefreshError == value)
@@ -60,8 +98,15 @@ public sealed partial class DeclaredFieldRow
             _state.SetSourceError(value);
         }
 
-        bool Matches(ComboBoxItem item) => item.Tag is ReferenceSetting selected && _setting is ReferenceSetting current
-            ? SameImageReference(selected.Reference, current.Reference) : item.Tag is UnsetSetting && _setting is UnsetSetting;
+        bool MatchesSetting(ParameterSetting? setting) => (setting, _setting) switch
+        {
+            (ReferenceSetting selected, ReferenceSetting current) => SameImageReference(selected.Reference, current.Reference),
+            (VariableSetting selected, VariableSetting current) => selected.Reference.SolutionId == current.Reference.SolutionId
+                && selected.Reference.VariableId == current.Reference.VariableId && selected.Reference.Type == current.Reference.Type,
+            (UnsetSetting, UnsetSetting) => true,
+            _ => false
+        };
+        ImageSourceChoice? FindSelection() => combo.Items.OfType<ImageSourceChoice>().FirstOrDefault(item => MatchesSetting(item.Setting));
         void RestoreSelection()
         {
             if (!Current())
@@ -69,7 +114,7 @@ public sealed partial class DeclaredFieldRow
             refreshing = true;
             try
             {
-                combo.SelectedItem = combo.Items.OfType<ComboBoxItem>().FirstOrDefault(Matches);
+                combo.SelectedItem = FindSelection();
             }
             finally
             {
@@ -77,9 +122,24 @@ public sealed partial class DeclaredFieldRow
             }
         }
 
+        void ProjectAcceptedSelection()
+        {
+            if(!Current()||refreshing||projected is not null&&DeclaredFieldState.SameSetting(projected,_setting))return;
+            projected=_setting;
+            var match=FindSelection();
+            if(match is null&&_setting is (ReferenceSetting or VariableSetting))
+            {
+                Refresh();
+                return;
+            }
+            RestoreSelection();
+            if(candidatesValid)
+                ChangeRefreshError(match is {Enabled:false}?"当前来源不在可选图像声明中，请重新选择":"");
+        }
+
         void Refresh()
         {
-            if (!Current())
+            if (!Current() || refreshing)
                 return;
             var revision = ++candidateRevision;
             candidatesValid = false;
@@ -87,13 +147,17 @@ public sealed partial class DeclaredFieldRow
             try
             {
                 // 先构建完整候选快照，再替换已接受的显示。
-                var items = new List<ComboBoxItem>();
+                var items = new List<ImageSourceChoice>();
                 if (!_port.Required)
-                    items.Add(new ComboBoxItem {Content = "", Tag = new UnsetSetting(), ToolTip = "清除图像来源"});
-                var candidates = _imageSources!() ?? throw new InvalidOperationException("图像来源函数返回了空列表。");
+                {
+                    // 空项显示沿原件 Holder.NullName（RunParam_None），zh-cn "无"/en-us "None"。
+                    var noneLabel = Native.Common.Localization.AppLocalizationService.GetLang("RunParam_None", "无");
+                    items.Add(new(new UnsetSetting(), noneLabel, ToolTip: "清除图像来源"));
+                }
+                var candidates = sources() ?? throw new InvalidOperationException("图像来源函数返回了空列表。");
                 if (!Active())
                     return;
-                foreach (var candidate in candidates)
+                foreach (var candidate in candidates.Sources)
                 {
                     if (!Active())
                         return;
@@ -101,22 +165,31 @@ public sealed partial class DeclaredFieldRow
                     if (candidate.Output.Type.Shape == ValueShape.Sequence || candidate.SelectedType != _port.Type)
                         continue;
                     var reference = new ReferenceSetting(candidate.Reference(BindingSelection.All));
-                    if (items.Any(item => item.Tag is ReferenceSetting prior && SameImageReference(prior.Reference, reference.Reference)))
+                    if (items.Any(item => item.Setting is ReferenceSetting prior && SameImageReference(prior.Reference, reference.Reference)))
                         continue;
-                    items.Add(new ComboBoxItem {Content = candidate.Label, Tag = reference});
+                    items.Add(new(reference, candidate.Label));
+                }
+                foreach (var candidate in candidates.Variables)
+                {
+                    if (!Active()) return;
+                    if (candidate.Reference.Type == _port.Type)
+                        items.Add(new(new VariableSetting(candidate.Reference), "变量 · " + candidate.Name));
                 }
 
-                var selected = items.FirstOrDefault(Matches);
-                var retainedUnavailable = false;
+                var accepted = _setting;
+                var selected = items.FirstOrDefault(item => MatchesSetting(item.Setting));
                 if (selected is null && _setting is ReferenceSetting retained)
                 {
                     // 保留被移除/变更的来源供检视；刷新绝不改写其身份或草稿。
-                    retainedUnavailable = true;
-                    selected = new ComboBoxItem
-                    {
-                        Content = _formatReference?.Invoke(retained.Reference) ?? retained.Reference.NodeId + " · " + retained.Reference.PortId,
-                        Tag = retained, IsEnabled = false, ToolTip = "当前来源不在可选图像声明中，请重新选择"
-                    };
+                    selected = new(retained,
+                        _formatReference?.Invoke(retained.Reference) ?? retained.Reference.NodeId + " · " + retained.Reference.PortId,
+                        Enabled: false, ToolTip: "当前来源不在可选图像声明中，请重新选择");
+                    items.Add(selected);
+                }
+                if (selected is null && _setting is VariableSetting retainedVariable)
+                {
+                    selected = new(retainedVariable, "变量 · " + retainedVariable.Reference.VariableId,
+                        Enabled: false, ToolTip: "当前变量不在可选图像声明中，请重新选择");
                     items.Add(selected);
                 }
 
@@ -125,22 +198,16 @@ public sealed partial class DeclaredFieldRow
                 refreshing = true;
                 try
                 {
-                    DetachItems();
-                    combo.Items.Clear();
-                    if (!Active())
-                        return;
-                    foreach (var item in items)
-                    {
-                        item.PreviewMouseLeftButtonDown += OnItemActivated;
-                        activationItems.Add(item);
-                        combo.Items.Add(item);
-                        if (!Active())
-                            return;
-                    }
+                    var unchanged = combo.ItemsSource is IReadOnlyList<ImageSourceChoice> previous && previous.Count == items.Count
+                        && previous.Zip(items).All(pair => DeclaredFieldState.SameSetting(pair.First.Setting, pair.Second.Setting)
+                            && pair.First.Label == pair.Second.Label && pair.First.ToolTip == pair.Second.ToolTip
+                            && pair.First.Enabled == pair.Second.Enabled);
+                    if (!unchanged)
+                        combo.ItemsSource = items.AsReadOnly();
 
                     if (!Active())
                         return;
-                    combo.SelectedItem = selected;
+                    combo.SelectedItem = FindSelection();
                 }
                 finally
                 {
@@ -150,7 +217,11 @@ public sealed partial class DeclaredFieldRow
                 if (!Active())
                     return;
                 candidatesValid = true;
-                ChangeRefreshError(retainedUnavailable ? "当前来源不在可选图像声明中，请重新选择" : "");
+                projected = accepted;
+                if(!DeclaredFieldState.SameSetting(accepted,_setting))
+                    ProjectAcceptedSelection();
+                else
+                    ChangeRefreshError(selected is {Enabled:false}?"当前来源不在可选图像声明中，请重新选择":"");
             }
             catch (Exception error) when (error is ArgumentException or InvalidOperationException)
             {
@@ -163,7 +234,7 @@ public sealed partial class DeclaredFieldRow
         void OnSelectionChanged(object sender, SelectionChangedEventArgs args)
         {
             if (!Current() || !_presentationVisible || !IsEnabled || !combo.IsLoaded || !combo.IsVisible || !combo.IsEnabled || refreshing
-                || combo.SelectedItem is not ComboBoxItem {IsEnabled: true, Tag: ParameterSetting selected})
+                || combo.SelectedItem is not ImageSourceChoice {Enabled: true, Setting: var selected})
                 return;
             if (!candidatesValid)
             {
@@ -176,16 +247,19 @@ public sealed partial class DeclaredFieldRow
                 RestoreSelection();
         }
 
-        bool ConfirmCurrent(ComboBoxItem item)
+        bool ConfirmCurrent(ImageSourceChoice item)
         {
             if (!Current() || !candidatesValid || refreshing || !combo.IsDropDownOpen || !_presentationVisible || !IsEnabled
                 || !combo.IsLoaded || !combo.IsVisible || !combo.IsEnabled
-                || !item.IsEnabled || !ReferenceEquals(combo.SelectedItem, item) || item.Tag is not ReferenceSetting selected
-                || _setting is not ReferenceSetting current || !SameImageReference(selected.Reference, current.Reference)
-                || current.OriginId is null && string.IsNullOrEmpty(current.RebindingReason) && _state.EditError.Length == 0)
+                || !item.Enabled || !ReferenceEquals(combo.SelectedItem, item) || !MatchesSetting(item.Setting)
+                || _setting is not (ReferenceSetting or VariableSetting))
                 return false;
+            var needsConfirmation = _setting is ReferenceSetting current
+                ? current.OriginId is not null || !string.IsNullOrEmpty(current.RebindingReason)
+                : !string.IsNullOrEmpty(((VariableSetting)_setting).RebindingReason);
+            if (!needsConfirmation && _state.EditError.Length == 0) return false;
             var revision = candidateRevision;
-            var accepted = Set(selected);
+            var accepted = Set(item.Setting);
             if (Current() && revision == candidateRevision)
             {
                 if (!accepted)
@@ -199,13 +273,13 @@ public sealed partial class DeclaredFieldRow
 
         void OnItemActivated(object sender, MouseButtonEventArgs args)
         {
-            if (sender is ComboBoxItem item && ConfirmCurrent(item))
+            if (sender is ComboBoxItem {Content: ImageSourceChoice item} && ConfirmCurrent(item))
                 args.Handled = true;
         }
 
         void OnKeyDown(object sender, KeyEventArgs args)
         {
-            if (args.Key == Key.Enter && combo.IsDropDownOpen && combo.SelectedItem is ComboBoxItem item && ConfirmCurrent(item))
+            if (args.Key == Key.Enter && combo.IsDropDownOpen && combo.SelectedItem is ImageSourceChoice item && ConfirmCurrent(item))
                 args.Handled = true;
         }
 
@@ -236,6 +310,7 @@ public sealed partial class DeclaredFieldRow
         combo.PreviewKeyDown += OnKeyDown;
         _detachImageSource = () =>
         {
+            retired = true;
             combo.DropDownOpened -= OnOpened;
             combo.SelectionChanged -= OnSelectionChanged;
             combo.Unloaded -= OnUnloaded;
@@ -243,10 +318,13 @@ public sealed partial class DeclaredFieldRow
             combo.IsEnabledChanged -= OnActivationChanged;
             combo.IsVisibleChanged -= OnActivationChanged;
             combo.PreviewKeyDown -= OnKeyDown;
-            DetachItems();
             combo.SetCurrentValue(ComboBox.IsDropDownOpenProperty, false);
+            combo.ItemsSource = null;
+            combo.ClearValue(ItemsControl.ItemContainerStyleProperty);
             NativeInputFactory.ReleaseEnumeration(combo);
         };
+        _refreshImageSource = Refresh;
+        _projectImageSourceSelection = ProjectAcceptedSelection;
         Refresh();
         return combo;
     }

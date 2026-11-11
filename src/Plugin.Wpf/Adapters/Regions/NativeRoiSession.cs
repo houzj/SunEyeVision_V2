@@ -29,6 +29,7 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
     private readonly Func<bool> _isCurrent;
     private readonly Func<string,bool>? _canDraw;
     private readonly Func<string,bool>? _canSetCoverage;
+    private readonly int? _maximumDrawItems;
     private readonly Func<RoiHistoryAvailability> _history;
     private Dictionary<(string,Guid),NativeRoiProjection> _items=new();
     private readonly ProjectionRows<NativeRoiProjection> _rows=new();
@@ -94,13 +95,15 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
 
     public event Action<RoiDrawRequest>? DrawRequested;
     public event Action<RoiDrawRequest>? DrawCancelled;
+    internal event Action<NativeRoiSession>? DrawLimitReached;
     public NativeRoiSession(IReadOnlyImage image,Func<RoiEditSnapshot> read,
         Func<RoiEditStamp,RoiEditProposal,RoiEditAcceptance> accept,Func<bool> isCurrent,Func<RoiHistoryAvailability> history,string drawingGroup,bool isAvoid=false,
-        Func<string,bool>? canDraw=null,Func<string,bool>? canSetCoverage=null)
+        Func<string,bool>? canDraw=null,Func<string,bool>? canSetCoverage=null,int? maximumDrawItems=null)
     {
         ResourceContractRules.ValidateImage(image);
         if(string.IsNullOrWhiteSpace(drawingGroup))throw new ArgumentException("绘制组必须由宿主明确提供。",nameof(drawingGroup));
         DrawingGroup=drawingGroup;_canDraw=canDraw;_canSetCoverage=canSetCoverage;
+        _maximumDrawItems=maximumDrawItems;
         IsAvoid=isAvoid;Image=image;Frame=image.Frame;Coordinates=image.EffectiveDomain.Frame;ImageWidth=image.Width;ImageHeight=image.Height;
         _read=read;_accept=accept;_isCurrent=isCurrent;_history=history;
         ROIValueChangedCommand=new EditCommand(_=>{if(_selected is {} selected)TryCommit(selected);});
@@ -120,7 +123,10 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
                 Native.Dependencies.ParameterSchema.ParamTab.RoiType.Polygon=>"polygon",
                 _=>throw new NotSupportedException("该原绘制类型尚未接入。")
             };
-            BeginDraw(kind);
+            if (ActiveDraw?.Kind == kind)
+                CancelPending();
+            else
+                BeginDraw(kind);
         });
         Refresh();
     }
@@ -316,6 +322,14 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
             var snapshot=Capture(ReadCurrent());
             if(!IsCurrent||generation!=_drawGeneration||groupGeneration!=_groupGeneration||!CanDrawGroup(group))return null;
             if(snapshot.Stamp!=stamp){Error="区域根已改变，请在当前范围重新绘制。";Install(snapshot);return null;}
+            if (_maximumDrawItems is int maximum && snapshot.Items.Count(item => item.Group == group) >= maximum)
+            {
+                Error = IsAvoid ? $"屏蔽区数量已达到上限（{maximum}）。" : $"检测区域数量已达到上限（{maximum}）。";
+                Notify();
+                if (IsCurrent && generation == _drawGeneration && groupGeneration == _groupGeneration)
+                    DrawLimitReached?.Invoke(this);
+                return null;
+            }
             handlers=DrawRequested?.GetInvocationList().Cast<Action<RoiDrawRequest>>().ToArray()??[];
             if(handlers.Length!=1){Error="绘制需要一份明确的视口接收器。";Notify();return null;}
             var request=new RoiDrawRequest(stamp,group,kind);_drawRequest=request;Error="";
@@ -519,7 +533,7 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
         if(_disposed)return;_disposed=true;
         foreach(var item in _rows)item.Detach();_items.Clear();_selected=null;_editorCommit=null;_rows.Install([]);
         try{NativeRoiCallbacks.Run([CancelDraw,_rows.NotifyReset,Notify]);}
-        finally{PropertyChanged=null;Changed=null;InteractionRetiring=null;DrawRequested=null;DrawCancelled=null;}
+        finally{PropertyChanged=null;Changed=null;InteractionRetiring=null;DrawRequested=null;DrawCancelled=null;DrawLimitReached=null;}
     }
     private sealed class EditCommand(Action<object?> action):ICommand
     {

@@ -18,6 +18,8 @@ public static class ToolRuntimeExecutor
         foreach(var request in invocation.OutputRequests)request.Validate(schema);
         if(context.Cancellation.IsCancellationRequested)
             return new(false,null,BusinessJudgment.NotEvaluated,new[]{new Diagnostic("TOOL_CANCELLED","工具执行已取消。")});
+        if (definition is IToolExecutionFilter filter && !filter.ShouldExecute(frozen))
+            return ToolOutcome.Suppress();
         var session=definition.CreateSession();
         Exception? failure=null;
         ToolOutcome? outcome=null;

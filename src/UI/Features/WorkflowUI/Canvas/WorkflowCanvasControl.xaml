@@ -30,8 +30,9 @@
 
         <!-- 使用缓存的节点转换器（性能优化） -->
         <rendering:CachedNodeBackgroundConverter x:Key="NodeBackgroundColorConverter"/>
-        <rendering:CachedNodeBorderConverter x:Key="NodeBorderColorConverter"/>
         <converters:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
+        <PathGeometry x:Key="StandardModuleOutline" Figures="M106,0 A4,4 0 0 1 110,4 L110,26 A4,4 0 0 1 106,30 L4,30 A4,4 0 0 1 0,26 L0,4 A4,4 0 0 1 4,0 Z"/>
+        <PathGeometry x:Key="ImageModuleOutline" Figures="M15,0 L95,0 A15,15 0 0 1 110,15 A15,15 0 0 1 95,30 L15,30 A15,15 0 0 1 0,15 A15,15 0 0 1 15,0 Z"/>
 
         <!-- 箭头标记 - 尖端指向右侧（度的方向），方便旋转 -->
         <!-- 箭头长度与 BezierPathCalculator.ArrowLength 保持一致（15px） -->
@@ -213,6 +214,18 @@
                 <DataTemplate>
                     <!-- 节点视图宿主：对应原件 DiagramItem，命中状态由控件自身维护，端口可见性跟随它 -->
                     <local:WorkflowNodeView>
+                    <local:WorkflowNodeView.Style>
+                        <Style TargetType="local:WorkflowNodeView">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding DataContext.IsRunning, RelativeSource={RelativeSource AncestorType=local:WorkflowCanvasControl}}" Value="True">
+                                    <Setter Property="IsWorkAreaLocked" Value="True"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding DataContext.CanEditWorkflowCanvas, RelativeSource={RelativeSource AncestorType=Window}}" Value="False">
+                                    <Setter Property="IsWorkAreaLocked" Value="True"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </local:WorkflowNodeView.Style>
                     <!-- HitArea Border: 用于命中测试，Position表示其中心点 -->
                     <Border Width="{Binding HitAreaWidth}" Height="{Binding HitAreaHeight}"
                             Background="Transparent"
@@ -252,7 +265,6 @@
                             <!-- NodeBorder: 视觉显示元素，居中于HitArea -->
                             <Border Width="{Binding VisualWidth}" Height="{Binding VisualHeight}"
 
-                                    BorderBrush="{Binding IsSelected, Converter={StaticResource NodeBorderColorConverter}}"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
 
@@ -262,6 +274,63 @@
                                     x:Name="NodeBorder">
 
                                 <Grid>
+                            <Canvas x:Name="StateFlag" Width="26" HorizontalAlignment="Left" Margin="-2,-2,0,-2"
+                                    Clip="{Binding Data, ElementName=NodeStatusBorder}" IsHitTestVisible="False">
+                                <Canvas.Style>
+                                    <Style TargetType="Canvas">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding RunState}" Value="Passed">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                                <Setter Property="Background" Value="{DynamicResource Col_EditProcess_Modular_OK_Status}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding RunState}" Value="Rejected">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                                <Setter Property="Background" Value="{DynamicResource Col_EditProcess_Modular_NG_Status}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding RunState}" Value="Failed">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                                <Setter Property="Background" Value="{DynamicResource Col_EditProcess_Modular_NG_Status}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsEnabled}" Value="False">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Setter Property="Background" Value="{x:Null}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsSubroutineNode}" Value="True">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Canvas.Style>
+                            </Canvas>
+                            <Path x:Name="NodeStatusBorder" Margin="-2" Stretch="Fill" StrokeThickness="2" IsHitTestVisible="False">
+                                <Path.Style>
+                                    <Style TargetType="Path">
+                                        <Setter Property="Data" Value="{StaticResource StandardModuleOutline}"/>
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Setter Property="Stroke" Value="#FF636468"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasUnconfiguredRequiredInputs}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                                <Setter Property="StrokeDashArray" Value="3,2"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsEnabled}" Value="False">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                                <Setter Property="Stroke" Value="{DynamicResource Col_EditProcess_Modular_BorderBrush}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding NodeDisplayType}" Value="IMAGE">
+                                                <Setter Property="Data" Value="{StaticResource ImageModuleOutline}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsSubroutineNode}" Value="True">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Path.Style>
+                            </Path>
                             <!-- 节点内容 -->
                             <Grid Margin="{DynamicResource NodeContentMargin}">
                                 <Grid.ColumnDefinitions>
@@ -359,7 +428,11 @@
                                 <!-- Effect 已移至 NodeGlowBorder 装饰层（选中/悬停辉光），避免内容子树位图化导致文字/图标模糊 -->
                                 <Setter Property="Effect"><Setter.Value><DropShadowEffect BlurRadius="3" ShadowDepth="3" Opacity="0.45" Color="#FF121111"/></Setter.Value></Setter>
 
-                            <Style.Triggers><DataTrigger Binding="{Binding IsEnabled}" Value="False"><Setter Property="Background"><Setter.Value><LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#D3D3D3F5" Offset="0"/><GradientStop Color="#D3D3D3E1" Offset="1"/></LinearGradientBrush></Setter.Value></Setter></DataTrigger><DataTrigger Binding="{Binding IsSelected}" Value="True"><Setter Property="BorderThickness" Value="2"/></DataTrigger><DataTrigger Binding="{Binding NodeDisplayType}" Value="IMAGE"><Setter Property="CornerRadius" Value="15"/></DataTrigger><DataTrigger Binding="{Binding IsSubroutineNode}" Value="True">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasUnconfiguredRequiredInputs}" Value="True">
+                                    <Setter Property="Background"><Setter.Value><LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#FFFAF7F5" Offset="0"/><GradientStop Color="#FFE1E5E1" Offset="1"/></LinearGradientBrush></Setter.Value></Setter>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsEnabled}" Value="False"><Setter Property="Background"><Setter.Value><LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#D3D3D3F5" Offset="0"/><GradientStop Color="#D3D3D3E1" Offset="1"/></LinearGradientBrush></Setter.Value></Setter></DataTrigger><DataTrigger Binding="{Binding NodeDisplayType}" Value="IMAGE"><Setter Property="CornerRadius" Value="15"/></DataTrigger><DataTrigger Binding="{Binding IsSubroutineNode}" Value="True">
                                     <Setter Property="BorderThickness" Value="0"/><Setter Property="CornerRadius" Value="0"/><Setter Property="Effect" Value="{x:Null}"/>
                                     <Setter Property="Background"><Setter.Value><MultiBinding Converter="{StaticResource GroupNodeBackground}"><Binding Path="IsEnabled"/><Binding Path="IsSelected"/><Binding Path="Status"/></MultiBinding></Setter.Value></Setter>
                                 </DataTrigger>
@@ -418,6 +491,11 @@
                         </Grid>
                     </Border>
                     </local:WorkflowNodeView>
+                    <DataTemplate.Triggers>
+                        <DataTrigger Binding="{Binding DataContext.IsDebugWindowOpen, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                            <Setter TargetName="HitAreaBorder" Property="ContextMenu" Value="{x:Null}"/>
+                        </DataTrigger>
+                    </DataTemplate.Triggers>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

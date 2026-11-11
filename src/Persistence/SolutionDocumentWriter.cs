@@ -12,7 +12,8 @@ public static class SolutionDocumentWriter
 {
     public static EncodedSolutionDocument Capture(SolutionDefinition document,
         IReadOnlyDictionary<string,FrozenToolDeclarations> declarations, FrozenVariableTypeCatalog variableTypes,
-        JsonSerializerOptions options, IVariableValueExtensionCodec? extension = null, string? baseDirectory = null)
+        JsonSerializerOptions options, IVariableValueExtensionCodec? extension = null, string? baseDirectory = null,
+        EmbeddedFileCatalog? embeddedFiles=null)
     {
         ArgumentNullException.ThrowIfNull(document); ArgumentNullException.ThrowIfNull(declarations);
         ArgumentNullException.ThrowIfNull(variableTypes); ArgumentNullException.ThrowIfNull(options);
@@ -40,6 +41,14 @@ public static class SolutionDocumentWriter
                     writer.WriteStartObject(); writer.WriteString("Id",node.Id); writer.WriteString("Name",node.Name); writer.WriteString("DispName",node.DispName);
                     writer.WriteString("ToolType",node.ToolType); writer.WriteNumber("GlobalIndex",node.GlobalIndex); writer.WriteNumber("LocalIndex",node.LocalIndex);
                     writer.WriteBoolean("IsEnabled",node.IsEnabled); writer.WriteString("SubroutineId",node.SubroutineId); writer.WriteString("SelectedDisplayReference",node.SelectedDisplayReference);
+                    if(node.DisplayOverlays is {} overlays)
+                    {
+                        writer.WriteStartObject("DisplayOverlays");
+                        writer.WriteString("Background",overlays.Background);
+                        writer.WriteStartArray("Slots");
+                        foreach(var slot in overlays.Slots)writer.WriteStringValue(slot);
+                        writer.WriteEndArray();writer.WriteEndObject();
+                    }
                     writer.WriteNumber("PositionX",node.PositionX); writer.WriteNumber("PositionY",node.PositionY); writer.WriteNumber("Width",node.Width); writer.WriteNumber("Height",node.Height);
                     WriteValue(writer,"AdditionalData",node.AdditionalData,jsonOptions);
                     writer.WriteStartObject("Configuration"); writer.WriteString("ToolId",node.Configuration.ToolId);
@@ -65,10 +74,13 @@ public static class SolutionDocumentWriter
             WriteValue(writer,"DatabaseConfiguration",document.DatabaseConfiguration,jsonOptions); WriteValue(writer,"ExecutionStrategy",document.ExecutionStrategy,jsonOptions);
             WriteValue(writer,"VersionHistory",document.VersionHistory,jsonOptions); writer.WriteEndObject();
         }
+        var captureDiagnostics=new List<PersistenceDiagnostic>();
         var bytes=stream.ToArray();
+        if(EmbeddedFileCapture.HasWork(document,declarations,embeddedFiles))
+            bytes=EmbeddedFileCapture.Capture(bytes,declarations,baseDirectory,embeddedFiles,captureDiagnostics);
         var scope=extension?.Scope ?? new DecodedResourcesScope();
         using var candidate=SolutionDocumentReader.Read(bytes,declarations,variableTypes,options,scope,extension,baseDirectory);
-        return new EncodedSolutionDocument(bytes,candidate.Diagnostics,candidate.ResourcePlan,baseDirectory);
+        return new EncodedSolutionDocument(bytes,candidate.Diagnostics.Concat(captureDiagnostics).ToArray(),candidate.ResourcePlan,baseDirectory);
     }
     private static void WriteValue<T>(Utf8JsonWriter writer,string name,T value,JsonSerializerOptions options)
     { writer.WritePropertyName(name); JsonSerializer.Serialize(writer,value,options); }
@@ -95,12 +107,12 @@ public sealed class EncodedSolutionDocument
         var bytes=System.Text.Encoding.UTF8.GetBytes(rebased);
         var scope=extension?.Scope ?? new DecodedResourcesScope();
         using var candidate=SolutionDocumentReader.Read(bytes,declarations,variableTypes,options,scope,extension,targetDirectory);
-        return new EncodedSolutionDocument(bytes,candidate.Diagnostics,candidate.ResourcePlan,targetDirectory);
+        return new EncodedSolutionDocument(bytes,candidate.Diagnostics.Concat(_diagnostics.Where(item=>item.Code.StartsWith("RESOURCE_EMBED_",StringComparison.Ordinal))).Distinct().ToArray(),candidate.ResourcePlan,targetDirectory);
     }
     public FrozenSolutionDocument BindTarget(string targetPath,TargetExpectation? expected=null)
     {
         var targetDirectory=Path.GetDirectoryName(Path.GetFullPath(targetPath));
-        if (_resources.Any(r=>!Path.IsPathRooted(r.Reference)) &&
+        if (_resources.Any(r=>!EmbeddedFileCatalog.IsReference(r.Reference)&&!Path.IsPathRooted(r.Reference)) &&
             (_baseDirectory is null || !string.Equals(Path.TrimEndingDirectorySeparator(_baseDirectory),Path.TrimEndingDirectorySeparator(targetDirectory!),StringComparison.OrdinalIgnoreCase)))
             throw new InvalidOperationException("跨目录保存含相对资源的方案须先完成资源引用重定位及重新验证。");
         return new(targetPath,_bytes,_diagnostics,_resources,expected);

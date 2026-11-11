@@ -84,7 +84,7 @@ internal sealed class DeclaredRangeRow : ContentControl, IDisposable, IParameter
         _templateKey = left.Port.Type.Scalar == ScalarKind.Int64
             ? DeclaredFieldTemplateRegistry.IntegerBettween
             : DeclaredFieldTemplateRegistry.FloatBettween;
-        _model = new FieldRowModel(null!, _templateKey, lower.DisplayName.Replace("下限", "范围"),
+        _model = new FieldRowModel(null!, _templateKey, lower.Layout?.PairDisplayName ?? lower.DisplayName,
             0, 0, 1, null, 0, Array.Empty<FieldRowModel.Entry>(), false);
         _expansion = new ReferenceExpansionCoordinator(this, references?.WindowOwner);
         Tag = left.Port.Id;
@@ -161,8 +161,8 @@ internal sealed class DeclaredRangeRow : ContentControl, IDisposable, IParameter
         Language = XmlLanguage.GetLanguage("en-US");
         view.Language = XmlLanguage.GetLanguage("en-US");
         var bounds = _states.Select((s, i) => Bounds(s.Port, _presentations[i].Layout!)).ToArray();
-        view.Minimum = Math.Min(bounds[0].Min, bounds[1].Min);
-        view.Maximum = Math.Max(bounds[0].Max, bounds[1].Max);
+        view.Minimum = _presentations[0].Layout!.PairMinimum ?? Math.Min(bounds[0].Min, bounds[1].Min);
+        view.Maximum = _presentations[0].Layout!.PairMaximum ?? Math.Max(bounds[0].Max, bounds[1].Max);
         view.MinimumLeft = bounds[0].Min;
         view.MaximumLeft = bounds[0].Max;
         view.MinimumRight = bounds[1].Min;

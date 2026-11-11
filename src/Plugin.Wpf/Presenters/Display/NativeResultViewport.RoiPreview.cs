@@ -26,9 +26,17 @@ public sealed partial class NativeResultViewport
             if(_image.Frame!=receipt.Frame||_image.EffectiveDomain.Frame!=receipt.Coordinates)
                 throw new ArgumentException("继承预览必须使用同一实际帧和坐标域。");
             var rows=items.ToArray();
-            if(rows.Length>64||rows.Any(item=>item.Enabled||!item.Visible||item.Geometry.Get<string>("kind") is not ("rectangle" or "annulus")))
-                throw new ArgumentException("检测继承预览只接纳最多64个只读矩形或圆环。");
-            var snapshot=new RoiEditSnapshot(new(_scope,revision,receipt.Frame),rows,new[]{new RoiGroupState("inspection",RoiCoverage.Explicit,RoiCoverage.FullDomain)});
+            if(rows.Count(item=>item.Group=="inspection")>64||rows.Count(item=>item.Group=="mask")>64||
+                rows.Any(item=>item.Enabled||!item.Visible||!(item.Group switch
+                {
+                    "inspection"=>item.Geometry.Get<string>("kind") is "rectangle" or "annulus",
+                    "mask"=>item.Geometry.Get<string>("kind")=="polygon",
+                    _=>false
+                })))
+                throw new ArgumentException("继承预览只接纳每组最多64个检测形状或屏蔽多边形。");
+            var detection=rows.Where(row=>row.Group=="inspection").ToArray();
+            var snapshot=new RoiEditSnapshot(new(_scope,revision,receipt.Frame),detection,
+                new[]{new RoiGroupState("inspection",detection.Length==0?RoiCoverage.FullDomain:RoiCoverage.Explicit,RoiCoverage.FullDomain)});
             NativeRoiSession? candidate=null;
             try
             {
@@ -43,7 +51,9 @@ public sealed partial class NativeResultViewport
                         var shape=row.Geometry;var center=RoiGeometryEditing.Center(shape);
                         return new NativeGeometryOverlay(receipt.Frame,new OrientedRectangleGeometry(receipt.Coordinates,new(center.X,center.Y),shape.Get<double>("width"),shape.Get<double>("height"),(shape.Get<double>("angle-degrees")%360)*Math.PI/180),Color.FromRgb(15,106,243));
                     }).ToArray();
-                    var prepared=NativeShapeProjection.Geometry(receipt,rectangles,owner.ShapeBudget,owner._shapeLimits.MaximumPolygonVertices,proof);
+                    var polygons=rows.Where(row=>row.Group=="mask").Select(row=>new NativeGeometryOverlay(receipt.Frame,
+                        new PolygonGeometry(receipt.Coordinates,RoiGeometryEditing.Vertices(row.Geometry)),Color.FromRgb(255,84,0)));
+                    var prepared=NativeShapeProjection.Geometry(receipt,rectangles.Concat(polygons).ToArray(),owner.ShapeBudget,owner._shapeLimits.MaximumPolygonVertices,proof);
                     var rings=frozen.Items.OfType<NativeInheritedAnnulusProjection>().Cast<object>().ToArray();
                     NativeResultRaster.CheckCurrent(proof);return new(prepared.Items.Concat(rings).ToArray(),rows.Length,prepared.Vertices);
                 });

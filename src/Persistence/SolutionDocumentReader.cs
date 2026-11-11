@@ -33,10 +33,13 @@ public static class SolutionDocumentReader
             var root=JsonNode.Parse(json) as JsonObject ?? throw new JsonException("Solution root must be an object.");
             var diagnostics=new List<PersistenceDiagnostic>();
             SolutionDocumentValidator.Prepare(root,diagnostics,variableTypes,options);
-            var resources=new SolutionResourceResolver(baseDirectory).Inspect(root,diagnostics,declarations);
+            var files=EmbeddedFileCatalog.Parse(root);scope.RegisterNew(files);
+            var resources=new SolutionResourceResolver(baseDirectory,files).Inspect(root,diagnostics,declarations);
+            files.ValidateReferences(resources);
             var workflows=Array.AsReadOnly(((JsonArray?)root["Workflows"] ?? new JsonArray()).Select(flow=>ReadWorkflow(flow!,declarations,options)).ToArray());
             return new SolutionReadCandidate(scope,utf8)
             {
+                EmbeddedFiles=files,
                 Id=Required(root,"Id"),Name=Text(root,"Name",string.Empty),Description=Text(root,"Description",string.Empty),Version=Text(root,"Version","1.0"),
                 AdditionalData=Value<Dictionary<string,JsonElement>?>(root,"AdditionalData",options,null),
                 Workflows=workflows,GlobalVariables=List<GlobalVariable>(root,"GlobalVariables",options),Devices=List<Device>(root,"Devices",options),
@@ -67,13 +70,34 @@ public static class SolutionDocumentReader
         var keys=value.EnumerateObject().Select(p=>p.Name).ToHashSet(StringComparer.Ordinal);
         if(!keys.SetEquals(new[]{"ToolId","Fields","CurrentValues","ParameterBindingOrder"}) || value.GetProperty("ToolId").GetString()!=tool)
             throw new JsonException("Configuration requires the same ToolId and exact fields.");
-        var fields=DeclaredFieldJson.Read(declared,value.GetProperty("Fields"));
+        var fields=DeclaredFieldJson.Read(declared,value.GetProperty("Fields"))
+            .ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal);
+        foreach(var port in declared.DisplaySchema.Inputs.Where(port=>port.Required))
+            if(declared.DisplayDefaults.Read(port.Id) is ConstantSetting fallback)
+                fields.TryAdd(port.Id,fallback);
+        foreach(var pair in declared.SettingsDefaults.Capture())
+            fields.TryAdd(pair.Key,pair.Value);
         var current=DeclaredFieldJson.Read(declared,value.GetProperty("CurrentValues"),true).ToDictionary(p=>p.Key,p=>p.Value as ConstantSetting ?? throw new JsonException("Current values require constants."),StringComparer.Ordinal);
         var order=value.GetProperty("ParameterBindingOrder").EnumerateArray().Select(p=>p.ValueKind==JsonValueKind.String?p.GetString()!:throw new JsonException("Binding order requires field identities.")).ToArray();
         var ports=declared.Schema.Inputs.Concat(declared.SettingsSchema.Inputs).Concat(declared.DisplaySchema.Inputs);
         var config=new ToolConfiguration(tool,new FieldSettings(ports,fields),current,parameterBindingOrder:order);
         return new(Required(root,"Id"),Text(root,"Name",string.Empty),Text(root,"DispName",string.Empty),tool,Int(root,"GlobalIndex",-1),Int(root,"LocalIndex",-1),Bool(root,"IsEnabled",true),
-            OptionalText(root,"SubroutineId"),OptionalText(root,"SelectedDisplayReference"),Finite(root,"PositionX",0),Finite(root,"PositionY",0),Finite(root,"Width",140),Finite(root,"Height",90),config,ReadAdditionalData(root));
+            OptionalText(root,"SubroutineId"),OptionalText(root,"SelectedDisplayReference"),ReadDisplayOverlays(root),Finite(root,"PositionX",0),Finite(root,"PositionY",0),Finite(root,"Width",140),Finite(root,"Height",90),config,ReadAdditionalData(root));
+    }
+    private static ImageOverlaySelection? ReadDisplayOverlays(JsonObject root)
+    {
+        if(root["DisplayOverlays"] is null)return null;
+        if(root["DisplayOverlays"] is not JsonObject value||value.Count!=2||value["Slots"] is not JsonArray slots)
+            throw new JsonException("DisplayOverlays requires a background and fixed overlay slots.");
+        string Canonical(string text)
+        {
+            var reference=ParameterSettingCanonical.Deserialize(text);
+            if(reference.Selection is not (BindingSelection.AllItems or BindingSelection.AtConstant)||
+                ParameterReferenceRules.SelectedType(reference)!=TypeRef.ResourceOf(ResourceKind.Image))
+                throw new JsonException("DisplayOverlays references must select one declared image.");
+            return ParameterSettingCanonical.Serialize(reference);
+        }
+        return new(Canonical(Required(value,"Background")),slots.Select(item=>item is null?null:Canonical(item.GetValue<string>())));
     }
     private static IReadOnlyDictionary<string,JsonElement>? ReadAdditionalData(JsonObject root)
     {

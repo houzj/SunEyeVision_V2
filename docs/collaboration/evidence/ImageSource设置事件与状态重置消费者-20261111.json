@@ -1,0 +1,63 @@
+{
+  "kind": "设置接纳事件到图像源跨轮状态的实际消费者",
+  "basis": "原件InitialSN写计数器、ImageSourceType与CameraID清失败次数；版本戳是宿主接缝，并非原厂结构声明",
+  "consumers": [
+    {
+      "path": "src/Application/FieldChangeRevisions.cs",
+      "sha256": "E3C70D08B16630F37FDA1F9730264FB873DBFC92E62DF3DDE8E23752B2EE6730"
+    },
+    {
+      "path": "src/Application/DocumentSession.NodeLifetimes.cs",
+      "sha256": "91D560687AA086B83EE8B159F0834CF55A0601EBCD0591889965FE9AE7CFEAEE"
+    },
+    {
+      "path": "src/Application/DocumentSession.GraphCommit.cs",
+      "sha256": "1EB993FED179DB47DFBB0B9B89BB3D78D053300A6E5525EAF636E6C6B7083C4A"
+    },
+    {
+      "path": "src/Application/Editing/NodeConfigurationEditDraft.cs",
+      "sha256": "2AC4E608F33664DEFE24FB11792BAC5E1DCBD5715378300CC497E489F60FC00B"
+    },
+    {
+      "path": "src/Application/Editing/NodeConfigurationEditHost.cs",
+      "sha256": "B8F16C5BA1943C6218410C4A07BCBB0F4F146429A87AE4796F866EF2095C77D1"
+    },
+    {
+      "path": "src/Application/DocumentSession.RuntimeHostInputs.cs",
+      "sha256": "F0D8545AADD1DA3E43704095C547A274E8C9C0745973A97E775EACEFFFFE0C5D"
+    },
+    {
+      "path": "src/Application/DocumentSession.RuntimeDebug.cs",
+      "sha256": "7220B885E6700F83ADA29362CB788A613B2ED112EC8585734FB9A0A327386537"
+    },
+    {
+      "path": "src/Application/HostInputFactory.cs",
+      "sha256": "6AEC9B8E5C62B493CD076FB3610C012C21A4F4E2143F9DA6A10A0FDFFB50D743"
+    },
+    {
+      "path": "src/Plugin.Contracts/ToolContracts.cs",
+      "sha256": "1BCCC6B192949754770B14E256B403AEB24BF3A3A45ACB8692D4BB21DE44AA44"
+    },
+    {
+      "path": "src/Infrastructure.ImageSources/ImageSourceHostInputFactory.cs",
+      "sha256": "51CB316B2DB5840C66481F4D9D3522024244F9F3B353D37F1D91F34418BBE00A"
+    },
+    {
+      "path": "tools/SunEyeVision.ImageSource/Runtime/ImageSourceRunState.cs",
+      "sha256": "469ACD2E8B6CA40239E51676678436F3C4DE2719F4AF495D10075A58A9D4E439"
+    },
+    {
+      "path": "tools/SunEyeVision.ImageSource/Runtime/ImageSourceSession.cs",
+      "sha256": "4750BF46BE330C2B10DB7A7CADC55B373B5DD30EC8508BBA5AD26B376072A897"
+    }
+  ],
+  "contract": [
+    "只追踪具备宿主输入的实际节点SettingsSchema字段",
+    "正式提交及Undo/Redo按已安装字段实际变化签新戳，运行值与显示值不重放",
+    "私有草稿复制及预览分叉，重基继承已接纳戳，不写入正式或历史值",
+    "正式和私有捕获冻结戳，工具仅查询已声明设置",
+    "来源/设备戳重置失败次数，SN初值戳重设计数；不依赖是否运行过中间配置"
+  ],
+  "verification": "全量Release编译0错误、6087警告、22.92秒；用例已编译，未启动测试、程序和探针",
+  "remaining": "原厂同值低层SetParam调用是否属于实际UI事件仍未确认；模块状态、原生错误码、原机动态和体感待验"
+}

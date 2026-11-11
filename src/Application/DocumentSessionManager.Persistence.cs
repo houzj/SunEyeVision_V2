@@ -132,7 +132,7 @@ public sealed partial class DocumentSessionManager
             cancellationToken.ThrowIfCancellationRequested();
             using(var admitted=DocumentSession.FromPersistenceCandidate(candidate,_directory,declarations)) { }
             cancellationToken.ThrowIfCancellationRequested();
-            using var lease=_directory.AcquireInvocation();
+            using var lease=_directory.AcquireInvocation("方案持久化");
             var frozen=candidate.PrepareSave(targetPath,TargetExpectation.Match(expectedTargetHash));
             return SolutionFileCommit.Restore(frozen,backupPath,expectedTargetHash.ToUpperInvariant(),expectedBackupHash.ToUpperInvariant(),cancellationToken);
         }
@@ -183,14 +183,17 @@ public sealed partial class DocumentSessionManager
                     foreach(var node in nodes.EnumerateArray())
                         if(node.TryGetProperty("ToolType",out var tool) && tool.ValueKind==JsonValueKind.String) ids.Add(tool.GetString()!);
         var declarations=new Dictionary<string,FrozenToolDeclarations>(StringComparer.Ordinal);
-        using var lease=directory.AcquireInvocation();
+        using var lease=directory.AcquireInvocation("方案加载");
         foreach(var id in ids)
         {
             var definition=directory.CreateDefinition(id);
             var settings=definition as IToolSettingsFields ?? throw new InvalidOperationException("工具未声明正式设置字段："+id);
             var manual=(definition as IToolManualReferenceSources)?.ManualReferenceSources ?? Array.Empty<ManualReferenceSource>();
             declarations.Add(id,new(id,definition.Describe(),settings.SettingsSchema,ResultDisplayFields.Schema(definition),
-                ParameterReferenceRules.Freeze(definition),ToolHostDeclarationRules.Capture(definition),manual));
+                ParameterReferenceRules.Freeze(definition),ToolHostDeclarationRules.Capture(definition),manual,
+                (definition as IToolDisplaySettingsProvider)?.CreateDisplaySettings(),
+                settings.SettingsSchema.Inputs.Any(port=>port.DefaultPresence==FieldDefaultPresence.UseDeclaredDefault)
+                    ? settings.ReadSettings(definition.CreateSettings()) : null));
         }
         if(!directory.IsActive) throw new InvalidOperationException("运行目录已退役。");
         return declarations;
@@ -219,7 +222,7 @@ public sealed partial class DocumentSession
             foreach(var entry in item.Nodes)
                 flow.MutableNodes.Add(new NodeDefinition(entry.Id,entry.Name,entry.ToolType,entry.Configuration)
                 { DispName=entry.DispName,GlobalIndex=entry.GlobalIndex,LocalIndex=entry.LocalIndex,IsEnabled=entry.IsEnabled,
-                  SubroutineId=entry.SubroutineId,SelectedDisplayReference=entry.SelectedDisplayReference,PositionX=entry.PositionX,PositionY=entry.PositionY,
+                  SubroutineId=entry.SubroutineId,SelectedDisplayReference=entry.SelectedDisplayReference,DisplayOverlays=entry.DisplayOverlays,PositionX=entry.PositionX,PositionY=entry.PositionY,
                   Width=entry.Width,Height=entry.Height,AdditionalData=entry.AdditionalData });
             foreach(var edge in item.Connections)
                 flow.MutableConnections.Add(new ConnectionDefinition(edge.Id,edge.SourceNodeId,edge.TargetNodeId,edge.SourcePort,edge.TargetPort){ManualPathPoints=edge.ManualPathPoints});
@@ -243,7 +246,9 @@ public sealed partial class DocumentSession
                 if(result.State is BindingCompatibility.Incompatible or BindingCompatibility.Unresolved)
                     throw new InvalidOperationException("全局变量生产来源未通过正式声明校验："+result.Reason);
             }
+            candidate.EmbeddedFiles?.MaterializeForAdmission();
             session._decodedResources=candidate.TransferResources();
+            session._embeddedFiles=candidate.EmbeddedFiles;
             return session;
         }
         catch(Exception error)

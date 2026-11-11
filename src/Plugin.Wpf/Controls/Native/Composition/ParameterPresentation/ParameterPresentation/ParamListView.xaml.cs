@@ -97,14 +97,26 @@ public partial class ParamListView : ItemsControl, IComponentConnector
         _rows=rows;_view.Source=rows;
         if(generation!=_sourceGeneration)return;
         if(rows is INotifyCollectionChanged next)CollectionChangedEventManager.AddHandler(next,OnRows);
-        UpdateGroupOrder();
+        RefreshGroups();
     }
-    private void OnRows(object? sender,NotifyCollectionChangedEventArgs args){if(ReferenceEquals(sender,_rows))UpdateGroupOrder();}
-    private void UpdateGroupOrder()
+    private void OnRows(object? sender,NotifyCollectionChangedEventArgs args){if(ReferenceEquals(sender,_rows))RefreshGroups();}
+    internal void RefreshGroups(Func<bool>? isCurrent=null)
     {
-        var generation=_sourceGeneration;var order=++_orderGeneration;
-        var groups=_rows?.Cast<NativeParameterRow>().Select(row=>row.GroupName).Distinct().ToArray()??Array.Empty<NativeParameterGroup>();
-        ParameterCleanup.Run(groups.Select((group,index)=>(Action)(()=>{if(generation==_sourceGeneration&&order==_orderGeneration)group.IsFirst=index==0;})));
+        var generation = _sourceGeneration;
+        var order = ++_orderGeneration;
+        bool Current() => generation == _sourceGeneration && order == _orderGeneration && (isCurrent?.Invoke() ?? true);
+        var groups = _rows?.Cast<NativeParameterRow>().GroupBy(row => row.GroupName)
+            .Select(group => (Group: group.Key, Visible: group.Any(row => row.CustomVisibleA))).ToArray() ?? [];
+        var first = true;
+        var updates = new List<Action>();
+        foreach (var (group, visible) in groups)
+        {
+            var isFirst = visible && first;
+            updates.Add(() => { if (Current()) group.CustomVisibleA = visible; });
+            updates.Add(() => { if (Current()) group.IsFirst = isFirst; });
+            if (visible) first = false;
+        }
+        ParameterCleanup.Run(updates);
     }
     public ParamListView()
 	{

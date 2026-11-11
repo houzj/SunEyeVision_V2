@@ -30,6 +30,25 @@ internal static class Program
  var blobOptions=new SunEyeVision.Plugin.Wpf.Presenters.Parameters.ToolSettingsViewOptions(ReferenceOptions:SunEyeVision.Plugin.Wpf.Adapters.References.ReferenceFieldOptions.Empty,InputSection:blobSchema.Presentation!.Fields.First().Layout!.Page,InputContent:input);
  using(var blob=new SunEyeVision.Tool.BlobAnalysis.Wpf.Views.BlobParameterEditor(blobContext.Draft,blobOptions))
  { blob.Measure(new Size(680,800)); blob.Arrange(new Rect(0,0,680,800)); }
+ using(var sample=new SunEyeVision.Tool.BlobAnalysis.Wpf.Views.BlobParameterEditor())
+ {
+  var presenter=(SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView)sample.FindName("Editor");
+  SunEyeVision.Tool.BlobAnalysis.Wpf.Design.BlobDesignData.BindParameterContext(presenter,blobContext);
+  var parameterTree=presenter.Content??throw new Exception("Blob design parameter tree was not built");
+  SunEyeVision.Tool.BlobAnalysis.Wpf.Design.BlobDesignData.BindParameterContext(presenter,blobContext);
+  if(!ReferenceEquals(parameterTree,presenter.Content))throw new Exception("Same Blob design context rebuilt its parameter tree");
+  if(presenter.SelectedPageKey!="基本参数")throw new Exception("Blob designer does not open the production first page");
+  var designInputs=(SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredInputFieldsView)blobContext.Options.InputContent!;
+  var imageRow=designInputs.Fields.Single(row=>row.FieldId==SunEyeVision.Tool.BlobAnalysis.Runtime.BlobTool.ImageInput);
+  if(imageRow.InputElement is not System.Windows.Controls.ComboBox {SelectedItem:SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldRow.ImageSourceChoice {Label:"图像源 · 图像"}})
+   throw new Exception("Blob designer input source is not projected through the real selector");
+  foreach(var (index,key) in new[]{(1,"运行参数"),(2,"结果显示"),(0,"基本参数")})
+  {
+   presenter.SelectedPageIndex=index;
+   sample.Measure(new Size(680,800));sample.Arrange(new Rect(0,0,680,800));
+   if(presenter.SelectedPageKey!=key)throw new Exception("Blob designer page was not composed: "+key);
+  }
+ }
  var sourceContext=SunEyeVision.Tool.ImageSource.Wpf.Design.ImageSourceDesignData.CreateParameterContext();
  using(var source=new SunEyeVision.Tool.ImageSource.Wpf.Views.ImageSourceParameterEditor(sourceContext.Draft,sourceContext.Options))
  { source.Measure(new Size(680,800)); source.Arrange(new Rect(0,0,680,800)); }

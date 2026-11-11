@@ -17,10 +17,32 @@ public sealed class ImageSourcePolicy
     public int RunMode { get; set; }
     public bool AutoSwitchEnabled { get; set; } = true;
     public bool StopAtLastImage { get; set; }
+    public int PathCache { get; set; }
+    public bool SubscribeFolder { get; set; }
+    public string FolderPath { get; set; } = "";
+    public bool RefreshFolder { get; set; } = true;
+    public bool TriggerFolderRun { get; set; }
     public string CameraDeviceId { get; set; } = string.Empty;
     public int CameraTimeoutMs { get; set; } = 3000;
-    public ImageOutputFormat OutputFormat { get; set; }
+    public ImageOutputFormat OutputFormat { get; set; } = ImageOutputFormat.Mono8;
     public long SNInitialValue { get; set; } = 1;
+    internal bool UsesFolder => SourceKind == ImageSourceKind.Local && SubscribeFolder;
+
+    /// <summary>Initial accepted-directory projection only; does not watch, acquire a frame or advance a cursor.</summary>
+    public LocalImageSourcePlan CaptureFolderList(IResourcePathResolver paths)
+    {
+        ArgumentNullException.ThrowIfNull(paths);
+        if(!UsesFolder)throw new InvalidOperationException("当前不是订阅目录图像来源。");
+        return SubscribedImageFolder.CaptureList(ResolveFolder(paths),this,-1);
+    }
+
+    internal string ResolveFolder(IResourcePathResolver paths)
+    {
+        if (string.IsNullOrWhiteSpace(FolderPath)) throw new InvalidOperationException("请选择订阅图片文件夹。");
+        if (RunMode != 0) throw new InvalidOperationException("订阅图片文件夹使用全部图片运行模式。");
+        var resolved = paths.Resolve("local.folder-path", FolderPath, ResourcePurpose.DirectoryRead);
+        return resolved.Address;
+    }
 
     /// <summary>Freeze the same local-source plan for formal execution and private debug.</summary>
     public static LocalImageSourcePlan CreateLocalPlan(string nodeId,ImageSourcePolicy? config,
@@ -33,10 +55,12 @@ public sealed class ImageSourcePolicy
             !Enum.IsDefined(config.SourceKind) || !Enum.IsDefined(config.OutputFormat) || config.CameraTimeoutMs <= 0 || config.SNInitialValue < 0)
             throw new InvalidOperationException("正式图像源身份、运行模式或选择无效。");
         var selected=config.ForRunPaths.ToHashSet(StringComparer.Ordinal);
-        var all=config.FilePaths.Select((reference,index)=>new LocalImageSequenceEntry(
-            $"{index}:{reference}",reference,resourcePaths.Resolve("ImageSourceSettings.FileReferences",reference,ResourcePurpose.FileRead).Address,index)).ToArray();
-        var entries=all.Where(entry=>config.RunMode==0||selected.Contains(entry.ResourceReference)).ToArray();
-        return new(nodeId,Array.AsReadOnly(entries),config.CurrentIndex<0?null:all[config.CurrentIndex].EntryId,
+        var entries=config.FilePaths.Select((reference,index)=>(Reference:reference,Index:index))
+            .Where(item=>config.RunMode==0||selected.Contains(item.Reference))
+            .Select(item=>new LocalImageSequenceEntry($"{item.Index}:{item.Reference}",item.Reference,
+                resourcePaths.Resolve("local.paths",item.Reference,ResourcePurpose.FileRead).Address,item.Index)).ToArray();
+        var start=entries.FirstOrDefault(entry=>entry.OriginalIndex==config.CurrentIndex);
+        return new(nodeId,Array.AsReadOnly(entries),start?.EntryId,
             config.AutoSwitchEnabled,config.StopAtLastImage);
     }
 
@@ -53,7 +77,7 @@ public sealed class ImageSourcePolicy
             NodeId = nodeId,
             SourceKind = values.Get<string>("source.kind") switch
             {
-                "local" => ImageSourceKind.Local, "camera" => ImageSourceKind.Camera,
+                "local" => ImageSourceKind.Local, "camera" => ImageSourceKind.Camera, "sdk" => ImageSourceKind.Sdk,
                 _ => throw new InvalidOperationException("图像来源无效。")
             },
             FilePaths = References("local.paths"), ForRunPaths = References("local.selected"),
@@ -64,6 +88,11 @@ public sealed class ImageSourcePolicy
             },
             AutoSwitchEnabled = values.Get<bool>("local.auto-switch"),
             StopAtLastImage = values.Get<bool>("local.stop-at-last"),
+            PathCache = checked((int)values.Get<long>("local.path-cache")),
+            SubscribeFolder = values.Get<bool>("local.subscribe-folder"),
+            FolderPath = values.Get<string>("local.folder-path"),
+            RefreshFolder = values.Get<bool>("local.refresh-folder"),
+            TriggerFolderRun = values.Get<bool>("local.trigger-folder-run"),
             CameraDeviceId = values.Get<string>("camera.device"),
             CameraTimeoutMs = checked((int)values.Get<long>("camera.timeout-ms")),
             OutputFormat = values.Get<string>("output.format") switch
@@ -83,7 +112,7 @@ public sealed class ImageSourcePolicy
         {
             ["source.kind"] = SourceKind switch
             {
-                ImageSourceKind.Local => "local", ImageSourceKind.Camera => "camera",
+                ImageSourceKind.Local => "local", ImageSourceKind.Camera => "camera", ImageSourceKind.Sdk => "sdk",
                 _ => throw new InvalidOperationException("图像来源无效。")
             },
             ["local.paths"] = References("local.paths", FilePaths),
@@ -100,7 +129,8 @@ public sealed class ImageSourcePolicy
                 ImageOutputFormat.Original => "original", ImageOutputFormat.Mono8 => "mono8",
                 ImageOutputFormat.Rgb24 => "rgb24", _ => throw new InvalidOperationException("输出格式无效。")
             },
-            ["sequence.initial"] = SNInitialValue
+            ["sequence.initial"] = SNInitialValue,
+            ["local.path-cache"] = (long)PathCache
         };
     }
 

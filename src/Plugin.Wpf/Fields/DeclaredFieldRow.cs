@@ -42,8 +42,8 @@ public sealed partial class DeclaredFieldRow : ContentControl, IDisposable, IPar
     private readonly bool _numericSequence;
     private bool _disposed;
     private string _editError => _state.EditError;
-    private bool _regionSourceSelector;
     private readonly bool _allowUnboundReference;
+    private readonly bool _showClearButton;
     private readonly bool _composedNumeric;
     private readonly bool _canReference;
     private readonly FieldRowModel? _model;
@@ -61,7 +61,8 @@ public sealed partial class DeclaredFieldRow : ContentControl, IDisposable, IPar
     internal bool InlineConstantReference => _inlineConstantReference;
     internal bool NumericSequence => _numericSequence;
 
-    internal void SetSubData(object? value) => _model?.SetSubData(value);
+    internal void SetReferenceData(object? value) => _model?.SetReferenceData(value);
+    internal void SetTextData(object? value) => _model?.SetTextData(value);
 
     public string FieldId => _port.Id;
     internal string TemplateKey => _model?.TemplateKey ?? "Slot";
@@ -83,26 +84,29 @@ public sealed partial class DeclaredFieldRow : ContentControl, IDisposable, IPar
         Func<OutputReference,string>? formatReference = null, IReadOnlyDictionary<string,string>? choiceLabels = null,
         FieldPresentation? presentation = null, bool allowUnboundReference = false,
         NativeIntegerRadioOptions? integerRadioOptions = null, DeclaredChoiceDisplayOptions? choiceDisplay = null,
-        bool numericSequence = false)
+        bool numericSequence = false, bool showClearButton = true)
         : this(new DeclaredFieldState(port, initial, write, constantBackup, allowUnboundReference,
             proposal => choiceDisplay?.ValidateProposal(proposal) ?? integerRadioOptions?.Validate(proposal) ?? references?.ValidateProposal?.Invoke(port, proposal),
             readCurrentValue: references?.ReadCurrentValue is {} read ? () => read(port) : null,
             referenceBehavior: references?.ReadBehavior?.Invoke(port) ?? ParameterReferenceBehavior.StrictExactlyOne),
             label, references, formatReference, choiceLabels, presentation, allowUnboundReference,
-            integerRadioOptions, ownsState: true, choiceDisplay: choiceDisplay, numericSequence: numericSequence)
+            integerRadioOptions, ownsState: true, choiceDisplay: choiceDisplay, numericSequence: numericSequence,
+            showClearButton: showClearButton)
     { }
 
     internal DeclaredFieldRow(DeclaredFieldState state, string label,
         ReferenceFieldOptions? references = null, Func<OutputReference,string>? formatReference = null,
         IReadOnlyDictionary<string,string>? choiceLabels = null, FieldPresentation? presentation = null,
         bool allowUnboundReference = false, NativeIntegerRadioOptions? integerRadioOptions = null, bool ownsState = false,
-        bool inlineConstantReference = false, DeclaredChoiceDisplayOptions? choiceDisplay = null, bool numericSequence = false)
+        bool inlineConstantReference = false, DeclaredChoiceDisplayOptions? choiceDisplay = null, bool numericSequence = false,
+        bool showClearButton = true)
     {
         var port = state.Port;
         _state = state; _port = state.Port; _referenceOptions = references; _ownsState = ownsState;
         _formatReference = formatReference; _choiceLabels = choiceLabels; _presentation = presentation;
         _choiceDisplay = choiceDisplay; _integerRadioOptions = integerRadioOptions;
         _allowUnboundReference = allowUnboundReference;
+        _showClearButton = showClearButton;
         _numericSequence = numericSequence;
         _inlineConstantReference = inlineConstantReference;
         if (numericSequence && !NativeNumericSequenceProjection.Applies(port))
@@ -189,6 +193,10 @@ public sealed partial class DeclaredFieldRow : ContentControl, IDisposable, IPar
             return DeclaredFieldTemplateRegistry.IntegerRadio;
         if (inlineConstantReference)
             return DeclaredFieldTemplateRegistry.Reference;
+        if (port.Type.Shape == ValueShape.Resource && (port.EditModes & FieldEditModes.Reference) != 0)
+            return DeclaredFieldTemplateRegistry.Reference;
+        if (port.EditModes == FieldEditModes.Reference)
+            return DeclaredFieldTemplateRegistry.Reference;
         return port.Type.Shape switch
         {
             ValueShape.Scalar => port.Type.Scalar switch
@@ -242,7 +250,7 @@ public sealed partial class DeclaredFieldRow : ContentControl, IDisposable, IPar
                 increment = layout?.Increment ?? 1;
                 break;
             case DeclaredFieldTemplateRegistry.IntegerRadio:
-                radioWidth = 110;
+                radioWidth = Native.Common.Localization.AppLocalizationService.GetLang("Language") == "English" ? 165 : 89;
                 entries = _integerRadioOptions!.Choices.Select(choice => new FieldRowModel.Entry(choice.Label, (int)choice.Value)).ToList();
                 break;
             case DeclaredFieldTemplateRegistry.Enumeration:
@@ -252,13 +260,14 @@ public sealed partial class DeclaredFieldRow : ContentControl, IDisposable, IPar
             case DeclaredFieldTemplateRegistry.Reference:
             case DeclaredFieldTemplateRegistry.Boolean:
             case DeclaredFieldTemplateRegistry.BooleanEye:
-                hasReferenceBranch = key != DeclaredFieldTemplateRegistry.Boolean && key != DeclaredFieldTemplateRegistry.BooleanEye;
+            case DeclaredFieldTemplateRegistry.BooleanTips:
+                hasReferenceBranch = key is DeclaredFieldTemplateRegistry.String or DeclaredFieldTemplateRegistry.Reference;
                 break;
         }
 
-        var model = new FieldRowModel(this, key, label, minimum, maximum, increment, decimals, radioWidth, entries, hasReferenceBranch);
-        if (key == DeclaredFieldTemplateRegistry.IntegerRadio && _integerRadioOptions!.UseFiveSlotTemplate)
-            model.TemplateKey = "RadioSelecter3";
+        var model = new FieldRowModel(this, key, label, minimum, maximum, increment, decimals, radioWidth, entries, hasReferenceBranch,layout?.BooleanTips);
+        if (key == DeclaredFieldTemplateRegistry.IntegerRadio)
+            model.TemplateKey = _integerRadioOptions!.UseFiveSlotTemplate ? "RadioSelecter3" : "RadioSelecter";
         return model;
     }
 
@@ -277,16 +286,16 @@ public sealed partial class DeclaredFieldRow : ContentControl, IDisposable, IPar
     /// <summary>没有对应行模板族、且工具已显式给出组合控件的字段，沿用原组合槽（单一控件，不逐字段造树）。</summary>
     private UIElement? BuildSlotContent(string label)
     {
-        if (_imageSources is not null)
-            return CreateImageSourceSlot();
-        if (_port.Type.Shape == ValueShape.Resource)
-            return new TextBlock {Text = "运行时资源，请选择来源", TextWrapping = TextWrapping.Wrap};
+        // A registered row template owns every value state, including unset
+        // and retained constants. Value-driven slot construction must not
+        // override it with record children or a second unset presentation.
+        // Region/image selectors are the explicitly registered external slots.
+        if (_model.TemplateKey != DeclaredFieldTemplateRegistry.ComposedSlot)
+            return null;
+        if (_setting is ReferenceSetting or VariableSetting)
+            return null;
         if (_setting is UnsetSetting)
-        {
-            var panel = new Grid();
-            panel.Children.Add(new TextBlock {Text = "未设置", Opacity = .6, VerticalAlignment = VerticalAlignment.Center});
-            return panel;
-        }
+            throw new NotSupportedException($"原件组合字段尚未提供未设置模板：{_port.Id}");
 
         var value = _setting switch
         {
@@ -294,12 +303,6 @@ public sealed partial class DeclaredFieldRow : ContentControl, IDisposable, IPar
             DisplayExpressionSetting expression when _port.Type == DataType.Text && (_port.EditModes & FieldEditModes.DisplayExpression) != 0 => expression.Text,
             _ => throw new ArgumentException("字段设置与原编辑器声明不匹配：" + _port.Id)
         };
-        if (_port.Type.Shape == ValueShape.Resource)
-            return new TextBlock {Text = "运行时资源，请选择来源", TextWrapping = TextWrapping.Wrap};
-        if (_regionSourceSelector && _port.Choices is not null)
-        {
-            return new RegionSourceModeSelector((string)value!, key => CurrentSlotGate && Set(new ConstantSetting(key)));
-        }
 
         if (_port.Type.Shape == ValueShape.Record && value is RecordValue record)
         {
@@ -311,32 +314,11 @@ public sealed partial class DeclaredFieldRow : ContentControl, IDisposable, IPar
                 input.SelectedColorChanged += OnNativeColorChanged;
                 return input;
             }
-
-            var stack = new StackPanel();
-            foreach (var field in _port.Type.Fields)
-            {
-                var child = new DeclaredFieldRow(field, field.Id,
-                    record.Contains(field.Id) ? new ConstantSetting(record.Get<object?>(field.Id)) : new UnsetSetting(), next =>
-                    {
-                        var current = (RecordValue)((ConstantSetting)_setting).Value!;
-                        var values = current.Declaration.Fields.Where(p => current.Contains(p.Id)).ToDictionary(p => p.Id, p => current.Get<object?>(p.Id));
-                        if (next is UnsetSetting)
-                            values.Remove(field.Id);
-                        else
-                            values[field.Id] = ((ConstantSetting)next).Value;
-                        if (!Set(new ConstantSetting(new RecordValue(_port.Type, values))))
-                            throw new ArgumentException(Error);
-                    });
-                child.Margin = new Thickness(10, 2, 0, 2);
-                _children.Add(child);
-                stack.Children.Add(child);
-            }
-
-            return stack;
+            throw new NotSupportedException($"原件记录字段缺少正式组合模板：{_port.Id}");
         }
 
         if (_port.Type.Shape is ValueShape.Geometry or ValueShape.Sequence)
-            return new TextBlock {Text = "此字段由专用区域或集合编辑器处理。", TextWrapping = TextWrapping.Wrap};
+            throw new NotSupportedException($"原件几何/集合字段缺少正式组合模板：{_port.Id}");
         return null;
     }
 
@@ -389,6 +371,7 @@ public sealed partial class DeclaredFieldRow : ContentControl, IDisposable, IPar
         if (_disposed)
             return;
         ProjectTemplate();
+        _projectImageSourceSelection?.Invoke();
         Changed?.Invoke();
     }
 
@@ -409,7 +392,7 @@ public sealed partial class DeclaredFieldRow : ContentControl, IDisposable, IPar
             var unset = _setting is UnsetSetting;
             _model.SetIsSub(_referenceMode);
             _model.SetSubscribeVisible(_canReference && !_composedNumeric && (_port.EditModes & FieldEditModes.Constant) != 0);
-            _model.SetClearVisible(!_numericSequence && !_port.Required && !unset && _port.EditModes != FieldEditModes.Reference);
+            _model.SetClearVisible(_showClearButton && !_numericSequence && !_port.Required && !unset && _port.EditModes != FieldEditModes.Reference);
             _model.SetUnset(unset,
                 unset && _port.Type.Shape != ValueShape.Resource
                 && (_port.EditModes == FieldEditModes.None || (_port.EditModes & FieldEditModes.Constant) != 0));
@@ -417,6 +400,7 @@ public sealed partial class DeclaredFieldRow : ContentControl, IDisposable, IPar
             {
                 case DeclaredFieldTemplateRegistry.Boolean:
                 case DeclaredFieldTemplateRegistry.BooleanEye:
+                case DeclaredFieldTemplateRegistry.BooleanTips:
                     _model.SetCurValue(_setting is ConstantSetting {Value: bool accepted} && accepted);
                     break;
                 case DeclaredFieldTemplateRegistry.Enumeration:
@@ -441,7 +425,7 @@ public sealed partial class DeclaredFieldRow : ContentControl, IDisposable, IPar
     internal void HandleTemplateValueProposal(object? proposed)
     {
         if (_model is not null && proposed is null
-            && _model.TemplateKey is DeclaredFieldTemplateRegistry.Boolean or DeclaredFieldTemplateRegistry.BooleanEye)
+            && _model.TemplateKey is DeclaredFieldTemplateRegistry.Boolean or DeclaredFieldTemplateRegistry.BooleanEye or DeclaredFieldTemplateRegistry.BooleanTips)
             return;
         if (_model is null || !CurrentTemplateGate)
         {
@@ -453,7 +437,7 @@ public sealed partial class DeclaredFieldRow : ContentControl, IDisposable, IPar
         {
             switch (proposed)
             {
-                case bool boolean when _model.TemplateKey is DeclaredFieldTemplateRegistry.Boolean or DeclaredFieldTemplateRegistry.BooleanEye:
+                case bool boolean when _model.TemplateKey is DeclaredFieldTemplateRegistry.Boolean or DeclaredFieldTemplateRegistry.BooleanEye or DeclaredFieldTemplateRegistry.BooleanTips:
                     if (_setting is ConstantSetting {Value: bool accepted} && boolean == accepted && _editError.Length == 0)
                         return;
                     if (Set(new ConstantSetting(boolean)))
@@ -547,6 +531,7 @@ public sealed partial class DeclaredFieldRow : ContentControl, IDisposable, IPar
         if (_disposed)
             return;
         ProjectTemplate();
+        if(!_disposed)_model?.ReapplyCurrentValue();
     }
 
     private bool Set(ParameterSetting next)
@@ -570,7 +555,17 @@ public sealed partial class DeclaredFieldRow : ContentControl, IDisposable, IPar
 
     // ---- 公开窄 API（对齐原编辑器消费者） ----
     private string _label;
+    private string? _referenceSummary;
     public void SetLabel(string text) => _model?.SetDisplayName(text);
+    public void SetDescription(string text) => _model?.SetDescription(text);
+    public void SetReferenceSummary(string? summary)
+    {
+        if (_disposed || summary == _referenceSummary) return;
+        RetireInteractions();
+        if (_disposed) return;
+        _referenceSummary = summary;
+        _host.SetReferenceSummary(summary);
+    }
 
     /// <summary>为文本字段启用显示表达式会话（必须在行 Loaded 前调用）。</summary>
     public void UseTextExpressions(TextExpressionOptions options)
@@ -581,22 +576,20 @@ public sealed partial class DeclaredFieldRow : ContentControl, IDisposable, IPar
         _textExpressions = options ?? throw new ArgumentNullException(nameof(options));
     }
 
-    /// <summary>把枚举字段切换为区域来源模式选择器组合槽（卡外组合，沿用原控件）。</summary>
-    public void UseRegionSourceSelector()
-    {
-        ObjectDisposedException.ThrowIf(_disposed, this);
-        if (_imageSources is not null)
-            throw new InvalidOperationException("图像来源与区域来源选择互斥。");
-        _regionSourceSelector = true;
-        var slot = BuildSlotContent(_label);
-        if (slot is null)
-            throw new InvalidOperationException("区域来源选择需要枚举字段且当前设置可转换为选择值。");
-        _slotContent = slot;
-        Content = slot;
-        ContentTemplateSelector = null;
-    }
     internal void SetLabelWidth(double width) => _labelWidth = width;
     internal bool TryApplySetting(ParameterSetting setting) => Set(setting) && !IsDisposed;
+    internal void BrowseFolder()
+    {
+        if (_model.TemplateKey != DeclaredFieldTemplateRegistry.FolderPath || !CurrentTemplateGate ||
+            Window.GetWindow(this) is not { IsVisible: true } owner) return;
+        var version = _state.AcceptanceVersion;
+        var dialog = new Microsoft.Win32.OpenFolderDialog { Title = _model.DisplayNameA };
+        if (_setting is ConstantSetting { Value: string path } && System.IO.Directory.Exists(path))
+            dialog.InitialDirectory = path;
+        if (dialog.ShowDialog(owner) == true && CurrentTemplateGate && ReferenceEquals(Window.GetWindow(this), owner)
+            && _state.AcceptanceVersion == version)
+            TrySetConstant(dialog.FolderName);
+    }
     public bool TrySetConstant(object value)
     {
         if (_host.TrySetConstant(value))
@@ -608,8 +601,13 @@ public sealed partial class DeclaredFieldRow : ContentControl, IDisposable, IPar
     {
         if (IsDisposed || ChoiceError is not null)
             return false;
-        if (_imageSources is not null && _state.HasInvalidInput)
-            return false;
+        if (_refreshImageSource is { } refresh)
+        {
+            var generation = _imageSourceGeneration;
+            refresh();
+            if (IsDisposed || generation != _imageSourceGeneration || _state.HasInvalidInput)
+                return false;
+        }
         if (!_host.TryCommitPending())
             return false;
         return _children.All(child => child.TryCommitPending());
@@ -672,8 +670,8 @@ public sealed partial class DeclaredFieldRow : ContentControl, IDisposable, IPar
         Changed = null;
         ParameterCleanup.Run(new Action[]
         {
-            () => _children.ToArray().Select(child => (Action)child.Dispose).ToList().ForEach(action => action()),
-            _host.Dispose,
+            () => ParameterCleanup.Run(_children.ToArray().Select(child => (Action)child.Dispose)),
+            () => _host?.Dispose(),
             DetachImageSource,
             () =>
             {

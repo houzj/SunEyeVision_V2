@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="../Platform.Sdk.Contracts/SunEyeVision.Platform.Sdk.Contracts.csproj" />
     <ProjectReference Include="../Application/SunEyeVision.Application.csproj" />
+    <ProjectReference Include="../Infrastructure.ImageSources/SunEyeVision.Infrastructure.ImageSources.csproj" />
     <ProjectReference Include="../Infrastructure.Persistence/SunEyeVision.Infrastructure.Persistence.csproj" />
     <ProjectReference Include="../Persistence/SunEyeVision.Persistence.csproj" />
     <ProjectReference Include="../Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" />

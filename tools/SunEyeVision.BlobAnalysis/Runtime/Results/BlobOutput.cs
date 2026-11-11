@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Contracts.Results.Presentation;
 
@@ -10,32 +11,48 @@ public sealed record BlobBoundaryPath(long Id, long? ParentId, string Role, IRea
 public sealed record BlobMeasurement(long ElementId, int Label, double Area, double Perimeter,
     double CentroidX, double CentroidY, double Circularity, double Rectangularity, BlobBounds Bounds,
     BlobOrientedBounds OrientedBounds, IReadOnlyList<Point2> RotatedBounds, IReadOnlyList<BlobBoundaryPath> Boundary, IReadOnlyRegion Region, bool JudgmentPassed,
-    double? MinGrayValue = null, double? MaxGrayValue = null, double? GrayContrast = null, double? BlobAngleDegrees = null);
+    double? MinGrayValue = null, double? MaxGrayValue = null, double? GrayContrast = null, double? BlobAngleDegrees = null,
+    IReadOnlyList<Point2>? UnorderedContour = null, BlobOrientedBounds? InnerRectangle = null);
 
 /// <summary>One final ordered result set. Independent resource readers can outlive this output owner.</summary>
-public sealed class BlobOutput : IToolOutput, IDisposable, IToolResultGeometryOutput
+public sealed class BlobOutput : IToolOutput, IDisposable, IToolResultGeometryOutput, IToolResultRecordOutput
 {
     private readonly IDisposable[] _owned;
+    private readonly Dictionary<string,object?> _values;
     private int _disposed;
+    public IEnumerable<string> DescribeResultRecords()
+    {
+        yield return $"Module Status:{ResultProjection.ModuStatus}Blob Numer{ResultProjection.BlobNum}Total Area{ResultProjection.TotalArea}";
+        foreach (var item in Measurements)
+            yield return $"BlobInfo{item.Label}:Area{(float)item.Area},Circumference{(float)item.Perimeter},CentroidX{(float)item.CentroidX},CentroidY{(float)item.CentroidY},Angle{(float)item.OrientedBounds.AngleDegrees}";
+    }
     internal BlobOutput(BlobSettings settings,BlobThresholdExecutionSnapshot threshold,IEnumerable<Diagnostic> diagnostics,IEnumerable<BlobSelectionEntry> selection, IEnumerable<BlobMeasurement> measurements, IReadOnlyImage? blobImage, IReadOnlyImage? binary,
-        IReadOnlyRegion region, IReadOnlyRegion ok, IReadOnlyRegion ng, double whiteRatio,
-        double[] histogram, double[] means, bool isPass, IEnumerable<string> messages, IEnumerable<IDisposable> owned,ResultGeometrySnapshot resultGeometry)
+        IReadOnlyImage? maskImage, IReadOnlyRegion region, IReadOnlyRegion ok, IReadOnlyRegion ng, double whiteRatio,
+        double[] histogram, double[] means, bool isPass, IEnumerable<string> messages, IEnumerable<IDisposable> owned,ResultGeometrySnapshot resultGeometry,
+        SequenceValue maskPolygons, bool publishContour, CancellationToken cancellation, long moduleStarted)
     {
         ResultGeometry=resultGeometry;
+        MaskPolygons=maskPolygons;
         ThresholdExecution=threshold;ExecutionDiagnostics=Array.AsReadOnly(diagnostics.ToArray());
         SelectionExecution=Array.AsReadOnly(selection.ToArray());
         ThresholdMinUsed=threshold.Lower;ThresholdMaxUsed=threshold.Upper;TypeUsed=threshold.Polarity;
         SegmentationModeUsed=settings.SegmentationMode.ToString();
         Measurements = Array.AsReadOnly(measurements.ToArray()); BlobImage = blobImage; BinaryImage = binary;
-        VmResult = BlobVmResultProjection.Create(Measurements,binary,blobImage);
+        MaskImage = maskImage;
+        ResultProjection = BlobResultProjection.Create(Measurements,binary,blobImage,resultGeometry,maskPolygons,maskImage,
+            publishContour,cancellation);
         Region = region; OkRegion = ok; NgRegion = ng; WhitePixelRatio = whiteRatio;
         Histogram = Array.AsReadOnly(histogram.ToArray()); ChannelMeans = Array.AsReadOnly(means.ToArray());
         IsPass = isPass; JudgmentMessages = Array.AsReadOnly(messages.ToArray()); _owned = owned.Distinct<IDisposable>(ReferenceEqualityComparer.Instance).ToArray();
+        _values = BuildValues(cancellation);
+        _values.Add(BlobSchema.ModuleRunTimePort,(double)(float)Stopwatch.GetElapsedTime(moduleStarted).TotalMilliseconds);
+        _ = new InputValues(BlobSchema.Outputs, _values);
     }
     public ResultGeometrySnapshot ResultGeometry {get;}
+    public SequenceValue MaskPolygons {get;}
     public IReadOnlyList<BlobMeasurement> Measurements { get; }
     /// <summary>VM BlobFindResult 的中立投影，Unavailable 中的成员没有本方等价资源。</summary>
-    public BlobVmResultProjection VmResult { get; }
+    public BlobResultProjection ResultProjection { get; }
     public BlobThresholdExecutionSnapshot ThresholdExecution {get;}
     public IReadOnlyList<Diagnostic> ExecutionDiagnostics {get;}
     public IReadOnlyList<BlobSelectionEntry> SelectionExecution {get;}
@@ -45,6 +62,7 @@ public sealed class BlobOutput : IToolOutput, IDisposable, IToolResultGeometryOu
     public string SegmentationModeUsed { get; }
     public IReadOnlyImage? BlobImage { get; }
     public IReadOnlyImage? BinaryImage { get; }
+    public IReadOnlyImage? MaskImage { get; }
     public IReadOnlyRegion Region { get; }
     public IReadOnlyRegion OkRegion { get; }
     public IReadOnlyRegion NgRegion { get; }
@@ -54,7 +72,7 @@ public sealed class BlobOutput : IToolOutput, IDisposable, IToolResultGeometryOu
     public bool IsPass { get; }
     public IReadOnlyList<string> JudgmentMessages { get; }
     public int Count => Measurements.Count;
-    public double TotalArea => BlobNumericSemantics.Float32Sum(Measurements.Select(x => x.Area));
+    public double TotalArea => ResultProjection.TotalArea;
     public double AverageArea => Count == 0 ? 0 : TotalArea / Count;
     public double MinimumArea => Count == 0 ? 0 : Measurements.Min(x => x.Area);
     public double MaximumArea => Count == 0 ? 0 : Measurements.Max(x => x.Area);
@@ -71,24 +89,59 @@ public sealed class BlobOutput : IToolOutput, IDisposable, IToolResultGeometryOu
     public IReadOnlyDictionary<string, object?> ToValues()
     {
         ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
-        return new ReadOnlyDictionary<string, object?>(new Dictionary<string, object?> {
-            [BlobSchema.BlobsPort] = new SequenceValue(BlobSchema.BlobsType, Measurements.Select(x => (object?)BlobSchema.Freeze(x))),
+        return new ReadOnlyDictionary<string,object?>(_values.ToDictionary(
+            pair => pair.Key, pair => pair.Value is Array array ? array.Clone() : pair.Value, StringComparer.Ordinal));
+    }
+
+    private Dictionary<string,object?> BuildValues(CancellationToken cancellation)
+    {
+        static double[]? NumberSequence(IReadOnlyList<float>? values) => values?.Select(value => (double)value).ToArray();
+        return new Dictionary<string, object?> {
+            [BlobSchema.BlobsPort] = new SequenceValue(BlobSchema.BlobsType, Measurements.Select(measurement =>
+            {
+                cancellation.ThrowIfCancellationRequested();
+                return BlobSchema.Freeze(measurement, ResultProjection.ContourNum.HasValue, cancellation);
+            })),
             [BlobSchema.Field(5)] = ImageValue(BlobImage,BlobSchema.BlobImageType), [BlobSchema.Field(6)] = ImageValue(BinaryImage,BlobSchema.BinaryImageType),
-            [BlobSchema.Field(4)] = IsPass,
+            [BlobSchema.MaskImagePort] = ImageValue(MaskImage,BlobSchema.MaskImageType),
+            [BlobSchema.MaskPolygonsPort] = MaskPolygons,
+            [BlobSchema.MaskPolygonStringsPort] = ResultProjection.BlindPolygonString?.ToArray(),
+            [BlobSchema.DetectionRectanglesPort] = ResultProjection.ROI is { } rectangles
+                ? new SequenceValue(BlobSchema.OrientedRectanglesType, rectangles.Select(BlobSchema.FreezeBounds)) : null,
+            [BlobSchema.DetectionAnnuliPort] = ResultProjection.ROIAnnulus is { } annuli
+                ? new SequenceValue(TypeRef.SequenceOf(BlobRoiInheritance.AnnulusType), annuli.Select(BlobSchema.FreezeDetectionAnnulus)) : null,
+            [BlobSchema.ContourPointsPort] = ResultProjection.ContourNum is int contourCount
+                ? new RecordValue(BlobSchema.ContourPointsType, new Dictionary<string, object?>
+                    { ["count"] = (long)contourCount, ["info"] = ResultProjection.ContourInfo }) : null,
+            [BlobSchema.InnerRectanglesPort] = new SequenceValue(BlobSchema.OrientedRectanglesType, ResultProjection.MaxAreaInnerRect.Select(bounds => (object?)BlobSchema.FreezeBounds(bounds))),
+            [BlobSchema.OuterRectanglesPort] = new SequenceValue(BlobSchema.OrientedRectanglesType, ResultProjection.MinBoudingRect.Select(bounds => (object?)BlobSchema.FreezeBounds(bounds))),
+            [BlobSchema.LongAxesPort] = NumberSequence(ResultProjection.LongAxis),
+            [BlobSchema.ShortAxesPort] = NumberSequence(ResultProjection.ShortAxis),
+            [BlobSchema.ModuleStatusPort] = (long)ResultProjection.ModuStatus,
+            [BlobSchema.BlobStatusesPort] = ResultProjection.BlobStatus.Select(status => (long)status).ToArray(),
+            [BlobSchema.MinGrayValuesPort] = NumberSequence(ResultProjection.MinGrayValue),
+            [BlobSchema.MaxGrayValuesPort] = NumberSequence(ResultProjection.MaxGrayValue),
+            [BlobSchema.GrayContrastsPort] = NumberSequence(ResultProjection.GrayContrast),
+            [BlobSchema.PrincipalAnglesPort] = NumberSequence(ResultProjection.BlobAngle),
             [BlobSchema.Field(8)] = ThresholdMinUsed is int lower ? (object)(long)lower : null, [BlobSchema.Field(9)] = ThresholdMaxUsed is int upper ? (object)(long)upper : null, [BlobSchema.Field(10)] = TypeUsed, [BlobSchema.Field(102)] = SegmentationModeUsed,
-            [BlobSchema.Field(11)] = (long)Count, [BlobSchema.Field(12)] = TotalArea,
+            [BlobSchema.Field(11)] = (long)ResultProjection.BlobNum, [BlobSchema.Field(12)] = TotalArea,
             [BlobSchema.Field(13)] = AverageArea, [BlobSchema.Field(16)] = WhitePixelRatio,
             [BlobSchema.Field(30)] = MinimumArea, [BlobSchema.Field(31)] = MaximumArea,
             [BlobSchema.Field(14)] = AverageCircularity,
             [BlobSchema.Field(15)] = AverageRectangularity,
             [BlobSchema.Field(17)] = Histogram.ToArray(), [BlobSchema.Field(18)] = ChannelMeans.ToArray(),
-            [BlobSchema.Field(19)] = Measurements.Select(x=>x.Area).ToArray(), [BlobSchema.Field(20)] = Measurements.Select(x=>x.Perimeter).ToArray(),
-            [BlobSchema.Field(21)] = Measurements.Select(x=>x.CentroidX).ToArray(), [BlobSchema.Field(22)] = Measurements.Select(x=>x.CentroidY).ToArray(),
-            [BlobSchema.Field(23)] = Measurements.Select(x=>x.Circularity).ToArray(), [BlobSchema.Field(24)] = Measurements.Select(x=>x.Rectangularity).ToArray(),
-            [BlobSchema.Field(25)] = Measurements.Select(x=>x.Bounds.Width).ToArray(), [BlobSchema.Field(26)] = Measurements.Select(x=>x.Bounds.Height).ToArray(),
+            [BlobSchema.Field(19)] = NumberSequence(ResultProjection.Area), [BlobSchema.Field(20)] = NumberSequence(ResultProjection.Perimeter),
+            [BlobSchema.CentroidPointsPort] = new SequenceValue(BlobSchema.CentroidPointsType,ResultProjection.CentroidPoint.Select(BlobSchema.FreezePoint)),
+            [BlobSchema.Field(23)] = NumberSequence(ResultProjection.Circularity), [BlobSchema.Field(24)] = NumberSequence(ResultProjection.Rectangularity),
+            [BlobSchema.AxisAlignedRectanglesPort] = new SequenceValue(BlobSchema.AxisAlignedRectanglesType,
+                ResultProjection.BlobRect.Select(BlobSchema.FreezeAxisAlignedBounds)),
+            [BlobSchema.RectangleTopLeftXPort] = NumberSequence(ResultProjection.BlobRectUpLeftX),
+            [BlobSchema.RectangleTopLeftYPort] = NumberSequence(ResultProjection.BlobRectUpLeftY),
+            [BlobSchema.RectangleBottomRightXPort] = NumberSequence(ResultProjection.BlobRectBottomRightX),
+            [BlobSchema.RectangleBottomRightYPort] = NumberSequence(ResultProjection.BlobRectBottomRightY),
             [BlobSchema.Field(27)] = new SequenceValue(TypeRef.SequenceOf((TypeRef)DataType.Text), Measurements.Select(x=>(object?)$"{(int)x.Bounds.Width}×{(int)x.Bounds.Height}")),
             [BlobSchema.RegionPort] = Region
-        });
+        };
     }
     public void Dispose()
     {

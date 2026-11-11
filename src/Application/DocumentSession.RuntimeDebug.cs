@@ -71,7 +71,7 @@ public sealed partial class DocumentSession
                                 throw new InvalidOperationException("调试捕获期间节点配置已变化。");
                             var node = new ExecutionNodeSnapshot(flow.Id, item.Node.Id, admitted.Configuration, admitted.Definition,
                                 admitted.Directory, admitted.Schema, admitted.SettingsSchema, admitted.DisplaySchema,
-                                admitted.ReferenceBehaviors, admitted.BindingNames, admitted.ActiveInputs, admitted.HostDeclarations,
+                                admitted.ReferenceBehaviors, admitted.BindingNames, admitted.ActiveInputs, admitted.DormantParameterDefaults, admitted.HostDeclarations,
                                 admitted.ManualReferenceSources, _owner);
                             nodes.Add(new(node, item.Enabled));
                         }
@@ -85,7 +85,8 @@ public sealed partial class DocumentSession
                         snapshots.Add(flow.Id, new ExecutionWorkflowSnapshot(flow.Id, ChangeRevision, _directory, _owner, nodes, predecessors, controls, edges));
                     }
                     states[targetFlow] = originalTargetState;
-                    var capturedVariables = CaptureRuntimeVariables(flows, definitions);
+                    var capturedVariables = CaptureRuntimeVariables(flows, definitions,
+                        ReferencedVariableImages(snapshots[targetFlow.Id].Nodes.Where(node => node.Node.NodeId == draft.Node.Id)));
                     variables = capturedVariables.Values;
                     producers = capturedVariables.Producers;
                     if (hostInput is null && previewInputs is null && hostFactory is not null && proposal.Candidate.HostDeclarations.HostInputs is { } declaration)
@@ -101,7 +102,7 @@ public sealed partial class DocumentSession
                                 formal.EnsureCurrent();
                                 if (debugSession.Retirement.IsCancellationRequested || !draft.IsCapturedCurrent(token))
                                     throw new InvalidOperationException("私有调试草稿或编辑器已退役。");
-                            }, debugSession.Id, debugSession.Retirement);
+                            }, debugSession.Id, debugSession.Retirement,draft.CaptureFieldRevisions());
                         createdHost = hostFactory.Create(context);
                         hostInput = createdHost;
                     }
@@ -215,10 +216,11 @@ public sealed class DocumentDebugInvocation : IDisposable
         return result;
     }
     public void Cancel() { try { Volatile.Read(ref _cancellation)?.Cancel(); } catch (ObjectDisposedException) { } }
+    public bool IsCurrent => Volatile.Read(ref _disposed) == 0 && !_owner.IsRetired && _isCurrent();
     public ExecutionInputPreviewLease CaptureInputs() => _invocation.CaptureInputs();
     public void AcceptParameters()
     {
-        if (Volatile.Read(ref _disposed) != 0 || _owner.IsRetired || Volatile.Read(ref _completed) == 0 || Volatile.Read(ref _accepted) != 0 || !_isCurrent())
+        if (Volatile.Read(ref _completed) == 0 || Volatile.Read(ref _accepted) != 0 || !IsCurrent)
             throw new InvalidOperationException("调试结果未成功完成、已接纳或来源已失效。");
         _acceptPrivateValues(_invocation.AcceptedParameters);
         Interlocked.Exchange(ref _accepted, 1);

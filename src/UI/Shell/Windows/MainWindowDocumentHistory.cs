@@ -17,6 +17,10 @@ public partial class MainWindowViewModel
         if(_documentEventOwner is {} manager)manager.SessionChanged-=FormalDocumentSessionChanged;
         _documentEventOwner=null;UnbindFormalSession();
         ReleaseProductionEditors();ClearFormalImageSourceSelection();ReleaseActiveResultView();RetireResultPublication();
+        // 方案会话仍持有正式结果/执行代次时，插件目录不能退役。关闭主窗口时
+        // 由同一会话所有者先丢弃未保存编辑并释放会话资源，再进入目录排空。
+        // 这只用于宿主退出（ReleaseDocumentHost），不改变方案切换语义。
+        DocumentManager.CloseCurrent(discardPendingEdits:true);
     }
     private void UnbindFormalSession()
     {
@@ -43,10 +47,16 @@ public partial class MainWindowViewModel
         if(ReferenceEquals(session,_observedDocumentSession))return;
         UnbindFormalSession();_observedDocumentSession=session;
         if(session is not null){session.Changed+=FormalDocumentChanged;session.RuntimeResultAvailable+=FormalResultAvailable;session.NodeDisplayNavigationChanged+=FormalDisplayNavigationChanged;session.WorkspaceNavigationChanged+=FormalWorkspaceNavigationChanged;}
+        QueueFolderTriggerTracking();
     }
     private void FormalDocumentChanged(object? sender,DocumentChangeSet change)
     {
         if(_documentHostReleased||!ReferenceEquals(sender,_observedDocumentSession)||!ReferenceEquals(sender,DocumentManager.CurrentSession))return;
+        foreach (var item in change.ChangedNodes)
+            if ((item.Aspects & NodeChangedAspect.Configuration) != 0)
+                _formalImageInputs?.RetireFolderCursor(change.EditSessionId, item.Identity.WorkflowId, item.Identity.NodeId);
+        if (!change.ChangedNodes.IsDefaultOrEmpty || !change.ChangedRoots.IsDefaultOrEmpty)
+            QueueFolderTriggerTracking();
         if(!change.RemovedNodes.IsDefaultOrEmpty)CanvasClipboardNodesDeleted(change.RemovedNodes.Select(item=>item.Node).ToArray());
         if(!change.ChangedRoots.IsDefaultOrEmpty)
         {
@@ -83,11 +93,18 @@ public partial class MainWindowViewModel
         OnPropertyChanged(nameof(CanUndoRootWorkspace));OnPropertyChanged(nameof(CanRedoRootWorkspace));OnPropertyChanged(nameof(EditHistoryLocations));
     }
     internal void SetFormalDisplaySelection(SunEyeVision.Domain.Workflows.NodeDefinition node,string? reference)
+        =>SetFormalDisplayNavigation(node,reference,null,replaceOverlays:false);
+    internal void SetFormalDisplayOverlays(SunEyeVision.Domain.Workflows.NodeDefinition node,string? reference,
+        SunEyeVision.Domain.Workflows.ImageOverlaySelection? overlays)
+        =>SetFormalDisplayNavigation(node,reference,overlays,replaceOverlays:true);
+    private void SetFormalDisplayNavigation(SunEyeVision.Domain.Workflows.NodeDefinition node,string? reference,
+        SunEyeVision.Domain.Workflows.ImageOverlaySelection? overlays,bool replaceOverlays)
     {
         var session=DocumentManager.CurrentSession??throw new InvalidOperationException("没有当前方案。");
         var workflowId=WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId??throw new InvalidOperationException("没有当前流程。");
         if(!ReferenceEquals(SelectedNode,node)||!OwnsSelectedDocumentNode(node))throw new InvalidOperationException("图像显示选择已失效。");
-        session.SetNodeDisplayReference(workflowId,node,reference);
+        if(replaceOverlays)session.SetNodeDisplayOverlays(workflowId,node,reference,overlays);
+        else session.SetNodeDisplayReference(workflowId,node,reference);
     }
     private void FormalDisplayNavigationChanged(object? sender,NodeDisplayNavigationChange change)
     {

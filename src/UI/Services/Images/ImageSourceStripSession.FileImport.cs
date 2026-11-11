@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Win32;
+using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
 using SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources;
 using SunEyeVision.UI.Services.Thumbnail;
 using SunEyeVision.UI.Shared;
@@ -40,8 +41,10 @@ public sealed partial class ImageSourceStripSession
             var owner = _dialogOwner?.Invoke(); RequireCurrent(request.ExpectedVersion);
             var dialog = new OpenFileDialog
             {
-                Title = "添加图像", Multiselect = true, CheckFileExists = true,
-                Filter = "图像文件|*.jpg;*.jpeg;*.png;*.bmp;*.tiff;*.tif|所有文件|*.*"
+                Multiselect = true,
+                CheckFileExists = true,
+                CheckPathExists = true,
+                Filter = AppLocalizationService.GetLang("图像文件") + "|*.bmp;*.jpeg;*.jpg;*.png;*.tif;*.tiff"
             };
             bool? accepted = owner is null ? dialog.ShowDialog() : dialog.ShowDialog(owner);
             cancellationToken.ThrowIfCancellationRequested(); RequireCurrent(request.ExpectedVersion);
@@ -126,8 +129,7 @@ public sealed partial class ImageSourceStripSession
                 }
                 // One action, one acceptance. Notifications may cancel or retire this session after acceptance;
                 // no partially accepted chunks and no rollback of already accepted references.
-                // 原本没有当前图像时（空列表首次导入），导入后选中第一张，避免计数停在 (0/N)。
-                var receipt=_source.AddImages(additions,_source.CurrentIndex<0);
+                var receipt=_source.AddImages(additions);
                 if (cancellation.IsCancellationRequested || generation != _fileImportGeneration || !OwnerIsCurrent()) return;
                 if(receipt.ExecutionError is { } failure)
                 {

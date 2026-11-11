@@ -3,28 +3,59 @@
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+ xmlns:foundation="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Foundation"
  mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="700">
  <UserControl.Resources>
   <ResourceDictionary>
    <ResourceDictionary.MergedDictionaries>
     <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Commands/BottomCommands.xaml"/>
    </ResourceDictionary.MergedDictionaries>
+   <DataTemplate x:Key="ToolWindowTitle">
+    <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
+     <TextBlock Text="{Binding Title,RelativeSource={RelativeSource AncestorType=foundation:BaseWindow}}" Foreground="{DynamicResource Col_SubForm_HeaderBrush_Foreground}"
+                VerticalAlignment="Center" Margin="10,0,0,0" FontSize="13" FontWeight="Bold"/>
+     <Button Margin="8,0" ToolTip="{DynamicResource Lang_Help}" WindowChrome.IsHitTestVisibleInChrome="True"
+             Command="{Binding HelpCommand,RelativeSource={RelativeSource AncestorType=foundation:BaseWindow}}">
+      <Image Width="14" Height="14" Stretch="Uniform" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/btn_help.png"/>
+      <Button.Template>
+       <ControlTemplate TargetType="{x:Type Button}">
+        <Border x:Name="border" Width="30" Height="26" Background="Transparent" CornerRadius="2">
+         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+        <ControlTemplate.Triggers>
+         <Trigger Property="IsMouseOver" Value="True">
+          <Setter TargetName="border" Property="Background" Value="{DynamicResource Col_Menubar_Shortcut_Selected_Background}"/>
+         </Trigger>
+        </ControlTemplate.Triggers>
+       </ControlTemplate>
+      </Button.Template>
+     </Button>
+    </StackPanel>
+   </DataTemplate>
   </ResourceDictionary>
  </UserControl.Resources>
  <!-- Original ParamsTabUserControl */Auto/Auto composition. The body owns its existing tabs/scroll. -->
  <Grid Background="#00FFFFFF">
   <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
   <ContentPresenter Content="{Binding EditorContent,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-  <Border Grid.Row="1" Background="#00FFFFFF" CornerRadius="0">
+  <Border x:Name="ExternalSlot" Grid.Row="1" Background="#00FFFFFF" CornerRadius="0">
+   <Border.Style>
+    <Style TargetType="Border">
+     <Style.Triggers>
+      <DataTrigger Binding="{Binding ExternalContent,RelativeSource={RelativeSource AncestorType=UserControl}}" Value="{x:Null}">
+       <Setter Property="Visibility" Value="Collapsed"/>
+      </DataTrigger>
+     </Style.Triggers>
+    </Style>
+   </Border.Style>
    <ContentPresenter HorizontalAlignment="Center" Content="{Binding ExternalContent,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
   </Border>
   <Border Grid.Row="2" Background="{DynamicResource GlobalBorderBg}" CornerRadius="0,0,2,2">
    <Grid>
-    <Button x:Name="ResetButton" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,8,0" Width="24" Height="24"
-            ToolTip="重置运行参数（尚未接入）" ToolTipService.ShowOnDisabled="True" Style="{StaticResource ResetBtnStyle}"
-            Visibility="{Binding ResetVisibility,RelativeSource={RelativeSource AncestorType=UserControl}}"
-            Command="{Binding ResetCommand,RelativeSource={RelativeSource AncestorType=UserControl}}"
-            IsEnabled="{Binding ResetAvailable,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+    <ContentControl Height="32" HorizontalAlignment="Left" Padding="4,4,0,4"
+                    Content=""
+                    ContentTemplate="{StaticResource Button_ResetAlgoParams}"
+                    Visibility="{Binding ResetVisibility,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
    <ItemsControl x:Name="BottomCommands" Height="32" HorizontalAlignment="Right">
     <ItemsControl.Style><Style TargetType="ItemsControl"><Style.Triggers><Trigger Property="ItemsSource" Value="{x:Null}"><Setter Property="Visibility" Value="Collapsed"/></Trigger></Style.Triggers></Style></ItemsControl.Style>
     <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,14,4"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>

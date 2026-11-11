@@ -1,0 +1,10 @@
+dotnet build SunEyeVision.slnx -c Release --no-restore -m:1 -p:HalconSourceRoot=D:\MyWork\SunEyeVision_V2\libs\halcon
+测试、探针及程序未启动；字段104项完整，声明分组不等于视觉通过。
+C:\Users\Administrator\.codex\worktrees\param-window-datatree-project-v2\SunEyeVision_V2\tests\VariableValue.Runtime.Tests\VariableValue.Runtime.Tests.csproj : warning NU1900: 获取包漏洞数据时出错: 无法加载源 https://api.nuget.org/v3/index.json 的服务索引。
+    3308 个警告
+    0 个错误
+
+已用时间 00:00:17.13
+6383779CD2597CAB7FDE3F95DF636C6430D3C728EAE5C30E3556243CDDAB580E  tools/SunEyeVision.BlobAnalysis/Runtime/Resources/BlobParameters.xml
+15CBD54DEFF7D1894829CC02794BD774647DA0BA149D695C8DC7D58F31C54702  tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRunUi.cs
+31B19DCEEF81AD4672930ADC8DAFFFF78FBB9AB513D74A8ADAF18279A17D6CDC  tests/SunEyeVision.Tool.BlobAnalysis.Tests/BlobAnalysisParameterContractTests.cs

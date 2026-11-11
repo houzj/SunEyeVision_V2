@@ -2,6 +2,7 @@ using SunEyeVision.Application;
 using SunEyeVision.Application.Editing;
 using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Contracts.Results.Presentation;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Tool.BlobAnalysis.Runtime;
 using Xunit;
@@ -50,7 +51,7 @@ public sealed class DeclaredBlobResultTests
         var pixels=new byte[64*64];
         foreach(var box in new[]{(X:2,Y:2,W:3,H:3),(X:22,Y:7,W:4,H:5),(X:8,Y:28,W:6,H:7)})
             for(var y=0;y<box.H;y++)for(var x=0;x<box.W;x++)pixels[(box.Y+y)*64+box.X+x]=255;
-        using var host = new Host(new BlobSettings { IsAreaFilterEnabled=true,FilterAreaMin=10,FilterAreaMax=100,SortMode=BlobSortMode.SortModeDecend,OutputBoundary=true }, pixels,64,64);
+        using var host = new Host(new BlobSettings { IsAreaFilterEnabled=true,FilterAreaMin=10,FilterAreaMax=100,SortMode=BlobSortMode.SortModeDecend,FindParameters=new BlobFindParameters { BlobContourType=BlobContourType.SequentialContour } }, pixels,64,64);
         var run=host.Run(); Assert.True(run.Success,string.Join(";",run.Errors));
         var output=(BlobOutput)run.NodeResults[host.Node.Id].Result!.Output!;
         using var reader=run.AcquireDeclaredOutput(Assert.Single(run.DeclaredOutputs).Identity);
@@ -89,11 +90,15 @@ public sealed class DeclaredBlobResultTests
         var pixels=new byte[32*32];
         for(var i=0;i<count;i++)for(var y=0;y<4;y++)for(var x=0;x<4;x++)pixels[(2+(i==2?16:0)+y)*32+2+i*10+x]=255;
 
-        using var host=new Host(new BlobSettings{IsAreaFilterEnabled=false,OutputBlobImage=true,OutputBinaryImage=true,OutputBoundary=true},pixels,32,32);
+        using var host=new Host(new BlobSettings{IsAreaFilterEnabled=false,OutputBlobImage=true,OutputBinaryImage=true,FindParameters=new BlobFindParameters { BlobContourType=BlobContourType.SequentialContour }},pixels,32,32);
         var run=host.Run(); Assert.True(run.Success,string.Join(";",run.Errors));
 
         var publication=Assert.Single(run.DeclaredOutputs);Assert.Equal(BlobSchema.Outputs.Count,publication.Schema.Outputs.Count);
         var first=run.AcquireDeclaredOutput(publication.Identity);var second=run.AcquireDeclaredOutput(publication.Identity);
+        Assert.Equal(NumericStorage.Float32, publication.Schema.Outputs.Single(port => port.Id == BlobSchema.ModuleRunTimePort).Storage);
+        var moduleTime = first.Values!.Get<double>(BlobSchema.ModuleRunTimePort);
+        Assert.True(double.IsFinite(moduleTime) && moduleTime >= 0);
+        Assert.Equal(moduleTime, second.Values!.Get<double>(BlobSchema.ModuleRunTimePort));
         var records=second.Values!.Read(BlobSchema.BlobsPort);Assert.Equal(count,records.Count);
         var ids=new HashSet<long>();
         for(var i=0;i<count;i++)
@@ -124,7 +129,9 @@ public sealed class DeclaredBlobResultTests
             new BlobMeasurement(2, 2, 1d, 0, 0, 0, 0, 0, new BlobBounds(0, 0, 1, 1), new BlobOrientedBounds(0, 0, 1, 1, 0), Array.Empty<Point2>(), Array.Empty<BlobBoundaryPath>(), null!, true)
         };
 
-        var projection = BlobVmResultProjection.Create(measurements, null, null);
+        var geometry = new ResultGeometrySnapshot(new ImageFrameAddress(Guid.NewGuid(), "total-area"),
+            BlobSchema.ImageFrame, true, Array.Empty<ResultGeometryGroup>());
+        var projection = BlobResultProjection.Create(measurements, null, null, geometry);
 
         Assert.Equal((float)16_777_216d, projection.TotalArea);
     }

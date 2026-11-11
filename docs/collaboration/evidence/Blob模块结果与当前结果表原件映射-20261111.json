@@ -1,0 +1,28 @@
+{
+  "kind": "Blob模块结果与当前结果表原件映射",
+  "nativeEvidence": [
+    "D:/MyWork/Rea逆向/docs/COMPOUND-LEAF-MAPPING.md",
+    "D:/MyWork/Rea逆向/docs/plugins/BLOB-ANALYSIS-IDENTITY-SOURCE-INVENTORY.md",
+    "D:/MyWork/Rea逆向/docs/reverse/C03-original-blob-runtime-capture.md"
+  ],
+  "decisions": [
+    {"field":"BlobStatusesPort","nativeCaption":"单体状态","displayInModuleResult":true},
+    {"field":"ModuleRunTimePort","nativeCaption":"模块耗时","displayInModuleResult":false,"reason":"统一使用宿主执行摘要耗时，避免重复模块耗时根字段"},
+    {"field":"BlobsPort","nativeCaption":"Blob明细","displayInModuleResult":false,"reason":"当前结果表消费同一Blob序列，模块结果树不再重复展开整组记录"},
+    {"field":"BlobSchema.BlobsPort","currentResultTable":"BlobResultView -> DeclaredResultTable","sharedPublication":true}
+  ],
+  "sourceOfTruth": {
+    "outputValues": "tools/SunEyeVision.BlobAnalysis/Runtime/Results/BlobOutput.cs",
+    "outputDeclaration": "tools/SunEyeVision.BlobAnalysis/Runtime/Results/BlobSchema.cs",
+    "moduleDisplay": "tools/SunEyeVision.BlobAnalysis/Runtime/Results/BlobOutputDisplay.cs",
+    "currentResultTable": "tools/SunEyeVision.BlobAnalysis/Runtime/Results/BlobResultDisplay.cs + tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobResultView.xaml.cs",
+    "moduleResultConsumer": "src/UI/Services/Monitoring/ResultPresentationPresenter.cs"
+  },
+  "build": "全量Release 0错误、3302警告、17.50秒",
+  "runtime": "未运行，等待人工核对模块结果树和当前结果表",
+  "unconfirmed": [
+    "VM模块结果树完整展开顺序与数组分页",
+    "同一次publication在模块结果、当前结果表、图像叠加中的动态一致性",
+    "Blob结果历史和关闭后的publication租约释放"
+  ]
+}

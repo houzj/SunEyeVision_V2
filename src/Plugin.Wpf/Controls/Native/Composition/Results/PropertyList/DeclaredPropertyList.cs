@@ -211,7 +211,16 @@ public sealed class DeclaredPropertyList : IToolResultView
         return generation;
     }
 
-    private static string ValueText(ResultPresentationNode node,ResultPresentationModel model) => node.ValueState switch
+    private static string ValueText(ResultPresentationNode node,ResultPresentationModel model)
+    {
+        // 主树与属性树共用同一语义投影。序列元素节点不携带 DeclaredPort，
+        // 沿声明地址回溯根端口取显示名（如"单体状态"数组元素 0/1 → 失败/成功）。
+        if (node.ValueState == ResultPresentationValueState.Available && node.ScalarValue is { } scalar &&
+            (node.DeclaredPort ?? node.DeclarationAddress?.RootPort) is { } port &&
+            model.Schema.FindOutputDisplay(port.Id) is { DisplayName: var name } &&
+            ResultSemanticText.TryProject(name, scalar) is { } semantic)
+            return semantic;
+        return node.ValueState switch
     {
         ResultPresentationValueState.Missing => "missing",
         ResultPresentationValueState.Null => "null",
@@ -229,11 +238,13 @@ public sealed class DeclaredPropertyList : IToolResultView
                 string text => text.Length == 0 ? "empty" : text,
                 bool value => value ? "true" : "false",
                 long value => value.ToString(CultureInfo.InvariantCulture),
+                double value when ResultSemanticText.TryProjectFloat32(node.PhysicalStorage, value) is { } float32 => float32,
                 double value => value.ToString("R", CultureInfo.InvariantCulture),
                 _ => "值不可用"
             }
         }
-    };
+        };
+    }
     private static string GeometryText(GeometryValue geometry)
     {
         static string N(double value)=>value.ToString("R",CultureInfo.InvariantCulture);

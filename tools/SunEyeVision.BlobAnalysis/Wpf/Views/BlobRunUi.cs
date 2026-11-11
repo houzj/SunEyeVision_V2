@@ -1,4 +1,3 @@
-using System.IO;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using SunEyeVision.Tool.BlobAnalysis.Runtime;
@@ -15,48 +14,28 @@ namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Views;
 /// </summary>
 internal static class BlobRunUi
 {
-    internal static ToolSettingsViewOptions AddRows(
-        ToolSettingsViewOptions options,
-        IToolSettingsDraft draft,
-        DeclaredSettingsView settingsView,
-        Func<string?> validateSupportedState,
-        Action<BlobRunUiState>? observe = null)
+    internal static ToolSettingsViewOptions Configure(ToolSettingsViewOptions options)
     {
-        ArgumentNullException.ThrowIfNull(options);
-        ArgumentNullException.ThrowIfNull(draft);
-        ArgumentNullException.ThrowIfNull(settingsView);
-        ArgumentNullException.ThrowIfNull(validateSupportedState);
-
-        // These fields are deliberately resolved from the formal VM metadata.
-        // The guard makes a missing/partial resource fail at the current contract
-        // boundary instead of silently falling back to a second visual tree.
-        if (!BlobParameterDefinition.Instance.Contains("HoleMinArea"))
-            throw new InvalidDataException("Blob VM 运行参数元数据不完整：缺少 HoleMinArea。");
-
-        var supportedSort = new HashSet<string>(
-            new[]
-            {
-                "SortFeatureArea",
-                "SortFeaturePerimeter",
-                "SortFeatureCircularity",
-                "SortFeatureRect",
-                "SortFeatureCentroidX",
-                "SortFeatureCentroidY",
-                "SortFeatureRectX",
-                "SortFeatureRectY"
-            },
-            StringComparer.Ordinal);
-
-        var formalState = new BlobRunUiState(draft, settingsView, supportedSort);
-        observe?.Invoke(formalState);
-
-        return options with
+        var definition=BlobParameterDefinition.Instance;
+        var controller=definition.SettingsFieldId(nameof(BlobSettings.SegmentationMode));
+        var conditions=options.ParentConditions?.ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal)
+            ??new Dictionary<string,IReadOnlyList<FieldCondition>>(StringComparer.Ordinal);
+        // Original ThresholdType triggers select the active controls. Apply the
+        // same activity before materialization, including both range endpoints.
+        foreach(var property in BlobThresholdCapabilities.ControlledFields)
         {
-            ValidateUiState = () =>
-            {
-                var previous = options.ValidateUiState?.Invoke();
-                return string.IsNullOrEmpty(previous) ? validateSupportedState() : previous;
-            }
+            var id=definition.SettingsFieldId(property);
+            var hidden=Enum.GetValues<BlobSegmentationMode>()
+                .Where(mode=>!BlobThresholdCapabilities.IsThresholdFieldActive(mode,property))
+                .Select(mode=>new FieldCondition(controller,mode.ToString(),true));
+            conditions[id]=(conditions.GetValueOrDefault(id)??Array.Empty<FieldCondition>()).Concat(hidden).Distinct().ToArray();
+        }
+        // The original advanced expander never exposes OverlapRatio.
+        var suppressed = new HashSet<string>(options.SuppressedFieldRows ?? Enumerable.Empty<string>(), StringComparer.Ordinal)
+        {
+            definition.SettingsFieldId(nameof(BlobFindParameters.OverlapRatio))
         };
+        return options with { ParentConditions = conditions, SuppressedFieldRows = suppressed };
     }
+
 }

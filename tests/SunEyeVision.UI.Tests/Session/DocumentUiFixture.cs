@@ -125,9 +125,12 @@ internal sealed class DocumentUiFixture:IDisposable
     {
         var draft=Session.Editing.Host.BeginEdit(Root.Id,node.Id);draft.ApplyFields(changes.ToDictionary(item=>item.Id,item=>item.Value));Session.CommitEdit(DocumentEditProposal.Prepare(Session.Editing.Host,nodes:new[]{draft}));UiRuntime.Pump();
     }
-    internal string Image(byte gray=51)
+    internal string Image(byte gray=51,int side=2)
     {
-        var file=Path.Combine(DirectoryPath,Guid.NewGuid().ToString("N")+".pgm");File.WriteAllBytes(file,System.Text.Encoding.ASCII.GetBytes("P5\n2 2\n255\n").Concat(new byte[]{gray,gray,gray,gray}).ToArray());return file;
+        var file=Path.Combine(DirectoryPath,Guid.NewGuid().ToString("N")+".pgm");
+        var header=System.Text.Encoding.ASCII.GetBytes($"P5\n{side} {side}\n255\n");
+        File.WriteAllBytes(file,header.Concat(Enumerable.Repeat(gray,side*side)).ToArray());
+        return file;
     }
     internal void ConfigureImage(NodeDefinition node,params string[] files)=>Fields(node,("local.paths",new ConstantSetting(files)),("local.start",new ConstantSetting(0L)));
     internal void Run()

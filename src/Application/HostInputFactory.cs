@@ -9,12 +9,15 @@ public sealed class HostInputFactoryContext
     internal HostInputFactoryContext(ScopedNodeIdentity node, Guid editSessionId, Guid nodeGeneration,
         CancellationToken nodeRetirement, string toolId, ToolSchema inputSchema, ToolSchema settingsSchema,
         FieldSettings fields, IReadOnlyDictionary<string, ConstantSetting> currentValues,
-        HostInputDeclaration declaration, IResourcePathResolver resourcePaths, Action validate, Guid? debugScopeId = null, CancellationToken debugRetirement = default)
+        HostInputDeclaration declaration, IResourcePathResolver resourcePaths, Action validate, Guid? debugScopeId = null, CancellationToken debugRetirement = default,
+        IReadOnlyDictionary<string,Guid>? configurationRevisions=null)
     {
         Node = node; EditSessionId = editSessionId; NodeGeneration = nodeGeneration; NodeRetirement = nodeRetirement;
         ToolId = toolId; InputSchema = inputSchema; SettingsSchema = settingsSchema; Fields = fields;
         CurrentValues = currentValues; Declaration = declaration; ResourcePaths = resourcePaths; _validate = validate;
         DebugScopeId = debugScopeId; DebugRetirement = debugRetirement;
+        ConfigurationRevisions=new System.Collections.ObjectModel.ReadOnlyDictionary<string,Guid>(
+            configurationRevisions?.ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal)??new(StringComparer.Ordinal));
     }
     private readonly Action _validate;
     public void EnsureCurrent() => _validate();
@@ -31,6 +34,7 @@ public sealed class HostInputFactoryContext
     public IReadOnlyDictionary<string, ConstantSetting> CurrentValues { get; }
     public HostInputDeclaration Declaration { get; }
     public IResourcePathResolver ResourcePaths { get; }
+    public IReadOnlyDictionary<string,Guid> ConfigurationRevisions {get;}
 }
 
 /// <summary>Host composition only; returned preparers transfer to a successful run capture.</summary>

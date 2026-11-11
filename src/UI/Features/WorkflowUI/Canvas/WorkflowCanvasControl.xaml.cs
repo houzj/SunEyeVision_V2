@@ -1072,45 +1072,15 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
 
 
-            // 双击事件：打开调试窗口
-
             if (e.ClickCount == 2)
-
             {
-                _canvasBoxSelectionActive = false; ClearCanvasSelectionFrame();
-
-                if (_viewModel?.WorkflowTabViewModel.SelectedTab != null)
-
+                if (node.IsEnabled)
                 {
-
-                    foreach (var n in _viewModel.WorkflowTabViewModel.SelectedTab.DocumentCanvas?.Nodes ?? Enumerable.Empty<CanvasNodeProjection>())
-
-                    {
-
-                        n.IsSelected = (n == node);
-
-                    }
-
+                    _canvasBoxSelectionActive = false;
+                    ClearCanvasSelectionFrame();
+                    _viewModel.OpenDebugWindowCommand.Execute(node.Definition);
                 }
-
-                // 使用 ForceSelectNode 强制更新显示（即使引用相同）
-
-                _viewModel.ForceSelectNode(node.Definition);
-
-
-
-                // 打开调试窗口
-
-                _viewModel.OpenDebugWindowCommand.Execute(node.Definition);
-
-                // 不设置 e.Handled，让事件冒泡到 Port_MouseLeftButtonUp
-
-            // 设置 e.Handled = true 会导致 Port_MouseLeftButtonUp 无法被触发，
-
-            // 从而导致临时连接线无法隐藏
-
                 return;
-
             }
 
 

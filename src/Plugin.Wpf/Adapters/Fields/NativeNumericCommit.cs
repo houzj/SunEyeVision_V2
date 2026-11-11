@@ -152,7 +152,7 @@ internal sealed class NativeNumericCommit : IDisposable
             ||(!_paired&&(numeric<_leaf.Minimum||numeric>_leaf.Maximum))
             ||(_paired&&_owner is not null&&(numeric<_owner.Minimum||numeric>_owner.Maximum))
             ||_leaf.IsNeedCheckExtremumByXML&&(numeric<_leaf.MinValue||numeric>_leaf.MaxValue))
-            throw new ArgumentException("数值超出允许范围。");
+            throw new ArgumentException($"数值超出允许范围：{_state.Port.Id}={numeric}，布局[{_layout?.Minimum},{_layout?.Maximum}]，控件[{_leaf.Minimum},{_leaf.Maximum}]，XML[{_leaf.MinValue},{_leaf.MaxValue}]。");
     }
     public void ValidateStored(ConstantSetting setting)
     {

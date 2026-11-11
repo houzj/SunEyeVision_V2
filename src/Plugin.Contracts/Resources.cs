@@ -1,5 +1,5 @@
 namespace SunEyeVision.Plugin.Contracts;
-public enum PixelLayout { Gray8, Bgr24, Bgra32 }
+public enum PixelLayout { Gray8, Bgr24, Bgra32, Rgb24 }
 /// <summary>Positive stride. Copies and row reads include row padding.</summary>
 public sealed record ImageLayout
 {
@@ -7,13 +7,14 @@ public sealed record ImageLayout
     {
         if(width<=0 || height<=0)throw new ArgumentOutOfRangeException(nameof(width));
         if(!Enum.IsDefined(format))throw new ArgumentOutOfRangeException(nameof(format));
-        int bpp=format switch {PixelLayout.Gray8=>1,PixelLayout.Bgr24=>3,_=>4};
-        if(rowStrideBytes<checked(width*bpp))throw new ArgumentOutOfRangeException(nameof(rowStrideBytes));
-        Width=width;Height=height;RowStrideBytes=rowStrideBytes;Format=format;
+        Width=width;Height=height;Format=format;
+        if(rowStrideBytes<checked(width*BytesPerPixel))throw new ArgumentOutOfRangeException(nameof(rowStrideBytes));
+        RowStrideBytes=rowStrideBytes;
         BufferLength=checked(rowStrideBytes*height);
     }
     public int Width {get;} public int Height {get;} public int RowStrideBytes {get;}
     public PixelLayout Format {get;} public int BufferLength {get;}
+    public int BytesPerPixel => Format switch { PixelLayout.Gray8 => 1, PixelLayout.Bgra32 => 4, _ => 3 };
 }
 /// <summary>Physical frozen provenance, distinct from logical CoordinateFrame.</summary>
 public sealed record ImageFrameAddress

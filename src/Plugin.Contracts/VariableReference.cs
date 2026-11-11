@@ -1,6 +1,6 @@
 namespace SunEyeVision.Plugin.Contracts;
 
-/// <summary>A solution-owned variable identity and expected pure-value declaration.
+/// <summary>A solution-owned variable identity and expected binding declaration.
 /// No node/result identity, current value, name, UI or runtime resource is persisted.</summary>
 public sealed class VariableReference
 {
@@ -9,7 +9,8 @@ public sealed class VariableReference
         ArgumentException.ThrowIfNullOrWhiteSpace(solutionId);
         ArgumentException.ThrowIfNullOrWhiteSpace(variableId);ArgumentNullException.ThrowIfNull(type);
         var element=type.Shape==ValueShape.Sequence?type.Element!:type;
-        if(element.Shape!=ValueShape.Scalar)throw new ArgumentException("Variable references require a pure scalar or scalar sequence declaration.");
+        if(element.Shape!=ValueShape.Scalar && type!=TypeRef.ResourceOf(ResourceKind.Image))
+            throw new ArgumentException("Variable references require a scalar, scalar sequence or single image declaration.");
         NumericStorageRules.ValidateDeclaration(new Port(variableId,type,Storage:storage));
         SolutionId=solutionId;VariableId=variableId;Type=type;Storage=NumericStorageRules.Effective(type,storage);Selection=selection??BindingSelection.All;
         if(Selection is not BindingSelection.AllItems&&type.Shape!=ValueShape.Sequence)

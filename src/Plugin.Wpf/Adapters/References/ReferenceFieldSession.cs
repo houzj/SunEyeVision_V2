@@ -35,7 +35,16 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     private IReadOnlyList<VariableSelectionItem> _variables=Array.Empty<VariableSelectionItem>();
     private IReadOnlyList<VariableSelectionItem> _indexVariables=Array.Empty<VariableSelectionItem>();
     private readonly bool _allowConstantText;
+    private string? _readOnlySummary;
+    private string? VisibleSummary => HasPendingReference ? null : _readOnlySummary;
     private bool CanBrowse=>!_disposed&&!_state.IsDisposed&&(_allowConstantText||_state.IsReferenceMode);
+    internal void SetReadOnlySummary(string? summary)
+    {
+        if (_disposed || _readOnlySummary == summary) return;
+        _readOnlySummary = summary;
+        Notify(nameof(ReadOnlyA));
+        Notify(nameof(CurValueA));
+    }
     private readonly Func<OutputReference,string>? _format;
     private IReadOnlyList<DeclaredReferenceCandidate> _candidates=Array.Empty<DeclaredReferenceCandidate>();
     private IReadOnlyList<DeclaredReferenceCandidate> _indices=Array.Empty<DeclaredReferenceCandidate>();
@@ -63,7 +72,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     public ReferenceTreeNode? SelectedSourceNode {get=>_sourceNode;set=>_sourceNode=value;}
     public ReferenceTreeNode? SelectedIndexNode {get=>_indexNode;set=>_indexNode=value;}
     public bool HasPendingText=>_pendingText is not null||HasPendingReference;
-    public bool ReadOnlyA=>!_allowConstantText&&!_options.EditableIndex;
+    public bool ReadOnlyA=>VisibleSummary is not null||!_allowConstantText&&!_options.EditableIndex;
     public bool IsTextPopupVisible=>_expansion is null;
     public bool SubscribeInPopWindowEnableA=>_expand is not null;
     internal void ClearExpandedSelection(ReferenceExpansionRequest request)
@@ -76,9 +85,10 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     public bool IsTextDropDownOpen {get=>_indexOpen;set{if(_indexOpen==value)return;_indexOpen=value;if(value)_popupGeneration++;Notify(nameof(IsTextDropDownOpen));}}
     public string CurValueA
     {
-        get=>_pendingText??AcceptedText();
+        get=>VisibleSummary??_pendingText??AcceptedText();
         set
         {
+            if (VisibleSummary is not null) return;
             // DeleteTextBox writes an empty string when the visible reference text
             // is already empty. In reference mode that is still an explicit clear
             // request for a retained constant setting.
@@ -100,7 +110,10 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     public ReferenceFieldSession(DeclaredFieldState state,ReferenceFieldOptions options,Func<OutputReference,string>? format,Func<ParameterSetting,bool>? accept=null,Func<bool>? commitGroup=null,Action<ReferenceExpansionRequest>? expand=null,Func<ReferenceExpansionPreference>? preference=null,bool allowConstantText=false,Action<VariableSelectionRequest>? selectVariable=null,Func<bool>? isExpanded=null)
     {
         ArgumentNullException.ThrowIfNull(options.ReadCandidates);
-        _state=state;_options=options;_format=format;_accept=accept??state.TrySet;_commitGroup=commitGroup;_expand=options.Expand??expand;_allowConstantText=allowConstantText;_selectVariable=options.SelectVariable??selectVariable;
+        _state=state;_options=options;_format=format;
+        _accept=accept??(setting=>setting is UnsetSetting&&_readOnlySummary is not null
+            ?state.TryClearProjectedSource():state.TrySet(setting));
+        _commitGroup=commitGroup;_expand=options.Expand??expand;_allowConstantText=allowConstantText;_selectVariable=options.SelectVariable??selectVariable;
         var localPreference=new ReferenceExpansionPreference();_preference=preference??(()=>localPreference);_isExpanded=isExpanded??(()=>options.WindowOwner?.IsExpanded==true);
         DropDownCommand=new SessionCommand(_=>{if(_suspended||!CanBrowse)return;if(_isExpanded())Expand(false);else Refresh();});
         ClickCommand=new SessionCommand(value=>SelectSource(Unwrap(value)));
@@ -203,7 +216,7 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
     private void SelectSource(ReferenceTreeNode? node)
     {
         if(_suspended||!CanBrowse||!ContainsSourceNode(node)||node!.EnumEntrysA.Count!=0)return;
-        if(node.Clear){ClearSource();return;}
+        if(node.Clear){ClearSource(fromSourcePicker:true);return;}
         if(node.VariableManager){OpenVariableSelector();return;}
         if(node.Candidate is not {} candidate)return;
         var selection=DisplaySetting is {} old&&candidate.SelectedType.Shape==ValueShape.Sequence
@@ -223,7 +236,9 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
             var version=_pendingVersion;var popupGeneration=_popupGeneration;
             _state.SetEditError("请选择有效的序列索引后再确认。");
             if(_disposed||version!=_pendingVersion||!HasPendingReference)return true;
-            RestoreSelection();Notify(nameof(CurValueA));
+            RestoreSelection();
+            if(_readOnlySummary is not null)Notify(nameof(ReadOnlyA));
+            Notify(nameof(CurValueA));
             if(popupGeneration==_popupGeneration)RequestClose();
             return true;
         }
@@ -326,12 +341,13 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
 
     public void ObserveText(string text)
     {
-        if(_disposed||text==CurValueA)return;
+        if(_disposed||VisibleSummary is not null||text==CurValueA)return;
         if(!_suspended&&text.Length==0){ClearSource();return;}
         SetPending(text);
     }
-    private void ClearSource()
+    private void ClearSource(bool fromSourcePicker=false)
     {
+        if(_disposed||!fromSourcePicker&&VisibleSummary is not null)return;
         if(_pendingReference is not null){_pendingReference=null;_pendingVersion++;}
         if(!_state.Port.Required){AcceptSetting(new UnsetSetting());return;}
         var generation=_uiGeneration;var pendingVersion=_pendingVersion;var popupGeneration=_popupGeneration;
@@ -489,7 +505,9 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
         if(_pendingReference is {} pending&&(pending.Acceptance!=_state.AcceptanceVersion||!CanBrowse))_pendingReference=null;
         if(_variableRequest is {} variableRequest&&!variableRequest.IsValid)InvalidateVariableSelection();
         if(!CanBrowse||_expansion?.IsIndex==true&&!HasSequenceReference)InvalidateExpansion();
-        RestoreSelection();Notify(nameof(CurValueA));
+        RestoreSelection();
+        if(_readOnlySummary is not null)Notify(nameof(ReadOnlyA));
+        Notify(nameof(CurValueA));
     }
     public void Close()
     {

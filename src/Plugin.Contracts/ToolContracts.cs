@@ -18,13 +18,22 @@ public static class FoundationContract
 }
 public interface IToolSettings<TSelf> { TSelf Freeze(); }
 public interface IToolOutput { IReadOnlyDictionary<string, object?> ToValues(); }
-public sealed record Diagnostic(string Code, string Message, string? FieldId = null);
+public sealed record Diagnostic(string Code, string Message, string? FieldId = null)
+{
+    /// <summary>An evidenced native return value, independent of the host diagnostic identity; null means unavailable.</summary>
+    public uint? NativeErrorCode { get; init; }
+}
 public enum BusinessJudgment { NotEvaluated, Pass, Fail }
-public sealed record ToolOutcome<T>(bool Success, T? Output, BusinessJudgment Judgment, IReadOnlyList<Diagnostic> Diagnostics)
+public sealed record ToolOutcome<T>(bool Success, T? Output, BusinessJudgment Judgment, IReadOnlyList<Diagnostic> Diagnostics, bool Suppressed = false)
     where T : class, IToolOutput
 {
     public static ToolOutcome<T> Completed(T output, BusinessJudgment judgment=BusinessJudgment.NotEvaluated) => new(true,output,judgment,Array.Empty<Diagnostic>());
     public static ToolOutcome<T> Failed(string code,string message) => new(false,null,BusinessJudgment.NotEvaluated,new[]{new Diagnostic(code,message)});
+}
+/// <summary>Pure admission against already frozen settings, evaluated before host input acquisition.</summary>
+public interface IToolExecutionFilter
+{
+    bool ShouldExecute(object settings);
 }
 /// <summary>RequestId is the original admission Guid, never a derived counter or hash.</summary>
 public readonly record struct RunIdentity(Guid DocumentSessionId, Guid RunId, Guid ScopeId, string NodeId, Guid RequestId);
@@ -58,7 +67,7 @@ public interface IToolSession<TSettings,TOutput> : IToolSession
     {
         if(invocation.Settings is not TSettings settings)throw new ArgumentException("Runtime invocation settings type differs.",nameof(invocation));
         var result=await ExecuteAsync(new ToolInvocation<TSettings>(settings,invocation.Inputs,invocation.Context,invocation.OutputRequests)).ConfigureAwait(false);
-        return new(result.Success,result.Output,result.Judgment,result.Diagnostics);
+        return new(result.Success,result.Output,result.Judgment,result.Diagnostics,result.Suppressed);
     }
 }
 public sealed class ToolInvocation<TSettings> where TSettings : IToolSettings<TSettings>
@@ -102,6 +111,19 @@ public sealed class OutputValueRequest
 public interface ILocalImageReadContext
 {
     string AcceptLocalImage();
+}
+/// <summary>Optional owner-scoped cache for the admitted local path. Every returned value is caller-owned.</summary>
+public interface ILocalImageCacheContext
+{
+    T OpenLocalImage<T>(string address, Func<T> load, Func<T,T> clone) where T : class, IDisposable;
+}
+/// <summary>Image-source-owned processing state borrowed until this invocation drains.
+/// The host owns its lifetime, while the tool supplies and operates the disposable state.</summary>
+public interface IImageSourceProcessingContext
+{
+    T GetProcessingState<T>(Func<T> create) where T : class, IDisposable;
+    /// <summary>Frozen revision of an admitted setting; changes reflect accepted edits, not runtime readback.</summary>
+    Guid GetConfigurationRevision(string fieldId);
 }
 /// <summary>Restricted invocation capabilities; deliberately no graph, UI, arbitrary service locator or writable globals.</summary>
 public interface IToolExecutionContext

@@ -14,17 +14,26 @@ public sealed class ResultPresentationModel
         ArgumentNullException.ThrowIfNull(schema);
         if (pageSize <= 0) throw new ArgumentOutOfRangeException(nameof(pageSize));
         if (!Enum.IsDefined(state)) throw new ArgumentOutOfRangeException(nameof(state));
-        var hasValues=state is ResultViewState.Success or ResultViewState.PartialSuccess;
-        if (hasValues) ArgumentNullException.ThrowIfNull(values);
+        if (state is ResultViewState.Success or ResultViewState.PartialSuccess) ArgumentNullException.ThrowIfNull(values);
+        var hasValues=values is not null&&(state is ResultViewState.Success or ResultViewState.PartialSuccess or ResultViewState.Failed or ResultViewState.Timeout);
         Schema = schema;
         Stamp=stamp;
         Identity = stamp.Invocation;
         State = state;
         PageSize = pageSize;
-        var outputs = new ResultPresentationNode[schema.Outputs.Count];
+        // VM's result declaration owns the visible root order. Keep the declared
+        // port identities and value contract intact, while projecting roots in
+        // OutputDisplay order. Tools without a display declaration retain the
+        // schema order as a deterministic fallback.
+        var outputOrder = schema.OutputDisplay.Select(node => node.FieldId)
+            .Concat(schema.Outputs.Select(port => port.Id))
+            .Distinct(StringComparer.Ordinal)
+            .Select(id => schema.Outputs.Single(port => port.Id == id))
+            .ToArray();
+        var outputs = new ResultPresentationNode[outputOrder.Length];
         for (var index = 0; index < outputs.Length; index++)
         {
-            var port = schema.Outputs[index];
+            var port = outputOrder[index];
             // A resource leaf is never read. Mixed containers are observed only transiently;
             // their navigation path keeps weak publication/lease identities, not a parent reader.
             var reader=hasValues&&port.Type.Shape!=ValueShape.Resource?values!.Read(port.Id):null;
@@ -90,12 +99,13 @@ public sealed class ResultPresentationNode
     private readonly GeometryValue? _geometry;
     private readonly Dictionary<int, ResultPresentationNode> _children = new();
 
-    internal ResultPresentationNode(string key, TypeRef declaration, Port? port, int? elementIndex, int pageSize, DeclaredValueReader? reader = null,GeometryValue? geometry=null,Func<bool>? isCurrent=null,ResultValuePath? path=null,ResultDeclarationAddress? address=null,bool allProjection=false)
+    internal ResultPresentationNode(string key, TypeRef declaration, Port? port, int? elementIndex, int pageSize, DeclaredValueReader? reader = null,GeometryValue? geometry=null,Func<bool>? isCurrent=null,ResultValuePath? path=null,ResultDeclarationAddress? address=null,bool allProjection=false,NumericStorage? elementStorage=null)
     {
         _isCurrent=isCurrent;_path=path;DeclarationAddress=address;IsAllProjection=allProjection;
         Key = key;
         Declaration = declaration;
         DeclaredPort = port;
+        PhysicalStorage = port?.Storage ?? elementStorage;
         ElementIndex = elementIndex;
         _pageSize = pageSize;
         if (reader != null && reader.Declaration != declaration)
@@ -117,6 +127,7 @@ public sealed class ResultPresentationNode
     public string Key { get; }
     public TypeRef Declaration { get; }
     public Port? DeclaredPort { get; }
+    public NumericStorage? PhysicalStorage { get; }
     public int? ElementIndex { get; }
     public bool IsExpanded { get; set; }
     public ResultPresentationValueState ValueState { get; }
@@ -190,7 +201,7 @@ public sealed class ResultPresentationNode
                 else
                 {
                     var key = Key + "/i" + index.ToString(CultureInfo.InvariantCulture);
-                    child = new ResultPresentationNode(key, Declaration.Element!, null, index, _pageSize, ChildReader(null,index,Declaration.Element!),isCurrent:_isCurrent,path:_path?.Element(index),address:DeclarationAddress?.Sample());
+                    child = new ResultPresentationNode(key, Declaration.Element!, null, index, _pageSize, ChildReader(null,index,Declaration.Element!),isCurrent:_isCurrent,path:_path?.Element(index),address:DeclarationAddress?.Sample(),elementStorage:PhysicalStorage);
                 }
                 if(!Current)return Array.Empty<ResultPresentationNode>();
                 _children.Add(index, child);

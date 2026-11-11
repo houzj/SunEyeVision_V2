@@ -4,6 +4,8 @@
                     xmlns:vm_port_1="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.Interaction.ListView"
                     xmlns:localcontrol="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamTabControl"
                     xmlns:fields="clr-namespace:SunEyeVision.Plugin.Wpf.Fields"
+                    xmlns:pathUi="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.Interaction.Commom"
+                    xmlns:referenceUi="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.References.Primitives"
                     xmlns:i="http://schemas.microsoft.com/xaml/behaviors">
   <!--
     原参数行模板族（迁自 VM paramusercontroldatatemplate.xaml，仅保留生产链用到的族）。
@@ -17,6 +19,7 @@
     <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/IntegerRadioResources.xaml"/>
     <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/References/ReferenceField.xaml"/>
     <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Text/TextField.xaml"/>
+    <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/ParameterPresentation/resourcedictionaries/BooleanStateTips.xaml"/>
   </ResourceDictionary.MergedDictionaries>
 
   <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter"/>
@@ -24,7 +27,7 @@
 
   <!-- 数值输入（无滑条模式）：静态上下界/步长来自行投影，值由数值协调器驱动 -->
   <DataTemplate x:Key="NumericField_sub">
-    <vm_port_1:NumericControl Minimum="{Binding MinValueA}" Maximum="{Binding MaxValueA}" Increment="{Binding IncValueA}"
+    <vm_port_1:NumericControl Minimum="{Binding MinValueA}" Maximum="{Binding MaxValueA}" MinValue="{Binding MinValueA}" MaxValue="{Binding MaxValueA}" Increment="{Binding IncValueA}"
                               Foreground="#666666" FontSize="14" HorizontalAlignment="Stretch"/>
   </DataTemplate>
 
@@ -59,7 +62,7 @@
             </Grid.ColumnDefinitions>
             <ContentControl ContentTemplate="{StaticResource NumericField_sub}" Content="{Binding}"
                             Visibility="{Binding IsSubA, Converter={StaticResource inverseBoolToVisibilityConverter}}"/>
-            <ContentControl ContentTemplate="{StaticResource ButtonSelecter_sub}" Content="{Binding SubDataA}"
+            <ContentControl ContentTemplate="{StaticResource ButtonSelecter_sub}" Content="{Binding ReferenceDataA}"
                             HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
                             Visibility="{Binding IsSubA, Converter={StaticResource bool2VisibilityConverter}}"/>
             <ToggleButton Grid.Column="1" Width="26" Height="26" Margin="5,0,0,0"
@@ -117,10 +120,10 @@
               <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <Grid>
-              <ContentControl ContentTemplate="{StaticResource StringConfig_sub}" Content="{Binding SubDataA}"
+              <ContentControl ContentTemplate="{StaticResource StringConfig_sub}" Content="{Binding TextDataA}"
                               HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
                               Visibility="{Binding IsSubA, Converter={StaticResource inverseBoolToVisibilityConverter}}"/>
-              <ContentControl ContentTemplate="{StaticResource ButtonSelecter_sub}" Content="{Binding SubDataA}"
+              <ContentControl ContentTemplate="{StaticResource ButtonSelecter_sub}" Content="{Binding ReferenceDataA}"
                               HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
                               Visibility="{Binding IsSubA, Converter={StaticResource bool2VisibilityConverter}}"/>
             </Grid>
@@ -141,12 +144,39 @@
     </localParamTab:LeftRightControl>
   </DataTemplate>
 
+  <DataTemplate x:Key="OpenFileDialog">
+    <localParamTab:LeftRightControl Height="34">
+      <localParamTab:LeftRightControl.RightContent>
+        <Grid>
+          <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+          <referenceUi:DeleteTextBox DataContext="{Binding TextDataA}" Background="Transparent" BorderThickness="0"
+                        FontSize="14" Foreground="{DynamicResource TextBox.Normal.Forground}" VerticalAlignment="Center"
+                        Text="{Binding RawText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ToolTip="{Binding RawText}"/>
+          <pathUi:SuperImageButton Grid.Column="1" Margin="0,-1,0,1" Command="{Binding BrowseFolderCommand}">
+            <pathUi:SuperImageButton.NormalConnent><Image Stretch="None" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/ParameterPresentation/resources/ic_文件路径_normal.png"/></pathUi:SuperImageButton.NormalConnent>
+            <pathUi:SuperImageButton.PressedConnent><Image Stretch="None" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/ParameterPresentation/resources/ic_文件路径_click.png"/></pathUi:SuperImageButton.PressedConnent>
+            <pathUi:SuperImageButton.MOverConnent><Image Stretch="None" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/ParameterPresentation/resources/ic_文件路径_hover.png"/></pathUi:SuperImageButton.MOverConnent>
+          </pathUi:SuperImageButton>
+          <Border Grid.ColumnSpan="2" IsHitTestVisible="False" BorderThickness="1" CornerRadius="4" BorderBrush="{DynamicResource TextBox.Static.Border}"/>
+        </Grid>
+      </localParamTab:LeftRightControl.RightContent>
+    </localParamTab:LeftRightControl>
+  </DataTemplate>
+
   <!-- Reference：内联常量|订阅（原 ButtonSelecter 订阅行） -->
   <DataTemplate x:Key="Reference">
     <localParamTab:LeftRightControl Height="32">
       <localParamTab:LeftRightControl.RightContent>
-        <ContentControl ContentTemplate="{StaticResource ButtonSelecter_sub}" Content="{Binding SubDataA}"
+        <ContentControl ContentTemplate="{StaticResource ButtonSelecter_sub}" Content="{Binding ReferenceDataA}"
                         HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
+      </localParamTab:LeftRightControl.RightContent>
+    </localParamTab:LeftRightControl>
+  </DataTemplate>
+
+  <DataTemplate x:Key="EnumerationG">
+    <localParamTab:LeftRightControl Height="32">
+      <localParamTab:LeftRightControl.RightContent>
+        <ContentPresenter Content="{Binding ImageSourceSelector}" />
       </localParamTab:LeftRightControl.RightContent>
     </localParamTab:LeftRightControl>
   </DataTemplate>
@@ -216,7 +246,7 @@
                       ItemsSource="{Binding EnumEntrysA}" DisplayMemberPath="DisplayNameALang" SelectedValuePath="ValueA"
                       SelectedValue="{Binding CurValueA, Mode=TwoWay}">
               <ComboBox.ItemContainerStyle>
-                <Style TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+                <Style TargetType="ComboBoxItem" BasedOn="{StaticResource SourceComboBoxItemStyle}">
                   <Setter Property="IsEnabled" Value="{Binding IsAvailable}"/>
                   <Setter Property="ToolTip" Value="{Binding UnavailableReason}"/>
                   <Setter Property="ToolTipService.ShowOnDisabled" Value="True"/>
@@ -233,6 +263,7 @@
       </localParamTab:LeftRightControl.RightContent>
     </localParamTab:LeftRightControl>
   </DataTemplate>
+
 
   <!-- 范围组合：SliderArrange SliderType=between，全部由范围行宿主接线 -->
   <DataTemplate x:Key="IntegerBettween">

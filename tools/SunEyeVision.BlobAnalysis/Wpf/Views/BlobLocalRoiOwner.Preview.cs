@@ -15,20 +15,29 @@ internal sealed partial class BlobLocalRoiOwner
     private DispatcherOperation? _previewRefresh;
     private long _previewRequest,_previewRevision;
     private bool _previewing,_previewAgain;
-    private readonly List<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldRow> _previewFields=new();
+    private readonly HashSet<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldRow> _previewFields=new();
     internal string PreviewError {get;private set;}="";
     private void InitializePreview()
     {
         _controls.Loaded+=PreviewLoaded;_controls.Unloaded+=PreviewUnloaded;_controls.IsVisibleChanged+=PreviewVisibilityChanged;
-        foreach(var field in _inputs.Fields.Where(field=>field.FieldId==BlobTool.ImageInput||BlobRoiInheritance.Ports.Any(port=>port.Id==field.FieldId)))
-        {_previewFields.Add(field);field.Changed+=QueuePreview;}
+        TrackPreviewSources();
         if(_source is not null)_source.Changed+=QueuePreview;
+    }
+    private void TrackPreviewSources()
+    {
+        foreach(var field in _inputs.Fields)
+        {
+            var id=field.FieldId;
+            if((id==BlobTool.ImageInput||id==BlobMaskInheritance.SourceId||BlobRoiInheritance.Ports.Any(port=>port.Id==id))
+                &&_previewFields.Add(field))
+                field.Changed+=QueuePreview;
+        }
     }
     private void PreviewLoaded(object sender,RoutedEventArgs args){if(ReferenceEquals(args.OriginalSource,_controls))QueuePreview();}
     private void PreviewUnloaded(object sender,RoutedEventArgs args){if(ReferenceEquals(args.OriginalSource,_controls))RetireFrame();}
     private void PreviewVisibilityChanged(object sender,DependencyPropertyChangedEventArgs args)
     {if(_controls.IsVisible)QueuePreview();else RetireFrame();}
-    private string PreviewMode()=>_inputs.ReadUnpresentedInput(BlobRoiInheritance.ModeId) switch
+    private string PreviewMode()=>_controls.IsImageArea?BlobRoiInheritance.Local:_inputs.ReadUnpresentedInput(BlobRoiInheritance.ModeId) switch
     {UnsetSetting=>BlobRoiInheritance.Local,ConstantSetting{Value:string mode}=>BlobRoiInheritance.ValidateMode(mode),_=>throw new InvalidOperationException("ROI继承方式无效。")};
     private void QueuePreview()
     {
@@ -48,7 +57,8 @@ internal sealed partial class BlobLocalRoiOwner
         _previewing=true;NativeRoiInputLease? inputs=null;NativeResultViewport.ReadOnlyRoiLayer? layer=null;
         try
         {
-            var mode=PreviewMode();if(mode==BlobRoiInheritance.Local)return;
+            var mode=PreviewMode();var maskInherited=_controls.IsInheritedMask;
+            if(mode==BlobRoiInheritance.Local&&!maskInherited)return;
             if(!FrameCurrent(_generation)){AcquireFrame();if(request!=_previewRequest){if(FrameCurrent(_generation))QueuePreview();return;}}
             var frame=_frame;var generation=_generation;
             bool OwnerCurrent(){var valid=!_disposed&&request==_previewRequest&&generation==_generation&&ReferenceEquals(frame,_frame)&&frame is not null&&FrameCurrent(generation)&&_controls.IsLoaded&&_controls.IsVisible;return valid&&!_disposed&&request==_previewRequest&&generation==_generation&&ReferenceEquals(frame,_frame);}
@@ -57,23 +67,28 @@ internal sealed partial class BlobLocalRoiOwner
             {
                 BlobRoiInheritance.Rectangle=>new[]{BlobRoiInheritance.RectangleSource},
                 BlobRoiInheritance.Annulus=>new[]{BlobRoiInheritance.AnnulusSource},
+                BlobRoiInheritance.Local=>Array.Empty<string>(),
                 BlobRoiInheritance.RectangleParameters=>BlobRoiInheritance.RectangleMembers.Select(member=>BlobRoiInheritance.Leaf(mode,member)).ToArray(),
                 _=>BlobRoiInheritance.AnnulusMembers.Select(member=>BlobRoiInheritance.Leaf(mode,member)).ToArray()
-            }).Concat(new[]{BlobTool.ImageInput,BlobRoiInheritance.ModeId}).ToArray();
+            }).Concat(new[]{BlobTool.ImageInput,BlobRoiInheritance.ModeId})
+                .Concat(maskInherited?new[]{BlobMaskInheritance.ModeId,BlobMaskInheritance.SourceId}:Array.Empty<string>()).ToArray();
             inputs=_source?.CaptureInputs(ids)??throw new InvalidOperationException("继承来源预览尚未就绪。");
             if(!OwnerCurrent()||!inputs.IsCurrent||!OwnerCurrent())return;
             var image=inputs.Inputs.Get<IReadOnlyImage>(BlobTool.ImageInput);
             if(image.Frame!=frame!.Image.Frame||image.EffectiveDomain.Frame!=frame.Image.EffectiveDomain.Frame)
                 throw new InvalidOperationException("继承输入与可见图像不是同一物理帧和坐标域。");
-            var root=BlobRoiInheritance.Materialize(inputs.Inputs,Read())!;
-            var rows=BlobLocalRoi.Items(root,BlobLocalRoi.Inspection).Select(item=>new RoiEditItem(BlobLocalRoi.Inspection,Guid.ParseExact(item.Get<string>("id"),"N"),item.Get<string>("name"),BlobLocalRoiProjection.ToNative(item.Get<RecordValue>("shape")),Enabled:false,Visible:true)).ToArray();
+            var root=BlobMaskInheritance.Materialize(inputs.Inputs,BlobRoiInheritance.Materialize(inputs.Inputs,Read()))!;
+            var rows=(mode==BlobRoiInheritance.Local?Enumerable.Empty<RoiEditItem>():Items(BlobLocalRoi.Inspection))
+                .Concat(maskInherited?Items(BlobLocalRoi.Mask):Enumerable.Empty<RoiEditItem>()).ToArray();
+            IEnumerable<RoiEditItem> Items(string group)=>BlobLocalRoi.Items(root,group)
+                .Select(item=>new RoiEditItem(group,Guid.ParseExact(item.Get<string>("id"),"N"),item.Get<string>("name"),
+                    BlobLocalRoiProjection.ToNative(item.Get<RecordValue>("shape")),Enabled:false,Visible:true));
             if(!OwnerCurrent()||!inputs.IsCurrent||!OwnerCurrent())return;
             var captured=inputs;layer=frame.CreateReadOnlyLayer();
             bool Current()=>OwnerCurrent()&&captured.IsCurrent&&OwnerCurrent();
             if(!layer.Present(frame.Receipt,++_previewRevision,rows,Current)||!Current())return;
-            _previewInputs=inputs;inputs=null;_previewLayer=layer;layer=null;PreviewError="";
+            _previewInputs=inputs;inputs=null;_previewLayer=layer;layer=null;
             if(_interaction is null&&_controls.IsLocalDrawing(BlobLocalRoi.Mask)&&BlobLocalRoi.Items(Read(),BlobLocalRoi.Mask).Any(item=>item.Get<bool>("enabled")&&item.Get<bool>("visible")))Activate(BlobLocalRoi.Mask);
-            _controls.ToolTip="继承区域为只读预览；图像区域、屏蔽继承及输出掩膜尚未实现。";
         }
         catch(Exception failure)
         {
@@ -90,6 +105,11 @@ internal sealed partial class BlobLocalRoiOwner
     {
         ++_previewRequest;var pending=_previewRefresh;_previewRefresh=null;
         var layer=_previewLayer;_previewLayer=null;var inputs=_previewInputs;_previewInputs=null;
+        if (PreviewError.Length != 0)
+        {
+            PreviewError = "";
+            _controls.ClearValue(FrameworkElement.ToolTipProperty);
+        }
         Run(new Action[]{()=>pending?.Abort(),()=>layer?.Dispose(),()=>inputs?.Dispose()});
     }
     private void DisposePreview()

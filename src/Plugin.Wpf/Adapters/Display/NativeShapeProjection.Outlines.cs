@@ -26,7 +26,7 @@ internal static partial class NativeShapeProjection
             var bytes=new byte[checked(points.Length*16)];
             for(var i=0;i<points.Length;i++)
             {
-                NativeResultRaster.CheckCurrent(current);
+                if ((i & 255) == 0) NativeResultRaster.CheckCurrent(current);
                 var x=(float)points[i].X;var y=(float)points[i].Y;
                 if(!float.IsFinite(x)||!float.IsFinite(y))throw new ArgumentException("轮廓坐标超出原float点集范围。");
                 var record=bytes.AsSpan(i*16,16);

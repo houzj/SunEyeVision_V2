@@ -15,7 +15,7 @@ namespace SunEyeVision.Plugin.Wpf.Presenters.Display;
 
 public sealed record NativeResultFrameReceipt(Guid OwnerId, long Epoch, ImageFrameAddress Frame, CoordinateFrame Coordinates);
 
-/// <summary>Single owner of an original image view. Regions use its real raster-layer entry, not approximated shapes.</summary>
+/// <summary>Single owner of an original image view and its raster layers.</summary>
 public sealed partial class NativeResultViewport : IDisposable
 {
     private static readonly ConditionalWeakTable<FrameworkElement, NativeResultViewport> Owners = new();
@@ -34,6 +34,15 @@ public sealed partial class NativeResultViewport : IDisposable
     public FrameworkElement View => _view;
     public ImageLayout? Layout => _frame?.OriginalLayout;
     public NativeResultFrameReceipt? CurrentFrame => _frame is {} frame ? new(_ownerId, _epoch, frame.Frame, frame.Coordinates) : null;
+    public (int Width,int Height) OverlaySamplingSize
+    {
+        get
+        {
+            var width=(int)_view.GetImageViewWidth();
+            var height=(int)_view.GetImageViewHeight();
+            return (width>0?width:920,height>0?height:517);
+        }
+    }
 
     public NativeResultViewport(NativeResultRasterLimits? limits = null, NativeResultShapeLimits? shapeLimits = null)
         : this(new ImageViewBox(), limits ?? new(), shapeLimits ?? new()) { }
@@ -47,6 +56,12 @@ public sealed partial class NativeResultViewport : IDisposable
             throw new InvalidOperationException("原图像视口仍有显示所有者或绑定，不能并存第二条图像路径。");
         shapeLimits.Validate(); _shapeLimits = shapeLimits;
         _view = view; _limits = limits; _prepareExport = PrepareExport;
+        // 结果叠加层是只读呈现层。按原件结果视图的交互边界，图形/文本不应
+        // 抢占画布的平移命中测试；平移、缩放始终由 ImageViewBox 处理。
+        // ROI 编辑视图另走 NativeRoiViewport，不复用此呈现器。
+        view.ShapeHitTestVisible = false;
+        view.ROIHitTestVisible = false;
+        view.ImageDragEanble = true;
         _templateDescriptor = DependencyPropertyDescriptor.FromProperty(Control.TemplateProperty, typeof(ImageViewBox));
         Owners.Add(view, this);
         try
@@ -100,7 +115,7 @@ public sealed partial class NativeResultViewport : IDisposable
         return valid && Owns(receipt.Epoch, frame) && ReferenceEquals(proof, _imageCurrent) && receipt == CurrentFrame;
     }
 
-    public bool BindImage(IReadOnlyImage image, Func<bool> isCurrent)
+    public bool BindImage(IReadOnlyImage image, Func<bool> isCurrent, bool preserveShapeLayers = false)
     {
         _view.Dispatcher.VerifyAccess(); ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(image); ArgumentNullException.ThrowIfNull(isCurrent);
@@ -123,7 +138,7 @@ public sealed partial class NativeResultViewport : IDisposable
                 foreach (var layer in _layers.ToArray())
                 { if (!Owns(epoch, candidate)) break; layer.RetireFrame(); }
                 if (Owns(epoch, candidate)) RetireRoi();
-                if (Owns(epoch, candidate)) RetireShapes(() => Owns(epoch, candidate));
+                if (Owns(epoch, candidate) && !preserveShapeLayers) RetireShapes(() => Owns(epoch, candidate));
                 if (Owns(epoch, candidate)) _view.ImageName = null;
                 if (Owns(epoch, candidate)) _view.ImageDataSource = candidate;
                 if (Owns(epoch, candidate))
@@ -134,7 +149,7 @@ public sealed partial class NativeResultViewport : IDisposable
         catch (Exception error)
         {
             failure = error;
-            if (attached && Owns(epoch, candidate)) Clean(Retire);
+            if (attached && Owns(epoch, candidate)) Clean(() => Retire());
         }
         if (!attached) Clean(candidate.Dispose); else Clean(() => previous?.Dispose());
         var receipt = new NativeResultFrameReceipt(_ownerId, epoch, candidate.Frame, candidate.Coordinates);
@@ -143,7 +158,7 @@ public sealed partial class NativeResultViewport : IDisposable
             try { valid = attached && AttemptCurrent() && Current(receipt); } catch (Exception error) { failure = error; }
         if (failure is not null)
         {
-            if (attached && Owns(epoch, candidate)) Clean(Retire);
+            if (attached && Owns(epoch, candidate)) Clean(() => Retire());
             System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
         }
         if (valid) QueueRefresh(); else if (Owns(epoch, candidate)) Retire();
@@ -207,18 +222,19 @@ public sealed partial class NativeResultViewport : IDisposable
         RefreshShapes();
         if (_roiAttachment is {} editing && !editing.IsCurrent) DetachRoi(editing);
     }
-    public void Clear()
+    public void Clear(bool preserveShapeLayers = false)
     {
-        _view.Dispatcher.VerifyAccess(); ObjectDisposedException.ThrowIf(_disposed, this); Retire();
+        _view.Dispatcher.VerifyAccess(); ObjectDisposedException.ThrowIf(_disposed, this); Retire(preserveShapeLayers);
     }
-    private void Retire()
+    private void Retire(bool preserveShapeLayers = false)
     {
         ++_request; var epoch = ++_epoch; var frame = _frame; _frame = null; _imageCurrent = null;
         var refresh = _refresh; _refresh = null;
         var actions = new List<Action> { () => refresh?.Abort() };
         actions.Add(() => { if (epoch == _epoch) RetireRoi(); });
         actions.AddRange(_layers.ToArray().Select<RegionLayer, Action>(layer => () => { if (epoch == _epoch) layer.RetireFrame(); }));
-        actions.Add(() => { if (epoch == _epoch) RetireShapes(() => epoch == _epoch); });
+        if (!preserveShapeLayers)
+            actions.Add(() => { if (epoch == _epoch) RetireShapes(() => epoch == _epoch); });
         actions.Add(() => { if (epoch == _epoch && Owners.TryGetValue(_view, out var owner) && ReferenceEquals(owner, this)) _view.ImageDataSource = null; });
         actions.Add(() => { if (epoch == _epoch && Owners.TryGetValue(_view, out var owner) && ReferenceEquals(owner, this)) _view.ImageName = null; });
         actions.Add(() => frame?.Dispose()); ParameterCleanup.Run(actions);
@@ -228,7 +244,7 @@ public sealed partial class NativeResultViewport : IDisposable
         _view.Dispatcher.VerifyAccess(); if (_disposed) return; _disposed = true;
         _view.Loaded -= Loaded;
         _view.SizeChanged -= SizeChanged; _view.PropertyChanged -= ViewChanged;
-        var actions = new List<Action> { () => _templateDescriptor.RemoveValueChanged(_view, TemplateChanged), Retire };
+        var actions = new List<Action> { () => _templateDescriptor.RemoveValueChanged(_view, TemplateChanged), () => Retire() };
         actions.Add(() => { if (ReferenceEquals(_view.NativePrepareExport, _prepareExport)) _view.NativePrepareExport = null!; });
         actions.AddRange(_layers.ToArray().Select<RegionLayer, Action>(layer => layer.Dispose));
         actions.AddRange(_shapeLayers.ToArray().Select<ShapeLayer, Action>(layer => layer.Dispose));
@@ -248,9 +264,36 @@ public sealed partial class NativeResultViewport : IDisposable
         internal RegionLayer(NativeResultViewport owner, int zIndex)
         { _owner = owner; Panel.SetZIndex(_image, zIndex); RenderOptions.SetBitmapScalingMode(_image, BitmapScalingMode.NearestNeighbor); }
         public bool Present(NativeResultFrameReceipt receipt, long revision, IReadOnlyRegion region, Color color, Func<bool> isCurrent)
+            =>PresentCore(receipt,revision,isCurrent,(owner,current)=>
+            {
+                var frame=owner._frame!;
+                var runs=NativeResultRaster.Read(region,receipt.Frame,receipt.Coordinates,frame.Width,frame.Height,owner._limits,current);
+                var pixels=NativeResultRaster.Paint(frame.Width,frame.Height,runs,color,owner._limits,current);
+                return (pixels,frame.Width,frame.Height);
+            });
+
+        public bool PresentImage(NativeResultFrameReceipt receipt,long revision,IReadOnlyImage image,byte opacity,Func<bool> isCurrent)
+            =>PresentCore(receipt,revision,isCurrent,(owner,current)=>
+            {
+                using var frame=new NativeResultImageFrame(image,owner._limits,current);
+                var (width,height)=owner.OverlaySamplingSize;
+                if(frame.Width<width||frame.Height<height)
+                {
+                    var ratio=(double)width/height;
+                    if(ratio>(double)frame.Width/frame.Height)
+                    {width=frame.Width;height=Math.Max(1,(int)(width/ratio));}
+                    else
+                    {height=frame.Height;width=Math.Max(1,(int)(ratio*height));}
+                }
+                var pixels=NativeResultRaster.SampleOverlay(frame,width,height,opacity,owner._limits,current);
+                return (pixels,width,height);
+            });
+
+        private bool PresentCore(NativeResultFrameReceipt receipt,long revision,Func<bool> isCurrent,
+            Func<NativeResultViewport,Func<bool>,(byte[] Pixels,int Width,int Height)> create)
         {
             var owner = _owner ?? throw new ObjectDisposedException(nameof(RegionLayer)); owner._view.Dispatcher.VerifyAccess();
-            ArgumentNullException.ThrowIfNull(receipt); ArgumentNullException.ThrowIfNull(region); ArgumentNullException.ThrowIfNull(isCurrent);
+            ArgumentNullException.ThrowIfNull(receipt); ArgumentNullException.ThrowIfNull(isCurrent);
             if (revision < 0) throw new ArgumentOutOfRangeException(nameof(revision));
             if (!owner.Current(receipt) || revision <= _revision) return false;
             var attempt = ++_attempt;
@@ -265,10 +308,8 @@ public sealed partial class NativeResultViewport : IDisposable
             }
             try
             {
-                var frame = owner._frame!;
-                var runs = NativeResultRaster.Read(region, receipt.Frame, receipt.Coordinates, frame.Width, frame.Height, owner._limits, Current);
-                var pixels = NativeResultRaster.Paint(frame.Width, frame.Height, runs, color, owner._limits, Current);
-                var source = BitmapSource.Create(frame.Width, frame.Height, 96, 96, PixelFormats.Bgra32, null, pixels, checked(frame.Width * 4)); source.Freeze();
+                var (pixels,width,height)=create(owner,Current);
+                var source = BitmapSource.Create(width, height, 96, 96, PixelFormats.Bgra32, null, pixels, checked(width * 4)); source.Freeze();
                 if (!Current()) return false;
                 _receipt = receipt; _current = isCurrent; _revision = revision; _image.Source = source;
                 if (!Current()) { if (attempt == _attempt) RetireFrame(); return false; }

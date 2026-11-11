@@ -16,6 +16,7 @@ public partial class MainWindowViewModel
     internal event Action? ResultWorkspaceGraphicsCleared;
     internal event Action<SunEyeVision.UI.Shared.ImageInputSource,SourceDisplayPreservationScope>? SourceDisplayPreservationPreparing;
     internal event Action<string>? ResultWorkspaceRootSettled;
+    internal bool IsResultImageChoiceLocked=>IsRunning||_editorDebugControl?.IsDebugBusy==true;
     private void ConfigureFormalImageSourcePresentation()
     {
         ImageSourceCanNavigate=()=>CanAcceptExternalActivation&&!IsDebugWindowOpen&&!IsExecutionStopping&&DocumentManager.CurrentSession is not null;
@@ -50,6 +51,18 @@ public partial class MainWindowViewModel
     private string? _nativePreviewPath;
     private bool _nativeImagesSuppressed;
     internal string? NativePreviewPath=>_nativePreviewPath;
+    internal bool ShowLocalImageName
+    {
+        get
+        {
+            var node=SelectedNode;
+            if(node?.ToolType!="ImageLoad")return false;
+            var preview=_displayPreview;
+            var fields=(preview?.Current==true?preview.Context.PreparedDraft.Configuration:node.Configuration).Fields;
+            return fields.Read("source.kind") is ConstantSetting { Value:"local" } &&
+                fields.Read("display.image-name") is ConstantSetting { Value:true };
+        }
+    }
     internal void RefreshNativeResultImages()
     {
         _nativePreviewPath=null;_nativeImagesSuppressed=false;
@@ -65,28 +78,29 @@ public partial class MainWindowViewModel
 
     internal ResultWorkspaceImagePlan CaptureNativeImageSources(Func<bool> consumerCurrent)
     {
-        var plan=new ResultWorkspaceImagePlan();
+        var editor=SelectedEditorContext;
+        var plan=new ResultWorkspaceImagePlan {EditorScopeId=editor?.ScopeId};
         var session=DocumentManager.CurrentSession;var selected=SelectedNode;
         var tab=WorkflowTabViewModel.SelectedTab;var scope=tab?.CurrentWorkflowId;
         if(session is null||selected is null||scope is null||!session.GetNodes(scope).Any(node=>ReferenceEquals(node,selected)))return plan;
         bool Owner()=>!plan.IsDisposed&&consumerCurrent()&&ReferenceEquals(DocumentManager.CurrentSession,session)
-            &&ReferenceEquals(SelectedNode,selected)&&ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab)&&OwnsSelectedDocumentNode(selected);
+            &&ReferenceEquals(SelectedNode,selected)&&ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab)
+            &&ReferenceEquals(SelectedEditorContext,editor)&&OwnsSelectedDocumentNode(selected);
         var nodes=session.GetNodes(scope);var edges=session.GetConnections(scope);
         var ids=new HashSet<string>(StringComparer.Ordinal){selected.Id};var queue=new Queue<string>();queue.Enqueue(selected.Id);
         while(queue.TryDequeue(out var id))foreach(var edge in edges.Where(edge=>edge.TargetNodeId==id))if(ids.Add(edge.SourceNodeId))queue.Enqueue(edge.SourceNodeId);
         try
         {
-            foreach(var node in nodes.Where(node=>ids.Contains(node.Id)).OrderBy(node=>node.Id==selected.Id?0:1))
+            foreach(var node in nodes.Where(node=>ids.Contains(node.Id)).OrderBy(node=>node.Name,StringComparer.CurrentCulture))
             {
-                using var acquired=session.AcquirePublishedResult(scope,node.Id);
-                var privateSnapshot=ReferenceEquals(node,selected)?CurrentEditorDebugSnapshot:null;
-                var snapshot=privateSnapshot??acquired?.Snapshot;
+                var privateNode=editor is not null&&ReferenceEquals(node,selected);
+                using var acquired=privateNode?null:session.AcquirePublishedResult(scope,node.Id);
+                var snapshot=privateNode?CurrentEditorDebugSnapshot:acquired?.Snapshot;
                 bool SnapshotCurrent()
                 {
                     if(!Owner()||snapshot is null)return false;
-                    if(privateSnapshot is not null)return ReferenceEquals(CurrentEditorDebugSnapshot,snapshot)&&Owner();
-                    using var latest=session.AcquirePublishedResult(scope,node.Id);
-                    return latest is not null&&ReferenceEquals(latest.Snapshot,snapshot)&&Owner();
+                    if(privateNode)return ReferenceEquals(CurrentEditorDebugSnapshot,snapshot)&&Owner();
+                    return session.IsPublishedResultCurrent(scope,node.Id,snapshot)&&Owner();
                 }
                 var schema=snapshot?.Schema??session.GetNodeSchema(scope,node.Id);
                 if(schema is null){plan.Diagnostics.Add(node.Name+"：输出声明尚未就绪。");continue;}
@@ -94,10 +108,12 @@ public partial class MainWindowViewModel
                 if(!_nativeImagesSuppressed&&snapshot is {IsComplete:true}&&SnapshotCurrent())
                 {publication=ToolResultViews.FromSnapshot(snapshot,SnapshotCurrent);plan.Own(publication);}
                 using var values=publication?.Borrow();
-                string? fileName=null;
+                var fileName=node.ToolType=="ImageLoad"&&values?.Values?.Read("output.file-name") is {IsMissing:false,IsNull:false} name
+                    ?name.GetScalar<string>():null;
                 foreach(var port in schema.Outputs)
                 {
-                    var label=schema.FindOutputDisplay(port.Id)?.DisplayName
+                    var caption=schema.FindOutputDisplay(port.Id);
+                    var label=caption?.DisplayName
                         ??(snapshot?.Fields.TryGetValue(port.Id,out var metadata)==true?metadata.DisplayName:port.Id);
                     Walk(port.Type,values?.Values?.Read(port.Id),Array.Empty<string>(),null,node.Name+" · "+label);
                     void Walk(TypeRef type,DeclaredValueReader? value,string[] path,int? index,string name)
@@ -107,8 +123,12 @@ public partial class MainWindowViewModel
                         {
                             var reference=new OutputReference(node.Id,port.Id,port.Type,path,
                                 selection:index is {} item?new BindingSelection.AtConstant(item):null,scopeId:scope,storage:port.Storage);
-                            plan.Sources.Add(new(name,reference,publication,SnapshotCurrent,node.Id!=selected.Id)
-                                {FileName=port.Id is "output.image" or "output.gray-image"?fileName:null});
+                            plan.Sources.Add(new(name,reference,publication,SnapshotCurrent,node.Id!=selected.Id,
+                                value is {IsMissing:false,IsNull:false})
+                                {
+                                    FileName=port.Id is "output.image" or "output.gray-image"?fileName:null,
+                                    IsAuxiliaryImage=caption?.IsAuxiliaryImage==true
+                                });
                             return;
                         }
                         if(type.Shape==ValueShape.Record)
@@ -134,26 +154,61 @@ public partial class MainWindowViewModel
                 }
                 if(!Owner())throw new InvalidOperationException("建立图像来源期间工作区已被替换。");
             }
-            if((SelectedEditorContext?.PreparedDraft.InputSchema??session.GetNodeSchema(scope,selected.Id)) is {} inputSchema)
+            var auxiliaryImages=plan.Sources.Where(source=>source.IsAuxiliaryImage).ToArray();
+            plan.Sources.RemoveAll(source=>source.IsAuxiliaryImage);
+            plan.Sources.AddRange(auxiliaryImages);
+            string? primaryInputKey=null;
+            if((editor?.PreparedDraft.InputSchema??session.GetNodeSchema(scope,selected.Id)) is {} inputSchema)
             {
+                var configuration=editor?.PreparedDraft.Configuration??selected.Configuration;
                 var inputKeys=new HashSet<string>(StringComparer.Ordinal);
                 foreach(var input in inputSchema.Inputs.Where(port=>port.Type==TypeRef.ResourceOf(ResourceKind.Image)))
                 {
-                    if((SelectedEditorContext?.PreparedDraft.Configuration??selected.Configuration).Fields.Read(input.Id) is not ReferenceSetting setting)continue;
-                    var reference=setting.Reference;
-                    if(!string.IsNullOrEmpty(setting.RebindingReason)||reference.ScopeId is {} explicitScope&&explicitScope!=scope)continue;
-                    var scoped=new OutputReference(reference.NodeId,reference.PortId,reference.Type,reference.MemberFieldPath,
-                        selection:reference.Selection,scopeId:scope,storage:reference.Storage);
-                    var key=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(scoped);
-                    var source=plan.Sources.FirstOrDefault(item=>item.Key==key);
-                    if(source is not null&&inputKeys.Add(key))plan.InputSources.Add(source.CreateInputItem());
+                    var setting=configuration.Fields.Read(input.Id);
+                    var key=GetWorkspaceImageSourceKey(setting,scope);
+                    if(key is null)continue;
+                    if(inputKeys.Add(key)&&setting is VariableSetting variable&&!_nativeImagesSuppressed)
+                    {
+                        try
+                        {
+                            if(session.CaptureVariableImageForDisplay(variable.Reference) is {} capture)
+                            {
+                                plan.Own(capture.Image);
+                                if(!Owner())throw new InvalidOperationException("建立图像来源期间工作区已被替换。");
+                                plan.Sources.Add(new("变量 · "+capture.Name,key,capture.Image,()=>Owner()&&capture.Current()&&Owner()));
+                            }
+                            else plan.Diagnostics.Add("图像变量不可用："+variable.Reference.VariableId);
+                        }
+                        catch(Exception error) when(error is ArgumentException or InvalidOperationException or OverflowException)
+                        {
+                            if(!Owner())throw;
+                            plan.Diagnostics.Add("图像变量不可用："+error.Message);
+                        }
+                    }
+                    if(input.Id==inputSchema.WorkflowImageInputId)primaryInputKey=key;
                 }
+                plan.InputSources.AddRange(plan.Sources.Where(source=>inputKeys.Contains(source.Key)).Select(source=>source.CreateInputItem()));
             }
+            var ownImage=plan.Sources.FirstOrDefault(source=>!source.IsUpstream&&!source.IsAuxiliaryImage
+                &&(!plan.IsPrivateDebug||source.HasImageValue));
+            plan.PrimaryInputKey=primaryInputKey;
+            var primaryImage=primaryInputKey is null?null:plan.Sources.FirstOrDefault(source=>source.Key==primaryInputKey);
+            plan.DefaultOutput=ownImage??primaryImage
+                ??plan.Sources.FirstOrDefault();
 
             return plan;
         }
         catch{plan.Dispose();throw;}
     }
+    private static string? GetWorkspaceImageSourceKey(ParameterSetting setting,string scope) => setting switch
+    {
+        ReferenceSetting {RebindingReason:null or ""} value when value.Reference.ScopeId is null || value.Reference.ScopeId==scope
+            => ParameterSettingCanonical.Serialize(new OutputReference(value.Reference.NodeId,value.Reference.PortId,value.Reference.Type,
+                value.Reference.MemberFieldPath,selection:value.Reference.Selection,scopeId:scope,storage:value.Reference.Storage)),
+        VariableSetting {RebindingReason:null or ""} value when value.Reference.Type==TypeRef.ResourceOf(ResourceKind.Image)
+            => ParameterSettingCanonical.Serialize(value.Reference),
+        _ => null
+    };
     private static bool ContainsImage(TypeRef type)=>type==TypeRef.ResourceOf(ResourceKind.Image)
         ||type.Shape==ValueShape.Sequence&&ContainsImage(type.Element!)
         ||type.Shape==ValueShape.Record&&type.Fields.Any(field=>ContainsImage(field.Type));

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>ImageSource + Blob VM 全链路差异矩阵</title>
+  <style>
+    body{font-family:"Microsoft YaHei",sans-serif;background:#f6f7f9;color:#20242a;margin:28px;line-height:1.55}
+    h1{font-size:24px;margin:0 0 8px} h2{font-size:18px;margin:28px 0 8px}
+    .note{background:#fff4d6;border-left:4px solid #d88b00;padding:10px 14px;margin:14px 0}
+    table{width:100%;border-collapse:collapse;background:#fff;font-size:13px}
+    th,td{border:1px solid #d8dde5;padding:8px;vertical-align:top;text-align:left}
+    th{background:#e9edf3;font-weight:600} .done{color:#176b3a}.gap{color:#9a2e19}.unknown{color:#765b00}
+    code{font-family:Consolas,monospace;font-size:12px}
+  </style>
+</head>
+<body>
+<h1>VM 原件化工具调试窗口全链路差异矩阵</h1>
+<p>范围：ImageSource → Blob，基于 VM 同版本静态材料、用户原厂截图、本方源码和当前人工反馈。矩阵是实施入口，不把局部构建或测试通过记为体感完成。</p>
+<div class="note"><strong>当前结论：</strong>缺口集中在生命周期所有权、结果显示状态、图像视口交互和窗口组装消费者四个交界面。算法数值部分已有较高一致性，但不能覆盖这些交互和框架缺口。</div>
+<table>
+<thead><tr><th>链路段</th><th>VM 原件行为/证据</th><th>本方现状</th><th>差异归因</th><th>统一修复出口</th><th>状态</th></tr></thead>
+<tbody>
+<tr><td>节点准入与样式</td><td>节点图标、端口、选中态、双击进入调试窗口共同由工具声明和画布消费者驱动。原厂截图显示 Blob 选中后仍保持结果层。</td><td>节点可创建、连线和打开，但结果层、节点选中态与调试窗口状态没有同一代次合同。</td><td>组装/状态合同</td><td>以节点身份+编辑代次建立窗口、结果层和画布选择的唯一上下文。</td><td class="gap">未闭口</td></tr>
+<tr><td>调试窗口组装</td><td>工厂→设置视图→参数根→Tab/Group→模板行→外部槽→底栏命令。</td><td>参数模板已迁移一部分，Blob 仍存在宿主组合和历史视觉接缝。</td><td>组装链混合</td><td>完成消费者映射后删除旧视觉双轨，保留仅身份、提交、执行、释放接缝。</td><td class="gap">部分完成</td></tr>
+<tr><td>图像来源</td><td>来源组绑定正式图像资源，换图只替换背景帧，结果图形和文本层保持。</td><td><code>ResultWorkspacePresenter.Present</code> 曾在换源时清空图形；显示层还按物理帧地址拒绝旧结果。</td><td>显示数据生命周期</td><td>按坐标域和发布代次保持结果层，换源只更新背景；迟到回调按代次拒写。</td><td class="gap">代码已改，待构建/人工</td></tr>
+<tr><td>图像视口</td><td>缩放后可拖拽平移，边界裁剪，坐标、图层、文本同步，工具栏缩放与鼠标滚轮一致。</td><td><code>ImageViewBox</code> 有拖拽字段和处理函数，但当前消费者是否启用、图层命中、缩放后偏移重置未形成验收合同；用户确认无法移动。</td><td>控件交互+承载状态</td><td>核对 <code>ImageDragEanble</code>、命中测试、Capture/Release、ClipImage、Resize 重置和结果层变换，统一接入正式视口状态。</td><td class="gap">未修复</td></tr>
+<tr><td>Blob 图形/文本</td><td>选 Blob 节点可同时显示 Blob、轮廓、文本及来源图层，切换图像来源不丢失。</td><td>用户反馈双击或切换图像源后只剩原始图像，图形和文本消失。</td><td>发布层与背景帧错误耦合</td><td>建立 ImagePublicationContext，图形/文本/结果表共享同一发布快照，背景帧独立替换。</td><td class="gap">未闭口</td></tr>
+<tr><td>模块结果</td><td>原厂按模块状态、执行状态、图像数据、Blob 集合和属性字段分组，字段格式由输出声明决定；状态/枚举显示原厂中文（C03：单阈值、亮于背景），数值为单精度自然位数。</td><td>数值内容已有较高一致性；本批已将模块状态/单体状态/阈值方式/极性语义投影和 Float32 自然位数在主结果树与只读属性树统一（<code>ResultSemanticText</code>，证据 <code>evidence/Blob结果格式语义投影原件对照-20261111.json</code>）。专用分组标题无 VM 原证，不发明，保留待证。</td><td>结果呈现合同</td><td>以公开输出声明生成分组/顺序/格式，保留结果 reader 的字段身份，不用通用树猜测。</td><td class="gap">语义/格式已统一，分组缺原证</td></tr>
+<tr><td>参数绑定</td><td>控件值→正式字段→快照→执行输入，引用/枚举/范围/ROI 使用同一字段身份和提交代次。</td><td>已有快照、引用和代次接缝，但 ROI、来源、范围和正式结果显示仍有分散消费者。</td><td>数据合同分裂</td><td>以字段身份、资源身份、执行代次建立唯一绑定路径，统一提交和回读。</td><td class="gap">部分完成</td></tr>
+<tr><td>执行与结果资源</td><td>窗口关闭先退订、取消在飞、排空 reader，再释放资源，迟到回调拒写。</td><td>关闭时主窗口进入等待释放，诊断显示“正式执行×2”，用户选择否后仍不能退出。</td><td>框架生命周期+资源所有权</td><td>追踪每个正式执行租约的创建、转交、reader 释放和关闭退订；关闭流程必须可完成或给出可恢复错误，不让进程无限等待。</td><td class="gap">严重缺口</td></tr>
+<tr><td>关闭与方案确认</td><td>选择“否”放弃保存后，关闭方案/工具窗口并完成资源释放。</td><td>选择“否”后弹出等待资源释放，窗口保持打开，最终需任务管理器结束。</td><td>宿主关闭编排与租约泄漏</td><td>将方案关闭、调试窗口关闭、结果区退订、插件排空分段记录；修复卡住的租约释放，不用强杀作为正常路径。</td><td class="gap">未修复</td></tr>
+<tr><td>性能与体感</td><td>首屏、切页、换图和关闭反馈连续，状态不闪退、不丢层。</td><td>已有局部计时，但用户体感仍与原厂差异大。</td><td>端到端时序</td><td>按完整链路一次性测量并和原厂证据分开记录，不能用单控件耗时替代。</td><td class="unknown">运行未确认</td></tr>
+</tbody>
+</table>
+<h2>实施顺序</h2>
+<h2>完整生产链核对矩阵</h2>
+<p>下表把 VM 逆向证据作为基准链，覆盖从进程启动到方案关闭的全部可见和不可见设计面。每一行必须分别记录 VM 来源、本方入口、状态/身份、资源边界、交互表现、异常路径和验收证据。</p>
+<table>
+<thead><tr><th>阶段</th><th>VM 基准链</th><th>本方核对对象</th><th>必须覆盖的差异</th><th>当前状态</th></tr></thead>
+<tbody>
+<tr><td>1. 进程启动</td><td>只对照 VM 的流程节点和可见时序：单实例、准入检查、启动提示、失败回退、主窗口进入。</td><td><code>App.xaml.cs</code>、单实例协调、插件准入、主题装载、启动日志。</td><td>启动顺序、失败回退、重复启动激活、目录代次、资源路径、主窗口初始布局。加密、授权和权限策略采用本方自研设计，不复刻原厂实现、密钥、协议或资源。</td><td class="gap">流程需对照，安全实现自研</td></tr>
+<tr><td>2. 打开方案</td><td>方案管理器打开文件，建立方案、流程、节点和结果会话，加载图像源与历史状态。</td><td><code>SolutionManager</code>、<code>DocumentSession</code>、持久化和恢复入口。</td><td>文件解析、默认值、版本协商、旧状态处理、打开遮罩、失败回滚、当前方案身份。</td><td class="gap">未完成对照</td></tr>
+<tr><td>3. 根工作区</td><td>流程标签、画布、工具箱、结果区和底栏在同一方案会话下组装。</td><td>主窗口、<code>WorkflowTabViewModel</code>、画布和结果工作区。</td><td>布局比例、默认选中、焦点、快捷键、面板折叠、视口状态与方案身份绑定。</td><td class="gap">未完成对照</td></tr>
+<tr><td>4. 工具箱与添加节点</td><td>工具箱按工具声明展示图标和分类，拖放或点击创建原件节点。</td><td>工具目录准入、工具箱控件、拖放处理、节点工厂。</td><td>工具可见性、图标、命名、拖放反馈、重复添加、无效位置、节点身份分配。</td><td class="gap">未完成对照</td></tr>
+<tr><td>5. 节点样式与选中</td><td>节点颜色、图标、端口、选中边框、错误态和双击入口由声明驱动。</td><td>节点显示适配器、节点样式、选中状态和调试窗口入口。</td><td>节点视觉、端口位置、命中区域、单击/双击/右键、状态同步和结果层联动。</td><td class="gap">未完成对照</td></tr>
+<tr><td>6. 连线与输入来源</td><td>连接线按端口类型和来源关系更新，节点参数来源与画布连接保持一致。</td><td>连线合同、输入绑定、图像源连接、ROI/资源来源。</td><td>连接候选、方向、替换/删除、无效连接、来源身份、断线后的参数状态。</td><td class="gap">未完成对照</td></tr>
+<tr><td>7. 双击调试窗口</td><td>工厂→设置视图→参数根→Tab/Group→模板行→引用/ROI→底栏命令。</td><td>调试窗口、Blob 三页、ImageSource 页面、参数模板和外部槽。</td><td>首屏、默认折叠、高级参数、字段顺序、焦点、滚动、引用、ROI、取消、确认和重复打开。</td><td class="gap">部分完成</td></tr>
+<tr><td>8. 参数绑定与提交</td><td>控件值进入正式字段，引用/枚举/范围/ROI 在同一代次提交并可保存重开。</td><td>字段状态、提交合同、参数快照、变量/资源引用。</td><td>编辑回写、校验、范围、枚举显示、引用候选、失效重绑定、保存前后值一致性。</td><td class="gap">部分完成</td></tr>
+<tr><td>9. 运行与取消</td><td>执行入口捕获输入快照，运行、连续运行、取消和在飞任务由执行层管理。</td><td>正式执行、调试执行、输入工厂、取消和排空。</td><td>快照时点、参数冻结、运行状态、取消响应、重复运行、错误和资源释放。</td><td class="gap">未完成对照</td></tr>
+<tr><td>10. 结果列表/模块结果</td><td>结果名称、当前值、变量管理、模块状态、耗时、Blob 属性按原件声明分组和排序。</td><td>结果 publication、结果树、结果表、值格式化和变量绑定。</td><td>分组、顺序、展开、数组格式、中文语义、空值、失败值、变量链接和刷新时机。</td><td class="partial">状态/枚举中文与 Float32 格式已按原证统一（2026-11-11 交接批）；分组标题与空值文案缺原证待办</td></tr>
+<tr><td>11. 图像、图形与文本</td><td>图像源、Blob 图像、掩膜、轮廓、文本和图形可组合显示；缩放、平移、滚轮和坐标同步。</td><td><code>ImageViewBox</code>、<code>ResultImagePane</code>、结果 publication 和图层。</td><td>图层选择、换图保持、缩放中心、平移捕获、边界裁剪、命中测试、坐标、文本和图形同步。</td><td class="partial">换图保留/命中测试代码已修；缩放平移与组合显示待人工确认</td></tr>
+<tr><td>12. 节点切换与重复切换</td><td>切换节点/Tab 后结果、来源条、模块结果和调试窗口按当前身份恢复。</td><td>选中节点、结果工作区、调试上下文和 publication 代次。</td><td>状态保持、旧回调拒写、结果清理、图层恢复、重复切换后资源计数。</td><td class="gap">未完成对照</td></tr>
+<tr><td>13. 保存、重开、换节点</td><td>保存参数、图像源和布局，重开后恢复声明值、连接、结果入口和默认视觉状态。</td><td>持久化、方案重开、节点重建和资源恢复。</td><td>字段身份、资源文件、连接、默认折叠、结果显示、版本/缺源错误。</td><td class="gap">未完成对照</td></tr>
+<tr><td>14. 关闭与释放</td><td>先停止/取消，关闭调试窗口，退订结果和图像，排空 reader/插件租约，再退出进程。</td><td><code>PrepareSolutionTransitionAsync</code>、子窗口关闭、publication、<code>DocumentSession.CloseCurrent</code>、插件代次排空。</td><td>选择“否”、窗口关闭顺序、在飞执行、reader、正式执行租约、迟到回调、超时恢复。</td><td class="partial">代码已补会话释放顺序；人工关闭与动态退订待确认</td></tr>
+</tbody>
+</table>
+<h2>矩阵使用规则</h2>
+<ul>
+  <li>每个阶段必须同时有 VM 静态证据、VM 运行证据或明确的“运行未确认”、本方源码入口和正式消费者。</li>
+  <li>每个差异必须归因到框架、数据/资源、控件、组装或算法层，明确复用、替换或语义实现决定。</li>
+  <li>只有完成相邻阶段之间的身份、状态和所有权传递，才能把该阶段记为闭口。</li>
+  <li>构建、自动测试和单页截图只能作为本方验证，不能替代 VM 体感对照。</li>
+</ul>
+<ol>
+  <li>先修正式结果发布上下文和图像视口状态，让换源、缩放、平移、图形、文本共享一条链。</li>
+  <li>再修正式执行租约的转交、reader 释放和关闭排空，覆盖“保存/否/关闭”路径。</li>
+  <li>最后收拢 Blob 三页组装、结果树分组和参数绑定，删除残留自研视觉双轨。</li>
+</ol>
+<p>未取得 VM 同版本动态证据的缓存、异步、虚拟化和销毁行为继续标记“运行未确认”。</p>
+</body>
+</html>

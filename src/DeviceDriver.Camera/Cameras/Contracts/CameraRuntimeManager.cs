@@ -208,9 +208,12 @@ public sealed class CameraRuntimeManager : ICameraFrameProvider, IAsyncDisposabl
             var factory=_factories.FirstOrDefault(item=>item.CanCreate(descriptor));
             if(factory is null || !factory.SupportsWorkflowFrames(descriptor)) throw new InvalidOperationException("相机采集有效域尚未确认，不能用于工作流。");
         }
+        var overrides=new Dictionary<string,object?>();
+        if(request.ExposureTime is {} exposure)overrides.Add("ExposureTime",exposure);
+        if(request.Gain is {} gain)overrides.Add("Gain",gain);
         return await CaptureSingleFrameAsync(new CameraCaptureRequest {
             CameraRef=new CameraDeviceRef(request.DeviceId),ProducerRun=request.ProducerRun,Purpose=request.Purpose,
-            Timeout=request.Timeout,DiagnosticCorrelationId=request.DiagnosticCorrelationId
+            Timeout=request.Timeout,DiagnosticCorrelationId=request.DiagnosticCorrelationId,Parameters=overrides
         },cancellationToken).ConfigureAwait(false);
     }
     private async Task<ICameraFrameLease> CaptureSingleFrameAsync(
@@ -257,6 +260,7 @@ public sealed class CameraRuntimeManager : ICameraFrameProvider, IAsyncDisposabl
     private static async Task<ICameraFrameLease> CaptureConfiguredFrameAsync(
         CameraSession session, CameraCaptureRequest request, CancellationToken cancellationToken)
     {
+        using var operation=request.Parameters.Count==0?null:session.AcquireOperation("逐轮曝光与增益",exclusive:true);
         var configuration = await session.Adapter.ReadCaptureConfigurationAsync(cancellationToken)
             .ConfigureAwait(false);
         if (!configuration.IsValid)
@@ -272,7 +276,41 @@ public sealed class CameraRuntimeManager : ICameraFrameProvider, IAsyncDisposabl
             TriggerMode = configuration.StreamMode,
             Parameters = parameters
         };
-        return await session.Adapter.CaptureAsync(configuredRequest, cancellationToken).ConfigureAwait(false);
+        if(request.Parameters.Count==0)
+            return await CaptureAdapterFrameAsync(session,configuredRequest,cancellationToken).ConfigureAwait(false);
+
+        var names=request.Parameters.Keys.Concat(request.Parameters.Keys.Select(name=>name=="ExposureTime"?"ExposureAuto":"GainAuto")).ToArray();
+        var before=await session.Adapter.ReadParametersAsync(names,cancellationToken).ConfigureAwait(false);
+        if(request.Parameters.Keys.Any(name=>!before.TryGetValue(name,out var value)||value is null))
+            throw new InvalidOperationException("相机无法读取逐轮参数的原值，不能安全地应用和恢复。");
+        var restore=names.Where(name=>before.TryGetValue(name,out var value)&&value is not null)
+            .ToDictionary(name=>name,name=>before[name],StringComparer.Ordinal);
+        ICameraFrameLease? frame=null;
+        Exception? failure=null;
+        try
+        {
+            await session.Adapter.ApplyParametersAsync(request.Parameters,cancellationToken).ConfigureAwait(false);
+            frame=await CaptureAdapterFrameAsync(session,configuredRequest,cancellationToken).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+        }
+        catch(Exception error){failure=error;}
+        try { await session.Adapter.ApplyParametersAsync(restore,CancellationToken.None).ConfigureAwait(false); }
+        catch(Exception cleanup){failure=failure is null?cleanup:new AggregateException(failure,cleanup);}
+        if(failure is null)return frame!;
+        if(frame is not null)
+            try { await frame.DisposeAsync().ConfigureAwait(false); }
+            catch(Exception cleanup){failure=new AggregateException(failure,cleanup);}
+        System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+        throw new InvalidOperationException("相机逐轮参数采集失败。");
+    }
+
+    private static async Task<ICameraFrameLease> CaptureAdapterFrameAsync(CameraSession session,CameraCaptureRequest request,CancellationToken cancellation)
+    {
+        try{return await session.Adapter.CaptureAsync(request,cancellation).ConfigureAwait(false);}
+        catch(TimeoutException error){throw new CameraFrameAcquisitionException(CameraErrorCode.FrameTimeout,error.Message,error);}
+        catch(CameraAdapterException error)when(error.ErrorCode is CameraErrorCode.FrameTimeout or CameraErrorCode.TriggerTimeout
+            or CameraErrorCode.StreamStopped or CameraErrorCode.DeviceDisconnected or CameraErrorCode.Unknown)
+        {throw new CameraFrameAcquisitionException(error.ErrorCode,error.Message,error);}
     }
 
     public Task CloseAsync(CameraDeviceRef cameraRef, CancellationToken cancellationToken = default)

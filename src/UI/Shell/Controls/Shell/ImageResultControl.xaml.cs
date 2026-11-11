@@ -159,12 +159,17 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         {
             ObjectDisposedException.ThrowIf(_shutdown,this);
             if(_viewModel is not null)_viewModel.PropertyChanged-=OnHostEditingStateChanged;
+            Workspace.CurrentResultSelectionChanged-=OnCurrentResultSelectionChanged;
             ReleaseResultSelection();
             ReleaseWorkspace();
             _viewModel = viewModel;
             System.Windows.Data.BindingOperations.SetBinding(Workspace,
                 SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell.CurrentResultContentProperty,
                 new System.Windows.Data.Binding(nameof(MainWindowViewModel.SelectedNodeDataAnalysisControl)){Source=viewModel});
+            Workspace.CurrentResultSelectionChanged+=OnCurrentResultSelectionChanged;
+            OnCurrentResultSelectionChanged(Workspace,EventArgs.Empty);
+            foreach (var (property, path) in ResultHistoryBindings)
+                Workspace.SetBinding(property, new System.Windows.Data.Binding(path) { Source = viewModel });
             // The visual DataContext is ImageResultViewModel; borrow the root presenter collection explicitly.
             ModuleResultTreeView.ItemsSource=viewModel.ResultTreeRoots;
             _resultRoots=(System.Collections.Specialized.INotifyCollectionChanged)viewModel.ResultTreeRoots;
@@ -173,6 +178,9 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             OnHostEditingStateChanged(this,new System.ComponentModel.PropertyChangedEventArgs(null));
             RefreshSourceSession();AttachWorkspace();
         }
+
+        private void OnCurrentResultSelectionChanged(object? sender, EventArgs e) =>
+            _viewModel?.SetCurrentResultTableSelected(Workspace.IsCurrentResultSelected);
 
         /// <summary>
         /// 退出时退订图像预览事件
@@ -183,21 +191,29 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             foreach(var action in actions)try{action();}catch(Exception error){failures.Add(error);}
             if(failures.Count>0)throw new AggregateException("结果宿主关闭失败，所有清理均已尝试。",failures);
         }
+        private static readonly (DependencyProperty Property, string Path)[] ResultHistoryBindings =
+        [
+            (SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell.HistoryItemsProperty, nameof(MainWindowViewModel.ResultHistory)),
+            (SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell.ClearHistoryCommandProperty, nameof(MainWindowViewModel.ClearResultHistoryCommand)),
+            (SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell.SaveHistoryCommandProperty, nameof(MainWindowViewModel.SaveResultHistoryCommand))
+        ];
         public void Shutdown()
         {
             if(_shutdown)return;_shutdown=true;
             var main=_viewModel;_viewModel=null!;
             Cleanup(new Action[]{
                 ()=>{if(main is not null)main.PropertyChanged-=OnHostEditingStateChanged;},
+                ()=>Workspace.CurrentResultSelectionChanged-=OnCurrentResultSelectionChanged,
                 ReleaseResultSelection,
                 ()=>ModuleResultTreeView.ItemsSource=null,
                 ()=>main?.CloseResultPresentation(),CloseCopyNotice,ReleaseSourceSession,ReleaseWorkspace,
                 ()=>System.Windows.Data.BindingOperations.ClearBinding(Workspace,
                     SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell.CurrentResultContentProperty),
+                ()=>Cleanup(ResultHistoryBindings.Select(binding => (Action)(() => System.Windows.Data.BindingOperations.ClearBinding(Workspace, binding.Property)))),
                 _sourceTheme.Dispose,_resultTheme.Dispose,_shellTheme.Dispose});
         }
 
-        private Func<SunEyeVision.Plugin.Contracts.OutputReference,Func<bool>,SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameLease?>? _roiBorrow;
+        private Func<string,Func<bool>,SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameLease?>? _roiBorrow;
         private MainWindowViewModel? _roiBorrowOwner;
         private void AttachWorkspace()
         {

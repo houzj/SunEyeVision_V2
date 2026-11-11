@@ -2,76 +2,73 @@ using System.Windows;
 using System.Windows.Controls;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
-using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Fields;
+using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Regions;
 
-/// <summary>Original assist layout with temporarily unavailable source fields.</summary>
+/// <summary>Original assist layout over owner-provided reference rows and a formal mode field.</summary>
 public sealed class NativeAssistUiDraftControls : StackPanel, IDisposable
 {
-    private readonly DeclaredFieldState _mode;
-    private readonly DeclaredFieldRow _radio;
+    private readonly DeclaredFieldRow _mode;
     private readonly List<AssistRow> _rows=[];
     private readonly DeclaredFieldRow _information;
-    private bool _disposed,_informationOnly;
-    public FrameworkElement? GraphicVisibilitySource {get;init;}
+    private bool _disposed, _projecting, _projectionPending;
 
-    public NativeAssistUiDraftControls(DeclaredFieldRow information)
+    public NativeAssistUiDraftControls(DeclaredFieldRow mode, DeclaredFieldRow information,
+        IEnumerable<(int Mode, Func<DeclaredFieldRow> Create)> sources)
     {
+        _mode=mode??throw new ArgumentNullException(nameof(mode));
         _information=information??throw new ArgumentNullException(nameof(information));
+        if(mode.Parent is not null)throw new ArgumentException("修正方式控件已有宿主。",nameof(mode));
         if(information.Parent is not null)throw new ArgumentException("修正信息控件已有宿主。",nameof(information));
-        _mode=new DeclaredFieldState(new Port("ui-only-assist-mode",DataType.Integer),new ConstantSetting(0L),_=>{});
-        _radio=new DeclaredFieldRow(_mode,"选择方式",integerRadioOptions:new NativeIntegerRadioOptions(new[]{
-            new NativeIntegerRadioChoice(0,"按信息"),new NativeIntegerRadioChoice(1,"按点"),
-            new NativeIntegerRadioChoice(2,"按坐标")},useFiveSlotTemplate:true));
         try
         {
-            Children.Add(_radio);
-            information.SetLabel("修正信息");Children.Add(information);
-            Add("基准点",1);Add("基准点X",2);Add("基准点Y",2);
-            Add("基准角度",3);Add("基准尺度X",3);Add("基准尺度Y",3);
-            Add("运行点",1);Add("运行点X",2);Add("运行点Y",2);
-            Add("运行角度",3);Add("运行尺度X",3);Add("运行尺度Y",3);
+            Children.Add(_mode);
+            information.SetLabel("Fixture Info");
+            information.SetDescription("Description_CorrectInfo");
+            Children.Add(information);
+            _rows.AddRange(sources.Select(source => new AssistRow(source.Mode, source.Create)));
             _mode.Changed+=ProjectVisibility;_mode.Changed+=OnUiChanged;ProjectVisibility();
             IsVisibleChanged+=OnVisibility;Loaded+=OnLoaded;Unloaded+=OnUnloaded;
         }
         catch{Dispose();throw;}
     }
 
-    private void Add(string label,int visibleMode)
+    private sealed class AssistRow(int visibleMode,Func<DeclaredFieldRow> create)
     {
-        // Keep the declaration in the VM parameter tree, but do not construct a
-        // hidden editor. The original window only materializes the selected
-        // assist mode; the other templates remain declarations until selected.
-        _rows.Add(new AssistRow(label,visibleMode));
-    }
-    private sealed class AssistRow(string label,int visibleMode)
-    {
-        internal string Label {get;}=label;
         internal int VisibleMode {get;}=visibleMode;
+        internal Func<DeclaredFieldRow> Create {get;}=create;
         internal DeclaredFieldRow? Editor {get;set;}
     }
-    private DeclaredFieldRow EnsureEditor(AssistRow row)
+    private DeclaredFieldRow? EnsureEditor(AssistRow row)
     {
         if(row.Editor is not null)return row.Editor;
-        var port=new Port("ui-only-assist-"+_rows.IndexOf(row),DataType.Number,Required:false,EditModes:FieldEditModes.Reference);
-        row.Editor=new DeclaredFieldRow(port,row.Label,new UnsetSetting(),_=>{},ReferenceFieldOptions.Empty,allowUnboundReference:true)
-            {ToolTip="界面试用，来源功能尚未接入。"};
+        var created=row.Create();
+        if(_disposed){created.Dispose();return null;}
+        row.Editor=created;
         row.Editor.Changed+=OnUiChanged;
-        Children.Add(row.Editor);
+        var index = _rows.IndexOf(row);
+        var before = _rows.Take(index).Count(item => item.Editor is not null);
+        Children.Insert(2 + before, row.Editor);
         return row.Editor;
     }
     public event Action? Changed;
-    public bool HasUiChanges=>!_disposed&&(IsUnimplementedMode||_rows.Any(row=>row.Editor is { } editor&&(editor.HasPendingEdits||editor.Setting is not UnsetSetting)));
     private void OnUiChanged(){if(!_disposed)Changed?.Invoke();}
-    public bool IsUnimplementedMode=>!_disposed&&(long)((ConstantSetting)_mode.Accepted).Value! != 0;
-    public bool TrySetMode(long mode)=>_radio.TrySetConstant(mode);
-    public void SetInformationOnly(bool informationOnly)
+    public bool TrySetMode(long mode)=>!_disposed&&_mode.TrySetConstant(mode);
+    private IEnumerable<DeclaredFieldRow> ActiveSources => _rows.Select(row => row.Editor).OfType<DeclaredFieldRow>()
+        .Prepend(_information).Where(row => row.Visibility == Visibility.Visible && row.IsEnabled);
+    public bool HasPendingEdits => !_disposed && ActiveSources.Any(row => row.HasPendingEdits);
+    public string? CommitActiveSources()
     {
-        if(_disposed||_informationOnly==informationOnly)return;
-        RetireInteractions();_informationOnly=informationOnly;ProjectVisibility();
+        if(_disposed)return "位置修正组合已失效。";
+        foreach (var row in ActiveSources.ToArray())
+        {
+            if(_disposed)return "位置修正组合已失效。";
+            if (!row.TryCommitPending()) return row.Error;
+        }
+        return _disposed?"位置修正组合已失效。":null;
     }
     public void RetireInteractions()
     {
@@ -90,30 +87,41 @@ public sealed class NativeAssistUiDraftControls : StackPanel, IDisposable
     private void ProjectVisibility()
     {
         if(_disposed)return;
-        var mode=(long)((ConstantSetting)_mode.Accepted).Value!;
-        _radio.Visibility=_informationOnly?Visibility.Collapsed:Visibility.Visible;
-        _information.Visibility=_informationOnly||mode==0?Visibility.Visible:Visibility.Collapsed;
-        foreach(var row in _rows)
+        _projectionPending=true;
+        if(_projecting)return;
+        _projecting=true;
+        try
         {
-            var active=!_informationOnly&&(row.VisibleMode==mode||(row.VisibleMode==3&&mode is 1 or 2));
-            if(active)
+            while(_projectionPending&&!_disposed)
             {
-                var editor=EnsureEditor(row);
-                editor.Visibility=Visibility.Visible;
+                _projectionPending=false;
+                var mode=_mode.Setting is ConstantSetting {Value:long value}?value:0L;
+                _information.Visibility=mode==0?Visibility.Visible:Visibility.Collapsed;
+                foreach(var row in _rows)
+                {
+                    if(_disposed||_projectionPending)break;
+                    var active=row.VisibleMode==mode||(row.VisibleMode==3&&mode is 1 or 2);
+                    if(active)
+                    {
+                        var editor=EnsureEditor(row);
+                        if(_disposed||_projectionPending||editor is null)break;
+                        editor.Visibility=Visibility.Visible;
+                    }
+                    else if(row.Editor is not null)row.Editor.Visibility=Visibility.Collapsed;
+                }
+                if(!_disposed&&!_projectionPending)PrepareInteractions(IsVisible);
             }
-            else if(row.Editor is not null)row.Editor.Visibility=Visibility.Collapsed;
         }
-        PrepareInteractions(IsVisible);
+        finally{_projecting=false;}
     }
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;Changed=null;
         IsVisibleChanged-=OnVisibility;Loaded-=OnLoaded;Unloaded-=OnUnloaded;
         var rows=_rows.ToArray();
-        ParameterCleanup.Run(new Action[]{()=>((IParameterVisibility)_information).PrepareForVisibility(false),()=>{if(_mode is {} mode){mode.Changed-=ProjectVisibility;mode.Changed-=OnUiChanged;}}}
+        ParameterCleanup.Run(new Action[]{()=>((IParameterVisibility)_information).PrepareForVisibility(false),()=>{_mode.Changed-=ProjectVisibility;_mode.Changed-=OnUiChanged;}}
             .Concat(rows.Where(row=>row.Editor is not null).Select(row=>(Action)(()=>row.Editor!.Changed-=OnUiChanged)))
             .Append(()=>Children.Clear())
-            .Concat(rows.Where(row=>row.Editor is not null).Select(row=>(Action)(()=>row.Editor!.Dispose())))
-            .Concat(new Action[]{()=>_radio?.Dispose(),()=>_mode?.Dispose()}));
+            .Concat(Array.Empty<Action>()));
     }
 }

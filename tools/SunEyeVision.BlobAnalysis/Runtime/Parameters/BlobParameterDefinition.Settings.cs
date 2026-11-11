@@ -31,8 +31,8 @@ public sealed partial class BlobParameterDefinition
         foreach(var item in _fields.Values)
         {
             var name=Required(item,"id");var type=ParameterType(name);
-            var settingsProperty=SettingsProperty(name);var vmProperty=VmProperty(name);
-            if(settingsProperty is null&&vmProperty is null)throw new InvalidDataException("Unknown Blob parameter: "+name);
+            var settingsProperty=SettingsProperty(name);var findProperty=FindProperty(name);
+            if(settingsProperty is null&&findProperty is null)throw new InvalidDataException("Unknown Blob parameter: "+name);
             var choices=item.Elements("Choice").ToDictionary(x=>Required(x,"key"),x=>Required(x,"label"),StringComparer.Ordinal);
             var port=new Port(FieldId(item,"fieldId"),type==typeof(bool)?DataType.Boolean:type==typeof(int)?DataType.Integer:type==typeof(double)?DataType.Number:DataType.Text,
                 Storage:type==typeof(int)?NumericStorage.Int32:type==typeof(double)?NumericStorage.Float64:null,
@@ -54,12 +54,13 @@ public sealed partial class BlobParameterDefinition
             if(item.Attribute("pairWith") is { } partner)
             {if(!_fields.TryGetValue(partner.Value,out var endpoint))throw new InvalidDataException("Unknown Blob range endpoint.");pair=FieldId(endpoint,"fieldId");}
             var layout=new FieldLayout(Page(name),Section(name),condition,pair,Advanced:Advanced(name),Minimum:Minimum(name),Maximum:Maximum(name),
-                DecimalPlaces:DecimalPlaces(name),AllowReference:Boolean(item,"allowReference"),Increment:Increment(name));
+                DecimalPlaces:DecimalPlaces(name),AllowReference:Boolean(item,"allowReference"),Increment:Increment(name),
+                PairMinimum:Number(name,"pairMinimum"),PairMaximum:Number(name,"pairMaximum"),PairDisplayName:(string?)item.Attribute("pairLabel"));
             var presentation=new FieldPresentation(port.Id,Label(name),Section(name),bindings.Count,type.IsEnum?FieldEditorKind.Choice:FieldEditorKind.Scalar,
                 type.IsEnum?choices.Keys:null,type.IsEnum?choices:null){Layout=layout};
             bindings.Add(new(port,presentation,settings=>
             {
-                var value=settingsProperty is not null?settingsProperty.GetValue(settings):vmProperty!.GetValue(settings.ToVmParameters());
+                var value=settingsProperty is not null?settingsProperty.GetValue(settings):findProperty!.GetValue(settings.ToFindParameters());
                 return type.IsEnum?value!.ToString():type==typeof(int)?(object)(long)(int)value!:value;
             },(settings,value)=>
             {
@@ -68,7 +69,7 @@ public sealed partial class BlobParameterDefinition
                 if(settingsProperty is not null)settingsProperty.SetValue(copy,converted);
                 else
                 {
-                    var vm=copy.ToVmParameters();vmProperty!.SetValue(vm,converted);copy=copy with {VmParameters=vm};
+                    var vm=copy.ToFindParameters();findProperty!.SetValue(vm,converted);copy=copy with {FindParameters=vm};
                 }
                 return copy;
             }));

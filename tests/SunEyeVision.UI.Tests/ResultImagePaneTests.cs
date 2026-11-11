@@ -1,10 +1,12 @@
 using System.ComponentModel;
 using System.Runtime.ExceptionServices;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Threading;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport;
+using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using SunEyeVision.Plugin.Wpf.Presenters.Results;
 using SunEyeVision.UI.Services.Images;
 using Xunit;
@@ -13,6 +15,178 @@ namespace SunEyeVision.UI.Tests;
 
 public sealed class ResultImagePaneTests
 {
+    [Fact]
+    public void Output_image_rebind_can_keep_native_shape_layer_until_the_new_scene_receipt_is_presented() => Sta(() =>
+    {
+        using var first = new Source(coordinateFrame: RoiDeclarations.ImageFrame);
+        using var second = new Source(coordinateFrame: RoiDeclarations.ImageFrame);
+        var view = new ImageViewBox();
+        using var pane = new ResultImagePane(view);
+        Assert.True(pane.TryPresent(first.Publication, first.Reference(), "flow", () => true, out var firstError), firstError);
+        var receipt = Assert.IsType<NativeResultFrameReceipt>(pane.CurrentFrame);
+        using var scene = pane.Viewport.CreateDisplaySceneLayer();
+        var text = new NativeTextOverlay("Blob面积:10", new System.Windows.Point(1, 1), 12, Colors.Lime, 1);
+        Assert.True(scene.Present(receipt, 1, Array.Empty<NativeGeometryOverlay>(), new[] { text }, () => true));
+        Assert.NotNull(view.ShapeList);
+
+        Assert.True(pane.TryPresent(second.Publication, second.Reference(), "flow", () => true,
+            out var secondError, preserveShapeLayers: true), secondError);
+        // The old layer remains available for the workspace presenter to replace with
+        // the new receipt; a plain Viewport.Clear would have destroyed it here.
+        Assert.NotNull(view.ShapeList);
+    });
+
+    [Fact]
+    public void Annular_tooltip_uses_published_angles_even_when_the_native_renderer_reverses_the_arc() => Sta(() =>
+    {
+        using var source = new Source(coordinateFrame: RoiDeclarations.ImageFrame);
+        var view = new ImageViewBox();
+        using var pane = new ResultImagePane(view);
+        Assert.True(pane.TryPresent(source.Publication, source.Reference(), "flow", () => true, out var error), error);
+        var frame = Assert.IsType<NativeResultFrameReceipt>(pane.CurrentFrame);
+        using var scene = pane.Viewport.CreateDisplaySceneLayer();
+        var annulus = new RecordValue(RoiDeclarations.Shape, new Dictionary<string, object?>
+        {
+            ["kind"] = "annulus",
+            ["center"] = new PointGeometry(frame.Coordinates, new(2, 1)),
+            ["inner-radius"] = 1d, ["outer-radius"] = 3d,
+            ["start-radians"] = Math.PI / 2, ["end-radians"] = 0d
+        });
+        var roi = new[] { new NativeRoiResultOverlay(frame.Frame, annulus, Colors.Blue, Colors.Transparent, 2, 1, IncludeMeasurements: true) };
+        Assert.True(scene.Present(frame, 1, Array.Empty<NativeGeometryOverlay>(), Array.Empty<NativeTextOverlay>(),
+            () => true, roi: roi));
+        var batch = Assert.Single(view.ShapeList.OfType<Tuple<string, object>>());
+        var native = Assert.IsAssignableFrom<SunEyeVision.Plugin.Wpf.Native.Dependencies.PresentationControls.RenderInterface.IAnnularSector>(
+            Assert.Single(Assert.IsAssignableFrom<IReadOnlyList<object>>(batch.Item2)));
+        Assert.Equal(0d, native.StartAngle);
+        Assert.Equal(90d, native.AngleRange);
+        Assert.Equal(Colors.Blue.ToString(), native.Stroke);
+        Assert.Equal("CenterX:2 CenterY:1 OuterRadius:3 InnerRadius:1 StartAngle:90 AngleRange:-90", native.ToolTip);
+        source.Publication.Dispose();
+        pane.RefreshCurrentness();
+        Assert.Null(view.ShapeList);
+    });
+
+    [Fact]
+    public void Fixture_point_tooltip_reaches_the_original_point_batch_and_retires_with_the_frame() => Sta(() =>
+    {
+        using var source = new Source(coordinateFrame: RoiDeclarations.ImageFrame);
+        var view = new ImageViewBox();
+        using var pane = new ResultImagePane(view);
+        Assert.True(pane.TryPresent(source.Publication, source.Reference(), "flow", () => true, out var error), error);
+        var frame = Assert.IsType<NativeResultFrameReceipt>(pane.CurrentFrame);
+        using var scene = pane.Viewport.CreateDisplaySceneLayer();
+        var point = new RecordValue(RoiDeclarations.Shape, new Dictionary<string, object?>
+        {
+            ["kind"] = "point",
+            ["center"] = new PointGeometry(frame.Coordinates, new(2, 1))
+        });
+        const string tip = "Fixture RunPoint:(2,1) ";
+        var roi = new[] { new NativeRoiResultOverlay(frame.Frame, point, Colors.Red, Colors.Transparent, 1, 1, ToolTip: tip) };
+        Assert.True(scene.Present(frame, 1, Array.Empty<NativeGeometryOverlay>(), Array.Empty<NativeTextOverlay>(),
+            () => true, roi: roi));
+        var batch = Assert.Single(view.ShapeList.OfType<Tuple<string, object>>());
+        Assert.Equal("IPoint", batch.Item1);
+        var native = Assert.IsAssignableFrom<SunEyeVision.Plugin.Wpf.Native.Dependencies.PresentationControls.RenderInterface.IPoint>(
+            Assert.Single(Assert.IsAssignableFrom<IReadOnlyList<object>>(batch.Item2)));
+        Assert.Equal(tip, native.ToolTip);
+        source.Publication.Dispose();
+        pane.RefreshCurrentness();
+        Assert.Null(view.ShapeList);
+    });
+
+    [Fact]
+    public void Rectangle_measurements_reach_the_native_shape_and_clear_with_its_frame() => Sta(() =>
+    {
+        using var source = new Source();
+        var view = new ImageViewBox();
+        using var pane = new ResultImagePane(view);
+        Assert.True(pane.TryPresent(source.Publication, source.Reference(), "flow", () => true, out var error), error);
+        var frame = Assert.IsType<NativeResultFrameReceipt>(pane.CurrentFrame);
+        using var layer = pane.Viewport.CreateGeometryLayer();
+        var corners = new PolygonGeometry(frame.Coordinates, new Point2[] { new(0, 0), new(4, 0), new(4, 2), new(0, 2) });
+        var rectangle = new OrientedRectangleGeometry(frame.Coordinates, new(2, 1), 4, 2, 0);
+        var overlays = new[]
+        {
+            new NativeGeometryOverlay(frame.Frame, rectangle, Colors.Green, IncludeMeasurements: true),
+            new NativeGeometryOverlay(frame.Frame, corners, Colors.Orange)
+        };
+        Assert.True(layer.Present(frame, 1, overlays, () => true));
+        const string expected = "CenterX:2,CenterY:1 Width:4 Height:2 Angle:0";
+        Assert.Equal(new[] { expected, "" }, view.ShapeList
+            .OfType<SunEyeVision.Plugin.Wpf.Native.Dependencies.PresentationControls.RenderInterface.IShape>()
+            .Select(shape => shape.ToolTip));
+        source.Publication.Dispose();
+        pane.RefreshCurrentness();
+        Assert.Null(view.ShapeList);
+    });
+
+    [Fact]
+    public void A_degenerate_measured_rectangle_uses_the_native_rectangle_batch() => Sta(() =>
+    {
+        using var source = new Source();
+        var view = new ImageViewBox();
+        using var pane = new ResultImagePane(view);
+        Assert.True(pane.TryPresent(source.Publication, source.Reference(), "flow", () => true, out var error), error);
+        var frame = Assert.IsType<NativeResultFrameReceipt>(pane.CurrentFrame);
+        using var layer = pane.Viewport.CreateDisplaySceneLayer();
+        var measured = new NativeMeasuredRectangle(frame.Frame, new(2, 1), 4, 0, 0, Colors.Green, 2, .5);
+        Assert.True(layer.Present(frame, 1, Array.Empty<NativeGeometryOverlay>(), Array.Empty<NativeTextOverlay>(),
+            () => true, rectangles: new[] { measured }));
+        var batch = Assert.Single(view.ShapeList.OfType<Tuple<string, object>>());
+        Assert.Equal("IRectangle", batch.Item1);
+        var native = Assert.IsAssignableFrom<SunEyeVision.Plugin.Wpf.Native.Dependencies.PresentationControls.RenderInterface.IRectangle>(
+            Assert.Single(Assert.IsAssignableFrom<IReadOnlyList<object>>(batch.Item2)));
+        Assert.Equal((4d, 0d), (native.Width, native.Height));
+        Assert.Equal("CenterX:2,CenterY:1 Width:4 Height:0 Angle:0", native.ToolTip);
+        Assert.Equal(.5, native.Opacity);
+        source.Publication.Dispose();
+        pane.RefreshCurrentness();
+        Assert.Null(view.ShapeList);
+    });
+
+    [Fact]
+    public void Large_native_outline_checks_ownership_by_chunk_and_rejects_retired_preparation() => Sta(() =>
+    {
+        using var source = new Source();
+        using var pane = new ResultImagePane(new ImageViewBox());
+        Assert.True(pane.TryPresent(source.Publication, source.Reference(), "flow", () => true, out var error), error);
+        var frame = Assert.IsType<NativeResultFrameReceipt>(pane.CurrentFrame);
+        using var layer = pane.Viewport.CreateDisplaySceneLayer();
+        var points = Enumerable.Range(0, 2048).Select(index => new Point2(index % 2, index % 2)).ToArray();
+        var outlines = new[] { new NativeOutlineOverlay(frame.Frame, frame.Coordinates, points, 0, true, Colors.Green, Colors.Red) };
+        var checks = 0;
+        Assert.False(layer.Present(frame, 1, Array.Empty<NativeGeometryOverlay>(), Array.Empty<NativeTextOverlay>(),
+            () => ++checks <= 3, outlines: outlines));
+        Assert.Equal(4, checks);
+
+        checks = 0;
+        Assert.True(layer.Present(frame, 2, Array.Empty<NativeGeometryOverlay>(), Array.Empty<NativeTextOverlay>(),
+            () => { checks++; return true; }, outlines: outlines));
+        Assert.InRange(checks, 8, 64);
+    });
+
+    [Fact]
+    public void Packed_rgb_result_keeps_raw_channel_order_and_projects_bgra_for_the_view() => Sta(() =>
+    {
+        var layout = new ImageLayout(3, 2, 9, PixelLayout.Rgb24);
+        var pixels = new byte[] { 255, 0, 0, 64, 128, 192, 0, 0, 255, 0, 255, 0, 9, 8, 7, 6, 5, 4 };
+        using var source = new Source(raster: (layout, pixels));
+        var view = new ImageViewBox();
+        using var pane = new ResultImagePane(view);
+        Assert.True(pane.TryPresent(source.Publication, source.Reference(), "flow", () => true, out var error), error);
+        Assert.Equal(new byte[] { 64, 128, 192 }, pane.Viewport.ReadPixel(1, 0));
+        Assert.Equal(new byte[] { 192, 128, 64, 255 }, view.ImageDataSource.Buffer.Skip(4).Take(4));
+        Assert.Equal(new byte[] { 0, 0, 255, 0 }, view.ImageDataSource.Buffer.Take(4));
+        var prepare = Assert.IsType<Func<bool, System.Windows.Media.Imaging.BitmapSource>>(
+            typeof(ImageViewBox).GetProperty("NativePrepareExport", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(view));
+        var original = prepare(false);
+        Assert.Equal(PixelFormats.Rgb24, original.Format);
+        var exported = new byte[pixels.Length];
+        original.CopyPixels(exported, layout.RowStrideBytes, 0);
+        Assert.Equal(pixels, exported);
+    });
+
     [Fact]
     public void Original_view_uses_actual_frame_domain_padding_and_independent_edit_borrow() => Sta(() =>
     {
@@ -264,15 +438,16 @@ public sealed class ResultImagePaneTests
         internal readonly IReadOnlyImage Image;
         internal readonly TypeRef Type;
         private readonly bool _nested, _sequence;
-        internal Source(bool nested = false, bool sequence = false, Func<IReadOnlyImage, IReadOnlyImage>? wrap = null)
+        internal Source(bool nested = false, bool sequence = false, Func<IReadOnlyImage, IReadOnlyImage>? wrap = null,
+            CoordinateFrame? coordinateFrame = null, (ImageLayout Layout, byte[] Pixels)? raster = null)
         {
             _nested = nested; _sequence = sequence;
             var resources = new FrozenOutputResources(); Owner = new(resources);
             var frame = new ImageFrameAddress(Guid.NewGuid(), "captured-camera");
-            var coordinates = new CoordinateFrame("image:actual-domain", CoordinateDomain.Image, CoordinateUnit.Pixel);
+            var coordinates = coordinateFrame ?? new CoordinateFrame("image:actual-domain", CoordinateDomain.Image, CoordinateUnit.Pixel);
             var domain = resources.CreateRegion(coordinates, frame, new[] { new RegionRun(0, 1, 2), new RegionRun(1, 0, 0) });
-            var actual = resources.CreateImage(new ImageLayout(3, 2, 4, PixelLayout.Gray8), frame, domain,
-                new byte[] { 1, 2, 3, 99, 4, 5, 6, 88 });
+            var (layout, pixels) = raster ?? (new ImageLayout(3, 2, 4, PixelLayout.Gray8), new byte[] { 1, 2, 3, 99, 4, 5, 6, 88 });
+            var actual = resources.CreateImage(layout, frame, domain, pixels);
             Image = wrap?.Invoke(actual) ?? actual;
             Type = TypeRef.ResourceOf(ResourceKind.Image);
             object value = Image;

@@ -14,12 +14,78 @@ public partial class MainWindowViewModel
 {
  internal bool IsFormalRootRunning(string rootId)=>_formalRunningRootIds.Contains(rootId);
  private ImageSourceHostInputFactory? _formalImageInputs;
+ private bool _folderTrackingQueued;
+ private readonly object _folderRunGate = new();
+ private readonly Dictionary<(Guid Session, string Workflow, string Node), List<HostInputFactoryContext>> _folderRunsQueued = new();
  private DocumentRunBatch? _formalActiveBatch;
  private Task? _formalRunTask;
  private readonly HashSet<string> _formalRunningRootIds=new(StringComparer.Ordinal);
  private readonly Dictionary<string,WorkflowExecutionSnapshot> _formalExecutionSnapshots=new(StringComparer.Ordinal);
- private ImageSourceHostInputFactory FormalImageInputs=>_formalImageInputs??=new ImageSourceHostInputFactory(
-  SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime.Runtime);
+ private ImageSourceHostInputFactory FormalImageInputs=>_formalImageInputs??=CreateFormalImageInputs();
+
+ private ImageSourceHostInputFactory CreateFormalImageInputs()
+ {
+  var dispatcher = System.Windows.Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
+  return new(SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.CameraRuntime.Runtime,
+   context => QueueFolderRun(dispatcher, context));
+ }
+ private void QueueFolderRun(Dispatcher dispatcher, HostInputFactoryContext context)
+ {
+  var key = (Session: context.EditSessionId, Workflow: context.Node.WorkflowId, Node: context.Node.NodeId);
+  if (dispatcher.HasShutdownStarted) return;
+  lock (_folderRunGate)
+  {
+   if (_folderRunsQueued.TryGetValue(key, out var pending))
+   {
+    if (!pending.Contains(context)) pending.Add(context);
+    return;
+   }
+   _folderRunsQueued.Add(key, new() { context });
+  }
+  dispatcher.BeginInvoke(new Action(async () =>
+  {
+   List<HostInputFactoryContext> requests;
+   lock (_folderRunGate)
+    if (!_folderRunsQueued.Remove(key, out requests!)) return;
+   try
+   {
+    if (_documentHostReleased || !CanAcceptExternalActivation || IsDebugWindowOpen || IsRunning || _formalRunTask is not null ||
+        DocumentManager.CurrentSession is not { } session || session.EditSessionId != key.Session) return;
+    var accepted = false;
+    for (var i = requests.Count - 1; i >= 0 && !accepted; i--)
+    {
+     try { requests[i].EnsureCurrent(); accepted = true; }
+     catch (InvalidOperationException) { }
+    }
+    if (!accepted || !session.GetWorkflows().Any(flow => !flow.IsSubroutine && flow.Id == key.Workflow)) return;
+    await RunFormalWorkflowsAsync(new[] { key.Workflow });
+   }
+   catch (Exception error) { AddLog("订阅文件夹触发流程失败：" + error.Message); }
+  }));
+ }
+ private void QueueFolderTriggerTracking()
+ {
+  if (_folderTrackingQueued || _documentHostReleased || DocumentManager.CurrentSession is null) return;
+  _folderTrackingQueued = true;
+  Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
+  {
+   _folderTrackingQueued = false;
+   if (_documentHostReleased || DocumentManager.CurrentSession is not { } session) return;
+   foreach (var flow in session.GetWorkflows().Where(flow => !flow.IsSubroutine))
+    foreach (var node in session.GetNodes(flow.Id))
+    {
+     if (!node.Configuration.Fields.Declarations.ContainsKey("local.trigger-folder-run") ||
+         node.Configuration.Fields.Read("local.trigger-folder-run") is not ConstantSetting { Value: true }) continue;
+     try
+     {
+      if (session.CaptureHostInputContext(flow.Id, node) is { } context)
+       FormalImageInputs.TrackFolderTrigger(context);
+     }
+     catch (Exception error) when (error is ArgumentException or InvalidOperationException or System.IO.IOException or UnauthorizedAccessException)
+     { AddLog("订阅文件夹监听失败：" + error.Message); }
+    }
+  }));
+ }
  private WorkflowExecutionSnapshot? GetFormalExecutionSnapshot(string workflowId)=>_formalExecutionSnapshots.GetValueOrDefault(workflowId);
  private WorkflowExecutionSnapshot? EnsureFormalExecutionSnapshot(string workflowId)
  {
@@ -29,20 +95,21 @@ public partial class MainWindowViewModel
   if(!_formalExecutionSnapshots.TryGetValue(workflowId,out var snapshot))_formalExecutionSnapshots.Add(workflowId,snapshot=new(workflowId,root.Name));
   snapshot.SynchronizeDefinition(root.Name,root.Nodes);return snapshot;
  }
- private async Task RunFormalWorkflowsAsync(IReadOnlyList<string> workflowIds)
+ private async Task RunFormalWorkflowsAsync(IReadOnlyList<string> workflowIds, int navigationDirection = 0)
  {
   if(_formalRunTask is not null||IsRunning)throw new InvalidOperationException("方案已有正式运行，请先停止并等待排空。");
   var session=DocumentManager.CurrentSession??throw new InvalidOperationException("当前没有方案。");
   if(!CanEditRootWorkspace||IsDebugWindowOpen)throw new InvalidOperationException("请先处理参数编辑和方案切换后再运行。");
   if(!TryCommitSolutionEditors(out var error))throw new InvalidOperationException(error);
-  _formalRunTask=RunFormalBatchCoreAsync(session,workflowIds);
+  _formalRunTask=RunFormalBatchCoreAsync(session,workflowIds,navigationDirection);
   try{await _formalRunTask;}finally{_formalRunTask=null;}
  }
- private async Task RunFormalBatchCoreAsync(DocumentSession session,IReadOnlyList<string> workflowIds)
+ private async Task RunFormalBatchCoreAsync(DocumentSession session,IReadOnlyList<string> workflowIds,int navigationDirection)
  {
   if(workflowIds.Count==0)throw new InvalidOperationException("没有可运行的根流程。");
   var dispatcher=System.Windows.Application.Current?.Dispatcher??Dispatcher.CurrentDispatcher;
-  using var batch=DocumentManager.CaptureCurrentRunBatch(workflowIds,hostFactory:FormalImageInputs);
+  var inputFactory=navigationDirection==0?FormalImageInputs:FormalImageInputs.ForNavigation(workflowIds.Single(),navigationDirection);
+  using var batch=DocumentManager.CaptureCurrentRunBatch(workflowIds,hostFactory:inputFactory);
   if(!ReferenceEquals(DocumentManager.CurrentSession,session))throw new InvalidOperationException("运行捕获期间方案已变化。");
   _formalActiveBatch=batch;
   void Status(string workflowId,string nodeId,ExecutionStatus status)=>dispatcher.BeginInvoke(new Action(()=>
@@ -94,7 +161,7 @@ public partial class MainWindowViewModel
   var context=activation.Session.CaptureHostInputContext(activation.Workflow.Id,activation.Node)
    ??throw new InvalidOperationException("图像源宿主能力已失效。");
   var binding=ActiveImageSourceBinding;
-  if(binding is null||!binding.Owns(activation.Session,activation.Workflow,activation.Node))throw new InvalidOperationException("来源条已替换。");
+  if(binding is null||!binding.OwnsNavigation(activation))throw new InvalidOperationException("来源条或导航选择已替换。");
   FormalImageInputs.SelectIndex(context,activation.Index);
   if(!binding.TryPresentNavigation(activation))throw new InvalidOperationException("导航接纳期间来源条已变化。");
   ResultWorkspaceChanged?.Invoke();
@@ -131,6 +198,7 @@ public partial class MainWindowViewModel
  private void ReleaseFormalExecution()
  {
   if(_formalRunTask is {IsCompleted:false}||IsRunning)throw new InvalidOperationException("正式运行尚未排空，不能释放输入工厂。");
+  lock (_folderRunGate) _folderRunsQueued.Clear();
   _formalImageInputs?.Dispose();_formalImageInputs=null;_formalExecutionSnapshots.Clear();
  }
 }

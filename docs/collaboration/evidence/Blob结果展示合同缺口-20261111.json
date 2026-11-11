@@ -1,0 +1,31 @@
+{
+  "kind": "Blob结果展示合同缺口",
+  "scope": "ImageSource + Blob结果页、图像源切换、图形文本保留",
+  "evidence": [
+    "用户截图 codex-clipboard-1b1053b9-01a1-4f65-b537-93eee8f9356e.png",
+    "用户截图 codex-clipboard-c0235d15-514b-47b0-92a9-0ecce89399f4.png",
+    "用户截图 codex-clipboard-ff48ddaf-b28e-4c9b-85fa-83c0d0ef5c16.png",
+    "tools/SunEyeVision.BlobAnalysis/Runtime/Results/BlobSchema.cs",
+    "tools/SunEyeVision.BlobAnalysis/Runtime/Results/BlobOutputDisplay.cs",
+    "src/Plugin.Wpf/Controls/Native/Composition/Results/PropertyList/DeclaredPropertyList.cs",
+    "src/UI/Services/Images/ResultWorkspacePresenter.Display.cs"
+  ],
+  "confirmed": [
+    "Blob数值结果与原厂截图中的面积、周长、质心、角度、长短轴等数据高度一致",
+    "当前结果根节点顺序已部分按OutputDisplay声明投影",
+    "当前图像源下结果菜单可以列出Blob图像、二值化图像、输出掩膜等图像项"
+  ],
+  "gaps": [
+    "结果页仍用通用端口树显示Blob低层身份，缺少原厂模块结果的专用分组和字段格式化",
+    "模块状态、单体状态、阈值方式、极性、数组和浮点精度没有统一的Blob专用显示合同",
+    "切换图像源后，Blob图形、文本和二值图显示状态会消失，结果publication、背景图和叠加层没有共用稳定上下文",
+    "图像源菜单的当前勾选与Blob节点结果显示状态没有建立原厂同等的保留/恢复规则"
+  ],
+  "decision": {
+    "algorithm": "保留当前算法和结果值映射作为已具备基础，继续以同版本原厂结果声明复核字段和格式",
+    "presentation": "新增Blob专用结果展示合同，覆盖分组、顺序、状态映射、数组/数值格式和空值语义",
+    "imageContext": "背景图切换只更新图像源，沿同一结果publication保留Blob图形、文本、二值图和结果表；publication、节点代次或真实帧失效时才退役",
+    "verification": "代码完成后重新做全量Release构建，由用户人工核对模块结果、图层菜单、图像源切换和双击调试窗口"
+  },
+  "build": "全量Release 0错误、5964警告、28.87秒；未运行测试或程序",\n  "runtime": "当前仅有用户人工截图证据，未运行程序、自动测试或生产探针"
+}

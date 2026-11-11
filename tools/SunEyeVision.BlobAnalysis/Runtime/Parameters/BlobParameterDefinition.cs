@@ -26,7 +26,7 @@ public sealed partial class BlobParameterDefinition
         if(inputs.Elements().Select(x=>Required(x,"id")).Distinct(StringComparer.Ordinal).Count()!=inputs.Elements().Count())
             throw new InvalidDataException("Duplicate Blob input editor identity.");
         _inputs=new ReadOnlyDictionary<string,XElement>(inputs.Elements().ToDictionary(x=>Required(x,"id"),StringComparer.Ordinal));
-        if(!_inputs.Keys.ToHashSet(StringComparer.Ordinal).SetEquals(new[]{BlobTool.ImageInput,BlobTool.InspectionInput,BlobTool.MaskInput,BlobTool.PoseInput}))
+        if(!_inputs.Keys.ToHashSet(StringComparer.Ordinal).SetEquals(new[]{BlobTool.ImageInput,BlobTool.PoseInput}))
             throw new InvalidDataException("Blob input editor declarations differ from the input model.");
         foreach(var group in root.Elements("Group"))
         {
@@ -36,7 +36,7 @@ public sealed partial class BlobParameterDefinition
             if(!group.HasElements)throw new InvalidDataException("Empty Blob parameter group.");
             foreach(var field in group.Elements())
             {
-                Shape(field,["id","fieldId","allowReference","bindingName","type","default","label","minimum","maximum","decimals","increment","visibleWhen","visibleValue","visibleNegate","pairWith"],["Choice"]);
+                Shape(field,["id","fieldId","allowReference","bindingName","type","default","label","minimum","maximum","decimals","increment","visibleWhen","visibleValue","visibleNegate","pairWith","pairMinimum","pairMaximum","pairLabel"],["Choice"]);
                 Required(field,"id");Required(field,"type");Required(field,"default");Required(field,"label");
                 Required(field,"fieldId");Boolean(field,"allowReference");
                 if(Boolean(field,"allowReference"))Required(field,"bindingName");
@@ -126,12 +126,12 @@ public sealed partial class BlobParameterDefinition
         var settings=typeof(BlobSettings).GetProperties(BindingFlags.Public|BindingFlags.Instance)
             .Where(p=>p.GetCustomAttribute<BlobNonFieldAttribute>() is null)
             .ToDictionary(p=>p.Name,p=>p.PropertyType,StringComparer.Ordinal);
-        foreach(var property in typeof(BlobVmFindParameters).GetProperties(BindingFlags.Public|BindingFlags.Instance))
+        foreach(var property in typeof(BlobFindParameters).GetProperties(BindingFlags.Public|BindingFlags.Instance))
             settings.TryAdd(property.Name,property.PropertyType);
         return settings;
     }
     internal static PropertyInfo? SettingsProperty(string id)=>typeof(BlobSettings).GetProperty(id);
-    internal static PropertyInfo? VmProperty(string id)=>typeof(BlobVmFindParameters).GetProperty(id);
+    internal static PropertyInfo? FindProperty(string id)=>typeof(BlobFindParameters).GetProperty(id);
     internal static Type ParameterType(string id)=>ParameterTypes().TryGetValue(id,out var type)?type
         :throw new InvalidDataException("Unknown Blob parameter: "+id);
     public string WorkflowImageInputId { get; }

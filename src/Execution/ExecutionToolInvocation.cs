@@ -37,12 +37,16 @@ internal static class ExecutionToolInvocation
                 throw new InvalidOperationException("执行身份不属于冻结方案中的实际节点。");
             admission = node.Owner.EnterRun(identity);
             identity.CancellationToken.ThrowIfCancellationRequested();
-            generation = node.Directory.AcquireInvocation();
+            generation = node.Directory.AcquireInvocation("正式执行");
             var resolved = ExecutionBindingInputResolver.Resolve(workflow, node, plan, identity, expected, results, variables, parameterValues);
             sourceReaders = resolved.Readers;
             var settings = node.MaterializeSettings(resolved.Settings);
             var values = new Dictionary<string, object?>(resolved.Inputs, StringComparer.Ordinal);
             var context = new InvocationContext(invocationIdentity, identity.CancellationToken, resources, log);
+            if (node.Definition is IToolExecutionFilter filter && !filter.ShouldExecute(settings))
+                outcome = ToolOutcome.Suppress();
+            else
+            {
             IToolExecutionContext bound = context;
             if (node.Directory.GetHostInputs(node.Configuration.ToolId) is not null)
             {
@@ -59,6 +63,7 @@ internal static class ExecutionToolInvocation
             var inputs = new InputValues(node.Schema.Inputs, values);
             var requests = plan.Requests.Concat(node.RequiredDisplayOutputs).ToArray();
             outcome = await ToolRuntimeExecutor.ExecuteAsync(node.Definition, settings, inputs, bound, requests).ConfigureAwait(false);
+            }
             var owned = new GenerationResourceOwner(resources, generation);
             generation = null;
             // Capture consumes both output and owned resources even if it throws.

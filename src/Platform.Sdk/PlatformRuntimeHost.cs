@@ -6,6 +6,7 @@ using SunEyeVision.Domain.Persistence;
 using SunEyeVision.Domain.Solutions;
 using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Infrastructure.Persistence;
+using SunEyeVision.Infrastructure.ImageSources;
 using SunEyeVision.Persistence;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Runtime;
@@ -23,6 +24,7 @@ public sealed class PlatformRuntimeHost : IPlatformRuntime
     private readonly TaskCompletionSource _ready = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly Thread _owner;
     private readonly object _gate = new();
+    private readonly ImageSourceHostInputFactory _imageInputs = new();
     private DocumentSessionManager? _manager;
     private RuntimeDirectorySnapshot? _directory;
     private PlatformSolution? _solution;
@@ -69,10 +71,10 @@ public sealed class PlatformRuntimeHost : IPlatformRuntime
         return solution;
     }
 
-    internal Task<PlatformRunResult> RunAsync(PlatformSolution solution, string workflowId, CancellationToken cancellationToken)
-        => Task.Run(() => RunCore(solution, workflowId, cancellationToken), cancellationToken);
+    internal Task<PlatformRunResult> RunAsync(PlatformSolution solution, string workflowId, IHostInputFactory inputs, CancellationToken cancellationToken)
+        => Task.Run(() => RunCore(solution, workflowId, inputs, cancellationToken), cancellationToken);
 
-    private PlatformRunResult RunCore(PlatformSolution solution, string workflowId, CancellationToken cancellationToken)
+    private PlatformRunResult RunCore(PlatformSolution solution, string workflowId, IHostInputFactory inputs, CancellationToken cancellationToken)
     {
         DocumentRunBatch? batch = null;
         DocumentRunResult? result = null;
@@ -82,7 +84,7 @@ public sealed class PlatformRuntimeHost : IPlatformRuntime
             {
                 EnsureCurrent(solution);
                 return (_manager ?? throw new ObjectDisposedException(nameof(PlatformRuntimeHost)))
-                    .CaptureCurrentRunBatch(new[] { workflowId });
+                    .CaptureCurrentRunBatch(new[] { workflowId },hostFactory:inputs);
             });
             solution.SetActiveBatch(batch);
             result = batch.RunAsync(_ => { }, cancellationToken).GetAwaiter().GetResult();
@@ -111,8 +113,42 @@ public sealed class PlatformRuntimeHost : IPlatformRuntime
         {
             EnsureCurrent(solution);
             var manager = _manager ?? throw new ObjectDisposedException(nameof(PlatformRuntimeHost));
-            var run = manager.CaptureCurrentContinuousRun(workflowIds, ownerPost: PostOwner);
+            var run = manager.CaptureCurrentContinuousRun(workflowIds, hostFactory:_imageInputs, ownerPost: PostOwner);
             return new PlatformContinuousExecution(this, solution, workflowIds, run);
+        });
+
+    internal IHostInputFactory CaptureImageInputs(PlatformSolution solution,string workflowId,IReadOnlyDictionary<string,string> files)
+        =>CaptureImageInputs(solution,workflowId,files,captured=>_imageInputs.ForSdkFiles(workflowId,captured));
+
+    internal IHostInputFactory CaptureImageInputs(PlatformSolution solution,string workflowId,IReadOnlyDictionary<string,PlatformImageInput> frames)
+        =>CaptureImageInputs(solution,workflowId,frames,captured=>_imageInputs.ForSdkImages(workflowId,
+            captured.ToDictionary(pair=>pair.Key,pair=>
+            {
+                var frame=pair.Value??throw new ArgumentException("SDK 图像不能为空。",nameof(frames));
+                var format=frame.PixelFormat switch
+                {
+                    PlatformInputPixelFormat.Mono8=>PixelLayout.Gray8,
+                    PlatformInputPixelFormat.Rgb24=>PixelLayout.Rgb24,
+                    _=>throw new ArgumentException("SDK 图像像素格式不受支持。",nameof(frames))
+                };
+                return new SdkImageInput(new ImageLayout(frame.Width,frame.Height,frame.RowStrideBytes,format),frame.Pixels);
+            },StringComparer.Ordinal)));
+
+    private IHostInputFactory CaptureImageInputs<T>(PlatformSolution solution,string workflowId,IReadOnlyDictionary<string,T> inputs,
+        Func<IReadOnlyDictionary<string,T>,IHostInputFactory> freeze)
+        =>Invoke(()=>
+        {
+            EnsureCurrent(solution);
+            var workflow=solution.Session.GetWorkflows().Single(item=>item.Id==workflowId);
+            var captured=new Dictionary<string,T>(StringComparer.Ordinal);
+            foreach(var pair in inputs)
+            {
+                var node=workflow.Nodes.SingleOrDefault(item=>item.Id==pair.Key);
+                if(node?.ToolType!="ImageLoad"||node.Configuration.Fields.Read("source.kind") is not ConstantSetting {Value:"sdk"})
+                    throw new ArgumentException("SDK 输入必须对应所选流程中的 SDK 模式图像源。",nameof(inputs));
+                captured.Add(pair.Key,pair.Value);
+            }
+            return captured.Count==0?_imageInputs:freeze(captured);
         });
 
     internal async Task<PlatformContinuousCompletion> RunContinuousAsync(PlatformContinuousExecution execution, CancellationToken cancellationToken)
@@ -222,6 +258,7 @@ public sealed class PlatformRuntimeHost : IPlatformRuntime
         finally
         {
             try { _manager?.Dispose(); } catch { }
+            try { _imageInputs.Dispose(); } catch { }
             _work.Dispose();
         }
     }
@@ -295,10 +332,18 @@ internal sealed class PlatformSolution : IPlatformSolution
         => Workflows.Single(workflow => workflow.Id == workflowId);
     public void Save() { EnsureUsable(); _host.Save(this); }
     public IPlatformExecution CreateExecution(string workflowId)
+        =>CreateExecution(workflowId,new Dictionary<string,string>());
+    public IPlatformExecution CreateExecution(string workflowId,IReadOnlyDictionary<string,string> imageSourceFiles)
     {
         EnsureUsable();
-        _ = GetWorkflow(workflowId);
-        return new PlatformExecution(_host, this, workflowId);
+        ArgumentNullException.ThrowIfNull(imageSourceFiles);
+        return new PlatformExecution(_host,this,workflowId,_host.CaptureImageInputs(this,workflowId,imageSourceFiles));
+    }
+    public IPlatformExecution CreateExecution(string workflowId,IReadOnlyDictionary<string,PlatformImageInput> imageSourceFrames)
+    {
+        EnsureUsable();
+        ArgumentNullException.ThrowIfNull(imageSourceFrames);
+        return new PlatformExecution(_host,this,workflowId,_host.CaptureImageInputs(this,workflowId,imageSourceFrames));
     }
     public IPlatformContinuousExecution CreateContinuousExecution(IReadOnlyList<string> workflowIds)
     {
@@ -476,25 +521,38 @@ internal sealed class PlatformResultSubscription(PlatformSolution solution, Acti
     public void Dispose() => Interlocked.Exchange(ref _solution, null)?.RemoveSubscription(_handler, _user);
 }
 
-internal sealed class PlatformExecution(PlatformRuntimeHost host, PlatformSolution solution, string workflowId) : IPlatformExecution
+internal sealed class PlatformExecution(PlatformRuntimeHost host, PlatformSolution solution, string workflowId,IHostInputFactory inputs) : IPlatformExecution
 {
     private readonly PlatformRuntimeHost _host = host;
     private readonly PlatformSolution _solution = solution;
+    private readonly object _gate=new();
+    private IHostInputFactory? _inputs=inputs;
     private int _disposed;
     private Task<PlatformRunResult>? _run;
     public string WorkflowId => workflowId;
     public Task<PlatformRunResult> RunAsync(CancellationToken cancellationToken = default)
     {
-        ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
-        var run = new Lazy<Task<PlatformRunResult>>(() => _host.RunAsync(_solution, workflowId, cancellationToken));
-        var existing = Interlocked.CompareExchange(ref _run, run.Value, null);
-        return existing ?? run.Value;
+        lock(_gate)
+        {
+            ObjectDisposedException.ThrowIf(_disposed!=0,this);
+            if(_run is not null)return _run;
+            var captured=_inputs!;
+            _inputs=null;
+            return _run=_host.RunAsync(_solution,workflowId,captured,cancellationToken);
+        }
     }
     public void Stop() => _host.Stop(_solution);
     public void Dispose()
     {
-        if (Interlocked.Exchange(ref _disposed, 1) != 0) return;
-        if (Volatile.Read(ref _run) is { } run && !run.IsCompleted)
+        Task<PlatformRunResult>? run;
+        lock(_gate)
+        {
+            if(_disposed!=0)return;
+            _disposed=1;
+            _inputs=null;
+            run=_run;
+        }
+        if(run is {IsCompleted:false})
         {
             Stop();
             try { run.GetAwaiter().GetResult(); } catch (OperationCanceledException) { }

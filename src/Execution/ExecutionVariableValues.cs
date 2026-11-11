@@ -1,9 +1,10 @@
 using System.Collections.ObjectModel;
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Runtime;
 
 namespace SunEyeVision.Execution;
 
-/// <summary>One invocation batch's pure variable slots; no document or image ownership is retained.</summary>
+/// <summary>One batch's pure value slots and independently owned read-only image snapshots.</summary>
 internal sealed class ExecutionVariableValues : IDisposable
 {
     internal sealed record State(IReadOnlyDictionary<string, object?> Values, IReadOnlyDictionary<string, Diagnostic> Issues);
@@ -11,12 +12,14 @@ internal sealed class ExecutionVariableValues : IDisposable
     private readonly IReadOnlyDictionary<string, BindingVariableSource> _sources;
     private readonly IReadOnlyDictionary<string, string> _names;
     private readonly Dictionary<string, object?> _values = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, FrozenImageResource> _images;
     private readonly Dictionary<string, Diagnostic> _issues = new(StringComparer.Ordinal);
     private readonly HashSet<string> _blocked = new(StringComparer.Ordinal);
     private bool _disposed;
     internal ExecutionVariableValues(string solutionId, IEnumerable<BindingVariableSource> sources,
         IReadOnlyDictionary<string, string> names,
-        IEnumerable<KeyValuePair<string, object?>> initialValues, IReadOnlyDictionary<string, Diagnostic>? initialIssues = null)
+        IEnumerable<KeyValuePair<string, object?>> initialValues, IReadOnlyDictionary<string, Diagnostic>? initialIssues = null,
+        Dictionary<string, FrozenImageResource>? images = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(solutionId);
         ArgumentNullException.ThrowIfNull(sources); ArgumentNullException.ThrowIfNull(names); ArgumentNullException.ThrowIfNull(initialValues);
@@ -41,6 +44,7 @@ internal sealed class ExecutionVariableValues : IDisposable
             if (!_sources.ContainsKey(id) || issue is null) throw new ArgumentException("变量诊断不属于冻结声明。", nameof(initialIssues));
             _values.Remove(id); _issues.Add(id, issue); _blocked.Add(id);
         }
+        _images = images ?? new(StringComparer.Ordinal);
     }
     internal string SolutionId { get; }
     internal IReadOnlyList<BindingVariableSource> Sources => Array.AsReadOnly(_sources.Values.ToArray());
@@ -51,8 +55,18 @@ internal sealed class ExecutionVariableValues : IDisposable
         lock (_gate)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-            var copy = new ExecutionVariableValues(SolutionId, _sources.Values, _names,
-                _values.Select(pair => new KeyValuePair<string, object?>(pair.Key, Copy(pair.Value))).ToArray());
+            var images = new Dictionary<string, FrozenImageResource>(StringComparer.Ordinal);
+            ExecutionVariableValues copy;
+            try
+            {
+                foreach (var (id, image) in _images) images.Add(id, image.RetainSnapshot());
+                copy = new ExecutionVariableValues(SolutionId, _sources.Values, _names, _values, images: images);
+            }
+            catch
+            {
+                foreach (var image in images.Values) image.Dispose();
+                throw;
+            }
             foreach (var (id, issue) in _issues) copy._issues.Add(id, issue);
             copy._blocked.UnionWith(_blocked);
             return copy;
@@ -106,6 +120,7 @@ internal sealed class ExecutionVariableValues : IDisposable
             {
                 var source = pair.Value;
                 if (_issues.TryGetValue(pair.Key, out var issue)) return new BindingVariableValue(source, consumer, null, issue);
+                if (_images.TryGetValue(pair.Key, out var image)) return new BindingVariableValue(source, consumer, image);
                 if (!_values.TryGetValue(pair.Key, out var raw)) return new BindingVariableValue(source, consumer, null,
                     new Diagnostic("variable-unavailable", "变量在本批运行尚未产生有效值。", pair.Key));
                 try
@@ -177,5 +192,14 @@ internal sealed class ExecutionVariableValues : IDisposable
         }
         return ValueRules.Freeze(port, value);
     }
-    public void Dispose() { lock (_gate) { if (_disposed) return; _disposed = true; _values.Clear(); _issues.Clear(); _blocked.Clear(); } }
+    public void Dispose()
+    {
+        lock (_gate)
+        {
+            if (_disposed) return;
+            _disposed = true;
+            foreach (var image in _images.Values) image.Dispose();
+            _images.Clear(); _values.Clear(); _issues.Clear(); _blocked.Clear();
+        }
+    }
 }

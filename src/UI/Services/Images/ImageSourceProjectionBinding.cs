@@ -1,4 +1,5 @@
 using System.Windows;
+using System.IO;
 using System.Windows.Threading;
 using SunEyeVision.Application;
 using SunEyeVision.Application.Editing;
@@ -31,6 +32,7 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
  private readonly Dispatcher _dispatcher;
  private Func<Window?>? _dialogOwner;
  private bool _disposed, _ownCommit, _refreshQueued, _isLocal;
+ private (string Reference,Guid Source,Guid Subscription,Guid Path)? _folderProjectionKey;
  internal ImageInputSource Source { get; }
  internal ImageSourceStripSession Strip { get; }
  internal bool CanActivate => _activate is not null && _isLocal && Current() && _canNavigate() && Current();
@@ -62,8 +64,8 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
   try
   {
    var initial = ReadPolicy();
-   Source.LoadFromPolicy(initial, _session.CreateResourcePathResolver());
-   _isLocal = initial.SourceKind == ImageSourceKind.Local;
+   Source.LoadFromPolicy(Projection(initial), _session.CreateResourcePathResolver());
+   _isLocal = initial.SourceKind == ImageSourceKind.Local && !initial.SubscribeFolder;
    Source.IsReadOnly = !_isLocal || !Current() || !_canEdit();
    Source.AttachFormalOwner(); Source.ConfigurationWriter = AcceptEdit;
    Strip = new ImageSourceStripSession(Source, Current, () => CanActivate, ActivateAsync, _dispatcher, () => _dialogOwner?.Invoke(),
@@ -107,17 +109,52 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
   // 接纳事务在途时投影状态归在途 Commit 所有：文档已前移而投影尚未安装，此刻刷新必然读到
   // 不一致快照并撞 LoadFromPolicy 门禁；在途 Commit 会在 writer 返回后自行安装同一批行，跳过即可。
   if (Source.IsAcceptingEdit) return;
-  var current = ReadPolicy();
+  var accepted = ReadPolicy();
+  var current = Projection(accepted);
   var displayed = Source.CapturePolicy();
   var resolver = _session.CreateResourcePathResolver();
   var same = displayed.CurrentIndex == current.CurrentIndex && displayed.RunMode == current.RunMode &&
-   displayed.AutoSwitchEnabled == current.AutoSwitchEnabled && displayed.FilePaths.SequenceEqual(current.FilePaths) &&
+   displayed.AutoSwitchEnabled == current.AutoSwitchEnabled && displayed.StopAtLastImage == current.StopAtLastImage && displayed.FilePaths.SequenceEqual(current.FilePaths) &&
    displayed.ForRunPaths.SequenceEqual(current.ForRunPaths) &&
    Source.Images.Select(image => image.FilePath).SequenceEqual(current.FilePaths.Select(reference =>
     resolver.Resolve("local.paths", reference, ResourcePurpose.FileRead).Address), StringComparer.OrdinalIgnoreCase);
-  if (!same) Source.LoadFromPolicy(current, resolver);
-  _isLocal = current.SourceKind == ImageSourceKind.Local;
+  if (!same)
+  {
+   try { Source.LoadFromPolicy(current,resolver); }
+   catch { _folderProjectionKey=null;throw; }
+  }
+  _isLocal = accepted.SourceKind == ImageSourceKind.Local && !accepted.SubscribeFolder;
   RefreshAvailability();
+ }
+ private ImageSourcePolicy Projection(ImageSourcePolicy policy)
+ {
+  if(policy.SourceKind!=ImageSourceKind.Local||!policy.SubscribeFolder)
+  { _folderProjectionKey=null;return policy; }
+  var previous=Source.CapturePolicy();
+  var projection=new ImageSourcePolicy {NodeId=policy.NodeId,AutoSwitchEnabled=policy.AutoSwitchEnabled,StopAtLastImage=policy.StopAtLastImage};
+  var reference=policy.FolderPath;
+  var context=_session.CaptureHostInputContext(_root.Id,_node)
+   ??throw new InvalidOperationException("订阅目录缺少已接纳输入声明。");
+  var revisions=context.ConfigurationRevisions;
+  var key=(reference,revisions.GetValueOrDefault("source.kind"),revisions.GetValueOrDefault("local.subscribe-folder"),revisions.GetValueOrDefault("local.folder-path"));
+  if(_folderProjectionKey==key)
+  {
+   projection.FilePaths=previous.FilePaths;projection.CurrentIndex=previous.CurrentIndex;
+   return projection;
+  }
+  _folderProjectionKey=key;
+  if(string.IsNullOrWhiteSpace(reference))return projection;
+  try
+  {
+   var plan=policy.CaptureFolderList(_session.CreateResourcePathResolver());
+   EnsureCurrent();
+   projection.FilePaths=plan.Entries.Select(entry=>entry.Address).ToList();
+  }
+  catch(Exception error) when(error is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException)
+  { ReportPresentationError("订阅目录初始列表读取失败",error); }
+  try { context.EnsureCurrent();EnsureCurrent(); }
+  catch { _folderProjectionKey=null;throw; }
+  return projection;
  }
  private ImageSourcePolicy ReadPolicy()
  {
@@ -139,7 +176,7 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
   _node = draft.Node;
   var values = draft.Configuration.Fields.Select(draft.SettingsSchema.Inputs).Materialize(new Dictionary<string, object?>());
   var policy = ImageSourcePolicy.ReadFields(_node.Id, values);
-  if (policy.SourceKind != ImageSourceKind.Local || proposal.Configuration.NodeId != _node.Id)
+  if (policy.SourceKind != ImageSourceKind.Local || policy.SubscribeFolder || proposal.Configuration.NodeId != _node.Id)
    throw new InvalidOperationException("当前来源不是本地图像，不能修改列表。");
   var retainDisplay = !proposal.SelectStart && policy.CurrentIndex == proposal.Configuration.CurrentIndex &&
    policy.FilePaths.Count <= proposal.Configuration.FilePaths.Count &&
@@ -189,13 +226,17 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
   await activate(new(_session, _root, _node, Source, image, index, version));
  }
  /// <summary>Present an accepted runtime choice without editing the document's configured start.</summary>
- internal bool TryPresentNavigation(ImageSourceActivation selection)
+ internal bool OwnsNavigation(ImageSourceActivation selection)
  {
   _dispatcher.VerifyAccess();
-  if (!Current() || !ReferenceEquals(selection.Session, _session) || !ReferenceEquals(selection.Workflow, _root) ||
-      !ReferenceEquals(selection.Node, _node) || !ReferenceEquals(selection.Source, Source) ||
-      Source.EditVersion != selection.ProjectionVersion || selection.Index < 0 || selection.Index >= Source.Count ||
-      !ReferenceEquals(Source.Images[selection.Index], selection.Image)) return false;
+  return Current() && ReferenceEquals(selection.Session, _session) && ReferenceEquals(selection.Workflow, _root) &&
+      ReferenceEquals(selection.Node, _node) && ReferenceEquals(selection.Source, Source) &&
+      Source.EditVersion == selection.ProjectionVersion && Source.CanSelectImage(selection.Index) &&
+      ReferenceEquals(Source.Images[selection.Index], selection.Image);
+ }
+ internal bool TryPresentNavigation(ImageSourceActivation selection)
+ {
+  if (!OwnsNavigation(selection)) return false;
   return Source.TryPresentRuntimeCursor(selection.ProjectionVersion, selection.Image.Id,
    selection.Image.SourceReference ?? selection.Image.FilePath, selection.Image.FilePath) && Current();
  }
@@ -204,9 +245,20 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
  {
   _dispatcher.VerifyAccess();
   ArgumentNullException.ThrowIfNull(factory); ArgumentNullException.ThrowIfNull(receipt);
-  if (!Current() || !_isLocal || Source.EditVersion != projectionVersion) return false;
+  if (!Current() || Source.EditVersion != projectionVersion) return false;
   var context = _session.CaptureHostInputContext(_root.Id, _node);
   if (context is null || !factory.IsReceiptCurrent(context, receipt)) return false;
+  if (factory.CaptureFolderPlan(context, receipt) is { } folder)
+  {
+   if (context.Fields.Read("local.refresh-folder") is ConstantSetting { Value: false }) return false;
+   Source.LoadFromPolicy(new ImageSourcePolicy
+   {
+    NodeId = _node.Id, FilePaths = folder.Entries.Select(entry => entry.Address).ToList(),
+    CurrentIndex = receipt.Read.Position, AutoSwitchEnabled = folder.AutoAdvance
+   }, context.ResourcePaths);
+   return Current() && factory.IsReceiptCurrent(context, receipt);
+  }
+  if (!_isLocal) return false;
   var entry = receipt.Read.Entry;
   if (entry.OriginalIndex < 0 || entry.OriginalIndex >= Source.Count) return false;
   var image = Source.Images[entry.OriginalIndex];

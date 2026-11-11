@@ -166,7 +166,7 @@
     <Grid Grid.Row="2">
       <Border BorderBrush="{DynamicResource Results.Shell.Col_DisplayImage_BorderBrush}" BorderThickness="0,1,0,1">
         <Grid>
-          <TabControl Style="{StaticResource Results.Shell.ModuleViewTabControl}" Background="{DynamicResource Results.Shell.Col_DisplayImage_Background}" BorderBrush="{DynamicResource Results.Shell.Col_DisplayImage_BorderBrush}">
+          <TabControl x:Name="InfoTab" SelectionChanged="InfoTabSelectionChanged" Style="{StaticResource Results.Shell.ModuleViewTabControl}" Background="{DynamicResource Results.Shell.Col_DisplayImage_Background}" BorderBrush="{DynamicResource Results.Shell.Col_DisplayImage_BorderBrush}">
             <TabItem x:Name="CurrentResultTab" Header="当前结果" Height="40" FontSize="14">
               <TabItem.Style>
                 <Style TargetType="TabItem" BasedOn="{StaticResource Results.Shell.FrequentTab}">
@@ -175,22 +175,22 @@
               </TabItem.Style>
               <ContentPresenter Content="{Binding CurrentResultContent, ElementName=View}" />
             </TabItem>
-            <TabItem x:Name="HistoryTab" Header="历史结果" Height="40" FontSize="14" Style="{StaticResource Results.Shell.FrequentTab}">
+            <TabItem x:Name="HistoryTab" Header="历史结果" Height="40" FontSize="14" Style="{StaticResource Results.Shell.FrequentTab}" Tag="{Binding ElementName=View}">
               <TabItem.ContextMenu>
-                <ContextMenu Style="{StaticResource Results.History.ContextMenu}">
-                  <MenuItem Header="清空" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="未实现：历史记录服务尚未接入" />
-                  <MenuItem Header="保存" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="未实现：历史记录导出尚未接入" />
+                  <ContextMenu Style="{StaticResource Results.History.ContextMenu}" DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                    <MenuItem Header="清空" Command="{Binding ClearHistoryCommand}" />
+                    <MenuItem Header="保存" Command="{Binding SaveHistoryCommand}" />
                 </ContextMenu>
               </TabItem.ContextMenu>
               <Grid>
-                <DataGrid x:Name="HistoryGrid" ColumnWidth="Auto" Style="{StaticResource ModuleViewDataGridStyle}" IsEnabled="False">
+                  <DataGrid x:Name="HistoryGrid" ColumnWidth="Auto" Style="{StaticResource ModuleViewDataGridStyle}" IsReadOnly="True"
+                            ItemsSource="{Binding HistoryItems, ElementName=View}">
                   <DataGrid.Columns>
                     <DataGridTextColumn Header="执行序号" MinWidth="30" CellStyle="{StaticResource Results.History.LeftCell}" Binding="{Binding RowIndex}" />
                     <DataGridTextColumn Header="时间" MinWidth="150" CellStyle="{StaticResource Results.History.LeftCell}" Binding="{Binding AddTime}" />
                     <DataGridTextColumn Header="模块数据" MinWidth="200" CellStyle="{StaticResource Results.History.LeftCell}" Binding="{Binding Content}" />
                   </DataGrid.Columns>
                 </DataGrid>
-                <TextBlock Text="历史记录尚未接入" IsHitTestVisible="False" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource Results.Shell.Col_DisplayImage_Foreground}" />
               </Grid>
             </TabItem>
             <TabItem Header="帮助" Height="40" Width="90" FontSize="14" Style="{StaticResource Results.Shell.FrequentTab}">

@@ -23,6 +23,10 @@ public interface IPlatformSolution : IDisposable
     PlatformWorkflowInfo GetWorkflow(string workflowId);
     void Save();
     IPlatformExecution CreateExecution(string workflowId);
+    /// <summary>Freeze SDK-mode image-source file paths for this single execution, keyed by node ID.</summary>
+    IPlatformExecution CreateExecution(string workflowId, IReadOnlyDictionary<string, string> imageSourceFiles);
+    /// <summary>Copy SDK-mode image inputs for this single execution, keyed by node ID.</summary>
+    IPlatformExecution CreateExecution(string workflowId, IReadOnlyDictionary<string, PlatformImageInput> imageSourceFrames);
     IPlatformContinuousExecution CreateContinuousExecution(IReadOnlyList<string> workflowIds);
     IPlatformResultSubscription SubscribeResults(Action<PlatformResultEvent> handler);
     void Close();
@@ -157,6 +161,12 @@ public sealed record PlatformImageFrame(
     byte[] Pixels,
     Guid FrameId,
     string SourceId);
+
+public enum PlatformInputPixelFormat { Mono8, Rgb24 }
+
+/// <summary>Pixels include row padding. The execution copies the buffer and uses a full image domain.</summary>
+public sealed record PlatformImageInput(int Width,int Height,int RowStrideBytes,
+    PlatformInputPixelFormat PixelFormat,ReadOnlyMemory<byte> Pixels);
 
 /// <summary>跨程序集传递的区域快照，不暴露内部区域句柄或 reader。</summary>
 public sealed record PlatformRegionFrame(

@@ -1,10 +1,11 @@
+using System.ComponentModel;
 using System.Windows.Input;
 using System.Windows.Threading;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Commands;
 
-public readonly record struct NativeToolCommandState(bool IsContinuous, bool IsRunning, bool RunEnabled, bool ConfirmVisible);
-public sealed record NativeToolCommandLabels(string Continuous="连续执行", string Stop="停止", string ExecuteOnce="执行", string Confirm="确定");
+public readonly record struct NativeToolCommandState(bool IsContinuous, bool IsRunning, bool RunVisible, bool ConfirmVisible);
+public sealed record NativeToolCommandLabels(string Continuous="Lang_MutiRun", string Stop="Lang_StopRun", string ExecuteOnce="Execute", string Confirm="Confirm");
 
 /// <summary>Borrowed host operations. The view never runs an execution loop or owns the host.</summary>
 public interface INativeToolCommands
@@ -24,8 +25,9 @@ internal sealed class NativeToolCommandPresenter : IDisposable
     private readonly INativeToolCommands _source;
     private readonly Func<bool> _ownsSlot;
     private readonly Action<IReadOnlyList<NativeToolCommandItem>> _present;
-    private readonly NativeToolCommandLabels _labels;
     private readonly GuardedCommand[] _commands;
+    private readonly IReadOnlyList<NativeToolCommandItem> _items;
+    private bool _installed;
     private long _refresh;
     private volatile bool _disposed;
     private bool _adding, _subscribed;
@@ -36,8 +38,15 @@ internal sealed class NativeToolCommandPresenter : IDisposable
     internal NativeToolCommandPresenter(Dispatcher dispatcher, INativeToolCommands source, Func<bool> ownsSlot,
         Action<IReadOnlyList<NativeToolCommandItem>> present, NativeToolCommandLabels labels)
     {
-        _dispatcher=dispatcher;_source=source;_ownsSlot=ownsSlot;_present=present;_labels=labels;
+        _dispatcher=dispatcher;_source=source;_ownsSlot=ownsSlot;_present=present;
         _commands=Enumerable.Range(0,4).Select(index=>new GuardedCommand(this,index)).ToArray();
+        _items=Array.AsReadOnly(new[]
+        {
+            new NativeToolCommandItem("ContinuousExecuteBottomCommand",labels.Continuous,_commands[0]),
+            new NativeToolCommandItem("StopExecuteBottomCommand",labels.Stop,_commands[1]),
+            new NativeToolCommandItem("ExecuteOnceBottomCommand",labels.ExecuteOnce,_commands[2]),
+            new NativeToolCommandItem("BottomCommand",labels.Confirm,_commands[3])
+        });
     }
     private bool LocalCurrent=>!_disposed&&_ownsSlot();
     private bool Current(long request)=>LocalCurrent&&request==Interlocked.Read(ref _refresh);
@@ -75,11 +84,13 @@ internal sealed class NativeToolCommandPresenter : IDisposable
         var valid=ReadState(request,out var state);
         if(!Current(request))return;
         if(valid&&!SyncCommands(request))return;
-        var texts=new[]{_labels.Continuous,_labels.Stop,_labels.ExecuteOnce,_labels.Confirm};
-        var templates=new[]{"ContinuousExecuteBottomCommand","StopExecuteBottomCommand","ExecuteOnceBottomCommand","BottomCommand"};
-        var items=Enumerable.Range(0,4).Select(index=>new NativeToolCommandItem(templates[index],texts[index],
-            valid&&(index!=3||state.ConfirmVisible),state,_commands[index])).ToArray();
-        _present(items);
+        for(var index=0;index<_items.Count;index++)
+        {
+            if(!Current(request))return;
+            _items[index].Project(valid&&(index!=3||state.ConfirmVisible),state);
+        }
+        if(!Current(request))return;
+        if(!_installed){_installed=true;_present(_items);}
         foreach(var command in _commands){if(!Current(request))break;command.Notify();}
         }
         finally{_refreshing=false;}
@@ -118,7 +129,7 @@ internal sealed class NativeToolCommandPresenter : IDisposable
     }
     private static bool Allowed(int kind,NativeToolCommandState state)=>kind switch
     {
-        0 or 2=>!state.IsContinuous&&!state.IsRunning&&state.RunEnabled,
+        0 or 2=>!state.IsContinuous&&!state.IsRunning&&state.RunVisible,
         1=>state.IsContinuous,
         3=>state.ConfirmVisible,
         _=>false
@@ -175,10 +186,22 @@ internal sealed class NativeToolCommandPresenter : IDisposable
     }
 }
 
-internal sealed record NativeToolCommandItem(string TemplateKey,string DisplayNameA,bool CustomVisibleA,
-    NativeToolCommandState State,ICommand ClickCommand)
+internal sealed class NativeToolCommandItem(string templateKey,string displayName,ICommand command) : INotifyPropertyChanged
 {
-    public bool IsContinuous=>State.IsContinuous;
-    public bool IsRunning=>State.IsRunning;
-    public bool RunEnabled=>State.RunEnabled;
+    private NativeToolCommandState _state;
+    public string TemplateKey {get;}=templateKey;
+    public string DisplayNameA {get;}=displayName;
+    public ICommand ClickCommand {get;}=command;
+    public bool CustomVisibleA {get;private set;}
+    public bool IsContinuous=>_state.IsContinuous;
+    public bool IsRunning=>_state.IsRunning;
+    public bool RunVisible=>_state.RunVisible;
+    public event PropertyChangedEventHandler? PropertyChanged;
+    internal void Project(bool visible,NativeToolCommandState state)
+    {
+        if(CustomVisibleA==visible&&_state==state)return;
+        CustomVisibleA=visible;
+        _state=state;
+        PropertyChanged?.Invoke(this,new PropertyChangedEventArgs(string.Empty));
+    }
 }

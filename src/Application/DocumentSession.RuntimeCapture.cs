@@ -100,7 +100,8 @@ public sealed partial class DocumentSession
                         snapshots.Add(flow.Id, new ExecutionWorkflowSnapshot(flow.Id, ChangeRevision, _directory, _owner, nodes, predecessors, control, edges));
                     }
                     if (hosts.Any(pair => !nodeCaptures.ContainsKey(pair.Key))) throw new ArgumentException("宿主输入不属于所选流程的实际节点。", nameof(hostInputs));
-                    var capturedVariables = CaptureRuntimeVariables(flows, definitions);
+                    var capturedVariables = CaptureRuntimeVariables(flows, definitions,
+                        ReferencedVariableImages(selected.SelectMany(flow => snapshots[flow.Id].Nodes)));
                     variableValues = capturedVariables.Values;
                     var producers = capturedVariables.Producers;
                     var acceptance = CreateRunParameterAcceptance(nodeCaptures);

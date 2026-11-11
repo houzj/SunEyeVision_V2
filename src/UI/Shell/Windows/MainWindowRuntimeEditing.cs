@@ -7,11 +7,16 @@ using SunEyeVision.Application.Editing;
 using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Plugin.Editing.Wpf;
 using SunEyeVision.UI.Services.Editing;
+using SunEyeVision.UI.Features.Camera;
+using SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters;
+using SunEyeVision.Plugin.Contracts.Acquisition;
+using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Contracts.Results.Presentation;
 
 namespace SunEyeVision.UI.Shell.Windows;
 public partial class MainWindowViewModel
 {
-    internal Func<SunEyeVision.Plugin.Contracts.OutputReference,Func<bool>,SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameLease?>? RuntimeRoiFrameBorrow {get;set;}
+    internal Func<string,Func<bool>,SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameLease?>? RuntimeRoiFrameBorrow {get;set;}
     internal event Action? RoiFrameAvailabilityChanged;
     internal void NotifyRoiFrameAvailabilityChanged() => RoiFrameAvailabilityChanged?.Invoke();
     private bool OwnsSelectedDocumentNode(NodeDefinition node)
@@ -53,7 +58,7 @@ public partial class MainWindowViewModel
         var node = SelectedNode;
         ReleaseActiveResultView();
         ClearResultDisplay();
-        if (node is null) { HasDataAnalysisControl=false; SelectedNodeDataAnalysisControl=null; ClearFormalImageSourceSelection(); return; }
+        if (node is null) { HasDataAnalysisControl=false; SelectedNodeDataAnalysisControl=null; ClearFormalImageSourceSelection(); NotifyResultHistoryChanged(); return; }
         if (!OwnsSelectedDocumentNode(node)) { SelectedNode=null; return; }
         UpdateDataAnalysisControl(node).GetAwaiter().GetResult();
         RefreshFormalPublishedResult();
@@ -61,42 +66,68 @@ public partial class MainWindowViewModel
         NotifyResultDisplayChanged();
     }
     private long _editorOpenGeneration;
+    private bool CanOpenFormalEditor => !_documentHostReleased && !IsRunning
+        && !_solutionTransitionPrepared && !_transitionPreparationInProgress;
+
     private async System.Threading.Tasks.Task OpenFormalNodeEditor(NodeDefinition node)
     {
         // PROBE-KEEP：窗口打开分段计时，仅超阈值时输出（见 PerfProbe）。
         using var perf=SunEyeVision.UI.Services.Performance.PerfProbe.Begin("open",node.Name);
-        var opening=++_editorOpenGeneration;
-        if(_documentHostReleased||IsRunning||_solutionTransitionPrepared||_transitionPreparationInProgress)
+        if(!CanOpenFormalEditor)
             throw new InvalidOperationException("当前主窗正在运行、切换或关闭，不能打开参数页。");
         if (!OwnsSelectedDocumentNode(node)) throw new InvalidOperationException("节点已退出当前实际流程。");
+        if (!node.IsEnabled) return;
         var session=DocumentManager.CurrentSession!;
         var workflowId=WorkflowTabViewModel.SelectedTab!.CurrentWorkflowId;
         _=session.AdmitPresentation(workflowId,node.Id);
+        var opening=++_editorOpenGeneration;
+        bool RequestCurrent()=>opening==_editorOpenGeneration&&CanOpenFormalEditor;
         if (_openDebugWindow is {} previous)
         {
             if(previous is RuntimeToolEditorWindow actual)
-            {if(!await actual.CloseAndDrainAsync()){previous.Activate();return;}}
+            {if(!await actual.CloseAndDrainAsync()){if(RequestCurrent())previous.Activate();return;}}
             else {previous.Close();if(previous.IsVisible){previous.Activate();return;}}
         }
-        if(opening!=_editorOpenGeneration||_documentHostReleased||_solutionTransitionPrepared||_transitionPreparationInProgress)return;
-        if (!ReferenceEquals(DocumentManager.CurrentSession,session) || !OwnsSelectedDocumentNode(node))
+        if(!RequestCurrent())return;
+        bool OwnsTarget()=>ReferenceEquals(DocumentManager.CurrentSession,session)
+            &&WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId==workflowId&&OwnsSelectedDocumentNode(node);
+        if (!OwnsTarget())
             throw new InvalidOperationException("关闭旧窗口期间方案或节点已变化。");
+        if (!node.IsEnabled) return;
         SelectedNode=node;
+        // Selection observers may open a different node synchronously.
+        bool SelectionCurrent() => RequestCurrent() && ReferenceEquals(SelectedNode, node);
+        if (!SelectionCurrent() || !OwnsTarget()) return;
+        if (WorkflowTabViewModel.SelectedTab?.DocumentCanvas is { } canvas)
+        {
+            foreach (var projection in canvas.Nodes.ToArray())
+            {
+                if (!SelectionCurrent() || !ReferenceEquals(WorkflowTabViewModel.SelectedTab?.DocumentCanvas, canvas)) return;
+                projection.IsSelected = ReferenceEquals(projection.Definition, node);
+            }
+        }
+        if (!SelectionCurrent() || !OwnsTarget() || !node.IsEnabled) return;
         perf.Mark("前置");
         var control=new RuntimeNodeConfigurationControl();
-        var window=new RuntimeToolEditorWindow(control) {Title=node.Name};
+        var window=new RuntimeToolEditorWindow(control,node.ToolType) {Title=node.Name};
         if (ResolveSolutionDialogOwner(null) is {} owner) window.Owner=owner;
         _openDebugWindow=window;
         perf.Mark("构造");
-        window.Closed+=(_,_)=>{if(ReferenceEquals(_openDebugWindow,window))_openDebugWindow=null;};
-        try { InitializeRuntimeEditor(window,node); perf.Mark("初始化"); }
+        window.Loaded += (_, _) =>
+        {
+            if (ReferenceEquals(_openDebugWindow, window)) NotifyParameterWindowStateChanged();
+        };
+        window.Closed += (_, _) =>
+        {
+            if (!ReferenceEquals(_openDebugWindow, window)) return;
+            _openDebugWindow = null;
+            NotifyParameterWindowStateChanged();
+        };
+        try { InitializeRuntimeEditor(window,node,session,workflowId,opening); perf.Mark("初始化"); }
         catch { control.Dispose(); window.Close(); if(ReferenceEquals(_openDebugWindow,window))_openDebugWindow=null; throw; }
     }
-    private bool InitializeRuntimeEditor(object target,NodeDefinition node)
+    private void InitializeRuntimeEditor(RuntimeToolEditorWindow window,NodeDefinition node,DocumentSession session,string workflowId,long opening)
     {
-        if(target is not RuntimeToolEditorWindow window) return false;
-        var session=DocumentManager.CurrentSession??throw new InvalidOperationException("当前没有方案。");
-        var workflowId=WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId??throw new InvalidOperationException("当前没有流程。");
         var control=window.Editor;
         ProductionEditorContext? context=null;
         bool Current()=>ReferenceEquals(DocumentManager.CurrentSession,session) && ReferenceEquals(SelectedNode,node) && WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId==workflowId;
@@ -108,6 +139,29 @@ public partial class MainWindowViewModel
             context.PrepareView=()=>control.TryCapture(out var error)?null:error;
             context.HasPendingViewEdits=()=>control.HasPendingEdits;
             context.PreserveViewAfterRebase=control.AdoptRebasedDraft;
+            control.ReadCameraStatus = id =>
+            {
+                if (!Current()) return null;
+                var device = session.Document.Devices.FirstOrDefault(item => item.Type == SunEyeVision.Domain.Solutions.DeviceType.Camera
+                    && StringComparer.OrdinalIgnoreCase.Equals(CameraManagerViewModel.RuntimeDeviceId(item), id));
+                if (device is null) return "设备已移除";
+                if (!device.IsEnabled) return "已禁用";
+                return ServiceInitializer.ReadCameraState(CameraManagerViewModel.RuntimeDeviceId(device)) switch
+                {
+                    CameraState.Connected => "已连接",
+                    CameraState.Capturing => "采集中",
+                    CameraState.Connecting or CameraState.Reconnecting => "连接中",
+                    CameraState.StartingCapture or CameraState.StoppingCapture => "采集状态切换中",
+                    CameraState.Faulted => "设备异常",
+                    _ => "未连接"
+                };
+            };
+            control.OpenCameraSettings = id =>
+            {
+                if (!Current() || !context.IsValid || !window.IsCurrent || !window.IsVisible)
+                    throw new InvalidOperationException("相机设置所属调试窗口已失效。");
+                ShowCameraManager(window, id);
+            };
             context.Deactivated+=control.Dispose;
             context.Deactivated+=()=>{if(window.IsLoaded)window.Close();};
             _editorDebugContext=context;_editorDebugControl=control;
@@ -116,9 +170,23 @@ public partial class MainWindowViewModel
                 message=>control.Dispatcher.BeginInvoke(new Action(()=>AddLog(message))),
                 field=>
                 {
-                    if(!context.IsValid||control.HasPendingEdits)return null;
-                    var setting=context.PreparedDraft.Configuration.Fields.Read(field) as SunEyeVision.Plugin.Contracts.ReferenceSetting;
-                    return setting is null?null:RuntimeRoiFrameBorrow?.Invoke(setting.Reference,()=>context.IsValid&&!control.HasPendingEdits);
+                    if(!window.CanCompleteAssembly||!context.IsValid||!control.TryGetResultDisplayBinding(out var owner,out var binding)
+                        ||!ReferenceEquals(owner,node))return null;
+                    var draft=context.PreparedDraft;
+                    var configuration=draft.Configuration;
+                    var key=GetWorkspaceImageSourceKey(configuration.Fields.Read(field),draft.WorkflowId);
+                    if(key is null)return null;
+                    bool SourceCurrent()
+                    {
+                        if(!window.CanCompleteAssembly||!context.IsValid||!ReferenceEquals(context.PreparedDraft,draft)
+                            ||!control.IsResultDisplayBinding(node,binding))return false;
+                        var latest=draft.Configuration;
+                        if(ReferenceEquals(configuration,latest))return true;
+                        if(GetWorkspaceImageSourceKey(latest.Fields.Read(field),draft.WorkflowId)!=key)return false;
+                        configuration=latest;
+                        return true;
+                    }
+                    return RuntimeRoiFrameBorrow?.Invoke(key,SourceCurrent);
                 },RefreshEditorDebugResult);
             RoiFrameAvailabilityChanged+=control.RefreshRoiFrame;
             context.Deactivated+=()=>
@@ -129,39 +197,52 @@ public partial class MainWindowViewModel
             window.SetRunAvailability(()=>Current()&&!IsRunning&&!_solutionTransitionPrepared&&!_transitionPreparationInProgress);
             TrackProductionEditor(_productionEditors,context,window);
             window.SetAssemblyPending();
+            bool AssemblyCurrent()=>opening==_editorOpenGeneration&&CanOpenFormalEditor&&ReferenceEquals(_openDebugWindow,window)
+                &&window.CanCompleteAssembly&&context.IsValid;
+            void RetireOpening()
+            {
+                if(!window.CanCompleteAssembly)return; // Closing owns context release after drain.
+                context.Discard();
+                if(window.CanCompleteAssembly)window.Close();
+            }
             window.Dispatcher.BeginInvoke(DispatcherPriority.Background, new Func<Task>(async () =>
             {
-                if (!context.IsValid || !window.IsCurrent)
-                {
-                    context.Discard();
-                    window.Close();
-                    return;
-                }
                 try
                 {
+                    if(!AssemblyCurrent()){RetireOpening();return;}
                     control.BindDraft(context.PreparedDraft);
                     await control.WaitForViewReadyAsync();
-                    if (!context.IsValid || !window.IsCurrent)
+                    if(!AssemblyCurrent()){RetireOpening();return;}
+                    var preview=InstallResultDisplayPreview(session,node,context,control);
+                    if(!AssemblyCurrent())
                     {
-                        context.Discard();
-                        window.Close();
+                        preview.Dispose();
+                        RetireOpening();
                         return;
                     }
-                    var preview=InstallResultDisplayPreview(session,node,context,control);context.Deactivated+=preview.Dispose;
+                    context.Deactivated+=preview.Dispose;
                     window.SetAssemblyReady();
+                    if(!AssemblyCurrent()){RetireOpening();return;}
                     // VM 先完成首个可见参数页的组装，再把窗口交给桌面，
                     // 避免用户看到空白窗口后等待内容补挂。
                     window.Show();
                 }
                 catch (Exception error)
                 {
+                    if(!AssemblyCurrent()){RetireOpening();return;}
                     Foundation.Logging.PluginLogger.Error(error.Message,nameof(MainWindowViewModel),error);
-                    window.SetAssemblyFailure(error);
-                    window.Show();
-                    context.Discard();
+                    try
+                    {
+                        window.SetAssemblyFailure(error);
+                        if(AssemblyCurrent())
+                        {
+                            StatusText="参数页组装失败："+error.Message;
+                            AddLog(StatusText);
+                        }
+                    }
+                    finally{RetireOpening();}
                 }
             }));
-            return true;
         }
         catch { context.Discard(); throw; }
     }

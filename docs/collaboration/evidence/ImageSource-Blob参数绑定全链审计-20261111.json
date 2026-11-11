@@ -1,0 +1,29 @@
+{
+  "kind": "ImageSource+Blob参数绑定全链审计",
+  "status": "设计已纳入，生产闭环待实施与验证",
+  "nativeEvidence": [
+    "D:/MyWork/Rea逆向/docs/COMPOUND-LEAF-MAPPING.md",
+    "D:/MyWork/Rea逆向/docs/DEBUG-SESSION-CONTRACT.md",
+    "D:/MyWork/Rea逆向/docs/collaboration/evidence/B08_NUMERIC_REFERENCE_CHAIN_DESIGN_20261031.json"
+  ],
+  "chain": [
+    {"stage":"声明","current":["src/Plugin.Contracts/ToolContracts.cs","src/Plugin.Contracts/BindingPlans.cs","src/Plugin.Contracts/ParameterReferenceBehavior.cs"],"risk":"数组基数、完整成员路径和行为策略必须保持身份"},
+    {"stage":"候选与编辑","current":["src/Plugin.Wpf/Adapters/References/DeclaredReferenceTree.cs","src/Plugin.Wpf/Adapters/References/ReferenceFieldSession.cs","src/Plugin.Wpf/Fields/DeclaredFieldState.cs"],"risk":"刷新候选不能改写已接纳值，取消不能半写入"},
+    {"stage":"保存重开","current":["src/Persistence/SolutionDocumentReader.cs","src/Persistence/SolutionDocumentWriter.cs","src/Plugin.Contracts/BindingPlans.cs"],"risk":"成员路径、索引选择、失效原因和绑定顺序不能丢失"},
+    {"stage":"执行快照","current":["src/Plugin.Runtime/ParameterBindingService.cs","src/Execution/ExecutionBindingInputResolver.cs","src/Execution/ExecutionDebugInvocation.cs"],"risk":"执行不读取UI活动状态，调试和正式执行必须消费同一快照合同"},
+    {"stage":"结果与退役","current":["src/UI/Services/Monitoring/ResultPresentationPresenter.cs","src/UI/Services/Editing/Nodes/RuntimeToolEditorWindow.cs","src/Plugin.Runtime/RuntimeDirectorySnapshot.cs"],"risk":"结果来源、调试上下文、引用弹层和代次租约必须同批退役"}
+  ],
+  "build": "dotnet build SunEyeVision.slnx -c Release --no-restore -m:1 -p:HalconSourceRoot=D:/MyWork/SunEyeVision_V2/libs/halcon；0错误、3302警告、17.50秒",
+  "verification": {
+    "program": "未启动",
+    "tests": "未运行",
+    "productionProbe": "未运行",
+    "manualAcceptance": "待统一人工验收"
+  },
+  "unconfirmed": [
+    "VM同版本动态候选刷新、索引选择、取消/确认和失效重绑定",
+    "ImageSource+Blob保存重开后的绑定消费",
+    "执行中修改、迟到回调和关闭退役的真实时序",
+    "结果表、图像叠加和模块结果树对同一publication的动态一致性"
+  ]
+}

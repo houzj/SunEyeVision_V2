@@ -11,8 +11,36 @@ public partial class MainWindowViewModel
     private IResultPublication? _resultPublication;
     private DeclaredOutputSnapshot? _resultPublicationSnapshot;
     private long _resultPublicationEpoch;
-    private IReadOnlyDictionary<string,ResultBindingInfo>? _resultPublicationBindings;
     internal IResultPublication? CurrentResultPublication=>_resultPublication;
+    private bool _currentResultTableSelected;
+    private (IToolResultView View, IResultPublication Publication)? _presentedResultTable;
+
+    internal void SetCurrentResultTableSelected(bool selected)
+    {
+        if (_currentResultTableSelected == selected) return;
+        _currentResultTableSelected = selected;
+        _presentedResultTable = null;
+        if (selected && _resultPublication is { } publication)
+            PresentCurrentResultTable(publication);
+    }
+
+    private void PresentCurrentResultTable(IResultPublication publication)
+    {
+        if (!_currentResultTableSelected || _activeResultView is not { } view) return;
+        var ownsView = CaptureResultViewOwner(_resultPublicationEpoch);
+        if (!ReferenceEquals(_resultPublication, publication) || !publication.IsCurrent()
+            || !ownsView() || !ReferenceEquals(_activeResultView, view) || !_currentResultTableSelected
+            || _presentedResultTable is { } presented && ReferenceEquals(presented.View, view)
+                && ReferenceEquals(presented.Publication, publication)) return;
+        _presentedResultTable = (view, publication);
+        try { view.Present(publication); }
+        catch
+        {
+            if (_presentedResultTable is { } failed && ReferenceEquals(failed.View, view)
+                && ReferenceEquals(failed.Publication, publication)) _presentedResultTable = null;
+            throw;
+        }
+    }
 
     private Func<bool> CaptureResultViewOwner(long epoch)
     {
@@ -25,7 +53,7 @@ public partial class MainWindowViewModel
     private long RetireResultPublication()
     {
         var epoch=++_resultPublicationEpoch;
-        var publication=_resultPublication;_resultPublication=null;_resultPublicationSnapshot=null;_resultPublicationBindings=null;
+        var publication=_resultPublication;_resultPublication=null;_resultPublicationSnapshot=null;_presentedResultTable=null;
         _declaredResultActive=false;
         var failures=new List<Exception>();
         void Cleanup(Action action){try{action();}catch(Exception error){failures.Add(error);}}
@@ -48,12 +76,16 @@ public partial class MainWindowViewModel
         try
         {
             if(!publication.IsCurrent()){publication.Dispose();return;}
-            _resultPublication=publication;_resultPublicationSnapshot=snapshot;_resultPublicationBindings=bindings;_declaredResultActive=true;
-            DeclaredResultPresenter.Present(publication,bindings,true,snapshot?.ExecutionTimeMs);
+            _resultPublication=publication;_resultPublicationSnapshot=snapshot;_declaredResultActive=true;
+            var presenter=DeclaredResultPresenter;
+            if(DocumentManager.CurrentSession is {} session&&WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId is {} workflow)
+                presenter.SetExpansionScope(session.ResultOwnerId,_outputContractSelectionGeneration,workflow,publication.Stamp.SchemaFingerprint);
+            var hasNativeModuleSummary=publication.Schema.OutputDisplay.Any(item=>item.IsModuleExecutionSummary);
+            presenter.Present(publication,bindings,!hasNativeModuleSummary,snapshot?.ExecutionTimeMs);
             if(!EnsureCurrent())return;
             if(FlatResultRows.FirstOrDefault() is {} root)root.DisplayName=nodeName??"结果";
             if(!EnsureCurrent())return;
-            _activeResultView?.Present(publication);
+            PresentCurrentResultTable(publication);
             if(EnsureCurrent())RefreshNativeResultImages();
             EnsureCurrent();
         }
@@ -69,6 +101,7 @@ public partial class MainWindowViewModel
         var session=DocumentManager.CurrentSession;var node=SelectedNode;var workflowId=WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId;
         if(session is null||node is null||workflowId is null||snapshot.Identity.NodeId!=node.Id||snapshot.SourceWorkflowId!=workflowId)return;
         if(snapshot.Identity.DocumentSessionId!=session.ResultOwnerId&&!ReferenceEquals(CurrentEditorDebugSnapshot,snapshot))return;
+        if(!IsCurrentPresentedSnapshot(session,workflowId,node,snapshot))return;
         var epoch=RetireResultPublication();var owner=CaptureResultViewOwner(epoch);
         bool Current()
         {
@@ -83,11 +116,12 @@ public partial class MainWindowViewModel
     }
     private void RefreshFormalPublishedResult()
     {
+        NotifyResultHistoryChanged();
         var session=DocumentManager.CurrentSession;var node=SelectedNode;var workflowId=WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId;
         if(session is null||node is null||workflowId is null){ClearResultDisplay();return;}
         if(!OwnsSelectedDocumentNode(node)){SelectedNode=null;return;}
         if(CurrentEditorDebugSnapshot is {} debug){PresentSnapshot(debug,node.Name);return;}
-        using var reader=session.AcquirePublishedResult(workflowId,node.Id);
+        using var reader=SelectedEditorContext is null?session.AcquirePublishedResult(workflowId,node.Id):null;
         if(reader is not null){PresentSnapshot(reader.Snapshot,node.Name);return;}
         var schema=session.GetNodeSchema(workflowId,node.Id);
         if(schema is null){ClearResultDisplay();return;}
@@ -103,8 +137,8 @@ public partial class MainWindowViewModel
         var nodeId=publication.Stamp.Invocation?.NodeId??SelectedNode?.Id;
         var bindings=DeclaredBindings(publication.Schema,nodeId,_resultPublicationSnapshot?.SourceWorkflowId);
         if(!EnsureCurrent())return;
-        _resultPublicationBindings=bindings;
-        DeclaredResultPresenter.Present(publication,bindings,true,_resultPublicationSnapshot?.ExecutionTimeMs);
+        var hasNativeModuleSummary=publication.Schema.OutputDisplay.Any(item=>item.IsModuleExecutionSummary);
+        DeclaredResultPresenter.Present(publication,bindings,!hasNativeModuleSummary,_resultPublicationSnapshot?.ExecutionTimeMs);
         EnsureCurrent();
     }
     private void PresentDeclaration(ToolSchema schema,string? nodeName,

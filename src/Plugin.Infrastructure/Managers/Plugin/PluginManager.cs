@@ -38,6 +38,14 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         public string? LastAdmissionError {get;private set;}
         public IReadOnlyDictionary<string,long> LastAdmissionStageMs { get; private set; } = new Dictionary<string,long>();
         public RuntimeDirectorySnapshot? RuntimeDirectory { get { lock (AdmissionGate) return AdmissionTransition is null && _current?.Desktop.Runtime.IsActive == true ? _current.Desktop.Runtime : null; } }
+        public string RuntimeLeaseDiagnostics
+        {
+            get
+            {
+                lock(AdmissionGate)
+                    return _current?.Desktop.Runtime.DescribeLiveLeases() ?? "插件目录代次不存在";
+            }
+        }
         public DesktopToolAdmission? DesktopAdmission
         {
             get { lock (AdmissionGate) return AdmissionTransition is null && _current?.Desktop.Runtime.IsActive == true ? _current.Desktop : null; }

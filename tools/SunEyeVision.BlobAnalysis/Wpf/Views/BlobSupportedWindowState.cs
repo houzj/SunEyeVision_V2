@@ -1,5 +1,4 @@
 using System.Windows;
-using System.Windows.Controls;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using SunEyeVision.Plugin.Wpf.Presenters.Regions;
@@ -12,11 +11,11 @@ internal sealed class BlobSupportedWindowState : IDisposable
 {
     private readonly IToolSettingsDraft _draft;
     private readonly DeclaredInputFieldsView _inputs;
-    private bool _disposed;
-    private readonly FrameworkElement _pointVisibility;
-    internal BlobSupportedWindowState(IToolSettingsDraft draft,DeclaredInputFieldsView inputs,FrameworkElement pointVisibility)
+    private readonly NativeAssistUiDraftControls _assist;
+    private bool _disposed, _refreshing;
+    internal BlobSupportedWindowState(IToolSettingsDraft draft,DeclaredInputFieldsView inputs,NativeAssistUiDraftControls assist)
     {
-        _draft=draft;_inputs=inputs;_pointVisibility=pointVisibility;
+        _draft=draft;_inputs=inputs;_assist=assist;
         foreach(var field in inputs.Fields)field.Changed+=Refresh;
         Refresh();
     }
@@ -24,11 +23,18 @@ internal sealed class BlobSupportedWindowState : IDisposable
     internal string? Validate()
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
-        if(ValidateSettings(_draft) is {} thresholdError)return thresholdError;
-        return ValidateInputs(_inputs);
+        if (_assist.Visibility==Visibility.Visible && _assist.CommitActiveSources() is {} sourceError)
+            return sourceError;
+        return ValidateInputs(_inputs, _draft);
     }
-    internal static string? ValidateInputs(DeclaredInputFieldsView inputs)
+    internal static string? ValidateInputs(DeclaredInputFieldsView inputs, IToolSettingsDraft draft)
     {
+        if (BlobImageRoi.IsImageMode(inputs.ReadUnpresentedInput(BlobImageRoi.ModeId)))
+        {
+            var mask = inputs.Fields.Single(field => field.FieldId == BlobImageRoi.ImageId);
+            if (mask.Setting is UnsetSetting) return "请选择屏蔽图像。";
+            return mask.TryCommitPending() ? null : mask.Error;
+        }
         var roiValues=new Dictionary<string,ParameterSetting>(StringComparer.Ordinal);
         foreach(var port in BlobRoiInheritance.Ports)
         {
@@ -39,10 +45,15 @@ internal sealed class BlobSupportedWindowState : IDisposable
         }
         var roiDiagnostics=BlobRoiInheritance.ValidateConfiguration(new FieldSettings(BlobRoiInheritance.Ports,roiValues));
         if(roiDiagnostics.Count!=0)return roiDiagnostics[0].Message;
-        if(inputs.Fields.Where(field=>field.FieldId is BlobTool.InspectionInput or BlobTool.MaskInput).Any(field=>field.Setting is not UnsetSetting))
-            return "已有像素区域引用，原几何继承尚未实现，当前窗口不能确认或执行；原值保持不变。";
-        if(inputs.Fields.Single(field=>field.FieldId==BlobTool.PoseInput).Setting is not UnsetSetting)
-            return "位置修正尚未实现，请在修正信息中清除已有来源后再确认。";
+        if (BlobMaskInheritance.IsInherited(inputs.ReadUnpresentedInput(BlobMaskInheritance.ModeId)))
+        {
+            var mask=inputs.Fields.Single(field=>field.FieldId==BlobMaskInheritance.SourceId);
+            if (mask.Setting is UnsetSetting) return "请选择继承屏蔽区来源。";
+            if (!mask.TryCommitPending()) return mask.Error;
+        }
+        var correction = draft.CaptureFields().Read(Id(nameof(BlobSettings.IsPositionCorrectionEnabled))) is ConstantSetting { Value:true };
+        if (correction && BlobFixtureInputs.LeafIds.Any(id => inputs.ReadInputProjection(id) is UnsetSetting))
+            return "请选择完整的位置修正来源。";
         return null;
     }
     // These guards must also run before the lazy Basic page has created its input-owned state.
@@ -51,51 +62,63 @@ internal sealed class BlobSupportedWindowState : IDisposable
         var values=draft.CaptureFields();
         if(!BlobThresholdCapabilities.IsSupported((values.Read(Id(nameof(BlobSettings.SegmentationMode))) as ConstantSetting)?.Value as string))
             return "当前阈值模式尚未就绪；原设置保留，不能确认或执行。";
-        if(values.Read(Id(nameof(BlobSettings.SegmentationMode))) is not ConstantSetting{Value:"DoubleThreshold"}
-            &&values.Read(Id(nameof(BlobSettings.UpperThreshold))) is ReferenceSetting or VariableSetting)
-            return "单阈值下隐藏的高阈值仍有正式绑定，本窗口不能确认或执行；绑定保持原值。";
-        var mode=Enum.Parse<BlobSegmentationMode>((string)((ConstantSetting)values.Read(Id(nameof(BlobSettings.SegmentationMode)))).Value!);
-        foreach(var property in new[]{nameof(BlobSettings.Threshold),nameof(BlobSettings.FixedSoftLowerThreshold),nameof(BlobSettings.FixedSoftUpperThreshold),nameof(BlobSettings.ThresholdSoftness),
-            nameof(BlobSettings.RelativeLeftRatio),nameof(BlobSettings.RelativeRightRatio),nameof(BlobSettings.RelativeLowerRatio),nameof(BlobSettings.RelativeUpperRatio)})
-            if(!BlobThresholdCapabilities.IsThresholdFieldActive(mode,property)&&values.Read(Id(property)) is ReferenceSetting or VariableSetting)
-                return "当前模式隐藏的阈值字段仍有正式绑定，尚未接入休眠引用消费策略；绑定保持原值："+BlobParameterDefinition.Instance.Label(property);
-        if(values.Read(Id(nameof(BlobSettings.OutputBoundary))) is not ConstantSetting {Value:false})
-            return "已有图像输出设置超出当前窗口支持范围，不能确认或执行；原值保持不变。";
-        if(values.Read(Id(nameof(BlobSettings.IsPositionCorrectionEnabled))) is not ConstantSetting {Value:false})
-            return "位置修正尚未接入原三方式，请明确关闭正式位置开关后再确认；原值不会自动清除。";
-        var judgmentSwitches=draft.Schema.Presentation!.Fields.Where(field=>field.Group=="结果判定"
-            &&draft.Schema.Inputs.Single(port=>port.Id==field.FieldId).Type==TypeRef.ScalarOf(ScalarKind.Boolean));
-        var enabled=judgmentSwitches.Where(field=>values.Read(field.FieldId) is not ConstantSetting{Value:false}).Select(field=>field.DisplayName).ToArray();
-        return enabled.Length==0?null:"已有正式结果判定影响运行但原厂判定尚未接通，本窗口拒绝确认或执行："+string.Join("、",enabled)+"。原值保持不变。";
+        // Result judgments and boundary output are formal settings consumed by
+        // BlobSession. Their enabled state is not an unsupported UI capability.
+        return null;
     }
     internal void Refresh()
     {
-        if(!_disposed)ProjectAssist(_draft,_inputs,InformationHost as NativeAssistUiDraftControls,_pointVisibility,()=>!_disposed);
+        if (_disposed || _refreshing) return;
+        _refreshing = true;
+        try { ProjectSources(_draft,_inputs,()=>!_disposed); }
+        finally { _refreshing = false; }
     }
-    // One logical projection also serves Result-first, without constructing the lazy Basic inputs.
-    // Last accepted parameter values and effective IsVisible are not the UI's activity contract.
-    internal static void ProjectAssist(IToolSettingsDraft draft,DeclaredInputFieldsView? inputs,NativeAssistUiDraftControls? assist,
-        FrameworkElement pointVisibility,Func<bool> current)
+    internal void RefreshAcceptedInputs(NativeRoiUiDraftControls roi)
     {
+        if (_disposed) return;
+        roi.RefreshAcceptedModes(()=>
+        {
+            _inputs.RefreshInputProjection(BlobTool.ImageInput);
+            _inputs.RefreshInputProjection(BlobImageRoi.ModeId,new ConstantSetting(0L));
+            _inputs.RefreshInputProjection(BlobImageRoi.OutputEnabledId,new ConstantSetting(false));
+            _inputs.RefreshInputProjection(BlobImageRoi.ImageId);
+        });
+        Refresh();
+    }
+    // Refresh the shared sources without forcing the lazy Basic input page into existence.
+    internal static void ProjectSources(IToolSettingsDraft draft,DeclaredInputFieldsView? inputs,
+        Func<bool> current)
+    {
+        if (inputs is null) return;
         try
         {
-            var revision=draft.Revision;var values=draft.CaptureFields();
-            var hasPose=inputs?.Fields.Single(field=>field.FieldId==BlobTool.PoseInput).Setting is {} pose&&pose is not UnsetSetting;
-            var enabled=values.Read(Id(nameof(BlobSettings.IsPositionCorrectionEnabled))) is not ConstantSetting{Value:false};
-            var graphic=assist?.GraphicVisibilitySource?.Visibility is not (Visibility.Collapsed or Visibility.Hidden);
-            if(!current()||revision!=draft.Revision)return;
-            assist?.SetInformationOnly(graphic&&!enabled&&hasPose);
-            if(!current()||revision!=draft.Revision)return;
-            if(assist is not null)assist.Visibility=graphic&&(enabled||hasPose)?Visibility.Visible:Visibility.Collapsed;
-            if(current()&&revision==draft.Revision)pointVisibility.Visibility=graphic&&enabled?Visibility.Visible:Visibility.Collapsed;
+            var revision=draft.Revision;
+            if(!current())return;
+            if (inputs.Fields.Any(field => field.FieldId == BlobMaskInheritance.SourceId))
+                inputs.RefreshInputProjection(BlobMaskInheritance.SourceId);
+            foreach (var field in inputs.Fields.Where(field => BlobRoiInheritance.Ports.Any(port => port.Id == field.FieldId)).ToArray())
+            {
+                if (!current() || revision != draft.Revision) return;
+                inputs.RefreshInputProjection(field.FieldId);
+            }
+            foreach (var field in inputs.Fields.Where(field => field.FieldId.StartsWith(BlobTool.PoseInput, StringComparison.Ordinal)).ToArray())
+            {
+                if (!current() || revision != draft.Revision) return;
+                inputs.RefreshInputProjection(field.FieldId);
+                if (field.FieldId is not (BlobTool.PoseInput or BlobFixtureInputs.ReferencePoint or BlobFixtureInputs.RunPoint)) continue;
+                var members = BlobFixtureInputs.LeavesFor(field.FieldId).Select(inputs.ReadInputProjection).ToArray();
+                field.SetReferenceSummary(field.Setting is UnsetSetting && members.Any(member => member is not UnsetSetting)
+                    ? "(" + string.Join(", ", members.Select(Describe)) + ")" : null);
+            }
+            string Describe(ParameterSetting value)
+            {
+                try { return inputs.DescribeInputSource(value); }
+                catch (Exception error) when (error is ArgumentException or InvalidOperationException) { return "来源不可用"; }
+            }
         }
-        catch(Exception error)when(error is ArgumentException or InvalidOperationException)
-        {
-            // Keep an existing input's clear route available on a projection fault. Admission still re-reads the real fields.
-            if(current()&&assist is not null)assist.Visibility=Visibility.Visible;
-        }
+        catch(Exception error)when(error is ArgumentException or InvalidOperationException) { }
     }
-    internal FrameworkElement? InformationHost {get;set;}    public void Dispose()
+    public void Dispose()
     {
         if(_disposed)return;_disposed=true;
         foreach(var field in _inputs.Fields)field.Changed-=Refresh;

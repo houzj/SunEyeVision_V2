@@ -17,6 +17,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
     private FrameworkElement? _inputContent;
     private IReadOnlyList<FrameworkElement> _additionalContents=Array.Empty<FrameworkElement>();
     private long _generation;
+    private DispatcherOperation? _pendingNumericRead;
     private bool _binding;
     private bool _disposed;
     private bool _capturing;
@@ -25,11 +26,15 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
     public static readonly DependencyProperty SelectedPageIndexProperty=DependencyProperty.Register(nameof(SelectedPageIndex),typeof(int),typeof(DeclaredSettingsView),
         new FrameworkPropertyMetadata(0,FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,SelectPage),value=>(int)value>=0);
     public int SelectedPageIndex {get=>(int)GetValue(SelectedPageIndexProperty);set=>SetValue(SelectedPageIndexProperty,value);}
+    public string? SelectedPageKey => _fields?.SelectedPageKey;
+    public event EventHandler? SelectedPageChanged;
     public IToolSettingsDraft? Draft {get=>(IToolSettingsDraft?)GetValue(DraftProperty);set=>SetValue(DraftProperty,value);}
     public ToolSettingsViewOptions? Options {get=>(ToolSettingsViewOptions?)GetValue(OptionsProperty);set=>SetValue(OptionsProperty,value);}
     public FrameworkElement View=>this;
     public bool HasInvalidInput=>!_disposed&&_fields?.HasInvalidActiveFields==true;
     public bool HasPendingEdits=>!_disposed&&_fields?.HasPendingActiveFields==true;
+    public bool HasPendingEditsOutside(IReadOnlySet<string> excludedFields)=>
+        !_disposed&&_fields?.HasPendingActiveFieldsOutside(excludedFields)==true;
     public long AcceptedRevision=>Draft?.Revision??throw new InvalidOperationException("A settings draft is required.");
     public IReadOnlyList<string> AcceptedFieldOrder {get;private set;}=Array.Empty<string>();
     public FieldSettings CaptureAcceptedFields()
@@ -84,11 +89,13 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
     private void Detach(FrameworkElement? retainInput=null,IReadOnlySet<FrameworkElement>? retainAdditional=null)
     {
         _generation++;
+        var pendingRead = _pendingNumericRead;
+        _pendingNumericRead = null;
         var fields=_fields;var input=_inputContent;
         var additional=_additionalContents;
         _additionalContents=additional.Where(item=>retainAdditional?.Contains(item)==true).ToArray();
         _fields=null;_inputContent=ReferenceEquals(input,retainInput)?input:null;
-        var cleanup=new List<Action>{()=>Content=null};
+        var cleanup=new List<Action>{()=>Content=null,()=>pendingRead?.Abort()};
         if(fields is not null)
         {
             foreach(var field in fields.Fields)field.Changed-=OnChanged;
@@ -126,6 +133,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
         _additionalContents=owned;
         var schema=draft.Schema;var values=draft.CaptureFields();
         if(schema.Presentation is null)throw new ArgumentException("Runtime settings require explicit presentation metadata.");
+        var ports=schema.Inputs.ToDictionary(port=>port.Id,StringComparer.Ordinal);
         var inputPage=options.InputAfterField is {} inputAnchor
             ?schema.Presentation.Fields.FirstOrDefault(field=>field.FieldId==inputAnchor) is {} anchorField?anchorField.Layout?.Page??anchorField.Group:null
             :options.InputSection is {} inputSection
@@ -155,7 +163,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
         },StringComparer.Ordinal);
         candidate=new(schema.Presentation.Fields.Select(presentation=>
         {
-            var port=schema.Inputs.Single(p=>p.Id==presentation.FieldId);
+            var port=ports[presentation.FieldId];
             ParameterSetting initial=values.Read(port.Id);
             return(port,presentation,initial);
         }),proposals=>
@@ -225,10 +233,13 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
                 // semantics, while explicit callers can still request an immediate
                 // All read through the public contract.
                 var scheduledGeneration=generation;
-                Dispatcher.BeginInvoke(DispatcherPriority.SystemIdle, new Action(() =>
+                _pendingNumericRead = Dispatcher.BeginInvoke(DispatcherPriority.SystemIdle, new Action(() =>
                 {
                     if(!_disposed&&scheduledGeneration==_generation&&ReferenceEquals(_fields,candidate))
+                    {
+                        _pendingNumericRead = null;
                         ReadNumericModels(NumericModelReadScope.All);
+                    }
                 }));
             }
         }
@@ -244,7 +255,17 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
     }
     private static void SelectPage(DependencyObject sender,DependencyPropertyChangedEventArgs args)
     {var view=(DeclaredSettingsView)sender;if(view._fields is not null)view._fields.SelectedPageIndex=(int)args.NewValue;}
-    private void OnPageChanged()=>SetCurrentValue(SelectedPageIndexProperty,_fields!.SelectedPageIndex);
+    private void OnPageChanged()
+    {
+        var fields = _fields;
+        if (_disposed || fields is null) return;
+        SetCurrentValue(SelectedPageIndexProperty, fields.SelectedPageIndex);
+        if (!_disposed && ReferenceEquals(_fields, fields))
+            SelectedPageChanged?.Invoke(this, EventArgs.Empty);
+    }
+    public bool TryResetFields(IReadOnlyDictionary<string,ParameterSetting> defaults)
+        => (_fields ?? throw new InvalidOperationException("A settings draft is required.")).TryResetFields(defaults);
+
     public bool TrySetFields(IReadOnlyDictionary<string,ParameterSetting> proposals)
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
@@ -296,7 +317,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;
-        try{Detach();}finally{Changed=null;
+        try{Detach();}finally{Changed=null;SelectedPageChanged=null;
         _binding=true;
         try {ClearValue(DraftProperty);ClearValue(OptionsProperty);}
         finally {_binding=false;}}

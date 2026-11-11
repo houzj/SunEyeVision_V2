@@ -64,7 +64,8 @@ internal static partial class NativeShapeProjection
             if (!double.IsFinite(overlay.Thickness) || overlay.Thickness <= 0
                 || !double.IsFinite(overlay.Opacity) || overlay.Opacity is < 0 or > 1)
                 throw new ArgumentException("几何线宽或透明度无效。");
-            var style = new Style(overlay.Stroke.ToString(), overlay.Thickness, overlay.Opacity,(overlay.Fill??Colors.Transparent).ToString());
+            var style = new Style(overlay.Stroke.ToString(), overlay.Thickness, overlay.Opacity,
+                (overlay.Fill ?? Colors.Transparent).ToString(), overlay.ToolTip ?? MeasurementTip(overlay));
             object shape = overlay.Geometry switch
             {
                 PointGeometry point => new PointProjection(style, Point(point.Point)),
@@ -91,6 +92,37 @@ internal static partial class NativeShapeProjection
             return new PolygonProjection(style, polygon.Vertices.Select(Point).ToArray());
         }
     }
+    internal static object[] MeasuredRectangles(NativeResultFrameReceipt receipt,
+        IReadOnlyList<NativeMeasuredRectangle> rectangles, int maximum, Func<bool> current)
+    {
+        if (rectangles.Count > maximum) throw new ArgumentException("shape-budget: 完整矩形超过绘制预算。");
+        var shapes = new object[rectangles.Count];
+        for (var index = 0; index < rectangles.Count; index++)
+        {
+            NativeResultRaster.CheckCurrent(current);
+            var rectangle = rectangles[index];
+            if (rectangle.SourceFrame != receipt.Frame
+                || receipt.Coordinates.Domain != CoordinateDomain.Image || receipt.Coordinates.Unit != CoordinateUnit.Pixel
+                || !double.IsFinite(rectangle.Width) || rectangle.Width < 0
+                || !double.IsFinite(rectangle.Height) || rectangle.Height < 0
+                || !double.IsFinite(rectangle.AngleDegrees) || !double.IsFinite(rectangle.Thickness) || rectangle.Thickness <= 0
+                || !double.IsFinite(rectangle.Opacity) || rectangle.Opacity is < 0 or > 1)
+                throw new ArgumentException("矩形测量或样式与当前图像不匹配。");
+            var style = new Style(rectangle.Stroke.ToString(), rectangle.Thickness, rectangle.Opacity, Colors.Transparent.ToString(),
+                RectangleTip(rectangle.Center, rectangle.Width, rectangle.Height, rectangle.AngleDegrees));
+            shapes[index] = new RectangleProjection(style, Point(rectangle.Center), rectangle.Width, rectangle.Height, rectangle.AngleDegrees);
+        }
+        return shapes;
+    }
+    private static string MeasurementTip(NativeGeometryOverlay overlay)
+    {
+        if (overlay.IncludeMeasurements && overlay.Geometry is OrientedRectangleGeometry rectangle)
+            return RectangleTip(rectangle.Center, rectangle.Width, rectangle.Height, Degrees(rectangle.AngleRadians));
+        return "";
+    }
+    private static string RectangleTip(Point2 center, double width, double height, double angle) =>
+        $"CenterX:{(float)center.X},CenterY:{(float)center.Y} Width:{(float)width} Height:{(float)height} Angle:{(float)angle}";
+
     private static Point Point(Point2 value) => new(value.X, value.Y);
     private static double Degrees(double value)
     {
@@ -98,14 +130,14 @@ internal static partial class NativeShapeProjection
         return double.IsFinite(degrees) ? degrees : throw new ArgumentException("几何角度转换超出原绘制范围。");
     }
     private sealed record TextProjection(string Content, Point Position, int FontSize, string Stroke, double Opacity) : IText;
-    private sealed record Style(string Stroke, double Thickness, double Opacity,string Fill);
+    private sealed record Style(string Stroke, double Thickness, double Opacity,string Fill,string ToolTip);
     private abstract record ShapeProjection(Style Style) : IShape
     {
         public string Stroke => Style.Stroke;
         public double Opacity => Style.Opacity;
         public string Fill => Style.Fill;
         public double StrokeThickness => Style.Thickness;
-        public string ToolTip => "";
+        public string ToolTip => Style.ToolTip;
     }
     private sealed record PointProjection(Style Style, Point Point) : ShapeProjection(Style), IPoint;
     private sealed record LineProjection(Style Style, Point StartPoint, Point EndPoint) : ShapeProjection(Style), ILine

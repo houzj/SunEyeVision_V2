@@ -13,6 +13,39 @@ namespace SunEyeVision.Application.Editing.Tests;
 
 public sealed class EditingDraftTests
 {
+    [Fact]
+    public void Frozen_settings_snapshots_share_untouched_values_and_compare_independent_projections()
+    {
+        var ports=new[]{new Port("numbers",DataType.NumberArray),new Port("threshold",DataType.Integer),
+            new Port("optional",DataType.Integer,Required:false)};
+        var schema=new ToolSchema(ports,Array.Empty<Port>());
+        var numbers=new[]{1.25,2.5};
+        var initial=new FieldSettings(ports,new Dictionary<string,ParameterSetting>
+        {
+            ["numbers"]=new ConstantSetting(numbers),["threshold"]=new ConstantSetting(100L)
+        });
+        var draft=new FieldSettingsDraft(schema,initial);
+        var before=draft.CaptureFields();
+        numbers[0]=0;
+        before.Get<double[]>("numbers")[0]=0;
+        FieldSettings? accepted=null;
+        draft.ApplyFields(new Dictionary<string,ParameterSetting>{["threshold"]=new ConstantSetting(105L)},candidate=>accepted=candidate);
+        var after=draft.CaptureFields();
+        Assert.Same(accepted,after);
+        Assert.Equal(new[]{1.25,2.5},after.Get<double[]>("numbers"));
+        Assert.Equal(100L,before.Get<long>("threshold"));
+        Assert.True(before.HasSameSetting(after,"numbers"));
+        Assert.True(before.HasSameSetting(after,"optional"));
+        Assert.False(before.HasSameSetting(after,"threshold"));
+        var independent=new FieldSettings(ports,after.Capture());
+        Assert.True(after.HasSameSetting(independent,"numbers"));
+        Assert.True(after.HasSameSetting(independent,"threshold"));
+        Assert.Throws<InvalidOperationException>(()=>draft.ApplyFields(
+            new Dictionary<string,ParameterSetting>{["threshold"]=new ConstantSetting(110L)},
+            _=>throw new InvalidOperationException("拒绝编辑")));
+        Assert.Same(after,draft.CaptureFields());
+    }
+
     private static (DocumentSession Session, WorkflowDefinition Flow, GlobalVariable Variable) Fixture()
     {
         var path = Environment.GetEnvironmentVariable("SUNEYE_EDITING_TEST_PAYLOAD");

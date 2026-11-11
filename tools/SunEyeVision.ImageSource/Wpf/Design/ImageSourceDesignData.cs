@@ -1,4 +1,5 @@
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Contracts.Results.Presentation;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using SunEyeVision.Tool.ImageSource.Runtime;
 using SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources;
@@ -42,8 +43,10 @@ public static class ImageSourceDesignData
         public DesignDraft()
         {
             var declaration=(IToolSettingsFields)Tool;
-            _draft=new(declaration.SettingsSchema,new FieldSettings(declaration.SettingsSchema.Inputs,
-                declaration.ReadSettings(new ImageSourceSettings()).CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal)));
+            var schema=ResultDisplayFields.EditorSchema(Tool);
+            var defaults=declaration.ReadSettings(new ImageSourceSettings()).CopyValues().Concat(Tool.CreateDisplaySettings().CopyValues());
+            _draft=new(schema,new FieldSettings(schema.Inputs,
+                defaults.ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal)));
         }
         public ToolSchema Schema=>_draft.Schema;
         public long Revision=>_draft.Revision;
@@ -52,7 +55,7 @@ public static class ImageSourceDesignData
         {
             var fields=_draft.CaptureValidatedFields();
             if(fields.Capture().Values.Any(value=>value is ReferenceSetting))return fields;
-            var settings=((IToolSettingsFields)Tool).MaterializeSettings(fields.Materialize(new Dictionary<string,object?>()));
+            var settings=Tool.MaterializeSettings(fields.Select(Tool.SettingsSchema.Inputs).Materialize(new Dictionary<string,object?>()));
             var errors=((IToolDefinition)Tool).Validate(settings);
             if(errors.Count!=0)throw new ArgumentException(string.Join("; ",errors.Select(error=>error.Message)));
             return fields;

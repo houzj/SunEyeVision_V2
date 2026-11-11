@@ -1,13 +1,13 @@
 using System.Windows;
-using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Tool.BlobAnalysis.Runtime;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Views;
 
 internal static class BlobDisplayUi
 {
-    internal static ToolSettingsViewOptions Configure(ToolSettingsViewOptions options,ToolSchema schema)
+    internal static ToolSettingsViewOptions Configure(ToolSettingsViewOptions options,FrameworkElement pointVisibility)
     {
         var graphic=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Graphic;
         var text=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Text;
@@ -28,35 +28,16 @@ internal static class BlobDisplayUi
             }
             return SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.ParseContent(proposal.Text,slots);
         });
-        return options with {TextExpressions=expressions,
-            GraphicDisplays=new[]{graphic,SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Inspection,SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Mask,SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Annulus}.Select(group=>new SunEyeVision.Plugin.Wpf.Fields.NativeGraphicDisplayOptions(group,Id(group,"visible"),Id(group,"ok"),Id(group,"ng"),Id(group,"opacity"),Id(group,"width"))).ToArray(),
+        var visibilitySources = options.FieldVisibilitySources?.ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal)
+            ?? new Dictionary<string,FrameworkElement>(StringComparer.Ordinal);
+        visibilitySources.Add(Id(BlobResultDisplay.ReferencePoint,"visible"),pointVisibility);
+        visibilitySources.Add(Id(BlobResultDisplay.RunPoint,"visible"),pointVisibility);
+        return options with {TextExpressions=expressions, FieldVisibilitySources=visibilitySources,
+            GraphicDisplays=new[]{graphic,BlobResultDisplay.InnerRectangle,BlobResultDisplay.Inspection,BlobResultDisplay.ReferencePoint,
+                BlobResultDisplay.RunPoint,BlobResultDisplay.Mask,BlobResultDisplay.Annulus}
+                .Select(group=>new SunEyeVision.Plugin.Wpf.Fields.NativeGraphicDisplayOptions(group,Id(group,"visible"),Id(group,"ok"),Id(group,"ng"),Id(group,"opacity"),Id(group,"width"))).ToArray(),
             VisibilityDisplays=new[]{new SunEyeVision.Plugin.Wpf.Fields.NativeVisibilityDisplayOptions(Id(text,"visible")),new SunEyeVision.Plugin.Wpf.Fields.NativeVisibilityDisplayOptions(Id(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Outline,"visible"))},
             TextDisplays=new[]{new SunEyeVision.Plugin.Wpf.Fields.NativeTextDisplayOptions(Id(text,"content"),Id(text,"ok"),Id(text,"ng"),Id(text,"size"),Id(text,"opacity"),Id(text,"x"),Id(text,"y"))}};
     }
 
-    internal static ToolSettingsViewOptions AddRows(ToolSettingsViewOptions options,ToolSchema schema,FrameworkElement assistPointVisibility,Action<NativeDisplayUiDraftRows>? observe=null)
-    {
-        options=Configure(options,schema);
-        var display=new NativeDisplayUiDraftRows("图像显示",new[]{
-            new NativeDisplayUiDraftEntry("最大内接矩形",true),
-            new NativeDisplayUiDraftEntry("基准点",true,InitiallyVisible:false),
-            new NativeDisplayUiDraftEntry("运行点",true,InitiallyVisible:false)});
-        display.BindEntryVisibility(1,assistPointVisibility);display.BindEntryVisibility(2,assistPointVisibility);
-        var views=display.ExtractEntryViews();
-        observe?.Invoke(display);
-        var rows=options.AdditionalAnchoredContents?.ToList()??new List<AnchoredSettingsContent>();
-        var textEye=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Field(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Text,"visible");
-        rows.Add(new(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Field(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Inspection,"visible"),views[0],FollowAnchorVisibility:false,InsertBefore:true));
-        foreach(var view in views.Skip(1))rows.Add(new(textEye,new PointVisibilityHost(view),FollowAnchorVisibility:false,InsertBefore:true));
-        return options with {AdditionalAnchoredContents=rows};
-    }
-    // The generic row owns only this shell. Retiring it detaches the borrowed native view's logical binding.
-    private sealed class PointVisibilityHost : System.Windows.Controls.Decorator,IDisposable
-    {
-        internal PointVisibilityHost(FrameworkElement view)=>Child=view;
-        public void Dispose()
-        {
-            if(Child is not FrameworkElement view)return;
-            System.Windows.Data.BindingOperations.ClearBinding(view,FrameworkElement.VisibilityProperty);Child=null;
-        }
-    }}
+}

@@ -44,6 +44,8 @@ public sealed class ResultPresentationPresenter : IDisposable
     private IResultValueLease? _reader;
     private IReadOnlyList<Diagnostic> _diagnostics=Array.Empty<Diagnostic>();
     private FlatResultRow? _root;
+    private (Guid Document, long Selection, string Workflow, string Schema)? _expansionScope;
+    private readonly Dictionary<string,bool> _expandedDeclarations = new(StringComparer.Ordinal);
     private int _generation;
     private bool _disposed;
 
@@ -61,6 +63,14 @@ public sealed class ResultPresentationPresenter : IDisposable
     public void Present(IResultPublication publication,IReadOnlyDictionary<string,ResultBindingInfo>? bindings=null,
         bool showExecutionSummary=false,double? executionTimeMs=null)
         =>RunProjection(()=>PresentCore(publication,bindings,showExecutionSummary,executionTimeMs));
+
+    internal void SetExpansionScope(Guid document,long selection,string workflow,string schema)
+    {
+        var scope=(document,selection,workflow,schema);
+        if(_expansionScope==scope)return;
+        _expansionScope=scope;
+        _expandedDeclarations.Clear();
+    }
 
     private void PresentCore(IResultPublication publication,IReadOnlyDictionary<string,ResultBindingInfo>? bindings,bool showExecutionSummary,double? executionTimeMs)
     {
@@ -200,6 +210,7 @@ public sealed class ResultPresentationPresenter : IDisposable
     {
         if (_disposed) return;
         _disposed = true;
+        _expandedDeclarations.Clear();
         Retire();
     }
 
@@ -232,9 +243,14 @@ public sealed class ResultPresentationPresenter : IDisposable
     {
         if(!Current(generation)){Abandon(generation);return;}
         _model = model;_bindingRoots=bindings;
-        var root = new FlatResultRow { Key="result",DisplayName = "结果", DisplayValue = StatusText(model.State), IsGroup = true, IsExpanded = true };
+        var root = new FlatResultRow { Key="result",DisplayName = "结果", DisplayValue = StatusText(model.State), IsGroup = true,
+            IsExpanded = _expandedDeclarations.GetValueOrDefault("result",true) };
         if(!Current(generation)){Abandon(generation);return;}_root=root;
-        Subscribe(root, () => RefreshRows());
+        Subscribe(root, () =>
+        {
+            if(_expansionScope.HasValue)_expandedDeclarations[root.Key]=root.IsExpanded;
+            RefreshRows();
+        });
         foreach (var node in model.Outputs.Where(node=>displayedPorts is null||displayedPorts.Contains(node.DeclaredPort!.Id)))
         {if(!Current(generation)){Abandon(generation);return;}var entry=GetEntry(node,1);if(entry is null||!Current(generation))return;_outputs.Add(entry);}
         _root.IsGroup=_outputs.Count>0;
@@ -287,7 +303,9 @@ public sealed class ResultPresentationPresenter : IDisposable
         if(!Current(generation)){Abandon(generation);return null;}
         // VM's result-tree item style starts expanded. Materialize the first page of
         // declared record groups, while sequences retain their bounded lazy paging.
+        var declaredGroup=node.DeclarationAddress is {ThroughSequence:false} && node.Declaration.Shape is ValueShape.Record or ValueShape.Sequence;
         var expanded=node.IsExpanded||(node.Declaration.Shape==ValueShape.Record&&childCount is > 0);
+        if(declaredGroup&&_expandedDeclarations.TryGetValue(node.Key,out var remembered))expanded=remembered;
         node.IsExpanded=expanded;
         var row = new FlatResultRow
         {
@@ -301,6 +319,7 @@ public sealed class ResultPresentationPresenter : IDisposable
         if(!ApplyBinding(entry,generation))return null;
         Subscribe(row, () =>
         {
+            if(declaredGroup&&_expansionScope.HasValue)_expandedDeclarations[node.Key]=row.IsExpanded;
             node.IsExpanded = row.IsExpanded;
             if (row.IsExpanded && entry.Children.Count == 0) LoadPage(entry);
             RefreshRows();
@@ -419,29 +438,41 @@ public sealed class ResultPresentationPresenter : IDisposable
         return _diagnostics.FirstOrDefault() is {} diagnostic?label+": "+diagnostic.Message:label;
     }
 
-    private string ValueText(ResultPresentationNode node) => node.IsAllProjection?"All · 按声明绑定全部元素，不是样本索引值":node.ValueState switch
+    private string ValueText(ResultPresentationNode node)
     {
-        ResultPresentationValueState.Missing => "missing",
-        ResultPresentationValueState.Null => "null",
-        ResultPresentationValueState.ResourcePending when node.Declaration.Resource==ResourceKind.Image &&
-            _model!.State is ResultViewState.Declaration or ResultViewState.NotExecuted or ResultViewState.Success or ResultViewState.PartialSuccess => "",
-        ResultPresentationValueState.ResourcePending => _model!.State is ResultViewState.Success or ResultViewState.PartialSuccess?"资源待接入":StatusText(_model.State),
-        ResultPresentationValueState.Unavailable => _model!.State is ResultViewState.Success or ResultViewState.PartialSuccess ? "值不可用" : StatusText(_model.State),
-        _ => node.Declaration.Shape switch
+        // 主树与只读属性树共用同一语义投影（ResultSemanticText）。序列元素节点不携带
+        // DeclaredPort，沿声明地址回溯根端口显示名（如"单体状态"数组元素 0/1 → 失败/成功）。
+        if (!node.IsAllProjection && node.ValueState == ResultPresentationValueState.Available
+            && node.ScalarValue is { } scalar && _model is { } model
+            && (node.DeclaredPort ?? node.DeclarationAddress?.RootPort) is { } port
+            && model.Schema.FindOutputDisplay(port.Id) is { DisplayName: var name }
+            && ResultSemanticText.TryProject(name, scalar) is { } semantic)
+            return semantic;
+        return node.IsAllProjection?"All · 按声明绑定全部元素，不是样本索引值":node.ValueState switch
         {
-            ValueShape.Sequence => SequenceText(node.ChildCount),
-            ValueShape.Record => "",
-            ValueShape.Geometry => node.GeometryValue is {} geometry?GeometryText(geometry):"值不可用",
-            _ => node.ScalarValue switch
+            ResultPresentationValueState.Missing => "missing",
+            ResultPresentationValueState.Null => "null",
+            ResultPresentationValueState.ResourcePending when node.Declaration.Resource==ResourceKind.Image &&
+                _model!.State is ResultViewState.Declaration or ResultViewState.NotExecuted or ResultViewState.Success or ResultViewState.PartialSuccess => "",
+            ResultPresentationValueState.ResourcePending => _model!.State is ResultViewState.Success or ResultViewState.PartialSuccess?"资源待接入":StatusText(_model.State),
+            ResultPresentationValueState.Unavailable => _model!.State is ResultViewState.Success or ResultViewState.PartialSuccess ? "值不可用" : StatusText(_model.State),
+            _ => node.Declaration.Shape switch
             {
-                string text => text,
-                bool boolean => boolean ? "true" : "false",
-                long integer => integer.ToString(CultureInfo.InvariantCulture),
-                double number => number.ToString("R", CultureInfo.InvariantCulture),
-                _ => "值不可用"
+                ValueShape.Sequence => SequenceText(node.ChildCount),
+                ValueShape.Record => "",
+                ValueShape.Geometry => node.GeometryValue is {} geometry?GeometryText(geometry):"值不可用",
+                _ => node.ScalarValue switch
+                {
+                    string text => text,
+                    bool boolean => boolean ? "true" : "false",
+                    long integer => integer.ToString(CultureInfo.CurrentCulture),
+                    double number when node.PhysicalStorage==NumericStorage.Float32 => ((float)number).ToString(CultureInfo.CurrentCulture),
+                    double number => number.ToString(CultureInfo.CurrentCulture),
+                    _ => "值不可用"
+                }
             }
-        }
-    };
+        };
+    }
     private static string SequenceText(int? count)=>count is null?"值不可用":count==0?"空序列 (0)":"["+count.Value.ToString(CultureInfo.InvariantCulture)+" 项]";
     private static string GeometryText(GeometryValue geometry)
     {

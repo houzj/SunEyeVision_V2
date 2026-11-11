@@ -12,6 +12,7 @@ public sealed class RuntimeDirectorySnapshot
     private readonly object _lifetimeGate=new();
     private bool _retiring;
     private int _leases;
+    private readonly Dictionary<Guid,string> _leaseOwners=new();
     private readonly TaskCompletionSource _drained=new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly CancellationTokenSource _retirementCancellation=new();
     private RuntimeDirectorySnapshot(Dictionary<string,Entry> runtimes, ToolComponentRegistration[] components,
@@ -57,13 +58,26 @@ public sealed class RuntimeDirectorySnapshot
         return _runtimes.TryGetValue(toolId,out var entry) ? entry.HostDeclarations.HostInputs : throw new InvalidOperationException("Required runtime is not registered: "+toolId);
     }
     /// <summary>Hold one accepted invocation or retained result until its final reader releases it.</summary>
-    public RuntimeGenerationLease AcquireInvocation()
+    public RuntimeGenerationLease AcquireInvocation()=>AcquireInvocation("未标记租约");
+    public RuntimeGenerationLease AcquireInvocation(string owner)
     {
+        if(string.IsNullOrWhiteSpace(owner))owner="未标记租约";
         lock(_lifetimeGate)
         {
             if(_retiring)throw new InvalidOperationException("Runtime directory is retiring.");
             _leases++;
-            return new RuntimeGenerationLease(this);
+            var id=Guid.NewGuid();_leaseOwners.Add(id,owner);
+            return new RuntimeGenerationLease(this,id);
+        }
+    }
+    internal string DescribeLiveLeases()
+    {
+        lock(_lifetimeGate)
+        {
+            if(_leaseOwners.Count==0)return "无活动租约";
+            return string.Join("；",_leaseOwners.Values.GroupBy(value=>value,StringComparer.Ordinal)
+                .OrderBy(group=>group.Key,StringComparer.Ordinal)
+                .Select(group=>$"{group.Key}×{group.Count()}"));
         }
     }
     internal Task BeginRetirement()
@@ -77,10 +91,11 @@ public sealed class RuntimeDirectorySnapshot
     }
     internal void SignalRetirement()=>_retirementCancellation.Cancel();
     internal CancellationToken RetirementToken=>_retirementCancellation.Token;
-    internal void ReleaseInvocation()
+    internal void ReleaseInvocation(Guid id)
     {
         lock(_lifetimeGate)
         {
+            _leaseOwners.Remove(id);
             if(--_leases<0)throw new InvalidOperationException("Runtime generation lease count underflow.");
             if(_retiring&&_leases==0)_drained.TrySetResult();
         }
@@ -128,8 +143,9 @@ public sealed class RuntimeDirectorySnapshot
 public sealed class RuntimeGenerationLease : IDisposable
 {
     private RuntimeDirectorySnapshot? _directory;
-    internal RuntimeGenerationLease(RuntimeDirectorySnapshot directory)=>_directory=directory;
+    private readonly Guid _id;
+    internal RuntimeGenerationLease(RuntimeDirectorySnapshot directory,Guid id){_directory=directory;_id=id;}
     public RuntimeDirectorySnapshot Directory=>Volatile.Read(ref _directory)??throw new ObjectDisposedException(nameof(RuntimeGenerationLease));
     public CancellationToken RetirementToken=>Directory.RetirementToken;
-    public void Dispose()=>Interlocked.Exchange(ref _directory,null)?.ReleaseInvocation();
+    public void Dispose()=>Interlocked.Exchange(ref _directory,null)?.ReleaseInvocation(_id);
 }

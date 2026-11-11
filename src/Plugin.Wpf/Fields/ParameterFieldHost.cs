@@ -59,6 +59,12 @@ internal sealed class ParameterFieldHost : IDisposable
     private long _loadGeneration;
     // 订阅
     private ReferenceFieldSession? _referenceSession;
+    private string? _referenceSummary;
+    internal void SetReferenceSummary(string? summary)
+    {
+        _referenceSummary = summary;
+        _referenceSession?.SetReadOnlySummary(summary);
+    }
     private ReferenceExpansionCoordinator? _expansion;
     private ReferencePopupScope? _scope;
     private DeleteTextBox? _deleteText;
@@ -75,7 +81,7 @@ internal sealed class ParameterFieldHost : IDisposable
         _templateKey = templateKey;
         _numericSequence = numericSequence;
         _canReference = canReference;
-        _isTextKind = templateKey == DeclaredFieldTemplateRegistry.String;
+        _isTextKind = templateKey is DeclaredFieldTemplateRegistry.String or DeclaredFieldTemplateRegistry.FolderPath;
         _isReferenceKind = templateKey == DeclaredFieldTemplateRegistry.Reference;
         _isPlainNumericKind = templateKey == DeclaredFieldTemplateRegistry.NumericPlain;
         row.Loaded += OnRowLoaded;
@@ -88,7 +94,8 @@ internal sealed class ParameterFieldHost : IDisposable
     }
 
     /// <summary>主输入元素（数值文本框 / 文本框 / 订阅删除框 / 枚举下拉）。</summary>
-    public FrameworkElement? InputElement => _numeric?.TextEditor ?? (FrameworkElement?)_textInput ?? (FrameworkElement?)_deleteText ?? (FrameworkElement?)_combo;
+    public FrameworkElement? InputElement => _referenceMode && _deleteText is not null ? _deleteText
+        : _numeric?.TextEditor ?? (FrameworkElement?)_textInput ?? (FrameworkElement?)_deleteText ?? (FrameworkElement?)_combo;
 
     internal ComboBox? EnumerationCombo => _combo;
     internal void AttachEnumeration(ComboBox combo)
@@ -168,6 +175,7 @@ internal sealed class ParameterFieldHost : IDisposable
         AttachSessions();
         ++_loadGeneration;
         AttachTextInputs();
+        RefreshReferenceInput();
         if (!_listening)
         {
             InputManager.Current.PreProcessInput += OnInput;
@@ -180,8 +188,7 @@ internal sealed class ParameterFieldHost : IDisposable
         if (_owner is not null)
             _owner.Deactivated += OnDeactivate;
         _textSession?.SetSuspended(_hidden || !_row.IsLoaded || !_row.IsVisible || !_row.IsEnabled);
-        _scope?.PrepareForVisibility(_hidden ? false : _row.IsVisible);
-        _referenceSession?.SetSuspended(_hidden || !_row.IsVisible);
+        _scope?.PrepareForVisibility(!_hidden);
     }
 
     private void OnRowUnloaded(object sender, RoutedEventArgs args)
@@ -196,7 +203,7 @@ internal sealed class ParameterFieldHost : IDisposable
         {
             () => { if (owner is not null) owner.Deactivated -= OnDeactivate; },
             StopListening,
-            () => { if (StillUnloaded()) { _textSession?.SetSuspended(true); _referenceSession?.SetSuspended(true); } },
+            () => { if (StillUnloaded()) { _textSession?.SetSuspended(true); _scope?.PrepareForVisibility(!_hidden); } },
             () => { if (StillUnloaded()) CloseTextPopup(); }
         });
     }
@@ -228,33 +235,38 @@ internal sealed class ParameterFieldHost : IDisposable
         }
 
         // 订阅会话：引用行常驻；默认数值/文本行创建（引用分支模板按 IsSubA 显隐）。
-        if (_referenceSession is null && (_isReferenceKind || (_canReference && (_isPlainNumericKind || _isTextKind))))
+        if (_referenceSession is null && !_row.UsesImageSourceSelector
+            && (_isReferenceKind || (_canReference && (_isPlainNumericKind || _isTextKind))))
         {
             _expansion = new ReferenceExpansionCoordinator(_row, _references?.WindowOwner);
             _referenceSession = new ReferenceFieldSession(_state, _references ?? ReferenceFieldOptions.Empty, _formatReference,
                 expand: _expansion.Open, preference: _expansion.Preference,
                 allowConstantText: _isReferenceKind && _row.InlineConstantReference,
                 selectVariable: _expansion.OpenVariable, isExpanded: _expansion.IsExpanded);
+            _referenceSession.SetReadOnlySummary(_referenceSummary);
             _scope = new ReferencePopupScope(_row, _referenceSession,
                 () => !_state.IsDisposed && (_isReferenceKind || _state.IsReferenceMode));
-            _row.SetSubData(_referenceSession);
+            _row.SetReferenceData(_referenceSession);
         }
 
-        // 文本会话：字符串行常驻（StringConfig_sub 绑定 SubDataA）。
+        // Each template branch receives its own session over the same field.
         if (_textSession is null && _isTextKind)
         {
             _textSession = new NativeTextSession(_state, _row.TextExpressionOptionsForHost,
                 () => !_disposed && (_textInput is null
                     || Visuals<NativeText>(_row).Any(text => ReferenceEquals(text, _textInput))));
             _textSession.ProjectInsertionRequested += ProjectInsertion;
-            _row.SetSubData(_textSession);
+            _row.SetTextData(_textSession);
             AttachTextInputs();
         }
     }
 
     private void OnLayout(object? sender, EventArgs args)
     {
-        if (_disposed || (_textInput is null || !Visuals<NativeText>(_row).Any(text => ReferenceEquals(text, _textInput))))
+        if (_disposed)
+            return;
+        RefreshReferenceInput();
+        if (_textInput is null || !Visuals<NativeText>(_row).Any(text => ReferenceEquals(text, _textInput)))
             AttachTextInputs();
     }
 
@@ -267,12 +279,12 @@ internal sealed class ParameterFieldHost : IDisposable
         {
             _row.ApplyTemplate();
             _row.UpdateLayout();
-            var popup = Visuals<NativePopup>(_row).FirstOrDefault();
+            var popup = Visuals<NativePopup>(_row).FirstOrDefault(item => ReferenceEquals(item.DataContext, _textSession));
             if (popup is null)
             {
                 _textPopup = null;
-                _textInput = null;
-                _textSession.AttachText(null);
+                _textInput = Visuals<NativeText>(_row).FirstOrDefault(item => ReferenceEquals(item.DataContext, _textSession));
+                _textSession.AttachText(_textInput);
                 return;
             }
 
@@ -489,8 +501,6 @@ internal sealed class ParameterFieldHost : IDisposable
         if (_disposed)
             return;
         _textSession?.SetSuspended(_hidden || !_row.IsVisible || !_row.IsEnabled);
-        _scope?.PrepareForVisibility(_row.IsVisible && !_hidden);
-        _referenceSession?.SetSuspended(_hidden || !_row.IsVisible);
         if (!_row.IsVisible)
             CloseTextPopup();
     }
@@ -550,10 +560,10 @@ internal sealed class ParameterFieldHost : IDisposable
         if (_disposed)
             return;
         _disposed = true;
-        _textSession?.SetSuspended(true);
-        _referenceSession?.SetSuspended(true);
         ParameterCleanup.Run(new Action[]
         {
+            () => _textSession?.SetSuspended(true),
+            () => _referenceSession?.SetSuspended(true),
             CloseTextPopup,
             StopListening,
             () =>
@@ -576,8 +586,6 @@ internal sealed class ParameterFieldHost : IDisposable
             },
             () =>
             {
-                if (_deleteText is not null)
-                    _deleteText.KeyUp -= OnDeleteKey;
                 _deleteText = null;
             },
             () => { if (_combo is not null) _combo.SetCurrentValue(ComboBox.IsDropDownOpenProperty, false); },
@@ -586,23 +594,21 @@ internal sealed class ParameterFieldHost : IDisposable
             () => _referenceSession?.Dispose(),
             () => _textSession?.Dispose(),
             () => _numeric?.Dispose(),
-            () => _row.SetSubData(null)
+            () => _row.SetReferenceData(null),
+            () => _row.SetTextData(null)
         });
     }
 
-    private void OnDeleteKey(object sender, KeyEventArgs args)
+    // The native DeleteTextBox owns Delete-key handling. Track only the current
+    // template's reference input and let the scope detach its previous listener.
+    private void RefreshReferenceInput()
     {
-        if (args.Key == Key.Delete && !_disposed && !(_deleteText?.IsReadOnly ?? true))
-            _referenceSession?.ClearFromUi();
-    }
-
-    /// <summary>订阅删除框在模板实例化后登记（Delete 键清除订阅文本）。</summary>
-    internal void AttachDeleteTextBox()
-    {
-        if (_disposed || _deleteText is not null)
+        if (_disposed || _referenceSession is null || !_row.IsLoaded)
             return;
-        _deleteText = FindVisual<DeleteTextBox>(_row, _ => true);
-        if (_deleteText is not null)
-            _deleteText.KeyUp += OnDeleteKey;
+        var input = Visuals<DeleteTextBox>(_row).FirstOrDefault(item => ReferenceEquals(item.DataContext, _referenceSession));
+        if (ReferenceEquals(input, _deleteText))
+            return;
+        _deleteText = input;
+        _scope?.Refresh();
     }
 }

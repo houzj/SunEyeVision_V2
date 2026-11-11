@@ -39,7 +39,7 @@ public sealed class FieldSettingsDraft : IToolSettingsDraft
     public long Revision {get;private set;}
     public FieldSettingsDraft(ToolSchema schema,FieldSettings fields,Action<FieldSettings>? validate=null)
     {Schema=schema;_fields=fields.Select(schema.Inputs);_validate=validate;_validate?.Invoke(_fields);}
-    public FieldSettings CaptureFields()=>new(Schema.Inputs,_fields.Capture());
+    public FieldSettings CaptureFields()=>_fields;
     public FieldSettings CaptureValidatedFields()
     {
         var revision=Revision;var snapshot=CaptureFields();_validate?.Invoke(snapshot);
@@ -54,7 +54,7 @@ public sealed class FieldSettingsDraft : IToolSettingsDraft
         try
         {
             var candidate=_fields.Apply(changes);_validate?.Invoke(candidate);
-            acceptCandidate(new(Schema.Inputs,candidate.Capture()));
+            acceptCandidate(candidate);
             _fields=candidate;
             Revision++;
         }

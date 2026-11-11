@@ -27,7 +27,7 @@ public sealed partial class DocumentSession
                 var settings = definition as IToolSettingsFields ?? throw new InvalidOperationException("工具没有正式参数声明。");
                 var defaults = settings.ReadSettings(definition.CreateSettings()).CopyValues()
                     .ToDictionary(pair => pair.Key, pair => (ParameterSetting)new ConstantSetting(pair.Value), StringComparer.Ordinal);
-                if (definition is IToolResultDisplayProvider display)
+                if (definition is IToolDisplaySettingsProvider display)
                     foreach (var pair in display.CreateDisplaySettings().CopyValues()) defaults.Add(pair.Key, new ConstantSetting(pair.Value));
                 var declarations = definition.Describe().Inputs.Concat(settings.SettingsSchema.Inputs)
                     .Concat(ResultDisplayFields.Schema(definition).Inputs).ToArray();

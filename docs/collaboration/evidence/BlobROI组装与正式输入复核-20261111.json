@@ -1,0 +1,57 @@
+{
+  "kind": "ROI原件组装与正式输入静态复核",
+  "date": "2026-11-11",
+  "facts": [
+    "RadioSelecter.LangRadioSelecterWidth：中文89、英文165",
+    "RadioSelecterEx2.DisplayType返回RadioSelecter",
+    "InputMaskImageGroup图像模式隐藏ROI创建、屏蔽区创建、位置修正",
+    "ExternROITypeGroup仅绘制且CustomVisible=true的分支清空继承屏蔽区来源，没有隐藏即清空的同等分支"
+  ],
+  "change": "两槽单选从固定110修正到原件语言列宽，复用原模板及现有字段状态",
+  "consumers": [
+    "BlobRoiUi区域类型→ComposeInputEditor→DeclaredFieldRow→RadioSelecter",
+    "NativeRoiUiDraftControls检测/屏蔽创建→同一原件模板",
+    "AdmittedToolConfiguration.ApplyChanges→IToolFieldTransitions.ExpandChanges→正式配置",
+    "AdmittedToolConfiguration准入→IToolExecutionInputs.SelectExecutionInputs→正式执行输入"
+  ],
+  "existingBehaviors": [
+    "图像模式排除检测继承、屏蔽继承及位置修正输入",
+    "检测继承来源隐藏清空保留创建选择",
+    "屏蔽来源切绘制清空；图像模式隐藏不擅自清空",
+    "关闭修正或进入图像模式清空位置修正叶字段",
+    "隐藏页/控件退役来源交互；本地ROI按帧与代次拥有者拒绝迟到提案"
+  ],
+  "build": "全量Release0错误、5945警告、24.59秒",
+  "tests": "原单选真实控件选择/退役用例增加列宽断言，已编译未运行",
+  "runtime": "运行未确认；用户要求不控制桌面、不启动测试",
+  "files": [
+    {
+      "path": "docs/07-工具逆向/decompiled/XmlParser/Apps.XmlParser/Apps.XmlParser.ParamTab/RadioSelecter.cs",
+      "sha256": "B35FACD3F1E42C2153A9AC2A00C0B5783388CBA8F53B014195B37F55D3169791"
+    },
+    {
+      "path": "docs/07-工具逆向/decompiled/XmlParser/Apps.XmlParser/Apps.XmlParser.ParamTab/RadioSelecterEx2.cs",
+      "sha256": "7A59BDE22EBBA7B2EAF1DA9B008A4F6E9D0129B512BA006E56D41D492A1B8AB9"
+    },
+    {
+      "path": "docs/07-工具逆向/decompiled/Groups/Group.xml",
+      "sha256": "9129B82A0F9906DDE591347498A80E2E8C019C0FB959A721ECFD24FBBB5207DC"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldRow.cs",
+      "sha256": "0C5262DCC3096206C93B6D423ACE45627A9D2E4F1FC301732BF44E2791D92369"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Regions/NativeRoiUiDraftControls.cs",
+      "sha256": "24878D83B661DF264D77B92EE6C26854A19137ACF6DF6F2E8BC0C4023C12F97C"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/BlobTool.cs",
+      "sha256": "FE0E3796788F68828B5964055525371C63C24375F4104589FCB03BFF5C00EC0D"
+    },
+    {
+      "path": "src/Application/AdmittedToolConfiguration.cs",
+      "sha256": "D4D4DFC7E2E27EB7A9F5F1D858C34C9848A5EFEC4DCFB19EF672F64C5619EB03"
+    }
+  ]
+}

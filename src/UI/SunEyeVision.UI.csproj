@@ -59,6 +59,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="SunEyeVision.UI.Tests" />
     <InternalsVisibleTo Include="SunEyeVision.CanvasLayout.Tests" />
+    <InternalsVisibleTo Include="RuntimeEditorProductionProbe" />
   </ItemGroup>
 
   <ItemGroup>

@@ -18,7 +18,7 @@ public static class DesktopToolPresentation
     public static IToolSettingsView CreateSettingsView(ToolPresentationAdmission admission,FieldSettings fields,ToolSettingsViewOptions? options=null)
     {
         ArgumentNullException.ThrowIfNull(admission);
-        var generation=admission.AcquireInvocation();
+        var generation=admission.AcquireInvocation("参数视图");
         IToolSettingsView? inner=null;
         SettingsLease? lease=null;
         try
@@ -40,7 +40,7 @@ public static class DesktopToolPresentation
     public static IToolResultView? CreateCurrentResultView(ToolPresentationAdmission admission)
     {
         ArgumentNullException.ThrowIfNull(admission);
-        var generation=admission.AcquireInvocation();
+        var generation=admission.AcquireInvocation("结果视图");
         IToolResultView? inner=null;
         ResultLease? lease=null;
         try
@@ -73,7 +73,7 @@ public static class DesktopToolPresentation
         return Activator.CreateInstance(editor) as IToolPresentationFactory
             ??throw new InvalidOperationException("桌面编辑组件不是正式呈现工厂。 "+editor.FullName);
     }
-    private sealed class SettingsLease:IToolSettingsView
+    private sealed class SettingsLease:IToolSettingsView,IToolSettingsViewReady
     {
         private readonly IToolSettingsView _view;
         private readonly RuntimeGenerationLease _generation;
@@ -89,8 +89,11 @@ public static class DesktopToolPresentation
             _nodeRetirement=admission.RetirementToken.Register(()=>RetireOnDispatcher(view.View,Dispose));
         }
         public FrameworkElement View=>_view.View;
+        public System.Threading.Tasks.Task ReadyTask=>_view is IToolSettingsViewReady ready
+            ?ready.ReadyTask:System.Threading.Tasks.Task.CompletedTask;
         public bool HasInvalidInput=>_view.HasInvalidInput;
         public bool HasPendingEdits=>_view.HasPendingEdits;
+        public bool HasPendingEditsOutside(IReadOnlySet<string> excludedFields)=>_view.HasPendingEditsOutside(excludedFields);
         public long AcceptedRevision=>_view.AcceptedRevision;
         public IReadOnlyList<string> AcceptedFieldOrder=>_view.AcceptedFieldOrder;
         public IReadOnlyList<NumericModelReadResult> ReadNumericModels(NumericModelReadScope scope,string? fieldId=null)

@@ -104,4 +104,29 @@ internal static class NativeResultRaster
         }
         CheckCurrent(current); return pixels;
     }
+
+    internal static byte[] SampleOverlay(NativeResultImageFrame frame,int width,int height,byte opacity,
+        NativeResultRasterLimits limits,Func<bool> current)
+    {
+        var buffer=frame.Buffer;
+        var pixels=width==frame.Width&&height==frame.Height?buffer:new byte[BufferLength(width,height,limits)];
+        var stepX=(double)frame.Width/width;
+        var stepY=(double)frame.Height/height;
+        for(var y=0;y<height;y++)
+        {
+            CheckCurrent(current);
+            var sourceRow=(int)(stepY*y)*frame.Width;
+            for(var x=0;x<width;x++)
+            {
+                var source=(sourceRow+(int)(stepX*x))*4;
+                var target=(y*width+x)*4;
+                pixels[target]=buffer[source];
+                pixels[target+1]=buffer[source+1];
+                pixels[target+2]=buffer[source+2];
+                pixels[target+3]=(byte)(buffer[source+3]*opacity/255);
+            }
+        }
+        CheckCurrent(current);
+        return pixels;
+    }
 }

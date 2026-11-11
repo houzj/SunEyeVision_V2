@@ -7,7 +7,9 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Threading;
 using SunEyeVision.Plugin.Wpf.Adapters.Regions;
+using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
 using SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamTabControl;
+using SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls;
 using Numbers=SunEyeVision.Plugin.Wpf.Native.Numeric.ParameterPresentation.ParamTabControl;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Regions;
@@ -24,6 +26,7 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
     private NativeRoiProjection? _projectedItem;
     private RoiEditStamp? _projectedStamp;
     private IDisposable? _registration;
+    private NativeMessageBox? _drawLimitWarning;
     private bool _disposed,_projecting,_committing;
     private long _generation;
     private long _uiGeneration;
@@ -62,6 +65,7 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
     {if(!_disposed&&!_projecting&&!_committing&&PrepareInteraction?.Invoke()==false)args.Handled=true;}
     public string? Title {get;set;}
     public bool AllowUnboundFullDomain {get;set;}=true;
+    public bool PolygonOnly {get;set;}
     public bool UnboundFullDomain {get;set;}
     public event Action? PendingChanged;
     private void OnPendingChanged(object sender,TextChangedEventArgs args)
@@ -77,11 +81,48 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
     public void Bind(NativeRoiSession? session)
     {
         Dispatcher.VerifyAccess();if(_disposed)throw new ObjectDisposedException(nameof(NativeRoiEditor));
+        CloseDrawLimitWarning();
         _resume?.Abort();_resume=null;_savedRaw=null;_suspended=false;_registration?.Dispose();_registration=null;
-        if(_session is not null){_session.Changed-=Project;_session.PropertyChanged-=OnDrawStateChanged;}
+        if(_session is not null){_session.Changed-=Project;_session.PropertyChanged-=OnDrawStateChanged;_session.DrawLimitReached-=ShowDrawLimitWarning;}
         _session=session;_projectedSession=null;_projectedItem=null;_projectedStamp=null;
-        if(session is not null){_registration=session.RegisterEditorCommit(()=>TryCommitPending());session.Changed+=Project;session.PropertyChanged+=OnDrawStateChanged;}
+        if(session is not null){_registration=session.RegisterEditorCommit(()=>TryCommitPending());session.Changed+=Project;session.PropertyChanged+=OnDrawStateChanged;session.DrawLimitReached+=ShowDrawLimitWarning;}
         Project();
+    }
+    private void ShowDrawLimitWarning(NativeRoiSession session)
+    {
+        bool Current() => !_disposed && !_suspended && IsLoaded && IsVisible
+            && ReferenceEquals(_session, session) && session.IsCurrent;
+        if (_drawLimitWarning is not null || !Current() || Window.GetWindow(this) is not { IsVisible: true } owner)
+            return;
+
+        void CloseWhenHidden(object sender, DependencyPropertyChangedEventArgs args)
+        {
+            if (!IsVisible)
+                CloseDrawLimitWarning();
+        }
+
+        IsVisibleChanged += CloseWhenHidden;
+        session.InteractionRetiring += CloseDrawLimitWarning;
+        try
+        {
+            NativeMessageBox.ShowOwnedWarning(owner,
+                AppLocalizationService.GetLang("Lang_RoiMaxNumLimit", "已超配置ROI数量的最大上限"),
+                warning => _drawLimitWarning = warning, Current,
+                AppLocalizationService.GetLang("Lang_ParamSet", "参数设置"));
+        }
+        finally
+        {
+            session.InteractionRetiring -= CloseDrawLimitWarning;
+            IsVisibleChanged -= CloseWhenHidden;
+            _drawLimitWarning = null;
+        }
+    }
+    private void CloseDrawLimitWarning()
+    {
+        var warning = _drawLimitWarning;
+        _drawLimitWarning = null;
+        if (warning?.IsVisible == true)
+            warning.Close();
     }
     private void Project()=>Project(false);
     private void OnDrawStateChanged(object? sender,System.ComponentModel.PropertyChangedEventArgs args)
@@ -89,6 +130,8 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
     private void Project(bool force)
     {
         if(_disposed)return;
+        if (_drawLimitWarning is not null && _session?.IsCurrent != true)
+            CloseDrawLimitWarning();
         // Same-root rejection/no-op notifications must not erase the active raw transaction.
         // Explicit Bind resets this lease; a changed version/selection still projects immediately.
         if(!force&&_committing&&_session?.IsCurrent==true&&ReferenceEquals(_projectedSession,_session)
@@ -138,6 +181,7 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
     {
         if(!ReferenceEquals(args.OriginalSource,this)||_disposed)return;
         if(!_suspended)_savedRaw=_inputs.Select(input=>input.Raw).ToArray();_suspended=true;
+        CloseDrawLimitWarning();
         _polygon.Suspend();_uiGeneration++;_resume?.Abort();_resume=null;
         _projecting=true;
         try{foreach(var input in _inputs)((ComboBox)input.View.FindName("CBox")).SetCurrentValue(ComboBox.IsDropDownOpenProperty,false);}
@@ -275,7 +319,8 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;_generation++;_resume?.Abort();_resume=null;_savedRaw=null;
-        _registration?.Dispose();_registration=null;if(_session is not null){_session.Changed-=Project;_session.PropertyChanged-=OnDrawStateChanged;}
+        CloseDrawLimitWarning();
+        _registration?.Dispose();_registration=null;if(_session is not null){_session.Changed-=Project;_session.PropertyChanged-=OnDrawStateChanged;_session.DrawLimitReached-=ShowDrawLimitWarning;}
         _session=null;_projectedSession=null;_projectedItem=null;_projectedStamp=null;NativeView.LayoutUpdated-=OnLayout;PreviewKeyDown-=OnKey;Loaded-=OnLoaded;Unloaded-=OnUnloaded;
         foreach(var input in _inputs){input.Text.TextChanged-=OnText;input.Leaf.Loaded-=OnLeafLoaded;}
         PreviewGotKeyboardFocus-=OnPreparingFocus;
@@ -307,7 +352,7 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         public bool FullScreen_ModuleEnableA=>_owner.UnboundFullDomain;
         public bool FullScreenA {get=>_owner.UnboundFullDomain;set{}}
         public bool IsAvoid=>!_owner.AllowUnboundFullDomain;public bool Is3DROI=>false;
-        public string ROISelectionA=>"Box SectorRing Sector Polygon";
+        public string ROISelectionA=>_owner.PolygonOnly?"Polygon":"Box SectorRing Sector Polygon";
         public string DisplayNameA=>_owner.Title??"ROI形状";public string DescriptionA=>DisplayNameA;
         public ICommand ValueChangedCommand {get;}
         public ICommand ROIValueChangedCommand=>ValueChangedCommand;
@@ -345,12 +390,12 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         public bool SectorRingA {get=>_session.SectorRingA;set=>_session.SectorRingA=value;}
         public bool PolygonEnable_ModuleEnableA=>_session.PolygonEnable_ModuleEnableA;
         public bool PolygonA {get=>_session.PolygonA;set=>_session.PolygonA=value;}
-        public bool FullScreenEnableA=>_session.FullScreenEnableA;
+        public bool FullScreenEnableA=>!_owner.PolygonOnly&&_session.FullScreenEnableA;
         public bool FullScreen_ModuleEnableA=>_session.FullScreen_ModuleEnableA;
         public bool FullScreenA {get=>_session.FullScreenA;set=>_session.FullScreenA=value;}
         public bool IsAvoid=>_session.IsAvoid;
         public bool Is3DROI=>false;
-        public string ROISelectionA=>_session.ROISelectionA;
+        public string ROISelectionA=>_owner.PolygonOnly?"Polygon":_session.ROISelectionA;
         public string DisplayNameA=>_owner.Title??_session.DisplayNameA;
         public string DescriptionA=>_session.DescriptionA;
         public ICommand ValueChangedCommand {get;}

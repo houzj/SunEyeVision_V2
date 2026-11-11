@@ -1,0 +1,190 @@
+静态dumpbin指令摘录，不是运行证据
+C:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Collection/ImageSourceModule/ImageSourceModule.dll
+SHA256 F88A455061F3AE2D5E2EF157E7B3CAAFD94A2B95C39B5BBA096802E405EBC6C8
+  0000000180020980: 48 8B C4           mov         rax,rsp
+  0000000180020983: 4C 89 48 20        mov         qword ptr [rax+20h],r9
+  0000000180020987: 48 89 50 10        mov         qword ptr [rax+10h],rdx
+  000000018002098B: 55                 push        rbp
+  000000018002098C: 53                 push        rbx
+  000000018002098D: 56                 push        rsi
+  000000018002098E: 57                 push        rdi
+  000000018002098F: 41 54              push        r12
+  0000000180020991: 41 55              push        r13
+  0000000180020993: 41 56              push        r14
+  0000000180020995: 41 57              push        r15
+  0000000180020997: 48 8D A8 E8 FE FF  lea         rbp,[rax+FFFFFFFFFFFFFEE8h]
+                    FF
+  000000018002099E: 48 81 EC F8 01 00  sub         rsp,1F8h
+                    00
+  00000001800209A5: 48 C7 45 A0 FE FF  mov         qword ptr [rbp-60h],0FFFFFFFFFFFFFFFEh
+                    FF FF
+  00000001800209AD: 0F 29 70 A8        movaps      xmmword ptr [rax-58h],xmm6
+  00000001800209B1: 0F 29 78 98        movaps      xmmword ptr [rax-68h],xmm7
+  00000001800209B5: 44 0F 29 40 88     movaps      xmmword ptr [rax-78h],xmm8
+  00000001800209BA: 44 0F 29 88 78 FF  movaps      xmmword ptr [rax+FFFFFFFFFFFFFF78h],xmm9
+                    FF FF
+  00000001800209C2: 44 0F 29 90 68 FF  movaps      xmmword ptr [rax+FFFFFFFFFFFFFF68h],xmm10
+                    FF FF
+  00000001800209CA: 44 0F 29 98 58 FF  movaps      xmmword ptr [rax+FFFFFFFFFFFFFF58h],xmm11
+                    FF FF
+  00000001800209D2: 44 0F 29 A0 48 FF  movaps      xmmword ptr [rax+FFFFFFFFFFFFFF48h],xmm12
+                    FF FF
+  00000001800209DA: 44 0F 29 A8 38 FF  movaps      xmmword ptr [rax+FFFFFFFFFFFFFF38h],xmm13
+                    FF FF
+  00000001800209E2: 44 0F 29 B0 28 FF  movaps      xmmword ptr [rax+FFFFFFFFFFFFFF28h],xmm14
+                    FF FF
+  00000001800209EA: 44 0F 29 B8 18 FF  movaps      xmmword ptr [rax+FFFFFFFFFFFFFF18h],xmm15
+                    FF FF
+  00000001800209F2: 49 8B F0           mov         rsi,r8
+  00000001800209F5: 48 8B F9           mov         rdi,rcx
+  00000001800209F8: 33 D2              xor         edx,edx
+  00000001800209FA: 44 8D 42 70        lea         r8d,[rdx+70h]
+  00000001800209FE: 48 8D 4D B8        lea         rcx,[rbp-48h]
+  0000000180020A02: E8 97 90 00 00     call        0000000180029A9E
+  0000000180020A07: 48 8D 8D 20 01 00  lea         rcx,[rbp+0000000000000120h]
+                    00
+  0000000180020A0E: FF 15 CC C6 00 00  call        qword ptr [000000018002D0E0h]
+  0000000180020A14: 48 8D 8D 30 01 00  lea         rcx,[rbp+0000000000000130h]
+                    00
+  0000000180020A1B: FF 15 B7 C6 00 00  call        qword ptr [000000018002D0D8h]
+  0000000180020A21: 45 0F 57 E4        xorps       xmm12,xmm12
+  0000000180020A25: F2 4C 0F 2A A5 20  cvtsi2sd    xmm12,qword ptr [rbp+0000000000000120h]
+                    01 00 00
+  0000000180020A2E: 0F 57 C0           xorps       xmm0,xmm0
+  0000000180020A31: F2 48 0F 2A 85 30  cvtsi2sd    xmm0,qword ptr [rbp+0000000000000130h]
+                    01 00 00
+  0000000180020A3A: F2 44 0F 5E E0     divsd       xmm12,xmm0
+  0000000180020A3F: F2 44 0F 10 1D E8  movsd       xmm11,mmword ptr [0000000180031C30h]
+                    11 01 00
+  0000000180020A48: F2 45 0F 59 E3     mulsd       xmm12,xmm11
+  0000000180020A4D: 80 BF 70 5C 02 00  cmp         byte ptr [rdi+0000000000025C70h],0
+                    00
+  0000000180020A54: 74 1F              je          0000000180020A75
+  0000000180020A56: 4C 63 87 2C 5C 02  movsxd      r8,dword ptr [rdi+0000000000025C2Ch]
+                    00
+  0000000180020A5D: 33 D2              xor         edx,edx
+  0000000180020A5F: 48 8B 8F 38 5C 02  mov         rcx,qword ptr [rdi+0000000000025C38h]
+                    00
+  0000000180020A66: E8 33 90 00 00     call        0000000180029A9E
+  0000000180020A6B: C7 87 20 5C 02 00  mov         dword ptr [rdi+0000000000025C20h],0
+                    00 00 00 00
+  0000000180020A75: 48 8D 8D 20 01 00  lea         rcx,[rbp+0000000000000120h]
+                    00
+  0000000180020A7C: FF 15 5E C6 00 00  call        qword ptr [000000018002D0E0h]
+  0000000180020A82: 48 8D 8D 30 01 00  lea         rcx,[rbp+0000000000000130h]
+                    00
+  0000000180020A89: FF 15 49 C6 00 00  call        qword ptr [000000018002D0D8h]
+  0000000180020A8F: 0F 57 F6           xorps       xmm6,xmm6
+  0000000180020A92: F2 48 0F 2A B5 20  cvtsi2sd    xmm6,qword ptr [rbp+0000000000000120h]
+                    01 00 00
+  0000000180020A9B: 0F 57 C0           xorps       xmm0,xmm0
+  0000000180020A9E: F2 48 0F 2A 85 30  cvtsi2sd    xmm0,qword ptr [rbp+0000000000000130h]
+                    01 00 00
+  0000000180020AA7: F2 0F 5E F0        divsd       xmm6,xmm0
+  0000000180020AAB: F2 41 0F 59 F3     mulsd       xmm6,xmm11
+  0000000180020AB0: 44 8B AF 64 5C 02  mov         r13d,dword ptr [rdi+0000000000025C64h]
+                    00
+  0000000180020AB7: 8B 9F 6C 5C 02 00  mov         ebx,dword ptr [rdi+0000000000025C6Ch]
+  0000000180020ABD: 8B 87 20 5C 02 00  mov         eax,dword ptr [rdi+0000000000025C20h]
+  0000000180020AC3: 39 06              cmp         dword ptr [rsi],eax
+  0000000180020AC5: 0F 84 9A 00 00 00  je          0000000180020B65
+  0000000180020ACB: 85 C0              test        eax,eax
+  0000000180020ACD: 0F 84 92 00 00 00  je          0000000180020B65
+  0000000180020AD3: B9 04 00 00 00     mov         ecx,4
+  0000000180020AD8: FF 15 2A C5 00 00  call        qword ptr [000000018002D008h]
+  0000000180020ADE: 84 C0              test        al,al
+  0000000180020AE0: 74 79              je          0000000180020B5B
+  0000000180020AE2: 8B 05 18 C4 01 00  mov         eax,dword ptr [000000018003CF00h]
+  0000000180020AE8: A8 01              test        al,1
+  0000000180020AEA: 75 1B              jne         0000000180020B07
+  0000000180020AEC: 83 C8 01           or          eax,1
+  0000000180020AEF: 89 05 0B C4 01 00  mov         dword ptr [000000018003CF00h],eax
+  0000000180020AF5: E8 66 08 FE FF     call        0000000180001360
+  0000000180020AFA: 48 8D 0D BF C0 00  lea         rcx,[000000018002CBC0h]
+                    00
+  0000000180020B01: E8 F2 84 00 00     call        0000000180028FF8
+  0000000180020B06: 90                 nop
+  0000000180020B07: 8B 87 20 5C 02 00  mov         eax,dword ptr [rdi+0000000000025C20h]
+  0000000180020B0D: 89 44 24 38        mov         dword ptr [rsp+38h],eax
+  0000000180020B11: 8B 06              mov         eax,dword ptr [rsi]
+  0000000180020B13: 89 44 24 30        mov         dword ptr [rsp+30h],eax
+  0000000180020B17: C7 44 24 28 AC 15  mov         dword ptr [rsp+28h],15ACh
+                    00 00
+  0000000180020B1F: 48 8D 15 92 07 01  lea         rdx,[00000001800312B8h]
+                    00
+  0000000180020B26: 48 8D 05 63 07 01  lea         rax,[0000000180031290h]
+                    00
+  0000000180020B2D: 4C 8D 05 AC C3 01  lea         r8,[000000018003CEE0h]
+                    00
+  0000000180020B34: 48 83 3D BC C3 01  cmp         qword ptr [000000018003CEF8h],10h
+                    00 10
+  0000000180020B3C: 44 8B 8F 38 49 02  mov         r9d,dword ptr [rdi+0000000000024938h]
+                    00
+  0000000180020B43: 48 89 44 24 20     mov         qword ptr [rsp+20h],rax
+  0000000180020B48: 4C 0F 43 05 90 C3  cmovae      r8,qword ptr [000000018003CEE0h]
+                    01 00
+  0000000180020B50: B9 04 00 00 00     mov         ecx,4
+  0000000180020B55: FF 15 B5 C4 00 00  call        qword ptr [000000018002D010h]
+  0000000180020B5B: B8 02 05 00 E0     mov         eax,0E0000502h
+  0000000180020B60: E9 8E 05 00 00     jmp         00000001800210F3
+  0000000180020B65: 48 8D 8D 20 01 00  lea         rcx,[rbp+0000000000000120h]
+                    00
+  0000000180020B6C: FF 15 6E C5 00 00  call        qword ptr [000000018002D0E0h]
+  0000000180020B72: 48 8D 8D 30 01 00  lea         rcx,[rbp+0000000000000130h]
+                    00
+  0000000180020B79: FF 15 59 C5 00 00  call        qword ptr [000000018002D0D8h]
+  0000000180020B7F: 45 0F 57 C0        xorps       xmm8,xmm8
+  0000000180020B83: F2 4C 0F 2A 85 20  cvtsi2sd    xmm8,qword ptr [rbp+0000000000000120h]
+                    01 00 00
+  0000000180020B8C: 0F 57 C0           xorps       xmm0,xmm0
+  0000000180020B8F: F2 48 0F 2A 85 30  cvtsi2sd    xmm0,qword ptr [rbp+0000000000000130h]
+                    01 00 00
+  0000000180020B98: F2 44 0F 5E C0     divsd       xmm8,xmm0
+  0000000180020B9D: F2 45 0F 59 C3     mulsd       xmm8,xmm11
+  0000000180020BA2: 46 8D 34 2B        lea         r14d,[rbx+r13]
+  0000000180020BA6: 8B 56 04           mov         edx,dword ptr [rsi+4]
+  0000000180020BA9: 44 3B F2           cmp         r14d,edx
+  0000000180020BAC: 7E 54              jle         0000000180020C02
+  0000000180020BAE: B9 04 00 00 00     mov         ecx,4
+  0000000180020BB3: FF 15 4F C4 00 00  call        qword ptr [000000018002D008h]
+  0000000180020BB9: 84 C0              test        al,al
+  0000000180020BBB: 74 9E              je          0000000180020B5B
+  0000000180020BBD: 8B 05 3D C3 01 00  mov         eax,dword ptr [000000018003CF00h]
+  0000000180020BC3: A8 01              test        al,1
+  0000000180020BC5: 75 1B              jne         0000000180020BE2
+  0000000180020BC7: 83 C8 01           or          eax,1
+  0000000180020BCA: 89 05 30 C3 01 00  mov         dword ptr [000000018003CF00h],eax
+  0000000180020BD0: E8 8B 07 FE FF     call        0000000180001360
+  0000000180020BD5: 48 8D 0D E4 BF 00  lea         rcx,[000000018002CBC0h]
+                    00
+  0000000180020BDC: E8 17 84 00 00     call        0000000180028FF8
+  0000000180020BE1: 90                 nop
+  0000000180020BE2: 8B 46 04           mov         eax,dword ptr [rsi+4]
+  0000000180020BE5: 89 44 24 38        mov         dword ptr [rsp+38h],eax
+  0000000180020BE9: 44 89 74 24 30     mov         dword ptr [rsp+30h],r14d
+  0000000180020BEE: C7 44 24 28 B3 15  mov         dword ptr [rsp+28h],15B3h
+                    00 00
+  0000000180020BF6: 48 8D 15 FB 06 01  lea         rdx,[00000001800312F8h]
+                    00
+  0000000180020BFD: E9 24 FF FF FF     jmp         0000000180020B26
+  0000000180020C02: 81 7E 08 01 00 08  cmp         dword ptr [rsi+8],1080001h
+                    01
+  0000000180020C09: 75 1E              jne         0000000180020C29
+  0000000180020C0B: 44 8B 36           mov         r14d,dword ptr [rsi]
+  0000000180020C0E: 41 8B C6           mov         eax,r14d
+  0000000180020C11: 41 0F AF C5        imul        eax,r13d
+  0000000180020C15: 89 85 20 01 00 00  mov         dword ptr [rbp+0000000000000120h],eax
+  0000000180020C1B: 46 8D 3C 2A        lea         r15d,[rdx+r13]
+  0000000180020C1F: 45 0F AF FE        imul        r15d,r14d
+  0000000180020C23: 44 0F AF F3        imul        r14d,ebx
+  0000000180020C27: EB 25              jmp         0000000180020C4E
+  0000000180020C29: 8B 0E              mov         ecx,dword ptr [rsi]
+  0000000180020C2B: 8B C1              mov         eax,ecx
+  0000000180020C2D: 41 0F AF C5        imul        eax,r13d
+  0000000180020C31: 44 8D 04 40        lea         r8d,[rax+rax*2]
+  0000000180020C35: 44 89 85 20 01 00  mov         dword ptr [rbp+0000000000000120h],r8d
+                    00
+  0000000180020C3C: 42 8D 04 2A        lea         eax,[rdx+r13]
+  0000000180020C40: 0F AF C1           imul        eax,ecx
+  0000000180020C43: 44 8D 3C 40        lea         r15d,[rax+rax*2]
+  0000000180020C47: 0F AF CB           imul        ecx,ebx

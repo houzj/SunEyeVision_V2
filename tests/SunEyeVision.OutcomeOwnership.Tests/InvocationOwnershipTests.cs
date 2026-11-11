@@ -6,6 +6,65 @@ namespace SunEyeVision.Plugin.Editing.Wpf.Tests;
 
 public sealed class InvocationOwnershipTests
 {
+    [Fact]
+    public void Hidden_module_status_is_readable_on_failed_results_without_overriding_execution_status()
+    {
+        var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("status",DataType.Integer)},
+            outputDisplay:new[]{new OutputDisplayNode("status","模块状态",displayInResultPanel:false)});
+        var owner=new ToolExecutionOwner();var identity=owner.Begin("scope/node",Guid.NewGuid(),"5.0");
+        try
+        {
+            using var result=DeclaredOutputSnapshot.Capture(schema,0,identity,"node",
+                new(false,new AvailableOutput(new Dictionary<string,object?>{{"status",1L}}),BusinessJudgment.NotEvaluated,
+                    new[]{new Diagnostic("IMAGE_SOURCE_CAPTURE","取帧失败")}),new Scope(),0,
+                fields:new Dictionary<string,DeclaredOutputField>{{"status",new("status","旧标题","",null,null,null,true)}});
+            Assert.Equal(ExecutionStatus.Failed,result.Status);Assert.False(result.IsSuccess);
+            Assert.False(result.Fields["status"].DisplayInResultPanel);Assert.Equal("模块状态",result.Fields["status"].DisplayName);
+            using var reader=result.AcquireReader();Assert.Equal(1L,reader.Values!.Get<long>("status"));
+        }
+        finally{identity.CompleteCallbacks();owner.Retire();}
+    }
+
+    [Fact]
+    public void Failed_result_retains_available_fields_without_satisfying_missing_outputs_and_drains_its_readers()
+    {
+        var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("sn",DataType.Integer),new Port("image",TypeRef.ResourceOf(ResourceKind.Image))});
+        var owner=new ToolExecutionOwner();var identity=owner.Begin("scope/node",Guid.NewGuid(),"5.0");
+        var output=new AvailableOutput(new Dictionary<string,object?>{{"sn",8L}});var resources=new Scope();
+        var result=DeclaredOutputSnapshot.Capture(schema,0,identity,"node",new(false,output,BusinessJudgment.NotEvaluated,
+            new[]{new Diagnostic("IMAGE_SOURCE_STITCH","拼接失败"){NativeErrorCode=0xE0000502}}),resources,0);
+        Assert.Equal(ExecutionStatus.Failed,result.Status);Assert.False(result.IsSuccess);Assert.True(result.IsComplete);
+        Assert.Equal(0xE0000502u,Assert.Single(result.Diagnostics).NativeErrorCode);
+        var reader=result.AcquireReader();
+        Assert.Equal(8L,reader.Values!.Get<long>("sn"));Assert.True(reader.Values.Read("image").IsMissing);
+        Assert.Equal(schema.Outputs.Count,reader.Values.Declarations.Count);
+        result.Dispose();Assert.Equal(0,output.Count);Assert.Equal(0,resources.Count);
+        reader.Dispose();Assert.Equal(1,output.Count);Assert.Equal(1,resources.Count);
+        identity.CompleteCallbacks();owner.Retire();
+    }
+
+    [Fact]
+    public void Available_failed_outputs_still_validate_types_and_success_cannot_omit_required_fields()
+    {
+        var ports=new[]{new Port("sn",DataType.Integer),new Port("image",TypeRef.ResourceOf(ResourceKind.Image))};
+        Assert.Throws<ArgumentException>(()=>InputValues.CaptureAvailableOutputs(ports,new Dictionary<string,object?>{{"sn","8"}}));
+        Assert.Throws<ArgumentException>(()=>InputValues.CaptureAvailableOutputs(ports,new Dictionary<string,object?>{{"other",8L}}));
+        Assert.Throws<ArgumentException>(()=>new InputValues(ports,new Dictionary<string,object?>{{"sn",8L}}));
+        var owner=new ToolExecutionOwner();var identity=owner.Begin("scope/node",Guid.NewGuid(),"5.0");
+        var output=new AvailableOutput(new Dictionary<string,object?>{{"sn",8L}});var resources=new Scope();
+        Assert.Throws<ArgumentException>(()=>DeclaredOutputSnapshot.Capture(new(Array.Empty<Port>(),ports),0,identity,"node",
+            new(true,output,BusinessJudgment.Pass,Array.Empty<Diagnostic>()),resources,0));
+        Assert.Equal(1,output.Count);Assert.Equal(1,resources.Count);
+        identity.CompleteCallbacks();owner.Retire();
+    }
+
+    private sealed class AvailableOutput(IReadOnlyDictionary<string,object?> values):IToolOutput,IDisposable
+    {
+        public int Count;
+        public IReadOnlyDictionary<string,object?> ToValues()=>values;
+        public void Dispose()=>Count++;
+    }
+
     private static readonly ToolSchema Schema = new(Array.Empty<Port>(),Array.Empty<Port>());
     private static InputValues Inputs()=>new(Array.Empty<Port>(),new Dictionary<string,object?>());
 
@@ -48,6 +107,39 @@ public sealed class InvocationOwnershipTests
         var staleAlias=new Scope();
         Assert.Throws<InvalidOperationException>(()=>DeclaredOutputSnapshot.Capture(Schema,0,identity,"node",new(true,staleAlias,BusinessJudgment.Pass,Array.Empty<Diagnostic>()),staleAlias,0));
         Assert.Equal(1,staleAlias.Count);
+    }
+
+    [Fact]
+    public void Broken_history_formatter_keeps_the_accepted_output_and_releases_owners()
+    {
+        var owner = new ToolExecutionOwner();
+        var identity = owner.Begin("scope/node", Guid.NewGuid(), "5.0");
+        var output = new BrokenHistoryOutput();
+        var scope = new Scope();
+        using (var result = DeclaredOutputSnapshot.Capture(Schema, 0, identity, "node",
+            new(true, output, BusinessJudgment.Pass, Array.Empty<Diagnostic>()), scope, 0))
+        {
+            Assert.True(result.IsSuccess);
+            Assert.Equal("历史记录生成失败：formatter failed", Assert.Single(result.ResultRecords));
+            using var reader = result.AcquireReader();
+            Assert.NotNull(reader.Values);
+            Assert.Equal(1, output.FormatAttempts);
+        }
+        Assert.Equal(1, output.Disposals);
+        Assert.Equal(1, scope.Count);
+    }
+
+    private sealed class BrokenHistoryOutput : IToolOutput, IToolResultRecordOutput, IDisposable
+    {
+        public int FormatAttempts;
+        public int Disposals;
+        public IReadOnlyDictionary<string, object?> ToValues() => new Dictionary<string, object?>();
+        public IEnumerable<string> DescribeResultRecords()
+        {
+            FormatAttempts++;
+            throw new InvalidOperationException("formatter failed");
+        }
+        public void Dispose() => Disposals++;
     }
 
     [Fact]

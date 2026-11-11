@@ -76,7 +76,8 @@ public sealed partial class DocumentSession
             foreach (var selection in kind == ReferenceSelectionFieldKind.Display
                 ? Array.Empty<VariableSelection>() : CaptureVariableSelections())
             {
-                if (!VariableValueDeclarations.TryGetPort(selection.Type, out var variablePort))
+                if (selection.Type == "Image" && port.Type != TypeRef.ResourceOf(ResourceKind.Image)) continue;
+                if (!VariableValueDeclarations.TryGetConsumerPort(selection.Type, out var variablePort))
                 { diagnostics.Add(selection.Name + "：变量类型尚无正式引用声明。"); continue; }
                 var actual = selection.Actual;
                 variables.Add(new(actual, selection.Name, actual.Group, actual.Index, actual.Description,

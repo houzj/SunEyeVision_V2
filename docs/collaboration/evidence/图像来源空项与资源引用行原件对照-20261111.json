@@ -1,0 +1,36 @@
+{
+  "kind": "VM原件优先实施门禁",
+  "batch": "交接单接手：图像来源空项显示与资源引用行对照",
+  "vmEvidence": [
+    {
+      "path": "D:/MyWork/Rea逆向/analysis/decompiled/Apps.XmlParser.CapabilityAudit/Apps.XmlParser.ParamTab/Holder.cs:12",
+      "facts": ["Holder.NullName = \"RunParam_None\"；VmModuleExtern.cs:133-140 在 IsNeedNull 时向列表 Insert(0, new Holder { DisplayNameA = Holder.NullName, HolderTarget = \"null\" })"]
+    },
+    {
+      "path": "D:/MyWork/Rea逆向/analysis/decompiled/VisionMaster.Exe.Audit/resources/zh-cn.xaml:1409",
+      "facts": ["<sys:String x:Key=\"RunParam_None\">无</sys:String>；en-us.xaml:1431 为 None", "VM 4.4.0 全库检索\"未设置\"仅命中 ImageBaseData.cs:28 代码注释，中文资源不存在该字符串"]
+    },
+    {
+      "path": "docs/collaboration/evidence/VM-Blob组装与输入组合原件摘录-20261110.xml:7-32",
+      "facts": ["Blob 的 ImageSource 为 EnumerationG 组合下拉，EnumEntrys 由 GetFrontParamItemsOperation/IMAGE 填充，原件无静态空 EnumEntry", "清空语义由 SetCombinationSourceOperation 空值分支承担（SetCombinationSourceOperation.cs:62-86：RelateIO = null）"]
+    },
+    {
+      "path": "docs/collaboration/evidence/IMAGE_INPUT_SELECTION_DESIGN_20261031.json:39",
+      "facts": ["宿主已登记设计决策：必填无清空项，可选 Unset 清空；该清空项为本方宿主设计，非原件空项"]
+    }
+  ],
+  "currentConsumers": [
+    "src/Plugin.Wpf/Fields/DeclaredFieldRow.ImageSource.cs:151-156（可选端口的 Unset 清空项构造）",
+    "src/Plugin.Wpf/Themes/Native/Localization/zh-cn.xaml:1513、en-us.xaml:1535（RunParam_None 本地化键已存在）"
+  ],
+  "difference": [
+    "交接单 D 盘参考实现将空项显示为\"未设置\"，该字符串在 VM 4.4.0 中文资源中查无，属自拟文案，违反原件优先门禁",
+    "本方可选端口清空项在原件中无对应空项（原件由 SetCombinationSourceOperation 空值分支承担清空），显示文本应沿原件空项惯例 RunParam_None"
+  ],
+  "decision": {
+    "fix1": "空项 Label 由空串改为 AppLocalizationService.GetLang(\"RunParam_None\", \"无\")，ToolTip 保持\"清除图像来源\"，UnsetSetting 身份、候选快照、代次与接受链不变",
+    "fix2": "DeclaredFieldTemplateRegistry.cs:71-76 与 DeclaredFieldRow.cs:196-197 的 Resource+Reference→Reference 模板路由在当前 worktree 已存在等价实现（注释明确资源文本占位不是原生来源选择器替代），src 中已无\"运行时资源，请选择来源\"文本；本批不重做，仅登记核对结论",
+    "fix2VmAlignment": "VM 原件中图像资源字段走 EnumerationG 组合槽直写订阅（非 ButtonSelecter 引用行）；资源端口实际路由是否应改用组合槽待消费者盘点后单独登记，本次不改动"
+  },
+  "acceptance": "构建通过 + 新增合同用例 Image_source_unset_choice_uses_the_native_none_label 编译通过；运行态由用户人工核对图像来源下拉空项显示\"无\"、选择后清空来源、保存重开一致"
+}

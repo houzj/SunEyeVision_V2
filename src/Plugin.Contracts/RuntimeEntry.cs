@@ -21,7 +21,10 @@ public interface IToolSession : IAsyncDisposable
 }
 
 public sealed record ToolOutcome(bool Success, IToolOutput? Output, BusinessJudgment Judgment,
-    IReadOnlyList<Diagnostic> Diagnostics);
+    IReadOnlyList<Diagnostic> Diagnostics, bool Suppressed = false)
+{
+    public static ToolOutcome Suppress() => new(false, null, BusinessJudgment.NotEvaluated, Array.Empty<Diagnostic>(), true);
+}
 
 public sealed class ToolInvocation
 {

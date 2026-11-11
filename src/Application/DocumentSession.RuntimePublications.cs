@@ -9,6 +9,21 @@ public sealed record PublishedNodeResult(ScopedNodeIdentity Node, RunIdentity Id
 public sealed partial class DocumentSession
 {
     private readonly Dictionary<ScopedNodeIdentity, DeclaredOutputReader> _publishedRuntimeResults = new();
+    private readonly System.Runtime.CompilerServices.ConditionalWeakTable<NodeDefinition, ResultHistoryBuffer> _resultHistory = new();
+
+    public IReadOnlyList<ResultHistoryRow> ReadResultHistory(string workflowId, NodeDefinition node)
+    {
+        lock (_gate)
+            return ReferenceEquals(FindNode(workflowId, node.Id), node) && _resultHistory.TryGetValue(node, out var history)
+                ? history.Read() : Array.Empty<ResultHistoryRow>();
+    }
+
+    public void ClearResultHistory(string workflowId, NodeDefinition node)
+    {
+        lock (_gate)
+            if (ReferenceEquals(FindNode(workflowId, node.Id), node) && _resultHistory.TryGetValue(node, out var history))
+                history.Clear();
+    }
     public Exception? LastRuntimeReleaseError { get; private set; }
     public event EventHandler<PublishedNodeResult>? RuntimeResultAvailable;
 
@@ -54,6 +69,20 @@ public sealed partial class DocumentSession
         return acquired;
     }
 
+    /// <summary>Check publication ownership without borrowing its values or resources.</summary>
+    public bool IsPublishedResultCurrent(string workflowId, string nodeId, DeclaredOutputSnapshot snapshot)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        var key = new ScopedNodeIdentity(workflowId, nodeId);
+        if (snapshot.ExecutionIdentity is not { IsDomainCurrent: true } identity)
+            return false;
+        lock (_gate)
+            if (_closed || _closing || !_publishedRuntimeResults.TryGetValue(key, out var entry)
+                || !ReferenceEquals(entry.Snapshot, snapshot))
+                return false;
+        return identity.IsDomainCurrent;
+    }
+
     // Session.Dispose calls this only after run and editing activities have drained.
     private IReadOnlyList<IDisposable> TakeInvalidatedRuntimePublications(IEnumerable<ScopedNodeIdentity> invalidated)
     {
@@ -68,7 +97,7 @@ public sealed partial class DocumentSession
     private void ReleaseRuntimePublications()
     {
         DeclaredOutputReader[] readers;
-        lock (_gate) { readers = _publishedRuntimeResults.Values.ToArray(); _publishedRuntimeResults.Clear(); }
+        lock (_gate) { readers = _publishedRuntimeResults.Values.ToArray(); _publishedRuntimeResults.Clear(); _resultHistory.Clear(); }
         var failures = new List<Exception>();
         foreach (var reader in readers) try { reader.Dispose(); } catch (Exception error) { failures.Add(error); }
         if (failures.Count != 0) throw new AggregateException("运行结果 reader 释放失败。", failures);

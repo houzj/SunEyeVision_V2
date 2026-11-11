@@ -29,6 +29,16 @@ public sealed class ResultPresentationModelTests:IDisposable
     }
 
     [Fact]
+    public void Result_display_declaration_controls_root_order_before_undeclared_display_items()
+    {
+        var schema = new ToolSchema(Array.Empty<Port>(),
+            new[] { new Port("first", DataType.Integer), new Port("second", DataType.Integer), new Port("third", DataType.Integer) },
+            outputDisplay: new[] { new OutputDisplayNode("second", "第二"), new OutputDisplayNode("first", "第一") });
+        var model = Declaration(schema);
+        Assert.Equal(new[] { "second", "first", "third" }, model.Outputs.Select(node => node.DeclaredPort!.Id));
+    }
+
+    [Fact]
     public void Declaration_addresses_preserve_root_contract_and_all_members_without_sample_identity()
     {
         var record=TypeRef.RecordOf("record",new[]{new Port("name.with/slash",DataType.Text),new Port("count",DataType.Integer,Storage:NumericStorage.UInt8)});

@@ -392,7 +392,7 @@ namespace SunEyeVision.UI.Features.Camera
                     IsEnabled = device.IsEnabled,
                     AutoConnect = ReadSetting(device, "AutoConnect", true),
                     Description = device.Description,
-                    DeviceId = ReadSetting(device, "DeviceId", device.Id),
+                    DeviceId = RuntimeDeviceId(device),
                     MacAddress = ReadSetting(device, "MacAddress", string.Empty),
                     Transport = ReadSetting(device, "Transport", string.Empty),
                     State = CameraState.Offline
@@ -400,6 +400,8 @@ namespace SunEyeVision.UI.Features.Camera
             }
             UpdateStatistics();
         }
+
+        internal static string RuntimeDeviceId(Device device) => ReadSetting(device, "DeviceId", device.Id);
 
         public void PersistCameraList()
         {

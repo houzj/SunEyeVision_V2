@@ -99,8 +99,10 @@ public sealed partial class DocumentSession
                 var fields=node.Configuration.Fields;
                 _=fields.MapReferences(reference=>{CaptureReference(reference);return reference;});
                 if (node.SelectedDisplayReference is {} selected) CaptureReference(ParameterSettingCanonical.Deserialize(selected));
+                if(node.DisplayOverlays is {} overlays)
+                    foreach(var reference in overlays.References())CaptureReference(ParameterSettingCanonical.Deserialize(reference));
                 return new FragmentNodeSnapshot(node.Id,node.ToolType,node.DispName,node.IsEnabled,node.Position,node.Width,node.Height,
-                    node.SelectedDisplayReference,node.AdditionalData?.ToDictionary(pair=>pair.Key,pair=>pair.Value.Clone(),StringComparer.Ordinal),node.Configuration.Copy());
+                    node.SelectedDisplayReference,node.DisplayOverlays,node.AdditionalData?.ToDictionary(pair=>pair.Key,pair=>pair.Value.Clone(),StringComparer.Ordinal),node.Configuration.Copy());
             }).ToArray();
             var edges=scope.Flow.Connections.Where(edge=>ids.Contains(edge.TargetNodeId)).Select(edge=>
             {
@@ -227,20 +229,23 @@ public sealed partial class DocumentSession
         }
         var incoming=candidate.Edges.GroupBy(edge=>edge.TargetNodeId,StringComparer.Ordinal)
             .ToDictionary(group=>group.Key,group=>group.Select(edge=>edge.SourceNodeId).ToArray(),StringComparer.Ordinal);
-        foreach(var node in mapped.Values.Where(node=>node.SelectedDisplayReference is not null))
+        foreach(var node in mapped.Values.Where(node=>node.SelectedDisplayReference is not null||node.DisplayOverlays is not null))
         {
-            var reference=ParameterSettingCanonical.Deserialize(node.SelectedDisplayReference!);
-            if(reference.Selection is not (BindingSelection.AllItems or BindingSelection.AtConstant) ||
-                ParameterReferenceRules.SelectedType(reference)!=TypeRef.ResourceOf(ResourceKind.Image))
-                throw new InvalidOperationException("复制图像导航来源无效。");
             var eligible=new HashSet<string>(StringComparer.Ordinal){node.Id};var pending=new Stack<string>();pending.Push(node.Id);
             while(pending.TryPop(out var current))if(incoming.TryGetValue(current,out var sources))
                 foreach(var source in sources)if(eligible.Add(source))pending.Push(source);
             var declarations=candidate.Nodes.Where(item=>eligible.Contains(item.Node.Id)).Select(item=>
                 new BindingSource(new(targetWorkflowId,item.Node.Id),Guid.Empty,AdmitConfiguration(item.Node,item.Configuration).Schema,0)).ToArray();
             var bindingScope=new ResultDisplayBindingScope(new(targetWorkflowId,node.Id),_owner.Id,ChangeRevision,declarations);
-            if(new ParameterBindingService().CompileBinding(reference,new Port("display-image",TypeRef.ResourceOf(ResourceKind.Image)),bindingScope).Plan is null)
-                throw new InvalidOperationException("复制图像导航来源不属于目标前序或自身。");
+            var references=(node.DisplayOverlays?.References()??Enumerable.Empty<string>()).Append(node.SelectedDisplayReference).OfType<string>();
+            foreach(var text in references.Distinct(StringComparer.Ordinal))
+            {
+                var reference=ParameterSettingCanonical.Deserialize(text);
+                if(reference.Selection is not (BindingSelection.AllItems or BindingSelection.AtConstant) ||
+                    ParameterReferenceRules.SelectedType(reference)!=TypeRef.ResourceOf(ResourceKind.Image)||
+                    new ParameterBindingService().CompileBinding(reference,new Port("display-image",TypeRef.ResourceOf(ResourceKind.Image)),bindingScope).Plan is null)
+                    throw new InvalidOperationException("复制图像导航来源不属于目标前序或自身。");
+            }
         }
         var change=CommitGraphEdit(draft,"粘贴节点") ?? throw new InvalidOperationException("复制没有发布任何节点。");
         return new(Array.AsReadOnly(mapped.Values.ToArray()),Array.AsReadOnly(edges.Values.ToArray()),change);

@@ -691,7 +691,7 @@
             <Trigger Property="IsEnabled" Value="False">
               <Setter Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" Property="Foreground" />
             </Trigger>
-            <DataTrigger Value="1" Binding="{Binding ItemsSource.Count, RelativeSource={RelativeSource Self}}">
+            <DataTrigger Value="1" Binding="{Binding Items.Count, RelativeSource={RelativeSource Self}}">
               <Setter TargetName="head" Property="Visibility" Value="Hidden" />
               <Setter TargetName="head" Property="Margin" Value="0" />
               <Setter TargetName="head" Property="Height" Value="0" />

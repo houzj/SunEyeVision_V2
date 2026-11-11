@@ -12,7 +12,10 @@ public sealed class NodeClipboardTests
   using var f=new SessionGraphFixture();var a=f.Add();var b=f.Add("BlobAnalysis",200,20);var edge=f.Connect(a,b);
   var edit=f.Session.PrepareGraphEdit(f.Root.Id);edit.EditConnectionPath(edge,new[]{new CanvasPoint(80,30),new CanvasPoint(100,30)});f.Session.CommitGraphEdit(edit,"折点");
   var output=f.Session.GetNodeSchema(f.Root.Id,a.Id)!.Outputs.Single(port=>port.Id=="output.image");
-  f.Session.SetNodeDisplayReference(f.Root.Id,b,ParameterSettingCanonical.Serialize(new OutputReference(a.Id,output.Id,output.Type,new[]{"data"},scopeId:f.Root.Id)));
+  var selected=ParameterSettingCanonical.Serialize(new OutputReference(a.Id,output.Id,output.Type,new[]{"data"},scopeId:f.Root.Id));
+  var binary=f.Session.GetNodeSchema(f.Root.Id,b.Id)!.Outputs.Single(port=>port.Id=="field:8ca10000000040008000000000000006");
+  var layer=ParameterSettingCanonical.Serialize(new OutputReference(b.Id,binary.Id,binary.Type,new[]{"data"},scopeId:f.Root.Id));
+  f.Session.SetNodeDisplayOverlays(f.Root.Id,b,selected,new ImageOverlaySelection(selected,new string?[]{null,layer,null}));
   var fragment=f.Session.CaptureNodeClipboard(f.Root.Id,new[]{a,b});
   var count=f.Session.HistoryEntries.Count;var receipt=f.Session.PasteNodeClipboard(f.Root.Id,fragment,new CanvasPoint(400,300));
   Assert.Equal(2,receipt.Nodes.Count);var copied=Assert.Single(receipt.Connections);Assert.Equal(4,f.Session.GetNodes(f.Root.Id).Count);
@@ -20,10 +23,13 @@ public sealed class NodeClipboardTests
   var binding=Assert.IsType<ReferenceSetting>(copyTarget.Configuration.Fields.Read("input.image"));
   Assert.Equal(copySource.Id,binding.Reference.NodeId);Assert.Equal(f.Root.Id,binding.Reference.ScopeId);Assert.Equal("connection:"+copied.Id,binding.OriginId);
   Assert.Equal(copySource.Id,ParameterSettingCanonical.Deserialize(copyTarget.SelectedDisplayReference!).NodeId);
+  Assert.Equal(copyTarget.SelectedDisplayReference,copyTarget.DisplayOverlays!.Background);
+  Assert.Equal(copyTarget.Id,ParameterSettingCanonical.Deserialize(copyTarget.DisplayOverlays.Slots[1]!).NodeId);
   Assert.Equal(new CanvasPoint(470,310),copied.ManualPathPoints![0]);Assert.Equal(count+1,f.Session.HistoryEntries.Count);
   Assert.True(f.Session.Undo());Assert.Equal(2,f.Session.GetNodes(f.Root.Id).Count);Assert.True(f.Session.Redo());Assert.Equal(4,f.Session.GetNodes(f.Root.Id).Count);
   var path=f.Save();var reopened=f.Manager.Open(path,_=>SessionGraphFixture.Types,_=>null,SessionGraphFixture.Options);
   Assert.Equal(4,reopened.GetNodes(f.Root.Id).Count);Assert.Equal(2,reopened.GetConnections(f.Root.Id).Count);
+  Assert.True(copyTarget.DisplayOverlays.SameSelection(reopened.FindNode(f.Root.Id,copyTarget.Id)!.DisplayOverlays));
  }
  [Fact] public void Missing_sources_are_skipped_without_creating_empty_history()
  {
@@ -96,7 +102,7 @@ public sealed class NodeClipboardTests
   var dormant=f.Add("BlobAnalysis",450,20);var dormantDraft=f.Session.Editing.Host.BeginEdit(f.Root.Id,dormant.Id);
   var output=f.Session.GetNodeSchema(f.Root.Id,b.Id)!.Outputs.Single(port=>port.Id=="field:8ca10000000040008000000000000019");
   const string inactiveField="input.roi.rectangle.center-x";
-  dormantDraft.ApplyFields(new Dictionary<string,ParameterSetting>{{inactiveField,new ReferenceSetting(new OutputReference(b.Id,output.Id,output.Type,scopeId:f.Root.Id))}});
+  dormantDraft.ApplyFields(new Dictionary<string,ParameterSetting>{{inactiveField,new ReferenceSetting(new OutputReference(b.Id,output.Id,output.Type,scopeId:f.Root.Id,storage:output.Storage))}});
   f.Session.CommitEdit(DocumentEditProposal.Prepare(f.Session.Editing.Host,nodes:new[]{dormantDraft}));
   var path=f.Save();var json=System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(path))!;
   var flows=json["Workflows"]!.AsArray();var second=flows[0]!.DeepClone();second["Id"]=Guid.NewGuid().ToString("N");second["Name"]="目标";
@@ -136,8 +142,8 @@ public sealed class NodeClipboardTests
   var schema=f.Session.GetNodeSchema(f.Root.Id,source.Id)!;
   var array=schema.Outputs.Single(port=>port.Id=="field:8ca10000000040008000000000000019");
   var index=schema.Outputs.Single(port=>port.Id=="field:8ca10000000040008000000000000011");
-  var indexReference=new OutputReference(source.Id,index.Id,index.Type,scopeId:f.Root.Id);
-  var reference=new OutputReference(source.Id,array.Id,array.Type,selection:new BindingSelection.AtField(indexReference),scopeId:f.Root.Id);
+  var indexReference=new OutputReference(source.Id,index.Id,index.Type,scopeId:f.Root.Id,storage:index.Storage);
+  var reference=new OutputReference(source.Id,array.Id,array.Type,selection:new BindingSelection.AtField(indexReference),scopeId:f.Root.Id,storage:array.Storage);
   const string field="field:43bda03261df55b88f963bd18f2ba4d9";var draft=f.Session.Editing.Host.BeginEdit(f.Root.Id,target.Id);
   draft.ApplyFields(new Dictionary<string,ParameterSetting>{{field,new ReferenceSetting(reference,BindingConversion.Float64ToInt64Checked)}});
   f.Session.CommitEdit(DocumentEditProposal.Prepare(f.Session.Editing.Host,nodes:new[]{draft}));
@@ -150,7 +156,7 @@ public sealed class NodeClipboardTests
  {
   using var f=new SessionGraphFixture();var source=f.Add("BlobAnalysis");var target=f.Add("BlobAnalysis",200,20);f.Connect(source,target);
   var output=f.Session.GetNodeSchema(f.Root.Id,source.Id)!.Outputs.Single(port=>port.Id=="field:8ca10000000040008000000000000011");
-  var expression=new DisplayExpressionSetting("{前} / {己}",new[]{new DisplayExpressionSlot("前",new OutputReference(source.Id,output.Id,output.Type,scopeId:f.Root.Id)),new DisplayExpressionSlot("己",new ResultFieldPath(output.Id))});
+  var expression=new DisplayExpressionSetting("{前} / {己}",new[]{new DisplayExpressionSlot("前",new OutputReference(source.Id,output.Id,output.Type,scopeId:f.Root.Id,storage:output.Storage)),new DisplayExpressionSlot("己",new ResultFieldPath(output.Id))});
   var draft=f.Session.Editing.Host.BeginEdit(f.Root.Id,target.Id);draft.ApplyFields(new Dictionary<string,ParameterSetting>{{"display.text.content",expression}});
   f.Session.CommitEdit(DocumentEditProposal.Prepare(f.Session.Editing.Host,nodes:new[]{draft}));
   var result=f.Session.PasteNodeClipboard(f.Root.Id,f.Session.CaptureNodeClipboard(f.Root.Id,new[]{source,target}),new CanvasPoint(400,300));
@@ -165,7 +171,7 @@ public sealed class NodeClipboardTests
   var variable=Assert.Single(f.Session.Document.GlobalVariables);var source=f.Add("BlobAnalysis");var target=f.Add("BlobAnalysis",200,20);f.Connect(source,target);
   var port=f.Session.GetNodeSchema(f.Root.Id,source.Id)!.Outputs.Single(item=>item.Id=="field:8ca10000000040008000000000000019");
   var index=new VariableReference(f.Session.Document.Id,variable.Id,TypeRef.ScalarOf(ScalarKind.Int64));
-  var reference=new OutputReference(source.Id,port.Id,port.Type,selection:new BindingSelection.AtVariable(index),scopeId:f.Root.Id);
+  var reference=new OutputReference(source.Id,port.Id,port.Type,selection:new BindingSelection.AtVariable(index),scopeId:f.Root.Id,storage:port.Storage);
   const string field="field:43bda03261df55b88f963bd18f2ba4d9";var draft=f.Session.Editing.Host.BeginEdit(f.Root.Id,target.Id);
   draft.ApplyFields(new Dictionary<string,ParameterSetting>{{field,new ReferenceSetting(reference,BindingConversion.Float64ToInt64Checked)}});
   f.Session.CommitEdit(DocumentEditProposal.Prepare(f.Session.Editing.Host,nodes:new[]{draft}));
@@ -198,7 +204,7 @@ public sealed class NodeClipboardTests
   var variable=Assert.Single(f.Session.Document.GlobalVariables);var source=f.Add("BlobAnalysis");var target=f.Add("BlobAnalysis",200,20);
   var port=f.Session.GetNodeSchema(f.Root.Id,source.Id)!.Outputs.Single(item=>item.Id=="field:8ca10000000040008000000000000019");
   var index=new VariableReference(f.Session.Document.Id,variable.Id,TypeRef.ScalarOf(ScalarKind.Int64));
-  var reference=new OutputReference(source.Id,port.Id,port.Type,selection:new BindingSelection.AtVariable(index),scopeId:f.Root.Id);
+  var reference=new OutputReference(source.Id,port.Id,port.Type,selection:new BindingSelection.AtVariable(index),scopeId:f.Root.Id,storage:port.Storage);
   const string field="input.roi.rectangle.center-x";var edit=f.Session.Editing.Host.BeginEdit(f.Root.Id,target.Id);
   edit.ApplyFields(new Dictionary<string,ParameterSetting>{{field,new ReferenceSetting(reference)}});
   f.Session.CommitEdit(DocumentEditProposal.Prepare(f.Session.Editing.Host,nodes:new[]{edit}));

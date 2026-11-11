@@ -1,0 +1,37 @@
+{
+  "kind": "静态模板与消费者核对",
+  "date": "2026-11-11",
+  "original": "docs/07-工具逆向/decompiled/AppsStyle/comboboxstyle/listviewcomboboxstyle.xaml",
+  "consumer": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
+  "originalControlTemplateXmlEqualsCurrent": true,
+  "runtime": "未验证；用户要求停止桌面控制",
+  "build": "全量Release：0错误、5945警告、22.23秒；未启动程序、测试或探针",
+  "tests": "正式弹出项/宿主样式冲突、ROI默认投影、构造失败清理、底栏祖先拥有者用例均已编译，未运行",
+  "changes": [
+    "原件下拉项模板提取成共享资源",
+    "枚举行不可选项扩展继承原件样式",
+    "图像来源既有扩展仍继承NativeInputFactory的原件容器样式"
+  ],
+  "files": [
+    {
+      "path": "docs/07-工具逆向/decompiled/AppsStyle/comboboxstyle/listviewcomboboxstyle.xaml",
+      "sha256": "E29B9D9FDB7FCF4F91EA3C7140A04A762B68AD3341D0DCAF84A5CB6769289A97"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
+      "sha256": "A3EF82AEC66AEC07DDCB52AFF75BAA51FE208CC7231D9FF1DEE0BCEED2D1D7ED"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/ParameterPresentation/resourcedictionaries/ParamRowDataTemplates.xaml",
+      "sha256": "E374072EF82D5D69F6FD7D8347219E3D0D9C6EC5BBC6558624B0CC84D239D5FB"
+    },
+    {
+      "path": "tests/SunEyeVision.UI.Tests/Session/ParameterTemplateInteractionTests.cs",
+      "sha256": "EEC765F9F850B1E019946F4D8493752082FCE7CACA05C3CE46B77A190FCD53CB"
+    }
+  ],
+  "releaseAssembly": {
+    "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.Wpf.dll",
+    "sha256": "8A3AEEF48B386559D618E3BF8F8A5265B5D117841B38811127B92BFCBC476ED0"
+  }
+}

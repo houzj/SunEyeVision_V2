@@ -9,6 +9,8 @@ namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 public static class BlobResultDisplay
 {
     public const string Graphic="display.blob";
+    public const string InnerRectangle="display.inner-rectangle";
+    public const string ReferencePoint="display.reference-point", RunPoint="display.run-point";
     public const string Text="display.text";
     public const string Outline="display.outline";
     public const string Inspection="display.inspection",Mask="display.mask",Annulus="display.annulus";
@@ -17,8 +19,9 @@ public static class BlobResultDisplay
     private static readonly IReadOnlyList<Definition> Definitions=Build();
     public static ToolSchema Schema {get;}=new(Definitions.Select(item=>item.Port),Array.Empty<Port>(),new ToolPresentation(Definitions.Select(item=>item.Presentation)));
     public static ResultDisplayDescriptor Descriptor {get;}=new(new(BlobSchema.BlobsPort),new(BlobSchema.BlobsPort,new[]{"element-id"}),
-        new(BlobSchema.BlobsPort,new[]{"rotated-bounds"}),new(BlobSchema.BlobsPort,new[]{"region"}),
-        new(BlobSchema.BlobsPort,new[]{"area"}),new(BlobSchema.BlobsPort,new[]{"judgment-passed"}),new(BlobSchema.BlobsPort,new[]{"boundary"}));
+        new(BlobSchema.BlobsPort,new[]{"oriented-bounds"}),new(BlobSchema.BlobsPort,new[]{"region"}),
+        new(BlobSchema.BlobsPort,new[]{"area"}),new(BlobSchema.BlobsPort,new[]{"judgment-passed"}),new(BlobSchema.BlobsPort,new[]{"outline-points"}),
+        new(BlobSchema.BlobsPort,new[]{"inner-rectangle"}), selectedRectangleColor:new(255,255,0));
     public static InputValues Defaults()=>new(Schema.Inputs,Definitions.ToDictionary(item=>item.Port.Id,item=>(object?)item.Value,StringComparer.Ordinal));
     private static IReadOnlyList<Definition> Build()
     {
@@ -31,27 +34,34 @@ public static class BlobResultDisplay
             var port=new Port(id,type,EditModes:modes);
             result.Add(new(port,new(id,label,section,displayOrder+result.Count,type.Shape==ValueShape.Record?FieldEditorKind.Record:FieldEditorKind.Scalar){Layout=new("结果显示",section,
                 Minimum:minimum,Maximum:maximum,Increment:increment??1,DecimalPlaces:type==DataType.Number?decimals:0,
-                DialogGroup:dialog,DialogTitle:dialog is null?null:dialog switch {Inspection=>"ROI",Mask=>"屏蔽区域",Annulus=>"扇环检测区域",_=>"Blob"},DialogPrimary:primary)},value));
+                DialogGroup:dialog,DialogTitle:dialog is null?null:dialog switch
+                {
+                    InnerRectangle=>"最大内接矩形",Inspection=>"检测区域",Mask=>"屏蔽区多边形",Annulus=>"扇环检测区域",
+                    ReferencePoint=>"基准点",RunPoint=>"运行点",_=>"Blob"
+                },DialogPrimary:primary)},value));
         }
         var ok=PresentationDeclarations.Color(102,255,0);var ng=PresentationDeclarations.Color(255,0,0);
-        void GraphicFields(string group,string label,RecordValue color,double opacity=1)
+        void GraphicFields(string group,string label,RecordValue color,double opacity=1,double width=2)
         {
             Add(Field(group,"visible"),label,"图像显示",DataType.Boolean,true,dialog:group,primary:true);
             Add(Field(group,"ok"),"OK颜色","图像显示",PresentationDeclarations.Rgba,color,dialog:group);
             Add(Field(group,"ng"),"NG颜色","图像显示",PresentationDeclarations.Rgba,ng,dialog:group);
             Add(Field(group,"opacity"),"透明度","图像显示",DataType.Number,opacity,0,1,.01,group);
-            Add(Field(group,"width"),"线宽","图像显示",DataType.Number,2d,1,10,1,group);
+            Add(Field(group,"width"),"线宽","图像显示",DataType.Number,width,1,10,1,group);
         }
         GraphicFields(Graphic,"Blob",ok);
-        GraphicFields(Inspection,"ROI",PresentationDeclarations.Color(0,0,255));
+        GraphicFields(InnerRectangle,"最大内接矩形",ok);
+        GraphicFields(Inspection,"检测区域",PresentationDeclarations.Color(0,0,255));
         Add(Field(Outline,"visible"),"轮廓点","图像显示",DataType.Boolean,true);
+        GraphicFields(ReferencePoint,"基准点",ok,width:1);
+        GraphicFields(RunPoint,"运行点",ng,width:1);
         Add(Field(Text,"visible"),"文本","图像显示",DataType.Boolean,true);
-        GraphicFields(Mask,"屏蔽区域",PresentationDeclarations.Color(0,0,255),.5);
+        GraphicFields(Mask,"屏蔽区多边形",PresentationDeclarations.Color(0,0,255),.5);
         GraphicFields(Annulus,"扇环检测区域",PresentationDeclarations.Color(0,0,255));
-        Add(Field(Text,"content"),"内容","文本显示",DataType.Text,"Blob Area:{0}");
+        Add(Field(Text,"content"),"内容","文本显示",DataType.Text,"Blob面积:{面积}");
         Add(Field(Text,"ok"),"OK颜色","文本显示",PresentationDeclarations.Rgba,ok);
         Add(Field(Text,"ng"),"NG颜色","文本显示",PresentationDeclarations.Rgba,ng);
-        Add(Field(Text,"size"),"字号","文本显示",DataType.Number,10d,6,72,1,decimals:0);
+        Add(Field(Text,"size"),"字号","文本显示",DataType.Number,10d,6,72,1);
         Add(Field(Text,"opacity"),"透明度","文本显示",DataType.Number,1d,0,1,.1);
         Add(Field(Text,"x"),"位置X","文本显示",DataType.Number,0d,decimals:null);
         Add(Field(Text,"y"),"位置Y","文本显示",DataType.Number,0d,decimals:null);
@@ -74,8 +84,17 @@ public static class BlobResultDisplay
         ParameterSetting Position(string role){var setting=fields.Read(Field(Text,role));if(setting is ReferenceSetting reference){ValidateDisplayReference(reference.Reference,true);return reference;}if(setting is ConstantSetting {Value:double number}&&double.IsFinite(number))return setting;throw new ArgumentException("文本位置必须是有限数或已声明数字来源。");}
         var x=Position("x");var y=Position("y");
         ResultGraphicAppearance Style(string group)=>new(Read<bool>(Field(group,"visible")),Color(group,"ok"),Color(group,"ng"),Number(group,"opacity"),Number(group,"width"));
+        var configuredSize = Number(Text,"size");
+        // The original bridge reads Int32 from the feature string. Its text renderer uses 10 when that parse yields zero.
+        var renderedSize = configuredSize == Math.Truncate(configuredSize) ? configuredSize : 10d;
         return new(Style(Graphic),
-            new(Read<bool>(Field(Text,"visible")),content,Color(Text,"ok"),Color(Text,"ng"),Number(Text,"size"),Number(Text,"opacity"),x is ConstantSetting {Value:double xv}?xv:0,y is ConstantSetting {Value:double yv}?yv:0,expression,x,y),Style(Inspection),Style(Mask),Style(Annulus),Read<bool>(Field(Outline,"visible")));
+            new(Read<bool>(Field(Text,"visible")),content,Color(Text,"ok"),Color(Text,"ng"),renderedSize,Number(Text,"opacity"),x is ConstantSetting {Value:double xv}?xv:0,y is ConstantSetting {Value:double yv}?yv:0,expression,x,y),
+            Style(Inspection) with { ShowMeasurements = true },
+            Style(Mask) with { Fill = new(255,84,0) },
+            Style(Annulus) with { ShowMeasurements = true },
+            new(Read<bool>(Field(Outline,"visible")),new(102,255,0),new(255,0,0)),Style(InnerRectangle),
+            Style(ReferencePoint) with { FixedJudgment = true, PointLabel = "Fixture BasePoint" },
+            Style(RunPoint) with { FixedJudgment = true, PointLabel = "Fixture RunPoint" });
     }
     public static void ValidateDisplayReference(OutputReference reference,bool numeric=false)
     {

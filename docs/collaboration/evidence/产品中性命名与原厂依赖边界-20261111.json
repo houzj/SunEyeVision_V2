@@ -1,0 +1,32 @@
+{
+  "kind": "产品边界与命名门禁",
+  "scope": "ImageSource + Blob",
+  "sourceEvidence": [
+    "docs/collaboration/CURRENT_TASK.md",
+    "docs/09-现行文档/框架架构总览.html",
+    "docs/01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html"
+  ],
+  "rules": [
+    "原厂Qt/C++、托管程序集、类型名和算法库名称只进入逆向证据，不进入SunEyeVision公开产品类型、项目和运行时合同",
+    "产品使用中性命名；算法适配通过本方抽象和部署依赖接入，不能直接引用原厂VM DLL",
+    "逆向来源名称在证据和迁移映射中保留可追溯性，不能把证据名当作产品名"
+  ],
+  "currentFindings": [
+    "Blob运行时类型、公开属性和枚举已改为中性命名，原厂来源名称仅保留在证据/映射材料中",
+    "BlobUiComposition、BlobRoiUi、NativeRoiUiDraftControls和NativeAssistUiDraftControls属于本方视觉组装链，不能继续作为原件视觉替代",
+    "DeclaredFieldRow.BuildSlotContent已删除通用记录展开、未设置和专用区域文本占位；未覆盖类型现在显式报告未完成依赖"
+  ],
+  "decision": {
+    "rename": "将上述Blob运行时类型和公开属性改为中性命名，证据文档继续保留原厂身份映射",
+    "visual": "以原件参数模板、ROI控件和资源声明为唯一视觉来源，C#仅保留绑定、提交、资源所有权和生命周期接缝",
+    "dependency": "禁止产品工程直接引用原厂VM DLL；本批不改变已批准的算法适配边界",
+    "slot": "DeclaredFieldRow仅保留已接入原件颜色控件的记录槽；删除通用记录逐字段展开和专用区域文本占位，未覆盖类型必须显式报未完成依赖"
+  },
+  "acceptance": [
+    "源码/工程/程序集公开命名扫描不再命中原厂品牌或逆向前缀",
+    "Blob三页和ROI视觉不再由本方占位或逐字段组合器提供",
+    "中性命名后全量Release编译通过，参数保存重开和结果链身份不变"
+  ],
+  "build": "全量Release 0错误、3302警告、15.73秒（2026-11-11；未运行测试）",
+  "runtime": "尚未运行，未启动程序或自动测试"
+}

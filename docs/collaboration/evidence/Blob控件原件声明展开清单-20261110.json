@@ -1,0 +1,3218 @@
+{
+  "scope": "Blob AlgorithmTabRoot 及递归 GroupLinkItem 声明；不包括尚未展开的模板资源和运行行为",
+  "createdAt": "2026-11-10T22:01:38.2887126+08:00",
+  "sourceFiles": [
+    {
+      "path": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "sha256": "34A0CC5423A3D66B92DC272E0F50B013310E5180E801C648005383C3ADDDFDEC"
+    },
+    {
+      "path": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "sha256": "9129B82A0F9906DDE591347498A80E2E8C019C0FB959A721ECFD24FBBB5207DC"
+    }
+  ],
+  "groups": [
+    "AssistGroup",
+    "BottomCommandGroup",
+    "ExternROITypeGroup",
+    "ImageSourceGroup",
+    "InheritWayGroup2",
+    "InputMaskImageGroup",
+    "OutputMaskImageGroup",
+    "RoiSelectGroup",
+    "TextDisplayGroup"
+  ],
+  "namedDeclarations": 247,
+  "entries": [
+    {
+      "kind": "Tab",
+      "name": "Tab_Basic Params",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "GroupLinkItem",
+      "name": "ImageSourceGroup",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/GroupLinkItem[@Name=\"ImageSourceGroup\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "GroupInfoItem",
+      "name": "ImageSourceGroup",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/GroupLinkItem[@Name=\"ImageSourceGroup\"]/GroupInfoItem[@Name=\"ImageSourceGroup\"]",
+      "groupChain": [
+        "ImageSourceGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Category",
+      "name": "Tab_Image Input",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/GroupLinkItem[@Name=\"ImageSourceGroup\"]/GroupInfoItem[@Name=\"ImageSourceGroup\"]/Items/Category[@Name=\"Tab_Image Input\"]",
+      "groupChain": [
+        "ImageSourceGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumerationG",
+      "name": "ImageSource",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/GroupLinkItem[@Name=\"ImageSourceGroup\"]/GroupInfoItem[@Name=\"ImageSourceGroup\"]/Items/Category[@Name=\"Tab_Image Input\"]/Items/EnumerationG[@Name=\"ImageSource\"]",
+      "groupChain": [
+        "ImageSourceGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "SetCombinationSourceOperation",
+        "GetFrontParamItemsOperation",
+        "GetSelectedCombinationOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Category",
+      "name": "Tab_ROI Area",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "GroupLinkItem",
+      "name": "OutputMaskImageGroup",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"OutputMaskImageGroup\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "GroupInfoItem",
+      "name": "OutputMaskImageGroup",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"OutputMaskImageGroup\"]/GroupInfoItem[@Name=\"OutputMaskImageGroup\"]",
+      "groupChain": [
+        "OutputMaskImageGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "OutputMaskImage",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"OutputMaskImageGroup\"]/GroupInfoItem[@Name=\"OutputMaskImageGroup\"]/Items/Boolean[@Name=\"OutputMaskImage\"]",
+      "groupChain": [
+        "OutputMaskImageGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "GroupLinkItem",
+      "name": "InputMaskImageGroup",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"InputMaskImageGroup\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "GroupInfoItem",
+      "name": "InputMaskImageGroup",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"InputMaskImageGroup\"]/GroupInfoItem[@Name=\"InputMaskImageGroup\"]",
+      "groupChain": [
+        "InputMaskImageGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "RadioSelecterEx2",
+      "name": "ROIAreaType",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"InputMaskImageGroup\"]/GroupInfoItem[@Name=\"InputMaskImageGroup\"]/Items/RadioSelecterEx2[@Name=\"ROIAreaType\"]",
+      "groupChain": [
+        "InputMaskImageGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "RoiDisplayOperation",
+        "VisibleOperation",
+        "HiddenOperation",
+        "HiddenOperation",
+        "HiddenOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "ShapeType",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"InputMaskImageGroup\"]/GroupInfoItem[@Name=\"InputMaskImageGroup\"]/Items/RadioSelecterEx2[@Name=\"ROIAreaType\"]/EnumEntrys/EnumEntry[@Name=\"ShapeType\"]",
+      "groupChain": [
+        "InputMaskImageGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "ImageType",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"InputMaskImageGroup\"]/GroupInfoItem[@Name=\"InputMaskImageGroup\"]/Items/RadioSelecterEx2[@Name=\"ROIAreaType\"]/EnumEntrys/EnumEntry[@Name=\"ImageType\"]",
+      "groupChain": [
+        "InputMaskImageGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumerationG",
+      "name": "MaskImage",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"InputMaskImageGroup\"]/GroupInfoItem[@Name=\"InputMaskImageGroup\"]/Items/EnumerationG[@Name=\"MaskImage\"]",
+      "groupChain": [
+        "InputMaskImageGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "SetCombinationSourceOperation",
+        "GetFrontParamItemsOperation",
+        "GetSelectedCombinationOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "GroupLinkItem",
+      "name": "RoiSelectGroup",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"RoiSelectGroup\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "GroupInfoItem",
+      "name": "RoiSelectGroup",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"RoiSelectGroup\"]/GroupInfoItem[@Name=\"RoiSelectGroup\"]",
+      "groupChain": [
+        "RoiSelectGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "RadioSelecter",
+      "name": "RoiSelect",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"RoiSelectGroup\"]/GroupInfoItem[@Name=\"RoiSelectGroup\"]/Items/RadioSelecter[@Name=\"RoiSelect\"]",
+      "groupChain": [
+        "RoiSelectGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "RoiDisplayOperation",
+        "VisibleOperation",
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ROISelecter",
+      "name": "RoiType",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/ROISelecter[@Name=\"RoiType\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "GroupLinkItem",
+      "name": "InheritWayGroup",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"InheritWayGroup\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "GroupInfoItem",
+      "name": "InheritWayGroup2",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"InheritWayGroup\"]/GroupInfoItem[@Name=\"InheritWayGroup2\"]",
+      "groupChain": [
+        "InheritWayGroup2"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "RadioSelecter3",
+      "name": "InheritWay",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"InheritWayGroup\"]/GroupInfoItem[@Name=\"InheritWayGroup2\"]/Items/RadioSelecter3[@Name=\"InheritWay\"]",
+      "groupChain": [
+        "InheritWayGroup2"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation",
+        "DoInitOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "DoInitOperaion",
+        "DoInitOperaion",
+        "DoInitOperaion",
+        "DoInitOperaion",
+        "DoInitOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "VisibleOperation",
+        "DoInitOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "DoInitOperaion",
+        "DoInitOperaion",
+        "DoInitOperaion",
+        "DoInitOperaion",
+        "DoInitOperaion",
+        "DoInitOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "Region",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"InheritWayGroup\"]/GroupInfoItem[@Name=\"InheritWayGroup2\"]/Items/ButtonSelecter[@Name=\"Region\"]",
+      "groupChain": [
+        "InheritWayGroup2"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontCombinationTreeOperation",
+        "SetCombinationSourceOperation",
+        "GetSelectedCombinationOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "ROICenterX",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"InheritWayGroup\"]/GroupInfoItem[@Name=\"InheritWayGroup2\"]/Items/ButtonSelecter[@Name=\"ROICenterX\"]",
+      "groupChain": [
+        "InheritWayGroup2"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontFilterTreeOperation",
+        "SetFilterSourceOperation",
+        "GetSelectedFilterOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "ROICenterY",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"InheritWayGroup\"]/GroupInfoItem[@Name=\"InheritWayGroup2\"]/Items/ButtonSelecter[@Name=\"ROICenterY\"]",
+      "groupChain": [
+        "InheritWayGroup2"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontFilterTreeOperation",
+        "SetFilterSourceOperation",
+        "GetSelectedFilterOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "ROIWidth",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"InheritWayGroup\"]/GroupInfoItem[@Name=\"InheritWayGroup2\"]/Items/ButtonSelecter[@Name=\"ROIWidth\"]",
+      "groupChain": [
+        "InheritWayGroup2"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontFilterTreeOperation",
+        "SetFilterSourceOperation",
+        "GetSelectedFilterOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "ROIHeight",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"InheritWayGroup\"]/GroupInfoItem[@Name=\"InheritWayGroup2\"]/Items/ButtonSelecter[@Name=\"ROIHeight\"]",
+      "groupChain": [
+        "InheritWayGroup2"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontFilterTreeOperation",
+        "SetFilterSourceOperation",
+        "GetSelectedFilterOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "ROIAngle",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"InheritWayGroup\"]/GroupInfoItem[@Name=\"InheritWayGroup2\"]/Items/ButtonSelecter[@Name=\"ROIAngle\"]",
+      "groupChain": [
+        "InheritWayGroup2"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontFilterTreeOperation",
+        "SetFilterSourceOperation",
+        "GetSelectedFilterOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "Region2",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"InheritWayGroup\"]/GroupInfoItem[@Name=\"InheritWayGroup2\"]/Items/ButtonSelecter[@Name=\"Region2\"]",
+      "groupChain": [
+        "InheritWayGroup2"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontCombinationTreeOperation",
+        "SetCombinationSourceOperation",
+        "GetSelectedCombinationOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "ROIAnnulusCenterX",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"InheritWayGroup\"]/GroupInfoItem[@Name=\"InheritWayGroup2\"]/Items/ButtonSelecter[@Name=\"ROIAnnulusCenterX\"]",
+      "groupChain": [
+        "InheritWayGroup2"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontFilterTreeOperation",
+        "SetFilterSourceOperation",
+        "GetSelectedFilterOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "ROIAnnulusCenterY",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"InheritWayGroup\"]/GroupInfoItem[@Name=\"InheritWayGroup2\"]/Items/ButtonSelecter[@Name=\"ROIAnnulusCenterY\"]",
+      "groupChain": [
+        "InheritWayGroup2"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontFilterTreeOperation",
+        "SetFilterSourceOperation",
+        "GetSelectedFilterOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "ROIAnnulusInnerRadius",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"InheritWayGroup\"]/GroupInfoItem[@Name=\"InheritWayGroup2\"]/Items/ButtonSelecter[@Name=\"ROIAnnulusInnerRadius\"]",
+      "groupChain": [
+        "InheritWayGroup2"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontFilterTreeOperation",
+        "SetFilterSourceOperation",
+        "GetSelectedFilterOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "ROIAnnulusOuterRadius",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"InheritWayGroup\"]/GroupInfoItem[@Name=\"InheritWayGroup2\"]/Items/ButtonSelecter[@Name=\"ROIAnnulusOuterRadius\"]",
+      "groupChain": [
+        "InheritWayGroup2"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontFilterTreeOperation",
+        "SetFilterSourceOperation",
+        "GetSelectedFilterOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "ROIAnnulusStartAngle",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"InheritWayGroup\"]/GroupInfoItem[@Name=\"InheritWayGroup2\"]/Items/ButtonSelecter[@Name=\"ROIAnnulusStartAngle\"]",
+      "groupChain": [
+        "InheritWayGroup2"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontFilterTreeOperation",
+        "SetFilterSourceOperation",
+        "GetSelectedFilterOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "ROIAnnulusAngleExtend",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"InheritWayGroup\"]/GroupInfoItem[@Name=\"InheritWayGroup2\"]/Items/ButtonSelecter[@Name=\"ROIAnnulusAngleExtend\"]",
+      "groupChain": [
+        "InheritWayGroup2"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontFilterTreeOperation",
+        "SetFilterSourceOperation",
+        "GetSelectedFilterOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "GroupLinkItem",
+      "name": "ExternROITypeGroup",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"ExternROITypeGroup\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "GroupInfoItem",
+      "name": "ExternROITypeGroup",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"ExternROITypeGroup\"]/GroupInfoItem[@Name=\"ExternROITypeGroup\"]",
+      "groupChain": [
+        "ExternROITypeGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "RadioSelecter",
+      "name": "ExternRoiSelect",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"ExternROITypeGroup\"]/GroupInfoItem[@Name=\"ExternROITypeGroup\"]/Items/RadioSelecter[@Name=\"ExternRoiSelect\"]",
+      "groupChain": [
+        "ExternROITypeGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "RoiDisplayOperation",
+        "VisibleOperation",
+        "SetValueNullOperaion",
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ROISelecter_Extern",
+      "name": "ExternRoiType",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"ExternROITypeGroup\"]/GroupInfoItem[@Name=\"ExternROITypeGroup\"]/Items/ROISelecter_Extern[@Name=\"ExternRoiType\"]",
+      "groupChain": [
+        "ExternROITypeGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "InputBlindPolygonString",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"ExternROITypeGroup\"]/GroupInfoItem[@Name=\"ExternROITypeGroup\"]/Items/ButtonSelecter[@Name=\"InputBlindPolygonString\"]",
+      "groupChain": [
+        "ExternROITypeGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontFilterTreeOperation",
+        "SetFilterSourceOperation",
+        "GetSelectedFilterOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "GroupLinkItem",
+      "name": "AssistGroup",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"AssistGroup\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "GroupInfoItem",
+      "name": "AssistGroup",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"AssistGroup\"]/GroupInfoItem[@Name=\"AssistGroup\"]",
+      "groupChain": [
+        "AssistGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "Assist0",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"AssistGroup\"]/GroupInfoItem[@Name=\"AssistGroup\"]/Items/Boolean[@Name=\"Assist0\"]",
+      "groupChain": [
+        "AssistGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion",
+        "SetValueNullOperaion"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "RadioSelecter3",
+      "name": "SelectWay",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"AssistGroup\"]/GroupInfoItem[@Name=\"AssistGroup\"]/Items/RadioSelecter3[@Name=\"SelectWay\"]",
+      "groupChain": [
+        "AssistGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation",
+        "DoInitOperaion",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "DoInitOperaion",
+        "DoInitOperaion",
+        "DoInitOperaion",
+        "DoInitOperaion",
+        "DoInitOperaion",
+        "DoInitOperaion",
+        "DoInitOperaion",
+        "DoInitOperaion",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "DoInitOperaion",
+        "DoInitOperaion",
+        "DoInitOperaion",
+        "DoInitOperaion",
+        "DoInitOperaion",
+        "DoInitOperaion",
+        "DoInitOperaion",
+        "DoInitOperaion",
+        "DoInitOperaion",
+        "DoInitOperaion"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "CorrectInfo",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"AssistGroup\"]/GroupInfoItem[@Name=\"AssistGroup\"]/Items/ButtonSelecter[@Name=\"CorrectInfo\"]",
+      "groupChain": [
+        "AssistGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontCombinationTreeOperation",
+        "SetCombinationSourceOperation",
+        "GetSelectedCombinationOperation",
+        "SetInitValueByCurValue"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "OriginPoint",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"AssistGroup\"]/GroupInfoItem[@Name=\"AssistGroup\"]/Items/ButtonSelecter[@Name=\"OriginPoint\"]",
+      "groupChain": [
+        "AssistGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontCombinationTreeOperation",
+        "SetCombinationSourceOperation",
+        "GetSelectedCombinationOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "BaseX",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"AssistGroup\"]/GroupInfoItem[@Name=\"AssistGroup\"]/Items/ButtonSelecter[@Name=\"BaseX\"]",
+      "groupChain": [
+        "AssistGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontFilterTreeOperation",
+        "SetFilterSourceOperation",
+        "GetSelectedFilterOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "BaseY",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"AssistGroup\"]/GroupInfoItem[@Name=\"AssistGroup\"]/Items/ButtonSelecter[@Name=\"BaseY\"]",
+      "groupChain": [
+        "AssistGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontFilterTreeOperation",
+        "SetFilterSourceOperation",
+        "GetSelectedFilterOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "Angle",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"AssistGroup\"]/GroupInfoItem[@Name=\"AssistGroup\"]/Items/ButtonSelecter[@Name=\"Angle\"]",
+      "groupChain": [
+        "AssistGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontFilterTreeOperation",
+        "SetFilterSourceOperation",
+        "GetSelectedFilterOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "ScaleX",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"AssistGroup\"]/GroupInfoItem[@Name=\"AssistGroup\"]/Items/ButtonSelecter[@Name=\"ScaleX\"]",
+      "groupChain": [
+        "AssistGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontFilterTreeOperation",
+        "SetFilterSourceOperation",
+        "GetSelectedFilterOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "ScaleY",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"AssistGroup\"]/GroupInfoItem[@Name=\"AssistGroup\"]/Items/ButtonSelecter[@Name=\"ScaleY\"]",
+      "groupChain": [
+        "AssistGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontFilterTreeOperation",
+        "SetFilterSourceOperation",
+        "GetSelectedFilterOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "RunPoint",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"AssistGroup\"]/GroupInfoItem[@Name=\"AssistGroup\"]/Items/ButtonSelecter[@Name=\"RunPoint\"]",
+      "groupChain": [
+        "AssistGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontCombinationTreeOperation",
+        "SetCombinationSourceOperation",
+        "GetSelectedCombinationOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "RunPointBaseX",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"AssistGroup\"]/GroupInfoItem[@Name=\"AssistGroup\"]/Items/ButtonSelecter[@Name=\"RunPointBaseX\"]",
+      "groupChain": [
+        "AssistGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontFilterTreeOperation",
+        "SetFilterSourceOperation",
+        "GetSelectedFilterOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "RunPointBaseY",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"AssistGroup\"]/GroupInfoItem[@Name=\"AssistGroup\"]/Items/ButtonSelecter[@Name=\"RunPointBaseY\"]",
+      "groupChain": [
+        "AssistGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontFilterTreeOperation",
+        "SetFilterSourceOperation",
+        "GetSelectedFilterOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "RunAngle",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"AssistGroup\"]/GroupInfoItem[@Name=\"AssistGroup\"]/Items/ButtonSelecter[@Name=\"RunAngle\"]",
+      "groupChain": [
+        "AssistGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontFilterTreeOperation",
+        "SetFilterSourceOperation",
+        "GetSelectedFilterOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "RunScaleX",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"AssistGroup\"]/GroupInfoItem[@Name=\"AssistGroup\"]/Items/ButtonSelecter[@Name=\"RunScaleX\"]",
+      "groupChain": [
+        "AssistGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontFilterTreeOperation",
+        "SetFilterSourceOperation",
+        "GetSelectedFilterOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "RunScaleY",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Basic Params\"]/Categorys/Category[@Name=\"Tab_ROI Area\"]/Items/GroupLinkItem[@Name=\"AssistGroup\"]/GroupInfoItem[@Name=\"AssistGroup\"]/Items/ButtonSelecter[@Name=\"RunScaleY\"]",
+      "groupChain": [
+        "AssistGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontFilterTreeOperation",
+        "SetFilterSourceOperation",
+        "GetSelectedFilterOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Tab",
+      "name": "Tab_Run Params",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Category",
+      "name": "Tab_Run Params",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Enumeration",
+      "name": "ThresholdType",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"ThresholdType\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "BinaryImage",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"ThresholdType\"]/EnumEntrys/EnumEntry[@Name=\"BinaryImage\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "SingleThreshold",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"ThresholdType\"]/EnumEntrys/EnumEntry[@Name=\"SingleThreshold\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "DoubleThreshold",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"ThresholdType\"]/EnumEntrys/EnumEntry[@Name=\"DoubleThreshold\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "AutoThreshold",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"ThresholdType\"]/EnumEntrys/EnumEntry[@Name=\"AutoThreshold\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "FixedSoftThreshold",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"ThresholdType\"]/EnumEntrys/EnumEntry[@Name=\"FixedSoftThreshold\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "RelativeSoftThreshold",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"ThresholdType\"]/EnumEntrys/EnumEntry[@Name=\"RelativeSoftThreshold\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Enumeration",
+      "name": "Polarity",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"Polarity\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "DarkOnBright",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"Polarity\"]/EnumEntrys/EnumEntry[@Name=\"DarkOnBright\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "BrightOnDark",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"Polarity\"]/EnumEntrys/EnumEntry[@Name=\"BrightOnDark\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "LowThreshold",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Integer[@Name=\"LowThreshold\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "HightThreshold",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Integer[@Name=\"HightThreshold\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "IntegerBettween",
+      "name": "ThresholdRangArea",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/IntegerBettween[@Name=\"ThresholdRangArea\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "LowSoftThreshold",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/IntegerBettween[@Name=\"ThresholdRangArea\"]/Integers/Integer[@Name=\"LowSoftThreshold\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "HightSoftThreshold",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/IntegerBettween[@Name=\"ThresholdRangArea\"]/Integers/Integer[@Name=\"HightSoftThreshold\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "Softness",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Integer[@Name=\"Softness\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "SoftLeftRatio",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Integer[@Name=\"SoftLeftRatio\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "SoftRightRatio",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Integer[@Name=\"SoftRightRatio\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "SoftLowRatio",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Integer[@Name=\"SoftLowRatio\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "SoftHighRatio",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Integer[@Name=\"SoftHighRatio\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "FindNum",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Integer[@Name=\"FindNum\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "HoleMinArea",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Integer[@Name=\"HoleMinArea\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "SelectByArea",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Boolean[@Name=\"SelectByArea\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "HiddenOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "IntegerBettween",
+      "name": "RangArea",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/IntegerBettween[@Name=\"RangArea\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "MinArea",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/IntegerBettween[@Name=\"RangArea\"]/Integers/Integer[@Name=\"MinArea\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "MaxArea",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/IntegerBettween[@Name=\"RangArea\"]/Integers/Integer[@Name=\"MaxArea\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Enumeration",
+      "name": "BlobContourType",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"BlobContourType\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "NoneContour",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"BlobContourType\"]/EnumEntrys/EnumEntry[@Name=\"NoneContour\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "NoneSequentialContour",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"BlobContourType\"]/EnumEntrys/EnumEntry[@Name=\"NoneSequentialContour\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "SequentialContour",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"BlobContourType\"]/EnumEntrys/EnumEntry[@Name=\"SequentialContour\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "BolbImageEnable",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Boolean[@Name=\"BolbImageEnable\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "BinaryImageEnable",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Boolean[@Name=\"BinaryImageEnable\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Expand",
+      "name": "Expert",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Expand[@Name=\"Expert\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation",
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "SelectByHistInfo",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Boolean[@Name=\"SelectByHistInfo\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "SelectByBoxAngle",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Boolean[@Name=\"SelectByBoxAngle\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "IntegerBettween",
+      "name": "RangBoxAngle",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/IntegerBettween[@Name=\"RangBoxAngle\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "MinBoxAngle",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/IntegerBettween[@Name=\"RangBoxAngle\"]/Integers/Integer[@Name=\"MinBoxAngle\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "MaxBoxAngle",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/IntegerBettween[@Name=\"RangBoxAngle\"]/Integers/Integer[@Name=\"MaxBoxAngle\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "SelectByRectWidth",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Boolean[@Name=\"SelectByRectWidth\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "IntegerBettween",
+      "name": "RangRectWidth",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/IntegerBettween[@Name=\"RangRectWidth\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "MinRectWidth",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/IntegerBettween[@Name=\"RangRectWidth\"]/Integers/Integer[@Name=\"MinRectWidth\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "MaxRectWidth",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/IntegerBettween[@Name=\"RangRectWidth\"]/Integers/Integer[@Name=\"MaxRectWidth\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "SelectByRectHeight",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Boolean[@Name=\"SelectByRectHeight\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "IntegerBettween",
+      "name": "RangRectHeight",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/IntegerBettween[@Name=\"RangRectHeight\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "MinRectHeight",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/IntegerBettween[@Name=\"RangRectHeight\"]/Integers/Integer[@Name=\"MinRectHeight\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "MaxRectHeight",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/IntegerBettween[@Name=\"RangRectHeight\"]/Integers/Integer[@Name=\"MaxRectHeight\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "SelectByPerimeter",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Boolean[@Name=\"SelectByPerimeter\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "IntegerBettween",
+      "name": "RangPerimeter",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/IntegerBettween[@Name=\"RangPerimeter\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "MinPerimeter",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/IntegerBettween[@Name=\"RangPerimeter\"]/Integers/Integer[@Name=\"MinPerimeter\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "MaxPerimeter",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/IntegerBettween[@Name=\"RangPerimeter\"]/Integers/Integer[@Name=\"MaxPerimeter\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "SelectByShortAxis",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Boolean[@Name=\"SelectByShortAxis\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "IntegerBettween",
+      "name": "RangShortAxis",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/IntegerBettween[@Name=\"RangShortAxis\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "MinShortAxis",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/IntegerBettween[@Name=\"RangShortAxis\"]/Integers/Integer[@Name=\"MinShortAxis\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "MaxShortAxis",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/IntegerBettween[@Name=\"RangShortAxis\"]/Integers/Integer[@Name=\"MaxShortAxis\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "SelectByLongAxis",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Boolean[@Name=\"SelectByLongAxis\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "IntegerBettween",
+      "name": "RangLongAxis",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/IntegerBettween[@Name=\"RangLongAxis\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "MinLongAxis",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/IntegerBettween[@Name=\"RangLongAxis\"]/Integers/Integer[@Name=\"MinLongAxis\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "MaxLongAxis",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/IntegerBettween[@Name=\"RangLongAxis\"]/Integers/Integer[@Name=\"MaxLongAxis\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "SelectByCircularuty",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Boolean[@Name=\"SelectByCircularuty\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "FloatBettween",
+      "name": "RangCircularity",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/FloatBettween[@Name=\"RangCircularity\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "MinCircularity",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/FloatBettween[@Name=\"RangCircularity\"]/Floats/Float[@Name=\"MinCircularity\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "MaxCircularity",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/FloatBettween[@Name=\"RangCircularity\"]/Floats/Float[@Name=\"MaxCircularity\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "SelectByRectangularity",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Boolean[@Name=\"SelectByRectangularity\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "FloatBettween",
+      "name": "RangRectangularity",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/FloatBettween[@Name=\"RangRectangularity\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "MinRectangularity",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/FloatBettween[@Name=\"RangRectangularity\"]/Floats/Float[@Name=\"MinRectangularity\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "MaxRectangularity",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/FloatBettween[@Name=\"RangRectangularity\"]/Floats/Float[@Name=\"MaxRectangularity\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "SelectByCentraBias",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Boolean[@Name=\"SelectByCentraBias\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "FloatBettween",
+      "name": "RangCenterBias",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/FloatBettween[@Name=\"RangCenterBias\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "MinCenterBias",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/FloatBettween[@Name=\"RangCenterBias\"]/Floats/Float[@Name=\"MinCenterBias\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "MaxCenterBias",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/FloatBettween[@Name=\"RangCenterBias\"]/Floats/Float[@Name=\"MaxCenterBias\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "AxisRatioEnable",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Boolean[@Name=\"AxisRatioEnable\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "FloatBettween",
+      "name": "AxisRatioRange",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/FloatBettween[@Name=\"AxisRatioRange\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "MinAxisRatio",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/FloatBettween[@Name=\"AxisRatioRange\"]/Floats/Float[@Name=\"MinAxisRatio\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "MaxAxisRatio",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/FloatBettween[@Name=\"AxisRatioRange\"]/Floats/Float[@Name=\"MaxAxisRatio\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Enumeration",
+      "name": "SortFeature",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"SortFeature\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "SortFeatureArea",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"SortFeature\"]/EnumEntrys/EnumEntry[@Name=\"SortFeatureArea\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "SortFeaturePerimeter",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"SortFeature\"]/EnumEntrys/EnumEntry[@Name=\"SortFeaturePerimeter\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "SortFeatureCircularity",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"SortFeature\"]/EnumEntrys/EnumEntry[@Name=\"SortFeatureCircularity\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "SortFeatureRect",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"SortFeature\"]/EnumEntrys/EnumEntry[@Name=\"SortFeatureRect\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "SortFeatureCentroidX",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"SortFeature\"]/EnumEntrys/EnumEntry[@Name=\"SortFeatureCentroidX\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "SortFeatureCentroidY",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"SortFeature\"]/EnumEntrys/EnumEntry[@Name=\"SortFeatureCentroidY\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "SortFeatureBoxAngle",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"SortFeature\"]/EnumEntrys/EnumEntry[@Name=\"SortFeatureBoxAngle\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "SortFeatureBoxWidth",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"SortFeature\"]/EnumEntrys/EnumEntry[@Name=\"SortFeatureBoxWidth\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "SortFeatureBoxHeight",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"SortFeature\"]/EnumEntrys/EnumEntry[@Name=\"SortFeatureBoxHeight\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "SortFeatureRectX",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"SortFeature\"]/EnumEntrys/EnumEntry[@Name=\"SortFeatureRectX\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "SortFeatureRectY",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"SortFeature\"]/EnumEntrys/EnumEntry[@Name=\"SortFeatureRectY\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "SortFeatureAxisAngle",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"SortFeature\"]/EnumEntrys/EnumEntry[@Name=\"SortFeatureAxisAngle\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "SortFeatureAxisRatio",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"SortFeature\"]/EnumEntrys/EnumEntry[@Name=\"SortFeatureAxisRatio\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Enumeration",
+      "name": "SortMode",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"SortMode\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "SortModeAscend",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"SortMode\"]/EnumEntrys/EnumEntry[@Name=\"SortModeAscend\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "SortModeDecend",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"SortMode\"]/EnumEntrys/EnumEntry[@Name=\"SortModeDecend\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "SortModeNotSort",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"SortMode\"]/EnumEntrys/EnumEntry[@Name=\"SortModeNotSort\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Enumeration",
+      "name": "connectivity",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"connectivity\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "Connected_8",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"connectivity\"]/EnumEntrys/EnumEntry[@Name=\"Connected_8\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "EnumEntry",
+      "name": "Connected_4",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Enumeration[@Name=\"connectivity\"]/EnumEntrys/EnumEntry[@Name=\"Connected_4\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "MaxAreaInnerRectNum",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Integer[@Name=\"MaxAreaInnerRectNum\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "OverlapRatio",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Integer[@Name=\"OverlapRatio\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "MaxOutPixelNumEnable",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Boolean[@Name=\"MaxOutPixelNumEnable\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "MaxOutPixelNum",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"Tab_Run Params\"]/Categorys/Category[@Name=\"Tab_Run Params\"]/Items/Integer[@Name=\"MaxOutPixelNum\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Tab",
+      "name": "ResultShow",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Category",
+      "name": "Tab_Check Result",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "OKWhenNumIsZero",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/Boolean[@Name=\"OKWhenNumIsZero\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "BlobNumLimitEnable",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/Boolean[@Name=\"BlobNumLimitEnable\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "HiddenOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "IntegerBettween",
+      "name": "RangBlobNumLimit",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/IntegerBettween[@Name=\"RangBlobNumLimit\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "BlobNumLimitLow",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/IntegerBettween[@Name=\"RangBlobNumLimit\"]/Integers/Integer[@Name=\"BlobNumLimitLow\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Integer",
+      "name": "BlobNumLimitHigh",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/IntegerBettween[@Name=\"RangBlobNumLimit\"]/Integers/Integer[@Name=\"BlobNumLimitHigh\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "BlobAreaLimitEnable",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/Boolean[@Name=\"BlobAreaLimitEnable\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "HiddenOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "FloatBettween",
+      "name": "RangBlobAreaLimit",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangBlobAreaLimit\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "BlobAreaLimitLow",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangBlobAreaLimit\"]/Floats/Float[@Name=\"BlobAreaLimitLow\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "BlobAreaLimitHigh",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangBlobAreaLimit\"]/Floats/Float[@Name=\"BlobAreaLimitHigh\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "BlobTotalAreaLimitEnable",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/Boolean[@Name=\"BlobTotalAreaLimitEnable\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "HiddenOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "FloatBettween",
+      "name": "RangBlobTotalAreaLimit",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangBlobTotalAreaLimit\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "BlobTotalAreaLimitLow",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangBlobTotalAreaLimit\"]/Floats/Float[@Name=\"BlobTotalAreaLimitLow\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "BlobTotalAreaLimitHigh",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangBlobTotalAreaLimit\"]/Floats/Float[@Name=\"BlobTotalAreaLimitHigh\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "CentroidXLimitEnable",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/Boolean[@Name=\"CentroidXLimitEnable\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "FloatBettween",
+      "name": "RangCentroidXLimit",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangCentroidXLimit\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "CentroidXLimitLow",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangCentroidXLimit\"]/Floats/Float[@Name=\"CentroidXLimitLow\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "CentroidXLimitHigh",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangCentroidXLimit\"]/Floats/Float[@Name=\"CentroidXLimitHigh\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "CentroidYLimitEnable",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/Boolean[@Name=\"CentroidYLimitEnable\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "FloatBettween",
+      "name": "RangCentroidYLimit",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangCentroidYLimit\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "CentroidYLimitLow",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangCentroidYLimit\"]/Floats/Float[@Name=\"CentroidYLimitLow\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "CentroidYLimitHigh",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangCentroidYLimit\"]/Floats/Float[@Name=\"CentroidYLimitHigh\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "AngleLimitEnable",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/Boolean[@Name=\"AngleLimitEnable\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "FloatBettween",
+      "name": "RangAngleLimit",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangAngleLimit\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "AngleLimitLow",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangAngleLimit\"]/Floats/Float[@Name=\"AngleLimitLow\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "AngleLimitHigh",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangAngleLimit\"]/Floats/Float[@Name=\"AngleLimitHigh\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "CenterXLimitEnable",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/Boolean[@Name=\"CenterXLimitEnable\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "FloatBettween",
+      "name": "RangCenterXLimit",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangCenterXLimit\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "CenterXLimitLow",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangCenterXLimit\"]/Floats/Float[@Name=\"CenterXLimitLow\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "CenterXLimitHigh",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangCenterXLimit\"]/Floats/Float[@Name=\"CenterXLimitHigh\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "CenterYLimitEnable",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/Boolean[@Name=\"CenterYLimitEnable\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "FloatBettween",
+      "name": "RangCenterYLimit",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangCenterYLimit\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "CenterYLimitLow",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangCenterYLimit\"]/Floats/Float[@Name=\"CenterYLimitLow\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "CenterYLimitHigh",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangCenterYLimit\"]/Floats/Float[@Name=\"CenterYLimitHigh\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "BoxHeightLimitEnable",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/Boolean[@Name=\"BoxHeightLimitEnable\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "FloatBettween",
+      "name": "BoxHeightLimit",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"BoxHeightLimit\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "BoxHeightLimitLow",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"BoxHeightLimit\"]/Floats/Float[@Name=\"BoxHeightLimitLow\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "BoxHeightLimitHigh",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"BoxHeightLimit\"]/Floats/Float[@Name=\"BoxHeightLimitHigh\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "BoxWidthLimitEnable",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/Boolean[@Name=\"BoxWidthLimitEnable\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "FloatBettween",
+      "name": "BoxWidthLimit",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"BoxWidthLimit\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "BoxWidthLimitLow",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"BoxWidthLimit\"]/Floats/Float[@Name=\"BoxWidthLimitLow\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "BoxWidthLimitHigh",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"BoxWidthLimit\"]/Floats/Float[@Name=\"BoxWidthLimitHigh\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "PerimeterLimitEnable",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/Boolean[@Name=\"PerimeterLimitEnable\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "FloatBettween",
+      "name": "RangPerimeterLimit",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangPerimeterLimit\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "PerimeterLimitLow",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangPerimeterLimit\"]/Floats/Float[@Name=\"PerimeterLimitLow\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "PerimeterLimitHigh",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangPerimeterLimit\"]/Floats/Float[@Name=\"PerimeterLimitHigh\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "LongAxisLimitEnable",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/Boolean[@Name=\"LongAxisLimitEnable\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "FloatBettween",
+      "name": "RangLongAxisLimit",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangLongAxisLimit\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "LongAxisLimitLow",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangLongAxisLimit\"]/Floats/Float[@Name=\"LongAxisLimitLow\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "LongAxisLimitHigh",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangLongAxisLimit\"]/Floats/Float[@Name=\"LongAxisLimitHigh\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "ShortAxisLimitEnable",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/Boolean[@Name=\"ShortAxisLimitEnable\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "FloatBettween",
+      "name": "RangShortAxisLimit",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangShortAxisLimit\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "ShortAxisLimitLow",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangShortAxisLimit\"]/Floats/Float[@Name=\"ShortAxisLimitLow\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "ShortAxisLimitHigh",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangShortAxisLimit\"]/Floats/Float[@Name=\"ShortAxisLimitHigh\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "CircularityLimitEnable",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/Boolean[@Name=\"CircularityLimitEnable\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "FloatBettween",
+      "name": "RangCircularityLimit",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangCircularityLimit\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "CircularityLimitLow",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangCircularityLimit\"]/Floats/Float[@Name=\"CircularityLimitLow\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "CircularityLimitHigh",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangCircularityLimit\"]/Floats/Float[@Name=\"CircularityLimitHigh\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Boolean",
+      "name": "RectangularityLimitEnable",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/Boolean[@Name=\"RectangularityLimitEnable\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "VisibleOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "FloatBettween",
+      "name": "RangRectangularityLimit",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangRectangularityLimit\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "RectangularityLimitLow",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangRectangularityLimit\"]/Floats/Float[@Name=\"RectangularityLimitLow\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Float",
+      "name": "RectangularityLimitHigh",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Check Result\"]/Items/FloatBettween[@Name=\"RangRectangularityLimit\"]/Floats/Float[@Name=\"RectangularityLimitHigh\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Category",
+      "name": "Tab_Image Display",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Image Display\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ImageViewConfig",
+      "name": "BlobFiled",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Image Display\"]/Items/ImageViewConfig[@Name=\"BlobFiled\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ImageViewConfig",
+      "name": "BlobMaxAreaInnerRect",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Image Display\"]/Items/ImageViewConfig[@Name=\"BlobMaxAreaInnerRect\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ImageViewConfig",
+      "name": "CheckZone",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Image Display\"]/Items/ImageViewConfig[@Name=\"CheckZone\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ImageViewConfig",
+      "name": "MatchLocation",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Image Display\"]/Items/ImageViewConfig[@Name=\"MatchLocation\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ImageViewConfig",
+      "name": "FixtureInitPoint",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Image Display\"]/Items/ImageViewConfig[@Name=\"FixtureInitPoint\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "SetDisplayObjectPropertyOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ImageViewConfig",
+      "name": "FixtureRunPoint",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Image Display\"]/Items/ImageViewConfig[@Name=\"FixtureRunPoint\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "SetDisplayObjectPropertyOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ImageViewConfig",
+      "name": "ResutlText",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Image Display\"]/Items/ImageViewConfig[@Name=\"ResutlText\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ImageViewConfig",
+      "name": "BlindZone",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Image Display\"]/Items/ImageViewConfig[@Name=\"BlindZone\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ImageViewConfig",
+      "name": "CheckZoneAnnular",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/Category[@Name=\"Tab_Image Display\"]/Items/ImageViewConfig[@Name=\"CheckZoneAnnular\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "GroupLinkItem",
+      "name": "TextDisplayGroup",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/GroupLinkItem[@Name=\"TextDisplayGroup\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "GroupInfoItem",
+      "name": "TextDisplayGroup",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/GroupLinkItem[@Name=\"TextDisplayGroup\"]/GroupInfoItem[@Name=\"TextDisplayGroup\"]",
+      "groupChain": [
+        "TextDisplayGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Category",
+      "name": "文本显示",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/GroupLinkItem[@Name=\"TextDisplayGroup\"]/GroupInfoItem[@Name=\"TextDisplayGroup\"]/Items/Category[@Name=\"文本显示\"]",
+      "groupChain": [
+        "TextDisplayGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "StringConfig",
+      "name": "Content",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/GroupLinkItem[@Name=\"TextDisplayGroup\"]/GroupInfoItem[@Name=\"TextDisplayGroup\"]/Items/Category[@Name=\"文本显示\"]/Items/StringConfig[@Name=\"Content\"]",
+      "groupChain": [
+        "TextDisplayGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ColorConfig",
+      "name": "OKColor",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/GroupLinkItem[@Name=\"TextDisplayGroup\"]/GroupInfoItem[@Name=\"TextDisplayGroup\"]/Items/Category[@Name=\"文本显示\"]/Items/ColorConfig[@Name=\"OKColor\"]",
+      "groupChain": [
+        "TextDisplayGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ColorConfig",
+      "name": "NGColor",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/GroupLinkItem[@Name=\"TextDisplayGroup\"]/GroupInfoItem[@Name=\"TextDisplayGroup\"]/Items/Category[@Name=\"文本显示\"]/Items/ColorConfig[@Name=\"NGColor\"]",
+      "groupChain": [
+        "TextDisplayGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "FloatConfig",
+      "name": "CharacterSize",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/GroupLinkItem[@Name=\"TextDisplayGroup\"]/GroupInfoItem[@Name=\"TextDisplayGroup\"]/Items/Category[@Name=\"文本显示\"]/Items/FloatConfig[@Name=\"CharacterSize\"]",
+      "groupChain": [
+        "TextDisplayGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "FloatConfig",
+      "name": "Transparency",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/GroupLinkItem[@Name=\"TextDisplayGroup\"]/GroupInfoItem[@Name=\"TextDisplayGroup\"]/Items/Category[@Name=\"文本显示\"]/Items/FloatConfig[@Name=\"Transparency\"]",
+      "groupChain": [
+        "TextDisplayGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "PositionX",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/GroupLinkItem[@Name=\"TextDisplayGroup\"]/GroupInfoItem[@Name=\"TextDisplayGroup\"]/Items/Category[@Name=\"文本显示\"]/Items/ButtonSelecter[@Name=\"PositionX\"]",
+      "groupChain": [
+        "TextDisplayGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontAndSelfFilterTreeOperation",
+        "SetResultIOToModuleOperation",
+        "GetSelectedDisplayFilterOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ButtonSelecter",
+      "name": "PositionY",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/Tabs/Tab[@Name=\"ResultShow\"]/Categorys/GroupLinkItem[@Name=\"TextDisplayGroup\"]/GroupInfoItem[@Name=\"TextDisplayGroup\"]/Items/Category[@Name=\"文本显示\"]/Items/ButtonSelecter[@Name=\"PositionY\"]",
+      "groupChain": [
+        "TextDisplayGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [
+        "GetFrontAndSelfFilterTreeOperation",
+        "SetResultIOToModuleOperation",
+        "GetSelectedDisplayFilterOperation"
+      ],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "Button_ResetAlgoParams",
+      "name": "Button_ResetAlgoParams",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/BottomExcuteButtonsLeft/Button_ResetAlgoParams[@Name=\"Button_ResetAlgoParams\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "GroupLinkItem",
+      "name": "BottomCommandGroup",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+      "context": "/AlgorithmTabRoot/BottomExcuteButtons/GroupLinkItem[@Name=\"BottomCommandGroup\"]",
+      "groupChain": [],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "GroupInfoItem",
+      "name": "BottomCommandGroup",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/BottomExcuteButtons/GroupLinkItem[@Name=\"BottomCommandGroup\"]/GroupInfoItem[@Name=\"BottomCommandGroup\"]",
+      "groupChain": [
+        "BottomCommandGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ContinuousExecuteBottomCommand",
+      "name": "ContinuousExecute",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/BottomExcuteButtons/GroupLinkItem[@Name=\"BottomCommandGroup\"]/GroupInfoItem[@Name=\"BottomCommandGroup\"]/Items/ContinuousExecuteBottomCommand[@Name=\"ContinuousExecute\"]",
+      "groupChain": [
+        "BottomCommandGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "StopExecuteBottomCommand",
+      "name": "StopExecute",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/BottomExcuteButtons/GroupLinkItem[@Name=\"BottomCommandGroup\"]/GroupInfoItem[@Name=\"BottomCommandGroup\"]/Items/StopExecuteBottomCommand[@Name=\"StopExecute\"]",
+      "groupChain": [
+        "BottomCommandGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    },
+    {
+      "kind": "ExecuteOnceBottomCommand",
+      "name": "Execute",
+      "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\Group.xml",
+      "context": "/AlgorithmTabRoot/BottomExcuteButtons/GroupLinkItem[@Name=\"BottomCommandGroup\"]/GroupInfoItem[@Name=\"BottomCommandGroup\"]/Items/ExecuteOnceBottomCommand[@Name=\"Execute\"]",
+      "groupChain": [
+        "BottomCommandGroup"
+      ],
+      "review": "待逐项行为复核",
+      "declaredOperations": [],
+      "templateResources": "待依赖闭包核对",
+      "runtime": "运行未确认"
+    }
+  ]
+}

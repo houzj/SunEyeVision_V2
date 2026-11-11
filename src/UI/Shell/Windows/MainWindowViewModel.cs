@@ -941,15 +941,15 @@ SplitterPosition = position;
         /// </remarks>
 
 
-        internal bool CanNavigateLocalImages()=>ActiveImageSourceBinding?.CanActivate==true;
-        internal System.Threading.Tasks.Task NavigateLocalImagesAsync(int direction)
+        internal bool CanNavigateLocalImages()=>!IsRunning && ActiveImageSourceBinding?.CanActivate==true;
+        internal async System.Threading.Tasks.Task NavigateLocalImagesAsync(int direction)
         {
             if(direction is not (-1 or 1))throw new ArgumentOutOfRangeException(nameof(direction));
-            var binding=ActiveImageSourceBinding;var source=binding?.Source;var session=DocumentManager.CurrentSession;var tab=WorkflowTabViewModel.SelectedTab;
-            if(binding is null||source is null||session is null||tab is null||!CanNavigateLocalImages())return System.Threading.Tasks.Task.CompletedTask;
-            var index=source.CurrentIndex+direction;if(index<0||index>=source.Count||!source.CanSelectImage(index))return System.Threading.Tasks.Task.CompletedTask;
-            var root=session.GetWorkflows().Single(flow=>flow.Id==tab.RootWorkflowId);var node=session.GetNodes(root.Id).Single(item=>item.Id==source.NodeId);
-            return ActivateFormalImageSourceAsync(new(session,root,node,source,source.Images[index],index,source.EditVersion));
+            var tab=WorkflowTabViewModel.SelectedTab;
+            if(tab is null||tab.IsInSubroutine||!CanNavigateLocalImages())return;
+            try{await RunFormalWorkflowsAsync(new[]{tab.RootWorkflowId},direction);}
+            catch(OperationCanceledException){StatusText="图像导航已取消。";}
+            catch(Exception error){StatusText="图像导航失败："+error.Message;AddLog(StatusText);}
         }
         public System.Threading.Tasks.Task RunSelectedImageAsync() => ExecuteRunWorkflow();
 
@@ -1497,6 +1497,7 @@ SplitterPosition = position;
         {
             if(_activeResultView is not {} view)return;
             _activeResultView=null;
+            _presentedResultTable=null;
             view.SelectionHighlightChanged-=OnDeclaredSelectionHighlightChanged;
             view.Dispose();
         }
@@ -1531,8 +1532,8 @@ SplitterPosition = position;
             if(!Current()||!ReferenceEquals(_activeResultView,view))return System.Threading.Tasks.Task.CompletedTask;
             HasDataAnalysisControl=true;
             if(!Current()||!ReferenceEquals(_activeResultView,view))return System.Threading.Tasks.Task.CompletedTask;
-            if(_resultPublication is {} publication&&publication.IsCurrent()&&Current())
-                PresentResultPublication(publication,_resultPublicationSnapshot,selectedNode.Name,_resultPublicationBindings);
+            if(_resultPublication is {} publication&&Current())
+                PresentCurrentResultTable(publication);
             else if(Current()&&ReferenceEquals(_activeResultView,view))view.Clear();
             return System.Threading.Tasks.Task.CompletedTask;
         }
@@ -2131,7 +2132,9 @@ SplitterPosition = position;
         /// <summary>
         /// 显示相机管理器
         /// </summary>
-        private void ExecuteShowCameraManager()
+        private void ExecuteShowCameraManager() => ShowCameraManager(null, null);
+
+        private void ShowCameraManager(Window? owner, string? selectedDeviceId)
         {
             try
             {
@@ -2152,10 +2155,18 @@ SplitterPosition = position;
 
                 LogInfo("创建 CameraManagerViewModel...");
                 var viewModel = new SunEyeVision.UI.Features.Camera.CameraManagerViewModel(solutionManager);
+                if (!string.IsNullOrWhiteSpace(selectedDeviceId) && viewModel.Cameras.FirstOrDefault(camera =>
+                    StringComparer.OrdinalIgnoreCase.Equals(camera.DeviceId, selectedDeviceId)) is { } camera)
+                    viewModel.SelectedCamera = camera;
                 LogInfo($"ViewModel 已创建, 相机数量: {viewModel.Cameras?.Count ?? 0}");
 
                 LogInfo("创建 CameraManagerDialog...");
                 var dialog = new SunEyeVision.UI.Features.Camera.CameraManagerDialog(viewModel);
+                if (owner is not null)
+                {
+                    dialog.Owner = owner;
+                    dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                }
 
                 LogInfo("显示对话框...");
                 dialog.ShowDialog();

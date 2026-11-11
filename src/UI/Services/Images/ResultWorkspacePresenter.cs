@@ -40,8 +40,11 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
     private long _epoch,_layerRevision,_selectionGeneration,_outputChoiceRevision;
     private bool _disposed,_refreshing,_refreshAgain,_refreshQueued,_restoringInput,_restoringOutput;
     private string? _inputKey,_outputKey;
+    private string? _editorInputDisplayKey;
+    private string? _variableOutputKey;
     private ResultWorkspaceImageSource? _inputSource,_outputSource;
     private object? _selectionOwner;
+    private ResultSelection? _sceneSelection;
     private IResultPublication? _displayDefinitionNotice;
     internal ResultImagePane InputPane=>_input.Image;
     internal ResultImagePane OutputPane=>_output.Image;
@@ -58,7 +61,7 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         _inputSelection.AddValueChanged(shell,InputSelected);_outputSelection.AddValueChanged(shell,OutputSelected);
         _doubleImage.AddValueChanged(shell,DoubleImageChanged);
         main.ResultWorkspaceChanged+=Refresh;main.ResultWorkspaceSelectionChanged+=Highlight;
-        main.ResultDisplayChanged+=QueueResultDisplay;
+        main.ResultDisplayChanged+=ResultDisplayChanged;
         main.ResultWorkspaceGraphicsCleared+=ClearGraphics;
         main.SourceDisplayPreservationPreparing+=PrepareSourceDisplayPreservation;
         main.ResultWorkspaceRootSettled+=RootSettled;
@@ -69,10 +72,9 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
                 _fullscreen?.Dispose();_fullscreen=ResultViewportFullscreenScope.Open(view,owner,shell.ImageNavigationControls);
             }
         },value=>!_disposed&&value is FrameworkElement view&&(ReferenceEquals(view,shell.InputViewport)||ReferenceEquals(view,shell.OutputViewport)));
-        // The original background command exchanges an established output background
-        // with a checked overlay. It is not an alias of ordinary source selection.
-        // Keep it unavailable until the one-owner multi-image layer chain is present.
-        shell.SelectBackgroundCommand=null;
+        shell.SelectOverlayCommand=new SunEyeVision.UI.Core.RelayCommand(ToggleOverlay,CanToggleOverlay);
+        shell.SelectBackgroundCommand=new SunEyeVision.UI.Core.RelayCommand(SwapBackground,CanSwapBackground);
+        ((SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.ImageViewBox)_output.Image.Viewport.View).OnFreshExtendContent+=OnOverlayViewportChanged;
         shell.CrossLinesCommand=new SunEyeVision.UI.Core.RelayCommand(()=>
         {
             if(Window.GetWindow(shell) is {} owner)_output.Cross.OpenSettings(owner);
@@ -101,50 +103,61 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
     }
     private void InputSelected(object? sender,EventArgs args)
     {
+        var accepted=false;
         try
         {
         if(_disposed||_restoringInput)return;
-        if(_roiPresentation?.Input==true)RetireRoiPresentation();
         if(_refreshing&&_plan is null)return;
         var source=_shell.SelectedInputItem as ResultWorkspaceImageSource;
         if(_shell.SelectedInputItem is not null&&(source is null||!OwnsChoice(source,true)))
         {RestoreChoice(true);return;}
+        accepted=true;
+        if(_roiPresentation?.Input==true)RetireRoiPresentation();
         _inputSource=source;_inputKey=source?.Key;
         if(_refreshing)return;
         Present(_input,source);ReportDisplayDefinitionGap();
 
         }
-        finally{if(!_disposed&&_shell.IsDoubleImage)_main.NotifyRoiFrameAvailabilityChanged();}
+        finally{if(accepted&&!_disposed&&_shell.IsDoubleImage)_main.NotifyRoiFrameAvailabilityChanged();}
     }
     private void OutputSelected(object? sender,EventArgs args)
     {
+        var accepted=false;
         try
         {
         if(_disposed||_restoringOutput)return;
-        if(_roiPresentation?.Input==false)RetireRoiPresentation();
         if(_refreshing&&_plan is null)return;
         var source=_shell.SelectedOutputItem as ResultWorkspaceImageSource;
         if(_shell.SelectedOutputItem is not null&&(source is null||!OwnsChoice(source,false)))
         {RestoreChoice(false);return;}
+        accepted=true;
+        if(_roiPresentation?.Input==false)RetireRoiPresentation();
         _outputSource=source;_outputKey=source?.Key;var choiceRevision=++_outputChoiceRevision;
         var choicePlan=_plan;var choiceEpoch=_epoch;
         if(choicePlan is not null)
             foreach(var item in choicePlan.Sources.ToArray())
             {
                 if(_disposed||choiceEpoch!=_epoch||!ReferenceEquals(choicePlan,_plan)||choiceRevision!=_outputChoiceRevision)return;
-                item.IsCheck=ReferenceEquals(item,source);
+                item.IsCheck=IsCheckedOutput(item,source);
+                if(_disposed||choiceEpoch!=_epoch||!ReferenceEquals(choicePlan,_plan)||choiceRevision!=_outputChoiceRevision)return;
+                item.IsBackgroundImage=item.Key==_backgroundKey;
             }
         if(_disposed||choiceEpoch!=_epoch||!ReferenceEquals(choicePlan,_plan)||choiceRevision!=_outputChoiceRevision)return;
         if(_refreshing)return;
-        if(sender is not null&&_main.SelectedNode is {} selected)
-            _main.SetFormalDisplaySelection(selected,source?.Key);
+        if(sender is not null)
+        {
+            _editorInputDisplayKey=null;
+            _variableOutputKey=source?.VariableImage is not null?source.Key:null;
+            if(_variableOutputKey is null&&_main.SelectedNode is {} selected)
+                _main.SetFormalDisplaySelection(selected,source?.Key);
+        }
         if(_disposed||choiceEpoch!=_epoch||!ReferenceEquals(choicePlan,_plan)||choiceRevision!=_outputChoiceRevision)return;
         var epoch=_epoch;var plan=_plan;
         _previewCancellation?.Cancel();
-        Present(_output,source);ReportDisplayDefinitionGap();
+        Present(_output,source);RefreshOverlayLayers();ReportDisplayDefinitionGap();
 
         }
-        finally{if(!_disposed&&!_shell.IsDoubleImage)_main.NotifyRoiFrameAvailabilityChanged();}
+        finally{if(accepted&&!_disposed&&!_shell.IsDoubleImage)_main.NotifyRoiFrameAvailabilityChanged();}
     }
     private bool OwnsChoice(ResultWorkspaceImageSource source,bool input)
     {
@@ -175,18 +188,40 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         ++_selectionGeneration;
         bool Current()=>!_disposed&&epoch==_epoch&&ReferenceEquals(_plan,plan)&&pane.Generation==paneGeneration;
         if(!Current())return;
-        pane.ClearDisplay();pane.ClearGraphics();
+        pane.ClearDisplay();
         if(!Current())return;
-        if(source?.Publication is not {} publication){pane.Image.ClearUnlessRetained();return;}
-        if(!pane.Image.TryPresent(publication,source.Reference,source.Reference.ScopeId!,
-            ()=>Current()&&source.Current()&&Current(),out var error))
+        if(source is null||source.Publication is null&&source.VariableImage is null){pane.Image.ClearUnlessRetained();return;}
+        if(!source.HasImageValue){pane.Image.Clear();return;}
+        bool SourceCurrent()=>Current()&&source.Current()&&Current();
+        var preserveShapeLayers=ReferenceEquals(pane,_output);
+        var presented=source.VariableImage is {} variable
+            ? pane.Image.TryPresentPreview(variable,SourceCurrent,out var error,filePreview:false,preserveShapeLayers:preserveShapeLayers)
+            : pane.Image.TryPresent(source.Publication!,source.Reference!,source.Reference!.ScopeId!,SourceCurrent,out error,preserveShapeLayers);
+        if(!presented)
             _main.AddLog("图像来源未显示："+source.DisplayName+"，"+error);
-        else if(Current())SetImageName(pane,source.FileName);
+        else if(Current())RefreshImageName(pane,source);
         if(Current())QueueResultDisplay();
     }
     private static void SetImageName(Pane pane,string? name)
         =>pane.Image.Viewport.View.SetCurrentValue(
             SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.ImageViewBox.ImageNameProperty,name);
+    private void RefreshImageName(Pane pane,ResultWorkspaceImageSource? source)
+    {
+        if(pane.Image.CurrentFrame is null)return;
+        var name=_main.ShowLocalImageName
+            ?pane.Image.IsFilePreview?System.IO.Path.GetFileName(_main.NativePreviewPath)
+                :source is {IsUpstream:false}?source.FileName:null
+            :null;
+        SetImageName(pane,string.IsNullOrEmpty(name)?null:name);
+    }
+    private void ResultDisplayChanged()
+    {
+        if(_disposed)return;
+        RefreshImageName(_input,_inputSource);
+        if(_disposed)return;
+        RefreshImageName(_output,_outputSource);
+        QueueResultDisplay();
+    }
     private void PrepareSourceDisplayPreservation(SunEyeVision.UI.Shared.ImageInputSource source,SourceDisplayPreservationScope scope)
     {
         if(_disposed||!ReferenceEquals(_main.ActiveInputSource,source))return;
@@ -216,21 +251,36 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
                 Run(new Action[]{_input.Image.ClearUnlessRetained,_output.Image.ClearUnlessRetained,ClearGraphics,()=>old?.Dispose()});
                 if(_disposed)return;
                 if(!ReferenceEquals(_selectionOwner,_main.SelectedNode))
-                {_selectionOwner=_main.SelectedNode;_inputKey=null;_outputKey=_main.SelectedNode?.SelectedDisplayReference;}
+                {_selectionOwner=_main.SelectedNode;_inputKey=null;_outputKey=_main.SelectedNode?.SelectedDisplayReference;
+                    _variableOutputKey=null;ResetOverlayChoice();}
+                ReadOverlayChoice(_main.SelectedNode?.DisplayOverlays);
                 var plan=_main.CaptureNativeImageSources(()=>!_disposed&&epoch==_epoch);
                 if(_disposed||epoch!=_epoch){plan.Dispose();continue;}
                 _plan=plan;
                 var inputs=plan.InputSources.ToArray();
                 _shell.InputItems=inputs;_shell.OutputItems=plan.Sources;
-                var input=_shell.IsDoubleImage?inputs.FirstOrDefault(source=>source.Key==_inputKey)??inputs.FirstOrDefault():null;
+                var sameEditor=plan.IsPrivateDebug&&old is not null&&old.EditorScopeId==plan.EditorScopeId;
+                var relatedImageChanged=sameEditor&&old!.PrimaryInputKey!=plan.PrimaryInputKey;
+                var inputKey=relatedImageChanged?plan.PrimaryInputKey:_inputKey;
+                var input=_shell.IsDoubleImage?inputs.FirstOrDefault(source=>source.Key==inputKey)??inputs.FirstOrDefault():null;
                 var byKey=plan.Sources.FirstOrDefault(source=>source.Key==_outputKey);
+                if (!sameEditor)
+                    _editorInputDisplayKey = null;
+                else if (!_shell.IsDoubleImage && relatedImageChanged)
+                    _editorInputDisplayKey = plan.PrimaryInputKey;
+                var editedInput = _editorInputDisplayKey is { } editedKey
+                    ? plan.Sources.FirstOrDefault(source => source.Key == editedKey) : null;
+                if(old?.EditorScopeId!=plan.EditorScopeId)_variableOutputKey=null;
+                var variableOutput=_variableOutputKey is {} variableKey
+                    ?plan.Sources.FirstOrDefault(source=>source.Key==variableKey):null;
                 // A persisted explicit identity must match exactly, including scope and members.
                 // Missing or stale declarations never silently select a different image.
                 var explicitChoice=_main.SelectedNode?.SelectedDisplayReference;
-                var output=explicitChoice is not null
+                var useDefault=plan.IsPrivateDebug||old?.IsPrivateDebug==true;
+                var output=editedInput??variableOutput??(explicitChoice is not null
                     ?plan.Sources.FirstOrDefault(source=>source.Key==explicitChoice)
-                    :byKey??plan.Sources.FirstOrDefault(source=>!source.IsUpstream)??plan.Sources.FirstOrDefault();
-                if(explicitChoice is not null&&output is null)plan.Diagnostics.Add("已选择的图像来源不存在或声明已变更，请重新选择。");
+                    :useDefault?plan.DefaultOutput:byKey??plan.DefaultOutput);
+                if(explicitChoice is not null&&editedInput is null&&output is null)plan.Diagnostics.Add("已选择的图像来源不存在或声明已变更，请重新选择。");
                 _inputSource=input;_outputSource=output;
                 var outputChoiceRevision=_outputChoiceRevision;
                 _shell.SelectedInputItem=input;
@@ -290,7 +340,7 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
             if(!_output.Image.TryPresentPreview(decoded.Image,Current,out var error))_main.AddLog("文件预览未显示："+error);
             else if(Current())
             {
-                SetImageName(_output,System.IO.Path.GetFileName(path));
+                RefreshImageName(_output,null);
                 if(_main.StatusText==openingStatus&&!openingStatus.StartsWith("图像源配置已接纳，",StringComparison.Ordinal))
                     _main.StatusText="文件预览："+decoded.Image.Width+" × "+decoded.Image.Height;
             }
@@ -315,9 +365,7 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         if(publication is not null&&_main.CaptureCurrentResultDisplay(publication) is not null)return;
         if(publication is null||!publication.IsCurrent()||ReferenceEquals(publication,_displayDefinitionNotice))return;
         _displayDefinitionNotice=publication;
-        // Resource values are not display declarations. Do not invent visible regions,
-        // colors, text or frame provenance while the formal display contract is absent.
-        _main.AddLog("结果图形/文字显示尚未接入正式声明；图像叠层与背景替换尚未接入唯一owner，不绘制推测图层。普通来源选择、树表及有同帧证明的高亮可用。");
+        _main.AddLog("当前结果没有正式图形或文字显示声明。");
     }
     private void Highlight(ResultSelection? selection)
     {
@@ -329,6 +377,16 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         bool Current()=>LocalCurrent()&&(publication?.IsCurrent()!=false)&&LocalCurrent();
         bool ClearCurrent()=>selection is null?LocalCurrent():Current();
         Run(new Action[]{()=>{if(ClearCurrent())_input.Selection.Clear();},()=>{if(ClearCurrent())_output.Selection.Clear();}});
+        if(!ClearCurrent())return;
+        var sceneSelection = selection?.ElementIdentity is long && publication is not null &&
+            _main.CaptureCurrentResultDisplay(publication)?.Descriptor.SelectedRectangleColor is not null;
+        if(!ClearCurrent())return;
+        if(sceneSelection || _sceneSelection is not null)
+        {
+            _sceneSelection = sceneSelection ? selection : null;
+            QueueResultDisplay();
+        }
+        if(sceneSelection)return;
         if(selection is null||publication is null||!Current())return;
         var displayed=false;
         foreach(var pane in new[]{_input,_output})
@@ -359,11 +417,11 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
     public void Dispose()
     {
         if(_disposed)return;RetireRoiPresentation();_disposed=true;++_epoch;++_selectionGeneration;++_input.Generation;++_output.Generation;_displayDefinitionNotice=null;
-        var plan=_plan;_plan=null;_inputSource=null;_outputSource=null;var fullscreen=_fullscreen;_fullscreen=null;
+        var plan=_plan;_plan=null;_inputSource=null;_outputSource=null;_sceneSelection=null;var fullscreen=_fullscreen;_fullscreen=null;
         var cancellation=_previewCancellation;_previewCancellation=null;
         Run(new Action[]{
             ()=>_main.ResultWorkspaceChanged-=Refresh,
-            ()=>_main.ResultDisplayChanged-=QueueResultDisplay,()=>{_displayRefresh?.Abort();_displayRefresh=null;},
+            ()=>_main.ResultDisplayChanged-=ResultDisplayChanged,()=>{_displayRefresh?.Abort();_displayRefresh=null;},
             ()=>_main.ResultWorkspaceSelectionChanged-=Highlight,
             ()=>_main.ResultWorkspaceGraphicsCleared-=ClearGraphics,
             ()=>_main.SourceDisplayPreservationPreparing-=PrepareSourceDisplayPreservation,
@@ -371,10 +429,11 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
             ()=>_inputSelection.RemoveValueChanged(_shell,InputSelected),
             ()=>_outputSelection.RemoveValueChanged(_shell,OutputSelected),
             ()=>_doubleImage.RemoveValueChanged(_shell,DoubleImageChanged),
-            ()=>_shell.FullscreenCommand=null,()=>_shell.SelectBackgroundCommand=null,()=>_shell.CrossLinesCommand=null,
+            ()=>((SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.ImageViewBox)_output.Image.Viewport.View).OnFreshExtendContent-=OnOverlayViewportChanged,
+            ()=>_shell.FullscreenCommand=null,()=>_shell.SelectOverlayCommand=null,()=>_shell.SelectBackgroundCommand=null,()=>_shell.CrossLinesCommand=null,
             ()=>_shell.SelectedInputItem=null,()=>_shell.SelectedOutputItem=null,
             ()=>_shell.InputItems=null,()=>_shell.OutputItems=null,
             ()=>cancellation?.Cancel(),()=>cancellation?.Dispose(),
-            ()=>fullscreen?.Dispose(),_input.Dispose,_output.Dispose,()=>plan?.Dispose(),_main.NotifyRoiFrameAvailabilityChanged});
+            ()=>fullscreen?.Dispose(),ResetOverlayChoice,_input.Dispose,_output.Dispose,()=>plan?.Dispose(),_main.NotifyRoiFrameAvailabilityChanged});
     }
 }

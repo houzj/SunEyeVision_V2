@@ -23,10 +23,10 @@
           <localParamTab:LeftRightControl.RightContent>
             <WrapPanel Orientation="Horizontal">
 <ContentPresenter ContentTemplate="{StaticResource FullScreenDataTemplate}" Content="{Binding}" Visibility="{Binding FullScreenEnableA, Converter={StaticResource bool2VisibilityConverter}}" />
-<ContentPresenter ContentTemplate="{StaticResource BoxTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.Box}}" />
 <ContentPresenter ContentTemplate="{StaticResource SectorRingTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.SectorRing}}" />
-<ContentPresenter ContentTemplate="{StaticResource PolygonTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.Polygon}}"/>
 <ContentPresenter ContentTemplate="{StaticResource SectorTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.Sector}}" />
+<ContentPresenter ContentTemplate="{StaticResource BoxTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.Box}}" />
+<ContentPresenter ContentTemplate="{StaticResource PolygonTemplate}" Content="{Binding}" Visibility="{Binding ROISelectionA, Converter={StaticResource ROIDefaultValueToVisibilityConvert}, ConverterParameter={x:Static localParserTab:RoiType.Polygon}}"/>
             </WrapPanel>
           </localParamTab:LeftRightControl.RightContent>
         </localParamTab:LeftRightControl>

@@ -1,0 +1,39 @@
+{
+  "kind": "VM原件优先实施门禁",
+  "batch": "Blob模块结果树与当前结果表",
+  "vmEvidence": [
+    {
+      "path": "D:/MyWork/Rea逆向/docs/reverse/C03-original-blob-runtime-capture.md",
+      "facts": ["原厂模块结果包含ModuStatus、BlobStatus、BlobNum、TotalArea、单体字段数组", "原厂当前结果表按Blob序号展示面积、周长、质心、角度、长短轴、圆形度和矩形度"]
+    },
+    {
+      "path": "D:/MyWork/Rea逆向/docs/COMPOUND-LEAF-MAPPING.md",
+      "facts": ["BlobNum、Area、TotalArea、CentroidPoint、BlobRect是独立原生输出", "Components是托管聚合名称，不得当作原生同名复合类型"]
+    },
+    {
+      "path": "D:/MyWork/Rea逆向/docs/plugins/BLOB-ANALYSIS-IDENTITY-SOURCE-INVENTORY.md",
+      "facts": ["原AlgorithmTab含Tab_Basic Params、Tab_Run Params、ResultShow", "原模块结果还包含图像、轮廓、掩膜和位置修正相关输出"]
+    }
+  ],
+  "currentConsumers": [
+    "tools/SunEyeVision.BlobAnalysis/Runtime/Results/BlobSchema.cs",
+    "tools/SunEyeVision.BlobAnalysis/Runtime/Results/BlobOutput.cs",
+    "tools/SunEyeVision.BlobAnalysis/Runtime/Results/BlobOutputDisplay.cs",
+    "tools/SunEyeVision.BlobAnalysis/Runtime/Results/BlobResultDisplay.cs",
+    "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobResultView.xaml.cs",
+    "src/UI/Services/Monitoring/ResultPresentationPresenter.cs",
+    "src/Plugin.Wpf/Presenters/Results/DeclaredResultTable.cs"
+  ],
+  "difference": [
+    "模块结果树是通用声明树，当前结果表是Blob专用标准表，两者必须共享同一publication和Blob序列",
+    "通用树不能重复展示整组Blob记录，也不能把模块耗时和宿主执行摘要展示成两行",
+    "单体状态显示名必须沿原厂截图和结果字段语义"
+  ],
+  "decision": {
+    "migration": "保留Blob输出端口和当前结果表，模块结果树隐藏重复Blob明细与模块耗时根字段，单体状态使用原厂显示名",
+    "semanticFallback": "仅对VM证据未覆盖的动态树展开、分页和资源释放标记运行未确认",
+    "acceptance": "人工核对模块结果树、当前结果表、图像叠加是否来自同一publication"
+  },
+  "implementationStatus": "已实施并完成Release编译，未运行程序/测试/生产探针",
+  "followUp": "2026-11-11新增原件模块摘要标记：Blob正式输出树承载耗时（ms）和模块状态，宿主不再重复追加执行摘要。最新全量Release 0错误、6089警告、54.24秒。"
+}

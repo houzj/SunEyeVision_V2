@@ -17,6 +17,112 @@ namespace SunEyeVision.UI.Tests;
 public sealed class ResultPresentationPresenterTests:IDisposable
 {
     [Fact]
+    public void Hidden_declared_output_is_hidden_in_declaration_and_failed_publication() => Sta(() =>
+    {
+        var schema=new ToolSchema(Array.Empty<Port>(),new[]{new Port("status",DataType.Integer)},
+            outputDisplay:new[]{new OutputDisplayNode("status","模块状态",displayInResultPanel:false)});
+        using var declaration=ToolResultViews.Declaration(schema,()=>true,displayedPorts:new HashSet<string>{"status"});
+        Assert.DoesNotContain("status",declaration.DisplayedPorts);
+        using var snapshot=DeclaredOutputSnapshot.WithoutValues(schema,0,Identity(),ExecutionStatus.Failed,
+            new[]{new Diagnostic("IMAGE_SOURCE_STITCH","拼接失败"){NativeErrorCode=0xE0000502}});
+        using var publication=ToolResultViews.FromSnapshot(snapshot,()=>true);
+        Assert.DoesNotContain("status",publication.DisplayedPorts);Assert.Single(publication.Schema.Outputs);
+        Assert.Equal(0xE0000502u,Assert.Single(publication.Diagnostics).NativeErrorCode);
+    });
+
+    [Fact]
+    public void Failed_publication_displays_produced_scalars_and_keeps_missing_images_and_failure_status() => Sta(() =>
+    {
+        var schema=Schema(new Port("sn",DataType.Integer),new Port("image",TypeRef.ResourceOf(ResourceKind.Image)));
+        var values=InputValues.CaptureAvailableOutputs(schema.Outputs,new Dictionary<string,object?>{{"sn",25L}});
+        var stamp=new ResultPublicationStamp(Guid.NewGuid(),Identity(),1,schema.Fingerprint);
+        using var publication=new ResultPublication(schema,stamp,ResultViewState.Failed,values,new EmptyOwner(),()=>true,
+            new[]{new Diagnostic("IMAGE_SOURCE_READ","拼接失败")});
+        var rows=new ObservableCollection<FlatResultRow>();using var presenter=new ResultPresentationPresenter(rows,_=>{});
+        presenter.Present(publication);
+        Assert.Equal("25",rows.Single(row=>row.DisplayName=="sn").DisplayValue);
+        Assert.Contains("失败",rows[0].DisplayValue);
+        Assert.NotEqual("25",rows.Single(row=>row.DisplayName=="image").DisplayValue);
+        using var lease=publication.Borrow();Assert.True(lease.Values!.Read("image").IsMissing);
+        Assert.Throws<ArgumentException>(()=>new ResultPublication(schema,stamp with{PublicationId=Guid.NewGuid()},ResultViewState.Success,
+            values,new EmptyOwner(),()=>true));
+    });
+
+    [Fact]
+    public void Result_tree_formats_float32_scalars_and_sequence_items_in_the_current_culture() => Sta(() =>
+    {
+        var previous = CultureInfo.CurrentCulture;
+        try
+        {
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR");
+            var schema = Schema(new Port("module-time", DataType.Number, Storage: NumericStorage.Float32),
+                new Port("measurements", DataType.NumberArray, Storage: NumericStorage.Float32));
+            const double value = (double)1.2f;
+            using var result = Success(schema, new() { ["module-time"] = value, ["measurements"] = new[] { value } });
+            var rows = new ObservableCollection<FlatResultRow>();
+            using var tree = new ResultPresentationPresenter(rows, _ => { });
+            tree.Present(result.Publication);
+            Assert.Equal("1,2", rows.Single(row => row.DisplayName == "module-time").DisplayValue);
+            rows.Single(row => row.DisplayName == "measurements").IsExpanded = true;
+            Assert.Equal("1,2", rows.Single(row => row.Level == 2).DisplayValue);
+        }
+        finally { CultureInfo.CurrentCulture = previous; }
+    });
+
+    [Fact]
+    public void Blob_status_enum_and_polarity_outputs_project_original_texts_in_the_result_tree() => Sta(() =>
+    {
+        var schema = new ToolSchema(Array.Empty<Port>(), new[]
+        {
+            new Port("module-status", DataType.Integer),
+            new Port("blob-statuses", TypeRef.SequenceOf(DataType.Integer)),
+            new Port("threshold-mode", DataType.Text),
+            new Port("polarity", DataType.Text)
+        }, outputDisplay: new[]
+        {
+            new OutputDisplayNode("module-status", "模块状态"),
+            new OutputDisplayNode("blob-statuses", "单体状态"),
+            new OutputDisplayNode("threshold-mode", "阈值方式"),
+            new OutputDisplayNode("polarity", "极性")
+        });
+        using var run = Success(schema, new()
+        {
+            ["module-status"] = 1L,
+            ["blob-statuses"] = new long[] { 0, 1 },
+            ["threshold-mode"] = "DoubleThreshold",
+            ["polarity"] = "BinaryInv"
+        });
+        var rows = new ObservableCollection<FlatResultRow>();
+        using var tree = new ResultPresentationPresenter(rows, _ => { });
+        tree.Present(run.Publication);
+        Assert.Equal("成功", rows.Single(row => row.DisplayName == "模块状态").DisplayValue);
+        var statuses = rows.Single(row => row.DisplayName == "单体状态");
+        Assert.Equal("[2 项]", statuses.DisplayValue);
+        statuses.IsExpanded = true;
+        Assert.Equal(new[] { "失败", "成功" }, rows.Where(row => row.Level == 2).Select(row => row.DisplayValue));
+        Assert.Equal("双阈值", rows.Single(row => row.DisplayName == "阈值方式").DisplayValue);
+        Assert.Equal("暗于背景", rows.Single(row => row.DisplayName == "极性").DisplayValue);
+    });
+
+    [Fact]
+    public void Semantic_projection_maps_only_declared_blob_status_enum_and_polarity_values()
+    {
+        Assert.Equal("成功", ResultSemanticText.TryProject("模块状态", 1L));
+        Assert.Equal("失败", ResultSemanticText.TryProject("单体状态", 0L));
+        Assert.Equal("2", ResultSemanticText.TryProject("模块状态", 2L));
+        Assert.Equal("单阈值", ResultSemanticText.TryProject("阈值方式", "SingleThreshold"));
+        Assert.Equal("软阈值（相对）", ResultSemanticText.TryProject("阈值方式", "RelativeSoftThreshold"));
+        Assert.Equal("亮于背景", ResultSemanticText.TryProject("极性", "Binary"));
+        Assert.Equal("暗于背景", ResultSemanticText.TryProject("极性", "BinaryInv"));
+        Assert.Null(ResultSemanticText.TryProject("极性", "Unknown"));
+        Assert.Null(ResultSemanticText.TryProject("面积", 1L));
+        Assert.Equal("1.2", ResultSemanticText.TryProjectFloat32(NumericStorage.Float32, (double)1.2f));
+        Assert.Equal("0.4195392", ResultSemanticText.TryProjectFloat32(NumericStorage.Float32, 0.41953921d));
+        Assert.Null(ResultSemanticText.TryProjectFloat32(NumericStorage.Float64, 1.2d));
+        Assert.Null(ResultSemanticText.TryProjectFloat32(null, 1.2d));
+    }
+
+    [Fact]
     public void Sdk_snapshot_drives_tree_and_table_together_and_retired_run_cannot_replace_either() => Sta(() =>
     {
         var schema=Schema(new Port("value",DataType.Integer));
@@ -50,6 +156,109 @@ public sealed class ResultPresentationPresenterTests:IDisposable
         Assert.Equal("22",rows[1].DisplayValue);Assert.Equal(22L,Cell());Assert.Equal(2,a.Borrows);
         tree.Clear();table.Clear();Assert.Empty(rows);Assert.Empty(grid.Items);
         Assert.Equal(2,b.LeaseDisposals);
+    });
+
+    [Fact]
+    public void Paging_appends_the_same_publication_and_keeps_the_selected_row() => Sta(() =>
+    {
+        var rowType=TypeRef.RecordOf("test.result-row",new[]{new Port("id",DataType.Integer)});
+        var rowsType=TypeRef.SequenceOf(rowType);
+        var schema=Schema(new Port("rows",rowsType));
+        var projection=new ResultProjectionDescriptor(ResultProjectionKind.StandardTable,ResultCardinality.Many,
+            new[]{new ResultColumnDescriptor("id","编号",new("rows",new[]{"id"}))},new("rows"),"id");
+        SequenceValue Rows(int count)=>new(rowsType,Enumerable.Range(0,count)
+            .Select(index=>new RecordValue(rowType,new Dictionary<string,object?>{["id"]=(long)index})));
+        using var first=Success(schema,new(){["rows"]=Rows(501)});
+        using var next=Success(schema,new(){["rows"]=Rows(1)});
+        var tracked=new TrackedPublication(first.Publication);
+        using var table=new DeclaredResultTable(schema,projection);
+        var grid=Assert.IsType<DataGrid>(table.Content);
+        table.Present(tracked);
+        Assert.Equal(500,grid.Items.Count);
+        grid.SelectedIndex=1;
+        var selected=grid.SelectedItem;
+        Assert.NotNull(selected);
+        var page=table.CurResultScrollCommand;
+        page.Execute(401d);
+        Assert.Equal(501,grid.Items.Count);
+        Assert.Same(selected,grid.SelectedItem);
+        Assert.Equal(1,tracked.Borrows);
+        Assert.Equal(1,tracked.LeaseDisposals);
+        table.Present(next.Publication);
+        page.Execute(401d);
+        Assert.Single(grid.Items.Cast<object>());
+        Assert.Null(grid.SelectedItem);
+    });
+
+    [Fact]
+    public void Current_result_column_resets_width_when_the_longest_value_shrinks_by_more_than_fifty() => Sta(() =>
+    {
+        var schema=Schema(new Port("text",DataType.Text));
+        var projection=new ResultProjectionDescriptor(ResultProjectionKind.StandardTable,ResultCardinality.One,
+            new[]{new ResultColumnDescriptor("text","文本",new("text"))});
+        using var first=Success(schema,new(){["text"]=new string('a',102)});
+        using var second=Success(schema,new(){["text"]=new string('b',52)});
+        using var third=Success(schema,new(){["text"]="c"});
+        using var table=new DeclaredResultTable(schema,projection);
+        var column=Assert.Single(Assert.IsType<DataGrid>(table.Content).Columns);
+        table.Present(first.Publication);
+        column.Width=new DataGridLength(300);
+        table.Present(second.Publication);
+        Assert.Equal(new DataGridLength(300),column.Width);
+        table.Present(third.Publication);
+        Assert.Equal(DataGridLengthUnitType.Auto,column.Width.UnitType);
+    });
+
+    [Fact]
+    public void Highlight_borrows_only_the_selected_row_and_rejects_replaced_publications() => Sta(() =>
+    {
+        var coordinates=new CoordinateFrame("image:selection",CoordinateDomain.Image,CoordinateUnit.Pixel);
+        var frame=new ImageFrameAddress(Guid.NewGuid(),"selection-source");
+        using var resources=new FrozenOutputResources();
+        var region=resources.CreateRegion(coordinates,frame,new[]{new RegionRun(0,0,0)});
+        var rowType=TypeRef.RecordOf("test.highlight-row",new[]
+        {
+            new Port("id",DataType.Integer),
+            new Port("point",TypeRef.GeometryOf(GeometryKind.Point,coordinates)),
+            new Port("origin",TypeRef.ResourceOf(ResourceKind.Region))
+        });
+        var rowsType=TypeRef.SequenceOf(rowType);
+        var schema=Schema(new Port("rows",rowsType));
+        var projection=new ResultProjectionDescriptor(ResultProjectionKind.StandardTable,ResultCardinality.Many,
+            new[]{new ResultColumnDescriptor("id","编号",new("rows",new[]{"id"}),Geometry:new("rows",new[]{"point"}),
+                GeometrySource:new("rows",new[]{"origin"}))},new("rows"),"id");
+        Dictionary<string,object?> Rows(params long[] ids)=>new()
+        {
+            ["rows"]=new SequenceValue(rowsType,ids.Select(id=>new RecordValue(rowType,new Dictionary<string,object?>
+            {
+                ["id"]=id,["point"]=new PointGeometry(coordinates,new(id,0)),["origin"]=region
+            })))
+        };
+        using var first=Success(schema,Rows(10,20));
+        using var next=Success(schema,Rows(30));
+        var tracked=new TrackedPublication(first.Publication);
+        using var table=new DeclaredResultTable(schema,projection);
+        var grid=Assert.IsType<DataGrid>(table.Content);
+        var changes=new List<ResultSelection>();
+        table.SelectionHighlightChanged+=(_,selection)=>changes.Add(selection);
+        table.Present(tracked);
+        Assert.Equal(1,tracked.Borrows);
+        Assert.Equal(1,tracked.LeaseDisposals);
+        Assert.Empty(Assert.Single(changes).Targets);
+        grid.SelectedIndex=1;
+        Assert.Equal(2,tracked.Borrows);
+        Assert.Equal(2,tracked.LeaseDisposals);
+        Assert.Equal(20L,changes[^1].ElementIdentity);
+        Assert.Equal(frame,Assert.Single(changes[^1].Targets).ImageFrame);
+
+        changes.Clear();
+        tracked.AfterBorrow=()=>table.Present(next.Publication);
+        grid.SelectedIndex=0;
+        Assert.Equal(3,tracked.LeaseDisposals);
+        Assert.Null(grid.SelectedItem);
+        var clear=Assert.Single(changes);
+        Assert.Equal(next.Publication.Stamp,clear.Publication);
+        Assert.Empty(clear.Targets);
     });
 
     [Fact]

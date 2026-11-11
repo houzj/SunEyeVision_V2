@@ -17,7 +17,7 @@ foreach ($file in @(
     "SunEyeVision.Platform.Sdk.dll", "SunEyeVision.Platform.Sdk.xml", "SunEyeVision.Platform.Sdk.deps.json",
     "SunEyeVision.Platform.Sdk.Contracts.dll", "SunEyeVision.Platform.Sdk.Contracts.xml",
     "SunEyeVision.Application.dll", "SunEyeVision.Domain.dll", "SunEyeVision.Execution.dll",
-    "SunEyeVision.Foundation.dll", "SunEyeVision.Infrastructure.Persistence.dll", "SunEyeVision.Persistence.dll",
+    "SunEyeVision.Foundation.dll", "SunEyeVision.Infrastructure.Persistence.dll", "SunEyeVision.Infrastructure.ImageSources.dll", "SunEyeVision.Persistence.dll",
     "SunEyeVision.Plugin.Contracts.dll", "SunEyeVision.Plugin.Runtime.dll",
     "OpenCvSharp.dll", "OpenCvSharpExtern.dll", "opencv_videoio_ffmpeg4130_64.dll",
     "Microsoft.Extensions.DependencyInjection.dll", "Microsoft.Extensions.DependencyInjection.Abstractions.dll",

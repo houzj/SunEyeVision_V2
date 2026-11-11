@@ -30,7 +30,7 @@ public static class HalconResourceBridge
         ArgumentNullException.ThrowIfNull(source);
         using var reader = source.AcquirePixels();
         var layout = reader.Layout;
-        int channels = layout.Format switch { PixelLayout.Gray8 => 1, PixelLayout.Bgr24 => 3, PixelLayout.Bgra32 => 4, _ => throw new ArgumentException("Unsupported pixel layout.") };
+        int channels = layout.BytesPerPixel;
         int rowBytes = checked(layout.Width * channels);
         var packed = new byte[checked(rowBytes * layout.Height)];
         for (int row = 0; row < layout.Height; row++)
@@ -48,7 +48,11 @@ public static class HalconResourceBridge
             Marshal.Copy(packed, 0, pointer, packed.Length);
             using var full = new HImage();
             if (channels == 1) full.GenImage1("byte", layout.Width, layout.Height, pointer);
-            else full.GenImageInterleaved(pointer, channels == 3 ? "bgr" : "bgrx", layout.Width, layout.Height, 0, "byte", 0, 0, 0, 0, -1, 0);
+            else
+            {
+                var order = layout.Format switch { PixelLayout.Rgb24 => "rgb", PixelLayout.Bgr24 => "bgr", _ => "bgrx" };
+                full.GenImageInterleaved(pointer, order, layout.Width, layout.Height, 0, "byte", 0, 0, 0, 0, -1, 0);
+            }
             if (channels == 4)
             {
                 var alpha = new byte[checked(layout.Width * layout.Height)];
@@ -115,7 +119,8 @@ public static class HalconResourceBridge
     // Region runs carry an explicit validated pixel grid. Native creation must not
     // clip them to the previous image size of this worker thread. The same rule
     // applies to affine results before the caller's explicit target-domain intersection.
-    private static HRegion CreateWithoutImplicitClipping(Func<HRegion> create)
+    /// <summary>Creates a region with thread-local clipping disabled until it returns.</summary>
+    public static HRegion CreateWithoutImplicitClipping(Func<HRegion> create)
     {
         HOperatorSet.GetSystem("tsp_clip_region", out var previous);
         HRegion? result = null;

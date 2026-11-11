@@ -60,6 +60,7 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.Editing.Wpf.Models.Ob
     internal void AttachFormalOwner() { _requiresWriter = true; ConfigurationWriter = null; }
     internal void DetachFormalOwner() { _requiresWriter = true; ConfigurationWriter = null; }
     public int Count => _entries.Count;
+    internal int ConfiguredStartIndex => _configuredIndex;
     public bool HasImages => Count != 0;
     public ImageInfo? CurrentImage => _currentIndex >= 0 && _currentIndex < Count ? _entries[_currentIndex] : null;
     public bool IsReadOnly { get => _readOnly; set => SetProperty(ref _readOnly,value); }
@@ -203,11 +204,11 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.Editing.Wpf.Models.Ob
         Commit(_entries.ToArray(),_configuredIndex,_runMode,_autoSwitch,references);
     }
     public void AddImage(ImageInfo image)=>AddImages(new[]{image});
-    public ImageSourceEditReceipt AddImages(IEnumerable<ImageInfo> images,bool selectFirstAdded=false)
+    public ImageSourceEditReceipt AddImages(IEnumerable<ImageInfo> images)
     {
         var additions=images.ToArray();if(additions.Length==0)return new(false,null);
-        return Commit(_entries.Concat(additions).ToArray(),selectFirstAdded?Count:_configuredIndex,_runMode,_autoSwitch,
-            _runReferences.Concat(additions.Where(image=>image.IsForRun).Select(Reference)).Distinct(StringComparer.Ordinal),selectFirstAdded);
+        return Commit(_entries.Concat(additions).ToArray(),_configuredIndex,_runMode,_autoSwitch,
+            _runReferences.Concat(additions.Where(image=>image.IsForRun).Select(Reference)).Distinct(StringComparer.Ordinal));
     }
     public void RemoveImage(ImageInfo image)
     {
@@ -257,10 +258,8 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.Editing.Wpf.Models.Ob
             if(image is null||image.FilePath!=address)image=new(){SourceReference=reference,FilePath=address,Name=System.IO.Path.GetFileName(reference),ResourceError=error};
             rows.Add(image);
         }
-        // 列表非空但配置未记录当前图像时（历史方案常见），按原厂行为把第一张当作当前图像：
-        // 否则图像源条计数停在 (0/N)，图像区也没有可显示的来源。这里只规范化显示游标，
-        // 不写回文档配置（_configuredIndex 仍按 config 安装）。
-        var configured=config.CurrentIndex<0&&rows.Count>0?0:config.CurrentIndex;
+        // Preserve an unset cursor until an explicit selection or a completed read supplies one.
+        var configured=config.CurrentIndex;
         var displayIndex=configured!=_configuredIndex?configured:RemapDisplay(rows,configured);
         Install(rows.ToArray(),config,false,displayIndex);
     }

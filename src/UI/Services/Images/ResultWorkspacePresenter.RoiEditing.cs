@@ -1,4 +1,3 @@
-using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Wpf.Adapters.Regions;
 
@@ -10,16 +9,15 @@ internal sealed partial class ResultWorkspacePresenter
     private RoiPresentation? _roiPresentation;
     private long _roiRequest;
     /// <summary>Borrow only the actually selected visible input. ROI never selects, restores or publishes images.</summary>
-    internal NativeRoiFrameLease? BorrowRoiFrame(OutputReference reference,Func<bool> current)
+    internal NativeRoiFrameLease? BorrowRoiFrame(string key,Func<bool> current)
     {
         _shell.Dispatcher.VerifyAccess();var request=++_roiRequest;var epoch=_epoch;var plan=_plan;var input=_shell.IsDoubleImage;
         bool PlanCurrent()=>!_disposed&&!_refreshing&&epoch==_epoch&&ReferenceEquals(plan,_plan)&&plan is not null&&input==_shell.IsDoubleImage;
         bool RequestCurrent()=>request==_roiRequest&&PlanCurrent();
         if(!RequestCurrent()||!current()||!RequestCurrent())return null;
-        var key=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(reference);
         var source=(input?_shell.SelectedInputItem:_shell.SelectedOutputItem) as ResultWorkspaceImageSource;
-        if(source is null||source.Key!=key||!plan!.InputSources.Any(candidate=>candidate.Key==key)
-            ||!ReferenceEquals(source,input?_inputSource:_outputSource)||!OwnsChoice(source,input)||source.Publication is not {} publication)return null;
+        if(source is not {HasImageValue:true}||source.Key!=key||!plan!.InputSources.Any(candidate=>candidate.Key==key)
+            ||!ReferenceEquals(source,input?_inputSource:_outputSource)||!OwnsChoice(source,input))return null;
         bool Selected()=>ReferenceEquals(source,input?_shell.SelectedInputItem:_shell.SelectedOutputItem)&&ReferenceEquals(source,input?_inputSource:_outputSource);
         bool ActiveProof()=>PlanCurrent()&&Selected()&&current()&&PlanCurrent()&&Selected()&&source.Current()&&PlanCurrent()&&Selected();
         bool Proof()=>RequestCurrent()&&ActiveProof()&&RequestCurrent();
@@ -29,11 +27,27 @@ internal sealed partial class ResultWorkspacePresenter
         bool Owns()=>RequestCurrent()&&ActiveOwner()&&RequestCurrent();
         var previous=_roiPresentation;var transferred=false;
         ResultViewportImageLease? borrowed=null;
+        FrozenImageResource? variableBorrow=null;
         try
         {
             _roiPresentation=presentation;
             if(!Owns())return null;
-            borrowed=(input?_input:_output).Image.BorrowCurrentImage();
+            var pane=(input?_input:_output).Image;
+            if(source.VariableImage is {} variable)
+            {
+                var receipt=pane.CurrentFrame;
+                if(receipt is null||!Owns())return null;
+                variableBorrow=variable.RetainSnapshot();
+                if(receipt.Frame!=variableBorrow.Frame||receipt.Coordinates!=variableBorrow.EffectiveDomain.Frame
+                    ||pane.CurrentFrame!=receipt||!Owns())return null;
+                var acceptedVariable=variableBorrow;
+                var variableLease=new NativeRoiFrameLease(acceptedVariable,pane.Viewport,receipt,
+                    ()=>ActiveOwner()&&pane.CurrentFrame==receipt&&ActiveOwner(),()=>
+                    {try{acceptedVariable.Dispose();}finally{if(ReferenceEquals(_roiPresentation,presentation))_roiPresentation=null;}});
+                variableBorrow=null;transferred=true;return variableLease;
+            }
+            if(source.Publication is not {} publication)return null;
+            borrowed=pane.BorrowCurrentImage();
             if(borrowed is null||!Owns()||borrowed.Stamp!=publication.Stamp||!Owns())return null;
             var accepted=borrowed;
             var lease=new NativeRoiFrameLease(accepted.Image,accepted.Viewport,accepted.Receipt,()=>ActiveOwner()&&accepted.IsCurrent&&ActiveOwner(),()=>
@@ -48,7 +62,7 @@ internal sealed partial class ResultWorkspacePresenter
         finally
         {
             // Only the failed request's independent borrow is released. No old cleanup can clear a new owner or pane.
-            try{borrowed?.Dispose();}finally{if(!transferred&&ReferenceEquals(_roiPresentation,presentation))_roiPresentation=previous;}
+            try{borrowed?.Dispose();variableBorrow?.Dispose();}finally{if(!transferred&&ReferenceEquals(_roiPresentation,presentation))_roiPresentation=previous;}
         }
     }
     private void RetireRoiPresentation()=>_roiPresentation=null;

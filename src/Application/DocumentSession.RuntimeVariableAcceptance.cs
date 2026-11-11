@@ -73,6 +73,8 @@ public sealed partial class DocumentSession
                                     Array.Empty<ScopedNodeIdentity>());
                                 post = EnqueueRuntimeChange(change);
                             }
+                            if (result.ResultRecords.Count != 0)
+                                _resultHistory.GetOrCreateValue(sourceNode.Node).Append(result.ResultRecords, result.CompletedAt);
                             installed = true;
                         }
                         catch

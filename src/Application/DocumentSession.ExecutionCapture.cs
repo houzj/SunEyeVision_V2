@@ -18,7 +18,7 @@ public sealed partial class DocumentSession
             var config = captured.Configuration;
             var snapshot = new ExecutionNodeSnapshot(captured.Scope.WorkflowId, captured.Node.Id, config.Configuration,
                 config.Definition, config.Directory, config.Schema, config.SettingsSchema, config.DisplaySchema,
-                config.ReferenceBehaviors, config.BindingNames, config.ActiveInputs, config.HostDeclarations,
+                config.ReferenceBehaviors, config.BindingNames, config.ActiveInputs, config.DormantParameterDefaults, config.HostDeclarations,
                 config.ManualReferenceSources, _owner);
             _ = RequireCurrent(captured, executionOnly: true);
             return snapshot;

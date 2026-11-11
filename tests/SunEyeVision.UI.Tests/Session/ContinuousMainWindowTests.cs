@@ -1,6 +1,7 @@
 using SunEyeVision.Application;
 using SunEyeVision.Application.Editing;
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources;
 using SunEyeVision.UI.Services.Workflow;
 using System.Windows.Controls;
 using Xunit;
@@ -47,6 +48,33 @@ public sealed class ContinuousMainWindowTests
   Assert.NotEmpty(summaries);var final=summaries.Last().Workflows.Single();var snapshot=Assert.IsType<WorkflowExecutionSnapshot>(UiRuntime.Call(f.Main,"GetFormalExecutionSnapshot",f.Root.Id));
   Assert.Equal(final.ExecutionTime,snapshot.Elapsed);foreach(var item in final.Nodes){var actual=snapshot.Nodes.Single(node=>node.NodeId==item.NodeId);Assert.Equal(item.Duration.HasValue,actual.HasModuleTiming);if(item.Duration.HasValue)Assert.Equal(item.Duration.Value,actual.ModuleElapsed);if(item.AlgorithmExecutionTimeMs.HasValue)Assert.Equal(item.AlgorithmExecutionTimeMs.Value,actual.AlgorithmElapsedMs);}
   using var result=f.Session.AcquirePublishedResult(f.Root.Id,blob.Id);Assert.True(result?.Snapshot.IsSuccess);Assert.Equal(history,f.Session.HistoryEntries.Count);Assert.False(f.Session.HasUnsavedChanges);Assert.True(f.Tab.IsRootConfigurationReady);Assert.False(f.Tab.IsRunning);
+ });
+ [Fact] public void A_thumbnail_queued_at_the_last_frame_stops_after_that_continuous_round()=>UiRuntime.Run(()=>
+ {
+  using var f=new DocumentUiFixture();
+  var source=f.Add();
+  var blob=f.Add("BlobAnalysis",350,210);
+  var paths=new[]{f.Image(150,6),f.Image(160,6),f.Image(170,6),f.Image(180,6)};
+  f.ConfigureImage(source,paths);
+  f.Connect(source,blob);
+  f.Fields(source,("local.auto-switch",new ConstantSetting(true)),("local.stop-at-last",new ConstantSetting(true)));
+  Interval(f,1000);
+  f.Main.SelectedNode=source;
+  UiRuntime.Pump();
+  var strip=f.Main.ActiveImageSourceBinding!.Strip;
+  f.Main.ToggleContinuousAllCommand.Execute(null);
+  var task=Running(f);
+  var run=UiRuntime.Field<DocumentContinuousRun>(f.Main,"_formalContinuousRun")!;
+  Until(()=>run.State.Phase==ContinuousPhase.Waiting&&run.State.Round>0);
+  var firstRound=run.State.Round;
+  UiRuntime.Await(strip.RequestAsync(new(ImageSourceStripRequestKind.Activate,strip.Version,strip.Items[^1].Id),CancellationToken.None));
+  UiRuntime.Await(task);
+  Assert.Equal(firstRound+1,run.State.Round);
+  using var image=f.Session.AcquirePublishedResult(f.Root.Id,source.Id);
+  Assert.Equal(paths[^1],image!.Values!.Get<string>("output.file"));
+  using var result=f.Session.AcquirePublishedResult(f.Root.Id,blob.Id);
+  Assert.True(result?.Snapshot.IsSuccess);
+  Assert.Equal(0L,source.Configuration.Fields.Get<long>("local.start"));
  });
  [Fact] public void Waiting_pause_stop_keeps_root_busy_and_rejects_late_round_status()=>UiRuntime.Run(()=>
  {

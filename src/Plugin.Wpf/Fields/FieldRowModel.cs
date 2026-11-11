@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
+using SunEyeVision.Plugin.Contracts;
 
 namespace SunEyeVision.Plugin.Wpf.Fields;
 
@@ -29,7 +30,9 @@ public sealed class FieldRowModel : INotifyPropertyChanged
     private bool _clearVisibleA;
     private bool _isUnsetA;
     private bool _setAvailableA;
-    private object? _subDataA;
+    private object? _referenceDataA;
+    private object? _textDataA;
+    private readonly BooleanStateTips? _booleanTips;
 
     internal FieldRowModel(
         DeclaredFieldRow owner,
@@ -41,9 +44,10 @@ public sealed class FieldRowModel : INotifyPropertyChanged
         int? decimalDigits,
         double radioWidth,
         IReadOnlyList<Entry> entries,
-        bool hasReferenceBranch)
+        bool hasReferenceBranch,BooleanStateTips? booleanTips=null)
     {
         _owner = owner;
+        _booleanTips=booleanTips;
         TemplateKey = templateKey;
         _displayNameA = displayName;
         MinValueA = minValue;
@@ -58,6 +62,7 @@ public sealed class FieldRowModel : INotifyPropertyChanged
         TypeChangeCommand = new DelegateCommand(_ => _owner.HandleTypeChange());
         SetCommand = new DelegateCommand(_ => _owner.HandleUnsetExit());
         ClearCommand = new DelegateCommand(_ => _owner.HandleClear());
+        BrowseFolderCommand = new DelegateCommand(_ => _owner.BrowseFolder());
     }
 
     // ---- 静态投影 ----
@@ -66,7 +71,9 @@ public sealed class FieldRowModel : INotifyPropertyChanged
     /// <summary>字段身份（声明稳定 ID）。</summary>
     public string FieldId => _owner.FieldId;
     public string DisplayNameA => _displayNameA;
-    public string DescriptionA => _displayNameA;
+    private string? _description;
+    public string DescriptionA => _description ?? _displayNameA;
+    public string MessageTips => (_curValueA is true?_booleanTips?.Selected:_booleanTips?.Unselected)??string.Empty;
     public double MinValueA { get; }
     public double MaxValueA { get; }
     public double IncValueA { get; }
@@ -95,8 +102,10 @@ public sealed class FieldRowModel : INotifyPropertyChanged
     public Visibility UnsetVisibilityA => _isUnsetA ? Visibility.Visible : Visibility.Collapsed;
     /// <summary>常量⇄订阅切换按钮提示。</summary>
     public string ModeToolTipA => _isSubA ? "切换为数值编辑" : "切换为订阅";
-    /// <summary>订阅会话或文本会话实例（ReferenceFieldSession/NativeTextSession），模板经 ButtonSelecter_sub/StringConfig_sub 呈现。</summary>
-    public object? SubDataA => _subDataA;
+    /// <summary>引用模板会话；与常量文本会话分别投影，共享同一字段状态。</summary>
+    public object? ReferenceDataA => _referenceDataA;
+    public object? ImageSourceSelector { get; private set; }
+    public object? TextDataA => _textDataA;
 
     // ---- 命令 ----
     public ICommand ValueChangedCommand { get; }
@@ -104,6 +113,7 @@ public sealed class FieldRowModel : INotifyPropertyChanged
     public ICommand TypeChangeCommand { get; }
     public ICommand SetCommand { get; }
     public ICommand ClearCommand { get; }
+    public ICommand BrowseFolderCommand { get; }
 
     // ---- 宿主回写入口（内部） ----
     internal void SetCurValue(object? value)
@@ -112,6 +122,15 @@ public sealed class FieldRowModel : INotifyPropertyChanged
             return;
         _curValueA = value;
         Notify(nameof(CurValueA));
+        Notify(nameof(MessageTips));
+    }
+
+    // A TwoWay target may have changed while the owner rejected its proposal.
+    // The accepted source can be unchanged, but the target still needs its receipt.
+    internal void ReapplyCurrentValue()
+    {
+        Notify(nameof(CurValueA));
+        Notify(nameof(MessageTips));
     }
 
     internal void SetIsSub(bool value)
@@ -163,12 +182,26 @@ public sealed class FieldRowModel : INotifyPropertyChanged
         }
     }
 
-    internal void SetSubData(object? value)
+    internal void SetReferenceData(object? value)
     {
-        if (ReferenceEquals(_subDataA, value))
+        if (ReferenceEquals(_referenceDataA, value))
             return;
-        _subDataA = value;
-        Notify(nameof(SubDataA));
+        _referenceDataA = value;
+        Notify(nameof(ReferenceDataA));
+    }
+
+    internal void SetImageSourceSelector(object value)
+    {
+        ImageSourceSelector = value;
+        Notify(nameof(ImageSourceSelector));
+    }
+
+    internal void SetTextData(object? value)
+    {
+        if (ReferenceEquals(_textDataA, value))
+            return;
+        _textDataA = value;
+        Notify(nameof(TextDataA));
     }
 
     internal void SetDisplayName(string value)
@@ -177,14 +210,24 @@ public sealed class FieldRowModel : INotifyPropertyChanged
             return;
         _displayNameA = value;
         Notify(nameof(DisplayNameA));
+        if (_description is null) Notify(nameof(DescriptionA));
+    }
+
+    internal void SetDescription(string value)
+    {
+        if (_description == value) return;
+        _description = value;
         Notify(nameof(DescriptionA));
     }
 
     /// <summary>行释放后清空投影引用，避免模板内容悬挂会话对象。</summary>
     internal void DisposeProjection()
     {
-        _subDataA = null;
-        Notify(nameof(SubDataA));
+        _referenceDataA = null;
+        _textDataA = null;
+        ImageSourceSelector = null;
+        ParameterCleanup.Run(new Action[] { () => Notify(nameof(ReferenceDataA)), () => Notify(nameof(TextDataA)),
+            () => Notify(nameof(ImageSourceSelector)) });
     }
 
     private void Notify(string property)

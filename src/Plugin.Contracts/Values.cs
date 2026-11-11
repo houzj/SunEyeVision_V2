@@ -73,6 +73,12 @@ public sealed class InputValues
     /// <summary>Frozen declarations only. Inspecting them does not read/copy values or touch resources.</summary>
     public IReadOnlyDictionary<string,Port> Declarations=>_ports;
     public InputValues(IEnumerable<Port> ports,IReadOnlyDictionary<string,object?> values)
+        : this(ports, values, false) { }
+    /// <summary>Captures only outputs actually produced by a failed invocation, retaining the complete declaration.
+    /// Present values undergo normal validation; missing required outputs remain explicitly missing.</summary>
+    public static InputValues CaptureAvailableOutputs(IEnumerable<Port> outputs,IReadOnlyDictionary<string,object?> values)
+        => new(outputs, values, true);
+    private InputValues(IEnumerable<Port> ports,IReadOnlyDictionary<string,object?> values,bool allowMissingOutputs)
     {
         var specs=ports.ToDictionary(p=>p.Id,StringComparer.Ordinal);
         _ports=new ReadOnlyDictionary<string,Port>(specs);
@@ -80,7 +86,7 @@ public sealed class InputValues
         _values=new(StringComparer.Ordinal);
         foreach(var p in specs.Values)
         {
-            if(!values.TryGetValue(p.Id,out var v)){ if(p.Required)throw new ArgumentException($"Missing required port {p.Id}"); continue; }
+            if(!values.TryGetValue(p.Id,out var v)){ if(p.Required&&!allowMissingOutputs)throw new ArgumentException($"Missing required port {p.Id}"); continue; }
             _values[p.Id]=ValueRules.Freeze(p,v);
         }
     }

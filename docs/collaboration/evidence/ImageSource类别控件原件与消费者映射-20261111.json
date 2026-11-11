@@ -1,0 +1,242 @@
+{
+  "kind": "原件静态声明与消费者映射，不是运行验证",
+  "originalPath": "C:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Collection/ImageSourceModule/ImageSourceModuleAlgorithmTab.xml",
+  "sha256": "001A57675192867594D3BBC7EFA94462C19F056583659D759CEB5648E55091E0",
+  "localizationEvidence": "D:/MyWork/Rea逆向/analysis/image-source-ui-contract.json",
+  "runtimeDeclaration": "tools/SunEyeVision.ImageSource/Runtime/ImageSourceFields.cs",
+  "composition": "tools/SunEyeVision.ImageSource/Wpf/Views/ImageSourceParameterEditor.xaml.cs",
+  "hostSourceSlot": "src/UI/Services/Editing/Nodes/ImageSourceDraftContent.cs",
+  "templateHost": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+  "rows": [
+    {
+      "originalName": "ImageSourceType",
+      "originalType": "Enumeration",
+      "originalCategory": "Tab_Basic Params",
+      "categoryCaption": "基本参数",
+      "fieldId": "source.kind",
+      "decision": "现有声明与公共模板，分组和顺序已调整；运行未验",
+      "rawDeclaration": "<Enumeration Name=\"ImageSourceType\"><Description>Lang_ImgSoc</Description><DisplayName>Lang_ImgSoc</DisplayName><AccessMode>RW</AccessMode><AlgorithmIndex>0</AlgorithmIndex><CurValue>1</CurValue><DefaultValue>1</DefaultValue><GroupRunParamEnable>false</GroupRunParamEnable><EnumEntrys><EnumEntry Name=\"LocalImage\"><Description>LocalImage</Description><DisplayName>LocalImage</DisplayName><IsImplemented>0x1</IsImplemented><Value>0x1</Value></EnumEntry><EnumEntry Name=\"Camera\"><Description>Camera</Description><DisplayName>Camera</DisplayName><IsImplemented>0x1</IsImplemented><Value>0x2</Value></EnumEntry><EnumEntry Name=\"SDK\"><Description>SDK</Description><DisplayName>%SDK%</DisplayName><IsImplemented>0x1</IsImplemented><Value>0x3</Value></EnumEntry></EnumEntrys><Triggers><Trigger><Property>CurValue</Property><Value>1</Value><Setters><Setter><TargetName>CurrentImagePath</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>PixelFormat</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>SolSaveImageData</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>ShowImageName</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>CameraID</TargetName><OperationName>HiddenOperation</OperationName></Setter><Setter><TargetName>ExposureTimeInput</TargetName><OperationName>HiddenOperation</OperationName></Setter><Setter><TargetName>GainInput</TargetName><OperationName>HiddenOperation</OperationName></Setter><Setter><TargetName>AutoPlay</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>PathCache</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>IsSubscribeFolderMode</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>ImageSourceType</TargetName><OperationName>GeneralParamListVisibleOperation</OperationName></Setter></Setters></Trigger><Trigger><Property>CurValue</Property><Value>2</Value><Setters><Setter><TargetName>CurrentImagePath</TargetName><OperationName>HiddenOperation</OperationName></Setter><Setter><TargetName>PixelFormat</TargetName><OperationName>HiddenOperation</OperationName></Setter><Setter><TargetName>SolSaveImageData</TargetName><OperationName>HiddenOperation</OperationName></Setter><Setter><TargetName>ShowImageName</TargetName><OperationName>HiddenOperation</OperationName></Setter><Setter><TargetName>CameraID</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>ExposureTimeInput</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>GainInput</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>AutoPlay</TargetName><OperationName>HiddenOperation</OperationName></Setter><Setter><TargetName>PathCache</TargetName><OperationName>HiddenOperation</OperationName></Setter><Setter><TargetName>IsSubscribeFolderMode</TargetName><OperationName>HiddenOperation</OperationName></Setter><Setter><TargetName>ImageSourceType</TargetName><OperationName>GeneralParamListHiddenOperation</OperationName></Setter></Setters></Trigger><Trigger><Property>CurValue</Property><Value>3</Value><Setters><Setter><TargetName>CurrentImagePath</TargetName><OperationName>HiddenOperation</OperationName></Setter><Setter><TargetName>PixelFormat</TargetName><OperationName>HiddenOperation</OperationName></Setter><Setter><TargetName>SolSaveImageData</TargetName><OperationName>HiddenOperation</OperationName></Setter><Setter><TargetName>ShowImageName</TargetName><OperationName>HiddenOperation</OperationName></Setter><Setter><TargetName>CameraID</TargetName><OperationName>HiddenOperation</OperationName></Setter><Setter><TargetName>ExposureTimeInput</TargetName><OperationName>HiddenOperation</OperationName></Setter><Setter><TargetName>GainInput</TargetName><OperationName>HiddenOperation</OperationName></Setter><Setter><TargetName>AutoPlay</TargetName><OperationName>HiddenOperation</OperationName></Setter><Setter><TargetName>PathCache</TargetName><OperationName>HiddenOperation</OperationName></Setter><Setter><TargetName>IsSubscribeFolderMode</TargetName><OperationName>HiddenOperation</OperationName></Setter><Setter><TargetName>ImageSourceType</TargetName><OperationName>GeneralParamListHiddenOperation</OperationName></Setter></Setters></Trigger></Triggers></Enumeration>"
+    },
+    {
+      "originalName": "CurrentImagePath",
+      "originalType": "ButtonSelecter_ImageList",
+      "originalCategory": "Tab_Basic Params",
+      "categoryCaption": "基本参数",
+      "fieldId": "local.paths",
+      "decision": "现有外部来源组合，原件交互和视觉仍待验",
+      "rawDeclaration": "<ButtonSelecter_ImageList Name=\"CurrentImagePath\"><Description>Image List</Description><DisplayName>Image List</DisplayName><AccessMode>RW</AccessMode><CurValue></CurValue></ButtonSelecter_ImageList>"
+    },
+    {
+      "originalName": "PixelFormat",
+      "originalType": "Enumeration",
+      "originalCategory": "Tab_Basic Params",
+      "categoryCaption": "基本参数",
+      "fieldId": "output.format",
+      "decision": "现有声明与公共模板，分组和顺序已调整；运行未验",
+      "rawDeclaration": "<Enumeration Name=\"PixelFormat\"><Description>Pixel Format</Description><DisplayName>Pixel Format</DisplayName><AccessMode>RW</AccessMode><AlgorithmIndex>0</AlgorithmIndex><CurValue>1</CurValue><DefaultValue>1</DefaultValue><EnumEntrys><EnumEntry Name=\"MONO8\"><Description>MONO8</Description><DisplayName>MONO8</DisplayName><IsImplemented>0x1</IsImplemented><Value>0x1</Value></EnumEntry><EnumEntry Name=\"RGB24\"><Description>RGB24</Description><DisplayName>RGB24</DisplayName><IsImplemented>0x1</IsImplemented><Value>0x2</Value></EnumEntry></EnumEntrys><Triggers><MultiTrigger><Conditions><Condition><Property>CurValue</Property><Value>1</Value></Condition><Condition><Property>CustomVisible</Property><Value>True</Value></Condition></Conditions><Setters><Setter><TargetName>OutMono8</TargetName><OperationName>HiddenOperation</OperationName></Setter></Setters></MultiTrigger></Triggers></Enumeration>"
+    },
+    {
+      "originalName": "SolSaveImageData",
+      "originalType": "BooleanTips",
+      "originalCategory": "Tab_Basic Params",
+      "categoryCaption": "基本参数",
+      "fieldId": "local.save-images",
+      "decision": "显式列表已接入：ImageSourceSettings.SaveImages → BooleanTips原件模板 → FileEmbeddingDeclaration → Writer/Reader/会话统一资源解析。目录快照仍未接入，保存捕获明确拒绝；运行及视觉未验。",
+      "rawDeclaration": "<BooleanTips Name=\"SolSaveImageData\"><AlgorithmIndex>0</AlgorithmIndex><CurValue>False</CurValue><DefaultValue>False</DefaultValue><Description>Save solution with images of it, or only save the path of the images.</Description><DisplayName>RunParam_Save Image</DisplayName><AccessMode>RW</AccessMode><SelecetedTips>最大保存120张图片</SelecetedTips></BooleanTips>"
+    },
+    {
+      "originalName": "ShowImageName",
+      "originalType": "Boolean",
+      "originalCategory": "Tab_Basic Params",
+      "categoryCaption": "基本参数",
+      "fieldId": "display.image-name",
+      "decision": "现有声明与公共模板，分组和顺序已调整；运行未验",
+      "rawDeclaration": "<Boolean Name=\"ShowImageName\"><AlgorithmIndex>0</AlgorithmIndex><CurValue>True</CurValue><DefaultValue>True</DefaultValue><Description>RunParam_Show Image Name</Description><DisplayName>RunParam_Show Image Name</DisplayName><AccessMode>RW</AccessMode></Boolean>"
+    },
+    {
+      "originalName": "CameraID",
+      "originalType": "EnumerationCameraForImage",
+      "originalCategory": "Tab_Basic Params",
+      "categoryCaption": "基本参数",
+      "fieldId": "camera.device",
+      "decision": "现有外部来源组合，原件交互和视觉仍待验",
+      "rawDeclaration": "<EnumerationCameraForImage Name=\"CameraID\"><Description>Relate Camera</Description><DisplayName>Relate Camera</DisplayName><AccessMode>RW</AccessMode><AlgorithmIndex>0</AlgorithmIndex><CurValue>-1</CurValue><DefaultValue>-1</DefaultValue><CustomVisible>False</CustomVisible><Initers><Setter><TargetName>EnumEntrys</TargetName><OperationName>GetGlobalModuleListOperation</OperationName><OperationParams>6</OperationParams></Setter></Initers><Triggers><Trigger><Property>CurValue</Property><Setters><Setter><OperationName>UpdateModuleStateOperation</OperationName></Setter></Setters></Trigger><Trigger><Property>CustomVisible</Property><Setters><Setter><OperationName>UpdateModuleStateOperation</OperationName></Setter></Setters></Trigger></Triggers></EnumerationCameraForImage>"
+    },
+    {
+      "originalName": "ExposureTimeInput",
+      "originalType": "ButtonSelecter",
+      "originalCategory": "Tab_Basic Params",
+      "categoryCaption": "基本参数",
+      "fieldId": "camera.exposure-time",
+      "decision": "现有声明与公共模板，分组和顺序已调整；运行未验",
+      "rawDeclaration": "<ButtonSelecter Name=\"ExposureTimeInput\"><Description>控制曝光</Description><DisplayName>控制曝光</DisplayName><AccessMode>O</AccessMode><DropOpenSetter><TargetName>EnumEntrys</TargetName><OperationName>GetFrontFilterTreeOperation</OperationName><OperationParams>float</OperationParams></DropOpenSetter><Triggers><Trigger><Property>CurValue</Property><Setters><Setter><OperationName>SetFilterSourceOperation</OperationName><OperationParams>ExposureTimeInput</OperationParams></Setter></Setters></Trigger></Triggers><Initers><Setter><TargetName>CurValue</TargetName><OperationName>GetSelectedFilterOperation</OperationName><OperationParams>ExposureTimeInput</OperationParams></Setter></Initers></ButtonSelecter>"
+    },
+    {
+      "originalName": "GainInput",
+      "originalType": "ButtonSelecter",
+      "originalCategory": "Tab_Basic Params",
+      "categoryCaption": "基本参数",
+      "fieldId": "camera.gain",
+      "decision": "现有声明与公共模板，分组和顺序已调整；运行未验",
+      "rawDeclaration": "<ButtonSelecter Name=\"GainInput\"><Description>控制增益</Description><DisplayName>控制增益</DisplayName><AccessMode>O</AccessMode><DropOpenSetter><TargetName>EnumEntrys</TargetName><OperationName>GetFrontFilterTreeOperation</OperationName><OperationParams>float</OperationParams></DropOpenSetter><Triggers><Trigger><Property>CurValue</Property><Setters><Setter><OperationName>SetFilterSourceOperation</OperationName><OperationParams>GainInput</OperationParams></Setter></Setters></Trigger></Triggers><Initers><Setter><TargetName>CurValue</TargetName><OperationName>GetSelectedFilterOperation</OperationName><OperationParams>GainInput</OperationParams></Setter></Initers></ButtonSelecter>"
+    },
+    {
+      "originalName": "InitialSN",
+      "originalType": "Integer",
+      "originalCategory": "Tab_Basic Params",
+      "categoryCaption": "基本参数",
+      "fieldId": "sequence.initial",
+      "decision": "现有声明与公共模板，分组和顺序已调整；运行未验",
+      "rawDeclaration": "<Integer Name=\"InitialSN\"><Description>RunParam_SNCode</Description><DisplayName>RunParam_SNCode</DisplayName><AccessMode>RW</AccessMode><AlgorithmIndex>0</AlgorithmIndex><CurValue>1</CurValue><DefaultValue>1</DefaultValue><MinValue>0</MinValue><MaxValue>100000</MaxValue><IncValue>1</IncValue></Integer>"
+    },
+    {
+      "originalName": "PathCache",
+      "originalType": "Integer",
+      "originalCategory": "Tab_Basic Params",
+      "categoryCaption": "基本参数",
+      "fieldId": "local.path-cache",
+      "decision": "现有声明与公共模板，分组和顺序已调整；运行未验",
+      "rawDeclaration": "<Integer Name=\"PathCache\"><Description>RunParam_PathCache</Description><DisplayName>RunParam_PathCache</DisplayName><AccessMode>RW</AccessMode><AlgorithmIndex>0</AlgorithmIndex><CurValue>0</CurValue><DefaultValue>0</DefaultValue><MinValue>0</MinValue><MaxValue>5</MaxValue><IncValue>1</IncValue><SubscribeVisible>False</SubscribeVisible></Integer>"
+    },
+    {
+      "originalName": "OutMono8",
+      "originalType": "Boolean",
+      "originalCategory": "Tab_Basic Params",
+      "categoryCaption": "基本参数",
+      "fieldId": "output.mono8",
+      "decision": "现有声明与公共模板，分组和顺序已调整；运行未验",
+      "rawDeclaration": "<Boolean Name=\"OutMono8\"><AlgorithmIndex>0</AlgorithmIndex><CurValue>True</CurValue><DefaultValue>True</DefaultValue><Description>output mono8 when image is rgb</Description><DisplayName>RunParam_OutMono8</DisplayName><AccessMode>RW</AccessMode></Boolean>"
+    },
+    {
+      "originalName": "StitchEnable",
+      "originalType": "Boolean",
+      "originalCategory": "Tab_Basic Params",
+      "categoryCaption": "基本参数",
+      "fieldId": "stitch.enabled",
+      "decision": "现有声明与公共模板，分组和顺序已调整；运行未验",
+      "rawDeclaration": "<Boolean Name=\"StitchEnable\"><AlgorithmIndex>0</AlgorithmIndex><CurValue>True</CurValue><DefaultValue>True</DefaultValue><Description>RunParam_StitchEnable</Description><DisplayName>RunParam_StitchEnable</DisplayName><AccessMode>RW</AccessMode><Triggers><Trigger><Property>CurValue</Property><Value>True</Value><Setters><Setter><TargetName>StitchStartHeight</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>StitchHeight</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>ClearTrigger</TargetName><OperationName>VisibleOperation</OperationName></Setter></Setters></Trigger></Triggers></Boolean>"
+    },
+    {
+      "originalName": "StitchStartHeight",
+      "originalType": "Integer",
+      "originalCategory": "Tab_Basic Params",
+      "categoryCaption": "基本参数",
+      "fieldId": "stitch.start",
+      "decision": "现有声明与公共模板，分组和顺序已调整；运行未验",
+      "rawDeclaration": "<Integer Name=\"StitchStartHeight\"><Description>RunParam_StitchStartHeight</Description><DisplayName>RunParam_StitchStartHeight</DisplayName><CustomVisible>False</CustomVisible><AccessMode>RW</AccessMode><AlgorithmIndex>0</AlgorithmIndex><CurValue>0</CurValue><DefaultValue>0</DefaultValue><MinValue>0</MinValue><MaxValue>20000</MaxValue><IncValue>1</IncValue></Integer>"
+    },
+    {
+      "originalName": "StitchHeight",
+      "originalType": "Integer",
+      "originalCategory": "Tab_Basic Params",
+      "categoryCaption": "基本参数",
+      "fieldId": "stitch.height",
+      "decision": "现有声明与公共模板，分组和顺序已调整；运行未验",
+      "rawDeclaration": "<Integer Name=\"StitchHeight\"><Description>RunParam_StitchHeight</Description><DisplayName>RunParam_StitchHeight</DisplayName><CustomVisible>False</CustomVisible><AccessMode>RW</AccessMode><AlgorithmIndex>0</AlgorithmIndex><CurValue>2000</CurValue><DefaultValue>2000</DefaultValue><MinValue>0</MinValue><MaxValue>20000</MaxValue><IncValue>1</IncValue></Integer>"
+    },
+    {
+      "originalName": "ClearTrigger",
+      "originalType": "Boolean",
+      "originalCategory": "Tab_Basic Params",
+      "categoryCaption": "基本参数",
+      "fieldId": "stitch.clear",
+      "decision": "现有声明与公共模板，分组和顺序已调整；运行未验",
+      "rawDeclaration": "<Boolean Name=\"ClearTrigger\"><AlgorithmIndex>0</AlgorithmIndex><CurValue>False</CurValue><DefaultValue>False</DefaultValue><CustomVisible>False</CustomVisible><Description>RunParam_ClearTrigger</Description><DisplayName>RunParam_ClearTrigger</DisplayName><AccessMode>RW</AccessMode><Triggers><MultiTrigger><Conditions><Condition><Property>CurValue</Property><Value>True</Value></Condition><Condition><Property>CustomVisible</Property><Value>True</Value></Condition></Conditions><Setters><Setter><TargetName>ClearTriggerCondition</TargetName><OperationName>VisibleOperation</OperationName></Setter></Setters></MultiTrigger></Triggers></Boolean>"
+    },
+    {
+      "originalName": "ClearTriggerCondition",
+      "originalType": "ButtonSelecter",
+      "originalCategory": "Tab_Basic Params",
+      "categoryCaption": "基本参数",
+      "fieldId": "stitch.clear-value",
+      "decision": "现有声明与公共模板，分组和顺序已调整；运行未验",
+      "rawDeclaration": "<ButtonSelecter Name=\"ClearTriggerCondition\"><Description>SaveTriggerName</Description><DisplayName>SaveTriggerName</DisplayName><AccessMode>O</AccessMode><CustomVisible>False</CustomVisible><DropOpenSetter><TargetName>EnumEntrys</TargetName><OperationName>GetFrontFilterTreeOperation</OperationName><OperationParams>int</OperationParams></DropOpenSetter><Triggers><Trigger><Property>CurValue</Property><Setters><Setter><OperationName>SetFilterSourceOperation</OperationName><OperationParams>ClearTriggerValue</OperationParams></Setter></Setters></Trigger><Trigger><Property>CustomVisible</Property><Setters><Setter><TargetName>ClearTriggerCondition</TargetName><OperationName>SetFilterForcePropertyOperation</OperationName><OperationParams>ClearTriggerValue</OperationParams></Setter></Setters></Trigger></Triggers><Initers><Setter><TargetName>CurValue</TargetName><OperationName>GetSelectedFilterOperation</OperationName><OperationParams>ClearTriggerValue</OperationParams></Setter></Initers></ButtonSelecter>"
+    },
+    {
+      "originalName": "AutoPlay",
+      "originalType": "Boolean",
+      "originalCategory": "Tab_Trigger",
+      "categoryCaption": "触发设置",
+      "fieldId": "local.auto-switch",
+      "decision": "现有声明与公共模板，分组和顺序已调整；运行未验",
+      "rawDeclaration": "<Boolean Name=\"AutoPlay\"><AlgorithmIndex>0</AlgorithmIndex><CurValue>True</CurValue><DefaultValue>True</DefaultValue><Description>Switch to next image every run</Description><DisplayName>RunParam_Auto Switch</DisplayName><AccessMode>RW</AccessMode><Triggers><MultiTrigger><Conditions><Condition><Property>CurValue</Property><Value>False</Value></Condition><Condition><Property>CustomVisible</Property><Value>True</Value></Condition></Conditions><Setters><Setter><TargetName>AutoStop</TargetName><OperationName>HiddenOperation</OperationName></Setter></Setters></MultiTrigger><MultiTrigger><Conditions><Condition><Property>CustomVisible</Property><Value>False</Value></Condition></Conditions><Setters><Setter><TargetName>AutoStop</TargetName><OperationName>HiddenOperation</OperationName></Setter></Setters></MultiTrigger></Triggers></Boolean>"
+    },
+    {
+      "originalName": "AutoStop",
+      "originalType": "Boolean",
+      "originalCategory": "Tab_Trigger",
+      "categoryCaption": "触发设置",
+      "fieldId": "local.stop-at-last",
+      "decision": "现有声明与公共模板，分组和顺序已调整；运行未验",
+      "rawDeclaration": "<Boolean Name=\"AutoStop\"><AlgorithmIndex>0</AlgorithmIndex><CurValue>True</CurValue><DefaultValue>True</DefaultValue><Description>Stop run after last image</Description><DisplayName>RunParam_Auto Stop</DisplayName><AccessMode>RW</AccessMode></Boolean>"
+    },
+    {
+      "originalName": "TriggerStringEnable",
+      "originalType": "Boolean",
+      "originalCategory": "Tab_Trigger",
+      "categoryCaption": "触发设置",
+      "fieldId": "trigger.filter-enabled",
+      "decision": "现有声明与公共模板，分组和顺序已调整；运行未验",
+      "rawDeclaration": "<Boolean Name=\"TriggerStringEnable\"><AlgorithmIndex>0</AlgorithmIndex><CurValue>False</CurValue><DefaultValue>False</DefaultValue><Description>根据订阅的输入字符来决定是否触发</Description><DisplayName>字符触发过滤</DisplayName><AccessMode>RW</AccessMode><Triggers><Trigger><Property>CurValue</Property><Value>False</Value><Setters><Setter><TargetName>TriggerFilter</TargetName><OperationName>HiddenOperation</OperationName></Setter><Setter><TargetName>TriggerString</TargetName><OperationName>HiddenOperation</OperationName></Setter></Setters></Trigger></Triggers></Boolean>"
+    },
+    {
+      "originalName": "TriggerString",
+      "originalType": "ButtonSelecter",
+      "originalCategory": "Tab_Trigger",
+      "categoryCaption": "触发设置",
+      "fieldId": "trigger.text",
+      "decision": "现有声明与公共模板，分组和顺序已调整；运行未验",
+      "rawDeclaration": "<ButtonSelecter Name=\"TriggerString\"><Description>External Input Character</Description><DisplayName>InputString</DisplayName><AccessMode>O</AccessMode><DropOpenSetter><TargetName>EnumEntrys</TargetName><OperationName>GetFrontFilterTreeOperation</OperationName><OperationParams>string</OperationParams></DropOpenSetter><Triggers><Trigger><Property>CurValue</Property><Setters><Setter><OperationName>SetFilterSourceOperation</OperationName><OperationParams>TriggerString</OperationParams></Setter></Setters></Trigger></Triggers><Initers><Setter><TargetName>CurValue</TargetName><OperationName>GetSelectedFilterOperation</OperationName><OperationParams>TriggerString</OperationParams></Setter></Initers></ButtonSelecter>"
+    },
+    {
+      "originalName": "TriggerFilter",
+      "originalType": "ButtonSelecter",
+      "originalCategory": "Tab_Trigger",
+      "categoryCaption": "触发设置",
+      "fieldId": "trigger.filter-text",
+      "decision": "现有声明与公共模板，分组和顺序已调整；运行未验",
+      "rawDeclaration": "<ButtonSelecter Name=\"TriggerFilter\"><Description>External Triggered Character</Description><DisplayName>TriggerString</DisplayName><AccessMode>O</AccessMode><DropOpenSetter><TargetName>EnumEntrys</TargetName><OperationName>GetFrontFilterTreeOperation</OperationName><OperationParams>string</OperationParams></DropOpenSetter><Triggers><Trigger><Property>CurValue</Property><Setters><Setter><OperationName>SetFilterSourceOperation</OperationName><OperationParams>TriggerFilter</OperationParams></Setter></Setters></Trigger></Triggers><Initers><Setter><TargetName>CurValue</TargetName><OperationName>GetSelectedFilterOperation</OperationName><OperationParams>TriggerFilter</OperationParams></Setter></Initers></ButtonSelecter>"
+    },
+    {
+      "originalName": "IsSubscribeFolderMode",
+      "originalType": "Boolean",
+      "originalCategory": "Tab_Subscribe_File",
+      "categoryCaption": "订阅图片文件夹",
+      "fieldId": "local.subscribe-folder",
+      "decision": "现有声明与公共模板，分组和顺序已调整；运行未验",
+      "rawDeclaration": "<Boolean Name=\"IsSubscribeFolderMode\"><CurValue>False</CurValue><DefaultValue>False</DefaultValue><Description>Subscribe Folder Mode</Description><DisplayName>Subscribe Folder Mode</DisplayName><AccessMode>RW</AccessMode><Triggers><MultiTrigger><Conditions><Condition><Property>CurValue</Property><Value>True</Value></Condition><Condition><Property>CustomVisible</Property><Value>True</Value></Condition></Conditions><Setters><Setter><TargetName>SubscribeFolderPath</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>RefreshImage</TargetName><OperationName>VisibleOperation</OperationName></Setter><Setter><TargetName>TriggerProcessRun</TargetName><OperationName>VisibleOperation</OperationName></Setter></Setters></MultiTrigger></Triggers></Boolean>"
+    },
+    {
+      "originalName": "SubscribeFolderPath",
+      "originalType": "OpenFolderDialog",
+      "originalCategory": "Tab_Subscribe_File",
+      "categoryCaption": "订阅图片文件夹",
+      "fieldId": "local.folder-path",
+      "decision": "现有声明与公共模板，分组和顺序已调整；运行未验",
+      "rawDeclaration": "<OpenFolderDialog Name=\"SubscribeFolderPath\"><CustomVisible>False</CustomVisible><Description>Image Path</Description><DisplayName>Image Path</DisplayName><AccessMode>RW</AccessMode><MaxFileDirLength>200</MaxFileDirLength></OpenFolderDialog>"
+    },
+    {
+      "originalName": "RefreshImage",
+      "originalType": "Boolean",
+      "originalCategory": "Tab_Subscribe_File",
+      "categoryCaption": "订阅图片文件夹",
+      "fieldId": "local.refresh-folder",
+      "decision": "现有声明与公共模板，分组和顺序已调整；运行未验",
+      "rawDeclaration": "<Boolean Name=\"RefreshImage\"><CustomVisible>False</CustomVisible><AlgorithmIndex>0</AlgorithmIndex><CurValue>True</CurValue><DefaultValue>True</DefaultValue><Description>RunParam_Refresh image in folder</Description><DisplayName>RunParam_Refresh image in folder</DisplayName><AccessMode>RW</AccessMode></Boolean>"
+    },
+    {
+      "originalName": "TriggerProcessRun",
+      "originalType": "Boolean",
+      "originalCategory": "Tab_Subscribe_File",
+      "categoryCaption": "订阅图片文件夹",
+      "fieldId": "local.trigger-folder-run",
+      "decision": "现有声明与公共模板，分组和顺序已调整；运行未验",
+      "rawDeclaration": "<Boolean Name=\"TriggerProcessRun\"><CustomVisible>False</CustomVisible><AlgorithmIndex>0</AlgorithmIndex><CurValue>False</CurValue><DefaultValue>False</DefaultValue><Description>RunParam_Trigger process run</Description><DisplayName>RunParam_Trigger process run</DisplayName><AccessMode>RW</AccessMode></Boolean>"
+    }
+  ],
+  "externalSlots": [
+    "<LocalImageList Name=\"Lang_LocalImgList\"><CustomVisible>False</CustomVisible></LocalImageList>"
+  ],
+  "hostExtension": "camera.timeout-ms，无对应原件可见声明；保留现行取帧超时接缝",
+  "verification": "全量编译单列；测试、产品和探针未启动，原件动态与视觉未确认"
+}

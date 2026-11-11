@@ -11,6 +11,158 @@ namespace SunEyeVision.UI.Tests;
 [Collection("Canvas UI")]
 public sealed class CanvasSessionTests
 {
+    [Fact]
+    public void Node_open_keeps_the_old_selection_through_close_and_rejects_disabled_nodes() => UiRuntime.Run(() =>
+    {
+        using var fixture = new DocumentUiFixture();
+        var source = fixture.Add();
+        var blob = fixture.Add("BlobAnalysis", 350, 290);
+        fixture.ConfigureImage(source, fixture.Image());
+        fixture.Connect(source, blob);
+        fixture.Canvas.SetEnabled(fixture.Projection(blob), false);
+        fixture.Main.OpenDebugWindowCommand.Execute(source);
+        UiRuntime.Pump();
+        var first = Assert.Single(System.Windows.Application.Current.Windows
+            .OfType<SunEyeVision.UI.Services.Editing.RuntimeToolEditorWindow>());
+        UiRuntime.AwaitEditorReady(first);
+        fixture.Main.OpenDebugWindowCommand.Execute(blob);
+        UiRuntime.Pump();
+        Assert.True(first.IsCurrent);
+        Assert.Same(source, fixture.Main.SelectedNode);
+        Assert.True(fixture.Projection(source).IsSelected);
+        Assert.False(fixture.Projection(blob).IsSelected);
+
+        fixture.Canvas.SetEnabled(fixture.Projection(blob), true);
+        UiRuntime.Pump();
+        bool? oldSelectionAtClose = null;
+        first.Closing += (_, _) => oldSelectionAtClose = ReferenceEquals(source, fixture.Main.SelectedNode)
+            && fixture.Projection(source).IsSelected && !fixture.Projection(blob).IsSelected;
+        fixture.Main.OpenDebugWindowCommand.Execute(blob);
+        UiRuntime.Pump();
+        Assert.True(oldSelectionAtClose);
+        Assert.False(first.IsCurrent);
+        Assert.Same(blob, fixture.Main.SelectedNode);
+        Assert.False(fixture.Projection(source).IsSelected);
+        Assert.True(fixture.Projection(blob).IsSelected);
+        var current = Assert.Single(System.Windows.Application.Current.Windows
+            .OfType<SunEyeVision.UI.Services.Editing.RuntimeToolEditorWindow>());
+        UiRuntime.AwaitEditorReady(current);
+        Assert.NotSame(first, current);
+        UiRuntime.Await(current.CloseAndDrainAsync());
+    });
+
+    [Fact]
+    public void Tool_parameter_windows_disable_node_menus_and_single_click_until_close() => UiRuntime.Run(() =>
+    {
+        using var fixture = new DocumentUiFixture();
+        var source = fixture.Add();
+        var blob = fixture.Add("BlobAnalysis", 350, 290);
+        fixture.Connect(source, blob);
+        fixture.Host.UpdateLayout();
+        UiRuntime.Pump();
+        Border HitArea(NodeDefinition node) => Assert.Single(UiRuntime.Visuals<Border>(fixture.View),
+            border => border.Name == "HitAreaBorder" && ReferenceEquals(border.Tag, fixture.Projection(node)));
+
+        foreach (var node in new[] { source, blob })
+        {
+            var other = ReferenceEquals(node, source) ? blob : source;
+            Assert.NotNull(HitArea(node).ContextMenu);
+            Assert.NotNull(HitArea(other).ContextMenu);
+            fixture.Main.OpenDebugWindowCommand.Execute(node);
+            UiRuntime.Pump();
+            var window = Assert.Single(System.Windows.Application.Current.Windows
+                .OfType<SunEyeVision.UI.Services.Editing.RuntimeToolEditorWindow>());
+            UiRuntime.Await(window.AssemblyReadyTask);
+
+            Assert.True(fixture.Main.IsDebugWindowOpen);
+            Assert.Null(HitArea(node).ContextMenu);
+            var otherHitArea = HitArea(other);
+            Assert.Null(otherHitArea.ContextMenu);
+            otherHitArea.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, Environment.TickCount, MouseButton.Left)
+            { RoutedEvent = UIElement.MouseLeftButtonDownEvent });
+            Assert.Same(node, fixture.Main.SelectedNode);
+
+            window.Close();
+            UiRuntime.Pump();
+            Assert.False(fixture.Main.IsDebugWindowOpen);
+            Assert.NotNull(HitArea(node).ContextMenu);
+            Assert.NotNull(HitArea(other).ContextMenu);
+        }
+    });
+
+    [Fact]
+    public void Image_source_and_blob_share_node_state_layers_with_their_own_outlines() => UiRuntime.Run(() =>
+    {
+        using var fixture = new DocumentUiFixture();
+        var source = fixture.Add();
+        var blob = fixture.Add("BlobAnalysis", 350, 290);
+        fixture.ConfigureImage(source, fixture.Image());
+        fixture.Connect(source, blob);
+        fixture.Host.UpdateLayout();
+        UiRuntime.Pump();
+
+        var imageNode = fixture.Projection(source);
+        var blobNode = fixture.Projection(blob);
+        System.Windows.Shapes.Path Outline(CanvasNodeProjection node) =>
+            Assert.Single(UiRuntime.Visuals<System.Windows.Shapes.Path>(fixture.View),
+                path => path.Name == "NodeStatusBorder" && ReferenceEquals(path.DataContext, node));
+        Canvas Flag(CanvasNodeProjection node) => Assert.Single(UiRuntime.Visuals<Canvas>(fixture.View),
+            canvas => canvas.Name == "StateFlag" && ReferenceEquals(canvas.DataContext, node));
+
+        var imageOutline = Outline(imageNode);
+        var blobOutline = Outline(blobNode);
+        Assert.False(imageOutline.Data.FillContains(new Point(5, 2)));
+        Assert.True(blobOutline.Data.FillContains(new Point(5, 2)));
+        Assert.Same(imageOutline.Data, Flag(imageNode).Clip);
+        Assert.Same(blobOutline.Data, Flag(blobNode).Clip);
+
+        fixture.Run();
+        Assert.Equal(CanvasNodeRunState.Passed, imageNode.RunState);
+        Assert.Equal(Visibility.Visible, Flag(imageNode).Visibility);
+        fixture.Canvas.SetEnabled(imageNode, false);
+        UiRuntime.Pump();
+        imageNode = fixture.Projection(source);
+        imageNode.IsSelected = false;
+        Assert.Equal(Visibility.Collapsed, Flag(imageNode).Visibility);
+        Assert.Null(Flag(imageNode).Background);
+        Assert.Equal(Visibility.Visible, Outline(imageNode).Visibility);
+        var disabledStroke = Outline(imageNode).Stroke;
+        imageNode.IsSelected = true;
+        Assert.Equal(Visibility.Visible, Outline(imageNode).Visibility);
+        Assert.NotSame(disabledStroke, Outline(imageNode).Stroke);
+    });
+
+    [Fact]
+    public void Blob_required_source_controls_the_canvas_border_through_connection_history()=>UiRuntime.Run(()=>
+    {
+        using var fixture = new DocumentUiFixture();
+        var source = fixture.Add();
+        var blob = fixture.Add("BlobAnalysis", 350, 290);
+        var node = fixture.Projection(blob);
+        node.IsSelected = false;
+        var border = Assert.Single(UiRuntime.Visuals<System.Windows.Shapes.Path>(fixture.View),
+            path => path.Name == "NodeStatusBorder" && ReferenceEquals(path.DataContext, node));
+        Assert.True(node.HasUnconfiguredRequiredInputs);
+        Assert.Equal(Visibility.Visible, border.Visibility);
+        Assert.Equal(new[] { 3d, 2d }, border.StrokeDashArray);
+
+        var connection = fixture.Connect(source, blob);
+        Assert.False(node.HasUnconfiguredRequiredInputs);
+        Assert.Equal(Visibility.Collapsed, border.Visibility);
+        fixture.Canvas.Delete(Array.Empty<CanvasNodeProjection>(), new[] { connection });
+        Assert.True(node.HasUnconfiguredRequiredInputs);
+        Assert.Equal(Visibility.Visible, border.Visibility);
+
+        Assert.True(fixture.Canvas.Undo());
+        Assert.False(node.HasUnconfiguredRequiredInputs);
+        Assert.Equal(Visibility.Collapsed, border.Visibility);
+        Assert.True(fixture.Canvas.Redo());
+        Assert.True(node.HasUnconfiguredRequiredInputs);
+        node.IsSelected = true;
+        Assert.Equal(new[] { 3d, 2d }, border.StrokeDashArray);
+        Assert.Same(border.FindResource("Col_EditProcess_Modular_BorderBrush"), border.Stroke);
+    });
+
     [Fact] public void Connection_move_path_enable_and_history_edit_the_same_actual_nodes()=>UiRuntime.Run(()=>
     {
         using var f=new DocumentUiFixture();var source=f.Add();var target=f.Add("BlobAnalysis",350,290);var wire=f.Connect(source,target,"LeftPort","RightPort");

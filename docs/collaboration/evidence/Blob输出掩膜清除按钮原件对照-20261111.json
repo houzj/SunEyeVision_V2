@@ -1,0 +1,40 @@
+{
+  "kind": "ROI原件清除按钮差异",
+  "original": "C:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModuAlgorithmTab.xml",
+  "originalObject": "OutputMaskImage",
+  "originalAccessMode": "RW",
+  "originalDefault": "False",
+  "originalHasUnsetBranch": false,
+  "cause": "本方可选Boolean字段沿通用模板显示了清除分支，旧配置缺少该字段时又被错误改成必填，导致Blob执行报Missing required port input.roi.output-mask",
+  "fix": "保留Port可选以兼容旧配置和VM默认值语义，在Blob正式输出掩膜行投影false并显式隐藏清除按钮；普通字段仍沿通用可清除规则",
+  "runtime": "用户截图已确认此前必填修正会导致Blob执行失败；本次修正待用户手动复核，未运行自动测试或程序",
+  "files": [
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Parameters/BlobImageRoi.cs",
+      "sha256": "AC3B8C048482E62202E84BB9857929B0B014CF1B43DF055742AB5536A3BCEF52"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/ParameterPresentation/resourcedictionaries/ParamRowDataTemplates.xaml",
+      "sha256": "E374072EF82D5D69F6FD7D8347219E3D0D9C6EC5BBC6558624B0CC84D239D5FB"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldRow.cs",
+      "sha256": "81E7D6F141458C54796EF01F00EDACF1D094FC12CD2E03CE4C1088A6D46C54A8"
+    },
+    {
+      "path": "tests/SunEyeVision.Tool.BlobAnalysis.Tests/BlobAnalysisParameterContractTests.cs",
+      "sha256": "F0228A1B6089CE6A3410A1CEAD9F1C977F57D6510F65F1ACAFDA7D3583CC2B72"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Input/VisionUi/SourceComboBoxes.xaml",
+      "sha256": "4933B462B600A242C8CFF0BC1E6AA7CD8A2C8EFE35E7DCE0A0D47843F743E7CD"
+    }
+  ],
+  "build": "本次代码改动后的全量Release构建0错误、3355警告、23.30秒；未启动程序或自动测试",
+  "releaseAssembly": {
+    "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+    "sha256": "35F9F79222A2D1828680E653158FDA164F22B5BFE1A2AA006B858EEFF0BBD26B"
+  },
+  "originalDisplayName": "OutputMask",
+  "originalSource": "docs/07-工具逆向/decompiled/Groups/Group.xml"
+}

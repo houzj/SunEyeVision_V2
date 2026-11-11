@@ -1,0 +1,288 @@
+{
+  "kind": "静态范围依赖核对",
+  "runtimeConfirmed": false,
+  "finding": "父级范围、叶范围、同组另一端当前值均参与，不能只按叶XML最小值替换。",
+  "sources": [
+    {
+      "path": "docs/07-工具逆向/decompiled/XmlUi/styles/paramusercontroldatatemplate.xaml",
+      "sha256": "96B98F06FBAF9BC2CF1F481B2A24323ECFC11831C05698E9FA5B18EC294E0F63",
+      "matches": [
+        {
+          "line": 577,
+          "text": "    <PCListView:SliderArrange SliderType=\"between\" IsNeedCheckExtremumByXML=\"True\" SubscribeTemplate=\"{StaticResource ButtonSelecter_sub}\" SliderTickFrequency=\"{Binding IncValueA}\" StartValue=\"{Binding IntegersA[0].CurValueA, Mode=TwoWay}\" EndValue=\"{Binding IntegersA[1].CurValueA, Mode=TwoWay}\" Minimum=\"{Binding MinValueA}\" Maximum=\"{Binding MaxValueA}\" MinimumLeft=\"{Binding IntegersA[0].MinValueA}\" MaximumLeft=\"{Binding IntegersA[0].MaxValueA}\" MinimumRight=\"{Binding IntegersA[1].MinValueA}\" MaximumRight=\"{Binding IntegersA[1].MaxValueA}\" IsSubscribeLeft=\"{Binding IntegersA[0].IsSubA, Mode=TwoWay}\" IsSubscribeRight=\"{Binding IntegersA[1].IsSubA, Mode=TwoWay}\" SubscribeDataLeft=\"{Binding IntegersA[0].SubData}\" SubscribeDataRight=\"{Binding IntegersA[1].SubData}\" IsSubscribeVisible=\"{Binding SubscribeVisibleA, Converter={StaticResource bool2VisibilityConverter}}\">"
+        },
+        {
+          "line": 822,
+          "text": "    <PCListView:SliderArrangeFloat SliderType=\"between\" SubscribeTemplate=\"{StaticResource ButtonSelecter_sub}\" SliderTickFrequency=\"{Binding IncValueA}\" StartValue=\"{Binding FloatsA[0].CurValueA, Mode=TwoWay}\" EndValue=\"{Binding FloatsA[1].CurValueA, Mode=TwoWay}\" Minimum=\"{Binding MinValueA}\" Maximum=\"{Binding MaxValueA}\" MinimumLeft=\"{Binding FloatsA[0].MinValueA}\" MaximumLeft=\"{Binding FloatsA[0].MaxValueA}\" MinimumRight=\"{Binding FloatsA[1].MinValueA}\" MaximumRight=\"{Binding FloatsA[1].MaxValueA}\" DecimalDigits=\"{Binding DecimalDigitsA}\" IsSubscribeLeft=\"{Binding FloatsA[0].IsSubA, Mode=TwoWay}\" IsSubscribeRight=\"{Binding FloatsA[1].IsSubA, Mode=TwoWay}\" SubscribeDataLeft=\"{Binding FloatsA[0].SubData}\" SubscribeDataRight=\"{Binding FloatsA[1].SubData}\" IsSubscribeVisible=\"{Binding SubscribeVisibleA, Converter={StaticResource bool2VisibilityConverter}}\">"
+        },
+        {
+          "line": 2705,
+          "text": "    <PCListView:SliderArrange Name=\"slider\" SliderType=\"between\" SubscribeTemplate=\"{StaticResource ButtonSelecter_sub}\" SliderTickFrequency=\"{Binding IncValueA}\" Minimum=\"{Binding MinValueA}\" Maximum=\"{Binding MaxValueA}\" MinimumLeft=\"{Binding IntegersA[0].MinValueA}\" MaximumLeft=\"{Binding IntegersA[0].MaxValueA}\" MinimumRight=\"{Binding IntegersA[1].MinValueA}\" MaximumRight=\"{Binding IntegersA[1].MaxValueA}\" IsSubscribeLeft=\"{Binding IntegersA[0].IsSubA, Mode=TwoWay}\" IsSubscribeRight=\"{Binding IntegersA[1].IsSubA, Mode=TwoWay}\" IsSubscribeVisible=\"{Binding SubscribeVisibleA, Converter={StaticResource bool2VisibilityConverter}}\" SubscribeDataLeft=\"{Binding IntegersA[0].SubData}\" SubscribeDataRight=\"{Binding IntegersA[1].SubData}\">"
+        },
+        {
+          "line": 3689,
+          "text": "            <localcontrol:SliderArrangeFloat Minimum=\"-9999\" Maximum=\"9999\" MinimumLeft=\"-9999\" MaximumRight=\"9999\" SliderType=\"between\" SliderTickFrequency=\"{Binding IncValueA}\" StartValue=\"{Binding DataContextA.XLimitA.MinValueA, Mode=TwoWay}\" EndValue=\"{Binding DataContextA.XLimitA.MaxValueA, Mode=TwoWay}\" MaximumLeft=\"{Binding DataContextA.XLimitA.MaxValueA}\" MinimumRight=\"{Binding DataContextA.XLimitA.MinValueA}\" DecimalDigits=\"{Binding DecimalDigitsA}\" />"
+        },
+        {
+          "line": 3730,
+          "text": "            <localcontrol:SliderArrangeFloat Minimum=\"-9999\" Maximum=\"9999\" MinimumLeft=\"-9999\" MaximumRight=\"9999\" SliderType=\"between\" SliderTickFrequency=\"{Binding IncValueA}\" StartValue=\"{Binding DataContextA.YLimitA.MinValueA, Mode=TwoWay}\" EndValue=\"{Binding DataContextA.YLimitA.MaxValueA, Mode=TwoWay}\" MaximumLeft=\"{Binding DataContextA.YLimitA.MaxValueA}\" MinimumRight=\"{Binding DataContextA.YLimitA.MinValueA}\" DecimalDigits=\"{Binding DecimalDigitsA}\" />"
+        },
+        {
+          "line": 3771,
+          "text": "            <localcontrol:SliderArrangeFloat Minimum=\"-360\" Maximum=\"360\" MinimumLeft=\"-360\" MaximumRight=\"360\" SliderType=\"between\" SliderTickFrequency=\"{Binding IncValueA}\" StartValue=\"{Binding DataContextA.RLimitA.MinValueA, Mode=TwoWay}\" EndValue=\"{Binding DataContextA.RLimitA.MaxValueA, Mode=TwoWay}\" MaximumLeft=\"{Binding DataContextA.RLimitA.MaxValueA}\" MinimumRight=\"{Binding DataContextA.RLimitA.MinValueA}\" DecimalDigits=\"{Binding DecimalDigitsA}\" />"
+        },
+        {
+          "line": 3815,
+          "text": "          <localcontrol:SliderArrangeFloat Minimum=\"-9999\" Maximum=\"9999\" MinimumLeft=\"-9999\" MaximumRight=\"9999\" SliderType=\"between\" SliderTickFrequency=\"{Binding IncValueA}\" StartValue=\"{Binding DataContextA.MinValueA, Mode=TwoWay}\" EndValue=\"{Binding DataContextA.MaxValueA, Mode=TwoWay}\" MaximumLeft=\"{Binding DataContextA.MaxValueA}\" MinimumRight=\"{Binding DataContextA.MinValueA}\" DecimalDigits=\"{Binding DecimalDigitsA}\" />"
+        }
+      ]
+    },
+    {
+      "path": "docs/07-工具逆向/decompiled/PcUi/HikPcUI.ListView/SliderArrangeBase.cs",
+      "sha256": "CDCE54E608EEE5421A2863C700B28DDBE89242514EF44690B7B1EC83544C8FF2",
+      "matches": [
+        {
+          "line": 78,
+          "text": "\tpublic static readonly DependencyProperty MinimumLeftProperty = DependencyProperty.Register(\"MinimumLeft\", typeof(double), typeof(SliderArrangeBase), new PropertyMetadata(_min));"
+        },
+        {
+          "line": 80,
+          "text": "\tpublic static readonly DependencyProperty MaximumLeftProperty = DependencyProperty.Register(\"MaximumLeft\", typeof(double), typeof(SliderArrangeBase), new PropertyMetadata(_max));"
+        },
+        {
+          "line": 82,
+          "text": "\tpublic static readonly DependencyProperty MinimumRightProperty = DependencyProperty.Register(\"MinimumRight\", typeof(double), typeof(SliderArrangeBase), new PropertyMetadata(_min));"
+        },
+        {
+          "line": 84,
+          "text": "\tpublic static readonly DependencyProperty MaximumRightProperty = DependencyProperty.Register(\"MaximumRight\", typeof(double), typeof(SliderArrangeBase), new PropertyMetadata(_max));"
+        },
+        {
+          "line": 86,
+          "text": "\tpublic static readonly DependencyProperty IsNeedCheckExtremumByXMLProperty = DependencyProperty.Register(\"IsNeedCheckExtremumByXML\", typeof(bool), typeof(SliderArrangeBase), new PropertyMetadata(false));"
+        },
+        {
+          "line": 106,
+          "text": "\tprivate static readonly DependencyProperty StartValueEProperty = DependencyProperty.Register(\"StartValueE\", typeof(double), typeof(SliderArrangeBase));"
+        },
+        {
+          "line": 108,
+          "text": "\tprivate static readonly DependencyProperty EndValueEProperty = DependencyProperty.Register(\"EndValueE\", typeof(double), typeof(SliderArrangeBase), new PropertyMetadata(_max));"
+        },
+        {
+          "line": 318,
+          "text": "\tpublic double MinimumLeft"
+        },
+        {
+          "line": 322,
+          "text": "\t\t\treturn (double)GetValue(MinimumLeftProperty);"
+        },
+        {
+          "line": 326,
+          "text": "\t\t\tSetValue(MinimumLeftProperty, value);"
+        },
+        {
+          "line": 330,
+          "text": "\tpublic double MaximumLeft"
+        },
+        {
+          "line": 334,
+          "text": "\t\t\treturn (double)GetValue(MaximumLeftProperty);"
+        },
+        {
+          "line": 338,
+          "text": "\t\t\tSetValue(MaximumLeftProperty, value);"
+        },
+        {
+          "line": 342,
+          "text": "\tpublic double MinimumRight"
+        },
+        {
+          "line": 346,
+          "text": "\t\t\treturn (double)GetValue(MinimumRightProperty);"
+        },
+        {
+          "line": 350,
+          "text": "\t\t\tSetValue(MinimumRightProperty, value);"
+        },
+        {
+          "line": 354,
+          "text": "\tpublic double MaximumRight"
+        },
+        {
+          "line": 358,
+          "text": "\t\t\treturn (double)GetValue(MaximumRightProperty);"
+        },
+        {
+          "line": 362,
+          "text": "\t\t\tSetValue(MaximumRightProperty, value);"
+        },
+        {
+          "line": 366,
+          "text": "\tpublic bool IsNeedCheckExtremumByXML"
+        },
+        {
+          "line": 370,
+          "text": "\t\t\treturn (bool)GetValue(IsNeedCheckExtremumByXMLProperty);"
+        },
+        {
+          "line": 374,
+          "text": "\t\t\tSetValue(IsNeedCheckExtremumByXMLProperty, value);"
+        },
+        {
+          "line": 466,
+          "text": "\t\t\treturn StartValueF = (StartValueE = (double)GetValue(StartValueProperty));"
+        },
+        {
+          "line": 478,
+          "text": "\t\t\treturn EndValueE = (EndValueF = (double)GetValue(EndValueProperty));"
+        },
+        {
+          "line": 486,
+          "text": "\tprivate double StartValueE"
+        },
+        {
+          "line": 490,
+          "text": "\t\t\treturn (double)GetValue(StartValueEProperty);"
+        },
+        {
+          "line": 496,
+          "text": "\t\t\t\tSetValue(StartValueEProperty, value);"
+        },
+        {
+          "line": 500,
+          "text": "\t\t\t\tSetValue(StartValueEProperty, Minimum);"
+        },
+        {
+          "line": 505,
+          "text": "\tprivate double EndValueE"
+        },
+        {
+          "line": 509,
+          "text": "\t\t\treturn (double)GetValue(EndValueEProperty);"
+        },
+        {
+          "line": 515,
+          "text": "\t\t\t\tSetValue(EndValueEProperty, value);"
+        },
+        {
+          "line": 519,
+          "text": "\t\t\t\tSetValue(EndValueEProperty, (double)GetValue(StartValueProperty));"
+        },
+        {
+          "line": 889,
+          "text": "\t\tStartValueE = StartValue;"
+        },
+        {
+          "line": 909,
+          "text": "\t\tEndValueE = EndValue;"
+        },
+        {
+          "line": 1053,
+          "text": "\t\t\t\tif (e.NewValue < MinimumLeft)"
+        },
+        {
+          "line": 1055,
+          "text": "\t\t\t\t\tStartValue = MinimumLeft;"
+        },
+        {
+          "line": 1057,
+          "text": "\t\t\t\tif (e.NewValue > MaximumLeft)"
+        },
+        {
+          "line": 1059,
+          "text": "\t\t\t\t\tStartValue = MaximumLeft;"
+        },
+        {
+          "line": 1087,
+          "text": "\t\t\t\tif (e.NewValue < MinimumRight)"
+        },
+        {
+          "line": 1089,
+          "text": "\t\t\t\t\tEndValue = MinimumRight;"
+        },
+        {
+          "line": 1091,
+          "text": "\t\t\t\tif (e.NewValue > MaximumRight)"
+        },
+        {
+          "line": 1093,
+          "text": "\t\t\t\t\tEndValue = MaximumRight;"
+        }
+      ]
+    },
+    {
+      "path": "docs/07-工具逆向/decompiled/PcUi/HikPcUI.ListView/NumericControl.xaml.cs",
+      "sha256": "7FA31754DF042FAD31AE5E16A9149484C4956C1164FF7FED9F688FBE9FB4B7EF",
+      "matches": [
+        {
+          "line": 48,
+          "text": "\tpublic static readonly DependencyProperty IsNeedCheckExtremumByXMLProperty = DependencyProperty.Register(\"IsNeedCheckExtremumByXML\", typeof(bool), typeof(NumericControl), new PropertyMetadata(false));"
+        },
+        {
+          "line": 255,
+          "text": "\tpublic bool IsNeedCheckExtremumByXML"
+        },
+        {
+          "line": 259,
+          "text": "\t\t\treturn (bool)GetValue(IsNeedCheckExtremumByXMLProperty);"
+        },
+        {
+          "line": 263,
+          "text": "\t\t\tSetValue(IsNeedCheckExtremumByXMLProperty, value);"
+        },
+        {
+          "line": 330,
+          "text": "\t\tif (IsNeedCheckExtremumByXML)"
+        },
+        {
+          "line": 357,
+          "text": "\t\tif (IsNeedCheckExtremumByXML)"
+        }
+      ]
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredRangeRow.cs",
+      "sha256": "8967556176FD6973832E6D2D0EECD3B21B5256D3221DBF773D3B81C3D06504F7",
+      "matches": [
+        {
+          "line": 123,
+          "text": "                state.SetEditError(\"范围下限不能大于上限。\");"
+        },
+        {
+          "line": 166,
+          "text": "        view.MinimumLeft = bounds[0].Min;"
+        },
+        {
+          "line": 167,
+          "text": "        view.MaximumLeft = bounds[0].Max;"
+        },
+        {
+          "line": 168,
+          "text": "        view.MinimumRight = bounds[1].Min;"
+        },
+        {
+          "line": 169,
+          "text": "        view.MaximumRight = bounds[1].Max;"
+        },
+        {
+          "line": 170,
+          "text": "        view.IsNeedCheckExtremumByXML = _states[0].Port.Type.Scalar == ScalarKind.Int64;"
+        },
+        {
+          "line": 294,
+          "text": "            throw new ArgumentException(\"历史范围下限不能大于上限。\");"
+        },
+        {
+          "line": 503,
+          "text": "                    state.SetEditError(\"范围下限不能大于上限。\");"
+        }
+      ]
+    }
+  ],
+  "pending": [
+    "引用端与常量端切换后的动态极值",
+    "反向范围的原件输入与算法路径分离",
+    "父级整体范围在当前FieldLayout中未显式保留"
+  ]
+}

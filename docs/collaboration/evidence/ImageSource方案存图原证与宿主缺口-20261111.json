@@ -1,0 +1,71 @@
+{
+  "kind": "外部原厂嵌入存图证据核收；不是本方运行结果",
+  "source": "D:/MyWork/Rea逆向/docs/plugins/image-source-embed-evidence.json",
+  "sha256": "2C8584A6330F9722D941C5D388EB66E86D87FEFD475377FE9CE7BDCD284DA3AB",
+  "evidence": {
+    "schema": 1,
+    "runtimeSource": "analysis\\full-audit\\image-source-runtime\\run-9a9313c56a3e486199c58f66f763c67e\\probe.json",
+    "runtimeSha256": "170baf9df443e1d297287c9ad65d00800dc9a4ad077e069049795f4349a1a807",
+    "save": {
+      "phase": "embed-save-as",
+      "exists": true,
+      "length": 104795,
+      "sha256": "dbb566b7b8e4f05206f2103149dda00767a3008b91fc11f33af12f2f75863e01"
+    },
+    "observations": [
+      {
+        "sn": 18,
+        "phase": "embed-before-save",
+        "nativeErrorCode": 0,
+        "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\full-audit\\image-source-runtime\\run-9a9313c56a3e486199c58f66f763c67e\\embed-fixtures\\owned.bmp",
+        "name": "owned.bmp",
+        "width": 4,
+        "height": 4,
+        "format": 17301505,
+        "length": 16,
+        "extraMonoLength": 0,
+        "pixelSha256": "4c75b1675cd338faee8495940b780a2e84598955ca1e7c11315143e093599c62",
+        "pixelsHex": "0a0a0a0a141414141e1e1e1e28282828"
+      },
+      {
+        "sn": 19,
+        "phase": "embed-after-source-removed",
+        "nativeErrorCode": 0,
+        "path": "D:\\MyWork\\REA逆向测试\\worktrees\\tool-plugins\\analysis\\full-audit\\image-source-runtime\\run-9a9313c56a3e486199c58f66f763c67e\\ImageTemp\\VM69720ImgSrcTemp\\0697200-owned.bmp",
+        "name": "0697200-owned.bmp",
+        "width": 4,
+        "height": 4,
+        "format": 17301505,
+        "length": 16,
+        "extraMonoLength": 0,
+        "pixelSha256": "4c75b1675cd338faee8495940b780a2e84598955ca1e7c11315143e093599c62",
+        "pixelsHex": "0a0a0a0a141414141e1e1e1e28282828"
+      }
+    ],
+    "sourceAnalysis": [
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-native-extra-7.c",
+        "sha256": "b556956b29291be7b20b64f97f8193c3bfb8f2f1960f41d1d8d20d042fce81ed"
+      },
+      {
+        "path": "D:\\MyWork\\REA逆向测试\\analysis\\full-audit\\image-source-native-8.c",
+        "sha256": "4cb7f0c97fe72e3eb442217ca88e3ea99913641b1f2aac57c9e89441e8d2ec06"
+      }
+    ],
+    "limitations": [
+      "Original SDK SaveAs wrote only a new owned .sol. The originally loaded sample was not saved or changed.",
+      "Original reload filename gains a numeric module-ID prefix. Independent VMX resources preserve original configured names and do not implement vendor SOL serialization.",
+      "Native 120-item limit is source-confirmed (0x78 checks in SaveModuleData), not a 120-item native runtime experiment."
+    ],
+    "completeParity": false
+  },
+  "currentHostFindings": [
+    "ResourceFieldDeclaration 仅有字段、用途、基数，无嵌入条件或数量声明",
+    "SolutionDocumentWriter 保存节点配置和变量，无嵌入文件资产表",
+    "SolutionResourceResolver.Inspect 检查外部文件；RebaseCopy 只改引用，不复制字节",
+    "DocumentSession.CaptureAcceptedDocument 在冻结方案与重定位阶段没有文件资产捕获入口"
+  ],
+  "boundary": "原厂运行记录与本机安装件哈希需分开；120张是原生源码结论，不是120张原机实验",
+  "implementation": "未实现；不得仅补开关、将变量存图代作本地文件嵌入或借用其他worktree产物",
+  "runtimeRawAvailability": "ledger 指向的 runtimeSource 在迁移后的仓库不存在；runtimeSha256 仅为历史记录，不是当前文件核验，也不是模块程序集哈希"
+}

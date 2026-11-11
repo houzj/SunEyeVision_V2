@@ -14,6 +14,27 @@ namespace SunEyeVision.ImageSource.Runtime.Tests;
 
 public sealed class ImageSourceRuntimeTests
 {
+    [Theory]
+    [InlineData("go", "go", true)]
+    [InlineData("go", "stop", false)]
+    [InlineData("GO", "go", false)]
+    [InlineData("", "stop", true)]
+    [InlineData("go", "", true)]
+    [InlineData("##RunProcedureSilently##", "stop", true)]
+    [InlineData("go", "##RunProcedureSilently##", true)]
+    [InlineData("go\0ignored", "go", true)]
+    public void Character_filter_uses_the_original_comparison_and_bypass_rules(string text,string filter,bool expected)
+    {
+        Assert.Equal(expected, new ImageSourceTool().ShouldExecute(new ImageSourceSettings
+        {
+            TriggerFilterEnabled = true, TriggerText = text, TriggerFilterText = filter
+        }));
+        Assert.True(new ImageSourceTool().ShouldExecute(new ImageSourceSettings
+        {
+            TriggerFilterEnabled = false, TriggerText = text, TriggerFilterText = filter
+        }));
+    }
+
     private static IToolExecutionContext Context(FrozenOutputResources resources,CancellationToken token=default,string? localAddress=null)
     {
         var context=Substitute.For<IToolExecutionContext,ILocalImageReadContext>();
@@ -22,6 +43,21 @@ public sealed class ImageSourceRuntimeTests
         context.Cancellation.Returns(token);context.Resources.Returns(resources);return context;
     }
     private static InputValues Input(IReadOnlyDictionary<string,object?> values)=>new(ImageSourceTool.Schema.Inputs,values);
+
+    [Theory]
+    [InlineData(-1L, false)]
+    [InlineData(0L, true)]
+    [InlineData(100_000L, true)]
+    [InlineData(100_001L, false)]
+    public void Initial_sequence_settings_enforce_the_declared_range(long value, bool accepted)
+    {
+        var original = new ImageSourceSettings();
+        var changes = new Dictionary<string, object?> { [ImageSourceFields.InitialSequence] = value };
+        if (accepted)
+            Assert.Equal(value, ImageSourceFields.Apply(original, changes).InitialSequence);
+        else
+            Assert.Throws<ArgumentException>(() => ImageSourceFields.Apply(original, changes));
+    }
 
     [Fact]
     public void Settings_defaults_and_full_payload_round_trip_through_the_admitted_v4_session()
@@ -37,6 +73,9 @@ public sealed class ImageSourceRuntimeTests
         Assert.Empty(draft.Configuration.Fields.Get<SequenceValue>(ImageSourceFields.Paths));
         Assert.Empty(draft.Configuration.Fields.Get<SequenceValue>(ImageSourceFields.Selected));
         Assert.Equal(-1L, draft.Configuration.Fields.Get<long>(ImageSourceFields.Start));
+        Assert.Equal("mono8", draft.Configuration.Fields.Get<string>(ImageSourceFields.OutputFormat));
+        Assert.False(draft.Configuration.Fields.Get<bool>(ImageSourceFields.OutputMono8));
+        Assert.Equal(0L, draft.Configuration.Fields.Get<long>(ImageSourceFields.PathCache));
         var files = new[] { "assets/a.png", "assets/b.png" };
         var pathType = draft.SettingsSchema.Inputs.Single(port => port.Id == ImageSourceFields.Paths).Type;
         draft.ApplyFields(new Dictionary<string,ParameterSetting>
@@ -47,7 +86,9 @@ public sealed class ImageSourceRuntimeTests
             [ImageSourceFields.AutoSwitch] = new ConstantSetting(false), [ImageSourceFields.StopAtLast] = new ConstantSetting(true),
             [ImageSourceFields.SourceKind] = new ConstantSetting("camera"), [ImageSourceFields.CameraDevice] = new ConstantSetting("device"),
             [ImageSourceFields.CameraTimeout] = new ConstantSetting(4200L), [ImageSourceFields.OutputFormat] = new ConstantSetting("rgb24"),
-            [ImageSourceFields.InitialSequence] = new ConstantSetting(25L)
+            [ImageSourceFields.OutputMono8] = new ConstantSetting(true),
+            [ImageSourceFields.InitialSequence] = new ConstantSetting(25L),
+            [ImageSourceFields.PathCache] = new ConstantSetting(3L)
         });
         session.CommitEdit(DocumentEditProposal.Prepare(session.Editing.Host, nodes: new[] { draft }));
         var data = Path.Combine(SunEyeVision.TestShared.ProductRuntimeTestHost.ProductRoot, "test-data", "image-source", Guid.NewGuid().ToString("N"));
@@ -69,7 +110,16 @@ public sealed class ImageSourceRuntimeTests
         Assert.False(actual.Get<bool>(ImageSourceFields.AutoSwitch)); Assert.True(actual.Get<bool>(ImageSourceFields.StopAtLast));
         Assert.Equal("camera", actual.Get<string>(ImageSourceFields.SourceKind)); Assert.Equal("device", actual.Get<string>(ImageSourceFields.CameraDevice));
         Assert.Equal(4200L, actual.Get<long>(ImageSourceFields.CameraTimeout)); Assert.Equal("rgb24", actual.Get<string>(ImageSourceFields.OutputFormat));
+        Assert.True(actual.Get<bool>(ImageSourceFields.OutputMono8));
         Assert.Equal(25L, actual.Get<long>(ImageSourceFields.InitialSequence));
+        Assert.Equal(3L, actual.Get<long>(ImageSourceFields.PathCache));
+        var withoutCache = System.Text.Json.Nodes.JsonNode.Parse(json)!;
+        var fields = withoutCache["Workflows"]![0]!["Nodes"]![0]!["Configuration"]!["Fields"]!.AsObject();
+        Assert.True(fields.Remove(ImageSourceFields.PathCache));
+        var withoutCachePath = Path.Combine(data, "source-no-cache-field.solution");
+        File.WriteAllText(withoutCachePath, withoutCache.ToJsonString());
+        var defaulted = manager.Open(withoutCachePath, _ => types, _ => null, new JsonSerializerOptions());
+        Assert.Equal(0L, defaulted.GetNodes(flow.Id).Single().Configuration.Fields.Get<long>(ImageSourceFields.PathCache));
     }
     [Fact]
     public void Fields_freeze_input_collections_and_invalid_edit_never_mutates_previous_settings()
@@ -106,7 +156,7 @@ public sealed class ImageSourceRuntimeTests
             Assert.True(result.Success,string.Join(";",result.Diagnostics.Select(d=>d.Message)));
             using var output=result.Output!;var values=output.ToValues();var image=Assert.IsAssignableFrom<IReadOnlyImage>(((RecordValue)values[ImageSourceOutput.Image]!).Get<IReadOnlyImage>(ImageSourceOutput.ImageData));
             Assert.Equal(new byte[]{20,90},image.CopyPixels());Assert.Equal(context.Identity,image.Frame.ProducerRun);
-            Assert.Equal(path,values[ImageSourceOutput.FileReference]);Assert.Equal(11L,values[ImageSourceOutput.Sequence]);
+            Assert.Equal(path,values[ImageSourceOutput.FileReference]);Assert.Equal(12L,values[ImageSourceOutput.Sequence]);
             using var domain=image.EffectiveDomain.AcquireReader();Assert.Equal(new[]{new RegionRun(0,0,1)},domain.ReadRuns(0,4096).ToArray());
         }
         finally{Directory.Delete(directory,true);}
@@ -193,9 +243,9 @@ public sealed class ImageSourceRuntimeTests
         var result=await session.ExecuteAsync(new(new ImageSourceSettings{SourceKind="camera",CameraDeviceId="device"},inputs,context));
         Assert.True(result.Success,string.Join(";",result.Diagnostics.Select(d=>d.Message)));
         var output=result.Output!;var values=output.ToValues();var image=Assert.IsAssignableFrom<IReadOnlyImage>(((RecordValue)values[ImageSourceOutput.Image]!).Get<IReadOnlyImage>(ImageSourceOutput.ImageData));
-        Assert.Same(image,((RecordValue)values[ImageSourceOutput.GrayImage]!).Get<IReadOnlyImage>(ImageSourceOutput.GrayData));Assert.NotEqual(sourceFrame,image.Frame);
+        Assert.Null(values[ImageSourceOutput.GrayImage]);Assert.NotEqual(sourceFrame,image.Frame);
         Assert.Equal(context.Identity,image.Frame.ProducerRun);Assert.Equal(ImageSourceOutput.Image,image.Frame.SourcePortId);
-        Assert.Equal(image.Frame,image.EffectiveDomain.SourceFrame);Assert.Equal(7L,values[ImageSourceOutput.Sequence]);
+        Assert.Equal(image.Frame,image.EffectiveDomain.SourceFrame);Assert.Equal(8L,values[ImageSourceOutput.Sequence]);
         Assert.Equal("frame-7",values[ImageSourceOutput.FrameId]);Assert.Equal("time-7",values[ImageSourceOutput.Timestamp]);
         var publishedFrame=image.Frame;
         using var pixels=image.AcquirePixels();using var runs=pixels.AcquireDomainReader();

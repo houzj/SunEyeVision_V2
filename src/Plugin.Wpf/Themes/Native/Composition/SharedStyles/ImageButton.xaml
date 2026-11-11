@@ -1,0 +1,16 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style x:Key="Shared.ImageButtonStyle" TargetType="{x:Type Button}">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type Button}">
+          <ContentPresenter Name="cp" Content="{TemplateBinding ContentControl.Content}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+          <ControlTemplate.Triggers>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+              <Setter TargetName="cp" Property="ContentPresenter.Content" Value="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

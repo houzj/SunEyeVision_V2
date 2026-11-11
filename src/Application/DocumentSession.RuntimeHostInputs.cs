@@ -29,7 +29,7 @@ public sealed partial class DocumentSession
         return new HostInputFactoryContext(new ScopedNodeIdentity(scope.WorkflowId, view.Node.Id), EditSessionId,
             lifetime.Generation, lifetime.Retirement, configuration.ToolId, view.Configuration.Schema,
             view.Configuration.SettingsSchema, fields, configuration.CaptureCurrentValues(), declaration,
-            new SunEyeVision.Persistence.SolutionResourceResolver(_resourceBaseDirectory), () =>
+            new SunEyeVision.Persistence.SolutionResourceResolver(_resourceBaseDirectory,_embeddedFiles), () =>
             {
                 if (Environment.CurrentManagedThreadId != _ownerThread) throw new InvalidOperationException("宿主输入上下文必须由方案所属线程使用。");
                 lock (_gate)
@@ -41,6 +41,6 @@ public sealed partial class DocumentSession
                         !ReferenceEquals(view.Node.Configuration, configuration))
                         throw new InvalidOperationException("宿主输入所属节点或配置已失效。");
                 }
-            });
+            }, configurationRevisions:CaptureNodeFieldRevisions(view));
     }
 }

@@ -16,6 +16,7 @@ using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 using SunEyeVision.UI.Shell.Controls.Common;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Services;
+using SunEyeVision.UI.Services.Editing;
 using SunEyeVision.UI.Core;
 using AIStudio.Wpf.DiagramDesigner;
 using AIStudio.Wpf.DiagramDesigner.ViewModels;
@@ -255,6 +256,7 @@ namespace SunEyeVision.UI.Shell.Windows
         private bool _closeApproved;
         private bool _shutdownPreparationStarted;
         private bool _consumerReleaseStarted;
+        private Task? _pluginDrainTask;
 
         /// <summary>
         /// 窗口关闭前事件 - 提示保存解决方案。
@@ -281,9 +283,10 @@ namespace SunEyeVision.UI.Shell.Windows
             e.Cancel = true;
             if (_shutdownPreparationStarted)
             {
-                // A child that refused to close has not released any consumers; retry
-                // only that reversible phase after the owner has resolved the failure.
-                if (!_consumerReleaseStarted && !_isClosingPromptInProgress)
+                // Preparation is idempotent after the first successful consumer
+                // release. A timed-out plugin drain can be retried without
+                // rebuilding the editor or releasing the consumers twice.
+                if (!_isClosingPromptInProgress)
                 {
                     _isClosingPromptInProgress=true;
                     Dispatcher.BeginInvoke(new Action(RetryPreparedClose));
@@ -335,18 +338,25 @@ namespace SunEyeVision.UI.Shell.Windows
         }
         private async Task CompletePreparedCloseAsync()
         {
-            PreparePluginConsumersForShutdown();
+            if (!_consumerReleaseStarted)
+            await PreparePluginConsumersForShutdownAsync();
             if(System.Windows.Application.Current is SunEyeVision.UI.App app)
             {
-                var drain=app.DrainPluginDirectoryAsync();
+                _pluginDrainTask ??= app.DrainPluginDirectoryAsync();
+                var drain=_pluginDrainTask;
                 if(await Task.WhenAny(drain,Task.Delay(TimeSpan.FromSeconds(10)))!=drain)
-                    ThemeMessageDialog.Show("仍有结果或插件资源正在使用。窗口将保持打开并继续等待，资源释放后自动关闭。", "等待资源释放", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info, this);
+                {
+                    var diagnostics=app.PluginDrainDiagnostics;
+                    ThemeMessageDialog.Show("仍有结果或插件资源正在使用。窗口将保持打开并继续等待，资源释放后自动关闭。\n当前租约："+diagnostics, "等待资源释放", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info, this);
+                    _isClosingPromptInProgress=false;
+                    return;
+                }
                 await drain;
             }
             _closeApproved=true;
             Close();
         }
-        private void PreparePluginConsumersForShutdown()
+        private async Task PreparePluginConsumersForShutdownAsync()
         {
             var failures=new List<Exception>();
             // 主窗口关闭时主动关闭仍存活的子窗口，避免预览窗口或对话框继续持有
@@ -364,7 +374,12 @@ namespace SunEyeVision.UI.Shell.Windows
                     Dispatcher.UnhandledException+=capture;
                     try
                     {
-                        childWindow.Close();
+                        if (childWindow is RuntimeToolEditorWindow editorWindow)
+                        {
+                            if (!await editorWindow.CloseAndDrainAsync())
+                                failures.Add(new InvalidOperationException("调试窗口关闭排空未完成："+editorWindow.Title));
+                        }
+                        else childWindow.Close();
                         if(dispatcherFailure is not null)failures.Add(dispatcherFailure);
                         if(System.Windows.Application.Current?.Windows.OfType<Window>().Contains(childWindow)==true)
                             failures.Add(new InvalidOperationException("子窗口未关闭："+childWindow.GetType().Name));

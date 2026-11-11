@@ -17,6 +17,16 @@ public class WorkflowNodeView : ContentControl
         typeof(WorkflowNodeView),
         new PropertyMetadata(false, OnIsHitedChanged));
 
+    public static readonly DependencyProperty IsWorkAreaLockedProperty = DependencyProperty.Register(
+        nameof(IsWorkAreaLocked), typeof(bool), typeof(WorkflowNodeView),
+        new PropertyMetadata(false, OnIsHitedChanged));
+
+    public bool IsWorkAreaLocked
+    {
+        get => (bool)GetValue(IsWorkAreaLockedProperty);
+        set => SetValue(IsWorkAreaLockedProperty, value);
+    }
+
     private const string PortLayerName = "PortLayer";
     private FrameworkElement? _portLayer;
 
@@ -40,6 +50,10 @@ public class WorkflowNodeView : ContentControl
         {
             IsHited = (bool)e.NewValue;
         }
+        else if (e.Property == IsEnabledProperty)
+        {
+            ApplyPortVisibility();
+        }
     }
 
     private static void OnIsHitedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -58,7 +72,8 @@ public class WorkflowNodeView : ContentControl
             return;
         }
 
-        _portLayer.Visibility = IsHited ? Visibility.Visible : Visibility.Collapsed;
+        _portLayer.Visibility = IsHited && IsEnabled && !IsWorkAreaLocked
+            ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private static FrameworkElement? FindDescendantByName(DependencyObject root, string name)

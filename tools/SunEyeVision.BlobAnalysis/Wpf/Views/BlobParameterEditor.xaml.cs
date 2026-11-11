@@ -6,12 +6,11 @@ using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Views;
 
 /// <summary>Real tool view; the document owner controls execution, capture and disposal.</summary>
-public partial class BlobParameterEditor : UserControl,IToolSettingsView,IToolSettingsViewReady
+public partial class BlobParameterEditor : UserControl,IToolSettingsView,IToolSettingsViewReady,IToolSettingsViewInputProjection
 {
-    private static readonly DependencyPropertyKey SelectedPageIndexPropertyKey=DependencyProperty.RegisterReadOnly(nameof(SelectedPageIndex),typeof(int),typeof(BlobParameterEditor),new PropertyMetadata(1));
+    private static readonly DependencyPropertyKey SelectedPageIndexPropertyKey=DependencyProperty.RegisterReadOnly(nameof(SelectedPageIndex),typeof(int),typeof(BlobParameterEditor),new PropertyMetadata(0));
     public static readonly DependencyProperty SelectedPageIndexProperty=SelectedPageIndexPropertyKey.DependencyProperty;
     public int SelectedPageIndex=>(int)GetValue(SelectedPageIndexProperty);
-    private static readonly System.ComponentModel.DependencyPropertyDescriptor PageDescriptor=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(DeclaredSettingsView.SelectedPageIndexProperty,typeof(DeclaredSettingsView));
     private BlobUiComposition? _composition;
     private BlobUiComposition? Composition=>_composition??Design.BlobDesignData.GetComposition(Editor);
     public Task ReadyTask=>Composition?.ReadyTask??Task.CompletedTask;
@@ -20,15 +19,26 @@ public partial class BlobParameterEditor : UserControl,IToolSettingsView,IToolSe
     private bool _disposed;
     private void SelectedPageChanged(object? sender,EventArgs args)=>SetValue(SelectedPageIndexPropertyKey,Editor.SelectedPageIndex);
     public BlobParameterEditor()
-    {InitializeComponent();PageDescriptor.AddValueChanged(Editor,SelectedPageChanged);SelectedPageChanged(this,EventArgs.Empty);}
+    {InitializeComponent();Editor.SelectedPageChanged+=SelectedPageChanged;SelectedPageChanged(this,EventArgs.Empty);}
     public BlobParameterEditor(IToolSettingsDraft draft,ToolSettingsViewOptions options):this()
     {
-        Editor.SetCurrentValue(DeclaredSettingsView.SelectedPageIndexProperty,0);
-        _composition=new(Editor,draft,options);_composition.Changed+=OnUiOnlyChanged;
+        try
+        {
+            _composition=new(Editor,draft,options);_composition.Changed+=OnUiOnlyChanged;
+            SelectedPageChanged(Editor,EventArgs.Empty);
+        }
+        catch(Exception failure)
+        {
+            try{Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}
+            throw;
+        }
     }
     public FrameworkElement View=>this;
-    public bool HasInvalidInput=>Editor.HasInvalidInput||Composition?.IsReady!=true||Composition?.CompositionError is not null||Composition?.HasUiChanges==true;
+    public void RefreshAcceptedInputs()=>Composition?.RefreshAcceptedInputs();
+    public bool HasInvalidInput=>Editor.HasInvalidInput||Composition?.IsReady!=true||Composition?.CompositionError is not null;
     public bool HasPendingEdits=>Editor.HasPendingEdits||Composition?.HasPending==true;
+    public bool HasPendingEditsOutside(IReadOnlySet<string> excludedFields)=>Editor.HasPendingEditsOutside(excludedFields)
+        ||Composition is not {IsReady:true,HasPending:false};
     public long AcceptedRevision=>Editor.AcceptedRevision+(Composition?.RoiRevision??0);
     public IReadOnlyList<string> AcceptedFieldOrder=>Editor.AcceptedFieldOrder;
     public FieldSettings CaptureAcceptedFields()=>Editor.CaptureAcceptedFields();
@@ -44,7 +54,7 @@ public partial class BlobParameterEditor : UserControl,IToolSettingsView,IToolSe
     private void OnUiOnlyChanged(){if(!_disposed){_uiOnlyChanged?.Invoke();System.Windows.Input.CommandManager.InvalidateRequerySuggested();}}
     public void Dispose()
     {
-        if(_disposed)return;_disposed=true;PageDescriptor.RemoveValueChanged(Editor,SelectedPageChanged);_uiOnlyChanged=null;
+        if(_disposed)return;_disposed=true;Editor.SelectedPageChanged-=SelectedPageChanged;_uiOnlyChanged=null;
         var composition=Composition;if(composition is not null)composition.Changed-=OnUiOnlyChanged;
         try{composition?.Dispose();}finally{Editor.Dispose();}
     }

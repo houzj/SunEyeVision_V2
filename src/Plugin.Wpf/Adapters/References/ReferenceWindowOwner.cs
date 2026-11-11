@@ -81,6 +81,15 @@ public sealed class ReferenceWindowOwner : INotifyPropertyChanged, IDisposable
         catch(Exception failure){try{ParameterCleanup.Run(new Action[]{request.Dispose,()=>{if(generation==_generation)Close();}});}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}throw;}
     }
     internal void Release(ReferenceExpansionRequest request){if(ReferenceEquals(_request,request))ClearTarget();}
+    internal void RetirePageRequest()
+    {
+        _root.Dispatcher.VerifyAccess();
+        if(_disposed)return;
+        ++_generation;
+        var request=_request;_request=null;
+        var modal=_closeModal;_closeModal=null;
+        ParameterCleanup.Run([()=>modal?.Invoke(),()=>RetireTarget(request)]);
+    }
     public void ClearSelection(){if(CurrentRequest is {} request)request.ClearSelection();}
     private void OnRequestInvalidated(){if(_request is {IsValid:false})ClearTarget();}
     private void OnRequestChanged(object? sender,PropertyChangedEventArgs args){if(ReferenceEquals(sender,_request)&&IsCurrent)NotifyProjection();}

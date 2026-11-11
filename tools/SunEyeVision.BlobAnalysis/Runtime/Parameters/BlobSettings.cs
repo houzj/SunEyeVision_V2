@@ -5,7 +5,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 
 public enum BlobConnectivity { Connected_8 = 8, Connected_4 = 4 }
 public enum BlobThresholdMode { Binary, BinaryInv }
-public enum BlobSortFeature { SortFeatureArea = 1, SortFeaturePerimeter = 2, SortFeatureCircularity = 3, SortFeatureRect = 4, SortFeatureCentroidX = 5, SortFeatureCentroidY = 6, SortFeatureRectX = 10, SortFeatureRectY = 11 }
+public enum BlobSortFeature { SortFeatureArea = 1, SortFeaturePerimeter = 2, SortFeatureCircularity = 3, SortFeatureRect = 4, SortFeatureCentroidX = 5, SortFeatureCentroidY = 6, SortFeatureBoxAngle = 7, SortFeatureBoxWidth = 8, SortFeatureBoxHeight = 9, SortFeatureRectX = 10, SortFeatureRectY = 11, SortFeatureAxisAngle = 12, SortFeatureAxisRatio = 13 }
 public enum BlobSortMode { SortModeAscend = 1, SortModeDecend = 2, SortModeNotSort = 3 }
 public enum BlobSegmentationMode { SingleThreshold, DoubleThreshold, None, AutoThreshold, FixedSoftThreshold, RelativeSoftThreshold }
 
@@ -41,7 +41,6 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
         BlobCountLimit=definition.Default<int>(nameof(BlobCountLimit));
         OutputBlobImage=definition.Default<bool>(nameof(OutputBlobImage));
         OutputBinaryImage=definition.Default<bool>(nameof(OutputBinaryImage));
-        OutputBoundary=definition.Default<bool>(nameof(OutputBoundary));
         SortMode=definition.Default<BlobSortMode>(nameof(SortMode));
         SortFeature=definition.Default<BlobSortFeature>(nameof(SortFeature));
         Connectivity=definition.Default<BlobConnectivity>(nameof(Connectivity));
@@ -97,8 +96,6 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
     [JsonRequired]
     public bool OutputBinaryImage { get; init; }
     [JsonRequired]
-    public bool OutputBoundary { get; init; }
-    [JsonRequired]
     public BlobSortMode SortMode { get; init; }
     [JsonRequired]
     public BlobSortFeature SortFeature { get; init; }
@@ -110,10 +107,10 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
     /// Freeze 会用当前宿主字段覆盖对应成员，避免两个模型产生漂移。
     /// </summary>
     [BlobNonField]
-    public BlobVmFindParameters VmParameters { get; init; } = new();
+    public BlobFindParameters FindParameters { get; init; } = new();
 
-    public BlobVmFindParameters ToVmParameters() => BlobVmFindParameters.FromSettings(this);
-    public BlobSettings Freeze() => this with { VmParameters = ToVmParameters() };
+    public BlobFindParameters ToFindParameters() => BlobFindParameters.FromSettings(this);
+    public BlobSettings Freeze() => this with { FindParameters = ToFindParameters() };
 
     public IReadOnlyList<Diagnostic> Validate()
     {
@@ -141,7 +138,7 @@ public sealed record BlobSettings : IToolSettings<BlobSettings>
         Number(nameof(RelativeUpperRatio),RelativeUpperRatio);
         Number(nameof(BlobCountLimit), BlobCountLimit);
         // 仅存在于VM闭包的四项参数（填充面积阈值、最大内接矩形数量、最小重叠率、最大超界像素）同样受XML上下限约束。
-        var closure = VmParameters ?? new BlobVmFindParameters();
+        var closure = FindParameters ?? new BlobFindParameters();
         Number("HoleMinArea", closure.HoleMinArea);
         Number("MaxAreaInnerRectNum", closure.MaxAreaInnerRectNum);
         Number("OverlapRatio", closure.OverlapRatio);

@@ -1,17 +1,13 @@
 namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 
-/// <summary>VM IMVSBlobFindModu 的参数闭包。类型和字段来自 BlobFindParam.cs，宿主资源和 ROI 不在此状态中。</summary>
-public enum BlobVmThresholdType { BinaryImage = 1, SingleThreshold, DoubleThreshold, AutoThreshold, FixedSoftThreshold, RelativeSoftThreshold }
-public enum BlobVmPolarity { DarkOnBright, BrightOnDark }
-public enum BlobVmContourType { NoneContour, NoneSequentialContour, SequentialContour }
-public enum BlobVmSortFeature { SortFeatureArea = 1, SortFeaturePerimeter, SortFeatureCircularity, SortFeatureRect, SortFeatureCentroidX, SortFeatureCentroidY, SortFeatureBoxAngle, SortFeatureBoxWidth, SortFeatureBoxHeight, SortFeatureRectX, SortFeatureRectY, SortFeatureAxisAngle, SortFeatureAxisRatio }
-public enum BlobVmSortMode { SortModeAscend = 1, SortModeDecend, SortModeNotSort }
-public enum BlobVmConnectivity { Connected_8 = 8, Connected_4 = 4 }
-
-public sealed record BlobVmFindParameters
+/// <summary>Blob运行参数的中性快照。宿主资源和ROI不在此状态中。</summary>
+public enum BlobThresholdType { BinaryImage = 1, SingleThreshold, DoubleThreshold, AutoThreshold, FixedSoftThreshold, RelativeSoftThreshold }
+public enum BlobPolarity { DarkOnBright, BrightOnDark }
+public enum BlobContourType { NoneContour, NoneSequentialContour, SequentialContour }
+public sealed record BlobFindParameters
 {
-    public BlobVmThresholdType ThresholdType { get; init; } = BlobVmThresholdType.SingleThreshold;
-    public BlobVmPolarity Polarity { get; init; } = BlobVmPolarity.DarkOnBright;
+    public BlobThresholdType ThresholdType { get; init; } = BlobThresholdType.SingleThreshold;
+    public BlobPolarity Polarity { get; init; } = BlobPolarity.DarkOnBright;
     public int LowThreshold { get; init; } = 0;
     public int HightThreshold { get; init; } = 0;
     public int LowSoftThreshold { get; init; } = 0;
@@ -26,8 +22,7 @@ public sealed record BlobVmFindParameters
     public bool SelectByArea { get; init; } = false;
     public int MinArea { get; init; } = 0;
     public int MaxArea { get; init; } = 0;
-    public bool BolbOutLineEnable { get; init; } = false;
-    public BlobVmContourType BlobContourType { get; init; } = BlobVmContourType.NoneContour;
+    public BlobContourType BlobContourType { get; init; } = BlobContourType.NoneContour;
     public bool BolbImageEnable { get; init; } = false;
     public bool BinaryImageEnable { get; init; } = false;
     public bool SelectByHistInfo { get; init; } = false;
@@ -35,19 +30,19 @@ public sealed record BlobVmFindParameters
     public int MinBoxAngle { get; init; } = -9000;
     public int MaxBoxAngle { get; init; } = 9000;
     public bool SelectByRectWidth { get; init; } = false;
-    public int MinRectWidth { get; init; } = 1;
-    public int MaxRectWidth { get; init; } = 1000000;
+    public int MinRectWidth { get; init; } = 100;
+    public int MaxRectWidth { get; init; } = 200;
     public bool SelectByRectHeight { get; init; } = false;
-    public int MinRectHeight { get; init; } = 1;
-    public int MaxRectHeight { get; init; } = 1000000;
+    public int MinRectHeight { get; init; } = 100;
+    public int MaxRectHeight { get; init; } = 200;
     public bool SelectByPerimeter { get; init; } = false;
-    public int MinPerimeter { get; init; } = 1;
+    public int MinPerimeter { get; init; } = 10;
     public int MaxPerimeter { get; init; } = 999999999;
     public bool SelectByShortAxis { get; init; } = false;
     public int MinShortAxis { get; init; } = 1;
     public int MaxShortAxis { get; init; } = 999999999;
     public bool SelectByLongAxis { get; init; } = false;
-    public int MinLongAxis { get; init; } = 1;
+    public int MinLongAxis { get; init; } = 10;
     public int MaxLongAxis { get; init; } = 999999999;
     public bool SelectByCircularuty { get; init; } = false;
     public double MinCircularity { get; init; } = 0d;
@@ -61,9 +56,9 @@ public sealed record BlobVmFindParameters
     public bool AxisRatioEnable { get; init; } = false;
     public double MinAxisRatio { get; init; } = 0.01d;
     public double MaxAxisRatio { get; init; } = 1d;
-    public BlobVmSortFeature SortFeature { get; init; } = BlobVmSortFeature.SortFeatureArea;
-    public BlobVmSortMode SortMode { get; init; } = BlobVmSortMode.SortModeDecend;
-    public BlobVmConnectivity Connectivity { get; init; } = BlobVmConnectivity.Connected_8;
+    public BlobSortFeature SortFeature { get; init; } = BlobSortFeature.SortFeatureArea;
+    public BlobSortMode SortMode { get; init; } = BlobSortMode.SortModeDecend;
+    public BlobConnectivity Connectivity { get; init; } = BlobConnectivity.Connected_8;
     public int MaxAreaInnerRectNum { get; init; } = 0;
     public int OverlapRatio { get; init; } = 0;
     public bool MaxOutPixelNumEnable { get; init; } = false;
@@ -115,23 +110,24 @@ public sealed record BlobVmFindParameters
     public double RectangularityLimitLow { get; init; } = 0d;
     public double RectangularityLimitHigh { get; init; } = 1d;
 
-    public static BlobVmFindParameters FromSettings(BlobSettings settings)
+    public static BlobFindParameters FromSettings(BlobSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
-        var vm = settings.VmParameters ?? new BlobVmFindParameters();
+        var vm = settings.FindParameters ?? new BlobFindParameters();
+        // The active original window declares only the three-valued contour mode.
+        // Keep that mode unchanged through host projection and Freeze.
         return vm with
         {
-            ThresholdType = settings.SegmentationMode switch { BlobSegmentationMode.None => BlobVmThresholdType.BinaryImage, BlobSegmentationMode.DoubleThreshold => BlobVmThresholdType.DoubleThreshold, BlobSegmentationMode.AutoThreshold => BlobVmThresholdType.AutoThreshold, BlobSegmentationMode.FixedSoftThreshold => BlobVmThresholdType.FixedSoftThreshold, BlobSegmentationMode.RelativeSoftThreshold => BlobVmThresholdType.RelativeSoftThreshold, _ => BlobVmThresholdType.SingleThreshold },
-            Polarity = settings.Type == BlobThresholdMode.BinaryInv ? BlobVmPolarity.BrightOnDark : BlobVmPolarity.DarkOnBright,
+            ThresholdType = settings.SegmentationMode switch { BlobSegmentationMode.None => BlobThresholdType.BinaryImage, BlobSegmentationMode.DoubleThreshold => BlobThresholdType.DoubleThreshold, BlobSegmentationMode.AutoThreshold => BlobThresholdType.AutoThreshold, BlobSegmentationMode.FixedSoftThreshold => BlobThresholdType.FixedSoftThreshold, BlobSegmentationMode.RelativeSoftThreshold => BlobThresholdType.RelativeSoftThreshold, _ => BlobThresholdType.SingleThreshold },
+            Polarity = settings.Type == BlobThresholdMode.BinaryInv ? BlobPolarity.BrightOnDark : BlobPolarity.DarkOnBright,
             LowThreshold = settings.Threshold, HightThreshold = settings.UpperThreshold,
             LowSoftThreshold = settings.FixedSoftLowerThreshold, HightSoftThreshold = settings.FixedSoftUpperThreshold, Softness = settings.ThresholdSoftness,
             SoftLeftRatio = settings.RelativeLeftRatio, SoftRightRatio = settings.RelativeRightRatio, SoftLowRatio = settings.RelativeLowerRatio, SoftHighRatio = settings.RelativeUpperRatio,
             FindNum = settings.BlobCountLimit, SelectByArea = settings.IsAreaFilterEnabled, MinArea = settings.FilterAreaMin, MaxArea = settings.FilterAreaMax,
-            BolbOutLineEnable = settings.OutputBoundary, BlobContourType = settings.OutputBoundary ? BlobVmContourType.SequentialContour : BlobVmContourType.NoneContour,
             BolbImageEnable = settings.OutputBlobImage, BinaryImageEnable = settings.OutputBinaryImage,
             SelectByCircularuty = settings.IsCircularityFilterEnabled, MinCircularity = settings.FilterCircularityMin, MaxCircularity = settings.FilterCircularityMax,
             SelectByRectangularity = settings.IsRectangularityFilterEnabled, MinRectangularity = settings.FilterRectangularityMin, MaxRectangularity = settings.FilterRectangularityMax,
-            SortFeature = (BlobVmSortFeature)(int)settings.SortFeature, SortMode = (BlobVmSortMode)(int)settings.SortMode, Connectivity = (BlobVmConnectivity)(int)settings.Connectivity
+            SortFeature = (BlobSortFeature)(int)settings.SortFeature, SortMode = (BlobSortMode)(int)settings.SortMode, Connectivity = (BlobConnectivity)(int)settings.Connectivity
         };
     }
 
@@ -140,13 +136,13 @@ public sealed record BlobVmFindParameters
         ArgumentNullException.ThrowIfNull(settings);
         var result = settings with
         {
-            SegmentationMode = ThresholdType switch { BlobVmThresholdType.BinaryImage => BlobSegmentationMode.None, BlobVmThresholdType.DoubleThreshold => BlobSegmentationMode.DoubleThreshold, BlobVmThresholdType.AutoThreshold => BlobSegmentationMode.AutoThreshold, BlobVmThresholdType.FixedSoftThreshold => BlobSegmentationMode.FixedSoftThreshold, BlobVmThresholdType.RelativeSoftThreshold => BlobSegmentationMode.RelativeSoftThreshold, _ => BlobSegmentationMode.SingleThreshold },
-            Type = Polarity == BlobVmPolarity.BrightOnDark ? BlobThresholdMode.BinaryInv : BlobThresholdMode.Binary,
+            SegmentationMode = ThresholdType switch { BlobThresholdType.BinaryImage => BlobSegmentationMode.None, BlobThresholdType.DoubleThreshold => BlobSegmentationMode.DoubleThreshold, BlobThresholdType.AutoThreshold => BlobSegmentationMode.AutoThreshold, BlobThresholdType.FixedSoftThreshold => BlobSegmentationMode.FixedSoftThreshold, BlobThresholdType.RelativeSoftThreshold => BlobSegmentationMode.RelativeSoftThreshold, _ => BlobSegmentationMode.SingleThreshold },
+            Type = Polarity == BlobPolarity.BrightOnDark ? BlobThresholdMode.BinaryInv : BlobThresholdMode.Binary,
             Threshold = LowThreshold, UpperThreshold = HightThreshold, FixedSoftLowerThreshold = LowSoftThreshold, FixedSoftUpperThreshold = HightSoftThreshold, ThresholdSoftness = Softness,
             RelativeLeftRatio = SoftLeftRatio, RelativeRightRatio = SoftRightRatio, RelativeLowerRatio = SoftLowRatio, RelativeUpperRatio = SoftHighRatio, BlobCountLimit = FindNum,
-            IsAreaFilterEnabled = SelectByArea, FilterAreaMin = MinArea, FilterAreaMax = MaxArea, OutputBoundary = BolbOutLineEnable || BlobContourType != BlobVmContourType.NoneContour, OutputBlobImage = BolbImageEnable, OutputBinaryImage = BinaryImageEnable,
+            IsAreaFilterEnabled = SelectByArea, FilterAreaMin = MinArea, FilterAreaMax = MaxArea, OutputBlobImage = BolbImageEnable, OutputBinaryImage = BinaryImageEnable,
             IsCircularityFilterEnabled = SelectByCircularuty, FilterCircularityMin = MinCircularity, FilterCircularityMax = MaxCircularity, IsRectangularityFilterEnabled = SelectByRectangularity, FilterRectangularityMin = MinRectangularity, FilterRectangularityMax = MaxRectangularity,
-            SortFeature = (BlobSortFeature)(int)SortFeature, SortMode = (BlobSortMode)(int)SortMode, Connectivity = (BlobConnectivity)(int)Connectivity, VmParameters = this
+            SortFeature = (BlobSortFeature)(int)SortFeature, SortMode = (BlobSortMode)(int)SortMode, Connectivity = (BlobConnectivity)(int)Connectivity, FindParameters = this
         };
         return result;
     }

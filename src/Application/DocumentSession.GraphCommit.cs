@@ -124,6 +124,7 @@ public sealed partial class DocumentSession
     private void RetireChangedDomains(DocumentChangeSet change)
     {
         QueueRemovedNodeLifetimes(change);
+        TrackCommittedFieldRevisions(change);
         if (!change.ChangedRoots.IsDefaultOrEmpty)
             foreach (var root in change.ChangedRoots.Where(item => item.Kind == RootCollectionChangeKind.Removed))
                 RetireFlowGeneration(root.Workflow);

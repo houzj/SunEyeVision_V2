@@ -41,7 +41,8 @@ public sealed record ToolSettingsViewOptions(
     IReadOnlyList<NativeVisibilityDisplayOptions>? VisibilityDisplays=null,
     Action<string,DeclaredFieldsView,FrameworkElement?>? PageBuilt=null,
     Func<DeclaredFieldsView,FrameworkElement>? InputContentFactory=null,
-    bool EagerlyComposePages=false)
+    bool EagerlyComposePages=false,
+    Func<string,ParameterSetting>? ReadInputSetting=null)
 {
     private IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? _choiceDisplays=FreezeChoiceDisplays(ChoiceDisplays);
     public IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? ChoiceDisplays
@@ -59,6 +60,7 @@ public interface IToolSettingsView : IDisposable
     FrameworkElement View { get; }
     bool HasInvalidInput { get; }
     bool HasPendingEdits { get; }
+    bool HasPendingEditsOutside(IReadOnlySet<string> excludedFields) => HasPendingEdits || HasInvalidInput;
     long AcceptedRevision { get; }
     IReadOnlyList<string> AcceptedFieldOrder { get; }
     FieldSettings CaptureAcceptedFields();
@@ -71,4 +73,10 @@ public interface IToolSettingsView : IDisposable
 public interface IToolSettingsViewReady
 {
     Task ReadyTask { get; }
+}
+
+/// <summary>Refresh input projections when the host adopts a receipt without replacing the view.</summary>
+public interface IToolSettingsViewInputProjection
+{
+    void RefreshAcceptedInputs();
 }

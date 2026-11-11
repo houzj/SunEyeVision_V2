@@ -28,7 +28,58 @@
 </style>
 </head>
 <body>
-<h1>Blob 控件依赖闭包台账（P1）</h1>
+<section id="manual-ui-feedback-20261111"><h2>人工界面反馈</h2><p>用户手动验证C盘Release后反馈正常，确认输出掩膜无×、枚举项中文显示、Blob三页切换与关闭正常。其余完整生产链仍按未逐项验证记录，人工反馈不替代自动回归或结果/ROI/资源生命周期核对。</p></section>
+<section id="output-mask-clear-build-20261111"><h2>输出掩膜清除按钮修正构建</h2><p>原件输出掩膜为普通RW Boolean，现正式Port Required=true，去掉Boolean模板的Unset/×分支，默认false和执行输入不变。Debug探针编译0错误、3302警告、21.25秒；全量Release0错误、3308警告、19.48秒。探针与自动测试均未运行；用户需手动确认输出掩膜、位置修正无×及开关状态保存重开。</p></section>
+<section id="roi-output-mask-no-clear-20261111"><h2>输出掩膜原件开关闭包</h2><p>Display/Algorithm原件声明OutputMaskImage为普通RW Boolean，默认False；本方模板只有在Port可选且当前有值时才显示×，因此错误来自Port可选声明，不是原件模板本身。已改BlobImageRoi.OutputEnabledId为Required=true，保留正式默认值、切换写入和执行输入。合同用例新增Required/Constant断言；源码已改但尚未构建、运行或测试。用户截图确认的视觉验收项：输出掩膜行不能出现×；位置修正行同样只有开关。</p></section>
+<section id="probe-host-resource-coverage-20261111"><h2>生产探针覆盖补强（未构建）</h2><p>RuntimeEditorProductionProbe现改为加载正式<code>SunEyeVision.UI.App</code>资源图（包含宿主隐式ComboBoxItem样式），并在每个实际参数页检查：可见文本不得出现Entry对象全文或旧资源占位；高级参数首次呈现必须折叠；正式枚举候选展开项必须显示声明中文标签且打开列表不改变接受值。该检查针对生产宿主资源冲突，避免仅加载Plugin.Wpf共享字典而漏测用户截图问题。探针仍沿既有正式节点→RuntimeToolEditorWindow→DeclaredSettingsView→真实字段→捕获/回执→底栏命令→结果reader→关闭排空链，未新增算法或结果模型。</p><p>本轮探针源码已修改但当前C盘Release控件DLL被用户运行中的程序占用，全量Release复制失败（MSB3027/MSB3021），因此新探针尚未编译、未运行；不得以旧探针输出覆盖本轮。等待用户手动退出程序后重新构建。</p></section>
+<section id="result-display-owner-consumers-20261111"><h2>结果显示配置到正式帧与reader</h2><p>七组可编辑图形默认值与同版本Display.xml一致，TextDisplayGroup字号/透明度边界与步长有原证。正式字段沿AdmittedToolConfiguration → ResultDisplayFields.Capture → DocumentSession.GetNodeResultPresentation → MainWindowResultDisplay → ResultWorkspacePresenter的帧/坐标/代次校验 → NativeResultViewport原件投影；表格与选择高亮借用同一publication。设计示例有GetIsInDesignMode门禁，不认定生产重复建表。<a href="../../../collaboration/evidence/Blob结果显示默认声明与生产消费者-20261111.json">静态证据与未验范围</a>。原件文字动态本地化、轮廓点描边语义、实际切图/实时预览/关闭释放及性能仍未运行确认；本批无代码修改，不重复构建或运行测试。</p></section>
+<section id="numeric-step-original-evidence-20261111"><h2>数值步长生产消费者</h2><p>原AlgorithmTab范围父节点IncValue → FloatBettween_sub.SliderTickFrequency绑定；本方BlobParameters.xml.increment → FieldLayout.Increment → DeclaredRangeRow.SliderTickFrequency。结果判定12组24端点的0.01通用值已按原件修正为1或0.1，保留两位小数及原边界。302项默认值/边界/步长和27个范围父级静态一致；全量Release0错误、3308警告、18.34秒，相关用例编译未运行。<a href="../../../collaboration/evidence/Blob默认值与数值边界原件复核-20261111.json">原证与消费者</a>。未操作桌面，不把静态数值一致当作交互或性能通过。</p></section>
+<section id="alias-enum-label-closure-20261111"><h2>别名字段和枚举项补充映射</h2><p>正式FromSettings/ApplyTo转换与AssistGroup补齐9个非同名字段来源，合计104个声明字段；全部29个候选覆盖原件Name、Value、IsImplemented和DisplayName。轮廓、排序等标签沿原件资源修正，值和顺序不变。<a href="../../../collaboration/evidence/Blob别名字段与枚举项原件映射-20261111.json">字段/枚举明细</a>。名称映射覆盖不代表功能、性能或所有交互通过；未执行测试或桌面操作。</p></section>
+<section id="native-range-label-closure-20261111"><h2>字段/范围命名闭包</h2><p>同版本Blob AlgorithmTab.xml → 唯一字段bindingName/Name → 范围父节点IntegerBettween/FloatBettween → 原件zh-cn资源 → BlobParameters.xml的label/pairLabel → FieldLayout.PairDisplayName → DeclaredRangeRow → 原范围模板。27个范围均有独立显示名，字段端点名称保留，不再用中文替换推导标题。运行参数Category标题保留：原件XML与模板未提供删除依据，截图滚动位置及动态行为未确认。<a href="../../../collaboration/evidence/Blob标签与范围组原件映射-20261111.json">逐项静态映射</a>；构建结果另记，未启动UI、测试或探针。</p></section>
+<section id="enumeration-style-build-20261111"><h2>2026-11-11 原件条目样式消费者修正</h2><p>用户截图确认阈值方式/极性弹出项显示Entry全文。原件AppsStyle/comboboxstyle/listviewcomboboxstyle.xaml → SourceComboBoxes.xaml/SourceComboBoxItemStyle → ParamRowDataTemplates.xaml/Enumeration不可选项扩展 → Blob正式参数行；该链替代原先错误继承宿主隐式ComboBoxItem的路径。原件ControlTemplate XML相等；图像来源通过NativeInputFactory继续使用同一原件下拉族。原件模板和资源不重新绘制。</p><p>全量Release0错误、5945警告、22.23秒；补充弹出项中文/正式枚举值提交及宿主样式冲突用例，已编译未运行。此前ROI默认投影、半构造清理和底栏祖先循环修正一并保留。<a href="../../../collaboration/evidence/Blob枚举弹出项原件样式修正-20261111.json">原证/消费者/源码与产物哈希</a>。按用户要求不再控制桌面，不运行测试或探针；三页外观、交互和性能仍待相称验证，不能以本次构建代替完整验收。</p></section>
+<p>活动枚举续核：旧轮廓布尔控件在原件XML中已注释，本方声明/模型/门控已删除并统一三值枚举；六组枚举中排序特征原缺五项已接入，13项运行待验。详见主设计 active-contour-declaration 与 Blob六组枚举原件对账-20261110.json。编译通过，运行未验；有序/无序提取不计作已闭合。</p>
+<p><a href="../../../collaboration/evidence/VM-Blob原厂三页截图-20261110/index.html">用户确认的VM原厂9图</a>：三个Tab含高级展开及滚动状态；高级参数默认收起。原图为视觉参考，本方人工视觉验收未进行。</p><p>三页声明已按原厂默认收起纠偏：高级运行项及高级结果判定归组，字段身份全部保留，编译通过；实际WPF外观未运行验收。完整记录见主设计 default-advanced-layout。</p><p>范围链更新：27组父级极值已按原XML进入正式声明及SliderArrange，左右叶约束独立保留；全量编译通过，动态交互未验。详见主设计range-parent-implementation。</p><h1>Blob 控件与组装依赖复核台账</h1>
+<p class="sub">现行范围：ImageSource + Blob 调试窗口完整生产链；静态复核、产品实现、本方验证、原厂运行与人工验收分别记录。</p>
+<div class="note warnnote"><b>现行纠偏：</b>源码中没有引用 .pending，不能证明该依赖与原件迁移无关；采用声明式 schema 也不能证明参数页无需原件复核。下方历史“参数页无需动作”“55 类均无关”等结论撤销其现行效力。是否复用、调整或替换，应按 VM 真实入口、模板资源和行为到本方消费者判断。暂未完成的项目保持待核，不能以控件在库或编译通过标成完成。</div>
+<h2>原件覆盖基线</h2>
+<p>直接解析本机 VM Blob AlgorithmTabRoot 并递归展开 GroupLinkItem，已登记 <b>247 条命名声明</b>及 <b>9 个引用组</b>。命名声明含页签、分类、控件和条目，并非 247 个独立控件或已复核项。每项保留原文件哈希、层级、引用组链、声明操作名和待核状态，见 <a href="../../../collaboration/evidence/Blob控件原件声明展开清单-20261110.json">机器清单</a>。模板的动态资源、代码事件、继承方法及运行时行为尚须逐项展开，不因 XML 枚举完成而记作依赖闭包完成。</p>
+<p>九组：ImageSourceGroup、OutputMaskImageGroup、InputMaskImageGroup、RoiSelectGroup、InheritWayGroup2、ExternROITypeGroup、AssistGroup、TextDisplayGroup、BottomCommandGroup。Blob 实际链接四方式 InheritWayGroup2；两方式 InheritWayGroup 仅作原件对照，不替代实际消费者。</p>
+<h2>完整功能链与消费者决策</h2>
+<p>屏蔽区继承使用正式引用模板和中立多边形序列，已接只读预览、执行及结果叠加，旧预览来源行和旧 Region 参数入口已删除。原件字符串编码及人工交互待确认。见主设计 blind-polygon-inheritance。</p>
+<p>位置修正三方式现共用十叶正式输入。信息和点为组合投影，坐标直读叶，混合来源走引用模板只读摘要。已去除草稿来源行和预览方式门禁。原件运行、索引交互及保存重开仍待验证。见主设计 fixture-shared-leaf-implementation。</p>
+<p>ImageSource 相机行复用 EnumerationCamera_Sub 的布局、模板资源和相机图标，设置入口连接正式相机管理器。方案候选、草稿和取帧使用一致的运行时设备 ID。见主设计 image-source-camera-selector。实机及自动回归未执行。</p>
+<p>图像源缩略图目录菜单已复用 InteractionContextMenu，按缩略图和会话版本定位，换源退役。原件参数 CurrentImagePath 模板为空，本方列表仍由正式外部槽和图像源会话承载。图像源条其余交互的动态对照待验。见主设计 image-source-file-strip。</p>
+<p>原件基准点和运行点是默认隐藏的活动 ImageViewConfig。已接正式图形模板、FIXTURE 结果点和原件点绘制，并复核字号编辑与绘制的整数转换规则。见主设计 fixture-points-and-text-display。动态和人工对照未执行。</p>
+<p>检测区、屏蔽区和扇环的显示行继续走原件模板。像素 ROI、图像掩膜及仿射后的轮廓接入同轮结果快照和原件结果图层。独立显隐、源图像与坐标域校验保留。HALCON 边界适配及显示预算见主设计 roi-result-boundaries；实机叠加与原厂动态行为未验。</p>
+<p>最大内接矩形的 ImageViewConfig 已进入正式 GraphicDisplays 组装，显示开关、颜色、透明度和线宽使用现行结果设置，旧预览行及其草稿控件已删除。参数与正式结果由同一 Blob 执行产生。原厂旋转和数量分配规则、WPF 实际叠加和交互仍待核。详见主设计 inner-rectangle-result-chain。</p>
+<p>真实连线验收要求正式图像来源行读取连线生成的 ImageSource 图像成员引用，并核对保存重开后的归属。关闭位置修正或切至图像 ROI 时，BlobTool 在同一草稿候选清除十个叶来源，正式行无写回刷新。三方式运行与原件控件动态表现待统一验证。已编译，未启动测试或程序。</p>
+<table><thead><tr><th>原件对象／链</th><th>本方生产消费者</th><th>当前证据及差异</th><th>复核与实施出口</th></tr></thead><tbody>
+<tr><td>工厂、参数根、页签与分组</td><td>RuntimeToolEditorWindow → IToolSettingsView → DeclaredSettingsView → DeclaredFieldsView / BlobUiComposition</td><td>存在按页声明和额外手工组装；首次就绪与重绑状态须整体核对</td><td>核入口、Owner、父状态、页签切换、失败与关闭；收拢三页组装，未完成</td></tr>
+<tr><td>ParamListView / ParamUserControl / UserTempConverter 与模板选择</td><td>ParameterPresentation 原控件、DeclaredFieldRow、ParameterRowTemplateSelector</td><td>已修正值驱动槽位覆盖模板；未逐项完成命名元素和资源闭包复核</td><td>模板物化、重复切页、标签宽度、分组与虚拟化行为分项核验</td></tr>
+<tr><td>Integer / Float / 范围模板</td><td>ParamRowDataTemplates、NativeNumberCoordinator、DeclaredFieldsView.Groups</td><td>已修正布局范围与控件 XML 范围绑定；完整键盘、滚轮、焦点及端点规则待统一验证</td><td>原件默认、上下界、反向范围、引用切换、提交与退役；不得只验数值可写</td></tr>
+<tr><td>Boolean / Enumeration / RadioSelecter</td><td>FieldRowModel、原单选模板与选择命令</td><td>已修正单选模板身份与接纳命令不一致</td><td>初态、鼠标与键盘切换、禁用、父级显隐、重复切换和保存重开</td></tr>
+<tr><td>ButtonSelecter / StringConfig</td><td>ReferenceFieldSession、NativeTextSession、ParameterFieldHost</td><td>已分离文本／引用的会话投影，修复共享 SubData 覆盖；新增用例未运行</td><td>候选、索引、清除、派生只读、弹层、焦点、模式回切及关闭退订</td></tr>
+<tr><td>ImageSourceGroup / EnumerationG</td><td>DeclaredFieldRow.ImageSource、正式来源声明</td><td>保留原枚举入口；已加来源重配代次与退订；空来源与真实候选资格仍待完整对照</td><td>声明→候选→选择→同帧消费→失效回执；消除无解释的空框</td></tr>
+<tr><td>RoiSelectGroup / ROISelecter / ExternROITypeGroup</td><td>NativeRoiUiDraftControls、BlobLocalRoiOwner、共享 ROI 会话与栅格化</td><td>已有本地几何生产链；共享外形不等于所有组装和交互已对齐</td><td>四形、选择/编辑、复制删除、绘制取消、同帧预览、提交、保存及释放</td></tr>
+<tr><td>InheritWayGroup2</td><td>NativeRoiInheritanceBinding、BlobRoiInheritance、BlobTool.ExpandChanges、BlobSupportedWindowState</td><td>四方式共十三个来源槽。两个组合及 5/6 参数均走原 ButtonSelecter_sub 模板。同类保留、跨类清空、退出继承清空与图像 ROI 隐藏继承组的清空均映射到同一次草稿提交与行状态回读。原组合、角度及数组规则仍待运行差分。</td><td>正式窗口用例覆盖两组行序、上游检测矩形成员订阅、图形与图像切换、撤销重做及保存重开，待统一执行。来源失效及换图继续列入整链验收。</td></tr>
+<tr><td>AssistGroup / FIXTURE</td><td>NativeAssistUiDraftControls、BlobFixtureInputs、BlobTool.ExpandChanges、BlobSupportedWindowState</td><td>按信息、按点和按坐标共用十个正式 Float32 输入叶，组合选择写入同源索引，混合来源以只读摘要回显。首批可用上游 Blob 质心验证 POINT，FIXTURE 生产者另列。</td><td>统一核对选择与解除、数组索引、保存重开、实际位姿及失效保护。原件原生变换数值待同输入对照。</td></tr>
+<tr><td>InputMaskImageGroup / OutputMaskImageGroup</td><td>NativeRoiUiDraftControls、BlobImageRoi、BlobInput、BlobSession、BlobOutput</td><td>图像 ROI 走正式 IMAGE 引用，同尺寸 Gray8 掩膜与主图有效域相交。输出开关独立发布掩膜，可经结果选择与 reader 消费。</td><td>图形与图像切换、输入掩膜缺失、输出启停、像素及释放。原件格式准入和掩膜逐像素行为待验。</td></tr>
+<tr><td>ImageViewConfig / TextDisplayGroup</td><td>BlobResultDisplay、GraphicDisplays / TextDisplays、ResultWorkspacePresenter、原件图形批次</td><td>正式结果样式消费同轮外接矩形、内接矩形、检测区、轮廓、屏蔽区、位置修正点及文本。内接矩形采用 HALCON 轴对齐求解。</td><td>颜色、线宽、透明度、文本插入、可见性、判定色和换帧。内接矩形的原厂旋转及数量分配待同版本运行对照。</td></tr>
+<tr><td>结果表、图像／模块结果页</td><td>ResultWorkspaceShell、PropertyListView、ResultImagePane、BlobDisplayDefinition</td><td>控件已在库，不能据此免除列映射、空失败结果及迟到结果核验</td><td>结果字段→reader→图像与表格→切换→替换/释放，复核叠层与坐标</td></tr>
+<tr><td>BottomCommandGroup</td><td>RuntimeToolEditorWindow 与正式执行会话</td><td>已核 BottomCommand 串行回调门控与300ms轮询；连续命令接入正式会话、停止及关闭排空，重复加载不重复绑定；完整状态与原厂动态时序仍待验</td><td>执行捕获、禁用、取消、回执、关闭排空与迟到拒写；不得只检查按钮存在</td></tr>
+<tr><td>ImageListPanel 与图像源条</td><td>ImageSourceStrip、ImageSourceStripSession、正式 ImageSource Runtime</td><td>原件 pending 和本方组合都存在；名称差异不证明等效或必须重写</td><td>按原 XAML、命令与状态逐项决定复用/替换；文件队列、删除、首图、自动切换、运行全部及资源释放</td></tr>
+</tbody></table>
+<h2>统一复核单元</h2>
+<p>每项记录：原程序集／MVID／资源哈希 → 命名元素与继承事件 → 模板及 StaticResource/DynamicResource → 父级条件与绑定 → 命令、鼠标键盘和焦点 → 异步回调与资源 Owner → 当前消费者 → 保存重开与关闭 → 本方验证及原件动态证据。缺失栏明确待核，不用一张截图或单个测试替代。</p>
+<h2>逆向设计参考及证据边界</h2>
+<p>用户指定参考入口：<code>D:/MyWork/Rea逆向/docs/reverse-plan/index.html</code>。已读 16-ui-control-landing 及 ui-control-landing.map.json，关联 UI-C05–09、UI-C12。任务卡的 originalEvidencePaths 仍需核对正文：例如 A-runtime-editor-batch18 实际记录目录加载与注册，A06-close-dependency-batch13 记录 FrontendEdit 设计器关闭，不能直接签为 Blob 参数窗口或结果缓存证据。站点计划、逆向侧自研验证、原件静态与原机运行分别采纳，不转抄其阻塞/完成状态为本方状态。</p>
+<h2>验证状态</h2>
+<p>已完成的一次 Release 编译见 <a href="../../../collaboration/evidence/参数模板集中实施-Release编译-20261110.txt">命令与源码哈希</a>；其后的文本／引用生命周期增量尚未构建。按用户要求不启动自动测试、生产探针或程序。完整设计、实施、性能与交互对照均未完成，不宣称 Blob 控件已全部复核通过。</p>
+<p>设计与实施总记录：<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html">全链设计审计</a>。</p>
+<details><summary>历史 P1 台账原文（仅保留演进依据，不作为现行结论）</summary>
+
+<p>活动枚举续核：旧轮廓布尔控件在原件XML中已注释，本方声明/模型/门控已删除并统一三值枚举；六组枚举中排序特征原缺五项已接入，13项运行待验。详见主设计 active-contour-declaration 与 Blob六组枚举原件对账-20261110.json。编译通过，运行未验；有序/无序提取不计作已闭合。</p>
+<p><a href="../../../collaboration/evidence/VM-Blob原厂三页截图-20261110/index.html">用户确认的VM原厂9图</a>：三个Tab含高级展开及滚动状态；高级参数默认收起。原图为视觉参考，本方人工视觉验收未进行。</p><p>三页声明已按原厂默认收起纠偏：高级运行项及高级结果判定归组，字段身份全部保留，编译通过；实际WPF外观未运行验收。完整记录见主设计 default-advanced-layout。</p><p>范围链更新：27组父级极值已按原XML进入正式声明及SliderArrange，左右叶约束独立保留；全量编译通过，动态交互未验。详见主设计range-parent-implementation。</p><h1>Blob 控件依赖闭包台账（P1）</h1>
 <div class="sub">2026-11-10 · 范围：参数页 / 结果工作区 / 图像源条三条链 · 结论基于全仓反向检索</div>
 
 <div class="cards">
@@ -143,5 +194,99 @@
   <li>画布节点的显示适配器（节点卡片/连线）——属画布层，另立批次。</li>
   <li>历史结果页（界面显示"历史记录未接入"）——已知未实现，本批只保留明确占位。</li>
 </ul>
-</body>
-</html>
+
+</details>
+<h2>检测区形状栏与执行入口</h2>
+<table><thead><tr><th>原件证据</th><th>正式消费者</th><th>验证状态</th></tr></thead><tbody>
+<tr><td><code>RoiSelectControl.xaml</code> 与 Blob <code>ROISelection</code> 声明</td><td><code>NativeRoiEditor</code> 复用全屏、扇环、扇形、矩形、多边形模板，按原件顺序显示。独立屏蔽组仅显示多边形。</td><td>静态映射已核，实际视觉和换页状态待验。</td></tr>
+<tr><td><code>ROISelecter.ValueChangedCmdExecute</code>、<code>DoRadioButton</code>、检测区 <code>RoiMaxNum=16</code> 和 <code>ROISelecter_Extern</code> 继承的默认上限 8</td><td><code>NativeRoiSession</code> 处理复点取消，在绘制前检查 <code>BlobLocalRoi</code> 的本地上限。<code>NativeRoiEditor</code> 显示原件模态提示并随交互退役关闭。正式草稿与执行检查相同本地限制，继承屏蔽区使用单独的宿主上限。</td><td>用例覆盖复点、两种上限提示归属、换绑关闭、删除后恢复和订阅屏蔽区的执行。原厂和本方实际模态焦点待验。</td></tr>
+<tr><td>C03 的 <code>01 00</code> 全屏矩形链及直接 SDK 二值图的外圈像素差分</td><td><code>BlobInput</code> 将正式默认图形 ROI 解释为全屏。<code>BlobSession</code> 在已取证的亮前景单阈值、无屏蔽及修正路径分离阈值工作域与名义检测区。叠加与输出掩膜保留名义区域。</td><td>全屏、显式矩形和图像掩膜用例已编译。真实窗口和生产探针已补阈值及边缘像素检查，并覆盖保存重开后重跑。历史宿主逐帧输入、本方同输入差分及其他路径边缘语义待验证。</td></tr>
+</tbody></table>
+<h2>高级参数的可见性和执行接线</h2>
+<table><thead><tr><th>原件证据</th><th>正式消费者</th><th>验证状态</th></tr></thead><tbody>
+<tr><td>算法页 XML 的 <code>MaxOutPixelNumEnable</code> 与 <code>MaxOutPixelNum</code> 联动</td><td><code>BlobRunUi</code> 沿现有声明呈现，<code>BlobTool</code> 与 <code>BlobSession</code> 在关闭时保留设置并跳过读取。</td><td>高级页、休眠订阅及执行门禁已补用例。启用后原厂超界像素规则待确认。</td></tr>
+<tr><td><code>OverlapRatio</code> 默认隐藏，展开没有显示触发。已核模块直接访问为初始化、设置和读取。</td><td>声明式视图压制该行，保留配置往返。非零值不再阻断执行。</td><td>新增候选测量和输出像素用例，已编译。实际视图和同版本动态对照待验。</td></tr>
+</tbody></table>
+<h2>输出掩膜显示</h2>
+<p>原件 <code>OutputMask</code> 图像对象映射到正式掩膜端口。中立结果投影、正式 reader 和结果工作区选择器沿用本轮发布资源。新增启用、选择和关闭后退役用例。像素对照及原厂多图叠层待验。</p>
+<h2>长短轴结果列与全屏边缘修正</h2>
+<p>C03 的原厂 box 角度与归档 Blob 图支持长短轴按像素中心投影跨度加一。该值进入正式明细、筛选、判定及结果列表。逐字节差分仅发生在顶行与左列，已更新全屏工作域及生产验收图。Release 构建通过，实际列表显示与原厂动态对照待验。</p>
+<h2>Blob 结果行高亮</h2>
+<p>原件 <code>SetRectHighLight</code> 的黄色接入正式结果场景。行身份和物理帧一致时替换可见矩形颜色。新增真实列表与图像工作区用例，覆盖同帧换图和新发布后清除选中。运行待验。</p>
+<h2>轮廓发布与点集编码</h2>
+<p>当前轮身份由正式会话直接校验，结果值和点集继续走实际 reader 与原件 16 字节点记录。两个轮廓循环分块校验，保留场景安装前的完整身份判断。大点集检查次数、准备期间退役和真实换轮已补用例，耗时及实机行为待验。</p>
+<h2>全屏检测区显示</h2>
+<p>原件全屏二进制解码到检测矩形输出，再由 Display ROI 对象消费。本方在同一结果几何声明发布冻结图像上的全屏矩形，使用原件检测区样式及帧检查。用例核对矩形尺寸和行高亮独立性。异尺寸切换和实际边界可见性待验。</p>
+<h2>轮廓点配色</h2>
+<p><code>Contour Point</code> 及 <code>Object.SetBaseProperty</code> 对应独立点集颜色，正式结果工作区复用原件渲染器。矩形改色和行高亮不进入轮廓点样式。用例已补，动态对照待验。</p>
+<h2>运行页组装与退役</h2>
+<p>原件页签、分组、模板与正式字段由同一声明视图消费。移除旧运行页预览校验及重复事件转发。基本页 ROI 与位置修正仍走现有生命周期。补高级排序提交及设计上下文重复绑定检查，运行待验。</p>
+<h2>范围端点回读</h2>
+<p>原件范围控件的两个端点沿正式字段读回。本方整页读取使用同批冻结端点验证，避免上一轮的旧对端拒绝本轮合法范围。保留单项入口和原件范围交互。用例覆盖双端上下移动及反序拒绝，动态待验。</p>
+<h2>底栏重置消息框</h2>
+<p>左槽按参数树选中页键映射 <code>ParamsTabUserControl</code> 的 <code>Tab_Run Params</code> 触发器，使用原件重置模板及语言键。右槽四命令按原件显示键解析。回归已补基本页和结果页隐藏、运行页显示、可见标题改名后的命令状态与提示文本。</p>
+<p><code>Button_ResetAlgoParams</code> 的确认、成功和错误类型映射到 <code>NativeMessageBox</code>，由当前调试窗拥有。跨页算法重置通过同一草稿恢复默认值并解除算法订阅。用例覆盖取消、确认、关闭提示、私有草稿隔离及结果页范围订阅恢复。原厂回读时序和实际焦点待验。</p>
+<p>底栏连续、单次、停止模板分开绑定命令可见、连续请求和在飞状态。正式窗口用例直接检查原件按钮在准备、停止排空与恢复后的可见和启用状态。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#native-footer-visibility">显示与执行准入的对应关系</a></p>
+<h2>窗口结果通知的退役</h2>
+<p>调试结果沿现有场景和窗口命令接缝发布。宿主在捕获、接纳及同步通知后检查当前草稿和快照。真实窗口用例覆盖通知内关闭、排空和拒发完成事件，原厂动态时序待验。</p>
+<h2>关窗排空的共享回执</h2>
+<p>原件窗口继续承载关闭入口，宿主在同步通知前登记共享排空任务。重复请求不再调用正在进行的 WPF 关闭。连续调试准备中关窗和观察者重入已补用例，动态待验。</p>
+<p>位置修正的混合来源通过原件 <code>ButtonSelecter_sub</code> 对应的引用模板显示。<code>ReadOnlyA</code> 限制摘要文本，订阅选择命令继续可用；显式清除仍通过宿主展开并清除组合叶。已补模板交互用例。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#fixture-mixed-source-edit">原件路径与实施说明</a></p>
+<p><code>AssistGroup</code> 的三种方式采用安装件角色顺序、原本地化键和说明。正式参数树直接折叠附属行，来源仍投影同一输入树。窗口回归用例已补，Release 编译通过，截图与焦点时序待对照。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#fixture-row-layout">原件行序与折叠</a></p>
+<p>图像来源及掩膜选择挂接 <code>EnumerationG</code> 原件行布局。图像掩膜与输出开关沿正式草稿变更退役旧结果。新增窗口和模板用例，实际像素、布局及原厂刷新时序待运行对照。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#mask-source-original-row">原件分组与结果链</a></p>
+<p>主图和掩膜下拉接入方案图像变量候选。结果壳复用正式视口，变量帧独立持有，ROI 使用同一帧回执。新增真实窗口至正式 Blob 结果的回归覆盖，尚未运行。原件的变量候选交互及回显时序运行未确认。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#blob-image-variable-contract">变量订阅静态证据与消费者</a></p>
+<p>正式结果为 <code>ROI</code> 与 <code>ROIAnnulus</code> 接入下游可继承的矩形和扇环，复用图像叠加的同帧几何。只能显示栅格轮廓的输出仍标记不可用。运行与订阅待验。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#detection-geometry-publication">声明与读回范围</a></p>
+<p><code>ContourPoints</code> 将有序和无序轮廓发布到正式 reader。点数、X/Y、判定和结果索引由同一批测量生成。轮廓开关分别控制模块组合和图像叠加，独立拓扑请求仍可读。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#contour-result-publication">原件输出分支与对照状态</a></p>
+<p><code>ModuStatus</code> 与 <code>BlobStatus</code> 按原件 Int32 形状正式发布，画布及结果配色共用本轮判定。已补业务失败与执行状态隔离的结果断言，运行待验。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#blob-integer-status">状态来源与验证范围</a></p>
+<p>原件 Text 对象按 Content 值数绘制。正式场景按冻结显示来源计数，沿用已有图像层、坐标和配色。回归覆盖多 Blob、固定文字和零结果，运行待验。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#text-content-cardinality">原件数量与回退规则</a></p>
+<p>正式调试结果在单独编辑文字、位置或配色时继续保留，显示场景读取已接纳草稿。执行字段编辑仍退役结果。已补实际窗口回归，运行待验。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#display-draft-execution-boundary">显示与执行修订边界</a></p>
+<p>运行页的二值图和 Blob 图像开关沿草稿进入各自发布分支。下游引用继续持有原声明，值可随开关为空或恢复。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#blob-image-output-switches">原件标志与引用回归</a></p>
+<p>双图输入的 ROI 编辑沿已接纳图像引用借阅。待提交手势保留同帧权限，换视口或关闭拒绝旧回写。已补正式窗口回归，运行待验。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#roi-frame-edit-authority">图像候选与编辑权限</a></p>
+<p>结果区先验证图像选项属于当前计划，再退役 ROI 租约。回归加入同键旧选项，核对恢复当前项且不取消在绘制的 ROI，实际换视口仍拒绝旧回写。</p>
+<p>显示场景借阅前检查结果与视口物理帧和坐标域。正式回归加入上游独立灰度帧的图文清理，以及切回同帧二值图的高亮恢复，运行待验。</p>
+<p>按原件 <code>ActiveUpdateShapes</code> 的显示条件，在借阅前过滤场景需求。隐藏图形时跳过逐 Blob 区域读取，全关时释放场景。正式窗口用例覆盖全关和仅重开文字，待统一执行。</p>
+<p>正式主窗测试将三页、展开、范围、引用和 ROI 采集统一到同一方案。关窗状态另有结构化记录。已编译，采集及人工像素核验待执行。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#visual-evidence-capture">九张原厂截图的对照索引</a></p>
+<h2>首屏组装和换节点</h2>
+<p>原件参数根与模板仍由正式工厂接入。显示前核对当前窗口及打开代次，关闭中的旧窗口由排空流程释放。新增 ImageSource 就绪通知内切换到 Blob 的正式窗口用例，运行和耗时待验。</p>
+<h2>画布节点边框</h2>
+<p>原件 NORMAL 模板的 <code>errorBorder</code> 和 <code>StateFlag</code> 分别消费配置与执行状态。本方 <code>WorkflowCanvasControl</code> 使用同形描边，由正式必填输入设置驱动虚线，选中保留虚线并取主题描边色。用例沿 ImageSource → Blob 连线、删除及撤销重做检查实际 WPF 路径，待统一执行。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#node-input-readiness">原件来源与实现边界</a></p>
+<h2>结果图像选择</h2>
+<p>原件 <code>RefreshImageList</code>、<code>RecoveryCheckedImages</code> 与 <code>RefreshInputImageList</code> 映射至 <code>CaptureNativeImageSources</code> 和结果工作区选择恢复。原件输出掩膜的末项及默认排除规则由正式输出显示声明传递，双图输入使用同一候选排序和真实引用。正式工作区已接叠加勾选回读、背景交换和图层空位复用，测试与原厂实机对照待验。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#result-image-list">来源映射和叠加证据</a></p>
+<p>图像源 <code>ShowImageName</code> 由原件布尔模板承载，当前冻结发布的文件名进入原件 <code>ImageName</code> 属性。相机模式隐藏该行，方案保存开关状态。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#image-source-file-caption">图像源标题来源与回归</a></p>
+<p>Blob 原件逐体最小灰度、最大灰度、对比度和主轴角通过正式 Float32 结果端口进入 reader 及引用树。按安装帮助，逐体对比度由自动阈值分组后的亮暗均值差提供。原结果表的角度列沿用外接矩形角度，实机数值对照待验。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#blob-published-gray-and-angle">发布和引用来源</a></p>
+<p>原件选中页模板及订阅目标重置映射到公共参数树和 <code>ReferenceWindowOwner</code>，工具层不再安排第二轮页组装。切页旧索引与订阅请求退役，真实窗口回归待执行。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#blob-tab-request-lifetime">切页组装和生命周期</a></p>
+<p>订阅行的启用、可见和加载门禁由同一个弹层作用域负责。用例覆盖禁用时拒绝展开、重新启用不复活旧请求，以及 Blob 回到原页后旧命令继续失效。</p>
+<p><code>InputMaskImageGroup.ROIAreaType</code> 经 <code>RadioSelecterEx2.DisplayType</code> 使用 <code>RadioSelecter</code>，本方复用公共正式输入行。区域类型的模板状态、草稿与分支显隐读取同一字段。继承用 <code>RadioSelecter3</code>，其他两项用 <code>RadioSelecter</code>，标签和选项查原件资源。正式窗口已编写字段身份、模板和模式往返回归，待运行。</p>
+<p>图像源条沿原件水平虚拟化容器选择视口内缩略图，滚动与折叠释放独立借阅。正式方案回归覆盖长列表、可见范围及起点隔离，运行待验。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#image-source-strip-viewport">图像源条滚动及刷新</a></p>
+<p>最小外接矩形与长短轴新增独立正式发布，继续复用结果表和图像叠加使用的同轮测量。新增斜向目标的结果 reader 用例，运行待验。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#blob-bounding-box-publication">原件矩形及结果字段映射</a></p>
+<p>参数输入和底栏的键盘边界已纳入正式三页用例，覆盖阈值 Enter 写入私有草稿及来源列表 Escape 收起时保留窗口和私有执行状态。已编译，运行待验。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#tool-keyboard-command-boundary">键盘与底栏原件对照</a></p>
+<p>Blob 外接框按原件 Display XML 的 <code>rect</code> 映射到原件 <code>IRectangle</code> 批次。正式测量提供中心、宽高和角度。用例覆盖宽度、透明度、选中颜色、零高矩形和帧退役，实际绘制及命中待验。</p>
+<p>原件 <code>ExternROI</code> 的橙色填充及定位点固定状态、坐标提示从 Blob 样式声明进入公共结果绘制。新增正式窗口屏蔽区绘制、样式编辑与关窗用例。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#blob-result-roi-style-ownership">原件配置和消费关系</a></p>
+<p>屏蔽区继承行复用原件引用模板，订阅上游坐标字符串。解码供只读 ROI 预览和执行共用，结果叠加沿原有多边形几何输出。正式窗口用例包含绘制、继承、切回绘制清除、保存重开、取消及二值图检查。已编译，运行待验。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#blind-polygon-inheritance">原件载荷与正式消费链</a></p>
+<p>图像条 <code>ImageListPanelBase.MenuItem_Click</code> 以命令触发时的当前图像索引读取路径。正式菜单保留来源与列表版本门禁，图像文件由 Shell 定位，目录由 Explorer 选中。独立交互探针已编译，原件右击选择时序待实机对照。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#image-source-file-strip">目录菜单原件与正式消费者</a></p>
+<p>实际主窗用例跨三页提交低阈值、由 <code>NativeRoiEditor</code> 提交的矩形和结果文字。保存重开后检查同一连线、图形身份、新会话结果、绘制文字和取消编辑。已编译，运行待验。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#tool-save-reopen">方案重开与结果消费者</a></p>
+<p><code>ModuleResultView.InfoTab</code> 的选中条件接入正式结果表发布。切回读取最新批次，历史表继续显示实际记录，清理旧占位文字。主窗用例覆盖隐藏、返回和换节点，待运行。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#blob-current-result-tab">结果页签门禁及原件映射</a></p>
+<p><code>SetFirstVisibleTab</code> 与 <code>RefreshDataListResult</code> 分别映射到结果壳的首个可用页和正式表格的数据列宽回缩。编译覆盖 ImageSource 帮助页切换 Blob 及长度变化 50/51 两类边界，实际布局和原件手动页签状态待对照。</p>
+<p>底栏 <code>StopExecuteBottomCommand</code> 按原件连续状态显示，命令清连续请求。已派发轮次仍允许回执，关窗和草稿变更使用独立的退役与取消路径。正式窗口用例覆盖派发前后、单次门禁及关窗拒收，运行待验。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#continuous-execution-implementation">命令及生命周期映射</a></p>
+<p>图像源 <code>EnumerationCamera_Sub</code> 的候选与值路径由正式设备目录提供。<code>BaseImage_ButtonStyle</code> 提取为公共原件样式，由相机设置、结果壳和属性表消费。正式窗口用例覆盖曝光已引用时的相机行读取与草稿提交，待运行。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#image-source-camera-selector">相机控件依赖和运行边界</a></p>
+<p>图像源目录字段使用迁移的 <code>OpenFileDialog</code> 行模板及文件路径三态图标，文本由正式待提交会话接纳。目录监听、运行快照和结果条按游标生命周期退役，新增与删除通过主窗请求正式根流程。已编写目录源到 Blob 的真实窗口用例，运行待验。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#image-source-folder-subscription">原件来源及宿主差异</a></p>
+<p>目录切换后同批新旧回调由当前配置门禁核验，保留有效请求。正式窗口用例覆盖旧回调先到和后到，最终读取新目录并验证 Blob 二值图。关闭清理待派发请求，游标释放逐项汇总异常，运行待验。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#image-source-folder-lifecycle">宿主时序与释放边界</a></p>
+<p>ImageSource 拼接组合复用正式布尔、数值和整数引用模板。处理状态按正式节点及私有窗口隔离，参数提交进入同一冻结捕获。用例覆盖参数显隐、跨轮前缀及下游 Blob 同帧二值图、前序清空订阅，尚未运行。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#image-source-stitch-state-contract">拼接组装与跨轮所有权</a></p>
+<p>处理状态借阅纳入本轮执行身份门禁。新增宿主用例检查退役拒绝与在飞释放计数，拼接用例覆盖改高度、越界及宽度失败恢复、零高度和旧发布读取。运行待验。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#image-source-stitch-retirement">退出与失败边界</a></p>
+<p><code>ParamsTabUserControl.ExternParamsListA</code> 对应公共外部槽。安装件 ImageSource 列表默认隐藏，SDK 模式显式显示。桌面窗的执行诊断复用原件消息框，已补缺文件运行和槽位高度相关状态用例，运行待验。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#tool-window-external-slot">原件外部槽与提示映射</a></p>
+<p>主图及掩膜 <code>EnumerationG</code> 改用数据候选及原件容器样式。回归覆盖候选消失和恢复、正式连线读回、主图改选和清除掩膜，待统一运行。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#image-source-choice-refresh">原件候选与提交</a></p>
+<p>ImageSource 字符过滤开关及两个可选字符串引用使用公共声明模板，正式执行与私有调试在取图前接纳冻结值。新增比较规则、相机零采集请求、过滤后的 Blob 后继抑制及恢复游标用例，已编译未运行。全量 Release 编译 0 错误，不代称交互或原件体感通过。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#image-source-character-filter">过滤完整生产链与证据边界</a></p>
+<p>ImageSource 原件 25 项控件声明、三类顺序及外部列表已固定到<a href="../../../collaboration/evidence/ImageSource类别控件原件与消费者映射-20261111.json">独立消费者映射</a>。参数声明恢复基本参数、触发设置、订阅图片文件夹三类，拼接归基本类；复用既有目录和清空订阅父级条件。类别序列与拼接开关往返用例已编译未运行；方案存图明确未实现，原件来源组合交互及视觉仍待验。见主设计 image-source-category-order。</p>
+<p>退役来源视觉链：SourceSelectionField 及其两个专属来源模型无产品和测试消费者，RegionSourceModeSelector 仅经两层同样无人调用的安装方法引用。本批已删除两控件、两层入口及分支，正式图像来源和 ROI 原件组合继续使用现有消费者。全量 Release 0 错误、5992 警告、18.21 秒，未启动测试/程序/探针。NativeAssistUiDraftControls 仍有实际消费者，不计入本次删除。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#retired-source-visual-paths">完整处理决定</a></p>
+<p>Assist 延迟来源组合已补拥有者退出检查及显隐重入收敛，输入字段工厂在宿主读取及配置回调返回后复核存活；未接纳行释放，关闭后来源提交返回失效。新增关闭期间创建、重入切方式及输入读取关闭的用例，已编译未运行。全量 Release 0 错误、5992 警告、18.16 秒；此为宿主接缝，不转签原件生命周期行为。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#assist-reentrant-lifecycle">完整处理链</a></p>
+<p>ImageSource SN初值控件现接跨轮计数，修正每轮原样输出初值的实际缺陷。计数与拼接使用同一工具状态拥有者，正式与私有隔离，初值变化重设；按本地/相机原件阶段消耗计数。正式运行及保存重开到Blob的用例已补SN断言，已编译未运行。全量Release 0错误、3302警告、13.99秒；未启动程序/测试/探针。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#image-source-sequence-state">原件计数与生命周期</a></p>
+<p>失败结果续审确认原件已有部分标量与本方失败Values为空之间的合同差异。新增两工具成功、缺图失败、同路径恢复用例，核对当前Blob发布退出、旧借阅图像不被改写、新帧及二值像素和SN。最终全量Release 0错误、3302警告、14.20秒，未运行用例。字段可用性、结果树和失败图像消费须按主设计 image-source-failure-result-contract 集中实施，不能以本方现有失败全空策略代替原件。</p>
+<p>失败字段已沿同一输出声明和reader接入原件属性结果树，状态保持失败，不向Blob提供执行输入。相机有效帧后失败可读SN、已有帧号/时间及设备，未产生图像缺失。新增类型/完整性、最后reader释放、失败表格呈现和相机拼接失败字段用例，已编译未运行。全量Release 0错误、3302警告、14.28秒。采集前失败计数、模块状态和原生错误码映射仍待实施，原件动态及实际窗口体感未验。见主设计 failed-fields-implementation。</p>
+<p>图像源相机采集失败次数已贯通实际取帧错误分类、冻结输入、Runtime状态与失败/成功结果reader；可选Int32字段及SN均进入正式订阅来源。新用例覆盖连续失败、恢复、未分类错误、私有隔离和已执行的模式/设备重置。全量Release 0错误、6087警告、22.69秒，用例未运行。模块状态、原生错误码和未执行中间设置事件仍待完善；不将模拟提供器或编译当原机通过。见主设计 camera-failure-counter-implementation。</p>
+<p>图像源来源、设备和SN初值控件的实际接纳事件已沿节点/私有草稿变更戳、冻结输入与工具状态贯通，补足中间未运行切换的重置。新增撤销重做、私有往返/重基、显示不重置及初值改回用例，已编译未运行。全量Release 0错误、6087警告、22.92秒。低层重复同值设置与原厂UI事件的对应仍未确认；不将变更戳结构冒充原厂事实。见主设计 image-source-configuration-revisions-implementation。</p>
+<p>图像源模块状态已按原件Process条件出口接入正式输出，且按CustomVisible=false默认隐藏；隐藏仅影响面板，reader仍读取实际值。相机采集失败计数写入成功后的模块状态1不授予Blob执行资格，也不制造图像。声明、快照显式字段元数据和publication均沿同一显示合同；新增失败及隐藏用例未运行。原生错误码全映射与本机原件动态仍待核，见主设计 image-source-module-status。</p>
+<p>图像源拼接两类拒绝的0xE0000502已沿同一诊断、失败快照和publication贯通，模块状态0且无新图像，不授予Blob执行输入。已有结果控件继续消费失败诊断，无新增自研错误控件；采集分类及未分类异常的原生码保持缺失。当前DLL静态指令已核，成功恢复与跨层诊断保留用例已编译未运行；全量Release0错误、6087警告、23.01秒。见主设计 image-source-native-error；完整错误码及动态体验未验。</p>
+<p>图像源目录接纳后的初始列表已接入现有图像条，修正等待运行才有列表、无关刷新又置空的组装差异；复用正式执行的过滤/自然排序，不新增可视控件、watcher或执行游标。回执更新仍受RefreshFolder控制；切目录错误及退订恢复由同一投影处理。新增UI会话用例已编译未运行，全量Release0错误、3302警告、14.28秒。方案存图仍未实现，原机动态和完整体感未验。见主设计 folder-initial-list。</p>
+<p>ImageSource存图声明依赖的BooleanTips已定位到ExtensionParamUserControl扩展字典，不能等同普通Boolean的ToolTip。公共库已迁入其原件组合与完整值/提示/提交投影，包含原件图片、主题、本地化、拒绝回退及退出拒写；普通Boolean和带提示Boolean的真实控件用例已编写未运行。全量Release0错误、3302警告、14.17秒。ImageSource生产存图字段仍待完整持久化接入，当前无该功能开关；不能将公共模板就绪记作生产消费者或整链完成。见主设计 boolean-tips-template。</p>
+<section id="source-save-current"><h3>图像源存图开关的当前生产消费者</h3><p>SolSaveImageData现映射local.save-images，默认False、本地显示，位于像素格式后，使用已迁入的BooleanTips原件模板。显式文件列表已贯通保存输出副本、编码资产校验、完整准入后写出、会话拥有者及图像条/正式/私有统一路径解析，原ImageSource与Blob执行/结果链继续复用。源路径与勾选列表同步保留同一身份，不将会话临时地址写回配置或历史。</p><p>候选损坏、预算、数量/孤立/悬空身份拒绝、作用域转移/只读/关闭清理、删源重开/再次另存/关闭存图及实际BMP→Blob同帧用例均已编译未运行；全量Release0错误、3302警告、16.07秒。目录快照目前明确拒绝存图，跨方案复制资产转交未复核，120后名单对应、完整控件布局/Description、运行时序及性能仍未验。此为显式列表生产实施，不是完整方案存图、控件体感或总目标验收完成。<a href="../../../01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#embedded-file-implementation">原主设计与证据</a></p></section>
+</body></html>

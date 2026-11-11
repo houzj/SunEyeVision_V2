@@ -79,10 +79,22 @@ public sealed class LocalImageSequenceService
         }
     }
 
+    internal IReadOnlyDictionary<string, LocalImageRunInput> GetSelectedInputs(string workflowId, long generation)
+    {
+        lock (_gate)
+        {
+            if (!_sessions.TryGetValue(workflowId, out var session) || session.Generation != generation)
+                throw new InvalidOperationException("图像运行序列已失效。");
+            return session.Sources.Where(source => source.HasCursor && source.Position >= 0)
+                .ToDictionary(source => source.NodeId, source => new LocalImageRunInput(workflowId, generation,
+                    source.NodeId, session.IterationVersion, source.Position, source.Entries[source.Position]));
+        }
+    }
+
     /// <summary>Accept one frozen source at its actual read boundary. The caller must
     /// validate the execution owner and request before entering this state machine.</summary>
     public LocalImageReadReceipt AcceptRead(LocalImageRunInput ticket, Guid requestId,
-        bool advance, CancellationToken cancellation, int navigationDelta = 0)
+        bool advance, CancellationToken cancellation, int navigationDelta = 0, bool holdCurrent = false)
     {
         if (requestId == Guid.Empty) throw new ArgumentException("图像读取缺少请求身份。", nameof(requestId));
         if(navigationDelta is < -1 or > 1)throw new ArgumentOutOfRangeException(nameof(navigationDelta));
@@ -106,7 +118,7 @@ public sealed class LocalImageSequenceService
                 throw new InvalidOperationException("当前来源没有可运行的图像。");
             var position = !source.HasCursor ? (navigationDelta<0?source.Entries.Length-1:0) :
                 navigationDelta != 0 ? (source.Position + navigationDelta + source.Entries.Length) % source.Entries.Length :
-                advance && source.AutoAdvance ? (source.Position + 1) % source.Entries.Length : source.Position;
+                advance && source.AutoAdvance && !holdCurrent ? (source.Position + 1) % source.Entries.Length : source.Position;
             var entry = source.Entries[position];
             var receipt = new LocalImageReadReceipt(ticket, requestId, entry, position,
                 navigationDelta == 0 && advance && source.AutoAdvance && source.StopAtLast && position == source.Entries.Length - 1);

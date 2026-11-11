@@ -26,16 +26,24 @@ public sealed class BlobDisplayDefinition
         var port=Required(table,"port");
         Table=new(ResultProjectionKind.StandardTable,ResultCardinality.Many,table.Elements().Select(item=>
         {
-            Shape(item,["key","label","member","decimals","unit","unavailable"],[]);
+            Shape(item,["key","label","labelResource","member","numericFormat","unavailable"],[]);
             if(item.Attribute("unavailable") is {} unavailable)
             {
-                if(string.IsNullOrWhiteSpace(unavailable.Value)||item.Attribute("member") is not null||item.Attribute("decimals") is not null||item.Attribute("unit") is not null)
+                if(string.IsNullOrWhiteSpace(unavailable.Value)||item.Attribute("member") is not null||item.Attribute("numericFormat") is not null)
                     throw new InvalidDataException("An unavailable display column cannot declare an output member or numeric format.");
-                return new ResultColumnDescriptor(Required(item,"key"),Required(item,"label"),null,UnavailableReason:unavailable.Value);
+                return new ResultColumnDescriptor(Required(item,"key"),Required(item,"label"),null,
+                    UnavailableReason:unavailable.Value,DisplayNameResourceKey:(string?)item.Attribute("labelResource"));
             }
             var source=new ResultFieldPath(port,Required(item,"member").Split('/'));
-            return new ResultColumnDescriptor(Required(item,"key"),Required(item,"label"),source,Attribute(item,"unit"),Integer(item,"decimals",0,15),
-                null,new(port,["rotated-bounds"]),new(port,["region"]));
+            var useSinglePrecision=(string?)item.Attribute("numericFormat") switch
+            {
+                null=>false,
+                "float32"=>true,
+                _=>throw new InvalidDataException("Unsupported Blob numeric display format.")
+            };
+            return new ResultColumnDescriptor(Required(item,"key"),Required(item,"label"),source,
+                Geometry:new(port,["rotated-bounds"]),GeometrySource:new(port,["region"]),UseSinglePrecision:useSinglePrecision,
+                DisplayNameResourceKey:(string?)item.Attribute("labelResource"));
         }),new(port),Required(table,"identity"));
         var errors=Table.Validate(schema);
         if(errors.Count!=0||Table.Columns.Count==0)throw new InvalidDataException("Invalid Blob table mapping: "+string.Join("; ",errors.Select(x=>x.Message)));
@@ -58,5 +66,4 @@ public sealed class BlobDisplayDefinition
         catch(Exception e)when(e is XmlException or ArgumentException)
         {throw new InvalidDataException("Invalid Blob display metadata.",e);}
     }
-    private static string Attribute(XElement item,string name)=>(string?)item.Attribute(name)??throw new InvalidDataException("Missing Blob display attribute: "+name);
 }

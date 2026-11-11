@@ -1,0 +1,48 @@
+{
+  "kind": "VM原件优先实施门禁",
+  "batch": "模块结果摘要行",
+  "vmEvidence": [
+    {
+      "path": "D:/MyWork/Rea逆向/docs/reverse/C03-original-blob-runtime-capture.md",
+      "facts": [
+        "原厂Blob模块结果树显示耗时（ms）和模块状态，随后显示单体状态、Blob个数、面积、总面积及几何结果",
+        "模块结果树的耗时和状态属于工具输出结果链，不是宿主另加的执行状态摘要"
+      ]
+    },
+    {
+      "path": "D:/MyWork/Rea逆向/docs/plugins/BLOB-ANALYSIS-IDENTITY-SOURCE-INVENTORY.md",
+      "facts": [
+        "Blob原件结果声明包含模块状态、BlobNum、TotalArea和单体字段"
+      ]
+    },
+    {
+      "path": "D:/MyWork/Rea逆向/docs/COMPOUND-LEAF-MAPPING.md",
+      "facts": [
+        "BlobNum、Area、TotalArea、CentroidPoint和BlobRect是独立原生输出"
+      ]
+    }
+  ],
+  "currentConsumers": [
+    "src/UI/Shell/Windows/MainWindowResultPublication.cs",
+    "src/UI/Services/Monitoring/ResultPresentationPresenter.cs",
+    "src/Plugin.Contracts/OutputDisplayNode.cs",
+    "tools/SunEyeVision.BlobAnalysis/Runtime/Results/BlobOutputDisplay.cs",
+    "tools/SunEyeVision.ImageSource/Runtime/ImageSourceOutput.cs"
+  ],
+  "difference": [
+    "宿主PresentResultPublication当前无条件追加执行状态和耗时摘要",
+    "Blob已经产生模块状态和模块耗时输出，两个层级可能重复或顺序不符合原厂",
+    "模块结果呈现没有声明哪个输出已经承担原件模块摘要职责"
+  ],
+  "decision": {
+    "migration": "在OutputDisplayNode登记原件模块摘要标记；Blob的模块状态和模块耗时由正式输出树承载，宿主检测到该标记时不再追加执行状态/耗时摘要",
+    "semanticFallback": "没有该标记的工具继续使用宿主执行摘要，避免改变未取得VM证据的其他工具",
+    "acceptance": "Blob模块结果树按原件顺序核对耗时、模块状态、单体状态、统计数组和几何结果；ImageSource维持现有声明并单独核对"
+  },
+  "unconfirmed": [
+    "VM不同工具是否全部使用同一模块摘要声明",
+    "原厂模块耗时的具体计时边界"
+  ],
+  "build": "全量Release 0错误、6089警告、54.24秒",
+  "runtime": "未启动程序、未运行自动测试或生产探针"
+}

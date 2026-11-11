@@ -131,6 +131,13 @@
           "log4net": "[2.0.17, )"
         }
       },
+      "suneyevision.infrastructure.imagesources": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Application": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
+        }
+      },
       "suneyevision.infrastructure.persistence": {
         "type": "Project",
         "dependencies": {

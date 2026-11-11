@@ -7,7 +7,7 @@ namespace SunEyeVision.Application;
 
 // Frozen, pure definition snapshots. Session ownership and external dependency lifetimes stay outside this builder.
 internal sealed record FragmentNodeSnapshot(string Id, string ToolId, string DisplayName, bool Enabled, CanvasPoint Position,
-    double Width, double Height, string? SelectedDisplayReference, IReadOnlyDictionary<string,JsonElement>? AdditionalData,
+    double Width, double Height, string? SelectedDisplayReference,ImageOverlaySelection? DisplayOverlays,IReadOnlyDictionary<string,JsonElement>? AdditionalData,
     ToolConfiguration Configuration);
 internal sealed record FragmentEdgeSnapshot(string Id, string SourceId, string TargetId, string SourcePort, string TargetPort,
     IReadOnlyList<CanvasPoint>? ManualPath);
@@ -88,8 +88,11 @@ internal static class FragmentBuilder
             var values=snapshot.Configuration.CaptureCurrentValues().Where(pair=>Identity(pair.Key,snapshot.Configuration.Fields.Read(pair.Key))==Identity(pair.Key,fields.Read(pair.Key)))
                 .ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal);
             node.Configuration=new ToolConfiguration(node.ToolType,fields,values,parameterBindingOrder:snapshot.Configuration.ParameterBindingOrder);
-            node.SelectedDisplayReference=snapshot.SelectedDisplayReference is {} selected
-                ?ParameterSettingCanonical.Serialize(Remap(ParameterSettingCanonical.Deserialize(selected))):null;
+            string? MapDisplay(string? reference)=>reference is null?null:
+                ParameterSettingCanonical.Serialize(Remap(ParameterSettingCanonical.Deserialize(reference)));
+            node.SelectedDisplayReference=MapDisplay(snapshot.SelectedDisplayReference);
+            if(snapshot.DisplayOverlays is {} overlays)
+                node.DisplayOverlays=new(MapDisplay(overlays.Background)!,overlays.Slots.Select(MapDisplay));
         }
         return new(Array.AsReadOnly(nodes.Select(node=>map[node.Id]).ToArray()),Array.AsReadOnly(included.Select(edge=>mappedEdges[edge.Id]).ToArray()),
             new ReadOnlyDictionary<string,NodeDefinition>(map),new ReadOnlyDictionary<string,ConnectionDefinition>(mappedEdges));

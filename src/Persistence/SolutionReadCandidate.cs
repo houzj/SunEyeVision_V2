@@ -9,6 +9,7 @@ public sealed class SolutionReadCandidate : IDisposable
 {
     private readonly DecodedResourcesScope _scope;
     private readonly byte[] _originalBytes;
+    public EmbeddedFileCatalog? EmbeddedFiles {get;internal init;}
     internal SolutionReadCandidate(DecodedResourcesScope scope, ReadOnlySpan<byte> originalBytes) { _scope=scope; _originalBytes=originalBytes.ToArray(); }
     public required string Id { get; init; }
     public required string Name { get; init; }
@@ -39,6 +40,6 @@ public sealed record WorkflowReadCandidate(string Id,string Name,bool IsSubrouti
     RootWorkspaceSettings WorkspaceSettings,IReadOnlyList<NodeReadCandidate> Nodes,IReadOnlyList<ConnectionReadCandidate> Connections,
     IReadOnlyDictionary<string,JsonElement>? AdditionalData);
 public sealed record NodeReadCandidate(string Id,string Name,string DispName,string ToolType,int GlobalIndex,int LocalIndex,bool IsEnabled,
-    string? SubroutineId,string? SelectedDisplayReference,double PositionX,double PositionY,double Width,double Height,ToolConfiguration Configuration,
+    string? SubroutineId,string? SelectedDisplayReference,ImageOverlaySelection? DisplayOverlays,double PositionX,double PositionY,double Width,double Height,ToolConfiguration Configuration,
     IReadOnlyDictionary<string,JsonElement>? AdditionalData);
 public sealed record ConnectionReadCandidate(string Id,string SourceNodeId,string TargetNodeId,string SourcePort,string TargetPort,IReadOnlyList<CanvasPoint>? ManualPathPoints);

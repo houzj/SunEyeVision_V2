@@ -18,13 +18,16 @@ public static class DeclaredFieldTemplateRegistry
     public const string Integer = "Integer";
     public const string Float = "Float";
     public const string String = "String";
+    public const string FolderPath = "OpenFileDialog";
     public const string Boolean = "Boolean";
+    public const string BooleanTips = "BooleanTips";
     public const string BooleanEye = "BooleanEye";
     public const string Enumeration = "Enumeration";
     public const string IntegerBettween = "IntegerBettween";
     public const string FloatBettween = "FloatBettween";
     public const string IntegerRadio = "IntegerRadio";
     public const string Reference = "Reference";
+    public const string ImageSource = "EnumerationG";
     /// <summary>组合槽占位：图像来源等由消费者在构造后挂接显式组合控件的字段（UseImageSourceSelector 等）。</summary>
     public const string ComposedSlot = "Slot";
 
@@ -50,6 +53,10 @@ public static class DeclaredFieldTemplateRegistry
         ArgumentNullException.ThrowIfNull(presentation);
         if (!StringComparer.Ordinal.Equals(port.Id, presentation.FieldId))
             throw new ArgumentException("字段身份与参数展示声明不一致。", nameof(presentation));
+        if(presentation.Layout?.BooleanTips is {} tips && (port.Type!=TypeRef.ScalarOf(ScalarKind.Boolean)||!port.Required||port.Nullable
+            ||port.EditModes!=FieldEditModes.Constant||tips.Selected is null||tips.Unselected is null||presentation.Editor!=FieldEditorKind.Scalar
+            ||isNumericPair||hasIntegerRadio||inlineConstantReference||isDialogPrimary||presentation.Layout.DialogGroup is not null))
+            throw new ArgumentException("State tips require an ordinary constant Boolean template.",nameof(presentation));
 
         if (isNumericPair)
         {
@@ -62,6 +69,12 @@ public static class DeclaredFieldTemplateRegistry
         if (inlineConstantReference)
             return Reference;
 
+        // Resource ports are VM reference rows. They must enter the reference
+        // template even when the current setting is unset; a resource text
+        // placeholder is not a visual substitute for the native source picker.
+        if (port.Type.Shape == ValueShape.Resource && (port.EditModes & FieldEditModes.Reference) != 0)
+            return Reference;
+
         // 仅引用字段（区域/图像等任意形态，对齐原编辑器引用模式分支）：订阅链接行。
         if (port.EditModes == FieldEditModes.Reference)
             return Reference;
@@ -70,6 +83,7 @@ public static class DeclaredFieldTemplateRegistry
         {
             FieldEditorKind.Scalar => ResolveScalar(port, presentation, numericSequence, isDialogPrimary),
             FieldEditorKind.Choice => Enumeration,
+            FieldEditorKind.FolderPath => FolderPath,
             // 对齐原编辑器：记录字段由行宿主展开子行（组合槽自渲染），不走行内模板。
             FieldEditorKind.Record => ComposedSlot,
             FieldEditorKind.Sequence => throw new NotSupportedException($"序列字段不支持行内模板：{port.Id}（{presentation.Editor}）。"),
@@ -91,7 +105,11 @@ public static class DeclaredFieldTemplateRegistry
     {
         var type = port.Type;
         if (type == TypeRef.ScalarOf(ScalarKind.Boolean))
+        {
+            if(presentation.Layout?.BooleanTips is not null)
+                return !isDialogPrimary?BooleanTips:throw new ArgumentException("State tips cannot replace an eye-dialog control.");
             return isDialogPrimary ? BooleanEye : Boolean;
+        }
 
         if (type == TypeRef.ScalarOf(ScalarKind.Int64))
             return Integer;

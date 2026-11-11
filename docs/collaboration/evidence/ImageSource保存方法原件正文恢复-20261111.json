@@ -1,0 +1,42 @@
+{
+  "kind": "归档原始反编译正文恢复及本机静态指令核对",
+  "records": [
+    {
+      "source": "D:/MyWork/Rea逆向/analysis/full-audit/image-source-native-extra-7.json",
+      "sourceSha256": "07F8FECCA5C2160C42B812D8C7AEE3EDBDB609890E2B19470441B757474958B5",
+      "evidenceId": "ev_a0e93820826834da6a4b6b5343a2e58d87e625fad229b4d5996127072756afe0",
+      "procedure": "CMyAlgorithmManager::SaveModuleData",
+      "subject": {
+        "name": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModule.dll",
+        "digest": {
+          "sha256": "91ea3659be97e51edeab0c913779d4555d51dcd0d6288086fbf9916d35b942db"
+        },
+        "format": "pe",
+        "architecture": "x86_64",
+        "local_path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModule.dll"
+      },
+      "rawBodySha256": "B556956B29291BE7B20B64F97F8193C3BFB8F2F1960F41D1D8D20D042FCE81ED"
+    },
+    {
+      "source": "D:/MyWork/Rea逆向/analysis/full-audit/image-source-native-8.json",
+      "sourceSha256": "E21863560DE05A8A180F9817303E03EBCE45A091E5FAC443A736156E54A22925",
+      "evidenceId": "ev_ecaaeae56d4abd5616ec285c16dd8029d470885f0fe7d57f3b908a309971f6fa",
+      "procedure": "CMyAlgorithmManager::SaveImageFileToSol",
+      "subject": {
+        "name": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModule.dll",
+        "digest": {
+          "sha256": "91ea3659be97e51edeab0c913779d4555d51dcd0d6288086fbf9916d35b942db"
+        },
+        "format": "pe",
+        "architecture": "x86_64",
+        "local_path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModule.dll"
+      },
+      "rawBodySha256": "4CB7F0C97FE72E3EB442217CA88E3EA99913641B1F2AAC57C9E89441E8D2EC06"
+    }
+  ],
+  "installedPath": "C:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Collection/ImageSourceModule/ImageSourceModule.dll",
+  "installedSha256": "F88A455061F3AE2D5E2EF157E7B3CAAFD94A2B95C39B5BBA096802E405EBC6C8",
+  "installedStaticEvidence": "ImageSource保存方法-本机指令-20261111.txt",
+  "verified": "归档正文SHA匹配embed ledger；本机导出SaveModuleData RVA171A0和SaveImageFileToSol RVA18210；本机保存循环计数在173CF与17EF5以78h为界转出",
+  "limitations": "归档与本机模块哈希不同，只有已定位指令可直接转签；没有启动原厂或本方程序、测试、探针；runtimeSource原始文件仍缺失"
+}

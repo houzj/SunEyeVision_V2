@@ -87,8 +87,11 @@ internal static class DisplayValidationScenario
 public sealed class DisplayProbeDefinition : IToolDefinition<WorkspaceProbeSettings, WorkspaceProbeOutput>, IToolSettingsFields,
     IToolCatalogProvider, IToolResultDisplayProvider
 {
+    private static readonly TypeRef Rectangle = TypeRef.RecordOf("display-rectangle", new[] {
+        new Port("center", FixtureDeclarations.Point), new Port("width", DataType.Number),
+        new Port("height", DataType.Number), new Port("angle-degrees", DataType.Number) });
     private static readonly TypeRef Row = TypeRef.RecordOf("display-row", new[] {
-        new Port("id", DataType.Integer), new Port("quad", TypeRef.SequenceOf(TypeRef.GeometryOf(GeometryKind.Point, WorkspaceProbeDefinition.Coordinates), CountConstraint.Exactly(4))),
+        new Port("id", DataType.Integer), new Port("rectangle", Rectangle),
         new Port("region", TypeRef.ResourceOf(ResourceKind.Region)), new Port("value", DataType.Number), new Port("passed", DataType.Boolean) });
     private static readonly ToolSchema Schema = new(new[] { new Port("input", DataType.Integer, Required: false, EditModes: FieldEditModes.Reference) },
         new[] { new Port("count", DataType.Integer), new Port("name", DataType.Text), new Port("items", TypeRef.SequenceOf(DataType.Integer)), new Port("rows", TypeRef.SequenceOf(Row)) });
@@ -99,7 +102,7 @@ public sealed class DisplayProbeDefinition : IToolDefinition<WorkspaceProbeSetti
     public ToolSchema DisplaySettingsSchema { get; } = new(new[] {
         new Port("text", DataType.Text, EditModes: FieldEditModes.Constant | FieldEditModes.DisplayExpression),
         new Port("x", DataType.Number, EditModes: FieldEditModes.Constant | FieldEditModes.Reference) }, Array.Empty<Port>());
-    public ResultDisplayDescriptor ResultDisplay { get; } = new(new("rows"), new("rows", new[] { "id" }), new("rows", new[] { "quad" }),
+    public ResultDisplayDescriptor ResultDisplay { get; } = new(new("rows"), new("rows", new[] { "id" }), new("rows", new[] { "rectangle" }),
         new("rows", new[] { "region" }), new("rows", new[] { "value" }), new("rows", new[] { "passed" }));
     public DisplayProbeDefinition() => ResultDisplay.Validate(Schema);
     public InputValues CreateDisplaySettings() => new(DisplaySettingsSchema.Inputs, new Dictionary<string, object?> { ["text"] = "", ["x"] = 0d });

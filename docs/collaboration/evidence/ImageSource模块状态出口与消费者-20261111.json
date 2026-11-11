@@ -1,0 +1,84 @@
+{
+  "kind": "原件静态状态出口与现行消费者，不是本方或原件运行验证",
+  "source": {
+    "path": "D:/MyWork/Rea逆向/analysis/full-audit/image-source-native-0.c",
+    "sha256": "600FAA687D61B61ACBD7207FE2FDEF569647D6BF91F5F34AFBE5719ECCFF61CA",
+    "lines": [
+      350,
+      809,
+      811,
+      813,
+      2262,
+      2264,
+      2265
+    ]
+  },
+  "declaration": {
+    "path": "docs/07-工具逆向/tools/imagesourcemodule/parameters.json",
+    "sha256": "7B49C4B4DFCDBFFAD1BE52E03992C0D75A9E8110F7745139542D329F4C86AFA3",
+    "name": "ModuStatus",
+    "type": "int",
+    "isForce": true,
+    "customVisible": false
+  },
+  "stages": [
+    {
+      "stage": "成功处理",
+      "value": 1,
+      "hostExecution": "Success"
+    },
+    {
+      "images": "缺失，不提供Blob输入",
+      "stage": "已分类取帧失败且失败计数写入成功",
+      "nativeCondition": "iVar11由GetCameraFailCount写入返回；0进入统一出口置1",
+      "value": 1,
+      "hostExecution": "Failed"
+    },
+    {
+      "stage": "已进入处理后失败",
+      "value": 0,
+      "hostExecution": "Failed"
+    },
+    {
+      "stage": "宿主准入或身份错误、取消、抑制",
+      "value": "不制造",
+      "hostExecution": "沿用现行状态"
+    }
+  ],
+  "consumers": [
+    "ImageSourceSession → ImageSourceOutput.Ports/Display",
+    "OutputDisplayNode.DisplayInResultPanel → DeclaredOutputSnapshot.Fields",
+    "ToolResultViews.Declaration/FromSnapshot → ResultPublication.DisplayedPorts → DeclaredPropertyList",
+    "既有执行成功门禁及图像/Blob消费者保持，不以ModuleStatus替代"
+  ],
+  "tests": "完整用例已更新，未运行",
+  "build": "最终全量Release 0错误、3302警告、13.90秒；dotnet build SunEyeVision.slnx -c Release --no-restore -m:1 -p:HalconSourceRoot=D:/MyWork/SunEyeVision_V2/libs/halcon；未启动测试、程序或探针",
+  "limitations": [
+    "归档Process哈希与本机安装DLL身份不同，不能转签同版本运行证据",
+    "真实GetCameraFailCount写入失败及原件窗口展示未运行确认",
+    "宿主状态与模块状态语义独立；不以状态1代表有图",
+    "原生错误码完整映射尚未实施"
+  ],
+  "productSources": [
+    {
+      "sha256": "DDBC3EBDEB790963C7D3CB41B9AA839CEE10A55AD9A3CC55029926B196D57B08",
+      "path": "src/Plugin.Contracts/OutputDisplayNode.cs"
+    },
+    {
+      "sha256": "4631E7A5FABFFDA5E147FD30B9F343AFDB62F88188EABE5B5E853679316909A2",
+      "path": "src/Plugin.Runtime/Results/DeclaredOutputSnapshot.cs"
+    },
+    {
+      "sha256": "FF8AEF422F5D3AB2074F903D269360281773E2F33E1D4BCC797A0D73CA08DCA3",
+      "path": "src/UI/Services/Monitoring/ToolResultViews.cs"
+    },
+    {
+      "sha256": "5224571C674003001970A7E029FF00DAC6063B8253AB4A1B5E6C3FF37C1AFE29",
+      "path": "tools/SunEyeVision.ImageSource/Runtime/ImageSourceSession.cs"
+    },
+    {
+      "sha256": "E2C85ED5C3B74AD85795A5ADE6A2D3ECD11C78FD0EEA074F501183EFBB3E8820",
+      "path": "tools/SunEyeVision.ImageSource/Runtime/ImageSourceOutput.cs"
+    }
+  ]
+}

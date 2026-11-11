@@ -14,6 +14,7 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
     private readonly DeclaredInputFieldsView _inputs;
     private readonly NativeRoiUiDraftControls _controls;
     private readonly NativeRoiFrameSource? _source;
+    private readonly SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldRow _imageField;
     private readonly Dictionary<string,NativeRoiEditor> _editors=new();
     private readonly Dictionary<string,NativeRoiSession> _sessions=new();
     private readonly Dictionary<NativeRoiSession,Action> _retirementHandlers=new();
@@ -38,18 +39,28 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
     internal BlobLocalRoiOwner(DeclaredInputFieldsView inputs,NativeRoiUiDraftControls controls,NativeRoiFrameSource? source)
     {
         _inputs=inputs;_controls=controls;_source=source;_observed=Read();
-        foreach(var group in new[]{BlobLocalRoi.Inspection,BlobLocalRoi.Mask})
+        _imageField=inputs.Fields.Single(field=>field.FieldId==BlobTool.ImageInput);
+        try
         {
-            var editor=new NativeRoiEditor{Title=group==BlobLocalRoi.Inspection?"形状":"屏蔽区",ToolTip=group==BlobLocalRoi.Mask?"屏蔽区支持多形状。":"先运行图像来源，再编辑区域。"};
-            editor.PrepareInteraction=()=>Activate(group);editor.AllowUnboundFullDomain=group==BlobLocalRoi.Inspection;editor.UnboundFullDomain=BlobLocalRoi.Coverage(_observed,group)==BlobLocalRoi.FullDomain;editor.PendingChanged+=Notify;_editors.Add(group,editor);editor.Bind(null);
+            foreach(var group in new[]{BlobLocalRoi.Inspection,BlobLocalRoi.Mask})
+            {
+                var editor=new NativeRoiEditor{Title=group==BlobLocalRoi.Inspection?"形状":"屏蔽区",PolygonOnly=group==BlobLocalRoi.Mask,
+                    ToolTip="先运行图像来源，再编辑区域。"};
+                editor.PrepareInteraction=()=>Activate(group);editor.AllowUnboundFullDomain=group==BlobLocalRoi.Inspection;editor.UnboundFullDomain=BlobLocalRoi.Coverage(_observed,group)==BlobLocalRoi.FullDomain;editor.PendingChanged+=Notify;_editors.Add(group,editor);editor.Bind(null);
+            }
+            controls.BindLocalEditors(_editors[BlobLocalRoi.Inspection],_editors[BlobLocalRoi.Mask]);
+            controls.Changed+=OnModesChanged;
+            _imageField.Changed+=RefreshFrame;
+            if(source is not null)source.Changed+=RefreshFrame;
+            _localInspection=_controls.IsLocalDrawing(BlobLocalRoi.Inspection);_localMask=_controls.IsLocalDrawing(BlobLocalRoi.Mask);
+            _observedPreviewMode=PreviewMode();InitializePreview();
         }
-        controls.BindLocalEditors(_editors[BlobLocalRoi.Inspection],_editors[BlobLocalRoi.Mask]);
-        controls.Changed+=OnModesChanged;
-        inputs.Fields.Single(field=>field.FieldId==BlobTool.ImageInput).Changed+=RefreshFrame;
-        if(source is not null)source.Changed+=RefreshFrame;
-        _localInspection=_controls.IsLocalDrawing(BlobLocalRoi.Inspection);_localMask=_controls.IsLocalDrawing(BlobLocalRoi.Mask);
-        _observedPreviewMode=PreviewMode();InitializePreview();
-
+        catch(Exception failure)
+        {
+            try{Dispose();}
+            catch(Exception cleanup){throw new AggregateException(failure,cleanup);}
+            throw;
+        }
     }
 
     private void Notify(){if(!_disposed)Changed?.Invoke();}
@@ -93,7 +104,8 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
             {
                 var session=new NativeRoiSession(frame.Image,()=>Snapshot(group),(stamp,proposal)=>Accept(group,stamp,proposal),()=>FrameCurrent(generation),
                     ()=>new(_undo.Count>0,_redo.Count>0),group,isAvoid:group==BlobLocalRoi.Mask,
-                    canDraw:target=>target==group&&_controls.IsLocalDrawing(group),canSetCoverage:target=>target==group&&_controls.IsLocalDrawing(group));
+                    canDraw:target=>target==group&&_controls.IsLocalDrawing(group),canSetCoverage:target=>target==group&&_controls.IsLocalDrawing(group),
+                    maximumDrawItems:group==BlobLocalRoi.Inspection?BlobLocalRoi.MaximumLocalInspectionCount:BlobLocalRoi.MaximumLocalMaskCount);
                 _sessions.Add(group,session);
                 Action retiring=()=>RecordInteractionRetirement(group,session,generation);
                 session.InteractionRetiring+=retiring;_retirementHandlers.Add(session,retiring);
@@ -169,6 +181,8 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
             }
             if(!history)next=group==BlobLocalRoi.Inspection?BlobLocalRoi.Root(BlobLocalRoi.Group(coverage,rows),old.Get<RecordValue>(BlobLocalRoi.Mask))
                 :BlobLocalRoi.Root(old.Get<RecordValue>(BlobLocalRoi.Inspection),BlobLocalRoi.Group(coverage,rows));
+            if (BlobLocalRoi.Items(next,BlobLocalRoi.Mask).Any(item=>item.Get<RecordValue>("shape").Get<string>("kind")!="polygon"))
+                throw new ArgumentException("屏蔽区仅支持多边形。");
             BlobLocalRoi.Validate(next);if(BlobLocalRoi.Same(old,next))return RoiEditAcceptance.Reject(before,"区域内容没有变化。");
             _accepting=true;
             _inputs.WriteUnpresentedInput(BlobLocalRoi.InputId,new ConstantSetting(next));
@@ -200,19 +214,21 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
         if(_disposed){error="区域编辑会话已关闭。";return false;}
         RefreshFrame();
         if(_unrestoredInput is not null||_pending.Count>0){error=_unrestoredInput??"图像来源暂不可用，区域原文已保留；请恢复图像后修正或取消窗口。";return false;}
-        if(_interaction?.HasPendingGesture==true){error="请先完成或取消当前绘制。";return false;}
+        if(UnacceptedGesture){error="请先完成或取消当前绘制。";return false;}
         foreach(var editor in _editors.Values.Where(editor=>editor.HasPendingEdits))if(!editor.TryCommitPending()){error=editor.Error;return false;}
         try{_=Read();error="";return true;}catch(Exception failure){error=failure.Message;return false;}
     }
     private void OnModesChanged()
     {
-        if(_disposed||_accepting||_activating||_refreshing)return;
+        if(_disposed)return;
+        // The ROI control creates the inherited parameter rows when their mode first becomes visible.
+        TrackPreviewSources();
+        if(_accepting||_activating||_refreshing)return;
         var inspection=_controls.IsLocalDrawing(BlobLocalRoi.Inspection);var mask=_controls.IsLocalDrawing(BlobLocalRoi.Mask);
-        var mode=PreviewMode();var previewChanged=inspection!=_localInspection||mode!=_observedPreviewMode;_observedPreviewMode=mode;
+        var mode=PreviewMode();var previewChanged=inspection!=_localInspection||mask!=_localMask||mode!=_observedPreviewMode;_observedPreviewMode=mode;
         if(inspection==_localInspection&&mask==_localMask){if(previewChanged)QueuePreview();Notify();return;}
         _localInspection=inspection;_localMask=mask;
         CapturePendingEditors();
-        if(_interaction?.HasPendingGesture==true)_unrestoredInput="区域模式已改变，未完成绘制不能接纳；请取消窗口后重新编辑。";
         if(_active is {} group&&!_controls.IsLocalDrawing(group))
         {var old=_interaction;_interaction=null;_active=null;old?.Dispose();}
         ++_projectionRevision;
@@ -226,12 +242,7 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
     {
         if(_disposed||_recordingRetirement||generation!=_generation||!_sessions.TryGetValue(group,out var current)||!ReferenceEquals(current,session))return;
         _recordingRetirement=true;
-        try
-        {
-            CapturePendingEditors(group);
-            if(session.ActiveDraw is not null||session.Items.Any(item=>item.Group==group&&item.HasPending))
-                _unrestoredInput="区域视口已改变，未完成的绘制不能接纳；请取消窗口后重新编辑。";
-        }
+        try{CapturePendingEditors(group);}
         finally{_recordingRetirement=false;}
     }
     private void CapturePendingEditors(string? group=null)
@@ -254,11 +265,7 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
     }
     private void RetireFrame()
     {
-        if(!_disposed)
-        {
-            CapturePendingEditors();
-            if(UnacceptedGesture)_unrestoredInput="区域视口已改变，未完成的绘制不能接纳；请取消窗口后重新编辑。";
-        }
+        if(!_disposed)CapturePendingEditors();
         ClearPreview();
         ++_generation;var interaction=_interaction;_interaction=null;_active=null;var frame=_frame;_frame=null;
         var sessions=_sessions.Values.ToArray();_sessions.Clear();
@@ -276,7 +283,7 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;_controls.Changed-=OnModesChanged;
-        _inputs.Fields.Single(field=>field.FieldId==BlobTool.ImageInput).Changed-=RefreshFrame;if(_source is not null)_source.Changed-=RefreshFrame;Changed=null;
+        _imageField.Changed-=RefreshFrame;if(_source is not null)_source.Changed-=RefreshFrame;Changed=null;
         Run(new Action[]{DisposePreview,RetireFrame}.Concat(_editors.Values.Select(editor=>(Action)(()=>{editor.PendingChanged-=Notify;editor.Dispose();}))));
     }
 }

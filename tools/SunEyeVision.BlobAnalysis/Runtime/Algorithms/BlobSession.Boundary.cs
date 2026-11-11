@@ -5,6 +5,22 @@ namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 
 public sealed partial class BlobSession
 {
+    private static Point2[] ReadUnorderedContour(HRegion source, CancellationToken cancellation)
+    {
+        HOperatorSet.Boundary(source, out var region, "inner");
+        using var boundary = region;
+        HOperatorSet.GetRegionPoints(boundary, out var rows, out var columns);
+        using var r = rows;
+        using var c = columns;
+        var points = new Point2[rows.Length];
+        for (var i = 0; i < points.Length; i++)
+        {
+            if ((i & 4095) == 0) cancellation.ThrowIfCancellationRequested();
+            points[i] = new Point2(columns[i].D, rows[i].D);
+        }
+        return points;
+    }
+
     private sealed record NativeLoop(long Id, Point2[] Points, HRegion Filled, double Area,
         double MinX, double MinY, double MaxX, double MaxY);
 
@@ -28,7 +44,22 @@ public sealed partial class BlobSession
                 if (rows.Length != columns.Length || rows.Length == 0)
                     throw new InvalidDataException("HALCON returned an invalid boundary path.");
                 var points = new Point2[rows.Length];
-                for (int p = 0; p < points.Length; p++) points[p] = new(columns[p].D, rows[p].D);
+                var minX = double.PositiveInfinity;
+                var minY = double.PositiveInfinity;
+                var maxX = double.NegativeInfinity;
+                var maxY = double.NegativeInfinity;
+                for (int p = 0; p < points.Length; p++)
+                {
+                    if ((p & 4095) == 0) cancellation.ThrowIfCancellationRequested();
+                    var x = columns[p].D;
+                    var y = rows[p].D;
+                    points[p] = new(x, y);
+                    minX = Math.Min(minX, x);
+                    minY = Math.Min(minY, y);
+                    maxX = Math.Max(maxX, x);
+                    maxY = Math.Max(maxY, y);
+                }
+                cancellation.ThrowIfCancellationRequested();
                 HOperatorSet.GenRegionContourXld(single, out var fillObject, "filled");
                 using var nativeFill = fillObject;
                 var filled = new HRegion(nativeFill);
@@ -36,8 +67,7 @@ public sealed partial class BlobSession
                 {
                     HOperatorSet.AreaCenter(filled, out var area, out var cy, out var cx);
                     using (area) using (cy) using (cx)
-                        loops.Add(new(i, points, filled, area.Length == 0 ? 0 : area[0].D,
-                            points.Min(p => p.X), points.Min(p => p.Y), points.Max(p => p.X), points.Max(p => p.Y)));
+                        loops.Add(new(i, points, filled, area.Length == 0 ? 0 : area[0].D, minX, minY, maxX, maxY));
                 }
                 catch { filled.Dispose(); throw; }
             }

@@ -36,8 +36,12 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     private long _refreshGeneration;
     private string? _requestError;
     private bool _viewportQueued;
+    private System.Windows.Threading.DispatcherOperation? _sessionRefresh;
+    private bool _resetFirstOnRefresh;
     private string[] _lastViewport = Array.Empty<string>();
     private string? _lastDisplayedId;
+    private sealed record DirectoryMenuTarget(ContextMenu Menu, IImageSourceStripSession Session, long Version);
+    private DirectoryMenuTarget? _directoryMenu;
     public event PropertyChangedEventHandler? PropertyChanged;
     public IReadOnlyList<ImageSourceStripItem> Items => Session?.Items ?? Array.Empty<ImageSourceStripItem>();
     public int DisplayIndex => Session?.DisplayIndex ?? -1;
@@ -101,6 +105,10 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     {
         ++_refreshGeneration; ++_keyboardSelectionGeneration; _keyboardSelectionPending = false;
         var attached = _attached; var lifetime = _lifetime;
+        var refresh = _sessionRefresh;
+        _sessionRefresh = null; _resetFirstOnRefresh = false;
+        var directoryMenu = _directoryMenu;
+        _directoryMenu = null;
         _attached = null; _lifetime = null;
         _lastViewport = Array.Empty<string>();
         _lastDisplayedId = null;
@@ -108,6 +116,8 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
         var errors = new List<Exception>();
         void Clean(Action action) { try { action(); } catch (Exception error) { errors.Add(error); } }
         if (attached is not null) Clean(() => attached.PropertyChanged -= SessionPropertyChanged);
+        if (refresh is not null) Clean(() => refresh.Abort());
+        if (directoryMenu is not null) Clean(() => directoryMenu.Menu.IsOpen = false);
         Clean(() => AutoSwitch.OnCheckedChange -= AutoSwitchChanged);
         Clean(() => lst.LayoutUpdated -= ViewportLayoutUpdated);
         Clean(() => lst.ItemContainerGenerator.StatusChanged -= ViewportLayoutUpdated);
@@ -122,11 +132,21 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     private void SessionPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (!ReferenceEquals(sender, _attached)) return;
+        var lifetime=_lifetime;
         void Apply()
         {
-            if(!ReferenceEquals(sender,_attached))return;
-            if(string.IsNullOrEmpty(e.PropertyName)||e.PropertyName==nameof(IImageSourceStripSession.DisplayIndex))SetFirstResetActive(false);
-            Refresh();
+            if(!ReferenceEquals(sender,_attached)||!ReferenceEquals(lifetime,_lifetime))return;
+            _resetFirstOnRefresh |= string.IsNullOrEmpty(e.PropertyName)
+                || e.PropertyName==nameof(IImageSourceStripSession.DisplayIndex);
+            if(_sessionRefresh is not null)return;
+            _sessionRefresh=Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.DataBind,new Action(() =>
+            {
+                _sessionRefresh=null;
+                if(!ReferenceEquals(sender,_attached)||!ReferenceEquals(lifetime,_lifetime))return;
+                var resetFirst=_resetFirstOnRefresh;_resetFirstOnRefresh=false;
+                if(resetFirst)SetFirstResetActive(false);
+                if(ReferenceEquals(sender,_attached)&&ReferenceEquals(lifetime,_lifetime))Refresh();
+            }));
         }
         if (!Dispatcher.CheckAccess()) { Dispatcher.BeginInvoke(new Action(Apply)); return; }
         Apply();
@@ -195,12 +215,14 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
             if (IsExpanded && lst.IsVisible && lst.ActualWidth > 0 && lst.ActualHeight > 0)
             {
                 var bounds = new Rect(0, 0, lst.ActualWidth, lst.ActualHeight);
-                for (int i = 0; i < lst.Items.Count && ids.Count < 128; i++)
-                    if (lst.ItemContainerGenerator.ContainerFromIndex(i) is FrameworkElement container && container.IsVisible
-                        && container.ActualWidth > 0 && container.ActualHeight > 0)
+                if (FindItemsHost(lst) is { } panel)
+                    foreach (var container in panel.Children.OfType<ListBoxItem>())
                     {
+                        if(ids.Count==128)break;
+                        if(!container.IsVisible||container.ActualWidth<=0||container.ActualHeight<=0)continue;
                         var itemBounds = container.TransformToAncestor(lst).TransformBounds(new Rect(container.RenderSize));
-                        if (bounds.IntersectsWith(itemBounds) && lst.Items[i] is ImageSourceStripItem item) ids.Add(item.Id);
+                        if (bounds.IntersectsWith(itemBounds)
+                            && lst.ItemContainerGenerator.ItemFromContainer(container) is ImageSourceStripItem item) ids.Add(item.Id);
                     }
             }
             var snapshot = ids.ToArray();
@@ -209,11 +231,18 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
             viewport.UpdateVisibleItems(Array.AsReadOnly(snapshot));
         }));
     }
+    private static VirtualizingStackPanel? FindItemsHost(DependencyObject parent)
+    {
+        if(parent is VirtualizingStackPanel { IsItemsHost:true } panel)return panel;
+        for(var i=0;i<VisualTreeHelper.GetChildrenCount(parent);i++)
+            if(FindItemsHost(VisualTreeHelper.GetChild(parent,i)) is {} found)return found;
+        return null;
+    }
     private int FirstEligibleIndex()
     { for (int i = 0; i < Items.Count; i++) if (!IsSelectMode || Items[i].IsForRun) return i; return -1; }
     private ImageSourceStripItem? Item(object sender) => (sender as FrameworkElement)?.DataContext as ImageSourceStripItem;
     private async Task Request(ImageSourceStripRequestKind kind, string? id = null, bool? flag = null,
-        IEnumerable<string>? itemIds = null, IEnumerable<string>? paths = null)
+        IEnumerable<string>? itemIds = null, IEnumerable<string>? paths = null, DirectoryMenuTarget? menuTarget = null)
     {
         var session = Session; var lifetime = _lifetime;
         if (session is null || lifetime is null || lifetime.IsCancellationRequested || _refreshing) return;
@@ -225,7 +254,10 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
             _=>CanEdit
         };
         if(!allowed)return;
-        var request = new ImageSourceStripRequest(kind, session.Version, id, flag, itemIds, paths);
+        if (!ReferenceEquals(session, Session) || !ReferenceEquals(lifetime, _lifetime)) return;
+        var version = session.Version;
+        if (menuTarget is not null && (!ReferenceEquals(menuTarget.Session, session) || menuTarget.Version != version)) return;
+        var request = new ImageSourceStripRequest(kind, version, id, flag, itemIds, paths);
         try { _requestError = null; await session.RequestAsync(request, lifetime.Token); }
         catch (OperationCanceledException) when (lifetime.IsCancellationRequested) { }
         catch (Exception ex)
@@ -285,18 +317,50 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
         var configured = session.ConfiguredStartIndex;
         if (_requestError is null&&session.Version!=version&&configured>=0&&configured<session.Items.Count
             &&session.Items[configured].Id==id&&session.DisplayIndex==configured)
-        {SetFirstResetActive(true);FindScrollViewer(lst)?.ScrollToLeftEnd();}
+        {
+            _resetFirstOnRefresh=false;
+            SetFirstResetActive(true);
+            FindScrollViewer(lst)?.ScrollToLeftEnd();
+        }
     }
     private async void BtnDelete_Click(object sender, RoutedEventArgs e)
     { e.Handled = true; if (Item(sender) is { } item) await Request(ImageSourceStripRequestKind.Remove, item.Id); }
     private async void BtnImageClear_Click(object sender, RoutedEventArgs e) => await Request(ImageSourceStripRequestKind.Clear);
     private async void BtnImageAdd_Click(object sender, RoutedEventArgs e) => await Request(ImageSourceStripRequestKind.ImportFiles);
     private async void BtnImageAddFolder_Click(object sender, RoutedEventArgs e) => await Request(ImageSourceStripRequestKind.ImportDirectory);
-    private void BtnImageAddRpFolder_Click(object sender, RoutedEventArgs e) { }
+    private void DirectoryMenuOpened(object sender, RoutedEventArgs e)
+    {
+        if (sender is not ContextMenu menu) return;
+        _directoryMenu = null;
+        var session = _attached;
+        if (session is null || !ReferenceEquals(session, Session) || _lifetime is null ||
+            menu.PlacementTarget is not ImageSourceThumbnail thumbnail || !thumbnail.IsDescendantOf(lst) ||
+            Item(thumbnail) is not { } item || !CanUseList ||
+            !ReferenceEquals(session, _attached) || !session.Items.Any(row => row.Id == item.Id))
+        {
+            menu.IsOpen = false;
+            return;
+        }
+        _directoryMenu = new(menu, session, session.Version);
+    }
+    private void DirectoryMenuClosed(object sender, RoutedEventArgs e)
+    {
+        if (_directoryMenu is not { } target || !ReferenceEquals(target.Menu, sender)) return;
+        // WPF closes the popup before dispatching the selected item's Click.
+        Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ContextIdle, new Action(() =>
+        {
+            if (ReferenceEquals(_directoryMenu, target)) _directoryMenu = null;
+        }));
+    }
     private async void MenuItem_Click(object sender, RoutedEventArgs e)
     {
-        if (DisplayIndex >= 0 && DisplayIndex < Items.Count)
-            await Request(ImageSourceStripRequestKind.OpenDirectory, Items[DisplayIndex].Id);
+        if (_directoryMenu is not { } target || !target.Menu.Items.Contains(sender)) return;
+        _directoryMenu = null;
+        if (!ReferenceEquals(target.Session, _attached) || target.Session.Version != target.Version) return;
+        var index = target.Session.DisplayIndex;
+        var items = target.Session.Items;
+        if (index < 0 || index >= items.Count) return;
+        await Request(ImageSourceStripRequestKind.OpenDirectory, items[index].Id, menuTarget: target);
     }
     private async void AutoSwitchChanged(object sender, RoutedEventArgs e)
     {

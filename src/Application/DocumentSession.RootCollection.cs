@@ -56,7 +56,7 @@ public sealed partial class DocumentSession
                         var graph = GraphState.Capture(source).WithConfigurations(replacements);
                         var nodes = graph.Nodes.Select(item => new FragmentNodeSnapshot(item.Node.Id, item.Node.ToolType,
                             item.DisplayName, item.Enabled, item.Position, item.Node.Width, item.Node.Height,
-                            item.Node.SelectedDisplayReference, item.Node.AdditionalData, item.Configuration.WithoutCurrentValues())).ToArray();
+                            item.Node.SelectedDisplayReference,item.Node.DisplayOverlays,item.Node.AdditionalData,item.Configuration.WithoutCurrentValues())).ToArray();
                         var edges = graph.Edges.Select(edge => new FragmentEdgeSnapshot(edge.Edge.Id, edge.SourceNodeId,
                             edge.TargetNodeId, edge.SourcePort, edge.TargetPort, edge.ManualPath)).ToArray();
                         var local = new Dictionary<string, HashSet<int>>(StringComparer.Ordinal);

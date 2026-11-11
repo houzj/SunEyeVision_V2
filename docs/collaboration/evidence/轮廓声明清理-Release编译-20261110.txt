@@ -1,0 +1,20 @@
+dotnet build SunEyeVision.slnx -c Release --no-restore -m:1 -p:HalconSourceRoot=D:\MyWork\SunEyeVision_V2\libs\halcon
+基线 c5e8901df 加当前未提交源码；未启动测试、探针或程序。
+C:\Users\Administrator\.codex\worktrees\param-window-datatree-project-v2\SunEyeVision_V2\tests\SunEyeVision.WorkflowGraph.Tests\SunEyeVision.WorkflowGraph.Tests.csproj : warning NU1900: 获取包漏洞数据时出错: 无法加载源 https://api.nuget.org/v3/index.json 的服务索引。
+C:\Users\Administrator\.codex\worktrees\param-window-datatree-project-v2\SunEyeVision_V2\tests\VariableValue.Runtime.Tests\VariableValue.Runtime.Tests.csproj : warning NU1900: 获取包漏洞数据时出错: 无法加载源 https://api.nuget.org/v3/index.json 的服务索引。
+    3308 个警告
+    0 个错误
+
+已用时间 00:00:23.94
+5A5EC43BBC0F793C256F94EC900503B7C42E92A266EC2DC9AB1513ACD3C47DBC  tests/SunEyeVision.Tool.BlobAnalysis.Tests/BlobAnalysisParameterContractTests.cs
+C8DE8EF3BD4A31876A7AD15E159375D65C65CAFBFA8D836EEB06EA239BE91901  tests/SunEyeVision.Tool.BlobAnalysis.Tests/BlobSessionChainRegressionTests.cs
+B886563F1BBC2EDD361D3529811E45D99965C0E4BCFB5D72371774D13285C30C  tests/SunEyeVision.Tool.BlobAnalysis.Tests/DeclaredBlobResultTests.cs
+52B5AB2B32F7CBE6E9B3D4DF421B35C41FCEC3AFC325B99482FBD1CB72FA7923  tests/SunEyeVision.UI.Tests/Session/EditorDebugSessionTests.cs
+DA583B1F7858BD2F4002AC326F0F80760D0815895514FE78A0967620235C5B4F  tools/SunEyeVision.BlobAnalysis/Runtime/Algorithms/BlobSession.cs
+310D780F06F73896E054214B679BE18B821A86BA07D27913EE93728FA9CC7C9D  tools/SunEyeVision.BlobAnalysis/Runtime/Parameters/BlobSettings.cs
+1C8DE6D2D3CC570397D24F0FEA9B93363E668DB9DABB011E9A91501E5EBD2981  tools/SunEyeVision.BlobAnalysis/Runtime/Parameters/BlobVmFindParameters.cs
+16BDF36F19C0112CD5A0CEF7FED8A805E34AE44D7C3DE9C897A38C4F23E5B955  tools/SunEyeVision.BlobAnalysis/Runtime/Resources/BlobParameters.xml
+5F28727A5D8040A2DC1FFA3EBD5462F68F49DD884226574F3F510145ECD102D1  tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobDisplayUi.cs
+0625831114198726244D5F74F61D0EA67F24012B61EC74E7C9B78CE51E913007  tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobLocalRoiOwner.Preview.cs
+ED664BA98138EA159C0C79D335954DCDE0433697C67CD3295C5F6B668FF18DC1  tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRoiUi.cs
+CD98935AB6A45EACE3AC094AE99B833A95B5221761598C5212881A48BA57EA55  tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobSupportedWindowState.cs

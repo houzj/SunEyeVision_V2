@@ -1,0 +1,73 @@
+{
+  "kind": "BooleanTips原件扩展模板与声明驱动迁移；不是运行验证",
+  "installedAssembly": {
+    "path": "C:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/.CommonControl/ExtensionParamUserControl.dll",
+    "sha256": "D842A44B89FABD960001C0F70465B826C074435A1E5BEAEE3B0F2F6FE832D4E0",
+    "identity": "ExtensionParamUserControl, Version=1.0.0.0, Culture=neutral, PublicKeyToken=5551edd2d0b8ef25",
+    "mvid": "f14afa2c-3da7-4f0c-a023-3821d61f3318"
+  },
+  "originalFiles": [
+    {
+      "path": "docs/07-工具逆向/decompiled/ModuleControls/ExtensionParamUserControl/booleanusercontrol/booleantipsdatatemplate.xaml",
+      "sha256": "70573052187A5D7CF1EA076D830B415FB9A7B5EA2E55CA509F55E719F74A303F"
+    },
+    {
+      "path": "docs/07-工具逆向/decompiled/ModuleControls/ExtensionParamUserControl/Apps.XmlParser.ParamTab/BooleanTips.cs",
+      "sha256": "48A1A0AC0FC573BF49A656AC9909C324E1A17A48DFC201900D0F79BE40A85710"
+    },
+    {
+      "path": "docs/07-工具逆向/decompiled/ModuleControls/ExtensionParamUserControl/datatemplate/paramusercontroldatatemplate.xaml",
+      "sha256": "AEABF0ECB2CE378BAE16A2AF6831282CD8D4CFA7A16675A88E741E59E1E37352"
+    }
+  ],
+  "original": [
+    "扩展字典合并BooleanTipsDataTemplate.xaml；不是普通Boolean的ToolTip",
+    "BooleanControl+两张switch图；32高；提示字体12、宽150、左距5、橙色、字符省略和完整文字ToolTip",
+    "BooleanTips.CurValueA改变后MessageTips随选中/未选中提示改变"
+  ],
+  "mapping": [
+    "FieldLayout.BooleanTips不可变双态文本声明 → 唯一DeclaredFieldTemplateRegistry.BooleanTips",
+    "FieldRowModel从同一Accepted值投影MessageTips → 原件BooleanTips模板 → 既有BooleanControl/图片/主题资源",
+    "Boolean提案/外部投影仍走DeclaredFieldState；退役拒写；模板回执重新发出已接纳值，回滚被拒绝的TwoWay控件状态"
+  ],
+  "adaptations": [
+    "DataType原件BooleanTips模型由现有FieldRowModel承接，不复制原模型",
+    "原Lang ResourceBinding保留，MessageTips只读投影使用OneWay；TextBlock没有编辑语义",
+    "现行宿主DeclaredFieldRow.Margin固定为0，本模板不添加第二层Margin绑定；不据此推断所有原件MarginA值",
+    "不复制原字典九份全局资源；依赖既有OriginalTheme及已迁入BooleanControl样式、图片"
+  ],
+  "boundaries": [
+    "当前生产消费者已增加ImageSourceFields.SaveImages、保存/重开及统一资源解析；显式列表实现见ImageSource显式列表存图生产链-20261111.json",
+    "目录列表快照仍未接入，保存捕获明确拒绝；不把显式列表当完整方案存图完成",
+    "实际布局和交互/时序、原机同版本动态与资源排空仍未运行验收"
+  ],
+  "tests": "真实BooleanControl、普通Boolean与BooleanTips两族、初值true/false、切换、拒绝回退、关闭拒写和冲突声明用例已编写，未运行",
+  "build": "最终全量Release0错误、3302警告、14.17秒；dotnet build SunEyeVision.slnx -c Release --no-restore -m:1 -p:HalconSourceRoot=D:/MyWork/SunEyeVision_V2/libs/halcon；未启动测试、程序或探针",
+  "productSources": [
+    {
+      "sha256": "7E1C7F556EF82624BE89FE2E5FC896E72BA303C210FE852BE32A8C66D0E3AFEE",
+      "path": "src/Plugin.Contracts/FieldPresentation.cs"
+    },
+    {
+      "sha256": "698B54E6AA6FA3B37DAF8917139F10AA178AACBDF1E20104160FED85B6738AA5",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldRow.cs"
+    },
+    {
+      "sha256": "AAE35254C8997576482AA065DB0FE4BDF29E42F50A5A53D6C5BC1181333C19E5",
+      "path": "src/Plugin.Wpf/Fields/DeclaredFieldTemplateRegistry.cs"
+    },
+    {
+      "sha256": "9F32AC7C6C43458502653C9A1FB3ACDD99FE9449681D495C52B562DD7FAC74B3",
+      "path": "src/Plugin.Wpf/Fields/FieldRowModel.cs"
+    },
+    {
+      "sha256": "9CF9703F825A0C35E2CE6007C6AE293714C88D1DC5FC43619A5206C39CEED9BF",
+      "path": "src/Plugin.Wpf/Themes/Native/Composition/ParameterPresentation/resourcedictionaries/BooleanStateTips.xaml"
+    }
+  ],
+  "historicalBoundaries": [
+    "ImageSource.SolSaveImageData生产字段仍未接入；未放出无功能开关",
+    "方案存图完整保存/重载/资源解析链仍未实现，目录快照的持久化拥有者合同仍需闭合",
+    "布局、初始提示及切换动态未经原机对照；同版本安装DLL哈希与归档源码映射分别留存，不转签源码为实机证据"
+  ]
+}

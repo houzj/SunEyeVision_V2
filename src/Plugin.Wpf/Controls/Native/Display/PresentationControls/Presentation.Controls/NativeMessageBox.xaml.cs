@@ -65,12 +65,25 @@ public partial class NativeMessageBox : BaseWindow, INotifyPropertyChanged, ICom
 
 	public static bool Alive => _alivecount > 0;
 
-    internal static void ShowOwnedWarning(Window owner,string message,Action<NativeMessageBox> created,Func<bool> current)
+    internal static void ShowOwnedWarning(Window owner,string message,Action<NativeMessageBox> created,Func<bool> current,string? title=null)
     {
         owner.Dispatcher.VerifyAccess();
         var window=new NativeMessageBox(message,MessageIcons.Warning);
+        if(title is not null)window.Title=title;
         try{window.Owner=owner;window.WindowStartupLocation=WindowStartupLocation.CenterOwner;created(window);if(current())window.ShowDialog();}
         finally{window.Close();}
+    }
+
+    public static DialogResult ShowOwned(Window owner, string title, string message, MessageButtons buttons, MessageIcons icon)
+    {
+        owner.Dispatcher.VerifyAccess();
+        var window = new NativeMessageBox(message, buttons, icon)
+        {
+            Owner = owner,
+            Title = title,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner
+        };
+        return window.ShowDialog();
     }
 
 	public new event PropertyChangedEventHandler PropertyChanged;

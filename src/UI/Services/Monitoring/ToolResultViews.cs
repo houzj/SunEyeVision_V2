@@ -56,8 +56,9 @@ internal static class ToolResultViews
     public static IResultPublication Declaration(ToolSchema schema,Func<bool> isCurrent,
         IReadOnlyDictionary<string,string>? displayNames=null,IReadOnlySet<string>? displayedPorts=null)
     {
-        var outputs=new ToolSchema(Array.Empty<Port>(),schema.Outputs);
+        var outputs=new ToolSchema(Array.Empty<Port>(),schema.Outputs,outputDisplay:schema.OutputDisplay);
         return new ResultPublication(outputs,new(Guid.NewGuid(),null,null,outputs.Fingerprint),ResultViewState.Declaration,
-            null,null,isCurrent,displayNames:displayNames,displayedPorts:displayedPorts);
+            null,null,isCurrent,displayNames:displayNames,displayedPorts:(displayedPorts??schema.Outputs.Select(port=>port.Id).ToHashSet(StringComparer.Ordinal))
+                .Where(id=>schema.FindOutputDisplay(id)?.DisplayInResultPanel!=false).ToHashSet(StringComparer.Ordinal));
     }
 }

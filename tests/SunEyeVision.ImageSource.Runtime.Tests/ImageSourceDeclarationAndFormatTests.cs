@@ -19,6 +19,41 @@ namespace SunEyeVision.ImageSource.Runtime.Tests;
 public sealed class ImageSourceDeclarationAndFormatTests
 {
     [Fact]
+    public void Save_image_declaration_uses_the_original_false_default_state_tips_and_host_file_policy()
+    {
+        var tool=new ImageSourceTool();Assert.False(new ImageSourceSettings().SaveImages);
+        var field=Assert.Single(ImageSourceFields.Schema.Presentation!.Fields,item=>item.FieldId==ImageSourceFields.SaveImages);
+        Assert.Equal("最大保存120张图片",field.Layout!.BooleanTips!.Selected);
+        Assert.Equal(new FieldCondition(ImageSourceFields.SourceKind,"local"),field.Layout.VisibleWhen);
+        var resource=Assert.Single(tool.ResourceFields,item=>item.Embedding is not null);
+        Assert.Equal(ImageSourceFields.Paths,resource.FieldId);Assert.Equal(120,resource.Embedding!.MaximumFiles);
+        ToolHostDeclarationRules.ValidateEmbedding(tool.ResourceFields,tool.SettingsSchema);
+        Assert.Throws<InvalidOperationException>(()=>ToolHostDeclarationRules.ValidateEmbedding(
+            new[]{resource with{Embedding=new("camera.gain",120)}},tool.SettingsSchema));
+        var dynamicSchema=new ToolSchema(tool.SettingsSchema.Inputs.Select(port=>port.Id==ImageSourceFields.Paths?port with{EditModes=FieldEditModes.Reference}:port),Array.Empty<Port>());
+        Assert.Throws<InvalidOperationException>(()=>ToolHostDeclarationRules.ValidateEmbedding(tool.ResourceFields,dynamicSchema));
+    }
+
+    [Fact]
+    public void Image_source_categories_follow_the_original_single_page_and_declaration_order()
+    {
+        // Installed ImageSourceModuleAlgorithmTab.xml: Tab_Basic Params, Tab_Trigger, Tab_Subscribe_File.
+        var fields = ImageSourceFields.Schema.Presentation!.Fields.Concat(ImageSourceFields.DisplaySchema.Presentation!.Fields)
+            .OrderBy(field => field.Order).ToArray();
+        Assert.All(fields, field => Assert.Equal("基本参数", field.Layout!.Page));
+        var categories = fields.GroupBy(field => field.Layout!.Section).ToArray();
+        Assert.Equal(new[] { "基本参数", "触发设置", "订阅图片文件夹" }, categories.Select(group => group.Key));
+        Assert.Equal(new[] { "source.kind", "output.format", "local.save-images", "display.image-name", "camera.exposure-time", "camera.gain",
+            "camera.timeout-ms", "sequence.initial", "local.path-cache", "output.mono8", "stitch.enabled", "stitch.start",
+            "stitch.height", "stitch.clear", "stitch.clear-value" }, categories[0].Select(field => field.FieldId));
+        Assert.Equal(new[] { "local.auto-switch", "local.stop-at-last", "trigger.filter-enabled", "trigger.text", "trigger.filter-text" },
+            categories[1].Select(field => field.FieldId));
+        Assert.Equal(new[] { "local.subscribe-folder", "local.folder-path", "local.refresh-folder", "local.trigger-folder-run" },
+            categories[2].Select(field => field.FieldId));
+        Assert.All(fields, field => Assert.Equal(field.Group, field.Layout!.Section));
+    }
+
+    [Fact]
     public void Runtime_declares_catalog_stable_tool_identity_and_the_actual_component_role()
     {
         var tool = new ImageSourceTool();
@@ -51,16 +86,27 @@ public sealed class ImageSourceDeclarationAndFormatTests
             [ImageSourceOutput.FileReference] = TypeRef.ScalarOf(ScalarKind.Text),
             [ImageSourceOutput.FileName] = TypeRef.ScalarOf(ScalarKind.Text),
             [ImageSourceOutput.FrameId] = TypeRef.ScalarOf(ScalarKind.Text),
-            [ImageSourceOutput.Timestamp] = TypeRef.ScalarOf(ScalarKind.Text)
+            [ImageSourceOutput.Timestamp] = TypeRef.ScalarOf(ScalarKind.Text),
+            [ImageSourceOutput.ModuleRunTime] = DataType.Number,
+            [ImageSourceOutput.CameraFailureCount] = DataType.Integer,
+            [ImageSourceOutput.ModuleStatus] = DataType.Integer
         };
         Assert.Equal(expected.Keys.OrderBy(x => x), ImageSourceOutput.Ports.Select(port => port.Id).OrderBy(x => x));
         foreach (var port in ImageSourceOutput.Ports)
         {
             Assert.Equal(expected[port.Id], port.Type);
-            Assert.True(port.Required);
-            Assert.False(port.Nullable);
+            Assert.Equal(port.Id!=ImageSourceOutput.CameraFailureCount,port.Required);
+            Assert.Equal(port.Id==ImageSourceOutput.GrayImage,port.Nullable);
         }
         var tool = new ImageSourceTool();
+        Assert.False(tool.ResultSchema.FindOutputDisplay(ImageSourceOutput.ModuleStatus)!.DisplayInResultPanel);
+        Assert.Equal(NumericStorage.Float32, ImageSourceOutput.Ports.Single(port => port.Id == ImageSourceOutput.ModuleRunTime).Storage);
+        foreach (var imageType in new[] { ImageSourceOutput.ImageType, ImageSourceOutput.GrayImageType })
+        {
+            Assert.All(imageType.Fields.Where(port => port.Type == DataType.Integer),
+                port => Assert.Equal(NumericStorage.Int32, port.Storage));
+            Assert.Equal(DataType.Integer, imageType.Fields.Single(port => port.Id == ImageSourceOutput.ImageFormat).Type);
+        }
         Assert.Equal(ImageSourceOutput.Ports, tool.ResultSchema.Outputs);
         Assert.Equal(ImageSourceOutput.Ports, ImageSourceTool.Schema.Outputs);
         Assert.Null(ImageSourceTool.Schema.WorkflowImageInputId);
@@ -84,7 +130,7 @@ public sealed class ImageSourceDeclarationAndFormatTests
         var context = Context(resources);
         var input = CameraInput(borrowed, 37L);
         await using var session = new ImageSourceTool().CreateSession();
-        var outcome = await session.ExecuteAsync(new(new ImageSourceSettings { SourceKind = "camera", CameraDeviceId = "device", OutputFormat = format }, input, context));
+        var outcome = await session.ExecuteAsync(new(new ImageSourceSettings { SourceKind = "camera", CameraDeviceId = "device", OutputFormat = format, OutputMono8 = true }, input, context));
         Assert.True(outcome.Success, string.Join(";", outcome.Diagnostics.Select(x => x.Message)));
         using var output = outcome.Output!;
         var values = output.ToValues();
@@ -112,10 +158,14 @@ public sealed class ImageSourceDeclarationAndFormatTests
         Assert.Equal("frame-123", Assert.IsType<string>(values[ImageSourceOutput.FrameId]));
         Assert.Equal("2026-10-28T01:02:03.4560000+00:00", Assert.IsType<string>(values[ImageSourceOutput.Timestamp]));
         Assert.Equal(string.Empty, Assert.IsType<string>(values[ImageSourceOutput.FileReference]));
-        Assert.Equal(37L, Assert.IsType<long>(values[ImageSourceOutput.Sequence]));
+        Assert.Equal(38L, Assert.IsType<long>(values[ImageSourceOutput.Sequence]));
+        var moduleTime = Assert.IsType<double>(values[ImageSourceOutput.ModuleRunTime]);
+        Assert.True(double.IsFinite(moduleTime) && moduleTime >= 0);
+        Assert.Equal((double)(float)moduleTime, moduleTime);
         Assert.Equal(3L, Assert.IsType<long>(((RecordValue)values[ImageSourceOutput.Image]!).Get<long>(ImageSourceOutput.ImageWidth)));
         Assert.Equal(2L, Assert.IsType<long>(((RecordValue)values[ImageSourceOutput.Image]!).Get<long>(ImageSourceOutput.ImageHeight)));
-        Assert.Equal(image.Layout.Format.ToString(), Assert.IsType<string>(((RecordValue)values[ImageSourceOutput.Image]!).Get<string>(ImageSourceOutput.ImageFormat)));
+        Assert.True(((RecordValue)values[ImageSourceOutput.Image]!).Read(ImageSourceOutput.ImageFormat).IsNull);
+        Assert.Equal(17301505L, ((RecordValue)values[ImageSourceOutput.GrayImage]!).Get<long>(ImageSourceOutput.GrayFormat));
     }
 
     [Theory]
@@ -132,21 +182,16 @@ public sealed class ImageSourceDeclarationAndFormatTests
             new byte[] { 10, 30, 99, 201, 77, 80, 88, 202 });
         var context = Context(resources);
         await using var session = new ImageSourceTool().CreateSession();
-        var outcome = await session.ExecuteAsync(new(new ImageSourceSettings { SourceKind = "camera", CameraDeviceId = "device", OutputFormat = format }, CameraInput(borrowed, 9L), context));
+        var outcome = await session.ExecuteAsync(new(new ImageSourceSettings { SourceKind = "camera", CameraDeviceId = "device", OutputFormat = format, OutputMono8 = true }, CameraInput(borrowed, 9L), context));
         Assert.True(outcome.Success, string.Join(";", outcome.Diagnostics.Select(x => x.Message)));
         using var output = outcome.Output!;
         var values = output.ToValues();
         var image = Assert.IsAssignableFrom<IReadOnlyImage>(((RecordValue)values[ImageSourceOutput.Image]!).Get<IReadOnlyImage>(ImageSourceOutput.ImageData));
-        var gray = Assert.IsAssignableFrom<IReadOnlyImage>(((RecordValue)values[ImageSourceOutput.GrayImage]!).Get<IReadOnlyImage>(ImageSourceOutput.GrayData));
+        Assert.Null(values[ImageSourceOutput.GrayImage]);
         Assert.Equal(PixelLayout.Gray8, image.Layout.Format);
         using var pixels = image.AcquirePixels();
-        using var grayPixels = gray.AcquirePixels();
-        Assert.Equal(new byte[] { 10, 30 }, grayPixels.GetRow(0)[..2].ToArray());
-        Assert.Equal((byte)80, grayPixels.GetRow(1)[1]);
-        Assert.Same(image, gray);
         Assert.Equal(new byte[] { 10, 30 }, pixels.GetRow(0)[..2].ToArray());
         AssertImageIdentityAndDomain(image, context.Identity, ImageSourceOutput.Image);
-        AssertImageIdentityAndDomain(gray, context.Identity, ImageSourceOutput.Image);
         Assert.Equal(new byte[] { 10, 30, 99, 201, 77, 80, 88, 202 }, borrowed.CopyPixels());
         Assert.Equal("frame-123", values[ImageSourceOutput.FrameId]);
         Assert.Equal("2026-10-28T01:02:03.4560000+00:00", values[ImageSourceOutput.Timestamp]);
@@ -169,7 +214,7 @@ public sealed class ImageSourceDeclarationAndFormatTests
                 new[]{new RegionRun(0,0,width-1)});
             var camera=resources.CreateImage(new ImageLayout(width,1,width*3,PixelLayout.Bgr24),sourceFrame,domain,bgr);
             await using var session=new ImageSourceTool().CreateSession();
-            var outcome=await session.ExecuteAsync(new(new ImageSourceSettings {SourceKind="camera",CameraDeviceId="device"},CameraInput(camera,1L),context));
+            var outcome=await session.ExecuteAsync(new(new ImageSourceSettings {SourceKind="camera",CameraDeviceId="device",OutputMono8=true},CameraInput(camera,1L),context));
             Assert.True(outcome.Success,string.Join(";",outcome.Diagnostics.Select(item=>item.Message)));
             using var output=outcome.Output!;
             var gray=Assert.IsAssignableFrom<IReadOnlyImage>(((RecordValue)output.ToValues()[ImageSourceOutput.GrayImage]!).Get<IReadOnlyImage>(ImageSourceOutput.GrayData));
@@ -192,36 +237,53 @@ public sealed class ImageSourceDeclarationAndFormatTests
         {
             var path=Path.Combine(directory,"source.png");
             var encoder=new PngBitmapEncoder();
-            var pixels=grayInput?new byte[]{20,90}:new byte[]{20,20,20,90,90,90};
-            encoder.Frames.Add(BitmapFrame.Create(BitmapSource.Create(2,1,96,96,
-                grayInput?PixelFormats.Gray8:PixelFormats.Bgr24,null,pixels,grayInput?2:6)));
+            var grayRow=new byte[]{20,90,0,255};
+            var colorRow=grayInput
+                ?grayRow.SelectMany(pixel=>new[]{pixel,pixel,pixel}).ToArray()
+                :new byte[]{0,0,255,0,255,0,255,0,0,255,255,255};
+            var sourceRow=grayInput?grayRow:colorRow;
+            var pixels=Enumerable.Repeat(sourceRow,4).SelectMany(row=>row).ToArray();
+            encoder.Frames.Add(BitmapFrame.Create(BitmapSource.Create(4,4,96,96,
+                grayInput?PixelFormats.Gray8:PixelFormats.Bgr24,null,pixels,sourceRow.Length)));
             using(var file=File.Create(path))encoder.Save(file);
             using var resources=new FrozenOutputResources();
             var context=Context(resources,path);
             var input=new InputValues(ImageSourceTool.Schema.Inputs,new Dictionary<string,object?> {
                 [ImageSourceTool.LocalAddress]=path,[ImageSourceTool.Sequence]=7L });
             await using var session=new ImageSourceTool().CreateSession();
-            var outcome=await session.ExecuteAsync(new(new ImageSourceSettings {OutputFormat=format},input,context));
+            var outcome=await session.ExecuteAsync(new(new ImageSourceSettings {OutputFormat=format,OutputMono8=true},input,context));
             Assert.True(outcome.Success,string.Join(";",outcome.Diagnostics.Select(item=>item.Message)));
             using var output=outcome.Output!;
             var values=output.ToValues();
-            var image=Assert.IsAssignableFrom<IReadOnlyImage>(((RecordValue)values[ImageSourceOutput.Image]!).Get<IReadOnlyImage>(ImageSourceOutput.ImageData));
-            var gray=Assert.IsAssignableFrom<IReadOnlyImage>(((RecordValue)values[ImageSourceOutput.GrayImage]!).Get<IReadOnlyImage>(ImageSourceOutput.GrayData));
+            var record=Assert.IsType<RecordValue>(values[ImageSourceOutput.Image]);
+            var image=Assert.IsAssignableFrom<IReadOnlyImage>(record.Get<IReadOnlyImage>(ImageSourceOutput.ImageData));
             var expectGray=format=="mono8"||(format=="original"&&grayInput);
-            Assert.Equal(expectGray?PixelLayout.Gray8:PixelLayout.Bgr24,image.Layout.Format);
-            Assert.Equal(expectGray?new byte[]{20,90}:new byte[]{20,20,20,90,90,90},image.CopyPixels());
-            Assert.Equal(new byte[]{20,90},gray.CopyPixels());
+            var expectedGrayRow=grayInput?grayRow:new byte[]{75,149,29,255};
+            var expectedGray=Enumerable.Repeat(expectedGrayRow,4).SelectMany(row=>row).ToArray();
+            var expectedColor=Enumerable.Repeat(colorRow,4).SelectMany(row=>row).ToArray();
+            var expectRgb=format=="rgb24";
+            var expectedRgb=expectedColor.Chunk(3).SelectMany(pixel=>new[]{pixel[2],pixel[1],pixel[0]}).ToArray();
+            Assert.Equal(expectGray?PixelLayout.Gray8:expectRgb?PixelLayout.Rgb24:PixelLayout.Bgr24,image.Layout.Format);
+            Assert.Equal(expectGray?expectedGray:expectRgb?expectedRgb:expectedColor,image.CopyPixels());
+            if(expectRgb)Assert.Equal(35127316L,record.Get<long>(ImageSourceOutput.ImageFormat));
             Assert.Equal(context.Identity,image.Frame.ProducerRun);
-            Assert.Equal(context.Identity,gray.Frame.ProducerRun);
             Assert.Equal(ImageSourceOutput.Image,image.Frame.SourcePortId);
-            Assert.Equal(expectGray?ImageSourceOutput.Image:ImageSourceOutput.GrayImage,gray.Frame.SourcePortId);
-            Assert.Equal(expectGray,ReferenceEquals(image,gray));
-            foreach(var result in new[]{image,gray})
+            if(expectGray) Assert.Null(values[ImageSourceOutput.GrayImage]);
+            var images=new List<IReadOnlyImage>{image};
+            if(!expectGray)
+            {
+                var gray=Assert.IsType<RecordValue>(values[ImageSourceOutput.GrayImage]).Get<IReadOnlyImage>(ImageSourceOutput.GrayData);
+                Assert.Equal(expectedGray,gray.CopyPixels());
+                Assert.Equal(context.Identity,gray.Frame.ProducerRun);
+                Assert.Equal(ImageSourceOutput.GrayImage,gray.Frame.SourcePortId);
+                images.Add(gray);
+            }
+            foreach(var result in images)
             {
                 Assert.Equal(result.Frame,result.EffectiveDomain.SourceFrame);
                 using var domain=result.EffectiveDomain.AcquireReader();
                 Assert.Equal(result.Frame,domain.SourceFrame);
-                Assert.Equal(new[]{new RegionRun(0,0,1)},domain.ReadRuns(0,4096).ToArray());
+                Assert.Equal(Enumerable.Range(0,4).Select(row=>new RegionRun(row,0,3)),domain.ReadRuns(0,4096).ToArray());
             }
         }
         finally{Directory.Delete(directory,true);}
@@ -261,11 +323,11 @@ public sealed class ImageSourceDeclarationAndFormatTests
                 Assert.Equal(string.Empty, Assert.IsType<string>(values[id]));
             Assert.Equal(2L, Assert.IsType<long>(((RecordValue)values[ImageSourceOutput.Image]!).Get<long>(ImageSourceOutput.ImageWidth)));
             Assert.Equal(1L, Assert.IsType<long>(((RecordValue)values[ImageSourceOutput.Image]!).Get<long>(ImageSourceOutput.ImageHeight)));
-            Assert.Equal(21L, Assert.IsType<long>(values[ImageSourceOutput.Sequence]));
+            Assert.Equal(22L, Assert.IsType<long>(values[ImageSourceOutput.Sequence]));
             var image = Assert.IsAssignableFrom<IReadOnlyImage>(((RecordValue)values[ImageSourceOutput.Image]!).Get<IReadOnlyImage>(ImageSourceOutput.ImageData));
             Assert.Equal(new byte[] { 17, 29 }, image.CopyPixels());
-            Assert.Same(image, ((RecordValue)values[ImageSourceOutput.GrayImage]!).Get<IReadOnlyImage>(ImageSourceOutput.GrayData));
-            Assert.Equal(PixelLayout.Gray8.ToString(), Assert.IsType<string>(((RecordValue)values[ImageSourceOutput.Image]!).Get<string>(ImageSourceOutput.ImageFormat)));
+            Assert.Null(values[ImageSourceOutput.GrayImage]);
+            Assert.Equal(17301505L, ((RecordValue)values[ImageSourceOutput.Image]!).Get<long>(ImageSourceOutput.ImageFormat));
             Assert.Equal(context.Identity, image.Frame.ProducerRun);
         }
         finally { Directory.Delete(directory, recursive: true); }

@@ -114,14 +114,15 @@ public sealed partial class ImageSourceStripSession : IImageSourceStripSession, 
         bool Current()=>generation==_refreshGeneration&&version==_source.EditVersion&&OwnerIsCurrent();
         if(!Current())return;
         var rows = _source.Images.ToArray();
-        foreach (var old in _subscribedImages.Where(x => !rows.Contains(x)).ToArray())
+        var present = rows.ToHashSet(ReferenceEqualityComparer.Instance);
+        foreach (var old in _subscribedImages.Where(x => !present.Contains(x)).ToArray())
         { old.PropertyChanged -= ImagePropertyChanged; _subscribedImages.Remove(old); RemoveThumbnail(old); }
         foreach (var row in rows)
             if (_subscribedImages.Add(row)) row.PropertyChanged += ImagePropertyChanged;
         foreach (var old in _thumbnails.Keys.Where(row => !_visibleIds.Contains(row.Id)).ToArray()) RemoveThumbnail(old);
         foreach (var row in rows.Where(row => _visibleIds.Contains(row.Id)))
             if (!_thumbnails.ContainsKey(row)) _thumbnails.Add(row, new(row, _lifetime.Token));
-        _configuredStartIndex = _source.CapturePolicy().CurrentIndex;
+        _configuredStartIndex = _source.ConfiguredStartIndex;
         var nextItems = rows.Select(row =>
         {
             _thumbnails.TryGetValue(row, out var thumbnail);
@@ -283,18 +284,19 @@ public sealed partial class ImageSourceStripSession : IImageSourceStripSession, 
     {
         RequireCurrent(version, edit: false);
         var path = image.FilePath;
-        if (!File.Exists(path) && !Directory.Exists(path)) throw new FileNotFoundException("图像文件或目录不存在。", path);
-        var start = new ProcessStartInfo("explorer.exe") { UseShellExecute = false };
-        if (Directory.Exists(path)) start.ArgumentList.Add(path);
-        else
+        if (Directory.Exists(path))
         {
-            var item = ILCreateFromPathW(path);
-            if (item == IntPtr.Zero) throw new IOException("无法定位图像文件：" + path);
-            try { RequireCurrent(version, edit: false); Marshal.ThrowExceptionForHR(SHOpenFolderAndSelectItems(item, 0, IntPtr.Zero, 0)); }
-            finally { ILFree(item); }
+            var start = new ProcessStartInfo("explorer.exe") { UseShellExecute = false };
+            start.ArgumentList.Add("/select," + path);
+            RequireCurrent(version, edit: false);
+            Process.Start(start)?.Dispose();
             return;
         }
-        RequireCurrent(version, edit: false); Process.Start(start)?.Dispose();
+        if (!File.Exists(path)) throw new FileNotFoundException("图像文件或目录不存在。", path);
+        var item = ILCreateFromPathW(path);
+        if (item == IntPtr.Zero) throw new IOException("无法定位图像文件：" + path);
+        try { RequireCurrent(version, edit: false); Marshal.ThrowExceptionForHR(SHOpenFolderAndSelectItems(item, 0, IntPtr.Zero, 0)); }
+        finally { ILFree(item); }
     }
     [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
     private static extern IntPtr ILCreateFromPathW(string path);

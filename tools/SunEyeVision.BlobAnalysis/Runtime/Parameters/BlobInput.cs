@@ -7,16 +7,25 @@ namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 /// constructing this view does not copy or dispose image/region resources.
 /// </summary>
 public sealed record BlobInput(IReadOnlyImage Image, IReadOnlyRegion? Inspection,
-    IReadOnlyRegion? Mask, RecordValue? Pose,RecordValue? LocalRoi=null,bool IsInheritedRoi=false)
+    IReadOnlyRegion? Mask, RecordValue? Pose,RecordValue? LocalRoi=null,bool IsInheritedRoi=false,IReadOnlyImage? ImageMask=null,
+    bool OutputMask=false,RecordValue? Fixture=null,bool IsInheritedMask=false)
 {
     public static BlobInput Read(InputValues values)
     {
         ArgumentNullException.ThrowIfNull(values);
-        return new(values.Get<IReadOnlyImage>(BlobTool.ImageInput),
-            values.Contains(BlobTool.InspectionInput) ? values.Get<IReadOnlyRegion>(BlobTool.InspectionInput) : null,
-            values.Contains(BlobTool.MaskInput) ? values.Get<IReadOnlyRegion>(BlobTool.MaskInput) : null,
-            values.Contains(BlobTool.PoseInput) ? values.Get<RecordValue>(BlobTool.PoseInput) : null,
-            BlobRoiInheritance.Materialize(values,values.Contains(BlobLocalRoi.InputId)?values.Get<RecordValue>(BlobLocalRoi.InputId):null),
-            values.Contains(BlobRoiInheritance.ModeId)&&values.Get<string>(BlobRoiInheritance.ModeId)!=BlobRoiInheritance.Local);
+        var outputMask = values.Contains(BlobImageRoi.OutputEnabledId) && values.Get<bool>(BlobImageRoi.OutputEnabledId);
+        if (values.Contains(BlobImageRoi.ModeId) && values.Get<long>(BlobImageRoi.ModeId) == 1)
+            return new(values.Get<IReadOnlyImage>(BlobTool.ImageInput), null, null, null,
+                ImageMask: values.Get<IReadOnlyImage>(BlobImageRoi.ImageId), OutputMask:outputMask);
+        var fixture = BlobFixtureInputs.Read(values);
+        var localRoi = values.Contains(BlobLocalRoi.InputId) ? values.Get<RecordValue>(BlobLocalRoi.InputId) : BlobLocalRoi.Empty;
+        BlobLocalRoi.Validate(localRoi);
+        var roi = BlobRoiInheritance.Materialize(values, localRoi);
+        return new(values.Get<IReadOnlyImage>(BlobTool.ImageInput), null, null,
+            fixture is null ? null : FixtureDeclarations.ToAffine2D(fixture,BlobSchema.ImageFrame),
+            BlobMaskInheritance.Materialize(values,roi),
+            values.Contains(BlobRoiInheritance.ModeId)&&values.Get<string>(BlobRoiInheritance.ModeId)!=BlobRoiInheritance.Local,
+            OutputMask:outputMask,Fixture:fixture,
+            IsInheritedMask:values.Contains(BlobMaskInheritance.ModeId)&&values.Get<bool>(BlobMaskInheritance.ModeId));
     }
 }

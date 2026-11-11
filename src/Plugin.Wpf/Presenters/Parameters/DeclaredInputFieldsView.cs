@@ -38,8 +38,7 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
     }
     public DeclaredInputFieldsView(ToolSchema schema,Func<Port,ParameterSetting> read,
         Action<Port,ParameterSetting> write,ReferenceFieldOptions references,
-        Func<OutputReference,string>? format=null,
-        Func<Port,IReadOnlyList<DeclaredReferenceCandidate>>? referenceCandidates=null)
+        Func<OutputReference,string>? format=null)
     {
         _schema=schema;_read=read;_write=write;
         _ownsReferenceWindowOwner=references.WindowOwner is null;_referenceWindowOwner=references.WindowOwner??new ReferenceWindowOwner(this,()=>!_disposed,new(),false);references=references with{WindowOwner=_referenceWindowOwner};
@@ -66,7 +65,7 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
                         presentation:field,allowUnboundReference:!port.Required||schema.WorkflowImageInputId==port.Id);
                     _fields.Add(editor);
                     if(port.Id==schema.WorkflowImageInputId)
-                        editor.UseImageSourceSelector(()=>referenceCandidates?.Invoke(port)??Array.Empty<DeclaredReferenceCandidate>());
+                        editor.UseImageSourceSelector(()=>references.ReadCandidates(port));
                     var row=new NativeParameterRow(metadata,editor,()=>editor.NativeItemState,
                         ()=>{if(!_disposed)ReferenceExpansionCoordinator.ClearSelectionFor(_referenceWindowOwner);});
                     _fieldRows.Add(port.Id,row);
@@ -87,18 +86,66 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
         ObjectDisposedException.ThrowIf(_disposed,this);
         var port=Unpresented(id);return _read(port);
     }
+    /// <summary>Project a field changed by an accepted owner edit without proposing a second edit.</summary>
+    public void RefreshInputProjection(string id,ConstantSetting? defaultWhenUnset=null)
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);
+        var row = _fields.Single(field => field.FieldId == id);
+        var state = row.StateForHost;
+        ParameterSetting ReadAccepted()
+        {
+            var value=ReadInputProjection(id);
+            return value is UnsetSetting&&defaultWhenUnset is not null?defaultWhenUnset:value;
+        }
+        var accepted = ReadAccepted();
+        if (DeclaredFieldState.SameSetting(state.Accepted, accepted)) return;
+        row.RetireInteractions();
+        if (!_disposed) state.ProjectAcceptedInput(ReadAccepted());
+    }
     /// <summary>Creates a real declared input editor for a tool's original composite layout.
     /// The view retains the editor and the same host write/reference callbacks; no second field owner is created.</summary>
-    public DeclaredFieldRow ComposeInputEditor(string id,string label,bool numericSequence=false)
+    public DeclaredFieldRow ComposeInputEditor(string id,string label,bool numericSequence=false,bool imageSource=false,ConstantSetting? defaultWhenUnset=null,
+        bool referenceOnly=false,NativeIntegerRadioOptions? integerRadioOptions=null, bool showClearButton=true)
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
         var port=_schema.Inputs.SingleOrDefault(port=>port.Id==id)??throw new ArgumentException("输入未声明。");
         if(_fields.Any(field=>field.FieldId==id)||_schema.Presentation!.Fields.Any(field=>field.FieldId==id))
             throw new ArgumentException("输入已有编辑器。");
-        var editor=new DeclaredFieldRow(port,label,_read(port),setting=>_write(port,setting),_references,
-            formatReference:_formatReference,allowUnboundReference:!port.Required,numericSequence:numericSequence);
-        _fields.Add(editor);return editor;
+        var value = _read(port);
+        ObjectDisposedException.ThrowIf(_disposed,this);
+        if (value is UnsetSetting && defaultWhenUnset is not null) value = defaultWhenUnset;
+        // An optional host input with an explicit presentation default is a selected
+        // constant in the original radio control. Keep the formal input optional;
+        // only its editor projection has no unset branch.
+        var editorPort = referenceOnly ? port with { EditModes=FieldEditModes.Reference } : port;
+        if (integerRadioOptions is not null && defaultWhenUnset is not null)
+            editorPort = editorPort with { Required=true };
+        var editor=new DeclaredFieldRow(editorPort,label,value,setting=>_write(port,setting),_references,
+            formatReference:_formatReference,allowUnboundReference:!port.Required,numericSequence:numericSequence,
+            integerRadioOptions:integerRadioOptions, showClearButton:showClearButton);
+        try
+        {
+            ObjectDisposedException.ThrowIf(_disposed,this);
+            if(imageSource)editor.UseImageSourceSelector(()=>_references.ReadCandidates(port));
+            ObjectDisposedException.ThrowIf(_disposed,this);
+            if(_fields.Any(field=>field.FieldId==id))throw new InvalidOperationException("输入编辑器在创建期间已被安装。");
+            _fields.Add(editor);
+            return editor;
+        }
+        catch{editor.Dispose();throw;}
     }
+    public ParameterSetting ReadInputProjection(string id)
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);
+        return _read(_schema.Inputs.Single(port=>port.Id==id));
+    }
+    public string DescribeInputSource(ParameterSetting setting) => setting switch
+    {
+        ReferenceSetting value => _formatReference?.Invoke(value.Reference) ?? value.Reference.PortId,
+        VariableSetting value => _references.FormatVariable?.Invoke(value.Reference) ?? value.Reference.VariableId,
+        ConstantSetting value => Convert.ToString(value.Value, System.Globalization.CultureInfo.CurrentCulture) ?? "",
+        _ => ""
+    };
     public void WriteUnpresentedInput(string id,ParameterSetting setting)
     {
         ObjectDisposedException.ThrowIf(_disposed,this);var port=Unpresented(id);

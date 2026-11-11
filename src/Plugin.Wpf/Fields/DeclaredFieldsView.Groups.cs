@@ -76,7 +76,21 @@ public sealed partial class DeclaredFieldsView
     }
     private bool ProposeSingle(string id,ParameterSetting proposal)
         =>SubmitFields(new Dictionary<string,ParameterSetting>{{id,proposal}},false);
-    private bool SubmitFields(IReadOnlyDictionary<string,ParameterSetting> proposals,bool replacePending)
+    internal bool TryResetFields(IReadOnlyDictionary<string,ParameterSetting> defaults)
+    {
+        Dispatcher.VerifyAccess();
+        if (!CurrentGroup() || _submitting) return false;
+        foreach (var (id, presentation) in _groupPresentations)
+        {
+            if (presentation.Layout?.PairWith is not { } peer || (!defaults.ContainsKey(id) && !defaults.ContainsKey(peer))) continue;
+            if (defaults.GetValueOrDefault(id) is not ConstantSetting low || defaults.GetValueOrDefault(peer) is not ConstantSetting high
+                || Convert.ToDouble(low.Value, CultureInfo.InvariantCulture) > Convert.ToDouble(high.Value, CultureInfo.InvariantCulture))
+                throw new ArgumentException("重置必须同时提供有序的两个范围默认值。");
+        }
+        return SubmitFields(defaults, true, allowPairedReset:true);
+    }
+
+    private bool SubmitFields(IReadOnlyDictionary<string,ParameterSetting> proposals,bool replacePending,bool allowPairedReset=false)
     {
         ArgumentNullException.ThrowIfNull(proposals);
         Dispatcher.VerifyAccess();
@@ -88,7 +102,7 @@ public sealed partial class DeclaredFieldsView
             var changes=proposals.ToArray();
             var states=_fieldStates.ToDictionary(x=>x.Port.Id,StringComparer.Ordinal);
             if(changes.Any(x=>!states.ContainsKey(x.Key)||x.Value is null))throw new ArgumentException("组合提案含未知字段或空设置。");
-            if(changes.Any(x=>_pairedFields.Contains(x.Key)))throw new ArgumentException("范围端点必须通过原双端组合及绑定上下文联合编辑。");
+            if(!allowPairedReset&&changes.Any(x=>_pairedFields.Contains(x.Key)))throw new ArgumentException("范围端点必须通过原双端组合及绑定上下文联合编辑。");
             return SubmitCore(changes.Select(x=>(states[x.Key],x.Value)).ToArray(),true,replacePending);
         }
         finally{_submitting=false;}
@@ -138,7 +152,7 @@ public sealed partial class DeclaredFieldsView
                     var presentation=_groupPresentations[change.Key];
                     if(!_inlineConstants.Contains(change.Key)&&DeclaredFieldTemplateRegistry.UsesOriginalModes(state.Port,presentation,false))NativeNumericCommit.EnsureRepresentable(number);
                     var value=Convert.ToDouble(number.Value,CultureInfo.InvariantCulture);
-                    if(presentation.Layout is {} layout&&(value<layout.Minimum||value>layout.Maximum))throw new ArgumentException("数值超出声明的编辑范围。");
+                    if(presentation.Layout is {} layout&&(value<layout.Minimum||value>layout.Maximum))throw new ArgumentException($"数值超出声明的编辑范围：{change.Key}={value}，范围[{layout.Minimum},{layout.Maximum}]。");
                     if(!_inlineConstants.Contains(change.Key)&&number.Value is double real&&presentation.Layout?.DecimalPlaces is {} precision&&Math.Round(real,precision,MidpointRounding.ToEven)!=real)
                         throw new ArgumentException("组合提案超出声明的编辑精度，请提供规范值。");
                 }

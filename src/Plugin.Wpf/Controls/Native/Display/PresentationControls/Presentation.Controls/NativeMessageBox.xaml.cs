@@ -65,6 +65,18 @@ public partial class NativeMessageBox : BaseWindow, INotifyPropertyChanged, ICom
 
 	public static bool Alive => _alivecount > 0;
 
+	/// <summary>
+	/// 测试宿主自动应答钩子：设置后模态弹窗不再 ShowDialog 阻塞，直接返回钩子给出的应答。
+	/// 生产进程不设置该钩子，行为不变。参数为（标题，消息），返回应答；返回 null 表示不接管。
+	/// </summary>
+	internal static Func<string?, string?, DialogResult?>? TestAutoRespond;
+
+	private static DialogResult? TryAutoRespond(string? title, string? message)
+	{
+		var respond = TestAutoRespond;
+		return respond is null ? null : respond(title, message);
+	}
+
     internal static void ShowOwnedWarning(Window owner,string message,Action<NativeMessageBox> created,Func<bool> current,string? title=null)
     {
         owner.Dispatcher.VerifyAccess();
@@ -833,6 +845,10 @@ public partial class NativeMessageBox : BaseWindow, INotifyPropertyChanged, ICom
 
 	private new DialogResult ShowDialog()
 	{
+		if (TryAutoRespond(Title, Message) is { } answered)
+		{
+			return answered;
+		}
 		if (IsSdkMode())
 		{
 			return DialogResult.None;

@@ -14,5 +14,10 @@
     <PackageReference Include="System.Management" Version="7.0.0" />
     <Resource Include="Themes/Assets/**/*.*" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- UI/画布测试宿主经 NativeMessageBox 测试自动应答钩子接管模态弹窗（internal 契约）。 -->
+    <InternalsVisibleTo Include="SunEyeVision.UI.Tests" />
+    <InternalsVisibleTo Include="SunEyeVision.CanvasLayout.Tests" />
+  </ItemGroup>
   <Import Project="NativeResources.props" />
 </Project>

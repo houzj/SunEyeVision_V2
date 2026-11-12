@@ -29,6 +29,19 @@ internal static class UiRuntime
 {
     private static PluginManager? _plugins;
     private static IDisposable? _desktop;
+    private static bool _dialogHookInstalled;
+
+    /// <summary>测试宿主自动应答模态弹窗：不阻塞测试派发线程；弹窗内容记录到控制台供失败定位。</summary>
+    private static void InstallDialogAutoRespond()
+    {
+        if(_dialogHookInstalled)return;_dialogHookInstalled=true;
+        SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls.NativeMessageBox.TestAutoRespond=(title,message)=>
+        {
+            var text=$"[测试自动应答弹窗] 标题={title ?? "-"} 消息={message ?? "-"}{Environment.NewLine}{Environment.StackTrace}";
+            Console.WriteLine(text);
+            return SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls.DialogResult.Ok;
+        };
+    }
     internal static string ProductRoot => Path.GetFullPath(typeof(UiRuntime).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().Single(item=>item.Key=="HostDebugRoot").Value!);
     internal static string Cases => Path.GetFullPath(Path.Combine(ProductRoot,"..","..","_validation","UiSessionTests"));
     internal static DesktopToolAdmission Admission
@@ -38,6 +51,7 @@ internal static class UiRuntime
             System.Windows.Application.Current.Dispatcher.VerifyAccess();
             if(_plugins is null)
             {
+                InstallDialogAutoRespond();
                 AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY",ProductRoot);
                 _plugins=new PluginManager();_plugins.LoadPluginsAsync().GetAwaiter().GetResult();
                 if(_plugins.LastAdmissionError is {} error)throw new InvalidOperationException(error);

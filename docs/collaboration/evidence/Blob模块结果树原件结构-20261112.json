@@ -123,5 +123,24 @@
       "同步重写按旧结构编写的 12 条 ResultPresentationPresenterTests 用例"
     ]
   },
+  "implementation20261112": {
+    "conclusion": "投影方向重构已落地：显示声明（OutputDisplayNode portId+memberPath）成为结果树的项集/顺序/分组/名称唯一权威；成员转置行取代 [All]/[i]/分页行；Blob 声明按本清单逐项重写，BlobSchema.Outputs 顺序与 Fingerprint 未动。",
+    "code": [
+      "src/Plugin.Contracts/OutputDisplayNode.cs：portId/memberPath 行、几何伪成员（Polygon count/x/y）、按端口+路径校验",
+      "src/Plugin.Contracts/Values.cs：FindOutputDisplay 深度查找（分组子行端口可取名）",
+      "src/Plugin.Wpf/.../ResultPresentationModel.cs：按声明建树、成员转置取值、删除 All/样本/分页",
+      "src/Plugin.Wpf/.../DeclaredPropertyList.cs：同源模型，删除分页行",
+      "src/UI/Services/Monitoring/ResultPresentationPresenter.cs：按声明行渲染，组行不带值",
+      "src/UI/Shell/Windows/MainWindowViewModel.cs：CanBind 对几何伪成员返回 false",
+      "tools/.../BlobOutputDisplay.cs：25 个可见顶层项 + 12 个分组 + 16 个隐藏项，分数不声明"
+    ],
+    "retractedTests": "旧分页/All/样本索引用例先按原件改为成员转置与行数合同再改代码（ResultPresentationModelTests/ResultPresentationPresenterTests 成片重写，BlobAnalysisParameterContractTests 隐藏件断言同步）；新增 BlobResultTreeTests 以本清单逐项断言",
+    "unimplemented": [
+      "分数：本方无 Blob 级 score 数据来源（BlobMeasurement/BlobResultProjection 只有轮廓判定值 0/2），按禁止兜底原则不声明该行",
+      "屏蔽区多边形点集（多边形点X/Y/点数）：几何成员投影已实现，但原件截图中该组值全为空，数值语义标「运行未确认」"
+    ],
+    "verification": "全量 Release 构建 0 错误；全量封签后 --no-build：UI 357 用例 310 通过/47 失败（stash 基线 288 通过/69 失败，净修复 22 条，失败均为存量环境问题），BlobResultTreeTests+参数契约 29/29 通过",
+    "acceptance": "待用户按本清单 6 张原件截图逐项核对项名/分组/顺序/值形式，及双击调试窗口不闪烁"
+  },
   "acceptance": "以本清单逐项核对结果树：项名、分组、顺序、值形式（裸值、分号拼接、float32 自然位数）"
 }

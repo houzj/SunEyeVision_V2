@@ -57,11 +57,22 @@ public sealed class ToolSchema
     public IReadOnlyList<Port> Outputs { get; }
     public ToolPresentation? Presentation { get; }
     public IReadOnlyList<OutputDisplayNode> OutputDisplay {get;}
+    /// <summary>端口显示节点；端口只作为分组子行出现时也返回该节点，成员名沿用逐级 FieldId 下钻。</summary>
     public OutputDisplayNode? FindOutputDisplay(string portId,IEnumerable<string>? members=null)
     {
-        var node=OutputDisplay.SingleOrDefault(item=>item.FieldId==portId);
+        var node=FindPortDisplay(portId);
         foreach(var member in members??Array.Empty<string>())node=node?.Children.SingleOrDefault(item=>item.FieldId==member);
         return node;
+    }
+    private OutputDisplayNode? FindPortDisplay(string portId)
+        =>OutputDisplay.Select(item=>FindPortDisplay(item,portId,null)).FirstOrDefault(item=>item is not null);
+    private static OutputDisplayNode? FindPortDisplay(OutputDisplayNode node,string portId,string? inheritedPort)
+    {
+        var target=node.PortId??inheritedPort??node.FieldId;
+        if(target==portId)return node;
+        foreach(var child in node.Children)
+            if(FindPortDisplay(child,portId,target) is {} found)return found;
+        return null;
     }
     public string? WorkflowImageInputId { get; }
     public string Fingerprint { get; }

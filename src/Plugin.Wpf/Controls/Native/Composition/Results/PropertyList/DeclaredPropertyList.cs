@@ -13,7 +13,6 @@ namespace SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.PropertyLi
 /// <summary>Read-only declaration/result tree over one borrowed publication. It never owns the shared publication.</summary>
 public sealed class DeclaredPropertyList : IToolResultView
 {
-    private const int PageSize = 128;
     private readonly string _schemaFingerprint;
     private readonly PropertyListView _view = new() { IsReadOnly = true };
     private readonly ObservableCollection<Row> _roots = new();
@@ -56,16 +55,15 @@ public sealed class DeclaredPropertyList : IToolResultView
             lease = publication.Borrow();
             bool Installing() => publication.IsCurrent() && publication.Stamp == stamp && !_disposed && generation == _generation;
             if (!Installing() || lease.Stamp != stamp) return;
-            var model = ResultPresentationModel.ForPublication(publication, lease, PageSize, Installing);
+            var model = ResultPresentationModel.ForPublication(publication, lease, Installing);
             if (!Installing()) return;
             _publication = publication; _stamp = stamp; _lease = lease; lease = null; _model = model;
             var root = new Row("$result", "结果", StatusText(publication.State), 0, true) { IsExpanded = true };
-            foreach (var node in model.Outputs.Where(node => publication.DisplayedPorts.Contains(node.DeclaredPort!.Id)))
+            foreach (var node in model.Outputs)
             {
                 if (!Current(generation)) return;
                 var entry = EntryFor(node, 1, generation);
                 if(entry is null||!Current(generation))return;
-                if (publication.DisplayNames.TryGetValue(node.DeclaredPort!.Id, out var name)) entry.Row.DisplayName = name;
                 root.MutableChildren.Add(entry.Row);
             }
             root.IsGroup = root.Children.Count > 0;
@@ -112,67 +110,37 @@ public sealed class DeclaredPropertyList : IToolResultView
         if(model is null)return null;
         var text=ValueText(node,model);
         if(!Current(generation))return null;
-        var count=node.ChildCount;
-        if(!Current(generation))return null;
-        var row = new Row(node.Key, node.DeclaredPort?.Id ?? "[" + node.ElementIndex!.Value.ToString(CultureInfo.InvariantCulture) + "]",
-            text, level, count is > 0) { IsExpanded = node.IsExpanded, NodeKey = node.Key };
+        var row = new Row(node.Key, node.DisplayName, text, level, node.IsGroup) { IsExpanded = node.IsExpanded, NodeKey = node.Key };
         var entry = new Entry(node, row); _entries.Add(node.Key, entry);
         PropertyChangedEventHandler handler = (_, args) =>
         {
             if (args.PropertyName != nameof(Row.IsExpanded) || !Owns(row, generation)) return;
             node.IsExpanded = row.IsExpanded;
             if(!Owns(row,generation))return;
-            if (row.IsExpanded && entry.Children.Count == 0) LoadPage(entry, generation);
+            if (row.IsExpanded && entry.Children.Count == 0) LoadChildren(entry, generation);
         };
         row.PropertyChanged += handler; _subscriptions.Add((row, handler));
+        if (row.IsExpanded && row.IsGroup) LoadChildren(entry, generation);
         return entry;
     }
 
-    private void LoadPage(Entry entry, long generation)
+    /// <summary>声明树是静态的：展开即物化已声明子行，不再有分页行或元素索引行。</summary>
+    private void LoadChildren(Entry entry, long generation)
     {
-        if (!Current(generation) || entry.Loading) return;
-        entry.Loading = true;
-        try
-        {
-        var page = entry.Node.GetChildrenPage(entry.Children.Count, PageSize);
-        if (!Current(generation)) return;
+        if (!Current(generation) || entry.Children.Count != 0) return;
         var prepared = new List<Entry>();
-        foreach (var node in page)
+        foreach (var node in entry.Node.Children)
         {
             if (!Current(generation)) return;
             var child=EntryFor(node, entry.Row.Level + 1, generation);
             if(child is null||!Current(generation))return;
             prepared.Add(child);
         }
-        var childCount=entry.Node.ChildCount;
-        if(!Current(generation))return;
-        var offset = entry.Children.Count + prepared.Count;
-        Row? more = null;
-        PropertyChangedEventHandler? handler = null;
-        if (childCount is int count && offset < count)
-        {
-        var last = Math.Min((long)count - 1, (long)offset + PageSize - 1);
-        more = new Row(entry.Node.Key + ":page:" + offset.ToString(CultureInfo.InvariantCulture),
-            $"加载下一页 [{offset.ToString(CultureInfo.InvariantCulture)}…{last.ToString(CultureInfo.InvariantCulture)}]", "按需读取", entry.Row.Level + 1, true);
-        var pageRow = more;
-        handler = (_, args) =>
-        {
-            if (args.PropertyName == nameof(Row.IsExpanded) && pageRow.IsExpanded && ReferenceEquals(entry.More, pageRow) && Current(generation)) LoadPage(entry, generation);
-        };
-        }
-        // Complete the page and its continuation before any collection observer runs.
-        // A throwing observer must not strand a partial page with no way to continue.
-        if (entry.More is {} previous && entry.MoreHandler is {} previousHandler)
-            previous.PropertyChanged -= previousHandler;
+        // Complete the child page before any collection observer runs.
         entry.Children.AddRange(prepared);
-        entry.More = more; entry.MoreHandler = handler;
-        if (more is not null && handler is not null) more.PropertyChanged += handler;
         var rows = entry.Children.Select(child => child.Row).ToList();
-        if (more is not null) rows.Add(more);
         entry.Row.MutableChildren.Install(rows);
         entry.Row.MutableChildren.Publish(() => Owns(entry.Row, generation));
-        }
-        finally { entry.Loading = false; }
     }
 
     public void Clear()
@@ -190,11 +158,6 @@ public sealed class DeclaredPropertyList : IToolResultView
         _publication = null; _stamp = null; _lease = null; _model = null;
         foreach (var (row, handler) in _subscriptions) row.PropertyChanged -= handler;
         _subscriptions.Clear();
-        foreach (var entry in _entries.Values)
-        {
-            if (entry.More is { } more && entry.MoreHandler is { } handler) more.PropertyChanged -= handler;
-            entry.More = null; entry.MoreHandler = null;
-        }
         _entries.Clear();
         var errors=new List<Exception>();
         void Clean(Action action,bool ownView=true)
@@ -213,11 +176,9 @@ public sealed class DeclaredPropertyList : IToolResultView
 
     private static string ValueText(ResultPresentationNode node,ResultPresentationModel model)
     {
-        // 主树与属性树共用同一语义投影。序列元素节点不携带 DeclaredPort，
-        // 沿声明地址回溯根端口取显示名（如"单体状态"数组元素 0/1 → 失败/成功）。
+        // 主树与属性树共用同一语义投影：成员行按声明地址回溯根端口取显示名（如"单体状态"0/1 → 失败/成功）。
         if (node.ValueState == ResultPresentationValueState.Available && node.ScalarValue is { } scalar &&
-            (node.DeclaredPort ?? node.DeclarationAddress?.RootPort) is { } port &&
-            model.Schema.FindOutputDisplay(port.Id) is { DisplayName: var name } &&
+            model.Schema.FindOutputDisplay(node.DeclaredPort.Id) is { DisplayName: var name } &&
             ResultSemanticText.TryProject(name, scalar) is { } semantic)
             return semantic;
         return node.ValueState switch
@@ -231,8 +192,10 @@ public sealed class DeclaredPropertyList : IToolResultView
         _ => node.Declaration.Shape switch
         {
             ValueShape.Record => "",
-            ValueShape.Sequence => node.ChildCount is {} count ? count==0?"空序列 (0)":"["+count.ToString(CultureInfo.InvariantCulture)+" 项]":"值不可用",
+            ValueShape.Sequence when node.Declaration.Element!.Shape==ValueShape.Scalar => ResultValueText.JoinSequence(node),
+            ValueShape.Sequence => ResultValueText.SequenceText(node.SequenceLength),
             ValueShape.Geometry => node.GeometryValue is { } geometry ? GeometryText(geometry) : "几何值不可用",
+            _ when node.SequenceLength is not null => ResultValueText.JoinSequence(node),
             _ => node.ScalarValue switch
             {
                 string text => text.Length == 0 ? "empty" : text,
@@ -273,8 +236,6 @@ public sealed class DeclaredPropertyList : IToolResultView
         internal ResultPresentationNode Node { get; } = node;
         internal Row Row { get; } = row;
         internal List<Entry> Children { get; } = new();
-        internal bool Loading;
-        internal Row? More; internal PropertyChangedEventHandler? MoreHandler;
     }
     /// <summary>Visual row identity is the declared model key; no mutable business object or resource escapes.</summary>
     public sealed class Row : INotifyPropertyChanged

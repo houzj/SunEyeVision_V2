@@ -2397,17 +2397,19 @@ SplitterPosition = position;
             get
             {
                 var type=Reference.Type;
-                foreach(var member in Reference.MemberFieldPath)type=Project(type,member);
+                foreach(var member in Reference.MemberFieldPath)
+                {
+                    while(type.Shape==SunEyeVision.Plugin.Contracts.ValueShape.Sequence)type=type.Element!;
+                    // 成员路径必须落在声明记录的字段上；几何伪成员（如多边形顶点）暂不提供变量承载。
+                    if(type.Shape!=SunEyeVision.Plugin.Contracts.ValueShape.Record)return false;
+                    if(type.Fields.SingleOrDefault(item=>item.Id==member) is not {} declaredField)return false;
+                    type=declaredField.Type;
+                }
                 var element=type.Shape==SunEyeVision.Plugin.Contracts.ValueShape.Sequence?type.Element!:type;
                 if(element.Shape!=SunEyeVision.Plugin.Contracts.ValueShape.Scalar)return false;
                 return SunEyeVision.Plugin.Contracts.VariableValueDeclarations.DisplayNames.Keys.SelectMany(name=>new[]{name,name+"[]"}).Any(vocabulary=>SunEyeVision.Plugin.Contracts.VariableValueDeclarations.TryGetPort(vocabulary,out var target)
                     &&target.Type.Shape==type.Shape&&(target.Type.Shape==SunEyeVision.Plugin.Contracts.ValueShape.Sequence?target.Type.Element:target.Type)==element);
             }
-        }
-        private static SunEyeVision.Plugin.Contracts.TypeRef Project(SunEyeVision.Plugin.Contracts.TypeRef type,string member)
-        {
-            if(type.Shape==SunEyeVision.Plugin.Contracts.ValueShape.Sequence)return SunEyeVision.Plugin.Contracts.TypeRef.SequenceOf(Project(type.Element!,member),type.Count);
-            return type.Fields.Single(field=>field.Id==member).Type;
         }
     }
 

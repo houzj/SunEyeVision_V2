@@ -8,9 +8,11 @@ namespace SunEyeVision.UI.Tests;
 public sealed class ResultPresentationModelTests:IDisposable
 {
     private static ToolSchema Schema(params Port[] outputs) => new(Array.Empty<Port>(), outputs);
+    private static ToolSchema Declared(IEnumerable<OutputDisplayNode> display,params Port[] outputs)
+        =>new(Array.Empty<Port>(),outputs,outputDisplay:display);
 
     [Fact]
-    public void Declarations_preserve_ports_record_order_storage_and_unknown_sequence_observation()
+    public void Declarations_follow_display_order_and_auto_expand_undeclared_records()
     {
         var record = TypeRef.RecordOf("record", new[]
         {
@@ -18,42 +20,53 @@ public sealed class ResultPresentationModelTests:IDisposable
             new Port("a", TypeRef.SequenceOf(TypeRef.ScalarOf(ScalarKind.Text), CountConstraint.Exactly(3)))
         });
         var schema = Schema(new Port("record", record), new Port("scalar", DataType.Boolean));
-        var model = Declaration(schema, pageSize: 2);
+        var model = Declaration(schema);
         Assert.Same(schema, model.Schema); Assert.Null(model.Identity); Assert.Equal(ResultViewState.Declaration, model.State);
-        Assert.Equal(new[] { "record", "scalar" }, model.Outputs.Select(node => node.DeclaredPort!.Id));
-        var fields = model.Outputs[0].GetChildrenPage(0, 2);
-        Assert.Equal(new[] { "z", "a" }, fields.Select(node => node.DeclaredPort!.Id));
-        Assert.Equal(NumericStorage.UInt8, fields[0].DeclaredPort!.Storage);
-        Assert.Null(fields[1].ChildCount); Assert.Equal(CountConstraint.Exactly(3), fields[1].Declaration.Count);
-        Assert.Empty(fields[1].GetChildrenPage(0, 2)); Assert.Null(fields[0].ScalarValue);
+        Assert.Equal(new[] { "record", "scalar" }, model.Outputs.Select(node => node.DeclaredPort.Id));
+        var fields = model.Outputs[0].Children;
+        Assert.Equal(new[] { new[] { "z" }, new[] { "a" } }, fields.Select(node => node.MemberPath.ToArray()));
+        Assert.Equal(NumericStorage.UInt8, fields[0].PhysicalStorage);
+        Assert.Equal(CountConstraint.Exactly(3), fields[1].Declaration.Count);
+        Assert.True(model.Outputs[0].IsGroup); Assert.Empty(fields[0].Children);
+        Assert.Equal(ResultPresentationValueState.Unavailable, fields[0].ValueState); Assert.Null(fields[0].ScalarValue);
     }
 
     [Fact]
     public void Result_display_declaration_controls_root_order_before_undeclared_display_items()
     {
-        var schema = new ToolSchema(Array.Empty<Port>(),
-            new[] { new Port("first", DataType.Integer), new Port("second", DataType.Integer), new Port("third", DataType.Integer) },
-            outputDisplay: new[] { new OutputDisplayNode("second", "第二"), new OutputDisplayNode("first", "第一") });
+        var schema = Declared(new[] { new OutputDisplayNode("second", "第二"), new OutputDisplayNode("first", "第一") },
+            new Port("first", DataType.Integer), new Port("second", DataType.Integer), new Port("third", DataType.Integer));
         var model = Declaration(schema);
-        Assert.Equal(new[] { "second", "first", "third" }, model.Outputs.Select(node => node.DeclaredPort!.Id));
+        Assert.Equal(new[] { "second", "first", "third" }, model.Outputs.Select(node => node.DeclaredPort.Id));
+        Assert.Equal(new[] { "第二", "第一", "third" }, model.Outputs.Select(node => node.DisplayName));
     }
 
     [Fact]
-    public void Declaration_addresses_preserve_root_contract_and_all_members_without_sample_identity()
+    public void Member_rows_transpose_sequence_members_into_declared_columns()
     {
-        var record=TypeRef.RecordOf("record",new[]{new Port("name.with/slash",DataType.Text),new Port("count",DataType.Integer,Storage:NumericStorage.UInt8)});
-        var root=new Port("output.with/slash",TypeRef.SequenceOf(record));
-        var model=Declaration(Schema(root));var output=model.Outputs[0];
-        var all=Assert.IsType<ResultPresentationNode>(output.CreateAllMembers());
-        Assert.True(all.IsAllProjection);Assert.Equal(2,all.ChildCount);
-        var member=all.GetChildrenPage(0,128)[0];
-        Assert.Equal(new[]{"name.with/slash"},member.DeclarationAddress!.MemberFieldPath);
-        var reference=member.DeclarationAddress.Reference("source","flow");
-        Assert.Same(root.Type,reference.Type);Assert.Equal(root.Storage,reference.Storage);
-        Assert.Equal(root.Id,reference.PortId);Assert.Equal("flow",reference.ScopeId);
-        Assert.IsType<BindingSelection.AllItems>(reference.Selection);Assert.False(member.DeclarationAddress.IsSampleRow);
-        Assert.Equal(ResultPresentationValueState.Unavailable,member.ValueState);Assert.Equal(0,member.ChildCount);
-        Assert.Null(member.ScalarValue);
+        var record=TypeRef.RecordOf("point",new[]{new Port("x",DataType.Number,Storage:NumericStorage.Float32),new Port("y",DataType.Number,Storage:NumericStorage.Float32)});
+        var type=TypeRef.SequenceOf(record);
+        var schema=Declared(new[]
+        {
+            new OutputDisplayNode("centroid","质心点",new[]{new OutputDisplayNode("x","质心X"),new OutputDisplayNode("y","质心Y")})
+        },new Port("centroid",type));
+        var values=Values(schema,("centroid",new SequenceValue(type,new object?[]
+        {
+            new Dictionary<string,object?>{["x"]=1.5d,["y"]=2.5d},
+            new Dictionary<string,object?>{["x"]=3.5d,["y"]=4.5d}
+        })));
+        var model=Published(schema,Run(),ResultViewState.Success,values);
+        var group=Assert.Single(model.Outputs);
+        Assert.True(group.IsGroup);Assert.Equal("质心点",group.DisplayName);Assert.Equal(2,group.ChildCount);
+        var x=group.Children[0];
+        Assert.Equal("质心X",x.DisplayName);
+        Assert.Equal(new[]{"x"},x.MemberPath.ToArray());Assert.True(x.ThroughSequence);Assert.Equal(2,x.SequenceLength);
+        Assert.Equal(1.5d,x.SequenceItem(0));Assert.Equal(3.5d,x.SequenceItem(1));
+        Assert.Equal(NumericStorage.Float32,x.PhysicalStorage);
+        var address=x.DeclarationAddress;Assert.Same(group.DeclaredPort,address.RootPort);
+        var reference=address.Reference("source","flow");
+        Assert.Equal(type,reference.Type);Assert.Equal("centroid",reference.PortId);Assert.IsType<BindingSelection.AllItems>(reference.Selection);
+        Assert.NotEqual(group.Key,x.Key);
     }
 
     [Theory]
@@ -70,101 +83,69 @@ public sealed class ResultPresentationModelTests:IDisposable
     [InlineData(0)]
     [InlineData(1)]
     [InlineData(37)]
-    public void Declared_zero_one_many_does_not_fabricate_runtime_elements(int declared)
+    public void Declared_sequences_never_fabricate_elements(int declared)
     {
         var type = TypeRef.SequenceOf(TypeRef.ScalarOf(ScalarKind.Int64), CountConstraint.Exactly(declared));
         var node = Assert.Single(Declaration(Schema(new Port("items", type))).Outputs);
-        Assert.Null(node.ChildCount); Assert.Empty(node.GetChildrenPage(0, 128));
+        Assert.Null(node.SequenceLength); Assert.Empty(node.Children);
         Assert.Equal(ResultPresentationValueState.Unavailable, node.ValueState);
     }
 
     [Fact]
-    public void Record_pages_reuse_nodes_and_keys_follow_field_identity_across_reordering()
+    public void Row_keys_follow_port_and_member_identity_across_record_reordering()
     {
         var first = TypeRef.RecordOf("r", new[] { new Port("a/f1:b", DataType.Text), new Port("b", DataType.Text) });
         var second = TypeRef.RecordOf("r", first.Fields.Reverse());
-        var model = Declaration(Schema(new Port("root", first)), 1);
-        var root = Assert.Single(model.Outputs); var child = Assert.Single(root.GetChildrenPage(1, 1));
+        var model = Declaration(Schema(new Port("root", first)));
+        var root = Assert.Single(model.Outputs);
+        var child = root.Children.Single(node => node.MemberPath.SequenceEqual(new[] { "b" }));
         child.IsExpanded = true;
-        Assert.Same(child, Assert.Single(root.GetChildrenPage(1, 1))); Assert.True(root.GetChildrenPage(1, 1)[0].IsExpanded);
-        var reordered = Declaration(Schema(new Port("root", second)), 1).Outputs[0].GetChildrenPage(0, 1)[0];
+        // 行 Key 只跟端口与成员身份走，字段重排不影响已展开行的复用。
+        var reordered = Declaration(Schema(new Port("root", second))).Outputs[0]
+            .Children.Single(node => node.MemberPath.SequenceEqual(new[] { "b" }));
         Assert.Equal(child.Key, reordered.Key); Assert.False(reordered.IsExpanded);
         Assert.NotEqual(Declaration(Schema(new Port("root/f1:b", DataType.Text))).Outputs[0].Key, child.Key);
     }
 
     [Fact]
-    public void Pages_validate_bounds_and_empty_schema_is_a_valid_declaration()
+    public void Empty_schema_is_valid_and_undeclared_display_targets_fail_closed()
     {
         Assert.Empty(Declaration(Schema()).Outputs);
-        Assert.Throws<ArgumentOutOfRangeException>(() => Declaration(Schema(), 0));
-        var type = TypeRef.RecordOf("r", new[] { new Port("field", DataType.Text) });
-        var node = Declaration(Schema(new Port("r", type)), 2).Outputs[0];
-        Assert.Throws<ArgumentOutOfRangeException>(() => node.GetChildrenPage(-1, 1));
-        Assert.Throws<ArgumentOutOfRangeException>(() => node.GetChildrenPage(0, -1));
-        Assert.Throws<ArgumentOutOfRangeException>(() => node.GetChildrenPage(0, 3));
-        Assert.Empty(node.GetChildrenPage(int.MaxValue, 2)); Assert.Empty(node.GetChildrenPage(0, 0));
-        Assert.Single(node.GetChildrenPage(0, 2));
+        Assert.Throws<ArgumentException>(() => Declared(new[] { new OutputDisplayNode("ghost", "幽灵") }, new Port("real", DataType.Integer)));
+        var record = TypeRef.RecordOf("r", new[] { new Port("field", DataType.Text) });
+        Assert.Throws<ArgumentException>(() => Declared(new[]
+        {
+            new OutputDisplayNode("r","记录",new[]{new OutputDisplayNode("ghost","幽灵成员")})
+        }, new Port("r", record)));
+        Assert.Throws<ArgumentException>(() => new OutputDisplayNode("row","行",memberPath:new[]{"field"}));
     }
-    private ResultPresentationModel Declaration(ToolSchema schema,int pageSize=128)=>Published(schema,null,ResultViewState.Declaration,null,pageSize);
-    private ResultPresentationModel Published(ToolSchema schema,RunIdentity? identity,ResultViewState state,InputValues? values,int pageSize=128)
-    {
-        var context=Hold(schema,identity,state,values);
-        return ResultPresentationModel.ForPublication(context.Publication,context.Lease,pageSize);
-    }
-    private readonly List<IResultPublication> _publications=new();
-    private readonly List<IResultValueLease> _leases=new();
-    private (IResultPublication Publication,IResultValueLease Lease) Hold(ToolSchema schema,RunIdentity? identity,ResultViewState state,InputValues? values)
-    {
-        var publication=new ResultPublication(schema,new ResultPublicationStamp(Guid.NewGuid(),identity,identity is null?null:1,schema.Fingerprint),
-            state,state is ResultViewState.Success or ResultViewState.PartialSuccess?values:null,new EmptyOwner(),()=>true);
-        var lease=publication.Borrow();_publications.Add(publication);_leases.Add(lease);return(publication,lease);
-    }
-    public void Dispose(){foreach(var lease in _leases)lease.Dispose();foreach(var publication in _publications)publication.Dispose();}
-    private sealed class EmptyOwner:IDisposable{public void Dispose(){}}
-    private static RunIdentity Run() => new(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "node", Guid.NewGuid());
-    private static InputValues Values(ToolSchema schema, params (string Id, object? Value)[] values) =>
-        new(schema.Outputs, values.ToDictionary(pair => pair.Id, pair => pair.Value, StringComparer.Ordinal));
 
     [Theory]
     [InlineData(0)]
     [InlineData(1)]
     [InlineData(131)]
-    public void Successful_sequence_values_have_observed_zero_one_many_counts_and_index_keys(int count)
+    public void Successful_scalar_sequences_report_their_length_and_items_without_index_rows(int count)
     {
         var type = TypeRef.SequenceOf(TypeRef.ScalarOf(ScalarKind.Int64));
         var schema = Schema(new Port("items", type));
         var values = Values(schema, ("items", new SequenceValue(type, Enumerable.Range(0, count).Select(i => (object?)(long)i))));
-        var identity = Run(); var model = Published(schema, identity, ResultViewState.Success, values, 16);
+        var identity = Run(); var model = Published(schema, identity, ResultViewState.Success, values);
         Assert.Equal(identity, model.Identity); Assert.Equal(ResultViewState.Success, model.State);
-        var root = Assert.Single(model.Outputs); Assert.Equal(count, root.ChildCount);
+        var root = Assert.Single(model.Outputs);
+        Assert.Equal(count, root.SequenceLength); Assert.Empty(root.Children);
         Assert.Equal(ResultPresentationValueState.Available, root.ValueState);
-        for (var offset = 0; offset < count; offset += 16)
-        {
-            var page = root.GetChildrenPage(offset, 16); Assert.Equal(Math.Min(16, count - offset), page.Count);
-            for (var i = 0; i < page.Count; i++)
-            {
-                Assert.Equal((long)(offset + i), Assert.IsType<long>(page[i].ScalarValue));
-                Assert.Equal(offset + i, page[i].ElementIndex); Assert.Null(page[i].DeclaredPort);
-                Assert.Equal(root.Key + "/i" + (offset + i).ToString(System.Globalization.CultureInfo.InvariantCulture), page[i].Key);
-            }
-        }
-        Assert.Empty(root.GetChildrenPage(count, 16));
+        for (var index = 0; index < count; index++) Assert.Equal((long)index, root.SequenceItem(index));
     }
 
     [Fact]
-    public void Nested_record_sequence_values_follow_declaration_order_and_distinguish_missing_null_empty()
+    public void Record_sequences_expose_only_their_element_count()
     {
-        var record = TypeRef.RecordOf("r", new[] { new Port("z", DataType.Text, false, true), new Port("a", DataType.Text, false, true) });
+        var record = TypeRef.RecordOf("r", new[] { new Port("z", DataType.Text, false, true) });
         var rows = TypeRef.SequenceOf(record);
         var schema = Schema(new Port("rows", rows), new Port("missing", DataType.Text, false, true), new Port("null", DataType.Text, false, true));
-        var values = Values(schema, ("rows", new[] { new Dictionary<string, object?> { { "a", "" }, { "z", null } }, new Dictionary<string, object?>() }), ("null", null));
+        var values = Values(schema, ("rows", new[] { new Dictionary<string, object?> { ["z"] = null }, new Dictionary<string, object?>() }), ("null", null));
         var model = Published(schema, Run(), ResultViewState.Success, values);
-        var children = model.Outputs[0].GetChildrenPage(0, 2);
-        var first = children[0].GetChildrenPage(0, 2);
-        Assert.Equal(new[] { "z", "a" }, first.Select(node => node.DeclaredPort!.Id));
-        Assert.Equal(ResultPresentationValueState.Null, first[0].ValueState);
-        Assert.Equal(ResultPresentationValueState.Available, first[1].ValueState); Assert.Equal("", first[1].ScalarValue);
-        Assert.All(children[1].GetChildrenPage(0, 2), node => Assert.Equal(ResultPresentationValueState.Missing, node.ValueState));
+        Assert.Equal(2, model.Outputs[0].SequenceLength); Assert.Empty(model.Outputs[0].Children);
         Assert.Equal(ResultPresentationValueState.Missing, model.Outputs[1].ValueState);
         Assert.Equal(ResultPresentationValueState.Null, model.Outputs[2].ValueState);
     }
@@ -202,14 +183,14 @@ public sealed class ResultPresentationModelTests:IDisposable
                 Values(schema, ("boolean", false), ("number", 1.25d), ("integer", 255L), ("text", "literal <null>")));
             Assert.False(Assert.IsType<bool>(model.Outputs[0].ScalarValue)); Assert.Equal(1.25d, Assert.IsType<double>(model.Outputs[1].ScalarValue));
             Assert.Equal(255L, Assert.IsType<long>(model.Outputs[2].ScalarValue)); Assert.Equal("literal <null>", model.Outputs[3].ScalarValue);
-            Assert.Equal(NumericStorage.Float32, model.Outputs[1].DeclaredPort!.Storage);
-            Assert.Equal(NumericStorage.UInt8, model.Outputs[2].DeclaredPort!.Storage);
+            Assert.Equal(NumericStorage.Float32, model.Outputs[1].DeclaredPort.Storage);
+            Assert.Equal(NumericStorage.UInt8, model.Outputs[2].DeclaredPort.Storage);
         }
         finally { System.Globalization.CultureInfo.CurrentCulture = prior; }
     }
 
     [Fact]
-    public void Large_legacy_double_array_is_paged_without_a_full_copy_and_input_isolation_is_kept()
+    public void Large_legacy_double_array_is_never_copied_into_the_row_model()
     {
         const int length = 2_000_000;
         var source = new double[length]; source[length - 1] = 17.25;
@@ -217,32 +198,29 @@ public sealed class ResultPresentationModelTests:IDisposable
         // Construction/freeze is outside the measurement: presentation must not clone that frozen 16 MB array.
         var context=Hold(schema,Run(),ResultViewState.Success,values);
         var before = GC.GetAllocatedBytesForCurrentThread();
-        var model = ResultPresentationModel.ForPublication(context.Publication,context.Lease,32);
-        var root = model.Outputs[0]; var tail = root.GetChildrenPage(length - 32, 32);
+        var model = ResultPresentationModel.ForPublication(context.Publication,context.Lease);
+        var root = model.Outputs[0];
         var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
-        Assert.True(allocated < 1024 * 1024, $"Presentation copied beyond its page: {allocated} bytes");
-        Assert.Equal(length, root.ChildCount); Assert.Equal(17.25, tail[^1].ScalarValue);
+        Assert.True(allocated < 1024 * 1024, $"Presentation copied the frozen array: {allocated} bytes");
+        Assert.Equal(length, root.SequenceLength); Assert.Equal(17.25d, root.SequenceItem(length - 1));
         source[length - 1] = 99; values.Get<double[]>("large")[length - 1] = 88;
-        Assert.Equal(17.25, tail[^1].ScalarValue);
-        tail[0].IsExpanded = true;
-        var overlap = root.GetChildrenPage(length - 31, 31);
-        Assert.Same(tail[1], overlap[0]); Assert.True(root.GetChildrenPage(length - 32, 1)[0].IsExpanded);
-        Assert.Throws<ArgumentOutOfRangeException>(() => root.GetChildrenPage(0, 33));
+        Assert.Equal(17.25d, root.SequenceItem(length - 1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => root.SequenceItem(length));
     }
 
     [Fact]
-    public void Nested_legacy_double_arrays_are_paged_with_the_same_reader_and_no_whole_array_copy()
+    public void Nested_legacy_double_arrays_stay_single_rows_without_element_nodes()
     {
         var inner = TypeRef.SequenceOf(TypeRef.ScalarOf(ScalarKind.Float64)); var outer = TypeRef.SequenceOf(inner);
         var schema = Schema(new Port("nested", outer)); var large = new double[500_000]; large[^1] = 6.25;
         var values = Values(schema, ("nested", new SequenceValue(outer, new object?[] { large })));
         var context=Hold(schema,Run(),ResultViewState.Success,values);
         var before = GC.GetAllocatedBytesForCurrentThread();
-        var model = ResultPresentationModel.ForPublication(context.Publication,context.Lease,4);
-        var child = model.Outputs[0].GetChildrenPage(0, 1)[0]; var last = child.GetChildrenPage(large.Length - 1, 1)[0];
+        var model = ResultPresentationModel.ForPublication(context.Publication,context.Lease);
+        var root = Assert.Single(model.Outputs);
         var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
         Assert.True(allocated < 256 * 1024, $"Nested presentation cloned an array: {allocated} bytes");
-        Assert.Equal(6.25, last.ScalarValue); Assert.Equal(0, child.ElementIndex); Assert.Equal(large.Length, child.ChildCount);
+        Assert.Equal(1, root.SequenceLength); Assert.Empty(root.Children);
     }
 
     [Fact]
@@ -258,62 +236,64 @@ public sealed class ResultPresentationModelTests:IDisposable
     }
 
     [Fact]
-    public void Publication_stamp_and_current_guard_retire_old_lazy_pages_without_retaining_the_owner()
+    public void Publication_stamp_and_current_guard_retire_old_rows_without_retaining_the_owner()
     {
         var schema=Schema(new Port("items",DataType.NumberArray));var stamp=new ResultPublicationStamp(Guid.NewGuid(),Run(),3,schema.Fingerprint);
         using var publication=new ResultPublication(schema,stamp,ResultViewState.Success,Values(schema,("items",new[]{1d,2d,3d})),new EmptyOwner(),()=>true);
         using var lease=publication.Borrow();var current=true;
-        var model=ResultPresentationModel.ForPublication(publication,lease,1,()=>current);
-        Assert.Equal(stamp,model.Stamp);var root=Assert.Single(model.Outputs);var child=Assert.Single(root.GetChildrenPage(0,1));Assert.Equal(1d,child.ScalarValue);
-        current=false;Assert.Null(root.ChildCount);Assert.Empty(root.GetChildrenPage(1,1));Assert.Null(child.ScalarValue);
+        var model=ResultPresentationModel.ForPublication(publication,lease,()=>current);
+        Assert.Equal(stamp,model.Stamp);var root=Assert.Single(model.Outputs);Assert.Equal(1d,root.SequenceItem(0));
+        current=false;Assert.Null(root.SequenceLength);Assert.Null(root.ScalarValue);Assert.Null(root.SequenceItem(1));
     }
 
     [Fact]
-    public void Blob_style_mixed_records_page_nested_scalars_and_geometry_without_reading_resource_leaves()
+    public void Blob_style_member_rows_read_scalars_without_touching_resource_leaves()
     {
         const int count=8193;
         var frame=new CoordinateFrame("image:mixed",CoordinateDomain.Image,CoordinateUnit.Pixel);
         var region=new BorrowedRegion(frame);var regionType=TypeRef.ResourceOf(ResourceKind.Region);
-        var pointType=TypeRef.GeometryOf(GeometryKind.Point,frame);
-        var part=TypeRef.RecordOf("part",new[]{new Port("number",DataType.Integer),new Port("region",regionType),new Port("point",pointType)});
-        var parts=TypeRef.SequenceOf(part);
         var bounds=TypeRef.RecordOf("bounds",new[]{new Port("x",DataType.Number),new Port("y",DataType.Number)});
-        var blob=TypeRef.RecordOf("blob",new[]{new Port("element-id",DataType.Integer),new Port("area",DataType.Number),new Port("region",regionType),new Port("bounds",bounds),new Port("parts",parts)});
-        var blobs=TypeRef.SequenceOf(blob);var schema=Schema(new Port("blobs",blobs));
-        var sharedParts=new SequenceValue(parts,new object?[]{new Dictionary<string,object?>{["number"]=7L,["region"]=region,["point"]=new PointGeometry(frame,new(3,4))}});
+        var blob=TypeRef.RecordOf("blob",new[]{new Port("element-id",DataType.Integer),new Port("area",DataType.Number),new Port("region",regionType),new Port("bounds",bounds)});
+        var blobs=TypeRef.SequenceOf(blob);var schema=Declared(new[]
+        {
+            new OutputDisplayNode("blobs","单体",new[]
+            {
+                new OutputDisplayNode("element-id","元素标识"),
+                new OutputDisplayNode("area","面积"),
+                new OutputDisplayNode("region","区域"),
+                new OutputDisplayNode("bounds","边界",new[]{new OutputDisplayNode("x","左上X"),new OutputDisplayNode("y","左上Y")})
+            })
+        },new Port("blobs",blobs));
         var values=Values(schema,("blobs",new SequenceValue(blobs,Enumerable.Range(0,count).Select(index=>(object?)new Dictionary<string,object?>{
             ["element-id"]=(long)index,["area"]=(double)index,["region"]=region,
-            ["bounds"]=new Dictionary<string,object?>{["x"]=1.5d,["y"]=2.5d},["parts"]=sharedParts}))));
+            ["bounds"]=new Dictionary<string,object?>{["x"]=1.5d,["y"]=2.5d}}))));
         using var publication=new ResultPublication(schema,new(Guid.NewGuid(),Run(),1,schema.Fingerprint),ResultViewState.Success,values,new EmptyOwner(),()=>true);
         using var lease=publication.Borrow();region.BeginPresentation();
         var before=GC.GetAllocatedBytesForCurrentThread();
         var model=ResultPresentationModel.ForPublication(publication,lease);
-        var root=Assert.Single(model.Outputs);Assert.Equal(ResultPresentationValueState.Available,root.ValueState);Assert.Equal(count,root.ChildCount);
-        var first=root.GetChildrenPage(0,128);Assert.Equal(128,first.Count);
-        var fields=first[127].GetChildrenPage(0,5);Assert.Equal(127L,fields[0].ScalarValue);Assert.Equal(127d,fields[1].ScalarValue);
-        Assert.Equal(ResultPresentationValueState.ResourcePending,fields[2].ValueState);Assert.Null(fields[2].ScalarValue);Assert.Empty(fields[2].GetChildrenPage(0,1));
-        Assert.Equal(1.5d,fields[3].GetChildrenPage(0,2)[0].ScalarValue);
-        var nested=fields[4].GetChildrenPage(0,1)[0].GetChildrenPage(0,3);Assert.Equal(7L,nested[0].ScalarValue);
-        Assert.Equal(ResultPresentationValueState.ResourcePending,nested[1].ValueState);Assert.Equal(new Point2(3,4),Assert.IsType<PointGeometry>(nested[2].GeometryValue).Point);
-        var tail=Assert.Single(root.GetChildrenPage(count-1,128));Assert.Equal((double)(count-1),tail.GetChildrenPage(0,2)[1].ScalarValue);
-        Assert.Same(first[127],Assert.Single(root.GetChildrenPage(127,1)));Assert.Equal(0,region.Accesses);
-        Assert.True(GC.GetAllocatedBytesForCurrentThread()-before<2*1024*1024,"Mixed records copied beyond the requested pages.");
-        Assert.Throws<ArgumentOutOfRangeException>(()=>root.GetChildrenPage(0,129));
-        lease.Dispose();Assert.True(publication.IsCurrent());Assert.Null(root.ChildCount);Assert.Empty(root.GetChildrenPage(128,128));Assert.Null(fields[1].ScalarValue);Assert.Null(nested[2].GeometryValue);
+        var root=Assert.Single(model.Outputs);Assert.Equal(count,root.SequenceLength);
+        var members=root.Children;Assert.Equal(4,members.Count);
+        Assert.Equal((long)(count-1),members[0].SequenceItem(count-1));
+        Assert.Equal((double)(count-1),members[1].SequenceItem(count-1));
+        Assert.Equal(ResultPresentationValueState.ResourcePending,members[2].ValueState);Assert.Null(members[2].ScalarValue);
+        Assert.Equal(1.5d,members[3].Children[0].SequenceItem(count-1));
+        Assert.True(GC.GetAllocatedBytesForCurrentThread()-before<2*1024*1024,"Member rows copied beyond their declared columns.");
+        Assert.Equal(0,region.Accesses);
+        lease.Dispose();Assert.True(publication.IsCurrent());Assert.Null(members[1].SequenceLength);Assert.Null(members[1].ScalarValue);
         Assert.Equal(0,region.Accesses);Assert.Equal(0,region.Disposals);
     }
 
     [Fact]
-    public void Closing_publication_invalidates_cached_mixed_pages_even_while_the_lease_keeps_owner_alive()
+    public void Closing_publication_invalidates_member_rows_even_while_the_lease_keeps_owner_alive()
     {
         var region=new BorrowedRegion(new("image:closed",CoordinateDomain.Image,CoordinateUnit.Pixel));
         var record=TypeRef.RecordOf("mixed",new[]{new Port("area",DataType.Number),new Port("region",TypeRef.ResourceOf(ResourceKind.Region))});
-        var schema=Schema(new Port("mixed",record));var released=0;
+        var schema=Declared(new[]{new OutputDisplayNode("mixed","混合",new[]{new OutputDisplayNode("area","面积")})},new Port("mixed",record));var released=0;
         using var publication=new ResultPublication(schema,new(Guid.NewGuid(),Run(),1,schema.Fingerprint),ResultViewState.Success,
             Values(schema,("mixed",new Dictionary<string,object?>{["area"]=16d,["region"]=region})),new CountOwner(()=>released++),()=>true);
         using var lease=publication.Borrow();region.BeginPresentation();
-        var model=ResultPresentationModel.ForPublication(publication,lease);var root=Assert.Single(model.Outputs);var area=root.GetChildrenPage(0,2)[0];Assert.Equal(16d,area.ScalarValue);
-        publication.Dispose();Assert.Equal(0,released);Assert.Null(root.ChildCount);Assert.Empty(root.GetChildrenPage(0,2));Assert.Null(area.ScalarValue);
+        var model=ResultPresentationModel.ForPublication(publication,lease);var root=Assert.Single(model.Outputs);var area=root.Children[0];Assert.Equal(16d,area.ScalarValue);
+        publication.Dispose();Assert.Equal(0,released);Assert.Null(area.ScalarValue);Assert.Null(area.SequenceLength);
         lease.Dispose();Assert.Equal(1,released);Assert.Equal(0,region.Accesses);Assert.Equal(0,region.Disposals);
     }
 
@@ -322,19 +302,20 @@ public sealed class ResultPresentationModelTests:IDisposable
     {
         var region=new BorrowedRegion(new("image:weak",CoordinateDomain.Image,CoordinateUnit.Pixel));
         var record=TypeRef.RecordOf("weak-mixed",new[]{new Port("area",DataType.Number),new Port("region",TypeRef.ResourceOf(ResourceKind.Region))});
-        var sequence=TypeRef.SequenceOf(record);var schema=Schema(new Port("blobs",sequence));
+        var sequence=TypeRef.SequenceOf(record);
+        var schema=Declared(new[]{new OutputDisplayNode("blobs","弱混合",new[]{new OutputDisplayNode("area","面积")})},new Port("blobs",sequence));
         using var publication=new ResultPublication(schema,new(Guid.NewGuid(),Run(),1,schema.Fingerprint),ResultViewState.Success,
             Values(schema,("blobs",new SequenceValue(sequence,new object?[]{new Dictionary<string,object?>{["area"]=16d,["region"]=region}}))),new EmptyOwner(),()=>true);
         using var lease=publication.Borrow();region.BeginPresentation();var model=ResultPresentationModel.ForPublication(publication,lease);
-        var fields=model.Outputs[0].GetChildrenPage(0,1)[0].GetChildrenPage(0,2);Assert.Equal(16d,fields[0].ScalarValue);
-        return(model,fields[0],new(region),new(publication),new(lease));
+        var area=model.Outputs[0].Children[0];Assert.Equal(16d,area.SequenceItem(0));
+        return(model,area,new(region),new(publication),new(lease));
     }
     [Fact]
-    public void Cached_mixed_paths_do_not_extend_resource_publication_or_lease_lifetimes()
+    public void Cached_member_rows_do_not_extend_resource_publication_or_lease_lifetimes()
     {
         var result=ClosedMixedModel();GC.Collect();GC.WaitForPendingFinalizers();GC.Collect();
         Assert.False(result.Region.IsAlive);Assert.False(result.Publication.IsAlive);Assert.False(result.Lease.IsAlive);
-        Assert.Null(result.Model.Outputs[0].ChildCount);Assert.Empty(result.Model.Outputs[0].GetChildrenPage(0,128));Assert.Null(result.Area.ScalarValue);
+        Assert.Null(result.Model.Outputs[0].SequenceLength);Assert.Null(result.Area.ScalarValue);Assert.Null(result.Area.SequenceItem(0));
         GC.KeepAlive(result.Model);GC.KeepAlive(result.Area);
     }
     private sealed class CountOwner(Action released):IDisposable{public void Dispose()=>released();}
@@ -378,38 +359,61 @@ public sealed class ResultPresentationModelTests:IDisposable
         var record = TypeRef.RecordOf("mixed", new[] { new Port("image", imageType), new Port("number", DataType.Integer) });
         var sequence = TypeRef.SequenceOf(imageType);
         var schema = Schema(new Port("direct", imageType), new Port("mixed", record), new Port("images", sequence), new Port("plain", DataType.Integer));
-        var values = Values(schema, ("direct", image), ("mixed", new Dictionary<string, object?> { { "image", image }, { "number", 7L } }),
+        var values = Values(schema, ("direct", image), ("mixed", new Dictionary<string, object?> { ["image"] = image, ["number"] = 7L }),
             ("images", new SequenceValue(sequence, new object?[] { image })), ("plain", 5L));
         using var publication=new ResultPublication(schema,new(Guid.NewGuid(),Run(),1,schema.Fingerprint),ResultViewState.Success,values,new EmptyOwner(),()=>true);
         using var lease=publication.Borrow();image.BeginPresentation();
         var model=ResultPresentationModel.ForPublication(publication,lease);
-        Assert.Equal(7L,model.Outputs[1].GetChildrenPage(0,2)[1].ScalarValue);
+        Assert.Equal(7L,model.Outputs[1].Children[1].ScalarValue);
         Assert.Equal(5L,model.Outputs[3].ScalarValue);
         return (model,new WeakReference(image));
     }
 
     [Fact]
-    public void Resource_leaves_and_weak_mixed_containers_do_not_retain_borrowed_images_after_close()
+    public void Resource_leaves_do_not_retain_borrowed_images_after_close()
     {
         var disposals = BorrowedImage.Disposals;
         var result = ResourceModel();
         GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
         Assert.False(result.Image.IsAlive);
         Assert.Equal(ResultPresentationValueState.ResourcePending,result.Model.Outputs[0].ValueState);
-        Assert.All(result.Model.Outputs.Skip(1).Take(2),node=>Assert.Equal(ResultPresentationValueState.Available,node.ValueState));
-        Assert.Null(result.Model.Outputs[2].ChildCount);
-        Assert.All(result.Model.Outputs[1].GetChildrenPage(0, 2), node => Assert.Null(node.ScalarValue));
+        Assert.Equal(ResultPresentationValueState.Available,result.Model.Outputs[1].ValueState);
+        Assert.Null(result.Model.Outputs[2].SequenceLength);
+        Assert.All(result.Model.Outputs[1].Children, node => Assert.Null(node.ScalarValue));
         Assert.Null(result.Model.Outputs[3].ScalarValue); // closed weak lease never supplies an old value.
         Assert.Equal(disposals, BorrowedImage.Disposals); Assert.False((object)result.Model is IDisposable);
         GC.KeepAlive(result.Model);
-    }    [Fact]
+    }
+
+    [Fact]
     public void Equal_length_outputs_remain_distinct_by_port_identity_and_input_dictionary_order_is_irrelevant()
     {
         var type = TypeRef.SequenceOf(TypeRef.ScalarOf(ScalarKind.Int64));
         var schema = Schema(new Port("left", type), new Port("right", type));
         var values = Values(schema, ("right", new long[] { 9, 8 }), ("left", new long[] { 1, 2 }));
         var model = Published(schema, Run(), ResultViewState.Success, values);
-        Assert.Equal(1L, model.Outputs[0].GetChildrenPage(0, 1)[0].ScalarValue);
-        Assert.Equal(9L, model.Outputs[1].GetChildrenPage(0, 1)[0].ScalarValue);
-        Assert.NotEqual(model.Outputs[0].GetChildrenPage(1, 1)[0].Key, model.Outputs[1].GetChildrenPage(1, 1)[0].Key);
-    }}
+        Assert.Equal(1L, model.Outputs[0].SequenceItem(0));
+        Assert.Equal(9L, model.Outputs[1].SequenceItem(0));
+        Assert.NotEqual(model.Outputs[0].Key, model.Outputs[1].Key);
+    }
+
+    private ResultPresentationModel Declaration(ToolSchema schema)=>Published(schema,null,ResultViewState.Declaration,null);
+    private ResultPresentationModel Published(ToolSchema schema,RunIdentity? identity,ResultViewState state,InputValues? values)
+    {
+        var context=Hold(schema,identity,state,values);
+        return ResultPresentationModel.ForPublication(context.Publication,context.Lease);
+    }
+    private readonly List<IResultPublication> _publications=new();
+    private readonly List<IResultValueLease> _leases=new();
+    private (IResultPublication Publication,IResultValueLease Lease) Hold(ToolSchema schema,RunIdentity? identity,ResultViewState state,InputValues? values)
+    {
+        var publication=new ResultPublication(schema,new ResultPublicationStamp(Guid.NewGuid(),identity,identity is null?null:1,schema.Fingerprint),
+            state,state is ResultViewState.Success or ResultViewState.PartialSuccess?values:null,new EmptyOwner(),()=>true);
+        var lease=publication.Borrow();_publications.Add(publication);_leases.Add(lease);return(publication,lease);
+    }
+    public void Dispose(){foreach(var lease in _leases)lease.Dispose();foreach(var publication in _publications)publication.Dispose();}
+    private sealed class EmptyOwner:IDisposable{public void Dispose(){}}
+    private static RunIdentity Run() => new(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "node", Guid.NewGuid());
+    private static InputValues Values(ToolSchema schema, params (string Id, object? Value)[] values) =>
+        new(schema.Outputs, values.ToDictionary(pair => pair.Id, pair => pair.Value, StringComparer.Ordinal));
+}

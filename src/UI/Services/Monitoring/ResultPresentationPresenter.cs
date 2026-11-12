@@ -20,9 +20,6 @@ public sealed class ResultPresentationPresenter : IDisposable
         internal readonly ResultPresentationNode Node = node;
         internal readonly FlatResultRow Row = row;
         internal readonly List<Entry> Children = new();
-        internal Entry? AllMembers;
-        internal FlatResultRow? More;
-        internal PropertyChangedEventHandler? MoreHandler;
     }
 
     private readonly ObservableCollection<FlatResultRow> _rows;
@@ -32,7 +29,6 @@ public sealed class ResultPresentationPresenter : IDisposable
         ||_entries.TryGetValue(row.Key,out var entry)&&ReferenceEquals(entry.Row,row));
     private readonly Action<bool> _setHasResults;
     private readonly Action<IResultPublication>? _projectionFailed;
-    private readonly int _pageSize;
     private readonly Dictionary<string, Entry> _entries = new(StringComparer.Ordinal);
     private readonly List<(FlatResultRow Row, PropertyChangedEventHandler Handler)> _subscriptions = new();
     private readonly List<Entry> _outputs = new();
@@ -49,15 +45,13 @@ public sealed class ResultPresentationPresenter : IDisposable
     private int _generation;
     private bool _disposed;
 
-    public ResultPresentationPresenter(ObservableCollection<FlatResultRow> rows, Action<bool> setHasResults, int pageSize = 128,
+    public ResultPresentationPresenter(ObservableCollection<FlatResultRow> rows, Action<bool> setHasResults,
         Action<IResultPublication>? projectionFailed=null)
     {
         _rows = rows ?? throw new ArgumentNullException(nameof(rows));
         Roots=new(_roots);
         _setHasResults = setHasResults ?? throw new ArgumentNullException(nameof(setHasResults));
         _projectionFailed=projectionFailed;
-        if (pageSize <= 0) throw new ArgumentOutOfRangeException(nameof(pageSize));
-        _pageSize = pageSize;
     }
 
     public void Present(IResultPublication publication,IReadOnlyDictionary<string,ResultBindingInfo>? bindings=null,
@@ -95,13 +89,12 @@ public sealed class ResultPresentationPresenter : IDisposable
             if(!Current(generation)){Abandon(generation);return;}
             lease=publication.Borrow();
             if(!Current(generation)||lease.Stamp!=stamp){Abandon(generation);return;}
-            var model=ResultPresentationModel.ForPublication(publication,lease,_pageSize,()=>Current(generation));
+            var model=ResultPresentationModel.ForPublication(publication,lease,()=>Current(generation));
             if(!Current(generation)){Abandon(generation);return;}
             _reader=lease;lease=null;
             var names=publication.DisplayNames;if(!Current(generation)){Abandon(generation);return;}
-            var displayed=publication.DisplayedPorts;if(!Current(generation)){Abandon(generation);return;}
             var diagnostics=publication.Diagnostics;if(!Current(generation)){Abandon(generation);return;}_diagnostics=diagnostics;
-            Install(model,names,bindings,displayed,generation);
+            Install(model,names,bindings,generation);
             if(showExecutionSummary&&Current(generation))InstallExecutionSummary(model.State,executionTimeMs);
             if(Current(generation))RefreshRows();else Abandon(generation);
         }
@@ -130,7 +123,7 @@ public sealed class ResultPresentationPresenter : IDisposable
         if(failures.Count!=0)throw new AggregateException("结果投影退休失败。",failures);
     }
 
-    /// <summary>Rebuilds only the visible, already requested rows; it never loads another page.</summary>
+    /// <summary>Rebuilds the visible declared rows; the declaration is static, so it never loads another page.</summary>
     public void RefreshRows()
         =>RunProjection(RefreshRowsCore);
 
@@ -156,11 +149,9 @@ public sealed class ResultPresentationPresenter : IDisposable
         var generation = _generation;
         if(!Current(generation)){Abandon(generation);return;}
         // Both surfaces borrow these exact row objects and the same retained reader.
-        // Hierarchy projection never reads another value page.
         foreach(var entry in _entries.Values.ToArray())
         {
-            var children=(entry.AllMembers is {} all?new[]{all}:Array.Empty<Entry>()).Concat(entry.Children).Select(child=>child.Row)
-                .Concat(entry.More is {} more?new[]{more}:Array.Empty<FlatResultRow>()).ToArray();
+            var children=entry.Children.Select(child=>child.Row).ToArray();
             if(!Synchronize(entry.Row.MutableChildren,children,generation))return;
         }
         if(_root is {} root&&!Synchronize(root.MutableChildren,_summaryRows.Concat(_outputs.Select(entry=>entry.Row)).ToArray(),generation))return;
@@ -221,7 +212,6 @@ public sealed class ResultPresentationPresenter : IDisposable
         _reader = null;
         foreach (var (row, handler) in _subscriptions) row.PropertyChanged -= handler;
         _subscriptions.Clear();
-        foreach (var entry in _entries.Values) DetachMore(entry);
         _entries.Clear();
         _outputs.Clear();
         _summaryRows.Clear();
@@ -239,7 +229,7 @@ public sealed class ResultPresentationPresenter : IDisposable
     }
 
     private void Install(ResultPresentationModel model, IReadOnlyDictionary<string, string>? names,
-        IReadOnlyDictionary<string, ResultBindingInfo>? bindings,IReadOnlySet<string>? displayedPorts,int generation)
+        IReadOnlyDictionary<string, ResultBindingInfo>? bindings,int generation)
     {
         if(!Current(generation)){Abandon(generation);return;}
         _model = model;_bindingRoots=bindings;
@@ -252,7 +242,7 @@ public sealed class ResultPresentationPresenter : IDisposable
             if(_expansionScope.HasValue)_expandedDeclarations[root.Key]=root.IsExpanded;
             RefreshRows();
         });
-        foreach (var node in model.Outputs.Where(node=>displayedPorts is null||displayedPorts.Contains(node.DeclaredPort!.Id)))
+        foreach (var node in model.Outputs)
         {if(!Current(generation)){Abandon(generation);return;}var entry=GetEntry(node,1);if(entry is null||!Current(generation))return;_outputs.Add(entry);}
         _root.IsGroup=_outputs.Count>0;
         if(_outputs.Count==0&&model.State is ResultViewState.Declaration or ResultViewState.NotExecuted)_root=null;
@@ -283,9 +273,10 @@ public sealed class ResultPresentationPresenter : IDisposable
         foreach (var entry in _outputs.ToArray())
         {
             if(!Current(generation)){Abandon(generation);return;}
-            var id = entry.Node.DeclaredPort!.Id;
-            entry.Row.DisplayName = _model?.Schema.FindOutputDisplay(id)?.DisplayName
-                ??(names != null && names.TryGetValue(id, out var name) ? name : id);
+            // 显示名来自工具自己的显示声明；未声明的顶层端口沿用发布端的字段名，不能退回裸端口 id。
+            var node=entry.Node;var caption=node.DisplayName;
+            if(caption==node.DeclaredPort.Id&&names is not null&&names.TryGetValue(node.DeclaredPort.Id,out var declaredName))caption=declaredName;
+            entry.Row.DisplayName=caption;
             if(!Current(generation)){Abandon(generation);return;}
         }
         foreach(var entry in _entries.Values.ToArray())
@@ -300,49 +291,39 @@ public sealed class ResultPresentationPresenter : IDisposable
         var generation=_generation;
         if(!Current(generation)){Abandon(generation);return null;}
         if (_entries.TryGetValue(node.Key, out var existing)) return existing;
-        var value=ValueText(node);var childCount=node.ChildCount;
+        // 原件组合项只显示成员名，分组行本身不带「当前值」。
+        var value=node.IsGroup?"":ValueText(node);var childCount=node.ChildCount;
         if(!Current(generation)){Abandon(generation);return null;}
-        // VM's result-tree item style starts expanded. Materialize the first page of
-        // declared record groups, while sequences retain their bounded lazy paging.
-        var declaredGroup=node.DeclarationAddress is {ThroughSequence:false} && node.Declaration.Shape is ValueShape.Record or ValueShape.Sequence;
-        var expanded=node.IsExpanded||(node.Declaration.Shape==ValueShape.Record&&childCount is > 0);
-        if(declaredGroup&&_expandedDeclarations.TryGetValue(node.Key,out var remembered))expanded=remembered;
+        // 原件组合 IO 分组默认展开；展开状态按声明行 key 记忆，刷新不丢。
+        var expanded=node.IsGroup&&_expandedDeclarations.GetValueOrDefault(node.Key,true);
         node.IsExpanded=expanded;
         var row = new FlatResultRow
         {
             Key=node.Key,
-            DisplayName = DisplayName(node),
+            DisplayName = node.DisplayName,
             DisplayValue = value, Level = level,
-            IsGroup = childCount is > 0||(node.HasAllMembers&&node.DeclarationAddress is {} address&&_bindingRoots?.ContainsKey(address.RootPort.Id)==true), IsExpanded = expanded
+            IsGroup = childCount > 0, IsExpanded = expanded
         };
         var entry = new Entry(node, row);
         _entries.Add(node.Key, entry);
         if(!ApplyBinding(entry,generation))return null;
         Subscribe(row, () =>
         {
-            if(declaredGroup&&_expansionScope.HasValue)_expandedDeclarations[node.Key]=row.IsExpanded;
+            if(_expansionScope.HasValue)_expandedDeclarations[node.Key]=row.IsExpanded;
             node.IsExpanded = row.IsExpanded;
-            if (row.IsExpanded && entry.Children.Count == 0) LoadPage(entry);
+            if (row.IsExpanded && entry.Children.Count == 0) LoadChildren(entry);
             RefreshRows();
         });
-        if(expanded&&entry.Row.IsGroup)LoadPageCore(entry);
+        if(expanded&&entry.Row.IsGroup)LoadChildrenCore(entry);
         return entry;
     }
 
-    private string DisplayName(ResultPresentationNode node)
-    {
-        if(node.ElementIndex is {} index)return "["+index.ToString(CultureInfo.InvariantCulture)+"]";
-        var address=node.DeclarationAddress;
-        var name=address is null?null:_model?.Schema.FindOutputDisplay(address.RootPort.Id,address.MemberFieldPath)?.DisplayName;
-        name??=node.DeclaredPort?.Id;
-        return node.IsAllProjection?(name is null?"All · 全部元素成员":name+" [All]"):name??"";
-    }
     private bool ApplyBinding(Entry entry,int generation)
     {
         if(!Current(generation)){Abandon(generation);return false;}
         var address=entry.Node.DeclarationAddress;
         ResultBindingInfo? binding=null;
-        if(address is not null&&!address.IsSampleRow&&_bindingRoots?.TryGetValue(address.RootPort.Id,out var root)==true)
+        if(address is not null&&_bindingRoots?.TryGetValue(address.RootPort.Id,out var root)==true)
         {
             var reference=address.Reference(root.Reference.NodeId,root.Reference.ScopeId!);
             var path=address.RootPort.Id+string.Concat(address.MemberFieldPath.Select(member=>" / "+member));
@@ -372,56 +353,29 @@ public sealed class ResultPresentationPresenter : IDisposable
         _subscriptions.Add((row, handler));
     }
 
-    private void LoadPage(Entry entry)
-        =>RunProjection(()=>LoadPageCore(entry));
+    private void LoadChildren(Entry entry)
+        =>RunProjection(()=>LoadChildrenCore(entry));
 
-    private void LoadPageCore(Entry entry)
+    /// <summary>声明树是静态的：展开只物化已声明的子行，没有分页行也没有元素索引行。</summary>
+    private void LoadChildrenCore(Entry entry)
     {
         var generation=_generation;
         if(!Current(generation)){Abandon(generation);return;}
-        DetachMore(entry);
-        if(entry.AllMembers is null&&entry.Node.DeclarationAddress is {IsSampleRow:false} address&&_bindingRoots?.ContainsKey(address.RootPort.Id)==true&&entry.Node.CreateAllMembers() is {} all)
-        {entry.AllMembers=GetEntry(all,entry.Row.Level+1);if(!Current(generation)){Abandon(generation);return;}}
-        var page = entry.Node.GetChildrenPage(entry.Children.Count, _pageSize);
-        if(!Current(generation)){Abandon(generation);return;}
-        foreach (var child in page){if(!Current(generation)){Abandon(generation);return;}var childEntry=GetEntry(child,entry.Row.Level+1);if(childEntry is null||!Current(generation))return;entry.Children.Add(childEntry);}
-        if (entry.Node.ChildCount is not int count || entry.Children.Count >= count) return;
-        var offset = entry.Children.Count;
-        var last = Math.Min((long)count - 1, (long)offset + _pageSize - 1);
-        var more = new FlatResultRow
-        {
-            Key=entry.Node.Key+":page:"+offset.ToString(CultureInfo.InvariantCulture),
-            DisplayName = $"加载下一页 [{offset.ToString(CultureInfo.InvariantCulture)}…{last.ToString(CultureInfo.InvariantCulture)}]",
-            DisplayValue = "按需读取", IsGroup = true, IsExpanded = false, Level = entry.Row.Level + 1
-        };
-        PropertyChangedEventHandler handler = (_, args) =>
+        if(entry.Children.Count!=0)return;
+        foreach(var child in entry.Node.Children)
         {
             if(!Current(generation)){Abandon(generation);return;}
-            if (ReferenceEquals(entry.More, more) && args.PropertyName == nameof(FlatResultRow.IsExpanded) && more.IsExpanded)
-            {
-                LoadPage(entry);
-                RefreshRows();
-            }
-        };
-        entry.More = more;
-        entry.MoreHandler = handler;
-        more.PropertyChanged += handler;
-    }
-
-    private static void DetachMore(Entry entry)
-    {
-        if (entry.More != null && entry.MoreHandler != null) entry.More.PropertyChanged -= entry.MoreHandler;
-        entry.More = null;
-        entry.MoreHandler = null;
+            var childEntry=GetEntry(child,entry.Row.Level+1);
+            if(childEntry is null||!Current(generation))return;
+            entry.Children.Add(childEntry);
+        }
     }
 
     private static void AppendVisible(Entry entry, List<FlatResultRow> visible)
     {
         visible.Add(entry.Row);
         if (!entry.Row.IsExpanded) return;
-        if(entry.AllMembers is {} all)AppendVisible(all,visible);
         foreach (var child in entry.Children) AppendVisible(child, visible);
-        if (entry.More != null) visible.Add(entry.More);
     }
 
     // 纯状态标签：用于汇总行，不携带诊断。
@@ -442,8 +396,8 @@ public sealed class ResultPresentationPresenter : IDisposable
     private string ValueText(ResultPresentationNode node)
     {
         // 原件模块结果树只做 DisplayValue 拼接，不做枚举中文化（用户原件截图：模块状态=1、
-        // 单体状态=1;1;1…、极性不出现）。中文只出现在表格列头/显示配置，树路径保持裸值。
-        return node.IsAllProjection?"All · 按声明绑定全部元素，不是样本索引值":node.ValueState switch
+        // 单体状态=1;1;1…），中文只出现在表格列头/显示配置。
+        return node.ValueState switch
         {
             ResultPresentationValueState.Missing => "missing",
             ResultPresentationValueState.Null => "null",
@@ -453,43 +407,15 @@ public sealed class ResultPresentationPresenter : IDisposable
             ResultPresentationValueState.Unavailable => _model!.State is ResultViewState.Success or ResultViewState.PartialSuccess ? "值不可用" : StatusText(_model.State),
             _ => node.Declaration.Shape switch
             {
-                // 原件 VmIO.cs:374-385：标量数组一行内以 ";" 拼接；仅组合 IO 生成子节点。
-                ValueShape.Sequence => node.IsScalarSequence ? JoinScalarSequence(node) : SequenceText(node.ChildCount),
+                // 原件 VmIO.cs:374-385：标量数组/成员转置行在单行内以 ";" 拼接，超出上限以 "…" 收尾。
+                ValueShape.Sequence when node.Declaration.Element!.Shape==ValueShape.Scalar => ResultValueText.JoinSequence(node),
+                ValueShape.Sequence => ResultValueText.SequenceText(node.SequenceLength),
                 ValueShape.Record => "",
                 ValueShape.Geometry => node.GeometryValue is {} geometry?GeometryText(geometry):"值不可用",
-                _ => node.ScalarValue switch
-                {
-                    string text => text,
-                    bool boolean => boolean ? "true" : "false",
-                    long integer => integer.ToString(CultureInfo.CurrentCulture),
-                    double number when node.PhysicalStorage==NumericStorage.Float32 => ((float)number).ToString(CultureInfo.CurrentCulture),
-                    double number => number.ToString(CultureInfo.CurrentCulture),
-                    _ => "值不可用"
-                }
+                _ when node.SequenceLength is not null => ResultValueText.JoinSequence(node),
+                _ => ResultValueText.FormatScalar(node.ScalarValue,node.PhysicalStorage)
             }
         };
-    }
-    private static string SequenceText(int? count)=>count is null?"值不可用":count==0?"空序列 (0)":"["+count.Value.ToString(CultureInfo.InvariantCulture)+" 项]";
-    /// <summary>原件同义：标量数组按 ";" 拼接为一行，超出上限以 "…" 收尾（VmIO.cs:374-385）。</summary>
-    private static string JoinScalarSequence(ResultPresentationNode node)
-    {
-        if(node.SequenceLength is not int total)return "值不可用";
-        if(total==0)return "";
-        const int max=64;
-        var shown=Math.Min(total,max);
-        var parts=node.GetChildrenPage(0,shown)
-            .Select(element=>element.ScalarValue switch
-            {
-                string text=>text,
-                bool boolean=>boolean?"true":"false",
-                long integer=>integer.ToString(CultureInfo.CurrentCulture),
-                double number=>number.ToString(CultureInfo.CurrentCulture),
-                _=>""
-            })
-            .Where(text=>text.Length!=0)
-            .ToArray();
-        var joined=string.Join(";",parts);
-        return total>shown?joined+";…":joined;
     }
     private static string GeometryText(GeometryValue geometry)
     {

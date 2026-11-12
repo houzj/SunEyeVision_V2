@@ -243,6 +243,7 @@ public sealed class ResultPresentationPresenter : IDisposable
     {
         if(!Current(generation)){Abandon(generation);return;}
         _model = model;_bindingRoots=bindings;
+        // 根行显示名由宿主在 Present 后用节点名覆盖（MainWindowResultPublication.cs:86），此处保留占位。
         var root = new FlatResultRow { Key="result",DisplayName = "结果", DisplayValue = StatusText(model.State), IsGroup = true,
             IsExpanded = _expandedDeclarations.GetValueOrDefault("result",true) };
         if(!Current(generation)){Abandon(generation);return;}_root=root;

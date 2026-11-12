@@ -21,15 +21,9 @@ public sealed class ResultPresentationModel
         Identity = stamp.Invocation;
         State = state;
         PageSize = pageSize;
-        // VM's result declaration owns the visible root order. Keep the declared
-        // port identities and value contract intact, while projecting roots in
-        // OutputDisplay order. Tools without a display declaration retain the
-        // schema order as a deterministic fallback.
-        var outputOrder = schema.OutputDisplay.Select(node => node.FieldId)
-            .Concat(schema.Outputs.Select(port => port.Id))
-            .Distinct(StringComparer.Ordinal)
-            .Select(id => schema.Outputs.Single(port => port.Id == id))
-            .ToArray();
+        // 原件 ModuleResultView.xaml:234 的树一级=模块、二级=该模块 Outputs，顺序取 SDK 声明序
+        // （VmModule.cs:3484-3493 按 nNum 下标，无排序键）；OutputDisplay 只提供显示名，不参与排序。
+        var outputOrder = schema.Outputs.ToArray();
         var outputs = new ResultPresentationNode[outputOrder.Length];
         for (var index = 0; index < outputs.Length; index++)
         {

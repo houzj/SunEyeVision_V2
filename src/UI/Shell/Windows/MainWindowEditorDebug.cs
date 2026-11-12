@@ -64,8 +64,10 @@ public partial class MainWindowViewModel
  }
  private bool IsCurrentPresentedSnapshot(DocumentSession session,string workflowId,NodeDefinition node,DeclaredOutputSnapshot snapshot)
  {
+  // 调试快照优先；编辑器打开不得否决正式发布的当前性——原件 ModuleResultView 在编辑态
+  // 同样显示该模块的正式结果（形状+文本）。否则 publication.IsCurrent() 恒 false，
+  // 结果区只留图像、叠加被清空。
   if(ReferenceEquals(CurrentEditorDebugSnapshot,snapshot))return true;
-  if(SelectedEditorContext is not null)return false;
   if(snapshot.Identity.DocumentSessionId!=session.ResultOwnerId)return false;
   return session.IsPublishedResultCurrent(workflowId,node.Id,snapshot);
  }

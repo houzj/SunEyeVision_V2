@@ -112,5 +112,16 @@
     "顺序为模块声明序：耗时→模块状态→单体状态→Blob个数→面积→总面积→质心点→最小外接矩形→灰度三项→最大内接矩形→Blob矩形框→周长/长轴/短轴/圆形度/矩形度/分数→二值化图像数据→Blob图像数据→检测区域→ROI圆弧→轮廓点集→屏蔽区多边形→输出掩膜",
     "我方差异：现有 BlobSchema.Outputs 项集与顺序与该清单不一致（多阈值方式/极性等，缺质心点/最小外接矩形/Blob矩形框/检测区域/ROI圆弧/轮廓点集/屏蔽区多边形等分组），必须按本清单重排显示声明"
   ],
+  "projectionDirectionGap": {
+    "conclusion": "问题在数据模型到树的投影方向，不在渲染。VM 把 BlobsPort 记录按成员转置为列（每成员一行、值为全 Blob 数组、分号拼接）；我方把每个成员做成顶层端口并手工起名，编号与名称本身错位。",
+    "evidence": "tools/SunEyeVision.BlobAnalysis/Runtime/Resources/BlobDisplay.xml 的 Column member 定义（area/perimeter/centroid-x/centroid-y/oriented-bounds/angle-degrees/long-axis/short-axis/circularity/rectangularity）与原件截图逐项一致；BlobOutputDisplay.cs:11-15 的 Field(n)↔名称映射与之冲突（Field(17)=灰度直方图、Field(19)=面积…）",
+    "reworkPlan": [
+      "OutputDisplayNode 增加 member-path 行（支持分组，如 质心点 → centroid-x/centroid-y）",
+      "ResultPresentationModel 按 member 从 BlobsPort 投影为数组行（复用已实现的 ; 拼接）",
+      "BlobOutputDisplay 重写为原件清单顺序与分组；名称不再散落在渲染代码",
+      "结果表继续沿用 BlobDisplay.xml 列定义（已与原件一致）",
+      "同步重写按旧结构编写的 12 条 ResultPresentationPresenterTests 用例"
+    ]
+  },
   "acceptance": "以本清单逐项核对结果树：项名、分组、顺序、值形式（裸值、分号拼接、float32 自然位数）"
 }

@@ -81,21 +81,23 @@ internal sealed partial class ResultWorkspacePresenter
             if(state is null||publication is null||!Current()||pane.Image.CurrentFrame is not {} receipt)
             {ClearOriginal();continue;}
             var frozen = state.Geometry;
-            // Browsing another image is valid. The scene belongs only to its declared input frame.
-            // Switching the displayed image output can create a new physical frame
-            // address while remaining in the same image coordinate domain and result
-            // publication. VM keeps the Blob scene in that case and changes only the
-            // background image.
-            if (frozen is not null && frozen.Coordinates != receipt.Coordinates)
-            {ClearOriginal();continue;}
+            // 原件 ModuleResultView.xaml:142 的 ShapeList 始终绑定模块结果，
+            // imageListCombobox_SelectionChanged 只在 SelectedValue==null 时清空（:2152-2153），
+            // 换显示图像从不重建形状。因此坐标域不一致时只跳过与坐标域绑定的 ROI/内接/轮廓，
+            // 保留矩形与文字（它们来自结果行与文本租约，不需要域一致）。
+            var sameDomain = frozen is null || frozen.Coordinates == receipt.Coordinates;
+            if (!sameDomain)
+                try { _main.AddLog("当前显示图像的坐标域与结果几何不一致：按原件语义仅切换背景图像，保留模块结果图形与文字。"); } catch { }
             var appearance = state.Appearance;
             var innerPath = appearance.InnerRectangle is { Visible: true } ? state.Descriptor.InnerRectangle : null;
             var outlinePath = appearance.Outline is { Visible: true } ? state.Descriptor.Outline : null;
             var showRows = appearance.Graphic.Visible || innerPath is not null || outlinePath is not null;
-            var roiGroups = frozen?.Groups
-                .Where(group => group.Coverage == ResultGeometryCoverage.Explicit && group.Shapes.Count != 0)
-                .Select(group => (Group:group, Style:RoiStyle(appearance,group.Role)))
-                .Where(item => item.Style?.Visible == true).ToArray() ?? [];
+            var roiGroups = sameDomain
+                ? frozen?.Groups
+                    .Where(group => group.Coverage == ResultGeometryCoverage.Explicit && group.Shapes.Count != 0)
+                    .Select(group => (Group:group, Style:RoiStyle(appearance,group.Role)))
+                    .Where(item => item.Style?.Visible == true).ToArray() ?? []
+                : [];
             if (!showRows && !appearance.Text.Visible && roiGroups.Length == 0)
             {ClearOriginal();continue;}
             IResultValueLease? values=null;DisplayScene? candidate=null;SunEyeVision.Plugin.Runtime.ResultDisplayTextLease? textLease=null;
@@ -149,21 +151,23 @@ internal sealed partial class ResultWorkspacePresenter
                     var row=rows!.GetElement(i);var id=Member(row,state.Descriptor.Identity).GetScalar<long>();
                     if(!ids.Add(id))throw new InvalidOperationException("结果显示对象身份重复。");
                     using var region=Member(row,state.Descriptor.GeometrySource).AcquireRegionReader();
-                    if(region.Frame!=receipt.Coordinates)throw new InvalidOperationException("结果显示与当前图像坐标域不匹配。");
+                    if(sameDomain && region.Frame!=receipt.Coordinates)throw new InvalidOperationException("结果显示与当前图像坐标域不匹配。");
+                    // 跨域浏览时形状仍按像素坐标绘制到当前背景上（原件同义），源帧取当前显示帧。
+                    var shapeFrame=sameDomain?region.SourceFrame:receipt.Frame;
                     var passed=Member(row,state.Descriptor.Passed).GetScalar<bool>();
                     var selectedColor = id == selectedId ? state.Descriptor.SelectedRectangleColor : null;
                     if(appearance.Graphic.Visible)
                     {
                         var bounds=Member(row,state.Descriptor.Rectangle);
                         var center=bounds.GetField("center");
-                        rectangles.Add(new(region.SourceFrame,
+                        rectangles.Add(new(shapeFrame,
                             new(center.GetField("x").GetScalar<double>(),center.GetField("y").GetScalar<double>()),
                             bounds.GetField("width").GetScalar<double>(),bounds.GetField("height").GetScalar<double>(),
                             bounds.GetField("angle-degrees").GetScalar<double>(),
                             Color(selectedColor ?? (passed?appearance.Graphic.Ok:appearance.Graphic.Ng)),
                             appearance.Graphic.Width,appearance.Graphic.Opacity));
                     }
-                    if (innerPath is not null && appearance.InnerRectangle is {} style)
+                    if (sameDomain && innerPath is not null && appearance.InnerRectangle is {} style)
                     {
                         var inner = Member(row, innerPath);
                         if (!inner.IsMissing && !inner.IsNull)
@@ -174,7 +178,7 @@ internal sealed partial class ResultWorkspacePresenter
                                 IncludeMeasurements:true));
                         }
                     }
-                    if(outlinePath is not null && appearance.Outline is {} outlineStyle)
+                    if(sameDomain && outlinePath is not null && appearance.Outline is {} outlineStyle)
                     {
                         var outline = Member(row, outlinePath);
                         var sources = outline.IsMissing || outline.IsNull ? Enumerable.Empty<DeclaredValueReader>()

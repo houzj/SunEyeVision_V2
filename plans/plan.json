@@ -4973,6 +4973,10 @@
                                     {
                                         "date":  "2026-10-23",
                                         "note":  "[9e0da65d03815ceb9d0cb3392fd3ac5597227119] checkpoint: 保存方案持久化、标定整改与脚本架构文档"
+                                    },
+                                    {
+                                        "date":  "2026-11-12",
+                                        "note":  "[aaa906aeb0bcf5f27e64f7b1c573f4db1c0727a3] fix(imagesource): 缩略图计数沿原件恒为 1..N，修正 0/N"
                                     }
                                 ]
                     },
@@ -5590,6 +5594,16 @@
                        }
                    ],
     "tempTasks":  [
-
+                      {
+                          "id":  "TMP-e747dc0",
+                          "message":  "fix(image-source): thumbnail count follows original 1..N instead of 0/N",
+                          "date":  "2026-11-12",
+                          "commit":  "e747dc0105e5eca9c8c708ff8764be386f931a90",
+                          "files":  [
+                                        ".git-msg.txt",
+                                        "src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml.cs"
+                                    ],
+                          "status":  "in_progress"
+                      }
                   ]
 }

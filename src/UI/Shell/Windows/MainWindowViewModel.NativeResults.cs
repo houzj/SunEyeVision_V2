@@ -94,12 +94,15 @@ public partial class MainWindowViewModel
             foreach(var node in nodes.Where(node=>ids.Contains(node.Id)).OrderBy(node=>node.Name,StringComparer.CurrentCulture))
             {
                 var privateNode=editor is not null&&ReferenceEquals(node,selected);
-                using var acquired=privateNode?null:session.AcquirePublishedResult(scope,node.Id);
-                var snapshot=privateNode?CurrentEditorDebugSnapshot:acquired?.Snapshot;
+                // 调试窗口打开但尚未执行时没有私有快照，此时节点仍以正式发布呈现图像与叠加
+                // （原件 ModuleResultView 编辑态同样显示模块结果）；不得因此抽走正式图像。
+                var debugSnapshot=privateNode?CurrentEditorDebugSnapshot:null;
+                using var acquired=debugSnapshot is null?session.AcquirePublishedResult(scope,node.Id):null;
+                var snapshot=debugSnapshot??acquired?.Snapshot;
                 bool SnapshotCurrent()
                 {
                     if(!Owner()||snapshot is null)return false;
-                    if(privateNode)return ReferenceEquals(CurrentEditorDebugSnapshot,snapshot)&&Owner();
+                    if(ReferenceEquals(debugSnapshot,snapshot))return ReferenceEquals(CurrentEditorDebugSnapshot,snapshot)&&Owner();
                     return session.IsPublishedResultCurrent(scope,node.Id,snapshot)&&Owner();
                 }
                 var schema=snapshot?.Schema??session.GetNodeSchema(scope,node.Id);

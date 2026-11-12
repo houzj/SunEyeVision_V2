@@ -121,7 +121,9 @@ public partial class MainWindowViewModel
         if(session is null||node is null||workflowId is null){ClearResultDisplay();return;}
         if(!OwnsSelectedDocumentNode(node)){SelectedNode=null;return;}
         if(CurrentEditorDebugSnapshot is {} debug){PresentSnapshot(debug,node.Name);return;}
-        using var reader=SelectedEditorContext is null?session.AcquirePublishedResult(workflowId,node.Id):null;
+        // 调试窗口打开但尚未执行时（无 debug 快照），正式发布仍是唯一真实结果；
+        // 原件 ModuleResultView 在编辑态同样显示模块结果，若退化为声明视图会得到空表空图。
+        using var reader=session.AcquirePublishedResult(workflowId,node.Id);
         if(reader is not null){PresentSnapshot(reader.Snapshot,node.Name);return;}
         var schema=session.GetNodeSchema(workflowId,node.Id);
         if(schema is null){ClearResultDisplay();return;}

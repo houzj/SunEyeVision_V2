@@ -1093,8 +1093,12 @@ public sealed class EditorDebugSessionTests
   shell.SetCurrentValue(ResultWorkspaceShell.SelectedOutputItemProperty, gray);
   UiRuntime.Pump();
   Assert.Same(gray, shell.SelectedOutputItem);
-  Assert.Empty(viewport.ShapeList.OfType<Tuple<string, object>>());
-  Assert.Empty(viewport.ShapeList.OfType<IMultiText>());
+  // 原件 ModuleResultView.xaml:142 的 ShapeList 恒绑模块结果；imageListCombobox_SelectionChanged
+  // （ModuleResultView.xaml.cs:2152-2153）只在 SelectedValue==null 时清空。换显示图像仅换背景，
+  // 矩形与文字必须保留；仅跨坐标域的轮廓点不重采样。
+  Assert.Equal(Colors.Yellow.ToString(), Rectangle().Stroke);
+  Assert.NotEmpty(viewport.ShapeList.OfType<Tuple<string, object>>());
+  Assert.NotEmpty(viewport.ShapeList.OfType<IMultiText>());
   Assert.Empty(viewport.ShapeList.OfType<IMultiPoint>());
   Assert.True(fixture.Session.IsPublishedResultCurrent(fixture.Root.Id, blob.Id, first.Snapshot));
 

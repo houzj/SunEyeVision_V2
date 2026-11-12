@@ -805,7 +805,11 @@ public class SliderArrangeBase : UserControl, INotifyPropertyChanged
 
 	private static void MaxChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
-		(d as SliderArrangeBase).ClipSilder();
+		var arrange = (d as SliderArrangeBase)!;
+		// 非 between 单值模式下 EndValueF 的设计语义就是 Maximum（见 EndValueF setter）；
+		// Maximum 到位晚于模板绑定时不同步它，T1 的范围校验会一直按默认上限 100 误判。
+		if (!arrange.isBetween) d.SetValue(EndValueFProperty, e.NewValue);
+		arrange.ClipSilder();
 	}
 
 	private static void SubscribeLeftCallBack(DependencyObject d, DependencyPropertyChangedEventArgs e)

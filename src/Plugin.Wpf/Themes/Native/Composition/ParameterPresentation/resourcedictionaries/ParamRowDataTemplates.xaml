@@ -33,10 +33,16 @@
 
   <!-- 原厂滑条（整数/浮点）：值、订阅模板、上下界全部由数值协调器接线 -->
   <DataTemplate x:Key="Integer_Sub">
-    <vm_port_1:SliderArrange Foreground="#666666" FontSize="14"/>
+    <!-- 原件 paramusercontroldatatemplate.xaml:551 同款范围绑定：缺失时 SliderArrange.Maximum
+         停在控件默认 100，默认值大于 100 的行（如拼接高度 2000）被 RangeRule 误判越界挂红框。 -->
+    <vm_port_1:SliderArrange Foreground="#666666" FontSize="14" SliderTickFrequency="{Binding IncValueA}"
+                             Minimum="{Binding MinValueA}" Maximum="{Binding MaxValueA}"/>
   </DataTemplate>
   <DataTemplate x:Key="Float_Sub">
-    <vm_port_1:SliderArrangeFloat DecimalDigits="{Binding DecimalDigitsA}" Foreground="#666666" FontSize="14"/>
+    <!-- 原件 paramusercontroldatatemplate.xaml:803 同款范围绑定，理由同上。 -->
+    <vm_port_1:SliderArrangeFloat DecimalDigits="{Binding DecimalDigitsA}" Foreground="#666666" FontSize="14"
+                                  SliderTickFrequency="{Binding IncValueA}"
+                                  Minimum="{Binding MinValueA}" Maximum="{Binding MaxValueA}"/>
   </DataTemplate>
 
   <!-- 未设置占位（原"未设置 + 设置"分支） -->

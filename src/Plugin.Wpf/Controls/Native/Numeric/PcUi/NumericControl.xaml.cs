@@ -39,9 +39,9 @@ public partial class NumericControl : UserControl, INotifyPropertyChanged, IComp
 
 	public static readonly DependencyProperty IncrementProperty = DependencyProperty.Register("Increment", typeof(double), typeof(NumericControl), new PropertyMetadata(1.0));
 
-	public static readonly DependencyProperty MinimumProperty = DependencyProperty.Register("Minimum", typeof(double), typeof(NumericControl), new PropertyMetadata(0.0));
+	public static readonly DependencyProperty MinimumProperty = DependencyProperty.Register("Minimum", typeof(double), typeof(NumericControl), new PropertyMetadata(0.0, OnRangeChanged));
 
-	public static readonly DependencyProperty MaximumProperty = DependencyProperty.Register("Maximum", typeof(double), typeof(NumericControl), new PropertyMetadata(100.0));
+	public static readonly DependencyProperty MaximumProperty = DependencyProperty.Register("Maximum", typeof(double), typeof(NumericControl), new PropertyMetadata(100.0, OnRangeChanged));
 
 	public static readonly DependencyProperty MinValueProperty = DependencyProperty.Register("MinValue", typeof(double), typeof(NumericControl), new PropertyMetadata(0.0));
 
@@ -270,6 +270,8 @@ public partial class NumericControl : UserControl, INotifyPropertyChanged, IComp
 
 	public event PropertyChangedEventHandler PropertyChanged;
 
+	private RangeRule? _rangeRule;
+
 	public NumericControl()
 	{
 		InitializeComponent();
@@ -278,9 +280,30 @@ public partial class NumericControl : UserControl, INotifyPropertyChanged, IComp
 		{
 			Container = this
 		};
+		_rangeRule = item;
 		Binding binding = BindingOperations.GetBinding(ValueText, TextBox.TextProperty);
 		binding.ValidationRules.Clear();
 		binding.ValidationRules.Add(item);
+	}
+
+	/// <summary>
+	/// 范围绑定变化时重跑当前文本的范围校验：宿主投影文本可能先于 Minimum/Maximum 绑定
+	/// 激活到达（此时校验按控件默认范围执行并把默认值误标为越界，如拼接高度 2000 > 默认
+	/// 上限 100），范围到位后 WPF 不会自动重跑规则，红框将一直残留。
+	/// </summary>
+	private static void OnRangeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if (d is NumericControl control) control.RevalidateRange();
+	}
+
+	private void RevalidateRange()
+	{
+		if (_rangeRule is null) return;
+		var expression = BindingOperations.GetBindingExpression(ValueText, TextBox.TextProperty);
+		if (expression is null) return;
+		var result = _rangeRule.Validate(ValueText.Text, System.Globalization.CultureInfo.InvariantCulture);
+		if (result.IsValid) Validation.ClearInvalid(expression);
+		else Validation.MarkInvalid(expression, new ValidationError(_rangeRule, expression, result.ErrorContent, null));
 	}
 
 	private static void OnSymbolChange(DependencyObject d, DependencyPropertyChangedEventArgs e)

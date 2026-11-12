@@ -90,6 +90,47 @@ public sealed class ParameterTemplateInteractionTests
     }
 
     [Fact]
+    public void Integer_row_default_above_hundred_keeps_no_validation_error_after_range_binding()
+    {
+        // 复现：拼接高度默认 2000 超出 NumericControl 默认 Maximum(100)，范围绑定晚到后
+        // 无人重跑 RangeRule，WPF 默认 ErrorTemplate 红框残留（用户实机 2026-11-12）。
+        if (System.Windows.Application.Current is null) SunEyeVision.TestShared.WpfTestDispatcher.RequireHiddenDesktop();
+        UiRuntime.Run(() =>
+        {
+            var port = new Port("stitch.height", DataType.Integer, Storage:NumericStorage.Int32,
+                EditModes:FieldEditModes.Constant);
+            var presentation = new FieldPresentation("stitch.height","拼接高度","基本参数",82,FieldEditorKind.Scalar)
+            {
+                Layout=new("基本参数","基本参数",Minimum:0,Maximum:20000,DecimalPlaces:0,AllowReference:false)
+            };
+            var writes = new List<ParameterSetting>();
+            using var row = new DeclaredFieldRow(port,"拼接高度",new ConstantSetting(2000L),writes.Add,
+                presentation:presentation);
+            var window = new Window { Content=row, Width=420, Height=240, ShowInTaskbar=false };
+            window.Resources.MergedDictionaries.Add(EditorResources.Shared);
+            window.Resources.MergedDictionaries.Add(new ResourceDictionary
+            {
+                Source=new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/ParameterPresentation/resourcedictionaries/ParamRowDataTemplates.xaml",UriKind.Relative)
+            });
+            try
+            {
+                window.Show(); window.UpdateLayout(); UiRuntime.Pump();
+                var numeric = Assert.Single(UiRuntime.Visuals<
+                    SunEyeVision.Plugin.Wpf.Native.Numeric.Interaction.ListView.NumericControl>(row),
+                    item=>item.IsVisible);
+                var text = UiRuntime.Visuals<TextBox>(numeric).Single(item=>item.Name=="ValueText");
+                Assert.Equal("2000", text.Text);
+                if (System.Windows.Controls.Validation.GetHasError(text))
+                {
+                    var errors=System.Windows.Controls.Validation.GetErrors(text);
+                    Assert.Fail($"数值行文本残留校验错误：{string.Join("；",errors.Select(item=>item.ErrorContent))}");
+                }
+            }
+            finally { window.Close(); UiRuntime.Pump(); }
+        });
+    }
+
+    [Fact]
     public void Optional_roi_mode_with_default_uses_original_radio_without_changing_formal_input()
     {
         if (System.Windows.Application.Current is null) SunEyeVision.TestShared.WpfTestDispatcher.RequireHiddenDesktop();

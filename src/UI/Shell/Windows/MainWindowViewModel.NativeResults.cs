@@ -83,9 +83,14 @@ public partial class MainWindowViewModel
         var session=DocumentManager.CurrentSession;var selected=SelectedNode;
         var tab=WorkflowTabViewModel.SelectedTab;var scope=tab?.CurrentWorkflowId;
         if(session is null||selected is null||scope is null||!session.GetNodes(scope).Any(node=>ReferenceEquals(node,selected)))return plan;
+        // 原件 ModuleResultView 语义：正式结果显示不随参数窗口开合变化（证据
+        // docs/collaboration/evidence/VM调试窗口结果视口更新路径-20261112.json）。
+        // 因此正式发布来源的当前性不绑定编辑上下文；私有调试快照的上下文校验
+        // 由 CurrentEditorDebugSnapshot 内部（IsValid/会话/节点一致）保证，上下文
+        // 失效或更换都会使其返回 null/false，无需在此重复绑定。
         bool Owner()=>!plan.IsDisposed&&consumerCurrent()&&ReferenceEquals(DocumentManager.CurrentSession,session)
             &&ReferenceEquals(SelectedNode,selected)&&ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab)
-            &&ReferenceEquals(SelectedEditorContext,editor)&&OwnsSelectedDocumentNode(selected);
+            &&OwnsSelectedDocumentNode(selected);
         var nodes=session.GetNodes(scope);var edges=session.GetConnections(scope);
         var ids=new HashSet<string>(StringComparer.Ordinal){selected.Id};var queue=new Queue<string>();queue.Enqueue(selected.Id);
         while(queue.TryDequeue(out var id))foreach(var edge in edges.Where(edge=>edge.TargetNodeId==id))if(ids.Add(edge.SourceNodeId))queue.Enqueue(edge.SourceNodeId);

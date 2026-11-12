@@ -1303,7 +1303,124 @@ public sealed class EditorDebugSessionTests
   Assert.NotEqual(enabled.Publication!.Stamp.Invocation, restored.Publication!.Stamp.Invocation);
   Assert.NotNull(viewport.ImageDataSource);
  });
- [Fact] public void Blob_output_overlay_is_visible_only_on_its_background_and_retires_on_a_new_choice_plan()=>UiRuntime.Run(()=>
+ [Fact] public void Opening_the_debug_window_keeps_the_presented_result_workspace_untouched()=>UiRuntime.Run(()=>
+{
+ // 原件 ModuleResultView：参数窗口开合只切 ROI 可见性，来源集合/选中结果/图像值未变时视口不动（证据 VM调试窗口结果视口更新路径-20261112.json）。
+ using var fixture=new DocumentUiFixture();
+ var source=fixture.Add();var blob=fixture.Add("BlobAnalysis",350,240);
+ fixture.ConfigureImage(source,fixture.Image(200,6));
+ fixture.Connect(source,blob);
+ fixture.Run();
+ fixture.Main.SelectedNode=blob;UiRuntime.Pump();
+ var shell=Assert.Single(UiRuntime.Visuals<ResultWorkspaceShell>(fixture.Results));
+ var viewport=Assert.IsType<ImageViewBox>(shell.OutputViewport);
+ Assert.NotNull(viewport.ImageDataSource);
+ var outputItems=shell.OutputItems!.Cast<object>().ToArray();
+ var inputItems=shell.InputItems!.Cast<object>().ToArray();
+ var selected=Assert.IsType<ResultWorkspaceImageSource>(shell.SelectedOutputItem);
+ Open(fixture,blob);
+ Assert.Same(selected,shell.SelectedOutputItem);
+ var outputAfter=shell.OutputItems!.Cast<object>().ToArray();
+ Assert.Equal(outputItems.Length,outputAfter.Length);
+ for(var index=0;index<outputItems.Length;index++)Assert.Same(outputItems[index],outputAfter[index]);
+ var inputAfter=shell.InputItems!.Cast<object>().ToArray();
+ Assert.Equal(inputItems.Length,inputAfter.Length);
+ for(var index=0;index<inputItems.Length;index++)Assert.Same(inputItems[index],inputAfter[index]);
+ Assert.NotNull(viewport.ImageDataSource);
+});
+[Fact] public void Result_workspace_rebuilds_when_a_selected_image_value_disappears_and_restores()=>UiRuntime.Run(()=>
+{
+ // 反例：图像值从有变无必须清空、恢复必须重显，不得因来源键/选中不变而跳过重建。
+ const string grayPort="output.gray-image";const string mono8="output.mono8";
+ using var fixture=new DocumentUiFixture();
+ var source=fixture.Add();var blob=fixture.Add("BlobAnalysis",350,240);
+ fixture.ConfigureImage(source,fixture.Image(200,6));
+ fixture.Fields(source,("output.format",new ConstantSetting("rgb24")),(mono8,new ConstantSetting(true)));
+ fixture.Connect(source,blob);
+ var port=fixture.Session.GetNodeSchema(fixture.Root.Id,source.Id)!.Outputs.Single(item=>item.Id==grayPort);
+ fixture.Fields(blob,("input.image",new ReferenceSetting(new OutputReference(source.Id,grayPort,port.Type,new[]{"data"},scopeId:fixture.Root.Id))));
+ fixture.Main.SelectedNode=source;UiRuntime.Pump();
+ fixture.Run();
+ var shell=Assert.Single(UiRuntime.Visuals<ResultWorkspaceShell>(fixture.Results));
+ var viewport=Assert.IsType<ImageViewBox>(shell.OutputViewport);
+ ResultWorkspaceImageSource Gray()=>shell.OutputItems!.Cast<ResultWorkspaceImageSource>().Single(
+  item=>item.Reference.NodeId==source.Id&&item.Reference.PortId==grayPort);
+ shell.SetCurrentValue(ResultWorkspaceShell.SelectedOutputItemProperty,Gray());
+ UiRuntime.Pump();
+ Assert.True(Gray().HasImageValue);Assert.NotNull(viewport.ImageDataSource);
+ fixture.Fields(source,(mono8,new ConstantSetting(false)));
+ fixture.Run();
+ Assert.False(Gray().HasImageValue);Assert.Same(Gray(),shell.SelectedOutputItem);Assert.Null(viewport.ImageDataSource);
+ fixture.Fields(source,(mono8,new ConstantSetting(true)));
+ fixture.Run();
+ Assert.True(Gray().HasImageValue);Assert.Same(Gray(),shell.SelectedOutputItem);Assert.NotNull(viewport.ImageDataSource);
+});
+[Fact] public void Blob_mask_output_clears_and_restores_with_the_output_mask_switch()=>UiRuntime.Run(()=>
+{
+ // 反例：掩膜清空（输出掩膜关）必须清空已选掩膜显示，重新打开必须恢复。
+ const string maskSwitch="input.roi.output-mask";const string maskPort="field:8ca10000000040008000000000000103";
+ using var fixture=new DocumentUiFixture();
+ var source=fixture.Add();var blob=fixture.Add("BlobAnalysis",350,240);
+ fixture.ConfigureImage(source,fixture.Image(200,6));
+ fixture.Connect(source,blob);
+ fixture.Fields(blob,(maskSwitch,new ConstantSetting(true)));
+ fixture.Main.SelectedNode=blob;UiRuntime.Pump();
+ fixture.Run();
+ var shell=Assert.Single(UiRuntime.Visuals<ResultWorkspaceShell>(fixture.Results));
+ var viewport=Assert.IsType<ImageViewBox>(shell.OutputViewport);
+ ResultWorkspaceImageSource Mask()=>shell.OutputItems!.Cast<ResultWorkspaceImageSource>().Single(
+  item=>item.Reference.NodeId==blob.Id&&item.Reference.PortId==maskPort);
+ shell.SetCurrentValue(ResultWorkspaceShell.SelectedOutputItemProperty,Mask());
+ UiRuntime.Pump();
+ Assert.True(Mask().HasImageValue);Assert.NotNull(viewport.ImageDataSource);
+ fixture.Fields(blob,(maskSwitch,new ConstantSetting(false)));
+ fixture.Run();
+ Assert.False(Mask().HasImageValue);Assert.Same(Mask(),shell.SelectedOutputItem);Assert.Null(viewport.ImageDataSource);
+ fixture.Fields(blob,(maskSwitch,new ConstantSetting(true)));
+ fixture.Run();
+ Assert.True(Mask().HasImageValue);Assert.Same(Mask(),shell.SelectedOutputItem);Assert.NotNull(viewport.ImageDataSource);
+});
+[Fact] public void Result_workspace_follows_a_changed_display_choice_plan()=>UiRuntime.Run(()=>
+{
+ // 反例：显示选择计划（SelectedDisplayReference）更替必须照常重建并切换显示来源。
+ using var fixture=new DocumentUiFixture();
+ var source=fixture.Add();var blob=fixture.Add("BlobAnalysis",350,240);
+ fixture.ConfigureImage(source,fixture.Image(200,6));
+ fixture.Connect(source,blob);
+ fixture.Run();
+ fixture.Main.SelectedNode=blob;UiRuntime.Pump();
+ var shell=Assert.Single(UiRuntime.Visuals<ResultWorkspaceShell>(fixture.Results));
+ var viewport=Assert.IsType<ImageViewBox>(shell.OutputViewport);
+ Assert.Equal(blob.Id,Assert.IsType<ResultWorkspaceImageSource>(shell.SelectedOutputItem).Reference.NodeId);
+ Assert.NotNull(viewport.ImageDataSource);
+ var upstream=shell.InputItems!.Cast<ResultWorkspaceImageSource>().First();
+ fixture.Session.SetNodeDisplayReference(fixture.Root.Id,blob,upstream.Key);
+ UiRuntime.Pump();
+ Assert.Equal(source.Id,Assert.IsType<ResultWorkspaceImageSource>(shell.SelectedOutputItem).Reference.NodeId);
+ Assert.NotNull(viewport.ImageDataSource);
+});
+[Fact] public void Image_source_stitch_height_row_keeps_no_validation_error_when_the_window_opens()=>UiRuntime.Run(()=>
+{
+ // 复现：拼接开启后拼接高度默认 2000，打开调试窗口时该行出现 WPF 校验红框（用户实机 2026-11-12）。
+ using var fixture=new DocumentUiFixture();
+ var source=fixture.Add();
+ fixture.ConfigureImage(source,fixture.Image(200,6));
+ fixture.Fields(source,("stitch.enabled",new ConstantSetting(true)));
+ var window=Open(fixture,source);
+ var all=UiRuntime.Visuals<System.Windows.Controls.TextBox>(window)
+  .Where(item=>item.Name=="ValueText"&&item.IsVisible).ToArray();
+ var texts=all.Where(item=>item.Text=="2000").ToArray();
+ if(texts.Length==0)
+  throw new Exception($"diag: 可见数值文本=[{string.Join(",",all.Select(item=>item.Text))}]");
+ Assert.NotEmpty(texts);
+ foreach(var text in texts)
+  if(System.Windows.Controls.Validation.GetHasError(text))
+  {
+   var errors=System.Windows.Controls.Validation.GetErrors(text);
+   Assert.Fail($"拼接高度行残留校验错误：{string.Join("；",errors.Select(item=>item.ErrorContent))}");
+  }
+});
+[Fact] public void Blob_output_overlay_is_visible_only_on_its_background_and_retires_on_a_new_choice_plan()=>UiRuntime.Run(()=>
  {
   using var fixture=new DocumentUiFixture();
   var source=fixture.Add();

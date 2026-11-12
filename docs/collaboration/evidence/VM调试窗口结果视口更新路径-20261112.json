@@ -1,0 +1,56 @@
+{
+  "kind": "VM 原件取证（ilspycmd 反编译本机同版本安装件）",
+  "batch": "双击打开调试窗口：VM 结果视口不重绘，本方清空重建一次（闪烁）",
+  "evidenceSource": {
+    "binary": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.WPF.dll",
+    "sha256": "7F47D5B27EA7C0CFFBBA02C66DC4D29D9A580519574803D62A72A8BBB0F31DB5",
+    "product": "VisionMaster 4.4.0（本机正式安装）",
+    "tool": "ilspycmd 11.2.0.10050（dotnet tool，本批新装）",
+    "note": "仓内第一批反编译（docs/07-工具逆向/decompiled/WpfControls/）来自 Codex VisionReplica 项目且登记哈希 99FFA401…与本机 7F47D5B2… 不一致，故本批按用户要求从本机安装件重新反编译取证，不直接复用第一批产物。",
+    "decompiledTypes": [
+      "VMControls.WPF.ModuleResultView",
+      "VMControls.WPF.DataForUI.ModuleDisplayDecorator",
+      "VMControls.WPF.MainViewControl（宿主，XAML 绑定引用第一批反编译 MainViewControl.xaml 交叉印证）"
+    ]
+  },
+  "keyFindings": [
+    {
+      "id": "source-binding",
+      "finding": "ModuleResultView.ModuleSource 依赖属性绑定宿主流程图的选中模块：MainViewControl.xaml:33 `ModuleSource=\"{Binding SelectedItem, Mode=OneWay}\"`。",
+      "implication": "全量重建（DoSourceChanged）只在选中模块变化时发生；打开参数窗口不改变 SelectedItem，因此不触发重建。"
+    },
+    {
+      "id": "is-open-params",
+      "finding": "ModuleResultView 有 IsOpenParams 依赖属性（ModuleResultView.cs :140 注册、:325 包装、:2342 唯一消费点）。该值由 MainViewControl.xaml:33 绑定宿主 IsOpenParams（参数窗口开合状态）。",
+      "implication": "参数窗口打开在原件中只驱动 SetRoiVisible()——切换 imageView/imageViewIn 的 ROIVisible（ROI 层可见性）；图像、图形、文本层完全不动，无任何清空或重设。"
+    },
+    {
+      "id": "image-set-guard",
+      "finding": "ModuleDisplayDecorator.ImageDataSource setter（ModuleDisplayDecorator.cs :524）：`if (imageDataSource != value)`，仅当图像对象变化才赋值并 OnPropertyChanged 通知视图 SetImage。",
+      "implication": "同一图像对象重复到达时不重设视口——这是『仅数据变化才重设图像』的直接原件证据。"
+    },
+    {
+      "id": "callback-path",
+      "finding": "执行回调 OnModuleCallBackArrived（ModuleResultView.cs :614）与 UpdateRender（:767）：取到候选图像后先比 `image != m_CurrentInfo.ImageDataSource`，不同才设置；相同则走 UpdateShapesWithCallBackData 只更新图形/文本层；候选图像为 null（值从有变无）时同样经 ImageDataSource 守卫赋 null 使视图清空。",
+      "implication": "原件的更新路径天然满足：图像值不变→图形层单独更新、视口不动；图像值变化（含从有到无）→重设/清空。"
+    },
+    {
+      "id": "update-image-view",
+      "finding": "UpdateImageView（ModuleResultView.cs :1689）：imageData 为 null/空尺寸/不支持格式→ClearImage()；否则经 ImageDataSource 守卫设置。UpdateModuleViewResultShow（:1433）在参数值变化回调（P_ValueChanged，非运行中）时重取当前值并走同一路径。",
+      "implication": "『该清空』语义：值消失必须清空视口；『不该动』语义：值未变不重画。"
+    },
+    {
+      "id": "do-source-changed",
+      "finding": "DoSourceChanged（ModuleResultView.cs :529，仅选中模块变化触发）：dispose 旧 decorator→ClearDataStore()（只清渲染缓存字段，不清视口）→新建 decorator→UpdateModuleView()（只 AddCrossLine/双图模式调整，不清图像）。",
+      "implication": "即使选中模块切换，原件也不做『清空视口再重设同一张图』；视口内容由新 decorator 按数据重建，图像仍经 ImageDataSource 守卫。"
+    }
+  ],
+  "conclusion": "VM 结果视口按数据变化更新：显示来源集合、选中结果与图像值有无都未变化时，打开参数窗口不触碰图像/图形/文本层（只切 ROI 可见性）；图像值变化（含从有变无）才重设或清空；选中模块变化才全量重建。本方根因（打开调试窗口→ResultWorkspaceChanged 广播→ResultWorkspacePresenter.Refresh 无条件清空两个视口并全量重建）与原件语义不符，应改为：重建计划与当前显示完全一致时不动视口；判定条件必须覆盖每来源图像值有无（HasImageValue）与选择计划（显式选择/叠加勾选计划）变化时的强制重建。",
+  "mappingToFix": {
+    "skipCondition": "ResultWorkspacePresenter.Refresh 增加显示一致性判定：来源集合（Key/运行身份/VariableImage/HasImageValue/显示名）、选中节点、叠加勾选计划、按重建规则只读解析出的输入/输出选择及其图像值有无全部一致时跳过清空重建。",
+    "forcedRebuild": "图像值有无变化、掩膜清空恢复（值消失）、选择计划更替（显式选择/默认选择语义随私有调试切换）必须照常重建。",
+    "roiVisibility": "本方 ROI 编辑由独立 NativeRoiViewport 负责，调试窗口开合的 ROI 可见性语义已在既有接缝处理，不在本批范围。"
+  },
+  "limitation": "Qt 层（原厂 C++ 流程调度）未逆向；本证据覆盖 WPF 结果视图控件的更新路径，足以约束『打开参数窗口时结果视口不重绘』的用户可见行为。原件动态运行行为未实机录制，标记为静态反编译证据。",
+  "acceptance": "修复后人工核对三条：双击打开调试窗口图形/文本不动；正式结果叠加不消失；图像源切换图形仍保留。回归红线：UI 全量测试失败数不得多于基线 47。"
+}

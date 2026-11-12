@@ -116,6 +116,14 @@ internal sealed partial class ResultWorkspacePresenter
         _backgroundKey=selection?.Background;
         for(var slot=0;slot<_overlayKeys.Length;slot++)_overlayKeys[slot]=selection?.Slots[slot];
     }
+    /// <summary>当前应用的叠加勾选计划是否与节点声明一致：不一致说明选择计划已更替，必须照常重建。</summary>
+    private bool OverlayChoiceMatches(ImageOverlaySelection? selection)
+    {
+        if(!string.Equals(_backgroundKey,selection?.Background,StringComparison.Ordinal))return false;
+        for(var slot=0;slot<_overlayKeys.Length;slot++)
+            if(!string.Equals(_overlayKeys[slot],slot<(selection?.Slots.Count??0)?selection!.Slots[slot]:null,StringComparison.Ordinal))return false;
+        return true;
+    }
 
     private void RefreshOverlayLayers()
     {

@@ -41,6 +41,7 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
     private bool _disposed,_refreshing,_refreshAgain,_refreshQueued,_restoringInput,_restoringOutput;
     private string? _inputKey,_outputKey;
     private string? _editorInputDisplayKey;
+    private string? _previewPath;
     private string? _variableOutputKey;
     private ResultWorkspaceImageSource? _inputSource,_outputSource;
     private object? _selectionOwner;
@@ -244,18 +245,28 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         {
             do
             {
-                _refreshAgain=false;var epoch=++_epoch;
+                _refreshAgain=false;
+                var previous=_plan;
+                // 捕获的 currency 只挂 _disposed：重入由 _refreshing 排除，_epoch 仅由本方法重建
+                // 路径与 Dispose 触碰；plan 的来源闭包必须跨过重建路径的 epoch 自增仍然有效。
+                var plan=_main.CaptureNativeImageSources(()=>!_disposed);
+                if(_disposed){plan.Dispose();continue;}
+                // 原件按数据变化更新（VMControls.WPF.ModuleResultView：图像仅在对象变化时经
+                // ImageDataSource 守卫重设，参数窗口开合只切 ROI 可见性，证据见
+                // docs/collaboration/evidence/VM调试窗口结果视口更新路径-20261112.json）：
+                // 重建计划与当前显示完全一致时不动视口，避免“清空→重设同一张图”的一帧闪烁
+                // （如双击打开调试窗口附加编辑上下文）。
+                if(DisplayUnchanged(previous,plan)){plan.Dispose();continue;}
+                var epoch=++_epoch;
                 ++_input.Generation;++_output.Generation;++_selectionGeneration;
                 _previewCancellation?.Cancel();
-                var old=_plan;_plan=null;_inputSource=null;_outputSource=null;
+                var old=previous;_plan=null;_inputSource=null;_outputSource=null;_previewPath=null;
                 Run(new Action[]{_input.Image.ClearUnlessRetained,_output.Image.ClearUnlessRetained,ClearGraphics,()=>old?.Dispose()});
                 if(_disposed)return;
                 if(!ReferenceEquals(_selectionOwner,_main.SelectedNode))
                 {_selectionOwner=_main.SelectedNode;_inputKey=null;_outputKey=_main.SelectedNode?.SelectedDisplayReference;
                     _variableOutputKey=null;ResetOverlayChoice();}
                 ReadOverlayChoice(_main.SelectedNode?.DisplayOverlays);
-                var plan=_main.CaptureNativeImageSources(()=>!_disposed&&epoch==_epoch);
-                if(_disposed||epoch!=_epoch){plan.Dispose();continue;}
                 _plan=plan;
                 var inputs=plan.InputSources.ToArray();
                 _shell.InputItems=inputs;_shell.OutputItems=plan.Sources;
@@ -306,7 +317,8 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
                 {
                     OutputSelected(null,EventArgs.Empty);
                     if(!_disposed&&epoch==_epoch&&ReferenceEquals(plan,_plan)
-                        &&_main.NativePreviewPath is {} path)_=PresentPreview(path,epoch);
+                        &&_main.NativePreviewPath is {} path
+                        &&!string.Equals(path,_previewPath,StringComparison.Ordinal))_=PresentPreview(path,epoch);
                 }
             }
             }
@@ -327,6 +339,56 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
             }
         }
     }
+    /// <summary>判定重建计划与当前显示是否完全一致：一致时不动视口（原件按数据变化更新，不清空重画）。</summary>
+    private bool DisplayUnchanged(ResultWorkspaceImagePlan? previous,ResultWorkspaceImagePlan plan)
+    {
+        if(previous is null||previous.IsDisposed)return false;
+        if(!ReferenceEquals(_selectionOwner,_main.SelectedNode))return false;
+        if(!OverlayChoiceMatches(_main.SelectedNode?.DisplayOverlays))return false;
+        if(!SourcesUnchanged(previous.InputSources,plan.InputSources))return false;
+        if(!SourcesUnchanged(previous.Sources,plan.Sources))return false;
+        // 输入/输出选择按与重建路径完全相同的规则只读解析，再与当前显示比较；
+        // 状态重置（编辑作用域、主输入变化）只有在会改变解析结果时才触发重建。
+        var sameEditor=plan.IsPrivateDebug&&previous.EditorScopeId==plan.EditorScopeId;
+        var relatedImageChanged=sameEditor&&previous.PrimaryInputKey!=plan.PrimaryInputKey;
+        var inputKey=relatedImageChanged?plan.PrimaryInputKey:_inputKey;
+        var input=_shell.IsDoubleImage?plan.InputSources.FirstOrDefault(source=>source.Key==inputKey)??plan.InputSources.FirstOrDefault():null;
+        var editedKey=!sameEditor?null
+            :!_shell.IsDoubleImage&&relatedImageChanged?plan.PrimaryInputKey
+            :_editorInputDisplayKey;
+        var editedInput=editedKey is { } edited?plan.Sources.FirstOrDefault(source=>source.Key==edited):null;
+        var variableOutput=previous.EditorScopeId==plan.EditorScopeId&&_variableOutputKey is { } variableKey
+            ?plan.Sources.FirstOrDefault(source=>source.Key==variableKey):null;
+        var explicitChoice=_main.SelectedNode?.SelectedDisplayReference;
+        var useDefault=plan.IsPrivateDebug||previous.IsPrivateDebug;
+        var byKey=plan.Sources.FirstOrDefault(source=>source.Key==_outputKey);
+        var output=editedInput??variableOutput??(explicitChoice is not null
+            ?plan.Sources.FirstOrDefault(source=>source.Key==explicitChoice)
+            :useDefault?plan.DefaultOutput:byKey??plan.DefaultOutput);
+        return SameChoice(_inputSource,input)&&SameChoice(_outputSource,output)
+            &&SameChoiceHasImage(_inputSource,input)&&SameChoiceHasImage(_outputSource,output);
+    }
+    private static bool SameChoice(ResultWorkspaceImageSource? presented,ResultWorkspaceImageSource? candidate)
+        =>presented is null?candidate is null:candidate is not null&&presented.Key==candidate.Key;
+    private static bool SameChoiceHasImage(ResultWorkspaceImageSource? presented,ResultWorkspaceImageSource? candidate)
+        =>presented is null||candidate is null?presented is null&&candidate is null
+            :presented.HasImageValue==candidate.HasImageValue;
+    private static bool SourcesUnchanged(System.Collections.Generic.IReadOnlyList<ResultWorkspaceImageSource> previous,
+        System.Collections.Generic.IReadOnlyList<ResultWorkspaceImageSource> current)
+    {
+        if(previous.Count!=current.Count)return false;
+        for(var index=0;index<previous.Count;index++)
+        {
+            if(!string.Equals(previous[index].Key,current[index].Key,StringComparison.Ordinal))return false;
+            if(!string.Equals(previous[index].DisplayName,current[index].DisplayName,StringComparison.Ordinal))return false;
+            // publication 每次捕获都重建实例，用快照运行身份判定“同一份结果”。
+            if(!Nullable.Equals(previous[index].Publication?.Stamp.Invocation,current[index].Publication?.Stamp.Invocation))return false;
+            if(!ReferenceEquals(previous[index].VariableImage,current[index].VariableImage))return false;
+            // 同一运行身份下图像值有无变化（如掩膜清空/恢复）必须照常重建。
+            if(previous[index].HasImageValue!=current[index].HasImageValue)return false;
+        }
+        return true;
+    }
     private async Task PresentPreview(string path,long epoch)
     {
         var cancellation=new CancellationTokenSource();var token=cancellation.Token;_previewCancellation=cancellation;
@@ -340,6 +402,7 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
             if(!_output.Image.TryPresentPreview(decoded.Image,Current,out var error))_main.AddLog("文件预览未显示："+error);
             else if(Current())
             {
+                _previewPath=path;
                 RefreshImageName(_output,null);
                 if(_main.StatusText==openingStatus&&!openingStatus.StartsWith("图像源配置已接纳，",StringComparison.Ordinal))
                     _main.StatusText="文件预览："+decoded.Image.Width+" × "+decoded.Image.Height;

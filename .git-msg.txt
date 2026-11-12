@@ -1,8 +1,8 @@
-fix(result): 调试窗口保留正式结果叠加+模块结果按声明序
+feat(result): 数组按原件一行拼接且不展开子节点
 
-缺陷2：MainWindowEditorDebug.IsCurrentPresentedSnapshot 增加 SelectedEditorContext is not null 时否决正式快照，
-导致 publication.IsCurrent() 恒 false、CaptureCurrentResultDisplay 返回 null，结果区只留图像、矩形与文字被清。
-改为：调试快照优先，否则按会话发布当前性判定（原件 ModuleResultView 编辑态同样显示模块正式结果）。
+原件 VmIO.cs:374-385 标量数组在同一行内以 ; 拼接，仅组合 IO 生成子节点。
+- ResultPresentationModel：新增 IsScalarSequence/SequenceLength；标量序列 ChildCount 置 0，不再生成 [i] 子节点与加载下一页行
+- ResultPresentationPresenter：ValueText 对标量序列单行拼接（上限 64 项以 … 收尾）
+- 用例：单体状态断言改为 0;1 且无子行
 
-缺陷3（第一批）：ResultPresentationModel 的根顺序原按 OutputDisplay 重排，原件 VmModule.cs:3484-3493 为 SDK 声明序、无排序键；
-改为 schema.Outputs 声明序，OutputDisplay 只提供显示名。
+注：ResultPresentationPresenterTests 中 12 条基于旧分页模型（[i] 子节点/加载下一页）的用例待按原件重写。

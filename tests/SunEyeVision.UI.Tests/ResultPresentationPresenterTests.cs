@@ -96,10 +96,10 @@ public sealed class ResultPresentationPresenterTests:IDisposable
         using var tree = new ResultPresentationPresenter(rows, _ => { });
         tree.Present(run.Publication);
         Assert.Equal("成功", rows.Single(row => row.DisplayName == "模块状态").DisplayValue);
+        // 原件 VmIO.cs:374-385：标量数组一行以 ";" 拼接，不展开 [i] 子节点。
         var statuses = rows.Single(row => row.DisplayName == "单体状态");
-        Assert.Equal("[2 项]", statuses.DisplayValue);
-        statuses.IsExpanded = true;
-        Assert.Equal(new[] { "失败", "成功" }, rows.Where(row => row.Level == 2).Select(row => row.DisplayValue));
+        Assert.Equal("0;1", statuses.DisplayValue);
+        Assert.DoesNotContain(rows, row => row.Level == 2);
         Assert.Equal("双阈值", rows.Single(row => row.DisplayName == "阈值方式").DisplayValue);
         Assert.Equal("暗于背景", rows.Single(row => row.DisplayName == "极性").DisplayValue);
     });

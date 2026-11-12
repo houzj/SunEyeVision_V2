@@ -459,7 +459,8 @@ public sealed class ResultPresentationPresenter : IDisposable
             ResultPresentationValueState.Unavailable => _model!.State is ResultViewState.Success or ResultViewState.PartialSuccess ? "值不可用" : StatusText(_model.State),
             _ => node.Declaration.Shape switch
             {
-                ValueShape.Sequence => SequenceText(node.ChildCount),
+                // 原件 VmIO.cs:374-385：标量数组一行内以 ";" 拼接；仅组合 IO 生成子节点。
+                ValueShape.Sequence => node.IsScalarSequence ? JoinScalarSequence(node) : SequenceText(node.ChildCount),
                 ValueShape.Record => "",
                 ValueShape.Geometry => node.GeometryValue is {} geometry?GeometryText(geometry):"值不可用",
                 _ => node.ScalarValue switch
@@ -475,6 +476,27 @@ public sealed class ResultPresentationPresenter : IDisposable
         };
     }
     private static string SequenceText(int? count)=>count is null?"值不可用":count==0?"空序列 (0)":"["+count.Value.ToString(CultureInfo.InvariantCulture)+" 项]";
+    /// <summary>原件同义：标量数组按 ";" 拼接为一行，超出上限以 "…" 收尾（VmIO.cs:374-385）。</summary>
+    private static string JoinScalarSequence(ResultPresentationNode node)
+    {
+        if(node.SequenceLength is not int total)return "值不可用";
+        if(total==0)return "";
+        const int max=64;
+        var shown=Math.Min(total,max);
+        var parts=node.GetChildrenPage(0,shown)
+            .Select(element=>element.ScalarValue switch
+            {
+                string text=>text,
+                bool boolean=>boolean?"true":"false",
+                long integer=>integer.ToString(CultureInfo.CurrentCulture),
+                double number=>number.ToString(CultureInfo.CurrentCulture),
+                _=>""
+            })
+            .Where(text=>text.Length!=0)
+            .ToArray();
+        var joined=string.Join(";",parts);
+        return total>shown?joined+";…":joined;
+    }
     private static string GeometryText(GeometryValue geometry)
     {
         static string N(double value)=>value.ToString("R",CultureInfo.InvariantCulture);

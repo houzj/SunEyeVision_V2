@@ -115,6 +115,10 @@ public sealed class ResultPresentationNode
 
     public bool IsAllProjection {get;}
     public bool HasAllMembers=>Declaration.Shape==ValueShape.Sequence&&Declaration.Element!.Shape==ValueShape.Record;
+    /// <summary>原件 VmIO.cs:374-385：标量数组在一行内以 ";" 拼接，不生成 [i] 子节点。</summary>
+    public bool IsScalarSequence=>Declaration.Shape==ValueShape.Sequence&&Declaration.Element!.Shape==ValueShape.Scalar;
+    /// <summary>标量数组的观测元素数（ChildCount 已被抑制为 0，拼接仍需真实数量）。</summary>
+    public int? SequenceLength=>Current&&IsScalarSequence?SequenceCount():null;
     public ResultPresentationNode? CreateAllMembers()
         =>!Current||!HasAllMembers||IsAllProjection?null:new(Key+"/all",Declaration,null,null,_pageSize,isCurrent:_isCurrent,path:_path,address:DeclarationAddress,allProjection:true);
     public ResultDeclarationAddress? DeclarationAddress {get;}
@@ -140,6 +144,8 @@ public sealed class ResultPresentationNode
     public int? ChildCount => !Current?null:IsAllProjection?(HasAllMembers?Declaration.Element!.Fields.Count:0):Declaration.Shape switch
     {
         ValueShape.Record => Declaration.Fields.Count,
+        // 标量数组走单行拼接（原件 VmIO.cs:374-385），不展开子节点。
+        ValueShape.Sequence when IsScalarSequence => 0,
         ValueShape.Sequence => SequenceCount(),
         ValueShape.Geometry => _geometry is PolygonGeometry polygon?polygon.Vertices.Count:0,
         _ => 0

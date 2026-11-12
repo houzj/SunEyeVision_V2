@@ -45,7 +45,9 @@ public partial class ImageSourceStrip : UserControl, INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
     public IReadOnlyList<ImageSourceStripItem> Items => Session?.Items ?? Array.Empty<ImageSourceStripItem>();
     public int DisplayIndex => Session?.DisplayIndex ?? -1;
-    public int DisplayNumber => DisplayIndex < 0 ? 0 : DisplayIndex + 1;
+    // 原件 CurImageIndexT = CurImageIndex + 1（ImageListPanelBase.cs:219-223）恒为 1..N；本方未呈现运行游标时
+    // CurrentIndex 为 -1，此时按第 1 张显示，避免出现原件没有的 "(0/N)"。
+    public int DisplayNumber => Items.Count == 0 ? 0 : DisplayIndex < 0 ? 1 : DisplayIndex + 1;
     public int ImageCount => Items.Count;
     public Visibility FirstVisibility => IsExpanded && Items.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
     public bool IsReadOnly => Session?.IsReadOnly ?? true;

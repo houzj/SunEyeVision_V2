@@ -1,5 +1,1 @@
-fix(result): 同身份快照不再退休重建，消除打开调试窗口闪烁
-
-RefreshFormalPublishedResult 之前无条件 RetireResultPublication（清图像/清树）再 Present，
-导致画面'有→清空→再画'一帧闪烁；原件只在数据变化时更新。
-改为：当前发布仍当前且快照身份相同则直接返回。
+docs: 新增 Blob 模块结果树转置投影重构交接单

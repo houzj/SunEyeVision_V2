@@ -124,7 +124,14 @@ public partial class MainWindowViewModel
         // 调试窗口打开但尚未执行时（无 debug 快照），正式发布仍是唯一真实结果；
         // 原件 ModuleResultView 在编辑态同样显示模块结果，若退化为声明视图会得到空表空图。
         using var reader=session.AcquirePublishedResult(workflowId,node.Id);
-        if(reader is not null){PresentSnapshot(reader.Snapshot,node.Name);return;}
+        if(reader is not null)
+        {
+            // 同一身份且仍当前：不 retire 不重建，避免"清空→重画"造成的一帧闪烁（原件按数据变化更新）。
+            if(_resultPublication is {} existing&&existing.IsCurrent()
+                &&_resultPublicationSnapshot is {} presented&&presented.Identity==reader.Snapshot.Identity)
+                return;
+            PresentSnapshot(reader.Snapshot,node.Name);return;
+        }
         var schema=session.GetNodeSchema(workflowId,node.Id);
         if(schema is null){ClearResultDisplay();return;}
         PresentDeclaration(schema,node.Name,schema.Outputs.ToDictionary(port=>port.Id,port=>schema.FindOutputDisplay(port.Id)?.DisplayName??port.Id,StringComparer.Ordinal),DeclaredBindings(schema,node.Id,workflowId));

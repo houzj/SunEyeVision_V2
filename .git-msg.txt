@@ -1,1 +1,5 @@
-docs(result): 登记模块结果树投影方向错误的结论与改造清单
+fix(result): 同身份快照不再退休重建，消除打开调试窗口闪烁
+
+RefreshFormalPublishedResult 之前无条件 RetireResultPublication（清图像/清树）再 Present，
+导致画面'有→清空→再画'一帧闪烁；原件只在数据变化时更新。
+改为：当前发布仍当前且快照身份相同则直接返回。

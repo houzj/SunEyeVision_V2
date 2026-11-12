@@ -39,7 +39,7 @@
     {"item": "图像结果区顶部页签", "confirmed": "「图像 | 模块结果」两个页签", "decision": "对照我方 ImageResultControl 是否具备同名双页签，待核"},
     {"item": "图像两侧导航箭头", "confirmed": "图像左右两侧 ‹ › 箭头（上一张/下一张图像源）", "decision": "对照我方是否有同位置导航入口，待核"},
     {"item": "图像区底部条", "confirmed": "左侧文件名 `1.jpg`；缩略图条：`图像源 (1/12)` + `自动切换`开关 + `运行全部`下拉", "decision": "对照我方 ImageSourceStrip 底部条元素集合"},
-    {"item": "帮助页签语义", "confirmed": "VM 帮助页签点击后【在默认浏览器打开本地帮助文档】并定位到对应模块页：`.../VisionMaster4.4.0/Applications/Help/CH/index.html?guid=<模块索引>`（非内嵌正文）", "source": "用户截图 2026-11-11（海康机器人 VM 算法开发平台 · Blob分析 帮助页）", "decision": "实现方向改为：帮助入口按工具身份打开我方帮助文档 `Help/Output/usermanual/index.html` 的对应锚点/页面；不再计划往 HelpContent 塞正文。需源码对照我方帮助打开机制（Help 目录结构与既有入口）后实施"}
+    {"item": "帮助页签语义", "confirmed": "VM 帮助页签点击后【在默认浏览器打开本地帮助文档】并定位到对应模块页：`.../VisionMaster4.4.0/Applications/Help/CH/index.html?guid=<模块索引>`（非内嵌正文）", "source": "用户截图 2026-11-11（海康机器人 VM 算法开发平台 · Blob分析 帮助页）", "decision": "【用户决定 2026-11-11：先占位，帮助文档尚未编写】保持现有占位文案，不接入帮助文档打开；仅登记未实现，不得计为完成。待我方帮助文档就绪后按“工具身份→帮助页锚点”接入"}
   ],
   "missingEvidenceNeedUser": [
     "VM 输出图工具条：坐标下拉是否存在及其三态切换后的坐标读数格式",

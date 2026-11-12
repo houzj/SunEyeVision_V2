@@ -95,13 +95,14 @@ public sealed class ResultPresentationPresenterTests:IDisposable
         var rows = new ObservableCollection<FlatResultRow>();
         using var tree = new ResultPresentationPresenter(rows, _ => { });
         tree.Present(run.Publication);
-        Assert.Equal("成功", rows.Single(row => row.DisplayName == "模块状态").DisplayValue);
+        // 原件模块结果树为裸值（用户原件截图：模块状态=1、单体状态=1;1;1…），不做枚举中文化。
+        Assert.Equal("1", rows.Single(row => row.DisplayName == "模块状态").DisplayValue);
         // 原件 VmIO.cs:374-385：标量数组一行以 ";" 拼接，不展开 [i] 子节点。
         var statuses = rows.Single(row => row.DisplayName == "单体状态");
         Assert.Equal("0;1", statuses.DisplayValue);
         Assert.DoesNotContain(rows, row => row.Level == 2);
-        Assert.Equal("双阈值", rows.Single(row => row.DisplayName == "阈值方式").DisplayValue);
-        Assert.Equal("暗于背景", rows.Single(row => row.DisplayName == "极性").DisplayValue);
+        Assert.Equal("DoubleThreshold", rows.Single(row => row.DisplayName == "阈值方式").DisplayValue);
+        Assert.Equal("BinaryInv", rows.Single(row => row.DisplayName == "极性").DisplayValue);
     });
 
     [Fact]

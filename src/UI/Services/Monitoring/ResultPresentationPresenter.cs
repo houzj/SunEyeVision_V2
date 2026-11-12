@@ -441,14 +441,8 @@ public sealed class ResultPresentationPresenter : IDisposable
 
     private string ValueText(ResultPresentationNode node)
     {
-        // 主树与只读属性树共用同一语义投影（ResultSemanticText）。序列元素节点不携带
-        // DeclaredPort，沿声明地址回溯根端口显示名（如"单体状态"数组元素 0/1 → 失败/成功）。
-        if (!node.IsAllProjection && node.ValueState == ResultPresentationValueState.Available
-            && node.ScalarValue is { } scalar && _model is { } model
-            && (node.DeclaredPort ?? node.DeclarationAddress?.RootPort) is { } port
-            && model.Schema.FindOutputDisplay(port.Id) is { DisplayName: var name }
-            && ResultSemanticText.TryProject(name, scalar) is { } semantic)
-            return semantic;
+        // 原件模块结果树只做 DisplayValue 拼接，不做枚举中文化（用户原件截图：模块状态=1、
+        // 单体状态=1;1;1…、极性不出现）。中文只出现在表格列头/显示配置，树路径保持裸值。
         return node.IsAllProjection?"All · 按声明绑定全部元素，不是样本索引值":node.ValueState switch
         {
             ResultPresentationValueState.Missing => "missing",

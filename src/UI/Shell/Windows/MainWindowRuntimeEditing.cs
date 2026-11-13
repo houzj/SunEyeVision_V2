@@ -16,7 +16,7 @@ using SunEyeVision.Plugin.Contracts.Results.Presentation;
 namespace SunEyeVision.UI.Shell.Windows;
 public partial class MainWindowViewModel
 {
-    internal Func<string,Func<bool>,SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameLease?>? RuntimeRoiFrameBorrow {get;set;}
+    internal Func<string,bool,Func<bool>,SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameLease?>? RuntimeRoiFrameBorrow {get;set;}
     internal event Action? RoiFrameAvailabilityChanged;
     internal void NotifyRoiFrameAvailabilityChanged() => RoiFrameAvailabilityChanged?.Invoke();
     private bool OwnsSelectedDocumentNode(NodeDefinition node)
@@ -203,14 +203,6 @@ public partial class MainWindowViewModel
                         catch(Exception){_activeRoiImageVariable=null;}
                     }
                     if(key is null)return null;
-                    // 原件绘制前置（IsCanDrawROI）：显示图必须是模块的输入图。
-                    // 仅交互借帧（用户绘制请求）先切显示再借帧（EnsureRoiDisplayInput
-                    // 内联同步完成刷新，随后立即重试）；预览等非交互借帧不得改变
-                    // 用户当前的显示选择。
-                    var roiSetting=configuration.Fields.Read(field);
-                    var roiPortId=(roiSetting as ReferenceSetting)?.Reference.PortId;
-                    if(interactive&&EnsureRoiDisplayInput(key,roiPortId,context.ScopeId))
-                        return RuntimeRoiFrameBorrow?.Invoke(key,SourceCurrent);
                     bool SourceCurrent()
                     {
                         if(!window.CanCompleteAssembly||!context.IsValid||!ReferenceEquals(context.PreparedDraft,draft)
@@ -221,8 +213,8 @@ public partial class MainWindowViewModel
                         configuration=latest;
                         return true;
                     }
-                    return RuntimeRoiFrameBorrow?.Invoke(key,SourceCurrent);
-                },RefreshEditorDebugResult);
+                    return RuntimeRoiFrameBorrow?.Invoke(key,interactive,SourceCurrent);
+                },()=>RoiDrawBlockReason,RefreshEditorDebugResult);
             RoiFrameAvailabilityChanged+=control.RefreshRoiFrame;
             context.Deactivated+=()=>
             {

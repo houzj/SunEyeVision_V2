@@ -159,7 +159,7 @@ internal sealed class BlobUiComposition : IDisposable
                 {
                     var pose=BlobRoiUi.Add(inputs,observe:value=>_roiUi=value);
                     _assistUi=pose;
-                    _roiOwner=new BlobLocalRoiOwner(inputs,_roiUi!,_baseOptions.RoiFrames);
+                    _roiOwner=new BlobLocalRoiOwner(inputs,_roiUi!,_baseOptions.RoiFrames,_baseOptions.RoiDrawBlockReason);
                     _supportedState=new BlobSupportedWindowState(Draft,inputs,pose);
                     fields.BindFieldVisibilityTo(PositionCorrectionField,_roiUi!.GraphicVisibilitySource);
                     // The row's visibility already follows the correction field

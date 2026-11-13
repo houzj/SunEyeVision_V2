@@ -25,6 +25,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
     private ProductionEditorContext? _context;
     private ProductionEditorDebug? _debug;
     private SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameSource? _roiFrames;
+    private Func<string?>? _roiDrawBlockReason;
     private Task? _debugRetirement;
     internal event Action? DebugStateChanged;
     internal event Action? ParameterPageChanged;
@@ -69,11 +70,12 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
     internal Guid? DebugScopeId => _debug?.ScopeId;
     internal SunEyeVision.Plugin.Runtime.DeclaredOutputSnapshot? CurrentDebugSnapshot => _debug?.CurrentSnapshot;
     internal SunEyeVision.Plugin.Runtime.ResultHistoryBuffer? DebugHistory => _debug?.History;
-    internal void ConfigureDebug(ProductionEditorContext context, Func<IHostInputFactory> factory, Func<bool> canRun, Action<string> log, Func<string,bool,SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameLease?> borrowFrame, Action changed)
+    internal void ConfigureDebug(ProductionEditorContext context, Func<IHostInputFactory> factory, Func<bool> canRun, Action<string> log, Func<string,bool,SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameLease?> borrowFrame, Func<string?> blockReason, Action changed)
     {
         if (_debug is not null) throw new InvalidOperationException("参数页已拥有调试会话。");
         _debugResultChanged=changed;
         _debug = new ProductionEditorDebug(context,this,factory,canRun,log,()=>{DebugStateChanged?.Invoke();changed();});
+        _roiDrawBlockReason = blockReason;
         _roiFrames = new(borrowFrame,CaptureDebugInputs);
     }
     internal SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiInputLease CaptureDebugInputs(IReadOnlyCollection<string> fields) => (_debug ?? throw new InvalidOperationException("参数调试尚未就绪。")).CaptureInputs(fields);
@@ -216,7 +218,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
         try
         {
             candidate = DesktopToolPresentation.CreateSettingsView(admission, draft.Configuration.Fields.Select(editorPorts),
-                new ToolSettingsViewOptions(references, FormatReference, inputSchema.Presentation?.Fields.FirstOrDefault()?.Layout?.Page, inputContent, ValidateComposition:group=>ValidateChanges(group.Changes), TextExpressions:textExpressions, RoiFrames:_roiFrames, InputContentFactory:inputFactory,
+                new ToolSettingsViewOptions(references, FormatReference, inputSchema.Presentation?.Fields.FirstOrDefault()?.Layout?.Page, inputContent, ValidateComposition:group=>ValidateChanges(group.Changes), TextExpressions:textExpressions, RoiFrames:_roiFrames, RoiDrawBlockReason:_roiDrawBlockReason, InputContentFactory:inputFactory,
                     PageBuilt:(page,built,_)=>ToolWindowAssemblyTrace.Event("PageBuilt", built.LastBuildStageMs.TryGetValue(page,out var stages)
                         ?$"{draft.Node.Id}:{page} rows={stages.RowsMs}ms layout={stages.LayoutMs}ms 构造[{string.Join(" ",built.ConstructionStages.Select(mark=>$"{mark.Stage}={mark.Ms}ms"))}]"
                         :$"{draft.Node.Id}:{page}"),

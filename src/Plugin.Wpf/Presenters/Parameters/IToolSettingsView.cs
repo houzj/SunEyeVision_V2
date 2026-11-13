@@ -38,6 +38,7 @@ public sealed record ToolSettingsViewOptions(
     IReadOnlyDictionary<string,FrameworkElement>? FieldVisibilitySources=null,
     IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? ChoiceDisplays=null,
     SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameSource? RoiFrames=null,
+    Func<string?>? RoiDrawBlockReason=null,
     IReadOnlyList<NativeVisibilityDisplayOptions>? VisibilityDisplays=null,
     Action<string,DeclaredFieldsView,FrameworkElement?>? PageBuilt=null,
     Func<DeclaredFieldsView,FrameworkElement>? InputContentFactory=null,

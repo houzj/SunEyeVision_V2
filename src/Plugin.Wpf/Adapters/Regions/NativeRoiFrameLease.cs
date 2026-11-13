@@ -30,8 +30,8 @@ public sealed class NativeRoiFrameLease : IDisposable
 
 /// <summary>The actual host announces input/publication changes; a tool never polls Workflow or queries live values.</summary>
 /// <remarks><paramref name="borrow"/> 的 interactive 参数标记本次借帧是否由用户绘制请求触发：
-/// 交互借帧允许宿主先把单图显示切到 ROI 输入图（VM IsCanDrawROI 前置），
-/// 预览等非交互借帧不得改变用户当前的显示选择。</remarks>
+/// 交互借帧在显示图不是 ROI 输入图时被宿主阻断并给出原因（原件 RoiDrawTips 语义，
+/// 阻断原因经宿主 RoiDrawBlockReason 传递），预览等非交互借帧不受影响。</remarks>
 public sealed class NativeRoiFrameSource(Func<string,bool,NativeRoiFrameLease?> borrow,Func<IReadOnlyCollection<string>,NativeRoiInputLease?>? captureInputs=null)
 {
     public NativeRoiInputLease? CaptureInputs(IReadOnlyCollection<string> fields)=>captureInputs?.Invoke(fields);

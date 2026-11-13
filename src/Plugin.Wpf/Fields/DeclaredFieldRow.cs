@@ -151,7 +151,15 @@ public sealed partial class DeclaredFieldRow : ContentControl, IDisposable, IPar
             _slotContent = BuildSlotContent(label);
             if (_slotContent is not null)
             {
-                Content = _slotContent;
+                // 原件组合行与普通行同构：左侧标签（LeftRightControl.PartText 经
+                // ResourceBinding DisplayNameA）+ 右侧内容；此前组合槽直接替换整行，
+                // 导致 OK颜色/NG颜色 等行丢失标签（用户实机 2026-11-13 对照原厂截图）。
+                Content = new Native.Composition.ParameterPresentation.ParamTab.LeftRightControl
+                {
+                    Height = 32,
+                    RightContent = _slotContent,
+                    DataContext = _model
+                };
             }
             else
             {

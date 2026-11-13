@@ -10,7 +10,7 @@ internal sealed partial class ResultWorkspacePresenter
     private RoiPresentation? _roiPresentation;
     private long _roiRequest;
     /// <summary>Borrow only the actually selected visible input. ROI never selects, restores or publishes images.</summary>
-    internal NativeRoiFrameLease? BorrowRoiFrame(string key,Func<bool> current)
+    internal NativeRoiFrameLease? BorrowRoiFrame(string key,bool interactive,Func<bool> current)
     {
         _shell.Dispatcher.VerifyAccess();var request=++_roiRequest;var epoch=_epoch;var plan=_plan;var input=_shell.IsDoubleImage;
         bool PlanCurrent()=>!_disposed&&!_refreshing&&epoch==_epoch&&ReferenceEquals(plan,_plan)&&plan is not null&&input==_shell.IsDoubleImage;
@@ -20,6 +20,15 @@ internal sealed partial class ResultWorkspacePresenter
             return null;
         }
         var source=(input?_shell.SelectedInputItem:_shell.SelectedOutputItem) as ResultWorkspaceImageSource;
+        // P1（原件 IsCanDrawROI+RoiDrawTips 语义）：绘制请求时显示图必须是模块的输入图，
+        // 否则阻断借帧并给出原因（不自动切换显示——原厂由用户自行切换，OnRelatedIOChanged
+        // 只随输入绑定变化切换）；预览等非交互借帧不受影响。
+        var displayed=(input?_shell.SelectedInputItem:_shell.SelectedOutputItem) as ResultWorkspaceImageSource;
+        if(interactive&&displayed?.Key!=key)
+        {
+            _main.RoiDrawBlockReason="请先将单图显示切换到该模块的输入图像后再绘制区域。";
+            return null;
+        }
         ResultImagePane? privatePane=null;
         FrozenImageResource? temporaryVariable=null;
         void DisposePrivate(){privatePane?.Dispose();temporaryVariable?.Dispose();temporaryVariable=null;}
@@ -92,7 +101,7 @@ internal sealed partial class ResultWorkspacePresenter
             var lease=new NativeRoiFrameLease(accepted.Image,accepted.Viewport,accepted.Receipt,
                 ()=>!_disposed&&pane.CurrentFrame is {} current&&current.Frame==accepted.Receipt.Frame,()=>
                 {try{accepted.Dispose();}finally{DisposePrivate();if(ReferenceEquals(_roiPresentation,presentation))_roiPresentation=null;}});
-            borrowed=null;transferred=true;return lease;
+            borrowed=null;transferred=true;_main.RoiDrawBlockReason=null;return lease;
         }
         catch(Exception failure)
         {

@@ -507,6 +507,11 @@ public sealed class EditorDebugSessionTests
 
   var window = Open(fixture, blob);
   var settings = Assert.Single(UiRuntime.Visuals<DeclaredSettingsView>(window.Editor));
+  // 原件 IsCanDrawROI：绘制前显示图必须是模块的输入图，用户先切换显示。
+  var shellForDraw = Assert.Single(UiRuntime.Visuals<ResultWorkspaceShell>(fixture.Results));
+  shellForDraw.SetCurrentValue(ResultWorkspaceShell.SelectedOutputItemProperty,
+      shellForDraw.OutputItems!.Cast<ResultWorkspaceImageSource>().Single(item => item.Reference?.PortId == "output.image"));
+  UiRuntime.Pump();
   var roiEditor = Assert.Single(UiRuntime.Visuals<NativeRoiEditor>(window.Editor), item => !item.PolygonOnly);
   Assert.True(roiEditor.PrepareInteraction?.Invoke());
   var roi = Assert.IsType<NativeRoiSession>(UiRuntime.Field<NativeRoiSession>(roiEditor, "_session"));
@@ -877,6 +882,11 @@ public sealed class EditorDebugSessionTests
   try
   {
    var roi=Assert.Single(UiRuntime.Visuals<NativeRoiEditor>(window.Editor).Where(item=>!item.PolygonOnly));
+   // 原件 IsCanDrawROI：绘制前显示图必须是模块的输入图，用户先切换显示。
+   var shellForDraw=Assert.Single(UiRuntime.Visuals<ResultWorkspaceShell>(fixture.Results));
+   shellForDraw.SetCurrentValue(ResultWorkspaceShell.SelectedOutputItemProperty,
+       shellForDraw.OutputItems!.Cast<ResultWorkspaceImageSource>().Single(item=>item.Reference?.PortId=="output.image"));
+   UiRuntime.Pump();
    var buttons=UiRuntime.Visuals<ToggleButton>(roi.NativeView).Where(button=>button.CommandParameter is not null).ToArray();
    Assert.NotEmpty(buttons);
    Assert.All(buttons,button=>Assert.True(button.IsEnabled));
@@ -887,10 +897,12 @@ public sealed class EditorDebugSessionTests
   }
   finally{UiRuntime.Await(window.CloseAndDrainAsync());}
  });
- [Fact] public void Roi_shape_activation_switches_the_display_to_the_roi_input_and_draws_on_the_visible_viewport()=>UiRuntime.Run(()=>
+ [Fact] public void Roi_draw_request_on_non_input_display_is_blocked_until_the_display_switches_to_the_input()=>UiRuntime.Run(()=>
  {
-  // P1（原件 IsCanDrawROI+OnRelatedIOChanged）：绘制请求时显示图不是 ROI 输入图的，
-  // 先把单图显示切到输入图（不写正式选择），显示就绪后自动完成激活——绘制面=可见的结果视口。
+  // 原件 IsCanDrawROI+RoiDrawTips（ModuleDisplayDecorator.cs.pending:446-480、
+  // ModuleResultView.xaml.cs.pending:2514-2521）：显示图不是模块输入图时绘制不可用并给出
+  // 提示，由用户自行切换显示（原厂不自动切换，OnRelatedIOChanged 只随输入绑定变化切换）；
+  // 显示切到输入图后绘制武装，且会话跨结果刷新存活（P2，UpdateROI 语义）。
   using var fixture = new DocumentUiFixture();
   var source = fixture.Add();
   var blob = fixture.Add("BlobAnalysis", 350, 240);
@@ -900,21 +912,22 @@ public sealed class EditorDebugSessionTests
   fixture.Main.SelectedNode = blob;
   fixture.Run();
   var shell = Assert.Single(UiRuntime.Visuals<ResultWorkspaceShell>(fixture.Results));
+  ResultWorkspaceImageSource Output() => Assert.IsType<ResultWorkspaceImageSource>(shell.SelectedOutputItem);
   var ownOutput = shell.OutputItems!.Cast<ResultWorkspaceImageSource>().Single(item => !item.IsUpstream && item.Reference.PortId == "field:8ca10000000040008000000000000005");
   shell.SetCurrentValue(ResultWorkspaceShell.SelectedOutputItemProperty, ownOutput);
   UiRuntime.Pump();
   var window = Open(fixture, blob);
   var roi = Assert.Single(UiRuntime.Visuals<NativeRoiEditor>(window.Editor).Where(item => !item.PolygonOnly));
-  roi.PrepareInteraction?.Invoke();
-  UiRuntime.Pump();UiRuntime.Pump();
-  Assert.Equal("output.image", Assert.IsType<ResultWorkspaceImageSource>(shell.SelectedOutputItem).Reference.PortId);
+  Assert.False(roi.PrepareInteraction?.Invoke());
+  Assert.Equal("field:8ca10000000040008000000000000005", Output().Reference.PortId);
   Assert.True(blob.SelectedDisplayReference is null||blob.SelectedDisplayReference==ownOutput.Key,
-      "ROI 显示切换不得改写正式显示选择");
-  var session = UiRuntime.Field<NativeRoiSession>(roi, "_session");
-  Assert.True(session is not null,$"会话未建立 Error='{roi.Error}'");
-  Assert.True(session!.IsCurrent);
+      "阻断流程不得把输入图写进正式显示选择");
+  var inputSource = shell.OutputItems!.Cast<ResultWorkspaceImageSource>().Single(item => item.Reference?.PortId == "output.image");
+  shell.SetCurrentValue(ResultWorkspaceShell.SelectedOutputItemProperty, inputSource);
+  UiRuntime.Pump();
   Assert.True(roi.PrepareInteraction?.Invoke());
-  // P2（原件 UpdateROI 语义）：结果工作区刷新不得销毁绘制会话，ROI 跨刷新存活。
+  var session = UiRuntime.Field<NativeRoiSession>(roi, "_session");
+  Assert.True(session is not null && session.IsCurrent);
   UiRuntime.Call(fixture.Main,"RefreshEditorDebugResult");
   UiRuntime.Pump();
   Assert.True(session!.IsCurrent,$"刷新后绘制会话应存活 Error='{roi.Error}'");
@@ -2042,7 +2055,7 @@ public sealed class EditorDebugSessionTests
    var control=new RuntimeNodeConfigurationControl();Window=new(control){Owner=f.Host,ShowInTaskbar=false};
    Context=new(f.Session,f.Root.Id,node,()=>ReferenceEquals(SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSession,f.Session),control.BindDraft);
    ToolEditorCommit.AttachDraftContext(control,Context);Context.PrepareView=()=>control.TryCapture(out var error)?null:error;Context.HasPendingViewEdits=()=>control.HasPendingEdits;Context.PreserveViewAfterRebase=control.AdoptRebasedDraft;
-   control.ConfigureDebug(Context,()=>factory,()=>true,_=>{},(_,_)=>null,()=>{});Window.SetRunAvailability(()=>true);
+   control.ConfigureDebug(Context,()=>factory,()=>true,_=>{},(_,_)=>null,()=>null,()=>{});Window.SetRunAvailability(()=>true);
    Context.Deactivated+=control.Dispose;Context.Deactivated+=()=>{if(Window.IsLoaded)Window.Close();};Window.Closed+=(_,_)=>Context.Discard();
    control.BindDraft(Context.PreparedDraft);Window.Show();Window.SetAssemblyReady();UiRuntime.Pump();
   }

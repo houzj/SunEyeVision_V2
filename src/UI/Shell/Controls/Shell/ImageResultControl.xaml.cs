@@ -213,14 +213,14 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 _sourceTheme.Dispose,_resultTheme.Dispose,_shellTheme.Dispose});
         }
 
-        private Func<string,Func<bool>,SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameLease?>? _roiBorrow;
+        private Func<string,bool,Func<bool>,SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameLease?>? _roiBorrow;
         private MainWindowViewModel? _roiBorrowOwner;
         private void AttachWorkspace()
         {
             if(_shutdown||!IsLoaded||_viewModel is null||_workspacePresenter is not null)return;
             _workspacePresenter=new(_viewModel,Workspace);
             var presenter=_workspacePresenter;
-            _roiBorrow=(reference,current)=>!_shutdown&&ReferenceEquals(_workspacePresenter,presenter)?presenter.BorrowRoiFrame(reference,current):null;
+            _roiBorrow=(reference,interactive,current)=>!_shutdown&&ReferenceEquals(_workspacePresenter,presenter)?presenter.BorrowRoiFrame(reference,interactive,current):null;
             _roiBorrowOwner=_viewModel;_viewModel.RuntimeRoiFrameBorrow=_roiBorrow;
         }
         private void ReleaseWorkspace()

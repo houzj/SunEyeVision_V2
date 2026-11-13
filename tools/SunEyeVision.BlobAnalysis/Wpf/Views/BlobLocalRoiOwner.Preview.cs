@@ -60,7 +60,7 @@ internal sealed partial class BlobLocalRoiOwner
         {
             var mode=PreviewMode();var maskInherited=_controls.IsInheritedMask;
             if(mode==BlobRoiInheritance.Local&&!maskInherited)return;
-            if(!FrameCurrent(_generation)){AcquireFrame();if(request!=_previewRequest){if(FrameCurrent(_generation))QueuePreview();return;}}
+            if(!FrameCurrent(_generation)){AcquireFrame(interactive:false);if(request!=_previewRequest){if(FrameCurrent(_generation))QueuePreview();return;}}
             var frame=_frame;var generation=_generation;
             bool OwnerCurrent(){var valid=!_disposed&&request==_previewRequest&&generation==_generation&&ReferenceEquals(frame,_frame)&&frame is not null&&FrameCurrent(generation)&&_controls.IsLoaded&&_controls.IsVisible;return valid&&!_disposed&&request==_previewRequest&&generation==_generation&&ReferenceEquals(frame,_frame);}
             if(!OwnerCurrent())throw new InvalidOperationException("请选择与输入一致的已发布图像后预览。");

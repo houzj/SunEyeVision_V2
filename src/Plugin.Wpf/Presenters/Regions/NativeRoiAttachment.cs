@@ -37,9 +37,9 @@ internal sealed partial class NativeRoiAttachment : INativeRoiEditLease
     internal NativeRoiSession? Session => _session;
     private ImageViewBox NativeView => (ImageViewBox)_owner.View;
     private System.Windows.Threading.Dispatcher Dispatcher => NativeView.Dispatcher;
-    private bool IsLoaded => NativeView.IsLoaded;
-    private bool IsVisible => NativeView.IsVisible;
-    private bool IsEnabled => NativeView.IsEnabled;
+    private bool IsLoaded => _owner.AllowsUnloadedRoi||NativeView.IsLoaded;
+    private bool IsVisible => _owner.AllowsUnloadedRoi||NativeView.IsVisible;
+    private bool IsEnabled => _owner.AllowsUnloadedRoi||NativeView.IsEnabled;
     public bool IsCurrent
     {
         get

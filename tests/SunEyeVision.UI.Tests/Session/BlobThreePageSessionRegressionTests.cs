@@ -198,6 +198,9 @@ public sealed class BlobThreePageSessionRegressionTests
             Assert.IsType<UnsetSetting>(consumer.Configuration.Fields.Read(rectangle));
 
             fixture.Save();
+            // Match the production solution-transition precondition before
+            // opening the persisted document directly in this regression.
+            UiRuntime.Await(ServiceInitializer.DisposeCommunicationRuntimeAsync().AsTask());
             var reopened = ServiceInitializer.SolutionManager.Open(
                 Path.Combine(fixture.DirectoryPath, "document.solution"),
                 _ => new SunEyeVision.Domain.Persistence.FrozenVariableTypeCatalog(Array.Empty<KeyValuePair<string, string>>()),

@@ -46,7 +46,7 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
             {
                 var editor=new NativeRoiEditor{Title=group==BlobLocalRoi.Inspection?"形状":"屏蔽区",PolygonOnly=group==BlobLocalRoi.Mask,
                     ToolTip="先运行图像来源，再编辑区域。"};
-                editor.PrepareInteraction=()=>Activate(group);editor.AllowUnboundFullDomain=group==BlobLocalRoi.Inspection;editor.UnboundFullDomain=BlobLocalRoi.Coverage(_observed,group)==BlobLocalRoi.FullDomain;editor.PendingChanged+=Notify;_editors.Add(group,editor);editor.Bind(null);
+                editor.PrepareInteraction=()=>Activate(group);editor.InteractionFailureText=()=>string.IsNullOrWhiteSpace(Error)?null:Error;editor.AllowUnboundFullDomain=group==BlobLocalRoi.Inspection;editor.UnboundFullDomain=BlobLocalRoi.Coverage(_observed,group)==BlobLocalRoi.FullDomain;editor.PendingChanged+=Notify;_editors.Add(group,editor);editor.Bind(null);
             }
             controls.BindLocalEditors(_editors[BlobLocalRoi.Inspection],_editors[BlobLocalRoi.Mask]);
             controls.Changed+=OnModesChanged;

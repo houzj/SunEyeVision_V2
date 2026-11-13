@@ -40,6 +40,7 @@ public sealed partial class DocumentSession
         }
         var post = false;
         DeclaredOutputReader? previous = null;
+        var invalidated = new List<DeclaredOutputReader>();
         var next = result.AcquireReader();
         var installed = false;
         try
@@ -64,6 +65,8 @@ public sealed partial class DocumentSession
                             foreach (var write in writes)
                                 write.Capture.Actual.ApplyValueRaw(new GlobalVariable.ValueState(write.Value, checked(write.Prior.Revision + 1)));
                             _publishedRuntimeResults[source] = next;
+                            if (!result.IsSuccess)
+                                RetireDependentRuntimePublicationsLocked(source, invalidated);
                             if (writes.Count > 0)
                             {
                                 var changes = writes.Select(write => new VariableChange(write.Capture.Actual, VariableChangeKind.Updated,
@@ -90,8 +93,29 @@ public sealed partial class DocumentSession
         }
         finally { if (!installed) next.Dispose(); }
         try { previous?.Dispose(); } catch (Exception error) { LastRuntimeReleaseError = error; }
+        foreach (var publication in invalidated)
+            try { publication.Dispose(); } catch (Exception error) { LastRuntimeReleaseError = error; }
         if (post) PostRuntimeChanges();
         PostResultAvailable(source, result.Identity);
+    }
+
+    private void RetireDependentRuntimePublicationsLocked(ScopedNodeIdentity source, List<DeclaredOutputReader> retired)
+    {
+        var pending = new Queue<ScopedNodeIdentity>();
+        var visited = new HashSet<ScopedNodeIdentity>();
+        pending.Enqueue(source);
+        while (pending.Count > 0)
+        {
+            var current = pending.Dequeue();
+            foreach (var flow in Document.Workflows.Where(flow => flow.Id == current.WorkflowId))
+                foreach (var edge in flow.Connections.Where(edge => edge.SourceNodeId == current.NodeId))
+                {
+                    var target = new ScopedNodeIdentity(flow.Id, edge.TargetNodeId);
+                    if (!visited.Add(target)) continue;
+                    pending.Enqueue(target);
+                    if (_publishedRuntimeResults.Remove(target, out var publication)) retired.Add(publication);
+                }
+        }
     }
 
     private bool RunVariableIsCurrent(RunVariableCapture captured) =>

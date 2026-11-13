@@ -38,7 +38,7 @@ public sealed class EmbeddedFileCatalog : IDisposable
             foreach(var item in files)
             {
                 if(item is not JsonObject file)throw new JsonException("Invalid embedded file entry.");
-                var length=file["Length"]?.GetValue<long>()??throw new JsonException("Embedded length missing.");
+                var length=ReadInt64(file["Length"],"Embedded length missing.");
                 if(length<0||length>MaximumBytes-total)throw new JsonException("Embedded file budget exceeded.");
                 var content=file["Content"]?.GetValue<string>()??throw new JsonException("Embedded bytes missing.");
                 if(content.Length!=checked((length+2)/3*4))throw new JsonException("Embedded encoded length differs.");
@@ -57,6 +57,25 @@ public sealed class EmbeddedFileCatalog : IDisposable
             }
         }
         return new(entries);
+
+        static long ReadInt64(JsonNode? node,string missing)
+        {
+            if(node is null)throw new JsonException(missing);
+            try
+            {
+                // JsonNode preserves the source numeric token type.  Accept every
+                // integral JSON representation while keeping non-integral values
+                // and overflow as persistence-format errors.
+                using var document=JsonDocument.Parse(node.ToJsonString());
+                var element=document.RootElement;
+                if(element.ValueKind!=JsonValueKind.Number||!element.TryGetInt64(out var value))
+                    throw new JsonException(missing);
+                return value;
+            }
+            catch(JsonException){throw;}
+            catch(Exception error) when(error is InvalidOperationException or FormatException or OverflowException)
+            {throw new JsonException(missing,error);}
+        }
     }
     internal Entry Copy(string reference)
     {

@@ -95,7 +95,7 @@ public static class ToolEditorCommit
         return elements.OfType<IToolEditorPendingState>().Any(editor=>editor.HasPendingEdits) ||
             elements.OfType<IEditorNumericParticipant>().Any(n => n.HasPendingEdit) ||
             elements.SelectMany(Bindings).Any(b => b.IsDirty) ||
-            elements.Any(e => e.BindingGroup?.IsDirty == true || System.Windows.Controls.Validation.GetHasError(e));
+            elements.Any(e => e.BindingGroup?.IsDirty == true || e.IsVisible && System.Windows.Controls.Validation.GetHasError(e));
     }
 
     public static bool TryPrepare(FrameworkElement root, out string error)
@@ -149,7 +149,7 @@ public static class ToolEditorCommit
         var bindings = elements.SelectMany(Bindings).Where(b => b.IsDirty).Distinct().ToArray();
         var groups = elements.Select(e => e.BindingGroup).OfType<BindingGroup>().Where(g => g.IsDirty).Distinct().ToArray();
         if (bindings.Any(b => !b.ValidateWithoutUpdate()) || groups.Any(g => !g.ValidateWithoutUpdate()) ||
-            bindings.Length == 0 && groups.Length == 0 && elements.Any(System.Windows.Controls.Validation.GetHasError))
+            bindings.Length == 0 && groups.Length == 0 && elements.Any(e => e.IsVisible && System.Windows.Controls.Validation.GetHasError(e)))
         { error = "配置中有无效或未完成的编辑，请检查当前输入。"; return false; }
         if (root is IToolEditorCommitParticipant participant && !participant.TryValidateEditor(out error)) return false;
         error = ""; return true;
@@ -175,7 +175,13 @@ public static class ToolEditorCommit
         }
         foreach (var group in groups)
             if (group.IsDirty && !group.CommitEdit()) { error = "参数编辑提交失败，请检查当前输入。"; return false; }
-        if (elements.Any(System.Windows.Controls.Validation.GetHasError)) { error = "参数验证失败，修改已保留，请检查当前输入。"; return false; }
+        // Hidden materialized pages can retain template validation state while their
+        // formal field state is already accepted. Only the active visual page may
+        // veto this editor transaction.
+        if (elements.Any(e => e.IsVisible && System.Windows.Controls.Validation.GetHasError(e)))
+        {
+            error = "参数验证失败，修改已保留，请检查当前输入。"; return false;
+        }
         error = ""; return true;
     }
     private static IEnumerable<BindingExpression> Bindings(FrameworkElement element)

@@ -20,7 +20,12 @@ public partial class MainWindowViewModel
     private void RefreshProductionPublication(DocumentSession session,DocumentEditReceipt receipt)
     {
         if(!ReferenceEquals(DocumentManager.CurrentSession,session)||!ReferenceEquals(receipt.Session,session))return;
-        RefreshFormalPublishedResult();NotifyResultDisplayChanged();RefreshRootTabReadiness();
+        // While a node debug editor is active, its private draft/result owns the
+        // result workspace. Rebuilding the formal publication here would replace
+        // the transient input display selected for ROI before the editor rebinds.
+        if(_editorDebugContext is null)
+            RefreshFormalPublishedResult();
+        NotifyResultDisplayChanged();RefreshRootTabReadiness();
         BuildFlatRows();OnPropertyChanged(nameof(CanUndoRootWorkspace));OnPropertyChanged(nameof(CanRedoRootWorkspace));
     }
     internal static void ReleaseProductionEditorContexts(ISet<ProductionEditorContext> active)

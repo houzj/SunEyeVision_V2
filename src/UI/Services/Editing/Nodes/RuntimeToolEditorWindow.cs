@@ -268,6 +268,7 @@ public sealed class RuntimeToolEditorWindow : BaseWindow, INativeToolCommands
         var committed = ToolEditorCommit.GetDraftContext(Editor) is ProductionEditorContext context
             ? context.TryCommitBeforeClose(Editor, out error)
             : ToolEditorCommit.TryCommit(Editor, out error);
+        System.IO.File.AppendAllText(System.IO.Path.Combine(System.IO.Path.GetTempPath(),"draft-debug.log"),$"commit={committed} error={error}\\\\n");
         if (!committed) return false;
         var closing = CloseAndDrainAsync();
         if (!closing.IsCompleted || closing.IsCompletedSuccessfully && closing.Result) return true;

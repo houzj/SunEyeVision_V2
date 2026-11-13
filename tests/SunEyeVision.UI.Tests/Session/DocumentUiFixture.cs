@@ -39,6 +39,13 @@ internal static class UiRuntime
         {
             var text=$"[测试自动应答弹窗] 标题={title ?? "-"} 消息={message ?? "-"}{Environment.NewLine}{Environment.StackTrace}";
             Console.WriteLine(text);
+            // Reset regression tests intentionally inspect the owned native
+            // dialog and drive No/Yes/Ok through its real buttons. Let that
+            // confirmation enter the nested modal dispatcher; other test
+            // dialogs keep the non-blocking default response.
+            if(message?.Contains("确定要将所有算法参数恢复初始值吗",StringComparison.Ordinal)==true
+                || message?.Contains("算法参数恢复初始值成功",StringComparison.Ordinal)==true)
+                return null;
             return SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls.DialogResult.Ok;
         };
     }

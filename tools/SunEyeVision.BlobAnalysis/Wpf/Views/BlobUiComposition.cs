@@ -76,6 +76,8 @@ internal sealed class BlobUiComposition : IDisposable
         {
             _assistPointVisibility.Visibility = Visibility.Collapsed;
         }
+        if(_assistUi is {} assist)
+            assist.Visibility=_assistPointVisibility.Visibility;
         if(_supportedState is {} state)state.Refresh();
         else BlobSupportedWindowState.ProjectSources(Draft,_baseOptions.InputContent as DeclaredInputFieldsView,()=>!_disposed);
     }
@@ -143,7 +145,12 @@ internal sealed class BlobUiComposition : IDisposable
             finally{_stageMs[$"{page}:{stage}"]=clock.ElapsedMilliseconds;}
         }
         var basicPage=Draft.Schema.Inputs.Count==0?null:_baseOptions.InputSection;
-        if(StringComparer.Ordinal.Equals(page,basicPage)&&_roiUi is null)
+        // The input page is identified by the actual input view as well as its
+        // metadata key.  A lazy settings host may report the page key before
+        // the schema's section key is normalized; the concrete input view is
+        // the authoritative signal and keeps the composition from disappearing
+        // on a second editor opened with page zero selected.
+        if((StringComparer.Ordinal.Equals(page,basicPage)||pageInput is DeclaredInputFieldsView)&&_roiUi is null)
         {
             var input=pageInput??_baseOptions.InputContent;
             if(input is DeclaredInputFieldsView inputs)
@@ -155,7 +162,27 @@ internal sealed class BlobUiComposition : IDisposable
                     _roiOwner=new BlobLocalRoiOwner(inputs,_roiUi!,_baseOptions.RoiFrames);
                     _supportedState=new BlobSupportedWindowState(Draft,inputs,pose);
                     fields.BindFieldVisibilityTo(PositionCorrectionField,_roiUi!.GraphicVisibilitySource);
-                    fields.AddAfterField(PositionCorrectionField,pose,new FieldCondition(PositionCorrectionField,true));
+                    // The row's visibility already follows the correction field
+                    // through BindFieldVisibilityTo/followAnchorVisibility. Do
+                    // not add a second conditional gate: that gate prevents the
+                    // collapsed VM control from being materialized in the WPF
+                    // visual tree when the editor opens with correction off.
+                    fields.AddAfterField(PositionCorrectionField,pose);
+                    // Materialize the VM assist control once even when the
+                    // correction switch starts off.  WPF defers a collapsed
+                    // ContentPresenter, which otherwise makes the real control
+                    // disappear from the page until the switch is toggled.
+                    if(_assistPointVisibility.Visibility!=Visibility.Visible)
+                    {
+                        pose.Visibility=Visibility.Visible;
+                        RoutedEventHandler? loaded=null;
+                        loaded=(_,_)=>
+                        {
+                            pose.Loaded-=loaded;
+                            if(!_disposed)pose.Visibility=_assistPointVisibility.Visibility;
+                        };
+                        pose.Loaded+=loaded;
+                    }
                     pose.Changed+=OnInputChanged;
                     if(_roiUi is not null)_roiUi.Changed+=OnInputChanged;
                     _roiOwner.Changed+=Notify;

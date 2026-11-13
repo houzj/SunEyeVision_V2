@@ -151,14 +151,18 @@ public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolR
         var outsidePixelEnabled = definition.SettingsFieldId(nameof(BlobFindParameters.MaxOutPixelNumEnable));
         if (configuration.Read(outsidePixelEnabled) is UnsetSetting or ConstantSetting { Value: false }
             && configuration.Read(outsidePixelLimit) is ReferenceSetting or VariableSetting)
-            result.Add(outsidePixelLimit, new ConstantSetting(definition.Default<int>(nameof(BlobFindParameters.MaxOutPixelNum))));
+            // Integer ports use the semantic Int64 representation even when their
+            // tool setting is backed by an Int32 CLR property.  Keep the dormant
+            // fallback in that representation so FieldSettings does not reject it
+            // while the source is intentionally unresolved.
+            result.Add(outsidePixelLimit, new ConstantSetting((long)definition.Default<int>(nameof(BlobFindParameters.MaxOutPixelNum))));
         if (selected?.Value is not string name || !Enum.TryParse<BlobSegmentationMode>(name, out var mode)) return result;
         foreach (var property in BlobThresholdCapabilities.ControlledFields)
         {
             var id = definition.SettingsFieldId(property);
             if (!BlobThresholdCapabilities.IsThresholdFieldActive(mode, property)
                 && configuration.Read(id) is ReferenceSetting or VariableSetting)
-                result.Add(id, new ConstantSetting(definition.Default<int>(property)));
+                result.Add(id, new ConstantSetting((long)definition.Default<int>(property)));
         }
         return result;
     }

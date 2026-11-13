@@ -47,7 +47,7 @@ public sealed class BlobSessionChainRegressionTests
         Assert.Throws<ArgumentException>(() => session.Execute(settings, image, resources, localRoi: overflow));
 
         var subscribed = new SequenceValue(BlobMaskInheritance.PolygonStrings,
-            Enumerable.Repeat("2,2,4,2,4,4,2,4", 9));
+            Enumerable.Repeat("2,2,8,2,2,8", 9));
         var values = new InputValues(ports, new Dictionary<string, object?>
         {
             [BlobTool.ImageInput] = image,

@@ -597,6 +597,11 @@ public sealed partial class DeclaredFieldRow : ContentControl, IDisposable, IPar
         return false;
     }
 
+    public bool TryClear()
+    {
+        return !IsDisposed && _host.TryClear();
+    }
+
     public bool TryCommitPending()
     {
         if (IsDisposed || ChoiceError is not null)

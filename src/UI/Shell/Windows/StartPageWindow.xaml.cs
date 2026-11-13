@@ -106,10 +106,16 @@ public partial class StartPageWindow : Window
         e.Handled = true;
     }
 
+    // 只拦真正需要鼠标交互的控件；Label/TextBlock/Border 等呈现元素放行拖动，
+    // 对齐原件 GuideWindow「整窗任意空白处按住即可移动」的行为。
     private static bool IsInteractiveSource(DependencyObject? source)
     {
         for (var current = source; current is not null; current = VisualTreeHelper.GetParent(current))
-            if (current is Control)
+            if (current is System.Windows.Controls.Primitives.ButtonBase
+                or System.Windows.Controls.Primitives.TextBoxBase
+                or System.Windows.Controls.ComboBox
+                or System.Windows.Controls.ListBoxItem
+                or System.Windows.Controls.Slider)
                 return true;
         return false;
     }

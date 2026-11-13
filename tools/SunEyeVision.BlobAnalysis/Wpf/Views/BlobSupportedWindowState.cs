@@ -12,10 +12,11 @@ internal sealed class BlobSupportedWindowState : IDisposable
     private readonly IToolSettingsDraft _draft;
     private readonly DeclaredInputFieldsView _inputs;
     private readonly NativeAssistUiDraftControls _assist;
-    private bool _disposed, _refreshing;
+    private bool _disposed, _refreshing, _correctionEnabled;
     internal BlobSupportedWindowState(IToolSettingsDraft draft,DeclaredInputFieldsView inputs,NativeAssistUiDraftControls assist)
     {
         _draft=draft;_inputs=inputs;_assist=assist;
+        _correctionEnabled = draft.CaptureFields().Read(Id(nameof(BlobSettings.IsPositionCorrectionEnabled))) is ConstantSetting { Value:true };
         foreach(var field in inputs.Fields)field.Changed+=Refresh;
         Refresh();
     }
@@ -70,7 +71,19 @@ internal sealed class BlobSupportedWindowState : IDisposable
     {
         if (_disposed || _refreshing) return;
         _refreshing = true;
-        try { ProjectSources(_draft,_inputs,()=>!_disposed); }
+        try
+        {
+            var enabled = _draft.CaptureFields().Read(Id(nameof(BlobSettings.IsPositionCorrectionEnabled))) is ConstantSetting { Value:true };
+            if (_correctionEnabled && !enabled)
+            {
+                var pose = _assist.Children.OfType<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldRow>()
+                    .SingleOrDefault(field => field.FieldId == BlobTool.PoseInput);
+                if (pose is not null && !pose.TryClear())
+                    throw new InvalidOperationException("位置修正来源清理未被参数草稿接纳。");
+            }
+            _correctionEnabled = enabled;
+            ProjectSources(_draft,_inputs,()=>!_disposed);
+        }
         finally { _refreshing = false; }
     }
     internal void RefreshAcceptedInputs(NativeRoiUiDraftControls roi)

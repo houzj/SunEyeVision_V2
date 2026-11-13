@@ -38,7 +38,15 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
         get
         {
             if (!_active || !_isCurrent()) return false;
-            try { return Host.OwnsNode(_draft.WorkflowId, (NodeDefinition)FormalNode); }
+            try
+            {
+                // Parameter edits may synchronously rebind the selected node
+                // instance while the same editor draft remains active. The
+                // editor identity is the workflow/node id, not that transient
+                // object reference.
+                var current = _session.GetNodes(_draft.WorkflowId).FirstOrDefault(node => node.Id == _draft.Node.Id);
+                return current is not null && Host.OwnsNode(_draft.WorkflowId, current);
+            }
             catch (InvalidOperationException) { return false; }
         }
     }

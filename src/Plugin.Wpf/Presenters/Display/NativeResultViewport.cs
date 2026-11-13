@@ -31,6 +31,7 @@ public sealed partial class NativeResultViewport : IDisposable
     private DispatcherOperation? _refresh;
     private readonly DependencyPropertyDescriptor _templateDescriptor;
     private readonly Func<bool, BitmapSource> _prepareExport;
+    internal bool AllowsUnloadedRoi {get;}
     public FrameworkElement View => _view;
     public ImageLayout? Layout => _frame?.OriginalLayout;
     public NativeResultFrameReceipt? CurrentFrame => _frame is {} frame ? new(_ownerId, _epoch, frame.Frame, frame.Coordinates) : null;
@@ -45,9 +46,10 @@ public sealed partial class NativeResultViewport : IDisposable
     }
 
     public NativeResultViewport(NativeResultRasterLimits? limits = null, NativeResultShapeLimits? shapeLimits = null)
-        : this(new ImageViewBox(), limits ?? new(), shapeLimits ?? new()) { }
-    private NativeResultViewport(ImageViewBox view, NativeResultRasterLimits limits, NativeResultShapeLimits shapeLimits)
+        : this(new ImageViewBox(), limits ?? new(), shapeLimits ?? new(), true) { }
+    private NativeResultViewport(ImageViewBox view, NativeResultRasterLimits limits, NativeResultShapeLimits shapeLimits, bool allowsUnloadedRoi)
     {
+        AllowsUnloadedRoi=allowsUnloadedRoi;
         view.Dispatcher.VerifyAccess(); limits.Validate();
         if (Owners.TryGetValue(view, out _) || view.NativePrepareExport is not null || view.ImageDataSource is not null || view.ShapeList is not null || view.ROIList is not null
             || BindingOperations.IsDataBound(view, ImageViewBox.ImageDataSourceProperty)
@@ -94,7 +96,7 @@ public sealed partial class NativeResultViewport : IDisposable
 
     public static NativeResultViewport Attach(FrameworkElement originalView, NativeResultRasterLimits? limits = null,
         NativeResultShapeLimits? shapeLimits = null)
-        => new(originalView as ImageViewBox ?? throw new ArgumentException("必须借原ImageViewBox实例。", nameof(originalView)), limits ?? new(), shapeLimits ?? new());
+        => new(originalView as ImageViewBox ?? throw new ArgumentException("必须借原ImageViewBox实例。", nameof(originalView)), limits ?? new(), shapeLimits ?? new(), false);
 
     private bool Owns(long epoch, NativeResultImageFrame? frame)
         => !_disposed && epoch == _epoch && ReferenceEquals(frame, _frame) && Owners.TryGetValue(_view, out var owner) && ReferenceEquals(owner, this);

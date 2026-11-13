@@ -119,6 +119,11 @@ internal sealed class NativeNumberCoordinator : IDisposable
         _owner=owner;if(_owner is not null)_owner.Deactivated+=OnDeactivated;
         ProjectState();_referenceScope?.Refresh();
         _referenceScope?.PrepareForVisibility(!_presentationHidden&&_eventRoot.IsVisible&&_eventRoot.IsEnabled);
+        var validationGeneration=_loadGeneration;
+        _eventRoot.Dispatcher.BeginInvoke(DispatcherPriority.DataBind, new Action(() =>
+        {
+            if(CurrentInput()&&validationGeneration==_loadGeneration)_commit?.ValidateInitial();
+        }));
         QueueResume();
     }
     public void AttachInput()
@@ -143,7 +148,7 @@ internal sealed class NativeNumberCoordinator : IDisposable
             old?.Dispose();var created=new NativeNumericCommit(_state,_layout,_leaf!,_arrange,_arrange is null?null:Numbers.SliderArrangeBase.StartValueProperty,requireOwnerBinding:_requireStartBinding,isCurrent:CurrentInput,projectBoundValue:_projectBoundValue);
             if(!Current()||generation!=_attachGeneration||!ReferenceEquals(old,_commit)){created.Dispose();return;}
             _commit=created;
-            _commit.RestorePending(raw);_commit.ValidateInitial();
+            _commit.RestorePending(raw);
         }
         else _commit.RestorePending(raw);
         }

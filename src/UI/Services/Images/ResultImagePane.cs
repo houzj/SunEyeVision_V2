@@ -36,6 +36,7 @@ internal sealed class ResultImagePane : IDisposable
     internal NativeResultViewport Viewport { get; }
     internal bool IsFilePreview => _preview?.IsFilePreview == true;
     internal ResultImagePane(FrameworkElement originalView) => Viewport = NativeResultViewport.Attach(originalView);
+    internal ResultImagePane(NativeResultViewport viewport) => Viewport = viewport;
     internal NativeResultFrameReceipt? CurrentFrame
     {
         get

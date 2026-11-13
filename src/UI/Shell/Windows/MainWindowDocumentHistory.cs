@@ -62,7 +62,8 @@ public partial class MainWindowViewModel
         {
             // Retire selection-bound participants before their acknowledgement. A removed
             // root cannot accept a rebase; Undo must not reactivate its old windows.
-            foreach(var editor in _productionEditors.ToArray())if(!editor.IsValid)editor.Discard();
+            foreach(var editor in _productionEditors.ToArray())
+                if(!ReferenceEquals(editor,_editorDebugContext)&&!editor.IsValid)editor.Discard();
             if(_rootConfigurationWindow is {} rootWindow&&change.ChangedRoots.Any(item=>
                 item.Kind==RootCollectionChangeKind.Removed&&ReferenceEquals(item.Workflow,rootWindow.Context.Root)))
             {rootWindow.Context.Dispose();rootWindow.Close();}
@@ -79,7 +80,8 @@ public partial class MainWindowViewModel
     }
     private void RefreshChangedDocumentViews(DocumentChangeSet change)
     {
-        foreach(var editor in _productionEditors.ToArray())if(!editor.IsValid)editor.Discard();
+        foreach(var editor in _productionEditors.ToArray())
+            if(!ReferenceEquals(editor,_editorDebugContext)&&!editor.IsValid)editor.Discard();
         // 提交会重建节点实例：无条件按稳定 Id 把选择重绑定到当前实例。
         // 下游（ImageSourceResolver 等）仍使用引用判定，不重绑定就会被误判失效并清空图像源条。
         if(SelectedNode is {} selected)

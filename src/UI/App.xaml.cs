@@ -367,7 +367,15 @@ public partial class App : System.Windows.Application
         }
         else if (_startupSolutionManagerShown)
         {
-            // 早期方案管理器已经由用户关闭；不要在插件准入完成后再弹第二次。
+            // 原件 GuideWindow 语义：欢迎页只是引导层，主窗口在其之下已持有可编辑方案——
+            // 用户直接关闭欢迎页（未选择任何动作）也进入可编辑空白方案，不落“暂无流程”空态。
+            mainWindow.ShowSolutionLoadingOverlay("正在创建方案", "正在准备空白方案工作区");
+            try
+            {
+                if (mainWindow.DataContext is MainWindowViewModel vm && await vm.NewEmptySolutionAsync())
+                    return;
+            }
+            finally { mainWindow.HideSolutionLoadingOverlay(); }
         }
         else if (StartPreferences.HideStartPage)
         {
@@ -483,7 +491,11 @@ public partial class App : System.Windows.Application
                 case StartPageAction.NewSolution:
                     if (!await vm.NewEmptySolutionAsync()) continue;
                     break;
-                default: break; // Closing a start page never exits the application or discards an open workspace.
+                default:
+                    // Closing a start page never exits the application. With no open
+                    // workspace it enters an editable empty solution (original GuideWindow semantics).
+                    if (ServiceInitializer.SolutionManager.CurrentSession is null && !await vm.NewEmptySolutionAsync()) continue;
+                    break;
             }
             if (!mainWindow.IsVisible) ShowMainWindow(mainWindow, "start page selection");
             return;

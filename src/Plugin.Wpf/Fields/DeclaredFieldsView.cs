@@ -513,6 +513,11 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
    Content=tabs;
    if(selectedPageIndex<0||selectedPageIndex>=tabs.Items.Count)throw new ArgumentOutOfRangeException(nameof(selectedPageIndex));
    tabs.SelectedIndex=selectedPageIndex;
+   // WPF does not raise SelectionChanged when the initial index is already zero.
+   // Materialize the initially selected page explicitly so lazy page composition
+   // has the same contract for every valid starting index.
+   if(tabs.SelectedItem is TabItem initialTab&&_numericTabPages.TryGetValue(initialTab,out var initialPage))
+    _pageBuilders[initialPage]();
    UpdateVisibility();
    if(eagerlyComposePages)
    {

@@ -164,8 +164,19 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
   if (!string.Equals(draft.Node.Id, _node.Id, StringComparison.Ordinal))
    throw new InvalidOperationException("图像源节点已被替换。");
   _node = draft.Node;
-  var values = draft.Configuration.Fields.Select(draft.SettingsSchema.Inputs).Materialize(new Dictionary<string, object?>());
+  var values = MaterializeProjectionFields(draft.Configuration.Fields.Select(draft.SettingsSchema.Inputs));
   return ImageSourcePolicy.ReadFields(_node.Id, values);
+ }
+ private static InputValues MaterializeProjectionFields(FieldSettings fields)
+ {
+  var configured = fields.Capture();
+  var unresolved = configured
+   .Where(pair => pair.Value is ReferenceSetting or VariableSetting)
+   .ToDictionary(pair => pair.Key, _ => (object?)null, StringComparer.Ordinal);
+  // The projection only consumes persistent source settings. Reference-backed
+  // fields such as stitch.clear-value are resolved by execution and must not
+  // prevent the projection from reading folder, format, and subscription state.
+  return fields.Materialize(unresolved);
  }
  private void AcceptEdit(ImageSourceEditProposal proposal)
  {
@@ -174,7 +185,7 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
   var draft = _session.Editing.Host.BeginEdit(_root.Id, _node.Id);
   if (!string.Equals(draft.Node.Id, _node.Id, StringComparison.Ordinal)) throw new InvalidOperationException("图像源节点已被替换。");
   _node = draft.Node;
-  var values = draft.Configuration.Fields.Select(draft.SettingsSchema.Inputs).Materialize(new Dictionary<string, object?>());
+  var values = MaterializeProjectionFields(draft.Configuration.Fields.Select(draft.SettingsSchema.Inputs));
   var policy = ImageSourcePolicy.ReadFields(_node.Id, values);
   if (policy.SourceKind != ImageSourceKind.Local || policy.SubscribeFolder || proposal.Configuration.NodeId != _node.Id)
    throw new InvalidOperationException("当前来源不是本地图像，不能修改列表。");

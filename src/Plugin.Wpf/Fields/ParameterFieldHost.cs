@@ -144,6 +144,12 @@ internal sealed class ParameterFieldHost : IDisposable
         return _state.TrySet(new ConstantSetting(value));
     }
 
+    public bool TryClear()
+    {
+        if (_disposed) return false;
+        return _state.TrySet(new UnsetSetting());
+    }
+
     /// <summary>暂存/恢复交互（会话挂起、弹层关闭），沿用原编辑器 PrepareForVisibility 语义。</summary>
     public void PrepareForVisibility(bool visible)
     {

@@ -257,6 +257,7 @@ namespace SunEyeVision.UI.Shell.Windows
         private bool _shutdownPreparationStarted;
         private bool _consumerReleaseStarted;
         private Task? _pluginDrainTask;
+        private bool _pluginDrainRetryScheduled;
 
         /// <summary>
         /// 窗口关闭前事件 - 提示保存解决方案。
@@ -349,12 +350,35 @@ namespace SunEyeVision.UI.Shell.Windows
                     var diagnostics=app.PluginDrainDiagnostics;
                     ThemeMessageDialog.Show("仍有结果或插件资源正在使用。窗口将保持打开并继续等待，资源释放后自动关闭。\n当前租约："+diagnostics, "等待资源释放", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info, this);
                     _isClosingPromptInProgress=false;
+                    SchedulePluginDrainRetry(drain);
                     return;
                 }
                 await drain;
             }
             _closeApproved=true;
             Close();
+        }
+        private void SchedulePluginDrainRetry(Task drain)
+        {
+            if (_pluginDrainRetryScheduled) return;
+            _pluginDrainRetryScheduled=true;
+            _ = RetryAfterPluginDrainAsync(drain);
+        }
+        private async Task RetryAfterPluginDrainAsync(Task drain)
+        {
+            try { await drain.ConfigureAwait(false); }
+            catch { return; }
+            await Dispatcher.InvokeAsync(async () =>
+            {
+                if (_closeApproved || !IsVisible) return;
+                _isClosingPromptInProgress=true;
+                try { await CompletePreparedCloseAsync(); }
+                catch(Exception error)
+                {
+                    _isClosingPromptInProgress=false;
+                    ThemeMessageDialog.Show("退出未完成："+error.Message, "退出未完成", MessageBoxButton.OK,ThemeMessageDialog.MessageIcon.Error, this);
+                }
+            });
         }
         private async Task PreparePluginConsumersForShutdownAsync()
         {

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Windows;
 
 using System.Windows.Controls;
+using System.Windows.Data;
 
 using System.Windows.Input;
 
@@ -374,6 +375,45 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
                 new System.Windows.Data.Binding("ScaleTransform") { Source=tab, Mode=System.Windows.Data.BindingMode.OneWay });
             ForceRefreshItemsControls();
             RebindConnectionSystem(tab);
+        }
+
+        /// <summary>
+        /// 将当前流程身份直接绑定到画布的视觉投影。
+        ///
+        /// 方案打开时 Tab、ContentTemplate 和 Loaded 的先后顺序不固定，
+        /// 仅依赖继承 DataContext 或一次性 XAML 路径绑定会留下“数据已有、节点容器为空”的窗口。
+        /// 这里把节点和连线 ItemsControl 绑定到同一个 Tab 实例，并在模板已生成后刷新目标。
+        /// </summary>
+        public void SynchronizePresentation(WorkflowTabViewModel tab)
+        {
+            ArgumentNullException.ThrowIfNull(tab);
+            if (!ReferenceEquals(DataContext, tab))
+                DataContext = tab;
+
+            if (FindName("CanvasNodeItems") is ItemsControl nodes)
+            {
+                nodes.SetBinding(ItemsControl.ItemsSourceProperty, new Binding("DocumentCanvas.Nodes")
+                {
+                    Source = tab,
+                    Mode = BindingMode.OneWay
+                });
+            }
+
+            if (FindVisualChildren<ItemsControl>(WorkflowCanvas).FirstOrDefault() is ItemsControl connections)
+            {
+                connections.SetBinding(ItemsControl.ItemsSourceProperty, new Binding("DocumentCanvas.Connections")
+                {
+                    Source = tab,
+                    Mode = BindingMode.OneWay
+                });
+            }
+
+            WorkflowCanvas.SetBinding(System.Windows.Controls.Canvas.RenderTransformProperty, new Binding("ScaleTransform")
+            {
+                Source = tab,
+                Mode = BindingMode.OneWay
+            });
+            ForceRefreshItemsControls();
         }
         private WorkflowTabViewModel? _connectionProjectionTab;
         private void BindConnectionProjectionTab(WorkflowTabViewModel? tab)

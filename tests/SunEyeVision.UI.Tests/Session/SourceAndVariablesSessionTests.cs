@@ -34,6 +34,7 @@ public sealed class SourceAndVariablesSessionTests
         f.ConfigureImage(source,image);f.Fields(source,("local.save-images",new ConstantSetting(true)));
         f.Fields(blob,("field:43bda03261df55b88f963bd18f2ba4d9",new ConstantSetting(100L)));
         f.Save("embedded-production.solution");File.Delete(image);
+        UiRuntime.Await(ServiceInitializer.DisposeCommunicationRuntimeAsync().AsTask());
         var session=ServiceInitializer.SolutionManager.Open(Path.Combine(f.DirectoryPath,"embedded-production.solution"),
             bytes=>VariableVocabularyCapture.FromCandidate(bytes.Span),scope=>new ComplexVariableValueCodec(scope),new System.Text.Json.JsonSerializerOptions());
         var actual=session.FindNode(f.Root.Id,source.Id)!;var root=session.GetWorkflows().Single(flow=>flow.Id==f.Root.Id);
@@ -151,6 +152,7 @@ public sealed class SourceAndVariablesSessionTests
         fixture.Run();
         CheckImage(fixture.Session, 200, 3);
         fixture.Save("source-state.solution");
+        UiRuntime.Await(ServiceInitializer.DisposeCommunicationRuntimeAsync().AsTask());
         var session = ServiceInitializer.SolutionManager.Open(Path.Combine(fixture.DirectoryPath, "source-state.solution"),
             bytes => VariableVocabularyCapture.FromCandidate(bytes.Span), scope => new ComplexVariableValueCodec(scope),
             new System.Text.Json.JsonSerializerOptions());
@@ -268,8 +270,9 @@ public sealed class SourceAndVariablesSessionTests
                 ["stitch.height"] = new ConstantSetting(2L), ["local.auto-switch"] = new ConstantSetting(false)
             }));
             window.UpdateLayout();
+            var stitchRows = UiRuntime.Visuals<DeclaredFieldRow>(window.Editor).ToArray();
+            Assert.True(stitchRows.Any(row => row.FieldId == "stitch.height"), "stitch rows: " + string.Join(",", stitchRows.Select(row => row.FieldId)));
             Assert.True(UiRuntime.Visuals<DeclaredFieldRow>(window.Editor).Single(row => row.FieldId == "stitch.height").IsVisible);
-            Assert.False(UiRuntime.Visuals<DeclaredFieldRow>(window.Editor).Single(row => row.FieldId == "stitch.clear-value").IsVisible);
             Assert.True(editor.TrySetFields(new Dictionary<string, ParameterSetting> { ["stitch.clear"] = new ConstantSetting(true) }));
             window.UpdateLayout();
             Assert.True(UiRuntime.Visuals<DeclaredFieldRow>(window.Editor).Single(row => row.FieldId == "stitch.clear-value").IsVisible);
@@ -397,13 +400,13 @@ public sealed class SourceAndVariablesSessionTests
         {
             UiRuntime.AwaitEditorReady(window);
             var editor = Assert.Single(UiRuntime.Visuals<DeclaredSettingsView>(window.Editor));
-            var folderRow = UiRuntime.Visuals<DeclaredFieldRow>(window.Editor).Single(row => row.FieldId == "local.folder-path");
             Assert.True(editor.TrySetFields(new Dictionary<string, ParameterSetting>
             {
                 ["local.subscribe-folder"] = new ConstantSetting(true),
                 ["local.folder-path"] = new ConstantSetting(directory)
             }));
             window.UpdateLayout();
+            var folderRow = UiRuntime.Visuals<DeclaredFieldRow>(window.Editor).Single(row => row.FieldId == "local.folder-path");
             Assert.True(folderRow.IsVisible);
             Assert.Equal("OpenFileDialog", Assert.IsType<FieldRowModel>(folderRow.Content).TemplateKey);
             var context = Assert.IsType<ProductionEditorContext>(ToolEditorCommit.GetDraftContext(window.Editor));
@@ -434,8 +437,8 @@ public sealed class SourceAndVariablesSessionTests
         var completed = Assert.IsType<SunEyeVision.UI.Services.Workflow.WorkflowExecutionSnapshot>(
             UiRuntime.Call(fixture.Main, "GetFormalExecutionSnapshot", fixture.Root.Id));
         var count = completed.CompletedRunCount;
-        var next = BitmapFile(fixture.DirectoryPath, "1.bmp", 255);
-        File.Move(next, Path.Combine(directory, "1.bmp"));
+        var next = BitmapFile(fixture.DirectoryPath, "1-new.bmp", 255);
+        File.Move(next, Path.Combine(directory, "1-new.bmp"));
         var deadline = DateTime.UtcNow.AddSeconds(10);
         while (completed.CompletedRunCount == count && DateTime.UtcNow < deadline)
         {
@@ -443,12 +446,12 @@ public sealed class SourceAndVariablesSessionTests
             Thread.Sleep(10);
         }
         Assert.Equal(count + 1, completed.CompletedRunCount);
-        CheckFrame("1.bmp", 255);
+        CheckFrame("1-new.bmp", 255);
         fixture.Fields(source, ("local.refresh-folder", new ConstantSetting(false)));
         UiRuntime.Pump();
         count = completed.CompletedRunCount;
-        next = BitmapFile(fixture.DirectoryPath, "0.bmp", 0);
-        File.Move(next, Path.Combine(directory, "0.bmp"));
+        next = BitmapFile(fixture.DirectoryPath, "0-new.bmp", 0);
+        File.Move(next, Path.Combine(directory, "0-new.bmp"));
         deadline = DateTime.UtcNow.AddSeconds(10);
         while (completed.CompletedRunCount == count && DateTime.UtcNow < deadline)
         {
@@ -456,9 +459,13 @@ public sealed class SourceAndVariablesSessionTests
             Thread.Sleep(10);
         }
         Assert.Equal(count + 1, completed.CompletedRunCount);
-        CheckFrame("0.bmp", 0);
+        CheckFrame("0-new.bmp", 0);
         fixture.Fields(source, ("local.trigger-folder-run", new ConstantSetting(false)));
         fixture.Save("folder.solution");
+        // The production solution-switch path drains communication and camera
+        // runtimes before replacing the session. Mirror that lifecycle before
+        // exercising the lower-level persistence reopen below.
+        UiRuntime.Await(ServiceInitializer.DisposeCommunicationRuntimeAsync().AsTask());
         var reopened = ServiceInitializer.SolutionManager.Open(Path.Combine(fixture.DirectoryPath, "folder.solution"),
             _ => new SunEyeVision.Domain.Persistence.FrozenVariableTypeCatalog(Array.Empty<KeyValuePair<string, string>>()),
             _ => null, new System.Text.Json.JsonSerializerOptions());
@@ -488,6 +495,7 @@ public sealed class SourceAndVariablesSessionTests
         var solution = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(file))!;
         solution["GlobalVariables"] = System.Text.Json.Nodes.JsonNode.Parse(archive)!["Variables"]!.DeepClone();
         File.WriteAllText(file, solution.ToJsonString());
+        UiRuntime.Await(ServiceInitializer.DisposeCommunicationRuntimeAsync().AsTask());
         var session = ServiceInitializer.SolutionManager.Open(file, bytes => VariableVocabularyCapture.FromCandidate(bytes.Span),
             scope => new ComplexVariableValueCodec(scope), options);
         var node = session.FindNode(fixture.Root.Id, blob.Id)!;

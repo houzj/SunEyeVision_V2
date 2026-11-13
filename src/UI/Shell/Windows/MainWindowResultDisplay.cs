@@ -20,7 +20,7 @@ public partial class MainWindowViewModel
   internal bool Current=>!_disposed&&ReferenceEquals(Main._displayPreview,this)&&ReferenceEquals(DocumentManager.CurrentSession,Session)
    &&ReferenceEquals(Main.SelectedNode,Node)&&Context.IsValid&&Control.IsLoaded&&Control.IsVisible
    &&!Control.HasPendingExecutionEdits&&Control.TryGetResultDisplayBinding(out var node,out _)&&ReferenceEquals(node,Node);
-  internal void Edited()=>Main.NotifyResultDisplayChanged();
+  internal void Edited(){Main.RefreshEditorDebugResult();Main.NotifyResultDisplayChanged();}
   internal void Bound(NodeDefinition node,long binding)=>Edited();
   internal void Loaded(object sender,System.Windows.RoutedEventArgs args)=>Edited();
   internal void Visibility(object sender,System.Windows.DependencyPropertyChangedEventArgs args)=>Edited();

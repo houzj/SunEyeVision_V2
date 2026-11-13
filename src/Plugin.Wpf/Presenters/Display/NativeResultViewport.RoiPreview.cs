@@ -55,7 +55,9 @@ public sealed partial class NativeResultViewport
                         new PolygonGeometry(receipt.Coordinates,RoiGeometryEditing.Vertices(row.Geometry)),Color.FromRgb(255,84,0)));
                     var prepared=NativeShapeProjection.Geometry(receipt,rectangles.Concat(polygons).ToArray(),owner.ShapeBudget,owner._shapeLimits.MaximumPolygonVertices,proof);
                     var rings=frozen.Items.OfType<NativeInheritedAnnulusProjection>().Cast<object>().ToArray();
-                    NativeResultRaster.CheckCurrent(proof);return new(prepared.Items.Concat(rings).ToArray(),rows.Length,prepared.Vertices);
+                    NativeResultRaster.CheckCurrent(proof);
+                    var items=prepared.Items.Concat(rings).ToArray();
+                    return new(items,rows.Length,prepared.Vertices,NativeShapeProjection.Presentation(items,owner._view));
                 });
                 if(!accepted)return false;
                 var previous=_projection;_projection=candidate;candidate=null;previous?.Dispose();return true;

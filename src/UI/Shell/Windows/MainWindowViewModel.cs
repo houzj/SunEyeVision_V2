@@ -141,6 +141,7 @@ namespace SunEyeVision.UI.Shell.Windows
         /// 调试窗口是否打开（用于锁定画布操作，避免Delete键冲突）
         /// </summary>
         public bool IsDebugWindowOpen => (_openDebugWindow != null && _openDebugWindow.IsLoaded) || _auxiliaryParameterWindows.Count != 0;
+        internal bool HasActiveEditorDebugSession => _openDebugWindow is not null || _editorDebugContext is not null;
 
         // 按 Workflow 缓存的 DSQS（key: WorkflowId，替代旧的按节点缓存的 _nodeDataProviders）
 

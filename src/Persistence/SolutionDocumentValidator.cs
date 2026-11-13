@@ -19,7 +19,11 @@ public static class SolutionDocumentValidator
         CheckDuplicateKeys(root.ToJsonString());
         RequireId(root, "$");
         _ = SolutionFormatPolicy.ReadVersion(root);
-        RejectUnknownMembers(root, "$", SerializableFields(typeof(SolutionDefinition)));
+        // Embedded file records are persisted alongside the domain document by
+        // EmbeddedFileCapture and are parsed into SolutionReadCandidate rather
+        // than SolutionDefinition. They are part of the current persistence
+        // envelope, so the strict root validator must admit that envelope field.
+        RejectUnknownMembers(root, "$", SerializableFields(typeof(SolutionDefinition)).Append("EmbeddedFiles"));
         if (root["GlobalVariables"] is JsonArray variables)
         for (int i = 0; i < variables.Count; i++)
         {
@@ -172,7 +176,7 @@ public static class SolutionDocumentValidator
         var known = names.ToHashSet(StringComparer.Ordinal);
         foreach (var property in value)
             if (!known.Contains(property.Key))
-                throw new JsonException("Unknown field; no approved migration exists.", path + "." + property.Key, null, null);
+                throw new JsonException($"Unknown field; no approved migration exists: {path}.{property.Key}", path + "." + property.Key, null, null);
     }
 
     private static void RequireId(JsonNode node, string path)

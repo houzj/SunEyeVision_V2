@@ -96,6 +96,8 @@ public sealed class BlobOutput : IToolOutput, IDisposable, IToolResultGeometryOu
     private Dictionary<string,object?> BuildValues(CancellationToken cancellation)
     {
         static double[]? NumberSequence(IReadOnlyList<float>? values) => values?.Select(value => (double)value).ToArray();
+        static SequenceValue? NumericSequence(IReadOnlyList<float>? values)
+            => values is null ? null : new SequenceValue(TypeRef.SequenceOf(DataType.Number), values.Select(value => (object?)(double)value));
         return new Dictionary<string, object?> {
             [BlobSchema.BlobsPort] = new SequenceValue(BlobSchema.BlobsType, Measurements.Select(measurement =>
             {
@@ -119,10 +121,10 @@ public sealed class BlobOutput : IToolOutput, IDisposable, IToolResultGeometryOu
             [BlobSchema.ShortAxesPort] = NumberSequence(ResultProjection.ShortAxis),
             [BlobSchema.ModuleStatusPort] = (long)ResultProjection.ModuStatus,
             [BlobSchema.BlobStatusesPort] = ResultProjection.BlobStatus.Select(status => (long)status).ToArray(),
-            [BlobSchema.MinGrayValuesPort] = NumberSequence(ResultProjection.MinGrayValue),
-            [BlobSchema.MaxGrayValuesPort] = NumberSequence(ResultProjection.MaxGrayValue),
-            [BlobSchema.GrayContrastsPort] = NumberSequence(ResultProjection.GrayContrast),
-            [BlobSchema.PrincipalAnglesPort] = NumberSequence(ResultProjection.BlobAngle),
+            [BlobSchema.MinGrayValuesPort] = NumericSequence(ResultProjection.MinGrayValue),
+            [BlobSchema.MaxGrayValuesPort] = NumericSequence(ResultProjection.MaxGrayValue),
+            [BlobSchema.GrayContrastsPort] = NumericSequence(ResultProjection.GrayContrast),
+            [BlobSchema.PrincipalAnglesPort] = NumericSequence(ResultProjection.BlobAngle),
             [BlobSchema.Field(8)] = ThresholdMinUsed is int lower ? (object)(long)lower : null, [BlobSchema.Field(9)] = ThresholdMaxUsed is int upper ? (object)(long)upper : null, [BlobSchema.Field(10)] = TypeUsed, [BlobSchema.Field(102)] = SegmentationModeUsed,
             [BlobSchema.Field(11)] = (long)ResultProjection.BlobNum, [BlobSchema.Field(12)] = TotalArea,
             [BlobSchema.Field(13)] = AverageArea, [BlobSchema.Field(16)] = WhitePixelRatio,
@@ -131,8 +133,12 @@ public sealed class BlobOutput : IToolOutput, IDisposable, IToolResultGeometryOu
             [BlobSchema.Field(15)] = AverageRectangularity,
             [BlobSchema.Field(17)] = Histogram.ToArray(), [BlobSchema.Field(18)] = ChannelMeans.ToArray(),
             [BlobSchema.Field(19)] = NumberSequence(ResultProjection.Area), [BlobSchema.Field(20)] = NumberSequence(ResultProjection.Perimeter),
+            [BlobSchema.Field(21)] = NumberSequence(ResultProjection.CentroidPoint.Select(point => (float)point.X).ToArray()),
+            [BlobSchema.Field(22)] = NumberSequence(ResultProjection.CentroidPoint.Select(point => (float)point.Y).ToArray()),
             [BlobSchema.CentroidPointsPort] = new SequenceValue(BlobSchema.CentroidPointsType,ResultProjection.CentroidPoint.Select(BlobSchema.FreezePoint)),
             [BlobSchema.Field(23)] = NumberSequence(ResultProjection.Circularity), [BlobSchema.Field(24)] = NumberSequence(ResultProjection.Rectangularity),
+            [BlobSchema.Field(25)] = NumberSequence(ResultProjection.BlobRect.Select(bounds => (float)bounds.Width).ToArray()),
+            [BlobSchema.Field(26)] = NumberSequence(ResultProjection.BlobRect.Select(bounds => (float)bounds.Height).ToArray()),
             [BlobSchema.AxisAlignedRectanglesPort] = new SequenceValue(BlobSchema.AxisAlignedRectanglesType,
                 ResultProjection.BlobRect.Select(BlobSchema.FreezeAxisAlignedBounds)),
             [BlobSchema.RectangleTopLeftXPort] = NumberSequence(ResultProjection.BlobRectUpLeftX),

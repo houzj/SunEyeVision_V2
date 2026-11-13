@@ -150,6 +150,14 @@ public sealed partial class DocumentSession
             sourceDirectory = ResolveResourceBaseDirectory(sourceDirectory)!;
             if (!updateBaseline && _lastWrittenSnapshot is not null && string.Equals(Path.GetFullPath(destination), _lastWrittenSnapshot.TargetPath, StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException("保存副本不能覆盖当前方案。");
+            if (updateBaseline)
+            {
+                // 保存即命名（原件语义：方案名=方案文件名，最近列表与主窗标题都显示它）；
+                // 首次保存或另存为把默认“未命名方案”随目标文件名落库，副本保存不改当前方案名。
+                var solutionName = Path.GetFileNameWithoutExtension(destination);
+                if (!string.IsNullOrWhiteSpace(solutionName) && !string.Equals(Document.Name, solutionName, StringComparison.Ordinal))
+                    Document.Name = solutionName;
+            }
             revision = ChangeRevision; savedState = CapturePersistenceState();
             encoded = CaptureAcceptedDocument(variableTypes, options, createCodec, sourceDirectory, Path.GetDirectoryName(Path.GetFullPath(destination)));
         }

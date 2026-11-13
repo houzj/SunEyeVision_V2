@@ -164,11 +164,30 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 _canvasScrollViewer = FindVisualParent<ScrollViewer>(workflowCanvas);
                 // 检查DataContext
                 var dataContext = workflowCanvas.DataContext;
-                // 如果DataContext为null，手动设置为当前选中的Tab
-                if (dataContext == null && _viewModel?.WorkflowTabViewModel?.SelectedTab != null)
+                // PROBE-KEEP：画布加载时的绑定状态（诊断后保留）。
+                Foundation.Logging.VisionLogger.Instance?.Log(Foundation.Logging.LogLevel.Info,
+                    $"[CanvasLoaded] 画布加载：dataContext={(dataContext is null ? "null" : (dataContext is WorkflowTabViewModel t ? t.Name : dataContext.GetType().Name))} selectedTab={(_viewModel?.WorkflowTabViewModel?.SelectedTab is { } s ? s.Name : "null")}", "ShellWorkspaceControl");
+                // 画布必须绑定当前流程 Tab：DataContext 为 null 或继承自宿主（ViewModel）都要补绑。
+                // 启动期打开方案时 Tab 选择先于画布生成，仅补 null 会让画布停留在继承的宿主
+                // 上下文上，DocumentCanvas 绑定解析不到，画布与小地图全空（原件语义：加载结束
+                // 事件无论 UI 是否就绪都最终重建流程呈现，就绪时补绑）。
+                if (_viewModel?.WorkflowTabViewModel?.SelectedTab is { } selectedForCanvas
+                    && !ReferenceEquals(workflowCanvas.DataContext, selectedForCanvas))
                 {
-                    workflowCanvas.DataContext = _viewModel.WorkflowTabViewModel.SelectedTab;
+                    workflowCanvas.DataContext = selectedForCanvas;
                     dataContext = workflowCanvas.DataContext;
+                }
+                if (_viewModel?.WorkflowTabViewModel?.SelectedTab is { } readyTab)
+                {
+                    workflowCanvas.SynchronizePresentation(readyTab);
+                    // ContentTemplate 的视觉子树可能在 Loaded 回调返回后才完成生成，
+                    // 再补一次就绪队列同步，覆盖打开方案与 Tab 选中先后的两种时序。
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        if (_viewModel?.WorkflowTabViewModel?.SelectedTab is { } deferredTab
+                            && ReferenceEquals(_currentWorkflowCanvas, workflowCanvas))
+                            workflowCanvas.SynchronizePresentation(deferredTab);
+                    }), DispatcherPriority.ContextIdle);
                 }
                 // 订阅DataContextChanged事件，以便在CanvasType变化时更新Visibility
                 workflowCanvas.DataContextChanged += (s, args) =>
@@ -326,6 +345,9 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         /// </summary>
         private void WorkflowTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            // PROBE-KEEP：启动期打开方案的呈现断点定位，诊断后保留。
+            Foundation.Logging.VisionLogger.Instance?.Log(Foundation.Logging.LogLevel.Info,
+                $"[TabSelection] Tab选择变化：added=[{string.Join(",", e.AddedItems.OfType<WorkflowTabViewModel>().Select(item => item.Name))}] removedCount={e.RemovedItems.Count}", "ShellWorkspaceControl");
             // 退订旧 Tab 的小地图内容订阅（Tab 切换时清理，防内存泄漏）
             foreach (var removed in e.RemovedItems)
             {
@@ -351,6 +373,14 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             if (selectedTab != null && _currentWorkflowCanvas != null)
             {
                 _currentWorkflowCanvas.DataContext = selectedTab;
+                _currentWorkflowCanvas.SynchronizePresentation(selectedTab);
+                var canvas = _currentWorkflowCanvas;
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    if (ReferenceEquals(_currentWorkflowCanvas, canvas)
+                        && _viewModel?.WorkflowTabViewModel?.SelectedTab is { } deferredTab)
+                        canvas.SynchronizePresentation(deferredTab);
+                }), DispatcherPriority.ContextIdle);
             }
             // 优化：合并Dispatcher调用，减少UI重绘次数
             Dispatcher.BeginInvoke(new Action(() =>
@@ -985,12 +1015,26 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         private void RefreshMiniMap()
         {
             var selectedTab = _viewModel?.WorkflowTabViewModel?.SelectedTab;
+            // PROBE-KEEP：启动期打开方案的呈现断点定位，诊断后保留。
+            Foundation.Logging.VisionLogger.Instance?.Log(Foundation.Logging.LogLevel.Info,
+                $"[MiniMap] 刷新：selectedTab={(selectedTab is null ? "null" : selectedTab.Name)} nodes={selectedTab?.WorkflowNodes.Count ?? -1} miniMapCanvas={(MiniMapCanvas is null ? "null" : "ok")} viewModel={(_viewModel is null ? "null" : "ok")}", "ShellWorkspaceControl");
             if (selectedTab == null || MiniMapCanvas == null)
             {
                 UnbindMiniMapContent();_miniMapThrottleTimer.Stop();MiniMapCanvas?.Children.Clear();
                 MiniMapHost.Visibility=Visibility.Collapsed;
                 _currentWorkflowCanvas?.SetCurrentValue(DataContextProperty,null);_currentWorkflowCanvas=null;_canvasScrollViewer=null;
                 _restoringContainerView=false;WorkflowSearch.CloseSearch();return;
+            }
+            // 欢迎页阶段没有选中流程时会清空画布引用。打开方案后 Tab 先恢复、
+            // 画布视觉树随后生成，必须在本次刷新重新接回当前画布。
+            if (_currentWorkflowCanvas == null)
+            {
+                _currentWorkflowCanvas = FindVisualChild<WorkflowCanvasControl>(this);
+                if (_currentWorkflowCanvas != null)
+                {
+                    _canvasScrollViewer = FindVisualParent<ScrollViewer>(_currentWorkflowCanvas);
+                    _currentWorkflowCanvas.SynchronizePresentation(selectedTab);
+                }
             }
             MiniMapHost.Visibility=Visibility.Visible;
             UnbindMiniMapContent();
@@ -1006,6 +1050,10 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             SubscribeMiniMapNodes(selectedTab.WorkflowNodes);
 
             DrawMiniMap();
+            // PROBE-KEEP：呈现视觉树状态（诊断后保留）。
+            var canvasNodes=_currentWorkflowCanvas?.DataContext is WorkflowTabViewModel ctab?ctab.WorkflowNodes.Count:-1;
+            Foundation.Logging.VisionLogger.Instance?.Log(Foundation.Logging.LogLevel.Info,
+                $"[MiniMap] 绘制后：hostVisibility={MiniMapHost.Visibility} children={MiniMapCanvas.Children.Count} canvasRef={(_currentWorkflowCanvas is null?"null":"ok")} canvasNodes={canvasNodes}", "ShellWorkspaceControl");
         }
 
         /// <summary>

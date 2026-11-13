@@ -21,6 +21,7 @@ internal sealed partial class BlobLocalRoiOwner
     {
         _controls.Loaded+=PreviewLoaded;_controls.Unloaded+=PreviewUnloaded;_controls.IsVisibleChanged+=PreviewVisibilityChanged;
         TrackPreviewSources();
+        _controls.Changed+=QueuePreview;
         if(_source is not null)_source.Changed+=QueuePreview;
     }
     private void TrackPreviewSources()
@@ -33,8 +34,8 @@ internal sealed partial class BlobLocalRoiOwner
                 field.Changed+=QueuePreview;
         }
     }
-    private void PreviewLoaded(object sender,RoutedEventArgs args){if(ReferenceEquals(args.OriginalSource,_controls))QueuePreview();}
-    private void PreviewUnloaded(object sender,RoutedEventArgs args){if(ReferenceEquals(args.OriginalSource,_controls))RetireFrame();}
+    private void PreviewLoaded(object sender,RoutedEventArgs args){QueuePreview();}
+    private void PreviewUnloaded(object sender,RoutedEventArgs args){RetireFrame();}
     private void PreviewVisibilityChanged(object sender,DependencyPropertyChangedEventArgs args)
     {if(_controls.IsVisible)QueuePreview();else RetireFrame();}
     private string PreviewMode()=>_controls.IsImageArea?BlobRoiInheritance.Local:_inputs.ReadUnpresentedInput(BlobRoiInheritance.ModeId) switch
@@ -116,6 +117,7 @@ internal sealed partial class BlobLocalRoiOwner
     {
         _controls.Loaded-=PreviewLoaded;_controls.Unloaded-=PreviewUnloaded;_controls.IsVisibleChanged-=PreviewVisibilityChanged;
         foreach(var field in _previewFields)field.Changed-=QueuePreview;_previewFields.Clear();
+        _controls.Changed-=QueuePreview;
         if(_source is not null)_source.Changed-=QueuePreview;ClearPreview();
     }
 }

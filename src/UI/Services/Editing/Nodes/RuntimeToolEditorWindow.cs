@@ -220,8 +220,14 @@ public sealed class RuntimeToolEditorWindow : BaseWindow, INativeToolCommands
                     // 原件语义（ModuleResultView/ModuleDisplayDecorator）：形状与参数即模块
                     // 参数对象，关闭参数窗口即持久生效，不存在"丢弃草稿"边界。关闭前
                     // 把未提交的调试草稿（含 ROI 区域记录）提交到正式配置，尽力而为
-                    // （失败不阻断关闭，与原件一致）。
-                    try { if (!Editor.TryCommitEditor(out var commitError)) Foundation.Logging.PluginLogger.Error("关闭参数窗口提交草稿失败：" + commitError, nameof(RuntimeToolEditorWindow)); }
+                    // （失败不阻断关闭，与原件一致）；走 TryCommitBeforeClose 保留视图复用契约。
+                    try
+                    {
+                        if (ToolEditorCommit.GetDraftContext(Editor) as ProductionEditorContext is { } draftContext
+                            && Editor.Content is System.Windows.FrameworkElement editorView
+                            && !draftContext.TryCommitBeforeClose(editorView, out var commitError))
+                            Foundation.Logging.PluginLogger.Error("关闭参数窗口提交草稿失败：" + commitError, nameof(RuntimeToolEditorWindow));
+                    }
                     catch (Exception commitFailure) { Foundation.Logging.PluginLogger.Error(commitFailure.Message, nameof(RuntimeToolEditorWindow)); }
                     var drain = Editor.CloseDebugAsync();
                     if (drain.IsCompletedSuccessfully) _closeAllowed = true;

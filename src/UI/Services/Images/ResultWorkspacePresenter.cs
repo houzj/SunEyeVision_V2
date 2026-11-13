@@ -76,6 +76,14 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         shell.SelectOverlayCommand=new SunEyeVision.UI.Core.RelayCommand(ToggleOverlay,CanToggleOverlay);
         shell.SelectBackgroundCommand=new SunEyeVision.UI.Core.RelayCommand(SwapBackground,CanSwapBackground);
         ((SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.ImageViewBox)_output.Image.Viewport.View).OnFreshExtendContent+=OnOverlayViewportChanged;
+        // 原件两段式（形状按钮只选中，图像落笔才检查并弹阻断提示）：视口落笔仅在
+        // 存在阻断意图（RoiDrawBlockReason 非空）时上报给工具侧 owner 重试激活。
+        System.Windows.Input.MouseButtonEventHandler onRoiDrawDown=(sender,args)=>
+        {
+            if(!_disposed&&!string.IsNullOrEmpty(_main.RoiDrawBlockReason))_main.NotifyRoiInputViewportClicked();
+        };
+        _output.Image.Viewport.View.PreviewMouseLeftButtonDown+=onRoiDrawDown;
+        _input.Image.Viewport.View.PreviewMouseLeftButtonDown+=onRoiDrawDown;
         shell.CrossLinesCommand=new SunEyeVision.UI.Core.RelayCommand(()=>
         {
             if(Window.GetWindow(shell) is {} owner)_output.Cross.OpenSettings(owner);

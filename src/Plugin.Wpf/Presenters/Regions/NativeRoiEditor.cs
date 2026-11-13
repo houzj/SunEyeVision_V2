@@ -63,6 +63,8 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
     }
     public Func<bool>? PrepareInteraction {get;set;}
     public Func<string?>? InteractionFailureText {get;set;}
+    /// <summary>阻断来自显示选择（非输入图）时为真：按钮点击不弹框，提示延迟到图像落笔。</summary>
+    public bool DeferInteractionFeedback {get;set;}
     private void OnPreparingFocus(object sender,KeyboardFocusChangedEventArgs args)
     {if(!_disposed&&!_projecting&&!_committing&&PrepareInteraction?.Invoke()==false)args.Handled=true;}
     public string? Title {get;set;}
@@ -131,7 +133,7 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         var warning=_drawFeedbackWarning;_drawFeedbackWarning=null;
         if(warning?.IsVisible==true)warning.Close();
     }
-    private void ShowInteractionFeedback()
+    public void ShowInteractionFeedback()
     {
         if(_disposed||!IsLoaded||!IsVisible||_drawFeedbackWarning is not null
             ||Window.GetWindow(this) is not {IsVisible:true} owner)return;
@@ -357,7 +359,9 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         {
             _owner=owner;
             ValueChangedCommand=new RequestCommand(()=>!owner._disposed&&!owner._projecting&&!owner._suspended&&owner.IsLoaded&&generation==owner._generation,
-                value=>{if(owner.PrepareInteraction?.Invoke()==true&&owner.NativeView.DataContext is Context current)current.ValueChangedCommand.Execute(value);else owner.ShowInteractionFeedback();},owner.ShowInteractionFeedback);
+                // 原厂两段式（用户实机对照）：显示图不是输入图时点形状按钮只选中不弹框，
+                // 提示延迟到用户在图像上落笔时（owner 经图像点击通道触发）。
+                value=>{if(owner.PrepareInteraction?.Invoke()==true&&owner.NativeView.DataContext is Context current)current.ValueChangedCommand.Execute(value);else if(!owner.DeferInteractionFeedback)owner.ShowInteractionFeedback();},owner.ShowInteractionFeedback);
         }
         public object? CurROIData=>null;
         public bool IsHaveData=>false;

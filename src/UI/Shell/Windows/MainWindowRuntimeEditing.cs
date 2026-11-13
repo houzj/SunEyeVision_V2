@@ -19,6 +19,9 @@ public partial class MainWindowViewModel
     internal Func<string,bool,Func<bool>,SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameLease?>? RuntimeRoiFrameBorrow {get;set;}
     internal event Action? RoiFrameAvailabilityChanged;
     internal void NotifyRoiFrameAvailabilityChanged() => RoiFrameAvailabilityChanged?.Invoke();
+    /// <summary>用户在显示图像视口上落笔（原件两段式：此时才检查绘制资格并弹阻断提示）。</summary>
+    internal event Action? RoiInputViewportClicked;
+    internal void NotifyRoiInputViewportClicked() => RoiInputViewportClicked?.Invoke();
     private bool OwnsSelectedDocumentNode(NodeDefinition node)
     {
         var session = DocumentManager.CurrentSession;
@@ -216,9 +219,11 @@ public partial class MainWindowViewModel
                     return RuntimeRoiFrameBorrow?.Invoke(key,interactive,SourceCurrent);
                 },()=>RoiDrawBlockReason,RefreshEditorDebugResult);
             RoiFrameAvailabilityChanged+=control.RefreshRoiFrame;
+            RoiInputViewportClicked+=control.NotifyRoiDrawRequested;
             context.Deactivated+=()=>
             {
                 RoiFrameAvailabilityChanged-=control.RefreshRoiFrame;
+                RoiInputViewportClicked-=control.NotifyRoiDrawRequested;
                 if(ReferenceEquals(_editorDebugControl,control))
                 {
                     _editorDebugControl=null;_editorDebugContext=null;RefreshEditorDebugResult();

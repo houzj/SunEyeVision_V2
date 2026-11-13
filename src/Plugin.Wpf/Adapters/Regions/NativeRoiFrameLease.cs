@@ -36,8 +36,12 @@ public sealed class NativeRoiFrameSource(Func<string,bool,NativeRoiFrameLease?> 
 {
     public NativeRoiInputLease? CaptureInputs(IReadOnlyCollection<string> fields)=>captureInputs?.Invoke(fields);
     public event Action? Changed;
+    /// <summary>用户在显示图像视口上按下鼠标（原件两段式：形状按钮只选中，
+    /// 落笔时才检查 IsCanDrawROI 并弹阻断提示）；宿主仅在存在阻断意图时上报。</summary>
+    public event Action? InputViewportClicked;
     public NativeRoiFrameLease? Borrow(string inputFieldId,bool interactive)=>borrow(inputFieldId,interactive);
     public void Refresh()=>Changed?.Invoke();
+    public void NotifyInputViewportClicked()=>InputViewportClicked?.Invoke();
 }
 
 /// <summary>Borrowed, frozen declared inputs; the host alone owns resolver and publication readers.</summary>

@@ -54,6 +54,7 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
             controls.Changed+=OnModesChanged;
             _imageField.Changed+=RefreshFrame;
             if(source is not null)source.Changed+=RefreshFrame;
+            if(source is not null)source.InputViewportClicked+=OnInputViewportClicked;
             _localInspection=_controls.IsLocalDrawing(BlobLocalRoi.Inspection);_localMask=_controls.IsLocalDrawing(BlobLocalRoi.Mask);
             _observedPreviewMode=PreviewMode();InitializePreview();
         }
@@ -160,7 +161,7 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
             if(!FrameCurrent(generation))return false;
             var candidate=_frame!.BeginEditing(session);
             if(!FrameCurrent(generation)){candidate.Dispose();return false;}
-            _interaction=candidate;_active=group;_pendingActivate=null;Error="";return true;
+            _interaction=candidate;_active=group;_pendingActivate=null;_editors[group].DeferInteractionFeedback=false;Error="";return true;
         }
         finally{_activating=false;}
     }
@@ -169,10 +170,22 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
         if(_disposed||_activating||_accepting||!_controls.IsLoaded||!_controls.IsVisible||!_controls.IsLocalDrawing(group))return false;
         if(!FrameCurrent(_generation))AcquireFrame(interactive:true);
         if(ActivateCore(group))return true;
-        // P1 一击命中：显示图不是输入图时本轮借帧被切换放弃（宿主 EnsureRoiDisplayInput），
-        // 记录待激活；显示切换完成自动重建后由 CompletePendingActivation 补齐，无需再次点击。
+        // 原厂两段式（用户实机截图）：显示图不是输入图时点形状按钮只选中不弹框，
+        // 提示延迟到图像落笔（OnInputViewportClicked 重试仍阻断时弹出）。
+        // 待激活记录兜底：用户切回输入图后自动重建即武装。
+        _editors[group].DeferInteractionFeedback=_drawBlockReason?.Invoke() is not null;
         _pendingActivate=group;
         return false;
+    }
+    private void OnInputViewportClicked()
+    {
+        if(_disposed||_refreshing||_accepting||_activating)return;
+        if(_active is not null)return;
+        var group=_controls.IsLocalDrawing(BlobLocalRoi.Inspection)?BlobLocalRoi.Inspection
+            :_controls.IsLocalDrawing(BlobLocalRoi.Mask)?BlobLocalRoi.Mask:null;
+        if(group is null)return;
+        if(!Activate(group)&&_drawBlockReason?.Invoke() is not null)
+            _editors[group].ShowInteractionFeedback();
     }
     private void CompletePendingActivation()
     {
@@ -311,7 +324,7 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;_pendingActivate=null;_controls.Changed-=OnModesChanged;
-        _imageField.Changed-=RefreshFrame;if(_source is not null)_source.Changed-=RefreshFrame;Changed=null;
+        _imageField.Changed-=RefreshFrame;if(_source is not null){_source.Changed-=RefreshFrame;_source.InputViewportClicked-=OnInputViewportClicked;}Changed=null;
         Run(new Action[]{DisposePreview,RetireFrame}.Concat(_editors.Values.Select(editor=>(Action)(()=>{editor.PendingChanged-=Notify;editor.Dispose();}))));
     }
 }

@@ -16,7 +16,12 @@ internal static partial class NativeRoiResultProjection
         foreach(var row in rows.ToArray())
         {
             NativeResultRaster.CheckCurrent(current);
-            if(row.SourceFrame!=receipt.Frame||receipt.Coordinates!=RoiDeclarations.ImageFrame)throw new ArgumentException("区域图形与实际帧或坐标域不匹配。");
+            // 声明坐标域（如 "image:input"）是参数合同标签，与显示帧实际来源 id 无关；
+            // 按原件语义（ModuleResultView.xaml:142，换显示图像从不隐藏形状），
+            // 区域图形绑定当前显示物理帧并要求像素坐标域，形状在 Prepare 内重声明到 receipt.Coordinates。
+            if(row.SourceFrame!=receipt.Frame
+                ||receipt.Coordinates.Domain!=CoordinateDomain.Image||receipt.Coordinates.Unit!=CoordinateUnit.Pixel)
+                throw new ArgumentException("区域图形与当前显示物理帧或像素坐标域不匹配。");
             RoiGeometryEditing.Validate(row.Shape);
             if(!double.IsFinite(row.Width)||row.Width<=0||!double.IsFinite(row.Opacity)||row.Opacity is <0 or >1)throw new ArgumentException("区域样式无效。");
             var shape=row.Shape;var kind=shape.Get<string>("kind");
@@ -42,7 +47,8 @@ internal static partial class NativeRoiResultProjection
             {
                 GeometryValue geometry=kind switch
                 {
-                    "point"=>shape.Get<PointGeometry>("center"),
+                    // 点几何携带声明域帧；绘制在当前背景上，重声明到显示帧坐标域。
+                    "point"=>new PointGeometry(receipt.Coordinates,shape.Get<PointGeometry>("center").Point),
                     "rectangle"=>new OrientedRectangleGeometry(receipt.Coordinates,RoiGeometryEditing.Center(shape),shape.Get<double>("width"),shape.Get<double>("height"),shape.Get<double>("angle-degrees")*Math.PI/180),
                     "polygon"=>new PolygonGeometry(receipt.Coordinates,RoiGeometryEditing.Vertices(shape)),
                     _=>throw new ArgumentException("结果区域不支持该名义形状。")

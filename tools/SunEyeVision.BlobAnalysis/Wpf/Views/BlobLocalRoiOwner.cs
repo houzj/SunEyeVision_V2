@@ -133,14 +133,13 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
         if(_disposed||_refreshing||_accepting||_activating)return;
         // 原件语义（SetRoiVisible + UpdateROI，ModuleResultView.xaml.cs.pending:2252/:604-608）：
         // 形状=参数对象，页签/窗口可见性变化只隐藏不销毁；仅图像帧身份变化才退役。
-        // 恢复可见时自动重建会话显示既有形状，不依赖用户点击绘制激活。
-        var frameAlive=_frame is {} frame&&frame.IsCurrent;
-        if(!frameAlive)
+        // 退役后（如切换可编辑图像）立即按当前来源重建会话，既有形状随参数值恢复显示，
+        // 不依赖用户再点绘制按钮。
+        if(_frame is not {} frame||!frame.IsCurrent)
         {
             _refreshing=true;
             try{RetireFrame();Notify();}
             finally{_refreshing=false;}
-            return;
         }
         if(_controls.IsVisible&&_controls.IsLoaded&&_sessions.Count==0
             &&(_controls.IsLocalDrawing(BlobLocalRoi.Inspection)||_controls.IsLocalDrawing(BlobLocalRoi.Mask)))

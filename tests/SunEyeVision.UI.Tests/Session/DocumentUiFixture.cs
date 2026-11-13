@@ -48,6 +48,19 @@ internal static class UiRuntime
                 return null;
             return SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls.DialogResult.Ok;
         };
+        // ThemeMessageDialog 是真实模态窗口，同样需要无监督应答：确认/继续→确定，保存询问→否（不落盘）。
+        SunEyeVision.UI.Features.Dialogs.ThemeMessageDialog.TestAutoRespond=(title,message,button)=>
+        {
+            Console.WriteLine($"[测试自动应答弹窗] ThemeMessageDialog 标题={title ?? "-"} 消息={message ?? "-"} 按钮={button}{Environment.NewLine}{Environment.StackTrace}");
+            return button switch
+            {
+                System.Windows.MessageBoxButton.OK => System.Windows.MessageBoxResult.OK,
+                System.Windows.MessageBoxButton.OKCancel => System.Windows.MessageBoxResult.OK,
+                System.Windows.MessageBoxButton.YesNo => System.Windows.MessageBoxResult.No,
+                System.Windows.MessageBoxButton.YesNoCancel => System.Windows.MessageBoxResult.No,
+                _ => System.Windows.MessageBoxResult.Cancel,
+            };
+        };
     }
     internal static string ProductRoot => Path.GetFullPath(typeof(UiRuntime).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().Single(item=>item.Key=="HostDebugRoot").Value!);
     internal static string Cases => Path.GetFullPath(Path.Combine(ProductRoot,"..","..","_validation","UiSessionTests"));

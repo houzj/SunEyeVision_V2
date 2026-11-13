@@ -82,22 +82,18 @@ internal sealed partial class ResultWorkspacePresenter
             {ClearOriginal();continue;}
             var frozen = state.Geometry;
             // 原件 ModuleResultView.xaml:142 的 ShapeList 始终绑定模块结果，
-            // imageListCombobox_SelectionChanged 只在 SelectedValue==null 时清空（:2152-2153），
-            // 换显示图像从不重建形状。因此坐标域不一致时只跳过与坐标域绑定的 ROI/内接/轮廓，
-            // 保留矩形与文字（它们来自结果行与文本租约，不需要域一致）。
-            var sameDomain = frozen is null || frozen.Coordinates == receipt.Coordinates;
-            if (!sameDomain)
-                try { _main.AddLog("当前显示图像的坐标域与结果几何不一致：按原件语义仅切换背景图像，保留模块结果图形与文字。"); } catch { }
+            // imageListCombobox_SelectionChanged 只在 SelectedValue==null 时清空（:2152-2153）：
+            // 换显示图像从不重建或隐藏形状，模块几何按像素坐标绘制到当前背景上。
+            // 声明坐标域（如参数合同的 "image:input"）是合同标签，与显示帧实际来源 id 无关；
+            // 绑定与重声明一律使用当前显示帧的物理帧与坐标域，不做逻辑域相等比较。
             var appearance = state.Appearance;
             var innerPath = appearance.InnerRectangle is { Visible: true } ? state.Descriptor.InnerRectangle : null;
             var outlinePath = appearance.Outline is { Visible: true } ? state.Descriptor.Outline : null;
             var showRows = appearance.Graphic.Visible || innerPath is not null || outlinePath is not null;
-            var roiGroups = sameDomain
-                ? frozen?.Groups
-                    .Where(group => group.Coverage == ResultGeometryCoverage.Explicit && group.Shapes.Count != 0)
-                    .Select(group => (Group:group, Style:RoiStyle(appearance,group.Role)))
-                    .Where(item => item.Style?.Visible == true).ToArray() ?? []
-                : [];
+            var roiGroups = frozen?.Groups
+                .Where(group => group.Coverage == ResultGeometryCoverage.Explicit && group.Shapes.Count != 0)
+                .Select(group => (Group:group, Style:RoiStyle(appearance,group.Role)))
+                .Where(item => item.Style?.Visible == true).ToArray() ?? [];
             if (!showRows && !appearance.Text.Visible && roiGroups.Length == 0)
             {ClearOriginal();continue;}
             IResultValueLease? values=null;DisplayScene? candidate=null;SunEyeVision.Plugin.Runtime.ResultDisplayTextLease? textLease=null;
@@ -131,8 +127,8 @@ internal sealed partial class ResultWorkspacePresenter
                     {
                         var style=visibleStyle!;
                         var fill=style.Fill is {} color && !group.OutlineOnly ? Color(color) : Colors.Transparent;
-                        var passed=style.FixedJudgment??frozen.Passed;
-                        foreach(var shape in group.Shapes)roi.Add(new(frozen.SourceFrame,shape,Color(passed?style.Ok:style.Ng),fill,style.Width,style.Opacity,
+                        var passed=style.FixedJudgment??frozen!.Passed;
+                        foreach(var shape in group.Shapes)roi.Add(new(receipt.Frame,shape,Color(passed?style.Ok:style.Ng),fill,style.Width,style.Opacity,
                             IncludeMeasurements:style.ShowMeasurements,ToolTip:PointTip(style.PointLabel,shape)));
                     }
                 }
@@ -151,9 +147,8 @@ internal sealed partial class ResultWorkspacePresenter
                     var row=rows!.GetElement(i);var id=Member(row,state.Descriptor.Identity).GetScalar<long>();
                     if(!ids.Add(id))throw new InvalidOperationException("结果显示对象身份重复。");
                     using var region=Member(row,state.Descriptor.GeometrySource).AcquireRegionReader();
-                    if(sameDomain && region.Frame!=receipt.Coordinates)throw new InvalidOperationException("结果显示与当前图像坐标域不匹配。");
-                    // 跨域浏览时形状仍按像素坐标绘制到当前背景上（原件同义），源帧取当前显示帧。
-                    var shapeFrame=sameDomain?region.SourceFrame:receipt.Frame;
+                    // 形状按像素坐标绘制到当前背景上（原件同义），源帧取当前显示帧。
+                    var shapeFrame=receipt.Frame;
                     var passed=Member(row,state.Descriptor.Passed).GetScalar<bool>();
                     var selectedColor = id == selectedId ? state.Descriptor.SelectedRectangleColor : null;
                     if(appearance.Graphic.Visible)
@@ -167,18 +162,21 @@ internal sealed partial class ResultWorkspacePresenter
                             Color(selectedColor ?? (passed?appearance.Graphic.Ok:appearance.Graphic.Ng)),
                             appearance.Graphic.Width,appearance.Graphic.Opacity));
                     }
-                    if (sameDomain && innerPath is not null && appearance.InnerRectangle is {} style)
+                    if (innerPath is not null && appearance.InnerRectangle is {} style)
                     {
                         var inner = Member(row, innerPath);
                         if (!inner.IsMissing && !inner.IsNull)
                         {
-                            if (inner.GetGeometry() is not OrientedRectangleGeometry rectangle || rectangle.Frame != receipt.Coordinates)
-                                throw new InvalidOperationException("内接矩形与图像坐标域不匹配。");
-                            geometry.Add(new(region.SourceFrame, rectangle, Color(selectedColor ?? (passed ? style.Ok : style.Ng)), style.Width, style.Opacity,
+                            if (inner.GetGeometry() is not OrientedRectangleGeometry rectangle)
+                                throw new InvalidOperationException("内接矩形不是有效的有向矩形。");
+                            // 声明域是合同标签；按原件语义形状画在当前背景上，重声明到显示帧坐标域。
+                            var declared = new OrientedRectangleGeometry(receipt.Coordinates, rectangle.Center,
+                                rectangle.Width, rectangle.Height, rectangle.AngleRadians);
+                            geometry.Add(new(receipt.Frame, declared, Color(selectedColor ?? (passed ? style.Ok : style.Ng)), style.Width, style.Opacity,
                                 IncludeMeasurements:true));
                         }
                     }
-                    if(sameDomain && outlinePath is not null && appearance.Outline is {} outlineStyle)
+                    if(outlinePath is not null && appearance.Outline is {} outlineStyle)
                     {
                         var outline = Member(row, outlinePath);
                         var sources = outline.IsMissing || outline.IsNull ? Enumerable.Empty<DeclaredValueReader>()
@@ -194,13 +192,13 @@ internal sealed partial class ResultWorkspacePresenter
                                 // The held result lease protects these immutable points. Check retirement in bounded chunks.
                                 if((pointIndex & 255)==0&&!Current())
                                     throw new InvalidOperationException("轮廓准备期间结果已失效。");
-                                if(sourcePoints.GetElement(pointIndex).GetGeometry() is not PointGeometry point||point.Frame!=receipt.Coordinates)
-                                    throw new InvalidOperationException("轮廓点与图像坐标域不匹配。");
+                                if(sourcePoints.GetElement(pointIndex).GetGeometry() is not PointGeometry point)
+                                    throw new InvalidOperationException("轮廓点不是有效的点几何。");
                                 points.Add(point.Point);
                             }
                         }
                         if(points.Count!=0)
-                            outlines.Add(new(region.SourceFrame,receipt.Coordinates,points.ToArray(),i,passed,Color(outlineStyle.Ok),Color(outlineStyle.Ng)));
+                            outlines.Add(new(receipt.Frame,receipt.Coordinates,points.ToArray(),i,passed,Color(outlineStyle.Ok),Color(outlineStyle.Ng)));
                     }
                 }
                 if(textLease is not null)

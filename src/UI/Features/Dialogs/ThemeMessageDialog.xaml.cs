@@ -28,6 +28,10 @@ namespace SunEyeVision.UI.Features.Dialogs
         private readonly MessageBoxResult _defaultResult;
         private MessageBoxResult? _result;
 
+        /// <summary>测试宿主自动应答钩子：返回非空结果时不开真实模态窗口直接返回；返回 null 放行真实弹窗。
+        /// 生产进程不设置该钩子，行为不变。参数为（标题，消息，按钮组合）。</summary>
+        internal static Func<string?, string?, MessageBoxButton, MessageBoxResult?>? TestAutoRespond { get; set; }
+
         private ThemeMessageDialog(string message, string title, MessageBoxButton button, MessageIcon icon)
         {
             InitializeComponent();
@@ -72,6 +76,12 @@ namespace SunEyeVision.UI.Features.Dialogs
             MessageIcon icon = MessageIcon.Info,
             Window? owner = null)
         {
+            // 测试宿主自动应答：不开真实模态窗口，保证无人值守测试不阻塞（与 NativeMessageBox.TestAutoRespond 同型）。
+            if (TestAutoRespond?.Invoke(title, message, button) is { } answered)
+            {
+                VisionLogger.Instance.Log(LogLevel.Info, $"[ThemeMessageDialog] 测试自动应答: title='{title}', button={button}, result={answered}", "ThemeMessageDialog");
+                return answered;
+            }
             VisionLogger.Instance.Log(LogLevel.Info, $"[ThemeMessageDialog] 准备显示: title='{title}', button={button}, icon={icon}, ownerIsNull={owner == null}", "ThemeMessageDialog");
             var dialog = new ThemeMessageDialog(message, title, button, icon);
             if (owner != null)

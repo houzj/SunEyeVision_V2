@@ -914,6 +914,10 @@ public sealed class EditorDebugSessionTests
   Assert.True(session is not null,$"会话未建立 Error='{roi.Error}'");
   Assert.True(session!.IsCurrent);
   Assert.True(roi.PrepareInteraction?.Invoke());
+  // P2（原件 UpdateROI 语义）：结果工作区刷新不得销毁绘制会话，ROI 跨刷新存活。
+  UiRuntime.Call(fixture.Main,"RefreshEditorDebugResult");
+  UiRuntime.Pump();
+  Assert.True(session!.IsCurrent,$"刷新后绘制会话应存活 Error='{roi.Error}'");
   UiRuntime.Await(window.CloseAndDrainAsync());
  });
  [Fact] public void Actual_blob_roi_keeps_its_source_frame_during_drawing_and_rejects_a_retired_viewport()=>UiRuntime.Run(()=>

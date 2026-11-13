@@ -85,8 +85,13 @@ internal sealed partial class ResultWorkspacePresenter
             if(borrowed is null)return null;
             if(!Owns()||borrowed.Stamp!=publication.Stamp)return null;
             var accepted=borrowed;
-            var lease=new NativeRoiFrameLease(accepted.Image,accepted.Viewport,accepted.Receipt,()=>ActiveOwner(),()=>
-            {try{accepted.Dispose();}finally{DisposePrivate();if(ReferenceEquals(_roiPresentation,presentation))_roiPresentation=null;}});
+            // P2（原件 UpdateROI 语义，ModuleResultView.xaml.cs.pending:604-608）：租约货币
+            // 锚定“同一图像帧仍是该视口的呈现帧”，与变量路径一致——结果工作区刷新
+            // （调试执行/参数编辑/发布更新）不销毁 ROI 会话，仅图像对象变化时失效重投影；
+            // 不再锚定刷新代次（epoch），避免绘制中途会话反复死亡（roibtn.log 实锤）。
+            var lease=new NativeRoiFrameLease(accepted.Image,accepted.Viewport,accepted.Receipt,
+                ()=>!_disposed&&pane.CurrentFrame is {} current&&current.Frame==accepted.Receipt.Frame,()=>
+                {try{accepted.Dispose();}finally{DisposePrivate();if(ReferenceEquals(_roiPresentation,presentation))_roiPresentation=null;}});
             borrowed=null;transferred=true;return lease;
         }
         catch(Exception failure)

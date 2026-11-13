@@ -46,7 +46,9 @@ internal sealed partial class ResultWorkspacePresenter
         }
         if(source is not {HasImageValue:true}||source.Key!=key||(!temporarySource&&!plan!.InputSources.Any(candidate=>candidate.Key==key))
             ||(!temporarySource&&!ReferenceEquals(source,input?_inputSource:_outputSource))||(!temporarySource&&!OwnsChoice(source,input)))
-        {DisposePrivate();return null;}
+        {
+            DisposePrivate();return null;
+        }
         bool Selected()=>temporarySource?true:ReferenceEquals(source,input?_shell.SelectedInputItem:_shell.SelectedOutputItem)&&ReferenceEquals(source,input?_inputSource:_outputSource);
         bool ActiveProof()=>temporarySource||PlanCurrent()&&Selected()&&(temporarySource||current())&&PlanCurrent()&&Selected()&&(temporarySource||source.Current())&&PlanCurrent()&&Selected();
         bool Proof()=>temporarySource||RequestCurrent()&&ActiveProof()&&RequestCurrent();
@@ -80,7 +82,8 @@ internal sealed partial class ResultWorkspacePresenter
             }
             if(source.Publication is not {} publication)return null;
             borrowed=pane.BorrowCurrentImage();
-            if(borrowed is null||!Owns()||borrowed.Stamp!=publication.Stamp||!Owns())return null;
+            if(borrowed is null)return null;
+            if(!Owns()||borrowed.Stamp!=publication.Stamp)return null;
             var accepted=borrowed;
             var lease=new NativeRoiFrameLease(accepted.Image,accepted.Viewport,accepted.Receipt,()=>ActiveOwner(),()=>
             {try{accepted.Dispose();}finally{DisposePrivate();if(ReferenceEquals(_roiPresentation,presentation))_roiPresentation=null;}});

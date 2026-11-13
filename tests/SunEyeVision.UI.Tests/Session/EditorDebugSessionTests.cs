@@ -887,6 +887,35 @@ public sealed class EditorDebugSessionTests
   }
   finally{UiRuntime.Await(window.CloseAndDrainAsync());}
  });
+ [Fact] public void Roi_shape_activation_switches_the_display_to_the_roi_input_and_draws_on_the_visible_viewport()=>UiRuntime.Run(()=>
+ {
+  // P1（原件 IsCanDrawROI+OnRelatedIOChanged）：绘制请求时显示图不是 ROI 输入图的，
+  // 先把单图显示切到输入图（不写正式选择），显示就绪后自动完成激活——绘制面=可见的结果视口。
+  using var fixture = new DocumentUiFixture();
+  var source = fixture.Add();
+  var blob = fixture.Add("BlobAnalysis", 350, 240);
+  fixture.ConfigureImage(source, fixture.Image(180, 12));
+  fixture.Fields(source, ("output.format", new ConstantSetting("rgb24")), ("output.mono8", new ConstantSetting(true)));
+  fixture.Connect(source, blob);
+  fixture.Main.SelectedNode = blob;
+  fixture.Run();
+  var shell = Assert.Single(UiRuntime.Visuals<ResultWorkspaceShell>(fixture.Results));
+  var ownOutput = shell.OutputItems!.Cast<ResultWorkspaceImageSource>().Single(item => !item.IsUpstream && item.Reference.PortId == "field:8ca10000000040008000000000000005");
+  shell.SetCurrentValue(ResultWorkspaceShell.SelectedOutputItemProperty, ownOutput);
+  UiRuntime.Pump();
+  var window = Open(fixture, blob);
+  var roi = Assert.Single(UiRuntime.Visuals<NativeRoiEditor>(window.Editor).Where(item => !item.PolygonOnly));
+  roi.PrepareInteraction?.Invoke();
+  UiRuntime.Pump();UiRuntime.Pump();
+  Assert.Equal("output.image", Assert.IsType<ResultWorkspaceImageSource>(shell.SelectedOutputItem).Reference.PortId);
+  Assert.True(blob.SelectedDisplayReference is null||blob.SelectedDisplayReference==ownOutput.Key,
+      "ROI 显示切换不得改写正式显示选择");
+  var session = UiRuntime.Field<NativeRoiSession>(roi, "_session");
+  Assert.True(session is not null,$"会话未建立 Error='{roi.Error}'");
+  Assert.True(session!.IsCurrent);
+  Assert.True(roi.PrepareInteraction?.Invoke());
+  UiRuntime.Await(window.CloseAndDrainAsync());
+ });
  [Fact] public void Actual_blob_roi_keeps_its_source_frame_during_drawing_and_rejects_a_retired_viewport()=>UiRuntime.Run(()=>
  {
   using var fixture = new DocumentUiFixture();
@@ -2009,7 +2038,7 @@ public sealed class EditorDebugSessionTests
    var control=new RuntimeNodeConfigurationControl();Window=new(control){Owner=f.Host,ShowInTaskbar=false};
    Context=new(f.Session,f.Root.Id,node,()=>ReferenceEquals(SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSession,f.Session),control.BindDraft);
    ToolEditorCommit.AttachDraftContext(control,Context);Context.PrepareView=()=>control.TryCapture(out var error)?null:error;Context.HasPendingViewEdits=()=>control.HasPendingEdits;Context.PreserveViewAfterRebase=control.AdoptRebasedDraft;
-   control.ConfigureDebug(Context,()=>factory,()=>true,_=>{},_=>null,()=>{});Window.SetRunAvailability(()=>true);
+   control.ConfigureDebug(Context,()=>factory,()=>true,_=>{},(_,_)=>null,()=>{});Window.SetRunAvailability(()=>true);
    Context.Deactivated+=control.Dispose;Context.Deactivated+=()=>{if(Window.IsLoaded)Window.Close();};Window.Closed+=(_,_)=>Context.Discard();
    control.BindDraft(Context.PreparedDraft);Window.Show();Window.SetAssemblyReady();UiRuntime.Pump();
   }

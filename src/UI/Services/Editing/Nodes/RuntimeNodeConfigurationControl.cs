@@ -69,7 +69,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
     internal Guid? DebugScopeId => _debug?.ScopeId;
     internal SunEyeVision.Plugin.Runtime.DeclaredOutputSnapshot? CurrentDebugSnapshot => _debug?.CurrentSnapshot;
     internal SunEyeVision.Plugin.Runtime.ResultHistoryBuffer? DebugHistory => _debug?.History;
-    internal void ConfigureDebug(ProductionEditorContext context, Func<IHostInputFactory> factory, Func<bool> canRun, Action<string> log, Func<string,SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameLease?> borrowFrame, Action changed)
+    internal void ConfigureDebug(ProductionEditorContext context, Func<IHostInputFactory> factory, Func<bool> canRun, Action<string> log, Func<string,bool,SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameLease?> borrowFrame, Action changed)
     {
         if (_debug is not null) throw new InvalidOperationException("参数页已拥有调试会话。");
         _debugResultChanged=changed;

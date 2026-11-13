@@ -29,11 +29,14 @@ public sealed class NativeRoiFrameLease : IDisposable
 }
 
 /// <summary>The actual host announces input/publication changes; a tool never polls Workflow or queries live values.</summary>
-public sealed class NativeRoiFrameSource(Func<string,NativeRoiFrameLease?> borrow,Func<IReadOnlyCollection<string>,NativeRoiInputLease?>? captureInputs=null)
+/// <remarks><paramref name="borrow"/> 的 interactive 参数标记本次借帧是否由用户绘制请求触发：
+/// 交互借帧允许宿主先把单图显示切到 ROI 输入图（VM IsCanDrawROI 前置），
+/// 预览等非交互借帧不得改变用户当前的显示选择。</remarks>
+public sealed class NativeRoiFrameSource(Func<string,bool,NativeRoiFrameLease?> borrow,Func<IReadOnlyCollection<string>,NativeRoiInputLease?>? captureInputs=null)
 {
     public NativeRoiInputLease? CaptureInputs(IReadOnlyCollection<string> fields)=>captureInputs?.Invoke(fields);
     public event Action? Changed;
-    public NativeRoiFrameLease? Borrow(string inputFieldId)=>borrow(inputFieldId);
+    public NativeRoiFrameLease? Borrow(string inputFieldId,bool interactive)=>borrow(inputFieldId,interactive);
     public void Refresh()=>Changed?.Invoke();
 }
 

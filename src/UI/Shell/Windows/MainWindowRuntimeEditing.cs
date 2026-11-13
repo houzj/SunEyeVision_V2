@@ -188,7 +188,7 @@ public partial class MainWindowViewModel
             control.ConfigureDebug(context,()=>FormalImageInputs,
                 ()=>Current()&&!IsRunning&&!_solutionTransitionPrepared&&!_transitionPreparationInProgress,
                 message=>control.Dispatcher.BeginInvoke(new Action(()=>AddLog(message))),
-                field=>
+                (field,interactive)=>
                 {
                     if(!window.CanCompleteAssembly||!context.IsValid||!control.TryGetResultDisplayBinding(out var owner,out var binding)
                         ||owner.Id!=node.Id)return null;
@@ -203,6 +203,14 @@ public partial class MainWindowViewModel
                         catch(Exception){_activeRoiImageVariable=null;}
                     }
                     if(key is null)return null;
+                    // 原件绘制前置（IsCanDrawROI）：显示图必须是模块的输入图。
+                    // 仅交互借帧（用户绘制请求）先切显示再借帧（EnsureRoiDisplayInput
+                    // 内联同步完成刷新，随后立即重试）；预览等非交互借帧不得改变
+                    // 用户当前的显示选择。
+                    var roiSetting=configuration.Fields.Read(field);
+                    var roiPortId=(roiSetting as ReferenceSetting)?.Reference.PortId;
+                    if(interactive&&EnsureRoiDisplayInput(key,roiPortId,context.ScopeId))
+                        return RuntimeRoiFrameBorrow?.Invoke(key,SourceCurrent);
                     bool SourceCurrent()
                     {
                         if(!window.CanCompleteAssembly||!context.IsValid||!ReferenceEquals(context.PreparedDraft,draft)

@@ -15,6 +15,18 @@ public partial class MainWindowViewModel
  private EditorRelatedImage? _editorRelatedImage;
  internal EditorRelatedImage? EditorRelatedImageState=>_editorRelatedImage;
  internal void SetEditorRelatedImage(EditorRelatedImage? value)=>_editorRelatedImage=value;
+ /// <summary>ROI 本地绘制前置（VM IsCanDrawROI：显示图必须是模块的输入图，
+ /// ModuleDisplayDecorator.cs.pending:446-480）。绘制请求的输入图与当前显示不一致时，
+ /// 把单图临时显示态切到该输入图并触发结果工作区刷新；返回 true 表示已发起切换，
+ /// 调用方本轮借帧应放弃并在刷新完成后重试。</summary>
+ internal bool EnsureRoiDisplayInput(string key,string? portId,Guid? scopeId)
+ {
+  if(_editorRelatedImage is not null&&(_editorRelatedImage.Key==key||
+      (portId is {Length:>0}&&_editorRelatedImage.PortId==portId)))return false;
+  _editorRelatedImage=key is null?null:new EditorRelatedImage(key,portId??"",scopeId);
+  ResultWorkspaceChanged?.Invoke();
+  return true;
+ }
  private ProductionEditorContext? _workspaceEditorContext;
  private ToolConfiguration? _workspaceEditorConfiguration;
  private DeclaredOutputSnapshot? _workspaceEditorSnapshot;

@@ -23,11 +23,12 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
     private readonly Stack<RecordValue> _undo=new(),_redo=new();
     private readonly Dictionary<string,NativeRoiPendingInput> _pending=new();
     private string? _unrestoredInput;
+    private string? _pendingActivate;
     private NativeRoiFrameLease? _frame;
     private INativeRoiEditLease? _interaction;
     private string? _active;
     private RecordValue _observed;
-    private bool _disposed,_accepting,_refreshing,_activating;
+    private bool _disposed,_accepting,_refreshing,_activating,_acquireQueued;
     private bool _localInspection,_localMask;
     private string _observedPreviewMode=BlobRoiInheritance.Local;
     private long _generation,_projectionRevision;
@@ -97,8 +98,8 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
         {
             if(FrameCurrent(_generation))return;
             RetireFrame();if(_disposed)return;var generation=_generation;
-            var frame=_source?.Borrow(BlobTool.ImageInput);
-            if(frame is null){Error="请先运行并选择图像来源。";Notify();return;}
+            var frame=_source?.Borrow(BlobTool.ImageInput,_pendingActivate is not null);
+            if(frame is null){Error="请先运行并选择图像来源。";_pendingActivate=null;Notify();return;}
             if(_disposed||generation!=_generation||!frame.IsCurrent){frame.Dispose();return;}_frame=frame;
             foreach(var group in new[]{BlobLocalRoi.Inspection,BlobLocalRoi.Mask})
             {
@@ -118,6 +119,12 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
                 }
             }
             Error="";Notify();
+            // P1：绘制请求时显示图尚未就绪的，在借帧成功后补齐激活（一次性，失败由用户重试）。
+            if(_pendingActivate is {} requestedGroup&&_controls.IsLocalDrawing(requestedGroup)&&_sessions.ContainsKey(requestedGroup))
+            {
+                _pendingActivate=null;
+                Activate(requestedGroup);
+            }
         }
         catch(Exception error)
         {
@@ -129,7 +136,24 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
     }
     internal void RefreshFrame()
     {
-        if(_disposed||_refreshing||_accepting||_activating||_frame is null)return;
+        if(_disposed||_refreshing||_accepting||_activating)return;
+        if(_frame is null)
+        {
+            // P1：显示切换（EnsureRoiDisplayInput）完成后由可用性通知驱动补借帧；
+            // 推迟到派发器 Background 阶段执行，避免在结果工作区刷新期内借帧被
+            // PlanCurrent 的 !IsRefreshing 条件拒绝（原件 UpdateROI：刷新后 ROI 重投影而非销毁）。
+            if(!_acquireQueued&&_controls.IsLoaded&&_controls.IsVisible
+                &&(_controls.IsLocalDrawing(BlobLocalRoi.Inspection)||_controls.IsLocalDrawing(BlobLocalRoi.Mask)))
+            {
+                _acquireQueued=true;
+                _controls.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background,new Action(()=>
+                {
+                    _acquireQueued=false;
+                    if(!_disposed&&_frame is null)AcquireFrame();
+                }));
+            }
+            return;
+        }
         _refreshing=true;
         try{if(!FrameCurrent(_generation)){RetireFrame();Error="请选择与输入一致的图像后继续编辑。";Notify();}}
         finally{_refreshing=false;}
@@ -137,7 +161,13 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
     private bool Activate(string group)
     {
         if(_disposed||_activating||_accepting||!_controls.IsLoaded||!_controls.IsVisible||!_controls.IsLocalDrawing(group))return false;
-        if(!FrameCurrent(_generation))AcquireFrame();
+        if(!FrameCurrent(_generation))
+        {
+            // 绘制请求时显示图与 ROI 输入图不一致：宿主先把显示切到输入图（P1），
+            // 本轮借帧放弃，刷新完成后按 _pendingActivate 自动补齐激活，无需再次点击。
+            _pendingActivate=group;
+            AcquireFrame();
+        }
         if(!FrameCurrent(_generation)||!_sessions.TryGetValue(group,out var session))return false;
         if(_active==group&&_interaction?.IsCurrent==true)return true;
         if(_interaction?.HasPendingGesture==true){Error="请先完成或取消当前绘制。";return false;}

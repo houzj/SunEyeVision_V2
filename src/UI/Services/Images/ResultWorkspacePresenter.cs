@@ -94,18 +94,15 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         {
         if(_disposed)return;
         RetireRoiPresentation();
-        // Original OnIsShowDoubleImageChanged clears the old input then selects the first input on entry.
-        // Preserve a currently selected source when it is also a legal input source;
-        // switching to the two-image view must not silently detach a variable image
-        // that the editor has just selected for ROI.
-        var previousInput=_shell.SelectedInputItem as ResultWorkspaceImageSource;
-        var previousOutput=_shell.SelectedOutputItem as ResultWorkspaceImageSource;
+        // 原件双图入口语义（ModuleDisplayDecorator.cs.pending:1453-1463 RefreshInputImageList）：
+        // 先选与关联 IO 匹配的输入项，否则取第一个输入项；退出双图清空输入选择
+        // （OnIsShowDoubleImageChanged，:2228-2260）。
         if(!_disposed&&_shell.IsDoubleImage)
         {
-            var selected=previousInput is {} input&&_plan?.InputSources.Any(candidate=>ReferenceEquals(candidate,input))==true
-                ?input
-                :previousOutput is {} output&&_plan?.InputSources.Any(candidate=>ReferenceEquals(candidate,output))==true
-                    ?output:_plan?.InputSources.FirstOrDefault();
+            var related=_main.EditorRelatedImageState;
+            var selected=related is null?null
+                :_plan?.InputSources.FirstOrDefault(candidate=>candidate.Reference?.PortId==related.PortId||candidate.Key==related.Key);
+            selected??=_plan?.InputSources.FirstOrDefault();
             if(!ReferenceEquals(_shell.SelectedInputItem,selected))_shell.SelectedInputItem=selected;
         }
         else _shell.SelectedInputItem=null;

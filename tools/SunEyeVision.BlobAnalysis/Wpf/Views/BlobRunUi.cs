@@ -30,6 +30,12 @@ internal static class BlobRunUi
                 .Select(mode=>new FieldCondition(controller,mode.ToString(),true));
             conditions[id]=(conditions.GetValueOrDefault(id)??Array.Empty<FieldCondition>()).Concat(hidden).Distinct().ToArray();
         }
+        // 原件 0x3 双阈值 Trigger（IMVSBlobFindModuAlgorithmTab.xml:160-173）只显示
+        // LowThreshold/HightThreshold，隐藏 Polarity 行——极性由端点顺序决定
+        // （BlobThresholdCapabilities.IsInverse 同源约定）。
+        var polarityId=definition.SettingsFieldId(nameof(BlobSettings.Type));
+        conditions[polarityId]=(conditions.GetValueOrDefault(polarityId)??Array.Empty<FieldCondition>())
+            .Append(new FieldCondition(controller,BlobSegmentationMode.DoubleThreshold.ToString(),true)).Distinct().ToArray();
         // The original advanced expander never exposes OverlapRatio.
         var suppressed = new HashSet<string>(options.SuppressedFieldRows ?? Enumerable.Empty<string>(), StringComparer.Ordinal)
         {

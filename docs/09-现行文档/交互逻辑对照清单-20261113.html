@@ -66,6 +66,30 @@
 <tr><td>D3</td><td>调试快照隔离</td><td>编辑态显示所选对象当前值</td><td>私有快照/正式发布分离</td><td class="ok">✅</td><td>Actual_window_private 用例</td></tr>
 </table>
 
+<h2>G. Blob 分析专用交互入口全覆盖核对（逐面清点）</h2>
+<p>以 BlobTool 声明字段+BlobSchema 端口+三页结构（基本参数/运行参数/结果显示）+ROI 两组为准逐面清点。</p>
+<table>
+<tr><th>#</th><th>入口</th><th>内容</th><th>对照状态</th></tr>
+<tr><td>1</td><td>主窗口图像结果下拉/单图联动</td><td>A2/A3</td><td class="ok">✅已对照</td></tr>
+<tr><td>2</td><td>双图切换入口</td><td>A4</td><td class="diff">⚠️待确认</td></tr>
+<tr><td>3</td><td>数据刷新/窗口开合</td><td>A5/A6</td><td class="ok">✅已对照</td></tr>
+<tr><td>4</td><td>ROI 绘制资格/载体/刷新/反馈/门控</td><td>B1-B7</td><td class="ok">✅已对照</td></tr>
+<tr><td>5</td><td>数值行范围校验/红框</td><td>C1/C2</td><td class="ok">✅已闭口</td></tr>
+<tr><td>6</td><td>调试窗口生命周期</td><td>D1-D3</td><td class="ok">✅已对照</td></tr>
+<tr><td>7</td><td>算法执行链（参数/输入/ROI消费/输出/状态/失败）</td><td>生态链环4</td><td class="ok">✅已对照（6 种分割模式全实现，BLOB_MODE_NOT_READY 为防御守卫）</td></tr>
+<tr><td>8</td><td>保存重开</td><td>生态链环8</td><td class="ok">✅已对照</td></tr>
+<tr><td>9</td><td>基本参数页 17 行逐行交互</td><td>高/低阈值、软阈值柔和度、尾部比例、面积范围、矩形宽高下限、填充面积阈值、短轴下限的滑条/订阅/编辑逐行对照</td><td class="bad">❌未对照（仅框架级）</td></tr>
+<tr><td>10</td><td>运行参数页行级交互</td><td>查找个数、最小重叠率、最大内接矩形输出数量、FilterAreaMax 拼接高度双值滑条</td><td class="bad">❌未对照</td></tr>
+<tr><td>11</td><td>阈值模式切换→参数行显隐联动</td><td>IsThresholdFieldActive 驱动的行显隐是否符合原厂模式切换表现</td><td class="bad">❌未对照</td></tr>
+<tr><td>12</td><td>ROI 区域页内部交互</td><td>检测区/屏蔽区两组的 继承⇄绘制 模式切换、ROI 列表选中/双击编辑、删除、撤销重做、最大数量提示（DrawLimitReached 已有）</td><td class="bad">❌未对照</td></tr>
+<tr><td>13</td><td>位置校正行</td><td>PositionCorrectionField+pose 编辑（BlobUiComposition.cs:71-170）</td><td class="bad">❌未对照</td></tr>
+<tr><td>14</td><td>结果显示页显示内容组合</td><td>内容行、显示宽度/高度拼接（pairWith 双值滑条）</td><td class="bad">❌未对照</td></tr>
+<tr><td>15</td><td>颜色行（OK颜色/NG颜色）</td><td>标签已修待验；颜色选择交互本身未对照</td><td class="diff">⚠️部分</td></tr>
+<tr><td>16</td><td>Blob 输出数据呈现</td><td>Blobs 表格/测量数据在结果区呈现（原厂 TableControl/OKNGControl 族）</td><td class="bad">❌未对照（原厂文件已枚举，见交互面总表）</td></tr>
+<tr><td>17</td><td>运行控制交互</td><td>连续执行时的窗口交互、执行次数</td><td class="bad">❌未对照</td></tr>
+</table>
+<p><b>结论</b>：已对照 8/17（主干：显示联动、绘制资格、红框、生命周期、算法执行框架）；<b>9 个 Blob 专用入口未对照</b>（#9-17，多为页内行级交互与数据显示族），已按优先级纳入任务清单（data-family 等待办）。</p>
+
 <h2>E. 待办与风险（按优先级）</h2>
 <table>
 <tr><th>#</th><th>项</th><th>说明</th><th>状态</th></tr>

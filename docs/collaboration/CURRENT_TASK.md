@@ -1,13 +1,56 @@
 # SunEyeVision_V2 当前任务账本
 
+**2026-11-13 ROI 生态链完整逆向对照完成，优化方案定稿（CodeBuddy 接管，按阶段实施）**：按用户要求先完整逆向原厂 ROI 生态链再设计。方案归档 `docs/09-现行文档/ROI完整生态链逆向对照与优化方案-20261113.html`：原厂链 6 条（单绘制面=结果视图 ImageViewBox+ROISelecterHolder 形状共享，ROISelecterHolder.cs.pending:15-193；绘制前置=显示图必须是输入图，IsCanDrawROI ModuleDisplayDecorator.cs.pending:446-480；关联输入变化自动切显示 OnRelatedIOChanged :500-524；ROI 跨刷新 UpdateROI 重投影 :604-608；掩膜不参与显示切换 :1180-1186；RoiDrawTips 反馈 :2514-2521）。本方三个实锤断点：①显示图≠ROI输入图时借帧落**离屏视口**（privatePane 不在可视树），用户无处可画且无反馈（ResultWorkspacePresenter.RoiEditing.cs:25-44）；②租约锚定刷新代次致会话反复死亡重建（roibtn.log gen 0→1→2）；③不可绘无反馈。方案分四阶段：P1 进入绘制即把显示切到 ROI 输入图（借帧命中可见视口）、P2 租约货币全路径帧锚定、P3 RoiDrawTips 等价反馈、P4 订阅/继承链同规则，P5 生态验收（绘制→提交→执行→重投影→保存重开→关闭释放）。未取证项如实标注（RoiSelecterCombine.xaml 绑定细节无 .pending）。CodeBuddy 接管写入（用户确认 Codex 已停），按阶段实施，每段独立验收。
+
+**2026-11-13 Blob 红框第二次根因收口**：用户最新截图确认上一版仍显示红框。继续追踪后确认错误有两层：`AppsXmlUi.NumericControl` 的 WPF 范围校验，以及 `NativeNumericCommit.ValidateInitial` 在字段范围绑定前把默认上限 100 的错误写入字段状态。现已移除过早的初始状态校验，改为在原参数行加载、正式 `Minimum/Maximum` 绑定完成后的 `DataBind` 阶段执行；新增回归同时断言 `Validation.GetHasError`、字段 `Error` 和 `DeclaredSettingsView.HasInvalidInput`。最新 Release UI.Tests 定向回归 3 条中数值红框和拼接链通过 2/2，当前 E 盘正式程序时间戳为 `2026-11-13 15:02:40`。用户若仍看到旧红框，应先关闭旧进程并启动该 E 盘程序验证，截图可能来自重建前进程。上一版仅清控件验证、未清字段状态的问题已修正。
+
+**2026-11-13 ImageSource 投影引用与条件字段时序修复**：订阅目录和拼接条件字段按 VM 的可见条件虚拟化，测试改为先切换条件再读取真实行。ImageSource 显示投影此前直接对完整 `FieldSettings` 做空解析，遇到 `stitch.clear-value` 的引用就阻断整个投影；现为投影阶段给未使用的引用字段保留空解析值，执行层仍按正式引用合同解析。最新 Release UI.Tests 定向 3 条中数值红框和拼接引用链通过 2/2；订阅目录场景剩余失败是保存重开前测试会话仍持有“通讯服务及驱动”后台租约，属于关闭顺序待收口项，不能计作资源释放完成。
+
+**2026-11-13 Blob 数值输入红框根因修复**：用户反馈运行参数“查找个数 100”和结果显示“字号 10”显示红框。两者都使用原厂 `AppsXmlUi.NumericControl`，该控件在字段范围绑定前先按默认上限 100 执行 `RangeRule`，范围绑定到 `1..20000` 或 `6..72` 后没有重新清理旧验证状态。现补齐与另一套原厂数值控件一致的 `Minimum/Maximum` 范围变化回校验，保留真实范围合同和错误校验。新增真实 Blob 参数窗口回归，核对查找个数与字号初值无验证错误，1/1 通过；UI.Tests 构建 0 错误。人工需用最新 Release 窗口复核两处红框消失及超范围输入仍能报错。
+
+**2026-11-13 Blob 掩膜继承执行链甄别**：Blob 运行回归中发现的二值图不一致不是生产逻辑证据，而是测试输入几何不一致：本地屏蔽区使用三角形 `(2,2)-(8,2)-(2,8)`，继承输入此前使用矩形 `(2,2)-(4,2)-(4,4)-(2,4)`。已将测试改为同一三角形坐标，保留本地 8 个与继承 9 个数量上限断言。全量 Release 重建后重新封签，定向执行链回归 1/1 通过；随后 ROI/变量帧/保存重开及 Blob 三页定向回归 9/9 通过。该项结论仅关闭误报，不代表 Blob/ImageSource 完整生态已闭口；正式剩余项仍按 ROI 借帧、提交、重投影、保存重开、关闭释放和 ImageSource 存量失败继续核对。
+
+**2026-11-13 ROI 完整链路逆向定位**：沿 VM 的 ROI 按钮、SelectedROI/ROIList、ImageViewBox、参数 ValueChanged、UpdateROI、RoiDrawTips 链路完成源码对照。已用新增回归确认本方五个 ROI 形状 ToggleButton 全部初始 IsEnabled=false，根因是 NativeRoiEditor.RequestCommand 将 _suspended 等加载暂态直接用于 WPF CanExecute，且 CanExecuteChanged 为空，首次绑定禁用后不会重新查询。原厂 ROI 命令入口保持可执行，绘制资格在 IsCanDrawROI 和结果视图层判断。本方已按该原证修正命令入口，新增回归通过，并验证矩形命令实际进入绘制状态；相关 ROI 回归 4/4、Blob 三页 5/5 通过。该修正只解决命令门控，完整链路仍需继续核对借帧、会话、参数写回、结果重投影、保存重开和关闭释放。临时借帧探针已清理。
+**2026-11-13 ROI 根链合同第一阶段**：按原厂 RoiDrawTips 语义，ROI 命令入口现在保持可点击，加载暂态和会话失效由统一执行路径处理；失败时 NativeRoiEditor 显示原厂资源文案的警告反馈，BlobLocalRoiOwner 可提供具体错误信息。Release UI.Tests 构建 0 错误；ROI 形状命令、同帧绘制、ROI 保存重开和变量帧相关定向回归 4/4 通过，Blob 三页 5/5 保持通过。当前未闭口仍是帧借用全路径、各种形状提交、刷新重投影、保存重开和关闭释放的完整生产链，不能计作总目标完成。
+**2026-11-13 完整回归甄别**：ROI 专项链和 Blob 三页保持通过。编辑器调试全套与 SourceAndVariables 全套仍有多条存量失败，主要表现为参数页/结果树/主题数据未物化、调试执行入口未就绪或来源列表缺项，需按基线逐项甄别，不能混入 ROI 根链结论。SourceAndVariables 本次 15/17 通过，2 条失败在图像源拼接/文件夹订阅场景；当前不宣称 ImageSource 全生态闭口。
+
+**2026-11-13 ROI 形状按钮缺陷移交 Codex**：探针证实点击从未进入业务借帧链（roibtn.log 不存在），失效点在 NativeRoiEditor 命令门控层（_suspended/IsCurrent/generation 三个候选门）。交接单 `docs/collaboration/HANDOFF_ROI形状按钮不可点-20261113.md`（含根因候选、命令门控分析、原厂基线锚点、修改文件清单、构建测试命令、回归红线与禁止事项）。本对话批次成果（P0/显式改选/变量租约/差异矩阵）随交接单一并临时提交。
+
+**2026-11-13 图像结果与 ROI 绘制交互全量原厂对照完成（差异矩阵已归档，待日志定位按钮缺陷）**：按用户要求先完成逆向全量对照再修。差异矩阵归档 `docs/09-现行文档/图像结果与ROI绘制交互原厂对照-20261113.html`：图像结果工作区 8 条（A1 模块切换/A2 单图改选/A3 关联输入/A4 双图入口/A5 数据刷新/A6 参数窗口开合/A7 来源列表构成/A8 不可绘制反馈）+ ROI 绘制 5 条（B1 判定/B2 载体/B3 刷新共存/B4 反馈/B5 绘制中编辑），每条含原件锚点（ModuleResultView/ModuleDisplayDecorator/RenderControlBase/DisplayImageListDecorator *.pending 行号）与本方差异。已对齐：A2/A3/A5/A6/B3/B5；差异待办：A8+B4 不可绘制必须给用户明确反馈（原件 RoiDrawTips 弹窗，本方静默 no-op）、A4 双图入口待用户确认、A7 来源列表构成逐项核对。ROI 按钮不可点的候选根因 H1 借帧失败无反馈 / H2 会话过期禁用 / H3 组合器不可见已列判据，一次性定位日志（roibtn.log：Activate 门槛/借帧拒绝/宿主借帧门槛）已埋点待用户配合点击采集。本批不先修，等日志定位后按矩阵成片实施。
+
+**2026-11-13 调试窗口打开期间显式改选显示来源空白已修（按原件基线去除正式像素压制）**：用户人工反馈并确认调试窗口内输入联动正常，但主窗口图像结果下拉显式选择『2 Blob分析1 · Blob图像数据』视口空白（关闭调试窗口才显示、重开又消失、来回切输入源恢复）。原件基线：`UpdateVMResultShow`（RenderControlBase.xaml.cs.pending:1127-1154，由 imageListCombobox_SelectionChanged:1998-1999 调用）在用户改选后立即读取所选图像对象当前值显示，与参数窗口开合无关；据此**删除** `CaptureNativeImageSources` 中"私有编辑作用域+有持久化显示选择即压制正式像素"的规则（`retainFormalImage` 恒为 true，调试执行产生私有快照后自然切换私有结果），P0 用例中编码旧行为的 `HasImageValue=false` 断言同步翻转为原件基线。新增合同用例 `Explicit_display_choice_shows_the_selected_modules_formal_pixels_while_the_debug_window_is_open`（含用户场景：先选上游图、开调试窗口、再显式选 Blob图像数据、关闭后保持）。验证：定向 9/9 通过（含 P0 三条、Blob 三页 5 条）；全量 Release 0 错误。回归补测：ROI 保存重开 `Confirmed_blob_roi_threshold_and_display_reopen_on_the_same_image_source_connection` 通过；`ShutdownLifecycleProbe wait` 通过（探针目录部署重建后运行，临时数据已清理）；`ImageSourceSessionTests` 37/38，唯一失败 `Camera_acquisition_resolves_exposure_and_gain_from_the_formal_upstream_result` 报"普通参数来源必须属于当前流程的控制前序"（Application 层 `CandidateInputValidation`，不经过本批任何改动文件，疑似存量，待全量封签与基线对照甄别）。遗留：UI.Tests 全量封签、图像结果完整交互矩阵（图像源条/自动切换/模块切换）对照另批立项。改动未提交。
+
+**2026-11-13 ROI 形状绘制失效修复（待用户重建验证）**：用户人工反馈 ROI 形状绘制按钮完全不可用。根因：本批输入页写回通知对**所有**输入执行 `_debug.OnDraftEdited()`，而 ROI 每次形状接受都是 `input.roi.*` 写回 → `InvalidateDraft` 杀死调试会话/帧租约 → 绘制报废。原件语义（ModuleResultView.xaml.cs.pending:604-608 `UpdateROI`、`P_ValueChanged→UpdateModuleViewResultShow`）：区域/参数编辑只重绘结果并重投影 ROI，从不终止模块会话。修正：输入页写回不再失效调试会话，仅 IMAGE 输入触发 `_debugResultChanged`（OnRelatedIOChanged 语义）。定向 10/10 通过（ROI 相关回归全绿）；用户运行中的程序占用 Release 导致该修复尚未部署，待用户退出程序后重建再人工验证绘制与显式改选两条。
+
+**2026-11-13 P0 闭口 + 变量 ROI 租约按原件语义修复（待提交）**：P0 用例 `Blob_primary_image_edit_selects_the_new_roi_frame_without_replacing_the_saved_output_choice` 由失败转通过（781/801/804 三处断言全过）。缺失接缝是**输入页字段接受后不通知宿主**：`DeclaredInputFieldsView` 写回只应用草稿不触发宿主，`input.image` 改选后结果工作区从不刷新；原件 `ModuleResultView.P_ValueChanged`/`OnRelatedIOChanged` 直接驱动结果视图，现按端口类型通知（IMAGE 输入触发结果刷新，其它输入只失效调试草稿并重绘结果）。配套：调试临时显示态收敛为单一 `EditorRelatedImage(Key,PortId,EditorScopeId)`；`ResolveOutputChoice` 为重建与不变判定共用的唯一解析；双图模式会话存续期间保持单图选择（原件 `OnIsShowDoubleImageChanged` 不动 `SelectedImage`）；`ItemsSource` 替换期置空不清除已选来源；变量图像比较改按帧身份（对应原件 ImageDataSource 守卫）；空/无输入的中间捕获计划不清空已呈现视口（原件无新数据不动视口）。变量 ROI 回归根因与修复：`ResultWorkspacePresenter.RoiEditing.cs` 变量租约谓词误含 `temporarySource`，输入面板真正选中变量来源后走真实视口路径时租约创建即死；按原件 `UpdateROI` 语义（ModuleResultView.xaml.cs.pending:604-608 数据刷新后把既有 ROI 重投影到当前帧、不销毁会话）改为锚定“同一帧仍是该视口的呈现帧”。验证：定向 8/8 通过（P0 三条 + Blob 三页 5 条）；全量 Release 构建 0 错误（657 警告为存量；期间 174 个 MSB3027/3021 为扩展宿主崩溃残留 testhost 锁文件，结束进程后 0 错误，非代码错误）。未做与待验：ROI 保存重开、上游失败恢复、`ShutdownLifecycleProbe wait`、全量测试封签、人工核对（单图下拉切换后右侧联动、关闭后回正式选择、变量 ROI 绘制提交与保存重开）。改动未提交，涉及 `ResultWorkspacePresenter(.RoiEditing).cs`、`MainWindowEditorDebug.cs`、`MainWindowRuntimeEditing.cs`、`MainWindowViewModel.NativeResults.cs`、`RuntimeNodeConfigurationControl.cs` 及已登记证据 `evidence/VM编辑器相关输入单图联动原件对照-20261113.json`。
+
+**2026-11-13 P0 输入改选→单图联动：先补原证再改实现**：用户质询本轮改动是否先取证，如实结论是「方向有原证、机制属自研推导」。已逐行核对仓内 `.pending` 保留源并新登记 `docs/collaboration/evidence/VM编辑器相关输入单图联动原件对照-20261113.json`：`ModuleResultView.OnRelatedIOChanged`（:500-524，仅单图模式、按 DisplayValue 命中后同步写 SelectedImage、随后 RefreshInputImageList 与 SetRoiVisible）、`ModuleDisplayDecorator.SelectedImage/SelectedInputImage` setter（:319-372、:282-314，纯视图状态、无持久化写入）、`RefreshInputImageList`（:1432-1468，双图选匹配项否则首项、单图清空输入选择）、单/双图下拉绑定（`RenderControlBase.xaml.pending:47/:28`）、用户改选处理（`RenderControlBase.xaml.cs.pending:1934-2007`，只改视图与叠加层、不写保存）、双图开合（:2225-2260，不动 SelectedImage）。差异与决定已登记：D1 匹配键改端口/Key（语义适配）、D2 双图入口保留当前合法输入（不按原件 `[0]`，标运行未确认）、D3 临时态随编辑会话退役清空、D4 ROI 可见性不在本批、D5 参数根切换不迁移。据此把无原证的 6 个补偿字段（ActiveEditorInputKey/PortId、_editorInputDisplayKey/PortId、_pendingTransientInputPortId、两处 ContextIdle 回推）收敛为单一 `EditorRelatedImage(Key,PortId,EditorScopeId)`，`Refresh` 与 `DisplayUnchanged` 共用唯一 `ResolveOutputChoice`。P0 失败事实：`EditorDebugSessionTests.cs:781` 期望 `output.gray-image` 实际仍为二值字段；一次性追踪显示下拉事件被接纳且切换逻辑执行，但视图选择未在同一通知内落地（追踪代码与日志已删除）。当前改动未构建未验证，下一步构建 UI.Tests 并复跑 P0 三条。
+
+**2026-11-13 VM 源码级联动取证与当前状态**：已从仓内 VM 反编译保留源 `ModuleResultView.xaml.cs.pending`、`ModuleDisplayDecorator.cs.pending`、`RenderControlBase.xaml.pending` 核对原厂链路。单图调试时 `OnRelatedIOChanged` 直接将 `SelectedImage` 切到关联输入，随后回调从 `RenderDataCenter.SelectedImage` 刷新结果视口，正式显示选择不在该调试切换中改写。本方已将编辑器图像字段变更接回结果工作区刷新，并保留调试输入的临时来源身份跨计划重建；UI.Tests 编译通过，三条定向回归仍为 2/3，Blob 主图切换断言仍失败。进一步确认失败发生在编辑器上下文重绑定后的选择恢复，当前仍不能宣称链路闭口。已补充独立的临时输入选择通知与窗口关闭清理边界，回归仍未通过。临时调试文件已清理，下一步继续核对结果工作区选择对象与 WPF 选择绑定的最终覆盖顺序。
+
 > 本文件只回答「现在在做什么、卡在哪、下一步做什么」。历史批次已按月切到 `history/CURRENT_TASK_ARCHIVE_<年-月>.md`（只追加、不改写），2026-11-05 之前共 2206 个批次已归档。
 > 找文档先看 `docs/00-索引/主题台账.html`；找具体文件用 `docs/00-索引/文档索引.html`。
 
 **交接入口（2026-11-11）**：本批暂停/清除后的基线、已改文件、构建证据、人工验收边界和下一步统一见 `docs/collaboration/HANDOFF_VM原件化工具调试窗口全链迁移-20261111.md`；该交接单不代表目标完成。
 
-**CodeBuddy 交接摘要（2026-11-11）**：本轮 Codex→CodeBuddy 的目录、基线、未提交手工修复、构建阻塞和接续顺序已追加到上述交接单末尾的“2026-11-11 Codex → CodeBuddy 交接摘要”。
+**CodeBuddy 交接摘要（2026-11-11）**：本轮 Codex→CodeBuddy 的目录、基线、未提交手工修复、构建阻塞和接续顺序已追加到上述交接单末尾的"2026-11-11 Codex → CodeBuddy 交接摘要"。
 
-**2026-11-12 双击调试窗口闪烁与拼接高度红框修复批（用户手测两项均确认修复）**：①闪烁：按门禁先用 ilspycmd 11.2.0.10050 反编译本机 `myLibs\VMControls.WPF.dll`（SHA-256 7F47D5B2…，与仓内第一批登记 99FFA4…不一致故未复用旧产物）取证 `ModuleResultView`：原件结果视口按数据变化更新——图像仅在对象变化时经 `ImageDataSource` 守卫（ModuleDisplayDecorator.cs:524）重设，参数窗口开合只切 ROI 可见性（`IsOpenParams`→`SetRoiVisible`），证据 `evidence/VM调试窗口结果视口更新路径-20261112.json`。据此改 `ResultWorkspacePresenter.Refresh`：重建计划与当前显示完全一致时跳过清空重建（判定覆盖来源集合 Key/运行身份/HasImageValue/显示名、选中节点、叠加勾选计划、按重建规则只读解析的输入/输出选择）；捕获 currency 只挂 `_disposed`（plan 闭包须跨重建 epoch 自增有效——首版把 epoch 后置导致来源 Current 全假、图像不呈现，已修）；并在 `CaptureNativeImageSources.Owner` 移除 `SelectedEditorContext` 绑定（原件语义：正式结果显示不随参数窗口开合变化；私有调试快照当前性由 `CurrentEditorDebugSnapshot` 内部校验保证）——这是“打开窗口后正式结果被清”的根因。②红框：用户实机定位“拼接高度 2000 红、改 100 不红”锁定 NumericControl 默认上限 100 误判；根因两处——迁移丢失原件 `Integer_Sub`/`Float_sub` 的 `Minimum="{Binding MinValueA}" Maximum="{Binding MaxValueA}"`（原件 paramusercontroldatatemplate.xaml 551/803 行，已补回含 SliderTickFrequency），及 `SliderArrangeBase.MaxChanged` 未按单值模式语义同步 `EndValueF`（T1.Maximum 源，恒停默认 100）；另加 `NumericControl` 范围变化重跑 `RangeRule` 清除残留红框。③测试基建：`NativeMessageBox` 加 internal `TestAutoRespond` 钩子（Plugin.Wpf 对 UI.Tests/CanvasLayout.Tests 开友元；生产不设置行为不变），测试宿主自动应答模态弹窗——此前弹窗会阻塞测试派发线程。新增合同用例 6 条（显示不重建、图像值消失/恢复、掩膜清空/恢复、选择计划更替、红框简单物化+会话级守卫）。验证：全量 Release 0 错误；定向用例通过；全量 361 用例 309 通过/52 失败——经 stash 基线对照 EditorDebug/NativeResultComposition 两类基线失败 19 条与本批清单一致，`Failed_execute…native_dialog`、`Overlay_commands_restore…` 2 条疑似本批回归**待甄别**，其余为存量夹具/主题资源环境失败，下次封签复核。人工验收：双击打开调试窗口图形/文本不动（用户确认）✓、拼接高度 2000 红框消失（用户确认）✓、正式结果叠加不消失与图像源切换图形保留（用户确认"没有太大问题"）✓——四条人工验收全部通过。未做：2 条疑似回归甄别、全量封签复核、Pack-Release 本地打包（缺 Inno Setup 6 非阻塞）。本批改动未提交，工作区含 anti-flicker-wip.patch（首版参考）与两份证据 JSON。
+
+**2026-11-12 欢迎页链路交接（供 Codex 接手）**：本批剩余核心问题="打开已保存方案后流程画布节点与小地图视觉空白（数据层确证 2 节点）"，交接文档 `docs/02-实施总结/2026/11/12/欢迎页链路与方案打开画布空白-实施总结-20261112-195757.md`（含证据链、已改文件清单、未验证的候选修复、诊断步骤、回归命令与踩坑提示）。已修并手测通过：保存即命名、关闭欢迎页进入可编辑方案；已修未复测：欢迎页拖动。构建当前 0 错误。本批改动未提交。
+**2026-11-12 画布空白修复（Codex 接手）**：按已有 VM 生命周期证据和本方运行日志完成一次性根因收口：将当前 Tab 显式绑定到画布节点/连线 ItemsControl 与缩放投影，Shell Loaded/Tab 切换共用 `SynchronizePresentation`，并把回归用例改为断言真实节点容器和小地图内容。此为有原证约束的 WPF 语义适配，不宣称直接迁移 VM 内部控件。未启动程序或自动测试。执行 `dotnet build-server shutdown` 释放占用后，完整 Release 构建已通过，0 错误。新程序路径、生成时间和哈希见实施总结第9节，现可交人工验收。
+**2026-11-12 画布空白二次根因修正**：用户截图探针显示 `selectedTab=流程1 nodes=2` 但 `canvasRef=null canvasNodes=-1`，确认方案文件和会话数据完整，真正漏通在欢迎页空态清理画布引用后打开方案未重新接回。`RefreshMiniMap` 已补充当前视觉树重新发现、ScrollViewer 恢复和 `SynchronizePresentation`，完整 Release 已再次通过，0 错误。新程序仍为同一 C 盘 Release 路径，待用户重新打开方案验收。
+**2026-11-12 画布空白人工验收通过**：用户使用 C 盘 Release 重新打开方案后确认画布节点和小地图均正常显示，当前测试没有发现问题。该项完成人工验收，后续继续观察方案切换和关闭重开回归。
+**2026-11-13 持久化阻断已解除**：`EmbeddedFileCatalog.Parse` 的 JSON 数字节点读取已统一为严格 `Int64` 令牌校验并保持 `JsonException` 语义；清理旧 `dotnet/testhost` 占用后，以正式 Release 程序集和 `S2_CASE_ROOT=E:\\SunEyeVision_V2\\Release\\_validation` 重跑 `SunEyeVision.Persistence.Tests`，56/56 通过。当前未闭口的是三条真实 UI 回归：方案切换前"通讯服务及驱动"租约未排空、Blob 重开后主图来源仍带图像值、屏蔽区继承保存重开断言失败；已拆成独立链路继续修复，不再归因于权限或旧 DLL。
+**2026-11-13 关闭资源阻断修复**：主窗口插件 drain 超时后原实现只显示"资源释放后自动关闭"提示却没有重新执行关闭链，导致 `wait` 场景一直停在"等待资源释放"。现已保留同一 drain 任务，在其完成后回到 UI 线程自动重试 `CompletePreparedCloseAsync`；正式 Release `ShutdownLifecycleProbe wait` 通过并输出 `Actual MainWindow shutdown scenario passed: wait`。通讯服务、相机和会话租约的所有权顺序未改变。
+**2026-11-13 位置修正 UI 投影修复**：关闭 Blob 位置修正开关时，原实现尝试向不含投影字段的工具编辑草稿直接写入，导致可视行仍显示旧来源或抛未知字段异常。现改为沿真实 `input.pose` 参数行宿主写回 `UnsetSetting`，由现有输入转换和提交链维护同一草稿状态；`Disabling_position_correction_clears_its_source_in_the_same_undoable_edit` 1/1 通过。
+**2026-11-13 Blob 三页回归复测**：位置修正清理修复后，`BlobThreePageSessionRegressionTests` 为 2/5 通过；剩余失败已缩小为 Reset 对话框观测、真实三页数值模型查找、继承 ROI 预览层路由/颜色三条，未宣称三页闭口。
+**2026-11-13 ROI 预览层修正（待干净复测）**：继承/区域模式的变更现在会触发 `BlobLocalRoiOwner` 预览刷新；只读 ROI 层新增与结果视口一致的分组形状投影，避免蓝色输入 ROI 只作为未分组形状落在 `ShapeList` 外。复测时测试夹具在断言后直接 `SolutionManager.Open`，仍被"通讯服务及驱动"租约阻断，当前只记录实现变更，不记录通过。
+**2026-11-13 三页参数首屏物化修复**：真实三页回归暴露初始页索引为 0 时 WPF 不触发 `SelectionChanged`，导致 Blob 基本参数页的 Assist 控件未进入实际视觉树；`DeclaredFieldsView` 现在显式物化初始选中页。Blob Assist 行取消重复条件门控，改由正式位置修正开关同步可见性，并在关闭状态首次打开时先物化一次再折叠，保留 VM 的隐藏语义。`Real_three_pages_read_numeric_models_and_retire_with_the_actual_editor` 已 **1/1 通过**。当前 Blob 三页套件为 **3/5 通过**；剩余 Reset 对话框观察和 ROI 测试直接 `SolutionManager.Open` 通讯租约问题均属测试入口/钩子，不能冒充产品链通过。
+**2026-11-13 测试入口与嵌入文件持久化收口**：Reset 测试钩子对该确认/成功消息改为进入真实 owned native dialog，由测试安排的 No/Yes/Ok 按钮驱动；Blob 三页回归现 **5/5 通过**。直接重开前统一排空通讯租约。`SolutionDocumentValidator` 允许当前持久化信封写入的根级 `EmbeddedFiles`，ImageSource 保存重开两条回归 **2/2 通过**。另发现独立 ROI 调试回归的真实产品缺口：窗口初开时结果工作区仍选 Blob 输出，`NativeRoiFrameSource` 因未选上游输入而拒绝借帧；未用试探性自动切换冒充 VM 行为，保留为下一批按原证补齐的输入图像选择链。
+**2026-11-13 变量图像源 ROI 阻断仍未闭口**：已确认不是权限或通讯租约，而是编辑器选择变量后，双图切换期间 `SelectedEditorContext` 会短暂失效，结果工作区随后按空输入重建，ROI `PrepareInteraction` 无法取得同一帧。已加入同会话/同节点草稿保留和私有计划空输入过渡保护，但定向回归 `Stored_image_variable_uses_the_same_frame_in_editor_roi_preview_and_formal_blob_execution` 仍失败（ROI 会话未成为 current），因此不能宣称该阻断已解决。下一步需沿"编辑器节点重绑定→草稿作用域→结果计划捕获"补齐稳定身份合同，再复测变量图像源、ROI、Blob 执行及保存重开全链。
+**2026-11-13 ROI 阻断继续定位**：编辑器当前性已改为按 workflow/node 稳定 ID核验，且结果绑定不再因节点对象重建立即失效；UI.Tests 构建 0 错误。但定向变量图像源回归仍在 `PrepareInteraction` 失败。当前新增的变量帧直接借用路径已能从方案变量捕获同一帧，剩余缺口集中在私有未加载视口的 ROI 安装/会话接纳，尚未通过回归，不能计作闭口。
+**2026-11-13 ROI 作用域复用根因进一步收窄**：结果工作区在正式发布计划与私有调试计划的来源集合相同、但编辑作用域已变化时，原 `DisplayUnchanged` 判定会错误复用正式计划；现已增加 `EditorScopeId` 边界判定，Blob 三页回归保持 **5/5**。独立 ROI 回归仍在 `PrepareInteraction` 入口失败，当前未宣称闭口；下一步需实现不改正式结果选择、不重置调试草稿的宿主私有帧借用路径。
+**2026-11-12 欢迎页全链路开口（取证完成，待实施）**：用户三截图对照 VM 提出三条链路问题：①VM 欢迎页可移动、本方不可；②关闭应用→保存解决方案→弹窗命名后，最近打开列表显示的仍是"未命名方案"；③直接关闭欢迎页后本方主窗口"暂无流程"不可编辑，VM 关闭欢迎页即可直接编辑。已按门禁完成取证（ilspycmd 反编译本机 VisionMasterMain.dll + 用户实机截图），证据 `evidence/欢迎页与方案生命周期原件对照-20261112.json`：VM 欢迎页=VisionMaster.AppMainWindow.GuideWindow（BaseWindow 独立窗口）+GuideHelper（ShowEnable 不再显示配置），模板卡只 SaveConfig("ToolBoxType") 后 Close，不创建/销毁方案——VM 主窗在欢迎页之下已持有可编辑方案；最近列表显示名=方案文件名。本方根因：②SaveCurrentDocumentWithPrompt→SaveAs 后 RecordRecentSolution 记录的是 session.Document.Name（CreateNew 默认"未命名方案"），未同步文件主名；③App.xaml.cs 关闭起始页=EmptyWorkspace→不建方案进空态，仅 NewEmptySolutionAsync 才建；①拖动代码已存在（PreviewMouseLeftButtonDown+DragMove）但用户实机不可移动——失效区域待实机复现定位，不猜测改。修复已实施（2026-11-12）：②DocumentSession.SaveAsCore 在 updateBaseline 时把 Document.Name 同步为文件主名（保存即命名，方案名随文件名落库，副本保存不改名）→ 最近列表/主窗标题随实名；③App.xaml.cs 启动期关闭欢迎页与运行期复显关闭（无打开方案时）均触发 NewEmptySolutionAsync，主窗口进入可编辑空白方案不再落空态；①StartPageWindow.IsInteractiveSource 精确化（只拦 ButtonBase/TextBoxBase/ComboBox/ListBoxItem/Slider，Label/TextBlock/Border 放行拖动）。全量 Release 0 错误；定向回归 26 用例 25 通过（唯一失败为存量超时型环境失败）。待人工核对三条：欢迎页任意空白可拖动（如仍不可动请指明拖动区域）、关闭应用→保存命名后最近列表显示所命名、直接关闭欢迎页后画布可直接新建/编辑流程。**2026-11-12 双击调试窗口闪烁与拼接高度红框修复批（用户手测两项均确认修复）**：①闪烁：按门禁先用 ilspycmd 11.2.0.10050 反编译本机 `myLibs\VMControls.WPF.dll`（SHA-256 7F47D5B2…，与仓内第一批登记 99FFA4…不一致故未复用旧产物）取证 `ModuleResultView`：原件结果视口按数据变化更新——图像仅在对象变化时经 `ImageDataSource` 守卫（ModuleDisplayDecorator.cs:524）重设，参数窗口开合只切 ROI 可见性（`IsOpenParams`→`SetRoiVisible`），证据 `evidence/VM调试窗口结果视口更新路径-20261112.json`。据此改 `ResultWorkspacePresenter.Refresh`：重建计划与当前显示完全一致时跳过清空重建（判定覆盖来源集合 Key/运行身份/HasImageValue/显示名、选中节点、叠加勾选计划、按重建规则只读解析的输入/输出选择）；捕获 currency 只挂 `_disposed`（plan 闭包须跨重建 epoch 自增有效——首版把 epoch 后置导致来源 Current 全假、图像不呈现，已修）；并在 `CaptureNativeImageSources.Owner` 移除 `SelectedEditorContext` 绑定（原件语义：正式结果显示不随参数窗口开合变化；私有调试快照当前性由 `CurrentEditorDebugSnapshot` 内部校验保证）——这是"打开窗口后正式结果被清"的根因。②红框：用户实机定位"拼接高度 2000 红、改 100 不红"锁定 NumericControl 默认上限 100 误判；根因两处——迁移丢失原件 `Integer_Sub`/`Float_sub` 的 `Minimum="{Binding MinValueA}" Maximum="{Binding MaxValueA}"`（原件 paramusercontroldatatemplate.xaml 551/803 行，已补回含 SliderTickFrequency），及 `SliderArrangeBase.MaxChanged` 未按单值模式语义同步 `EndValueF`（T1.Maximum 源，恒停默认 100）；另加 `NumericControl` 范围变化重跑 `RangeRule` 清除残留红框。③测试基建：`NativeMessageBox` 加 internal `TestAutoRespond` 钩子（Plugin.Wpf 对 UI.Tests/CanvasLayout.Tests 开友元；生产不设置行为不变），测试宿主自动应答模态弹窗——此前弹窗会阻塞测试派发线程。新增合同用例 6 条（显示不重建、图像值消失/恢复、掩膜清空/恢复、选择计划更替、红框简单物化+会话级守卫）。验证：全量 Release 0 错误；定向用例通过；全量 361 用例 309 通过/52 失败——经 stash 基线对照 EditorDebug/NativeResultComposition 两类基线失败 19 条与本批清单一致，`Failed_execute…native_dialog`、`Overlay_commands_restore…` 2 条疑似本批回归**待甄别**，其余为存量夹具/主题资源环境失败，下次封签复核。人工验收：双击打开调试窗口图形/文本不动（用户确认）✓、拼接高度 2000 红框消失（用户确认）✓、正式结果叠加不消失与图像源切换图形保留（用户确认"没有太大问题"）✓——四条人工验收全部通过。未做：2 条疑似回归甄别、全量封签复核、Pack-Release 本地打包（缺 Inno Setup 6 非阻塞）。本批改动未提交，工作区含 anti-flicker-wip.patch（首版参考）与两份证据 JSON。
 
 **2026-11-12 双击调试窗口闪烁：用户反馈"图形和文本重绘闪烁、VM 不会"，按门禁先 REA 取证再修复（下一轮启动依据）**：用户反馈双击打开调试窗口时主窗口结果视口的图形与文本会重绘（闪烁），VM 无此现象；模块结果树部分用户确认"目前看的还行"。已定位本方根因（代码事实）：打开调试窗口 → `MainWindowEditorDebug.RefreshEditorDebugResult` 因 `contextChanged` 广播 `ResultWorkspaceChanged`（MainWindowEditorDebug.cs:60）→ `ResultWorkspacePresenter.Refresh`（src/UI/Services/Images/ResultWorkspacePresenter.cs:237 起）**无条件清空两个视口图像+图形层并全量重建**（清空→重设同一张图=可见闪烁）；另有同族隐患：`RefreshFormalNodeSelection`（MainWindowRuntimeEditing.cs:52）无条件 `ReleaseActiveResultView+ClearResultDisplay`，使 `MainWindowResultPublication.cs:129` 既有防闪护栏（"同一身份不重建，原件按数据变化更新"）在该路径永不生效。已尝试"计划未变化则跳过重建"的首版实现并回滚：全量测试 47→50 失败，定向用例（Actual_result_workspace_clears_and_restores/Blob_output_overlay_retires_on_a_new_choice_plan 等 6 条）证明判定条件不足——至少漏了每来源 `HasImageValue` 变化（同一 publication 下图像值从有变无）与"该清空/该换计划"的强制重建语义。**回滚后工作区=已验证提交 `2e0e1e174`；首版改动存于仓库根未跟踪文件 `anti-flicker-wip.patch`，可作参考但不得直接套用。**用户明确要求：先找 VM 逆向证据再优化，不得自行推导实施。VM 4.4.0 已定位：`C:\Program Files\VisionMaster4.4.0\Applications\`（主逻辑在 Qt DLL，不在 1.4MB 的 VisionMaster.exe）。下一轮步骤：①REA 打开 VM Applications 下承载结果视图的模块 DLL（顺既有类名 `AlgorithmTabRoot`/`ModuleResultView` 定位），取证"参数窗口打开时结果视图的更新路径"——是否复用已呈现场景、是否仅数据变化才重设图像、叠加层归属；②产出 `evidence/VM调试窗口结果视口更新路径-<日期>.json`（类名/关键函数/调用链/结论）；③按证据修正判定条件（补 `HasImageValue` 比对等），先补合同用例（显示未变不重建 + 三个反例：图像值有无变化、掩膜清空恢复、选择计划更替）再改实现；④全量构建封签后 `--no-build` 测试不得劣于基线 47 条失败；⑤人工核对"双击打开调试窗口图形/文本不动、正式结果叠加不消失、图像源切换图形仍保留"三条。
 
@@ -17,35 +60,35 @@
 
 **2026-11-11 CodeBuddy 接手交接批：图像来源空项/资源引用行核对 + 结果树语义格式成片收拢**：按 `HANDOFF_VM原件化工具调试窗口全链迁移-20261111.md` 接续。修复1按 VM 原证纠偏：D 盘参考的"未设置"文案在 VM 4.4.0 中文资源中查无，图像来源空项改为原件空项惯例 `RunParam_None`（zh"无"/en"None"，`DeclaredFieldRow.ImageSource.cs`），新增合同用例；修复2（资源字段→引用模板路由）经核对在本 worktree 已有等价实现，只登记不重做，证据 `evidence/图像来源空项与资源引用行原件对照-20261111.json`。结果格式块新增 `ResultSemanticText` 共用语义投影：模块状态/单体状态 0/1→失败/成功、阈值方式五种原厂中文、极性 Binary→亮于背景/BinaryInv→暗于背景，主结果树（`ResultPresentationPresenter`）与只读属性树（`DeclaredPropertyList`）统一接入，序列元素节点沿声明地址回溯根端口取显示名；属性树 Float32 改单精度自然位数（C03 原证），主树/属性树既有 Culture 合同不动；结果表 Blob 列已是 float32 与原证一致未改。分组标题与空值文案无 VM 原证，按门禁不发明，保留待办；证据 `evidence/Blob结果格式语义投影原件对照-20261111.json`。全量 Release 构建 0 错误（本机缺 PowerShell 7 阻断 UI 载荷封装，经用户授权以官方便携 ZIP 装至 `C:\Users\Administrator\.local\pwsh7` 并配置 git-ignored 的 `installer/Release.Local.props` 解决；winget 安装因系统服务禁用失败）。回归（用户授权全量）：UI 224/355、Blob 103/121，本批相关用例全部通过；失败项经排查均为该 worktree 既有的夹具/部署问题——`DocumentSession.Dispose` 报"方案后台活动尚未排空"、测试 bin 主题资源缺失、共享 bin 陈旧程序集/清单哈希不匹配（测试程序集烘焙路径与独立构建测试项目会使已封装清单失效，必须全量构建后立即 --no-build 跑测试），以及一个既有 de-DE Culture 漂移用例；均与本批改动无交集。运行态体感（空项显示、结果树文本、关闭释放）留用户人工核对。分支：`feature/param-window-datatree` 被 D 盘 worktree 占用，本批提交落同源兄弟分支 `feature/param-window-datatree-codebuddy`（基线同 c5e8901df，可快进合并）。
 
-**2026-11-11 全链路差异矩阵重新开口**：用户反馈“否”关闭方案后仍停留在等待资源释放、图像缩小后无法平移、图像源切换后 Blob 图形与文本消失，且模块结果页的分组和格式仍与 VM 不一致。前期工作只完成局部字段、结果格式和若干生命周期接缝，没有完成“VM 原证→当前消费者→状态/身份→资源所有权→关闭退役”的统一矩阵，不能声称全链路已完成。现已建立 `docs/09-现行文档/VM-ImageSource-Blob全链路差异矩阵-20261111.html`，按框架生命周期、数据/资源所有权、控件交互和窗口组装四层归因，后续按矩阵成片修复并集中构建，不再逐点补丁。
+**2026-11-11 全链路差异矩阵重新开口**：用户反馈"否"关闭方案后仍停留在等待资源释放、图像缩小后无法平移、图像源切换后 Blob 图形与文本消失，且模块结果页的分组和格式仍与 VM 不一致。前期工作只完成局部字段、结果格式和若干生命周期接缝，没有完成"VM 原证→当前消费者→状态/身份→资源所有权→关闭退役"的统一矩阵，不能声称全链路已完成。现已建立 `docs/09-现行文档/VM-ImageSource-Blob全链路差异矩阵-20261111.html`，按框架生命周期、数据/资源所有权、控件交互和窗口组装四层归因，后续按矩阵成片修复并集中构建，不再逐点补丁。
 
 **启动安全边界**：启动阶段只对照 VM 的流程时序和用户可见状态。加密、权限、授权策略、密钥和安全弹窗均采用本方自研设计，不逆向或复用原厂实现、协议、资源或名称；差异矩阵单独记录流程一致性与安全实现来源。
 
 **2026-11-11 图像图层保留与结果视口交互修正（待人工核对）**：定位到图像源切换后 Blob 图形/文本消失的实际断点：`ResultWorkspacePresenter`虽按坐标域保留场景，但`ResultImagePane`清空视口及`NativeResultViewport.BindImage`仍无条件退役Shape层，导致下游重呈现前图层已被删除。现将输出视口的清空/绑定改为可选保留Shape层，并把结果视口图形设为只读命中区域、让平移/缩放继续由原件`ImageViewBox`处理；ROI编辑仍由独立`NativeRoiViewport`负责。全量Release重新构建0错误、3302警告、22.04秒，未启动程序、自动测试或桌面控制。图像源切换后图形/文本是否持续、缩小图像是否可平移，以及关闭释放链仍待用户统一人工核对，不能据此宣称整链完成。
 
-**2026-11-11 关闭资源代次释放顺序修正（待人工核对）**：继续沿“否关闭→子窗口排空→正式结果/视图→方案会话→插件目录”的生命周期矩阵复核，确认`ReleaseDocumentHost`此前只解绑宿主和视图，却未在插件目录退役前关闭`DocumentSession`；正式结果reader/执行代次可能因此继续持有租约，造成“等待资源释放”后只能结束进程。现将宿主退出专用的`DocumentManager.CloseCurrent(discardPendingEdits:true)`加入`ReleaseDocumentHost`，方案切换路径不复用该方法，不改变切换语义。全量Release构建0错误、5945警告、26.71秒，未启动程序、自动测试或桌面控制。实际“不保存后退出”和迟到回调仍待用户人工核对，不能宣称关闭链完成。
+**2026-11-11 关闭资源代次释放顺序修正（待人工核对）**：继续沿"否关闭→子窗口排空→正式结果/视图→方案会话→插件目录"的生命周期矩阵复核，确认`ReleaseDocumentHost`此前只解绑宿主和视图，却未在插件目录退役前关闭`DocumentSession`；正式结果reader/执行代次可能因此继续持有租约，造成"等待资源释放"后只能结束进程。现将宿主退出专用的`DocumentManager.CloseCurrent(discardPendingEdits:true)`加入`ReleaseDocumentHost`，方案切换路径不复用该方法，不改变切换语义。全量Release构建0错误、5945警告、26.71秒，未启动程序、自动测试或桌面控制。实际"不保存后退出"和迟到回调仍待用户人工核对，不能宣称关闭链完成。
 
 **2026-11-11 图像层回归合同补强（待运行）**：在`ResultImagePaneTests`增加输出图像重新绑定时保留原生Shape层、等待新场景回执替换的STA合同；该用例验证的是图像源切换下图形/文本不被底层清空，不将截图或算法结果替代视图生命周期证据。全量Release重新构建0错误、3302警告、18.83秒；按用户要求未运行测试或程序。
 
-## 一、当前主线\n\n**2026-11-11 结果语义格式化首批验证**：`DeclaredPropertyList` 已沿结果声明将模块状态值1/0投影为“成功/失败”，将阈值方式内部值投影为中文语义；不改变算法结果或端口身份。Plugin.Wpf编译0错误，全量Release编译0错误、5964警告、28.87秒；未运行测试或程序。图像源切换后的图形/文本保留、Blob专用结果分组和原厂数值格式仍未完成。\n\n**2026-11-11 Blob结果展示合同重新开口**：用户人工截图确认Blob算法结果值与原厂高度一致，但模块结果页的分组、状态文本、数组/数值格式，以及图像源切换后Blob图形和文本的保留行为仍明显不一致。已固定证据 `evidence/Blob结果展示合同缺口-20261111.json`。当前结论是算法结果链具备基础，结果声明/格式化/图像publication上下文尚未闭合；不进入完成或验收结论，下一批按三层合同成片修复。\n\n**2026-11-11 原厂依赖边界与正式位置修正字段收口**：产品运行时不直接引用原厂 VM DLL，原厂程序集、Qt/C++ 类型名、资源路径和算法身份只保留在逆向证据与映射材料中。位置修正模式依据同版本 Group.xml 的 SelectWay 0/1/2 静态证据，改为中性正式输入 `input.pose.mode`，进入参数提交、保存重开和执行快照；辅助组合器只保留宿主绑定、可见性和生命周期接缝。全量 Release 编译0错误、3302警告、15.73秒；未启动程序、自动测试或生产探针。当前进入人工验收阶段，重点核对 Blob 三页、位置修正模式、参数保存重开、执行结果/图像叠加和关闭释放，未反馈项不计作通过。\n\n**2026-11-11 删除字段视觉占位分支**：按原件优先门禁，`DeclaredFieldRow.BuildSlotContent` 不再生成通用记录子行、“未设置”文本或“由专用区域处理”文本。生产已接入的颜色记录继续借用原件颜色控件；未覆盖的记录、几何和集合字段现在明确抛出未完成依赖，避免伪造可用视觉。全量Release编译0错误、5992警告、23.92秒；未启动程序、自动测试或生产探针。Blob ROI组合器、辅助组合器和页面组装链仍待按原件闭包替换。\n\n\n**2026-11-11 中性命名与原厂依赖边界清理**：确认产品代码仍有 `BlobVmFindParameters`、`BlobVmResultProjection`、`VmParameters`、`VmResult` 及 `BlobVm*` 枚举等逆向来源命名，且 Blob 视觉仍由 `BlobUiComposition`、`BlobRoiUi`、`NativeRoiUiDraftControls` 等本方组合器部分承担。已将运行时类型、属性和枚举改为中性命名，未改变字段身份、序列化键、结果端口或算法语义；新增原厂依赖边界证据。全量Release编译0错误、3308警告、22.20秒；未启动程序、自动测试或生产探针。视觉组合器和字段记录/未设置占位仍待按VM原件证据成片替换。\n\n\n**2026-11-11 结果树根顺序按VM显示声明收口**：VM结果页的根字段顺序来自原件显示声明，当前 `ResultPresentationModel` 原先按 `ToolSchema.Outputs` 顺序生成根节点，导致Blob耗时、模块状态和统计字段顺序与原厂不一致。现按 `OutputDisplay` 根节点顺序投影，未列入显示声明的端口追加到末尾，端口身份、publication、结果表和资源借阅不变。已补充结果树顺序合同与回归用例。全量Release编译0错误、5992警告、21.88秒；未启动程序、自动测试或生产探针。\n\n\n**2026-11-11 模块结果摘要行全链修正**：基于 VM 原厂结果页证据，确认 Blob 的“耗时（ms）”和“模块状态”属于工具正式输出，不应与宿主无条件追加的“执行状态/耗时”摘要混排。已在 `OutputDisplayNode` 增加原件模块摘要标记，Blob 正式输出树显示耗时与模块状态，宿主仅对未声明原件摘要的工具追加通用摘要。全量 Release 编译0错误、6089警告、54.24秒；未启动程序、自动测试或生产探针。运行顺序、视觉尺寸、结果树展开和关闭释放仍待人工核对。\n
+## 一、当前主线\n\n**2026-11-11 结果语义格式化首批验证**：`DeclaredPropertyList` 已沿结果声明将模块状态值1/0投影为"成功/失败"，将阈值方式内部值投影为中文语义；不改变算法结果或端口身份。Plugin.Wpf编译0错误，全量Release编译0错误、5964警告、28.87秒；未运行测试或程序。图像源切换后的图形/文本保留、Blob专用结果分组和原厂数值格式仍未完成。\n\n**2026-11-11 Blob结果展示合同重新开口**：用户人工截图确认Blob算法结果值与原厂高度一致，但模块结果页的分组、状态文本、数组/数值格式，以及图像源切换后Blob图形和文本的保留行为仍明显不一致。已固定证据 `evidence/Blob结果展示合同缺口-20261111.json`。当前结论是算法结果链具备基础，结果声明/格式化/图像publication上下文尚未闭合；不进入完成或验收结论，下一批按三层合同成片修复。\n\n**2026-11-11 原厂依赖边界与正式位置修正字段收口**：产品运行时不直接引用原厂 VM DLL，原厂程序集、Qt/C++ 类型名、资源路径和算法身份只保留在逆向证据与映射材料中。位置修正模式依据同版本 Group.xml 的 SelectWay 0/1/2 静态证据，改为中性正式输入 `input.pose.mode`，进入参数提交、保存重开和执行快照；辅助组合器只保留宿主绑定、可见性和生命周期接缝。全量 Release 编译0错误、3302警告、15.73秒；未启动程序、自动测试或生产探针。当前进入人工验收阶段，重点核对 Blob 三页、位置修正模式、参数保存重开、执行结果/图像叠加和关闭释放，未反馈项不计作通过。\n\n**2026-11-11 删除字段视觉占位分支**：按原件优先门禁，`DeclaredFieldRow.BuildSlotContent` 不再生成通用记录子行、"未设置"文本或"由专用区域处理"文本。生产已接入的颜色记录继续借用原件颜色控件；未覆盖的记录、几何和集合字段现在明确抛出未完成依赖，避免伪造可用视觉。全量Release编译0错误、5992警告、23.92秒；未启动程序、自动测试或生产探针。Blob ROI组合器、辅助组合器和页面组装链仍待按原件闭包替换。\n\n\n**2026-11-11 中性命名与原厂依赖边界清理**：确认产品代码仍有 `BlobVmFindParameters`、`BlobVmResultProjection`、`VmParameters`、`VmResult` 及 `BlobVm*` 枚举等逆向来源命名，且 Blob 视觉仍由 `BlobUiComposition`、`BlobRoiUi`、`NativeRoiUiDraftControls` 等本方组合器部分承担。已将运行时类型、属性和枚举改为中性命名，未改变字段身份、序列化键、结果端口或算法语义；新增原厂依赖边界证据。全量Release编译0错误、3308警告、22.20秒；未启动程序、自动测试或生产探针。视觉组合器和字段记录/未设置占位仍待按VM原件证据成片替换。\n\n\n**2026-11-11 结果树根顺序按VM显示声明收口**：VM结果页的根字段顺序来自原件显示声明，当前 `ResultPresentationModel` 原先按 `ToolSchema.Outputs` 顺序生成根节点，导致Blob耗时、模块状态和统计字段顺序与原厂不一致。现按 `OutputDisplay` 根节点顺序投影，未列入显示声明的端口追加到末尾，端口身份、publication、结果表和资源借阅不变。已补充结果树顺序合同与回归用例。全量Release编译0错误、5992警告、21.88秒；未启动程序、自动测试或生产探针。\n\n\n**2026-11-11 模块结果摘要行全链修正**：基于 VM 原厂结果页证据，确认 Blob 的"耗时（ms）"和"模块状态"属于工具正式输出，不应与宿主无条件追加的"执行状态/耗时"摘要混排。已在 `OutputDisplayNode` 增加原件模块摘要标记，Blob 正式输出树显示耗时与模块状态，宿主仅对未声明原件摘要的工具追加通用摘要。全量 Release 编译0错误、6089警告、54.24秒；未启动程序、自动测试或生产探针。运行顺序、视觉尺寸、结果树展开和关闭释放仍待人工核对。\n
 
-**VM原件优先门禁（持续有效）**：任何新的代码修改必须先登记同版本 VM 原件证据、当前生产消费者、可见/交互/数据/生命周期差异、迁移或语义实现决定及验收出口。没有 VM 源码、模板、资源、XML 或运行证据的行为只能标记“运行未确认”，不得按本方现状猜测，不得以构建、测试或截图替代 VM 对照。先完成全链设计审计，再集中实施，禁止发现一个局部问题就直接追加补丁。
+**VM原件优先门禁（持续有效）**：任何新的代码修改必须先登记同版本 VM 原件证据、当前生产消费者、可见/交互/数据/生命周期差异、迁移或语义实现决定及验收出口。没有 VM 源码、模板、资源、XML 或运行证据的行为只能标记"运行未确认"，不得按本方现状猜测，不得以构建、测试或截图替代 VM 对照。先完成全链设计审计，再集中实施，禁止发现一个局部问题就直接追加补丁。
 
 本批模块结果树与当前结果表的实施门禁记录见 `evidence/VM-Blob模块结果树对照与迁移决定-20261111.json`。后续每个跨链批次沿同一格式登记，不再只在代码注释或口头说明中保留 VM 对照结论。
 
-**2026-11-11 结果与生命周期全链设计漏通（当前最高优先级）**：用户连续反馈模块结果树与VM差异大、Blob节点选中后图像/图形/文本和结果表不一致、打开调试窗口后正式结果消失，以及选择“不保存”关闭后卡在“等待资源释放”并需要任务管理器。它们共同说明输出声明、结果表、模块结果树、publication、图像/叠加、调试上下文和插件代次释放没有形成同一全链合同。暂停继续追加局部视觉补丁，先按 `VM调试窗口体感全链设计审计-20261110.html#full-chain-gap-20261111` 完成 VM 原证→当前消费者→状态/身份→资源所有权→关闭退役的统一矩阵，再成片实施。当前问题未闭合，不能以已有构建、单个页面正常或结果表局部可见宣称目标完成。
+**2026-11-11 结果与生命周期全链设计漏通（当前最高优先级）**：用户连续反馈模块结果树与VM差异大、Blob节点选中后图像/图形/文本和结果表不一致、打开调试窗口后正式结果消失，以及选择"不保存"关闭后卡在"等待资源释放"并需要任务管理器。它们共同说明输出声明、结果表、模块结果树、publication、图像/叠加、调试上下文和插件代次释放没有形成同一全链合同。暂停继续追加局部视觉补丁，先按 `VM调试窗口体感全链设计审计-20261110.html#full-chain-gap-20261111` 完成 VM 原证→当前消费者→状态/身份→资源所有权→关闭退役的统一矩阵，再成片实施。当前问题未闭合，不能以已有构建、单个页面正常或结果表局部可见宣称目标完成。
 
 **2026-11-11 参数绑定提升为核心闭包**：用户明确要求参数绑定完整链作为参数传递核心。已纳入同一审计矩阵 `#parameter-binding-chain-20261111`，覆盖声明、候选、引用/变量编辑、接纳、保存重开、执行快照、结果来源、失效重绑定和退订释放。现有 B08 数值引用证据只作为来源，不能把局部引用控件通过当作 ImageSource + Blob 绑定链完成。下一批实施必须把图像来源、ROI、结果显示来源和普通数值绑定按同一身份、代次和顺序合同统一核对。
 
-**2026-11-11 插件代次租约诊断与跨链修正构建**：运行代次现在记录长期租约持有者，主窗口关闭超时提示会显示“参数视图/结果视图/调试执行/正式执行”等消费者计数，用于定位资源释放断点。调试窗口打开时保留当前正式 publication 的代码修正已纳入本批，生命周期语义定为“首次打开保留正式结果，执行参数改变后清空失效结果，调试执行后替换为私有结果，关闭后恢复正式结果”。Blob模块结果元数据已按VM证据隐藏重复Blob明细和模块耗时根字段，保留单体状态命名与当前结果表，补充合同用例。关闭链异步等待和结果工作区释放继续沿同一退役顺序。最新全量 Release 构建0错误、3302警告、17.50秒；未启动程序、自动测试或生产探针。最新构建只证明代码可编译，不能替代人工关闭和结果体感验收。
+**2026-11-11 插件代次租约诊断与跨链修正构建**：运行代次现在记录长期租约持有者，主窗口关闭超时提示会显示"参数视图/结果视图/调试执行/正式执行"等消费者计数，用于定位资源释放断点。调试窗口打开时保留当前正式 publication 的代码修正已纳入本批，生命周期语义定为"首次打开保留正式结果，执行参数改变后清空失效结果，调试执行后替换为私有结果，关闭后恢复正式结果"。Blob模块结果元数据已按VM证据隐藏重复Blob明细和模块耗时根字段，保留单体状态命名与当前结果表，补充合同用例。关闭链异步等待和结果工作区释放继续沿同一退役顺序。最新全量 Release 构建0错误、3302警告、17.50秒；未启动程序、自动测试或生产探针。最新构建只证明代码可编译，不能替代人工关闭和结果体感验收。
 
-**2026-11-11 首轮人工界面反馈**：用户按C盘Release手动核对输出掩膜、枚举展开和Blob三页切换/关闭，反馈“正常了”。本次确认覆盖输出掩膜无×、枚举中文呈现及三页基本导航/关闭。图像来源候选失效、ROI绘制/继承、阈值执行、结果图层、保存重开、取消/在飞排空、性能和迟到回调仍未逐项确认，不能据此宣称ImageSource+Blob完整目标完成。人工反馈已纳入现行验收口径。
+**2026-11-11 首轮人工界面反馈**：用户按C盘Release手动核对输出掩膜、枚举展开和Blob三页切换/关闭，反馈"正常了"。本次确认覆盖输出掩膜无×、枚举中文呈现及三页基本导航/关闭。图像来源候选失效、ROI绘制/继承、阈值执行、结果图层、保存重开、取消/在飞排空、性能和迟到回调仍未逐项确认，不能据此宣称ImageSource+Blob完整目标完成。人工反馈已纳入现行验收口径。
 
 **2026-11-11 Blob执行回归修正（待构建）**：用户提供的生产结果截图显示Blob执行失败，错误为`Missing required port input.roi.output-mask`。原因是上一轮为去除输出掩膜清除叉号，将该字段错误改成Required=true，旧配置没有写入该字段。现恢复Port可选，保留VM的false默认值语义，在Blob正式输出掩膜行通过`showClearButton:false`隐藏清除按钮，普通字段的清除规则不变。用户未授权桌面控制，未启动程序或自动测试。本次全量Release因C盘DLL仍被进程占用在复制阶段失败，等待用户手动退出后重建并由用户人工复核执行链。
 
-**2026-11-11 关闭链逆向对照与阻塞修正**：REA现有调试会话证据确认VM关闭顺序为停止连续执行、解绑运行回调与设备/通信服务、`AlgorithmTabRoot.Dispose`、`DoFinish`，参数树随后释放。当前宿主的调试窗口本身沿“取消→等待在飞→排空→Dispose”实现，但主窗口关闭时曾同步调用子窗口`Close()`后立即检查窗口是否仍存在。RuntimeToolEditorWindow的`Closing`本来就会异步等待排空，因此该检查把正常的异步关闭误判为失败，主窗口停在退出准备状态，用户只能用任务管理器结束进程。现将主窗口关闭准备改为异步等待RuntimeToolEditorWindow.CloseAndDrainAsync，并复用插件目录排空任务，超时返回可重试状态，不再无限等待。全量Release构建0错误、3355警告、23.30秒，未启动程序或自动测试。原厂动态关闭回调和设备服务实机顺序仍标“运行未确认”，不能把本方修正冒充VM事实。
+**2026-11-11 关闭链逆向对照与阻塞修正**：REA现有调试会话证据确认VM关闭顺序为停止连续执行、解绑运行回调与设备/通信服务、`AlgorithmTabRoot.Dispose`、`DoFinish`，参数树随后释放。当前宿主的调试窗口本身沿"取消→等待在飞→排空→Dispose"实现，但主窗口关闭时曾同步调用子窗口`Close()`后立即检查窗口是否仍存在。RuntimeToolEditorWindow的`Closing`本来就会异步等待排空，因此该检查把正常的异步关闭误判为失败，主窗口停在退出准备状态，用户只能用任务管理器结束进程。现将主窗口关闭准备改为异步等待RuntimeToolEditorWindow.CloseAndDrainAsync，并复用插件目录排空任务，超时返回可重试状态，不再无限等待。全量Release构建0错误、3355警告、23.30秒，未启动程序或自动测试。原厂动态关闭回调和设备服务实机顺序仍标"运行未确认"，不能把本方修正冒充VM事实。
 
-**2026-11-11 工作流与执行引擎独立逆向闭包**：按用户要求，工作流、节点/连线、输入快照、执行调度、结果发布、调试会话和关闭退役从工具迁移中独立出来，形成现行方案 [工作流与执行引擎逆向闭包方案](../09-现行文档/工作流与执行引擎逆向闭包方案-20261111.html)。ImageSource + Blob 作为真实载体验证，不再把全工具落地作为引擎逆向前置。原厂证据沿 `DynamicParamsTabControl`、`BottomCommand`、`VmModule.Run`、`ModuleManager.SelfRun`、`Window_Closed`、`AlgorithmTabRoot.Dispose` 和 `DoFinish` 建立映射；原生上游准备、算法中止、设备释放和事件线程仍标“运行未确认”。
+**2026-11-11 工作流与执行引擎独立逆向闭包**：按用户要求，工作流、节点/连线、输入快照、执行调度、结果发布、调试会话和关闭退役从工具迁移中独立出来，形成现行方案 [工作流与执行引擎逆向闭包方案](../09-现行文档/工作流与执行引擎逆向闭包方案-20261111.html)。ImageSource + Blob 作为真实载体验证，不再把全工具落地作为引擎逆向前置。原厂证据沿 `DynamicParamsTabControl`、`BottomCommand`、`VmModule.Run`、`ModuleManager.SelfRun`、`Window_Closed`、`AlgorithmTabRoot.Dispose` 和 `DoFinish` 建立映射；原生上游准备、算法中止、设备释放和事件线程仍标"运行未确认"。
 
 用户随后提供了基本参数页截图，画面中输出掩膜没有×，ROI区域的图像类型、创建方式、形状、屏蔽区创建和位置修正均可见。截图窗口处于较小尺寸，字体与间距按窗口整体缩放，不能据此判定原件设计尺寸差异；该截图作为人工反馈留存，完整尺寸、交互和其余链路仍按待验项记录。
 
@@ -65,15 +108,15 @@
 
 **2026-11-11 别名字段及全部枚举名称闭包**：沿BlobVmFindParameters.FromSettings/ApplyTo和AssistGroup/Assist0核对剩余9个非同名声明字段，连同上批95项共104个字段名称有原件来源；29个枚举项逐项记录原件Name/Value/IsImplemented/DisplayName，原件均可实现，没有新增隐藏或禁用。修正二值化图输出、圆形度使能、输出无序/有序轮廓及排序项目的自拟缩写，正式键、顺序、算法转换不变。当前XML与104字段标签、27范围标题、29候选标签逐项静态一致；该名称闭包不等于控件全行为闭包。最终全量Release0错误、3302警告、19.74秒；未运行程序、测试、探针或桌面读取。主审计native-alias-choice-label-closure-20261111节、控件台账及 `evidence/Blob别名字段与枚举项原件映射-20261111.json`同步；图像来源/ROI交互、结果显示、异步及性能仍须继续整链核验，目标未完成。
 
-**2026-11-11 原件标签与范围标题集中修正**：按当前同版本Blob AlgorithmTab.xml字段bindingName/Name及原件zh-cn资源逐项匹配，校正RECT宽/高使能、轴比范围、Blob个数为0、Blob总面积等自拟文案。27个范围组按原件IntegerBettween/FloatBettween真实父节点独立迁入显示名，端点仍保留原字段名称；Blob XML增加pairLabel，沿既有FieldLayout.PairDisplayName进入DeclaredRangeRow，删除中文“下限→范围”推导，不新增参数值模型或视觉链。公共声明拒绝无PairWith或空范围标题，Blob原范围合同用例补充范围/端点名称分离和关键原厂标签断言，已编译未运行。全量Release0错误、6089警告、33.68秒；未操作桌面、未启动程序、测试或探针。原件仍把运行参数声明为普通Category，当前无删除页内标题的动态证据，保留并标明截图滚动/动态状态未确认。原主设计native-label-and-range-contract-20261111节、控件闭包台账及 `evidence/Blob标签与范围组原件映射-20261111.json`已同步；整体体感、交互及性能待用户后续手动核对，总目标未完成。
+**2026-11-11 原件标签与范围标题集中修正**：按当前同版本Blob AlgorithmTab.xml字段bindingName/Name及原件zh-cn资源逐项匹配，校正RECT宽/高使能、轴比范围、Blob个数为0、Blob总面积等自拟文案。27个范围组按原件IntegerBettween/FloatBettween真实父节点独立迁入显示名，端点仍保留原字段名称；Blob XML增加pairLabel，沿既有FieldLayout.PairDisplayName进入DeclaredRangeRow，删除中文"下限→范围"推导，不新增参数值模型或视觉链。公共声明拒绝无PairWith或空范围标题，Blob原范围合同用例补充范围/端点名称分离和关键原厂标签断言，已编译未运行。全量Release0错误、6089警告、33.68秒；未操作桌面、未启动程序、测试或探针。原件仍把运行参数声明为普通Category，当前无删除页内标题的动态证据，保留并标明截图滚动/动态状态未确认。原主设计native-label-and-range-contract-20261111节、控件闭包台账及 `evidence/Blob标签与范围组原件映射-20261111.json`已同步；整体体感、交互及性能待用户后续手动核对，总目标未完成。
 
-**2026-11-11 枚举样式集中修复构建**：用户确认已退出程序后，执行当前worktree全量Release构建，0错误、5945警告、22.23秒。下拉条目共享模板与归档原件ControlTemplate XML逐字一致；正式枚举行不再继承宿主隐式ComboBoxItem样式，禁用及说明扩展保留。图像来源仍继承NativeInputFactory内的原件样式。已补充“宿主隐式条目模板存在时，正式弹出项显示中文、无Entry全文、选择写回正式枚举键”用例，并与ROI默认投影、构造失败清理、底栏父级/命令用例一起编译；全部未运行。证据与本次Release控件DLL哈希见 `evidence/Blob枚举弹出项原件样式修正-20261111.json`。未启动或操作程序；待用户手动核对阈值方式、极性、轮廓类型的展开列表、选择回显和关闭重开。此结果仅为本批构建通过，不代表Blob整窗或总目标完成。
+**2026-11-11 枚举样式集中修复构建**：用户确认已退出程序后，执行当前worktree全量Release构建，0错误、5945警告、22.23秒。下拉条目共享模板与归档原件ControlTemplate XML逐字一致；正式枚举行不再继承宿主隐式ComboBoxItem样式，禁用及说明扩展保留。图像来源仍继承NativeInputFactory内的原件样式。已补充"宿主隐式条目模板存在时，正式弹出项显示中文、无Entry全文、选择写回正式枚举键"用例，并与ROI默认投影、构造失败清理、底栏父级/命令用例一起编译；全部未运行。证据与本次Release控件DLL哈希见 `evidence/Blob枚举弹出项原件样式修正-20261111.json`。未启动或操作程序；待用户手动核对阈值方式、极性、轮廓类型的展开列表、选择回显和关闭重开。此结果仅为本批构建通过，不代表Blob整窗或总目标完成。
 
-**2026-11-11 用户停止桌面控制（最新约束）**：用户明确要求“不控制电脑，需要什么由用户手动测试反馈”。立即停止窗口读取、激活、点击、程序启动等全部桌面操作；后续仅做源码/原证分析、代码修改、构建及测试用例维护，不运行自动测试。上批底栏循环修正后全量Release0错误、5945警告、22.52秒；重新打开的C盘进程及Blob运行参数页已由此前授权范围内的窗口清单和可访问性树确认，窗口不再停在原错误对话框，但不得据此宣称三页和全部生命周期通过。用户新截图确认阈值方式/极性弹出项显示Entry对象全文：本方枚举模板为支持不可选项覆盖ItemContainerStyle，错误继承宿主隐式ComboBoxItem样式，退出原件条目模板。现从已有原件SourceComboBoxes样式提取同一条目模板为SourceComboBoxItemStyle，原ListViewComboBoxStyle及枚举扩展样式共用，保留禁用/提示绑定、ValueA身份和DisplayNameALang显示。该增量XML语法已检查，尚未重新构建、运行或人工核对；不操作仍运行的程序。
+**2026-11-11 用户停止桌面控制（最新约束）**：用户明确要求"不控制电脑，需要什么由用户手动测试反馈"。立即停止窗口读取、激活、点击、程序启动等全部桌面操作；后续仅做源码/原证分析、代码修改、构建及测试用例维护，不运行自动测试。上批底栏循环修正后全量Release0错误、5945警告、22.52秒；重新打开的C盘进程及Blob运行参数页已由此前授权范围内的窗口清单和可访问性树确认，窗口不再停在原错误对话框，但不得据此宣称三页和全部生命周期通过。用户新截图确认阈值方式/极性弹出项显示Entry对象全文：本方枚举模板为支持不可选项覆盖ItemContainerStyle，错误继承宿主隐式ComboBoxItem样式，退出原件条目模板。现从已有原件SourceComboBoxes样式提取同一条目模板为SourceComboBoxItemStyle，原ListViewComboBoxStyle及枚举扩展样式共用，保留禁用/提示绑定、ValueA身份和DisplayNameALang显示。该增量XML语法已检查，尚未重新构建、运行或人工核对；不操作仍运行的程序。
 
 **2026-11-11 C盘正式窗口阻断定位与修正**：已成功启动本worktree Release，原生窗口清单确认完整C盘路径；实际错误对话框与用户截图一致，不能再把问题仅归于D盘旧产物。实机同时暴露ROI区域类型原整数单选声明拒绝、未完成字段行清理的空宿主委托异常，以及WPF逻辑树深度异常。现已修正显式默认值单选的编辑器Required投影（正式可选Port和写入回调不改）、构造早期失败清理的空检查、底栏Reset内容错误引用祖先框架的父子循环（原件模板直接绑定祖先命令/可用状态）。补充三项生产消费者/真实窗口回归用例，未运行。首次构建因运行进程锁DLL失败；用户已明确关闭程序，随后单选/清理修改全量构建0错误、3349警告；底栏修正后的最终构建正在进行，三页尚未重新核对。原主设计的release-window-startup-failures-20261111节记录归因和边界，不宣称整个窗口完成。
 
-**2026-11-11 当前实机与启动核对**：用户明确允许启动当前worktree的Release，仅核对Blob三页界面，不运行自动测试或算法；该授权覆盖下文历史“不启动程序”表述。用户手动启动并确认的路径是 `D:\MyWork\SunEyeVision_V2-param-window-datatree\Release\SunEyeVision_v1.0.0\SunEyeVision`，原生窗口清单亦确认该路径；它不是本C盘worktree产物。C盘Release最新全量构建0错误、3385警告，尚无成功显示的C盘窗口证据。启动源码确认SingleInstanceCoordinator按Windows用户与Session标识单实例、不按安装目录区分；第二个实例会向已有实例转发激活并退出，符合本次C盘进程短暂出现后退出的现象。不能把D盘界面当作C盘构建的视觉验证；保留用户D盘会话，不擅自关闭或丢弃未保存内容。后续需退出D盘实例后再打开C盘正式Release核对，不使用隔离测试模式冒充正式启动。
+**2026-11-11 当前实机与启动核对**：用户明确允许启动当前worktree的Release，仅核对Blob三页界面，不运行自动测试或算法；该授权覆盖下文历史"不启动程序"表述。用户手动启动并确认的路径是 `D:\MyWork\SunEyeVision_V2-param-window-datatree\Release\SunEyeVision_v1.0.0\SunEyeVision`，原生窗口清单亦确认该路径；它不是本C盘worktree产物。C盘Release最新全量构建0错误、3385警告，尚无成功显示的C盘窗口证据。启动源码确认SingleInstanceCoordinator按Windows用户与Session标识单实例、不按安装目录区分；第二个实例会向已有实例转发激活并退出，符合本次C盘进程短暂出现后退出的现象。不能把D盘界面当作C盘构建的视觉验证；保留用户D盘会话，不擅自关闭或丢弃未保存内容。后续需退出D盘实例后再打开C盘正式Release核对，不使用隔离测试模式冒充正式启动。
 
 **2026-11-11 用户实机纠偏（最高执行优先级）**：用户反馈工作11小时后，打开程序的Blob分析UI仍无改善。最近推进集中在图像源存图、诊断和资源接缝，不能算作Blob整窗原厂化交付。停止这些旁支的新增扩展，返回用户三页原图与实际Blob窗口的完整差异归因及集中实施；先核对正在使用的产物，再沿入口、组装、资源、模板及消费者查明可见差异。当前进程路径未核实，CIM读取拒绝访问，Get-Process未取得SunEye进程；不得据此归咎用户启动旧版本。保持不启动测试或程序的要求，可观察用户已打开的窗口。此前构建成功不代表UI改善。存图逻辑引用身份修补尚有本轮未最终构建改动，不沿用上一轮编译结果覆盖；保留为进行中，不再扩展其功能范围。
 
@@ -89,11 +132,11 @@
 
 **目标**：参数页行内容改为原件模板驱动（XAML DataTemplate + 模板选择器），删除自研逐字段 C# 控件构造；完成后统一验证，再交人工验收。**执行时不做新的调研与决策，照卡施工；每步构建闭环。**
 
-**新增最高验收门禁**：调试窗口整体使用体感必须沿 VM 原厂完整链核对。入口、首屏、页签切换、模板物化、引用/ROI 交互、提交回执、关闭排空和资源释放分别记录架构、组装时序、控件映射三类差异。局部测试通过不等同于体感达标；没有 VM 同版本动态证据的行为标记“运行未确认”。
+**新增最高验收门禁**：调试窗口整体使用体感必须沿 VM 原厂完整链核对。入口、首屏、页签切换、模板物化、引用/ROI 交互、提交回执、关闭排空和资源释放分别记录架构、组装时序、控件映射三类差异。局部测试通过不等同于体感达标；没有 VM 同版本动态证据的行为标记"运行未确认"。
 
 **用户最新纠偏（优先于下文历史施工与测试安排）**：现有测试通过但成品与 VM 实现和体感差异较大，说明现有用例不足以证明迁移一致性。先完成全链设计差异归因，再集中实施；预期行为必须可追溯到 VM 同版本源码、模板、资源或运行证据，不能从本方当前实现反推预期。覆盖布局与组合、默认与联动状态、鼠标/键盘/焦点、引用及 ROI、切页状态保持、算法输入输出与边界、取消关闭及响应耗时；性能绝对门限只证明本方预算，不证明 VM 等效。按用户最新要求不启动测试或程序，保留完整验收用例和未验状态，实施完成后由用户统一人工验收。不得以构建成功、绿测或文档齐备替代原件一致性结论。
 
-**Blob 闭口口径补充**：本批的 Blob 交付单元同时包含 UI 与算法双闭包。UI 的窗口、参数页、引用、ROI、运行参数、结果显示和生命周期，必须与 Runtime 的输入快照、阈值/软阈值模式、检测/屏蔽区域、位置修正、筛选排序、输出与结果 reader 使用同一字段身份、资源身份和代次合同；不能把“Blob Runtime 测试通过”或“窗口能打开”单独记为 Blob 全量完成。VM 算法动态未取得的部分标为“运行未确认”，不以 HALCON 结果猜测原件语义。
+**Blob 闭口口径补充**：本批的 Blob 交付单元同时包含 UI 与算法双闭包。UI 的窗口、参数页、引用、ROI、运行参数、结果显示和生命周期，必须与 Runtime 的输入快照、阈值/软阈值模式、检测/屏蔽区域、位置修正、筛选排序、输出与结果 reader 使用同一字段身份、资源身份和代次合同；不能把"Blob Runtime 测试通过"或"窗口能打开"单独记为 Blob 全量完成。VM 算法动态未取得的部分标为"运行未确认"，不以 HALCON 结果猜测原件语义。
 
 **两工具共用链路**：用同一方案中的 ImageSource → Blob 验证后续工具的架构接入基线。整链从工具准入、工具箱创建、节点样式及交互、连接和来源订阅开始，贯通设置工厂、三页原件组装和 ROI、执行捕获、阈值算法、结果 reader 与图像显示、底栏命令、保存重开、取消关闭和资源释放。每项追踪到正式生产消费者，并区分本方回归、原件静态对照和人工体感验收。
 
@@ -128,7 +171,7 @@
 
 **2026-11-10 一次性批次回归**：全量 Release 构建 0 错误；Blob Runtime `45/45`。UI 三项 Blob 调试窗口用例中 1 项通过，2 项失败，分别暴露 ROI 视图中重复引用文本控件和正式提交时数值范围校验失败。该结果只作为整体修复输入，不记作全链完成；生产探针需在下一轮整体修复后重新执行。
 
-本轮按 VM 对照先修正两处设计边界：数值行模板同时把业务范围投影到原件控件的 XML 范围属性，避免 `ThresholdSoftness=254` 被控件默认上限 100 拒绝；结果页移除“基准点/运行点”旧自研显示行。历史判断曾将默认截图未显示解读为无对应声明，后续静态复核已更正。按用户要求，本轮不启动测试。
+本轮按 VM 对照先修正两处设计边界：数值行模板同时把业务范围投影到原件控件的 XML 范围属性，避免 `ThresholdSoftness=254` 被控件默认上限 100 拒绝；结果页移除"基准点/运行点"旧自研显示行。历史判断曾将默认截图未显示解读为无对应声明，后续静态复核已更正。按用户要求，本轮不启动测试。
 
 随后又清理了 Resource 字段的自研资源文字占位：资源端口按 VM 引用模板分类，图像来源仍由来源组组合槽承载；本轮完整 Release 构建复核 0 错误（3298 个既有警告）。测试、生产探针和人工 VM 视觉验收均保持未执行。
 
@@ -146,7 +189,7 @@ Assist 绑定语义续查：已确认 CurValueA→OnPropertyChanged→TriggerBus
 
 模板生命周期续批：修复 StringConfig_sub 与 ButtonSelecter_sub 共用 SubDataA 导致文本会话覆盖引用会话的问题，两个模板分别绑定 TextDataA/ReferenceDataA，仍共用唯一字段状态；引用输入随模板物化重新挂接，文本弹层按自身会话定位。关闭挂起与子行释放纳入异常聚合清理，单项失败不跳过其他释放。新增三次模式切换、实际控件 DataContext、常量恢复及释放投影清空用例。此增量尚未构建/运行；不沿用上一构建结果宣称通过。完整 Assist/FIXTURE、图像掩膜及整窗 VM 对照仍未完成。
 
-按用户要求启动全部 Blob 消费控件的原件复核：原 AlgorithmTabRoot 递归展开 9 个 GroupLinkItem 引用组，固定 247 条命名声明（含页签、分组、控件与条目，不是独立控件数或完成数），原文件哈希/层级/操作名见 `evidence/Blob控件原件声明展开清单-20261110.json`。已重建 `docs/03-测试报告/2026/11/Blob控件依赖闭包台账-20261110.html` 的现行结论和完整消费者清单，旧“参数页无需动作、pending 均无关”的推断转入历史保留。用户提供的 D:/MyWork/Rea逆向/docs/reverse-plan/index.html 已读作参考，并核对 UI-C05–09/C12 关联正文；目录加载和 FrontendEdit 设计器证据不得转签为 Blob 参数窗证据。模板资源/代码继承与事件的逐项闭包仍待核，不以声明枚举完成代称全控件复核完成。
+按用户要求启动全部 Blob 消费控件的原件复核：原 AlgorithmTabRoot 递归展开 9 个 GroupLinkItem 引用组，固定 247 条命名声明（含页签、分组、控件与条目，不是独立控件数或完成数），原文件哈希/层级/操作名见 `evidence/Blob控件原件声明展开清单-20261110.json`。已重建 `docs/03-测试报告/2026/11/Blob控件依赖闭包台账-20261110.html` 的现行结论和完整消费者清单，旧"参数页无需动作、pending 均无关"的推断转入历史保留。用户提供的 D:/MyWork/Rea逆向/docs/reverse-plan/index.html 已读作参考，并核对 UI-C05–09/C12 关联正文；目录加载和 FrontendEdit 设计器证据不得转签为 Blob 参数窗证据。模板资源/代码继承与事件的逐项闭包仍待核，不以声明枚举完成代称全控件复核完成。
 
 底栏连续执行实施：依据 BottomCommand 静态源码，将硬编码禁用的连续命令接入 DocumentDebugSession 串行循环，复用正式捕获/执行/结果接纳；停止取消、关闭等待单次及循环排空，回调重入取消后禁止新捕获，重复 Loaded 不重复订阅。补充真实输入准备期间停止/重启、关闭拒写、准入重入用例（未运行）。全量 Release 编译0错误、6028警告、32.68秒，覆盖本次及上一文本/引用模板增量；证据见 evidence/连续调试与模板会话-Release编译-20261110.txt。宿主 await 完成后300ms与VM独立轮询的实际相位不保证一致，未宣称动态等效。主设计、控件台账同步；未启动测试、探针或程序，Assist/FIXTURE及图像掩膜等剩余范围不变。
 
@@ -154,7 +197,7 @@ Assist完整输入树续审取得新的原件正文：迁移仓库 docs/architec
 
 活动XML轮廓链清理：确认原件 BolbOutLineEnable 控件处于注释，正式窗口仅有三值 BlobContourType；同步删除本方 OutputBoundary 声明/设置/旧布尔投影与执行门控，消费者统一枚举，顺序改为不输出/无序/有序。此前六组合独立往返结论由本次活动树证据替代，原历史保留。全量Release编译0错误、3308警告、23.94秒；未启动测试或程序。集中核对六组枚举，五组声明顺序对应，排序特征仍缺原件五项且现有选择器拒绝负键，缺口已列主设计和 Blob六组枚举原件对账-20261110.json；有序/无序提取语义仍未完成。
 
-用户新增原厂视觉证据：9张Blob三Tab截图，明确“原厂3个tab展开高级参数的截图 默认是不展开的”。已原样归档 evidence/VM-Blob原厂三页截图-20261110/（含SHA256清单与HTML图集）。默认高级参数收起；展开截图用于完整内容/滚动位置对照，不作为默认首屏。跨Tab或重开是否保留展开状态仍未确认。排序续批补齐五项声明与同一候选特征消费者，角度容量选择允许有限负键；原件参数注释定义Box角度/宽高、二阶中心矩角度、Box短长轴比，测量沿既有HALCON适配，非VM数值等效声明。新增13特征生产链及正负角度限数用例（未运行）。首次编译发现RequireKey签名遗漏已修，最终全量Release 0错误、3308警告、15.39秒；未启动测试/程序。
+用户新增原厂视觉证据：9张Blob三Tab截图，明确"原厂3个tab展开高级参数的截图 默认是不展开的"。已原样归档 evidence/VM-Blob原厂三页截图-20261110/（含SHA256清单与HTML图集）。默认高级参数收起；展开截图用于完整内容/滚动位置对照，不作为默认首屏。跨Tab或重开是否保留展开状态仍未确认。排序续批补齐五项声明与同一候选特征消费者，角度容量选择允许有限负键；原件参数注释定义Box角度/宽高、二阶中心矩角度、Box短长轴比，测量沿既有HALCON适配，非VM数值等效声明。新增13特征生产链及正负角度限数用例（未运行）。首次编译发现RequireKey签名遗漏已修，最终全量Release 0错误、3308警告、15.39秒；未启动测试/程序。
 
 原厂截图组装纠偏实施：NativeAdvancedPresenter原本默认false，问题为XML把高级字段放入普通组。现运行页19个普通声明/38个高级声明，结果判定10个普通声明/36个高级声明（均含条件字段，不是同时可见行数）；保留全部104字段身份。填充阈值移至查找个数后，轮廓类型移至面积范围后，Blob/二值图像随后；圆度/矩形度移至长轴后、质心偏移前。结果页从质心X起归高级判定。同步将BlobRunUi过期8项排序准入改为正式枚举，避免新增5项仍被UI拒绝。补充原厂三页分组/顺序用例，未运行。全量Release0错误、3308警告、17.13秒；未启动测试、探针或程序，实际WPF外观待统一验收。
 
@@ -188,7 +231,7 @@ Blob 输出掩膜从 UI 草稿开关替换为正式输入配置，默认关闭�
 
 位置修正执行前置已补齐。Blob 本地/继承几何支持现有 Affine2D 正式输入，显式区域先在无隐式裁剪作用域生成，再修正检测和屏蔽区域，最后与目标图像有效域相交。全域模式保留目标图像有效域。新增画外矩形平移进图用例。此为 HALCON 宿主适配，原件 FIXTURE 十叶、三方式共享订阅、坐标公式及 UI 接线仍待实施。全量 Release 0 错误、3312 警告、15.57 秒，未运行用例。
 
-首批以实际连线的 ImageSource → Blob 作为后续工具的参考生产链。RunChainProbe 移除测试端手工注入图像来源，改为断言正式连线自动产生的流程、节点、输出端口、图像成员和连线归属，并在保存重开后再核对。探针后续的私有调试、正式结果 reader 和取消使用该绑定。位置修正“按信息”输入从 Affine2D 改为 VM XML 所示的 FIXTURE 两姿态十项 Float32 记录，执行入口按已有 REA 托管语义转成图像坐标仿射。旧仿射字段不再作为方案输入，首批两工具没有 FIXTURE 生产者；按点、按坐标、共用叶订阅与关闭开关时整组解除仍未完成。全量 Release 0 错误、6085 警告、23.25 秒，含本机 HALCON 源目录覆盖。未启动测试、程序或探针，VM 原生变换、性能和体感仍待对照。
+首批以实际连线的 ImageSource → Blob 作为后续工具的参考生产链。RunChainProbe 移除测试端手工注入图像来源，改为断言正式连线自动产生的流程、节点、输出端口、图像成员和连线归属，并在保存重开后再核对。探针后续的私有调试、正式结果 reader 和取消使用该绑定。位置修正"按信息"输入从 Affine2D 改为 VM XML 所示的 FIXTURE 两姿态十项 Float32 记录，执行入口按已有 REA 托管语义转成图像坐标仿射。旧仿射字段不再作为方案输入，首批两工具没有 FIXTURE 生产者；按点、按坐标、共用叶订阅与关闭开关时整组解除仍未完成。全量 Release 0 错误、6085 警告、23.25 秒，含本机 HALCON 源目录覆盖。未启动测试、程序或探针，VM 原生变换、性能和体感仍待对照。
 
 Assist 退订按原件 Assist0 的 False / CustomVisible=False 触发链接入现行字段编辑。关闭修正或切至图像 ROI 时，宿主将已接入的按信息来源清空合入同一候选，来源控件从草稿无写回刷新并退役旧交互。停用时拒绝迟到来源安装。补充正式窗口草稿接纳、撤销重做和图像 ROI 转换回归，三方式十叶共享的剩余范围保留。全量 Release 0 错误、6085 警告、23.83 秒。按当前要求未运行测试、探针或程序。
 
@@ -196,7 +239,7 @@ Assist 退订按原件 Assist0 的 False / CustomVisible=False 触发链接入�
 
 图像掩膜、像素 ROI 和仿射修正后的检测区／屏蔽区已从本轮执行区域发布边界，复用现有结果图层及帧身份校验。仿射下的普通 ROI 和扇环保留独立显示状态。HALCON 边界描边保留孔洞，不给光栅轮廓套用名义多边形填充。每组边界超过预算或无法构造时记录诊断，继续发布测量结果。新增画外移入、掩膜与孔洞回归用例。全量 Release 0 错误、6085 警告、22.77 秒。程序、测试与探针未运行，原厂动态绘制未确认。
 
-结果页原件续核确认 Fixtured Point 和 Unfixtured Point 是活动 ImageViewConfig，默认隐藏。两行恢复为正式图形样式声明，图形 ROI 下跟随位置修正显示。已接入的“按信息”FIXTURE 中基准点和运行点从本轮快照发布，使用原件点渲染。检测区域、屏蔽区多边形和默认文本按用户的中文截图对齐。字号按原浮点行显示两位小数，原件整数解析失败经渲染回退 10 的规则由正式显示桥承接。全量 Release 0 错误、6085 警告、22.77 秒。已编写坐标、图像 ROI 缺省点、样式和字号用例，测试、探针与程序未运行。按点、按坐标输入、原厂结果点动态语义及实际绘制待核。
+结果页原件续核确认 Fixtured Point 和 Unfixtured Point 是活动 ImageViewConfig，默认隐藏。两行恢复为正式图形样式声明，图形 ROI 下跟随位置修正显示。已接入的"按信息"FIXTURE 中基准点和运行点从本轮快照发布，使用原件点渲染。检测区域、屏蔽区多边形和默认文本按用户的中文截图对齐。字号按原浮点行显示两位小数，原件整数解析失败经渲染回退 10 的规则由正式显示桥承接。全量 Release 0 错误、6085 警告、22.77 秒。已编写坐标、图像 ROI 缺省点、样式和字号用例，测试、探针与程序未运行。按点、按坐标输入、原厂结果点动态语义及实际绘制待核。
 
 ImageSource 文件条原件复核确认本地 CurrentImagePath 的参数模板为空，外部 LocalImageList 槽负责列表消费。缩略图目录菜单改接已迁移 InteractionContextMenu，按菜单打开时的缩略图身份、会话和列表版本定位，保留正式执行游标。换源或退役关闭菜单，旧版本点击拒绝；清理未接入 RP/3D 的隐藏空事件和按钮。回归探针补充菜单目标、版本变化和换源三条路径。全量 Release 0 错误、5990 警告、19.40 秒，独立探针 Release 0 错误，未运行。原厂右击时系统选择与执行游标的实际时序仍未确认。
 
@@ -328,15 +371,15 @@ Blob 结果图层按原件 ActiveUpdateShapes 的 IsDisplay 门禁接入。全�
 
 参数树仅在首次安装和实际显隐变化时准备行交互，普通编辑继续刷新行状态。同步回调使变更失效时按新条件重试。补隐藏双端范围不因无关编辑重复挂起的用例。全量 Release 0 错误、3277 警告、14.23 秒，程序、测试和探针未启动。
 
-正式编辑器生产探针改为从窗口底栏的真实 WPF 按钮读取模板命令，检查本地化标签、可见性与启用状态，执行后从同一 reader 核对图像及 Blob 模块和单体判定。通过实际“确定”命令等待窗口 Closed，核对草稿、视图、结果和旧命令退役。探针项目独立 Release 编译通过（0 错误、5959 警告、16.77 秒）；未运行程序、测试或探针。画布入口和保存重开的覆盖仍由实际节点会话及生产链探针负责。
+正式编辑器生产探针改为从窗口底栏的真实 WPF 按钮读取模板命令，检查本地化标签、可见性与启用状态，执行后从同一 reader 核对图像及 Blob 模块和单体判定。通过实际"确定"命令等待窗口 Closed，核对草稿、视图、结果和旧命令退役。探针项目独立 Release 编译通过（0 错误、5959 警告、16.77 秒）；未运行程序、测试或探针。画布入口和保存重开的覆盖仍由实际节点会话及生产链探针负责。
 
 ImageSource 本地文件选择对齐原件 ImageListPanelBase.LocalImage_Click 的路径与文件检查、原本地化过滤标签和六种格式。目录导入用例补路径长短、子目录插入顺序、扩展名大小写及超过一层的排除。全量 Release 0 错误、6026 警告、19.78 秒，未启动程序、测试或探针。原件 INI 记忆目录、导入中途失败的部分接纳语义及对话框实机表现仍待对照。
 
 ImageSource 彩色转灰度以 REA 原厂无损语料、JPEG RGB 对照及现代 SIMD 源证为依据。相机、本地 MONO8 主输出和本地彩色输出的灰度成员统一按 (76R+150G+30B)>>8 生成，保留实际有效域和当前输出租约。PNG 格式用例改用 4×4 彩色原色，固定红、绿、蓝期望 75、149、29，同时核对帧、有效域、彩色缓冲和三种本地选项。全量 Release 0 错误、3277 警告、14.10 秒。未启动程序、测试或探针。仍需对照独立 OutMono8 开关、原件小尺寸拒绝、跨 CPU 标量分支及文件解码差异。
 
-ImageSource 按原件 OutMono8 补独立布尔行及持久配置。取算法初始化默认关闭，MONO8 本地输出隐藏，RGB24 与相机显示；本方“保持原图”也显示，按实际色彩格式决定附加输出。正式灰度记录可为空，彩色主图且开关打开才分配独立灰度帧，MONO8 主图不重复发布。结果控件沿既有空记录路径保持声明与引用身份。补方案保存重开、相机及文件像素与域、真实窗口显隐/确认和 ImageSource→Blob 结果切换回归。全量 Release 0 错误、6061 警告、22.97 秒，程序、测试及探针未启动。原件桌面联动、SDK 来源模式及同版本运行对照仍待验。
+ImageSource 按原件 OutMono8 补独立布尔行及持久配置。取算法初始化默认关闭，MONO8 本地输出隐藏，RGB24 与相机显示；本方"保持原图"也显示，按实际色彩格式决定附加输出。正式灰度记录可为空，彩色主图且开关打开才分配独立灰度帧，MONO8 主图不重复发布。结果控件沿既有空记录路径保持声明与引用身份。补方案保存重开、相机及文件像素与域、真实窗口显隐/确认和 ImageSource→Blob 结果切换回归。全量 Release 0 错误、6061 警告、22.97 秒，程序、测试及探针未启动。原件桌面联动、SDK 来源模式及同版本运行对照仍待验。
 
-附加灰度图关闭后的跨工具链：绑定解析区分“已声明且本轮为空的组合输出”和成员形状错误。Blob 绑定灰度图时，空输出给出包含来源节点和端口的本轮诊断，显示读值允许空。新增真实 ImageSource→Blob 连接及结果区回归，核对关闭时主图保留、原灰度帧退役、Blob 本轮失败，重新开启后相同选择恢复新帧及 Blob 新结果。全量 Release 0 错误、3279 警告、13.97 秒。程序、测试和探针未启动，VM 同版本空输出提示与恢复时序仍待对照。
+附加灰度图关闭后的跨工具链：绑定解析区分"已声明且本轮为空的组合输出"和成员形状错误。Blob 绑定灰度图时，空输出给出包含来源节点和端口的本轮诊断，显示读值允许空。新增真实 ImageSource→Blob 连接及结果区回归，核对关闭时主图保留、原灰度帧退役、Blob 本轮失败，重新开启后相同选择恢复新帧及 Blob 新结果。全量 Release 0 错误、3279 警告、13.97 秒。程序、测试和探针未启动，VM 同版本空输出提示与恢复时序仍待对照。
 
 Blob 正式结果按安装 XML 对齐个数 Int32、总面积和逐体面积/周长/质心/圆度/矩形度/轴对齐宽高 Float32。正式发布消费现有结果投影，保留排序及端口 ID。复制节点用例按声明传递物理类型，13 种排序回归新增 reader 逐项同序及物理精度断言。全量 Release 0 错误、3289 警告、14.18 秒。程序、测试和探针未启动。已有采用旧物理类型保存的订阅按现有门禁需重选；原厂与 HALCON 的测量值及矩形约定仍待同输入对照。
 
@@ -464,7 +507,7 @@ Blob 屏蔽区橙色填充、定位点固定状态与提示、检测区测量提
 
 正式参数窗口探针增加红蓝分区 RGB24 场景，沿实际连线及发布 reader 检查主图和附加灰度的像素、格式码、Blob 二值图及物理帧。阈值 50 可区分红蓝通道倒置。独立 RuntimeEditorProductionProbe Release 编译 0 错误、5960 警告、16.56 秒。程序、测试与探针未启动，本轮无新增运行结果。
 
-安装件算法与页签 XML 一致将图像源默认格式设为 MONO8。现行声明、设置和宿主投影已对齐，原件两项置前，宿主“保持原图”保留末项。用例及生产探针从新建节点验证默认。控件闭包台账同步校正位置修正、输入输出掩膜和内接矩形当前消费者，审计分列 SDK 供图、PathCache、相机逐轮订阅和其余 ImageSource 原件缺口。全量 Release 0 错误、6028 警告、20.64 秒；独立 RuntimeEditorProductionProbe Release 0 错误、5960 警告、17.15 秒。程序、测试及探针未启动。
+安装件算法与页签 XML 一致将图像源默认格式设为 MONO8。现行声明、设置和宿主投影已对齐，原件两项置前，宿主"保持原图"保留末项。用例及生产探针从新建节点验证默认。控件闭包台账同步校正位置修正、输入输出掩膜和内接矩形当前消费者，审计分列 SDK 供图、PathCache、相机逐轮订阅和其余 ImageSource 原件缺口。全量 Release 0 错误、6028 警告、20.64 秒；独立 RuntimeEditorProductionProbe Release 0 错误、5960 警告、17.15 秒。程序、测试及探针未启动。
 
 图像源 PathCache 已接正式本地参数和来源游标。默认 0、上限 5，按已接纳路径保留首批解码副本，正式与私有调试隔离，换代和关闭在读取排空后释放，结果仍独立发布帧。现行方案缺失该字段按声明初值读回。新增容量、文件删除后命中、私有隔离及保存重开用例。全量 Release 0 错误、6064 警告、22.90 秒。程序、测试和探针未启动，本机同哈希原厂缓存动态仍待验。
 
@@ -622,7 +665,7 @@ Blob 主图及掩膜沿正式引用候选统一接入方案图像变量，设计
 
 已用FieldChangeRevisions记录宿主输入节点SettingsSchema字段的实际接纳变化。正式戳归节点生命周期，提交及Undo/Redo统一在RetireChangedDomains推进；私有ApplyFields/PreviewFields分叉，RebaseAcceptedDraft继承，运行值回读和显示值不推进戳。HostInputFactoryContext冻结正式/私有戳，处理上下文只读已声明设置，ImageSourceRunState用来源/设备戳重置失败次数、用初值戳重设SN。无第二套参数模型、历史运行状态或文件格式改动。
 
-新增连续失败后设备无运行切回、Undo+Redo、显示往返不重置、初值改回重设、私有来源/初值往返、提交重基继续计数、同值不造戳及正式私有隔离的完整宿主用例，已编译未运行。全量Release 0错误、6087警告、22.92秒，临时日志 SunEyeVision-configuration-revisions-build.log；消费者及哈希见 evidence/ImageSource设置事件与状态重置消费者-20261111.json。主设计、架构总览和控件台账同步；未启动测试/程序/探针。本批替代前批“只处理运行观测变化”的限制。底层同值SetParam与UI事件对应、模块状态、原生错误码和原机体感仍未确认。
+新增连续失败后设备无运行切回、Undo+Redo、显示往返不重置、初值改回重设、私有来源/初值往返、提交重基继续计数、同值不造戳及正式私有隔离的完整宿主用例，已编译未运行。全量Release 0错误、6087警告、22.92秒，临时日志 SunEyeVision-configuration-revisions-build.log；消费者及哈希见 evidence/ImageSource设置事件与状态重置消费者-20261111.json。主设计、架构总览和控件台账同步；未启动测试/程序/探针。本批替代前批"只处理运行观测变化"的限制。底层同值SetParam与UI事件对应、模块状态、原生错误码和原机体感仍未确认。
 
 ## 2026-11-09 VM 原厂 SDK 证据收口（当前有效）
 
@@ -669,14 +712,14 @@ PluginDevKit 已按发布边界回归：SDK Contracts/Runtime/WPF DLL 与两个�
 
 ## 2026-11-09 Blob 参数双轨清理（当前有效增量）
 
-审计确认 Blob 运行参数仍保留一整套“元数据不完整时按代码逐行创建控件”的备用分支；当前 VM 参数 XML 已完整覆盖该链，因此本批删除备用分支和对应的第二套 `BlobRunUiState` 编辑器/范围/阈值状态。现在 `BlobParameters.xml`、`BlobParameterDefinition`、`ParameterPresentationTree`、`DeclaredFieldsView` 是唯一参数来源，`BlobRunUiState` 只保留支持项校验和会话退役。
+审计确认 Blob 运行参数仍保留一整套"元数据不完整时按代码逐行创建控件"的备用分支；当前 VM 参数 XML 已完整覆盖该链，因此本批删除备用分支和对应的第二套 `BlobRunUiState` 编辑器/范围/阈值状态。现在 `BlobParameters.xml`、`BlobParameterDefinition`、`ParameterPresentationTree`、`DeclaredFieldsView` 是唯一参数来源，`BlobRunUiState` 只保留支持项校验和会话退役。
 
 验证：Blob WPF 专项构建 0 错误；全量 Release 构建 0 错误、6062 个警告；NeutralReleaseProbe PASS，正式载荷 SHA-256 为 `F91AC7CBF9D03B12F98E2DDAA3F7BC29E9CB5161369AF072F3AD2BF8A85DBBC2`；生产探针 ImageLoad 绑定/首显 `761/1460ms`，BlobAnalysis 绑定/首显 `1497/442ms`，首次切换第 2/3 页 `311/419ms`，重复切换 `0/34/47ms`，两工具 Session→正式参数控件→捕获/回执→关闭释放 PASS。Plugin.SDK 退役门禁仍 PASS（现行消费者 0，历史旧引用 20）。
 
 最终校正：正式状态的 `RetireInteractions` 保持为会话租约的无操作退役，不把正式参数树字段误标为失效；重新全量 Release 构建 0 错误、6064 个警告并封签 `31F58A1ADB399D0B03D17E8176CBFC4407FA802255C52A2A5B6B4CEB130E01F0`。同一构建生产探针 ImageLoad 绑定/首显 `523/1415ms`，BlobAnalysis 绑定/首显 `1459/476ms`，首次切换第 2/3 页 `326/438ms`，重复切换 `0/27/44ms`，两工具关闭释放 PASS。
 ## 2026-11-06 迁移 REA 历史架构与源码树方案
 
-已从 `D:\MyWork\REA逆向测试` 迁入与架构、源码树、插件边界、配置宿主、调试会话和验收模型直接相关的原文，位置为 `docs/07-工具逆向/历史-REA逆向测试/`。旧项目的 `VisionReplica.slnx` 和 `src/Vision*` 已确认是“独立兼容重建”实施树，不是已证明等同 VM 的最终树；旧 `*.vmx.json`、未闭合 `.sol`/SDK/ABI 和独立实现不直接迁入产品。历史树已回填 `docs/01-方案设计/2026/11/06/最终源码树评审稿-证据分级-20261106.html`，下一步按 VM 真实程序集、模板、NodeData 和生命周期证据逐项目映射。
+已从 `D:\MyWork\REA逆向测试` 迁入与架构、源码树、插件边界、配置宿主、调试会话和验收模型直接相关的原文，位置为 `docs/07-工具逆向/历史-REA逆向测试/`。旧项目的 `VisionReplica.slnx` 和 `src/Vision*` 已确认是"独立兼容重建"实施树，不是已证明等同 VM 的最终树；旧 `*.vmx.json`、未闭合 `.sol`/SDK/ABI 和独立实现不直接迁入产品。历史树已回填 `docs/01-方案设计/2026/11/06/最终源码树评审稿-证据分级-20261106.html`，下一步按 VM 真实程序集、模板、NodeData 和生命周期证据逐项目映射。
 ## 2026-11-09 SDK 合同构建后 Release 复核（当前有效增量）
 
 新增 `Platform.Sdk.Contracts` 后重新执行全量 `dotnet build SunEyeVision.slnx -c Release --no-restore -v:q`：0 错误、62 个 NU1900 离线漏洞源警告。`build-platform-sdk.ps1 -Configuration Release` 成功发布 Platform 合同 DLL/XML/manifest；NeutralReleaseProbe PASS，最新正式载荷封签 `8DF30ADD27EFEE87BC69A8D956C5D4B2C877F0DFD891A19B239A5EA9D4EC2D0E`；Plugin.SDK 退役门禁 PASS（现行消费者 0、历史目录旧引用 20）。本次未改 UI/工具生产链，沿用最近生产探针记录；Platform 合同模板的独立工程验证见 `docs/collaboration/evidence/PlatformSdk合同边界回归-20261109.txt`。
@@ -686,7 +729,7 @@ PluginDevKit 已按发布边界回归：SDK Contracts/Runtime/WPF DLL 与两个�
 
 ## 2026-11-09 VM 原厂启动阶段顺序纠偏（当前有效批次）
 
-用户提供的原厂阶段截图与既有 REA 静态捕获已对齐：VM 的可见顺序是“品牌启动页（快速过渡）→ 方案管理器可操作 → 用户打开方案后工作区加载覆盖层 → 完整方案工作区”。原件静态调用链为 `App.OnStartup → animatedSplashScreenWindow → Program.BeforeStartMian → InitMainWindow → ParamTabControl.PreLoadPage/启动信号 → ShowFrontendUI/ShowMainWindow → ProjectManager.OpenRecentSolution`。证据见 `docs/collaboration/evidence/VM启动阶段顺序静态对照-20261109.txt` 及 `D:\MyWork\REA逆向测试\docs\architecture-recovery\startup-order-cil-evidence.json`；该捕获明确 `runtimeExecuted=false`，因此只确认顺序，不确认动态耗时。
+用户提供的原厂阶段截图与既有 REA 静态捕获已对齐：VM 的可见顺序是"品牌启动页（快速过渡）→ 方案管理器可操作 → 用户打开方案后工作区加载覆盖层 → 完整方案工作区"。原件静态调用链为 `App.OnStartup → animatedSplashScreenWindow → Program.BeforeStartMian → InitMainWindow → ParamTabControl.PreLoadPage/启动信号 → ShowFrontendUI/ShowMainWindow → ProjectManager.OpenRecentSolution`。证据见 `docs/collaboration/evidence/VM启动阶段顺序静态对照-20261109.txt` 及 `D:\MyWork\REA逆向测试\docs\architecture-recovery\startup-order-cil-evidence.json`；该捕获明确 `runtimeExecuted=false`，因此只确认顺序，不确认动态耗时。
 
 此前本方 `App.OnStartup` 先显示 `MainWindow` 和方案加载覆盖层，直接跳过方案管理器，属于错误的本方设计假设。本批已调整为无直接方案参数且未隐藏起始页时，先显示 `StartPageWindow` 收集用户选择；选择完成后才创建/显示 `MainWindow`，并保持方案加载覆盖层连续到方案打开/新建完成。直接文件启动和隐藏起始页是显式旁路。VM 品牌启动页当前只作为快速阶段证据，未重新把自研 Splash 用作长耗时容器。
 
@@ -694,13 +737,13 @@ UI Release 构建已通过（0 错误），并已重新封存正式 Release 载�
 
 ### 2026-11-09 新建方案拖放节点链路修复
 
-人工验收发现：新建空方案后流程 Tab 已可见，但 Tab 对应画布在同一调度周期尚未完成 `DataContext` 接管，工具箱拖放入口仍从画布直接读取当前流程，错误提示“无法获取当前工作流”。同时该提示未传递主窗口 Owner，可能被主窗口遮挡。现已在 `src/UI/Services/Interaction/DragDropHandler.cs` 的拖放入口增加主窗口选中 Tab 的同身份回退与画布补绑，并将两处异常提示的 Owner 设为画布宿主窗口。正式 Release UI 构建已重新通过（0 错误）并完成载荷封存；人工需复测“新建方案→拖入图像源/Blob 节点→弹窗层级”。
+人工验收发现：新建空方案后流程 Tab 已可见，但 Tab 对应画布在同一调度周期尚未完成 `DataContext` 接管，工具箱拖放入口仍从画布直接读取当前流程，错误提示"无法获取当前工作流"。同时该提示未传递主窗口 Owner，可能被主窗口遮挡。现已在 `src/UI/Services/Interaction/DragDropHandler.cs` 的拖放入口增加主窗口选中 Tab 的同身份回退与画布补绑，并将两处异常提示的 Owner 设为画布宿主窗口。正式 Release UI 构建已重新通过（0 错误）并完成载荷封存；人工需复测"新建方案→拖入图像源/Blob 节点→弹窗层级"。
 
 ## 2026-11-09 VM 对齐组装批次：方案管理器与两工具完整参数页
 
-本批按 VM 的完整可见语义收口，默认启动链固定为“快速启动阶段→方案管理器可操作→用户打开/新建方案→工作区加载遮罩→节点配置状态→隐藏状态完成当前页→窗口可见→其余页空闲预热→Tab 复用已建页”。`App.OnStartup` 的默认路径已先显示 `StartPageWindow`，选择完成后才创建 `MainWindow`；指定文件和隐藏起始页是显式旁路。
+本批按 VM 的完整可见语义收口，默认启动链固定为"快速启动阶段→方案管理器可操作→用户打开/新建方案→工作区加载遮罩→节点配置状态→隐藏状态完成当前页→窗口可见→其余页空闲预热→Tab 复用已建页"。`App.OnStartup` 的默认路径已先显示 `StartPageWindow`，选择完成后才创建 `MainWindow`；指定文件和隐藏起始页是显式旁路。
 
-ImageSource 单页直接完成；Blob 工厂按 VM 静态的参数树、`ContentTemplate` 和 Tab 宿主语义改为“选中页先就绪、窗口首显后空闲逐页预热、已建页复用”。`BlobUiComposition.ReadyTask` 只在当前选中页完成后结束，首帧不再等待运行参数和结果页，也不允许当前页以空壳先显示；未预热页首次点击仍有一次明确记录的物化成本，后续 Tab 只改变选择。换节点、关闭和迟到回调仍沿现有 `SettingsLease`、代次和 `Dispose` 合同，未引入第二套生命周期。
+ImageSource 单页直接完成；Blob 工厂按 VM 静态的参数树、`ContentTemplate` 和 Tab 宿主语义改为"选中页先就绪、窗口首显后空闲逐页预热、已建页复用"。`BlobUiComposition.ReadyTask` 只在当前选中页完成后结束，首帧不再等待运行参数和结果页，也不允许当前页以空壳先显示；未预热页首次点击仍有一次明确记录的物化成本，后续 Tab 只改变选择。换节点、关闭和迟到回调仍沿现有 `SettingsLease`、代次和 `Dispose` 合同，未引入第二套生命周期。
 
 UI Release 已重新构建并封存，0 错误；本轮全量 `SunEyeVision.slnx` Release 构建 0 错误、6132 个既有警告，PluginDevKit 宿主准备后载荷以 `A7E3C36BB5DD76E82E147514A8F43ACEC45827AE9BF873D783D2E691D238D9F1` 重新封签。正式程序路径：`D:\MyWork\SunEyeVision_V2\Release\SunEyeVision_v1.0.0\SunEyeVision\SunEyeVision.UI.exe`。本批尚未把人工启动、节点打开和三页内容验收写成已通过；下一步只做一次完整正式 Release 回归并记录启动、方案管理器、节点窗口、首次/重复 Tab、换节点关闭和迟到回调结果，不再追加零散探针。
 
@@ -714,7 +757,7 @@ UI Release 已重新构建并封存，0 错误；本轮全量 `SunEyeVision.slnx
 
 已完成一次性对齐审计，证据见 `docs/collaboration/evidence/VM-CodeBuddy对齐审计-20261109.html`，并已回填《框架架构总览》。VM 静态链确认 `AlgorithmTabRoot → ParamsConfigControlBase → ParamsTabUserControl → ParamListView/ParamUserControl → DataTemplate`；当前 `ParameterPresentationTree`、逆向 Native 控件、ImageSource 单页完成/Blob 选中页就绪与空闲预热、统一租约/退订/Dispose 链已覆盖可迁移边界。
 
-CodeBuddy 的“数据树 + DataTemplate”作为目标形态保留；“静态命令式装配必然是性能根因”“立即删除 `DeclaredFieldsView`”“VM Tab 已证明完全零构建”不作为未经验证的删除依据。下一批按完整链实施：先把 `ParameterPresentationTree` 固定为唯一数据树入口，建立 `Plugin.Wpf` 模板注册表和字段覆盖契约，再按 ImageSource→BlobAnalysis 替换宿主；ROI、范围对、结果显示和资源 Owner 通过显式槽迁移，覆盖生产链后再删除对应旧装配分支。VM 同版本动态 UI 线程耗时、复用边界、释放顺序和真实外部 SDK 仍未确认，继续单独列项。
+CodeBuddy 的"数据树 + DataTemplate"作为目标形态保留；"静态命令式装配必然是性能根因""立即删除 `DeclaredFieldsView`""VM Tab 已证明完全零构建"不作为未经验证的删除依据。下一批按完整链实施：先把 `ParameterPresentationTree` 固定为唯一数据树入口，建立 `Plugin.Wpf` 模板注册表和字段覆盖契约，再按 ImageSource→BlobAnalysis 替换宿主；ROI、范围对、结果显示和资源 Owner 通过显式槽迁移，覆盖生产链后再删除对应旧装配分支。VM 同版本动态 UI 线程耗时、复用边界、释放顺序和真实外部 SDK 仍未确认，继续单独列项。
 
 ## 2026-11-09 VM 启动→准入→工具窗口链路落地与验证一致性修复（当前有效批次）
 
@@ -724,9 +767,9 @@ CodeBuddy 的“数据树 + DataTemplate”作为目标形态保留；“静态�
 
 正式 Release 准入回归已通过：`Run-NeutralReleaseProbe.ps1 -SkipBuild` 返回 `PASS`，确认发布清单、ImageLoad→BlobAnalysis Runtime 执行、保存/重开/取消排空及无 WPF/UI/SDK 泄漏。该脚本已增加探针源码时间戳检查，默认发现探针落后于 `ReleasePayloadAuthority` 或探针源码时自动重建；只有明确 `-SkipBuild` 才复用现有产物，避免再次出现旧构造签名混入新载荷的 `MissingMethodException`。当前仍未把 VM 动态耗时、真实人工视觉验收或 VS 外部工程验收记作通过。
 
-全量 `dotnet build SunEyeVision.slnx -c Release --no-restore -v:minimal` 已通过（0 错误；本轮串行复核为 6132 个既有警告），正式 Release 载荷重新封存；随后门禁、NeutralReleaseProbe 和 RuntimeEditorProductionProbe 均通过。当前阶段可交付基线为“启动顺序、两工具准入、选中页首显、其余页空闲预热、Tab 复用、Runtime 执行和生命周期收口”，未实现工具保留在历史逆向层，不再混入本阶段负担。
+全量 `dotnet build SunEyeVision.slnx -c Release --no-restore -v:minimal` 已通过（0 错误；本轮串行复核为 6132 个既有警告），正式 Release 载荷重新封存；随后门禁、NeutralReleaseProbe 和 RuntimeEditorProductionProbe 均通过。当前阶段可交付基线为"启动顺序、两工具准入、选中页首显、其余页空闲预热、Tab 复用、Runtime 执行和生命周期收口"，未实现工具保留在历史逆向层，不再混入本阶段负担。
 
-Blob 的就绪合同已调整为“当前页完成后才结束”，避免窗口首显空壳；其余页只在首帧后的空闲阶段组装并缓存。对应生产探针见 `docs/collaboration/evidence/VM完整链路代码落地回归-20261109.txt`：当前 BlobAnalysis 首选页绑定约 1333ms，窗口首次呈现约 382ms，ROI 组合约 1929ms，运行页/结果页空闲预热约 1565/1120ms，首次 Tab 292/427ms，重复 Tab 0/20/36ms。该结果证明去掉全量 eager 可以收回启动等待，但重型槽首次物化成本仍未达到 VM 目标；下一批按 VM 数据树/DataTemplate 复用继续降低 ROI、运行和结果槽的首次构造成本。
+Blob 的就绪合同已调整为"当前页完成后才结束"，避免窗口首显空壳；其余页只在首帧后的空闲阶段组装并缓存。对应生产探针见 `docs/collaboration/evidence/VM完整链路代码落地回归-20261109.txt`：当前 BlobAnalysis 首选页绑定约 1333ms，窗口首次呈现约 382ms，ROI 组合约 1929ms，运行页/结果页空闲预热约 1565/1120ms，首次 Tab 292/427ms，重复 Tab 0/20/36ms。该结果证明去掉全量 eager 可以收回启动等待，但重型槽首次物化成本仍未达到 VM 目标；下一批按 VM 数据树/DataTemplate 复用继续降低 ROI、运行和结果槽的首次构造成本。
 ## 2026-11-08 产品主线优先级调整（当前有效批次）
 本轮手动验收确认当前窗口先显示空壳再组装，造成空白停留。已定位为 `MainWindowRuntimeEditing.InitializeRuntimeEditor` 先调用 `window.Show()`，再异步 `BindDraft`。代码已调整为隐藏状态完成首个参数页和结果预览后再显示，节点失效时清理隐藏窗口。VM 原件静态补证见现行架构总览，动态耗时仍未冒充已确认。
 
@@ -734,13 +777,13 @@ Blob 的就绪合同已调整为“当前页完成后才结束”，避免窗口
 
 ## 2026-11-08 Blob 首屏与首次切 Tab 时序纠偏（当前有效批次）
 
-上一版为降低首帧耗时，把 Blob 当前页组合也放入 `SystemIdle/ApplicationIdle`，形成“窗口先可见、当前页随后补挂”的跳变，并让第一次切 Tab 承担目标页首次组装成本。该时序与 VM 的可见语义不一致。现已改为：当前选中页完成组合后才允许窗口 `Show()`；首次及后续 Tab 切换在当前 UI 回调中完成目标页组合；非当前页继续在首屏之后后台预热并由 `_builtPages` 复用。新增 `IToolSettingsViewReady` 就绪合同，宿主等待 Blob 当前页就绪后再进入可调试状态。UI Release 构建 0 错误，实际运行窗口人工截图待本轮统一验收。
+上一版为降低首帧耗时，把 Blob 当前页组合也放入 `SystemIdle/ApplicationIdle`，形成"窗口先可见、当前页随后补挂"的跳变，并让第一次切 Tab 承担目标页首次组装成本。该时序与 VM 的可见语义不一致。现已改为：当前选中页完成组合后才允许窗口 `Show()`；首次及后续 Tab 切换在当前 UI 回调中完成目标页组合；非当前页继续在首屏之后后台预热并由 `_builtPages` 复用。新增 `IToolSettingsViewReady` 就绪合同，宿主等待 Blob 当前页就绪后再进入可调试状态。UI Release 构建 0 错误，实际运行窗口人工截图待本轮统一验收。
 
 按需编辑器加载后的 `RuntimeEditorProductionProbe` 已复测。ImageLoad 参数页绑定 682ms、首显 1320ms，BlobAnalysis 绑定 1098ms、首显 357ms，ROI 组合 1348ms，运行页首次 387ms，结果页首次空闲组装 1108ms，重复切换 0/18/55ms；两工具实际 Session、参数捕获、回执和关闭释放均通过。证据见 `docs/collaboration/evidence/ImageSource-Blob-按需编辑器加载回归-20261108.txt`。
 
 ## 2026-11-08 启动链差异审计（当前有效批次）
 
-现有启动页是对启动链过慢的补偿，不是 VM 目标设计。`src/UI/App.xaml.cs` 当前在主窗口创建前依次等待正式插件准入、数据根、服务、解决方案管理器、主题和启动决策；历史启动日志 `D:\SunEyeVisionData\Logs\2026\11\08\SunEyeVision_172710.txt` 显示主窗口 `Show` 约在启动后 60183ms，`Service.Initialize completed` 已到 54026ms，主要耗时发生在更早的插件准入/程序集扫描阶段。VM 原厂静态入口包含方案加载开始/进度/结束回调，结合用户实机观察可确认其工作区壳先进入可见状态，再在壳内推进方案和工具装配。本批先固定差异与证据，不把启动页继续当作性能方案；下一批按“壳先可见、后台准入与方案装载、状态覆盖层、失败可恢复”设计启动链，先分段测量 Plugin.Load、Service.Initialize 和方案恢复，再实施整体重构。
+现有启动页是对启动链过慢的补偿，不是 VM 目标设计。`src/UI/App.xaml.cs` 当前在主窗口创建前依次等待正式插件准入、数据根、服务、解决方案管理器、主题和启动决策；历史启动日志 `D:\SunEyeVisionData\Logs\2026\11\08\SunEyeVision_172710.txt` 显示主窗口 `Show` 约在启动后 60183ms，`Service.Initialize completed` 已到 54026ms，主要耗时发生在更早的插件准入/程序集扫描阶段。VM 原厂静态入口包含方案加载开始/进度/结束回调，结合用户实机观察可确认其工作区壳先进入可见状态，再在壳内推进方案和工具装配。本批先固定差异与证据，不把启动页继续当作性能方案；下一批按"壳先可见、后台准入与方案装载、状态覆盖层、失败可恢复"设计启动链，先分段测量 Plugin.Load、Service.Initialize 和方案恢复，再实施整体重构。
 
 已先修正启动前一处确定的重复成本。`ReleasePayloadAuthority` 不再默认在每次启动时对全部 606 个发布条目约 834 MB 逐个做 SHA-256，正式组件及其依赖仍在实际加载路径通过 `VerifyApprovedFile` 校验，产品锚点仍在准入阶段校验；需要完整封包审计的探针可显式传入 `verifyAllFilesOnAdmission:true`。UI Release 构建通过 0 错误。首次完整启动时间线仍需在不受外部探针进程干扰的环境中复测。
 
@@ -768,26 +811,26 @@ Roslyn 预热另行核对：`src/CommonControl/ScriptEditorCore.xaml.cs` 仍保�
 
 启动页暂不删除。当前它承担的是启动反馈，不是性能实现。若在主窗口仍要等插件准入、服务初始化和启动决策完成后才创建的状态下直接删除，用户会看到进程已启动但桌面无可交互窗口的空等待，行为比现有启动页更差。
 
-VM 对齐目标固定为“主工作区壳先可见，壳内显示加载遮罩和阶段进度，插件准入、服务初始化、方案恢复及工具装配在同一窗口内推进”。启动页只保留到主窗口壳完成接管，不能作为长期替代方案。迁移期间必须同时满足以下门禁：
+VM 对齐目标固定为"主工作区壳先可见，壳内显示加载遮罩和阶段进度，插件准入、服务初始化、方案恢复及工具装配在同一窗口内推进"。启动页只保留到主窗口壳完成接管，不能作为长期替代方案。迁移期间必须同时满足以下门禁：
 
 - 主窗口壳显示前只允许执行最小进程、单实例和 WPF 资源初始化，不得先构造完整工具编辑器树。
 - 壳显示后工具目录、服务、方案和设备恢复均通过可观测阶段推进，未就绪时禁止误操作，失败可恢复。
 - 默认 `D:\SunEyeVisionData` 与隔离启动根分别记录 `ShellVisible`、`PluginAdmission`、`ServiceInitialize`、`SolutionReady` 和 `MainWindowReady`，不得用隔离根读数代替默认根。
-- 只有在默认根连续回归确认主窗口接管后不再出现空白等待，才允许移除独立 Splash。此前保留 Splash，不把“隐藏启动页”记作 VM 对齐完成。
+- 只有在默认根连续回归确认主窗口接管后不再出现空白等待，才允许移除独立 Splash。此前保留 Splash，不把"隐藏启动页"记作 VM 对齐完成。
 
 现有证据：独立启动根约 6.45 秒完成服务初始化、约 6.81 秒进入启动决策；默认根最近一次约 5.3 秒完成服务初始化、约 8.8 秒主窗口出现，历史默认根记录曾在服务初始化前耗时 21–54 秒。该差异说明启动链仍需整体调整，不能通过删启动页掩盖。
 
-本轮已先落地可见时序修正：`HandleStartupDecisionAsync` 在构造并绑定完整主窗口后立即 `ShowMainWindow("workspace shell")`，再打开起始页或通过主窗口遮罩恢复指定方案；不再等待起始页返回后才显示主窗口。指定方案恢复使用主窗口内的“正在打开方案”遮罩，并以 `finally` 保证异常时关闭遮罩。该改动只修正可见顺序，没有宣称已解决插件准入和服务初始化的总耗时。
+本轮已先落地可见时序修正：`HandleStartupDecisionAsync` 在构造并绑定完整主窗口后立即 `ShowMainWindow("workspace shell")`，再打开起始页或通过主窗口遮罩恢复指定方案；不再等待起始页返回后才显示主窗口。指定方案恢复使用主窗口内的"正在打开方案"遮罩，并以 `finally` 保证异常时关闭遮罩。该改动只修正可见顺序，没有宣称已解决插件准入和服务初始化的总耗时。
 
 本轮首次 UI Release 构建仍受现有 Release 载荷封装脚本退出码 1 影响；源码编译阶段未出现 C# 错误。随后使用单进程隔离输出 `C:\Users\houzhongjie\.codex\visualizations\2026\11\06\01a1ae75-37f7-7281-b9b8-51a3cf21dc1a\build-ui-serial` 执行 `-t:Compile -m:1 --no-restore`，结果 2755 个既有警告、0 个错误，证明本轮启动与窗口拖动改动可编译。正式 Release 载荷封装仍需在发布环境单独复测，不能把隔离 Compile 结果记作完整发布验收。
 
-针对“启动页和方案窗口鼠标无法移动”，已把 `PluginManager.LoadPluginsAsync` 从 UI Dispatcher 调用改为 `Task.Run` 后等待。插件准入只做载荷文件、程序集和运行目录准备，没有 WPF 线程亲和性；这样准入期间 Splash 和已显示的主壳可以继续接收输入。方案文档读取和主窗口构造仍保留在所属 UI 线程，后续按方案会话的 owner-thread 合同单独收口，不能把这次线程边界调整写成完整异步启动。
+针对"启动页和方案窗口鼠标无法移动"，已把 `PluginManager.LoadPluginsAsync` 从 UI Dispatcher 调用改为 `Task.Run` 后等待。插件准入只做载荷文件、程序集和运行目录准备，没有 WPF 线程亲和性；这样准入期间 Splash 和已显示的主壳可以继续接收输入。方案文档读取和主窗口构造仍保留在所属 UI 线程，后续按方案会话的 owner-thread 合同单独收口，不能把这次线程边界调整写成完整异步启动。
 
-当前仍有一个明确未收口点：`InitializeSolutionManager()` 发生在 `HandleStartupDecisionAsync` 创建并显示 `MainWindow` 之前，但它必须在 UI owner thread 构造 `DocumentSessionManager`，不能直接搬到后台。 已在 `App.xaml.cs` 增加 `SolutionManager.Initialize` 与 `MainWindow.Constructed` 独立耗时埋点，下一次使用新隔离 Release 运行时只需读取启动日志即可确认两段真实成本。已先把无会话所有权的 `ServiceInitializer.InitializeServices()`（适配器/日志/静态服务注册）改为后台等待；方案管理器继续在 UI 线程创建，保持 owner-thread 合同。这样只消除服务注册阶段的 Dispatcher 阻塞，仍未让主工作区壳提前于方案管理器创建，因此不得宣称“启动过程已与 VM 完全对齐”。下一步是测量方案管理器构造和 MainWindowViewModel 构造，再决定是否需要独立的轻量壳。
+当前仍有一个明确未收口点：`InitializeSolutionManager()` 发生在 `HandleStartupDecisionAsync` 创建并显示 `MainWindow` 之前，但它必须在 UI owner thread 构造 `DocumentSessionManager`，不能直接搬到后台。 已在 `App.xaml.cs` 增加 `SolutionManager.Initialize` 与 `MainWindow.Constructed` 独立耗时埋点，下一次使用新隔离 Release 运行时只需读取启动日志即可确认两段真实成本。已先把无会话所有权的 `ServiceInitializer.InitializeServices()`（适配器/日志/静态服务注册）改为后台等待；方案管理器继续在 UI 线程创建，保持 owner-thread 合同。这样只消除服务注册阶段的 Dispatcher 阻塞，仍未让主工作区壳提前于方案管理器创建，因此不得宣称"启动过程已与 VM 完全对齐"。下一步是测量方案管理器构造和 MainWindowViewModel 构造，再决定是否需要独立的轻量壳。
 
 已使用单进程隔离输出 `C:\Users\houzhongjie\.codex\visualizations\2026\11\06\01a1ae75-37f7-7281-b9b8-51a3cf21dc1a\build-ui-serial` 完整执行 WPF `Build`（`-m:1 -p:SelfContained=true`，跳过既有载荷封装），3322 个既有警告、0 个错误；该结果覆盖 WPF MarkupCompilePass2，证明本轮启动埋点和起始页拖动改动可编译。正式发布封装仍需单独验收。
 
-窗口移动语义也已补齐：Splash 原先没有拖动事件；起始页原先只在鼠标命中 `TextBlock` 时调用 `DragMove`；主窗口方案加载遮罩覆盖标题栏时也没有拖动入口。现已让 Splash 内容区、起始页标题区和主窗口加载遮罩都可拖动，并排除起始页按钮、复选框等交互控件。该修正解决“窗口本身没有移动合同”的问题，与 UI 线程是否响应是两个独立验收项：若拖动事件未触发，是窗口设计缺口；若事件触发但 `DragMove` 期间无响应，则是 Dispatcher 被同步工作占满。
+窗口移动语义也已补齐：Splash 原先没有拖动事件；起始页原先只在鼠标命中 `TextBlock` 时调用 `DragMove`；主窗口方案加载遮罩覆盖标题栏时也没有拖动入口。现已让 Splash 内容区、起始页标题区和主窗口加载遮罩都可拖动，并排除起始页按钮、复选框等交互控件。该修正解决"窗口本身没有移动合同"的问题，与 UI 线程是否响应是两个独立验收项：若拖动事件未触发，是窗口设计缺口；若事件触发但 `DragMove` 期间无响应，则是 Dispatcher 被同步工作占满。
 
 方案打开链已拆为后台候选准备和 UI 会话发布：文件读取、JSON/资源候选解码、工具声明冻结改由 `DocumentSessionManager.PrepareOpen` 在后台完成，`OpenPrepared` 只在 owner thread 安装和发布 `DocumentSession`。旧的 `Open` 保留给现有同步调用和测试，当前 UI 外部打开路径已切到新链。正式 Release 构建尚未通过，原因仍是共享 `build_temp` 被并发构建占用和现有 Plugin.Wpf 产物不完整，不能把该批记作已验收。
 
@@ -796,7 +839,7 @@ VM 对齐目标固定为“主工作区壳先可见，壳内显示加载遮罩�
 现行解决方案已不再包含旧工具项目，Plugin.SDK 退役门禁实测为现行消费者 0、工具消费者 0、源码实时扫描 0、SDK 目录条目 0，已满足删除后的最终状态。外部组件身份门禁通过，Runtime、WPF 模板和 SamplePlugin 使用独立输出目录构建通过，记录见 `docs/collaboration/evidence/PluginDevKit外部组件验收-20261108.txt`。外部宿主 PID 32868 已启动，VS 附加仍需在同一管理员会话中取得调试器附加回执。用户截图中的 `VisionFramework.SaveRoundTripChecks.exe` 与 `GroupRoundLifecycleChecks20.exe` 不属于本仓库或 PluginDevKit runtime，不能作为本项目外部 SDK 失败证据。
 ## 2026-11-07 性能与 SDK 状态纠偏（历史批次，SDK 状态已由 2026-11-08 批次覆盖）
 
-本批把“窗口性能”和“旧 SDK 迁移”拆成两个可并行收口的批次。性能问题不再用连续加探针拖延，现有探针已足以确认本方的第一处真实阻塞：Blob 专用组合和字段编辑器在当前页同步创建重型 WPF 视觉树。REA 本地重建项目的源码证据显示其链路是 `AlgorithmTab` 数据树 → 模板注册表 → 统一窗口壳 → 状态刷新，不能把该项目的测试耗时直接当作原厂 VM 数值，但足以确定当前 V2 的命令式专用组装方向与目标链不同。
+本批把"窗口性能"和"旧 SDK 迁移"拆成两个可并行收口的批次。性能问题不再用连续加探针拖延，现有探针已足以确认本方的第一处真实阻塞：Blob 专用组合和字段编辑器在当前页同步创建重型 WPF 视觉树。REA 本地重建项目的源码证据显示其链路是 `AlgorithmTab` 数据树 → 模板注册表 → 统一窗口壳 → 状态刷新，不能把该项目的测试耗时直接当作原厂 VM 数值，但足以确定当前 V2 的命令式专用组装方向与目标链不同。
 
 性能批次的最快落地顺序固定为：先保留现有生命周期和字段合同，把普通字段与 Blob 专用控件统一登记到数据树和模板槽，不在 Tab 切换回调中临时拼装整组视觉树。然后交付 Blob 的一条完整链，首次显示只创建当前页可见模板，复杂 ROI、运行和结果槽按页首次激活创建一次，重复切换只刷新状态，不重建视觉树。最后以现有 `RuntimeEditorProductionProbe` 验收首帧、首次页切换、重复切换、重绑定和释放。该批独立于旧 SDK 删除，不等 SDK 全迁移才开始。
 
@@ -860,7 +903,7 @@ VM逆向取证实况：本机确认原厂D:\Program Files\VisionMaster4.4.0（�
 
 已读原版架构新增tool-layer-new-development-20261104及方案管理静态报告（7633D791…6039E6），总监交接81837f48a及产品ce64已接收，尚未统一到根f03。先现有图像源＋Blob打通新Session：正式Schema/Storage/空态、真实窗口、唯一草稿与历史保存、执行和私有调试快照、同次结果与图像区域reader释放。其它工具在途保留停止扩展；原全平台范围保留，Group/新循环暂停。禁止整仓恢复旧SDK/Workflow/主窗；两Blob候选未提交测试及设计修改原地保护。新主窗空态GetNodeSchema、运行publication.Schema、引用RootPort.Storage已核源码，新Int32状态/Float32总面积消费者仍待整批验证。
 
-详细“框架消息核收与原型统一基线实施批-20261104.html”和原主计划/剩余矩阵同步本阶段。数据目录旧Locate/选择窗/Remember门禁须整体退出；B日志三个提交已固定，App路径接缝由唯一负责人集中调整，原厂资源/日志/恢复路径未证不猜。根人工查看Release继续冻结。独立几何探针修正reader.Values后构建0错0warn，实际Session链未运行不计通过；C公共ROI/宿主自测仍在途，不把子项结果签成完整批完成。
+详细"框架消息核收与原型统一基线实施批-20261104.html"和原主计划/剩余矩阵同步本阶段。数据目录旧Locate/选择窗/Remember门禁须整体退出；B日志三个提交已固定，App路径接缝由唯一负责人集中调整，原厂资源/日志/恢复路径未证不猜。根人工查看Release继续冻结。独立几何探针修正reader.Values后构建0错0warn，实际Session链未运行不计通过；C公共ROI/宿主自测仍在途，不把子项结果签成完整批完成。
 ## 2026-11-04 当前人工查看Release保持不变
 
 用户询问进度并确认打开路径。已告知可打开本树Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe；当前产品f03e6347f（几何常量整链源码），正式全量Release0错6154warn，载荷1A289D1261066C1E21C3AC6AE40BB3766C986FAD26FC626A8C211388C0B390E1，247条目只读核对0缺失/0字节差异。已明确承诺用户测试期间冻结此Release；不得再次构建/还原/签封覆盖本树产物，替换前协调关闭。源码分析、文档、并行独立树实施继续。几何七类/嵌套/严格反例的修复前3失败与修复后Persistence48通过已保留，但真实Session/历史/执行专项仍待，不把93上批UI232成绩转签f03。93/D5完整上批证据保留，f03只是当前可查看的新构建，不宣称全平台目标已完成。
@@ -922,7 +965,7 @@ b927完整59工程Release0错6124warn；载荷AD5ABC601EB5C949C8EEB74D55332B5189
 
 ## 2026-11-07 工具窗口分层探针收敛（当前批次）
 
-已接手 CodeBuddy 的逐点探针并完成一轮分层定位。`RuntimeEditorProductionProbe` 现输出字段行、页面布局、显隐统计和 Blob 专用组合阶段。当前证据：Blob 基本参数 ROI 组合约 1.16–1.32s，运行参数专用组合约 1.10–1.18s，结果显示专用组合约 1.27–1.65s；通用字段行约0.59–1.16s，显隐约36–93ms，重复切页约20–50ms。根因收敛到工具专用组合首次实例化大量 `DeclaredFieldEditor`/原生呈现控件，不是Tab控件或显隐遍历主导。已回填 `docs/01-方案设计/2026/11/07/工具调试窗口性能取证与架构评审总结-20261107-131704.md`。新增诊断字段位于 `DeclaredFieldsView`、`BlobUiComposition` 和 `RuntimeEditorProductionProbe`，UI Release构建0错误（保留既有警告）。下一步按“数据描述 + 模板槽 + 复杂控件延迟/复用”设计 Blob 专用组合第一批，不直接删除 `DeclaredFieldsView` 或旧 Plugin.SDK。
+已接手 CodeBuddy 的逐点探针并完成一轮分层定位。`RuntimeEditorProductionProbe` 现输出字段行、页面布局、显隐统计和 Blob 专用组合阶段。当前证据：Blob 基本参数 ROI 组合约 1.16–1.32s，运行参数专用组合约 1.10–1.18s，结果显示专用组合约 1.27–1.65s；通用字段行约0.59–1.16s，显隐约36–93ms，重复切页约20–50ms。根因收敛到工具专用组合首次实例化大量 `DeclaredFieldEditor`/原生呈现控件，不是Tab控件或显隐遍历主导。已回填 `docs/01-方案设计/2026/11/07/工具调试窗口性能取证与架构评审总结-20261107-131704.md`。新增诊断字段位于 `DeclaredFieldsView`、`BlobUiComposition` 和 `RuntimeEditorProductionProbe`，UI Release构建0错误（保留既有警告）。下一步按"数据描述 + 模板槽 + 复杂控件延迟/复用"设计 Blob 专用组合第一批，不直接删除 `DeclaredFieldsView` 或旧 Plugin.SDK。
 
 ## 2026-11-07 Blob 延迟组合第一批已落地
 
@@ -952,7 +995,7 @@ Blob 相关模板证据已定位：`docs/07-工具逆向/decompiled/ModuleContro
 
 ## 公开未完成项（必须按此状态汇报）
 
-以下事项均未完成，不能用“已接入新合同”“探针通过”替代：
+以下事项均未完成，不能用"已接入新合同""探针通过"替代：
 
 1. **Blob 不是 VM 控件全量迁移**。`BlobUiComposition`、`BlobRunUi`、`BlobDisplayUi`、`BlobRoiUi` 和多项 `Native*UiDraftControls` 仍是本方视觉组合适配器。
 2. **VM Blob UI 映射尚未闭合**。当前工具身份已确认是 `IMVSBlobFindModu`，但其完整程序集、NodeData、模板键、复合控件和释放链仍未逐项映射完成。
@@ -961,7 +1004,7 @@ Blob 相关模板证据已定位：`docs/07-工具逆向/decompiled/ModuleContro
 5. **VM 等效性能未证明**。当前探针只证明本方生命周期和回归链未被阶段性修改破坏，没有原厂 VM 同场景耗时对照，也不能宣称达到 VM 流畅度。
 6. **提交基线未固定**。当前工作区仍混有大量既有 CodeBuddy 未提交改动，本批修改未形成独立可回退提交。
 
-后续每次汇报必须分别列出“VM 已确认”“本方已实施”“本方过渡实现”“未确认/未完成”，不再把阶段性代码或本方探针结果描述为全量重构完成。
+后续每次汇报必须分别列出"VM 已确认""本方已实施""本方过渡实现""未确认/未完成"，不再把阶段性代码或本方探针结果描述为全量重构完成。
 
 ## 当前阶段范围收口（用户最新决定）
 
@@ -1034,7 +1077,7 @@ PluginDevKit 外部工程隔离验收已通过：复制 SDK DLL/XML、模板及�
 
 ## 2026-11-08 CodeBuddy 方案对齐与首批收口
 
-CodeBuddy 的“数据树 + 模板 + 页面复用”方向已作为候选重构方案采用，但其原始评估中的静态性能结论、VM ≤80/100ms 预算和“零构建”表述均不作为已确认事实。`docs/01-方案设计/2026/11/07/参数窗对齐VM数据树模板化优化方案-20261107-153655.html` 已补充评审结论，区分历史基线、实施回归和未确认 VM 动态机制。
+CodeBuddy 的"数据树 + 模板 + 页面复用"方向已作为候选重构方案采用，但其原始评估中的静态性能结论、VM ≤80/100ms 预算和"零构建"表述均不作为已确认事实。`docs/01-方案设计/2026/11/07/参数窗对齐VM数据树模板化优化方案-20261107-153655.html` 已补充评审结论，区分历史基线、实施回归和未确认 VM 动态机制。
 
 本批以已有 VM BlobFind 参数/结果/工具逆向代码和 REA 本地图像源/Blob 实现为输入，已完成 ImageSource 与 BlobAnalysis 的代码级完整链。当前固定生产回归读数为 ImageLoad 绑定约 801ms、首显约 1596ms；BlobAnalysis 绑定约 813ms、首显约 341ms；第 2/3 页首次切换约 212/265ms，重复切换约 18/26ms。BlobAnalysis xUnit 37/37 通过，两个工具 Session、参数控件、捕获/回执、Tab、关闭释放均通过。该结果证明本方重复组装瓶颈已被页面缓存和 VM 参数树入口显著收敛，不证明已达到 VM 原厂同机性能。
 
@@ -1066,7 +1109,7 @@ CodeBuddy 的“数据树 + 模板 + 页面复用”方向已作为候选重构�
 
 ## 2026-11-08 CodeBuddy 窗口入口冲突纠偏
 
-审查未提交 CodeBuddy 改动时发现 `MainWindowRuntimeEditing` 被改成同步完成 `BindDraft` 后才 `Show` 窗口。该顺序会把约 780ms 的参数组装放到窗口首次可见之前，与 VM 流畅打开目标和现行“先显示窗口壳、再按生命周期装配”合同冲突。已恢复该入口到固定基线，保留探针代码作为定位材料，不把该候选实现纳入正式重构。
+审查未提交 CodeBuddy 改动时发现 `MainWindowRuntimeEditing` 被改成同步完成 `BindDraft` 后才 `Show` 窗口。该顺序会把约 780ms 的参数组装放到窗口首次可见之前，与 VM 流畅打开目标和现行"先显示窗口壳、再按生命周期装配"合同冲突。已恢复该入口到固定基线，保留探针代码作为定位材料，不把该候选实现纳入正式重构。
 
 恢复后 UI Release 构建 0 错误并重新封签。未提交的 `RuntimeNodeConfigurationControl` 探针、`RuntimeEditorProductionProbe` 输出扩展、工具预览文档和脚本改动仍保持独立，未混入正式基线。
 
@@ -1103,7 +1146,7 @@ REA 已确认 `IMVSBlobFindModuCs.dll` 只负责 `BlobFindResult` 容器初始�
 实现调整：
 
 - 当前源码中的 `BlobUiComposition` 将当前页和后续页都提交到 `DispatcherPriority.SystemIdle`。窗口先显示壳，当前页在首个 SystemIdle 阶段完成，其他页面随后逐页一次性建立并缓存，重复切换复用已有页面树。生产探针等待真实组装就绪任务，不把窗口显示事件误当作参数页已就绪。
-- 旧 UI 回归中仍有 6 个测试按“窗口显示后立即可调试”同步假设断言，现行窗口宿主实际有“组装中→就绪→可调试”状态。生产探针已覆盖该状态机，旧测试需要按新状态合同重写，不能为通过测试回退到窗口显示前同步构造。
+- 旧 UI 回归中仍有 6 个测试按"窗口显示后立即可调试"同步假设断言，现行窗口宿主实际有"组装中→就绪→可调试"状态。生产探针已覆盖该状态机，旧测试需要按新状态合同重写，不能为通过测试回退到窗口显示前同步构造。
 
 仍未完成：
 
@@ -1119,7 +1162,7 @@ REA 已确认 `IMVSBlobFindModuCs.dll` 只负责 `BlobFindResult` 容器初始�
 
 在 D:\MyWork\REA逆向测试\docs\joint-audit 发现并迁入此前被标为缺失的 8 份 Blob 原厂证据，索引与 SHA-256 见 docs/collaboration/evidence/Blob-原厂证据迁移清单-20261108.md。补证明确了 VM 参数窗口的 AlgorithmTabRoot 组装链、参数恢复与关闭入口、Blob 参数合同、4/8 连通参数入口、形状量化校验、BinaryImage/BlobImage 独立输出声明，以及 Result List 的 Angle/BlobAngle 映射。
 
-补证没有证明填孔和阈值边界、4/8 连通的对角行为、形状最终比较公式、双图像像素与 Domain、长短轴半长/全长或动态原机差分。上述项继续保持未确认，不把 HALCON 结果冒充 VM 等价。下一步可依据已迁移的组装和参数证据继续代码落地，不再把“证据文件未迁入”作为阻塞理由。
+补证没有证明填孔和阈值边界、4/8 连通的对角行为、形状最终比较公式、双图像像素与 Domain、长短轴半长/全长或动态原机差分。上述项继续保持未确认，不把 HALCON 结果冒充 VM 等价。下一步可依据已迁移的组装和参数证据继续代码落地，不再把"证据文件未迁入"作为阻塞理由。
 
 ## 2026-11-08 窗口就绪状态与引用清空语义收口
 
@@ -1141,7 +1184,7 @@ REA 的 `B08-总面积聚合排序与判断传输链-20261104.md` 已确认总�
 
 在正式 Release 重新封签后，BlobAnalysis Runtime 全量回归最终 `39/39` 通过，日志见 `docs/collaboration/evidence/BlobAnalysis全量回归-20261108.log`。这次回归覆盖参数合同、阈值模式准入、真实 HALCON Session、输出图像、结果 reader、边界和释放链；它仍不等同于 VM 原机动态差分。
 
-当前机器实际存在 `C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\devenv.exe`。已启动 PluginDevKit 外部正式宿主并准备调试回执，也启动过 Visual Studio 进程，但 Computer Use 未能获得可操作的 Visual Studio 窗口，附加动作没有发生，随后已关闭本次测试进程并清理临时回执。因此“VS 启动或附加正式宿主”仍是未验收项，不能把进程启动检查记作 VS 附加通过。
+当前机器实际存在 `C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\devenv.exe`。已启动 PluginDevKit 外部正式宿主并准备调试回执，也启动过 Visual Studio 进程，但 Computer Use 未能获得可操作的 Visual Studio 窗口，附加动作没有发生，随后已关闭本次测试进程并清理临时回执。因此"VS 启动或附加正式宿主"仍是未验收项，不能把进程启动检查记作 VS 附加通过。
 
 PluginDevKit 清理了 5 个被工程排除但仍引用旧 `Plugin.SDK` 的死模板/死样例文件，并删除了无法被 `dotnet sln` 解析的旧二进制 `PluginDevKit.sln`。`prepare-devkit.ps1` 现在只提示 `RuntimePlugin.Template` 和 `WpfTool.Template`。清理后两个新模板分别 Release 构建 0 错误，`validate-components.ps1 -PackageRoot PluginDevKit` 通过，PluginDevKit 中已无旧 SDK 源码引用。
 
@@ -1213,3 +1256,16 @@ PluginDevKit/runtime 中一份旧产品 Help 静态站点仍展示 `IVisionPlugi
 ## 2026-11-09 运行参数条件字段整页延迟物化（当前有效增量）
 
 依据 VM 参数 XML 的 `visibleWhen` 和高级分组声明，`DeclaredFieldsView` 对两类字段统一保留状态、行身份和访问合同，仅在当前条件可见时物化编辑器。该调整覆盖运行参数整页，Release 全量构建 0 错误，正式载荷 SHA-256 为 `0EB2902A77706C82628FF528C5573D42DA19AA1541549742A05E2FF629544FB2`。本批没有新增自动生产探针，人工验收由用户直接启动 Release 程序完成。
+
+**2026-11-13 ROI 提交阻断进一步收口**：确认 BlobResultDisplay 字号正式默认值为10，ROI调试窗口提交时出现的 100.00 来自已物化但隐藏的旧结果显示页控件；其残留校验状态不应否决当前活动页的正式草稿。ToolEditorCommit 的活动验证现仅让可见控件阻断提交，正式字段状态仍由编辑草稿/参数校验负责；Blob三页回归保持5/5。ROI回归已越过 PrepareInteraction、ROI绘制和阈值40草稿提交，继续在测试入口的通讯租约排空处阻断（直接 SolutionManager.Open 的夹具生命周期），该失败未归因于ROI产品链，需单独补齐测试入口释放或改用真实方案切换入口后再验保存重开。
+
+**2026-11-13 ROI 保存重开回归闭口**：独立 ROI 回归已补齐与生产方案切换相同的通讯租约排空前置（DisposeCommunicationRuntimeAsync），不改变产品提交语义；Confirmed_blob_roi_threshold_and_display_reopen_on_the_same_image_source_connection **1/1 通过**，确认 ROI 绘制、阈值40提交、结果显示文本、保存、重开、输入来源连接和 ROI 再次准备均贯通。此前的租约失败是测试入口漏掉生产切换前置，不是权限或算法阻断。
+
+**2026-11-13 变量图像 ROI 阻断已解除**：根因是私有变量图像借帧后，租约有效性错误依赖正式结果发布身份；在双图切换/编辑器重绑定后，该身份会被清理，导致 ROI 会话 PrepareInteraction 判定帧失效。现对临时变量预览使用独立私有视口和当前帧有效性合同，释放仍由租约负责，不改正式结果选择。验证：变量图像源→ROI→正式执行回归 1/1；变量 ROI、正式 ROI 保存重开、Blob 三页回归合计 7/7；UI.Tests Release 构建 0 错误。当前阻断不再是权限或通讯租约问题，剩余总目标仍需按既有矩阵继续完成人工验收与全量主线封签。
+
+**2026-11-13 上游失败结果退役修复**：全量 UI 回归进一步暴露 ImageSource 失败后下游 Blob 仍保留旧成功 publication 的真实生产缺口。DocumentSession.AcceptRunNodeResult 现以同一流程连接图递归退役失败节点的下游结果 reader，源节点失败结果仍保留用于诊断；旧 reader 在结果安装后释放，恢复运行可重新发布新代次。验证：Source_failure_retires_the_blob_input_but_preserves_borrowed_frames_and_recovers_with_a_new_frame 1/1；ImageSource Runtime 在设置 S2_CASE_ROOT=E:\\SunEyeVision_V2\\Release\\_validation 后 45/45；全量 Release 构建 0 错误并已重新封签。Blob Runtime 当前 127/129：1 项测试发现阶段缺少正式工具程序集探测，1 项屏蔽区像素期望差异待按 VM 原证继续核对，未计作通过。
+
+**2026-11-13 当前链路复核**：重新封签后，ImageSource Runtime 在 S2_CASE_ROOT 验证根下 **45/45**，Persistence **56/56**，UI 关键链路（变量图像 ROI、上游失败退役与恢复、ROI 保存重开、Blob 三页）**8/8** 通过；全量 UI 仍有历史/环境与若干结果工作区测试失败，不能把局部 8/8 扩大为整个 VM 生态已闭口。
+**2026-11-13 结果工作区作用域判定修正**：按 VM 证据，打开调试窗口且仍使用正式 publication 时，编辑作用域变化本身不应重建图像/图形/来源对象；只有变量图像来源或来源值集合实际变化才跨作用域重建。`DisplayUnchanged` 已按该边界调整。回归：`Opening_the_debug_window_keeps_the_presented_result_workspace_untouched`、变量图像 ROI、ROI 保存重开 **3/3** 通过。仍有"非默认 Blob 输出在调试窗口打开时应清除图像值"等结果策略用例待继续对照，未宣称结果工作区全闭口。
+
+**2026-11-13 结果选择阻断仍在**：已确认编辑器把 Blob 输入草稿切换到 `output.gray-image`，但 `Blob_primary_image_edit_selects_the_new_roi_frame_without_replacing_the_saved_output_choice` 仍在结果工作区刷新后读到旧 binary 输出，期望与实际分别为 `output.gray-image` / `field:8ca100...00000006`。当前不再继续叠加猜测性补丁；已保留输入来源、正式显示选择和私有调试帧三者分离的现行合同，下一步需按 VM 原件补齐"输入变更触发当前显示帧、且不写回已保存显示选择"的确切事件顺序。该项未通过，不计入完整链路闭口。

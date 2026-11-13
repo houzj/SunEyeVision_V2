@@ -3367,6 +3367,18 @@
                                     {
                                         "date":  "2026-11-12",
                                         "note":  "[2ad83dadd537eab981bef51213d8e38238b3531a] fix(result): 模块结果树按原件显示裸值与分组结构"
+                                    },
+                                    {
+                                        "date":  "2026-11-12",
+                                        "note":  "[644daf018ed1801df298b0650be90af0c5a67c34] fix(results): 调试窗口打开按显示一致性跳过重建，修复闪烁与正式结果被清"
+                                    },
+                                    {
+                                        "date":  "2026-11-12",
+                                        "note":  "[090211fa8c1f102ce06c034c7f56541523508690] fix(numeric): 补齐数值行范围绑定并同步EndValueF，清除拼接高度红框"
+                                    },
+                                    {
+                                        "date":  "2026-11-12",
+                                        "note":  "[ce0c61738cbc385f0cf7a974355166fc943e93ef] chore(test): 增加模态弹窗测试自动应答钩子"
                                     }
                                 ]
                     },
@@ -5639,6 +5651,26 @@
                                         "docs/collaboration/CURRENT_TASK.md",
                                         "\"docs/collaboration/evidence/Blob\\346\\250\\241\\345\\235\\227\\347\\273\\223\\346\\236\\234\\346\\240\\221\\345\\216\\237\\344\\273\\266\\347\\273\\223\\346\\236\\204-20261112.json\"",
                                         "plans/plan.json"
+                                    ],
+                          "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-9e92b22",
+                          "message":  "docs: 登记调试窗口闪烁根因定位与REA取证接续计划",
+                          "date":  "2026-11-12",
+                          "commit":  "9e92b222b0054ca10b863dd81de8e673c2cb5776",
+                          "files":  [
+                                        "docs/collaboration/CURRENT_TASK.md"
+                                    ],
+                          "status":  "in_progress"
+                      },
+                      {
+                          "id":  "TMP-7339632",
+                          "message":  "docs: 登记调试窗口闪烁与拼接高度红框修复批人工验收结果",
+                          "date":  "2026-11-12",
+                          "commit":  "7339632e0be48f958d99ba03981106badcca325c",
+                          "files":  [
+                                        "docs/collaboration/CURRENT_TASK.md"
                                     ],
                           "status":  "in_progress"
                       }

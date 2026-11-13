@@ -11,6 +11,8 @@ namespace SunEyeVision.UI.Shell.Windows;
 
 public partial class MainWindowViewModel
 {
+    private VariableSetting? _activeRoiImageVariable;
+    private Guid? _activeRoiImageScope;
     internal event Action? ResultWorkspaceChanged;
     internal event Action<ResultSelection?>? ResultWorkspaceSelectionChanged;
     internal event Action? ResultWorkspaceGraphicsCleared;
@@ -78,9 +80,14 @@ public partial class MainWindowViewModel
 
     internal ResultWorkspaceImagePlan CaptureNativeImageSources(Func<bool> consumerCurrent)
     {
-        var editor=SelectedEditorContext;
-        var plan=new ResultWorkspaceImagePlan {EditorScopeId=editor?.ScopeId};
         var session=DocumentManager.CurrentSession;var selected=SelectedNode;
+        // Keep the live debug draft as the source of truth during a synchronous
+        // node rebind caused by a parameter selection. The public selected
+        // context briefly reports invalid while the same editor is being
+        // rebound, but discarding its pending image variable would detach ROI.
+        var editor=SelectedEditorContext??(_editorDebugContext is {} candidate
+            &&ReferenceEquals(candidate.Session,session)&&selected is not null&&candidate.Identity.NodeId==selected.Id?candidate:null);
+        var plan=new ResultWorkspaceImagePlan {EditorScopeId=editor?.ScopeId};
         var tab=WorkflowTabViewModel.SelectedTab;var scope=tab?.CurrentWorkflowId;
         if(session is null||selected is null||scope is null||!session.GetNodes(scope).Any(node=>ReferenceEquals(node,selected)))return plan;
         // 原件 ModuleResultView 语义：正式结果显示不随参数窗口开合变化（证据
@@ -102,6 +109,13 @@ public partial class MainWindowViewModel
                 // 调试窗口打开但尚未执行时没有私有快照，此时节点仍以正式发布呈现图像与叠加
                 // （原件 ModuleResultView 编辑态同样显示模块结果）；不得因此抽走正式图像。
                 var debugSnapshot=privateNode?CurrentEditorDebugSnapshot:null;
+                // 原件编辑态同样显示该模块的正式结果；用户显式改选显示来源后，
+                // UpdateVMResultShow 立即读取所选图像对象当前值显示（RenderControlBase
+                // .xaml.cs.pending:1127-1154，由 imageListCombobox_SelectionChanged 调用），
+                // 与参数窗口开合无关。因此不再按私有编辑作用域压制正式像素
+                // （此前“有持久化选择即压制”导致调试窗口打开期间显式改选后视口空白）；
+                // 调试执行产生私有快照后自然切换到私有结果。
+                var retainFormalImage=true;
                 using var acquired=debugSnapshot is null?session.AcquirePublishedResult(scope,node.Id):null;
                 var snapshot=debugSnapshot??acquired?.Snapshot;
                 bool SnapshotCurrent()
@@ -123,7 +137,7 @@ public partial class MainWindowViewModel
                     var caption=schema.FindOutputDisplay(port.Id);
                     var label=caption?.DisplayName
                         ??(snapshot?.Fields.TryGetValue(port.Id,out var metadata)==true?metadata.DisplayName:port.Id);
-                    Walk(port.Type,values?.Values?.Read(port.Id),Array.Empty<string>(),null,node.Name+" · "+label);
+                            Walk(port.Type,values?.Values?.Read(port.Id),Array.Empty<string>(),null,node.Name+" · "+label);
                     void Walk(TypeRef type,DeclaredValueReader? value,string[] path,int? index,string name)
                     {
                         if(plan.Sources.Count>=4096)throw new InvalidOperationException("图像来源超过4096项，拒绝整批而非截断列表。");
@@ -132,7 +146,7 @@ public partial class MainWindowViewModel
                             var reference=new OutputReference(node.Id,port.Id,port.Type,path,
                                 selection:index is {} item?new BindingSelection.AtConstant(item):null,scopeId:scope,storage:port.Storage);
                             plan.Sources.Add(new(name,reference,publication,SnapshotCurrent,node.Id!=selected.Id,
-                                value is {IsMissing:false,IsNull:false})
+                                retainFormalImage&&value is {IsMissing:false,IsNull:false})
                                 {
                                     FileName=port.Id is "output.image" or "output.gray-image"?fileName:null,
                                     IsAuxiliaryImage=caption?.IsAuxiliaryImage==true
@@ -173,6 +187,8 @@ public partial class MainWindowViewModel
                 foreach(var input in inputSchema.Inputs.Where(port=>port.Type==TypeRef.ResourceOf(ResourceKind.Image)))
                 {
                     var setting=configuration.Fields.Read(input.Id);
+                    if(setting is not VariableSetting&&_activeRoiImageVariable is {} pendingVariable)
+                        setting=pendingVariable;
                     var key=GetWorkspaceImageSourceKey(setting,scope);
                     if(key is null)continue;
                     if(inputKeys.Add(key)&&setting is VariableSetting variable&&!_nativeImagesSuppressed)
@@ -207,6 +223,16 @@ public partial class MainWindowViewModel
             return plan;
         }
         catch{plan.Dispose();throw;}
+    }
+    internal (string Name, FrozenImageResource Image, Func<bool> Current)? CaptureVariableImageForRoi(string key)
+    {
+        try
+        {
+            var reference=ParameterSettingCanonical.DeserializeVariable(key);
+            return DocumentManager.CurrentSession?.CaptureVariableImageForDisplay(reference);
+        }
+        catch(Exception error) when(error is ArgumentException or InvalidOperationException or System.Text.Json.JsonException)
+        { return null; }
     }
     private static string? GetWorkspaceImageSourceKey(ParameterSetting setting,string scope) => setting switch
     {

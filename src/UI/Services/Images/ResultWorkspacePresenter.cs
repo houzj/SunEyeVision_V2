@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Media;
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell;
 using SunEyeVision.Plugin.Wpf.Presenters.Display;
 using SunEyeVision.Plugin.Wpf.Presenters.Results;
@@ -40,7 +41,6 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
     private long _epoch,_layerRevision,_selectionGeneration,_outputChoiceRevision;
     private bool _disposed,_refreshing,_refreshAgain,_refreshQueued,_restoringInput,_restoringOutput;
     private string? _inputKey,_outputKey;
-    private string? _editorInputDisplayKey;
     private string? _previewPath;
     private string? _variableOutputKey;
     private ResultWorkspaceImageSource? _inputSource,_outputSource;
@@ -95,9 +95,20 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         if(_disposed)return;
         RetireRoiPresentation();
         // Original OnIsShowDoubleImageChanged clears the old input then selects the first input on entry.
-        _shell.SelectedInputItem=null;
+        // Preserve a currently selected source when it is also a legal input source;
+        // switching to the two-image view must not silently detach a variable image
+        // that the editor has just selected for ROI.
+        var previousInput=_shell.SelectedInputItem as ResultWorkspaceImageSource;
+        var previousOutput=_shell.SelectedOutputItem as ResultWorkspaceImageSource;
         if(!_disposed&&_shell.IsDoubleImage)
-            _shell.SelectedInputItem=_plan?.InputSources.FirstOrDefault();
+        {
+            var selected=previousInput is {} input&&_plan?.InputSources.Any(candidate=>ReferenceEquals(candidate,input))==true
+                ?input
+                :previousOutput is {} output&&_plan?.InputSources.Any(candidate=>ReferenceEquals(candidate,output))==true
+                    ?output:_plan?.InputSources.FirstOrDefault();
+            if(!ReferenceEquals(_shell.SelectedInputItem,selected))_shell.SelectedInputItem=selected;
+        }
+        else _shell.SelectedInputItem=null;
 
         }
         finally{if(!_disposed)_main.NotifyRoiFrameAvailabilityChanged();}
@@ -121,6 +132,50 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         }
         finally{if(accepted&&!_disposed&&_shell.IsDoubleImage)_main.NotifyRoiFrameAvailabilityChanged();}
     }
+    /// <summary>编辑器相关输入的单图临时显示态（VM ModuleResultView.OnRelatedIOChanged）：
+    /// 只改写视图选择，不写正式 SelectedDisplayReference。</summary>
+    private ResultWorkspaceImageSource? EditorRelatedDisplay(ResultWorkspaceImagePlan plan)
+    {
+        if(_shell.IsDoubleImage)return null;
+        if(_main.EditorRelatedImageState is not {} related)return null;
+        return plan.Sources.FirstOrDefault(source=>source.Reference?.PortId==related.PortId)
+            ??plan.Sources.FirstOrDefault(source=>source.Key==related.Key);
+    }
+    private bool IsEditorRelatedDisplay(ResultWorkspaceImageSource? source)
+        =>source is not null&&_main.EditorRelatedImageState is {} related
+            &&(source.Reference?.PortId==related.PortId||source.Key==related.Key);
+    /// <summary>单图选择的唯一解析规则；重建与不变判定共用，避免两条路径漂移。</summary>
+    private ResultWorkspaceImageSource? ResolveOutputChoice(ResultWorkspaceImagePlan? previous,ResultWorkspaceImagePlan plan)
+    {
+        var editorRelated=EditorRelatedDisplay(plan);
+        var variableOutput=previous is not null&&previous.EditorScopeId==plan.EditorScopeId&&_variableOutputKey is {} variableKey
+            ?plan.Sources.FirstOrDefault(source=>source.Key==variableKey):null;
+        var explicitChoice=_main.SelectedNode?.SelectedDisplayReference;
+        var useDefault=plan.IsPrivateDebug||previous?.IsPrivateDebug==true;
+        var byKey=plan.Sources.FirstOrDefault(source=>source.Key==_outputKey);
+        // 双图模式下原件不改单图选择（OnIsShowDoubleImageChanged 只动 SelectedInputImage，
+        // OnRelatedIOChanged 在双图时不切 SelectedImage），因此编辑器会话存续期间保持当前来源；
+        // 会话退役后回到正式保存的选择。
+        if(_shell.IsDoubleImage&&byKey is not null&&_main.EditorRelatedImageState is not null)return byKey;
+        return editorRelated??variableOutput??(explicitChoice is not null
+            ?plan.Sources.FirstOrDefault(source=>source.Key==explicitChoice)
+            :useDefault?plan.DefaultOutput:byKey??plan.DefaultOutput);
+    }
+    /// <summary>双图输入项选择：关联输入变化时跟随新输入，否则保持当前合法输入。</summary>
+    private ResultWorkspaceImageSource? ResolveInputChoice(ResultWorkspaceImagePlan? previous,ResultWorkspaceImagePlan plan)
+    {
+        if(!_shell.IsDoubleImage)return null;
+        var relatedImageChanged=previous is not null&&previous.PrimaryInputKey!=plan.PrimaryInputKey;
+        var inputKey=relatedImageChanged?plan.PrimaryInputKey:_inputKey;
+        return plan.InputSources.FirstOrDefault(source=>source.Key==inputKey)??plan.InputSources.FirstOrDefault();
+    }
+    private void SetOutputSelection(ResultWorkspaceImageSource? source)
+    {
+        if(_disposed||ReferenceEquals(_shell.SelectedOutputItem,source))return;
+        _restoringOutput=true;
+        try{_shell.SetCurrentValue(ResultWorkspaceShell.SelectedOutputItemProperty,source);}
+        finally{_restoringOutput=false;}
+    }
     private void OutputSelected(object? sender,EventArgs args)
     {
         var accepted=false;
@@ -128,6 +183,14 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         {
         if(_disposed||_restoringOutput)return;
         if(_refreshing&&_plan is null)return;
+        // WPF 在 ItemsSource 被替换时会短暂把双向 SelectedItem 置空。清空不是用户意图：
+        // 原件 SelectedImage 只由显式改选或所属模块重建改变。刷新期内的置空是中间态，
+        // 由 Refresh 安装解析结果；刷新之外的迟到置空恢复原选择。
+        if(_shell.SelectedOutputItem is null)
+        {
+            if(_refreshing)return;
+            if(_outputSource is not null){RestoreChoice(false);return;}
+        }
         var source=_shell.SelectedOutputItem as ResultWorkspaceImageSource;
         if(_shell.SelectedOutputItem is not null&&(source is null||!OwnsChoice(source,false)))
         {RestoreChoice(false);return;}
@@ -147,9 +210,12 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         if(_refreshing)return;
         if(sender is not null)
         {
-            _editorInputDisplayKey=null;
+            // 用户在单图下拉里的显式改选属于正式选择边界：编辑器临时显示态在此退役，
+            // 正式 SelectedDisplayReference 只允许在该边界或提交时写入。
+            var transientEditorChoice=IsEditorRelatedDisplay(source);
+            if(!transientEditorChoice)_main.SetEditorRelatedImage(null);
             _variableOutputKey=source?.VariableImage is not null?source.Key:null;
-            if(_variableOutputKey is null&&_main.SelectedNode is {} selected)
+            if(_variableOutputKey is null&&!transientEditorChoice&&_main.SelectedNode is {} selected)
                 _main.SetFormalDisplaySelection(selected,source?.Key);
         }
         if(_disposed||choiceEpoch!=_epoch||!ReferenceEquals(choicePlan,_plan)||choiceRevision!=_outputChoiceRevision)return;
@@ -238,7 +304,8 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
     internal void Refresh()
     {
         if(_disposed)return;
-        RetireRoiPresentation();
+        // ROI 展示不随“数据未变”的刷新退役：原件在同一 ImageDataSource 下保留区域编辑，
+        // 只在真正重建（相机/结果/作用域变化，epoch 自增）时失效。
         if(_refreshing){_refreshAgain=true;return;}
         _refreshing=true;
         try
@@ -257,6 +324,7 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
                 // 重建计划与当前显示完全一致时不动视口，避免“清空→重设同一张图”的一帧闪烁
                 // （如双击打开调试窗口附加编辑上下文）。
                 if(DisplayUnchanged(previous,plan)){plan.Dispose();continue;}
+                RetireRoiPresentation();
                 var epoch=++_epoch;
                 ++_input.Generation;++_output.Generation;++_selectionGeneration;
                 _previewCancellation?.Cancel();
@@ -270,33 +338,20 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
                 _plan=plan;
                 var inputs=plan.InputSources.ToArray();
                 _shell.InputItems=inputs;_shell.OutputItems=plan.Sources;
-                var sameEditor=plan.IsPrivateDebug&&old is not null&&old.EditorScopeId==plan.EditorScopeId;
-                var relatedImageChanged=sameEditor&&old!.PrimaryInputKey!=plan.PrimaryInputKey;
-                var inputKey=relatedImageChanged?plan.PrimaryInputKey:_inputKey;
-                var input=_shell.IsDoubleImage?inputs.FirstOrDefault(source=>source.Key==inputKey)??inputs.FirstOrDefault():null;
-                var byKey=plan.Sources.FirstOrDefault(source=>source.Key==_outputKey);
-                if (!sameEditor)
-                    _editorInputDisplayKey = null;
-                else if (!_shell.IsDoubleImage && relatedImageChanged)
-                    _editorInputDisplayKey = plan.PrimaryInputKey;
-                var editedInput = _editorInputDisplayKey is { } editedKey
-                    ? plan.Sources.FirstOrDefault(source => source.Key == editedKey) : null;
+                // A parameter rebind can recreate the private draft scope while keeping
+                // the same editor session. The input reference is still the authoritative
+                // input-pane choice in that case, so no extra state is carried here.
+                var input=ResolveInputChoice(old,plan);
                 if(old?.EditorScopeId!=plan.EditorScopeId)_variableOutputKey=null;
-                var variableOutput=_variableOutputKey is {} variableKey
-                    ?plan.Sources.FirstOrDefault(source=>source.Key==variableKey):null;
                 // A persisted explicit identity must match exactly, including scope and members.
                 // Missing or stale declarations never silently select a different image.
                 var explicitChoice=_main.SelectedNode?.SelectedDisplayReference;
-                var useDefault=plan.IsPrivateDebug||old?.IsPrivateDebug==true;
-                var output=editedInput??variableOutput??(explicitChoice is not null
-                    ?plan.Sources.FirstOrDefault(source=>source.Key==explicitChoice)
-                    :useDefault?plan.DefaultOutput:byKey??plan.DefaultOutput);
-                if(explicitChoice is not null&&editedInput is null&&output is null)plan.Diagnostics.Add("已选择的图像来源不存在或声明已变更，请重新选择。");
+                var output=ResolveOutputChoice(old,plan);
+                if(explicitChoice is not null&&output is null)plan.Diagnostics.Add("已选择的图像来源不存在或声明已变更，请重新选择。");
                 _inputSource=input;_outputSource=output;
-                var outputChoiceRevision=_outputChoiceRevision;
                 _shell.SelectedInputItem=input;
-                // An input observer may already have accepted a newer output choice.
-                if(outputChoiceRevision==_outputChoiceRevision)_shell.SelectedOutputItem=output;
+                // 本轮解析结果是单图显示的权威值：绕过 OutputSelected 的正式选择写入。
+                SetOutputSelection(output);
                 // Setters can synchronously replace a choice. Reconcile the actual
                 // values rather than replaying the pre-setter local candidates.
                 InputSelected(null,EventArgs.Empty);OutputSelected(null,EventArgs.Empty);
@@ -315,6 +370,7 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
                 InputSelected(null,EventArgs.Empty);
                 if(!_disposed&&epoch==_epoch&&ReferenceEquals(plan,_plan))
                 {
+                    // 单图选择已由本轮解析安装；这里只做呈现对账，不再改写选择。
                     OutputSelected(null,EventArgs.Empty);
                     if(!_disposed&&epoch==_epoch&&ReferenceEquals(plan,_plan)
                         &&_main.NativePreviewPath is {} path
@@ -343,28 +399,42 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
     private bool DisplayUnchanged(ResultWorkspaceImagePlan? previous,ResultWorkspaceImagePlan plan)
     {
         if(previous is null||previous.IsDisposed)return false;
+        // 会话/选中/工作流短暂无效时捕获到的空计划不是数据变化：原件在无新数据时保留
+        // 当前 ImageDataSource（ModuleResultView 图像守卫），不得清空已呈现的图像与选择。
+        if(plan.Sources.Count==0&&previous.Sources.Count>0&&ReferenceEquals(_plan,previous)
+            &&ReferenceEquals(_selectionOwner,_main.SelectedNode))return true;
+        // 草稿瞬时不可读会捕获到“有来源但无输入”的中间计划；这不是输入选择变化，
+        // 原件在同一草稿作用域内仍保留已呈现的输入帧（ROI 借用依赖同一帧身份）。
+        if(plan.InputSources.Count==0&&previous.InputSources.Count>0&&ReferenceEquals(_plan,previous)
+            &&ReferenceEquals(_selectionOwner,_main.SelectedNode))return true;
+        // Opening or closing the private editor changes the result-source
+        // ownership scope even when the published image collection is equal.
+        // Reuse across that boundary leaves ROI bound to the formal Blob output.
+        if(previous.EditorScopeId!=plan.EditorScopeId
+            &&(ContainsVariableImage(previous.InputSources)||ContainsVariableImage(previous.Sources)
+                ||ContainsVariableImage(plan.InputSources)||ContainsVariableImage(plan.Sources)))return false;
+        // A WPF parameter editor can publish one intermediate refresh while a
+        // pending image-variable selection is being materialized. Keep the
+        // already-owned private input lease across that transient empty plan;
+        // the next refresh with the committed draft replaces it normally.
+        if(previous.IsPrivateDebug&&plan.IsPrivateDebug&&previous.InputSources.Count>0&&plan.InputSources.Count==0)
+            return true;
         if(!ReferenceEquals(_selectionOwner,_main.SelectedNode))return false;
         if(!OverlayChoiceMatches(_main.SelectedNode?.DisplayOverlays))return false;
+        // Check this boundary before publication identity comparison: the formal
+        // refresh may legitimately carry a new invocation while the editor's
+        // already-presented input frame must remain selected for ROI interaction.
+        if(previous.IsPrivateDebug&&!plan.IsPrivateDebug
+            &&previous.PrimaryInputKey is {} primaryKey
+            &&previous.PrimaryInputKey!=plan.PrimaryInputKey
+            &&_outputSource?.Key==primaryKey)
+            return true;
         if(!SourcesUnchanged(previous.InputSources,plan.InputSources))return false;
         if(!SourcesUnchanged(previous.Sources,plan.Sources))return false;
         // 输入/输出选择按与重建路径完全相同的规则只读解析，再与当前显示比较；
         // 状态重置（编辑作用域、主输入变化）只有在会改变解析结果时才触发重建。
-        var sameEditor=plan.IsPrivateDebug&&previous.EditorScopeId==plan.EditorScopeId;
-        var relatedImageChanged=sameEditor&&previous.PrimaryInputKey!=plan.PrimaryInputKey;
-        var inputKey=relatedImageChanged?plan.PrimaryInputKey:_inputKey;
-        var input=_shell.IsDoubleImage?plan.InputSources.FirstOrDefault(source=>source.Key==inputKey)??plan.InputSources.FirstOrDefault():null;
-        var editedKey=!sameEditor?null
-            :!_shell.IsDoubleImage&&relatedImageChanged?plan.PrimaryInputKey
-            :_editorInputDisplayKey;
-        var editedInput=editedKey is { } edited?plan.Sources.FirstOrDefault(source=>source.Key==edited):null;
-        var variableOutput=previous.EditorScopeId==plan.EditorScopeId&&_variableOutputKey is { } variableKey
-            ?plan.Sources.FirstOrDefault(source=>source.Key==variableKey):null;
-        var explicitChoice=_main.SelectedNode?.SelectedDisplayReference;
-        var useDefault=plan.IsPrivateDebug||previous.IsPrivateDebug;
-        var byKey=plan.Sources.FirstOrDefault(source=>source.Key==_outputKey);
-        var output=editedInput??variableOutput??(explicitChoice is not null
-            ?plan.Sources.FirstOrDefault(source=>source.Key==explicitChoice)
-            :useDefault?plan.DefaultOutput:byKey??plan.DefaultOutput);
+        var input=ResolveInputChoice(previous,plan);
+        var output=ResolveOutputChoice(previous,plan);
         return SameChoice(_inputSource,input)&&SameChoice(_outputSource,output)
             &&SameChoiceHasImage(_inputSource,input)&&SameChoiceHasImage(_outputSource,output);
     }
@@ -383,12 +453,19 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
             if(!string.Equals(previous[index].DisplayName,current[index].DisplayName,StringComparison.Ordinal))return false;
             // publication 每次捕获都重建实例，用快照运行身份判定“同一份结果”。
             if(!Nullable.Equals(previous[index].Publication?.Stamp.Invocation,current[index].Publication?.Stamp.Invocation))return false;
-            if(!ReferenceEquals(previous[index].VariableImage,current[index].VariableImage))return false;
+            // 变量图像每次捕获都是新的包装对象，按实际帧/坐标域比较（原件 ImageDataSource 守卫
+            // 比较的是图像数据本身），否则每次刷新都会误判为变化并清空视口。
+            if(!SameVariableImage(previous[index].VariableImage,current[index].VariableImage))return false;
             // 同一运行身份下图像值有无变化（如掩膜清空/恢复）必须照常重建。
             if(previous[index].HasImageValue!=current[index].HasImageValue)return false;
         }
         return true;
     }
+    private static bool SameVariableImage(FrozenImageResource? previous,FrozenImageResource? current)
+        =>previous is null?current is null
+            :current is not null&&previous.Frame==current.Frame&&previous.EffectiveDomain.Frame==current.EffectiveDomain.Frame;
+    private static bool ContainsVariableImage(System.Collections.Generic.IReadOnlyList<ResultWorkspaceImageSource> sources)
+        =>sources.Any(source=>source.VariableImage is not null);
     private async Task PresentPreview(string path,long epoch)
     {
         var cancellation=new CancellationTokenSource();var token=cancellation.Token;_previewCancellation=cancellation;

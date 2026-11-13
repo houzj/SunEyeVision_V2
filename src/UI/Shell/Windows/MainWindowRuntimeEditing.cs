@@ -51,7 +51,16 @@ public partial class MainWindowViewModel
     }
     private void RefreshFormalNodeSelection()
     {
-        foreach(var editor in _productionEditors.ToArray())if(!editor.IsValid)editor.Discard();
+        foreach(var editor in _productionEditors.ToArray())
+        {
+            // The debug editor owns the selected node's private draft. During a
+            // committed rebind the selection may be temporarily empty or point to
+            // the replacement instance; do not discard that context from this
+            // transient formal-refresh pass. The editor window close path remains
+            // the authoritative owner for its lifetime.
+            if(ReferenceEquals(editor,_editorDebugContext))continue;
+            if(!editor.IsValid)editor.Discard();
+        }
         // 提交会重建节点实例：先把选择重新绑定到当前实例，再走后续引用判定，避免选择被误判失效。
         if (SelectedNode is {} stale && FindCurrentNode(stale.Id) is {} rebound && !ReferenceEquals(rebound, stale))
         { SelectedNode = rebound; return; }
@@ -121,6 +130,7 @@ public partial class MainWindowViewModel
         {
             if (!ReferenceEquals(_openDebugWindow, window)) return;
             _openDebugWindow = null;
+            SetEditorRelatedImage(null);ResultWorkspaceChanged?.Invoke();
             NotifyParameterWindowStateChanged();
         };
         try { InitializeRuntimeEditor(window,node,session,workflowId,opening); perf.Mark("初始化"); }
@@ -130,7 +140,17 @@ public partial class MainWindowViewModel
     {
         var control=window.Editor;
         ProductionEditorContext? context=null;
-        bool Current()=>ReferenceEquals(DocumentManager.CurrentSession,session) && ReferenceEquals(SelectedNode,node) && WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId==workflowId;
+            // A committed draft can briefly clear/rebind the canvas selection before
+            // the replacement node is installed. Keep this editor alive across that
+            // transient gap; the session, workflow and final node identity still gate
+            // every callback once the selection settles.
+            bool Current()
+            {
+                var currentWorkflow=WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId;
+                return ReferenceEquals(DocumentManager.CurrentSession,session)
+                    &&(SelectedNode is null||SelectedNode.Id==node.Id)
+                    &&(currentWorkflow is null||currentWorkflow==workflowId);
+            }
         context=new ProductionEditorContext(session,workflowId,node,Current,control.BindDraft,
             receipt=>RefreshProductionPublication(session,receipt));
         try
@@ -171,10 +191,17 @@ public partial class MainWindowViewModel
                 field=>
                 {
                     if(!window.CanCompleteAssembly||!context.IsValid||!control.TryGetResultDisplayBinding(out var owner,out var binding)
-                        ||!ReferenceEquals(owner,node))return null;
+                        ||owner.Id!=node.Id)return null;
                     var draft=context.PreparedDraft;
                     var configuration=draft.Configuration;
+                    _activeRoiImageVariable=configuration.Fields.Read(field) as VariableSetting;
+                    _activeRoiImageScope=context.ScopeId;
                     var key=GetWorkspaceImageSourceKey(configuration.Fields.Read(field),draft.WorkflowId);
+                    if(_activeRoiImageVariable is null)
+                    {
+                        try{_activeRoiImageVariable=new VariableSetting(ParameterSettingCanonical.DeserializeVariable(key!));}
+                        catch(Exception){_activeRoiImageVariable=null;}
+                    }
                     if(key is null)return null;
                     bool SourceCurrent()
                     {
@@ -192,7 +219,10 @@ public partial class MainWindowViewModel
             context.Deactivated+=()=>
             {
                 RoiFrameAvailabilityChanged-=control.RefreshRoiFrame;
-                if(ReferenceEquals(_editorDebugControl,control)){_editorDebugControl=null;_editorDebugContext=null;RefreshEditorDebugResult();}
+                if(ReferenceEquals(_editorDebugControl,control))
+                {
+                    _editorDebugControl=null;_editorDebugContext=null;RefreshEditorDebugResult();
+                }
             };
             window.SetRunAvailability(()=>Current()&&!IsRunning&&!_solutionTransitionPrepared&&!_transitionPreparationInProgress);
             TrackProductionEditor(_productionEditors,context,window);

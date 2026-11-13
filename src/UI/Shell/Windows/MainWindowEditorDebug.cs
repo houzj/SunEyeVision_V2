@@ -9,6 +9,12 @@ public partial class MainWindowViewModel
  private ProductionEditorContext? _editorDebugContext;
  private RuntimeNodeConfigurationControl? _editorDebugControl;
  private bool _refreshingEditorDebug, _editorDebugRefreshPending;
+ /// <summary>编辑器相关输入的单图临时显示态（VM ModuleResultView.OnRelatedIOChanged）：
+ /// 只改变结果工作区的视图选择，不写正式 SelectedDisplayReference。</summary>
+ internal sealed record EditorRelatedImage(string Key,string PortId,Guid? EditorScopeId);
+ private EditorRelatedImage? _editorRelatedImage;
+ internal EditorRelatedImage? EditorRelatedImageState=>_editorRelatedImage;
+ internal void SetEditorRelatedImage(EditorRelatedImage? value)=>_editorRelatedImage=value;
  private ProductionEditorContext? _workspaceEditorContext;
  private ToolConfiguration? _workspaceEditorConfiguration;
  private DeclaredOutputSnapshot? _workspaceEditorSnapshot;
@@ -29,21 +35,31 @@ public partial class MainWindowViewModel
    var context=SelectedEditorContext;
    var draft=context?.PreparedDraft;
    var configuration=draft?.Configuration;
+   var previousEditorImages=_workspaceEditorImages;
    var snapshot=CurrentEditorDebugSnapshot;
    var contextChanged=!ReferenceEquals(context,_workspaceEditorContext);
    var snapshotChanged=!ReferenceEquals(snapshot,_workspaceEditorSnapshot);
    var imagesChanged=false;
-   if(contextChanged||!ReferenceEquals(configuration,_workspaceEditorConfiguration))
+   if(configuration is not null&&draft is not null)
    {
-    var images=draft is null?Array.Empty<string>():draft.InputSchema.Inputs
+    var images=draft.InputSchema.Inputs
       .Where(port=>port.Type==TypeRef.ResourceOf(ResourceKind.Image))
-      .Select(port=>GetWorkspaceImageSourceKey(configuration!.Fields.Read(port.Id),draft.WorkflowId)??"").ToArray();
+      .Select(port=>GetWorkspaceImageSourceKey(configuration.Fields.Read(port.Id),draft.WorkflowId)??"").ToArray();
     imagesChanged=!images.SequenceEqual(_workspaceEditorImages,StringComparer.Ordinal);
     _workspaceEditorImages=images;
     _workspaceEditorConfiguration=configuration;
    }
    _workspaceEditorContext=context;
    _workspaceEditorSnapshot=snapshot;
+   if(imagesChanged&&previousEditorImages.Any(key=>!string.IsNullOrEmpty(key)))
+   {
+    // 只有真实发生变更的第二输入才切换单图显示；打开窗口本身不改变已呈现结果。
+    var imageInput=draft?.InputSchema.Inputs.FirstOrDefault(port=>port.Type==TypeRef.ResourceOf(ResourceKind.Image));
+    var portId=imageInput is not null&&configuration is not null
+     &&configuration.Fields.Read(imageInput.Id) is ReferenceSetting reference?reference.Reference.PortId:null;
+    var key=_workspaceEditorImages.FirstOrDefault(value=>!string.IsNullOrEmpty(value));
+    _editorRelatedImage=key is not null&&portId is not null?new EditorRelatedImage(key,portId,context?.ScopeId):null;
+   }
    if(contextChanged||snapshotChanged)
    {
     // Opening the parameter window creates a draft context before its first
@@ -57,7 +73,8 @@ public partial class MainWindowViewModel
     if(!preserveFormalPublication)RefreshFormalPublishedResult();
     NotifyResultDisplayChanged();
    }
-   if(contextChanged||snapshotChanged||imagesChanged)ResultWorkspaceChanged?.Invoke();
+  if(contextChanged&&context is null)_editorRelatedImage=null;
+  if(contextChanged||snapshotChanged||imagesChanged)ResultWorkspaceChanged?.Invoke();
    }while(_editorDebugRefreshPending&&!_documentHostReleased);
   }
   finally{_refreshingEditorDebug=false;_editorDebugRefreshPending=false;}

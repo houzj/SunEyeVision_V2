@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using SunEyeVision.Application;
 using SunEyeVision.Application.Editing;
@@ -85,6 +86,35 @@ public sealed class EditorDebugSessionTests
   Assert.False(context.IsActive);
   Assert.False(window.IsCurrent);
   Assert.Equal(accepted, blob.Configuration.Fields.Get<long>(threshold));
+ });
+ [Fact] public void Blob_numeric_ranges_clear_initial_validation_after_original_bounds_are_bound()=>UiRuntime.Run(()=>
+ {
+  using var fixture = new DocumentUiFixture();
+  var source = fixture.Add();
+  var blob = fixture.Add("BlobAnalysis", 350, 240);
+  fixture.ConfigureImage(source, fixture.Image());
+  fixture.Connect(source, blob);
+  var window = Open(fixture, blob);
+  try
+  {
+   var settings = Assert.Single(UiRuntime.Visuals<DeclaredSettingsView>(window.Editor));
+   settings.SelectedPageIndex = 1;
+   UiRuntime.Pump();
+   var count = UiRuntime.Visuals<DeclaredFieldRow>(settings).Single(row => row.FieldId == "field:e748553b7cb45d1a8003c2b345b1d98f");
+   var countText = Assert.IsType<TextBox>(count.InputElement);
+   Assert.Equal("100", countText.Text);
+   Assert.False(Validation.GetHasError(countText));
+   Assert.False(settings.HasInvalidInput, count.Error);
+
+   settings.SelectedPageIndex = 2;
+   UiRuntime.Pump();
+   var size = UiRuntime.Visuals<DeclaredFieldRow>(settings).Single(row => row.FieldId == "display.text.size");
+   var sizeText = Assert.IsType<TextBox>(size.InputElement);
+   Assert.Equal("10.00", sizeText.Text);
+   Assert.False(Validation.GetHasError(sizeText));
+   Assert.False(settings.HasInvalidInput, size.Error);
+  }
+  finally { UiRuntime.Await(window.CloseAndDrainAsync()); }
  });
  [Fact] public void Image_source_result_group_expansion_survives_rerun_and_resets_on_node_switch()=>UiRuntime.Run(()=>
  {
@@ -379,6 +409,7 @@ public sealed class EditorDebugSessionTests
   window.Confirm.Execute(null);
   UiRuntime.Await(window.CloseAndDrainAsync());
   fixture.Save();
+  UiRuntime.Await(ServiceInitializer.DisposeCommunicationRuntimeAsync().AsTask());
   var reopened = ServiceInitializer.SolutionManager.Open(
    System.IO.Path.Combine(fixture.DirectoryPath, "document.solution"),
    _ => new SunEyeVision.Domain.Persistence.FrozenVariableTypeCatalog(Array.Empty<KeyValuePair<string, string>>()),
@@ -514,6 +545,7 @@ public sealed class EditorDebugSessionTests
   Assert.Equal(40L, Assert.IsType<ConstantSetting>(blob.Configuration.Fields.Read(threshold)).Value);
 
   fixture.Save();
+  UiRuntime.Await(ServiceInitializer.DisposeCommunicationRuntimeAsync().AsTask());
   var reopened = ServiceInitializer.SolutionManager.Open(
    System.IO.Path.Combine(fixture.DirectoryPath, "document.solution"),
    _ => new SunEyeVision.Domain.Persistence.FrozenVariableTypeCatalog(Array.Empty<KeyValuePair<string, string>>()),
@@ -770,7 +802,8 @@ public sealed class EditorDebugSessionTests
 
   var window = Open(fixture, blob);
   Assert.Equal(binary, Output().Reference.PortId);
-  Assert.False(Output().HasImageValue);
+  // 原件编辑态同样显示所选对象的当前值（UpdateVMResultShow），打开调试窗口不抽走正式像素。
+  Assert.True(Output().HasImageValue);
   var imageRow = UiRuntime.Visuals<DeclaredFieldRow>(window.Editor).Single(row => row.FieldId == "input.image");
   var picker = Assert.IsType<ComboBox>(imageRow.InputElement);
   picker.SelectedItem = picker.Items.OfType<DeclaredFieldRow.ImageSourceChoice>().Single(item =>
@@ -803,6 +836,57 @@ public sealed class EditorDebugSessionTests
   Assert.Equal(saved, blob.SelectedDisplayReference);
  });
 
+ [Fact] public void Explicit_display_choice_shows_the_selected_modules_formal_pixels_while_the_debug_window_is_open()=>UiRuntime.Run(()=>
+ {
+  // 用户人工反馈（2026-11-13）：调试窗口打开期间在主窗口图像结果下拉显式选择
+  // 『2 Blob分析1 · Blob图像数据』视口空白，关闭调试窗口才显示。
+  // 原件基线：UpdateVMResultShow 在用户改选后立即读取所选图像对象当前值显示，
+  // 与参数窗口开合无关（RenderControlBase.xaml.cs.pending:1127-1154）。
+  using var fixture = new DocumentUiFixture();
+  var source = fixture.Add();
+  var blob = fixture.Add("BlobAnalysis", 350, 240);
+  fixture.ConfigureImage(source, fixture.Image(180, 12));
+  fixture.Fields(source, ("output.format", new ConstantSetting("rgb24")), ("output.mono8", new ConstantSetting(true)));
+  fixture.Connect(source, blob);
+  fixture.Main.SelectedNode = blob;
+  fixture.Run();
+  var shell = Assert.Single(UiRuntime.Visuals<ResultWorkspaceShell>(fixture.Results));
+  ResultWorkspaceImageSource Output() => Assert.IsType<ResultWorkspaceImageSource>(shell.SelectedOutputItem);
+  var upstream = shell.OutputItems!.Cast<ResultWorkspaceImageSource>().First(item => item.IsUpstream);
+  shell.SetCurrentValue(ResultWorkspaceShell.SelectedOutputItemProperty, upstream);
+  UiRuntime.Pump();
+  Assert.Equal(upstream.Key, blob.SelectedDisplayReference);
+  var window = Open(fixture, blob);
+  const string blobImage = "field:8ca10000000040008000000000000005";
+  var ownOutput = shell.OutputItems!.Cast<ResultWorkspaceImageSource>().Single(item => !item.IsUpstream && item.Reference.PortId == blobImage);
+  shell.SetCurrentValue(ResultWorkspaceShell.SelectedOutputItemProperty, ownOutput);
+  UiRuntime.Pump();
+  Assert.Equal(blobImage, Output().Reference.PortId);
+  Assert.True(Output().HasImageValue);
+  Assert.Equal(ownOutput.Key, blob.SelectedDisplayReference);
+  UiRuntime.Await(window.CloseAndDrainAsync());
+  Assert.Equal(blobImage, Output().Reference.PortId);
+  Assert.True(Output().HasImageValue);
+ });
+ [Fact] public void Blob_roi_shape_commands_are_enabled_after_the_editor_view_resumes()=>UiRuntime.Run(()=>
+ {
+  using var fixture=new DocumentUiFixture();
+  var source=fixture.Add();var blob=fixture.Add("BlobAnalysis",350,240);
+  fixture.ConfigureImage(source,fixture.Image(180,12));fixture.Connect(source,blob);fixture.Main.SelectedNode=blob;fixture.Run();
+  var window=Open(fixture,blob);
+  try
+  {
+   var roi=Assert.Single(UiRuntime.Visuals<NativeRoiEditor>(window.Editor).Where(item=>!item.PolygonOnly));
+   var buttons=UiRuntime.Visuals<ToggleButton>(roi.NativeView).Where(button=>button.CommandParameter is not null).ToArray();
+   Assert.NotEmpty(buttons);
+   Assert.All(buttons,button=>Assert.True(button.IsEnabled));
+   var rectangle=buttons.Single(button=>string.Equals(button.CommandParameter?.ToString(),"Box",StringComparison.Ordinal));
+   rectangle.Command!.Execute(rectangle.CommandParameter);
+   UiRuntime.Pump();
+   Assert.True(rectangle.IsChecked);
+  }
+  finally{UiRuntime.Await(window.CloseAndDrainAsync());}
+ });
  [Fact] public void Actual_blob_roi_keeps_its_source_frame_during_drawing_and_rejects_a_retired_viewport()=>UiRuntime.Run(()=>
  {
   using var fixture = new DocumentUiFixture();
@@ -1398,6 +1482,31 @@ public sealed class EditorDebugSessionTests
  UiRuntime.Pump();
  Assert.Equal(source.Id,Assert.IsType<ResultWorkspaceImageSource>(shell.SelectedOutputItem).Reference.NodeId);
  Assert.NotNull(viewport.ImageDataSource);
+});
+[Fact] public void Reopen_user_saved_solution_projects_canvas_nodes()=>UiRuntime.Run(()=>
+{
+ // 复现：用户关闭应用保存 11111.solution（文件内 2 节点已核实），重新打开后画布无节点。
+ const string path="C:\\Users\\Administrator\\AppData\\Local\\SunEyeVision\\Solutions\\11111.solution";
+ if(!System.IO.File.Exists(path)) throw new Exception("用户方案文件不存在，复现前提失效。");
+ using var fixture=new DocumentUiFixture();
+ UiRuntime.Await(fixture.Main.OpenExternalSolutionAsync(path));var opened=true;
+ var session=fixture.Session;
+ var flows=session.Document.Workflows.ToList();
+ var nodes=flows.SelectMany(flow=>flow.Nodes).ToList();
+ if(!opened) throw new Exception($"diag: 打开未接纳 opened=false flows={flows.Count} nodes={nodes.Count}");
+ if(nodes.Count==0) throw new Exception($"diag: 打开接纳但会话无节点 flows={flows.Count} nodeCounts=[{string.Join(",",flows.Select(f=>f.Nodes.Count))}] name={session.Document.Name}");
+ var canvas=fixture.Canvas;
+ UiRuntime.Pump();
+ fixture.Host.UpdateLayout();
+ var view=fixture.View;
+ Assert.Same(fixture.Tab,view.DataContext);
+ var nodeItems=Assert.IsType<System.Windows.Controls.ItemsControl>(view.FindName("CanvasNodeItems"));
+ Assert.Same(canvas.Nodes,nodeItems.ItemsSource);
+ Assert.Equal(nodes.Count,nodeItems.Items.Count);
+ Assert.Equal(nodes.Count,canvas.Nodes.Count);
+ var shell=fixture.Workspace;
+ var miniMap=Assert.IsType<System.Windows.Controls.Canvas>(shell.FindName("MiniMapCanvas"));
+ Assert.NotEmpty(miniMap.Children);
 });
 [Fact] public void Image_source_stitch_height_row_keeps_no_validation_error_when_the_window_opens()=>UiRuntime.Run(()=>
 {

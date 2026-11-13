@@ -72,6 +72,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
     internal void ConfigureDebug(ProductionEditorContext context, Func<IHostInputFactory> factory, Func<bool> canRun, Action<string> log, Func<string,SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameLease?> borrowFrame, Action changed)
     {
         if (_debug is not null) throw new InvalidOperationException("参数页已拥有调试会话。");
+        _debugResultChanged=changed;
         _debug = new ProductionEditorDebug(context,this,factory,canRun,log,()=>{DebugStateChanged?.Invoke();changed();});
         _roiFrames = new(borrowFrame,CaptureDebugInputs);
     }
@@ -90,6 +91,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
     private long _referenceRevision = -1;
     private long _generation, _syncedRevision;
     private bool _disposed, _capturing;
+    private Action? _debugResultChanged;
     private string _captureError = "";
     public event EventHandler<RuntimeToolExecutionEventArgs>? ExecutionCompleted;
     internal event Action? ResultDisplayEdited;
@@ -100,7 +102,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
         || _inputs.Any(input => input.HasPendingEdits);
     private ProductionEditorContext CurrentContext() => !_disposed && _context is { IsValid: true } context && ReferenceEquals(ToolEditorCommit.GetDraftContext(this), context)
         ? context : throw new InvalidOperationException("参数页所属方案、流程或节点已失效。");
-    internal bool IsResultDisplayBinding(NodeDefinition node, long generation) => !_disposed && generation == _generation && _view is not null && ReferenceEquals(_context?.FormalNode, node) && ReferenceEquals(Content, _view.View);
+    internal bool IsResultDisplayBinding(NodeDefinition node, long generation) => !_disposed && generation == _generation && _view is not null && _context?.DraftNode.Id == node.Id && ReferenceEquals(Content, _view.View);
     internal bool TryGetResultDisplayBinding(out NodeDefinition node, out long generation)
     { node = _context?.FormalNode as NodeDefinition ?? null!; generation = _generation; return node is not null && IsResultDisplayBinding(node, generation); }
 
@@ -170,7 +172,21 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
             if(!Current())throw new InvalidOperationException("输入页创建期间编辑会话已失效。");
             var panel=new DeclaredInputFieldsView(inputSchema,
                 port=>CurrentContext().PreparedDraft.ReadInputSetting(port.Id),
-                (port,value)=>{if(!Current())throw new InvalidOperationException("输入编辑已失效。");var edits=new Dictionary<string,ParameterSetting>{{port.Id,value}};var error=ValidateChanges(edits);if(error is not null)throw new InvalidOperationException(error);CurrentContext().PreparedDraft.ApplyFields(edits);},
+                (port,value)=>
+                {
+                    if(!Current())throw new InvalidOperationException("输入编辑已失效。");
+                    var edits=new Dictionary<string,ParameterSetting>{{port.Id,value}};
+                    var error=ValidateChanges(edits);if(error is not null)throw new InvalidOperationException(error);
+                    CurrentContext().PreparedDraft.ApplyFields(edits);
+                    // 输入页接受后必须通知宿主，否则调试窗口的输入选择不会驱动结果视图。
+                    // 原件只对 IMAGE/PIXELIMAGE 关联 IO 触发 OnRelatedIOChanged（切单图显示），
+                    // 其它输入（含区域绘制写回）走参数值回调只重绘结果并 UpdateROI 重投影，
+                    // 从不终止模块会话——ROI 借用的帧租约依赖会话存活，若在此失效调试草稿
+                    // 会导致每次形状接受后绘制立即报废；证据见
+                    // docs/collaboration/evidence/VM编辑器相关输入单图联动原件对照-20261113.json。
+                    ResultDisplayEdited?.Invoke();
+                    if(port.Type==TypeRef.ResourceOf(ResourceKind.Image))_debugResultChanged?.Invoke();
+                },
                 references,FormatReference);
             _inputs.Clear();_inputs.AddRange(panel.Fields);return panel;
         }
@@ -257,7 +273,14 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
             }
         }
         catch (Exception error) { _captureError = error.Message; }
+        NotifyDraftEdited();
+    }
+    /// <summary>草稿被接受后的统一通知：调试草稿失效、结果工作区刷新、结果显示刷新。
+    /// 设置页与输入页必须走同一出口，否则输入页编辑不会驱动结果视图。</summary>
+    private void NotifyDraftEdited()
+    {
         _debug?.OnDraftEdited();
+        _debugResultChanged?.Invoke();
         ResultDisplayEdited?.Invoke();
     }
     public bool TryCapture(out string error)

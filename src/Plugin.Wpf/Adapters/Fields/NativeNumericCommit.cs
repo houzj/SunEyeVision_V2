@@ -47,6 +47,10 @@ internal sealed class NativeNumericCommit : IDisposable
         var valid=Matches(stamp)&&_textRevision-revision<=1&&ReferenceEquals(inner,_text.GetBindingExpression(TextBox.TextProperty))
             &&ReferenceEquals(outer,_leaf.GetBindingExpression(Numbers.NumericControl.TextProperty));
         if(!valid)_externalMutation++;
+        // SetCurrentValue 不触发绑定校验：初值 '0'（Text DP 默认，PcUi NumericControl
+        // TextProperty 元数据）时代挂上的 RangeRule 错误状态，必须在真实值落地后重跑，
+        // 否则合法值带着残留红框（用户实机 2026-11-13）。
+        if(valid)_leaf.RevalidateRange();
         return valid;
     }
     internal bool ProjectCandidate(ConstantSetting value,Action action)=>WriteText(Format(value.Value!),action,Stamp());

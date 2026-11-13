@@ -278,7 +278,10 @@ public partial class NumericControl : UserControl, INotifyPropertyChanged, IComp
 		ValueText.GotFocus += TextBox_GotFocus;
 		RangeRule item = new RangeRule
 		{
-			Container = this
+			Container = this,
+			// 原件行为：值经代码落地（SetCurrentValue 绕过绑定校验）时也要重跑范围规则，
+			// 并让 WPF 自行管理错误装饰器的生命周期，避免残留孤儿红框。
+			ValidatesOnTargetUpdated = true
 		};
 		_rangeRule = item;
 		Binding binding = BindingOperations.GetBinding(ValueText, TextBox.TextProperty);
@@ -296,14 +299,30 @@ public partial class NumericControl : UserControl, INotifyPropertyChanged, IComp
 		if (d is NumericControl control) control.RevalidateRange();
 	}
 
-	private void RevalidateRange()
+	/// <summary>真实值经 SetCurrentValue 落地后由提交器调用：SetCurrentValue 绕过绑定
+	/// 校验，初值 '0'（Text DP 默认）时代的错误状态必须在此重跑清除或维持。</summary>
+	internal void RevalidateRange()
 	{
 		if (_rangeRule is null) return;
 		var expression = BindingOperations.GetBindingExpression(ValueText, TextBox.TextProperty);
 		if (expression is null) return;
 		var result = _rangeRule.Validate(ValueText.Text, System.Globalization.CultureInfo.InvariantCulture);
-		if (result.IsValid) Validation.ClearInvalid(expression);
-		else Validation.MarkInvalid(expression, new ValidationError(_rangeRule, expression, result.ErrorContent, null));
+		if (result.IsValid)
+		{
+			Validation.ClearInvalid(expression);
+			// 值合法时该控件不应再有任何校验装饰器；装载期 '0' 初值（Text DP 默认）
+			// 挂上的孤儿 TemplatedAdorner 在此强制清扫。
+			var layer = System.Windows.Documents.AdornerLayer.GetAdornerLayer(ValueText);
+			if (layer is not null)
+			{
+				foreach (var adorner in layer.GetAdorners(ValueText) ?? Array.Empty<System.Windows.Documents.Adorner>())
+					layer.Remove(adorner);
+			}
+		}
+		else
+		{
+		    Validation.MarkInvalid(expression, new ValidationError(_rangeRule, expression, result.ErrorContent, null));
+		}
 	}
 
 	private static void OnSymbolChange(DependencyObject d, DependencyPropertyChangedEventArgs e)

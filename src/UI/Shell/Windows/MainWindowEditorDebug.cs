@@ -16,21 +16,9 @@ public partial class MainWindowViewModel
  internal EditorRelatedImage? EditorRelatedImageState=>_editorRelatedImage;
  internal void SetEditorRelatedImage(EditorRelatedImage? value)=>_editorRelatedImage=value;
  /// <summary>ROI 交互借帧被宿主阻断的原因（空=未阻断）；由 presenter 在阻断时写入，
- /// 经参数视图传递给工具侧编辑器的不可绘反馈（原件 RoiDrawTips 语义）。</summary>
+ /// 经参数视图传递给工具侧编辑器的不可绘反馈（原件 RoiDrawTips 语义：
+ /// "无效的绘制操作！请检查绘制图像是否为模块的输入图像"，用户实机截图在案）。</summary>
  internal string? RoiDrawBlockReason{get;set;}
- /// <summary>ROI 本地绘制前置（VM IsCanDrawROI：显示图必须是模块的输入图，
- /// ModuleDisplayDecorator.cs.pending:446-480）。绘制请求的输入图与当前显示不一致时，
- /// 把单图临时显示态切到该输入图并触发结果工作区刷新；返回 true 表示已发起切换，
- /// 调用方本轮借帧放弃，刷新完成（NotifyRoiFrameAvailabilityChanged→RefreshFrame）
- /// 自动重建会话并补齐激活——一次点击完成切换+借帧+命中（原件 UpdateROI 语义）。</summary>
- internal bool EnsureRoiDisplayInput(string key,string? portId,Guid? scopeId)
- {
-  if(_editorRelatedImage is not null&&(_editorRelatedImage.Key==key||
-      (portId is {Length:>0}&&_editorRelatedImage.PortId==portId)))return false;
-  _editorRelatedImage=key is null?null:new EditorRelatedImage(key,portId??"",scopeId);
-  ResultWorkspaceChanged?.Invoke();
-  return true;
- }
  private ProductionEditorContext? _workspaceEditorContext;
  private ToolConfiguration? _workspaceEditorConfiguration;
  private DeclaredOutputSnapshot? _workspaceEditorSnapshot;

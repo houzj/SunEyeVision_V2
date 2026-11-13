@@ -103,7 +103,9 @@ public partial class MainWindowViewModel
         while(queue.TryDequeue(out var id))foreach(var edge in edges.Where(edge=>edge.TargetNodeId==id))if(ids.Add(edge.SourceNodeId))queue.Enqueue(edge.SourceNodeId);
         try
         {
-            foreach(var node in nodes.Where(node=>ids.Contains(node.Id)).OrderBy(node=>node.Name,StringComparer.CurrentCulture))
+            // 原件显示来源下拉按模块序号排列（数据流/创建顺序，用户实机截图：
+            // "1 图像源1 · 图像"→"2 Blob分析1 · …"）；不按名称排序（拉丁名会插到中文前）。
+            foreach(var node in nodes.Where(node=>ids.Contains(node.Id)).OrderBy(node=>node.GlobalIndex))
             {
                 var privateNode=editor is not null&&ReferenceEquals(node,selected);
                 // 调试窗口打开但尚未执行时没有私有快照，此时节点仍以正式发布呈现图像与叠加
@@ -137,7 +139,8 @@ public partial class MainWindowViewModel
                     var caption=schema.FindOutputDisplay(port.Id);
                     var label=caption?.DisplayName
                         ??(snapshot?.Fields.TryGetValue(port.Id,out var metadata)==true?metadata.DisplayName:port.Id);
-                            Walk(port.Type,values?.Values?.Read(port.Id),Array.Empty<string>(),null,node.Name+" · "+label);
+                            Walk(port.Type,values?.Values?.Read(port.Id),Array.Empty<string>(),null,
+                                SunEyeVision.Plugin.Wpf.Adapters.References.ReferenceText.ModuleNumber(node.GlobalIndex)+" "+node.Name+" · "+label);
                     void Walk(TypeRef type,DeclaredValueReader? value,string[] path,int? index,string name)
                     {
                         if(plan.Sources.Count>=4096)throw new InvalidOperationException("图像来源超过4096项，拒绝整批而非截断列表。");
@@ -176,9 +179,8 @@ public partial class MainWindowViewModel
                 }
                 if(!Owner())throw new InvalidOperationException("建立图像来源期间工作区已被替换。");
             }
-            var auxiliaryImages=plan.Sources.Where(source=>source.IsAuxiliaryImage).ToArray();
-            plan.Sources.RemoveAll(source=>source.IsAuxiliaryImage);
-            plan.Sources.AddRange(auxiliaryImages);
+            // 原件掩膜等辅助图不挪队尾，保持所属模块组内的端口顺序（用户实机截图：
+            // "2 Blob分析1 · 输出掩膜"紧跟"二值化图像数据"）。
             string? primaryInputKey=null;
             if((editor?.PreparedDraft.InputSchema??session.GetNodeSchema(scope,selected.Id)) is {} inputSchema)
             {

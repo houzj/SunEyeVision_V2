@@ -897,12 +897,12 @@ public sealed class EditorDebugSessionTests
   }
   finally{UiRuntime.Await(window.CloseAndDrainAsync());}
  });
- [Fact] public void Roi_draw_request_on_non_input_display_switches_display_and_arms_in_one_click()=>UiRuntime.Run(()=>
+ [Fact] public void Roi_draw_request_on_non_input_display_is_blocked_with_original_tip_until_user_switches()=>UiRuntime.Run(()=>
  {
-  // P1 一击命中（用户定案；原件 IsCanDrawROI：ModuleDisplayDecorator.cs.pending:446-480，
-  // 切换走 OnRelatedIOChanged 单图临时显示态 ModuleResultView.xaml.cs.pending:500-524）：
-  // 显示图不是模块输入图时点击形状按钮，单击完成"切显示+借帧+激活"——绘制武装发生在
-  // 可见真实视口（不落离屏），不改写正式显示选择；会话跨结果刷新存活（P2，UpdateROI 语义）。
+  // 原件语义（用户实机截图实锤：VM 弹"无效的绘制操作！请检查绘制图像是否为模块的输入图像"；
+  // IsCanDrawROI ModuleDisplayDecorator.cs.pending:446-480 只判定不切换）：
+  // 显示图不是输入图时点形状按钮→阻断并给原版文案，不切换显示、不改正式选择；
+  // 用户切回输入图后点形状即可绘制（会话在可见视口武装），跨结果刷新存活（P2）。
   using var fixture = new DocumentUiFixture();
   var source = fixture.Add();
   var blob = fixture.Add("BlobAnalysis", 350, 240);
@@ -918,14 +918,16 @@ public sealed class EditorDebugSessionTests
   UiRuntime.Pump();
   var window = Open(fixture, blob);
   var roi = Assert.Single(UiRuntime.Visuals<NativeRoiEditor>(window.Editor).Where(item => !item.PolygonOnly));
-  // 单击即命中：切显示+借帧+激活在调用栈内完成（有界等待呈现，无跨路径回调）
-  Assert.True(roi.PrepareInteraction?.Invoke());
-  UiRuntime.Pump();
-  // 显示已自动切到模块输入图（单图临时显示态）
-  Assert.Equal("output.image", Output().Reference.PortId);
+  // 显示图不是输入图：阻断+原厂文案，显示与正式选择都不动
+  Assert.False(roi.PrepareInteraction?.Invoke());
+  Assert.Equal("field:8ca10000000040008000000000000005", Output().Reference.PortId);
   Assert.True(blob.SelectedDisplayReference is null||blob.SelectedDisplayReference==ownOutput.Key,
-      "绘制切换不得把输入图写进正式显示选择");
-  // 无需再次点击：刷新完成自动重建会话并补齐激活（交互武装在可见视口）
+      "阻断流程不得把输入图写进正式显示选择");
+  // 用户手动把显示切回输入图（图像源1.图像），点形状即命中，武装在可见视口
+  var inputSource = shell.OutputItems!.Cast<ResultWorkspaceImageSource>().Single(item => item.Reference?.PortId == "output.image");
+  shell.SetCurrentValue(ResultWorkspaceShell.SelectedOutputItemProperty, inputSource);
+  UiRuntime.Pump();
+  Assert.True(roi.PrepareInteraction?.Invoke());
   var presenter = UiRuntime.Field<ResultWorkspacePresenter>(fixture.Results, "_workspacePresenter");
   var pane = UiRuntime.Prop<ResultImagePane>(presenter, "OutputPane");
   var viewport = UiRuntime.Prop<SunEyeVision.Plugin.Wpf.Presenters.Display.NativeResultViewport>(pane, "Viewport");

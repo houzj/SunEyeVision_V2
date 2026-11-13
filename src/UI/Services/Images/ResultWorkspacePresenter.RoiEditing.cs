@@ -15,34 +15,14 @@ internal sealed partial class ResultWorkspacePresenter
         _shell.Dispatcher.VerifyAccess();
         var input=_shell.IsDoubleImage;
         var displayed=(input?_shell.SelectedInputItem:_shell.SelectedOutputItem) as ResultWorkspaceImageSource;
-        if(interactive&&displayed?.Key!=key&&_plan is not null)
+        // 原件语义（用户实机截图实锤：VM 弹"无效的绘制操作！请检查绘制图像是否为模块的输入图像"）：
+        // IsCanDrawROI（ModuleDisplayDecorator.cs.pending:446-480）只判定不切换，
+        // 绘制请求时显示图不是模块输入图→阻断并给原因，用户自行切换显示（RoiDrawTips）；
+        // 切回后 RefreshFrame 自动重建会话，点形状即可绘制。预览等非交互借帧不受影响。
+        if(interactive&&displayed?.Key!=key)
         {
-            // P1 一击命中（VM IsCanDrawROI：ModuleDisplayDecorator.cs.pending:446-480）：
-            // 绘制请求时显示图不是模块输入图——把显示切到该输入图（单图走临时显示态，
-            // 双图直接改输入选择），在本调用栈内同步刷新并有界等待新图呈现（PushFrame
-            // 处理 Render 队列，超时放弃本轮），同栈借帧命中，不再要求用户手动切换或二次点击。
-            // 严禁"显示刷新→ROI重建→编辑事件→再刷新"的跨路径通知：该反馈环会在 Render
-            // 队列无限自旋冻结 UI（实锤并已回滚）。
-            var roiPane=input?_input.Image:_output.Image;
-            var before=roiPane.CurrentFrame?.Frame;
-            if(input)_shell.SelectedInputItem=_plan.InputSources.FirstOrDefault(candidate=>candidate.Key==key);
-            else _main.EnsureRoiDisplayInput(key,null,null);
-            Refresh();
-            var deadline=DateTime.UtcNow.AddMilliseconds(800);
-            while(DateTime.UtcNow<deadline)
-            {
-                displayed=(input?_shell.SelectedInputItem:_shell.SelectedOutputItem) as ResultWorkspaceImageSource;
-                if(displayed?.Key==key&&roiPane.CurrentFrame is {} presented&&(before is null||presented.Frame!=before))break;
-                var pumpFrame=new System.Windows.Threading.DispatcherFrame();
-                _shell.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background,new Action(()=>pumpFrame.Continue=false));
-                System.Windows.Threading.Dispatcher.PushFrame(pumpFrame);
-            }
-            displayed=(input?_shell.SelectedInputItem:_shell.SelectedOutputItem) as ResultWorkspaceImageSource;
-            if(displayed?.Key!=key)
-            {
-                _main.RoiDrawBlockReason="请先将单图显示切换到该模块的输入图像后再绘制区域。";
-                return null;
-            }
+            _main.RoiDrawBlockReason="无效的绘制操作！请检查绘制图像是否为模块的输入图像。";
+            return null;
         }
         var request=++_roiRequest;var epoch=_epoch;var plan=_plan;
         bool PlanCurrent()=>!_disposed&&!_refreshing&&epoch==_epoch&&ReferenceEquals(plan,_plan)&&plan is not null&&input==_shell.IsDoubleImage;

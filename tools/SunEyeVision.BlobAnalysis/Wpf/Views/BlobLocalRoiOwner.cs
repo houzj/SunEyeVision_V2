@@ -131,9 +131,20 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
     internal void RefreshFrame()
     {
         if(_disposed||_refreshing||_accepting||_activating)return;
-        _refreshing=true;
-        try{if(!FrameCurrent(_generation)){RetireFrame();Error="请选择与输入一致的图像后继续编辑。";Notify();}}
-        finally{_refreshing=false;}
+        // 原件语义（SetRoiVisible + UpdateROI，ModuleResultView.xaml.cs.pending:2252/:604-608）：
+        // 形状=参数对象，页签/窗口可见性变化只隐藏不销毁；仅图像帧身份变化才退役。
+        // 恢复可见时自动重建会话显示既有形状，不依赖用户点击绘制激活。
+        var frameAlive=_frame is {} frame&&frame.IsCurrent;
+        if(!frameAlive)
+        {
+            _refreshing=true;
+            try{RetireFrame();Notify();}
+            finally{_refreshing=false;}
+            return;
+        }
+        if(_controls.IsVisible&&_controls.IsLoaded&&_sessions.Count==0
+            &&(_controls.IsLocalDrawing(BlobLocalRoi.Inspection)||_controls.IsLocalDrawing(BlobLocalRoi.Mask)))
+            AcquireFrame(interactive:false);
     }
     private bool Activate(string group)
     {

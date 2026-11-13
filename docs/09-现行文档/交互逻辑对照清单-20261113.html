@@ -71,7 +71,7 @@
 <table>
 <tr><th>#</th><th>入口</th><th>内容</th><th>对照状态</th></tr>
 <tr><td>1</td><td>主窗口图像结果下拉/单图联动</td><td>A2/A3</td><td class="ok">✅已对照</td></tr>
-<tr><td>2</td><td>双图切换入口</td><td>A4</td><td class="diff">⚠️待确认</td></tr>
+<tr><td>2</td><td>双图切换入口</td><td>A4：已按原件对齐——双图入口先选关联 IO 匹配项、否则第一个输入（RefreshInputImageList :1453-1463）（3b04ca63d）</td><td class="ok">✅已对照并修正</td></tr>
 <tr><td>3</td><td>数据刷新/窗口开合</td><td>A5/A6</td><td class="ok">✅已对照</td></tr>
 <tr><td>4</td><td>ROI 绘制资格/载体/刷新/反馈/门控</td><td>B1-B7</td><td class="ok">✅已对照</td></tr>
 <tr><td>5</td><td>数值行范围校验/红框</td><td>C1/C2</td><td class="ok">✅已闭口</td></tr>
@@ -80,7 +80,7 @@
 <tr><td>8</td><td>保存重开</td><td>生态链环8</td><td class="ok">✅已对照</td></tr>
 <tr><td>9</td><td>基本参数页 17 行逐行交互</td><td>高/低阈值、软阈值柔和度、尾部比例、面积范围、矩形宽高下限、填充面积阈值、短轴下限的滑条/订阅/编辑逐行对照</td><td class="bad">❌未对照（仅框架级）</td></tr>
 <tr><td>10</td><td>运行参数页行级交互</td><td>查找个数、最小重叠率、最大内接矩形输出数量、FilterAreaMax 拼接高度双值滑条</td><td class="bad">❌未对照</td></tr>
-<tr><td>11</td><td>阈值模式切换→参数行显隐联动</td><td>IsThresholdFieldActive 驱动的行显隐是否符合原厂模式切换表现</td><td class="bad">❌未对照</td></tr>
+<tr><td>11</td><td>阈值模式切换→参数行显隐联动</td><td>已对照并修正：原件 0x3 双阈值隐藏 Polarity 行（IMVSBlobFindModuAlgorithmTab.xml:160-173），本方已补 Type 行双阈值隐藏条件（3b04ca63d）</td><td class="ok">✅已对照并修正</td></tr>
 <tr><td>12</td><td>ROI 区域页内部交互</td><td>检测区/屏蔽区两组的 继承⇄绘制 模式切换、ROI 列表选中/双击编辑、删除、撤销重做、最大数量提示（DrawLimitReached 已有）</td><td class="bad">❌未对照</td></tr>
 <tr><td>13</td><td>位置校正行</td><td>PositionCorrectionField+pose 编辑（BlobUiComposition.cs:71-170）</td><td class="bad">❌未对照</td></tr>
 <tr><td>14</td><td>结果显示页显示内容组合</td><td>内容行、显示宽度/高度拼接（pairWith 双值滑条）</td><td class="bad">❌未对照</td></tr>

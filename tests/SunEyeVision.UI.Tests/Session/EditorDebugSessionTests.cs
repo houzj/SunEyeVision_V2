@@ -897,12 +897,12 @@ public sealed class EditorDebugSessionTests
   }
   finally{UiRuntime.Await(window.CloseAndDrainAsync());}
  });
- [Fact] public void Roi_draw_request_on_non_input_display_is_blocked_until_the_display_switches_to_the_input()=>UiRuntime.Run(()=>
+ [Fact] public void Roi_draw_request_on_non_input_display_switches_display_and_arms_in_one_click()=>UiRuntime.Run(()=>
  {
-  // 原件 IsCanDrawROI+RoiDrawTips（ModuleDisplayDecorator.cs.pending:446-480、
-  // ModuleResultView.xaml.cs.pending:2514-2521）：显示图不是模块输入图时绘制不可用并给出
-  // 提示，由用户自行切换显示（原厂不自动切换，OnRelatedIOChanged 只随输入绑定变化切换）；
-  // 显示切到输入图后绘制武装，且会话跨结果刷新存活（P2，UpdateROI 语义）。
+  // P1 一击命中（用户定案；原件 IsCanDrawROI：ModuleDisplayDecorator.cs.pending:446-480，
+  // 切换走 OnRelatedIOChanged 单图临时显示态 ModuleResultView.xaml.cs.pending:500-524）：
+  // 显示图不是模块输入图时点击形状按钮，单击完成"切显示+借帧+激活"——绘制武装发生在
+  // 可见真实视口（不落离屏），不改写正式显示选择；会话跨结果刷新存活（P2，UpdateROI 语义）。
   using var fixture = new DocumentUiFixture();
   var source = fixture.Add();
   var blob = fixture.Add("BlobAnalysis", 350, 240);
@@ -918,21 +918,25 @@ public sealed class EditorDebugSessionTests
   UiRuntime.Pump();
   var window = Open(fixture, blob);
   var roi = Assert.Single(UiRuntime.Visuals<NativeRoiEditor>(window.Editor).Where(item => !item.PolygonOnly));
-  Assert.False(roi.PrepareInteraction?.Invoke());
-  Assert.Equal("field:8ca10000000040008000000000000005", Output().Reference.PortId);
-  Assert.True(blob.SelectedDisplayReference is null||blob.SelectedDisplayReference==ownOutput.Key,
-      "阻断流程不得把输入图写进正式显示选择");
-  var inputSource = shell.OutputItems!.Cast<ResultWorkspaceImageSource>().Single(item => item.Reference?.PortId == "output.image");
-  shell.SetCurrentValue(ResultWorkspaceShell.SelectedOutputItemProperty, inputSource);
-  UiRuntime.Pump();
+  // 单击即命中：切显示+借帧+激活在调用栈内完成（有界等待呈现，无跨路径回调）
   Assert.True(roi.PrepareInteraction?.Invoke());
+  UiRuntime.Pump();
+  // 显示已自动切到模块输入图（单图临时显示态）
+  Assert.Equal("output.image", Output().Reference.PortId);
+  Assert.True(blob.SelectedDisplayReference is null||blob.SelectedDisplayReference==ownOutput.Key,
+      "绘制切换不得把输入图写进正式显示选择");
+  // 无需再次点击：刷新完成自动重建会话并补齐激活（交互武装在可见视口）
+  var presenter = UiRuntime.Field<ResultWorkspacePresenter>(fixture.Results, "_workspacePresenter");
+  var pane = UiRuntime.Prop<ResultImagePane>(presenter, "OutputPane");
+  var viewport = UiRuntime.Prop<SunEyeVision.Plugin.Wpf.Presenters.Display.NativeResultViewport>(pane, "Viewport");
+  Assert.NotNull(UiRuntime.Field<SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeRoiAttachment>(viewport, "_roiAttachment"));
   var session = UiRuntime.Field<NativeRoiSession>(roi, "_session");
   Assert.True(session is not null && session.IsCurrent);
   UiRuntime.Call(fixture.Main,"RefreshEditorDebugResult");
   UiRuntime.Pump();
   Assert.True(session!.IsCurrent,$"刷新后绘制会话应存活 Error='{roi.Error}'");
   UiRuntime.Await(window.CloseAndDrainAsync());
- });
+});
  [Fact] public void Actual_blob_roi_keeps_its_source_frame_during_drawing_and_rejects_a_retired_viewport()=>UiRuntime.Run(()=>
  {
   using var fixture = new DocumentUiFixture();

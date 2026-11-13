@@ -12,23 +12,46 @@ internal sealed partial class ResultWorkspacePresenter
     /// <summary>Borrow only the actually selected visible input. ROI never selects, restores or publishes images.</summary>
     internal NativeRoiFrameLease? BorrowRoiFrame(string key,bool interactive,Func<bool> current)
     {
-        _shell.Dispatcher.VerifyAccess();var request=++_roiRequest;var epoch=_epoch;var plan=_plan;var input=_shell.IsDoubleImage;
+        _shell.Dispatcher.VerifyAccess();
+        var input=_shell.IsDoubleImage;
+        var displayed=(input?_shell.SelectedInputItem:_shell.SelectedOutputItem) as ResultWorkspaceImageSource;
+        if(interactive&&displayed?.Key!=key&&_plan is not null)
+        {
+            // P1 一击命中（VM IsCanDrawROI：ModuleDisplayDecorator.cs.pending:446-480）：
+            // 绘制请求时显示图不是模块输入图——把显示切到该输入图（单图走临时显示态，
+            // 双图直接改输入选择），在本调用栈内同步刷新并有界等待新图呈现（PushFrame
+            // 处理 Render 队列，超时放弃本轮），同栈借帧命中，不再要求用户手动切换或二次点击。
+            // 严禁"显示刷新→ROI重建→编辑事件→再刷新"的跨路径通知：该反馈环会在 Render
+            // 队列无限自旋冻结 UI（实锤并已回滚）。
+            var roiPane=input?_input.Image:_output.Image;
+            var before=roiPane.CurrentFrame?.Frame;
+            if(input)_shell.SelectedInputItem=_plan.InputSources.FirstOrDefault(candidate=>candidate.Key==key);
+            else _main.EnsureRoiDisplayInput(key,null,null);
+            Refresh();
+            var deadline=DateTime.UtcNow.AddMilliseconds(800);
+            while(DateTime.UtcNow<deadline)
+            {
+                displayed=(input?_shell.SelectedInputItem:_shell.SelectedOutputItem) as ResultWorkspaceImageSource;
+                if(displayed?.Key==key&&roiPane.CurrentFrame is {} presented&&(before is null||presented.Frame!=before))break;
+                var pumpFrame=new System.Windows.Threading.DispatcherFrame();
+                _shell.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background,new Action(()=>pumpFrame.Continue=false));
+                System.Windows.Threading.Dispatcher.PushFrame(pumpFrame);
+            }
+            displayed=(input?_shell.SelectedInputItem:_shell.SelectedOutputItem) as ResultWorkspaceImageSource;
+            if(displayed?.Key!=key)
+            {
+                _main.RoiDrawBlockReason="请先将单图显示切换到该模块的输入图像后再绘制区域。";
+                return null;
+            }
+        }
+        var request=++_roiRequest;var epoch=_epoch;var plan=_plan;
         bool PlanCurrent()=>!_disposed&&!_refreshing&&epoch==_epoch&&ReferenceEquals(plan,_plan)&&plan is not null&&input==_shell.IsDoubleImage;
         bool RequestCurrent()=>request==_roiRequest&&PlanCurrent();
         if(!RequestCurrent()||!current()||!RequestCurrent())
         {
             return null;
         }
-        var source=(input?_shell.SelectedInputItem:_shell.SelectedOutputItem) as ResultWorkspaceImageSource;
-        // P1（原件 IsCanDrawROI+RoiDrawTips 语义）：绘制请求时显示图必须是模块的输入图，
-        // 否则阻断借帧并给出原因（不自动切换显示——原厂由用户自行切换，OnRelatedIOChanged
-        // 只随输入绑定变化切换）；预览等非交互借帧不受影响。
-        var displayed=(input?_shell.SelectedInputItem:_shell.SelectedOutputItem) as ResultWorkspaceImageSource;
-        if(interactive&&displayed?.Key!=key)
-        {
-            _main.RoiDrawBlockReason="请先将单图显示切换到该模块的输入图像后再绘制区域。";
-            return null;
-        }
+        var source=displayed;
         ResultImagePane? privatePane=null;
         FrozenImageResource? temporaryVariable=null;
         void DisposePrivate(){privatePane?.Dispose();temporaryVariable?.Dispose();temporaryVariable=null;}
@@ -41,6 +64,13 @@ internal sealed partial class ResultWorkspacePresenter
         }
         if(source?.Key!=key&&requested is {} requestedSource)
         {
+            if(plan!.InputSources.Any(candidate=>candidate.Key==key))
+            {
+                // 绘制面=输入图的可见真实视口（原件 P1）。常规输入图在工作区有显示位：
+                // 非交互借帧（预览/自动重建）不改用户显示也不落离屏视口（离屏会话用户无处可画），
+                // 等待显示就位；交互请求经宿主 EnsureRoiDisplayInput 切换后命中。
+                DisposePrivate();return null;
+            }
             source=requestedSource;temporarySource=true;
             privatePane=new(new NativeResultViewport());
             // The editor owns this borrowed frame for the whole draft lifetime.

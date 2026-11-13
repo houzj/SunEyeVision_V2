@@ -26,6 +26,7 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
     private NativeRoiFrameLease? _frame;
     private INativeRoiEditLease? _interaction;
     private string? _active;
+    private string? _pendingActivate;
     private RecordValue _observed;
     private bool _disposed,_accepting,_refreshing,_activating;
     private readonly Func<string?>? _drawBlockReason;
@@ -119,6 +120,7 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
                 }
             }
             Error="";Notify();
+            CompletePendingActivation();
         }
         catch(Exception error)
         {
@@ -145,10 +147,8 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
             &&(_controls.IsLocalDrawing(BlobLocalRoi.Inspection)||_controls.IsLocalDrawing(BlobLocalRoi.Mask)))
             AcquireFrame(interactive:false);
     }
-    private bool Activate(string group)
+    private bool ActivateCore(string group)
     {
-        if(_disposed||_activating||_accepting||!_controls.IsLoaded||!_controls.IsVisible||!_controls.IsLocalDrawing(group))return false;
-        if(!FrameCurrent(_generation))AcquireFrame(interactive:true);
         if(!FrameCurrent(_generation)||!_sessions.TryGetValue(group,out var session))return false;
         if(_active==group&&_interaction?.IsCurrent==true)return true;
         if(_interaction?.HasPendingGesture==true){Error="请先完成或取消当前绘制。";return false;}
@@ -160,9 +160,25 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
             if(!FrameCurrent(generation))return false;
             var candidate=_frame!.BeginEditing(session);
             if(!FrameCurrent(generation)){candidate.Dispose();return false;}
-            _interaction=candidate;_active=group;Error="";return true;
+            _interaction=candidate;_active=group;_pendingActivate=null;Error="";return true;
         }
         finally{_activating=false;}
+    }
+    private bool Activate(string group)
+    {
+        if(_disposed||_activating||_accepting||!_controls.IsLoaded||!_controls.IsVisible||!_controls.IsLocalDrawing(group))return false;
+        if(!FrameCurrent(_generation))AcquireFrame(interactive:true);
+        if(ActivateCore(group))return true;
+        // P1 一击命中：显示图不是输入图时本轮借帧被切换放弃（宿主 EnsureRoiDisplayInput），
+        // 记录待激活；显示切换完成自动重建后由 CompletePendingActivation 补齐，无需再次点击。
+        _pendingActivate=group;
+        return false;
+    }
+    private void CompletePendingActivation()
+    {
+        if(_disposed||_pendingActivate is not {} group)return;
+        if(!_controls.IsLocalDrawing(group)){_pendingActivate=null;return;}
+        ActivateCore(group);
     }
     private RoiEditAcceptance Accept(string group,RoiEditStamp expected,RoiEditProposal proposal)
     {
@@ -239,6 +255,7 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
         var mode=PreviewMode();var previewChanged=inspection!=_localInspection||mask!=_localMask||mode!=_observedPreviewMode;_observedPreviewMode=mode;
         if(inspection==_localInspection&&mask==_localMask){if(previewChanged)QueuePreview();Notify();return;}
         _localInspection=inspection;_localMask=mask;
+        _pendingActivate=null;
         CapturePendingEditors();
         if(_active is {} group&&!_controls.IsLocalDrawing(group))
         {var old=_interaction;_interaction=null;_active=null;old?.Dispose();}
@@ -293,7 +310,7 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
     }
     public void Dispose()
     {
-        if(_disposed)return;_disposed=true;_controls.Changed-=OnModesChanged;
+        if(_disposed)return;_disposed=true;_pendingActivate=null;_controls.Changed-=OnModesChanged;
         _imageField.Changed-=RefreshFrame;if(_source is not null)_source.Changed-=RefreshFrame;Changed=null;
         Run(new Action[]{DisposePreview,RetireFrame}.Concat(_editors.Values.Select(editor=>(Action)(()=>{editor.PendingChanged-=Notify;editor.Dispose();}))));
     }

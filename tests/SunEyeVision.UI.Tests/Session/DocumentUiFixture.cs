@@ -113,6 +113,7 @@ internal static class UiRuntime
         catch(TargetInvocationException error) when(error.InnerException is not null){ExceptionDispatchInfo.Capture(error.InnerException).Throw();throw;}
     }
     internal static T? Field<T>(object target,string name)=>(T?)target.GetType().GetField(name,BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(target);
+    internal static T? Prop<T>(object target,string name)=>(T?)target.GetType().GetProperty(name,BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public)!.GetValue(target);
     internal static IEnumerable<T> Visuals<T>(DependencyObject parent) where T:DependencyObject
     {
         if(parent is T match)yield return match;

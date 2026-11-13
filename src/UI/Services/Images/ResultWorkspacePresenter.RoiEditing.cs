@@ -95,11 +95,14 @@ internal sealed partial class ResultWorkspacePresenter
             if(!Owns()||borrowed.Stamp!=publication.Stamp)return null;
             var accepted=borrowed;
             // P2（原件 UpdateROI 语义，ModuleResultView.xaml.cs.pending:604-608）：租约货币
-            // 锚定“同一图像帧仍是该视口的呈现帧”，与变量路径一致——结果工作区刷新
-            // （调试执行/参数编辑/发布更新）不销毁 ROI 会话，仅图像对象变化时失效重投影；
+            // 锚定"同一回执仍是该视口的呈现帧"，与变量路径一致——回执全等含 Owner/Epoch/
+            // Frame/Coordinates，视口重绑定（执行/刷新后 BindImage epoch+1）即失效，
+            // 由 BlobLocalRoiOwner.RefreshFrame 自动重建会话把既有形状重投影到新呈现，
             // 不再锚定刷新代次（epoch），避免绘制中途会话反复死亡（roibtn.log 实锤）。
+            // 不能只比 Frame 身份：BeginRoiEditing 校验完整回执 Current(receipt)，
+            // 只比帧会让"活租约撞失效回执"在点击绘制时抛不一致异常。
             var lease=new NativeRoiFrameLease(accepted.Image,accepted.Viewport,accepted.Receipt,
-                ()=>!_disposed&&pane.CurrentFrame is {} current&&current.Frame==accepted.Receipt.Frame,()=>
+                ()=>!_disposed&&pane.CurrentFrame==accepted.Receipt,()=>
                 {try{accepted.Dispose();}finally{DisposePrivate();if(ReferenceEquals(_roiPresentation,presentation))_roiPresentation=null;}});
             borrowed=null;transferred=true;_main.RoiDrawBlockReason=null;return lease;
         }

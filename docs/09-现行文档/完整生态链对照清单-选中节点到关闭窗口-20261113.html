@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8"/>
+<title>完整生态链对照清单（选中节点→打开→执行→显示→关闭）-20261113</title>
+<style>
+ body{font-family:"Microsoft YaHei",sans-serif;max-width:1240px;margin:24px auto;padding:0 16px;line-height:1.65;color:#222}
+ h1{font-size:22px;border-bottom:2px solid #2a6496;padding-bottom:8px}
+ h2{font-size:17px;margin-top:28px;border-left:4px solid #2a6496;padding-left:10px}
+ table{border-collapse:collapse;width:100%;margin:10px 0;font-size:12.5px}
+ th,td{border:1px solid #bbb;padding:5px 8px;vertical-align:top;text-align:left}
+ th{background:#eaf0f6}
+ code{background:#f4f4f4;padding:1px 4px;border-radius:3px;font-size:12px}
+ .ok{color:#2a7a2a;font-weight:bold}
+ .diff{color:#b8860b;font-weight:bold}
+ .bad{color:#b03030;font-weight:bold}
+ .todo{color:#555;font-weight:bold}
+ .anchor{color:#666;font-size:12px}
+ .closed{background:#f0f7f0}
+</style>
+</head>
+<body>
+<h1>完整生态链对照清单：选中节点 → 打开窗口 → 编辑 → 执行 → 显示 → ROI → 关闭 → 保存重开</h1>
+<p><b>日期</b>：2026-11-13　<b>范围</b>：UI 交互 + 算法执行 + 数据流 + 资源生命周期，端到端八环。<br/>
+<b>证据源</b>：原厂保留源 *.pending（框架层；<b>算法体（VmAlgorithm 内部）闭源不可见，如实标注</b>）+ 本方源码。<br/>
+<b>状态</b>：<span class="ok">✅对齐</span>｜<span class="diff">⚠️语义适配（差异已登记）</span>｜<span class="bad">❌未闭口</span>｜<span class="todo">⚪待验收/待取证</span><br/>
+<b>关联</b>：<code>交互逻辑对照清单-20261113.html</code>（交互面总表）、<code>ROI完整生态链逆向对照与优化方案-20261113.html</code>。</p>
+
+<h2>环 1：选中节点（流程树 → 模块上下文）</h2>
+<table>
+<tr><th>环节</th><th>原厂实现（锚点）</th><th>本方实现（锚点）</th><th>状态</th></tr>
+<tr><td>选中联动</td><td>MainViewControl.xaml:33 <code>ModuleSource={Binding SelectedItem}</code>；选中即绑定模块，结果视图经 DoSourceChanged 重建 decorator（ModuleResultView:529）</td><td>SelectedNode → SelectedEditorContext → RefreshEditorDebugResult（MainWindowEditorDebug.cs:25）；结果工作区按 DisplayUnchanged 决定重建/跳过</td><td class="diff">⚠️ 原件每次选中重建 decorator；本方按数据一致性跳过（防闪烁，证据 VM调试窗口结果视口更新路径-20261112.json）——语义适配已登记</td></tr>
+<tr><td>参数页随选中切换</td><td>ModuleSource 绑定驱动参数页整页重建</td><td>SelectedNode 变化 → BindDraft/BindLocalEditors 重建行</td><td class="ok">✅</td></tr>
+</table>
+
+<h2>环 2：打开窗口（调试上下文构建）</h2>
+<table>
+<tr><th>环节</th><th>原厂实现（锚点）</th><th>本方实现（锚点）</th><th>状态</th></tr>
+<tr><td>窗口打开</td><td>双击模块 → 参数窗口（IsOpenParams=true）→ SetRoiVisible（:2252）；结果视图继续显示</td><td>OpenDebugWindowCommand → RuntimeToolEditorWindow → ConfigureDebug（RuntimeNodeConfigurationControl.cs:72）→ ProductionEditorDebug 创建</td><td class="ok">✅</td></tr>
+<tr><td>草稿构建</td><td>参数对象即模块配置（无草稿概念，编辑即写参数对象）</td><td>context.PreparedDraft（草稿与正式隔离，提交边界写回）</td><td class="diff">⚠️ 本方增加草稿隔离层（安全边界设计，登记为语义适配）</td></tr>
+<tr><td>打开不动结果</td><td>图像仅在对象变化时重设（ImageDataSource 守卫，ModuleDisplayDecorator:524）</td><td>DisplayUnchanged 一致性跳过（Opening 用例）</td><td class="ok">✅</td></tr>
+</table>
+
+<h2>环 3：参数编辑与写回</h2>
+<table>
+<tr><th>环节</th><th>原厂实现（锚点）</th><th>本方实现（锚点）</th><th>状态</th></tr>
+<tr><td>编辑生效</td><td>P_ValueChanged 即写参数对象并重绘（:473-498）；无"未提交"概念</td><td>行宿主校验 → 草稿 ApplyFields；正式配置仅在 TryCommitEditor 提交边界写回</td><td class="diff">⚠️ 草稿隔离适配（同环2）</td></tr>
+<tr><td>输入页图像改选</td><td>OnRelatedIOChanged 切显示（:500-524）</td><td>IMAGE 输入写回 → _debugResultChanged → EditorRelatedImage 联动</td><td class="ok">✅</td></tr>
+<tr><td>其它输入写回</td><td>参数值回调只重绘（P_ValueChanged）</td><td>ResultDisplayEdited 重绘，不失效会话</td><td class="ok">✅</td></tr>
+</table>
+
+<h2>环 4：执行（算法侧实现）</h2>
+<table>
+<tr><th>环节</th><th>原厂实现（锚点）</th><th>本方实现（锚点）</th><th>状态</th></tr>
+<tr><td>执行入口</td><td><code>vmProcedure.Run(null, bIsWait:false)</code>（ModuleResultView:1974/2015）→ 异步；算法体在 VmAlgorithm 内部（闭源不可见）</td><td>RunDebugAsync/StartContinuousAsync（ProductionEditorDebug.cs:48）→ scope.Run → BlobSession.ExecuteAsync（BlobSession.cs:18）</td><td class="ok">✅ 框架对齐；算法体为本方 HALCON 对标实现</td></tr>
+<tr><td>算法参数读取</td><td>算法经参数对象 GetValue 读取（框架约定）</td><td>invocation.Settings（BlobSettings 强类型）+ Fields.Read</td><td class="diff">⚠️ 本方强类型设置对象（安全边界设计）</td></tr>
+<tr><td>图像输入消费</td><td>输入 IO 关联图像对象（关联 IO 机制）</td><td>invocation 输入 input.image（ReferenceSetting 引用解析，BlobTool.cs:56）</td><td class="ok">✅</td></tr>
+<tr><td>ROI 区域消费</td><td>ROI 形状对象经算法参数读取（UpdateROI 同源）</td><td>input.roi 记录（本地区域/继承）经 BlobRoiInheritance 物化</td><td class="ok">✅</td></tr>
+<tr><td>执行输出</td><td>算法写输出参数对象 → 回调携带（IMVS_MODULE_WORK_STAUS + 数据）</td><td>BlobOutput（BlobSchema.Outputs 全端口）→ ToolOutcome</td><td class="ok">✅</td></tr>
+<tr><td>状态/计数</td><td>ExecuteCount、模块状态端口</td><td>ModuleStatusPort/执行计数（BlobSchema）</td><td class="ok">✅</td></tr>
+<tr><td>失败/取消</td><td>异常→日志；无独立失败语义（框架层）</td><td>ToolOutcome.Failed（BLOB_* 错误码）</td><td class="diff">⚠️ 本方错误码语义（安全边界）</td></tr>
+</table>
+
+<h2>环 5：结果发布与呈现</h2>
+<table>
+<tr><th>环节</th><th>原厂实现（锚点）</th><th>本方实现（锚点）</th><th>状态</th></tr>
+<tr><td>回调渲染</td><td>OnModuleCallBackArrived/AsyncWorkStatusCallBack → RenderThreadPool.AsyncRun 渲染（:686）→ UpdateShapesWithCallBackData</td><td>发布变更 → ResultWorkspaceChanged → presenter.Refresh → CaptureNativeImageSources → Present</td><td class="ok">✅</td></tr>
+<tr><td>图像呈现</td><td>ImageDataSource 守卫+SelectedImage 当前值（UpdateVMResultShow :1127）</td><td>DisplayUnchanged+Present（pane.CurrentFrame）</td><td class="ok">✅</td></tr>
+<tr><td>图形/数据呈现</td><td>DrawCurModuleUIResult 按类型分发（形状/文本/表格）</td><td>shape/data 投影（结果树+视口叠加）</td><td class="diff">⚠️ 数据族控件（OKNG/表格/曲线）未逐项对照（清单 E3）</td></tr>
+<tr><td>刷新后 ROI</td><td>UpdateROI 重投影（:604-608）</td><td>租约帧锚定+重投影（47cd5b1b6）</td><td class="ok">✅</td></tr>
+</table>
+
+<h2>环 6：ROI 数据流（绘制→写回→执行消费）</h2>
+<table>
+<tr><th>环节</th><th>原厂实现（锚点）</th><th>本方实现（锚点）</th><th>状态</th></tr>
+<tr><td>绘制资格</td><td>IsCanDrawROI：显示图=输入图（ModuleDisplayDecorator:446-480）</td><td>交互借帧阻断+RoiDrawBlockReason 提示（4972ba4a2）</td><td class="ok">✅</td></tr>
+<tr><td>不可绘反馈</td><td>RoiDrawTips 弹窗（:2514-2521）</td><td>ShowInteractionFeedback（RoiDrawTips 文案）</td><td class="ok">✅</td></tr>
+<tr><td>形状归属</td><td>参数页 ROIList ⇄ 结果视图共享对象（ROISelecterHolder:15-193）</td><td>NativeRoiSession ⇄ 草稿 input.roi 记录</td><td class="diff">⚠️ 本方经草稿记录中转（草稿隔离适配）</td></tr>
+<tr><td>绘制→执行</td><td>形状即参数，下次执行直接读取</td><td>绘制→Accept→草稿→提交/调试执行读取</td><td class="ok">✅</td></tr>
+</table>
+
+<h2>环 7：关闭窗口（会话退役与资源释放）</h2>
+<table>
+<tr><th>环节</th><th>原厂实现（锚点）</th><th>本方实现（锚点）</th><th>状态</th></tr>
+<tr><td>关闭触发</td><td>Dispatcher_ShutdownStarted → isclose=true（:618-622）</td><td>CloseAndDrainAsync → window.Closed</td><td class="ok">✅</td></tr>
+<tr><td>渲染资源</td><td>RenderThreadPool.ShutDown（:621）</td><td>StopContinuous → DisposeAsync → 租约/快照/视口释放</td><td class="ok">✅</td></tr>
+<tr><td>显示回退</td><td>decorator 随选中模块保留（无"回退"概念）</td><td>临时显示态退役 → 回正式 SelectedDisplayReference</td><td class="diff">⚠️ 本方临时显示态为本方适配（差异已登记）</td></tr>
+<tr><td>租约清空</td><td>—（无租约概念）</td><td>RuntimeRoiFrameBorrow=null（ImageResultControl:228）</td><td class="ok">✅</td></tr>
+</table>
+
+<h2>环 8：保存重开</h2>
+<table>
+<tr><th>环节</th><th>原厂实现（锚点）</th><th>本方实现（锚点）</th><th>状态</th></tr>
+<tr><td>持久化</td><td>模块参数对象序列化（保存链）</td><td>方案文档持久化（SelectedDisplayReference/字段设置）</td><td class="diff">⚠️ 载体不同（本方方案文档）</td></tr>
+<tr><td>重开恢复</td><td>参数对象反序列化 → 显示按持久选择</td><td>重开 → 持久选择恢复 → Confirmed_blob_roi 用例</td><td class="ok">✅</td></tr>
+</table>
+
+<h2>九、缺口与待办汇总（按本链）</h2>
+<table>
+<tr><th>#</th><th>缺口</th><th>说明</th><th>优先级</th></tr>
+<tr><td>1</td><td>数据族控件对照</td><td>OKNG/表格/曲线/标签阵列呈现交互未逐项对照（环5）</td><td>中</td></tr>
+<tr><td>2</td><td>float 滑条推值</td><td>字号值链路污染（EndValueF 单值模式），真实程序取证后修</td><td>高</td></tr>
+<tr><td>3</td><td>P1 人工验收</td><td>阻断提示→切显示→绘制→跨刷新，全链人工走查</td><td>高</td></tr>
+<tr><td>4</td><td>草稿隔离差异确认</td><td>本方草稿层为安全边界设计，与原厂"编辑即写参数对象"的差异需用户确认接受</td><td>中</td></tr>
+<tr><td>5</td><td>测试隔离污染</td><td>ParameterTemplateInteractionTests 批量污染（独立历史问题）</td><td>低</td></tr>
+</table>
+<p class="anchor">原厂算法体（VmAlgorithm 内部）闭源不可见——环 4 的算法内部对照以"执行框架与数据流约定"为准，算法实现为本方 HALCON 对标（项目安全边界约定）。</p>
+</body>
+</html>

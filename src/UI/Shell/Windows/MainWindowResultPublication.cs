@@ -109,6 +109,11 @@ public partial class MainWindowViewModel
         if(session is null||node is null||workflowId is null||snapshot.Identity.NodeId!=node.Id||snapshot.SourceWorkflowId!=workflowId)return;
         if(snapshot.Identity.DocumentSessionId!=session.ResultOwnerId&&!ReferenceEquals(CurrentEditorDebugSnapshot,snapshot)&&!IsRetainedEditorDebugSnapshot(snapshot))return;
         if(!IsCurrentPresentedSnapshot(session,workflowId,node,snapshot))return;
+        // 同一已呈现快照：原件按数据变化更新（ModuleResultView.UpdateModuleViewResultShow），
+        // 不退役发布、不重建工作区。配置编辑触发的 RefreshFormalPublishedResult 走 retained 分支
+        // 会重复呈现同一快照，此处短路避免全清重建把已显示的图文层清空。
+        if(_resultPublication is not null&&_resultPublicationSnapshot is {} presented&&presented.Identity==snapshot.Identity)
+            return;
         var epoch=RetireResultPublication();var owner=CaptureResultViewOwner(epoch);
         bool Current()
         {

@@ -166,6 +166,10 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             System.Windows.Data.BindingOperations.SetBinding(Workspace,
                 SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell.CurrentResultContentProperty,
                 new System.Windows.Data.Binding(nameof(MainWindowViewModel.SelectedNodeDataAnalysisControl)){Source=viewModel});
+            System.Windows.Data.BindingOperations.SetBinding(Workspace,
+                SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell.HelpContentProperty,
+                new System.Windows.Data.Binding(nameof(MainWindowViewModel.ResultHelpContent))
+                {Source=viewModel,Mode=System.Windows.Data.BindingMode.OneWay});
             Workspace.CurrentResultSelectionChanged+=OnCurrentResultSelectionChanged;
             OnCurrentResultSelectionChanged(Workspace,EventArgs.Empty);
             foreach (var (property, path) in ResultHistoryBindings)
@@ -209,6 +213,8 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
                 ()=>main?.CloseResultPresentation(),CloseCopyNotice,ReleaseSourceSession,ReleaseWorkspace,
                 ()=>System.Windows.Data.BindingOperations.ClearBinding(Workspace,
                     SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell.CurrentResultContentProperty),
+                ()=>System.Windows.Data.BindingOperations.ClearBinding(Workspace,
+                    SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShell.ResultWorkspaceShell.HelpContentProperty),
                 ()=>Cleanup(ResultHistoryBindings.Select(binding => (Action)(() => System.Windows.Data.BindingOperations.ClearBinding(Workspace, binding.Property)))),
                 _sourceTheme.Dispose,_resultTheme.Dispose,_shellTheme.Dispose});
         }

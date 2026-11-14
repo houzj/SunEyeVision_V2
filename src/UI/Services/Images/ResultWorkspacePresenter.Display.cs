@@ -79,7 +79,16 @@ internal sealed partial class ResultWorkspacePresenter
             bool Attempt()=>!_disposed&&epoch==_epoch&&request==_displayRequest&&attempt==_displayAttempt&&paneGeneration==pane.Generation&&ReferenceEquals(pane.Display,original);
             void ClearOriginal(){if(!Attempt())return;pane.Display=null;original?.Dispose();}
             if(state is null||publication is null||!Current()||pane.Image.CurrentFrame is not {} receipt)
-            {ClearOriginal();continue;}
+            {
+                // A source-navigation refresh can transiently invalidate the
+                // display descriptor while the same publication is still the
+                // current result. Keep the last output scene during that
+                // rebind; execution/publication retirement remains the only
+                // path that removes a completed result.
+                if(state is null&&publication is not null&&ReferenceEquals(pane,_output)&&original is not null)
+                    continue;
+                ClearOriginal();continue;
+            }
             var frozen = state.Geometry;
             // 原件 ModuleResultView.xaml:142 的 ShapeList 始终绑定模块结果，
             // imageListCombobox_SelectionChanged 只在 SelectedValue==null 时清空（:2152-2153）：
@@ -88,8 +97,9 @@ internal sealed partial class ResultWorkspacePresenter
             // 绑定与重声明一律使用当前显示帧的物理帧与坐标域，不做逻辑域相等比较。
             var appearance = state.Appearance;
             var innerPath = appearance.InnerRectangle is { Visible: true } ? state.Descriptor.InnerRectangle : null;
+            var centroidPath = appearance.Centroids is { Visible: true } ? state.Descriptor.Centroid : null;
             var outlinePath = appearance.Outline is { Visible: true } ? state.Descriptor.Outline : null;
-            var showRows = appearance.Graphic.Visible || innerPath is not null || outlinePath is not null;
+            var showRows = appearance.Graphic.Visible || centroidPath is not null || innerPath is not null || outlinePath is not null;
             var roiGroups = frozen?.Groups
                 .Where(group => group.Coverage == ResultGeometryCoverage.Explicit && group.Shapes.Count != 0)
                 .Select(group => (Group:group, Style:RoiStyle(appearance,group.Role)))
@@ -136,9 +146,16 @@ internal sealed partial class ResultWorkspacePresenter
                 var rectangles=new List<NativeMeasuredRectangle>();
                 var geometry=new List<NativeGeometryOverlay>();var texts=new List<NativeTextOverlay>();var ids=new HashSet<long>();long textCharacters=0;
                 var selection = _sceneSelection;
-                var selectedId = selection?.Publication == publication.Stamp
-                    && selection.Targets.Any(target => target.ImageFrame == receipt.Frame && target.Coordinates == receipt.Coordinates)
-                    ? selection.ElementIdentity as long? : null;
+                // A result-row selection is identified by the published element-id.
+                // Its geometry targets are an overlay projection and may carry the
+                // source frame while the current pane is showing the derived frame.
+                // Do not discard a valid row selection merely because those overlay
+                // frames do not compare equal.
+                // Highlight() accepts a selection only after checking the current
+                // publication. Once stored in _sceneSelection, the identity must
+                // survive display-state rebinding instead of being revalidated by
+                // a second stamp comparison here.
+                var selectedId = selection?.ElementIdentity as long?;
                 DeclaredValueReader Member(DeclaredValueReader row,ResultFieldPath path)=>row.GetField(path.MemberFieldPath.Last());
                 var rowCount=showRows?rows!.Count:0;
                 for(var i=0;i<rowCount;i++)
@@ -150,7 +167,11 @@ internal sealed partial class ResultWorkspacePresenter
                     // 形状按像素坐标绘制到当前背景上（原件同义），源帧取当前显示帧。
                     var shapeFrame=receipt.Frame;
                     var passed=Member(row,state.Descriptor.Passed).GetScalar<bool>();
-                    var selectedColor = id == selectedId ? state.Descriptor.SelectedRectangleColor : null;
+                    var selected = id == selectedId;
+                    var selectedColor = selected ? state.Descriptor.SelectedRectangleColor : null;
+                    // 保留原厂黄色选中语义，同时提高线宽，避免在绿色正常结果
+                    // 和复杂背景上难以辨认当前结果行。
+                    var selectedWidth = selected ? Math.Max(appearance.Graphic.Width + 1, 3) : appearance.Graphic.Width;
                     if(appearance.Graphic.Visible)
                     {
                         var bounds=Member(row,state.Descriptor.Rectangle);
@@ -160,7 +181,17 @@ internal sealed partial class ResultWorkspacePresenter
                             bounds.GetField("width").GetScalar<double>(),bounds.GetField("height").GetScalar<double>(),
                             bounds.GetField("angle-degrees").GetScalar<double>(),
                             Color(selectedColor ?? (passed?appearance.Graphic.Ok:appearance.Graphic.Ng)),
-                            appearance.Graphic.Width,appearance.Graphic.Opacity));
+                            selectedWidth,appearance.Graphic.Opacity));
+                    }
+                    if (centroidPath is not null && appearance.Centroids is {} centroidStyle)
+                    {
+                        var centroid = Member(row, centroidPath);
+                        if (!centroid.IsMissing && !centroid.IsNull && centroid.GetGeometry() is PointGeometry point)
+                            geometry.Add(new(receipt.Frame,
+                                new PointGeometry(receipt.Coordinates, point.Point),
+                                Color(selectedColor ?? (passed ? centroidStyle.Ok : centroidStyle.Ng)),
+                                selected ? Math.Max(centroidStyle.Width + 1, 3) : centroidStyle.Width, centroidStyle.Opacity,
+                                IncludeMeasurements:false));
                     }
                     if (innerPath is not null && appearance.InnerRectangle is {} style)
                     {

@@ -65,7 +65,7 @@ public sealed class ImageSourceOutput : IToolOutput,IDisposable,IToolResultRecor
         if(_values.Contains(Image))
         {
             var image = _values.Get<RecordValue>(Image);
-            yield return $"Image:Width:{image.Get<long>(ImageWidth)} Height:{image.Get<long>(ImageHeight)}";
+            yield return $"读取图像:图像宽度:{image.Get<long>(ImageWidth)} 图像高度:{image.Get<long>(ImageHeight)}";
         }
         if (_values.Contains(SourceKind)&&_values.Get<string>(SourceKind) == "camera"&&_values.Contains(FrameId) && _values.Get<string>(FrameId) is { Length: > 0 } frameId)
             yield return $"FrameNum:{frameId}";

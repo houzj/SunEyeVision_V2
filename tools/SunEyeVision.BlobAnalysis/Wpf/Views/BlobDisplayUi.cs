@@ -33,7 +33,7 @@ internal static class BlobDisplayUi
         visibilitySources.Add(Id(BlobResultDisplay.ReferencePoint,"visible"),pointVisibility);
         visibilitySources.Add(Id(BlobResultDisplay.RunPoint,"visible"),pointVisibility);
         return options with {TextExpressions=expressions, FieldVisibilitySources=visibilitySources,
-            GraphicDisplays=new[]{graphic,BlobResultDisplay.InnerRectangle,BlobResultDisplay.Inspection,BlobResultDisplay.ReferencePoint,
+            GraphicDisplays=new[]{graphic,BlobResultDisplay.Centroids,BlobResultDisplay.InnerRectangle,BlobResultDisplay.Inspection,BlobResultDisplay.ReferencePoint,
                 BlobResultDisplay.RunPoint,BlobResultDisplay.Mask,BlobResultDisplay.Annulus}
                 .Select(group=>new SunEyeVision.Plugin.Wpf.Fields.NativeGraphicDisplayOptions(group,Id(group,"visible"),Id(group,"ok"),Id(group,"ng"),Id(group,"opacity"),Id(group,"width"))).ToArray(),
             VisibilityDisplays=new[]{new SunEyeVision.Plugin.Wpf.Fields.NativeVisibilityDisplayOptions(Id(text,"visible")),new SunEyeVision.Plugin.Wpf.Fields.NativeVisibilityDisplayOptions(Id(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Outline,"visible"))},

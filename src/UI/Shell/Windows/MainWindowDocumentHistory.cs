@@ -16,7 +16,7 @@ public partial class MainWindowViewModel
         WorkflowTabViewModel.UnbindDocumentManager();
         if(_documentEventOwner is {} manager)manager.SessionChanged-=FormalDocumentSessionChanged;
         _documentEventOwner=null;UnbindFormalSession();
-        ReleaseProductionEditors();ClearFormalImageSourceSelection();ReleaseActiveResultView();RetireResultPublication();
+        ReleaseProductionEditors();ClearRetainedEditorDebugSnapshot();ClearFormalImageSourceSelection();ReleaseActiveResultView();RetireResultPublication();
         // 方案会话仍持有正式结果/执行代次时，插件目录不能退役。关闭主窗口时
         // 由同一会话所有者先丢弃未保存编辑并释放会话资源，再进入目录排空。
         // 这只用于宿主退出（ReleaseDocumentHost），不改变方案切换语义。
@@ -32,7 +32,7 @@ public partial class MainWindowViewModel
     private void FormalDocumentSessionChanged(object? sender,DocumentSessionReplacement change)
     {
         if(_documentHostReleased)return;
-        UnbindFormalSession();ReleaseProductionEditors();ClearFormalImageSourceSelection();ReleaseFormalExecution();SelectedNode=null;
+        UnbindFormalSession();ReleaseProductionEditors();ClearRetainedEditorDebugSnapshot();ClearFormalImageSourceSelection();ReleaseFormalExecution();SelectedNode=null;
         BindDocumentHistory();RefreshFormalImageSourceSelection();UpdateCurrentSolutionInfo();
     }
     private void BindDocumentHistory()
@@ -80,6 +80,11 @@ public partial class MainWindowViewModel
     }
     private void RefreshChangedDocumentViews(DocumentChangeSet change)
     {
+        // Image-source policy commits notify the session before their display
+        // preservation scope is accepted. Do not retire the current result in
+        // that window. ImageSourceProjectionBinding completes the acceptance
+        // and the main callback decides whether a formal refresh is needed.
+        var imageSourceEditInProgress=ActiveImageSourceBinding?.Source.IsAcceptingEdit==true;
         foreach(var editor in _productionEditors.ToArray())
             if(!ReferenceEquals(editor,_editorDebugContext)&&!editor.IsValid)editor.Discard();
         // 提交会重建节点实例：无条件按稳定 Id 把选择重绑定到当前实例。
@@ -89,9 +94,11 @@ public partial class MainWindowViewModel
             var rebound=FindCurrentNode(selected.Id);
             if(rebound is null)SelectedNode=null;
             else if(!ReferenceEquals(rebound,selected))SelectedNode=rebound;
-            else RefreshFormalPublishedResult();
+            else if(!imageSourceEditInProgress)RefreshFormalPublishedResult();
         }
-        RefreshFormalImageSourceSelection();NotifyResultDisplayChanged();foreach(var tab in WorkflowTabViewModel.Tabs)tab.QueueRootReadiness();UpdateCurrentSolutionInfo();UpdateUndoRedoCommands();
+        RefreshFormalImageSourceSelection();
+        if(!imageSourceEditInProgress)NotifyResultDisplayChanged();
+        foreach(var tab in WorkflowTabViewModel.Tabs)tab.QueueRootReadiness();UpdateCurrentSolutionInfo();UpdateUndoRedoCommands();
         OnPropertyChanged(nameof(CanUndoRootWorkspace));OnPropertyChanged(nameof(CanRedoRootWorkspace));OnPropertyChanged(nameof(EditHistoryLocations));
     }
     internal void SetFormalDisplaySelection(SunEyeVision.Domain.Workflows.NodeDefinition node,string? reference)
@@ -124,7 +131,10 @@ public partial class MainWindowViewModel
         if(_documentHostReleased||!ReferenceEquals(sender,DocumentManager.CurrentSession))return;
         if(_formalImageInputs is not null&&sender is DocumentSession session)RefreshFormalImageReadReceipts(session);
         if(SelectedNode?.Id==result.Node.NodeId&&WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId==result.Node.WorkflowId)
+        {
+            ClearRetainedEditorDebugSnapshot();
             RefreshFormalPublishedResult();
+        }
         ResultWorkspaceChanged?.Invoke();
     }
     // Full history navigation has no public session contract yet; Undo/Redo use the actual session.

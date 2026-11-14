@@ -165,8 +165,6 @@ public sealed class DocumentCanvasProjection : IDisposable
         // A removed root can still have a live tab until the root collection observer
         // disposes it. Never resolve its id to a replacement root in that interval.
         if (!_session.GetWorkflows().Any(flow => ReferenceEquals(flow, _workflow))) return;
-        foreach (var key in change.ExecutionInvalidatedNodes.Where(key => key.WorkflowId == _workflowId))
-            if (_nodes.FirstOrDefault(node => node.Id == key.NodeId) is { } node) RefreshRunState(node);
         if (change.ChangedNodes.Any(x => x.Identity.WorkflowId == _workflowId) ||
             change.RemovedNodes.Any(x => x.Identity.WorkflowId == _workflowId) ||
             change.ChangedConnections.Any(x => x.WorkflowId == _workflowId))
@@ -209,10 +207,18 @@ public sealed class DocumentCanvasProjection : IDisposable
     {
         var actualNodes = _session.GetNodes(_workflowId);
         var actualEdges = _session.GetConnections(_workflowId);
-        var existing = _nodes.ToDictionary(x => x.Definition, (IEqualityComparer<NodeDefinition>)ReferenceEqualityComparer.Instance);
+        // A committed parameter edit replaces the NodeDefinition instance while
+        // preserving the VM node identity. Reuse the canvas projection by stable
+        // id so the last execution state remains visible until a new execution
+        // publishes a replacement result.
+        var existing = _nodes.ToDictionary(x => x.Id, StringComparer.Ordinal);
         var nextNodes = actualNodes.Select(node =>
         {
-            if (existing.TryGetValue(node, out var projection)) return projection;
+            if (existing.TryGetValue(node.Id, out var projection))
+            {
+                projection.Rebind(node);
+                return projection;
+            }
             projection = new CanvasNodeProjection(node, () => _session.GetNodeCatalog(_workflowId, node));
             RefreshRunState(projection);
             RefreshInputReadiness(projection);
@@ -290,13 +296,21 @@ public enum CanvasNodeRunState { None, Passed, Rejected, Failed, Cancelled }
 
 public sealed class CanvasNodeProjection : INotifyPropertyChanged, ICanvasToolIconSource
 {
+    private NodeDefinition _definition;
     private bool _selected, _editingName;
     private string _renameBuffer = string.Empty;
     private readonly Func<SunEyeVision.Plugin.Contracts.ToolCatalogDescriptor?>? _catalog;
-    public CanvasNodeProjection(NodeDefinition definition) => Definition = definition;
+    public CanvasNodeProjection(NodeDefinition definition) => _definition = definition;
     internal CanvasNodeProjection(NodeDefinition definition, Func<SunEyeVision.Plugin.Contracts.ToolCatalogDescriptor?> catalog)
-    { Definition = definition; _catalog = catalog; }
-    public NodeDefinition Definition { get; }
+    { _definition = definition; _catalog = catalog; }
+    public NodeDefinition Definition => _definition;
+    internal void Rebind(NodeDefinition definition)
+    {
+        ArgumentNullException.ThrowIfNull(definition);
+        if (ReferenceEquals(_definition, definition)) return;
+        _definition = definition;
+        Notify(string.Empty);
+    }
     public SunEyeVision.Plugin.Contracts.ToolCatalogDescriptor? Catalog
     {
         get { try { return _catalog?.Invoke(); } catch (InvalidOperationException) { return null; } }

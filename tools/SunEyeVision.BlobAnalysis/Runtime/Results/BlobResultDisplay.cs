@@ -9,6 +9,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 public static class BlobResultDisplay
 {
     public const string Graphic="display.blob";
+    public const string Centroids="display.centroids";
     public const string InnerRectangle="display.inner-rectangle";
     public const string ReferencePoint="display.reference-point", RunPoint="display.run-point";
     public const string Text="display.text";
@@ -21,7 +22,8 @@ public static class BlobResultDisplay
     public static ResultDisplayDescriptor Descriptor {get;}=new(new(BlobSchema.BlobsPort),new(BlobSchema.BlobsPort,new[]{"element-id"}),
         new(BlobSchema.BlobsPort,new[]{"oriented-bounds"}),new(BlobSchema.BlobsPort,new[]{"region"}),
         new(BlobSchema.BlobsPort,new[]{"area"}),new(BlobSchema.BlobsPort,new[]{"judgment-passed"}),new(BlobSchema.BlobsPort,new[]{"outline-points"}),
-        new(BlobSchema.BlobsPort,new[]{"inner-rectangle"}), selectedRectangleColor:new(255,255,0));
+        new(BlobSchema.BlobsPort,new[]{"inner-rectangle"}), selectedRectangleColor:new(255,255,0),
+        centroid:new(BlobSchema.BlobsPort,new[]{"centroid"}));
     public static InputValues Defaults()=>new(Schema.Inputs,Definitions.ToDictionary(item=>item.Port.Id,item=>(object?)item.Value,StringComparer.Ordinal));
     private static IReadOnlyList<Definition> Build()
     {
@@ -37,7 +39,7 @@ public static class BlobResultDisplay
                 DialogGroup:dialog,DialogTitle:dialog is null?null:dialog switch
                 {
                     InnerRectangle=>"最大内接矩形",Inspection=>"检测区域",Mask=>"屏蔽区多边形",Annulus=>"扇环检测区域",
-                    ReferencePoint=>"基准点",RunPoint=>"运行点",_=>"Blob"
+                    Centroids=>"质心",ReferencePoint=>"基准点",RunPoint=>"运行点",_=>"Blob"
                 },DialogPrimary:primary)},value));
         }
         var ok=PresentationDeclarations.Color(102,255,0);var ng=PresentationDeclarations.Color(255,0,0);
@@ -50,6 +52,7 @@ public static class BlobResultDisplay
             Add(Field(group,"width"),"线宽","图像显示",DataType.Number,width,1,10,1,group);
         }
         GraphicFields(Graphic,"Blob",ok);
+        GraphicFields(Centroids,"质心",ok,width:1);
         GraphicFields(InnerRectangle,"最大内接矩形",ok);
         GraphicFields(Inspection,"检测区域",PresentationDeclarations.Color(0,0,255));
         Add(Field(Outline,"visible"),"轮廓点","图像显示",DataType.Boolean,true);
@@ -94,7 +97,8 @@ public static class BlobResultDisplay
             Style(Annulus) with { ShowMeasurements = true },
             new(Read<bool>(Field(Outline,"visible")),new(102,255,0),new(255,0,0)),Style(InnerRectangle),
             Style(ReferencePoint) with { FixedJudgment = true, PointLabel = "Fixture BasePoint" },
-            Style(RunPoint) with { FixedJudgment = true, PointLabel = "Fixture RunPoint" });
+            Style(RunPoint) with { FixedJudgment = true, PointLabel = "Fixture RunPoint" },
+            Style(Centroids));
     }
     public static void ValidateDisplayReference(OutputReference reference,bool numeric=false)
     {

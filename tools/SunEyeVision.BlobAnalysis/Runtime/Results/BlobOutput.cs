@@ -22,9 +22,8 @@ public sealed class BlobOutput : IToolOutput, IDisposable, IToolResultGeometryOu
     private int _disposed;
     public IEnumerable<string> DescribeResultRecords()
     {
-        yield return $"Module Status:{ResultProjection.ModuStatus}Blob Numer{ResultProjection.BlobNum}Total Area{ResultProjection.TotalArea}";
         foreach (var item in Measurements)
-            yield return $"BlobInfo{item.Label}:Area{(float)item.Area},Circumference{(float)item.Perimeter},CentroidX{(float)item.CentroidX},CentroidY{(float)item.CentroidY},Angle{(float)item.OrientedBounds.AngleDegrees}";
+            yield return $"Blob信息{item.Label}:面积{(float)item.Area},周长{(float)item.Perimeter},质心X{(float)item.CentroidX},质心Y{(float)item.CentroidY},角度{(float)item.OrientedBounds.AngleDegrees}";
     }
     internal BlobOutput(BlobSettings settings,BlobThresholdExecutionSnapshot threshold,IEnumerable<Diagnostic> diagnostics,IEnumerable<BlobSelectionEntry> selection, IEnumerable<BlobMeasurement> measurements, IReadOnlyImage? blobImage, IReadOnlyImage? binary,
         IReadOnlyImage? maskImage, IReadOnlyRegion region, IReadOnlyRegion ok, IReadOnlyRegion ng, double whiteRatio,

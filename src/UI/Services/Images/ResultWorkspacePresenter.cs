@@ -40,6 +40,7 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
     private ResultViewportFullscreenScope? _fullscreen;
     private long _epoch,_layerRevision,_selectionGeneration,_outputChoiceRevision;
     private bool _disposed,_refreshing,_refreshAgain,_refreshQueued,_restoringInput,_restoringOutput;
+    private System.Windows.Threading.DispatcherOperation? _roiRebind;
     private string? _inputKey,_outputKey;
     private string? _previewPath;
     private string? _variableOutputKey;
@@ -63,6 +64,7 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         _doubleImage.AddValueChanged(shell,DoubleImageChanged);
         main.ResultWorkspaceChanged+=Refresh;main.ResultWorkspaceSelectionChanged+=Highlight;
         main.ResultDisplayChanged+=ResultDisplayChanged;
+        shell.ResultTabSelectionChanged+=ResultTabSelectionChanged;
         main.ResultWorkspaceGraphicsCleared+=ClearGraphics;
         main.SourceDisplayPreservationPreparing+=PrepareSourceDisplayPreservation;
         main.ResultWorkspaceRootSettled+=RootSettled;
@@ -95,6 +97,10 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
             try{Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}
             throw;
         }
+    }
+    private void ResultTabSelectionChanged(object? sender,EventArgs args)
+    {
+        if(!_disposed)_main.NotifyRoiFrameAvailabilityChanged();
     }
     private void DoubleImageChanged(object? sender,EventArgs args)
     {
@@ -169,7 +175,6 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
     /// <summary>双图输入项选择：关联输入变化时跟随新输入，否则保持当前合法输入。</summary>
     private ResultWorkspaceImageSource? ResolveInputChoice(ResultWorkspaceImagePlan? previous,ResultWorkspaceImagePlan plan)
     {
-        if(!_shell.IsDoubleImage)return null;
         var relatedImageChanged=previous is not null&&previous.PrimaryInputKey!=plan.PrimaryInputKey;
         var inputKey=relatedImageChanged?plan.PrimaryInputKey:_inputKey;
         return plan.InputSources.FirstOrDefault(source=>source.Key==inputKey)??plan.InputSources.FirstOrDefault();
@@ -260,19 +265,35 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         ++_selectionGeneration;
         bool Current()=>!_disposed&&epoch==_epoch&&ReferenceEquals(_plan,plan)&&pane.Generation==paneGeneration;
         if(!Current())return;
-        pane.ClearDisplay();
+        // The output pane is a shared result surface: changing the selected
+        // image source replaces only its background frame. Keep the current
+        // result scene alive until the new frame has a valid receipt and the
+        // replacement scene is ready; disposing it here creates the observed
+        // image+table-without-graphics gap during source navigation.
+        var preserveResultScene=ReferenceEquals(pane,_output);
+        if(!preserveResultScene)pane.ClearDisplay();
         if(!Current())return;
         if(source is null||source.Publication is null&&source.VariableImage is null){pane.Image.ClearUnlessRetained();return;}
         if(!source.HasImageValue){pane.Image.Clear();return;}
         bool SourceCurrent()=>Current()&&source.Current()&&Current();
-        var preserveShapeLayers=ReferenceEquals(pane,_output);
+        var preserveShapeLayers=preserveResultScene;
         var presented=source.VariableImage is {} variable
             ? pane.Image.TryPresentPreview(variable,SourceCurrent,out var error,filePreview:false,preserveShapeLayers:preserveShapeLayers)
             : pane.Image.TryPresent(source.Publication!,source.Reference!,source.Reference!.ScopeId!,SourceCurrent,out error,preserveShapeLayers);
         if(!presented)
             _main.AddLog("图像来源未显示："+source.DisplayName+"，"+error);
         else if(Current())RefreshImageName(pane,source);
+        if(presented&&Current())QueueRoiRebind();
         if(Current())QueueResultDisplay();
+    }
+    private void QueueRoiRebind()
+    {
+        _roiRebind?.Abort();
+        _roiRebind=_shell.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ContextIdle,new Action(() =>
+        {
+            _roiRebind=null;
+            if(!_disposed&&!_refreshing&&_plan is not null)_main.NotifyRoiFrameAvailabilityChanged();
+        }));
     }
     private static void SetImageName(Pane pane,string? name)
         =>pane.Image.Viewport.View.SetCurrentValue(
@@ -313,6 +334,7 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         // 只在真正重建（相机/结果/作用域变化，epoch 自增）时失效。
         if(_refreshing){_refreshAgain=true;return;}
         _refreshing=true;
+        var roiFrameAvailabilityChanged=false;
         try
         {
             do
@@ -330,6 +352,10 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
                 // （如双击打开调试窗口附加编辑上下文）。
                 if(DisplayUnchanged(previous,plan)){plan.Dispose();continue;}
                 RetireRoiPresentation();
+                // VM 在结果图像刷新完成后调用 ModuleSource.UpdateROI，让既有 ROI
+                // 重投影到新帧。这里只记录换代，通知会放到 finally，避免工具侧在
+                // 视口清空和新图尚未绑定时借到半成品帧。
+                roiFrameAvailabilityChanged=true;
                 var epoch=++_epoch;
                 ++_input.Generation;++_output.Generation;++_selectionGeneration;
                 _previewCancellation?.Cancel();
@@ -386,6 +412,11 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
             catch(Exception error){_main.AddLog("结果工作区选择刷新失败："+error.Message);}
             finally
             {
+            if(roiFrameAvailabilityChanged&&!_disposed)
+            {
+                try{_main.NotifyRoiFrameAvailabilityChanged();}
+                catch(Exception error){_main.AddLog("ROI 帧换代通知失败："+error.Message);}
+            }
             // An exception must not discard a newer notification received while the
             // previous plan was clearing/capturing. Retry only a genuinely queued intent.
             if(_refreshAgain&&!_disposed&&!_refreshQueued)
@@ -523,15 +554,19 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         bool ClearCurrent()=>selection is null?LocalCurrent():Current();
         Run(new Action[]{()=>{if(ClearCurrent())_input.Selection.Clear();},()=>{if(ClearCurrent())_output.Selection.Clear();}});
         if(!ClearCurrent())return;
-        var sceneSelection = selection?.ElementIdentity is long && publication is not null &&
-            _main.CaptureCurrentResultDisplay(publication)?.Descriptor.SelectedRectangleColor is not null;
+        // The result table already validated the element-id against this
+        // publication. Display-state capture is a separate, replaceable
+        // projection and may briefly be unavailable while the editor rebinds.
+        // Do not discard the table selection during that window. The display
+        // renderer will apply the selected color when its current appearance
+        // is available.
+        var sceneSelection = selection?.ElementIdentity is long && publication is not null;
         if(!ClearCurrent())return;
         if(sceneSelection || _sceneSelection is not null)
         {
             _sceneSelection = sceneSelection ? selection : null;
             QueueResultDisplay();
         }
-        if(sceneSelection)return;
         if(selection is null||publication is null||!Current())return;
         var displayed=false;
         foreach(var pane in new[]{_input,_output})
@@ -542,7 +577,7 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
             var paneGeneration=pane.Generation;
             bool LayerCurrent()=>Current()&&pane.Generation==paneGeneration;
             var values=selection.Targets.Where(target=>target.ImageFrame==receipt.Frame&&target.Coordinates==receipt.Coordinates)
-                .SelectMany(target=>target.Geometry.Select(geometry=>new NativeGeometryOverlay(target.ImageFrame,geometry,Colors.Orange,2))).ToArray();
+                .SelectMany(target=>target.Geometry.Select(geometry=>new NativeGeometryOverlay(target.ImageFrame,geometry,Colors.Yellow,3))).ToArray();
             if(values.Length==0)continue;
             if(!LayerCurrent())return;
             try
@@ -567,6 +602,8 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         Run(new Action[]{
             ()=>_main.ResultWorkspaceChanged-=Refresh,
             ()=>_main.ResultDisplayChanged-=ResultDisplayChanged,()=>{_displayRefresh?.Abort();_displayRefresh=null;},
+            ()=>{_roiRebind?.Abort();_roiRebind=null;},
+            ()=>_shell.ResultTabSelectionChanged-=ResultTabSelectionChanged,
             ()=>_main.ResultWorkspaceSelectionChanged-=Highlight,
             ()=>_main.ResultWorkspaceGraphicsCleared-=ClearGraphics,
             ()=>_main.SourceDisplayPreservationPreparing-=PrepareSourceDisplayPreservation,

@@ -21,11 +21,24 @@ public partial class MainWindowViewModel
     internal bool IsResultImageChoiceLocked=>IsRunning||_editorDebugControl?.IsDebugBusy==true;
     private void ConfigureFormalImageSourcePresentation()
     {
-        ImageSourceCanNavigate=()=>CanAcceptExternalActivation&&!IsDebugWindowOpen&&!IsExecutionStopping&&DocumentManager.CurrentSession is not null;
+        // VM keeps the image-source strip navigable while a module debug window
+        // is open. Navigation changes the displayed input cursor and does not
+        // commit the debug draft or start a formal run.
+        ImageSourceCanNavigate=()=>CanAcceptExternalActivation&&!IsExecutionStopping&&DocumentManager.CurrentSession is not null;
         ImageSourceActivate=ActivateFormalImageSourceAsync;
         ImageSourceEditAccepted=receipt=>
         {
             if(!ReferenceEquals(DocumentManager.CurrentSession,receipt.Session))return;
+            // VM keeps the current result/display when only the image-source run
+            // policy changes. The projection binding has already accepted the
+            // one-shot display retention lease for this edit.
+            if(ActiveImageSourceBinding?.LastAcceptedPreservedDisplay==true)
+            {
+                RefreshRootTabReadiness();
+                BuildFlatRows();
+                OnPropertyChanged(nameof(ActiveInputSource));
+                return;
+            }
             RefreshProductionPublication(receipt.Session,receipt);
             ResultWorkspaceChanged?.Invoke();OnPropertyChanged(nameof(ActiveInputSource));
         };
@@ -35,10 +48,19 @@ public partial class MainWindowViewModel
             var session=DocumentManager.CurrentSession;var node=SelectedNode;var tab=WorkflowTabViewModel.SelectedTab;
             var binding=ActiveImageSourceBinding;var clearEpoch=_nativeExplicitClearEpoch;
             if(session is null||node is null||tab is null||binding is null)return null;
+            // The document transaction retires execution domains before the
+            // image-source policy acceptance callback runs. Keep the last
+            // completed result owned by the display layer so a policy-only edit
+            // cannot turn a visible result into an empty workspace.
+            RetainCurrentResultForEdit();
             var source=binding.Source;var version=source.EditVersion;
             bool Current()=>ReferenceEquals(DocumentManager.CurrentSession,session)&&ReferenceEquals(SelectedNode,node)
                 &&ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab)&&ReferenceEquals(ActiveImageSourceBinding,binding)
-                &&source.EditVersion==version&&clearEpoch==_nativeExplicitClearEpoch&&OwnsSelectedDocumentNode(node);
+                // The acceptance callback runs after the source projection commits
+                // and increments EditVersion once. Keep the retention lease valid
+                // across that single transition, but reject any later edit.
+                &&source.EditVersion>=version&&source.EditVersion<=version+1
+                &&clearEpoch==_nativeExplicitClearEpoch&&OwnsSelectedDocumentNode(node);
             var scope=new SourceDisplayPreservationScope(Current);
             try{SourceDisplayPreservationPreparing?.Invoke(source,scope);return scope;}
             catch{scope.Dispose();throw;}
@@ -103,14 +125,18 @@ public partial class MainWindowViewModel
         while(queue.TryDequeue(out var id))foreach(var edge in edges.Where(edge=>edge.TargetNodeId==id))if(ids.Add(edge.SourceNodeId))queue.Enqueue(edge.SourceNodeId);
         try
         {
-            // 原件显示来源下拉按模块序号排列（数据流/创建顺序，用户实机截图：
-            // "1 图像源1 · 图像"→"2 Blob分析1 · …"）；不按名称排序（拉丁名会插到中文前）。
-            foreach(var node in nodes.Where(node=>ids.Contains(node.Id)).OrderBy(node=>node.GlobalIndex))
+            // 原件显示来源下拉先列当前模块自己的图像结果，再列上游来源。
+            // 当前 Blob 的实机证据为“显示 Blob/显示二值化 → 图像源输出图像/灰度 → 输出掩膜”。
+            // 节点序号仍只用于同组内稳定排序，不能把上游图像源整体移到当前模块之前。
+            foreach(var node in nodes.Where(node=>ids.Contains(node.Id))
+                .OrderBy(node=>node.Id==selected.Id?0:1).ThenBy(node=>node.GlobalIndex))
             {
                 var privateNode=editor is not null&&ReferenceEquals(node,selected);
                 // 调试窗口打开但尚未执行时没有私有快照，此时节点仍以正式发布呈现图像与叠加
                 // （原件 ModuleResultView 编辑态同样显示模块结果）；不得因此抽走正式图像。
                 var debugSnapshot=privateNode?CurrentEditorDebugSnapshot:null;
+                if(debugSnapshot is null&&ReferenceEquals(node,selected)&&_retainedEditorDebugSnapshot is {} retained
+                    &&IsRetainedEditorDebugSnapshot(retained))debugSnapshot=retained;
                 // 原件编辑态同样显示该模块的正式结果；用户显式改选显示来源后，
                 // UpdateVMResultShow 立即读取所选图像对象当前值显示（RenderControlBase
                 // .xaml.cs.pending:1127-1154，由 imageListCombobox_SelectionChanged 调用），
@@ -123,7 +149,7 @@ public partial class MainWindowViewModel
                 bool SnapshotCurrent()
                 {
                     if(!Owner()||snapshot is null)return false;
-                    if(ReferenceEquals(debugSnapshot,snapshot))return ReferenceEquals(CurrentEditorDebugSnapshot,snapshot)&&Owner();
+                    if(ReferenceEquals(debugSnapshot,snapshot))return (ReferenceEquals(CurrentEditorDebugSnapshot,snapshot)||IsRetainedEditorDebugSnapshot(snapshot))&&Owner();
                     return session.IsPublishedResultCurrent(scope,node.Id,snapshot)&&Owner();
                 }
                 var schema=snapshot?.Schema??session.GetNodeSchema(scope,node.Id);
@@ -140,7 +166,7 @@ public partial class MainWindowViewModel
                     var label=caption?.DisplayName
                         ??(snapshot?.Fields.TryGetValue(port.Id,out var metadata)==true?metadata.DisplayName:port.Id);
                             Walk(port.Type,values?.Values?.Read(port.Id),Array.Empty<string>(),null,
-                                SunEyeVision.Plugin.Wpf.Adapters.References.ReferenceText.ModuleNumber(node.GlobalIndex)+" "+node.Name+" · "+label);
+                                node.Name+"."+WorkspaceImageLabel(node.ToolType,label));
                     void Walk(TypeRef type,DeclaredValueReader? value,string[] path,int? index,string name)
                     {
                         if(plan.Sources.Count>=4096)throw new InvalidOperationException("图像来源超过4096项，拒绝整批而非截断列表。");
@@ -226,6 +252,23 @@ public partial class MainWindowViewModel
         }
         catch{plan.Dispose();throw;}
     }
+    private static string WorkspaceImageLabel(string toolType,string label)
+        =>toolType switch
+        {
+            "ImageLoad"=>label switch
+            {
+                "图像"=>"输出图像",
+                "灰度图像"=>"灰度图像数据",
+                _=>label
+            },
+            "BlobAnalysis"=>label switch
+            {
+                "Blob图像数据"=>"显示Blob图像",
+                "二值化图像数据"=>"显示二值化图像",
+                _=>label
+            },
+            _=>label
+        };
     internal (string Name, FrozenImageResource Image, Func<bool> Current)? CaptureVariableImageForRoi(string key)
     {
         try

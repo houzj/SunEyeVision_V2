@@ -51,26 +51,47 @@ public partial class MainWindowViewModel
  {
   var session=DocumentManager.CurrentSession;var node=SelectedNode;var workflowId=WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId;
   var snapshot=_resultPublicationSnapshot;var revision=_resultDisplayRevision;
+  var retained= snapshot is not null && IsRetainedEditorDebugSnapshot(snapshot)
+      && ReferenceEquals(snapshot,_retainedEditorDebugSnapshot)
+      && _retainedResultDisplayDescriptor is not null
+      && _retainedResultDisplayAppearance is not null;
   if(session is null||node is null||workflowId is null||snapshot is null||!OwnsSelectedDocumentNode(node)
-   ||(snapshot.Identity.DocumentSessionId!=session.ResultOwnerId&&!ReferenceEquals(CurrentEditorDebugSnapshot,snapshot))||snapshot.Identity.NodeId!=node.Id||snapshot.SourceWorkflowId!=workflowId
+   ||(snapshot.Identity.DocumentSessionId!=session.ResultOwnerId&&!ReferenceEquals(CurrentEditorDebugSnapshot,snapshot)&&!IsRetainedEditorDebugSnapshot(snapshot))||snapshot.Identity.NodeId!=node.Id||snapshot.SourceWorkflowId!=workflowId
    ||!ReferenceEquals(_resultPublication,expectedPublication)||snapshot.Identity!=expectedPublication.Stamp.Invocation)return null;
   var preview=_displayPreview;
-  var draft=preview?.Current==true?preview.Context.PreparedDraft:null;
+  // A retained snapshot is the last completed execution.  Once the editor has
+  // pending ROI/parameter edits, its draft must not restyle or relabel that
+  // snapshot.  VM keeps the result layer bound to the completed invocation
+  // until the next execution replaces it.  Only the live debug snapshot may
+  // use the editor draft because it was produced from that accepted draft.
+  var liveDebug=ReferenceEquals(snapshot,CurrentEditorDebugSnapshot);
+  var draft=liveDebug&&preview?.Current==true?preview.Context.PreparedDraft:null;
   var configuration=draft?.Configuration??node.Configuration;
-  var presentation=session.GetNodeResultPresentation(workflowId,node,draft);
-  if(presentation.Display is not {} descriptor||presentation.Appearance is not {} appearance)return null;
+  ResultDisplayDescriptor? descriptor;
+  ResultDisplayAppearance? appearance;
+  if(retained)
+  {
+   descriptor=_retainedResultDisplayDescriptor;
+   appearance=_retainedResultDisplayAppearance;
+  }
+  else
+  {
+   var presentation=session.GetNodeResultPresentation(workflowId,node,draft);
+   if(presentation.Display is not {} currentDescriptor||presentation.Appearance is not {} currentAppearance)return null;
+   descriptor=currentDescriptor;appearance=currentAppearance;
+  }
   try{descriptor.Validate(snapshot.Schema);}catch(ArgumentException){return null;}
   bool Current()
   {
-   if(revision!=_resultDisplayRevision||!ReferenceEquals(DocumentManager.CurrentSession,session)||!ReferenceEquals(SelectedNode,node)
+   if((!retained&&revision!=_resultDisplayRevision)||!ReferenceEquals(DocumentManager.CurrentSession,session)||!ReferenceEquals(SelectedNode,node)
     ||!ReferenceEquals(_resultPublication,expectedPublication)||!expectedPublication.IsCurrent()||!OwnsSelectedDocumentNode(node))return false;
    if(draft is not null&&(!ReferenceEquals(_displayPreview,preview)||preview?.Current!=true||!ReferenceEquals(preview.Context.PreparedDraft,draft)
     ||!ReferenceEquals(draft.Configuration,configuration)))return false;
-   if(draft is null&&!ReferenceEquals(node.Configuration,configuration))return false;
+   if(!retained&&draft is null&&!ReferenceEquals(node.Configuration,configuration))return false;
    return IsCurrentPresentedSnapshot(session,workflowId,node,snapshot);
   }
   if(!Current())return null;
-  return new(descriptor,appearance,revision,Current,(snapshot.Output as IToolResultGeometryOutput)?.ResultGeometry,()=>
+  return new(descriptor,appearance,revision,Current,retained?_retainedResultDisplayGeometry:(snapshot.Output as IToolResultGeometryOutput)?.ResultGeometry,()=>
   {
    if(!Current())throw new InvalidOperationException("文字显示来源已失效。");
    var lease=new ResultDisplayTextLease(snapshot,appearance.Text);

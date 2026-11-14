@@ -128,7 +128,7 @@ public static class DesktopToolPresentation
         public void Clear()=>_view.Clear();
         public event EventHandler<ResultSelection>? SelectionHighlightChanged
         {
-            add { if(value is null)return;_admission.EnsureCurrent();EventHandler<ResultSelection> guarded=(sender,selection)=>{if(Volatile.Read(ref _disposed)==0&&_admission.IsCurrent)value(sender,selection);};_selectionChanged.Add((value,guarded));_view.SelectionHighlightChanged+=guarded; }
+            add { if(value is null)return;_admission.EnsureCurrent();EventHandler<ResultSelection> guarded=(sender,selection)=>{if(Volatile.Read(ref _disposed)==0&&_admission.IsCurrent)value(this,selection);};_selectionChanged.Add((value,guarded));_view.SelectionHighlightChanged+=guarded; }
             remove { if(value is null)return;var index=_selectionChanged.FindLastIndex(item=>item.Original==value);if(index<0)return;var handler=_selectionChanged[index].Guarded;_selectionChanged.RemoveAt(index);_view.SelectionHighlightChanged-=handler; }
         }
         public void Dispose(){if(Interlocked.Exchange(ref _disposed,1)!=0)return;var errors=new List<Exception>();foreach(var item in _selectionChanged.ToArray())try{_view.SelectionHighlightChanged-=item.Guarded;}catch(Exception e){errors.Add(e);}_selectionChanged.Clear();try{_nodeRetirement.Dispose();}catch(Exception e){errors.Add(e);}try{_retirement.Dispose();}catch(Exception e){errors.Add(e);}try{_view.Dispose();}catch(Exception e){errors.Add(e);}try{_generation.Dispose();}catch(Exception e){errors.Add(e);}if(errors.Count!=0)throw new AggregateException(errors);}

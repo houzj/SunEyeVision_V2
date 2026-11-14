@@ -100,7 +100,7 @@ public partial class MainWindowViewModel
     {
         var session=DocumentManager.CurrentSession;var node=SelectedNode;var workflowId=WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId;
         if(session is null||node is null||workflowId is null||snapshot.Identity.NodeId!=node.Id||snapshot.SourceWorkflowId!=workflowId)return;
-        if(snapshot.Identity.DocumentSessionId!=session.ResultOwnerId&&!ReferenceEquals(CurrentEditorDebugSnapshot,snapshot))return;
+        if(snapshot.Identity.DocumentSessionId!=session.ResultOwnerId&&!ReferenceEquals(CurrentEditorDebugSnapshot,snapshot)&&!IsRetainedEditorDebugSnapshot(snapshot))return;
         if(!IsCurrentPresentedSnapshot(session,workflowId,node,snapshot))return;
         var epoch=RetireResultPublication();var owner=CaptureResultViewOwner(epoch);
         bool Current()
@@ -121,6 +121,7 @@ public partial class MainWindowViewModel
         if(session is null||node is null||workflowId is null){ClearResultDisplay();return;}
         if(!OwnsSelectedDocumentNode(node)){SelectedNode=null;return;}
         if(CurrentEditorDebugSnapshot is {} debug){PresentSnapshot(debug,node.Name);return;}
+        if(_retainedEditorDebugSnapshot is {} retained&&IsRetainedEditorDebugSnapshot(retained)){PresentSnapshot(retained,node.Name);return;}
         // 调试窗口打开但尚未执行时（无 debug 快照），正式发布仍是唯一真实结果；
         // 原件 ModuleResultView 在编辑态同样显示模块结果，若退化为声明视图会得到空表空图。
         using var reader=session.AcquirePublishedResult(workflowId,node.Id);
@@ -133,7 +134,7 @@ public partial class MainWindowViewModel
             PresentSnapshot(reader.Snapshot,node.Name);return;
         }
         var schema=session.GetNodeSchema(workflowId,node.Id);
-        if(schema is null){ClearResultDisplay();return;}
+        if(schema is null){ClearRetainedEditorDebugSnapshot();ClearResultDisplay();return;}
         PresentDeclaration(schema,node.Name,schema.Outputs.ToDictionary(port=>port.Id,port=>schema.FindOutputDisplay(port.Id)?.DisplayName??port.Id,StringComparer.Ordinal),DeclaredBindings(schema,node.Id,workflowId));
     }
     private void RefreshCurrentResultBindings()
@@ -157,5 +158,32 @@ public partial class MainWindowViewModel
         var epoch=RetireResultPublication();var owner=CaptureResultViewOwner(epoch);
         if(!owner())return;
         PresentResultPublication(ToolResultViews.Declaration(schema,owner,names,displayedPorts),null,nodeName,bindings);
+    }
+
+    /// <summary>
+    /// Transfer the current completed invocation's resource lease to the display
+    /// layer before a document edit retires its execution domain. Editing a
+    /// configuration changes the next execution snapshot; it does not replace
+    /// the result currently shown by the workspace.
+    /// </summary>
+    private void RetainCurrentResultForEdit()
+    {
+        if(_resultPublicationSnapshot is { IsComplete:true } snapshot
+            && SelectedNode?.Id==snapshot.Identity.NodeId
+            && WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId==snapshot.SourceWorkflowId)
+        {
+            // Capture the presentation contract before the document transaction
+            // replaces the node configuration. The result table and immutable
+            // output snapshot survive that transaction, while the draft
+            // configuration instance intentionally does not.
+            if(_resultPublication is {} publication
+                && CaptureCurrentResultDisplay(publication) is {} display)
+            {
+                _retainedResultDisplayDescriptor=display.Descriptor;
+                _retainedResultDisplayAppearance=display.Appearance;
+                _retainedResultDisplayGeometry=display.Geometry;
+            }
+            RetainEditorDebugSnapshot(snapshot);
+        }
     }
 }

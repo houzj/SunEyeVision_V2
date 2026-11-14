@@ -36,6 +36,7 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
  internal ImageInputSource Source { get; }
  internal ImageSourceStripSession Strip { get; }
  internal bool CanActivate => _activate is not null && _isLocal && Current() && _canNavigate() && Current();
+ internal bool LastAcceptedPreservedDisplay { get; private set; }
  internal Exception? LastPresentationError { get; private set; }
  // 身份而非引用：文档提交会重建节点/流程实例，引用判定会把仍然有效的投影误判为失效。
  internal bool Owns(DocumentSession session, WorkflowDefinition root, NodeDefinition node) =>
@@ -181,6 +182,7 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
  private void AcceptEdit(ImageSourceEditProposal proposal)
  {
   ArgumentNullException.ThrowIfNull(proposal); EnsureCurrent(true);
+  LastAcceptedPreservedDisplay=false;
   if (_ownCommit) throw new InvalidOperationException("图像源编辑不能重入。");
   var draft = _session.Editing.Host.BeginEdit(_root.Id, _node.Id);
   if (!string.Equals(draft.Node.Id, _node.Id, StringComparison.Ordinal)) throw new InvalidOperationException("图像源节点已被替换。");
@@ -189,9 +191,11 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
   var policy = ImageSourcePolicy.ReadFields(_node.Id, values);
   if (policy.SourceKind != ImageSourceKind.Local || policy.SubscribeFolder || proposal.Configuration.NodeId != _node.Id)
    throw new InvalidOperationException("当前来源不是本地图像，不能修改列表。");
-  var retainDisplay = !proposal.SelectStart && policy.CurrentIndex == proposal.Configuration.CurrentIndex &&
-   policy.FilePaths.Count <= proposal.Configuration.FilePaths.Count &&
-   policy.FilePaths.SequenceEqual(proposal.Configuration.FilePaths.Take(policy.FilePaths.Count));
+  // Every accepted image-source edit is a configuration/cursor edit, not a
+  // result execution. The display layer keeps the last completed result while
+  // the source projection updates its image cursor or run policy. A new result
+  // replaces that lease only when execution publishes one.
+  var retainDisplay = true;
   policy.UpdateLocalInput(proposal.Configuration);
   var localFields = new HashSet<string>(StringComparer.Ordinal)
    { "local.paths", "local.selected", "local.start", "local.run-mode", "local.auto-switch" };
@@ -209,10 +213,15 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
   {
    _session.ValidateEdit(frozen); EnsureCurrent(true);
    var receipt = _session.CommitEdit(frozen);
-   try { display?.Accept(receipt.Change?.ExecutionInvalidatedNodes.ToArray() ?? Array.Empty<ScopedNodeIdentity>()); }
+   try
+   {
+    display?.Accept(receipt.Change?.ExecutionInvalidatedNodes.ToArray() ?? Array.Empty<ScopedNodeIdentity>());
+    LastAcceptedPreservedDisplay=retainDisplay&&display is not null;
+   }
    catch (Exception error) { ReportPresentationError("显示留存接纳失败", error); }
    // The accepted transaction is final even if a presentation observer fails.
-   try { _accepted?.Invoke(receipt); } catch (Exception error) { ReportPresentationError("显示刷新失败", error); }
+   try { _accepted?.Invoke(receipt); }
+   catch (Exception error) { ReportPresentationError("显示刷新失败", error); }
   }
   finally
   {

@@ -22,15 +22,16 @@ public sealed record ResultTextAppearance(bool Visible,string Content,ResultDisp
 /// <summary>Pure immutable appearance. Its host revision is independent of invocation/run identity.</summary>
 public sealed record ResultDisplayAppearance(ResultGraphicAppearance Graphic,ResultTextAppearance Text,
     ResultGraphicAppearance? Inspection=null,ResultGraphicAppearance? Mask=null,ResultGraphicAppearance? Annulus=null,ResultOutlineAppearance? Outline=null,
-    ResultGraphicAppearance? InnerRectangle=null,ResultGraphicAppearance? ReferencePoint=null,ResultGraphicAppearance? RunPoint=null);
+    ResultGraphicAppearance? InnerRectangle=null,ResultGraphicAppearance? ReferencePoint=null,ResultGraphicAppearance? RunPoint=null,
+    ResultGraphicAppearance? Centroids=null);
 
 /// <summary>Only declared same-row output paths. Does not own values, resources, callbacks or a renderer.</summary>
 public sealed class ResultDisplayDescriptor
 {
     public ResultDisplayDescriptor(ResultFieldPath rows,ResultFieldPath identity,ResultFieldPath rectangle,
         ResultFieldPath geometrySource,ResultFieldPath textValue,ResultFieldPath passed,ResultFieldPath? outline=null,
-        ResultFieldPath? innerRectangle=null,ResultDisplayColor? selectedRectangleColor=null)
-    {Rows=rows;Identity=identity;Rectangle=rectangle;GeometrySource=geometrySource;TextValue=textValue;Passed=passed;Outline=outline;InnerRectangle=innerRectangle;SelectedRectangleColor=selectedRectangleColor;}
+        ResultFieldPath? innerRectangle=null,ResultDisplayColor? selectedRectangleColor=null,ResultFieldPath? centroid=null)
+    {Rows=rows;Identity=identity;Rectangle=rectangle;GeometrySource=geometrySource;TextValue=textValue;Passed=passed;Outline=outline;InnerRectangle=innerRectangle;SelectedRectangleColor=selectedRectangleColor;Centroid=centroid;}
     public ResultFieldPath Rows {get;}
     public ResultFieldPath Identity {get;}
     public ResultFieldPath Rectangle {get;}
@@ -40,6 +41,7 @@ public sealed class ResultDisplayDescriptor
     public ResultFieldPath? Outline {get;}
     public ResultFieldPath? InnerRectangle {get;}
     public ResultDisplayColor? SelectedRectangleColor {get;}
+    public ResultFieldPath? Centroid {get;}
     public IReadOnlyList<OutputValueRequest> RequiredOutputs=>Outline is null?Array.Empty<OutputValueRequest>():new[]{new OutputValueRequest(Outline.PortId,Outline.MemberFieldPath)};
     public void Validate(ToolSchema schema)
     {
@@ -72,6 +74,8 @@ public sealed class ResultDisplayDescriptor
             throw new ArgumentException("Display rectangles require a declared center, width, height and angle in degrees.");
         if(InnerRectangle is {} rectangle && (!SameRow(rectangle) || Element(rectangle).Geometry != GeometryKind.OrientedRectangle))
             throw new ArgumentException("An inner rectangle requires rectangle geometry in the same declared row.");
+        if(Centroid is {} centroid && (!SameRow(centroid) || Element(centroid).Geometry != GeometryKind.Point))
+            throw new ArgumentException("A centroid requires point geometry in the same declared row.");
     }
 }
 

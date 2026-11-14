@@ -288,6 +288,14 @@ namespace SunEyeVision.UI.Shell.Windows
             set => SetProperty(ref _dataAnalysisControlTitle, value);
         }
 
+        /// <summary>当前节点在结果工作区帮助页显示的工具说明。</summary>
+        public string? ResultHelpContent => SelectedNode?.ToolType switch
+        {
+            "BlobAnalysis" => "功能：对输入图像进行二值化，提取满足条件的 Blob，并输出 Blob 的特征。\n操作：\n1.连接并配置好输入图像；\n2.设置待查找 ROI；\n3.设置运行参数；\n4.运行工作流。",
+            "ImageLoad" => "功能：读取本地图像、相机图像或 SDK 图像，并向后续工具提供图像数据。\n操作：\n1.选择图像来源；\n2.配置图像列表或采集设备；\n3.设置运行模式和自动切换；\n4.运行工作流。",
+            _ => null
+        };
+
         public NodeDefinition? SelectedNode
         {
             get => _selectedNode;
@@ -1130,10 +1138,19 @@ SplitterPosition = position;
             var intent=System.Threading.Interlocked.Increment(ref _nodeSelectionIntent);
             if (ReferenceEquals(_selectedNode, node)) return false;
             System.Threading.Interlocked.Increment(ref _outputContractSelectionGeneration);
+            var sameStableNode=_selectedNode is { } previous&&node is { } next
+                &&string.Equals(previous.Id,next.Id,StringComparison.Ordinal)
+                &&WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId is not null;
+            if(sameStableNode&&_resultPublicationSnapshot is { IsComplete:true } published)
+                RetainEditorDebugSnapshot(published);
+            // A node switch only changes the active result view. Retained debug
+            // snapshots belong to their stable workflow/node identity and must
+            // remain available when the user switches back.
             RetireResultPublication();
             if(intent!=_nodeSelectionIntent)return false;
             _declaredHistoricalResult=false;
             var changed=SetProperty(ref _selectedNode,node,propertyName:nameof(SelectedNode));
+            OnPropertyChanged(nameof(ResultHelpContent));
             return changed&&intent==_nodeSelectionIntent&&ReferenceEquals(_selectedNode,node);
         }
 
@@ -1665,7 +1682,15 @@ SplitterPosition = position;
 
 
         private bool StartContinuousWorkflow(WorkflowTabViewModel workflow) => StartFormalContinuous(new[]{workflow.RootWorkflowId});
-        private bool StopContinuousWorkflow(WorkflowTabViewModel workflow) { if(!IsFormalRootRunning(workflow.RootWorkflowId))return false; RequestStopFormalExecution(); return true; }
+        private bool StopContinuousWorkflow(WorkflowTabViewModel workflow)
+        {
+            // The continuous run owns the stop request.  The per-root set is a
+            // presentation projection and can briefly lag while a round is
+            // settling, which used to make the Tab button drop the stop click.
+            if(_formalContinuousRun is null)return false;
+            RequestStopFormalExecution();
+            return true;
+        }
 
         /// <summary>
         /// 执行开始事件

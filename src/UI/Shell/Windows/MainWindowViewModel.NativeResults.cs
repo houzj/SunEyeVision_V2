@@ -16,7 +16,6 @@ public partial class MainWindowViewModel
     internal event Action? ResultWorkspaceChanged;
     internal event Action<ResultSelection?>? ResultWorkspaceSelectionChanged;
     internal event Action? ResultWorkspaceGraphicsCleared;
-    internal event Action<SunEyeVision.UI.Shared.ImageInputSource,SourceDisplayPreservationScope>? SourceDisplayPreservationPreparing;
     internal event Action<string>? ResultWorkspaceRootSettled;
     internal bool IsResultImageChoiceLocked=>IsRunning||_editorDebugControl?.IsDebugBusy==true;
     private void ConfigureFormalImageSourcePresentation()
@@ -26,45 +25,16 @@ public partial class MainWindowViewModel
         // commit the debug draft or start a formal run.
         ImageSourceCanNavigate=()=>CanAcceptExternalActivation&&!IsExecutionStopping&&DocumentManager.CurrentSession is not null;
         ImageSourceActivate=ActivateFormalImageSourceAsync;
+        // 图像源策略编辑（自动切换/运行模式/运行勾选/缩略图游标）与普通参数编辑同类：
+        // 只改参数与游标，不触碰结果显示层。RefreshProductionPublication 内的
+        // RefreshFormalPublishedResult 按"陈旧发布保持显示"语义保持上一轮结果。
         ImageSourceEditAccepted=receipt=>
         {
             if(!ReferenceEquals(DocumentManager.CurrentSession,receipt.Session))return;
-            // VM keeps the current result/display when only the image-source run
-            // policy changes. The projection binding has already accepted the
-            // one-shot display retention lease for this edit.
-            if(ActiveImageSourceBinding?.LastAcceptedPreservedDisplay==true)
-            {
-                RefreshRootTabReadiness();
-                BuildFlatRows();
-                OnPropertyChanged(nameof(ActiveInputSource));
-                return;
-            }
             RefreshProductionPublication(receipt.Session,receipt);
-            ResultWorkspaceChanged?.Invoke();OnPropertyChanged(nameof(ActiveInputSource));
+            OnPropertyChanged(nameof(ActiveInputSource));
         };
         ImageSourcePresentationError=(stage,error)=>AddLog(stage+"："+error.Message);
-        ImageSourcePrepareDisplay=_=>
-        {
-            var session=DocumentManager.CurrentSession;var node=SelectedNode;var tab=WorkflowTabViewModel.SelectedTab;
-            var binding=ActiveImageSourceBinding;var clearEpoch=_nativeExplicitClearEpoch;
-            if(session is null||node is null||tab is null||binding is null)return null;
-            // The document transaction retires execution domains before the
-            // image-source policy acceptance callback runs. Keep the last
-            // completed result owned by the display layer so a policy-only edit
-            // cannot turn a visible result into an empty workspace.
-            RetainCurrentResultForEdit();
-            var source=binding.Source;var version=source.EditVersion;
-            bool Current()=>ReferenceEquals(DocumentManager.CurrentSession,session)&&ReferenceEquals(SelectedNode,node)
-                &&ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab)&&ReferenceEquals(ActiveImageSourceBinding,binding)
-                // The acceptance callback runs after the source projection commits
-                // and increments EditVersion once. Keep the retention lease valid
-                // across that single transition, but reject any later edit.
-                &&source.EditVersion>=version&&source.EditVersion<=version+1
-                &&clearEpoch==_nativeExplicitClearEpoch&&OwnsSelectedDocumentNode(node);
-            var scope=new SourceDisplayPreservationScope(Current);
-            try{SourceDisplayPreservationPreparing?.Invoke(source,scope);return scope;}
-            catch{scope.Dispose();throw;}
-        };
     }
     private long _nativeExplicitClearEpoch;
     private void NotifyResultWorkspaceRootSettled(string workflowId)

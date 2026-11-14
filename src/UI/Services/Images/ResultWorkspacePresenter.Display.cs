@@ -70,8 +70,11 @@ internal sealed partial class ResultWorkspacePresenter
         var attempt=_displayAttempt;
         var publication=_main.CurrentResultPublication;var epoch=_epoch;var request=_displayRequest;
         var state=publication is null?null:_main.CaptureCurrentResultDisplay(publication);
+        // 场景按"同一发布对象+同一显示合同"判定存活；publication 的执行域当前性不参与。
+        // 配置编辑使发布陈旧后重入不重建不清理（原件 UpdateModuleViewResultShow 用旧数据保持显示），
+        // 只有新执行产生新发布对象才走场景替换。
         bool Current()=>!_disposed&&epoch==_epoch&&request==_displayRequest&&attempt==_displayAttempt&&ReferenceEquals(publication,_main.CurrentResultPublication)
-            &&publication?.IsCurrent()==true&&state?.IsCurrent()==true&&!_disposed&&epoch==_epoch&&request==_displayRequest&&attempt==_displayAttempt;
+            &&state?.IsCurrent()==true&&!_disposed&&epoch==_epoch&&request==_displayRequest&&attempt==_displayAttempt;
         foreach(var pane in new[]{_input,_output})
         {
             if(_disposed||epoch!=_epoch||request!=_displayRequest||attempt!=_displayAttempt)return;

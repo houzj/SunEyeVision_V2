@@ -27,7 +27,6 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
  private readonly Func<bool> _isCurrent, _canEdit, _canNavigate;
  private readonly Action<DocumentEditReceipt>? _accepted;
  private readonly Func<ImageSourceActivation, Task>? _activate;
- private readonly Func<ImageSourceEditProposal, SourceDisplayPreservationScope?>? _prepareDisplay;
  private readonly Action<string, Exception>? _reportPresentationError;
  private readonly Dispatcher _dispatcher;
  private Func<Window?>? _dialogOwner;
@@ -36,7 +35,6 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
  internal ImageInputSource Source { get; }
  internal ImageSourceStripSession Strip { get; }
  internal bool CanActivate => _activate is not null && _isLocal && Current() && _canNavigate() && Current();
- internal bool LastAcceptedPreservedDisplay { get; private set; }
  internal Exception? LastPresentationError { get; private set; }
  // 身份而非引用：文档提交会重建节点/流程实例，引用判定会把仍然有效的投影误判为失效。
  internal bool Owns(DocumentSession session, WorkflowDefinition root, NodeDefinition node) =>
@@ -47,7 +45,6 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
  internal ImageSourceProjectionBinding(DocumentSession session, WorkflowDefinition root, NodeDefinition node,
   Func<bool> isCurrent, Func<bool> canEdit, Func<bool> canNavigate, Action<DocumentEditReceipt>? accepted = null,
   Func<ImageSourceActivation, Task>? activate = null, Dispatcher? dispatcher = null,
-  Func<ImageSourceEditProposal, SourceDisplayPreservationScope?>? prepareDisplay = null,
   Action<string, Exception>? reportPresentationError = null, bool providesImageImport = false)
  {
   _session = session ?? throw new ArgumentNullException(nameof(session));
@@ -57,7 +54,7 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
   _canEdit = canEdit ?? throw new ArgumentNullException(nameof(canEdit));
   _canNavigate = canNavigate ?? throw new ArgumentNullException(nameof(canNavigate));
   _accepted = accepted; _activate = activate; _dispatcher = dispatcher ?? Dispatcher.CurrentDispatcher;
-  _prepareDisplay = prepareDisplay; _reportPresentationError = reportPresentationError;
+  _reportPresentationError = reportPresentationError;
   _dispatcher.VerifyAccess(); EnsureCurrent();
   if (_session.GetNodeHostInputDeclaration(_root.Id, _node) is not { CapabilityId: "image-source", Version: 1 })
    throw new InvalidOperationException("当前节点未准入图像源宿主能力。");
@@ -181,54 +178,38 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
  }
  private void AcceptEdit(ImageSourceEditProposal proposal)
  {
-  ArgumentNullException.ThrowIfNull(proposal); EnsureCurrent(true);
-  LastAcceptedPreservedDisplay=false;
-  if (_ownCommit) throw new InvalidOperationException("图像源编辑不能重入。");
-  var draft = _session.Editing.Host.BeginEdit(_root.Id, _node.Id);
-  if (!string.Equals(draft.Node.Id, _node.Id, StringComparison.Ordinal)) throw new InvalidOperationException("图像源节点已被替换。");
-  _node = draft.Node;
-  var values = MaterializeProjectionFields(draft.Configuration.Fields.Select(draft.SettingsSchema.Inputs));
-  var policy = ImageSourcePolicy.ReadFields(_node.Id, values);
-  if (policy.SourceKind != ImageSourceKind.Local || policy.SubscribeFolder || proposal.Configuration.NodeId != _node.Id)
-   throw new InvalidOperationException("当前来源不是本地图像，不能修改列表。");
-  // Every accepted image-source edit is a configuration/cursor edit, not a
-  // result execution. The display layer keeps the last completed result while
-  // the source projection updates its image cursor or run policy. A new result
-  // replaces that lease only when execution publishes one.
-  var retainDisplay = true;
-  policy.UpdateLocalInput(proposal.Configuration);
-  var localFields = new HashSet<string>(StringComparer.Ordinal)
-   { "local.paths", "local.selected", "local.start", "local.run-mode", "local.auto-switch" };
-  var proposed = policy.ToFieldValues(draft.SettingsSchema).Where(pair => localFields.Contains(pair.Key))
-   .ToDictionary(pair => pair.Key, pair => (ParameterSetting)new ConstantSetting(pair.Value), StringComparer.Ordinal);
-  if (proposed.Count != localFields.Count) throw new InvalidOperationException("图像源本地列表声明不完整。");
-  draft.ApplyFields(proposed);
-  var frozen = DocumentEditProposal.Prepare(_session.Editing.Host, nodes: new[] { draft });
-  SourceDisplayPreservationScope? display = null;
-  if (retainDisplay && _prepareDisplay is not null)
-   try { display = _prepareDisplay(proposal); }
-   catch (Exception error) { ReportPresentationError("显示留存准备失败", error); }
-  _ownCommit = true;
-  try
-  {
-   _session.ValidateEdit(frozen); EnsureCurrent(true);
-   var receipt = _session.CommitEdit(frozen);
+   ArgumentNullException.ThrowIfNull(proposal); EnsureCurrent(true);
+   if (_ownCommit) throw new InvalidOperationException("图像源编辑不能重入。");
+   var draft = _session.Editing.Host.BeginEdit(_root.Id, _node.Id);
+   if (!string.Equals(draft.Node.Id, _node.Id, StringComparison.Ordinal)) throw new InvalidOperationException("图像源节点已被替换。");
+   _node = draft.Node;
+   var values = MaterializeProjectionFields(draft.Configuration.Fields.Select(draft.SettingsSchema.Inputs));
+   var policy = ImageSourcePolicy.ReadFields(_node.Id, values);
+   if (policy.SourceKind != ImageSourceKind.Local || policy.SubscribeFolder || proposal.Configuration.NodeId != _node.Id)
+    throw new InvalidOperationException("当前来源不是本地图像，不能修改列表。");
+   policy.UpdateLocalInput(proposal.Configuration);
+   var localFields = new HashSet<string>(StringComparer.Ordinal)
+    { "local.paths", "local.selected", "local.start", "local.run-mode", "local.auto-switch" };
+   var proposed = policy.ToFieldValues(draft.SettingsSchema).Where(pair => localFields.Contains(pair.Key))
+    .ToDictionary(pair => pair.Key, pair => (ParameterSetting)new ConstantSetting(pair.Value), StringComparer.Ordinal);
+   if (proposed.Count != localFields.Count) throw new InvalidOperationException("图像源本地列表声明不完整。");
+   draft.ApplyFields(proposed);
+   var frozen = DocumentEditProposal.Prepare(_session.Editing.Host, nodes: new[] { draft });
+   _ownCommit = true;
    try
    {
-    display?.Accept(receipt.Change?.ExecutionInvalidatedNodes.ToArray() ?? Array.Empty<ScopedNodeIdentity>());
-    LastAcceptedPreservedDisplay=retainDisplay&&display is not null;
+    _session.ValidateEdit(frozen); EnsureCurrent(true);
+    var receipt = _session.CommitEdit(frozen);
+    // 图像源编辑是配置/游标编辑，不是结果执行：显示层按单一所有权持有上一轮
+    // 完成结果（RefreshFormalPublishedResult 的陈旧保持语义），新执行才替换。
+    // 接纳事务本身是终态，呈现观察者失败只记录不回滚。
+    try { _accepted?.Invoke(receipt); }
+    catch (Exception error) { ReportPresentationError("显示刷新失败", error); }
    }
-   catch (Exception error) { ReportPresentationError("显示留存接纳失败", error); }
-   // The accepted transaction is final even if a presentation observer fails.
-   try { _accepted?.Invoke(receipt); }
-   catch (Exception error) { ReportPresentationError("显示刷新失败", error); }
-  }
-  finally
-  {
-   _ownCommit = false;
-   try { display?.Dispose(); }
-   catch (Exception error) { ReportPresentationError("显示留存释放失败", error); }
-  }
+   finally
+   {
+    _ownCommit = false;
+   }
  }
  private void ReportPresentationError(string stage, Exception error)
  {

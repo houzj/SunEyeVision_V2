@@ -66,8 +66,6 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         main.ResultDisplayChanged+=ResultDisplayChanged;
         shell.ResultTabSelectionChanged+=ResultTabSelectionChanged;
         main.ResultWorkspaceGraphicsCleared+=ClearGraphics;
-        main.SourceDisplayPreservationPreparing+=PrepareSourceDisplayPreservation;
-        main.ResultWorkspaceRootSettled+=RootSettled;
         shell.FullscreenCommand=new SunEyeVision.UI.Core.RelayCommand(value=>
         {
             if(value is FrameworkElement view&&Window.GetWindow(shell) is {} owner)
@@ -273,7 +271,7 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         var preserveResultScene=ReferenceEquals(pane,_output);
         if(!preserveResultScene)pane.ClearDisplay();
         if(!Current())return;
-        if(source is null||source.Publication is null&&source.VariableImage is null){pane.Image.ClearUnlessRetained();return;}
+        if(source is null||source.Publication is null&&source.VariableImage is null){pane.Image.Clear();return;}
         if(!source.HasImageValue){pane.Image.Clear();return;}
         bool SourceCurrent()=>Current()&&source.Current()&&Current();
         var preserveShapeLayers=preserveResultScene;
@@ -315,18 +313,6 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         RefreshImageName(_output,_outputSource);
         QueueResultDisplay();
     }
-    private void PrepareSourceDisplayPreservation(SunEyeVision.UI.Shared.ImageInputSource source,SourceDisplayPreservationScope scope)
-    {
-        if(_disposed||!ReferenceEquals(_main.ActiveInputSource,source))return;
-        bool Current()=>!_disposed&&scope.IsCurrent;
-        if(_input.Image.PrepareDisplayRetention(Current) is {} input)scope.Enlist(input);
-        if(_output.Image.PrepareDisplayRetention(Current) is {} output)scope.Enlist(output);
-    }
-    private void RootSettled(string workflowId)
-    {
-        if(_disposed||_main.WorkflowTabViewModel.SelectedTab?.RootWorkflowId!=workflowId)return;
-        Run(new Action[]{_input.Image.ClearRetained,_output.Image.ClearRetained});
-    }
     internal void Refresh()
     {
         if(_disposed)return;
@@ -360,7 +346,7 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
                 ++_input.Generation;++_output.Generation;++_selectionGeneration;
                 _previewCancellation?.Cancel();
                 var old=previous;_plan=null;_inputSource=null;_outputSource=null;_previewPath=null;
-                Run(new Action[]{_input.Image.ClearUnlessRetained,_output.Image.ClearUnlessRetained,ClearGraphics,()=>old?.Dispose()});
+                Run(new Action[]{_input.Image.Clear,_output.Image.Clear,ClearGraphics,()=>old?.Dispose()});
                 if(_disposed)return;
                 if(!ReferenceEquals(_selectionOwner,_main.SelectedNode))
                 {_selectionOwner=_main.SelectedNode;_inputKey=null;_outputKey=_main.SelectedNode?.SelectedDisplayReference;
@@ -606,8 +592,6 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
             ()=>_shell.ResultTabSelectionChanged-=ResultTabSelectionChanged,
             ()=>_main.ResultWorkspaceSelectionChanged-=Highlight,
             ()=>_main.ResultWorkspaceGraphicsCleared-=ClearGraphics,
-            ()=>_main.SourceDisplayPreservationPreparing-=PrepareSourceDisplayPreservation,
-            ()=>_main.ResultWorkspaceRootSettled-=RootSettled,
             ()=>_inputSelection.RemoveValueChanged(_shell,InputSelected),
             ()=>_outputSelection.RemoveValueChanged(_shell,OutputSelected),
             ()=>_doubleImage.RemoveValueChanged(_shell,DoubleImageChanged),

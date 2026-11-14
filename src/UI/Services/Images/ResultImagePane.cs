@@ -19,8 +19,6 @@ internal sealed class ResultImagePane : IDisposable
         internal readonly ResultPublicationStamp Stamp = stamp;
         internal NativeResultFrameReceipt? Receipt;
         internal readonly string ScopeId=scopeId, NodeId=nodeId;
-        internal bool DisplayOnly;
-        internal Func<bool>? DisplayCurrent;
     }
     private sealed class Preview(Func<bool> current, long generation, bool filePreview)
     {
@@ -66,7 +64,7 @@ internal sealed class ResultImagePane : IDisposable
             {
                 if (_disposed || generation != _generation) return false;
                 var valid = current();
-                return valid && !_disposed && generation == _generation && publication.IsCurrent()
+                return valid && !_disposed && generation == _generation
                     && !_disposed && generation == _generation;
             }
             ArgumentNullException.ThrowIfNull(publication); ArgumentNullException.ThrowIfNull(reference);
@@ -196,43 +194,16 @@ internal sealed class ResultImagePane : IDisposable
 
     private bool IsCurrent(Presentation active)
     {
-        if (_disposed || active.DisplayOnly || active.Generation != _generation || !ReferenceEquals(_presentation, active)) return false;
-        var valid = active.Current() && active.Publication.IsCurrent() && active.Publication.Stamp == active.Stamp
+        if (_disposed || active.Generation != _generation || !ReferenceEquals(_presentation, active)) return false;
+        // 呈现存活按"同发布对象+同租约身份+帧未换代+发布未退役"判定。
+        // 执行域当前性（IsCurrent）不参与：配置编辑使发布陈旧后场景继续显示；
+        // 但退役（Dispose）必须归还借用、释放资源，由新呈现或显式 Clear 接管。
+        var valid = !active.Publication.IsRetired && active.Current() && active.Publication.Stamp == active.Stamp
             && active.Lease.Stamp == active.Stamp;
         return valid && !_disposed && active.Generation == _generation && ReferenceEquals(_presentation, active);
     }
 
-    private bool CanDisplay(Presentation active)
-    {
-        if(!active.DisplayOnly)return IsCurrent(active);
-        if(_disposed||active.Generation!=_generation||!ReferenceEquals(_presentation,active))return false;
-        var valid=active.DisplayCurrent?.Invoke()==true;
-        return valid&&!_disposed&&active.Generation==_generation&&ReferenceEquals(_presentation,active);
-    }
-    internal Action<IReadOnlyList<SunEyeVision.Domain.Workflows.ScopedNodeIdentity>?>? PrepareDisplayRetention(Func<bool> current)
-    {
-        Viewport.View.Dispatcher.VerifyAccess();
-        var active=_presentation;
-        if(active is null||!CanDisplay(active)||active.Receipt!=Viewport.CurrentFrame)return null;
-        return affected=>
-        {
-            if(affected is null||!affected.Any(node=>node.WorkflowId==active.ScopeId&&node.NodeId==active.NodeId)
-                ||_disposed||active.Generation!=_generation||!ReferenceEquals(_presentation,active)
-                ||active.Receipt!=Viewport.CurrentFrame||!current())return;
-            active.DisplayOnly=true;active.DisplayCurrent=current;
-            // The native frame already owns an independent pixel reader. Retire result
-            // authority now; its reader is released by the normal viewport clear/replace path.
-            active.Lease.Dispose();
-            Viewport.RefreshCurrentness();
-        };
-    }
-    internal void ClearUnlessRetained()
-    {
-        if(_presentation is {DisplayOnly:true} retained&&CanDisplay(retained))RefreshCurrentness();
-        else Clear();
-    }
-    internal void ClearRetained()
-    {if(_presentation is {DisplayOnly:true})Clear();}
+    private bool CanDisplay(Presentation active)=>IsCurrent(active);
     internal ResultViewportImageLease? BorrowCurrentImage()
     {
         Viewport.View.Dispatcher.VerifyAccess();

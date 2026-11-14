@@ -25,13 +25,6 @@ public partial class MainWindowViewModel
  private DeclaredOutputSnapshot? _workspaceEditorSnapshot;
  private DeclaredOutputSnapshot? _retainedEditorDebugSnapshot;
  private IDisposable? _retainedEditorDebugLease;
- // Image-source policy edits replace the draft configuration object before the
- // display refresh callback runs. Keep the presentation contract that belonged
- // to the completed result, so the result scene can be rebuilt without
- // restyling or invalidating its graphics/text.
- private ResultDisplayDescriptor? _retainedResultDisplayDescriptor;
- private ResultDisplayAppearance? _retainedResultDisplayAppearance;
- private ResultGeometrySnapshot? _retainedResultDisplayGeometry;
  private string[] _workspaceEditorImages=[];
  private ProductionEditorContext? SelectedEditorContext=>_editorDebugContext is {IsValid:true} context
   &&ReferenceEquals(DocumentManager.CurrentSession,context.Session)&&ReferenceEquals(SelectedNode,context.FormalNode)?context:null;
@@ -57,9 +50,6 @@ public partial class MainWindowViewModel
  {
   _retainedEditorDebugSnapshot=null;
   _retainedEditorDebugLease?.Dispose();_retainedEditorDebugLease=null;
-  _retainedResultDisplayDescriptor=null;
-  _retainedResultDisplayAppearance=null;
-  _retainedResultDisplayGeometry=null;
  }
  private void RefreshEditorDebugResult()
  {

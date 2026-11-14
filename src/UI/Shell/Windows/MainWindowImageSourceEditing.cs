@@ -21,7 +21,6 @@ public partial class MainWindowViewModel
  internal Action<DocumentEditReceipt>? ImageSourceEditAccepted { get; set; }
  internal Func<ImageSourceActivation, Task>? ImageSourceActivate { get; set; }
  internal Func<bool>? ImageSourceCanNavigate { get; set; }
- internal Func<ImageSourceEditProposal, SourceDisplayPreservationScope?>? ImageSourcePrepareDisplay { get; set; }
  internal Action<string, Exception>? ImageSourcePresentationError { get; set; }
 
  /// <summary>Replace the source projection only after resolving actual session, flow and node identities.</summary>
@@ -67,7 +66,7 @@ public partial class MainWindowViewModel
    var next = new ImageSourceProjectionBinding(session, root, source, Current,
     () => CanEditRootWorkspace && !IsRunning, () => ImageSourceCanNavigate?.Invoke() == true,
     ImageSourceEditAccepted, ImageSourceActivate,
-    prepareDisplay: ImageSourcePrepareDisplay, reportPresentationError: ImageSourcePresentationError,
+    reportPresentationError: ImageSourcePresentationError,
     providesImageImport: providesImport);
    candidate=next;
    _imageSourceBindings[source.Id] = next;

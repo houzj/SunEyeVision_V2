@@ -127,12 +127,21 @@ public partial class MainWindowViewModel
         using var reader=session.AcquirePublishedResult(workflowId,node.Id);
         if(reader is not null)
         {
-            // 同一身份且仍当前：不 retire 不重建，避免"清空→重画"造成的一帧闪烁（原件按数据变化更新）。
-            if(_resultPublication is {} existing&&existing.IsCurrent()
-                &&_resultPublicationSnapshot is {} presented&&presented.Identity==reader.Snapshot.Identity)
+            // 同一身份：不 retire 不重建，避免"清空→重画"造成的一帧闪烁（原件按数据变化更新）。
+            // 配置编辑使执行域退役后 IsCurrent 为假，但显示层按原件语义继续持有上一轮结果，
+            // 只有新执行产生不同身份的快照才替换（P_ValueChanged→UpdateModuleViewResultShow）。
+            if(_resultPublicationSnapshot is {} presented&&presented.Identity==reader.Snapshot.Identity)
                 return;
-            PresentSnapshot(reader.Snapshot,node.Name);return;
+            PresentSnapshot(reader.Snapshot,node.Name);
+            // 原件语义（UpdateModuleViewResultShow）：正式完成快照呈现即保留租约——
+            // 配置编辑使执行域退役后数据仍可显示，不再依赖编辑前挽留。调试快照不在此保留
+            // （其租约由调试窗口生命周期管理，关闭即释放）。
+            if(reader.Snapshot is {IsComplete:true})RetainEditorDebugSnapshot(reader.Snapshot);
+            return;
         }
+        // 执行域被编辑退役后 reader 为空：当前发布虽已陈旧仍是用户看到的上一轮完整结果，
+        // 保持显示不动；仅当本就没有可显示的发布时才走声明/清空。
+        if(_resultPublication is not null)return;
         var schema=session.GetNodeSchema(workflowId,node.Id);
         if(schema is null){ClearRetainedEditorDebugSnapshot();ClearResultDisplay();return;}
         PresentDeclaration(schema,node.Name,schema.Outputs.ToDictionary(port=>port.Id,port=>schema.FindOutputDisplay(port.Id)?.DisplayName??port.Id,StringComparer.Ordinal),DeclaredBindings(schema,node.Id,workflowId));
@@ -158,32 +167,5 @@ public partial class MainWindowViewModel
         var epoch=RetireResultPublication();var owner=CaptureResultViewOwner(epoch);
         if(!owner())return;
         PresentResultPublication(ToolResultViews.Declaration(schema,owner,names,displayedPorts),null,nodeName,bindings);
-    }
-
-    /// <summary>
-    /// Transfer the current completed invocation's resource lease to the display
-    /// layer before a document edit retires its execution domain. Editing a
-    /// configuration changes the next execution snapshot; it does not replace
-    /// the result currently shown by the workspace.
-    /// </summary>
-    private void RetainCurrentResultForEdit()
-    {
-        if(_resultPublicationSnapshot is { IsComplete:true } snapshot
-            && SelectedNode?.Id==snapshot.Identity.NodeId
-            && WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId==snapshot.SourceWorkflowId)
-        {
-            // Capture the presentation contract before the document transaction
-            // replaces the node configuration. The result table and immutable
-            // output snapshot survive that transaction, while the draft
-            // configuration instance intentionally does not.
-            if(_resultPublication is {} publication
-                && CaptureCurrentResultDisplay(publication) is {} display)
-            {
-                _retainedResultDisplayDescriptor=display.Descriptor;
-                _retainedResultDisplayAppearance=display.Appearance;
-                _retainedResultDisplayGeometry=display.Geometry;
-            }
-            RetainEditorDebugSnapshot(snapshot);
-        }
     }
 }

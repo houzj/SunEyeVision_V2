@@ -28,6 +28,9 @@ public interface IResultPublication : IDisposable
     IReadOnlyList<Diagnostic> Diagnostics { get; }
     IReadOnlyDictionary<string,string> DisplayNames { get; }
     IReadOnlySet<string> DisplayedPorts { get; }
+    /// <summary>已显式退役（Dispose）。与 IsCurrent 的"执行域当前性"不同：
+    /// 陈旧发布（配置编辑后）仍可被显示层持有显示，退役发布必须释放借用。</summary>
+    bool IsRetired { get; }
     bool IsCurrent();
     IResultValueLease Borrow();
 }
@@ -92,6 +95,7 @@ public sealed class ResultPublication : IResultPublication
     public IReadOnlyList<Diagnostic> Diagnostics {get;}
     public IReadOnlyDictionary<string,string> DisplayNames {get;}
     public IReadOnlySet<string> DisplayedPorts {get;}
+    public bool IsRetired{get{lock(_gate){return _retired;}}}
     public bool IsCurrent()
     {
         lock(_gate){if(_retired)return false;}

@@ -62,6 +62,8 @@ public sealed class ResultImagePaneTests
         Assert.Equal(90d, native.AngleRange);
         Assert.Equal(Colors.Blue.ToString(), native.Stroke);
         Assert.Equal("CenterX:2 CenterY:1 OuterRadius:3 InnerRadius:1 StartAngle:90 AngleRange:-90", native.ToolTip);
+        // 单一所有权合同：陈旧发布（执行域退役但未销毁）保留显示；
+        // 显式退役（Dispose）释放借用并清场（资源合同）。
         source.Publication.Dispose();
         pane.RefreshCurrentness();
         Assert.Null(view.ShapeList);
@@ -205,6 +207,7 @@ public sealed class ResultImagePaneTests
         Assert.Same(source.Image, borrowed.Image);
         Assert.Equal(frame, borrowed.Receipt);
         source.Publication.Dispose();
+        // 退役（Dispose）释放借用：借帧通道关闭、租约失效、视口清空（资源合同）。
         Assert.False(borrowed.IsCurrent);
         Assert.Null(pane.BorrowCurrentImage());
         pane.RefreshCurrentness();
@@ -431,6 +434,38 @@ public sealed class ResultImagePaneTests
         Assert.False(borrowed.IsCurrent); Assert.Null(pane.BorrowCurrentImage());
     });
 
+    [Fact]
+    public void Stale_publication_keeps_the_displayed_scene_until_a_new_publication_replaces_it() => Sta(() =>
+    {
+        var currency = true;
+        using var first = new Source(isCurrent: () => currency);
+        using var second = new Source();
+        var view = new ImageViewBox();
+        using var pane = new ResultImagePane(view);
+        Assert.True(pane.TryPresent(first.Publication, first.Reference(), "flow", () => true, out var error), error);
+        var receipt = Assert.IsType<NativeResultFrameReceipt>(pane.CurrentFrame);
+        using var scene = pane.Viewport.CreateDisplaySceneLayer();
+        var text = new NativeTextOverlay("Blob面积:10", new System.Windows.Point(1, 1), 12, Colors.Lime, 1);
+        Assert.True(scene.Present(receipt, 1, Array.Empty<NativeGeometryOverlay>(), new[] { text }, () => true));
+        Assert.NotNull(view.ShapeList);
+
+        // 配置编辑使执行域退役：发布变陈旧（IsCurrent=false）但未销毁。
+        currency = false;
+        Assert.False(first.Publication.IsCurrent());
+        pane.RefreshCurrentness();
+        // 单一所有权合同：陈旧发布的已呈现背景帧与结果图文层全部保留
+        // （原件 P_ValueChanged→UpdateModuleViewResultShow 用上一轮数据保持显示）。
+        Assert.NotNull(view.ImageDataSource);
+        Assert.NotNull(pane.CurrentFrame);
+        Assert.NotNull(view.ShapeList);
+
+        // 新执行发布到达：同 pane 原子替换，不留旧场景。
+        Assert.True(pane.TryPresent(second.Publication, second.Reference(), "flow", () => true, out var replaceError), replaceError);
+        Assert.Equal(second.Image.Frame, pane.CurrentFrame!.Frame);
+        Assert.NotEqual(first.Image.Frame, pane.CurrentFrame.Frame);
+        Assert.Null(view.ShapeList);
+    });
+
     private sealed class Source : IDisposable
     {
         internal readonly TrackingOwner Owner;
@@ -439,7 +474,8 @@ public sealed class ResultImagePaneTests
         internal readonly TypeRef Type;
         private readonly bool _nested, _sequence;
         internal Source(bool nested = false, bool sequence = false, Func<IReadOnlyImage, IReadOnlyImage>? wrap = null,
-            CoordinateFrame? coordinateFrame = null, (ImageLayout Layout, byte[] Pixels)? raster = null)
+            CoordinateFrame? coordinateFrame = null, (ImageLayout Layout, byte[] Pixels)? raster = null,
+            Func<bool>? isCurrent = null)
         {
             _nested = nested; _sequence = sequence;
             var resources = new FrozenOutputResources(); Owner = new(resources);
@@ -464,7 +500,7 @@ public sealed class ResultImagePaneTests
             var schema = new ToolSchema(Array.Empty<Port>(), new[] { new Port("output.image", Type) });
             var identity = new RunIdentity(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "source", Guid.NewGuid());
             Publication = new(new ResultPublication(schema, new ResultPublicationStamp(Guid.NewGuid(), identity, 7, schema.Fingerprint),
-                ResultViewState.Success, new InputValues(schema.Outputs, new Dictionary<string, object?> { ["output.image"] = value }), Owner, () => true));
+                ResultViewState.Success, new InputValues(schema.Outputs, new Dictionary<string, object?> { ["output.image"] = value }), Owner, isCurrent ?? (() => true)));
         }
         internal OutputReference Reference() => new("source", "output.image", Type, _nested ? new[] { "capture" } : null,
             _sequence ? new BindingSelection.AtConstant(0) : BindingSelection.All, scopeId: "flow");
@@ -486,6 +522,7 @@ public sealed class ResultImagePaneTests
         public IReadOnlyList<Diagnostic> Diagnostics => inner.Diagnostics;
         public IReadOnlyDictionary<string, string> DisplayNames => inner.DisplayNames;
         public IReadOnlySet<string> DisplayedPorts => inner.DisplayedPorts;
+        public bool IsRetired => inner.IsRetired;
         public bool IsCurrent() => inner.IsCurrent();
         public IResultValueLease Borrow()
         {

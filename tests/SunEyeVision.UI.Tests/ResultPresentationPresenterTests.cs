@@ -694,7 +694,7 @@ public sealed class ResultPresentationPresenterTests:IDisposable
         public int Borrows,LeaseDisposals,OwnerDisposals;public Func<bool>? Current;public Action? AfterBorrow;public ResultPublicationStamp? OverrideStamp;
         public ResultPublicationStamp Stamp=>OverrideStamp??inner.Stamp;public ToolSchema Schema=>inner.Schema;public ResultViewState State=>inner.State;
         public IReadOnlyList<Diagnostic> Diagnostics=>inner.Diagnostics;public IReadOnlyDictionary<string,string> DisplayNames=>inner.DisplayNames;
-        public IReadOnlySet<string>? DisplayedPorts=>inner.DisplayedPorts;public bool IsCurrent()=>(Current?.Invoke()??true)&&inner.IsCurrent();
+        public IReadOnlySet<string>? DisplayedPorts=>inner.DisplayedPorts;public bool IsRetired=>inner.IsRetired;public bool IsCurrent()=>(Current?.Invoke()??true)&&inner.IsCurrent();
         public IResultValueLease Borrow(){Borrows++;var lease=inner.Borrow();AfterBorrow?.Invoke();return new TrackedLease(lease,()=>LeaseDisposals++);}
         public void Dispose(){OwnerDisposals++;inner.Dispose();}
         private sealed class TrackedLease(IResultValueLease inner,Action disposed):IResultValueLease
@@ -752,6 +752,7 @@ public sealed class ResultPresentationPresenterTests:IDisposable
         public ResultPublicationStamp Stamp=>inner.Stamp;public ToolSchema Schema=>inner.Schema;public ResultViewState State=>inner.State;
         public IReadOnlyList<Diagnostic> Diagnostics=>inner.Diagnostics;public IReadOnlyDictionary<string,string> DisplayNames=>inner.DisplayNames;
         public IReadOnlySet<string>? DisplayedPorts=>inner.DisplayedPorts;
+        public bool IsRetired=>inner.IsRetired;
         public bool IsCurrent()=>true;public IResultValueLease Borrow()=>inner.Borrow();public void Dispose(){}
     }
     private sealed class PoisonImage : IReadOnlyImage, IDisposable

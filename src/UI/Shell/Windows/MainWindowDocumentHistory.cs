@@ -80,24 +80,21 @@ public partial class MainWindowViewModel
     }
     private void RefreshChangedDocumentViews(DocumentChangeSet change)
     {
-        // Image-source policy commits notify the session before their display
-        // preservation scope is accepted. Do not retire the current result in
-        // that window. ImageSourceProjectionBinding completes the acceptance
-        // and the main callback decides whether a formal refresh is needed.
-        var imageSourceEditInProgress=ActiveImageSourceBinding?.Source.IsAcceptingEdit==true;
         foreach(var editor in _productionEditors.ToArray())
             if(!ReferenceEquals(editor,_editorDebugContext)&&!editor.IsValid)editor.Discard();
         // 提交会重建节点实例：无条件按稳定 Id 把选择重绑定到当前实例。
         // 下游（ImageSourceResolver 等）仍使用引用判定，不重绑定就会被误判失效并清空图像源条。
+        // 图像源策略编辑与普通参数编辑同类：RefreshFormalPublishedResult 按"陈旧发布保持显示"
+        // 语义处理（同一快照身份不重建、发布仍在显示时不清空），无需在途豁免窗口。
         if(SelectedNode is {} selected)
         {
             var rebound=FindCurrentNode(selected.Id);
             if(rebound is null)SelectedNode=null;
             else if(!ReferenceEquals(rebound,selected))SelectedNode=rebound;
-            else if(!imageSourceEditInProgress)RefreshFormalPublishedResult();
+            else RefreshFormalPublishedResult();
         }
         RefreshFormalImageSourceSelection();
-        if(!imageSourceEditInProgress)NotifyResultDisplayChanged();
+        NotifyResultDisplayChanged();
         foreach(var tab in WorkflowTabViewModel.Tabs)tab.QueueRootReadiness();UpdateCurrentSolutionInfo();UpdateUndoRedoCommands();
         OnPropertyChanged(nameof(CanUndoRootWorkspace));OnPropertyChanged(nameof(CanRedoRootWorkspace));OnPropertyChanged(nameof(EditHistoryLocations));
     }

@@ -359,7 +359,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
     public bool TryValidateEditor(out string error) => CurrentContext().TryValidateEditor(out error);
     public bool TryCommitEditor(out string error) => CurrentContext().TryCommitEditor(out error);
     public Task RunDebugAsync() => (_debug ?? throw new InvalidOperationException("参数调试尚未接入实际会话。")).RunAsync();
-    internal void RefreshRoiFrame() => _roiFrames?.Refresh();
+    internal void RefreshRoiFrame() => _roiFrames?.RebindCurrentFrame();
     /// <summary>图像视口落笔：转发给工具侧 owner，阻断时弹原厂提示（两段式）。</summary>
     internal void NotifyRoiDrawRequested() => _roiFrames?.NotifyInputViewportClicked();
     private void ReleaseView()

@@ -11,6 +11,12 @@
     <Setter Property="Shape.Stretch" Value="Fill" />
     <Setter Property="StrokeThickness" Value="{Binding StrokeThickness, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
     <Setter Property="Fill" Value="#00FFFFFF" />
+    <Style.Triggers>
+      <DataTrigger Binding="{Binding IsAvoid}" Value="True">
+        <Setter Property="Fill" Value="{StaticResource AnchorBaseColor}" />
+        <Setter Property="Opacity" Value="0.45" />
+      </DataTrigger>
+    </Style.Triggers>
   </Style>
   <Style x:Key="FeaturePolygonStyle" TargetType="{x:Type Polygon}" BasedOn="{StaticResource PolygonBaseStyle}">
     <Style.Triggers>

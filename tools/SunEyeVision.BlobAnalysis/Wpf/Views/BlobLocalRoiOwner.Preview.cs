@@ -13,6 +13,7 @@ internal sealed partial class BlobLocalRoiOwner
     private NativeRoiInputLease? _previewInputs;
     private NativeResultViewport.ReadOnlyRoiLayer? _previewLayer;
     private DispatcherOperation? _previewRefresh;
+    private DispatcherOperation? _frameRefresh;
     private long _previewRequest,_previewRevision;
     private bool _previewing,_previewAgain;
     private readonly HashSet<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldRow> _previewFields=new();
@@ -34,10 +35,30 @@ internal sealed partial class BlobLocalRoiOwner
                 field.Changed+=QueuePreview;
         }
     }
-    private void PreviewLoaded(object sender,RoutedEventArgs args){QueuePreview();}
-    private void PreviewUnloaded(object sender,RoutedEventArgs args){RetireFrame();}
+    private void PreviewLoaded(object sender,RoutedEventArgs args)
+    {
+        QueuePreview();
+        QueueFrameRefresh();
+    }
+    private void PreviewUnloaded(object sender,RoutedEventArgs args)
+    {
+        _frameRefresh?.Abort();_frameRefresh=null;
+    }
     private void PreviewVisibilityChanged(object sender,DependencyPropertyChangedEventArgs args)
-    {if(_controls.IsVisible)QueuePreview();else RetireFrame();}
+    {
+        if(_controls.IsVisible){QueuePreview();QueueFrameRefresh();}
+        else{_frameRefresh?.Abort();_frameRefresh=null;}
+    }
+    private void QueueFrameRefresh()
+    {
+        if(_disposed||!_controls.IsLoaded||!_controls.IsVisible)return;
+        _frameRefresh?.Abort();
+        _frameRefresh=_controls.Dispatcher.BeginInvoke(DispatcherPriority.Loaded,new Action(() =>
+        {
+            _frameRefresh=null;
+            if(!_disposed&&_controls.IsLoaded&&_controls.IsVisible)RefreshFrame();
+        }));
+    }
     private string PreviewMode()=>_controls.IsImageArea?BlobRoiInheritance.Local:_inputs.ReadUnpresentedInput(BlobRoiInheritance.ModeId) switch
     {UnsetSetting=>BlobRoiInheritance.Local,ConstantSetting{Value:string mode}=>BlobRoiInheritance.ValidateMode(mode),_=>throw new InvalidOperationException("ROI继承方式无效。")};
     private void QueuePreview()
@@ -116,6 +137,7 @@ internal sealed partial class BlobLocalRoiOwner
     private void DisposePreview()
     {
         _controls.Loaded-=PreviewLoaded;_controls.Unloaded-=PreviewUnloaded;_controls.IsVisibleChanged-=PreviewVisibilityChanged;
+        _frameRefresh?.Abort();_frameRefresh=null;
         foreach(var field in _previewFields)field.Changed-=QueuePreview;_previewFields.Clear();
         _controls.Changed-=QueuePreview;
         if(_source is not null)_source.Changed-=QueuePreview;ClearPreview();

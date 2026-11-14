@@ -367,6 +367,12 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
             return PublishAcceptance(result,()=>
             {
                 if(!Current())return;
+                if(IsStaleAcceptance(current,result))
+                {
+                    Error="区域编辑期间图像或区域范围已刷新，本次绘制已取消。";
+                    NativeRoiCallbacks.Run([Notify]);
+                    return;
+                }
                 var installed=ValidateAcceptance(current,proposal,result);
                 Error=result.Accepted?"":result.Error??"宿主拒绝新区域。";
                 InstallAfterCommit(installed,result.Selection);
@@ -396,6 +402,15 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
             _invalid=true;Error="宿主区域回执违反接纳合同，编辑租约已停止。";
             NativeRoiCallbacks.Run([CancelPending,Notify]);throw;
         }
+    }
+
+    private static bool IsStaleAcceptance(RoiEditSnapshot current,RoiEditAcceptance result)
+    {
+        var stamp=result.Snapshot?.Stamp;
+        return stamp is null
+            || stamp.ScopeId!=current.Stamp.ScopeId
+            || stamp.Frame!=current.Stamp.Frame
+            || stamp.Revision<current.Stamp.Revision;
     }
     private RoiEditSnapshot ValidateAcceptanceCore(RoiEditSnapshot current,RoiEditProposal proposal,RoiEditAcceptance result)
     {
@@ -501,6 +516,13 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
             return PublishAcceptance(result,()=>
             {
                 if(!IsCurrent)return;
+                if(IsStaleAcceptance(current,result))
+                {
+                    item.Cancel();
+                    Error="区域编辑期间图像或区域范围已刷新，本次编辑已取消。";
+                    NativeRoiCallbacks.Run([Notify]);
+                    return;
+                }
                 var installed=ValidateAcceptance(current,proposal,result);
                 Error=result.Accepted?"":result.Error??"宿主拒绝区域几何候选。";
                 var unchanged=installed.Stamp==_stamp;

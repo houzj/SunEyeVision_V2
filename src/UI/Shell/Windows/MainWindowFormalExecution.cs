@@ -95,11 +95,11 @@ public partial class MainWindowViewModel
   if(!_formalExecutionSnapshots.TryGetValue(workflowId,out var snapshot))_formalExecutionSnapshots.Add(workflowId,snapshot=new(workflowId,root.Name));
   snapshot.SynchronizeDefinition(root.Name,root.Nodes);return snapshot;
  }
- private async Task RunFormalWorkflowsAsync(IReadOnlyList<string> workflowIds, int navigationDirection = 0)
+ private async Task RunFormalWorkflowsAsync(IReadOnlyList<string> workflowIds, int navigationDirection = 0, bool allowDebugWindow = false)
  {
   if(_formalRunTask is not null||IsRunning)throw new InvalidOperationException("方案已有正式运行，请先停止并等待排空。");
   var session=DocumentManager.CurrentSession??throw new InvalidOperationException("当前没有方案。");
-  if(!CanEditRootWorkspace||IsDebugWindowOpen)throw new InvalidOperationException("请先处理参数编辑和方案切换后再运行。");
+  if(!CanEditRootWorkspaceState||IsDebugWindowOpen&&!allowDebugWindow)throw new InvalidOperationException("请先处理参数编辑和方案切换后再运行。");
   if(!TryCommitSolutionEditors(out var error))throw new InvalidOperationException(error);
   _formalRunTask=RunFormalBatchCoreAsync(session,workflowIds,navigationDirection);
   try{await _formalRunTask;}finally{_formalRunTask=null;}
@@ -156,7 +156,7 @@ public partial class MainWindowViewModel
  }
  private async Task ActivateFormalImageSourceAsync(ImageSourceActivation activation)
  {
-  if(!ReferenceEquals(DocumentManager.CurrentSession,activation.Session)||!CanAcceptExternalActivation||IsDebugWindowOpen)
+  if(!ReferenceEquals(DocumentManager.CurrentSession,activation.Session)||!CanAcceptExternalActivation)
    throw new InvalidOperationException("图像导航所属方案或编辑状态已变化。");
   var context=activation.Session.CaptureHostInputContext(activation.Workflow.Id,activation.Node)
    ??throw new InvalidOperationException("图像源宿主能力已失效。");
@@ -170,7 +170,7 @@ public partial class MainWindowViewModel
   ResultWorkspaceChanged?.Invoke();
   if(IsRunning){StatusText="图像导航已排队，当前已捕获输入保持冻结。";return;}
   if(previousIndex==activation.Index)return;
-  await RunFormalWorkflowsAsync(new[]{activation.Workflow.Id});
+  await RunFormalWorkflowsAsync(new[]{activation.Workflow.Id},allowDebugWindow:IsDebugWindowOpen);
  }
  private void RefreshFormalImageReadReceipts(DocumentSession session)
  {

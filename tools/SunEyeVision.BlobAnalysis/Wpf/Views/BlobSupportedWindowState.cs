@@ -117,7 +117,12 @@ internal sealed class BlobSupportedWindowState : IDisposable
             foreach (var field in inputs.Fields.Where(field => field.FieldId.StartsWith(BlobTool.PoseInput, StringComparison.Ordinal)).ToArray())
             {
                 if (!current() || revision != draft.Revision) return;
-                inputs.RefreshInputProjection(field.FieldId);
+                // VM's SelectWay is a real persisted radio with default value 0.
+                // The projection may be unset while the optional fixture leaves are
+                // dormant, but that must not clear the selected radio or make the
+                // three choices appear inert after the enable switch is accepted.
+                inputs.RefreshInputProjection(field.FieldId,
+                    field.FieldId == BlobFixtureInputs.PositionCorrectionModeId ? new ConstantSetting(0L) : null);
                 if (field.FieldId is not (BlobTool.PoseInput or BlobFixtureInputs.ReferencePoint or BlobFixtureInputs.RunPoint)) continue;
                 var members = BlobFixtureInputs.LeavesFor(field.FieldId).Select(inputs.ReadInputProjection).ToArray();
                 field.SetReferenceSummary(field.Setting is UnsetSetting && members.Any(member => member is not UnsetSetting)

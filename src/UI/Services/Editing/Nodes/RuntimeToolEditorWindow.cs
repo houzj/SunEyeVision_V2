@@ -36,6 +36,7 @@ public sealed class RuntimeToolEditorWindow : BaseWindow, INativeToolCommands
     public RuntimeNodeConfigurationControl Editor { get; }
     public event EventHandler<RuntimeToolExecutionEventArgs>? ToolExecutionCompleted;
     public event EventHandler? Changed;
+    internal Action? BeforeClose { get; set; }
     public bool IsCurrent => !_closed;
     internal bool CanCompleteAssembly => !_closed && !_closing;
     public NativeToolCommandState State => new(Editor.IsContinuousDebugRequested, _running || Editor.IsDebugBusy, RunVisible: true, ConfirmVisible: true);
@@ -217,6 +218,8 @@ public sealed class RuntimeToolEditorWindow : BaseWindow, INativeToolCommands
                 catch (Exception error) { Foundation.Logging.PluginLogger.Error(error.Message, nameof(RuntimeToolEditorWindow), error); }
                 try
                 {
+                    try { BeforeClose?.Invoke(); }
+                    catch (Exception preserveFailure) { Foundation.Logging.PluginLogger.Error(preserveFailure.Message, nameof(RuntimeToolEditorWindow), preserveFailure); }
                     // 原件语义（ModuleResultView/ModuleDisplayDecorator）：形状与参数即模块
                     // 参数对象，关闭参数窗口即持久生效，不存在"丢弃草稿"边界。关闭前
                     // 把未提交的调试草稿（含 ROI 区域记录）提交到正式配置，尽力而为

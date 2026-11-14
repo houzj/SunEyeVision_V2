@@ -54,6 +54,17 @@ public partial class MainWindowViewModel
     }
     private void RefreshFormalNodeSelection()
     {
+        var node=SelectedNode;
+        var workflowId=WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId;
+        // Rebinding a committed draft can replace the NodeDefinition instance
+        // while keeping the same workflow/node identity. VM keeps the module
+        // result view and its last result in that case. Preserve the retained
+        // publication through this selection pass so the editor rebind does not
+        // become an implicit result reset.
+        var preserveStablePresentation=node is not null&&workflowId is not null
+            &&_retainedEditorDebugSnapshot is { IsComplete:true } retained
+            &&retained.Identity.NodeId==node.Id
+            &&retained.SourceWorkflowId==workflowId;
         foreach(var editor in _productionEditors.ToArray())
         {
             // The debug editor owns the selected node's private draft. During a
@@ -67,14 +78,19 @@ public partial class MainWindowViewModel
         // 提交会重建节点实例：先把选择重新绑定到当前实例，再走后续引用判定，避免选择被误判失效。
         if (SelectedNode is {} stale && FindCurrentNode(stale.Id) is {} rebound && !ReferenceEquals(rebound, stale))
         { SelectedNode = rebound; return; }
-        var node = SelectedNode;
         ReleaseActiveResultView();
-        ClearResultDisplay();
+        if(!preserveStablePresentation)ClearResultDisplay();
         if (node is null) { HasDataAnalysisControl=false; SelectedNodeDataAnalysisControl=null; ClearFormalImageSourceSelection(); NotifyResultHistoryChanged(); return; }
         if (!OwnsSelectedDocumentNode(node)) { SelectedNode=null; return; }
         UpdateDataAnalysisControl(node).GetAwaiter().GetResult();
         RefreshFormalPublishedResult();
         RefreshFormalImageSourceSelection();
+         // The image-source binding may be created after a workflow run when
+         // the user selects the node afterwards. Consume the still-current
+         // formal read receipts now so ImageInputSource.CurrentIndex and the
+         // thumbnail selection catch up with the completed execution.
+         if(DocumentManager.CurrentSession is {} currentSession)
+             RefreshFormalImageReadReceipts(currentSession);
         NotifyResultDisplayChanged();
     }
     private long _editorOpenGeneration;
@@ -88,6 +104,11 @@ public partial class MainWindowViewModel
         if(!CanOpenFormalEditor)
             throw new InvalidOperationException("当前主窗正在运行、切换或关闭，不能打开参数页。");
         if (!OwnsSelectedDocumentNode(node)) throw new InvalidOperationException("节点已退出当前实际流程。");
+        // Opening the private editor rebuilds the node draft and may retire the
+        // formal publication. VM keeps the last completed result visible while
+        // the draft is being edited, so retain it before creating the context.
+        if(_resultPublicationSnapshot is { IsComplete:true } published&&SelectedNode?.Id==node.Id)
+            RetainEditorDebugSnapshot(published);
         if (!node.IsEnabled) return;
         var session=DocumentManager.CurrentSession!;
         var workflowId=WorkflowTabViewModel.SelectedTab!.CurrentWorkflowId;
@@ -122,6 +143,13 @@ public partial class MainWindowViewModel
         perf.Mark("前置");
         var control=new RuntimeNodeConfigurationControl();
         var window=new RuntimeToolEditorWindow(control,node.ToolType) {Title=node.Name};
+        window.BeforeClose=() =>
+        {
+            if(_resultPublicationSnapshot is { IsComplete:true } published&&SelectedNode?.Id==node.Id)
+                RetainEditorDebugSnapshot(published);
+            if(control.CurrentDebugSnapshot is { IsComplete:true } debug&&SelectedNode?.Id==node.Id)
+                RetainEditorDebugSnapshot(debug);
+        };
         if (ResolveSolutionDialogOwner(null) is {} owner) window.Owner=owner;
         _openDebugWindow=window;
         perf.Mark("构造");
@@ -218,6 +246,27 @@ public partial class MainWindowViewModel
                     }
                     return RuntimeRoiFrameBorrow?.Invoke(key,interactive,SourceCurrent);
                 },()=>RoiDrawBlockReason,RefreshEditorDebugResult);
+            EventHandler<RuntimeToolExecutionEventArgs> retainDebugResult=(_,args)=>
+            {
+                if(args.Result is {IsComplete:true} result&&ReferenceEquals(DocumentManager.CurrentSession,session)&&SelectedNode?.Id==node.Id)
+                {
+                    RetainEditorDebugSnapshot(result);
+                    // VM 更新结果后在视口完成当前帧装载时重投影 ROI。结果来源
+                    // 计划可能保持同一输入图而跳过工作区重建，因此执行完成事件
+                    // 必须单独补一次编辑层接帧。
+                    try
+                    {
+                        control.Dispatcher.BeginInvoke(DispatcherPriority.Loaded,new Action(() =>
+                        {
+                            if(context.IsValid&&ReferenceEquals(_editorDebugControl,control)&&SelectedNode?.Id==node.Id)
+                                NotifyRoiFrameAvailabilityChanged();
+                        }));
+                    }
+                    catch(InvalidOperationException) when(control.Dispatcher.HasShutdownStarted||control.Dispatcher.HasShutdownFinished) { }
+                }
+            };
+            control.ExecutionCompleted+=retainDebugResult;
+            context.Deactivated+=()=>control.ExecutionCompleted-=retainDebugResult;
             RoiFrameAvailabilityChanged+=control.RefreshRoiFrame;
             RoiInputViewportClicked+=control.NotifyRoiDrawRequested;
             context.Deactivated+=()=>
@@ -226,7 +275,8 @@ public partial class MainWindowViewModel
                 RoiInputViewportClicked-=control.NotifyRoiDrawRequested;
                 if(ReferenceEquals(_editorDebugControl,control))
                 {
-                    _editorDebugControl=null;_editorDebugContext=null;RefreshEditorDebugResult();
+                    _editorDebugControl=null;_editorDebugContext=null;
+                    RefreshEditorDebugResult();
                 }
             };
             window.SetRunAvailability(()=>Current()&&!IsRunning&&!_solutionTransitionPrepared&&!_transitionPreparationInProgress);

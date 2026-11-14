@@ -17,6 +17,7 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
     private readonly SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldRow _imageField;
     private readonly Dictionary<string,NativeRoiEditor> _editors=new();
     private readonly Dictionary<string,NativeRoiSession> _sessions=new();
+    private readonly Dictionary<string,Guid> _selectedRoiIds=new();
     private readonly Dictionary<NativeRoiSession,Action> _retirementHandlers=new();
     private bool _recordingRetirement;
     private readonly Dictionary<string,Guid> _scopes=new(){{BlobLocalRoi.Inspection,Guid.NewGuid()},{BlobLocalRoi.Mask,Guid.NewGuid()}};
@@ -29,6 +30,7 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
     private string? _pendingActivate;
     private RecordValue _observed;
     private bool _disposed,_accepting,_refreshing,_activating;
+    private bool _synchronizingSelection;
     private readonly Func<string?>? _drawBlockReason;
     private bool _localInspection,_localMask;
     private string _observedPreviewMode=BlobRoiInheritance.Local;
@@ -53,7 +55,7 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
             controls.BindLocalEditors(_editors[BlobLocalRoi.Inspection],_editors[BlobLocalRoi.Mask]);
             controls.Changed+=OnModesChanged;
             _imageField.Changed+=RefreshFrame;
-            if(source is not null)source.Changed+=RefreshFrame;
+            if(source is not null){source.Changed+=RefreshFrame;source.FrameReplaced+=RebindCurrentFrame;}
             if(source is not null)source.InputViewportClicked+=OnInputViewportClicked;
             _localInspection=_controls.IsLocalDrawing(BlobLocalRoi.Inspection);_localMask=_controls.IsLocalDrawing(BlobLocalRoi.Mask);
             _observedPreviewMode=PreviewMode();InitializePreview();
@@ -86,12 +88,20 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
         {
             groups.Add(new(group,Enum.Parse<RoiCoverage>(BlobLocalRoi.Coverage(root,group)),group==BlobLocalRoi.Inspection?RoiCoverage.FullDomain:RoiCoverage.None));
             foreach(var item in BlobLocalRoi.Items(root,group))rows.Add(new(group,Guid.ParseExact(item.Get<string>("id"),"N"),item.Get<string>("name"),
-                BlobLocalRoiProjection.ToNative(item.Get<RecordValue>("shape")),item.Get<bool>("enabled")&&group==editableGroup&&_controls.IsLocalDrawing(group),item.Get<bool>("visible")&&_controls.IsLocalDrawing(group)));
+                BlobLocalRoiProjection.ToNative(item.Get<RecordValue>("shape")),item.Get<bool>("enabled")&&_controls.IsLocalDrawing(group),item.Get<bool>("visible")&&_controls.IsLocalDrawing(group)));
         }
         return new(new(_scopes[editableGroup],revision,frame),rows.AsReadOnly(),groups.AsReadOnly());
     }
     private bool FrameCurrent(long generation)
-    {var frame=_frame;return !_disposed&&_controls.IsLoaded&&_controls.IsVisible&&generation==_generation&&frame is not null&&frame.IsCurrent&&!_disposed&&_controls.IsLoaded&&_controls.IsVisible&&generation==_generation&&ReferenceEquals(frame,_frame);}
+    {
+        // VM keeps the ROI objects attached to the module result view while
+        // parameter sub-tabs are switched. The basic-page control may be
+        // unloaded or hidden during that navigation, but the physical frame
+        // and ROI session remain valid until the input frame or editor scope
+        // actually changes.
+        var frame=_frame;
+        return !_disposed&&generation==_generation&&frame is not null&&frame.IsCurrent&&ReferenceEquals(frame,_frame);
+    }
     private void AcquireFrame(bool interactive)
     {
         if(_disposed||_refreshing||_accepting||_activating||!_controls.IsLoaded||!_controls.IsVisible)return;
@@ -105,11 +115,14 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
             if(_disposed||generation!=_generation||!frame.IsCurrent){frame.Dispose();return;}_frame=frame;
             foreach(var group in new[]{BlobLocalRoi.Inspection,BlobLocalRoi.Mask})
             {
-                var session=new NativeRoiSession(frame.Image,()=>Snapshot(group),(stamp,proposal)=>Accept(group,stamp,proposal),()=>FrameCurrent(generation),
+                NativeRoiSession? session=null;
+                session=new NativeRoiSession(frame.Image,()=>Snapshot(group),(stamp,proposal)=>Accept(ProposalGroup(proposal,session!.DrawingGroup),stamp,proposal),()=>FrameCurrent(generation),
                     ()=>new(_undo.Count>0,_redo.Count>0),group,isAvoid:group==BlobLocalRoi.Mask,
                     canDraw:target=>target==group&&_controls.IsLocalDrawing(group),canSetCoverage:target=>target==group&&_controls.IsLocalDrawing(group),
                     maximumDrawItems:group==BlobLocalRoi.Inspection?BlobLocalRoi.MaximumLocalInspectionCount:BlobLocalRoi.MaximumLocalMaskCount);
                 _sessions.Add(group,session);
+                var observedSession=session;
+                observedSession.Changed+=()=>SyncSelection(observedSession);
                 Action retiring=()=>RecordInteractionRetirement(group,session,generation);
                 session.InteractionRetiring+=retiring;_retirementHandlers.Add(session,retiring);
                 if(_pending.TryGetValue(group,out var pending)&&_controls.IsLocalDrawing(group))session.Select(group,pending.Id);
@@ -118,6 +131,17 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
                 {
                     if(_editors[group].RestorePendingInput(pending))_pending.Remove(group);
                     else _unrestoredInput="区域对象已改变，未提交原文不能应用；请取消窗口后重新编辑。";
+                }
+                if(_selectedRoiIds.TryGetValue(group,out var selectedId)&&_controls.IsLocalDrawing(group))
+                    session.Select(group,selectedId);
+                if(!_selectedRoiIds.ContainsKey(group)&&_controls.IsLocalDrawing(group))
+                {
+                    var initial=session.Items.FirstOrDefault(item=>item.Enabled&&item.Visible);
+                    if(initial is not null&&session.Select(group,initial.Id))
+                    {
+                        _selectedRoiIds[group]=initial.Id;
+                        _pendingActivate ??= group;
+                    }
                 }
             }
             Error="";Notify();
@@ -131,6 +155,29 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
         }
         finally{_refreshing=false;}
     }
+    private static string ProposalGroup(RoiEditProposal proposal,string fallback)
+        =>proposal switch
+        {
+            RoiEditProposal.Create create=>create.Group,
+            RoiEditProposal.Replace replace=>replace.Target.Group,
+            RoiEditProposal.SetCoverage coverage=>coverage.Group,
+            RoiEditProposal.Delete delete=>delete.Targets[0].Group,
+            _=>fallback
+        };
+    private void SyncSelection(NativeRoiSession source)
+    {
+        if(_disposed||_refreshing||_synchronizingSelection||source.CurROIData is not { } selected)return;
+        _selectedRoiIds[selected.Group]=selected.Id;
+        _synchronizingSelection=true;
+        try
+        {
+            foreach(var pair in _sessions)
+                if(!ReferenceEquals(pair.Value,source)&&pair.Value.IsCurrent&&
+                    (pair.Value.CurROIData?.Group!=selected.Group||pair.Value.CurROIData?.Id!=selected.Id))
+                    pair.Value.Select(selected.Group,selected.Id);
+        }
+        finally{_synchronizingSelection=false;}
+    }
     internal void RefreshFrame()
     {
         if(_disposed||_refreshing||_accepting||_activating)return;
@@ -140,6 +187,7 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
         // 不依赖用户再点绘制按钮。
         if(_frame is not {} frame||!frame.IsCurrent)
         {
+            if(_active is {} active)_pendingActivate=active;
             _refreshing=true;
             try{RetireFrame();Notify();}
             finally{_refreshing=false;}
@@ -148,10 +196,31 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
             &&(_controls.IsLocalDrawing(BlobLocalRoi.Inspection)||_controls.IsLocalDrawing(BlobLocalRoi.Mask)))
             AcquireFrame(interactive:false);
     }
+    private void RebindCurrentFrame()
+    {
+        if(_disposed||_refreshing||_accepting||_activating)return;
+        if(!_controls.IsLoaded||!_controls.IsVisible)return;
+        var reacquire=_controls.IsLocalDrawing(BlobLocalRoi.Inspection)||_controls.IsLocalDrawing(BlobLocalRoi.Mask);
+        if(_active is {} active)_pendingActivate=active;
+        _refreshing=true;
+        try
+        {
+            RetireFrame();
+        }
+        finally{_refreshing=false;}
+        if(!_disposed&&reacquire)AcquireFrame(interactive:false);
+    }
     private bool ActivateCore(string group)
     {
         if(!FrameCurrent(_generation)||!_sessions.TryGetValue(group,out var session))return false;
-        if(_active==group&&_interaction?.IsCurrent==true)return true;
+        if(_active==group&&_interaction?.IsCurrent==true)
+        {
+            // A free hit may have changed the selected object's group while
+            // keeping the same viewport lease. Selecting a new-draw button
+            // must restore that session's creation group before BeginDraw.
+            if(session.DrawingGroup!=group)session.SetDrawingGroup(group);
+            return true;
+        }
         if(_interaction?.HasPendingGesture==true){Error="请先完成或取消当前绘制。";return false;}
         _activating=true;var generation=_generation;
         try
@@ -159,7 +228,19 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
             if(_active is {} previous&&!_editors[previous].TryCommitPending()){Error=_editors[previous].Error;return false;}
             var old=_interaction;_interaction=null;_active=null;old?.Dispose();
             if(!FrameCurrent(generation))return false;
-            var candidate=_frame!.BeginEditing(session);
+            INativeRoiEditLease candidate;
+            try
+            {
+                candidate=_frame!.BeginEditing(session);
+            }
+            catch(InvalidOperationException) when(!FrameCurrent(generation)||!session.IsCurrent)
+            {
+                // The result viewport can complete a frame replacement between the
+                // focus event and BeginEditing. VM reprojects after that replacement.
+                // Retire this stale lease and let Activate reacquire the new receipt.
+                RetireFrame();
+                return false;
+            }
             if(!FrameCurrent(generation)){candidate.Dispose();return false;}
             _interaction=candidate;_active=group;_pendingActivate=null;_editors[group].DeferInteractionFeedback=false;Error="";return true;
         }
@@ -170,6 +251,13 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
         if(_disposed||_activating||_accepting||!_controls.IsLoaded||!_controls.IsVisible||!_controls.IsLocalDrawing(group))return false;
         if(!FrameCurrent(_generation))AcquireFrame(interactive:true);
         if(ActivateCore(group))return true;
+        // A frame may have changed after the first borrow but before the
+        // viewport accepted the edit lease. Reborrow once on the new receipt.
+        if(!FrameCurrent(_generation))
+        {
+            AcquireFrame(interactive:true);
+            if(ActivateCore(group))return true;
+        }
         // 原厂两段式（用户实机截图）：显示图不是输入图时点形状按钮只选中不弹框，
         // 提示延迟到图像落笔（OnInputViewportClicked 重试仍阻断时弹出）。
         // 待激活记录兜底：用户切回输入图后自动重建即武装。
@@ -307,6 +395,11 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
     private void RetireFrame()
     {
         if(!_disposed)CapturePendingEditors();
+        foreach(var pair in _sessions)
+        {
+            if(pair.Value.CurROIData is { } selected)_selectedRoiIds[pair.Key]=selected.Id;
+            else _selectedRoiIds.Remove(pair.Key);
+        }
         ClearPreview();
         ++_generation;var interaction=_interaction;_interaction=null;_active=null;var frame=_frame;_frame=null;
         var sessions=_sessions.Values.ToArray();_sessions.Clear();
@@ -324,7 +417,7 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;_pendingActivate=null;_controls.Changed-=OnModesChanged;
-        _imageField.Changed-=RefreshFrame;if(_source is not null){_source.Changed-=RefreshFrame;_source.InputViewportClicked-=OnInputViewportClicked;}Changed=null;
+        _imageField.Changed-=RefreshFrame;if(_source is not null){_source.Changed-=RefreshFrame;_source.FrameReplaced-=RebindCurrentFrame;_source.InputViewportClicked-=OnInputViewportClicked;}Changed=null;
         Run(new Action[]{DisposePreview,RetireFrame}.Concat(_editors.Values.Select(editor=>(Action)(()=>{editor.PendingChanged-=Notify;editor.Dispose();}))));
     }
 }

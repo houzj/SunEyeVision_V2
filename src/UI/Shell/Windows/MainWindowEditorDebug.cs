@@ -2,6 +2,7 @@ using SunEyeVision.Application;
 using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Contracts.Results.Presentation;
 using SunEyeVision.UI.Services.Editing;
 namespace SunEyeVision.UI.Shell.Windows;
 public partial class MainWindowViewModel
@@ -22,10 +23,44 @@ public partial class MainWindowViewModel
  private ProductionEditorContext? _workspaceEditorContext;
  private ToolConfiguration? _workspaceEditorConfiguration;
  private DeclaredOutputSnapshot? _workspaceEditorSnapshot;
+ private DeclaredOutputSnapshot? _retainedEditorDebugSnapshot;
+ private IDisposable? _retainedEditorDebugLease;
+ // Image-source policy edits replace the draft configuration object before the
+ // display refresh callback runs. Keep the presentation contract that belonged
+ // to the completed result, so the result scene can be rebuilt without
+ // restyling or invalidating its graphics/text.
+ private ResultDisplayDescriptor? _retainedResultDisplayDescriptor;
+ private ResultDisplayAppearance? _retainedResultDisplayAppearance;
+ private ResultGeometrySnapshot? _retainedResultDisplayGeometry;
  private string[] _workspaceEditorImages=[];
  private ProductionEditorContext? SelectedEditorContext=>_editorDebugContext is {IsValid:true} context
   &&ReferenceEquals(DocumentManager.CurrentSession,context.Session)&&ReferenceEquals(SelectedNode,context.FormalNode)?context:null;
  private DeclaredOutputSnapshot? CurrentEditorDebugSnapshot=>SelectedEditorContext is not null?_editorDebugControl?.CurrentDebugSnapshot:null;
+ // Debug and formal executions share the document owner. Retention is therefore
+ // identified by the retained snapshot reference plus the active node/workflow,
+ // not by a different DocumentSessionId.
+ private bool IsRetainedEditorDebugSnapshot(DeclaredOutputSnapshot snapshot)
+  =>ReferenceEquals(snapshot,_retainedEditorDebugSnapshot)
+    &&DocumentManager.CurrentSession is {} session
+    &&SelectedNode is {} node
+    &&snapshot.Identity.NodeId==node.Id
+    &&snapshot.SourceWorkflowId==WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId;
+ internal void RetainEditorDebugSnapshot(DeclaredOutputSnapshot snapshot)
+ {
+  if(!snapshot.IsComplete)return;
+  if(ReferenceEquals(snapshot,_retainedEditorDebugSnapshot))return;
+  var lease=snapshot.Retain();
+  _retainedEditorDebugLease?.Dispose();
+  _retainedEditorDebugLease=lease;_retainedEditorDebugSnapshot=snapshot;
+ }
+ private void ClearRetainedEditorDebugSnapshot()
+ {
+  _retainedEditorDebugSnapshot=null;
+  _retainedEditorDebugLease?.Dispose();_retainedEditorDebugLease=null;
+  _retainedResultDisplayDescriptor=null;
+  _retainedResultDisplayAppearance=null;
+  _retainedResultDisplayGeometry=null;
+ }
  private void RefreshEditorDebugResult()
  {
   if(_documentHostReleased)return;
@@ -88,7 +123,7 @@ public partial class MainWindowViewModel
   // 调试快照优先；编辑器打开不得否决正式发布的当前性——原件 ModuleResultView 在编辑态
   // 同样显示该模块的正式结果（形状+文本）。否则 publication.IsCurrent() 恒 false，
   // 结果区只留图像、叠加被清空。
-  if(ReferenceEquals(CurrentEditorDebugSnapshot,snapshot))return true;
+  if(ReferenceEquals(CurrentEditorDebugSnapshot,snapshot)||IsRetainedEditorDebugSnapshot(snapshot))return true;
   if(snapshot.Identity.DocumentSessionId!=session.ResultOwnerId)return false;
   return session.IsPublishedResultCurrent(workflowId,node.Id,snapshot);
  }

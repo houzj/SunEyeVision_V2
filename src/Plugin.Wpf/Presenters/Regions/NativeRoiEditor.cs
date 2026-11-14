@@ -71,6 +71,9 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
     public bool AllowUnboundFullDomain {get;set;}=true;
     public bool PolygonOnly {get;set;}
     public bool UnboundFullDomain {get;set;}
+    // 原厂两段式：阻断态（无 session）点形状按钮仍呈现选中样式（用户实机对照）。
+    // UnboundContext 每次 Bind(null) 都会重建，选中态必须落在 owner 上才能跨重建保持。
+    internal string? UnboundShape {get;set;}
     public event Action? PendingChanged;
     private void OnPendingChanged(object sender,TextChangedEventArgs args)
     {if(!_disposed&&!_projecting&&!_committing&&!_suspended)PendingChanged?.Invoke();}
@@ -89,6 +92,7 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         _resume?.Abort();_resume=null;_savedRaw=null;_suspended=false;_registration?.Dispose();_registration=null;
         if(_session is not null){_session.Changed-=Project;_session.PropertyChanged-=OnDrawStateChanged;_session.DrawLimitReached-=ShowDrawLimitWarning;}
         _session=session;_projectedSession=null;_projectedItem=null;_projectedStamp=null;
+        if(session is not null)UnboundShape=null;
         if(session is not null){_registration=session.RegisterEditorCommit(()=>TryCommitPending());session.Changed+=Project;session.PropertyChanged+=OnDrawStateChanged;session.DrawLimitReached+=ShowDrawLimitWarning;}
         Project();
     }
@@ -352,9 +356,10 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         {var child=VisualTreeHelper.GetChild(root,i);if(child is T match)yield return match;foreach(var nested in Descendants<T>(child))yield return nested;}
     }
     // This is only an original-toolbox command route. It contains no image or editable geometry.
-    private sealed class UnboundContext
+    private sealed class UnboundContext : System.ComponentModel.INotifyPropertyChanged
     {
         private readonly NativeRoiEditor _owner;
+        public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
         public UnboundContext(NativeRoiEditor owner,long generation)
         {
             _owner=owner;
@@ -367,8 +372,19 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         public bool IsHaveData=>false;
         public bool BoxEnable_ModuleEnableA=>false;public bool SectorEnable_ModuleEnableA=>false;
         public bool SectorRingEnable_ModuleEnableA=>false;public bool PolygonEnable_ModuleEnableA=>false;
-        public bool BoxA {get=>false;set{}} public bool SectorA {get=>false;set{}}
-        public bool SectorRingA {get=>false;set{}} public bool PolygonA {get=>false;set{}}
+        // 形状选中态以 owner.UnboundShape 为单一事实源（radio 互斥），跨 Bind(null) 重建保持；
+        // kind 取值与 session 侧 ActiveDraw.Kind 一致。
+        public bool BoxA {get=>_owner.UnboundShape=="rectangle";set=>SetShape("rectangle",value);}
+        public bool SectorA {get=>_owner.UnboundShape=="sector";set=>SetShape("sector",value);}
+        public bool SectorRingA {get=>_owner.UnboundShape=="annulus";set=>SetShape("annulus",value);}
+        public bool PolygonA {get=>_owner.UnboundShape=="polygon";set=>SetShape("polygon",value);}
+        private void SetShape(string kind,bool value)
+        {
+            if(_owner.UnboundShape==kind==value)return;
+            _owner.UnboundShape=value?kind:null;
+            foreach(var name in new[]{nameof(BoxA),nameof(SectorA),nameof(SectorRingA),nameof(PolygonA)})
+                PropertyChanged?.Invoke(this,new(name));
+        }
         public bool FullScreenEnableA=>_owner.AllowUnboundFullDomain;
         public bool FullScreen_ModuleEnableA=>_owner.UnboundFullDomain;
         public bool FullScreenA {get=>_owner.UnboundFullDomain;set{}}

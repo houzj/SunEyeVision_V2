@@ -1137,12 +1137,18 @@ SplitterPosition = position;
         {
             var intent=System.Threading.Interlocked.Increment(ref _nodeSelectionIntent);
             if (ReferenceEquals(_selectedNode, node)) return false;
-            System.Threading.Interlocked.Increment(ref _outputContractSelectionGeneration);
-            var sameStableNode=_selectedNode is { } previous&&node is { } next
+            // 提交重建节点实例（同稳定 Id）：原件语义对结果视图不可见——发布、结果表、
+            // 图文层全部原样保留，仅静默替换实例引用，不退役发布、不推进选择代次。
+            if(_selectedNode is { } previous&&node is { } next
                 &&string.Equals(previous.Id,next.Id,StringComparison.Ordinal)
-                &&WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId is not null;
-            if(sameStableNode&&_resultPublicationSnapshot is { IsComplete:true } published)
-                RetainEditorDebugSnapshot(published);
+                &&WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId is not null)
+            {
+                if(intent!=_nodeSelectionIntent)return false;
+                SetProperty(ref _selectedNode,node,propertyName:nameof(SelectedNode));
+                OnPropertyChanged(nameof(ResultHelpContent));
+                return false;
+            }
+            System.Threading.Interlocked.Increment(ref _outputContractSelectionGeneration);
             // A node switch only changes the active result view. Retained debug
             // snapshots belong to their stable workflow/node identity and must
             // remain available when the user switches back.

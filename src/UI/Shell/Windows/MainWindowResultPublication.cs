@@ -46,9 +46,16 @@ public partial class MainWindowViewModel
     {
         var session=DocumentManager.CurrentSession;var node=SelectedNode;var tab=WorkflowTabViewModel.SelectedTab;
         var selection=_outputContractSelectionGeneration;
-        return ()=>epoch==_resultPublicationEpoch && selection==_outputContractSelectionGeneration && ReferenceEquals(DocumentManager.CurrentSession,session)
-            &&ReferenceEquals(SelectedNode,node)&&ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab)
-            &&(node is null||OwnsSelectedDocumentNode(node));
+        // 提交重建节点实例（同稳定 Id）对结果视图不可见：归属按稳定 Id 判定，
+        // 并用当前实例复核文档归属，重绑定不会让已呈现发布被误判失效。
+        return ()=>{
+            if(epoch!=_resultPublicationEpoch||selection!=_outputContractSelectionGeneration
+                ||!ReferenceEquals(DocumentManager.CurrentSession,session)
+                ||!ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab))return false;
+            if(node is null)return SelectedNode is null;
+            return SelectedNode is {} current&&string.Equals(current.Id,node.Id,StringComparison.Ordinal)
+                &&OwnsSelectedDocumentNode(current);
+        };
     }
     private long RetireResultPublication()
     {

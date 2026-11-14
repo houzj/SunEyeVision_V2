@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VM ImageSource-Blob 全链快照与窗口生命周期逆向分析</title>
+<style>
+body{font-family:"Microsoft YaHei",sans-serif;max-width:1200px;margin:24px auto;padding:0 18px;line-height:1.7;color:#222}
+h1{font-size:24px;border-bottom:2px solid #324a68;padding-bottom:8px}
+h2{font-size:19px;margin-top:32px;border-left:4px solid #324a68;padding-left:10px}
+h3{font-size:16px;margin-top:22px;color:#324a68}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13px}
+th,td{border:1px solid #b9c1cc;padding:7px 9px;vertical-align:top;text-align:left}
+th{background:#edf2f7}
+code{background:#f3f5f7;padding:1px 4px;border-radius:3px;font-size:12px}
+.fact{background:#f1f8f2;border:1px solid #78a77c;padding:10px 14px;border-radius:5px}
+.gap{background:#fff6e8;border:1px solid #d7a64a;padding:10px 14px;border-radius:5px}
+.wrong{background:#fff0f0;border:1px solid #bd6b6b;padding:10px 14px;border-radius:5px}
+.flow{background:#f7f9fc;border:1px solid #b9c1cc;padding:12px 16px;border-radius:5px;font-family:Consolas,"Microsoft YaHei",monospace;white-space:pre-wrap}
+li{margin:4px 0}
+</style>
+</head>
+<body>
+<h1>VM ImageSource → Blob 全链快照与窗口生命周期逆向分析</h1>
+<p><b>日期</b>：2026-11-14　<b>用途</b>：在继续修改前固定原厂状态边界、证据等级和本方差异。<br>
+<b>分析范围</b>：本地图像入口、Blob 输入、参数草稿、执行结果、结果显示层、ROI 编辑层、节点选择、调试窗口打开/关闭、重开、保存与退役。相机链路不在本批范围。</p>
+
+<div class="gap"><b>当前结论</b>：问题不是单个形状按钮或单个红框控件的局部 Bug。当前本方把“节点实例重绑、结果发布退役、参数草稿接纳、ROI 编辑帧换代、窗口关闭”串成了同一条清理路径，导致未执行的参数/ROI 修改提前清掉上一次执行快照，导致结果层和文本层消失；同时结果投影层没有在窗口重开时自动恢复编辑会话和选中态。VM 将这些状态分开管理。</div>
+
+<h2>一、原厂完整生产链</h2>
+<div class="flow">ImageSource 参数树
+  → 本地图片列表/运行模式写回 AlgorithmTabRoot
+  → ImageSource Run / Process 生成 ImageData、Mono8、当前路径、帧号
+  → Blob 输入 InputImage 绑定同一图像 IO
+  → Blob 参数树与 RoiManager 保存 ROI 几何
+  → Process / ProcessOutput 生成一次 ModuleResult
+  → ModuleResultView 从结果存储读取图像与图形
+  → 结果图形层独立重建
+  → 参数页打开时 SetRoiVisible → 同一 ROI 对象重投影到输入图
+  → 参数页关闭时只隐藏 ROI 编辑层，保留结果图形、文本和结果表</div>
+
+<table>
+<tr><th>阶段</th><th>原厂对象/入口</th><th>状态归属</th><th>逆向证据</th></tr>
+<tr><td>本地图像选择</td><td><code>LocalImageListView</code>、<code>AlgorithmTabRoot.UserStringData[ExecuteType]</code>、<code>CurrentImagePath</code></td><td>正式参数树和列表选择态</td><td>反编译 <code>LocalImageListView.xaml.cs</code>；REA managed evidence <code>ev_f71488f7f8c40dfcd4abf6d3b9b422cb384b0c37971f48305f01be9a0ad18d06</code></td></tr>
+<tr><td>执行输入</td><td><code>ImageSourceModuleTool.Run/SetImagePath/SetImageData</code>、原生 <code>Process</code></td><td>执行轮次快照</td><td><code>ImageSourceModuleCs.dll</code>，SHA-256 <code>1f7c52...aa35c</code>，MVID <code>0435b7cd-e965-456f-ace6-2bd83ca97a88</code></td></tr>
+<tr><td>Blob ROI</td><td><code>BlobFindRoiManager</code>、<code>ROIAreaType</code>、<code>roicenterx/roicentery/roiwidth/roiheight/roiangle</code></td><td>模块参数中的可持久化几何，不是结果矩形</td><td><code>BlobFindRoiManager.cs</code>、REA managed evidence <code>ev_1113a5ecda381684fed82abf4933969659ea279956d3577640b4b9da44d8faa1</code></td></tr>
+<tr><td>Blob 结果</td><td><code>IMVSBlobFindModuTool.ModuResult</code> → <code>ModuleResultManager.QueryModuleOneResult/SetModuleResult</code></td><td>单次执行结果对象</td><td><code>BlobFindResult</code> 同时含 BlobRect、CentroidPoint、ContourInfo、ROI、ROIAnnulus、BinaryImageComb、BlobImageComb、OutputMask</td></tr>
+<tr><td>结果图形</td><td><code>RenderControlBase.UpdateShapesWithCallBackData</code>、<code>DrawCurModuleUIResult</code></td><td>结果投影层，刷新可清图形但不销毁参数 ROI</td><td>反编译 <code>RenderControlBase.xaml.cs</code></td></tr>
+<tr><td>ROI 编辑层</td><td><code>ModuleResultView.SetRoiVisible</code>、<code>IsCanDrawROI</code>、<code>AlgorithmTabRoot.UpdateROI</code></td><td>参数窗口会话和同一 ROI 对象的编辑投影</td><td>反编译 <code>ModuleResultView.xaml.cs</code>、<code>ROISelecter.cs</code></td></tr>
+</table>
+
+<h2>二、原厂四条关键状态边界</h2>
+<h3>1. 参数草稿不等于执行结果</h3>
+<p>参数变化通过 <code>P_ValueChanged</code> 在非运行状态调用 <code>UpdateModuleViewResultShow()</code>。该方法从显示对象以 <code>GetValue(uint.MaxValue)</code> 读取最近可用结果，再重建图形，不触发一次新的 Blob 执行，也不把上一次结果清空。参数修改因此可以改变“下一次执行使用的草稿”，同时保留当前结果层和结果表。</p>
+<div class="fact">原厂可观察语义：编辑阈值、查找个数、ROI 等参数后，未执行前，Blob 结果、文本、结果表和上一次图像仍然存在。</div>
+
+<h3>2. 结果图形层与 ROI 编辑层是两套消费者</h3>
+<p><code>RenderControlBase.UpdateShapesWithCallBackData</code> 先清理 <code>shapeBuffer/shapeList</code>，再从当前回调结果重新绘制 Blob 矩形、质心点、轮廓点和文本。<code>ModuleResultView.SetRoiVisible</code> 只控制参数 ROI 在输入图上的可见性。结果层变换不会自动销毁 ROI 参数对象，关闭窗口也只是把 <code>ROIVisible</code> 设为 false。</p>
+<div class="wrong">本方目前把“结果发布退役”和“ROI 编辑帧退役”都挂在节点选择/窗口关闭的统一清理路径上。结果层清空后，ROI 仍可能只剩绿色/蓝色结果投影，橙色编辑控制点和命中状态没有恢复。</div>
+
+<h3>3. 执行完成后的重投影发生在结果回调末尾</h3>
+<p>原厂 <code>ModuleResultView.OnModuleCallBackArrived</code> 在结果交换、图像刷新、结果树刷新之后，检查 <code>ROIVisible &amp;&amp; !IsDragROI</code>，再调用 <code>ModuleSource.UpdateROI()</code>。<code>AlgorithmTabRoot.UpdateROI</code> 读取参数中的 ROI 字节并对既有 ROI 对象调用 <code>UpdateIROI</code>。因此执行后的 ROI 位置来自参数几何重新投影，结果图形和 ROI 编辑对象不会混为一体。</p>
+
+<h3>4. 打开/关闭窗口只改变可见性，不改变结果快照身份</h3>
+<p>原厂打开参数页后设置 <code>IsOpenParams=true</code>，随后调用 <code>ModuleResultView.SetRoiVisible()</code>。关闭回调调用 <code>SetRoiVisible(false)</code>，但没有清空 <code>ModuleResultView</code> 的结果数据和图形缓存。切换到另一个真实模块或方案退役时才执行 <code>DoSourceChanged</code>、<code>Dispose</code> 和数据清理。</p>
+
+<h2>三、本方完整调用链对照</h2>
+<table>
+<tr><th>本方环节</th><th>当前实现</th><th>与 VM 的差异</th><th>证据等级</th></tr>
+<tr><td>打开调试窗口</td><td><code>OpenFormalNodeEditor</code> 创建 <code>ProductionEditorContext</code>、<code>RuntimeNodeConfigurationControl</code> 和独立窗口</td><td>本方创建新的编辑会话和节点草稿。该动作本身不能导致正式结果退役，但当前后续选择刷新会触发正式视图清理。</td><td>源码闭合 + 日志</td></tr>
+<tr><td>参数接纳/节点重绑</td><td><code>ProductionEditorContext.Acknowledge</code> 调用 <code>RebaseAcceptedDraft</code>，随后 <code>RefreshFormalNodeSelection</code></td><td><code>RefreshFormalNodeSelection</code> 无条件 <code>ReleaseActiveResultView(); ClearResultDisplay();</code>。而 <code>ClearResultDisplay</code> 又清理保留调试快照。稳定节点 ID 的保留意图在此被抹掉。</td><td>源码实锤</td></tr>
+<tr><td>结果发布</td><td><code>RetireResultPublication</code> 释放 publication、清空结果表、模块结果树、原生图像展示</td><td>本方把节点对象实例更换当作结果必须清空的条件。VM 以模块身份和执行结果存储区为边界，参数回绑不等于结果失效。</td><td>源码 + VM 静态证据</td></tr>
+<tr><td>调试执行完成</td><td><code>ExecutionCompleted</code> 保留 <code>DeclaredOutputSnapshot</code>，并排队 ROI 帧通知</td><td>保留租约方向正确，但只要中途发生节点选择刷新或清理路径，租约会被清掉，出现用户看到的“关闭后只有背景图/空表”。</td><td>源码 + 15:32 日志</td></tr>
+<tr><td>ROI 编辑帧</td><td><code>BlobLocalRoiOwner</code> 通过 <code>NativeRoiFrameLease</code> 借当前视口帧</td><td>当前会话、选中态和结果 publication 分离不完整。结果投影还在时，编辑会话可能被退役，重开后只能通过再次绘制建立可命中状态。</td><td>源码 + 用户截图</td></tr>
+<tr><td>调试关闭</td><td><code>RuntimeToolEditorWindow.BeforeClose</code> 尝试保留快照，随后 <code>context.Deactivated</code> 释放编辑器和 ROI 订阅</td><td>关闭前保留快照的补丁不足以抵御前置的 <code>ClearResultDisplay</code> 或陈旧节点实例拒绝。关闭动作与结果 publication 生命周期仍耦合。</td><td>源码 + 15:32 日志</td></tr>
+</table>
+
+<h2>四、已经证实的根因</h2>
+<ol>
+<li><b>结果快照清理边界错误。</b> 稳定节点 ID 的草稿重绑本应只替换参数/节点实例引用，本方却进入 <code>RefreshFormalNodeSelection</code> 的无条件清理，清掉上一次执行结果。</li>
+<li><b>保留快照的租约层级错误。</b> 调试快照被作为结果清理的附属状态管理。VM 的最近执行结果属于模块结果存储，编辑窗口关闭只解除编辑视图，不解除结果存储。</li>
+<li><b>ROI 选中态与 ROI 几何混淆。</b> 参数中的 ROI 几何还在时，本方编辑会话/选中项可能已经退役，所以画面可见蓝色或绿色投影，却没有橙色控制点和命中路由。</li>
+<li><b>编辑视图实例与结果视图实例没有统一稳定身份。</b> 日志明确出现“节点实例或声明配置已变化，不能使用过期视图”。VM 的 <code>ModuleResultView</code> 在同一模块身份下复用显示装饰器，只有真实模块/方案切换才销毁。</li>
+<li><b>把异步换代通知当成状态清理通知。</b> 本方 ROI 帧换代通知已经补上，但它只负责重新借当前帧，不能承担结果快照保留、节点重绑和编辑选中态恢复。</li>
+</ol>
+
+<h2>五、必须按此边界重新设计的状态机</h2>
+<table>
+<tr><th>状态</th><th>允许更新</th><th>必须保持</th><th>唯一清理条件</th></tr>
+<tr><td>参数草稿编辑</td><td>草稿字段、ROI 参数、显示配置、节点实例</td><td>最近一次成功执行的结果图形、文本、表格、结果图像</td><td>同节点新的成功执行、节点删除、方案/流程切换、方案关闭</td></tr>
+<tr><td>ROI 绘制/拖动</td><td>ROI 几何与选中态</td><td>最近执行结果投影</td><td>真实输入图换代、编辑会话关闭、节点/方案退役</td></tr>
+<tr><td>执行中</td><td>执行私有快照和临时帧</td><td>旧结果直到新结果完成或明确失败策略生效</td><td>新结果发布、取消/失败按原厂规则处理</td></tr>
+<tr><td>调试窗口关闭</td><td>解除编辑视图、隐藏 ROI 编辑层</td><td>最近一次完整结果 publication 与结果层</td><td>新的正式执行或真实身份切换</td></tr>
+<tr><td>节点实例重绑</td><td>按 <code>workflowId + nodeId</code> 重绑消费者</td><td>结果快照和显示选择</td><td>稳定身份变化或结果声明不再属于该节点</td></tr>
+</table>
+
+<h2>六、证据缺口与本次不作猜测的部分</h2>
+<div class="gap"><ul>
+<li>已取得 VM 托管层、XML、结果视图和 ROI 更新顺序证据。原生 <code>Process/ProcessOutput/LimitJudge</code> 的内部参数布局和调用顺序仍受当前 REA Windows 提供方边界限制，不能从导出表猜测。</li>
+<li>VM 是否在所有异常/取消执行中保留上一轮结果，需要补充原机运行证据。当前只把“成功结果在未执行编辑后保持”列为已证实。</li>
+<li>本方首个 ROI 自动选中策略没有 VM 直接证据，暂不把它当最终设计依据。重开后的选中态应由稳定 ROI 身份/参数对象恢复，不能用“取第一个 ROI”掩盖缺失的选中状态合同。</li>
+</ul></div>
+
+<h2>七、实施顺序</h2>
+<ol>
+<li>先拆分结果 publication、编辑会话、ROI 几何、ROI 选中态和节点实例重绑的清理职责。</li>
+<li>把“同一稳定节点的草稿接纳/实例重绑”改为结果 publication 可继续消费的重绑定，不进入无条件清屏路径。</li>
+<li>把调试快照保留挂到节点/流程/会话稳定身份和最近成功执行轮次，不挂到窗口对象。</li>
+<li>窗口重开时按同一 ROI 参数身份恢复全部编辑 ROI 和选中状态，再由当前输入帧完成一次重投影；结果投影继续从上一轮结果快照读取。</li>
+<li>完成后只做一次 Release 构建，人工验收覆盖“执行→改参数不执行→关窗→重开→命中旧 ROI→再执行→结果层替换→节点切换/方案关闭清理”。</li>
+</ol>
+
+<h2>八、本批实施与构建状态</h2>
+<div class="fact">已实施结果快照边界修复：同一流程/节点稳定身份的节点实例重绑不再调用会清理保留快照的无条件清屏路径，真实节点/流程切换仍按原清理路径处理。Blob ROI 当前帧借用、既有 ROI 恢复和编辑 attachment 恢复链已保留。正式全量 Release 构建通过，0 个错误、366 个存量警告，Build payload 为 <code>88C293FBF17C4B6380DEDE086BE000C9869FFB6A77D653AE429BCCB29C596DEE</code>。本批未运行自动化测试，结果层与 ROI 的端到端行为仍由人工统一验收。</div>
+
+<h2>证据索引</h2>
+<ul>
+<li><code>docs/collaboration/evidence/VM原厂本地图像与ROI刷新逆向取证-20261114.json</code></li>
+<li><code>docs/07-工具逆向/decompiled/WpfControls/VMControls.WPF/ModuleResultView.xaml.cs</code></li>
+<li><code>docs/07-工具逆向/decompiled/WpfControls/VMControls.WPF/RenderControlBase.xaml.cs</code></li>
+<li><code>docs/07-工具逆向/decompiled/XmlParser/Apps.XmlParser/Apps.XmlParser.ParamTab/ROISelecter.cs</code></li>
+<li><code>src/UI/Shell/Windows/MainWindowRuntimeEditing.cs</code>、<code>MainWindowResultPublication.cs</code>、<code>MainWindowViewModel.cs</code></li>
+<li>正式日志：<code>C:\Users\Administrator\AppData\Local\SunEyeVision\Logs\suneye.log2026-11-14.log</code>，15:32:24 的“当前结果没有正式图形或文字显示声明”与“CloseRequested/ReleaseView”序列</li>
+</ul>
+</body>
+</html>

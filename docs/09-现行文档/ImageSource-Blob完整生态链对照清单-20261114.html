@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ImageSource-Blob 完整生态链对照清单-20261114</title>
+<style>
+body{font-family:"Microsoft YaHei",sans-serif;max-width:1280px;margin:24px auto;padding:0 18px;line-height:1.65;color:#222;background:#fff}
+h1{font-size:24px;border-bottom:3px solid #2d6a8a;padding-bottom:10px}
+h2{font-size:19px;margin-top:34px;border-left:5px solid #2d6a8a;padding-left:10px}
+h3{font-size:16px;margin-top:24px;color:#24566f}
+p{margin:8px 0}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13px}
+th,td{border:1px solid #b9c5cc;padding:7px 9px;vertical-align:top;text-align:left}
+th{background:#eaf3f7}
+code{background:#f1f3f4;padding:1px 4px;border-radius:3px;font-size:12px}
+.note{background:#fff7df;border:1px solid #d5ad42;border-radius:5px;padding:11px 14px;margin:14px 0}
+.evidence{background:#eef7ef;border:1px solid #7ca77c;border-radius:5px;padding:11px 14px;margin:14px 0}
+.unknown{background:#fff0f0;border:1px solid #bd6b6b;border-radius:5px;padding:11px 14px;margin:14px 0}
+.chain{background:#f4f7fb;border:1px solid #a6b5c4;border-radius:5px;padding:11px 14px;margin:12px 0}
+.status{white-space:nowrap;font-weight:bold}
+.done{color:#247a35}.pending{color:#9a6500}.open{color:#ad2d2d}
+li{margin:4px 0}
+</style>
+</head>
+<body>
+<h1>ImageSource → BlobAnalysis 完整生态链 VM 对照清单</h1>
+<p><b>日期</b>：2026-11-14　<b>性质</b>：逆向对照与验收清单　<b>当前阶段范围</b>：本地图像文件/本地文件夹 → BlobAnalysis 完整链路；ROI 是其中一个子链。相机和 SDK 保留为后续阶段，不作为本阶段闭口条件。</p>
+
+<div class="note"><b>使用规则</b>：每项都要有 VM 同版本证据、本方实现位置、差异判断、代码出口和验证出口。局部按钮通过不代表整链完成。用户实机截图是交互语义最终裁决，未取证项不得按推断填写为完成。</div>
+
+<div class="unknown"><b>完整性声明</b>：本文件是当前已知范围的第一版工作清单，不宣称已经覆盖 VM 全部依赖闭包。后续必须沿四层继续补齐：功能链、组件/资源依赖闭包、状态与异步时序、证据和验收。没有原厂证据或当前消费者定位的条目保持“待补证”，不能因为代码存在或局部测试通过而标记完成。</div>
+
+<h2>一、完整生产链总图</h2>
+<div class="chain"><code>方案/流程</code> → <code>ImageSource 本地文件/文件夹节点</code> → <code>路径接纳与本地序列</code> → <code>图像帧发布</code> → <code>Blob 输入接纳</code> → <code>Blob 参数快照</code> → <code>ROI/掩膜/定位</code> → <code>HALCON 执行</code> → <code>Blob 结果发布</code> → <code>图像显示下拉</code> → <code>图像交互与 ROI</code> → <code>保存/重开</code> → <code>取消/关闭/资源释放</code></div>
+
+<h2>二、VM 原厂证据闭包</h2>
+<table>
+<tr><th>编号</th><th>证据项</th><th>VM 证据锚点</th><th>本方记录</th><th>状态</th></tr>
+<tr><td>E1</td><td>程序集、版本、MVID、资源身份</td><td>VM 4.4.0 安装目录与同版本反编译保留源</td><td>登记程序集 SHA、来源和许可</td><td class="pending">需逐项复核</td></tr>
+<tr><td>E2</td><td>ImageSource 参数树、模板、默认值</td><td>图像源参数页、设置 XML、输入组合</td><td><code>ImageSourceFields</code>、WPF 参数组合</td><td class="pending">部分已有</td></tr>
+<tr><td>E3</td><td>Blob 参数树、三页、显示模板</td><td>Blob 参数 XML、参数页和结果页</td><td><code>BlobParameters.xml</code>、Blob WPF</td><td class="pending">部分已有</td></tr>
+<tr><td>E4</td><td>结果视图和图像条</td><td><code>ModuleResultView</code>、<code>RenderControlBase</code>、<code>DisplayImageListDecorator</code></td><td>结果工作区、来源投影、视口</td><td class="pending">需全链复核</td></tr>
+<tr><td>E5</td><td>生命周期、异步回调、资源释放</td><td>参数窗口打开、运行、停止、关闭、方案切换</td><td>会话、借帧、发布、通讯、相机释放</td><td class="open">未闭口</td></tr>
+</table>
+
+<h2>三、方案、流程与节点生态</h2>
+<table>
+<tr><th>编号</th><th>节点操作</th><th>必须核对</th><th>验收出口</th></tr>
+<tr><td>N1</td><td>新建方案/流程</td><td>方案管理器、流程身份、画布、小地图</td><td>新建后节点可创建、可编辑、可运行</td></tr>
+<tr><td>N2</td><td>创建 ImageSource</td><td>默认来源、默认输出格式、默认输出字段</td><td>参数页和结果页身份正确</td></tr>
+<tr><td>N3</td><td>创建 BlobAnalysis</td><td>默认输入、三页参数、结果显示默认值</td><td>窗口可打开，参数完整物化</td></tr>
+<tr><td>N4</td><td>节点选择</td><td>选中节点、参数窗口、结果工作区和当前模块一致</td><td>不串节点、不串流程</td></tr>
+<tr><td>N5</td><td>节点连线</td><td>输出端口、输入端口、类型、来源身份</td><td>ImageSource 图像帧进入 Blob 正式输入</td></tr>
+<tr><td>N6</td><td>断线/重连</td><td>旧帧退役、输入候选刷新、错误反馈</td><td>不继续使用旧来源和旧结果</td></tr>
+<tr><td>N7</td><td>移动/重命名</td><td>只改画布或显示名，不改连接和稳定身份</td><td>保存重开后身份仍一致</td></tr>
+<tr><td>N8</td><td>复制节点</td><td>参数、ROI、显示配置复制，运行对象不共享</td><td>两个节点独立运行和保存</td></tr>
+<tr><td>N9</td><td>删除节点</td><td>结果、图像帧、ROI 会话、引用和租约释放</td><td>删除后无迟到回调和资源残留</td></tr>
+<tr><td>N10</td><td>撤销/重做</td><td>节点、连线、参数、ROI、显示选择同步回退恢复</td><td>历史状态与当前工作区一致</td></tr>
+</table>
+
+<h2>四、ImageSource 完整链</h2>
+<table>
+<tr><th>编号</th><th>功能域</th><th>对照项</th><th>验收出口</th></tr>
+<tr><td>S1</td><td>本地图像</td><td>文件选择、格式过滤、路径列表、起始索引</td><td>单图运行、全部运行、选中运行均正确</td></tr>
+<tr><td>S2</td><td>文件夹订阅</td><td>目录路径、初始扫描、排序、子目录规则</td><td>新文件按原厂时序触发或等待运行</td></tr>
+<tr><td>S3</td><td>文件夹刷新</td><td>刷新开关、已有列表、文件新增/删除</td><td>列表和当前游标不乱跳</td></tr>
+<tr><td>S4</td><td>自动切换</td><td>自动切换、最后一张停止、当前索引</td><td>执行序号、当前文件和结果一致</td></tr>
+<tr><td>S5</td><td>相机来源</td><td>设备身份、曝光、增益、超时、失败计数</td><td>后续阶段，不阻断本地链路闭口</td></tr>
+<tr><td>S6</td><td>SDK 来源</td><td>SDK 地址、图像帧身份、设备/来源校验</td><td>后续阶段，不阻断本地链路闭口</td></tr>
+<tr><td>S7</td><td>像素格式</td><td>原图、MONO8、RGB24、彩色转灰度</td><td>像素、有效域、帧身份和格式正确</td></tr>
+<tr><td>S8</td><td>灰度输出</td><td>独立灰度开关、空输出、关闭恢复</td><td>Blob 绑定灰度输出时成功或给出本轮错误</td></tr>
+<tr><td>S9</td><td>图像缓存</td><td>缓存容量、命中、换代、释放</td><td>缓存不跨节点、跨会话泄漏</td></tr>
+<tr><td>S10</td><td>拼接</td><td>启用、起点、高度、清空触发、引用值</td><td>拼接图像正确进入 Blob，引用字段不阻断显示投影</td></tr>
+<tr><td>S11</td><td>字符触发</td><td>过滤开关、输入字符、触发字符</td><td>触发条件和执行序号一致</td></tr>
+<tr><td>S12</td><td>文件保存</td><td>保存图像、资源嵌入、方案重开</td><td>路径、嵌入资源和结果可恢复</td></tr>
+</table>
+
+<h2>五、BlobAnalysis 输入、参数与执行链</h2>
+<table>
+<tr><th>编号</th><th>功能域</th><th>对照项</th><th>验收出口</th></tr>
+<tr><td>B1</td><td>输入图像</td><td>ImageSource 输出图像/灰度图像候选、端口类型、帧身份</td><td>Blob 使用与显示一致的正式帧</td></tr>
+<tr><td>B2</td><td>检测区域</td><td>全屏、矩形、圆、扇环、多边形、数量上限</td><td>区域参与执行并发布几何</td></tr>
+<tr><td>B3</td><td>屏蔽区域</td><td>掩膜绘制、继承、数量上限、像素排除</td><td>掩膜参与算法但不成为显示绘制面</td></tr>
+<tr><td>B4</td><td>位置修正</td><td>固定点、运行点、仿射变换、区域重投影</td><td>检测、显示、发布坐标一致</td></tr>
+<tr><td>B5</td><td>阈值</td><td>单阈值、双阈值、极性、低阈值、高阈值</td><td>快照、执行、回读一致</td></tr>
+<tr><td>B6</td><td>查找个数</td><td>默认值、真实范围、越界校验、排序前后语义</td><td>合法初值无红框，越界仍报错</td></tr>
+<tr><td>B7</td><td>面积/圆度/矩形度</td><td>启用开关、范围、配对端点、引用</td><td>筛选与判定语义分离</td></tr>
+<tr><td>B8</td><td>孔洞/边缘/轮廓</td><td>孔洞填充、边缘像素、轮廓类型、请求输出</td><td>二值图、Blob 图、轮廓数据一致</td></tr>
+<tr><td>B9</td><td>判定组</td><td>Blob 数量、总面积、单体判定、OK/NG</td><td>结果表、图形颜色、整体判定一致</td></tr>
+<tr><td>B10</td><td>执行快照</td><td>参数、输入、变量、引用在执行开始冻结</td><td>执行中编辑不改变当前轮次</td></tr>
+<tr><td>B11</td><td>执行取消</td><td>取消、异常、失败结果、资源回收</td><td>不会发布半成品结果或残留帧</td></tr>
+</table>
+
+<h2>六、结果显示下拉与图像交互</h2>
+<table>
+<tr><th>编号</th><th>显示项/交互</th><th>对照内容</th><th>验收出口</th></tr>
+<tr><td>D1</td><td>Blob 显示 Blob 图像</td><td>图像值、帧、结果图形、表格</td><td>切换后内容真实对应</td></tr>
+<tr><td>D2</td><td>Blob 显示二值化图像</td><td>二值图像、像素域、图形叠加</td><td>不误清理其他结果层</td></tr>
+<tr><td>D3</td><td>图像源输出图像</td><td>上游原图、帧身份、当前图像序号</td><td>切换后保持正式来源</td></tr>
+<tr><td>D4</td><td>图像源灰度图像数据</td><td>灰度输出开关、空输出、恢复</td><td>Blob 灰度输入链正确</td></tr>
+<tr><td>D5</td><td>Blob 输出掩膜</td><td>掩膜值、显示、算法掩膜区别</td><td>掩膜显示不冒充 ROI 绘制面</td></tr>
+<tr><td>D6</td><td>来源列表</td><td>按模块序号、模块号、名称、输出分组、排序</td><td>与 VM 下拉结构一致</td></tr>
+<tr><td>D7</td><td>下拉改选</td><td>显式选择、当前帧、正式选择、调试临时态</td><td>选择与视口内容严格一致</td></tr>
+<tr><td>D8</td><td>快速切换</td><td>切换延迟、重复切换、空值、迟到回调</td><td>无空白、无旧图覆盖、无明显闪烁</td></tr>
+<tr><td>D9</td><td>缩放/平移/适应/1:1</td><td>视口变换与 ROI 坐标</td><td>图像操作不改变数据坐标</td></tr>
+<tr><td>D10</td><td>图形和文本层</td><td>显示开关、颜色、透明度、字号、位置</td><td>参数显示和结果显示一致</td></tr>
+<tr><td>D11</td><td>图像条与缩略图</td><td>当前索引、缩略图、主图、表格执行序号</td><td>同一轮次数据不串联</td></tr>
+</table>
+
+<h2>七、ROI 子链</h2>
+<table>
+<tr><th>编号</th><th>ROI 环节</th><th>必须对照</th><th>验收出口</th></tr>
+<tr><td>R1</td><td>绘制资格</td><td>显示图必须是模块输入图；不可绘时使用原厂提示</td><td>不静默 no-op</td></tr>
+<tr><td>R2</td><td>形状按钮</td><td>矩形、圆、扇环、多边形选中态和互斥</td><td>阻断态重建不丢选中样式</td></tr>
+<tr><td>R3</td><td>绘制面</td><td>结果视图唯一 ImageViewBox</td><td>参数页和结果视图共享形状对象</td></tr>
+<tr><td>R4</td><td>借帧</td><td>当前显示帧、视口、模块、租约和代次</td><td>不使用过期视口</td></tr>
+<tr><td>R5</td><td>提交</td><td>绘制完成写回正式 <code>input.roi.*</code></td><td>撤销、重做、保存均可恢复</td></tr>
+<tr><td>R6</td><td>运行刷新</td><td>原厂 <code>UpdateROI</code> 重投影，不销毁形状</td><td>运行后图形和交互形状保持</td></tr>
+<tr><td>R7</td><td>切图/切页/关窗</td><td>当前形状、结果图形、会话状态</td><td>不丢 ROI、不串模块</td></tr>
+<tr><td>R8</td><td>变量与继承</td><td>变量图像 ROI、检测区继承、掩膜继承</td><td>绘制面和算法输入不混淆</td></tr>
+</table>
+
+<h2>八、持久化、节点生命周期与资源释放</h2>
+<table>
+<tr><th>编号</th><th>生命周期项</th><th>验收出口</th></tr>
+<tr><td>L1</td><td>保存方案</td><td>节点、连线、ImageSource 参数、Blob 参数、ROI、显示选择正确保存</td></tr>
+<tr><td>L2</td><td>保存引用</td><td>变量、上游引用、目录资源和嵌入文件身份保持</td></tr>
+<tr><td>L3</td><td>保存重开</td><td>重新打开后可直接运行 ImageSource → Blob</td></tr>
+<tr><td>L4</td><td>取消参数窗口</td><td>草稿不污染正式配置，不残留临时帧</td></tr>
+<tr><td>L5</td><td>关闭参数窗口</td><td>调试会话、ROI 会话、视口、结果读者释放</td></tr>
+<tr><td>L6</td><td>停止运行</td><td>执行批次、取消令牌、输出资源和借帧租约排空</td></tr>
+<tr><td>L7</td><td>切换方案/流程</td><td>通讯、相机、插件、文档活动按顺序释放</td></tr>
+<tr><td>L8</td><td>节点删除/复制</td><td>节点资源与引用不共享、不泄漏</td></tr>
+<tr><td>L9</td><td>迟到回调</td><td>旧窗口、旧节点、旧帧不能写当前工作区</td></tr>
+<tr><td>L10</td><td>Release 载荷</td><td>程序、插件、测试均来自同一正式封签，不混用旧 DLL</td></tr>
+</table>
+
+<h2>九、验收矩阵</h2>
+<table>
+<tr><th>场景</th><th>操作链</th><th>结果要求</th><th>当前状态</th></tr>
+<tr><td>A</td><td>创建 ImageSource 本地文件 → 创建 Blob → 连线 → 运行</td><td>Blob 成功得到正式输入帧</td><td class="pending">当前阶段必须闭口</td></tr>
+<tr><td>B</td><td>图像显示下拉切换五类图像</td><td>内容、帧、图形、表格不串</td><td class="pending">待逐项验收</td></tr>
+<tr><td>C</td><td>输入图上绘制四种 ROI → 运行</td><td>图形保持、结果正确、可继续交互</td><td class="open">运行后清空图形曾被实锤</td></tr>
+<tr><td>D</td><td>保存 → 关闭 → 重开 → 运行</td><td>参数、ROI、显示选择和结果恢复</td><td class="pending">待完整验收</td></tr>
+<tr><td>E</td><td>本地文件夹订阅新增图像 → Blob 执行</td><td>新帧接入、结果刷新、ROI 重投影</td><td class="pending">当前阶段必须闭口</td></tr>
+<tr><td>F</td><td>取消运行/关闭窗口/切换方案</td><td>后台活动和资源全部排空</td><td class="pending">部分自动验证</td></tr>
+<tr><td>G</td><td>复制、删除、撤销、重做节点</td><td>身份、连接、参数、ROI、结果一致</td><td class="pending">待完整验收</td></tr>
+</table>
+
+<h2>十、当前已知未闭口</h2>
+<div class="unknown">
+<ul>
+<li>运行后交互 ROI 图形清空：已按本机 VM 逆向证据补齐视口换代后的 ROI 当前帧通知，仍待用户手动验收。</li>
+<li>图像显示下拉五类来源的完整顺序、空值和迟到回调矩阵尚未逐项验收。</li>
+<li>节点复制、删除、撤销重做与 ROI/结果/资源的全链尚未闭口。</li>
+<li>保存重开、取消关闭和通讯/相机后台租约的完整人工验收尚未闭口。</li>
+<li>当前文档不把自动化局部通过视为完整生态完成。</li>
+</ul>
+</div>
+
+<h2>十一、主要证据入口</h2>
+<ul>
+<li><code>docs/09-现行文档/ROI完整生态链逆向对照与优化方案-20261113.html</code></li>
+<li><code>docs/09-现行文档/图像结果与ROI绘制交互原厂对照-20261113.html</code></li>
+<li><code>docs/collaboration/HANDOFF_ROI选中态批次与运行清空图形-20261114.md</code></li>
+<li><code>docs/collaboration/evidence/VM原厂本地图像与ROI刷新逆向取证-20261114.json</code></li>
+<li>本批 REA 补证：<code>ImageSourceModuleControl.LocalImageListView</code> 的 Root/CurrentImagePath/ExecuteType 参数入口，以及 <code>IMVSBlobFindModuCs</code> 的 BlobFindParam/BlobFindResult/ROI 管理/结果管理器入口；原生算法 DLL 已登记为无 CLI 元数据。</li>
+<li>本批 REA 原生导出补证：ImageSource 原生模块含文件夹监听、文件枚举排序、图像/灰度输出、拼接和 Process 入口；Blob 原生模块含 Process、ProcessAlg、ProcessOutput、LimitJudge、ResetMember、SetParam 入口。导出表只证明模块边界，不证明参数布局和时序。</li>
+<li>本批 REA 第二轮托管补证：<code>VMControls.WPF.RenderControlBase</code> 维护 <code>shapeBuffer</code>、<code>shapeList</code>、临时图形存储，并把执行后结果通过 <code>UpdateShapesWithCallBackData</code>、<code>DrawCurModuleUIResult</code> 分发到同一视图；<code>VMControls.RenderInterface</code> 明确以 <code>IRectangle</code>、<code>IPoint</code>、<code>IOutlinePoint</code>、<code>IText</code> 表达矩形、质心点、轮廓和文本。该证据支持质心作为独立点图形消费 <code>BlobFindResult.CentroidPoint</code>，不支持给矩形控件臆造中心标记字段。</li>
+<li>REA 原生深度取证边界：当前 Windows 未配置 Ghidra/IDA/Kuna，原生 PE provider 不可用。原生导出表仅作为模块边界证据，参数布局、调用顺序和运行时值保持待证，缺口不以猜测填充。</li>
+<li>本方结果显示输出需求链已完成静态对照：轮廓显示声明会形成 <code>OutputValueRequest</code>，Blob 执行入口据此请求边界，边界、轮廓、质心、矩形和结果表从同一结果快照进入结果视图。实际图像下的数量、颜色和切换仍待人工验收。</li>
+<li>本批持久化链静态对照完成：方案读取和保存会保留节点配置、显示字段、参数绑定顺序、本地图像路径/选择、布局、连线、嵌入资源与声明指纹。保存重开后的实际运行、ROI 重投影和资源释放仍待正式 Release 人工验收。</li>
+<li>本批资源生命周期静态对照完成：本地图像游标、文件夹 watcher、缓存副本、处理状态、输入租约和 ImageSource 输出资源均有对应释放路径。多张文件夹连续运行、取消和迟到回调仍待正式 Release 人工验收。</li>
+<li>本批补证 VM 本地图像列表控件：<code>LocalImageListView</code> 以 <code>Root</code>、<code>CurrentImagePath</code>、列表面板和模式 ComboBox 作为参数树/列表会话接缝，控件本身不拥有算法执行状态。当前本方列表编辑、路径接纳和执行游标保持同一边界，模式切换时序仍待正式 UI 验收。</li>
+<li><code>docs/collaboration/CURRENT_TASK.md</code></li>
+</ul>
+
+<h2>十二、必须补齐的横向审计维度</h2>
+<table>
+<tr><th>维度</th><th>当前清单已覆盖</th><th>仍需补齐的内容</th><th>完成证据</th></tr>
+<tr><td>组件依赖闭包</td><td>节点、参数页、结果视图、ROI 主要入口</td><td>程序集、模板、动态资源、图标、父级状态、绑定、事件、继承方法、宿主消费者、发布清单</td><td>同版本 VM 证据 + 本方文件/资源/消费者映射表</td></tr>
+<tr><td>数据与身份合同</td><td>图像帧、输出端口、ROI 身份已有部分记录</td><td>节点/流程/方案/端口/图像帧/视口回执/执行轮次/变量/引用/资源作用域的全量身份规则</td><td>身份字段矩阵 + 过期对象拒绝用例</td></tr>
+<tr><td>状态时序</td><td>打开、运行、刷新、关闭已有主线</td><td>加载、物化、用户改选、执行中、取消、失败恢复、重入、迟到回调、重复通知、线程切换</td><td>时序图 + 关键状态转移和日志证据</td></tr>
+<tr><td>并发与排空</td><td>部分取消和关闭用例</td><td>连续运行、文件夹 watcher、相机回调、通信回调、调试执行、结果刷新同时发生时的排空顺序</td><td>取消/关闭/重开压力回归和资源计数</td></tr>
+<tr><td>引用与变量</td><td>ImageSource/Blob 部分引用、变量 ROI</td><td>标量、序列、图像、区域、记录、数组成员、变量失效、来源删除、索引绑定、执行快照</td><td>解析矩阵 + 保存重开和失败恢复用例</td></tr>
+<tr><td>资源与持久化</td><td>方案保存、嵌入资源、部分重开</td><td>跨卷路径、嵌入文件、缓存、帧、HALCON 对象、发布 reader、临时目录、恢复文件、版本校验</td><td>保存字节、资源清单、重开结果和释放探针</td></tr>
+<tr><td>节点工作区生态</td><td>创建、连线、复制、删除已列入范围</td><td>端口候选、连线高亮、节点状态、禁用、排序、布局、小地图、流程切换、方案切换、撤销历史</td><td>真实画布操作 + 方案重开 + 历史一致性</td></tr>
+<tr><td>显示与交互层</td><td>下拉图像、缩放、平移、ROI 主要动作</td><td>图像值空/恢复、缩略图、自动切换、背景、叠加层、文本、表格选中、双图、全屏、键盘和鼠标焦点</td><td>截图/录制 + 当前选择、帧和叠加层断言</td></tr>
+<tr><td>错误与诊断</td><td>不可绘反馈、部分执行失败</td><td>错误码、用户文案、状态栏、日志、异常边界、重试、无损保留草稿、禁止静默回退</td><td>故障注入矩阵 + 用户可见反馈证据</td></tr>
+<tr><td>性能与容量</td><td>部分首显和切页观测</td><td>多图、多 Blob、多 ROI、大图、长目录、连续运行、快速下拉切换、重建次数、内存增长</td><td>正式 Release 计时、资源峰值和重复操作回归</td></tr>
+<tr><td>发布与环境</td><td>正式 Release 构建和封签</td><td>正式目录唯一性、插件准入、DLL 版本、运行库、跨卷测试数据、旧进程占用、部署后实际加载路径</td><td>载荷 SHA、进程路径、模块加载和发布探针</td></tr>
+</table>
+
+<h2>十三、当前不应误判为完成的项目</h2>
+<div class="unknown"><ul>
+<li>运行后 ROI 交互图形清空已完成证据驱动修复，最终状态以用户手动验收为准。</li>
+<li>本地文件/文件夹 → Blob 的完整引用、显示和保存重开链尚未形成一份全绿证据。</li>
+<li>相机和 SDK 接入不属于当前阶段，保留到后续阶段。</li>
+<li>节点操作清单已列出，但节点生命周期与 ROI、结果、资源的联动仍需逐项验证。</li>
+<li>EditorDebugSession 的存量失败、通信/相机后台活动排空和人工 Release 验收不能由本清单自动替代。</li>
+</ul></div>
+
+<h2>十四、按实现入口反向追踪的全链地图</h2>
+<p>后续分析以实现入口为主索引。每个入口必须继续追踪其输入、状态、消费者、异步回调、资源所有权和退出路径，功能清单只作为验收视图。</p>
+<table>
+<tr><th>入口层</th><th>当前实现入口</th><th>下游链路</th><th>必须补齐的审计问题</th></tr>
+<tr><td>应用启动</td><td><code>src/UI/App.xaml.cs:OnStartup</code></td><td>插件准入 → 方案管理器 → 起始页/主窗口 → 工作区</td><td>启动旁路、正式载荷、服务初始化、失败退出和资源释放</td></tr>
+<tr><td>方案与流程</td><td><code>DocumentSessionManager.CreateNew</code>、<code>PrepareOpen</code>、<code>OpenPrepared</code></td><td>方案身份 → 流程 → 节点 → 配置与历史</td><td>节点/流程身份、代次、撤销重做、保存基线和切换排空</td></tr>
+<tr><td>节点显示</td><td><code>WorkflowCanvasControl</code>、<code>NodeDisplayAdapterFactory</code></td><td>节点创建/选中/移动/连线 → 参数窗口和结果工作区</td><td>画布状态、小地图、端口候选、节点删除、显示选择来源</td></tr>
+<tr><td>工具插件装配</td><td><code>DesktopToolPresentation.CreateSettingsView/CreateResultView</code></td><td>Runtime Schema → WPF Factory → 参数页/结果页</td><td>程序集、模板、资源、输入组合、声明字段和释放边界</td></tr>
+<tr><td>ImageSource 参数</td><td><code>ImageSourceEditorFactory</code>、<code>ImageSourceParameterEditor</code></td><td>字段草稿 → 来源组合 → 接纳配置</td><td>条件字段物化、引用字段、路径资源、目录 watcher、输入回读</td></tr>
+<tr><td>ImageSource 执行</td><td><code>ImageSourceHostInputFactory</code>、<code>ImageSourceHostInputPreparer</code>、<code>ImageSourceSession</code></td><td>文件/相机/SDK → 冻结输入 → 图像/灰度/元数据输出</td><td>来源身份、帧身份、格式转换、缓存、拼接、序列、失败和取消</td></tr>
+<tr><td>Blob 参数</td><td><code>BlobEditorFactory</code>、<code>BlobUiComposition</code>、<code>BlobLocalRoiOwner</code></td><td>字段草稿 → ROI/掩膜 → Blob 快照</td><td>输入帧、参数快照、引用解析、ROI 会话、掩膜继承和提交时序</td></tr>
+<tr><td>Blob 执行</td><td><code>BlobSession.ExecuteAsync/Execute</code></td><td>图像/区域/掩膜 → HALCON → BlobOutput</td><td>算法域、数量上限、筛选/判定分离、输出资源和取消释放</td></tr>
+<tr><td>正式执行</td><td><code>MainWindowViewModel.ExecuteRunWorkflow</code>、<code>DocumentSession.CaptureRunBatch</code></td><td>工作流快照 → 节点执行 → 发布结果 → UI 通知</td><td>运行/停止/连续运行、执行序号、失败恢复、迟到通知</td></tr>
+<tr><td>调试执行</td><td><code>RuntimeToolEditorWindow</code>、<code>RuntimeNodeConfigurationControl.RunDebugAsync</code></td><td>私有草稿 → Debug Invocation → 私有结果 → 正式结果视图</td><td>私有/正式边界、参数改动、调试运行后 ROI 重建和关闭排空</td></tr>
+<tr><td>结果来源捕获</td><td><code>MainWindowViewModel.CaptureNativeImageSources</code></td><td>正式/私有结果 → <code>ResultWorkspaceImagePlan</code></td><td>来源集合、排序、空值、中间计划、显示选择和帧回执</td></tr>
+<tr><td>结果工作区</td><td><code>ResultWorkspacePresenter.Refresh/Present</code></td><td>图像计划 → 输入/输出 Pane → 图形/文字/表格</td><td>下拉切换、双图、刷新重建、叠加层、闪烁、ROI 通知</td></tr>
+<tr><td>ROI 借帧</td><td><code>ResultWorkspacePresenter.BorrowRoiFrame</code>、<code>NativeRoiFrameSource</code></td><td>显示来源/帧回执 → ROI FrameLease → BlobLocalRoiOwner</td><td>输入图资格、同帧锚定、重建通知、失败反馈、离屏禁止</td></tr>
+<tr><td>ROI 会话</td><td><code>BlobLocalRoiOwner.AcquireFrame/RefreshFrame/RetireFrame</code>、<code>NativeRoiSession</code></td><td>借帧 → 形状编辑 → 参数写回 → 重投影</td><td>运行后重建、形状恢复、撤销重做、绘制中取消、关闭释放</td></tr>
+<tr><td>图形渲染</td><td><code>NativeResultViewport.BindImage/BeginRoiEditing</code>、图形层</td><td>帧回执 → ROI/Blob/文字层 → ImageViewBox</td><td>回执全等、坐标域、层保留、清空和重绑定</td></tr>
+<tr><td>持久化</td><td><code>DocumentSession.Save/SaveAs</code>、<code>MainWindowDocumentFiles.OpenFormalDocumentAsync</code></td><td>草稿接纳 → JSON/资源 → 准备打开 → 新会话</td><td>引用、变量、嵌入资源、跨卷、恢复文件、旧会话排空</td></tr>
+<tr><td>关闭释放</td><td><code>RuntimeToolEditorWindow.CloseAndDrainAsync</code>、<code>DisposeCommunicationRuntimeAsync</code>、<code>DisposeCameraRuntimeAsync</code>、<code>DocumentSession.Dispose</code></td><td>子窗口 → 图像结果 → 通讯/相机 → 插件 → 文档会话</td><td>后台活动、迟到回调、重复关闭、失败保留和正式进程实际加载</td></tr>
+</table>
+
+<h2>十五、本阶段本地图像闭口入口</h2>
+<p>本阶段只沿本地文件和本地文件夹入口闭口。相机、SDK 和设备回调保留在同一张总图中，暂不进入本阶段通过条件。</p><div class="evidence"><b>当前统一构建基线</b>：全量 Release 已成功构建，载荷 <code>5E79580B07EFF9D729DA314715BC2BE2297E8A11B3EBF80E0769CF09F72763B4</code>，0 个错误。该基线只证明源码与发布载荷可生成，不替代本地图像运行、ROI、保存重开和关闭释放验收。</div>
+<table>
+<tr><th>链路段</th><th>本方入口</th><th>必须形成的证据</th><th>当前结论</th></tr>
+<tr><td>文件枚举</td><td><code>SubscribedImageFolder.CaptureList</code>、<code>ImageSourcePolicy.CreateLocalPlan</code></td><td>扩展名过滤、自然排序、稳定 EntryId、选中位置恢复</td><td class="pending">源码已定位，需纳入本地单图/文件夹回归</td></tr>
+<tr><td>单图运行序列</td><td><code>LocalImageSequenceService.Begin/GetInputs/AcceptRead/FinishReadRound</code></td><td>运行代次、游标、单轮接纳、自动前进、停止末图、取消不误发布</td><td class="pending">已有状态机，需用正式运行出口封签</td></tr>
+<tr><td>文件夹订阅</td><td><code>SubscribedImageFolder.FileSystemWatcher</code>、<code>ImageSourceHostInputFactory.TrackFolderTrigger</code></td><td>新增/删除/修改/Watcher 错误、触发运行、刷新列表、旧游标排空</td><td class="pending">已有定向用例，需完成正式载荷复测</td></tr>
+<tr><td>输入准备</td><td><code>ImageSourceHostInputFactory.CreateCore</code>、<code>ImageSourceHostInputPreparer</code></td><td>本地路径接纳、像素读取、灰度/拼接字段、帧身份和缓存所有权</td><td class="pending">需与 Blob 输入端口和显示帧逐项对齐</td></tr>
+<tr><td>Blob 接入</td><td><code>BlobSession.ExecuteAsync/Execute</code>、Blob 输入字段接纳</td><td>输入帧、ROI/掩膜、参数快照、HALCON 输出和失败释放</td><td class="pending">需完成本地输入到结果发布的正式链证据</td></tr>
+<tr><td>结果呈现</td><td><code>MainWindowViewModel.CaptureNativeImageSources</code>、<code>ResultWorkspacePresenter.Refresh/Present</code></td><td>图像源输出、灰度、Blob 图、二值图、掩膜的下拉选择与同帧绑定</td><td class="pending">需完成本地来源的选择/空值/切换矩阵</td></tr>
+<tr><td>ROI 交互</td><td><code>ResultWorkspacePresenter.BorrowRoiFrame</code>、<code>BlobLocalRoiOwner</code>、<code>NativeResultViewport</code></td><td>输入图资格、绘制、写回、运行重投影、切图和关闭释放</td><td class="pending">已按 VM UpdateROI 对照补齐换代通知，待用户手动验收</td></tr>
+<tr><td>保存重开</td><td><code>DocumentSession.Save/SaveAs</code>、<code>OpenFormalDocumentAsync</code></td><td>本地路径/嵌入资源、Blob 参数、ROI、显示选择和重新运行</td><td class="pending">需形成一条全绿本地重开证据</td></tr>
+<tr><td>取消关闭</td><td><code>DocumentSession.Dispose</code>、<code>RuntimeToolEditorWindow.CloseAndDrainAsync</code></td><td>读取轮次、Watcher、缓存、帧租约、结果读者和迟到回调排空</td><td class="pending">需在本地文件夹连续运行场景验证</td></tr>
+</table>
+
+<div class="evidence"><b>入口分析原则</b>：先以这些入口建立调用图和消费者表，再逐项回填功能清单。每条入口至少要记录“创建者、当前状态源、所有消费者、异步通知、资源所有者、失效条件、关闭路径、VM 证据和验收用例”。</div>
+<h2>十六、正式 Release 人工验收顺序</h2>
+<p>使用 <code>E:\SunEyeVision_V2\Release\SunEyeVision_v1.0.0\SunEyeVision\SunEyeVision.UI.exe</code>，当前封签 SHA-256 为 <code>D909095125AD3ACF3F5E36DD1D7FD62C74A94FAA3C4135276C302C9696533AC7</code>。每一步完成后保留当前界面和方案文件，按顺序执行。</p>
+<ol>
+<li>打开包含本地图像源和 BlobAnalysis 的方案，确认图像列表、运行模式、Blob 输入源和结果显示设置均已恢复。</li>
+<li>单图运行一轮，确认 ImageSource 图像、灰度图、路径/名称/帧信息和 Blob 结果表来自同一轮。</li>
+<li>在 Blob 结果显示中切换图像、灰度图、Blob 图、二值图和掩膜，确认下拉变化不丢结果图形和 ROI。</li>
+<li>切到模块输入图绘制矩形、扇环、屏蔽区，执行后再次绘制，确认形状、选中态和参数写回保持。</li>
+<li>切换本地图像或连续运行多张图，确认 Blob 矩形、轮廓、质心、文本和 ROI 按当前图像换代，不借用旧帧。</li>
+<li>保存、关闭、重开方案并再次运行，确认路径、参数、显示选择、ROI 和结果均恢复。</li>
+<li>在文件夹订阅场景运行中取消并关闭窗口，确认 watcher、缓存、帧租约、结果读者和迟到回调完成排空后进程退出。</li>
+</ol>
+<h2>十七、跨模块完整生命周期对照（新增主索引）</h2>
+<p class="unknown"><b>使用规则</b>：ROI 绘制不再作为参数页的孤立入口核对。每个操作必须同时核对图像入口、视口显示、命中层、帧回执、编辑会话、参数写回、执行快照、结果几何、关闭恢复和资源释放。任何一列没有原厂证据或本方消费者证据，都只能记为未闭口。</p>
+<p class="evidence"><b>全入口规则</b>：本清单中的每个实现入口都必须继续追溯到完整生产链。入口不是功能边界，不能只修入口事件或局部控件。必须覆盖入口的创建者、状态源、所有消费者、身份与帧合同、同步/异步通知、图像与结果渲染、执行快照、持久化、取消关闭、资源所有权和失效路径，并以同一 VM 操作的端到端证据验收。</p>
+<table>
+<tr><th>VM 操作事件</th><th>入口与状态源</th><th>跨模块生产链</th><th>必须保持的合同</th><th>当前证据出口</th></tr>
+<tr><td>打开 Blob 参数窗口</td><td><code>ModuleResultView</code> 参数可见、当前显示图、输入源</td><td>节点选择 → 调试草稿 → 图像计划 → 输入视口 → ROI owner</td><td>打开窗口不清空正式结果；ROI 只绑定当前输入帧；结果层和编辑层独立</td><td>VM 参数窗口/结果视图取证 + <code>RuntimeToolEditorWindow</code>、<code>ResultWorkspacePresenter</code> 调用图</td></tr>
+<tr><td>选择形状按钮</td><td><code>RoiSelectControl</code> 形状选中态、<code>NativeRoiSession.ActiveDraw</code></td><td>按钮状态 → 待绘制类型 → 图像入口等待 → 当前输入帧资格检查</td><td>按钮只改变形状选择；没有当前输入图时不得伪造编辑会话；提示时机与 VM 一致</td><td>原厂按钮/落笔截图 + <code>NativeRoiEditor</code> 状态链</td></tr>
+<tr><td>点击图像结果入口</td><td><code>SelectedResultTabIndex</code>、选中图像来源、视口可见性</td><td>图像入口 → 视口加载 → <code>BorrowRoiFrame</code> → <code>BeginRoiEditing</code> → ROI 图层挂载</td><td>图像入口必须触发当前帧重新核验和编辑层安装；结果图层不可替代 ROI 编辑层</td><td>VM 图像入口截图 + <code>ResultTabSelectionChanged</code> → <code>NotifyRoiFrameAvailabilityChanged</code></td></tr>
+<tr><td>图像上落笔/拖动</td><td><code>ImageViewBox</code> 命中门、<code>ROIList</code>、<code>RoiSelectedCommand</code></td><td>视口命中 → ROI 选中 → 交互租约 → 几何提案 → 参数接纳</td><td><code>ROIHitTestVisible</code>、坐标换算、选中态、当前帧回执和取消回调必须同代</td><td>VM 手柄/选中态证据 + <code>NativeRoiAttachment</code> 命中链</td></tr>
+<tr><td>运行/连续运行</td><td>正式快照与调试快照、运行代次、结果发布</td><td>参数写回 → 输入快照 → Blob 执行 → 结果几何 → 图像结果层 → ROI 重投影</td><td>结果几何、可编辑 ROI、文本和表格同一物理帧；新帧只使旧租约失效，不丢持久形状</td><td>VM <code>UpdateROI</code> 证据 + <code>BlobResultGeometry</code>/<code>ResultWorkspacePresenter</code> 状态矩阵</td></tr>
+<tr><td>切换图像/下拉/双图</td><td>输入/输出选择、来源计划、Pane generation、视口 epoch</td><td>选择事件 → 计划重解 → 图像重绑定 → 结果层重投影 → ROI 可编辑资格重算</td><td>结果层可跨背景重投影；ROI 编辑只允许输入图；空选择是中间态，不得误清最终状态</td><td>VM 下拉/双图截图 + <code>InputSelected</code>/<code>OutputSelected</code>/<code>Refresh</code></td></tr>
+<tr><td>关闭调试窗口</td><td>调试快照、参数草稿、编辑器、ROI lease、结果 publication</td><td>提交草稿 → 排空运行 → 释放预览/帧/会话 → 恢复正式结果 → 保留已接纳 ROI</td><td>关闭不能丢参数写回；不能留下旧视口回调；正式结果是否接续调试结果必须有 VM 证据</td><td>VM 关闭后结果截图 + <code>CloseAndDrainAsync</code>/<code>RefreshFormalPublishedResult</code></td></tr>
+<tr><td>保存/重开/删除节点</td><td>文档会话、节点身份、方案资源、发布 reader</td><td>ROI 记录/显示字段 → 持久化 → 新会话 → 图像计划 → 结果/编辑层重建</td><td>ROI 身份、图像来源、显示选择、执行结果和释放边界不能串节点或串会话</td><td>保存字节/重开截图 + <code>DocumentSession</code> 生命周期映射</td></tr>
+</table>
+<div class="evidence"><b>新增运行实锤</b>：正式日志曾记录 <code>BlobLocalRoiOwner.Activate → NativeRoiFrameLease.BeginEditing → NativeResultViewport.BeginRoiEditing</code> 因视口换代造成物理帧不一致。当前实现已按该证据在帧/会话失效时退役旧借帧、重新借当前视口帧并限次重试；该修复的 Release payload 为 <code>2B2209C30B6A499E0B57924246D0920888D6ED9F56387EA510D6D906723218C4</code>。仍需人工确认重试后实际可命中。</div><h3>十七点二、当前证据等级</h3>
+<table>
+<tr><th>要求</th><th>当前证据</th><th>等级</th><th>未闭口证据</th></tr>
+<tr><td>ImageSource 本地图像 → Blob 输入</td><td>入口源码、VM 托管/原生边界证据、Release 构建</td><td class="pending">源码闭合</td><td>正式程序单图/文件夹执行轮次截图和结果身份</td></tr>
+<tr><td>运行后 ROI 保持可编辑</td><td>VM UpdateROI 证据、ROI lease/session/视口调用图、Release 构建</td><td class="pending">待人工</td><td>绘制、运行、再次命中拖动的完整操作记录</td></tr>
+<tr><td>检测区域与结果图层</td><td>BlobResultGeometry → ResultGeometrySnapshot → ResultWorkspacePresenter 场景层</td><td class="pending">待人工</td><td>下拉开启检测区域后图像区与扇环/Blob同时显示</td></tr>
+<tr><td>调试窗口关闭后结果延续</td><td>保留快照租约、同 owner 身份门槛修正、全量构建</td><td class="pending">待人工</td><td>关闭调试窗口后结果图形、文本、表格仍保持</td></tr>
+<tr><td>保存重开、取消关闭、资源释放</td><td>DocumentSession/ImageSource/Blob 静态所有权和释放链</td><td class="pending">待人工</td><td>保存重开再运行，以及文件夹连续运行取消关闭后的排空证据</td></tr>
+</table><h3>十七点一、跨模块阻断判定</h3>
+<ul>
+<li>只看到 ROI 参数值，不代表图像命中层、视口回执和编辑会话已建立。</li>
+<li>只看到 Blob 结果图形，不代表可编辑 ROI 仍存在。两者必须分别核对并同时显示。</li>
+<li>只完成运行刷新，不代表调试关闭、保存重开和节点删除后的资源生命周期闭合。</li>
+<li>只完成某个入口的事件通知，不代表其消费者、异步回调、帧租约和退出路径已接通。</li>
+</ul>
+</body>
+</html>
+
+
+

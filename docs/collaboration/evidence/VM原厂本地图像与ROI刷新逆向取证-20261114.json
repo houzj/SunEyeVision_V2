@@ -1,0 +1,336 @@
+{
+  "kind": "VM 原厂逆向取证（REA 静态程序集分析 + 本机安装件反编译交叉验证）",
+  "batch": "本地图像运行后结果视图与 ROI 刷新链",
+  "date": "2026-11-14",
+  "evidenceSource": {
+    "binary": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.WPF.Release.dll",
+    "sha256": "1dd76c5157a7d6ec9229a5f59275337312625cbd481cd483ba2b2891ead91332",
+    "mvid": "60eb9c1d-902a-4e2f-8266-75e5c188c129",
+    "reaEvidence": [
+      "ev_690c472b48c72a10ab359cb8d3e6017c21c06923c5f83d75768dfb169a48417a",
+      "ev_f337ac6297abb1a1460a24fa745205cb4e4781a48eb56b91e6bfb82614d8c94c"
+    ],
+    "supportingBinaries": [
+      "C:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.WPF.dll",
+      "C:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\Apps.XmlParser.dll"
+    ],
+    "tooling": "REA managed static provider；ilspycmd 11.2.0.10050 仅用于可读源码交叉核对",
+    "limitation": "REA 当前 Windows 环境未配置 Ghidra/IDA/Kuna，因此没有运行时调用追踪；托管程序集使用完整 CIL/成员元数据静态取证，原生 DLL 使用完整导出表。原生 PE 反编译 provider 在本环境不可用，不能从导出表推断参数布局或调用顺序。",
+    "additionalBinaries": [
+      {
+        "binary": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModuleControl.dll",
+        "sha256": "04a73b135d18641b65b2815a292b795b922cb675122d6555f61947f372958906",
+        "mvid": "4298c0d6-ba00-4d57-8925-21ea9618117f",
+        "reaEvidence": [
+          "ev_097da29618c466f2bbc51c3d345040d4ab8af9d80b39f5dbf08324a99e8f3de5",
+          "ev_16ee04447b1ac56eb08c60143902c2984607dbd236e872cdf7419af7cdae7dc4",
+          "ev_f71488f7f8c40dfcd4abf6d3b9b422cb384b0c37971f48305f01be9a0ad18d06"
+        ],
+        "types": [
+          "ImageSourceModuleControl.LocalImageListView"
+        ]
+      },
+      {
+        "binary": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuCs.dll",
+        "sha256": "3106af2e9344a97288553bfbbfa86afd81e2384188b452734f56825f63e0a78d",
+        "mvid": "1d550689-0379-4822-8b69-8713d2324342",
+        "reaEvidence": [
+          "ev_702107a918eacb2061eaab3a80718de82c92995ddc7aee80d1728848fa9e8ab4"
+        ],
+        "types": [
+          "IMVSBlobFindModuCs.BlobFindParam",
+          "IMVSBlobFindModuCs.BlobFindResult",
+          "IMVSBlobFindModuCs.BlobFindRoiManager",
+          "IMVSBlobFindModuCs.IMVSBlobFindModuTool"
+        ]
+      },
+      {
+        "binary": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModu.dll",
+        "sha256": "4de695d8c3051045c9010739686f94c32d66a36ee486207fe749fb183fff4c9a",
+        "reaEvidence": [
+          "ev_207ab36d1f5a9422162f4d4e5709a34bf0c1ea5bd87c898fc742750f6c8e49dc"
+        ],
+        "limitation": "原生算法 DLL 无 CLI 元数据，REA 不能从该文件提供 CIL。本批只把它作为算法实现边界的原件身份证据。"
+      },
+      {
+        "binary": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModuleCs.dll",
+        "sha256": "1f7c52abb34eb61ec177e295aea9812b9fbc3b1c4453bef28fbc960bf35aa35c",
+        "mvid": "0435b7cd-e965-456f-ace6-2bd83ca97a88",
+        "reaEvidence": [
+          "ev_2a7731cc2de4f888d532d8c3960c2b8fb9270a18002724755b53b8dcacce2edc"
+        ],
+        "types": [
+          "ImageSourceModuleCs.ImageSourceParam",
+          "ImageSourceModuleCs.ImageSourceResult",
+          "ImageSourceModuleCs.ImageSourceModuleTool"
+        ]
+      },
+      {
+        "binary": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModule.dll",
+        "sha256": "f88a455061f3ae2d5e2ef157e7b3caafd94a2b95c39b5bba096802e405ebc6c8",
+        "reaEvidence": [
+          "ev_54bc6997460139f5bf298b73e4c69866aa6667769946feacf80288170e1c4b94"
+        ],
+        "nativeExports": [
+          "Add_WatchSubFolder",
+          "Del_WatchSubFolder",
+          "MonitoringSubFolderInit",
+          "MonitoringSubFolderDeInit",
+          "MonitoringSubFolderChanges",
+          "GetImageFilesPathNameFromDir",
+          "SortImageNameInFolder",
+          "UpdateImageFilesListFromDir",
+          "SetImageOutput",
+          "SetImageOutputMono8",
+          "StitchImageOutput",
+          "Process",
+          "CreateModule",
+          "DestroyModule"
+        ]
+      },
+      {
+        "binary": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModu.dll",
+        "sha256": "4de695d8c3051045c9010739686f94c32d66a36ee486207fe749fb183fff4c9a",
+        "reaEvidence": [
+          "ev_364a47abc1f0cd607eca92cdefd43ccf64537a5f91d211ed8e1e693f6a38d716"
+        ],
+        "nativeExports": [
+          "Init",
+          "DeInit",
+          "Process",
+          "ProcessAlg",
+          "ProcessOutput",
+          "LimitJudge",
+          "ResetMember",
+          "SetParam",
+          "CreateModule",
+          "DestroyModule"
+        ]
+      },
+      {
+        "binary": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.WPF.dll",
+        "sha256": "7f47d5b27ea7c0cffbba02c66dc4d29d9a580519574803d62a72a8bbb0f31db5",
+        "mvid": "7b4de046-2de8-4838-a206-c0deb0ddb3ae",
+        "reaEvidence": [
+          "ev_6a77fb6a6a2f6550dc70a6bb9ed694f291c1d19f368d5d9a3b5c84d51e72d5b9"
+        ],
+        "types": [
+          "VMControls.WPF.RenderControlBase"
+        ]
+      },
+      {
+        "binary": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VMControls.RenderInterface.dll",
+        "sha256": "f1cdd28930e07279db60096ebb5377f2e63404da30c787de3720aa94b0aa4906",
+        "mvid": "3155bc99-cf71-4a97-a984-0939ac0a5643",
+        "reaEvidence": [
+          "ev_b44064df6ed612b1b3089982a1bebb5f0f6a73aad174857a38f6cd7fb7bca3b4",
+          "ev_75e52b99cb046129f9d5638847aab9bf057490ad3ece43a75557771338ff0120"
+        ],
+        "types": [
+          "VMControls.RenderInterface.IRectangle",
+          "VMControls.RenderInterface.IPoint",
+          "VMControls.RenderInterface.IOutlinePoint",
+          "VMControls.RenderInterface.IText"
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "render-contract",
+      "source": "VMControls.WPF.Release.VmParamsConfigWithRenderControl / VmRenderControl",
+      "facts": [
+        "存在 ImageSource 依赖属性",
+        "存在 ROIVisible 依赖属性",
+        "存在 OnSelectedImageChanged 回调",
+        "存在 UpdateView、SetSelectedImage、SwitchBackgroundImage、AddStackImage、RemoveStackImage、DrawCppShapes、Dispose"
+      ],
+      "meaning": "参数窗口把图像数据、ROI 可见性、显示选择和图形绘制接到同一个 RenderControl，不以重新创建参数对象作为切图或刷新条件。"
+    },
+    {
+      "id": "image-change-guard",
+      "source": "VMControls.WPF.RenderControlBase.ImageDataChanged / UpdateRender / UpdateRenderAfterSelfExecute",
+      "facts": [
+        "ImageDataChanged 只在新 ImageData 非空时调用 UpdateImageView",
+        "UpdateRender 先比较 imageData != ImageDataSource",
+        "相同图像时不重新设置 ImageDataSource，继续更新图形层",
+        "自执行路径同样先比较图像对象，再决定清空缓存或更新图形"
+      ],
+      "meaning": "运行回调不是无条件清空视口。图像对象不变时保留图像并更新图形，图像值变化或为空时才更新/清空图像。"
+    },
+    {
+      "id": "shape-refresh",
+      "source": "VMControls.WPF.RenderControlBase.UpdateShapesWithCallBackData / DrawShapesInShapeBuffer",
+      "facts": [
+        "刷新图形时先 ClearExternShapes 与 ShapeList.Clear",
+        "随后从 callback store 调用 DrawCurModuleUIResult",
+        "最后合并 shapeBuffer 并 UpdateCheckImages"
+      ],
+      "meaning": "结果图形层可以独立重建，不等于销毁参数 ROI 数据。"
+    },
+    {
+      "id": "roi-reprojection",
+      "source": "VMControls.WPF.ModuleResultView.OnModuleCallBackArrived / RenderControlBase.UpdateRoi / Apps.XmlParser.ParamTab.AlgorithmTabRoot.UpdateROI",
+      "facts": [
+        "模块回调在结果处理后检查 ROIVisible 和 IsDragROI",
+        "满足条件时调用 ModuleSource.UpdateROI",
+        "AlgorithmTabRoot.UpdateROI 遍历 ROISelecters 并逐个调用 UpdateROI"
+      ],
+      "meaning": "运行后的 ROI 保持依赖回调完成后的重投影调用，不能只退役旧视口会话而不触发当前帧重新接纳。"
+    },
+    {
+      "id": "display-selection",
+      "source": "VMControls.WPF.RenderControlBase.imageListCombobox_SelectionChanged / SetSelectedImage / MyOnSelectedImageChanged",
+      "facts": [
+        "SelectedValue 为空时才清空图像和图形",
+        "有效图像切换会记录选中图像并调用 UpdateVMResultShow",
+        "SetSelectedImage 只按 DisplayName 找到条目并设置 SelectedImage",
+        "选中变化通过 OnSelectedImageChanged 回传"
+      ],
+      "meaning": "有效下拉切换不应因为刷新路径被当作空选择而清除 ROI 或结果层。"
+    },
+    {
+      "id": "roi-eligibility",
+      "source": "VMControls.WPF.DataForUI.ModuleDisplayDecorator.IsCanDrawROI / RefreshInputImageList",
+      "facts": [
+        "IsCanDrawROI 取双图 SelectedInputImage 或单图 SelectedImage",
+        "先检查模块输入图集合 ImageInputs",
+        "RefreshInputImageList 按关联输入重新建立输入图列表，缺少匹配项时取第一项",
+        "单图模式 SelectedInputImage 置空"
+      ],
+      "meaning": "ROI 借帧资格必须以当前显示图是否属于模块输入图判断，输入图列表刷新和显示选择是同一条合同。"
+    },
+    {
+      "id": "roi-visibility-feedback",
+      "source": "VMControls.WPF.ModuleResultView.SetRoiVisible / RenderControlBase.imageView_MouseLeftButtonDown",
+      "facts": [
+        "参数窗口打开时按 IsCanDrawROI 设置 ROIVisible，关闭时两个视口都隐藏",
+        "ROIVisible=false 且绘制状态已武装时，鼠标落笔弹出 RoiDrawTips"
+      ],
+      "meaning": "按钮选择、显示资格、落笔反馈和 ROI 可见性是分层时序，不能在按钮点击阶段提前清空或弹框。"
+    },
+    {
+      "id": "image-source-local-entry",
+      "source": "ImageSourceModuleControl.LocalImageListView（本机 ImageSourceModuleControl.dll）",
+      "facts": [
+        "Root 是 AlgorithmTabRoot 依赖属性，Root 变化时清空 AutoPlay、Interval、CurrentImagePath 缓存并重新读取",
+        "CurrentImagePath 由 Root.FindBaseNodeByName(\"CurrentImagePath\")取得并调用 GetParamUnit",
+        "运行模式下拉只有“运行全部”和“运行选中”两项，SelectionChanged 写回 UserStringData[\"ExecuteType\"]",
+        "切换模式后调用 ImageListPanel.GetModuleSelectMode 或 OnExcuteTypeParamChanged",
+        "OnApplyTemplate 绑定 ImageListPanel 与 ComboBox，模式状态与 CurrentImagePath 均从同一 Root 取值"
+      ],
+      "meaning": "VM 的本地图片入口不是独立预览控件。它通过 AlgorithmTabRoot 的正式参数节点保存当前路径和运行模式，列表面板只负责选择态与模式变化通知。实现本地图像链时必须保持参数节点、列表选择、运行模式和执行计划的同一身份。"
+    },
+    {
+      "id": "blob-result-contract",
+      "source": "IMVSBlobFindModuCs.BlobFindParam / BlobFindResult / BlobFindRoiManager / IMVSBlobFindModuTool",
+      "facts": [
+        "BlobFindParam 的正式输入字段是 InputImage，ROI 由 BlobFindRoiManager 管理",
+        "参数对象公开 BlobNum、Area、CentroidPoint、BlobRect、ContourInfo、BinaryImageComb、BlobImageComb、ROI、OutputMask 等结果字段",
+        "IMVSBlobFindModuTool.ModuResult 从模块结果管理器 QueryModuleOneResult 取结果，再由 ModuleResultManager.SetModuleResult 填充 BlobFindResult",
+        "BlobFindResult 构造时初始化全部结果集合和图像结果对象"
+      ],
+      "meaning": "Blob 的显示下拉、结果表、结果图形和 ROI 必须消费同一次模块结果对象。质心、边界、二值图和 Blob 图像不是 UI 自己推导的替代数据，输出请求与结果接收需要沿同一模块结果合同传递。"
+    },
+    {
+      "id": "image-source-result-contract",
+      "source": "ImageSourceModuleCs.ImageSourceModuleTool / ImageSourceResult / ImageSourceModuleAlgorithmTab.xml / ImageSourceModuleDisplay.xml",
+      "facts": [
+        "ImageSourceResult 暴露 ImageData、ImageDataMono8、CurImagePath、CurImageName、FrameNum、SNCode 等正式结果字段",
+        "ImageSourceModuleTool.ModuResult 通过 QueryModuleOneResult 和 ModuleResultManager.SetModuleResult 获取结果",
+        "ImageSourceModuleTool 提供 Run、SetImagePath、SetImageData、AddInputImageByPath、DeleteInputImageByPath、ClearAllInputImage 入口",
+        "AlgorithmTab XML 将 ImageSourceType=LocalImage 时的 CurrentImagePath、PixelFormat、AutoPlay、PathCache、订阅文件夹字段设为可见；Camera/SDK 时隐藏本地列表",
+        "Display XML 明确图像、灰度图、Blob/二值图像不是同一对象，Blob 矩形按 CenterX/CenterY/BoxWidth/BoxHeight/Angle，轮廓按 ContourInfo/ContourNum，文本按 Area 和 BlobStatus，结果列表按 BlobNum 转置显示"
+      ],
+      "meaning": "本地图像链的最小闭包包含本地图像列表和运行模式、图像与灰度输出、Blob 输入、Blob 结果对象、矩形/轮廓/质心/文本/表格显示。工具入口和结果显示必须保持同一执行轮次，不能只完成一张背景图。"
+    },
+    {
+      "id": "native-module-entry",
+      "source": "REA native export inventories for ImageSourceModule.dll and IMVSBlobFindModu.dll",
+      "facts": [
+        "ImageSource 原生模块导出目录包含 Add_WatchSubFolder/Del_WatchSubFolder、MonitoringSubFolderInit/DeInit/Changes、GetImageFilesPathNameFromDir、SortImageNameInFolder、UpdateImageFilesListFromDir",
+        "ImageSource 原生模块导出 SetImageOutput、SetImageOutputMono8、StitchImageOutput 和 Process，说明文件枚举、文件夹监听、输出格式/灰度、拼接和执行属于原生模块同一处理链",
+        "Blob 原生模块导出 Process、ProcessAlg、ProcessOutput、LimitJudge、ResetMember、SetParam，说明算法、结果输出、判定和参数重置在原生模块内分段处理",
+        "两个原生 DLL 的导出均为完整 PE export inventory；仅导出表静态证据，未据此推断参数布局或运行时调用顺序"
+      ],
+      "meaning": "本方本地链路应把文件枚举/监听/图像输出/拼接交给 ImageSource 运行入口，再把冻结图像交给 Blob 执行和结果发布。当前 REA 已覆盖到原生模块边界，无法从导出表单独证明具体参数和时序。"
+    },
+    {
+      "id": "vm-render-shape-contract",
+      "source": "REA managed static evidence ev_6a77fb6a6a2f6550dc70a6bb9ed694f291c1d19f368d5d9a3b5c84d51e72d5b9 and ev_b44064df6ed612b1b3089982a1bebb5f0f6a73aad174857a38f6cd7fb7bca3b4",
+      "facts": [
+        "VMControls.WPF.RenderControlBase 维护 shapeBuffer、shapeList、tempShapeStore 和 ModuleParams。UpdateRender/UpdateRenderAfterSelfExecute 负责输入图像变化与执行后更新，UpdateShapesWithCallBackData 独立接收模块结果字典，DrawCurModuleUIResult 分发当前模块 UI 结果。",
+        "AddShapeToList 的宿主合同通过 RenderInterface 的 IShape 家族消费图形对象。IRectangle 只有 CenterPoint、Width、Height、Angle、SkewAngleX、SkewAngleY；IPoint 通过 Point 单独表示点图形；IOutlinePoint 通过 OutlineData 表示轮廓点；IText 通过 Content、Position、FontSize 表示文本。",
+        "IMVSBlobFindModuCs.BlobFindResult 同时公开 CentroidPoint、MinBoudingRect/BlobRect、ContourInfo、BlobStatus 和 BlobNum，因此原厂结果图形应由同一结果对象分别产生矩形、质心点、轮廓和文本，不应从矩形对象臆造质心或把质心嵌入矩形。",
+        "RenderControlBase 的 ImageDataChanged CIL 只在新图像非空时调用 UpdateImageView；shapeList 与结果回调保持独立更新，支持同一背景图上的多种结果图形。",
+        "原厂 Result display XML 的 Blob rect 没有独立 centroid display object，但托管结果合同和 RenderInterface 明确存在 IPoint 形状；因此本方质心 descriptor/point projection 有合同依据，矩形类不应增加未经证据的中心标记字段。"
+      ],
+      "meaning": "本方结果投影应保持 VM 的“模块结果对象→多种 IShape 图形→同一视图”分发关系。当前质心单独点图形的方向有托管合同依据，后续只需核对颜色、开关和数据请求，不应把中心标记当矩形内部属性。"
+    },
+    {
+      "id": "rea-native-provider-boundary",
+      "source": "REA provider diagnostics from attempted search_procedures/search_strings on IMVSBlobFindModu.dll",
+      "facts": [
+        "REA 已成功打开原生 PE 并取得 SHA-256 及导出目录，但 Windows 当前未配置 Ghidra、IDA、Kuna，Hopper 不支持 Windows。",
+        "因此无法继续取得原生函数伪代码、调用图或运行时值追踪；该限制是工具环境边界，不是原生算法不存在。"
+      ],
+      "meaning": "原生实现的参数布局、内部调用顺序和运行时状态不能从当前 REA 环境直接证明。实现决策必须继续以托管包装层、XML、已有运行证据为边界，缺少原生证据的地方在清单中保持待证，不用名称猜测。"
+    },
+    {
+      "id": "blob-display-output-demand",
+      "source": "当前实现静态链审计 + VM XML/托管结果合同",
+      "facts": [
+        "当前 BlobResultDisplay.Descriptor 将轮廓声明为同一 Blob 行的 outline-points，ResultDisplayDescriptor.RequiredOutputs 将该路径转成 OutputValueRequest。",
+        "ExecutionNodeSnapshot 收集 RequiredDisplayOutputs 并在工具执行入口校验，BlobSession.ExecuteAsync 根据 boundary/contour/contour-lossy 请求设置 BlobOutputRequest.Boundary。",
+        "BlobResultProjection 和 BlobOutput 将边界、轮廓点、质心、矩形和结果表从同一批 BlobMeasurement 冻结到同一结果快照，ResultWorkspacePresenter 再从同一 publication 借值绘制。"
+      ],
+      "meaning": "当前“结果显示勾选轮廓 → 执行请求边界 → 同一 Blob 结果快照 → 结果视图”链条已有源码对应，不需要另造显示层计算。待人工验收的是实际图像和参数下的数量、颜色及切换结果。"
+    },
+    {
+      "id": "solution-persistence-display-closure",
+      "source": "当前实现静态链审计：SolutionDocumentReader / DocumentSession.Persistence / DocumentSessionManager.Persistence",
+      "facts": [
+        "SolutionDocumentReader.ReadNode 读取 ToolConfiguration 的 Fields、CurrentValues、ParameterBindingOrder，并把显示字段纳入同一声明集合；缺失的显示默认值按声明补入。",
+        "DocumentSession.CapturePersistenceDeclarations 固定工具、设置、显示、宿主和引用声明指纹，Save/SaveAs 在编码前接纳编辑器，再校验声明未在保存过程中变化。",
+        "DocumentSession.FromPersistenceCandidate 恢复节点配置、显示选择、布局、连线和嵌入资源候选；打开完成后建立 LastWrittenSnapshot 与资源基址。"
+      ],
+      "meaning": "方案持久化链在源码层覆盖 Blob 参数、显示设置、ImageSource 路径/选择、节点身份和嵌入资源。保存重开实际运行、ROI 重投影和资源释放仍需用户使用正式 Release 统一验收。"
+    },
+    {
+      "id": "local-image-resource-lifecycle",
+      "source": "当前实现静态链审计：ImageSourceHostInputFactory / ImageSourceRunSequence / ImageSourceSession",
+      "facts": [
+        "ImageSourceHostInputFactory.Dispose 先退役并释放游标，再释放处理状态；ProcessingPreparer/ProcessingInputs 分别释放输入租约和读取状态。",
+        "ImageSourceRunSequence 在轮次结束或会话释放时关闭 watcher、缓存和读取游标；LocalImagePathCache 逐项释放缓存副本。",
+        "ImageSourceSession 在成功输出转移资源所有权，在异常/取消路径释放临时 scope，DisposeAsync 释放直接运行状态。"
+      ],
+      "meaning": "本地图像链静态上具备文件读取、缓存、watcher、帧输出和取消关闭的资源所有权边界。实际多张文件夹连续运行及迟到回调释放仍需正式 Release 人工验收。"
+    },
+    {
+      "id": "vm-local-image-list-control-contract",
+      "source": "REA managed static evidence ev_f71488f7f8c40dfcd4abf6d3b9b422cb384b0c37971f48305f01be9a0ad18d06",
+      "facts": [
+        "VM ImageSourceModuleControl.LocalImageListView 的字段包括 Root、list、cbx、CurrentImagePath 和 imageModes，方法包括 OnRootChanged、get_CurrentImagePath、cbxMode_SelectionChanged。",
+        "Root 是依赖属性，CurrentImagePath 通过 Root 读取当前图像列表/当前项，模式 ComboBox 由 cbxMode_SelectionChanged 处理。",
+        "该控件不直接拥有算法执行，它把模式和当前路径写回 Root/参数树，再由图像列表面板和宿主通知消费。"
+      ],
+      "meaning": "本方 ImageSource 列表编辑器应把路径、模式和选中状态集中写入方案参数/列表会话，再由执行游标消费，不能在控件内部另起一套执行状态。当前源码的 ImageSourceStripSession、ImageSourceProjectionBinding 和 ImageSourceHostInputFactory 已按该边界组织，剩余是正式 UI 人工核对时序。"
+    }
+  ],
+  "implementationDecision": {
+    "evidenceBackedChange": "ResultWorkspacePresenter 在完成视口换代后单次通知 BlobLocalRoiOwner 重新借当前帧，等价于原厂回调末尾 ModuleSource.UpdateROI；ImageSource 与 Blob 原件入口证据已补齐，后续实现只沿已登记参数节点、模块结果和视口合同修改。",
+    "notChanged": [
+      "不自动切换显示来源",
+      "不在视口清空中途通知",
+      "不改变有效下拉切换语义",
+      "不进入相机和 SDK 链路"
+    ],
+    "remainingManualAcceptance": [
+      "本地图像运行后 ROI 图形保持且可继续绘制",
+      "结果矩形、轮廓、质心和文本按当前图像值刷新",
+      "下拉切换不丢 ROI",
+      "保存重开后再次运行",
+      "本地图像多张列表的 Activate/SelectStart/SetRunSelection 与 Blob 输入及结果显示保持同一执行轮次"
+    ]
+  }
+}

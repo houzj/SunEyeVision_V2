@@ -20,6 +20,13 @@ public interface IToolSession : IAsyncDisposable
     ValueTask<ToolOutcome> ExecuteAsync(ToolInvocation invocation);
 }
 
+/// <summary>Marks a session whose internal state is scoped to an invocation and may be reused sequentially.</summary>
+public interface IReusableToolSession
+{
+}
+
+/// <summary>Optional startup hook for runtime components that need process-level native initialization.</summary>
+
 public sealed record ToolOutcome(bool Success, IToolOutput? Output, BusinessJudgment Judgment,
     IReadOnlyList<Diagnostic> Diagnostics, bool Suppressed = false)
 {

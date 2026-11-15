@@ -9,6 +9,7 @@ using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Infrastructure.ImageSources;
 using SunEyeVision.UI.Services.Images;
 using SunEyeVision.UI.Services.Workflow;
+using SunEyeVision.UI.Services.Performance;
 namespace SunEyeVision.UI.Shell.Windows;
 public partial class MainWindowViewModel
 {
@@ -107,9 +108,11 @@ public partial class MainWindowViewModel
  private async Task RunFormalBatchCoreAsync(DocumentSession session,IReadOnlyList<string> workflowIds,int navigationDirection)
  {
   if(workflowIds.Count==0)throw new InvalidOperationException("没有可运行的根流程。");
+  using var timing=PerfProbe.Begin("execute",string.Join(",",workflowIds));
   var dispatcher=System.Windows.Application.Current?.Dispatcher??Dispatcher.CurrentDispatcher;
   var inputFactory=navigationDirection==0?FormalImageInputs:FormalImageInputs.ForNavigation(workflowIds.Single(),navigationDirection);
   using var batch=DocumentManager.CaptureCurrentRunBatch(workflowIds,hostFactory:inputFactory);
+  timing.Mark("batch-capture");
   if(!ReferenceEquals(DocumentManager.CurrentSession,session))throw new InvalidOperationException("运行捕获期间方案已变化。");
   _formalActiveBatch=batch;
   void Status(string workflowId,string nodeId,ExecutionStatus status)=>dispatcher.BeginInvoke(new Action(()=>
@@ -130,7 +133,11 @@ public partial class MainWindowViewModel
   foreach(var tab in WorkflowTabViewModel.Tabs.Where(tab=>_formalRunningRootIds.Contains(tab.RootWorkflowId))){tab.RunMode=SunEyeVision.UI.Features.WorkflowUI.RunMode.Single;tab.IsRunning=true;}
   NotifyFormalRunState();
    using var result=await Task.Run(()=>batch.RunAsync(message=>dispatcher.BeginInvoke(new Action(()=>AddLog(message)))));
+   timing.Mark("batch-run");
+   using var publishTiming=RuntimeExecutionTimingProbe.Begin("result-publish",string.Join(",",workflowIds));
+   publishTiming.Mark("batch-run-return");
    session.DrainRuntimeChanges();
+   publishTiming.Mark("runtime-changes-drained");
    if(!ReferenceEquals(DocumentManager.CurrentSession,session))return;
    foreach(var item in result.Workflows)
    {
@@ -140,7 +147,10 @@ public partial class MainWindowViewModel
     AddLog("流程 "+session.GetWorkflows().Single(flow=>flow.Id==item.Key).Name+"："+item.Value.Status);
     NotifyResultWorkspaceRootSettled(item.Key);
    }
+   publishTiming.Mark("workflow-status-and-settled");
    RefreshFormalImageReadReceipts(session);RefreshFormalPublishedResult();RefreshStatusBarExecutionSnapshot();
+   publishTiming.Mark("formal-result-refresh");
+   timing.Mark("result-publish");
   }
   finally
   {

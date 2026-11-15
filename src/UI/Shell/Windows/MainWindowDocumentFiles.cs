@@ -10,6 +10,7 @@ using SunEyeVision.Application;
 using SunEyeVision.Domain.Persistence;
 using SunEyeVision.Infrastructure.Persistence;
 using SunEyeVision.Persistence;
+using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.UI.Features.Dialogs;
 namespace SunEyeVision.UI.Shell.Windows;
 public partial class MainWindowViewModel
@@ -72,22 +73,31 @@ public partial class MainWindowViewModel
  {
   path=Path.GetFullPath(path);Services.Startup.StartupLaunchContext.Current.ValidatePath(path);
   if(!reload&&string.Equals(DocumentManager.CurrentSession?.LastWrittenSnapshot?.TargetPath,path,StringComparison.OrdinalIgnoreCase))return true;
+  using var timing=RuntimeExecutionTimingProbe.Begin("solution-open",Path.GetFileName(path));
+  timing.Mark("open-enter");
   // Basic file/format checks precede stop/save prompts. The manager alone fully admits and installs the candidate.
   var bytes=await Task.Run(()=>File.ReadAllBytes(path));
+  timing.Mark("file-read");
   await Task.Run(()=>ValidateDocumentCandidateBytes(bytes));
+  timing.Mark("format-validate");
   _=await Task.Run(()=>VariableVocabularyCapture.FromCandidate(bytes));
+  timing.Mark("variable-vocabulary");
   if(!await PrepareSolutionTransitionAsync(reload))return false;
+  timing.Mark("transition-prepared");
   DocumentSessionManager.PreparedDocumentOpen? prepared=null;
   try
   {
    await SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.DisposeCommunicationRuntimeAsync();
    prepared=await Task.Run(()=>DocumentManager.PrepareOpen(bytes,path,data=>VariableVocabularyCapture.FromCandidate(data.Span),scope=>new ComplexVariableValueCodec(scope),DocumentJsonOptions));
+   timing.Mark("document-prepared");
    var current=DocumentManager.OpenPrepared(prepared,discardPendingEdits:true);
+   timing.Mark("document-installed");
 
    UpdateCurrentSolutionInfo();
    if(DocumentManager.LastObserverError is {} observerError)throw new InvalidOperationException("方案已切换，但部分界面观察者未完成更新。",observerError);
    if(DocumentManager.LastCloseError is {} closeError)throw new InvalidOperationException("方案已切换，但旧方案部分资源清理未完成。",closeError);
    if(System.Windows.Application.Current is App app){app.RecordRecentSolution(current);await app.CompleteOpenedWorkspaceAsync();}
+   timing.Mark("workspace-completed");
    return true;
   }
   finally{EndSolutionTransition();}

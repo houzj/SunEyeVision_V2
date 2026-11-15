@@ -117,3 +117,67 @@ ROI 按钮 -> RequestCommand -> PrepareInteraction -> BlobLocalRoiOwner.Activate
 - 探针不进入正式载荷。
 
 **验收矩阵**：自动切换、运行模式、运行勾选、显式缩略图、Blob 参数、ROI 修改均在“不执行”条件下保持上次图像/图形/文本/结果表；重新执行整体替换；切节点、切方案、关闭重开正确清理并重建。
+
+## 2026-11-15 公共执行链常驻化批次
+
+### 目标
+
+按 VM 已确认的服务端常驻、模块预加载和运行请求复用语义，重构本方公共执行链：方案打开后建立方案级运行时；配置版本未变化时复用不可变执行计划、调度器和工具会话；每轮只捕获输入/变量增量并重置运行态；配置、节点、方案或目录身份变化时原子失效并释放。
+
+### 设计合同
+
+- `SolutionRuntime` 是方案编辑会话的唯一执行宿主，拥有执行计划、调度器、节点会话租约和结果发布边界；UI 不进入该对象。
+- `ExecutionPlan` 以方案会话、流程结构代次、节点配置身份和运行目录身份组成键；命中时不得重新捕获 GraphState、依赖边、控制边和节点快照。
+- 每轮运行只创建 `RunState`、输入/变量快照和结果容器；运行结束后清理 RunState，保留方案级运行时。
+- 方案编辑、节点/连线变化、工具目录退役、方案切换和关闭会使计划失效；失效先停止并排空运行，再释放计划和会话。
+- 结果发布仍由执行轮次原子替换，编辑和导航不触发执行计划失效；取消、异常和迟到回调不能写入新会话。
+
+### 实施顺序
+
+1. 在 Application/Execution 层建立方案级运行时和执行计划合同，先接入现有 `DocumentSession`，不改 UI。
+2. 将 `CaptureRunBatchCore` 拆为“计划命中/构建”和“每轮输入捕获”，保留现有隔离与所有权校验。
+3. 将 `DocumentRunBatch` 的单轮 `WorkflowExecutionEngine` 改为运行时持有的可重置调度器，确保并发、取消、连续运行和关闭边界不变。
+4. 将 ImageSource/Blob 工具会话接入计划节点租约，按配置身份失效；结果发布继续使用现有快照合同。
+5. 增加公共执行链探针，分别记录 plan-hit/plan-build、run-state、input-capture、dispatch、tool-session、result-build、publish 和 retirement。
+6. 全量 Release 构建；只做与执行链直接相关的定向验证，人工验收覆盖首次/后续、连续运行、取消、参数修改、节点切换、方案关闭。
+
+### 当前已知风险
+
+- 当前 `workflow-snapshots` 探针包含完整流程图和依赖结构构建，不能只缓存 `ExecutionNodeSnapshot`。
+- `engine-build-result` 首轮仍包含结果来源捕获和输出聚合，调度器常驻后必须确认资源租约和结果身份不会跨轮泄漏。
+- VM 的服务端动态 RPC 跟踪尚未取得；本批只迁移已由服务配置、反编译入口和本方运行证据共同支持的生命周期语义，不声称协议等价。
+
+## 2026-11-15 ExecutionServer 产品级重构前置批次
+
+### 目标
+
+依据 VM 产品级架构证据重构执行引擎，不再把旧单进程执行链的局部缓存视为最终设计。正式实施前先完成原厂执行引擎依赖闭包、状态机、数据所有权和关闭链取证。
+
+### 设计产物
+
+- `docs/09-现行文档/执行引擎产品级架构重构设计.html`：ExecutionServer、常驻拓扑计划、RunRequest、ResultSubscription、InputWorkspace、ModuleRuntimeHost、ResultStore 和生命周期合同。
+- `docs/09-现行文档/VM与SunEyeVision启动执行链差异对比.html`：启动、Run、拓扑和软件核心设计差异及目标流程。
+
+### 取证门槛（实施前必须完成）
+
+- [ ] 启动/Server/ModuleProxy 就绪、失败和关闭闭包。
+- [ ] Solution/Procedure/Module/Port/Connection 对象构造、常驻和退役闭包。
+- [ ] 拓扑编译、依赖表示、就绪队列、分支并发和顺序规则。
+- [ ] 图像/变量/ROI/模块输出传播、复制/借用/共享和释放规则。
+- [ ] 模块实例复用、线程安全、取消、异常恢复和重试规则。
+- [ ] 结果提交、UI 回调/订阅、历史结果和显示更新规则。
+- [ ] 方案切换、窗口关闭、Server/Proxy 退役和最终资源释放顺序。
+
+### 实施阶段（取证闭口后）
+
+1. 建立四个深模块接口和身份/代次/所有权合同。
+2. 建立内存 ExecutionServer 和常驻 CompiledWorkflowPlan。
+3. 迁移 TopologyScheduler、InputWorkspace、ModuleRuntimeHost 和 ResultStore。
+4. 迁移 Run/Cancel/Subscribe/Retire UI 入口，删除旧生产执行入口。
+5. 完成独立进程 ExecutionServer/IPC 适配器评估和实施。
+
+### 取证完成前禁止
+
+- 不根据本方现有队列反推 VM 内部调度算法。
+- 不先造 ExecutionServer 接口再补原厂语义。
+- 不保留新旧两套生产执行链长期并行。

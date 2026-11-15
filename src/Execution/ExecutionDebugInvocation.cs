@@ -164,7 +164,7 @@ public sealed class ExecutionDebugInvocation : IDisposable
             // 与正式执行一致传递显示所需输出（ExecutionToolInvocation.cs:64）：结果显示的
             // 行几何（如 Blob 区域/轮廓）依赖该请求生成，缺失时调试窗口结果图形不渲染。
             outcome = await ToolRuntimeExecutor.ExecuteAsync(_node.Definition, settings, new InputValues(_node.Schema.Inputs, inputs), bound,
-                _node.RequiredDisplayOutputs).ConfigureAwait(false);
+                _node.RequiredDisplayOutputs, _node.Directory).ConfigureAwait(false);
             }
             var owned = new GenerationResourceOwner(resources, generation); generation = null; transferred = true;
             result = DeclaredOutputSnapshot.Capture(_node.Schema, 0, Identity, _node.NodeId, outcome, owned,

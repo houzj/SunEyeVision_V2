@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VM 与 SunEyeVision 启动执行链差异摘要</title>
+  <style>
+    body{margin:0;background:#f6f8fb;color:#1f2937;font:15px/1.7 "Microsoft YaHei",Segoe UI,sans-serif}
+    main{max-width:1100px;margin:auto;padding:36px}h1{color:#0f172a}h2{border-left:5px solid #2563eb;padding-left:10px;margin-top:28px}
+    .notice{padding:15px 18px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0}.card{background:#fff;border:1px solid #d8e0ea;border-radius:8px;padding:15px}.card strong{display:block;font-size:20px}.card span{color:#64748b}table{width:100%;border-collapse:collapse;background:#fff}th,td{border:1px solid #d8e0ea;padding:10px;vertical-align:top;text-align:left}th{background:#eaf1fb;color:#1e3a8a}code{background:#eef2f7;border-radius:4px;padding:1px 5px}a{color:#2563eb}
+  </style>
+</head>
+<body>
+<main>
+  <h1>VM 与 SunEyeVision 启动执行链差异摘要</h1>
+  <div class="notice"><b>现行文档说明：</b>本页只保留导航和差异摘要。唯一现行方案、目标链路、目标 Run、执行引擎、结果 UI 和关闭生命周期统一维护在 <a href="执行引擎产品级架构重构设计.html">执行引擎产品级架构重构设计.html</a>，本页不再维护第二套目标设计。</div>
+  <div class="summary">
+    <div class="card"><strong>VM 原厂</strong><span>启动服务 → 欢迎页 → Load Solution → Run → 结果更新</span></div>
+    <div class="card"><strong>当前自研</strong><span>插件/宿主初始化 → DocumentSession → CaptureRunBatch → 工作流执行器 → 多层结果发布</span></div>
+    <div class="card"><strong>目标设计</strong><span>ExecutionServer → ExecutionCoordinator → Run/Trigger → ResultStore → 独立 UI 投影</span></div>
+  </div>
+  <h2>核心差异</h2>
+  <table>
+    <tr><th>阶段</th><th>VM 原厂</th><th>SunEyeVision 当前</th><th>目标设计</th></tr>
+    <tr><td>启动</td><td>Server/Proxy 和模块运行环境常驻准备。</td><td>应用内插件准入和公共初始化。</td><td>启动页只准备服务、插件和公共框架，不执行工具。</td></tr>
+    <tr><td>方案</td><td><code>VmSolution.Load</code> 安装流程和模块对象。</td><td>DocumentSession 同时承担模型、画布和部分宿主接缝。</td><td>SolutionRuntime 统一方案会话，编辑状态与运行状态分离。</td></tr>
+    <tr><td>Run</td><td><code>VmSolution.Run</code>/<code>VmProcedure.Run</code> 进入常驻服务。</td><td>CaptureRunBatch 和自研执行器承担较多每轮准备。</td><td>Run/Trigger 请求进入 ExecutionServer，由 ExecutionCoordinator 按原厂模型协调。</td></tr>
+    <tr><td>结果</td><td>常驻结果对象按 ExecuteCount 异步更新。</td><td>结果快照、Owner、Presenter 和表格/图形多层协作。</td><td>ResultStore 提交代次；模块结果、当前结果、历史结果、帮助四条 UI 链独立更新。</td></tr>
+    <tr><td>关闭</td><td>服务统一排空和释放。</td><td>宿主需要显式处理窗口、方案、运行和结果资源。</td><td>停止请求、排空 Run、退役投影、释放结果/会话/方案、关闭服务。</td></tr>
+  </table>
+  <h2>继续阅读</h2>
+  <p><a href="执行引擎产品级架构重构设计.html">打开唯一现行方案：执行引擎产品级架构重构设计</a></p>
+  <p>原厂反编译、运行证据和历史差异材料仍保留在 <code>docs/07-工具逆向</code>；本摘要不替代证据原文。</p>
+</main>
+</body>
+</html>

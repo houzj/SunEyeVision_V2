@@ -15,6 +15,7 @@ using System.Windows.Data;
 using System.Threading;
 using System.Threading.Tasks;
 using SunEyeVision.UI.Shell.Windows;
+using SunEyeVision.UI.Shell.Controls.Common;
 using SunEyeVision.UI.Features.Dialogs;
 using System.Runtime.InteropServices;
 
@@ -29,6 +30,7 @@ using SunEyeVision.UI.Shell;
 using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Shared.Events;
+using SunEyeVision.Plugin.Runtime;
 
 using SunEyeVision.UI.Features.Dialogs;
 
@@ -74,6 +76,7 @@ public partial class App : System.Windows.Application
     private int _monitorReportInterval = 30; // 每30秒报告一次
 
     private MainWindow? _mainWindow;
+    private LoadingWindow? _startupLoadingWindow;
 
     static App()
     {
@@ -194,13 +197,13 @@ public partial class App : System.Windows.Application
         base.OnStartup(e);
         LogStartupStage("Application base OnStartup completed");
 
-        // 先准备数据根和起始页偏好。方案管理器只读取最近方案目录，不依赖
-        // 插件准入、服务注册或完整工作区，因此可以在最慢的启动链之前先交给用户。
+        // 先显示启动加载窗口，再完成运行环境初始化。原厂先完成启动阶段，
+        // 方案管理器属于启动完成后的用户入口，不能反过来阻塞插件和服务初始化。
         try
         {
+            _startupLoadingWindow = new LoadingWindow("正在准备运行环境");
+            _startupLoadingWindow.Show();
             InitializeDataPathsAndPreferences();
-            if (_requestedSolutionPath is null && !StartPreferences.HideStartPage)
-                ShowStartupSolutionManager();
         }
         catch (Exception ex)
         {
@@ -218,7 +221,6 @@ public partial class App : System.Windows.Application
             _mainWindow = new MainWindow();
             AttachMainWindowDiagnostics(_mainWindow);
             System.Windows.Application.Current.MainWindow = _mainWindow;
-            ShowMainWindow(_mainWindow, "startup shell");
             _mainWindow.ShowSolutionLoadingOverlay("正在启动", "准备插件目录和运行环境");
         }
         catch (Exception ex)
@@ -263,6 +265,7 @@ public partial class App : System.Windows.Application
         }
         _mainWindow?.UpdateSolutionLoadingOverlay("正在加载模块", "工具目录读取完成");
         LogStartupStage("Plugin.Load completed");
+        var desktopAdmission = pluginManager.DesktopAdmission ?? throw new InvalidOperationException("缺少已准入运行目录。");
 
         // 2. 标记插件已加载（全局状态）
 
@@ -287,7 +290,6 @@ public partial class App : System.Windows.Application
         // 5. 初始化解决方案管理器
         _mainWindow?.UpdateSolutionLoadingOverlay("正在初始化解决方案", "准备方案仓库和用户设置");
         LogStartupStage("SolutionManager.Initialize begin", $"defaultPath={defaultPath}");
-        var desktopAdmission=pluginManager.DesktopAdmission??throw new InvalidOperationException("缺少已准入运行目录。");
         _desktopDirectoryPin=pluginManager.PinDesktopHost();
         LogStartupStage("SolutionManager directory pinned");
         var solutionManagerClock = Stopwatch.StartNew();
@@ -305,6 +307,12 @@ public partial class App : System.Windows.Application
 
         // 启动决策
         LogStartupStage("Startup decision begin");
+        // The startup loading window ends before the welcome page. The main
+        // workspace remains hidden until the user chooses a solution.
+        _startupLoadingWindow?.Close();
+        _startupLoadingWindow = null;
+        if (_requestedSolutionPath is null && !StartPreferences.HideStartPage)
+            ShowStartupSolutionManager();
         await HandleStartupDecisionAsync(desktopAdmission, _mainWindow);
         _startupActivationReady = true;
         LogStartupStage("HandleStartupDecision returned");
@@ -878,9 +886,12 @@ public partial class App : System.Windows.Application
     /// </summary>
     protected override void OnExit(ExitEventArgs e)
     {
+        try { _startupLoadingWindow?.Close(); } catch { }
+        _startupLoadingWindow = null;
         MarkInstanceClosing();
         if (_releaseProbe || _startupRejected || !_servicesReady)
         {
+            RuntimeLifecycleProbe.Log("application-exit");
             base.OnExit(e);
             return;
         }
@@ -908,6 +919,8 @@ public partial class App : System.Windows.Application
         try { ServiceInitializer.SolutionManager.Dispose(); }
         catch (Exception ex) { VisionLogger.Instance.Log(LogLevel.Warning, $"退出时关闭方案会话失败: {ex.Message}", "App", ex); }
 
+        // 记录方案、插件和结果消费者释放后的最终资源计数。
+        RuntimeLifecycleProbe.Log("application-exit");
         base.OnExit(e);
     }
 

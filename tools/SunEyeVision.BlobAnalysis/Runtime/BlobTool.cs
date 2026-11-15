@@ -35,6 +35,7 @@ public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolR
     public string ToolId => Id;
     public ToolCatalogDescriptor Catalog {get;}=new("Blob分析","连通域分析与特征提取","blob","定位",10,"DEFAULT");
     public ToolSchema ResultSchema => new(Array.Empty<Port>(), BlobSchema.Outputs,outputDisplay:BlobSchema.OutputDisplay);
+    private static readonly ToolSchema ExecutionSchema = BuildExecutionSchema();
     public ResultProjectionDescriptor ResultProjection => BlobDisplayDefinition.Instance.Table;
     public ToolSchema SettingsSchema=>BlobParameterDefinition.Instance.SettingsSchema;
     public ToolSchema DisplaySettingsSchema=>BlobResultDisplay.Schema;
@@ -51,6 +52,9 @@ public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolR
                 nameof(BlobSettings.RelativeLeftRatio),nameof(BlobSettings.RelativeRightRatio),nameof(BlobSettings.RelativeLowerRatio),nameof(BlobSettings.RelativeUpperRatio)}
                 .ToDictionary(name=>BlobParameterDefinition.Instance.SettingsFieldId(name),_=>ParameterReferenceBehavior.FirstItemWithIndexReadZeroFallback));
     public ToolSchema Describe()
+        => ExecutionSchema;
+
+    private static ToolSchema BuildExecutionSchema()
     {
         var inputs=new[] {
         new Port(ImageInput, TypeRef.ResourceOf(ResourceKind.Image), EditModes:FieldEditModes.Reference),

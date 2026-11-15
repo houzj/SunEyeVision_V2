@@ -27,6 +27,7 @@ public sealed class WorkflowExecutionEngine
         ArgumentNullException.ThrowIfNull(batch);
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(log);
+        using var lifecycle = RuntimeLifecycleProbe.EnterEngine();
         var control = new ExecutionRunControl(cancellation);
         lock (_gate)
         {
@@ -40,6 +41,8 @@ public sealed class WorkflowExecutionEngine
         cancellation = control.Token;
         var workflow = request.Workflow;
         var root = batch.RootId; var scope = Guid.NewGuid();
+        using var engineTiming = RuntimeExecutionTimingProbe.Begin("workflow-engine", root.ToString());
+        engineTiming.Mark("engine-enter");
         var timer = Stopwatch.StartNew();
         var identities = new Dictionary<string, ToolExecutionIdentity>(StringComparer.Ordinal);
         var outputs = new ConcurrentDictionary<string, DeclaredOutputSnapshot>(StringComparer.Ordinal);
@@ -52,6 +55,7 @@ public sealed class WorkflowExecutionEngine
         try
         {
             workflowLease = batch.Enter(workflow);
+            engineTiming.Mark("workflow-enter");
             var bindings = new ExecutionBindingPlan(workflow, scope, request.VariableValues,
                 request.GlobalProducers.Select(item => item.Source));
             foreach (var item in workflow.Nodes)
@@ -59,10 +63,12 @@ public sealed class WorkflowExecutionEngine
                     FoundationContract.Major + "." + FoundationContract.Minor, cancellation, rootRunId: root));
             var expected = identities.ToDictionary(pair => new BindingNodeId(workflow.WorkflowId, pair.Key),
                 pair => pair.Value.ToInvocationIdentity(pair.Key));
+            engineTiming.Mark("identity-and-binding-plan");
             var pending = workflow.Nodes.Select(item => item.Node.NodeId).ToHashSet(StringComparer.Ordinal);
             var items = workflow.Nodes.ToDictionary(item => item.Node.NodeId, StringComparer.Ordinal);
             var leases = new ExecutionResourceLeaseManager();
             var maxConcurrency = Math.Max(1, Math.Min(4, Environment.ProcessorCount - 1));
+            engineTiming.Mark("dispatch-loop-start");
             while (pending.Count > 0 || running.Count > 0)
             {
                 await control.WaitAsync().ConfigureAwait(false);
@@ -183,12 +189,14 @@ public sealed class WorkflowExecutionEngine
                     }
                 }
             }
-            final = BuildResult(workflow, identities, outputs, nodeResults, timer.Elapsed, false);
+            final = BuildResult(workflow, identities, outputs, nodeResults, timer.Elapsed, false, engineTiming);
+            engineTiming.Mark("engine-build-result");
             return final;
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         {
-            final = BuildResult(workflow, identities, outputs, nodeResults, timer.Elapsed, true);
+            final = BuildResult(workflow, identities, outputs, nodeResults, timer.Elapsed, true, engineTiming);
+            engineTiming.Mark("engine-build-cancelled-result");
             return final;
         }
         catch (Exception error) { failure = error; throw; }
@@ -212,6 +220,7 @@ public sealed class WorkflowExecutionEngine
             try { workflowLease?.Dispose(); } catch (Exception error) { cleanup.Add(error); }
             lock (_gate) { _running = false; _control = null; _state = WorkflowExecutionState.Idle; }
             try { control.Dispose(); } catch (Exception error) { cleanup.Add(error); }
+            engineTiming.Mark("engine-cleanup");
             if (cleanup.Count != 0)
             {
                 if (final is not null)
@@ -252,12 +261,14 @@ public sealed class WorkflowExecutionEngine
 
     private static ExecutionResult BuildResult(ExecutionWorkflowSnapshot workflow,
         IReadOnlyDictionary<string, ToolExecutionIdentity> identities, IReadOnlyDictionary<string, DeclaredOutputSnapshot> outputs,
-        IReadOnlyDictionary<string, NodeExecutionResult> outcomes, TimeSpan elapsed, bool cancelled)
+        IReadOnlyDictionary<string, NodeExecutionResult> outcomes, TimeSpan elapsed, bool cancelled,
+        RuntimeExecutionTimingProbe timing)
     {
         var owned = new List<DeclaredOutputSnapshot>();
         var nodes = new Dictionary<string, NodeExecutionResult>(outcomes, StringComparer.Ordinal);
         try
         {
+            timing.Mark("result-build-start");
             foreach (var item in workflow.Nodes)
             {
                 var id = item.Node.NodeId;
@@ -274,6 +285,8 @@ public sealed class WorkflowExecutionEngine
                 result.Result = snapshot;
             }
             var success = !cancelled && nodes.Values.All(node => node.Success || node.Status == ExecutionStatus.NotExecuted);
+            timing.Mark("result-fallback-snapshots");
+            timing.Mark("result-display-source-begin");
             foreach (var item in workflow.Nodes.Where(item => item.Node.HasResultDisplay))
             {
                 if (!outputs.TryGetValue(item.Node.NodeId, out var target) || !target.IsSuccess) continue;
@@ -291,11 +304,14 @@ public sealed class WorkflowExecutionEngine
                 }
                 catch (Exception error) { target.RejectDisplaySources("显示来源捕获失败：" + error.Message); }
             }
+            timing.Mark("result-display-source-complete");
             var aggregate = new ExecutionResult { Success = success, Status = cancelled ? ExecutionStatus.Cancelled : success ? ExecutionStatus.Success : ExecutionStatus.Failed,
                 IsStopped = cancelled, ExecutionTime = elapsed, NodeResults = nodes,
                 Errors = nodes.Values.SelectMany(node => node.ErrorMessages).ToList() };
+            timing.Mark("result-aggregate-created");
             try { aggregate.CaptureDeclaredOutputs(nodes.Values.Select(node => node.Result).Where(result => result is not null)!); }
             catch { aggregate.Dispose(); throw; }
+            timing.Mark("result-declared-capture");
             return aggregate;
         }
         finally { foreach (var snapshot in owned) snapshot.Dispose(); }

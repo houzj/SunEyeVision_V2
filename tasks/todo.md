@@ -17,6 +17,16 @@
 - [ ] Task 13: 更新主文档、实施总结、证据索引和未实现范围
 - [ ] Checkpoint: 完整闭口
 
+## ExecutionServer 产品级重构前置
+
+- [ ] 完成 VM 启动服务、Server、ModuleProxy 和关闭闭包取证
+- [ ] 完成 VM Solution/Procedure/Module/Port/Connection 生命周期取证
+- [ ] 完成 VM 拓扑编译、依赖调度、分支并发和取消异常取证
+- [ ] 完成 VM 输入传播、结果提交、订阅和资源所有权取证
+- [ ] 完成 VM 方案切换、关闭和最终释放顺序取证
+- [ ] 取证矩阵收口并定稿 ExecutionServer/CompiledWorkflowPlan/RunRequest/ResultSubscription 合同
+- [ ] 设计合同审查通过后再开始 ExecutionServer 实施
+
 ## 当前批次：ROI 完整生产链
 
 - [x] 原厂证据：完成 ROI 按钮、SelectedROI、ROIList、ImageViewBox、ValueChanged、UpdateROI、RoiDrawTips 链路对照
@@ -54,3 +64,14 @@
 - [x] 接纳窗口跳过结果发布退役和显示清空
 - [x] 无探针 Release 构建
 - [ ] 人工验收：ImageSource/Blob 全入口不执行保持上次结果，重新执行替换，身份切换清理
+
+## 2026-11-15 公共执行链常驻化
+
+- [x] 建立方案级 SolutionRuntime 与 ExecutionPlan 合同
+- [x] 拆分计划构建和每轮输入/变量捕获
+- [x] 复用方案级 WorkflowExecutionEngine 与工具 Session，保留取消/连续运行/关闭排空
+- [x] 接入配置、节点、方案和目录身份失效释放
+- [x] 增加执行计划命中/构建分段探针并核对首次/后续差异
+- [x] 复用配置未变更时的工作流执行快照，按配置实例变化失效
+- [x] 全量 Release 构建并记录载荷哈希
+- [ ] Release 人工验收首次/后续、连续运行、取消、编辑失效和关闭释放

@@ -42,8 +42,13 @@ public sealed class ImageSourceRunSequence : IDisposable
             OutputFormat = p.OutputFormat, SNInitialValue = p.SNInitialValue
         }).ToArray();
         _policies = captured.ToDictionary(p => p.NodeId, StringComparer.Ordinal);
-        _caches = captured.Where(p=>p.SourceKind==ImageSourceKind.Local&&p.PathCache>0)
-            .ToDictionary(p=>p.NodeId,p=>new LocalImagePathCache(p.PathCache),StringComparer.Ordinal);
+        // VM keeps a current local-image record even when the visible PathCache
+        // parameter is 0.  That parameter controls the additional retained path
+        // records; it does not make the decoded current image disposable after
+        // every execution.  Keeping one record here also keeps the decoder and
+        // pixel ownership on the node cursor lifetime instead of the invocation.
+        _caches = captured.Where(p=>p.SourceKind==ImageSourceKind.Local)
+            .ToDictionary(p=>p.NodeId,p=>new LocalImagePathCache(Math.Max(1,p.PathCache)),StringComparer.Ordinal);
         try
         {
             _plans = captured.Where(p => p.SourceKind == ImageSourceKind.Local).Select(policy =>
@@ -192,31 +197,63 @@ public sealed class ImageSourceRunSequence : IDisposable
 // the cache even when its configuration is retired before it drains.
 internal sealed class LocalImagePathCache(int capacity) : IDisposable
 {
-    private readonly Dictionary<string, IDisposable> _images = new(StringComparer.Ordinal);
+    private sealed record Entry(FileStamp Stamp, IDisposable Image);
+    private readonly Dictionary<string, Entry> _images = new(StringComparer.Ordinal);
+    private readonly Queue<string> _order = new();
 
     internal T Open<T>(string address, Func<T> load, Func<T,T> clone) where T : class, IDisposable
     {
-        if (_images.TryGetValue(address, out var cached)) return clone((T)cached);
+        var stamp = FileStamp.Read(address);
+        if (_images.TryGetValue(address, out var cached))
+        {
+            if (cached.Stamp == stamp) return clone((T)cached.Image);
+            _images.Remove(address);
+            cached.Image.Dispose();
+        }
         var image = load();
-        if (_images.Count >= capacity) return image;
-        try { _images.Add(address, clone(image)); }
+        if (_images.Count >= capacity)
+        {
+            while (_order.Count > 0 && _images.Count >= capacity)
+            {
+                var evictedAddress = _order.Dequeue();
+                if (!_images.Remove(evictedAddress, out var evicted)) continue;
+                evicted.Image.Dispose();
+            }
+        }
+        try { _images.Add(address, new Entry(stamp, clone(image))); }
         catch (Exception failure)
         {
             try { image.Dispose(); }
             catch (Exception cleanup) { throw new AggregateException("图像缓存副本创建及源图释放均失败。", failure, cleanup); }
             throw;
         }
+        _order.Enqueue(address);
         return image;
     }
 
     public void Dispose()
     {
-        var images = _images.Values.ToArray();
+        var images = _images.Values.Select(entry => entry.Image).ToArray();
         _images.Clear();
+        _order.Clear();
         var errors = new List<Exception>();
         foreach (var image in images)
             try { image.Dispose(); } catch (Exception error) { errors.Add(error); }
         if (errors.Count != 0) throw new AggregateException(errors);
+    }
+
+    private readonly record struct FileStamp(long Length, DateTime LastWriteUtc)
+    {
+        internal static FileStamp Read(string address)
+        {
+            try
+            {
+                var info = new FileInfo(address);
+                return info.Exists ? new(info.Length, info.LastWriteTimeUtc) : default;
+            }
+            catch (IOException) { return default; }
+            catch (UnauthorizedAccessException) { return default; }
+        }
     }
 }
 

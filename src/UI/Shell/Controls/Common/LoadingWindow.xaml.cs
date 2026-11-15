@@ -17,8 +17,13 @@ namespace SunEyeVision.UI.Shell.Controls.Common
         {
             InitializeComponent();
             Message = message;
-            Owner = System.Windows.Application.Current?.MainWindow;
+            // Startup loading appears before MainWindow exists. Binding Owner to
+            // Application.Current.MainWindow here can point back to this window
+            // and WPF rejects the self-owner relationship.
+            Owner = null;
             ShowInTaskbar = false;
+            ShowActivated = true;
+            Topmost = true;
         }
     }
 }

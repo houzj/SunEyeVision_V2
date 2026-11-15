@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>性能差异对比与设计对齐方案（V2·待 Codex 审阅）</title>
+<style>
+body{font-family:"Microsoft YaHei",sans-serif;max-width:1200px;margin:0 auto;padding:24px;color:#222;line-height:1.62}
+h1{border-bottom:3px solid #2d6cdf;padding-bottom:8px}
+h2{color:#2d6cdf;border-left:4px solid #2d6cdf;padding-left:10px;margin-top:30px}
+h3{color:#333;margin-top:18px}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:0.93em}
+th,td{border:1px solid #bbb;padding:6px 9px;text-align:left;vertical-align:top}
+th{background:#eef3fb}
+code{background:#f4f4f4;padding:1px 5px;border-radius:3px;font-size:0.88em}
+.p0{background:#fdecec;border-left:4px solid #e05b5b;padding:8px 12px;margin:8px 0}
+.p1{background:#fff6e5;border-left:4px solid #e6a23c;padding:8px 12px;margin:8px 0}
+.ok{background:#eefaf0;border-left:4px solid #67c23a;padding:8px 12px;margin:8px 0}
+.rev{background:#eef3fb;border:1px solid #b9cbe8;padding:10px 14px;margin:12px 0}
+</style>
+</head>
+<body>
+<h1>性能差异对比与设计对齐方案（V2 · 待 Codex 审阅）</h1>
+
+<div class="rev">
+<b>修订说明（V2，2026-11-15 17:40）</b><br>
+V1 版把 Blob 算法当作主战场。V2 基于实测重新定性：<b>算法只占本方流程耗时的 13%，框架开销占 87%</b>；VM 恰好相反（算法 96%）。因此"设计对齐 VM"的核心目标是<b>消除每轮框架开销</b>（模块常驻模型），而不是优化算法常数。<br>
+本版新增：关键数据洞察、VM 的 Server 常驻实证、L1-L4 分层对齐路线、未对齐项诚实清单、待审阅开放问题。<br>
+<b>请 Codex 重点审阅第 9 节开放问题与第 6 节 L2 可行性判断。</b>
+</div>
+
+<h2>一、三段实测基线</h2>
+<table>
+<tr><th>段</th><th>本方实测</th><th>VM 原厂</th><th>数据来源</th></tr>
+<tr><td>启动（exe→可操作）</td><td>+2855ms（窗口可见 +4150ms）</td><td>未实测（启动画面掩盖）</td><td>StartupTrace 日志</td></tr>
+<tr><td>打开方案（决策→画布）</td><td>约 550ms（装配 130 + 会话 476 + 画布 112）</td><td>未实测</td><td>日志时间线</td></tr>
+<tr><td>执行（点击→出结果）</td><td>非首次 300-332ms / 首次 1494-3723ms</td><td><b>7.32ms</b></td><td>用户截图 + PerfProbe</td></tr>
+<tr><td>└ ImageSource 算法</td><td>7.42ms / 首次 53.64ms</td><td>4.05ms</td><td>用户截图</td></tr>
+<tr><td>└ Blob 算法</td><td>38.28ms / 首次 89.24ms</td><td>3.00ms</td><td>用户截图 + 探针</td></tr>
+</table>
+
+<h2>二、关键洞察：算法 13%，框架 87%</h2>
+<table>
+<tr><th>项目</th><th>VM</th><th>本方（非首次）</th></tr>
+<tr><td>ImageSource 算法</td><td>4.05ms</td><td>5-7ms</td></tr>
+<tr><td>Blob 算法</td><td>3.00ms</td><td>25-38ms</td></tr>
+<tr><td><b>算法小计</b></td><td><b>7.05ms（96%）</b></td><td><b>~40ms（13%）</b></td></tr>
+<tr><td><b>框架开销</b>（快照/准入/绑定/调度/发布/渲染）</td><td><b>0.27ms（4%）</b></td><td><b>~260ms（87%）</b></td></tr>
+<tr><td>流程总耗时</td><td>7.32ms</td><td>~300ms</td></tr>
+</table>
+<div class="p0">
+<b>本方 300ms 分解</b>：batch-capture 70ms + batch-run 200ms（其中算法仅 40ms，<b>160ms 为框架</b>）+ result-publish 10ms + 其他约 20ms。<br>
+<b>结论</b>：即便把 Blob 从 38ms 优化到 15ms（省 23ms，占 8%），总耗时也只到约 275ms；而把 260ms 框架压到 80-120ms，可让总耗时进入 130ms 级别（省 57%）。<b>主战场是框架开销，对应 VM 的"模块常驻 + 只发请求"设计。</b>
+</div>
+
+<h2>三、VM 为什么稳定：算法引擎是启动时就绪的独立 Server</h2>
+<p>反编译实证（<code>decompiled/HostShell/ExeEntry/VisionMaster/Program.cs:111-134</code>，位于 <code>BeforeStartPart</code>）：</p>
+<pre><code>LogHelper.Info("GetSolutionTakeState");
+if (!VmSolution.GetSolutionTakeState())
+{
+    LogHelper.Info("StartNewInstance");
+    VmSolution.StartNewInstance();   // 启动时就创建/接管算法 Server 实例
+}</code></pre>
+<table>
+<tr><th>环节</th><th>VM</th><th>本方</th></tr>
+<tr><td>算法引擎归属</td><td><b>独立 Server 实例/进程</b></td><td><b>UI 进程内</b>（HALCON 75MB）</td></tr>
+<tr><td>装载时机</td><td><b>启动时</b>（<code>BeforeStartPart</code> 后台最高优先级线程，与 UI 并行）</td><td><b>首次执行时</b>（<code>IsDeferredPlatformDependency</code> 延迟装载，<code>new HImage(address)</code> 隐式触发）</td></tr>
+<tr><td>成本可预期性</td><td>确定（启动付一次，之后恒定）</td><td><b>随机</b>（20ms~3100ms，取决于 OS 文件缓存是否命中 75MB DLL）</td></tr>
+<tr><td>点方案时的行为</td><td>只加载方案（流程/模块描述）；算法本体已在 Server</td><td>全托管新建对象；算法仍冷</td></tr>
+<tr><td>执行时行为</td><td>向常驻 Server 发请求</td><td>每轮 new 引擎/会话/全量快照</td></tr>
+</table>
+<div class="ok">
+<b>定性</b>：<b>"时快时慢"是设计问题，不是环境问题</b>——一次性成本（HALCON 平台装载）没有确定归属，被隐式绑定在"第一次 <code>new HImage</code>"上，因此成本大小取决于系统当时缓存状态。VM 把这个成本固定在启动阶段，所以稳定。<br>
+佐证：本机可用内存 2.9GB/15.8GB、Standby 缓存 2.5GB，75MB DLL 易被回收 → 冷/热交替 → 随机表现。环境只决定随机值大小，设计决定随机性存在与否。
+</div>
+
+<h2>四、打开方案段对比</h2>
+<table>
+<tr><th>环节</th><th>本方</th><th>VM</th><th>差异</th></tr>
+<tr><td>解析与对象创建</td><td>全托管：JSON → NodeDefinition/WorkflowDefinition → 会话安装 → 画布</td><td>原生 <code>VmSolution.Load</code>（VM.Core，范围外）；模块/流程对象加载时创建并常驻</td><td>架构差异</td></tr>
+<tr><td>工具 DLL</td><td>Runtime 启动全加载；Editor 首次呈现懒加载</td><td>Cs.dll/Control.dll 首次用到懒加载</td><td>相当</td></tr>
+<tr><td>预热回填</td><td><b>无</b></td><td><code>VmSolution_OnExecuteAfterLoad</code> 静默执行（可选）</td><td>设计差异</td></tr>
+<tr><td>实测</td><td>会话安装 476ms + 画布绘制 112ms</td><td>未实测</td><td>可优化</td></tr>
+</table>
+
+<h2>五、差异定性总表</h2>
+<table>
+<tr><th>类别</th><th>差异</th><th>影响</th><th>可否对齐</th></tr>
+<tr><td><b>设计·装载时机</b></td><td>算法库延迟到首跑、无预热；VM 启动时常量装载</td><td>首次随机 20-3100ms</td><td>✅ L1 预热</td></tr>
+<tr><td><b>设计·对象生命周期</b></td><td>每轮 new 引擎/会话/全量快照；VM 模块常驻只发请求</td><td><b>框架 160ms/轮</b></td><td>✅ L2 常驻化（主战场）</td></tr>
+<tr><td><b>设计·算法位置</b></td><td>本方 UI 进程内 HALCON；VM 独立 Server（C++）</td><td>内存/崩溃隔离、托管边界</td><td>⚠️ 仅进程内预热可缓解</td></tr>
+<tr><td><b>实现·Blob</b></td><td>逐 blob 多次算子 + 全部特征无条件 + 多次深拷贝</td><td>38ms vs 3ms</td><td>✅ L3 按需+批量</td></tr>
+<tr><td><b>实现·渲染发布</b></td><td>每次重建场景；VM 常驻 RenderThreadPool</td><td>10-20ms</td><td>✅ L4 差量化</td></tr>
+<tr><td><b>实现·启动校验</b></td><td>准入阶段对 275MB 依赖 SHA256（含不装载的 HALCON）</td><td>启动期读满盘</td><td>✅ 校验缓存</td></tr>
+<tr><td><b>技术栈</b></td><td>JIT + 托管/原生边界</td><td>分散数百 ms</td><td>⚠️ R2R 部分缓解</td></tr>
+</table>
+
+<h2>六、设计对齐路线（L1-L4）</h2>
+
+<h3>L1 预热：补上缺失的初始化阶段（对齐 VM 的 <code>StartNewInstance</code> 时机）</h3>
+<div class="p1">
+<b>做法</b>：<code>HandleStartupDecision returned</code> 之后，后台 <code>LongRunning</code> + <code>BelowNormal</code> 线程执行一次：<code>HOperatorSet.GetSystem("version")</code> + 内存生成小图 → <code>HImage</code> 构造 + 一个阈值算子。<b>不 await、不进启动关键路径、不读用户图像、不写方案</b>；失败只记日志。<br>
+<b>预期</b>：首次 <code>image-read-decode</code> 1107ms（冷态可达 3134ms）→ <b>≤10ms</b>；首次流程 1532ms → 约 450ms。<br>
+<b>验收</b>：新进程首次执行探针 ≤10ms；启动 <code>HandleStartupDecision returned</code> 耗时不变（±0.2s）。
+</div>
+
+<h3>L2 执行链常驻化：消除每轮 260ms 框架开销（主战场）</h3>
+<div class="p0">
+<b>对齐对象</b>：VM 的"模块/流程对象常驻，运行只发请求"。<br>
+<b>候选四刀</b>（须先量化后再动，见第 7 节）：
+<table>
+<tr><th>#</th><th>候选</th><th>现状</th><th>预期</th><th>风险</th></tr>
+<tr><td>L2-a</td><td>执行引擎池化/复用</td><td><code>DocumentRunBatch</code> 每批 <code>new WorkflowExecutionEngine()</code></td><td>省数 ms</td><td>低（需确认无状态残留）</td></tr>
+<tr><td>L2-b</td><td>工具会话按节点复用</td><td>每节点每轮新建 <code>IToolSession</code>（BlobSession 等）</td><td>省数 ms + 避免 HALCON 作用域重建</td><td>中（会话状态/生命周期）</td></tr>
+<tr><td>L2-c</td><td>参数绑定物化缓存</td><td>每轮 <code>binding-settings</code> 重新物化（3-6ms/节点）</td><td>省 10-20ms</td><td>中（配置版本失效）</td></tr>
+<tr><td>L2-d</td><td>输入/参数快照按需</td><td>每轮 <code>batch-capture</code> 全量捕获 70ms</td><td>省 20-50ms</td><td>中高（快照是执行隔离语义，须逐端口核实消费方）</td></tr>
+</table>
+<b>预期</b>：框架 260ms → 80-120ms。<br>
+<b>底线</b>：不得以放弃"执行快照语义"换性能；只优化"没被消费的端口/重复物化"。
+</div>
+
+<h3>L3 Blob 算法确定性（消除内容相关抖动）</h3>
+<div class="p1">
+B4 先测入口 24ms → B1 灰度统计按需（每 blob 一次 GrayHisto，-10~15ms）→ B3 per-blob SelectObj 批量合并（-3~5ms）→ B2 区域快照按需（per-blob + final/ok/ng 三次深拷贝，-6~8ms）。<br>
+<b>预期</b>：Blob 25-57ms → ≤15ms，且不再随 blob 数量线性抖动。
+</div>
+
+<h3>L4 渲染/发布（可选）</h3>
+<div class="p1">
+场景差量更新（同 publication 只更新变化图层）；result-publish 惰性化。预期省 10-20ms。
+</div>
+
+<div class="ok">
+<b>综合预期</b>：流程总耗时 ~300ms → <b>约 100-130ms</b>；首次 ≈ 后续（确定性达成）。<br>
+<b>诚实边界</b>：仍约为 VM（7.32ms）的 15 倍，根源是架构（进程内 HALCON + 托管边界 + 快照隔离设计）。要完全追平需算法迁独立进程 + 模块全常驻 + 渲染常驻，属执行层重写，本方案不承诺。
+</div>
+
+<h2>七、执行稳定性与效率底线</h2>
+<div class="p0">
+<b>稳定性是性能优化的前置约束</b>。执行引擎、节点会话、输入快照和结果发布的生命周期必须形成完整合同，不能因为改动范围大而停止优化，也不能用删除隔离语义换取耗时下降。<br>
+每个优化批次必须同时验证冷启动首次执行、同一流程后续执行、连续执行、取消、异常、节点切换、方案切换、参数编辑后再次执行和关闭释放。结果数量、数值、图形、文本、结果表、历史记录和资源归属必须保持一致。<br>
+执行引擎复用、工具会话复用、参数物化缓存和图像缓存都必须有明确的身份键、配置失效条件、取消边界、异常回滚和退役释放路径。任何复用对象在下一轮执行前都必须完成上一轮的资源结算。<br>
+性能验收同时记录首轮耗时、稳定态耗时、耗时方差、失败率和资源增长，不能只看平均耗时。优化结果必须在 Release 程序中按统一执行 ID 留存探针证据。
+</div>
+
+<h2>八、实施顺序（第一步必须先量化）</h2>
+<table>
+<tr><th>序</th><th>步骤</th><th>目的</th><th>验收</th></tr>
+<tr><td>1</td><td><b>执行链细粒度探针</b>（节点调度/引擎构建/参数绑定物化/输入准备/快照捕获/发布）</td><td>定位 batch-run 内 160ms 的分布，决定 L2 动哪几刀</td><td>日志给出各段毫秒数</td></tr>
+<tr><td>2</td><td>L1 预热</td><td>消除首次随机</td><td>新进程首次 decode ≤10ms</td></tr>
+<tr><td>3</td><td>L2 按探针数据逐项常驻化</td><td>消除框架开销主体</td><td>batch-capture + batch-run 逐项下降</td></tr>
+<tr><td>4</td><td>L3 Blob 按需</td><td>消除算法抖动</td><td>Blob ≤15ms 且稳定</td></tr>
+<tr><td>5</td><td>L4 渲染差量</td><td>收尾</td><td>publish ≤5ms</td></tr>
+</table>
+<div class="p1">
+<b>验证原则</b>：每步只做 构建 0 错误 + 探针对比 + 用户实机；不跑全量测试套件（该类套件对性能与时序无拦截能力）。
+</div>
+
+<h2>九、明确不做</h2>
+<table>
+<tr><th>项</th><th>理由</th></tr>
+<tr><td>移除执行/参数快照机制</td><td>快照是执行隔离语义（同输入必同结果、执行期不受编辑影响），不以正确性换性能；只做"按需捕获"</td></tr>
+<tr><td>ReadyToRun 全量</td><td>对 HALCON 原生装载无效；JIT 非本次主因</td></tr>
+<tr><td>ImageSource 解码优化</td><td>非首次已 4-7ms，接近 VM 4.05ms</td></tr>
+<tr><td>算法迁独立进程（本轮）</td><td>工程量≈执行层重写，需单独立项评估</td></tr>
+</table>
+
+<h2>十、待 Codex 审阅的开放问题</h2>
+<table>
+<tr><th>#</th><th>问题</th><th>需要 Codex 给出的判断</th></tr>
+<tr><td>1</td><td>L2-d 快照按需是否会破坏执行隔离语义？哪些端口实际有消费方？</td><td>端口消费矩阵；可安全跳过的端口清单</td></tr>
+<tr><td>2</td><td>工具会话（<code>IToolSession</code>）是否可安全按节点复用？HALCON 作用域与资源租约是否有隐藏状态？</td><td>可复用/不可复用清单与依据</td></tr>
+<tr><td>3</td><td>参数绑定物化（<code>binding-settings</code>）缓存失效键应是什么（配置版本/字段指纹）？</td><td>失效键设计与风险点</td></tr>
+<tr><td>4</td><td><code>batch-capture</code> 70ms 内部构成是否已有拆分（输入/参数/全局变量/身份）？</td><td>是否已有细探针或需补</td></tr>
+<tr><td>5</td><td>L1 预热的挂点是否与 Codex 的启动链改动冲突（<code>HandleStartupDecision</code> 之后）？</td><td>挂点建议与冲突点</td></tr>
+<tr><td>6</td><td>是否已有 Codex 侧的性能结论与本文件冲突（如 3134ms 定性为解码而非平台装载）？</td><td>结论对齐</td></tr>
+</table>
+
+<h2>十一、证据锚点</h2>
+<table>
+<tr><th>结论</th><th>证据</th></tr>
+<tr><td>首次解码 1107-3134ms，后续 3-5ms</td><td>日志 <code>[UI.ExecTimingProbe] tool=image-source … image-read-decode=</code>；<code>[DecodeSplit]</code>（临时探针）</td></tr>
+<tr><td>解码入口 <code>new HImage(address)</code></td><td><code>tools/SunEyeVision.ImageSource/Runtime/ImageSourceSession.cs:195-199</code>（116-119 调用链）</td></tr>
+<tr><td>缓存实现（Codex 修复后）</td><td><code>src/Infrastructure.ImageSources/ImageSourceRunSequence.cs:204-232</code>；容量 <code>Math.Max(1,PathCache)</code> 在 :50-51</td></tr>
+<tr><td>HALCON 延迟装载</td><td><code>src/Plugin.Runtime/ReleasePayloadAuthority.cs:245-268</code></td></tr>
+<tr><td>VM 启动时创建 Server</td><td><code>decompiled/HostShell/ExeEntry/VisionMaster/Program.cs:128-133</code>；<code>App.cs:121-147</code>（后台线程并行）</td></tr>
+<tr><td>Blob 阶段耗时</td><td><code>[UI.ExecTimingProbe] tool=blob stages=</code>：per-blob-measure 23ms / region-snapshots 10ms / 入口 24ms</td></tr>
+<tr><td>VM 执行只发请求</td><td><code>TitleMenueItemData.cs:1460-1467</code>（<code>VmSolution.Instance.Run()</code>）、<code>VmProcedureDecorator.cs:463-472</code></td></tr>
+</table>
+</body>
+</html>

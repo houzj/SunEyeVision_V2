@@ -5,7 +5,7 @@ using SunEyeVision.Plugin.Contracts;
 
 namespace SunEyeVision.Tool.ImageSource.Runtime;
 
-internal sealed class ImageSourceSession : IToolSession<ImageSourceSettings,ImageSourceOutput>
+internal sealed class ImageSourceSession : IToolSession<ImageSourceSettings,ImageSourceOutput>, IReusableToolSession
 {
     private int _executing,_disposed;
     private readonly object _lifetimeGate = new();
@@ -28,6 +28,8 @@ internal sealed class ImageSourceSession : IToolSession<ImageSourceSettings,Imag
     {
         var cancellation=invocation.Context.Cancellation;cancellation.ThrowIfCancellationRequested();
         var settings=invocation.Settings;
+        using var timing=ImageSourceTimingProbe.Begin(invocation.Context.Log, invocation.Context.Identity.NodeId);
+        timing.Mark("validated-input");
         var errors=settings.Validate();
         if(errors.Count!=0)return new(false,null,BusinessJudgment.NotEvaluated,errors);
         if(!ImageSourceTool.AllowsTrigger(settings))
@@ -115,6 +117,7 @@ internal sealed class ImageSourceSession : IToolSession<ImageSourceSettings,Imag
                 hasFile&&invocation.Context is ILocalImageCacheContext cache
                     ?cache.OpenLocalImage(address,DecodeLocalImage, image=>image.Clone())
                     :DecodeLocalImage();
+            timing.Mark("image-read-decode");
             cancellation.ThrowIfCancellationRequested();
             // The format selector belongs to local files; camera output retains the captured frame format.
             var format=settings.SourceKind=="local"?settings.OutputFormat:"original";
@@ -136,6 +139,7 @@ internal sealed class ImageSourceSession : IToolSession<ImageSourceSettings,Imag
             }
             else image=HalImageSnapshotSource.Capture(source,imageFrame,resources,
                 rgb24:format=="rgb24"||inputImage?.Layout.Format==PixelLayout.Rgb24||hasSdkFile&&channels.I==3);
+            timing.Mark("image-frame-capture");
 
             if (settings.StitchEnabled && settings.StitchHeight > 0)
             {
@@ -160,6 +164,7 @@ internal sealed class ImageSourceSession : IToolSession<ImageSourceSettings,Imag
             if(hasCamera)values[ImageSourceOutput.CameraFailureCount]=state.CameraFailures();
             values.Add(ImageSourceOutput.ModuleRunTime,(double)(float)Stopwatch.GetElapsedTime(moduleStarted).TotalMilliseconds);
             var output=new ImageSourceOutput(values,resources);
+            timing.Mark("output-capture");
             cancellation.ThrowIfCancellationRequested();
             resources=null;
             return ToolOutcome<ImageSourceOutput>.Completed(output);
@@ -190,7 +195,24 @@ internal sealed class ImageSourceSession : IToolSession<ImageSourceSettings,Imag
         HImage DecodeLocalImage()
         {
             if(!File.Exists(address))throw new FileNotFoundException("本轮图像文件地址无效或不可用。",address);
-            return new HImage(address);
+            // 临时探针（采证后删除）：拆分首次解码耗时——平台装载 / 冷读盘 / 解码 / 元数据。
+            var probeLog=invocation.Context.Log;
+            var platform=Stopwatch.StartNew();
+            try{HOperatorSet.GetSystem("version",out var version);}catch(Exception error){probeLog($"[DecodeSplit] platform failed: {error.Message}");}
+            platform.Stop();
+            var fileRead=Stopwatch.StartNew();
+            long bytes=0;
+            try{using var stream=File.OpenRead(address);var buffer=new byte[stream.Length];int read;while((read=stream.Read(buffer,0,buffer.Length))>0)bytes+=read;}
+            catch(Exception error){probeLog($"[DecodeSplit] fileRead failed: {error.Message}");}
+            fileRead.Stop();
+            var decode=Stopwatch.StartNew();
+            var decoded=new HImage(address);
+            decode.Stop();
+            var meta=Stopwatch.StartNew();
+            try{decoded.GetImageSize(out int probeWidth,out int probeHeight);}catch{}
+            meta.Stop();
+            probeLog($"[DecodeSplit] file={Path.GetFileName(address)} bytes={bytes} platform={platform.ElapsedMilliseconds}ms fileRead={fileRead.ElapsedMilliseconds}ms decode={decode.ElapsedMilliseconds}ms meta={meta.ElapsedMilliseconds}ms");
+            return decoded;
         }
     }
     private static IReadOnlyImage CreateGrayImage(IReadOnlyImage image,ImageFrameAddress frame,
@@ -242,4 +264,15 @@ internal sealed class ImageSourceSession : IToolSession<ImageSourceSettings,Imag
             if(Interlocked.Exchange(ref _disposed,1)==0)Interlocked.Exchange(ref _directState,null)?.Dispose();
         return ValueTask.CompletedTask;
     }
+}
+
+file sealed class ImageSourceTimingProbe : IDisposable
+{
+    private static readonly bool Enabled=true; // TEMP-PROBE：采证期默认开启，采证后恢复环境变量开关
+    private readonly Action<string> _log; private readonly string _node; private readonly Stopwatch _clock=Stopwatch.StartNew();
+    private readonly List<(string Stage,long Ms)> _stages=new(); private long _last; private bool _disposed;
+    private ImageSourceTimingProbe(Action<string> log,string node){_log=log;_node=node;}
+    public static ImageSourceTimingProbe Begin(Action<string> log,string node)=>new(log,node);
+    public void Mark(string stage){if(!Enabled||_disposed)return;var now=_clock.ElapsedMilliseconds;_stages.Add((stage,now-_last));_last=now;}
+    public void Dispose(){if(_disposed)return;_disposed=true;if(!Enabled)return;_clock.Stop();_log($"[ExecTimingProbe] tool=image-source node={_node} total={_clock.ElapsedMilliseconds}ms stages={string.Join("/",_stages.Select(x=>x.Stage+"="+x.Ms+"ms"))}");}
 }

@@ -1,6 +1,6 @@
 <Window x:Class="SunEyeVision.UI.Shell.Windows.StartPageWindow"
  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
- Title="SunEyeVision · 起始页" Width="960" Height="720" MinWidth="860" MinHeight="620"
+ Title="SunEyeVision · 起始页" Width="800" Height="546" MinWidth="760" MinHeight="520"
  WindowStartupLocation="CenterScreen" WindowStyle="None" ResizeMode="CanResize" Background="{DynamicResource Startup.Background}" Foreground="{DynamicResource Startup.Text}" FontFamily="{DynamicResource Startup.Font}">
  <Window.Resources>
  <ResourceDictionary>

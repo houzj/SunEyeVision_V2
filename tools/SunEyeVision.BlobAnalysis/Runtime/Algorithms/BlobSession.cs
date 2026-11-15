@@ -10,7 +10,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 public enum BlobOutputRequest { None = 0, Boundary = 4 }
 
 /// <summary>One synchronous HALCON invocation; all public inputs/outputs are vendor-neutral.</summary>
-public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
+public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>, IReusableToolSession
 {
     private int _disposed;
     public ValueTask DisposeAsync() { Interlocked.Exchange(ref _disposed, 1); return ValueTask.CompletedTask; }
@@ -30,7 +30,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
                 if(demand.PortId==BlobSchema.BlobsPort&&(demand.FieldPath.Count==0||demand.FieldPath[0] is "boundary" or "contour" or "contour-lossy"))requested|=BlobOutputRequest.Boundary;
             }
             var input=BlobInput.Read(invocation.Inputs);
-            var output=Execute(invocation.Settings,input,invocation.Context.Resources,invocation.Context.Cancellation,requested);
+            var output=Execute(invocation.Settings,input,invocation.Context.Resources,invocation.Context.Cancellation,requested,timingLog:invocation.Context.Log);
             IReadOnlyList<Diagnostic> diagnostics=output.Measurements.Any(blob=>blob.Boundary.Count>1)
                 ?new[]{new Diagnostic("BLOB_CONTOUR_LOSSY","单轮廓仅投影一个外环；多环和孔洞应读取boundary/Region。",BlobSchema.BlobsPort)}
                 :Array.Empty<Diagnostic>();
@@ -45,14 +45,16 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
 
     public BlobOutput Execute(BlobSettings settings, IReadOnlyImage input, IOutputResources resources, IReadOnlyRegion? inspection = null,
         IReadOnlyRegion? mask = null, RecordValue? pose = null, CancellationToken cancellation = default,
-        BlobOutputRequest requested = BlobOutputRequest.None,RecordValue? localRoi=null)
-        =>ExecuteCore(settings,input,resources,inspection,mask,pose,cancellation,requested,localRoi,BlobLocalRoi.MaximumLocalInspectionCount);
-    public BlobOutput Execute(BlobSettings settings,BlobInput input,IOutputResources resources,CancellationToken cancellation=default,BlobOutputRequest requested=BlobOutputRequest.None)
+        BlobOutputRequest requested = BlobOutputRequest.None,RecordValue? localRoi=null,Action<string>? timingLog=null)
+        =>ExecuteCore(settings,input,resources,inspection,mask,pose,cancellation,requested,localRoi,BlobLocalRoi.MaximumLocalInspectionCount,timingLog:timingLog);
+    public BlobOutput Execute(BlobSettings settings,BlobInput input,IOutputResources resources,CancellationToken cancellation=default,BlobOutputRequest requested=BlobOutputRequest.None,Action<string>? timingLog=null)
         =>ExecuteCore(settings,input.Image,resources,input.Inspection,input.Mask,input.Pose,cancellation,requested,input.LocalRoi,
-            input.IsInheritedRoi?BlobLocalRoi.MaximumInheritedCount:BlobLocalRoi.MaximumLocalInspectionCount,input.ImageMask,input.OutputMask,input.Fixture,input.IsInheritedMask);
+            input.IsInheritedRoi?BlobLocalRoi.MaximumInheritedCount:BlobLocalRoi.MaximumLocalInspectionCount,input.ImageMask,input.OutputMask,input.Fixture,input.IsInheritedMask,timingLog);
     private BlobOutput ExecuteCore(BlobSettings settings, IReadOnlyImage input, IOutputResources resources, IReadOnlyRegion? inspection,
-        IReadOnlyRegion? mask, RecordValue? pose, CancellationToken cancellation,BlobOutputRequest requested,RecordValue? localRoi,int maximumInspectionCount,IReadOnlyImage? imageMask=null,bool outputMask=false,RecordValue? fixture=null,bool inheritedMask=false)
+        IReadOnlyRegion? mask, RecordValue? pose, CancellationToken cancellation,BlobOutputRequest requested,RecordValue? localRoi,int maximumInspectionCount,IReadOnlyImage? imageMask=null,bool outputMask=false,RecordValue? fixture=null,bool inheritedMask=false,Action<string>? timingLog=null)
     {
+        using var timing=BlobTimingProbe.Begin(timingLog??(_=>{}), input.Frame.ProducerRun?.NodeId ?? "unknown");
+        timing.Mark("execute-core-start");
         ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed)!=0,this);
         ArgumentNullException.ThrowIfNull(settings); ArgumentNullException.ThrowIfNull(input); ArgumentNullException.ThrowIfNull(resources);
         settings = settings.Freeze();
@@ -82,7 +84,9 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
                 throw new ArgumentException("本地几何不能与像素区域同时执行。");
         }
         using var execution = new HalconBlobExecutionScope(settings.Connectivity);
+        timing.Mark("halcon-scope-init");
         using var image = HalconResourceBridge.CopyImage(input);
+        timing.Mark("image-copy");
         HOperatorSet.GetImageSize(image, out var widthValue, out var heightValue);
         using var widthTuple = widthValue; using var heightTuple = heightValue;
         int width = widthValue.I, height = heightValue.I;
@@ -98,6 +102,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         }
         using var gray = HalconImageAdmission.Gray(image);
         using var domain = gray.GetDomain();
+        timing.Mark("gray-domain-ready");
         using var imageMaskRegion = imageMask is null ? null : CreateImageMaskRegion(imageMask, width, height);
         using var inspectionRegion = imageMaskRegion is not null ? imageMaskRegion.Clone()
             : localRoi is not null?BlobLocalRoiRasterizer.Build(localRoi,BlobLocalRoi.Inspection,domain,cancellation,clipToInputDomain:pose is null)
@@ -109,6 +114,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         using var correctedMask = HalconResourceBridge.TransformRegion(maskRegion, pose);
         using var difference = correctedInspection.Difference(correctedMask);
         using var effectiveDomain = domain.Intersection(difference);
+        timing.Mark("roi-mask-domain-ready");
         // The C03 direct-SDK comparison removes threshold foreground on the top row and left column.
         // Keep the geometric ROI and generated output mask on the nominal domain.
         using var directRectangleInterior = width > 2 && height > 2 && pose is null && localRoi is not null
@@ -118,6 +124,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
                 : null;
         using var thresholdDomain = directRectangleInterior is null ? null : effectiveDomain.Intersection(directRectangleInterior);
         var transformed=BlobThresholdTransform.Apply(gray,thresholdDomain ?? effectiveDomain,settings,width,height,cancellation);
+        timing.Mark("threshold-segmentation");
         using var work=transformed.Work;
         using var binary=transformed.Foreground;
         var outputResources=resources.CreateScope();
@@ -140,20 +147,28 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
             if(holeFilled is not null)
                 executionDiagnostics.Add(new("BLOB_HOLE_FILL_LOCAL","填充面积阈值按已核分支实现（0跳过、面积不超过阈值、贴工作区边界不填充）；原机逐像素等价未证。"));
             var blobRegion=holeFilled??binary;
+            timing.Mark("hole-fill");
             cancellation.ThrowIfCancellationRequested();
             HalconBlobExecutionScope.RequireUnlimitedConnection();
             using var connected=blobRegion.Connection();
+            timing.Mark("connection");
             HalconBlobExecutionScope.RequireUnlimitedConnection();
             using var contactBoundary=vm.MaxOutPixelNumEnable?BuildContactBoundary(effectiveDomain):null;
-            var candidates=FilterCandidates(connected,ExtractCandidates(connected,cancellation),vm,width,height,contactBoundary,cancellation);
+            var extracted=ExtractCandidates(connected,cancellation);
+            timing.Mark("candidates-extract");
+            var candidates=FilterCandidates(connected,extracted,vm,width,height,contactBoundary,cancellation);
+            timing.Mark("candidate-count=" + candidates.Length);
             Func<Candidate,int>? integerKey=settings.SortFeature is BlobSortFeature.SortFeatureRectX or BlobSortFeature.SortFeatureRectY?value=>SortIntegerKey(value,settings.SortFeature):null;
             var retained=BlobCandidateSelection.SelectSlots(candidates,settings.BlobCountLimit,settings.SortFeature,settings.SortMode,value=>(float)value.Area,value=>SortFloatKey(value,settings.SortFeature),integerKey,cancellation);
+            timing.Mark("retained-count=" + retained.Count());
             if(transformed.Receipt.Provenance=="LocalScalarFormulaCalculation")
                 executionDiagnostics.Add(new("BLOB_THRESHOLD_LOCAL_CALCULATION","本轮阈值由本方按已核原标量公式计算；原厂动态阈值对外发布接口尚未证实。",BlobSchema.Field(8)));
             var ordered=BlobCandidateSelection.Order(retained,settings.SortMode,value=>SortFloatKey(value,settings.SortFeature),
                 integerKey,value=>value.ComponentLabel,cancellation);
+            timing.Mark("filter-sort");
             // VM 判定组语义：启用的判定组逐 Blob 给出单项 OK/NG；筛选只决定保留集合，不等于合格。
             var perBlobPass=ResultProjectionLimitsPerBlob(vm,ordered.Select(x=>x.Candidate).ToArray(),out var overallPass,out var vmLimitMessages);
+            timing.Mark("result-projection");
             var judged=ordered.Select((entry,index)=>entry with{Candidate=entry.Candidate with{IsPass=perBlobPass[index]}}).ToArray();
             var messages=new List<string>(vmLimitMessages);
             var isPass=(vm.OKWhenNumIsZero?judged.Length==0:judged.Length>0)
@@ -162,32 +177,59 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
             bool boundaryRequested = vm.BlobContourType == BlobContourType.SequentialContour
                 || requested.HasFlag(BlobOutputRequest.Boundary);
             var measurements = new List<BlobMeasurement>(judged.Length);
+            var regionCaptureClock = Stopwatch.StartNew();
+            var boundaryClock = Stopwatch.StartNew();
+            var grayStatisticsClock = Stopwatch.StartNew();
+            regionCaptureClock.Stop(); boundaryClock.Stop(); grayStatisticsClock.Stop();
             foreach (var selection in judged)
             {
                 var item=selection.Candidate;
                 cancellation.ThrowIfCancellationRequested();
                 using var native = connected.SelectObj(item.RegionIndex);
+                regionCaptureClock.Start();
                 var region = HalconResourceBridge.CaptureRegion(native, BlobSchema.ImageFrame, frame, outputResources);
+                regionCaptureClock.Stop();
+                boundaryClock.Start();
                 var boundary = boundaryRequested ? ReadBoundary(native, cancellation) : Array.Empty<BlobBoundaryPath>();
                 var contour = unorderedContour ? Array.AsReadOnly(ReadUnorderedContour(native, cancellation)) : null;
                 var innerRectangle = measurements.Count < vm.MaxAreaInnerRectNum ? ReadInnerRectangle(native) : (BlobOrientedBounds?)null;
+                boundaryClock.Stop();
+                grayStatisticsClock.Start();
                 var grayStatistics=ReadGrayStatistics(native,gray);
+                grayStatisticsClock.Stop();
                 measurements.Add(new(item.ComponentLabel, measurements.Count, item.Area, item.Perimeter, item.X, item.Y, item.Circularity,
                     item.Rectangularity, item.Bounds, item.OrientedBounds, Array.AsReadOnly(item.Corners), Array.AsReadOnly(boundary), region, item.IsPass,
                     grayStatistics.Minimum, grayStatistics.Maximum, grayStatistics.Contrast, item.BlobAngleDegrees, contour, innerRectangle));
             }
+            timing.Mark("per-blob-region-capture=" + regionCaptureClock.ElapsedMilliseconds + "ms");
+            timing.Mark("per-blob-boundary=" + boundaryClock.ElapsedMilliseconds + "ms");
+            timing.Mark("per-blob-gray-statistics=" + grayStatisticsClock.ElapsedMilliseconds + "ms");
+            timing.Mark("per-blob-measure");
+            var finalRegionClock = Stopwatch.StartNew();
             using var finalRegions = SelectRegions(connected, judged.Select(x => x.Candidate.RegionIndex).ToArray());
+            finalRegionClock.Stop();
             IReadOnlyImage? blobImage=null;
+            var blobImageClock = Stopwatch.StartNew();
             if(settings.OutputBlobImage)
             {
                 using var candidateImage=BlobThresholdTransform.RegionImage(finalRegions,width,height);
                 blobImage=HalImageSnapshotSource.Capture(candidateImage,frame,BlobSchema.ImageFrame,outputResources);
             }
+            blobImageClock.Stop();
+            var acceptedRegionClock = Stopwatch.StartNew();
             using var okRegions = SelectRegions(connected, judged.Where(x => x.Candidate.IsPass).Select(x => x.Candidate.RegionIndex).ToArray());
             using var ngRegions = SelectRegions(connected, judged.Where(x => !x.Candidate.IsPass).Select(x => x.Candidate.RegionIndex).ToArray());
+            acceptedRegionClock.Stop();
+            var regionOutputClock = Stopwatch.StartNew();
             var regionOutput = HalconResourceBridge.CaptureRegion(finalRegions, BlobSchema.ImageFrame, frame, outputResources);
             var okOutput = HalconResourceBridge.CaptureRegion(okRegions, BlobSchema.ImageFrame, frame, outputResources);
             var ngOutput = HalconResourceBridge.CaptureRegion(ngRegions, BlobSchema.ImageFrame, frame, outputResources);
+            regionOutputClock.Stop();
+            timing.Mark("region-select=" + finalRegionClock.ElapsedMilliseconds + "ms");
+            timing.Mark("blob-image=" + blobImageClock.ElapsedMilliseconds + "ms");
+            timing.Mark("accepted-region-select=" + acceptedRegionClock.ElapsedMilliseconds + "ms");
+            timing.Mark("region-capture=" + regionOutputClock.ElapsedMilliseconds + "ms");
+            timing.Mark("region-snapshots");
             HOperatorSet.AreaCenter(blobRegion, out var whiteCount, out var whiteRow, out var whiteColumn);
             using var white = whiteCount; using var wr = whiteRow; using var wc = whiteColumn;
             double whiteRatio = whiteCount.D / ((double)width * height) * 100;
@@ -210,6 +252,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
                 inspection is not null || imageMask is not null, mask is not null, maskPolygons, cancellation, fixture);
             if (resultGeometry.Groups.Any(group => group.Coverage == ResultGeometryCoverage.Unavailable))
                 executionDiagnostics.Add(new("BLOB_ROI_DISPLAY_UNAVAILABLE", "部分像素区域无法在当前边界预算内完整显示。"));
+            timing.Mark("result-geometry");
             var output = new BlobOutput(settings, transformed.Receipt, executionDiagnostics, judged.Select((entry,index)=>new BlobSelectionEntry(entry.Candidate.ComponentLabel,entry.Candidate.RegionIndex,entry.Slot,index+1)), measurements, blobImage, binaryOutput, maskOutput, regionOutput, okOutput, ngOutput, whiteRatio, histogram, means, isPass, messages, new[] { outputResources }, resultGeometry,maskPolygons,
                 vm.BlobContourType!=BlobContourType.NoneContour,cancellation,moduleStarted);
             cancellation.ThrowIfCancellationRequested();

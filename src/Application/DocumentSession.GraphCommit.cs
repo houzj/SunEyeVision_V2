@@ -123,6 +123,7 @@ public sealed partial class DocumentSession
     // roll it back, and every invalidated domain must still be retired before new admission.
     private void RetireChangedDomains(DocumentChangeSet change)
     {
+        InvalidateExecutionPlan(change);
         QueueRemovedNodeLifetimes(change);
         TrackCommittedFieldRevisions(change);
         if (!change.ChangedRoots.IsDefaultOrEmpty)

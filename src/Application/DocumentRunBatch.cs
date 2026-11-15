@@ -16,13 +16,15 @@ public sealed class DocumentRunBatch : IDisposable
     private readonly ExecutionVariableValues _variables;
     private readonly IReadOnlyDictionary<string, ExecutionRunRequest> _requests;
     private readonly IReadOnlyList<string> _order;
-    private readonly WorkflowExecutionEngine _engine = new();
+    private readonly WorkflowExecutionEngine _engine;
+    private readonly IDisposable _lifecycle;
     private CancellationTokenSource? _cancellation;
     private int _state;
     internal DocumentRunBatch(DocumentSession session, ExecutionRunBatch reservation, ExecutionVariableValues variables,
         IReadOnlyDictionary<string, ExecutionRunRequest> requests, IReadOnlyList<string> order, bool ownsReservation = true,
-        IReadOnlyDictionary<SunEyeVision.Domain.Workflows.ScopedNodeIdentity, Guid>? hostGenerations = null)
-    { _session = session; _reservation = reservation; _variables = variables; _requests = requests; _order = order; _ownsReservation = ownsReservation; _hostGenerations = hostGenerations ?? new Dictionary<SunEyeVision.Domain.Workflows.ScopedNodeIdentity, Guid>(); }
+        IReadOnlyDictionary<SunEyeVision.Domain.Workflows.ScopedNodeIdentity, Guid>? hostGenerations = null,
+        WorkflowExecutionEngine? engine = null)
+    { _session = session; _reservation = reservation; _variables = variables; _requests = requests; _order = order; _ownsReservation = ownsReservation; _hostGenerations = hostGenerations ?? new Dictionary<SunEyeVision.Domain.Workflows.ScopedNodeIdentity, Guid>(); _engine = engine ?? new WorkflowExecutionEngine(); _lifecycle = RuntimeLifecycleProbe.EnterBatch(); }
 
     public event Action<string, string, ExecutionStatus>? NodeStatusChanged;
     public bool Pause() => _engine.PauseExecution();
@@ -105,7 +107,8 @@ public sealed class DocumentRunBatch : IDisposable
         foreach (var request in _requests.Values) try { request.Dispose(); } catch (Exception error) { errors.Add(error); }
         try { _variables.Dispose(); } catch (Exception error) { errors.Add(error); }
         if (_ownsReservation) try { _reservation.Dispose(); } catch (Exception error) { errors.Add(error); }
-        if (errors.Count != 0) throw new AggregateException("运行批次释放失败。", errors);
+        try { if (errors.Count != 0) throw new AggregateException("运行批次释放失败。", errors); }
+        finally { _lifecycle.Dispose(); RuntimeLifecycleProbe.Log("batch-disposed"); }
     }
 }
 

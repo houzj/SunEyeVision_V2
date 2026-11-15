@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>执行性能优化方案</title>
+<style>
+body{font-family:"Microsoft YaHei",sans-serif;max-width:1100px;margin:0 auto;padding:24px;color:#222;line-height:1.65}
+h1{border-bottom:3px solid #2d6cdf;padding-bottom:8px}
+h2{color:#2d6cdf;border-left:4px solid #2d6cdf;padding-left:10px;margin-top:30px}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:0.94em}
+th,td{border:1px solid #bbb;padding:6px 9px;text-align:left;vertical-align:top}
+th{background:#eef3fb}
+code{background:#f4f4f4;padding:1px 5px;border-radius:3px;font-size:0.9em}
+.warn{background:#fff6e5;border-left:4px solid #e6a23c;padding:8px 12px;margin:10px 0}
+.ok{background:#eefaf0;border-left:4px solid #67c23a;padding:8px 12px;margin:10px 0}
+</style>
+</head>
+<body>
+<h1>执行性能优化方案（首次慢 + Blob 算法耗时）</h1>
+<p>日期：2026-11-15 ｜ 状态：待确认 ｜ 基线实测：VM 7.32ms / 本方非首次 47.49ms / 本方首次 174.93ms</p>
+
+<h2>一、目标（据实测数据，不做无依据优化）</h2>
+<table>
+<tr><th>指标</th><th>现状</th><th>目标</th><th>依据</th></tr>
+<tr><td>首次执行 image-read-decode</td><td>25-3134ms</td><td><b>≤10ms</b></td><td>热态实测 platformInit=0-26ms、decode=4ms</td></tr>
+<tr><td>Blob 算法总耗时</td><td>33-85ms</td><td><b>≤15ms</b></td><td>per-blob-measure 23ms + region-snapshots 10ms + 入口 24ms 均为可拆解冗余</td></tr>
+<tr><td>流程总耗时（非首次）</td><td>47.49ms</td><td>≤25ms</td><td>VM 7.32ms 为长期参照，本轮不承诺追平</td></tr>
+</table>
+
+<h2>二、段 1：启动后台预热（消首次装载成本）</h2>
+<h3>设计</h3>
+<table>
+<tr><th>项</th><th>做法</th></tr>
+<tr><td>挂点</td><td><code>App.OnStartup</code> 中 <code>HandleStartupDecision returned</code> 之后（日志 +2855ms 那个点），<b>不 await、不进启动关键路径</b></td></tr>
+<tr><td>线程</td><td><code>Task.Factory.StartNew(..., TaskCreationOptions.LongRunning)</code> + 线程优先级 <code>BelowNormal</code>，避免抢 UI/执行 CPU</td></tr>
+<tr><td>预热内容</td><td>① <code>HOperatorSet.GetSystem("version")</code>（触发 HALCON 平台装载，实测可覆盖）② 内存生成 8×8 灰度图 → <code>HImage</code> 构造 + 一个 <code>Threshold</code> 算子（覆盖 HImage 构造与算子注册）<b>不读用户图像、不碰方案</b></td></tr>
+<tr><td>幂等</td><td>静态 <code>Interlocked</code> 标志，进程内只跑一次</td></tr>
+<tr><td>失败语义</td><td>失败只写一条 <code>AddLog("HALCON 预热失败：…")</code>，不弹窗、不重试、不影响首次执行（首次执行仍会正常装载）——属诊断日志，不是兜底</td></tr>
+<tr><td>可观测</td><td>成功记录 <code>HALCON 预热完成 耗时=Nms（平台装载）</code>，用于后续验收对比</td></tr>
+</table>
+<div class="ok"><b>为什么有效</b>：实测热态 <code>platformInit=0-26ms</code>、<code>decode=4ms</code>，证明装载成本只在首次；预热把这一次性成本挪到后台。</div>
+<div class="warn"><b>约束</b>：不得在启动关键路径 await；不得占用执行租约；不得产生可见结果；不得写方案/日志刷屏（只 1-2 条）。</div>
+
+<h2>三、段 2：Blob 按需计算与算子合并</h2>
+<h3>2.1 现状（实测 85ms 首次 / 33-38ms 非首次）</h3>
+<table>
+<tr><th>阶段</th><th>耗时</th><th>问题</th></tr>
+<tr><td>入口准备（探针前）</td><td>~24ms</td><td>未拆分：参数 Freeze / ROI 栅格化 / 阈值准备，需先测</td></tr>
+<tr><td>per-blob-measure</td><td>23ms</td><td>每 blob：<code>SelectObj</code> + <code>CaptureRegion</code> + <code>ReadBoundary</code> + <code>ReadInnerRectangle</code> + <b>无条件 <code>ReadGrayStatistics</code>（每 blob 一次 GrayHisto 256 桶）</b></td></tr>
+<tr><td>region-snapshots</td><td>10ms</td><td><code>SelectRegions</code>×3 + <code>CaptureRegion</code>×3（final/ok/ng）全部无条件深拷贝</td></tr>
+</table>
+
+<h3>2.2 优化项（按风险从低到高）</h3>
+<table>
+<tr><th>#</th><th>项</th><th>做法</th><th>预期</th><th>风险</th></tr>
+<tr><td>B1</td><td>灰度统计按需</td><td><code>ReadGrayStatistics(native,gray)</code>（:179）改为按需求标志执行：仅当①结果显示需要灰度/对比度字段，或②判定组引用了灰度相关特征时计算。需求来源从 <code>invocation.OutputRequests</code> + 显示设置解析，写入 <code>BlobOutputRequest</code> 新标志</td><td>-10~15ms</td><td>中：需核对判定组字段消费</td></tr>
+<tr><td>B2</td><td>区域快照按需</td><td>per-blob <code>CaptureRegion</code> 与 3 次批量 <code>CaptureRegion</code> 改为按输出端口/显示请求创建；未请求时输出 region 字段为 null（消费方需支持 <code>null</code> 语义）</td><td>-6~8ms</td><td>中高：涉及结果表/叠加/继承消费者</td></tr>
+<tr><td>B3</td><td>算子批量合并</td><td>per-blob 的 <code>connected.SelectObj(index)</code> 合并为一次批量 SelectObj 取 region 数组；<code>ReadInnerRectangle</code>/<code>ReadBoundary</code> 仅在对应输出请求时执行（边界已按 requested 控制，保持）</td><td>-3~5ms</td><td>低</td></tr>
+<tr><td>B4</td><td>入口 24ms 定位</td><td>在 <code>ExecuteCore</code> 开头到 <code>execute-core-start</code> 之间补细分探针（Freeze / ROI 栅格化 / 阈值准备），按结果决定是否优化</td><td>待测</td><td>低（只加探针）</td></tr>
+</table>
+<div class="warn"><b>实施顺序</b>：B4（先测）→ B1（按需灰度，收益最大且独立）→ B3（批量合并）→ B2（区域按需，最后做，涉及面最广）。每步用探针 <code>tool=blob stages=…</code> 对比，不跑全量套件。</div>
+
+<h2>四、不做项（本轮明确排除）</h2>
+<table>
+<tr><th>项</th><th>原因</th></tr>
+<tr><td>执行引擎池化复用</td><td>每批重建仅 ~1-2ms 级，收益小、状态残留风险高</td></tr>
+<tr><td>启动依赖 SHA256 校验缓存</td><td>属启动优化，与本次"执行耗时"目标不同，另立</td></tr>
+<tr><td>ImageSource 解码优化</td><td>非首次 3-5ms 已接近 VM 4.05ms，0.27MB JPG 解码无可省空间</td></tr>
+<tr><td>ReadyToRun</td><td>对 HALCON 原生装载无效，仅治 JIT（本轮非主因）</td></tr>
+</table>
+
+<h2>五、验收矩阵（探针对比 + 实机，不跑全量套件）</h2>
+<table>
+<tr><th>#</th><th>验收项</th><th>方法</th><th>通过标准</th></tr>
+<tr><td>1</td><td>预热生效</td><td>重启后首次执行，日志 <code>image-read-decode</code></td><td>≤10ms（此前 25-3134ms）；日志出现预热完成记录</td></tr>
+<tr><td>2</td><td>预热不阻塞启动</td><td>对比启动日志 <code>HandleStartupDecision returned</code> 耗时</td><td>与预热前持平（±0.2s）</td></tr>
+<tr><td>3</td><td>Blob 耗时下降</td><td>探针 <code>tool=blob stages=…</code></td><td>非首次 ≤15ms（此前 33-38ms）</td></tr>
+<tr><td>4</td><td>结果语义不变</td><td>实机对比：Blob 数量/面积/周长/质心/轮廓/结果表/图形叠加</td><td>与优化前完全一致</td></tr>
+<tr><td>5</td><td>未请求特征的消费者</td><td>结果表/属性树/继承链实机查看</td><td>字段缺失时显示为空而非报错（按既有空值语义）</td></tr>
+<tr><td>6</td><td>ROI/结果显示零回归</td><td>实机：绘制 ROI→运行→图形/文本/表/高亮</td><td>与优化前一致</td></tr>
+</table>
+
+<h2>六、风险与回退</h2>
+<table>
+<tr><th>风险</th><th>应对</th></tr>
+<tr><td>预热拖慢启动或抢 CPU</td><td>BelowNormal 优先级 + 只跑一次 + 失败不影响功能；实测对比启动日志</td></tr>
+<tr><td>B2 区域按需导致结果表/叠加字段为空</td><td>先确认消费者对 null 的处理语义；必要时保留"显示请求时必算"</td></tr>
+<tr><td>B1 灰度按需遗漏判定组字段</td><td>实施前逐项核对判定组引用的特征清单，不凭猜测跳过</td></tr>
+<tr><td>性能优化引入语义偏差</td><td>每段独立提交；探针保留期间可随时对比；实机确认后合入</td></tr>
+</table>
+
+<h2>七、待确认事项</h2>
+<ul>
+<li>段 1（预热）是否立即实施？（独立、低风险、收益明确）</li>
+<li>段 2 是否等预热验证通过后再做，还是同批做？</li>
+<li>探针（<code>ExecutionTimingProbe</code>/<code>BlobTimingProbe</code>）在优化期间保留，优化完成后是否按环境变量开关恢复默认关闭？</li>
+</ul>
+</body>
+</html>

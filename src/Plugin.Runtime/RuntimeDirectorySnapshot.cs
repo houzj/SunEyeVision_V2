@@ -8,6 +8,10 @@ public sealed class RuntimeDirectorySnapshot
 {
     private sealed record Entry(ToolComponentRegistration Registration,Type SettingsType,Type OutputType,string Schema,string? SettingsSchema,ToolHostDeclarationSnapshot HostDeclarations,ToolCatalogDescriptor Catalog);
     private readonly IReadOnlyDictionary<string,Entry> _runtimes;
+    private readonly object _definitionGate=new();
+    private readonly Dictionary<string,IToolDefinition> _definitions=new(StringComparer.Ordinal);
+    private readonly object _sessionGate=new();
+    private readonly Dictionary<IToolDefinition,List<CachedSession>> _sessions=new(ReferenceEqualityComparer.Instance);
     private readonly Func<string,ToolComponentRegistration?>? _editorResolver;
     private readonly object _lifetimeGate=new();
     private bool _retiring;
@@ -38,13 +42,54 @@ public sealed class RuntimeDirectorySnapshot
     internal IToolDefinition CreateDefinition(string toolId)
     {
         using var creation=AcquireInvocation();
+        lock (_definitionGate)
+            if (_definitions.TryGetValue(toolId, out var existing)) return existing;
         if(!_runtimes.TryGetValue(toolId,out var entry))throw new InvalidOperationException("Required runtime is not registered: "+toolId);
         var definition=(IToolDefinition)Activator.CreateInstance(entry.Registration.EntryType)!;
         var settingsSchema=(definition as IToolSettingsFields)?.SettingsSchema.Fingerprint;
         if(definition.ToolId!=toolId || definition.SettingsType!=entry.SettingsType || definition.OutputType!=entry.OutputType ||
             definition.Describe().Fingerprint!=entry.Schema || settingsSchema!=entry.SettingsSchema || ToolHostDeclarationRules.ValidateAndFingerprint(definition)!=entry.HostDeclarations.Fingerprint)
             throw new InvalidOperationException("Runtime definition differs from its admitted directory generation: "+toolId);
-        return definition;
+        lock (_definitionGate)
+        {
+            if (_definitions.TryGetValue(toolId, out var existing)) return existing;
+            _definitions.Add(toolId, definition);
+            return definition;
+        }
+    }
+
+    /// <summary>Obtains a sequentially reusable session when the runtime opts into that lifetime.</summary>
+    public ToolSessionLease AcquireSession(IToolDefinition definition)
+    {
+        ArgumentNullException.ThrowIfNull(definition);
+        lock (_sessionGate)
+        {
+            if (!_sessions.TryGetValue(definition, out var entries))
+                _sessions[definition] = entries = new List<CachedSession>();
+            foreach (var entry in entries)
+                if (!entry.Busy)
+                {
+                    entry.Busy = true;
+                    return new ToolSessionLease(entry.Session, () => ReleaseSession(entry));
+                }
+            var session = definition.CreateSession();
+            if (session is not IReusableToolSession)
+                return new ToolSessionLease(session, null);
+            var cached = new CachedSession(session) { Busy = true };
+            entries.Add(cached);
+            return new ToolSessionLease(session, () => ReleaseSession(cached));
+        }
+    }
+
+    private void ReleaseSession(CachedSession entry)
+    {
+        lock (_sessionGate) entry.Busy = false;
+    }
+
+    private sealed class CachedSession(IToolSession session)
+    {
+        public IToolSession Session { get; } = session;
+        public bool Busy { get; set; }
     }
     /// <summary>Returns validated declarations from the active generation, never a UI or tool-name lookup.</summary>
     public IReadOnlyList<ResourceFieldDeclaration> GetResourceFields(string toolId)
@@ -86,8 +131,23 @@ public sealed class RuntimeDirectorySnapshot
         {
             Volatile.Write(ref _retiring,true);
             if(_leases==0)_drained.TrySetResult();
-            return _drained.Task;
+            var drained = _drained.Task;
+            _ = drained.ContinueWith(_ => DisposeCachedSessionsAsync(), CancellationToken.None,
+                TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default).Unwrap();
+            return drained;
         }
+    }
+
+    private async Task DisposeCachedSessionsAsync()
+    {
+        List<IToolSession> sessions;
+        lock (_sessionGate)
+        {
+            sessions = _sessions.Values.SelectMany(items => items.Select(item => item.Session)).ToList();
+            _sessions.Clear();
+        }
+        foreach (var session in sessions)
+            try { await session.DisposeAsync().ConfigureAwait(false); } catch { }
     }
     internal void SignalRetirement()=>_retirementCancellation.Cancel();
     internal CancellationToken RetirementToken=>_retirementCancellation.Token;
@@ -137,6 +197,24 @@ public sealed class RuntimeDirectorySnapshot
         if(runtimes.Count==0)throw new InvalidOperationException("The admitted directory contains no runtime tools.");
         return new RuntimeDirectorySnapshot(runtimes,all,componentMetadata.ToArray(),editorResolver);
     }
+}
+
+/// <summary>Lease returned by a runtime generation; reusable sessions are returned, transient sessions are disposed.</summary>
+public sealed class ToolSessionLease : IAsyncDisposable, IDisposable
+{
+    private readonly Action? _release;
+    private IToolSession? _session;
+    private readonly IDisposable _lifecycle;
+    internal ToolSessionLease(IToolSession session, Action? release) { _session = session; _release = release; _lifecycle = RuntimeLifecycleProbe.EnterSession(); }
+    public IToolSession Session => Volatile.Read(ref _session) ?? throw new ObjectDisposedException(nameof(ToolSessionLease));
+    public async ValueTask DisposeAsync()
+    {
+        var session = Interlocked.Exchange(ref _session, null);
+        if (session is null) return;
+        try { if (_release is not null) { _release(); return; } await session.DisposeAsync().ConfigureAwait(false); }
+        finally { _lifecycle.Dispose(); }
+    }
+    public void Dispose() => DisposeAsync().AsTask().GetAwaiter().GetResult();
 }
 
 /// <summary>A single accepted generation reference. Dispose exactly once when all owners have transferred or released it.</summary>

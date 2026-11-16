@@ -115,5 +115,7 @@
 
 ## 九、提交
 
-- `df7a5ab4d9bd686e2d1ce2ff369da56d887cbf18` — `feat(色彩提取): 新增色彩提取工具Runtime与Wpf实现并登记组件`
-- 未 push、未 merge main；仅在本工作树 `feature/tools-image-processing` 上。
+- `df7a5ab4d9bd686e2d1ce2ff369da56d887cbf18` — `feat(色彩提取): 新增色彩提取工具Runtime与Wpf实现并登记组件`（主交付）
+- `976ff88b7` — 交接单补记提交号
+- `aed3eef6a` — 取消误加入的临时提交消息文件的版本跟踪
+- 未 push、未 merge main；仅在本工作树 `feature/tools-image-processing` 上。工作树残留未跟踪的 `color-commit-msg.txt`（删除命令待人工确认，未纳入版本库）。

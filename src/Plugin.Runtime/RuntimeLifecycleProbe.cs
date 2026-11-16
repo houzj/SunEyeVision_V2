@@ -3,7 +3,8 @@ using SunEyeVision.Foundation.Logging;
 
 namespace SunEyeVision.Plugin.Runtime;
 
-/// <summary>临时生命周期计数探针。用于确认重复执行不会累积运行态资源。</summary>
+/// <summary>运行态生命周期计数探针。记录批次/引擎/会话/结果所有者/执行服务器/请求的存活数量，
+/// 用于确认重复执行不会累积运行态资源；计数归零即释放完成。</summary>
 public static class RuntimeLifecycleProbe
 {
     private static int _batches, _engines, _sessions, _resultOwners, _executionServers, _executionRequests;

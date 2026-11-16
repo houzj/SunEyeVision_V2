@@ -186,5 +186,58 @@ B4 先测入口 24ms → B1 灰度统计按需（每 blob 一次 GrayHisto，-10
 <tr><td>Blob 阶段耗时</td><td><code>[UI.ExecTimingProbe] tool=blob stages=</code>：per-blob-measure 23ms / region-snapshots 10ms / 入口 24ms</td></tr>
 <tr><td>VM 执行只发请求</td><td><code>TitleMenueItemData.cs:1460-1467</code>（<code>VmSolution.Instance.Run()</code>）、<code>VmProcedureDecorator.cs:463-472</code></td></tr>
 </table>
+<h2>十二、2026-11-17 实施结论（L1 完成 · L3 证据阻断）</h2>
+
+<h3>12.1 已完成并提交</h3>
+<table>
+<tr><th>提交</th><th>内容</th><th>实测效果</th></tr>
+<tr><td><code>70e6f4891</code></td><td>HALCON 平台预热 + 执行链 JIT 预热</td><td>首次整轮 570ms → 142ms；<code>image-read-decode</code> 141~3134ms → 0ms</td></tr>
+<tr><td><code>9a361d656</code></td><td>启动画面加载点依次橙色点亮</td><td>—</td></tr>
+<tr><td><code>2c17f0cca</code></td><td>执行链常驻化与运行态探针（34 文件）</td><td>框架稳定态降至 1~3ms；<code>module-session-hit</code> 复用生效</td></tr>
+</table>
+<p>预热实现：<code>IToolRuntimeInitialization</code> 契约 + <code>HalconPlatform.Initialise()</code>（一次 <code>GetSystem</code> 装载原生平台）+ <code>RuntimeMethodWarmup</code>（<code>PrepareMethod</code> 预编译 4632 个方法，294ms）。两者都在启动后台 BelowNormal 线程完成，不阻塞启动。</p>
+
+<h3>12.2 验收数据（agent-desktop 自动驱动，同一进程连续 5 次）</h3>
+<table>
+<tr><th>指标</th><th>首次</th><th>稳定态</th><th>修复前首次</th></tr>
+<tr><td>整轮</td><td>137~142ms</td><td>46~50ms</td><td>570ms</td></tr>
+<tr><td>ImageSource</td><td>13ms</td><td>4~5ms</td><td>141~3134ms</td></tr>
+<tr><td>Blob</td><td>77~83ms</td><td>28~40ms</td><td>108ms</td></tr>
+</table>
+
+<h3>12.3 L3 Blob 优化被证据阻断（未实施）</h3>
+<p>按“算法逻辑与设计对应、不为对齐而对齐”的决定，Blob 不再追平 VM。三条路线均被实测或源码证据否定：</p>
+<table>
+<tr><th>路线</th><th>阻断证据</th><th>结论</th></tr>
+<tr><td>按需跳过未请求输出</td><td><code>BlobResultDisplay.Descriptor</code> 显示必需项含 <code>region</code>/<code>outline-points</code>/<code>area</code>；输出树节点含最小/最大灰度值与对比度（<code>BlobOutputDisplay.cs:39-41</code>）</td><td>跳过会改变现有显示语义，回退</td></tr>
+<tr><td>批量灰度统计</td><td><code>HOperatorSet.GrayHisto</code> 对区域数组返回合并直方图（256 桶），非逐区域数组；实测 74 个用例失败</td><td>HALCON 算子语义不支持，回退</td></tr>
+<tr><td>泛型收敛</td><td><code>filter-sort</code> 首次 2ms、稳定态 0ms</td><td>收益不足，放弃</td></tr>
+</table>
+
+<h3>12.4 稳定态 Blob 36ms 的构成（均为每轮真实工作量）</h3>
+<table>
+<tr><th>阶段</th><th>耗时</th><th>性质</th></tr>
+<tr><td>逐 Blob 灰度统计（45 次 <code>GrayHisto</code>）</td><td>9~15ms</td><td>显示与结果树必需</td></tr>
+<tr><td>逐 Blob 区域捕获（45 次）</td><td>4~8ms</td><td>结果显示必需（<code>region</code> 字段）</td></tr>
+<tr><td>整体区域捕获（3 次 <code>CaptureRegion</code>）</td><td>4~8ms</td><td>输出端口</td></tr>
+<tr><td>特征提取（7 个批量算子）</td><td>2~6ms</td><td>算法必要</td></tr>
+<tr><td>二值图 / Blob 图快照</td><td>2~6ms</td><td>输出端口</td></tr>
+</table>
+<p><b>定性</b>：这是 HALCON 逐区域算子调用的库级成本，与 VM（原生 C++ 一次遍历返回数组）的架构差距一致。托管层再优化最多到 28~32ms；要对齐 VM 的 3ms 只能把 Blob 算法体重写为原生实现（单独立项，本轮未评估工期）。</p>
+
+<h3>12.5 剩余项评估（本轮不做）</h3>
+<ul>
+<li><b>L2 参数物化/快照按需</b>：稳定态框架已 1~3ms（<code>accepted</code> → 首个 <code>module-session-created</code> 实测 1ms），无优化空间；</li>
+<li><b>L4 发布差量化</b>：稳定态 8ms，属渲染实现选择，收益小且触及防闪烁护栏，按原则暂不做；</li>
+<li><b>R2R</b>：可覆盖首次残余 96ms 中的托管 JIT，但需改造发布流程（开发验证与发布程序不一致），用户已决定不做。</li>
+</ul>
+
+<h3>12.6 验证能力沉淀</h3>
+<ul>
+<li><code>E:\SunEyeVision_V2\.tools\agent-desktop\agent-desktop.cmd</code> 自动驱动 <code>UI 启动 → 起始页选方案 → 点击运行 → 日志取数</code>，无需人工点击；</li>
+<li><code>SUNEYEVISION_TIMING_PROBE=1</code> 开启 Blob/ImageSource 分阶段计时；<code>[PerfProbe]</code> 记录超阈值整轮；<code>[LifecycleProbe]</code> 记录运行态存活计数；</li>
+<li>连续点击会丢失，验收时必须按日志中 <code>run-request-accepted</code> 计数核对实际执行次数。</li>
+</ul>
+
 </body>
 </html>

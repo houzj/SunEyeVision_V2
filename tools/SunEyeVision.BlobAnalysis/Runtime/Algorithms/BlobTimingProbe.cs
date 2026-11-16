@@ -2,7 +2,8 @@ using System.Diagnostics;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 
-/// <summary>临时 Blob 分段耗时探针，采证完成后删除。</summary>
+/// <summary>Blob 分段耗时探针。仅当 SUNEYEVISION_TIMING_PROBE=1 时启用，未设置时为零开销空实现，
+/// 用于每次执行后核对首次与稳定态的阶段分布。</summary>
 internal sealed class BlobTimingProbe : IDisposable
 {
     private static readonly bool Enabled = string.Equals(

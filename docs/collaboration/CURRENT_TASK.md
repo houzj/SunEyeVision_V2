@@ -1,3 +1,11 @@
+**2026-11-17 codebuddy 分支合并主线（集成批完成，未推送）**：`feature/param-window-datatree-codebuddy`（`cd54056e0`，相对 main 领先 169 提交，1168 文件）以 `--no-ff` 合入 main，合并提交 `5fd78bfc2`（双父 `33bae25a5` + `cd54056e0`）；合并前先把本工作区未入库的 11-09 基线同步记录提交为 `33bae25a5`。唯一冲突文件为任务账本，按分支版为主体、回插 11-09 记录解决。
+
+- **合并暴露的漏提交文件**：分支尖端全量构建报 `ImageSourceRunState` 未定义——该类型在仓库全历史中从未存在，根因是保存点提交 `a785163d9`（固定交接单未提交工作）漏加了定义文件。已从分支工作现场 `E:\SunEyeVision_V2`（检出 `cd54056e0` 的 worktree）的未跟踪文件中找回三个文件：`ImageSourceRunState.cs`、`ImageSourceProcessingException.cs`、`ImageSourceStitchState.cs`，提交为 `16faadfee`。
+- **gitignore 根因修复**：`.gitignore` 的 `runtime/` 规则（第 189 行）过宽，任何 `Runtime/` 目录新文件被静默忽略；DeviceDriver/HalAdapter/BlobAnalysis 已有白名单，唯 `tools/SunEyeVision.ImageSource/Runtime/` 缺失（保存点漏加的直接原因）。已按既有格式补白名单，`git check-ignore` 验证三文件不再被忽略。
+- **集成验证**：全量 Release 构建（`SunEyeVision.slnx`，61 工程，`--no-incremental -m:1`）0 错误 6059 警告；启动 `Release\SunEyeVision_v1.0.0\SunEyeVision\SunEyeVision.UI.exe` 验证通过（PID 2732，"SunEyeVision · 起始页"，进程响应正常）。本机签封配置 `installer\Release.Local.props`（gitignore，指便携 pwsh7）从 E 盘补齐。
+- **未合入与未推送**：E 盘 worktree 的进行中改动（`SunEyeVision.slnx` 目录整理、两份执行链设计 HTML、`tasks/plan.md`/`todo.md`）属分支线在途工作，不在本次合并范围；main 领先 `origin/main` 172 提交，未 push。主目录 `src/Plugin.SDK/` 未跟踪目录来历未查清，保持未入库。
+- **待人工验收**：合并后程序的工具加载、参数窗数据树、图像源拼接链（`ImageSourceStitchState` 拼接语义按分支实现，未做 VM 对照验收）。
+
 **2026-11-17 框架地基与工具基线（架构最优批次）**：按“原厂设计为首要标准、除非不可达”的口径，先补地基再谈批量做工具。本批完成并提交 6 项：
 
 1. **契约控制输出与兼容窗口**（`726c86efb`）：`ToolSchema.ControlOutputs` 声明分支能力（仅声明非空时进入 schema 指纹，故既有方案指纹不变）；`FoundationContract.IsCompatible` 统一兼容窗口（major 精确、minor 落在 `[OldestCompatibleMinor, Minor]`），程序集绑定与组件目录共用同一判据。

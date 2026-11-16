@@ -56,5 +56,16 @@
       <EntryType>SunEyeVision.Tool.BlobLabels.Wpf.BlobLabelsEditorFactory</EntryType>
       <CompanionToolId>BlobLabels</CompanionToolId>
     </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.MarkFind/Runtime/SunEyeVision.MarkFind.Runtime.csproj">
+      <ComponentId>SunEyeVision.Tool.MarkFind.Runtime</ComponentId>
+      <ToolId>MarkFind</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.MarkFind.Runtime.MarkFindTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.MarkFind/Wpf/SunEyeVision.MarkFind.Wpf.csproj">
+      <ComponentId>SunEyeVision.Tool.MarkFind.Wpf</ComponentId>
+      <ToolId>MarkFind</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.MarkFind.Wpf.MarkFindEditorFactory</EntryType>
+      <CompanionToolId>MarkFind</CompanionToolId>
+    </ProductToolComponent>
   </ItemGroup>
 </Project>

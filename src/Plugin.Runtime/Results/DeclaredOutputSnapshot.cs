@@ -19,7 +19,8 @@ public sealed class DeclaredOutputSnapshot : IDisposable
     private DeclaredOutputSnapshot(ToolSchema schema,long revision,RunIdentity identity,ExecutionStatus status,
         InputValues? values,ResultResourceOwner? resources,IEnumerable<Diagnostic> diagnostics,
         IReadOnlyDictionary<string,DeclaredOutputField>? fields=null,string? sourceWorkflowId=null,bool complete=true,
-        ToolExecutionIdentity? executionIdentity=null,BusinessJudgment judgment=BusinessJudgment.NotEvaluated,double elapsed=0,IToolOutput? output=null)
+        ToolExecutionIdentity? executionIdentity=null,BusinessJudgment judgment=BusinessJudgment.NotEvaluated,double elapsed=0,IToolOutput? output=null,
+        IReadOnlyCollection<string>? selectedControlOutputs=null)
     {
         if(schema.Inputs.Count!=0 || revision<0)throw new ArgumentException("A result requires the captured output-only declaration and revision.");
         if(executionIdentity is not null&&executionIdentity.ToInvocationIdentity(identity.NodeId)!=identity)
@@ -36,6 +37,7 @@ public sealed class DeclaredOutputSnapshot : IDisposable
         if(Fields.Count!=schema.Outputs.Count || Fields.Keys.Any(key=>!schema.Outputs.Any(port=>port.Id==key)))
             throw new ArgumentException("Result field metadata differs from the captured output declaration.");
         SourceWorkflowId=sourceWorkflowId;IsComplete=complete;
+        SelectedControlOutputs=Array.AsReadOnly((selectedControlOutputs??Array.Empty<string>()).ToArray());
     }
     public ToolSchema Schema {get;}
     public long SchemaRevision {get;}
@@ -55,6 +57,9 @@ public sealed class DeclaredOutputSnapshot : IDisposable
     public IReadOnlyDictionary<string,DeclaredOutputField> Fields {get;}
     public string? SourceWorkflowId {get;}
     public bool IsComplete {get;}
+    /// <summary>Control outputs this run selected, carried from the tool outcome. Empty for tools
+    /// without control outputs and for runs that took no branch.</summary>
+    public IReadOnlyCollection<string> SelectedControlOutputs {get;}
 
     /// <summary>Ownership of outcome.Output and resources transfers on entry, including failure.</summary>
     public static DeclaredOutputSnapshot Capture(ToolSchema schema,long revision,ToolExecutionIdentity executionIdentity,
@@ -77,7 +82,8 @@ public sealed class DeclaredOutputSnapshot : IDisposable
                 status==ExecutionStatus.Failed&&outcome.Output is not null
                     ?InputValues.CaptureAvailableOutputs(outputSchema.Outputs,outcome.Output.ToValues()):null;
             return new(outputSchema,revision,executionIdentity.ToInvocationIdentity(nodeId),status,values,owner,
-                outcome.Diagnostics,fields,sourceWorkflowId,complete,executionIdentity,outcome.Judgment,elapsed,outcome.Output);
+                outcome.Diagnostics,fields,sourceWorkflowId,complete,executionIdentity,outcome.Judgment,elapsed,outcome.Output,
+                outcome.SelectedControlOutputs);
         }
         catch(Exception failure)
         {

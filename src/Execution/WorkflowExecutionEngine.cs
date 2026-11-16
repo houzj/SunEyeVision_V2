@@ -62,6 +62,35 @@ public sealed class WorkflowExecutionEngine
                 pair => pair.Value.ToInvocationIdentity(pair.Key));
             var pending = workflow.Nodes.Select(item => item.Node.NodeId).ToHashSet(StringComparer.Ordinal);
             var items = workflow.Nodes.ToDictionary(item => item.Node.NodeId, StringComparer.Ordinal);
+            // Branch edges carry no value: they only say "enter the target when this control output
+            // was selected". A source connected only by branch edges is therefore not a data
+            // predecessor; a source connected by both keeps both roles.
+            var branchIn = workflow.ControlEdges
+                .Where(edge => edge.IsBranchEdge && items.ContainsKey(edge.TargetNodeId))
+                .GroupBy(edge => edge.TargetNodeId, StringComparer.Ordinal)
+                .ToDictionary(group => group.Key, group => group.ToArray(), StringComparer.Ordinal);
+            var dataPredecessors = workflow.Nodes.ToDictionary(
+                item => item.Node.NodeId,
+                item => (IReadOnlyCollection<string>)workflow.Predecessors[item.Node.NodeId]
+                    .Where(source => !branchIn.TryGetValue(item.Node.NodeId, out var incoming)
+                        || !incoming.Any(edge => edge.SourceNodeId == source))
+                    .ToArray(), StringComparer.Ordinal);
+            var selectedOutputs = new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.Ordinal);
+            bool Terminal(string id) => nodeResults.TryGetValue(id, out var result)
+                && result.Status is ExecutionStatus.Success or ExecutionStatus.Failed or ExecutionStatus.Cancelled
+                    or ExecutionStatus.Timeout or ExecutionStatus.Skipped or ExecutionStatus.NotExecuted;
+            bool BranchHit(string id) => branchIn.TryGetValue(id, out var incoming) && incoming.Any(edge =>
+                nodeResults.TryGetValue(edge.SourceNodeId, out var source) && source.Success
+                && selectedOutputs.TryGetValue(edge.SourceNodeId, out var chosen)
+                && chosen.Contains(edge.ControlOutputId!, StringComparer.Ordinal));
+            bool BranchClosed(string id)
+            {
+                if (!branchIn.TryGetValue(id, out var incoming)) return false;
+                // Every branch source must have finished before a miss can be declared, otherwise a
+                // later-arriving hit would enter a node that was already skipped.
+                if (incoming.Any(edge => !Terminal(edge.SourceNodeId))) return false;
+                return !BranchHit(id);
+            }
             var leases = new ExecutionResourceLeaseManager();
             var maxConcurrency = Math.Max(1, Math.Min(4, Environment.ProcessorCount - 1));
             while (pending.Count > 0 || running.Count > 0)
@@ -72,19 +101,39 @@ public sealed class WorkflowExecutionEngine
                 do
                 {
                     skipped = false;
-                    foreach (var id in pending.Where(id => !items[id].IsEnabled || workflow.Predecessors[id]
-                        .Any(source => nodeResults.TryGetValue(source, out var previous) && !previous.Success)).ToArray())
+                    foreach (var id in pending.ToArray())
                     {
-                        pending.Remove(id); skipped = true;
-                        nodeResults.Add(id, new NodeExecutionResult { NodeId = id, Status = ExecutionStatus.NotExecuted, Success = false });
-                        NotifyNodeStatus(id, ExecutionStatus.NotExecuted);
+                        if (!items[id].IsEnabled)
+                        {
+                            pending.Remove(id); skipped = true;
+                            nodeResults.Add(id, new NodeExecutionResult { NodeId = id, Status = ExecutionStatus.NotExecuted, Success = false });
+                            NotifyNodeStatus(id, ExecutionStatus.NotExecuted);
+                            continue;
+                        }
+                        // Wait until every data predecessor terminated before deciding the node's fate.
+                        if (!dataPredecessors[id].All(Terminal)) continue;
+                        var failed = dataPredecessors[id].Any(source => nodeResults[source].Status
+                            is ExecutionStatus.Failed or ExecutionStatus.Cancelled or ExecutionStatus.Timeout);
+                        var upstreamSkipped = dataPredecessors[id].Any(source => nodeResults[source].Status is ExecutionStatus.Skipped);
+                        if (failed || upstreamSkipped || BranchClosed(id))
+                        {
+                            // Upstream failure keeps the historic NotExecuted identity; a branch that was
+                            // not taken or a skipped chain propagates as Skipped so it never reads as NG.
+                            var status = failed ? ExecutionStatus.NotExecuted : ExecutionStatus.Skipped;
+                            pending.Remove(id); skipped = true;
+                            nodeResults.Add(id, new NodeExecutionResult { NodeId = id, Status = status, Success = false });
+                            NotifyNodeStatus(id, status);
+                        }
                     }
                 } while (skipped);
                 foreach (var item in workflow.Nodes)
                 {
                     var id = item.Node.NodeId;
                     if (!pending.Contains(id) || running.Count >= maxConcurrency ||
-                        !workflow.Predecessors[id].All(source => nodeResults.TryGetValue(source, out var previous) && previous.Success)) continue;
+                        !dataPredecessors[id].All(source => nodeResults.TryGetValue(source, out var previous) && previous.Success)) continue;
+                    // A branch target runs only when an incoming branch edge hit; a miss was already
+                    // turned into Skipped by the scan above, so a still-pending target simply waits.
+                    if (branchIn.ContainsKey(id) && !BranchHit(id)) continue;
                     if (!leases.TryAcquire(workflow.WorkflowId, id, item.Node.Capabilities, out var lease)) continue;
                     pending.Remove(id);
                     NotifyNodeStatus(id, ExecutionStatus.Running);
@@ -145,6 +194,10 @@ public sealed class WorkflowExecutionEngine
                         }
                         nodeResults.Add(finished.Id, new NodeExecutionResult { NodeId = finished.Id, Success = output.IsSuccess,
                             Status = output.Status, Result = output, ErrorMessages = output.Diagnostics.Select(issue => issue.Message).ToList() });
+                        // Control selection decides downstream branches; it is recorded only for a
+                        // successful run because a failed run selected nothing.
+                        if (output.IsSuccess && output.SelectedControlOutputs.Count > 0)
+                            selectedOutputs[finished.Id] = output.SelectedControlOutputs;
                         NotifyNodeCompleted(finished.Id, output);
                         NotifyNodeStatus(finished.Id, output.Status);
                     }

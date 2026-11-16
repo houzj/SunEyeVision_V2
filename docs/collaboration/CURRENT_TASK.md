@@ -1,3 +1,5 @@
+**2026-11-17 用户强制门槛：工具开发必须先取证再对照开发**：所有工具（含批量并行各线）开发前必须先完成原厂逆向取证，再对照开发，顺序固定为"原厂取证 → 完整链路分析 → 差异确认 → 实施设计 → 改代码 → 按原厂链路验收"；取证未完成不得编码，证据不足时停在设计阶段等补证，禁止先实现后对照。已写入 A 线任务卡并下发 A 线队员（`line-a-image`）；B/C 线任务卡起草时同规则。
+
 **2026-11-17 codebuddy 分支合并主线（集成批完成，未推送）**：`feature/param-window-datatree-codebuddy`（`cd54056e0`，相对 main 领先 169 提交，1168 文件）以 `--no-ff` 合入 main，合并提交 `5fd78bfc2`（双父 `33bae25a5` + `cd54056e0`）；合并前先把本工作区未入库的 11-09 基线同步记录提交为 `33bae25a5`。唯一冲突文件为任务账本，按分支版为主体、回插 11-09 记录解决。
 
 - **合并暴露的漏提交文件**：分支尖端全量构建报 `ImageSourceRunState` 未定义——该类型在仓库全历史中从未存在，根因是保存点提交 `a785163d9`（固定交接单未提交工作）漏加了定义文件。已从分支工作现场 `E:\SunEyeVision_V2`（检出 `cd54056e0` 的 worktree）的未跟踪文件中找回三个文件：`ImageSourceRunState.cs`、`ImageSourceProcessingException.cs`、`ImageSourceStitchState.cs`，提交为 `16faadfee`。

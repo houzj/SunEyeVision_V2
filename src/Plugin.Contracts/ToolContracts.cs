@@ -35,10 +35,12 @@ public enum BusinessJudgment { NotEvaluated, Pass, Fail }
 public sealed record ToolOutcome<T>(bool Success, T? Output, BusinessJudgment Judgment, IReadOnlyList<Diagnostic> Diagnostics, bool Suppressed = false)
     where T : class, IToolOutput
 {
-    /// <summary>Control outputs this run selected. Meaningful only when the tool declares
-    /// control outputs: an empty set then means "no branch taken", and every branch edge
-    /// descending from this node is skipped. Tools without control outputs leave it empty.</summary>
-    public IReadOnlyCollection<string> SelectedControlOutputs { get; init; } = Array.Empty<string>();
+    /// <summary>Branch indexes this run selected, in the order the node's outgoing edges are
+    /// declared. Meaningful only for a node that declares control outputs: an empty set then
+    /// means "no branch taken" and every outgoing edge is skipped. The tool never needs node
+    /// identities — the host maps indexes to the graph, which mirrors how the original platform
+    /// keeps branch selection inside the tool and successor resolution in the executor.</summary>
+    public IReadOnlyCollection<int> SelectedBranches { get; init; } = Array.Empty<int>();
     public static ToolOutcome<T> Completed(T output, BusinessJudgment judgment=BusinessJudgment.NotEvaluated) => new(true,output,judgment,Array.Empty<Diagnostic>());
     public static ToolOutcome<T> Failed(string code,string message) => new(false,null,BusinessJudgment.NotEvaluated,new[]{new Diagnostic(code,message)});
 }
@@ -82,7 +84,7 @@ public interface IToolSession<TSettings,TOutput> : IToolSession
         // The branch selection must survive this bridge: dropping it here would silently make
         // every declaring tool look like it took no branch at all.
         return new(result.Success,result.Output,result.Judgment,result.Diagnostics,result.Suppressed)
-            { SelectedControlOutputs = result.SelectedControlOutputs };
+            { SelectedBranches = result.SelectedBranches };
     }
 }
 public sealed class ToolInvocation<TSettings> where TSettings : IToolSettings<TSettings>

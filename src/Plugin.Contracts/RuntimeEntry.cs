@@ -37,9 +37,9 @@ public interface IToolRuntimeInitialization
 public sealed record ToolOutcome(bool Success, IToolOutput? Output, BusinessJudgment Judgment,
     IReadOnlyList<Diagnostic> Diagnostics, bool Suppressed = false)
 {
-    /// <summary>Control outputs this run selected; carried from the tool outcome into the result
-    /// snapshot so the engine can decide which branches to take without re-querying the tool.</summary>
-    public IReadOnlyCollection<string> SelectedControlOutputs { get; init; } = Array.Empty<string>();
+    /// <summary>Branch indexes this run selected; carried from the tool outcome into the result
+    /// snapshot so the engine can resolve successors without re-querying the tool.</summary>
+    public IReadOnlyCollection<int> SelectedBranches { get; init; } = Array.Empty<int>();
     public static ToolOutcome Suppress() => new(false, null, BusinessJudgment.NotEvaluated, Array.Empty<Diagnostic>(), true);
 }
 

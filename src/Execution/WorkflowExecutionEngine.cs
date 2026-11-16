@@ -62,33 +62,44 @@ public sealed class WorkflowExecutionEngine
                 pair => pair.Value.ToInvocationIdentity(pair.Key));
             var pending = workflow.Nodes.Select(item => item.Node.NodeId).ToHashSet(StringComparer.Ordinal);
             var items = workflow.Nodes.ToDictionary(item => item.Node.NodeId, StringComparer.Ordinal);
-            // Branch edges carry no value: they only say "enter the target when this control output
-            // was selected". A source connected only by branch edges is therefore not a data
-            // predecessor; a source connected by both keeps both roles.
-            var branchIn = workflow.ControlEdges
-                .Where(edge => edge.IsBranchEdge && items.ContainsKey(edge.TargetNodeId))
-                .GroupBy(edge => edge.TargetNodeId, StringComparer.Ordinal)
-                .ToDictionary(group => group.Key, group => group.ToArray(), StringComparer.Ordinal);
+            // A node whose tool declares control outputs is a branch source: its outgoing edges are
+            // numbered in declaration order, and the tool reports which indexes it took. The tool
+            // never receives node identities, and an edge keeps node-pair semantics — the same split
+            // the original platform uses (selection inside the tool, successor resolution outside).
+            var branchIn = new Dictionary<string, List<(ExecutionControlEdge Edge, int Index)>>(StringComparer.Ordinal);
+            var branchPairs = new HashSet<(string Source, string Target)>();
+            var nextBranchIndex = new Dictionary<string, int>(StringComparer.Ordinal);
+            foreach (var edge in workflow.ControlEdges)
+            {
+                if (!items.TryGetValue(edge.SourceNodeId, out var sourceNode)) continue;
+                if (sourceNode.Node.Schema.ControlOutputs.Count == 0) continue;
+                if (!items.ContainsKey(edge.TargetNodeId)) continue;
+                var index = nextBranchIndex.TryGetValue(edge.SourceNodeId, out var next) ? next : 0;
+                nextBranchIndex[edge.SourceNodeId] = index + 1;
+                if (!branchIn.TryGetValue(edge.TargetNodeId, out var incoming))
+                    branchIn[edge.TargetNodeId] = incoming = new List<(ExecutionControlEdge Edge, int Index)>();
+                incoming.Add((edge, index));
+                branchPairs.Add((edge.SourceNodeId, edge.TargetNodeId));
+            }
             var dataPredecessors = workflow.Nodes.ToDictionary(
                 item => item.Node.NodeId,
                 item => (IReadOnlyCollection<string>)workflow.Predecessors[item.Node.NodeId]
-                    .Where(source => !branchIn.TryGetValue(item.Node.NodeId, out var incoming)
-                        || !incoming.Any(edge => edge.SourceNodeId == source))
+                    .Where(source => !branchPairs.Contains((source, item.Node.NodeId)))
                     .ToArray(), StringComparer.Ordinal);
-            var selectedOutputs = new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.Ordinal);
+            var selectedBranches = new Dictionary<string, IReadOnlyCollection<int>>(StringComparer.Ordinal);
             bool Terminal(string id) => nodeResults.TryGetValue(id, out var result)
                 && result.Status is ExecutionStatus.Success or ExecutionStatus.Failed or ExecutionStatus.Cancelled
                     or ExecutionStatus.Timeout or ExecutionStatus.Skipped or ExecutionStatus.NotExecuted;
-            bool BranchHit(string id) => branchIn.TryGetValue(id, out var incoming) && incoming.Any(edge =>
-                nodeResults.TryGetValue(edge.SourceNodeId, out var source) && source.Success
-                && selectedOutputs.TryGetValue(edge.SourceNodeId, out var chosen)
-                && chosen.Contains(edge.ControlOutputId!, StringComparer.Ordinal));
+            bool BranchHit(string id) => branchIn.TryGetValue(id, out var incoming) && incoming.Any(item =>
+                nodeResults.TryGetValue(item.Edge.SourceNodeId, out var source) && source.Success
+                && selectedBranches.TryGetValue(item.Edge.SourceNodeId, out var chosen)
+                && chosen.Contains(item.Index));
             bool BranchClosed(string id)
             {
                 if (!branchIn.TryGetValue(id, out var incoming)) return false;
                 // Every branch source must have finished before a miss can be declared, otherwise a
                 // later-arriving hit would enter a node that was already skipped.
-                if (incoming.Any(edge => !Terminal(edge.SourceNodeId))) return false;
+                if (incoming.Any(item => !Terminal(item.Edge.SourceNodeId))) return false;
                 return !BranchHit(id);
             }
             var leases = new ExecutionResourceLeaseManager();
@@ -196,8 +207,16 @@ public sealed class WorkflowExecutionEngine
                             Status = output.Status, Result = output, ErrorMessages = output.Diagnostics.Select(issue => issue.Message).ToList() });
                         // Control selection decides downstream branches; it is recorded only for a
                         // successful run because a failed run selected nothing.
-                        if (output.IsSuccess && output.SelectedControlOutputs.Count > 0)
-                            selectedOutputs[finished.Id] = output.SelectedControlOutputs;
+                        if (output.IsSuccess && output.SelectedBranches.Count > 0)
+                        {
+                            // A selection outside the declared branches would silently skip every
+                            // outgoing edge, so it fails the run instead of being ignored.
+                            var declared = items[finished.Id].Node.Schema.ControlOutputs.Count;
+                            if (declared == 0 || output.SelectedBranches.Any(index => index < 0 || index >= declared))
+                                throw new InvalidOperationException(
+                                    $"节点 {finished.Id} 的工具有效分支数为 {declared}，但本次返回了未声明的分支序号，无法解析后继。");
+                            selectedBranches[finished.Id] = output.SelectedBranches;
+                        }
                         NotifyNodeCompleted(finished.Id, output);
                         NotifyNodeStatus(finished.Id, output.Status);
                     }

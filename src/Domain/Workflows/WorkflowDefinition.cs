@@ -1,5 +1,4 @@
 using System.Text.Json;
-using SunEyeVision.Plugin.Contracts;
 
 namespace SunEyeVision.Domain.Workflows;
 
@@ -52,11 +51,6 @@ public sealed class ConnectionDefinition
     public string TargetNodeId { get; internal set; }
     public string SourcePort { get; internal set; }
     public string TargetPort { get; internal set; }
-    /// <summary>True when this edge addresses a control output (control.&lt;id&gt;) rather than a data
-    /// port. A control edge carries no value: it only says which branch the source selected.</summary>
-    public bool IsControlEdge => SourcePort.StartsWith(ToolSchema.ControlPortPrefix, StringComparison.Ordinal);
-    /// <summary>Control output identity addressed by this edge, or null for a data edge.</summary>
-    public string? ControlOutputId => IsControlEdge ? SourcePort[ToolSchema.ControlPortPrefix.Length..] : null;
     private IReadOnlyList<CanvasPoint>? _manualPathPoints;
     public IReadOnlyList<CanvasPoint>? ManualPathPoints
     {

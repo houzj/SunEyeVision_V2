@@ -5,6 +5,36 @@
         Background="#171A1B" Width="640" Height="360"
         WindowStartupLocation="CenterScreen" ShowInTaskbar="False"
         ShowActivated="True" Topmost="True">
+    <Window.Resources>
+        <!-- 点亮样式与原第 4 个点一致：灰底依次点亮为橙色后回落，节奏保持原样 -->
+        <Storyboard x:Key="LoadingDotsPulse" RepeatBehavior="Forever">
+            <ColorAnimation Storyboard.TargetName="LoadingDot1" Storyboard.TargetProperty="(Ellipse.Fill).(SolidColorBrush.Color)"
+                            From="#9B9B9B" To="#D8782A" Duration="0:0:0.32" AutoReverse="True" BeginTime="0:0:0.00"/>
+            <DoubleAnimation Storyboard.TargetName="LoadingDot1" Storyboard.TargetProperty="Opacity"
+                             From="0.35" To="1" Duration="0:0:0.32" AutoReverse="True" BeginTime="0:0:0.00"/>
+            <ColorAnimation Storyboard.TargetName="LoadingDot2" Storyboard.TargetProperty="(Ellipse.Fill).(SolidColorBrush.Color)"
+                            From="#9B9B9B" To="#D8782A" Duration="0:0:0.32" AutoReverse="True" BeginTime="0:0:0.22"/>
+            <DoubleAnimation Storyboard.TargetName="LoadingDot2" Storyboard.TargetProperty="Opacity"
+                             From="0.35" To="1" Duration="0:0:0.32" AutoReverse="True" BeginTime="0:0:0.22"/>
+            <ColorAnimation Storyboard.TargetName="LoadingDot3" Storyboard.TargetProperty="(Ellipse.Fill).(SolidColorBrush.Color)"
+                            From="#9B9B9B" To="#D8782A" Duration="0:0:0.32" AutoReverse="True" BeginTime="0:0:0.44"/>
+            <DoubleAnimation Storyboard.TargetName="LoadingDot3" Storyboard.TargetProperty="Opacity"
+                             From="0.35" To="1" Duration="0:0:0.32" AutoReverse="True" BeginTime="0:0:0.44"/>
+            <ColorAnimation Storyboard.TargetName="LoadingDot4" Storyboard.TargetProperty="(Ellipse.Fill).(SolidColorBrush.Color)"
+                            From="#9B9B9B" To="#D8782A" Duration="0:0:0.32" AutoReverse="True" BeginTime="0:0:0.66"/>
+            <DoubleAnimation Storyboard.TargetName="LoadingDot4" Storyboard.TargetProperty="Opacity"
+                             From="0.35" To="1" Duration="0:0:0.32" AutoReverse="True" BeginTime="0:0:0.66"/>
+            <ColorAnimation Storyboard.TargetName="LoadingDot5" Storyboard.TargetProperty="(Ellipse.Fill).(SolidColorBrush.Color)"
+                            From="#9B9B9B" To="#D8782A" Duration="0:0:0.32" AutoReverse="True" BeginTime="0:0:0.88"/>
+            <DoubleAnimation Storyboard.TargetName="LoadingDot5" Storyboard.TargetProperty="Opacity"
+                             From="0.35" To="1" Duration="0:0:0.32" AutoReverse="True" BeginTime="0:0:0.88"/>
+        </Storyboard>
+    </Window.Resources>
+    <Window.Triggers>
+        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+            <BeginStoryboard Storyboard="{StaticResource LoadingDotsPulse}" />
+        </EventTrigger>
+    </Window.Triggers>
     <Grid ClipToBounds="True">
         <Grid.Background><LinearGradientBrush StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#202426" Offset="0"/><GradientStop Color="#121516" Offset="0.65"/><GradientStop Color="#101213" Offset="1"/></LinearGradientBrush></Grid.Background>
         <Canvas Opacity="0.28" IsHitTestVisible="False">
@@ -14,9 +44,14 @@
             <Image Source="{DynamicResource SunEyeVision.BrandLogo}" Width="34" Height="22" Stretch="Uniform" Margin="0,0,8,0"/>
             <TextBlock Text="SunEyeVision" FontSize="15" FontWeight="SemiBold" Foreground="#D7DBDD" VerticalAlignment="Center"/>
         </StackPanel>
+        <Button x:Name="CancelButton" Content="×" Width="32" Height="30" Margin="0,10,12,0"
+                HorizontalAlignment="Right" VerticalAlignment="Top"
+                Background="Transparent" BorderBrush="Transparent" Foreground="#D7DBDD"
+                FontSize="22" Padding="0" ToolTip="取消启动"
+                AutomationProperties.Name="取消启动" Click="Cancel_Click"/>
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,12,0,0">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"><Image Source="{DynamicResource SunEyeVision.BrandLogo}" Width="104" Height="72" Stretch="Uniform" Margin="0,0,18,0"/><StackPanel VerticalAlignment="Center"><TextBlock Text="SunEyeVision" FontSize="44" FontWeight="SemiBold" Foreground="#F1F1F1"/><TextBlock Text="机器视觉平台" FontSize="20" Foreground="#D1D4D5" Margin="3,2,0,0"/></StackPanel></StackPanel>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,32,0,0"><Ellipse Width="8" Height="8" Fill="#9B9B9B" Margin="0,0,13,0"/><Ellipse Width="8" Height="8" Fill="#9B9B9B" Margin="0,0,13,0"/><Ellipse Width="8" Height="8" Fill="#9B9B9B" Margin="0,0,13,0"/><Ellipse Width="8" Height="8" Fill="#D8782A" Margin="0,0,13,0"/><Ellipse Width="8" Height="8" Fill="#9B9B9B"/></StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,32,0,0"><Ellipse x:Name="LoadingDot1" Width="8" Height="8" Fill="#9B9B9B" Opacity="0.35" Margin="0,0,13,0"/><Ellipse x:Name="LoadingDot2" Width="8" Height="8" Fill="#9B9B9B" Opacity="0.35" Margin="0,0,13,0"/><Ellipse x:Name="LoadingDot3" Width="8" Height="8" Fill="#9B9B9B" Opacity="0.35" Margin="0,0,13,0"/><Ellipse x:Name="LoadingDot4" Width="8" Height="8" Fill="#9B9B9B" Opacity="0.35" Margin="0,0,13,0"/><Ellipse x:Name="LoadingDot5" Width="8" Height="8" Fill="#9B9B9B" Opacity="0.35"/></StackPanel>
         </StackPanel>
         <TextBlock x:Name="MessageText" Text="正在启动" Foreground="#969C9E" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,18"/>
     </Grid>

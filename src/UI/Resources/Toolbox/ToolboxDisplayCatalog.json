@@ -85,7 +85,8 @@
         "Id": "IMVSBlobFindLabelsModu",
         "Name": "Blob标签分析",
         "Icon": "IMVSBlobFindLabelsModuImageEnable.png",
-        "ToolId": null
+        "ToolId": "BlobLabels",
+        "MappingVerified": true
       },
       {
         "Id": "IMVSCircleFindModu",
@@ -643,7 +644,8 @@
         "Id": "IMVSFrameMeanModu",
         "Name": "帧平均",
         "Icon": "IMVSFrameMeanModuImageEnable.png",
-        "ToolId": null
+        "ToolId": "FrameMean",
+        "MappingVerified": true
       },
       {
         "Id": "IMVSMultiImageFusionModu",
@@ -771,7 +773,8 @@
         "Id": "IfBranchModule",
         "Name": "条件分支",
         "Icon": "IfBranchModuleImageEnable.png",
-        "ToolId": "Condition"
+        "ToolId": "If",
+        "MappingVerified": true
       },
       {
         "Id": "IfModule",

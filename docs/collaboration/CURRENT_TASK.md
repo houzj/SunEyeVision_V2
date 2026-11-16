@@ -1,3 +1,13 @@
+**2026-11-17 三线并行首轮集成（帧均值 / 条件分支If / Blob标签分析，未人工验收）**：三条开发线按"开发一致性分类"并行，各自独立 worktree（`D:\MyWork\line-tools-image|logic|inspect`）与分支（`feature/tools-image-processing|logic-data|inspection`），基线 `945de540f`→`4dcb3cd72`。
+
+- **产出**：A 线帧均值工具 `2119916d7`（+合并 `b5cbe7720`）、B 线条件分支 If `a8c23fb50`（合并 `64e858bc7`）、C 线 Blob 标签分析 `a9f189720`（合并 `289620bed`）；合并到 main 时仅 `SunEyeVision.slnx` 与 `product/ToolComponents.props` 冲突，按并集解决。
+- **gitignore 根因二次修复 `4dcb3cd72`**：`runtime/` 规则再次吞掉新工具 `Runtime/` 源码（A 线首次提交就丢了 8 个文件）。已改为通配白名单 `!/tools/*/Runtime/`、`!/tools/*/Runtime/*.cs|*.csproj|packages.lock.json`，覆盖后续所有新工具，不再逐个工具手加。
+- **工具箱映射补正**：`IMVSFrameMeanModu`→`FrameMean`、`IMVSBlobFindLabelsModu`→`BlobLabels`（原 `ToolId: null`）、`IfBranchModule`→`If`（原误映射 `Condition`），三处均置 `MappingVerified: true`。
+- **已验**：三条线各自与 main 全量 Release 构建 0 错误；新测试项目 16+23+30=69 项全通过；六个工具体 DLL 已部署到 `Release\SunEyeVision_v1.0.0\SunEyeVision\`；`release-payload.json` 含三工具条目；程序启动正常、窗口响应。
+- **未验（不得记作通过）**：10 项验收检查表逐项（工具箱可见性与名称图标、拖入画布、参数页分组显隐联动、结果页表格与叠加、单次执行、连续执行、保存重开、异常路径、生命周期计数、分支 Skipped 行为）、UI 与 VM 原件外观对照、人工验收。
+- **上报未处理**：①执行引擎不校验"分支源出边数 > 已声明控制输出数"，多出的出边永不选中（应补明确诊断）；②画布不为分支源渲染多个出口，用户只能靠连线顺序区分第 0/1 支；③`IMVSFrameMeanModu` 原件名"帧平均"与工具自查显示名"帧均值"不一致，需定口径。
+- **队伍管理教训**：首轮队员结束前未提交、未汇报，代码停在未提交状态；本轮由主线代提交。后续任务书必须写死"未提交即未完成"，主线按工作树 `git log/status` 验收而不是看会话标记。
+
 **2026-11-17 用户强制门槛：工具开发必须先取证再对照开发**：所有工具（含批量并行各线）开发前必须先完成原厂逆向取证，再对照开发，顺序固定为"原厂取证 → 完整链路分析 → 差异确认 → 实施设计 → 改代码 → 按原厂链路验收"；取证未完成不得编码，证据不足时停在设计阶段等补证，禁止先实现后对照。已写入 A 线任务卡并下发 A 线队员（`line-a-image`）；B/C 线任务卡起草时同规则。
 
 **2026-11-17 codebuddy 分支合并主线（集成批完成，未推送）**：`feature/param-window-datatree-codebuddy`（`cd54056e0`，相对 main 领先 169 提交，1168 文件）以 `--no-ff` 合入 main，合并提交 `5fd78bfc2`（双父 `33bae25a5` + `cd54056e0`）；合并前先把本工作区未入库的 11-09 基线同步记录提交为 `33bae25a5`。唯一冲突文件为任务账本，按分支版为主体、回插 11-09 记录解决。

@@ -5,10 +5,14 @@ namespace SunEyeVision.Plugin.Contracts;
 public enum DataType { Boolean, Integer, Number, Text, NumberArray, Image }
 public sealed record Port(string Id, TypeRef Type, bool Required=true, bool Nullable=false, NumericStorage? Storage=null,
     FieldEditModes EditModes=FieldEditModes.None,FieldDefaultPresence DefaultPresence=FieldDefaultPresence.Unset,TextChoiceConstraint? Choices=null);
+/// <summary>A control-flow output. It carries no value: after a run it selects which outgoing
+/// control edges are taken. Edges address it as <see cref="ToolSchema.ControlPortPrefix"/> + Id,
+/// so a data edge and a control edge never share a port identity.</summary>
+public sealed record ControlOutput(string Id, string DisplayName);
 public sealed class ToolSchema
 {
     public ToolSchema(IEnumerable<Port> inputs, IEnumerable<Port> outputs,ToolPresentation? presentation=null,string? workflowImageInputId=null,
-        IEnumerable<OutputDisplayNode>? outputDisplay=null)
+        IEnumerable<OutputDisplayNode>? outputDisplay=null, IEnumerable<ControlOutput>? controlOutputs=null)
     {
         Inputs=Array.AsReadOnly(inputs.ToArray()); Outputs=Array.AsReadOnly(outputs.ToArray());
         if (workflowImageInputId is not null && !Inputs.Any(port => port is not null && port.Id == workflowImageInputId && port.Type == TypeRef.ResourceOf(ResourceKind.Image)))
@@ -29,6 +33,14 @@ public sealed class ToolSchema
         presentation?.Validate(Inputs);Presentation=presentation;
         OutputDisplay=OutputDisplayNode.Freeze(outputDisplay??Array.Empty<OutputDisplayNode>());
         OutputDisplayNode.Validate(OutputDisplay,Outputs);
+        ControlOutputs=Array.AsReadOnly((controlOutputs??Array.Empty<ControlOutput>()).ToArray());
+        if (ControlOutputs.Any(item => item is null || string.IsNullOrWhiteSpace(item.Id) || string.IsNullOrWhiteSpace(item.DisplayName))
+            || ControlOutputs.Select(item => item.Id).Distinct(StringComparer.Ordinal).Count() != ControlOutputs.Count)
+            throw new ArgumentException("Control output identities and display names must be nonempty and unique.");
+        if (ControlOutputs.Any(item => item.Id.StartsWith(ControlPortPrefix, StringComparison.Ordinal)))
+            throw new ArgumentException("Control output identities must not carry the control port prefix.");
+        if (Inputs.Concat(Outputs).Any(port => ControlOutputs.Any(item => item.Id == port.Id)))
+            throw new ArgumentException("Control outputs must not reuse a data port identity.");
         // IDs may contain punctuation. Length-prefixed fields avoid delimiter collisions
         // between one compound ID and several different ports.
         using var buffer=new MemoryStream();
@@ -50,6 +62,14 @@ public sealed class ToolSchema
             // Labels/layout do not affect compatibility. Region-role relationships affect which source is consumed.
             var regions=presentation?.Regions??Array.Empty<RegionFieldGroup>();writer.Write(regions.Count);
             foreach(var region in regions.OrderBy(region=>region.Role,StringComparer.Ordinal)){writer.Write(region.Role);writer.Write(region.ModeFieldId);writer.Write(region.LocalGeometryFieldId);writer.Write(region.GeometrySourceFieldId);writer.Write(region.RegionSourceFieldId);}
+            // Control outputs join the fingerprint only when declared. A tool without branch
+            // capability must keep the exact fingerprint its saved solutions were written with,
+            // so extending this declaration can never invalidate an existing solution.
+            if (ControlOutputs.Count > 0)
+            {
+                writer.Write(ControlOutputs.Count);
+                foreach (var output in ControlOutputs) { writer.Write(output.Id); writer.Write(output.DisplayName); }
+            }
         }
         Fingerprint=Convert.ToHexString(SHA256.HashData(buffer.ToArray()));
     }
@@ -57,6 +77,14 @@ public sealed class ToolSchema
     public IReadOnlyList<Port> Outputs { get; }
     public ToolPresentation? Presentation { get; }
     public IReadOnlyList<OutputDisplayNode> OutputDisplay {get;}
+    /// <summary>Declared control-flow outputs; empty for tools that cannot branch.</summary>
+    public IReadOnlyList<ControlOutput> ControlOutputs {get;}
+    /// <summary>Port-id prefix that addresses a control output on a connection edge.</summary>
+    public static string ControlPortPrefix => "control.";
+    /// <summary>Resolves a connection edge's port id to a declared control output, if it addresses one.</summary>
+    public ControlOutput? FindControlOutput(string portId)
+        => portId.StartsWith(ControlPortPrefix, StringComparison.Ordinal)
+            ? ControlOutputs.SingleOrDefault(item => item.Id == portId[ControlPortPrefix.Length..]) : null;
     /// <summary>端口显示节点；端口只作为分组子行出现时也返回该节点，成员名沿用逐级 FieldId 下钻。</summary>
     public OutputDisplayNode? FindOutputDisplay(string portId,IEnumerable<string>? members=null)
     {

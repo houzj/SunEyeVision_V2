@@ -9,11 +9,19 @@ public sealed class PluginContractAttribute(int major, int minor) : Attribute
 public static class FoundationContract
 {
     public const int Major = 6, Minor = 0;
+    /// <summary>Oldest minor this host still accepts. Bumping <see cref="Minor"/> alone never
+    /// invalidates an older component; only a breaking shape change increments
+    /// <see cref="Major"/> and must drop compatibility deliberately.</summary>
+    public const int OldestCompatibleMinor = 0;
+    /// <summary>Compatibility window check shared by assembly binding and the component catalog:
+    /// major must match exactly, minor must not exceed the host and must not be older than the
+    /// declared floor.</summary>
+    public static bool IsCompatible(int major, int minor) => major == Major && minor >= OldestCompatibleMinor && minor <= Minor;
     public static void RequireCurrent(Assembly assembly)
     {
         var v = assembly.GetCustomAttribute<PluginContractAttribute>();
-        if(v is null || v.Major != Major || v.Minor != Minor)
-            throw new InvalidOperationException($"Plugin contract must be {Major}.{Minor}; actual {v?.Major.ToString() ?? "missing"}.{v?.Minor.ToString() ?? "missing"}. Rebuild; legacy binaries are not supported.");
+        if(v is null || !IsCompatible(v.Major, v.Minor))
+            throw new InvalidOperationException($"Plugin contract must be {Major}.{OldestCompatibleMinor}..{Major}.{Minor}; actual {v?.Major.ToString() ?? "missing"}.{v?.Minor.ToString() ?? "missing"}. Rebuild; legacy binaries are not supported.");
     }
 }
 public interface IToolSettings<TSelf> { TSelf Freeze(); }

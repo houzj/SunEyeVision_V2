@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <OutDir>$(WorktreeBasePath)tests/bin/ProductRuntime/$(MSBuildProjectName)/$(Configuration)/</OutDir>
+    <OutputPath>$(OutDir)</OutputPath>
+    <AssemblyName>SunEyeVision.Tools.Inspection.Tests</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector" Version="6.0.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" />
+    <!-- 工具插件真实部署在 plugins/<Tool>/，测试运行时从正式 Release 目录加载，不 copy-local。 -->
+    <ProjectReference Include="../../tools/SunEyeVision.BlobLabels/Runtime/SunEyeVision.BlobLabels.Runtime.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\_shared\ProductRuntimeTestHost.cs" Link="_shared\ProductRuntimeTestHost.cs" />
+  </ItemGroup>
+  <Target Name="UseFormalProductAssemblies" BeforeTargets="_CopyFilesMarkedCopyLocal">
+    <ItemGroup>
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="$([System.String]::Copy('%(ReferenceCopyLocalPaths.Filename)').StartsWith('SunEyeVision.'))" />
+    </ItemGroup>
+  </Target>
+  <ItemGroup>
+    <Reference Include="halcondotnetxl"><HintPath>$(HalconSourceRoot)/net/halcondotnetxl.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+</Project>

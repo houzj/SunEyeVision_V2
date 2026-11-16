@@ -230,8 +230,10 @@ public sealed class ImageSourceDeclarationAndFormatTests
     [InlineData(false,"rgb24")]
     public async Task Local_file_formats_preserve_pixels_frame_and_decoded_domain(bool grayInput,string format)
     {
-        var directory=Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")
-            ??throw new InvalidOperationException("Missing validation root"),"local-formats",Guid.NewGuid().ToString("N"));
+        var validationRoot = Environment.GetEnvironmentVariable("S2_CASE_ROOT");
+        if (string.IsNullOrWhiteSpace(validationRoot))
+            validationRoot = Path.Combine(Path.GetTempPath(), "SunEyeVision.ImageSource.Runtime.Tests");
+        var directory=Path.Combine(validationRoot,"local-formats",Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(directory);
         try
         {

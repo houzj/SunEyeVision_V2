@@ -1569,7 +1569,7 @@ SplitterPosition = position;
         {
             var publication=_resultPublication;
             if(!ReferenceEquals(sender,_activeResultView)||publication is null||selection.Publication!=publication.Stamp
-                ||!publication.IsCurrent()||!ReferenceEquals(_resultPublication,publication))return;
+                ||!CanDisplayResultPublication(publication)||!ReferenceEquals(_resultPublication,publication))return;
             ResultWorkspaceSelectionChanged?.Invoke(selection);
         }
 
@@ -2051,6 +2051,7 @@ SplitterPosition = position;
             if (_transitionPreparationInProgress) return false;
             owner = ResolveSolutionDialogOwner(owner);
             _transitionPreparationInProgress = true;
+            RuntimeLifecycleProbe.Log($"solution-transition-enter reload={reload} running={IsRunning}");
             OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace));OnPropertyChanged(nameof(CanEditRootCollection));
             try
             {
@@ -2059,7 +2060,9 @@ SplitterPosition = position;
                     ThemeMessageDialog.Show("方案正在运行。停止全部执行后继续？", "切换方案", MessageBoxButton.OKCancel,
                         ThemeMessageDialog.MessageIcon.Question, owner) != MessageBoxResult.OK) return false;
                 _solutionTransitionPrepared=true;
+                RuntimeLifecycleProbe.Log($"solution-transition-stop-begin running={IsRunning}");
                 await StopFormalExecutionAsync(TimeSpan.FromSeconds(30));
+                RuntimeLifecycleProbe.Log($"solution-transition-stop-complete running={IsRunning}");
                 if (manager.CurrentSession == null) return await TryCloseParameterWindowsForTransitionAsync();
                 if (reload)
                 {
@@ -2077,11 +2080,12 @@ SplitterPosition = position;
             }
             catch (Exception ex)
             {
+                RuntimeLifecycleProbe.Log($"solution-transition-fault type={ex.GetType().Name} message={ex.Message}");
                 EndSolutionTransition();
                 ThemeMessageDialog.Show("操作未完成，原方案保持打开：" + ex.Message, "方案切换", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error, owner);
                 return false;
             }
-            finally { _transitionPreparationInProgress = false; ActiveImageSourceBinding?.RefreshAvailability(); OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace));OnPropertyChanged(nameof(CanEditRootCollection)); }
+            finally { RuntimeLifecycleProbe.Log($"solution-transition-exit running={IsRunning} prepared={_solutionTransitionPrepared}"); _transitionPreparationInProgress = false; ActiveImageSourceBinding?.RefreshAvailability(); OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace));OnPropertyChanged(nameof(CanEditRootCollection)); }
         }
 
         /// <summary>External file activation reuses existing stop/save and identity-conflict rules.</summary>

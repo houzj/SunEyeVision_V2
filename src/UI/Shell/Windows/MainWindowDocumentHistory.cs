@@ -24,7 +24,7 @@ public partial class MainWindowViewModel
     }
     private void UnbindFormalSession()
     {
-        if(_observedDocumentSession is {} session){session.Changed-=FormalDocumentChanged;session.RuntimeResultAvailable-=FormalResultAvailable;session.NodeDisplayNavigationChanged-=FormalDisplayNavigationChanged;session.WorkspaceNavigationChanged-=FormalWorkspaceNavigationChanged;}
+        if(_observedDocumentSession is {} session){session.Changed-=FormalDocumentChanged;session.RuntimeResultAvailable-=FormalResultAvailable;session.ResultVersionAvailable-=FormalResultVersionAvailable;session.NodeDisplayNavigationChanged-=FormalDisplayNavigationChanged;session.WorkspaceNavigationChanged-=FormalWorkspaceNavigationChanged;}
         // 会话失效即投影失效：全部常驻图像源缓存逐出，避免跨会话复用旧会话的投影。
         ReleaseImageSourceBindings();
         _observedDocumentSession=null;
@@ -46,7 +46,7 @@ public partial class MainWindowViewModel
         var session=DocumentManager.CurrentSession;
         if(ReferenceEquals(session,_observedDocumentSession))return;
         UnbindFormalSession();_observedDocumentSession=session;
-        if(session is not null){session.Changed+=FormalDocumentChanged;session.RuntimeResultAvailable+=FormalResultAvailable;session.NodeDisplayNavigationChanged+=FormalDisplayNavigationChanged;session.WorkspaceNavigationChanged+=FormalWorkspaceNavigationChanged;}
+        if(session is not null){session.Changed+=FormalDocumentChanged;session.RuntimeResultAvailable+=FormalResultAvailable;session.ResultVersionAvailable+=FormalResultVersionAvailable;session.NodeDisplayNavigationChanged+=FormalDisplayNavigationChanged;session.WorkspaceNavigationChanged+=FormalWorkspaceNavigationChanged;}
         QueueFolderTriggerTracking();
     }
     private void FormalDocumentChanged(object? sender,DocumentChangeSet change)
@@ -133,6 +133,16 @@ public partial class MainWindowViewModel
             RefreshFormalPublishedResult();
         }
         ResultWorkspaceChanged?.Invoke();
+    }
+    private void FormalResultVersionAvailable(object? sender,PublishedResultVersion result)
+    {
+        if(_documentHostReleased||!ReferenceEquals(sender,DocumentManager.CurrentSession))return;
+        NotifyResultHistoryChanged();
+        if(SelectedNode?.Id==result.Node.NodeId&&WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId==result.Node.WorkflowId)
+        {
+            RefreshFormalPublishedResult();
+            ResultWorkspaceChanged?.Invoke();
+        }
     }
     // Full history navigation has no public session contract yet; Undo/Redo use the actual session.
     private ICommand? _navigateEditHistoryCommand;

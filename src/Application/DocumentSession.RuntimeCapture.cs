@@ -24,15 +24,12 @@ public sealed partial class DocumentSession
         ArgumentNullException.ThrowIfNull(workflowIds);
         EnsureOwnerCanEdit();
         var requested = workflowIds.ToArray();
-        using var captureTiming = RuntimeExecutionTimingProbe.Begin("batch-capture", string.Join(",", requested));
-        captureTiming.Mark("workflow-ids");
         if (requested.Length == 0 || requested.Any(string.IsNullOrWhiteSpace) || requested.Distinct(StringComparer.Ordinal).Count() != requested.Length)
             throw new ArgumentException("运行流程必须非空且身份唯一。", nameof(workflowIds));
         var hosts = (hostInputs ?? new Dictionary<ScopedNodeIdentity, IHostInputPreparer>()).ToList();
         var createdHosts = new List<IHostInputPreparer>();
         var hostGenerations = new Dictionary<ScopedNodeIdentity, Guid>();
         var images = (workflowImages ?? new Dictionary<string, WorkflowImageInput>()).ToArray();
-        captureTiming.Mark("input-validation");
         if (hosts.Any(pair => pair.Key is null || pair.Value is null) || images.Any(pair => pair.Value is null || pair.Value.Image is null || pair.Value.Lease is null))
             throw new ArgumentException("运行输入缺少实际身份或资源租约。 ");
         if (hosts.Select(pair => pair.Key.WorkflowId).Distinct(StringComparer.Ordinal).Count() > 1 &&
@@ -52,7 +49,6 @@ public sealed partial class DocumentSession
                 try
                 {
                     var flows = Document.Workflows.ToArray();
-                    captureTiming.Mark("document-state");
                     if (flows.Select(flow => flow.Id).Distinct(StringComparer.Ordinal).Count() != flows.Length)
                         throw new InvalidOperationException("方案流程身份不唯一。 ");
                     var selected = requested.Select(id => flows.SingleOrDefault(flow => flow.Id == id && !flow.IsSubroutine)
@@ -63,7 +59,7 @@ public sealed partial class DocumentSession
                     var actualVariables = Document.GlobalVariables.ToArray();
                     GlobalVariable[] definitions;
                     lock (GlobalVariable.ValueGate) definitions = GlobalVariable.CaptureDefinitions(actualVariables).ToArray();
-                    var plan = GetOrBuildExecutionPlan(flows, definitions, captureTiming.Mark);
+                    var plan = GetOrBuildExecutionPlan(flows, definitions);
                     var workflowPlans = plan.Workflows.ToDictionary(item => item.Workflow,
                         (IEqualityComparer<WorkflowDefinition>)ReferenceEqualityComparer.Instance);
                     var nodeCaptures = new Dictionary<ScopedNodeIdentity, RunNodeCapture>();
@@ -100,7 +96,6 @@ public sealed partial class DocumentSession
                                 item.pair.View.Node.Id == cached!.Nodes[item.index].Node.NodeId &&
                                 ReferenceEquals(item.pair.View.Configuration.Configuration, cached.Nodes[item.index].Node.Configuration) &&
                                 item.pair.Plan.Enabled == cached.Nodes[item.index].IsEnabled);
-                        captureTiming.Mark(canReuse ? $"execution-snapshot-hit:{flow.Id}" : $"execution-snapshot-rebuild:{flow.Id}");
                         ExecutionWorkflowSnapshot runSnapshot;
                         if (canReuse)
                         {
@@ -124,12 +119,10 @@ public sealed partial class DocumentSession
                                 new(flow, pair.Plan.Node, pair.View.Configuration.Configuration, pair.View.Configuration.ConfigurationIdentity));
                         snapshots.Add(flow.Id, runSnapshot);
                     }
-                    captureTiming.Mark("workflow-snapshots");
                     if (hosts.Any(pair => !nodeCaptures.ContainsKey(pair.Key))) throw new ArgumentException("宿主输入不属于所选流程的实际节点。", nameof(hostInputs));
                     var capturedVariables = CaptureRuntimeVariables(flows, definitions,
                         ReferencedVariableImages(selected.SelectMany(flow => snapshots[flow.Id].Nodes)));
                     variableValues = capturedVariables.Values;
-                    captureTiming.Mark("variable-capture");
                     var producers = capturedVariables.Producers;
                     var acceptance = CreateRunParameterAcceptance(nodeCaptures);
                     var variableCaptures = actualVariables.Select((variable, index) => new RunVariableCapture(variable, definitions[index]))
@@ -144,7 +137,6 @@ public sealed partial class DocumentSession
                             (node, result) => { var key = new ScopedNodeIdentity(node.WorkflowId, node.NodeId);
                                 AcceptRunNodeResult(key, nodeCaptures[key], result, producerSnapshot, batchVariables, variableCaptures); });
                     }, StringComparer.Ordinal);
-                    captureTiming.Mark("host-requests");
                     var order = OrderRunWorkflows(requested, plan.Dependencies.GetEdges());
                     EnsureOpen();
                     if (Document.Id != _documentId || flows.Length != Document.Workflows.Count ||
@@ -160,8 +152,7 @@ public sealed partial class DocumentSession
                             latest.Where((variable, index) => variable.ValueRevision != definitions[index].ValueRevision).Any())
                             throw new InvalidOperationException("运行冻结期间变量配置或当前值已改变。 ");
                     }
-                    captureTiming.Mark("batch-ready");
-                    return new DocumentRunBatch(this, reservation, variableValues, requests, order, ownsReservation, hostGenerations, _executionEngine);
+                    return new DocumentRunBatch(this, reservation, variableValues, requests, order, ownsReservation, hostGenerations, _executionEngine, _executionServer);
                 }
                 finally { _preparing = false; }
             }

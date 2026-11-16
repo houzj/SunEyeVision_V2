@@ -95,7 +95,21 @@ public sealed partial class DocumentSession
         try { previous?.Dispose(); } catch (Exception error) { LastRuntimeReleaseError = error; }
         foreach (var publication in invalidated)
             try { publication.Dispose(); } catch (Exception error) { LastRuntimeReleaseError = error; }
+        Guid? retiredVersion = null;
+        lock (_gate)
+        {
+            if (_resultVersions.TryGetValue(source, out var priorVersion)) retiredVersion = priorVersion;
+            _resultVersions[source] = identity.RequestId;
+            _resultStore.Publish(identity.RequestId, result);
+        }
+        if (retiredVersion is { } oldVersion && oldVersion != identity.RequestId)
+        {
+            _resultStore.Retire(oldVersion);
+            RuntimeLifecycleProbe.Log($"result-store-retired version={oldVersion}");
+        }
+        RuntimeLifecycleProbe.Log($"result-store-published version={identity.RequestId} node={source.WorkflowId}/{source.NodeId}");
         if (post) PostRuntimeChanges();
+        PostResultVersion(source, identity.RequestId, result.Identity);
         PostResultAvailable(source, result.Identity);
     }
 
@@ -114,6 +128,7 @@ public sealed partial class DocumentSession
                     if (!visited.Add(target)) continue;
                     pending.Enqueue(target);
                     if (_publishedRuntimeResults.Remove(target, out var publication)) retired.Add(publication);
+                    if (_resultVersions.Remove(target, out var version)) _resultStore.Retire(version);
                 }
         }
     }

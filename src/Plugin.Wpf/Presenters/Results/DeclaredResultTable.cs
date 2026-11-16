@@ -88,7 +88,7 @@ public sealed class DeclaredResultTable : UserControl, IToolResultView
         var expected=_generation;
         if(publication.Schema.Fingerprint!=_schemaFingerprint||publication.Stamp.SchemaFingerprint!=_schemaFingerprint)
             throw new ArgumentException("Result publication differs from this view's frozen declaration.");
-        bool Current()=>!_disposed&&expected==_generation&&publication.IsCurrent()&&!_disposed&&expected==_generation;
+        bool Current()=>!_disposed&&expected==_generation&&publication is { IsRetired:false }&&!_disposed&&expected==_generation;
         if(!Current())return;
         using var lease=publication.Borrow();
         if(lease.Stamp!=publication.Stamp)throw new ArgumentException("Result lease belongs to another publication.");
@@ -145,7 +145,7 @@ public sealed class DeclaredResultTable : UserControl, IToolResultView
         var previousTextLengths=_columnTextLengths;
         if(columnTextLengths is not null)_columnTextLengths=columnTextLengths;
         bool Current()=>!_disposed&&generation==_generation&&ReferenceEquals(_publication,publication)
-            &&(publication is null||publication.IsCurrent())&&!_disposed&&generation==_generation&&ReferenceEquals(_publication,publication);
+            &&(publication is null||!publication.IsRetired)&&!_disposed&&generation==_generation&&ReferenceEquals(_publication,publication);
         CurResultScrollCommand=new ScrollCommand(value=>
         {
             if(_disposed||_publishing!=0||generation!=_generation||value is not double offset||!double.IsFinite(offset)
@@ -292,7 +292,7 @@ public sealed class DeclaredResultTable : UserControl, IToolResultView
         if(publication is null)return;
         var revision=++_selectionRevision;
         bool SameSelection()=>!_disposed&&generation==_generation&&revision==_selectionRevision&&ReferenceEquals(publication,_publication);
-        bool Current()=>SameSelection()&&publication.IsCurrent()&&SameSelection();
+        bool Current()=>SameSelection()&&!publication.IsRetired&&SameSelection();
         if(!Current())return;
         var row=_table.SelectedItem as Row;
         if(row is not null&&(row.Ordinal>=_rows.Count||!ReferenceEquals(_rows[row.Ordinal],row)))row=null;

@@ -47,13 +47,13 @@ public sealed class DeclaredPropertyList : IToolResultView
         if (publication.Schema.Fingerprint != _schemaFingerprint) throw new ArgumentException("Publication schema differs from the constructed result view.", nameof(publication));
         if (ReferenceEquals(publication, _publication) && _stamp == publication.Stamp && Current(_generation)) return;
         var generation = Retire();
-        if (_disposed || generation != _generation || !publication.IsCurrent()) return;
+        if (_disposed || generation != _generation || publication.IsRetired) return;
         IResultValueLease? lease = null;
         try
         {
             var stamp = publication.Stamp;
             lease = publication.Borrow();
-            bool Installing() => publication.IsCurrent() && publication.Stamp == stamp && !_disposed && generation == _generation;
+            bool Installing() => !publication.IsRetired && publication.Stamp == stamp && !_disposed && generation == _generation;
             if (!Installing() || lease.Stamp != stamp) return;
             var model = ResultPresentationModel.ForPublication(publication, lease, Installing);
             if (!Installing()) return;
@@ -96,7 +96,7 @@ public sealed class DeclaredPropertyList : IToolResultView
     {
         var publication = _publication; var lease = _lease; var stamp = _stamp;
         if (_disposed || generation != _generation || publication is null || lease is null || stamp != publication.Stamp || lease.Stamp != stamp) return false;
-        var current = publication.IsCurrent();
+        var current = !publication.IsRetired;
         return current && !_disposed && generation == _generation && ReferenceEquals(publication, _publication)
             && ReferenceEquals(lease, _lease) && stamp == _stamp;
     }

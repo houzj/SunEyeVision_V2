@@ -29,7 +29,9 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
                 demand.Validate(schema);
                 if(demand.PortId==BlobSchema.BlobsPort&&(demand.FieldPath.Count==0||demand.FieldPath[0] is "boundary" or "contour" or "contour-lossy"))requested|=BlobOutputRequest.Boundary;
             }
-            var input=BlobInput.Read(invocation.Inputs);
+            var inputStarted=Stopwatch.GetTimestamp();
+            var input=BlobInput.Read(invocation.Inputs, invocation.Context.Log);
+            invocation.Context.Log($"[ExecTimingProbe] tool=blob-entry stage=input-read elapsed={Stopwatch.GetElapsedTime(inputStarted).TotalMilliseconds:0.###}ms");
             var output=Execute(invocation.Settings,input,invocation.Context.Resources,invocation.Context.Cancellation,requested,timingLog:invocation.Context.Log);
             IReadOnlyList<Diagnostic> diagnostics=output.Measurements.Any(blob=>blob.Boundary.Count>1)
                 ?new[]{new Diagnostic("BLOB_CONTOUR_LOSSY","单轮廓仅投影一个外环；多环和孔洞应读取boundary/Region。",BlobSchema.BlobsPort)}
@@ -58,6 +60,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed)!=0,this);
         ArgumentNullException.ThrowIfNull(settings); ArgumentNullException.ThrowIfNull(input); ArgumentNullException.ThrowIfNull(resources);
         settings = settings.Freeze();
+        timing.Mark("settings-frozen");
         if (imageMask is not null)
         {
             if (inspection is not null || mask is not null || pose is not null || localRoi is not null)
@@ -68,9 +71,11 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         // host fields are projected into it by Freeze, so execution never reads
         // a partially updated editor model.
         var vm = settings.ToFindParameters();
+        timing.Mark("vm-parameters-built");
         if (!BlobThresholdCapabilities.IsSupported(settings.SegmentationMode))
             throw new InvalidOperationException("BLOB_MODE_NOT_READY: 该阈值模式尚未完成原厂语义对齐。");
         var errors = settings.Validate();
+        timing.Mark("settings-validated");
         if (errors.Count != 0) throw new BlobCapabilityException("BLOB_SETTINGS_INVALID", string.Join("; ", errors.Select(x => x.Message)));
         // The module stores OverlapRatio for readback. Its execution path does not forward that slot to the SDK.
         if ((requested & ~BlobOutputRequest.Boundary) != 0)
@@ -83,6 +88,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
             if(inspection is not null||mask is not null)
                 throw new ArgumentException("本地几何不能与像素区域同时执行。");
         }
+        timing.Mark("input-contract-validated");
         using var execution = new HalconBlobExecutionScope(settings.Connectivity);
         timing.Mark("halcon-scope-init");
         using var image = HalconResourceBridge.CopyImage(input);
@@ -90,6 +96,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         HOperatorSet.GetImageSize(image, out var widthValue, out var heightValue);
         using var widthTuple = widthValue; using var heightTuple = heightValue;
         int width = widthValue.I, height = heightValue.I;
+        timing.Mark("image-size-read");
         // Capture the same frozen input frame for every output and ROI reader admission.
         var frame = input.Frame;
         if (!settings.IsPositionCorrectionEnabled) pose = null;
@@ -102,8 +109,10 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         }
         using var gray = HalconImageAdmission.Gray(image);
         using var domain = gray.GetDomain();
+        timing.Mark("gray-image-domain");
         timing.Mark("gray-domain-ready");
         using var imageMaskRegion = imageMask is null ? null : CreateImageMaskRegion(imageMask, width, height);
+        timing.Mark("image-mask-ready");
         using var inspectionRegion = imageMaskRegion is not null ? imageMaskRegion.Clone()
             : localRoi is not null?BlobLocalRoiRasterizer.Build(localRoi,BlobLocalRoi.Inspection,domain,cancellation,clipToInputDomain:pose is null)
             :inspection is null ? domain.Clone() : HalconResourceBridge.CopyRegion(inspection, frame, width, height);
@@ -128,6 +137,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
         using var work=transformed.Work;
         using var binary=transformed.Foreground;
         var outputResources=resources.CreateScope();
+        timing.Mark("output-resource-scope");
         try
         {
             IReadOnlyImage? maskOutput = null;
@@ -139,6 +149,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
             // Freeze the actual byte work image before region extraction; soft intermediate values survive.
             var binaryOutput=work is not null
                 ?HalImageSnapshotSource.Capture(work,frame,BlobSchema.ImageFrame,outputResources):null;
+            timing.Mark("binary-output-snapshot");
             var executionDiagnostics=new List<Diagnostic>();
             if (vm.MaxAreaInnerRectNum > 0)
                 executionDiagnostics.Add(new("BLOB_INNER_RECT_LOCAL", "内接矩形使用 HALCON 轴对齐求解，原厂旋转策略和输出分配未确认。", BlobSchema.InnerRectanglesPort));
@@ -170,6 +181,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
             var perBlobPass=ResultProjectionLimitsPerBlob(vm,ordered.Select(x=>x.Candidate).ToArray(),out var overallPass,out var vmLimitMessages);
             timing.Mark("result-projection");
             var judged=ordered.Select((entry,index)=>entry with{Candidate=entry.Candidate with{IsPass=perBlobPass[index]}}).ToArray();
+            timing.Mark("candidate-judgment");
             var messages=new List<string>(vmLimitMessages);
             var isPass=(vm.OKWhenNumIsZero?judged.Length==0:judged.Length>0)
                 &&overallPass&&judged.All(x=>x.Candidate.IsPass);
@@ -246,6 +258,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
                     using (mean) using (deviation) means = new[] { mean.D };
                 }
             }
+            timing.Mark("histogram-output");
             cancellation.ThrowIfCancellationRequested();
             var maskPolygons = BlobMaskInheritance.Publish(localRoi,pose);
             var resultGeometry = BlobResultGeometry.Capture(localRoi, input, isPass, domain, correctedInspection, correctedMask, pose,
@@ -256,6 +269,7 @@ public sealed partial class BlobSession : IToolSession<BlobSettings, BlobOutput>
             var output = new BlobOutput(settings, transformed.Receipt, executionDiagnostics, judged.Select((entry,index)=>new BlobSelectionEntry(entry.Candidate.ComponentLabel,entry.Candidate.RegionIndex,entry.Slot,index+1)), measurements, blobImage, binaryOutput, maskOutput, regionOutput, okOutput, ngOutput, whiteRatio, histogram, means, isPass, messages, new[] { outputResources }, resultGeometry,maskPolygons,
                 vm.BlobContourType!=BlobContourType.NoneContour,cancellation,moduleStarted);
             cancellation.ThrowIfCancellationRequested();
+            timing.Mark("blob-output-constructed");
             return output;
         }
         catch (Exception failure)

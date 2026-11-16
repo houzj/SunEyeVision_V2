@@ -16,16 +16,17 @@ internal sealed class WorkflowExecutionSnapshotPresenter
   // The timing viewer is an independent read-only tool window. It must not be
   // an owned child of MainWindow: closing the viewer must never participate in
   // the solution/main-window shutdown lifecycle.
+  _mainWindowAnchor = owner as MainWindow;
   var window=new WorkflowExecutionSnapshotWindow(snapshot)
   {
    Owner=_mainWindowAnchor,
    WindowStartupLocation=WindowStartupLocation.CenterOwner,
-   ShowInTaskbar=false
+   ShowInTaskbar=false,
+   Topmost=true
   };
   // WPF may promote the first independently shown window when MainWindow was
   // not explicitly restored. Keep the real workspace as the application's
   // shutdown anchor so closing this viewer can never trigger application exit.
-  _mainWindowAnchor = owner as MainWindow;
   if (_mainWindowAnchor is not null && !ReferenceEquals(System.Windows.Application.Current?.MainWindow, _mainWindowAnchor))
    System.Windows.Application.Current.MainWindow = _mainWindowAnchor;
   if (_mainWindowAnchor is not null)
@@ -33,7 +34,11 @@ internal sealed class WorkflowExecutionSnapshotPresenter
    _ownerStateChanged = (_, _) =>
    {
     if (CurrentWindow is { IsLoaded:true } viewer)
+    {
      viewer.WindowState = _mainWindowAnchor.WindowState;
+     viewer.Topmost = true;
+     viewer.Activate();
+    }
    };
    _mainWindowAnchor.StateChanged += _ownerStateChanged;
    window.WindowState = _mainWindowAnchor.WindowState;
@@ -44,7 +49,12 @@ internal sealed class WorkflowExecutionSnapshotPresenter
    application.ShutdownMode = ShutdownMode.OnExplicitShutdown;
   }
   CurrentWindow=window;window.Closed+=WindowClosed;
-  try{window.Show();return true;}
+  try
+  {
+   window.Show();
+   window.Activate();
+   return true;
+  }
   catch{CurrentWindow=null;window.Closed-=WindowClosed;window.DataContext=null;window.Close();throw;}
  }
  public bool Close()

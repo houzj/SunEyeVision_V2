@@ -71,7 +71,7 @@ public sealed class ResultPresentationPresenter : IDisposable
         ObjectDisposedException.ThrowIf(_disposed,this);ArgumentNullException.ThrowIfNull(publication);
         var entryGeneration=_generation;
         var stamp=publication.Stamp;
-        if(!publication.IsCurrent())
+        if(publication.IsRetired)
         {if(ReferenceEquals(publication,_publication))Abandon(entryGeneration);return;}
         if(entryGeneration!=_generation||_disposed)return;
         if(ReferenceEquals(publication,_publication)&&_stamp==stamp&&Current(_generation))
@@ -109,7 +109,7 @@ public sealed class ResultPresentationPresenter : IDisposable
     private bool Current(int generation)
     {
         if(_disposed||generation!=_generation||_publication is not {} publication||_stamp is not {} stamp)return false;
-        var current=publication.IsCurrent();var actualStamp=publication.Stamp;
+        var current=!publication.IsRetired;var actualStamp=publication.Stamp;
         return current&&actualStamp==stamp&&!_disposed&&generation==_generation&&ReferenceEquals(_publication,publication)&&_stamp==stamp;
     }
 

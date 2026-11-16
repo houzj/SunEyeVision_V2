@@ -31,6 +31,7 @@ internal sealed class ImageSourceSession : IToolSession<ImageSourceSettings,Imag
         using var timing=ImageSourceTimingProbe.Begin(invocation.Context.Log, invocation.Context.Identity.NodeId);
         timing.Mark("validated-input");
         var errors=settings.Validate();
+        timing.Mark("settings-validated");
         if(errors.Count!=0)return new(false,null,BusinessJudgment.NotEvaluated,errors);
         if(!ImageSourceTool.AllowsTrigger(settings))
             return new(false,null,BusinessJudgment.NotEvaluated,Array.Empty<Diagnostic>(),Suppressed:true);
@@ -60,9 +61,11 @@ internal sealed class ImageSourceSession : IToolSession<ImageSourceSettings,Imag
         {
             if(invocation.Context is not ILocalImageReadContext reader)
                 return ToolOutcome<ImageSourceOutput>.Failed("IMAGE_SOURCE_ADMISSION","本轮缺少正式本地图像读取接纳能力。");
+            timing.Mark("local-admission-start");
             try { address=reader.AcceptLocalImage(); }
             catch(OperationCanceledException){throw;}
             catch(Exception error){return ToolOutcome<ImageSourceOutput>.Failed("IMAGE_SOURCE_ADMISSION",error.Message);}
+            timing.Mark("local-admission-complete");
         }
         else if(hasSdkFile)
             address=invocation.Inputs.Get<string>(ImageSourceTool.SdkAddress);
@@ -78,6 +81,7 @@ internal sealed class ImageSourceSession : IToolSession<ImageSourceSettings,Imag
             var state = processing is not null
                 ? processing.GetProcessingState(() => new ImageSourceRunState())
                 : _directState ??= new ImageSourceRunState();
+            timing.Mark("run-state-ready");
             var sequenceRevision=processing?.GetConfigurationRevision(ImageSourceFields.InitialSequence)??Guid.Empty;
             state.ObserveSource(settings.SourceKind,settings.CameraDeviceId,
                 processing?.GetConfigurationRevision(ImageSourceFields.SourceKind)??Guid.Empty,
@@ -113,29 +117,34 @@ internal sealed class ImageSourceSession : IToolSession<ImageSourceSettings,Imag
                 if(invocation.Inputs.Contains(ImageSourceTool.DeviceTimestamp))produced[ImageSourceOutput.Timestamp]=invocation.Inputs.Get<string>(ImageSourceTool.DeviceTimestamp);
             }
             // Native decode/copy has a bounded ownership scope; cancellation is checked before and after it.
-            using var source=inputImage is not null?HalconResourceBridge.CopyImage(inputImage):
-                hasFile&&invocation.Context is ILocalImageCacheContext cache
-                    ?cache.OpenLocalImage(address,DecodeLocalImage, image=>image.Clone())
-                    :DecodeLocalImage();
+            timing.Mark("source-open-start");
+            using var source=inputImage is not null?HalconResourceBridge.CopyImage(inputImage):DecodeLocalImage();
+            timing.Mark("source-open-complete");
             timing.Mark("image-read-decode");
             cancellation.ThrowIfCancellationRequested();
             // The format selector belongs to local files; camera output retains the captured frame format.
             var format=settings.SourceKind=="local"?settings.OutputFormat:"original";
             resources=invocation.Context.Resources.CreateScope();
+            timing.Mark("output-resource-scope");
             ImageFrameAddress Frame(string port)=>new(Guid.NewGuid(),"image-source:"+invocation.Context.Identity.NodeId,
                 invocation.Context.Identity,port);
             var imageFrame=Frame(ImageSourceOutput.Image);
             IReadOnlyImage image;
             using var channels=source.CountChannels();
+            timing.Mark("channel-query");
             if(format=="mono8"&&channels.I!=1)
             {
                 using var color=HalImageSnapshotSource.Capture(source,imageFrame);
+                timing.Mark("color-snapshot-for-gray");
                 image=CreateGrayImage(color,imageFrame,resources,cancellation);
+                timing.Mark("gray-conversion");
             }
             else if(format=="rgb24"&&channels.I!=3)
             {
                 using var rgb=ConvertToRgb(source,channels.I);
+                timing.Mark("rgb-conversion");
                 image=HalImageSnapshotSource.Capture(rgb,imageFrame,resources,rgb24:true);
+                timing.Mark("rgb-snapshot");
             }
             else image=HalImageSnapshotSource.Capture(source,imageFrame,resources,
                 rgb24:format=="rgb24"||inputImage?.Layout.Format==PixelLayout.Rgb24||hasSdkFile&&channels.I==3);
@@ -144,10 +153,12 @@ internal sealed class ImageSourceSession : IToolSession<ImageSourceSettings,Imag
             if (settings.StitchEnabled && settings.StitchHeight > 0)
             {
                 image = state.Stitch.Process(image, settings, resources, cancellation);
+                timing.Mark("stitch");
             }
             var gray=settings.OutputMono8&&image.Layout.Format!=PixelLayout.Gray8
                 ?CreateGrayImage(image,Frame(ImageSourceOutput.GrayImage),resources,cancellation)
                 :null;
+            timing.Mark("optional-gray-output");
             cancellation.ThrowIfCancellationRequested();
             if(hasFile)sequence=state.NextSequence(sequence,sequenceRevision);
             var values=new Dictionary<string,object?> {
@@ -161,6 +172,7 @@ internal sealed class ImageSourceSession : IToolSession<ImageSourceSettings,Imag
                 [ImageSourceOutput.FrameId]=settings.SourceKind=="camera"&&invocation.Inputs.Contains(ImageSourceTool.DeviceFrameId)?invocation.Inputs.Get<string>(ImageSourceTool.DeviceFrameId):string.Empty,
                 [ImageSourceOutput.Timestamp]=settings.SourceKind=="camera"&&invocation.Inputs.Contains(ImageSourceTool.DeviceTimestamp)?invocation.Inputs.Get<string>(ImageSourceTool.DeviceTimestamp):string.Empty
             };
+            timing.Mark("output-values-built");
             if(hasCamera)values[ImageSourceOutput.CameraFailureCount]=state.CameraFailures();
             values.Add(ImageSourceOutput.ModuleRunTime,(double)(float)Stopwatch.GetElapsedTime(moduleStarted).TotalMilliseconds);
             var output=new ImageSourceOutput(values,resources);
@@ -194,24 +206,11 @@ internal sealed class ImageSourceSession : IToolSession<ImageSourceSettings,Imag
 
         HImage DecodeLocalImage()
         {
+            timing.Mark("decode-file-check-start");
             if(!File.Exists(address))throw new FileNotFoundException("本轮图像文件地址无效或不可用。",address);
-            // 临时探针（采证后删除）：拆分首次解码耗时——平台装载 / 冷读盘 / 解码 / 元数据。
-            var probeLog=invocation.Context.Log;
-            var platform=Stopwatch.StartNew();
-            try{HOperatorSet.GetSystem("version",out var version);}catch(Exception error){probeLog($"[DecodeSplit] platform failed: {error.Message}");}
-            platform.Stop();
-            var fileRead=Stopwatch.StartNew();
-            long bytes=0;
-            try{using var stream=File.OpenRead(address);var buffer=new byte[stream.Length];int read;while((read=stream.Read(buffer,0,buffer.Length))>0)bytes+=read;}
-            catch(Exception error){probeLog($"[DecodeSplit] fileRead failed: {error.Message}");}
-            fileRead.Stop();
-            var decode=Stopwatch.StartNew();
+            timing.Mark("decode-file-check-complete");
             var decoded=new HImage(address);
-            decode.Stop();
-            var meta=Stopwatch.StartNew();
-            try{decoded.GetImageSize(out int probeWidth,out int probeHeight);}catch{}
-            meta.Stop();
-            probeLog($"[DecodeSplit] file={Path.GetFileName(address)} bytes={bytes} platform={platform.ElapsedMilliseconds}ms fileRead={fileRead.ElapsedMilliseconds}ms decode={decode.ElapsedMilliseconds}ms meta={meta.ElapsedMilliseconds}ms");
+            timing.Mark("decode-himage-created");
             return decoded;
         }
     }
@@ -268,11 +267,17 @@ internal sealed class ImageSourceSession : IToolSession<ImageSourceSettings,Imag
 
 file sealed class ImageSourceTimingProbe : IDisposable
 {
-    private static readonly bool Enabled=true; // TEMP-PROBE：采证期默认开启，采证后恢复环境变量开关
-    private readonly Action<string> _log; private readonly string _node; private readonly Stopwatch _clock=Stopwatch.StartNew();
-    private readonly List<(string Stage,long Ms)> _stages=new(); private long _last; private bool _disposed;
-    private ImageSourceTimingProbe(Action<string> log,string node){_log=log;_node=node;}
-    public static ImageSourceTimingProbe Begin(Action<string> log,string node)=>new(log,node);
-    public void Mark(string stage){if(!Enabled||_disposed)return;var now=_clock.ElapsedMilliseconds;_stages.Add((stage,now-_last));_last=now;}
-    public void Dispose(){if(_disposed)return;_disposed=true;if(!Enabled)return;_clock.Stop();_log($"[ExecTimingProbe] tool=image-source node={_node} total={_clock.ElapsedMilliseconds}ms stages={string.Join("/",_stages.Select(x=>x.Stage+"="+x.Ms+"ms"))}");}
+    private static readonly bool Enabled = string.Equals(
+        Environment.GetEnvironmentVariable("SUNEYEVISION_TIMING_PROBE"), "1", StringComparison.Ordinal);
+    private static readonly ImageSourceTimingProbe Disabled = new(null,null,false);
+    private readonly Action<string>? _log; private readonly string? _node; private readonly Stopwatch? _clock;
+    private readonly List<(string Stage,long Ms)>? _stages; private readonly bool _enabled; private long _last; private bool _disposed;
+    private ImageSourceTimingProbe(Action<string>? log,string? node,bool enabled)
+    {
+        _log=log;_node=node;_enabled=enabled;
+        if(enabled){_clock=Stopwatch.StartNew();_stages=new();}
+    }
+    public static ImageSourceTimingProbe Begin(Action<string> log,string node)=>Enabled?new(log,node,true):Disabled;
+    public void Mark(string stage){if(!_enabled||_disposed)return;var now=_clock!.ElapsedMilliseconds;_stages!.Add((stage,now-_last));_last=now;}
+    public void Dispose(){if(!_enabled||_disposed)return;_disposed=true;_clock!.Stop();_log!($"[ExecTimingProbe] tool=image-source node={_node} total={_clock.ElapsedMilliseconds}ms stages={string.Join("/",_stages!.Select(x=>x.Stage+"="+x.Ms+"ms"))}");}
 }

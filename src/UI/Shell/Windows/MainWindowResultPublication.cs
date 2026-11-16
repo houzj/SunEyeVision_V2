@@ -12,6 +12,15 @@ public partial class MainWindowViewModel
     private DeclaredOutputSnapshot? _resultPublicationSnapshot;
     private long _resultPublicationEpoch;
     internal IResultPublication? CurrentResultPublication=>_resultPublication;
+    /// <summary>
+    /// 结果表和图形投影的显示边界。编辑后执行域可能已退役，但最近一次完整结果
+    /// 仍由当前工作区持有；它可以继续被选择和高亮，直到新执行或身份切换替换它。
+    /// </summary>
+    internal bool CanDisplayResultPublication(IResultPublication publication)
+        => !publication.IsRetired &&
+           (publication.IsCurrent() ||
+            ReferenceEquals(_resultPublication, publication) &&
+            _resultPublicationSnapshot is { IsComplete: true });
     private bool _currentResultTableSelected;
     private (IToolResultView View, IResultPublication Publication)? _presentedResultTable;
 
@@ -28,7 +37,7 @@ public partial class MainWindowViewModel
     {
         if (!_currentResultTableSelected || _activeResultView is not { } view) return;
         var ownsView = CaptureResultViewOwner(_resultPublicationEpoch);
-        if (!ReferenceEquals(_resultPublication, publication) || !publication.IsCurrent()
+        if (!ReferenceEquals(_resultPublication, publication) || !CanDisplayResultPublication(publication)
             || !ownsView() || !ReferenceEquals(_activeResultView, view) || !_currentResultTableSelected
             || _presentedResultTable is { } presented && ReferenceEquals(presented.View, view)
                 && ReferenceEquals(presented.Publication, publication)) return;

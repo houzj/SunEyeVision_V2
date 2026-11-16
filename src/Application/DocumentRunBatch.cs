@@ -17,14 +17,17 @@ public sealed class DocumentRunBatch : IDisposable
     private readonly IReadOnlyDictionary<string, ExecutionRunRequest> _requests;
     private readonly IReadOnlyList<string> _order;
     private readonly WorkflowExecutionEngine _engine;
+    private readonly ExecutionServer _executionServer;
+    private readonly ExecutionCoordinator _coordinator;
+    private readonly bool _ownsExecutionServer;
     private readonly IDisposable _lifecycle;
     private CancellationTokenSource? _cancellation;
     private int _state;
     internal DocumentRunBatch(DocumentSession session, ExecutionRunBatch reservation, ExecutionVariableValues variables,
         IReadOnlyDictionary<string, ExecutionRunRequest> requests, IReadOnlyList<string> order, bool ownsReservation = true,
         IReadOnlyDictionary<SunEyeVision.Domain.Workflows.ScopedNodeIdentity, Guid>? hostGenerations = null,
-        WorkflowExecutionEngine? engine = null)
-    { _session = session; _reservation = reservation; _variables = variables; _requests = requests; _order = order; _ownsReservation = ownsReservation; _hostGenerations = hostGenerations ?? new Dictionary<SunEyeVision.Domain.Workflows.ScopedNodeIdentity, Guid>(); _engine = engine ?? new WorkflowExecutionEngine(); _lifecycle = RuntimeLifecycleProbe.EnterBatch(); }
+        WorkflowExecutionEngine? engine = null, ExecutionServer? executionServer = null)
+    { _session = session; _reservation = reservation; _variables = variables; _requests = requests; _order = order; _ownsReservation = ownsReservation; _hostGenerations = hostGenerations ?? new Dictionary<SunEyeVision.Domain.Workflows.ScopedNodeIdentity, Guid>(); _engine = engine ?? new WorkflowExecutionEngine(); _ownsExecutionServer = executionServer is null; _executionServer = executionServer ?? new ExecutionServer(); _coordinator = _executionServer.Coordinator; _lifecycle = RuntimeLifecycleProbe.EnterBatch(); }
 
     public event Action<string, string, ExecutionStatus>? NodeStatusChanged;
     public bool Pause() => _engine.PauseExecution();
@@ -38,13 +41,15 @@ public sealed class DocumentRunBatch : IDisposable
     }
 
     public Task<DocumentRunResult> RunAsync(Action<string> log, CancellationToken cancellationToken = default)
-        => RunCoreAsync(log, cancellationToken, null, null, null);
+        => _coordinator.ExecuteAsync(new RunRequest(Guid.NewGuid(), _order, "formal"),
+            token => RunCoreAsync(log, token, null, null, null), cancellationToken);
 
     internal Task<DocumentRunResult> RunRoundAsync(Action<string> log, CancellationToken cancellationToken,
         Func<string, CancellationToken, ValueTask> beforeWorkflow,
         Func<string, ExecutionResult, ExecutionRunRequest, bool> afterWorkflow,
         Func<string, Func<Task<ExecutionResult>>, Task<ExecutionResult>> startWorkflow)
-        => RunCoreAsync(log, cancellationToken, beforeWorkflow, afterWorkflow, startWorkflow);
+        => _coordinator.ExecuteAsync(new RunRequest(Guid.NewGuid(), _order, "continuous"),
+            token => RunCoreAsync(log, token, beforeWorkflow, afterWorkflow, startWorkflow), cancellationToken);
 
     private async Task<DocumentRunResult> RunCoreAsync(Action<string> log, CancellationToken cancellationToken,
         Func<string, CancellationToken, ValueTask>? beforeWorkflow,
@@ -108,7 +113,12 @@ public sealed class DocumentRunBatch : IDisposable
         try { _variables.Dispose(); } catch (Exception error) { errors.Add(error); }
         if (_ownsReservation) try { _reservation.Dispose(); } catch (Exception error) { errors.Add(error); }
         try { if (errors.Count != 0) throw new AggregateException("运行批次释放失败。", errors); }
-        finally { _lifecycle.Dispose(); RuntimeLifecycleProbe.Log("batch-disposed"); }
+        finally
+        {
+            if (_ownsExecutionServer) _executionServer.DisposeAsync().AsTask().GetAwaiter().GetResult();
+            _lifecycle.Dispose();
+            RuntimeLifecycleProbe.Log("batch-disposed");
+        }
     }
 }
 

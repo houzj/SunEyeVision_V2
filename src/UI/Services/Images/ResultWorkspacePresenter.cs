@@ -532,11 +532,11 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
     private void Highlight(ResultSelection? selection)
     {
         var publication=_main.CurrentResultPublication;var epoch=_epoch;
-        if(selection is not null&&(publication is null||selection.Publication!=publication.Stamp||!publication.IsCurrent()))return;
+        if(selection is not null&&(publication is null||selection.Publication!=publication.Stamp||!_main.CanDisplayResultPublication(publication)))return;
         var generation=++_selectionGeneration;
         bool LocalCurrent()=>!_disposed&&epoch==_epoch&&generation==_selectionGeneration
             &&ReferenceEquals(_main.CurrentResultPublication,publication);
-        bool Current()=>LocalCurrent()&&(publication?.IsCurrent()!=false)&&LocalCurrent();
+        bool Current()=>LocalCurrent()&&(publication is null||_main.CanDisplayResultPublication(publication))&&LocalCurrent();
         bool ClearCurrent()=>selection is null?LocalCurrent():Current();
         Run(new Action[]{()=>{if(ClearCurrent())_input.Selection.Clear();},()=>{if(ClearCurrent())_output.Selection.Clear();}});
         if(!ClearCurrent())return;

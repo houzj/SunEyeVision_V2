@@ -17,7 +17,6 @@ public sealed class ImageSourceRunSequence : IDisposable
     private long _generation;
     private LocalImageSourcePlan[] _plans;
     private readonly IReadOnlyDictionary<string, ImageSourcePolicy> _policies;
-    private readonly Dictionary<string, LocalImagePathCache> _caches;
     private readonly Dictionary<string, (SubscribedImageFolder Folder, long AcceptedRevision)> _folders = new(StringComparer.Ordinal);
     private readonly object _gate = new();
     private long _iteration;
@@ -42,13 +41,6 @@ public sealed class ImageSourceRunSequence : IDisposable
             OutputFormat = p.OutputFormat, SNInitialValue = p.SNInitialValue
         }).ToArray();
         _policies = captured.ToDictionary(p => p.NodeId, StringComparer.Ordinal);
-        // VM keeps a current local-image record even when the visible PathCache
-        // parameter is 0.  That parameter controls the additional retained path
-        // records; it does not make the decoded current image disposable after
-        // every execution.  Keeping one record here also keeps the decoder and
-        // pixel ownership on the node cursor lifetime instead of the invocation.
-        _caches = captured.Where(p=>p.SourceKind==ImageSourceKind.Local)
-            .ToDictionary(p=>p.NodeId,p=>new LocalImagePathCache(Math.Max(1,p.PathCache)),StringComparer.Ordinal);
         try
         {
             _plans = captured.Where(p => p.SourceKind == ImageSourceKind.Local).Select(policy =>
@@ -86,7 +78,6 @@ public sealed class ImageSourceRunSequence : IDisposable
                 var ticket = _sequences.GetInputs(_workflowId, _generation).Single(t => t.SourceNodeId == nodeId);
                 result = new ImageSourceHostInputPreparer(ticket.Entry?.Address ?? string.Empty, policy.SNInitialValue)
                 {
-                    PathCache = _caches.GetValueOrDefault(nodeId),
                     LocalReadAdmission = (identity, cancellation) =>
                     {
                         lock (_gate)
@@ -117,7 +108,6 @@ public sealed class ImageSourceRunSequence : IDisposable
         }
         var updated = _plans.Select(plan => replacements.TryGetValue(plan.SourceNodeId, out var replacement)
             ? replacement.Plan : plan with { SelectedEntryId = prior.GetValueOrDefault(plan.SourceNodeId)?.Entry?.EntryId }).ToArray();
-        foreach (var nodeId in replacements.Keys) _caches.GetValueOrDefault(nodeId)?.Dispose();
         _generation = _sequences.Begin(_workflowId, updated);
         _plans = updated;
         _iteration = 0;
@@ -181,14 +171,10 @@ public sealed class ImageSourceRunSequence : IDisposable
     private void Release()
     {
         _sequences.End(_workflowId, _generation);
-        var caches = _caches.Values.ToArray();
-        _caches.Clear();
         var errors = new List<Exception>();
         foreach (var watched in _folders.Values)
             try { watched.Folder.Dispose(); } catch (Exception error) { errors.Add(error); }
         _folders.Clear();
-        foreach (var cache in caches)
-            try { cache.Dispose(); } catch (Exception error) { errors.Add(error); }
         if (errors.Count != 0) throw new AggregateException("本地图像缓存释放失败。", errors);
     }
 }

@@ -134,10 +134,7 @@ public partial class MainWindowViewModel
   NotifyFormalRunState();
    using var result=await Task.Run(()=>batch.RunAsync(message=>dispatcher.BeginInvoke(new Action(()=>AddLog(message)))));
    timing.Mark("batch-run");
-   using var publishTiming=RuntimeExecutionTimingProbe.Begin("result-publish",string.Join(",",workflowIds));
-   publishTiming.Mark("batch-run-return");
    session.DrainRuntimeChanges();
-   publishTiming.Mark("runtime-changes-drained");
    if(!ReferenceEquals(DocumentManager.CurrentSession,session))return;
    foreach(var item in result.Workflows)
    {
@@ -147,9 +144,7 @@ public partial class MainWindowViewModel
     AddLog("流程 "+session.GetWorkflows().Single(flow=>flow.Id==item.Key).Name+"："+item.Value.Status);
     NotifyResultWorkspaceRootSettled(item.Key);
    }
-   publishTiming.Mark("workflow-status-and-settled");
    RefreshFormalImageReadReceipts(session);RefreshFormalPublishedResult();RefreshStatusBarExecutionSnapshot();
-   publishTiming.Mark("formal-result-refresh");
    timing.Mark("result-publish");
   }
   finally

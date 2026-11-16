@@ -28,7 +28,6 @@ internal static class ExecutionToolInvocation
         var transferred = false;
         Exception? failure = null;
         var timer = Stopwatch.StartNew();
-        using var timing = RuntimeExecutionTimingProbe.Begin(node.Configuration.ToolId, node.NodeId);
         try
         {
             if (!ReferenceEquals(workflow.Owner, node.Owner) || !ReferenceEquals(workflow.Directory, node.Directory)
@@ -37,13 +36,11 @@ internal static class ExecutionToolInvocation
                 || invocationIdentity.DocumentSessionId != node.DocumentOwnerId)
                 throw new InvalidOperationException("执行身份不属于冻结方案中的实际节点。");
             admission = node.Owner.EnterRun(identity);
-            timing.Mark("admission");
             identity.CancellationToken.ThrowIfCancellationRequested();
             generation = node.Directory.AcquireInvocation("正式执行");
             var resolved = ExecutionBindingInputResolver.Resolve(workflow, node, plan, identity, expected, results, variables, parameterValues);
             sourceReaders = resolved.Readers;
             var settings = node.MaterializeSettings(resolved.Settings);
-            timing.Mark("binding-settings");
             var values = new Dictionary<string, object?>(resolved.Inputs, StringComparer.Ordinal);
             var context = new InvocationContext(invocationIdentity, identity.CancellationToken, resources, log);
             if (node.Definition is IToolExecutionFilter filter && !filter.ShouldExecute(settings))
@@ -56,7 +53,6 @@ internal static class ExecutionToolInvocation
                 preparedHost = await HostInputCoordinator.PrepareAsync(node,
                     hostInput ?? throw new InvalidOperationException("工具缺少本轮宿主输入。"),
                     settings, identity, node.NodeId, context).ConfigureAwait(false);
-                timing.Mark("host-input");
                 foreach (var value in preparedHost.Values)
                     if (!values.TryAdd(value.Key, value.Value)) throw new InvalidOperationException("宿主输入与持久绑定冲突：" + value.Key);
                 bound = preparedHost.Context;
@@ -67,7 +63,6 @@ internal static class ExecutionToolInvocation
             var inputs = new InputValues(node.Schema.Inputs, values);
             var requests = plan.Requests.Concat(node.RequiredDisplayOutputs).ToArray();
             outcome = await ToolRuntimeExecutor.ExecuteAsync(node.Definition, settings, inputs, bound, requests, node.Directory).ConfigureAwait(false);
-            timing.Mark("runtime-return");
             }
             var owned = new GenerationResourceOwner(resources, generation);
             generation = null;
@@ -75,7 +70,6 @@ internal static class ExecutionToolInvocation
             transferred = true;
             result = DeclaredOutputSnapshot.Capture(node.Schema, 0, identity, node.NodeId,
                 outcome, owned, timer.Elapsed.TotalMilliseconds, fields: resultFields, sourceWorkflowId: node.WorkflowId);
-            timing.Mark("snapshot-capture");
             return result;
         }
         catch (Exception error) { failure = error; throw; }

@@ -1,10 +1,11 @@
+using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Contracts.Results.Presentation;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 
 /// <summary>Blob runtime entry. One invocation only; workflow scheduling belongs to the host.</summary>
-public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolResultPresentationProvider, IToolSettingsFields, IToolCatalogProvider,IToolParameterBindingNames,IToolManualReferenceSources,IToolKnownSettingsValidation,IToolParameterReferenceBehavior,IToolExecutionInputs,IToolResultDisplayProvider,IToolDormantParameterDefaults,IToolFieldTransitions
+public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolResultPresentationProvider, IToolSettingsFields, IToolCatalogProvider,IToolParameterBindingNames,IToolManualReferenceSources,IToolKnownSettingsValidation,IToolParameterReferenceBehavior,IToolExecutionInputs,IToolResultDisplayProvider,IToolDormantParameterDefaults,IToolFieldTransitions,IToolRuntimeInitialization
 {
     public const string Id = "BlobAnalysis";
     public const string ImageInput = "input.image";
@@ -202,5 +203,6 @@ public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolR
     }
     public IReadOnlyList<Diagnostic> Validate(BlobSettings settings) => settings.Validate();
     public ToolCapabilities Capabilities() => new(new[] { "halcon" });
+    public void InitializeRuntime() => HalconPlatform.Initialise();
     public IToolSession<BlobSettings, BlobOutput> CreateSession() => new BlobSession();
 }

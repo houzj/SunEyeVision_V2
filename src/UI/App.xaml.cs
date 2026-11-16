@@ -77,6 +77,12 @@ public partial class App : System.Windows.Application
 
     private MainWindow? _mainWindow;
     private LoadingWindow? _startupLoadingWindow;
+    private readonly CancellationTokenSource _startupCancellation = new();
+    private readonly CancellationTokenSource _startupWatchdogCancellation = new();
+    private int _startupCancellationHandled;
+    private int _startupWatchdogStopped;
+    private static readonly TimeSpan StartupTimeout = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan StartupCancellationTimeout = TimeSpan.FromSeconds(5);
 
     static App()
     {
@@ -202,7 +208,9 @@ public partial class App : System.Windows.Application
         try
         {
             _startupLoadingWindow = new LoadingWindow("正在准备运行环境");
+            _startupLoadingWindow.CancelRequested += StartupLoadingWindow_CancelRequested;
             _startupLoadingWindow.Show();
+            _ = MonitorStartupTimeoutAsync();
             InitializeDataPathsAndPreferences();
         }
         catch (Exception ex)
@@ -246,7 +254,16 @@ public partial class App : System.Windows.Application
         // Admission is filesystem/assembly work and has no WPF affinity. Keep it off
         // the dispatcher so the visible startup surface can continue to receive input
         // while the approved runtime generation is prepared.
-        await Task.Run(() => pluginManager.LoadPluginsAsync());
+        try
+        {
+            await Task.Run(() => pluginManager.LoadPluginsAsync(_startupCancellation.Token), _startupCancellation.Token);
+        }
+        catch (OperationCanceledException) when (_startupCancellation.IsCancellationRequested)
+        {
+            await CancelStartupAsync();
+            return;
+        }
+        if (await StopStartupIfRequestedAsync()) return;
         LogStartupStage("Plugin.Load task joined");
         LogStartupStage("Plugin.Load stages",
             string.Join(", ", pluginManager.LastAdmissionStageMs.Select(item => $"{item.Key}={item.Value}ms")));
@@ -278,6 +295,7 @@ public partial class App : System.Windows.Application
         // touch WPF objects, so keep them off the dispatcher while the startup
         // surface remains visible and movable.
         await Task.Run(() => ServiceInitializer.InitializeServices());
+        if (await StopStartupIfRequestedAsync()) return;
         LogStartupStage("Service.Initialize completed");
         // 日志系统已完成初始化，此处记录实际运行文件身份，避免启动早期埋点丢失。
         LogRuntimeIdentity();
@@ -291,6 +309,7 @@ public partial class App : System.Windows.Application
         _mainWindow?.UpdateSolutionLoadingOverlay("正在初始化解决方案", "准备方案仓库和用户设置");
         LogStartupStage("SolutionManager.Initialize begin", $"defaultPath={defaultPath}");
         _desktopDirectoryPin=pluginManager.PinDesktopHost();
+        if (await StopStartupIfRequestedAsync()) return;
         LogStartupStage("SolutionManager directory pinned");
         var solutionManagerClock = Stopwatch.StartNew();
         ServiceInitializer.InitializeSolutionManager(_dataPaths!, desktopAdmission.Runtime);
@@ -298,6 +317,7 @@ public partial class App : System.Windows.Application
         _servicesReady = true;
         _mainWindow?.UpdateSolutionLoadingOverlay("正在初始化解决方案", "解决方案管理器准备完成");
         LogStartupStage("SolutionManager.Initialize completed", $"elapsedMs={solutionManagerClock.Elapsed.TotalMilliseconds:F1}");
+        if (await StopStartupIfRequestedAsync()) return;
 
         // 5.2 校验唯一主题字典的语义键契约（VM 原件只有一套固定主题，不提供运行时切换）
         InitializeFixedTheme();
@@ -307,15 +327,137 @@ public partial class App : System.Windows.Application
 
         // 启动决策
         LogStartupStage("Startup decision begin");
+        StopStartupWatchdog();
         // The startup loading window ends before the welcome page. The main
         // workspace remains hidden until the user chooses a solution.
-        _startupLoadingWindow?.Close();
+        _startupLoadingWindow?.CloseProgrammatically();
         _startupLoadingWindow = null;
         if (_requestedSolutionPath is null && !StartPreferences.HideStartPage)
             ShowStartupSolutionManager();
         await HandleStartupDecisionAsync(desktopAdmission, _mainWindow);
         _startupActivationReady = true;
         LogStartupStage("HandleStartupDecision returned");
+        StartExecutionJitWarmup(desktopAdmission);
+    }
+
+    // The execution chain is managed code, so the CLR compiles its methods the first time a
+    // real run reaches them. That is the first-run penalty a natively compiled platform does
+    // not have, and it is the only part HALCON platform admission cannot cover. Preparing the
+    // methods on a below-normal background thread moves the compilation into the gap between
+    // startup and the first user execution without touching tool state or solution resources.
+    private void StartExecutionJitWarmup(DesktopToolAdmission admission)
+    {
+        var assemblies = admission.Runtime.RuntimeAssemblies
+            .Concat(new[]
+            {
+                typeof(SunEyeVision.Application.DocumentSession).Assembly,
+                typeof(SunEyeVision.Execution.WorkflowExecutionEngine).Assembly
+            })
+            .Distinct()
+            .ToArray();
+        var thread = new Thread(() =>
+        {
+            try { RuntimeMethodWarmup.Prepare("execution-chain", assemblies); }
+            catch (Exception error) { LogStartupStage("Execution JIT warmup failed", error.Message); }
+        })
+        {
+            IsBackground = true,
+            Name = "SunEyeVision.ExecutionJitWarmup",
+            Priority = ThreadPriority.BelowNormal
+        };
+        thread.Start();
+    }
+
+    private void StartupLoadingWindow_CancelRequested(object? sender, EventArgs e)
+    {
+        if (Interlocked.Exchange(ref _startupCancellationHandled, 1) != 0)
+            return;
+        _startupRejected = true;
+        _startupCancellation.Cancel();
+        _startupLoadingWindow?.ShowCancelling();
+        LogStartupStage("Startup cancellation requested", "source=loading-window");
+    }
+
+    private async Task<bool> StopStartupIfRequestedAsync()
+    {
+        if (!_startupCancellation.IsCancellationRequested)
+            return false;
+        await CancelStartupAsync();
+        return true;
+    }
+
+    private async Task CancelStartupAsync()
+    {
+        _startupRejected = true;
+        _startupCancellation.Cancel();
+        try
+        {
+            var drain = DrainPluginDirectoryAsync();
+            if (await Task.WhenAny(drain, Task.Delay(StartupCancellationTimeout)) != drain)
+            {
+                LogStartupStage("Startup cancellation cleanup timeout",
+                    $"timeoutMs={StartupCancellationTimeout.TotalMilliseconds:0}");
+            }
+            else
+            {
+                await drain;
+            }
+        }
+        catch (Exception ex)
+        {
+            LogStartupStage("Startup cancellation cleanup failed", ex.ToString());
+        }
+        finally
+        {
+            _startupLoadingWindow?.CloseProgrammatically();
+            _startupLoadingWindow = null;
+            if (!Dispatcher.HasShutdownStarted)
+                Shutdown(0);
+        }
+    }
+
+    private async Task MonitorStartupTimeoutAsync()
+    {
+        try
+        {
+            await Task.Delay(StartupTimeout, _startupWatchdogCancellation.Token);
+            if (Volatile.Read(ref _startupWatchdogStopped) != 0 || _startupRejected || _startupActivationReady)
+                return;
+            LogStartupStage("Startup timeout", $"timeoutMs={StartupTimeout.TotalMilliseconds:0}");
+            await Dispatcher.InvokeAsync(async () => await FailStartupTimeoutAsync());
+        }
+        catch (OperationCanceledException) when (_startupWatchdogCancellation.IsCancellationRequested) { }
+        catch (Exception error)
+        {
+            LogStartupStage("Startup watchdog failed", error.ToString());
+        }
+    }
+
+    private async Task FailStartupTimeoutAsync()
+    {
+        if (_startupRejected || Dispatcher.HasShutdownStarted) return;
+        _startupRejected = true;
+        _startupCancellation.Cancel();
+        _startupLoadingWindow?.ShowError("启动超时：运行环境未能在 30 秒内完成。正在退出，请检查 startup-trace.txt。");
+        try
+        {
+            ThemeMessageDialog.Show(
+                "启动超时：运行环境未能在 30 秒内完成。\n\n请查看 startup-trace.txt 或日志中的最后一个 StartupTrace 阶段。",
+                "SunEyeVision 启动失败", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
+        }
+        finally
+        {
+            _startupLoadingWindow?.CloseProgrammatically();
+            _startupLoadingWindow = null;
+            if (!Dispatcher.HasShutdownStarted) Shutdown(1);
+        }
+        await Task.CompletedTask;
+    }
+
+    private void StopStartupWatchdog()
+    {
+        if (Interlocked.Exchange(ref _startupWatchdogStopped, 1) == 0)
+            _startupWatchdogCancellation.Cancel();
     }
 
     /// <summary>
@@ -886,7 +1028,10 @@ public partial class App : System.Windows.Application
     /// </summary>
     protected override void OnExit(ExitEventArgs e)
     {
-        try { _startupLoadingWindow?.Close(); } catch { }
+        StopStartupWatchdog();
+        _startupWatchdogCancellation.Dispose();
+        _startupCancellation.Cancel();
+        try { _startupLoadingWindow?.CloseProgrammatically(); } catch { }
         _startupLoadingWindow = null;
         MarkInstanceClosing();
         if (_releaseProbe || _startupRejected || !_servicesReady)

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using SunEyeVision.Foundation.Logging;
 using SunEyeVision.Plugin.Contracts;
 
 namespace SunEyeVision.Plugin.Runtime;
@@ -37,13 +38,21 @@ public sealed class RuntimeDirectorySnapshot
             ? _editorResolver(toolId)
             : Components.SingleOrDefault(component=>component.Metadata.Role==ToolComponentRole.Editor&&component.Metadata.ToolId==toolId);
     public IReadOnlyCollection<string> ToolIds => _runtimes.Keys.ToArray();
+
+    /// <summary>Runtime assemblies of this generation, for host-side method preparation.</summary>
+    public IReadOnlyList<System.Reflection.Assembly> RuntimeAssemblies =>
+        _runtimes.Values.Select(entry => entry.Registration.EntryType.Assembly).Distinct().ToArray();
     public bool Contains(string toolId)=>_runtimes.ContainsKey(toolId);
     public ToolCatalogDescriptor? GetCatalog(string toolId)=>_runtimes.TryGetValue(toolId,out var entry)?entry.Catalog:null;
     internal IToolDefinition CreateDefinition(string toolId)
     {
         using var creation=AcquireInvocation();
         lock (_definitionGate)
-            if (_definitions.TryGetValue(toolId, out var existing)) return existing;
+            if (_definitions.TryGetValue(toolId, out var existing))
+            {
+                PluginLogger.Info($"[ExecutionServer] module-definition-hit tool={toolId}", "ExecutionLifecycle");
+                return existing;
+            }
         if(!_runtimes.TryGetValue(toolId,out var entry))throw new InvalidOperationException("Required runtime is not registered: "+toolId);
         var definition=(IToolDefinition)Activator.CreateInstance(entry.Registration.EntryType)!;
         var settingsSchema=(definition as IToolSettingsFields)?.SettingsSchema.Fingerprint;
@@ -52,8 +61,13 @@ public sealed class RuntimeDirectorySnapshot
             throw new InvalidOperationException("Runtime definition differs from its admitted directory generation: "+toolId);
         lock (_definitionGate)
         {
-            if (_definitions.TryGetValue(toolId, out var existing)) return existing;
+            if (_definitions.TryGetValue(toolId, out var existing))
+            {
+                PluginLogger.Info($"[ExecutionServer] module-definition-hit-after-create tool={toolId}", "ExecutionLifecycle");
+                return existing;
+            }
             _definitions.Add(toolId, definition);
+            PluginLogger.Info($"[ExecutionServer] module-definition-created tool={toolId}", "ExecutionLifecycle");
             return definition;
         }
     }
@@ -70,13 +84,18 @@ public sealed class RuntimeDirectorySnapshot
                 if (!entry.Busy)
                 {
                     entry.Busy = true;
+                    PluginLogger.Info($"[ExecutionServer] module-session-hit tool={definition.ToolId}", "ExecutionLifecycle");
                     return new ToolSessionLease(entry.Session, () => ReleaseSession(entry));
                 }
             var session = definition.CreateSession();
             if (session is not IReusableToolSession)
+            {
+                PluginLogger.Info($"[ExecutionServer] module-session-created-nonreusable tool={definition.ToolId}", "ExecutionLifecycle");
                 return new ToolSessionLease(session, null);
+            }
             var cached = new CachedSession(session) { Busy = true };
             entries.Add(cached);
+            PluginLogger.Info($"[ExecutionServer] module-session-created tool={definition.ToolId}", "ExecutionLifecycle");
             return new ToolSessionLease(session, () => ReleaseSession(cached));
         }
     }
@@ -84,6 +103,35 @@ public sealed class RuntimeDirectorySnapshot
     private void ReleaseSession(CachedSession entry)
     {
         lock (_sessionGate) entry.Busy = false;
+        PluginLogger.Info("[ExecutionServer] module-session-released", "ExecutionLifecycle");
+    }
+
+    /// <summary>Runs each admitted tool's optional process-level native initialisation once,
+    /// on the caller's background thread. A tool that does not implement the hook is skipped;
+    /// a failure is reported and leaves the tool usable with its cost on first execution, so
+    /// a prewarm problem can never block admission or replace a real execution failure.</summary>
+    internal void InitializeRuntimePlatforms(Action<string> report)
+    {
+        ArgumentNullException.ThrowIfNull(report);
+        foreach (var toolId in _runtimes.Keys.ToArray())
+        {
+            var clock = System.Diagnostics.Stopwatch.StartNew();
+            try
+            {
+                var definition = CreateDefinition(toolId);
+                if (definition is not IToolRuntimeInitialization initialization)
+                {
+                    report($"[PlatformWarmup] tool={toolId} state=skipped elapsed={clock.ElapsedMilliseconds}ms reason=not-declared");
+                    continue;
+                }
+                initialization.InitializeRuntime();
+                report($"[PlatformWarmup] tool={toolId} state=completed elapsed={clock.ElapsedMilliseconds}ms");
+            }
+            catch (Exception error)
+            {
+                report($"[PlatformWarmup] tool={toolId} state=failed elapsed={clock.ElapsedMilliseconds}ms error={error.GetType().Name}: {error.Message}");
+            }
+        }
     }
 
     private sealed class CachedSession(IToolSession session)
@@ -146,6 +194,7 @@ public sealed class RuntimeDirectorySnapshot
             sessions = _sessions.Values.SelectMany(items => items.Select(item => item.Session)).ToList();
             _sessions.Clear();
         }
+        PluginLogger.Info($"[ExecutionServer] module-sessions-retired count={sessions.Count}", "ExecutionLifecycle");
         foreach (var session in sessions)
             try { await session.DisposeAsync().ConfigureAwait(false); } catch { }
     }

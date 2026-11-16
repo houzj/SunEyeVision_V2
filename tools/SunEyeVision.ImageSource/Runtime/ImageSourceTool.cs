@@ -1,10 +1,11 @@
+using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Contracts.Results.Presentation;
 
 namespace SunEyeVision.Tool.ImageSource.Runtime;
 
 /// <summary>One frozen file/frame invocation. Sequence and camera connection ownership stay in the host.</summary>
-public sealed class ImageSourceTool : IToolDefinition<ImageSourceSettings,ImageSourceOutput>,IToolSettingsFields,IToolCatalogProvider,IToolResultPresentationProvider,IToolDisplaySettingsProvider,IToolManualReferenceSources,IToolHostInputDeclaration,IToolResourceFieldDeclarations,IToolParameterBindingNames,IToolDormantParameterDefaults,IToolExecutionFilter
+public sealed class ImageSourceTool : IToolDefinition<ImageSourceSettings,ImageSourceOutput>,IToolSettingsFields,IToolCatalogProvider,IToolResultPresentationProvider,IToolDisplaySettingsProvider,IToolManualReferenceSources,IToolHostInputDeclaration,IToolResourceFieldDeclarations,IToolParameterBindingNames,IToolDormantParameterDefaults,IToolExecutionFilter,IToolRuntimeInitialization
 {
     public const string Id="ImageLoad";
     public const string LocalAddress="input.local-address", CameraImage="input.camera-image", Sequence="input.sequence",
@@ -97,5 +98,6 @@ public sealed class ImageSourceTool : IToolDefinition<ImageSourceSettings,ImageS
     },ImageSourceOutput.Ports,new ToolPresentation(Array.Empty<FieldPresentation>()),outputDisplay:ImageSourceOutput.Display);
     public IReadOnlyList<Diagnostic> Validate(ImageSourceSettings settings)=>settings.Validate();
     public ToolCapabilities Capabilities()=>new(new[]{"halcon"});
+    public void InitializeRuntime()=>HalconPlatform.Initialise();
     public IToolSession<ImageSourceSettings,ImageSourceOutput> CreateSession()=>new ImageSourceSession();
 }

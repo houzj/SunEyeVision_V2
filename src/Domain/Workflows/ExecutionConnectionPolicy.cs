@@ -10,8 +10,15 @@ public static class ExecutionConnectionPolicy
         if (string.IsNullOrWhiteSpace(candidate.SourceNodeId) || string.IsNullOrWhiteSpace(candidate.TargetNodeId)) return "连线端点不能为空。";
         if (candidate.SourceNodeId == candidate.TargetNodeId) return "节点不能连接自身。";
         var edges = connections.ToArray();
-        if (edges.Any(c => c.SourceNodeId == candidate.SourceNodeId && c.TargetNodeId == candidate.TargetNodeId))
-            return "这两个节点之间已有执行连线，换端口不能再添加第二条线。";
+        // A data edge and a control edge between the same node pair express different things:
+        // "hand this value over" versus "enter this node only when that branch is taken", so they
+        // may coexist. Two edges of the same kind still collapse to one, which keeps the canvas
+        // unambiguous and stops a second port from silently re-pointing an existing edge.
+        if (edges.Any(c => c.SourceNodeId == candidate.SourceNodeId && c.TargetNodeId == candidate.TargetNodeId
+                && c.IsControlEdge == candidate.IsControlEdge))
+            return candidate.IsControlEdge
+                ? "这两个节点之间已有控制连线，换端口不能再添加第二条线。"
+                : "这两个节点之间已有执行连线，换端口不能再添加第二条线。";
         var outgoing = edges.GroupBy(c => c.SourceNodeId).ToDictionary(g => g.Key, g => g.Select(c => c.TargetNodeId).ToArray());
         var pending = new Stack<string>(); var visited = new HashSet<string>(); pending.Push(candidate.TargetNodeId);
         while (pending.Count > 0)

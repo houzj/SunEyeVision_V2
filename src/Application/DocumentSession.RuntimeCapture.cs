@@ -104,6 +104,21 @@ public sealed partial class DocumentSession
                         else
                         {
                             var nodes = views.Select(pair => new ExecutionWorkflowNode(IssueExecutionNode(pair.View), pair.Plan.Enabled)).ToArray();
+                            // A control edge addresses a declared control output. An unknown control
+                            // port must fail here with node and port named, instead of entering a
+                            // branch that can never be taken; a data port set is not re-validated
+                            // because it was already admitted with the configuration fingerprint.
+                            var byNode = nodes.ToDictionary(item => item.Node.NodeId, StringComparer.Ordinal);
+                            foreach (var edge in workflowPlan.Edges)
+                            {
+                                if (!edge.Edge.IsControlEdge) continue;
+                                if (!byNode.TryGetValue(edge.Edge.SourceNodeId, out var source))
+                                    throw new InvalidOperationException($"控制连线 {edge.Edge.Id} 的源节点不在本次执行图中。");
+                                var outputId = edge.Edge.ControlOutputId!;
+                                if (!source.Node.Schema.ControlOutputs.Any(output => output.Id == outputId))
+                                    throw new InvalidOperationException(
+                                        $"控制连线 {edge.Edge.Id} 引用了工具未声明的控制输出 {edge.Edge.SourcePort}（节点 {edge.Edge.SourceNodeId}）。");
+                            }
                             var predecessors = workflowPlan.Nodes.ToDictionary(item => item.Node.Id,
                                 item => (IReadOnlyCollection<string>)plan.Dependencies.GetPredecessors(new(flow.Id, item.Node.Id))
                                     .Where(source => source.WorkflowId == flow.Id).Select(source => source.NodeId).ToArray(), StringComparer.Ordinal);

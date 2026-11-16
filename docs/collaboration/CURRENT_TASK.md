@@ -3,11 +3,19 @@
 > 本文件只回答「现在在做什么、卡在哪、下一步做什么」。历史批次已按月切到 `history/CURRENT_TASK_ARCHIVE_<年-月>.md`（只追加、不改写），2026-11-05 之前共 2206 个批次已归档。
 > 找文档先看 `docs/00-索引/主题台账.html`；找具体文件用 `docs/00-索引/文档索引.html`。
 
+### 2026-11-09 GitHub 版本同步、Release 构建与启动验证
+
+- 本地 `main` 已从旧基线 `9603e18d` 快进同步到 GitHub `origin/main` 的 `821858528aa60e4a9d502dfb8d1726bdd97a9e09`，工作区保持干净，`main` 与 `origin/main` 一致。
+- 同步前已创建本地备份分支 `backup/main-before-github-sync-20261109`，备份提交为 `9603e18d4429afe8db01ca84783356b05c816c2b`。
+- 按 `dotnet build SunEyeVision.slnx -c Release --no-restore -m:1` 执行全量 Release 构建。首次因本机缺少 `obj/project.assets.json` 未进入完整编译，完成 `dotnet restore SunEyeVision.slnx -m:1` 后重新构建成功，退出码 `0`。产物位于 `Release\\SunEyeVision_v1.0.0\\SunEyeVision\\`。
+- 启动 `Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.exe` 验证通过，进程响应正常，窗口显示“SunEyeVision · 起始页”，工具加载由用户人工确认正常。启动验证进程 PID 为 `25248`，验证时保持运行。
+- 现有警告未作为本轮阻断项处理，包括 `log4net 2.0.17` 的 `NU1902` 已知漏洞警告及项目原有的 nullable、XML 文档和未使用成员等编译警告。本轮无编译错误。
+
 ## 一、当前主线
 
 | 事项 | 状态 | 关键结论 |
 | --- | --- | --- |
-| 统一开发基线 | 已建立 | `main` 指向合并提交 `b895d697e`（双父：重构分支 `f5e6b8fde` + 旧 main `d44904f38`，164 个旧提交全保留）；回退点 `backup/main-before-sync`；`origin/main` 尚未同步 |
+| 统一开发基线 | 已建立并同步 | `main` 与 `origin/main` 均指向 GitHub 提交 `821858528aa60e4a9d502dfb8d1726bdd97a9e09`；同步前回退点为 `backup/main-before-github-sync-20261109`（`9603e18d4429afe8db01ca84783356b05c816c2b`） |
 | 数据目录启动门禁 | 实施中（代码未修） | 已定案：数据根写程序目录 `App.ini` 的 `[Data] Root`，不弹「选择软件数据目录」；退出 `data-location.json`、`suneyevision-data.json` marker、`schemaVersion` 协商 |
 | main 控件原件回补 | 分批进行 | 按原件映射表回补 55 个控件提交 + 72 个验证夹具提交，不做逐文件人工合并 |
 | 工具身份合同 | 已定案 | 发布态才有 `release-payload.json` + `ToolGroups.xml` 强准入；开发态 `dev\Debug\plugins\<Tool>\` 只有 dll/pdb/deps.json |

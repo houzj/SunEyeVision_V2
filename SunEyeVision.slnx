@@ -8,6 +8,10 @@
     <Project Path="tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj" />
     <Project Path="tools/SunEyeVision.ImageSource/Wpf/SunEyeVision.ImageSource.Wpf.csproj" />
   </Folder>
+  <Folder Name="/Tools/FrameMeanComponents/">
+    <Project Path="tools/SunEyeVision.FrameMean/Runtime/SunEyeVision.FrameMean.Runtime.csproj" />
+    <Project Path="tools/SunEyeVision.FrameMean/Wpf/SunEyeVision.FrameMean.Wpf.csproj" />
+  </Folder>
   <Folder Name="/Src/Foundation/">
     <Project Path="Src/Foundation/SunEyeVision.Foundation.csproj" />
   </Folder>
@@ -97,6 +101,9 @@
   </Folder>
   <Folder Name="/Tests/SunEyeVision.ImageSource.Runtime.Tests/">
     <Project Path="tests/SunEyeVision.ImageSource.Runtime.Tests/SunEyeVision.ImageSource.Runtime.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Tools.ImageProcessing.Tests/">
+    <Project Path="tests/SunEyeVision.Tools.ImageProcessing.Tests/SunEyeVision.Tools.ImageProcessing.Tests.csproj" />
   </Folder>
   <Folder Name="/Tests/SunEyeVision.DeviceDriver.Tests/">
     <Project Path="tests/SunEyeVision.DeviceDriver.Tests/SunEyeVision.DeviceDriver.Tests.csproj" />

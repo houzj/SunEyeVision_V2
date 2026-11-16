@@ -23,5 +23,16 @@
       <EntryType>SunEyeVision.Tool.BlobAnalysis.Wpf.BlobEditorFactory</EntryType>
       <CompanionToolId>BlobAnalysis</CompanionToolId>
     </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.FrameMean/Runtime/SunEyeVision.FrameMean.Runtime.csproj">
+      <ComponentId>SunEyeVision.Tool.FrameMean.Runtime</ComponentId>
+      <ToolId>FrameMean</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.FrameMean.Runtime.FrameMeanTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.FrameMean/Wpf/SunEyeVision.FrameMean.Wpf.csproj">
+      <ComponentId>SunEyeVision.Tool.FrameMean.Wpf</ComponentId>
+      <ToolId>FrameMean</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.FrameMean.Wpf.FrameMeanEditorFactory</EntryType>
+      <CompanionToolId>FrameMean</CompanionToolId>
+    </ProductToolComponent>
   </ItemGroup>
 </Project>

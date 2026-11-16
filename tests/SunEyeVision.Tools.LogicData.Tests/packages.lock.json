@@ -226,6 +226,13 @@
           "log4net": "[2.0.17, )"
         }
       },
+      "suneyevision.haladapter.runtime": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )"
+        }
+      },
       "suneyevision.persistence": {
         "type": "Project",
         "dependencies": {
@@ -246,6 +253,13 @@
       "SunEyeVision.Tool.If.Runtime": {
         "type": "Project",
         "dependencies": {
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
+        }
+      },
+      "SunEyeVision.Tool.PixelCount.Runtime": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.HalAdapter.Runtime": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
         }
       }

@@ -97,3 +97,124 @@
 - 已执行构建与测试：
 - 人工验收结果：
 - 下一步：
+
+---
+
+## 第三段 · 像素统计（类②首个工具）原厂取证
+
+取证日期 2026-11-17；本机原厂安装根为 `C:\Program Files\VisionMaster4.4.0`（`D:\Program Files\...` 不存在，仅为历史文档记录路径）。以下全部为静态证据（读 XML / 读 DLL 元数据与字符串），**未启动原厂程序、未跑 Ghidra、未占用任何独占动态取证资源**。
+
+### 3.1 证据清单（来源可复查）
+
+| # | 证据项 | 来源（文件 + 位置） | 结论 | 状态 |
+|---|---|---|---|---|
+| E1 | 工具身份与分类 | `Applications\Module(sp)\x64\Measurement\IMVSPixelCountModuVA\ToolItemInfo.xml:2-6` | `name=IMVSPixelCountModuVA`、`priority=9`、`toolTip=IMVSPixelCountModu_Tip`、`helpUrl=GUID-60D8AD05-…`；原厂分类 Measurement，显示名「像素统计」 | 已证（资源声明） |
+| E2 | 显示名与帮助语 | `src/Plugin.Wpf/Themes/Native/Localization/zh-cn.xaml:8716`、`:10239` | `IMVSPixelCountModu_Tip=统计图像中像素总数`、`IMVSPixelCountModuVA=像素统计` | 已证（本地化资源） |
+| E3 | 参数页页签与控件树 | `IMVSPixelCountModuVAAlgorithmTab.xml:4-41`（基本参数）、`:42-53`（运行参数）、`:54-255`（结果显示） | 基本参数=ImageSourceGroup + ROI Area（`ROISelecter` ROISelection=`Box SectorRing Sector`、`RoiType`、掩膜/输出掩膜组、继承方式、辅助组）；运行参数=`PixelModuRangeConfigList`（AccessMode=O）；结果显示=`CountLimitEnable`/`RangCountLimit`/`RatioLimitEnable`/`RangRatioLimit` + 4 个 `ImageViewConfig` | 已证（资源 XML） |
+| E4 | ROI 可选类型含全图 | `IMVSPixelCountModuVACs.dll` 字符串字面量 | `Full Box SectorRing Sector`（RoiType 取值集），与 E3 的 ROISelection 合并后为 Full/Box/SectorRing/Sector 四种 | 已证（程序集字符串） |
+| E5 | 阈值区间列表模型 | `docs/07-工具逆向/decompiled/ModuleControls/IMVSPixelCountModuVA*Control/Apps.XmlParser.ParamTab/PixelModuRangeConfigList.cs:23-33`、`:31`、`:95`、`:122-156`、`:158-207` | 参数名 `Threshold_nums`/`min_Threshold_i`/`max_Threshold_i`/`add_Threshold`/`del_Threshold_i`；`MaxNum=32`；新增项默认 Min=0/Max=255/Inc=1；每项两个 Integer 参数范围 0..255；删除只能删末条（`DelEnable = Count>1`，故最少 1 条） | 已证（反编译源码） |
+| E6 | 区间如何进入模块 | `IMVSPixelCountModuVACs.dll` 字符串 `min_Threshold_`/`max_Threshold_`/`DynamicParams`/`Threshold_nums`；`IMVSPixelCountModuVACs.xml:75-114` | 区间以动态参数承载：`GetThresholdRangeItemNum() = DynamicParams.Count / 2`（IL：`ldfld dynamicParams; callvirt Count; div 2`），每区间 2 项；`ThresholdRangeItemParam` 只有 `MinValue`/`MaxValue` | 已证（程序集元数据 + XML 文档） |
+| E7 | 输入声明 | `IMVSPixelCountModuVA.xml:Input 段`（`:28-114`） | `InputImage`(IMAGE, InImage/W/H/PixelFormat 强制)、`InputROI`(ROIBOX, roicenterx/y/roiwidth/roiheight/roiangle)、`InputROIAnnulus`(ROIANNULUS, 中心/内外半径/起始角/角扩展)、`Position Correction Info`(FIXTURE)、`InputMask`(IMAGE, InMask/W/H/PixelFormat) | 已证（资源 XML） |
+| E8 | 输出声明 | `IMVSPixelCountModuVA.xml:Output 段`（`:117-188`） | `ModuRunTime`(float)、`ModuStatus`(int)、`Count`(int, IsArray=true)、`Ratio`(float, IsArray=true)、`ROI`(ROIBOX 回显 DetectCenterX/Y、DetectWidth/Height、DetectAngle)、`ROIAnnulus`(回显)、`OutputMask`(IMAGE, OutMask/W/H/PixelFormat)、`Output Position Correction Info`(FIXTURE, `Visible=false`) | 已证（资源 XML） |
+| E9 | 结果对象类型 | `IMVSPixelCountModuVACs.xml:143-186` + `IMVSPixelCountModuVACs.dll` 字段元数据 | `PixelCountVAResult.Count` = `List<int>`（`0x04000010` 类型 `class:129<i4>`）、`Ratio` = `List<float>`（`class:129<r4>`）；另有 `ROI`/`ROIAnnulus`/`OutputMask` 回显属性；含义是「每个阈值区间一个像素数与一个比率」 | 已证（元数据 + XML 文档） |
+| E10 | 判定参数默认值与范围 | `IMVSPixelCountModuVAAlgorithm.xml:2-27`；`IMVSPixelCountModuVAAlgorithmTab.xml:79-173` | CountLimitEnable=False→`RangCountLimit` 隐藏（Trigger False + HiddenOperation）；IntegerBettween 0..999999999（low=0/high=999999999/inc=1）；RatioLimitEnable=False 同理；FloatBettween 0..1（low=0/high=1/inc=0.01） | 已证（资源 XML） |
+| E11 | 显示项与颜色/文本模板 | `IMVSPixelCountModuVADisplay.xml:14-42`、`:24-34`、`:63-70` | 文本对象 `Show Text`：`Content="ModuleStatus:{0}PixelNum:{1} ,Rate{2}"`、FontSize=10、OK `#66ff00`/NG `#ff0000`；`ROI`(rect)：OK `#0000ff`、linewidth=2；`OutputMask` 为图像对象 | 已证（资源 XML） |
+| E12 | 算法职责与原生边界 | `IMVSPixelCountModuVA.dll` 字符串 | `CIMVSPixelCountModuVA::Init/ProcessAlg/LimitJudge/ProcessOutput`、`GenerateMaskImage`、`VmModule_GetInputRoiBox/GetInputRoiAnnulus`、`CreatePixelCountV3ToolInstance`、依赖 `MVDPixelCountV3Cpp.dll`；模块 DLL 为原生（无 CLI 头，`BSJB` 不存在） | 已证（二进制字符串） |
+| E13 | 算法库位置 | `MVDAlgorithmSDK\Runtime\x64\MVDPixelCountV3Cpp.dll`（47KB，导出仅实例创建/销毁） | 计数公式在原生库内，无符号、无可读字符串（仅 `No data.`）→ **公式取证不可得** | 已证（文件存在 + 字符串） |
+
+### 3.2 原厂完整链路（按证据拼接）
+
+1. 参数页「基本参数」：`ImageSourceGroup` 选输入图；`RoiSelecter` 选 ROI 形态（Full/Box/SectorRing/Sector）并在图像上给出 `InputROI`/`InputROIAnnulus` 几何；`InputMaskImageGroup` 选输入掩膜；`OutputMaskImageGroup` 决定是否输出掩膜。
+2. 参数页「运行参数」：`PixelModuRangeConfigList` 增删灰度区间（1..32 条，每条 min/max 0..255），增删通过模块参数命令 `add_Threshold`/`del_Threshold_i` 落到动态参数 `min_Threshold_i`/`max_Threshold_i`。
+3. 参数页「结果显示」：勾选数量判断/比率判断并设置两条范围；未勾选时对应范围行隐藏。
+4. 运行：`ProcessAlg` 取输入图与 ROI/掩膜 → `GenerateMaskImage` 生成统计掩膜 → 原生 `PixelCountV3` 逐区间计数 → 结果写回 `Count[]`/`Ratio[]`/`ModuStatus`，`OutputMask` 输出掩膜图像。
+5. 判定：`LimitJudge` 按数量/比率范围给出判定；文本对象按 `ModuleStatus/PixelNum/Rate` 模板显示。
+
+链路缺口（冻结，不猜）：见 3.3 未确认项 U1–U5。
+
+### 3.3 未确认项（本方定义 + 上报）
+
+| # | 缺口 | 影响 | 本方定义（已在代码注释与测试中固化） |
+|---|---|---|---|
+| U1 | `Ratio` 的分母 | 比率数值 | 分母 = ROI∩掩膜后的参与统计像素数（不是全图像素数） |
+| U2 | 阈值端点包含性 | 边界像素归哪个区间 | 闭区间 `[min,max]`（与 If 工具一致） |
+| U3 | `InputMask` 语义 | 掩膜是有效区还是屏蔽区 | 非零像素参与统计（与 ROI 求交）；原厂可能相反，属未确认 |
+| U4 | 判定作用于区间还是合计 | 判定口径 | 逐区间判定，任一区间越界即整体 NG |
+| U5 | `ModuStatus` 取值含义 | 状态码 | `1` = 本次执行成功；判定单独走 `BusinessJudgment` 与逐行 `judgment-passed` |
+
+### 3.4 未实现项（本次明确不做，入口不可误用）
+
+1. `ROIAnnulus` 输出回显（原厂仅在扇环 ROI 下输出）：本方 `output.roi` 只给出检测区域外接旋转矩形。
+2. `Position Correction Info`（位置修正，原厂输入 FIXTURE + 输出 `Visible=false`）：输入端口与输出端口均未声明；显示项 `Fixtured Point`/`Unfixtured Point` 也未实现。
+3. 区间列表的增删按钮 UI：框架字段声明是类型级静态声明，改为单个文本字段（见 4.4）。
+
+---
+
+## 第四段 · 像素统计实现与验证
+
+### 4.1 交付物
+
+| 项 | 值 |
+|---|---|
+| ToolId | `PixelCount` |
+| 组件 | `SunEyeVision.Tool.PixelCount.Runtime`（Runtime）/ `SunEyeVision.Tool.PixelCount.Wpf`（Editor） |
+| 入口类型 | `SunEyeVision.Tool.PixelCount.Runtime.PixelCountTool` / `SunEyeVision.Tool.PixelCount.Wpf.PixelCountEditorFactory` |
+| 代码位置 | `tools/SunEyeVision.PixelCount/Runtime/*`、`tools/SunEyeVision.PixelCount/Wpf/*` |
+| 登记 | `SunEyeVision.slnx` 的 `/Tools/PixelCountComponents/`、`product/ToolComponents.props`（均只追加自身条目） |
+| 目录声明 | 显示名「像素统计」、描述「统计图像中落在各灰度区间的像素数与占比，并按数量/比率判定」、分类「测量」、`Order=9`（原厂 priority 9）、`IconKey=blob`、`NodeDisplayType=DEFAULT` |
+
+### 4.2 端口与契约
+
+- 输入：`input.image`(Image, 必需, Reference)、`input.roi`(Region, 可选, Reference)、`input.mask`(Image, 可选, Reference)。
+- 输出：`output.module-status`(Int32)、`output.module-time-ms`(Float32)、`output.count`(Int32 序列, 1..32)、`output.ratio`(Float32 序列, 1..32)、`output.roi`(外接矩形记录, 可空)、`output.mask`(图像记录, 可空)、`output.rows`(区间结果行, 1..32)。
+- 实现契约：`IToolDefinition`、`IToolSettings`、`IToolOutput`、`IToolSettingsFields`、`IToolCatalogProvider`、`IToolResultPresentationProvider`（6 必需）+ `IToolResultDisplayProvider`（结果显示）+ `IToolRuntimeInitialization`（`HalconPlatform.Initialise()`）+ `IToolManualReferenceSources`（状态/耗时/像素数/比率可被手动引用）。
+- 结果投影：`StandardTable`/`Many`，行身份 `range-index`，列 = 序号/灰度下限/灰度上限/像素数/比率/判定。
+- 显示需求：`ResultDisplayDescriptor`（行=结果行、身份=range-index、矩形=rectangle、区域=region、文本值=ratio、判定=judgment-passed、选中矩形色 `#0000ff`）。
+
+### 4.3 参数与校验（页面「运行参数」「结果显示」）
+
+| 字段 | 类型 | 默认 | 说明 |
+|---|---|---|---|
+| `range.thresholds` | Text | `0-255` | 阈值区间列表，`下限-上限`，`;`/`,`/换行分隔，1..32 条，0..255，下限≤上限 |
+| `limit.count.enabled` | Boolean | `false` | 原厂 `CountLimitEnable` |
+| `limit.count.low` / `.high` | Integer(Int32) | `0` / `999999999` | 区间成对显示；勾选后可见 |
+| `limit.ratio.enabled` | Boolean | `false` | 原厂 `RatioLimitEnable` |
+| `limit.ratio.low` / `.high` | Number(Float32, 两位小数, 步长 0.01) | `0` / `1` | 同上 |
+
+校验（直接报诊断，不兜底）：`PIXELCOUNT_THRESHOLD`（区间文本非法/条数越界/越界灰度/下限大于上限）、`PIXELCOUNT_COUNT_LIMIT`、`PIXELCOUNT_RATIO_LIMIT`。
+
+执行期失败码：`PIXELCOUNT_SETTINGS_INVALID`、`PIXELCOUNT_IMAGE_REQUIRED`、`PIXELCOUNT_PIXEL_FORMAT`、`PIXELCOUNT_MASK_INVALID`（掩膜非 Gray8 或尺寸不同，不缩放兜底）、`PIXELCOUNT_ROI_EMPTY`（统计区域为空，**不输出 0**）、`PIXELCOUNT_CANCELLED`、`PIXELCOUNT_EXECUTION`。
+
+### 4.4 与原厂的差异（逐项）
+
+| 项 | 原厂 | 本方 | 决策依据 |
+|---|---|---|---|
+| ROI 承载 | `InputROI`/`InputROIAnnulus` 几何参数 + `RoiType` 四种形态 | 单一区域引用 `input.roi`（缺省整图） | 框架区域资源已覆盖全部形态；不新造 `RoiType` 参数（差异已记录） |
+| 阈值区间 | 可增删列表控件（1..32 条） | 一个文本字段 + 严格解析 | 字段声明是类型级静态，无动态行编辑器；与 `BlobLabels` 阈值区域同一既有做法 |
+| ROI 输出 | `ROI` + `ROIAnnulus` 两路回显 | 单路外接旋转矩形 | 扇环回显未实现（见 3.4） |
+| 位置修正 | 输入 FIXTURE + 输出（默认隐藏） | 未实现 | 无回显语义证据 |
+| 掩膜 | `InputMask` IMAGE | 同（引用图像，Gray8 同尺寸） | 语义见 U3 |
+| 显示项 | ROI/文本/基准点/运行点 + 输出掩膜组 | `display.range.*`（区间像素区域）、`display.roi.*`（检测区域）、`display.text.*`（文本，含原厂模板默认值） | 基准点/运行点随位置修正未实现；掩膜图像作为辅助图像输出 |
+
+显示字段共 18 个，全部随工具持久化、不进调用输入（`ResultDisplayFields.EditorSchema` 校验通过）。
+
+### 4.5 构建与测试
+
+| 项 | 命令 | 结果 |
+|---|---|---|
+| 全量 Release | `dotnet build SunEyeVision.slnx -c Release --no-incremental -m:1` | **0 错误** |
+| 载荷登记 | `Release\SunEyeVision_v1.0.0\SunEyeVision\release-payload.json` | 含 `SunEyeVision.Tool.PixelCount.Runtime/Wpf`、`toolId=PixelCount` |
+| 单元测试 | `dotnet test tests\SunEyeVision.Tools.LogicData.Tests\... -c Release --no-build` | **59 通过 / 0 失败**（像素统计新增 36 条 + If 既有 23 条） |
+
+新增测试覆盖：端口与无分支声明、可选 ROI/掩膜、投影与显示需求一致性、显示字段逐一有布局行、默认值准入、显隐与成对区间、区间解析边界（0-255/多条/空格/32 条上限/33 条拒绝/8 类非法文本/往返）、设置校验、Materialize 拒绝非法区间对、宿主声明规则指纹稳定、逐区间计数与比率、输出掩膜 Gray8 全 255、ROI 裁切、掩膜裁切、数量判定逐区间、比率判定整体通过、空 ROI 明确失败、掩膜网格不符明确失败、必需图像端口在冻结期即拒绝、输出释放后拒绝读取且输入不受影响。
+
+### 4.6 需要主线/宿主侧处理（`src/**` 不在本线边界）
+
+1. `src/UI/Resources/Toolbox/ToolboxDisplayCatalog.json:264-269` 中 `IMVSPixelCountModuVA` 的 `ToolId` 为 `null`：需改为 `"ToolId": "PixelCount"` 并加 `MappingVerified: true`，否则工具箱只会以「像素统计（已部署，未匹配目录）」出现。**原件 Id 为 `IMVSPixelCountModuVA`**（同文件 `:258-263` 还有非 VA 变体 `IMVSPixelCountModu`，不要误映射）。
+2. 图标：本线未新增图标资源，目录声明 `IconKey=blob`（宿主已有 `tool-blob.png`）。若要求与原件 `IMVSPixelCountModuVAImageEnable.png` 一致，需在 `src/UI/Resources/Toolbox/` 增加图标并改 IconKey。
+
+### 4.7 未验证项（如实记录）
+
+- 未在正式 Release 程序中做人工交互验收（工具箱拖入、参数页显隐、结果页叠加、保存重开）；本次仅完成构建与 Runtime/声明级自动化验证。
+- 未取得原厂运行证据（未启动原厂程序），U1–U5 属本方定义。
+- 结果页叠加依赖宿主对 `output.rows[].region` 与 `output.roi` 的绘制；本线未做 WPF 视觉核验。

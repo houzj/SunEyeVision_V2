@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>SunEyeVision.Tool.PixelCount.Wpf</AssemblyName>
+    <RootNamespace>SunEyeVision.Tool.PixelCount.Wpf</RootNamespace>
+    <ToolComponentId>SunEyeVision.Tool.PixelCount.Wpf</ToolComponentId>
+    <ToolComponentToolId>PixelCount</ToolComponentToolId>
+    <ToolComponentRole>Editor</ToolComponentRole>
+    <ToolComponentEntryType>SunEyeVision.Tool.PixelCount.Wpf.PixelCountEditorFactory</ToolComponentEntryType>
+    <ToolComponentCompanionToolId>PixelCount</ToolComponentCompanionToolId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Runtime/SunEyeVision.PixelCount.Runtime.csproj"><Private>false</Private></ProjectReference>
+    <ProjectReference Include="../../../src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj"><Private>false</Private></ProjectReference>
+  </ItemGroup>
+</Project>

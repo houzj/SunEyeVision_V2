@@ -56,5 +56,16 @@
       <EntryType>SunEyeVision.Tool.BlobLabels.Wpf.BlobLabelsEditorFactory</EntryType>
       <CompanionToolId>BlobLabels</CompanionToolId>
     </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.PixelCount/Runtime/SunEyeVision.PixelCount.Runtime.csproj">
+      <ComponentId>SunEyeVision.Tool.PixelCount.Runtime</ComponentId>
+      <ToolId>PixelCount</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.PixelCount.Runtime.PixelCountTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.PixelCount/Wpf/SunEyeVision.PixelCount.Wpf.csproj">
+      <ComponentId>SunEyeVision.Tool.PixelCount.Wpf</ComponentId>
+      <ToolId>PixelCount</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.PixelCount.Wpf.PixelCountEditorFactory</EntryType>
+      <CompanionToolId>PixelCount</CompanionToolId>
+    </ProductToolComponent>
   </ItemGroup>
 </Project>

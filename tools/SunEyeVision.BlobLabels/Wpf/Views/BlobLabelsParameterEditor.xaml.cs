@@ -42,7 +42,8 @@ public partial class BlobLabelsParameterEditor : UserControl, IToolSettingsView
         };
         var anchored = (options.AdditionalAnchoredContents ?? Array.Empty<AnchoredSettingsContent>()).ToList();
         anchored.Add(new AnchoredSettingsContent(BlobLabelsFields.LabelWiseAreaSelectEnabled, panel));
-        Editor.Bind(draft, options with { SuppressedFieldRows = suppressed, AdditionalAnchoredContents = anchored });
+        var composed = BlobLabelsDisplayUi.Configure(options);
+        Editor.Bind(draft, composed with { SuppressedFieldRows = suppressed, AdditionalAnchoredContents = anchored });
         _thresholdPanel = panel;
     }
 

@@ -142,4 +142,33 @@ public static class BlobLabelsResultDisplay
             Style(RunPoint) with { FixedJudgment = true, PointLabel = "Fixture RunPoint" },
             null);
     }
+
+    /// <summary>解析「文本显示-内容」的占位表达式；未知占位直接报错，不做兜底。</summary>
+    public static DisplayExpressionSetting ParseContent(string content, IEnumerable<DisplayExpressionSlot>? available = null)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+        var slots = new List<DisplayExpressionSlot>();
+        var known = (available ?? Array.Empty<DisplayExpressionSlot>()).ToArray();
+        var position = 0;
+        while (position < content.Length)
+        {
+            var start = content.IndexOfAny(new[] { '{', '}' }, position);
+            if (start < 0) break;
+            if (content[start] != '{') throw new ArgumentException("文本表达式括号不完整。");
+            var end = content.IndexOf('}', start + 1);
+            if (end < 0 || content.AsSpan(start + 1, end - start - 1).Contains('{')) throw new ArgumentException("文本表达式括号不完整。");
+            var token = content.Substring(start + 1, end - start - 1);
+            var matches = known.Where(slot => slot.Token == token).ToArray();
+            if (matches.Length > 1 && !matches.Skip(1).All(slot => new DisplayExpressionSetting("", new[] { slot }).SameExpression(new("", new[] { matches[0] }))))
+                throw new ArgumentException("文本来源名称不唯一，请重新选择。");
+            if (matches.Length != 0) slots.Add(matches[0]);
+            else if (System.Text.RegularExpressions.Regex.Match(token, @"^(0|面积|Area)(?::([FfNnGgRr][0-9]?))?$") is { Success: true } area)
+                slots.Add(new(token, new ResultFieldPath(BlobLabelsSchema.Rows, new[] { "area" }), area.Groups[2].Success ? area.Groups[2].Value : null));
+            else throw new ArgumentException("文本来源尚未选择或已失效：" + token);
+            position = end + 1;
+        }
+        return new(content, slots);
+    }
+
+    public static void ValidateContent(string content) => _ = ParseContent(content);
 }

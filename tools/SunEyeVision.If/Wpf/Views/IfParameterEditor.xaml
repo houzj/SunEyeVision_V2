@@ -1,0 +1,10 @@
+<UserControl x:Class="SunEyeVision.Tool.If.Wpf.Views.IfParameterEditor"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+ xmlns:parameters="clr-namespace:SunEyeVision.Plugin.Wpf.Presenters.Parameters;assembly=SunEyeVision.Plugin.Wpf"
+ mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="560">
+ <!-- 原厂条件分支只有一个基本参数页，四个条件槽位由 Runtime 声明分组。 -->
+ <parameters:DeclaredSettingsView x:Name="Editor" SelectedPageIndex="0"/>
+</UserControl>

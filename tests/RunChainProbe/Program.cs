@@ -52,17 +52,27 @@ internal static class Program
         using (var writer = new BinaryWriter(File.Create(imagePath)))
         {
             writer.Write((ushort)0x4d42); writer.Write(54+8*8*3); writer.Write(0); writer.Write(54); writer.Write(40); writer.Write(8); writer.Write(8); writer.Write((ushort)1); writer.Write((ushort)24); writer.Write(0); writer.Write(8*8*3); for (int i=0;i<4;i++) writer.Write(0);
-            for (int y=0;y<8;y++) for (int x=0;x<8;x++) { byte p=(byte)(x>=2 && x<6 && y>=2 && y<6 ? 255 : 0); writer.Write(p); writer.Write(p); writer.Write(p); }
+            for (int y = 0; y < 8; y++)
+            for (int x = 0; x < 8; x++)
+            {
+                var outerRing = x is 0 or 7 || y is 0 or 7;
+                var center = x is >= 2 and < 6 && y is >= 2 and < 6;
+                var pixel = (byte)(outerRing || center ? 255 : 0);
+                writer.Write(pixel); writer.Write(pixel); writer.Write(pixel);
+            }
         }
         var imagePath2 = Path.Combine(path, "run-probe-2.bmp");
         File.Copy(imagePath, imagePath2, true);
         var sourceDraft = session.Editing.Host.BeginEdit(flow.Id, source.Id);
         var pathsPort = sourceDraft.SettingsSchema.Inputs.Single(p => p.Id == "local.paths");
-        sourceDraft.ApplyFields(new Dictionary<string,ParameterSetting> { ["local.paths"] = new ConstantSetting(new SequenceValue(pathsPort.Type, new object?[] { imagePath, imagePath2 })) });
-        var blobDraft = session.Editing.Host.BeginEdit(flow.Id, blob.Id);
+        sourceDraft.ApplyFields(new Dictionary<string,ParameterSetting>
+        {
+            ["local.paths"] = new ConstantSetting(new SequenceValue(pathsPort.Type, new object?[] { imagePath, imagePath2 })),
+            ["output.format"] = new ConstantSetting("mono8")
+        });
         var imagePort = session.GetNodeSchema(flow.Id, source.Id)!.Outputs.Single(p => p.Id == "output.image");
-        blobDraft.ApplyFields(new Dictionary<string,ParameterSetting> { ["input.image"] = new ReferenceSetting(new OutputReference(source.Id,imagePort.Id,imagePort.Type,new[]{"data"},scopeId:flow.Id)) });
-        session.CommitEdit(DocumentEditProposal.Prepare(session.Editing.Host, nodes: new[] { sourceDraft, blobDraft }));
+        RequireConnectedImage(session, flow.Id, source.Id, blob.Id, "wire");
+        session.CommitEdit(DocumentEditProposal.Prepare(session.Editing.Host, nodes: new[] { sourceDraft }));
         using var factory = new ImageSourceHostInputFactory();
         var tracking = new TrackingFactory(factory);
         var context = session.CaptureHostInputContext(flow.Id, source)!;
@@ -73,8 +83,13 @@ internal static class Program
             var run = result.Workflows[flow.Id];
             if (!run.Success) throw new Exception("运行失败：" + string.Join("; ",run.Errors));
             if (!run.DeclaredOutputs.Any(o => o.Identity.NodeId == source.Id) || !run.DeclaredOutputs.Any(o => o.Identity.NodeId == blob.Id)) throw new Exception("缺少真实图像源或 Blob 结果");
+            using var sourceReader = session.AcquirePublishedResult(flow.Id, source.Id) ?? throw new Exception("会话缺少图像源 reader");
+            var sourcePixels = sourceReader.Values!.Get<RecordValue>("output.image").Get<IReadOnlyImage>("data").CopyPixels();
+            if (sourcePixels.Length != 64 || sourcePixels[0] != 255 || sourcePixels[9] != 0 || sourcePixels[18] != 255)
+                throw new Exception("图像源未发布带亮外圈和中心目标的对照像素");
             using var reader = session.AcquirePublishedResult(flow.Id, blob.Id) ?? throw new Exception("会话缺少 Blob 结果 reader");
-            Console.WriteLine("PASS: 实际准入、图像读取、Blob 执行和结果 reader");
+            RequireFullScreenBlobPixels(reader.Values);
+            Console.WriteLine("PASS: 实际图像源、Blob 全屏阈值外圈及结果 reader");
         }
         if (tracking.Seen.Contains(disabled.Id)) throw new Exception("禁用节点不应创建宿主输入");
         if (factory.TakeCompletedReads(context).Count != 0) throw new Exception("新选择不能被旧轮次收据覆盖");
@@ -99,6 +114,8 @@ internal static class Program
         using (var debugResult = debug.ExecuteAsync().WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult())
         {
             if (!debugResult.IsSuccess) throw new Exception("真实私有 Blob 调试失败");
+            using var reader = debugResult.AcquireReader();
+            RequireFullScreenBlobPixels(reader.Values);
             debug.AcceptParameters();
         }
         using (var stale = editorDebug.Capture(privateDraft, null, _ => { }))
@@ -252,6 +269,7 @@ internal static class Program
         File.WriteAllText(multiPath, document.ToJsonString());
         var reopened = manager.Open(multiPath, _ => types, _ => null, new JsonSerializerOptions());
         var sourceFlow = reopened.GetWorkflows().Single(item => item.Id == flow.Id);
+        RequireConnectedImage(reopened, sourceFlow.Id, source.Id, blob.Id, "wire");
         var targetFlow = reopened.GetWorkflows().Single(item => item.Name == "跨流程测试");
         var targetGraph = reopened.PrepareGraphEdit(targetFlow.Id);
         var targetSource = reopened.CreateNode(targetGraph, "ImageLoad", new CanvasPoint(0, 0));
@@ -262,17 +280,20 @@ internal static class Program
         var targetPaths = targetSourceDraft.SettingsSchema.Inputs.Single(port => port.Id == "local.paths");
         targetSourceDraft.ApplyFields(new Dictionary<string,ParameterSetting> { ["local.paths"] = new ConstantSetting(new SequenceValue(targetPaths.Type, new object?[] { imagePath })) });
         var targetBlobDraft = reopened.Editing.Host.BeginEdit(targetFlow.Id, targetBlob.Id);
-        var targetImage = reopened.GetNodeSchema(targetFlow.Id, targetSource.Id)!.Outputs.Single(port => port.Id == "output.image");
+        RequireConnectedImage(reopened, targetFlow.Id, targetSource.Id, targetBlob.Id, "cross-wire");
         var reopenedVariable = reopened.Document.GlobalVariables.Single(item => item.Name == "宽度变量");
         targetBlobDraft.ApplyFields(new Dictionary<string,ParameterSetting> {
-            ["input.image"] = new ReferenceSetting(new OutputReference(targetSource.Id, targetImage.Id, targetImage.Type, new[] { "data" }, scopeId: targetFlow.Id)),
             [threshold] = new VariableSetting(new VariableReference(reopened.Document.Id, reopenedVariable.Id, TypeRef.ScalarOf(ScalarKind.Int64)))
         });
         reopened.CommitEdit(DocumentEditProposal.Prepare(reopened.Editing.Host, nodes: new[] { targetSourceDraft, targetBlobDraft }));
         using var crossFactory = new ImageSourceHostInputFactory();
         using (var crossBatch = reopened.CaptureRunBatch(new[] { sourceFlow.Id, targetFlow.Id }, hostFactory: crossFactory))
         using (var crossRun = crossBatch.RunAsync(_ => { }).WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult())
+        {
             if (!crossRun.Workflows.Values.All(item => item.Success)) throw new Exception("跨流程正式运行失败");
+            using var reader = reopened.AcquirePublishedResult(sourceFlow.Id, blob.Id) ?? throw new Exception("重开后缺少原 Blob reader");
+            RequireFullScreenBlobPixels(reader.Values);
+        }
         using (var crossEditor = reopened.OpenDebugSession(targetFlow.Id, targetBlob))
         {
             var crossDraft = reopened.Editing.Host.BeginEdit(targetFlow.Id, targetBlob.Id);
@@ -337,6 +358,47 @@ internal static class Program
         File.Delete(imagePath);
         return 0;
     }
+
+    private static void RequireFullScreenBlobPixels(InputValues? values)
+    {
+        if (values is null)
+            throw new Exception("Blob 结果缺少声明值");
+        const string blobCount = "field:8ca10000000040008000000000000011";
+        const string moduleStatus = "field:8ca10000000040008000000000000004";
+        const string blobStatuses = "field:8ca10000000040008000000000000109";
+        const string blobImage = "field:8ca10000000040008000000000000005";
+        const string binaryImage = "field:8ca10000000040008000000000000006";
+        var expected = Enumerable.Range(0, 64)
+            .Select(index =>
+            {
+                int y = index / 8, x = index % 8;
+                var center = y is >= 2 and < 6 && x is >= 2 and < 6;
+                var bottomOrRight = x > 0 && y > 0 && (x == 7 || y == 7);
+                return (byte)(center || bottomOrRight ? 255 : 0);
+            }).ToArray();
+        foreach (var field in new[] { binaryImage, blobImage })
+        {
+            var image = values.Get<RecordValue>(field).Get<IReadOnlyImage>("data");
+            if (image.Width != 8 || image.Height != 8 || !image.CopyPixels().SequenceEqual(expected))
+                throw new Exception("Blob 全屏运行未正确保留中心与右下边缘，或未排除顶行和左列：" + field);
+        }
+        if (values.Get<long>(blobCount) != 2L)
+            throw new Exception("Blob 全屏运行应发布中心和右下边缘两个目标");
+        if (values.Get<long>(moduleStatus) != 1L ||
+            !values.Get<SequenceValue>(blobStatuses).Cast<long>().SequenceEqual(new[] { 1L, 1L }))
+            throw new Exception("Blob 全屏运行的整体与单体判定未随结果发布");
+    }
+
+    private static void RequireConnectedImage(DocumentSession session, string workflowId, string sourceId, string blobId, string wireId)
+    {
+        var draft = session.Editing.Host.BeginEdit(workflowId, blobId);
+        if (draft.Configuration.Fields.Read("input.image") is not ReferenceSetting { RebindingReason: null } image ||
+            image.OriginId != "connection:" + wireId || image.Reference.ScopeId != workflowId ||
+            image.Reference.NodeId != sourceId || image.Reference.PortId != "output.image" ||
+            !image.Reference.MemberFieldPath.SequenceEqual(new[] { "data" }))
+            throw new Exception("Blob 的图像输入必须由真实节点连线建立，并保留图像成员和连线归属。");
+    }
+
     private sealed class TrackingFactory(ImageSourceHostInputFactory inner) : IHostInputFactory
     {
         public readonly HashSet<string> Seen = new(StringComparer.Ordinal);

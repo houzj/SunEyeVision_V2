@@ -1,0 +1,51 @@
+{
+  "date": "2026-11-11",
+  "scope": "ImageSource + Blob 结果图层切换、结果视口交互、宿主关闭资源释放",
+  "vm_reference": [
+    "同版本结果视图：图像重新选择后仍保留当前图形/文本，直到新结果场景回执替换",
+    "同版本结果视图：图形/文本是只读叠加，不阻断图像缩放和平移",
+    "同版本窗口生命周期：关闭时先停执行、释放结果/参数消费者，再退役运行目录"
+  ],
+  "changes": [
+    {
+      "file": "src/UI/Services/Images/ResultWorkspacePresenter.cs",
+      "decision": "输出视口重绑图像时传递 preserveShapeLayers；输入视口不保留结果层",
+      "consumer": "结果工作区输出图像与图层呈现"
+    },
+    {
+      "file": "src/UI/Services/Images/ResultImagePane.cs",
+      "decision": "清空/绑定支持保留Shape层，等待新场景回执替换；普通清理仍完整退役",
+      "consumer": "图像 publication、预览及结果视口"
+    },
+    {
+      "file": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.cs",
+      "decision": "结果图形设为只读命中区域，平移/缩放交给ImageViewBox；ROI编辑仍由独立视口承担",
+      "consumer": "原件ImageViewBox结果呈现"
+    },
+    {
+      "file": "src/UI/Shell/Windows/MainWindowDocumentHistory.cs",
+      "decision": "宿主退出专用ReleaseDocumentHost在插件目录排空前关闭当前DocumentSession并丢弃未保存编辑",
+      "consumer": "否关闭方案、结果reader、执行代次与插件目录退役"
+    }
+  ],
+  "verification": {
+    "release_build": {
+      "command": "dotnet build SunEyeVision.slnx -c Release --no-restore -m:1 -p:HalconSourceRoot=D:/MyWork/SunEyeVision_V2/libs/halcon",
+      "result": "0 errors; 3302 warnings; 18.83 seconds",
+      "program_started": false,
+      "automated_tests_run": false
+    },
+    "static_regression_contract": {
+      "file": "tests/SunEyeVision.UI.Tests/ResultImagePaneTests.cs",
+      "case": "Output_image_rebind_can_keep_native_shape_layer_until_the_new_scene_receipt_is_presented",
+      "status": "compiled; not executed"
+    }
+  },
+  "unconfirmed": [
+    "C盘Release人工核对图像源切换后Blob图形和文本是否持续",
+    "缩小图像拖动平移与缩放手感是否与VM一致",
+    "选择否关闭方案后是否无需任务管理器即可退出",
+    "迟到回调、设备服务和真实运行线程的动态退订顺序"
+  ],
+  "security_boundary": "启动加密、权限、授权、密钥和安全弹窗采用本方自研；本记录只对照流程时序和可见状态，不复用原厂实现。"
+}

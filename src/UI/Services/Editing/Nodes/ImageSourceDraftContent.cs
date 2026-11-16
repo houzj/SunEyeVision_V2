@@ -9,6 +9,7 @@ using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources;
 using SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources;
 using SunEyeVision.UI.Services.Images;
+using SunEyeVision.UI.Features.Camera;
 
 namespace SunEyeVision.UI.Services.Editing;
 
@@ -32,6 +33,7 @@ public sealed class ImageSourceDraftContent : UserControl, IImageSourceSettingsC
  private Action<FieldSettings>? _accept;
  private Action? _prepare;
  private bool _preparing, _disposed, _refreshing;
+ private sealed record CameraChoice(string Name, string Id);
  public event Action? Changed;
 
  public ImageSourceDraftContent(DocumentSession session, WorkflowDefinition root, NodeDefinition node,
@@ -55,7 +57,7 @@ public sealed class ImageSourceDraftContent : UserControl, IImageSourceSettingsC
   Loaded += OnLoaded; Unloaded += OnUnloaded;
  }
  private void OnLoaded(object sender, RoutedEventArgs args)
- { if (!_disposed) { RefreshCameraStatus(); _statusTimer.Start(); } }
+ { if (!_disposed && _inputView.IsCamera) { RefreshCameraStatus(); _statusTimer.Start(); } }
  private void OnUnloaded(object sender, RoutedEventArgs args) => _statusTimer.Stop();
  public void BindSourceDraft(IToolSettingsDraft draft, Action prepareEdit, Action<FieldSettings> acceptCandidate)
  {
@@ -85,44 +87,59 @@ public sealed class ImageSourceDraftContent : UserControl, IImageSourceSettingsC
    throw new InvalidOperationException("图像源参数页与重基草稿的已接纳字段不一致，请先解决编辑冲突。");
   _boundNodeDraft = candidate;
  }
- private InputValues ReadValues()
+ private FieldSettings ReadFields()
  {
   EnsureCurrent();
-  return _draft!.CaptureFields().Materialize(new Dictionary<string, object?>());
+  return _draft!.CaptureFields();
  }
  public void RefreshSourceDraft()
  {
   ObjectDisposedException.ThrowIf(_disposed, this);
   if (_draft is null || _preparing) return;
-  var values = ReadValues();
+  var values = ReadFields();
   var deviceId = values.Get<string>("camera.device");
   _inputView.IsCamera = values.Get<string>("source.kind") == "camera";
+  if (!_inputView.IsCamera)
+  {
+   _statusTimer.Stop();
+   return;
+  }
+  if (IsLoaded) _statusTimer.Start();
+  var choices = new List<CameraChoice> { new("请选择方案中的相机", string.Empty) };
+  foreach (var device in _session.Document.Devices.Where(device => device.Type == DeviceType.Camera))
+  {
+   var runtimeId = CameraManagerViewModel.RuntimeDeviceId(device);
+   if (!string.IsNullOrWhiteSpace(runtimeId)) choices.Add(new(device.Name, runtimeId));
+  }
+  if (!string.IsNullOrWhiteSpace(deviceId) && !choices.Any(choice => string.Equals(choice.Id, deviceId, StringComparison.OrdinalIgnoreCase)))
+   choices.Add(new("设备已移除：" + deviceId, deviceId));
+
   _refreshing = true;
   try
   {
-   _cameraPicker.Items.Clear();
-   _cameraPicker.Items.Add(new ComboBoxItem { Content = "请选择方案中的相机", Tag = string.Empty });
-   foreach (var device in _session.Document.Devices.Where(device => device.Type == DeviceType.Camera))
-    _cameraPicker.Items.Add(new ComboBoxItem { Content = device.Name, Tag = device.Id });
-   var selected = _cameraPicker.Items.OfType<ComboBoxItem>().FirstOrDefault(item =>
-    string.Equals(item.Tag as string, deviceId, StringComparison.OrdinalIgnoreCase));
-   if (selected is null && !string.IsNullOrWhiteSpace(deviceId))
-   { selected = new ComboBoxItem { Content = "设备已移除：" + deviceId, Tag = deviceId }; _cameraPicker.Items.Add(selected); }
-   _cameraPicker.SelectedItem = selected ?? _cameraPicker.Items[0];
+   if (_cameraPicker.ItemsSource is not IReadOnlyList<CameraChoice> previous || !previous.SequenceEqual(choices))
+    _cameraPicker.ItemsSource = choices.AsReadOnly();
+   _cameraPicker.SelectedValue = choices.FirstOrDefault(choice =>
+    string.Equals(choice.Id, deviceId, StringComparison.OrdinalIgnoreCase))?.Id ?? string.Empty;
   }
   finally { _refreshing = false; }
   RefreshCameraStatus();
  }
  private void CameraSelected(object sender, SelectionChangedEventArgs args)
  {
-  if (_refreshing || _disposed || _draft is null) return;
+  if (_refreshing || _disposed || _draft is null || !_inputView.IsCamera
+   || _cameraPicker.SelectedItem is not CameraChoice selected) return;
   try
   {
-   EnsureCurrent(); PrepareEdit(); var draft = _draft;
+   EnsureCurrent(); PrepareEdit();
+   if (ReadFields().Get<string>("source.kind") != "camera" || !ReferenceEquals(_cameraPicker.SelectedItem, selected))
+   { RefreshSourceDraft(); return; }
+   var draft = _draft;
    draft.ApplyFields(new Dictionary<string, ParameterSetting> {
-    ["camera.device"] = new ConstantSetting((_cameraPicker.SelectedItem as ComboBoxItem)?.Tag as string ?? string.Empty)
+    ["camera.device"] = new ConstantSetting(selected.Id)
    }, candidate => { EnsureCurrent(); _accept!(candidate); EnsureCurrent(); });
-   Changed?.Invoke(); RefreshCameraStatus();
+   Changed?.Invoke();
+   if (!_disposed && _isCurrent()) RefreshSourceDraft();
   }
   catch (Exception error)
   {
@@ -132,10 +149,10 @@ public sealed class ImageSourceDraftContent : UserControl, IImageSourceSettingsC
  }
  private void RefreshCameraStatus()
  {
-  if (_disposed || _draft is null) return;
+  if (_disposed || _draft is null || !_inputView.IsCamera) return;
   try
   {
-   var id = ReadValues().Get<string>("camera.device");
+   var id = ReadFields().Get<string>("camera.device");
    _status.Text = string.IsNullOrWhiteSpace(id) ? "设备状态：未选择相机" :
     _cameraStatus is null ? "设备状态：当前会话尚未接入" : "设备状态：" + (_cameraStatus(id) ?? "未知");
   }
@@ -143,9 +160,16 @@ public sealed class ImageSourceDraftContent : UserControl, IImageSourceSettingsC
  }
  private void OpenCameraManager(object sender, RoutedEventArgs args)
  {
-  EnsureCurrent();
-  (_openCamera ?? throw new InvalidOperationException("相机管理尚未接入当前方案会话。"))(ReadValues().Get<string>("camera.device"));
-  if (!_disposed && _isCurrent()) RefreshSourceDraft();
+  try
+  {
+   EnsureCurrent();
+   (_openCamera ?? throw new InvalidOperationException("相机管理尚未接入当前方案会话。"))(ReadFields().Get<string>("camera.device"));
+   if (!_disposed && _isCurrent()) RefreshSourceDraft();
+  }
+  catch (InvalidOperationException error)
+  {
+   if (!_disposed) _status.Text = error.Message;
+  }
  }
  private void PrepareEdit()
  {
@@ -173,6 +197,7 @@ public sealed class ImageSourceDraftContent : UserControl, IImageSourceSettingsC
   if (_disposed) return; _disposed = true;
   _statusTimer.Stop(); Loaded -= OnLoaded; Unloaded -= OnUnloaded;
   _cameraPicker.SelectionChanged -= CameraSelected; _inputView.OpenCameraButton.Click -= OpenCameraManager;
+  _cameraPicker.ItemsSource = null;
   _theme.Dispose(); _draft = null; _boundNodeDraft = null; _prepare = null; _accept = null; Changed = null; Content = null;
  }
 }

@@ -16,32 +16,50 @@ internal static partial class NativeRoiResultProjection
         foreach(var row in rows.ToArray())
         {
             NativeResultRaster.CheckCurrent(current);
-            if(row.SourceFrame!=receipt.Frame||receipt.Coordinates!=RoiDeclarations.ImageFrame)throw new ArgumentException("区域图形与实际帧或坐标域不匹配。");
+            // 声明坐标域（如 "image:input"）是参数合同标签，与显示帧实际来源 id 无关；
+            // 按原件语义（ModuleResultView.xaml:142，换显示图像从不隐藏形状），
+            // 区域图形绑定当前显示物理帧并要求像素坐标域，形状在 Prepare 内重声明到 receipt.Coordinates。
+            if(row.SourceFrame!=receipt.Frame
+                ||receipt.Coordinates.Domain!=CoordinateDomain.Image||receipt.Coordinates.Unit!=CoordinateUnit.Pixel)
+                throw new ArgumentException("区域图形与当前显示物理帧或像素坐标域不匹配。");
             RoiGeometryEditing.Validate(row.Shape);
             if(!double.IsFinite(row.Width)||row.Width<=0||!double.IsFinite(row.Opacity)||row.Opacity is <0 or >1)throw new ArgumentException("区域样式无效。");
             var shape=row.Shape;var kind=shape.Get<string>("kind");
             if(kind is "annulus" or "sector")
             {
-                var center=RoiGeometryEditing.Center(shape);var start=shape.Get<double>("start-radians");var end=shape.Get<double>("end-radians");var sweep=end-start;
-                items.Add(new Annular(new(center.X,center.Y),shape.Get<double>("inner-radius"),shape.Get<double>("outer-radius"),
-                    (sweep<0?end:start)*180/Math.PI,Math.Abs(Math.Abs(sweep)-2*Math.PI)<=1e-9?360:Math.Abs(sweep)*180/Math.PI,
-                    row.Stroke.ToString(),row.Fill.ToString(),row.Width,row.Opacity));
+                var center = RoiGeometryEditing.Center(shape);
+                var start = shape.Get<double>("start-radians");
+                var end = shape.Get<double>("end-radians");
+                var sweep = end - start;
+                var inner = shape.Get<double>("inner-radius");
+                var outer = shape.Get<double>("outer-radius");
+                var startDegrees = start * 180d / Math.PI;
+                var signedRange = Math.Clamp(sweep * 180d / Math.PI, -360d, 360d);
+                var tip = row.ToolTip ?? (row.IncludeMeasurements
+                    ? $"CenterX:{(float)center.X} CenterY:{(float)center.Y} OuterRadius:{(float)outer} InnerRadius:{(float)inner} StartAngle:{(float)startDegrees} AngleRange:{(float)signedRange}"
+                    : "");
+                items.Add(new Annular(new(center.X,center.Y),inner,outer,
+                    sweep < 0 ? end * 180d / Math.PI : startDegrees,
+                    Math.Abs(Math.Abs(sweep) - 2 * Math.PI) <= 1e-9 ? 360 : Math.Abs(signedRange),
+                    row.Stroke.ToString(),row.Fill.ToString(),row.Width,row.Opacity,tip));
             }
             else
             {
                 GeometryValue geometry=kind switch
                 {
+                    // 点几何携带声明域帧；绘制在当前背景上，重声明到显示帧坐标域。
+                    "point"=>new PointGeometry(receipt.Coordinates,shape.Get<PointGeometry>("center").Point),
                     "rectangle"=>new OrientedRectangleGeometry(receipt.Coordinates,RoiGeometryEditing.Center(shape),shape.Get<double>("width"),shape.Get<double>("height"),shape.Get<double>("angle-degrees")*Math.PI/180),
                     "polygon"=>new PolygonGeometry(receipt.Coordinates,RoiGeometryEditing.Vertices(shape)),
                     _=>throw new ArgumentException("结果区域不支持该名义形状。")
                 };
-                var prepared=NativeShapeProjection.Geometry(receipt,new[]{new NativeGeometryOverlay(row.SourceFrame,geometry,row.Stroke,row.Width,row.Opacity,row.Fill)},maximum,maximumVertices,current);
+                var prepared=NativeShapeProjection.Geometry(receipt,new[]{new NativeGeometryOverlay(row.SourceFrame,geometry,row.Stroke,row.Width,row.Opacity,row.Fill,
+                    IncludeMeasurements:row.IncludeMeasurements,ToolTip:row.ToolTip)},maximum,maximumVertices,current);
                 vertices=checked(vertices+prepared.Vertices);items.AddRange(prepared.Items);
             }
         }
         NativeResultRaster.CheckCurrent(current);return new(items.ToArray(),items.Count,vertices);
     }
     private sealed record Annular(Point CenterPoint,double InnerRadius,double OuterRadius,double StartAngle,double AngleRange,
-        string Stroke,string Fill,double StrokeThickness,double Opacity):IAnnularSector
-    {public string ToolTip=>"";}
+        string Stroke,string Fill,double StrokeThickness,double Opacity,string ToolTip):IAnnularSector;
 }

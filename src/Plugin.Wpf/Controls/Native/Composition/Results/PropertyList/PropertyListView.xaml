@@ -73,7 +73,7 @@
           <Image Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Results/PropertyList/path-copy-hover.png" />
         </FrameworkElement.Tag>
         <Button.Style>
-          <Style TargetType="Button" BasedOn="{StaticResource Results.PropertyList.BaseImage_ButtonStyle}">
+          <Style TargetType="Button" BasedOn="{StaticResource Shared.ImageButtonStyle}">
             <Style.Triggers>
               <DataTrigger Binding="{Binding CopyPathCommand, ElementName=View}" Value="{x:Null}">
                 <Setter Property="IsEnabled" Value="False" />

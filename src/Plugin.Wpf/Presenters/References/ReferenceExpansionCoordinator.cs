@@ -32,23 +32,24 @@ internal sealed class ReferenceExpansionCoordinator : IDisposable
     }
     internal ReferenceExpansionPreference Preference()=>_owner.Preference;
     internal bool IsExpanded()=>_owner.IsExpanded;
+    private bool CanInteract => !_disposed && _root.IsLoaded && _root.IsVisible && _root.IsEnabled && _owner.IsCurrent;
     internal static void ClearSelectionFor(ReferenceWindowOwner? owner)=>owner?.ClearSelection();
     internal void Open(ReferenceExpansionRequest request)
     {
-        if(_disposed||!_owner.IsCurrent||!request.IsValid||!_root.IsLoaded||!_root.IsVisible){request.Dispose();return;}
+        if(!CanInteract||!request.IsValid){request.Dispose();return;}
         _request=request;_owner.Open(request);
     }
     internal void OpenVariable(VariableSelectionRequest request)
     {
         _root.Dispatcher.VerifyAccess();
-        if(_disposed||!_owner.IsCurrent||!request.IsValid||!_root.IsLoaded||!_root.IsVisible||Window.GetWindow(_root) is not {} windowOwner)
+        if(!CanInteract||!request.IsValid||Window.GetWindow(_root) is not {} windowOwner)
         {request.Dispose();return;}
         var generation=++_generation;VariableLease? lease=null;
         Action close=()=>{if(lease is not null)RetireVariable(lease,true,false);else request.Dispose();};
         try
         {
             if(!_owner.InstallModal(close)){request.Dispose();return;}
-            if(_disposed||!_owner.IsCurrent||!request.IsValid||generation!=_generation||!_root.IsLoaded||!_root.IsVisible||!ReferenceEquals(Window.GetWindow(_root),windowOwner))
+            if(!CanInteract||!request.IsValid||generation!=_generation||!ReferenceEquals(Window.GetWindow(_root),windowOwner))
             {_owner.ReleaseModal(close);request.Dispose();return;}
             var dialog=new VariableSelectionDialog(request.Items){Owner=windowOwner,WindowStartupLocation=WindowStartupLocation.CenterOwner,ShowInTaskbar=false};
             lease=new(dialog,request,close);var captured=lease;

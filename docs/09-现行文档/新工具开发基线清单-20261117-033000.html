@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>新工具开发基线清单（2026-11-17）</title>
+<style>
+body{font-family:"Microsoft YaHei",sans-serif;max-width:1200px;margin:0 auto;padding:24px;line-height:1.65;color:#222}
+h1{border-bottom:3px solid #2d6cdf;padding-bottom:8px}
+h2{color:#2d6cdf;border-left:4px solid #2d6cdf;padding-left:10px;margin-top:28px}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:.92em}
+th,td{border:1px solid #bbb;padding:6px 9px;text-align:left;vertical-align:top}
+th{background:#eef3fb}
+code{background:#f4f4f4;padding:1px 5px;border-radius:3px;font-size:.88em}
+.meta{background:#eef3fb;border:1px solid #b9cbe8;padding:10px 14px;margin:12px 0}
+.req{background:#eefaf0;border-left:4px solid #67c23a;padding:8px 12px;margin:10px 0}
+.warn{background:#fff6e5;border-left:4px solid #e6a23c;padding:8px 12px;margin:10px 0}
+.stop{background:#fdecec;border-left:4px solid #e05b5b;padding:8px 12px;margin:10px 0}
+</style>
+</head>
+<body>
+<h1>新工具开发基线清单</h1>
+
+<div class="meta">
+<b>日期</b>：2026-11-17　<b>参照样本</b>：<code>tools/SunEyeVision.ImageSource</code>（输入类）、<code>tools/SunEyeVision.BlobAnalysis</code>（处理类 + 复杂结果投影）<br>
+<b>用途</b>：新增工具的照抄模板。契约矩阵、接入步骤、验收检查表三者配套使用，缺一项不算完成。<br>
+<b>前提</b>：框架侧已完成控制流语义（工具按分支序号声明走向）、契约兼容窗口（major 相等 + minor 区间）、结果声明式投影。
+</div>
+
+<h2>一、契约矩阵（按实现必要性分三级）</h2>
+
+<h3>1.1 必需（缺一不可，否则工具无法准入或执行）</h3>
+<table>
+<tr><th>契约</th><th>职责</th><th>ImageSource</th><th>Blob</th></tr>
+<tr><td><code>IToolDefinition&lt;TSettings,TOutput&gt;</code></td><td>工具身份、<code>Describe()</code> 端口声明、<code>Validate()</code>、<code>CreateSession()</code></td><td>✓</td><td>✓</td></tr>
+<tr><td><code>IToolSettings&lt;TSelf&gt;</code></td><td><code>Freeze()</code> 冻结设置；冻结值才进入执行与持久化</td><td>✓</td><td>✓</td></tr>
+<tr><td><code>IToolOutput</code></td><td><code>ToValues()</code> 输出端口取值</td><td>✓</td><td>✓</td></tr>
+<tr><td><code>IToolSettingsFields</code></td><td>参数页字段、默认值、逐字段校验（<code>SettingsSchema</code>）</td><td>✓</td><td>✓</td></tr>
+<tr><td><code>IToolCatalogProvider</code></td><td>工具箱显示名、分类、描述、排序</td><td>✓</td><td>✓</td></tr>
+<tr><td><code>IToolResultPresentationProvider</code></td><td>结果投影声明（<code>ResultProjectionDescriptor</code> / <code>ResultDisplayDescriptor</code>），Runtime 侧可用、不依赖 WPF</td><td>✓</td><td>✓</td></tr>
+</table>
+
+<h3>1.2 呈现相关（有结果表/显示设置就要实现）</h3>
+<table>
+<tr><th>契约</th><th>职责</th><th>何时实现</th></tr>
+<tr><td><code>IToolDisplaySettingsProvider</code></td><td>呈现专用字段：随工具持久化，<b>不是</b>算法参数、不进调用输入</td><td>工具需要“显示选项”类设置（如显示模式、颜色策略）</td></tr>
+<tr><td><code>IToolResultDisplayProvider : IToolDisplaySettingsProvider</code></td><td>在显示设置之外，把结果字段绑定到显示</td><td>结果需要按要求显示（表格列/属性列表/叠加层）时</td></tr>
+</table>
+<div class="warn">
+两条路径不是二选一随便挑：<b>只是有显示选项</b> → <code>IToolDisplaySettingsProvider</code>（ImageSource 是这种）；<b>还要把结果显示出来</b> → <code>IToolResultDisplayProvider</code>（Blob 是这种）。
+</div>
+
+<h3>1.3 执行期能力（按需，不实现即走缺省）</h3>
+<table>
+<tr><th>契约</th><th>用途</th><th>缺省行为</th><th>样本</th></tr>
+<tr><td><code>IToolExecutionInputs</code></td><td>把输入端口/绑定值映射成设置，冻结一次复用</td><td>需按实例参考，新工具若无输入端口映射需求可不实现</td><td>Blob</td></tr>
+<tr><td><code>IToolHostInputDeclaration</code></td><td>声明“本次执行由宿主提供输入”（如本地图像/相机帧）</td><td>不声明则宿主不准备输入</td><td>ImageSource</td></tr>
+<tr><td><code>IToolResourceFieldDeclarations</code></td><td>声明资源字段（图像/区域等引用字段）</td><td>不声明则无资源字段</td><td>ImageSource</td></tr>
+<tr><td><code>IToolExecutionFilter</code></td><td>冻结设置下判定“本次是否执行”（纯判定，不取输入）</td><td><b>不实现即总是执行</b>（执行链按 <code>is IToolExecutionFilter</code> 判定）</td><td>ImageSource</td></tr>
+<tr><td><code>IToolRuntimeInitialization</code></td><td>进程级一次预热（如原生平台装载）</td><td><b>不实现即跳过预热</b>，首次执行付成本</td><td>两者</td></tr>
+<tr><td><code>IToolParameterBindingNames</code></td><td>为每个被引用字段提供绑定记录排序键</td><td>—（引用记录顺序按工具声明）</td><td>两者</td></tr>
+<tr><td><code>IToolManualReferenceSources</code></td><td>普通手动参数引用的可用来源</td><td>—</td><td>两者</td></tr>
+<tr><td><code>IToolParameterReferenceBehavior</code></td><td>参数被引用时的消费语义（不推断工具身份/UI 状态）</td><td>—</td><td>Blob</td></tr>
+<tr><td><code>IToolDormantParameterDefaults</code></td><td>参数停用时仍保留持久绑定，恢复后沿用</td><td>—</td><td>两者</td></tr>
+<tr><td><code>IToolFieldTransitions</code></td><td>字段联动（触发与效果同一次编辑生效）</td><td>—</td><td>Blob</td></tr>
+<tr><td><code>IToolKnownSettingsValidation</code></td><td>已知设置组合的显式校验</td><td>—</td><td>Blob</td></tr>
+<tr><td><code>IToolResultGeometryOutput</code> / <code>IToolResultRecordOutput</code></td><td>同一次成功调用产生的几何 / 文本记录</td><td>—</td><td>按需</td></tr>
+</table>
+
+<h3>1.4 分支能力（仅分支类工具需要）</h3>
+<div class="req">
+工具在 <code>Describe()</code> 的 <code>controlOutputs</code> 声明分支（<b>按声明顺序编号 0..n-1</b>），执行结果用
+<code>ToolOutcome.SelectedBranches</code> 返回选中的序号。宿主把序号映射到该节点的出边，未命中目标标 <b>Skipped</b>（不是失败，不参与合格判定）。
+工具<b>不需要知道节点身份</b>，连线保持“节点对”语义——与原厂一致（选择在工具内、后继解析在执行器）。越界序号会判失败而不是静默跳过。
+</div>
+
+<h2>二、宿主侧契约（工具不实现，但要知道）</h2>
+<table>
+<tr><th>契约</th><th>由谁实现</th><th>说明</th></tr>
+<tr><td><code>IHostInputPreparer</code> / <code>IPreparedHostInputs</code></td><td>宿主</td><td>一次冻结的宿主输入；即使执行未开始也会被释放</td></tr>
+<tr><td><code>IHostInvocationGate</code></td><td>宿主</td><td>单次调用的准入闸门，过期身份拒绝迟到回调</td></tr>
+<tr><td><code>IToolEditorContext</code></td><td>宿主</td><td>受限编辑能力；调试冻结作用域，正式执行不暴露</td></tr>
+<tr><td><code>IResourcePathResolver</code></td><td>宿主</td><td>按冻结文档基准解析资源引用，不依赖 UI 或旧 SDK</td></tr>
+<tr><td><code>IReadOnlyImage</code></td><td>宿主</td><td>借用的冻结图像；适配器必须给真实数据，不得用尺寸推导兜底</td></tr>
+</table>
+
+<h2>三、接入步骤（照抄顺序）</h2>
+<ol>
+<li><b>建两个项目</b>：<code>tools/&lt;Tool&gt;/Runtime</code>（算法与契约实现，无 WPF 依赖）与 <code>tools/&lt;Tool&gt;/Wpf</code>（参数页/结果显示）；在 <code>product/ToolComponents.props</code> 登记两个组件。</li>
+<li><b>实现 1.1 六个必需契约</b>；<code>Describe()</code> 声明输入/输出端口（端口 id 即绑定名）。</li>
+<li><b>按需实现 1.2 / 1.3</b>；判断标准是“不实现会怎样”，矩阵里已写缺省行为。</li>
+<li><b>实现工具契约版本</b>：<code>ToolComponentMetadata</code> 的 <code>contractMajor</code> 必须等于 <code>FoundationContract.Major</code>，<code>contractMinor</code> 不得高于宿主；宿主接受 <code>[OldestCompatibleMinor, Minor]</code> 区间。</li>
+<li><b>结果声明</b>：给出 <code>ResultProjectionDescriptor</code>（字段投影）与 <code>ResultDisplayDescriptor</code>（显示需求）；需要显示的资源（region/outline 等）必须写进显示需求，否则结果页缺图。</li>
+<li><b>原生平台预热</b>（用到 HALCON 时）：实现 <code>IToolRuntimeInitialization</code>，内部调用 <code>HalconPlatform.Initialise()</code>；不得在预热里读用户图像、改设置或依赖执行身份。</li>
+<li><b>写测试</b>：Runtime 侧至少覆盖“正常输出、边界/空输入、参数校验失败、显示需求声明完整”。</li>
+<li><b>重建顺序</b>：先建测试项目 → 再建 <code>src/UI</code>（刷新 <code>release-payload.json</code>）→ 再 <code>dotnet test --no-build</code>。<b>顺序反了会因载荷 SHA 不匹配导致测试加载失败</b>。</li>
+</ol>
+
+<h2>四、验收检查表</h2>
+<table>
+<tr><th>#</th><th>检查项</th><th>通过标准</th></tr>
+<tr><td>1</td><td>工具箱出现</td><td>启动后分类下可见，名称/描述/图标正确；不可用时隐藏而不是灰显</td></tr>
+<tr><td>2</td><td>拖入画布</td><td>生成节点、参数页可打开、默认值符合声明</td></tr>
+<tr><td>3</td><td>参数页</td><td>字段分组/显隐/联动与原厂对照一致；非法值有明确提示</td></tr>
+<tr><td>4</td><td>结果页</td><td>结果表/属性列表有值；需要图形的（region/contour/point）能叠加；缺失字段显示为不可用而非 0</td></tr>
+<tr><td>5</td><td>单次执行</td><td>节点状态成功、结果发布、耗时进探针（<code>[Perf]</code>）</td></tr>
+<tr><td>6</td><td>连续执行</td><td>轮次推进正常、停止能排空、暂停/恢复可用</td></tr>
+<tr><td>7</td><td>保存/重开</td><td>设置与显示选项往返一致；资源（图像/嵌入文件）能解析</td></tr>
+<tr><td>8</td><td>异常路径</td><td>非法输入 → 明确诊断，不崩溃、不静默产出空结果</td></tr>
+<tr><td>9</td><td>生命周期</td><td>重复执行不累积资源（<code>[LifecycleProbe]</code> 计数归零）</td></tr>
+<tr><td>10</td><td>分支（若声明）</td><td>选中的分支执行、未选中为 Skipped、整轮仍判成功</td></tr>
+</table>
+
+<h2>五、已知限制（新工具不会碰到，但要知道）</h2>
+<table>
+<tr><th>限制</th><th>原因（有代码依据）</th><th>替代</th></tr>
+<tr><td><b>工具目录不支持热插拔</b>：加/换工具必须重启程序</td><td>准入代次被三处持有：<code>App.xaml.cs:311</code> 进程级 pin、<code>ServiceInitializer.InitializeSolutionManager</code> 只初始化一次、<code>MainWindowViewModel.Toolbox</code> 只读属性；且发布时序为“先退役旧代次再发布”，中途失败无可回退</td><td>重启程序（约 10 秒）</td></tr>
+<tr><td><b>分支工具必须按序号声明</b>，不能自选目标节点</td><td>宿主映射出边，工具不接触图结构（与原厂一致：选择在工具内、后继在执行器）</td><td>—</td></tr>
+<tr><td><b>控制输出声明会改变 schema 指纹</b>（仅当声明非空）</td><td>指纹参与已保存方案的兼容判定；无分支能力的工具指纹保持不变，故不破坏既有方案</td><td>—</td></tr>
+<tr><td><b>算法性能上限受第三方库约束</b>（如 HALCON 逐区域算子）</td><td>逐 Blob 调用 45 次 vs 原厂原生一次遍历；按需跳过会破坏显示语义，批量算子不支持逐区域返回</td><td>如需追平，需算法体原生重写（单独立项）</td></tr>
+</table>
+
+<h2>六、样本入口</h2>
+<table>
+<tr><th>要看什么</th><th>看哪里</th></tr>
+<tr><td>输入类工具完整实现</td><td><code>tools/SunEyeVision.ImageSource/Runtime/ImageSourceTool.cs</code>（契约声明）、<code>ImageSourceSession.cs</code>（执行）、<code>Wpf/</code>（参数页）</td></tr>
+<tr><td>处理类 + 复杂结果投影</td><td><code>tools/SunEyeVision.BlobAnalysis/Runtime/BlobTool.cs</code>、<code>Runtime/Algorithms/BlobSession.cs</code>、<code>Runtime/Results/BlobResultProjection.cs</code>、<code>Runtime/Results/BlobResultDisplay.cs</code></td></tr>
+<tr><td>契约定义</td><td><code>src/Plugin.Contracts/ToolContracts.cs</code>、<code>RuntimeEntry.cs</code>、<code>Values.cs</code>、<code>Results/Presentation/*</code></td></tr>
+<tr><td>结果呈现控件</td><td><code>src/Plugin.Wpf/Presenters/Results/DeclaredResultTable.cs</code>、<code>PropertyList/DeclaredPropertyList.cs</code></td></tr>
+<tr><td>分支工具将来怎么写</td><td>本文件 §1.4；引擎侧 <code>src/Execution/WorkflowExecutionEngine.cs</code> 的分支段</td></tr>
+</table>
+
+</body>
+</html>

@@ -28,7 +28,7 @@ public static class RuntimeComponentAdmission
         if(definition is IToolSettingsFields settingsFields)
         {
             var defaults=settingsFields.ReadSettings(settings).CopyValues().ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal);
-            if(definition is IToolResultDisplayProvider display)
+            if (definition is IToolDisplaySettingsProvider display)
                 foreach(var pair in display.CreateDisplaySettings().CopyValues())defaults.Add(pair.Key,new ConstantSetting(pair.Value));
             _=new ToolSettingsEditSession(definition,new FieldSettings(ResultDisplayFields.EditorSchema(definition).Inputs,defaults)).CaptureValidatedFields();
         }

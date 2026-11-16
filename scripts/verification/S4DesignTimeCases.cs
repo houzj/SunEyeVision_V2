@@ -95,7 +95,7 @@ internal static class S2DocumentEditingCases
     private static void VerifyBooleanComponent()
     {
         var writes=new List<bool>();var reject=false;
-        using var editor=new DeclaredFieldEditor(new Port("switch.unit",DataType.Boolean),"开关",
+        using var editor=new DeclaredFieldRow(new Port("switch.unit",DataType.Boolean),"开关",
             new ConstantSetting(false),setting=>
             {
                 if(reject)throw new ArgumentException("拒绝开关提案");
@@ -123,7 +123,7 @@ internal static class S2DocumentEditingCases
         Check(editor.InputElement is null&&editor.Content is null&&eventField.GetValue(last) is null
             &&!editor.TrySetConstant(true),"开关重复释放解绑原件并拒绝关闭后写入");
         var clickWrites=new List<bool>();var rejectClick=false;
-        using var clickable=new DeclaredFieldEditor(new Port("switch.click",DataType.Boolean),"开关",
+        using var clickable=new DeclaredFieldRow(new Port("switch.click",DataType.Boolean),"开关",
             new ConstantSetting(false),setting=>
             {
                 if(rejectClick)throw new ArgumentException("拒绝点击");
@@ -157,7 +157,7 @@ internal static class S2DocumentEditingCases
     private static void VerifyEnumerationComponent()
     {
         var writes=new List<string>();var reject=false;
-        using var editor=new DeclaredFieldEditor(new Port("enum.unit",DataType.Text,
+        using var editor=new DeclaredFieldRow(new Port("enum.unit",DataType.Text,
             Choices:new TextChoiceConstraint(new[]{"first","second","third"})),"枚举",new ConstantSetting("first"),
             value=>{if(reject)throw new ArgumentException("宿主拒绝枚举");writes.Add((string)((ConstantSetting)value).Value!);},
             choiceLabels:new Dictionary<string,string>{{"first","同名"},{"second","同名"},{"third","第三项"}});
@@ -198,7 +198,7 @@ internal static class S2DocumentEditingCases
                 &&!editor.TrySetConstant("second"),"普通枚举重复释放关闭弹层、取消延迟任务并拒绝写入");
         }
         finally{window.Content=null;window.Close();}
-        using var invalid=new DeclaredFieldEditor(new Port("enum.stale",DataType.Text,
+        using var invalid=new DeclaredFieldRow(new Port("enum.stale",DataType.Text,
             Choices:new TextChoiceConstraint(new[]{"valid"})),"旧选项",new ConstantSetting("removed"),_=>{});
         Check(invalid.HasInvalidText&&((ComboBox)invalid.InputElement!).SelectedIndex==-1
             &&invalid.TrySetConstant("valid")&&!invalid.HasInvalidText,"普通枚举保留非法初值供显式修复，不擅自选择首项");
@@ -211,7 +211,7 @@ internal static class S2DocumentEditingCases
         var draft=new FieldSettingsDraft(schema,new FieldSettings(schema.Inputs,
             new Dictionary<string,ParameterSetting>{{port.Id,new ConstantSetting(10L)}}));
         var reject=false;var writes=0;
-        using var editor=new DeclaredFieldEditor(port,"两项单选",draft.CaptureFields().Read(port.Id),setting=>
+        using var editor=new DeclaredFieldRow(port,"两项单选",draft.CaptureFields().Read(port.Id),setting=>
             draft.ApplyFields(new Dictionary<string,ParameterSetting>{{port.Id,setting}},_=>
             {if(reject)throw new ArgumentException("拒绝单选");writes++;}),integerRadioOptions:choices);
         var presenter=editor.InputElement!;
@@ -248,7 +248,7 @@ internal static class S2DocumentEditingCases
                 "整数单选重复关闭释放模板与命令并拒绝迟到写入");
         }
         finally{window.Content=null;window.Close();}
-        using var five=new DeclaredFieldEditor(new Port("radio.five",DataType.Integer,EditModes:FieldEditModes.Constant),"四个候选",
+        using var five=new DeclaredFieldRow(new Port("radio.five",DataType.Integer,EditModes:FieldEditModes.Constant),"四个候选",
             new ConstantSetting(-99L),_=>{},integerRadioOptions:new NativeIntegerRadioOptions(
                 new[]{new NativeIntegerRadioChoice(0,"零"),new NativeIntegerRadioChoice(1,"一"),new NativeIntegerRadioChoice(2,"二"),new NativeIntegerRadioChoice(3,"三")},true,-99));
         Render(five,"native-radio-five-slot-unit.png",600,150);
@@ -257,14 +257,14 @@ internal static class S2DocumentEditingCases
             &&all.Where(button=>button.Visibility==Visibility.Visible).All(button=>button.IsChecked!=true)&&!five.HasInvalidText,
             "整数单选五槽保留空槽隐藏及显式未选值，不回退首项");
         Check(five.TrySetConstant(3L)&&all[3].IsChecked==true,"整数单选五槽显式选择保留同一原模板实例");
-        using var invalid=new DeclaredFieldEditor(new Port("radio.invalid",DataType.Integer,EditModes:FieldEditModes.Constant),"非法原值",
+        using var invalid=new DeclaredFieldRow(new Port("radio.invalid",DataType.Integer,EditModes:FieldEditModes.Constant),"非法原值",
             new ConstantSetting(99L),_=>{},integerRadioOptions:choices);
         Check(invalid.HasInvalidText&&invalid.TrySetConstant(30L)&&!invalid.HasInvalidText,"整数单选非法初值可显式修复");
     }
     private static void VerifyIntegerInputComponent()
     {
         var writes=new List<long>();var reject=false;
-        using var field=new DeclaredFieldEditor(new Port("integer.unit",DataType.Integer,
+        using var field=new DeclaredFieldRow(new Port("integer.unit",DataType.Integer,
             EditModes:FieldEditModes.Constant,Storage:NumericStorage.Int32),"整数",new ConstantSetting(10L),
             value=>{if(reject)throw new ArgumentException("拒绝整数");writes.Add((long)((ConstantSetting)value).Value!);},
             presentation:new FieldPresentation("integer.unit","整数","基础",0,FieldEditorKind.Scalar)
@@ -323,7 +323,7 @@ internal static class S2DocumentEditingCases
     private static void VerifyFloatInputComponent()
     {
         var writes=new List<double>();var reject=false;
-        using var field=new DeclaredFieldEditor(new Port("float.unit",DataType.Number,
+        using var field=new DeclaredFieldRow(new Port("float.unit",DataType.Number,
             EditModes:FieldEditModes.Constant,Storage:NumericStorage.Float64),"浮点",new ConstantSetting(0.25d),
             value=>{if(reject)throw new ArgumentException("拒绝浮点");writes.Add((double)((ConstantSetting)value).Value!);},
             presentation:new FieldPresentation("float.unit","浮点","基础",0,FieldEditorKind.Scalar)
@@ -365,7 +365,7 @@ internal static class S2DocumentEditingCases
     private static void VerifyTextInputComponent()
     {
         var writes=new List<string>();var reject=false;
-        using var field=new DeclaredFieldEditor(new Port("text.unit",DataType.Text,EditModes:FieldEditModes.Constant),
+        using var field=new DeclaredFieldRow(new Port("text.unit",DataType.Text,EditModes:FieldEditModes.Constant),
             "内容",new ConstantSetting("Blob面积:{面积}"),value=>
             {if(reject)throw new ArgumentException("拒绝文本");writes.Add((string)((ConstantSetting)value).Value!);});
         var window=new Window{Content=field,Width=400,Height=150,ShowActivated=false,ShowInTaskbar=false,Left=-32000,Top=-32000};
@@ -400,7 +400,7 @@ internal static class S2DocumentEditingCases
     private static void VerifyColorInputComponent()
     {
         var writes=new List<RecordValue>();var reject=false;
-        using var field=new DeclaredFieldEditor(new Port("color.unit",PresentationDeclarations.Rgba),"颜色",
+        using var field=new DeclaredFieldRow(new Port("color.unit",PresentationDeclarations.Rgba),"颜色",
             new ConstantSetting(PresentationDeclarations.Color(10,20,30,200)),value=>
             {if(reject)throw new ArgumentException("拒绝颜色");writes.Add((RecordValue)((ConstantSetting)value).Value!);});
         var window=new Window{Content=field,Width=400,Height=150,ShowActivated=false,ShowInTaskbar=false,Left=-32000,Top=-32000};
@@ -694,7 +694,7 @@ internal static class S2DocumentEditingCases
                 Check(invalid.HasInvalidText&&!invalid.TrySetConstant(99L)&&invalid.TrySetConstant(1L),
                     "独立设计原单选示例可显式修复非法初值且不回退首项");
             }
-            using(var field=new DeclaredFieldEditor(new Port("host.enabled",DataType.Boolean),"启用",new ConstantSetting(true),_=>throw new Exception("设计宿主不得写参数")))
+            using(var field=new DeclaredFieldRow(new Port("host.enabled",DataType.Boolean),"启用",new ConstantSetting(true),_=>throw new Exception("设计宿主不得写参数")))
             using(var row=new SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow(new("独立原宿主"),field))
             {
                 var list=new SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamListView();list.SetRows(new[]{row});
@@ -795,7 +795,7 @@ internal static class S2DocumentEditingCases
             Render(nativeInputs,"native-input-family-independent.png",400,230);
             Check(Application.Current is null&&nativeInputs.Children.Count==4,
                 "原Apps弹层文本树及枚举可无Application独立装配资源");
-            using var subscription=new DeclaredFieldEditor(new Port("reference",DataType.Integer,EditModes:FieldEditModes.Reference),
+            using var subscription=new DeclaredFieldRow(new Port("reference",DataType.Integer,EditModes:FieldEditModes.Reference),
                 "来源",new ReferenceSetting(new OutputReference("producer","value",DataType.Integer)),_=>throw new Exception("设计渲染不得写入"),
                 ReferenceFieldOptions.Empty);
             Render(subscription,"native-reference-composition-independent.png",400,65);
@@ -857,7 +857,7 @@ internal static class S2DocumentEditingCases
                     Check(new[]{4,5}.All(item=>((SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow)displayRows.Items[item]).View!.Visibility==Visibility.Visible),
                         "基本页位置修正开启同步显示结果页两项点配置");
                     var assist=(SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeAssistUiDraftControls)pose;
-                    var assistRows=assist.Children.OfType<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor>().ToArray();
+                    var assistRows=assist.Children.OfType<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldRow>().ToArray();
                     Check(assistRows.Length==13&&assistRows.Count(row=>row.Visibility==Visibility.Visible)==1,
                         "位置修正默认按信息展示唯一来源");
                     Check(assist.TrySetMode(1)&&assist.IsUnimplementedMode&&assistRows.Count(row=>row.Visibility==Visibility.Visible)==8,
@@ -870,7 +870,7 @@ internal static class S2DocumentEditingCases
                     Check(new[]{4,5}.All(item=>((SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow)displayRows.Items[item]).View!.Visibility==Visibility.Collapsed),
                         "基本页位置修正关闭同步隐藏结果页两项点配置");
                     var roi=Descendants<SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeRoiUiDraftControls>(first).Single();
-                    var outputMask=(SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor)roi.Children[0];
+                    var outputMask=(SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldRow)roi.Children[0];
                     Check(outputMask.FieldId=="ui-only-output-mask"&&outputMask.TrySetConstant(true)&&outputMask.TrySetConstant(false),
                         "输出掩膜使用原开关并能切换临时UI状态");
                     Check(roi.IsEnabled&&Descendants<SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamTabControl.RoiSelectControl>(roi).Count()==2,
@@ -919,11 +919,11 @@ internal static class S2DocumentEditingCases
                     var circle=fields.Fields.Single(field=>field.FieldId=="field:7d59f57f71c65911b88bae5f90d994d9").View;
                     var binaryOutput=fields.Fields.Single(field=>field.FieldId=="field:73f2c01e7b385e0ab2d35f739a88e718");
                     var binaryRow=(SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamTab.LeftRightControl)
-                        ((SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor)binaryOutput.View).EditorBody;
+                        ((SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldRow)binaryOutput.View).EditorBody;
                     var expectedLabelWidth=SunEyeVision.Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang("Language")=="English"?170d:89d;
                     Check(page.ChildLeftWidth==expectedLabelWidth&&binaryRow.ChildLeftWidth==expectedLabelWidth,"运行参数页标签使用当前语言原控件列");
                     var unavailable=replacement.Options.AdditionalAnchoredContents!.Select(item=>item.Content)
-                        .OfType<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor>()
+                        .OfType<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldRow>()
                         .Where(editor=>editor.FieldId.StartsWith("ui-only-run.",StringComparison.Ordinal)).ToArray();
                     Check(unavailable.Length>0&&unavailable.All(editor=>!editor.IsEnabled&&editor.ToolTip is string),
                         "尚未接入的运行参数显示为不可误用的占位控件");
@@ -986,9 +986,9 @@ internal static class S2DocumentEditingCases
                         "真实Blob结果页包含九项原图形声明与七项文字设置，位置修正图形初始隐藏");
                     var textRows=display.Items.Cast<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>()
                         .Where(row=>row.GroupName.NameA=="文本显示").ToArray();
-                    Check(textRows.Length==7&&textRows.All(row=>row.View is SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor editor
+                    Check(textRows.Length==7&&textRows.All(row=>row.View is SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldRow editor
                         ?((FrameworkElement)editor.EditorBody).Height==32:row.View?.Height==32),"文本显示七行采用原厂32设备无关像素行高");
-                    var coordinates=textRows.Select(row=>row.View).OfType<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor>()
+                    var coordinates=textRows.Select(row=>row.View).OfType<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldRow>()
                         .Where(editor=>editor.FieldId is "unavailable.text.x" or "unavailable.text.y").ToArray();
                     Check(coordinates.Length==2&&coordinates.All(editor=>editor.Setting is SunEyeVision.Plugin.Contracts.ConstantSetting{Value:0d}
                         &&editor.InputElement?.GetType().Name=="NativeReferencePresenter"),
@@ -998,7 +998,7 @@ internal static class S2DocumentEditingCases
                     {
                         Render(textGroup,"blob-text-settings.png",600,420);
                         var content=textGroup.Items.Cast<SunEyeVision.Plugin.Wpf.Adapters.Fields.NativeParameterRow>()
-                            .Select(row=>row.View).OfType<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldEditor>()
+                            .Select(row=>row.View).OfType<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldRow>()
                             .Single(editor=>editor.FieldId=="unavailable.text.content");
                         Check(content.InputElement is TextBox textBox&&textBox.ActualHeight>=28,"内容输入框按原行高实际伸展");
                     }
@@ -1076,7 +1076,7 @@ internal static class S2DocumentEditingCases
     }
     private static int replacementInputCount(DeclaredFieldsView fields)
         =>InputFields(fields).Count();
-    private static IEnumerable<DeclaredFieldEditor> InputFields(DeclaredFieldsView fields)
+    private static IEnumerable<DeclaredFieldRow> InputFields(DeclaredFieldsView fields)
     {
         var tabs=(TabControl)fields.Content;
         return tabs.Items.Cast<TabItem>().Select(tab=>(SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamListView)tab.Content)

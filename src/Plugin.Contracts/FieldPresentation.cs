@@ -2,16 +2,19 @@ namespace SunEyeVision.Plugin.Contracts;
 
 /// <summary>Finite UI-neutral layout; conditions address declared stable field IDs, never CLR paths.</summary>
 public sealed record FieldCondition(string FieldId, object? Value, bool Negate = false);
+/// <summary>State-dependent text shown beside one constant Boolean control.</summary>
+public sealed record BooleanStateTips(string Selected,string Unselected="");
 /// <param name="DecimalPlaces">Fixed fractional digits, or null for an explicitly unformatted numeric text composition.</param>
 public sealed record FieldLayout(string Page, string Section, FieldCondition? VisibleWhen=null,
     string? PairWith=null, bool Advanced=false, double? Minimum=null, double? Maximum=null,
     int? DecimalPlaces=2, bool AllowReference=true,
     string? DialogGroup=null, string? DialogTitle=null, bool DialogPrimary=false,
-    double Increment=1);
+    double Increment=1, double? PairMinimum=null, double? PairMaximum=null, FieldCondition? OrVisibleWhen=null,
+    BooleanStateTips? BooleanTips=null, string? PairDisplayName=null);
 
-public enum FieldEditorKind { Scalar, Choice, Record, Sequence, Geometry, Region, ResultPresentation, Image }
+public enum FieldEditorKind { Scalar, Choice, Record, Sequence, Geometry, Region, ResultPresentation, Image, FolderPath }
 [Flags] public enum FieldEditModes { None=0, Constant=1, Reference=2, NumericGeometry=4, Gesture=8, DisplayExpression=16 }
-public enum FieldDefaultPresence { Unset, ExplicitValueRequired }
+public enum FieldDefaultPresence { Unset, ExplicitValueRequired, UseDeclaredDefault }
 public enum RegionFieldMode { LocalGeometry, InheritedGeometry, InheritedRegion,
     InheritedRectangle, InheritedRectangleParameters, InheritedCircle, InheritedCircleParameters }
 /// <summary>Immutable closed text values, enforced by ValueRules for constants and resolved references alike.</summary>
@@ -73,6 +76,7 @@ public sealed class ToolPresentation
             var compatible=field.Editor switch {
                 FieldEditorKind.Scalar=>port.Type.Shape==ValueShape.Scalar,
                 FieldEditorKind.Choice=>port.Type.Shape==ValueShape.Scalar&&port.Type.Scalar==ScalarKind.Text,
+                FieldEditorKind.FolderPath=>port.Type==TypeRef.ScalarOf(ScalarKind.Text)&&port.EditModes==FieldEditModes.Constant,
                 FieldEditorKind.Record or FieldEditorKind.ResultPresentation=>port.Type.Shape==ValueShape.Record,
                 FieldEditorKind.Sequence=>port.Type.Shape==ValueShape.Sequence,
                 FieldEditorKind.Geometry=>IsGeometryDefinition(port.Type),
@@ -82,14 +86,31 @@ public sealed class ToolPresentation
             if(!compatible)throw new ArgumentException("Editor kind disagrees with its declared field type.");
             if(field.Layout is {} layout)
             {
+                if(layout.BooleanTips is {} tips && (port.Type!=TypeRef.ScalarOf(ScalarKind.Boolean)||!port.Required||port.Nullable
+                    ||port.EditModes!=FieldEditModes.Constant||tips.Selected is null||tips.Unselected is null||layout.DialogGroup is not null))
+                    throw new ArgumentException("State tips require a nonnullable constant Boolean outside a dialog composition.");
                 if(string.IsNullOrWhiteSpace(layout.Page)||string.IsNullOrWhiteSpace(layout.Section)||layout.DecimalPlaces is <0 or >15)
                     throw new ArgumentException("Invalid field layout.");
                 if(layout.VisibleWhen is {} condition)
                 {if(!ports.TryGetValue(condition.FieldId,out var controller))throw new ArgumentException("Visibility references an undeclared field.");ValueRules.Freeze(controller,condition.Value);}
+                if(layout.OrVisibleWhen is {} alternative)
+                {
+                    if(layout.VisibleWhen is null||!ports.TryGetValue(alternative.FieldId,out var controller))
+                        throw new ArgumentException("Alternative visibility requires a primary condition and a declared field.");
+                    ValueRules.Freeze(controller,alternative.Value);
+                }
                 if(layout.PairWith is {} paired&&(paired==port.Id||!ports.TryGetValue(paired,out var other)||other.Type!=port.Type||port.Type.Shape!=ValueShape.Scalar||port.Type.Scalar is not (ScalarKind.Int64 or ScalarKind.Float64)))
                     throw new ArgumentException("A range requires two distinct declared numeric fields of the same type.");
+                if(layout.PairDisplayName is not null && (layout.PairWith is null || string.IsNullOrWhiteSpace(layout.PairDisplayName)))
+                    throw new ArgumentException("A range display name requires a paired field and a nonempty label.");
                 if(layout.Minimum is {} minimum&&!double.IsFinite(minimum)||layout.Maximum is {} maximum&&!double.IsFinite(maximum)||layout.Minimum>layout.Maximum)
                     throw new ArgumentException("Invalid visual numeric bounds.");
+                if(layout.PairMinimum is not null || layout.PairMaximum is not null)
+                {
+                    if(layout.PairWith is null || layout.PairMinimum is not {} pairMinimum || layout.PairMaximum is not {} pairMaximum
+                        || !double.IsFinite(pairMinimum) || !double.IsFinite(pairMaximum) || pairMinimum>pairMaximum)
+                        throw new ArgumentException("A parent range requires a paired field and complete finite bounds.");
+                }
                 if(!double.IsFinite(layout.Increment)||layout.Increment<=0)
                     throw new ArgumentException("A numeric increment must be finite and positive.");
                 if(layout.DialogPrimary&&layout.DialogGroup is null||layout.DialogGroup is not null&&(string.IsNullOrWhiteSpace(layout.DialogGroup)||string.IsNullOrWhiteSpace(layout.DialogTitle)))

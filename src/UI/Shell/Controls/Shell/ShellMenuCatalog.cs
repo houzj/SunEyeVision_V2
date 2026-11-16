@@ -51,8 +51,7 @@ internal static class ShellMenuCatalog
             new ShellMenuEntry("run","运行当前工作流","RunWorkflowCommand",ToolGroup:"group3",Priority:0,ToolTip:"运行当前工作流 (F5)",Icon:Native+"toolbarstart_normal.png",DisabledIcon:Native+"toolbarstart_disable.png"),
             new ShellMenuEntry("continuous","连续运行","ToggleContinuousAllCommand",ToolGroup:"group3",Priority:1,Icon:Native+"toolbarrunrepeat_normal.png",DisabledIcon:Native+"toolbarrunrepeat_disable.png",ToolName:"ContinuousRunToggle",Special:"continuous"),
             new ShellMenuEntry("config","综合配置",DisabledReason:"综合配置：功能尚未接入",ToolGroup:"group3",Priority:2,Icon:Workflow+"toolbar_ic_topbar_综合配置_normal.png"),
-            new ShellMenuEntry("frontend","运行界面",DisabledReason:"运行界面：功能尚未接入",ToolGroup:"group3",Priority:3,Icon:Workflow+"toolbar_ic_topbar_fronted_normal.png"),
-            new ShellMenuEntry("theme","主题","ToggleThemeCommand",ToolGroup:"group4",Priority:0,ToolName:"ThemeToggleButton",Special:"theme") })
+            new ShellMenuEntry("frontend","运行界面",DisabledReason:"运行界面：功能尚未接入",ToolGroup:"group3",Priority:3,Icon:Workflow+"toolbar_ic_topbar_fronted_normal.png") })
     };
 
     internal static IEnumerable<ShellMenuEntry> Flatten(IEnumerable<ShellMenuEntry> roots)

@@ -31,7 +31,6 @@ public partial class ResultWorkspaceDesignView : UserControl, IDisposable
     public sealed record ImageChoice(string DisplayName)
     {
         public bool IsCheck => false;
-        public bool CanOverlay => false;
         public bool IsBackgroundImage => false;
     }
     private void OnLoaded(object sender, RoutedEventArgs args)

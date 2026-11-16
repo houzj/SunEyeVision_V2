@@ -34,6 +34,68 @@ public sealed class DocumentDebugSession : IDisposable
     private readonly CancellationTokenSource _retirement;
     private IDisposable? _activity;
     private int _active, _disposed;
+    private CancellationTokenSource? _continuousCancellation;
+    private Task? _continuousTask;
+    public bool IsContinuous => _continuousTask is not null;
+    public bool IsContinuousRequested => _continuousCancellation is { IsCancellationRequested: false };
+    public Task ContinuousCompletion => _continuousTask ?? Task.CompletedTask;
+
+    /// <summary>Serial editor self-execution. The owner-thread callbacks capture
+    /// each invocation; execution remains in the existing runtime pipeline.</summary>
+    public Task StartContinuousAsync(Func<Task<bool>> executeOnce, Func<bool> isCurrent, Func<bool> canExecute)
+    {
+        EnsureOwner();
+        ArgumentNullException.ThrowIfNull(executeOnce);
+        ArgumentNullException.ThrowIfNull(isCurrent);
+        ArgumentNullException.ThrowIfNull(canExecute);
+        if (_continuousTask is not null || Volatile.Read(ref _active) != 0)
+            throw new InvalidOperationException("上一调试尚未排空。");
+        // Capture/accept callbacks have thread affinity, just like Capture.
+        if (SynchronizationContext.Current is null)
+            throw new InvalidOperationException("连续调试必须由编辑器所属同步上下文启动。");
+        var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_retirement.Token);
+        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _continuousCancellation = cancellation;
+        _continuousTask = completion.Task;
+        _ = RepeatAsync();
+        return completion.Task;
+
+        async Task RepeatAsync()
+        {
+            Exception? failure = null;
+            try
+            {
+                while (!cancellation.IsCancellationRequested && isCurrent())
+                {
+                    var ready = canExecute();
+                    // Host predicates may synchronously retire the editor.
+                    // Never capture another invocation after that callback.
+                    if (cancellation.IsCancellationRequested || !isCurrent()) break;
+                    if (ready && !await executeOnce()) break;
+                    // BottomCommand polls at 300 ms and does not overlap a
+                    // previous callback. Await also keeps stop/close responsive.
+                    await Task.Delay(300, cancellation.Token);
+                }
+            }
+            catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
+            catch (Exception error) { failure = error; }
+            finally
+            {
+                _continuousCancellation = null;
+                _continuousTask = null;
+                cancellation.Dispose();
+                if (failure is null) completion.TrySetResult();
+                else completion.TrySetException(failure);
+            }
+        }
+    }
+
+    public void StopContinuous()
+    {
+        if (Environment.CurrentManagedThreadId != _ownerThread)
+            throw new InvalidOperationException("连续调试必须由编辑器所属线程停止。");
+        _continuousCancellation?.Cancel();
+    }
     internal DocumentDebugSession(DocumentSession session, string workflowId, NodeDefinition node, Guid nodeGeneration,
         CancellationToken nodeRetirement, IDisposable activity)
     { _session = session; _workflowId = workflowId; _node = node; NodeGeneration = nodeGeneration;
@@ -67,7 +129,7 @@ public sealed class DocumentDebugSession : IDisposable
         if (Environment.CurrentManagedThreadId != _ownerThread) throw new InvalidOperationException("调试会话必须由编辑器所属线程释放。");
         if (Volatile.Read(ref _disposed) != 0) return;
         _retirement.Cancel();
-        if (Volatile.Read(ref _active) != 0) throw new InvalidOperationException("调试尚未排空，请先等待执行及预览结束。");
+        if (Volatile.Read(ref _active) != 0 || _continuousTask is not null) throw new InvalidOperationException("调试尚未排空，请先等待执行及预览结束。");
         Interlocked.Exchange(ref _disposed, 1);
         _retirement.Dispose(); Interlocked.Exchange(ref _activity, null)?.Dispose();
     }

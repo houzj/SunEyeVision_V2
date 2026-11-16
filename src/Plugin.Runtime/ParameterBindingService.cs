@@ -212,6 +212,11 @@ public sealed class ParameterBindingService : IBindingPlanCompiler
         if(!result.Values.Contains(plan.Reference.PortId))throw new BindingFault("missing-value","Source did not publish the required field.");
         var root=plan.Source.Schema.Outputs.Single(p=>p.Id==plan.Reference.PortId);
         object? value=ValueRules.Freeze(root,result.Values.Get<object?>(plan.Reference.PortId));
+        if(value is null&&root.Type.Shape==ValueShape.Record&&plan.Reference.MemberFieldPath.Count>0)
+        {
+            if(display)return null;
+            throw new BindingFault("source-empty",$"来源 {plan.Source.Node.NodeId}/{root.Id} 本轮没有输出值。");
+        }
         var type=root.Type;var memberPosition=0;
         if(plan.Reference.Selection is not BindingSelection.AllItems)
         {

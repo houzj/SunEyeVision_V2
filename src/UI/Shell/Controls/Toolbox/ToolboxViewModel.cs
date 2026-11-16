@@ -8,7 +8,7 @@ using SunEyeVision.UI.Core;
 
 namespace SunEyeVision.UI.Shell.Controls.Toolbox;
 
-/// <summary>统一展示目录与当前准入状态；条目存在不意味着允许创建工具。</summary>
+/// <summary>只展示当前正式载荷已经准入的工具；历史目录条目不再生成不可用占位项。</summary>
 public sealed class ToolboxViewModel : ViewModelBase
 {
     private readonly ToolDirectoryCatalog? _directory;
@@ -56,7 +56,7 @@ public sealed class ToolboxViewModel : ViewModelBase
             var c = new ToolCategory(g.Name, g.Icon, g.Name, 0, false) { HoverIcon = g.HoverIcon };
             c.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(ToolCategory.IsExpanded) && c.IsExpanded) LoadCategory(c); };
             Categories.Add(c);
-            c.ToolCount = BuildCategory(c.Name, false).Count();
+            c.ToolCount = BuildCategory(c.Name, true).Count();
         }
     }
     public IReadOnlyList<ToolItem> GetCategoryTools(string name)
@@ -87,8 +87,9 @@ public sealed class ToolboxViewModel : ViewModelBase
                 _directory == null ? "运行目录不可用" : runtime == null ? "工具未部署或未准入" :
                 runtime.Category != entry.Category ? "部署分类与已核实映射不一致" : null;
             if (error == null && load) error = CheckRuntime(runtime!);
+            if (error != null) continue;
             yield return new ToolItem(entry.Name, entry.Category, "generic", entry.Name, id)
-            { CatalogIcon = entry.Icon, IsAvailable = load && error == null, LoadError = error ?? (load ? null : "等待加载"),
+            { CatalogIcon = entry.Icon, IsAvailable = true, LoadError = null,
               AvailabilityProbe = error == null && runtime != null ? () => CheckRuntime(runtime) == null : null,
               NodeIconKey = error == null && runtime != null ? () => CheckRuntime(runtime) == null ? _admission.Runtime.GetCatalog(runtime.Id)?.IconKey : null : null };
         }
@@ -96,8 +97,9 @@ public sealed class ToolboxViewModel : ViewModelBase
         foreach (var runtime in _directory.GetCategory(name).Where(t => !verified.Contains(t.Id)))
         {
             var error = load ? CheckRuntime(runtime) : "等待加载";
+            if (error != null) continue;
             yield return new ToolItem(runtime.DisplayName + "（已部署，未匹配目录）", runtime.Category, runtime.Icon, runtime.Description, runtime.Id)
-            { IsAvailable = load && error == null, LoadError = error,
+            { IsAvailable = true, LoadError = null,
               AvailabilityProbe = error == null ? () => CheckRuntime(runtime) == null : null,
               NodeIconKey = error == null ? () => CheckRuntime(runtime) == null ? _admission.Runtime.GetCatalog(runtime.Id)?.IconKey : null : null };
         }

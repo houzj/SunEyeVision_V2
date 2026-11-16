@@ -7,7 +7,6 @@ using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 using SunEyeVision.UI.Services.PathCalculators;
 using SunEyeVision.UI.Services.Connection;
 using SunEyeVision.UI.Services.Path;
-using SunEyeVision.UI.Services.Node;
 using PortDirection = SunEyeVision.UI.Services.Path.PortDirection;
 
 namespace SunEyeVision.UI.Services.Connection

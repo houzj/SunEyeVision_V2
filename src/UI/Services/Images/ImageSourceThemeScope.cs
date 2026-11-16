@@ -1,43 +1,46 @@
 using System;
 using System.Windows;
 using System.Windows.Media;
-using SunEyeVision.UI.Core;
 using SunEyeVision.UI.Themes.Base;
 
 namespace SunEyeVision.UI.Services.Images;
 
-/// <summary>Host palette for the unchanged original source templates; subscribed only while attached.</summary>
+/// <summary>Host palette for the unchanged original source templates; applied once while attached.
+/// 固定主题：宿主只有一套主题字典，因此不再订阅切换事件，只按当前宿主画刷注入一次。</summary>
 public sealed class ImageSourceThemeScope : IDisposable
 {
     private readonly FrameworkElement _target;
-    private readonly ThemeManager? _providedManager;
-    private ThemeManager? _manager;
     private ResourceDictionary? _palette;
     private bool _disposed;
-    public ImageSourceThemeScope(FrameworkElement target,ThemeManager? manager=null)
+    private static readonly Lazy<Brush> OriginalAccent = new(() =>
     {
-        _target=target;_providedManager=manager;target.Loaded+=Loaded;target.Unloaded+=Unloaded;
+        var strip=new ResourceDictionary{Source=new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/ImageSources/ImageSourceStrip.xaml",UriKind.Relative)};
+        return (Brush)strip["ImageSources.Accent"];
+    });
+    public ImageSourceThemeScope(FrameworkElement target)
+    {
+        _target=target;target.Loaded+=Loaded;target.Unloaded+=Unloaded;
         if(target.IsLoaded)Attach();
     }
     private void Loaded(object sender,RoutedEventArgs args)=>Attach();
     private void Unloaded(object sender,RoutedEventArgs args)=>Detach();
     private void Attach()
     {
-        if(_disposed||_manager is not null)return;
-        _manager=_providedManager??ServiceLocator.Instance.GetService<ThemeManager>();
-        // Standalone designer/test surfaces use the control's own original palette.
-        if(_manager is null)return;
-        _manager.ThemeChanged+=ThemeChanged;Apply();
-    }
-    private void ThemeChanged(AppTheme theme)
-    {
-        if(!_disposed&&_target.IsLoaded)Apply();
+        if(_disposed||_palette is not null)return;
+        // Standalone designer/test surfaces without host theme resources keep the control's own original palette.
+        if(_target.TryFindResource(ThemeKeys.PanelBackgroundBrush) is not Brush)return;
+        Apply();
     }
     private void Apply()
     {
         _target.Dispatcher.VerifyAccess();
         object Brush(string key)=>_target.TryFindResource(key) as Brush
             ??throw new InvalidOperationException("图像源缺少宿主主题画刷："+key);
+        // Accent 定义在图像源条自身字典（Themes/Native/Composition/ImageSources/ImageSourceStrip.xaml:6），
+        // 仅当该条已装载时沿视觉树可见。取不到时按原件字典固定值兜底，避免装载时序差异导致
+        // FindResource 抛 ResourceReferenceKeyNotFoundException（曾使测试主机进程崩溃）。
+        var accent=_target.TryFindResource("ImageSources.Accent")
+            ??OriginalAccent.Value;
         var palette=new ResourceDictionary
         {
             ["ImageSources.Background"]=Brush(ThemeKeys.PanelBackgroundBrush),
@@ -56,7 +59,7 @@ public sealed class ImageSourceThemeScope : IDisposable
             ["Col_ComboBox_Popup"]=Brush(ThemeKeys.ContextMenuBackgroundBrush),
             ["Col_ComboBox_Popup_BoderBrush"]=Brush(ThemeKeys.BorderBrush),
             ["Col_ComboBox_Popup_Selected_Background"]=Brush(ThemeKeys.ButtonHoverBackgroundBrush),
-            ["Col_Theme"]=_target.FindResource("ImageSources.Accent")
+            ["Col_Theme"]=accent
         };
         var dictionaries=_target.Resources.MergedDictionaries;
         if(_palette is not null&&dictionaries.IndexOf(_palette) is var index&&index>=0)dictionaries[index]=palette;
@@ -65,8 +68,6 @@ public sealed class ImageSourceThemeScope : IDisposable
     }
     private void Detach()
     {
-        if(_manager is not null)_manager.ThemeChanged-=ThemeChanged;
-        _manager=null;
         if(_palette is not null)_target.Resources.MergedDictionaries.Remove(_palette);
         _palette=null;
     }

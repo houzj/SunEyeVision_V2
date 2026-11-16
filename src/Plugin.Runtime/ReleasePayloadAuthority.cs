@@ -24,12 +24,28 @@ public sealed class ReleasePayloadAuthority
     private readonly Dictionary<string,string> _expectedTools=new(StringComparer.Ordinal);
     private readonly HashSet<string> _frameworkPayloadPaths=new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _frameworkNames=new(StringComparer.Ordinal);
+    private readonly HashSet<string> _trustedPlatformAssemblyNames=new(StringComparer.OrdinalIgnoreCase);
     private readonly string _mode;
+    private readonly bool _verifyAllFilesOnAdmission;
+    public IReadOnlyDictionary<string,long> LastPreparationStageMs { get; private set; } =
+        new System.Collections.ObjectModel.ReadOnlyDictionary<string,long>(new Dictionary<string,long>());
+    public IReadOnlyDictionary<string,long> LastLoadSubstageMs { get; private set; } =
+        new System.Collections.ObjectModel.ReadOnlyDictionary<string,long>(new Dictionary<string,long>());
+    private long _dependencyVerifyMs;
+    private long _dependencyLoadMs;
+    private long _dependencyRecurseMs;
     public IReadOnlyDictionary<string,string> ExpectedTools=>new System.Collections.ObjectModel.ReadOnlyDictionary<string,string>(_expectedTools);
 
-    public ReleasePayloadAuthority(string appRoot)
+    public ReleasePayloadAuthority(string appRoot,bool verifyAllFilesOnAdmission=false)
     {
+        _verifyAllFilesOnAdmission=verifyAllFilesOnAdmission;
         _root=Path.TrimEndingDirectorySeparator(Path.GetFullPath(appRoot));
+        // Framework assemblies are already authenticated by the CLR shared
+        // framework. Do not remap or recursively load the publish directory's
+        // copies during tool admission; VM only admits tool metadata here.
+        if (AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") is string tpa)
+            foreach (var path in tpa.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
+                _trustedPlatformAssemblyNames.Add(Path.GetFileNameWithoutExtension(path));
         using var document=JsonDocument.Parse(File.ReadAllBytes(Path.Combine(_root,"release-payload.json")));
         var payload=document.RootElement;
         RejectDuplicateProperties(payload);
@@ -70,7 +86,12 @@ public sealed class ReleasePayloadAuthority
                 if(owner is null||!relative.StartsWith(owner.Path[..^4]+".",StringComparison.OrdinalIgnoreCase))throw new InvalidDataException("Invalid optional editor payload ownership.");
                 optional=true;
             }
-            if(!optional||File.Exists(path))VerifyFile(path,_entries[relative]);
+            // The manifest and product anchor are checked during admission. The
+            // remaining payload bytes are verified when their assembly is loaded
+            // through VerifyApprovedFile. Strict probes may opt into the old
+            // full-payload audit with verifyAllFilesOnAdmission=true.
+            if((!optional||File.Exists(path))&&(_verifyAllFilesOnAdmission||relative.Equals("SunEyeVision.Foundation.dll",StringComparison.OrdinalIgnoreCase)))
+                VerifyFile(path,_entries[relative]);
         }
         VerifyHostProductIdentity(payload);
         var declared = payload.GetProperty("productComponents").EnumerateArray().ToArray();
@@ -120,15 +141,29 @@ public sealed class ReleasePayloadAuthority
                 throw new InvalidDataException("Framework has no managed publish winners: "+name);
         }
         if(!_frameworkNames.Contains("Microsoft.NETCore.App"))throw new InvalidDataException("Core framework declaration is missing.");
+        InstallDeferredPlatformResolver();
     }
 
     /// <summary>Prepare one complete runtime generation from the approved physical payload.</summary>
     /// <summary>Prepare the complete desktop projection and runtime identities in one admitted generation.</summary>
     public RuntimeDirectorySnapshot PrepareDesktopDirectory()
     {
-        var snapshot=RuntimeDirectorySnapshot.Prepare(LoadToolComponents());
+        var clock=System.Diagnostics.Stopwatch.StartNew();
+        var runtime=LoadToolComponents(null,runtimeOnly:true);
+        var stages=new Dictionary<string,long>(StringComparer.Ordinal)
+        {
+            ["RuntimeAssemblies"] = clock.ElapsedMilliseconds
+        };
+        clock.Restart();
+        var editorCache=new System.Collections.Concurrent.ConcurrentDictionary<string,ToolComponentRegistration?>(StringComparer.Ordinal);
+        ToolComponentRegistration? ResolveEditor(string toolId)
+            =>editorCache.GetOrAdd(toolId,id=>LoadToolComponents(new HashSet<string>(StringComparer.Ordinal){id},runtimeOnly:false)
+                .SingleOrDefault(component=>component.Metadata.Role==ToolComponentRole.Editor));
+        var snapshot=RuntimeDirectorySnapshot.PrepareRuntimeWithEditorResolver(runtime,_components.Select(component=>component.Metadata),ResolveEditor);
+        stages["RuntimeDefinitions"] = clock.ElapsedMilliseconds;
         if(!snapshot.ToolIds.OrderBy(id=>id,StringComparer.Ordinal).SequenceEqual(_expectedTools.Keys.OrderBy(id=>id,StringComparer.Ordinal),StringComparer.Ordinal))
             throw new InvalidDataException("Admitted runtime directory differs from the declared release set.");
+        LastPreparationStageMs=new System.Collections.ObjectModel.ReadOnlyDictionary<string,long>(stages);
         return snapshot;
     }
     public RuntimeDirectorySnapshot PrepareRuntimeDirectory()
@@ -144,14 +179,20 @@ public sealed class ReleasePayloadAuthority
     private IReadOnlyList<ToolComponentRegistration> LoadToolComponents(IReadOnlySet<string>? toolIds,bool runtimeOnly)
     {
         var result=new List<ToolComponentRegistration>();
+        var verifyMs=0L; var loadMs=0L; var dependencyMs=0L; var metadataMs=0L;
+        _dependencyVerifyMs=0; _dependencyLoadMs=0; _dependencyRecurseMs=0;
         foreach(var group in _components.Where(c=>(!runtimeOnly||c.Metadata.Role==ToolComponentRole.Runtime) && (toolIds==null||toolIds.Contains(c.Metadata.ToolId))).GroupBy(c=>c.Path,StringComparer.OrdinalIgnoreCase))
         {
             var path=Resolve(group.Key);
             if(!File.Exists(path)&&group.All(c=>c.Metadata.Role==ToolComponentRole.Editor))continue;
+            var stage=System.Diagnostics.Stopwatch.StartNew();
             VerifyApprovedFile(path);
+            verifyMs+=stage.ElapsedMilliseconds; stage.Restart();
             var assembly=AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
+            loadMs+=stage.ElapsedMilliseconds; stage.Restart();
             VerifyApprovedAssembly(assembly);
             LoadApprovedDependencies(assembly,_entries[group.Key],new HashSet<string>(StringComparer.Ordinal));
+            dependencyMs+=stage.ElapsedMilliseconds; stage.Restart();
             var actual=assembly.GetCustomAttributes<ToolComponentAttribute>().ToArray();
             if(actual.Length!=group.Count()||actual.Any(a=>!group.Any(c=>a.Metadata==c.Metadata&&a.EntryType==c.EntryType)))
                 throw new InvalidDataException("Component PE declarations differ from the release payload: "+group.Key);
@@ -160,7 +201,18 @@ public sealed class ReleasePayloadAuthority
                 var type=assembly.GetType(declaration.EntryType,throwOnError:true)!;
                 result.Add(new(declaration.Metadata,type));
             }
+            metadataMs+=stage.ElapsedMilliseconds;
         }
+        LastLoadSubstageMs=new System.Collections.ObjectModel.ReadOnlyDictionary<string,long>(new Dictionary<string,long>(StringComparer.Ordinal)
+        {
+            ["VerifyEntry"] = verifyMs,
+            ["LoadAssembly"] = loadMs,
+            ["LoadDependencies"] = dependencyMs,
+            ["LoadDependencies.VerifyEntry"] = _dependencyVerifyMs,
+            ["LoadDependencies.LoadAssembly"] = _dependencyLoadMs,
+            ["LoadDependencies.Recurse"] = _dependencyRecurseMs,
+            ["ReadComponentMetadata"] = metadataMs
+        });
         return result;
     }
 
@@ -178,6 +230,8 @@ public sealed class ReleasePayloadAuthority
         }
         foreach(var reference in owner.GetReferencedAssemblies())
         {
+            if (!string.IsNullOrWhiteSpace(reference.Name) && _trustedPlatformAssemblyNames.Contains(reference.Name))
+                continue;
             var matches=_entries.Values.Where(entry=>entry.Identity==reference.FullName).ToArray();
             if(matches.Length==0)continue;
             var winner=matches.Length==1?null:resolver?.ResolveAssemblyToPath(reference);
@@ -185,15 +239,67 @@ public sealed class ReleasePayloadAuthority
                 winner is not null&&string.Equals(Resolve(candidate.Path),Path.GetFullPath(winner),StringComparison.OrdinalIgnoreCase))
                 ??throw new InvalidDataException("Approved dependency has no unique declared runtime winner: "+reference.FullName);
             var path=Resolve(entry.Path);
+            var stage=System.Diagnostics.Stopwatch.StartNew();
             VerifyFile(path,entry);
+            _dependencyVerifyMs+=stage.ElapsedMilliseconds;
+            // VM 的启动阶段只建立工具元数据和声明，不把 HALCON/OpenCV
+            // 这类大平台运行库递归装入进程。它们仍在准入时完成发布身份校验，
+            // 真正执行图像算法时由宿主安装的默认上下文解析入口
+            // （InstallDeferredPlatformResolver）按需装载，避免启动阶段承担算法库
+            // 的映射、静态初始化和原生依赖探测成本。
+            if (IsDeferredPlatformDependency(reference.Name))
+                continue;
             var loaded=AssemblyLoadContext.Default.Assemblies.SingleOrDefault(assembly=>assembly.FullName==reference.FullName);
+            stage.Restart();
             loaded??=AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
+            _dependencyLoadMs+=stage.ElapsedMilliseconds;
             // The CLR can return an existing host instance even for a requested approved path.
             // Apply the same exact PE identity and byte proof to both resolution outcomes.
             if(loaded.FullName!=entry.Identity)throw new FileLoadException("Loaded dependency identity differs from the approved payload.",loaded.Location);
             VerifyFile(loaded.Location,entry);
+            stage.Restart();
             LoadApprovedDependencies(loaded,entry,visited);
+            _dependencyRecurseMs+=stage.ElapsedMilliseconds;
         }
+    }
+    private static bool IsDeferredPlatformDependency(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return false;
+        return name.Equals("halcondotnetxl",StringComparison.OrdinalIgnoreCase)
+            || name.StartsWith("halcon",StringComparison.OrdinalIgnoreCase)
+            || name.StartsWith("opencv",StringComparison.OrdinalIgnoreCase)
+            || name.StartsWith("mv",StringComparison.OrdinalIgnoreCase);
+    }
+    // 延迟装载的平台大件以 Private=false 引用，既不进 deps.json 也不进 TPA；工具隔间按
+    // 「宿主目录可解析」把它们交回默认上下文，而默认上下文没有解析入口，于是执行首次用到
+    // HALCON/OpenCV 时必然抛 FileNotFoundException。这里按 payload 唯一真源补上该入口：
+    // 精确 PE 身份 + SHA256 校验通过后才映射，未登记的身份一律交回 CLR 默认行为。
+    private static readonly object ResolverGate=new();
+    private static readonly HashSet<string> InstalledResolverRoots=new(StringComparer.OrdinalIgnoreCase);
+    private void InstallDeferredPlatformResolver()
+    {
+        lock(ResolverGate)
+        {
+            if(!InstalledResolverRoots.Add(_root))return;
+        }
+        AssemblyLoadContext.Default.Resolving+=OnDeferredPlatformResolving;
+    }
+    private Assembly? OnDeferredPlatformResolving(AssemblyLoadContext context,AssemblyName requested)
+    {
+        if(string.IsNullOrWhiteSpace(requested.Name)||!IsDeferredPlatformDependency(requested.Name))return null;
+        var identity=requested.FullName;
+        if(identity is null)return null;
+        Entry match;
+        lock(ResolverGate)
+        {
+            var matches=_entries.Values.Where(entry=>entry.Identity==identity).ToArray();
+            if(matches.Length!=1)return null;
+            match=matches[0];
+        }
+        var path=Resolve(match.Path);
+        if(!File.Exists(path))return null;
+        VerifyFile(path,match);
+        return AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
     }
     private void VerifyHostProductIdentity(JsonElement payload)
     {

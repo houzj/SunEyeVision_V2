@@ -1,0 +1,7 @@
+dotnet build SunEyeVision.slnx -c Release --no-restore -m:1 -p:HalconSourceRoot=D:\MyWork\SunEyeVision_V2\libs\halcon
+最终编译成功，测试和程序未运行。
+C:\Users\Administrator\.codex\worktrees\param-window-datatree-project-v2\SunEyeVision_V2\tests\VariableValue.Runtime.Tests\VariableValue.Runtime.Tests.csproj : warning NU1900: 获取包漏洞数据时出错: 无法加载源 https://api.nuget.org/v3/index.json 的服务索引。
+    3308 个警告
+    0 个错误
+
+已用时间 00:00:15.66

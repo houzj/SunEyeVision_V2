@@ -1,0 +1,67 @@
+{
+  "source": "用户提供并明确确认：原厂3个tab展开高级参数的截图 默认是不展开的",
+  "advancedDefault": "collapsed",
+  "runtimeConfirmedByAgent": false,
+  "unknown": [
+    "展开状态跨Tab是否保持",
+    "关闭重开是否保持展开状态",
+    "版本由截图无法独立识别",
+    "动态焦点、鼠标键盘与资源释放"
+  ],
+  "images": [
+    {
+      "image": "01.png",
+      "caption": "基本参数：图像输入、ROI、位置修正",
+      "source": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\codex-clipboard-2c44f571-77ad-4bac-9c94-bdbf44d7cf59.png",
+      "sha256": "579EE2E7CE559086891D3FEF9474B969C81F7A48C34D1BFD000937B23EC07CC0"
+    },
+    {
+      "image": "02.png",
+      "caption": "运行参数：基本项及高级参数入口",
+      "source": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\codex-clipboard-0ed6a37b-b68a-4fdc-a6b4-b6ed4810e378.png",
+      "sha256": "88AFA18F976A7C6EE1CB7CF751BFC240872A02B0A2CB9A821E2CBF2EB1C8BFE5"
+    },
+    {
+      "image": "03.png",
+      "caption": "运行参数：高级参数展开上段",
+      "source": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\codex-clipboard-d3ece3ae-e86d-4e44-b41c-3569bf42eb15.png",
+      "sha256": "62C102BB6D08566B3635D1EC4822A3C9B2244A22E7A8F90319B3C6203C82DC3B"
+    },
+    {
+      "image": "04.png",
+      "caption": "运行参数：高级参数展开下段",
+      "source": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\codex-clipboard-92d5f4c3-4ebf-43d3-9a71-441b17f2f459.png",
+      "sha256": "E9B6A7328C393CB4DB7ACF0CD35D17D22CFCC31DD3959C18222F0562E5DDCE7C"
+    },
+    {
+      "image": "05.png",
+      "caption": "结果显示：基本判定及图像显示",
+      "source": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\codex-clipboard-43b9649e-d402-46ca-908d-b81e3a5807a9.png",
+      "sha256": "D9C81E78FAFCAF355E57C15751CDFEFA06644F19C7A59F897D73D8CD41591694"
+    },
+    {
+      "image": "06.png",
+      "caption": "结果显示：高级判定展开上段",
+      "source": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\codex-clipboard-e86f0051-ffc0-43e4-bed9-dd54c7b50579.png",
+      "sha256": "BC747AED407E54A7E61602B9D07242C42406D5C11E4FAB200EBE9246337E6627"
+    },
+    {
+      "image": "07.png",
+      "caption": "结果显示：高级判定展开下段",
+      "source": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\codex-clipboard-6d9c2f7a-08e4-455b-8427-9e14fdd9ae97.png",
+      "sha256": "08A2404634BFD86F56840417BC4D36D409584943CBBB0C6C88FCBDBAC54E5C7F"
+    },
+    {
+      "image": "08.png",
+      "caption": "结果显示：图像显示完整组",
+      "source": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\codex-clipboard-2495f112-c10a-420c-bbb5-75a038d2cc93.png",
+      "sha256": "88C9B09F2317D63E20808876DBD7A7B6FB91BAA68C374803E2B5BB9FA0327A70"
+    },
+    {
+      "image": "09.png",
+      "caption": "结果显示：文本显示完整组",
+      "source": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\codex-clipboard-5018cbfb-e853-46e4-8dc2-97eab963948c.png",
+      "sha256": "1A1DB14B72E983597CB1E9AD7570B4CCEFFD73444BA40132B4E1C625DD06F91E"
+    }
+  ]
+}

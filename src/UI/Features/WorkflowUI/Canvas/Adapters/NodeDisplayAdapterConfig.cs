@@ -119,6 +119,10 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters
         public static CameraRuntimeComposition CameraRuntime
             => _cameraRuntime ??= new CameraRuntimeComposition(diagnostic => VisionLogger.Instance.Log(diagnostic.Level switch { SunEyeVision.DeviceDriver.Cameras.Contracts.CameraDiagnosticLevel.Error => LogLevel.Error, SunEyeVision.DeviceDriver.Cameras.Contracts.CameraDiagnosticLevel.Warning => LogLevel.Warning, _ => LogLevel.Info }, $"[{diagnostic.DeviceId}][{diagnostic.CorrelationId}] {diagnostic.Message}{(diagnostic.Error is null ? string.Empty : Environment.NewLine + diagnostic.Error)}", "CameraRuntime"));
 
+        internal static SunEyeVision.Plugin.Contracts.Acquisition.CameraState ReadCameraState(string deviceId)
+            => _cameraRuntime?.Runtime.TryGetSession(new SunEyeVision.Plugin.Contracts.Acquisition.CameraDeviceRef(deviceId), out var session) == true
+                ? session.Adapter.State : SunEyeVision.Plugin.Contracts.Acquisition.CameraState.Offline;
+
         public static CommunicationRuntimeComposition CommunicationRuntime
         {
             get

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>B0-3 算子对照表</title>
+<style>
+:root{--ink:#1f2328;--muted:#656d76;--line:#d0d7de;--soft:#f6f8fa;--ok:#1a7f37;--warn:#9a6700;--bad:#cf222e}
+*{box-sizing:border-box}
+body{margin:0;padding:32px 22px 70px;color:var(--ink);font:15px/1.7 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+main{max-width:1240px;margin:0 auto}
+h1{font-size:24px;margin:0 0 4px}
+h2{font-size:18px;margin:28px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+p.sub{color:var(--muted);font-size:13px;margin-bottom:20px}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th,td{border:1px solid var(--line);padding:6px 9px;vertical-align:top;text-align:left}
+th{background:var(--soft);font-weight:600}
+code{background:var(--soft);padding:1px 4px;border-radius:3px;font:12px/1.5 ui-monospace,Consolas,monospace}
+.box{border:1px solid var(--line);border-radius:8px;padding:12px 16px;margin:14px 0;background:var(--soft)}
+.ok{color:var(--ok);font-weight:600}
+.warn{color:var(--warn);font-weight:600}
+.bad{color:var(--bad);font-weight:600}
+</style>
+</head>
+<body>
+<main>
+<h1>B0-3 算子对照表 · 图像源与 Blob 全链路重构</h1>
+<p class="sub">生成于 2026-11-10 ｜ 依据《图像源与Blob全链路重构计划-20261110-092128》B0-3 ｜ 只读取证，未改任何产品代码</p>
+
+<h2>结论</h2>
+<div class="box">
+<ul>
+<li>VM 参数闭包共 <b>104 项</b>，逐项核对承接：<b>98 项已承接</b>（HALCON 算子或已核本方实现），<b>6 项无承接</b>。</li>
+<li>关键事实：<span class="warn">阈值不是 HALCON Threshold 算子</span>。单/双/自动/软阈值全部由 <code>BlobThresholdTransform.Apply</code>（<code>Runtime/Algorithms/BlobThresholdTransform.cs:12-69</code>）按已核原标量公式逐像素计算，只有最终二值化用 <code>work.Threshold(1,255)</code>（<code>BlobSession.cs:113</code>）。这与原厂动态阈值发布接口未证实有关，执行回执里已写 <code>LocalScalarFormulaCalculation</code>。</li>
+<li>6 项无承接：<code>HoleMinArea</code>（孔洞最小面积）、<code>SelectByHistInfo</code>（按直方图信息筛选）、<code>MaxAreaInnerRectNum</code>（最大内接矩形数量）、<code>OverlapRatio</code>（重叠率）、<code>MaxOutPixelNumEnable</code> / <code>MaxOutPixelNum</code>（最大输出像素数）。这些参数在原件参数表里存在，但当前 Runtime 无读取点，<span class="bad">属 B3-1 需要补执行逻辑或经取证判定不适用的项</span>。</li>
+<li>另有 14 项在 Runtime 中不直接读名字，但经 <code>BlobVmFindParameters.FromSettings</code>（<code>BlobVmFindParameters.cs:118-136</code>）与 <code>BlobSettings</code> 同义字段双向映射，属「命名差异承接」，不是缺失。</li>
+</ul>
+</div>
+
+<h2>参数族 → 算子/实现 → 调用点</h2>
+<table>
+<thead><tr><th style="width:18%">参数族</th><th style="width:26%">承接实现</th><th style="width:36%">调用点（文件:行）</th><th style="width:20%">备注</th></tr></thead>
+<tbody>
+<tr><td>阈值族（模式/极性/上下阈值/软阈值比例）</td><td>本方标量阈值实现 + HALCON 二值化</td><td><code>BlobThresholdTransform.cs:12-69</code>、<code>BlobSession.cs:105,113</code></td><td>非 HALCON Threshold 算子</td></tr>
+<tr><td>连通性</td><td>HALCON neighborhood + Connection</td><td><code>HalconBlobExecutionScope</code>、<code>BlobSession.cs:116</code></td><td>4/8 连通</td></tr>
+<tr><td>连通域特征</td><td>AreaCenter / SmallestRectangle1 / SmallestRectangle2 / OrientationRegion / Circularity / Rectangularity / Contlength</td><td><code>BlobSession.cs:276-283</code></td><td>逐 Blob 特征</td></tr>
+<tr><td>灰度特征</td><td>MinMaxGray</td><td><code>BlobSession.cs:146</code></td><td>最小/最大灰度、对比度</td></tr>
+<tr><td>区域筛选（SelectBy* / Min* / Max*）</td><td>本方区间判定 + HALCON SelectShape</td><td><code>BlobSession.cs:205-239</code>（判定）、<code>:233</code>（SelectShape）</td><td>面积/圆度/矩形度/框角/轴比/中心偏差</td></tr>
+<tr><td>结果判定限值（*LimitEnable/Low/High）</td><td>本方判定，不改变区域集合</td><td><code>BlobSession.cs:241-262</code></td><td>只影响 OK/NG 与消息</td></tr>
+<tr><td>数量限制与排序</td><td>本方候选选择</td><td><code>BlobSession.cs:120</code>（SelectSlots）、<code>:135</code>（Order）</td><td>FindNum / SortFeature / SortMode</td></tr>
+<tr><td>输出开关（Blob 图/二值图/轮廓）</td><td>RegionToBin + 区域捕获 + 轮廓读取</td><td><code>BlobSession.cs:111,125,137,145</code></td><td>GenRegionToBin / ReadBoundary</td></tr>
+<tr><td>ROI 与掩膜域</td><td>Difference / Intersection / RegionToBin</td><td><code>BlobSession.cs:103-104</code>、<code>BlobThresholdTransform.cs:128</code></td><td>位置修正走 TransformRegion</td></tr>
+<tr><td>统计输出</td><td>AreaCenter / GrayHisto / Intensity</td><td><code>BlobSession.cs:158,164,166</code></td><td>白比、直方图、均值</td></tr>
+<tr><td class="bad">无承接（6 项）</td><td class="bad">无读取点</td><td class="bad">—</td><td class="bad">转 B3-1</td></tr>
+</tbody>
+</table>
+
+<h2>逐参数明细（104 项）</h2>
+<table>
+<thead><tr><th style="width:4%">#</th><th style="width:24%">VM 参数</th><th style="width:20%">参数族</th><th style="width:36%">承接实现 / 调用点</th><th style="width:16%">结论</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><code>ThresholdType</code></td><td>threshold</td><td><code>BlobThresholdTransform.cs:12-69 + BlobSession.cs:105,113</code></td><td>mapped</td></tr>
+<tr><td>2</td><td><code>Polarity</code></td><td>threshold</td><td><code>BlobThresholdTransform.cs:12-69 + BlobSession.cs:105,113</code></td><td>mapped</td></tr>
+<tr><td>3</td><td><code>LowThreshold</code></td><td>threshold</td><td><code>BlobThresholdTransform.cs:12-69 + BlobSession.cs:105,113</code></td><td>mapped</td></tr>
+<tr><td>4</td><td><code>HightThreshold</code></td><td>threshold</td><td><code>BlobThresholdTransform.cs:12-69 + BlobSession.cs:105,113</code></td><td>mapped</td></tr>
+<tr><td>5</td><td><code>LowSoftThreshold</code></td><td>threshold</td><td><code>BlobThresholdTransform.cs:12-69 + BlobSession.cs:105,113</code></td><td>mapped</td></tr>
+<tr><td>6</td><td><code>HightSoftThreshold</code></td><td>threshold</td><td><code>BlobThresholdTransform.cs:12-69 + BlobSession.cs:105,113</code></td><td>mapped</td></tr>
+<tr><td>7</td><td><code>Softness</code></td><td>threshold</td><td><code>BlobThresholdTransform.cs:12-69 + BlobSession.cs:105,113</code></td><td>mapped</td></tr>
+<tr><td>8</td><td><code>SoftLeftRatio</code></td><td>threshold</td><td><code>BlobThresholdTransform.cs:12-69 + BlobSession.cs:105,113</code></td><td>mapped</td></tr>
+<tr><td>9</td><td><code>SoftRightRatio</code></td><td>threshold</td><td><code>BlobThresholdTransform.cs:12-69 + BlobSession.cs:105,113</code></td><td>mapped</td></tr>
+<tr><td>10</td><td><code>SoftLowRatio</code></td><td>threshold</td><td><code>BlobThresholdTransform.cs:12-69 + BlobSession.cs:105,113</code></td><td>mapped</td></tr>
+<tr><td>11</td><td><code>SoftHighRatio</code></td><td>threshold</td><td><code>BlobThresholdTransform.cs:12-69 + BlobSession.cs:105,113</code></td><td>mapped</td></tr>
+<tr><td>12</td><td><code>FindNum</code></td><td>order-count</td><td><code>SelectSlots (BlobSession.cs:120)</code></td><td>mapped</td></tr>
+<tr><td>13</td><td><code>HoleMinArea</code></td><td>no-handler</td><td><code>-</code></td><td>gap</td></tr>
+<tr><td>14</td><td><code>SelectByArea</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>15</td><td><code>MinArea</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>16</td><td><code>MaxArea</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>17</td><td><code>BolbOutLineEnable</code></td><td>output-switch</td><td><code>BlobSession.cs:111,125,137,145</code></td><td>mapped</td></tr>
+<tr><td>18</td><td><code>BlobContourType</code></td><td>output-switch</td><td><code>BlobSession.cs:111,125,137,145</code></td><td>mapped</td></tr>
+<tr><td>19</td><td><code>BolbImageEnable</code></td><td>output-switch</td><td><code>BlobSession.cs:111,125,137,145</code></td><td>mapped</td></tr>
+<tr><td>20</td><td><code>BinaryImageEnable</code></td><td>output-switch</td><td><code>BlobSession.cs:111,125,137,145</code></td><td>mapped</td></tr>
+<tr><td>21</td><td><code>SelectByHistInfo</code></td><td>no-handler</td><td><code>-</code></td><td>gap</td></tr>
+<tr><td>22</td><td><code>SelectByBoxAngle</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>23</td><td><code>MinBoxAngle</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>24</td><td><code>MaxBoxAngle</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>25</td><td><code>SelectByRectWidth</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>26</td><td><code>MinRectWidth</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>27</td><td><code>MaxRectWidth</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>28</td><td><code>SelectByRectHeight</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>29</td><td><code>MinRectHeight</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>30</td><td><code>MaxRectHeight</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>31</td><td><code>SelectByPerimeter</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>32</td><td><code>MinPerimeter</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>33</td><td><code>MaxPerimeter</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>34</td><td><code>SelectByShortAxis</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>35</td><td><code>MinShortAxis</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>36</td><td><code>MaxShortAxis</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>37</td><td><code>SelectByLongAxis</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>38</td><td><code>MinLongAxis</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>39</td><td><code>MaxLongAxis</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>40</td><td><code>SelectByCircularuty</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>41</td><td><code>MinCircularity</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>42</td><td><code>MaxCircularity</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>43</td><td><code>SelectByRectangularity</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>44</td><td><code>MinRectangularity</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>45</td><td><code>MaxRectangularity</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>46</td><td><code>SelectByCentraBias</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>47</td><td><code>MinCenterBias</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>48</td><td><code>MaxCenterBias</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>49</td><td><code>AxisRatioEnable</code></td><td>other</td><td><code>BlobVmFindParameters.FromSettings (BlobVmFindParameters.cs:118-136)</code></td><td>mapped</td></tr>
+<tr><td>50</td><td><code>MinAxisRatio</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>51</td><td><code>MaxAxisRatio</code></td><td>region-filter</td><td><code>FilterCandidates + SelectShape (BlobSession.cs:205-239,233)</code></td><td>mapped</td></tr>
+<tr><td>52</td><td><code>SortFeature</code></td><td>order-count</td><td><code>BlobCandidateSelection (BlobSession.cs:135)</code></td><td>mapped</td></tr>
+<tr><td>53</td><td><code>SortMode</code></td><td>order-count</td><td><code>BlobCandidateSelection (BlobSession.cs:135)</code></td><td>mapped</td></tr>
+<tr><td>54</td><td><code>Connectivity</code></td><td>connectivity</td><td><code>HalconBlobExecutionScope + Connection (BlobSession.cs:116)</code></td><td>mapped</td></tr>
+<tr><td>55</td><td><code>MaxAreaInnerRectNum</code></td><td>no-handler</td><td><code>-</code></td><td>gap</td></tr>
+<tr><td>56</td><td><code>OverlapRatio</code></td><td>no-handler</td><td><code>-</code></td><td>gap</td></tr>
+<tr><td>57</td><td><code>MaxOutPixelNumEnable</code></td><td>no-handler</td><td><code>-</code></td><td>gap</td></tr>
+<tr><td>58</td><td><code>MaxOutPixelNum</code></td><td>no-handler</td><td><code>-</code></td><td>gap</td></tr>
+<tr><td>59</td><td><code>OKWhenNumIsZero</code></td><td>other</td><td><code>BlobVmFindParameters.FromSettings (BlobVmFindParameters.cs:118-136)</code></td><td>mapped</td></tr>
+<tr><td>60</td><td><code>BlobNumLimitEnable</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>61</td><td><code>BlobNumLimitLow</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>62</td><td><code>BlobNumLimitHigh</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>63</td><td><code>BlobAreaLimitEnable</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>64</td><td><code>BlobAreaLimitLow</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>65</td><td><code>BlobAreaLimitHigh</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>66</td><td><code>BlobTotalAreaLimitEnable</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>67</td><td><code>BlobTotalAreaLimitLow</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>68</td><td><code>BlobTotalAreaLimitHigh</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>69</td><td><code>CentroidXLimitEnable</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>70</td><td><code>CentroidXLimitLow</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>71</td><td><code>CentroidXLimitHigh</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>72</td><td><code>CentroidYLimitEnable</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>73</td><td><code>CentroidYLimitLow</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>74</td><td><code>CentroidYLimitHigh</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>75</td><td><code>AngleLimitEnable</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>76</td><td><code>AngleLimitLow</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>77</td><td><code>AngleLimitHigh</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>78</td><td><code>CenterXLimitEnable</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>79</td><td><code>CenterXLimitLow</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>80</td><td><code>CenterXLimitHigh</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>81</td><td><code>CenterYLimitEnable</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>82</td><td><code>CenterYLimitLow</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>83</td><td><code>CenterYLimitHigh</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>84</td><td><code>BoxHeightLimitEnable</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>85</td><td><code>BoxHeightLimitLow</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>86</td><td><code>BoxHeightLimitHigh</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>87</td><td><code>BoxWidthLimitEnable</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>88</td><td><code>BoxWidthLimitLow</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>89</td><td><code>BoxWidthLimitHigh</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>90</td><td><code>PerimeterLimitEnable</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>91</td><td><code>PerimeterLimitLow</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>92</td><td><code>PerimeterLimitHigh</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>93</td><td><code>LongAxisLimitEnable</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>94</td><td><code>LongAxisLimitLow</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>95</td><td><code>LongAxisLimitHigh</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>96</td><td><code>ShortAxisLimitEnable</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>97</td><td><code>ShortAxisLimitLow</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>98</td><td><code>ShortAxisLimitHigh</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>99</td><td><code>CircularityLimitEnable</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>100</td><td><code>CircularityLimitLow</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>101</td><td><code>CircularityLimitHigh</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>102</td><td><code>RectangularityLimitEnable</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>103</td><td><code>RectangularityLimitLow</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+<tr><td>104</td><td><code>RectangularityLimitHigh</code></td><td>result-limit</td><td><code>EvaluateVmResultLimits (BlobSession.cs:241-262)</code></td><td>mapped</td></tr>
+</tbody>
+</table>
+</main>
+</body>
+</html>

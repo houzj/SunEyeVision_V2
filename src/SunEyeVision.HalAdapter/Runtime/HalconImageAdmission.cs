@@ -47,7 +47,7 @@ public static class HalconImageAdmission
         using var count = input.CountChannels();
         if (count.I == 1) return input.Clone();
         if (count.I == 3) return input.Rgb1ToGray();
-        if (count.I != 4) throw new NotSupportedException("支持Gray8/Bgr24/Bgra32图像。");
+        if (count.I != 4) throw new NotSupportedException("支持单通道、RGB 和 RGBA 图像。");
         using var r = input.AccessChannel(1); using var g = input.AccessChannel(2); using var b = input.AccessChannel(3);
         HOperatorSet.Compose3(r, g, b, out var composed);
         using (composed) using (var rgb = new HImage(composed)) return rgb.Rgb1ToGray();

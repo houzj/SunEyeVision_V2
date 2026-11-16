@@ -32,7 +32,8 @@ internal sealed class DeclaredFieldState : IDisposable
         return Convert.ToString(scalar,System.Globalization.CultureInfo.InvariantCulture)??throw new InvalidOperationException("普通参数没有字符串值。");
     }
     internal void EnableNumericModel(FieldLayout? layout)=>NumericModel??=new(Port,layout,_accepted);
-    internal NumericModelReadResult ReadNumericModel(Func<bool>? current=null,Func<ConstantSetting?>? readCurrentValue=null)
+    internal NumericModelReadResult ReadNumericModel(Func<bool>? current=null,Func<ConstantSetting?>? readCurrentValue=null,
+        ConstantSetting? batchPeerValue=null)
     {
         var peer=NumericPeer;var peerAcceptance=peer?.AcceptanceVersion;var peerVersion=peer?.NumericModel?.Version;
         var numericVersion=NumericModel?.Version;
@@ -47,9 +48,19 @@ internal sealed class DeclaredFieldState : IDisposable
             var read=readCurrentValue??_readCurrentValue;var value=read?.Invoke();
             if(!Current()||request!=_numericRead||acceptance!=AcceptanceVersion)return new(Port.Id,NumericModelReadStatus.Retired);
             if(value is null)return new(Port.Id,NumericModelReadStatus.Unavailable);
-            var prepared=model.ReadProjection(value.Value!);NumericCheck?.Invoke(value.Value!);
-            if(!Current()||request!=_numericRead||acceptance!=AcceptanceVersion)return new(Port.Id,NumericModelReadStatus.Retired);
+            model.ReadProjection(value.Value!);
             var scalar=NativeNumericSequenceProjection.Single(Port,value.Value!);
+            if(batchPeerValue is not null&&peer?.NumericModel is {} peerModel&&NumericEndpoint is 0 or 1)
+            {
+                peerModel.ReadProjection(batchPeerValue.Value!);
+                var peerScalar=NativeNumericSequenceProjection.Single(peer.Port,batchPeerValue.Value!);
+                var comparison=Convert.ToDouble(scalar,System.Globalization.CultureInfo.InvariantCulture)
+                    -Convert.ToDouble(peerScalar,System.Globalization.CultureInfo.InvariantCulture);
+                if((NumericEndpoint==0?comparison:-comparison)>1e-8)
+                    throw new ArgumentException("范围下限不能大于上限。");
+            }
+            else NumericCheck?.Invoke(value.Value!);
+            if(!Current()||request!=_numericRead||acceptance!=AcceptanceVersion)return new(Port.Id,NumericModelReadStatus.Retired);
             var changed=!Equals(model.CurValue,scalar)||!model.HasValue;
             numericVersion=model.Version+(changed?1:0);
             var status=model.Install(scalar);
@@ -117,7 +128,10 @@ internal sealed class DeclaredFieldState : IDisposable
         _allowUnboundReference = allowUnboundReference;
     }
 
-    public bool TrySet(ParameterSetting proposal)
+    public bool TrySet(ParameterSetting proposal) => TrySet(proposal, forceWrite:false);
+    // An aggregate can display populated leaves while its own projected setting is unset.
+    internal bool TryClearProjectedSource() => TrySet(new UnsetSetting(), forceWrite:true);
+    private bool TrySet(ParameterSetting proposal, bool forceWrite)
     {
         if(IsDisposed||_writing)return false;
         if(_propose is {} propose)return propose(CopySetting(proposal));
@@ -125,10 +139,25 @@ internal sealed class DeclaredFieldState : IDisposable
         {
             var error=_validate?.Invoke(CopySetting(values[Port.Id]));
             if(!string.IsNullOrEmpty(error))throw new ArgumentException(error);
-        });
+        },forceWrite:forceWrite);
     }
 
     internal AcceptedFieldValue CaptureAccepted()=>new(Accepted,IsReferenceMode,ConstantBackup);
+
+    internal void ProjectAcceptedInput(ParameterSetting setting)
+    {
+        if (IsDisposed || _writing || SameSetting(_accepted, setting)) return;
+        var accepted = PrepareInitial(setting);
+        _accepted = accepted;
+        _constantBackup = accepted as ConstantSetting;
+        IsReferenceMode = accepted is ReferenceSetting or VariableSetting || Port.EditModes == FieldEditModes.Reference;
+        _referenceCleared = false;
+        EditError = "";
+        SourceError = "";
+        AcceptanceVersion++;
+        NumericModel?.Accept(accepted);
+        PublishReplay(new[] { this });
+    }
 
     /// <summary>Owner history replay, deliberately separate from a draft proposal or its writer.</summary>
     internal static bool ReplayAccepted(IReadOnlyList<(DeclaredFieldState State,AcceptedFieldValue Value)> entries,
@@ -183,7 +212,8 @@ internal sealed class DeclaredFieldState : IDisposable
     /// <summary>Prepare every endpoint before one host write; install every accepted value before notifying.</summary>
     internal static bool TrySetGroup(IReadOnlyList<(DeclaredFieldState State,ParameterSetting Proposal)> proposals,
         Action<IReadOnlyDictionary<string,ParameterSetting>> writeGroup,
-        Action<IReadOnlyDictionary<string,ParameterSetting>>? validatePrepared=null,Func<bool>? isCurrent=null,bool replacePending=false,Action? installed=null)
+        Action<IReadOnlyDictionary<string,ParameterSetting>>? validatePrepared=null,Func<bool>? isCurrent=null,bool replacePending=false,Action? installed=null,
+        bool forceWrite=false)
     {
         ArgumentNullException.ThrowIfNull(writeGroup);
         proposals=proposals.ToArray();
@@ -208,7 +238,7 @@ internal sealed class DeclaredFieldState : IDisposable
                 prepared.ToDictionary(item=>item.State.Port.Id,item=>CopySetting(item.Value),StringComparer.Ordinal));
             validatePrepared?.Invoke(CopyPrepared());
             if(!Current())return false;
-            if(prepared.Any(item=>item.State._referenceCleared||!SameSetting(item.State._accepted,item.Value)))
+            if(forceWrite||prepared.Any(item=>item.State._referenceCleared||!SameSetting(item.State._accepted,item.Value)))
                 writeGroup(CopyPrepared());
             if(!Current())return false;
             foreach(var (state,value) in prepared)
@@ -216,7 +246,7 @@ internal sealed class DeclaredFieldState : IDisposable
                 var referenceMode=value is ReferenceSetting or VariableSetting||value is UnsetSetting&&state.IsReferenceMode;
                 // Prepared proposals passed the current host validation and write. Retire the old source diagnostic atomically.
                 var clearSourceError=state.SourceError.Length!=0;
-                if(replacePending||!SameSetting(state._accepted,value)||state._referenceCleared||state.IsReferenceMode!=referenceMode||state.EditError.Length!=0||clearSourceError)
+                if(forceWrite||replacePending||!SameSetting(state._accepted,value)||state._referenceCleared||state.IsReferenceMode!=referenceMode||state.EditError.Length!=0||clearSourceError)
                     notifications.Add(state);
                 state._accepted=value;
                 if(value is ConstantSetting constant)state._constantBackup=constant;

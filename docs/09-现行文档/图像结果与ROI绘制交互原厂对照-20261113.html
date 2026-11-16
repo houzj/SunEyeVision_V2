@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8"/>
+<title>图像结果与ROI绘制交互原厂对照-20261113</title>
+<style>
+ body{font-family:"Microsoft YaHei",sans-serif;max-width:1100px;margin:24px auto;padding:0 16px;line-height:1.65;color:#222}
+ h1{font-size:22px;border-bottom:2px solid #d9534f;padding-bottom:8px}
+ h2{font-size:18px;margin-top:32px;border-left:4px solid #d9534f;padding-left:10px}
+ h3{font-size:15px;margin-top:24px}
+ table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13px}
+ th,td{border:1px solid #bbb;padding:6px 8px;vertical-align:top;text-align:left}
+ th{background:#f5eaea}
+ code{background:#f4f4f4;padding:1px 4px;border-radius:3px;font-size:12px}
+ .warn{background:#fff3f3;border:1px solid #d9534f;padding:10px 14px;border-radius:4px}
+ .ok{background:#f0f7f0;border:1px solid #4a9a4a;padding:10px 14px;border-radius:4px}
+ .anchor{color:#666;font-size:12px}
+</style>
+</head>
+<body>
+<h1>图像结果与 ROI 绘制交互：原厂对照全量差异矩阵</h1>
+<p><b>日期</b>：2026-11-13　<b>证据来源</b>：仓内同版本反编译保留源（<code>src/Plugin.Wpf/Controls/Native/Input/WorkspaceControls/</code> 下 *.pending）+ 用户人工反馈　<b>关联证据</b>：<code>docs/collaboration/evidence/VM编辑器相关输入单图联动原件对照-20261113.json</code>、<code>evidence/VM调试窗口结果视口更新路径-20261112.json</code></p>
+
+<h2>一、结论摘要</h2>
+<div class="warn">
+<b>当前缺陷</b>：Blob 调试窗口参数页 ROI 形状绘制按钮全部点不动。<br/>
+<b>最可能根因（按概率排序，待一次性定位日志 roibtn.log 确认）</b>：<br/>
+① 借帧失败后 <code>BlobLocalRoiOwner.Error="请先运行并选择图像来源。"</code>，会话不存在，且<b>本方没有任何用户可见反馈</b>（原件此时会弹 RoiDrawTips 警告框）——表现为"点了没反应"；<br/>
+② 会话存在但 <code>IsCurrent=false</code> → <code>NativeRoiEditor.NativeView.IsEnabled=false</code>，真点不动；<br/>
+③ ROI 组合器宿主 <code>_controls.IsVisible=false</code>（页未物化）→ Activate 直接返回。<br/>
+<b>治本方向</b>：① 不可绘制必须给用户明确反馈（对应原件 RoiDrawTips）；② 借帧货币完全锚定"同一帧仍是呈现帧"（已修变量路径，需全路径复核）；③ 交互矩阵逐条对齐原件（见下表）。
+</div>
+
+<h2>二、图像结果工作区交互（原件锚点 → 本方现状 → 差异）</h2>
+<table>
+<tr><th>#</th><th>交互</th><th>原件行为与锚点</th><th>本方现状</th><th>差异 / 风险</th></tr>
+<tr><td>A1</td><td>显示哪个模块</td>
+ <td>结果视图绑定流程选中模块：<code>MainViewControl.xaml:33 ModuleSource="{Binding SelectedItem}"</code>；选中模块变化 → DoSourceChanged（ModuleResultView.xaml.cs.pending:529）dispose 旧 decorator、新建、UpdateModuleView，<b>不清视口</b></td>
+ <td>结果工作区常驻，全局图像来源下拉覆盖上游闭包全部输出</td>
+ <td>结构性差异（产品形态）。需保证"选中模块变化→按数据重建不闪"（已有 DisplayUnchanged 护栏，证据 VM调试窗口结果视口更新路径-20261112.json）</td></tr>
+<tr><td>A2</td><td>单图下拉改选</td>
+ <td><code>SelectedImage</code> 视图状态双向绑定（RenderControlBase.xaml.pending:47）；改选 → imageListCombobox_SelectionChanged（.cs.pending:1934-2007）改勾选/叠加层 + <b>UpdateVMResultShow 立即读取所选对象当前值显示</b>（:1127-1154）；不写模块持久化</td>
+ <td>SelectedOutputItem → OutputSelected 写 <code>SelectedDisplayReference</code>（正式选择边界）+ Present</td>
+ <td>✅ "立即显示"已对齐（2026-11-13 删除压制规则）。差异：本方持久化到方案文档（原件持久化在模块保存链）——载体不同，边界语义一致</td></tr>
+<tr><td>A3</td><td>关联输入变化</td>
+ <td>OnRelatedIOChanged（ModuleResultView.xaml.cs.pending:500-524）：仅单图模式，切 <code>SelectedImage</code> 到关联 IO；随后 RefreshInputImageList（双图选匹配项否则 [0]；单图清空输入选择）+ SetRoiVisible</td>
+ <td>单一 <code>EditorRelatedImage</code> 状态 + ResolveOutputChoice 联动（2026-11-13 重构）</td>
+ <td>✅ 已对齐。匹配键差异：原件按 IO 对象，本方按 PortId→Key（语义等价）</td></tr>
+<tr><td>A4</td><td>单/双图切换</td>
+ <td>OnIsShowDoubleImageChanged（.cs.pending:2228-2260）：清输入选择→取 <code>InputImageViewList[0]</code>；退出双图只动 ROIVisible，<b>不动 SelectedImage</b></td>
+ <td>DoubleImageChanged 保留当前合法输入/输出（变量图像 ROI 连续借用依赖）</td>
+ <td><b>差异待确认</b>：本方不强制 [0]。用户确认后二选一</td></tr>
+<tr><td>A5</td><td>数据刷新</td>
+ <td>ImageDataSource 守卫（ModuleDisplayDecorator.cs.pending:524）仅对象变化重设；回调尾部 <code>UpdateROI</code> 重投影（ModuleResultView:604-608）；值消失清空、值不变不重画</td>
+ <td>DisplayUnchanged 一致性判定 + SourcesUnchanged 按帧身份比较变量图像</td>
+ <td>✅ 已对齐</td></tr>
+<tr><td>A6</td><td>参数窗口开合</td>
+ <td>IsOpenParams 只驱动 SetRoiVisible（ROI 层可见性），图像/图形/文本层不动（证据 VM调试窗口结果视口更新路径-20261112.json）</td>
+ <td>刷新期视口不动（DisplayUnchanged）</td>
+ <td>✅ 已对齐</td></tr>
+<tr><td>A7</td><td>图像来源列表</td>
+ <td>DisplayImageListDecorator（.pending:22-139）：当前模块自身输出 + 关联输入图像；ImageSourceType=1 时另开本地图像列表（isShowLocalImageList，ModuleDisplayDecorator:348-362）</td>
+ <td>全局来源集合：上游闭包全部模块输出 + 变量图像，含诊断信息</td>
+ <td>本方列表更宽（跨模块）。排序/命名/分组需逐项对照原件 ImageViewList 构成——<b>下批逐项核对</b></td></tr>
+<tr><td>A8</td><td>不可绘制时点击图像</td>
+ <td><b>弹 RoiDrawTips 警告框</b>（ModuleResultView:2514-2521），明确告知用户为什么画不了</td>
+ <td>静默无动作（借帧失败只写内部 Error，无用户可见反馈）</td>
+ <td><b>差异：必须补用户反馈</b>（toast/状态条/弹窗任一，形式对齐原件弹窗语义）</td></tr>
+</table>
+
+<h2>三、ROI 绘制交互（原件锚点 → 本方现状 → 差异）</h2>
+<table>
+<tr><th>#</th><th>交互</th><th>原件行为与锚点</th><th>本方现状</th><th>差异 / 风险</th></tr>
+<tr><td>B1</td><td>能否绘制判定</td>
+ <td><code>IsCanDrawROI</code>（ModuleDisplayDecorator.cs.pending:446-480）：当前选中图像必须 ∈ 模块 IMAGE 输入关联 IO（<code>ImageInputs.Contains(vmIO.FullName)</code>）；SetRoiVisible（ModuleResultView:2252-2275）按它开 ROIVisible，非参数窗口态强制不可绘</td>
+ <td>host 借帧（RuntimeRoiFrameBorrow）+ 调试会话存续 + NativeRoiUiDraftControls 模式开关</td>
+ <td>本方多一层"会话租约"依赖：租约死 → 会话退役 → 按钮失效。任何一环失效都表现为"点不动"且<b>无反馈</b></td></tr>
+<tr><td>B2</td><td>绘制载体</td>
+ <td>形状直接挂模块参数/渲染层（ShapeList、AlgorithmItems），无独立会话对象</td>
+ <td>NativeRoiSession + NativeRoiFrameLease（host 借帧，所有权在宿主）</td>
+ <td>结构性差异。租约 currency 必须锚定帧身份——变量路径已修（2026-11-13），<b>全路径需复核</b></td></tr>
+<tr><td>B3</td><td>绘制与刷新共存</td>
+ <td>刷新后 UpdateROI 重投影（:604-608）；拖拽中（IsDragROI）跳过</td>
+ <td>租约按帧锚定（已修）；重建（epoch）仍使租约退役</td>
+ <td>✅ 基本对齐。遗留：重建后需能立即重新借到同一帧</td></tr>
+<tr><td>B4</td><td>不可绘制反馈</td>
+ <td>RoiDrawTips 弹窗（:2514-2521）</td>
+ <td>静默</td>
+ <td><b>差异：待补</b>（同 A8）</td></tr>
+<tr><td>B5</td><td>绘制中参数编辑</td>
+ <td>P_ValueChanged 非运行中 → UpdateModuleViewResultShow 重绘 + UpdateROI；不终止任何会话</td>
+ <td>输入页写回不再失效调试会话（2026-11-13 修正）</td>
+ <td>✅ 已对齐</td></tr>
+</table>
+
+<h2>四、当前缺陷（按钮全部不可点）候选根因与判据</h2>
+<table>
+<tr><th>#</th><th>假设</th><th>机理</th><th>判据（roibtn.log）</th></tr>
+<tr><td>H1</td><td>借帧失败且无反馈</td><td>BorrowRoiFrame 某条件不满足 → 返回 null → Error="请先运行并选择图像来源。" → 会话不存在 → 点击 Activate 每次都失败；用户看不到任何提示（A8/B4 差异）</td><td><code>borrow reject</code> / <code>borrow-check</code> 行 + <code>after-acquire ... error=请先运行并选择图像来源。</code></td></tr>
+<tr><td>H2</td><td>会话过期禁用</td><td>session 绑定但 IsCurrent=false → NativeView.IsEnabled=false → 真点不动</td><td><code>after-acquire frameCurrent=False sessions&gt;0</code> 或无 enter 行（按钮层禁用）</td></tr>
+<tr><td>H3</td><td>组合器宿主不可见</td><td>_controls.IsVisible=false（页未物化）→ Activate 首行返回</td><td><code>enter ... visible=False local=?</code></td></tr>
+</table>
+<p>一次性定位日志已埋点（Activate 门槛 / 借帧拒绝原因 / 宿主借帧门槛），写入 <code>Release\_validation\roibtn.log</code>，用户点击一次即可判定。</p>
+
+<h2>五、治本方向（下一批实施清单，按原件基线）</h2>
+<ol>
+<li><b>补用户反馈（A8/B4）</b>：不可绘制时给出明确提示（对齐原件 RoiDrawTips 语义），禁止静默 no-op（rule-015 精神）。</li>
+<li><b>借帧全路径帧锚定（B2/B3）</b>：publication 路径租约同样按"同一帧仍是呈现帧"判定，重建后可立即重借同一帧；不依赖刷新代次。</li>
+<li><b>A4 双图入口</b>：待用户确认后统一（原件 [0] vs 本方保留）。</li>
+<li><b>A7 来源列表构成</b>：逐项对照原件 ImageViewList（模块自身输出+关联输入）与命名/分组/排序。</li>
+<li><b>A1 模块切换</b>：选中模块变化时按数据重建不闪（已有护栏，补合同用例固化）。</li>
+</ol>
+
+<h2>六、证据索引</h2>
+<ul>
+<li>ModuleResultView.xaml.cs.pending：500-524（OnRelatedIOChanged）、526-616（回调渲染+UpdateROI）、1127-1166（UpdateVMResultShow）、1934-2007（用户改选）、2228-2260（双图切换）、2252-2275（SetRoiVisible）、2514-2521（RoiDrawTips）</li>
+<li>ModuleDisplayDecorator.cs.pending：282-314（SelectedInputImage）、319-372（SelectedImage）、446-480（IsCanDrawROI）、524（ImageDataSource 守卫）、1432-1468（RefreshInputImageList）</li>
+<li>RenderControlBase.xaml.pending：28/47（下拉绑定）；RenderControlBase.xaml.cs.pending：1934-2007、2228-2260</li>
+<li>DisplayImageListDecorator.cs.pending：22-139（图像列表装饰器）</li>
+<li>用户人工反馈（2026-11-13）：调试窗口输入联动正常；主窗口下拉显式选 Blob图像数据空白（已修）；ROI 形状绘制按钮全部不可点（本件处理中）</li>
+</ul>
+</body>
+</html>

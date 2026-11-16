@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>结果显示层单一所有权重构方案</title>
+<style>
+body{font-family:"Microsoft YaHei",sans-serif;max-width:1100px;margin:0 auto;padding:24px;color:#222;line-height:1.7}
+h1{border-bottom:3px solid #2d6cdf;padding-bottom:8px}
+h2{color:#2d6cdf;border-left:4px solid #2d6cdf;padding-left:10px;margin-top:32px}
+table{border-collapse:collapse;width:100%;margin:12px 0}
+th,td{border:1px solid #bbb;padding:6px 10px;text-align:left;vertical-align:top}
+th{background:#eef3fb}
+code{background:#f4f4f4;padding:1px 5px;border-radius:3px;font-size:0.92em}
+.src{color:#777;font-size:0.88em}
+.warn{background:#fff6e5;border-left:4px solid #e6a23c;padding:8px 12px;margin:10px 0}
+.ok{background:#eefaf0;border-left:4px solid #67c23a;padding:8px 12px;margin:10px 0}
+</style>
+</head>
+<body>
+<h1>结果显示层单一所有权重构方案</h1>
+<p>日期：2026-11-15 ｜ 状态：已确认待实施 ｜ 基线：328e6b7cf / 0843ca19e / d817339f8 / f9ffc0fae</p>
+
+<h2>一、改前 / 改后 / 依据</h2>
+<p><b>改前（用户实锤截图）</b>：点"自动切换"开关，图像与当前结果表保留，Blob 图形/文本叠加层被清空。</p>
+<p><b>改后</b>：任何参数/策略编辑（自动切换、运行模式、运行勾选、缩略图游标、参数修改）不影响已显示的结果图文；只有<b>重新执行</b>才替换、<b>切换节点/方案</b>才清理、<b>关闭</b>才释放。</p>
+<p><b>原厂依据</b>：自动切换=图像源模块参数节点 <code>AutoPlay</code> 普通双向绑定（<span class="src">decompiled/WpfControls/VMControls.WPF/LocalImageListView.xaml:11-45</span>，<code>Root.FindBaseNodeByName("AutoPlay")</code> :139-149）；参数变化结果侧唯一反应是 <code>P_ValueChanged</code>→<code>UpdateModuleViewResultShow</code> 用上一轮回调数据重绘，图形/文本全保留（<span class="src">ModuleResultView.xaml.cs.pending:473/:495/:1344</span>，UpdateROI :604-608）。</p>
+
+<h2>二、问题分析（真凶）</h2>
+<p>显示场景存活被一条<b>传递性当前性闭包</b>锁死：</p>
+<pre>
+ShapeLayer.Read 自清（NativeResultViewport.Shapes.cs:227 ← Owns 闭包 Display.cs:258）
+ ← Current() 含 publication.IsCurrent()（Display.cs:73-74）
+   ← CaptureCurrentResultDisplay.Current()（MainWindowResultDisplay.cs:87）
+     ← 快照执行域当前性（配置编辑即逐出，DocumentSession.GraphCommit.cs:131-135）
+</pre>
+<p>配置提交 → 执行域退役 → <code>IsCurrent()</code> 假 → 任何一次 <code>QueueResultDisplay</code> 重入（Display.cs:81→90 ClearOriginal）清场景。图像背景与结果表走独立生命周期所以幸存——与截图症状吻合。</p>
+<p class="warn"><b>Bug 模式</b>：设计缺陷+补偿层堆积。原厂把"上一轮结果"所有权交给显示层；本方把所有权交给"执行域当前性"，于是每个触发点都要打"事后挽留"补丁（已堆 5 层仍漏）。</p>
+<p>同类潜伏点：<code>RefreshCurrentResultBindings</code>（MainWindowResultPublication.cs:145 配置提交→整个发布退役）、<code>ResultImagePane.TryPresent</code>（:65-71 不可当前→抛错→面板清空）、<code>PresentCurrentResultTable</code>（:31）、<code>RefreshFormalPublishedResult</code>（:127 域退役→声明空表）。</p>
+
+<h2>三、架构图</h2>
+<pre>
+配置编辑(自动切换/参数/ROI) ──► 文档提交 session.Changed ──► 标脏/游标更新 ──✕ 不再传播 ──► 结果显示层
+正式执行完成 ────────► 新 publication 到达 ──► 原子替换场景(按 Stamp)
+节点/方案身份变化 ───► 按身份清理
+窗口/方案关闭 ──────► 释放租约
+</pre>
+
+<h2>四、新合同（4 条）</h2>
+<table>
+<tr><th>#</th><th>合同</th><th>内容</th></tr>
+<tr><td>1</td><td>场景重建判据</td><td><code>(publication Stamp, 帧回执, 描述 revision)</code> 变化才重建；同一 publication 因配置编辑变"陈旧"不清不重建（数据由租约保护，对齐原件 UpdateModuleViewResultShow）</td></tr>
+<tr><td>2</td><td>场景存活守卫</td><td>Owns = epoch + pane 代次 + 帧回执 + 未释放；<b>剔除</b> publication.IsCurrent()/state.IsCurrent()</td></tr>
+<tr><td>3</td><td>最近完成执行租约</td><td>正式执行完成即 Retain（第一类公民），节点/方案身份变化或关闭才清；不再依赖"编辑前恰好调用"</td></tr>
+<tr><td>4</td><td>三层清理通道</td><td>新结果原子替换 / 身份清理 / 关闭释放——<b>禁止永不清理</b></td></tr>
+</table>
+
+<h2>五、修改清单（段 A：收口）</h2>
+<table>
+<tr><th>文件</th><th>变更</th></tr>
+<tr><td>ResultWorkspacePresenter.Display.cs</td><td>重建判据改 Stamp/帧/revision；Owns 剔除 publication 当前性（:73-74/:258）</td></tr>
+<tr><td>ResultImagePane.cs</td><td>IsCurrent(Presentation)/CurrentFrame 去 publication.IsCurrent 门槛，改"同 publication 对象+帧"（:197-203/:40-49）</td></tr>
+<tr><td>ResultWorkspacePresenter.cs</td><td>Refresh 重建路径（:363）按身份判定清图形；RootSettled 复核</td></tr>
+<tr><td>MainWindowDocumentHistory.cs</td><td>FormalResultAvailable 统一 Retain；RefreshChangedDocumentViews 撤特判（:87-100）</td></tr>
+<tr><td>MainWindowResultPublication.cs</td><td>RefreshCurrentResultBindings/RefreshFormalPublishedResult 陈旧发布不 retire（:131/:145）</td></tr>
+</table>
+
+<h2>六、清理清单（段 B：拆补偿层，不留双轨）</h2>
+<table>
+<tr><th>项</th><th>位置</th></tr>
+<tr><td>SourceDisplayPreservationScope 整文件</td><td>src/UI/Services/Images/</td></tr>
+<tr><td>PrepareDisplayRetention/DisplayOnly/ClearUnlessRetained/ClearRetained</td><td>ResultImagePane.cs:197-235</td></tr>
+<tr><td>PrepareSourceDisplayPreservation+订阅</td><td>ResultWorkspacePresenter.cs:69/:318-324</td></tr>
+<tr><td>SourceDisplayPreservationPreparing/ImageSourcePrepareDisplay/RetainCurrentResultForEdit 调用</td><td>MainWindowViewModel.NativeResults.cs:19/:46-67/:55</td></tr>
+<tr><td>_prepareDisplay/retainDisplay/LastAcceptedPreservedDisplay</td><td>ImageSourceProjectionBinding.cs:30/:39/:198/:207-221</td></tr>
+<tr><td>imageSourceEditInProgress 特判</td><td>MainWindowDocumentHistory.cs:87/:97/:100</td></tr>
+<tr><td>3 个 frozen 字段+RetainCurrentResultForEdit</td><td>MainWindowEditorDebug.cs:32-34 / MainWindowResultPublication.cs:169-188</td></tr>
+</table>
+
+<h2>七、防御机制与验收</h2>
+<table>
+<tr><th>#</th><th>验收项</th><th>方法</th><th>防御</th></tr>
+<tr><td>1</td><td>自动切换开关切换后 Blob 图形/文本/表保留</td><td>manual（用户截图对照）</td><td>契约测试</td></tr>
+<tr><td>2</td><td>运行模式/运行勾选/缩略图切换同样保留</td><td>manual</td><td>契约测试</td></tr>
+<tr><td>3</td><td>重新执行整体替换不叠加</td><td>manual</td><td>端到端</td></tr>
+<tr><td>4</td><td>切节点/方案/关闭按身份清理释放</td><td>manual+单测</td><td>端到端</td></tr>
+<tr><td>5</td><td>高亮/缩略图选中/帮助页/历史格式零回归</td><td>manual</td><td>端到端</td></tr>
+<tr><td>6</td><td>EditorDebugSession 52 条对照 16F/36P 基线</td><td>自动</td><td>回归红线</td></tr>
+<tr><td>7</td><td>全量 Release 0 错误</td><td>自动</td><td>构建验证</td></tr>
+</table>
+<p class="ok">契约测试：陈旧 publication（IsCurrent=false）下场景不清、新 Stamp 才替换。Fail-Forward：场景准备失败仅显式报错日志，不静默保留半成品。</p>
+
+<h2>八、风险与回退</h2>
+<p>ROI 借帧依赖的 pane.CurrentFrame 不受影响（帧不因配置编辑换代，已核）；执行替换通道保持原子性——契约测试覆盖。回退：基线 4 提交+段 A/B 独立提交，可逐段 revert。</p>
+</body>
+</html>

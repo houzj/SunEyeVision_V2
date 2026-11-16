@@ -9,6 +9,38 @@ namespace SunEyeVision.DeviceDriver.Tests;
 
 public sealed class CameraRuntimeManagerTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Workflow_capture_restores_exposure_and_gain_after_success_or_failure(bool fail)
+    {
+        var options=new SimulatedCameraOptions
+        {
+            DeviceId="sim-frame-parameters",
+            FrameDelay=System.TimeSpan.Zero,
+            FailCapture=fail
+        };
+        await using var manager=new CameraRuntimeManager(new[]{new SimulatedCameraFactory(options)});
+        await manager.DiscoverAsync(new[]{new SimulatedCameraDiscoveryProvider(options)});
+        await using var session=await manager.OpenAsync(new CameraDeviceRef(options.DeviceId),CameraAccessMode.Exclusive);
+        var names=new[]{"ExposureTime","Gain"};
+        await session.Adapter.ApplyParametersAsync(new System.Collections.Generic.Dictionary<string,object?>
+        {["ExposureTime"]=1250d,["Gain"]=2d},CancellationToken.None);
+        var run=new SunEyeVision.Plugin.Contracts.RunIdentity(System.Guid.NewGuid(),System.Guid.NewGuid(),System.Guid.NewGuid(),"source",System.Guid.NewGuid());
+        var request=new CameraFrameRequest(options.DeviceId,CameraRequestPurpose.Workflow,run,System.TimeSpan.FromSeconds(1),
+            exposureTime:750d,gain:4d);
+        if(fail)
+            Assert.Equal(CameraErrorCode.FrameTimeout,(await Assert.ThrowsAsync<CameraFrameAcquisitionException>(()=>manager.CaptureAsync(request,CancellationToken.None).AsTask())).ErrorCode);
+        else
+        {
+            await using var frame=await manager.CaptureAsync(request,CancellationToken.None);
+            Assert.Equal(run,frame.Image.Frame.ProducerRun);
+        }
+        var restored=await session.Adapter.ReadParametersAsync(names,CancellationToken.None);
+        Assert.Equal(1250d,restored["ExposureTime"]);
+        Assert.Equal(2d,restored["Gain"]);
+    }
+
     [Fact]
     public async Task DiscoveryRegistersSimulationDeviceAndCaptureReturnsFrame()
     {

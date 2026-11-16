@@ -9,5 +9,13 @@
     <ToolComponentToolId>ExternalRuntimePlugin</ToolComponentToolId>
     <ToolComponentRole>Runtime</ToolComponentRole>
     <ToolComponentEntryType>ExternalRuntimePlugin.RuntimePluginDefinition</ToolComponentEntryType>
+    <!-- When the template is copied outside the repository, point SdkPath at
+         the sibling PluginDevKit/sdk/net9.0 directory.  In-place builds use
+         Directory.Build.props and keep these references disabled. -->
+    <SdkPath Condition="'$(SdkPath)'==''">$(MSBuildThisFileDirectory)..\..\sdk\net9.0\</SdkPath>
   </PropertyGroup>
+  <ItemGroup Condition="'$(PluginDevKitBuild)'!='true'">
+    <Reference Include="SunEyeVision.Plugin.Contracts"><HintPath>$(SdkPath)SunEyeVision.Plugin.Contracts.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="SunEyeVision.Plugin.Runtime"><HintPath>$(SdkPath)SunEyeVision.Plugin.Runtime.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
 </Project>

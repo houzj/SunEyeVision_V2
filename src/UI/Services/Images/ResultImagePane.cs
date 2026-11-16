@@ -19,13 +19,12 @@ internal sealed class ResultImagePane : IDisposable
         internal readonly ResultPublicationStamp Stamp = stamp;
         internal NativeResultFrameReceipt? Receipt;
         internal readonly string ScopeId=scopeId, NodeId=nodeId;
-        internal bool DisplayOnly;
-        internal Func<bool>? DisplayCurrent;
     }
-    private sealed class Preview(Func<bool> current, long generation)
+    private sealed class Preview(Func<bool> current, long generation, bool filePreview)
     {
         internal readonly Func<bool> Current = current;
         internal readonly long Generation = generation;
+        internal readonly bool IsFilePreview = filePreview;
         internal NativeResultFrameReceipt? Receipt;
     }
     private Presentation? _presentation;
@@ -33,7 +32,9 @@ internal sealed class ResultImagePane : IDisposable
     private long _generation;
     private bool _disposed;
     internal NativeResultViewport Viewport { get; }
+    internal bool IsFilePreview => _preview?.IsFilePreview == true;
     internal ResultImagePane(FrameworkElement originalView) => Viewport = NativeResultViewport.Attach(originalView);
+    internal ResultImagePane(NativeResultViewport viewport) => Viewport = viewport;
     internal NativeResultFrameReceipt? CurrentFrame
     {
         get
@@ -47,7 +48,7 @@ internal sealed class ResultImagePane : IDisposable
     }
 
     internal bool TryPresent(IResultPublication publication, OutputReference reference, string actualWorkflowId,
-        Func<bool> current, out string error)
+        Func<bool> current, out string error, bool preserveShapeLayers = false)
     {
         Viewport.View.Dispatcher.VerifyAccess();
         error = "";
@@ -58,12 +59,12 @@ internal sealed class ResultImagePane : IDisposable
         Presentation? active = null;
         try
         {
-            Drain(Viewport.Clear, () => previous?.Lease.Dispose());
+            Drain(() => Viewport.Clear(preserveShapeLayers), () => previous?.Lease.Dispose());
             bool AttemptCurrent()
             {
                 if (_disposed || generation != _generation) return false;
                 var valid = current();
-                return valid && !_disposed && generation == _generation && publication.IsCurrent()
+                return valid && !_disposed && generation == _generation
                     && !_disposed && generation == _generation;
             }
             ArgumentNullException.ThrowIfNull(publication); ArgumentNullException.ThrowIfNull(reference);
@@ -106,7 +107,7 @@ internal sealed class ResultImagePane : IDisposable
             if (!AttemptCurrent()) throw new InvalidOperationException("图像读取期间来源已失效。");
             active = new(publication, candidate, image, current, generation, stamp, actualWorkflowId, reference.NodeId); candidate = null;
             _presentation = active;
-            if (!Viewport.BindImage(image, () => CanDisplay(active)))
+            if (!Viewport.BindImage(image, () => CanDisplay(active), preserveShapeLayers))
                 throw new InvalidOperationException("图像绑定期间来源已失效。");
             active.Receipt = Viewport.CurrentFrame;
             if (!IsCurrent(active) || active.Receipt is null || active.Receipt.Frame != image.Frame
@@ -130,8 +131,28 @@ internal sealed class ResultImagePane : IDisposable
         }
     }
 
-    /// <summary>Display-only decoded file preview. It does not invent a run or authorize a node-input ROI edit.</summary>
-    internal bool TryPresentPreview(IReadOnlyImage image, Func<bool> current, out string error)
+    internal bool TryPresentOverlay(ResultWorkspaceImageSource source,NativeResultViewport.RegionLayer layer,
+        byte opacity,long revision,Func<bool> current)
+    {
+        if(CurrentFrame is not {} background||source.Publication is not {} publication
+            ||source.Reference is not {} reference||!source.HasImageValue)return false;
+        var stamp=publication.Stamp;
+        bool Current()=>current()&&CurrentFrame==background&&source.Current()&&publication.IsCurrent()&&current();
+        if(stamp.Invocation?.NodeId!=reference.NodeId||stamp.SchemaFingerprint!=publication.Schema.Fingerprint||!Current())return false;
+        var port=publication.Schema.Outputs.SingleOrDefault(candidate=>candidate.Id==reference.PortId);
+        if(port is null||port.Type!=reference.Type||NumericStorageRules.Effective(port.Type,port.Storage)!=reference.Storage
+            ||reference.Selection is not (BindingSelection.AllItems or BindingSelection.AtConstant))return false;
+        using var lease=publication.Borrow();
+        if(lease.Stamp!=stamp||!Current()||lease.Values is not {} values||!values.Contains(port.Id)||
+            !values.Declarations.TryGetValue(port.Id,out var declared)||declared!=port)return false;
+        var value=SelectValue(values.Get<object?>(port.Id),reference.MemberFieldPath,0,
+            reference.Selection is BindingSelection.AtConstant index?index.Index:null);
+        return value is IReadOnlyImage image&&Current()&&layer.PresentImage(background,revision,image,opacity,Current);
+    }
+
+    /// <summary>Present a host-owned frame without inventing a run or publication.</summary>
+    internal bool TryPresentPreview(IReadOnlyImage image, Func<bool> current, out string error, bool filePreview = true,
+        bool preserveShapeLayers = false)
     {
         Viewport.View.Dispatcher.VerifyAccess();
         error = "";
@@ -141,16 +162,16 @@ internal sealed class ResultImagePane : IDisposable
         Preview? preview = null;
         try
         {
-            Drain(Viewport.Clear, () => previous?.Lease.Dispose());
+            Drain(() => Viewport.Clear(preserveShapeLayers), () => previous?.Lease.Dispose());
             ArgumentNullException.ThrowIfNull(image); ArgumentNullException.ThrowIfNull(current);
             ResourceContractRules.ValidateImage(image);
             var frame = image.Frame; var coordinates = image.EffectiveDomain.Frame;
-            if (_disposed || generation != _generation) throw new InvalidOperationException("文件预览已被替换。");
-            preview = new(current, generation); _preview = preview;
-            if (!Viewport.BindImage(image, () => IsCurrent(preview))) throw new InvalidOperationException("文件预览已失效。");
+            if (_disposed || generation != _generation) throw new InvalidOperationException("预览帧已被替换。");
+            preview = new(current, generation, filePreview); _preview = preview;
+            if (!Viewport.BindImage(image, () => IsCurrent(preview), preserveShapeLayers)) throw new InvalidOperationException("预览帧已失效。");
             preview.Receipt = Viewport.CurrentFrame;
             if (!IsCurrent(preview) || preview.Receipt is null || preview.Receipt.Frame != frame || preview.Receipt.Coordinates != coordinates)
-                throw new InvalidOperationException("文件预览回执与真实Frame/Domain不一致。");
+                throw new InvalidOperationException("预览回执与真实Frame/Domain不一致。");
             return true;
         }
         catch (Exception failure)
@@ -173,43 +194,16 @@ internal sealed class ResultImagePane : IDisposable
 
     private bool IsCurrent(Presentation active)
     {
-        if (_disposed || active.DisplayOnly || active.Generation != _generation || !ReferenceEquals(_presentation, active)) return false;
-        var valid = active.Current() && active.Publication.IsCurrent() && active.Publication.Stamp == active.Stamp
+        if (_disposed || active.Generation != _generation || !ReferenceEquals(_presentation, active)) return false;
+        // 呈现存活按"同发布对象+同租约身份+帧未换代+发布未退役"判定。
+        // 执行域当前性（IsCurrent）不参与：配置编辑使发布陈旧后场景继续显示；
+        // 但退役（Dispose）必须归还借用、释放资源，由新呈现或显式 Clear 接管。
+        var valid = !active.Publication.IsRetired && active.Current() && active.Publication.Stamp == active.Stamp
             && active.Lease.Stamp == active.Stamp;
         return valid && !_disposed && active.Generation == _generation && ReferenceEquals(_presentation, active);
     }
 
-    private bool CanDisplay(Presentation active)
-    {
-        if(!active.DisplayOnly)return IsCurrent(active);
-        if(_disposed||active.Generation!=_generation||!ReferenceEquals(_presentation,active))return false;
-        var valid=active.DisplayCurrent?.Invoke()==true;
-        return valid&&!_disposed&&active.Generation==_generation&&ReferenceEquals(_presentation,active);
-    }
-    internal Action<IReadOnlyList<SunEyeVision.Domain.Workflows.ScopedNodeIdentity>?>? PrepareDisplayRetention(Func<bool> current)
-    {
-        Viewport.View.Dispatcher.VerifyAccess();
-        var active=_presentation;
-        if(active is null||!CanDisplay(active)||active.Receipt!=Viewport.CurrentFrame)return null;
-        return affected=>
-        {
-            if(affected is null||!affected.Any(node=>node.WorkflowId==active.ScopeId&&node.NodeId==active.NodeId)
-                ||_disposed||active.Generation!=_generation||!ReferenceEquals(_presentation,active)
-                ||active.Receipt!=Viewport.CurrentFrame||!current())return;
-            active.DisplayOnly=true;active.DisplayCurrent=current;
-            // The native frame already owns an independent pixel reader. Retire result
-            // authority now; its reader is released by the normal viewport clear/replace path.
-            active.Lease.Dispose();
-            Viewport.RefreshCurrentness();
-        };
-    }
-    internal void ClearUnlessRetained()
-    {
-        if(_presentation is {DisplayOnly:true} retained&&CanDisplay(retained))RefreshCurrentness();
-        else Clear();
-    }
-    internal void ClearRetained()
-    {if(_presentation is {DisplayOnly:true})Clear();}
+    private bool CanDisplay(Presentation active)=>IsCurrent(active);
     internal ResultViewportImageLease? BorrowCurrentImage()
     {
         Viewport.View.Dispatcher.VerifyAccess();
@@ -236,7 +230,7 @@ internal sealed class ResultImagePane : IDisposable
         if (_disposed) return;
         ++_generation;
         var active = _presentation; _presentation = null; _preview = null;
-        Drain(Viewport.Clear, () => active?.Lease.Dispose());
+        Drain(() => Viewport.Clear(), () => active?.Lease.Dispose());
     }
 
     internal void RefreshCurrentness()

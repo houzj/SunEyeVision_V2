@@ -1,0 +1,68 @@
+{
+  "kind": "外部原件失败结果记录核收，不是本方运行",
+  "source": "D:/MyWork/Rea逆向/docs/plugins/image-source-camera-evidence.json",
+  "sha256": "873FFCFA13018EAAD1506C27C62F768153E4F64FE48A413CE009CA8EFD94A54F",
+  "originalSource": "analysis\\full-audit\\image-source-runtime\\run-990884e9ce8748cdb4e5d8cb28748e19\\probe.json",
+  "originalSha256": "f9c7bb7af086b5051526e0d7be16340398fa3f89574ed794fe069c3fd976168e",
+  "observations": [
+    {
+      "sn": 0,
+      "phase": "camera-no-trigger",
+      "nativeErrorCode": 0,
+      "path": "",
+      "name": "",
+      "width": 0,
+      "height": 0,
+      "format": 17301505,
+      "length": 0,
+      "extraMonoLength": 0,
+      "pixelSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "phase": "camera-failure-counters",
+      "failures": 1,
+      "frame": 0
+    },
+    {
+      "sn": 25,
+      "phase": "camera-invalid-stitch",
+      "nativeErrorCode": 3758097666,
+      "path": "",
+      "name": "",
+      "width": 0,
+      "height": 0,
+      "format": 17301505,
+      "length": 0,
+      "extraMonoLength": 0,
+      "pixelSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "phase": "camera-invalid-stitch-counters",
+      "frame": 8,
+      "failures": 1
+    },
+    {
+      "sn": 26,
+      "phase": "camera-after-invalid-stitch",
+      "nativeErrorCode": 0,
+      "path": "",
+      "name": "",
+      "width": 2448,
+      "height": 2048,
+      "format": 35127316,
+      "length": 15040512,
+      "extraMonoLength": 5013504,
+      "pixelSha256": "80f2f854550f913af7a72f910db6818d0782e41d74e975bed255b6e1fd1d323d"
+    }
+  ],
+  "limits": [
+    "Different live exposures are different sensor frames; no cross-process frame-hash equality is claimed.",
+    "Same original RGB frame to its extra MONO output was compared at every pixel.",
+    "Gain values compare at original global-camera readback precision of three decimals.",
+    "Positive physical packet loss and hardware-trigger input were not generated.",
+    "Only the attached MV-CS050-10GC was tested; other camera models and fallback parameter names remain unverified."
+  ],
+  "hostGap": "DeclaredOutputSnapshot只为Success构建Values；ImageSourceOutput要求完整图像值；失败阶段SN/帧号尚未发布到结果reader",
+  "target": "失败字段按同一结果声明明确记录实际可用性，不能伪造成功或让Blob绑定上一轮图像",
+  "verification": "新增成功→缺图失败→恢复的两工具完整生产链用例；编译与运行单列，未启动测试、程序或探针"
+}

@@ -1,0 +1,10 @@
+{
+  "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+  "sha256": "34A0CC5423A3D66B92DC272E0F50B013310E5180E801C648005383C3ADDDFDEC",
+  "kind": "static-xml",
+  "runtimeConfirmed": false,
+  "activeBooleanCount": 0,
+  "activeContourMode": "<Enumeration Name=\"BlobContourType\"><Description>RunParam_BlobContourType</Description><DisplayName>RunParam_BlobContourType</DisplayName><AccessMode>RW</AccessMode><AlgorithmIndex>0x20630</AlgorithmIndex><CurValue>0</CurValue><DefaultValue>0</DefaultValue><CustomVisible>True</CustomVisible><EnumEntrys><EnumEntry Name=\"NoneContour\"><Description>RunParam_NoneContour</Description><DisplayName>RunParam_NoneContour</DisplayName><IsImplemented>1</IsImplemented><Value>0</Value></EnumEntry><EnumEntry Name=\"NoneSequentialContour\"><Description>RunParam_NoneSequentialContour</Description><DisplayName>RunParam_NoneSequentialContour</DisplayName><IsImplemented>1</IsImplemented><Value>1</Value></EnumEntry><EnumEntry Name=\"SequentialContour\"><Description>RunParam_SequentialContour</Description><DisplayName>RunParam_SequentialContour</DisplayName><IsImplemented>1</IsImplemented><Value>2</Value></EnumEntry></EnumEntrys></Enumeration>",
+  "commentedBoolean": "<Boolean Name=\"BolbOutLineEnable\">\n              <AlgorithmIndex>0</AlgorithmIndex>\n              <CurValue>False</CurValue>\n              <DefaultValue>False</DefaultValue>\n              <Description>RunParam_BolbOutLineEnable</Description>\n              <DisplayName>RunParam_BolbOutLineEnable</DisplayName>\n              <AccessMode>RW</AccessMode>\n            </Boolean>",
+  "decision": "产品只保留活动三值轮廓枚举；注释布尔控件退出声明、设置和执行门控。原SDK中的旧参数存在不等于当前窗口活动控件。"
+}

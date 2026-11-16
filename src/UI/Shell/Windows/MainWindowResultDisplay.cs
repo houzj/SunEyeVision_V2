@@ -19,8 +19,8 @@ public partial class MainWindowViewModel
   private bool _disposed;
   internal bool Current=>!_disposed&&ReferenceEquals(Main._displayPreview,this)&&ReferenceEquals(DocumentManager.CurrentSession,Session)
    &&ReferenceEquals(Main.SelectedNode,Node)&&Context.IsValid&&Control.IsLoaded&&Control.IsVisible
-   &&!Control.HasPendingEdits&&Control.TryGetResultDisplayBinding(out var node,out _)&&ReferenceEquals(node,Node);
-  internal void Edited()=>Main.NotifyResultDisplayChanged();
+   &&!Control.HasPendingExecutionEdits&&Control.TryGetResultDisplayBinding(out var node,out _)&&ReferenceEquals(node,Node);
+  internal void Edited(){Main.RefreshEditorDebugResult();Main.NotifyResultDisplayChanged();}
   internal void Bound(NodeDefinition node,long binding)=>Edited();
   internal void Loaded(object sender,System.Windows.RoutedEventArgs args)=>Edited();
   internal void Visibility(object sender,System.Windows.DependencyPropertyChangedEventArgs args)=>Edited();
@@ -51,22 +51,35 @@ public partial class MainWindowViewModel
  {
   var session=DocumentManager.CurrentSession;var node=SelectedNode;var workflowId=WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId;
   var snapshot=_resultPublicationSnapshot;var revision=_resultDisplayRevision;
+  // 保留快照=最近完成执行（呈现即保留，执行域退役后数据租约仍有效）。
+  // 显示合同（描述/外观）仍按当前节点配置读取：参数编辑不换数据，显示设置编辑即时生效。
+  var retained= snapshot is not null && IsRetainedEditorDebugSnapshot(snapshot)
+      && ReferenceEquals(snapshot,_retainedEditorDebugSnapshot);
   if(session is null||node is null||workflowId is null||snapshot is null||!OwnsSelectedDocumentNode(node)
-   ||(snapshot.Identity.DocumentSessionId!=session.ResultOwnerId&&!ReferenceEquals(CurrentEditorDebugSnapshot,snapshot))||snapshot.Identity.NodeId!=node.Id||snapshot.SourceWorkflowId!=workflowId
+   ||(snapshot.Identity.DocumentSessionId!=session.ResultOwnerId&&!ReferenceEquals(CurrentEditorDebugSnapshot,snapshot)&&!IsRetainedEditorDebugSnapshot(snapshot))||snapshot.Identity.NodeId!=node.Id||snapshot.SourceWorkflowId!=workflowId
    ||!ReferenceEquals(_resultPublication,expectedPublication)||snapshot.Identity!=expectedPublication.Stamp.Invocation)return null;
   var preview=_displayPreview;
-  var draft=preview?.Current==true?preview.Context.PreparedDraft:null;
+  // A retained snapshot is the last completed execution.  Once the editor has
+  // pending ROI/parameter edits, its draft must not restyle or relabel that
+  // snapshot.  VM keeps the result layer bound to the completed invocation
+  // until the next execution replaces it.  Only the live debug snapshot may
+  // use the editor draft because it was produced from that accepted draft.
+  var liveDebug=ReferenceEquals(snapshot,CurrentEditorDebugSnapshot);
+  var draft=liveDebug&&preview?.Current==true?preview.Context.PreparedDraft:null;
   var configuration=draft?.Configuration??node.Configuration;
   var presentation=session.GetNodeResultPresentation(workflowId,node,draft);
   if(presentation.Display is not {} descriptor||presentation.Appearance is not {} appearance)return null;
   try{descriptor.Validate(snapshot.Schema);}catch(ArgumentException){return null;}
   bool Current()
   {
+   // 显示合同按"同一发布对象+会话/节点/选择/显示配置版本不变"判定；
+   // publication 的执行域当前性不参与（配置编辑后保持上一轮结果显示）。
    if(revision!=_resultDisplayRevision||!ReferenceEquals(DocumentManager.CurrentSession,session)||!ReferenceEquals(SelectedNode,node)
-    ||!ReferenceEquals(_resultPublication,expectedPublication)||!expectedPublication.IsCurrent()||!OwnsSelectedDocumentNode(node))return false;
+    ||!ReferenceEquals(_resultPublication,expectedPublication)||!OwnsSelectedDocumentNode(node))return false;
    if(draft is not null&&(!ReferenceEquals(_displayPreview,preview)||preview?.Current!=true||!ReferenceEquals(preview.Context.PreparedDraft,draft)
     ||!ReferenceEquals(draft.Configuration,configuration)))return false;
-   if(draft is null&&!ReferenceEquals(node.Configuration,configuration))return false;
+   // 配置提交会替换节点实例：保留快照的显示合同随当前配置读取，身份比较跳过旧实例。
+   if(!retained&&draft is null&&!ReferenceEquals(node.Configuration,configuration))return false;
    return IsCurrentPresentedSnapshot(session,workflowId,node,snapshot);
   }
   if(!Current())return null;

@@ -29,6 +29,39 @@ internal static class UiRuntime
 {
     private static PluginManager? _plugins;
     private static IDisposable? _desktop;
+    private static bool _dialogHookInstalled;
+
+    /// <summary>测试宿主自动应答模态弹窗：不阻塞测试派发线程；弹窗内容记录到控制台供失败定位。</summary>
+    private static void InstallDialogAutoRespond()
+    {
+        if(_dialogHookInstalled)return;_dialogHookInstalled=true;
+        SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls.NativeMessageBox.TestAutoRespond=(title,message)=>
+        {
+            var text=$"[测试自动应答弹窗] 标题={title ?? "-"} 消息={message ?? "-"}{Environment.NewLine}{Environment.StackTrace}";
+            Console.WriteLine(text);
+            // Reset regression tests intentionally inspect the owned native
+            // dialog and drive No/Yes/Ok through its real buttons. Let that
+            // confirmation enter the nested modal dispatcher; other test
+            // dialogs keep the non-blocking default response.
+            if(message?.Contains("确定要将所有算法参数恢复初始值吗",StringComparison.Ordinal)==true
+                || message?.Contains("算法参数恢复初始值成功",StringComparison.Ordinal)==true)
+                return null;
+            return SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls.DialogResult.Ok;
+        };
+        // ThemeMessageDialog 是真实模态窗口，同样需要无监督应答：确认/继续→确定，保存询问→否（不落盘）。
+        SunEyeVision.UI.Features.Dialogs.ThemeMessageDialog.TestAutoRespond=(title,message,button)=>
+        {
+            Console.WriteLine($"[测试自动应答弹窗] ThemeMessageDialog 标题={title ?? "-"} 消息={message ?? "-"} 按钮={button}{Environment.NewLine}{Environment.StackTrace}");
+            return button switch
+            {
+                System.Windows.MessageBoxButton.OK => System.Windows.MessageBoxResult.OK,
+                System.Windows.MessageBoxButton.OKCancel => System.Windows.MessageBoxResult.OK,
+                System.Windows.MessageBoxButton.YesNo => System.Windows.MessageBoxResult.No,
+                System.Windows.MessageBoxButton.YesNoCancel => System.Windows.MessageBoxResult.No,
+                _ => System.Windows.MessageBoxResult.Cancel,
+            };
+        };
+    }
     internal static string ProductRoot => Path.GetFullPath(typeof(UiRuntime).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().Single(item=>item.Key=="HostDebugRoot").Value!);
     internal static string Cases => Path.GetFullPath(Path.Combine(ProductRoot,"..","..","_validation","UiSessionTests"));
     internal static DesktopToolAdmission Admission
@@ -38,27 +71,41 @@ internal static class UiRuntime
             System.Windows.Application.Current.Dispatcher.VerifyAccess();
             if(_plugins is null)
             {
+                InstallDialogAutoRespond();
                 AppContext.SetData("APP_CONTEXT_BASE_DIRECTORY",ProductRoot);
                 _plugins=new PluginManager();_plugins.LoadPluginsAsync().GetAwaiter().GetResult();
                 if(_plugins.LastAdmissionError is {} error)throw new InvalidOperationException(error);
                 _desktop=_plugins.PinDesktopHost();
                 var paths=ApplicationDataPaths.Open(Path.Combine(Cases,"Data"));
                 ServiceInitializer.ConfigureDataPaths(paths);ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(paths,_plugins.DesktopAdmission!.Runtime);
-                var theme=new ThemeManager(()=>null,_=>{});theme.Initialize();ServiceLocator.Instance.Register(theme);
             }
             return _plugins.DesktopAdmission??throw new InvalidOperationException("本树正式桌面目录未准入。");
         }
     }
     internal static void Run(Action action)=>SunEyeVision.TestShared.WpfTestDispatcher.Invoke(action);
-    internal static void Pump()
+    internal static void Pump(DispatcherPriority priority=DispatcherPriority.ApplicationIdle)
     {
-        var frame=new DispatcherFrame();Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle,new Action(()=>frame.Continue=false));Dispatcher.PushFrame(frame);
+        var frame=new DispatcherFrame();Dispatcher.CurrentDispatcher.BeginInvoke(priority,new Action(()=>frame.Continue=false));Dispatcher.PushFrame(frame);
     }
     internal static void Await(Task task)
     {
+        Await(task,DispatcherPriority.ApplicationIdle);
+    }
+    internal static void Await(Task task,DispatcherPriority priority)
+    {
         var deadline=DateTime.UtcNow.AddSeconds(35);
-        while(!task.IsCompleted){if(DateTime.UtcNow>deadline)throw new TimeoutException("实际UI异步操作未排空。");Pump();Thread.Sleep(1);}
+        while(!task.IsCompleted){if(DateTime.UtcNow>deadline)throw new TimeoutException("实际UI异步操作未排空。");Pump(priority);Thread.Sleep(1);}
         task.GetAwaiter().GetResult();Pump();
+    }
+    internal static void AwaitEditorReady(SunEyeVision.UI.Services.Editing.RuntimeToolEditorWindow window)
+    {
+        Await(window.AssemblyReadyTask,DispatcherPriority.SystemIdle);
+        var deadline=DateTime.UtcNow.AddSeconds(35);
+        while(!window.Editor.CanDebug)
+        {
+            if(DateTime.UtcNow>deadline)throw new TimeoutException("实际参数页未进入可调试状态。");
+            Pump(DispatcherPriority.SystemIdle);Thread.Sleep(1);
+        }
     }
     internal static object? Call(object target,string method,params object?[] args)
     {
@@ -66,6 +113,7 @@ internal static class UiRuntime
         catch(TargetInvocationException error) when(error.InnerException is not null){ExceptionDispatchInfo.Capture(error.InnerException).Throw();throw;}
     }
     internal static T? Field<T>(object target,string name)=>(T?)target.GetType().GetField(name,BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(target);
+    internal static T? Prop<T>(object target,string name)=>(T?)target.GetType().GetProperty(name,BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public)!.GetValue(target);
     internal static IEnumerable<T> Visuals<T>(DependencyObject parent) where T:DependencyObject
     {
         if(parent is T match)yield return match;
@@ -112,9 +160,12 @@ internal sealed class DocumentUiFixture:IDisposable
     {
         var draft=Session.Editing.Host.BeginEdit(Root.Id,node.Id);draft.ApplyFields(changes.ToDictionary(item=>item.Id,item=>item.Value));Session.CommitEdit(DocumentEditProposal.Prepare(Session.Editing.Host,nodes:new[]{draft}));UiRuntime.Pump();
     }
-    internal string Image(byte gray=51)
+    internal string Image(byte gray=51,int side=2)
     {
-        var file=Path.Combine(DirectoryPath,Guid.NewGuid().ToString("N")+".pgm");File.WriteAllBytes(file,System.Text.Encoding.ASCII.GetBytes("P5\n2 2\n255\n").Concat(new byte[]{gray,gray,gray,gray}).ToArray());return file;
+        var file=Path.Combine(DirectoryPath,Guid.NewGuid().ToString("N")+".pgm");
+        var header=System.Text.Encoding.ASCII.GetBytes($"P5\n{side} {side}\n255\n");
+        File.WriteAllBytes(file,header.Concat(Enumerable.Repeat(gray,side*side)).ToArray());
+        return file;
     }
     internal void ConfigureImage(NodeDefinition node,params string[] files)=>Fields(node,("local.paths",new ConstantSetting(files)),("local.start",new ConstantSetting(0L)));
     internal void Run()
@@ -129,9 +180,11 @@ internal sealed class DocumentUiFixture:IDisposable
     public void Dispose()
     {
         foreach(var editor in System.Windows.Application.Current.Windows.OfType<SunEyeVision.UI.Services.Editing.RuntimeToolEditorWindow>().ToArray())UiRuntime.Await(editor.CloseAndDrainAsync());
-        Results.Shutdown();Main.ReleasePluginConsumersForShutdown();Main.ReleaseDocumentHost();
+        Results.Shutdown();Main.ReleasePluginConsumersForShutdown();
+        // 与生产关闭链同序：先排空持有活动租约的通讯/相机运行时，ReleaseDocumentHost 才能关闭会话。
         UiRuntime.Await(ServiceInitializer.DisposeCommunicationRuntimeAsync().AsTask());
         UiRuntime.Await(ServiceInitializer.DisposeCameraRuntimeAsync().AsTask());
+        Main.ReleaseDocumentHost();
         Host.Content=null;Host.Close();ServiceInitializer.SolutionManager.CloseCurrent(discardPendingEdits:true);UiRuntime.Pump();
     }
 }

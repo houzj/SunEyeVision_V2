@@ -38,9 +38,12 @@ public sealed record ToolSettingsViewOptions(
     IReadOnlyDictionary<string,FrameworkElement>? FieldVisibilitySources=null,
     IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? ChoiceDisplays=null,
     SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameSource? RoiFrames=null,
+    Func<string?>? RoiDrawBlockReason=null,
     IReadOnlyList<NativeVisibilityDisplayOptions>? VisibilityDisplays=null,
     Action<string,DeclaredFieldsView,FrameworkElement?>? PageBuilt=null,
-    Func<DeclaredFieldsView,FrameworkElement>? InputContentFactory=null)
+    Func<DeclaredFieldsView,FrameworkElement>? InputContentFactory=null,
+    bool EagerlyComposePages=false,
+    Func<string,ParameterSetting>? ReadInputSetting=null)
 {
     private IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? _choiceDisplays=FreezeChoiceDisplays(ChoiceDisplays);
     public IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? ChoiceDisplays
@@ -58,10 +61,23 @@ public interface IToolSettingsView : IDisposable
     FrameworkElement View { get; }
     bool HasInvalidInput { get; }
     bool HasPendingEdits { get; }
+    bool HasPendingEditsOutside(IReadOnlySet<string> excludedFields) => HasPendingEdits || HasInvalidInput;
     long AcceptedRevision { get; }
     IReadOnlyList<string> AcceptedFieldOrder { get; }
     FieldSettings CaptureAcceptedFields();
     IReadOnlyList<NumericModelReadResult> ReadNumericModels(NumericModelReadScope scope,string? fieldId=null);
     event Action? Changed;
     bool TryCapture(out FieldSettings fields,out string error);
+}
+
+/// <summary>Optional readiness contract for views that assemble their selected page asynchronously.</summary>
+public interface IToolSettingsViewReady
+{
+    Task ReadyTask { get; }
+}
+
+/// <summary>Refresh input projections when the host adopts a receipt without replacing the view.</summary>
+public interface IToolSettingsViewInputProjection
+{
+    void RefreshAcceptedInputs();
 }

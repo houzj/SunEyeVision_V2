@@ -20,8 +20,7 @@ public sealed class ToolPresentationAdmission
         Definition = definition ?? throw new ArgumentNullException(nameof(definition));
         _isCurrent = isCurrent ?? throw new ArgumentNullException(nameof(isCurrent));
         RetirementToken = retirement;
-        EditorEntryType = directory.Components.SingleOrDefault(component => component.Metadata.Role == ToolComponentRole.Editor &&
-            component.Metadata.ToolId == definition.ToolId)?.EntryType;
+        EditorEntryType = directory.ResolveEditor(definition.ToolId)?.EntryType;
         EnsureCurrent();
     }
 
@@ -31,8 +30,10 @@ public sealed class ToolPresentationAdmission
         if (!IsCurrent) throw new InvalidOperationException("呈现来源节点、方案或组件目录已退出。");
     }
     internal RuntimeGenerationLease AcquireInvocation()
+        =>AcquireInvocation("工具呈现");
+    internal RuntimeGenerationLease AcquireInvocation(string owner)
     {
-        var generation = Directory.AcquireInvocation();
+        var generation = Directory.AcquireInvocation(owner);
         try { EnsureCurrent(); return generation; }
         catch { generation.Dispose(); throw; }
     }

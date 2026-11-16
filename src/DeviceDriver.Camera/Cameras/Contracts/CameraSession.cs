@@ -23,6 +23,7 @@ public sealed class CameraSession : IAsyncDisposable
     private TaskCompletionSource<bool>? _closeCompletion;
     private TaskCompletionSource<bool>? _operationsDrained;
     private int _activeOperations;
+    private bool _exclusiveOperation;
     private bool _adapterReleased;
 
     public CameraDeviceRef CameraRef { get; }
@@ -37,14 +38,17 @@ public sealed class CameraSession : IAsyncDisposable
         get { lock (_disposeGate) return _closeCompletion?.Task; }
     }
 
-    internal IDisposable AcquireOperation(string purpose)
+    internal IDisposable AcquireOperation(string purpose,bool exclusive=false)
     {
         lock (_disposeGate)
         {
             if (_closeCompletion is not null)
                 throw new InvalidOperationException($"相机 {CameraRef.Value} 正在关闭，不能开始{purpose}。");
+            if (_exclusiveOperation || exclusive && _activeOperations!=0)
+                throw new InvalidOperationException($"相机 {CameraRef.Value} 正在执行其他参数操作，不能开始{purpose}。");
             ++_activeOperations;
-            return new OperationLease(this);
+            _exclusiveOperation=exclusive;
+            return new OperationLease(this,exclusive);
         }
     }
 
@@ -67,7 +71,7 @@ public sealed class CameraSession : IAsyncDisposable
         }
     }
 
-    private sealed class OperationLease(CameraSession owner) : IDisposable
+    private sealed class OperationLease(CameraSession owner,bool exclusive) : IDisposable
     {
         private int _released;
         public void Dispose()
@@ -76,6 +80,7 @@ public sealed class CameraSession : IAsyncDisposable
             TaskCompletionSource<bool>? drained = null;
             lock (owner._disposeGate)
             {
+                if(exclusive)owner._exclusiveOperation=false;
                 if (--owner._activeOperations == 0)
                 { drained = owner._operationsDrained; owner._operationsDrained = null; }
             }

@@ -1,0 +1,24 @@
+Blob VM 原件结果桥接证据（2026-11-08）
+
+目标程序集：
+- Native：D:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\x64\Location\IMVSBlobFindModu\IMVSBlobFindModu.dll
+  SHA-256：4DE695D8C3051045C9010739686F94C32D66A36EE486207FE749FB183FFF4C9A
+- Managed：同目录 IMVSBlobFindModuCs.dll
+  SHA-256：3106AF2E9344A97288553BFBBFA86DAF81E2384188B452734F56825F63E0A78D
+  MVID：1d550689-0379-4822-8b69-8713d2324342
+  TargetFramework：.NETFramework,Version=v4.6.1
+  引用：VM.Core、VM.PlatformSDKCS
+
+REA 托管证据：
+- inspect_managed_artifact：ev_9af527f6d0dd76bf57a954dece44ff7240f59d6569eb6bcc1f7bacd79053587b
+- inspect_managed_members：ev_d8aa7c0244e4698b352fefd5e96fec8b3e23f2b23453a3869d04409f92383208
+
+已确认：
+1. `IMVSBlobFindModuCs.IMVSBlobFindModuTool.Run` 的 CIL 只有 7 条指令，调用 `get_serverSDKManager`、读取模块 ID 并调用 `SyncSelfRun`。托管层不实现 Blob 算法和结果计算。
+2. `BlobFindResult` 构造函数依次初始化所有结果成员，包括 `MaxAreaInnerRect`、`Score`、`ROI`、`ROIAnnulus`、`ContourInfo`、BlindPolygon 三组和 `OutputMask`，这只证明容器初始化，不证明运行时值语义。
+3. 结果成员的实际填充必须沿 `SyncSelfRun` 进入 native `IMVSBlobFindModu.dll` 继续追踪。
+
+当前缺口：
+- REA native provider 自动选择失败。Ghidra 未配置，IDA 未注册，Hopper 不支持当前 Windows 主机。
+- 因此本批不把上述 10 个成员按名称或结果声明近似填充，继续保持 `BlobVmResultProjection.Unavailable`。
+- 原件参数/结果声明和托管容器证据仍可作为迁移合同，不能替代 native 算法值证据。

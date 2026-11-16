@@ -28,6 +28,9 @@ public interface IResultPublication : IDisposable
     IReadOnlyList<Diagnostic> Diagnostics { get; }
     IReadOnlyDictionary<string,string> DisplayNames { get; }
     IReadOnlySet<string> DisplayedPorts { get; }
+    /// <summary>已显式退役（Dispose）。与 IsCurrent 的"执行域当前性"不同：
+    /// 陈旧发布（配置编辑后）仍可被显示层持有显示，退役发布必须释放借用。</summary>
+    bool IsRetired { get; }
     bool IsCurrent();
     IResultValueLease Borrow();
 }
@@ -59,8 +62,11 @@ public sealed class ResultPublication : IResultPublication
             throw new ArgumentException("A declaration does not invent a run, revision or result values.");
         if(state!=ResultViewState.Declaration&&(stamp.Invocation is null||stamp.SchemaRevision is null))
             throw new ArgumentException("An invocation publication requires its actual run and schema revision.");
-        if((state is ResultViewState.Success or ResultViewState.PartialSuccess)!=(values is not null))
-            throw new ArgumentException("Only completed successful publications have result values.");
+        var succeeded=state is ResultViewState.Success or ResultViewState.PartialSuccess;
+        if(succeeded&&values is null||!succeeded&&state is not (ResultViewState.Failed or ResultViewState.Timeout)&&values is not null)
+            throw new ArgumentException("Result values require a completed successful or failed invocation.");
+        if(succeeded&&schema.Outputs.Any(port=>port.Required&&!values!.Contains(port.Id)))
+            throw new ArgumentException("A successful publication must contain every required output.");
         var ids=schema.Outputs.Select(port=>port.Id).ToHashSet(StringComparer.Ordinal);
         if(displayNames?.Any(item=>!ids.Contains(item.Key)||item.Value is null)==true
             ||displayedPorts?.Any(id=>!ids.Contains(id))==true)
@@ -89,6 +95,7 @@ public sealed class ResultPublication : IResultPublication
     public IReadOnlyList<Diagnostic> Diagnostics {get;}
     public IReadOnlyDictionary<string,string> DisplayNames {get;}
     public IReadOnlySet<string> DisplayedPorts {get;}
+    public bool IsRetired{get{lock(_gate){return _retired;}}}
     public bool IsCurrent()
     {
         lock(_gate){if(_retired)return false;}

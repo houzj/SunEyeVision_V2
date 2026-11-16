@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>工作流与执行引擎逆向闭包方案</title>
+  <style>
+    body{font-family:Arial,"Microsoft YaHei",sans-serif;line-height:1.65;color:#20252b;max-width:1180px;margin:32px auto;padding:0 24px}
+    h1{border-bottom:3px solid #2d6cdf;padding-bottom:12px} h2{margin-top:30px;color:#174a9c}
+    table{border-collapse:collapse;width:100%;margin:14px 0 24px}th,td{border:1px solid #cdd5df;padding:9px;vertical-align:top}th{background:#edf3ff;text-align:left}
+    code{background:#f3f5f7;padding:2px 5px;border-radius:3px}.flow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:18px 0}.box{border:1px solid #6b8dcc;border-radius:6px;padding:10px 14px;background:#f5f8ff}.arrow{font-size:22px;color:#52677f}
+    .unknown{color:#9a5b00;background:#fff5dc;padding:2px 6px;border-radius:3px}.done{color:#176b3a;background:#e9f7ef;padding:2px 6px;border-radius:3px}
+  </style>
+</head>
+<body>
+<h1>工作流与执行引擎逆向闭包方案</h1>
+<p>本方案把工作流和执行引擎作为独立核心进行逆向复核。ImageSource + Blob 只作为真实工具载体验证核心合同，不要求先完成全部目录工具。</p>
+
+<h2>一、独立闭包边界</h2>
+<div class="flow">
+  <div class="box">方案/流程身份</div><span class="arrow">→</span>
+  <div class="box">节点与连线图</div><span class="arrow">→</span>
+  <div class="box">输入绑定与快照</div><span class="arrow">→</span>
+  <div class="box">调度与执行身份</div><span class="arrow">→</span>
+  <div class="box">结果发布/阅读</div><span class="arrow">→</span>
+  <div class="box">取消、关闭、退役</div>
+</div>
+<p>工具算法只在执行节点的声明、输入、输出和宿主资源边界接入。引擎可以用最小测试工具或现有 ImageSource + Blob 验证，不依赖全工具迁移。</p>
+
+<h2>二、原厂证据与本方映射</h2>
+<table>
+  <thead><tr><th>核心闭包</th><th>VM 逆向证据</th><th>当前实现入口</th><th>当前判断</th></tr></thead>
+  <tbody>
+    <tr><td>调试入口与单次执行</td><td><code>DynamicParamsTabControl</code>、<code>BottomCommand.SelfExcuteModule</code>、<code>VmModule.Run</code>、<code>ModuleManager.SelfRun</code></td><td><code>RuntimeToolEditorWindow</code>、<code>ProductionEditorDebug</code>、<code>DocumentDebugSession</code></td><td><span class="done">源码链已映射</span>，原生上游准备仍需动态取证</td></tr>
+    <tr><td>连续执行与停止</td><td><code>ContinuousSelfExcute</code>、<code>StopContinuousSelfExecute</code>，等待回调标志并按 300ms 循环</td><td><code>DocumentDebugSession.StartContinuousAsync</code>、<code>StopContinuous</code>、<code>ProductionEditorDebug.RetireAsync</code></td><td><span class="done">机制已映射</span>，原厂算法中止语义<span class="unknown">运行未确认</span></td></tr>
+    <tr><td>窗口关闭</td><td><code>ParamsConfigControlBase.Window_Closed</code> 停止连续执行、注销设备/通信服务、<code>AlgorithmTabRoot.Dispose</code>、<code>DoFinish</code></td><td><code>RuntimeToolEditorWindow.OnClosing</code> → <code>CloseDebugAsync</code> → <code>DisposeAsync</code></td><td>当前已修正主窗口异步等待子窗口排空，原厂回调顺序<span class="unknown">运行未确认</span></td></tr>
+    <tr><td>图执行拓扑</td><td>入口计划 E0–E7 与原厂节点/连接/执行边证据</td><td><code>WorkflowDefinition</code>、<code>ConnectionDefinition</code>、<code>WorkflowExecutionEngine</code>、<code>ExecutionBindingInputResolver</code></td><td>本方生产链存在，需按原厂事件与状态逐项对照</td></tr>
+    <tr><td>结果发布与读取</td><td>原厂模块回调、结果显示和参数结果树证据</td><td><code>DeclaredOutputSnapshot</code>、<code>ResultPublication</code>、<code>AcquirePublishedResult</code></td><td>身份/代次/迟到回调门禁已实现，视觉和动态时序<span class="unknown">运行未确认</span></td></tr>
+  </tbody>
+</table>
+
+<h2>三、逆向实施顺序</h2>
+<ol>
+  <li>冻结方案、流程、节点、连线、端口、绑定和结果身份合同。</li>
+  <li>沿 E0–E7 入口链核对创建、编辑、保存重开、节点切换和连线变更。</li>
+  <li>核对执行调度的快照边界、拓扑顺序、上游结果、变量和宿主输入。</li>
+  <li>核对单次、连续、停止、取消、失败、超时、重复执行和结果发布。</li>
+  <li>核对调试窗口、主窗口、方案切换和应用退出的关闭排空与退订顺序。</li>
+  <li>用 ImageSource → Blob 做一条生产链验证，再把引擎合同推广给其他工具。</li>
+</ol>
+
+<h2>四、独立验收矩阵</h2>
+<table>
+  <thead><tr><th>类别</th><th>必须覆盖</th><th>证据出口</th></tr></thead>
+  <tbody>
+    <tr><td>图模型</td><td>节点创建/删除/复制/撤销重做、连线约束、节点身份和代次</td><td>静态源码映射 + 方案保存重开</td></tr>
+    <tr><td>执行</td><td>拓扑调度、输入快照、结果发布、失败隔离、重复运行</td><td>引擎探针 + ImageSource/Blob 载体</td></tr>
+    <tr><td>调试</td><td>单次、连续、停止、取消、字段修改、迟到回调拒写</td><td>正式窗口会话 + 调试会话合同</td></tr>
+    <tr><td>生命周期</td><td>切节点、换方案、关闭窗口、关闭主程序、插件代次退役</td><td>资源计数、退订记录、关闭排空结果</td></tr>
+    <tr><td>性能</td><td>首屏、首轮、重复切页、调度延迟、关闭排空时间</td><td>统一计时预算，不能代替 VM 等效结论</td></tr>
+  </tbody>
+</table>
+
+<h2>五、当前缺口</h2>
+<ul>
+  <li>VM 原生 <code>SelfRun</code> 的上游准备、原生算法中止和设备服务释放尚无同版本运行证据。</li>
+  <li>当前工作流引擎的源码链已具备独立分析条件，但原厂事件时序、结果回调线程和缓存策略需要集中取证。</li>
+  <li>本次主窗口关闭阻塞已定位为异步子窗口关闭被同步检查，以及插件目录排空无限等待。修正已完成并通过全量 Release 编译，程序和自动测试尚未启动。</li>
+</ul>
+</body>
+</html>

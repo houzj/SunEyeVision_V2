@@ -1,0 +1,10 @@
+按需编辑器加载后的 RuntimeEditorProductionProbe 回归（2026-11-08）
+
+命令：Release/_validation/bin/RuntimeEditorProductionProbe/Release/RuntimeEditorProductionProbe.exe D:\MyWork\SunEyeVision_V2
+
+结果：
+- ImageLoad 参数页绑定 682ms，窗口首次呈现与首个页面组装 1320ms，重复切页 0ms，实际 SN 文本回执、重基和关闭释放 PASS。
+- BlobAnalysis 参数页绑定 1098ms，窗口首次呈现 357ms；基本参数 ROI 组合 1348ms；运行参数页首次切换 387ms；结果显示页首次空闲组装 1108ms，其中结果控件组合 964ms；第 3 页切换 292ms；重复切换 0/18/55ms；捕获、回执和关闭释放 PASS。
+- 主题字典重复解析 1–3ms，未成为主要耗时。
+
+结论：按需加载编辑器没有破坏两工具真实 Session、参数模板、Tab、回执和释放链。Blob 的主要剩余成本仍是 ROI 组合、运行页通用字段树和结果显示字段树的首次视觉树构造。该结果是本方 Release 探针，不是 VM 同机动态等效值。

@@ -150,6 +150,11 @@ internal static class Program
    Console.WriteLine($"PASS: reopened image source reference {loadedReference} resolves {loadedPath.Address}");
    var movedRoot = movedSession.GetWorkflows().Single();
    var nodeDraft = movedSession.Editing.Host.BeginEdit(movedRoot.Id, reopenedImage.Id);
+   nodeDraft.ApplyFields(new Dictionary<string, ParameterSetting>
+   {
+    ["source.kind"] = new ConstantSetting("camera"),
+    ["camera.device"] = new ConstantSetting("stale-device")
+   });
    var active = true;
    using var sourceView = new ImageSourceDraftContent(movedSession, movedRoot, reopenedImage, () => nodeDraft, () => active);
    IToolSettingsDraft Settings() => new FieldSettingsDraft(nodeDraft.SettingsSchema, nodeDraft.Configuration.Fields);
@@ -160,9 +165,8 @@ internal static class Program
    var rebase = DocumentEditProposal.Prepare(movedSession.Editing.Host, nodes: new[] { nodeDraft });
    movedSession.CommitEdit(rebase);
    nodeDraft = movedSession.Editing.Host.RebaseAcceptedDraft(nodeDraft, rebase);
-   inputView.CameraPicker.Items.Add(new System.Windows.Controls.ComboBoxItem { Content = "失效回调", Tag = "stale-device" });
-   inputView.CameraPicker.SelectedIndex = 1;
-   if (nodeDraft.Configuration.Fields.Read("camera.device") is not ConstantSetting { Value: string camera } || camera == "stale-device")
+   inputView.CameraPicker.SelectedIndex = 0;
+   if (nodeDraft.Configuration.Fields.Read("camera.device") is not ConstantSetting { Value: "stale-device" })
     throw new Exception("stale camera callback modified the rebased draft");
    try { sourceView.RefreshSourceDraft(); throw new Exception("old source view survived draft rebase"); }
    catch (InvalidOperationException) { }

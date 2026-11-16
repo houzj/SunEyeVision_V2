@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Win32;
+using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
 using SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources;
 using SunEyeVision.UI.Services.Thumbnail;
 using SunEyeVision.UI.Shared;
@@ -40,8 +41,10 @@ public sealed partial class ImageSourceStripSession
             var owner = _dialogOwner?.Invoke(); RequireCurrent(request.ExpectedVersion);
             var dialog = new OpenFileDialog
             {
-                Title = "添加图像", Multiselect = true, CheckFileExists = true,
-                Filter = "图像文件|*.jpg;*.jpeg;*.png;*.bmp;*.tiff;*.tif|所有文件|*.*"
+                Multiselect = true,
+                CheckFileExists = true,
+                CheckPathExists = true,
+                Filter = AppLocalizationService.GetLang("图像文件") + "|*.bmp;*.jpeg;*.jpg;*.png;*.tif;*.tiff"
             };
             bool? accepted = owner is null ? dialog.ShowDialog() : dialog.ShowDialog(owner);
             cancellationToken.ThrowIfCancellationRequested(); RequireCurrent(request.ExpectedVersion);
@@ -67,6 +70,8 @@ public sealed partial class ImageSourceStripSession
         }
         RequireCurrent(request.ExpectedVersion);
         var frozen = directories.ToArray();
+        // 回显实际扫描位置，便于区分"选的目录不对"与"目录里没有可用图像"。
+        SetStatus("正在读取文件夹：" + string.Join("；", frozen));
         await ImportCoreAsync(async token =>
         {
             var files = new System.Collections.Generic.List<string>();
@@ -114,7 +119,14 @@ public sealed partial class ImageSourceStripSession
                 if (cancellation.IsCancellationRequested || generation != _fileImportGeneration || !CanAccept(expectedVersion)) return;
                 var existing = _source.Images.Select(image => image.FilePath).ToHashSet(StringComparer.OrdinalIgnoreCase);
                 var additions = prepared.Where(image => existing.Add(image.FilePath)).ToArray();
-                if (additions.Length == 0) { SetStatus("没有找到新的可导入图像文件"); return; }
+                // 把"扫描到多少 / 新增多少"直接回显，便于区分"没扫到文件"与"被去重/被清空"。
+                if (additions.Length == 0)
+                {
+                    SetStatus(prepared.Length == 0
+                        ? "未在所选位置找到可用图像文件（支持 jpg/jpeg/png/bmp/tif/tiff，文件夹内最多向下 1 层）"
+                        : $"扫描到 {prepared.Length} 个图像，但都已存在，未新增");
+                    return;
+                }
                 // One action, one acceptance. Notifications may cancel or retire this session after acceptance;
                 // no partially accepted chunks and no rollback of already accepted references.
                 var receipt=_source.AddImages(additions);

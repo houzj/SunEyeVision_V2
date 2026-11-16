@@ -1,0 +1,18 @@
+{
+  "kind": "SN状态迁移的原件静态依据",
+  "processPath": "D:/MyWork/Rea逆向/analysis/full-audit/image-source-native-0.c",
+  "processSha256": "600FAA687D61B61ACBD7207FE2FDEF569647D6BF91F5F34AFBE5719ECCFF61CA",
+  "setParamPath": "D:/MyWork/Rea逆向/analysis/full-audit/image-source-native-3.c",
+  "setParamSha256": "08B8DFCD958B692E5059EC895737202BD5731CD701912CBA5F2EF2F8FD0B8F6E",
+  "archiveBinarySha256": "91EA3659BE97E51EDEAB0C913779D4555D51DCD0D6288086FBF9916D35B942DB",
+  "installedBinarySha256": "F88A455061F3AE2D5E2EF157E7B3CAAFD94A2B95C39B5BBA096802E405EBC6C8",
+  "installedInstructions": "ImageSource-SN计数-本机指令-20261111.txt",
+  "behavior": [
+    "SetParam InitialSN 范围0至100000并写模块计数器this+0x3B0",
+    "Process 相机有效图像后、拼接前计数器加一并发布SNCode",
+    "Process 本地成功路径末尾计数器加一并发布SNCode",
+    "字符过滤提前退出不触及计数器"
+  ],
+  "implementation": "ImageSourceRunState承载同一个SN与拼接子状态，原处理状态拥有者管理正式/私有生命周期，直接IToolSession持有同一实现",
+  "limitations": "本机指令核对与归档反编译分列；未启动原件或本方程序、测试和探针。失败时部分结果的对外发布仍未完成对照"
+}

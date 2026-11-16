@@ -1,0 +1,20 @@
+dotnet build SunEyeVision.slnx -c Release --no-restore -m:1 -p:HalconSourceRoot=D:\MyWork\SunEyeVision_V2\libs\halcon
+首次编译CS7036已修复；以下为最终编译结果。测试、程序、探针未运行。
+C:\Users\Administrator\.codex\worktrees\param-window-datatree-project-v2\SunEyeVision_V2\tests\VariableValue.Runtime.Tests\VariableValue.Runtime.Tests.csproj : warning NU1900: 获取包漏洞数据时出错: 无法加载源 https://api.nuget.org/v3/index.json 的服务索引。
+    3308 个警告
+    0 个错误
+
+已用时间 00:00:15.39
+5A5EC43BBC0F793C256F94EC900503B7C42E92A266EC2DC9AB1513ACD3C47DBC  tests/SunEyeVision.Tool.BlobAnalysis.Tests/BlobAnalysisParameterContractTests.cs
+5D27966469AC56576B3080D8C88C8612423F358D424FBC70C33BACD1A9AABCED  tests/SunEyeVision.Tool.BlobAnalysis.Tests/BlobSessionChainRegressionTests.cs
+B886563F1BBC2EDD361D3529811E45D99965C0E4BCFB5D72371774D13285C30C  tests/SunEyeVision.Tool.BlobAnalysis.Tests/DeclaredBlobResultTests.cs
+52B5AB2B32F7CBE6E9B3D4DF421B35C41FCEC3AFC325B99482FBD1CB72FA7923  tests/SunEyeVision.UI.Tests/Session/EditorDebugSessionTests.cs
+103ABE2E4CE88BFD54160274246BA1A7D4C39FAD18A8002369854968FB73A79F  tools/SunEyeVision.BlobAnalysis/Runtime/Algorithms/BlobCandidateSelection.cs
+AA2C39F05D030A3BED9ACC55DC52EF2E67928A0B73338A1CACC11330D3D0302A  tools/SunEyeVision.BlobAnalysis/Runtime/Algorithms/BlobSession.cs
+07F5DD2A5681E86AF59C4599F5172F194432F5594027B8589B44B2659B6B784F  tools/SunEyeVision.BlobAnalysis/Runtime/Parameters/BlobSettings.cs
+1C8DE6D2D3CC570397D24F0FEA9B93363E668DB9DABB011E9A91501E5EBD2981  tools/SunEyeVision.BlobAnalysis/Runtime/Parameters/BlobVmFindParameters.cs
+52A22BFC9AF05FA8978440BEA8EFC13EA874D75F63318511631254FB4D73746D  tools/SunEyeVision.BlobAnalysis/Runtime/Resources/BlobParameters.xml
+5F28727A5D8040A2DC1FFA3EBD5462F68F49DD884226574F3F510145ECD102D1  tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobDisplayUi.cs
+0625831114198726244D5F74F61D0EA67F24012B61EC74E7C9B78CE51E913007  tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobLocalRoiOwner.Preview.cs
+ED664BA98138EA159C0C79D335954DCDE0433697C67CD3295C5F6B668FF18DC1  tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRoiUi.cs
+CD98935AB6A45EACE3AC094AE99B833A95B5221761598C5212881A48BA57EA55  tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobSupportedWindowState.cs

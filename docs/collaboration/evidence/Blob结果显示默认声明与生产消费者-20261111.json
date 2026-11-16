@@ -1,0 +1,146 @@
+{
+  "kind": "结果显示默认声明及生产消费者静态复核",
+  "original": "C:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModuDisplay.xml",
+  "styles": [
+    {
+      "fieldGroup": "display.blob",
+      "originalObject": "Blob",
+      "ok": "#66ff00",
+      "ng": "#ff0000",
+      "opacity": "1",
+      "width": "2",
+      "visible": "true",
+      "status": "与当前BlobResultDisplay.Build源码逐项一致"
+    },
+    {
+      "fieldGroup": "display.inner-rectangle",
+      "originalObject": "Blob Max Area Inner Rect",
+      "ok": "#66ff00",
+      "ng": "#ff0000",
+      "opacity": "1",
+      "width": "2",
+      "visible": "true",
+      "status": "与当前BlobResultDisplay.Build源码逐项一致"
+    },
+    {
+      "fieldGroup": "display.inspection",
+      "originalObject": "ROI",
+      "ok": "#0000ff",
+      "ng": "#ff0000",
+      "opacity": "1",
+      "width": "2",
+      "visible": "true",
+      "status": "与当前BlobResultDisplay.Build源码逐项一致"
+    },
+    {
+      "fieldGroup": "display.reference-point",
+      "originalObject": "Fixtured Point",
+      "ok": "#66ff00",
+      "ng": "#ff0000",
+      "opacity": "1",
+      "width": "1",
+      "visible": "true",
+      "status": "与当前BlobResultDisplay.Build源码逐项一致"
+    },
+    {
+      "fieldGroup": "display.run-point",
+      "originalObject": "Unfixtured Point",
+      "ok": "#ff0000",
+      "ng": "#ff0000",
+      "opacity": "1",
+      "width": "1",
+      "visible": "true",
+      "status": "与当前BlobResultDisplay.Build源码逐项一致"
+    },
+    {
+      "fieldGroup": "display.mask",
+      "originalObject": "ExternROI",
+      "ok": "#0000ff",
+      "ng": "#ff0000",
+      "opacity": "0.5",
+      "width": "2",
+      "visible": "true",
+      "status": "与当前BlobResultDisplay.Build源码逐项一致"
+    },
+    {
+      "fieldGroup": "display.annulus",
+      "originalObject": "Annular",
+      "ok": "#0000ff",
+      "ng": "#ff0000",
+      "opacity": "1",
+      "width": "2",
+      "visible": "true",
+      "status": "与当前BlobResultDisplay.Build源码逐项一致"
+    }
+  ],
+  "text": {
+    "defaultOpacity": 1,
+    "defaultX": 0,
+    "originalContent": "Blob Area:{0}, Mapping=Area",
+    "defaultSize": 10,
+    "currentContent": "Blob面积:{面积}",
+    "opacityBounds": "0..1, step0.1",
+    "defaultY": 0,
+    "sizeBounds": "6..72, step1",
+    "contentEvidence": "用户原厂截图为中文表达式；原件内容桥接和动态本地化仍须运行核对，不单凭XML英文改写当前截图目标"
+  },
+  "outline": {
+    "currentNativeConsumer": "MultiPointShape.UpdateOutlinePointsData/UpdatePointData使用原点集像素绘制；未见该分支消费StrokeThickness，不凭XML改造描边",
+    "originalDeclaredWidth": 2,
+    "ng": "#ff0000",
+    "visible": true,
+    "ok": "#66ff00",
+    "runtime": "运行未确认"
+  },
+  "consumers": [
+    "BlobDisplayUi配置→DeclaredFieldsView→NativeGraphicStylePresenter/原ImageViewConfig与文字模板",
+    "AdmittedToolConfiguration准入→ResultDisplayFields.Capture→BlobResultDisplay.Capture",
+    "DocumentSession.GetNodeResultPresentation按正式节点或当前草稿捕获同一呈现声明",
+    "MainWindowResultDisplay.CaptureCurrentResultDisplay校验方案/节点/工作流/publication身份",
+    "ResultWorkspacePresenter.RefreshResultDisplayCore校验物理帧/坐标/代次，借用reader与文本lease",
+    "NativeResultViewport.DisplaySceneLayer→NativeShapeProjection/NativeRoiResultProjection→现有原件绘制控件",
+    "BlobResultView→DeclaredResultTable→同一publication选择高亮，不增加运行值模型"
+  ],
+  "designer": "BlobResultDesignData.Attach有GetIsInDesignMode门禁；生产InitializeComponent不会建立设计示例表，不删除正式构造路径",
+  "changes": "本批不改已对应实现，不运行程序/测试，不新增第二套渲染或显示状态",
+  "remaining": [
+    "实际图像来源/二值化图切换和叠加效果",
+    "开关/颜色/文本位置修改即时预览和保存重开",
+    "换节点/取消/关闭后的reader、帧和回调释放",
+    "原件同版本动态、性能及VS设计器实际核验"
+  ],
+  "files": [
+    {
+      "path": "C:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModuDisplay.xml",
+      "sha256": "B3BC63E6CF7C8CA120BAF5B632BBE1359843138CF77CB5A64FC698EF22465112"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Results/BlobResultDisplay.cs",
+      "sha256": "23DD63298B8E7551B251BDFFEE65C5BBBAE817232ECFDF7CC172C7C8E35DE2B9"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobDisplayUi.cs",
+      "sha256": "573E68F047D932589D2C472A4C8A75F777DE0D729EC54E6C8A7E10EA111E169B"
+    },
+    {
+      "path": "src/Application/DocumentSession.ResultPresentation.cs",
+      "sha256": "754FBB474898B52043EA9BF9BFC47248F96D6EE772DFA194375BCB10C970D549"
+    },
+    {
+      "path": "src/UI/Shell/Windows/MainWindowResultDisplay.cs",
+      "sha256": "1BCA455826F43AF3F63C498C4613B6F1E5073EB26BB1570CD1EFF24DF988A668"
+    },
+    {
+      "path": "src/UI/Services/Images/ResultWorkspacePresenter.Display.cs",
+      "sha256": "B7F00806EC408180FA399DDBFF89F5940623F9E8E6A1FBC17021F2D085406051"
+    },
+    {
+      "path": "src/Plugin.Wpf/Presenters/Display/NativeResultViewport.DisplayScene.cs",
+      "sha256": "4C6E507108CA4B95541813196F031EBFDFC83B53D7E2CB016A9DD0EF94E0A69D"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Wpf/Design/BlobDesignData.cs",
+      "sha256": "E4F19087136D8F29011CD0004ACF80C8E0B28E317CCE6C94A914A15B31A2E3E6"
+    }
+  ]
+}

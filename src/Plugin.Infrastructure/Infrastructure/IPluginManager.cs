@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SunEyeVision.Plugin.Infrastructure.Infrastructure
@@ -11,7 +12,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Infrastructure
         /// <summary>
         /// 加载所有插件
         /// </summary>
-        Task LoadPluginsAsync();
+        Task LoadPluginsAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 卸载所有插件

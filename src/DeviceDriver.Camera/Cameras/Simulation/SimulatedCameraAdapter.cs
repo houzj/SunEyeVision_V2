@@ -12,6 +12,8 @@ namespace SunEyeVision.DeviceDriver.Cameras.Simulation;
 public sealed class SimulatedCameraAdapter : ICameraAdapter
 {
     private readonly SimulatedCameraOptions _options;
+    private double _exposureTime=1000;
+    private double _gain;
     private readonly object _gate = new();
     private CancellationTokenSource? _streamCancellation;
     private Task? _streamTask;
@@ -247,6 +249,8 @@ public sealed class SimulatedCameraAdapter : ICameraAdapter
             if (name.Equals("Width", StringComparison.OrdinalIgnoreCase)) values[name] = _options.Width;
             if (name.Equals("Height", StringComparison.OrdinalIgnoreCase)) values[name] = _options.Height;
             if (name.Equals("FrameRate", StringComparison.OrdinalIgnoreCase)) values[name] = _options.FrameRate;
+            if (name.Equals("ExposureTime", StringComparison.OrdinalIgnoreCase)) values[name] = _exposureTime;
+            if (name.Equals("Gain", StringComparison.OrdinalIgnoreCase)) values[name] = _gain;
             if (name.Equals("TriggerMode", StringComparison.OrdinalIgnoreCase)) values[name] = _triggerMode.ToString(CultureInfo.InvariantCulture);
             if (name.Equals("TriggerSource", StringComparison.OrdinalIgnoreCase)) values[name] = _triggerSource.ToString(CultureInfo.InvariantCulture);
         }
@@ -268,6 +272,10 @@ public sealed class SimulatedCameraAdapter : ICameraAdapter
                 _triggerMode = Convert.ToInt32(pair.Value, CultureInfo.InvariantCulture);
             else if (pair.Key.Equals("TriggerSource", StringComparison.OrdinalIgnoreCase))
                 _triggerSource = Convert.ToInt32(pair.Value, CultureInfo.InvariantCulture);
+            else if(pair.Key.Equals("ExposureTime",StringComparison.OrdinalIgnoreCase))
+                _exposureTime=Convert.ToDouble(pair.Value,CultureInfo.InvariantCulture);
+            else if(pair.Key.Equals("Gain",StringComparison.OrdinalIgnoreCase))
+                _gain=Convert.ToDouble(pair.Value,CultureInfo.InvariantCulture);
         }
         return Task.CompletedTask;
     }

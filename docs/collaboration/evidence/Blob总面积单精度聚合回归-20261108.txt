@@ -1,0 +1,9 @@
+执行时间: 2026-11-08 06:00:15 +08:00
+源码提交: 9f893ecd57adcc4b165b2a7cbfd4ca9a4405d374
+正式载荷 SHA-256: 73B75700A9C843C86C8673AEDFAADF0AEA882D79CED076343C0B74B95FA3E0FE
+测试: Vm_total_area_uses_ordered_float32_accumulation
+结果:
+D:\MyWork\SunEyeVision_V2\tests\bin\ProductRuntime\SunEyeVision.Tool.BlobAnalysis.Tests\Release\SunEyeVision.BlobAnalysis.Runtime.Tests.dll (.NETCoreApp,Version=v9.0)的测试运行
+总共 1 个测试文件与指定模式相匹配。
+
+已通过! - 失败:     0，通过:     1，已跳过:     0，总计:     1，持续时间: 31 ms - SunEyeVision.BlobAnalysis.Runtime.Tests.dll (net9.0)

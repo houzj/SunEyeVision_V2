@@ -1,0 +1,3294 @@
+{
+  "kind": "同版本原件XML默认值和数值边界静态比对",
+  "records": [
+    {
+      "field": "IsPositionCorrectionEnabled",
+      "original": "Assist0",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "SegmentationMode",
+      "original": "ThresholdType",
+      "property": "default",
+      "current": "SingleThreshold",
+      "originalRaw": "0x2",
+      "equal": true,
+      "currentAfter": "SingleThreshold",
+      "equalAfter": true
+    },
+    {
+      "field": "Type",
+      "original": "Polarity",
+      "property": "default",
+      "current": "Binary",
+      "originalRaw": "0",
+      "equal": true,
+      "currentAfter": "Binary",
+      "equalAfter": true
+    },
+    {
+      "field": "Threshold",
+      "original": "LowThreshold",
+      "property": "default",
+      "current": "100",
+      "originalRaw": "0x64",
+      "equal": true,
+      "currentAfter": "100",
+      "equalAfter": true
+    },
+    {
+      "field": "Threshold",
+      "original": "LowThreshold",
+      "property": "minimum",
+      "current": "0",
+      "originalRaw": "0x0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "Threshold",
+      "original": "LowThreshold",
+      "property": "maximum",
+      "current": "255",
+      "originalRaw": "0xff",
+      "equal": true,
+      "currentAfter": "255",
+      "equalAfter": true
+    },
+    {
+      "field": "Threshold",
+      "original": "LowThreshold",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "UpperThreshold",
+      "original": "HightThreshold",
+      "property": "default",
+      "current": "150",
+      "originalRaw": "0x96",
+      "equal": true,
+      "currentAfter": "150",
+      "equalAfter": true
+    },
+    {
+      "field": "UpperThreshold",
+      "original": "HightThreshold",
+      "property": "minimum",
+      "current": "0",
+      "originalRaw": "0x0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "UpperThreshold",
+      "original": "HightThreshold",
+      "property": "maximum",
+      "current": "255",
+      "originalRaw": "0xff",
+      "equal": true,
+      "currentAfter": "255",
+      "equalAfter": true
+    },
+    {
+      "field": "UpperThreshold",
+      "original": "HightThreshold",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "FixedSoftLowerThreshold",
+      "original": "LowSoftThreshold",
+      "property": "default",
+      "current": "100",
+      "originalRaw": "0x64",
+      "equal": true,
+      "currentAfter": "100",
+      "equalAfter": true
+    },
+    {
+      "field": "FixedSoftLowerThreshold",
+      "original": "LowSoftThreshold",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "FixedSoftLowerThreshold",
+      "original": "LowSoftThreshold",
+      "property": "maximum",
+      "current": "255",
+      "originalRaw": "255",
+      "equal": true,
+      "currentAfter": "255",
+      "equalAfter": true
+    },
+    {
+      "field": "FixedSoftLowerThreshold",
+      "original": "LowSoftThreshold",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "FixedSoftUpperThreshold",
+      "original": "HightSoftThreshold",
+      "property": "default",
+      "current": "150",
+      "originalRaw": "0x96",
+      "equal": true,
+      "currentAfter": "150",
+      "equalAfter": true
+    },
+    {
+      "field": "FixedSoftUpperThreshold",
+      "original": "HightSoftThreshold",
+      "property": "minimum",
+      "current": "0",
+      "originalRaw": "0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "FixedSoftUpperThreshold",
+      "original": "HightSoftThreshold",
+      "property": "maximum",
+      "current": "255",
+      "originalRaw": "255",
+      "equal": true,
+      "currentAfter": "255",
+      "equalAfter": true
+    },
+    {
+      "field": "FixedSoftUpperThreshold",
+      "original": "HightSoftThreshold",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "ThresholdSoftness",
+      "original": "Softness",
+      "property": "default",
+      "current": "254",
+      "originalRaw": "254",
+      "equal": true,
+      "currentAfter": "254",
+      "equalAfter": true
+    },
+    {
+      "field": "ThresholdSoftness",
+      "original": "Softness",
+      "property": "minimum",
+      "current": "0",
+      "originalRaw": "0x0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "ThresholdSoftness",
+      "original": "Softness",
+      "property": "maximum",
+      "current": "254",
+      "originalRaw": "254",
+      "equal": true,
+      "currentAfter": "254",
+      "equalAfter": true
+    },
+    {
+      "field": "ThresholdSoftness",
+      "original": "Softness",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "RelativeLeftRatio",
+      "original": "SoftLeftRatio",
+      "property": "default",
+      "current": "5",
+      "originalRaw": "5",
+      "equal": true,
+      "currentAfter": "5",
+      "equalAfter": true
+    },
+    {
+      "field": "RelativeLeftRatio",
+      "original": "SoftLeftRatio",
+      "property": "minimum",
+      "current": "0",
+      "originalRaw": "0x0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "RelativeLeftRatio",
+      "original": "SoftLeftRatio",
+      "property": "maximum",
+      "current": "100",
+      "originalRaw": "100",
+      "equal": true,
+      "currentAfter": "100",
+      "equalAfter": true
+    },
+    {
+      "field": "RelativeLeftRatio",
+      "original": "SoftLeftRatio",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "RelativeRightRatio",
+      "original": "SoftRightRatio",
+      "property": "default",
+      "current": "5",
+      "originalRaw": "5",
+      "equal": true,
+      "currentAfter": "5",
+      "equalAfter": true
+    },
+    {
+      "field": "RelativeRightRatio",
+      "original": "SoftRightRatio",
+      "property": "minimum",
+      "current": "0",
+      "originalRaw": "0x0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "RelativeRightRatio",
+      "original": "SoftRightRatio",
+      "property": "maximum",
+      "current": "100",
+      "originalRaw": "100",
+      "equal": true,
+      "currentAfter": "100",
+      "equalAfter": true
+    },
+    {
+      "field": "RelativeRightRatio",
+      "original": "SoftRightRatio",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "RelativeLowerRatio",
+      "original": "SoftLowRatio",
+      "property": "default",
+      "current": "40",
+      "originalRaw": "40",
+      "equal": true,
+      "currentAfter": "40",
+      "equalAfter": true
+    },
+    {
+      "field": "RelativeLowerRatio",
+      "original": "SoftLowRatio",
+      "property": "minimum",
+      "current": "0",
+      "originalRaw": "0x0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "RelativeLowerRatio",
+      "original": "SoftLowRatio",
+      "property": "maximum",
+      "current": "100",
+      "originalRaw": "100",
+      "equal": true,
+      "currentAfter": "100",
+      "equalAfter": true
+    },
+    {
+      "field": "RelativeLowerRatio",
+      "original": "SoftLowRatio",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "RelativeUpperRatio",
+      "original": "SoftHighRatio",
+      "property": "default",
+      "current": "60",
+      "originalRaw": "60",
+      "equal": true,
+      "currentAfter": "60",
+      "equalAfter": true
+    },
+    {
+      "field": "RelativeUpperRatio",
+      "original": "SoftHighRatio",
+      "property": "minimum",
+      "current": "0",
+      "originalRaw": "0x0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "RelativeUpperRatio",
+      "original": "SoftHighRatio",
+      "property": "maximum",
+      "current": "100",
+      "originalRaw": "100",
+      "equal": true,
+      "currentAfter": "100",
+      "equalAfter": true
+    },
+    {
+      "field": "RelativeUpperRatio",
+      "original": "SoftHighRatio",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobCountLimit",
+      "original": "FindNum",
+      "property": "default",
+      "current": "100",
+      "originalRaw": "100",
+      "equal": true,
+      "currentAfter": "100",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobCountLimit",
+      "original": "FindNum",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobCountLimit",
+      "original": "FindNum",
+      "property": "maximum",
+      "current": "20000",
+      "originalRaw": "20000",
+      "equal": true,
+      "currentAfter": "20000",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobCountLimit",
+      "original": "FindNum",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "HoleMinArea",
+      "original": "HoleMinArea",
+      "property": "default",
+      "current": "0",
+      "originalRaw": "0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "HoleMinArea",
+      "original": "HoleMinArea",
+      "property": "minimum",
+      "current": "0",
+      "originalRaw": "0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "HoleMinArea",
+      "original": "HoleMinArea",
+      "property": "maximum",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "HoleMinArea",
+      "original": "HoleMinArea",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "IsAreaFilterEnabled",
+      "original": "SelectByArea",
+      "property": "default",
+      "current": "true",
+      "originalRaw": "True",
+      "equal": true,
+      "currentAfter": "true",
+      "equalAfter": true
+    },
+    {
+      "field": "FilterAreaMin",
+      "original": "MinArea",
+      "property": "default",
+      "current": "10",
+      "originalRaw": "10",
+      "equal": true,
+      "currentAfter": "10",
+      "equalAfter": true
+    },
+    {
+      "field": "FilterAreaMin",
+      "original": "MinArea",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "FilterAreaMin",
+      "original": "MinArea",
+      "property": "maximum",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "FilterAreaMin",
+      "original": "MinArea",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "FilterAreaMax",
+      "original": "MaxArea",
+      "property": "default",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "FilterAreaMax",
+      "original": "MaxArea",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "FilterAreaMax",
+      "original": "MaxArea",
+      "property": "maximum",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "FilterAreaMax",
+      "original": "MaxArea",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobContourType",
+      "original": "BlobContourType",
+      "property": "default",
+      "current": "NoneContour",
+      "originalRaw": "0",
+      "equal": true,
+      "currentAfter": "NoneContour",
+      "equalAfter": true
+    },
+    {
+      "field": "OutputBlobImage",
+      "original": "BolbImageEnable",
+      "property": "default",
+      "current": "true",
+      "originalRaw": "True",
+      "equal": true,
+      "currentAfter": "true",
+      "equalAfter": true
+    },
+    {
+      "field": "OutputBinaryImage",
+      "original": "BinaryImageEnable",
+      "property": "default",
+      "current": "true",
+      "originalRaw": "True",
+      "equal": true,
+      "currentAfter": "true",
+      "equalAfter": true
+    },
+    {
+      "field": "SelectByHistInfo",
+      "original": "SelectByHistInfo",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "SelectByBoxAngle",
+      "original": "SelectByBoxAngle",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "MinBoxAngle",
+      "original": "MinBoxAngle",
+      "property": "default",
+      "current": "-9000",
+      "originalRaw": "-9000",
+      "equal": true,
+      "currentAfter": "-9000",
+      "equalAfter": true
+    },
+    {
+      "field": "MinBoxAngle",
+      "original": "MinBoxAngle",
+      "property": "minimum",
+      "current": "-9000",
+      "originalRaw": "-9000",
+      "equal": true,
+      "currentAfter": "-9000",
+      "equalAfter": true
+    },
+    {
+      "field": "MinBoxAngle",
+      "original": "MinBoxAngle",
+      "property": "maximum",
+      "current": "9000",
+      "originalRaw": "9000",
+      "equal": true,
+      "currentAfter": "9000",
+      "equalAfter": true
+    },
+    {
+      "field": "MinBoxAngle",
+      "original": "MinBoxAngle",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxBoxAngle",
+      "original": "MaxBoxAngle",
+      "property": "default",
+      "current": "9000",
+      "originalRaw": "9000",
+      "equal": true,
+      "currentAfter": "9000",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxBoxAngle",
+      "original": "MaxBoxAngle",
+      "property": "minimum",
+      "current": "-9000",
+      "originalRaw": "-9000",
+      "equal": true,
+      "currentAfter": "-9000",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxBoxAngle",
+      "original": "MaxBoxAngle",
+      "property": "maximum",
+      "current": "9000",
+      "originalRaw": "9000",
+      "equal": true,
+      "currentAfter": "9000",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxBoxAngle",
+      "original": "MaxBoxAngle",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "SelectByRectWidth",
+      "original": "SelectByRectWidth",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "MinRectWidth",
+      "original": "MinRectWidth",
+      "property": "default",
+      "current": "100",
+      "originalRaw": "100",
+      "equal": true,
+      "currentAfter": "100",
+      "equalAfter": true
+    },
+    {
+      "field": "MinRectWidth",
+      "original": "MinRectWidth",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "MinRectWidth",
+      "original": "MinRectWidth",
+      "property": "maximum",
+      "current": "1000000",
+      "originalRaw": "1000000",
+      "equal": true,
+      "currentAfter": "1000000",
+      "equalAfter": true
+    },
+    {
+      "field": "MinRectWidth",
+      "original": "MinRectWidth",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxRectWidth",
+      "original": "MaxRectWidth",
+      "property": "default",
+      "current": "200",
+      "originalRaw": "200",
+      "equal": true,
+      "currentAfter": "200",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxRectWidth",
+      "original": "MaxRectWidth",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxRectWidth",
+      "original": "MaxRectWidth",
+      "property": "maximum",
+      "current": "1000000",
+      "originalRaw": "1000000",
+      "equal": true,
+      "currentAfter": "1000000",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxRectWidth",
+      "original": "MaxRectWidth",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "SelectByRectHeight",
+      "original": "SelectByRectHeight",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "MinRectHeight",
+      "original": "MinRectHeight",
+      "property": "default",
+      "current": "100",
+      "originalRaw": "100",
+      "equal": true,
+      "currentAfter": "100",
+      "equalAfter": true
+    },
+    {
+      "field": "MinRectHeight",
+      "original": "MinRectHeight",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "MinRectHeight",
+      "original": "MinRectHeight",
+      "property": "maximum",
+      "current": "1000000",
+      "originalRaw": "1000000",
+      "equal": true,
+      "currentAfter": "1000000",
+      "equalAfter": true
+    },
+    {
+      "field": "MinRectHeight",
+      "original": "MinRectHeight",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxRectHeight",
+      "original": "MaxRectHeight",
+      "property": "default",
+      "current": "200",
+      "originalRaw": "200",
+      "equal": true,
+      "currentAfter": "200",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxRectHeight",
+      "original": "MaxRectHeight",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxRectHeight",
+      "original": "MaxRectHeight",
+      "property": "maximum",
+      "current": "1000000",
+      "originalRaw": "1000000",
+      "equal": true,
+      "currentAfter": "1000000",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxRectHeight",
+      "original": "MaxRectHeight",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "SelectByPerimeter",
+      "original": "SelectByPerimeter",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "MinPerimeter",
+      "original": "MinPerimeter",
+      "property": "default",
+      "current": "10",
+      "originalRaw": "10",
+      "equal": true,
+      "currentAfter": "10",
+      "equalAfter": true
+    },
+    {
+      "field": "MinPerimeter",
+      "original": "MinPerimeter",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "MinPerimeter",
+      "original": "MinPerimeter",
+      "property": "maximum",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "MinPerimeter",
+      "original": "MinPerimeter",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxPerimeter",
+      "original": "MaxPerimeter",
+      "property": "default",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxPerimeter",
+      "original": "MaxPerimeter",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxPerimeter",
+      "original": "MaxPerimeter",
+      "property": "maximum",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxPerimeter",
+      "original": "MaxPerimeter",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "SelectByShortAxis",
+      "original": "SelectByShortAxis",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "MinShortAxis",
+      "original": "MinShortAxis",
+      "property": "default",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "MinShortAxis",
+      "original": "MinShortAxis",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "MinShortAxis",
+      "original": "MinShortAxis",
+      "property": "maximum",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "MinShortAxis",
+      "original": "MinShortAxis",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxShortAxis",
+      "original": "MaxShortAxis",
+      "property": "default",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxShortAxis",
+      "original": "MaxShortAxis",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxShortAxis",
+      "original": "MaxShortAxis",
+      "property": "maximum",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxShortAxis",
+      "original": "MaxShortAxis",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "SelectByLongAxis",
+      "original": "SelectByLongAxis",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "MinLongAxis",
+      "original": "MinLongAxis",
+      "property": "default",
+      "current": "10",
+      "originalRaw": "10",
+      "equal": true,
+      "currentAfter": "10",
+      "equalAfter": true
+    },
+    {
+      "field": "MinLongAxis",
+      "original": "MinLongAxis",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "MinLongAxis",
+      "original": "MinLongAxis",
+      "property": "maximum",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "MinLongAxis",
+      "original": "MinLongAxis",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxLongAxis",
+      "original": "MaxLongAxis",
+      "property": "default",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxLongAxis",
+      "original": "MaxLongAxis",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxLongAxis",
+      "original": "MaxLongAxis",
+      "property": "maximum",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxLongAxis",
+      "original": "MaxLongAxis",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "IsCircularityFilterEnabled",
+      "original": "SelectByCircularuty",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "FilterCircularityMin",
+      "original": "MinCircularity",
+      "property": "default",
+      "current": "0.1",
+      "originalRaw": "0.1",
+      "equal": true,
+      "currentAfter": "0.1",
+      "equalAfter": true
+    },
+    {
+      "field": "FilterCircularityMin",
+      "original": "MinCircularity",
+      "property": "minimum",
+      "current": "0",
+      "originalRaw": "0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "FilterCircularityMin",
+      "original": "MinCircularity",
+      "property": "maximum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "FilterCircularityMin",
+      "original": "MinCircularity",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "0.01",
+      "equal": true,
+      "currentAfter": "0.01",
+      "equalAfter": true
+    },
+    {
+      "field": "FilterCircularityMax",
+      "original": "MaxCircularity",
+      "property": "default",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "FilterCircularityMax",
+      "original": "MaxCircularity",
+      "property": "minimum",
+      "current": "0",
+      "originalRaw": "0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "FilterCircularityMax",
+      "original": "MaxCircularity",
+      "property": "maximum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "FilterCircularityMax",
+      "original": "MaxCircularity",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "0.01",
+      "equal": true,
+      "currentAfter": "0.01",
+      "equalAfter": true
+    },
+    {
+      "field": "IsRectangularityFilterEnabled",
+      "original": "SelectByRectangularity",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "FilterRectangularityMin",
+      "original": "MinRectangularity",
+      "property": "default",
+      "current": "0.1",
+      "originalRaw": "0.1",
+      "equal": true,
+      "currentAfter": "0.1",
+      "equalAfter": true
+    },
+    {
+      "field": "FilterRectangularityMin",
+      "original": "MinRectangularity",
+      "property": "minimum",
+      "current": "0",
+      "originalRaw": "0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "FilterRectangularityMin",
+      "original": "MinRectangularity",
+      "property": "maximum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "FilterRectangularityMin",
+      "original": "MinRectangularity",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "0.01",
+      "equal": true,
+      "currentAfter": "0.01",
+      "equalAfter": true
+    },
+    {
+      "field": "FilterRectangularityMax",
+      "original": "MaxRectangularity",
+      "property": "default",
+      "current": "1",
+      "originalRaw": "1.0",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "FilterRectangularityMax",
+      "original": "MaxRectangularity",
+      "property": "minimum",
+      "current": "0",
+      "originalRaw": "0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "FilterRectangularityMax",
+      "original": "MaxRectangularity",
+      "property": "maximum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "FilterRectangularityMax",
+      "original": "MaxRectangularity",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "0.01",
+      "equal": true,
+      "currentAfter": "0.01",
+      "equalAfter": true
+    },
+    {
+      "field": "SelectByCentraBias",
+      "original": "SelectByCentraBias",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "MinCenterBias",
+      "original": "MinCenterBias",
+      "property": "default",
+      "current": "0",
+      "originalRaw": "0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "MinCenterBias",
+      "original": "MinCenterBias",
+      "property": "minimum",
+      "current": "0",
+      "originalRaw": "0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "MinCenterBias",
+      "original": "MinCenterBias",
+      "property": "maximum",
+      "current": "9999999.99",
+      "originalRaw": "9999999.99",
+      "equal": true,
+      "currentAfter": "9999999.99",
+      "equalAfter": true
+    },
+    {
+      "field": "MinCenterBias",
+      "original": "MinCenterBias",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "0.01",
+      "equal": true,
+      "currentAfter": "0.01",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxCenterBias",
+      "original": "MaxCenterBias",
+      "property": "default",
+      "current": "9999999.99",
+      "originalRaw": "9999999.99",
+      "equal": true,
+      "currentAfter": "9999999.99",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxCenterBias",
+      "original": "MaxCenterBias",
+      "property": "minimum",
+      "current": "0",
+      "originalRaw": "0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxCenterBias",
+      "original": "MaxCenterBias",
+      "property": "maximum",
+      "current": "9999999.99",
+      "originalRaw": "9999999.99",
+      "equal": true,
+      "currentAfter": "9999999.99",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxCenterBias",
+      "original": "MaxCenterBias",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "0.01",
+      "equal": true,
+      "currentAfter": "0.01",
+      "equalAfter": true
+    },
+    {
+      "field": "AxisRatioEnable",
+      "original": "AxisRatioEnable",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "MinAxisRatio",
+      "original": "MinAxisRatio",
+      "property": "default",
+      "current": "0.01",
+      "originalRaw": "0.01",
+      "equal": true,
+      "currentAfter": "0.01",
+      "equalAfter": true
+    },
+    {
+      "field": "MinAxisRatio",
+      "original": "MinAxisRatio",
+      "property": "minimum",
+      "current": "0.01",
+      "originalRaw": "0.01",
+      "equal": true,
+      "duplicateEvidence": "原XML该Float有两个MinValue元素，内容均为0.01；逐个归一后相等，非本方边界差异",
+      "currentAfter": "0.01",
+      "equalAfter": true
+    },
+    {
+      "field": "MinAxisRatio",
+      "original": "MinAxisRatio",
+      "property": "maximum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "MinAxisRatio",
+      "original": "MinAxisRatio",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "0.01",
+      "equal": true,
+      "currentAfter": "0.01",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxAxisRatio",
+      "original": "MaxAxisRatio",
+      "property": "default",
+      "current": "1",
+      "originalRaw": "1.0",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxAxisRatio",
+      "original": "MaxAxisRatio",
+      "property": "minimum",
+      "current": "0",
+      "originalRaw": "0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxAxisRatio",
+      "original": "MaxAxisRatio",
+      "property": "maximum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxAxisRatio",
+      "original": "MaxAxisRatio",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "0.01",
+      "equal": true,
+      "currentAfter": "0.01",
+      "equalAfter": true
+    },
+    {
+      "field": "SortFeature",
+      "original": "SortFeature",
+      "property": "default",
+      "current": "SortFeatureArea",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "SortFeatureArea",
+      "equalAfter": true
+    },
+    {
+      "field": "SortMode",
+      "original": "SortMode",
+      "property": "default",
+      "current": "SortModeDecend",
+      "originalRaw": "2",
+      "equal": true,
+      "currentAfter": "SortModeDecend",
+      "equalAfter": true
+    },
+    {
+      "field": "Connectivity",
+      "original": "connectivity",
+      "property": "default",
+      "current": "Connected_8",
+      "originalRaw": "0x8",
+      "equal": true,
+      "currentAfter": "Connected_8",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxAreaInnerRectNum",
+      "original": "MaxAreaInnerRectNum",
+      "property": "default",
+      "current": "0",
+      "originalRaw": "0x0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxAreaInnerRectNum",
+      "original": "MaxAreaInnerRectNum",
+      "property": "minimum",
+      "current": "0",
+      "originalRaw": "0x0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxAreaInnerRectNum",
+      "original": "MaxAreaInnerRectNum",
+      "property": "maximum",
+      "current": "10",
+      "originalRaw": "10",
+      "equal": true,
+      "currentAfter": "10",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxAreaInnerRectNum",
+      "original": "MaxAreaInnerRectNum",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "0x1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "OverlapRatio",
+      "original": "OverlapRatio",
+      "property": "default",
+      "current": "0",
+      "originalRaw": "0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "OverlapRatio",
+      "original": "OverlapRatio",
+      "property": "minimum",
+      "current": "0",
+      "originalRaw": "0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "OverlapRatio",
+      "original": "OverlapRatio",
+      "property": "maximum",
+      "current": "100",
+      "originalRaw": "100",
+      "equal": true,
+      "currentAfter": "100",
+      "equalAfter": true
+    },
+    {
+      "field": "OverlapRatio",
+      "original": "OverlapRatio",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxOutPixelNumEnable",
+      "original": "MaxOutPixelNumEnable",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxOutPixelNum",
+      "original": "MaxOutPixelNum",
+      "property": "default",
+      "current": "0",
+      "originalRaw": "0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxOutPixelNum",
+      "original": "MaxOutPixelNum",
+      "property": "minimum",
+      "current": "0",
+      "originalRaw": "0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxOutPixelNum",
+      "original": "MaxOutPixelNum",
+      "property": "maximum",
+      "current": "9000000",
+      "originalRaw": "9000000",
+      "equal": true,
+      "currentAfter": "9000000",
+      "equalAfter": true
+    },
+    {
+      "field": "MaxOutPixelNum",
+      "original": "MaxOutPixelNum",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "OKWhenNumIsZero",
+      "original": "OKWhenNumIsZero",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobNumLimitEnable",
+      "original": "BlobNumLimitEnable",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobNumLimitLow",
+      "original": "BlobNumLimitLow",
+      "property": "default",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobNumLimitLow",
+      "original": "BlobNumLimitLow",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobNumLimitLow",
+      "original": "BlobNumLimitLow",
+      "property": "maximum",
+      "current": "99999",
+      "originalRaw": "99999",
+      "equal": true,
+      "currentAfter": "99999",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobNumLimitLow",
+      "original": "BlobNumLimitLow",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobNumLimitHigh",
+      "original": "BlobNumLimitHigh",
+      "property": "default",
+      "current": "99999",
+      "originalRaw": "99999",
+      "equal": true,
+      "currentAfter": "99999",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobNumLimitHigh",
+      "original": "BlobNumLimitHigh",
+      "property": "minimum",
+      "current": "0",
+      "originalRaw": "0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobNumLimitHigh",
+      "original": "BlobNumLimitHigh",
+      "property": "maximum",
+      "current": "99999",
+      "originalRaw": "99999",
+      "equal": true,
+      "currentAfter": "99999",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobNumLimitHigh",
+      "original": "BlobNumLimitHigh",
+      "property": "increment",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobAreaLimitEnable",
+      "original": "BlobAreaLimitEnable",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobAreaLimitLow",
+      "original": "BlobAreaLimitLow",
+      "property": "default",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobAreaLimitLow",
+      "original": "BlobAreaLimitLow",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobAreaLimitLow",
+      "original": "BlobAreaLimitLow",
+      "property": "maximum",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobAreaLimitLow",
+      "original": "BlobAreaLimitLow",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "1",
+      "equal": false,
+      "repairedValue": "1",
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobAreaLimitHigh",
+      "original": "BlobAreaLimitHigh",
+      "property": "default",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobAreaLimitHigh",
+      "original": "BlobAreaLimitHigh",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobAreaLimitHigh",
+      "original": "BlobAreaLimitHigh",
+      "property": "maximum",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobAreaLimitHigh",
+      "original": "BlobAreaLimitHigh",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "1",
+      "equal": false,
+      "repairedValue": "1",
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobTotalAreaLimitEnable",
+      "original": "BlobTotalAreaLimitEnable",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobTotalAreaLimitLow",
+      "original": "BlobTotalAreaLimitLow",
+      "property": "default",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobTotalAreaLimitLow",
+      "original": "BlobTotalAreaLimitLow",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobTotalAreaLimitLow",
+      "original": "BlobTotalAreaLimitLow",
+      "property": "maximum",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobTotalAreaLimitLow",
+      "original": "BlobTotalAreaLimitLow",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "1",
+      "equal": false,
+      "repairedValue": "1",
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobTotalAreaLimitHigh",
+      "original": "BlobTotalAreaLimitHigh",
+      "property": "default",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobTotalAreaLimitHigh",
+      "original": "BlobTotalAreaLimitHigh",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobTotalAreaLimitHigh",
+      "original": "BlobTotalAreaLimitHigh",
+      "property": "maximum",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "BlobTotalAreaLimitHigh",
+      "original": "BlobTotalAreaLimitHigh",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "1",
+      "equal": false,
+      "repairedValue": "1",
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "CentroidXLimitEnable",
+      "original": "CentroidXLimitEnable",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "CentroidXLimitLow",
+      "original": "CentroidXLimitLow",
+      "property": "default",
+      "current": "-99999",
+      "originalRaw": "-99999",
+      "equal": true,
+      "currentAfter": "-99999",
+      "equalAfter": true
+    },
+    {
+      "field": "CentroidXLimitLow",
+      "original": "CentroidXLimitLow",
+      "property": "minimum",
+      "current": "-99999",
+      "originalRaw": "-99999",
+      "equal": true,
+      "currentAfter": "-99999",
+      "equalAfter": true
+    },
+    {
+      "field": "CentroidXLimitLow",
+      "original": "CentroidXLimitLow",
+      "property": "maximum",
+      "current": "99999",
+      "originalRaw": "99999",
+      "equal": true,
+      "currentAfter": "99999",
+      "equalAfter": true
+    },
+    {
+      "field": "CentroidXLimitLow",
+      "original": "CentroidXLimitLow",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "1",
+      "equal": false,
+      "repairedValue": "1",
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "CentroidXLimitHigh",
+      "original": "CentroidXLimitHigh",
+      "property": "default",
+      "current": "99999",
+      "originalRaw": "99999",
+      "equal": true,
+      "currentAfter": "99999",
+      "equalAfter": true
+    },
+    {
+      "field": "CentroidXLimitHigh",
+      "original": "CentroidXLimitHigh",
+      "property": "minimum",
+      "current": "-99999",
+      "originalRaw": "-99999",
+      "equal": true,
+      "currentAfter": "-99999",
+      "equalAfter": true
+    },
+    {
+      "field": "CentroidXLimitHigh",
+      "original": "CentroidXLimitHigh",
+      "property": "maximum",
+      "current": "99999",
+      "originalRaw": "99999",
+      "equal": true,
+      "currentAfter": "99999",
+      "equalAfter": true
+    },
+    {
+      "field": "CentroidXLimitHigh",
+      "original": "CentroidXLimitHigh",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "1",
+      "equal": false,
+      "repairedValue": "1",
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "CentroidYLimitEnable",
+      "original": "CentroidYLimitEnable",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "CentroidYLimitLow",
+      "original": "CentroidYLimitLow",
+      "property": "default",
+      "current": "-99999",
+      "originalRaw": "-99999",
+      "equal": true,
+      "currentAfter": "-99999",
+      "equalAfter": true
+    },
+    {
+      "field": "CentroidYLimitLow",
+      "original": "CentroidYLimitLow",
+      "property": "minimum",
+      "current": "-99999",
+      "originalRaw": "-99999",
+      "equal": true,
+      "currentAfter": "-99999",
+      "equalAfter": true
+    },
+    {
+      "field": "CentroidYLimitLow",
+      "original": "CentroidYLimitLow",
+      "property": "maximum",
+      "current": "99999",
+      "originalRaw": "99999",
+      "equal": true,
+      "currentAfter": "99999",
+      "equalAfter": true
+    },
+    {
+      "field": "CentroidYLimitLow",
+      "original": "CentroidYLimitLow",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "1",
+      "equal": false,
+      "repairedValue": "1",
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "CentroidYLimitHigh",
+      "original": "CentroidYLimitHigh",
+      "property": "default",
+      "current": "99999",
+      "originalRaw": "99999",
+      "equal": true,
+      "currentAfter": "99999",
+      "equalAfter": true
+    },
+    {
+      "field": "CentroidYLimitHigh",
+      "original": "CentroidYLimitHigh",
+      "property": "minimum",
+      "current": "-99999",
+      "originalRaw": "-99999",
+      "equal": true,
+      "currentAfter": "-99999",
+      "equalAfter": true
+    },
+    {
+      "field": "CentroidYLimitHigh",
+      "original": "CentroidYLimitHigh",
+      "property": "maximum",
+      "current": "99999",
+      "originalRaw": "99999",
+      "equal": true,
+      "currentAfter": "99999",
+      "equalAfter": true
+    },
+    {
+      "field": "CentroidYLimitHigh",
+      "original": "CentroidYLimitHigh",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "1",
+      "equal": false,
+      "repairedValue": "1",
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "AngleLimitEnable",
+      "original": "AngleLimitEnable",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "AngleLimitLow",
+      "original": "AngleLimitLow",
+      "property": "default",
+      "current": "-180",
+      "originalRaw": "-180",
+      "equal": true,
+      "currentAfter": "-180",
+      "equalAfter": true
+    },
+    {
+      "field": "AngleLimitLow",
+      "original": "AngleLimitLow",
+      "property": "minimum",
+      "current": "-180",
+      "originalRaw": "-180",
+      "equal": true,
+      "currentAfter": "-180",
+      "equalAfter": true
+    },
+    {
+      "field": "AngleLimitLow",
+      "original": "AngleLimitLow",
+      "property": "maximum",
+      "current": "180",
+      "originalRaw": "180",
+      "equal": true,
+      "currentAfter": "180",
+      "equalAfter": true
+    },
+    {
+      "field": "AngleLimitLow",
+      "original": "AngleLimitLow",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "0.1",
+      "equal": false,
+      "repairedValue": "0.1",
+      "currentAfter": "0.1",
+      "equalAfter": true
+    },
+    {
+      "field": "AngleLimitHigh",
+      "original": "AngleLimitHigh",
+      "property": "default",
+      "current": "180",
+      "originalRaw": "180",
+      "equal": true,
+      "currentAfter": "180",
+      "equalAfter": true
+    },
+    {
+      "field": "AngleLimitHigh",
+      "original": "AngleLimitHigh",
+      "property": "minimum",
+      "current": "-180",
+      "originalRaw": "-180",
+      "equal": true,
+      "currentAfter": "-180",
+      "equalAfter": true
+    },
+    {
+      "field": "AngleLimitHigh",
+      "original": "AngleLimitHigh",
+      "property": "maximum",
+      "current": "180",
+      "originalRaw": "180",
+      "equal": true,
+      "currentAfter": "180",
+      "equalAfter": true
+    },
+    {
+      "field": "AngleLimitHigh",
+      "original": "AngleLimitHigh",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "0.1",
+      "equal": false,
+      "repairedValue": "0.1",
+      "currentAfter": "0.1",
+      "equalAfter": true
+    },
+    {
+      "field": "CenterXLimitEnable",
+      "original": "CenterXLimitEnable",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "CenterXLimitLow",
+      "original": "CenterXLimitLow",
+      "property": "default",
+      "current": "-99999",
+      "originalRaw": "-99999",
+      "equal": true,
+      "currentAfter": "-99999",
+      "equalAfter": true
+    },
+    {
+      "field": "CenterXLimitLow",
+      "original": "CenterXLimitLow",
+      "property": "minimum",
+      "current": "-99999",
+      "originalRaw": "-99999",
+      "equal": true,
+      "currentAfter": "-99999",
+      "equalAfter": true
+    },
+    {
+      "field": "CenterXLimitLow",
+      "original": "CenterXLimitLow",
+      "property": "maximum",
+      "current": "99999",
+      "originalRaw": "99999",
+      "equal": true,
+      "currentAfter": "99999",
+      "equalAfter": true
+    },
+    {
+      "field": "CenterXLimitLow",
+      "original": "CenterXLimitLow",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "1",
+      "equal": false,
+      "repairedValue": "1",
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "CenterXLimitHigh",
+      "original": "CenterXLimitHigh",
+      "property": "default",
+      "current": "99999",
+      "originalRaw": "99999",
+      "equal": true,
+      "currentAfter": "99999",
+      "equalAfter": true
+    },
+    {
+      "field": "CenterXLimitHigh",
+      "original": "CenterXLimitHigh",
+      "property": "minimum",
+      "current": "-99999",
+      "originalRaw": "-99999",
+      "equal": true,
+      "currentAfter": "-99999",
+      "equalAfter": true
+    },
+    {
+      "field": "CenterXLimitHigh",
+      "original": "CenterXLimitHigh",
+      "property": "maximum",
+      "current": "99999",
+      "originalRaw": "99999",
+      "equal": true,
+      "currentAfter": "99999",
+      "equalAfter": true
+    },
+    {
+      "field": "CenterXLimitHigh",
+      "original": "CenterXLimitHigh",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "1",
+      "equal": false,
+      "repairedValue": "1",
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "CenterYLimitEnable",
+      "original": "CenterYLimitEnable",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "CenterYLimitLow",
+      "original": "CenterYLimitLow",
+      "property": "default",
+      "current": "-99999",
+      "originalRaw": "-99999",
+      "equal": true,
+      "currentAfter": "-99999",
+      "equalAfter": true
+    },
+    {
+      "field": "CenterYLimitLow",
+      "original": "CenterYLimitLow",
+      "property": "minimum",
+      "current": "-99999",
+      "originalRaw": "-99999",
+      "equal": true,
+      "currentAfter": "-99999",
+      "equalAfter": true
+    },
+    {
+      "field": "CenterYLimitLow",
+      "original": "CenterYLimitLow",
+      "property": "maximum",
+      "current": "99999",
+      "originalRaw": "99999",
+      "equal": true,
+      "currentAfter": "99999",
+      "equalAfter": true
+    },
+    {
+      "field": "CenterYLimitLow",
+      "original": "CenterYLimitLow",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "1",
+      "equal": false,
+      "repairedValue": "1",
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "CenterYLimitHigh",
+      "original": "CenterYLimitHigh",
+      "property": "default",
+      "current": "99999",
+      "originalRaw": "99999",
+      "equal": true,
+      "currentAfter": "99999",
+      "equalAfter": true
+    },
+    {
+      "field": "CenterYLimitHigh",
+      "original": "CenterYLimitHigh",
+      "property": "minimum",
+      "current": "-99999",
+      "originalRaw": "-99999",
+      "equal": true,
+      "currentAfter": "-99999",
+      "equalAfter": true
+    },
+    {
+      "field": "CenterYLimitHigh",
+      "original": "CenterYLimitHigh",
+      "property": "maximum",
+      "current": "99999",
+      "originalRaw": "99999",
+      "equal": true,
+      "currentAfter": "99999",
+      "equalAfter": true
+    },
+    {
+      "field": "CenterYLimitHigh",
+      "original": "CenterYLimitHigh",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "1",
+      "equal": false,
+      "repairedValue": "1",
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BoxHeightLimitEnable",
+      "original": "BoxHeightLimitEnable",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "BoxHeightLimitLow",
+      "original": "BoxHeightLimitLow",
+      "property": "default",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BoxHeightLimitLow",
+      "original": "BoxHeightLimitLow",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BoxHeightLimitLow",
+      "original": "BoxHeightLimitLow",
+      "property": "maximum",
+      "current": "99999",
+      "originalRaw": "99999",
+      "equal": true,
+      "currentAfter": "99999",
+      "equalAfter": true
+    },
+    {
+      "field": "BoxHeightLimitLow",
+      "original": "BoxHeightLimitLow",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "1",
+      "equal": false,
+      "repairedValue": "1",
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BoxHeightLimitHigh",
+      "original": "BoxHeightLimitHigh",
+      "property": "default",
+      "current": "99999",
+      "originalRaw": "99999",
+      "equal": true,
+      "currentAfter": "99999",
+      "equalAfter": true
+    },
+    {
+      "field": "BoxHeightLimitHigh",
+      "original": "BoxHeightLimitHigh",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BoxHeightLimitHigh",
+      "original": "BoxHeightLimitHigh",
+      "property": "maximum",
+      "current": "99999",
+      "originalRaw": "99999",
+      "equal": true,
+      "currentAfter": "99999",
+      "equalAfter": true
+    },
+    {
+      "field": "BoxHeightLimitHigh",
+      "original": "BoxHeightLimitHigh",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "1",
+      "equal": false,
+      "repairedValue": "1",
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BoxWidthLimitEnable",
+      "original": "BoxWidthLimitEnable",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "BoxWidthLimitLow",
+      "original": "BoxWidthLimitLow",
+      "property": "default",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BoxWidthLimitLow",
+      "original": "BoxWidthLimitLow",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BoxWidthLimitLow",
+      "original": "BoxWidthLimitLow",
+      "property": "maximum",
+      "current": "99999",
+      "originalRaw": "99999",
+      "equal": true,
+      "currentAfter": "99999",
+      "equalAfter": true
+    },
+    {
+      "field": "BoxWidthLimitLow",
+      "original": "BoxWidthLimitLow",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "1",
+      "equal": false,
+      "repairedValue": "1",
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BoxWidthLimitHigh",
+      "original": "BoxWidthLimitHigh",
+      "property": "default",
+      "current": "99999",
+      "originalRaw": "99999",
+      "equal": true,
+      "currentAfter": "99999",
+      "equalAfter": true
+    },
+    {
+      "field": "BoxWidthLimitHigh",
+      "original": "BoxWidthLimitHigh",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "BoxWidthLimitHigh",
+      "original": "BoxWidthLimitHigh",
+      "property": "maximum",
+      "current": "99999",
+      "originalRaw": "99999",
+      "equal": true,
+      "currentAfter": "99999",
+      "equalAfter": true
+    },
+    {
+      "field": "BoxWidthLimitHigh",
+      "original": "BoxWidthLimitHigh",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "1",
+      "equal": false,
+      "repairedValue": "1",
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "PerimeterLimitEnable",
+      "original": "PerimeterLimitEnable",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "PerimeterLimitLow",
+      "original": "PerimeterLimitLow",
+      "property": "default",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "PerimeterLimitLow",
+      "original": "PerimeterLimitLow",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "PerimeterLimitLow",
+      "original": "PerimeterLimitLow",
+      "property": "maximum",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "PerimeterLimitLow",
+      "original": "PerimeterLimitLow",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "1",
+      "equal": false,
+      "repairedValue": "1",
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "PerimeterLimitHigh",
+      "original": "PerimeterLimitHigh",
+      "property": "default",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "PerimeterLimitHigh",
+      "original": "PerimeterLimitHigh",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "PerimeterLimitHigh",
+      "original": "PerimeterLimitHigh",
+      "property": "maximum",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "PerimeterLimitHigh",
+      "original": "PerimeterLimitHigh",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "1",
+      "equal": false,
+      "repairedValue": "1",
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "LongAxisLimitEnable",
+      "original": "LongAxisLimitEnable",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "LongAxisLimitLow",
+      "original": "LongAxisLimitLow",
+      "property": "default",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "LongAxisLimitLow",
+      "original": "LongAxisLimitLow",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "LongAxisLimitLow",
+      "original": "LongAxisLimitLow",
+      "property": "maximum",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "LongAxisLimitLow",
+      "original": "LongAxisLimitLow",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "1",
+      "equal": false,
+      "repairedValue": "1",
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "LongAxisLimitHigh",
+      "original": "LongAxisLimitHigh",
+      "property": "default",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "LongAxisLimitHigh",
+      "original": "LongAxisLimitHigh",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "LongAxisLimitHigh",
+      "original": "LongAxisLimitHigh",
+      "property": "maximum",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "LongAxisLimitHigh",
+      "original": "LongAxisLimitHigh",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "1",
+      "equal": false,
+      "repairedValue": "1",
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "ShortAxisLimitEnable",
+      "original": "ShortAxisLimitEnable",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "ShortAxisLimitLow",
+      "original": "ShortAxisLimitLow",
+      "property": "default",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "ShortAxisLimitLow",
+      "original": "ShortAxisLimitLow",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "ShortAxisLimitLow",
+      "original": "ShortAxisLimitLow",
+      "property": "maximum",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "ShortAxisLimitLow",
+      "original": "ShortAxisLimitLow",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "1",
+      "equal": false,
+      "repairedValue": "1",
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "ShortAxisLimitHigh",
+      "original": "ShortAxisLimitHigh",
+      "property": "default",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "ShortAxisLimitHigh",
+      "original": "ShortAxisLimitHigh",
+      "property": "minimum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "ShortAxisLimitHigh",
+      "original": "ShortAxisLimitHigh",
+      "property": "maximum",
+      "current": "999999999",
+      "originalRaw": "999999999",
+      "equal": true,
+      "currentAfter": "999999999",
+      "equalAfter": true
+    },
+    {
+      "field": "ShortAxisLimitHigh",
+      "original": "ShortAxisLimitHigh",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "1",
+      "equal": false,
+      "repairedValue": "1",
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "CircularityLimitEnable",
+      "original": "CircularityLimitEnable",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "CircularityLimitLow",
+      "original": "CircularityLimitLow",
+      "property": "default",
+      "current": "0",
+      "originalRaw": "0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "CircularityLimitLow",
+      "original": "CircularityLimitLow",
+      "property": "minimum",
+      "current": "0",
+      "originalRaw": "0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "CircularityLimitLow",
+      "original": "CircularityLimitLow",
+      "property": "maximum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "CircularityLimitLow",
+      "original": "CircularityLimitLow",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "0.01",
+      "equal": true,
+      "currentAfter": "0.01",
+      "equalAfter": true
+    },
+    {
+      "field": "CircularityLimitHigh",
+      "original": "CircularityLimitHigh",
+      "property": "default",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "CircularityLimitHigh",
+      "original": "CircularityLimitHigh",
+      "property": "minimum",
+      "current": "0",
+      "originalRaw": "0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "CircularityLimitHigh",
+      "original": "CircularityLimitHigh",
+      "property": "maximum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "CircularityLimitHigh",
+      "original": "CircularityLimitHigh",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "0.01",
+      "equal": true,
+      "currentAfter": "0.01",
+      "equalAfter": true
+    },
+    {
+      "field": "RectangularityLimitEnable",
+      "original": "RectangularityLimitEnable",
+      "property": "default",
+      "current": "false",
+      "originalRaw": "False",
+      "equal": true,
+      "currentAfter": "false",
+      "equalAfter": true
+    },
+    {
+      "field": "RectangularityLimitLow",
+      "original": "RectangularityLimitLow",
+      "property": "default",
+      "current": "0",
+      "originalRaw": "0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "RectangularityLimitLow",
+      "original": "RectangularityLimitLow",
+      "property": "minimum",
+      "current": "0",
+      "originalRaw": "0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "RectangularityLimitLow",
+      "original": "RectangularityLimitLow",
+      "property": "maximum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "RectangularityLimitLow",
+      "original": "RectangularityLimitLow",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "0.01",
+      "equal": true,
+      "currentAfter": "0.01",
+      "equalAfter": true
+    },
+    {
+      "field": "RectangularityLimitHigh",
+      "original": "RectangularityLimitHigh",
+      "property": "default",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "RectangularityLimitHigh",
+      "original": "RectangularityLimitHigh",
+      "property": "minimum",
+      "current": "0",
+      "originalRaw": "0",
+      "equal": true,
+      "currentAfter": "0",
+      "equalAfter": true
+    },
+    {
+      "field": "RectangularityLimitHigh",
+      "original": "RectangularityLimitHigh",
+      "property": "maximum",
+      "current": "1",
+      "originalRaw": "1",
+      "equal": true,
+      "currentAfter": "1",
+      "equalAfter": true
+    },
+    {
+      "field": "RectangularityLimitHigh",
+      "original": "RectangularityLimitHigh",
+      "property": "increment",
+      "current": "0.01",
+      "originalRaw": "0.01",
+      "equal": true,
+      "currentAfter": "0.01",
+      "equalAfter": true
+    }
+  ],
+  "runtime": "未运行；不证明动态边界或算法行为",
+  "repairedIncrementCount": 24,
+  "originalTemplateBinding": "FloatBettween_sub.SliderArrangeFloat.SliderTickFrequency={Binding IncValueA}; 所有27个原件范围父步长与双端点相同",
+  "parentRanges": [
+    {
+      "field": "FixedSoftLowerThreshold",
+      "range": "ThresholdRangArea",
+      "minimum": "0",
+      "maximum": "255",
+      "increment": "1",
+      "equal": true
+    },
+    {
+      "field": "FilterAreaMin",
+      "range": "RangArea",
+      "minimum": "1",
+      "maximum": "999999999",
+      "increment": "1",
+      "equal": true
+    },
+    {
+      "field": "MinBoxAngle",
+      "range": "RangBoxAngle",
+      "minimum": "-9000",
+      "maximum": "9000",
+      "increment": "1",
+      "equal": true
+    },
+    {
+      "field": "MinRectWidth",
+      "range": "RangRectWidth",
+      "minimum": "1",
+      "maximum": "1000000",
+      "increment": "1",
+      "equal": true
+    },
+    {
+      "field": "MinRectHeight",
+      "range": "RangRectHeight",
+      "minimum": "1",
+      "maximum": "1000000",
+      "increment": "1",
+      "equal": true
+    },
+    {
+      "field": "MinPerimeter",
+      "range": "RangPerimeter",
+      "minimum": "1",
+      "maximum": "999999999",
+      "increment": "1",
+      "equal": true
+    },
+    {
+      "field": "MinShortAxis",
+      "range": "RangShortAxis",
+      "minimum": "1",
+      "maximum": "999999999",
+      "increment": "1",
+      "equal": true
+    },
+    {
+      "field": "MinLongAxis",
+      "range": "RangLongAxis",
+      "minimum": "1",
+      "maximum": "999999999",
+      "increment": "1",
+      "equal": true
+    },
+    {
+      "field": "FilterCircularityMin",
+      "range": "RangCircularity",
+      "minimum": "0",
+      "maximum": "1",
+      "increment": "0.01",
+      "equal": true
+    },
+    {
+      "field": "FilterRectangularityMin",
+      "range": "RangRectangularity",
+      "minimum": "0",
+      "maximum": "1",
+      "increment": "0.01",
+      "equal": true
+    },
+    {
+      "field": "MinCenterBias",
+      "range": "RangCenterBias",
+      "minimum": "0",
+      "maximum": "9999999.99",
+      "increment": "0.01",
+      "equal": true
+    },
+    {
+      "field": "MinAxisRatio",
+      "range": "AxisRatioRange",
+      "minimum": "0.01",
+      "maximum": "1",
+      "increment": "0.01",
+      "equal": true
+    },
+    {
+      "field": "BlobNumLimitLow",
+      "range": "RangBlobNumLimit",
+      "minimum": "1",
+      "maximum": "99999",
+      "increment": "1",
+      "equal": true
+    },
+    {
+      "field": "BlobAreaLimitLow",
+      "range": "RangBlobAreaLimit",
+      "minimum": "1",
+      "maximum": "999999999",
+      "increment": "1",
+      "equal": true
+    },
+    {
+      "field": "BlobTotalAreaLimitLow",
+      "range": "RangBlobTotalAreaLimit",
+      "minimum": "1",
+      "maximum": "999999999",
+      "increment": "1",
+      "equal": true
+    },
+    {
+      "field": "CentroidXLimitLow",
+      "range": "RangCentroidXLimit",
+      "minimum": "-99999",
+      "maximum": "99999",
+      "increment": "1",
+      "equal": true
+    },
+    {
+      "field": "CentroidYLimitLow",
+      "range": "RangCentroidYLimit",
+      "minimum": "-99999",
+      "maximum": "99999",
+      "increment": "1",
+      "equal": true
+    },
+    {
+      "field": "AngleLimitLow",
+      "range": "RangAngleLimit",
+      "minimum": "-180",
+      "maximum": "180",
+      "increment": "0.1",
+      "equal": true
+    },
+    {
+      "field": "CenterXLimitLow",
+      "range": "RangCenterXLimit",
+      "minimum": "-99999",
+      "maximum": "99999",
+      "increment": "1",
+      "equal": true
+    },
+    {
+      "field": "CenterYLimitLow",
+      "range": "RangCenterYLimit",
+      "minimum": "-99999",
+      "maximum": "99999",
+      "increment": "1",
+      "equal": true
+    },
+    {
+      "field": "BoxHeightLimitLow",
+      "range": "BoxHeightLimit",
+      "minimum": "1",
+      "maximum": "99999",
+      "increment": "1",
+      "equal": true
+    },
+    {
+      "field": "BoxWidthLimitLow",
+      "range": "BoxWidthLimit",
+      "minimum": "1",
+      "maximum": "99999",
+      "increment": "1",
+      "equal": true
+    },
+    {
+      "field": "PerimeterLimitLow",
+      "range": "RangPerimeterLimit",
+      "minimum": "1",
+      "maximum": "999999999",
+      "increment": "1",
+      "equal": true
+    },
+    {
+      "field": "LongAxisLimitLow",
+      "range": "RangLongAxisLimit",
+      "minimum": "1",
+      "maximum": "999999999",
+      "increment": "1",
+      "equal": true
+    },
+    {
+      "field": "ShortAxisLimitLow",
+      "range": "RangShortAxisLimit",
+      "minimum": "1",
+      "maximum": "999999999",
+      "increment": "1",
+      "equal": true
+    },
+    {
+      "field": "CircularityLimitLow",
+      "range": "RangCircularityLimit",
+      "minimum": "0",
+      "maximum": "1",
+      "increment": "0.01",
+      "equal": true
+    },
+    {
+      "field": "RectangularityLimitLow",
+      "range": "RangRectangularityLimit",
+      "minimum": "0",
+      "maximum": "1",
+      "increment": "0.01",
+      "equal": true
+    }
+  ],
+  "build": "全量Release0错误、3308警告、18.34秒",
+  "files": [
+    {
+      "path": "C:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModuAlgorithmTab.xml",
+      "sha256": "34A0CC5423A3D66B92DC272E0F50B013310E5180E801C648005383C3ADDDFDEC"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Resources/BlobParameters.xml",
+      "sha256": "E772397BB74213702D4D48B082847DB675C0981AF950A78344C6038E7B4C4FA7"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredRangeRow.cs",
+      "sha256": "2B1DB7F9B5E5E76B1D8FAA5442E23B826EA73EF5C64E8FD100E7E589A25FB6F9"
+    },
+    {
+      "path": "tests/SunEyeVision.Tool.BlobAnalysis.Tests/BlobAnalysisParameterContractTests.cs",
+      "sha256": "F69F8B2788A974958AEC49A8D7E1ECAF967F30008104400FF4F97649D2820217"
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Tool.BlobAnalysis.Runtime.dll",
+      "sha256": "A0C3E733CD8ECAC87A50D823F3E22A19BF1388111EB850401CA90F1BACF7A755"
+    }
+  ]
+}

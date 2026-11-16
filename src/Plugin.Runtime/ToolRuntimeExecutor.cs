@@ -7,7 +7,8 @@ namespace SunEyeVision.Plugin.Runtime;
 public static class ToolRuntimeExecutor
 {
     public static async ValueTask<ToolOutcome> ExecuteAsync(IToolDefinition definition,object settings,
-        InputValues inputs,IToolExecutionContext context,IEnumerable<OutputValueRequest>? outputRequests=null)
+        InputValues inputs,IToolExecutionContext context,IEnumerable<OutputValueRequest>? outputRequests=null,
+        RuntimeDirectorySnapshot? directory=null)
     {
         ArgumentNullException.ThrowIfNull(definition);ArgumentNullException.ThrowIfNull(context);ArgumentNullException.ThrowIfNull(inputs);
         var frozen=definition.FreezeSettings(settings);
@@ -18,14 +19,25 @@ public static class ToolRuntimeExecutor
         foreach(var request in invocation.OutputRequests)request.Validate(schema);
         if(context.Cancellation.IsCancellationRequested)
             return new(false,null,BusinessJudgment.NotEvaluated,new[]{new Diagnostic("TOOL_CANCELLED","工具执行已取消。")});
-        var session=definition.CreateSession();
+        if (definition is IToolExecutionFilter filter && !filter.ShouldExecute(frozen))
+            return ToolOutcome.Suppress();
+        var sessionLease=directory?.AcquireSession(definition);
+        var session=sessionLease?.Session ?? definition.CreateSession();
         Exception? failure=null;
         ToolOutcome? outcome=null;
-        try{outcome=await session.ExecuteAsync(invocation).ConfigureAwait(false);return outcome;}
+        try
+        {
+            outcome=await session.ExecuteAsync(invocation).ConfigureAwait(false);
+            return outcome;
+        }
         catch(Exception error){failure=error;throw;}
         finally
         {
-            try{await session.DisposeAsync().ConfigureAwait(false);}
+            try
+            {
+                if (sessionLease is not null) await sessionLease.DisposeAsync().ConfigureAwait(false);
+                else await session.DisposeAsync().ConfigureAwait(false);
+            }
             catch(Exception cleanup)when(failure is not null){throw new AggregateException("Tool execution and session cleanup both failed.",failure,cleanup);}
             catch(Exception cleanup)
             {

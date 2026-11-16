@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>图像源 + Blob 全链路 · 架构设计与源码树</title>
+<style>
+:root{--ink:#1f2328;--muted:#656d76;--line:#d0d7de;--soft:#f6f8fa;--ok:#1a7f37;--bad:#cf222e;--warn:#9a6700;--accent:#0969da}
+*{box-sizing:border-box}
+body{margin:0;padding:36px 22px 70px;color:var(--ink);font:15px/1.7 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+main{max-width:1140px;margin:0 auto}
+h1{font-size:26px;margin:0 0 6px}
+h2{font-size:19px;margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--line)}
+h3{font-size:15px;margin:22px 0 8px}
+p{margin:9px 0}
+.sub{color:var(--muted);font-size:13px;margin-bottom:22px}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th,td{border:1px solid var(--line);padding:7px 9px;vertical-align:top;text-align:left}
+th{background:var(--soft);font-weight:600}
+code{background:var(--soft);padding:1px 4px;border-radius:3px;font:12px/1.5 ui-monospace,Consolas,monospace;word-break:break-all}
+pre{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow:auto;font:12.5px/1.65 ui-monospace,Consolas,monospace;margin:12px 0}
+.tag{display:inline-block;padding:0 7px;border-radius:999px;font-size:12px;border:1px solid;white-space:nowrap}
+.t-ok{color:var(--ok);border-color:var(--ok);background:#e8f5ec}
+.t-no{color:var(--bad);border-color:var(--bad);background:#ffeceb}
+.t-part{color:var(--warn);border-color:var(--warn);background:#fff8e5}
+.note{border-left:4px solid var(--accent);background:#e8f2fd;padding:10px 14px;border-radius:0 6px 6px 0;margin:12px 0}
+ol,ul{margin:8px 0;padding-left:20px}
+li{margin:4px 0}
+</style>
+</head>
+<body>
+<main>
+
+<h1>图像源 + Blob 全链路 · 架构设计与源码树</h1>
+<p class="sub">SunEyeVision V2 ｜ 2026-11-10 ｜ 判定口径：以「工具箱 → 画布 → 参数 → 调试 → 执行 → 结果 → 保存重开」跑通为准</p>
+
+<h2>一、结论先行</h2>
+
+<div class="note">
+<b>链路已经连通，缺口在完整度而非架构。</b>实测：工具实现是完整的（Blob 39 个文件约 250KB，图像源 11 个设置字段 + 6 个输入端口）；参数呈现、执行、结果展示三处接缝全部有实现；编辑侧旧接口 <code>IToolEditorFactory</code> 只有定义没有实现，属死接口，说明呈现已单轨。<br>
+剩下的工作是：补 Blob 内部的 ROI 继承/位置修正功能、Shell 模板与 4 项交互、4 种节点形状，以及把 77 个工程收敛到可维护规模。
+</div>
+
+<h2>二、分层架构</h2>
+
+<table>
+<tr><th style="width:14%">层</th><th style="width:34%">工程</th><th style="width:36%">职责</th><th style="width:16%">允许依赖</th></tr>
+<tr>
+<td><b>契约层</b></td>
+<td><code>Plugin.Contracts</code><br><code>Platform.Sdk</code> / <code>Platform.Sdk.Contracts</code></td>
+<td>工具接口（<code>IToolDefinition</code>/<code>IToolSession</code>）、目录描述（<code>ToolCatalogDescriptor</code> 含 <code>NodeDisplayType</code>）、参数展示树、结果投影描述、组件声明（<code>ToolComponentAttribute</code>）。<b>不含任何 WPF 类型</b></td>
+<td>无</td>
+</tr>
+<tr>
+<td><b>运行时层</b></td>
+<td><code>Plugin.Runtime</code><br><code>Plugin.Tooling</code><br><code>Plugin.Infrastructure</code><br><code>Execution</code><br><code>Tool.Kernels</code></td>
+<td>工具发现与装载（<code>RuntimeDirectorySnapshot</code>、<code>RuntimeComponentAdmission</code>）、执行调度、桌面呈现桥接（<code>DesktopToolPresentation</code>）、工具内核抽象</td>
+<td>契约层、领域层</td>
+</tr>
+<tr>
+<td><b>领域层</b></td>
+<td><code>Domain</code><br><code>Core</code><br><code>Persistence</code> / <code>Infrastructure.Persistence</code></td>
+<td>工作流/节点/连线的领域模型与身份、方案序列化</td>
+<td>契约层</td>
+</tr>
+<tr>
+<td><b>呈现层</b></td>
+<td><code>Plugin.Wpf</code><br><code>Plugin.Editing.Wpf</code></td>
+<td>视觉控件与原件样式（端口、连线、节点、参数呈现器、原件字典）、非视觉编辑模型</td>
+<td>契约层、领域层</td>
+</tr>
+<tr>
+<td><b>宿主层</b></td>
+<td><code>UI</code><br><code>Application</code></td>
+<td>窗口/Shell/导航、画布宿主与交互编排、文档会话与运行批次</td>
+<td>全部</td>
+</tr>
+<tr>
+<td><b>设备与算法</b></td>
+<td><code>DeviceDriver</code> / <code>.Camera</code><br><code>CvEngine</code> / <code>CvAdapter</code><br><code>HalAdapter</code> / <code>.Runtime</code><br><code>Infrastructure.ImageSources</code></td>
+<td>相机接入与设备发现、CV 算子封装、HALCON 适配、本地图像源</td>
+<td>契约层</td>
+</tr>
+</table>
+
+<h2>三、依赖方向</h2>
+
+<pre>
+                        ┌──────────────┐
+                        │   UI (宿主)   │
+                        └──────┬───────┘
+                               │
+              ┌────────────────┼─────────────────┐
+              ▼                ▼                 ▼
+        ┌──────────┐    ┌────────────┐   ┌──────────────┐
+        │Application│    │ Plugin.Wpf │   │Plugin.Editing│
+        └────┬─────┘    └──────┬─────┘   └──────┬───────┘
+             │                 │                 │
+             ▼                 ▼                 ▼
+        ┌──────────┐    ┌──────────────┐  ┌──────────────┐
+        │ Domain   │    │Plugin.Infra  │  │Plugin.Contracts│
+        └────┬─────┘    └──────┬───────┘  └──────┬───────┘
+             │                 │                 │
+             ▼                 ▼                 ▼
+        ┌──────────┐    ┌──────────────┐  ┌──────────────┐
+        │Execution │    │Plugin.Runtime│  │ Tool.Kernels │
+        └────┬─────┘    └──────┬───────┘  └──────────────┘
+             │                 │
+             ▼                 ▼
+        ┌─────────────────────────────┐
+        │ CvEngine / HalAdapter /     │
+        │ DeviceDriver / ImageSources │
+        └─────────────────────────────┘
+
+工具工程（独立装配，不反向依赖宿主）：
+  tools/&lt;Tool&gt;/Runtime  → Plugin.Contracts + Tool.Kernels + CvEngine
+  tools/&lt;Tool&gt;/Wpf      → Plugin.Wpf + Plugin.Contracts（仅呈现）
+</pre>
+
+<h2>四、源码树（现状 77 工程）</h2>
+
+<pre>
+SunEyeVision_V2/
+├─ src/                                    25 个工程
+│  ├─ 契约    Plugin.Contracts · Platform.Sdk · Platform.Sdk.Contracts
+│  ├─ 领域    Domain · Core · Persistence · Infrastructure.Persistence
+│  ├─ 运行时  Plugin.Runtime · Plugin.Tooling · Plugin.Infrastructure · Execution · Tool.Kernels
+│  ├─ 呈现    Plugin.Wpf · Plugin.Editing.Wpf
+│  ├─ 宿主    UI · Application
+│  ├─ 设备    DeviceDriver · DeviceDriver.Camera
+│  ├─ 算法    CvEngine · CvAdapter · HalAdapter · HalAdapter.Runtime
+│  └─ 遗留    CommonControl（已从 slnx 移除，磁盘残留）
+├─ tools/                                   5 个工程
+│  ├─ SunEyeVision.ImageSource.Runtime      ImageSourceTool · ImageSourceFields · ImageSourceSession · Output
+│  ├─ SunEyeVision.ImageSource.Wpf
+│  ├─ SunEyeVision.BlobAnalysis.Runtime     39 文件 250KB：Algorithms(9) · Parameters(9) · Results(8) · Tool
+│  ├─ SunEyeVision.BlobAnalysis.Wpf         19 文件：Views · Design · EditorFactory · ResultViewFactory
+│  └─ FixEncoding（工具脚本，非产品）
+└─ tests/                                  47 个工程（含 20 余个 Probe 验证宿主）
+</pre>
+
+<h3>两个工具的内部结构</h3>
+
+<table>
+<tr><th style="width:20%">工具</th><th style="width:40%">Runtime</th><th style="width:40%">Wpf</th></tr>
+<tr>
+<td>图像源</td>
+<td><code>ImageSourceTool.cs</code>（7 个契约：<code>IToolDefinition</code>/<code>IToolSettingsFields</code>/<code>IToolCatalogProvider</code>/<code>IToolResultPresentationProvider</code>/<code>IToolManualReferenceSources</code>/<code>IToolHostInputDeclaration</code>/<code>IToolResourceFieldDeclarations</code>）<br>Id=<code>ImageLoad</code>，<code>NodeDisplayType=IMAGE</code>，6 个输入端口，11 个设置字段</td>
+<td>参数编辑器 + 图像显示，走 <code>Plugin.Wpf</code> 呈现器</td>
+</tr>
+<tr>
+<td>Blob 分析</td>
+<td><code>Algorithms/</code>：<code>BlobSession</code>(26KB)、<code>BlobThresholdTransform</code>(8KB)、候选选择、ROI 栅格化、HALCON 执行域<br><code>Parameters/</code>：<code>BlobParameterDefinition</code>(16KB)+<code>.Settings</code>(10KB)、<code>BlobSettings</code>(11KB)、<code>BlobVmFindParameters</code>(11KB)<br><code>Results/</code>：<code>BlobOutput</code>、<code>BlobSchema</code>、<code>BlobDisplayDefinition</code>、<code>BlobResultDisplay</code>、<code>BlobVmResultProjection</code></td>
+<td><code>Views/</code>：<code>BlobUiComposition</code>(25KB)、<code>BlobLocalRoiOwner</code>(19KB)+Preview、<code>BlobParameterEditor</code>、<code>BlobResultView</code>、<code>BlobRunUi</code>、<code>BlobSupportedWindowState</code><br><code>EditorFactory</code> / <code>ResultViewFactory</code></td>
+</tr>
+</table>
+
+<h2>五、全链路 8 环对照</h2>
+
+<table>
+<tr><th style="width:6%">#</th><th style="width:18%">环节</th><th style="width:52%">实现位置</th><th style="width:24%">状态</th></tr>
+<tr><td>1</td><td>工具声明与装载</td><td><code>ToolCatalogDescriptor</code>、<code>ToolComponentAttribute</code>、<code>Plugin.Runtime/RuntimeDirectorySnapshot.cs</code>、<code>RuntimeComponentAdmission.cs</code></td><td><span class="tag t-ok">已通</span></td></tr>
+<tr><td>2</td><td>工具箱呈现</td><td><code>ToolBoxData</code>（本轮新建）、UI 工具箱面板、工具目录扫描</td><td><span class="tag t-ok">已通</span></td></tr>
+<tr><td>3</td><td>画布节点</td><td><code>CanvasNodeProjection.NodeDisplayType</code>（透传工具声明）、节点模板按类型呈现</td><td><span class="tag t-part">部分</span>：仅 IMAGE 形状，另 4 种未迁</td></tr>
+<tr><td>4</td><td>参数面板</td><td><code>Plugin.Infrastructure/Managers/Plugin/DesktopToolPresentation.cs</code>（<code>IToolPresentationFactory</code>）+ <code>Plugin.Wpf/Presenters/Parameters</code></td><td><span class="tag t-ok">单轨已通</span>：旧 <code>IToolEditorFactory</code> 为死接口</td></tr>
+<tr><td>5</td><td>调试窗口</td><td><code>Application/DocumentSession.RuntimeDebug.cs</code> + 工具的 <code>BlobRunUi</code> / 图像源面板</td><td><span class="tag t-ok">已通</span></td></tr>
+<tr><td>6</td><td>执行</td><td><code>DocumentSession.RuntimeDebug.cs:211</code>（单次调试）、<code>DocumentRunBatch.cs:69</code>（批量运行）→ <code>IToolSession.ExecuteAsync</code></td><td><span class="tag t-ok">已通</span></td></tr>
+<tr><td>7</td><td>结果展示</td><td><code>DocumentSession.ResultPresentation.cs</code>（<code>ResultProjectionDescriptor</code>）+ <code>BlobDisplayDefinition</code> / <code>ImageSourceOutput.Display</code> + <code>IToolResultView</code></td><td><span class="tag t-ok">已通</span></td></tr>
+<tr><td>8</td><td>保存重开</td><td><code>Persistence</code> 方案序列化 + 节点/连线身份</td><td><span class="tag t-part">需回归验证</span></td></tr>
+</table>
+
+<h2>六、真实缺口清单</h2>
+
+<table>
+<tr><th style="width:24%">缺口</th><th style="width:40%">证据</th><th style="width:36%">影响</th></tr>
+<tr><td>Blob ROI 继承 / 位置修正</td><td><code>BlobLocalRoiOwner.Preview.cs:76</code>、<code>BlobRoiUi.cs:36,47</code>、<code>BlobSupportedWindowState.cs:43,45</code> 明确写着"尚未实现"</td><td>Blob 高级 ROI 能力不可用（基础 Blob 可用）</td></tr>
+<tr><td>图像源灰度原图语义</td><td><code>ImageSourceSession.cs:64</code>："语义占位：灰度原图暂复用同一受租约保护的图像"</td><td>灰度分支输出与原件不同</td></tr>
+<tr><td>4 种节点形状</td><td>仅 <code>IMAGE</code> 走胶囊，<code>IFBRANCH</code>/<code>FUNCTION</code>/<code>TIMER</code>/<code>SHELL</code>/<code>COMMUNCATION</code> 未迁</td><td>非图像源节点外观统一为卡片</td></tr>
+<tr><td>Shell 自绘模板</td><td><code>UI/Resources/Styles</code> 9 个通用样式仍为本方实现</td><td>结果区/属性表外观与原件有差异</td></tr>
+<tr><td>4 项交互</td><td>HoverPot、Shift 横向滚动、适配窗口、批注框均未实现</td><td>操作便利性不及原件</td></tr>
+<tr><td>死接口</td><td><code>Plugin.Editing.Wpf/Core/IToolEditorFactory.cs</code> 无实现无使用</td><td>误导后续开发者</td></tr>
+<tr><td>工程数量</td><td>77 个（src 25 + tools 5 + tests 47，含 20 余个 Probe）</td><td>构建慢、职责难辨</td></tr>
+</table>
+
+<h2>七、收敛建议（源码树目标）</h2>
+
+<table>
+<tr><th style="width:26%">现状</th><th style="width:26%">目标</th><th style="width:48%">处置</th></tr>
+<tr><td>77 个工程</td><td>约 30 个</td><td>Probe 类测试宿主合并为一个 <code>tests/Probes</code>；<code>HalAdapter</code> 与 <code>HalAdapter.Runtime</code> 合并；<code>Persistence</code> 与 <code>Infrastructure.Persistence</code> 合并；删除 <code>CommonControl</code> 残留</td></tr>
+<tr><td><code>Plugin.Editing.Wpf</code> 含死接口</td><td>只留非视觉编辑模型</td><td>删 <code>IToolEditorFactory</code>；评估该工程是否可整体并入 <code>Plugin.Contracts</code>/<code>Plugin.Wpf</code></td></tr>
+<tr><td><code>Plugin.Wpf/Controls/Native</code> 下 521 个 <code>.pending</code></td><td>三分类建档</td><td>已启用 / 待接通 / 放弃，各带原因；不再混在目录里</td></tr>
+<tr><td><code>UI</code> 承载画布交互编排</td><td>视觉下沉 <code>Plugin.Wpf</code></td><td>画布与节点视觉逐步迁到 <code>Plugin.Wpf</code>，UI 只留窗口与服务</td></tr>
+</table>
+
+<h2>八、剩余实施清单（按依赖）</h2>
+
+<ol>
+<li><b>Blob ROI 继承 / 位置修正</b>：工具内部功能补齐，<code>BlobLocalRoiOwner</code> 相关 4 处"尚未实现"</li>
+<li><b>图像源灰度分支</b>：<code>ImageSourceSession.cs:64</code> 的语义占位转真实实现</li>
+<li><b>4 种节点形状</b>：迁 <code>IfBranchPath</code>/<code>FunctionModulePath</code>/<code>TimerModulePath</code>/<code>ShellModulePath</code>/<code>CommuncationDataPath</code>，按 <code>NodeDisplayType</code> 选</li>
+<li><b>Shell 模板与 4 项交互</b>：<code>UI/Resources/Styles</code> 换原件样式；HoverPot、Shift 横向滚动、适配窗口、批注框</li>
+<li><b>死接口清理</b>：删 <code>IToolEditorFactory</code>；<code>.pending</code> 三分类；Probe 工程合并</li>
+<li><b>全链路人工验收</b>：按 41 项清单逐条过，含保存重开与联合调试</li>
+</ol>
+
+</main>
+</body>
+</html>

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
         xmlns:themeWindows="clr-namespace:SunEyeVision.UI.Shell.Windows"
-        xmlns:controls="clr-namespace:SunEyeVision.Plugin.Editing.Wpf.UI.Controls;assembly=SunEyeVision.Plugin.Editing.Wpf"
+        xmlns:controls="clr-namespace:SunEyeVision.Plugin.Editing.Wpf.UI.Controls;assembly=SunEyeVision.Plugin.Editing.Wpf" xmlns:inputs="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Inputs;assembly=SunEyeVision.Plugin.Wpf" xmlns:numeric="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.Presentation.Controls;assembly=SunEyeVision.Plugin.Wpf"
         xmlns:workflow="clr-namespace:SunEyeVision.Workflow;assembly=SunEyeVision.Workflow"
         xmlns:comm="clr-namespace:SunEyeVision.UI.Features.CommunicationManager"
         mc:Ignorable="d"
@@ -319,8 +319,8 @@
                         </Style>
                     </Ellipse.Style>
                 </Ellipse>
-                <controls:ToggleSwitch Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center"
-                                       SwitchWidth="40" SwitchHeight="20"
+                <inputs:ContentToggleSwitch Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center"
+
                                        IsChecked="{Binding IsActuallyConnected, Mode=OneWay}"
                                        ToolTip="连接/断开。开启自动重连时，手动断开后也会按倒计时重新连接。"
                                        IsEnabled="{Binding CanToggleRuntime}"
@@ -406,7 +406,7 @@
                         <TextBlock Text="目标IP"/><TextBox Grid.Column="1" Text="{Binding SelectedCommunication.Host, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
                         <TextBlock Grid.Column="2" Text="目标端口" Margin="18,0,0,0"/><TextBox Grid.Column="3" Text="{Binding SelectedCommunication.Port, UpdateSourceTrigger=PropertyChanged}" Height="32" Margin="18,0,0,0"/>
                         <TextBlock Grid.Row="1" Text="轮询间隔(ms)"/><TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SelectedCommunication.PollInterval, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
-                        <TextBlock Grid.Row="1" Grid.Column="2" Text="自动重连" Margin="18,0,0,0"/><controls:ToggleSwitch Grid.Row="1" Grid.Column="3" IsChecked="{Binding SelectedCommunication.AutoReconnect, Mode=TwoWay}" SwitchWidth="40" SwitchHeight="20" Margin="18,0,0,0"/>
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="自动重连" Margin="18,0,0,0"/><inputs:ContentToggleSwitch Grid.Row="1" Grid.Column="3" IsChecked="{Binding SelectedCommunication.AutoReconnect, Mode=TwoWay}" Margin="18,0,0,0"/>
                     </Grid>
                     <Grid Visibility="{Binding SelectedCommunication.IsTcpServer, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="42"/></Grid.RowDefinitions>
@@ -449,7 +449,7 @@
                         <Grid>
                             <Grid.ColumnDefinitions><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                             <TextBlock Text="轮询间隔(ms)"/><TextBox Grid.Column="1" Text="{Binding SelectedCommunication.PollInterval, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
-                            <TextBlock Grid.Column="2" Text="自动重连" Margin="18,0,0,0"/><controls:ToggleSwitch Grid.Column="3" IsChecked="{Binding SelectedCommunication.AutoReconnect, Mode=TwoWay}" SwitchWidth="40" SwitchHeight="20" Margin="18,0,0,0"/>
+                            <TextBlock Grid.Column="2" Text="自动重连" Margin="18,0,0,0"/><inputs:ContentToggleSwitch Grid.Column="3" IsChecked="{Binding SelectedCommunication.AutoReconnect, Mode=TwoWay}" Margin="18,0,0,0"/>
                         </Grid>
                     </StackPanel>
                     <Grid Visibility="{Binding SelectedCommunication.IsPlainSerial, Converter={StaticResource BooleanToVisibilityConverter}}">
@@ -464,9 +464,9 @@
                     <Grid Visibility="{Binding SelectedCommunication.IsOpcUa, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                         <TextBlock Text="服务器地址"/><TextBox Grid.Column="1" Text="{Binding SelectedCommunication.OpcUaHost, UpdateSourceTrigger=PropertyChanged}" Height="32"/>
-                        <TextBlock Grid.Column="2" Text="服务器端口" Margin="18,0,0,0"/><controls:NumericUpDown Grid.Column="3" IntValue="{Binding SelectedCommunication.OpcUaPort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="65535" DecimalPlaces="0" Height="32" Margin="18,0,0,0" ToolTip="端口 1–65535；0 表示旧配置无效，需修正后保存"/>
-                        <TextBlock Grid.Row="1" Text="请求超时(ms)"/><controls:NumericUpDown Grid.Row="1" Grid.Column="1" IntValue="{Binding SelectedCommunication.RequestTimeout, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="120000" DecimalPlaces="0" Height="32" ToolTip="有效范围 250–120000 ms"/>
-                        <TextBlock Grid.Row="1" Grid.Column="2" Text="自动重连" Margin="18,0,0,0"/><controls:ToggleSwitch Grid.Row="1" Grid.Column="3" IsChecked="{Binding SelectedCommunication.AutoReconnect, Mode=TwoWay}" SwitchWidth="40" SwitchHeight="20" Margin="18,0,0,0"/>
+                        <TextBlock Grid.Column="2" Text="服务器端口" Margin="18,0,0,0"/><numeric:IntegerUpDown Grid.Column="3" Value="{Binding SelectedCommunication.OpcUaPort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="65535" Height="32" Margin="18,0,0,0" ToolTip="端口 1–65535；0 表示旧配置无效，需修正后保存"/>
+                        <TextBlock Grid.Row="1" Text="请求超时(ms)"/><numeric:IntegerUpDown Grid.Row="1" Grid.Column="1" Value="{Binding SelectedCommunication.RequestTimeout, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="120000" Height="32" ToolTip="有效范围 250–120000 ms"/>
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="自动重连" Margin="18,0,0,0"/><inputs:ContentToggleSwitch Grid.Row="1" Grid.Column="3" IsChecked="{Binding SelectedCommunication.AutoReconnect, Mode=TwoWay}" Margin="18,0,0,0"/>
                         <TextBlock Grid.Row="2" Text="端点预览"/><TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding SelectedCommunication.EndpointUrl, Mode=OneWay}" IsReadOnly="True" Height="32"/>
                         <TextBlock Grid.Row="3" Grid.ColumnSpan="4" Text="匿名连接（None；仅适用于隔离测试网络）" FontSize="11" Foreground="{DynamicResource {x:Static base:ThemeKeys.TextSecondaryBrush}}" Margin="0,4,0,0"/>
                     </Grid>
@@ -478,10 +478,10 @@
                     </Grid>
                     <Grid Visibility="{Binding SelectedCommunication.IsRawProtocol, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,4,0,0">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="42"/><RowDefinition Height="42"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                        <TextBlock Text="数据上传"/><controls:ToggleSwitch Grid.Column="1" IsChecked="{Binding SelectedCommunication.EnableDataUpload, Mode=TwoWay}" SwitchWidth="40" SwitchHeight="20"/>
-                        <TextBlock Grid.Column="2" Text="自动重连" Margin="18,0,0,0"/><controls:ToggleSwitch Grid.Column="3" IsChecked="{Binding SelectedCommunication.AutoReconnect, Mode=TwoWay}" SwitchWidth="40" SwitchHeight="20" Margin="18,0,0,0"/>
+                        <TextBlock Text="数据上传"/><inputs:ContentToggleSwitch Grid.Column="1" IsChecked="{Binding SelectedCommunication.EnableDataUpload, Mode=TwoWay}"/>
+                        <TextBlock Grid.Column="2" Text="自动重连" Margin="18,0,0,0"/><inputs:ContentToggleSwitch Grid.Column="3" IsChecked="{Binding SelectedCommunication.AutoReconnect, Mode=TwoWay}" Margin="18,0,0,0"/>
                         <TextBlock Grid.Row="1" Text="接收结束符" VerticalAlignment="Center"/>
-                        <controls:ToggleSwitch Grid.Row="1" Grid.Column="1" IsChecked="{Binding SelectedCommunication.EnableReceiveTerminator, Mode=TwoWay}" SwitchWidth="40" SwitchHeight="20"/>
+                        <inputs:ContentToggleSwitch Grid.Row="1" Grid.Column="1" IsChecked="{Binding SelectedCommunication.EnableReceiveTerminator, Mode=TwoWay}"/>
                         <StackPanel Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,2,0,0" Visibility="{Binding SelectedCommunication.EnableReceiveTerminator, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <TextBox MinHeight="76" MaxHeight="140" HorizontalAlignment="Stretch" FontSize="14" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Top" Padding="8,7" Text="{Binding SelectedCommunication.ReceiveTerminator, UpdateSourceTrigger=PropertyChanged}"/>
                             <UniformGrid Columns="3" HorizontalAlignment="Left" Width="224" Margin="0,8,0,0">
@@ -526,8 +526,8 @@
                                             </TextBlock.Style>
                                         </TextBlock>
                                     </Border>
-                                    <controls:ToggleSwitch IsChecked="{Binding SelectedWorkspace.IsReceiveHexDisplay, Mode=TwoWay}"
-                                                           SwitchWidth="42" SwitchHeight="20" Margin="0,0,8,0"/>
+                                    <inputs:ContentToggleSwitch IsChecked="{Binding SelectedWorkspace.IsReceiveHexDisplay, Mode=TwoWay}"
+ Margin="0,0,8,0"/>
                                     <Button Content="清空" Command="{Binding ClearReceivedDataCommand}"
                                             Width="52" Height="24" Padding="4,0"/>
                                 </StackPanel>
@@ -549,8 +549,8 @@
                                             </TextBlock.Style>
                                         </TextBlock>
                                     </Border>
-                                    <controls:ToggleSwitch IsChecked="{Binding SelectedWorkspace.IsSendHexInput, Mode=TwoWay}"
-                                                           SwitchWidth="42" SwitchHeight="20" Margin="0,0,8,0"/>
+                                    <inputs:ContentToggleSwitch IsChecked="{Binding SelectedWorkspace.IsSendHexInput, Mode=TwoWay}"
+ Margin="0,0,8,0"/>
                                     <Button Content="清空" Command="{Binding ClearSentDataCommand}"
                                             Width="52" Height="24" Padding="4,0"/>
                                 </StackPanel>
@@ -655,11 +655,11 @@
                     <Grid Grid.Row="1" Margin="0,0,0,8">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="150"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <TextBlock Text="首地址" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                        <controls:NumericUpDown Grid.Column="1" Height="30" Minimum="0" Maximum="65535"
+                        <numeric:DoubleUpDown Grid.Column="1" Height="30" Minimum="0" Maximum="65535"
                                                 DecimalPlaces="0" ShowSlider="False"
                                                 IntValue="{Binding SelectedWorkspace.ModbusRegisterStartAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                         <TextBlock Grid.Column="2" Text="寄存器个数" VerticalAlignment="Center" Margin="20,0,8,0"/>
-                        <controls:NumericUpDown Grid.Column="3" Height="30" Minimum="1"
+                        <numeric:DoubleUpDown Grid.Column="3" Height="30" Minimum="1"
                                                 Maximum="{Binding SelectedWorkspace.MaxModbusRegisterCount}"
                                                 DecimalPlaces="0" ShowSlider="False"
                                                 IntValue="{Binding SelectedWorkspace.ModbusRegisterCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
@@ -1078,19 +1078,19 @@
                     <Grid Margin="0,0,0,10" Visibility="{Binding SelectedReceiveEvent.IsBinaryMode, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <TextBlock Text="起始偏移" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
-                        <controls:NumericUpDown Grid.Column="1" IntValue="{Binding SelectedReceiveEvent.ByteOffset, Mode=TwoWay}" Minimum="0" Maximum="65535" DecimalPlaces="0" Height="34"/>
+                        <numeric:IntegerUpDown Grid.Column="1" Value="{Binding SelectedReceiveEvent.ByteOffset, Mode=TwoWay}" Minimum="0" Maximum="65535" Height="34"/>
                     </Grid>
                     <Grid Margin="0,0,0,10">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <TextBlock Text="字符长度比较" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
-                        <controls:ToggleSwitch Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center"
+                        <inputs:ContentToggleSwitch Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center"
                                                IsChecked="{Binding SelectedReceiveEvent.CharacterLengthCompare, Mode=TwoWay}"
-                                               SwitchWidth="42" SwitchHeight="22"/>
+/>
                     </Grid>
                     <Grid Margin="0,0,0,20" Visibility="{Binding SelectedReceiveEvent.CharacterLengthCompare, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="300"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <TextBlock Text="字符长度" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
-                        <controls:NumericUpDown Grid.Column="1" IntValue="{Binding SelectedReceiveEvent.CharacterLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <numeric:IntegerUpDown Grid.Column="1" Value="{Binding SelectedReceiveEvent.CharacterLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Minimum="1" Maximum="65535" DecimalPlaces="0" Height="34"/>
                     </Grid>
                     <Separator Margin="0,0,0,16"/>
@@ -1133,9 +1133,9 @@
                                 <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="105"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                     <ComboBox Height="30" ItemsSource="{Binding CompareRuleOptions}" SelectedItem="{Binding CompareRule, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectionChanged="CompareRule_SelectionChanged"/>
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="6,0,0,0" Style="{StaticResource CompareNumericRangeStyle}">
-                                        <controls:NumericUpDown IntValue="{Binding Minimum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="-2147483648" Maximum="2147483647" Width="70" Height="30"/>
+                                        <numeric:IntegerUpDown Value="{Binding Minimum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="-2147483648" Maximum="2147483647" Width="70" Height="30"/>
                                         <TextBlock Text=" － " VerticalAlignment="Center"/>
-                                        <controls:NumericUpDown IntValue="{Binding Maximum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="-2147483648" Maximum="2147483647" Width="70" Height="30"/>
+                                        <numeric:IntegerUpDown Value="{Binding Maximum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="-2147483648" Maximum="2147483647" Width="70" Height="30"/>
                                     </StackPanel>
                                     <TextBox Grid.Column="1" Style="{StaticResource CompareStringValueStyle}" Margin="6,0,0,0" Text="{Binding CompareValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                 </Grid>
@@ -1219,19 +1219,19 @@
                             <Grid Margin="0,0,0,10" Visibility="{Binding SelectedReceiveEvent.IsBinaryMode, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                 <TextBlock Text="起始偏移" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
-                                <controls:NumericUpDown Grid.Column="1" IntValue="{Binding SelectedReceiveEvent.ByteOffset, Mode=TwoWay}" Minimum="0" Maximum="65535" DecimalPlaces="0" Height="34"/>
+                                <numeric:IntegerUpDown Grid.Column="1" Value="{Binding SelectedReceiveEvent.ByteOffset, Mode=TwoWay}" Minimum="0" Maximum="65535" Height="34"/>
                             </Grid>
                             <Grid Margin="0,0,0,10">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                 <TextBlock Text="字符长度比较" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
-                                <controls:ToggleSwitch Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center"
+                                <inputs:ContentToggleSwitch Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center"
                                                        IsChecked="{Binding SelectedReceiveEvent.CharacterLengthCompare, Mode=TwoWay}"
-                                                       SwitchWidth="42" SwitchHeight="22"/>
+/>
                             </Grid>
                             <Grid Margin="0,0,0,18" Visibility="{Binding SelectedReceiveEvent.CharacterLengthCompare, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="300"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                 <TextBlock Text="字符长度" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
-                                <controls:NumericUpDown Grid.Column="1" IntValue="{Binding SelectedReceiveEvent.CharacterLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                <numeric:IntegerUpDown Grid.Column="1" Value="{Binding SelectedReceiveEvent.CharacterLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                         Minimum="1" Maximum="65535" DecimalPlaces="0" Height="34"/>
                             </Grid>
                             </StackPanel>
@@ -1239,17 +1239,17 @@
                                 <Grid Margin="0,0,0,10">
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/></Grid.ColumnDefinitions>
                                     <TextBlock Text="字节长度比较" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
-                                    <controls:ToggleSwitch Grid.Column="1" IsChecked="{Binding SelectedReceiveEvent.ByteLengthCompare, Mode=TwoWay}" SwitchWidth="42" SwitchHeight="22"/>
+                                    <inputs:ContentToggleSwitch Grid.Column="1" IsChecked="{Binding SelectedReceiveEvent.ByteLengthCompare, Mode=TwoWay}"/>
                                 </Grid>
                                 <Grid Margin="0,0,0,10" Visibility="{Binding SelectedReceiveEvent.ByteLengthCompare, Converter={StaticResource BooleanToVisibilityConverter}}">
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/></Grid.ColumnDefinitions>
                                     <TextBlock Text="字节长度" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
-                                    <controls:NumericUpDown Grid.Column="1" IntValue="{Binding SelectedReceiveEvent.ByteLength, Mode=TwoWay}" Minimum="1" Maximum="65535" Height="34"/>
+                                    <numeric:IntegerUpDown Grid.Column="1" Value="{Binding SelectedReceiveEvent.ByteLength, Mode=TwoWay}" Minimum="1" Maximum="65535" Height="34"/>
                                 </Grid>
                                 <Grid Margin="0,0,0,8">
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/></Grid.ColumnDefinitions>
                                     <TextBlock Text="ASCII数据" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0" ToolTip="原始通信输入验证ASCII字符字节后按字节规则解析；Modbus使用原始寄存器字节，不启用此转换。"/>
-                                    <controls:ToggleSwitch Grid.Column="1" IsChecked="{Binding SelectedReceiveEvent.AsciiData, Mode=TwoWay}" SwitchWidth="42" SwitchHeight="22"/>
+                                    <inputs:ContentToggleSwitch Grid.Column="1" IsChecked="{Binding SelectedReceiveEvent.AsciiData, Mode=TwoWay}"/>
                                 </Grid>
                                 <Grid Margin="0,0,0,18">
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/></Grid.ColumnDefinitions>
@@ -1272,7 +1272,7 @@
                                     <DataGridTemplateColumn Header="序号" Width="50" HeaderStyle="{StaticResource CenteredDataGridHeaderStyle}" CellStyle="{StaticResource CenteredDataGridCellStyle}"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock HorizontalAlignment="Center" TextAlignment="Center" VerticalAlignment="Center" Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridCell}}, Path=ActualWidth}" Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource OneBasedIndexConverter}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                                     <DataGridTemplateColumn Header="名称" Width="110"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Style="{StaticResource ReceiveEventOutputTextBoxStyle}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" TextAlignment="Center" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                                     <DataGridTemplateColumn Header="类型" Width="110"><DataGridTemplateColumn.CellTemplate><DataTemplate><ComboBox Height="30" ItemsSource="{Binding DataContext.SelectedReceiveDataTypes, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" SelectedItem="{Binding DataType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
-                                     <DataGridTemplateColumn Header="比较规则配置" Width="300"><DataGridTemplateColumn.CellTemplate><DataTemplate><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="105"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><ComboBox Height="30" ItemsSource="{Binding CompareRuleOptions}" SelectedItem="{Binding CompareRule, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectionChanged="CompareRule_SelectionChanged"/><StackPanel Grid.Column="1" Orientation="Horizontal" Margin="6,0,0,0" Style="{StaticResource CompareNumericRangeStyle}"><controls:NumericUpDown IntValue="{Binding Minimum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="-2147483648" Maximum="2147483647" Width="70" Height="30"/><TextBlock Text=" － " VerticalAlignment="Center"/><controls:NumericUpDown IntValue="{Binding Maximum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="-2147483648" Maximum="2147483647" Width="70" Height="30"/></StackPanel><TextBox Grid.Column="1" Style="{StaticResource CompareStringValueStyle}" Margin="6,0,0,0" Text="{Binding CompareValue, UpdateSourceTrigger=PropertyChanged}"/></Grid></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                                     <DataGridTemplateColumn Header="比较规则配置" Width="300"><DataGridTemplateColumn.CellTemplate><DataTemplate><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="105"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><ComboBox Height="30" ItemsSource="{Binding CompareRuleOptions}" SelectedItem="{Binding CompareRule, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectionChanged="CompareRule_SelectionChanged"/><StackPanel Grid.Column="1" Orientation="Horizontal" Margin="6,0,0,0" Style="{StaticResource CompareNumericRangeStyle}"><numeric:IntegerUpDown Value="{Binding Minimum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="-2147483648" Maximum="2147483647" Width="70" Height="30"/><TextBlock Text=" － " VerticalAlignment="Center"/><numeric:IntegerUpDown Value="{Binding Maximum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="-2147483648" Maximum="2147483647" Width="70" Height="30"/></StackPanel><TextBox Grid.Column="1" Style="{StaticResource CompareStringValueStyle}" Margin="6,0,0,0" Text="{Binding CompareValue, UpdateSourceTrigger=PropertyChanged}"/></Grid></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                                     <DataGridTextColumn Header="数据结果" Binding="{Binding Result}" Width="140" IsReadOnly="True" ElementStyle="{StaticResource CenteredDataGridTextBlockStyle}"/>
                                     <DataGridTextColumn Header="状态 ⓘ" Binding="{Binding Status}" Width="100" IsReadOnly="True" CellStyle="{StaticResource CenteredDataGridCellStyle}" ElementStyle="{StaticResource CenteredDataGridTextBlockStyle}"/>
                                     <DataGridTemplateColumn Width="42"><DataGridTemplateColumn.CellTemplate><DataTemplate><Button Content="×" Click="RemoveCompareInput_Click" Style="{StaticResource DangerButtonStyle}" Padding="0" Width="24" Height="24"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
@@ -1295,8 +1295,8 @@
                                         <TextBox Style="{StaticResource ReceiveEventOutputTextBoxStyle}" TextAlignment="Center" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
                                     </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                                     <DataGridTemplateColumn Header="字节起止位置 ⓘ" Width="175"><DataGridTemplateColumn.CellTemplate><DataTemplate>
-                                        <StackPanel Orientation="Horizontal"><controls:NumericUpDown IntValue="{Binding ByteStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="65535" Width="70" Height="30" Tag="Start" ValueChanged="ByteRulePosition_ValueChanged"/>
-                                            <TextBlock Text="－" VerticalAlignment="Center"/><controls:NumericUpDown IntValue="{Binding ByteEnd, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="65535" Width="70" Height="30" Tag="End" ValueChanged="ByteRulePosition_ValueChanged"/></StackPanel>
+                                        <StackPanel Orientation="Horizontal"><numeric:IntegerUpDown Value="{Binding ByteStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="65535" Width="70" Height="30" Tag="Start" ValueChanged="ByteRulePosition_ValueChanged"/>
+                                            <TextBlock Text="－" VerticalAlignment="Center"/><numeric:IntegerUpDown Value="{Binding ByteEnd, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="65535" Width="70" Height="30" Tag="End" ValueChanged="ByteRulePosition_ValueChanged"/></StackPanel>
                                     </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                                     <DataGridTemplateColumn Header="类型" Width="95"><DataGridTemplateColumn.CellTemplate><DataTemplate>
                                         <ComboBox Height="30" SelectedValuePath="Content" SelectedValue="{Binding DataType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
@@ -1311,9 +1311,9 @@
                                     <DataGridTemplateColumn Header="比较规则配置 ⓘ" Width="285"><DataGridTemplateColumn.CellTemplate><DataTemplate>
                                         <StackPanel Orientation="Horizontal"><ComboBox Width="100" Height="30" ItemsSource="{Binding CompareRuleOptions}" SelectedItem="{Binding CompareRule, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectionChanged="CompareRule_SelectionChanged"/>
                                             <StackPanel Orientation="Horizontal" Style="{StaticResource ByteCompareRangeStyle}" Margin="6,0,0,0">
-                                                <controls:NumericUpDown IntValue="{Binding Minimum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ValueChanged="CompareRange_ValueChanged" Tag="Minimum" Minimum="-2147483648" Maximum="2147483647" Width="70" Height="30"/>
+                                                <numeric:IntegerUpDown Value="{Binding Minimum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ValueChanged="CompareRange_ValueChanged" Tag="Minimum" Minimum="-2147483648" Maximum="2147483647" Width="70" Height="30"/>
                                                 <TextBlock Text="－" VerticalAlignment="Center"/>
-                                                <controls:NumericUpDown IntValue="{Binding Maximum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ValueChanged="CompareRange_ValueChanged" Tag="Maximum" Minimum="-2147483648" Maximum="2147483647" Width="70" Height="30"/>
+                                                <numeric:IntegerUpDown Value="{Binding Maximum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ValueChanged="CompareRange_ValueChanged" Tag="Maximum" Minimum="-2147483648" Maximum="2147483647" Width="70" Height="30"/>
                                             </StackPanel>
                                             <TextBox Style="{StaticResource ByteCompareValueStyle}" Text="{Binding CompareValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                         </StackPanel>
@@ -1336,7 +1336,7 @@
                             <Grid Margin="0,0,0,12">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                 <TextBlock Text="回复给设备" FontSize="15" VerticalAlignment="Center" Margin="14,0,0,0"/>
-                                <controls:ToggleSwitch Grid.Column="1" IsChecked="{Binding SelectedReceiveEvent.EchoToDevice, Mode=TwoWay}" SwitchWidth="42" SwitchHeight="22"/>
+                                <inputs:ContentToggleSwitch Grid.Column="1" IsChecked="{Binding SelectedReceiveEvent.EchoToDevice, Mode=TwoWay}"/>
                             </Grid>
                             <Grid Margin="0,0,0,18" Visibility="{Binding SelectedReceiveEvent.EchoToDevice, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>

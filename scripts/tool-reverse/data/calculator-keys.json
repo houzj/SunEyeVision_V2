@@ -1,0 +1,67 @@
+{
+  "source": "docs/07-工具逆向/decompiled/ModuleControls/CalculatorModuleControl/CalculatorModuleControl/CalculatorWindow.xaml",
+  "sourceLines": "1-251",
+  "logicSource": "CalculatorWindow.xaml.cs (619 lines)",
+  "evidenceNote": "按键清单、尺寸、配色逐项取自原件 XAML；按键插入行为取自 Button_Click（字母键追加 '()'，退格图标删字符）",
+  "window": { "width": 504, "height": 448, "background": "#F2F3F5", "gridBackground": "#F2F3F5" },
+  "titleBinding": "Name（变量名）",
+  "expressionBox": { "name": "ExpressBox", "width": 432, "height": 118, "padding": "6,5,0,0", "background": "#FCFCFC", "foreground": "#808080", "border": "#CCCCCD" },
+  "treeToggle": { "name": "PopupBtn", "size": 32, "iconNormal": "combo_ic_关联_normal.png", "iconHover": "combo_ic_关联_hover.png", "popup": { "width": 180, "height": 180, "border": "#CCCCCD", "radius": 4, "content": "paramTab:SubTreeView" } },
+  "buttonStyle": {
+    "width": 40, "height": 28, "margin": 2, "fontSize": 14, "fontFamily": "Arial",
+    "foreground": "#666666", "border": "#C6C6C7", "borderHover": "#8B8B8C",
+    "gradient": ["#F7F7F8", "#ECECEE"], "radius": 2,
+    "clickBehavior": "字母键插入 '函数名()'，其余插入原字符；Image 内容 = 退格删除"
+  },
+  "keypads": [
+    {
+      "panel": "left", "width": 176,
+      "keys": [
+        { "label": "<", "canEditOnly": true }, { "label": "&", "canEditOnly": true }, { "label": "||", "canEditOnly": true },
+        { "label": "^", "canEditOnly": true }, { "label": ">", "canEditOnly": true },
+        { "label": "(" }, { "label": ")" },
+        { "label": "%", "canEditOnly": true }, { "label": "!=", "canEditOnly": true },
+        { "label": "7" }, { "label": "8" }, { "label": "9" }, { "label": "==", "canEditOnly": true },
+        { "label": "4" }, { "label": "5" }, { "label": "6" }, { "label": "*", "canEditOnly": true },
+        { "label": "1" }, { "label": "2" }, { "label": "3" }, { "label": "/", "canEditOnly": true },
+        { "label": "0", "width": 128 }
+      ]
+    },
+    {
+      "panel": "middle", "width": 46,
+      "keys": [
+        { "label": ".", "height": 28 }, { "label": ",", "height": 28, "canEditOnly": true },
+        { "label": "+", "height": 60 }, { "label": "-", "height": 60 }
+      ]
+    },
+    {
+      "panel": "right", "width": 220, "margin": "28,0,0,0",
+      "keys": [
+        { "label": "backspace", "width": 216, "icon": "ic_backspace.png", "action": "remove" },
+        { "label": "sin", "canEditOnly": true }, { "label": "asin", "canEditOnly": true }, { "label": "sinh", "canEditOnly": true }, { "label": "asinh", "canEditOnly": true }, { "label": "exp", "canEditOnly": true },
+        { "label": "cos", "canEditOnly": true }, { "label": "acos", "canEditOnly": true }, { "label": "cosh", "canEditOnly": true }, { "label": "acosh", "canEditOnly": true }, { "label": "sqrt", "canEditOnly": true },
+        { "label": "tan", "canEditOnly": true }, { "label": "atan", "canEditOnly": true }, { "label": "tanh", "canEditOnly": true }, { "label": "atanh", "canEditOnly": true }, { "label": "trunc", "canEditOnly": true },
+        { "label": "max", "canEditOnly": true }, { "label": "min", "canEditOnly": true }, { "label": "round", "canEditOnly": true }, { "label": "log", "canEditOnly": true }, { "label": "floor", "canEditOnly": true },
+        { "label": "pow", "canEditOnly": true }, { "label": "abs", "canEditOnly": true }, { "label": "ceil", "canEditOnly": true }, { "label": "log10", "canEditOnly": true }
+      ]
+    }
+  ],
+  "cvalueRow": {
+    "labelKeys": ["Lang_CalculatorCValue", "Lang_CalculatorCInitial"],
+    "textBox": { "width": 102, "height": 30, "binding": "Initial" },
+    "switch": { "width": 48, "height": 32, "icons": ["swith_off.png", "swith_on.png"], "binding": "Summation" }
+  },
+  "bottomBar": {
+    "background": "#E4E5E5", "borderTop": "#C8C4C4", "align": "right", "margin": "0,0,14,0",
+    "buttons": [
+      { "labelKey": "校验公式", "width": 70, "height": 25, "action": "verify", "gapAfter": 10 },
+      { "labelKey": "Lang_Msg_Cancel", "width": 70, "height": 25, "action": "cancel", "gapAfter": 10 },
+      { "labelKey": "Save", "width": 70, "height": 25, "action": "ok" }
+    ]
+  },
+  "verifyLangKeys": ["Lang_Caculate", "Lang_FmuCheckSuc", "Lang_FmuCheckFail"],
+  "trigger": {
+    "controlType": "ButtonSelecter_CalculatorPro",
+    "note": "变量计算工具的表达式选择控件点关联按钮弹出本窗口（全库仅此一处）"
+  }
+}

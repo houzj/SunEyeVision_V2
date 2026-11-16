@@ -98,8 +98,16 @@ public sealed class PreviewBitmapCacheTests : IDisposable
     [Fact]
     public async Task DirectoryPreparationIsOrderedCancellableAndNeverDeletesFiles()
     {
-        var b = File("b.PNG"); var a = File("a.bmp"); File("skip.txt");
-        Assert.Equal(new[] { a, b }, await ImageFileImport.DirectoryFilesAsync(_directory, CancellationToken.None));
+        var b = File("b.PNG");
+        var a = File("a.bmp");
+        var last = File("long-name.tiff");
+        File("skip.txt");
+        var child = Directory.CreateDirectory(Path.Combine(_directory, "subdir"));
+        var childImage = Path.Combine(child.FullName, "child.JPEG");
+        System.IO.File.WriteAllBytes(childImage, new byte[] { 1 });
+        var grandchild = Directory.CreateDirectory(Path.Combine(child.FullName, "deeper"));
+        System.IO.File.WriteAllBytes(Path.Combine(grandchild.FullName, "ignored.png"), new byte[] { 1 });
+        Assert.Equal(new[] { a, b, childImage, last }, await ImageFileImport.DirectoryFilesAsync(_directory, CancellationToken.None));
         using var cancellation = new CancellationTokenSource(); cancellation.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => ImageFileImport.DirectoryFilesAsync(_directory, cancellation.Token));
         Assert.Equal(new[] { a }, await ImageFileImport.ExistingFilesAsync(new[] { a, a, "missing" }, CancellationToken.None));

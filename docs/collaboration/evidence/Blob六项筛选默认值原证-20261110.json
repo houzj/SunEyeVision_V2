@@ -1,0 +1,44 @@
+{
+  "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+  "sha256": "34A0CC5423A3D66B92DC272E0F50B013310E5180E801C648005383C3ADDDFDEC",
+  "kind": "原厂活动XML静态证据",
+  "entries": [
+    {
+      "name": "MinRectWidth",
+      "current": "100",
+      "default": "100",
+      "xml": "<Integer Name=\"MinRectWidth\"><Description>Min RectWidth</Description><DisplayName>Min RectWidth</DisplayName><AccessMode>RW</AccessMode><AlgorithmIndex>0x20629</AlgorithmIndex><CurValue>100</CurValue><DefaultValue>100</DefaultValue><MinValue>1</MinValue><MaxValue>1000000</MaxValue><IncValue>0x1</IncValue></Integer>"
+    },
+    {
+      "name": "MaxRectWidth",
+      "current": "200",
+      "default": "200",
+      "xml": "<Integer Name=\"MaxRectWidth\"><Description>Max RectWidth</Description><DisplayName>Max RectWidth</DisplayName><AccessMode>RW</AccessMode><AlgorithmIndex>0x2062A</AlgorithmIndex><CurValue>200</CurValue><DefaultValue>200</DefaultValue><MinValue>1</MinValue><MaxValue>1000000</MaxValue><IncValue>0x1</IncValue></Integer>"
+    },
+    {
+      "name": "MinRectHeight",
+      "current": "100",
+      "default": "100",
+      "xml": "<Integer Name=\"MinRectHeight\"><Description>Min RectHeight</Description><DisplayName>Min RectHeight</DisplayName><AccessMode>RW</AccessMode><AlgorithmIndex>0x2062C</AlgorithmIndex><CurValue>100</CurValue><DefaultValue>100</DefaultValue><MinValue>1</MinValue><MaxValue>1000000</MaxValue><IncValue>0x1</IncValue></Integer>"
+    },
+    {
+      "name": "MaxRectHeight",
+      "current": "200",
+      "default": "200",
+      "xml": "<Integer Name=\"MaxRectHeight\"><Description>Max RectHeight</Description><DisplayName>Max RectHeight</DisplayName><AccessMode>RW</AccessMode><AlgorithmIndex>0x2062D</AlgorithmIndex><CurValue>200</CurValue><DefaultValue>200</DefaultValue><MinValue>1</MinValue><MaxValue>1000000</MaxValue><IncValue>0x1</IncValue></Integer>"
+    },
+    {
+      "name": "MinPerimeter",
+      "current": "10",
+      "default": "10",
+      "xml": "<Integer Name=\"MinPerimeter\"><Description>Min Perimeter</Description><DisplayName>Min Perimeter</DisplayName><AccessMode>RW</AccessMode><AlgorithmIndex>0x060F</AlgorithmIndex><CurValue>10</CurValue><DefaultValue>10</DefaultValue><MinValue>0x1</MinValue><MaxValue>999999999</MaxValue><IncValue>0x1</IncValue></Integer>"
+    },
+    {
+      "name": "MinLongAxis",
+      "current": "10",
+      "default": "10",
+      "xml": "<Integer Name=\"MinLongAxis\"><Description>Min Major Axis</Description><DisplayName>Min Major Axis</DisplayName><AccessMode>RW</AccessMode><AlgorithmIndex>0x0615</AlgorithmIndex><CurValue>10</CurValue><DefaultValue>10</DefaultValue><MinValue>0x1</MinValue><MaxValue>999999999</MaxValue><IncValue>0x1</IncValue></Integer>"
+    }
+  ],
+  "runtimeConfirmed": false
+}

@@ -3,6 +3,13 @@ namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 /// <summary>One capability decision shared by formal editing and both execution entry points.</summary>
 public static class BlobThresholdCapabilities
 {
+    public static IReadOnlyList<string> ControlledFields { get; } = Array.AsReadOnly(new[]
+    {
+        nameof(BlobSettings.Threshold), nameof(BlobSettings.UpperThreshold), nameof(BlobSettings.FixedSoftLowerThreshold),
+        nameof(BlobSettings.FixedSoftUpperThreshold), nameof(BlobSettings.ThresholdSoftness), nameof(BlobSettings.RelativeLeftRatio),
+        nameof(BlobSettings.RelativeRightRatio), nameof(BlobSettings.RelativeLowerRatio), nameof(BlobSettings.RelativeUpperRatio)
+    });
+
     public static bool IsSupported(BlobSegmentationMode mode)=>mode is BlobSegmentationMode.SingleThreshold or BlobSegmentationMode.DoubleThreshold
         or BlobSegmentationMode.AutoThreshold or BlobSegmentationMode.FixedSoftThreshold or BlobSegmentationMode.RelativeSoftThreshold or BlobSegmentationMode.None;
     public static bool IsSupported(string? mode)=>mode=="BinaryImage"||Enum.TryParse<BlobSegmentationMode>(mode,out var parsed)&&IsSupported(parsed);

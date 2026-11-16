@@ -481,7 +481,7 @@ public partial class CameraPreviewHost : UserControl, ICameraFrameSink, IAsyncDi
                     "CameraPreviewTrace", target: LogTarget.All);
             }
             var layout=frame.Image.Layout;
-            var format=layout.Format switch { PixelLayout.Gray8=>PixelFormats.Gray8,PixelLayout.Bgr24=>PixelFormats.Bgr24,PixelLayout.Bgra32=>PixelFormats.Bgra32,_=>throw new InvalidOperationException("不支持相机像素格式。") };
+            var format=layout.Format switch { PixelLayout.Gray8=>PixelFormats.Gray8,PixelLayout.Rgb24=>PixelFormats.Rgb24,PixelLayout.Bgr24=>PixelFormats.Bgr24,PixelLayout.Bgra32=>PixelFormats.Bgra32,_=>throw new InvalidOperationException("不支持相机像素格式。") };
             var bitmap=BitmapSource.Create(layout.Width,layout.Height,96,96,format,null,frame.Image.CopyPixels(),layout.RowStrideBytes);
             bitmap.Freeze();
             await UpdateImageAsync(bitmap, frame.DeviceFrameId, cancellationToken).ConfigureAwait(false);

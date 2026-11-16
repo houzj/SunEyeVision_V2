@@ -11,5 +11,11 @@
     <ToolComponentRole>Editor</ToolComponentRole>
     <ToolComponentCompanionToolId>ExternalRuntimePlugin</ToolComponentCompanionToolId>
     <ToolComponentEntryType>ExternalWpfTool.WpfToolPresentationFactory</ToolComponentEntryType>
+    <SdkPath Condition="'$(SdkPath)'==''">$(MSBuildThisFileDirectory)..\..\sdk\net9.0\</SdkPath>
   </PropertyGroup>
+  <ItemGroup Condition="'$(PluginDevKitBuild)'!='true'">
+    <Reference Include="SunEyeVision.Plugin.Contracts"><HintPath>$(SdkPath)SunEyeVision.Plugin.Contracts.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="SunEyeVision.Plugin.Runtime"><HintPath>$(SdkPath)SunEyeVision.Plugin.Runtime.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="SunEyeVision.Plugin.Wpf"><HintPath>$(SdkPath)SunEyeVision.Plugin.Wpf.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
 </Project>

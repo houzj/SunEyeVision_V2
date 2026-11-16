@@ -20,12 +20,14 @@ internal sealed class AdmittedToolConfiguration
     internal ToolSchema DisplaySchema { get; }
     internal ToolHostDeclarationSnapshot HostDeclarations { get; }
     internal IReadOnlySet<string> ActiveInputs { get; }
+    internal FieldSettings DormantParameterDefaults { get; }
     internal IReadOnlyDictionary<string, ParameterReferenceBehavior> ReferenceBehaviors { get; }
     internal IReadOnlyDictionary<string, string> BindingNames { get; }
     internal IReadOnlyList<ManualReferenceSource> ManualReferenceSources { get; }
 
     internal bool IsDisplayField(string id) => DisplaySchema.Inputs.Any(port => port.Id == id);
     internal bool IsExecutionFieldActive(string id) => !IsDisplayField(id) && Configuration.Fields.Declarations.ContainsKey(id) &&
+        !DormantParameterDefaults.Declarations.ContainsKey(id) &&
         (!Schema.Inputs.Any(port => port.Id == id) || ActiveInputs.Contains(id));
     internal IReadOnlyList<Diagnostic> ValidateForExecution()
     {
@@ -78,7 +80,7 @@ internal sealed class AdmittedToolConfiguration
     internal static Func<ToolConfiguration, AdmittedToolConfiguration> CreateFactory(RuntimeDirectorySnapshot directory, string toolId)
     {
         ArgumentNullException.ThrowIfNull(directory);
-        using var creationLease = directory.AcquireInvocation();
+        using var creationLease = directory.AcquireInvocation("工具准入创建");
         var definition = directory.CreateDefinition(toolId);
         var input = definition.Describe().Fingerprint;
         var settings = (definition as IToolSettingsFields)?.SettingsSchema.Fingerprint;
@@ -106,7 +108,7 @@ internal sealed class AdmittedToolConfiguration
         Func<ToolConfiguration, AdmittedToolConfiguration>? factory = null;
         factory = configuration =>
         {
-            using var validationLease = directory.AcquireInvocation();
+            using var validationLease = directory.AcquireInvocation("工具准入校验");
             EnsureDeclaration();
             var admitted = new AdmittedToolConfiguration(directory, definition, configuration, factory!);
             EnsureDeclaration();
@@ -139,6 +141,8 @@ internal sealed class AdmittedToolConfiguration
     internal AdmittedToolConfiguration WithFieldSettings(IReadOnlyDictionary<string, ParameterSetting> changes, IReadOnlyList<string>? acceptedFieldOrder = null)
     {
         ArgumentNullException.ThrowIfNull(changes);
+        if (_definition is IToolFieldTransitions transitions)
+            changes = transitions.ExpandChanges(Configuration.Fields, changes);
         var fields = Configuration.Fields.Apply(changes);
         var parameters = SettingsSchema.Inputs.Select(port => port.Id).ToHashSet(StringComparer.Ordinal);
         bool Referenced(string id) => parameters.Contains(id) && fields.Read(id) is ReferenceSetting or VariableSetting;
@@ -223,6 +227,17 @@ internal sealed class AdmittedToolConfiguration
             Schema.Inputs.Any(port => port.Required && !active.Contains(port.Id)))
             throw new ArgumentException("活动输入必须唯一、已声明并包含必需输入。");
         ActiveInputs = active.ToFrozenSet(StringComparer.Ordinal);
+        var dormant = definition is IToolDormantParameterDefaults defaults
+            ? defaults.SelectDormantParameterDefaults(configuration.Fields)
+                ?? throw new ArgumentException("休眠参数默认值声明为空。")
+            : new Dictionary<string, ConstantSetting>();
+        var settingsPorts = SettingsSchema.Inputs.ToDictionary(port => port.Id, StringComparer.Ordinal);
+        if (dormant.Any(pair => !settingsPorts.ContainsKey(pair.Key) || pair.Value is null
+            || configuration.Fields.Read(pair.Key) is not (ReferenceSetting or VariableSetting)))
+            throw new ArgumentException("休眠默认值只能替代已声明的参数绑定。");
+        DormantParameterDefaults = new FieldSettings(dormant.Keys.Select(id => settingsPorts[id] with
+            { EditModes = settingsPorts[id].EditModes | FieldEditModes.Constant }),
+            dormant.ToDictionary(pair => pair.Key, pair => (ParameterSetting)pair.Value, StringComparer.Ordinal));
         var parameterIds = SettingsSchema.Inputs.Select(port => port.Id).ToHashSet(StringComparer.Ordinal);
         var names = (definition as IToolParameterBindingNames)?.ParameterBindingNames ?? new Dictionary<string, string>();
         var copy = new Dictionary<string, string>(StringComparer.Ordinal);

@@ -1,4 +1,4 @@
-# 一键准备 PluginDevKit（构建 SDK 和 Runtime）
+﻿# 一键准备 PluginDevKit（构建 SDK 和 Runtime）
 # 使用方法: .\prepare-devkit.ps1 [-Configuration Release]
 
 param(
@@ -26,6 +26,6 @@ Write-Host "  PluginDevKit 准备完成！" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Green
 Write-Host ""
 Write-Host "接下来可以：" -ForegroundColor Yellow
-Write-Host "  1. 复制 templates/MyPlugin.Template 开始新插件开发" -ForegroundColor White
+Write-Host "  1. 复制 templates/RuntimePlugin.Template 或 templates/WpfTool.Template 开始新插件开发" -ForegroundColor White
 Write-Host "  2. 运行 launch-debug.ps1 启动调试" -ForegroundColor White
 Write-Host ""

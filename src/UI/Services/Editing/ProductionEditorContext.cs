@@ -17,6 +17,7 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
     private NodeConfigurationEditDraft _draft;
     private bool _active = true;
     private bool _preparing;
+    private bool _committingBeforeClose;
     internal Func<string?>? PrepareView { get; set; }
     internal Action<NodeConfigurationEditDraft>? PreserveViewAfterRebase { get; set; }
     internal Func<bool>? HasPendingViewEdits { get; set; }
@@ -37,7 +38,15 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
         get
         {
             if (!_active || !_isCurrent()) return false;
-            try { return Host.OwnsNode(_draft.WorkflowId, (NodeDefinition)FormalNode); }
+            try
+            {
+                // Parameter edits may synchronously rebind the selected node
+                // instance while the same editor draft remains active. The
+                // editor identity is the workflow/node id, not that transient
+                // object reference.
+                var current = _session.GetNodes(_draft.WorkflowId).FirstOrDefault(node => node.Id == _draft.Node.Id);
+                return current is not null && Host.OwnsNode(_draft.WorkflowId, current);
+            }
             catch (InvalidOperationException) { return false; }
         }
     }
@@ -65,11 +74,11 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
     {
         EnsureCurrent();
         var draft=_draft;var configuration=draft.Configuration;var revision=_session.ChangeRevision;
-        var values=configuration.Fields.Declarations.Keys.ToDictionary(id=>id,id=>Host.ReadCurrentParameter(draft,id),StringComparer.Ordinal);
+        var values=Host.ReadCurrentParameters(draft);
         EnsureCurrent();
         if(!ReferenceEquals(draft,_draft)||!ReferenceEquals(configuration,draft.Configuration)||revision!=_session.ChangeRevision)
             throw new InvalidOperationException("参数当前值批回读期间编辑会话或配置已变化。");
-        return new System.Collections.ObjectModel.ReadOnlyDictionary<string,SunEyeVision.Plugin.Contracts.ConstantSetting?>(values);
+        return values;
     }
     public DocumentEditProposal Prepare(NodeConfigurationEditHost host)
     {
@@ -85,7 +94,8 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
             throw new InvalidOperationException("编辑回执不属于当前参数页。");
         // A raw, unparsed control edit made during publication must survive the receipt.
         // The draft is rebased in either case; rebuilding WPF would lose that raw text.
-        var rebind = prepared.Matches(_draft) && HasPendingViewEdits?.Invoke() != true;
+        var preserveForClose = _committingBeforeClose && PreserveViewAfterRebase is not null;
+        var rebind = !preserveForClose && prepared.Matches(_draft) && HasPendingViewEdits?.Invoke() != true;
         _draft = Host.RebaseAcceptedDraft(_draft, prepared);
         if (rebind) _bindDraft(_draft); else PreserveViewAfterRebase?.Invoke(_draft);
         try { _published?.Invoke(receipt); } catch (Exception error) { LastRefreshError = error.Message; }
@@ -112,6 +122,13 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
     {
         try { EnsureCurrent(); _session.Editing.Apply(ScopeId); error = ""; return true; }
         catch (Exception failure) { error = failure.Message; return false; }
+    }
+    internal bool TryCommitBeforeClose(System.Windows.FrameworkElement editor, out string error)
+    {
+        if (_committingBeforeClose) { error = "参数提交正在进行。"; return false; }
+        _committingBeforeClose = true;
+        try { return ToolEditorCommit.TryCommit(editor, out error); }
+        finally { _committingBeforeClose = false; }
     }
     private void EnsureCurrent() { if (!IsValid) throw new InvalidOperationException("参数页所属方案、流程或节点实例已失效。"); }
     public void Cancel() => Discard();

@@ -43,7 +43,7 @@ internal static class S2DocumentEditingCases
     private static void Scalar(double source)
     {
         var writes=0;
-        using var field=new DeclaredFieldEditor(Port("scalar"),"标量",Initial(),_=>writes++,Options(source),presentation:Presentation("scalar"));
+        using var field=new DeclaredFieldRow(Port("scalar"),"标量",Initial(),_=>writes++,Options(source),presentation:Presentation("scalar"));
         Prepare(field);Switch(field,0);
         Record("scalar",source,field.Setting,writes,field.HasInvalidText,field.Error,field);
     }
@@ -63,7 +63,7 @@ internal static class S2DocumentEditingCases
     private static void ScalarRejected()
     {
         var reject=true;var writes=0;
-        using var field=new DeclaredFieldEditor(Port("reject"),"宿主拒绝",Initial(),_=>{if(reject)throw new InvalidOperationException("宿主拒绝");writes++;},Options(.125),presentation:Presentation("reject"));
+        using var field=new DeclaredFieldRow(Port("reject"),"宿主拒绝",Initial(),_=>{if(reject)throw new InvalidOperationException("宿主拒绝");writes++;},Options(.125),presentation:Presentation("reject"));
         Prepare(field);Switch(field,0);
         Check("舍入提案宿主拒绝不半写",field.Setting is ReferenceSetting&&writes==0&&field.HasInvalidText,new{writes,field.Error});
         reject=false;Switch(field,0);
@@ -73,21 +73,21 @@ internal static class S2DocumentEditingCases
     {
         var writes=0;
         var options=Options(.125) with {ValidateProposal=(_,value)=>value is ConstantSetting?"提案资格拒绝":null};
-        using var field=new DeclaredFieldEditor(Port("proposal"),"提案拒绝",Initial(),_=>writes++,options,presentation:Presentation("proposal"));
+        using var field=new DeclaredFieldRow(Port("proposal"),"提案拒绝",Initial(),_=>writes++,options,presentation:Presentation("proposal"));
         Prepare(field);Switch(field,0);
         Check("提案拒绝保留引用且不调用写入",field.Setting is ReferenceSetting&&writes==0&&field.HasInvalidText,new{writes,field.Error});
     }
     private static void ScalarInvalid()
     {
         var writes=0;
-        using var field=new DeclaredFieldEditor(Port("invalid"),"越界",Initial(),_=>writes++,Options(1.02),presentation:Presentation("invalid"));
+        using var field=new DeclaredFieldRow(Port("invalid"),"越界",Initial(),_=>writes++,Options(1.02),presentation:Presentation("invalid"));
         Prepare(field);Switch(field,0);
         Check("解绑越界当前值保留引用",field.Setting is ReferenceSetting&&writes==0&&field.HasInvalidText,new{writes,field.Error});
     }
     private static void ScalarRetired()
     {
-        DeclaredFieldEditor? field=null;var writes=0;
-        field=new DeclaredFieldEditor(Port("retired"),"退役",Initial(),_=>{writes++;field!.Dispose();},Options(.125),presentation:Presentation("retired"));
+        DeclaredFieldRow? field=null;var writes=0;
+        field=new DeclaredFieldRow(Port("retired"),"退役",Initial(),_=>{writes++;field!.Dispose();},Options(.125),presentation:Presentation("retired"));
         Prepare(field);var notifications=0;field.Changed+=()=>notifications++;
         Switch(field,0);
         Check("宿主接纳同步关闭后不继续通知",writes==1&&notifications==0,new{writes,notifications});

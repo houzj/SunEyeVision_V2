@@ -64,8 +64,8 @@ internal static class VariableManagerMainProbe
     Check(Visuals<TextBlock>(window).Any(text=>text.Name=="InputSourceText"&&ReferenceEquals(text.DataContext,sourceRow)&&text.Text==sourceRow.InputSourceDisplayText),"输入来源没有显示正式producer路径。");
     Check(variables.IsValid&&!variables.HasPendingChanges,"结果回执没有重基当前变量窗。");
     Check(!variables.ImportCommand.CanExecute(null)&&!variables.ExportCommand.CanExecute(null),"缺基础文件入口被错误开放。");
-    Render(window,Path.Combine(root,"variables-dark.png"));var theme=ServiceLocator.Instance.GetService<ThemeManager>()!;theme.ApplyTheme(AppTheme.Light);Pump();Render(window,Path.Combine(root,"variables-light.png"));theme.ApplyTheme(AppTheme.Dark);Pump();
-    Console.WriteLine("variables main: actual command/view/paging/producer+raw text single receipt/two themes");
+    Render(window,Path.Combine(root,"variables.png"));
+    Console.WriteLine("variables main: actual command/view/paging/producer+raw text single receipt/fixed theme");
    }
    catch(Exception error){failure=error;}
    finally{window.Close();}

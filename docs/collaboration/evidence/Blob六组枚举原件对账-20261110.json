@@ -1,0 +1,137 @@
+{
+  "originalSha256": "34A0CC5423A3D66B92DC272E0F50B013310E5180E801C648005383C3ADDDFDEC",
+  "productSha256": "16BDF36F19C0112CD5A0CEF7FED8A805E34AE44D7C3DE9C897A38C4F23E5B955",
+  "entries": [
+    {
+      "field": "SegmentationMode",
+      "original": "ThresholdType",
+      "current": [
+        "BinaryImage",
+        "SingleThreshold",
+        "DoubleThreshold",
+        "AutoThreshold",
+        "FixedSoftThreshold",
+        "RelativeSoftThreshold"
+      ],
+      "expected": [
+        "BinaryImage",
+        "SingleThreshold",
+        "DoubleThreshold",
+        "AutoThreshold",
+        "FixedSoftThreshold",
+        "RelativeSoftThreshold"
+      ],
+      "missing": [],
+      "extra": [],
+      "orderedEqual": true,
+      "scope": "只核声明选项及顺序，不证明算法等效"
+    },
+    {
+      "field": "Type",
+      "original": "Polarity",
+      "current": [
+        "DarkOnBright",
+        "BrightOnDark"
+      ],
+      "expected": [
+        "DarkOnBright",
+        "BrightOnDark"
+      ],
+      "missing": [],
+      "extra": [],
+      "orderedEqual": true,
+      "scope": "只核声明选项及顺序，不证明算法等效"
+    },
+    {
+      "field": "BlobContourType",
+      "original": "BlobContourType",
+      "current": [
+        "NoneContour",
+        "NoneSequentialContour",
+        "SequentialContour"
+      ],
+      "expected": [
+        "NoneContour",
+        "NoneSequentialContour",
+        "SequentialContour"
+      ],
+      "missing": [],
+      "extra": [],
+      "orderedEqual": true,
+      "scope": "只核声明选项及顺序，不证明算法等效"
+    },
+    {
+      "field": "SortFeature",
+      "original": "SortFeature",
+      "current": [
+        "SortFeatureArea",
+        "SortFeaturePerimeter",
+        "SortFeatureCircularity",
+        "SortFeatureRect",
+        "SortFeatureCentroidX",
+        "SortFeatureCentroidY",
+        "SortFeatureRectX",
+        "SortFeatureRectY"
+      ],
+      "expected": [
+        "SortFeatureArea",
+        "SortFeaturePerimeter",
+        "SortFeatureCircularity",
+        "SortFeatureRect",
+        "SortFeatureCentroidX",
+        "SortFeatureCentroidY",
+        "SortFeatureBoxAngle",
+        "SortFeatureBoxWidth",
+        "SortFeatureBoxHeight",
+        "SortFeatureRectX",
+        "SortFeatureRectY",
+        "SortFeatureAxisAngle",
+        "SortFeatureAxisRatio"
+      ],
+      "missing": [
+        "SortFeatureBoxAngle",
+        "SortFeatureBoxWidth",
+        "SortFeatureBoxHeight",
+        "SortFeatureAxisAngle",
+        "SortFeatureAxisRatio"
+      ],
+      "extra": [],
+      "orderedEqual": false,
+      "scope": "只核声明选项及顺序，不证明算法等效"
+    },
+    {
+      "field": "SortMode",
+      "original": "SortMode",
+      "current": [
+        "SortModeAscend",
+        "SortModeDecend",
+        "SortModeNotSort"
+      ],
+      "expected": [
+        "SortModeAscend",
+        "SortModeDecend",
+        "SortModeNotSort"
+      ],
+      "missing": [],
+      "extra": [],
+      "orderedEqual": true,
+      "scope": "只核声明选项及顺序，不证明算法等效"
+    },
+    {
+      "field": "Connectivity",
+      "original": "connectivity",
+      "current": [
+        "Connected_8",
+        "Connected_4"
+      ],
+      "expected": [
+        "Connected_8",
+        "Connected_4"
+      ],
+      "missing": [],
+      "extra": [],
+      "orderedEqual": true,
+      "scope": "只核声明选项及顺序，不证明算法等效"
+    }
+  ]
+}

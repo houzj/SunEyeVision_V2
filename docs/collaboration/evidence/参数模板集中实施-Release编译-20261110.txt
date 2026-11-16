@@ -1,0 +1,25 @@
+全量 Release 编译记录（仅构建，未运行测试或程序）
+工作区：
+C:\Users\Administrator\.codex\worktrees\param-window-datatree-project-v2\SunEyeVision_V2
+命令：dotnet build SunEyeVision.slnx -c Release --no-restore -m:1 -p:HalconSourceRoot=D:\MyWork\SunEyeVision_V2\libs\halcon
+进程退出码：0
+日志末尾：
+C:\Users\Administrator\.codex\worktrees\param-window-datatree-project-v2\SunEyeVision_V2\tests\VariableValue.Runtime.Tests\VariableValue.Runtime.Tests.csproj : warning NU1900: 获取包漏洞数据时出错: 无法加载源 https://api.nuget.org/v3/index.json 的服务索引。
+    5996 个警告
+    0 个错误
+
+已用时间 00:00:28.66
+本次改动源码 SHA256：
+0D333D4A345060690D4803ABEF9D35F57AAEA4C0A8EE92E30ED328F3E8F29DE1  src/Plugin.Wpf/Adapters/Fields/NativeNumericCommit.cs
+46F5AB52E38BC2CA5D63CDF073E29E12D0F590B670B1E5F7960E3A4EDAA4DAED  src/Plugin.Wpf/Fields/DeclaredFieldRow.ImageSource.cs
+4F1546DAEEC599124CE966F95EB7B1047A8DC8B91AF9B0BABFD9300526472873  src/Plugin.Wpf/Fields/DeclaredFieldRow.cs
+165968459FD0AB297FF5C5FC9DA0DEC959FE4D32612C81A84749F7DB29B645AA  src/Plugin.Wpf/Fields/DeclaredFieldTemplateRegistry.cs
+42C44B3E69969F5C1E0E583D69CAAF2A8A7F68BDE995CB42BAACCF5917A0A07A  src/Plugin.Wpf/Fields/DeclaredFieldsView.Groups.cs
+22C226C5B2CE09B29DB6BF86818DA3FD4CC91C1222F66584393DDB8DFF24CBA6  src/Plugin.Wpf/Themes/Native/Composition/ParameterPresentation/resourcedictionaries/ParamRowDataTemplates.xaml
+58547BFD91ED808EFCE0FBF0DD4F7130EDF36A51DFE1D6E89BBC1A1B40CB54C8  tests/SunEyeVision.Tool.BlobAnalysis.Tests/BlobAnalysisParameterContractTests.cs
+99C3774767FAB7C1B7E11C9D37DDFDDA812315ED830D25E03E65F873464B5A04  tools/SunEyeVision.BlobAnalysis/Runtime/Parameters/BlobVmFindParameters.cs
+5F28727A5D8040A2DC1FFA3EBD5462F68F49DD884226574F3F510145ECD102D1  tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobDisplayUi.cs
+0625831114198726244D5F74F61D0EA67F24012B61EC74E7C9B78CE51E913007  tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobLocalRoiOwner.Preview.cs
+ED664BA98138EA159C0C79D335954DCDE0433697C67CD3295C5F6B668FF18DC1  tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRoiUi.cs
+CD98935AB6A45EACE3AC094AE99B833A95B5221761598C5212881A48BA57EA55  tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobSupportedWindowState.cs
+A6A82926C383C8A7D40C51132E1661E63E1C4CAF0A874C059608ABD888D6047D  tests/SunEyeVision.UI.Tests/Session/ParameterTemplateInteractionTests.cs

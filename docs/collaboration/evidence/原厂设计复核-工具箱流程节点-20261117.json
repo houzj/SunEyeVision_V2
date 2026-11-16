@@ -1,0 +1,93 @@
+{
+  "record": "原厂设计复核-工具箱与工作流节点",
+  "date": "2026-11-17",
+  "segment": "工具箱装载与拖入 + 工作流 tab + 节点交互与撤销重做",
+  "vmVersion": "VisionMaster 4.4.0 Build20250516@1555331",
+
+  "factoryEvidence": [
+    {
+      "id": "F-TB-01",
+      "claim": "工具目录由磁盘枚举驱动：ToolBoxData 枚举 AppData.ModulesDir 一级目录，有 ToolGroup.xml 或 Global 才进入分类；普通分类先置代理条目，Global/UserTools/GroupTools 首次枚举子项",
+      "file": "start-re-01/START-RE-01.md 第 5 节；VMControls.Data/VMControls.Data/ToolBoxData.cs",
+      "lines": "报告引用 ToolBoxData.cs:266-325、196-229；本次回验：isInit:25、UpdateLoad:77、IsInit 判定与置位:84/88、GetItems:196、LoadData:266",
+      "confidence": "已证实"
+    },
+    {
+      "id": "F-TB-02",
+      "claim": "分类子项按需展开：ToolBox.OnMouseEnter 调 UpdateLoad，IsInit 先置 true 再解析每个 ToolItemInfo.xml 插入列表",
+      "file": "VMControls.WPF/VMControls.WPF/ToolBox.xaml.cs:185-199；VMControls.Data/ToolBoxData.cs:77-120",
+      "lines": "引用自 START-RE-01 第 5 节",
+      "confidence": "高置信（旧报告引用，本次未逐行复核 ToolBox.xaml.cs）",
+      "note": "待补证：ToolBox.OnMouseEnter 是否仍为唯一触发点"
+    },
+    {
+      "id": "F-NODE-01",
+      "claim": "拖放只把 ModuleDir/ModuleTypeName 传给 VmModuleDecorator，模块程序集在真正执行/加载时按路径装载",
+      "file": "VMControls.Data/ToolItemGrid.cs:169-183；START-RE-01 第 5 节",
+      "lines": "引用",
+      "confidence": "高置信",
+      "note": "原厂“拖入即建装饰器、按需装载 DLL”，不是拖入即加载程序集"
+    },
+    {
+      "id": "F-UNDO-01",
+      "claim": "主窗显示之后才尝试动态加载撤销服务",
+      "file": "VisionMaster.Exe.Audit/VisionMaster/App.cs:187-229（START-RE-01 第 4 节）",
+      "lines": "引用",
+      "confidence": "高置信",
+      "note": "撤销粒度与是否区分图/参数未取体，待补证"
+    },
+    {
+      "id": "F-TAB-01",
+      "claim": "流程页/工作流 tab 由 VmProcedure 承载，主窗按流程创建页面",
+      "file": "VM.Core/VM.Core/VmProcedure.cs",
+      "lines": "未取体",
+      "confidence": "未证",
+      "note": "待补证：原厂 tab 生命周期与根/子流程表达"
+    }
+  ],
+
+  "selfEvidence": [
+    { "id": "S-TB-01", "claim": "工具目录由发布载荷准入构建：ReleasePayloadAuthority 校验后生成 RuntimeDirectorySnapshot + ToolDirectoryCatalog，再包成 DesktopToolAdmission", "file": "src/Plugin.Infrastructure/Managers/Plugin/PluginManager.cs", "lines": "128（LoadPluginsAsync）、170（目录构建）、172（准入发布）", "confidence": "已证实" },
+    { "id": "S-TB-02", "claim": "目录元数据来自嵌入资源 ToolGroups.xml + ToolboxDisplayCatalog.json，并带 MappingVerified 映射核实标记", "file": "src/UI/Shell/Controls/Toolbox/ToolboxDisplayCatalog.cs", "lines": "13（类型）、21（Load）", "confidence": "已证实" },
+    { "id": "S-TB-03", "claim": "工具箱视图模型把目录与当前准入状态合并，运行时校验失败的条目直接隐藏（CheckRuntime）", "file": "src/UI/Shell/Controls/Toolbox/ToolboxViewModel.cs", "lines": "12、79（BuildCategory）、107（CheckRuntime）", "confidence": "已证实" },
+    { "id": "S-TB-04", "claim": "工具箱控件延迟创建（准入完成前只保留布局槽位），拖拽用 DataObject(\"ToolItem\") 发起 DoDragDrop", "file": "src/UI/Shell/Controls/Toolbox/DeferredToolboxHostControl.cs:7/22；ToolboxControl.xaml.cs:10/67/71/79/86", "lines": "如左", "confidence": "已证实" },
+    { "id": "S-NODE-01", "claim": "拖入后链路：WorkflowDragDropHandler.Canvas_Drop → DocumentSession.CreateNode → GraphEditDraft → History.Execute → DocumentChangeSet → 画布投影刷新", "file": "src/UI/Services/Interaction/DragDropHandler.cs:27/147；src/UI/Shell/Controls/Toolbox/ToolboxControl.xaml.cs:86；src/Application/Editing/GraphEditDraft.cs:6", "lines": "如左", "confidence": "高置信（调用方向由 code-explorer 汇总，CreateNode/History 具体行号待逐行核对）" },
+    { "id": "S-TAB-01", "claim": "tab 集合由 WorkflowTabControlViewModel 管理，每个根流程一个 WorkflowTabViewModel；根被移除时 RetireRootProjection，tab 不在准备集合时 UnbindDocumentCanvas 并移除", "file": "src/UI/Features/WorkflowUI/WorkflowTabControlViewModel.cs", "lines": "115-116、152", "confidence": "已证实" },
+    { "id": "S-UNDO-01", "claim": "撤销重做由 DocumentEditSession + DocumentChangeSet + DocumentHistoryCoordinator 承担，且图编辑（GraphHistory）与配置编辑（ConfigurationHistory）分历史", "file": "src/Application/Editing/DocumentEditSession.cs；src/Application/DocumentChangeSet.cs；src/Application/DocumentHistoryCoordinator.cs；src/Application/DocumentSession.GraphHistory.cs；src/Application/DocumentSession.ConfigurationHistory.cs", "lines": "类型级", "confidence": "已证实（类型存在与职责命名；粒度规则待逐行核对）" },
+    { "id": "S-CANVAS-01", "claim": "画布是文档的投影：DocumentCanvasProjection 生成画布元素，画布交互分文件（NodeGestures/ConnectionGestures/Clipboard/GroupSelection/InsertionGestures/GeometryTracking）", "file": "src/UI/Features/WorkflowUI/DocumentCanvasProjection.cs；src/UI/Features/WorkflowUI/WorkflowCanvasControl.*.cs", "lines": "类型级", "confidence": "已证实" }
+  ],
+
+  "axisOne": [
+    { "item": "工具目录来源", "factory": "枚举磁盘 ModulesDir + ToolGroup.xml/ToolItemInfo.xml", "self": "发布载荷准入 + 嵌入 ToolGroups.xml/ToolboxDisplayCatalog.json", "verdict": "偏离·结构" },
+    { "item": "分类展开时机", "factory": "鼠标进入分类时按需解析（IsInit 标记）", "self": "视图模型一次性构建分类条目，控件延迟创建", "verdict": "偏离·结构" },
+    { "item": "拖入画布", "factory": "传 ModuleDir/ModuleTypeName 建装饰器，执行时按路径装载", "self": "拖入即进编辑草稿并生成节点，工具在准入时已加载", "verdict": "偏离·结构" },
+    { "item": "撤销重做", "factory": "主窗显示后动态加载撤销服务，粒度未证", "self": "编辑会话 + 变更集 + 图/配置分历史", "verdict": "静态无法确认（原厂粒度待补证）" },
+    { "item": "工作流 tab", "factory": "VmProcedure 承载流程页，生命周期未证", "self": "TabControlViewModel 管理集合，根移除即解绑投影", "verdict": "静态无法确认（原厂细节待补证）" }
+  ],
+
+  "axisTwo": [
+    { "criterion": "分层与依赖方向", "verdict": "通过", "note": "工具箱只消费目录与准入状态；拖放经 UI 服务到 Application 的文档会话，未直接触执行层" },
+    { "criterion": "职责单一", "verdict": "通过", "note": "目录（ToolDirectoryCatalog）/展示（ToolboxViewModel）/拖拽源（ToolboxControl）/拖放处理（DragDropHandler）/编辑（GraphEditDraft）分离" },
+    { "criterion": "所有权唯一", "verdict": "通过", "note": "文档由 DocumentSession 拥有，tab 只持投影，关闭时显式解绑" },
+    { "criterion": "生命周期完整", "verdict": "通过", "note": "tab 关闭走 RetireRootProjection / UnbindDocumentCanvas；控件延迟创建避免准入前构造" },
+    { "criterion": "数据流单向", "verdict": "通过（关键优点）", "note": "画布是文档投影，编辑先落 DocumentChangeSet 再刷新画布，不存在画布反向持有业务状态" },
+    { "criterion": "扩展点", "verdict": "通过，有两点约束", "note": "新增工具只改声明与目录；约束一：新增工具需要重新准入（无热插拔）；约束二：分类一次性构建，工具数量显著增长时需改懒加载" },
+    { "criterion": "边界清晰", "verdict": "通过", "note": "工具只提供目录描述与 UI 组件，画布与编辑逻辑全在宿主" },
+    { "criterion": "并发与取消", "verdict": "待核", "note": "编辑历史与画布刷新的线程边界未逐行核对（仅见 tab 解绑与投影刷新）" },
+    { "criterion": "可测试性", "verdict": "通过", "note": "目录、视图模型、编辑草稿均可脱离 UI 构造" },
+    { "criterion": "失败可诊断", "verdict": "通过", "note": "准入失败的条目隐藏并保留准入错误；不静默展示不可用工具" }
+  ],
+
+  "findings": [
+    { "level": "保持", "item": "画布作为文档投影、编辑统一进 DocumentChangeSet，是本项目优于原厂的结构", "impact": "无阻断；新工具不需要参与画布逻辑", "advice": "保持，并在扩展点文档写明“工具不得直接操作画布元素”" },
+    { "level": "保持", "item": "图编辑与配置编辑分历史（GraphHistory / ConfigurationHistory）", "impact": "无阻断", "advice": "保持，补一条“参数编辑不产生图撤销栈记录”的回归用例" },
+    { "level": "建议修", "item": "工具箱无热插拔：新增/替换工具需重新准入（原厂新增目录即可）", "impact": "不影响工具开发，影响现场部署与工具升级体验", "advice": "确认是否为产品决策；若是，在扩展点文档登记为已知简化；若否，评估“准入增量刷新”能力" },
+    { "level": "建议修", "item": "分类条目一次性构建（BuildCategory），工具数量增长后可能影响工具箱展开耗时", "impact": "当前工具数少无感，批量实现其他工具后会放大", "advice": "批量做工具前先测一次“50 个工具条目”的构建耗时，超阈值再改懒加载" },
+    { "level": "待补证", "item": "原厂撤销粒度、tab 生命周期、拖入后模块装载时机", "impact": "影响“编辑语义是否偏离”的最终判定", "advice": "任务 7 取体 VmProcedure 页面管理、撤销服务、ToolItemGrid → VmModuleDecorator 装载链" }
+  ],
+
+  "coverage": {
+    "checked": ["工具目录构建（原厂磁盘枚举 / 自研载荷准入）", "分类展开时机", "拖入到节点创建链路", "tab 集合与关闭解绑", "撤销重做类型与图/配置分历史", "画布投影结构"],
+    "notChecked": ["ToolBox.xaml.cs 触发点逐行", "ToolItemInfo.xml 与 ToolGroups.xml 字段对照", "节点右键菜单与复制粘贴细节（WorkflowCanvasControl.Clipboard 未逐行）", "分组选择（GroupSelection）与原厂 Group 工具的语义差异", "参数页/结果页切换宿主控件的具体实现"]
+  }
+}

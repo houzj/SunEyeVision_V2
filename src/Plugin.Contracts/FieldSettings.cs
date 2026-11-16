@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Buffers;
+using System.Text.Json;
 
 namespace SunEyeVision.Plugin.Contracts;
 
@@ -21,6 +23,11 @@ public sealed class FieldSettings
         }
         _values = new ReadOnlyDictionary<string, ParameterSetting>(frozen);
     }
+    private FieldSettings(IReadOnlyDictionary<string,Port> ports,Dictionary<string,ParameterSetting> frozen)
+    {
+        _ports=ports;
+        _values=new ReadOnlyDictionary<string,ParameterSetting>(frozen);
+    }
     public IReadOnlyDictionary<string, Port> Declarations => _ports;
     public IReadOnlyDictionary<string, ParameterSetting> Capture() => new ReadOnlyDictionary<string, ParameterSetting>(
         _values.ToDictionary(pair => pair.Key, pair => Freeze(_ports[pair.Key], pair.Value), StringComparer.Ordinal));
@@ -31,10 +38,29 @@ public sealed class FieldSettings
     }
     public T Get<T>(string id) => Read(id) is ConstantSetting constant && (constant.Value is T || constant.Value is null && default(T) is null)
         ? (T)constant.Value! : throw new InvalidOperationException("Field is not a present constant of the requested type: " + id);
+    /// <summary>Compare a field by its persisted value, without copying shared frozen entries.</summary>
+    public bool HasSameSetting(FieldSettings other,string id)
+    {
+        ArgumentNullException.ThrowIfNull(other);
+        if(!_ports.ContainsKey(id)||!other._ports.ContainsKey(id))return false;
+        _values.TryGetValue(id,out var left);
+        other._values.TryGetValue(id,out var right);
+        if(ReferenceEquals(left,right))return true;
+        if(left is null||right is null)return false;
+        ArrayBufferWriter<byte> Encode(ParameterSetting setting)
+        {
+            var bytes=new ArrayBufferWriter<byte>();
+            using(var writer=new Utf8JsonWriter(bytes))
+                ParameterSettingCanonical.Write(writer,new Dictionary<string,ParameterSetting>{{id,setting}});
+            return bytes;
+        }
+        return Encode(left).WrittenSpan.SequenceEqual(Encode(right).WrittenSpan);
+    }
     public FieldSettings Apply(IReadOnlyDictionary<string, ParameterSetting> proposals)
     {
         ArgumentNullException.ThrowIfNull(proposals);
-        var values = Capture().ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+        if(proposals.Count==0)return this;
+        var values = new Dictionary<string,ParameterSetting>(_values,StringComparer.Ordinal);
         foreach (var (id, setting) in proposals)
         {
             if (!_ports.TryGetValue(id, out var port)) throw new ArgumentException("Unknown configuration field: " + id);
@@ -45,7 +71,7 @@ public sealed class FieldSettings
             }
             else values[id] = Freeze(port, setting);
         }
-        return new(_ports.Values, values);
+        return new(_ports, values);
     }
     public FieldSettings Select(IEnumerable<Port> ports)
     {

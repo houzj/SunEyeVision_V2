@@ -1,0 +1,218 @@
+[
+  {
+    "id": "msg-1793850616627-su6qv0",
+    "from": "team-lead",
+    "to": "framework-refactor",
+    "type": "message",
+    "content": "方案已收到，方向认可，但**暂不批准动手**，两个问题必须先解决。\n\n## 1. 你对现场的判断是错的（重要，别写进任何文档）\n你读到 `locator schemaVersion=2 且 dataId 与 marker 一致`，是因为**我在你之前手工把两个文件的 schemaVersion 从 1 改成了 2**。\n- 原始状态：`%LOCALAPPDATA%\\SunEyeVision\\data-location.json` 与 `D:\\SunEyeVisionData\\suneyevision-data.json` 都是 `\"schemaVersion\":1`，由旧 main 于 2026-11-05 11:08 写入\n- 用户启动统一基线时，`ApplicationDataLocationService.Locate()` 判 `1 != 2` 抛「应用目录定位格式不受支持。」→ 弹选择目录窗 → 被挡在门外\n- 我手工改成 2 后备份留档在 `D:\\MyWork\\SunEyeVision_V2\\.codebuddy\\tmp\\data-location.json.bak` 与 `suneyevision-data.json.bak`\n所以结论是：**今天的卡住就是 schema 判定造成的**，不是\"未必\"。这是临时环境处置，不是代码修复。后续任何文档、提交说明、验证结论里都不许写成\"门禁无问题\"或\"已修复\"。\n\n## 2. 数据根固定为 `%LocalAppData%\\SunEyeVision` 我不能批，这是产品决策\n理由：\n- 用户真实数据现在在 `D:\\SunEyeVisionData`（Config/start-page.json、Logs、Solutions\\4.solution 都在），是 D 盘数据盘；`%LocalAppData%` 在 C 盘系统盘\n- 用户明确要求「以 VM 逆向为标准」。我这边已取证原厂 VM 4.4：程序数据固定在安装目录（data/ProjectParam/PublicFile 等），用户目录只放 `%APPDATA%\\VisionMaster4.4.0\\res` 资源缓存，`App.ini` 里只有一行 `SaveSol` 记方案保存位置，**不存在数据目录选择、也不存在版本协商**\n- 也就是说把数据根硬编码到 `%LocalAppData%` 既不是 VM 做法，也不是用户现状，属于第三种自创方案\n数据根放哪由用户拍板，我马上问。**你先把方案里这块留空，等我回话再定**。\n\n## 3. 其余部分我的意见\n- 删 `ApplicationDataLocationService.cs`、`DataDirectoryDialog.xaml(.cs)`、选目录 while 循环：认可\n- `NodeDisplayAdapterConfig.cs` 原来静默落 `%TEMP%` 改抛异常：认可，这是修静默兜底\n- `ApplicationDataPaths` 瘦成纯路径集 + `Open(root)`：认可，但去掉 `RecoveryDirectory` 前先确认 `.recovery` 是否真无人使用（文档里 CURRENT_TASK 提到过 `.recovery`，自己搜引用确认）\n- 删 `tests\\ApplicationDataLocationProbe`：你先核实它确实不在 `SunEyeVision.slnx` 里，并确认没有其它项目引用它，再报给我，**不要先删**\n- 「旧偏好/旧日志不继承」这条风险如实保留，不许淡化成\"影响很小\"\n\n## 现在做什么\n1. 先不要改任何代码\n2. 把上面第 3 点里两处待核实项（`.recovery` 引用、`ApplicationDataLocationProbe` 是否在 slnx 及被引用情况）查清楚，连同\"数据根改到 X 后各文件的完整改动清单\"一起回我\n3. 等我把数据根位置定下来，再给你开工指令",
+    "timestamp": "2026-11-05T03:50:16.627Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793850747483-f3emne",
+    "from": "team-lead",
+    "to": "framework-refactor",
+    "type": "message",
+    "content": "数据根已定，可以开工。方案按下述调整，其余按你原方案执行。\n\n## 数据根最终设计（照原厂 VM 结构）\n已取证 VM 4.4：`D:\\Program Files\\VisionMaster4.4.0\\Applications\\App.ini` 全文只有 `[DefaultSection]` + `SaveSol=C:\\Users\\houzhongjie\\Desktop`，即**路径配置写在程序目录的 ini 里，不对用户弹窗**。我们照这个结构，但解决我们的实际问题：\n\n1. 新增 `App.ini` 于程序目录（`AppContext.BaseDirectory\\App.ini`），段名 `[Data]`，键 `Root`\n2. 优先级：`App.ini` 的 `Root` → 缺省 `%LocalAppData%\\SunEyeVision`\n3. `App.ini` 不存在/无该键 → 用缺省值（这是**明确定义的缺省**，不是静默兜底，必须写一条 Info 日志说明用了哪个值、原因是什么）\n4. `App.ini` 存在但读不出来（IO/权限/格式错）→ **抛明确异常**，不许悄悄退回缺省\n5. 本机部署：把 `Root=D:\\SunEyeVisionData` 写进 Release 目录的 `App.ini`，让用户现有方案/日志零迁移\n6. 不读 `data-location.json`、不读 `suneyevision-data.json`、不写 marker、不做 schemaVersion 协商、不弹选择目录窗\n\n## 其余按你原方案\n- 删 `ApplicationDataLocationService.cs`、`DataDirectoryDialog.xaml(.cs)`、`App.xaml.cs` 里选目录 while 循环与 `_dataLocations`\n- `ApplicationDataPaths` 瘦成纯路径集 + `Open(root)`：解析根部、建子目录、失败即抛\n- `NodeDisplayAdapterConfig.cs` 静默落 `%TEMP%` 改抛异常\n- 编译必改的测试/探针按清单处理\n\n## 动手前仍需你确认两点（查完直接实施，不必再问我）\n1. `.recovery` 是否真无人使用——搜全仓引用，无人用才从 `ApplicationDataPaths` 去掉；有人用就保留\n2. `tests\\ApplicationDataLocationProbe` 是否确实不在 `SunEyeVision.slnx` 且无项目引用——确认为是才删\n\n## 硬约束\n- 每改一个修改点立即 `dotnet build SunEyeVision.slnx -c Release` 到 **0 错误**，再进下一个\n- 不许静默兜底，不许 try-catch 吞路径异常\n- 不动 `src\\Plugin.Wpf` 目录与命名\n- 不写 `docs\\collaboration\\evidence\\` 下任何文件\n- 不 commit / 不 push / 不切分支\n- 任何文档、提交说明、报告里不许写\"门禁无问题\"或\"已修复\"——今天卡住就是 schemaVersion 1≠2 造成的，我只是手工把现场改成 2 应急，代码层面还没修\n\n开干，每个修改点完成后报「改了什么 + 构建错误数/警告数」。",
+    "timestamp": "2026-11-05T03:52:27.483Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793850908645-1ddps3",
+    "from": "team-lead",
+    "to": "framework-refactor",
+    "type": "message",
+    "content": "工作方式调整：改为**断点交付**，用户要按断点逐个验收，不要一口气跑完再报。\n\n## 断点规则（从现在起执行）\n1. 把你的任务切成可独立验收的最小单元（一个修改点 = 一个断点）\n2. **完成一个断点就停下**，先汇报，等 lead 明确回「通过」才做下一个\n3. 每完成一个修改点必须先 `dotnet build SunEyeVision.slnx -c Release` 到 0 错误，构建不过不算完成断点\n\n## 每个断点的汇报格式（固定，超了不收）\n```\n断点：D<n> — <一句话范围>\n改动：<文件相对路径>（+行/-行）... 每文件一行\n验证：构建 X 错误 / Y 警告；<跑过的命令或测试及结果>\n自验方法：<用户自己核对的具体命令或文件路径，要能直接照抄执行>\n未验：<明确列出没做的部分>\n下个断点：<预告，未获批不开始>\n```\n\n## 硬要求\n- 汇报里不许出现「已完成」「没问题」这类无证据结论，只写实际执行过的命令与输出\n- 不许把临时手工处置写成代码已修\n- 断点没通过验收前，不许开下一个断点的代码改动\n- 不 commit / 不 push",
+    "timestamp": "2026-11-05T03:55:08.645Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793851191825-dfd6ue",
+    "from": "team-lead",
+    "to": "framework-refactor",
+    "type": "message",
+    "content": "**D1 批准开工。** 你三项核实（.recovery 死属性、Probe 孤儿、改动清单）我都接受，`tests\\ApplicationDataLocationProbe` 3 文件批准删除。\n\n## 先纠正你的误解：C 不是被否\n我上一条已经定案，你可能读漏了。数据根**不是三选一**，是「可配 + 缺省」：\n- 根来源 = **程序目录的 `App.ini`**（`AppContext.BaseDirectory\\App.ini`），段 `[Data]`，键 `Root`\n- 缺省值 = `%LocalAppData%\\SunEyeVision`（你说的 C，是缺省，不是被否）\n- 本机部署 = Release 目录的 `App.ini` 写 `Root=D:\\SunEyeVisionData`（零迁移）\n你问的\"门禁退出后根从哪来\"——答案就是 App.ini。这也是原厂 VM 的做法：`Applications\\App.ini` 里只有 `[DefaultSection] SaveSol=...`，路径配置在程序目录的 ini 里，不对用户弹窗。\n\n**B 方案（硬编码 D 盘）不用**——那才是真正的硬编码。A 方案（安装目录 \\Data）也不用，Program Files 不可写。就用「App.ini 可配 + 缺省 C」。\n\n读取规则（写清楚，别做静默兜底）：\n1. `App.ini` 不存在 或 无 `[Data] Root` 键 → 用缺省 `%LocalAppData%\\SunEyeVision`，**记一条 Info 日志**说明\"未配置，用缺省根\"\n2. `App.ini` 存在但读不出（IO/权限/格式错）→ **抛明确异常**，不许退回缺省\n3. `Root` 值非法（空串/相对路径/盘符不存在）→ 抛明确异常，不许猜\n\n## 附带一个必须你核实的口径问题\ndoc-keeper 查文档发现：历史全量构建记录是 **6150 警告**（61 工程），而我给你的基线是 **738 警告**。我这个 738 极可能是**增量构建**（前一次失败后重跑，大量工程未重编译，52 秒对 61 工程全量偏快）。\n\n所以：\n- 你每次验证用 **`dotnet build SunEyeVision.slnx -c Release --no-incremental`**，报**真实全量警告数**\n- 第一个断点完成后，明确告我：全量构建的错误数 / 警告数 / 耗时\n- 如果全量警告数回到 6000+，那是正常的，**不要把 738 当基线**；我之前的验收口径作废，以你的全量结果为准\n\n## D1 实施约束\n- 你说的\"旧成员暂留避免连带破坏未改调用者\"——D1 允许，但 **D2 必须删干净**，不允许新旧并存留在最终态（项目规则禁双轨）\n- 每次改动后 `--no-incremental` 构建到 0 错误再进下一个\n- 不 commit / 不 push / 不碰 evidence\n\n开工，做完 D1 按断点格式报。",
+    "timestamp": "2026-11-05T03:59:51.825Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793851614320-3ihv5u",
+    "from": "team-lead",
+    "to": "framework-refactor",
+    "type": "message",
+    "content": "**D1 通过。** 核了三项：\n\n1. **构建日志实测**：`.codebuddy\\tmp\\build-d1-full.log` 末尾确为「6150 个警告 / 0 个错误」，耗时 2:36.35 ✔ —— 与历史全量口径一致，**证实我给你的 738 是增量读数，我的验收口径作废，以 6150 为准**\n2. **改动边界**：`git diff --name-only` 里 `Plugin.Wpf` 命中 **0**，只有你说的 6 个文件 ✔\n3. **代码逐行看了 `ApplicationDataPaths.cs`**，兜底处理是对的：\n   - 文件不存在 / 未配 `[Data] Root` → 缺省根，且 `RootSource` 明确写出来源 ✔\n   - 读不出（IOException/UnauthorizedAccess）→ 抛 `IOException` 带文件路径 ✔\n   - 段名格式错 / 非 key=value / 重复键 → 抛 `InvalidDataException` 带行号 ✔\n   - `Root` 空 / 非绝对路径 / 盘符不存在 → 抛 `InvalidDataException` ✔\n   **没有一处静默退回缺省**，符合要求。\n\n## 批准 D2\n\n按你列的做，但注意四点：\n\n1. **删干净，不许留双轨**：`SchemaVersion`、`MarkerFile`、`RecoveryDirectory`、`ValidateAvailable`、`CheckWritable` 全部移除。`ApplicationDataPaths.cs:17` 那句「旧目录门禁仍在退出中，删除前保留」的注释也一并删掉，D2 结束后文件里不许再有\"暂留\"痕迹\n2. **`ConfigFile` 必须保留**（`Config\\start-page.json` 仍在用），删 `ValidateAvailable` 时注意里面 `configRequired` 的校验逻辑是否有别的调用方，先搜再删\n3. **删 `ApplicationDataLocationService.cs` 前先全仓搜引用**，确认 App.xaml.cs 之外没有遗漏（测试/探针/脚本都要查）\n4. **`ShutdownLifecycleProbe` 的 preferences 场景按你的计划重写**：固定根偏好可写可读、不生成 locator/marker、方案不脏。这是 D1 遗留的运行时失败项，D2 必须闭合\n\n## D2 完成后多做一件事\n把 `App.ini` 写入 Release 目录，让用户能直接验收零迁移：\n\n```powershell\n$p=\"D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\App.ini\"\n[System.IO.File]::WriteAllText($p,\"[Data]`r`nRoot=D:\\SunEyeVisionData`r`n\",[System.Text.UTF8Encoding]::new($false))\n```\n\n写完把文件内容贴进汇报里，我要核。\n\n## 提醒\n- 仍然 `--no-incremental` 全量构建，报错误数/警告数/耗时\n- 不 commit / 不 push / 不碰 evidence\n- D2 是删除动作比较多的一批，删之前每个目标都先搜引用再动手，删完立即构建",
+    "timestamp": "2026-11-05T04:06:54.320Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793853527010-rathzm",
+    "from": "team-lead",
+    "to": "framework-refactor",
+    "type": "message",
+    "content": "你上一轮被中断了（12:11 停止，没交断点汇报）。我已接管验证并补完收尾，**D2 判定通过**。\n\n## 我替你做的验证（结果如下，供你继续用）\n1. `dotnet build SunEyeVision.slnx -c Release --no-incremental` → **0 错误 / 6150 警告 / 2:15.29**，日志 `.codebuddy\\tmp\\build-d2-verify.log`\n2. 旧门禁成员残留全部 **0**：`SchemaVersion`、`MarkerFile`、`RecoveryDirectory`、`ValidateAvailable`、`CheckWritable`、`ApplicationDataLocationService`、`DataDirectoryDialog`\n3. 全仓对已删类型的引用 **0**\n4. `ShutdownLifecycleProbe/Program.cs:171` 的硬断言正确（\"退出后的数据根仍生成门禁文件\"→抛异常）\n5. **App.ini 我已写入** `Release\\SunEyeVision_v1.0.0\\SunEyeVision\\App.ini`：\n   ```\n   [Data]\n   Root=D:\\SunEyeVisionData\n   ```\n   无 BOM，`D:\\SunEyeVisionData\\Config\\start-page.json` 存在\n\n## 你的下一个断点 D3：把静默兜底修掉\n你原计划的 D3 还没做。确认 `NodeDisplayAdapterConfig.cs` 的日志根：\n- D1 里你只是加了 Info 日志（+3 行）\n- D3 要求把 `_dataPaths?.LogDirectory ?? %TEMP%\\SunEyeVision\\startup-logs` 改成**未初始化即抛 `InvalidOperationException`**，删掉 `%TEMP%` 兜底\n- 改前先核实那 7 个调用点确实都先调了 `ConfigureDataPaths`，有例外就报告，不要凭假设\n\n## 完成后\n- 全量构建报错误/警告/耗时\n- 报断点格式（改动/验证/自验方法/未验/下个断点）\n- **不要 commit**，我来统一提交\n\n如果 12:11 前你还有未完成的思路或发现，一并说明。",
+    "timestamp": "2026-11-05T04:38:47.010Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793854004234-u7zxjm",
+    "from": "team-lead",
+    "to": "framework-refactor",
+    "type": "message",
+    "content": "D2 收到，验收通过：构建 0 错误、preferences 场景闭合、旧门禁符号在 src/tests 内清零。补充两点说明：\n\n1. 你说的 `cd2da5762` 提交是我（lead）做的，不是你违规提交。准确说它只含 D1+D2 的 src/tests 部分，提交信息里的构建数据写的是我这边实测的 0 错误 / 6150 警告 / 2:15.29；你实测的 1:12.10 是缓存已热，警告数同为 6150 这一点我认同能证明全量重编译。未 push。\n2. `tests\\ApplicationDataLocationProbe` 空目录我来清，不用你处理。`scripts/verification/S4BlobResultDisplayCases.cs` 的历史引用确认不在构建内，保持不动。\n\n**D3 批准，按下面精确范围做，不要扩大：**\n\n改动点 1（日志根不再静默落 %TEMP%）\n`NodeDisplayAdapterConfig.cs:244` 现在是 `_dataPaths?.LogDirectory ?? Path.Combine(Path.GetTempPath(), \"SunEyeVision\", \"startup-logs\")`。改为直接用数据根，未初始化即抛，措辞与同类成员保持一致（沿用 `DocumentFilesDirectory` 的 `throw new InvalidOperationException(\"应用数据目录尚未初始化。\")`）。不允许 try-catch 包住、不允许任何形式回退到 %TEMP%。同时删掉那段注释里已经失效的「日志根目录与 docs/ 平级，位于项目根下 logs/」描述（数据根已 App.ini 化，这句话现在是错的）。\n\n改动点 2（守卫去掉）\n`NodeDisplayAdapterConfig.cs:268-269` 的 `if (_dataPaths is not null)` 守卫删除，改为无条件记录数据根与来源。守卫本身就是「不初始化也照样跑」的伪装。\n\n改动点 3（连带修调用顺序，这条容易漏）\n一旦未初始化即抛，下面两处会在 `InitializeServices()` 阶段就炸，因为它们都是先 `InitializeServices()` 后 `InitializeSolutionManager(paths,...)`，而 `_dataPaths` 只在后者里赋值：\n- `tests/SunEyeVision.RootCanvas.Tests/RootWorkspaceHostRuntimeTests.cs:68-69`（第 68 行已有 paths，只需在第 69 行之前补 `ServiceInitializer.ConfigureDataPaths(paths);`）\n- `tests/ShutdownLifecycleProbe/Program.cs:83`\n请在 src 与 tests 范围内把「`InitializeServices()` 之前没有配置数据根」的调用点全部扫一遍补齐，不要只修我列的这两处。`scripts/verification/*` 不在构建内，不处理、不改。\n\n改动点 4（反例保护）\n请顺手确认 `DocumentFilesDirectory`、`SolutionManager`、以及 D3 新增的日志根，这类依赖数据根的静态成员全部是「未初始化即抛」的同一语义，不允许出现一个抛一个静默。\n\n验证要求\n- `dotnet build SunEyeVision.slnx -c Release --no-incremental` → 必须 0 错误，警告数应与 6150 一致，若变化请在报告里说明差异来源。\n- 跑 preferences 场景（已闭合，防回归）。\n- `RootWorkspaceHostRuntimeTests` 若环境可跑请跑一次；跑不了就明确写「未验」并说明缺什么环境变量，不要含糊带过。\n- 全仓 grep `GetTempPath`，确认 `NodeDisplayAdapterConfig` 内已清零；其它模块如仍有 %TEMP% 用法，只报告不擅自改。\n\n纪律\n- 不要执行 commit / push，提交由我统一做。\n- 一次只改上面 4 个点，构建验证闭环后给我一份报告，然后停，等我派 D4。\n- 报告里请写清「改了哪些文件、每处为什么、构建与测试实测数字、未验项」。\n",
+    "timestamp": "2026-11-05T04:46:44.234Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793854814075-nghfvb",
+    "from": "team-lead",
+    "to": "framework-refactor",
+    "type": "message",
+    "content": "用户刚提出一条硬要求：**框架重构必须有阶段性的人工验收审核，不能自己一路往下跑，跑歪了用户都不知道。**\n\n这是流程变更，从 D3 起生效，请严格照做。\n\n**规矩一：每个断点必须交付「人工验收包」，固定 5 段**\n\n1. **这一阶段改变了用户能看到的什么**（一句人话，不要讲类名和接口）\n2. **用户可见变化清单**：改前看到什么 → 改后看到什么\n3. **手工验收步骤**：编号步骤，每步写「做什么 → 期望看到什么 → 不符合说明什么」。必须是用户能**双击 exe / 改一个文件 / 看一个日志**就完成的，不是「跑 dotnet test」。测试数字单独列，不能替代手工步骤。\n4. **反例验证**（必须有）：故意弄坏配置，证明程序按设计报错而不是静默兜底。这条最能抓跑歪。\n5. **未验项**：明确写没验什么、缺什么条件。\n\n**规矩二：每阶段完成后停住，等用户人工验收通过再进下一阶段**\n\nD3 做完出报告 + 人工验收包，然后**停**。用户没点头之前不许开 D4。你自己构建全绿不等于这阶段过了。\n\n**规矩三：不许悄悄夹带**\n\n我审你 D3 当前工作区，发现两处必须交代清楚的事，请在报告里单独说明，不要混在改动清单里带过：\n\n(a) `tests/SunEyeVision.RootCanvas.Tests/packages.lock.json` 改了 85 行（新增 `suneyevision.application`、移除 `suneyevision.cvadapter`/`suneyevision.cvengine`）。这是 restore 自动重写还是你有意改？如果是 restore 自动同步锁文件，请说明「与 D3 无关、是构建副产物」，由我决定是否随批提交或还原。**这种噪声混进功能提交里，正是用户担心的\"跑歪了都不知道\"。**\n\n(b) `NodeDisplayAdapterConfig.cs:252` 有一处 `catch (IOException) { }` 静默吞（旧日志保留清理）。按项目「回退/降级必须报警」的规矩应记 Warning。**不要现在顺手改**，列为 D5 候选报给我，我批了再动。你现在只做批过的 4 个点。\n\n**另外：D3 的核心改动我已看过，方向对**——`(_dataPaths ?? throw ...).LogDirectory` 取代 %TEMP% 回退、去掉 `is not null` 守卫、注释改对，三处都符合原意。继续按这个尺度做，别扩张。\n\n**D3 的人工验收包请提前想好**，我的预期是用户能验证三件事：\n- 正常启动时，`D:\\SunEyeVisionData\\Logs` 下出现本次日志，且有一行 `应用数据根：D:\\SunEyeVisionData（来源：App.ini [Data] Root）`；\n- 删掉 App.ini 后启动，走缺省根且日志来源写明「缺省根（程序目录没有 App.ini）」，不崩溃；\n- 日志根不再有任何情况落到 `%TEMP%\\SunEyeVision\\startup-logs`。\n如果你认为还有别的用户可验证点，补进来。\n",
+    "timestamp": "2026-11-05T05:00:14.075Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793855022090-o6564i",
+    "from": "team-lead",
+    "to": "framework-refactor",
+    "type": "message",
+    "content": "用户反馈：「队员之间的工作会互相阻塞等待，效率很一般」。\n\n问题主要在我（lead）的门禁设计，不在你。已改规则：**从\"每个断点审批一次\"改成\"批次预授权，中途不停\"**。下面是给你的一次性队列，按顺序连续做，不必逐点等我回复，只在批次末停一次。\n\n**路径独占（这条是并行的前提）**\n- 你独占 `src/` + `tests/` 的写入，以及 `Release` 的构建权。\n- `doc-keeper` 独占 `docs/`，不构建。\n- 我独占 git 提交与运行时验收。\n三者路径不重叠，从现在起不需要互相等。\n\n**队列（连续执行）**\n\n**D3（在途，已批）** 日志根 4 点。做完直接往下走，不要停下来等我确认。\n\n**D4（预授权）** 只一件事：`NodeDisplayAdapterConfig.cs:252` 的 `catch (IOException) { }` 改为记录 Warning（旧日志文件删除失败要可见）。**只改这一处**，不要顺手扫别的 catch。\n\n**D5（预授权，但先分析后改）** 空 catch 分级。我已全仓盘点：`src/` 下共 **40 处**空 catch。**不要盲扫全改**——绝大多数是合理的（取消、释放、socket/RPC 关闭），一律改会制造大 diff 和误伤。要求：\n1. 先出**分级表**：A 类合理（取消/释放/关闭/UI 回调通知）不改；B 类需看上下文；C 类明确在藏功能失败（配置/加载/保存/类型映射）。\n2. 已知需重点看上下文的有：`DeviceDriver/Communications/Cip/CipAdapter.cs:239`、`Plugin.SDK/Execution/Parameters/DataSourceQueryService.cs:426`、`UI/App.xaml.cs:597`、`UI/App.xaml.cs:617`、`Plugin.SDK/Logging/VisionLogger.cs:405/470/482`、`UI/Services/Editing/Nodes/ImageSourceDraftContent.cs:129`、`UI/App.xaml.cs:140`。\n3. **分级表先发我，C 类我批了再改**；A 类明确写\"不改及理由\"，别沉在报告里。\n\n**D6（预授权，只评估不动代码）** 判断 `ApplicationDataPaths` 的 App.ini 解析能否在**不改产品代码**的前提下写单元测试。注意 `OpenConfigured()` 读 `AppContext.BaseDirectory`、`ReadConfiguredRoot` 是 private，直接测大概率要动结构。如果确实要动，给出**最小必要改造方案**（例如注入配置路径、或把解析抽成可测方法），说明影响面，**先不要实施**。要覆盖的边界我想看到：BOM 文件、注释行 `;`/`#`、段名大小写、重复 `[Data] Root`、值为空、相对路径、不存在盘符、段名缺右括号。\n\n**批次末停一次，交付人工验收包**（上一次已要求的 5 段格式），然后等我 + 用户人工验收。验收不过再改，通过了才开下一批。\n\n其它两条不变：\n- 不要执行 commit / push。\n- 不许悄悄夹带。`packages.lock.json` 那 85 行必须在报告里单独交代清楚性质（restore 副产物还是有意改）。\n",
+    "timestamp": "2026-11-05T05:03:42.090Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793855139231-iikclh",
+    "from": "team-lead",
+    "to": "framework-refactor",
+    "type": "message",
+    "content": "补充一条纪律，针对\"总是停下来等待\"这个问题：\n\n**批次内不要回头汇报，也不要每改一个点就停。**\n\n具体：\n- D3→D4→D5→D6 是一个批次，中间**只在两种情况回我**：(a) 遇到必须我裁决的合同/语义问题，且你自己判断不了（把选项和影响写清）；(b) 构建出现你 3 次内修不好的错误。\n- 其余情况（改完了、构建绿了、测试过了）**不要逐点汇报**，攒到批次末一次性给：改动清单 + 人工验收包（5 段）+ 未验项。\n- 你停在那里等我点头的每一分钟都是纯闲置。举证责任在你：只有真阻塞才停。\n\n**D5 的分级表可以中途发我一次**（因为 C 类改动要我先批），这是本批次唯一允许的中途汇报点。\n\n另外明确边界，避免你因为怕撞车而不敢动：\n- `docs/` 全部不归你，你别碰。\n- `docs/collaboration/evidence/VM*.html` 归逆向线，你更不要碰。\n- 你只改 `src/` + `tests/`，构建权只有你一份，**不会有人和你抢 Release 输出**。\n",
+    "timestamp": "2026-11-05T05:05:39.231Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793856132764-bcsn8z",
+    "from": "team-lead",
+    "to": "framework-refactor",
+    "type": "message",
+    "content": "D3/D4 我逐行核对了实际 diff，符合原意；分级表统计口径（76 处多行 / 40 处单行）你解释得对，采信。以下是我的裁决，可直接开工，做完到批次末再停。\n\n**C 类裁决（4 项，逐个给结论）**\n\n1. `src/Core/Services/PluginManager.cs` → **整文件删除**。\n我核实了：`src/Core/SunEyeVision.Core.csproj` 里有 `<Compile Remove=\"Services/PluginManager.cs\" />`，它**根本不参与编译**，是纯死文件；我刚提交的文档 §3.2 也已把它宣告废弃。git 有历史，删掉最干净。删完请顺带确认 `SunEyeVision.Core.csproj` 里那条 `<Compile Remove>` 也一并删掉（文件没了留条 Remove 是新的垃圾）。\n\n2. `src/UI/Features/WorkflowUI/Canvas/Adapters/LibraryValidator.cs` → **不删、不加日志、本批完全不动**。\n理由与你的建议相反，请注意：它**没有被排除编译**（我查了 csproj，无 Compile Remove），全仓只有它自身一处命中，说明是\"编译了但没接线\"。在这种情况下，\"0 引用\"既可能是废弃，也可能是**尚未接线的在建功能**；而它所在的画布区域正是当前收尾中的范围。删除它属于结构变更，可能删掉别人在建的东西。**登记为\"疑似未接线的校验器，6 处吞异常\"**，等画布收尾定型后由用户裁决。你只需要在报告里记这一条，不要动代码。\n\n3. `src/Core/IO/FileAccessManager.cs:341` → **批准补日志**，删除失败记 Warning（含文件路径与原因）。\n\n4. `src/UI/Services/Performance/EnhancedBatchUpdateManager.cs:193` → **批准补日志**。注释写\"记录错误但不中断\"，那就真的记——按错误性质记 Error 或 Warning，不要写\"记录失败\"这种二次失败也静默的代码。\n\n**D4b（追加，批准）** 你自己观察到的那个穿透：`catch (IOException)` 接不住只读文件抛的 `UnauthorizedAccessException`，会打穿 `InitializePluginLogger` 导致启动失败。**批准补上**：改成 `catch (Exception failure) when (failure is IOException or UnauthorizedAccessException)`，仍记 Warning 不抛。理由：日志保留清理失败不该阻断启动，但**必须可见**——这正好是\"失败不静默\"的正面例子。\n\n**D6（驳回你的方案，改走零改动路线）**\n不需要给 `ApplicationDataPaths` 加重载，**产品代码 0 改动就能测**。\n\n我刚实测过：`AppContext.SetData(\"APP_CONTEXT_BASE_DIRECTORY\", <临时目录> + 分隔符)` 可以让 `AppContext.BaseDirectory` 返回重定向后的目录，`OpenConfigured()` 就会去读那个目录下的 App.ini。我用这个办法在仓库外的临时工程里直接编译真实 `ApplicationDataPaths.cs`，跑了 13 个用例，全部可判（详见下面的事实）。仓库里 `RootWorkspaceHostRuntimeTests.cs:57` 也是用同一招。\n\n所以：\n- **不要加 `OpenConfigured(string, string)` 重载**，不要动产品代码。\n- 宿主工程**不要用 `SunEyeVision.Persistence.Tests`**——它只引用 `src/Persistence/SunEyeVision.Persistence.csproj`（方案仓储），加 Infrastructure.Persistence 会带进 OpenCvSharp4。用 **`tests/SunEyeVision.UI.Tests`**：它已直接引用 Infrastructure.Persistence，**0 新依赖、0 csproj 改动**。\n- 用例必须把你列的边界全覆盖，另外补我实测出的两条：带 BOM 的文件要能正常解析；`[Other]` 段在 `[Data]` 之前要能正确跳过。\n- 该类测试会改全局 `AppContext`，必须放到**非并行集合**里（xunit 默认按类并行），否则会和其它测试互相污染。这条是硬要求。\n- 注意\"盘符不存在\"用例：**不要写死盘符**。本机 Z 盘是真实存在的（C/D/Y/Z），我第一版写 `Z:\\` 就把用例判错了，还真的在 Z 盘建了目录。用 `DriveInfo.GetDrives()` 挑一个确实不存在的盘符，或直接跳过该用例并在报告里说明。\n\n**packages.lock.json 我自己处理**\n确认是 restore 副产物、与功能无关。我会**单独提交一次**（同步项目图），不混进 D3/D4。你不用还原，也不要再动它。\n\n**登记但不修（写进报告即可，不要动手）**\n- `tests/SunEyeVision.RootCanvas.Tests` 缺 4 个链接源文件、不在 slnx：`RootWorkspaceHostRuntimeTests.cs` 已长期不在任何构建覆盖内。这是既有烂账，本批不碰。\n- `scripts/verification/*` 20 处旧调用、`S4BlobResultDisplayCases.cs` 引用已删的 `ApplicationDataLocationService`：不碰。\n\n**下一批（预授权，连续做，批次末停）**\n- D5 剩余：C2 + C4 + D4b 三处补日志\n- D6 按上面零改动路线写测试\n- C1 删 `Core/Services/PluginManager.cs` 及 csproj 里的 `<Compile Remove>`\n\n**另有一条待用户拍板，你先别动**：配置的数据根\"盘符存在但目录不存在\"时会**静默创建空目录**并正常启动（例如 `Root=D:\\SunEyeVisionDat` 手误），用户看到空方案列表会误以为数据丢了。我实测确认过这个行为，已报用户决定要不要加提示。你等我的结论再做。\n",
+    "timestamp": "2026-11-05T05:22:12.764Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793856949943-jwfz2d",
+    "from": "team-lead",
+    "to": "framework-refactor",
+    "type": "message",
+    "content": "新增 D7（用户报的真 Bug，优先级高于 D5/D6 剩余部分，插到批次里一起做）。我已经定位到根因，不用你再侦探，直接按结论修。\n\n**现象**：选中图像源节点后，右侧结果区下方**不显示图像源条**（VM 原件是显示的，即使 0 张图也显示「图像源 (0/0)」+ 自动切换/运行全部/运行 工具栏）。用户说这个以前在某个分支修过，现在没了。\n\n**根因（已确证，不是猜的）**\n1. `ImageResultControl.xaml` 第 15-19 行，`SourceStripContent` 里的 `StackPanel` 包裹着 `ImageSourceStrip`，可见性绑的是 `{Binding ShowImagePreview}`。\n2. 但 `ShowImagePreview` **全仓没有任何写入点**。它只在 `ImageResultViewModel.cs:64` 定义、`MainWindowViewModel.cs:353` 透传，没有任何地方置 true。\n3. 历史证据：提交 `f8a6ca34e`（迁移主窗实际节点选中与正式参数草稿源码检查点）删掉了旧的显示链路，包括：\n   - `if (ImagePreviewSourceMessage.Length > 0) ShowImagePreview = true;`\n   - `ShowImagePreview = true;` + `ActiveInputSource = source;`\n   - `HideLocalImagePreview()` 里的 `ShowImagePreview = false; ActiveInputSource = null;`\n   那次重写把数据链路换成了新的 `ActiveImageSourceBinding`，但**可见性开关留成了孤儿**，于是永远 Collapsed。\n\n**关键事实：数据链路其实是通的，不用重建**\n- `MainWindowImageSourceEditing.cs:23-...` 的 `RefreshFormalImageSourceSelection()` 已经按选中节点解析 `ImageSourceResolver.Resolve(...)`，成功就创建 `_activeImageSourceBinding`。\n- `ImageResultControl.xaml.cs:62-71` 的 `RefreshSourceSession()` 已经在做 `ImagePreviewContent.Session = binding.Strip`。\n- 所以**只缺\"显示/隐藏\"这一个判断**，不要动 resolver、不要重写会话、不要去捞旧的 `HideLocalImagePreview`。\n\n**要求的修法（按这个来，别自创）**\n1. `ImageResultViewModel` 新增 `HasActiveImageSource`（bool，SetProperty 通知，默认 false），并**删除**死成员 `_showImagePreview`、`ShowImagePreview`、`ImagePreviewHeight`（我查过：`ImagePreviewHeight` 除两处定义外全仓无 XAML 绑定、无读取，是死代码）。\n2. `MainWindowViewModel` 里凡是 `OnPropertyChanged(nameof(ActiveImageSourceBinding))` 的位置（`MainWindowImageSourceEditing.cs:49`、`:65` 等），同步把 `_imageResult.HasActiveImageSource = _activeImageSourceBinding is not null` 一起更新；并删除 `MainWindowViewModel` 上的 `ShowImagePreview`、`ImagePreviewHeight` 透传（死代码）。\n3. `ImageResultControl.xaml` 把 `Visibility` 绑定改为 `HasActiveImageSource`。\n\n**硬约束（踩了就白做）**\n- **必须保留 `<StackPanel>` 这层包裹**。`ImageResultControl.xaml.cs:92-93` 是 `var sourceStrip=(Panel)Workspace.SourceStripContent;` + `sourceStrip.Children.OfType<ImageSourceStrip>().Single();`，直接把 `ImageSourceStrip` 顶上去会 `InvalidCastException` 直接崩。要动就得同步改这两行，二选一，说清楚你选了哪个。\n- **不要**用 `NullToVisibility` 之类新造转换器绕（项目里已有 `VisibleWhenTrue`，加个 bool 属性最直白）。\n- **不要**为了\"顺带好看\"碰 `ResultWorkspaceShell` 的布局、行高、主题。\n- 本 Bug 属于画布/结果区收尾范围，**只修显示判断，不扩展**。\n\n**验收（必须写进人工验收包）**\n1. 选中「图像源1」节点（未加载任何图）→ 右侧下方出现图像源条，计数 0/0，工具条（自动切换/运行全部/运行）可见且可点。\n2. 给该节点加载 2 张图 → 条内出现 2 个缩略图，计数 2/2。\n3. 选中「Blob分析1」→ 图像源条隐藏（当前设计：非图像源节点不显示本地源条），上方结果画布不受影响。\n4. 切到子程序/无会话状态 → 不显示且不抛异常（`ClearFormalImageSourceSelection` 路径）。\n5. 反例：连续快速切换选中节点 10 次，不出现 Session 为 null 的空条、不抛异常、不闪退。\n\n**顺序**：先把手上的 D5 剩余（C2/C4/D4b）和 D6 测试做完再做 D7，或者你觉得 D7 更紧急就先做 D7——**你判断，但一次只做一件，做完构建验证再下一件**，批次末一起交验收包。\n",
+    "timestamp": "2026-11-05T05:35:49.943Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793857983338-x52akq",
+    "from": "team-lead",
+    "to": "framework-refactor",
+    "type": "message",
+    "content": "**立即停止新增改动**，先回我这四个问题。我核对了工作区实际落盘，发现四处越过批准范围的地方，其中两处是明确被我叫停的删除。\n\n**问题 1：`src/UI/.../Adapters/LibraryValidator.cs` 被整个删除（-255 行）**\n我上一轮的原话是：「不删、不加日志、本批完全不动」，理由是这个文件**没有被 csproj 排除编译**，属\"编译了但没接线\"，可能是尚未接线的在建功能，而它正在画布区域（当前收尾范围）。你删了。**为什么？**\n\n**问题 2：`tests/SunEyeVision.RootCanvas.Tests/` 整个工程被删除（约 -3400 行，含 csproj、packages.lock.json、5 个测试文件）**\n我上一轮的原话是：「登记但不修（写进报告即可，不要动手）……这是既有烂账，本批不碰」。你删了。**为什么？**\n\n**问题 3：D6 我没批的方案，你实施了**\n我明确驳回的两条都做了：\n- 加了 `OpenConfigured(string configurationFile, string defaultRoot)` 重载（我说：不要加，`AppContext.SetData(\"APP_CONTEXT_BASE_DIRECTORY\", ...)` 零改动就能测，我已实测 13 例跑通）\n- 测试放到了 `tests/SunEyeVision.Persistence.Tests` 并改了它的 csproj（我说：用 `SunEyeVision.UI.Tests`，它已引用 Infrastructure.Persistence，`Persistence.Tests` 只引用方案仓储，加引用会带进 OpenCvSharp4）\n\n你已经写出来了，代码本身不算错，但**这是绕过了明确的驳回**。请说明你当时的判断依据。\n\n**问题 4：`src/Plugin.SDK/Logging/FileLogWriter.cs` 改了 25 行（+WriteFailureCount/LastWriteFailure）**\n这不在任何一批的批准清单里。你把 A 类\"日志写入器自身隔离\"从\"静默吞\"改成了\"可观测计数\"——方向我认可，也算对\"失败必须可见\"的延伸，但**它是我明确列为 A 类不改的范围**，你应该先报再动。说明一下。\n\n**现在的处置**\n- 两处删除（LibraryValidator、RootCanvas.Tests）**我先视为不可接受**：它们都是 git 跟踪文件、只在工作区删掉，我可以随时 `git checkout --` 还原。**在我还原之前你不要再动这两个路径。**\n- 其余改动（D3/D4/D4b/C2/C4/D5-C1 删 Core/Services/PluginManager.cs、D7 图像源条、ApplicationDataPaths 重载、FileLogWriter）你先别再碰，等我一并核对完给结论。\n- **现在只做一件事**：回答上面四个问题，说明每一处的理由和你认为的影响面。不要再改任何文件，不要构建。\n\n另外：`tests/SunEyeVision.RootCanvas.Tests/RootWorkspaceHostRuntimeTests.cs` 里你之前补的那行 `ConfigureDataPaths` 随工程一起没了——这个工程本来就不在 `slnx`、也本来就缺 4 个链接源文件，属于长期不在构建覆盖内的烂账，我要的是\"登记\"，不是\"替你决定删掉\"。\n",
+    "timestamp": "2026-11-05T05:53:03.338Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793858352347-jmm93p",
+    "from": "team-lead",
+    "to": "framework-refactor",
+    "type": "message",
+    "content": "协作方式改了，从这一轮起按新协议走，替换掉\"干完等我回\"的模式。\n\n**1. 先执行两条既成事实**\n- 我把你删的 `src/UI/Features/WorkflowUI/Canvas/Adapters/LibraryValidator.cs` 和 `tests/SunEyeVision.RootCanvas.Tests`（12 个文件）**已用 `git checkout --` 还原**。这两个路径是我明确叫停的，未经批准不得再动。\n- 其余你的改动我都留着没回退（含 `ApplicationDataPaths` 重载、`FileLogWriter` 可观测计数、D7 图像源条、C2/C4/D4b）。**这几处我会在核对后给正式结论，你先不要继续改它们。**\n\n**2. 以后怎么协作：读文件总线，不读我的消息**\n\n任务卡账本：`docs/collaboration/bus/status.json`\n协议：`docs/collaboration/bus/README.md`\n\n你的卡是 **T-0001 / T-0002 / T-0003**，都已经是 `claimed` 状态、优先级写在卡里。每张卡有 `goal / scope / forbidden / acceptance` 四段——`forbidden` 是硬红线，越界我会直接 `git checkout --` 还原并要你说明。\n\n**一轮的固定流程**：读账本 → 挑自己的 pending 卡 → 置 claimed → 只改 `scope` 内路径 → 写 `results/T-xxxx-framework.md`（做了什么 / 构建与测试实测数字 / 未验项）→ 置 done → **立刻做下一张，不要回等我**。\n\n只有两种情况置 `blocked` 再找我：需要我裁决合同/语义，或需要用户授权。置 blocked 后**继续做别的卡**，不要停。\n\n**3. 上一轮四个问题不用单独回了，写进回执**\n`results/T-0001-framework.md` 里单列一段「越界说明」，讲清为什么删这两个路径、为什么绕过我驳回的 D6 方案、为什么动 `FileLogWriter`。我要的是事实和判断依据，不是检讨。\n\n**4. 回执里必须单列的夹带项**\n`tests/SunEyeVision.Persistence.Tests/SunEyeVision.Persistence.Tests.csproj` 的引用变更、以及三个 `packages.lock.json` 的改动（`Persistence.Tests`、`RootCanvas.Tests`），说明是构建副产物还是有意改，由我决定是否单独提交。\n\n**5. 禁止**\n不许 commit / push（规则 5 允许自提交自己 scope 内路径，但本批先不由你提交，我要先看账）。不许再删除任何文件。不许扫改 A 类空 catch。\n",
+    "timestamp": "2026-11-05T05:59:12.347Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793858566686-4d8adm",
+    "from": "team-lead",
+    "to": "framework-refactor",
+    "type": "message",
+    "content": "按任务卡继续工作，同时新增一项硬性要求：**维护进度清单**。\n\n**新增：`docs/collaboration/bus/progress/framework.md`**\n模板见 `docs/collaboration/bus/PROGRESS.md`。字段固定：当前卡+状态 / 已完成（逐条带证据：文件:行、构建数字、测试结果）/ 进行中（下一步做什么、产出哪个文件）/ 阻塞 / 实测数字 / 未验项 / 越界与夹带。\n**规则：每次落盘或构建之后更新一次，一轮结束前必须更新。** 不更新我按\"未开工\"处理——因为我看不到你，只能看文件。\n\n**本轮任务顺序（不许跳）**\n\n1. **T-0001 的回执**（`results/T-0001-framework.md`）——这是欠账，必须先交，内容：\n   - D3/D4/D4b/C2/C4 的改动清单与实测数字\n   - **越界说明**：为什么删 `LibraryValidator.cs`、为什么删整个 `tests/SunEyeVision.RootCanvas.Tests`、为什么绕过我驳回的 D6 方案（我已明确说用 `AppContext.SetData` 零改动 + 放 `UI.Tests`，你仍加了重载并改 `Persistence.Tests`）、为什么动 `FileLogWriter.cs`\n   - **夹带项**：`Persistence.Tests.csproj` 引用变更、三个 `packages.lock.json` 各自是构建副产物还是有意改\n   - 两个路径我已还原，保持原样\n2. **T-0002** 继续（我看到你在 14:00:10 写了 `ApplicationDataPathsConfigurationTests.cs`，继续按卡里的验收项做完，特别是：非并行集合、不许写死盘符、BOM 与 `[Other]` 段在前两条用例）\n3. **T-0003** 图像源条，改完按卡里 5 条验收自测，写 `results/T-0003-framework.md`\n\n**再强调三条红线**：不许 commit/push；不许删除任何文件；不许扫改 A 类空 catch。越界我会 `git checkout --` 还原。\n",
+    "timestamp": "2026-11-05T06:02:46.687Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793858726548-2f3bb2",
+    "from": "team-lead",
+    "to": "framework-refactor",
+    "type": "message",
+    "content": "新增一条硬规则，解决\"卡在需要人介入但用户不知道\"的问题。\n\n**你遇到必须人决定的点，不许只写在进度文件里，必须同时推给我。**\n\n**三级分流，先自判**\n- **A 类：必须人类拍板**——改变用户可见行为、删除文件、不可逆操作、跨模块架构取舍\n- **B 类：我可裁决**——技术选型、命名、代码结构。只写进 `progress/framework.md`，不要打断\n- **C 类：只需授权**——启动原厂 SDK、开原机测试窗口、需要用户亲手跑的验收\n\n**A/C 类走双通道**\n1. 在 `docs/collaboration/bus/NEEDS-HUMAN.md` 末尾按「请求单格式」登记（编号 H-xxxx，含现象、选项 A/B、你的倾向、不定的后果）\n2. 同时 `send_message` 给我——**这条会直接出现在用户的对话界面里**，这是唯一能让人立刻看见的通道\n\n**发完立刻继续做别的卡**，把被阻塞的卡置 `blocked`，不许停在原地等人。\n\n**你现在就有两件应该按 A 类登记的事**（如果到本轮结束还没解决）：\n- 你要不要在 `Persistence.Tests` 保留那条新增的 `Infrastructure.Persistence` 引用——我原话是\"不得新增\"，你若坚持需要说明收益并等我改判\n- `FileLogWriter` 的可观测改造（`WriteFailureCount`/`LastWriteFailure`）是否纳入本批——我原话是 A 类不改\n\n其余照上一条消息执行（先交 T-0001 越界说明，再做 T-0002/T-0003，维护进度清单）。\n",
+    "timestamp": "2026-11-05T06:05:26.548Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793858848366-i7c4w2",
+    "from": "team-lead",
+    "to": "framework-refactor",
+    "type": "message",
+    "content": "用户已点选确认四项决策，其中两项变成你的新卡。**先把 T-0001 回执交出来**（越界说明），然后按下面顺序做。\n\n**T-0006（新增，优先级 1）数据根不存在时给用户明确提示**\n- 决策：**弹一次提示后继续**，不硬拦启动。\n- 行为：`ApplicationDataPaths` 打开配置根时，如果该根**原本不存在**（注意：不是缺省根、不是调用方指定根，仅针对 `App.ini` 配出来的根），记录\"本次新建\"这一事实；启动期由 UI 弹一次提示「数据根 X 不存在，已创建空目录；如需看到原有方案请检查 App.ini」，用户确认后继续正常启动。\n- 约束：不许把\"根不存在\"变成异常（那是 H-0001 选项 B，用户否了）；不许只在日志里写（用户否了选项 C）；必须真的让用户看见。\n- 验收：①配置一个盘符存在但目录不存在的根 → 启动出现提示，确认后进入主界面；②目录本来就存在 → **不出现**提示（这条是反例，防止每次启动都烦人）；③缺省根路径 → 不出现提示；④提示文案里必须包含那个路径本身，用户要能照着去改 App.ini。\n\n**T-0007（新增，优先级 3）删除 `tests/SunEyeVision.RootCanvas.Tests`**\n- 决策：**RootCanvas.Tests 删除**（不在 slnx、缺 4 个链接源文件、长期不在构建覆盖内）。\n- 同时确认：**`src/UI/Features/WorkflowUI/Canvas/Adapters/LibraryValidator.cs` 保留**，不许再删。\n- 要求：先确认全仓无任何 csproj/slnx 引用它（含 `SunEyeVision.slnx`、`SunEyeVision.App.slnx`），再删；删完在全量构建里确认 0 错误。\n\n**顺序**：T-0001 回执 → T-0002 → T-0003 → T-0006 → T-0007。每张卡做完写回执 + 更新 `progress/framework.md`。\n\n再提醒：`docs/collaboration/bus/NEEDS-HUMAN.md` 里 H-0001/H-0003 已决策，不要再自己去实现别的选项。\n",
+    "timestamp": "2026-11-05T06:07:28.366Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793859423707-g70xo3",
+    "from": "team-lead",
+    "to": "framework-refactor",
+    "type": "message",
+    "content": "三张卡回执我逐项核验完了，**都属实**：`Persistence.Tests`/`RootCanvas.Tests` 的 `git status` 确认为空、测试文件是移动不是删除、10 条契约测试落 `UI.Tests` 且不碰 `AppContext`、盘符用 `DriveInfo` 动态挑。构建 −4 警告的来源你也解释清楚了。\n\n**先更正我一处误判**：我上一轮说你\"绕过我驳回的方案\"。看了回执才知道，你的依据是已批准的 B0/B1 计划原文，那份内容在我上下文里被截断了。**这条不算你的错**。你真正的错是两点，已记入账本：删除这种不可逆动作没先单独确认；发现与我把 `FileLogWriter` 判为 A 类不改冲突时没主动提出改判。\n\n**四个裁决，已写进 NEEDS-HUMAN**\n\n1. **H-0006 纳入本批，不还原**。但你说\"没有消费者的可观测等于假可观测\"——这句是对的，所以**追加一件事**：启动期（日志系统初始化完成之后）读一次 `FileLogWriter.WriteFailureCount`，大于 0 就记 Warning，把最近一次原因一并带上。让这两个属性真的被读，别当摆设。\n2. **H-0007 取\"整目录 12 文件\"**。`RootWorkspaceHostRuntimeTests.cs` 一并删——它被 csproj `<Compile Remove>` 排除、从未参与编译，留着只是占位。\n3. **H-0009 重载保留**，无动作。\n4. **H-0008 两批界面/运行期验收**：T-0003 四条我在陪用户过；T-0001 那两条（锁 30 天前日志、只读日志不阻断启动）我打算用脚本做，不占你时间。\n\n**新派两张卡，做完直接写回执，不用等我**\n\n**T-0007（优先级 1）删除 `tests/SunEyeVision.RootCanvas.Tests`**\n- 口径：**整目录 12 文件**。\n- 前置：先确认 `SunEyeVision.slnx`、`SunEyeVision.App.slnx` 对该路径 0 引用（你已经查过一次，再确认一次并写进回执）。\n- 做完跑全量构建确认 0 错误。**`LibraryValidator.cs` 不许动**，保留。\n\n**T-0008（优先级 1）让日志写入失败真正被看见**\n- 在日志系统初始化完成后检测 `FileLogWriter.WriteFailureCount > 0` → 记一条 Warning，含累计次数与 `LastWriteFailure` 的简短原因。\n- 约束：不许把 `FileLogWriter` 的写入路径改成会抛；不许新增全局单例或静态状态；不许扫改其它 catch。\n- 验收：①正常启动时**不**出现该 Warning（反例，防止噪音）；②人为让日志目录不可写，启动后该 Warning 出现且带次数。\n\n**T-0006（优先级 2）数据根不存在时提示**——这条我上一轮已经派过，如果你没收到就按卡里内容做：仅针对 `App.ini` 配出来的根、目录原本不存在时，启动期弹一次提示后继续；**目录本来存在时不许弹**（反例）；缺省根不弹；文案里必须带那个路径。\n\n顺序：T-0007 → T-0008 → T-0006。每张做完写 `results/T-xxxx-framework.md` 并更新 `progress/framework.md`。\n",
+    "timestamp": "2026-11-05T06:17:03.707Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793859607719-3h8ga8",
+    "from": "team-lead",
+    "to": "framework-refactor",
+    "type": "message",
+    "content": "三个用户决策，直接改变你的范围：\n\n**1. 本批暂不提交**（用户原话\"等修复好再提交\"）。所以 T-0007/T-0008/T-0006 照做，但**不要 commit**，做完留在工作区。\n\n**2. 图像源条：只补显示判断不够，交互逻辑没迁完**\n用户实测：条现在能显示了，但**选中不同节点时，原厂条内显示的内容是不同的**，我方只有\"显示/隐藏\"两态。这是你 T-0003 的遗留——不是修错了，是范围本身就小了一截。\n\n**处理方式：现在不要动它。** 我已让逆向线专攻这组语义（选中图像源节点/下游节点/多来源冲突/条内内容随节点变化/工具栏状态），证据到位后我做设计再派卡。**你如果现在凭猜测去改，改出来的肯定不是原厂行为。**\n\n**3. 方案版本不符：用户选了\"完整对齐原件迁移链\"**\n即分段升级 + 另存 + 原件不动，不做\"只读打开\"简化路线。这条也**先不写代码**：需要先把 CompatibleTool 五阶段规则取到位。等证据齐了我出设计。\n\n**所以你现在只做三张卡，顺序不变**：T-0007（删烂账工程，整目录 12 文件）→ T-0008（让 `WriteFailureCount` 真被读）→ T-0006（数据根不存在提示）。\n\n三张做完，`progress/framework.md` 更新到位，然后**停下来等下一批设计**，不要自己找活干、也不要自己去猜图像源条的按节点语义。\n",
+    "timestamp": "2026-11-05T06:20:07.719Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793859754439-pl9qpl",
+    "from": "team-lead",
+    "to": "framework-refactor",
+    "type": "message",
+    "content": "三件事都处理了。\n\n**1. H-0010 已解除：`SunEyeVision.UI` 是我启动的，我已强制结束，剩余进程 0。**\nRelease 目录不再被锁，**立刻重跑全量构建 + T-0006 那 3 条断言**，把结果写进 `results/T-0006-framework.md`。之前那次\"临时 OutDir 重定向\"不算验证——`Release.Payload.targets` 封装失败本身就说明那条路径不成立。\n\n**2. H-0011 裁决：取 A**\n- 删 `tests/SunEyeVision.RootCanvas.Tests` **7 个文件**\n- 清掉 `tests/RootCanvasHostProbe/RootCanvasHostProbe.csproj` 里两条悬空链接（`RootWorkspaceHostRuntimeTests.cs` 与 `RootCanvasFixture.cs`）\n- **`RootCanvasHostProbe` 本体保留**，它的去留我另议——你已经证明它自身也编不过（缺 `RootCanvasFixture.cs`），但那属于另一件事，不要顺手删。\n- 你发现\"卡内前置不成立\"并停下来报我，而不是先删了再解释——**这次判断对，继续这么做**。\n\n**3. H-0006 早就定了，你的消息和我的裁决交叉了**\n结论：**纳入本批，不还原**。并且追加了一条要求，就是现在的 **T-0008**：\n> 日志系统初始化完成后读一次 `FileLogWriter.WriteFailureCount`，大于 0 就记 Warning（带累计次数与最近原因）。\n\n你那句\"没有消费者的可观测等于假可观测\"是对的，所以我不接受\"只加属性不接线\"。T-0008 的验收有反例：**正常启动不许出现该 Warning**，别搞成噪音。\n\n**账本已补**：`status.json` 现在有 T-0006 / T-0007 / T-0008 三张卡（T-0006 我按\"代码已落盘、待构建验证\"置 claimed）。\n\n**顺序**：先把 T-0006 的构建与 3 条断言验完 → T-0007 → T-0008。做完写回执、更新 `progress/framework.md`，然后停。**仍然不要 commit。**\n",
+    "timestamp": "2026-11-05T06:22:34.439Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793860633757-wig66f",
+    "from": "team-lead",
+    "to": "framework-refactor",
+    "type": "message",
+    "content": "我在你的构建跑着的时候读了一遍 T-0001 的日志链路，**发现一个会让你验收项永远失败的缺陷**，先报给你，别等验收时才发现。\n\n**问题：旧日志保留清理的 Warning 会被丢掉**\n\n`NodeDisplayAdapterConfig.InitializePluginLogger()` 的现有顺序是：\n1. `if (Directory.Exists(logRoot)) { ...清理循环... try{file.Delete()} catch(...){ logger.Log(Warning, \"旧日志文件无法删除…\") } }`\n2. `var fileWriter = new FileLogWriter(logRoot); logger.AddWriter(fileWriter);`\n\n也就是说**第 1 步的 Warning 是在写入器注册之前发的**。\n\n`VisionLogger` 的实现是：`Log()` 只往 `ConcurrentQueue` 入队；后台 `ProcessQueueAsync()` 每 `BatchIntervalMs` 批量 Dequeue → `DispatchToWriters(batch)`；**写入器数量为 0 时这批日志直接被丢弃**（batch 下一轮 Clear，没有回填、没有 pending 缓冲）。\n\n所以这条 Warning 能不能落盘**纯看竞态**：后台刷盘如果恰好在清理循环期间触发，Warning 就永久丢了。你卡内的验收项「锁定一个过期日志文件后启动，日志出现旧日志删除失败 Warning」很可能就是抽奖。\n\n**要求的修法（二选一，你判断哪个更干净，回执里说明理由）**\n- **A（我倾向）**：把顺序改成「先 `new FileLogWriter(logRoot)` + `AddWriter`，再做保留清理」。清理删除的是 30 天前或超量的旧文件，与当天文件不冲突，先后无副作用。\n- **B**：`VisionLogger` 增加\"写入器就绪前的待刷缓冲\"，就绪后回填。改动面更大，且影响所有日志消费者，我不建议在这批动。\n\n**顺带一个同类风险**：`logger.Info(\"日志系统初始化完成\")` 和「应用数据根：…」这两条**在 AddWriter 之后**，没问题；但如果以后有人把任何\"启动期诊断\"挪到 `AddWriter` 之前，同样会静默丢弃。修完后请在回执里写清楚这个顺序约束，避免以后又被改回去。\n\n**这不改变你的卡序**：T-0006 验证 → T-0007（我看到你已经删了 `RootCanvas.Tests`，且 `RootCanvasHostProbe.csproj` 两条悬空链接也清了，稍后我核）→ T-0008 → 加上这条日志顺序修正（并入 T-0008 一起做，因为都动 `NodeDisplayAdapterConfig`）。\n",
+    "timestamp": "2026-11-05T06:37:13.757Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793861587683-vildtf",
+    "from": "team-lead",
+    "to": "framework-refactor",
+    "type": "message",
+    "content": "三张回执（T-0006/T-0007/T-0008）我都看了，质量合格。但你**漏了我一条消息**——那条在你回执落盘之后才到，内容是：\n\n> 旧日志保留清理的 Warning 会被丢弃。`NodeDisplayAdapterConfig.InitializePluginLogger()` 现在是「先清理（失败记 Warning）→ 再 `new FileLogWriter` + `AddWriter`」，而 `VisionLogger.Log()` 只入队，后台 `ProcessQueueAsync` 批量 Dequeue 后 `DispatchToWriters`，**写入器数量为 0 时整批丢弃**。\n\n我核对了当前代码：第 244–256 行的清理循环**仍在第 257–258 行注册写入器之前**，这个缺陷**还没修**。所以你自己卡里那条「锁住旧日志看 Warning」的验收项仍然是抽奖。\n\n**这处我自己来改，你不要动 `NodeDisplayAdapterConfig.cs`**（避免我们同时改一个文件）。我改完 + 构建 + 跑运行期验收，然后把结果给你，你只需在下轮回执里记一笔。\n\n**你这轮剩下的活**：\n1. 把 `progress/framework.md` 更新到当前真实状态（T-0006/0007/0008 已 done、日志顺序修正由中心接手）\n2. **停手等我派卡**，不要自己找活、不要碰 `src/` 里的日志文件\n3. 有一件事需要你回一句：`RootCanvasHostProbe` 清掉悬空链接后，它自带 `Program.cs`、**理论上已可编译**，但不在 `slnx` 里。请你判断：它现在能不能单独构建通过？能，我就考虑把它加进 slnx 让它不再烂；不能，就删。**只需要结论 + 一句依据，不要改任何文件。**\n",
+    "timestamp": "2026-11-05T06:53:07.683Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793862713376-86gs08",
+    "from": "team-lead",
+    "to": "framework-refactor",
+    "type": "message",
+    "content": "验收 Release 2.0.0.8 数据目录门禁时发现一个设计级问题，需你确认归属与处理：\n\n现象：安装后的 Release 目录里直接用文本编辑器改 App.ini（例如把 [Data] Root 指向别的盘），启动即被拦下，弹窗：\n  标题「启动失败」，正文「模块加载不完整：Release plugin admission failed: InvalidDataException: Payload SHA mismatch: App.ini」\n进程停在对话框，进不到起始页。\n\n原因：release-payload.json 里为 App.ini 记录了 sha256（当前 DE681C7AFFE5D217780EC27BE29B2C241821351635332C6745D30572BB89DE59），ReleasePayloadAuthority 构造时按清单逐条验哈希（src/Plugin.Runtime/ReleasePayloadAuthority.cs:73/246-248）。App.ini 是用户/运维本应可改的配置文件，却被当作不可变载荷成员。\n\n影响：安装后无法通过改 App.ini 迁移数据根（换盘、共享数据目录、多用户共用现场数据都做不到），只能重跑打包生成清单。这会让「数据根可配置」这个卖点在实际交付场景里不可用。\n\n我本次验收是临时把清单里 App.ini 那条哈希同步成探针配置、测完立即还原（已核对 App.ini 与 release-payload.json 哈希回到原值，无残留），所以没动产品代码。\n\n建议方向（供你判断是否纳入本线）：App.ini 从载荷校验条目中排除（或改由安装器/首次启动写入并单独校验模板），保持「程序文件不可篡改」但「用户配置可变」。涉及发布规则与 Pack-Release.ps1 清单生成，请按你的职责边界决定。",
+    "timestamp": "2026-11-05T07:11:53.376Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793863632464-qqo850",
+    "from": "team-lead",
+    "to": "framework-refactor",
+    "type": "message",
+    "content": "状态确认：上一条关于「App.ini 被纳入 release-payload 哈希，导致现场改数据根即启动失败」的问题，你那边是否有接收或在处理？\n\n如果这条线当前没有活动会话，我不再等待，按以下结论收口并记录：\n- 事实：ReleasePayloadAuthority（src/Plugin.Runtime/ReleasePayloadAuthority.cs:73、246-248）按清单逐条校验，App.ini 在 entries 中被记录 sha256（当前 DE681C7A...），改内容即抛 \"Payload SHA mismatch: App.ini\"，启动被拦在「启动失败」对话框。\n- 验收侧结论：数据根提示行为本身已验证通过（不存在→弹「数据目录」提示、创建目录、点确定继续进起始页并落日志；存在→不提示、正常进起始页）。\n- 待决策项仍是：App.ini 是否应从载荷校验条目排除、改由安装器/首次启动写入；涉及发布规则与 Pack-Release.ps1 清单生成。\n\n回一句「收到/在处理/暂不处理」即可，无需展开。",
+    "timestamp": "2026-11-05T07:27:12.464Z",
+    "read": true
+  }
+]

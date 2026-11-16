@@ -11,35 +11,30 @@ namespace SunEyeVision.UI.Shell.Windows;
 
 public partial class MainWindowViewModel
 {
+    private VariableSetting? _activeRoiImageVariable;
+    private Guid? _activeRoiImageScope;
     internal event Action? ResultWorkspaceChanged;
     internal event Action<ResultSelection?>? ResultWorkspaceSelectionChanged;
     internal event Action? ResultWorkspaceGraphicsCleared;
-    internal event Action<SunEyeVision.UI.Shared.ImageInputSource,SourceDisplayPreservationScope>? SourceDisplayPreservationPreparing;
     internal event Action<string>? ResultWorkspaceRootSettled;
+    internal bool IsResultImageChoiceLocked=>IsRunning||_editorDebugControl?.IsDebugBusy==true;
     private void ConfigureFormalImageSourcePresentation()
     {
-        ImageSourceCanNavigate=()=>CanAcceptExternalActivation&&!IsDebugWindowOpen&&!IsExecutionStopping&&DocumentManager.CurrentSession is not null;
+        // VM keeps the image-source strip navigable while a module debug window
+        // is open. Navigation changes the displayed input cursor and does not
+        // commit the debug draft or start a formal run.
+        ImageSourceCanNavigate=()=>CanAcceptExternalActivation&&!IsExecutionStopping&&DocumentManager.CurrentSession is not null;
         ImageSourceActivate=ActivateFormalImageSourceAsync;
+        // 图像源策略编辑（自动切换/运行模式/运行勾选/缩略图游标）与普通参数编辑同类：
+        // 只改参数与游标，不触碰结果显示层。RefreshProductionPublication 内的
+        // RefreshFormalPublishedResult 按"陈旧发布保持显示"语义保持上一轮结果。
         ImageSourceEditAccepted=receipt=>
         {
             if(!ReferenceEquals(DocumentManager.CurrentSession,receipt.Session))return;
             RefreshProductionPublication(receipt.Session,receipt);
-            ResultWorkspaceChanged?.Invoke();OnPropertyChanged(nameof(ActiveInputSource));
+            OnPropertyChanged(nameof(ActiveInputSource));
         };
         ImageSourcePresentationError=(stage,error)=>AddLog(stage+"："+error.Message);
-        ImageSourcePrepareDisplay=_=>
-        {
-            var session=DocumentManager.CurrentSession;var node=SelectedNode;var tab=WorkflowTabViewModel.SelectedTab;
-            var binding=ActiveImageSourceBinding;var clearEpoch=_nativeExplicitClearEpoch;
-            if(session is null||node is null||tab is null||binding is null)return null;
-            var source=binding.Source;var version=source.EditVersion;
-            bool Current()=>ReferenceEquals(DocumentManager.CurrentSession,session)&&ReferenceEquals(SelectedNode,node)
-                &&ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab)&&ReferenceEquals(ActiveImageSourceBinding,binding)
-                &&source.EditVersion==version&&clearEpoch==_nativeExplicitClearEpoch&&OwnsSelectedDocumentNode(node);
-            var scope=new SourceDisplayPreservationScope(Current);
-            try{SourceDisplayPreservationPreparing?.Invoke(source,scope);return scope;}
-            catch{scope.Dispose();throw;}
-        };
     }
     private long _nativeExplicitClearEpoch;
     private void NotifyResultWorkspaceRootSettled(string workflowId)
@@ -50,6 +45,18 @@ public partial class MainWindowViewModel
     private string? _nativePreviewPath;
     private bool _nativeImagesSuppressed;
     internal string? NativePreviewPath=>_nativePreviewPath;
+    internal bool ShowLocalImageName
+    {
+        get
+        {
+            var node=SelectedNode;
+            if(node?.ToolType!="ImageLoad")return false;
+            var preview=_displayPreview;
+            var fields=(preview?.Current==true?preview.Context.PreparedDraft.Configuration:node.Configuration).Fields;
+            return fields.Read("source.kind") is ConstantSetting { Value:"local" } &&
+                fields.Read("display.image-name") is ConstantSetting { Value:true };
+        }
+    }
     internal void RefreshNativeResultImages()
     {
         _nativePreviewPath=null;_nativeImagesSuppressed=false;
@@ -65,28 +72,55 @@ public partial class MainWindowViewModel
 
     internal ResultWorkspaceImagePlan CaptureNativeImageSources(Func<bool> consumerCurrent)
     {
-        var plan=new ResultWorkspaceImagePlan();
         var session=DocumentManager.CurrentSession;var selected=SelectedNode;
+        // Keep the live debug draft as the source of truth during a synchronous
+        // node rebind caused by a parameter selection. The public selected
+        // context briefly reports invalid while the same editor is being
+        // rebound, but discarding its pending image variable would detach ROI.
+        var editor=SelectedEditorContext??(_editorDebugContext is {} candidate
+            &&ReferenceEquals(candidate.Session,session)&&selected is not null&&candidate.Identity.NodeId==selected.Id?candidate:null);
+        var plan=new ResultWorkspaceImagePlan {EditorScopeId=editor?.ScopeId};
         var tab=WorkflowTabViewModel.SelectedTab;var scope=tab?.CurrentWorkflowId;
         if(session is null||selected is null||scope is null||!session.GetNodes(scope).Any(node=>ReferenceEquals(node,selected)))return plan;
+        // 原件 ModuleResultView 语义：正式结果显示不随参数窗口开合变化（证据
+        // docs/collaboration/evidence/VM调试窗口结果视口更新路径-20261112.json）。
+        // 因此正式发布来源的当前性不绑定编辑上下文；私有调试快照的上下文校验
+        // 由 CurrentEditorDebugSnapshot 内部（IsValid/会话/节点一致）保证，上下文
+        // 失效或更换都会使其返回 null/false，无需在此重复绑定。
         bool Owner()=>!plan.IsDisposed&&consumerCurrent()&&ReferenceEquals(DocumentManager.CurrentSession,session)
-            &&ReferenceEquals(SelectedNode,selected)&&ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab)&&OwnsSelectedDocumentNode(selected);
+            &&ReferenceEquals(SelectedNode,selected)&&ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab)
+            &&OwnsSelectedDocumentNode(selected);
         var nodes=session.GetNodes(scope);var edges=session.GetConnections(scope);
         var ids=new HashSet<string>(StringComparer.Ordinal){selected.Id};var queue=new Queue<string>();queue.Enqueue(selected.Id);
         while(queue.TryDequeue(out var id))foreach(var edge in edges.Where(edge=>edge.TargetNodeId==id))if(ids.Add(edge.SourceNodeId))queue.Enqueue(edge.SourceNodeId);
         try
         {
-            foreach(var node in nodes.Where(node=>ids.Contains(node.Id)).OrderBy(node=>node.Id==selected.Id?0:1))
+            // 原件显示来源下拉先列当前模块自己的图像结果，再列上游来源。
+            // 当前 Blob 的实机证据为“显示 Blob/显示二值化 → 图像源输出图像/灰度 → 输出掩膜”。
+            // 节点序号仍只用于同组内稳定排序，不能把上游图像源整体移到当前模块之前。
+            foreach(var node in nodes.Where(node=>ids.Contains(node.Id))
+                .OrderBy(node=>node.Id==selected.Id?0:1).ThenBy(node=>node.GlobalIndex))
             {
-                using var acquired=session.AcquirePublishedResult(scope,node.Id);
-                var privateSnapshot=ReferenceEquals(node,selected)?CurrentEditorDebugSnapshot:null;
-                var snapshot=privateSnapshot??acquired?.Snapshot;
+                var privateNode=editor is not null&&ReferenceEquals(node,selected);
+                // 调试窗口打开但尚未执行时没有私有快照，此时节点仍以正式发布呈现图像与叠加
+                // （原件 ModuleResultView 编辑态同样显示模块结果）；不得因此抽走正式图像。
+                var debugSnapshot=privateNode?CurrentEditorDebugSnapshot:null;
+                if(debugSnapshot is null&&ReferenceEquals(node,selected)&&_retainedEditorDebugSnapshot is {} retained
+                    &&IsRetainedEditorDebugSnapshot(retained))debugSnapshot=retained;
+                // 原件编辑态同样显示该模块的正式结果；用户显式改选显示来源后，
+                // UpdateVMResultShow 立即读取所选图像对象当前值显示（RenderControlBase
+                // .xaml.cs.pending:1127-1154，由 imageListCombobox_SelectionChanged 调用），
+                // 与参数窗口开合无关。因此不再按私有编辑作用域压制正式像素
+                // （此前“有持久化选择即压制”导致调试窗口打开期间显式改选后视口空白）；
+                // 调试执行产生私有快照后自然切换到私有结果。
+                var retainFormalImage=true;
+                using var acquired=debugSnapshot is null?session.AcquirePublishedResult(scope,node.Id):null;
+                var snapshot=debugSnapshot??acquired?.Snapshot;
                 bool SnapshotCurrent()
                 {
                     if(!Owner()||snapshot is null)return false;
-                    if(privateSnapshot is not null)return ReferenceEquals(CurrentEditorDebugSnapshot,snapshot)&&Owner();
-                    using var latest=session.AcquirePublishedResult(scope,node.Id);
-                    return latest is not null&&ReferenceEquals(latest.Snapshot,snapshot)&&Owner();
+                    if(ReferenceEquals(debugSnapshot,snapshot))return (ReferenceEquals(CurrentEditorDebugSnapshot,snapshot)||IsRetainedEditorDebugSnapshot(snapshot))&&Owner();
+                    return session.IsPublishedResultCurrent(scope,node.Id,snapshot)&&Owner();
                 }
                 var schema=snapshot?.Schema??session.GetNodeSchema(scope,node.Id);
                 if(schema is null){plan.Diagnostics.Add(node.Name+"：输出声明尚未就绪。");continue;}
@@ -94,12 +128,15 @@ public partial class MainWindowViewModel
                 if(!_nativeImagesSuppressed&&snapshot is {IsComplete:true}&&SnapshotCurrent())
                 {publication=ToolResultViews.FromSnapshot(snapshot,SnapshotCurrent);plan.Own(publication);}
                 using var values=publication?.Borrow();
-                string? fileName=null;
+                var fileName=node.ToolType=="ImageLoad"&&values?.Values?.Read("output.file-name") is {IsMissing:false,IsNull:false} name
+                    ?name.GetScalar<string>():null;
                 foreach(var port in schema.Outputs)
                 {
-                    var label=schema.FindOutputDisplay(port.Id)?.DisplayName
+                    var caption=schema.FindOutputDisplay(port.Id);
+                    var label=caption?.DisplayName
                         ??(snapshot?.Fields.TryGetValue(port.Id,out var metadata)==true?metadata.DisplayName:port.Id);
-                    Walk(port.Type,values?.Values?.Read(port.Id),Array.Empty<string>(),null,node.Name+" · "+label);
+                            Walk(port.Type,values?.Values?.Read(port.Id),Array.Empty<string>(),null,
+                                node.Name+"."+WorkspaceImageLabel(node.ToolType,label));
                     void Walk(TypeRef type,DeclaredValueReader? value,string[] path,int? index,string name)
                     {
                         if(plan.Sources.Count>=4096)throw new InvalidOperationException("图像来源超过4096项，拒绝整批而非截断列表。");
@@ -107,8 +144,12 @@ public partial class MainWindowViewModel
                         {
                             var reference=new OutputReference(node.Id,port.Id,port.Type,path,
                                 selection:index is {} item?new BindingSelection.AtConstant(item):null,scopeId:scope,storage:port.Storage);
-                            plan.Sources.Add(new(name,reference,publication,SnapshotCurrent,node.Id!=selected.Id)
-                                {FileName=port.Id is "output.image" or "output.gray-image"?fileName:null});
+                            plan.Sources.Add(new(name,reference,publication,SnapshotCurrent,node.Id!=selected.Id,
+                                retainFormalImage&&value is {IsMissing:false,IsNull:false})
+                                {
+                                    FileName=port.Id is "output.image" or "output.gray-image"?fileName:null,
+                                    IsAuxiliaryImage=caption?.IsAuxiliaryImage==true
+                                });
                             return;
                         }
                         if(type.Shape==ValueShape.Record)
@@ -134,26 +175,89 @@ public partial class MainWindowViewModel
                 }
                 if(!Owner())throw new InvalidOperationException("建立图像来源期间工作区已被替换。");
             }
-            if((SelectedEditorContext?.PreparedDraft.InputSchema??session.GetNodeSchema(scope,selected.Id)) is {} inputSchema)
+            // 原件掩膜等辅助图不挪队尾，保持所属模块组内的端口顺序（用户实机截图：
+            // "2 Blob分析1 · 输出掩膜"紧跟"二值化图像数据"）。
+            string? primaryInputKey=null;
+            if((editor?.PreparedDraft.InputSchema??session.GetNodeSchema(scope,selected.Id)) is {} inputSchema)
             {
+                var configuration=editor?.PreparedDraft.Configuration??selected.Configuration;
                 var inputKeys=new HashSet<string>(StringComparer.Ordinal);
                 foreach(var input in inputSchema.Inputs.Where(port=>port.Type==TypeRef.ResourceOf(ResourceKind.Image)))
                 {
-                    if((SelectedEditorContext?.PreparedDraft.Configuration??selected.Configuration).Fields.Read(input.Id) is not ReferenceSetting setting)continue;
-                    var reference=setting.Reference;
-                    if(!string.IsNullOrEmpty(setting.RebindingReason)||reference.ScopeId is {} explicitScope&&explicitScope!=scope)continue;
-                    var scoped=new OutputReference(reference.NodeId,reference.PortId,reference.Type,reference.MemberFieldPath,
-                        selection:reference.Selection,scopeId:scope,storage:reference.Storage);
-                    var key=SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(scoped);
-                    var source=plan.Sources.FirstOrDefault(item=>item.Key==key);
-                    if(source is not null&&inputKeys.Add(key))plan.InputSources.Add(source.CreateInputItem());
+                    var setting=configuration.Fields.Read(input.Id);
+                    if(setting is not VariableSetting&&_activeRoiImageVariable is {} pendingVariable)
+                        setting=pendingVariable;
+                    var key=GetWorkspaceImageSourceKey(setting,scope);
+                    if(key is null)continue;
+                    if(inputKeys.Add(key)&&setting is VariableSetting variable&&!_nativeImagesSuppressed)
+                    {
+                        try
+                        {
+                            if(session.CaptureVariableImageForDisplay(variable.Reference) is {} capture)
+                            {
+                                plan.Own(capture.Image);
+                                if(!Owner())throw new InvalidOperationException("建立图像来源期间工作区已被替换。");
+                                plan.Sources.Add(new("变量 · "+capture.Name,key,capture.Image,()=>Owner()&&capture.Current()&&Owner()));
+                            }
+                            else plan.Diagnostics.Add("图像变量不可用："+variable.Reference.VariableId);
+                        }
+                        catch(Exception error) when(error is ArgumentException or InvalidOperationException or OverflowException)
+                        {
+                            if(!Owner())throw;
+                            plan.Diagnostics.Add("图像变量不可用："+error.Message);
+                        }
+                    }
+                    if(input.Id==inputSchema.WorkflowImageInputId)primaryInputKey=key;
                 }
+                plan.InputSources.AddRange(plan.Sources.Where(source=>inputKeys.Contains(source.Key)).Select(source=>source.CreateInputItem()));
             }
+            var ownImage=plan.Sources.FirstOrDefault(source=>!source.IsUpstream&&!source.IsAuxiliaryImage
+                &&(!plan.IsPrivateDebug||source.HasImageValue));
+            plan.PrimaryInputKey=primaryInputKey;
+            var primaryImage=primaryInputKey is null?null:plan.Sources.FirstOrDefault(source=>source.Key==primaryInputKey);
+            plan.DefaultOutput=ownImage??primaryImage
+                ??plan.Sources.FirstOrDefault();
 
             return plan;
         }
         catch{plan.Dispose();throw;}
     }
+    private static string WorkspaceImageLabel(string toolType,string label)
+        =>toolType switch
+        {
+            "ImageLoad"=>label switch
+            {
+                "图像"=>"输出图像",
+                "灰度图像"=>"灰度图像数据",
+                _=>label
+            },
+            "BlobAnalysis"=>label switch
+            {
+                "Blob图像数据"=>"显示Blob图像",
+                "二值化图像数据"=>"显示二值化图像",
+                _=>label
+            },
+            _=>label
+        };
+    internal (string Name, FrozenImageResource Image, Func<bool> Current)? CaptureVariableImageForRoi(string key)
+    {
+        try
+        {
+            var reference=ParameterSettingCanonical.DeserializeVariable(key);
+            return DocumentManager.CurrentSession?.CaptureVariableImageForDisplay(reference);
+        }
+        catch(Exception error) when(error is ArgumentException or InvalidOperationException or System.Text.Json.JsonException)
+        { return null; }
+    }
+    private static string? GetWorkspaceImageSourceKey(ParameterSetting setting,string scope) => setting switch
+    {
+        ReferenceSetting {RebindingReason:null or ""} value when value.Reference.ScopeId is null || value.Reference.ScopeId==scope
+            => ParameterSettingCanonical.Serialize(new OutputReference(value.Reference.NodeId,value.Reference.PortId,value.Reference.Type,
+                value.Reference.MemberFieldPath,selection:value.Reference.Selection,scopeId:scope,storage:value.Reference.Storage)),
+        VariableSetting {RebindingReason:null or ""} value when value.Reference.Type==TypeRef.ResourceOf(ResourceKind.Image)
+            => ParameterSettingCanonical.Serialize(value.Reference),
+        _ => null
+    };
     private static bool ContainsImage(TypeRef type)=>type==TypeRef.ResourceOf(ResourceKind.Image)
         ||type.Shape==ValueShape.Sequence&&ContainsImage(type.Element!)
         ||type.Shape==ValueShape.Record&&type.Fields.Any(field=>ContainsImage(field.Type));

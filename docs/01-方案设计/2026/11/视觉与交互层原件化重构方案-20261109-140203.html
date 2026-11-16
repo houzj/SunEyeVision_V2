@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>视觉与交互层原件化重构方案</title>
+<style>
+:root{--ink:#1f2328;--muted:#656d76;--line:#d0d7de;--bg:#ffffff;--soft:#f6f8fa;--accent:#0969da;--warn:#9a6700;--bad:#cf222e;--ok:#1a7f37;}
+*{box-sizing:border-box}
+body{margin:0;padding:40px 24px 80px;background:var(--bg);color:var(--ink);font:15px/1.75 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+main{max-width:1080px;margin:0 auto}
+h1{font-size:28px;margin:0 0 6px;letter-spacing:-.3px}
+h2{font-size:20px;margin:44px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+h3{font-size:16px;margin:26px 0 10px}
+p{margin:10px 0}
+.sub{color:var(--muted);font-size:13px;margin-bottom:28px}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600;white-space:nowrap}
+code{background:var(--soft);padding:1px 5px;border-radius:4px;font:13px/1.5 ui-monospace,Consolas,monospace}
+.card{border:1px solid var(--line);border-radius:8px;padding:16px 18px;margin:14px 0;background:var(--soft)}
+.card h3{margin-top:0}
+.badge{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid}
+.b-ok{color:var(--ok);border-color:var(--ok);background:#e8f5ec}
+.b-warn{color:var(--warn);border-color:var(--warn);background:#fff8e5}
+.b-bad{color:var(--bad);border-color:var(--bad);background:#ffeceb}
+.b-info{color:var(--accent);border-color:var(--accent);background:#e8f2fd}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:16px 0}
+.flow .n{border:1px solid var(--line);border-radius:6px;padding:8px 12px;background:#fff;font-size:13px}
+.flow .a{color:var(--muted)}
+ul,ol{margin:10px 0;padding-left:22px}
+li{margin:5px 0}
+.src{color:var(--muted);font-size:12.5px}
+.warnbox{border-left:4px solid var(--warn);background:#fff8e5;padding:12px 16px;border-radius:0 6px 6px 0;margin:14px 0}
+.badbox{border-left:4px solid var(--bad);background:#ffeceb;padding:12px 16px;border-radius:0 6px 6px 0;margin:14px 0}
+</style>
+</head>
+<body>
+<main>
+
+<h1>视觉与交互层原件化重构方案</h1>
+<p class="sub">SunEyeVision V2 ｜ 2026-11-09 ｜ 状态：待评审 ｜ 基线提交：<code>e886ffb3b</code></p>
+
+<h2>一、改前 / 改后 / 依据</h2>
+
+<div class="card">
+<h3>改前，用户看到什么</h3>
+<ul>
+<li>节点上一共只有 4 个端口，拖线时才冒出来，鼠标一移开就消失，悬停没有任何提示。</li>
+<li>只有"图像源"节点长得像胶囊，别的节点都是统一卡片，原因是代码里按工具 ID 写死了一个圆角特例。</li>
+<li>连线是灰蓝色（#666666），VM 里是橙色（#FFA70F），一眼就能看出不是同一套。</li>
+<li>节点右键只有"复制、重命名"两项，VM 里有六项。</li>
+<li>参数配置窗口的分页样式是自己画的，VM 用的是带页签背景和橙色下划线的那套。</li>
+</ul>
+</div>
+
+<div class="card">
+<h3>改后，用户看到什么</h3>
+<ul>
+<li>节点照样 4 个方位，但鼠标一进节点就四个端口一起出现，命中哪个哪个变粗变大；拖线走向与 VM 一致。</li>
+<li>节点填充、底边橙线、边框、投影与 VM 逐值一致；连线是 VM 的橙色，拖线是 VM 的 5/2.5 虚线节奏。</li>
+<li>右键菜单与 VM 同样六项：断开连接 / 删除 / 复制 / 重命名 / 禁用 / 启用。</li>
+<li>参数配置窗口用 VM 原件那套页签外观。</li>
+<li>节点形状后续按 VM 的"显示类型"（普通/图像/条件/功能/定时/壳/通讯）自动选择，不再按工具 ID 写死。</li>
+</ul>
+</div>
+
+<div class="card">
+<h3>依据（不是自创，是照做）</h3>
+<ul>
+<li>端口几何：VM 原件 <code>diagramitemtemplate.xaml</code> 第 167-190 行的四个 <code>Connector</code> 实例（20×30、Margin −20/−25、<code>ScaleX=-1</code>、<code>RotateTransform ±90</code>）。</li>
+<li>端口视觉：VM 原件 <code>Connector.xaml</code>（橙条 5×8、命中放大 8.5×12、<code>#FF444444</code> 边框）。</li>
+<li>节点填充：VM 原件 <code>NormalModulePathStyle</code>（#FAF7F5→#F3F6F5→#ECEDF0→#EBE6E2→#EB6600 五段渐变）。</li>
+<li>节点形状：VM 原件 6 个 <code>PathGeometry</code>（ImageModulePath / IfBranchPath / FunctionModulePath / TimerModulePath / ShellModulePath / CommuncationDataPath）。</li>
+<li>连线配色：VM 原件 <code>connectionstyle.xaml</code>（<code>Col_EditProcess_Ligature</code> = #FFA70F，<code>Selected</code> = #E76900，线宽 2/3）。</li>
+<li>右键菜单：VM 原件 <code>diagramitemtemplate.xaml</code> 的 <code>InteractionContextMenu</code> 六项。</li>
+</ul>
+</div>
+
+<h2>二、现状量化基线</h2>
+
+<p>全部为本次实测（<code>Get-ChildItem</code> 递归统计 <code>*.cs</code>/<code>*.xaml</code>，排除 <code>obj</code>/<code>bin</code> 与 WPF 临时工程）。</p>
+
+<table>
+<tr><th>层</th><th>工程数</th><th>文件数</th><th>行数</th><th>说明</th></tr>
+<tr><td>视觉与控件（<code>Plugin.Wpf</code>）</td><td>1</td><td>1249</td><td>147854</td><td>原件 799 个 .cs + 68 个 .xaml，另有 521 个 <code>.pending</code> 未参与编译</td></tr>
+<tr><td>宿主与编排（<code>UI</code>）</td><td>1</td><td>403</td><td>58893</td><td>画布、Shell、主题、相机、通讯管理</td></tr>
+<tr><td>编辑模型（<code>Plugin.Editing.Wpf</code>）</td><td>1</td><td>148</td><td>17748</td><td>参数呈现器、子程序调试契约</td></tr>
+<tr><td>业务与新架构（Application/Domain/Execution/Persistence/Plugin.* 等）</td><td>22</td><td>约 300</td><td>约 44000</td><td>VM 逆向无对应实现，属本方新架构，不退场</td></tr>
+<tr><td>工具（<code>tools</code>）</td><td>5</td><td>80</td><td>约 6300</td><td>Blob 与图像源各 Runtime+Wpf，另 FixEncoding 小工具</td></tr>
+<tr><td>测试与探针（<code>tests</code>）</td><td>47</td><td>约 400</td><td>约 21000</td><td>含 20 余个 Probe 验证宿主</td></tr>
+<tr><td><b>合计</b></td><td><b>77</b></td><td>—</td><td><b>292234</b></td><td>—</td></tr>
+</table>
+
+<div class="warnbox">
+<b>与旧方案口径的差异。</b>此前方案写"24 个工程 / 267541 行"，是只数 <code>src</code> 主体工程。实测含 <code>tools</code> 与 <code>tests</code> 共 77 个工程、292234 行。本方案以实测为准，避免用旧口径做验收。<br>
+<span class="src">来源：本次 <code>Get-ChildItem src,tools,tests -Recurse -Filter *.csproj</code> 统计；<code>src</code> 25 个、<code>tools</code> 5 个、<code>tests</code> 47 个。</span>
+</div>
+
+<h2>三、问题分析（含来源标注）</h2>
+
+<table>
+<tr><th>#</th><th>现象</th><th>真实原因</th><th>来源</th></tr>
+<tr><td>1</td><td>端口拖线才出现、命中不放大</td><td>端口是自绘 <code>ExecutionPortShape</code>，默认 <code>Visibility=Collapsed</code>，由 <code>Port_MouseEnter/Leave</code> 事件控制</td><td class="src"><code>UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.xaml</code> 原 355-408 行；<code>WorkflowCanvasControl.xaml.cs</code> 的 <code>SetPortsVisibility</code></td></tr>
+<tr><td>2</td><td>图像源是胶囊、其他是卡片</td><td>模板里按 <code>ToolType=="ImageLoad"</code> 写死 <code>CornerRadius=15</code>；VM 是按显示类型选 <code>PathGeometry</code></td><td class="src"><code>WorkflowCanvasControl.xaml</code> 原 348 行 DataTrigger；VM <code>diagramitemtemplate.xaml</code> 1166-1181 行</td></tr>
+<tr><td>3</td><td>连线颜色不对</td><td><code>ConnectionNormalColor=#666666</code>，VM 是 #FFA70F</td><td class="src"><code>UI/Resources/Styles/NodeStyleResources.xaml</code> 原 61-63 行；VM <code>connectionstyle.xaml</code> 8 行</td></tr>
+<tr><td>4</td><td>右键菜单只有两项</td><td>只接了复制与重命名，文档层其实已支持 <code>SetNodeEnabled</code>/<code>RemoveConnection</code></td><td class="src"><code>WorkflowCanvasControl.xaml</code> 原 225-226 行；<code>src/Application/GraphEditDraft.cs</code></td></tr>
+<tr><td>5</td><td>参数配置窗口外观与 VM 不符</td><td>原件字典 <code>ConfigurationShell</code> 早已合并进 Plugin.Wpf，但窗口内又定义了一份同名 <code>ConfigurationTabs/ConfigurationTab</code> 把它盖住</td><td class="src"><code>UI/Shell/Windows/RootWorkflowConfigurationWindow.xaml</code> 原 6-7 行；<code>Plugin.Wpf/Themes/Native/Composition/SharedStyles/configuration/ConfigurationShell.xaml</code></td></tr>
+<tr><td>6</td><td>画布原件"看着有、用不上"</td><td>31 个原件文件全是 <code>.pending</code>，不参与编译，也没有任何消费者</td><td class="src"><code>Plugin.Wpf/Controls/Native/Input/WorkspaceControls/WorkspaceControls.Base/*.pending</code></td></tr>
+<tr><td>7</td><td>VM 配色键存在但无人使用</td><td>158 个 <code>Col_*</code> 键在 <code>Themes/Palettes/colorstyle1.xaml</code>，但 UI 未合并该字典，全靠自造的 183 个语义键</td><td class="src"><code>Plugin.Wpf/NativeResources.props</code> 4-8 行；<code>UI/Themes/Dark/DarkTheme.xaml</code></td></tr>
+</table>
+
+<h2>四、Bug 模式分析（治本，不打补丁）</h2>
+
+<p><b>真因分类：实现偏差（迁入未接通）+ 契约漏洞（跨程序集资源无校验）。</b></p>
+
+<div class="card">
+<h3>第 1 类：迁入未接通（占问题 6、7 的全部，问题 5 的一半）</h3>
+<p>原件代码已经复制进仓库，但停在 <code>.pending</code> 或存在却无人消费。结果就是"仓库里看着有、界面上用不上"，开发者每次都要重新判断"到底有没有"。</p>
+<p><b>同类潜伏点（已实测）：</b></p>
+<ul>
+<li>521 个 <code>.pending</code>：内容含 <code>namespace SunEyeVision.Plugin.Wpf.Native...</code>，是迁移草稿而非垃圾；任何 csproj 都没有引用它们。</li>
+<li><code>ConfigurationShell.xaml</code>/<code>ConfigurationControls.xaml</code>：已合并进 <code>Generic.xaml</code>，但 UI 侧无窗口使用。</li>
+<li><code>colorstyle1/2/3.xaml</code>：已注册为 Resource，但 UI 未合并，158 个键零消费。</li>
+<li><code>ImageViewBox</code> 等原件控件：存在于 <code>Native/Display</code>，使用面待核对。</li>
+</ul>
+<p><b>治本点：</b>不逐个修补，而是建立"<b>原件资产必须有消费者</b>"的校验——每个迁入的原件字典/控件，要么有明确消费位置，要么在台账里标注"未接通 + 原因"。没有台账就不算完成。</p>
+</div>
+
+<div class="card">
+<h3>第 2 类：跨程序集资源无契约（问题 5 的直接原因）</h3>
+<p>WPF 的 <code>Themes/Generic.xaml</code> 只对**本程序集内定义的自定义控件**自动生效，对宿主里 <code>TabControl</code> 这类框架控件不生效。因此 UI 要用原件样式，必须显式合并字典。</p>
+<p>本次实施已踩到真实代价：把配置窗口样式改为依赖 <code>App.Resources</code> 后，<code>RootCollectionMainWindowTests</code> 立即失败（测试环境没有 Application 级资源），改为窗口级合并才恢复。</p>
+<p><b>治本点：</b>原件样式一律<b>在消费者所在作用域合并</b>（窗口级/控件级），不依赖全局 Application 资源；同时把这条写成契约测试。</p>
+</div>
+
+<h2>五、业界对标</h2>
+
+<table>
+<tr><th>框架 / 规范</th><th>关键做法</th><th>对本方案的约束</th><th>引用</th></tr>
+<tr><td>WPF 控件创作规范（Microsoft）</td><td>自定义控件默认样式放 <code>Themes/Generic.xaml</code>；跨程序集使用需显式合并 <code>ResourceDictionary</code></td><td>原件字典必须在使用者作用域合并，不能假设全局可见</td><td class="src">learn.microsoft.com/dotnet/desktop/wpf/controls/control-authoring-overview</td></tr>
+<tr><td>Adorner 层规范（Microsoft）</td><td>装饰元素放独立 <code>AdornerLayer</code>，坐标以被装饰元素为基准换算</td><td><code>AdornerPanel</code> 的排列必须区分"工作区坐标"与"元素坐标"两种基准</td><td class="src">learn.microsoft.com/dotnet/desktop/wpf/advanced/adorner-overview</td></tr>
+<tr><td>Microsoft.Xaml.Behaviors.Wpf</td><td>用 <code>TriggerAction</code> 把事件桥接成命令，替代手写事件后置代码</td><td>本次 <code>ParamsEventCommand</code> 按此重建，删掉对 VM 私有库的依赖</td><td class="src">github.com/microsoft/XamlBehaviorsWpf</td></tr>
+<tr><td>HALCON 算子双轨 API（MVTec）</td><td><code>HObject</code> 承载数据，<code>HOperatorSet</code> 承载算子，静态方法输入输出分离</td><td>本项目 <code>CvEngine</code> 已按此设计；视觉控件迁移同样坚持"数据与操作分离"</td><td class="src">mvtec.com/doc/halcon/2405/en/operators</td></tr>
+<tr><td>VS Code 贡献点模型（Microsoft）</td><td>扩展通过声明式 <code>contributes</code> 描述自己，不写死宿主分支</td><td>节点形状必须由工具元数据声明（显示类型），不能在 XAML 里按工具 ID 分叉</td><td class="src">code.visualstudio.com/api/references/contribution-points</td></tr>
+</table>
+
+<h2>六、方案对比</h2>
+
+<table>
+<tr><th>维度</th><th>A 逐点补丁</th><th>B 原件整批启用</th><th>C 分层替换 + 契约先行（推荐）</th></tr>
+<tr><td>做法</td><td>在现有自绘画布上改端口样式、改颜色、加菜单项</td><td>把 <code>DiagramItem</code>/<code>ItemsPage</code>/<code>ZoomArea</code> 整批启用，连带搬入 VM 业务装饰器模型</td><td>视觉与交互取原件实现，数据接本项目模型；先建契约与校验，再按可验收批次替换</td></tr>
+<tr><td>与架构一致性</td><td class="bad">违背"视觉归 Plugin.Wpf"，继续双轨</td><td class="warn">会把 VM 的 <code>IVmModule</code>/<code>VmSolution</code> 引入新架构</td><td class="ok">视觉下沉 Plugin.Wpf，业务层保持本方模型</td></tr>
+<tr><td>复杂度</td><td>低（约 300 行）</td><td>高（实测缺 18 类契约，需重建未逆向框架）</td><td>中（分批，每批 200-1500 行）</td></tr>
+<tr><td>维护成本</td><td class="bad">双轨长期存在，越改越乱</td><td class="warn">VM 业务模型与自有 Domain 双份语义</td><td class="ok">单一实现，原件即标准</td></tr>
+<tr><td>扩展性</td><td>低</td><td>中（受 VM 模型约束）</td><td class="ok">工具用显示类型声明，新增无需改宿主</td></tr>
+<tr><td>长期 ROI</td><td>6 个月后仍需返工</td><td>1 年内可用，但架构耦合重</td><td class="ok">一次到位，后续工具只加声明</td></tr>
+</table>
+
+<p><b>推荐 C，理由：</b></p>
+<ol>
+<li>实测证明整批启用 B 不可行——启用 24 个原件文件即产生 100 个编译错误、去重 18 类缺失契约（<code>IExtensionItem</code>、<code>IDecorate</code>、<code>ExtensionItemDecorator</code>、<code>DragDropAdorner</code>、<code>StatusBar</code> 等），而这些类型的来源程序集 <code>WindowUtilities</code> 在全部反编译产物中 0 命中，属未逆向证据缺口。</li>
+<li>A 已被本次实测否定——节点外观与端口的真实差异是结构与取值，不是样式微调；补丁式改法会留下两套端口实现。</li>
+<li>C 的每一批都能独立构建、独立跑单元测试、独立人工验收，符合"每批 0 错误"的硬约束。</li>
+</ol>
+
+<h2>七、目标结构与依赖方向</h2>
+
+<div class="flow">
+<span class="n">UI（宿主/编排/绑定）</span><span class="a">→</span>
+<span class="n">Plugin.Wpf（视觉/控件/原件字典）</span><span class="a">→</span>
+<span class="n">Plugin.Contracts</span><span class="a">→</span>
+<span class="n">Plugin.Editing.Wpf（非视觉编辑模型）</span>
+</div>
+<div class="flow">
+<span class="n">工具 Wpf</span><span class="a">→</span><span class="n">Plugin.Wpf</span><span class="a">｜</span>
+<span class="n">工具 Runtime</span><span class="a">→</span><span class="n">Plugin.Contracts</span><span class="a">+</span><span class="n">Tool.Kernels</span><span class="a">→</span><span class="n">CvEngine/HalAdapter</span>
+</div>
+<div class="flow">
+<span class="n">UI</span><span class="a">→</span><span class="n">Application</span><span class="a">→</span><span class="n">Domain</span><span class="a">｜</span>
+<span class="n">Execution</span><span class="a">→</span><span class="n">Domain</span><span class="a">｜</span>
+<span class="n">Persistence</span><span class="a">→</span><span class="n">Domain</span>
+</div>
+
+<table>
+<tr><th>层</th><th>当前问题</th><th>目标</th></tr>
+<tr><td>UI</td><td>自绘画布、自绘 Shell 模板、自造主题值、直接持有节点视觉</td><td>只保留窗口/服务/绑定/编排与数据泵；视觉元素全部在 Plugin.Wpf</td></tr>
+<tr><td>Plugin.Wpf</td><td>根目录 6 个旧 SDK 自研控件与 <code>Native/**</code> 原件并存；521 个 <code>.pending</code> 未接通</td><td>只保留原件 + 必要的适配层；自研控件逐个退场</td></tr>
+<tr><td>Plugin.Editing.Wpf</td><td>编辑模型与部分呈现混在一起</td><td>只保留非视觉编辑模型/契约</td></tr>
+<tr><td>业务层</td><td>—</td><td>VM 逆向无对应实现，保留为本方新架构，<b>不计入退场清单</b></td></tr>
+</table>
+
+<h2>八、退场清单（逐项，含本次实测状态）</h2>
+
+<table>
+<tr><th>现有实现</th><th>VM 原件</th><th>目标位置</th><th>动作</th><th>状态</th></tr>
+<tr><td>4 个固定 <code>ExecutionPortShape</code> + <code>Port_MouseEnter/Leave</code> 显隐</td><td><code>Connector.xaml</code> + 模板四实例</td><td><code>Plugin.Wpf/.../WorkspaceControls.Base/ConnectionPort.*</code></td><td>按节点悬停显示、命中放大</td><td><span class="badge b-ok">已完成</span> <code>53c4c61f</code></td></tr>
+<tr><td>自研贝塞尔拖线</td><td><code>PathFinder.cs</code></td><td><code>Plugin.Wpf/.../WorkspaceControls.Base/PathFinder.cs</code></td><td>纯几何入口，预览同算法</td><td><span class="badge b-ok">已完成</span> <code>7cdddf0a</code></td></tr>
+<tr><td><code>ToolType=="ImageLoad"</code> 圆角特例</td><td><code>DiagramItemSubDisplayEnum</code> + 6 个 PathGeometry</td><td>节点模板 + 显示类型</td><td>删除特例，改由显示类型驱动形状</td><td><span class="badge b-warn">部分</span> 特例已删（<code>31b3c816</code>），形状选择待做</td></tr>
+<tr><td>节点填充/边框/投影自造值</td><td><code>NormalModulePathStyle</code></td><td><code>WorkflowCanvasControl.xaml</code> 模板</td><td>取原件五段渐变与阴影参数</td><td><span class="badge b-ok">已完成</span> <code>459440b79</code></td></tr>
+<tr><td>连线灰蓝配色</td><td><code>Col_EditProcess_Ligature</code></td><td><code>NodeStyleResources.xaml</code></td><td>#FFA70F / #E76900</td><td><span class="badge b-ok">已完成</span> <code>459440b79</code></td></tr>
+<tr><td>两项右键菜单</td><td><code>InteractionContextMenu</code> 六项</td><td><code>WorkflowCanvasControl.xaml</code> + 分部类</td><td>补齐断开/删除/禁用/启用</td><td><span class="badge b-ok">已完成</span> <code>b77473530</code></td></tr>
+<tr><td>窗口内自绘 <code>ConfigurationTabs/Tab</code></td><td><code>ConfigurationShell.xaml</code></td><td>窗口级合并原件字典</td><td>删自绘、用原件</td><td><span class="badge b-ok">已完成</span> <code>e886ffb3b</code></td></tr>
+<tr><td>UI 183 个语义主题键</td><td><code>colorstyle1/2/3.xaml</code>（158 个 <code>Col_*</code>）</td><td><code>UI/Themes/Dark/DarkTheme.xaml</code></td><td>随自研控件退场，逐步指向 <code>Col_*</code></td><td><span class="badge b-warn">待做</span></td></tr>
+<tr><td><code>UI/Resources/Styles/*</code> 自绘 Shell 模板</td><td><code>ResultShellStyles</code>/<code>PropertyListStyles</code>/<code>BottomCommands</code>/<code>ImageSourceStrip</code></td><td><code>Plugin.Wpf/Themes/Native/Composition/**</code></td><td>逐块替换，删自绘模板</td><td><span class="badge b-info">下一批</span></td></tr>
+<tr><td>自研画布宿主（缩放/框选/区域页）</td><td><code>DiagramArea</code>/<code>DiagramPage</code>/<code>ZoomArea</code>/<code>RectDragPanal</code></td><td>同上目录</td><td>成片替换，保身份契约</td><td><span class="badge b-info">待做</span></td></tr>
+<tr><td><code>Plugin.Wpf/Controls/*.cs</code> 6 个旧 SDK 控件（2468 行）</td><td><code>Native/Numeric/**</code>、<code>Native/Display/**ColorPicker</code></td><td>消费者改为 Native 呈现器</td><td>参数窗已无依赖；剩相机/通讯界面</td><td><span class="badge b-warn">部分</span></td></tr>
+<tr><td><code>LenientScalarOrArrayConverter.cs</code></td><td>无（自造兼容）</td><td>—</td><td>删除，缺类型直接报错</td><td><span class="badge b-info">待做</span></td></tr>
+<tr><td>521 个 <code>.pending</code></td><td>—</td><td>—</td><td>按"已接通 / 待接通 / 放弃"三分类建档，不盲删</td><td><span class="badge b-warn">待做</span></td></tr>
+<tr><td><code>*_wpftmp.csproj</code> 临时工程</td><td>—</td><td>—</td><td>构建产物，加忽略规则并清理</td><td><span class="badge b-warn">待做</span></td></tr>
+</table>
+
+<h2>九、分批计划（文件级 + 验收标准）</h2>
+
+<h3>P1 端口与连线（<span class="badge b-ok">已完成</span>）</h3>
+<table>
+<tr><th>文件</th><th>动作</th></tr>
+<tr><td><code>Plugin.Wpf/.../WorkspaceControls.Base/ConnectionPort.xaml(.cs)</code></td><td>新增，原件端口视觉与命中放大</td></tr>
+<tr><td><code>Plugin.Wpf/.../WorkspaceControls.Base/PathFinder.cs</code></td><td>由 <code>.pending</code> 启用，入口改纯几何签名</td></tr>
+<tr><td><code>UI/.../WorkflowCanvasControl.xaml</code></td><td>四端口换 <code>ConnectionPort</code>，按原件边距/旋转变换</td></tr>
+<tr><td><code>UI/.../WorkflowCanvasControl.{ConnectionGestures,NodeGestures,xaml}.cs</code></td><td>删显隐机制，高亮改 <code>IsHited</code></td></tr>
+<tr><td><code>UI/Services/PathCalculators/OrthogonalPathCalculator.cs</code></td><td>预览走原件算法</td></tr>
+</table>
+
+<h3>P2 画布宿主（下一批，风险最高）</h3>
+<table>
+<tr><th>文件</th><th>动作</th><th>验收</th></tr>
+<tr><td><code>Plugin.Wpf/.../DiagramArea/DiagramPage/ZoomArea/RectDragPanal/ResizeThumb</code></td><td>由 <code>.pending</code> 启用，依赖替换为项目等价物</td><td>缩放/平移/框选/拖拽</td></tr>
+<tr><td><code>UI/.../WorkflowCanvasControl.GroupSelection.cs</code></td><td>框选交给原件，UI 只收结果</td><td>多选与撤销重做一致</td></tr>
+<tr><td><code>UI/.../DocumentCanvasProjection.cs</code></td><td>修 <code>selectedPageIndex</code> 越界与跨线程访问</td><td>CanvasProjection 2 个失败转绿</td></tr>
+</table>
+
+<h3>P3 节点形状按显示类型</h3>
+<table>
+<tr><th>文件</th><th>动作</th><th>验收</th></tr>
+<tr><td><code>Plugin.Wpf/Themes/.../nodeshapes.xaml</code></td><td>迁入 6 个 <code>PathGeometry</code> 与 <code>NormalModulePathStyle</code></td><td>资源键齐全</td></tr>
+<tr><td>工具元数据（<code>tools/*/...ToolMetadata</code>）</td><td>新增显示类型声明</td><td>新增工具不需改宿主</td></tr>
+<tr><td><code>UI/.../CanvasNodeProjection.cs</code></td><td>透传显示类型</td><td>模板按类型选形状</td></tr>
+</table>
+
+<h3>P4 参数与调试窗口控件退场</h3>
+<table>
+<tr><th>文件</th><th>动作</th><th>验收</th></tr>
+<tr><td><code>UI/Features/Camera/*</code>、<code>UI/Features/CommunicationManager/*</code></td><td>改用 <code>Native</code> 原件数值/开关控件</td><td>构建 0 错，人工验收</td></tr>
+<tr><td><code>Plugin.Wpf/Controls/{NumericUpDown,RangeSlider,RangeInputControl,ToggleSwitch,ColorPicker,HsvColor}.cs</code></td><td>无引用后删除</td><td>全仓 0 引用</td></tr>
+</table>
+
+<h3>P5 Shell 与主题</h3>
+<table>
+<tr><th>文件</th><th>动作</th><th>验收</th></tr>
+<tr><td><code>UI/Resources/Styles/CommonStyleResources.xaml</code>、<code>MenuStyleResources.xaml</code></td><td>逐块替换为 <code>Composition</code> 原件样式</td><td>主题契约校验通过</td></tr>
+<tr><td><code>UI/Themes/Dark/DarkTheme.xaml</code></td><td>语义键逐步指向 <code>Col_*</code>，引用清零后删除</td><td>无未消费语义键</td></tr>
+</table>
+
+<h3>P6 工具样板链</h3>
+<table>
+<tr><th>文件</th><th>动作</th><th>验收</th></tr>
+<tr><td><code>tools/SunEyeVision.ImageSource.*</code></td><td>按新契约重做（参数/结果/显示类型）</td><td>全链人工验收</td></tr>
+<tr><td><code>tools/SunEyeVision.BlobAnalysis.*</code></td><td>同上，作为第二个样板</td><td>图像源+Blob 联合调试</td></tr>
+</table>
+
+<h2>十、防御机制（≥2 项）</h2>
+
+<div class="card">
+<h3>1. 端口契约测试（单元）</h3>
+<p>断言：每个节点端口数 = 4；锚点位于节点视觉边缘中点（与原件的 <code>AnchorPoint(i)</code> 一致）；<code>IsHited</code> 由 <code>IsMouseOver</code> 驱动；端口层随节点悬停显示。</p>
+<p>落在 <code>tests/CanvasLayout.Tests</code>，与现有 27 个用例同批运行。</p>
+</div>
+
+<div class="card">
+<h3>2. 原件资源消费台账 + 校验（防"迁入未接通"复发）</h3>
+<p>对每个迁入的原件字典/控件登记：消费位置（文件:行号）或"未接通原因"。校验脚本在构建后运行，发现"字典存在但零消费且无原因"即失败。</p>
+<p>这一条直接封堵本次发现的第 1 类 bug 模式（<code>ConfigurationShell</code>/<code>colorstyle</code>/521 个 <code>.pending</code>）。</p>
+</div>
+
+<div class="card">
+<h3>3. 资源合并作用域规则（防跨程序集失效）</h3>
+<p>原件样式一律在使用者作用域合并（窗口级/控件级）；契约测试覆盖"脱离 Application 资源仍能构造窗口"，等价于本次已修复的 <code>RootCollectionMainWindowTests</code>。</p>
+</div>
+
+<h2>十一、验收标准</h2>
+
+<table>
+<tr><th>#</th><th>验收项</th><th>方法</th><th>关联测试</th><th>对应防御机制</th></tr>
+<tr><td>1</td><td>节点悬停时四方位端口同时显示，移开后隐藏</td><td>unit + manual</td><td>CL-PORT-01</td><td>端口契约测试</td></tr>
+<tr><td>2</td><td>端口命中后导向条由 5×8 放大到 8.5×12</td><td>unit + manual</td><td>CL-PORT-02</td><td>端口契约测试</td></tr>
+<tr><td>3</td><td>拖线路径与原件 <code>PathFinder</code> 折点一致</td><td>unit</td><td>CL-PATH-01</td><td>端口契约测试</td></tr>
+<tr><td>4</td><td>节点填充/边框/投影与原件取值逐项相等</td><td>code review + manual</td><td>—</td><td>资源消费台账（视觉清单）</td></tr>
+<tr><td>5</td><td>连线颜色为 #FFA70F，选中/悬停为 #E76900，线宽 2/3</td><td>code review</td><td>—</td><td>资源消费台账</td></tr>
+<tr><td>6</td><td>节点右键六项齐全，断开/删除/禁用/启用均生效并可撤销</td><td>unit + manual</td><td>UI-CTX-01</td><td>端口契约测试</td></tr>
+<tr><td>7</td><td>参数配置窗口使用原件分页外观，且不依赖 Application 资源</td><td>unit</td><td>RootCollectionMainWindowTests</td><td>资源合并作用域</td></tr>
+<tr><td>8</td><td>每批结束 <code>dotnet build SunEyeVision.slnx -c Debug</code> 为 0 错误</td><td>构建</td><td>—</td><td>构建门禁</td></tr>
+<tr><td>9</td><td>画布/投影/界面测试失败数不超过基线（0 / 2 / 9）</td><td>unit</td><td>—</td><td>回归基线</td></tr>
+<tr><td>10</td><td>启动→打开方案→加节点→节点交互→调试窗口→图像源+Blob 联调全链通过</td><td>manual</td><td>—</td><td>人工验收清单</td></tr>
+</table>
+
+<h2>十二、测试方法</h2>
+<table>
+<tr><th>批次</th><th>自动</th><th>人工</th><th>code review</th></tr>
+<tr><td>P1（已完成）</td><td>CanvasLayout 27/27、Blob 39/39、UI 244/253</td><td>端口悬停、拖线、右键菜单</td><td>端口/路径/配色取值比对</td></tr>
+<tr><td>P2</td><td>CanvasProjection 2 个失败转绿</td><td>缩放/平移/框选/撤销重做</td><td>身份契约接线</td></tr>
+<tr><td>P3</td><td>形状资源键齐全断言</td><td>七类节点形状目视</td><td>显示类型来源</td></tr>
+<tr><td>P4</td><td>构建 + 无引用断言</td><td>相机/通讯界面操作</td><td>API 契约映射</td></tr>
+<tr><td>P5</td><td>主题契约校验</td><td>主界面目视比对 VM</td><td>键消费台账</td></tr>
+<tr><td>P6</td><td>工具测试回归</td><td>图像源+Blob 联调</td><td>参数/结果显示</td></tr>
+</table>
+
+<div class="warnbox">
+<b>约束：</b>按用户要求，实施阶段<b>不启动界面做交互测试</b>，只跑单元测试与构建；界面行为统一留到最后一批人工验收。因此每批必须额外用"取值比对 + 资源键断言"替代目视，不能只靠构建通过就宣称外观一致。
+</div>
+
+<h2>十三、风险与回退</h2>
+
+<table>
+<tr><th>风险</th><th>影响</th><th>应对</th></tr>
+<tr><td>VM 装饰框架未逆向（<code>WindowUtilities</code> 0 命中）</td><td>P2 部分控件无法原样编译</td><td>按 12 处调用点重建最小契约，台账标注"按契约重建、非原件"；拿到原 DLL 后校正</td></tr>
+<tr><td>画布替换牵动节点/连线身份、撤销重做、序列化</td><td>界面好看但方案存不正确</td><td>P2 先接 <code>ScopedNodeIdentity</code>/连接身份，再接视觉</td></tr>
+<tr><td>原件控件与自有模型 API 不同（如 <code>NumericUpDown</code>）</td><td>替换需逐处改绑定</td><td>按批次替换并保留可回退提交点，不做一次性大改</td></tr>
+<tr><td>WPF 临时工程与 <code>.pending</code> 残留干扰统计与构建</td><td>误判规模、误判是否已接通</td><td>统计排除 <code>*_wpftmp</code>；<code>.pending</code> 建档三分类</td></tr>
+</table>
+
+<p><b>回退策略：</b>每批独立提交，构建或测试不达标即回退该批；已完成的 P1 六个提交均可单独 revert，互不依赖。</p>
+
+<h2>十四、本次已完成提交</h2>
+<table>
+<tr><th>提交</th><th>内容</th></tr>
+<tr><td><code>53c4c61f</code></td><td>端口按原件规格呈现并常驻，删自研显隐</td></tr>
+<tr><td><code>7cdddf0a</code></td><td>拖线预览改原件正交折点算法</td></tr>
+<tr><td><code>31b3c816</code></td><td>删除图像源圆角硬编码特例</td></tr>
+<tr><td><code>459440b79</code></td><td>节点与连线外观取原件精确值</td></tr>
+<tr><td><code>b77473530</code></td><td>节点右键菜单补齐六项</td></tr>
+<tr><td><code>e886ffb3b</code></td><td>参数配置窗口改原件分页外壳</td></tr>
+</table>
+
+</main>
+</body>
+</html>

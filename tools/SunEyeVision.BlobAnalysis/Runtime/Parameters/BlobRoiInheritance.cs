@@ -12,18 +12,45 @@ public static class BlobRoiInheritance
     public const string RectangleSource="input.roi.rectangle",AnnulusSource="input.roi.annulus";
     public static IReadOnlyList<string> RectangleMembers {get;}=Array.AsReadOnly(new[]{"center-x","center-y","width","height","angle-degrees"});
     public static IReadOnlyList<string> AnnulusMembers {get;}=Array.AsReadOnly(new[]{"center-x","center-y","inner-radius","outer-radius","start-degrees","sweep-degrees"});
-    public static TypeRef RectangleType {get;}=TypeRef.RecordOf("blob.roi.rectangle",RectangleMembers.Select(id=>new Port(id,DataType.Number)));
-    public static TypeRef AnnulusType {get;}=TypeRef.RecordOf("blob.roi.annulus",AnnulusMembers.Select(id=>new Port(id,DataType.Number)));
+    public static TypeRef RectangleType {get;}=ShapeType("blob.roi.rectangle",RectangleMembers);
+    public static TypeRef AnnulusType {get;}=ShapeType("blob.roi.annulus",AnnulusMembers);
+    private static TypeRef ShapeType(string name,IReadOnlyList<string> members)
+        => TypeRef.RecordOf(name,new[] {new Port("center",FixtureDeclarations.Point)}
+            .Concat(members.Skip(2).Select(id=>new Port(id,DataType.Number,Storage:NumericStorage.Float32))));
+
+    private static DeclaredValueReader ShapeMember(DeclaredValueReader shape,string member) => member switch
+    {
+        "center-x" => shape.GetField("center").GetField("x"),
+        "center-y" => shape.GetField("center").GetField("y"),
+        _ => shape.GetField(member)
+    };
     public static string Leaf(string mode,string member)=>"input.roi."+(mode==RectangleParameters?"rectangle.":mode==AnnulusParameters?"annulus.":throw new ArgumentException("Unknown inheritance parameter mode."))+member;
     public static IReadOnlyList<Port> Ports {get;}=Array.AsReadOnly(new[]{
         new Port(ModeId,DataType.Text,Required:false,EditModes:FieldEditModes.Constant),
         new Port(RectangleSource,TypeRef.SequenceOf(RectangleType),Required:false,EditModes:FieldEditModes.Reference),
         new Port(AnnulusSource,TypeRef.SequenceOf(AnnulusType),Required:false,EditModes:FieldEditModes.Reference)}
-        .Concat(RectangleMembers.Select(id=>new Port(Leaf(RectangleParameters,id),DataType.NumberArray,Required:false,EditModes:FieldEditModes.Constant|FieldEditModes.Reference)))
-        .Concat(AnnulusMembers.Select(id=>new Port(Leaf(AnnulusParameters,id),DataType.NumberArray,Required:false,EditModes:FieldEditModes.Constant|FieldEditModes.Reference))).ToArray());
-    public static string ReadMode(FieldSettings fields)=>fields.Read(ModeId) switch{
+        .Concat(RectangleMembers.Select(id=>new Port(Leaf(RectangleParameters,id),DataType.NumberArray,Required:false,EditModes:FieldEditModes.Reference)))
+        .Concat(AnnulusMembers.Select(id=>new Port(Leaf(AnnulusParameters,id),DataType.NumberArray,Required:false,EditModes:FieldEditModes.Reference))).ToArray());
+    public static string ReadMode(FieldSettings fields)=>ReadMode(fields.Read(ModeId));
+    internal static string ReadMode(ParameterSetting setting)=>setting switch{
         UnsetSetting=>Local,ConstantSetting {Value:string mode}=>ValidateMode(mode),_=>throw new ArgumentException("ROI继承方式必须是固定模式。")};
     public static string ValidateMode(string mode)=>mode is Local or Rectangle or RectangleParameters or Annulus or AnnulusParameters?mode:throw new ArgumentException("ROI继承方式无效。");
+
+    internal static IEnumerable<string> SourcesToClear(string mode)
+    {
+        // InheritWayGroup2 clears the opposite shape family and keeps sources
+        // when switching between area and parameters within the same family.
+        if (mode is Local or Annulus or AnnulusParameters)
+        {
+            yield return RectangleSource;
+            foreach (var member in RectangleMembers) yield return Leaf(RectangleParameters, member);
+        }
+        if (mode is Local or Rectangle or RectangleParameters)
+        {
+            yield return AnnulusSource;
+            foreach (var member in AnnulusMembers) yield return Leaf(AnnulusParameters, member);
+        }
+    }
     public static IReadOnlyList<string> ActiveInputs(FieldSettings fields,IEnumerable<Port> inputs)
     {
         var mode=ReadMode(fields);var own=Ports.Select(port=>port.Id).ToHashSet(StringComparer.Ordinal);
@@ -47,11 +74,12 @@ public static class BlobRoiInheritance
         var count=source?.Count??leaves!.Values.Min(reader=>reader.Count);
         if(count==0)throw new ArgumentException("ROI继承来源没有有效数据。");
         var rows=new List<RecordValue>();
-        for(var i=0;i<Math.Min(64,count);i++)
+        for(var i=0;i<Math.Min(BlobLocalRoi.MaximumInheritedCount,count);i++)
         {
+            var shapeSource=source?.GetElement(i);
             double Number(string member)
             {
-                var value=source is not null?source.GetElement(i).GetField(member).GetScalar<double>():leaves![member].GetElement(i).GetScalar<double>();
+                var value=shapeSource is not null?ShapeMember(shapeSource,member).GetScalar<double>():leaves![member].GetElement(i).GetScalar<double>();
                 if(!double.IsFinite(value))throw new ArgumentException("ROI继承参数必须有限。");return value;
             }
             var values=new Dictionary<string,object?>{{"kind",rectangle?"rectangle":"annulus"},{"center",BlobLocalRoi.Point(Number("center-x"),Number("center-y"))}};

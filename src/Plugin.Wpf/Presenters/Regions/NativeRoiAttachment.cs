@@ -37,9 +37,9 @@ internal sealed partial class NativeRoiAttachment : INativeRoiEditLease
     internal NativeRoiSession? Session => _session;
     private ImageViewBox NativeView => (ImageViewBox)_owner.View;
     private System.Windows.Threading.Dispatcher Dispatcher => NativeView.Dispatcher;
-    private bool IsLoaded => NativeView.IsLoaded;
-    private bool IsVisible => NativeView.IsVisible;
-    private bool IsEnabled => NativeView.IsEnabled;
+    private bool IsLoaded => _owner.AllowsUnloadedRoi||NativeView.IsLoaded;
+    private bool IsVisible => _owner.AllowsUnloadedRoi||NativeView.IsVisible;
+    private bool IsEnabled => _owner.AllowsUnloadedRoi||NativeView.IsEnabled;
     public bool IsCurrent
     {
         get
@@ -83,6 +83,10 @@ internal sealed partial class NativeRoiAttachment : INativeRoiEditLease
         NativeView.RoiSelectedCommand=new SelectionCommand(this);
         EnsureCurrent();
         NativeView.ShapeHitTestVisible=false;
+        // Result view starts with ROIHitTestVisible=false because its result
+        // overlays are read-only. Installing an editable ROI attachment must
+        // restore the original ROI hit-test gate for the current visible state.
+        NativeView.ROIHitTestVisible=NativeView.ROIVisible&&!NativeView.IsStateForDrawROI;
         EnsureCurrent();
         NativeView.NativeDrawStart=StartDrawing;NativeView.NativeDrawComplete=CompleteDrawing;NativeView.NativeDrawCancel=CancelAutomaticDrawing;
         NativeView.NativeDrawCaptureLost=source=>{if(_drawing is {} drawing&&!drawing.IsSuspended&&ReferenceEquals(source,drawing.Page)&&!ReferenceEquals(Mouse.Captured,drawing.Page))CancelAutomaticDrawing();};
@@ -389,7 +393,7 @@ internal sealed partial class NativeRoiAttachment : INativeRoiEditLease
             if(_drawCancelled is not null)previous.DrawCancelled-=_drawCancelled;
         }
         _changed=null;_drawRequested=null;_drawCancelled=null;
-        NativeRoiCallbacks.Run([()=>NotifyRetiring(previous),RetireMenus,()=>previous?.CancelPending(()=>_owner.MayCancelRoiSession(this,previous)),ReleaseFrame,()=>{if(_owner.MayClearRoiCallbacks(this))NativeView.RoiSelectedCommand=null;},
+        NativeRoiCallbacks.Run([()=>NotifyRetiring(previous),RetireMenus,()=>previous?.CancelPending(()=>_owner.MayCancelRoiSession(this,previous)),ReleaseFrame,()=>{if(_owner.MayClearRoiCallbacks(this)){NativeView.ROIHitTestVisible=false;NativeView.RoiSelectedCommand=null;}},
             ()=>{if(_owner.MayClearRoiCallbacks(this)){NativeView.NativeDrawStart=(_,_)=>false;NativeView.NativeDrawComplete=_=>false;NativeView.NativeDrawCancel=()=>{};NativeView.NativeDrawCaptureLost=_=>{};NativeView.NativeRoiCaptureCancelEdit=null;}},()=>_owner.DetachRoi(this)]);
     }
     private static IEnumerable<T> Descendants<T>(DependencyObject root)where T:DependencyObject

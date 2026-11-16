@@ -11,6 +11,7 @@ namespace SunEyeVision.Application;
 public sealed partial class DocumentSession
 {
     private IDisposable? _decodedResources;
+    private EmbeddedFileCatalog? _embeddedFiles;
     private FrozenSolutionDocument? _lastWrittenSnapshot;
     private long? _lastWrittenRevision;
     public FrozenSolutionDocument? LastWrittenSnapshot { get { lock(_gate) return _lastWrittenSnapshot; } }
@@ -21,7 +22,7 @@ public sealed partial class DocumentSession
     private string? _resourceBaseDirectory;
     public string? ResourceBaseDirectory { get { lock (_gate) return _resourceBaseDirectory; } }
     public IResourcePathResolver CreateResourcePathResolver()
-    { lock (_gate) { EnsureOpen(); return new SolutionResourceResolver(_resourceBaseDirectory); } }
+    { lock (_gate) { EnsureOpen(); return new SolutionResourceResolver(_resourceBaseDirectory,_embeddedFiles); } }
 
     /// <summary>Accept private editors and encode this document for its current file location.</summary>
     public EncodedSolutionDocument CaptureForSave(FrozenVariableTypeCatalog variableTypes, JsonSerializerOptions options,
@@ -72,7 +73,7 @@ public sealed partial class DocumentSession
                 var declarations = CapturePersistenceDeclarations();
                 using var captureScope = new DecodedResourcesScope();
                 var encoded = SolutionDocumentWriter.Capture(Document, declarations, variableTypes, options,
-                    createCodec?.Invoke(captureScope), sourceDirectory);
+                    createCodec?.Invoke(captureScope), sourceDirectory,_embeddedFiles);
                 if (targetDirectory is not null && sourceDirectory is not null &&
                     !string.Equals(NormalizeResourceDirectory(sourceDirectory), NormalizeResourceDirectory(targetDirectory), StringComparison.OrdinalIgnoreCase))
                 {
@@ -110,7 +111,7 @@ public sealed partial class DocumentSession
             encoded = CaptureAcceptedDocument(variableTypes, options, createCodec, sourceDirectory, Path.GetDirectoryName(Path.GetFullPath(destination)));
         }
         mutation.Dispose();
-        var receipt = SolutionFileCommit.Write(encoded.BindTarget(destination, expected ?? TargetExpectation.Missing), recoveryPath, cancellationToken: cancellationToken);
+        var receipt = WithEmbeddedResourceWarnings(SolutionFileCommit.Write(encoded.BindTarget(destination, expected ?? TargetExpectation.Missing), recoveryPath, cancellationToken: cancellationToken));
         lock (_gate)
         {
             if (!_closed && !_closing && !_owner.IsRetired && _directory.IsActive)
@@ -149,11 +150,19 @@ public sealed partial class DocumentSession
             sourceDirectory = ResolveResourceBaseDirectory(sourceDirectory)!;
             if (!updateBaseline && _lastWrittenSnapshot is not null && string.Equals(Path.GetFullPath(destination), _lastWrittenSnapshot.TargetPath, StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException("保存副本不能覆盖当前方案。");
+            if (updateBaseline)
+            {
+                // 保存即命名（原件语义：方案名=方案文件名，最近列表与主窗标题都显示它）；
+                // 首次保存或另存为把默认“未命名方案”随目标文件名落库，副本保存不改当前方案名。
+                var solutionName = Path.GetFileNameWithoutExtension(destination);
+                if (!string.IsNullOrWhiteSpace(solutionName) && !string.Equals(Document.Name, solutionName, StringComparison.Ordinal))
+                    Document.Name = solutionName;
+            }
             revision = ChangeRevision; savedState = CapturePersistenceState();
             encoded = CaptureAcceptedDocument(variableTypes, options, createCodec, sourceDirectory, Path.GetDirectoryName(Path.GetFullPath(destination)));
         }
         mutation.Dispose();
-        var receipt = SolutionFileCommit.Write(encoded.BindTarget(destination, expected ?? TargetExpectation.Missing), recoveryPath, cancellationToken: cancellationToken);
+        var receipt = WithEmbeddedResourceWarnings(SolutionFileCommit.Write(encoded.BindTarget(destination, expected ?? TargetExpectation.Missing), recoveryPath, cancellationToken: cancellationToken));
         lock (_gate)
         {
             if (updateBaseline && !_closed && !_closing && !_owner.IsRetired && _directory.IsActive)
@@ -189,6 +198,13 @@ public sealed partial class DocumentSession
            a.ReferenceBehaviors.Count!=b.ReferenceBehaviors.Count || a.ReferenceBehaviors.Any(p=>!b.ReferenceBehaviors.TryGetValue(p.Key,out var x)||x!=p.Value) ||
            a.ManualReferenceSources.Count!=b.ManualReferenceSources.Count || a.ManualReferenceSources.Zip(b.ManualReferenceSources).Any(p=>p.First.PortId!=p.Second.PortId || !p.First.MemberPath.SequenceEqual(p.Second.MemberPath,StringComparer.Ordinal)))
             throw new InvalidOperationException("工具声明在持久化期间变化。");
+    }
+    private static FrozenSaveReceipt WithEmbeddedResourceWarnings(FrozenSaveReceipt receipt)
+    {
+        var warnings=receipt.WrittenSnapshot.Diagnostics.Where(item=>item.Severity=="Warning"&&item.Code.StartsWith("RESOURCE_EMBED_",StringComparison.Ordinal))
+            .Select(item=>item.Message).Distinct(StringComparer.Ordinal).ToList();
+        if(!string.IsNullOrEmpty(receipt.Warning))warnings.Insert(0,receipt.Warning);
+        return warnings.Count==0?receipt:receipt with{Warning=string.Join(Environment.NewLine,warnings)};
     }
     private void ReleaseDecodedResources() => Interlocked.Exchange(ref _decodedResources,null)?.Dispose();
 }

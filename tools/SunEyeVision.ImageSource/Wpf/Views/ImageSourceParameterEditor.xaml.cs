@@ -27,7 +27,11 @@ public partial class ImageSourceParameterEditor : UserControl, IToolSettingsView
         }
     }
 
-    public ImageSourceParameterEditor(IToolSettingsDraft draft, ToolSettingsViewOptions options) : this()=>Bind(draft,options);
+    public ImageSourceParameterEditor(IToolSettingsDraft draft, ToolSettingsViewOptions options)
+    {
+        InitializeComponent();
+        Bind(draft, options);
+    }
 
     public void Bind(IToolSettingsDraft draft,ToolSettingsViewOptions options)
     {
@@ -57,8 +61,16 @@ public partial class ImageSourceParameterEditor : UserControl, IToolSettingsView
             EnsureCurrentBinding();
             options.AcceptCandidate?.Invoke(candidate);
         });
+        var conditions=options.ParentConditions?.ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal)
+            ??new Dictionary<string,IReadOnlyList<FieldCondition>>(StringComparer.Ordinal);
+        conditions[ImageSourceFields.ShowImageName]=[new(ImageSourceFields.SourceKind,"local")];
+        conditions[ImageSourceFields.StopAtLast]=[new(ImageSourceFields.AutoSwitch,true)];
+        conditions[ImageSourceFields.FolderPath]=[new(ImageSourceFields.SourceKind,"local")];
+        conditions[ImageSourceFields.RefreshFolder]=[new(ImageSourceFields.SourceKind,"local")];
+        conditions[ImageSourceFields.TriggerFolderRun]=[new(ImageSourceFields.SourceKind,"local")];
+        conditions[ImageSourceFields.ClearStitchValue]=[new(ImageSourceFields.StitchEnabled,true)];
         Editor.Bind(draft, options with { InputSection = null, InputAfterField = ImageSourceFields.SourceKind,
-            InputCondition = new FieldCondition(ImageSourceFields.SourceKind,"camera") });
+            InputCondition = new FieldCondition(ImageSourceFields.SourceKind,"camera"), ParentConditions=conditions });
         EnsureCurrentBinding();
         Editor.Changed+=OnFieldsChanged;
         if(_source is not null)_source.Changed+=OnSourceChanged;
@@ -69,6 +81,7 @@ public partial class ImageSourceParameterEditor : UserControl, IToolSettingsView
     public FrameworkElement View => this;
     public bool HasInvalidInput => Editor.HasInvalidInput;
     public bool HasPendingEdits=>Editor.HasPendingEdits;
+    public bool HasPendingEditsOutside(IReadOnlySet<string> excludedFields)=>Editor.HasPendingEditsOutside(excludedFields);
     public long AcceptedRevision=>Editor.AcceptedRevision;
     public IReadOnlyList<string> AcceptedFieldOrder=>Editor.AcceptedFieldOrder;
     public FieldSettings CaptureAcceptedFields()=>Editor.CaptureAcceptedFields();
@@ -76,9 +89,8 @@ public partial class ImageSourceParameterEditor : UserControl, IToolSettingsView
     private void OnFieldsChanged(){_source?.RefreshSourceDraft();ViewChanged?.Invoke();}
     private void OnSourceChanged()
     {
-        // The strip can also change declared fields such as automatic switching.
-        // Re-read the accepted private draft so scalar editors cannot retain stale values.
-        Editor.Bind(Editor.Draft??throw new InvalidOperationException("图像源设置草稿已释放。"),Editor.Options);
+        // Camera identity belongs to the input slot, not a materialized parameter row.
+        // The shared draft revision lets the host accept that edit without rebuilding the page.
         ViewChanged?.Invoke();
     }
     public bool TryCapture(out FieldSettings fields, out string error)

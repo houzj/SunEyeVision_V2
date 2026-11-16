@@ -1,0 +1,26 @@
+{
+  "kind": "采集失败次数原件分支与宿主分类接缝",
+  "process": "D:/MyWork/Rea逆向/analysis/full-audit/image-source-native-0.c",
+  "processSha256": "600FAA687D61B61ACBD7207FE2FDEF569647D6BF91F5F34AFBE5719ECCFF61CA",
+  "setParam": "D:/MyWork/Rea逆向/analysis/full-audit/image-source-native-3.c",
+  "setParamSha256": "08B8DFCD958B692E5059EC895737202BD5731CD701912CBA5F2EF2F8FD0B8F6E",
+  "nativeBranch": [
+    "实际GetImage失败分支写ModuStatus=0，增加this+0x25A60并写GetCameraFailCount",
+    "该分支没有写SNCode或FrameNum；不以SDK缺省读回0伪造输出",
+    "相机正常帧写出当前失败次数，不因成功清零",
+    "ImageSourceType和CameraID设置分支将this+0x25A60清零"
+  ],
+  "hostImplementation": [
+    "CameraRuntimeManager仅在实际Adapter.CaptureAsync调用周围将超时及指定取帧错误分类为CameraFrameAcquisitionException",
+    "ImageSourceHostInputPreparer将已分类失败转换为冻结的本轮相机失败输入；取消、身份和清理错误继续传播",
+    "ImageSourceRunState维护Int32失败次数；Runtime以同一失败输出reader发布，成功和后续处理失败读回同一计数",
+    "output.camera-failure-count为可选Int32声明，非相机来源不填；SN和计数进入正式手工订阅来源清单"
+  ],
+  "limitations": [
+    "归档程序集与本机哈希不同，未新增原机运行",
+    "只按Runtime实际观察到的来源/设备变化重置，未执行的中间切换和重复同值设置语义未闭合",
+    "释放/恢复异常仍是宿主失败，不合并为可执行工具结果",
+    "模块状态与原生错误数值全映射未实施"
+  ],
+  "verification": "全量Release编译0错误、6087警告、22.69秒；测试、程序、探针均未启动"
+}

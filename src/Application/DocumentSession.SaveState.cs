@@ -42,7 +42,17 @@ public sealed partial class DocumentSession
                 if (flow.WorkspaceSettings.OverviewY is {} y) writer.WriteNumber("y", y); else writer.WriteNull("y");
                 writer.WriteStartArray("display");
                 foreach (var node in flow.Nodes)
-                { writer.WriteStartObject(); writer.WriteString("node", node.Id); writer.WriteString("source", node.SelectedDisplayReference); writer.WriteEndObject(); }
+                {
+                    writer.WriteStartObject(); writer.WriteString("node", node.Id); writer.WriteString("source", node.SelectedDisplayReference);
+                    if(node.DisplayOverlays is {} overlays)
+                    {
+                        writer.WriteString("background",overlays.Background);
+                        writer.WriteStartArray("slots");
+                        foreach(var slot in overlays.Slots)writer.WriteStringValue(slot);
+                        writer.WriteEndArray();
+                    }
+                    writer.WriteEndObject();
+                }
                 writer.WriteEndArray(); writer.WriteEndObject();
             }
             writer.WriteEndArray();

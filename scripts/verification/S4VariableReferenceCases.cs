@@ -29,7 +29,7 @@ internal static class S2DocumentEditingCases
         var text=new VariableSelectionItem("文本","参数",3,"不适配整数","abc",new VariableReference("solution","text",DataType.Text));
         IReadOnlyList<VariableSelectionItem> rows=new[]{scalar,sequence,text};
         ParameterSetting accepted=new ReferenceSetting(module.Reference(BindingSelection.All));var writes=0;VariableSelectionRequest? request=null;
-        using var field=new DeclaredFieldEditor(new Port("value",DataType.Integer,EditModes:FieldEditModes.Reference),"来源",accepted,
+        using var field=new DeclaredFieldRow(new Port("value",DataType.Integer,EditModes:FieldEditModes.Reference),"来源",accepted,
             value=>{accepted=value;writes++;},new ReferenceFieldOptions(_=>new(new[]{module},new[]{index},rows),EditableIndex:true,SelectVariable:selection=>request=selection));
         owner.Content=field;Pump();owner.UpdateLayout();var session=Session(field);
         void Open(){Command(session,"DropDownCommand");Command(session,"ClickCommand",Nodes(Property(session,"SourceNodes")).Single(node=>(bool)Property(node,"VariableManager")));}
@@ -66,7 +66,7 @@ internal static class S2DocumentEditingCases
             field.IsEnabled=true;Pump();Open();var disposed=request!;field.Dispose();Require(!disposed.IsValid&&!disposed.TrySelect(scalar)&&writes==3,"销毁未退役变量选择");
         });
         ParameterSetting modalAccepted=new ReferenceSetting(module.Reference(BindingSelection.All));var modalWrites=0;
-        using var modalField=new DeclaredFieldEditor(new Port("numeric",DataType.Integer,Storage:NumericStorage.Int32,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"数值",modalAccepted,
+        using var modalField=new DeclaredFieldRow(new Port("numeric",DataType.Integer,Storage:NumericStorage.Int32,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"数值",modalAccepted,
             value=>{modalAccepted=value;modalWrites++;},new ReferenceFieldOptions(_=>new(new[]{module},new[]{index},new[]{scalar}),EditableIndex:true));
         owner.Content=modalField;Pump();owner.UpdateLayout();var modalSession=Session(modalField);
         Case("原数值组合经实际Owner模态选择框接纳变量",()=>
@@ -107,7 +107,7 @@ internal static class S2DocumentEditingCases
             IReadOnlyList<VariableSelectionItem> recoveryRows=new[]{scalar};
             VariableSelectionRequest? recovery=null;var acceptedRecovery=(ParameterSetting)new VariableSetting(sequence.Reference);var recoveryWrites=0;
             var recoveryOwner=new Window{Width=680,Height=300,Left=-10000,ShowInTaskbar=false};
-            using var recoveryField=new DeclaredFieldEditor(new Port("recovery",DataType.Integer,EditModes:FieldEditModes.Reference),"失效恢复",acceptedRecovery,
+            using var recoveryField=new DeclaredFieldRow(new Port("recovery",DataType.Integer,EditModes:FieldEditModes.Reference),"失效恢复",acceptedRecovery,
                 value=>{acceptedRecovery=value;recoveryWrites++;},new ReferenceFieldOptions(_=>new(Array.Empty<DeclaredReferenceCandidate>(),Array.Empty<DeclaredReferenceCandidate>(),recoveryRows),EditableIndex:true,SelectVariable:value=>recovery=value));
             recoveryOwner.Content=recoveryField;recoveryOwner.Show();Pump();var recoverySession=Session(recoveryField);
             Command(recoverySession,"DropDownCommand");Require(recoveryField.HasInvalidText&&recoveryWrites==0,"删除前提没有标记来源失效");
@@ -149,7 +149,7 @@ internal static class S2DocumentEditingCases
                 ParameterSetting current=variableSource?new VariableSetting(new VariableReference("solution","sequence",sequence.Reference.Type,new BindingSelection.AtConstant(0)))
                     :new ReferenceSetting(source.Reference(new BindingSelection.AtConstant(0)));
                 var changes=0;VariableSelectionRequest? indexRequest=null;var indexOwner=new Window{Width=680,Height=300,Left=-10000,ShowInTaskbar=false};
-                using var indexField=new DeclaredFieldEditor(new Port("indexed",DataType.Integer,EditModes:FieldEditModes.Reference),"索引",current,
+                using var indexField=new DeclaredFieldRow(new Port("indexed",DataType.Integer,EditModes:FieldEditModes.Reference),"索引",current,
                     value=>{current=value;changes++;},new ReferenceFieldOptions(_=>new(new[]{source},Array.Empty<DeclaredReferenceCandidate>(),new[]{scalar,sequence,text}),EditableIndex:true,SelectVariable:value=>indexRequest=value));
                 indexOwner.Content=indexField;indexOwner.Show();Pump();var indexSession=Session(indexField);Command(indexSession,"DropDownCommand");
                 var manager=Nodes(Property(indexSession,"IndexNodes")).Single(node=>(bool)Property(node,"VariableManager"));
@@ -166,7 +166,7 @@ internal static class S2DocumentEditingCases
             var source=new DeclaredReferenceCandidate("模块数组","array-owner","flow",new Port("values",TypeRef.SequenceOf(DataType.Integer,CountConstraint.Exactly(2))),Array.Empty<string>());
             ParameterSetting selected=new ReferenceSetting(source.Reference(new BindingSelection.AtConstant(0)));var writesIndex=0;
             var indexOwner=new Window{Width=680,Height=300,Left=-10000,ShowInTaskbar=false};
-            using var actual=new DeclaredFieldEditor(new Port("actual-index",DataType.Integer,EditModes:FieldEditModes.Reference),"实际索引",selected,
+            using var actual=new DeclaredFieldRow(new Port("actual-index",DataType.Integer,EditModes:FieldEditModes.Reference),"实际索引",selected,
                 value=>{selected=value;writesIndex++;},new ReferenceFieldOptions(_=>new(new[]{source},Array.Empty<DeclaredReferenceCandidate>(),new[]{scalar,sequence,text}),EditableIndex:true));
             indexOwner.Content=actual;indexOwner.Show();Pump();var sessionIndex=Session(actual);
             void OpenIndex(){Command(sessionIndex,"DropDownCommand");Command(sessionIndex,"IndexClickCommand",Nodes(Property(sessionIndex,"IndexNodes")).Single(node=>(bool)Property(node,"VariableManager")));}
@@ -189,7 +189,7 @@ internal static class S2DocumentEditingCases
                     :new ReferenceSetting(source.Reference(new BindingSelection.AtVariable(scalar.Reference)));
                 var changes=0;VariableSelectionRequest? pending=null;
                 IReadOnlyList<VariableSelectionItem> available=new[]{scalar,sequence};
-                using var refreshField=new DeclaredFieldEditor(new Port("refresh-index",DataType.Integer,EditModes:FieldEditModes.Reference),"索引刷新",selected,
+                using var refreshField=new DeclaredFieldRow(new Port("refresh-index",DataType.Integer,EditModes:FieldEditModes.Reference),"索引刷新",selected,
                     value=>{selected=value;changes++;},new ReferenceFieldOptions(_=>new(new[]{source},Array.Empty<DeclaredReferenceCandidate>(),available),EditableIndex:true,SelectVariable:value=>pending=value));
                 var refreshOwner=new Window{Width=680,Height=300,Left=-10000,ShowInTaskbar=false,Content=refreshField};
                 refreshOwner.Show();Pump();var refreshSession=Session(refreshField);

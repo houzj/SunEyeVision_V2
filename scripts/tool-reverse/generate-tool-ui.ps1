@@ -22,7 +22,8 @@
 
     显隐：CustomVisible 静态值 + 当前取值命中的 Triggers（VisibleOperation/HiddenOperation）求初始状态。
 
-    边界：Triggers 里依赖运行期外部状态的显隐、弹层内容、滑杆展开态不还原；不执行算法。
+    边界：Triggers 里依赖运行期外部状态的显隐、滑杆展开态不还原；弹窗还原形态
+    （变量树/色板/帮助/计算器可开合），弹窗内候选数据为运行期占位；不执行算法。
 
 .PARAMETER Root
     证据库根目录，默认 docs/07-工具逆向。
@@ -65,6 +66,14 @@ if (-not (Test-Path -LiteralPath $outRoot)) { New-Item -ItemType Directory -Path
 $iconOut = Join-Path $outRoot 'assets\icons'
 if (-not (Test-Path -LiteralPath $iconOut)) { New-Item -ItemType Directory -Path $iconOut -Force | Out-Null }
 $utf8 = New-Object System.Text.UTF8Encoding($false)
+
+# ---------------------------------------------------------------- 弹窗证据（固化自原件 XAML，数据驱动）
+$dlgDataPath = Join-Path $PSScriptRoot 'data\dialog-evidence.json'
+$dlgCalcPath = Join-Path $PSScriptRoot 'data\calculator-keys.json'
+if (-not (Test-Path -LiteralPath $dlgDataPath)) { throw "弹窗证据缺失: $dlgDataPath" }
+if (-not (Test-Path -LiteralPath $dlgCalcPath)) { throw "计算器证据缺失: $dlgCalcPath" }
+$script:dlgData = [System.IO.File]::ReadAllText($dlgDataPath, $utf8) | ConvertFrom-Json
+$script:dlgCalc = [System.IO.File]::ReadAllText($dlgCalcPath, $utf8) | ConvertFrom-Json
 
 # ---------------------------------------------------------------- 原件度量（取自 XAML）
 $script:M = [ordered]@{
@@ -535,6 +544,52 @@ details ul{margin:8px 0 0;padding-left:18px}
 details li{font-size:12px;color:#4B5563;line-height:1.8}
 details code{background:#F1F3F5;border:1px solid #E3E6EA;border-radius:3px;padding:0 3px;font-size:11px}
 .iconmiss{display:inline-block;width:16px;height:16px;line-height:16px;text-align:center;border:1px dashed #E5484D;color:#E5484D;font-size:11px}
+
+/* ---------------------------------------------------------------------------
+   弹窗层：形态逐项取自 CalculatorWindow.xaml / SubTreeView.xaml / ColorPickerFirstItem.xaml
+   --------------------------------------------------------------------------- */
+dialog.dlg{border:1px solid #B9BEC5;border-radius:3px;box-shadow:0 10px 30px rgba(0,0,0,.28);padding:0;background:#F2F3F5}
+dialog.dlg::backdrop{background:rgba(61,61,61,.35)}
+.dlg .dtb{height:30px;background:#3D3D3D;display:flex;align-items:center;gap:7px;padding:0 8px}
+.dlg .dtb b{color:#fff;font-size:13px;font-weight:700}
+.dlg .dtb .dx{margin-left:auto;color:#D5D8DD;font-size:13px;line-height:1;cursor:pointer;padding:2px 4px}
+.dlg .dbody{padding:10px}
+.dlg .dnote{font-size:11px;color:#98A0AA;padding:0 10px 8px;line-height:1.6}
+
+/* 变量绑定树：SubTreeView.xaml 行高30 复选框+名称；容器 180 边框 #CCCCCD 圆角4 */
+.vtree{width:200px;max-height:260px;overflow:auto;background:#fff;border:1px solid #CCCCCD;border-radius:4px;padding:3px 0}
+.vtree .tn{display:flex;align-items:center;height:30px;font-size:14px;color:#333;padding:0 6px;white-space:nowrap}
+.vtree .tn img{margin-right:5px;flex:0 0 auto}
+.vtree .tn.child{padding-left:24px}
+
+/* 色板：ColorPickerFirstItem.xaml 196 宽，格 13px 边框 #D0D0D0，悬停描边 #FEAB38 */
+.pal{width:206px;background:#fff;border:1px solid #A9A9A9;padding:2px}
+.pal .ph{height:21px;background:#DDE7EE;border-bottom:2px solid #BFBFBF;color:#00008B;font:bold 11px Arial;line-height:21px;padding-left:4px;margin-bottom:2px}
+.pal .pg{display:grid;grid-template-columns:repeat(10,13px);margin:0 4px 4px}
+.pal .pg span{width:13px;height:13px;border:1px solid #D0D0D0;margin:0 -1px -1px 0;cursor:pointer;display:block;position:relative}
+.pal .pg span:hover{outline:2px solid #FEAB38;outline-offset:-1px;z-index:1}
+.pal .pnf{display:flex;align-items:center;gap:6px;margin:2px 4px 4px;font-size:12px;color:#666}
+.pal .pnf i{width:13px;height:26px;border:1px solid #D0D0D0;background:linear-gradient(135deg,#fff 45%,#333 55%)}
+
+/* 计算器：CalculatorWindow.xaml 504x448，表达式框 432x118，按键 40x28 */
+.calc{width:504px;background:#F2F3F5}
+.calc .xrow{display:flex;gap:8px;padding:20px 12px 0}
+.calc .exp{width:432px;height:118px;border:1px solid #CCCCCD;border-radius:2px;background:#FCFCFC;font:14px "Microsoft YaHei";color:#333;padding:5px 0 0 6px;resize:none;outline:none}
+.calc .exp:focus{border-color:#8B8B8C}
+.calc .tbtn{flex:0 0 32px;width:32px;height:32px;border:1px solid #B8B6B6;border-radius:2px;background:#FBFBFC;display:flex;align-items:center;justify-content:center;padding:0}
+.calc .mid{display:flex;padding:14px 12px 0}
+.calc .kp{display:flex;flex-wrap:wrap;width:176px}
+.calc .kp2{display:flex;flex-wrap:wrap;width:46px}
+.calc .kp3{display:flex;flex-wrap:wrap;width:220px;margin-left:28px}
+.calc button.k{width:40px;height:28px;margin:2px 0 0 2px;border:1px solid #C6C6C7;border-radius:2px;background:linear-gradient(#F7F7F8,#ECECEE);font:14px Arial;color:#666;cursor:pointer;padding:0;line-height:1;display:flex;align-items:center;justify-content:center}
+.calc button.k:hover{border-color:#8B8B8C}
+.calc button.k:active{border-color:var(--theme)}
+.calc .cval{display:flex;align-items:center;gap:12px;padding:16px 12px 0;font-size:14px;color:#666}
+.calc .cval input{width:102px;height:30px;border:1px solid #CCCCCD;border-radius:2px;background:#FCFCFC;font:14px "Microsoft YaHei";color:#333;padding:0 0 0 6px;outline:none}
+.calc .cval .tail{margin-left:auto;display:flex;align-items:center;gap:3px}
+.calc .ft{display:flex;justify-content:flex-end;gap:10px;padding:6px 14px;background:#E4E5E5;border-top:1px solid #C8C4C4;margin-top:12px}
+.calc .ft button{width:70px;height:25px;border:1px solid #B8B6B6;border-radius:2px;background:#D6D5D4;font:12px "Microsoft YaHei";color:#666;cursor:pointer}
+.calc .ft button:hover{border-color:var(--theme)}
 '@
 
 $js = @'
@@ -549,7 +604,29 @@ $js = @'
     };
   });
   var cb=document.getElementById('showhid');
-  if(cb){cb.onchange=function(){document.body.classList.toggle('showhid',cb.checked);};}
+  if(cb){cb.onchange=function(){document.body.classList.toggle('showhid',cb.checked);};};
+  // 弹窗事件委托：[data-dialog] 打开对应 <dialog>；[data-close] 或点击背板/Esc 关闭
+  document.addEventListener('click',function(e){
+    if(!e.target||!e.target.closest)return;
+    var t=e.target.closest('[data-dialog]');
+    if(t){var d=document.getElementById('dlg-'+t.getAttribute('data-dialog'));if(d&&d.showModal){d.showModal();}return;}
+    var c=e.target.closest('[data-close]');
+    if(c){var dd=c.closest('dialog');if(dd){dd.close();}return;}
+    if(e.target instanceof HTMLDialogElement){e.target.close();}
+  });
+  // 计算器按键：函数键插入 '名()'，其余插入原字符，退格删除（对齐原件 Button_Click / RemoveText）
+  var exp=document.getElementById('calc-exp');
+  var dlgCalc=document.getElementById('dlg-calc');
+  if(exp&&dlgCalc){
+    dlgCalc.addEventListener('click',function(e){
+      if(!e.target||!e.target.closest)return;
+      var k=e.target.closest('button.k');
+      if(!k)return;
+      if(k.getAttribute('data-act')==='remove'){exp.value=exp.value.slice(0,-1);return;}
+      var fn=k.getAttribute('data-key');
+      exp.value=fn?(exp.value+fn+'()'):(exp.value+k.textContent);
+    });
+  }
 })();
 '@
 
@@ -605,8 +682,9 @@ function New-NumericControl {
     param([string]$Value, [switch]$WithLink)
     $h = '<span class="num"><input class="v" value="' + (Encode-Html (Get-NumberText $Value)) + '" readonly tabindex="-1"><span class="sp"><span class="up"><b></b></span><span class="dn"><b></b></span></span></span>'
     if ($WithLink) {
-        # combo_ic_关联_normal.png 实际 32x32，ButtonSelecter_sub 里是 32px 列
-        $h += '<button class="link" title="关联/下拉">' + (New-IconImg -Name 'combo_ic_关联_normal.png' -W 32 -H 32 -Alt '关联') + '</button>'
+        # combo_ic_关联_normal.png 实际 32x32，ButtonSelecter_sub 里是 32px 列；点击弹变量树（形态=SubTreeView.xaml）
+        $script:stat.dlgVar++
+        $h += '<button class="link" title="关联/下拉" data-dialog="varTree">' + (New-IconImg -Name 'combo_ic_关联_normal.png' -W 32 -H 32 -Alt '关联') + '</button>'
     }
     return $h
 }
@@ -627,6 +705,101 @@ function New-CmpCombo {
 
 function New-CmpRangePair {
     return (New-NumericControl -Value '') + '<span class="sep">~</span>' + (New-NumericControl -Value '')
+}
+
+# ---------------------------------------------------------------- 弹窗模板（数据全部来自 data/*.json 固化的原件证据）
+function New-VarTreeDialogHtml {
+    $vt = $script:dlgData.varTree
+    $h = '<dialog class="dlg" id="dlg-varTree" style="width:222px">'
+    $h += '<div class="dtb"><b>' + (Encode-Html (Get-Text 'Lang_VariableManager')) + '</b><span class="dx" data-close title="关闭">&#10005;</span></div>'
+    $h += '<div class="dbody" style="padding:6px"><div class="vtree">'
+    foreach ($g in $vt.placeholderGroups) {
+        $gt = Get-Text ([string]$g.labelKey)
+        $h += '<div class="tn">' + (New-IconImg -Name 'combo_ic_triangle_normal.png' -W 12 -H 12 -Alt '') + '<span>' + (Encode-Html $gt) + '</span></div>'
+        foreach ($c in $g.children) {
+            $h += '<div class="tn child">' + (New-IconImg -Name 'check2-box_off.png' -W 16 -H 16 -Alt '') + '<span>' + (Encode-Html ([string]$c.label)) + '</span></div>'
+        }
+    }
+    $h += '</div></div>'
+    $h += '<div class="dnote">' + (Encode-Html ([string]$vt.placeholderNote)) + '</div></dialog>'
+    return $h
+}
+
+function New-PaletteDialogHtml {
+    $p = $script:dlgData.palette
+    $h = '<dialog class="dlg" id="dlg-palette" style="width:222px">'
+    $h += '<div class="dtb"><b>' + (Encode-Html (Get-Text '颜色')) + '</b><span class="dx" data-close title="关闭">&#10005;</span></div>'
+    $h += '<div class="dbody" style="padding:4px"><div class="pal">'
+    $h += '<div class="ph">' + (Encode-Html (Get-Text ([string]$p.themeHeaderKey))) + '</div>'
+    foreach ($row in $p.themeColors) {
+        $h += '<div class="pg">'
+        foreach ($c in $row) { $h += '<span style="background:' + $c + '"></span>' }
+        $h += '</div>'
+    }
+    $h += '<div class="ph">' + (Encode-Html (Get-Text ([string]$p.standardHeaderKey))) + '</div>'
+    $h += '<div class="pg">'
+    foreach ($c in $p.standardColors) { $h += '<span style="background:' + $c + '"></span>' }
+    $h += '</div>'
+    $h += '<div class="pnf"><i></i><span>' + (Encode-Html (Get-Text ([string]$p.noFill.labelKey))) + '</span></div>'
+    $h += '</div></div></dialog>'
+    return $h
+}
+
+function New-HelpDialogHtml {
+    param([string]$DisplayName, [string]$Status)
+    $h = '<dialog class="dlg" id="dlg-help" style="width:340px">'
+    $h += '<div class="dtb"><b>' + (Encode-Html $DisplayName) + '</b><span class="dx" data-close title="关闭">&#10005;</span></div>'
+    $h += '<div class="dbody" style="font-size:13px;color:#333;line-height:1.9;padding-bottom:6px">'
+    $h += '<div>' + (Encode-Html $DisplayName) + '</div>'
+    $h += '<div class="dnote" style="padding:6px 0 0">原件标题栏「?」的说明文本由运行期按工具注册注入，语言字典未登记静态键，预览不臆造文案。</div>'
+    if ($Status) { $h += '<div class="dnote" style="padding:4px 0 0">证据状态：' + (Encode-Html $Status) + '</div>' }
+    $h += '</div></dialog>'
+    return $h
+}
+
+function New-CalculatorDialogHtml {
+    param([string]$VarName)
+    $c = $script:dlgCalc
+    $w = [int]$c.window.width
+    $h = '<dialog class="dlg" id="dlg-calc" style="width:' + ($w + 2) + 'px">'
+    $h += '<div class="dtb"><b>' + (Encode-Html $VarName) + '</b><span class="dx" data-close title="关闭">&#10005;</span></div>'
+    $h += '<div class="calc">'
+    $h += '<div class="xrow"><textarea class="exp" id="calc-exp" spellcheck="false"></textarea>'
+    $h += '<span class="tbtn" title="选择变量（弹层形态与变量树一致）">' + (New-IconImg -Name 'combo_ic_关联_normal.png' -W 32 -H 32 -Alt '关联') + '</span></div>'
+    $h += '<div class="mid">'
+    foreach ($kp in $c.keypads) {
+        $pn = [string]$kp.panel
+        $h += '<div class="kp' + $(if ($pn -eq 'middle') { '2' } elseif ($pn -eq 'right') { '3' }) + '">'
+        foreach ($k in $kp.keys) {
+            $style = ''
+            if ($k.width) { $style = 'width:' + [int]$k.width + 'px;' }
+            if ($k.height -and [int]$k.height -ne 28) { $style += 'height:' + [int]$k.height + 'px;' }
+            $styAttr = ''
+            if ($style) { $styAttr = ' style="' + $style + '"' }
+            $lbl = [string]$k.label
+            if ($lbl -eq 'backspace') {
+                $h += '<button class="k" data-act="remove" title="退格"' + $styAttr + '>' + (New-IconImg -Name ([string]$k.icon) -W 20 -H 20 -Alt '退格') + '</button>'
+                continue
+            }
+            $dk = ''
+            if ($lbl -match '^[a-z]+$') { $dk = ' data-key="' + $lbl + '"' }
+            $tip = ''
+            if ($k.canEditOnly) { $tip = ' title="运行期按 CanEdit 启用"' }
+            $h += '<button class="k"' + $dk + $tip + $styAttr + '>' + (Encode-Html $lbl) + '</button>'
+        }
+        $h += '</div>'
+    }
+    $h += '</div>'
+    $cv = $c.cvalueRow
+    $h += '<div class="cval"><span>' + (Encode-Html (Get-Text ([string]$cv.labelKeys[0]))) + '</span>'
+    $h += '<input value="" readonly tabindex="-1">'
+    $h += '<span class="tail">' + (Encode-Html (Get-Text ([string]$cv.labelKeys[1]))) + (New-IconImg -Name 'swith_off.png' -W 48 -H 32 -Alt '累加开关') + '</span></div>'
+    $h += '<div class="ft">'
+    foreach ($b in $c.bottomBar.buttons) {
+        $h += '<button data-close>' + (Encode-Html (Get-Text ([string]$b.labelKey))) + '</button>'
+    }
+    $h += '</div></div></dialog>'
+    return $h
 }
 
 function Render-Node {
@@ -791,7 +964,8 @@ function Render-Node {
             $ctl = '<span style="display:flex;align-items:center;gap:6px;min-width:0">'
             # eyeToggleButton 32x32，see_normal.png 实际 28x28
             $ctl += '<span style="flex:0 0 32px;width:32px;height:32px;display:flex;align-items:center;justify-content:center">' + (New-IconImg -Name $eyes -W 28 -H 28 -Alt '显示') + '</span>'
-            $ctl += '<span class="colorbtn" title="线宽/颜色"></span>'
+            $script:stat.dlgPal++
+            $ctl += '<span class="colorbtn" title="线宽/颜色" data-dialog="palette"></span>'
             $ctl += '</span>'
             return (New-Row -Label $label -LabelKey $labelKey -ControlHtml $ctl -Hidden $hidden -Disabled $disabled)
         }
@@ -799,14 +973,24 @@ function Render-Node {
             $script:stat.rows++
             $v = Get-CurrentValue $Node
             $ctl = '<span class="txt"><input class="v" value="' + (Encode-Html $v) + '" readonly tabindex="-1"></span>'
-            $ctl += '<button class="link" title="关联/下拉">' + (New-IconImg -Name 'combo_ic_关联_normal.png' -W 32 -H 32 -Alt '关联') + '</button>'
+            if ($type -eq 'ButtonSelecter_CalculatorPro') {
+                # CalculatorWindow.xaml 触发点：变量计算工具的表达式选择控件（全库仅此一处）
+                $script:stat.dlgCalc++
+                $script:stat.calcName = $label
+                $ctl += '<button class="link" title="表达式计算器" data-dialog="calc">' + (New-IconImg -Name 'combo_ic_关联_normal.png' -W 32 -H 32 -Alt '计算器') + '</button>'
+            }
+            else {
+                $script:stat.dlgVar++
+                $ctl += '<button class="link" title="关联/下拉" data-dialog="varTree">' + (New-IconImg -Name 'combo_ic_关联_normal.png' -W 32 -H 32 -Alt '关联') + '</button>'
+            }
             return (New-Row -Label $label -LabelKey $labelKey -ControlHtml $ctl -Hidden $hidden -Disabled $disabled)
         }
         'string' {
             $script:stat.rows++
             $v = Get-CurrentValue $Node
             $ctl = '<span class="txt"><input class="v" value="' + (Encode-Html $v) + '" readonly tabindex="-1"></span>'
-            $ctl += '<button class="link" title="订阅/关联">' + (New-IconImg -Name 'combo_ic_关联_normal.png' -W 32 -H 32 -Alt '关联') + '</button>'
+            $script:stat.dlgVar++
+            $ctl += '<button class="link" title="订阅/关联" data-dialog="varTree">' + (New-IconImg -Name 'combo_ic_关联_normal.png' -W 32 -H 32 -Alt '关联') + '</button>'
             return (New-Row -Label $label -LabelKey $labelKey -ControlHtml $ctl -Hidden $hidden -Disabled $disabled)
         }
         'path' {
@@ -831,7 +1015,8 @@ function Render-Node {
         'list' {
             $script:stat.rows++
             $ctl = '<span class="txt"><input class="v" value="" readonly tabindex="-1"></span>'
-            $ctl += '<button class="link" title="添加">' + (New-IconImg -Name 'add_normal.png' -W 20 -H 20 -Alt '添加') + '</button>'
+            $script:stat.dlgVar++
+            $ctl += '<button class="link" title="添加" data-dialog="varTree">' + (New-IconImg -Name 'add_normal.png' -W 20 -H 20 -Alt '添加') + '</button>'
             return (New-Row -Label $label -LabelKey $labelKey -ControlHtml $ctl -Hidden $hidden -Disabled $disabled)
         }
         'command' {
@@ -916,11 +1101,13 @@ function Render-Node {
             # 全局模板 ColorConfig（XmlUi/styles/paramusercontroldatatemplate.xaml 的 x:Key="ColorConfig"）
             $script:stat.rows++
             $h = '<div style="display:flex;align-items:center;gap:6px;padding:6px 8px">'
-            $h += '<span class="colorbtn" title="颜色"></span>'
-            $h += '<span class="hint" style="padding:0">颜色弹层未展开</span>'
+            $script:stat.dlgPal++
+            $h += '<span class="colorbtn" title="颜色" data-dialog="palette"></span>'
+            $h += '<span class="hint" style="padding:0">点色块弹出色板（形态=ColorPickerFirstItem.xaml）</span>'
             $h += '</div>'
-            $inner = New-CmpBlock -Source 'XmlUi/styles/paramusercontroldatatemplate.xaml (x:Key="ColorConfig")' -Inner $h -Note '颜色候选与取色弹层内容未还原'
-            $ctl = $inner + '<button class="link" title="关联">' + (New-IconImg -Name 'combo_ic_关联_normal.png' -W 32 -H 32 -Alt '关联') + '</button>'
+            $inner = New-CmpBlock -Source 'XmlUi/styles/paramusercontroldatatemplate.xaml (x:Key="ColorConfig")' -Inner $h -Note '色板候选取自原件 ColorPickerFirstItem.xaml；取色回填不联动'
+            $script:stat.dlgVar++
+            $ctl = $inner + '<button class="link" title="关联" data-dialog="varTree">' + (New-IconImg -Name 'combo_ic_关联_normal.png' -W 32 -H 32 -Alt '关联') + '</button>'
             return (New-Row -Label $label -LabelKey $labelKey -ControlHtml $ctl -Hidden $hidden -Disabled $disabled)
         }
         'empty' {
@@ -950,24 +1137,26 @@ function Render-Container {
     param([object]$Node, [int]$Depth)
 
     $sb = New-Object System.Text.StringBuilder
-    foreach ($c in $Node.SelectNodes('Categorys/Category')) {
+    # Categorys 下除 Category 外还有 CategoryNoHead 等变体元素名（如 CalculatorModuleAlgorithmTab.xml），按 LocalName 前缀识别
+    foreach ($c in $Node.SelectNodes('Categorys/*')) {
+        if ($c.LocalName -notmatch '^Category') { continue }
         $cn = Get-NodeText $c 'DisplayName'
         if (-not $cn) { $cn = [string]$c.GetAttribute('Name') }
         $dispType = Get-NodeText $c 'DisplayType'
         $cls = 'cat'
-        if ($dispType -eq 'CategoryNoHead') { $cls = 'cat nohd' }
+        if ($c.LocalName -eq 'CategoryNoHead' -or $dispType -eq 'CategoryNoHead') { $cls = 'cat nohd' }
         [void]$sb.Append('<div class="' + $cls + '"><div class="ln"></div><h3>' + (Encode-Html (Get-Text $cn)) + '</h3>')
         [void]$sb.Append((Render-Container $c $Depth))
         [void]$sb.Append('</div>')
         $script:stat.categories++
     }
     foreach ($it in $Node.SelectNodes('Items/*')) {
-        if ($it.LocalName -eq 'Category') {
+        if ($it.LocalName -match '^Category') {
             $cn = Get-NodeText $it 'DisplayName'
             if (-not $cn) { $cn = [string]$it.GetAttribute('Name') }
             $dispType = Get-NodeText $it 'DisplayType'
             $cls = 'cat'
-            if ($dispType -eq 'CategoryNoHead') { $cls = 'cat nohd' }
+            if ($it.LocalName -eq 'CategoryNoHead' -or $dispType -eq 'CategoryNoHead') { $cls = 'cat nohd' }
             [void]$sb.Append('<div class="' + $cls + '"><div class="ln"></div><h3>' + (Encode-Html (Get-Text $cn)) + '</h3>')
             [void]$sb.Append((Render-Container $it $Depth))
             [void]$sb.Append('</div>')
@@ -994,7 +1183,7 @@ function New-ToolUi {
     $status = [string]$Evidence.evidenceState
     if (-not $status) { $status = [string]$Evidence.status }
 
-    $script:stat = [pscustomobject]@{ rows = 0; categories = 0; groups = 0; hidden = 0; raw = 0; tabs = 0; unknown = 0; empty = 0; notAdopted = 0 }
+    $script:stat = [pscustomobject]@{ rows = 0; categories = 0; groups = 0; hidden = 0; raw = 0; tabs = 0; unknown = 0; empty = 0; notAdopted = 0; dlgVar = 0; dlgPal = 0; dlgCalc = 0; calcName = '' }
 
     $script:notAdopted = @{}
     if ($Evidence.currentImplementation -and $Evidence.currentImplementation.notAdopted) {
@@ -1083,7 +1272,7 @@ function New-ToolUi {
     [void]$sb.AppendLine('</div>')
     $naMeta = ''
     if ($script:stat.notAdopted -gt 0) { $naMeta = ' · 我方不采用 <b>' + $script:stat.notAdopted + '</b>' }
-    [void]$sb.AppendLine('<div class="meta">窗口 <b>' + $winW + 'x' + $winH + '</b> · 页签 <b>' + $script:stat.tabs + '</b> · 分类 <b>' + $script:stat.categories + '</b> · 参数行 <b>' + $script:stat.rows + '</b> · 初始隐藏 <b>' + $script:stat.hidden + '</b> · 共用组 <b>' + $script:stat.groups + '</b> · 无中文 <b>' + $script:stat.raw + '</b> · 未还原类型 <b>' + $script:stat.unknown + '</b>' + $naMeta + ' <label style="margin-left:12px;cursor:pointer"><input type="checkbox" id="showhid"> 显示初始隐藏项</label></div>')
+    [void]$sb.AppendLine('<div class="meta">窗口 <b>' + $winW + 'x' + $winH + '</b> · 页签 <b>' + $script:stat.tabs + '</b> · 分类 <b>' + $script:stat.categories + '</b> · 参数行 <b>' + $script:stat.rows + '</b> · 初始隐藏 <b>' + $script:stat.hidden + '</b> · 共用组 <b>' + $script:stat.groups + '</b> · 无中文 <b>' + $script:stat.raw + '</b> · 未还原类型 <b>' + $script:stat.unknown + '</b> · 弹窗（关联树 <b>' + $script:stat.dlgVar + '</b> / 色板 <b>' + $script:stat.dlgPal + '</b> / 计算器 <b>' + $script:stat.dlgCalc + '</b>）' + $naMeta + ' <label style="margin-left:12px;cursor:pointer"><input type="checkbox" id="showhid"> 显示初始隐藏项</label></div>')
 
     # 我方与原件形态不同的品类（相机：多品牌多接口），差异写在卡片 currentImplementation.differences
     $diffs = @()
@@ -1097,7 +1286,7 @@ function New-ToolUi {
     }
 
     [void]$sb.AppendLine('<div class="win" style="margin-top:10px;width:' + $winW + 'px">')
-    [void]$sb.AppendLine('<div class="tb"><i>1</i><b>' + (Encode-Html $displayName) + '</b><span class="q">?</span><span class="x">&#10005;</span></div>')
+    [void]$sb.AppendLine('<div class="tb"><i>1</i><b>' + (Encode-Html $displayName) + '</b><span class="q" data-dialog="help" style="cursor:pointer" title="帮助">?</span><span class="x">&#10005;</span></div>')
     [void]$sb.AppendLine('<div class="tabs">')
     for ($ti = 0; $ti -lt $tabs.Count; $ti++) {
         $cls = 'tab'
@@ -1123,17 +1312,23 @@ function New-ToolUi {
     [void]$sb.AppendLine('<li>图标：<code>Apps.XmlUI/resources</code>、<code>Apps.Style/resources</code> 原件 PNG，逐张复制到 <code>ui/assets/icons/</code>。</li>')
     [void]$sb.AppendLine('<li>主题色：<code>Apps.ColorFun/colorstyle1.xaml</code>（主题色 <code>#E76900</code>、面板底 <code>#F2F3F5</code>、分隔线 <code>#E0DFDE</code>）。</li>')
     [void]$sb.AppendLine('<li>共用组：<code>Group.xml</code> 的 <code>GroupInfoItem</code> 就地展开。</li>')
+    [void]$sb.AppendLine('<li>弹窗：<code>CalculatorWindow.xaml</code>（504x448 按键清单）、<code>SubTreeView.xaml</code>（变量树行高30）、<code>ColorPickerFirstItem.xaml</code>（主题色6x10+标准色10），数据固化于 <code>scripts/tool-reverse/data/*.json</code>。</li>')
     [void]$sb.AppendLine('<li>中文：<code>Lang/zh-cn.xaml</code> 等三份语言字典；查不到的中文按原件英文键显示，标签带红色虚线下划线。</li>')
     [void]$sb.AppendLine('</ul></details>')
 
     [void]$sb.AppendLine('<details><summary>没有还原的部分（不要当成原件等价物）</summary><ul>')
-    [void]$sb.AppendLine('<li>弹层内容（下拉候选、颜色选择、滑杆展开态、订阅树）未还原，只画收起态。</li>')
+    [void]$sb.AppendLine('<li>弹窗已还原形态（变量树 / 色板 / 帮助 / 计算器，可开合）；弹窗内候选数据为运行期占位，双击选中、取色回填、下拉候选、滑杆展开态等数据联动不还原。</li>')
     [void]$sb.AppendLine('<li>显隐只按当前取值的 Triggers 求初始状态，运行期由代码改的显隐不在此列。</li>')
     [void]$sb.AppendLine('<li>像素级误差仍在：字体渲染、控件内边距、部分样式的 hover/按下态未逐项对齐。</li>')
     [void]$sb.AppendLine('<li>不执行算法，不含运行结果与 ROI 交互。</li>')
     [void]$sb.AppendLine('</ul></details>')
 
     [void]$sb.AppendLine('</div>')
+    # 弹窗：每页注入 变量树/色板/帮助；计算器仅当页面含 ButtonSelecter_CalculatorPro 触发点
+    [void]$sb.AppendLine((New-VarTreeDialogHtml))
+    [void]$sb.AppendLine((New-PaletteDialogHtml))
+    [void]$sb.AppendLine((New-HelpDialogHtml -DisplayName $displayName -Status $status))
+    if ($script:stat.dlgCalc -gt 0) { [void]$sb.AppendLine((New-CalculatorDialogHtml -VarName ([string]$script:stat.calcName))) }
     [void]$sb.AppendLine('<script>' + $js + '</script>')
     [void]$sb.AppendLine('</body></html>')
 

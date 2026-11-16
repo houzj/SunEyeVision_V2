@@ -1,0 +1,9 @@
+PluginDevKit 模板引用回归 2026-11-08
+
+命令：
+- dotnet build PluginDevKit/templates/RuntimePlugin.Template/RuntimePlugin.Template.csproj -c Release --no-restore -p:UseSharedCompilation=false -p:PluginDevKitBuild=false -p:SdkPath=<PluginDevKit>/sdk/net9.0/
+- dotnet build PluginDevKit/templates/WpfTool.Template/WpfTool.Template.csproj -c Release --no-restore -p:UseSharedCompilation=false -p:PluginDevKitBuild=false -p:SdkPath=<PluginDevKit>/sdk/net9.0/
+
+结果：两个模板均 0 错误。模板显式引用发布 Contracts、Runtime、Wpf DLL，不引用主仓源码或旧 Plugin.SDK。警告仅为离线漏洞源访问和模板示例事件未使用。
+
+PluginDevKit/scripts/build-sdk.ps1 -Configuration Release：Contracts、Runtime、Wpf、Foundation 均 0 错误，随后 validate-components.ps1 PASS。当前 SDK DLL 已从本次 Release 重新复制。

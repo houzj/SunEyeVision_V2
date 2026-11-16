@@ -96,7 +96,6 @@ public partial class ShellTopBarControl
             button.Content = image;
         }
         else button.Content = entry.Label;
-        if (entry.Special == "theme") ConfigureTheme(button);
         if (entry.Special != "undo") return button;
 
         var wrapper = new Grid(); wrapper.Children.Add(button);
@@ -119,26 +118,4 @@ public partial class ShellTopBarControl
 
     private static ImageSource ImageSource(string path) => new BitmapImage(new Uri("pack://application:,,," + path, UriKind.Absolute));
 
-    private void ConfigureTheme(Button button)
-    {
-        button.ClearValue(ToolTipProperty);
-        var style = new Style(typeof(Button), (Style)FindResource("TitleBarButton"));
-        style.Setters.Add(new Setter(ToolTipProperty, "切换到深色主题"));
-        var dark = new DataTrigger { Binding = new Binding("IsDarkTheme"), Value = true };
-        dark.Setters.Add(new Setter(ToolTipProperty, "切换到浅色主题")); style.Triggers.Add(dark); button.Style = style;
-        // 本方主题入口：按原件工具栏图标的视觉权重绘制，颜色随主题变化。
-        var shape = new Path { StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round, StrokeLineJoin = PenLineJoin.Round };
-        shape.SetBinding(Shape.StrokeProperty, new Binding("Foreground") { RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(Button), 1) });
-        var shapeStyle = new Style(typeof(Path));
-        shapeStyle.Setters.Add(new Setter(Path.DataProperty, new CombinedGeometry(GeometryCombineMode.Exclude,
-            new EllipseGeometry(new Point(10, 10), 8, 8), new EllipseGeometry(new Point(14, 6), 7.4, 7.4))));
-        shapeStyle.Setters.Add(new Setter(Shape.FillProperty, new Binding("Foreground") { RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(Button), 1) }));
-        shapeStyle.Setters.Add(new Setter(Shape.StrokeThicknessProperty, 0d));
-        var trigger = new DataTrigger { Binding = new Binding("IsDarkTheme"), Value = true };
-        trigger.Setters.Add(new Setter(Path.DataProperty, Geometry.Parse("M 10,2 L 10,4 M 10,16 L 10,18 M 2,10 L 4,10 M 16,10 L 18,10 M 4.3,4.3 L 5.7,5.7 M 14.3,14.3 L 15.7,15.7 M 15.7,4.3 L 14.3,5.7 M 5.7,14.3 L 4.3,15.7 M 14,10 A 4,4 0 1 1 6,10 A 4,4 0 1 1 14,10")));
-        trigger.Setters.Add(new Setter(Shape.FillProperty, Brushes.Transparent));
-        trigger.Setters.Add(new Setter(Shape.StrokeThicknessProperty, 2.1));
-        shapeStyle.Triggers.Add(trigger); shape.Style = shapeStyle;
-        button.Content = new Viewbox { Width = 26, Height = 26, Child = shape };
-    }
 }

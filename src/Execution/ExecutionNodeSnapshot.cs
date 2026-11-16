@@ -11,7 +11,7 @@ public sealed class ExecutionNodeSnapshot
     internal ExecutionNodeSnapshot(string workflowId, string nodeId, ToolConfiguration configuration,
         IToolDefinition definition, RuntimeDirectorySnapshot directory, ToolSchema schema, ToolSchema settingsSchema,
         ToolSchema displaySchema, IReadOnlyDictionary<string, ParameterReferenceBehavior> referenceBehaviors,
-        IReadOnlyDictionary<string, string> bindingNames, IReadOnlySet<string> activeInputs,
+        IReadOnlyDictionary<string, string> bindingNames, IReadOnlySet<string> activeInputs, FieldSettings dormantParameterDefaults,
         ToolHostDeclarationSnapshot hostDeclarations, IReadOnlyList<ManualReferenceSource> manualReferenceSources,
         ToolExecutionOwner owner)
     {
@@ -40,6 +40,7 @@ public sealed class ExecutionNodeSnapshot
             new Dictionary<string, ParameterReferenceBehavior>(referenceBehaviors, StringComparer.Ordinal));
         BindingNames = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>(bindingNames, StringComparer.Ordinal));
         ActiveInputs = System.Collections.Frozen.FrozenSet.ToFrozenSet(activeInputs, StringComparer.Ordinal);
+        _dormantParameterDefaults = dormantParameterDefaults;
         HostDeclarations = new ToolHostDeclarationSnapshot(hostDeclarations.HostInputs,
             Array.AsReadOnly(hostDeclarations.ResourceFields.ToArray()), hostDeclarations.Fingerprint);
         ArgumentNullException.ThrowIfNull(manualReferenceSources);
@@ -69,6 +70,7 @@ public sealed class ExecutionNodeSnapshot
     public IReadOnlyDictionary<string, ParameterReferenceBehavior> ReferenceBehaviors { get; }
     public IReadOnlyDictionary<string, string> BindingNames { get; }
     public IReadOnlySet<string> ActiveInputs { get; }
+    private readonly FieldSettings _dormantParameterDefaults;
     public ToolHostDeclarationSnapshot HostDeclarations { get; }
     public IReadOnlyList<ManualReferenceSource> ManualReferenceSources { get; }
     public Guid DocumentOwnerId => Owner.Id;
@@ -84,7 +86,8 @@ public sealed class ExecutionNodeSnapshot
         var display = DisplaySchema.Inputs.Select(port => port.Id).ToHashSet(StringComparer.Ordinal);
         var inputs = Schema.Inputs.Select(port => port.Id).ToHashSet(StringComparer.Ordinal);
         var fields = Configuration.Fields.Capture()
-            .Where(pair => !display.Contains(pair.Key) && (!inputs.Contains(pair.Key) || ActiveInputs.Contains(pair.Key)))
+            .Where(pair => !display.Contains(pair.Key) && !_dormantParameterDefaults.Declarations.ContainsKey(pair.Key)
+                && (!inputs.Contains(pair.Key) || ActiveInputs.Contains(pair.Key)))
             .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
         var order = Configuration.ParameterBindingOrder;
         var referenced = order.ToHashSet(StringComparer.Ordinal);
@@ -97,7 +100,11 @@ public sealed class ExecutionNodeSnapshot
     {
         if (Definition is not IToolSettingsFields fields)
             throw new InvalidOperationException("工具缺少正式设置声明。");
-        return Definition.FreezeSettings(fields.MaterializeSettings(
-            Configuration.Fields.Select(SettingsSchema.Inputs).Materialize(resolved)));
+        var settings = Configuration.Fields.Select(SettingsSchema.Inputs);
+        if (_dormantParameterDefaults.Declarations.Count != 0)
+            settings = settings.Apply(_dormantParameterDefaults.Capture().ToDictionary(pair=>pair.Key,pair=>
+                pair.Value is ConstantSetting {Value:null}&&settings.Declarations[pair.Key] is {Required:false,EditModes:FieldEditModes.Reference}
+                    ? (ParameterSetting)new UnsetSetting() : pair.Value,StringComparer.Ordinal));
+        return Definition.FreezeSettings(fields.MaterializeSettings(settings.Materialize(resolved)));
     }
 }

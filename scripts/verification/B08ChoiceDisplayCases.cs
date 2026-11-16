@@ -60,8 +60,8 @@ internal static class ChoiceDisplayCases
                 Reject(()=>new DeclaredChoiceDisplayItem("a","标签","single",false));
                 Reject(()=>new DeclaredChoiceDisplayOptions(new[]{frozen.Items[0],frozen.Items[0]}));
                 Reject(()=>new DeclaredChoiceDisplayOptions(new[]{frozen.Items[1],new DeclaredChoiceDisplayItem("duplicate-key","重复","single",true)}));
-                using var valid=new DeclaredFieldEditor(Mode,"模式",new ConstantSetting("single"),_=>{},choiceDisplay:frozen);
-                Reject(()=>new DeclaredFieldEditor(Mode,"模式",new ConstantSetting("single"),_=>{},choiceDisplay:new(new[]{frozen.Items[1]})));
+                using var valid=new DeclaredFieldRow(Mode,"模式",new ConstantSetting("single"),_=>{},choiceDisplay:frozen);
+                Reject(()=>new DeclaredFieldRow(Mode,"模式",new ConstantSetting("single"),_=>{},choiceDisplay:new(new[]{frozen.Items[1]})));
                 Reject(()=>new DeclaredFieldsView(new[]{(Mode,ModeUi,(ParameterSetting)new ConstantSetting("single"))},_=>{},choiceDisplays:new Dictionary<string,DeclaredChoiceDisplayOptions>{{"missing",frozen}}));
             });
             Case("原六项容器禁用及Tooltip，鼠标/键盘/程序事件不接纳占位项",()=>

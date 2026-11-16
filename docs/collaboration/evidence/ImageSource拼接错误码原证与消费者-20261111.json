@@ -1,0 +1,54 @@
+{
+  "kind": "原件错误码静态分支与现行消费者；本次不启动VM或宿主",
+  "installed": {
+    "path": "C:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Collection/ImageSourceModule/ImageSourceModule.dll",
+    "sha256": "F88A455061F3AE2D5E2EF157E7B3CAAFD94A2B95C39B5BBA096802E405EBC6C8",
+    "excerpt": "docs/collaboration/evidence/ImageSource拼接错误码-本机指令-20261111.txt",
+    "excerptSha256": "F54ADD0C87BD608A81374D23A5947EEA3308039B3A44142CBD10C90C31675584",
+    "widthCheck": "0x180020AC3 → 0x180020B5B",
+    "heightCheck": "0x180020BA9 → 0x180020B5B（直接或经日志）",
+    "return": "0x180020B5B: mov eax,0E0000502h"
+  },
+  "archive": {
+    "path": "D:/MyWork/Rea逆向/analysis/full-audit/image-source-native-7.json",
+    "sha256": "438AAE8D8159C8FE794C68645299B897EFDA778889F992AD79655C8DD154B316",
+    "procedure": "CMyAlgorithmManager::StitchImageOutput",
+    "restored": "docs/collaboration/evidence/ImageSource-StitchImageOutput-原件归档.c",
+    "bodySha256": "6FD48677973F78D10B066EAB5BBE79486A98A89064698EA74B682177502B1721"
+  },
+  "externalObservations": [
+    {
+      "nativeErrorCode": 3758097666,
+      "phase": "clear-width-rejected",
+      "path": "D:/MyWork/Rea逆向/docs/plugins/image-source-clear-evidence.json"
+    },
+    {
+      "nativeErrorCode": 3758097666,
+      "phase": "camera-invalid-stitch",
+      "path": "D:/MyWork/Rea逆向/docs/plugins/image-source-camera-evidence.json"
+    }
+  ],
+  "mapping": {
+    "nativeErrorCode": "0xE0000502",
+    "conditions": [
+      "拼接历史宽度不为0且不等于本帧宽度",
+      "拼接起点加高度超出本帧高度"
+    ],
+    "hostDiagnosticCode": "IMAGE_SOURCE_STITCH"
+  },
+  "consumers": [
+    "ImageSourceStitchState → ImageSourceProcessingException → ImageSourceSession",
+    "Diagnostic.NativeErrorCode → ToolOutcome → DeclaredOutputSnapshot.Diagnostics → ResultPublication.Diagnostics"
+  ],
+  "unmapped": [
+    "采集分类异常不套码",
+    "宿主身份和准入异常不套码",
+    "读图、像素格式和任意内存/释放异常不套码",
+    "原厂错误码全表尚未闭合"
+  ],
+  "verification": {
+    "tests": "已编写并编译，未运行",
+    "runtime": "未启动测试、程序或探针",
+    "build": "全量Release 0错误、6087警告、23.01秒"
+  }
+}

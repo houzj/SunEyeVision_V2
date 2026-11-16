@@ -45,7 +45,13 @@ internal sealed class NativeResultImageFrame : IImageData, IDisposable
                 && !runs.SequenceEqual(NativeResultRaster.Read(pixels.EffectiveDomain, Frame, Coordinates, Width, Height, limits, current)))
                 throw new ArgumentException("像素租约Domain元数据与实际行程不一致。");
             var buffer = new byte[length];
-            var channels = OriginalLayout.Format switch { PixelLayout.Gray8 => 1, PixelLayout.Bgr24 => 3, _ => 4 };
+            var channels = OriginalLayout.BytesPerPixel;
+            var (blue, green, red) = OriginalLayout.Format switch
+            {
+                PixelLayout.Gray8 => (0, 0, 0),
+                PixelLayout.Rgb24 => (2, 1, 0),
+                _ => (0, 1, 2)
+            };
             // Keep original RGB even outside Domain: the original mouse status reads this buffer.
             // Domain changes display alpha only; ReadPixel additionally preserves the original format and A.
             for (var row = 0; row < Height; row++)
@@ -56,8 +62,8 @@ internal sealed class NativeResultImageFrame : IImageData, IDisposable
                 for (var x = 0; x < Width; x++)
                 {
                     var from = x * channels; var to = (row * Width + x) * 4;
-                    buffer[to] = source[from]; buffer[to + 1] = source[from + (channels == 1 ? 0 : 1)];
-                    buffer[to + 2] = source[from + (channels == 1 ? 0 : 2)];
+                    buffer[to] = source[from + blue]; buffer[to + 1] = source[from + green];
+                    buffer[to + 2] = source[from + red];
                 }
             }
             foreach (var run in runs)
@@ -82,7 +88,7 @@ internal sealed class NativeResultImageFrame : IImageData, IDisposable
         if (x < 0 || x >= Width || y < 0 || y >= Height) throw new ArgumentOutOfRangeException(nameof(x));
         return ReadOriginal(pixels =>
         {
-            var channels = OriginalLayout.Format switch { PixelLayout.Gray8 => 1, PixelLayout.Bgr24 => 3, _ => 4 };
+            var channels = OriginalLayout.BytesPerPixel;
             return pixels.GetRow(y).Slice(x * channels, channels).ToArray();
         });
     }
@@ -93,6 +99,7 @@ internal sealed class NativeResultImageFrame : IImageData, IDisposable
         var format = layout.Format switch
         {
             PixelLayout.Gray8 => PixelFormats.Gray8,
+            PixelLayout.Rgb24 => PixelFormats.Rgb24,
             PixelLayout.Bgr24 => PixelFormats.Bgr24,
             PixelLayout.Bgra32 => PixelFormats.Bgra32,
             _ => throw new NotSupportedException("原图像素格式无法导出。")

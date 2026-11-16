@@ -9,3 +9,10 @@ public interface IToolExecutionInputs
     /// <summary>Checks branch-specific required inputs without resolving any source.</summary>
     IReadOnlyList<Diagnostic> ValidateExecutionInputs(FieldSettings configuration)=>Array.Empty<Diagnostic>();
 }
+
+/// <summary>Supplies invocation-only defaults for inactive parameter bindings.
+/// Persistent bindings remain in the document and resume when active again.</summary>
+public interface IToolDormantParameterDefaults
+{
+    IReadOnlyDictionary<string, ConstantSetting> SelectDormantParameterDefaults(FieldSettings configuration);
+}

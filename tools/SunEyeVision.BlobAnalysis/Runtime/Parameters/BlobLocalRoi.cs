@@ -33,9 +33,14 @@ public static class BlobLocalRoi
     public static bool Same(object? left,object? right)=>left is RecordValue a&&right is RecordValue b
         ?a.Declaration==b.Declaration&&a.CopyFields().Count==b.CopyFields().Count&&a.CopyFields().All(pair=>b.Contains(pair.Key)&&Same(pair.Value,b.Get<object?>(pair.Key)))
         :left is SequenceValue x&&right is SequenceValue y?x.Count==y.Count&&x.Zip(y).All(pair=>Same(pair.First,pair.Second)):Equals(left,right);
-    public static void Validate(RecordValue root,int maximumInspectionCount=16)
+    public const int MaximumLocalInspectionCount = 16;
+    public const int MaximumLocalMaskCount = 8;
+    internal const int MaximumInheritedCount = 64;
+
+    public static void Validate(RecordValue root,int maximumInspectionCount=MaximumLocalInspectionCount, bool inheritedMask=false)
     {
         if(root.Declaration!=Declaration)throw new ArgumentException("Blob本地区域声明不匹配。");
+        if(maximumInspectionCount is not (MaximumLocalInspectionCount or MaximumInheritedCount))throw new ArgumentException("区域数量合同无效。");
         foreach(var group in new[]{Inspection,Mask})
         {
             var coverage=Coverage(root,group);var rows=Items(root,group);
@@ -43,14 +48,22 @@ public static class BlobLocalRoi
                 throw new ArgumentException("区域覆盖状态无效。");
             if(coverage!=Explicit&&rows.Count!=0||coverage==Explicit&&rows.Count==0)
                 throw new ArgumentException("显式区域与覆盖状态不一致。");
-            if(maximumInspectionCount is not (16 or 64))throw new ArgumentException("区域数量合同无效。");
             if(group==Inspection&&rows.Count>maximumInspectionCount)throw new ArgumentException("检测区域数量超出允许范围。");
+            if(group==Mask&&rows.Count>(inheritedMask?MaximumInheritedCount:MaximumLocalMaskCount))
+                throw new ArgumentException("屏蔽区数量超出允许范围。");
             var ids=new HashSet<Guid>();
             foreach(var item in rows)
             {
                 if(!Guid.TryParseExact(item.Get<string>("id"),"N",out var id)||id==Guid.Empty||!ids.Add(id))throw new ArgumentException("区域身份无效或重复。");
                 if(string.IsNullOrWhiteSpace(item.Get<string>("name")))throw new ArgumentException("区域名称不能为空。");
-                ValidateShape(item.Get<RecordValue>("shape"));
+                var shape=item.Get<RecordValue>("shape");
+                ValidateShape(shape);
+                if(group==Mask)
+                {
+                    if(shape.Get<string>("kind")!="polygon")throw new ArgumentException("屏蔽区仅支持多边形。");
+                    if(shape.Get<SequenceValue>("vertices").Count>BlobMaskInheritance.MaximumVertices)
+                        throw new ArgumentException($"每个屏蔽区最多支持 {BlobMaskInheritance.MaximumVertices} 个顶点。");
+                }
             }
         }
     }

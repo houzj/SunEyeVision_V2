@@ -2,6 +2,7 @@ using SunEyeVision.Domain.Solutions;
 using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Execution;
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Runtime;
 
 namespace SunEyeVision.Application;
 
@@ -55,23 +56,24 @@ public sealed partial class DocumentSession
                     if (hosts.Any(pair => !requested.Contains(pair.Key.WorkflowId, StringComparer.Ordinal)) ||
                         images.Any(pair => !requested.Contains(pair.Key, StringComparer.Ordinal)))
                         throw new ArgumentException("运行输入属于未选择的流程。 ");
-                    var states = flows.ToDictionary(flow => flow, GraphState.Capture,
-                        (IEqualityComparer<WorkflowDefinition>)ReferenceEqualityComparer.Instance);
                     var actualVariables = Document.GlobalVariables.ToArray();
                     GlobalVariable[] definitions;
                     lock (GlobalVariable.ValueGate) definitions = GlobalVariable.CaptureDefinitions(actualVariables).ToArray();
-                    var dependencies = GraphDependencySnapshot.Create(Document, states, definitions, AdmitConfiguration);
+                    var plan = GetOrBuildExecutionPlan(flows, definitions);
+                    var workflowPlans = plan.Workflows.ToDictionary(item => item.Workflow,
+                        (IEqualityComparer<WorkflowDefinition>)ReferenceEqualityComparer.Instance);
                     var nodeCaptures = new Dictionary<ScopedNodeIdentity, RunNodeCapture>();
                     var snapshots = new Dictionary<string, ExecutionWorkflowSnapshot>(StringComparer.Ordinal);
                     foreach (var flow in selected)
                     {
+                        var workflowPlan = workflowPlans[flow];
                         var scope = OpenScope(flow.Id);
-                        var nodes = new List<ExecutionWorkflowNode>();
-                        foreach (var item in states[flow].Nodes)
+                        var views = new List<(ExecutionPlanNode Plan, AdmittedNodeView View)>();
+                        foreach (var item in workflowPlan.Nodes)
                         {
                             var view = RequireNode(scope, item.Node.Id);
-                            if (!ReferenceEquals(view.Node, item.Node) || !ReferenceEquals(item.Configuration, view.Node.Configuration))
-                                throw new InvalidOperationException("运行捕获期间节点实例或配置已改变。 ");
+                            if (!ReferenceEquals(view.Node, item.Node) || view.Node.IsEnabled != item.Enabled)
+                                throw new InvalidOperationException("运行捕获期间节点实例或图结构已改变。 ");
                             var hostKey = new ScopedNodeIdentity(flow.Id, item.Node.Id);
                             if (item.Enabled && hostFactory is not null && view.Configuration.HostDeclarations.HostInputs is not null && !hosts.Any(pair => pair.Key == hostKey))
                             {
@@ -86,21 +88,40 @@ public sealed partial class DocumentSession
                                     hosts.Add(new(hostKey, prepared));
                                 }
                             }
-                            var snapshot = IssueExecutionNode(view);
-                            nodeCaptures.Add(new(flow.Id, item.Node.Id), new(flow, item.Node, view.Configuration.Configuration, view.Configuration.ConfigurationIdentity));
-                            nodes.Add(new(snapshot, item.Enabled));
+                            views.Add((item, view));
                         }
-                        var predecessors = states[flow].Nodes.ToDictionary(item => item.Node.Id,
-                            item => (IReadOnlyCollection<string>)dependencies.GetPredecessors(new(flow.Id, item.Node.Id))
-                                .Where(source => source.WorkflowId == flow.Id).Select(source => source.NodeId).ToArray(), StringComparer.Ordinal);
-                        var control = states[flow].Nodes.ToDictionary(item => item.Node.Id,
-                            item => (IReadOnlyCollection<string>)states[flow].Edges.Where(edge => edge.TargetNodeId == item.Node.Id)
-                                .Select(edge => edge.SourceNodeId).Distinct(StringComparer.Ordinal).ToArray(), StringComparer.Ordinal);
-                        var edges = states[flow].Edges.Select(edge => new ExecutionControlEdge(edge.Edge.Id, edge.SourceNodeId, edge.TargetNodeId)).ToArray();
-                        snapshots.Add(flow.Id, new ExecutionWorkflowSnapshot(flow.Id, ChangeRevision, _directory, _owner, nodes, predecessors, control, edges));
+                        var cached = workflowPlan.CachedSnapshot;
+                        var canReuse = cached is not null && cached.Nodes.Count == views.Count &&
+                            views.Select((pair, index) => (pair, index)).All(item =>
+                                item.pair.View.Node.Id == cached!.Nodes[item.index].Node.NodeId &&
+                                ReferenceEquals(item.pair.View.Configuration.Configuration, cached.Nodes[item.index].Node.Configuration) &&
+                                item.pair.Plan.Enabled == cached.Nodes[item.index].IsEnabled);
+                        ExecutionWorkflowSnapshot runSnapshot;
+                        if (canReuse)
+                        {
+                            runSnapshot = cached!.WithDocumentRevision(ChangeRevision);
+                        }
+                        else
+                        {
+                            var nodes = views.Select(pair => new ExecutionWorkflowNode(IssueExecutionNode(pair.View), pair.Plan.Enabled)).ToArray();
+                            var predecessors = workflowPlan.Nodes.ToDictionary(item => item.Node.Id,
+                                item => (IReadOnlyCollection<string>)plan.Dependencies.GetPredecessors(new(flow.Id, item.Node.Id))
+                                    .Where(source => source.WorkflowId == flow.Id).Select(source => source.NodeId).ToArray(), StringComparer.Ordinal);
+                            var control = workflowPlan.Nodes.ToDictionary(item => item.Node.Id,
+                                item => (IReadOnlyCollection<string>)workflowPlan.Edges.Where(edge => edge.Edge.TargetNodeId == item.Node.Id)
+                                    .Select(edge => edge.Edge.SourceNodeId).Distinct(StringComparer.Ordinal).ToArray(), StringComparer.Ordinal);
+                            var edges = workflowPlan.Edges.Select(edge => new ExecutionControlEdge(edge.Edge.Id, edge.Edge.SourceNodeId, edge.Edge.TargetNodeId, edge.Edge.SourcePort)).ToArray();
+                            runSnapshot = new ExecutionWorkflowSnapshot(flow.Id, ChangeRevision, _directory, _owner, nodes, predecessors, control, edges);
+                            workflowPlan.CachedSnapshot = runSnapshot;
+                        }
+                        foreach (var pair in views)
+                            nodeCaptures.Add(new(flow.Id, pair.Plan.Node.Id),
+                                new(flow, pair.Plan.Node, pair.View.Configuration.Configuration, pair.View.Configuration.ConfigurationIdentity));
+                        snapshots.Add(flow.Id, runSnapshot);
                     }
                     if (hosts.Any(pair => !nodeCaptures.ContainsKey(pair.Key))) throw new ArgumentException("宿主输入不属于所选流程的实际节点。", nameof(hostInputs));
-                    var capturedVariables = CaptureRuntimeVariables(flows, definitions);
+                    var capturedVariables = CaptureRuntimeVariables(flows, definitions,
+                        ReferencedVariableImages(selected.SelectMany(flow => snapshots[flow.Id].Nodes)));
                     variableValues = capturedVariables.Values;
                     var producers = capturedVariables.Producers;
                     var acceptance = CreateRunParameterAcceptance(nodeCaptures);
@@ -116,11 +137,11 @@ public sealed partial class DocumentSession
                             (node, result) => { var key = new ScopedNodeIdentity(node.WorkflowId, node.NodeId);
                                 AcceptRunNodeResult(key, nodeCaptures[key], result, producerSnapshot, batchVariables, variableCaptures); });
                     }, StringComparer.Ordinal);
-                    var order = OrderRunWorkflows(requested, dependencies.GetEdges());
+                    var order = OrderRunWorkflows(requested, plan.Dependencies.GetEdges());
                     EnsureOpen();
                     if (Document.Id != _documentId || flows.Length != Document.Workflows.Count ||
                         flows.Where((flow, index) => !ReferenceEquals(flow, Document.Workflows[index])).Any() ||
-                        states.Any(pair => !pair.Value.MatchesCurrent(pair.Key)) ||
+                        !plan.Matches(Document) ||
                         actualVariables.Length != Document.GlobalVariables.Count ||
                         actualVariables.Where((variable, index) => !ReferenceEquals(variable, Document.GlobalVariables[index])).Any())
                         throw new InvalidOperationException("运行冻结期间正式方案已改变。 ");
@@ -131,7 +152,7 @@ public sealed partial class DocumentSession
                             latest.Where((variable, index) => variable.ValueRevision != definitions[index].ValueRevision).Any())
                             throw new InvalidOperationException("运行冻结期间变量配置或当前值已改变。 ");
                     }
-                    return new DocumentRunBatch(this, reservation, variableValues, requests, order, ownsReservation, hostGenerations);
+                    return new DocumentRunBatch(this, reservation, variableValues, requests, order, ownsReservation, hostGenerations, _executionEngine, _executionServer);
                 }
                 finally { _preparing = false; }
             }

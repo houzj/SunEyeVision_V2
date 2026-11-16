@@ -56,7 +56,7 @@ internal static class S2DocumentEditingCases
             foreach(var resource in new[]{"Shell/Resources/AppResources.xaml","Themes/Dark/DarkTheme.xaml"})Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary{Source=new Uri("pack://application:,,,/SunEyeVision.UI;component/"+resource)});
             owner=new Window{Width=700,Height=720,Title="正式字段消费验证"};owner.Resources.MergedDictionaries.Add(EditorResources.Create());owner.Show();Pump();
             ParameterSetting current=new ConstantSetting(100L);var writes=0;
-            var number=new DeclaredFieldEditor(new("threshold",DataType.Integer,Storage:NumericStorage.Int32),"阈值",current,
+            var number=new DeclaredFieldRow(new("threshold",DataType.Integer,Storage:NumericStorage.Int32),"阈值",current,
                 next=>{current=next;writes++;});
             Show(number);var input=(TextBox)number.InputElement!;
             input.Text="2147483648";Require(number.HasInvalidText&&Equals(((ConstantSetting)current).Value,100L)&&writes==0,"溢出数字污染草稿");
@@ -67,12 +67,12 @@ internal static class S2DocumentEditingCases
             Require(Equals(((ConstantSetting)current).Value,211L)&&writes==2,"无界原数值箭头未单次写入草稿；writes="+writes);
             Console.WriteLine("通过：声明Int32范围、整数格式、非法原文保留和修正恢复");
 
-            var exact=1d;var floating=new DeclaredFieldEditor(new("ratio",DataType.Number),"比例",new ConstantSetting(exact),next=>exact=(double)((ConstantSetting)next).Value!);
+            var exact=1d;var floating=new DeclaredFieldRow(new("ratio",DataType.Number),"比例",new ConstantSetting(exact),next=>exact=(double)((ConstantSetting)next).Value!);
             Show(floating);((TextBox)floating.InputElement!).Text="NaN";Require(floating.HasInvalidText&&exact==1d,"NaN通过声明校验");
             ((TextBox)floating.InputElement!).Text="0.5";floating.TryCommitPending();Require(!floating.HasInvalidText&&exact==.5d,"有限数值不能恢复");
             Console.WriteLine("通过：非有限数值拒绝，独立字段错误状态互不污染");
 
-            var choiceValue="Binary";var choice=new DeclaredFieldEditor(new("type",DataType.Text,Choices:new TextChoiceConstraint(new[]{"Binary","BinaryInv"})),"极性",
+            var choiceValue="Binary";var choice=new DeclaredFieldRow(new("type",DataType.Text,Choices:new TextChoiceConstraint(new[]{"Binary","BinaryInv"})),"极性",
                 new ConstantSetting(choiceValue),next=>choiceValue=(string)((ConstantSetting)next).Value!);
             Show(choice);
             ((ComboBox)choice.InputElement!).SelectedValue="BinaryInv";Require(choiceValue=="BinaryInv","已声明选项未提交到草稿");
@@ -86,7 +86,7 @@ internal static class S2DocumentEditingCases
             VerifyReferenceLeaseCleanup();
 
             var color=PresentationDeclarations.Color(10,20,30);var colorWrites=0;
-            var record=new DeclaredFieldEditor(new("color",PresentationDeclarations.Rgba),"颜色",new ConstantSetting(color),next=>{color=(RecordValue)((ConstantSetting)next).Value!;colorWrites++;});
+            var record=new DeclaredFieldRow(new("color",PresentationDeclarations.Rgba),"颜色",new ConstantSetting(color),next=>{color=(RecordValue)((ConstantSetting)next).Value!;colorWrites++;});
             Show(record);var colorInput=(NativeColorPresenter)record.InputElement!;
             var nativeColorCommand=SunEyeVision.Plugin.Wpf.Native.Input.Interaction.ListView.ColorPickerControlView.SelectColorCommand;
             void Pick(NativeColorPresenter target,Color value)=>nativeColorCommand.Execute(new SolidColorBrush(value),target.NativeView);
@@ -186,7 +186,7 @@ internal static class S2DocumentEditingCases
             Require(typeof(NativeColorPresenter).Assembly.GetType("SunEyeVision.Plugin.Wpf.Fields.ColorField")==null&&typeof(NativeColorPresenter).Assembly.GetType("SunEyeVision.Plugin.Wpf.Controls.VmColorPicker")==null,"自制色板仍作为产品后备路径");
             colorInput.ClosePalette();
             var rejectColor=true;var guardedAttempts=0;var guardedColor=PresentationDeclarations.Color(1,2,3);
-            var guardedEditor=new DeclaredFieldEditor(new("guarded-color",PresentationDeclarations.Rgba),"拒绝颜色",new ConstantSetting(guardedColor),next=>
+            var guardedEditor=new DeclaredFieldRow(new("guarded-color",PresentationDeclarations.Rgba),"拒绝颜色",new ConstantSetting(guardedColor),next=>
             {guardedAttempts++;if(rejectColor)throw new InvalidOperationException("颜色草稿已失效");guardedColor=(RecordValue)((ConstantSetting)next).Value!;});
             colorInput.Palette.IsDropDownOpen=true;Show(guardedEditor);Require(!colorInput.Palette.IsDropDownOpen,"卸载未关闭原色板");
             var guardedPicker=(NativeColorPresenter)guardedEditor.InputElement!;
@@ -217,24 +217,24 @@ internal static class S2DocumentEditingCases
             Console.WriteLine("通过：原VM色板默认/更多、重复原调色命令、外部恢复、RGBA、拒绝回滚及卸载关闭");
             var channelType=TypeRef.RecordOf("test.channel",new[]{new Port("r",DataType.Integer,Storage:NumericStorage.UInt8)});
             var channelValue=new RecordValue(channelType,new Dictionary<string,object?>{{"r",10L}});var channelWrites=0;
-            var channel=new DeclaredFieldEditor(new("channel",channelType),"通道",new ConstantSetting(channelValue),next=>{channelValue=(RecordValue)((ConstantSetting)next).Value!;channelWrites++;});
-            Show(channel);var red=Descendants(channel).OfType<DeclaredFieldEditor>().Single(field=>field.FieldId=="r");
+            var channel=new DeclaredFieldRow(new("channel",channelType),"通道",new ConstantSetting(channelValue),next=>{channelValue=(RecordValue)((ConstantSetting)next).Value!;channelWrites++;});
+            Show(channel);var red=Descendants(channel).OfType<DeclaredFieldRow>().Single(field=>field.FieldId=="r");
             ((TextBox)red.InputElement!).Text="256";Require(channel.HasInvalidText&&channelValue.Get<long>("r")==10&&channelWrites==0,"记录成员溢出仍更新了记录");
             ((TextBox)red.InputElement!).Text="255";red.TryCommitPending();Require(!channel.HasInvalidText&&channelValue.Get<long>("r")==255&&channelWrites==1,"记录成员纠正未原子更新");
             Console.WriteLine("通过：真实颜色控件原子写RGBA；通用记录UInt8非法原文拦截及修正恢复");
 
             ParameterSetting bound=new ConstantSetting(7L);
             var reference=new OutputReference("producer","port",TypeRef.ScalarOf(ScalarKind.Int64));
-            var binding=new DeclaredFieldEditor(new("optional",DataType.Integer,Required:false,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"可选数值",bound,
+            var binding=new DeclaredFieldRow(new("optional",DataType.Integer,Required:false,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"可选数值",bound,
                 next=>bound=next,new ReferenceFieldOptions(_=>new(new[]{new DeclaredReferenceCandidate("来源","producer",null,new Port("port",DataType.Integer),Array.Empty<string>())},Array.Empty<DeclaredReferenceCandidate>())));
             Show(binding);Click(binding,"切换为订阅");SelectReferenceLeaf(binding,c=>c.NodeId=="producer");Require(bound is ReferenceSetting source&&source.Reference.NodeId==reference.NodeId,"绑定意图未交给宿主");
             Click(binding,"切换为数值编辑");Require(bound is ConstantSetting restored&&Equals(restored.Value,7L),"常量备份没有恢复");
             Click(binding,"清除可选项");Require(bound is UnsetSetting,"清除可选项误变为空值或空集合");
             Console.WriteLine("通过：宿主选择绑定、恢复常量及明确Unset；控件不自行执行或发布");
 
-            var rejected=3L;var reject=new DeclaredFieldEditor(new("host-reject",DataType.Integer),"宿主拒绝",new ConstantSetting(rejected),_=>throw new InvalidOperationException("编辑范围已失效"));
+            var rejected=3L;var reject=new DeclaredFieldRow(new("host-reject",DataType.Integer),"宿主拒绝",new ConstantSetting(rejected),_=>throw new InvalidOperationException("编辑范围已失效"));
             Show(reject);((TextBox)reject.InputElement!).Text="4";reject.TryCommitPending();Require(reject.HasInvalidText&&reject.Error.Contains("编辑范围")&&Equals(((ConstantSetting)reject.Setting).Value,3L),"宿主拒绝后控件冒称写入成功");
-            var names=typeof(DeclaredFieldEditor).Assembly.GetReferencedAssemblies().Select(assembly=>assembly.Name!).ToArray();
+            var names=typeof(DeclaredFieldRow).Assembly.GetReferencedAssemblies().Select(assembly=>assembly.Name!).ToArray();
             Require(!names.Any(name=>name.Contains("Plugin.SDK")||name.Contains("Halcon",StringComparison.OrdinalIgnoreCase)||name=="SunEyeVision.UI"),"公共字段层倒置依赖");
             Console.WriteLine("通过：失效范围拒绝且保留原值；公共字段程序集不依赖SDK、HALCON或UI宿主");
             var imageType=TypeRef.ResourceOf(ResourceKind.Image);
@@ -242,7 +242,7 @@ internal static class S2DocumentEditingCases
             var sourceB=new DeclaredReferenceCandidate("B · 图像","B","workflow",new Port("output",imageType),Array.Empty<string>());
             ParameterSetting imageAccepted=new ReferenceSetting(sourceA.Reference(BindingSelection.All));
             var imageWrites=0;var imageRefreshFails=false;var imageWriteRejected=false;
-            using var imageEditor=new DeclaredFieldEditor(new("input",imageType,Required:false,EditModes:FieldEditModes.Reference),"输入源",imageAccepted,next=>
+            using var imageEditor=new DeclaredFieldRow(new("input",imageType,Required:false,EditModes:FieldEditModes.Reference),"输入源",imageAccepted,next=>
             {if(imageWriteRejected)throw new InvalidOperationException("写入被宿主拒绝");imageAccepted=next;imageWrites++;});
             imageEditor.UseImageSourceSelector(()=>
             {if(imageRefreshFails)throw new InvalidOperationException("候选来源读取失败");return new[]{sourceA,sourceB};});
@@ -277,7 +277,7 @@ internal static class S2DocumentEditingCases
 
             var takeoverWrites=0;
             ParameterSetting automatic=new ReferenceSetting(sourceA.Reference(BindingSelection.All),OriginId:"connection:edge");
-            using var takeover=new DeclaredFieldEditor(new("takeover",imageType,EditModes:FieldEditModes.Reference),"同源确认",automatic,next=>{automatic=next;takeoverWrites++;});
+            using var takeover=new DeclaredFieldRow(new("takeover",imageType,EditModes:FieldEditModes.Reference),"同源确认",automatic,next=>{automatic=next;takeoverWrites++;});
             takeover.UseImageSourceSelector(()=>new[]{sourceA,sourceB});Show(takeover);
             var takeoverCombo=(ComboBox)takeover.InputElement!;takeoverCombo.IsDropDownOpen=true;Pump();
             Require(takeoverWrites==0&&((ReferenceSetting)automatic).OriginId=="connection:edge","打开图像下拉擅自接管自动来源");
@@ -468,7 +468,7 @@ internal static class S2DocumentEditingCases
         object Session(DeclaredFieldAccess field)
         {
             Window.GetWindow(field.View)?.UpdateLayout();Pump();Require(field.View.IsLoaded&&field.View.IsVisible,"数值字段尚未真实加载/可见，不能取模板会话");
-            var numeric=typeof(DeclaredFieldEditor).GetField("_numeric",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(field.View)!;
+            var numeric=typeof(DeclaredFieldRow).GetField("_numeric",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(field.View)!;
             var coordinator=numeric.GetType().GetField("_coordinator",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(numeric)!;
             var box=(ComboBox?)coordinator.GetType().GetField("_box",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(coordinator)??throw new Exception("真实数值ComboBox模板尚未加载");
             Window.GetWindow(field.View)!.Activate();box.Focus();box.SetCurrentValue(ComboBox.IsDropDownOpenProperty,true);Pump();
@@ -487,7 +487,7 @@ internal static class S2DocumentEditingCases
         void VerifyImageCombo(string transition,(SunEyeVision.UI.Shared.WorkflowNode Target,string SourceId,string WidthPort) fixture,string pathA)
         {
             string ImageState(RuntimeToolConfiguration configuration)=>System.Text.Json.JsonSerializer.Serialize(configuration.Fields.Read(configuration.Schema.WorkflowImageInputId!));
-            (DeclaredFieldEditor Field,ComboBox Combo) ImageCombo(DefaultDebugWindow window)
+            (DeclaredFieldRow Field,ComboBox Combo) ImageCombo(DefaultDebugWindow window)
             {
                 var inputs=CrossVisuals(Control(window)).OfType<DeclaredInputFieldsView>().Single();
                 var field=inputs.Fields.Single(f=>f.FieldId==BlobTool.ImageInput);var combo=(ComboBox)field.InputElement!;
@@ -564,20 +564,20 @@ internal static class S2DocumentEditingCases
             var snapshot=new ReferenceCandidates(new[]{source},new[]{index},behavior:first);var reads=0;var supplied=first;var writes=0;
             var presentation=new FieldPresentation("policy","整数","参数",0,FieldEditorKind.Scalar){Layout=new("参数","参数",Minimum:0,Maximum:1000,DecimalPlaces:0)};
             var target=new Port("policy",DataType.Integer,Storage:NumericStorage.Int32,EditModes:FieldEditModes.Constant|FieldEditModes.Reference);
-            using var field=new DeclaredFieldEditor(target,"整数",new ReferenceSetting(source.Reference(new BindingSelection.AtConstant(0))),_=>writes++,
+            using var field=new DeclaredFieldRow(target,"整数",new ReferenceSetting(source.Reference(new BindingSelection.AtConstant(0))),_=>writes++,
                 new ReferenceFieldOptions(_=>snapshot,EditableIndex:true,ReadBehavior:_=>{reads++;return supplied;}),new ConstantSetting(7L),presentation:presentation);
             Show(field);var access=(DeclaredFieldAccess)Activator.CreateInstance(typeof(DeclaredFieldAccess),BindingFlags.Instance|BindingFlags.NonPublic,null,new object[]{field},null)!;var session=Session(access);Command(session,"DropDownCommand");supplied=ParameterReferenceBehavior.StrictExactlyOne;
             var text=(string)Property(session,"CurValueA")!;session.GetType().GetProperty("CurValueA")!.SetValue(session,System.Text.RegularExpressions.Regex.Replace(text,"\\[[^\\]]*\\]$","[]"));Pump();
             Require(reads==1&&writes==1&&field.Setting is ReferenceSetting {Reference.Selection:BindingSelection.AllItems}&&!field.HasInvalidText,"显式First未冻结一次/未接纳All[]");
             var leaf=Nodes(session,"IndexNodes").Single(n=>Property(n,"Candidate") is DeclaredReferenceCandidate c&&c.NodeId==index.NodeId);Command(session,"IndexClickCommand",leaf);Pump();
             Require(writes==2&&field.Setting is ReferenceSetting {Reference.Selection:BindingSelection.AtField dynamic}&&dynamic.Reference.Type.Shape==ValueShape.Sequence,"模块整数数组索引未显式传消费行为");
-            using var strict=new DeclaredFieldEditor(target,"严格整数",new ReferenceSetting(source.Reference(new BindingSelection.AtConstant(0))),_=>throw new Exception("严格字段不应写入"),
+            using var strict=new DeclaredFieldRow(target,"严格整数",new ReferenceSetting(source.Reference(new BindingSelection.AtConstant(0))),_=>throw new Exception("严格字段不应写入"),
                 new ReferenceFieldOptions(_=>snapshot,EditableIndex:true),new ConstantSetting(7L),presentation:presentation);Show(strict);var strictSession=Session((DeclaredFieldAccess)Activator.CreateInstance(typeof(DeclaredFieldAccess),BindingFlags.Instance|BindingFlags.NonPublic,null,new object[]{strict},null)!);Command(strictSession,"DropDownCommand");
             Require(!Nodes(strictSession,"IndexNodes").Any(n=>Property(n,"Candidate") is DeclaredReferenceCandidate),"默认Strict泄露整数数组索引");
             var strictText=(string)Property(strictSession,"CurValueA")!;strictSession.GetType().GetProperty("CurValueA")!.SetValue(strictSession,System.Text.RegularExpressions.Regex.Replace(strictText,"\\[[^\\]]*\\]$","[]"));Pump();
             Require(strict.HasInvalidText&&strict.Setting is ReferenceSetting {Reference.Selection:BindingSelection.AtConstant},"Strict多项All[]未保持旧接纳值");
             var invalid=new ReferenceSetting(source.Reference(new BindingSelection.AtField(index.Reference(BindingSelection.All),first)));
-            var accepted=(bool)typeof(DeclaredFieldEditor).GetMethod("TryApplySetting",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(strict,new object[]{invalid})!;
+            var accepted=(bool)typeof(DeclaredFieldRow).GetMethod("TryApplySetting",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(strict,new object[]{invalid})!;
             Require(!accepted&&strict.Setting is ReferenceSetting {Reference.Selection:BindingSelection.AtConstant},"程序提案绕过冻结Strict索引校验");
             Show(new TextBlock());Trace("PASS_BEHAVIOR_CONTROLS 冻结/All/模块数组索引/Strict/程序拒绝");
         }
@@ -851,7 +851,7 @@ internal static class S2DocumentEditingCases
                 Require(field.Setting is ConstantSetting c&&Equals(c.Value,value),"九字段初值没有消费正式声明："+name);
             }
             Require(fields.Fields.Where(f=>expected.Keys.Select(Id).Contains(f.FieldId)).Select(f=>f.FieldId).SequenceEqual(expected.Keys.Select(Id)),"九字段声明顺序被页面替身改写");
-            var placeholders=NativeDescendants(view.View).OfType<DeclaredFieldEditor>().Where(e=>e.FieldId.StartsWith("ui-only-run.")).ToArray();
+            var placeholders=NativeDescendants(view.View).OfType<DeclaredFieldRow>().Where(e=>e.FieldId.StartsWith("ui-only-run.")).ToArray();
             Require(placeholders.Length>0&&placeholders.All(e=>!e.IsEnabled&&e.ToolTip is string),"未接入试用行仍可误编辑或没有说明");
             var mode=fields.Fields.Single(f=>f.FieldId==Id("SegmentationMode"));var combo=(ComboBox)mode.InputElement!;
             combo.IsDropDownOpen=true;Pump();combo.UpdateLayout();
@@ -922,7 +922,7 @@ internal static class S2DocumentEditingCases
         var alternate=new DeclaredReferenceCandidate("来源","other",null,new Port("values",sequence),Array.Empty<string>());
         ParameterSetting accepted=new ReferenceSetting(source.Reference(new BindingSelection.AtConstant(2)));
         var writes=0;
-        using var field=new DeclaredFieldEditor(new("reference-enter",DataType.Integer,EditModes:FieldEditModes.Reference),"来源",accepted,
+        using var field=new DeclaredFieldRow(new("reference-enter",DataType.Integer,EditModes:FieldEditModes.Reference),"来源",accepted,
             value=>{accepted=value;writes++;},new ReferenceFieldOptions(_=>new(new[]{source,alternate},Array.Empty<DeclaredReferenceCandidate>()),EditableIndex:true));
         Show(field);
         var buttons=NativeDescendants(field).OfType<AppsPopup>().ToArray();
@@ -1020,7 +1020,7 @@ internal static class S2DocumentEditingCases
         Console.WriteLine("通过：集合记录成员投影保留正式集合类型");
 
         var refreshFails=false;var badProjection=false;var refreshWrites=0;
-        using var refreshField=new DeclaredFieldEditor(new("refresh",DataType.Integer,EditModes:FieldEditModes.Reference),"刷新",
+        using var refreshField=new DeclaredFieldRow(new("refresh",DataType.Integer,EditModes:FieldEditModes.Reference),"刷新",
             new ReferenceSetting(source.Reference(new BindingSelection.AtConstant(2))),_=>refreshWrites++,new ReferenceFieldOptions(_=>
             {
                 if(refreshFails)throw new InvalidOperationException("目录读取失败");
@@ -1053,14 +1053,14 @@ internal static class S2DocumentEditingCases
             var writes=0;var candidate=new DeclaredReferenceCandidate("数组","cleanup-source",null,
                 new Port("values",TypeRef.SequenceOf(DataType.Integer)),Array.Empty<string>());
             var alternate=candidate with{NodeId="cleanup-other"};
-            using var field=new DeclaredFieldEditor(new("cleanup-"+scenario,DataType.Integer,Storage:NumericStorage.Int32,
+            using var field=new DeclaredFieldRow(new("cleanup-"+scenario,DataType.Integer,Storage:NumericStorage.Int32,
                 EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"清理来源",
                 new ReferenceSetting(candidate.Reference(new BindingSelection.AtConstant(0))),_=>writes++,
                 new ReferenceFieldOptions(_=>new(new[]{candidate,alternate},Array.Empty<DeclaredReferenceCandidate>()),EditableIndex:true),
                 new ConstantSetting(7L),presentation:new("cleanup-"+scenario,"清理来源","参数",0,FieldEditorKind.Scalar)
                 {Layout=new("参数","参数",Minimum:0,Maximum:1000,DecimalPlaces:0)});
             Show(field);
-            var numeric=typeof(DeclaredFieldEditor).GetField("_numeric",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(field)!;
+            var numeric=typeof(DeclaredFieldRow).GetField("_numeric",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(field)!;
             var coordinator=numeric.GetType().GetField("_coordinator",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(numeric)!;
             var type=coordinator.GetType();
             object? Member(string name)=>type.GetField(name,BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(coordinator);
@@ -1114,7 +1114,7 @@ internal static class S2DocumentEditingCases
         var replacement=source with{NodeId="same-caption-new-id"};
         var currentSources=new[]{source,other};var currentIndices=new[]{index};var writes=0;
         var accepted=(ParameterSetting)new ReferenceSetting(source.Reference(new BindingSelection.AtField(index.Reference(BindingSelection.All))));
-        using var field=new DeclaredFieldEditor(new("candidate-refresh",DataType.Integer,EditModes:FieldEditModes.Reference),"候选刷新",accepted,
+        using var field=new DeclaredFieldRow(new("candidate-refresh",DataType.Integer,EditModes:FieldEditModes.Reference),"候选刷新",accepted,
             value=>{accepted=value;writes++;},new ReferenceFieldOptions(_=>new(currentSources,currentIndices),EditableIndex:true));
         Show(field);
         var session=NativeDescendants(field).OfType<ContentControl>().Single(item=>item.Content?.GetType().Name=="ReferenceFieldSession").Content;
@@ -1285,9 +1285,9 @@ internal static class S2DocumentEditingCases
     }
     private static void VerifyAtomicFieldGroup()
     {
-        using var left=new DeclaredFieldEditor(new("low",DataType.Number),"下限",new ConstantSetting(10d),_=>throw new Exception("不能逐字段写入"));
-        using var right=new DeclaredFieldEditor(new("high",DataType.Number),"上限",new ConstantSetting(20d),_=>throw new Exception("不能逐字段写入"));
-        var stateField=typeof(DeclaredFieldEditor).GetField("_state",BindingFlags.Instance|BindingFlags.NonPublic)!;
+        using var left=new DeclaredFieldRow(new("low",DataType.Number),"下限",new ConstantSetting(10d),_=>throw new Exception("不能逐字段写入"));
+        using var right=new DeclaredFieldRow(new("high",DataType.Number),"上限",new ConstantSetting(20d),_=>throw new Exception("不能逐字段写入"));
+        var stateField=typeof(DeclaredFieldRow).GetField("_state",BindingFlags.Instance|BindingFlags.NonPublic)!;
         var a=stateField.GetValue(left)!;var b=stateField.GetValue(right)!;var stateType=a.GetType();
         var tupleType=typeof(ValueTuple<,>).MakeGenericType(stateType,typeof(ParameterSetting));
         var method=stateType.GetMethod("TrySetGroup",BindingFlags.Static|BindingFlags.NonPublic)!;
@@ -1314,8 +1314,8 @@ internal static class S2DocumentEditingCases
         Require(!Apply(50,60,_=>throw new InvalidOperationException("拒绝整组"))&&Low()==30&&High()==40,"宿主拒绝污染一端");
         Console.WriteLine("通过：范围两字段先完整准备再一次宿主接纳，通知只见完整状态，非法或重入不半写");
 
-        using var observedLeft=new DeclaredFieldEditor(new("a",DataType.Number),"A",new ConstantSetting(1d),_=>{});
-        using var observedRight=new DeclaredFieldEditor(new("b",DataType.Number),"B",new ConstantSetting(2d),_=>{});
+        using var observedLeft=new DeclaredFieldRow(new("a",DataType.Number),"A",new ConstantSetting(1d),_=>{});
+        using var observedRight=new DeclaredFieldRow(new("b",DataType.Number),"B",new ConstantSetting(2d),_=>{});
         var values=Array.CreateInstance(tupleType,2);
         values.SetValue(Activator.CreateInstance(tupleType,stateField.GetValue(observedLeft),new ConstantSetting(3d)),0);
         values.SetValue(Activator.CreateInstance(tupleType,stateField.GetValue(observedRight),new ConstantSetting(4d)),1);
@@ -1337,7 +1337,7 @@ internal static class S2DocumentEditingCases
     private static void VerifyFieldState()
     {
         var writes=0;var changes=0;
-        using var scalar=new DeclaredFieldEditor(new("state-value",DataType.Integer,Storage:NumericStorage.Int32),"数值",new ConstantSetting(3L),_=>writes++);
+        using var scalar=new DeclaredFieldRow(new("state-value",DataType.Integer,Storage:NumericStorage.Int32),"数值",new ConstantSetting(3L),_=>writes++);
         scalar.Changed+=()=>changes++;
         Require(scalar.TrySetConstant(3L)&&writes==0&&changes==0,"同值提案仍重复写入或通知");
         Require(!scalar.TrySetConstant((long)int.MaxValue+1)&&scalar.HasInvalidText&&writes==0,"越界提案未拒绝");
@@ -1345,7 +1345,7 @@ internal static class S2DocumentEditingCases
         Console.WriteLine("通过：唯一字段状态同值无重复写入通知，非法后可显式修复");
 
         var initial=new[]{1d,2d};var arrayWrites=0;
-        using var array=new DeclaredFieldEditor(new("state-array",DataType.NumberArray),"数组",new ConstantSetting(initial),setting=>
+        using var array=new DeclaredFieldRow(new("state-array",DataType.NumberArray),"数组",new ConstantSetting(initial),setting=>
         {arrayWrites++;((double[])((ConstantSetting)setting).Value!)[0]=999;});
         initial[0]=77;
         Require(((double[])((ConstantSetting)array.Setting).Value!)[0]==1,"初始数组引用泄漏进状态");
@@ -1357,20 +1357,20 @@ internal static class S2DocumentEditingCases
 
         var referenceWrites=0;
         OutputReference Source()=>new("producer","values",TypeRef.SequenceOf(DataType.Integer),selection:new BindingSelection.AtConstant(2));
-        using var reference=new DeclaredFieldEditor(new("state-reference",DataType.Integer,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"来源",
+        using var reference=new DeclaredFieldRow(new("state-reference",DataType.Integer,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"来源",
             new ReferenceSetting(Source()),_=>referenceWrites++,new ReferenceFieldOptions(_=>new(new[]{new DeclaredReferenceCandidate("来源","producer",null,new Port("values",TypeRef.SequenceOf(DataType.Integer)),Array.Empty<string>())},Array.Empty<DeclaredReferenceCandidate>())));
         Show(reference);SelectReferenceLeaf(reference,c=>c.NodeId=="producer");SelectReferenceLeaf(reference,c=>c.NodeId=="producer");
         Require(referenceWrites==0&&reference.Setting is ReferenceSetting,"相同新建索引引用没有语义去重");
-        using var noBackup=new DeclaredFieldEditor(new("no-backup",DataType.Integer,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"无备份",
+        using var noBackup=new DeclaredFieldRow(new("no-backup",DataType.Integer,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"无备份",
             new ReferenceSetting(Source()),_=>throw new Exception("不得猜默认写入"),ReferenceFieldOptions.Empty);
         Show(noBackup);Click(noBackup,"切换为数值编辑");
         Require(noBackup.Setting is ReferenceSetting&&noBackup.HasInvalidText&&noBackup.Error.Contains("常量"),"缺少备份时制造了默认常量");
         Console.WriteLine("通过：索引引用按完整身份去重，无常量备份时明确拒绝恢复");
 
         var repairedWrites=0;
-        using var repair=new DeclaredFieldEditor(new("repair",DataType.Integer,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"修复来源",
+        using var repair=new DeclaredFieldRow(new("repair",DataType.Integer,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),"修复来源",
             new ReferenceSetting(Source()),_=>repairedWrites++,ReferenceFieldOptions.Empty);
-        var repairState=typeof(DeclaredFieldEditor).GetField("_state",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(repair)!;
+        var repairState=typeof(DeclaredFieldRow).GetField("_state",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(repair)!;
         void SourceError(string message)=>repairState.GetType().GetMethod("SetSourceError")!.Invoke(repairState,new object[]{message});
         Show(repair);SourceError("旧来源不可读");Click(repair,"切换为数值编辑");
         var repairText=(TextBox)repair.InputElement!;
@@ -1386,18 +1386,18 @@ internal static class S2DocumentEditingCases
         Console.WriteLine("通过：无备份引用不补默认值，空值不写入，合法常量单次接纳并原子清理旧来源诊断");
 
         var observed=0;
-        using var observer=new DeclaredFieldEditor(new("observer",DataType.Integer),"观察者",new ConstantSetting(1L),_=>observed++);
+        using var observer=new DeclaredFieldRow(new("observer",DataType.Integer),"观察者",new ConstantSetting(1L),_=>observed++);
         observer.Changed+=()=>throw new InvalidOperationException("观察者失败");
         try{observer.TrySetConstant(2L);throw new Exception("观察者异常被吞掉");}
         catch(InvalidOperationException error)when(error.Message=="观察者失败"){}
         Require(observed==1&&Equals(((ConstantSetting)observer.Setting).Value,2L)&&!observer.HasInvalidText,"观察者异常被误判为宿主拒绝");
-        DeclaredFieldEditor? rebound=null;var oldChanges=0;
-        rebound=new DeclaredFieldEditor(new("rebind-state",DataType.Integer),"重绑",new ConstantSetting(1L),_=>rebound!.Dispose());
+        DeclaredFieldRow? rebound=null;var oldChanges=0;
+        rebound=new DeclaredFieldRow(new("rebind-state",DataType.Integer),"重绑",new ConstantSetting(1L),_=>rebound!.Dispose());
         rebound.Changed+=()=>oldChanges++;
         Require(!rebound.TrySetConstant(2L)&&oldChanges==0,"宿主同步释放后旧会话继续通知");
         Console.WriteLine("通过：观察者异常不回滚已接纳值，宿主同步释放后旧状态不通知");
 
-        using var missing=new DeclaredFieldEditor(new("required",DataType.Integer),"必填",new UnsetSetting(),_=>{});
+        using var missing=new DeclaredFieldRow(new("required",DataType.Integer),"必填",new UnsetSetting(),_=>{});
         Require(missing.HasInvalidText&&missing.Error.Contains("必填"),"必填未设置状态被当作合法");
         Require(!Descendants(missing).OfType<TextBlock>().Any(text=>text.Text==missing.Error),"字段下方仍显示行内错误文字");
         Console.WriteLine("通过：必填未设置阻断确认且不显示行内提示，不猜默认值");
@@ -1405,7 +1405,7 @@ internal static class S2DocumentEditingCases
     private static void VerifyNativeInputs()
     {
         var boolWrites=0;var booleanValue=false;var boolReject=true;
-        using var boolean=new DeclaredFieldEditor(new("enabled",DataType.Boolean),"使能",new ConstantSetting(false),setting=>
+        using var boolean=new DeclaredFieldRow(new("enabled",DataType.Boolean),"使能",new ConstantSetting(false),setting=>
         {if(boolReject)throw new InvalidOperationException("布尔写入拒绝");booleanValue=(bool)((ConstantSetting)setting).Value!;boolWrites++;});
         Show(boolean);var toggle=(NativeBoolean)boolean.InputElement!;
         Require(boolWrites==0&&toggle.OffContent is Image {Source:BitmapSource off}&&off.PixelWidth==48&&off.PixelHeight==32&&toggle.OnContent is Image {Source:BitmapSource on}&&on.PixelWidth==48&&on.PixelHeight==32,"原开关图片尺寸不符或初始化写入");
@@ -1413,11 +1413,11 @@ internal static class S2DocumentEditingCases
         boolReject=false;toggle.IsChecked=true;Require(booleanValue&&boolWrites==1&&!boolean.HasInvalidText,"原开关修正未写入");
         toggle.IsChecked=true;Require(boolWrites==1,"重复同步写入布尔草稿");
         toggle.IsEnabled=false;toggle.IsChecked=false;Require(boolWrites==1,"禁用开关仍写入");
-        Require(typeof(DeclaredFieldEditor).Assembly.GetType("SunEyeVision.Plugin.Wpf.Native.Common.SourceBooleanToggle")==null,"同源重复开关仍为产品后备");
+        Require(typeof(DeclaredFieldRow).Assembly.GetType("SunEyeVision.Plugin.Wpf.Native.Common.SourceBooleanToggle")==null,"同源重复开关仍为产品后备");
         Console.WriteLine("通过：原Apps.XmlUI开关图片、初始化无写入、拒绝回滚、去重和禁用保护");
 
         var choiceWrites=0;var choiceReject=true;
-        using var choice=new DeclaredFieldEditor(new("enum",DataType.Text,Choices:new TextChoiceConstraint(new[]{"a","b"})),"枚举",new ConstantSetting("a"),_=>
+        using var choice=new DeclaredFieldRow(new("enum",DataType.Text,Choices:new TextChoiceConstraint(new[]{"a","b"})),"枚举",new ConstantSetting("a"),_=>
         {if(choiceReject)throw new InvalidOperationException("枚举写入拒绝");choiceWrites++;},choiceLabels:new Dictionary<string,string>{{"a","同名"},{"b","同名"}});
         Show(choice);var combo=(ComboBox)choice.InputElement!;
         Require(((SolidColorBrush)combo.FindResource("Col_Theme")).Color==Color.FromRgb(231,105,0),"旧宿主主题覆盖原组合框主题");
@@ -1429,7 +1429,7 @@ internal static class S2DocumentEditingCases
         combo=(ComboBox)choice.InputElement!;var beforeOld=choiceWrites;oldCombo.SelectedValue="a";
         Require(choiceWrites==beforeOld&&Equals(combo.SelectedValue,"a"),"旧枚举回调污染新状态");
         combo.SelectedValue="b";Require(choiceWrites==beforeOld+1,"新枚举实例不能继续选择");
-        using var missingChoice=new DeclaredFieldEditor(new("enum-missing",DataType.Text,Choices:new TextChoiceConstraint(new[]{"a","b"})),"未知枚举",new ConstantSetting("removed"),_=>choiceWrites++);
+        using var missingChoice=new DeclaredFieldRow(new("enum-missing",DataType.Text,Choices:new TextChoiceConstraint(new[]{"a","b"})),"未知枚举",new ConstantSetting("removed"),_=>choiceWrites++);
         Show(missingChoice);
         Require(missingChoice.HasInvalidText&&((ComboBox)missingChoice.InputElement!).SelectedIndex==-1,"未知初值被静默替换");
         ((ComboBox)missingChoice.InputElement!).SelectedValue="b";
@@ -1566,7 +1566,7 @@ internal static class S2DocumentEditingCases
         bitmap.Render(drawing);var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(bitmap));
         using var stream=File.Create(Path.Combine(Environment.GetEnvironmentVariable("S2_CASE_ROOT")!,name));encoder.Save(stream);
     }
-    private static void SelectReferenceLeaf(DeclaredFieldEditor field,Func<DeclaredReferenceCandidate,bool> predicate)
+    private static void SelectReferenceLeaf(DeclaredFieldRow field,Func<DeclaredReferenceCandidate,bool> predicate)
     {
         var popup=NativeDescendants(field).OfType<AppsPopup>().Single(item=>item.Name=="rt");
         popup.ApplyTemplate();popup.Focus();popup.IsDropDownOpen=true;Pump();

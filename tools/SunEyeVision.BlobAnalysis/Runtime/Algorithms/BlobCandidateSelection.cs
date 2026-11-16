@@ -15,8 +15,9 @@ internal static class BlobCandidateSelection
         int count=Math.Min(source.Count,capacity);var slots=new BlobSelectedCandidate<T>[count];
         var capacityKey=mode==BlobSortMode.SortModeNotSort?area:featureKey;
         bool integerCapacity=mode!=BlobSortMode.SortModeNotSort&&integerKey is not null;
+        bool signedCapacity=mode!=BlobSortMode.SortModeNotSort&&feature is BlobSortFeature.SortFeatureBoxAngle or BlobSortFeature.SortFeatureAxisAngle;
         HeapEntry Entry(T candidate,int slot)
-        {if(integerCapacity)return new(0,integerKey!(candidate),slot);float key=capacityKey(candidate);RequireKey(key);return new(key,0,slot);}
+        {if(integerCapacity)return new(0,integerKey!(candidate),slot);float key=capacityKey(candidate);RequireKey(key,signedCapacity);return new(key,0,slot);}
         for(int i=0;i<count;i++){cancellation.ThrowIfCancellationRequested();_=Entry(source[i],i);slots[i]=new(source[i],i);}
         if(source.Count>capacity)
         {
@@ -40,7 +41,7 @@ internal static class BlobCandidateSelection
     {
         var slots=retained.ToArray();
         if(mode==BlobSortMode.SortModeNotSort)return slots;
-        foreach(var slot in slots){cancellation.ThrowIfCancellationRequested();if(integerKey is null)RequireKey(floatKey(slot.Candidate));else _=integerKey(slot.Candidate);}
+        foreach(var slot in slots){cancellation.ThrowIfCancellationRequested();if(integerKey is null)RequireFinite(floatKey(slot.Candidate));else _=integerKey(slot.Candidate);}
         // A real final comparator, including the integer component label on equal float keys.
         Array.Sort(slots,(left,right)=>
         {
@@ -58,8 +59,8 @@ internal static class BlobCandidateSelection
     }
     private static void RequireFinite(float value)
     {if(!float.IsFinite(value))throw new BlobCapabilityException("BLOB_SELECTION_VALUE_NOT_READY","候选选择只接纳已核正常有限浮点特征。");}
-    private static void RequireKey(float value)
-    {RequireFinite(value);if(value<0)throw new BlobCapabilityException("BLOB_SELECTION_VALUE_NOT_READY","当前HALCON选择特征仅接纳正常非负值。");}
+    private static void RequireKey(float value,bool signed)
+    {RequireFinite(value);if(!signed&&value<0)throw new BlobCapabilityException("BLOB_SELECTION_VALUE_NOT_READY","非角度选择特征不能为负值。");}
     private static int Compare(HeapEntry left,HeapEntry right,bool integer)=>integer?left.IntegerKey.CompareTo(right.IntegerKey):left.FloatingKey.CompareTo(right.FloatingKey);
     private static void SiftDown(HeapEntry[] heap,int parent,bool maximumHeap,bool integer)
     {

@@ -29,7 +29,7 @@ public sealed class ResultFieldPath
 }
 public sealed record ResultColumnDescriptor(string Key,string DisplayName,ResultFieldPath? Value,
     string Unit="",int? DecimalPlaces=null,ResultFieldPath? ValidWhen=null,ResultFieldPath? Geometry=null,
-    ResultFieldPath? GeometrySource=null,string? UnavailableReason=null);
+    ResultFieldPath? GeometrySource=null,string? UnavailableReason=null,bool UseSinglePrecision=false,string? DisplayNameResourceKey=null);
 
 /// <summary>Bounded display declaration. Reads a published snapshot; never runs an algorithm or recomputes judgments.</summary>
 public sealed class ResultProjectionDescriptor
@@ -42,7 +42,8 @@ public sealed class ResultProjectionDescriptor
         Columns=Array.AsReadOnly((columns??Array.Empty<ResultColumnDescriptor>()).ToArray());
         if(Columns.Any(column=>column is null||string.IsNullOrWhiteSpace(column.Key)||column.DisplayName is null||column.Unit is null
             ||(column.Value is null?(string.IsNullOrWhiteSpace(column.UnavailableReason)||column.ValidWhen is not null||column.Geometry is not null||column.GeometrySource is not null||column.DecimalPlaces is not null||column.Unit.Length!=0):column.UnavailableReason is not null)
-            ||column.DecimalPlaces is <0 or >15)||Columns.Select(column=>column.Key).Distinct(StringComparer.Ordinal).Count()!=Columns.Count)
+            ||column.DecimalPlaces is <0 or >15||column.DisplayNameResourceKey is {} key&&string.IsNullOrWhiteSpace(key))
+            ||Columns.Select(column=>column.Key).Distinct(StringComparer.Ordinal).Count()!=Columns.Count)
             throw new ArgumentException("Columns require unique keys, declared values and bounded formatting.");
         if(Columns.Any(column=>column.Value is null)&&kind!=ResultProjectionKind.StandardTable)throw new ArgumentException("Display-only unavailable columns require a standard table.");
         if(kind==ResultProjectionKind.None&&(Columns.Count!=0||rows is not null||elementIdentityFieldId is not null||rendererKey is not null))
@@ -79,6 +80,8 @@ public sealed class ResultProjectionDescriptor
             {
                 if(column.Value is null)continue; // Display-only: no schema or geometry source is fabricated.
                 var cell=ResolveCell(column.Value);
+                if(column.UseSinglePrecision&&(cell!=TypeRef.ScalarOf(ScalarKind.Float64)||column.DecimalPlaces is not null))
+                    throw new ArgumentException("Single-precision display requires a floating-point cell without a fixed decimal format.");
                 // StandardTable One is exactly one scalar per column. Complex declared values use
                 // PropertyList/tree or a registered Renderer, never an implicit first sequence item.
                 if(Kind==ResultProjectionKind.StandardTable&&Cardinality==ResultCardinality.One&&cell.Shape!=ValueShape.Scalar)

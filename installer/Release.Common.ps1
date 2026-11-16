@@ -1,4 +1,4 @@
-. "$PSScriptRoot/Product.Components.ps1"
+﻿. "$PSScriptRoot/Product.Components.ps1"
 
 function Get-ReleaseIdentity {
     param([Parameter(Mandatory)]$Source, [switch]$Next)

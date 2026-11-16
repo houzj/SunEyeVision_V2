@@ -1,0 +1,37 @@
+启动到工具窗口当前 Release 回归（2026-11-09）
+
+范围
+- 使用当前正式 Release：`D:\MyWork\SunEyeVision_V2\Release\SunEyeVision_v1.0.0\SunEyeVision\SunEyeVision.UI.exe`。
+- 使用隔离启动根：`D:\MyWork\SunEyeVision_V2\.startup-chain-20261109`，避免读取用户正式方案和设备配置。
+- 方案输入为当前 V5 验证方案 `PluginDevKit/_validation/ExternalPlatformSdkAcceptance/sdk-validation.solution`；该方案为空流程，专用于启动链，不代表 ImageSource/Blob UI 人工验收。
+
+当前真实时间线
+
+| 阶段 | 相对入口耗时 | 说明 |
+| --- | ---: | --- |
+| OnStartup.Enter | 294ms | 进程进入 WPF 启动入口 |
+| Application base OnStartup completed | 304ms | 未执行通用图像/线程池/Roslyn 预热 |
+| MainWindow.Show begin | 952ms | 已先显示主窗口壳和加载覆盖层 |
+| MainWindow.ContentRendered | 2266ms | 用户可见壳完成首帧；后续准入在后台继续 |
+| Plugin.Load task joined | 2736ms | 发布准入总阶段 325ms |
+| PayloadValidation | 195ms | 发布清单和文件身份校验 |
+| ComponentLoading | 325ms | RuntimeAssemblies 59ms，RuntimeDefinitions 265ms |
+| ToolDirectory | 8ms | 当前活动工具目录仅 ImageSource、BlobAnalysis |
+| Service.Initialize completed | 3198ms | 服务注册完成 |
+| SolutionManager.Initialize completed | 3220ms | 方案管理器仓库初始化 0.4ms |
+| Startup decision begin | 3257ms | 进入方案/工作区决策 |
+| MainWindow.WorkspaceInitialized | 3419ms | 工作区注入 159.5ms |
+| Camera connection restore completed | 3942ms | 隔离方案无设备，恢复为空操作 |
+| HandleStartupDecision returned | 3950ms | 启动主链返回 |
+
+结论
+- 当前代码已经按 VM 可确认顺序实现：启动阶段 → 方案管理器/方案选择 → 主工作区轻量壳与遮罩 → 发布准入 → 服务和方案会话 → 工作区 → 工具节点窗口。
+- 当前 Release 的慢点不在方案管理器和方案初始化；准入阶段已从旧日志的 5 秒级 `ComponentLoading` 收敛到 325ms。旧日志中的 5 秒级读数来自旧载荷，不能作为当前基线。
+- 首帧在准入完成前已出现，加载遮罩保持在主工作区上方；遮罩保留窗口拖动入口，避免启动阶段窗口不可移动。
+- 本次使用空流程验证启动链，未把 ImageSource/BlobAnalysis 的节点窗口动态打开写成同一次启动验收；两个工具的完整 Session→参数树/模板→执行/结果→关闭释放回归见 `VM完整链路代码落地回归-20261109.txt` 与 `RuntimeEditorProductionProbe-20261109-atomic-final.txt`。
+- 仍未确认 VM 同版本的动态 UI 线程耗时、同节点实例复用边界、真实硬件连接和 Visual Studio 实际附加；这些不能用本次隔离启动读数代替。
+
+证据文件
+- 原始时间线：`docs/collaboration/evidence/startup-trace-20261109.txt`。
+- VM 静态启动顺序：`VM启动阶段顺序静态对照-20261109.txt`。
+- 工具窗口完整链：`VM完整链路代码落地回归-20261109.txt`。

@@ -1,0 +1,116 @@
+{
+  "kind": "显式文件列表方案存图的生产实现、静态核验与未运行用例",
+  "baseline": "c5e8901df，当前worktree；未改main或D盘产品项目",
+  "nativeEvidence": [
+    "ImageSource方案存图原证与宿主缺口-20261111.json",
+    "ImageSource保存方法原件正文恢复-20261111.json",
+    "ImageSource保存重载退出原件闭包-20261111.json",
+    "BooleanTips原件模板与消费者-20261111.json"
+  ],
+  "schema": {
+    "template": "BooleanTips",
+    "resourceIdentity": "suneye-file:SHA256(大写原绝对地址+NUL+内容SHA256)/原文件名",
+    "hostEncodedBudget": "200MiB/整个文档，宿主预算，不冒充VM分配政策",
+    "setting": "local.save-images",
+    "payload": "EmbeddedFiles:Reference,Name,OriginalAddress,Sha256,Length,Content",
+    "originIdentity": "不同原地址即使内容相同也不误合并；同一外部地址在一次捕获中只读取一次",
+    "maximumFiles": 120,
+    "default": false,
+    "resourceField": "local.paths"
+  },
+  "consumers": [
+    "公开不可变资源声明/指纹 → FrozenToolDeclarations",
+    "CaptureAcceptedDocument → Writer输出副本/编码文件冻结 → FrozenSolutionDocument → 原子文件提交",
+    "Reader摘要/长度/唯一身份/声明拥有者/数量/预算校验 → DecodedResourcesScope",
+    "Application完整准入后写出并锁定编码文件 → TransferResources → 会话发布",
+    "CreateResourcePathResolver与RuntimeHostInputs共用同一目录 → 私有调试继承同一解析器",
+    "现有ImageSourceProjectionBinding → 现有取图/解码 → Blob → 原结果reader与图像/二值显示",
+    "现有输入排空及会话关闭 → 关闭文件读句柄/清空编码载荷/删除自有目录"
+  ],
+  "failureAndOwnership": [
+    "保存捕获、自校验与另存重定位不写临时附件目录，不改活字段/历史",
+    "默认不存图且无加载资产时不增加JSON重编码",
+    "前120项收集附件，余下独立文件保留外部引用，保存回执提示部分嵌入",
+    "关闭存图在输出副本恢复原地址；原文件缺失在保存回执报告，不保存临时文件路径",
+    "损坏、重复、悬空、孤立及超量/超预算资产拒绝整个候选",
+    "编码文件读锁与独立执行输出分离；图像条现行读取使用ReadWrite|Delete共享，退出拒写仍由原生命周期负责"
+  ],
+  "tests": [
+    "Source默认/模板/原件顺序/公开策略类型准入",
+    "编码数据冻结、只读文件、作用域转移/关闭、迟到解析拒绝",
+    "损坏摘要/长度/名称/预算/重复及孤立/悬空拒绝",
+    "同内容不同文件、原文件删除后重开、勾选引用一致、跨目录再次另存及旧目录释放",
+    "关闭存图恢复外部身份且不改活字段，部分嵌入提示与超量候选拒绝",
+    "保存缺源失败保持原文件和已保存基线；损坏候选不替换活动方案",
+    "实际BMP图像源 → 保存/删除原图/重开 → 图像条 → ImageSource/Blob同帧及SN不被保存消耗"
+  ],
+  "verification": {
+    "build": "最终全量Release0错误、3302警告、16.07秒；dotnet build SunEyeVision.slnx -c Release --no-restore -m:1 -p:HalconSourceRoot=D:/MyWork/SunEyeVision_V2/libs/halcon",
+    "runtime": "全部新增用例未运行；未启动测试、程序或探针"
+  },
+  "remaining": [
+    "目录运行列表保存快照仍未接入，当前明确拒绝该模式的存图，不冒充手工列表",
+    "跨方案复制嵌入引用的资产转交尚未复核；同一方案内资产由会话拥有并支持历史继续引用",
+    "最大数量/编码预算/并发读取和取消故障的真实运行、资源排空与性能仍待验证",
+    "图像源窗口实际布局、Description等全部交互及VM同版本动态仍待对照",
+    "120上限之后的名单/勾选截断与原件出口仍需核定；当前保留外部引用是本方明确策略，不宣称原厂相同"
+  ],
+  "productSources": [
+    {
+      "path": "src/Plugin.Contracts/HostInputAndResourceDeclarations.cs",
+      "sha256": "3725D2C04A697D8F89C03602E32779360D3E614B5816581F2CFC3BD5C3713076"
+    },
+    {
+      "path": "src/Domain/Persistence/FrozenToolDeclarations.cs",
+      "sha256": "40CF6F4D4B6F0E126BF443C5700B3B1F79E417E2AC0488FC80B9B33BC273565D"
+    },
+    {
+      "path": "src/Persistence/EmbeddedFileCatalog.cs",
+      "sha256": "6490E7E223494AF40FB458234CD01BD3C17FFC3A1481DDB5F94DFD6850954A07"
+    },
+    {
+      "path": "src/Persistence/EmbeddedFileCapture.cs",
+      "sha256": "9EEC29998E74C23889D622E7DFD95AF309325AFB96F76FE851156F94A353F021"
+    },
+    {
+      "path": "src/Persistence/SolutionResourceResolver.cs",
+      "sha256": "039A5575B9AB91B907EBB31FF8688A70CE607435E26E337288B6FCD8B07BEA66"
+    },
+    {
+      "path": "src/Persistence/SolutionDocumentReader.cs",
+      "sha256": "BAEE20B7EC7AE270271AE494A4BB83B36FEDB7088BABC6A8C98D57612BC04176"
+    },
+    {
+      "path": "src/Persistence/SolutionDocumentWriter.cs",
+      "sha256": "F1D6AABAAC168DFBCB22F71624640B4BD1C15405B72009645C42A9FA3BC0A41D"
+    },
+    {
+      "path": "src/Persistence/SolutionReadCandidate.cs",
+      "sha256": "2D70FF1355E2386FCDA7CC835FDF178D311DCE7402F58BC3B7A0272E0DA72161"
+    },
+    {
+      "path": "src/Application/DocumentSession.Persistence.cs",
+      "sha256": "2F838E59CA071AAAFE510A8A7B172A4B75CB0F2AECE1A874D3A5A0A57511E76D"
+    },
+    {
+      "path": "src/Application/DocumentSession.RuntimeHostInputs.cs",
+      "sha256": "2E541A95A23ACD7DD9F0770D0C4BECF3DAD84CF9A4A341556A8065ECC090CBA7"
+    },
+    {
+      "path": "src/Application/DocumentSessionManager.Persistence.cs",
+      "sha256": "C5D89A03B1E7D605EBEC82D1EB1E3F709C51EC60B0C7991D2AA7C35F62C5C942"
+    },
+    {
+      "path": "tools/SunEyeVision.ImageSource/Runtime/ImageSourceFields.cs",
+      "sha256": "2FE0F8DE40FBC40A57691AA8429E5096F6DDF619A6A4467E4E2BDB83238F1A63"
+    },
+    {
+      "path": "tools/SunEyeVision.ImageSource/Runtime/ImageSourceSettings.cs",
+      "sha256": "75C2970B52C563BFEBB0BE0E3598B83468961EDAB8FD4A0449C006AD6DDB3EB9"
+    },
+    {
+      "path": "tools/SunEyeVision.ImageSource/Runtime/ImageSourceTool.cs",
+      "sha256": "FF0802FA6CABFAE9624E8F7F483654BAA14F4EEC6097830C18943873B3468F42"
+    }
+  ]
+}

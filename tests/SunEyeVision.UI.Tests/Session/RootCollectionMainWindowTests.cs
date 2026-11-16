@@ -103,7 +103,7 @@ public sealed class RootCollectionMainWindowTests
     private static RuntimeToolEditorWindow Open(DocumentUiFixture f,NodeDefinition node)
     {
         f.Main.SelectedNode=node;f.Main.OpenDebugWindowCommand.Execute(node);UiRuntime.Pump();
-        return System.Windows.Application.Current.Windows.OfType<RuntimeToolEditorWindow>().Single();
+        var window=System.Windows.Application.Current.Windows.OfType<RuntimeToolEditorWindow>().Single();UiRuntime.AwaitEditorReady(window);return window;
     }
     private static TextBox Sequence(RuntimeToolEditorWindow window)
     {

@@ -52,6 +52,10 @@ public partial class RoiSelectControl : Control, IImageSizeControl, IComponentCo
 
 	public RoiSelectControl()
 	{
+		// XAML 内的 StaticResource（TextLeft、Roi 按钮样式）在 InitializeComponent 期间即解析，
+		// 此时控件尚未挂树、继承不到外层字典；外层不会替子控件兜底。
+		// 因此本控件必须自己声明主题字典，且必须在 InitializeComponent 之前建立。
+		Resources.MergedDictionaries.Add(EditorResources.Shared);
 		InitializeComponent();
 	}
 }

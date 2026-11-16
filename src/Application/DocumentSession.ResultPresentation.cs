@@ -32,7 +32,7 @@ public sealed partial class DocumentSession
             _admitting = true;
             try
             {
-                using var invocation = _directory.AcquireInvocation();
+                using var invocation = _directory.AcquireInvocation("结果显示声明");
                 var definition = configuration.Definition;
                 var provider = definition as IToolResultPresentationProvider;
                 var schema = provider?.ResultSchema ?? configuration.Schema;

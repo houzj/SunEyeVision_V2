@@ -9,6 +9,14 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 $root = (Resolve-Path $PackageRoot).Path
 $sdk = Join-Path $root "sdk/net9.0"
+if (-not (Test-Path (Join-Path $sdk "SunEyeVision.Plugin.Contracts.dll"))) { throw "SDK 合同 DLL 不存在：$sdk" }
+foreach ($source in Get-ChildItem (Join-Path $root "templates") -Recurse -File |
+    Where-Object { $_.FullName -notmatch '[\\/](obj|bin)[\\/]' -and $_.Extension -in '.cs','.csproj','.props','.targets','.md' }) {
+    $text = [System.IO.File]::ReadAllText($source.FullName, [System.Text.Encoding]::UTF8)
+    if ($text -match 'SunEyeVision\.Plugin\.SDK|src[\\/]Plugin\.SDK') {
+        throw "模板包含已退役 Plugin.SDK 引用：$($source.FullName)"
+    }
+}
 [Reflection.Assembly]::LoadFrom((Join-Path $sdk "SunEyeVision.Plugin.Contracts.dll")) | Out-Null
 [Reflection.Assembly]::LoadFrom((Join-Path $sdk "SunEyeVision.Foundation.dll")) | Out-Null
 [Reflection.Assembly]::LoadFrom((Join-Path $sdk "SunEyeVision.Plugin.Runtime.dll")) | Out-Null

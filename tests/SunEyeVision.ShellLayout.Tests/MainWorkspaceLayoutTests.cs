@@ -110,24 +110,7 @@ public sealed class MainWorkspaceLayoutTests
             Assert.Contains(welcome, ((MenuItem)menu.Items[4]).Items.Cast<object>());
             Assert.NotNull(top.FindName("UndoHistoryHotspot"));
             Assert.Null(top.FindName("EditHistoryButton"));
-            var theme = Assert.IsType<Button>(top.FindName("ThemeToggleButton"));
-            var themeIcon = Assert.IsType<Viewbox>(theme.Content);
-            Assert.Equal(26, themeIcon.Width); Assert.Equal(26, themeIcon.Height);
-            var geometry = Assert.IsType<System.Windows.Shapes.Path>(themeIcon.Child);
-            Assert.Equal(2.1, geometry.StrokeThickness);
-            var darkIcon = geometry.Data.ToString();
-            Assert.Equal("切换到浅色主题", theme.ToolTip);
-            state.IsDarkTheme = false; top.UpdateLayout();
-            Assert.NotEqual(darkIcon, geometry.Data.ToString());
-            Assert.Equal(0, geometry.StrokeThickness); Assert.NotNull(geometry.Fill);
-            Assert.Equal("切换到深色主题", theme.ToolTip);
-            if (Environment.GetEnvironmentVariable("SUN_EYE_TOPBAR_CAPTURE") is { Length: > 0 } lightCapture)
-            {
-                var light = new ResourceDictionary { Source = new Uri("/SunEyeVision.UI;component/Themes/Light/LightTheme.xaml", UriKind.Relative) };
-                app.Resources.MergedDictionaries.Add(light); top.UpdateLayout();
-                CaptureTopBar(top, lightCapture + ".light.png");
-                app.Resources.MergedDictionaries.Remove(light); top.UpdateLayout();
-            }
+            Assert.Null(top.FindName("ThemeToggleButton"));
             var buttons = new List<Button>(); CollectButtons(top, buttons);
             foreach (var iconButton in buttons.Where(button => button.Content is Image))
             {
@@ -419,12 +402,9 @@ public sealed class MainWorkspaceLayoutTests
         public FakeCommand Save { get; } = new();
         public System.Windows.Input.ICommand SaveCurrentSolutionCommand => Save;
         public System.Windows.Input.ICommand ShowStartPageCommand { get; } = new FakeCommand();
-        public System.Windows.Input.ICommand ToggleThemeCommand { get; } = new FakeCommand();
         public FakeCommand Continuous { get; } = new();
         public System.Windows.Input.ICommand ToggleContinuousAllCommand => Continuous;
         private bool _running;
-        private bool _dark = true;
-        public bool IsDarkTheme { get => _dark; set { _dark = value; PropertyChanged?.Invoke(this, new(nameof(IsDarkTheme))); } }
         public bool IsContinuousRunning { get => _running; set { _running = value; PropertyChanged?.Invoke(this, new(nameof(IsContinuousRunning))); } }
         public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
     }

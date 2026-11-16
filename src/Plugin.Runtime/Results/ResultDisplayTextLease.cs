@@ -17,7 +17,7 @@ public sealed class ResultDisplayTextLease : IDisposable
     private readonly BindingRunSnapshot _snapshot;
     private readonly ResultTextAppearance _appearance;
     private readonly Dictionary<DisplayExpressionSlot,OutputReference> _selfReferences=new(ReferenceEqualityComparer.Instance);
-    private readonly Dictionary<OutputReference,DeclaredValueReader> _resolved=new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<OutputReference,(DeclaredValueReader Reader,NumericStorage? Storage)> _resolved=new(ReferenceEqualityComparer.Instance);
     private readonly object _retireGate=new();
     private ToolExecutionIdentity[] _watched=Array.Empty<ToolExecutionIdentity>();
     private ToolExecutionOwner[] _owners=Array.Empty<ToolExecutionOwner>();
@@ -77,7 +77,7 @@ public sealed class ResultDisplayTextLease : IDisposable
         callback?.Invoke();
     }
     private sealed class TextSourceFault(string code,string message):ArgumentException(message){internal string Code{get;}=code;}
-    private DeclaredValueReader Read(OutputReference reference)
+    private (DeclaredValueReader Reader,NumericStorage? Storage) Read(OutputReference reference)
     {
         ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed)!=0,this);
         if(_resolved.TryGetValue(reference,out var cached))return cached;
@@ -89,46 +89,74 @@ public sealed class ResultDisplayTextLease : IDisposable
         var value=_resolver.ResolveDisplayBinding(compiled.Plan,_snapshot);
         if(!value.Success)throw new TextSourceFault(value.Diagnostic?.Code??"display-read",value.Diagnostic?.Message??"显示来源不能读取。");
         var reader=new InputValues(new[]{target},new Dictionary<string,object?>{{target.Id,value.Value}}).Read(target.Id);
-        _resolved.Add(reference,reader);return reader;
+        var resolved=(reader,compiled.Plan.Source.Storage);
+        _resolved.Add(reference,resolved);return resolved;
     }
-    private object? At(OutputReference reference,int row,bool missingContentIsEmpty=false)
+    private (DeclaredValueReader Reader,NumericStorage? Storage)? ReadAvailable(OutputReference reference)
     {
-        DeclaredValueReader reader;
-        try{reader=Read(reference);}
-        catch(TextSourceFault fault)when(missingContentIsEmpty&&fault.Code is "missing-value" or "source-unavailable"){return null;}
-        if(reader.IsMissing||reader.IsNull||reader.Count==0)return null;
-        reader=reader.GetElement(row<reader.Count?row:0);
-        if(reader.IsMissing||reader.IsNull)return null;
-        return reader.Declaration.Scalar switch{ScalarKind.Int64=>reader.GetScalar<long>(),ScalarKind.Float64=>reader.GetScalar<double>(),ScalarKind.Text=>reader.GetScalar<string>(),_=>throw new ArgumentException("显示来源类型无效。")};
+        try{return Read(reference);}
+        catch(TextSourceFault fault)when(fault.Code is "missing-value" or "source-unavailable"){return null;}
     }
-    public (string Content,double X,double Y) Evaluate(int row)
+    private (object? Value,NumericStorage? Storage) At(OutputReference reference,int row)
+    {
+        if(ReadAvailable(reference) is not {} source)return default;
+        var (reader,storage)=source;
+        if(reader.IsMissing||reader.IsNull||reader.Count==0)return default;
+        reader=reader.GetElement(row<reader.Count?row:0);
+        if(reader.IsMissing||reader.IsNull)return default;
+        object value=reader.Declaration.Scalar switch
+        {
+            ScalarKind.Int64=>reader.GetScalar<long>(),
+            ScalarKind.Float64=>reader.GetScalar<double>(),
+            ScalarKind.Text=>reader.GetScalar<string>(),
+            _=>throw new ArgumentException("显示来源类型无效。")
+        };
+        return (value,storage);
+    }
+    private OutputReference ResolveSlot(DisplayExpressionSlot slot)
+    {
+        if(slot.Reference is {} mapped)return mapped;
+        if(_selfReferences.TryGetValue(slot,out var reference))return reference;
+        var path=slot.Self!;var source=_reader.Snapshot;
+        var port=source.Schema.Outputs.Single(output=>output.Id==path.PortId);
+        reference=new(source.Identity.NodeId,port.Id,port.Type,path.MemberFieldPath,scopeId:source.SourceWorkflowId,storage:port.Storage);
+        _selfReferences.Add(slot,reference);
+        return reference;
+    }
+    public int GetContentCount()
+    {
+        EnsureCurrent();
+        var count=1;
+        if(_appearance.Expression is {} expression)
+            foreach(var slot in expression.Slots)
+                if(ReadAvailable(ResolveSlot(slot)) is {Reader:{IsMissing:false,IsNull:false} source})
+                    count=Math.Max(count,source.Count);
+        EnsureCurrent();
+        return count;
+    }
+    private void EnsureCurrent()
     {
         ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed)!=0,this);
         if(!IsCurrent)throw new InvalidOperationException("文字显示来源的节点域已退役。");
+    }
+    public (string Content,double X,double Y) Evaluate(int row)
+    {
+        EnsureCurrent();
         if(row<0)throw new ArgumentOutOfRangeException(nameof(row));
         var expression=_appearance.Expression;var text=expression?.Text??_appearance.Content;var any=false;
         if(expression is not null)
         foreach(var slot in expression.Slots)
         {
-            OutputReference reference;
-            if(slot.Reference is {} mapped)reference=mapped;
-            else
-            {
-                if(!_selfReferences.TryGetValue(slot,out reference!))
-                {
-                    var path=slot.Self!;var source=_reader.Snapshot;var port=source.Schema.Outputs.Single(output=>output.Id==path.PortId);
-                    reference=new(source.Identity.NodeId,port.Id,port.Type,path.MemberFieldPath,scopeId:source.SourceWorkflowId,storage:port.Storage);
-                    _selfReferences.Add(slot,reference);
-                }
-            }
-            var value=At(reference,row,true);any|=value is not null;
+            var (value,storage)=At(ResolveSlot(slot),row);any|=value is not null;
             if(slot.Format is not null&&value is not null&&value is not (long or double))throw new ArgumentException("显示数值格式只适用于数字来源。");
+            // The original formatter calls ToString on the physical value returned by the output.
+            if(value is double floating&&storage==NumericStorage.Float32)value=(float)floating;
             text=text.Replace("{"+slot.Token+"}",slot.Format is not null&&value is IFormattable number?number.ToString(slot.Format,CultureInfo.CurrentCulture):Convert.ToString(value,CultureInfo.CurrentCulture)??"",StringComparison.Ordinal);
         }
         if(expression?.Slots.Count>0&&!any)text="";
         double Position(ParameterSetting? setting,double fallback)
         {
-            var value=setting switch{null=>fallback,ConstantSetting constant=>constant.Value,ReferenceSetting reference=>At(reference.Reference,row),_=>throw new ArgumentException("显示位置设置无效。")};
+            var value=setting switch{null=>fallback,ConstantSetting constant=>constant.Value,ReferenceSetting reference=>At(reference.Reference,row).Value??fallback,_=>throw new ArgumentException("显示位置设置无效。")};
             var number=value switch {double d=>d,long i=>(double)i,_=>throw new ArgumentException("显示位置来源没有有效数字。")};
             return double.IsFinite(number)?number:throw new ArgumentException("显示位置必须是有限数。");
         }

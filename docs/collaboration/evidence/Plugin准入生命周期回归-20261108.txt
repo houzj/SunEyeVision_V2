@@ -1,0 +1,14 @@
+Plugin 准入生命周期回归（2026-11-08）
+
+构建基线：b8e3461ae；AdmissionLifecycleProbe 已重新构建，输出目录 Release/_validation/AdmissionLifecycleProbe，与正式 Release Foundation.dll SHA-256 一致。
+
+封存：installer/Seal-ReleasePayload.ps1 重新生成 release-payload.json，payload SHA-256=600DCD8C227003AFD9F09CA23FD24DE6E1EF9DC63D91BC359C44B0793893CC13。
+
+命令：
+$env:SUNEYE_INFRA_PRODUCT_ROOT=Release/SunEyeVision_v1.0.0/SunEyeVision
+$env:SUNEYE_INFRA_PROBE_PATH=Release/_validation/AdmissionLifecycleProbe/AdmissionLifecycleProbe.exe
+dotnet test tests/SunEyeVision.Plugin.Infrastructure.Tests/SunEyeVision.Plugin.Infrastructure.Tests.csproj -c Release --no-restore --no-build
+
+结果：25/25 通过，包含 Sealed_real_host_exercises_atomic_admission_generations_and_readers。该测试覆盖准入、代次切换、目录租约、失败重载、恢复加载、并发加载/卸载和回调生命周期。
+
+此前失败原因：旧 Release/_validation/AdmissionLifecycleProbe 携带旧 Foundation 程序集，与当前 release-payload.json 不同。删除旧探针目录并重建后恢复通过。

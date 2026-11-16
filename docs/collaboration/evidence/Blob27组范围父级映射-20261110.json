@@ -1,0 +1,196 @@
+{
+  "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+  "sha256": "34A0CC5423A3D66B92DC272E0F50B013310E5180E801C648005383C3ADDDFDEC",
+  "kind": "原件父级范围到正式声明映射",
+  "pairs": [
+    {
+      "field": "FixedSoftLowerThreshold",
+      "peer": "FixedSoftUpperThreshold",
+      "parent": "ThresholdRangArea",
+      "minimum": "0",
+      "maximum": "255"
+    },
+    {
+      "field": "FilterAreaMin",
+      "peer": "FilterAreaMax",
+      "parent": "RangArea",
+      "minimum": "1",
+      "maximum": "999999999"
+    },
+    {
+      "field": "MinBoxAngle",
+      "peer": "MaxBoxAngle",
+      "parent": "RangBoxAngle",
+      "minimum": "-9000",
+      "maximum": "9000"
+    },
+    {
+      "field": "MinRectWidth",
+      "peer": "MaxRectWidth",
+      "parent": "RangRectWidth",
+      "minimum": "1",
+      "maximum": "1000000"
+    },
+    {
+      "field": "MinRectHeight",
+      "peer": "MaxRectHeight",
+      "parent": "RangRectHeight",
+      "minimum": "1",
+      "maximum": "1000000"
+    },
+    {
+      "field": "MinPerimeter",
+      "peer": "MaxPerimeter",
+      "parent": "RangPerimeter",
+      "minimum": "1",
+      "maximum": "999999999"
+    },
+    {
+      "field": "MinShortAxis",
+      "peer": "MaxShortAxis",
+      "parent": "RangShortAxis",
+      "minimum": "1",
+      "maximum": "999999999"
+    },
+    {
+      "field": "MinLongAxis",
+      "peer": "MaxLongAxis",
+      "parent": "RangLongAxis",
+      "minimum": "1",
+      "maximum": "999999999"
+    },
+    {
+      "field": "FilterCircularityMin",
+      "peer": "FilterCircularityMax",
+      "parent": "RangCircularity",
+      "minimum": "0",
+      "maximum": "1"
+    },
+    {
+      "field": "FilterRectangularityMin",
+      "peer": "FilterRectangularityMax",
+      "parent": "RangRectangularity",
+      "minimum": "0",
+      "maximum": "1"
+    },
+    {
+      "field": "MinCenterBias",
+      "peer": "MaxCenterBias",
+      "parent": "RangCenterBias",
+      "minimum": "0",
+      "maximum": "9999999.99"
+    },
+    {
+      "field": "MinAxisRatio",
+      "peer": "MaxAxisRatio",
+      "parent": "AxisRatioRange",
+      "minimum": "0.01",
+      "maximum": "1"
+    },
+    {
+      "field": "BlobNumLimitLow",
+      "peer": "BlobNumLimitHigh",
+      "parent": "RangBlobNumLimit",
+      "minimum": "1",
+      "maximum": "99999"
+    },
+    {
+      "field": "BlobAreaLimitLow",
+      "peer": "BlobAreaLimitHigh",
+      "parent": "RangBlobAreaLimit",
+      "minimum": "1",
+      "maximum": "999999999"
+    },
+    {
+      "field": "BlobTotalAreaLimitLow",
+      "peer": "BlobTotalAreaLimitHigh",
+      "parent": "RangBlobTotalAreaLimit",
+      "minimum": "1",
+      "maximum": "999999999"
+    },
+    {
+      "field": "CentroidXLimitLow",
+      "peer": "CentroidXLimitHigh",
+      "parent": "RangCentroidXLimit",
+      "minimum": "-99999",
+      "maximum": "99999"
+    },
+    {
+      "field": "CentroidYLimitLow",
+      "peer": "CentroidYLimitHigh",
+      "parent": "RangCentroidYLimit",
+      "minimum": "-99999",
+      "maximum": "99999"
+    },
+    {
+      "field": "AngleLimitLow",
+      "peer": "AngleLimitHigh",
+      "parent": "RangAngleLimit",
+      "minimum": "-180",
+      "maximum": "180"
+    },
+    {
+      "field": "CenterXLimitLow",
+      "peer": "CenterXLimitHigh",
+      "parent": "RangCenterXLimit",
+      "minimum": "-99999",
+      "maximum": "99999"
+    },
+    {
+      "field": "CenterYLimitLow",
+      "peer": "CenterYLimitHigh",
+      "parent": "RangCenterYLimit",
+      "minimum": "-99999",
+      "maximum": "99999"
+    },
+    {
+      "field": "BoxHeightLimitLow",
+      "peer": "BoxHeightLimitHigh",
+      "parent": "BoxHeightLimit",
+      "minimum": "1",
+      "maximum": "99999"
+    },
+    {
+      "field": "BoxWidthLimitLow",
+      "peer": "BoxWidthLimitHigh",
+      "parent": "BoxWidthLimit",
+      "minimum": "1",
+      "maximum": "99999"
+    },
+    {
+      "field": "PerimeterLimitLow",
+      "peer": "PerimeterLimitHigh",
+      "parent": "RangPerimeterLimit",
+      "minimum": "1",
+      "maximum": "999999999"
+    },
+    {
+      "field": "LongAxisLimitLow",
+      "peer": "LongAxisLimitHigh",
+      "parent": "RangLongAxisLimit",
+      "minimum": "1",
+      "maximum": "999999999"
+    },
+    {
+      "field": "ShortAxisLimitLow",
+      "peer": "ShortAxisLimitHigh",
+      "parent": "RangShortAxisLimit",
+      "minimum": "1",
+      "maximum": "999999999"
+    },
+    {
+      "field": "CircularityLimitLow",
+      "peer": "CircularityLimitHigh",
+      "parent": "RangCircularityLimit",
+      "minimum": "0",
+      "maximum": "1"
+    },
+    {
+      "field": "RectangularityLimitLow",
+      "peer": "RectangularityLimitHigh",
+      "parent": "RangRectangularityLimit",
+      "minimum": "0",
+      "maximum": "1"
+    }
+  ]
+}

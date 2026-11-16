@@ -1,0 +1,49 @@
+{
+  "kind": "VM原件优先实施门禁",
+  "batch": "交接单接手：结果树/结果表语义与格式成片收拢",
+  "vmEvidence": [
+    {
+      "path": "D:/MyWork/Rea逆向/docs/reverse/C03-original-blob-runtime-capture.md",
+      "facts": [
+        "L29：原厂当前结果表头为序号、面积、周长、质心X、质心Y、角度、长轴、短轴和圆形度（本方 BlobDisplay.xml 已一致，未改）",
+        "L52：阈值方式显示\"单阈值\"、极性显示\"亮于背景\"——状态/枚举为原厂中文文本",
+        "L119：模块摘要行\"Blob 个数 45、总面积 971486\"——个数为整数、总面积按整数显示",
+        "L125：数值为单精度 float 自然位数（11217.29、4794.603、0.4195392），不是固定位数",
+        "L123：历史结果数据行显示 Blob信息{label}，含面积、周长、质心和角度字段"
+      ]
+    },
+    {
+      "path": "D:/MyWork/Rea逆向/docs/joint-audit/B08-Blob单阈值极性与显示证据-20261031.md",
+      "facts": ["原资源值0\"亮于背景\"、值1\"暗于背景\"；本方 Binary/BinaryInv 标签映射已按原厂集成（4b61bbbd）"]
+    },
+    {
+      "path": "docs/collaboration/evidence/Blob结果展示合同缺口-20261111.json",
+      "facts": ["缺口：模块状态、单体状态、阈值方式、极性、数组和浮点精度没有统一的 Blob 专用显示合同"]
+    },
+    {
+      "path": "docs/collaboration/history/CURRENT_TASK_ARCHIVE_2026-10.md",
+      "facts": ["COMPOUND-LEAF-MAPPING：数组展示属展示层策略，不作为 ABI 证据；本批不改分页/数组展开方式"]
+    }
+  ],
+  "currentConsumers": [
+    "src/UI/Services/Monitoring/ResultPresentationPresenter.cs（主结果树，ValueText 原先无任何语义映射）",
+    "src/Plugin.Wpf/Controls/Native/Composition/Results/PropertyList/DeclaredPropertyList.cs（只读属性树，原先仅模块状态/阈值方式，无极性/单体状态，Float64 用 R Invariant）",
+    "src/Plugin.Wpf/Controls/Native/Composition/Results/PropertyList/ResultSemanticText.cs（本批新增共用投影）",
+    "tools/SunEyeVision.BlobAnalysis/Runtime/Results/BlobOutput.cs:120-126（原值来源：ModuStatus/BlobStatus 0/1、TypeUsed=Binary/BinaryInv、SegmentationModeUsed）"
+  ],
+  "difference": [
+    "极性（Binary/BinaryInv）在两个视图中均无原厂中文映射",
+    "单体状态数组元素（0/1）在两个视图中均不映射（元素节点无 DeclaredPort）",
+    "主结果树 ValueText 完全没有语义映射，与属性树文案不一致",
+    "属性树 Float32 数值用 R16/17 位往返格式，与原厂单精度自然位数不符",
+    "结果表 Blob 列已是 float32 单精度自然位数（BlobDisplay.xml numericFormat），与原证一致，本批不改"
+  ],
+  "decision": {
+    "sharedProjection": "新增 ResultSemanticText：模块状态/单体状态 0/1→失败/成功、阈值方式五种原厂中文、极性 Binary→亮于背景/BinaryInv→暗于背景；两视图共用",
+    "elementNodes": "序列元素节点沿 DeclarationAddress.RootPort 回溯根端口显示名后投影，不改 DeclaredPort 语义",
+    "float32": "属性树 Float32 分支改用单精度自然位数（Invariant）；主树 Float32 CurrentCulture 合同（fr-FR 用例）与属性树 Float64 R Invariant 合同（de-DE 用例）保持不动，两视图既有 Culture 差异登记为遗留，不在本批扩大",
+    "notDone": "专用分组标题：C03 原证无分组标题事实，OutputDisplayNode 无 Group 字段，按门禁不发明，保留为缺原证待办",
+    "notDone2": "空值文案两视图不一致（资源待接入/资源显示未提供等）：无原厂空值文本原证，本批不改，保留待办"
+  },
+  "acceptance": "新增合同：结果树语义投影（ResultPresentationPresenterTests）、共享映射单元合同、Blob 声明侧投影键守护（BlobAnalysisParameterContractTests）；构建通过 + 相称回归；运行态文本显示由用户人工核对"
+}

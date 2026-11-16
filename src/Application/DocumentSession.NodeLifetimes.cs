@@ -14,11 +14,31 @@ public sealed partial class DocumentSession
         return generation;
     }
     private void RetireFlowGeneration(WorkflowDefinition flow) => _flowGenerations.Remove(flow);
-    private sealed record NodeLifetime(Guid Generation, CancellationTokenSource Cancellation);
+    private sealed record NodeLifetime(Guid Generation, CancellationTokenSource Cancellation)
+    {
+        internal FieldChangeRevisions? ConfigurationRevisions {get;set;}
+    }
     private readonly CancellationTokenSource _documentRetirement = new();
     private readonly Dictionary<NodeDefinition, NodeLifetime> _nodeLifetimes = new(ReferenceEqualityComparer.Instance);
     private readonly List<CancellationTokenSource> _retiredNodeLifetimes = new();
     public Exception? LastNodeRetirementError { get; private set; }
+
+    internal IReadOnlyDictionary<string,Guid> CaptureNodeFieldRevisions(AdmittedNodeView view)
+    {
+        _=CaptureNodeLifetime(view.Scope,view.Node);
+        lock(_gate)
+        {
+            var lifetime=_nodeLifetimes[view.Node];
+            lifetime.ConfigurationRevisions??=new FieldChangeRevisions(view.Node.Configuration.Fields.Select(view.Configuration.SettingsSchema.Inputs));
+            return lifetime.ConfigurationRevisions.Capture();
+        }
+    }
+    private void TrackCommittedFieldRevisions(DocumentChangeSet change)
+    {
+        foreach(var changed in change.ChangedNodes.Where(item=>(item.Aspects&NodeChangedAspect.Configuration)!=0))
+            if(_nodeLifetimes.TryGetValue(changed.Node,out var lifetime)&&lifetime.ConfigurationRevisions is {} revisions)
+                revisions.AdvanceConfiguration(changed.Node.Configuration.Fields);
+    }
 
     // Host-side capture only. A plugin never supplies the generation or an actual domain entity.
     internal (Guid Generation, CancellationToken Retirement) CaptureNodeLifetime(WorkflowScope scope, NodeDefinition node)

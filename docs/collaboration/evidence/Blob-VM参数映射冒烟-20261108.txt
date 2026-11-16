@@ -1,0 +1,13 @@
+测试时间：2026-11-08
+来源：docs/07-工具逆向/decompiled/Managed/BlobFind/IMVSBlobFindModuCs/BlobFindParam.cs
+参数树：BlobParameters.xml 105 个 Parameter 节点
+Runtime：BlobParameterDefinition.SettingsSchema 139 个字段（包含结果判定和输入映射）
+VM运行参数：104 个属性已进入完整参数树或通过宿主字段映射
+宿主保留：6 个 VM 枚举类型、InputImage、ModuRoiManager
+映射样例：DoubleThreshold / LowThreshold=45 / HightThreshold=180 / MinBoxAngle=-9000 / BlobNumLimitLow=1
+结果：PASS
+参数树完整读写：PASS，InputValues=139，SettingsSchema字段=139，默认值回写 MinRectWidth=1、MaxRectWidth=1000000。
+
+2026-11-08 UI Release 构建后复跑 BlobAnalysis xUnit：工程编译完成，但 21 项在 ProductRuntimeTestHost 初始化阶段被 `SunEyeVision.Execution.dll` 与 release-payload.json SHA 不一致拒绝。该测试阻塞属于测试工程构建重写正式产物后的封签同步问题，尚未进入算法断言。
+
+完整 BlobAnalysis xUnit 回归（先以 UI Release 封签，再以 BuildProjectReferences=false 编译测试）：37/37 通过，耗时 3 分 11 秒。此前测试封签 SHA 阻塞已通过隔离测试构建修复。

@@ -52,4 +52,5 @@ public partial class MainWindowViewModel
         catch (Exception ex) { ThemeMessageDialog.Show(ex.Message, "新建方案未完成", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error); return false; }
         finally { EndSolutionTransition(); }
     }
+
 }

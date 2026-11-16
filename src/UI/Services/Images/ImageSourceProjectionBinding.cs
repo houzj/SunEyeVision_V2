@@ -1,4 +1,5 @@
 using System.Windows;
+using System.IO;
 using System.Windows.Threading;
 using SunEyeVision.Application;
 using SunEyeVision.Application.Editing;
@@ -21,26 +22,29 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
 {
  private readonly DocumentSession _session;
  private readonly WorkflowDefinition _root;
- private readonly NodeDefinition _node;
+ // 提交会重建节点实例，投影持有它并随 ReadPolicy/AcceptEdit 更新到当前实例。
+ private NodeDefinition _node;
  private readonly Func<bool> _isCurrent, _canEdit, _canNavigate;
  private readonly Action<DocumentEditReceipt>? _accepted;
  private readonly Func<ImageSourceActivation, Task>? _activate;
- private readonly Func<ImageSourceEditProposal, SourceDisplayPreservationScope?>? _prepareDisplay;
  private readonly Action<string, Exception>? _reportPresentationError;
  private readonly Dispatcher _dispatcher;
  private Func<Window?>? _dialogOwner;
  private bool _disposed, _ownCommit, _refreshQueued, _isLocal;
+ private (string Reference,Guid Source,Guid Subscription,Guid Path)? _folderProjectionKey;
  internal ImageInputSource Source { get; }
  internal ImageSourceStripSession Strip { get; }
  internal bool CanActivate => _activate is not null && _isLocal && Current() && _canNavigate() && Current();
  internal Exception? LastPresentationError { get; private set; }
+ // 身份而非引用：文档提交会重建节点/流程实例，引用判定会把仍然有效的投影误判为失效。
  internal bool Owns(DocumentSession session, WorkflowDefinition root, NodeDefinition node) =>
-  ReferenceEquals(_session, session) && ReferenceEquals(_root, root) && ReferenceEquals(_node, node) && Current();
+  _session.EditSessionId == session.EditSessionId
+  && string.Equals(_root.Id, root.Id, StringComparison.Ordinal)
+  && string.Equals(_node.Id, node.Id, StringComparison.Ordinal) && Current();
 
  internal ImageSourceProjectionBinding(DocumentSession session, WorkflowDefinition root, NodeDefinition node,
   Func<bool> isCurrent, Func<bool> canEdit, Func<bool> canNavigate, Action<DocumentEditReceipt>? accepted = null,
   Func<ImageSourceActivation, Task>? activate = null, Dispatcher? dispatcher = null,
-  Func<ImageSourceEditProposal, SourceDisplayPreservationScope?>? prepareDisplay = null,
   Action<string, Exception>? reportPresentationError = null, bool providesImageImport = false)
  {
   _session = session ?? throw new ArgumentNullException(nameof(session));
@@ -50,7 +54,7 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
   _canEdit = canEdit ?? throw new ArgumentNullException(nameof(canEdit));
   _canNavigate = canNavigate ?? throw new ArgumentNullException(nameof(canNavigate));
   _accepted = accepted; _activate = activate; _dispatcher = dispatcher ?? Dispatcher.CurrentDispatcher;
-  _prepareDisplay = prepareDisplay; _reportPresentationError = reportPresentationError;
+  _reportPresentationError = reportPresentationError;
   _dispatcher.VerifyAccess(); EnsureCurrent();
   if (_session.GetNodeHostInputDeclaration(_root.Id, _node) is not { CapabilityId: "image-source", Version: 1 })
    throw new InvalidOperationException("当前节点未准入图像源宿主能力。");
@@ -58,8 +62,8 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
   try
   {
    var initial = ReadPolicy();
-   Source.LoadFromPolicy(initial, _session.CreateResourcePathResolver());
-   _isLocal = initial.SourceKind == ImageSourceKind.Local;
+   Source.LoadFromPolicy(Projection(initial), _session.CreateResourcePathResolver());
+   _isLocal = initial.SourceKind == ImageSourceKind.Local && !initial.SubscribeFolder;
    Source.IsReadOnly = !_isLocal || !Current() || !_canEdit();
    Source.AttachFormalOwner(); Source.ConfigurationWriter = AcceptEdit;
    Strip = new ImageSourceStripSession(Source, Current, () => CanActivate, ActivateAsync, _dispatcher, () => _dialogOwner?.Invoke(),
@@ -76,8 +80,9 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
  private bool Current()
  {
   if (_disposed || !_isCurrent() || _root.IsSubroutine) return false;
-  try { return _session.GetWorkflows().Any(flow => ReferenceEquals(flow, _root)) &&
-   _session.GetNodes(_root.Id).Any(node => ReferenceEquals(node, _node)) && !_disposed && _isCurrent(); }
+  // 流程与节点按 Id 判定存在性：提交重建实例不应让一个仍然存在的节点被判为失效。
+  try { return _session.GetWorkflows().Any(flow => string.Equals(flow.Id, _root.Id, StringComparison.Ordinal)) &&
+   _session.GetNodes(_root.Id).Any(node => string.Equals(node.Id, _node.Id, StringComparison.Ordinal)) && !_disposed && _isCurrent(); }
   catch (InvalidOperationException) { return false; }
  }
  private void EnsureCurrent(bool edit = false)
@@ -99,67 +104,112 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
  internal void RefreshFromDocument()
  {
   _dispatcher.VerifyAccess(); EnsureCurrent();
-  var current = ReadPolicy();
+  // 接纳事务在途时投影状态归在途 Commit 所有：文档已前移而投影尚未安装，此刻刷新必然读到
+  // 不一致快照并撞 LoadFromPolicy 门禁；在途 Commit 会在 writer 返回后自行安装同一批行，跳过即可。
+  if (Source.IsAcceptingEdit) return;
+  var accepted = ReadPolicy();
+  var current = Projection(accepted);
   var displayed = Source.CapturePolicy();
   var resolver = _session.CreateResourcePathResolver();
   var same = displayed.CurrentIndex == current.CurrentIndex && displayed.RunMode == current.RunMode &&
-   displayed.AutoSwitchEnabled == current.AutoSwitchEnabled && displayed.FilePaths.SequenceEqual(current.FilePaths) &&
+   displayed.AutoSwitchEnabled == current.AutoSwitchEnabled && displayed.StopAtLastImage == current.StopAtLastImage && displayed.FilePaths.SequenceEqual(current.FilePaths) &&
    displayed.ForRunPaths.SequenceEqual(current.ForRunPaths) &&
    Source.Images.Select(image => image.FilePath).SequenceEqual(current.FilePaths.Select(reference =>
     resolver.Resolve("local.paths", reference, ResourcePurpose.FileRead).Address), StringComparer.OrdinalIgnoreCase);
-  if (!same) Source.LoadFromPolicy(current, resolver);
-  _isLocal = current.SourceKind == ImageSourceKind.Local;
+  if (!same)
+  {
+   try { Source.LoadFromPolicy(current,resolver); }
+   catch { _folderProjectionKey=null;throw; }
+  }
+  _isLocal = accepted.SourceKind == ImageSourceKind.Local && !accepted.SubscribeFolder;
   RefreshAvailability();
+ }
+ private ImageSourcePolicy Projection(ImageSourcePolicy policy)
+ {
+  if(policy.SourceKind!=ImageSourceKind.Local||!policy.SubscribeFolder)
+  { _folderProjectionKey=null;return policy; }
+  var previous=Source.CapturePolicy();
+  var projection=new ImageSourcePolicy {NodeId=policy.NodeId,AutoSwitchEnabled=policy.AutoSwitchEnabled,StopAtLastImage=policy.StopAtLastImage};
+  var reference=policy.FolderPath;
+  var context=_session.CaptureHostInputContext(_root.Id,_node)
+   ??throw new InvalidOperationException("订阅目录缺少已接纳输入声明。");
+  var revisions=context.ConfigurationRevisions;
+  var key=(reference,revisions.GetValueOrDefault("source.kind"),revisions.GetValueOrDefault("local.subscribe-folder"),revisions.GetValueOrDefault("local.folder-path"));
+  if(_folderProjectionKey==key)
+  {
+   projection.FilePaths=previous.FilePaths;projection.CurrentIndex=previous.CurrentIndex;
+   return projection;
+  }
+  _folderProjectionKey=key;
+  if(string.IsNullOrWhiteSpace(reference))return projection;
+  try
+  {
+   var plan=policy.CaptureFolderList(_session.CreateResourcePathResolver());
+   EnsureCurrent();
+   projection.FilePaths=plan.Entries.Select(entry=>entry.Address).ToList();
+  }
+  catch(Exception error) when(error is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException)
+  { ReportPresentationError("订阅目录初始列表读取失败",error); }
+  try { context.EnsureCurrent();EnsureCurrent(); }
+  catch { _folderProjectionKey=null;throw; }
+  return projection;
  }
  private ImageSourcePolicy ReadPolicy()
  {
   EnsureCurrent();
   var draft = _session.Editing.Host.BeginEdit(_root.Id, _node.Id);
-  if (!ReferenceEquals(draft.Node, _node)) throw new InvalidOperationException("图像源节点已被替换。");
-  var values = draft.Configuration.Fields.Select(draft.SettingsSchema.Inputs).Materialize(new Dictionary<string, object?>());
+  // 提交会重建节点实例：按 Id 校验归属，并把投影跟到当前实例，否则后续引用比较全部失效。
+  if (!string.Equals(draft.Node.Id, _node.Id, StringComparison.Ordinal))
+   throw new InvalidOperationException("图像源节点已被替换。");
+  _node = draft.Node;
+  var values = MaterializeProjectionFields(draft.Configuration.Fields.Select(draft.SettingsSchema.Inputs));
   return ImageSourcePolicy.ReadFields(_node.Id, values);
+ }
+ private static InputValues MaterializeProjectionFields(FieldSettings fields)
+ {
+  var configured = fields.Capture();
+  var unresolved = configured
+   .Where(pair => pair.Value is ReferenceSetting or VariableSetting)
+   .ToDictionary(pair => pair.Key, _ => (object?)null, StringComparer.Ordinal);
+  // The projection only consumes persistent source settings. Reference-backed
+  // fields such as stitch.clear-value are resolved by execution and must not
+  // prevent the projection from reading folder, format, and subscription state.
+  return fields.Materialize(unresolved);
  }
  private void AcceptEdit(ImageSourceEditProposal proposal)
  {
-  ArgumentNullException.ThrowIfNull(proposal); EnsureCurrent(true);
-  if (_ownCommit) throw new InvalidOperationException("图像源编辑不能重入。");
-  var draft = _session.Editing.Host.BeginEdit(_root.Id, _node.Id);
-  if (!ReferenceEquals(draft.Node, _node)) throw new InvalidOperationException("图像源节点已被替换。");
-  var values = draft.Configuration.Fields.Select(draft.SettingsSchema.Inputs).Materialize(new Dictionary<string, object?>());
-  var policy = ImageSourcePolicy.ReadFields(_node.Id, values);
-  if (policy.SourceKind != ImageSourceKind.Local || proposal.Configuration.NodeId != _node.Id)
-   throw new InvalidOperationException("当前来源不是本地图像，不能修改列表。");
-  var retainDisplay = !proposal.SelectStart && policy.CurrentIndex == proposal.Configuration.CurrentIndex &&
-   policy.FilePaths.Count <= proposal.Configuration.FilePaths.Count &&
-   policy.FilePaths.SequenceEqual(proposal.Configuration.FilePaths.Take(policy.FilePaths.Count));
-  policy.UpdateLocalInput(proposal.Configuration);
-  var localFields = new HashSet<string>(StringComparer.Ordinal)
-   { "local.paths", "local.selected", "local.start", "local.run-mode", "local.auto-switch" };
-  var proposed = policy.ToFieldValues(draft.SettingsSchema).Where(pair => localFields.Contains(pair.Key))
-   .ToDictionary(pair => pair.Key, pair => (ParameterSetting)new ConstantSetting(pair.Value), StringComparer.Ordinal);
-  if (proposed.Count != localFields.Count) throw new InvalidOperationException("图像源本地列表声明不完整。");
-  draft.ApplyFields(proposed);
-  var frozen = DocumentEditProposal.Prepare(_session.Editing.Host, nodes: new[] { draft });
-  SourceDisplayPreservationScope? display = null;
-  if (retainDisplay && _prepareDisplay is not null)
-   try { display = _prepareDisplay(proposal); }
-   catch (Exception error) { ReportPresentationError("显示留存准备失败", error); }
-  _ownCommit = true;
-  try
-  {
-   _session.ValidateEdit(frozen); EnsureCurrent(true);
-   var receipt = _session.CommitEdit(frozen);
-   try { display?.Accept(receipt.Change?.ExecutionInvalidatedNodes.ToArray() ?? Array.Empty<ScopedNodeIdentity>()); }
-   catch (Exception error) { ReportPresentationError("显示留存接纳失败", error); }
-   // The accepted transaction is final even if a presentation observer fails.
-   try { _accepted?.Invoke(receipt); } catch (Exception error) { ReportPresentationError("显示刷新失败", error); }
-  }
-  finally
-  {
-   _ownCommit = false;
-   try { display?.Dispose(); }
-   catch (Exception error) { ReportPresentationError("显示留存释放失败", error); }
-  }
+   ArgumentNullException.ThrowIfNull(proposal); EnsureCurrent(true);
+   if (_ownCommit) throw new InvalidOperationException("图像源编辑不能重入。");
+   var draft = _session.Editing.Host.BeginEdit(_root.Id, _node.Id);
+   if (!string.Equals(draft.Node.Id, _node.Id, StringComparison.Ordinal)) throw new InvalidOperationException("图像源节点已被替换。");
+   _node = draft.Node;
+   var values = MaterializeProjectionFields(draft.Configuration.Fields.Select(draft.SettingsSchema.Inputs));
+   var policy = ImageSourcePolicy.ReadFields(_node.Id, values);
+   if (policy.SourceKind != ImageSourceKind.Local || policy.SubscribeFolder || proposal.Configuration.NodeId != _node.Id)
+    throw new InvalidOperationException("当前来源不是本地图像，不能修改列表。");
+   policy.UpdateLocalInput(proposal.Configuration);
+   var localFields = new HashSet<string>(StringComparer.Ordinal)
+    { "local.paths", "local.selected", "local.start", "local.run-mode", "local.auto-switch" };
+   var proposed = policy.ToFieldValues(draft.SettingsSchema).Where(pair => localFields.Contains(pair.Key))
+    .ToDictionary(pair => pair.Key, pair => (ParameterSetting)new ConstantSetting(pair.Value), StringComparer.Ordinal);
+   if (proposed.Count != localFields.Count) throw new InvalidOperationException("图像源本地列表声明不完整。");
+   draft.ApplyFields(proposed);
+   var frozen = DocumentEditProposal.Prepare(_session.Editing.Host, nodes: new[] { draft });
+   _ownCommit = true;
+   try
+   {
+    _session.ValidateEdit(frozen); EnsureCurrent(true);
+    var receipt = _session.CommitEdit(frozen);
+    // 图像源编辑是配置/游标编辑，不是结果执行：显示层按单一所有权持有上一轮
+    // 完成结果（RefreshFormalPublishedResult 的陈旧保持语义），新执行才替换。
+    // 接纳事务本身是终态，呈现观察者失败只记录不回滚。
+    try { _accepted?.Invoke(receipt); }
+    catch (Exception error) { ReportPresentationError("显示刷新失败", error); }
+   }
+   finally
+   {
+    _ownCommit = false;
+   }
  }
  private void ReportPresentationError(string stage, Exception error)
  {
@@ -177,13 +227,17 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
   await activate(new(_session, _root, _node, Source, image, index, version));
  }
  /// <summary>Present an accepted runtime choice without editing the document's configured start.</summary>
- internal bool TryPresentNavigation(ImageSourceActivation selection)
+ internal bool OwnsNavigation(ImageSourceActivation selection)
  {
   _dispatcher.VerifyAccess();
-  if (!Current() || !ReferenceEquals(selection.Session, _session) || !ReferenceEquals(selection.Workflow, _root) ||
-      !ReferenceEquals(selection.Node, _node) || !ReferenceEquals(selection.Source, Source) ||
-      Source.EditVersion != selection.ProjectionVersion || selection.Index < 0 || selection.Index >= Source.Count ||
-      !ReferenceEquals(Source.Images[selection.Index], selection.Image)) return false;
+  return Current() && ReferenceEquals(selection.Session, _session) && ReferenceEquals(selection.Workflow, _root) &&
+      ReferenceEquals(selection.Node, _node) && ReferenceEquals(selection.Source, Source) &&
+      Source.EditVersion == selection.ProjectionVersion && Source.CanSelectImage(selection.Index) &&
+      ReferenceEquals(Source.Images[selection.Index], selection.Image);
+ }
+ internal bool TryPresentNavigation(ImageSourceActivation selection)
+ {
+  if (!OwnsNavigation(selection)) return false;
   return Source.TryPresentRuntimeCursor(selection.ProjectionVersion, selection.Image.Id,
    selection.Image.SourceReference ?? selection.Image.FilePath, selection.Image.FilePath) && Current();
  }
@@ -192,9 +246,20 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
  {
   _dispatcher.VerifyAccess();
   ArgumentNullException.ThrowIfNull(factory); ArgumentNullException.ThrowIfNull(receipt);
-  if (!Current() || !_isLocal || Source.EditVersion != projectionVersion) return false;
+  if (!Current() || Source.EditVersion != projectionVersion) return false;
   var context = _session.CaptureHostInputContext(_root.Id, _node);
   if (context is null || !factory.IsReceiptCurrent(context, receipt)) return false;
+  if (factory.CaptureFolderPlan(context, receipt) is { } folder)
+  {
+   if (context.Fields.Read("local.refresh-folder") is ConstantSetting { Value: false }) return false;
+   Source.LoadFromPolicy(new ImageSourcePolicy
+   {
+    NodeId = _node.Id, FilePaths = folder.Entries.Select(entry => entry.Address).ToList(),
+    CurrentIndex = receipt.Read.Position, AutoSwitchEnabled = folder.AutoAdvance
+   }, context.ResourcePaths);
+   return Current() && factory.IsReceiptCurrent(context, receipt);
+  }
+  if (!_isLocal) return false;
   var entry = receipt.Read.Entry;
   if (entry.OriginalIndex < 0 || entry.OriginalIndex >= Source.Count) return false;
   var image = Source.Images[entry.OriginalIndex];
@@ -204,9 +269,10 @@ internal sealed class ImageSourceProjectionBinding : IDisposable
  private void OnDocumentChanged(object? sender, DocumentChangeSet change)
  {
   if (_disposed || _ownCommit || change.EditSessionId != _session.EditSessionId) return;
-  if (!change.ChangedNodes.Any(item => ReferenceEquals(item.Node, _node) &&
+  // 提交会重建节点实例，按 Id 匹配；引用比较会让提交后的刷新完全失效。
+  if (!change.ChangedNodes.Any(item => string.Equals(item.Node.Id, _node.Id, StringComparison.Ordinal) &&
        (item.Aspects & (NodeChangedAspect.Configuration | NodeChangedAspect.Identity)) != 0) &&
-      !change.RemovedNodes.Any(item => ReferenceEquals(item.Node, _node))) return;
+      !change.RemovedNodes.Any(item => string.Equals(item.Node.Id, _node.Id, StringComparison.Ordinal))) return;
   if (_refreshQueued || _dispatcher.HasShutdownStarted) return;
   _refreshQueued = true;
   _dispatcher.BeginInvoke(DispatcherPriority.DataBind, new Action(() =>

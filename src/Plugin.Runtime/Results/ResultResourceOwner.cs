@@ -10,7 +10,8 @@ public sealed class ResultResourceOwner : IDisposable
     private Action? _release;
     private int _references = 1;
     private int _ownerReleased;
-    public ResultResourceOwner(Action release) => _release = release ?? throw new ArgumentNullException(nameof(release));
+    private readonly IDisposable _lifecycle;
+    public ResultResourceOwner(Action release) { _release = release ?? throw new ArgumentNullException(nameof(release)); _lifecycle = RuntimeLifecycleProbe.EnterResultOwner(); }
     public IDisposable Retain()
     {
         lock (_gate)
@@ -47,7 +48,8 @@ public sealed class ResultResourceOwner : IDisposable
         {
             if (--_references == 0) { release = _release; _release = null; }
         }
-        release?.Invoke();
+        try { release?.Invoke(); }
+        finally { if (release is not null) _lifecycle.Dispose(); }
     }
     private sealed class Lease(ResultResourceOwner owner) : IDisposable
     {

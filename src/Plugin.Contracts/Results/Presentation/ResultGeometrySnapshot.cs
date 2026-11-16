@@ -5,14 +5,14 @@ public interface IToolResultGeometryOutput
 {
     ResultGeometrySnapshot ResultGeometry { get; }
 }
-public enum ResultGeometryRole { Inspection, Mask, Annulus }
+public enum ResultGeometryRole { Inspection, Mask, Annulus, ReferencePoint, RunPoint }
 public enum ResultGeometryCoverage { None, FullDomain, Explicit, Unavailable }
 public sealed class ResultGeometryGroup
 {
-    public ResultGeometryGroup(ResultGeometryRole role,ResultGeometryCoverage coverage,IEnumerable<RecordValue> shapes)
+    public ResultGeometryGroup(ResultGeometryRole role,ResultGeometryCoverage coverage,IEnumerable<RecordValue> shapes,bool outlineOnly=false)
     {
         if(!Enum.IsDefined(role)||!Enum.IsDefined(coverage))throw new ArgumentException("Unknown result geometry role or coverage.");
-        Role=role;Coverage=coverage;
+        Role=role;Coverage=coverage;OutlineOnly=outlineOnly;
         var frozen=shapes.Select(shape=>shape.Declaration==RoiDeclarations.Shape
             ?new RecordValue(RoiDeclarations.Shape,shape.CopyFields()):throw new ArgumentException("Result shape declaration differs.")).ToArray();
         if(coverage!=ResultGeometryCoverage.Explicit&&frozen.Length!=0)throw new ArgumentException("Non-explicit coverage cannot contain nominal shapes.");
@@ -32,6 +32,7 @@ public sealed class ResultGeometryGroup
             return;
         }
         Point(shape.Get<PointGeometry>("center"));
+        if(kind=="point")return;
         if(kind=="rectangle")
         {if(Number("width")/2<=0||Number("height")/2<=0)throw new ArgumentException("Result rectangle size is invalid.");_=Number("angle-degrees");return;}
         if(kind is not ("annulus" or "sector"))throw new ArgumentException("Unsupported result geometry kind.");
@@ -42,6 +43,8 @@ public sealed class ResultGeometryGroup
     public ResultGeometryRole Role {get;}
     public ResultGeometryCoverage Coverage {get;}
     public IReadOnlyList<RecordValue> Shapes {get;}
+    /// <summary>Closed raster contours can include holes. Their individual loops must not be filled.</summary>
+    public bool OutlineOnly {get;}
 }
 /// <summary>Immutable pure values; the enclosing publication controls authority and resource lifetime.</summary>
 public sealed class ResultGeometrySnapshot
@@ -50,7 +53,7 @@ public sealed class ResultGeometrySnapshot
     {
         ArgumentNullException.ThrowIfNull(sourceFrame);ArgumentNullException.ThrowIfNull(coordinates);
         SourceFrame=sourceFrame;Coordinates=coordinates;Passed=passed;
-        var frozen=groups.Select(group=>new ResultGeometryGroup(group.Role,group.Coverage,group.Shapes)).ToArray();
+        var frozen=groups.Select(group=>new ResultGeometryGroup(group.Role,group.Coverage,group.Shapes,group.OutlineOnly)).ToArray();
         if(frozen.Select(group=>group.Role).Distinct().Count()!=frozen.Length)throw new ArgumentException("Duplicate result geometry role.");
         if(frozen.Any(group=>group.Shapes.Count!=0)&&coordinates!=RoiDeclarations.ImageFrame)throw new ArgumentException("Nominal shape coordinate declaration differs from the snapshot.");
         Groups=Array.AsReadOnly(frozen.OrderBy(group=>group.Role).ToArray());

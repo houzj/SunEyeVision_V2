@@ -1,0 +1,62 @@
+{
+  "kind": "原件保存登记、重载、保存结束的依赖闭包",
+  "records": [
+    {
+      "source": "D:/MyWork/Rea逆向/analysis/full-audit/image-source-native-extra-8.json",
+      "sourceSha256": "67CC060B542F6A288131F9DAD9F185F35C82970CFD0C4E2758330B62336EDB19",
+      "body": "docs/collaboration/evidence/ImageSource-LoadModuleData-原件归档.c",
+      "bodySha256": "6625ABFA9124A309BC2538E0F1666B732DB67896C538D538D827CFB3D612D23A",
+      "evidenceId": "ev_b043344e5e22661c2e697de856892d7d32e95d6eb685a42419af2b962f6fea56",
+      "procedure": "CMyAlgorithmManager::LoadModuleData",
+      "subject": {
+        "name": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModule.dll",
+        "digest": {
+          "sha256": "91ea3659be97e51edeab0c913779d4555d51dcd0d6288086fbf9916d35b942db"
+        },
+        "format": "pe",
+        "architecture": "x86_64",
+        "local_path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModule.dll"
+      }
+    },
+    {
+      "source": "D:/MyWork/Rea逆向/analysis/full-audit/image-source-native-extra-9.json",
+      "sourceSha256": "762C9D7EF575020F7E2DF00759F8DF64EB638CC36FCC7287B5D7158324338E10",
+      "body": "docs/collaboration/evidence/ImageSource-SaveDataInfo-原件归档.c",
+      "bodySha256": "44CBC53738417D4938CC0F475A33E71CEC9279E33C3037C91FEB045DC4D58763",
+      "evidenceId": "ev_226c39f23d32a8494cd9fc2085a665e7675602ceda10326c62e58246d0680bb9",
+      "procedure": "CMyAlgorithmManager::SaveDataInfo",
+      "subject": {
+        "name": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModule.dll",
+        "digest": {
+          "sha256": "91ea3659be97e51edeab0c913779d4555d51dcd0d6288086fbf9916d35b942db"
+        },
+        "format": "pe",
+        "architecture": "x86_64",
+        "local_path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModule.dll"
+      }
+    },
+    {
+      "source": "D:/MyWork/Rea逆向/analysis/full-audit/image-source-native-extra-13.json",
+      "sourceSha256": "D1A80380CC5E4409200B00B33B5E2A31DEBC3EFFD1809763D140D0DC0ED769D6",
+      "body": "docs/collaboration/evidence/ImageSource-ProcSavemoduleFinishEvent-原件归档.c",
+      "bodySha256": "364800DAE509130B26B3E3FB7234F0ABF0E33046739EA83D22D467FFB1D6C2B5",
+      "evidenceId": "ev_e508d4fdcf9f7ac5b4eb213fbc26b0c52ce3f9487f6c9ba1706ecfc4de7a8192",
+      "procedure": "CMyAlgorithmManager::ProcSavemoduleFinishEvent",
+      "subject": {
+        "name": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModule.dll",
+        "digest": {
+          "sha256": "91ea3659be97e51edeab0c913779d4555d51dcd0d6288086fbf9916d35b942db"
+        },
+        "format": "pe",
+        "architecture": "x86_64",
+        "local_path": "D:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule\\ImageSourceModule.dll"
+      }
+    }
+  ],
+  "findings": [
+    "SaveDataInfo 在成功登记后增加附件计数，数组物理上限128与主循环120不同",
+    "LoadModuleData 显式读取ImageNameList及SelectedImageList，并将附件写为文件后接入AddImage2CircleList",
+    "ProcSavemoduleFinishEvent 清理260个缓存槽并清空保存期列表长度；不应把保存期缓冲永久保留为跨轮运行缓存"
+  ],
+  "limitations": "归档程序集哈希91EA…与本机F88A…不同，此处无新增实机运行或同机完整反编译；缺文件和超限的完整重开后列表结果仍需动态对照"
+}

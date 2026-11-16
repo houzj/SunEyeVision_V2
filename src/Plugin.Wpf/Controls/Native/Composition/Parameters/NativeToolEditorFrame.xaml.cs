@@ -24,7 +24,6 @@ public partial class NativeToolEditorFrame:UserControl,IDisposable
     {
         var frame=(NativeToolEditorFrame)sender;
         frame.SetValue(ResetAvailablePropertyKey,args.NewValue is ICommand);
-        if(frame.ResetButton is not null)frame.ResetButton.ToolTip=args.NewValue is null?"重置运行参数（尚未接入）":"重置运行参数";
     }
     private NativeToolCommandPresenter? _commands;
     private long _request;

@@ -11,21 +11,65 @@ public partial class MainWindowViewModel
     private IResultPublication? _resultPublication;
     private DeclaredOutputSnapshot? _resultPublicationSnapshot;
     private long _resultPublicationEpoch;
-    private IReadOnlyDictionary<string,ResultBindingInfo>? _resultPublicationBindings;
     internal IResultPublication? CurrentResultPublication=>_resultPublication;
+    /// <summary>
+    /// 结果表和图形投影的显示边界。编辑后执行域可能已退役，但最近一次完整结果
+    /// 仍由当前工作区持有；它可以继续被选择和高亮，直到新执行或身份切换替换它。
+    /// </summary>
+    internal bool CanDisplayResultPublication(IResultPublication publication)
+        => !publication.IsRetired &&
+           (publication.IsCurrent() ||
+            ReferenceEquals(_resultPublication, publication) &&
+            _resultPublicationSnapshot is { IsComplete: true });
+    private bool _currentResultTableSelected;
+    private (IToolResultView View, IResultPublication Publication)? _presentedResultTable;
+
+    internal void SetCurrentResultTableSelected(bool selected)
+    {
+        if (_currentResultTableSelected == selected) return;
+        _currentResultTableSelected = selected;
+        _presentedResultTable = null;
+        if (selected && _resultPublication is { } publication)
+            PresentCurrentResultTable(publication);
+    }
+
+    private void PresentCurrentResultTable(IResultPublication publication)
+    {
+        if (!_currentResultTableSelected || _activeResultView is not { } view) return;
+        var ownsView = CaptureResultViewOwner(_resultPublicationEpoch);
+        if (!ReferenceEquals(_resultPublication, publication) || !CanDisplayResultPublication(publication)
+            || !ownsView() || !ReferenceEquals(_activeResultView, view) || !_currentResultTableSelected
+            || _presentedResultTable is { } presented && ReferenceEquals(presented.View, view)
+                && ReferenceEquals(presented.Publication, publication)) return;
+        _presentedResultTable = (view, publication);
+        try { view.Present(publication); }
+        catch
+        {
+            if (_presentedResultTable is { } failed && ReferenceEquals(failed.View, view)
+                && ReferenceEquals(failed.Publication, publication)) _presentedResultTable = null;
+            throw;
+        }
+    }
 
     private Func<bool> CaptureResultViewOwner(long epoch)
     {
         var session=DocumentManager.CurrentSession;var node=SelectedNode;var tab=WorkflowTabViewModel.SelectedTab;
         var selection=_outputContractSelectionGeneration;
-        return ()=>epoch==_resultPublicationEpoch && selection==_outputContractSelectionGeneration && ReferenceEquals(DocumentManager.CurrentSession,session)
-            &&ReferenceEquals(SelectedNode,node)&&ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab)
-            &&(node is null||OwnsSelectedDocumentNode(node));
+        // 提交重建节点实例（同稳定 Id）对结果视图不可见：归属按稳定 Id 判定，
+        // 并用当前实例复核文档归属，重绑定不会让已呈现发布被误判失效。
+        return ()=>{
+            if(epoch!=_resultPublicationEpoch||selection!=_outputContractSelectionGeneration
+                ||!ReferenceEquals(DocumentManager.CurrentSession,session)
+                ||!ReferenceEquals(WorkflowTabViewModel.SelectedTab,tab))return false;
+            if(node is null)return SelectedNode is null;
+            return SelectedNode is {} current&&string.Equals(current.Id,node.Id,StringComparison.Ordinal)
+                &&OwnsSelectedDocumentNode(current);
+        };
     }
     private long RetireResultPublication()
     {
         var epoch=++_resultPublicationEpoch;
-        var publication=_resultPublication;_resultPublication=null;_resultPublicationSnapshot=null;_resultPublicationBindings=null;
+        var publication=_resultPublication;_resultPublication=null;_resultPublicationSnapshot=null;_presentedResultTable=null;
         _declaredResultActive=false;
         var failures=new List<Exception>();
         void Cleanup(Action action){try{action();}catch(Exception error){failures.Add(error);}}
@@ -48,12 +92,16 @@ public partial class MainWindowViewModel
         try
         {
             if(!publication.IsCurrent()){publication.Dispose();return;}
-            _resultPublication=publication;_resultPublicationSnapshot=snapshot;_resultPublicationBindings=bindings;_declaredResultActive=true;
-            DeclaredResultPresenter.Present(publication,bindings,true,snapshot?.ExecutionTimeMs);
+            _resultPublication=publication;_resultPublicationSnapshot=snapshot;_declaredResultActive=true;
+            var presenter=DeclaredResultPresenter;
+            if(DocumentManager.CurrentSession is {} session&&WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId is {} workflow)
+                presenter.SetExpansionScope(session.ResultOwnerId,_outputContractSelectionGeneration,workflow,publication.Stamp.SchemaFingerprint);
+            var hasNativeModuleSummary=publication.Schema.OutputDisplay.Any(item=>item.IsModuleExecutionSummary);
+            presenter.Present(publication,bindings,!hasNativeModuleSummary,snapshot?.ExecutionTimeMs);
             if(!EnsureCurrent())return;
             if(FlatResultRows.FirstOrDefault() is {} root)root.DisplayName=nodeName??"结果";
             if(!EnsureCurrent())return;
-            _activeResultView?.Present(publication);
+            PresentCurrentResultTable(publication);
             if(EnsureCurrent())RefreshNativeResultImages();
             EnsureCurrent();
         }
@@ -68,7 +116,13 @@ public partial class MainWindowViewModel
     {
         var session=DocumentManager.CurrentSession;var node=SelectedNode;var workflowId=WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId;
         if(session is null||node is null||workflowId is null||snapshot.Identity.NodeId!=node.Id||snapshot.SourceWorkflowId!=workflowId)return;
-        if(snapshot.Identity.DocumentSessionId!=session.ResultOwnerId&&!ReferenceEquals(CurrentEditorDebugSnapshot,snapshot))return;
+        if(snapshot.Identity.DocumentSessionId!=session.ResultOwnerId&&!ReferenceEquals(CurrentEditorDebugSnapshot,snapshot)&&!IsRetainedEditorDebugSnapshot(snapshot))return;
+        if(!IsCurrentPresentedSnapshot(session,workflowId,node,snapshot))return;
+        // 同一已呈现快照：原件按数据变化更新（ModuleResultView.UpdateModuleViewResultShow），
+        // 不退役发布、不重建工作区。配置编辑触发的 RefreshFormalPublishedResult 走 retained 分支
+        // 会重复呈现同一快照，此处短路避免全清重建把已显示的图文层清空。
+        if(_resultPublication is not null&&_resultPublicationSnapshot is {} presented&&presented.Identity==snapshot.Identity)
+            return;
         var epoch=RetireResultPublication();var owner=CaptureResultViewOwner(epoch);
         bool Current()
         {
@@ -83,14 +137,34 @@ public partial class MainWindowViewModel
     }
     private void RefreshFormalPublishedResult()
     {
+        NotifyResultHistoryChanged();
         var session=DocumentManager.CurrentSession;var node=SelectedNode;var workflowId=WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId;
         if(session is null||node is null||workflowId is null){ClearResultDisplay();return;}
         if(!OwnsSelectedDocumentNode(node)){SelectedNode=null;return;}
         if(CurrentEditorDebugSnapshot is {} debug){PresentSnapshot(debug,node.Name);return;}
+        if(_retainedEditorDebugSnapshot is {} retained&&IsRetainedEditorDebugSnapshot(retained)){PresentSnapshot(retained,node.Name);return;}
+        // 调试窗口打开但尚未执行时（无 debug 快照），正式发布仍是唯一真实结果；
+        // 原件 ModuleResultView 在编辑态同样显示模块结果，若退化为声明视图会得到空表空图。
         using var reader=session.AcquirePublishedResult(workflowId,node.Id);
-        if(reader is not null){PresentSnapshot(reader.Snapshot,node.Name);return;}
+        if(reader is not null)
+        {
+            // 同一身份：不 retire 不重建，避免"清空→重画"造成的一帧闪烁（原件按数据变化更新）。
+            // 配置编辑使执行域退役后 IsCurrent 为假，但显示层按原件语义继续持有上一轮结果，
+            // 只有新执行产生不同身份的快照才替换（P_ValueChanged→UpdateModuleViewResultShow）。
+            if(_resultPublicationSnapshot is {} presented&&presented.Identity==reader.Snapshot.Identity)
+                return;
+            PresentSnapshot(reader.Snapshot,node.Name);
+            // 原件语义（UpdateModuleViewResultShow）：正式完成快照呈现即保留租约——
+            // 配置编辑使执行域退役后数据仍可显示，不再依赖编辑前挽留。调试快照不在此保留
+            // （其租约由调试窗口生命周期管理，关闭即释放）。
+            if(reader.Snapshot is {IsComplete:true})RetainEditorDebugSnapshot(reader.Snapshot);
+            return;
+        }
+        // 执行域被编辑退役后 reader 为空：当前发布虽已陈旧仍是用户看到的上一轮完整结果，
+        // 保持显示不动；仅当本就没有可显示的发布时才走声明/清空。
+        if(_resultPublication is not null)return;
         var schema=session.GetNodeSchema(workflowId,node.Id);
-        if(schema is null){ClearResultDisplay();return;}
+        if(schema is null){ClearRetainedEditorDebugSnapshot();ClearResultDisplay();return;}
         PresentDeclaration(schema,node.Name,schema.Outputs.ToDictionary(port=>port.Id,port=>schema.FindOutputDisplay(port.Id)?.DisplayName??port.Id,StringComparer.Ordinal),DeclaredBindings(schema,node.Id,workflowId));
     }
     private void RefreshCurrentResultBindings()
@@ -103,8 +177,8 @@ public partial class MainWindowViewModel
         var nodeId=publication.Stamp.Invocation?.NodeId??SelectedNode?.Id;
         var bindings=DeclaredBindings(publication.Schema,nodeId,_resultPublicationSnapshot?.SourceWorkflowId);
         if(!EnsureCurrent())return;
-        _resultPublicationBindings=bindings;
-        DeclaredResultPresenter.Present(publication,bindings,true,_resultPublicationSnapshot?.ExecutionTimeMs);
+        var hasNativeModuleSummary=publication.Schema.OutputDisplay.Any(item=>item.IsModuleExecutionSummary);
+        DeclaredResultPresenter.Present(publication,bindings,!hasNativeModuleSummary,_resultPublicationSnapshot?.ExecutionTimeMs);
         EnsureCurrent();
     }
     private void PresentDeclaration(ToolSchema schema,string? nodeName,

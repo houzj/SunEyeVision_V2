@@ -16,6 +16,7 @@ using SunEyeVision.UI.Features.WorkflowUI.Canvas;
 using SunEyeVision.UI.Shell.Controls.Common;
 using SunEyeVision.UI.Shared;
 using SunEyeVision.UI.Services;
+using SunEyeVision.UI.Services.Editing;
 using SunEyeVision.UI.Core;
 using AIStudio.Wpf.DiagramDesigner;
 using AIStudio.Wpf.DiagramDesigner.ViewModels;
@@ -50,8 +51,23 @@ namespace SunEyeVision.UI.Shell.Windows
             UseAeroCaptionButtons = false
         };
 
-        private readonly MainWindowViewModel _viewModel;
+        private MainWindowViewModel? _viewModel;
+        private bool _workspaceInitialized;
         private readonly Stopwatch _solutionLoadingStopwatch = new();
+
+        private void SolutionLoadingOverlay_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton != MouseButton.Left || e.LeftButton != MouseButtonState.Pressed)
+                return;
+
+            // The loading mask intentionally owns hit testing so the workspace cannot be edited
+            // while a solution/device transition is in progress. It must still preserve the
+            // window-level move contract; otherwise the visible shell becomes immovable exactly
+            // during the longest part of startup/opening.
+            try { DragMove(); }
+            catch (InvalidOperationException) { }
+            e.Handled = true;
+        }
 
         /// <summary>Win32 消息：查询窗口最小/最大尺寸限制</summary>
         private const int WM_GETMINMAXINFO = 0x0024;
@@ -130,12 +146,27 @@ namespace SunEyeVision.UI.Shell.Windows
             return IntPtr.Zero;
         }
 
-        public MainWindow(SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DesktopToolAdmission admission)
+        public MainWindow(SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DesktopToolAdmission? admission = null)
         {
             InitializeComponent();
+            if (admission is not null)
+                InitializeWorkspace(admission);
+        }
+
+        /// <summary>
+        /// 将完整工作区注入已经显示的轻量窗口壳。
+        /// 启动阶段只构造 XAML 壳，避免插件准入、服务注册和方案会话把窗口创建拖到最后。
+        /// </summary>
+        public void InitializeWorkspace(SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DesktopToolAdmission admission)
+        {
+            if (_workspaceInitialized)
+                return;
+
             _viewModel = new MainWindowViewModel(admission);
             _viewModel.SolutionDialogOwner = this;
             DataContext = _viewModel;
+            // 先注入轻量工具箱宿主，再按 VM 语义一次性创建工作区和结果树。
+            ToolboxContent.Initialize();
             // ★ 中间工作区注入 ViewModel 并订阅缩放事件（替代直接操作 ZoomTextBlock 的跨区域耦合）
             WorkspaceHost.Initialize(_viewModel);
             WorkspaceHost.ZoomScaleChanged += p => TopBarHost.SetZoomPercentage(p);
@@ -149,7 +180,11 @@ namespace SunEyeVision.UI.Shell.Windows
             RegisterHotkeys();
             // 后台切换到NativeDiagramControl（使用原生AIStudio.Wpf.DiagramDesigner库）
             SwitchToDefaultConfiguration();
+            RestoreLayoutConfig();
+            _workspaceInitialized = true;
         }
+
+        public bool IsWorkspaceInitialized => _workspaceInitialized;
         /// <summary>
         /// 切换到默认配置：WorkflowCanvasControl画布 + OrthogonalPathCalculator路径计算器
         /// </summary>
@@ -197,6 +232,7 @@ namespace SunEyeVision.UI.Shell.Windows
         /// </summary>
         private void RegisterHotkeys()
         {
+            if (_viewModel is null) return;
             // 文件操作快捷键
             InputBindings.Add(new KeyBinding(_viewModel.NewSolutionCommand, Key.N, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(_viewModel.OpenSolutionCommand, Key.O, ModifierKeys.Control));
@@ -220,6 +256,8 @@ namespace SunEyeVision.UI.Shell.Windows
         private bool _closeApproved;
         private bool _shutdownPreparationStarted;
         private bool _consumerReleaseStarted;
+        private Task? _pluginDrainTask;
+        private bool _pluginDrainRetryScheduled;
 
         /// <summary>
         /// 窗口关闭前事件 - 提示保存解决方案。
@@ -228,6 +266,13 @@ namespace SunEyeVision.UI.Shell.Windows
         /// </summary>
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
+            // 启动壳尚未注入工作区时没有会话、插件消费者或保存状态，允许直接关闭。
+            if (_viewModel is null)
+            {
+                _closeApproved = true;
+                e.Cancel = false;
+                return;
+            }
             if (_closeApproved)
             {
                 // 确认弹窗已弹出，用户再次触发关闭 -> 放行（由弹窗结果决定）
@@ -239,9 +284,10 @@ namespace SunEyeVision.UI.Shell.Windows
             e.Cancel = true;
             if (_shutdownPreparationStarted)
             {
-                // A child that refused to close has not released any consumers; retry
-                // only that reversible phase after the owner has resolved the failure.
-                if (!_consumerReleaseStarted && !_isClosingPromptInProgress)
+                // Preparation is idempotent after the first successful consumer
+                // release. A timed-out plugin drain can be retried without
+                // rebuilding the editor or releasing the consumers twice.
+                if (!_isClosingPromptInProgress)
                 {
                     _isClosingPromptInProgress=true;
                     Dispatcher.BeginInvoke(new Action(RetryPreparedClose));
@@ -261,7 +307,7 @@ namespace SunEyeVision.UI.Shell.Windows
         {
             try
             {
-                  if (await _viewModel.PrepareSolutionTransitionAsync(owner: this))
+                  if (_viewModel is not null && await _viewModel.PrepareSolutionTransitionAsync(owner: this))
                   {
                       SaveLayoutConfig();
                       (System.Windows.Application.Current as App)?.SaveShellPreferences();
@@ -293,18 +339,48 @@ namespace SunEyeVision.UI.Shell.Windows
         }
         private async Task CompletePreparedCloseAsync()
         {
-            PreparePluginConsumersForShutdown();
+            if (!_consumerReleaseStarted)
+            await PreparePluginConsumersForShutdownAsync();
             if(System.Windows.Application.Current is SunEyeVision.UI.App app)
             {
-                var drain=app.DrainPluginDirectoryAsync();
+                _pluginDrainTask ??= app.DrainPluginDirectoryAsync();
+                var drain=_pluginDrainTask;
                 if(await Task.WhenAny(drain,Task.Delay(TimeSpan.FromSeconds(10)))!=drain)
-                    ThemeMessageDialog.Show("仍有结果或插件资源正在使用。窗口将保持打开并继续等待，资源释放后自动关闭。", "等待资源释放", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info, this);
+                {
+                    var diagnostics=app.PluginDrainDiagnostics;
+                    ThemeMessageDialog.Show("仍有结果或插件资源正在使用。窗口将保持打开并继续等待，资源释放后自动关闭。\n当前租约："+diagnostics, "等待资源释放", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info, this);
+                    _isClosingPromptInProgress=false;
+                    SchedulePluginDrainRetry(drain);
+                    return;
+                }
                 await drain;
             }
             _closeApproved=true;
             Close();
         }
-        private void PreparePluginConsumersForShutdown()
+        private void SchedulePluginDrainRetry(Task drain)
+        {
+            if (_pluginDrainRetryScheduled) return;
+            _pluginDrainRetryScheduled=true;
+            _ = RetryAfterPluginDrainAsync(drain);
+        }
+        private async Task RetryAfterPluginDrainAsync(Task drain)
+        {
+            try { await drain.ConfigureAwait(false); }
+            catch { return; }
+            await Dispatcher.InvokeAsync(async () =>
+            {
+                if (_closeApproved || !IsVisible) return;
+                _isClosingPromptInProgress=true;
+                try { await CompletePreparedCloseAsync(); }
+                catch(Exception error)
+                {
+                    _isClosingPromptInProgress=false;
+                    ThemeMessageDialog.Show("退出未完成："+error.Message, "退出未完成", MessageBoxButton.OK,ThemeMessageDialog.MessageIcon.Error, this);
+                }
+            });
+        }
+        private async Task PreparePluginConsumersForShutdownAsync()
         {
             var failures=new List<Exception>();
             // 主窗口关闭时主动关闭仍存活的子窗口，避免预览窗口或对话框继续持有
@@ -322,7 +398,12 @@ namespace SunEyeVision.UI.Shell.Windows
                     Dispatcher.UnhandledException+=capture;
                     try
                     {
-                        childWindow.Close();
+                        if (childWindow is RuntimeToolEditorWindow editorWindow)
+                        {
+                            if (!await editorWindow.CloseAndDrainAsync())
+                                failures.Add(new InvalidOperationException("调试窗口关闭排空未完成："+editorWindow.Title));
+                        }
+                        else childWindow.Close();
                         if(dispatcherFailure is not null)failures.Add(dispatcherFailure);
                         if(System.Windows.Application.Current?.Windows.OfType<Window>().Contains(childWindow)==true)
                             failures.Add(new InvalidOperationException("子窗口未关闭："+childWindow.GetType().Name));
@@ -340,11 +421,19 @@ namespace SunEyeVision.UI.Shell.Windows
             // release its shared consumers or start retirement after a failed close.
             if(failures.Count>0)throw new AggregateException("子窗口未能全部关闭，资源保持持有。",failures);
             _consumerReleaseStarted=true;
+            if (_viewModel is null) return;
             try { _viewModel.CloseExecutionSnapshotDetails(); } catch(Exception ex) { failures.Add(ex); }
             _viewModel.SolutionDialogOwner = null;
 
             // 取消订阅图像预览事件（经图像结果区退订），防止内存泄漏
             try { ImageResultHost.Shutdown(); } catch(Exception ex) { failures.Add(ex); }
+            // VM 关闭链顺序：设备/通信服务先于会话退役解绑（DocumentSession.Dispose 要求活动租约先排空，
+            // 否则"通讯服务及驱动"租约阻断 CloseCurrent，主窗口停在"等待资源释放"）。与方案切换路径
+            // （MainWindowDocumentFiles.PrepareSolutionTransition 后 DisposeCommunicationRuntimeAsync）同序。
+            try { await SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.DisposeCommunicationRuntimeAsync(); }
+            catch(Exception ex) { failures.Add(ex); }
+            try { await SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.DisposeCameraRuntimeAsync(); }
+            catch(Exception ex) { failures.Add(ex); }
             try { _viewModel.ReleasePluginConsumersForShutdown(); } catch(Exception ex) { failures.Add(ex); }
             try { _viewModel.ReleaseDocumentHost(); } catch(Exception ex) { failures.Add(ex); }
             if(failures.Count>0)throw new AggregateException("插件消费者未能全部释放，窗口保持打开。",failures);
@@ -392,6 +481,8 @@ namespace SunEyeVision.UI.Shell.Windows
         }
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            if (_viewModel is null)
+                return;
             try
             {
                 // 工具插件现在通过ToolboxViewModel自动加载
@@ -431,6 +522,8 @@ namespace SunEyeVision.UI.Shell.Windows
         /// </summary>
         private void MainContentGrid_Loaded(object sender, RoutedEventArgs e)
         {
+            if (_viewModel is null)
+                return;
             // 恢复布局配置（右侧面板折叠状态 + 列宽）
             RestoreLayoutConfig();
         }

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Windows;
 
 using System.Windows.Controls;
+using System.Windows.Data;
 
 using System.Windows.Input;
 
@@ -119,7 +120,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
     private Border? _highlightedTargetBorder = null; // 高亮的目标节点Border（用于恢复原始样式）
 
-    private ExecutionPortShape? _highlightedTargetPort = null; // 高亮的目标端口（ExecutionPortShape）
+    private ConnectionPort? _highlightedTargetPort = null; // 高亮的目标端口（ConnectionPort）
 
     private string? _lastHighlightedPort = null; // 上次高亮的端口名称
 
@@ -374,6 +375,45 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
                 new System.Windows.Data.Binding("ScaleTransform") { Source=tab, Mode=System.Windows.Data.BindingMode.OneWay });
             ForceRefreshItemsControls();
             RebindConnectionSystem(tab);
+        }
+
+        /// <summary>
+        /// 将当前流程身份直接绑定到画布的视觉投影。
+        ///
+        /// 方案打开时 Tab、ContentTemplate 和 Loaded 的先后顺序不固定，
+        /// 仅依赖继承 DataContext 或一次性 XAML 路径绑定会留下“数据已有、节点容器为空”的窗口。
+        /// 这里把节点和连线 ItemsControl 绑定到同一个 Tab 实例，并在模板已生成后刷新目标。
+        /// </summary>
+        public void SynchronizePresentation(WorkflowTabViewModel tab)
+        {
+            ArgumentNullException.ThrowIfNull(tab);
+            if (!ReferenceEquals(DataContext, tab))
+                DataContext = tab;
+
+            if (FindName("CanvasNodeItems") is ItemsControl nodes)
+            {
+                nodes.SetBinding(ItemsControl.ItemsSourceProperty, new Binding("DocumentCanvas.Nodes")
+                {
+                    Source = tab,
+                    Mode = BindingMode.OneWay
+                });
+            }
+
+            if (FindVisualChildren<ItemsControl>(WorkflowCanvas).FirstOrDefault() is ItemsControl connections)
+            {
+                connections.SetBinding(ItemsControl.ItemsSourceProperty, new Binding("DocumentCanvas.Connections")
+                {
+                    Source = tab,
+                    Mode = BindingMode.OneWay
+                });
+            }
+
+            WorkflowCanvas.SetBinding(System.Windows.Controls.Canvas.RenderTransformProperty, new Binding("ScaleTransform")
+            {
+                Source = tab,
+                Mode = BindingMode.OneWay
+            });
+            ForceRefreshItemsControls();
         }
         private WorkflowTabViewModel? _connectionProjectionTab;
         private void BindConnectionProjectionTab(WorkflowTabViewModel? tab)
@@ -1014,7 +1054,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
                     if (parent == null) break;
                     portScope = parent;
                 }
-                var ellipses = WorkflowVisualHelper.FindAllVisualChildren<ExecutionPortShape>(portScope);
+                var ellipses = WorkflowVisualHelper.FindAllVisualChildren<ConnectionPort>(portScope);
 
                 foreach (var ellipse in ellipses)
 
@@ -1030,7 +1070,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
                         // Collapsed 的元素不可见且不响应鼠标事件
 
-                        ellipse.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+                        ellipse.IsHited = isVisible;
 
                     }
 
@@ -1060,47 +1100,27 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
                 return;
 
+            // The canvas can receive input in the same dispatcher turn in which
+            // the new solution's visual tree is loaded. Resolve the host lazily
+            // so node selection/opening never dereferences a stale null owner.
+            _viewModel ??= Window.GetWindow(this)?.DataContext as MainWindowViewModel;
+            if (_viewModel is null)
+            {
+                e.Handled = true;
+                return;
+            }
 
 
-            // 双击事件：打开调试窗口
 
             if (e.ClickCount == 2)
-
             {
-                _canvasBoxSelectionActive = false; ClearCanvasSelectionFrame();
-
-                if (_viewModel?.WorkflowTabViewModel.SelectedTab != null)
-
+                if (node.IsEnabled)
                 {
-
-                    foreach (var n in _viewModel.WorkflowTabViewModel.SelectedTab.DocumentCanvas?.Nodes ?? Enumerable.Empty<CanvasNodeProjection>())
-
-                    {
-
-                        n.IsSelected = (n == node);
-
-                    }
-
+                    _canvasBoxSelectionActive = false;
+                    ClearCanvasSelectionFrame();
+                    _viewModel.OpenDebugWindowCommand.Execute(node.Definition);
                 }
-
-                // 使用 ForceSelectNode 强制更新显示（即使引用相同）
-
-                _viewModel.ForceSelectNode(node.Definition);
-
-
-
-                // 打开调试窗口
-
-                _viewModel.OpenDebugWindowCommand.Execute(node.Definition);
-
-                // 不设置 e.Handled，让事件冒泡到 Port_MouseLeftButtonUp
-
-            // 设置 e.Handled = true 会导致 Port_MouseLeftButtonUp 无法被触发，
-
-            // 从而导致临时连接线无法隐藏
-
                 return;
-
             }
 
 
@@ -1261,7 +1281,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         private void Port_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (sender is ExecutionPortShape port && port.DataContext is CanvasNodeProjection node && port.Tag is string side)
+            if (sender is ConnectionPort port && port.DataContext is CanvasNodeProjection node && port.Tag is string side)
                 BeginCanvasConnection(node, side);
             e.Handled = true;
         }
@@ -1424,7 +1444,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         {
 
-            // 获取节点对象（支持 Border 或 ExecutionPortShape 作为 sender）
+            // 获取节点对象（支持 Border 或 ConnectionPort 作为 sender）
 
             CanvasNodeProjection? targetNode = null;
 
@@ -1438,7 +1458,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
             }
 
-            else if (sender is ExecutionPortShape ellipse && ellipse.Tag is CanvasNodeProjection clickedNodeFromEllipse)
+            else if (sender is ConnectionPort ellipse && ellipse.Tag is CanvasNodeProjection clickedNodeFromEllipse)
 
             {
 
@@ -1642,7 +1662,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
             DependencyObject? current = e.OriginalSource as DependencyObject;
             while (current != null && current != WorkflowCanvas)
             {
-                if (ReferenceEquals(current, _canvasSelectionFrame) || current is ExecutionPortShape ||
+                if (ReferenceEquals(current, _canvasSelectionFrame) || current is ConnectionPort ||
                     current is Border { Tag: CanvasNodeProjection } ||
                     current is Rectangle handle && _canvasWireHandles.Contains(handle) ||
                     current is FrameworkElement { DataContext: CanvasConnectionProjection }) return;
@@ -2217,7 +2237,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
         /// </summary>
 
-        private ExecutionPortShape? GetPortElement(Border nodeBorder, string portName)
+        private ConnectionPort? GetPortElement(Border nodeBorder, string portName)
 
         {
 
@@ -2247,7 +2267,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
                 {
 
-                    return element as ExecutionPortShape;
+                    return element as ConnectionPort;
 
                 }
 
@@ -2558,6 +2578,42 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
         /// <summary>
         /// 右键菜单 - 重命名节点
         /// </summary>
+        private void NodeContextMenu_Disconnect_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled=true;
+            if(!CanEditCanvas||!TryGetContextCanvasNode(sender,out var node))return;
+            var canvas=CurrentWorkflowTab?.DocumentCanvas;
+            if(canvas is null)return;
+            var edges=canvas.Connections.Where(edge=>edge.SourceNodeId==node.Id||edge.TargetNodeId==node.Id).ToArray();
+            if(edges.Length==0)return;
+            canvas.Edit("断开连接",draft=>{foreach(var edge in edges)draft.RemoveConnection(edge.Definition);});
+        }
+
+        private void NodeContextMenu_Delete_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled=true;
+            if(!CanEditCanvas||!TryGetContextCanvasNode(sender,out var node))return;
+            var canvas=CurrentWorkflowTab?.DocumentCanvas;
+            if(canvas is null)return;
+            var edges=canvas.Connections.Where(edge=>edge.SourceNodeId==node.Id||edge.TargetNodeId==node.Id).ToArray();
+            canvas.Delete(new[]{node},edges);
+        }
+
+        private void NodeContextMenu_ToggleEnabled_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled=true;
+            if(!CanEditCanvas||!TryGetContextCanvasNode(sender,out var node))return;
+            CurrentWorkflowTab?.DocumentCanvas?.SetEnabled(node,!node.IsEnabled);
+        }
+
+        private static bool TryGetContextCanvasNode(object sender,out CanvasNodeProjection node)
+        {
+            node=null!;
+            if(sender is not MenuItem{Parent:ContextMenu{PlacementTarget:FrameworkElement{DataContext:CanvasNodeProjection placementNode}}})return false;
+            node=placementNode;
+            return true;
+        }
+
         private void NodeContextMenu_Rename_Click(object sender, RoutedEventArgs e)
         {
             e.Handled=true;

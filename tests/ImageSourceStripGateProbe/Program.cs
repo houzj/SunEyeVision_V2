@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 using SunEyeVision.Plugin.Wpf.Controls.Native.Composition.ImageSources;
 using SunEyeVision.Plugin.Wpf.Presenters.Input.ImageSources;
@@ -31,6 +32,7 @@ internal static class Program
    key=new KeyEventArgs(Keyboard.PrimaryDevice,PresentationSource.FromVisual(list),0,Key.Left){RoutedEvent=Keyboard.PreviewKeyDownEvent};list.RaiseEvent(key);
    Check(key.Handled,"无导航权限的方向键不改变选择");
    CheckToolbarLayout(strip,session,add);
+   CheckDirectoryMenu(strip,list,session);
    window.Close();strip.Session=null;Console.WriteLine("PASS 8: 实际WPF图像条门禁、运行遮罩、工具条占位块 130/0 与增删图入口条件；非自然OS输入或完整主窗验收");return 0;
   }
   catch(Exception error){Console.Error.WriteLine(error);return 1;}
@@ -58,6 +60,42 @@ private static void CheckToolbarLayout(ImageSourceStrip strip,ProbeSession sessi
  Check(slot.ActualWidth==130&&add.IsVisible,"回到图像源节点后占位与入口一并恢复");
  Check(Math.Abs(ownerGap-Gap())<0.5,"回到图像源节点后工具条右侧组件复位");
 }
+private static void CheckDirectoryMenu(ImageSourceStrip strip,ListBox list,ProbeSession session)
+{
+ strip.IsRunning=false;list.ScrollIntoView(list.Items[0]);list.UpdateLayout();Pump();
+ var container=(ListBoxItem)list.ItemContainerGenerator.ContainerFromIndex(0);
+ var thumbnail=FindVisual<ImageSourceThumbnail>(container)??throw new InvalidOperationException("未生成原件缩略图");
+ var menu=thumbnail.ContextMenu;var action=(MenuItem)menu.Items[0];
+ void Open(){menu.PlacementTarget=thumbnail;menu.IsOpen=true;Pump();}
+ void Click(){action.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent,action));Pump();}
+ var requestCount=session.Requests.Count;
+ Open();
+ Check(session.DisplayIndex==1,"右键菜单不改变执行游标");
+ menu.IsOpen=false;Click();
+ Check(session.Requests.Count==requestCount+1&&session.Requests[^1]==ImageSourceStripRequestKind.OpenDirectory
+   &&session.LastItemId=="b","菜单读取当前图像，右击非当前缩略图时仍定位当前图像");
+ Open();session.DisplayIndex=0;session.Raise();Pump();
+ menu.IsOpen=false;Click();
+ Check(session.Requests.Count==requestCount+2&&session.LastItemId=="a","执行菜单命令时读回最新图像索引");
+ Open();session.DisplayIndex=-1;session.Raise();Pump();
+ menu.IsOpen=false;Click();
+ Check(session.Requests.Count==requestCount+2,"没有当前图像时不发目录请求");
+ session.DisplayIndex=1;session.Raise();Pump();
+ Open();session.Version++;
+ Click();
+ Check(session.Requests.Count==requestCount+2,"列表版本变化后旧菜单不发请求");
+ menu.IsOpen=false;Pump();Open();
+ var replacement=new ProbeSession{CanEdit=true};
+ strip.Session=replacement;Click();
+ Check(!menu.IsOpen&&replacement.Requests.Count==0&&session.Requests.Count==requestCount+2,"换源关闭旧菜单并拒绝迟到点击");
+}
+private static T? FindVisual<T>(DependencyObject parent) where T:DependencyObject
+{
+ if(parent is T match)return match;
+ for(var index=0;index<VisualTreeHelper.GetChildrenCount(parent);index++)
+  if(FindVisual<T>(VisualTreeHelper.GetChild(parent,index)) is {} child)return child;
+ return null;
+}
 private static void Pump(){var frame=new DispatcherFrame();Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle,new Action(()=>frame.Continue=false));Dispatcher.PushFrame(frame);}
  private static void Check(bool condition,string message){if(!condition)throw new InvalidOperationException(message);}
  private sealed class ProbeSession:IImageSourceStripSession
@@ -65,10 +103,10 @@ private static void Pump(){var frame=new DispatcherFrame();Dispatcher.CurrentDis
   public bool CanEdit{get;set;}public bool CanNavigate{get;set;}public bool IsReadOnly=>!CanEdit;
   public bool ProvidesImageImport{get;set;}=true;
   public IReadOnlyList<ImageSourceStripItem> Items{get;}=new[]{new ImageSourceStripItem("a","A",null,true),new ImageSourceStripItem("b","B",null,true)};
-  public long Version=>1;public int DisplayIndex{get;private set;}public int ConfiguredStartIndex=>0;
+  public long Version{get;set;}=1;public int DisplayIndex{get;set;}public int ConfiguredStartIndex=>0;
   public bool IsSelectMode=>false;public bool AutoSwitchEnabled=>false;public bool IsImporting=>false;public string? Status=>null;
-  public List<ImageSourceStripRequestKind> Requests{get;}=new();public event PropertyChangedEventHandler? PropertyChanged;
+  public List<ImageSourceStripRequestKind> Requests{get;}=new();public string? LastItemId{get;private set;} public event PropertyChangedEventHandler? PropertyChanged;
   public void Raise()=>PropertyChanged?.Invoke(this,new PropertyChangedEventArgs(null));
-  public Task RequestAsync(ImageSourceStripRequest request,CancellationToken cancellation){Requests.Add(request.Kind);if(request.Kind==ImageSourceStripRequestKind.Activate)DisplayIndex=Items.ToList().FindIndex(item=>item.Id==request.ItemId);return Task.CompletedTask;}
+  public Task RequestAsync(ImageSourceStripRequest request,CancellationToken cancellation){Requests.Add(request.Kind);LastItemId=request.ItemId;if(request.Kind==ImageSourceStripRequestKind.Activate)DisplayIndex=Items.ToList().FindIndex(item=>item.Id==request.ItemId);return Task.CompletedTask;}
  }
 }

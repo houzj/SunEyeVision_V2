@@ -1,0 +1,128 @@
+VM 启动→方案→工具窗口完整链路复核（2026-11-09）
+
+证据边界
+- VM 动态运行耗时未取得；以下 VM 结论来自既有静态程序集/模板证据与原厂阶段截图，不把本方读数冒充 VM 动态等效。
+- 本方 Release 只准入 ImageSource 与 BlobAnalysis；历史自研工具不进入启动扫描、工具箱或当前载荷。
+
+VM 已确认静态链
+- 启动顺序：`App.OnStartup → animatedSplashScreenWindow → Program.BeforeStartMian → InitMainWindow → ParamTabControl.PreLoadPage → ShowFrontendUI/ShowMainWindow → ProjectManager.OpenRecentSolution`。
+- 工具参数链：`AlgorithmTabRoot → ParamsConfigControlBase → ParamsTabUserControl → ParamListView/ParamUserControl → UserTempConverter + paramusercontroldatatemplate.xaml → Tab/GroupLinkItem/底部命令/外部槽`。
+- 参数页使用 Tab 集合、ContentTemplate 和声明式数据树；同节点视图是否复用、跨节点释放顺序、动态 UI 线程耗时仍未由 VM 动态证据确认。
+
+本方已落地链
+- `src/UI/App.xaml.cs`：默认先显示 `StartPageWindow` 方案管理器，用户选择后创建 `MainWindow`；发布准入和服务初始化在主工作区遮罩链中继续，插件准入通过 `Task.Run` 离开 UI Dispatcher。
+- `src/UI/Services/Editing/Nodes/RuntimeNodeConfigurationControl.cs` 与 `src/UI/Shell/Windows/MainWindowRuntimeEditing.cs`：隐藏窗口中建立正式会话、代次和租约，等待选中页 Ready 后再显示，关闭时退订、拒收迟到回调并释放 reader/ROI/视图。
+- `src/Plugin.Wpf/Fields/DeclaredFieldsView.cs`：`ParameterPresentationTree` 唯一页/组入口，页构造器按 Tab 首次使用登记和缓存；`DeclaredFieldTemplateRegistry` 统一字段模板身份与 NumericPair/DialogGroup 槽。
+- `tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobUiComposition.cs`：Blob 首屏只等待当前页，其他页在首帧后复用同一数据树和模板槽逐页预热；跨节点/关闭继续使用同一生命周期合同。
+
+当前 Release 与回归
+- `dotnet build SunEyeVision.slnx -c Release --no-restore -v:minimal`：0 错误，6194 个既有警告；正式载荷封签：`F7A95752FF75ABE9219DEA49AAD8BE227A110D13D64C800E919384D3C7E294A7`。
+- `scripts/verification/Run-NeutralReleaseProbe.ps1 -SkipBuild`：PASS；无 WPF/UI/旧 SDK 装载，ImageLoad→BlobAnalysis、reader、保存重开和取消排空通过。
+- `scripts/verification/Test-PluginSdkRetirementGate.ps1`：PASS；现行解决方案消费者 0、工具消费者 0、源码实时扫描 0、SDK 目录条目 0。
+- `tests/RuntimeEditorProductionProbe`（实际 Session→节点→正式参数控件→捕获/回执→关闭释放）：PASS。
+- 最新生产探针读数：ImageLoad 绑定 857ms、首次呈现 1515ms、重复 Tab 0ms；BlobAnalysis 绑定 1439ms、首次呈现 483ms、基本页 ROI 组合 2082ms、运行/结果页空闲预热 1657/1210ms，首次切换第 2/3 页 334/416ms，重复切换 0/37/50ms。
+- Release 启动隔离验收（`--startup-test-root`，关闭硬件/用户数据）：进程存活，`OnStartup.Enter +305ms`、`Application base OnStartup completed +315ms`、`SolutionManager.Visible +599ms`；说明当前 Release 先进入可操作方案管理器，未回退到旧的直接主工作区启动路径。该夹具只确认顺序和进程存活，不替代用户视觉验收。
+
+本批新增：VM 参数树/模板语义对齐后的 ROI 延迟物化与共享资源优化（2026-11-09）
+- 对照证据：VM `ParamsTabControlPanal.xaml` 的 `TabControl.ItemsSource + ContentTemplate`、`ParamListView.xaml` 的 `ItemsControl`/字段模板，以及 `ParamsConfigControlBase` 的参数根重建入口。VM 动态耗时和实例复用仍未取得，以下只记录本方实现与本方测量。
+- `src/Plugin.Wpf/Presenters/Regions/NativeRoiInheritanceBinding.cs`、`src/Plugin.Wpf/Presenters/Regions/NativeRoiUiDraftControls.cs` 和 `tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRoiUi.cs`：隐藏的矩形/圆环继承参数改为工厂，只有选中继承模式才创建编辑器；关闭时按已物化实例退订并释放。
+- `src/Plugin.Wpf/Themes/Generic.xaml` 统一合并 `RoiResources.xaml`，`RoiSelectControl.xaml` 不再由每个控件重复加载同一资源字典。
+- 最新全量 Release：`dotnet build SunEyeVision.slnx -c Release --no-restore -v:q`，0 错误、3377 个既有警告；中间构建日志为 `.build-full-20261109.log`（已提取结果）。NeutralReleaseProbe 通过，Plugin.SDK 退役门禁通过。最后一次重新封签后的 `release-payload.json` SHA-256 为 `265E2BE6B0BADABA80C4C5F762D091213880A6D007A6E1385080D49060610E58`。
+- 最新 `RuntimeEditorProductionProbe`：ImageLoad 参数绑定/首显 `473/1176ms`，重复切换 `0ms`；BlobAnalysis 参数绑定/首显 `1287/438ms`，基本页 ROI 组合 `1927ms`，运行参数页空闲预热 `2291ms`，结果显示页空闲预热 `1450ms`，首次切换第 2/3 页 `403/450ms`，重复切换 `0/25/42ms`；ImageLoad 与 BlobAnalysis 的 Session→正式参数控件→捕获/回执→关闭释放均 PASS。
+- 结论：本批确认了一个可落地的设计差异（隐藏 ROI 编辑器提前物化及资源字典重复解析），并已收回首屏等待；运行/结果页的首次字段行构造仍是本方主要成本。不能据此宣称 VM 动态等效，后续只沿 VM 数据树/模板槽继续替换重型字段装配，不恢复旧 SDK 或第二套兼容链。
+
+本批新增：高级字段声明壳与真实控件按展开状态物化（2026-11-09）
+- `src/Plugin.Wpf/Fields/DeferredDeclaredFieldVisual.cs` 提供仅包含字段身份/状态的 `ContentControl` 壳；`DeclaredFieldsView` 对 `FieldLayout.Advanced=true` 的普通字段登记 `DeclaredFieldAccess`，只有 VM 对齐的高级分组变为可见时才创建 `DeclaredFieldEditor`。接受值、错误、提交、事件和 Dispose 仍由原 `DeclaredFieldState`/`DeclaredFieldAccess` 合同负责，没有第二份参数值。
+- 该改动保持 VM `ParamListView` 的声明树和模板入口不变；没有凭静态 `VirtualizationMode=Recycling` 推断 WPF 虚拟化，而是只延后本方确实提前创建的高级字段视觉对象。
+- UI Release 构建：0 错误、6094 个既有警告；`RuntimeEditorProductionProbe`：ImageLoad 绑定/首显 `769/1351ms`；BlobAnalysis 绑定/首显 `1387/423ms`，ROI 组合 `1747ms`，运行参数页行构造 `1844ms`，结果显示页行构造 `1191ms`，首次切换第 2/3 页 `340/447ms`，重复切换 `0/28/47ms`；两工具完整 Session→正式参数控件→捕获/回执→关闭释放 PASS。
+- 相比上一批本机读数，运行页首次行构造减少约 `447ms`，结果页减少约 `259ms`；读数受机器和资源状态影响，只用于确认趋势，不冒充 VM 动态耗时。
+
+本批最终 Release 复核（2026-11-09）
+- 全量 `dotnet build SunEyeVision.slnx -c Release --no-restore -v:q`：0 个错误、6177 个既有警告。
+- `scripts/verification/Run-NeutralReleaseProbe.ps1 -SkipBuild`：PASS；`scripts/verification/Test-PluginSdkRetirementGate.ps1`：PASS；正式载荷 `release-payload.json` SHA-256：`7AADECC5208A8EB1D7E23A5DD49331EBC8EC516B8C2A9219221CAB9E59FF3D61`。
+- 最终 `RuntimeEditorProductionProbe`：ImageLoad 参数绑定/首显 `527/1464ms`，重复 Tab `0ms`；BlobAnalysis 参数绑定/首显 `1246/562ms`，基本页 ROI 组合 `1567ms`，运行参数页/结果显示页首次行构造 `2066/1385ms`，首次切换第 2/3 页 `391/443ms`，重复切换 `0/25/36ms`；两个真实节点的 Session→正式参数控件→捕获/回执→关闭释放 PASS。
+- 本批读数与上一次相比受机器和 Release 资源状态影响，不能作为单调性能趋势，也不能冒充 VM 动态耗时；它确认的是代码链没有回退、重复 Tab 继续复用，以及首次未预热页的主要成本仍在字段视觉树物化。
+- `DeferredDeclaredFieldVisual` 已接入 `FieldLayout.Advanced=true` 普通字段：高级字段先登记身份/状态，进入高级分组时创建真实编辑器；`DeclaredFieldAccess` 仍是唯一值、错误、提交、事件和 Dispose 合同。ROI 隐藏编辑器继续按选中模式延迟物化，资源字典继续共享。
+本批最终 Release 原子首屏复核（2026-11-09）
+- `BlobUiComposition` 将首个选中页改为宿主隐藏期间同步完成，只有未选中的 Tab 继续进入 SystemIdle 预热；首屏 ReadyTask 仍在窗口显示前完成，目的为消除“先空白/后补挂”的视觉跳变。
+- 全量 Release 构建：0 个错误、774 个本轮输出警告；NeutralReleaseProbe、Plugin.SDK 退役门禁均 PASS；正式载荷 SHA-256：`4A89B5C2A848EC05B6645FE7E37616BDB1D4C91304A5D2A939B961045030B582`。
+- 最终生产探针：ImageLoad 参数绑定/首显 `475/1180ms`，重复 Tab `0ms`；BlobAnalysis 绑定/首显 `1086/420ms`，基本页 ROI 组合 `1808ms`，运行参数页/结果显示页首次行构造 `2184/1221ms`，首次切换第 2/3 页 `328/402ms`，重复切换 `0/25/38ms`；两个真实节点的 Session→正式参数控件→捕获/回执→关闭释放 PASS。
+- 该探针没有 VM 同版本动态计时，只证明首屏隐藏组装合同、重复页复用和关闭释放链在当前 Release 没有回退。最终原始日志：`docs/collaboration/evidence/RuntimeEditorProductionProbe-20261109-atomic-final.txt`。
+- Runtime 回归补跑：`SunEyeVision.ImageSource.Runtime.Tests` `31/31`、`SunEyeVision.Tool.BlobAnalysis.Tests` `39/39`；ImageSource 本地文件格式测试使用独立 `S2_CASE_ROOT` 临时目录。
+差异与下一刀
+- 已删除旧启动预热、旧工具准入和旧 Plugin.SDK 活动消费者；当前性能成本不在算法加载，而在 Blob 高级字段、ROI、运行参数和结果显示的首次 WPF 视觉物化。
+- VM 静态证据支持“数据树 + ContentTemplate + Tab 宿主 + 外部槽”目标；不能据静态材料断言 VM 采用缓存、虚拟化或异步。下一步应按原厂同版本动态证据继续替换重型槽的首次物化实现，保留当前单链生命周期，不再添加第二套兼容架构。
+
+证据路径
+- VM 启动顺序：`docs/collaboration/evidence/VM启动阶段顺序静态对照-20261109.txt`、`D:\MyWork\REA逆向测试\docs\architecture-recovery\startup-order-cil-evidence.json`。
+- VM 组装语义：`docs/collaboration/evidence/VM工具窗口组装语义与性能链回执-20261107.html`、`docs/07-工具逆向/decompiled/XmlUi/VisionMaster.ParamTab/ParamsTabControlPanal.xaml`。
+- VM 生命周期静态入口：`docs/07-工具逆向/decompiled/WpfControls/VMControls.WPF/ParamsConfigControlBase.xaml.cs`。
+- CodeBuddy 对齐审计：`docs/collaboration/evidence/VM-CodeBuddy对齐审计-20261109.html`。
+- 外部 SDK 边界：`docs/collaboration/evidence/PluginDevKit外部工程边界回归-20261109.txt`。
+
+当前完整逆向对照收口（2026-11-09）
+1. 启动与方案管理：VM 静态入口确认品牌快速阶段后先进入可操作方案管理器，再由用户选择方案，随后进入主工作区和方案加载链；当前 `App.OnStartup` 默认 `StartPageWindow → MainWindow 壳/加载遮罩 → PluginManager/ServiceInitializer/SolutionManager → OpenExternalSolutionAsync/NewEmptySolutionAsync`，直接文件启动和隐藏起始页只作为明确旁路。
+2. 工具窗口：VM 的 `AlgorithmTabRoot → ParamsConfigControlBase → ParamsTabUserControl → ParamListView/ParamUserControl → DataTemplate` 已映射到当前 `ParameterPresentationTree → DeclaredFieldTemplateRegistry → Native ParamListView/ParamUserControl 资源 → DeclaredFieldsView`；ImageSource 单页与 Blob 首个选中页均在窗口显示前完成，未选中页不阻塞首帧。
+3. Tab 与组装：Blob ROI、运行参数、结果显示属于页面专用槽，页面第一次激活才按同一数据树和模板入口物化，重复切换只选择已登记页面；高级字段和 ROI 继承编辑器只在需要时建立真实视觉对象。
+4. 生命周期：节点会话由 `ProductionEditorContext`、`SettingsLease`、`RuntimeGenerationLease` 和 `RuntimeToolEditorWindow.CloseAndDrainAsync` 组成；关闭/换节点先使会话失效、退订回调、排空调试任务，再释放结果 reader、ROI、参数视图和资源。当前本方 Session→捕获/回执→换节点/关闭释放已通过生产探针。
+
+结论边界：以上“VM 链”是静态程序集/XAML/原厂阶段截图确认；VM 同版本动态 UI 线程耗时、同节点实例复用的内部边界和释放线程顺序仍未观察到。当前 Release 的毫秒读数只证明本方实现没有回退和重复 Tab 复用，不宣称与 VM 动态等效。当前活动方案只含 ImageSource 与 BlobAnalysis；历史 20 个工具目录不参与构建、扫描或启动。
+
+
+串行最终 Release 复核（2026-11-09，构建完成后单独执行）
+- 全量 Release 构建结果：0 错误、6080 个既有警告；正式载荷 SHA-256：3BD9981DADEB79B0AD5DE5321D6389510183A460DACDC2ED48BF1607B35836B4。
+- RuntimeEditorProductionProbe：ImageLoad 参数绑定/首显 507/1173ms，重复 Tab 0ms；BlobAnalysis 参数绑定/首显 1435/453ms，首次切换第 2/3 页 385/428ms，重复切换 0/27/43ms；两个节点 Session→正式参数控件→捕获/回执→关闭释放均 PASS。
+- 该读数取自构建结束后的串行 Release，不与构建过程并发；仍只代表本方链路，不代表 VM 动态等效。
+
+
+最终封签校正（2026-11-09）：NeutralReleaseProbe 在构建后串行执行并重新封存正式载荷，最终 release-payload.json SHA-256 为 DF15710C681E49B53A41ADC84452AB7B749E0881D7D86F1869A5CB6AF87E84D5；随后 Plugin.SDK 退役门禁 PASS。前述生产参数窗读数对应同一源码构建，封签只更新发布清单身份。
+
+VM 双轨清理收口（2026-11-09）
+- Blob 运行参数页已删除旧“元数据不完整时按代码逐行创建控件”的备用分支；当前 `BlobParameters.xml`、`BlobParameterDefinition`、`ParameterPresentationTree`、`DeclaredFieldsView` 是唯一参数来源。
+- `BlobRunUi` 现在只创建正式 VM 参数树对应的运行能力状态；`BlobRunUiState` 不再维护第二套编辑器、范围控件或阈值控件集合，只负责支持项校验和会话退役。
+- Blob WPF 专项构建 0 错误；全量 Release 构建 0 错误、6062 个警告；NeutralReleaseProbe PASS 并重新封签，当前正式载荷 SHA-256 为 `F91AC7CBF9D03B12F98E2DDAA3F7BC29E9CB5161369AF072F3AD2BF8A85DBBC2`。
+- 串行生产探针 PASS：ImageLoad 绑定/首显 `761/1460ms`；BlobAnalysis 绑定/首显 `1497/442ms`，首次切换第 2/3 页 `311/419ms`，重复切换 `0/34/47ms`；两个工具的 Session、参数控件、捕获/回执、关闭释放均通过。
+- Plugin.SDK 退役门禁 PASS：现行解决方案消费者 0、工具消费者 0、源码实时扫描 0、历史工具目录旧引用 20、SDK 目录条目 0。历史工具仍只作为 VM 重建输入，不进入当前 Release。
+
+最终源码封签校正（2026-11-09）：上述双轨清理后仅调整正式状态退役语义并重新构建；全量 Release 0 错误、6064 个警告，NeutralReleaseProbe PASS，最终正式载荷 SHA-256 为 `31F58A1ADB399D0B03D17E8176CBFC4407FA802255C52A2A5B6B4CEB130E01F0`。同一构建生产探针 PASS：ImageLoad 绑定/首显 `523/1415ms`，BlobAnalysis 绑定/首显 `1459/476ms`，首次切换第 2/3 页 `326/438ms`，重复切换 `0/27/44ms`；两工具关闭释放和旧 SDK 退役门禁均通过。
+
+
+### 2026-11-09 启动链遗留诊断清理（当前有效增量）
+正式启动链移除全局 Button 悬停调试注册。该注册仅用于早期主题排查，原本在每次启动安装全局路由事件并持续记录 MouseEnter/MouseLeave，不属于 VM 启动、方案管理或工具组装语义。现在启动链只保留方案管理器→插件准入→服务/方案管理→工作区加载→工具窗口的正式路径。
+
+本次复核：`dotnet build SunEyeVision.slnx -c Release --no-restore -v:q` 0 错误、3354 个既有警告；`Run-NeutralReleaseProbe.ps1 -SkipBuild` PASS，正式载荷 SHA-256 为 `CB16CE1EFDC2057CB76A51FEB83D3CAD2C6B11B8FD5B62DD6DD33DAC3F53F2EB`；`Test-PluginSdkRetirementGate.ps1` PASS，现行消费者 0、历史旧引用 20。生产探针 PASS：ImageLoad 参数绑定/首显 `467/1401ms`，重复 Tab `0ms`；BlobAnalysis 参数绑定/首显 `1295/446ms`，首次切换第 2/3 页 `351/413ms`，重复切换 `0/25/41ms`，Session→正式参数控件→捕获/回执→关闭释放完整通过。原始日志为 `docs/collaboration/evidence/RuntimeEditorProductionProbe-20261109-blob-single-chain.txt`。
+
+该清理只删除正式启动链的诊断负担，不改变 VM 对齐的窗口、参数树、Tab 复用和资源生命周期语义。当前仍未取得 VM 同版本动态 UI 线程计时，不能把本方读数写成 VM 动态等效。
+
+### 2026-11-09 正式启动链与 Blob 运行能力单链最终封签（当前有效）
+在移除全局 Button 悬停诊断和 BlobRunUi 无效 Changed 订阅后，重新执行专项/全量 Release 构建与串行验收：Blob WPF 0 错误；全量 Release 0 错误、3350 个既有警告；NeutralReleaseProbe PASS，正式载荷 SHA-256 为 `5A32D9F789A52EF775A0F3547F7E18738F95327C19C20A21E8AAE66CD65C0A7F`。Plugin.SDK 退役门禁仍 PASS，现行消费者 0、历史目录旧引用 20。
+
+同一 Release 的生产探针 PASS：ImageLoad 参数绑定/首显 `454/1282ms`，重复 Tab `0ms`；BlobAnalysis 参数绑定/首显 `1194/437ms`，首次切换第 2/3 页 `349/445ms`，重复切换 `0/29/42ms`。两个节点均完成真实 Session→正式参数控件→捕获/回执→关闭释放。
+
+当前代码语义：启动链不再注册产品无关的全局悬停诊断；Blob 运行参数不再维护独立 Changed 事件或第二套编辑器状态，正式 `DeclaredFieldsView` 的字段变化和会话租约是唯一回调/退役来源。VM 同版本动态 UI 线程计时仍未取得，本方读数只证明当前实现单链、无回退和重复 Tab 复用。
+
+### 2026-11-09 Platform SDK 主链扩展回归
+依据 `VM原厂SDK发布边界静态取证-20261109.txt` 中 Platform SDK 的方案加载、流程运行、连续运行、结果回调和释放边界，新增 `src/Platform.Sdk.Contracts` 与 `src/Platform.Sdk/PlatformRuntimeHost.cs`。宿主适配器以专用 owner 线程承载 `DocumentSessionManager`、单次 `DocumentRunBatch`、连续 `DocumentContinuousRun`、结果订阅/退订和关闭释放；外部合同不暴露 Application、Execution、Persistence、UI 或旧 Plugin.SDK 类型。
+
+干净外部模板回归：
+- `Workflow flow-1: 0 node(s)`；
+- `Devices: 0`；
+- `Run flow-1: success=True, nodes=0`；
+- `Continuous flow-1: reason=Requested, rounds=1`；
+- 进程退出时 Close/Dispose 完成。
+
+同一源码基线全量 Release 构建 0 错误、6064 个既有警告；Platform SDK 发布脚本成功；NeutralReleaseProbe PASS，正式载荷 SHA-256 为 `F19BD7A0646955BB8197BBB12EB3596FA221CA38F14D7F5CA7BE156A9641A316`；Plugin.SDK 退役门禁 PASS。尚未公开 GroupControl、真实设备连接控制、WPF 渲染控件，也未完成 Visual Studio 实际启动/附加验收。
+
+### 2026-11-09 VM 参数树隐藏控件与结果模板资源作用域收口
+本批严格沿 VM 的 `ParamListView/ParamUserControl/DataTemplate` 证据实施两处代码级调整：
+- `NativeAssistUiDraftControls` 默认“按信息”模式只登记其余辅助字段，按点/按坐标模式切换时才创建对应编辑器；字段状态、事件和 Dispose 合同不变。Blob 基本页 ROI 专用组合由约 2.1 秒降至 `356ms`。
+- `NativeGraphicStylePresenter` 的原厂 `GraphicStyle.xaml` 改挂到实际 `ContentControl.Resources`，修复正常 WPF Measure 阶段找不到 `TextLeft` 的静态资源异常；同时保留隐藏页预热时的模板挂接，首次 Tab 不把整页成本推迟到用户点击。
+
+验证：全量 `dotnet build SunEyeVision.slnx -c Release --no-restore -m:1 -p:UseSharedCompilation=false -v:q` 0 错误；`Run-NeutralReleaseProbe.ps1 -SkipBuild` PASS，最终正式载荷 SHA-256 为 `B8CF66F0EF786D57AB5D403D4503C5935CB242CEE3297FC86042AFDDF701A202`；Plugin.SDK 退役门禁 PASS（现行消费者 0、历史目录旧引用 20）。
+
+同一 Release 生产探针：ImageLoad 绑定/首显 `527/1338ms`；BlobAnalysis 绑定/首显 `1400/454ms`，ROI 组合 `356ms`，运行页空闲物化 `2126ms`，结果页空闲物化 `997ms`，首次第 2/3 页 `271/257ms`，重复切换 `0/17/29ms`；两个节点 Session→正式参数控件→捕获/回执→关闭释放 PASS。原始日志：`docs/collaboration/evidence/RuntimeEditorProductionProbe-20261109-final-result-prewarm.txt`。
+
+本批没有 VM 同版本动态 UI 线程计时，因此只确认 VM 静态模板语义对应、本方首屏/Tab/释放链无回退；运行页字段批量物化仍是下一处按 VM 模板注册表继续收口的性能点。
+
+### 2026-11-09 运行参数条件字段整页延迟物化
+依据 VM 参数 XML 的 `visibleWhen` 和高级分组声明，`DeclaredFieldsView` 现在对 `Advanced` 与 `VisibleWhen` 字段统一保留状态、行身份和访问合同，仅在当前条件可见时物化 `DeclaredFieldEditor`。该调整覆盖运行参数整页，不再只延迟高级分组字段。Release 全量构建 0 错误，载荷已封签，SHA-256 为 `0EB2902A77706C82628FF528C5573D42DA19AA1541549742A05E2FF629544FB2`。本批只完成代码落地和构建，未执行新的生产探针，人工验收由用户直接启动 Release 程序完成。

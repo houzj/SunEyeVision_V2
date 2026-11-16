@@ -1,17 +1,16 @@
 using System;
 using System.Windows;
-using SunEyeVision.UI.Core;
 
 namespace SunEyeVision.UI.Services.Monitoring;
 
 public enum ResultViewThemeFamily { PropertyList, ResultShell }
 
-/// <summary>Selects the original family's palette on the actual instance, after its standalone defaults.</summary>
+/// <summary>Selects the original family's palette on the actual instance, after its standalone defaults.
+/// 固定主题：VM 原件只有一套深色界面，这里固定使用原件的 Dark 调色板，不再随主题切换。</summary>
 public sealed class ResultViewThemeScope : IDisposable
 {
     private readonly FrameworkElement _view;
     private readonly ResultViewThemeFamily _family;
-    private ThemeManager? _manager;
     private ResourceDictionary? _palette;
     private bool _disposed;
     public ResultViewThemeScope(FrameworkElement view,ResultViewThemeFamily family)
@@ -24,17 +23,15 @@ public sealed class ResultViewThemeScope : IDisposable
     private void Unloaded(object sender,RoutedEventArgs args)=>Detach();
     private void Attach()
     {
-        if(_disposed||_manager is not null)return;
-        _manager=ServiceLocator.Instance.GetService<ThemeManager>();
-        if(_manager is null)return;
-        _manager.ThemeChanged+=Apply;Apply(_manager.CurrentTheme);
+        if(_disposed||_palette is not null)return;
+        Apply();
     }
-    private void Apply(AppTheme theme)
+    private void Apply()
     {
         _view.Dispatcher.VerifyAccess();
         if(_disposed)return;
         var palette=new ResourceDictionary{Source=new Uri("/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Results/"
-            +_family+"/"+theme+".xaml",UriKind.Relative)};
+            +_family+"/Dark.xaml",UriKind.Relative)};
         var dictionaries=_view.Resources.MergedDictionaries;
         var index=_palette is null?-1:dictionaries.IndexOf(_palette);
         if(index<0)dictionaries.Add(palette);else dictionaries[index]=palette;
@@ -42,8 +39,6 @@ public sealed class ResultViewThemeScope : IDisposable
     }
     private void Detach()
     {
-        if(_manager is not null)_manager.ThemeChanged-=Apply;
-        _manager=null;
         if(_palette is not null)_view.Resources.MergedDictionaries.Remove(_palette);
         _palette=null;
     }

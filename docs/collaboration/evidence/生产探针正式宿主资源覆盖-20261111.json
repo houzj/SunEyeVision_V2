@@ -1,0 +1,27 @@
+{
+  "kind": "生产探针宿主资源覆盖编译",
+  "source": "tests/RuntimeEditorProductionProbe/Program.cs",
+  "checks": [
+    "加载正式SunEyeVision.UI.App资源图",
+    "参数页拒绝Entry全文和旧资源占位",
+    "高级参数默认折叠",
+    "枚举展开项中文标签且接受值不变"
+  ],
+  "debugBuild": "0错误、3302警告、21.25秒",
+  "releaseBuild": "全量Release0错误、3308警告、19.48秒",
+  "runtime": "未运行；用户手动验收",
+  "files": [
+    {
+      "path": "tests/RuntimeEditorProductionProbe/Program.cs",
+      "sha256": "D945316AB66DDF6A7DD6D70F73A0D42169E276491012BD7B9CD51B4D4A36B36E"
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe",
+      "sha256": "60E79BA29CCE70839D5799E529B8D36B08AD489E55C6EAE01762FDEC9A0F2D2A"
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.Wpf.dll",
+      "sha256": "632DD60AE6181A36B9400ECC385C0EAC210A0B0BDA3A2AB5AA5D0EEF4D994493"
+    }
+  ]
+}

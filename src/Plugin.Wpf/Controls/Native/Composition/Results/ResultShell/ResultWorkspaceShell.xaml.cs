@@ -6,6 +6,15 @@ namespace SunEyeVision.Plugin.Wpf.Controls.Native.Composition.Results.ResultShel
 /// <summary>Recovered result workspace composition. All publications, commands and image ownership remain with its host.</summary>
 public partial class ResultWorkspaceShell : UserControl
 {
+    public bool IsCurrentResultSelected => CurrentResultContent is not null && CurrentResultTab?.IsSelected == true;
+    public event EventHandler? CurrentResultSelectionChanged;
+    public event EventHandler? ResultTabSelectionChanged;
+    public static readonly DependencyProperty HistoryItemsProperty = DependencyProperty.Register(nameof(HistoryItems), typeof(IEnumerable), typeof(ResultWorkspaceShell));
+    public IEnumerable? HistoryItems { get => (IEnumerable?)GetValue(HistoryItemsProperty); set => SetValue(HistoryItemsProperty, value); }
+    public static readonly DependencyProperty ClearHistoryCommandProperty = DependencyProperty.Register(nameof(ClearHistoryCommand), typeof(ICommand), typeof(ResultWorkspaceShell));
+    public ICommand? ClearHistoryCommand { get => (ICommand?)GetValue(ClearHistoryCommandProperty); set => SetValue(ClearHistoryCommandProperty, value); }
+    public static readonly DependencyProperty SaveHistoryCommandProperty = DependencyProperty.Register(nameof(SaveHistoryCommand), typeof(ICommand), typeof(ResultWorkspaceShell));
+    public ICommand? SaveHistoryCommand { get => (ICommand?)GetValue(SaveHistoryCommandProperty); set => SetValue(SaveHistoryCommandProperty, value); }
     public static readonly DependencyProperty InputItemsProperty = DependencyProperty.Register(nameof(InputItems), typeof(IEnumerable), typeof(ResultWorkspaceShell), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
     public IEnumerable? InputItems { get => (IEnumerable?)GetValue(InputItemsProperty); set => SetValue(InputItemsProperty, value); }
     public static readonly DependencyProperty OutputItemsProperty = DependencyProperty.Register(nameof(OutputItems), typeof(IEnumerable), typeof(ResultWorkspaceShell), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
@@ -31,7 +40,7 @@ public partial class ResultWorkspaceShell : UserControl
     public string? HelpContent { get => (string?)GetValue(HelpContentProperty); set => SetValue(HelpContentProperty, value); }
     public static readonly DependencyProperty IsInfoExpandedProperty = DependencyProperty.Register(nameof(IsInfoExpanded), typeof(bool), typeof(ResultWorkspaceShell), new FrameworkPropertyMetadata(true, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, LayoutChanged));
     public bool IsInfoExpanded { get => (bool)GetValue(IsInfoExpandedProperty); set => SetValue(IsInfoExpandedProperty, value); }
-    public static readonly DependencyProperty SelectedResultTabIndexProperty = DependencyProperty.Register(nameof(SelectedResultTabIndex), typeof(int), typeof(ResultWorkspaceShell), new FrameworkPropertyMetadata(0, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+    public static readonly DependencyProperty SelectedResultTabIndexProperty = DependencyProperty.Register(nameof(SelectedResultTabIndex), typeof(int), typeof(ResultWorkspaceShell), new FrameworkPropertyMetadata(0, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, ResultTabIndexChanged));
     public int SelectedResultTabIndex { get => (int)GetValue(SelectedResultTabIndexProperty); set => SetValue(SelectedResultTabIndexProperty, value); }
     public static readonly DependencyProperty SelectOverlayCommandProperty = DependencyProperty.Register(nameof(SelectOverlayCommand), typeof(ICommand), typeof(ResultWorkspaceShell), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
     public ICommand? SelectOverlayCommand { get => (ICommand?)GetValue(SelectOverlayCommandProperty); set => SetValue(SelectOverlayCommandProperty, value); }
@@ -51,13 +60,30 @@ public partial class ResultWorkspaceShell : UserControl
         // Explicit sources survive the original buttons moving outside this namescope in fullscreen.
         btnLeft.SetBinding(Button.CommandProperty, new System.Windows.Data.Binding(nameof(PreviousImageCommand)) { Source = this });
         btnRight.SetBinding(Button.CommandProperty, new System.Windows.Data.Binding(nameof(NextImageCommand)) { Source = this });
-        Loaded += (_, _) => { ApplyLayout(); SelectAvailableInfoTab(); };
+        Loaded += (_, _) =>
+        {
+            ApplyLayout();
+            if (InfoTab.SelectedItem is null || (CurrentResultContent is null && CurrentResultTab.IsSelected))
+                SelectDefaultInfoTab();
+        };
     }
-    private static void CurrentResultChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e) => ((ResultWorkspaceShell)sender).SelectAvailableInfoTab();
-    private void SelectAvailableInfoTab()
+    private static void CurrentResultChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
     {
-        if (CurrentResultContent is null && CurrentResultTab is { IsSelected: true } && HistoryTab is not null)
-            HistoryTab.IsSelected = true;
+        var shell = (ResultWorkspaceShell)sender;
+        shell.SelectDefaultInfoTab();
+        shell.CurrentResultSelectionChanged?.Invoke(shell, EventArgs.Empty);
+    }
+    private static void ResultTabIndexChanged(DependencyObject sender,DependencyPropertyChangedEventArgs args)
+        =>((ResultWorkspaceShell)sender).ResultTabSelectionChanged?.Invoke(sender,EventArgs.Empty);
+    private void SelectDefaultInfoTab()
+    {
+        var firstAvailable = CurrentResultContent is null ? HistoryTab : CurrentResultTab;
+        if (firstAvailable is not null) firstAvailable.SetCurrentValue(TabItem.IsSelectedProperty, true);
+    }
+    private void InfoTabSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!ReferenceEquals(e.OriginalSource, InfoTab)) return;
+        CurrentResultSelectionChanged?.Invoke(this, EventArgs.Empty);
     }
     private static void LayoutChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e) => ((ResultWorkspaceShell)sender).ApplyLayout();
     private void ApplyLayout()

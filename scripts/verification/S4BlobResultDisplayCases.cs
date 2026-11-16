@@ -757,7 +757,7 @@ internal static class S2DocumentEditingCases
                 DeclaredFieldAccess Field(string id)=>((DeclaredFieldsView)editor.Content).Fields.Single(field=>field.FieldId==id);
                 var text=Field(contentId);Require(text.TrySetConstant("Blob面积:{面积}"),text.Error);Pump();
                 Require(text.Setting is DisplayExpressionSetting&&Words(Scene()).Select(word=>(string)Get(word,"Content")).Order().SequenceEqual(new[]{"Blob面积:25","Blob面积:64"}),"原文本控件确认未生成映射或未进入真实场景");
-                var position=(DeclaredFieldEditor)Field(xId).View;
+                var position=(DeclaredFieldRow)Field(xId).View;
                 Console.WriteLine("TEXT_POSITION_ROUTE "+System.Text.Json.JsonSerializer.Serialize(new{inline=(bool)Get(position,"_inlineConstantReference"),view=position.GetType().FullName,popups=Visual(position).OfType<AppsPopup>().Count()}));Require((bool)Get(position,"_inlineConstantReference"),"文本坐标未走原ButtonSelecter内联常量/来源组合");
                 SelectSource(position,widthSource);Pump();
                 Require(Field(xId).Setting is ReferenceSetting reference&&SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(reference.Reference)==SunEyeVision.Plugin.Contracts.ParameterSettingCanonical.Serialize(widthSource),"真实位置来源按钮未接纳完整引用身份");
@@ -977,7 +977,7 @@ internal static class S2DocumentEditingCases
     static bool Contains(IReadOnlyRegion region,int x,int y)
     {using var read=region.AcquireReader();for(var i=0;i<read.RunCount;){var runs=read.ReadRuns(i,Math.Min(4096,read.RunCount-i));foreach(var run in runs.Span)if(run.Row==y&&x>=run.FirstColumn&&x<=run.LastColumnInclusive)return true;i+=runs.Length;}return false;}
     private static bool SelectRadio(FrameworkElement radio,long value)=>(bool)radio.GetType().GetMethod("TrySetConstant")!.Invoke(radio,new object[]{value})!;
-    private static void SelectSource(DeclaredFieldEditor field,OutputReference? expected)
+    private static void SelectSource(DeclaredFieldRow field,OutputReference? expected)
     {
         var popup=Logical(field).Concat(Visual(field)).OfType<AppsPopup>().First(item=>item.IsVisible);popup.IsDropDownOpen=true;popup.UpdateLayout();Pump();
         var session=popup.DataContext;((ICommand)session.GetType().GetProperty("DropDownCommand")!.GetValue(session)!).Execute(null);Pump();

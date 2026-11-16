@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:themeWindows="clr-namespace:SunEyeVision.UI.Shell.Windows"
         xmlns:base="clr-namespace:SunEyeVision.UI.Themes.Base"
-        xmlns:controls="clr-namespace:SunEyeVision.Plugin.Editing.Wpf.UI.Controls;assembly=SunEyeVision.Plugin.Editing.Wpf"
+        xmlns:controls="clr-namespace:SunEyeVision.Plugin.Editing.Wpf.UI.Controls;assembly=SunEyeVision.Plugin.Editing.Wpf" xmlns:inputs="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Inputs;assembly=SunEyeVision.Plugin.Wpf" xmlns:numeric="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Numeric.Presentation.Controls;assembly=SunEyeVision.Plugin.Wpf"
         Title="设备管理" Width="430" Height="620" MinWidth="390" MinHeight="500"
         WindowStartupLocation="CenterOwner" ResizeMode="CanResize"
         Background="{DynamicResource {x:Static base:ThemeKeys.PanelBackgroundBrush}}">
@@ -25,7 +25,7 @@
                 <TextBlock Grid.Row="4" Text="字节顺序" VerticalAlignment="Center"/><ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding ByteOrderOptions}" SelectedItem="{Binding ByteOrder}" Height="32"/>
                 <TextBlock Grid.Row="5" Text="读写属性" VerticalAlignment="Center"/><ComboBox Grid.Row="5" Grid.Column="1" ItemsSource="{Binding AccessModeOptions}" SelectedItem="{Binding AccessMode}" Height="32"/>
                 <TextBlock Grid.Row="6" Text="超时时间(ms)" VerticalAlignment="Center"/><TextBox Grid.Row="6" Grid.Column="1" Text="{Binding TimeoutMs, UpdateSourceTrigger=PropertyChanged}" Height="32" ToolTip="该地址块每次读取请求的超时时间"/>
-                <TextBlock Grid.Row="7" Text="轮询使能" VerticalAlignment="Center"/><controls:ToggleSwitch Grid.Row="7" Grid.Column="1" IsChecked="{Binding PollEnabled, Mode=TwoWay}" SwitchWidth="42" SwitchHeight="22" VerticalAlignment="Center"/>
+                <TextBlock Grid.Row="7" Text="轮询使能" VerticalAlignment="Center"/><inputs:ContentToggleSwitch Grid.Row="7" Grid.Column="1" IsChecked="{Binding PollEnabled, Mode=TwoWay}" VerticalAlignment="Center"/>
             </Grid>
         </ScrollViewer>
         <TextBlock Grid.Row="3" Text="{Binding ValidationMessage}" Foreground="{DynamicResource {x:Static base:ThemeKeys.ErrorBrush}}" TextWrapping="Wrap" Margin="0,8,0,0"/>

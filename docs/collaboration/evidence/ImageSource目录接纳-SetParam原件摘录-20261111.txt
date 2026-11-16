@@ -1,0 +1,46 @@
+归档SetParam SubscribeFolderPath分支静态摘录；不是本机运行证据
+D:/MyWork/Rea逆向/analysis/full-audit/image-source-native-3.c
+SHA256 08B8DFCD958B692E5059EC895737202BD5731CD701912CBA5F2EF2F8FD0B8F6E
+      }
+      FUN_180001aa0((ulonglong *)pCVar18,param_2,uVar24);
+      pwVar9 = (wchar_t *)FUN_18000aca0(local_1a0,param_2);
+      if (7 < *(ulonglong *)(pwVar9 + 0xc)) {
+        pwVar9 = *(wchar_t **)pwVar9;
+      }
+      Add_WatchSubFolder(this,pwVar9);
+      if ((_LIST_ENTRY *)0x7 < (ulonglong)local_1a0._24_8_) {
+        operator_delete((void *)local_1a0._0_8_);
+      }
+      cVar4 = HSlog_ShouldLog(2);
+      if (cVar4 != '\0') {
+        puVar10 = FUN_180001320();
+        if (0xf < (ulonglong)puVar10[3]) {
+          puVar10 = (undefined8 *)*puVar10;
+        }
+        HSlog_LogPrint(2,
+                       "[%s] [ModuId:%d] [%s@%d] SubscribeFolderPath: Image path changed begin, path=%s"
+                       ,puVar10,*(undefined4 *)(this + 0x24938));
+      }
+      plVar11 = FUN_180023910((longlong *)local_1a0,(longlong *)pCVar18);
+      iVar6 = UpdateImageFilesListFromDir(this,plVar11);
+      if ((iVar6 != 0) && (cVar4 = HSlog_ShouldLog(4), cVar4 != '\0')) {
+        puVar10 = FUN_180001320();
+        if (0xf < (ulonglong)puVar10[3]) {
+          puVar10 = (undefined8 *)*puVar10;
+        }
+        HSlog_LogPrint(4,"[%s] [ModuId:%d] [%s@%d] UpdateImageFilesListFromDir failed",puVar10,
+                       *(undefined4 *)(this + 0x24938));
+      }
+      *(undefined4 *)(this + 0x25cc0) = 5;
+      cVar4 = HSlog_ShouldLog(2);
+      if (cVar4 == '\0') {
+        return 0;
+      }
+      puVar10 = FUN_180001320();
+      if (0xf < (ulonglong)puVar10[3]) {
+        puVar10 = (undefined8 *)*puVar10;
+      }
+      HSlog_LogPrint(2,
+                     "[%s] [ModuId:%d] [%s@%d] SubscribeFolderPath: Image path changed end, path=%s"
+                     ,puVar10,*(undefined4 *)(this + 0x24938));
+      return 0;

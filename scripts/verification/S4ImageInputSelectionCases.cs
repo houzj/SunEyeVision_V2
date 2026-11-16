@@ -9,7 +9,7 @@ internal static class S2DocumentEditingCases
  static DeclaredReferenceCandidate Candidate(string node="source",string port="image",string scope="flow",TypeRef? type=null,IReadOnlyList<string>? path=null)=>new("同名图像",node,scope,new Port(port,type??Image),path??Array.Empty<string>());
  sealed class Fixture:IDisposable
  {
-  public DeclaredFieldEditor Field;public Window? Window;public ComboBox Box=>(ComboBox)Field.InputElement!;
+  public DeclaredFieldRow Field;public Window? Window;public ComboBox Box=>(ComboBox)Field.InputElement!;
   public IReadOnlyList<DeclaredReferenceCandidate> Candidates;public Action? OnRead;public Action<ParameterSetting>? OnWrite;public bool ThrowRead,Reject;public int Writes;public ParameterSetting Accepted;
   public Fixture(bool required=true,ParameterSetting? initial=null,IReadOnlyList<DeclaredReferenceCandidate>? candidates=null,bool show=true)
   {Candidates=candidates??new[]{Candidate()};Accepted=initial??new ReferenceSetting(Candidate().Reference(BindingSelection.All));Field=new(new Port("input.image",Image,Required:required,EditModes:FieldEditModes.Reference),"图像来源",Accepted,setting=>{Accepted=setting;Writes++;OnWrite?.Invoke(setting);},new ReferenceFieldOptions(_=>ReferenceCandidates.Empty,ValidateProposal:(_,_)=>Reject?"宿主拒绝":null),allowUnboundReference:true);Field.UseImageSourceSelector(Read);if(show){Window=new Window{Content=Field,Width=420,Height=180,Title="图像来源选择专项"};Window.Show();Pump();}}

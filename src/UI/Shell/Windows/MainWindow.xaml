@@ -57,11 +57,11 @@
 
             <!-- ========== 左侧工具箱 - 使用双模ToolboxControl ========== -->
             <Border Grid.Column="0" Grid.RowSpan="2" Background="{DynamicResource ThemeWorkspaceBackgroundBrush}" BorderBrush="{DynamicResource {x:Static base:ThemeKeys.DividerBrush}}" BorderThickness="0,0,1,0">
-                <toolbox:ToolboxControl DataContext="{Binding Toolbox}" x:Name="ToolboxContent"/>
+                <toolbox:DeferredToolboxHostControl DataContext="{Binding Toolbox}" x:Name="ToolboxContent"/>
             </Border>
 
 
-            <shell:ShellWorkspaceControl Grid.Column="1" Grid.RowSpan="2" x:Name="WorkspaceHost" DataContext="{Binding Workspace}" Loaded="WorkspaceHost_Loaded"/>
+            <shell:DeferredWorkspaceHostControl Grid.Column="1" Grid.RowSpan="2" x:Name="WorkspaceHost" DataContext="{Binding Workspace}" Loaded="WorkspaceHost_Loaded"/>
             <!-- 右侧分割器 - 工作区和右侧面板之间（可折叠，折叠逻辑内聚） -->
             <common:CollapsibleSplitterBox Grid.Column="2" Width="8" MinWidth="8"
                                            ResizeDirection="Columns"
@@ -71,7 +71,7 @@
 
             <!-- 结果工作区统一承载图像、源条及当前结果/历史结果/帮助。 -->
             <Border Grid.Column="3" Grid.Row="0" Background="{DynamicResource ThemePanelBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="0">
-                <shell:ImageResultControl x:Name="ImageResultHost" DataContext="{Binding ImageResult}"/>
+                <shell:DeferredImageResultHostControl x:Name="ImageResultHost" DataContext="{Binding ImageResult}"/>
             </Border>
 
             <!-- 右侧日志栏与左侧画布状态栏处于同一视觉高度。 -->
@@ -84,7 +84,8 @@
               Panel.ZIndex="1000"
               Visibility="Collapsed"
               Background="#CC15171A"
-              IsHitTestVisible="True">
+              IsHitTestVisible="True"
+              MouseLeftButtonDown="SolutionLoadingOverlay_MouseLeftButtonDown">
             <Border Width="480" MinHeight="250" Padding="32"
                     HorizontalAlignment="Center" VerticalAlignment="Center"
                     Background="{DynamicResource ThemePanelBackgroundBrush}"

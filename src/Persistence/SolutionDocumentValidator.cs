@@ -19,7 +19,11 @@ public static class SolutionDocumentValidator
         CheckDuplicateKeys(root.ToJsonString());
         RequireId(root, "$");
         _ = SolutionFormatPolicy.ReadVersion(root);
-        RejectUnknownMembers(root, "$", SerializableFields(typeof(SolutionDefinition)));
+        // Embedded file records are persisted alongside the domain document by
+        // EmbeddedFileCapture and are parsed into SolutionReadCandidate rather
+        // than SolutionDefinition. They are part of the current persistence
+        // envelope, so the strict root validator must admit that envelope field.
+        RejectUnknownMembers(root, "$", SerializableFields(typeof(SolutionDefinition)).Append("EmbeddedFiles"));
         if (root["GlobalVariables"] is JsonArray variables)
         for (int i = 0; i < variables.Count; i++)
         {
@@ -122,7 +126,7 @@ public static class SolutionDocumentValidator
             {
                 var node = nodes[n] ?? throw new JsonException("Null node.", path + ".Nodes[" + n + "]", null, null);
                 RequireId(node, path + ".Nodes[" + n + "]");
-                RejectUnknownMembers(node, path + ".Nodes[" + n + "]", new[] { "Id", "Name", "DispName", "ToolType", "GlobalIndex", "LocalIndex", "IsEnabled", "SubroutineId", "SelectedDisplayReference", "PositionX", "PositionY", "Width", "Height", "Configuration", "AdditionalData" });
+                RejectUnknownMembers(node, path + ".Nodes[" + n + "]", new[] { "Id", "Name", "DispName", "ToolType", "GlobalIndex", "LocalIndex", "IsEnabled", "SubroutineId", "SelectedDisplayReference", "DisplayOverlays", "PositionX", "PositionY", "Width", "Height", "Configuration", "AdditionalData" });
                 if (node["SubroutineId"] is not null && node["SubroutineId"]!.GetValue<string>() != "")
                     throw new JsonException("子流程拥有关系迁移暂停，不能作为普通工具打开。", path + ".Nodes[" + n + "].SubroutineId", null, null);
                 if (!ids.Add(node["Id"]!.GetValue<string>())) throw new JsonException("Duplicate node identity.", path + ".Nodes[" + n + "].Id", null, null);
@@ -172,7 +176,7 @@ public static class SolutionDocumentValidator
         var known = names.ToHashSet(StringComparer.Ordinal);
         foreach (var property in value)
             if (!known.Contains(property.Key))
-                throw new JsonException("Unknown field; no approved migration exists.", path + "." + property.Key, null, null);
+                throw new JsonException($"Unknown field; no approved migration exists: {path}.{property.Key}", path + "." + property.Key, null, null);
     }
 
     private static void RequireId(JsonNode node, string path)

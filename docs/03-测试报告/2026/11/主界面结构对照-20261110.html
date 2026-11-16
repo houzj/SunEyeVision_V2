@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>主界面结构对照（VM vs 本方）</title>
+<style>
+  :root{--ink:#1f2933;--muted:#5b6770;--line:#d8dee4;--ok:#1b7a45;--warn:#a15c00;--bad:#b3261e;--bg:#f7f9fa;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:32px 40px 60px;background:var(--bg);color:var(--ink);font:14px/1.7 "Segoe UI","Microsoft YaHei",sans-serif;}
+  h1{margin:0 0 6px;font-size:23px;}
+  .sub{color:var(--muted);margin-bottom:22px;}
+  h2{font-size:17px;margin:26px 0 10px;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:10px;}
+  th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:13.5px;}
+  th{background:#eef2f5;font-weight:600;}
+  tr:last-child td{border-bottom:none;}
+  code{background:#eef2f5;padding:1px 5px;border-radius:4px;font-size:12.5px;word-break:break-all;}
+  .ok{color:var(--ok);font-weight:600;}
+  .warn{color:var(--warn);font-weight:600;}
+  .bad{color:var(--bad);font-weight:600;}
+  .note{background:#fff;border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:8px;padding:12px 16px;margin:14px 0;color:var(--muted);}
+  .keynote{border-left-color:var(--bad);}
+</style>
+</head>
+<body>
+<h1>主界面结构对照：VM 原厂 vs 本方</h1>
+<div class="sub">2026-11-10 · 依据：VM <code>MainWindow.xaml</code> → <code>VmMainViewConfigControl</code> → <code>MainViewControl.xaml</code> → <code>ModuleResultView.xaml</code>；本方 <code>MainWindow.xaml</code> → <code>ResultWorkspaceShell.xaml</code></div>
+
+<h2>一、区域结构对照</h2>
+<table>
+<thead><tr><th>区域</th><th>VM 原厂</th><th>本方</th><th>结论</th></tr></thead>
+<tbody>
+<tr><td>窗口外壳</td><td><code>BaseWindow</code> + <code>TitleBar</code>，内容只有一个 <code>VmMainViewConfigControl</code></td><td><code>Window</code> + <code>ShellTopBarControl</code>，内容为 <code>MainContentGrid</code></td><td class="ok">同构（外壳薄、真布局在子控件）</td></tr>
+<tr><td>左侧工具箱</td><td>列 0：<code>ProcedureConfigControl</code> 内部承载</td><td>列 0：<code>DeferredToolboxHostControl</code></td><td class="ok">分区一致</td></tr>
+<tr><td>中间画布</td><td>列 0：同在 <code>ProcedureConfigControl</code></td><td>列 1：<code>DeferredWorkspaceHostControl</code></td><td class="ok">分区一致</td></tr>
+<tr><td>右侧面板</td><td>列 2：<code>ModuleResultView</code></td><td>列 3：<code>DeferredImageResultHostControl</code> → <code>ResultWorkspaceShell</code></td><td class="ok">分区一致</td></tr>
+<tr><td>图像源控件位置</td><td><b>右区 <code>ModuleResultView</code> 内</b>：<code>&lt;local:LocalImageListView x:Name="localImageList" Visibility="{Binding IsShowLocalImageList}"/&gt;</code></td><td><b>右区 <code>ResultWorkspaceShell.SourceStripContent</code> 内</b>：<code>&lt;sources:ImageSourceStrip/&gt;</code>，可见性绑 <code>HasActiveImageSource</code></td><td class="ok">位置与机制一致（都在右区、都条件可见）</td></tr>
+<tr><td>日志区</td><td>右区底部独立 <code>LogView</code>（高 180）+ 日志条（高 28），可折叠、可按全部/报警/错误/提示过滤</td><td>右侧 <code>StatusBarControl</code>（第 2 行，高 28）+ 日志视图</td><td class="warn">形态不同：VM 是可展开日志面板，本方以状态栏为主</td></tr>
+<tr><td>参数窗</td><td>由 <code>ProcedureConfigControl</code> 的 <code>IsOpenParams</code> 控制，嵌在左区流程配置内</td><td>由 Workspace 参数页承载（<code>DeclaredSettingsView</code>）</td><td class="warn">宿主容器不同，需单独核对尺寸/折叠行为</td></tr>
+<tr><td>历史结果</td><td><code>ModuleResultView</code> 内含结果页签</td><td><code>ResultWorkspaceShell</code> 的「当前结果 / 历史结果」页签，历史页标注"历史记录未接入"</td><td class="bad">功能未接入</td></tr>
+</tbody>
+</table>
+
+<h2>二、关键结论：图像源控件"消失"不是主界面结构差异</h2>
+<div class="note keynote">
+证据：VM 的图像源控件同样放在<b>右区</b>，且同样<b>按条件可见</b>（<code>IsShowLocalImageList</code>）；本方对应 <code>HasActiveImageSource</code>。
+两者机制一致，所以「把控件搬到别的区」「照 VM 重写控件」都解决不了消失问题。
+<br/><br/>
+真正的差异在<b>判定链</b>：VM 的 <code>IsShowLocalImageList</code> 由"当前模块是否声明图像源"决定，是一次声明判定，编辑图片不会改变它；
+本方的 <code>HasActiveImageSource</code> 由"每次重新解析图像源成功"决定，而解析用<b>节点实例引用相等</b>，一次文档提交重建实例就会判失败 → 整条隐藏。
+</div>
+
+<h2>三、已确认的结构性差异（按影响排序）</h2>
+<table>
+<thead><tr><th>#</th><th>差异</th><th>影响</th><th>建议</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>日志区形态：VM 有可展开日志面板 + 分类过滤；本方以状态栏为主</td><td>排障时看不到完整历史日志</td><td>后续单独立项，按 <code>LogView</code> + <code>LogBar</code> 迁移</td></tr>
+<tr><td>2</td><td>参数窗宿主：VM 在流程配置区内、受 <code>IsOpenParams</code> 控制；本方在 Workspace 参数页</td><td>折叠/尺寸/切换行为可能有差异</td><td>先核对行为，不改结构</td></tr>
+<tr><td>3</td><td>历史结果未接入</td><td>无法回看历史运行</td><td>已知未实现，保持显式占位</td></tr>
+<tr><td>4</td><td>画布节点结果图文未接入</td><td>画布上不绘制结果图形/文字</td><td>已知未实现，需单独立项</td></tr>
+</tbody>
+</table>
+
+<h2>四、结论</h2>
+<div class="note">
+主界面四区划分与图像源控件的位置/可见机制<b>与 VM 一致</b>，不存在"因为主界面设计不同导致控件消失"。
+当前"添加/删除图片后控件消失"是<b>判定链缺陷</b>：可见性绑定在"每次解析成功"上，而解析依赖节点实例引用；
+文档提交重建实例后解析失败，控件即被隐藏。
+修复方向：可见性改为"节点是否声明图像源"这种稳定判定（与 VM 的 <code>IsShowLocalImageList</code> 对齐），解析失败只影响内容、不影响控件存在。
+</div>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8"/>
+<title>交互逻辑对照清单-20261113</title>
+<style>
+ body{font-family:"Microsoft YaHei",sans-serif;max-width:1200px;margin:24px auto;padding:0 16px;line-height:1.65;color:#222}
+ h1{font-size:22px;border-bottom:2px solid #2a6496;padding-bottom:8px}
+ h2{font-size:17px;margin-top:30px;border-left:4px solid #2a6496;padding-left:10px}
+ table{border-collapse:collapse;width:100%;margin:10px 0;font-size:12.5px}
+ th,td{border:1px solid #bbb;padding:5px 8px;vertical-align:top;text-align:left}
+ th{background:#eaf0f6}
+ code{background:#f4f4f4;padding:1px 4px;border-radius:3px;font-size:12px}
+ .ok{color:#2a7a2a;font-weight:bold}
+ .diff{color:#b8860b;font-weight:bold}
+ .bad{color:#b03030;font-weight:bold}
+ .na{color:#888}
+ .anchor{color:#666;font-size:12px}
+</style>
+</head>
+<body>
+<h1>交互逻辑对照清单（原厂 ⇄ 本方）</h1>
+<p><b>日期</b>：2026-11-13　<b>用途</b>：所有已逆向交互逻辑的总清单，逐项标注对齐状态与验收方式；详情见
+<code>图像结果与ROI绘制交互原厂对照-20261113.html</code>、<code>ROI完整生态链逆向对照与优化方案-20261113.html</code>。
+<b>状态图例</b>：<span class="ok">✅对齐</span> / <span class="diff">⚠️语义适配（差异已登记）</span> / <span class="bad">❌未闭口</span> / <span class="na">－待验收</span></p>
+
+<h2>A. 图像结果工作区（主窗口）</h2>
+<table>
+<tr><th>#</th><th>交互</th><th>原厂行为（锚点）</th><th>本方现状</th><th>状态</th><th>验收</th></tr>
+<tr><td>A1</td><td>显示哪个模块</td><td>绑定流程选中模块，DoSourceChanged 重建（ModuleResultView:529）</td><td>常驻工作区+全局来源下拉（产品形态差异）</td><td class="diff">⚠️</td><td>合同用例（不闪）</td></tr>
+<tr><td>A2</td><td>单图下拉改选</td><td>立即读所选对象当前值显示（UpdateVMResultShow :1127-1154）；不写持久化</td><td>显式改选立即呈现+正式边界写 SelectedDisplayReference</td><td class="ok">✅</td><td>Explicit_display_choice 用例+人工</td></tr>
+<tr><td>A3</td><td>关联输入变化→切显示</td><td>OnRelatedIOChanged 单图切 SelectedImage（:500-524）</td><td>EditorRelatedImage 单态联动</td><td class="ok">✅</td><td>P0 三条用例</td></tr>
+<tr><td>A4</td><td>单/双图切换</td><td>清输入选择→取[0]；退出只动 ROIVisible（:2228-2260）</td><td>保留当前合法输入（变量 ROI 依赖）</td><td class="diff">⚠️待用户确认</td><td>人工</td></tr>
+<tr><td>A5</td><td>数据刷新</td><td>ImageDataSource 守卫，仅对象变化重设（:524 守卫）</td><td>DisplayUnchanged+帧身份比较</td><td class="ok">✅</td><td>Opening 用例</td></tr>
+<tr><td>A6</td><td>参数窗口开合</td><td>只切 ROI 可见性（IsOpenParams→SetRoiVisible :2252）</td><td>视口不动</td><td class="ok">✅</td><td>Opening 用例</td></tr>
+<tr><td>A7</td><td>图像来源列表构成</td><td>模块自身输出+关联输入（DisplayImageListDecorator:22-139）</td><td>全局上游闭包（更宽）</td><td class="diff">⚠️待逐项核对</td><td>下批</td></tr>
+<tr><td>A8</td><td>模块切换重建</td><td>DoSourceChanged dispose 旧 decorator，不清视口</td><td>按数据重建不闪（护栏）</td><td class="ok">✅</td><td>合同用例</td></tr>
+</table>
+
+<h2>B. ROI 绘制（调试窗口参数页 ⇄ 结果视图）</h2>
+<table>
+<tr><th>#</th><th>交互</th><th>原厂行为（锚点）</th><th>本方现状</th><th>状态</th><th>验收</th></tr>
+<tr><td>B1</td><td>绘制面</td><td>唯一绘制面=结果视图 ImageViewBox，形状共享（ROISelecterHolder:15-193）</td><td>同构（NativeRoiAttachment 包 ImageViewBox）</td><td class="ok">✅</td><td>Actual_blob_roi 用例</td></tr>
+<tr><td>B2</td><td>绘制资格</td><td>显示图必须是模块输入图（IsCanDrawROI :446-480），否则不可绘</td><td>交互借帧阻断+RoiDrawBlockReason 提示（4972ba4a2）</td><td class="ok">✅</td><td>Roi_draw_request 用例+人工</td></tr>
+<tr><td>B3</td><td>不可绘反馈</td><td>弹 RoiDrawTips（:2514-2521）</td><td>ShowInteractionFeedback 弹原厂文案警告</td><td class="ok">✅</td><td>人工（阻断时见弹窗）</td></tr>
+<tr><td>B4</td><td>显示切换时机</td><td><b>不随形状按钮切换</b>；只随输入绑定变化（OnRelatedIOChanged）；用户自行切显示</td><td>4972ba4a2 已撤掉自动切换，与原厂一致</td><td class="ok">✅</td><td>Roi_draw_request 用例</td></tr>
+<tr><td>B5</td><td>刷新共存</td><td>UpdateROI 重投影，不销毁（:604-608）</td><td>publication 租约按帧身份锚定（47cd5b1b6）</td><td class="ok">✅</td><td>P2 刷新存活断言</td></tr>
+<tr><td>B6</td><td>命令门控</td><td>命令入口保持可点，资格在绘制层判定</td><td>已修（Codex 批）+失败弹反馈</td><td class="ok">✅</td><td>Blob_roi_shape_commands 用例</td></tr>
+<tr><td>B7</td><td>绘制中参数编辑</td><td>P_ValueChanged 只重绘，不终止会话（:473-498）</td><td>输入页写回不失效调试会话</td><td class="ok">✅</td><td>Stored_image_variable 用例</td></tr>
+</table>
+
+<h2>C. 数值/参数行交互</h2>
+<table>
+<tr><th>#</th><th>交互</th><th>原厂行为（锚点）</th><th>本方现状</th><th>状态</th><th>验收</th></tr>
+<tr><td>C1</td><td>范围红框</td><td>RangeRule 判越界（PcUi/RangeRule.cs:33）；值合法无红框</td><td>初值'0'挂红+SetCurrentValue 绕过重跑→孤儿装饰器残留已修（c24b11dc2）</td><td class="ok">✅</td><td class="ok">用户实机确认消失</td></tr>
+<tr><td>C2</td><td>行范围绑定</td><td>Minimum/Maximum 绑 MinValueA/MaxValueA（paramusercontroldatatemplate:551/803）</td><td>已补齐（090211fa8）+范围变化重校验</td><td class="ok">✅</td><td>Integer_row 用例</td></tr>
+<tr><td>C3</td><td>组合槽行标签</td><td>颜色等组合行带行标签（原厂结果显示截图）</td><td>LeftRightControl 包装已补（本批，待复验）</td><td class="na">－</td><td>人工（OK颜色/NG颜色）</td></tr>
+<tr><td>C4</td><td>float 滑条推值</td><td>EndValueF 单值模式落 Maximum（原件原件行为）</td><td>字体字号被写 100 的值链路污染<b>未修</b>（验证被夹具局限阻断）</td><td class="bad">❌</td><td>真实程序复核字号值</td></tr>
+</table>
+
+<h2>D. 调试窗口生命周期</h2>
+<table>
+<tr><th>#</th><th>交互</th><th>原厂行为（锚点）</th><th>本方现状</th><th>状态</th><th>验收</th></tr>
+<tr><td>D1</td><td>打开窗口</td><td>不改变已呈现结果（证据 VM调试窗口结果视口更新路径-20261112.json）</td><td>DisplayUnchanged 跳过</td><td class="ok">✅</td><td>Opening 用例</td></tr>
+<tr><td>D2</td><td>关闭窗口</td><td>回到正式显示；资源释放</td><td>回正式选择+CloseAndDrain</td><td class="ok">✅</td><td>Explicit 用例+Probe</td></tr>
+<tr><td>D3</td><td>调试快照隔离</td><td>编辑态显示所选对象当前值</td><td>私有快照/正式发布分离</td><td class="ok">✅</td><td>Actual_window_private 用例</td></tr>
+</table>
+
+<h2>G. Blob 分析专用交互入口全覆盖核对（逐面清点）</h2>
+<p>以 BlobTool 声明字段+BlobSchema 端口+三页结构（基本参数/运行参数/结果显示）+ROI 两组为准逐面清点。</p>
+<table>
+<tr><th>#</th><th>入口</th><th>内容</th><th>对照状态</th></tr>
+<tr><td>1</td><td>主窗口图像结果下拉/单图联动</td><td>A2/A3</td><td class="ok">✅已对照</td></tr>
+<tr><td>2</td><td>双图切换入口</td><td>A4：已按原件对齐——双图入口先选关联 IO 匹配项、否则第一个输入（RefreshInputImageList :1453-1463）（3b04ca63d）</td><td class="ok">✅已对照并修正</td></tr>
+<tr><td>3</td><td>数据刷新/窗口开合</td><td>A5/A6</td><td class="ok">✅已对照</td></tr>
+<tr><td>4</td><td>ROI 绘制资格/载体/刷新/反馈/门控</td><td>B1-B7</td><td class="ok">✅已对照</td></tr>
+<tr><td>5</td><td>数值行范围校验/红框</td><td>C1/C2</td><td class="ok">✅已闭口</td></tr>
+<tr><td>6</td><td>调试窗口生命周期</td><td>D1-D3</td><td class="ok">✅已对照</td></tr>
+<tr><td>7</td><td>算法执行链（参数/输入/ROI消费/输出/状态/失败）</td><td>生态链环4</td><td class="ok">✅已对照（6 种分割模式全实现，BLOB_MODE_NOT_READY 为防御守卫）</td></tr>
+<tr><td>8</td><td>保存重开</td><td>生态链环8</td><td class="ok">✅已对照</td></tr>
+<tr><td>9</td><td>基本参数页 17 行逐行交互</td><td>高/低阈值、软阈值柔和度、尾部比例、面积范围、矩形宽高下限、填充面积阈值、短轴下限的滑条/订阅/编辑逐行对照</td><td class="bad">❌未对照（仅框架级）</td></tr>
+<tr><td>10</td><td>运行参数页行级交互</td><td>查找个数、最小重叠率、最大内接矩形输出数量、FilterAreaMax 拼接高度双值滑条</td><td class="bad">❌未对照</td></tr>
+<tr><td>11</td><td>阈值模式切换→参数行显隐联动</td><td>已对照并修正：原件 0x3 双阈值隐藏 Polarity 行（IMVSBlobFindModuAlgorithmTab.xml:160-173），本方已补 Type 行双阈值隐藏条件（3b04ca63d）</td><td class="ok">✅已对照并修正</td></tr>
+<tr><td>12</td><td>ROI 区域页内部交互</td><td>检测区/屏蔽区两组的 继承⇄绘制 模式切换、ROI 列表选中/双击编辑、删除、撤销重做、最大数量提示（DrawLimitReached 已有）</td><td class="bad">❌未对照</td></tr>
+<tr><td>13</td><td>位置校正行</td><td>PositionCorrectionField+pose 编辑（BlobUiComposition.cs:71-170）</td><td class="bad">❌未对照</td></tr>
+<tr><td>14</td><td>结果显示页显示内容组合</td><td>内容行、显示宽度/高度拼接（pairWith 双值滑条）</td><td class="bad">❌未对照</td></tr>
+<tr><td>15</td><td>颜色行（OK颜色/NG颜色）</td><td>标签已修待验；颜色选择交互本身未对照</td><td class="diff">⚠️部分</td></tr>
+<tr><td>16</td><td>Blob 输出数据呈现</td><td>Blobs 表格/测量数据在结果区呈现（原厂 TableControl/OKNGControl 族）</td><td class="bad">❌未对照（原厂文件已枚举，见交互面总表）</td></tr>
+<tr><td>17</td><td>运行控制交互</td><td>连续执行时的窗口交互、执行次数</td><td class="bad">❌未对照</td></tr>
+</table>
+<p><b>结论</b>：已对照 8/17（主干：显示联动、绘制资格、红框、生命周期、算法执行框架）；<b>9 个 Blob 专用入口未对照</b>（#9-17，多为页内行级交互与数据显示族），已按优先级纳入任务清单（data-family 等待办）。</p>
+
+<h2>E. 待办与风险（按优先级）</h2>
+<table>
+<tr><th>#</th><th>项</th><th>说明</th><th>状态</th></tr>
+<tr><td>E1</td><td>P1 人工验收</td><td>绘制请求阻断提示→切显示→绘制→跨刷新存活，全链人工走一遍</td><td class="na">－待用户</td></tr>
+<tr><td>E2</td><td>C4 float 滑条推值</td><td>字号值被写 100 的值链路污染（EndValueF 单值模式），夹具无法复现，需真实程序取证</td><td class="bad">❌</td></tr>
+<tr><td>E3</td><td>A7 来源列表构成</td><td>与原厂 ImageViewList 逐项对照（构成/命名/分组）</td><td class="diff">⚠️下批</td></tr>
+<tr><td>E4</td><td>A4 双图入口</td><td>强制[0]（原厂）vs 保留当前（本方），待用户定</td><td class="diff">⚠️待确认</td></tr>
+<tr><td>E5</td><td>测试隔离污染</td><td>ParameterTemplateInteractionTests 批量时模板注册表被污染（单跑全过，非本批引入），独立待办</td><td class="diff">⚠️独立待办</td></tr>
+<tr><td>E6</td><td>BoundingRectangle 调试遗留</td><td>主窗口画布 Collapsed 红色调试矩形+死方法 ToggleBoundingRectangleOnCanvas，建议清理</td><td class="diff">⚠️下批</td></tr>
+</table>
+
+<h2>F. 提交索引（本日）</h2>
+<ul>
+<li><code>a78b24628</code> ROI 命令门控+数值红框两层（Codex 批）</li>
+<li><code>4002bafd5</code> 调试输入联动按 OnRelatedIOChanged 语义重构（P0 闭口）</li>
+<li><code>73e0c717a</code> 逆向对照方案与账本归档</li>
+<li><code>c24b11dc2</code> 数值红框根因修复（孤儿装饰器清扫）</li>
+<li><code>783d67a64</code> P1 显示切换（后被 4972ba4a2 修正）</li>
+<li><code>47cd5b1b6</code> P2 租约帧锚定</li>
+<li><code>4972ba4a2</code> P1 按原厂语义修正为阻断+提示（当前）</li>
+</ul>
+</body>
+</html>

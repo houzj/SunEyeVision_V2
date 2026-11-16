@@ -1,0 +1,925 @@
+{
+  "kind": "原件静态标签与范围组消费者",
+  "original": "C:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModuAlgorithmTab.xml",
+  "language": "src/Plugin.Wpf/Themes/Native/Localization/zh-cn.xaml",
+  "consumer": "tools/SunEyeVision.BlobAnalysis/Runtime/Resources/BlobParameters.xml",
+  "matched": 95,
+  "changed": 46,
+  "records": [
+    {
+      "field": "Threshold",
+      "originalNode": "LowThreshold",
+      "originalKey": "Low Threshold",
+      "before": "低阈值",
+      "after": "低阈值",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "UpperThreshold",
+      "originalNode": "HightThreshold",
+      "originalKey": "High Threshold",
+      "before": "高阈值",
+      "after": "高阈值",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "FixedSoftLowerThreshold",
+      "originalNode": "ThresholdRangArea",
+      "originalKey": "Threshold Range",
+      "before": "阈值范围",
+      "after": "阈值范围",
+      "range": true,
+      "changed": false,
+      "endpointLabel": "软阈值低阈值（固定）"
+    },
+    {
+      "field": "FixedSoftUpperThreshold",
+      "originalNode": "HightSoftThreshold",
+      "originalKey": "RunParam_Soft High Threshold",
+      "before": "高阈值",
+      "after": "软阈值高阈值（固定）",
+      "range": false,
+      "changed": true
+    },
+    {
+      "field": "ThresholdSoftness",
+      "originalNode": "Softness",
+      "originalKey": "Soft Threshold Softness",
+      "before": "软阈值柔和度",
+      "after": "软阈值柔和度",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "RelativeLeftRatio",
+      "originalNode": "SoftLeftRatio",
+      "originalKey": "RunParam_Low Tail Ratio",
+      "before": "低尾部比例",
+      "after": "低尾部比例",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "RelativeRightRatio",
+      "originalNode": "SoftRightRatio",
+      "originalKey": "RunParam_High Tail Ratio",
+      "before": "高尾部比例",
+      "after": "高尾部比例",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "RelativeLowerRatio",
+      "originalNode": "SoftLowRatio",
+      "originalKey": "Low Threshold Ratio",
+      "before": "低阈值比例",
+      "after": "低阈值比例",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "RelativeUpperRatio",
+      "originalNode": "SoftHighRatio",
+      "originalKey": "High Threshold Ratio",
+      "before": "高阈值比例",
+      "after": "高阈值比例",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "BlobCountLimit",
+      "originalNode": "FindNum",
+      "originalKey": "RunParam_Number to Find",
+      "before": "查找个数",
+      "after": "查找个数",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "HoleMinArea",
+      "originalNode": "HoleMinArea",
+      "originalKey": "Fill Area Threshold",
+      "before": "填充面积阈值",
+      "after": "填充面积阈值",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "FilterAreaMin",
+      "originalNode": "RangArea",
+      "originalKey": "RunParam_Area Range",
+      "before": "面积下限",
+      "after": "面积范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "最小面积"
+    },
+    {
+      "field": "FilterAreaMax",
+      "originalNode": "MaxArea",
+      "originalKey": "Max Area",
+      "before": "面积上限",
+      "after": "最大面积",
+      "range": false,
+      "changed": true
+    },
+    {
+      "field": "BlobContourType",
+      "originalNode": "BlobContourType",
+      "originalKey": "RunParam_BlobContourType",
+      "before": "输出轮廓类型",
+      "after": "输出轮廓类型",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "SelectByHistInfo",
+      "originalNode": "SelectByHistInfo",
+      "originalKey": "RunParam_SelectByHistInfoEnable",
+      "before": "直方图信息输出",
+      "after": "直方图信息输出",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "SelectByBoxAngle",
+      "originalNode": "SelectByBoxAngle",
+      "originalKey": "Angle Enable",
+      "before": "角度使能",
+      "after": "角度使能",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "MinBoxAngle",
+      "originalNode": "RangBoxAngle",
+      "originalKey": "RunParam_Angle Range",
+      "before": "角度下限",
+      "after": "角度范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "最小角度"
+    },
+    {
+      "field": "MaxBoxAngle",
+      "originalNode": "MaxBoxAngle",
+      "originalKey": "RunParam_Max BoxAngle",
+      "before": "角度上限",
+      "after": "最大角度",
+      "range": false,
+      "changed": true
+    },
+    {
+      "field": "SelectByRectWidth",
+      "originalNode": "SelectByRectWidth",
+      "originalKey": "RectWidth Enable",
+      "before": "矩形宽使能",
+      "after": "RECT宽使能",
+      "range": false,
+      "changed": true
+    },
+    {
+      "field": "MinRectWidth",
+      "originalNode": "RangRectWidth",
+      "originalKey": "RunParam_RectWidth Range",
+      "before": "矩形宽下限",
+      "after": "RECT宽范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "最小RECT宽"
+    },
+    {
+      "field": "MaxRectWidth",
+      "originalNode": "MaxRectWidth",
+      "originalKey": "Max RectWidth",
+      "before": "矩形宽上限",
+      "after": "最大RECT宽",
+      "range": false,
+      "changed": true
+    },
+    {
+      "field": "SelectByRectHeight",
+      "originalNode": "SelectByRectHeight",
+      "originalKey": "RectHeight Enable",
+      "before": "矩形高使能",
+      "after": "RECT高使能",
+      "range": false,
+      "changed": true
+    },
+    {
+      "field": "MinRectHeight",
+      "originalNode": "RangRectHeight",
+      "originalKey": "RunParam_RectHeight Range",
+      "before": "矩形高下限",
+      "after": "RECT高范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "最小RECT高"
+    },
+    {
+      "field": "MaxRectHeight",
+      "originalNode": "MaxRectHeight",
+      "originalKey": "Max RectHeight",
+      "before": "矩形高上限",
+      "after": "最大RECT高",
+      "range": false,
+      "changed": true
+    },
+    {
+      "field": "SelectByPerimeter",
+      "originalNode": "SelectByPerimeter",
+      "originalKey": "RunParam_Perimeter Enable",
+      "before": "周长使能",
+      "after": "周长使能",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "MinPerimeter",
+      "originalNode": "RangPerimeter",
+      "originalKey": "Perimeter Range",
+      "before": "周长下限",
+      "after": "周长范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "最小周长"
+    },
+    {
+      "field": "MaxPerimeter",
+      "originalNode": "MaxPerimeter",
+      "originalKey": "Max Perimeter",
+      "before": "周长上限",
+      "after": "最大周长",
+      "range": false,
+      "changed": true
+    },
+    {
+      "field": "SelectByShortAxis",
+      "originalNode": "SelectByShortAxis",
+      "originalKey": "Minor Axis Enable",
+      "before": "短轴使能",
+      "after": "短轴使能",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "MinShortAxis",
+      "originalNode": "RangShortAxis",
+      "originalKey": "Minor Axis Range",
+      "before": "短轴下限",
+      "after": "短轴范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "最小短轴"
+    },
+    {
+      "field": "MaxShortAxis",
+      "originalNode": "MaxShortAxis",
+      "originalKey": "Max Minor Axis",
+      "before": "短轴上限",
+      "after": "最大短轴",
+      "range": false,
+      "changed": true
+    },
+    {
+      "field": "SelectByLongAxis",
+      "originalNode": "SelectByLongAxis",
+      "originalKey": "Major Axis Enable",
+      "before": "长轴使能",
+      "after": "长轴使能",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "MinLongAxis",
+      "originalNode": "RangLongAxis",
+      "originalKey": "Major Axis Range",
+      "before": "长轴下限",
+      "after": "长轴范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "最小长轴"
+    },
+    {
+      "field": "MaxLongAxis",
+      "originalNode": "MaxLongAxis",
+      "originalKey": "Max Major Axis",
+      "before": "长轴上限",
+      "after": "最大长轴",
+      "range": false,
+      "changed": true
+    },
+    {
+      "field": "FilterCircularityMin",
+      "originalNode": "RangCircularity",
+      "originalKey": "Circularity Range",
+      "before": "圆度下限",
+      "after": "圆形度范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "最小圆形度"
+    },
+    {
+      "field": "FilterCircularityMax",
+      "originalNode": "MaxCircularity",
+      "originalKey": "Max Circularity",
+      "before": "圆度上限",
+      "after": "最大圆形度",
+      "range": false,
+      "changed": true
+    },
+    {
+      "field": "FilterRectangularityMin",
+      "originalNode": "RangRectangularity",
+      "originalKey": "Rectangularity Range",
+      "before": "矩形度下限",
+      "after": "矩形度范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "最小矩形度"
+    },
+    {
+      "field": "FilterRectangularityMax",
+      "originalNode": "MaxRectangularity",
+      "originalKey": "Max Rectangularity",
+      "before": "矩形度上限",
+      "after": "最大矩形度",
+      "range": false,
+      "changed": true
+    },
+    {
+      "field": "SelectByCentraBias",
+      "originalNode": "SelectByCentraBias",
+      "originalKey": "RunParam_Barycenter Offset Enable",
+      "before": "质心偏移使能",
+      "after": "质心偏移使能",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "MinCenterBias",
+      "originalNode": "RangCenterBias",
+      "originalKey": "RunParam_Barycenter Offset Range",
+      "before": "质心偏移下限",
+      "after": "质心偏移范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "最小质心偏移"
+    },
+    {
+      "field": "MaxCenterBias",
+      "originalNode": "MaxCenterBias",
+      "originalKey": "Max Barycenter Offset",
+      "before": "质心偏移上限",
+      "after": "最大质心偏移",
+      "range": false,
+      "changed": true
+    },
+    {
+      "field": "AxisRatioEnable",
+      "originalNode": "AxisRatioEnable",
+      "originalKey": "RunParam_Axial Ratio",
+      "before": "轴比使能",
+      "after": "轴比范围",
+      "range": false,
+      "changed": true
+    },
+    {
+      "field": "MinAxisRatio",
+      "originalNode": "AxisRatioRange",
+      "originalKey": "RunParam_Axial Ratio",
+      "before": "轴比下限",
+      "after": "轴比范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "最小轴比"
+    },
+    {
+      "field": "MaxAxisRatio",
+      "originalNode": "MaxAxisRatio",
+      "originalKey": "RunParam_MaxAxis",
+      "before": "轴比上限",
+      "after": "最大轴比",
+      "range": false,
+      "changed": true
+    },
+    {
+      "field": "SortFeature",
+      "originalNode": "SortFeature",
+      "originalKey": "Ranking",
+      "before": "排序特征",
+      "after": "排序特征",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "SortMode",
+      "originalNode": "SortMode",
+      "originalKey": "Sort Type",
+      "before": "排序方式",
+      "after": "排序方式",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "MaxAreaInnerRectNum",
+      "originalNode": "MaxAreaInnerRectNum",
+      "originalKey": "RunParam_MaxAreaInnerRectNum",
+      "before": "最大内接矩形数量",
+      "after": "最大内接矩形输出数量",
+      "range": false,
+      "changed": true
+    },
+    {
+      "field": "OverlapRatio",
+      "originalNode": "OverlapRatio",
+      "originalKey": "MinOverlap",
+      "before": "最小重叠率",
+      "after": "最小重叠率",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "MaxOutPixelNumEnable",
+      "originalNode": "MaxOutPixelNumEnable",
+      "originalKey": "RunParam_MaxOutPixelNumEnable",
+      "before": "像素超界使能",
+      "after": "像素超界使能",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "MaxOutPixelNum",
+      "originalNode": "MaxOutPixelNum",
+      "originalKey": "MaxOutPixelNum",
+      "before": "最大超界像素",
+      "after": "最大超界像素",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "OKWhenNumIsZero",
+      "originalNode": "OKWhenNumIsZero",
+      "originalKey": "OKWhenNumIsZero",
+      "before": "Blob数量为零时通过",
+      "after": "Blob个数为0",
+      "range": false,
+      "changed": true
+    },
+    {
+      "field": "BlobNumLimitEnable",
+      "originalNode": "BlobNumLimitEnable",
+      "originalKey": "Blob Number Check",
+      "before": "Blob个数判断",
+      "after": "Blob个数判断",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "BlobNumLimitLow",
+      "originalNode": "RangBlobNumLimit",
+      "originalKey": "Blob Number Range",
+      "before": "Blob个数下限",
+      "after": "Blob个数范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "Blob个数下限"
+    },
+    {
+      "field": "BlobNumLimitHigh",
+      "originalNode": "BlobNumLimitHigh",
+      "originalKey": "Blob Number Upper Limit",
+      "before": "Blob个数上限",
+      "after": "Blob个数上限",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "BlobAreaLimitEnable",
+      "originalNode": "BlobAreaLimitEnable",
+      "originalKey": "Blob Area Check",
+      "before": "Blob面积判断",
+      "after": "Blob面积判断",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "BlobAreaLimitLow",
+      "originalNode": "RangBlobAreaLimit",
+      "originalKey": "Blob Area Range",
+      "before": "Blob面积下限",
+      "after": "Blob面积范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "Blob面积下限"
+    },
+    {
+      "field": "BlobAreaLimitHigh",
+      "originalNode": "BlobAreaLimitHigh",
+      "originalKey": "Blob Area Upper Limit",
+      "before": "Blob面积上限",
+      "after": "Blob面积上限",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "BlobTotalAreaLimitEnable",
+      "originalNode": "BlobTotalAreaLimitEnable",
+      "originalKey": "RunParam_Blob Total Area Check",
+      "before": "Blob总面积判断",
+      "after": "Blob总面积",
+      "range": false,
+      "changed": true
+    },
+    {
+      "field": "BlobTotalAreaLimitLow",
+      "originalNode": "RangBlobTotalAreaLimit",
+      "originalKey": "RunParam_Blob Total Area Range",
+      "before": "总面积下限",
+      "after": "总面积范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "Blob总面积下限"
+    },
+    {
+      "field": "BlobTotalAreaLimitHigh",
+      "originalNode": "BlobTotalAreaLimitHigh",
+      "originalKey": "Blob Total Area Upper Limit",
+      "before": "总面积上限",
+      "after": "Blob总面积上限",
+      "range": false,
+      "changed": true
+    },
+    {
+      "field": "CentroidXLimitEnable",
+      "originalNode": "CentroidXLimitEnable",
+      "originalKey": "Barycenter X Check",
+      "before": "质心X判断",
+      "after": "质心X判断",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "CentroidXLimitLow",
+      "originalNode": "RangCentroidXLimit",
+      "originalKey": "Barycenter X Range",
+      "before": "质心X下限",
+      "after": "质心X范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "质心X下限"
+    },
+    {
+      "field": "CentroidXLimitHigh",
+      "originalNode": "CentroidXLimitHigh",
+      "originalKey": "Barycenter X Upper Limit",
+      "before": "质心X上限",
+      "after": "质心X上限",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "CentroidYLimitEnable",
+      "originalNode": "CentroidYLimitEnable",
+      "originalKey": "Barycenter Y Check",
+      "before": "质心Y判断",
+      "after": "质心Y判断",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "CentroidYLimitLow",
+      "originalNode": "RangCentroidYLimit",
+      "originalKey": "Barycenter Y Range",
+      "before": "质心Y下限",
+      "after": "质心Y范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "质心Y下限"
+    },
+    {
+      "field": "CentroidYLimitHigh",
+      "originalNode": "CentroidYLimitHigh",
+      "originalKey": "Barycenter Y Upper Limit",
+      "before": "质心Y上限",
+      "after": "质心Y上限",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "AngleLimitEnable",
+      "originalNode": "AngleLimitEnable",
+      "originalKey": "RunParam_BoxAngle Check",
+      "before": "Box角度判断",
+      "after": "Box角度判断",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "AngleLimitLow",
+      "originalNode": "RangAngleLimit",
+      "originalKey": "RunParam_BoxAngle Range",
+      "before": "Box角度下限",
+      "after": "Box角度范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "角度下限"
+    },
+    {
+      "field": "AngleLimitHigh",
+      "originalNode": "AngleLimitHigh",
+      "originalKey": "Angle Upper Limit",
+      "before": "Box角度上限",
+      "after": "角度上限",
+      "range": false,
+      "changed": true
+    },
+    {
+      "field": "CenterXLimitEnable",
+      "originalNode": "CenterXLimitEnable",
+      "originalKey": "Center X Check",
+      "before": "中心X判断",
+      "after": "中心X判断",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "CenterXLimitLow",
+      "originalNode": "RangCenterXLimit",
+      "originalKey": "Center X Range",
+      "before": "中心X下限",
+      "after": "中心X范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "中心X下限"
+    },
+    {
+      "field": "CenterXLimitHigh",
+      "originalNode": "CenterXLimitHigh",
+      "originalKey": "Center X Upper Limit",
+      "before": "中心X上限",
+      "after": "中心X上限",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "CenterYLimitEnable",
+      "originalNode": "CenterYLimitEnable",
+      "originalKey": "Center Y Check",
+      "before": "中心Y判断",
+      "after": "中心Y判断",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "CenterYLimitLow",
+      "originalNode": "RangCenterYLimit",
+      "originalKey": "Center Y Range",
+      "before": "中心Y下限",
+      "after": "中心Y范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "中心Y下限"
+    },
+    {
+      "field": "CenterYLimitHigh",
+      "originalNode": "CenterYLimitHigh",
+      "originalKey": "Center Y Upper Limit",
+      "before": "中心Y上限",
+      "after": "中心Y上限",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "BoxHeightLimitEnable",
+      "originalNode": "BoxHeightLimitEnable",
+      "originalKey": "Box Height Check",
+      "before": "Box高度判断",
+      "after": "Box高度判断",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "BoxHeightLimitLow",
+      "originalNode": "BoxHeightLimit",
+      "originalKey": "RunParam_Box Height Range",
+      "before": "Box高度下限",
+      "after": "Box高度范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "Box高度下限"
+    },
+    {
+      "field": "BoxHeightLimitHigh",
+      "originalNode": "BoxHeightLimitHigh",
+      "originalKey": "RunParam_Box Height Upper Limit",
+      "before": "Box高度上限",
+      "after": "Box高度上限",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "BoxWidthLimitEnable",
+      "originalNode": "BoxWidthLimitEnable",
+      "originalKey": "RunParam_Box Width Check",
+      "before": "Box宽度判断",
+      "after": "Box宽度判断",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "BoxWidthLimitLow",
+      "originalNode": "BoxWidthLimit",
+      "originalKey": "RunParam_Box Width Range",
+      "before": "Box宽度下限",
+      "after": "Box宽度范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "Box宽度下限"
+    },
+    {
+      "field": "BoxWidthLimitHigh",
+      "originalNode": "BoxWidthLimitHigh",
+      "originalKey": "RunParam_Box Width Upper Limit",
+      "before": "Box宽度上限",
+      "after": "Box宽度上限",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "PerimeterLimitEnable",
+      "originalNode": "PerimeterLimitEnable",
+      "originalKey": "Perimeter Check",
+      "before": "周长判断",
+      "after": "周长判断",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "PerimeterLimitLow",
+      "originalNode": "RangPerimeterLimit",
+      "originalKey": "Perimeter Range",
+      "before": "周长下限",
+      "after": "周长范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "周长下限"
+    },
+    {
+      "field": "PerimeterLimitHigh",
+      "originalNode": "PerimeterLimitHigh",
+      "originalKey": "Perimeter Upper Limit",
+      "before": "周长上限",
+      "after": "周长上限",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "LongAxisLimitEnable",
+      "originalNode": "LongAxisLimitEnable",
+      "originalKey": "Major Axis Check",
+      "before": "长轴判断",
+      "after": "长轴判断",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "LongAxisLimitLow",
+      "originalNode": "RangLongAxisLimit",
+      "originalKey": "Major Axis Range",
+      "before": "长轴下限",
+      "after": "长轴范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "长轴下限"
+    },
+    {
+      "field": "LongAxisLimitHigh",
+      "originalNode": "LongAxisLimitHigh",
+      "originalKey": "Major Axis Upper Limit",
+      "before": "长轴上限",
+      "after": "长轴上限",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "ShortAxisLimitEnable",
+      "originalNode": "ShortAxisLimitEnable",
+      "originalKey": "Minor Axis Check",
+      "before": "短轴判断",
+      "after": "短轴判断",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "ShortAxisLimitLow",
+      "originalNode": "RangShortAxisLimit",
+      "originalKey": "Minor Axis Range",
+      "before": "短轴下限",
+      "after": "短轴范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "短轴下限"
+    },
+    {
+      "field": "ShortAxisLimitHigh",
+      "originalNode": "ShortAxisLimitHigh",
+      "originalKey": "Minor Axis Upper Limit",
+      "before": "短轴上限",
+      "after": "短轴上限",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "CircularityLimitEnable",
+      "originalNode": "CircularityLimitEnable",
+      "originalKey": "Circularity Check",
+      "before": "圆形度判断",
+      "after": "圆形度判断",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "CircularityLimitLow",
+      "originalNode": "RangCircularityLimit",
+      "originalKey": "Circularity Range",
+      "before": "圆形度下限",
+      "after": "圆形度范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "圆形度下限"
+    },
+    {
+      "field": "CircularityLimitHigh",
+      "originalNode": "CircularityLimitHigh",
+      "originalKey": "Circularity Upper Limit",
+      "before": "圆形度上限",
+      "after": "圆形度上限",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "RectangularityLimitEnable",
+      "originalNode": "RectangularityLimitEnable",
+      "originalKey": "Rectangularity Check",
+      "before": "矩形度判断",
+      "after": "矩形度判断",
+      "range": false,
+      "changed": false
+    },
+    {
+      "field": "RectangularityLimitLow",
+      "originalNode": "RangRectangularityLimit",
+      "originalKey": "Rectangularity Range",
+      "before": "矩形度下限",
+      "after": "矩形度范围",
+      "range": true,
+      "changed": true,
+      "endpointLabel": "矩形度下限"
+    },
+    {
+      "field": "RectangularityLimitHigh",
+      "originalNode": "RectangularityLimitHigh",
+      "originalKey": "Rectangularity Upper Limit",
+      "before": "矩形度上限",
+      "after": "矩形度上限",
+      "range": false,
+      "changed": false
+    }
+  ],
+  "runtime": "未运行；用户手动验收",
+  "groupHeader": "原件仍为Category；无动态证据，不按截图删除标题",
+  "build": "全量Release 0错误、6089警告、33.68秒；未运行测试或程序",
+  "files": [
+    {
+      "path": "C:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModuAlgorithmTab.xml",
+      "sha256": "34A0CC5423A3D66B92DC272E0F50B013310E5180E801C648005383C3ADDDFDEC"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Localization/zh-cn.xaml",
+      "sha256": "FEEEE4725DD94D6770A1F267D3E123C1CF77F686AF440CCF626564E409D0EB45"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Resources/BlobParameters.xml",
+      "sha256": "D4C382A3F56C33D8EBC75CFF7FD71E12CC5D07EE95D0E6AA5CBFBA0D5C085B1A"
+    },
+    {
+      "path": "src/Plugin.Contracts/FieldPresentation.cs",
+      "sha256": "BE4FD89B431EBC1449ECA6B7209304DBCA935DC6B3FB163092283DAB4966F241"
+    },
+    {
+      "path": "src/Plugin.Wpf/Fields/DeclaredRangeRow.cs",
+      "sha256": "2B1DB7F9B5E5E76B1D8FAA5442E23B826EA73EF5C64E8FD100E7E589A25FB6F9"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Parameters/BlobParameterDefinition.Settings.cs",
+      "sha256": "D470B13460EC6ABAD697C219EEDEAADD1FBD6A8816BAC95C516607B2E9077A46"
+    },
+    {
+      "path": "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.Plugin.Wpf.dll",
+      "sha256": "75063FD3524C9DC0082718C8B3C5C39D3CEDFCE97A75D1A1F443D0685F2804CA"
+    }
+  ]
+}

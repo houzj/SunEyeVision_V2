@@ -26,7 +26,17 @@ public static class BlobDesignData
     public static (IToolSettingsDraft Draft,ToolSettingsViewOptions Options) CreateParameterContext()
     {
         var draft=new DesignDraft();var schema=draft.Tool.Describe();
-        var inputs=new DeclaredInputFieldsView(schema,_=>new UnsetSetting(),(_,_)=>{},ReferenceFieldOptions.Empty);
+        var source = new DeclaredReferenceCandidate("图像源 · 图像", "sample-image", "sample-workflow",
+            new Port("output.image", TypeRef.ResourceOf(ResourceKind.Image)), Array.Empty<string>());
+        var inputDraft = new FieldSettingsDraft(schema, new FieldSettings(schema.Inputs, new Dictionary<string, ParameterSetting>
+        {
+            [BlobTool.ImageInput] = new ReferenceSetting(source.Reference(BindingSelection.All))
+        }));
+        var inputs = new DeclaredInputFieldsView(schema, port => inputDraft.CaptureFields().Read(port.Id),
+            (port, value) => inputDraft.ApplyFields(new Dictionary<string, ParameterSetting> { [port.Id] = value }, _ => { }),
+            new ReferenceFieldOptions(port => port.Id == BlobTool.ImageInput
+                ? new ReferenceCandidates(new[] { source }, Array.Empty<DeclaredReferenceCandidate>())
+                : ReferenceCandidates.Empty));
         return(draft,new(ReferenceOptions:ReferenceFieldOptions.Empty,InputSection:schema.Presentation!.Fields.First().Layout!.Page,InputContent:inputs));
     }
     private static readonly DependencyProperty CompositionProperty=DependencyProperty.RegisterAttached("Composition",typeof(BlobUiComposition),typeof(BlobDesignData));
@@ -35,8 +45,7 @@ public static class BlobDesignData
     {
         if(GetComposition(presenter) is {} previous)
         {
-            if(!previous.IsDisposed&&ReferenceEquals(previous.Draft,context.Draft)&&ReferenceEquals(previous.BaseOptions,context.Options))
-            {previous.RebindSameContext();return;}
+            if(previous.OwnsContext(context.Draft,context.Options))return;
             previous.Dispose();presenter.ClearValue(CompositionProperty);
         }
         var composition=new BlobUiComposition(presenter,context.Draft,context.Options);presenter.SetValue(CompositionProperty,composition);
@@ -60,7 +69,7 @@ public static class BlobDesignData
         {
             var fields=_draft.CaptureValidatedFields();
             if(fields.Capture().Values.Any(value=>value is ReferenceSetting))return fields;
-            var settings=((IToolSettingsFields)Tool).MaterializeSettings(fields.Materialize(new Dictionary<string,object?>()));
+            var settings=((IToolSettingsFields)Tool).MaterializeSettings(fields.Select(Tool.SettingsSchema.Inputs).Materialize(new Dictionary<string,object?>()));
             var errors=((IToolDefinition)Tool).Validate(settings);
             if(errors.Count!=0)throw new ArgumentException(string.Join("; ",errors.Select(error=>error.Message)));
             return fields;
@@ -88,8 +97,8 @@ public static class BlobResultDesignData
             var points=new[]{new Point2(20,20),new Point2(40,20),new Point2(40,32),new Point2(20,32)};
             var secondPoints=new[]{new Point2(49,33),new Point2(61,33),new Point2(61,41),new Point2(49,41)};
             var records=new[] {
-                new BlobMeasurement(1,1,240,64,30,26,0.74,0.92,new BlobBounds(20,20,20,12),new BlobOrientedBounds(30,26,20,12,0),points,Array.Empty<BlobBoundaryPath>(),region,true),
-                new BlobMeasurement(2,2,96,40,55,37,0.81,0.88,new BlobBounds(49,33,12,8),new BlobOrientedBounds(55,37,12,8,0),secondPoints,Array.Empty<BlobBoundaryPath>(),region,true)
+                new BlobMeasurement(1,0,240,64,30,26,0.74,0.92,new BlobBounds(20,20,20,12),new BlobOrientedBounds(30,26,20,12,0),points,Array.Empty<BlobBoundaryPath>(),region,true),
+                new BlobMeasurement(2,1,96,40,55,37,0.81,0.88,new BlobBounds(49,33,12,8),new BlobOrientedBounds(55,37,12,8,0),secondPoints,Array.Empty<BlobBoundaryPath>(),region,true)
             };
             object? Sample(Port port)
             {

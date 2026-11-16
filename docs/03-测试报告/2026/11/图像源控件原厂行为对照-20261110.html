@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>图像源控件 原厂行为对照（ImageListPanel → ImageSourceStrip）</title>
+<style>
+  :root{--ink:#1f2933;--muted:#5b6770;--line:#d8dee4;--ok:#1b7a45;--warn:#a15c00;--bad:#b3261e;--bg:#f7f9fa;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:32px 40px 60px;background:var(--bg);color:var(--ink);font:14px/1.7 "Segoe UI","Microsoft YaHei",sans-serif;}
+  h1{margin:0 0 6px;font-size:23px;}
+  .sub{color:var(--muted);margin-bottom:22px;}
+  h2{font-size:17px;margin:28px 0 10px;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:8px;}
+  th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:13.5px;}
+  th{background:#eef2f5;font-weight:600;}
+  tr:last-child td{border-bottom:none;}
+  code{background:#eef2f5;padding:1px 5px;border-radius:4px;font-size:12.5px;}
+  .ok{color:var(--ok);font-weight:600;}
+  .warn{color:var(--warn);font-weight:600;}
+  .bad{color:var(--bad);font-weight:600;}
+  .note{background:#fff;border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:8px;padding:12px 16px;margin:14px 0;color:var(--muted);}
+  .cards{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0 8px;}
+  .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 16px;min-width:150px;}
+  .card b{display:block;font-size:20px;}
+  .card span{color:var(--muted);font-size:12px;}
+</style>
+</head>
+<body>
+<h1>图像源控件：原厂行为对照表</h1>
+<div class="sub">2026-11-10 · 原件 <code>ImageListPanelBase.cs.pending</code> + <code>ImageListPanel.xaml.pending</code> → 现行 <code>ImageSourceStrip</code> + <code>ImageSourceStripSession</code></div>
+
+<div class="note">
+<b>先明确本表的性质：这是"逐条比对"的清单，不是"已全部对齐"的证明。</b>
+原件约 40 个方法、5 个依赖属性、22 个交互事件；下表按证据标注三态：
+<span class="ok">已对齐</span>（有代码路径可对应）、
+<span class="warn">待补/待核</span>（存在差异或我尚未逐条验证）、
+<span class="bad">不适用</span>（依赖 VM 平台模型，按新架构以数据源替换）。
+</div>
+
+<div class="cards">
+  <div class="card"><b>22</b><span>原件交互事件</span></div>
+  <div class="card"><b>5</b><span>原件依赖属性</span></div>
+  <div class="card"><b>~40</b><span>原件方法</span></div>
+</div>
+
+<h2>一、交互事件对照</h2>
+<table>
+<thead><tr><th>原件事件处理</th><th>语义</th><th>我方实现</th><th>状态</th></tr></thead>
+<tbody>
+<tr><td><code>LocalImage_Click</code></td><td>添加本地图片文件</td><td><code>BtnImageAdd_Click</code>（合并为单入口）</td><td class="ok">已对齐</td></tr>
+<tr><td><code>LocalImageFolder_Click</code></td><td>添加本地图片文件夹</td><td><code>BtnImageAddFolder_Click</code></td><td class="ok">已对齐</td></tr>
+<tr><td><code>LinuxImage_Click</code></td><td>添加远端/Linux 图片</td><td>无</td><td class="bad">未接入（无远端后端）</td></tr>
+<tr><td><code>LinuxImageFolder_Click</code></td><td>添加远端/Linux 目录</td><td>无</td><td class="bad">未接入（无远端后端）</td></tr>
+<tr><td><code>BtnImageAddRpFolder_Click</code></td><td>添加 RP/3D 目录</td><td><code>BtnImageAddRpFolder_Click</code></td><td class="warn">占位（Collapsed + 当前未接入提示）</td></tr>
+<tr><td><code>BtnDelete_Click</code></td><td>删除单张</td><td><code>BtnDelete_Click</code></td><td class="ok">已对齐</td></tr>
+<tr><td><code>BtnImageClear_Click</code></td><td>清空全部</td><td><code>BtnImageClear_Click</code></td><td class="ok">已对齐</td></tr>
+<tr><td><code>FirstImage_Click</code></td><td>设置/回到首图</td><td><code>FirstImage_Click</code> → <code>SelectFirstAsync</code>：非 AutoPlay 取首项、AutoPlay 取末项；勾选模式只在勾选集合内选</td><td class="ok">已对齐（两分支均已实现）</td></tr>
+<tr><td><code>CheckBox_Click</code></td><td>运行勾选</td><td><code>CheckBox_Click</code></td><td class="ok">已对齐</td></tr>
+<tr><td><code>MenuItem_Click</code></td><td>右键“打开文件所在目录”</td><td><code>MenuItem_Click</code></td><td class="ok">已对齐</td></tr>
+<tr><td><code>lst_SelectionChanged</code></td><td>选中图像</td><td><code>ListSelectionChanged</code></td><td class="ok">已对齐</td></tr>
+<tr><td><code>lst_ScrollChanged</code></td><td>滚动时按需加载缩略图，离屏释放</td><td><code>ViewportScrolled</code> → <code>QueueViewport</code> → <code>UpdateVisibleItems</code>；会话对不可见项 <code>RemoveThumbnail</code></td><td class="ok">已对齐（加载 + 离屏释放均有）</td></tr>
+<tr><td><code>lst_DragEnter</code></td><td>拖入校验</td><td>XAML <code>DragEnter="ListDragOver"</code>（共用扩展名白名单校验）</td><td class="ok">已对齐</td></tr>
+<tr><td><code>lst_DragOver</code></td><td>拖动经过</td><td><code>ListDragOver</code></td><td class="ok">已对齐</td></tr>
+<tr><td><code>lst_Drop</code></td><td>放下导入</td><td><code>ListDrop</code></td><td class="ok">已对齐</td></tr>
+<tr><td><code>Grid_MouseDown</code></td><td>项内按下</td><td><code>Grid_MouseDown</code></td><td class="ok">已对齐</td></tr>
+<tr><td><code>Grid_MouseEnter / Leave</code></td><td>悬停显示删除按钮</td><td>同名处理器</td><td class="ok">已对齐</td></tr>
+<tr><td><code>ImagePanel_DataContextChanged</code></td><td>数据上下文切换</td><td><code>Attach</code>/<code>Detach</code>：解绑旧会话事件、释放旧视口、重建后按 <code>DisplayIndex</code> 恢复选中与滚动</td><td class="ok">已对齐</td></tr>
+<tr><td>—</td><td>展开/收起</td><td><code>ExpandToggle</code> + <code>IsExpanded</code></td><td class="ok">已对齐</td></tr>
+<tr><td>—</td><td>自动切换开关</td><td><code>AutoSwitch</code> + <code>AutoSwitchEnabled</code></td><td class="ok">已对齐</td></tr>
+<tr><td>—</td><td>运行全部 / 运行选中</td><td><code>Mode</code> + <code>ModeIndex</code></td><td class="ok">已对齐</td></tr>
+<tr><td>—</td><td>键盘操作</td><td><code>ListKeyDown</code>（←→↑↓ / Home / End / PageUp / PageDown）</td><td class="ok">已对齐（为原件超集：原件无键盘处理器）</td></tr>
+</tbody>
+</table>
+
+<h2>二、依赖属性对照</h2>
+<table>
+<thead><tr><th>原件 DP</th><th>语义</th><th>我方</th><th>状态</th></tr></thead>
+<tbody>
+<tr><td><code>TargetValue</code></td><td>绑定的目标变量路径</td><td>无（改为 <code>Session</code>/<code>Items</code> 数据源）</td><td class="bad">不适用（架构替换）</td></tr>
+<tr><td><code>CurSelectedIndex</code></td><td>当前选中索引</td><td><code>DisplayIndex</code> / <code>DisplayNumber</code></td><td class="ok">已对齐（命名不同）</td></tr>
+<tr><td><code>DoFreshImageList</code></td><td>外部触发刷新</td><td><code>Session</code> 变更即 <code>Detach</code>/<code>Attach</code> 并按新会话 <code>Refresh</code></td><td class="ok">已对齐</td></tr>
+<tr><td><code>IsExpanded</code></td><td>展开状态</td><td><code>IsExpanded</code> + <code>ExpandedVisibility</code></td><td class="ok">已对齐</td></tr>
+<tr><td><code>IsSelectMode</code></td><td>运行选择模式</td><td><code>IsSelectMode</code> + <code>ModeIndex</code></td><td class="ok">已对齐</td></tr>
+</tbody>
+</table>
+
+<h2>三、方法对照（按类归并）</h2>
+<table>
+<thead><tr><th>原件方法（组）</th><th>职责</th><th>我方对应</th><th>状态</th></tr></thead>
+<tbody>
+<tr><td><code>LoadThumbnailImage</code> / <code>DoRefreshLocalImage</code></td><td>缩略图按需加载</td><td><code>ImageSourceStripSession</code> 缩略图请求（异步 + 取消 + 版本校验）</td><td class="ok">已对齐（实现更强：可取消）</td></tr>
+<tr><td><code>DoAddImages</code> / <code>AddImage</code> / <code>AddImageLocal</code> / <code>AddImageToList</code> / <code>GetFiles</code></td><td>本地文件导入</td><td><code>ImportFilesRequestAsync</code> / <code>ImportDirectoryRequestAsync</code></td><td class="ok">已对齐</td></tr>
+<tr><td><code>AddImageByDir</code></td><td>目录递归导入</td><td><code>ImageFileImport.DirectoryFilesAsync</code>：只递归一层子目录，按路径长度再名称排序（与原件 <code>folderLayer&lt;=1</code>、<code>orderby Length,Name</code> 一致）</td><td class="ok">已对齐</td></tr>
+<tr><td><code>AddImageToLinux</code> / <code>AddImageToServer</code></td><td>远端导入</td><td>无</td><td class="bad">未接入</td></tr>
+<tr><td><code>RefreshImageList</code> / <code>UpdateImageListSource</code> / <code>GetModuleSel</code></td><td>从 VM 模块刷新列表</td><td><code>ImageInputSource</code> 集合变更 → <code>Session.Refresh</code></td><td class="bad">不适用（架构替换）</td></tr>
+<tr><td><code>VmSolution_OnReportModuleData</code> / <code>OnPreduceResultCallBackArrived</code></td><td>VM 结果回调刷新</td><td>结果发布 → 显示链路（<code>INodeResultSink</code>）</td><td class="bad">不适用（架构替换）</td></tr>
+<tr><td><code>OnUpdateExcuteType</code> / <code>UpdateExcuteType</code> / <code>OnExcuteTypeParamChanged</code></td><td>执行类型（单次/连续）联动</td><td>宿主执行入口</td><td class="bad">不适用（架构替换）</td></tr>
+<tr><td><code>ChangeShadowDataSource</code> / <code>GetModuleSelectMode</code></td><td>VM 影子数据源</td><td>无</td><td class="bad">不适用</td></tr>
+<tr><td><code>IsChildVisibleInParent</code> / <code>DoEvents</code></td><td>UI 辅助</td><td>WPF 原生能力 / 无（不阻塞 UI 线程）</td><td class="bad">不适用（原实现属规避手段）</td></tr>
+</tbody>
+</table>
+
+<h2>四、结论与待办</h2>
+<div class="note">
+<b>结论（2026-11-10 全量逐条复核后）：</b>控件本体确为原件适配版，交互事件、依赖属性、方法组已逐条核对完毕。
+最终差异只剩两类：① 远端/Linux 图源分支无后端，保持置灰占位；② VM 平台联动方法按新架构替换（不适用，不算缺失）。
+原先标注为"待核"的 6 项已全部核实并确认已对齐：<code>DragEnter</code>（已绑 DragOver）、滚动加载（视口计算 + 离屏释放）、首图双分支、目录递归一层 + 排序、键盘键位、数据上下文切换。
+<br/><br/>
+<b>本轮同时修复的两个主机接线缺陷（不在控件内）：</b>
+① 文档提交会重建节点实例，而选中判定与 <code>ImageSourceResolver</code> 使用引用相等 → 每次增删图都会清空选中、隐藏整条控件；
+现改为按稳定 Id 重绑定选中，再走下游引用判定。
+② 切换节点时"先清空（隐藏）再重建（显示）"造成闪烁；现改为先发布新投影、再释放旧投影，可见性全程为真。
+</div>
+</body>
+</html>

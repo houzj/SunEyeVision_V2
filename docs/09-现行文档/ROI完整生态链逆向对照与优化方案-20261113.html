@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8"/>
+<title>ROI完整生态链逆向对照与优化方案-20261113</title>
+<style>
+ body{font-family:"Microsoft YaHei",sans-serif;max-width:1150px;margin:24px auto;padding:0 16px;line-height:1.7;color:#222}
+ h1{font-size:22px;border-bottom:2px solid #b85450;padding-bottom:8px}
+ h2{font-size:18px;margin-top:34px;border-left:4px solid #b85450;padding-left:10px}
+ h3{font-size:15px;margin-top:22px}
+ table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13px}
+ th,td{border:1px solid #bbb;padding:6px 9px;vertical-align:top;text-align:left}
+ th{background:#f7ecec}
+ code{background:#f4f4f4;padding:1px 4px;border-radius:3px;font-size:12px}
+ .warn{background:#fff3f3;border:1px solid #b85450;padding:10px 14px;border-radius:4px}
+ .ok{background:#f0f7f0;border:1px solid #4a9a4a;padding:10px 14px;border-radius:4px}
+ .stage{background:#f7f7fb;border:1px solid #99a;padding:10px 14px;border-radius:4px;margin:10px 0}
+ .anchor{color:#666;font-size:12px}
+ li{margin:4px 0}
+</style>
+</head>
+<body>
+<h1>ROI 完整生态链逆向对照与优化方案</h1>
+<p><b>日期</b>：2026-11-13　<b>性质</b>：方案设计（全部设计决策附逆向证据；未取证处如实标注）<br/>
+<b>证据源</b>：仓内同版本反编译保留源 <code>src/Plugin.Wpf/Controls/Native/Input/WorkspaceControls/</code> 与 <code>Composition/ParameterPresentation/</code> 下 *.pending<br/>
+<b>关联文档</b>：<code>图像结果与ROI绘制交互原厂对照-20261113.html</code>、<code>evidence/VM编辑器相关输入单图联动原件对照-20261113.json</code>、<code>HANDOFF_ROI形状按钮不可点-20261113.md</code></p>
+
+<h2>一、原厂 ROI 生态链实现（逆向结论，逐条锚点）</h2>
+
+<h3>链 1：一个绘制面 —— 结果视图的 ImageViewBox</h3>
+<p>原厂 ROI 的绘制面只有一个：结果视图的 <code>ImageViewBox</code>。参数页的 ROI 列表与结果视图的 ROI 集合是<b>同一批形状对象</b>，由 <code>ROISelecterHolder</code> 做双向集合同步（参数 ROIList ⇄ 图像视图 ROIListOfHikImageView，增删互镜像）。<br/>
+<span class="anchor">[来源] ROISelecterHolder.cs.pending:15-193（ROIList/ROIListOfHikImageView 双向集合同步、RoiChangedCommand）</span></p>
+
+<h3>链 2：绘制资格 —— 显示图必须是模块的输入图</h3>
+<p><code>IsCanDrawROI</code>（ModuleDisplayDecorator.cs.pending:446-480）：当前选中图像（单图取 SelectedImage、双图取 SelectedInputImage）的 DisplayValue 必须属于模块 IMAGE/PIXELIMAGE 输入的关联 IO（<code>ImageInputs.Contains(vmIO.FullName)</code>），且参数状态检查通过。<code>SetRoiVisible</code>（ModuleResultView.xaml.cs.pending:2252-2275）按它开关 ROIVisible，且<b>仅参数窗口打开时</b>允许；不可绘时用户点击图像 → 弹 <code>RoiDrawTips</code> 警告框（:2514-2521）。<br/>
+<b>含义：原厂把"显示图=输入图"作为绘制前置条件；显示不是输入图时，绘制不可用且有明确弹窗反馈。</b></p>
+
+<h3>链 3：显示图自动跟随关联输入</h3>
+<p><code>OnRelatedIOChanged</code>（ModuleResultView.xaml.cs.pending:500-524）：单图模式直接把 <code>SelectedImage</code> 切到关联输入图，随后 <code>RefreshInputImageList</code>（ModuleDisplayDecorator:1432-1468）+ <code>SetRoiVisible</code>。即：关联输入一变，显示就切到输入图——绘制面天然就是输入图。<br/>
+<span class="anchor">[来源] ModuleResultView.xaml.cs.pending:500-524；ModuleDisplayDecorator.cs.pending:1432-1468</span></p>
+
+<h3>链 4：形状的生存与刷新 —— 挂在模块参数上，跨刷新重投影</h3>
+<p>形状对象属于模块参数（param 页 ROIList 与结果视图共享对象）；模块结果回调后若 <code>ROIVisible && !IsDragROI</code> 调 <code>ModuleSource.UpdateROI()</code> 把既有 ROI 重投影到当前帧（:604-608）；参数编辑走 P_ValueChanged → UpdateModuleViewResultShow 重绘，<b>从不销毁 ROI 会话/形状</b>。选中模块变化才 DoSourceChanged 重建 decorator（:529）。<br/>
+<span class="anchor">[来源] ModuleResultView.xaml.cs.pending:604-608、473-498、529</span></p>
+
+<h3>链 5：订阅（引用）与掩膜 —— 引用绑定不改变绘制面</h3>
+<p>ROI 相关参数允许引用上游（allowReference），阈值类数值引用由参数系统解析；掩膜输入 <code>InputMask</code> 在关联 IO 订阅中被显式排除（:1181 <code>vmIO.Name != "InputMask"</code>），即掩膜不参与"切显示"逻辑——掩膜只是数据输入，不是绘制面候选。<br/>
+<span class="anchor">[来源] ModuleResultView.xaml.cs.pending:1180-1186</span></p>
+
+<h3>链 6：形状按钮 → 绘制类型的传递</h3>
+<p>参数页 ROI 组合器 <code>RoiSelecterCombine</code>（.pending:1-57）只承载 ImageWidth/ImageHeight 与 <code>CanUpDateROI</code>；形状类型经行绑定传给结果视图（DrawRoiUIType/DrawROIType）。<b>未取证项</b>：RoiSelecterCombine.xaml 的具体绑定在仓内无 .pending，"按钮点击→DrawROIType→ImageViewBox"的中间绑定细节标 <b>运行未确认/待补证</b>。</p>
+
+<h2>二、本方现状与断点（证据分级）</h2>
+<table>
+<tr><th>#</th><th>环节</th><th>本方实现</th><th>与原件差异</th><th>证据</th></tr>
+<tr><td>S1</td><td>绘制面</td><td>结果视图 viewport（NativeRoiAttachment 包 ImageViewBox）✅ 同原件</td><td>一致</td><td>NativeRoiAttachment.cs:18-44</td></tr>
+<tr><td>S2</td><td><b>绘制前置：显示图=输入图</b></td><td><b>无此强制</b>。显示图可以是模块输出（如 Blob图像数据）；此时借帧走<b>临时离屏视口</b>（<code>privatePane=new(new NativeResultViewport())</code>，不在可视树）</td><td><b>断点①（实锤）</b>：离屏视口不可见不可交互 → 用户在可见结果图上拖拽无效，且无 RoiDrawTips 反馈。原件根本不允许该状态（IsCanDrawROI=false+弹窗）</td><td>ResultWorkspacePresenter.RoiEditing.cs:25-44；roibtn.log 反复 enter→acquire 循环</td></tr>
+<tr><td>S3</td><td>会话生命周期</td><td>租约 currency 锚定刷新代次（PlanCurrent/ActiveOwner），任何重建即死 → BlobLocalRoiOwner.RetireFrame → 会话报废，下次点击重借</td><td><b>断点②（实锤）</b>：原件 ROI 跨刷新存活（UpdateROI 重投影），本方 ROI 在刷新间反复死亡重建，绘制中途即断</td><td>roibtn.log：gen 0→1→2 每次点击重借；ResultWorkspacePresenter.RoiEditing.cs:16</td></tr>
+<tr><td>S4</td><td>订阅（变量/上游引用）</td><td>变量图像走临时捕获（CaptureVariableImageForRoi）→ 同样落离屏视口</td><td><b>同断点①</b>：订阅来源的绘制面也不可见</td><td>MainWindowRuntimeEditing.cs:197-216；RoiEditing.cs:27-31</td></tr>
+<tr><td>S5</td><td>不可绘反馈</td><td>静默 no-op（Error 只写内部属性）</td><td><b>断点③</b>：原件弹 RoiDrawTips</td><td>ModuleResultView:2514-2521 vs BlobLocalRoiOwner.cs:101</td></tr>
+<tr><td>S6</td><td>继承/掩膜</td><td>BlobRoiInheritance/BlobMaskInheritance 已有实现（预览只读层 + 物化）</td><td>预览层正常；绘制面问题同 S2</td><td>BlobLocalRoiOwner.Preview.cs:55-104</td></tr>
+<tr><td>S7</td><td>命令门控</td><td>已修（Codex）：按钮可点，失败有警告反馈</td><td>✅ 已对齐链 2 的"反馈"一半</td><td>CURRENT_TASK 2026-11-13 ROI 根链合同第一阶段</td></tr>
+</table>
+
+<h2>三、优化方案（按原件基线，分四阶段，每段可独立验收）</h2>
+
+<div class="stage"><b>阶段 P1：绘制面归位 —— "进入绘制即显示输入图"（治断点①）</b><br/>
+原件依据：链 2+3（IsCanDrawROI 把显示图限定为输入图；OnRelatedIOChanged 自动切显示）。<br/>
+设计：本方进入 ROI 本地绘制（模式切到"绘制"或点形状按钮）时，若当前显示图不是该 ROI 的输入图，则通过既有 <code>EditorRelatedImage</code> 机制把结果显示切换到 ROI 输入图（单图切显示、双图切输入项），使借帧命中<b>可见的真实 viewport</b>；不得再落离屏 privatePane。<br/>
+验收：调试窗口显示 Blob 图像数据时点形状 → 显示自动切到输入图 → 在结果图上可画出形状（人工+合同用例）。</div>
+
+<div class="stage"><b>阶段 P2：租约货币全路径帧锚定（治断点②）</b><br/>
+原件依据：链 4（UpdateROI 跨刷新重投影，ROI 不因刷新销毁）。<br/>
+设计：publication 路径租约 current 改为与变量路径同规则——锚定"同一帧仍是该视口呈现帧"（<code>pane.CurrentFrame==receipt</code>），叠加来源仍在选中位（按 Key 比较而非实例）；仅当帧对象变化（新执行/换显示）时租约失效并重借。禁止把刷新代次（epoch）作为租约死亡条件。<br/>
+验收：绘制会话存活期间触发结果刷新（调试执行/参数编辑），形状绘制不中断；新帧到达后会话按原件语义重投影。</div>
+
+<div class="stage"><b>阶段 P3：不可绘反馈（治断点③）</b><br/>
+原件依据：链 2 RoiDrawTips（:2514-2521）。<br/>
+设计：借帧失败/不可绘时，给出与原件等价的用户可见反馈（状态提示或弹窗，文案用原厂 RoiDrawTips 资源语义）；禁止静默 no-op（rule-015）。<br/>
+验收：构造不可绘状态（如显示图非输入且无法切换），点击形状出现明确提示。</div>
+
+<div class="stage"><b>阶段 P4：订阅与继承链同规则贯通（治 S4/S6）</b><br/>
+原件依据：链 5（掩膜不参与显示切换，只是数据输入）+ 链 3（显示跟随输入）。<br/>
+设计：变量图像/上游引用订阅的 ROI 借帧走 P1 同一显示切换规则（订阅来源成为显示图后用真实 viewport 绘制）；继承预览（只读层）维持现状；掩膜继承不触发显示切换。<br/>
+验收：变量图像源 + ROI 绘制全链（既有 Stored_image_variable 用例扩展到绘制）；继承模式预览与绘制不互相破坏。</div>
+
+<div class="stage"><b>阶段 P5：生态验收（贯通后一次性做）</b><br/>
+绘制→提交→参数写回（撤销/重做）→调试执行→结果重投影→保存重开→关闭释放，全链人工+自动验收；回归红线：P0 三条、Blob 三页 5 条、字号红框回归、ROI 保存重开、ShutdownLifecycleProbe。</div>
+
+<h2>四、设计决策的逆向依据对照表</h2>
+<table>
+<tr><th>设计决策</th><th>原件证据</th></tr>
+<tr><td>绘制面=结果视图，参数页与结果视图共享形状</td><td>ROISelecterHolder.cs.pending:15-193；NativeRoiAttachment.cs:18-44（本方同构）</td></tr>
+<tr><td>显示图必须是输入图才可绘</td><td>ModuleDisplayDecorator.cs.pending:446-480</td></tr>
+<tr><td>进入绘制自动切显示到输入图</td><td>ModuleResultView.xaml.cs.pending:500-524（OnRelatedIOChanged）</td></tr>
+<tr><td>不可绘弹窗反馈</td><td>ModuleResultView.xaml.cs.pending:2514-2521（RoiDrawTips）</td></tr>
+<tr><td>ROI 跨刷新存活（重投影而非重建）</td><td>ModuleResultView.xaml.cs.pending:604-608（UpdateROI）</td></tr>
+<tr><td>掩膜不参与显示切换</td><td>ModuleResultView.xaml.cs.pending:1180-1186（InputMask 排除）</td></tr>
+<tr><td>参数编辑不终止会话</td><td>ModuleResultView.xaml.cs.pending:473-498（P_ValueChanged→UpdateModuleViewResultShow）</td></tr>
+</table>
+
+<h2>五、未取证项（如实标注）</h2>
+<ul>
+<li>RoiSelecterCombine.xaml 绑定细节（按钮→DrawROIType 传递）仓内无 .pending——<b>运行未确认/待补证</b>；P1 实施若需该细节，先按取证约定补证再动。</li>
+<li>原件动态运行行为（拖拽节流、形状提交时机）为静态反编译证据，未实机录制。</li>
+</ul>
+
+<h2>六、实施与回退</h2>
+<ul>
+<li>实施顺序 P1→P2→P3→P4→P5，每段独立构建+合同用例+人工核验，禁止跨段混做。</li>
+<li>回退：每段独立成提交；P1/P2 涉及 ResultWorkspacePresenter.RoiEditing 与 BlobLocalRoiOwner，回退按段回退，不影响已修的命令门控（Codex 批）。</li>
+<li>回归红线：P0 三条、Blob 三页 5/5、变量 ROI、字号红框回归、ROI 保存重开、ShutdownLifecycleProbe。</li>
+</ul>
+</body>
+</html>

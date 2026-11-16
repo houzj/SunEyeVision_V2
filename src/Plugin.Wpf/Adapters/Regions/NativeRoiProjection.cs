@@ -18,6 +18,8 @@ public abstract class NativeRoiProjection : IROI,IROIVisible
     protected int ImageWidth {get;}
     protected int ImageHeight {get;}
     public string Group=>Accepted.Group;
+    /// <summary>Mask ROI keeps the original filled interaction appearance.</summary>
+    public bool IsAvoid=>_scope?.IsAvoid==true;
     internal RecordValue AcceptedGeometry=>Accepted.Geometry;
     public Guid Id=>Accepted.Id;
     public string Kind=>Accepted.Geometry.Get<string>("kind");

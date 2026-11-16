@@ -37,6 +37,8 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.Editing.Wpf.Models.Ob
     private List<string> _runReferences = new();
     public string NodeId { get; }
     public long EditVersion { get; private set; }
+    /// <summary>接纳事务在途标志：writer 回调期间文档已前移而投影尚未安装，此时投影状态归在途事务所有。</summary>
+    internal bool IsAcceptingEdit => _committing;
     public string? LastNotificationError { get; private set; }
     public ReadOnlyObservableCollection<ImageInfo> Images { get; }
     /// <summary>Owner-thread acceptance gateway. Throw before acceptance to reject; never write after notification.</summary>
@@ -58,6 +60,7 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.Editing.Wpf.Models.Ob
     internal void AttachFormalOwner() { _requiresWriter = true; ConfigurationWriter = null; }
     internal void DetachFormalOwner() { _requiresWriter = true; ConfigurationWriter = null; }
     public int Count => _entries.Count;
+    internal int ConfiguredStartIndex => _configuredIndex;
     public bool HasImages => Count != 0;
     public ImageInfo? CurrentImage => _currentIndex >= 0 && _currentIndex < Count ? _entries[_currentIndex] : null;
     public bool IsReadOnly { get => _readOnly; set => SetProperty(ref _readOnly,value); }
@@ -201,11 +204,11 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.Editing.Wpf.Models.Ob
         Commit(_entries.ToArray(),_configuredIndex,_runMode,_autoSwitch,references);
     }
     public void AddImage(ImageInfo image)=>AddImages(new[]{image});
-    public ImageSourceEditReceipt AddImages(IEnumerable<ImageInfo> images,bool selectFirstAdded=false)
+    public ImageSourceEditReceipt AddImages(IEnumerable<ImageInfo> images)
     {
         var additions=images.ToArray();if(additions.Length==0)return new(false,null);
-        return Commit(_entries.Concat(additions).ToArray(),selectFirstAdded?Count:_configuredIndex,_runMode,_autoSwitch,
-            _runReferences.Concat(additions.Where(image=>image.IsForRun).Select(Reference)).Distinct(StringComparer.Ordinal),selectFirstAdded);
+        return Commit(_entries.Concat(additions).ToArray(),_configuredIndex,_runMode,_autoSwitch,
+            _runReferences.Concat(additions.Where(image=>image.IsForRun).Select(Reference)).Distinct(StringComparer.Ordinal));
     }
     public void RemoveImage(ImageInfo image)
     {
@@ -255,7 +258,9 @@ public sealed class ImageInputSource : SunEyeVision.Plugin.Editing.Wpf.Models.Ob
             if(image is null||image.FilePath!=address)image=new(){SourceReference=reference,FilePath=address,Name=System.IO.Path.GetFileName(reference),ResourceError=error};
             rows.Add(image);
         }
-        var displayIndex=config.CurrentIndex!=_configuredIndex?config.CurrentIndex:RemapDisplay(rows,config.CurrentIndex);
+        // Preserve an unset cursor until an explicit selection or a completed read supplies one.
+        var configured=config.CurrentIndex;
+        var displayIndex=configured!=_configuredIndex?configured:RemapDisplay(rows,configured);
         Install(rows.ToArray(),config,false,displayIndex);
     }
     public void RemoveMissingImages()

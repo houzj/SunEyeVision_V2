@@ -1,0 +1,67 @@
+
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:15512:  000000018000CD29: 44 89 B3 AC 03 00  mov         dword ptr [rbx+00000000000003ACh],r14d
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:15513:                    00
+> C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:15514:  000000018000CD30: C7 83 B0 03 00 00  mov         dword ptr [rbx+00000000000003B0h],1
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:15515:                    01 00 00 00
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:15516:  000000018000CD3A: FF 15 A8 03 02 00  call        qword ptr [000000018002D0E8h]
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:15517:  000000018000CD40: 89 83 B4 03 00 00  mov         dword ptr [rbx+00000000000003B4h],eax
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:17337:  000000018000E7FD: B9 04 00 00 00     mov         ecx,4
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:17338:  000000018000E802: FF 15 08 E8 01 00  call        qword ptr [000000018002D010h]
+> C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:17339:  000000018000E808: 41 FF 86 B0 03 00  inc         dword ptr [r14+00000000000003B0h]
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:17340:                    00
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:17341:  000000018000E80F: 48 8D 8C 24 70 02  lea         rcx,[rsp+0000000000000270h]
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:17342:                    00 00
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:17367:  000000018000E87B: 49 8B CD           mov         rcx,r13
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:17368:  000000018000E87E: FF 15 B4 ED 01 00  call        qword ptr [000000018002D638h]
+> C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:17369:  000000018000E884: 45 8B 8E B0 03 00  mov         r9d,dword ptr [r14+00000000000003B0h]
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:17370:                    00
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:17371:  000000018000E88B: 45 33 C0           xor         r8d,r8d
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:17372:  000000018000E88E: 48 8D 15 93 0A 02  lea         rdx,[000000018002F328h]
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:20501:                    03 00 00
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:20502:  00000001800119E7: F2 44 0F 5C C6     subsd       xmm8,xmm6
+> C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:20503:  00000001800119EC: F2 44 0F 11 84 24  movsd       mmword ptr [rsp+00000000000003B0h],xmm8
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:20504:                    B0 03 00 00
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:20505:  00000001800119F6: F2 0F 5C F7        subsd       xmm6,xmm7
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:20506:  00000001800119FA: F2 0F 11 B4 24 78  movsd       mmword ptr [rsp+0000000000000278h],xmm6
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:20759:  0000000180011E7B: F2 0F 11 84 24 08  movsd       mmword ptr [rsp+0000000000000108h],xmm0
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:20760:                    01 00 00
+> C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:20761:  0000000180011E84: F2 0F 10 84 24 B0  movsd       xmm0,mmword ptr [rsp+00000000000003B0h]
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:20762:                    03 00 00
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:20763:  0000000180011E8D: F2 0F 11 84 24 00  movsd       mmword ptr [rsp+0000000000000100h],xmm0
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:20764:                    01 00 00
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:20868:  0000000180012067: 41 89 86 A8 03 00  mov         dword ptr [r14+00000000000003A8h],eax
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:20869:                    00
+> C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:20870:  000000018001206E: 41 FF 86 B0 03 00  inc         dword ptr [r14+00000000000003B0h]
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:20871:                    00
+> C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:20872:  0000000180012075: 45 8B 8E B0 03 00  mov         r9d,dword ptr [r14+00000000000003B0h]
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:20873:                    00
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:20874:  000000018001207C: 45 33 C0           xor         r8d,r8d
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:20875:  000000018001207F: 48 8D 15 A2 D2 01  lea         rdx,[000000018002F328h]
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:21737:  0000000180012C99: 85 C0              test        eax,eax
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:21738:  0000000180012C9B: 75 3F              jne         0000000180012CDC
+> C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:21739:  0000000180012C9D: 81 BB B0 03 00 00  cmp         dword ptr [rbx+00000000000003B0h],186A0h
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:21740:                    A0 86 01 00
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:21741:  0000000180012CA7: 7E 0A              jle         0000000180012CB3
+> C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:21742:  0000000180012CA9: C7 83 B0 03 00 00  mov         dword ptr [rbx+00000000000003B0h],186A0h
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:21743:                    A0 86 01 00
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:21744:  0000000180012CB3: 41 8D 45 FF        lea         eax,[r13-1]
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:21745:  0000000180012CB7: 4C 63 C0           movsxd      r8,eax
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:21746:  0000000180012CBA: 49 8B D5           mov         rdx,r13
+> C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:21747:  0000000180012CBD: 8B 83 B0 03 00 00  mov         eax,dword ptr [rbx+00000000000003B0h]
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:21748:  0000000180012CC3: 89 44 24 20        mov         dword ptr [rsp+20h],eax
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:21749:  0000000180012CC7: 4C 8D 0D F6 AD 01  lea         r9,[000000018002DAC4h]
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:21750:                    00
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:24216:  00000001800150CD: 3D A0 86 01 00     cmp         eax,186A0h
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:24217:  00000001800150D2: 0F 87 EA FB FF FF  ja          0000000180014CC2
+> C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:24218:  00000001800150D8: 89 86 B0 03 00 00  mov         dword ptr [rsi+00000000000003B0h],eax
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:24219:  00000001800150DE: E9 D1 00 00 00     jmp         00000001800151B4
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:24220:  00000001800150E3: 48 8B D3           mov         rdx,rbx
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:24221:  00000001800150E6: 48 8D 0D DB AB 01  lea         rcx,[000000018002FCC8h]
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:38196:  00000001800218CC: 48 8D 8E 20 00 01  lea         rcx,[rsi+0000000000010020h]
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:38197:                    00
+> C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:38198:  00000001800218D3: FF 15 D7 BA 00 00  call        qword ptr [000000018002D3B0h]
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:38199:  00000001800218D9: 45 33 F6           xor         r14d,r14d
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:38200:  00000001800218DC: 4C 89 74 24 30     mov         qword ptr [rsp+30h],r14
+  C:\Users\Administrator\AppData\Local\Temp\ImageSource-installed-save-disasm.txt:38201:  00000001800218E1: C7 44 24 28 00 00  mov         dword ptr [rsp+28h],42000000h
+
+

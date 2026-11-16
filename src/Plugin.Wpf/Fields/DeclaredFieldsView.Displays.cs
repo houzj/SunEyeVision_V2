@@ -34,7 +34,7 @@ public sealed partial class DeclaredFieldsView
             {
                 var p=declarations[id].Presentation;var b=p.Layout??throw new ArgumentException("文本显示需要完整布局。");
                 if(b.DialogGroup is not null||b.DialogPrimary||a.Page!=b.Page||a.Section!=b.Section||a.Advanced!=b.Advanced
-                    ||a.VisibleWhen!=b.VisibleWhen||first.Group!=p.Group||!Gates(ids[0]).SequenceEqual(Gates(id)))
+                    ||a.VisibleWhen!=b.VisibleWhen||a.OrVisibleWhen!=b.OrVisibleWhen||first.Group!=p.Group||!Gates(ids[0]).SequenceEqual(Gates(id)))
                     throw new ArgumentException("文本七行必须共享组装区及活动条件。");
             }
             var content=declarations[option.ContentFieldId];
@@ -110,7 +110,7 @@ public sealed partial class DeclaredFieldsView
             foreach(var member in members)
             {
                 var p=member.Presentation;var b=p.Layout!;
-                if(a.Page!=b.Page||a.Section!=b.Section||a.Advanced!=b.Advanced||a.VisibleWhen!=b.VisibleWhen||first.Group!=p.Group
+                if(a.Page!=b.Page||a.Section!=b.Section||a.Advanced!=b.Advanced||a.VisibleWhen!=b.VisibleWhen||a.OrVisibleWhen!=b.OrVisibleWhen||first.Group!=p.Group
                     ||!Gates(first.FieldId).SequenceEqual(Gates(p.FieldId)))throw new ArgumentException("图形角色必须共享布局和活动条件。");
             }
             Constant(option.VisibleFieldId,TypeRef.ScalarOf(ScalarKind.Boolean));

@@ -11,7 +11,6 @@ namespace SunEyeVision.UI.Services.Startup;
 public sealed class StartPageSettings
 {
     public bool HideStartPage { get; set; }
-    public string? Theme { get; set; }
     public SunEyeVision.UI.Shared.LayoutConfig? WindowLayout { get; set; }
     public List<RecentSolutionFile> RecentFiles { get; set; } = new();
     // 移除启动页建议不会删除方案文件或关闭当前工作区。

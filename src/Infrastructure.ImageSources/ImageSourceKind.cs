@@ -4,5 +4,6 @@ namespace SunEyeVision.Infrastructure.ImageSources;
 public enum ImageSourceKind
 {
     Local = 0,
-    Camera = 1
+    Camera = 1,
+    Sdk = 2
 }

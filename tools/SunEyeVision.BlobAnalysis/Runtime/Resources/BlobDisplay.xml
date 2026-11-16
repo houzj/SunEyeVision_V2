@@ -1,15 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <BlobDisplay schemaVersion="1">
   <Table port="field:8ca10000000040008000000000000100" identity="element-id">
-    <Column key="label" label="序号" member="label" decimals="0" unit="" />
-    <Column key="area" label="面积" member="area" decimals="0" unit="px²" />
-    <Column key="perimeter" label="周长" member="perimeter" decimals="1" unit="px" />
-    <Column key="centroid-x" label="中心X" member="centroid-x" decimals="1" unit="px" />
-    <Column key="centroid-y" label="中心Y" member="centroid-y" decimals="1" unit="px" />
-    <Column key="angle" label="角度" member="oriented-bounds/angle-degrees" decimals="3" unit="°" />
-    <Column key="long-axis" label="长轴" unavailable="原厂长轴数值语义尚未证实，当前不产出或订阅该特征" />
-    <Column key="short-axis" label="短轴" unavailable="原厂短轴数值语义尚未证实，当前不产出或订阅该特征" />
-    <Column key="circularity" label="圆度" member="circularity" decimals="3" unit="" />
-    <Column key="rectangularity" label="矩形度" member="rectangularity" decimals="3" unit="" />
+    <Column key="label" label="序号" labelResource="Number" member="label" />
+    <Column key="area" label="面积" labelResource="Area" member="area" numericFormat="float32" />
+    <Column key="perimeter" label="周长" labelResource="Perimeter" member="perimeter" numericFormat="float32" />
+    <Column key="centroid-x" label="质心X" labelResource="CentroidX" member="centroid-x" numericFormat="float32" />
+    <Column key="centroid-y" label="质心Y" labelResource="CentroidY" member="centroid-y" numericFormat="float32" />
+    <Column key="angle" label="角度" labelResource="Angle" member="oriented-bounds/angle-degrees" numericFormat="float32" />
+    <Column key="long-axis" label="长轴" labelResource="LongAxis" member="long-axis" numericFormat="float32" />
+    <Column key="short-axis" label="短轴" labelResource="ShortAxis" member="short-axis" numericFormat="float32" />
+    <Column key="circularity" label="圆形度" labelResource="Circularity" member="circularity" numericFormat="float32" />
+    <Column key="rectangularity" label="矩形度" labelResource="Rectangularity" member="rectangularity" numericFormat="float32" />
   </Table>
 </BlobDisplay>

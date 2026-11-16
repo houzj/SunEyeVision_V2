@@ -1,0 +1,130 @@
+{
+  "kind": "VM原件优先实施门禁+操作入口全量清单",
+  "batch": "左栏画布编辑链证据审计（节点链/连线链/执行状态批前审计）",
+  "vmArchitecture": "VM 画布编辑区核心在 VMControls.WPF 程序集（VMControls.WPF.Base：DiagramItem/Connection/DiagramPage/ItemsPage/ZoomArea/Connector/StatusBar/PathFinder；base/*.xaml 模板；DataForUI 命令装饰器；数据/撤销层在 VM.Core）。来源 D:/MyWork/Rea逆向/analysis/decompiled/VMControls.WPF/",
+  "entryInventory": [
+    {"entry": "节点Delete键删除", "vm": "DiagramItem.xaml.cs:946-952", "ours": "缺失（Delete仅连线 WireEditing.cs:59）", "decision": "对齐：补节点Delete"},
+    {"entry": "连线Delete/右键删除", "vm": "Connection.xaml:4", "ours": "有 WireEditing.cs:58-70", "decision": "已对齐"},
+    {"entry": "节点Ctrl+C复制", "vm": "DiagramItem.xaml:11-14", "ours": "仅画布焦点级 GroupSelection.cs:103-107", "decision": "对齐：节点级"},
+    {"entry": "节点Ctrl+F禁用/Ctrl+A启用", "vm": "VmModuleBaseDecorator.cs:603-614（DataQueue/GlobalCamera例外）", "ours": "仅组选时 GroupSelection.cs:109-110", "decision": "对齐：节点级+例外待核"},
+    {"entry": "节点Ctrl+M打开模块XML目录", "vm": "DiagramItem.xaml:11", "ours": "缺失", "decision": "缺失-待定：VM特性本方无对应物，待用户确认"},
+    {"entry": "节点Ctrl+L+T/D/I/W/E/R/O日志级别", "vm": "VmModuleBaseDecorator.cs:615-656", "ours": "缺失", "decision": "缺失-待定：VM日志调试功能，待用户确认"},
+    {"entry": "画布Ctrl+V粘贴", "vm": "ItemsPage.cs:431-446", "ours": "有", "decision": "已对齐"},
+    {"entry": "Ctrl+F模块搜索", "vm": "ItemsPage.cs:444-446弹搜索窗", "ours": "仅有搜索控件无快捷键/右键入口", "decision": "对齐：补Ctrl+F与右键入口"},
+    {"entry": "Ctrl+滚轮档位缩放（20档0.1..2.0鼠标锚点）", "vm": "ZoomArea.xaml.cs:23-29,462-516", "ours": "±0.1连续缩放 xaml.cs:897-911", "decision": "对齐：改档位制+锚点"},
+    {"entry": "Shift+滚轮横滚", "vm": "ZoomArea.xaml.cs:485-500", "ours": "有", "decision": "已对齐"},
+    {"entry": "Ctrl+左键拖平移", "vm": "ZoomArea.xaml.cs:429-460", "ours": "有 xaml.cs:1635-1640", "decision": "已对齐"},
+    {"entry": "空白区右键菜单", "vm": "DiagramPage.xaml:66-224：粘贴/导入组合/模块搜索/导入流程/工具箱分组子菜单", "ours": "仅粘贴+工具分类 Clipboard.cs:9-20", "decision": "补模块搜索；导入组合待Group范围；导入流程待定；锁定门控待定"},
+    {"entry": "拖方案文件到画布加载", "vm": "ItemsPage.cs:357-404", "ours": "缺失", "decision": "对齐：补文件拖放（语义待用户确认）"},
+    {"entry": "节点右键菜单", "vm": "diagramitemtemplate.xaml:821-925：断开/删除/复制/复制参数/粘贴参数/重命名弹窗/禁用/启用", "ours": "缺复制参数/粘贴参数；重命名为内联", "decision": "补复制参数/粘贴参数（跨链登记）；重命名形态待用户定夺（原件=弹窗370×150）"},
+    {"entry": "连线右键", "vm": "仅删除", "ours": "仅删除", "decision": "已对齐"},
+    {"entry": "端口拉线", "vm": "Connector.xaml.cs:81-276：虚线预览/候选高亮/最近端口击中放大/自动选最近锚点", "ours": "仅几何矩形高亮，无类型预检/最近锚点", "decision": "对齐：视觉+最近锚点+类型预检"},
+    {"entry": "连线折点拖动", "vm": "Connection.xaml.cs:342-544：段中点HoverPot/5px步进/防穿越/共线合并", "ours": "有手柄+EditPath无防穿越细节", "decision": "对齐：补防穿越与合并"},
+    {"entry": "拖节点到连线插入", "vm": "Connection.xaml.cs:815-856加粗10px反馈", "ours": "有InsertionGestures，加粗反馈待核", "decision": "已对齐，补视觉反馈"},
+    {"entry": "空白框选", "vm": "ItemsPage.cs:582-667 虚线LightSlateGray", "ours": "有，样式待核", "decision": "已对齐，核对样式"},
+    {"entry": "组框拖动", "vm": "DiagramPage.xaml.cs:595-696 外扩10px/Ctrl复制", "ours": "有，细节待核", "decision": "已对齐，核对细节"},
+    {"entry": "节点拖动幻影0.7透明", "vm": "DiagramItem.xaml.cs:623-714", "ours": "有（每次重建）", "decision": "已对齐；性能顺带"},
+    {"entry": "拖动实时对齐线", "vm": "DiagramItem.xaml.cs:855-944 LightGreen虚线6规则", "ours": "差异：本方为组菜单对齐×6（无实时对齐线）", "decision": "对齐：补实时对齐线；菜单对齐是否移除待用户定夺"},
+    {"entry": "网格吸附5px", "vm": "DiagramItem.xaml.cs:764-771", "ours": "未盘点到", "decision": "核对，缺则补"},
+    {"entry": "间距热区自动串接", "vm": "66×22橙热区；间距160/115/40+30", "ours": "有热区/插线，常量待核", "decision": "已对齐，核对常量"},
+    {"entry": "注释框", "vm": "CommentBox.cs:98-287", "ours": "缺失", "decision": "缺失-待定：待用户确认范围"},
+    {"entry": "鹰眼/小地图", "vm": "ZoomArea.xaml:26-100 187×150三态", "ours": "有 xaml.cs:1215-1304", "decision": "已对齐，核对尺寸图标"},
+    {"entry": "状态栏", "vm": "StatusBar 28px/耗时按钮/回100%/缩放Slider", "ours": "部分（耗时有）", "decision": "核对补齐"},
+    {"entry": "引导/流程模式切换", "vm": "DiagramArea.xaml.cs:478-547", "ours": "缺失", "decision": "缺失-待定"},
+    {"entry": "搜索定位居中", "vm": "ZoomArea.xaml.cs:402-411", "ours": "有 Search.cs:7-29", "decision": "已对齐"},
+    {"entry": "锁定工作区", "vm": "IsLockWorkArea全链禁用+浮层", "ours": "未盘点到", "decision": "缺失-待定"},
+    {"entry": "工具箱折叠偏移/数据源切换/左右布局", "vm": "ToolBox.xaml.cs:23,90-150", "ours": "待盘点", "decision": "节点链批补盘点"},
+    {"entry": "长按选中防抖", "vm": "ItemsPage.cs:303-309", "ours": "未盘点到", "decision": "核对"}
+  ],
+  "behaviorFacts": [
+    {"fact": "画布幕布5000×5000，6×6网格DrawingBrush，颜色资源Col_EditProcess_*", "source": "DiagramPage.xaml.cs:47;DiagramPage.xaml:31-51", "decision": "核对后对齐"},
+    {"fact": "节点视觉：#66F9F5F2 2px边、圆角3、渐变底；IMAGE/方图/流程/组合分模板族", "source": "diagramitemtemplate.xaml:31-33,821-1620", "decision": "成片：分模板族迁移+CanvasTemplateSelector落地（现恒返回同模板）"},
+    {"fact": "节点状态：禁用/失败图标、RunState三态、IsLoadFailed、单步连续按钮切图标", "source": "diagramitemtemplate.xaml:21-26,967-975,784-806", "decision": "成片：图标三态补齐；修xaml:437死绑定Status"},
+    {"fact": "端口：5×8橙#FFFFA719、1px#FF444444、命中8.5×12、四方位索引0左1上2右3下、悬停显示", "source": "Connector.xaml:6-16;DiagramItem.xaml.cs:331-341", "decision": "核对后对齐"},
+    {"fact": "连线：Col_EditProcess_Ligature粗2、悬停粗3、选中色、箭头法向10px", "source": "connectionstyle.xaml:8-39;Connection.xaml.cs:754-777", "decision": "核对后对齐"},
+    {"fact": "连线路径=A*正交寻路：5px栅格、节点外扩5px墙、失败退化直角、OptimizeLinePoints", "source": "DiagramPage.xaml.cs:438-518;PathFinder.cs", "decision": "成片重大项：按原件实现A*寻路，保留手工折点优先级"},
+    {"fact": "折点/锚点持久化UserData PathPoints+SourceIndex默认2", "source": "VmConnectionDecorator.cs:46-154", "decision": "核对后对齐"},
+    {"fact": "撤销重做：RootOperation+按操作类型快照类族", "source": "VM.Core/ModuleUnRedoOperation.cs:7-41等", "decision": "行为级已对齐（GraphCommit ChangeSet），粒度分歧再核"},
+    {"fact": "复制粘贴：剪贴板FullName+Position、全局模块禁拷提示、粘贴位置=剪贴板位或弹出点", "source": "VmModuleBaseDecorator.cs:594-760;ItemsPage.cs:410-458", "decision": "核对后对齐"},
+    {"fact": "重命名弹窗ModifyName 370×150、上限64字符", "source": "ModifyName.xaml:2;MaxNameLenth=64", "decision": "形态差异待用户定夺（本方内联）"},
+    {"fact": "缩放_ZoomTicks 0.1..2.0共20档+LayoutTransform+鼠标锚点+状态栏Slider", "source": "ZoomArea.xaml.cs:23-29;StatusBar.xaml:103-106", "decision": "对齐为档位制"}
+  ],
+  "ourSideWeakPoints": [
+    "WorkflowCanvasControl.xaml:437死绑定Status属性",
+    "CanvasTemplateSelector.cs:20-24占位",
+    "节点无Delete快捷键",
+    "Node_MouseMove/Port_MouseMove空实现壳（xaml.cs:1120,1290）",
+    "拖线候选无类型方向预检（ConnectionGestures.cs:48-53）",
+    "拖拽ghost每次重建（NodeGestures.cs:209-215）"
+  ],
+  "missingEvidenceNeedUser": [
+    "VM画布整体截图（含状态栏/工具箱折叠态）：幕布尺寸/网格密度/配色",
+    "VM节点选中/运行/失败/禁用四态实机截图：图标与配色",
+    "VM拖动节点时的对齐线与幻影实机截图",
+    "VM连线选中态（折点手柄）与拖折点实机截图",
+    "VM节点右键菜单实机截图（确认菜单项全集，特别是复制参数/粘贴参数）",
+    "VM空白区右键菜单实机截图（确认导入组合/导入流程可用性）",
+    "VM模块搜索窗（Ctrl+F）实机截图",
+    "VM工具箱实机截图（分类/折叠/悬停展开）",
+    "VM缩放档位实机确认（状态栏百分比/Slider）"
+  ],
+  "pendingUserDecisions": [
+    "Ctrl+M打开模块XML目录：VM特有，本方架构无模块XML，是否需要",
+    "Ctrl+L+T/D/I/W/E/R/O运行日志级别：是否纳入范围",
+    "复制参数/粘贴参数：是否纳入画布链批",
+    "重命名交互形态：按原件弹窗还是保留本方内联",
+    "拖动实时对齐线补齐后，本方组菜单对齐×6/分布×2是否移除（VM无此入口）",
+    "注释框/引导模式/锁定工作区：是否纳入范围",
+    "拖方案文件到画布加载：是否补"
+  ],
+  "batchResults": {
+    "implemented": [
+      {"item": "节点Delete键删除（含连线互斥）", "evidence": "VM DiagramItem.xaml.cs:946-952、Connection.xaml:4", "code": "WorkflowCanvasControl.GroupSelection.cs DeleteCanvasSelectionOrWire；PreviewKeyDown 分派", "test": "CanvasSessionTests.Delete_key_semantics_remove_selected_wire_first_then_selected_nodes_with_their_edges"},
+      {"item": "Group节点背景Status死绑定修复", "evidence": "本方 GroupNodeBackgroundConverter.cs:15-16 期望 成功/OK、失败/NG；原标题绑定不存在的 CanvasNodeProjection.Status", "code": "CanvasNodeProjection.Status 投影 RunState（Passed→成功、Failed/Rejected→失败）并随 SetRunState 通知", "test": "CanvasSessionTests.Node_projection_exposes_original_status_text_for_group_background"},
+      {"item": "节点级Ctrl+F/Ctrl+A启停", "evidence": "VM DiagramItem.xaml:13-14 + VmModuleBaseDecorator.cs:603-614（系统模块例外待核）", "code": "PreviewKeyDown 由仅组选扩展为选中集（组选或单选/多选节点）"},
+      {"item": "网格吸附5px核对", "evidence": "VM DiagramItem.xaml.cs:764-771", "code": "已存在：NodeGestures.cs:196、DragDropHandler.SnapCanvasPoint、ToolContextMenu.cs:52、SelectionLayoutCalculator.Snap（含幕布边界钳制）", "note": "无需修改"}
+    ],
+    "closeChainFix": {
+      "rootCause": "通讯运行时静态租约（NodeDisplayAdapterConfig.cs:135 '通讯服务及驱动'）阻断 DocumentSession.Dispose（DocumentSession.cs:270）；宿主退出路径 ReleaseDocumentHost 内含 CloseCurrent 但未先排空通讯/相机运行时 → 主窗口 CompletePreparedCloseAsync 停在'等待资源释放'对话框（用户反馈的'否关闭卡等待'根因）",
+      "evidence": "本方既有正确顺序：MainWindowDocumentFiles.cs:83（方案切换先 DisposeCommunicationRuntimeAsync 再换会话）、MainWindowStartupEntries.cs:43（新建同样先排空）",
+      "fix": "MainWindow.PreparePluginConsumersForShutdownAsync 在 ReleaseDocumentHost 前 await DisposeCommunicationRuntimeAsync/DisposeCameraRuntimeAsync；测试夹具 DocumentUiFixture.Dispose 同步顺序（通讯/相机先于 ReleaseDocumentHost）",
+      "effect": "UI 全量回归 133→47 失败（310/357 通过）；画布会话测试 2/11→9/11 通过"
+    },
+    "testHostResourceFix": {
+      "rootCause": "测试宿主仅合并 3 个资源字典，缺 VM 调色板 Col_*/画布/图像源样式 → 渲染期 DynamicResource 解析抛 ResourceReferenceKeyNotFoundException 未处理异常崩溃测试主机（整轮中止）",
+      "evidence": "生产 App.xaml:9-31 全量 11 个字典；生产探针 Program.cs:25-28 已改用正式资源图",
+      "fix": "tests/_shared/WpfTestDispatcher.cs 资源加载镜像 App.xaml 全量字典",
+      "followup": "ImageSourceThemeScope.cs 的 Accent 取键改为 TryFindResource+原件字典兜底（原值见 Themes/Native/Composition/ImageSources/ImageSourceStrip.xaml:6），修复装载时序崩溃"
+    },
+    "wireChainResults": {
+      "alreadyAlignedBySourcePort": [
+        {"item": "A* 正交寻路", "evidence": "VM DiagramPage.xaml.cs:438-518 + PathFinder.cs + Astar/", "ours": "OrthogonalRouting/{AStar,APoint,PathFinder,OrthogonalRouter}.cs 为原件移植：5 单位栅格、节点外扩 5 为墙、失败退化（先仅端点对、再直角折线）、OptimizeLinePoints/GetTurnPoints/RechargeLinePoints、Passivation，注释标注 Original VM 5-unit AStar pipeline"},
+        {"item": "折点拖动", "evidence": "VM Connection.xaml.cs:342-544（5px 步进、3px 死区、端点外扩 5、5000 上限）", "ours": "RecoveredConnectionDrag.cs 注释 Recoveded Connection.xaml.cs MouseMove/LineMove/ChangSite，实现一致"},
+        {"item": "端口拉线最近锚点", "evidence": "VM Connector.xaml.cs:203-276 最近端口击中 IsHited", "ours": "ConnectionGestures.CanvasNearestSide 按距离平方取最近侧并驱动 IsHited 高亮"},
+        {"item": "预览虚线 5,2.5", "evidence": "VM Connector.xaml.cs:141-175", "ours": "PreviewCanvasConnection StrokeDashArray{5,2.5}"}
+      ],
+      "implementedThisBatch": [
+        {"item": "空白右键'模块搜索'（原件顺序：粘贴→导入组合→模块搜索→导入流程→工具分组）", "evidence": "VM DiagramPage.xaml:66-224", "code": "WorkflowCanvasControl.Clipboard.cs；经 MainWindowViewModel.WorkflowSearchRequested 复用现有 WorkflowSearchControl.BeginSearch"},
+        {"item": "画布级 Ctrl+F 打开模块搜索（有选中节点时 Ctrl+F 仍为节点禁用，对齐原件节点/画布作用域）", "evidence": "VM ItemsPage.cs:444-446 + DiagramItem.xaml:13-14", "code": "WorkflowCanvasControl.GroupSelection.PreviewKeyDown"}
+      ],
+      "pendingEvidence": [
+        "拖线到无效端口类型时的视觉反馈：VM Connector HitTesting 是否有类型过滤未取证，本方当前仅几何高亮、合法性由 Domain Connect 判定（架构既有决定）；需用户提供 VM 拖到无效目标时的截图后再决定是否加 UI 预检"
+      ]
+    },
+    "runStateResults": {
+      "alreadyAligned": [
+        {"item": "执行结果发布→画布运行态同源", "evidence": "VM 节点运行三态 Trigger（diagramitemtemplate.xaml:967-975、DecorateSource.IsRunOK）", "ours": "DocumentSession.RuntimePublications.cs:28,44-52 事件+代次校验 → DocumentCanvasProjection.cs:190-203 RefreshRunState 五态映射 → XAML 触发器着色；合同 EditorDebugSessionTests:563-565（Passed/Rejected）、:610-611（编辑失效归 None）、CanvasSessionTests:119-123（运行灯可见性+禁用清除）"},
+        {"item": "连续运行按钮切停止图标", "evidence": "VM diagramitemtemplate.xaml:784-806 ContinuousRunEnable→ic_stop_*、ToolTip=Lang_StopRun", "ours": "WorkflowTabButtonStyles.xaml:58 IsRunning→WorkflowStopTemplate + ToolTip 停止运行；总览卡片 RootWorkflowOverviewControl.xaml.cs:105 同样切换"},
+        {"item": "单次运行运行中禁用", "evidence": "VM 单步/连续互斥", "ours": "WorkflowSingleButton IsRunning→IsEnabled=false（:50）"},
+        {"item": "状态栏模块耗时", "evidence": "VM StatusBar ShowTimeClick", "ours": "ShellWorkspaceControl.RootPresentation.cs:40-43 按 SelectedNode 取 Module/Algorithm 耗时"},
+        {"item": "运行中锁画布编辑", "evidence": "VM 运行期 IsOpenParams/锁定语义", "ours": "CanEditCanvas 含 IsRunning（WireEditing.cs:20）；ImageResultControl 结果区 IsRunning"}
+      ],
+      "conclusion": "本批源码对照结论：执行状态呈现链已对齐，未改代码；新增无需求"
+    },
+    "remainingFailures": {
+      "ui": "47/357：主要为①陈旧用例引用已移除的 themes/light/lighttheme.xaml（产品已决策唯一深色主题，App.xaml:30 注释）②参数行模板键在测试宿主缺声明（Boolean/BooleanTips/String）③结果层断言（Assert.NotSame 等）既有失败；均与本批改动无因果，需源码对照逐类处理",
+      "blob": "18/121：测试程序集发现期读取自定义属性时 CLR 默认解析失败（ModuleInitializer 的 Default.Resolving 尚未注册），属既有测试基础设施问题；部署 Runtime 版本与引用一致（v2.0.0.0）"
+    }
+  },
+  "acceptance": "入口清单逐项落实决定后，以合同用例+全量构建+入口清单逐项核对闭口；动态体感由用户人工核对"
+}

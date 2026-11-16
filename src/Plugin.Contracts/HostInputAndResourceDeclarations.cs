@@ -30,7 +30,9 @@ public sealed class HostInputDeclaration
 }
 
 public enum ResourceReferenceCardinality { Scalar, Sequence }
-public sealed record ResourceFieldDeclaration(string FieldId, ResourcePurpose Purpose, ResourceReferenceCardinality Cardinality);
+public sealed record FileEmbeddingDeclaration(string EnabledFieldId,int MaximumFiles,string? DynamicListFieldId=null);
+public sealed record ResourceFieldDeclaration(string FieldId, ResourcePurpose Purpose, ResourceReferenceCardinality Cardinality,
+    FileEmbeddingDeclaration? Embedding=null);
 
 public interface IToolHostInputDeclaration
 {
@@ -73,6 +75,7 @@ public static class ToolHostDeclarationRules
                 : type?.Shape == ValueShape.Sequence && type.Element?.Shape == ValueShape.Scalar && type.Element.Scalar == ScalarKind.Text;
             if (!valid) throw new InvalidOperationException("Resource field declaration differs from settings schema: " + field.FieldId);
         }
+        ValidateEmbedding(fields,settings);
         using var stream = new MemoryStream();
         using (var writer = new BinaryWriter(stream, Encoding.UTF8, true))
         {
@@ -85,8 +88,30 @@ public static class ToolHostDeclarationRules
             }
             writer.Write(fields.Count);
             foreach (var field in fields.OrderBy(field => field.FieldId, StringComparer.Ordinal))
-            { writer.Write(field.FieldId); writer.Write((int)field.Purpose); writer.Write((int)field.Cardinality); }
+            {
+                writer.Write(field.FieldId); writer.Write((int)field.Purpose); writer.Write((int)field.Cardinality);
+                writer.Write(field.Embedding is not null);
+                if(field.Embedding is {} embedding)
+                {writer.Write(embedding.EnabledFieldId);writer.Write(embedding.MaximumFiles);writer.Write(embedding.DynamicListFieldId??string.Empty);}
+            }
         }
         return new(inputs, fields, Convert.ToHexString(SHA256.HashData(stream.ToArray())));
+    }
+
+    public static void ValidateEmbedding(IReadOnlyList<ResourceFieldDeclaration> fields,ToolSchema? settings)
+    {
+        if(fields.Count(field=>field.Embedding is not null)>1)throw new InvalidOperationException("A tool declares one file-list embedding policy.");
+        foreach(var field in fields.Where(field=>field.Embedding is not null))
+        {
+            var policy=field.Embedding!;
+            bool Boolean(string id)=>settings?.Inputs.SingleOrDefault(port=>port.Id==id) is {Type:{} type,EditModes:FieldEditModes.Constant,Nullable:false,Required:true}
+                &&type==TypeRef.ScalarOf(ScalarKind.Boolean);
+            var target=settings?.Inputs.SingleOrDefault(port=>port.Id==field.FieldId);
+            if(field.Purpose!=ResourcePurpose.FileRead||field.Cardinality!=ResourceReferenceCardinality.Sequence||policy.MaximumFiles is <1 or >10000
+                ||target is not {EditModes:FieldEditModes.Constant,Nullable:false,Required:true}
+                ||target.Type.Shape!=ValueShape.Sequence||target.Type.Element!=TypeRef.ScalarOf(ScalarKind.Text)
+                ||!Boolean(policy.EnabledFieldId)||policy.DynamicListFieldId is {} dynamicField&&!Boolean(dynamicField))
+                throw new InvalidOperationException("File embedding policy differs from the admitted settings: "+field.FieldId);
+        }
     }
 }

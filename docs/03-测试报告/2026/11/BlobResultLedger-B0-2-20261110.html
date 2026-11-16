@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>B0-2 Blob 结果字段表</title>
+<style>
+:root{--ink:#1f2328;--muted:#656d76;--line:#d0d7de;--soft:#f6f8fa;--ok:#1a7f37;--warn:#9a6700;--bad:#cf222e}
+*{box-sizing:border-box}
+body{margin:0;padding:32px 22px 70px;color:var(--ink);font:15px/1.7 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+main{max-width:1200px;margin:0 auto}
+h1{font-size:24px;margin:0 0 4px}
+h2{font-size:18px;margin:28px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+p.sub{color:var(--muted);font-size:13px;margin-bottom:20px}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th,td{border:1px solid var(--line);padding:6px 9px;vertical-align:top;text-align:left}
+th{background:var(--soft);font-weight:600}
+code{background:var(--soft);padding:1px 4px;border-radius:3px;font:12px/1.5 ui-monospace,Consolas,monospace}
+.box{border:1px solid var(--line);border-radius:8px;padding:12px 16px;margin:14px 0;background:var(--soft)}
+.ok{color:var(--ok);font-weight:600}
+.warn{color:var(--warn);font-weight:600}
+.bad{color:var(--bad);font-weight:600}
+</style>
+</head>
+<body>
+<main>
+<h1>B0-2 结果字段表 · 图像源与 Blob 全链路重构</h1>
+<p class="sub">生成于 2026-11-10 ｜ 依据《图像源与Blob全链路重构计划-20261110-092128》B0-2 ｜ 只读取证，未改任何产品代码</p>
+
+<h2>结论</h2>
+<div class="box">
+<ul>
+<li>原件结果类 <code>BlobFindResult</code>（<code>docs/07-工具逆向/decompiled/Managed/BlobFind/IMVSBlobFindModuCs/BlobFindResult.cs</code>）共 <b>33 个结果字段</b>。</li>
+<li>现行代码已有完整投影 <code>tools/SunEyeVision.BlobAnalysis/Runtime/Results/BlobVmResultProjection.cs</code>，逐字段承接原件语义，并用 <code>Unavailable</code> 集合显式声明没有等价资源的成员——<span class="ok">不是静默缺失</span>。</li>
+<li><b>19 项已承接</b>（含 BlobNum/Area/TotalArea/CentroidPoint/MinBoudingRect/BlobRect 四角/Perimeter/LongAxis/ShortAxis/Circularity/Rectangularity/BlobStatus/ContourNum/两张图像）；<b>4 项条件不可用</b>（MinGrayValue、MaxGrayValue、GrayContrast、BlobAngle，取决于 BlobMeasurement 是否带该值）；<b>10 项常驻不可用</b>（ModuStatus、MaxAreaInnerRect、Score、ROI、ROIAnnulus、ContourInfo、BlindPolygonPointNum、BlindPolygonPoints、BlindPolygonString、OutputMask）。</li>
+<li>计划文档提到的 <code>CBlobInfo</code>、<code>CMultiCategoryBlobFindResult</code> 不在本仓库反编译产物中，本次无法取证，<span class="warn">不计入已对照</span>，需补逆向产物后再补表。</li>
+<li><span class="warn">待补</span>：10 项常驻不可用字段中，<code>MaxAreaInnerRect</code>、<code>Score</code>、<code>OutputMask</code> 属算法可产出项，应转 B3 判断是否需要真实实现；<code>ROI</code>、<code>ROIAnnulus</code> 属输入回显，归呈现层判断；屏蔽区三项（BlindPolygon*）与 <code>ContourInfo</code> 需先确认原件是否属于可选能力（同 B3-3 口径）。</li>
+</ul>
+</div>
+
+<h2>逐字段对照（33 项）</h2>
+<table>
+<thead><tr><th style="width:4%">#</th><th style="width:26%">原件字段（BlobFindResult）</th><th style="width:22%">本方投影（BlobVmResultProjection）</th><th style="width:14%">结论</th><th style="width:34%">说明</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><code>ModuStatus</code></td><td><code>ModuStatus</code></td><td>unavailable</td><td>declared in Unavailable (no equivalent resource)</td></tr>
+<tr><td>2</td><td><code>BlobStatus</code></td><td><code>BlobStatus</code></td><td>mapped</td><td>value carried through</td></tr>
+<tr><td>3</td><td><code>BlobNum</code></td><td><code>BlobNum</code></td><td>mapped</td><td>value carried through</td></tr>
+<tr><td>4</td><td><code>Area</code></td><td><code>Area</code></td><td>mapped</td><td>value carried through</td></tr>
+<tr><td>5</td><td><code>TotalArea</code></td><td><code>TotalArea</code></td><td>mapped</td><td>value carried through</td></tr>
+<tr><td>6</td><td><code>CentroidPoint</code></td><td><code>CentroidPoint</code></td><td>mapped</td><td>value carried through</td></tr>
+<tr><td>7</td><td><code>MinBoudingRect</code></td><td><code>MinBoudingRect</code></td><td>mapped</td><td>value carried through</td></tr>
+<tr><td>8</td><td><code>MinGrayValue</code></td><td><code>MinGrayValue</code></td><td>conditional</td><td>value only when BlobMeasurement carries it</td></tr>
+<tr><td>9</td><td><code>MaxGrayValue</code></td><td><code>MaxGrayValue</code></td><td>conditional</td><td>value only when BlobMeasurement carries it</td></tr>
+<tr><td>10</td><td><code>GrayContrast</code></td><td><code>GrayContrast</code></td><td>conditional</td><td>value only when BlobMeasurement carries it</td></tr>
+<tr><td>11</td><td><code>MaxAreaInnerRect</code></td><td><code>MaxAreaInnerRect</code></td><td>unavailable</td><td>declared in Unavailable (no equivalent resource)</td></tr>
+<tr><td>12</td><td><code>BlobRect</code></td><td><code>BlobRect</code></td><td>mapped</td><td>value carried through</td></tr>
+<tr><td>13</td><td><code>BlobRectUpLeftX</code></td><td><code>BlobRectUpLeftX</code></td><td>mapped</td><td>value carried through</td></tr>
+<tr><td>14</td><td><code>BlobRectUpLeftY</code></td><td><code>BlobRectUpLeftY</code></td><td>mapped</td><td>value carried through</td></tr>
+<tr><td>15</td><td><code>BlobRectBottomRightX</code></td><td><code>BlobRectBottomRightX</code></td><td>mapped</td><td>value carried through</td></tr>
+<tr><td>16</td><td><code>BlobRectBottomRightY</code></td><td><code>BlobRectBottomRightY</code></td><td>mapped</td><td>value carried through</td></tr>
+<tr><td>17</td><td><code>BlobAngle</code></td><td><code>BlobAngle</code></td><td>conditional</td><td>value only when BlobMeasurement carries it</td></tr>
+<tr><td>18</td><td><code>Perimeter</code></td><td><code>Perimeter</code></td><td>mapped</td><td>value carried through</td></tr>
+<tr><td>19</td><td><code>LongAxis</code></td><td><code>LongAxis</code></td><td>mapped</td><td>value carried through</td></tr>
+<tr><td>20</td><td><code>ShortAxis</code></td><td><code>ShortAxis</code></td><td>mapped</td><td>value carried through</td></tr>
+<tr><td>21</td><td><code>Circularity</code></td><td><code>Circularity</code></td><td>mapped</td><td>value carried through</td></tr>
+<tr><td>22</td><td><code>Rectangularity</code></td><td><code>Rectangularity</code></td><td>mapped</td><td>value carried through</td></tr>
+<tr><td>23</td><td><code>Score</code></td><td><code>Score</code></td><td>unavailable</td><td>declared in Unavailable (no equivalent resource)</td></tr>
+<tr><td>24</td><td><code>BinaryImageComb</code></td><td><code>BinaryImageComb</code></td><td>mapped</td><td>value carried through</td></tr>
+<tr><td>25</td><td><code>BlobImageComb</code></td><td><code>BlobImageComb</code></td><td>mapped</td><td>value carried through</td></tr>
+<tr><td>26</td><td><code>ROI</code></td><td><code>ROI</code></td><td>unavailable</td><td>declared in Unavailable (no equivalent resource)</td></tr>
+<tr><td>27</td><td><code>ROIAnnulus</code></td><td><code>ROIAnnulus</code></td><td>unavailable</td><td>declared in Unavailable (no equivalent resource)</td></tr>
+<tr><td>28</td><td><code>ContourInfo</code></td><td><code>ContourInfo</code></td><td>unavailable</td><td>declared in Unavailable (no equivalent resource)</td></tr>
+<tr><td>29</td><td><code>ContourNum</code></td><td><code>ContourNum</code></td><td>mapped</td><td>value carried through</td></tr>
+<tr><td>30</td><td><code>BlindPolygonPointNum</code></td><td><code>BlindPolygonPointNum</code></td><td>unavailable</td><td>declared in Unavailable (no equivalent resource)</td></tr>
+<tr><td>31</td><td><code>BlindPolygonPoints</code></td><td><code>BlindPolygonPoints</code></td><td>unavailable</td><td>declared in Unavailable (no equivalent resource)</td></tr>
+<tr><td>32</td><td><code>BlindPolygonString</code></td><td><code>BlindPolygonString</code></td><td>unavailable</td><td>declared in Unavailable (no equivalent resource)</td></tr>
+<tr><td>33</td><td><code>OutputMask</code></td><td><code>OutputMask</code></td><td>unavailable</td><td>declared in Unavailable (no equivalent resource)</td></tr>
+</tbody>
+</table>
+</main>
+</body>
+</html>

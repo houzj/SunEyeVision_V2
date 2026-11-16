@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>原厂设计复核报告：完整使用链与生态基线（2026-11-17）</title>
+<style>
+body{font-family:"Microsoft YaHei",sans-serif;max-width:1240px;margin:0 auto;padding:24px;color:#222;line-height:1.65}
+h1{border-bottom:3px solid #2d6cdf;padding-bottom:8px}
+h2{color:#2d6cdf;border-left:4px solid #2d6cdf;padding-left:10px;margin-top:30px}
+h3{color:#333;margin-top:20px}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:0.92em}
+th,td{border:1px solid #bbb;padding:6px 9px;text-align:left;vertical-align:top}
+th{background:#eef3fb}
+code{background:#f4f4f4;padding:1px 5px;border-radius:3px;font-size:0.88em}
+.block{background:#fdecec;border-left:4px solid #e05b5b;padding:8px 12px;margin:10px 0}
+.warn{background:#fff6e5;border-left:4px solid #e6a23c;padding:8px 12px;margin:10px 0}
+.ok{background:#eefaf0;border-left:4px solid #67c23a;padding:8px 12px;margin:10px 0}
+.meta{background:#eef3fb;border:1px solid #b9cbe8;padding:10px 14px;margin:12px 0}
+</style>
+</head>
+<body>
+<h1>原厂设计复核报告：完整使用链与生态基线</h1>
+
+<div class="meta">
+<b>日期</b>：2026-11-17　<b>参照</b>：VisionMaster 4.4.0 Build20250516@1555331（28 个托管程序集约 39 万行 + 原生模块）<br>
+<b>目的</b>：早期迁移依赖语义逆向，结论未必准确。本批用反编译与运行时取证能力，复核自研是否存在框架层的严重偏离与设计错误，并回答“能否直接批量实现其余工具”。<br>
+<b>判定口径</b>：双轴——轴一与原厂对照（一致/结构偏离/语义偏离/原厂不合理/静态无法确认），轴二架构正确性（十判据）。<b>原厂只作参照，不作为正确性标准。</b><br>
+<b>边界</b>：只做复核、不改产品代码；全局变量、相机、通信不在范围；验证用本地图像驱动。<br>
+<b>证据</b>：<code>docs/collaboration/evidence/原厂设计复核-*.json</code>（材料可信度、启动与方案、工具箱与节点、显示与状态栏、执行与工具栏、生态基线就绪度）。
+</div>
+
+<h2>一、结论摘要</h2>
+
+<div class="block">
+<b>必须修（阻断新工具）：</b>执行引擎是纯 DAG“前驱全成功”模型，<b>没有控制流语义</b>，分支/条件类工具无法实现；组/嵌套类同样缺嵌套执行路径。
+</div>
+
+<div class="warn">
+<b>建议修（不阻断，影响体验/吞吐）：</b>连续执行的轮次循环在 UI 层（原厂在原生 Server 内）；工具箱无热插拔；工具箱分类一次性构建；图像区状态栏缺“模块/算法耗时 + 缩放档位”。
+</div>
+
+<div class="ok">
+<b>保持（自研更正确，与原厂不同）：</b>两阶段打开、托管序列化 + 原子写 + 目标身份校验、画布作为文档投影、声明式结果投影（RequiredOutputs 回传）、图编辑与配置编辑分历史、工具窗口用调试会话对象而非容器路由、像素信息与状态栏按职责拆分。
+</div>
+
+<div class="ok">
+<b>数据工具可直接批量做：</b>图像处理/测量类工具的七项基线能力（契约、参数、结果声明、UI、执行、保存、准入）齐备，建议先做一次“非 Blob 类工具”端到端试点再全面铺开。
+</div>
+
+<h2>二、方法与覆盖面</h2>
+<table>
+<tr><th>项</th><th>做法</th><th>结果</th></tr>
+<tr><td>材料盘点</td><td>28 个程序集按功能分组，标注行数与复核用途</td><td>已完成（材料可信度 JSON）</td></tr>
+<tr><td>旧结论回验</td><td>启动链、执行链、工具箱各抽 3~5 条回查源码</td><td>7 条证实，<b>1 条新增发现</b>（见 §三.1），0 条推翻</td></tr>
+<tr><td>原厂取证</td><td>反编译定向阅读（入口 → 依赖闭包），不逐行通读</td><td>启动链、方案打开保存、工具箱、工具窗口容器、状态栏、执行与连续执行、SDK 回调声明</td></tr>
+<tr><td>自研取证</td><td>按符号定向阅读 + 调用方向核对</td><td>启动、方案、工具箱、画布投影、调试会话、结果投影、执行链、保存提交</td></tr>
+<tr><td>动态取证</td><td>本批未执行 Frida/Ghidra 取体</td><td>见 §七 待补证清单</td></tr>
+</table>
+
+<div class="warn">
+<b>覆盖面声明</b>：本批覆盖 13 个功能段的“入口 + 关键结构 + 双轴判定”，<b>未覆盖</b>：原厂模块内部算法体、工具栏完整按钮集与禁用规则、结果选中与图像高亮的逐事件链、图像源控件逐项对照、相机与通信。报告不对未覆盖项下结论。
+</div>
+
+<h2>三、逐段复核结论</h2>
+
+<h3>3.1 启动到欢迎页</h3>
+<table>
+<tr><th>维度</th><th>原厂</th><th>自研</th><th>轴一</th><th>轴二</th></tr>
+<tr>
+<td>启动并行</td>
+<td>欢迎页独立 STA 线程 + <code>BeforeStartPart</code> 后台线程（<b>Priority=Highest</b>）+ 主线程 <code>PreLoadPage</code>，<code>mWaitEventBefore</code> 汇合（<code>App.cs:100-141</code>）</td>
+<td>加载遮罩（可取消/30s 看门狗）+ 后台 <code>LoadPluginsAsync</code> + <code>InitializeSolutionManager</code>，await 汇合（<code>App.xaml.cs:208-365</code>）</td>
+<td>一致</td>
+<td>✅ 职责更清晰（遮罩、准入、方案管理器分离）</td>
+</tr>
+<tr>
+<td>欢迎页触发</td>
+<td>配置 <code>ShowEnable</code> 控制 <code>WelcomeDialog</code></td>
+<td>配置 <code>HideStartPage</code> 控制起始页</td>
+<td>一致</td>
+<td>✅ 一致（配置驱动）</td>
+</tr>
+</table>
+<p><b>新增发现</b>：原厂存在第二条启动路径 <code>Program.AppBeforStart()</code>（<code>Program.cs:142-157</code>），直接 <code>InitMainWindow</code> 而不经过 <code>GetSolutionTakeState/StartNewInstance</code>。旧报告未覆盖，适用模式待补证。</p>
+
+<h3>3.2 方案打开 / 保存 / 关闭</h3>
+<table>
+<tr><th>维度</th><th>原厂</th><th>自研</th><th>轴一</th><th>轴二</th></tr>
+<tr>
+<td>打开</td>
+<td><code>VmSolution.Load</code> = <code>TempVmSolution.Init</code> → <code>CheckSol</code> → <code>Import</code>，SDK 模式才触发 Server 就绪（<code>VmSolution.cs:2190-2213</code>）</td>
+<td><code>PrepareOpen</code>（解析校验）→ <code>OpenPrepared</code>（安装会话）（<code>DocumentSessionManager.Persistence.cs:40/70/143</code>）</td>
+<td>偏离·结构</td>
+<td>✅ 更清晰（预检与安装分离，非法方案不污染当前会话）</td>
+</tr>
+<tr>
+<td>会话模型</td>
+<td>全局单例 <code>instance</code> + <code>TempVmSolution</code> 中间态</td>
+<td><code>DocumentSessionManager</code> + <code>DocumentSession</code> 实例</td>
+<td>偏离·结构</td>
+<td>✅ 更好（实例化，避免全局可变状态）</td>
+</tr>
+<tr>
+<td>保存</td>
+<td><code>InternalExport</code>：<code>_isSaving</code> 布尔防重入 → 原生 <code>SyncSaveSolution</code> 写盘，失败清空 <code>SolutionPath</code>（<code>VmSolution.cs:1551-1596</code>）</td>
+<td>托管序列化 + <code>SolutionFileCommit</code> 原子提交 + 目标身份 SHA 校验 + 按目标静态锁 + 恢复阻断（<code>DocumentSession.Persistence.cs:90-121</code>、<code>SolutionFileCommit.cs:40-135</code>）</td>
+<td>偏离·结构</td>
+<td>✅ 明显更强（防覆盖、可恢复、串行化）</td>
+</tr>
+<tr>
+<td>关闭</td>
+<td><code>CloseSolution</code>（<code>VmSolution.cs:2532</code>，内部未取体）</td>
+<td><code>CloseCurrent(discardPendingEdits)</code></td>
+<td>静态无法确认</td>
+<td>✅ 有“丢弃未提交编辑”显式语义</td>
+</tr>
+</table>
+
+<h3>3.3 工具箱</h3>
+<table>
+<tr><th>维度</th><th>原厂</th><th>自研</th><th>轴一</th><th>轴二</th></tr>
+<tr>
+<td>目录来源</td>
+<td>枚举磁盘 <code>ModulesDir</code> + <code>ToolGroup.xml</code>/<code>ToolItemInfo.xml</code></td>
+<td>发布载荷准入（<code>ReleasePayloadAuthority</code> 校验）→ <code>ToolDirectoryCatalog</code>（嵌入 <code>ToolGroups.xml</code>+<code>ToolboxDisplayCatalog.json</code>）</td>
+<td>偏离·结构</td>
+<td>✅ 更安全（身份校验）；⚠️ 无热插拔</td>
+</tr>
+<tr>
+<td>展开时机</td>
+<td><code>ToolBox.OnMouseEnter</code> → <code>UpdateLoad</code>，<code>IsInit</code> 先置位（<code>ToolBoxData.cs:77-120</code>）</td>
+<td><code>ToolboxViewModel.BuildCategory</code> 一次性构建 + <code>CheckRuntime</code> 过滤，控件延迟创建</td>
+<td>偏离·结构</td>
+<td>⚠️ 工具数量增长后需改懒加载</td>
+</tr>
+<tr>
+<td>拖入</td>
+<td>传 <code>ModuleDir/ModuleTypeName</code> 建装饰器，执行时按路径装载</td>
+<td><code>DoDragDrop("ToolItem")</code> → <code>DragDropHandler.Canvas_Drop</code> → <code>DocumentSession.CreateNode</code> → <code>GraphEditDraft</code> → <code>History.Execute</code> → <code>DocumentChangeSet</code></td>
+<td>偏离·结构</td>
+<td>✅ 编辑即变更集，可撤销可保存</td>
+</tr>
+</table>
+
+<h3>3.4 工作流 tab 与节点</h3>
+<table>
+<tr><th>维度</th><th>自研实现</th><th>轴二</th></tr>
+<tr><td>tab 集合</td><td><code>WorkflowTabControlViewModel</code> 管理；每个根流程一个 <code>WorkflowTabViewModel</code>；根移除 → <code>RetireRootProjection</code>，tab 失效 → <code>UnbindDocumentCanvas</code> 并移除（:115-116/:152）</td><td>✅ 生命周期与根流程绑定，关闭即解绑</td></tr>
+<tr><td>画布</td><td><code>DocumentCanvasProjection</code> 从文档生成画布；交互按职责拆文件（NodeGestures/ConnectionGestures/Clipboard/GroupSelection/InsertionGestures）</td><td>✅ <b>画布是文档投影</b>，无反向持有业务状态</td></tr>
+<tr><td>撤销重做</td><td><code>DocumentEditSession</code> + <code>DocumentChangeSet</code> + <code>DocumentHistoryCoordinator</code>；<code>GraphHistory</code> 与 <code>ConfigurationHistory</code> 分离</td><td>✅ 图编辑与参数编辑分栈，符合编辑单位语义</td></tr>
+</table>
+
+<h3>3.5 工具窗口结构</h3>
+<table>
+<tr><th>维度</th><th>原厂</th><th>自研</th><th>轴二</th></tr>
+<tr>
+<td>参数页/结果页</td>
+<td><code>ParamsConfigWithResultViewControl</code> 单容器：<code>IsParamsEditState</code> 切换，依赖属性路由 <code>ModuleSource</code>/<code>ParamsConfigSource</code>/<code>ImageDataSource</code>/<code>ROIVisible</code>/<code>CoordinateInfoVisible</code>/<code>ParamsConfigWidth</code></td>
+<td><code>ProductionEditorDebug</code> 调试会话对象（快照/草稿/历史/连续运行/退役）+ 工具自有 Wpf + 公共控件</td>
+<td>✅ 会话对象可测试、生命周期显式；原厂容器把 6 项职责压进依赖属性</td>
+</tr>
+</table>
+
+<h3>3.6 图像显示与状态栏</h3>
+<table>
+<tr><th>维度</th><th>原厂</th><th>自研</th><th>轴二</th></tr>
+<tr>
+<td>像素信息</td>
+<td>底部 StatusBar 显示“位置/图像尺寸/灰度”</td>
+<td><code>ImageViewBox</code>：<code>PixelX/PixelY</code>、<code>PixelR/G/B</code>、<code>PixelInfo/PixelInfoLabel</code>、<code>IsDisplayPixelAuto</code>（:95-109）</td>
+<td>✅ 覆盖</td>
+</tr>
+<tr>
+<td>状态栏职责</td>
+<td><b>一个</b> StatusBar 承担 8 项：运行状态、当前对象、画布区域、选中项、ModuleTime、AlgorithmTime、ZoomIndex、StatusInfo</td>
+<td>主窗 <code>StatusBarViewModel</code> 只有执行快照入口（3 个成员）；像素信息归图像控件</td>
+<td>✅ 单一职责；⚠️ 缺“模块/算法耗时 + 缩放档位”展示</td>
+</tr>
+</table>
+
+<h3>3.7 模块结果</h3>
+<table>
+<tr><th>维度</th><th>原厂</th><th>自研</th><th>轴一</th><th>轴二</th></tr>
+<tr><td>结果模型</td><td>逐 Blob 字段数组（<code>BlobFindResult</code>）</td><td>逐字段序列投影 + <code>Unavailable</code> 集合（<code>BlobResultProjection</code>:19-21/57-83）</td><td>一致</td><td>✅ 一致</td></tr>
+<tr><td>呈现装配</td><td>结果视图控件 + XML 元数据</td><td>工具声明 <code>ResultProjectionDescriptor</code>/<code>ResultDisplayDescriptor</code>，宿主统一渲染，<code>RequiredOutputs</code> 回传执行链</td><td>偏离·结构</td><td>✅ <b>批量做工具的核心优势</b></td></tr>
+</table>
+
+<h3>3.8 执行与工具栏</h3>
+<table>
+<tr><th>维度</th><th>原厂</th><th>自研</th><th>轴一</th><th>轴二</th></tr>
+<tr><td>单次执行</td><td><code>Run</code> → <code>SyncExecuteOnce</code>（托管薄转发 → 原生）</td><td><code>DocumentRunBatch</code> → <code>ExecutionCoordinator</code> → <code>WorkflowExecutionEngine</code>（全托管调度）</td><td>偏离·结构</td><td>✅ 四层职责清晰</td></tr>
+<tr><td>连续执行</td><td><code>IMVS_ContinousRunStart_V30</code>：托管只启动一次，<b>循环在原生</b></td><td><code>RunContinuousCoreAsync</code>：托管侧逐轮循环，每轮走完整链路</td><td>偏离·结构</td><td>⚠️ 吞吐受托管轮次限制（每轮实测 46~50ms）</td></tr>
+<tr><td>停止/状态</td><td><code>StopExecute_V30</code> + 三种 SDK 回调</td><td><code>Stop()</code> + CancellationToken + <code>NodeStatusChanged</code> 事件</td><td>一致</td><td>✅ 等价</td></tr>
+</table>
+
+<h2>四、分级清单</h2>
+
+<h3>必须修（阻断新工具）</h3>
+<table>
+<tr><th>#</th><th>问题</th><th>证据</th><th>修正方向</th></tr>
+<tr>
+<td>1</td><td><b>执行引擎无控制流语义</b>：<code>WorkflowExecutionEngine</code> 以“全部前驱 Success”为执行条件（:86-87），不能按工具结果选择后继；<code>src/Domain/Workflows</code> 无条件/分支类型；连线策略仅保证无环与节点对唯一</td>
+<td>代码 + <code>ExecutionConnectionPolicy.cs:13-22</code>；原厂对照 <code>IfModule.Run → ModuleOperate → NextModuleListChange</code></td>
+<td>补：控制流端口类型 → 引擎动态后继解析 → 未选中分支的 Skip 语义 → 取消/失败传播 → 画布分支端口交互</td>
+</tr>
+<tr>
+<td>2</td><td><b>组/嵌套执行缺失</b>，且 Group 迁移当前暂停</td>
+<td><code>tools</code> 下无 Group 实现；AGENTS.md 暂停项</td>
+<td>先决策 Group 由子流程承载还是新增嵌套执行，再实现</td>
+</tr>
+</table>
+
+<h3>建议修</h3>
+<table>
+<tr><th>#</th><th>问题</th><th>影响</th><th>建议</th></tr>
+<tr><td>3</td><td>连续执行轮次循环在 UI 层</td><td>连续吞吐</td><td>先量化托管轮次开销，再决定是否下沉到 ExecutionServer 常驻循环</td></tr>
+<tr><td>4</td><td>工具箱无热插拔</td><td>现场部署/升级体验</td><td>确认是否产品决策；否则评估增量准入</td></tr>
+<tr><td>5</td><td>工具箱分类一次性构建</td><td>工具变多后展开耗时</td><td>批量前测“50 条目”构建耗时，超阈值改懒加载</td></tr>
+<tr><td>6</td><td>图像区/状态栏缺模块耗时、算法耗时、缩放档位</td><td>与原厂使用习惯不一致</td><td>数据源已有（ModuleRunTime、ZoomIndex），补展示即可</td></tr>
+</table>
+
+<h3>保持（正确但与原厂不同，不要改回原厂做法）</h3>
+<table>
+<tr><th>#</th><th>自研设计</th><th>为什么正确</th></tr>
+<tr><td>7</td><td>两阶段打开（PrepareOpen/OpenPrepared）</td><td>预检与安装分离，非法方案不污染当前会话</td></tr>
+<tr><td>8</td><td>托管序列化 + 原子写 + 目标身份校验 + 按目标锁</td><td>防覆盖、可恢复、并发安全，强于原厂布尔防重入</td></tr>
+<tr><td>9</td><td>画布作为文档投影</td><td>单一数据源，无画布反向持有业务状态</td></tr>
+<tr><td>10</td><td>声明式结果投影 + RequiredOutputs 回传</td><td>新工具只声明不改宿主，是批量做工具的基础</td></tr>
+<tr><td>11</td><td>图编辑与配置编辑分历史</td><td>撤销单位符合用户认知</td></tr>
+<tr><td>12</td><td>工具窗口用调试会话对象</td><td>生命周期、快照、退役显式，可脱离 UI 测试</td></tr>
+<tr><td>13</td><td>像素信息与状态栏职责拆分</td><td>避免原厂单控件 8 项职责混装</td></tr>
+</table>
+
+<h3>原厂不合理（不照抄）</h3>
+<table>
+<tr><th>#</th><th>原厂做法</th><th>问题</th></tr>
+<tr><td>14</td><td>StatusBar 承担 8 项职责（含算法耗时、缩放、选中项）</td><td>变化原因过多，任一处改动影响整体</td></tr>
+<tr><td>15</td><td>全局单例方案 + TempVmSolution 中间态</td><td>全局可变状态，多会话/临时预览边界靠约定</td></tr>
+<tr><td>16</td><td>保存只用布尔 <code>_isSaving</code>，无目标身份校验</td><td>外部改动文件后保存会静默覆盖</td></tr>
+</table>
+
+<h2>五、联动矩阵</h2>
+<table>
+<tr><th>源 → 目标</th><th>触发</th><th>实现</th><th>状态</th></tr>
+<tr><td>工具箱 → 画布</td><td>拖放</td><td><code>DoDragDrop</code> → <code>Canvas_Drop</code> → <code>CreateNode</code> → <code>GraphEditDraft</code> → <code>History</code> → <code>DocumentChangeSet</code></td><td>✅ 单向</td></tr>
+<tr><td>节点 → 参数页</td><td>选中节点</td><td>tab 内选中态 → 参数宿主（工具 Wpf）</td><td>✅</td></tr>
+<tr><td>节点 → 结果页</td><td>执行完成/选中</td><td><code>DeclaredOutputSnapshot</code> → <code>ResultStore</code> 版本 → <code>DeclaredResultTable/PropertyList</code></td><td>✅</td></tr>
+<tr><td>结果 → 图像叠加</td><td>结果发布</td><td><code>ResultWorkspacePresenter</code> → 叠加层</td><td>⚠️ 逐事件链未核</td></tr>
+<tr><td>图像源 → 图像显示</td><td>图像源执行</td><td><code>IImageData</code> → <code>ImageViewBox</code></td><td>✅</td></tr>
+<tr><td>tab → 画布/结果</td><td>切换 tab</td><td>tab 绑定根流程投影，切换不重建文档</td><td>✅</td></tr>
+<tr><td>执行 → 状态/结果</td><td>运行</td><td><code>NodeStatusChanged</code> + 结果发布 + 耗时窗口</td><td>✅</td></tr>
+<tr><td>工具栏 → 执行</td><td>命令</td><td><code>CanExecute</code> 判定运行态/编辑权限/节点数</td><td>✅</td></tr>
+</table>
+
+<h2>六、生态基线就绪度（能否批量做工具）</h2>
+<table>
+<tr><th>工具类</th><th>结论</th><th>缺口</th></tr>
+<tr><td>图像处理/测量类</td><td><b>可直接批量实现</b></td><td>无（七项基线能力齐备）</td></tr>
+<tr><td>分支/条件类</td><td><b>阻断</b></td><td>控制流语义（领域模型 + 引擎 + 端口 + 取消）</td></tr>
+<tr><td>组/嵌套类</td><td><b>阻断</b></td><td>嵌套执行路径；Group 与子流程语义未定</td></tr>
+<tr><td>脚本类</td><td>部分就绪</td><td>缺脚本工具 Runtime 与执行宿主、隔离策略</td></tr>
+<tr><td>通信类</td><td>范围外</td><td>底座存在（Domain + Plugin.Editing.Wpf 通信服务），未核验</td></tr>
+</table>
+
+<div class="warn">
+<b>批量前建议</b>：先用一个“非 Blob 类工具”（例如直线查找或阈值类）走一次端到端试点，验证契约是否真的够用。只用 Blob 一个样本不能证明基线完整。
+</div>
+
+<h2>七、待补证清单（本批未执行）</h2>
+<table>
+<tr><th>#</th><th>缺口</th><th>影响</th><th>补证手段</th><th>优先级</th></tr>
+<tr><td>1</td><td>原厂 <code>CloseSolution</code> 退役顺序（模块/Server/资源）</td><td>长时间运行资源释放对照</td><td>反编译取体 <code>VmSolution.cs:2532</code> + Dispose 链</td><td>中</td></tr>
+<tr><td>2</td><td>原厂撤销粒度与是否区分图/参数</td><td>编辑语义是否偏离</td><td>反编译撤销服务 + 单步操作对照</td><td>中</td></tr>
+<tr><td>3</td><td>原厂流程页（tab）生命周期与根/子流程表达</td><td>tab 语义对照</td><td>取体 <code>VmProcedure</code> 页面管理</td><td>中</td></tr>
+<tr><td>4</td><td>原厂连续执行在原生循环内是否逐轮回调托管</td><td>状态刷新时序对照</td><td>Frida 观察回调频率 或 取体 <code>ContinousRunStart_V30</code></td><td>中</td></tr>
+<tr><td>5</td><td>图像源控件逐项对照（文件列表/切换/序号/格式）</td><td>图像源能否作为工具范例</td><td>取体 <code>ImageSourceModuleControl</code> + <code>Apps.PcUI.ImageSourceAudit</code></td><td>高（作为批量范式）</td></tr>
+<tr><td>6</td><td>结果选中 → 图像高亮逐事件链</td><td>联动是否等价</td><td>代码追踪 + agent-desktop 实机验证</td><td>高</td></tr>
+<tr><td>7</td><td>原厂 <code>AppBeforStart</code> 第二启动路径的适用模式</td><td>启动链完整性</td><td>静态检索引用</td><td>低</td></tr>
+<tr><td>8</td><td>原厂工具栏完整按钮集与禁用规则</td><td>交互一致性</td><td>取体 <code>TitleToolBar</code> + CanExecute 条件</td><td>低</td></tr>
+</table>
+
+<h2>八、修正建议分批</h2>
+<table>
+<tr><th>批次</th><th>内容</th><th>前置</th></tr>
+<tr><td>第一批（阻断项，做工具前必须）</td><td>控制流语义：领域模型 + 引擎动态后继 + 控制流端口 + Skip/取消传播 + 画布分支端口</td><td>先用待补证 #5/#6 补齐图像源与联动范式</td></tr>
+<tr><td>第二批（批量前试点）</td><td>非 Blob 类工具端到端试点（契约压力测试）</td><td>第一批不阻塞数据类工具</td></tr>
+<tr><td>第三批（体验/吞吐）</td><td>状态栏补耗时与缩放档位；工具箱懒加载与热插拔评估；连续执行循环下沉评估</td><td>可用现有探针先量化</td></tr>
+<tr><td>不建议改</td><td>§四“保持”7 项（自研更正确）与“原厂不合理”3 项（不照抄）</td><td>—</td></tr>
+</table>
+
+<div class="meta">
+<b>证据文件</b>：<br>
+<code>docs/collaboration/evidence/原厂设计复核-材料可信度-20261117.json</code><br>
+<code>docs/collaboration/evidence/原厂设计复核-启动与方案-20261117.json</code><br>
+<code>docs/collaboration/evidence/原厂设计复核-工具箱流程节点-20261117.json</code><br>
+<code>docs/collaboration/evidence/原厂设计复核-显示结果与状态栏-20261117.json</code><br>
+<code>docs/collaboration/evidence/原厂设计复核-执行与工具栏-20261117.json</code><br>
+<code>docs/collaboration/evidence/原厂设计复核-生态基线就绪度-20261117.json</code>
+</div>
+
+</body>
+</html>

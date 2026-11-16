@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SunEyeVision.Platform.Sdk.Contracts</name>
+    </assembly>
+    <members>
+        <member name="T:SunEyeVision.Platform.Sdk.PlatformSdkContract">
+            <summary>公开 Platform SDK 合同版本；不携带 UI、Application 或 Persistence 类型。</summary>
+        </member>
+        <member name="T:SunEyeVision.Platform.Sdk.IPlatformRuntime">
+            <summary>对应 VM Platform SDK 的外部应用入口：加载一个方案并拥有其关闭生命周期。</summary>
+        </member>
+        <member name="T:SunEyeVision.Platform.Sdk.IPlatformSolution">
+            <summary>一个已加载方案。调用方只能通过公开身份、流程、运行和结果合同访问它。</summary>
+        </member>
+        <member name="T:SunEyeVision.Platform.Sdk.PlatformWorkflowInfo">
+            <summary>对应 VM 的 VmProcedure 身份快照。</summary>
+        </member>
+        <member name="M:SunEyeVision.Platform.Sdk.PlatformWorkflowInfo.#ctor(System.String,System.String,System.Collections.Generic.IReadOnlyList{SunEyeVision.Platform.Sdk.PlatformNodeInfo})">
+            <summary>对应 VM 的 VmProcedure 身份快照。</summary>
+        </member>
+        <member name="T:SunEyeVision.Platform.Sdk.PlatformNodeInfo">
+            <summary>对应 VM 模块路径/名称的无 UI 身份快照。</summary>
+        </member>
+        <member name="M:SunEyeVision.Platform.Sdk.PlatformNodeInfo.#ctor(System.String,System.String,System.String)">
+            <summary>对应 VM 模块路径/名称的无 UI 身份快照。</summary>
+        </member>
+        <member name="T:SunEyeVision.Platform.Sdk.PlatformDeviceInfo">
+            <summary>设备身份快照；连接和驱动控制仍属于宿主扩展，不把内部设备对象暴露给外部工程。</summary>
+        </member>
+        <member name="M:SunEyeVision.Platform.Sdk.PlatformDeviceInfo.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Boolean,System.String)">
+            <summary>设备身份快照；连接和驱动控制仍属于宿主扩展，不把内部设备对象暴露给外部工程。</summary>
+        </member>
+        <member name="T:SunEyeVision.Platform.Sdk.IPlatformExecution">
+            <summary>单次或连续运行的最小公开合同；输入和参数在创建执行时固定。</summary>
+        </member>
+        <member name="T:SunEyeVision.Platform.Sdk.IPlatformContinuousExecution">
+            <summary>对应 VM 连续运行入口；每轮仍从当前方案捕获独立快照。</summary>
+        </member>
+        <member name="T:SunEyeVision.Platform.Sdk.IPlatformResultSubscription">
+            <summary>对应 VM 模块/流程回调的可退订句柄。</summary>
+        </member>
+        <member name="T:SunEyeVision.Platform.Sdk.PlatformResultEvent">
+            <summary>结果事件不保留内部 reader、WPF 控件或方案对象。</summary>
+        </member>
+        <member name="M:SunEyeVision.Platform.Sdk.PlatformResultEvent.#ctor(System.String,System.String,System.String,System.Boolean,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object},System.DateTimeOffset)">
+            <summary>结果事件不保留内部 reader、WPF 控件或方案对象。</summary>
+        </member>
+        <member name="P:SunEyeVision.Platform.Sdk.PlatformResultEvent.Images">
+            <summary>结果中的图像独立快照；不保留宿主图像或 reader 引用。</summary>
+        </member>
+        <member name="T:SunEyeVision.Platform.Sdk.PlatformRunResult">
+            <summary>运行完成后的资源无关结果快照；资源所有权由实现内部在发布前完成收口。</summary>
+        </member>
+        <member name="M:SunEyeVision.Platform.Sdk.PlatformRunResult.#ctor(System.String,System.Boolean,System.Boolean,System.TimeSpan,System.Collections.Generic.IReadOnlyList{SunEyeVision.Platform.Sdk.PlatformNodeResult},System.Collections.Generic.IReadOnlyList{System.String})">
+            <summary>运行完成后的资源无关结果快照；资源所有权由实现内部在发布前完成收口。</summary>
+        </member>
+        <member name="P:SunEyeVision.Platform.Sdk.PlatformNodeResult.Images">
+            <summary>节点结果中的图像独立快照；调用方拥有该数组副本。</summary>
+        </member>
+        <member name="T:SunEyeVision.Platform.Sdk.PlatformImageFrame">
+            <summary>跨进程/跨程序集传递的图像快照；像素包含行填充，格式由 PixelFormat 指定。</summary>
+        </member>
+        <member name="M:SunEyeVision.Platform.Sdk.PlatformImageFrame.#ctor(System.Int32,System.Int32,System.Int32,System.String,System.Byte[],System.Guid,System.String)">
+            <summary>跨进程/跨程序集传递的图像快照；像素包含行填充，格式由 PixelFormat 指定。</summary>
+        </member>
+        <member name="T:SunEyeVision.Platform.Sdk.PlatformRegionFrame">
+            <summary>跨程序集传递的区域快照，不暴露内部区域句柄或 reader。</summary>
+        </member>
+        <member name="M:SunEyeVision.Platform.Sdk.PlatformRegionFrame.#ctor(System.Guid,System.String,System.Collections.Generic.IReadOnlyList{SunEyeVision.Platform.Sdk.PlatformRegionRun})">
+            <summary>跨程序集传递的区域快照，不暴露内部区域句柄或 reader。</summary>
+        </member>
+    </members>
+</doc>

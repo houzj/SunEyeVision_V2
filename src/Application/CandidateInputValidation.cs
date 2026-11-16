@@ -19,7 +19,7 @@ internal static class CandidateInputValidation
         var variableSources = new List<BindingVariableSource>();
         foreach (var variable in variables)
         {
-            if (!GlobalProducerBindingRules.TryDescribeTarget(variable.Type, out var port, out _, out _)) continue;
+            if (!VariableValueDeclarations.TryGetConsumerPort(variable.Type, out var port)) continue;
             variablePorts.Add(variable.Id, port);
             var producer = variable.ProducerBinding?.SourceReference;
             variableSources.Add(new BindingVariableSource(new VariableReference(solutionId, variable.Id, port.Type, storage: port.Storage),

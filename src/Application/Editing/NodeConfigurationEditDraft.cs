@@ -13,15 +13,20 @@ public sealed class NodeConfigurationEditDraft
     private AdmittedToolConfiguration _candidate;
     private bool _consumed;
     private long _revision;
+    private long _executionRevision;
+    private FieldChangeRevisions? _fieldRevisions;
 
     internal NodeConfigurationEditDraft(DocumentSession session, AdmittedNodeView opening,
-        AdmittedToolConfiguration? candidate = null)
+        AdmittedToolConfiguration? candidate = null,FieldChangeRevisions? fieldRevisions=null)
     {
         _session = session ?? throw new ArgumentNullException(nameof(session));
         _opening = opening ?? throw new ArgumentNullException(nameof(opening));
         if (!ReferenceEquals(opening.Scope.Session, session))
             throw new ArgumentException("草稿节点不属于当前会话。", nameof(opening));
         _candidate = candidate is null ? opening.Configuration : opening.Configuration.WithConfiguration(candidate.Configuration);
+        if(opening.Configuration.HostDeclarations.HostInputs is not null)
+            _fieldRevisions=(fieldRevisions??new FieldChangeRevisions(opening.Configuration.Configuration.Fields.Select(opening.Configuration.SettingsSchema.Inputs),
+                session.CaptureNodeFieldRevisions(opening))).Fork(_candidate.Configuration.Fields.Select(_candidate.SettingsSchema.Inputs));
     }
 
     public Guid EditSessionId => _session.EditSessionId;
@@ -32,8 +37,39 @@ public sealed class NodeConfigurationEditDraft
     public ToolSchema InputSchema => _candidate.Schema;
     public ToolSchema SettingsSchema => _candidate.SettingsSchema;
     public ToolSchema DisplaySchema => _candidate.DisplaySchema;
+    public long ExecutionRevision => Interlocked.Read(ref _executionRevision);
+    public IReadOnlyDictionary<string, ParameterSetting> CaptureSettingsDefaults()
+    {
+        EnsureCurrent();
+        var definition = _candidate.Definition;
+        var settings = (IToolSettingsFields)definition;
+        var defaults = settings.ReadSettings(definition.CreateSettings()).CopyValues()
+            .ToDictionary(pair => pair.Key, pair => (ParameterSetting)new ConstantSetting(pair.Value), StringComparer.Ordinal);
+        EnsureCurrent();
+        return defaults;
+    }
     internal AdmittedToolConfiguration CurrentCandidate => _candidate;
+    public ParameterSetting ReadInputSetting(string id)
+    {
+        // This is a read of the private candidate. Desktop callbacks check their current
+        // view before reading, while mutations still revalidate the formal node.
+        EnsureOwner();
+        if (!InputSchema.Inputs.Any(port => port.Id == id))
+            throw new ArgumentException("输入未声明。", nameof(id));
+        var fields = _candidate.Configuration.Fields;
+        return _candidate.Definition is IToolFieldTransitions transitions ? transitions.ProjectInput(fields, id) : fields.Read(id);
+    }
     internal ConstantSetting? ReadCurrentParameter(string fieldId) { EnsureCurrent(); return _candidate.Configuration.ReadCurrentParameter(fieldId); }
+    internal IReadOnlyDictionary<string, ConstantSetting?> ReadCurrentParameters()
+    {
+        EnsureCurrent();
+        var configuration = _candidate.Configuration;
+        var values = configuration.Fields.Declarations.Keys.ToDictionary(id => id, configuration.ReadCurrentParameter, StringComparer.Ordinal);
+        EnsureCurrent();
+        if (!ReferenceEquals(configuration, _candidate.Configuration))
+            throw new InvalidOperationException("参数批回读期间草稿配置已变化。");
+        return new System.Collections.ObjectModel.ReadOnlyDictionary<string, ConstantSetting?>(values);
+    }
     internal bool HasPendingChanges => _candidate.ConfigurationIdentity != _opening.Configuration.ConfigurationIdentity ||
         _candidate.SettingsSchema.Inputs.Any(port => _candidate.Configuration.CurrentValueChangedFrom(port.Id, _opening.Configuration.Configuration));
 
@@ -42,9 +78,14 @@ public sealed class NodeConfigurationEditDraft
     {
         EnsureCurrent();
         var next = _candidate.WithFieldSettings(changes, acceptedFieldOrder);
+        var revisions=_fieldRevisions?.Fork(next.Configuration.Fields.Select(next.SettingsSchema.Inputs));
+        var affectsExecution = changes.Keys.Any(id => !_candidate.IsDisplayField(id))
+            || _candidate.ExecutionConfigurationIdentity != next.ExecutionConfigurationIdentity;
         EnsureCurrent();
         Interlocked.Exchange(ref _revision, checked(_revision + 1));
+        if (affectsExecution) Interlocked.Increment(ref _executionRevision);
         _candidate = next;
+        _fieldRevisions=revisions;
     }
 
     internal AdmittedToolConfiguration CapturePresentationCandidate()
@@ -59,7 +100,7 @@ public sealed class NodeConfigurationEditDraft
         EnsureCurrent();
         var next = _candidate.WithFieldSettings(changes, acceptedFieldOrder);
         EnsureCurrent();
-        return new NodeConfigurationEditDraft(_session, _opening, next);
+        return new NodeConfigurationEditDraft(_session, _opening, next,_fieldRevisions);
     }
 
     /// <summary>Private debug value; merged with the live value using the opening revision at commit.</summary>
@@ -67,6 +108,7 @@ public sealed class NodeConfigurationEditDraft
     {
         EnsureCurrent();
         Interlocked.Exchange(ref _revision, checked(_revision + 1));
+        Interlocked.Increment(ref _executionRevision);
         var next = _candidate.WithAcceptedParameterValue(fieldId, value);
         EnsureCurrent();
         _candidate = next;
@@ -93,6 +135,7 @@ public sealed class NodeConfigurationEditDraft
             throw new InvalidOperationException("调试安装期间草稿版本已变化。");
         if (!prepared.HasValues) return;
         Interlocked.Exchange(ref _revision, checked(_revision + 1));
+        Interlocked.Increment(ref _executionRevision);
         _candidate = prepared.Candidate;
     }
     // Debug workers may only inspect this immutable stamp; they never access the
@@ -100,12 +143,12 @@ public sealed class NodeConfigurationEditDraft
     internal NodeDraftDebugToken CaptureDebugToken()
     {
         EnsureCurrent();
-        return new NodeDraftDebugToken(this, Interlocked.Read(ref _revision));
+        return new NodeDraftDebugToken(this, ExecutionRevision);
     }
 
     internal bool IsCapturedCurrent(NodeDraftDebugToken token) => token is not null &&
         ReferenceEquals(token.Draft, this) && !Volatile.Read(ref _consumed) &&
-        Interlocked.Read(ref _revision) == token.Revision;
+        ExecutionRevision == token.Revision;
 
     internal NodeConfigurationEditProposal Freeze()
     {
@@ -122,6 +165,9 @@ public sealed class NodeConfigurationEditDraft
         Volatile.Write(ref _consumed, true);
     }
     internal void EnsureCanConsume() => EnsureOwner();
+    internal FieldChangeRevisions? FieldRevisions {get{EnsureOwner();return _fieldRevisions;}}
+    internal IReadOnlyDictionary<string,Guid> CaptureFieldRevisions()
+    {EnsureOwner();return _fieldRevisions?.Capture()??new Dictionary<string,Guid>();}
 
     private void EnsureOwner()
     {

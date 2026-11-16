@@ -1,0 +1,70 @@
+{
+  "kind": "VM 原件取证（仓内同版本反编译保留源，逐行核对）",
+  "batch": "编辑器图像输入改选 → 结果工作区单图联动（P0）与变量 ROI 借帧租约",
+  "evidenceSource": {
+    "sources": [
+      "src/Plugin.Wpf/Controls/Native/Input/WorkspaceControls/WorkspaceControls/ModuleResultView.xaml.cs.pending",
+      "src/Plugin.Wpf/Controls/Native/Input/WorkspaceControls/WorkspaceControls.DataForUI/ModuleDisplayDecorator.cs.pending",
+      "src/Plugin.Wpf/Controls/Native/Input/WorkspaceControls/WorkspaceControls/RenderControlBase.xaml.pending",
+      "src/Plugin.Wpf/Controls/Native/Input/WorkspaceControls/WorkspaceControls/RenderControlBase.xaml.cs.pending"
+    ],
+    "note": "与已登记 evidence/VM调试窗口结果视口更新路径-20261112.json 同一批仓内保留源；本件补登记『输入改选联动』与『ROI 与刷新共存』两条链路，不重复覆盖视口更新路径。"
+  },
+  "keyFindings": [
+    {
+      "id": "related-io-single-image",
+      "finding": "ModuleResultView.OnRelatedIOChanged（ModuleResultView.xaml.cs.pending:500-524）：仅 `!IsShowDoubleImage` 时，用 `ImageViewList.FirstOrDefault(p => p.DisplayValue == relatedIO)` 匹配关联输入，命中即 `m_CurrentInfo.SelectedImage = imageViewItem`；随后必定 `RefreshInputImageList(e2.Value)` 与 `SetRoiVisible()`。",
+      "implication": "单图模式下，编辑器图像输入改选同步切换单图显示，不重排来源列表。"
+    },
+    {
+      "id": "selected-image-view-state",
+      "finding": "ModuleDisplayDecorator.SelectedImage/SelectedInputImage setter（ModuleDisplayDecorator.cs.pending:319-372、282-314）：纯视图/渲染数据层状态，写 `renderDataCenter.SelectedImage` 并通知PropertyChanged；不含任何持久化写入。",
+      "implication": "调试期切换显示不写模块保存配置——正式显示选择只能在正式改选或提交边界写入。"
+    },
+    {
+      "id": "input-list-refresh",
+      "finding": "ModuleDisplayDecorator.RefreshInputImageList（ModuleDisplayDecorator.cs.pending:1432-1468）：双图模式选匹配输入项，否则 `InputImageViewList[0]`；单图模式 `SelectedInputImage = null`。",
+      "implication": "双图输入项跟随关联输入变化；单图模式不保留输入选择。"
+    },
+    {
+      "id": "combobox-bindings",
+      "finding": "RenderControlBase.xaml.pending:47 单图下拉 `ItemsSource={Binding ImageViewList}` `SelectedItem={Binding SelectedImage, Mode=TwoWay}`；:28 双图下拉 `ItemsSource={Binding InputImageViewList}` `SelectedItem={Binding SelectedInputImage, Mode=TwoWay}`。",
+      "implication": "下拉与选中图像是同一视图状态的双向绑定。"
+    },
+    {
+      "id": "manual-choice-no-persist",
+      "finding": "RenderControlBase.imageListCombobox_SelectionChanged（RenderControlBase.xaml.cs.pending:1934-2007）：用户改选只改 IsCheck/IsEnable、叠加层可见性、RecordCheckedImages()、ROIVisible 与重绘，无持久化写入。",
+      "implication": "本方 `OutputSelected(sender≠null)` 作为正式选择边界是与原件一致的语义适配（本方持久化选择在方案文档中）。"
+    },
+    {
+      "id": "double-image-toggle",
+      "finding": "RenderControlBase.OnIsShowDoubleImageChanged（RenderControlBase.xaml.cs.pending 约2228-2260）：先 `SelectedInputImage=null`，双图时输入列表非空则取 `[0]`；退出双图只更新 ROIVisible，不触碰 SelectedImage。",
+      "implication": "双图切换不改单图选择。本方差异：进入双图保留当前合法输入/输出而非强制 `[0]`（为变量图像 ROI 连续借用），登记为语义适配待确认项。"
+    },
+    {
+      "id": "roi-survives-refresh",
+      "finding": "ModuleResultView.OnModuleCallBackArrived 渲染回调尾部（ModuleResultView.xaml.cs.pending:604-608）：`ImageViewBox imageViewBox = (IsShowDoubleImage ? imageViewIn : imageView); if (imageViewBox.ROIVisible && !imageViewBox.IsDragROI) { ModuleSource.UpdateROI(); }` —— 数据刷新后对既有 ROI 调 UpdateROI 重投影到当前帧，不销毁区域会话；仅拖拽中（IsDragROI）跳过。",
+      "implication": "ROI 有效性锚定『同一图像帧仍被呈现』，不锚定刷新代次；本方变量租约谓词原误含 temporarySource 导致真实视口路径租约创建即死，已改为锚定 `pane.CurrentFrame==receipt`（图像对象变化时帧回执改变，租约自然失效，等同原件换图后 ROI 重置）。"
+    }
+  ],
+  "differences": [
+    "D1 匹配键：原件按 IO 对象（DisplayValue）匹配，本方按端口 PortId 优先、Key 兜底匹配——本方来源为声明端口投影，无 VM IO 对象，语义等价（同一输出端口）。",
+    "D2 双图入口：原件强制 InputImageViewList[0]，本方保留当前合法输入/当前输出（变量图像 ROI 借用依赖），登记为『运行未确认』差异，待用户确认是否按原件改。",
+    "D3 临时显示态生命周期：原件 SelectedImage 随选中模块重建（DoSourceChanged 新建 decorator），本方以编辑器会话作用域等价承载（上下文退役/窗口关闭/用户显式改选时清空）。",
+    "D4 正式选择持久化：原件单图下拉改选不写持久化（持久化在模块保存链），本方在 OutputSelected 正式边界写 SelectedDisplayReference——入口一致性已对齐，持久化载体为本方方案文档。"
+  ],
+  "manualFindings": [
+    {
+      "id": "user-20261113-debug-window-ok",
+      "observation": "用户人工确认：调试窗口内切换输入图像下拉，右侧联动已正常。",
+      "verdict": "P0 修复有效。"
+    },
+    {
+      "id": "user-20261113-formal-choice-blank",
+      "observation": "调试窗口打开期间，在主窗口图像结果页右上角下拉显式选择『2 Blob分析1 · Blob图像数据』→ 视口空白；关闭调试窗口后正常显示二值图与 Blob 图形；再打开调试窗口又不显示；来回切换一次输入源下拉后恢复。",
+      "verdict": "缺陷：显式用户改选的正式来源被 retainFormalImage 压制成无图像值。原件 UpdateVMResultShow（RenderControlBase.xaml.cs.pending:1127-1154，由 imageListCombobox_SelectionChanged:1998-1999 调用）在用户改选后立即读取所选图像对象当前值 `obj.GetValue(uint.MaxValue)` 并显示，与参数窗口开合无关——显式选择必须立即呈现当前可得的图像。"
+    }
+  ],
+  "conclusion": "输入改选→单图联动、双图输入跟随、用户改选不写持久化、ROI 随刷新重投影四条链路均有原件锚点；本方按上述差异做语义适配，不宣称原件迁移。新增：显式用户改选必须立即呈现所选来源的当前图像值（UpdateVMResultShow 锚点）。",
+  "acceptance": "定向 8/8（P0 三条 + Blob 三页 5 条）通过；全量 Release 0 错误。待人工核对：单图下拉切换后右侧立即显示关联输入且正式选择不变；关闭调试窗口后回到正式选择；变量 ROI 绘制提交与保存重开。"
+}

@@ -1,0 +1,40 @@
+{
+  "kind": "VM原件优先实施门禁",
+  "batch": "结果树显示顺序",
+  "vmEvidence": [
+    {
+      "path": "D:/MyWork/Rea逆向/docs/reverse/C03-original-blob-runtime-capture.md",
+      "facts": [
+        "原厂Blob模块结果页按耗时（ms）、模块状态、单体状态、Blob个数、统计数组和几何结果的显示顺序展开",
+        "原厂结果树同时保留输出字段身份和显示分组，显示顺序不是由宿主执行摘要决定"
+      ]
+    },
+    {
+      "path": "D:/MyWork/Rea逆向/docs/plugins/BLOB-ANALYSIS-IDENTITY-SOURCE-INVENTORY.md",
+      "facts": [
+        "原AlgorithmTab和Display声明共同定义工具页面与结果显示分组"
+      ]
+    }
+  ],
+  "currentConsumers": [
+    "src/Plugin.Wpf/Controls/Native/Composition/Results/PropertyList/ResultPresentationModel.cs",
+    "src/UI/Services/Monitoring/ResultPresentationPresenter.cs",
+    "src/Plugin.Contracts/OutputDisplayNode.cs",
+    "tools/SunEyeVision.BlobAnalysis/Runtime/Results/BlobOutputDisplay.cs"
+  ],
+  "difference": [
+    "ResultPresentationModel当前按ToolSchema.Outputs生成根节点，未消费OutputDisplay声明顺序",
+    "Blob输出声明顺序与VM模块结果显示顺序不同，导致模块状态/耗时/统计字段排列体感不一致"
+  ],
+  "decision": {
+    "migration": "ResultPresentationModel按OutputDisplay根节点顺序排列已声明输出，未被显示声明列出的输出追加到末尾；输出端口身份、publication、结果表Rows和资源借阅合同不变",
+    "semanticFallback": "没有OutputDisplay声明的工具继续使用ToolSchema.Outputs顺序",
+    "acceptance": "Blob模块结果树核对根字段顺序与VM截图，ImageSource结果树核对其Display声明顺序"
+  },
+  "unconfirmed": [
+    "VM动态展开时是否对不同结果状态重新排序",
+    "原厂分页与虚拟化是否影响跨页排序"
+  ],
+  "build": "全量Release 0错误、5992警告、21.88秒",
+  "runtime": "未启动程序、未运行自动测试或生产探针"
+}

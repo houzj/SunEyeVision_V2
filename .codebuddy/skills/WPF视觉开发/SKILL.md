@@ -1,317 +1,148 @@
 ---
 name: WPF视觉开发
-description: WPF视觉开发技能。用于WPF/MVVM界面开发、工作流画布编辑器、节点系统、RoI编辑器、图像显示控件开发。触发场景：WPF开发、画布交互、节点渲染、连接绘制、RoI编辑、图像预览。
+description: WPF视觉开发技能。用于WPF/MVVM界面开发、公共控件迁移与组装、声明式参数页、结果工作区与图像源条、工作流画布与RoI编辑、图像显示控件开发。触发场景：WPF开发、公共控件迁移、.pending原件迁移、参数页显隐绑定、结果工作区、图像源条、画布交互、节点渲染、RoI编辑、图像预览。
 ---
 
-# WPF 视觉开发技能
+# WPF 视觉开发技能（2026-11 现行架构）
 
-## 触发场景
+> 本文件 2026-11-10 重写。旧版描述的 `src/Plugin.SDK/**`、`src/Workflow/WorkflowNode.cs`、`ParamBinding/ConfigSetting/ParamValue<T>`、`DefaultDebugWindow/ToolDebugControlBase` **已随旧 SDK 退役，路径不存在**。按旧版开发会直接走错方向。
 
-- WPF/MVVM 界面开发
-- 工作流画布编辑器交互
-- 节点渲染和样式
-- 连接路径绘制
-- RoI 编辑器开发
-- 图像预览控件
-- 参数面板绑定
+## 一、现行分层（唯一真相）
 
-## 核心架构
-
-### 目录分层（2026-06 UI 大重构后）
-
-```
-src/UI/
-  ├─ Core/          ← ViewModelBase、RelayCommand、ServiceLocator、IRootCoordinator
-  ├─ Features/      ← 功能模块（WorkflowUI：画布、Tab VM、调试窗口工厂）
-  ├─ Shell/         ← 主窗口（Windows/MainWindowViewModel、Controls/Panels/ImagePreviewControl）
-  ├─ Services/      ← 服务层（Interaction/Connection/Canvas/Rendering/PathCalculators/...）
-  ├─ Shared/        ← 共享模型（NodeStyleConfig、WorkflowNodeModel、MatExtensions 等）
-  ├─ Converters/    ← 转换器（30 个）
-  ├─ Themes/        ← 主题资源
-  └─ App.xaml       ← 应用入口
-
-src/Plugin.SDK/
-  ├─ Models/        ← ObservableObject、SdkTypeVocabulary、Geometry（Point2d/Line2d/Circle2d）
-  ├─ ViewModels/    ← ToolViewModelBase
-  ├─ Execution/     ← Parameters/Results（ToolParameters、ToolResults）
-  └─ UI/
-     ├─ Controls/   ← ImageControl/、Roi/、ParamBinding、ToolDebugControlBase、ImageSourceSelector 等
-     └─ Windows/    ← DefaultDebugWindow.xaml
-```
-
-### MVVM 分层
-
-```
-View (XAML) ← Binding → ViewModel ← 调用 → Service/Model
-```
-
-- **ViewModelBase** (`src/UI/Core/ViewModelBase.cs`) — UI层基类，继承 ObservableObject，提供 LogInfo/LogSuccess 等便捷日志 + 线程安全集合操作
-- **ObservableObject** (`src/Plugin.SDK/Models/ObservableObject.cs`) — SDK层基类
-- **ToolViewModelBase** (`src/Plugin.SDK/ViewModels/ToolViewModelBase.cs`) — 工具VM基类
-
-属性通知规范：
-```csharp
-// 用户可见属性 - 带中文显示名
-public int Threshold
-{
-    get => _threshold;
-    set => SetProperty(ref _threshold, value, "阈值");
-}
-
-// 内部属性 - 不带显示名
-public bool IsVisible
-{
-    get => _isVisible;
-    set => SetProperty(ref _isVisible, value);
-}
-```
-
-## 工作流画布系统
-
-### 画布引擎（Canvas Engine 模式）
-
-`src/UI/Services/Canvas/`：
-
-| 组件 | 职责 |
-|------|------|
-| `ICanvasEngine.cs` | 画布引擎统一接口（EngineName/GetControl/SetDataContext/SetPathCalculator/Cleanup） |
-| `CanvasEngineManager.cs` | 引擎管理器 |
-| `CanvasStateManager.cs` | 画布状态管理 |
-| `CanvasConfig.cs` / `CanvasHelper.cs` | 配置与坐标工具 |
-| `Engines/WorkflowCanvasEngine.cs` | 工作流画布引擎 |
-| `Engines/TestCanvasEngine.cs` | 测试画布引擎 |
-
-### 画布控件
-
-`src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.xaml(.cs)`
-
-- 纯画布控件，负责节点和连线的显示、拖拽、连接等交互
-- 通过 Adapters 解耦节点显示逻辑
-- 配合 `CanvasTemplateSelector.cs`（模板选择）与 `CanvasType.cs`
-
-### 节点模型
-
-`WorkflowNodeBase`（`src/Workflow/WorkflowNode.cs`，继承 ObservableObject）同时服务 UI 和序列化：
-
-- **序列化字段**：Id, Name, DispName, ToolType, Parameters, ParamSettings, PositionX/Y, Width/Height, IsEnabled, LocalIndex/GlobalIndex
-- **UI 专有属性**（`[JsonIgnore]`）：IsSelected, IsVisible, Status, Position, OutputCache, InputSource, LastResult, StyleConfig
-
-### 节点样式系统（Adapters 模式）
-
-`src/UI/Features/WorkflowUI/Canvas/Adapters/`（20 个适配器）：
-
-```
-NodeDisplayAdapterFactory（静态工厂，自动扫描 ICategoryDisplayAdapter）
-  ├── 按 Category 分类：AIAnalysis / ControlFlow / Data / ImageSource / Location /
-  │                      Logic / Measurement / MultiCollection / Output / Processing /
-  │                      Recognition / VideoSource
-  ├── 按 algorithmType 手动注册
-  └── DefaultNodeDisplayAdapter（兜底）
-```
-
-接口：`INodeDisplayAdapter`（GetDisplayText/GetIcon/GetBackgroundColor/GetBorderColor）
-样式配置：`src/UI/Shared/NodeStyleConfig.cs`
-
-### 连接系统
-
-`src/UI/Services/Connection/`：
-
-| 组件 | 职责 |
-|------|------|
-| `ConnectionService.cs` | 连接 CRUD（IConnectionService 接口） |
-| `ConnectionPathService.cs` | 路径计算调度 |
-| `ConnectionPathCache.cs` | 连接路径缓存 |
-| `ConnectionBatchUpdateManager.cs` | 批量更新 |
-
-路径计算：`src/UI/Services/PathCalculators/`（BezierPathCalculator + PathCalculatorFactory）
-连接模型：`WorkflowConnection`（`src/Workflow/Workflow.cs`，SourceNodeId → TargetNodeId）
-
-### 交互系统（Handler 拆分）
-
-`src/UI/Services/Interaction/`（15 个 Handler，从原 WorkflowCanvasControl 拆出）：
-
-| Handler | 职责 |
-|---------|------|
-| `NodeDragHandler.cs` | 节点拖拽 |
-| `ConnectionDragHandler.cs` | 连接拖拽 |
-| `ConnectionCreator.cs` | 连接创建 |
-| `ConnectionManager.cs` | 连接管理 |
-| `DragDropHandler.cs` | 工具箱拖放到画布 |
-| `BoxSelectionHandler.cs` | 框选 |
-| `SelectionHandler.cs` | 选择管理 |
-| `PortInteractionHandler.cs` / `PortInteractionHandler2.cs` | 端口交互 |
-| `PortPositionService.cs` | 端口位置查询 |
-| `NodeInteractionHandler.cs` | 节点通用交互 |
-| `DefaultInputProvider.cs` / `IInputProvider.cs` | 输入提供 |
-
-## RoI 编辑器（Region → RoI 迁移后）
-
-`src/Plugin.SDK/UI/Controls/Roi/`：
-
-### 核心文件
-
-| 文件 | 职责 |
-|------|------|
-| `Views/RoiEditorControl.xaml(.cs)` | RoI 编辑器主控件（纯 UI 组件，不持久化） |
-| `Views/RoiEditorManagerControl.xaml(.cs)` | RoI 管理器 |
-| `ViewModels/RoiEditorViewModel.cs` | RoI 编辑器 ViewModel |
-| `Models/RoiDefinition.cs` | RoI 定义基类（[JsonPolymorphic] + ShapeParameters/FixedRoi/ComputedRoi） |
-| `Models/RoiData.cs` / `Models/RoiEditorSettings.cs` / `Models/RoiType.cs` | 数据模型 |
-| `Logic/RoiResolver.cs` | RoI 解析 |
-| `Logic/RoiEditorIntegration.cs` | 编辑器集成 |
-| `Rendering/IRoiRenderer.cs` / `Rendering/RoiHitTester.cs` | 渲染与命中测试 |
-| `Converters/RoiConverters.cs` | 转换器 |
-
-### 支持的 RoI 类型
-
-`RoiDefinition` 抽象类，`[JsonPolymorphic]` 多态序列化：
-
-| 类型 | 类 | 说明 |
-|------|-----|------|
-| Shape | `ShapeParameters` | 用户绘制形状（持有 SDK Geometry 实例，Circle2d/Line2d/Annulus2d/RotatedRect2d/Polygon2d/Arc2d/Point2D） |
-| Fixed | `FixedRoi` | 固定 RoI |
-| Computed | `ComputedRoi` | 计算 RoI（绑定上游输出） |
-
-RoiSourceMode 枚举：Drawing / Fixed / Computed
-
-### 区域参数系统
-
-- `RegionParameters` — 带区域的参数基类
-- `RegionCollectionParameter` — 区域集合（支持常量/绑定模式）
-- `RegionData` — 区域数据模型
-- `RegionParameterMode` — InspectionRegion / MaskRegion
-
-## 图像显示控件
-
-### ImageControl
-
-路径：`src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml`
-
-功能：
-- 图像显示和缩放
-- 鼠标交互事件
-- 视图变换（平移/缩放）
-- RoI 叠加显示（叠加层机制）
-
-### ImagePreviewControl
-
-路径：`src/UI/Shell/Controls/Panels/ImagePreviewControl.xaml`
-
-主界面右侧图像预览面板，集成 ImageControl。
-
-## 参数面板系统
-
-### 参数绑定控件（SDK 层）
-
-`src/Plugin.SDK/UI/Controls/`：
-
-| 控件 | 用途 |
-|------|------|
-| `ParamBinding.cs` | 参数绑定控件（继承 ParamBindingBase，树形数据源选择 + 类型过滤） |
-| `ParamBindingBase.cs` | 绑定基类 |
-| `ParamComboBox.cs` / `ParamTextBox.cs` / `ParamGroup.cs` | 参数表单控件 |
-| `ImageSourceSelector.cs` | 图像源选择器 |
-| `ConfigSetting.cs` | 通用参数配置控件 |
-| `RangeSlider.cs` / `RangeInputControl.cs` | 范围滑块/输入 |
-| `NumericUpDown.cs` | 数值上下调 |
-| `ToggleSwitch.cs` | 开关 |
-| `ColorPicker/` | 颜色选择器 |
-| `LabeledControl.cs` | 带标签的控件容器 |
-
-### 参数绑定模式
-
-`ParamValue<T>` 统一管理值和绑定：
-
-- `BindingType.Constant` — 固定值
-- `BindingType.Binding` — 从其他节点输出动态获取
-- `BindingType.NodeOutput` — 从节点输出端口获取
-
-## 调试窗口系统
-
-| 组件 | 职责 |
-|------|------|
-| `src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml` | 标准调试窗口 |
-| `src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs` | 调试控件基类（路由命令 Execute/Confirm/ContinuousExecute/ResetParameters + ToolExecutionCompletedEvent） |
-| `src/UI/Features/WorkflowUI/ToolDebugWindowFactory.cs` | 调试窗口工厂 |
-| `CustomDebugWindow.cs` | 自定义无边框窗口 |
-
-`DebugWindowStyle` 枚举：None（无窗口）、Default（标准）、Custom（自定义）
-
-## 性能优化
-
-### 关键服务
-
-`src/UI/Services/Rendering/`：
-
-| 服务 | 职责 |
-|------|------|
-| `NodeRenderScheduler.cs` | 节点渲染调度 |
-| `NodeUIPool.cs` | 节点 UI 对象池 |
-| `SpatialIndex.cs` | 空间索引（命中测试） |
-| `CanvasRenderer.cs` | 画布渲染 |
-| `CachedNodeConverters.cs` / `VisualHelper.cs` / `GeometryOptimizer.cs` | 渲染辅助 |
-
-### 虚拟化
-
-- 节点虚拟化：`IsVisible` 属性控制渲染
-- 空间索引：`SpatialIndex` 加速命中测试
-- 渲染调度：`NodeRenderScheduler` 优先渲染可见节点
-
-## 日志规范
-
-ViewModel 层使用：
-```csharp
-LogInfo($"开始处理: {imagePath}, 尺寸: {width}x{height}");
-LogSuccess("执行完成");
-LogWarning("参数超出范围");
-LogError("执行失败", exception);
-```
-
-禁止：`Debug.WriteLine()`, `Console.WriteLine()`, `Trace.WriteLine()`
-
-## 命名规范速查
-
-| 类型 | 格式 | 示例 |
-|------|------|------|
-| 类名 | PascalCase 名词 | `WorkflowEngine` |
-| 方法 | PascalCase 动词 | `ProcessImage()` |
-| 属性 | PascalCase | `IsEnabled` |
-| 私有字段 | _camelCase | `_threshold` |
-| 布尔属性 | Is/Has/Can 前缀 | `IsSelected` |
-| 事件 | 过去式 | `Loaded`, `Completed` |
-| 命令 | 动词+Command | `SaveSolutionCommand` |
-
-## 代码锚点
-
-### 工作流引擎与 UI（2026-06 重构后路径）
-
-| 类 | 路径 | 用途 |
+| 项目 | 职责 | 关键约束 |
 |---|---|---|
-| `WorkflowCanvasControl` | `src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.xaml` | 画布主控件 |
-| `NodeDisplayAdapterFactory` | `src/UI/Features/WorkflowUI/Canvas/Adapters/NodeDisplayAdapterFactory.cs` | 节点样式适配器工厂（Category 自动扫描） |
-| `WorkflowNodeBase` | `src/Workflow/WorkflowNode.cs` | 节点模型（UI+序列化） |
-| `WorkflowConnection` | `src/Workflow/Workflow.cs` | 连接模型 |
-| `IConnectionService` | `src/UI/Services/Connection/ConnectionService.cs` | 连接 CRUD 接口 |
-| `BezierPathCalculator` | `src/UI/Services/PathCalculators/BezierPathCalculator.cs` | 贝塞尔曲线路径计算 |
-| `WorkflowTabViewModel` | `src/UI/Features/WorkflowUI/WorkflowTabViewModel.cs` | 工作流 Tab VM |
-| `MainWindowViewModel` | `src/UI/Shell/Windows/MainWindowViewModel.cs` | 主窗口 VM |
+| `src/Plugin.Contracts` | 工具与宿主的**唯一契约**：`IToolSession` / `ToolInvocation` / `ToolOutcome` / `Diagnostic` / `TypeRef` / `ParameterPresentationTree` / `RoiDeclarations` / `SpatialDeclarations` | 不含 WPF、不含业务服务 |
+| `src/Plugin.Runtime` | 运行时：`ReleasePayloadAuthority`（发布准入）、`ToolRuntimeExecutor`、`ToolSettingsEditSession`、`FrozenOutputResources`、`ResultResourceOwner`、`RuntimeDirectorySnapshot` | payload 是唯一真源 |
+| `src/Plugin.Wpf` | **公共控件库，全平台 UI 唯一归属**：`Controls/Native/**`、`Fields/**`、`Presenters/**`、`Themes/Native/**`、`Regions/**` | 工具 Wpf 只组装，不造公共控件 |
+| `src/Plugin.Editing.Wpf` | 编辑期参数模型、`ObservableObject`（见下方硬约束 5） | 不含 WPF 窗口 |
+| `src/Domain` | 领域定义：`Workflows/WorkflowDefinition.cs`、`Workflows/ToolConfiguration.cs`、`Workflows/ScopedNodeIdentity.cs`、`Workflows/CanvasPoint.cs`、`Solutions/SolutionDefinition.cs` | 纯数据，无 UI |
+| `src/Execution` | 执行：`ExecutionRunBatch`、`ExecutionToolInvocation`、`ExecutionNodeSnapshot`、`ExecutionResourceLeaseManager` | 不访问 WPF 控件 |
+| `src/Application` | `Editing`（文档编辑/提交/撤销）、`Queries`、`Communications` | 不依赖 UI |
+| `src/UI` | 宿主界面：`Shell/Windows`（MainWindow*）、`Shell/Controls`、`Features/WorkflowUI/Canvas`、`Services/**`、`Shared/**`、`Themes`、`Core/ViewModelBase.cs` | 不承担工作流调度 |
+| `tools/<Tool>/Runtime` | 工具算法与参数模型（如 `SunEyeVision.Tool.BlobAnalysis.Runtime`） | 不反依 UI/Application |
+| `tools/<Tool>/Wpf` | 工具界面**只组装**（如 `BlobParameterEditor.xaml` 仅 842 字节） | 依赖 Runtime + Plugin.Wpf |
 
-### Plugin SDK 控件（UI 开发者用）
+**已退役，禁止引用**：`src/Plugin.SDK`（目录已不存在）、`src/Workflow` 下的旧节点/连线模型（该目录已无 .cs）、`ParamBinding` / `ConfigSetting` / `ParamValue<T>` / `ImageSourceSelector` / `ToolDebugControlBase` / `DefaultDebugWindow`。
 
-| 类 | 路径 | UI 开发者视角 |
+## 二、五条硬约束（都是踩过的坑）
+
+### 1. `.pending` 文件不参与编译，不能当"控件缺失"的证据
+
+`src/Plugin.Wpf/Controls/Native` 现有 **333 个 `.pending` / 1219 个文件**。`.pending` 后缀不被 MSBuild 的 `*.cs` / `*.xaml` 默认 glob 收集，因此**任何已编译代码都不可能引用它们**。
+
+- 判断"某控件是否在用"必须**排除 `*.pending`** 再做全仓检索；
+- 实测结论：`ImageListPanel` 三件套、`ParameterPresentation.ParamTab` 家族 55 个 pending，与 Blob 三条链**引用关系为 0**；
+- `.pending` 只代表"原件尚未迁移"，不代表"功能缺失"；把 pending 迁成 `.cs` 才有消费者。
+
+### 2. 平台大件（HALCON / OpenCV）必须靠 `Default.Resolving`
+
+三处 csproj 以 `<Private>false</Private>` 引用 `halcondotnetxl`（`src/SunEyeVision.HalAdapter/*.csproj`、`src/Plugin.Tooling/*.csproj`），因此它**不进 deps.json、不进 TPA**。`PluginLoadContext.Load` 会把"宿主目录可解析"的大件交回 `AssemblyLoadContext.Default`。
+
+- 默认上下文能解析它们，**只因为** `src/Plugin.Runtime/ReleasePayloadAuthority.cs` 在构造时安装了幂等 `Default.Resolving`（按 payload 精确 `Identity` + SHA256 校验）；
+- 这段一旦被删或绕过，表现就是执行时 `Could not load file or assembly 'halcondotnetxl, Version=24.5.0.0…'`，流程直接失败、算法 0.00ms；
+- 不要用"再写一个 Resolving 兜底"或"往 deps.json 登记"绕过 payload 校验——那会形成第二份清单。
+
+### 3. 构建与测试的封签顺序
+
+`tests/_shared/ProductRuntimeTestHost.cs` 会校验 `release-payload.json` 里每个程序集的 SHA256。
+
+- 正确顺序：**先** `dotnet build SunEyeVision.slnx -c Release`（构建末尾重新封签）**再** `dotnet test --no-build`；
+- `dotnet test` 自带的构建会重建产品程序集，使清单立即失效并抛 `Product assembly SHA mismatch`；
+- 重新封签脚本 `installer/Seal-ReleasePayload.ps1` 需要 **PowerShell 7**（用了 Core 专有 API），PS 5.1 会报 `TrimEndingDirectorySeparator` 不存在。
+
+### 4. 参数页是声明式的，不要在工具里逐控件搭
+
+工具侧参数页只有一行 `parameters:DeclaredSettingsView`，三页 Tab 由 `ParameterPresentationTree` + 工具自己的 XML/定义驱动。
+
+- 新增参数 = 改工具的参数声明（如 `BlobParameters.xml` + `BlobParameterDefinition`）+ 设置模型字段；**不要**在工具 XAML 里手写控件；
+- 显隐联动、分组、分页由声明里的 `visibleWhen` / `page` / `section` / `advanced` 驱动；
+- 改公共控件（`DeclaredFieldsView` 家族）会影响所有工具，必须先评估跨工具影响。
+
+### 5. 属性通知与 MVVM 基类
+
+- `ObservableObject`：`src/Plugin.Editing.Wpf/Models/ObservableObject.cs`
+- 宿主 VM 基类：`src/UI/Core/ViewModelBase.cs`（提供 `LogInfo/LogSuccess/LogWarning/LogError`）
+- 规则：继承上述基类 + `SetProperty`，**禁止**直接实现 `INotifyPropertyChanged`（原厂 `.pending` 控件常犯这条，迁移时必须改）。
+
+## 三、参数页（声明式）
+
+| 组件 | 路径 | 说明 |
 |---|---|---|
-| `ToolDebugControlBase` | `src/Plugin.SDK/UI/Controls/ToolDebugControlBase.cs` | 调试控件基类（继承后实现 ExecuteTool/CanExecuteTool） |
-| `ImageControl` | `src/Plugin.SDK/UI/Controls/ImageControl/ImageControl.xaml.cs` | 图像预览 + RoI 叠加 |
-| `ParamBinding` | `src/Plugin.SDK/UI/Controls/ParamBinding.cs` | 参数绑定（树形数据源 + 类型过滤） |
-| `ConfigSetting` | `src/Plugin.SDK/UI/Controls/ConfigSetting.cs` | 参数面板核心控件 |
-| `RoiEditorControl` | `src/Plugin.SDK/UI/Controls/Roi/Views/RoiEditorControl.xaml.cs` | RoI 编辑器架构 |
-| `DefaultDebugWindow` | `src/Plugin.SDK/UI/Windows/DefaultDebugWindow.xaml` | 调试窗口体系 |
+| `DeclaredSettingsView` | `src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs` | 工具参数页入口，纯代码 ContentControl，按 schema 生成三页 |
+| `DeclaredFieldsView` | `src/Plugin.Wpf/Fields/DeclaredFieldsView.cs` | 字段树主体；同目录 `DeclaredFieldsView.{Assist,Displays,Groups,NumericModels,Options}.cs` 分层 |
+| 字段编辑器 | `src/Plugin.Wpf/Fields/DeclaredFieldEditor*.cs`、`DeclaredFieldTemplateRegistry.cs` | 按字段类型选模板 |
+| 参数树模型 | `src/Plugin.Contracts/ParameterPresentationTree.cs`、`FieldPresentation.cs`、`FieldSettings.cs` | 声明侧唯一来源 |
 
-### 画布引擎与交互（新增）
+改参数页显示问题，先确认是**声明（工具 XML/定义）**问题还是**公共控件渲染**问题，不要先改控件。
 
-| 类 | 路径 | 用途 |
+## 四、结果工作区与图像源条
+
+| 组件 | 路径 | 说明 |
 |---|---|---|
-| `ICanvasEngine` | `src/UI/Services/Canvas/ICanvasEngine.cs` | 画布引擎接口 |
-| `WorkflowCanvasEngine` | `src/UI/Services/Canvas/Engines/WorkflowCanvasEngine.cs` | 工作流画布引擎 |
-| `NodeDragHandler` | `src/UI/Services/Interaction/NodeDragHandler.cs` | 节点拖拽 |
-| `ConnectionDragHandler` | `src/UI/Services/Interaction/ConnectionDragHandler.cs` | 连接拖拽 |
+| `ResultWorkspaceShell` | `src/Plugin.Wpf/Controls/Native/Composition/Results/ResultShell/ResultWorkspaceShell.xaml` | 结果区容器（图像区 / 属性区 / 图像源条三块） |
+| `PropertyListView` | `src/Plugin.Wpf/Controls/Native/PropertyList/PropertyListView.xaml` | 模块结果树表 |
+| `ImageSourceStrip` | `src/Plugin.Wpf/Controls/Native/Composition/ImageSources/ImageSourceStrip.xaml(.cs)` | 图像源缩略图条（**自研**，原厂 `ImageListPanel` 未迁） |
+| 宿主承载 | `src/UI/Shell/Controls/Shell/ImageResultControl.xaml` | 用 `HasActiveImageSource` 控制整条可见性 |
+| 可见性写入口 | `src/UI/Shell/Windows/MainWindowImageSourceEditing.cs` | `SetActiveImageSourceBinding` 是唯一写入口 |
+| 投影绑定 | `src/UI/Services/Images/ImageSourceProjectionBinding.cs` | `Owns` 用 `ReferenceEquals` 判失效（增删后易误判） |
+| 条会话 | `src/UI/Services/Images/ImageSourceStripSession.cs` | 增删/自动切换/运行全部的交互状态机 |
+| 结果发布 | `src/UI/Services/Images/ResultWorkspacePresenter.cs`、`src/UI/Services/Workflow/INodeResultSink.cs`、`src/UI/Shared/NodeOutputCache.cs` | 执行结果 → 显示的唯一通道 |
+
+**已知坑（实测）**：
+- 增删文件后整条消失：一次 `CommitEdit` 后 `Owns` 引用判定失效 → 清空 → `HasActiveImageSource=false`；重算只挂在"选中节点变化"上；
+- 画布不画结果图形：日志 `[UI.默认] 结果图文未显示：轮廓准备期间结果已失效。` —— 结果在轮廓准备期间被判失效，属发布时序，不是控件问题。
+
+## 五、画布（本节旧版基本仍有效）
+
+| 组件 | 路径 |
+|---|---|
+| 画布控件 | `src/UI/Features/WorkflowUI/Canvas/WorkflowCanvasControl.xaml(.cs)` |
+| 节点显示适配 | `src/UI/Features/WorkflowUI/Canvas/Adapters/`（`NodeDisplayAdapterFactory`、`ImageSourceNodeDisplayAdapter` 等） |
+| 画布引擎 | `src/UI/Services/Canvas/`（`ICanvasEngine`、`CanvasEngineManager`、`Engines/*`） |
+| 交互拆分 | `src/UI/Services/Interaction/`（`NodeDragHandler`、`ConnectionDragHandler`、`BoxSelectionHandler` 等） |
+| 连线 | `src/UI/Services/Connection/`、`src/UI/Services/PathCalculators/` |
+| 渲染性能 | `src/UI/Services/Rendering/`（`NodeRenderScheduler`、`NodeUIPool`、`SpatialIndex`） |
+
+节点/连线数据模型在 `src/Domain/Workflows/**`，**不在** `src/Workflow`（旧模型已不存在）。
+
+## 六、图像与 RoI 控件
+
+| 组件 | 路径 |
+|---|---|
+| `ImageControl`（含 `MultiImageControl` 等） | `src/Plugin.Wpf/Controls/Native/Input/WorkspaceRelease/WorkspaceRelease.Front/` |
+| 图像结果显示 | `src/UI/Shared/Controls/Visualization/ImageVisualizationPanel.xaml.cs` |
+| RoI 编辑器 | `src/Plugin.Wpf/Presenters/Regions/NativeRoiEditor.cs` + `src/Plugin.Wpf/Regions/` |
+| RoI 声明 | `src/Plugin.Contracts/RoiDeclarations.cs`、`SpatialDeclarations.cs`、`GeometryValues.cs` |
+
+## 七、主题与本地化
+
+- 原件主题：`src/Plugin.Wpf/Themes/Native/OriginalTheme.xaml`（TabControl 等原厂样式键由它提供，已无 `clr-namespace` 依赖）
+- 本地化：`src/Plugin.Wpf/Themes/Native/Localization/zh-cn.xaml`（原厂文案），`AppLocalization` 为访问入口
+- 禁止：在公共控件里硬编码中文可见文案；新增文案先查本地化字典
+
+## 八、日志与命名
+
+- VM 层：`LogInfo/LogSuccess/LogWarning/LogError`（`ViewModelBase`）；Service 层用 `IAppLogger`
+- 禁止 `Debug.WriteLine` / `Console.WriteLine` / `Trace.WriteLine`
+- 失败必须可见：执行/发布失败要写日志（含节点身份 + 错误码），不能只在界面显示
+- 命名：PascalCase 类/方法/属性、`_camelCase` 私有字段、`Is/Has/Can` 布尔、过去式事件、`动词+Command`
+
+## 九、代码锚点速查
+
+| 要做的事 | 从这里入手 |
+|---|---|
+| 改工具参数页字段/显隐 | 工具的参数 XML/定义 → `ParameterPresentationTree` |
+| 改参数控件外观 | `src/Plugin.Wpf/Fields/DeclaredFieldsView*.cs` |
+| 改结果区布局 | `ResultWorkspaceShell.xaml` |
+| 改模块结果列 | `PropertyListView` + 工具的结果声明（`BlobSchema.Outputs` 等） |
+| 改图像源条 | `ImageSourceStrip` + `ImageSourceStripSession` + `MainWindowImageSourceEditing` |
+| 改执行→显示 | `ResultWorkspacePresenter` / `INodeResultSink` / `NodeOutputCache` |
+| 改画布节点外观 | `Adapters/*NodeDisplayAdapter` + `NodeStyleConfig` |
+| 排查"程序集加载失败" | `src/Plugin.Runtime/ReleasePayloadAuthority.cs` 的 `Default.Resolving` |
+
+## 十、验收纪律
+
+- UI 改动**必须真实启动程序目视核验**，不能用"测试通过"代替；
+- 构件级验证顺序：`dotnet build SunEyeVision.slnx -c Release` → 确认真实启动 → 再 `dotnet test --no-build`；
+- 未接入项（如历史结果页、结果图文叠层）要在界面与台账里显式标注"未接入"，不得用占位实现冒充完成；
+- 迁移原厂 `.pending` 控件时，先剥离原厂依赖（`VM.Core`、`VM.PlatformSDKCS`、`PresentationControls.Interface`、`View.Utility`、`Apps.*`、`SharedStyles`、`Microsoft.WindowsAPICodePack`），再评估是否可直接用；无法剥离的按行为契约重写。

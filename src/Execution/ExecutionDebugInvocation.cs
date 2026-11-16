@@ -101,7 +101,7 @@ public sealed class ExecutionDebugInvocation : IDisposable
             throw new InvalidOperationException("预览来源不属于当前方案中实际捕获的流程及节点。 ");
         _ = CapturePublishedDeclarations(scopes, readers);
         _ = CapturePublishedDeclarations(scopes, displayReaders);
-        var generation = workflow.Directory.AcquireInvocation();
+        var generation = workflow.Directory.AcquireInvocation("调试执行");
         CancellationTokenSource? linked = null; ToolExecutionIdentity? identity = null; ExecutionVariableValues? privateVariables = null;
         try
         {
@@ -147,6 +147,10 @@ public sealed class ExecutionDebugInvocation : IDisposable
             var settings = _node.MaterializeSettings(resolved.Settings);
             var inputs = new Dictionary<string, object?>(resolved.Inputs, StringComparer.Ordinal);
             var context = new DebugContext(Identity.ToInvocationIdentity(_node.NodeId), Identity.CancellationToken, resources, _log);
+            if (_node.Definition is IToolExecutionFilter filter && !filter.ShouldExecute(settings))
+                outcome = ToolOutcome.Suppress();
+            else
+            {
             IToolExecutionContext bound = context;
             if (_node.Directory.GetHostInputs(_node.Configuration.ToolId) is not null)
             {
@@ -157,7 +161,11 @@ public sealed class ExecutionDebugInvocation : IDisposable
             }
             else if (_hostInput is not null) throw new InvalidOperationException("工具未声明该调试宿主输入。 ");
             if (_node.Schema.WorkflowImageInputId is { } imagePort && !inputs.ContainsKey(imagePort) && _image is not null) inputs.Add(imagePort, _image);
-            outcome = await ToolRuntimeExecutor.ExecuteAsync(_node.Definition, settings, new InputValues(_node.Schema.Inputs, inputs), bound).ConfigureAwait(false);
+            // 与正式执行一致传递显示所需输出（ExecutionToolInvocation.cs:64）：结果显示的
+            // 行几何（如 Blob 区域/轮廓）依赖该请求生成，缺失时调试窗口结果图形不渲染。
+            outcome = await ToolRuntimeExecutor.ExecuteAsync(_node.Definition, settings, new InputValues(_node.Schema.Inputs, inputs), bound,
+                _node.RequiredDisplayOutputs, _node.Directory).ConfigureAwait(false);
+            }
             var owned = new GenerationResourceOwner(resources, generation); generation = null; transferred = true;
             result = DeclaredOutputSnapshot.Capture(_node.Schema, 0, Identity, _node.NodeId, outcome, owned,
                 timer.Elapsed.TotalMilliseconds, fields: _node.ResultFields, sourceWorkflowId: _workflow.WorkflowId);

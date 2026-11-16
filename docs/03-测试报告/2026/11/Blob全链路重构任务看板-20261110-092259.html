@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Blob 全链路重构 · 任务看板</title>
+<style>
+:root{--ink:#1f2328;--muted:#656d76;--line:#d0d7de;--soft:#f6f8fa;--ok:#1a7f37;--bad:#cf222e;--warn:#9a6700;--accent:#0969da}
+*{box-sizing:border-box}
+body{margin:0;padding:32px 22px 70px;color:var(--ink);font:15px/1.7 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+main{max-width:1100px;margin:0 auto}
+h1{font-size:24px;margin:0 0 4px}
+h2{font-size:18px;margin:32px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+p{margin:8px 0}
+.sub{color:var(--muted);font-size:13px;margin-bottom:20px}
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+th,td{border:1px solid var(--line);padding:6px 9px;vertical-align:top;text-align:left}
+th{background:var(--soft);font-weight:600}
+code{background:var(--soft);padding:1px 4px;border-radius:3px;font:12px/1.5 ui-monospace,Consolas,monospace;word-break:break-all}
+.sum{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+.sum div{flex:1;min-width:130px;border:1px solid var(--line);border-radius:8px;padding:10px 14px;background:var(--soft)}
+.sum b{display:block;font-size:20px}
+.ck{display:inline-block;width:13px;height:13px;border:1.5px solid #9198a1;border-radius:3px;vertical-align:-2px;margin-right:6px}
+.ck.done{background:var(--ok);border-color:var(--ok);position:relative}
+.ck.done::after{content:"✓";color:#fff;font-size:10px;position:absolute;left:1.5px;top:-3px}
+.ck.doing{border-color:var(--accent);background:#e8f2fd}
+.batch{background:#e8f2fd;border-left:4px solid var(--accent);padding:6px 12px;border-radius:0 6px 6px 0;margin:16px 0 6px;font-weight:600;font-size:14px}
+</style>
+</head>
+<body>
+<main>
+
+<h1>Blob 全链路重构 · 任务看板</h1>
+<p class="sub">更新于 2026-11-10 09:22:59 ｜ 依据：图像源与Blob全链路重构计划-20261110-092128 ｜ 共 22 项</p>
+
+<div class="sum">
+<div><b>3 / 22</b>已完成</div>
+<div><b>1</b>进行中</div>
+<div><b>18</b>待开始</div>
+<div><b>8</b>批次</div>
+</div>
+
+<h2>前置：已完成项（原计划遗留，已交付）</h2>
+<table>
+<tr><th style="width:5%"></th><th style="width:30%">项</th><th style="width:65%">说明</th></tr>
+<tr><td><span class="ck done"></span></td><td>链路连通性确认</td><td>参数呈现、执行、结果三处接缝均有实现；<code>IToolEditorFactory</code> 为死接口，呈现单轨</td></tr>
+<tr><td><span class="ck done"></span></td><td>视觉对齐（端口/节点/菜单/主题）</td><td>端口原件规格、节点五段渐变、右键六项、主题取值、通讯界面原件控件（8598 行净删）</td></tr>
+<tr><td><span class="ck done"></span></td><td>架构与计划文档</td><td>架构设计与源码树、8 批任务计划、两份对照表（代码级 + 交互级）</td></tr>
+</table>
+
+<div class="batch">B0 · Blob 原件取证（只读，产出 4 张表）</div>
+<table>
+<tr><th style="width:5%"></th><th style="width:8%">编号</th><th style="width:26%">任务</th><th style="width:36%">产出</th><th style="width:25%">验收</th></tr>
+<tr><td><span class="ck doing"></span></td><td>B0-1</td><td>参数清单表</td><td>95 个属性逐条：名称/类型/范围/默认值/当前是否有</td><td>95 行齐全，差集明确</td></tr>
+<tr><td><span class="ck"></span></td><td>B0-2</td><td>结果字段表</td><td><code>BlobFindResult</code>/<code>CBlobInfo</code> 与 <code>BlobOutput</code> 对应</td><td>每字段有对应或标注缺失</td></tr>
+<tr><td><span class="ck"></span></td><td>B0-3</td><td>算子对照表</td><td>参数 → HALCON 算子 → <code>BlobSession</code> 调用点</td><td>无空承接项</td></tr>
+<tr><td><span class="ck"></span></td><td>B0-4</td><td>UI 类型映射表</td><td>类型 → 控件 → 是否原件控件 → 分组</td><td>每种类型有控件，标注推断</td></tr>
+</table>
+
+<div class="batch">B1 · 参数补齐</div>
+<table>
+<tr><th style="width:5%"></th><th style="width:8%">编号</th><th style="width:26%">任务</th><th style="width:36%">内容</th><th style="width:25%">验收</th></tr>
+<tr><td><span class="ck"></span></td><td>B1-1</td><td>补缺失参数</td><td><code>BlobSettings</code>/<code>BlobVmFindParameters</code>/<code>BlobParameterDefinition</code> 增补</td><td>差集清零，构建 0 错</td></tr>
+<tr><td><span class="ck"></span></td><td>B1-2</td><td>合并项落文档</td><td>写明并入哪项、为何可合并</td><td>无静默省略</td></tr>
+<tr><td><span class="ck"></span></td><td>B1-3</td><td>序列化回归</td><td>保存重开参数不丢</td><td>单元测试覆盖</td></tr>
+</table>
+
+<div class="batch">B2 · 结果与显示</div>
+<table>
+<tr><th style="width:5%"></th><th style="width:8%">编号</th><th style="width:26%">任务</th><th style="width:36%">内容</th><th style="width:25%">验收</th></tr>
+<tr><td><span class="ck"></span></td><td>B2-1</td><td>结果字段补齐</td><td><code>BlobOutput</code>/<code>BlobSchema</code>/<code>BlobResultDisplay</code></td><td>原件字段均有承接</td></tr>
+<tr><td><span class="ck"></span></td><td>B2-2</td><td>结果图形样式</td><td>轮廓/十字/文本/图例取原件值</td><td>逐项取值一致</td></tr>
+<tr><td><span class="ck"></span></td><td>B2-3</td><td>结果表与缩略图</td><td>列、交替行色、缩略图</td><td>对照 <code>Col_ShowResults_*</code></td></tr>
+</table>
+
+<div class="batch">B3 · 算法对照</div>
+<table>
+<tr><th style="width:5%"></th><th style="width:8%">编号</th><th style="width:26%">任务</th><th style="width:36%">内容</th><th style="width:25%">验收</th></tr>
+<tr><td><span class="ck"></span></td><td>B3-1</td><td>算子承接补齐</td><td>无承接的参数补执行逻辑</td><td>对照表无空项</td></tr>
+<tr><td><span class="ck"></span></td><td>B3-2</td><td>参数语义一致</td><td>阈值端点、极性、面积筛选语义</td><td>固定测试图结果一致</td></tr>
+<tr><td><span class="ck"></span></td><td>B3-3</td><td>ROI 继承能力确认</td><td>查原件是否具备，具备才实现</td><td>有结论、无悬空文案</td></tr>
+</table>
+
+<div class="batch">B4 · UI 落地</div>
+<table>
+<tr><th style="width:5%"></th><th style="width:8%">编号</th><th style="width:26%">任务</th><th style="width:36%">内容</th><th style="width:25%">验收</th></tr>
+<tr><td><span class="ck"></span></td><td>B4-1</td><td>参数面板分组</td><td>阈值/形态/筛选/输出四组</td><td>分组与原件参数顺序一致</td></tr>
+<tr><td><span class="ck"></span></td><td>B4-2</td><td>控件映射落地</td><td>数值 <code>IntegerUpDown</code>/<code>DoubleUpDown</code>，布尔 <code>ContentToggleSwitch</code>，枚举 <code>ComboBox</code></td><td>无自研控件混入</td></tr>
+<tr><td><span class="ck"></span></td><td>B4-3</td><td>推断项标注</td><td>布局类推断在文档标注</td><td>可追溯</td></tr>
+</table>
+
+<div class="batch">B5 · 图像源补齐</div>
+<table>
+<tr><th style="width:5%"></th><th style="width:8%">编号</th><th style="width:26%">任务</th><th style="width:36%">内容</th><th style="width:25%">验收</th></tr>
+<tr><td><span class="ck"></span></td><td>B5-1</td><td>灰度分支</td><td><code>ImageSourceSession.cs:64</code> 占位改真实灰度输出</td><td>灰度端口单通道</td></tr>
+<tr><td><span class="ck"></span></td><td>B5-2</td><td>输入端口验证</td><td>6 个输入端口逐项验证</td><td>每端口有来源</td></tr>
+</table>
+
+<div class="batch">B6 · 视觉收口</div>
+<table>
+<tr><th style="width:5%"></th><th style="width:8%">编号</th><th style="width:26%">任务</th><th style="width:36%">内容</th><th style="width:25%">验收</th></tr>
+<tr><td><span class="ck"></span></td><td>B6-1</td><td>节点形状</td><td>迁 5 种 Path，按 <code>NodeDisplayType</code> 选形</td><td>各类型形状正确</td></tr>
+<tr><td><span class="ck"></span></td><td>B6-2</td><td>Shell 模板</td><td>9 个通用样式换原件 <code>Composition</code></td><td>结果区/属性表一致</td></tr>
+<tr><td><span class="ck"></span></td><td>B6-3</td><td>4 项交互</td><td>HoverPot、Shift 横向滚动、适配窗口、批注框</td><td>逐项验收</td></tr>
+<tr><td><span class="ck"></span></td><td>B6-4</td><td>工作区锁定</td><td><code>IsLockWorkArea</code></td><td>锁定时端口隐藏、节点不可拖</td></tr>
+</table>
+
+<div class="batch">B7 · 收敛与交付</div>
+<table>
+<tr><th style="width:5%"></th><th style="width:8%">编号</th><th style="width:26%">任务</th><th style="width:36%">内容</th><th style="width:25%">验收</th></tr>
+<tr><td><span class="ck"></span></td><td>B7-1</td><td>死代码清理</td><td>删 <code>IToolEditorFactory</code>；521 个 <code>.pending</code> 三分类</td><td>无悬空接口</td></tr>
+<tr><td><span class="ck"></span></td><td>B7-2</td><td>工程收敛</td><td>77 → 约 30：Probe 合并、两处 <code>Persistence</code> 合并、删 <code>CommonControl</code></td><td>构建时间下降</td></tr>
+<tr><td><span class="ck"></span></td><td>B7-3</td><td>交付包</td><td>测试结果 + Release 证据 + 全链路验收记录</td><td>逐项打勾</td></tr>
+</table>
+
+<h2>批次依赖</h2>
+<table>
+<tr><th style="width:10%">批次</th><th style="width:26%">前置</th><th style="width:64%">说明</th></tr>
+<tr><td>B0</td><td>无</td><td>只读取证，可立即开始</td></tr>
+<tr><td>B1</td><td>B0-1</td><td>没有参数表无法判断补什么</td></tr>
+<tr><td>B2</td><td>B0-2</td><td>结果字段以原件为准</td></tr>
+<tr><td>B3</td><td>B0-3、B1</td><td>参数补齐后对照算子</td></tr>
+<tr><td>B4</td><td>B0-4、B1</td><td>控件映射依赖参数清单</td></tr>
+<tr><td>B5</td><td>无</td><td>与 Blob 独立，可并行</td></tr>
+<tr><td>B6</td><td>无</td><td>纯视觉，建议后置避免返工</td></tr>
+<tr><td>B7</td><td>B1–B6</td><td>收尾</td></tr>
+</table>
+
+<h2>不承诺项</h2>
+<ol>
+<li><b>UI 逐像素一致</b>：反编译产物无 Blob 模块 WPF 程序集，UI 只能按参数类型映射与原件控件规格保证。</li>
+<li><b>算法数值完全等效</b>：能保证参数语义与算子调用方式一致；HALCON 版本差异可能导致边界结果不同，需固定测试图比对。</li>
+<li><b>ROI 继承 / 位置修正</b>：原件是否具备尚未确认；若不具备则删除现有占位文案。</li>
+</ol>
+
+</main>
+</body>
+</html>

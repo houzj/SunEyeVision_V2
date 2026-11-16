@@ -11,6 +11,9 @@ public partial class MainWindowViewModel
         return _auxiliaryParameterWindows.Track(window);
     }
     private void AuxiliaryParameterWindowsChanged(object? sender,EventArgs e)
+        => NotifyParameterWindowStateChanged();
+
+    private void NotifyParameterWindowStateChanged()
     {
         OnPropertyChanged(nameof(IsDebugWindowOpen));OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace));
         System.Windows.Input.CommandManager.InvalidateRequerySuggested();

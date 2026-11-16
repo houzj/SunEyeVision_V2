@@ -1,0 +1,464 @@
+{
+  "GeneratedAt": "2026-11-08",
+  "Scope": "src/tools/tests正式源码，排除obj/bin/build_temp与WPF临时工程",
+  "DirectConsumerCount": 20,
+  "Consumers": [
+    {
+      "Project": "src/Plugin.Editing.Wpf/SunEyeVision.Plugin.Editing.Wpf.csproj",
+      "ProjectReferences": [],
+      "ConsumerFiles": [
+        "src/Plugin.Editing.Wpf/Execution/Helpers/FittedLineDisplay.cs",
+        "src/Plugin.Editing.Wpf/Execution/Parameters/AvailableDataSource.cs",
+        "src/Plugin.Editing.Wpf/Execution/Parameters/ResultPresentationConfig.cs",
+        "src/Plugin.Editing.Wpf/Execution/Parameters/ShapeTypeVocabulary.cs",
+        "src/Plugin.Editing.Wpf/Execution/Results/EdgeFitDiagnostics.cs",
+        "src/Plugin.Editing.Wpf/Models/Communication/ProtocolBindingInput.cs",
+        "src/Plugin.Editing.Wpf/Models/Visualization/TextStyle.cs",
+        "src/Plugin.Editing.Wpf/Models/NumericTypes.cs",
+        "src/Plugin.Editing.Wpf/Models/SubroutineDisplayItem.cs"
+      ],
+      "TargetContracts": [
+        "SunEyeVision.Plugin.Contracts",
+        "SunEyeVision.Plugin.Runtime",
+        "SunEyeVision.Plugin.Wpf"
+      ],
+      "Status": "冻结，待完整生产链迁移"
+    },
+    {
+      "Project": "src/UI/SunEyeVision.UI.csproj",
+      "ProjectReferences": [],
+      "ConsumerFiles": [
+        "src/UI/Core/ViewModelBase.cs",
+        "src/UI/Features/CommunicationManager/CommunicationManagerDialog.xaml",
+        "src/UI/Features/CommunicationManager/CommunicationManagerDialog.xaml.cs",
+        "src/UI/Features/CommunicationManager/CommunicationSendEventsView.xaml",
+        "src/UI/Features/CommunicationManager/CommunicationSendEventsView.xaml.cs",
+        "src/UI/Features/CommunicationManager/CommunicationTriggersView.xaml",
+        "src/UI/Services/Editing/EditorDraftAdapter.cs",
+        "src/UI/Services/Monitoring/ResultPresentationPresenter.cs",
+        "src/UI/Shell/Controls/Shell/ImageResultControl.xaml.cs",
+        "src/UI/Shell/Windows/MainWindowResultDisplay.cs",
+        "src/UI/Shell/Windows/MainWindowViewModel.cs"
+      ],
+      "TargetContracts": [
+        "SunEyeVision.Plugin.Contracts",
+        "SunEyeVision.Plugin.Runtime",
+        "SunEyeVision.Plugin.Wpf"
+      ],
+      "Status": "冻结，待完整生产链迁移"
+    },
+    {
+      "Project": "tools/SunEyeVision.Tool.CircleCircleMeasure/SunEyeVision.Tool.CircleCircleMeasure.csproj",
+      "ProjectReferences": [
+        "..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "ConsumerFiles": [
+        "tools/SunEyeVision.Tool.CircleCircleMeasure/Views/CircleCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.CircleCircleMeasure/Views/CircleCircleMeasureToolDebugControl.xaml.cs",
+        "tools/SunEyeVision.Tool.CircleCircleMeasure/CircleCircleMeasureParameters.cs",
+        "tools/SunEyeVision.Tool.CircleCircleMeasure/CircleCircleMeasureResults.cs",
+        "tools/SunEyeVision.Tool.CircleCircleMeasure/CircleCircleMeasureTool.cs"
+      ],
+      "TargetContracts": [
+        "SunEyeVision.Plugin.Contracts",
+        "SunEyeVision.Plugin.Runtime",
+        "SunEyeVision.Plugin.Wpf"
+      ],
+      "Status": "冻结，待完整生产链迁移"
+    },
+    {
+      "Project": "tools/SunEyeVision.Tool.CircleDetect/SunEyeVision.Tool.CircleDetect.csproj",
+      "ProjectReferences": [
+        "..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "ConsumerFiles": [
+        "tools/SunEyeVision.Tool.CircleDetect/Views/CircleDetectToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.CircleDetect/Views/CircleDetectToolDebugControl.xaml.cs",
+        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectParameters.cs",
+        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectResults.cs",
+        "tools/SunEyeVision.Tool.CircleDetect/CircleDetectTool.cs"
+      ],
+      "TargetContracts": [
+        "SunEyeVision.Plugin.Contracts",
+        "SunEyeVision.Plugin.Runtime",
+        "SunEyeVision.Plugin.Wpf"
+      ],
+      "Status": "冻结，待完整生产链迁移"
+    },
+    {
+      "Project": "tools/SunEyeVision.Tool.Condition/SunEyeVision.Tool.Condition.csproj",
+      "ProjectReferences": [
+        "..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "ConsumerFiles": [
+        "tools/SunEyeVision.Tool.Condition/Models/ConditionInputResolver.cs",
+        "tools/SunEyeVision.Tool.Condition/Models/ConditionParameters.cs",
+        "tools/SunEyeVision.Tool.Condition/Models/ConditionResults.cs",
+        "tools/SunEyeVision.Tool.Condition/Views/ConditionDebugControl.xaml",
+        "tools/SunEyeVision.Tool.Condition/Views/ConditionDebugControl.xaml.cs",
+        "tools/SunEyeVision.Tool.Condition/Views/ConditionTypeConverter.cs",
+        "tools/SunEyeVision.Tool.Condition/ConditionTool.cs"
+      ],
+      "TargetContracts": [
+        "SunEyeVision.Plugin.Contracts",
+        "SunEyeVision.Plugin.Runtime",
+        "SunEyeVision.Plugin.Wpf"
+      ],
+      "Status": "冻结，待完整生产链迁移"
+    },
+    {
+      "Project": "tools/SunEyeVision.Tool.ImageFilter/SunEyeVision.Tool.ImageFilter.csproj",
+      "ProjectReferences": [
+        "..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "ConsumerFiles": [
+        "tools/SunEyeVision.Tool.ImageFilter/Views/ImageFilterDataAnalysisControl.xaml",
+        "tools/SunEyeVision.Tool.ImageFilter/Views/ImageFilterDataAnalysisControl.xaml.cs",
+        "tools/SunEyeVision.Tool.ImageFilter/Views/ImageFilterToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ImageFilter/Views/ImageFilterToolDebugControl.xaml.cs",
+        "tools/SunEyeVision.Tool.ImageFilter/ImageFilterParameters.cs",
+        "tools/SunEyeVision.Tool.ImageFilter/ImageFilterResults.cs",
+        "tools/SunEyeVision.Tool.ImageFilter/ImageFilterTool.cs"
+      ],
+      "TargetContracts": [
+        "SunEyeVision.Plugin.Contracts",
+        "SunEyeVision.Plugin.Runtime",
+        "SunEyeVision.Plugin.Wpf"
+      ],
+      "Status": "冻结，待完整生产链迁移"
+    },
+    {
+      "Project": "tools/SunEyeVision.Tool.ImageThreshold/SunEyeVision.Tool.ImageThreshold.csproj",
+      "ProjectReferences": [
+        "..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "ConsumerFiles": [
+        "tools/SunEyeVision.Tool.ImageThreshold/Views/ImageThresholdDataAnalysisControl.xaml",
+        "tools/SunEyeVision.Tool.ImageThreshold/Views/ImageThresholdDataAnalysisControl.xaml.cs",
+        "tools/SunEyeVision.Tool.ImageThreshold/Views/ImageThresholdToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ImageThreshold/Views/ImageThresholdToolDebugControl.xaml.cs",
+        "tools/SunEyeVision.Tool.ImageThreshold/ImageThresholdParameters.cs",
+        "tools/SunEyeVision.Tool.ImageThreshold/ImageThresholdResults.cs",
+        "tools/SunEyeVision.Tool.ImageThreshold/ImageThresholdTool.cs"
+      ],
+      "TargetContracts": [
+        "SunEyeVision.Plugin.Contracts",
+        "SunEyeVision.Plugin.Runtime",
+        "SunEyeVision.Plugin.Wpf"
+      ],
+      "Status": "冻结，待完整生产链迁移"
+    },
+    {
+      "Project": "tools/SunEyeVision.Tool.LineCircleMeasure/SunEyeVision.Tool.LineCircleMeasure.csproj",
+      "ProjectReferences": [
+        "..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "ConsumerFiles": [
+        "tools/SunEyeVision.Tool.LineCircleMeasure/Views/LineCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineCircleMeasure/Views/LineCircleMeasureToolDebugControl.xaml.cs",
+        "tools/SunEyeVision.Tool.LineCircleMeasure/LineCircleMeasureParameters.cs",
+        "tools/SunEyeVision.Tool.LineCircleMeasure/LineCircleMeasureResults.cs",
+        "tools/SunEyeVision.Tool.LineCircleMeasure/LineCircleMeasureTool.cs"
+      ],
+      "TargetContracts": [
+        "SunEyeVision.Plugin.Contracts",
+        "SunEyeVision.Plugin.Runtime",
+        "SunEyeVision.Plugin.Wpf"
+      ],
+      "Status": "冻结，待完整生产链迁移"
+    },
+    {
+      "Project": "tools/SunEyeVision.Tool.LineDetect/SunEyeVision.Tool.LineDetect.csproj",
+      "ProjectReferences": [
+        "..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "ConsumerFiles": [
+        "tools/SunEyeVision.Tool.LineDetect/Views/LineDetectToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineDetect/Views/LineDetectToolDebugControl.xaml.cs",
+        "tools/SunEyeVision.Tool.LineDetect/LineDetectParameters.cs",
+        "tools/SunEyeVision.Tool.LineDetect/LineDetectResults.cs",
+        "tools/SunEyeVision.Tool.LineDetect/LineDetectTool.cs"
+      ],
+      "TargetContracts": [
+        "SunEyeVision.Plugin.Contracts",
+        "SunEyeVision.Plugin.Runtime",
+        "SunEyeVision.Plugin.Wpf"
+      ],
+      "Status": "冻结，待完整生产链迁移"
+    },
+    {
+      "Project": "tools/SunEyeVision.Tool.LineLineMeasure/SunEyeVision.Tool.LineLineMeasure.csproj",
+      "ProjectReferences": [
+        "..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "ConsumerFiles": [
+        "tools/SunEyeVision.Tool.LineLineMeasure/Views/LineLineMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.LineLineMeasure/Views/LineLineMeasureToolDebugControl.xaml.cs",
+        "tools/SunEyeVision.Tool.LineLineMeasure/LineLineMeasureParameters.cs",
+        "tools/SunEyeVision.Tool.LineLineMeasure/LineLineMeasureResults.cs",
+        "tools/SunEyeVision.Tool.LineLineMeasure/LineLineMeasureTool.cs"
+      ],
+      "TargetContracts": [
+        "SunEyeVision.Plugin.Contracts",
+        "SunEyeVision.Plugin.Runtime",
+        "SunEyeVision.Plugin.Wpf"
+      ],
+      "Status": "冻结，待完整生产链迁移"
+    },
+    {
+      "Project": "tools/SunEyeVision.Tool.Morphology/SunEyeVision.Tool.Morphology.csproj",
+      "ProjectReferences": [
+        "..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "ConsumerFiles": [
+        "tools/SunEyeVision.Tool.Morphology/Views/MorphologyDataAnalysisControl.xaml",
+        "tools/SunEyeVision.Tool.Morphology/Views/MorphologyDataAnalysisControl.xaml.cs",
+        "tools/SunEyeVision.Tool.Morphology/Views/MorphologyToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.Morphology/Views/MorphologyToolDebugControl.xaml.cs",
+        "tools/SunEyeVision.Tool.Morphology/MorphologyParameters.cs",
+        "tools/SunEyeVision.Tool.Morphology/MorphologyResults.cs",
+        "tools/SunEyeVision.Tool.Morphology/MorphologyTool.cs"
+      ],
+      "TargetContracts": [
+        "SunEyeVision.Plugin.Contracts",
+        "SunEyeVision.Plugin.Runtime",
+        "SunEyeVision.Plugin.Wpf"
+      ],
+      "Status": "冻结，待完整生产链迁移"
+    },
+    {
+      "Project": "tools/SunEyeVision.Tool.NPointCalibration/SunEyeVision.Tool.NPointCalibration.csproj",
+      "ProjectReferences": [
+        "../../src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "ConsumerFiles": [
+        "tools/SunEyeVision.Tool.NPointCalibration/Views/CalibrationDialogs.cs",
+        "tools/SunEyeVision.Tool.NPointCalibration/Views/NPointCalibrationDebugControl.xaml",
+        "tools/SunEyeVision.Tool.NPointCalibration/Views/NPointCalibrationDebugControl.xaml.cs",
+        "tools/SunEyeVision.Tool.NPointCalibration/Views/NPointSampleEditor.xaml",
+        "tools/SunEyeVision.Tool.NPointCalibration/CalibrationRuntime.cs",
+        "tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationFile.cs",
+        "tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationParameters.cs",
+        "tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationResults.cs",
+        "tools/SunEyeVision.Tool.NPointCalibration/NPointCalibrationTool.cs"
+      ],
+      "TargetContracts": [
+        "SunEyeVision.Plugin.Contracts",
+        "SunEyeVision.Plugin.Runtime",
+        "SunEyeVision.Plugin.Wpf"
+      ],
+      "Status": "冻结，待完整生产链迁移"
+    },
+    {
+      "Project": "tools/SunEyeVision.Tool.PointCircleMeasure/SunEyeVision.Tool.PointCircleMeasure.csproj",
+      "ProjectReferences": [
+        "..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "ConsumerFiles": [
+        "tools/SunEyeVision.Tool.PointCircleMeasure/Views/PointCircleMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointCircleMeasure/Views/PointCircleMeasureToolDebugControl.xaml.cs",
+        "tools/SunEyeVision.Tool.PointCircleMeasure/PointCircleMeasureParameters.cs",
+        "tools/SunEyeVision.Tool.PointCircleMeasure/PointCircleMeasureResults.cs",
+        "tools/SunEyeVision.Tool.PointCircleMeasure/PointCircleMeasureTool.cs"
+      ],
+      "TargetContracts": [
+        "SunEyeVision.Plugin.Contracts",
+        "SunEyeVision.Plugin.Runtime",
+        "SunEyeVision.Plugin.Wpf"
+      ],
+      "Status": "冻结，待完整生产链迁移"
+    },
+    {
+      "Project": "tools/SunEyeVision.Tool.PointLineMeasure/SunEyeVision.Tool.PointLineMeasure.csproj",
+      "ProjectReferences": [
+        "..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "ConsumerFiles": [
+        "tools/SunEyeVision.Tool.PointLineMeasure/Views/PointLineMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointLineMeasure/Views/PointLineMeasureToolDebugControl.xaml.cs",
+        "tools/SunEyeVision.Tool.PointLineMeasure/PointLineMeasureParameters.cs",
+        "tools/SunEyeVision.Tool.PointLineMeasure/PointLineMeasureResults.cs",
+        "tools/SunEyeVision.Tool.PointLineMeasure/PointLineMeasureTool.cs"
+      ],
+      "TargetContracts": [
+        "SunEyeVision.Plugin.Contracts",
+        "SunEyeVision.Plugin.Runtime",
+        "SunEyeVision.Plugin.Wpf"
+      ],
+      "Status": "冻结，待完整生产链迁移"
+    },
+    {
+      "Project": "tools/SunEyeVision.Tool.PointPointMeasure/SunEyeVision.Tool.PointPointMeasure.csproj",
+      "ProjectReferences": [
+        "..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "ConsumerFiles": [
+        "tools/SunEyeVision.Tool.PointPointMeasure/Views/PointPointMeasureToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.PointPointMeasure/Views/PointPointMeasureToolDebugControl.xaml.cs",
+        "tools/SunEyeVision.Tool.PointPointMeasure/PointPointMeasureParameters.cs",
+        "tools/SunEyeVision.Tool.PointPointMeasure/PointPointMeasureResults.cs",
+        "tools/SunEyeVision.Tool.PointPointMeasure/PointPointMeasureTool.cs"
+      ],
+      "TargetContracts": [
+        "SunEyeVision.Plugin.Contracts",
+        "SunEyeVision.Plugin.Runtime",
+        "SunEyeVision.Plugin.Wpf"
+      ],
+      "Status": "冻结，待完整生产链迁移"
+    },
+    {
+      "Project": "tools/SunEyeVision.Tool.ProtocolAssemble/SunEyeVision.Tool.ProtocolAssemble.csproj",
+      "ProjectReferences": [
+        "../../src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "ConsumerFiles": [
+        "tools/SunEyeVision.Tool.ProtocolAssemble/Views/ProtocolAssembleEditor.xaml",
+        "tools/SunEyeVision.Tool.ProtocolAssemble/Views/ProtocolAssembleEditor.xaml.cs",
+        "tools/SunEyeVision.Tool.ProtocolAssemble/ProtocolAssembleParameters.cs",
+        "tools/SunEyeVision.Tool.ProtocolAssemble/ProtocolAssembleTool.cs"
+      ],
+      "TargetContracts": [
+        "SunEyeVision.Plugin.Contracts",
+        "SunEyeVision.Plugin.Runtime",
+        "SunEyeVision.Plugin.Wpf"
+      ],
+      "Status": "冻结，待完整生产链迁移"
+    },
+    {
+      "Project": "tools/SunEyeVision.Tool.ProtocolParse/SunEyeVision.Tool.ProtocolParse.csproj",
+      "ProjectReferences": [
+        "../../src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "ConsumerFiles": [
+        "tools/SunEyeVision.Tool.ProtocolParse/Views/ProtocolParseEditor.xaml",
+        "tools/SunEyeVision.Tool.ProtocolParse/Views/ProtocolParseEditor.xaml.cs",
+        "tools/SunEyeVision.Tool.ProtocolParse/ProtocolParseParameters.cs",
+        "tools/SunEyeVision.Tool.ProtocolParse/ProtocolParseTool.cs"
+      ],
+      "TargetContracts": [
+        "SunEyeVision.Plugin.Contracts",
+        "SunEyeVision.Plugin.Runtime",
+        "SunEyeVision.Plugin.Wpf"
+      ],
+      "Status": "冻结，待完整生产链迁移"
+    },
+    {
+      "Project": "tools/SunEyeVision.Tool.ReceiveData/SunEyeVision.Tool.ReceiveData.csproj",
+      "ProjectReferences": [
+        "../../src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "ConsumerFiles": [
+        "tools/SunEyeVision.Tool.ReceiveData/Views/ReceiveDataEditor.xaml",
+        "tools/SunEyeVision.Tool.ReceiveData/Views/ReceiveDataEditor.xaml.cs",
+        "tools/SunEyeVision.Tool.ReceiveData/ReceiveDataParameters.cs",
+        "tools/SunEyeVision.Tool.ReceiveData/ReceiveDataTool.cs"
+      ],
+      "TargetContracts": [
+        "SunEyeVision.Plugin.Contracts",
+        "SunEyeVision.Plugin.Runtime",
+        "SunEyeVision.Plugin.Wpf"
+      ],
+      "Status": "冻结，待完整生产链迁移"
+    },
+    {
+      "Project": "tools/SunEyeVision.Tool.Script/SunEyeVision.Tool.Script.csproj",
+      "ProjectReferences": [
+        "..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "ConsumerFiles": [
+        "tools/SunEyeVision.Tool.Script/Models/MonitorNode.cs",
+        "tools/SunEyeVision.Tool.Script/Models/ScriptInputConfig.cs",
+        "tools/SunEyeVision.Tool.Script/Models/ScriptIoContractSnapshot.cs",
+        "tools/SunEyeVision.Tool.Script/Models/ScriptIoTypeDescriptor.cs",
+        "tools/SunEyeVision.Tool.Script/Models/ScriptOutputConfig.cs",
+        "tools/SunEyeVision.Tool.Script/Models/ScriptParameters.cs",
+        "tools/SunEyeVision.Tool.Script/Models/ScriptResults.cs",
+        "tools/SunEyeVision.Tool.Script/ScriptEngine/MetadataReferenceProvider.cs",
+        "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptBindingResolver.cs",
+        "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptCompiler.cs",
+        "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptLifecycleManager.cs",
+        "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptOutputSnapshot.cs",
+        "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandbox.cs",
+        "tools/SunEyeVision.Tool.Script/ScriptEngine/ScriptSandboxPool.cs",
+        "tools/SunEyeVision.Tool.Script/ViewModels/ScriptEditorViewModel.cs",
+        "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml",
+        "tools/SunEyeVision.Tool.Script/Views/ScriptDebugControl.xaml.cs",
+        "tools/SunEyeVision.Tool.Script/Views/ScriptVariableTab.xaml",
+        "tools/SunEyeVision.Tool.Script/Views/ScriptVariableTab.xaml.cs",
+        "tools/SunEyeVision.Tool.Script/ScriptPlugin.cs",
+        "tools/SunEyeVision.Tool.Script/ScriptTool.cs"
+      ],
+      "TargetContracts": [
+        "SunEyeVision.Plugin.Contracts",
+        "SunEyeVision.Plugin.Runtime",
+        "SunEyeVision.Plugin.Wpf"
+      ],
+      "Status": "冻结，待完整生产链迁移"
+    },
+    {
+      "Project": "tools/SunEyeVision.Tool.SendData/SunEyeVision.Tool.SendData.csproj",
+      "ProjectReferences": [
+        "../../src/Plugin.SDK/SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "ConsumerFiles": [
+        "tools/SunEyeVision.Tool.SendData/Views/SendDataEditor.xaml",
+        "tools/SunEyeVision.Tool.SendData/Views/SendDataEditor.xaml.cs",
+        "tools/SunEyeVision.Tool.SendData/SendDataParameters.cs",
+        "tools/SunEyeVision.Tool.SendData/SendDataTool.cs"
+      ],
+      "TargetContracts": [
+        "SunEyeVision.Plugin.Contracts",
+        "SunEyeVision.Plugin.Runtime",
+        "SunEyeVision.Plugin.Wpf"
+      ],
+      "Status": "冻结，待完整生产链迁移"
+    },
+    {
+      "Project": "tools/SunEyeVision.Tool.ShapeMatch/SunEyeVision.Tool.ShapeMatch.csproj",
+      "ProjectReferences": [
+        "..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "ConsumerFiles": [
+        "tools/SunEyeVision.Tool.ShapeMatch/Models/TemplateModel.cs",
+        "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchDataAnalysisControl.xaml",
+        "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchDataAnalysisControl.xaml.cs",
+        "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml",
+        "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchTemplateEditorDialog.xaml.cs",
+        "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchToolDebugControl.xaml",
+        "tools/SunEyeVision.Tool.ShapeMatch/Views/ShapeMatchToolDebugControl.xaml.cs",
+        "tools/SunEyeVision.Tool.ShapeMatch/ShapeMatchParameters.cs",
+        "tools/SunEyeVision.Tool.ShapeMatch/ShapeMatchResults.cs",
+        "tools/SunEyeVision.Tool.ShapeMatch/ShapeMatchTool.cs",
+        "tools/SunEyeVision.Tool.ShapeMatch/ShapeMatchTransformFactory.cs"
+      ],
+      "TargetContracts": [
+        "SunEyeVision.Plugin.Contracts",
+        "SunEyeVision.Plugin.Runtime",
+        "SunEyeVision.Plugin.Wpf"
+      ],
+      "Status": "冻结，待完整生产链迁移"
+    },
+    {
+      "Project": "tools/SunEyeVision.Tool.Subroutine/SunEyeVision.Tool.Subroutine.csproj",
+      "ProjectReferences": [
+        "..\\..\\src\\Plugin.SDK\\SunEyeVision.Plugin.SDK.csproj"
+      ],
+      "ConsumerFiles": [
+        "tools/SunEyeVision.Tool.Subroutine/ViewModels/SubroutineParameterDialogViewModel.cs",
+        "tools/SunEyeVision.Tool.Subroutine/Views/SubroutineDebugControl.xaml",
+        "tools/SunEyeVision.Tool.Subroutine/Views/SubroutineDebugControl.xaml.cs",
+        "tools/SunEyeVision.Tool.Subroutine/Views/SubroutineIoPicker.cs",
+        "tools/SunEyeVision.Tool.Subroutine/Views/SubroutineTypeDisplayConverter.cs",
+        "tools/SunEyeVision.Tool.Subroutine/SubroutineTool.cs"
+      ],
+      "TargetContracts": [
+        "SunEyeVision.Plugin.Contracts",
+        "SunEyeVision.Plugin.Runtime",
+        "SunEyeVision.Plugin.Wpf"
+      ],
+      "Status": "冻结，待完整生产链迁移"
+    }
+  ],
+  "DirectProjectReferenceCount": 20,
+  "NamespaceOnlyProjectCount": 2
+}

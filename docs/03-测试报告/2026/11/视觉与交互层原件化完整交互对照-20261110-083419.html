@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>视觉与交互层 · 完整交互对照（VM 原件 vs 本项目）</title>
+<style>
+:root{--ink:#1f2328;--muted:#656d76;--line:#d0d7de;--soft:#f6f8fa;--ok:#1a7f37;--bad:#cf222e;--warn:#9a6700}
+*{box-sizing:border-box}
+body{margin:0;padding:36px 22px 70px;color:var(--ink);font:15px/1.7 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+main{max-width:1140px;margin:0 auto}
+h1{font-size:26px;margin:0 0 6px}
+h2{font-size:19px;margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--line)}
+p{margin:9px 0}
+.sub{color:var(--muted);font-size:13px;margin-bottom:22px}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th,td{border:1px solid var(--line);padding:7px 9px;vertical-align:top;text-align:left}
+th{background:var(--soft);font-weight:600}
+code{background:var(--soft);padding:1px 4px;border-radius:3px;font:12px/1.5 ui-monospace,Consolas,monospace;word-break:break-all}
+.tag{display:inline-block;padding:0 7px;border-radius:999px;font-size:12px;border:1px solid;white-space:nowrap}
+.t-ok{color:var(--ok);border-color:var(--ok);background:#e8f5ec}
+.t-no{color:var(--bad);border-color:var(--bad);background:#ffeceb}
+.t-part{color:var(--warn);border-color:var(--warn);background:#fff8e5}
+.sum{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+.sum div{flex:1;min-width:140px;border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:var(--soft)}
+.sum b{display:block;font-size:22px}
+.note{border-left:4px solid var(--warn);background:#fff8e5;padding:10px 14px;border-radius:0 6px 6px 0;margin:12px 0}
+.vm{color:#6639ba}
+.own{color:#0969da}
+</style>
+</head>
+<body>
+<main>
+
+<h1>视觉与交互层 · 完整交互对照</h1>
+<p class="sub">VM 原件路径：<code>D:\MyWork\REA逆向测试\analysis\decompiled\VMControls.WPF\VMControls.WPF.Base\</code> ｜ 本项目：<code>src\UI\Features\WorkflowUI\Canvas\</code> ｜ 2026-11-10</p>
+
+<div class="sum">
+<div><b>21</b>件原件交互入口</div>
+<div><b>13</b>本项目已具备</div>
+<div><b>3</b>部分具备</div>
+<div><b>5</b>完全缺失</div>
+</div>
+
+<h2>一、节点自身的交互</h2>
+
+<table>
+<tr><th style="width:22%">交互</th><th style="width:38%">VM 原件</th><th style="width:30%">本项目</th><th style="width:10%">结论</th></tr>
+<tr>
+<td>悬停显示端口</td>
+<td class="vm"><code>DiagramItem.xaml.cs:395-403</code><br><code>OnPropertyChanged(IsMouseOver)</code> → <code>SetConnectorDisplay(v)</code> → <code>IsHited = v</code>（<code>:390</code>）；模板 <code>MultiTrigger</code>（<code>diagramitemtemplate.xaml:949-956</code>）要求 <code>IsHited=True</code> 且 <code>IsLockWorkArea=False</code></td>
+<td class="own"><code>WorkflowNodeView.cs</code>：<code>OnPropertyChanged(IsMouseOver)</code> → <code>IsHited</code>，代码直接设 <code>PortLayer.Visibility</code></td>
+<td><span class="tag t-ok">已对齐</span><br><span class="tag t-no">缺锁定条件</span></td>
+</tr>
+<tr>
+<td>鼠标左键按下（选中/准备拖拽）</td>
+<td class="vm"><code>OnPreviewMouseLeftButtonDown:471</code></td>
+<td class="own"><code>Node_MouseLeftButtonDown</code></td>
+<td><span class="tag t-ok">已有</span></td>
+</tr>
+<tr>
+<td>拖拽移动节点</td>
+<td class="vm"><code>ToolItemGrid_PreviewMouseDown:604</code> → <code>DiagramItem_PreviewMouseMove:623</code> → <code>PreviewMouseUp:596</code>；拖动期间才挂 <code>ConnectorView.PreviewMouseMove:619</code></td>
+<td class="own"><code>NodeGestures</code></td>
+<td><span class="tag t-part">已有，机制不同</span></td>
+</tr>
+<tr>
+<td>拖拽对齐辅助线与插入热区</td>
+<td class="vm"><code>ToolItemGrid</code> 内 <code>DrawAlignLine</code>/<code>DrawHotRegion</code>：LightGreen 5/2.5、热区 66×22</td>
+<td class="own"><code>WorkflowCanvasControl.PlacementFeedback.cs</code> 同参数</td>
+<td><span class="tag t-ok">一致</span></td>
+</tr>
+<tr>
+<td>双击节点</td>
+<td class="vm">未见独立双击处理（<code>ItemBorder_MouseUp:518</code> 为抬起逻辑）</td>
+<td class="own">未实现</td>
+<td><span class="tag t-part">双方都不依赖</span></td>
+</tr>
+<tr>
+<td>节点右键菜单</td>
+<td class="vm"><code>diagramitemtemplate.xaml</code> <code>InteractionContextMenu</code> 六项</td>
+<td class="own">六项同序（<code>b7747353</code>）</td>
+<td><span class="tag t-ok">一致</span></td>
+</tr>
+</table>
+
+<h2>二、端口与连线</h2>
+
+<table>
+<tr><th style="width:22%">交互</th><th style="width:38%">VM 原件</th><th style="width:30%">本项目</th><th style="width:10%">结论</th></tr>
+<tr>
+<td>端口悬停放大</td>
+<td class="vm"><code>Connector.xaml.cs:190</code> <code>OnPropertyChanged(IsMouseOver)</code> → <code>IsHited</code></td>
+<td class="own"><code>ConnectionPort.xaml.cs</code> 同写法</td>
+<td><span class="tag t-ok">一致</span></td>
+</tr>
+<tr>
+<td>从端口拉线</td>
+<td class="vm"><code>Connector.OnPreviewMouseLeftButtonDown:81</code> → <code>ToolItemGrid_PreviewMouseMove:141</code> → <code>Up:90</code></td>
+<td class="own"><code>Port_MouseLeftButtonDown/Move/Up</code>（<code>ConnectionGestures</code>）</td>
+<td><span class="tag t-ok">已有</span></td>
+</tr>
+<tr>
+<td>拉线时目标节点显示端口</td>
+<td class="vm"><code>Connector.HitTesting:246-276</code>：命中测试找 <code>DiagramItem</code>，非拖拽源则 <code>SetConnectorDisplay(true)</code>，旧的设 false</td>
+<td class="own">靠 <code>_canvasConnectionTarget</code> 设端口 <code>IsHited</code>，但目标节点端口层是否可见取决于节点 <code>IsHited</code></td>
+<td><span class="tag t-part">效果可能缺失</span></td>
+</tr>
+<tr>
+<td>最近端口高亮</td>
+<td class="vm"><code>SetNearestConnector:203</code> / <code>ResetOldMinConnector:237</code></td>
+<td class="own"><code>PreviewCanvasConnection</code> 里按方位设端口 <code>IsHited</code></td>
+<td><span class="tag t-ok">已有</span></td>
+</tr>
+<tr>
+<td>连线中点悬停按钮（HoverPot）</td>
+<td class="vm"><code>HoverPot.xaml(.cs)</code> + <code>HoverPotData.cs</code> + <code>HoverPotDelegate.cs</code>（约 5.5KB），<code>Connection.xaml.cs:372</code> 挂 <code>MouseDownCommand</code></td>
+<td class="own">全仓 0 命中</td>
+<td><span class="tag t-no">缺失</span></td>
+</tr>
+<tr>
+<td>连线上拖动折点</td>
+<td class="vm"><code>connectionUserControl_MouseMove:398</code> → <code>SetPath:754</code> / <code>GetCleanLinePoint:783</code></td>
+<td class="own"><code>WireEditing</code>（手动折点）</td>
+<td><span class="tag t-part">已有，算法不同</span></td>
+</tr>
+<tr>
+<td>把节点拖到连线上插入</td>
+<td class="vm"><code>Shape_DragEnter:838</code>/<code>DragLeave:848</code>/<code>Drop:815</code> + <code>IsDragOver</code></td>
+<td class="own"><code>InsertionGestures</code> + <code>CreateNode(insertion)</code></td>
+<td><span class="tag t-ok">已有</span></td>
+</tr>
+<tr>
+<td>连线选中态</td>
+<td class="vm"><code>OnIsSelectedChanged:353</code>、<code>SetBlodStroke:858</code></td>
+<td class="own">选中/悬停 3px 加深橙</td>
+<td><span class="tag t-ok">一致</span></td>
+</tr>
+</table>
+
+<h2>三、画布操作</h2>
+
+<table>
+<tr><th style="width:22%">交互</th><th style="width:38%">VM 原件</th><th style="width:30%">本项目</th><th style="width:10%">结论</th></tr>
+<tr>
+<td>滚轮缩放（以鼠标为中心）</td>
+<td class="vm"><code>ZoomArea.OnPreviewMouseWheel:462</code> → <code>OnChangeZoom:469</code> → <code>DoChangeZoom:502</code>；20 档 0.1–2.0</td>
+<td class="own"><code>ApplyZoom</code>，0.1–2.0 步进 0.1</td>
+<td><span class="tag t-ok">已有</span></td>
+</tr>
+<tr>
+<td>Shift+滚轮横向滚动</td>
+<td class="vm"><code>OnHoriScroll:485</code></td>
+<td class="own">0 命中</td>
+<td><span class="tag t-no">缺失</span></td>
+</tr>
+<tr>
+<td>缩放档位下拉与索引</td>
+<td class="vm"><code>DiagramZoomIndex</code> DP + <code>OnDiagramZoomIndexChange:393</code></td>
+<td class="own"><code>WorkspaceStatusBar.Scale</code>（百分比）</td>
+<td><span class="tag t-part">等价</span></td>
+</tr>
+<tr>
+<td>适配窗口 / 全屏缩放</td>
+<td class="vm"><code>ZoomInFull:444</code></td>
+<td class="own">0 命中</td>
+<td><span class="tag t-no">缺失</span></td>
+</tr>
+<tr>
+<td>中键/空格平移</td>
+<td class="vm"><code>ZoomArea.OnMouseLeftButtonDown:449</code> + <code>ScrollViewer_MouseMove:429</code></td>
+<td class="own"><code>_isPanning</code>（中键/空格）</td>
+<td><span class="tag t-ok">已有</span></td>
+</tr>
+<tr>
+<td>框选</td>
+<td class="vm"><code>RectDragPanal</code>（含选中框、区域内节点收集 <code>DiagramPage.GetAllRect:536</code>）</td>
+<td class="own"><code>GroupSelection</code> + <code>_isBoxSelecting</code></td>
+<td><span class="tag t-ok">已有</span></td>
+</tr>
+<tr>
+<td>多选右键菜单</td>
+<td class="vm"><code>RectDragPanal.xaml.cs</code>：删除/复制/禁用/启用/对齐(6)/分布(2) + <code>KeyDown:36</code></td>
+<td class="own">同结构 + 对齐图标（<code>2269824b</code>/<code>56673723</code>）</td>
+<td><span class="tag t-ok">一致</span></td>
+</tr>
+<tr>
+<td>批注框（CommentBox）</td>
+<td class="vm"><code>CommentBox.cs</code>（10.7KB）+ <code>DiagramPage</code> 的 <code>AddCommentBoxs:262</code>/<code>RemoveCommentBoxs:237</code>/上移下移/清空</td>
+<td class="own">0 命中</td>
+<td><span class="tag t-no">缺失</span></td>
+</tr>
+<tr>
+<td>画布尺寸/网格</td>
+<td class="vm">6 像素线网背景、<code>DiagramPage</code> 尺寸约束</td>
+<td class="own"><code>WorkflowCanvas</code> 5000×5000 + 网格刷</td>
+<td><span class="tag t-ok">一致</span></td>
+</tr>
+</table>
+
+<h2>四、键盘与全局</h2>
+
+<table>
+<tr><th style="width:22%">交互</th><th style="width:38%">VM 原件</th><th style="width:30%">本项目</th><th style="width:10%">结论</th></tr>
+<tr>
+<td>Delete 删除</td>
+<td class="vm"><code>RectDragPanalBase_KeyDown:36</code>、<code>ListViewItem_KeyDown</code></td>
+<td class="own"><code>DeleteSelectedNodesCommand</code></td>
+<td><span class="tag t-ok">已有</span></td>
+</tr>
+<tr>
+<td>Ctrl+C / Ctrl+V / Ctrl+A / Ctrl+F</td>
+<td class="vm"><code>DiagramItem</code> InputBindings：<code>Ctrl+M/C/F/A</code> 等映射到 <code>KeyDownCommand</code></td>
+<td class="own">Ctrl+C/V/A/F（<code>GroupSelection.cs:85-93</code>）</td>
+<td><span class="tag t-ok">已有</span></td>
+</tr>
+<tr>
+<td>Ctrl+L 组合（层级上移/下移等）</td>
+<td class="vm"><code>Ctrl+L + T/D/I/W/E/R/O</code> → <code>LevelT/LevelD/...</code></td>
+<td class="own">未实现</td>
+<td><span class="tag t-no">缺失</span></td>
+</tr>
+<tr>
+<td>禁用/启用节点</td>
+<td class="vm"><code>ForbiddenItemCommand</code>/<code>ActivateItemCommand</code></td>
+<td class="own"><code>SetNodeEnabled</code> + 右键菜单</td>
+<td><span class="tag t-ok">已有</span></td>
+</tr>
+</table>
+
+<h2>五、完全缺失的 5 项（按影响排序）</h2>
+
+<table>
+<tr><th style="width:6%">#</th><th style="width:24%">能力</th><th style="width:40%">原件依据</th><th>影响</th></tr>
+<tr><td>1</td><td>工作区锁定（<code>IsLockWorkArea</code>）</td><td><code>diagramitemtemplate.xaml:951</code>，锁定后不显示端口</td><td>锁定态下仍能拉线，与原件不一致</td></tr>
+<tr><td>2</td><td>连线中点悬停按钮 HoverPot</td><td><code>HoverPot.xaml/.cs</code> + <code>HoverPotData</code> + <code>HoverPotDelegate</code></td><td>连线中点的快捷操作（删/插点）没有</td></tr>
+<tr><td>3</td><td>Shift+滚轮横向滚动</td><td><code>ZoomArea.OnHoriScroll:485</code></td><td>宽画布横向浏览不便</td></tr>
+<tr><td>4</td><td>适配窗口 / 全屏缩放</td><td><code>ZoomArea.ZoomInFull:444</code></td><td>打开方案后无法一键看全</td></tr>
+<tr><td>5</td><td>批注框 CommentBox</td><td><code>CommentBox.cs</code> + <code>DiagramPage</code> 增删/上下移/清空</td><td>画布批注功能整体缺失</td></tr>
+</table>
+
+<h2>六、当前唯一未定论的问题</h2>
+
+<div class="note">
+<b>端口悬停显示</b>：机制已按原件对齐（节点 <code>IsMouseOver</code> → <code>IsHited</code> → 端口可见），最新代码已编译部署（<code>2026/11/10 8:32:18</code>），尚未获得验证结果。若仍不显示，只剩两种可能：<br>
+① <code>WorkflowNodeView.IsMouseOver</code> 未被置 true（命中/尺寸问题）；<br>
+② 端口层 <code>PortLayer</code> 未被 <code>FindDescendantByName</code> 找到（视觉树问题）。<br>
+两者可用一行日志区分，不需要再靠改代码猜。
+</div>
+
+<h2>七、建议的补齐顺序</h2>
+<ol>
+<li><b>先收口端口显示</b>：确认当前版本行为；不行就加日志定位，而不是继续改机制。</li>
+<li><b>工作区锁定</b>：补 <code>IsLockWorkArea</code> 概念，端口与拖拽统一受它约束。</li>
+<li><b>适配窗口 + Shift 横向滚动</b>：纯交互增强，改动面小、收益直接。</li>
+<li><b>HoverPot</b>：连线中点的原件交互，需要迁入 3 个原件文件。</li>
+<li><b>CommentBox</b>：批注框整体迁入，工作量最大，可放最后。</li>
+<li><b>Ctrl+L 组合键</b>：层级调整类命令，需确认本项目是否需要该能力。</li>
+</ol>
+
+</main>
+</body>
+</html>

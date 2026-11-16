@@ -19,7 +19,8 @@ public sealed class DeclaredOutputSnapshot : IDisposable
     private DeclaredOutputSnapshot(ToolSchema schema,long revision,RunIdentity identity,ExecutionStatus status,
         InputValues? values,ResultResourceOwner? resources,IEnumerable<Diagnostic> diagnostics,
         IReadOnlyDictionary<string,DeclaredOutputField>? fields=null,string? sourceWorkflowId=null,bool complete=true,
-        ToolExecutionIdentity? executionIdentity=null,BusinessJudgment judgment=BusinessJudgment.NotEvaluated,double elapsed=0,IToolOutput? output=null)
+        ToolExecutionIdentity? executionIdentity=null,BusinessJudgment judgment=BusinessJudgment.NotEvaluated,double elapsed=0,IToolOutput? output=null,
+        IReadOnlyCollection<int>? selectedBranches=null)
     {
         if(schema.Inputs.Count!=0 || revision<0)throw new ArgumentException("A result requires the captured output-only declaration and revision.");
         if(executionIdentity is not null&&executionIdentity.ToInvocationIdentity(identity.NodeId)!=identity)
@@ -28,13 +29,15 @@ public sealed class DeclaredOutputSnapshot : IDisposable
         _valueResources=resources;_resources=resources is null?null:new ResultResourceOwner(resources.Dispose);
         ExecutionIdentity=executionIdentity;Judgment=judgment;ExecutionTimeMs=elapsed;Output=output;
         Diagnostics=Array.AsReadOnly(diagnostics.ToArray());
+        ResultRecords = ResultHistoryBuffer.Freeze(this);
         Fields=new System.Collections.ObjectModel.ReadOnlyDictionary<string,DeclaredOutputField>(
-            fields is null?schema.Outputs.ToDictionary(port=>port.Id,port=>new DeclaredOutputField(port.Id,schema.FindOutputDisplay(port.Id)?.DisplayName??port.Id,"",null,null,null,true))
+            fields is null?schema.Outputs.ToDictionary(port=>port.Id,port=>new DeclaredOutputField(port.Id,schema.FindOutputDisplay(port.Id)?.DisplayName??port.Id,"",null,null,null,schema.FindOutputDisplay(port.Id)?.DisplayInResultPanel??true))
                 :fields.ToDictionary(item=>item.Key,item=>schema.FindOutputDisplay(item.Key) is {} display
-                    ?item.Value with{DisplayName=display.DisplayName}:item.Value,StringComparer.Ordinal));
+                    ?item.Value with{DisplayName=display.DisplayName,DisplayInResultPanel=item.Value.DisplayInResultPanel&&display.DisplayInResultPanel}:item.Value,StringComparer.Ordinal));
         if(Fields.Count!=schema.Outputs.Count || Fields.Keys.Any(key=>!schema.Outputs.Any(port=>port.Id==key)))
             throw new ArgumentException("Result field metadata differs from the captured output declaration.");
         SourceWorkflowId=sourceWorkflowId;IsComplete=complete;
+        SelectedBranches=Array.AsReadOnly((selectedBranches??Array.Empty<int>()).ToArray());
     }
     public ToolSchema Schema {get;}
     public long SchemaRevision {get;}
@@ -43,6 +46,8 @@ public sealed class DeclaredOutputSnapshot : IDisposable
     public ExecutionStatus Status {get;}
     public BusinessJudgment Judgment {get;}
     public double ExecutionTimeMs {get;}
+    public DateTimeOffset CompletedAt { get; } = DateTimeOffset.UtcNow;
+    public IReadOnlyList<string> ResultRecords { get; }
     /// <summary>The original immutable typed output, borrowed under this result's reader or retained run.</summary>
     public IToolOutput? Output {get;}
     public bool IsSuccess=>Status is ExecutionStatus.Success or ExecutionStatus.PartialSuccess;
@@ -52,6 +57,9 @@ public sealed class DeclaredOutputSnapshot : IDisposable
     public IReadOnlyDictionary<string,DeclaredOutputField> Fields {get;}
     public string? SourceWorkflowId {get;}
     public bool IsComplete {get;}
+    /// <summary>Branch indexes this run selected, carried from the tool outcome. Empty for tools
+    /// without control outputs and for runs that took no branch.</summary>
+    public IReadOnlyCollection<int> SelectedBranches {get;}
 
     /// <summary>Ownership of outcome.Output and resources transfers on entry, including failure.</summary>
     public static DeclaredOutputSnapshot Capture(ToolSchema schema,long revision,ToolExecutionIdentity executionIdentity,
@@ -62,14 +70,20 @@ public sealed class DeclaredOutputSnapshot : IDisposable
         try
         {
             owner=new ResultResourceOwner(()=>Release(outcome.Output as IDisposable,resources));
+            if (outcome.Suppressed && (outcome.Success || outcome.Output is not null || outcome.Diagnostics.Count > 0))
+                throw new ArgumentException("被抑制的调用不能同时返回成功、图像值或错误诊断。");
             if(!executionIdentity.TryCaptureResult())throw new InvalidOperationException("This invocation is stale or its result was already captured.");
             var status=outcome.Success?ExecutionStatus.Success:
-                executionIdentity.CancellationToken.IsCancellationRequested?ExecutionStatus.Cancelled:ExecutionStatus.Failed;
+                executionIdentity.CancellationToken.IsCancellationRequested?ExecutionStatus.Cancelled:
+                outcome.Suppressed?ExecutionStatus.NotExecuted:ExecutionStatus.Failed;
             var outputSchema=new ToolSchema(Array.Empty<Port>(),schema.Outputs,outputDisplay:schema.OutputDisplay);
             var values=outcome.Success?new InputValues(outputSchema.Outputs,
-                outcome.Output?.ToValues()??throw new ArgumentException("A successful invocation has no output.")):null;
+                outcome.Output?.ToValues()??throw new ArgumentException("A successful invocation has no output.")):
+                status==ExecutionStatus.Failed&&outcome.Output is not null
+                    ?InputValues.CaptureAvailableOutputs(outputSchema.Outputs,outcome.Output.ToValues()):null;
             return new(outputSchema,revision,executionIdentity.ToInvocationIdentity(nodeId),status,values,owner,
-                outcome.Diagnostics,fields,sourceWorkflowId,complete,executionIdentity,outcome.Judgment,elapsed,outcome.Output);
+                outcome.Diagnostics,fields,sourceWorkflowId,complete,executionIdentity,outcome.Judgment,elapsed,outcome.Output,
+                outcome.SelectedBranches);
         }
         catch(Exception failure)
         {

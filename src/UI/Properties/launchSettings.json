@@ -23,11 +23,22 @@
     },
     "SunEyeVision.UI (Release)": {
       "commandName": "Executable",
-      "executablePath": "$(ProjectDir)bin/Release/net9.0-windows/SunEyeVision.UI.exe",
-      "workingDirectory": "$(ProjectDir)bin/Release/net9.0-windows",
+      "executablePath": "$(ProjectDir)..\\..\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.exe",
+      "workingDirectory": "$(ProjectDir)..\\..\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Production",
         "DOTNET_ENVIRONMENT": "Production"
+      },
+      "nativeDebugging": false
+    },
+    "SunEyeVision.UI (Timing Probe)": {
+      "commandName": "Executable",
+      "executablePath": "$(ProjectDir)..\\..\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.exe",
+      "workingDirectory": "$(ProjectDir)..\\..\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production",
+        "DOTNET_ENVIRONMENT": "Production",
+        "SUNEYEVISION_TIMING_PROBE": "1"
       },
       "nativeDebugging": false
     }

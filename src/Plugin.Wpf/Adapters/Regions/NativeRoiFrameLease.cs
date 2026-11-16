@@ -29,12 +29,22 @@ public sealed class NativeRoiFrameLease : IDisposable
 }
 
 /// <summary>The actual host announces input/publication changes; a tool never polls Workflow or queries live values.</summary>
-public sealed class NativeRoiFrameSource(Func<string,NativeRoiFrameLease?> borrow,Func<IReadOnlyCollection<string>,NativeRoiInputLease?>? captureInputs=null)
+/// <remarks><paramref name="borrow"/> 的 interactive 参数标记本次借帧是否由用户绘制请求触发：
+/// 交互借帧在显示图不是 ROI 输入图时被宿主阻断并给出原因（原件 RoiDrawTips 语义，
+/// 阻断原因经宿主 RoiDrawBlockReason 传递），预览等非交互借帧不受影响。</remarks>
+public sealed class NativeRoiFrameSource(Func<string,bool,NativeRoiFrameLease?> borrow,Func<IReadOnlyCollection<string>,NativeRoiInputLease?>? captureInputs=null)
 {
     public NativeRoiInputLease? CaptureInputs(IReadOnlyCollection<string> fields)=>captureInputs?.Invoke(fields);
     public event Action? Changed;
-    public NativeRoiFrameLease? Borrow(string inputFieldId)=>borrow(inputFieldId);
+    /// <summary>视口已经换代，必须让编辑器丢弃旧回执并重新挂接当前帧。</summary>
+    public event Action? FrameReplaced;
+    /// <summary>用户在显示图像视口上按下鼠标（原件两段式：形状按钮只选中，
+    /// 落笔时才检查 IsCanDrawROI 并弹阻断提示）；宿主仅在存在阻断意图时上报。</summary>
+    public event Action? InputViewportClicked;
+    public NativeRoiFrameLease? Borrow(string inputFieldId,bool interactive)=>borrow(inputFieldId,interactive);
     public void Refresh()=>Changed?.Invoke();
+    public void RebindCurrentFrame()=>FrameReplaced?.Invoke();
+    public void NotifyInputViewportClicked()=>InputViewportClicked?.Invoke();
 }
 
 /// <summary>Borrowed, frozen declared inputs; the host alone owns resolver and publication readers.</summary>

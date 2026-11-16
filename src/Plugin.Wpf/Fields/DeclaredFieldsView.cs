@@ -20,12 +20,13 @@ namespace SunEyeVision.Plugin.Wpf.Fields;
 public sealed partial class DeclaredFieldsView : UserControl,IDisposable
 {
  private readonly List<DeclaredFieldAccess> _fields=new();
+ private readonly Dictionary<string,DeclaredFieldAccess> _fieldsById=new(StringComparer.Ordinal);
  private readonly Dictionary<string,string> _numericModelPages=new(StringComparer.Ordinal);
  private string[] _numericPageKeys=[];
  private readonly Dictionary<TabItem,string> _numericTabPages=[];
- private readonly Dictionary<string,DeclaredFieldEditor> _editors=new(StringComparer.Ordinal);
+ private readonly Dictionary<string,DeclaredFieldRow> _editors=new(StringComparer.Ordinal);
  private readonly Dictionary<string,FrameworkElement> _rows=new(StringComparer.Ordinal);
- private readonly List<NativeRangePresenter> _ranges=new();
+ private readonly List<DeclaredRangeRow> _ranges=new();
  private readonly List<DeclaredFieldState> _fieldStates=new();
  private readonly List<NativeGraphicStylePresenter> _displayCompositions=new();
  private bool _disposed;
@@ -38,16 +39,43 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
  private readonly Dictionary<string,Action> _pageBuilders=new(StringComparer.Ordinal);
  private readonly HashSet<string> _builtPages=new(StringComparer.Ordinal);
  private readonly Action<string,DeclaredFieldsView>? _pageBuilt;
+ private readonly Dictionary<string,(long RowsMs,long LayoutMs)> _lastBuildStageMs=new(StringComparer.Ordinal);
+ private readonly Dictionary<string,long> _lastFieldBuildMs=new(StringComparer.Ordinal);
+ // PROBE-KEEP：编辑器构造/选项装配二级计时，用于确认单字段成本构成（构造 vs 选项 vs 行装配）。
+ private readonly Dictionary<string,long> _editorCtorMs=new(StringComparer.Ordinal);
+ private readonly Dictionary<string,long> _editorOptionsMs=new(StringComparer.Ordinal);
+ private readonly Dictionary<string,long> _rowAssemblyMs=new(StringComparer.Ordinal);
+ private readonly List<(string Stage,long Ms)> _ctorMarks=new();
+ private readonly Dictionary<string,string> _templateKinds=new(StringComparer.Ordinal);
+ /// <summary>VM 对齐模板键（原厂 DataTemplate 键），供工具组合和生产探针复核，不保存参数值。</summary>
+ public IReadOnlyDictionary<string,string> TemplateKinds=>_templateKinds;
+ /// <summary>PROBE-KEEP：构造分段里程碑（资源/状态/访问器与页分组/收口），供宿主探针输出。活引用：页构建触发早于构造收口。</summary>
+ public IReadOnlyList<(string Stage,long Ms)> ConstructionStages=>_ctorMarks;
+ /// <summary>PROBE-KEEP：最近一次页构建的分段耗时（行控件创建/行装配布局），供宿主探针输出。</summary>
+ public IReadOnlyDictionary<string,(long RowsMs,long LayoutMs)> LastBuildStageMs=>_lastBuildStageMs;
+ public IReadOnlyDictionary<string,long> LastFieldBuildMs=>_lastFieldBuildMs;
+ /// <summary>PROBE-KEEP：单字段编辑器构造耗时（含模板应用）。</summary>
+ public IReadOnlyDictionary<string,long> LastEditorCtorMs=>_editorCtorMs;
+ /// <summary>PROBE-KEEP：单字段编辑器选项装配耗时（文本表达式/图像来源）。</summary>
+ public IReadOnlyDictionary<string,long> LastEditorOptionsMs=>_editorOptionsMs;
+ /// <summary>PROBE-KEEP：单字段行装配耗时（边距绑定 + 行对象 + 入列）。</summary>
+ public IReadOnlyDictionary<string,long> LastRowAssemblyMs=>_rowAssemblyMs;
  private readonly List<(NativeParameterPage Page,NativeHost Host)> _pages=new();
  private readonly Dictionary<FrameworkElement,(NativeParameterPage Page,NativeParameterRow Row)> _positions=new();
  private readonly List<NativeAdvancedPresenter> _advanced=new();
  private readonly Dictionary<FrameworkElement,(NativeAdvancedPresenter? Advanced,FieldCondition? Condition)> _visibility=new();
+ private readonly Dictionary<FrameworkElement,bool> _appliedVisibility=new(ReferenceEqualityComparer.Instance);
  private long _visibilityVersion;
  private bool _updatingVisibility,_visibilityPending;
+ private long _visibilityElapsedMs;
+ private int _visibilityUpdateCount;
+ public long VisibilityElapsedMs=>_visibilityElapsedMs;
+ public int VisibilityUpdateCount=>_visibilityUpdateCount;
  private readonly List<NativeParameterRow> _parameterRows=new();
- private readonly Dictionary<string,FieldCondition> _fieldConditions=new(StringComparer.Ordinal);
+ private readonly Dictionary<string,(FieldCondition Primary,FieldCondition? Alternative)> _fieldConditions=new(StringComparer.Ordinal);
  private readonly TabControl? _tabs;
  private readonly NativeTabHeaderTextScope? _tabTextScope;
+ internal string? SelectedPageKey => _tabs?.SelectedItem is TabItem tab && _numericTabPages.TryGetValue(tab,out var key) ? key : null;
  public int SelectedPageIndex
  {
   get=>_tabs!.SelectedIndex;
@@ -59,8 +87,17 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
  }
  public bool HasInvalidActiveFields=>ChoiceReadinessError() is not null||_fields.Any(field=>IsFieldActive(field.FieldId)&&field.HasInvalidText)||AssistCompletenessError() is not null;
  public bool HasPendingActiveFields=>ChoiceReadinessError() is not null||_fields.Any(field=>IsFieldActive(field.FieldId)&&field.HasPendingEdits)||AssistCompletenessError() is not null;
+ internal bool HasPendingActiveFieldsOutside(IReadOnlySet<string> excludedFields)=>ChoiceReadinessError() is not null
+  ||_fields.Any(field=>!excludedFields.Contains(field.FieldId)&&IsFieldActive(field.FieldId)&&(field.HasInvalidText||field.HasPendingEdits))
+  ||AssistCompletenessError() is not null;
  public IReadOnlyList<DeclaredFieldAccess> Fields=>_fields.AsReadOnly();
  internal IReadOnlyCollection<string> RealizedPageKeys=>Array.AsReadOnly(_builtPages.ToArray());
+ public IReadOnlyCollection<string> DeclaredPageKeys=>Array.AsReadOnly(_pageBuilders.Keys.ToArray());
+ public void RealizePage(string page)
+ {
+  ObjectDisposedException.ThrowIf(_disposed,this);
+  if(_pageBuilders.TryGetValue(page,out var builder))builder();
+ }
  internal IReadOnlyCollection<string> RealizedFieldIds=>Array.AsReadOnly(_rows.Keys.ToArray());
  public event Action? PageChanged;
  private readonly Dictionary<string,FrameworkElement> _visualSources=new(StringComparer.Ordinal);
@@ -68,7 +105,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
  public void BindFieldVisibilityTo(string fieldId,FrameworkElement source)
  {
   ObjectDisposedException.ThrowIf(_disposed,this);
-  if(!_fields.Any(field=>field.FieldId==fieldId))throw new ArgumentException("显隐来源引用未知字段："+fieldId);
+  if(!_fieldsById.ContainsKey(fieldId))throw new ArgumentException("显隐来源引用未知字段："+fieldId);
   ArgumentNullException.ThrowIfNull(source);
   _visualSources.Add(fieldId,source);
   var property=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(VisibilityProperty,source.GetType());
@@ -80,12 +117,13 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
  {
   ObjectDisposedException.ThrowIf(_disposed,this);
   var ids=fieldIds.Distinct(StringComparer.Ordinal).ToArray();
-  if(ids.Any(id=>!_fields.Any(field=>field.FieldId==id)))throw new ArgumentException("隐藏行引用未知字段。");
+  if(ids.Any(id=>!_fieldsById.ContainsKey(id)))throw new ArgumentException("隐藏行引用未知字段。");
   foreach(var id in ids.Where(id=>!_rows.ContainsKey(id)))QueuePageAction(id,()=>SuppressFieldRows(new[]{id}));
   var rows=ids.Where(_rows.ContainsKey).Select(id=>_rows[id]).Distinct().ToArray();
   foreach(var row in rows)
   {
    _visibility.Remove(row);
+   _appliedVisibility.Remove(row);
    (row as IParameterVisibility)?.PrepareForVisibility(false);
    row.Visibility=Visibility.Collapsed;
   }
@@ -109,7 +147,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   ObjectDisposedException.ThrowIf(_disposed,this);EnsureAttachable(content);
   if(!_rows.TryGetValue(fieldId,out var anchor))
   {
-   if(!_fields.Any(field=>field.FieldId==fieldId))throw new ArgumentException("附加内容引用未知字段。");
+   if(!_fieldsById.ContainsKey(fieldId))throw new ArgumentException("附加内容引用未知字段。");
    QueueContent(content);QueuePageAction(fieldId,()=>{_pendingContent.Remove(content);AddAfterField(fieldId,content,condition,followAnchorVisibility,insertBefore);});return;
   }
   ValidateCondition(condition);
@@ -167,39 +205,17 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
  }
  private static void BindNativeRowMargin(FrameworkElement view,NativeHost page)
  {
-  if(view is NativeJudgmentUiDraftControls judgments)
-  {
-   foreach(var child in judgments.Rows)BindNativeRowMargin(child,page);return;
-  }
-  if(view is NativeThresholdUiDraftControls threshold)
-  {
-   foreach(var child in threshold.Rows)BindNativeRowMargin(child,page);return;
-  }
-  if(view is NativeUiConditionalFields conditional)
+   if(view is NativeUiConditionalFields conditional)
   {
    BindNativeRowMargin(conditional.Switch,page);BindNativeRowMargin(conditional.Dependent,page);return;
   }
-  if(view is NativeUiDraftRange draftRange)
-  {
-   BindNativeRowMargin(draftRange.Toggle,page);BindNativeRowMargin(draftRange.Range,page);return;
-  }
-  var row=view switch
-  {
-   DeclaredFieldEditor editor=>editor.EditorBody as FrameworkElement,
-   NativeRangePresenter range=>range.Content as FrameworkElement,
-   _=>null
-  };
-  if(row is null)return;
-  var original=BindingOperations.GetBinding(row,FrameworkElement.MarginProperty);
-  if(original?.Path?.Path=="ChildMargin"&&original.RelativeSource?.Mode==RelativeSourceMode.FindAncestor
-     &&original.RelativeSource.AncestorType==typeof(NativeHost))
-   BindingOperations.SetBinding(row,FrameworkElement.MarginProperty,new Binding(nameof(NativeHost.ChildMargin)){Source=page});
-  if(row is SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamTab.LeftRightControl native
+  // 行宿主（DeclaredFieldRow/DeclaredRangeRow）的 LeftRightControl 自绑定 ChildMargin/ChildLeftWidth，无需再补绑定；
+  // 工具显式提供的 LeftRightControl 组合槽仍按原规则补齐列宽绑定。
+  if(view is SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamTab.LeftRightControl native
      &&native.ReadLocalValue(SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamTab.LeftRightControl.ChildLeftWidthProperty)==DependencyProperty.UnsetValue)
    BindingOperations.SetBinding(native,SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamTab.LeftRightControl.ChildLeftWidthProperty,
        new Binding(nameof(NativeHost.ChildLeftWidth)){Source=page});
  }
- public void UseRegionSourceSelector(string fieldId)=>_editors[fieldId].UseRegionSourceSelector();
  public bool TryValidate(out string error)
  {
   if(ChoiceReadinessError() is {} unavailable){error=unavailable;return false;}
@@ -207,7 +223,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   foreach(var field in _fields.Where(field=>IsFieldActive(field.FieldId)))
   {
    var view=field.View;
-   if(view is NativeRangePresenter&&!checkedRanges.Add(view))continue;
+   if(view is DeclaredRangeRow&&!checkedRanges.Add(view))continue;
    if(!field.TryCommitPending())
    {
     error=_fields.FirstOrDefault(other=>view is not null&&ReferenceEquals(other.View,view)&&other.HasInvalidText)?.Error??field.Error;
@@ -231,13 +247,13 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   IReadOnlyDictionary<string,double>? pageLabelWidths=null,
   IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? choiceDisplays=null,
   IReadOnlyList<NativeVisibilityDisplayOptions>? visibilityDisplays=null,
-  Action<string,DeclaredFieldsView>? pageBuilt=null,int selectedPageIndex=0)
+  Action<string,DeclaredFieldsView>? pageBuilt=null,int selectedPageIndex=0,bool eagerlyComposePages=false)
  {
   ArgumentNullException.ThrowIfNull(writeDraft);
   _pageBuilt=pageBuilt;
   if(references is not null){_ownsReferenceWindowOwner=references.WindowOwner is null;_referenceWindowOwner=references.WindowOwner??new ReferenceWindowOwner(this,()=>!_disposed,new(),false);references=references with{WindowOwner=_referenceWindowOwner};}
   _writeGroup=writeDraft;_validateComposition=validateComposition;_isCurrent=isCurrent;_groupReferences=references;
-  Resources.MergedDictionaries.Add(EditorResources.Create());using var sharedResourceScope=EditorResources.BeginSharedResourceScope();Background=new SolidColorBrush(Color.FromRgb(242,243,245));Foreground=new SolidColorBrush(Color.FromRgb(102,102,102));FontSize=14;FontWeight=FontWeights.Normal;
+  Resources.MergedDictionaries.Add(EditorResources.Shared);Background=new SolidColorBrush(Color.FromRgb(242,243,245));Foreground=new SolidColorBrush(Color.FromRgb(102,102,102));FontSize=14;FontWeight=FontWeights.Normal;
   try
   {
   var all=fields.OrderBy(field=>field.Presentation.Order).ToArray();
@@ -284,7 +300,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
    if(id==field.Port.Id||!declarations.TryGetValue(id,out var other))throw new ArgumentException("配对字段缺失或自引用。");
    var a=field.Presentation.Layout;var b=other.Presentation.Layout;
    if(b is null||b.PairWith is not null||!paired.Add(field.Port.Id)||!paired.Add(id))throw new ArgumentException("范围端点重复、形成链或循环。");
-   if(a.Page!=b.Page||a.Section!=b.Section||a.Advanced!=b.Advanced||a.VisibleWhen!=b.VisibleWhen||field.Presentation.Group!=other.Presentation.Group)
+   if(a.Page!=b.Page||a.Section!=b.Section||a.Advanced!=b.Advanced||a.VisibleWhen!=b.VisibleWhen||a.OrVisibleWhen!=b.OrVisibleWhen||field.Presentation.Group!=other.Presentation.Group)
     throw new ArgumentException("范围两端必须属于相同页面、分组、层级与活动条件。");
    if(a.DialogGroup is not null||b.DialogGroup is not null)throw new ArgumentException("范围与显示弹层组合冲突。");
    if(field.Port.Type.Shape!=ValueShape.Scalar||field.Port.Type.Scalar is not (ScalarKind.Int64 or ScalarKind.Float64)||field.Port.Type!=other.Port.Type)
@@ -342,7 +358,8 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   var states=new Dictionary<string,DeclaredFieldState>(StringComparer.Ordinal);
   foreach(var field in all)
   {
-   if(field.Presentation.Layout?.VisibleWhen is {} activity)_fieldConditions.Add(field.Port.Id,activity);
+   if(field.Presentation.Layout is {VisibleWhen:{} activity} layout)
+    _fieldConditions.Add(field.Port.Id,(activity,layout.OrVisibleWhen));
    var state=new DeclaredFieldState(field.Port,field.Value,value=>writeDraft(new Dictionary<string,ParameterSetting>{{field.Port.Id,value}}),constantBackup?.Invoke(field.Port.Id),
        propose:proposal=>ProposeSingle(field.Port.Id,proposal),readCurrentValue:references?.ReadCurrentValue is {} read?()=>read(field.Port):null,referenceBehavior:references?.ReadBehavior?.Invoke(field.Port)??ParameterReferenceBehavior.StrictExactlyOne);
    _fieldStates.Add(state);states.Add(field.Port.Id,state);
@@ -351,30 +368,32 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
        &&(paired.Contains(field.Port.Id)||field.Port.EditModes!=FieldEditModes.Reference)&&field.Port.Choices is null&&field.Port.Type.Shape==ValueShape.Scalar
        &&field.Port.Type.Scalar is ScalarKind.Int64 or ScalarKind.Float64)state.EnableNumericModel(field.Presentation.Layout);
   }
-   var access=new Dictionary<string,DeclaredFieldAccess>(StringComparer.Ordinal);
    foreach(var field in all)
    {
-    var item=new DeclaredFieldAccess(states[field.Port.Id],CurrentGroup);access.Add(field.Port.Id,item);_fields.Add(item);item.Changed+=UpdateVisibility;
+    var item=new DeclaredFieldAccess(states[field.Port.Id],CurrentGroup);_fieldsById.Add(field.Port.Id,item);_fields.Add(item);item.Changed+=UpdateVisibility;
    }
    var tabs=_tabs=new TabControl {BorderThickness=new Thickness(0),Padding=new Thickness(0),Background=Background};
    tabs.Resources.MergedDictionaries.Add(OriginalThemeResources.Shared);
    _tabTextScope=new NativeTabHeaderTextScope(tabs);
    tabs.SetResourceReference(StyleProperty,"TabControlStyle");
-   var pageGroups=all.GroupBy(field=>field.Presentation.Layout?.Page??field.Presentation.Group).ToArray();
-   foreach(var page in pageGroups)
+   var presentationTree=ParameterPresentationTree.Create(all.Select(field=>field.Presentation));
+   foreach(var pageNode in presentationTree.Pages)
    {
-    var pageRows=new NativeParameterPage();_groups[page.Key]=pageRows;
-    _groupPageKeys[page.Key]=page.Key;
-    foreach(var group in page.GroupBy(field=>field.Presentation.Group)){_groups.TryAdd(group.Key,pageRows);_groupPageKeys.TryAdd(group.Key,page.Key);}
-    var tab=new TabItem{Header=page.Key};_numericTabPages.Add(tab,page.Key);tab.SetResourceReference(StyleProperty,"TopTabItemStyle");tabs.Items.Add(tab);
-    _pageBuilders.Add(page.Key,()=>
+    var pageRows=new NativeParameterPage();_groups[pageNode.Key]=pageRows;
+    _groupPageKeys[pageNode.Key]=pageNode.Key;
+    foreach(var section in pageNode.Sections){_groups.TryAdd(section.Key,pageRows);_groupPageKeys.TryAdd(section.Key,pageNode.Key);}
+    var tab=new TabItem{Header=pageNode.Key};_numericTabPages.Add(tab,pageNode.Key);tab.SetResourceReference(StyleProperty,"TopTabItemStyle");tabs.Items.Add(tab);
+    _pageBuilders.Add(pageNode.Key,() =>
     {
-     if(_disposed||!_builtPages.Add(page.Key))return;
+     if(_disposed||!_builtPages.Add(pageNode.Key))return;
+    
      try
      {
-      var pageFields=page.ToArray();var pageIds=pageFields.Select(field=>field.Port.Id).ToHashSet(StringComparer.Ordinal);
-      var body=new NativeHost();if(pageLabelWidths?.TryGetValue(page.Key,out var width)==true)body.ChildLeftWidth=width;
-      body.SetRows(pageRows.Rows);_pages.Add((pageRows,body));
+      var pageFields=pageNode.Fields.Select(field=>declarations[field.FieldId]).ToArray();var pageIds=pageFields.Select(field=>field.Port.Id).ToHashSet(StringComparer.Ordinal);
+      var body=new NativeHost();if(pageLabelWidths?.TryGetValue(pageNode.Key,out var width)==true)body.ChildLeftWidth=width;
+      _pages.Add((pageRows,body));
+      // PROBE-KEEP：页构建细分计时（行控件创建/行装配布局），经 LastBuildStageMs 由宿主 PageBuilt 埋点输出。
+      var buildProbe=System.Diagnostics.Stopwatch.StartNew();
       foreach(var option in graphicOptions.Values.Where(option=>GraphicIds(option).All(pageIds.Contains)))
       {
        var ids=GraphicIds(option);var graphic=new NativeGraphicStylePresenter(option,ids.ToDictionary(id=>id,id=>states[id],StringComparer.Ordinal),_groupPresentations,CurrentGroup);
@@ -382,7 +401,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
        foreach(var id in ids)
        {
         var fieldId=id;_rows.Add(id,graphic);
-        access[id].AttachVisual(new(id,graphic,()=>states[fieldId].Accepted,()=>states[fieldId].HasInvalidInput,()=>graphic.HasPendingEdits(fieldId),()=>states[fieldId].Error,()=>graphic.Input(fieldId),
+        _fieldsById[id].AttachVisual(new(id,graphic,()=>states[fieldId].Accepted,()=>states[fieldId].HasInvalidInput,()=>graphic.HasPendingEdits(fieldId),()=>states[fieldId].Error,()=>graphic.Input(fieldId),
          value=>graphic.TrySetConstant(fieldId,value),()=>graphic.TryCommitPending(fieldId),handler=>states[fieldId].Changed+=handler,handler=>states[fieldId].Changed-=handler,()=>!states[fieldId].IsDisposed));
        }
       }
@@ -391,38 +410,63 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
        var state=states[id];var roles=new NativeGraphicDisplayOptions(id,id,id,id,id,ShowStyleButton:false);
        var graphic=new NativeGraphicStylePresenter(roles,new Dictionary<string,DeclaredFieldState>{{id,state}},_groupPresentations,CurrentGroup,visibilityOnly:true);
        _displayCompositions.Add(graphic);_rows.Add(id,graphic);
-       access[id].AttachVisual(new(id,graphic,()=>state.Accepted,()=>state.HasInvalidInput,()=>false,()=>state.Error,()=>graphic.Input(id),
+       _fieldsById[id].AttachVisual(new(id,graphic,()=>state.Accepted,()=>state.HasInvalidInput,()=>false,()=>state.Error,()=>graphic.Input(id),
         value=>graphic.TrySetConstant(id,value),()=>!state.HasInvalidInput,handler=>state.Changed+=handler,handler=>state.Changed-=handler,()=>!state.IsDisposed));
       }
       foreach(var field in pageFields)
       {
+       var fieldProbe=System.Diagnostics.Stopwatch.StartNew();
+       try
+       {
+       var templateKey=DeclaredFieldTemplateRegistry.ResolveTemplateKey(
+        field.Port,
+        field.Presentation,
+        isNumericPair:field.Presentation.Layout?.PairWith is not null,
+        hasIntegerRadio:radios.ContainsKey(field.Port.Id),
+        inlineConstantReference:_inlineConstants.Contains(field.Port.Id),
+        isDialogPrimary:field.Presentation.Layout?.DialogPrimary==true);
+       _templateKinds[field.Port.Id]=templateKey;
        if(graphicIds.Contains(field.Port.Id))continue;
        if(field.Presentation.Layout?.PairWith is {} id)
        {
         var other=declarations[id];var left=states[field.Port.Id];var right=states[id];
-        var range=new NativeRangePresenter(left,right,field.Presentation,other.Presentation,writeDraft,references,formatReference,SubmitRange,BeginRange);_ranges.Add(range);
+        // 范围行：视觉（SliderArrange between）由模板在实现时声明，构建期只创建轻量宿主与会话。
+        var range=new DeclaredRangeRow(left,right,field.Presentation,other.Presentation,writeDraft,references,formatReference,SubmitRange,BeginRange);
+        _ranges.Add(range);
         foreach(var (state,endpoint) in new[]{(left,0),(right,1)})
         {
-         var i=endpoint;_rows.Add(state.Port.Id,range);
-         access[state.Port.Id].AttachVisual(new(state.Port.Id,range,()=>state.Accepted,()=>state.HasInvalidInput,()=>range.HasPendingEdits(i),()=>state.Error,()=>range.Input(i),
+         var i=endpoint;
+         _fieldsById[state.Port.Id].AttachVisual(new(state.Port.Id,range,()=>state.Accepted,()=>state.HasInvalidInput,()=>range.HasPendingEdits(i),()=>state.Error,()=>range.Input(i),
           value=>range.TrySetConstant(i,value),()=>range.TryCommitPending(),handler=>state.Changed+=handler,handler=>state.Changed-=handler,()=>!state.IsDisposed));
         }
+        _rows.Add(left.Port.Id,range);_rows.Add(right.Port.Id,range);
        }
        else if(!paired.Contains(field.Port.Id))
        {
-        var editor=new DeclaredFieldEditor(states[field.Port.Id],field.Presentation.DisplayName,references,formatReference,field.Presentation.ChoiceLabels,field.Presentation,
-          integerRadioOptions:radios.GetValueOrDefault(field.Port.Id),inlineConstantReference:_inlineConstants.Contains(field.Port.Id),choiceDisplay:_choiceDisplays.GetValueOrDefault(field.Port.Id));
-        _editors.Add(field.Port.Id,editor);_rows.Add(field.Port.Id,editor);access[field.Port.Id].AttachVisual(new(editor));
-        if(textOptions.TryGetValue(field.Port.Id,out var textOption))editor.UseTextExpressions(textOption);
-        if(imageProviders.TryGetValue(field.Port.Id,out var provider))editor.UseImageSourceSelector(()=>
+        // 行宿主只创建行视图模型（ContentControl），视觉由模板选择器在实现时实例化；会话类逻辑在行 Loaded 后挂接。
+        var fieldId=field.Port.Id;
+        var ctorProbe=System.Diagnostics.Stopwatch.StartNew();
+        var row=new DeclaredFieldRow(states[field.Port.Id],field.Presentation.DisplayName,references,formatReference,field.Presentation.ChoiceLabels,field.Presentation,
+         integerRadioOptions:radios.GetValueOrDefault(field.Port.Id),inlineConstantReference:_inlineConstants.Contains(field.Port.Id),choiceDisplay:_choiceDisplays.GetValueOrDefault(field.Port.Id));
+        _editors[field.Port.Id]=row;
+        var ctorMs=ctorProbe.ElapsedMilliseconds;ctorProbe.Restart();
+        if(textOptions.TryGetValue(field.Port.Id,out var textOption))row.UseTextExpressions(textOption);
+        if(imageProviders.TryGetValue(field.Port.Id,out var provider))row.UseImageSourceSelector(() =>
         {if(!CurrentGroup())throw new InvalidOperationException("图像来源编辑范围已失效。");var candidates=provider();if(!CurrentGroup())throw new InvalidOperationException("图像来源编辑范围已重绑。");return candidates;});
+        _fieldsById[fieldId].AttachVisual(new(row));
+        _editorCtorMs[field.Port.Id]=ctorMs;_editorOptionsMs[field.Port.Id]=ctorProbe.ElapsedMilliseconds;
+        _rows.Add(fieldId,row);
        }
+       }
+       finally{_lastFieldBuildMs[$"{field.Port.Id}|{field.Presentation.DisplayName}|{field.Port.Type}"]=fieldProbe.ElapsedMilliseconds;}
       }
-      foreach(var section in pageFields.GroupBy(field=>(field.Presentation.Layout?.Section??field.Presentation.Group,field.Presentation.Layout?.Advanced??false)))
+      var rowsMs=buildProbe.ElapsedMilliseconds;
+      foreach(var sectionNode in pageNode.Sections)
       {
-       var metadata=new NativeParameterGroup(section.Key.Item1,section.Key.Item2||section.Any(field=>headerlessSectionAnchors?.Contains(field.Port.Id)==true));
+       var section=sectionNode.Fields.Select(field=>declarations[field.FieldId]).ToArray();
+       var metadata=new NativeParameterGroup(sectionNode.Key,sectionNode.IsAdvanced||section.Any(field=>headerlessSectionAnchors?.Contains(field.Port.Id)==true));
        NativeAdvancedPresenter? advanced=null;
-       if(section.Key.Item2)
+       if(sectionNode.IsAdvanced)
        {
         advanced=new NativeAdvancedPresenter();_advanced.Add(advanced);advanced.Changed+=UpdateVisibility;
         var buttonRow=BorrowRow(metadata,advanced);pageRows.Rows.Add(buttonRow);_positions.Add(advanced,(pageRows,buttonRow));
@@ -432,16 +476,21 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
        foreach(var field in section)
        {
         if(rightEnds.Contains(field.Port.Id)||field.Presentation.Layout?.DialogGroup is {} dialog&&!field.Presentation.Layout.DialogPrimary)continue;
+        var rowProbe=System.Diagnostics.Stopwatch.StartNew();
         var view=_rows[field.Port.Id];BindNativeRowMargin(view,body);
         var affected=field.Presentation.Layout?.DialogGroup is {} displayGroup?section.Where(item=>item.Presentation.Layout?.DialogGroup==displayGroup).Select(item=>item.Port.Id).ToArray():
          field.Presentation.Layout?.PairWith is {} other?new[]{field.Port.Id,other}:new[]{field.Port.Id};
         var row=BorrowRow(metadata,view,()=>NativeParameterRow.ProjectState(affected.Select(id=>states[id])));pageRows.Rows.Add(row);_positions.Add(view,(pageRows,row));
-        _visibility.Add(view,(advanced,field.Presentation.Layout?.VisibleWhen));_rowGateAnchors.Add(view,field.Port.Id);
+        _rowAssemblyMs[field.Port.Id]=rowProbe.ElapsedMilliseconds;
+        _visibility.Add(view,(advanced,null));_rowGateAnchors.Add(view,field.Port.Id);
        }
       }
+      // Attach once after the declared rows are assembled. Later slot edits still use the live collection.
+      body.SetRows(pageRows.Rows);
+      var layoutMs=buildProbe.ElapsedMilliseconds-rowsMs;_lastBuildStageMs[pageNode.Key]=(rowsMs,layoutMs);
       tab.Content=body;
-      _pageBuilt?.Invoke(page.Key,this);
-      if(_pendingPageActions.Remove(page.Key,out var actions))foreach(var action in actions.ToArray())action();
+      _pageBuilt?.Invoke(pageNode.Key,this);
+      if(_pendingPageActions.Remove(pageNode.Key,out var actions))foreach(var action in actions.ToArray())action();
       UpdateVisibility();
      }
      catch(Exception failure)
@@ -453,40 +502,48 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
    }
    tabs.SelectionChanged+=(_,args)=>
    {
-    if(!ReferenceEquals(args.OriginalSource,tabs))return;
-    if(tabs.SelectedItem is TabItem selected&&_numericTabPages.TryGetValue(selected,out var key))_pageBuilders[key]();
+    if(_disposed||!ReferenceEquals(args.OriginalSource,tabs))return;
+    var selected=tabs.SelectedItem;
+    if(args.RemovedItems.Count>0)_referenceWindowOwner?.RetirePageRequest();
+    if(_disposed||!ReferenceEquals(tabs.SelectedItem,selected))return;
+    if(selected is TabItem tab&&_numericTabPages.TryGetValue(tab,out var key))_pageBuilders[key]();
+    if(_disposed||!ReferenceEquals(tabs.SelectedItem,selected))return;
     PageChanged?.Invoke();
    };
    Content=tabs;
    if(selectedPageIndex<0||selectedPageIndex>=tabs.Items.Count)throw new ArgumentOutOfRangeException(nameof(selectedPageIndex));
    tabs.SelectedIndex=selectedPageIndex;
-   if(tabs.SelectedItem is TabItem first&&_numericTabPages.TryGetValue(first,out var firstPage))
-   {
-    // Let the window enter the dispatcher before constructing the selected page.
-    // The tab item and resource dictionaries are already available, so the host can
-    // show the window while the first page is assembled at Loaded priority.
-    Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
-    {
-     if(!_disposed)_pageBuilders[firstPage]();
-    }));
-   }
+   // WPF does not raise SelectionChanged when the initial index is already zero.
+   // Materialize the initially selected page explicitly so lazy page composition
+   // has the same contract for every valid starting index.
+   if(tabs.SelectedItem is TabItem initialTab&&_numericTabPages.TryGetValue(initialTab,out var initialPage))
+    _pageBuilders[initialPage]();
    UpdateVisibility();
+   if(eagerlyComposePages)
+   {
+    // The caller can request all declared pages before exposing this view.
+    foreach(var page in _pageBuilders.Keys.ToArray())_pageBuilders[page]();
+   }
   }
   catch(Exception failure){try{Dispose();}catch(Exception cleanup){throw new AggregateException("参数宿主构造与清理均失败。",failure,cleanup);}throw;}
  }
  // Logical declaration activity is independent of selected tabs, collapsed Advanced sections, or attachment state.
- private bool IsFieldActive(string fieldId)=>(!_fieldConditions.TryGetValue(fieldId,out var condition)||Meets(condition))
+ private bool IsFieldActive(string fieldId)=>(!_fieldConditions.TryGetValue(fieldId,out var condition)||Meets(condition.Primary)
+  ||condition.Alternative is {} alternative&&Meets(alternative))
   &&(!_visualSources.TryGetValue(fieldId,out var visualSource)||visualSource.Visibility==Visibility.Visible)
   &&(!_parentConditions.TryGetValue(fieldId,out var parents)||parents.All(Meets));
  private bool Meets(FieldCondition condition)
  {
-  var source=_fields.SingleOrDefault(field=>field.FieldId==condition.FieldId);
+  var source=_fieldsById.GetValueOrDefault(condition.FieldId);
   // UI never resolves a reference: its dependents remain explicitly visible and active for review.
   return source?.Setting is ReferenceSetting||source?.Setting is ConstantSetting literal&&(Equals(literal.Value,condition.Value)!=condition.Negate);
  }
  private void UpdateVisibility()
  {
-  if(_disposed)return;_visibilityVersion++;_visibilityPending=true;if(_updatingVisibility)return;
+  if(_disposed)return;
+  _visibilityUpdateCount++;
+  var visibilityProbe=System.Diagnostics.Stopwatch.StartNew();
+  _visibilityVersion++;_visibilityPending=true;if(_updatingVisibility){_visibilityElapsedMs+=visibilityProbe.ElapsedMilliseconds;return;}
   _updatingVisibility=true;var failures=new List<Exception>();
   try
   {
@@ -494,39 +551,38 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
    {
     _visibilityPending=false;var version=_visibilityVersion;
     bool Current()=>!_disposed&&version==_visibilityVersion;
+    HashSet<FrameworkElement>? hiddenRows=null;
+    foreach(var (id,source) in _visualSources)
+     if(source.Visibility!=Visibility.Visible&&_rows.TryGetValue(id,out var row))
+      (hiddenRows??=new(ReferenceEqualityComparer.Instance)).Add(row);
     var targets=_visibility.ToArray().Select(item=>(item.Key,Visible:(item.Value.Advanced?.IsExpanded??true)
      &&(item.Value.Condition is not {} condition||Meets(condition))
-     &&!_rows.Any(row=>ReferenceEquals(row.Value,item.Key)&&_visualSources.TryGetValue(row.Key,out var source)&&source.Visibility!=Visibility.Visible)
+     &&hiddenRows?.Contains(item.Key)!=true
      &&(!_rowGateAnchors.TryGetValue(item.Key,out var anchor)||IsFieldActive(anchor))
      &&(!_advancedFields.TryGetValue(item.Key,out var members)||members.Any(IsFieldActive)))).ToArray();
+    void ApplyVisibility(FrameworkElement row,bool visible)
+    {
+     if(!Current()||!_visibility.ContainsKey(row))return;
+     var value=visible?Visibility.Visible:Visibility.Collapsed;
+     if(_appliedVisibility.TryGetValue(row,out var applied)&&applied==visible&&row.Visibility==value)return;
+     // Preparing may notify observers synchronously. Retry from the latest pass if they supersede this transition.
+     _appliedVisibility.Remove(row);
+     ParameterCleanup.Run(new Action[]{
+      ()=> (row as IParameterVisibility)?.PrepareForVisibility(visible),
+      ()=>{if(Current()&&_visibility.ContainsKey(row))row.Visibility=value;}
+     });
+     if(Current()&&_visibility.ContainsKey(row)&&row.Visibility==value)_appliedVisibility[row]=visible;
+    }
     try
     {
-     ParameterCleanup.Run(targets.Select(item=>(Action)(()=>ParameterCleanup.Run(new Action[]{
-      ()=>{if(Current())(item.Key as IParameterVisibility)?.PrepareForVisibility(item.Visible);},
-      ()=>{if(Current())item.Key.Visibility=item.Visible?Visibility.Visible:Visibility.Collapsed;}
-     }))).Concat(_parameterRows.ToArray().Select(row=>(Action)(()=>{if(Current())row.Refresh();})))
-     .Append(()=>
-     {
-      var updates=new List<Action>();
-      foreach(var (page,_) in _pages.ToArray())
-      {
-       var first=true;
-       foreach(var group in page.Rows.GroupBy(row=>row.GroupName))
-       {
-        var visible=group.Any(row=>row.CustomVisibleA);
-        var isFirst=visible&&first;
-        updates.Add(()=>{if(Current())group.Key.CustomVisibleA=visible;});
-        updates.Add(()=>{if(Current())group.Key.IsFirst=isFirst;});
-        if(visible)first=false;
-       }
-      }
-      ParameterCleanup.Run(updates);
-     }));
+     ParameterCleanup.Run(targets.Select(item=>(Action)(()=>ApplyVisibility(item.Key,item.Visible)))
+     .Concat(_parameterRows.ToArray().Select(row=>(Action)(()=>{if(Current())row.Refresh();})))
+     .Concat(_pages.ToArray().Select(page=>(Action)(()=>{if(Current())page.Host.RefreshGroups(Current);}))));
     }
     catch(Exception failure){failures.Add(failure);}
    }
   }
-  finally{_updatingVisibility=false;}
+  finally{_updatingVisibility=false;_visibilityElapsedMs+=visibilityProbe.ElapsedMilliseconds;}
   ParameterCleanup.Run(failures.Select(failure=>(Action)(()=>System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw())));
  }
  public void Dispose()
@@ -544,9 +600,10 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   cleanup.AddRange(_fieldStates.ToArray().Select(state=>(Action)state.Dispose));
   cleanup.Add(()=>
   {
-   _numericTabPages.Clear();_numericModelPages.Clear();_parameterRows.Clear();_pages.Clear();_positions.Clear();_visibility.Clear();_advanced.Clear();_ranges.Clear();_editors.Clear();_rows.Clear();
+  _numericTabPages.Clear();_numericModelPages.Clear();_parameterRows.Clear();_pages.Clear();_positions.Clear();_visibility.Clear();_advanced.Clear();_ranges.Clear();_editors.Clear();_rows.Clear();
+   _appliedVisibility.Clear();
    _groups.Clear();_groupPageKeys.Clear();_pendingPageActions.Clear();_pendingContent.Clear();_pageBuilders.Clear();_builtPages.Clear();
-   _fieldStates.Clear();_displayCompositions.Clear();_fields.Clear();_fieldConditions.Clear();_groups.Clear();
+   _fieldStates.Clear();_displayCompositions.Clear();_fields.Clear();_fieldsById.Clear();_fieldConditions.Clear();_groups.Clear();
    _pairedFields.Clear();_validateComposition=null;_groupReferences=null;_isCurrent=null;_writeGroup=null!;
    foreach(var release in _visualSourceCleanup)release();_visualSourceCleanup.Clear();_visualSources.Clear();
    _parentConditions.Clear();_rowGateAnchors.Clear();_advancedFields.Clear();_inlineConstants.Clear();

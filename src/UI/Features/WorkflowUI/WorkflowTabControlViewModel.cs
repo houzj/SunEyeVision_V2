@@ -84,6 +84,9 @@ namespace SunEyeVision.UI.Features.WorkflowUI
         private void DocumentSessionChanged(object? sender, SunEyeVision.Application.DocumentSessionReplacement change)
         {
             if (!ReferenceEquals(sender, _sessionManager)) return;
+            // PROBE-KEEP：启动期打开方案的呈现断点定位（画布空/小地图消失），诊断后保留。
+            Foundation.Logging.VisionLogger.Instance?.Log(Foundation.Logging.LogLevel.Info,
+                $"[TabRebuild] 会话安装通知：会话={change.Current?.Document.Name ?? "null"} 流程数={change.Current?.GetWorkflows().Count(flow => !flow.IsSubroutine) ?? 0}", "WorkflowTabControlViewModel");
             ObserveCollection(change.Current);
             try { ReplaceDocumentTabs(change.Current); }
             catch

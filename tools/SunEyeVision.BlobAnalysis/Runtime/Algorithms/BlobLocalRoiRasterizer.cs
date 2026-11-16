@@ -1,4 +1,5 @@
 using HalconDotNet;
+using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.Contracts;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
@@ -6,9 +7,31 @@ namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 /// <summary>One invocation-local rasterization of the persistent input-slot geometry. No resource escapes.</summary>
 internal static class BlobLocalRoiRasterizer
 {
-    internal static HRegion Build(RecordValue definition,string group,HRegion inputDomain,CancellationToken cancellation,int maximumInspectionCount=16)
+    internal static bool IsDirectFullFrameRectangle(RecordValue definition, int width, int height)
     {
-        BlobLocalRoi.Validate(definition,maximumInspectionCount);
+        if (BlobLocalRoi.Coverage(definition, BlobLocalRoi.Mask) != BlobLocalRoi.None)
+            return false;
+        if (BlobLocalRoi.Coverage(definition, BlobLocalRoi.Inspection) == BlobLocalRoi.FullDomain)
+            return true;
+        var items = BlobLocalRoi.Items(definition, BlobLocalRoi.Inspection);
+        if (items.Count != 1 || !items[0].Get<bool>("enabled"))
+            return false;
+        var shape = items[0].Get<RecordValue>("shape");
+        if (shape.Get<string>("kind") != "rectangle")
+            return false;
+        var center = shape.Get<RecordValue>("center");
+        return center.Get<double>("x") == width / 2d && center.Get<double>("y") == height / 2d
+            && shape.Get<double>("width") == width && shape.Get<double>("height") == height
+            && BlobLocalRoi.NormalizeDegrees(shape.Get<double>("angle-degrees")) == 0d;
+    }
+
+    // The invocation validates the definition before rasterization. Result subsets come from that same definition.
+    internal static HRegion Build(RecordValue definition,string group,HRegion inputDomain,CancellationToken cancellation,bool clipToInputDomain=true)
+        => clipToInputDomain ? BuildCore(definition,group,inputDomain,cancellation,true)
+            : HalconResourceBridge.CreateWithoutImplicitClipping(() => BuildCore(definition,group,inputDomain,cancellation,false));
+
+    private static HRegion BuildCore(RecordValue definition,string group,HRegion inputDomain,CancellationToken cancellation,bool clipToInputDomain)
+    {
         var coverage=BlobLocalRoi.Coverage(definition,group);
         if(coverage==BlobLocalRoi.FullDomain)return inputDomain.Clone();
         HOperatorSet.GenEmptyRegion(out var empty);
@@ -22,7 +45,7 @@ internal static class BlobLocalRoiRasterizer
                 using var region=Shape(item.Get<RecordValue>("shape"));using var next=union.Union2(region);
                 var replacement=next.Clone();union.Dispose();union=replacement;
             }
-            return union.Intersection(inputDomain);
+            return clipToInputDomain ? union.Intersection(inputDomain) : union.Clone();
         }
         finally{union.Dispose();}
     }

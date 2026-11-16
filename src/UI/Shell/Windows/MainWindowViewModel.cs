@@ -141,6 +141,7 @@ namespace SunEyeVision.UI.Shell.Windows
         /// 调试窗口是否打开（用于锁定画布操作，避免Delete键冲突）
         /// </summary>
         public bool IsDebugWindowOpen => (_openDebugWindow != null && _openDebugWindow.IsLoaded) || _auxiliaryParameterWindows.Count != 0;
+        internal bool HasActiveEditorDebugSession => _openDebugWindow is not null || _editorDebugContext is not null;
 
         // 按 Workflow 缓存的 DSQS（key: WorkflowId，替代旧的按节点缓存的 _nodeDataProviders）
 
@@ -286,6 +287,14 @@ namespace SunEyeVision.UI.Shell.Windows
             get => _dataAnalysisControlTitle;
             set => SetProperty(ref _dataAnalysisControlTitle, value);
         }
+
+        /// <summary>当前节点在结果工作区帮助页显示的工具说明。</summary>
+        public string? ResultHelpContent => SelectedNode?.ToolType switch
+        {
+            "BlobAnalysis" => "功能：对输入图像进行二值化，提取满足条件的 Blob，并输出 Blob 的特征。\n操作：\n1.连接并配置好输入图像；\n2.设置待查找 ROI；\n3.设置运行参数；\n4.运行工作流。",
+            "ImageLoad" => "功能：读取本地图像、相机图像或 SDK 图像，并向后续工具提供图像数据。\n操作：\n1.选择图像来源；\n2.配置图像列表或采集设备；\n3.设置运行模式和自动切换；\n4.运行工作流。",
+            _ => null
+        };
 
         public NodeDefinition? SelectedNode
         {
@@ -941,15 +950,15 @@ SplitterPosition = position;
         /// </remarks>
 
 
-        internal bool CanNavigateLocalImages()=>ActiveImageSourceBinding?.CanActivate==true;
-        internal System.Threading.Tasks.Task NavigateLocalImagesAsync(int direction)
+        internal bool CanNavigateLocalImages()=>!IsRunning && ActiveImageSourceBinding?.CanActivate==true;
+        internal async System.Threading.Tasks.Task NavigateLocalImagesAsync(int direction)
         {
             if(direction is not (-1 or 1))throw new ArgumentOutOfRangeException(nameof(direction));
-            var binding=ActiveImageSourceBinding;var source=binding?.Source;var session=DocumentManager.CurrentSession;var tab=WorkflowTabViewModel.SelectedTab;
-            if(binding is null||source is null||session is null||tab is null||!CanNavigateLocalImages())return System.Threading.Tasks.Task.CompletedTask;
-            var index=source.CurrentIndex+direction;if(index<0||index>=source.Count||!source.CanSelectImage(index))return System.Threading.Tasks.Task.CompletedTask;
-            var root=session.GetWorkflows().Single(flow=>flow.Id==tab.RootWorkflowId);var node=session.GetNodes(root.Id).Single(item=>item.Id==source.NodeId);
-            return ActivateFormalImageSourceAsync(new(session,root,node,source,source.Images[index],index,source.EditVersion));
+            var tab=WorkflowTabViewModel.SelectedTab;
+            if(tab is null||tab.IsInSubroutine||!CanNavigateLocalImages())return;
+            try{await RunFormalWorkflowsAsync(new[]{tab.RootWorkflowId},direction);}
+            catch(OperationCanceledException){StatusText="图像导航已取消。";}
+            catch(Exception error){StatusText="图像导航失败："+error.Message;AddLog(StatusText);}
         }
         public System.Threading.Tasks.Task RunSelectedImageAsync() => ExecuteRunWorkflow();
 
@@ -1128,11 +1137,26 @@ SplitterPosition = position;
         {
             var intent=System.Threading.Interlocked.Increment(ref _nodeSelectionIntent);
             if (ReferenceEquals(_selectedNode, node)) return false;
+            // 提交重建节点实例（同稳定 Id）：原件语义对结果视图不可见——发布、结果表、
+            // 图文层全部原样保留，仅静默替换实例引用，不退役发布、不推进选择代次。
+            if(_selectedNode is { } previous&&node is { } next
+                &&string.Equals(previous.Id,next.Id,StringComparison.Ordinal)
+                &&WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId is not null)
+            {
+                if(intent!=_nodeSelectionIntent)return false;
+                SetProperty(ref _selectedNode,node,propertyName:nameof(SelectedNode));
+                OnPropertyChanged(nameof(ResultHelpContent));
+                return false;
+            }
             System.Threading.Interlocked.Increment(ref _outputContractSelectionGeneration);
+            // A node switch only changes the active result view. Retained debug
+            // snapshots belong to their stable workflow/node identity and must
+            // remain available when the user switches back.
             RetireResultPublication();
             if(intent!=_nodeSelectionIntent)return false;
             _declaredHistoricalResult=false;
             var changed=SetProperty(ref _selectedNode,node,propertyName:nameof(SelectedNode));
+            OnPropertyChanged(nameof(ResultHelpContent));
             return changed&&intent==_nodeSelectionIntent&&ReferenceEquals(_selectedNode,node);
         }
 
@@ -1497,6 +1521,7 @@ SplitterPosition = position;
         {
             if(_activeResultView is not {} view)return;
             _activeResultView=null;
+            _presentedResultTable=null;
             view.SelectionHighlightChanged-=OnDeclaredSelectionHighlightChanged;
             view.Dispose();
         }
@@ -1531,8 +1556,8 @@ SplitterPosition = position;
             if(!Current()||!ReferenceEquals(_activeResultView,view))return System.Threading.Tasks.Task.CompletedTask;
             HasDataAnalysisControl=true;
             if(!Current()||!ReferenceEquals(_activeResultView,view))return System.Threading.Tasks.Task.CompletedTask;
-            if(_resultPublication is {} publication&&publication.IsCurrent()&&Current())
-                PresentResultPublication(publication,_resultPublicationSnapshot,selectedNode.Name,_resultPublicationBindings);
+            if(_resultPublication is {} publication&&Current())
+                PresentCurrentResultTable(publication);
             else if(Current()&&ReferenceEquals(_activeResultView,view))view.Clear();
             return System.Threading.Tasks.Task.CompletedTask;
         }
@@ -1544,7 +1569,7 @@ SplitterPosition = position;
         {
             var publication=_resultPublication;
             if(!ReferenceEquals(sender,_activeResultView)||publication is null||selection.Publication!=publication.Stamp
-                ||!publication.IsCurrent()||!ReferenceEquals(_resultPublication,publication))return;
+                ||!CanDisplayResultPublication(publication)||!ReferenceEquals(_resultPublication,publication))return;
             ResultWorkspaceSelectionChanged?.Invoke(selection);
         }
 
@@ -1663,7 +1688,15 @@ SplitterPosition = position;
 
 
         private bool StartContinuousWorkflow(WorkflowTabViewModel workflow) => StartFormalContinuous(new[]{workflow.RootWorkflowId});
-        private bool StopContinuousWorkflow(WorkflowTabViewModel workflow) { if(!IsFormalRootRunning(workflow.RootWorkflowId))return false; RequestStopFormalExecution(); return true; }
+        private bool StopContinuousWorkflow(WorkflowTabViewModel workflow)
+        {
+            // The continuous run owns the stop request.  The per-root set is a
+            // presentation projection and can briefly lag while a round is
+            // settling, which used to make the Tab button drop the stop click.
+            if(_formalContinuousRun is null)return false;
+            RequestStopFormalExecution();
+            return true;
+        }
 
         /// <summary>
         /// 执行开始事件
@@ -2018,6 +2051,7 @@ SplitterPosition = position;
             if (_transitionPreparationInProgress) return false;
             owner = ResolveSolutionDialogOwner(owner);
             _transitionPreparationInProgress = true;
+            RuntimeLifecycleProbe.Log($"solution-transition-enter reload={reload} running={IsRunning}");
             OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace));OnPropertyChanged(nameof(CanEditRootCollection));
             try
             {
@@ -2026,7 +2060,9 @@ SplitterPosition = position;
                     ThemeMessageDialog.Show("方案正在运行。停止全部执行后继续？", "切换方案", MessageBoxButton.OKCancel,
                         ThemeMessageDialog.MessageIcon.Question, owner) != MessageBoxResult.OK) return false;
                 _solutionTransitionPrepared=true;
+                RuntimeLifecycleProbe.Log($"solution-transition-stop-begin running={IsRunning}");
                 await StopFormalExecutionAsync(TimeSpan.FromSeconds(30));
+                RuntimeLifecycleProbe.Log($"solution-transition-stop-complete running={IsRunning}");
                 if (manager.CurrentSession == null) return await TryCloseParameterWindowsForTransitionAsync();
                 if (reload)
                 {
@@ -2044,11 +2080,12 @@ SplitterPosition = position;
             }
             catch (Exception ex)
             {
+                RuntimeLifecycleProbe.Log($"solution-transition-fault type={ex.GetType().Name} message={ex.Message}");
                 EndSolutionTransition();
                 ThemeMessageDialog.Show("操作未完成，原方案保持打开：" + ex.Message, "方案切换", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error, owner);
                 return false;
             }
-            finally { _transitionPreparationInProgress = false; ActiveImageSourceBinding?.RefreshAvailability(); OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace));OnPropertyChanged(nameof(CanEditRootCollection)); }
+            finally { RuntimeLifecycleProbe.Log($"solution-transition-exit running={IsRunning} prepared={_solutionTransitionPrepared}"); _transitionPreparationInProgress = false; ActiveImageSourceBinding?.RefreshAvailability(); OnPropertyChanged(nameof(CanEditWorkflowCanvas));OnPropertyChanged(nameof(CanEditRootWorkspace));OnPropertyChanged(nameof(CanEditRootCollection)); }
         }
 
         /// <summary>External file activation reuses existing stop/save and identity-conflict rules.</summary>
@@ -2131,7 +2168,9 @@ SplitterPosition = position;
         /// <summary>
         /// 显示相机管理器
         /// </summary>
-        private void ExecuteShowCameraManager()
+        private void ExecuteShowCameraManager() => ShowCameraManager(null, null);
+
+        private void ShowCameraManager(Window? owner, string? selectedDeviceId)
         {
             try
             {
@@ -2152,10 +2191,18 @@ SplitterPosition = position;
 
                 LogInfo("创建 CameraManagerViewModel...");
                 var viewModel = new SunEyeVision.UI.Features.Camera.CameraManagerViewModel(solutionManager);
+                if (!string.IsNullOrWhiteSpace(selectedDeviceId) && viewModel.Cameras.FirstOrDefault(camera =>
+                    StringComparer.OrdinalIgnoreCase.Equals(camera.DeviceId, selectedDeviceId)) is { } camera)
+                    viewModel.SelectedCamera = camera;
                 LogInfo($"ViewModel 已创建, 相机数量: {viewModel.Cameras?.Count ?? 0}");
 
                 LogInfo("创建 CameraManagerDialog...");
                 var dialog = new SunEyeVision.UI.Features.Camera.CameraManagerDialog(viewModel);
+                if (owner is not null)
+                {
+                    dialog.Owner = owner;
+                    dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                }
 
                 LogInfo("显示对话框...");
                 dialog.ShowDialog();
@@ -2386,17 +2433,19 @@ SplitterPosition = position;
             get
             {
                 var type=Reference.Type;
-                foreach(var member in Reference.MemberFieldPath)type=Project(type,member);
+                foreach(var member in Reference.MemberFieldPath)
+                {
+                    while(type.Shape==SunEyeVision.Plugin.Contracts.ValueShape.Sequence)type=type.Element!;
+                    // 成员路径必须落在声明记录的字段上；几何伪成员（如多边形顶点）暂不提供变量承载。
+                    if(type.Shape!=SunEyeVision.Plugin.Contracts.ValueShape.Record)return false;
+                    if(type.Fields.SingleOrDefault(item=>item.Id==member) is not {} declaredField)return false;
+                    type=declaredField.Type;
+                }
                 var element=type.Shape==SunEyeVision.Plugin.Contracts.ValueShape.Sequence?type.Element!:type;
                 if(element.Shape!=SunEyeVision.Plugin.Contracts.ValueShape.Scalar)return false;
                 return SunEyeVision.Plugin.Contracts.VariableValueDeclarations.DisplayNames.Keys.SelectMany(name=>new[]{name,name+"[]"}).Any(vocabulary=>SunEyeVision.Plugin.Contracts.VariableValueDeclarations.TryGetPort(vocabulary,out var target)
                     &&target.Type.Shape==type.Shape&&(target.Type.Shape==SunEyeVision.Plugin.Contracts.ValueShape.Sequence?target.Type.Element:target.Type)==element);
             }
-        }
-        private static SunEyeVision.Plugin.Contracts.TypeRef Project(SunEyeVision.Plugin.Contracts.TypeRef type,string member)
-        {
-            if(type.Shape==SunEyeVision.Plugin.Contracts.ValueShape.Sequence)return SunEyeVision.Plugin.Contracts.TypeRef.SequenceOf(Project(type.Element!,member),type.Count);
-            return type.Fields.Single(field=>field.Id==member).Type;
         }
     }
 

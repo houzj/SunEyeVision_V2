@@ -18,7 +18,7 @@ public sealed class FragmentBuilderTests
   var fields=new FieldSettings(new[]{port},new Dictionary<string,ParameterSetting>{{"parameter",new ReferenceSetting(sourceReference,OriginId:"connection:edge")}});
   var original=new ToolConfiguration("tool",fields,new Dictionary<string,ConstantSetting>{{"parameter",new ConstantSetting(12L)}},parameterBindingOrder:new[]{"parameter"});
   var empty=new ToolConfiguration("tool",new FieldSettings(Array.Empty<Port>(),new Dictionary<string,ParameterSetting>()));
-  var nodes=new[]{new FragmentNodeSnapshot("a","tool","源1",true,new(10,20),140,90,null,null,empty),new FragmentNodeSnapshot("b","tool","目标2",true,new(30,40),140,90,null,null,original)};
+  var nodes=new[]{new FragmentNodeSnapshot("a","tool","源1",true,new(10,20),140,90,null,null,null,empty),new FragmentNodeSnapshot("b","tool","目标2",true,new(30,40),140,90,null,null,null,original)};
   var edge=new FragmentEdgeSnapshot("edge","a","b","right","left",new[]{new CanvasPoint(15,25)});
   var ids=new Dictionary<string,FragmentIssuedNode>{{"a",new("new-a",3,3,"3 源3","源3")},{"b",new("new-b",4,4,"4 目标4","目标4")}};
   var edgeIds=new Dictionary<string,string>{{"edge","new-edge"}};
@@ -33,10 +33,10 @@ public sealed class FragmentBuilderTests
  [Fact] public void Invalid_issued_mapping_is_rejected_before_any_result_is_returned()
  {
   var configuration=new ToolConfiguration("tool",new FieldSettings(Array.Empty<Port>(),new Dictionary<string,ParameterSetting>()));
-  var nodes=new[]{new FragmentNodeSnapshot("a","tool","a",true,new(0,0),140,90,null,null,configuration)};
+  var nodes=new[]{new FragmentNodeSnapshot("a","tool","a",true,new(0,0),140,90,null,null,null,configuration)};
   Assert.Throws<InvalidOperationException>(()=>FragmentBuilder.Build("s","t",nodes,Array.Empty<FragmentEdgeSnapshot>(),
    new Dictionary<string,FragmentIssuedNode>(),new Dictionary<string,string>(),new CanvasPoint(0,0),false));
-  var two=new[]{nodes[0],new FragmentNodeSnapshot("b","tool","b",true,new(1,1),140,90,null,null,configuration)};
+  var two=new[]{nodes[0],new FragmentNodeSnapshot("b","tool","b",true,new(1,1),140,90,null,null,null,configuration)};
   var duplicate=new Dictionary<string,FragmentIssuedNode>{{"a",new("new-a",1,1,"a1","a1")},{"b",new("new-b",1,2,"b2","b2")}};
   Assert.Throws<InvalidOperationException>(()=>FragmentBuilder.Build("s","t",two,Array.Empty<FragmentEdgeSnapshot>(),duplicate,
    new Dictionary<string,string>(),new CanvasPoint(0,0),false));
@@ -48,7 +48,7 @@ public sealed class FragmentBuilderTests
   var reference=new ReferenceSetting(new OutputReference("external","output",type,scopeId:"s"));
   var fields=new FieldSettings(new[]{port},new Dictionary<string,ParameterSetting>{{"parameter",reference}});
   var configuration=new ToolConfiguration("tool",fields,new Dictionary<string,ConstantSetting>{{"parameter",new ConstantSetting(12L)}},parameterBindingOrder:new[]{"parameter"});
-  var nodes=new[]{new FragmentNodeSnapshot("a","tool","a",true,new(0,0),140,90,null,null,configuration)};
+  var nodes=new[]{new FragmentNodeSnapshot("a","tool","a",true,new(0,0),140,90,null,null,null,configuration)};
   var result=FragmentBuilder.Build("s","s",nodes,Array.Empty<FragmentEdgeSnapshot>(),
    new Dictionary<string,FragmentIssuedNode>{{"a",new("new-a",1,1,"a1","a1")}},new Dictionary<string,string>(),new CanvasPoint(0,0),true);
   Assert.Equal(12L,Assert.Single(result.Nodes).Configuration.ReadCurrentParameter("parameter")!.Value);

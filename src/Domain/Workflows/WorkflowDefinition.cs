@@ -21,6 +21,7 @@ public sealed class NodeDefinition
     public bool IsEnabled { get; internal set; } = true;
     public string? SubroutineId { get; internal set; }
     public string? SelectedDisplayReference { get; internal set; }
+    public ImageOverlaySelection? DisplayOverlays { get; internal set; }
     private IReadOnlyDictionary<string, JsonElement>? _additionalData;
     public IReadOnlyDictionary<string, JsonElement>? AdditionalData
     {

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows;
 using SunEyeVision.Application;
 using SunEyeVision.Domain.Workflows;
+using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.UI.Shared;
 
 namespace SunEyeVision.UI.Features.WorkflowUI.Canvas;
@@ -29,6 +30,7 @@ public sealed class DocumentCanvasProjection : IDisposable
         Connections = new(_connections);
         Synchronize();
         _session.Changed += OnChanged;
+        _session.RuntimeResultAvailable += OnRuntimeResultAvailable;
     }
 
     public ReadOnlyObservableCollection<CanvasNodeProjection> Nodes { get; }
@@ -168,17 +170,60 @@ public sealed class DocumentCanvasProjection : IDisposable
             change.ChangedConnections.Any(x => x.WorkflowId == _workflowId))
         {
             Synchronize();
+            foreach (var item in change.ChangedNodes.Where(item => item.Identity.WorkflowId == _workflowId &&
+                item.Aspects.HasFlag(NodeChangedAspect.Configuration)))
+                if (_nodes.FirstOrDefault(node => ReferenceEquals(node.Definition, item.Node)) is { } node)
+                    RefreshInputReadiness(node);
             Changed?.Invoke(this, EventArgs.Empty);
         }
     }
+
+    private void OnRuntimeResultAvailable(object? sender, PublishedNodeResult result)
+    {
+        if (_disposed || !ReferenceEquals(sender, _session) || result.Node.WorkflowId != _workflowId) return;
+        var node = _nodes.FirstOrDefault(item => item.Id == result.Node.NodeId);
+        if (node is not null) RefreshRunState(node);
+    }
+
+    private void RefreshRunState(CanvasNodeProjection node)
+    {
+        using var result = _session.AcquirePublishedResult(_workflowId, node.Id);
+        var snapshot = result?.Snapshot;
+        var state = snapshot switch
+        {
+            null => CanvasNodeRunState.None,
+            { Status:ExecutionStatus.Cancelled } => CanvasNodeRunState.Cancelled,
+            { IsSuccess:false } => CanvasNodeRunState.Failed,
+            { IsPass:true } => CanvasNodeRunState.Passed,
+            _ => CanvasNodeRunState.Rejected
+        };
+        node.SetRunState(state);
+    }
+
+    private void RefreshInputReadiness(CanvasNodeProjection node) =>
+        node.SetUnconfiguredRequiredInputs(_session.HasUnconfiguredRequiredInputs(_workflowId, node.Id));
 
     private void Synchronize()
     {
         var actualNodes = _session.GetNodes(_workflowId);
         var actualEdges = _session.GetConnections(_workflowId);
-        var existing = _nodes.ToDictionary(x => x.Definition, (IEqualityComparer<NodeDefinition>)ReferenceEqualityComparer.Instance);
-        var nextNodes = actualNodes.Select(node => existing.TryGetValue(node, out var projection)
-            ? projection : new CanvasNodeProjection(node, () => _session.GetNodeCatalog(_workflowId, node))).ToArray();
+        // A committed parameter edit replaces the NodeDefinition instance while
+        // preserving the VM node identity. Reuse the canvas projection by stable
+        // id so the last execution state remains visible until a new execution
+        // publishes a replacement result.
+        var existing = _nodes.ToDictionary(x => x.Id, StringComparer.Ordinal);
+        var nextNodes = actualNodes.Select(node =>
+        {
+            if (existing.TryGetValue(node.Id, out var projection))
+            {
+                projection.Rebind(node);
+                return projection;
+            }
+            projection = new CanvasNodeProjection(node, () => _session.GetNodeCatalog(_workflowId, node));
+            RefreshRunState(projection);
+            RefreshInputReadiness(projection);
+            return projection;
+        }).ToArray();
         Replace(_nodes, nextNodes);
         foreach (var node in nextNodes) node.Refresh();
         var existingEdges = _connections.ToDictionary(x => x.Definition, (IEqualityComparer<ConnectionDefinition>)ReferenceEqualityComparer.Instance);
@@ -206,6 +251,7 @@ public sealed class DocumentCanvasProjection : IDisposable
         if (_disposed) return;
         _disposed = true;
         _session.Changed -= OnChanged;
+        _session.RuntimeResultAvailable -= OnRuntimeResultAvailable;
         Changed = null;
         _nodes.Clear();
         _connections.Clear();
@@ -246,15 +292,25 @@ public sealed class CanvasConnectionProjection : INotifyPropertyChanged
 /// <summary>只组合实际节点，不复制或修改正式领域实体。</summary>
 public interface ICanvasToolIconSource { string? ToolIconKey { get; } }
 
+public enum CanvasNodeRunState { None, Passed, Rejected, Failed, Cancelled }
+
 public sealed class CanvasNodeProjection : INotifyPropertyChanged, ICanvasToolIconSource
 {
+    private NodeDefinition _definition;
     private bool _selected, _editingName;
     private string _renameBuffer = string.Empty;
     private readonly Func<SunEyeVision.Plugin.Contracts.ToolCatalogDescriptor?>? _catalog;
-    public CanvasNodeProjection(NodeDefinition definition) => Definition = definition;
+    public CanvasNodeProjection(NodeDefinition definition) => _definition = definition;
     internal CanvasNodeProjection(NodeDefinition definition, Func<SunEyeVision.Plugin.Contracts.ToolCatalogDescriptor?> catalog)
-    { Definition = definition; _catalog = catalog; }
-    public NodeDefinition Definition { get; }
+    { _definition = definition; _catalog = catalog; }
+    public NodeDefinition Definition => _definition;
+    internal void Rebind(NodeDefinition definition)
+    {
+        ArgumentNullException.ThrowIfNull(definition);
+        if (ReferenceEquals(_definition, definition)) return;
+        _definition = definition;
+        Notify(string.Empty);
+    }
     public SunEyeVision.Plugin.Contracts.ToolCatalogDescriptor? Catalog
     {
         get { try { return _catalog?.Invoke(); } catch (InvalidOperationException) { return null; } }
@@ -265,8 +321,32 @@ public sealed class CanvasNodeProjection : INotifyPropertyChanged, ICanvasToolIc
     public string DispName => Definition.DispName;
     public int GlobalIndex => Definition.GlobalIndex;
     public string ToolType => Definition.ToolType;
+    /// <summary>节点外观类型，由工具目录声明；未声明时按原件默认卡片呈现。</summary>
+    public string NodeDisplayType => Catalog?.NodeDisplayType ?? "DEFAULT";
     public string? SubroutineId => Definition.SubroutineId;
     public bool IsEnabled => Definition.IsEnabled;
+    public bool HasUnconfiguredRequiredInputs { get; private set; }
+    internal void SetUnconfiguredRequiredInputs(bool value)
+    {
+        if (HasUnconfiguredRequiredInputs == value) return;
+        HasUnconfiguredRequiredInputs = value;
+        Notify(nameof(HasUnconfiguredRequiredInputs));
+    }
+    public CanvasNodeRunState RunState { get; private set; }
+    /// <summary>原件 GroupNodeBackgroundConverter 期望的状态文本（成功/失败）；随 RunState 同步通知。</summary>
+    public string? Status => RunState switch
+    {
+        CanvasNodeRunState.Passed => "成功",
+        CanvasNodeRunState.Failed or CanvasNodeRunState.Rejected => "失败",
+        _ => null
+    };
+    internal void SetRunState(CanvasNodeRunState state)
+    {
+        if (RunState == state) return;
+        RunState = state;
+        Notify(nameof(RunState));
+        Notify(nameof(Status));
+    }
     public double PositionX => Definition.PositionX;
     public double PositionY => Definition.PositionY;
     public CanvasPoint Position => Definition.Position;

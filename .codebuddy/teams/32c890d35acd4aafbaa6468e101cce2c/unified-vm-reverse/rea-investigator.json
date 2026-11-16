@@ -1,0 +1,92 @@
+[
+  {
+    "id": "msg-1793850913960-9dey9o",
+    "from": "team-lead",
+    "to": "rea-investigator",
+    "type": "message",
+    "content": "工作方式调整：改为**断点交付**，用户要按断点逐个验收，不要一口气写完再报。\n\n## 断点划分（按此交付）\n- **D1 = 应用层数据目录证据**（A 组 5 个问题：有无选目录分支、App.ini 读写与缺省、方案格式版本、安装目录外依赖、各子目录职责）\n- **D2 = 工具层逆向材料盘点**（B 组 2 个问题：材料表 + 有/无原件证据清单）\n每完成一个断点就停，汇报，等 lead 回「通过」再做下一个。\n\n## 每个断点的汇报格式（固定）\n```\n断点：D<n> — <范围>\n结论：<逐条问题一句话结论，标注 观察到/推断/未知>\n证据：<文件路径:行号 或 命令+关键输出># 每条结论必须挂证据\n自验方法：<用户能直接照抄执行的命令或要看的文件/行号>\n未验/缺口：<需要 REA 深反编译 / 需实机 / 需厂商文档的部分>\n下个断点：<预告>\n```\n\n## 硬要求\n- 结论必须区分「观察到 / 推断 / 未知」三档，不许把推断写成观察到\n- 不许凭命名或目录猜行为，猜的必须标「推断」\n- 只写 `docs\\collaboration\\evidence\\` 下你自己的报告文件，不碰 src/tools/tests 与其他 evidence 文件\n- 不启动 `VisionMaster.exe`，不改安装目录，不写注册表\n- 不 commit / 不 push\n\n你已落盘的 `VM4.4应用层数据目录与工具层逆向证据-20261105.html`（55 KB）我看到了。若 A、B 两块都已写完，就按上面格式把 D1 + D2 一起汇报（仍未获批不做新取证方向）。",
+    "timestamp": "2026-11-05T03:55:13.960Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793851198155-6qqqhh",
+    "from": "team-lead",
+    "to": "rea-investigator",
+    "type": "message",
+    "content": "**D1、D2 均通过。** 我抽验了四条关键证据，全部属实：\n\n| 抽验项 | 结果 |\n|---|---|\n| `Program.cs:63` | 确为 `Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);` ✔ |\n| `Desktop\\test.sol` 首 4 字节 | `80 75 3 4` = PK，ZIP 容器属实 ✔ |\n| `data\\options\\StandardHeader.xml` | 确是 SharpDevelop 模板头，`data\\` 不是数据根属实 ✔ |\n| `myLibs\\VM.AppData.dll` 常量 | `RevertSource`=4、`AppData.dat`=2、`Librarys.Config`=2 ✔ |\n\n质量评价：区分了「观察到/推断/未知」三档，A4 主动更正了「res 是资源缓存」这个旧说法，A5 纠正了「data\\ 是数据根」的假设，A′ 对照表直接点出我方自建了三样 VM 没有的东西（选目录、schemaVersion 协商、dataId 目录身份），同时指出 VM 有而我们没有的能力（旧方案兼容转换 vs 我方 `SolutionFormatPolicy.cs:20-26` 直接抛）。这些正是后续设计要用的判断。\n\n## 批准下一断点：G7\n按你自己提的优先级做 **G7 — VM 是否有插件授权/版本协商**：\n- `Server\\PlatformManager.dll`(9.3 MB)、`PlugAuthorization.dll`(7.0 MB) 都是托管程序集，本机 `D:\\MyWork\\REA逆向测试\\analysis\\decompiled\\` 已有反编译链路，**不需要 native provider**，这是最快能闭合的一项\n- 目的很明确：决定我方「工具独立开发公开合同 / 分发边界」是继续自建，还是有 VM 原件可对齐\n- 同样按断点格式报，结论标观察/推断/未知\n\n## 提醒\n- 不要申请 REA provider 补 G1/G2（native 侧），那是另一件成本高的事，等我或用户决定\n- 只写 `docs\\collaboration\\evidence\\` 下你自己的报告（可续写同一份）\n- 不启动 `VisionMaster.exe`、不改安装目录、不碰 src/tools/tests、不 commit",
+    "timestamp": "2026-11-05T03:59:58.155Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793851875434-n4ycpk",
+    "from": "team-lead",
+    "to": "rea-investigator",
+    "type": "message",
+    "content": "**D3 通过。** 三条抽验全实，而且你主动更正 D2 的错误、保留原误判记录不静默改写——这个做法正确，比结论本身更有价值。\n\n抽验结果：\n| 项 | 实测 |\n|---|---|\n| `PlatformManager.dll` / `PlugAuthorization.dll` / `ModuleProxy.dll` | BSJB=**False**、mscoree=False → 原生 PE ✔ |\n| 对照组 `VM.Core.dll` | BSJB=**True**、mscoree=True → 方法有效 ✔ |\n| `Module(sp)` 签名/清单类文件 | **0** ✔ |\n| `ToolItemInfo.xml` | 全文仅 `name`/`priority`/`toolTip`/`helpUrl` ✔ |\n\n## D4（最后一个断点）：出一张总表\n把 D1+D2+D3 的结论合并成一张**《原件依据 vs 平台自建》总表**，写进你那份报告的收尾节。这是长期要用的判断依据，比零散结论有用。\n\n表结构建议：\n| 我方机制 | VM 是否有等价物 | 证据 | 建议口径 |\n\n要求覆盖至少这些条目：\n- 选数据目录 / `data-location.json` / `dataId` 目录身份 / schemaVersion 协商\n- 方案格式版本策略（我方直接抛 vs VM 转换升级）\n- 工具插件独立分发 / 分发边界\n- 插件级授权 / 插件级版本协商\n- `release-payload.json`、`ToolGroups.xml`、`ToolDirectoryCatalog` 校验\n- 数据根位置（安装目录 vs 我们 App.ini 可配）\n- 工具模块清单（`ToolItemInfo.xml` 4 字段 vs 我方目录元数据）\n\n每条给出「建议口径」——就是你提的那个点：**该写\"平台必要能力/自建设计\"的，绝不能写\"对齐 VM\"**。把这条写进表格结论段，作为后续文档的硬口径。\n\n## 明确不做\n- native 侧（G1/G2/模块 ID feature 位图）**不申请 REA provider**，成本高、当前不阻塞，我已记录为待决项，等用户决定\n- 不做新取证方向，D4 完成即收尾\n\nD4 完成后按断点格式报，然后停。",
+    "timestamp": "2026-11-05T04:11:15.434Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793852072474-ivh2k2",
+    "from": "team-lead",
+    "to": "rea-investigator",
+    "type": "message",
+    "content": "**D4 通过**，D1–D4 全部验收完毕。抽验结果：\n\n- `release-payload.json` 的 `\"sha256\"` 条数实测 **587**，与你报告一致 ✔\n- `src\\Core\\SunEyeVision.Core.csproj:16` 确为 `<Compile Remove=\"Services/PluginManager.cs\" />` ✔\n\n## 你 D4 挖出的两条新发现，价值最高\n1. **`plugin.json` 是死代码** —— 这个坑如果不指出，后续文档会一直引用一个不参与编译的路径。\n2. **开发态与发布态强弱不同** —— 这个区分很关键，否则\"工具独立分发合同\"会被误读成\"开发态每个工具目录都有清单\"，而实测 `dev\\Debug\\plugins\\SunEyeVision.Tool.BlobAnalysis` 只有 dll+pdb+deps.json。\n\n两条我都已转给 `doc-keeper` 并入文档口径清单，并要求它把「发布态准入合同」和「开发态松散目录」分开写。\n\n## 本轮取证收尾\nD1–D4 完成，你**停在这里待命**，不要自行开新方向。以下事项我记录为待决，不需要你现在做：\n- G1（native 模块名→算法 DLL 解析）、G2（native `pData` 生命周期）、G7 残余（native 是否按模块 ID 建 feature 位图）、G3/G5（原机对照与主题外观）、G4（算法语义边界）\n- `CompatibleTool.exe` 内部未反编译、`AlgorithmActivationTool.exe` 内部未看\n- 这些都需要 REA provider 或实机，**是否投入由用户决定**\n\n## 保留判断\n你报告里 G-2 那 6 条硬口径、以及「4/5/6 行的收益代价需在方案中显式列出（属方案设计范围）」这个边界划分，写得对。取证只给事实和口径，不做权衡评估——这个自我约束保持住。\n\n如果后续 framework-refactor 实施中需要核对某条原件行为，我会再找你。现在待命，不用回消息。",
+    "timestamp": "2026-11-05T04:14:32.474Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793855134641-b6el8u",
+    "from": "team-lead",
+    "to": "rea-investigator",
+    "type": "message",
+    "content": "用户明确点名了：**\"逆向队员的工作理论上永远都不用停下来，他只是逆向证据\"**。这条我认，问题在我的派工方式——我一直在等下游（框架重构/文档）的需求才给你派单，等于让取证跟着别人的节奏走。这是错的。\n\n从现在起你按**常驻证据线**运行，规则如下：\n\n**一、路径独占（避免和文档线撞车）**\n- 你独占 `docs/collaboration/evidence/VM*.html`，新建和修改都归你。\n- 其余 `docs/`（含 `全平台目标源码树重构计划-*.html`、`CURRENT_TASK.md`、索引等）归 `doc-keeper`，你不要碰。\n- 你只写证据，不碰 `src/`、`tests/`、不构建、不提交。\n\n**二、常驻证据队列（自己按顺序做，不要等我派单）**\n\n按优先级，做一项交一项，交完自动进下一项：\n\n1. **VM 启动流程完整时序**：从进程启动到主界面可用，中间有哪些阶段、各自落了什么盘、失败时表现是什么（弹窗/静默退回/直接崩）。这是对照我们退出\"选数据目录\"门禁后有没有行为差的基准。\n2. **VM 的日志落点与保留策略**：日志写哪、按什么切分、保留多久/多大、清理失败怎么处理。我们现在的 30 天 / 256MB 是我方自建，需要确认 VM 侧到底是什么，别把自建写成\"对齐原厂\"。\n3. **VM 的偏好/起始页机制**：`start-page.json` 这类东西 VM 有没有对应物，还是完全自建。\n4. **VM 的方案格式版本机制**：VM 方案文件里有没有类似 `SchemaVersion` 的字段、不匹配时怎么处理（拒绝/迁移/静默降级）。我方现有 `ValidateSchema` 是\"缺版本允许、版本≠1 拒绝\"，要对齐判断这是否有原件依据。\n5. **VM 的插件准入与工具身份链**：`ToolItemInfo.xml` 之外还有没有别的清单，加载前是否有校验、失败怎么表现。用于校正我方 `release-payload.json`＋`ToolGroups.xml` 的定位。\n6. **VM 的恢复/回收目录机制**：我方 `D:\\SunEyeVisionData` 下存在 `.recovery` 残留（对应已删掉的 `RecoveryDirectory` 概念），VM 侧到底有没有等价机制、语义是什么。\n\n**三、三条硬规矩**\n\n1. **每交一份就一句话汇报**：文件名 + 3 条关键结论 + 用于校正我方哪一处。不需要长篇总结。\n2. **只有两种情况才停下来等我**：(a) 需要用户授权才能继续（例如要开原机测试窗口跑原厂程序——这种情况汇总报我，我去向用户申请，**你不要自行启动原厂 SDK 或另起逆向工程**）；(b) 证据出现互相矛盾的结论，需要我裁决。除此之外一律自主推进。\n3. **不重复取证**：已有材料先复用（`VM4.4应用层数据目录与工具层逆向证据-20261105.html` 已入库），新证据只补缺口，不做全量重扫。\n\n**四、与下游的解耦**\n下游（框架重构、文档线）如果需要补证，让他们把缺口报我，我汇总去重后转给你。**你不要因为下游说\"我在改代码，先别打扰\"而停**——他们改的是 `src/`，你写的是 `evidence/`，本来就不冲突。\n",
+    "timestamp": "2026-11-05T05:05:34.641Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793858364460-serx5a",
+    "from": "team-lead",
+    "to": "rea-investigator",
+    "type": "message",
+    "content": "协作方式改成文件总线，你的常驻证据线保持不变（不需要等我派单），但状态要落到账本上。\n\n任务卡账本：`docs/collaboration/bus/status.json`\n协议：`docs/collaboration/bus/README.md`\n\n你的卡是 **T-0005**（已是 claimed），覆盖启动时序、日志落点与保留、偏好机制、方案格式版本、插件准入与工具身份链、恢复目录六项。\n\n**你要做的调整很小**\n1. 每交一份证据，除了给我一句话结论，同时写 `docs/collaboration/bus/results/T-0005-rea.md`（做了什么 / 三条关键结论 / 用于校正我方哪一处 / 未验项），然后把卡 state 保持 `claimed`（还在做）或置 `done`（六项交完）。\n2. 我注意到你已连续产出 `VM工具逆向批次R1..R5` 和 `VM启动时序与失败表现矩阵` 共 6 份，很高效——**继续保持，不需要回等我**。\n3. 路径仍只允许 `docs/collaboration/evidence/VM*.html` + 你自己的回执文件，不要碰 `bus/README.md`、`status.json` 的其它卡、也不要碰 `src/`。\n\n**两个提醒**\n- `docs/` 正在被文档线大规模重组归档（目前 889 个删除状态）。**如果你的证据文件被移动或删除，立刻告诉我**——证据是审计材料，丢了影响判定。\n- 下一批优先补的两项（比我原来给的顺序更急）：**VM 方案格式版本机制**（我方 `ValidateSchema` 是\"缺版本允许、版本≠1 拒绝\"，需要原件依据）、**VM 插件准入与工具身份链**（校正 `release-payload.json` + `ToolGroups.xml` 的定位）。这两项直接支撑文档线正在改的归属表述。\n\n需要用户授权才能继续的（比如开原机测试窗口），置 `blocked` 写清缺口，继续做别的。\n",
+    "timestamp": "2026-11-05T05:59:24.460Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793858577480-afzufa",
+    "from": "team-lead",
+    "to": "rea-investigator",
+    "type": "message",
+    "content": "按 T-0005 继续常驻证据线，同时新增一项硬性要求：**维护进度清单**。\n\n**新增：`docs/collaboration/bus/progress/rea.md`**\n模板见 `docs/collaboration/bus/PROGRESS.md`。字段固定：当前卡+状态 / 已完成（逐条带证据文件名）/ 进行中 / 阻塞 / 实测数字（取证方式与环境）/ 未验项 / 越界。\n**规则：每交一份证据后更新一次，一轮结束前必须更新。**\n\n**T-0005 剩余项的优先级已调整，按这个顺序**\n1. **VM 方案格式版本机制**——我方 `ValidateSchema` 是\"缺版本允许、版本≠1 拒绝\"，需要原件依据：VM 方案文件里有没有类似字段、不匹配时是拒绝/迁移/静默降级。这条直接支撑文档线正在改的归属表述，**最急**。\n2. **VM 插件准入与工具身份链**——校正我方 `release-payload.json` + `ToolGroups.xml` 的定位，确认 `ToolItemInfo.xml` 之外有没有别的清单、加载前有无校验、失败怎么表现。\n3. 其余四项（启动时序已交、日志与保留、偏好机制、恢复目录）按原顺序继续。\n\n**提醒**：`docs/` 正在被文档线大规模重组（890 个删除状态）。你的证据文件若被移动或删除，立刻告诉我——证据是审计材料。\n**红线**：只写 `docs/collaboration/evidence/VM*.html` 和你自己的进度/回执文件；不碰 `src/`、`tests/`、`bus/README.md`、`bus/status.json` 里别人的卡；不启动原厂 SDK；不 commit/push。\n",
+    "timestamp": "2026-11-05T06:02:57.480Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793858737015-4n2lfc",
+    "from": "team-lead",
+    "to": "rea-investigator",
+    "type": "message",
+    "content": "新增一条硬规则，解决\"卡在需要人介入但用户不知道\"的问题。\n\n**你遇到必须人决定的点，不许只写进度文件，必须同时推给我。**\n\n**三级分流**\n- **A 类：必须人类拍板**——需要扩大取证范围、需要解读有争议的原件行为、结论会改变现有实现\n- **B 类：我可裁决**——证据的组织方式、优先级微调。写 `progress/rea.md` 即可\n- **C 类：只需授权**——**开原机测试窗口、启动原厂 SDK**（这条对你最常见）。这类以前你只能干等，现在必须立刻报。\n\n**A/C 类走双通道**\n1. 在 `docs/collaboration/bus/NEEDS-HUMAN.md` 末尾按「请求单格式」登记（H-xxxx：缺口是什么、为什么必须原机运行、不取的后果、能否用静态材料替代）\n2. 同时 `send_message` 给我——**直接出现在用户对话界面**，用户当场就能批准\n\n**发完立刻转做不依赖授权的证据项**，不许因为等授权就整轮停住。\n\n你目前没有阻塞项，继续按调整后的优先级做：①VM 方案格式版本机制 ②VM 插件准入与工具身份链。\n",
+    "timestamp": "2026-11-05T06:05:37.015Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793859432307-87imwu",
+    "from": "team-lead",
+    "to": "rea-investigator",
+    "type": "message",
+    "content": "六项全交，三份新证据已入库，**这一批做得非常好**——尤其是下面三条，都属于\"纠正我方错误表述\"，价值比补新证据高：\n\n1. **方案版本是\"迁移\"不是\"拒绝\"**：`SoftVersion/Version CurrentVersion`、CompatibleTool.exe 五阶段升级、另存 `x_V4.4.0_1.sol`、原文件保留、缺模块只 WARN。这条直接推翻了我方 `ValidateSchema`「≠1 就拒绝」的隐含前提。\n2. **`ToolItemInfo.xml` 才是准入凭证**，加 `IMVSMarkInspModu` 有 18MB dll 无 TI 就不上工具箱这个反例——这是硬证据。\n3. **`ToolGroups.xml` 的 Order 与原厂 priority 逐一相同，还带上了\"6 缺位\"这个非平凡特征**——这条让我方顺序可以直接标\"原厂依据\"，同时把机制（单文件/复数名/SchemaVersion/Icon）和显示名（中文 vs 原厂英文）明确划到自建。这种\"部分可标、部分不可标\"的切分正是我要的精度。\n\n另记两条你要求的表述作废：不得写\"原厂有崩溃恢复机制\"（只证实只写不清）；\"45 种 Style\"作废改 44。\n\n**你待裁决的那条（ValidateSchema 方向）我认可你的判断方向，但这属 A 类用户可见行为，我已挂给用户拍板**，结论出来我通知你，你不要改代码。\n\n**你下一步（新卡 T-0009，先做前两项）**\n1. **VM 首选图像来源/多来源冲突时的原件表现**：我方在\"存在多个图像来源\"时会要求用户在上方选择显示来源。需要证据：原厂在同样情况下是自动选、还是提示、还是按什么规则定优先。这条直接卡着图像源条的行为验收。\n2. **VM 选中非图像源节点时，图像源条是隐藏还是保留显示**：我方当前是隐藏；需要确认原厂语义。**这条是当前 UI 验收第 3 项的直接依据**，最急。\n3. 之后按原队列继续（日志与保留已交、偏好机制、恢复目录未交）。\n\n**两点约束不变**：只写 `docs/collaboration/evidence/VM*.html`；不启动原厂 SDK，需要原机才置 blocked 报我。\n另外：文档线已被用户停止，`docs/` 其余部分现在无人写，你**仍然只写你自己的证据文件**，不要因为那边空着就去改它。\n",
+    "timestamp": "2026-11-05T06:17:12.307Z",
+    "read": true
+  },
+  {
+    "id": "msg-1793859601252-p5bxtv",
+    "from": "team-lead",
+    "to": "rea-investigator",
+    "type": "message",
+    "content": "用户刚做了两个决策，都指向取证，**把 T-0009 的优先级重排，只做下面第一组，做完再做迁移链**。\n\n## 第一优先：图像源条的\"按节点差异\"语义（用户实测反馈）\n\n用户已确认：图像源条现在能显示，但**选中不同节点时，原厂条内显示的内容是不同的**，我方只有\"显示/隐藏\"两态，属交互未完整迁移。请逐项取证，每项都要有原件截图或配置/日志/源码依据：\n\n1. **选中「图像源」节点时**：条内显示什么？计数 `0/0` 的两个数字分别是什么含义（当前序号/总数？还是其它）？\n2. **选中下游节点（如 Blob 分析）时**：条是隐藏、还是保留显示父来源的图？如果保留，显示的是该节点实际将要/已经使用的输入图吗？\n3. **多图像来源冲突时**（多个上游来源汇入）：原厂是自动选、弹提示、还是提供一个\"显示来源选择\"入口？规则是什么？\n4. **条内内容是否随选中节点变化**：同一个节点切换前后，图列表/选中项/计数怎么变？运行前后又怎么变？\n5. **非图像源节点的工具栏状态**：自动切换/运行全部/运行 这三个在原厂对不同节点是否可用（灰掉/隐藏/仍可点）。\n\n这组的结论直接决定我方\"按节点切换条内容\"要怎么实现，**最急**。\n\n## 第二优先：方案版本迁移链（用户选了\"完整对齐原件\"）\n\n用户明确选择**不做\"只读打开\"简化路线，要完整对齐原件的分段升级 + 另存 + 原件不动**。所以需要把 CompatibleTool 的规则取到位：\n\n1. **五个阶段各自的转换内容**：FrontendUI → DynamicIO → GlobalVar → CustomizedHandleModule → SaveAs，每一段具体改了什么（字段、结构、类型）？\n2. **`CompatibleTool.xml` 的 `SrcName→DstName` 映射表**：条目粒度、有没有条件、同一字段多次改名如何串联？\n3. **另存命名规则**：`x_V4.4.0_1.sol` 里的 `x` 和 `_1` 分别怎么生成？同目录已存在同名怎么办？多次升级是否叠加后缀？\n4. **失败与不完整路径**：`Failed Module Num:4` 之后程序继续运行到什么状态？缺模块的方案打开后那些节点怎么表现（占位/灰/丢弃）？\n5. **版本跨多段时**（如 V4.1 → V4.4）：是一次跳到底还是逐版本串行？中间版本文件会不会落盘？\n\n这组不要动手设计，只取证。证据到位后由我做设计再派实施。\n\n**约束**：只写 `docs/collaboration/evidence/VM*.html`；不启动原厂 SDK，需要原机置 blocked 报我；不碰 `src/`。\n",
+    "timestamp": "2026-11-05T06:20:01.252Z",
+    "read": true
+  }
+]

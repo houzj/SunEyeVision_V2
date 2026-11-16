@@ -13,6 +13,12 @@ public sealed partial class DocumentSession
 
     /// <summary>Persisted image selection only. Does not run a tool, mutate its parameters or add undo history.</summary>
     public void SetNodeDisplayReference(string workflowId, NodeDefinition node, string? canonicalOutputReference)
+        =>SetNodeDisplayNavigation(workflowId,node,canonicalOutputReference,null,replaceOverlays:false);
+
+    public void SetNodeDisplayOverlays(string workflowId,NodeDefinition node,string? selected,ImageOverlaySelection? overlays)
+        =>SetNodeDisplayNavigation(workflowId,node,selected,overlays,replaceOverlays:true);
+
+    private void SetNodeDisplayNavigation(string workflowId,NodeDefinition node,string? selected,ImageOverlaySelection? overlays,bool replaceOverlays)
     {
         ArgumentNullException.ThrowIfNull(node);
         NodeDisplayNavigationChange change;
@@ -23,12 +29,8 @@ public sealed partial class DocumentSession
             var target = RequireNode(scope, node.Id);
             if (!ReferenceEquals(target.Node, node)) throw new InvalidOperationException("显示导航目标不是当前实际节点。");
             string? canonical = null;
-            if (canonicalOutputReference is not null)
+            if (selected is not null||overlays is not null)
             {
-                var reference = ParameterSettingCanonical.Deserialize(canonicalOutputReference);
-                if (reference.Selection is not (BindingSelection.AllItems or BindingSelection.AtConstant) ||
-                    ParameterReferenceRules.SelectedType(reference) != TypeRef.ResourceOf(ResourceKind.Image))
-                    throw new ArgumentException("显示导航只接受单幅图像或明确的静态图像索引。", nameof(canonicalOutputReference));
                 var graph = GraphState.Capture(scope.Flow);
                 var incoming = graph.Edges.GroupBy(edge => edge.TargetNodeId, StringComparer.Ordinal)
                     .ToDictionary(group => group.Key, group => group.Select(edge => edge.SourceNodeId).ToArray(), StringComparer.Ordinal);
@@ -41,16 +43,28 @@ public sealed partial class DocumentSession
                     .Select(item => new BindingSource(new(workflowId, item.Node.Id), Guid.Empty,
                         RequireNode(scope, item.Node.Id).Configuration.Schema, 0)).ToArray();
                 var bindingScope = new ResultDisplayBindingScope(new(workflowId, node.Id), ResultOwnerId, ChangeRevision, declarations);
-                var compiled = new ParameterBindingService().CompileBinding(reference,
-                    new Port("display-image", TypeRef.ResourceOf(ResourceKind.Image)), bindingScope);
-                if (compiled.Plan is null) throw new ArgumentException(compiled.Diagnostic?.Message ?? "图像来源不属于前序或自身声明。", nameof(canonicalOutputReference));
+                string ValidateReference(string text)
+                {
+                    var reference=ParameterSettingCanonical.Deserialize(text);
+                    if(reference.Selection is not (BindingSelection.AllItems or BindingSelection.AtConstant)||
+                        ParameterReferenceRules.SelectedType(reference)!=TypeRef.ResourceOf(ResourceKind.Image))
+                        throw new ArgumentException("显示导航只接受单幅图像或明确的静态图像索引。");
+                    var compiled=new ParameterBindingService().CompileBinding(reference,
+                        new Port("display-image",TypeRef.ResourceOf(ResourceKind.Image)),bindingScope);
+                    if(compiled.Plan is null)throw new ArgumentException(compiled.Diagnostic?.Message??"图像来源不属于前序或自身声明。");
+                    return ParameterSettingCanonical.Serialize(reference);
+                }
+                canonical=selected is null?null:ValidateReference(selected);
+                if(overlays is not null)overlays=new(ValidateReference(overlays.Background),
+                    overlays.Slots.Select(slot=>slot is null?null:ValidateReference(slot)));
                 ValidateScopeCore(scope);
                 if (!graph.MatchesCurrent(scope.Flow)) throw new InvalidOperationException("显示导航准备期间图已改变。");
-                canonical = ParameterSettingCanonical.Serialize(reference);
             }
-            if (node.SelectedDisplayReference == canonical) return;
+            if (node.SelectedDisplayReference == canonical &&
+                (!replaceOverlays || (overlays is null?node.DisplayOverlays is null:overlays.SameSelection(node.DisplayOverlays)))) return;
             var revision = checked(_navigationRevision + 1);
             node.SelectedDisplayReference = canonical;
+            if(replaceOverlays)node.DisplayOverlays=overlays;
             _navigationRevision = revision;
             change = new(EditSessionId, workflowId, node, revision, canonical);
         }

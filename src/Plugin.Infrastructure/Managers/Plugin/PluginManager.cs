@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Foundation.Logging;
@@ -36,7 +37,16 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         private int _lastRejectedCount;
         private readonly List<string> _admissionFailures=new();
         public string? LastAdmissionError {get;private set;}
+        public IReadOnlyDictionary<string,long> LastAdmissionStageMs { get; private set; } = new Dictionary<string,long>();
         public RuntimeDirectorySnapshot? RuntimeDirectory { get { lock (AdmissionGate) return AdmissionTransition is null && _current?.Desktop.Runtime.IsActive == true ? _current.Desktop.Runtime : null; } }
+        public string RuntimeLeaseDiagnostics
+        {
+            get
+            {
+                lock(AdmissionGate)
+                    return _current?.Desktop.Runtime.DescribeLiveLeases() ?? "插件目录代次不存在";
+            }
+        }
         public DesktopToolAdmission? DesktopAdmission
         {
             get { lock (AdmissionGate) return AdmissionTransition is null && _current?.Desktop.Runtime.IsActive == true ? _current.Desktop : null; }
@@ -115,8 +125,11 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
         }
 
         /// <summary>只加载当前宿主正式载荷声明的Runtime与可选编辑器。</summary>
-        public async Task LoadPluginsAsync()
+        public async Task LoadPluginsAsync(CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+            var stageClock = System.Diagnostics.Stopwatch.StartNew();
+            var stages = new Dictionary<string,long>();
             long attempt=0, expectedGeneration=0;
             while(true)
             {
@@ -126,6 +139,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                     pending=AdmissionTransition?.Task;
                     if(pending is null){attempt=++_attempt;expectedGeneration=_generation;break;}
                 }
+                cancellationToken.ThrowIfCancellationRequested();
                 await pending.ConfigureAwait(false);
             }
             string? failure=null;
@@ -136,17 +150,17 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
             {
                 // Plugin constructors, schema callbacks and file IO must remain outside the gate.
                 var authority=new ReleasePayloadAuthority(AppContext.BaseDirectory);
+                cancellationToken.ThrowIfCancellationRequested();
+                stages["PayloadValidation"] = stageClock.ElapsedMilliseconds;
+                stageClock.Restart();
                 var snapshot=authority.PrepareDesktopDirectory();
+                cancellationToken.ThrowIfCancellationRequested();
+                stages["ComponentLoading"] = stageClock.ElapsedMilliseconds;
+                foreach(var item in authority.LastPreparationStageMs)
+                    stages["ComponentLoading."+item.Key]=item.Value;
+                stageClock.Restart();
                 var components=snapshot.Components;
-                foreach (var component in components.Where(c => c.Metadata.Role == SunEyeVision.Plugin.Contracts.ToolComponentRole.Editor))
-                {
-                    var type = component.EntryType;
-                    if (type.IsAbstract || type.GetConstructor(Type.EmptyTypes) is null ||
-                        type.Assembly.GetReferencedAssemblies().Any(a => a.Name == "SunEyeVision.UI") ||
-                        !typeof(SunEyeVision.Plugin.Wpf.Presenters.Results.IToolPresentationFactory).IsAssignableFrom(type) ||
-                        typeof(IToolPlugin).IsAssignableFrom(type))
-                        throw new InvalidOperationException("桌面编辑组件必须是独立的正式呈现工厂。 "+component.Metadata.ToolId);
-                }
+                cancellationToken.ThrowIfCancellationRequested();
                 var declarations=components.Where(c=>c.Metadata.Role==SunEyeVision.Plugin.Contracts.ToolComponentRole.Runtime).Select(c=>
                 {
                     var catalog=snapshot.GetCatalog(c.Metadata.ToolId) ?? throw new InvalidOperationException("已准入工具缺少目录声明："+c.Metadata.ToolId);
@@ -154,7 +168,8 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                         catalog.IconKey,catalog.Description,c.EntryType.FullName!,c.EntryType.Assembly.Location,true);
                 }).ToArray();
                 var directory=new ToolDirectoryCatalog(Path.Combine(AppContext.BaseDirectory,"ToolGroups.xml"),declarations,authority.VerifyApprovedFile);
-                var admission=new PublishedAdmission(new DesktopToolAdmission(directory,snapshot),authority,_ownerId);
+                stages["ToolDirectory"] = stageClock.ElapsedMilliseconds;
+                var admission=new PublishedAdmission(new DesktopToolAdmission(directory,snapshot,authority.LastLoadSubstageMs),authority,_ownerId);
                 RuntimeDirectorySnapshot? retiring;
                 Task drained;
                 lock(AdmissionGate)
@@ -169,6 +184,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                 }
                 if(retiring is not null)signal=Task.Run(retiring.SignalRetirement);
                 await drained.ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
                 lock(AdmissionGate)
                 {
                     if(!ReferenceEquals(AdmissionTransition,transition) || attempt!=_attempt || expectedGeneration!=_generation)
@@ -180,6 +196,7 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                     count=directory.ToolIds.Count;
                     AdmissionTransition=null;transition.TrySetResult();transition=null;
                 }
+                StartPlatformWarmup(snapshot);
                 await ObserveRetirementSignalAsync(signal).ConfigureAwait(false);
             }
             catch(Exception ex)
@@ -195,10 +212,39 @@ namespace SunEyeVision.Plugin.Infrastructure.Managers.Plugin
                     }
                     if(attempt==_attempt)LastAdmissionError=failure;
                 }
+                if (cancellationToken.IsCancellationRequested)
+                    throw new OperationCanceledException(cancellationToken);
             }
+            LastAdmissionStageMs = new System.Collections.ObjectModel.ReadOnlyDictionary<string,long>(stages);
             if(failure is null)_logger.LogInfo($"产品组件准入完成：{count}个工具。");
             else _logger.LogError("[发布准入] "+failure);
         }
+        // Native platform mapping is deferred out of admission, so without this hook the
+        // first real execution pays it (HALCON cold start observed at 141-3134 ms against a
+        // 3-5 ms steady state). A dedicated below-normal thread keeps the cost off the UI
+        // and off the admission continuation; the runtime's own locks make a concurrent
+        // first run correct, only shifting who waits.
+        private void StartPlatformWarmup(RuntimeDirectorySnapshot snapshot)
+        {
+            var thread = new System.Threading.Thread(() =>
+            {
+                try
+                {
+                    snapshot.InitializeRuntimePlatforms(message => PluginLogger.Info(message, "ExecutionLifecycle"));
+                }
+                catch (Exception error)
+                {
+                    PluginLogger.Info("[PlatformWarmup] state=aborted error=" + error.GetType().Name + ": " + error.Message, "ExecutionLifecycle");
+                }
+            })
+            {
+                IsBackground = true,
+                Name = "SunEyeVision.PlatformWarmup",
+                Priority = System.Threading.ThreadPriority.BelowNormal
+            };
+            thread.Start();
+        }
+
         /// <summary>
         /// 卸载所有插件
         /// </summary>

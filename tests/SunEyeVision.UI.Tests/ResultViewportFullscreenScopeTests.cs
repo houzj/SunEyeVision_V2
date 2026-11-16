@@ -9,6 +9,9 @@ using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Wpf.Adapters.Regions;
 using SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport;
+using SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls;
+using SunEyeVision.Plugin.Wpf.Native.Dependencies.ParameterSchema.ParamTab;
+using SunEyeVision.Plugin.Wpf.Presenters.Regions;
 using SunEyeVision.Plugin.Wpf.Presenters.Results;
 using SunEyeVision.Plugin.Wpf.Regions;
 using SunEyeVision.UI.Services.Images;
@@ -86,6 +89,67 @@ public sealed class ResultViewportFullscreenScopeTests
         Assert.Equal(before, fixture.Pane.CurrentFrame);
         Assert.True(borrowed.IsCurrent);
         Assert.Equal(0, fixture.OwnerReleaseCount);
+    });
+
+    [Theory]
+    [InlineData(false, 16)]
+    [InlineData(true, 8)]
+    public void Roi_toolbar_toggles_drawing_and_closes_its_limit_warning_on_rebind(bool mask, int limit) => Sta(() =>
+    {
+        using var fixture = new Scene("panel");
+        using var image = Assert.IsType<ResultViewportImageLease>(fixture.Pane.BorrowCurrentImage());
+        var stamp = new RoiEditStamp(Guid.NewGuid(), 0, image.Image.Frame);
+        var groupId = mask ? "mask" : "inspection";
+        var group = new RoiGroupState(groupId, RoiCoverage.None, RoiCoverage.None);
+        var snapshot = new RoiEditSnapshot(stamp, Array.Empty<RoiEditItem>(), new[] { group });
+        using var session = new NativeRoiSession(image.Image, () => snapshot,
+            (_, _) => throw new InvalidOperationException("没有完成绘制，不应产生提交。"), () => image.IsCurrent,
+            () => new RoiHistoryAvailability(false, false), groupId, isAvoid: mask, maximumDrawItems: limit);
+        var requested = new List<RoiDrawRequest>();
+        var cancelled = new List<RoiDrawRequest>();
+        session.DrawRequested += requested.Add;
+        session.DrawCancelled += cancelled.Add;
+
+        var draw = mask ? RoiType.Polygon : RoiType.SectorRing;
+        session.ValueChangedCommand.Execute(draw);
+        Assert.Equal(mask ? "polygon" : "annulus", Assert.Single(requested).Kind);
+        session.ValueChangedCommand.Execute(draw);
+        Assert.Same(requested[0], Assert.Single(cancelled));
+        Assert.Null(session.ActiveDraw);
+
+        var kind = mask ? "polygon" : "rectangle";
+        var create = mask ? RoiType.Polygon : RoiType.Box;
+        var geometry = RoiGeometryEditing.Create(kind, new Point2(0, 0), new Point2(1, 1),
+            mask ? new[] { new Point2(0, 0), new Point2(1, 0), new Point2(1, 1) } : null);
+        snapshot = new RoiEditSnapshot(stamp with { Revision = 1 },
+            Enumerable.Range(0, limit).Select(index => new RoiEditItem(groupId, Guid.NewGuid(), $"区域 {index}", geometry)).ToArray(),
+            new[] { group with { Coverage = RoiCoverage.Explicit } });
+        session.Refresh();
+        using var editor = new NativeRoiEditor { PolygonOnly = mask };
+        Assert.IsType<StackPanel>(fixture.Holder).Children.Add(editor);
+        editor.Bind(session);
+        Drain();
+        NativeMessageBox? shown = null;
+        var warned = false;
+        fixture.Owner.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
+        {
+            shown = fixture.Owner.OwnedWindows.OfType<NativeMessageBox>().SingleOrDefault();
+            warned = shown?.IsVisible == true && !string.IsNullOrWhiteSpace(shown.Title);
+            editor.Bind(null);
+        }));
+        session.ValueChangedCommand.Execute(create);
+        Drain();
+        Assert.True(warned);
+        Assert.False(Assert.IsType<NativeMessageBox>(shown).IsVisible);
+        Assert.Single(requested);
+        Assert.Null(session.ActiveDraw);
+        Assert.Contains(limit.ToString(System.Globalization.CultureInfo.InvariantCulture), session.Error);
+
+        snapshot = snapshot with { Stamp = stamp with { Revision = 2 }, Items = snapshot.Items.Skip(1).ToArray() };
+        session.Refresh();
+        session.ValueChangedCommand.Execute(create);
+        Assert.Equal(kind, Assert.IsType<RoiDrawRequest>(session.ActiveDraw).Kind);
+        Assert.Equal(2, requested.Count);
     });
 
     [Fact]

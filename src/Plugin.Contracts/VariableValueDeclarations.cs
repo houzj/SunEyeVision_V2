@@ -22,6 +22,16 @@ public static partial class VariableValueDeclarations
         if (!valid) throw new InvalidOperationException("当前值与变量类型不匹配，或该类型不支持文本值编辑。");
     }
 
+    public static bool TryGetConsumerPort(string vocabulary, out Port port)
+    {
+        if (vocabulary == "Image")
+        {
+            port = new Port("value", TypeRef.ResourceOf(ResourceKind.Image));
+            return true;
+        }
+        return TryGetPort(vocabulary, out port);
+    }
+
     public static bool TryGetPort(string vocabulary, out Port port)
     {
         port = null!;

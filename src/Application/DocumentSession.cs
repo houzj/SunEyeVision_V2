@@ -3,6 +3,7 @@ using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Application.Editing;
+using SunEyeVision.Execution;
 
 namespace SunEyeVision.Application;
 
@@ -14,8 +15,16 @@ public sealed partial class DocumentSession : IDisposable
     private readonly int _ownerThread = Environment.CurrentManagedThreadId;
     private readonly RuntimeDirectorySnapshot _directory;
     private readonly ToolExecutionOwner _owner = new();
+    private readonly WorkflowExecutionEngine _executionEngine = new();
+    private readonly ExecutionServer _executionServer = new();
+    private readonly SolutionRuntime _solutionRuntime;
+    private readonly ResultStore<DeclaredOutputSnapshot> _resultStore = new();
+    private readonly Dictionary<ScopedNodeIdentity, Guid> _resultVersions = new();
     private readonly CancellationTokenRegistration _directoryRetirement;
     private readonly Dictionary<string, Func<ToolConfiguration, AdmittedToolConfiguration>> _definitions = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, ExecutionNodeSnapshot> _executionSnapshotCache = new(StringComparer.Ordinal);
+    private ExecutionPlan? _executionPlan;
+    private long _executionPlanGeneration;
     private bool _closed, _closing, _admitting;
     public Guid EditSessionId { get; } = Guid.NewGuid();
     public Guid ResultOwnerId => _owner.Id;
@@ -33,10 +42,11 @@ public sealed partial class DocumentSession : IDisposable
         if (!document.Workflows.Any(flow => !flow.IsSubroutine))
             throw new InvalidOperationException("活动方案必须至少包含一个根流程。");
         _documentId = document.Id;
+        _solutionRuntime = new SolutionRuntime(document.Id, EditSessionId);
         History = new DocumentHistoryCoordinator(EditSessionId);
         History.SetMutationLeaseProvider(_owner.BeginDocumentMutation);
         Editing = new DocumentEditSession(this);
-        _directoryRetirement = directory.RetirementToken.Register(() => { lock (_gate) _definitions.Clear(); });
+        _directoryRetirement = directory.RetirementToken.Register(() => { lock (_gate) { _definitions.Clear(); _executionSnapshotCache.Clear(); _executionPlan = null; _resultVersions.Clear(); _executionServer.InvalidateResidentPlan(); } });
     }
 
     internal WorkflowScope OpenScope(string workflowId)
@@ -283,6 +293,10 @@ public sealed partial class DocumentSession : IDisposable
             _closed = true;
             _closing = false;
             _definitions.Clear();
+            _executionSnapshotCache.Clear();
+            _executionPlan = null;
+            _resultVersions.Clear();
+            _executionServer.InvalidateResidentPlan();
         }
         _directoryRetirement.Dispose();
         Exception? presentationFailure = null;
@@ -295,7 +309,10 @@ public sealed partial class DocumentSession : IDisposable
         try { ReleaseRuntimePublications(); } catch (Exception error) { runtimePublicationFailure = error; }
         Exception? decodedResourceFailure = null;
         try { ReleaseDecodedResources(); } catch (Exception error) { decodedResourceFailure = error; }
-        var failures = new[] { retireFailure, presentationFailure, editingFailure, historyFailure, runtimePublicationFailure, decodedResourceFailure }.OfType<Exception>().ToArray();
+        Exception? executionServerFailure = null;
+        try { _executionServer.RetireAsync().AsTask().GetAwaiter().GetResult(); } catch (Exception error) { executionServerFailure = error; }
+        try { _resultStore.Clear(); _solutionRuntime.DisposeAsync().AsTask().GetAwaiter().GetResult(); } catch (Exception error) { executionServerFailure = executionServerFailure is null ? error : new AggregateException(executionServerFailure, error); }
+        var failures = new[] { retireFailure, presentationFailure, editingFailure, historyFailure, runtimePublicationFailure, decodedResourceFailure, executionServerFailure }.OfType<Exception>().ToArray();
         if (failures.Length == 1) throw failures[0];
         if (failures.Length > 1) throw new AggregateException("方案关闭时部分清理失败。", failures);
     }

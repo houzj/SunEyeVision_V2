@@ -1,0 +1,25 @@
+{
+  "kind": "原件目录接纳时序与初始图片条消费者",
+  "source": {
+    "excerpt": "docs/collaboration/evidence/ImageSource目录接纳-SetParam原件摘录-20261111.txt",
+    "excerptSha256": "F50510935A348A469B9B1699EAC026CCBBAE76F26222E5EA1718A5E703BF5F0E",
+    "lines": [
+      1445,
+      1460
+    ],
+    "path": "D:/MyWork/Rea逆向/analysis/full-audit/image-source-native-3.c",
+    "sha256": "08B8DFCD958B692E5059EC895737202BD5731CD701912CBA5F2EF2F8FD0B8F6E"
+  },
+  "original": "SubscribeFolderPath写入后Add_WatchSubFolder并立即UpdateImageFilesListFromDir，不等待Process",
+  "hostDifference": "Projection曾始终将订阅目录转空；每次RefreshFromDocument清空已报告列表",
+  "implementation": [
+    "SubscribedImageFolder.CaptureList是正式执行与初始投影共用的纯文件名过滤/自然排序",
+    "ImageSourcePolicy.CaptureFolderList不创建watcher、不解码、不推进执行/SN",
+    "ImageSourceProjectionBinding按来源/订阅/目录实际接纳变更戳更新初始列表；无关参数保留当前报告列表与行身份",
+    "正式回执按既有RefreshFolder规则更新；退订恢复手工列表",
+    "无效目录回报既有呈现错误，旧目录列表不混入；回调改变所有者后拒绝安装"
+  ],
+  "tests": "新增正式UI会话用例覆盖运行前列表、自然排序、既有大小写规则、刷新关闭仍有初始列表、普通刷新保留行、不因无关参数扫描新增文件、错误/切回恢复及退订恢复；均未运行",
+  "scope": "本批不实现方案存图，不改变私有/正式执行取图及watcher释放；原机动态与初始选择位置未确认",
+  "build": "最终全量Release0错误、3302警告、14.28秒；首次缺少IO命名空间已修复；未启动测试、程序或探针"
+}

@@ -1,0 +1,41 @@
+{
+  "kind": "VM原件优先实施门禁",
+  "batch": "Blob位置修正模式绑定",
+  "vmEvidence": [
+    {
+      "path": "C:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/Group.xml",
+      "facts": [
+        "AssistGroup包含Boolean Assist0，默认False，关闭时清理位置修正来源",
+        "AssistGroup包含RadioSelecter3 SelectWay，正式CurValue/DefaultValue为0，枚举值0/1/2分别为按信息、按点、按坐标",
+        "SelectWay与Assist0、FixtureInitPoint、FixtureRunPoint和位置修正数值叶通过原件触发器连接"
+      ]
+    },
+    {
+      "path": "C:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModuAlgorithmTab.xml",
+      "facts": [
+        "Blob基本参数页链接AssistGroup，位置修正点显示由原件组装触发"
+      ]
+    }
+  ],
+  "currentConsumers": [
+    "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRoiUi.cs",
+    "src/Plugin.Wpf/Presenters/Regions/NativeAssistUiDraftControls.cs",
+    "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobSupportedWindowState.cs",
+    "tools/SunEyeVision.BlobAnalysis/Runtime/Parameters/BlobFixtureInputs.cs",
+    "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRoiUi.cs",
+    "src/Plugin.Wpf/Presenters/Regions/NativeAssistUiDraftControls.cs",
+    "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobSupportedWindowState.cs"
+  ],
+  "difference": [
+    "位置修正模式已声明为中性正式输入字段input.pose.mode，进入统一FieldSettings和执行快照",
+    "NativeAssistUiDraftControls现在只接收宿主创建的正式模式行和来源行，仍保留可见性/提交生命周期接缝",
+    "Assist0关闭时的原件触发器线程、持久化细节和动态缓存仍运行未确认"
+  ],
+  "decision": {
+    "migration": "新增中性input.pose.mode正式整数输入字段，映射SelectWay的0/1/2语义；ROI/Assist组装读取正式字段，不再维护临时模式状态；未引用原厂DLL",
+    "semanticFallback": "原件触发器具体回调线程和动态缓存仍运行未确认，先保留宿主提交/清理接缝",
+    "acceptance": "模式编辑、保存重开、切换节点、关闭位置修正后的来源清理与VM SelectWay/Assist0一致"
+  },
+  "build": "全量Release 0错误、3302警告、15.73秒；仅编译，未运行测试",
+  "runtime": "未启动程序、未运行自动测试或生产探针"
+}

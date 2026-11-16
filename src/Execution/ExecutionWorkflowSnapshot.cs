@@ -7,6 +7,19 @@ namespace SunEyeVision.Execution;
 /// <summary>A single admitted workflow graph, captured atomically by the document session.</summary>
 public sealed class ExecutionWorkflowSnapshot
 {
+    private ExecutionWorkflowSnapshot(ExecutionWorkflowSnapshot source, long documentRevision)
+    {
+        if (documentRevision < 0) throw new ArgumentOutOfRangeException(nameof(documentRevision));
+        WorkflowId = source.WorkflowId;
+        DocumentRevision = documentRevision;
+        Nodes = source.Nodes;
+        Predecessors = source.Predecessors;
+        ControlPredecessors = source.ControlPredecessors;
+        ControlEdges = source.ControlEdges;
+        Directory = source.Directory;
+        Owner = source.Owner;
+    }
+
     internal ExecutionWorkflowSnapshot(string workflowId, long documentRevision,
         RuntimeDirectorySnapshot directory, ToolExecutionOwner owner,
         IReadOnlyList<ExecutionWorkflowNode> nodes,
@@ -91,8 +104,15 @@ public sealed class ExecutionWorkflowSnapshot
     public IReadOnlyList<ExecutionControlEdge> ControlEdges { get; }
     internal RuntimeDirectorySnapshot Directory { get; }
     internal ToolExecutionOwner Owner { get; }
+
+    /// <summary>Reuse a validated immutable graph while rebinding only the current run revision.</summary>
+    internal ExecutionWorkflowSnapshot WithDocumentRevision(long documentRevision)
+        => documentRevision == DocumentRevision ? this : new ExecutionWorkflowSnapshot(this, documentRevision);
 }
 
 /// <summary>The execution snapshot and enabled state of the same captured node.</summary>
 public sealed record ExecutionWorkflowNode(ExecutionNodeSnapshot Node, bool IsEnabled);
-public sealed record ExecutionControlEdge(string Id, string SourceNodeId, string TargetNodeId);
+/// <summary>One execution dependency edge, identified by node pair only — the original platform
+/// keeps edges free of port semantics and resolves branches from the source tool's own decision,
+/// which is why a branch edge needs no special identity here.</summary>
+public sealed record ExecutionControlEdge(string Id, string SourceNodeId, string TargetNodeId, string SourcePort);

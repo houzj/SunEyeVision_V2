@@ -11,16 +11,23 @@
                 <!-- 节点样式资源 -->
                 <ResourceDictionary Source="Resources/Styles/NodeStyleResources.xaml"/>
                 <!-- 连接线样式资源 -->
+                <!-- VM 原件配色键（Col_*）：供原件控件与画布统一取色 -->
+                <ResourceDictionary Source="pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Palettes/colorstyle1.xaml"/>
+                <!-- VM 原件参数配置外壳与控件字典：Tabs/TabItem/分类标题/分隔线 -->
+                <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/SharedStyles/configuration/ConfigurationShell.xaml"/>
+                <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/SharedStyles/configuration/ConfigurationControls.xaml"/>
+                <!-- 原件数值控件样式：整数与小数输入统一使用原件外观 -->
+                <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Numeric/PresentationControls/controls/numericupdown/themes/generic.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/ConnectionStyleResources.xaml"/>
                 <!-- Canvas样式资源 -->
                 <ResourceDictionary Source="Resources/Styles/CanvasStyleResources.xaml"/>
                 <!-- 通用样式资源 -->
                 <ResourceDictionary Source="Resources/Styles/CommonStyleResources.xaml"/>
-                <!-- 菜单样式资源（主题化菜单弹出框，跟随亮/暗主题） -->
+                <!-- 菜单样式资源（主题化菜单弹出框，取唯一主题键） -->
                 <ResourceDictionary Source="Resources/Styles/MenuStyleResources.xaml"/>
-                <!-- 全局 ToolTip 样式资源（主题化悬浮提示，跟随亮/暗主题） -->
+                <!-- 全局 ToolTip 样式资源（主题化悬浮提示，取唯一主题键） -->
                 <ResourceDictionary Source="Resources/Styles/ToolTipStyleResources.xaml"/>
-                <!-- 首次启动及启动页默认暗色；ThemeManager 初始化后恢复用户已保存的主题。 -->
+                <!-- 唯一主题：与 VM 原件一致，界面只有一套固定深色外观，不提供运行时切换。 -->
                 <ResourceDictionary Source="Themes/Dark/DarkTheme.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

@@ -97,7 +97,7 @@ internal static class S2DocumentEditingCases
             var savedOpening=File.ReadAllBytes(path);
             var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(first))!;
             var tabs=Logical(Control(first)).OfType<TabControl>().Single();
-            var input=Logical(Control(first)).OfType<DeclaredFieldEditor>().Single(field=>field.FieldId==BlobTool.ImageInput);
+            var input=Logical(Control(first)).OfType<DeclaredFieldRow>().Single(field=>field.FieldId==BlobTool.ImageInput);
             var combo=(ComboBox)input.InputElement!;
             Case("真实MainWindow打开基本页与正式来源下拉",()=>
             {
@@ -124,7 +124,7 @@ internal static class S2DocumentEditingCases
             });
         Case("图像下拉拒绝真实自引用并恢复原草稿，刷新不改引用，修正后可继续",()=>
         {
-            var input=Logical(Control(first)).OfType<DeclaredFieldEditor>().Single(field=>field.FieldId==BlobTool.ImageInput);
+            var input=Logical(Control(first)).OfType<DeclaredFieldRow>().Single(field=>field.FieldId==BlobTool.ImageInput);
             var combo=(ComboBox)input.InputElement!;var priorItem=(ComboBoxItem)combo.SelectedItem;
             var reference=((ReferenceSetting)priorItem.Tag).Reference;
             var context=(ProductionEditorContext)ToolEditorCommit.GetDraftContext(Control(first))!;
@@ -172,14 +172,14 @@ internal static class S2DocumentEditingCases
                 var production=fields.Fields;var sortFeature=production.Single(field=>field.FieldId==SettingId("SortFeature"));var choices=(ComboBox)sortFeature.InputElement!;
                 first.UpdateLayout();Pump();
                 var advancedOrder=new[]{"ui-only-run.centroid-bias","ui-only-run.axis-ratio",SettingId("SortFeature"),SettingId("SortMode"),SettingId("Connectivity")};
-                var actualEditors=Logical(Control(first)).OfType<DeclaredFieldEditor>().ToArray();
+                var actualEditors=Logical(Control(first)).OfType<DeclaredFieldRow>().ToArray();
                 var positions=advancedOrder.Select(id=>actualEditors.Single(field=>field.FieldId==id).TransformToAncestor(first).Transform(new Point()).Y).ToArray();
                 Require(positions.All(double.IsFinite)&&positions.Zip(positions.Skip(1),(left,right)=>left<right).All(value=>value),"真实高级区行序未保持质心偏移/轴比/排序特征/方向/连通："+string.Join(",",positions));
                 var judgment=Logical(Control(first)).OfType<NativeJudgmentUiDraftControls>().Single();
                 Require(!judgment.IsEnabled&&judgment.ToolTip is string&&ToolTipService.GetShowOnDisabled(judgment),"禁用判定组合未保留可用的未实现提示");
                 Require(choices.Items.Count==13&&choices.Items.Cast<DeclaredChoiceDisplayItem>().Count(item=>item.IsAvailable)==6,"原13项排序未保留或未实现项被开放");
                 Require(sortFeature.TrySetConstant("SortFeaturePerimeter")&&production.Single(field=>field.FieldId==SettingId("SortMode")).TrySetConstant("SortModeAscend")&&production.Single(field=>field.FieldId==SettingId("Connectivity")).TrySetConstant("Connected_4")&&production.Single(field=>field.FieldId==SettingId("OutputBinaryImage")).TrySetConstant(false),"正式排序/连通/二值开关未接纳同一草稿");
-                Require(!Logical(Control(first)).OfType<DeclaredFieldEditor>().Any(field=>field.FieldId is "ui-only-run.sort-feature" or "ui-only-run.sort-mode" or "ui-only-run.connectivity" or "ui-only-run.binary-output"),"正式字段仍被重复UI-only覆盖");
+                Require(!Logical(Control(first)).OfType<DeclaredFieldRow>().Any(field=>field.FieldId is "ui-only-run.sort-feature" or "ui-only-run.sort-mode" or "ui-only-run.connectivity" or "ui-only-run.binary-output"),"正式字段仍被重复UI-only覆盖");
 
                 foreach(var enabledName in new[]{"IsCircularityFilterEnabled","IsRectangularityFilterEnabled"})
                     Require(fields.Fields.Single(f=>f.FieldId==SettingId(enabledName)).TrySetConstant(true),"真实过滤开关不可接纳");
@@ -221,7 +221,7 @@ internal static class S2DocumentEditingCases
             });
             Case("未接入占位项全部禁用且提供说明，不能冒充正式参数",()=>
             {
-                var placeholders=Logical(Control(first)).OfType<DeclaredFieldEditor>().Where(f=>f.FieldId.StartsWith("ui-only-run.",StringComparison.Ordinal)).ToArray();
+                var placeholders=Logical(Control(first)).OfType<DeclaredFieldRow>().Where(f=>f.FieldId.StartsWith("ui-only-run.",StringComparison.Ordinal)).ToArray();
                 Require(placeholders.Length>0&&placeholders.All(field=>!field.IsEnabled&&field.ToolTip is string),"未接入项仍可编辑或缺少说明");
                 Require(solutions.Session!.Editing.Host.GetVariableNames(solutions.CurrentSolution!.Id).ContainsKey(uiVariable!.Id),"真实变量候选准备丢失");
                 tabs.SelectedIndex=0;Pump();

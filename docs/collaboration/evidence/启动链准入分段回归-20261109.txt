@@ -1,0 +1,12 @@
+VM 对齐启动准入分段回归（2026-11-09）
+
+正式 Release：D:\MyWork\SunEyeVision_V2\Release\SunEyeVision_v1.0.0\SunEyeVision\SunEyeVision.UI.exe
+命令：SunEyeVision.UI.exe --toolbox-probe D:\Temp\suneye-toolbox-probe-stages-20261109.json
+
+结果：退出码 0；总探针耗时 722ms；PayloadValidation 140ms；ComponentLoading 264ms，其中 RuntimeAssemblies 54ms、RuntimeDefinitions 209ms、ToolDirectory 7ms。
+RuntimeAssemblies 子阶段：VerifyEntry 1ms、LoadAssembly 1ms、LoadDependencies 35ms、ReadComponentMetadata 2ms。共享框架程序集不再从发布目录递归装载。
+准入程序集：SunEyeVision.Tool.ImageSource.Runtime、SunEyeVision.Tool.BlobAnalysis.Runtime；组件数 4（两 Runtime、两 Wpf）。工具箱可用项 2：ImageLoad、BlobAnalysis。
+
+解释：此前 ComponentLoading 约 4.4–4.9 秒，LoadDependencies 约 4.4–4.7 秒；根因是把 CLR 可信平台程序集从发布目录重复映射并递归。现已按 TRUSTED_PLATFORM_ASSEMBLIES 跳过共享框架副本，工具声明和依赖身份仍在发布准入链校验，实际算法依赖继续按执行路径装载。
+
+边界：这是本方正式 Release 静态/准入探针，不是 VM 动态耗时实测；仍需人工验证启动页→方案管理器→方案加载遮罩→节点工具窗口及三页 Tab 的视觉和交互。

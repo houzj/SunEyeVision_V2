@@ -47,6 +47,10 @@ internal sealed class NativeNumericCommit : IDisposable
         var valid=Matches(stamp)&&_textRevision-revision<=1&&ReferenceEquals(inner,_text.GetBindingExpression(TextBox.TextProperty))
             &&ReferenceEquals(outer,_leaf.GetBindingExpression(Numbers.NumericControl.TextProperty));
         if(!valid)_externalMutation++;
+        // SetCurrentValue 不触发绑定校验：初值 '0'（Text DP 默认，PcUi NumericControl
+        // TextProperty 元数据）时代挂上的 RangeRule 错误状态，必须在真实值落地后重跑，
+        // 否则合法值带着残留红框（用户实机 2026-11-13）。
+        if(valid)_leaf.RevalidateRange();
         return valid;
     }
     internal bool ProjectCandidate(ConstantSetting value,Action action)=>WriteText(Format(value.Value!),action,Stamp());
@@ -152,7 +156,7 @@ internal sealed class NativeNumericCommit : IDisposable
             ||(!_paired&&(numeric<_leaf.Minimum||numeric>_leaf.Maximum))
             ||(_paired&&_owner is not null&&(numeric<_owner.Minimum||numeric>_owner.Maximum))
             ||_leaf.IsNeedCheckExtremumByXML&&(numeric<_leaf.MinValue||numeric>_leaf.MaxValue))
-            throw new ArgumentException("数值超出允许范围。");
+            throw new ArgumentException($"数值超出允许范围：{_state.Port.Id}={numeric}，布局[{_layout?.Minimum},{_layout?.Maximum}]，控件[{_leaf.Minimum},{_leaf.Maximum}]，XML[{_leaf.MinValue},{_leaf.MaxValue}]。");
     }
     public void ValidateStored(ConstantSetting setting)
     {

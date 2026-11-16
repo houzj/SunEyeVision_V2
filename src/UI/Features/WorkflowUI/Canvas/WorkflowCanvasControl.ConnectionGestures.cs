@@ -24,12 +24,12 @@ public partial class WorkflowCanvasControl
     }
     private bool ValidCanvasConnection() => CanEditCanvas && _canvasConnectionTab != null &&
         ReferenceEquals(_viewModel?.WorkflowTabViewModel.SelectedTab, _canvasConnectionTab) && CanvasGraphStamp(_canvasConnectionTab) == _canvasConnectionStamp;
-    private static IEnumerable<ExecutionPortShape> CanvasPorts(DependencyObject parent)
+    private static IEnumerable<ConnectionPort> CanvasPorts(DependencyObject parent)
     {
         for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
         {
             var child = VisualTreeHelper.GetChild(parent, i);
-            if (child is ExecutionPortShape port) yield return port;
+            if (child is ConnectionPort port) yield return port;
             foreach (var nested in CanvasPorts(child)) yield return nested;
         }
     }
@@ -55,9 +55,10 @@ public partial class WorkflowCanvasControl
         foreach (var port in CanvasPorts(WorkflowCanvas))
         {
             var node = port.DataContext as CanvasNodeProjection;
-            port.Visibility = ReferenceEquals(node, source) || ReferenceEquals(node, _canvasConnectionTarget) ? Visibility.Visible : Visibility.Collapsed;
-            port.IsHighlighted = ReferenceEquals(node, _canvasConnectionTarget) && port.Tag as string == targetSide;
+            port.IsHited = ReferenceEquals(node, _canvasConnectionTarget) && port.Tag as string == targetSide;
         }
+        // 拖线期间鼠标被画布捕获，节点的 IsMouseOver 不再更新；按原件 HitTesting 的做法主动驱动目标节点显示端口。
+        SyncConnectionTargetNodeHited(_canvasConnectionTarget);
         if (_tempConnectionLine != null)
         {
             _tempConnectionLine.Visibility = Visibility.Visible;
@@ -67,6 +68,21 @@ public partial class WorkflowCanvasControl
         UpdateTempConnectionPath(_dragConnectionStartPoint, pointer);
         e.Handled = true;
     }
+    /// <summary>拖线期间主动设置目标节点命中态，使其端口显示（对应原件 Connector.HitTesting）。</summary>
+    private void SyncConnectionTargetNodeHited(CanvasNodeProjection? target)
+    {
+        var canvas = _canvasConnectionTab?.DocumentCanvas;
+        if (canvas == null) return;
+        foreach (var node in canvas.Nodes)
+        {
+            if (CanvasNodeItems.ItemContainerGenerator.ContainerFromItem(node) is not DependencyObject container) continue;
+            var view = FindVisualChild<WorkflowNodeView>(container);
+            if (view == null) continue;
+            bool hited = ReferenceEquals(node, target);
+            if (view.IsHited != hited) view.IsHited = hited;
+        }
+    }
+
     private Rect CanvasPortHitRect(CanvasNodeProjection node, string side)
     {
         var a = GetPortPositionByName(node, side);

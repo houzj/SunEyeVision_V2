@@ -15,14 +15,14 @@ public partial class RootWorkflowConfigurationWindow:ThemeDialogWindow
  private readonly RootWorkflowConfigurationContext _context;
  private readonly Func<Task>? _run;private readonly Action? _repeat,_stop;private readonly Func<bool>? _running;
 
- private readonly List<DeclaredFieldEditor> _fields=new();
+ private readonly List<DeclaredFieldRow> _fields=new();
  private readonly DispatcherTimer _refresh=new(){Interval=TimeSpan.FromMilliseconds(160)};
  private bool _rebuilding;
  internal RootWorkflowConfigurationContext Context=>_context;
  internal RootWorkflowConfigurationWindow(RootWorkflowConfigurationContext context,Func<Task>? run,Action? repeat,Action? stop,Func<bool>? running)
  {
   _context=context;_run=run;_repeat=repeat;_stop=stop;_running=running;
-  InitializeComponent();Resources.MergedDictionaries.Add(EditorResources.Create());Heading.Text=Title=context.Root.Name+" · 流程配置";
+  InitializeComponent();Resources.MergedDictionaries.Add(EditorResources.Shared);Heading.Text=Title=context.Root.Name+" · 流程配置";
   _context.PrepareView=()=>_fields.FirstOrDefault(f=>f.HasInvalidText)?.Error;
   _context.HasPendingView=()=>_fields.Any(f=>f.HasInvalidText);_context.Changed+=Rebuild;
   _refresh.Tick+=RefreshTick;Loaded+=(_,_)=>{Rebuild();ImageNodes.ItemsSource=_context.Root.Nodes;ImageNodes.SelectedIndex=_context.Root.Nodes.Count>0?0:-1;RefreshPublishedResults();_refresh.Start();};
@@ -52,7 +52,7 @@ public partial class RootWorkflowConfigurationWindow:ThemeDialogWindow
       row.Children.Add(ResourceReferenceRow(proxy,candidate));Parameters.Children.Add(row);continue;
      }
      var field=candidate.Field!;
-     var editor=new DeclaredFieldEditor(field.Port,_context.Resolve(proxy).Node.DispName+"."+proxy.DisplayName,_context.Read(proxy),setting=>_context.Write(proxy,setting),
+     var editor=new DeclaredFieldRow(field.Port,_context.Resolve(proxy).Node.DispName+"."+proxy.DisplayName,_context.Read(proxy),setting=>_context.Write(proxy,setting),
       RootWorkflowReferencePicker.Options(_context,proxy),new ConstantSetting(field.Read()),reference=>FormatReference(reference),field.Presentation.ChoiceLabels,field.Presentation);
      editor.Changed+=RefreshState;_fields.Add(editor);row.Children.Add(editor);
     }
@@ -66,7 +66,7 @@ public partial class RootWorkflowConfigurationWindow:ThemeDialogWindow
  }
  private FrameworkElement ResourceReferenceRow(RootParameterProxy proxy,RootParameterCandidate candidate)
  {
-  var editor=new DeclaredFieldEditor(candidate.Resource!.Port,candidate.Node.DispName+"."+proxy.DisplayName,
+  var editor=new DeclaredFieldRow(candidate.Resource!.Port,candidate.Node.DispName+"."+proxy.DisplayName,
    _context.Read(proxy),setting=>_context.Write(proxy,setting),RootWorkflowReferencePicker.Options(_context,proxy),
    formatReference:FormatReference,choiceLabels:candidate.Field!.Presentation.ChoiceLabels,presentation:candidate.Field.Presentation,allowUnboundReference:true);
   editor.Changed+=RefreshState;_fields.Add(editor);return editor;

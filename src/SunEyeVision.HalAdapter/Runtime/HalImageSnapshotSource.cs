@@ -12,11 +12,11 @@ public static class HalImageSnapshotSource
     public static FrozenImageResource Capture(HImage captured,ImageFrameAddress frame)
         => CaptureCore(captured, frame, (layout, coordinates, pixels, runs) => new FrozenImageResource(layout, frame, coordinates, pixels, runs));
 
-    public static IReadOnlyImage Capture(HImage captured, ImageFrameAddress frame, IOutputResources resources)
+    public static IReadOnlyImage Capture(HImage captured, ImageFrameAddress frame, IOutputResources resources, bool rgb24=false)
         => CaptureCore(captured, frame, (layout, coordinates, pixels, runs) => {
             using var domain = new FrozenRegionResource(coordinates, frame, runs);
             return resources.CreateImage(layout, frame, domain, pixels);
-        });
+        }, rgb24:rgb24);
 
     /// <summary>Capture an unchanged pixel grid in the caller's explicitly declared image coordinate slot.</summary>
     public static IReadOnlyImage Capture(HImage captured,ImageFrameAddress frame,CoordinateFrame coordinates,IOutputResources resources)
@@ -31,12 +31,14 @@ public static class HalImageSnapshotSource
         },coordinates);
     }
 
-    private static T CaptureCore<T>(HImage captured, ImageFrameAddress frame, Func<ImageLayout, CoordinateFrame, byte[], RegionRun[], T> create, CoordinateFrame? declaredCoordinates=null)
+    private static T CaptureCore<T>(HImage captured, ImageFrameAddress frame, Func<ImageLayout, CoordinateFrame, byte[], RegionRun[], T> create,
+        CoordinateFrame? declaredCoordinates=null, bool rgb24=false)
     {
         ArgumentNullException.ThrowIfNull(frame);
         using var count=captured.CountChannels();
         int channels=count.I;
-        var format=channels switch {1=>PixelLayout.Gray8,3=>PixelLayout.Bgr24,4=>PixelLayout.Bgra32,
+        if(rgb24&&channels!=3)throw new ArgumentException("RGB24 图像必须有三个颜色通道。",nameof(captured));
+        var format=channels switch {1=>PixelLayout.Gray8,3=>rgb24?PixelLayout.Rgb24:PixelLayout.Bgr24,4=>PixelLayout.Bgra32,
             _=>throw new NotSupportedException("Typed HALCON snapshots support byte Gray, RGB and RGBA images only.")};
         var planes=new byte[channels][];
         int width=0,height=0;
@@ -55,13 +57,16 @@ public static class HalImageSnapshotSource
         var pixels=new byte[layout.BufferLength];
         if(channels==1)planes[0].CopyTo(pixels,0);
         else
-            for(int pixel=0;pixel<planes[0].Length;pixel++)
+        {
+            var leadingPlane=planes[rgb24?0:2];
+            var trailingPlane=planes[rgb24?2:0];
+            for(int pixel=0;pixel<leadingPlane.Length;pixel++)
             {
                 int offset=pixel*channels;
-                // HALCON color planes are R/G/B[/A]; the neutral packed layout is B/G/R[/A].
-                pixels[offset]=planes[2][pixel];pixels[offset+1]=planes[1][pixel];pixels[offset+2]=planes[0][pixel];
+                pixels[offset]=leadingPlane[pixel];pixels[offset+1]=planes[1][pixel];pixels[offset+2]=trailingPlane[pixel];
                 if(channels==4)pixels[offset+3]=planes[3][pixel];
             }
+        }
         using var domain=captured.GetDomain();
         domain.GetRegionRuns(out var rows,out var first,out var last);
         using(rows)using(first)using(last)

@@ -49,7 +49,7 @@ internal static class ContinuousMainProbe
   var root=Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,"..","..","_validation","ContinuousMain",Guid.NewGuid().ToString("N")));Directory.CreateDirectory(root);
   var paths=ApplicationDataPaths.Open(Path.Combine(root,"Data"));ServiceInitializer.ConfigureDataPaths(paths);ServiceInitializer.InitializeServices();ServiceInitializer.InitializeSolutionManager(paths,plugins.RuntimeDirectory!);
   typeof(SunEyeVision.UI.App).GetField("_dataPaths",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(app,paths);
-  var theme=new ThemeManager(()=>null,_=>{});theme.Initialize();ServiceLocator.Instance.Register(theme);
+ 
   var session=ServiceInitializer.SolutionManager.CreateNew("实际连续主窗");var flow=session.GetWorkflows().Single();var graph=session.PrepareGraphEdit(flow.Id);var node=session.CreateNode(graph,"ImageLoad",new(150,120));session.CommitGraphEdit(graph,"建立真实图像源");
   var image=Path.Combine(root,"source.pgm");File.WriteAllBytes(image,System.Text.Encoding.ASCII.GetBytes("P5\n2 1\n255\n").Concat(new byte[]{21,45}).ToArray());var draft=session.Editing.Host.BeginEdit(flow.Id,node.Id);draft.ApplyFields(new Dictionary<string,ParameterSetting>{{"local.paths",new ConstantSetting(new[]{image})},{"local.start",new ConstantSetting(0L)},{"local.auto-switch",new ConstantSetting(false)}});
   var settings=session.Editing.Host.BeginRootEdit(flow.Id);settings.WorkspaceSettings=settings.WorkspaceSettings with{RunIntervalMs=600};session.CommitEdit(DocumentEditProposal.Prepare(session.Editing.Host,nodes:new[]{draft},roots:new[]{settings}));

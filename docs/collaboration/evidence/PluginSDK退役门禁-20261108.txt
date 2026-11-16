@@ -1,0 +1,34 @@
+Plugin.SDK 退役门禁 2026-11-08
+
+脚本：scripts/verification/Test-PluginSdkRetirementGate.ps1
+
+ReportOnly 结果：
+- 直接项目消费者：20
+- 工具消费者：20
+- 源码实时扫描项目引用：20
+- src/Plugin.SDK 目录条目：0
+- 20 个待迁移工具已逐项列出
+
+正常门禁结果：按预期阻断，原因是 20 个直接消费者仍引用旧 SDK。ImageSource 与 BlobAnalysis 不在阻断列表中。
+
+该门禁用于防止未完成消费者迁移时删除旧 SDK，不代表旧 SDK 仍应继续扩展。
+
+2026-11-08 生产探针锁文件清理
+- tests/RuntimeEditorProductionProbe 工程源码已无旧 Plugin.SDK ProjectReference。
+- 重新评估 tests/RuntimeEditorProductionProbe/packages.lock.json 后，移除过期 SunEyeVision.Plugin.SDK 依赖，改为 SunEyeVision.Plugin.Editing.Wpf。
+- RuntimeEditorProductionProbe Release 构建：0 错误，MSB9008 旧 SDK 项目缺失警告消失。
+- 20 个旧工具消费者仍保持门禁冻结，本次只清理探针工程的过期锁文件。
+
+2026-11-08 门禁实时一致性增强
+- Windows PowerShell 5.1 与 pwsh 均使用显式 UTF-8 读取映射。
+- 门禁实时扫描 tools 下正式 csproj，并排除 obj/bin 及 `_wpftmp.csproj` 生成文件。
+- 映射登记 20 与源码实时扫描 20 一致，正常模式继续阻断旧 SDK 删除。
+
+2026-11-08 现行方案收口
+- 20 个旧工具已从 `SunEyeVision.slnx` 移出，保留源码和逆向材料供后续 VM 重建。
+- 活动方案消费者 0，历史移出消费者 20，活动源码实时扫描 0，SDK 目录条目 0。
+- 正常退役门禁已通过。详细收口记录见 `PluginSDK退役-现行方案收口-20261108.txt`。
+
+2026-11-09 现行/历史口径拆分
+- 门禁输出已补充历史工具目录扫描：现行解决方案消费者 `0`、现行工具 `0`、现行源码实时扫描 `0`、历史映射移出消费者 `20`、历史工具目录仍含旧引用 `20`、`src/Plugin.SDK` 目录条目 `0`。
+- 这 20 个历史工具项目均不在 `SunEyeVision.slnx`，也不进入当前 Release；它们保留为 VM 重建的历史源码和逆向对照，不得被误称为当前 SDK 消费者。

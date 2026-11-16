@@ -1,0 +1,67 @@
+{
+  "kind": "VM 原件取证（ilspycmd 反编译本机同版本安装件 + 用户实机截图）",
+  "batch": "欢迎页全链路：可移动 / 保存命名进最近列表 / 关闭欢迎页后主窗口可直接编辑",
+  "evidenceSource": {
+    "binary": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\myLibs\\VisionMasterMain.dll",
+    "tool": "ilspycmd 11.2.0.10050",
+    "types": ["VisionMaster.AppMainWindow.GuideWindow", "VisionMaster.AppMainWindow.GuideHelper", "VisionMasterMain.WelcomeDialog（启动 loading 框，非欢迎页）"],
+    "userScreenshots": "2026-11-12 用户三截图：VM 欢迎页 / 本方起始页 / 本方关闭欢迎页后主窗口空态"
+  },
+  "vmFindings": [
+    {
+      "id": "window",
+      "finding": "GuideWindow : BaseWindow，独立窗口；最近方案经 RecentlySolutions DP 由主窗注入；OpenSolutionCommand 由主窗提供；最近列表显示名即方案文件名（用户截图：test1108/test/一拖一_V4.4.0…）。",
+      "implication": "欢迎页是模态引导层，不承载方案创建；关闭后主窗口继续。"
+    },
+    {
+      "id": "close",
+      "finding": "GuideWindow.Close_OnClick：DialogResult=true; Close()。GuideButton（四个模板卡）OnClick：SaveConfig(\"ToolBoxType\", …) 后 Close()。均不创建/销毁方案。",
+      "implication": "VM 主窗口在欢迎页之下已经持有可编辑方案（启动即默认方案），关闭欢迎页直接进入编辑；模板卡只切换工具箱形态。"
+    },
+    {
+      "id": "donotshow",
+      "finding": "GuideHelper 以配置节点 GuideSetting/ShowEnable 持久化『不再显示』。",
+      "implication": "与本方 StartPreferences.HideStartPage 等价，已实现。"
+    },
+    {
+      "id": "move",
+      "finding": "GuideWindow 为 BaseWindow 派生无边框窗口；原件拖动语义为整窗任意空白处按住拖动（用户实机确认可移动）。",
+      "implication": "本方起始页拖动行为需实机复现失效区域后修复，不得按猜测改。"
+    }
+  ],
+  "ownFindings": [
+    {
+      "id": "startpage",
+      "finding": "StartPageWindow（src/UI/Shell/Windows/StartPageWindow.xaml.cs）：独立窗口，WindowChrome CaptionHeight=0，根 Border PreviewMouseLeftButtonDown + Header MouseLeftButtonDown 均调 DragMove，IsInteractiveSource(Control) 拦截控件命中；App.xaml.cs:387 启动期以 ShowDialog 显示并设为 MainWindow，运行期 ShowStartPageAsync 以 Owner=mainWindow 复显。"
+    },
+    {
+      "id": "empty-after-close",
+      "finding": "App.xaml.cs：关闭起始页 → StartPageAction.EmptyWorkspace → 主窗口不创建方案，画布呈『暂无流程』空态（用户截图3）；仅点『新建方案』才走 MainWindowStartupEntries.NewEmptySolutionAsync → DocumentManager.CreateNew(\"未命名方案\")。",
+      "difference": "VM 关闭欢迎页即持有可编辑方案；本方关闭欢迎页后无可编辑工作流。"
+    },
+    {
+      "id": "save-name",
+      "finding": "MainWindowDocumentFiles.SaveCurrentDocumentWithPrompt：SaveFileDialog（FileName=session.Document.Name）→ session.SaveAs(target) → RecordRecentSolution(session)；而 RecordRecentSolution（App.xaml.cs:436）记录显示名用 session.Document.Name——SaveAs 后 Document.Name 未同步为文件主名，仍为 CreateNew 默认『未命名方案』。",
+      "difference": "VM 最近列表显示方案文件名；本方显示内部默认名『未命名方案』，用户命名丢失。"
+    }
+  ],
+  "fixDesign": [
+    {
+      "id": "save-name-fix",
+      "design": "保存即命名：SaveCurrentDocumentWithPrompt 在 SaveAs 成功回执后将 session 方案名同步为文件主名（经会话官方改名路径），RecordRecentSolution 显示名同步；主窗口标题 CurrentSolutionName 随之更新。VM 语义：方案名=文件名，未保存时显示『未命名方案*』。",
+      "acceptance": "关闭应用→保存→命名『abc』后，最近打开列表显示『abc』；主窗标题同步；重开方案名一致。"
+    },
+    {
+      "id": "close-fix",
+      "design": "关闭欢迎页与新建语义对齐 VM：起始页关闭（×）不再进入不可编辑空态——主窗口进入即持有可编辑空白方案（启动链预建或关闭动作触发 NewEmptySolutionAsync），『暂无流程』空态仅在无方案异常路径出现；模板卡（四能力卡）对齐原件为工具箱形态选择占位（当前无工具箱形态切换则保持导航语义，如实标注）。",
+      "acceptance": "启动→直接关闭欢迎页→主窗口画布可直接新建/编辑流程；不再出现只能看不能编辑的空态。"
+    },
+    {
+      "id": "move-fix",
+      "design": "先实机复现拖动失效区域（标题区/卡片空白/列表区），再按失效点修 IsInteractiveSource 判定或事件挂接；不猜测改动。",
+      "acceptance": "按住欢迎页任意非交互空白处可拖动窗口。"
+    }
+  ],
+  "limitation": "GuideWindow.xaml 为 BAML 未能还原逐元素布局；拖动机制仅有行为级证据（用户实机可移动）。VM 主窗『启动即默认方案』由既有启动时序证据与用户实机行为支撑，未二次反编译验证默认方案创建点，标记待补证。",
+  "acceptance": "三条验收：①欢迎页任意空白可拖动；②关闭应用→保存命名后最近列表显示所命名（与文件名一致）；③直接关闭欢迎页后主窗口画布可直接编辑（新建/拖放工具/连线）。"
+}

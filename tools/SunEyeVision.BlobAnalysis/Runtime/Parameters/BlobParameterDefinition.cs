@@ -10,14 +10,13 @@ namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 public sealed partial class BlobParameterDefinition
 {
     private readonly IReadOnlyDictionary<string, XElement> _fields;
-    private readonly XElement[] _judgments;
     private readonly IReadOnlyDictionary<string,XElement> _inputs;
     public static BlobParameterDefinition Instance { get; } = Load();
     private BlobParameterDefinition(XElement root)
     {
         if(root.Name!="BlobParameters"||(string?)root.Attribute("schemaVersion")!="1")
             throw new InvalidDataException("Unsupported Blob parameter metadata.");
-        Shape(root,["schemaVersion","workflowImageInputId"],["Inputs","Group","Judgments"]);
+        Shape(root,["schemaVersion","workflowImageInputId"],["Inputs","Group"]);
         WorkflowImageInputId=Required(root,"workflowImageInputId");
         if(WorkflowImageInputId!=BlobTool.ImageInput)throw new InvalidDataException("Blob workflow image default must name its declared image input.");
         if(root.Elements("Inputs").Count()!=1)throw new InvalidDataException("Exactly one Blob input editor declaration is required.");
@@ -27,7 +26,7 @@ public sealed partial class BlobParameterDefinition
         if(inputs.Elements().Select(x=>Required(x,"id")).Distinct(StringComparer.Ordinal).Count()!=inputs.Elements().Count())
             throw new InvalidDataException("Duplicate Blob input editor identity.");
         _inputs=new ReadOnlyDictionary<string,XElement>(inputs.Elements().ToDictionary(x=>Required(x,"id"),StringComparer.Ordinal));
-        if(!_inputs.Keys.ToHashSet(StringComparer.Ordinal).SetEquals(new[]{BlobTool.ImageInput,BlobTool.InspectionInput,BlobTool.MaskInput,BlobTool.PoseInput}))
+        if(!_inputs.Keys.ToHashSet(StringComparer.Ordinal).SetEquals(new[]{BlobTool.ImageInput,BlobTool.PoseInput}))
             throw new InvalidDataException("Blob input editor declarations differ from the input model.");
         foreach(var group in root.Elements("Group"))
         {
@@ -37,7 +36,7 @@ public sealed partial class BlobParameterDefinition
             if(!group.HasElements)throw new InvalidDataException("Empty Blob parameter group.");
             foreach(var field in group.Elements())
             {
-                Shape(field,["id","fieldId","allowReference","bindingName","type","default","label","minimum","maximum","decimals","increment","visibleWhen","visibleValue","visibleNegate","pairWith"],["Choice"]);
+                Shape(field,["id","fieldId","allowReference","bindingName","type","default","label","minimum","maximum","decimals","increment","visibleWhen","visibleValue","visibleNegate","pairWith","pairMinimum","pairMaximum","pairLabel"],["Choice"]);
                 Required(field,"id");Required(field,"type");Required(field,"default");Required(field,"label");
                 Required(field,"fieldId");Boolean(field,"allowReference");
                 if(Boolean(field,"allowReference"))Required(field,"bindingName");
@@ -49,11 +48,13 @@ public sealed partial class BlobParameterDefinition
         if(ids.Distinct(StringComparer.Ordinal).Count()!=ids.Length)throw new InvalidDataException("Duplicate Blob parameter identity.");
         _fields=new ReadOnlyDictionary<string,XElement>(root.Elements("Group").Elements("Parameter")
             .ToDictionary(x=>Required(x,"id"),x=>x,StringComparer.Ordinal));
-        var declared=typeof(BlobSettings).GetProperties(BindingFlags.Public|BindingFlags.Instance)
-            .Where(p=>p.Name!=nameof(BlobSettings.Judgments)).ToDictionary(p=>p.Name,p=>p.PropertyType,StringComparer.Ordinal);
-        if(!_fields.Keys.ToHashSet(StringComparer.Ordinal).SetEquals(declared.Keys))
-            throw new InvalidDataException("Blob XML fields differ from the settings model.");
-        foreach(var (id,type) in declared)
+        var settingsTypes=typeof(BlobSettings).GetProperties(BindingFlags.Public|BindingFlags.Instance)
+            .Where(p=>p.GetCustomAttribute<BlobNonFieldAttribute>() is null)
+            .ToDictionary(p=>p.Name,p=>p.PropertyType,StringComparer.Ordinal);
+        var declared=ParameterTypes();
+        if(settingsTypes.Keys.Any(id=>!_fields.ContainsKey(id))||_fields.Keys.Any(id=>!declared.ContainsKey(id)))
+            throw new InvalidDataException("Blob XML fields differ from the settings and VM parameter models.");
+        foreach(var (id,type) in _fields.Keys.Select(id=>(id,declared[id])))
         {
             var expected=type==typeof(int)?"Integer":type==typeof(double)?"Number":type==typeof(bool)?"Boolean":type.IsEnum?"Enum":throw new InvalidDataException("Unsupported Blob setting type.");
             if(Required(_fields[id],"type")!=expected)throw new InvalidDataException("Blob XML field type differs: "+id);
@@ -84,34 +85,6 @@ public sealed partial class BlobParameterDefinition
             catch(Exception e)when(e is FormatException or OverflowException or ArgumentException)
             {throw new InvalidDataException("Invalid Blob default: "+id,e);}
         }
-        if(root.Elements("Judgments").Count()!=1)throw new InvalidDataException("Exactly one Blob Judgments element is required.");
-        Shape(root.Element("Judgments")!,["page","section"],["Judgment"]);
-        _judgmentPage=Required(root.Element("Judgments")!,"page");_judgmentSection=Required(root.Element("Judgments")!,"section");
-        _judgments=root.Element("Judgments")?.Elements("Judgment").ToArray()
-            ??throw new InvalidDataException("Blob judgment definitions are missing.");
-        if(_judgments.Select(x=>Required(x,"key")).Distinct(StringComparer.Ordinal).Count()!=_judgments.Length)
-            throw new InvalidDataException("Duplicate Blob judgment identities.");
-        var orders=new HashSet<int>();
-        foreach(var item in _judgments)
-        {
-            Shape(item,["key","name","kind","perItem","enabled","minimum","maximum","allowedMinimum","allowedMaximum","unit","decimals","order","enabledFieldId","minimumFieldId","maximumFieldId"],[]);
-            var key=Required(item,"key");Required(item,"name");
-            var perItem=Boolean(item,"perItem");Boolean(item,"enabled");
-            if(!Enum.TryParse<BlobJudgmentKind>(Required(item,"kind"),false,out var kind)||!Enum.IsDefined(kind))
-                throw new InvalidDataException("Unknown Blob judgment kind: "+key);
-            var expectedPerItem=key is "per-blob-area" or "per-blob-circularity" or "per-blob-rectangularity";
-            var known=expectedPerItem||key is "output-not-empty" or "white-ratio" or "blob-count" or "total-area" or "average-area"
-                or "max-area" or "min-area" or "average-circularity" or "average-rectangularity";
-            if(!known||perItem!=expectedPerItem||kind!=(key=="output-not-empty"?BlobJudgmentKind.Boolean:BlobJudgmentKind.Range))
-                throw new InvalidDataException("Blob judgment identity/scope/kind mismatch: "+key);
-            var min=Finite(item,"minimum");var max=Finite(item,"maximum");
-            if(Finite(item,"allowedMinimum")>min||min>max||max>Finite(item,"allowedMaximum"))
-                throw new InvalidDataException("Invalid Blob judgment bounds: "+key);
-            Integer(item,"decimals",0,15);
-            if(!orders.Add(Integer(item,"order",0,int.MaxValue)))throw new InvalidDataException("Duplicate Blob judgment order.");
-            if(item.Attribute("unit") is null)throw new InvalidDataException("Missing Blob judgment unit: "+key);
-        }
-        if(_judgments.Length!=12)throw new InvalidDataException("Missing Blob judgment definitions.");
         _bindings=BuildSettingsBindings();
         SettingsSchema=new(_bindings.Select(x=>x.Port),Array.Empty<SunEyeVision.Plugin.Contracts.Port>(),
             new SunEyeVision.Plugin.Contracts.ToolPresentation(_bindings.Select(x=>x.Presentation)));
@@ -148,6 +121,19 @@ public sealed partial class BlobParameterDefinition
     internal static bool Boolean(XElement element,string name)=>bool.TryParse(Required(element,name),out var value)
         ?value:throw new InvalidDataException("Invalid Blob Boolean: "+name);
     public bool Contains(string id)=>_fields.ContainsKey(id);
+    internal static IReadOnlyDictionary<string,Type> ParameterTypes()
+    {
+        var settings=typeof(BlobSettings).GetProperties(BindingFlags.Public|BindingFlags.Instance)
+            .Where(p=>p.GetCustomAttribute<BlobNonFieldAttribute>() is null)
+            .ToDictionary(p=>p.Name,p=>p.PropertyType,StringComparer.Ordinal);
+        foreach(var property in typeof(BlobFindParameters).GetProperties(BindingFlags.Public|BindingFlags.Instance))
+            settings.TryAdd(property.Name,property.PropertyType);
+        return settings;
+    }
+    internal static PropertyInfo? SettingsProperty(string id)=>typeof(BlobSettings).GetProperty(id);
+    internal static PropertyInfo? FindProperty(string id)=>typeof(BlobFindParameters).GetProperty(id);
+    internal static Type ParameterType(string id)=>ParameterTypes().TryGetValue(id,out var type)?type
+        :throw new InvalidDataException("Unknown Blob parameter: "+id);
     public string WorkflowImageInputId { get; }
     public SunEyeVision.Plugin.Contracts.FieldPresentation InputPresentation(SunEyeVision.Plugin.Contracts.Port port,int order)
     {
@@ -163,7 +149,7 @@ public sealed partial class BlobParameterDefinition
     public bool Advanced(string id)=>_fields[id].Parent!.Attribute("advanced") is not null&&Boolean(_fields[id].Parent!,"advanced");
     public T Default<T>(string id)
     {
-        if(typeof(BlobSettings).GetProperty(id)?.PropertyType!=typeof(T))throw new InvalidDataException("Requested Blob default type differs: "+id);
+        if(ParameterType(id)!=typeof(T))throw new InvalidDataException("Requested Blob default type differs: "+id);
         var value=Required(_fields[id],"default");
         if(typeof(T).IsEnum)
         {
@@ -184,9 +170,4 @@ public sealed partial class BlobParameterDefinition
     public double? Maximum(string id)=>Number(id,"maximum");
     public int DecimalPlaces(string id)=>_fields[id].Attribute("decimals") is null?0:Integer(_fields[id],"decimals",0,15);
     public double Increment(string id)=>Number(id,"increment")??1;
-    public IReadOnlyList<BlobJudgment> CreateJudgments()=>Array.AsReadOnly(_judgments.Select(x=>new BlobJudgment(
-        Required(x,"key"),bool.Parse(Required(x,"perItem")),bool.Parse(Required(x,"enabled")),
-        double.Parse(Required(x,"minimum"),CultureInfo.InvariantCulture),double.Parse(Required(x,"maximum"),CultureInfo.InvariantCulture),
-        Enum.Parse<BlobJudgmentKind>(Required(x,"kind")))).ToArray());
-    public IReadOnlyList<XElement> JudgmentMetadata=>Array.AsReadOnly(_judgments.Select(x=>new XElement(x)).ToArray());
 }

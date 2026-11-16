@@ -1,0 +1,434 @@
+{
+  "original": "C:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModuAlgorithmTab.xml",
+  "groupSource": "docs/07-工具逆向/decompiled/Groups/Group.xml",
+  "mappingSource": "tools/SunEyeVision.BlobAnalysis/Runtime/Parameters/BlobVmFindParameters.cs",
+  "fields": [
+    {
+      "field": "IsPositionCorrectionEnabled",
+      "originalNode": "Assist0",
+      "originalKey": "Fixture",
+      "before": "位置修正",
+      "after": "位置修正",
+      "consumerEvidence": "BlobVmFindParameters.FromSettings/ApplyTo；位置修正为BlobTool/AssistGroup",
+      "changed": false
+    },
+    {
+      "field": "SegmentationMode",
+      "originalNode": "ThresholdType",
+      "originalKey": "RunParam_Threshold Mode",
+      "before": "阈值方式",
+      "after": "阈值方式",
+      "consumerEvidence": "BlobVmFindParameters.FromSettings/ApplyTo；位置修正为BlobTool/AssistGroup",
+      "changed": false
+    },
+    {
+      "field": "Type",
+      "originalNode": "Polarity",
+      "originalKey": "Polarity",
+      "before": "极性",
+      "after": "极性",
+      "consumerEvidence": "BlobVmFindParameters.FromSettings/ApplyTo；位置修正为BlobTool/AssistGroup",
+      "changed": false
+    },
+    {
+      "field": "IsAreaFilterEnabled",
+      "originalNode": "SelectByArea",
+      "originalKey": "Area Enable",
+      "before": "面积使能",
+      "after": "面积使能",
+      "consumerEvidence": "BlobVmFindParameters.FromSettings/ApplyTo；位置修正为BlobTool/AssistGroup",
+      "changed": false
+    },
+    {
+      "field": "OutputBlobImage",
+      "originalNode": "BolbImageEnable",
+      "originalKey": "RunParam_BolbImageEnable",
+      "before": "Blob图像输出",
+      "after": "Blob图像输出",
+      "consumerEvidence": "BlobVmFindParameters.FromSettings/ApplyTo；位置修正为BlobTool/AssistGroup",
+      "changed": false
+    },
+    {
+      "field": "OutputBinaryImage",
+      "originalNode": "BinaryImageEnable",
+      "originalKey": "RunParam_BinaryImageEnable",
+      "before": "二值化图像输出",
+      "after": "二值化图输出",
+      "consumerEvidence": "BlobVmFindParameters.FromSettings/ApplyTo；位置修正为BlobTool/AssistGroup",
+      "changed": true
+    },
+    {
+      "field": "IsCircularityFilterEnabled",
+      "originalNode": "SelectByCircularuty",
+      "originalKey": "Circularity Enable",
+      "before": "圆度使能",
+      "after": "圆形度使能",
+      "consumerEvidence": "BlobVmFindParameters.FromSettings/ApplyTo；位置修正为BlobTool/AssistGroup",
+      "changed": true
+    },
+    {
+      "field": "IsRectangularityFilterEnabled",
+      "originalNode": "SelectByRectangularity",
+      "originalKey": "Rectangularity Enable",
+      "before": "矩形度使能",
+      "after": "矩形度使能",
+      "consumerEvidence": "BlobVmFindParameters.FromSettings/ApplyTo；位置修正为BlobTool/AssistGroup",
+      "changed": false
+    },
+    {
+      "field": "Connectivity",
+      "originalNode": "connectivity",
+      "originalKey": "Connectivity ",
+      "before": "连通性",
+      "after": "连通性",
+      "consumerEvidence": "BlobVmFindParameters.FromSettings/ApplyTo；位置修正为BlobTool/AssistGroup",
+      "changed": false
+    }
+  ],
+  "choices": [
+    {
+      "field": "SegmentationMode",
+      "key": "None",
+      "originalName": "BinaryImage",
+      "originalValue": "0x1",
+      "originalImplemented": "0x1",
+      "originalKey": "RunParam_No Binarization",
+      "before": "不进行二值化",
+      "after": "不进行二值化",
+      "changed": false
+    },
+    {
+      "field": "SegmentationMode",
+      "key": "SingleThreshold",
+      "originalName": "SingleThreshold",
+      "originalValue": "2",
+      "originalImplemented": "0x1",
+      "originalKey": "Single Threshold",
+      "before": "单阈值",
+      "after": "单阈值",
+      "changed": false
+    },
+    {
+      "field": "SegmentationMode",
+      "key": "DoubleThreshold",
+      "originalName": "DoubleThreshold",
+      "originalValue": "3",
+      "originalImplemented": "1",
+      "originalKey": "Double Threshold",
+      "before": "双阈值",
+      "after": "双阈值",
+      "changed": false
+    },
+    {
+      "field": "SegmentationMode",
+      "key": "AutoThreshold",
+      "originalName": "AutoThreshold",
+      "originalValue": "4",
+      "originalImplemented": "1",
+      "originalKey": "Auto Threshold",
+      "before": "自动阈值",
+      "after": "自动阈值",
+      "changed": false
+    },
+    {
+      "field": "SegmentationMode",
+      "key": "FixedSoftThreshold",
+      "originalName": "FixedSoftThreshold",
+      "originalValue": "5",
+      "originalImplemented": "1",
+      "originalKey": "Soft Threshld(Fixed)",
+      "before": "软阈值（固定）",
+      "after": "软阈值（固定）",
+      "changed": false
+    },
+    {
+      "field": "SegmentationMode",
+      "key": "RelativeSoftThreshold",
+      "originalName": "RelativeSoftThreshold",
+      "originalValue": "6",
+      "originalImplemented": "1",
+      "originalKey": "Soft Threshold(Relative)",
+      "before": "软阈值（相对）",
+      "after": "软阈值（相对）",
+      "changed": false
+    },
+    {
+      "field": "Type",
+      "key": "Binary",
+      "originalName": "DarkOnBright",
+      "originalValue": "0",
+      "originalImplemented": "1",
+      "originalKey": "Brighter Than Background",
+      "before": "亮于背景",
+      "after": "亮于背景",
+      "changed": false
+    },
+    {
+      "field": "Type",
+      "key": "BinaryInv",
+      "originalName": "BrightOnDark",
+      "originalValue": "1",
+      "originalImplemented": "1",
+      "originalKey": "Darker Than Background",
+      "before": "暗于背景",
+      "after": "暗于背景",
+      "changed": false
+    },
+    {
+      "field": "BlobContourType",
+      "key": "NoneContour",
+      "originalName": "NoneContour",
+      "originalValue": "0",
+      "originalImplemented": "1",
+      "originalKey": "RunParam_NoneContour",
+      "before": "不输出轮廓",
+      "after": "不输出轮廓",
+      "changed": false
+    },
+    {
+      "field": "BlobContourType",
+      "key": "NoneSequentialContour",
+      "originalName": "NoneSequentialContour",
+      "originalValue": "1",
+      "originalImplemented": "1",
+      "originalKey": "RunParam_NoneSequentialContour",
+      "before": "无序轮廓",
+      "after": "输出无序轮廓",
+      "changed": true
+    },
+    {
+      "field": "BlobContourType",
+      "key": "SequentialContour",
+      "originalName": "SequentialContour",
+      "originalValue": "2",
+      "originalImplemented": "1",
+      "originalKey": "RunParam_SequentialContour",
+      "before": "有序轮廓",
+      "after": "输出有序轮廓",
+      "changed": true
+    },
+    {
+      "field": "SortFeature",
+      "key": "SortFeatureArea",
+      "originalName": "SortFeatureArea",
+      "originalValue": "0x1",
+      "originalImplemented": "0x1",
+      "originalKey": "Area",
+      "before": "面积",
+      "after": "面积",
+      "changed": false
+    },
+    {
+      "field": "SortFeature",
+      "key": "SortFeaturePerimeter",
+      "originalName": "SortFeaturePerimeter",
+      "originalValue": "0x2",
+      "originalImplemented": "0x1",
+      "originalKey": "Perimeter",
+      "before": "周长",
+      "after": "周长",
+      "changed": false
+    },
+    {
+      "field": "SortFeature",
+      "key": "SortFeatureCircularity",
+      "originalName": "SortFeatureCircularity",
+      "originalValue": "0x3",
+      "originalImplemented": "0x1",
+      "originalKey": "CircleScore",
+      "before": "圆度",
+      "after": "圆形度",
+      "changed": true
+    },
+    {
+      "field": "SortFeature",
+      "key": "SortFeatureRect",
+      "originalName": "SortFeatureRect",
+      "originalValue": "0x4",
+      "originalImplemented": "0x1",
+      "originalKey": "RectScore",
+      "before": "矩形度",
+      "after": "矩形度",
+      "changed": false
+    },
+    {
+      "field": "SortFeature",
+      "key": "SortFeatureCentroidX",
+      "originalName": "SortFeatureCentroidX",
+      "originalValue": "0x5",
+      "originalImplemented": "0x1",
+      "originalKey": "Connectivity center X",
+      "before": "质心X",
+      "after": "连通域中心x",
+      "changed": true
+    },
+    {
+      "field": "SortFeature",
+      "key": "SortFeatureCentroidY",
+      "originalName": "SortFeatureCentroidY",
+      "originalValue": "0x6",
+      "originalImplemented": "0x1",
+      "originalKey": "Connectivity center Y",
+      "before": "质心Y",
+      "after": "连通域中心y",
+      "changed": true
+    },
+    {
+      "field": "SortFeature",
+      "key": "SortFeatureBoxAngle",
+      "originalName": "SortFeatureBoxAngle",
+      "originalValue": "0x7",
+      "originalImplemented": "0x1",
+      "originalKey": "box angle",
+      "before": "Box角度",
+      "after": "box角度",
+      "changed": true
+    },
+    {
+      "field": "SortFeature",
+      "key": "SortFeatureBoxWidth",
+      "originalName": "SortFeatureBoxWidth",
+      "originalValue": "0x8",
+      "originalImplemented": "0x1",
+      "originalKey": "box width",
+      "before": "Box宽",
+      "after": "box宽",
+      "changed": true
+    },
+    {
+      "field": "SortFeature",
+      "key": "SortFeatureBoxHeight",
+      "originalName": "SortFeatureBoxHeight",
+      "originalValue": "0x9",
+      "originalImplemented": "0x1",
+      "originalKey": "box height",
+      "before": "Box高",
+      "after": "box高",
+      "changed": true
+    },
+    {
+      "field": "SortFeature",
+      "key": "SortFeatureRectX",
+      "originalName": "SortFeatureRectX",
+      "originalValue": "0xA",
+      "originalImplemented": "0x1",
+      "originalKey": "Rectangle left upper x",
+      "before": "矩形左上X",
+      "after": "矩形左上顶点x",
+      "changed": true
+    },
+    {
+      "field": "SortFeature",
+      "key": "SortFeatureRectY",
+      "originalName": "SortFeatureRectY",
+      "originalValue": "0xB",
+      "originalImplemented": "0x1",
+      "originalKey": "Rectangle left upper y",
+      "before": "矩形左上Y",
+      "after": "矩形左上顶点y",
+      "changed": true
+    },
+    {
+      "field": "SortFeature",
+      "key": "SortFeatureAxisAngle",
+      "originalName": "SortFeatureAxisAngle",
+      "originalValue": "0xC",
+      "originalImplemented": "0x1",
+      "originalKey": "Two step spindle angle",
+      "before": "主轴角度",
+      "after": "二阶中心距主轴角度",
+      "changed": true
+    },
+    {
+      "field": "SortFeature",
+      "key": "SortFeatureAxisRatio",
+      "originalName": "SortFeatureAxisRatio",
+      "originalValue": "0xD",
+      "originalImplemented": "0x1",
+      "originalKey": "MinAxis / LongAxis",
+      "before": "轴比",
+      "after": "轴比(box短轴/box长轴)",
+      "changed": true
+    },
+    {
+      "field": "SortMode",
+      "key": "SortModeAscend",
+      "originalName": "SortModeAscend",
+      "originalValue": "0x1",
+      "originalImplemented": "0x1",
+      "originalKey": "Grade Up",
+      "before": "升序",
+      "after": "升序",
+      "changed": false
+    },
+    {
+      "field": "SortMode",
+      "key": "SortModeDecend",
+      "originalName": "SortModeDecend",
+      "originalValue": "0x2",
+      "originalImplemented": "0x1",
+      "originalKey": "Grade Down",
+      "before": "降序",
+      "after": "降序",
+      "changed": false
+    },
+    {
+      "field": "SortMode",
+      "key": "SortModeNotSort",
+      "originalName": "SortModeNotSort",
+      "originalValue": "0x3",
+      "originalImplemented": "0x1",
+      "originalKey": "Donot Grade",
+      "before": "不排序",
+      "after": "不排序",
+      "changed": false
+    },
+    {
+      "field": "Connectivity",
+      "key": "Connected_8",
+      "originalName": "Connected_8",
+      "originalValue": "0x8",
+      "originalImplemented": "0x1",
+      "originalKey": "8-connected",
+      "before": "8连通",
+      "after": "8连通",
+      "changed": false
+    },
+    {
+      "field": "Connectivity",
+      "key": "Connected_4",
+      "originalName": "Connected_4",
+      "originalValue": "0x4",
+      "originalImplemented": "0x1",
+      "originalKey": "4-connected",
+      "before": "4连通",
+      "after": "4连通",
+      "changed": false
+    }
+  ],
+  "runtime": "未运行；用户手动验收",
+  "build": "全量Release 0错误、3302警告、19.74秒",
+  "staticValidation": "当前XML与104字段标签、27范围标题、29枚举标签的映射逐项一致；仅静态检查，不是测试执行",
+  "files": [
+    {
+      "path": "C:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSBlobFindModu/IMVSBlobFindModuAlgorithmTab.xml",
+      "sha256": "34A0CC5423A3D66B92DC272E0F50B013310E5180E801C648005383C3ADDDFDEC"
+    },
+    {
+      "path": "docs/07-工具逆向/decompiled/Groups/Group.xml",
+      "sha256": "9129B82A0F9906DDE591347498A80E2E8C019C0FB959A721ECFD24FBBB5207DC"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Parameters/BlobVmFindParameters.cs",
+      "sha256": "37B19B4980ADB28A5341A8EA530ACFAD5596958921D096B9A05661C705E4AE9A"
+    },
+    {
+      "path": "tools/SunEyeVision.BlobAnalysis/Runtime/Resources/BlobParameters.xml",
+      "sha256": "A187D5B2713B52B25D91A014A777CA88AAC6D5FCAED2D88D934E1062860A886A"
+    },
+    {
+      "path": "src/Plugin.Wpf/Themes/Native/Localization/zh-cn.xaml",
+      "sha256": "FEEEE4725DD94D6770A1F267D3E123C1CF77F686AF440CCF626564E409D0EB45"
+    }
+  ]
+}

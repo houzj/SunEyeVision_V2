@@ -242,11 +242,11 @@ public sealed class NativeResultCompositionTests
         var history = Assert.IsType<TabItem>(shell.FindName("HistoryTab"));
         history.IsSelected = true; Drain();
         var historyGrid = Assert.IsType<DataGrid>(shell.FindName("HistoryGrid"));
-        Assert.False(historyGrid.IsEnabled);
         Assert.Null(historyGrid.ItemsSource);
+        Assert.True(historyGrid.IsReadOnly);
         Assert.Equal(new[] { "执行序号", "时间", "模块数据" }, historyGrid.Columns.Select(column => column.Header));
         Assert.All(history.ContextMenu!.Items.Cast<MenuItem>(), item => Assert.False(item.IsEnabled));
-        Assert.Contains(Descendants<TextBlock>(shell), text => text.Text == "历史记录尚未接入");
+        Assert.DoesNotContain(Descendants<TextBlock>(shell), text => text.Text == "历史记录尚未接入");
     });
 
     private static Color Theme(FrameworkElement view, string family, string key, string theme)

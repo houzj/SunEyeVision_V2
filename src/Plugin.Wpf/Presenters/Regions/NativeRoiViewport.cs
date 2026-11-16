@@ -34,7 +34,11 @@ public sealed class NativeRoiViewport : Decorator, IDisposable
             _changed=()=>{if(Current(generation,session)&&!session.IsCurrent&&Current(generation,session))_owner.Clear();};
             session.Changed+=_changed;
         }
-        if(IsLoaded||System.ComponentModel.DesignerProperties.GetIsInDesignMode(this))Attach();
+        // ResultWorkspacePresenter may own a private, headless viewport while
+        // the editor is being prepared. Its NativeResultViewport explicitly
+        // permits unloaded ROI, so install the attachment immediately instead
+        // of waiting for a Loaded event that will never arrive.
+        if(IsLoaded||_owner.AllowsUnloadedRoi||System.ComponentModel.DesignerProperties.GetIsInDesignMode(this))Attach();
     }
     private void Attach()
     {

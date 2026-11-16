@@ -20,43 +20,91 @@ namespace SunEyeVision.UI.Services.Editing;
 /// <summary>Formal document draft adapter for the original shared parameter composition.</summary>
 public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPendingState, IToolEditorCommitParticipant, IDisposable
 {
+    internal Func<string,string?>? ReadCameraStatus { get; set; }
+    internal Action<string?>? OpenCameraSettings { get; set; }
     private ProductionEditorContext? _context;
     private ProductionEditorDebug? _debug;
     private SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameSource? _roiFrames;
+    private Func<string?>? _roiDrawBlockReason;
     private Task? _debugRetirement;
     internal event Action? DebugStateChanged;
+    internal event Action? ParameterPageChanged;
+    private DeclaredSettingsView? _observedParameterView;
     internal bool IsDebugBusy => _debug?.IsBusy == true;
-    internal bool CanDebug => !_disposed && _debug?.CanRun == true;
+    internal bool IsContinuousDebugRequested => _debug?.IsContinuousRequested == true;
+    private DeclaredSettingsView? ParameterView => Content as DeclaredSettingsView
+        ?? (Content as FrameworkElement)?.FindName("Editor") as DeclaredSettingsView;
+
+    internal bool IsRunParameterPage => ParameterView?.SelectedPageKey is "运行参数";
+
+    private void ObserveParameterPage(DeclaredSettingsView? view)
+    {
+        if(ReferenceEquals(_observedParameterView,view))return;
+        if(_observedParameterView is {} previous)previous.SelectedPageChanged-=OnParameterPageChanged;
+        _observedParameterView=view;
+        if(view is not null)view.SelectedPageChanged+=OnParameterPageChanged;
+    }
+    private void OnParameterPageChanged(object? sender,EventArgs args)
+    {
+        if(!_disposed&&ReferenceEquals(sender,_observedParameterView))ParameterPageChanged?.Invoke();
+    }
+
+    internal void ResetRunParameters()
+    {
+        Dispatcher.VerifyAccess();
+        var context = CurrentContext();
+        var view = ParameterView;
+        if (view is null || !IsRunParameterPage || IsDebugBusy)
+            throw new InvalidOperationException("运行参数页当前不能重置。");
+        var draft = context.PreparedDraft;
+        var defaults = draft.CaptureSettingsDefaults();
+        var changes = draft.SettingsSchema.Presentation!.Fields
+            .ToDictionary(field => field.FieldId, field => defaults[field.FieldId], StringComparer.Ordinal);
+        if (changes.Count == 0 || !ReferenceEquals(ParameterView, view) || !ReferenceEquals(CurrentContext().PreparedDraft, draft)
+            || !view.TryResetFields(changes))
+            throw new InvalidOperationException("运行参数重置未被当前编辑会话接纳。");
+        if (_captureError.Length != 0) throw new InvalidOperationException(_captureError);
+    }
+    internal Task StartContinuousDebugAsync() => (_debug ?? throw new InvalidOperationException("参数调试尚未接入实际会话。")).StartContinuousAsync();
+    internal bool CanDebug => !_disposed && _view?.HasInvalidInput != true && _debug?.CanRun == true;
     internal Guid? DebugScopeId => _debug?.ScopeId;
     internal SunEyeVision.Plugin.Runtime.DeclaredOutputSnapshot? CurrentDebugSnapshot => _debug?.CurrentSnapshot;
-    internal void ConfigureDebug(ProductionEditorContext context, Func<IHostInputFactory> factory, Func<bool> canRun, Action<string> log, Func<string,SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameLease?> borrowFrame, Action changed)
+    internal SunEyeVision.Plugin.Runtime.ResultHistoryBuffer? DebugHistory => _debug?.History;
+    internal void ConfigureDebug(ProductionEditorContext context, Func<IHostInputFactory> factory, Func<bool> canRun, Action<string> log, Func<string,bool,SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiFrameLease?> borrowFrame, Func<string?> blockReason, Action changed)
     {
         if (_debug is not null) throw new InvalidOperationException("参数页已拥有调试会话。");
+        _debugResultChanged=changed;
         _debug = new ProductionEditorDebug(context,this,factory,canRun,log,()=>{DebugStateChanged?.Invoke();changed();});
+        _roiDrawBlockReason = blockReason;
         _roiFrames = new(borrowFrame,CaptureDebugInputs);
     }
     internal SunEyeVision.Plugin.Wpf.Adapters.Regions.NativeRoiInputLease CaptureDebugInputs(IReadOnlyCollection<string> fields) => (_debug ?? throw new InvalidOperationException("参数调试尚未就绪。")).CaptureInputs(fields);
     internal Task CloseDebugAsync() => _debugRetirement ??= _debug?.DisposeAsync().AsTask() ?? Task.CompletedTask;
-    internal void StopDebug() => _debug?.Stop();
+    internal void StopContinuousDebug() => _debug?.StopContinuous();
     internal void PublishDebugCompletion(SunEyeVision.Plugin.Runtime.DeclaredOutputSnapshot? result,string? error) => ExecutionCompleted?.Invoke(this,new RuntimeToolExecutionEventArgs(result,error));
     private IToolSettingsView? _view;
     private FieldSettings? _acceptedFields;
     private ImageSourceDraftContent? _imageSourceContent;
     private ReferenceWindowOwner? _referenceOwner;
-    private readonly List<DeclaredFieldEditor> _inputs = new();
+    private readonly List<DeclaredFieldRow> _inputs = new();
+    private IReadOnlySet<string> _displayFields = new HashSet<string>(StringComparer.Ordinal);
     /// <summary>引用来源快照按字段缓存：一次参数页构建只抓一次图，字段刷新与切页不再重走前驱与准入校验。</summary>
     private readonly Dictionary<string, ReferenceSelections> _referenceCache = new(StringComparer.Ordinal);
     private long _referenceRevision = -1;
     private long _generation, _syncedRevision;
     private bool _disposed, _capturing;
+    private Action? _debugResultChanged;
     private string _captureError = "";
     public event EventHandler<RuntimeToolExecutionEventArgs>? ExecutionCompleted;
     internal event Action? ResultDisplayEdited;
     internal event Action<NodeDefinition, long>? ResultDisplayBound;
     public bool HasPendingEdits => _view is { } view && (view.HasPendingEdits || view.HasInvalidInput || view.AcceptedRevision != _syncedRevision || _captureError.Length != 0) || _inputs.Any(input => input.HasPendingEdits);
+    internal bool HasPendingExecutionEdits => _view is { } view
+        && (view.HasPendingEditsOutside(_displayFields) || view.AcceptedRevision != _syncedRevision || _captureError.Length != 0)
+        || _inputs.Any(input => input.HasPendingEdits);
     private ProductionEditorContext CurrentContext() => !_disposed && _context is { IsValid: true } context && ReferenceEquals(ToolEditorCommit.GetDraftContext(this), context)
         ? context : throw new InvalidOperationException("参数页所属方案、流程或节点已失效。");
-    internal bool IsResultDisplayBinding(NodeDefinition node, long generation) => !_disposed && generation == _generation && _view is not null && ReferenceEquals(_context?.FormalNode, node) && ReferenceEquals(Content, _view.View);
+    internal bool IsResultDisplayBinding(NodeDefinition node, long generation) => !_disposed && generation == _generation && _view is not null && _context?.DraftNode.Id == node.Id && ReferenceEquals(Content, _view.View);
     internal bool TryGetResultDisplayBinding(out NodeDefinition node, out long generation)
     { node = _context?.FormalNode as NodeDefinition ?? null!; generation = _generation; return node is not null && IsResultDisplayBinding(node, generation); }
 
@@ -67,8 +115,11 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
         var context = ToolEditorCommit.GetDraftContext(this) as ProductionEditorContext ?? throw new InvalidOperationException("参数页未绑定正式编辑范围。");
         if (!context.IsValid || !ReferenceEquals(context.PreparedDraft, draft)) throw new InvalidOperationException("草稿不属于当前参数页。");
         _debug?.InvalidateDraft(); ReleaseView(); _context = context;
+        _displayFields = draft.DisplaySchema.Inputs.Select(port => port.Id).ToHashSet(StringComparer.Ordinal);
         var generation = ++_generation;
         bool Current() => !_disposed && generation == _generation && context.IsValid && ReferenceEquals(_context, context);
+        // PROBE-KEEP：BindDraft 三段细分计时（引用准备/输入与表达式/视图创建），定位 CreatePresentation 页构建之外的开销。
+        var bindProbe=System.Diagnostics.Stopwatch.StartNew();
         var admission = context.Session.AdmitPresentation(draft.WorkflowId, draft.Node.Id);
         using var presentationTrace = ToolWindowAssemblyTrace.Begin("CreatePresentation", draft.Node.Id.ToString());
         _referenceOwner = new ReferenceWindowOwner(this, Current, context.ReferencePreference, context.ReferencePreference.PreferExpanded);
@@ -110,6 +161,9 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
             ReadCurrentValues: () => CurrentContext().ReadCurrentParameters(),
             ReadBehavior: port => (port.EditModes&(FieldEditModes.Reference|FieldEditModes.DisplayExpression))==0
                 ?ParameterReferenceBehavior.StrictExactlyOne:Selection(port).ReferenceBehavior);
+        bindProbe.Stop();
+        ToolWindowAssemblyTrace.Event("BindStage", $"{draft.Node.Id}:引用准备={bindProbe.ElapsedMilliseconds}ms");
+        bindProbe.Restart();
         var inputSchema = draft.InputSchema;
         // Resolve actual capability before constructing input content. Only one input view is built.
         var declaration = context.Session.GetNodeHostInputDeclaration(draft.WorkflowId,draft.Node);
@@ -119,15 +173,29 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
         {
             if(!Current())throw new InvalidOperationException("输入页创建期间编辑会话已失效。");
             var panel=new DeclaredInputFieldsView(inputSchema,
-                port=>CurrentContext().PreparedDraft.Configuration.Fields.Read(port.Id),
-                (port,value)=>{if(!Current())throw new InvalidOperationException("输入编辑已失效。");var edits=new Dictionary<string,ParameterSetting>{{port.Id,value}};var error=ValidateChanges(edits);if(error is not null)throw new InvalidOperationException(error);CurrentContext().PreparedDraft.ApplyFields(edits);},
-                references,FormatReference,port=>Candidates(Selection(port)));
+                port=>CurrentContext().PreparedDraft.ReadInputSetting(port.Id),
+                (port,value)=>
+                {
+                    if(!Current())throw new InvalidOperationException("输入编辑已失效。");
+                    var edits=new Dictionary<string,ParameterSetting>{{port.Id,value}};
+                    var error=ValidateChanges(edits);if(error is not null)throw new InvalidOperationException(error);
+                    CurrentContext().PreparedDraft.ApplyFields(edits);
+                    // 输入页接受后必须通知宿主，否则调试窗口的输入选择不会驱动结果视图。
+                    // 原件只对 IMAGE/PIXELIMAGE 关联 IO 触发 OnRelatedIOChanged（切单图显示），
+                    // 其它输入（含区域绘制写回）走参数值回调只重绘结果并 UpdateROI 重投影，
+                    // 从不终止模块会话——ROI 借用的帧租约依赖会话存活，若在此失效调试草稿
+                    // 会导致每次形状接受后绘制立即报废；证据见
+                    // docs/collaboration/evidence/VM编辑器相关输入单图联动原件对照-20261113.json。
+                    ResultDisplayEdited?.Invoke();
+                    if(port.Type==TypeRef.ResourceOf(ResourceKind.Image))_debugResultChanged?.Invoke();
+                },
+                references,FormatReference);
             _inputs.Clear();_inputs.AddRange(panel.Fields);return panel;
         }
         if(declaration is { CapabilityId:"image-source",Version:1 })
             inputContent=_imageSourceContent=new ImageSourceDraftContent(context.Session,
                 context.Session.GetWorkflows().Single(flow=>flow.Id==draft.WorkflowId&&!flow.IsSubroutine),draft.Node,
-                ()=>Current()?context.PreparedDraft:null,Current);
+                ()=>Current()?context.PreparedDraft:null,Current,ReadCameraStatus,OpenCameraSettings);
         else inputFactory=CreateInputContent;
         var textExpressions=draft.DisplaySchema.Inputs.Where(port=>(port.EditModes & FieldEditModes.DisplayExpression)!=0).ToDictionary(port=>port.Id,port=>
             new SunEyeVision.Plugin.Wpf.Adapters.Text.TextExpressionOptions(()=>
@@ -142,26 +210,44 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
                     candidate=>candidate.NodeDisplayName+"."+candidate.OutputDisplayName+(candidate.MemberDisplayNames.Count==0?"":"."+string.Join(".",candidate.MemberDisplayNames)),
                     ()=>Current()&&context.Session.ChangeRevision==revision);
             }),StringComparer.Ordinal);
+        bindProbe.Stop();
+        ToolWindowAssemblyTrace.Event("BindStage", $"{draft.Node.Id}:输入与表达式={bindProbe.ElapsedMilliseconds}ms");
+        bindProbe.Restart();
         var editorPorts = draft.SettingsSchema.Inputs.Concat(draft.DisplaySchema.Inputs).ToArray();
         IToolSettingsView? candidate = null;
         try
         {
             candidate = DesktopToolPresentation.CreateSettingsView(admission, draft.Configuration.Fields.Select(editorPorts),
-                new ToolSettingsViewOptions(references, FormatReference, inputSchema.Presentation?.Fields.FirstOrDefault()?.Layout?.Page, inputContent, ValidateComposition:group=>ValidateChanges(group.Changes), TextExpressions:textExpressions, RoiFrames:_roiFrames, InputContentFactory:inputFactory,
-                    PageBuilt:(page,_,_)=>ToolWindowAssemblyTrace.Event("PageBuilt", $"{draft.Node.Id}:{page}")));
+                new ToolSettingsViewOptions(references, FormatReference, inputSchema.Presentation?.Fields.FirstOrDefault()?.Layout?.Page, inputContent, ValidateComposition:group=>ValidateChanges(group.Changes), TextExpressions:textExpressions, RoiFrames:_roiFrames, RoiDrawBlockReason:_roiDrawBlockReason, InputContentFactory:inputFactory,
+                    PageBuilt:(page,built,_)=>ToolWindowAssemblyTrace.Event("PageBuilt", built.LastBuildStageMs.TryGetValue(page,out var stages)
+                        ?$"{draft.Node.Id}:{page} rows={stages.RowsMs}ms layout={stages.LayoutMs}ms 构造[{string.Join(" ",built.ConstructionStages.Select(mark=>$"{mark.Stage}={mark.Ms}ms"))}]"
+                        :$"{draft.Node.Id}:{page}"),
+                    ReadInputSetting:id=>CurrentContext().PreparedDraft.ReadInputSetting(id)));
             if (!Current()) throw new InvalidOperationException("参数页创建期间节点已失效。");
             _view = candidate; _acceptedFields=candidate.CaptureAcceptedFields(); _syncedRevision = candidate.AcceptedRevision; _captureError = "";
             candidate.Changed += Changed; Content = candidate.View;
             ResultDisplayBound?.Invoke(draft.Node, generation);
+            if(Current()&&ReferenceEquals(_view,candidate))
+            {
+                ObserveParameterPage(ParameterView);
+                ParameterPageChanged?.Invoke();
+            }
+            bindProbe.Stop();
+            ToolWindowAssemblyTrace.Event("BindStage", $"{draft.Node.Id}:视图创建={bindProbe.ElapsedMilliseconds}ms");
         }
         catch
         {
+            if(ReferenceEquals(_view,candidate))ObserveParameterPage(null);
             candidate?.Dispose();
             if (candidate is null && inputContent is IDisposable disposable) disposable.Dispose();
             _inputs.Clear(); _view = null; _referenceOwner?.Dispose(); _referenceOwner = null;
             throw;
         }
     }
+
+    internal Task WaitForViewReadyAsync()
+        =>_view is SunEyeVision.Plugin.Wpf.Presenters.Parameters.IToolSettingsViewReady ready
+            ? ready.ReadyTask : Task.CompletedTask;
     private string FormatReference(OutputReference reference)
     {
         var context = CurrentContext();
@@ -189,7 +275,14 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
             }
         }
         catch (Exception error) { _captureError = error.Message; }
-        _debug?.InvalidateDraft();
+        NotifyDraftEdited();
+    }
+    /// <summary>草稿被接受后的统一通知：调试草稿失效、结果工作区刷新、结果显示刷新。
+    /// 设置页与输入页必须走同一出口，否则输入页编辑不会驱动结果视图。</summary>
+    private void NotifyDraftEdited()
+    {
+        _debug?.OnDraftEdited();
+        _debugResultChanged?.Invoke();
         ResultDisplayEdited?.Invoke();
     }
     public bool TryCapture(out string error)
@@ -212,21 +305,22 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
     }
     internal void AdoptRebasedDraft(NodeConfigurationEditDraft draft)
     {
-        if(!ReferenceEquals(CurrentContext().PreparedDraft,draft))throw new InvalidOperationException("回执草稿不属于当前视图。");
+        var context=CurrentContext();
+        if(!ReferenceEquals(context.PreparedDraft,draft))throw new InvalidOperationException("回执草稿不属于当前视图。");
+        var generation=_generation;
         _debug?.InvalidateDraft();
-        _imageSourceContent?.RebaseDraft(draft);
+        if(generation!=_generation||!ReferenceEquals(_context,context)||!ReferenceEquals(context.PreparedDraft,draft))return;
+        if (_view is IToolSettingsViewInputProjection projection)
+            projection.RefreshAcceptedInputs();
+        if(generation==_generation&&ReferenceEquals(_context,context))
+            _imageSourceContent?.RebaseDraft(draft);
     }
     private void ApplyAcceptedFields(FieldSettings fields)
     {
-        static string Identity(string id,ParameterSetting value)
-        {
-            using var stream=new System.IO.MemoryStream();
-            using(var writer=new System.Text.Json.Utf8JsonWriter(stream))ParameterSettingCanonical.Write(writer,new Dictionary<string,ParameterSetting>{{id,value}});
-            return Convert.ToBase64String(stream.ToArray());
-        }
         var previous=_acceptedFields;
-        var changes=(_view?.AcceptedFieldOrder??Array.Empty<string>()).Concat(fields.Declarations.Keys).Distinct(StringComparer.Ordinal).Where(id=>previous is null||!previous.Declarations.ContainsKey(id)
-            ||Identity(id,previous.Read(id))!=Identity(id,fields.Read(id))).ToDictionary(id=>id,fields.Read,StringComparer.Ordinal);
+        if(ReferenceEquals(previous,fields))return;
+        var changes=(_view?.AcceptedFieldOrder??Array.Empty<string>()).Concat(fields.Declarations.Keys).Distinct(StringComparer.Ordinal)
+            .Where(id=>previous is null||!previous.HasSameSetting(fields,id)).ToDictionary(id=>id,fields.Read,StringComparer.Ordinal);
         // Accepted controls do not get to overwrite unrelated newer fields after a receipt.
         if(changes.Count!=0)
         {
@@ -246,16 +340,10 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
     }
     private static IReadOnlyList<string> BindingOrder(NodeConfigurationEditDraft draft,IReadOnlyDictionary<string,ParameterSetting> changes)
     {
-        static string Identity(string id,ParameterSetting value)
-        {
-            using var stream=new System.IO.MemoryStream();using(var writer=new System.Text.Json.Utf8JsonWriter(stream))
-                ParameterSettingCanonical.Write(writer,new Dictionary<string,ParameterSetting>{{id,value}});
-            return Convert.ToBase64String(stream.ToArray());
-        }
         var current=draft.Configuration;var fields=current.Fields.Apply(changes);
         var parameters=draft.SettingsSchema.Inputs.Select(port=>port.Id).ToHashSet(StringComparer.Ordinal);
         bool Bound(string id)=>parameters.Contains(id)&&fields.Read(id) is ReferenceSetting or VariableSetting;
-        var retained=current.ParameterBindingOrder.Where(id=>Bound(id)&&Identity(id,current.Fields.Read(id))==Identity(id,fields.Read(id))).ToList();
+        var retained=current.ParameterBindingOrder.Where(id=>Bound(id)&&current.Fields.HasSameSetting(fields,id)).ToList();
         foreach(var id in changes.Keys.Concat(fields.Capture().Keys).Distinct(StringComparer.Ordinal))if(Bound(id)&&!retained.Contains(id,StringComparer.Ordinal))retained.Add(id);
         return retained;
     }
@@ -271,13 +359,16 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
     public bool TryValidateEditor(out string error) => CurrentContext().TryValidateEditor(out error);
     public bool TryCommitEditor(out string error) => CurrentContext().TryCommitEditor(out error);
     public Task RunDebugAsync() => (_debug ?? throw new InvalidOperationException("参数调试尚未接入实际会话。")).RunAsync();
-    internal void RefreshRoiFrame() => _roiFrames?.Refresh();
+    internal void RefreshRoiFrame() => _roiFrames?.RebindCurrentFrame();
+    /// <summary>图像视口落笔：转发给工具侧 owner，阻断时弹原厂提示（两段式）。</summary>
+    internal void NotifyRoiDrawRequested() => _roiFrames?.NotifyInputViewportClicked();
     private void ReleaseView()
     {
         ToolWindowAssemblyTrace.Event("ReleaseView", (_context?.FormalNode as NodeDefinition)?.Id.ToString() ?? "none");
+        ObserveParameterPage(null);
         var view = _view; _view = null; _acceptedFields=null; _imageSourceContent=null; Content = null; _inputs.Clear();
         try { if (view is not null) { view.Changed -= Changed; view.Dispose(); } }
         finally { _referenceOwner?.Dispose(); _referenceOwner = null; _referenceCache.Clear(); _referenceRevision = -1; }
     }
-    public void Dispose() { if (_disposed) return; _disposed = true; _generation++; _ = CloseDebugAsync(); ReleaseView(); _context = null; }
+    public void Dispose() { if (_disposed) return; _disposed = true; _generation++; _ = CloseDebugAsync(); ReleaseView(); _context = null; ReadCameraStatus = null; OpenCameraSettings = null; }
 }

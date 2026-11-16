@@ -28,6 +28,13 @@ public sealed partial class NodeConfigurationEditHost
     { EnsureAvailable(); ArgumentNullException.ThrowIfNull(draft); return ReferenceEquals(draft.Session, _session) ? draft.HasPendingChanges : throw new InvalidOperationException("草稿属于另一个方案。"); }
     public SunEyeVision.Plugin.Contracts.ConstantSetting? ReadCurrentParameter(NodeConfigurationEditDraft draft, string fieldId)
     { EnsureAvailable(); ArgumentNullException.ThrowIfNull(draft); if (!ReferenceEquals(draft.Session, _session)) throw new InvalidOperationException("草稿属于另一个方案。"); return draft.ReadCurrentParameter(fieldId); }
+    public IReadOnlyDictionary<string, SunEyeVision.Plugin.Contracts.ConstantSetting?> ReadCurrentParameters(NodeConfigurationEditDraft draft)
+    {
+        EnsureAvailable();
+        ArgumentNullException.ThrowIfNull(draft);
+        if (!ReferenceEquals(draft.Session, _session)) throw new InvalidOperationException("草稿属于另一个方案。");
+        return draft.ReadCurrentParameters();
+    }
     /// <summary>Validate a whole group without mutating the caller draft, document or history.</summary>
     public void ValidateFieldProposals(NodeConfigurationEditDraft draft,
         IReadOnlyDictionary<string, SunEyeVision.Plugin.Contracts.ParameterSetting> changes,
@@ -151,7 +158,7 @@ public sealed partial class NodeConfigurationEditHost
         if (!ReferenceEquals(current.Node, draft.Node)) throw new InvalidOperationException("节点实例已被替换。");
         var candidate = draft.Matches(frozen) ? current.Configuration :
             draft.CurrentCandidate.MergeCurrentValues(current.Configuration, frozen.Candidate);
-        var rebased = new NodeConfigurationEditDraft(_session, current, candidate);
+        var rebased = new NodeConfigurationEditDraft(_session, current, candidate,draft.FieldRevisions);
         draft.MarkConsumed();
         return rebased;
     }

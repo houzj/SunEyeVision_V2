@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Security.Cryptography;
 using SunEyeVision.Domain.Persistence;
 using SunEyeVision.Domain.Solutions;
 using SunEyeVision.Domain.Workflows;
@@ -12,6 +13,100 @@ namespace SunEyeVision.Application;
 
 public sealed partial class DocumentSessionManager
 {
+    /// <summary>
+    /// Background-safe candidate produced before the owner thread publishes a session.
+    /// The candidate owns its decode scope until OpenPrepared transfers it or Dispose releases it.
+    /// </summary>
+    public sealed class PreparedDocumentOpen : IDisposable
+    {
+        private int _disposed;
+        internal PreparedDocumentOpen(DocumentSessionManager manager, string path, byte[] bytes,
+            IReadOnlyDictionary<string, FrozenToolDeclarations> declarations, SolutionReadCandidate candidate)
+            => (Manager, Path, Bytes, Declarations, Candidate) = (manager, path, bytes, declarations, candidate);
+        internal DocumentSessionManager Manager { get; }
+        internal string Path { get; }
+        internal byte[] Bytes { get; }
+        internal IReadOnlyDictionary<string, FrozenToolDeclarations> Declarations { get; }
+        internal SolutionReadCandidate Candidate { get; }
+        internal void MarkConsumed() => Interlocked.Exchange(ref _disposed, 1);
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref _disposed, 1) == 0)
+                Candidate.Dispose();
+        }
+    }
+
+    /// <summary>Prepare the expensive file and resource work without touching the owner-thread session.</summary>
+    public PreparedDocumentOpen PrepareOpen(ReadOnlyMemory<byte> bytes, string path,
+        Func<ReadOnlyMemory<byte>, FrozenVariableTypeCatalog> captureTypes,
+        Func<DecodedResourcesScope, IVariableValueExtensionCodec?> createCodec,
+        JsonSerializerOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(captureTypes);
+        ArgumentNullException.ThrowIfNull(createCodec);
+        ArgumentNullException.ThrowIfNull(options);
+        if (!_directory.IsActive)
+            throw new InvalidOperationException("运行目录已退役，不能准备方案候选。");
+        path = System.IO.Path.GetFullPath(path);
+        var raw = bytes.ToArray();
+        var declarations = FreezeDeclarations(raw, _directory);
+        var types = captureTypes(raw);
+        var scope = new DecodedResourcesScope();
+        try
+        {
+            var codec = createCodec(scope);
+            var candidate = SolutionDocumentReader.Read(raw, declarations, types, options, scope, codec,
+                System.IO.Path.GetDirectoryName(path));
+            return new PreparedDocumentOpen(this, path, raw, declarations, candidate);
+        }
+        catch
+        {
+            scope.Dispose();
+            throw;
+        }
+    }
+
+    /// <summary>Publish a prepared candidate on the manager's owner thread.</summary>
+    public DocumentSession OpenPrepared(PreparedDocumentOpen prepared, bool discardPendingEdits = false)
+    {
+        ArgumentNullException.ThrowIfNull(prepared);
+        EnsureAvailable();
+        if (!ReferenceEquals(prepared.Manager, this))
+            throw new InvalidOperationException("候选方案不属于当前方案管理器或运行目录。");
+
+        _busy = true;
+        DocumentSession? session = null;
+        try
+        {
+            session = DocumentSession.FromPersistenceCandidate(prepared.Candidate, _directory, prepared.Declarations);
+            try
+            {
+                var expectedHash = Convert.ToHexString(SHA256.HashData(prepared.Bytes));
+                session.SetOpenedPersistenceBaseline(prepared.Candidate.PrepareSave(
+                    prepared.Path, TargetExpectation.Match(expectedHash)));
+            }
+            catch
+            {
+                session.Dispose();
+                throw;
+            }
+
+            Install(session, discardPendingEdits);
+            prepared.MarkConsumed();
+            return session;
+        }
+        catch
+        {
+            if (session is not null && !ReferenceEquals(session, CurrentSession))
+            {
+                try { session.Dispose(); }
+                catch { /* preserve the admission failure */ }
+            }
+            throw;
+        }
+        finally { _busy = false; prepared.Dispose(); }
+    }
+
     /// <summary>Restore a fully admitted backup only to a target that is not the active document.</summary>
     public FrozenSaveReceipt RestoreInactive(string targetPath,string backupPath,string expectedTargetHash,string expectedBackupHash,
         Func<ReadOnlyMemory<byte>,FrozenVariableTypeCatalog> captureTypes,
@@ -37,7 +132,7 @@ public sealed partial class DocumentSessionManager
             cancellationToken.ThrowIfCancellationRequested();
             using(var admitted=DocumentSession.FromPersistenceCandidate(candidate,_directory,declarations)) { }
             cancellationToken.ThrowIfCancellationRequested();
-            using var lease=_directory.AcquireInvocation();
+            using var lease=_directory.AcquireInvocation("方案持久化");
             var frozen=candidate.PrepareSave(targetPath,TargetExpectation.Match(expectedTargetHash));
             return SolutionFileCommit.Restore(frozen,backupPath,expectedTargetHash.ToUpperInvariant(),expectedBackupHash.ToUpperInvariant(),cancellationToken);
         }
@@ -88,14 +183,17 @@ public sealed partial class DocumentSessionManager
                     foreach(var node in nodes.EnumerateArray())
                         if(node.TryGetProperty("ToolType",out var tool) && tool.ValueKind==JsonValueKind.String) ids.Add(tool.GetString()!);
         var declarations=new Dictionary<string,FrozenToolDeclarations>(StringComparer.Ordinal);
-        using var lease=directory.AcquireInvocation();
+        using var lease=directory.AcquireInvocation("方案加载");
         foreach(var id in ids)
         {
             var definition=directory.CreateDefinition(id);
             var settings=definition as IToolSettingsFields ?? throw new InvalidOperationException("工具未声明正式设置字段："+id);
             var manual=(definition as IToolManualReferenceSources)?.ManualReferenceSources ?? Array.Empty<ManualReferenceSource>();
             declarations.Add(id,new(id,definition.Describe(),settings.SettingsSchema,ResultDisplayFields.Schema(definition),
-                ParameterReferenceRules.Freeze(definition),ToolHostDeclarationRules.Capture(definition),manual));
+                ParameterReferenceRules.Freeze(definition),ToolHostDeclarationRules.Capture(definition),manual,
+                (definition as IToolDisplaySettingsProvider)?.CreateDisplaySettings(),
+                settings.SettingsSchema.Inputs.Any(port=>port.DefaultPresence==FieldDefaultPresence.UseDeclaredDefault)
+                    ? settings.ReadSettings(definition.CreateSettings()) : null));
         }
         if(!directory.IsActive) throw new InvalidOperationException("运行目录已退役。");
         return declarations;
@@ -124,7 +222,7 @@ public sealed partial class DocumentSession
             foreach(var entry in item.Nodes)
                 flow.MutableNodes.Add(new NodeDefinition(entry.Id,entry.Name,entry.ToolType,entry.Configuration)
                 { DispName=entry.DispName,GlobalIndex=entry.GlobalIndex,LocalIndex=entry.LocalIndex,IsEnabled=entry.IsEnabled,
-                  SubroutineId=entry.SubroutineId,SelectedDisplayReference=entry.SelectedDisplayReference,PositionX=entry.PositionX,PositionY=entry.PositionY,
+                  SubroutineId=entry.SubroutineId,SelectedDisplayReference=entry.SelectedDisplayReference,DisplayOverlays=entry.DisplayOverlays,PositionX=entry.PositionX,PositionY=entry.PositionY,
                   Width=entry.Width,Height=entry.Height,AdditionalData=entry.AdditionalData });
             foreach(var edge in item.Connections)
                 flow.MutableConnections.Add(new ConnectionDefinition(edge.Id,edge.SourceNodeId,edge.TargetNodeId,edge.SourcePort,edge.TargetPort){ManualPathPoints=edge.ManualPathPoints});
@@ -148,7 +246,9 @@ public sealed partial class DocumentSession
                 if(result.State is BindingCompatibility.Incompatible or BindingCompatibility.Unresolved)
                     throw new InvalidOperationException("全局变量生产来源未通过正式声明校验："+result.Reason);
             }
+            candidate.EmbeddedFiles?.MaterializeForAdmission();
             session._decodedResources=candidate.TransferResources();
+            session._embeddedFiles=candidate.EmbeddedFiles;
             return session;
         }
         catch(Exception error)

@@ -5,10 +5,15 @@ namespace SunEyeVision.Plugin.Contracts;
 public enum DataType { Boolean, Integer, Number, Text, NumberArray, Image }
 public sealed record Port(string Id, TypeRef Type, bool Required=true, bool Nullable=false, NumericStorage? Storage=null,
     FieldEditModes EditModes=FieldEditModes.None,FieldDefaultPresence DefaultPresence=FieldDefaultPresence.Unset,TextChoiceConstraint? Choices=null);
+/// <summary>A control-flow output. It carries no value and gets no port identity: after a run the
+/// tool reports which indexes it took, in declaration order, and the host maps those indexes to the
+/// node's outgoing edges. This keeps branch selection inside the tool and successor resolution
+/// outside it, which is how the original platform splits the two.</summary>
+public sealed record ControlOutput(string Id, string DisplayName);
 public sealed class ToolSchema
 {
     public ToolSchema(IEnumerable<Port> inputs, IEnumerable<Port> outputs,ToolPresentation? presentation=null,string? workflowImageInputId=null,
-        IEnumerable<OutputDisplayNode>? outputDisplay=null)
+        IEnumerable<OutputDisplayNode>? outputDisplay=null, IEnumerable<ControlOutput>? controlOutputs=null)
     {
         Inputs=Array.AsReadOnly(inputs.ToArray()); Outputs=Array.AsReadOnly(outputs.ToArray());
         if (workflowImageInputId is not null && !Inputs.Any(port => port is not null && port.Id == workflowImageInputId && port.Type == TypeRef.ResourceOf(ResourceKind.Image)))
@@ -29,6 +34,12 @@ public sealed class ToolSchema
         presentation?.Validate(Inputs);Presentation=presentation;
         OutputDisplay=OutputDisplayNode.Freeze(outputDisplay??Array.Empty<OutputDisplayNode>());
         OutputDisplayNode.Validate(OutputDisplay,Outputs);
+        ControlOutputs=Array.AsReadOnly((controlOutputs??Array.Empty<ControlOutput>()).ToArray());
+        if (ControlOutputs.Any(item => item is null || string.IsNullOrWhiteSpace(item.Id) || string.IsNullOrWhiteSpace(item.DisplayName))
+            || ControlOutputs.Select(item => item.Id).Distinct(StringComparer.Ordinal).Count() != ControlOutputs.Count)
+            throw new ArgumentException("Control output identities and display names must be nonempty and unique.");
+        if (Inputs.Concat(Outputs).Any(port => ControlOutputs.Any(item => item.Id == port.Id)))
+            throw new ArgumentException("Control outputs must not reuse a data port identity.");
         // IDs may contain punctuation. Length-prefixed fields avoid delimiter collisions
         // between one compound ID and several different ports.
         using var buffer=new MemoryStream();
@@ -50,6 +61,14 @@ public sealed class ToolSchema
             // Labels/layout do not affect compatibility. Region-role relationships affect which source is consumed.
             var regions=presentation?.Regions??Array.Empty<RegionFieldGroup>();writer.Write(regions.Count);
             foreach(var region in regions.OrderBy(region=>region.Role,StringComparer.Ordinal)){writer.Write(region.Role);writer.Write(region.ModeFieldId);writer.Write(region.LocalGeometryFieldId);writer.Write(region.GeometrySourceFieldId);writer.Write(region.RegionSourceFieldId);}
+            // Control outputs join the fingerprint only when declared. A tool without branch
+            // capability must keep the exact fingerprint its saved solutions were written with,
+            // so extending this declaration can never invalidate an existing solution.
+            if (ControlOutputs.Count > 0)
+            {
+                writer.Write(ControlOutputs.Count);
+                foreach (var output in ControlOutputs) { writer.Write(output.Id); writer.Write(output.DisplayName); }
+            }
         }
         Fingerprint=Convert.ToHexString(SHA256.HashData(buffer.ToArray()));
     }
@@ -57,11 +76,25 @@ public sealed class ToolSchema
     public IReadOnlyList<Port> Outputs { get; }
     public ToolPresentation? Presentation { get; }
     public IReadOnlyList<OutputDisplayNode> OutputDisplay {get;}
+    /// <summary>Declared control-flow outputs; empty for tools that cannot branch. Their order
+    /// defines the branch indexes a run reports, which the host maps to outgoing edges.</summary>
+    public IReadOnlyList<ControlOutput> ControlOutputs {get;}
+    /// <summary>端口显示节点；端口只作为分组子行出现时也返回该节点，成员名沿用逐级 FieldId 下钻。</summary>
     public OutputDisplayNode? FindOutputDisplay(string portId,IEnumerable<string>? members=null)
     {
-        var node=OutputDisplay.SingleOrDefault(item=>item.FieldId==portId);
+        var node=FindPortDisplay(portId);
         foreach(var member in members??Array.Empty<string>())node=node?.Children.SingleOrDefault(item=>item.FieldId==member);
         return node;
+    }
+    private OutputDisplayNode? FindPortDisplay(string portId)
+        =>OutputDisplay.Select(item=>FindPortDisplay(item,portId,null)).FirstOrDefault(item=>item is not null);
+    private static OutputDisplayNode? FindPortDisplay(OutputDisplayNode node,string portId,string? inheritedPort)
+    {
+        var target=node.PortId??inheritedPort??node.FieldId;
+        if(target==portId)return node;
+        foreach(var child in node.Children)
+            if(FindPortDisplay(child,portId,target) is {} found)return found;
+        return null;
     }
     public string? WorkflowImageInputId { get; }
     public string Fingerprint { get; }
@@ -73,6 +106,12 @@ public sealed class InputValues
     /// <summary>Frozen declarations only. Inspecting them does not read/copy values or touch resources.</summary>
     public IReadOnlyDictionary<string,Port> Declarations=>_ports;
     public InputValues(IEnumerable<Port> ports,IReadOnlyDictionary<string,object?> values)
+        : this(ports, values, false) { }
+    /// <summary>Captures only outputs actually produced by a failed invocation, retaining the complete declaration.
+    /// Present values undergo normal validation; missing required outputs remain explicitly missing.</summary>
+    public static InputValues CaptureAvailableOutputs(IEnumerable<Port> outputs,IReadOnlyDictionary<string,object?> values)
+        => new(outputs, values, true);
+    private InputValues(IEnumerable<Port> ports,IReadOnlyDictionary<string,object?> values,bool allowMissingOutputs)
     {
         var specs=ports.ToDictionary(p=>p.Id,StringComparer.Ordinal);
         _ports=new ReadOnlyDictionary<string,Port>(specs);
@@ -80,7 +119,7 @@ public sealed class InputValues
         _values=new(StringComparer.Ordinal);
         foreach(var p in specs.Values)
         {
-            if(!values.TryGetValue(p.Id,out var v)){ if(p.Required)throw new ArgumentException($"Missing required port {p.Id}"); continue; }
+            if(!values.TryGetValue(p.Id,out var v)){ if(p.Required&&!allowMissingOutputs)throw new ArgumentException($"Missing required port {p.Id}"); continue; }
             _values[p.Id]=ValueRules.Freeze(p,v);
         }
     }

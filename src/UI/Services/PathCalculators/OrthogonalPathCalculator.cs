@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Media;
+using SunEyeVision.Plugin.Wpf.Native.Input.WorkspaceControls.Base;
 using SunEyeVision.UI.Services.Path;
 using Routing = SunEyeVision.UI.Services.PathCalculators.OrthogonalRouting;
 using Direction = SunEyeVision.UI.Services.Path.PortDirection;
@@ -11,9 +12,17 @@ public sealed class OrthogonalPathCalculator : IPathCalculator
     private static Routing.PortDirection Convert(Direction d)=>d switch
     {Direction.Left=>Routing.PortDirection.Left,Direction.Right=>Routing.PortDirection.Right,Direction.Top=>Routing.PortDirection.Up,_=>Routing.PortDirection.Down};
     private static Routing.RouteRect Convert(Rect r)=>new(r.X,r.Y,r.Width,r.Height);
+    private static ConnectorOrientation ConvertOrientation(Direction d)=>d switch
+    {
+        Direction.Left=>ConnectorOrientation.Left,
+        Direction.Top=>ConnectorOrientation.Top,
+        Direction.Right=>ConnectorOrientation.Right,
+        _=>ConnectorOrientation.Bottom
+    };
+    /// <summary>拖线预览使用原件连线的正交折点算法，保证预览与原件走线几何一致。</summary>
     public Point[] CalculatePreviewPath(Point source,Point target,Direction from,Rect sourceRect)
     {
-        return Routing.OrthogonalRouter.Preview(new(new(source.X,source.Y),Convert(from),Convert(sourceRect)),new(target.X,target.Y))
+        return PathFinder.GetConnectionLine(source,sourceRect,ConvertOrientation(from),target)
             .Select(p=>new Point(p.X,p.Y)).ToArray();
     }
     public Point[] CalculateOrthogonalPath(Point source,Point target,Direction from,Direction to,Rect sourceRect,Rect targetRect,params Rect[] obstacles)

@@ -25,6 +25,16 @@ public sealed partial class DocumentSession
         lock (_gate) return FindNode(OpenScope(workflowId), nodeId)?.Configuration.Schema;
     }
 
+    public bool HasUnconfiguredRequiredInputs(string workflowId, string nodeId)
+    {
+        lock (_gate)
+        {
+            var configuration = RequireNode(OpenScope(workflowId), nodeId).Configuration;
+            return configuration.Schema.Inputs.Any(port => port.Required && configuration.ActiveInputs.Contains(port.Id) &&
+                configuration.Configuration.Fields.Read(port.Id) is UnsetSetting or ReferenceSetting { RebindingReason.Length: > 0 });
+        }
+    }
+
     /// <summary>Admit the actual node, not a caller-supplied directory or tool-ID pair.
     /// A committed field edit does not replace that node's presentation identity.</summary>
     public ToolPresentationAdmission AdmitPresentation(string workflowId, string nodeId)

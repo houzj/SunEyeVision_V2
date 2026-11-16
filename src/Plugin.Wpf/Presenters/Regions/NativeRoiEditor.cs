@@ -7,7 +7,9 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Threading;
 using SunEyeVision.Plugin.Wpf.Adapters.Regions;
+using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
 using SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamTabControl;
+using SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls;
 using Numbers=SunEyeVision.Plugin.Wpf.Native.Numeric.ParameterPresentation.ParamTabControl;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Regions;
@@ -24,12 +26,14 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
     private NativeRoiProjection? _projectedItem;
     private RoiEditStamp? _projectedStamp;
     private IDisposable? _registration;
+    private NativeMessageBox? _drawLimitWarning;
     private bool _disposed,_projecting,_committing;
     private long _generation;
     private long _uiGeneration;
     private DispatcherOperation? _resume;
     private bool _suspended;
     private string?[]? _savedRaw;
+    private NativeMessageBox? _drawFeedbackWarning;
     public RoiSelectControl NativeView {get;}=new();
     public string Error {get;private set;}="";
     public bool HasInvalidText=>Error.Length!=0;
@@ -58,11 +62,18 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         PendingChanged?.Invoke();return true;
     }
     public Func<bool>? PrepareInteraction {get;set;}
+    public Func<string?>? InteractionFailureText {get;set;}
+    /// <summary>阻断来自显示选择（非输入图）时为真：按钮点击不弹框，提示延迟到图像落笔。</summary>
+    public bool DeferInteractionFeedback {get;set;}
     private void OnPreparingFocus(object sender,KeyboardFocusChangedEventArgs args)
     {if(!_disposed&&!_projecting&&!_committing&&PrepareInteraction?.Invoke()==false)args.Handled=true;}
     public string? Title {get;set;}
     public bool AllowUnboundFullDomain {get;set;}=true;
+    public bool PolygonOnly {get;set;}
     public bool UnboundFullDomain {get;set;}
+    // 原厂两段式：阻断态（无 session）点形状按钮仍呈现选中样式（用户实机对照）。
+    // UnboundContext 每次 Bind(null) 都会重建，选中态必须落在 owner 上才能跨重建保持。
+    internal string? UnboundShape {get;set;}
     public event Action? PendingChanged;
     private void OnPendingChanged(object sender,TextChangedEventArgs args)
     {if(!_disposed&&!_projecting&&!_committing&&!_suspended)PendingChanged?.Invoke();}
@@ -77,11 +88,64 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
     public void Bind(NativeRoiSession? session)
     {
         Dispatcher.VerifyAccess();if(_disposed)throw new ObjectDisposedException(nameof(NativeRoiEditor));
+        CloseDrawLimitWarning();CloseDrawFeedbackWarning();
         _resume?.Abort();_resume=null;_savedRaw=null;_suspended=false;_registration?.Dispose();_registration=null;
-        if(_session is not null){_session.Changed-=Project;_session.PropertyChanged-=OnDrawStateChanged;}
+        if(_session is not null){_session.Changed-=Project;_session.PropertyChanged-=OnDrawStateChanged;_session.DrawLimitReached-=ShowDrawLimitWarning;}
         _session=session;_projectedSession=null;_projectedItem=null;_projectedStamp=null;
-        if(session is not null){_registration=session.RegisterEditorCommit(()=>TryCommitPending());session.Changed+=Project;session.PropertyChanged+=OnDrawStateChanged;}
+        if(session is not null)UnboundShape=null;
+        if(session is not null){_registration=session.RegisterEditorCommit(()=>TryCommitPending());session.Changed+=Project;session.PropertyChanged+=OnDrawStateChanged;session.DrawLimitReached+=ShowDrawLimitWarning;}
         Project();
+    }
+    private void ShowDrawLimitWarning(NativeRoiSession session)
+    {
+        bool Current() => !_disposed && !_suspended && IsLoaded && IsVisible
+            && ReferenceEquals(_session, session) && session.IsCurrent;
+        if (_drawLimitWarning is not null || !Current() || Window.GetWindow(this) is not { IsVisible: true } owner)
+            return;
+
+        void CloseWhenHidden(object sender, DependencyPropertyChangedEventArgs args)
+        {
+            if (!IsVisible)
+                CloseDrawLimitWarning();
+        }
+
+        IsVisibleChanged += CloseWhenHidden;
+        session.InteractionRetiring += CloseDrawLimitWarning;
+        try
+        {
+            NativeMessageBox.ShowOwnedWarning(owner,
+                AppLocalizationService.GetLang("Lang_RoiMaxNumLimit", "已超配置ROI数量的最大上限"),
+                warning => _drawLimitWarning = warning, Current,
+                AppLocalizationService.GetLang("Lang_ParamSet", "参数设置"));
+        }
+        finally
+        {
+            session.InteractionRetiring -= CloseDrawLimitWarning;
+            IsVisibleChanged -= CloseWhenHidden;
+            _drawLimitWarning = null;
+        }
+    }
+    private void CloseDrawLimitWarning()
+    {
+        var warning = _drawLimitWarning;
+        _drawLimitWarning = null;
+        if (warning?.IsVisible == true)
+            warning.Close();
+    }
+    private void CloseDrawFeedbackWarning()
+    {
+        var warning=_drawFeedbackWarning;_drawFeedbackWarning=null;
+        if(warning?.IsVisible==true)warning.Close();
+    }
+    public void ShowInteractionFeedback()
+    {
+        if(_disposed||!IsLoaded||!IsVisible||_drawFeedbackWarning is not null
+            ||Window.GetWindow(this) is not {IsVisible:true} owner)return;
+        var message=InteractionFailureText?.Invoke()
+            ??AppLocalizationService.GetLang("RoiDrawTips","无效的绘制操作：请检查绘制图像是否为模块的输入图像");
+        NativeMessageBox.ShowOwnedWarning(owner,message,warning=>_drawFeedbackWarning=warning,
+            ()=>!_disposed&&IsLoaded&&IsVisible&&ReferenceEquals(Window.GetWindow(this),owner),
+            AppLocalizationService.GetLang("Lang_ParamSet","参数设置"));
     }
     private void Project()=>Project(false);
     private void OnDrawStateChanged(object? sender,System.ComponentModel.PropertyChangedEventArgs args)
@@ -89,6 +153,8 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
     private void Project(bool force)
     {
         if(_disposed)return;
+        if (_drawLimitWarning is not null && _session?.IsCurrent != true)
+            CloseDrawLimitWarning();
         // Same-root rejection/no-op notifications must not erase the active raw transaction.
         // Explicit Bind resets this lease; a changed version/selection still projects immediately.
         if(!force&&_committing&&_session?.IsCurrent==true&&ReferenceEquals(_projectedSession,_session)
@@ -138,6 +204,7 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
     {
         if(!ReferenceEquals(args.OriginalSource,this)||_disposed)return;
         if(!_suspended)_savedRaw=_inputs.Select(input=>input.Raw).ToArray();_suspended=true;
+        CloseDrawLimitWarning();CloseDrawFeedbackWarning();
         _polygon.Suspend();_uiGeneration++;_resume?.Abort();_resume=null;
         _projecting=true;
         try{foreach(var input in _inputs)((ComboBox)input.View.FindName("CBox")).SetCurrentValue(ComboBox.IsDropDownOpenProperty,false);}
@@ -275,11 +342,12 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;_generation++;_resume?.Abort();_resume=null;_savedRaw=null;
-        _registration?.Dispose();_registration=null;if(_session is not null){_session.Changed-=Project;_session.PropertyChanged-=OnDrawStateChanged;}
+        CloseDrawLimitWarning();CloseDrawFeedbackWarning();
+        _registration?.Dispose();_registration=null;if(_session is not null){_session.Changed-=Project;_session.PropertyChanged-=OnDrawStateChanged;_session.DrawLimitReached-=ShowDrawLimitWarning;}
         _session=null;_projectedSession=null;_projectedItem=null;_projectedStamp=null;NativeView.LayoutUpdated-=OnLayout;PreviewKeyDown-=OnKey;Loaded-=OnLoaded;Unloaded-=OnUnloaded;
         foreach(var input in _inputs){input.Text.TextChanged-=OnText;input.Leaf.Loaded-=OnLeafLoaded;}
         PreviewGotKeyboardFocus-=OnPreparingFocus;
-        RemoveHandler(System.Windows.Controls.Primitives.TextBoxBase.TextChangedEvent,new TextChangedEventHandler(OnPendingChanged));PrepareInteraction=null;PendingChanged=null;
+        RemoveHandler(System.Windows.Controls.Primitives.TextBoxBase.TextChangedEvent,new TextChangedEventHandler(OnPendingChanged));PrepareInteraction=null;InteractionFailureText=null;PendingChanged=null;CloseDrawFeedbackWarning();
         _inputs.Clear();_polygon.Dispose();NativeView.DataContext=null;Child=null;
     }
     private static IEnumerable<T> Descendants<T>(DependencyObject root)where T:DependencyObject
@@ -288,26 +356,40 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         {var child=VisualTreeHelper.GetChild(root,i);if(child is T match)yield return match;foreach(var nested in Descendants<T>(child))yield return nested;}
     }
     // This is only an original-toolbox command route. It contains no image or editable geometry.
-    private sealed class UnboundContext
+    private sealed class UnboundContext : System.ComponentModel.INotifyPropertyChanged
     {
         private readonly NativeRoiEditor _owner;
+        public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
         public UnboundContext(NativeRoiEditor owner,long generation)
         {
             _owner=owner;
             ValueChangedCommand=new RequestCommand(()=>!owner._disposed&&!owner._projecting&&!owner._suspended&&owner.IsLoaded&&generation==owner._generation,
-                value=>{if(owner.PrepareInteraction?.Invoke()==true&&owner.NativeView.DataContext is Context current)current.ValueChangedCommand.Execute(value);});
+                // 原厂两段式（用户实机对照）：显示图不是输入图时点形状按钮只选中不弹框，
+                // 提示延迟到用户在图像上落笔时（owner 经图像点击通道触发）。
+                value=>{if(owner.PrepareInteraction?.Invoke()==true&&owner.NativeView.DataContext is Context current)current.ValueChangedCommand.Execute(value);else if(!owner.DeferInteractionFeedback)owner.ShowInteractionFeedback();},owner.ShowInteractionFeedback);
         }
         public object? CurROIData=>null;
         public bool IsHaveData=>false;
         public bool BoxEnable_ModuleEnableA=>false;public bool SectorEnable_ModuleEnableA=>false;
         public bool SectorRingEnable_ModuleEnableA=>false;public bool PolygonEnable_ModuleEnableA=>false;
-        public bool BoxA {get=>false;set{}} public bool SectorA {get=>false;set{}}
-        public bool SectorRingA {get=>false;set{}} public bool PolygonA {get=>false;set{}}
+        // 形状选中态以 owner.UnboundShape 为单一事实源（radio 互斥），跨 Bind(null) 重建保持；
+        // kind 取值与 session 侧 ActiveDraw.Kind 一致。
+        public bool BoxA {get=>_owner.UnboundShape=="rectangle";set=>SetShape("rectangle",value);}
+        public bool SectorA {get=>_owner.UnboundShape=="sector";set=>SetShape("sector",value);}
+        public bool SectorRingA {get=>_owner.UnboundShape=="annulus";set=>SetShape("annulus",value);}
+        public bool PolygonA {get=>_owner.UnboundShape=="polygon";set=>SetShape("polygon",value);}
+        private void SetShape(string kind,bool value)
+        {
+            if(_owner.UnboundShape==kind==value)return;
+            _owner.UnboundShape=value?kind:null;
+            foreach(var name in new[]{nameof(BoxA),nameof(SectorA),nameof(SectorRingA),nameof(PolygonA)})
+                PropertyChanged?.Invoke(this,new(name));
+        }
         public bool FullScreenEnableA=>_owner.AllowUnboundFullDomain;
         public bool FullScreen_ModuleEnableA=>_owner.UnboundFullDomain;
         public bool FullScreenA {get=>_owner.UnboundFullDomain;set{}}
         public bool IsAvoid=>!_owner.AllowUnboundFullDomain;public bool Is3DROI=>false;
-        public string ROISelectionA=>"Box SectorRing Sector Polygon";
+        public string ROISelectionA=>_owner.PolygonOnly?"Polygon":"Box SectorRing Sector Polygon";
         public string DisplayNameA=>_owner.Title??"ROI形状";public string DescriptionA=>DisplayNameA;
         public ICommand ValueChangedCommand {get;}
         public ICommand ROIValueChangedCommand=>ValueChangedCommand;
@@ -329,9 +411,9 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
                 &&uiGeneration==owner._uiGeneration&&generation==owner._generation&&ReferenceEquals(owner._session,session)&&session.IsCurrent,
                 value=>
                 {
-                    try{if(owner.PrepareInteraction?.Invoke()!=false&&!owner._disposed&&!owner._suspended&&uiGeneration==owner._uiGeneration&&ReferenceEquals(owner._session,session)&&session.IsCurrent)session.ValueChangedCommand.Execute(value);}
+                    try{if(owner.PrepareInteraction?.Invoke()!=false&&!owner._disposed&&!owner._suspended&&uiGeneration==owner._uiGeneration&&ReferenceEquals(owner._session,session)&&session.IsCurrent)session.ValueChangedCommand.Execute(value);else owner.ShowInteractionFeedback();}
                     finally{RefreshTools();}
-                });
+                },owner.ShowInteractionFeedback);
             ROIValueChangedCommand=new CommitCommand(()=>
             {if(!owner._disposed&&!owner._projecting&&!owner._committing&&!owner._suspended&&owner.IsLoaded&&uiGeneration==owner._uiGeneration&&owner._generation==generation&&ReferenceEquals(owner._session,session)&&ReferenceEquals(session.CurROIData,item))owner.TryCommitPending();});
         }
@@ -345,21 +427,24 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         public bool SectorRingA {get=>_session.SectorRingA;set=>_session.SectorRingA=value;}
         public bool PolygonEnable_ModuleEnableA=>_session.PolygonEnable_ModuleEnableA;
         public bool PolygonA {get=>_session.PolygonA;set=>_session.PolygonA=value;}
-        public bool FullScreenEnableA=>_session.FullScreenEnableA;
+        public bool FullScreenEnableA=>!_owner.PolygonOnly&&_session.FullScreenEnableA;
         public bool FullScreen_ModuleEnableA=>_session.FullScreen_ModuleEnableA;
         public bool FullScreenA {get=>_session.FullScreenA;set=>_session.FullScreenA=value;}
         public bool IsAvoid=>_session.IsAvoid;
         public bool Is3DROI=>false;
-        public string ROISelectionA=>_session.ROISelectionA;
+        public string ROISelectionA=>_owner.PolygonOnly?"Polygon":_session.ROISelectionA;
         public string DisplayNameA=>_owner.Title??_session.DisplayNameA;
         public string DescriptionA=>_session.DescriptionA;
         public ICommand ValueChangedCommand {get;}
         public ICommand ROIValueChangedCommand {get;}
     }
-    private sealed class RequestCommand(Func<bool> current,Action<object?> execute):ICommand
+    private sealed class RequestCommand(Func<bool> current,Action<object?> execute,Action rejected):ICommand
     {
-        public bool CanExecute(object? parameter)=>current();
-        public void Execute(object? parameter){if(current())execute(parameter);}
+        // 原件 ROI 入口命令保持可点击，当前加载/帧状态由执行体和宿主反馈处理。
+        // 将 _suspended 等生命周期状态直接作为 WPF CanExecute 会在初始绑定时
+        // 把 ToggleButton 锁死，而当前命令没有 CanExecuteChanged 通知可重新查询。
+        public bool CanExecute(object? parameter)=>true;
+        public void Execute(object? parameter){if(current())execute(parameter);else rejected();}
         public event EventHandler? CanExecuteChanged{add{}remove{}}
     }
     private sealed class CommitCommand(Action execute):ICommand

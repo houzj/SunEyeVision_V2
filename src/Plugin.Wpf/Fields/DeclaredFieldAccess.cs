@@ -45,6 +45,6 @@ public sealed class DeclaredFieldAccess
         if(_attached is not null&&!ReferenceEquals(_attached,visual))throw new InvalidOperationException("字段已绑定另一个会话视觉编辑器。");
         _attached=visual;
     }
-    internal DeclaredFieldAccess(DeclaredFieldEditor editor):this(editor.FieldId,editor,()=>editor.Setting,()=>editor.HasInvalidText,()=>editor.HasPendingEdits,()=>editor.Error,
+    internal DeclaredFieldAccess(DeclaredFieldRow editor):this(editor.FieldId,editor,()=>editor.Setting,()=>editor.HasInvalidText,()=>editor.HasPendingEdits,()=>editor.Error,
         ()=>editor.InputElement,editor.TrySetConstant,editor.TryCommitPending,handler=>editor.Changed+=handler,handler=>editor.Changed-=handler,()=>!editor.IsDisposed){}
 }

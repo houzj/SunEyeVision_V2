@@ -199,6 +199,11 @@ runtime/
 !/tools/SunEyeVision.BlobAnalysis/Runtime/*.cs
 !/tools/SunEyeVision.BlobAnalysis/Runtime/*.csproj
 !/tools/SunEyeVision.BlobAnalysis/Runtime/packages.lock.json
+# 图像源工具运行时是源码工程，不是部署运行库目录。
+!/tools/SunEyeVision.ImageSource/Runtime/
+!/tools/SunEyeVision.ImageSource/Runtime/*.cs
+!/tools/SunEyeVision.ImageSource/Runtime/*.csproj
+!/tools/SunEyeVision.ImageSource/Runtime/packages.lock.json
 
 # 安装包第三方工具（Inno Setup 安装器 10.3MB，按需从官网下载）
 installer/third-party/

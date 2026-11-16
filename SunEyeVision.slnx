@@ -8,6 +8,10 @@
     <Project Path="tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj" />
     <Project Path="tools/SunEyeVision.ImageSource/Wpf/SunEyeVision.ImageSource.Wpf.csproj" />
   </Folder>
+  <Folder Name="/Tools/IfComponents/">
+    <Project Path="tools/SunEyeVision.If/Runtime/SunEyeVision.If.Runtime.csproj" />
+    <Project Path="tools/SunEyeVision.If/Wpf/SunEyeVision.If.Wpf.csproj" />
+  </Folder>
   <Folder Name="/Src/Foundation/">
     <Project Path="Src/Foundation/SunEyeVision.Foundation.csproj" />
   </Folder>
@@ -98,6 +102,9 @@
   <Folder Name="/Tests/SunEyeVision.ImageSource.Runtime.Tests/">
     <Project Path="tests/SunEyeVision.ImageSource.Runtime.Tests/SunEyeVision.ImageSource.Runtime.Tests.csproj" />
   </Folder>
+  <Folder Name="/Tests/SunEyeVision.Tools.LogicData.Tests/">
+    <Project Path="tests/SunEyeVision.Tools.LogicData.Tests/SunEyeVision.Tools.LogicData.Tests.csproj" />
+  </Folder>
   <Folder Name="/Tests/SunEyeVision.DeviceDriver.Tests/">
     <Project Path="tests/SunEyeVision.DeviceDriver.Tests/SunEyeVision.DeviceDriver.Tests.csproj" />
   </Folder>
@@ -171,6 +178,9 @@
   <Folder Name="/Tools/SunEyeVision.ImageSource/" />
   <Folder Name="/Tools/SunEyeVision.ImageSource/Runtime/" />
   <Folder Name="/Tools/SunEyeVision.ImageSource/Wpf/" />
+  <Folder Name="/Tools/SunEyeVision.If/" />
+  <Folder Name="/Tools/SunEyeVision.If/Runtime/" />
+  <Folder Name="/Tools/SunEyeVision.If/Wpf/" />
   <Folder Name="/Tests/AdmissionPreparationComponent/">
     <Project Path="tests/AdmissionPreparationComponent/AdmissionPreparationComponent.csproj" />
   </Folder>

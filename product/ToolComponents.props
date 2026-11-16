@@ -23,5 +23,16 @@
       <EntryType>SunEyeVision.Tool.BlobAnalysis.Wpf.BlobEditorFactory</EntryType>
       <CompanionToolId>BlobAnalysis</CompanionToolId>
     </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.If/Runtime/SunEyeVision.If.Runtime.csproj">
+      <ComponentId>SunEyeVision.Tool.If.Runtime</ComponentId>
+      <ToolId>If</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.If.Runtime.IfTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.If/Wpf/SunEyeVision.If.Wpf.csproj">
+      <ComponentId>SunEyeVision.Tool.If.Wpf</ComponentId>
+      <ToolId>If</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.If.Wpf.IfEditorFactory</EntryType>
+      <CompanionToolId>If</CompanionToolId>
+    </ProductToolComponent>
   </ItemGroup>
 </Project>

@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>SunEyeVision.Tool.If.Runtime</AssemblyName>
+    <RootNamespace>SunEyeVision.Tool.If.Runtime</RootNamespace>
+    <ToolComponentId>SunEyeVision.Tool.If.Runtime</ToolComponentId>
+    <ToolComponentToolId>If</ToolComponentToolId>
+    <ToolComponentRole>Runtime</ToolComponentRole>
+    <ToolComponentEntryType>SunEyeVision.Tool.If.Runtime.IfTool</ToolComponentEntryType>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj" />
+  </ItemGroup>
+</Project>

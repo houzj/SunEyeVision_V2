@@ -1,0 +1,214 @@
+{
+  "record": "原厂设计复核-启动与方案打开保存",
+  "date": "2026-11-17",
+  "segment": "启动到欢迎页 + 方案打开/保存/关闭/重开",
+  "vmVersion": "VisionMaster 4.4.0 Build20250516@1555331",
+
+  "factoryEvidence": {
+    "startup": [
+      {
+        "id": "F-START-01",
+        "claim": "OnStartup 按配置 ShowEnable 在独立 STA 后台线程显示 WelcomeDialog，等待 mWaitEvent 后 Dispatcher.InvokeShutdown",
+        "file": "VisionMaster.Exe.Audit/VisionMaster/App.cs",
+        "lines": "100-119",
+        "confidence": "已证实",
+        "note": "欢迎页与主窗准备并行，不是串行等待"
+      },
+      {
+        "id": "F-START-02",
+        "claim": "BeforeStartPart 在独立后台线程执行，Priority=Highest，异常存入 _subThreadException，finally 置 mWaitEventBefore",
+        "file": "VisionMaster.Exe.Audit/VisionMaster/App.cs",
+        "lines": "121-141",
+        "confidence": "已证实",
+        "note": "旧报告写“高优先级”，实际为 Highest"
+      },
+      {
+        "id": "F-START-03",
+        "claim": "主线程并行执行 BeforeStartMian 并创建 PreLoadPage，在 mWaitEventBefore.WaitOne() 汇合后再判断后台异常",
+        "file": "VisionMaster.Exe.Audit/VisionMaster/App.cs（调用点）+ start-re-01/START-RE-01.md",
+        "lines": "142-165（App.cs）、报告第 2 节",
+        "confidence": "已证实（报告）+ 高置信（汇合点行号未逐行复核）"
+      },
+      {
+        "id": "F-START-04",
+        "claim": "存在第二条启动路径 AppBeforStart()：无 GetSolutionTakeState/StartNewInstance 分支，直接 InitMainWindow",
+        "file": "VisionMaster.Exe.Audit/VisionMaster/Program.cs",
+        "lines": "142-157",
+        "confidence": "已证实",
+        "note": "旧报告未覆盖；调用方与适用模式待查"
+      }
+    ],
+    "solutionOpen": [
+      {
+        "id": "F-OPEN-01",
+        "claim": "VmSolution.Load(path,password,isSilentExecute) = TempVmSolution.Init → CheckSol → Import →（仅 SDK 模式）SetServerReadyEvent 或 SilentExecute",
+        "file": "VM.Core/VM.Core/VmSolution.cs",
+        "lines": "2190-2213",
+        "confidence": "已证实",
+        "note": "非 SDK 模式加载不触发执行；TempVmSolution 承担临时方案中间态"
+      },
+      {
+        "id": "F-OPEN-02",
+        "claim": "方案级实例接管由静态 GetSolutionTakeState 判定，未接管才 StartNewInstance",
+        "file": "VM.Core/VM.Core/VmSolution.cs",
+        "lines": "2350（StartNewInstance）、2360（GetSolutionTakeState）",
+        "confidence": "已证实"
+      }
+    ],
+    "solutionSave": [
+      {
+        "id": "F-SAVE-01",
+        "claim": "InternalExport 用 _isSaving 布尔防重入，未设置 path 时弹另存对话框，真正写盘由原生 SolutionManager.SyncSaveSolution 完成",
+        "file": "VM.Core/VM.Core/VmSolution.cs",
+        "lines": "1551-1596",
+        "confidence": "已证实",
+        "note": "托管层不掌握序列化格式；失败时清空 SolutionPath"
+      },
+      {
+        "id": "F-SAVE-02",
+        "claim": "Save/SaveAs 为静态入口，转发到 instance.BaseSave/BaseSaveAs，再进 base.Save/base.SaveAs",
+        "file": "VM.Core/VM.Core/VmSolution.cs",
+        "lines": "1598-1606、2219-2231",
+        "confidence": "已证实",
+        "note": "BaseSave 以下（基类）实现未取体，序列化细节待查"
+      }
+    ],
+    "solutionClose": [
+      {
+        "id": "F-CLOSE-01",
+        "claim": "CloseSolution 存在于 VmSolution.cs:2532，内部行为未取体",
+        "file": "VM.Core/VM.Core/VmSolution.cs",
+        "lines": "2532",
+        "confidence": "未证",
+        "note": "待补证：关闭时资源/模块/Server 的退役顺序"
+      }
+    ]
+  },
+
+  "selfEvidence": {
+    "startup": [
+      {
+        "id": "S-START-01",
+        "claim": "OnStartup 显示 LoadingWindow（可取消、30s 看门狗），后台 Task.Run(LoadPluginsAsync)，随后 InitializeSolutionManager 并置 _servicesReady",
+        "file": "src/UI/App.xaml.cs",
+        "lines": "208-320",
+        "confidence": "已证实"
+      },
+      {
+        "id": "S-START-02",
+        "claim": "加载遮罩关闭后按 HideStartPage 决定是否显示起始页，最后 HandleStartupDecisionAsync；随后启动 HALCON 与 JIT 预热后台线程",
+        "file": "src/UI/App.xaml.cs",
+        "lines": "331-365",
+        "confidence": "已证实"
+      }
+    ],
+    "solutionOpen": [
+      {
+        "id": "S-OPEN-01",
+        "claim": "两阶段打开：DocumentSessionManager.PrepareOpen(bytes,path,...) 解析校验，OpenPrepared 安装为当前会话",
+        "file": "src/Application/DocumentSessionManager.Persistence.cs",
+        "lines": "40（PrepareOpen）、70（OpenPrepared）、143（Open 一步式）",
+        "confidence": "已证实"
+      }
+    ],
+    "solutionSave": [
+      {
+        "id": "S-SAVE-01",
+        "claim": "Save 先 AcceptEditorsForSave + 文档 mutation 租约，锁内捕获编码，锁外 SolutionFileCommit.Write，成功后更新 _lastWrittenSnapshot/_writtenState",
+        "file": "src/Application/DocumentSession.Persistence.cs",
+        "lines": "90-121",
+        "confidence": "已证实"
+      },
+      {
+        "id": "S-SAVE-02",
+        "claim": "保存必须校验目标身份：TargetExpectation.Unchecked 直接拒绝；未给 expected 时用已保存快照 SHA 作为基线",
+        "file": "src/Application/DocumentSession.Persistence.cs",
+        "lines": "95、103-108",
+        "confidence": "已证实"
+      },
+      {
+        "id": "S-SAVE-03",
+        "claim": "落盘按目标路径静态加锁（Gates），并有 Blocked 恢复阻断状态，支持 recoveryPath",
+        "file": "src/Persistence/SolutionFileCommit.cs",
+        "lines": "40-41、56、73、99、125、133-135",
+        "confidence": "已证实"
+      },
+      {
+        "id": "S-SAVE-04",
+        "claim": "除 Save/SaveAs 外提供 SaveCopy（副本另存而不改变当前会话绑定）",
+        "file": "src/Application/DocumentSession.Persistence.cs",
+        "lines": "123-133",
+        "confidence": "已证实"
+      }
+    ],
+    "solutionClose": [
+      {
+        "id": "S-CLOSE-01",
+        "claim": "DocumentSessionManager.CloseCurrent(discardPendingEdits) 显式区分“丢弃未提交编辑”",
+        "file": "src/Application/DocumentSessionManager.cs",
+        "lines": "71",
+        "confidence": "已证实"
+      }
+    ]
+  },
+
+  "axisOne": [
+    { "item": "启动并行结构", "factory": "欢迎页 STA 线程 + BeforeStartPart Highest 线程 + 主线程 PreLoadPage，事件汇合", "self": "LoadingWindow + 后台 LoadPluginsAsync + 主线程 InitializeSolutionManager，await 汇合", "verdict": "一致（机制不同、语义等价）" },
+    { "item": "欢迎页触发", "factory": "配置 ShowEnable 控制 WelcomeDialog", "self": "配置 HideStartPage 控制起始页", "verdict": "一致（配置驱动）" },
+    { "item": "方案打开", "factory": "Load = CheckSol + Import，托管层不掌握格式", "self": "PrepareOpen + OpenPrepared 两阶段", "verdict": "偏离·结构（自研显式两阶段）" },
+    { "item": "方案会话模型", "factory": "全局单例 instance + TempVmSolution 中间态", "self": "DocumentSessionManager + DocumentSession 实例", "verdict": "偏离·结构" },
+    { "item": "保存写盘", "factory": "原生 SyncSaveSolution 写盘，_isSaving 防重入", "self": "托管序列化 + 原子提交 + 目标身份 SHA + 按目标锁 + 恢复阻断", "verdict": "偏离·结构（架构必然）" },
+    { "item": "关闭", "factory": "CloseSolution（内部未取体）", "self": "CloseCurrent(discardPendingEdits)", "verdict": "静态无法确认（原厂细节待补证）" }
+  ],
+
+  "axisTwo": [
+    { "criterion": "分层与依赖方向", "verdict": "通过", "note": "启动只做装配与调度，持久化在 Persistence 层，UI 不直接写盘" },
+    { "criterion": "职责单一", "verdict": "通过", "note": "打开=PrepareOpen/OpenPrepared；保存=CaptureForSave + SolutionFileCommit；加载遮罩=LoadingWindow" },
+    { "criterion": "所有权唯一", "verdict": "通过", "note": "文档由 DocumentSession 拥有，落盘由 SolutionFileCommit 独占按目标锁" },
+    { "criterion": "生命周期完整", "verdict": "通过", "note": "保存失败保留 Blocked 恢复态；关闭区分丢弃编辑；启动有取消与 30s 超时" },
+    { "criterion": "数据流单向", "verdict": "通过", "note": "打开→会话→编辑→保存，无反向写回" },
+    { "criterion": "扩展点", "verdict": "通过", "note": "打开/保存与工具无关，工具只提供声明" },
+    { "criterion": "边界清晰", "verdict": "通过", "note": "持久化格式在 Persistence 层，不侵入工具与执行链" },
+    { "criterion": "并发与取消", "verdict": "通过（强于原厂）", "note": "按目标静态锁 + 目标身份校验；原厂仅布尔 _isSaving" },
+    { "criterion": "可测试性", "verdict": "通过", "note": "PrepareOpen 接受 bytes，可脱离文件系统测试" },
+    { "criterion": "失败可诊断", "verdict": "通过", "note": "目标身份不符、未校验目标等均显式抛错，不静默覆盖" }
+  ],
+
+  "findings": [
+    {
+      "level": "保持",
+      "item": "自研两阶段打开（PrepareOpen/OpenPrepared）与原厂 Load(CheckSol+Import) 语义等价但更清晰",
+      "impact": "无阻断；新工具不需要感知",
+      "advice": "保持，并在扩展点文档写明“打开前预检不得修改当前会话”"
+    },
+    {
+      "level": "保持",
+      "item": "保存采用托管序列化 + 目标身份校验 + 按目标锁，强于原厂布尔防重入",
+      "impact": "无阻断",
+      "advice": "保持；补一条并发保存的回归用例（同一目标两次保存，后一次应因身份过期被拒或串行成功）"
+    },
+    {
+      "level": "待补证",
+      "item": "原厂 CloseSolution 的退役顺序（模块/Server/资源）未取体",
+      "impact": "若自研关闭顺序与原厂不同，可能影响长时间运行后的资源释放",
+      "advice": "任务 7 用 Ghidra/反编译补证 VmSolution.CloseSolution:2532 与相关 Dispose 链"
+    },
+    {
+      "level": "待补证",
+      "item": "原厂方案密码（SolutionPassword）能力，自研是否等价支持未查",
+      "impact": "若原厂方案普遍加密而自研不支持，属功能缺口；若是产品决策不支持，需登记为合理简化",
+      "advice": "查自研 SolutionFormatPolicy/SolutionDocumentReader 的加密分支；无则登记为简化并说明风险"
+    },
+    {
+      "level": "待查",
+      "item": "原厂 AppBeforStart() 第二启动路径的调用方与适用模式",
+      "impact": "影响启动链复核完整性，但不影响新工具接入",
+      "advice": "任务 7 静态检索引用；若为远程/服务器模式可标注范围外"
+    }
+  ],
+
+  "coverage": {
+    "checked": ["OnStartup 欢迎页线程", "BeforeStartPart/BeforeStartMian/InitMainWindow", "VmSolution.Load/Save/SaveAs/CloseSolution 入口", "InternalExport 保存实现", "自研启动链", "自研 PrepareOpen/OpenPrepared/Save/SaveAs/SaveCopy/CloseCurrent", "SolutionFileCommit 并发与恢复"],
+    "notChecked": ["MainWindowData.PreLoad 与 ToolBoxData 的衔接细节", "原厂 BaseSave 以下序列化实现", "自研 SolutionDocumentReader/Validator 内部规则", "最近方案列表（RecentSolutionFile）与原厂最近方案的一致性", "方案打开时的资源解码/嵌入文件行为对照"]
+  }
+}

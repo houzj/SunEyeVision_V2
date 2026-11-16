@@ -1,0 +1,101 @@
+{
+  "record": "原厂设计复核-单次/连续执行与工具栏",
+  "date": "2026-11-17",
+  "segment": "单次执行 + 连续执行 + 执行工具栏 + 状态高亮 + 取消 + 耗时窗口",
+  "vmVersion": "VisionMaster 4.4.0 Build20250516@1555331",
+
+  "factoryEvidence": [
+    {
+      "id": "F-RUN-01",
+      "claim": "单次执行：方案级 VmSolution.Run → mGlobalModuleManager.GlobalScriptStartRunOnce；流程级 VmProcedure.Run → mProcessManager.SyncExecuteOnce(ID)；模块级 VmModule.Run → mModuleManager.SelfRun(nodeID)，全部转发到原生",
+      "file": "VM.Core/VM.Core/VmSolution.cs:2236；VM.Core/VM.Core/VmProcedure.cs:1094-1099；VM.Core/VM.Core/VmModule.cs:3753-3770",
+      "lines": "如左",
+      "confidence": "已证实"
+    },
+    {
+      "id": "F-RUN-02",
+      "claim": "连续执行由原生侧循环驱动：托管层只调用 IMVS_ContinousRunStart(handle) 与 IMVS_ContinousRunStart_V30(handle, nProcessID)，停止走 IMVS_StopExecute / IMVS_StopExecute_V30(handle, nProcessID, nWaitTime)",
+      "file": "VM.PlatformSDKCS/VM.PlatformSDKCS/NativeMethods.cs",
+      "lines": "65（ContinousRunStart）、80（ContinousRunStart_V30）、41（StopExecute_V30）、44（StopExecute）",
+      "confidence": "已证实（DllImport 声明）",
+      "note": "原生循环内部是否逐轮回调托管层未取体；托管侧只发一次启动请求这一结构已明确"
+    },
+    {
+      "id": "F-RUN-03",
+      "claim": "执行状态通过 SDK 回调上报：ModuleStartRunStatusCallBack / ModuleContinousRunStatusCallBack / ModuleStopRunStatusCallBack",
+      "file": "VM.PlatformSDKCS/VM.PlatformSDKCS/Module*RunStatusCallBack.cs",
+      "lines": "类型级",
+      "confidence": "已证实（类型存在）",
+      "note": "回调参数与状态枚举未取体"
+    },
+    {
+      "id": "F-RUN-04",
+      "claim": "执行入口在 TitleMenueItemData 的运行命令，工具栏为主窗 TitleBar/TitleToolBar",
+      "file": "VisionMasterMain/TitleMenueItemData.cs:1460（VmSolution.Instance.Run()，START-RE-01 引用）；VisionMasterMain/TitleBar.xaml.cs、TitleToolBar.xaml.cs",
+      "lines": "引用 + 类型",
+      "confidence": "高置信",
+      "note": "工具栏按钮集合与可用性规则未逐项取体"
+    }
+  ],
+
+  "selfEvidence": [
+    { "id": "S-RUN-01", "claim": "单次执行：DocumentRunBatch.RunAsync → ExecutionCoordinator.ExecuteAsync(RunRequest, RunCoreAsync)，批次拥有 ExecutionServer 或复用常驻实例", "file": "src/Application/DocumentRunBatch.cs", "lines": "构造与 RunAsync（约 20-45）", "confidence": "已证实" },
+    { "id": "S-RUN-02", "claim": "连续执行在托管侧循环：RunContinuousCoreAsync 逐轮驱动，回调 RoundStarted/RootStarted/State/Node 上报进度；停止与暂停由 IsExecutionStopping/IsExecutionPaused 暴露", "file": "src/UI/Shell/Windows/MainWindowContinuousExecution.cs", "lines": "16-18（状态）、73-100（循环与回调）", "confidence": "已证实" },
+    { "id": "S-RUN-03", "claim": "命令可用性有显式判定（CanToggleContinuousAll 等），依赖运行态、编辑权限与 tab 节点数", "file": "src/UI/Shell/Windows/MainWindowContinuousExecution.cs", "lines": "21", "confidence": "已证实" },
+    { "id": "S-RUN-04", "claim": "节点状态通过 NodeStatusChanged 事件 + ExecutionStatus 上报；批次内引擎按依赖调度并在开始/结束处发状态", "file": "src/Application/DocumentRunBatch.cs（事件）、src/Execution/WorkflowExecutionEngine.cs（调度与通知）", "lines": "类型级", "confidence": "已证实" },
+    { "id": "S-RUN-05", "claim": "耗时窗口由 WorkflowExecutionSnapshotPresenter 呈现，已改为先设 Owner 再显示并保持 Topmost", "file": "src/UI/Services/Workflow/WorkflowExecutionSnapshotPresenter.cs", "lines": "类型级（本批前次修正）", "confidence": "已证实" }
+  ],
+
+  "axisOne": [
+    { "item": "单次执行", "factory": "托管入口 → 原生 SyncExecuteOnce", "self": "DocumentRunBatch → Coordinator → WorkflowExecutionEngine（全托管调度）", "verdict": "偏离·结构（托管/原生执行链位置不同）" },
+    { "item": "连续执行驱动位置", "factory": "原生 ContinousRunStart：托管层只启动一次，循环在原生 Server 内", "self": "托管侧 RunContinuousCoreAsync 逐轮循环，每轮走完整托管链路", "verdict": "偏离·结构（关键差异）" },
+    { "item": "停止", "factory": "IMVS_StopExecute_V30(handle, processId, waitTime)", "self": "Stop() + CancellationToken + 状态机 Stopping/Completed", "verdict": "一致（语义等价）" },
+    { "item": "状态上报", "factory": "SDK 三种回调（Start/Continous/Stop）", "self": "NodeStatusChanged 事件 + ContinuousNodeStatus/ExecutionStatus", "verdict": "一致（机制不同）" },
+    { "item": "工具栏", "factory": "TitleBar/TitleToolBar + 菜单运行命令", "self": "主窗工具栏（单次/连续/停止/运行模式），命令可用性显式判定", "verdict": "一致（交互等价）" }
+  ],
+
+  "axisTwo": [
+    { "criterion": "分层与依赖方向", "verdict": "通过", "note": "UI 只发命令并订阅状态，调度在 Execution 层，未在 UI 里写执行逻辑" },
+    { "criterion": "职责单一", "verdict": "通过", "note": "批次（一次运行）、协调器（请求排队）、引擎（调度）、服务器（常驻资源）分离" },
+    { "criterion": "所有权唯一", "verdict": "通过", "note": "批次拥有 Reservation/Variables，引擎由批次或常驻服务器持有，退役走 BeginRetirement" },
+    { "criterion": "生命周期完整", "verdict": "通过", "note": "Run/Stop/Cancel 与 batch-disposed、run-request-retired 日志成对出现，重复执行不累积（LifecycleProbe 已验证）" },
+    { "criterion": "数据流单向", "verdict": "通过", "note": "请求 → 执行 → 结果发布 → 界面订阅，无 UI 回写执行态" },
+    { "criterion": "扩展点", "verdict": "通过", "note": "新增工具不改变执行链；节点类型由契约提供" },
+    { "criterion": "边界清晰", "verdict": "通过", "note": "工作流调度在 Execution，连续循环在 UI 层驱动（见下方风险）" },
+    { "criterion": "并发与取消", "verdict": "通过（需补回归）", "note": "CancellationToken 贯通、批次状态机明确；连续执行与调试窗口互斥有显式异常" },
+    { "criterion": "可测试性", "verdict": "通过", "note": "DocumentRunBatch 可脱离 UI 运行（现有测试即如此）" },
+    { "criterion": "失败可诊断", "verdict": "通过", "note": "错误进 ExecutionResult.Errors 与节点 ErrorMessages，PerfProbe 记录超阈值" }
+  ],
+
+  "findings": [
+    {
+      "level": "保持",
+      "item": "单次执行分批次/协调器/引擎/服务器四层，职责与所有权清晰",
+      "impact": "无阻断",
+      "advice": "保持；批量实现其他工具不需要改动执行链"
+    },
+    {
+      "level": "建议修（架构级，需评估）",
+      "item": "连续执行的循环位置与原厂不同：原厂在原生 Server 内循环，托管层只启动一次；自研在 UI 层 RunContinuousCoreAsync 逐轮驱动，每轮都走完整托管调度链",
+      "impact": "连续运行吞吐受托管轮次开销限制（实测稳定态每轮 46~50ms，其中算法 30~36ms、框架与发布约 12~20ms）；原厂同场景接近纯算法时间。不影响单次执行正确性，也不阻断新工具接入",
+      "advice": "不作为本批修正项。若后续要提升连续运行吞吐，先量化“每轮托管开销”占比（现有 PerfProbe/ExecTimingProbe 已可测），再决定是否把轮次循环下沉到 Execution 层的常驻循环（ExecutionCoordinator 已具备常驻基础）"
+    },
+    {
+      "level": "待补证",
+      "item": "原厂连续执行在原生循环中是否逐轮回调托管层（影响状态高亮与结果刷新的时序对照）",
+      "impact": "只影响“状态刷新时序是否等价”的判断",
+      "advice": "任务 7 可用 Frida 观察 VM 连续运行时的回调频率，或取体 ContinousRunStart_V30 的调用链"
+    },
+    {
+      "level": "待补证",
+      "item": "原厂工具栏按钮集合与可用性规则（何时禁用运行/连续/停止）",
+      "impact": "影响交互一致性，不影响工具接入",
+      "advice": "取体 TitleToolBar 与运行命令的 CanExecute 条件后逐项对照"
+    }
+  ],
+
+  "coverage": {
+    "checked": ["单次执行链路（原厂/自研）", "连续执行驱动位置（原厂原生 vs 自研托管）", "停止与取消", "状态上报机制", "命令可用性判定", "耗时窗口"],
+    "notChecked": ["原厂连续循环内部时序", "工具栏完整按钮集与禁用规则", "运行模式（全部/选中）的原厂语义", "暂停/恢复在原厂是否存在", "执行期间的编辑锁定规则对照"]
+  }
+}

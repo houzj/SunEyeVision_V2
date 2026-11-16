@@ -1,0 +1,115 @@
+{
+  "record": "原厂设计复核-材料可信度",
+  "date": "2026-11-17",
+  "purpose": "复核开始前的材料盘点与旧结论抽样回验，确认哪些既有结论可直接用作复核前提、哪些需重新取证",
+  "vmVersion": "VisionMaster 4.4.0 Build20250516@1555331",
+  "materialRoot": "D:\\MyWork\\Rea逆向\\analysis\\decompiled",
+  "assemblies": {
+    "count": 28,
+    "totalLines": 390000,
+    "core": [
+      { "name": "VM.Core", "lines": 23294, "role": "方案/流程/模块/变量/执行入口" },
+      { "name": "VM.PlatformSDKCS.Audit", "lines": 29877, "role": "托管↔SDK 转发、共享内存、Server/Process/Module 管理器" },
+      { "name": "iMVS-6000PlatformSDKCS.PublicAudit", "lines": 80583, "role": "SDK 公开接口、DllImport、结构体" },
+      { "name": "Apps.XmlParser.CapabilityAudit", "lines": 45133, "role": "XML 参数体系与能力声明" },
+      { "name": "VMControls.WPF", "lines": 43576, "role": "WPF 公共控件（含 StatusBar/图像视图）" },
+      { "name": "VM.PcUI", "lines": 35490, "role": "工具参数页/结果页" },
+      { "name": "VM.Controls", "lines": 25429, "role": "控件业务层" },
+      { "name": "VMBaseControls", "lines": 17585, "role": "控件基类" },
+      { "name": "DynamicObjectConfigControl", "lines": 10712, "role": "动态配置控件" },
+      { "name": "Apps.XmlUI", "lines": 10542, "role": "XML 描述 UI" },
+      { "name": "VisionMaster.Exe.Audit", "lines": 9228, "role": "主程序入口与启动链" },
+      { "name": "VisionMasterMain", "lines": 6017, "role": "主窗口与菜单" },
+      { "name": "VMControls.WPF.Release", "lines": 6842, "role": "前端运行版控件包装" },
+      { "name": "vServerApp.Audit", "lines": 834, "role": "算法 Server 外壳" }
+    ],
+    "toolSamples": [
+      { "name": "CompatibleTool.Audit", "lines": 4120, "role": "通用工具实现样板" },
+      { "name": "IMVSGroup.WorkflowAudit", "lines": 2186, "role": "Group 工具" },
+      { "name": "IfModule.WorkflowAudit", "lines": 373, "role": "条件分支" },
+      { "name": "IfBranchModule.WorkflowAudit", "lines": 397, "role": "多路条件分支" },
+      { "name": "BranchModule_STD.WorkflowAudit", "lines": 239, "role": "标准分支" },
+      { "name": "BranchStringCpmL.WorkflowAudit", "lines": 368, "role": "字符串比较分支" },
+      { "name": "ImageSourceModuleControl", "lines": 422, "role": "图像源工具控件" },
+      { "name": "Apps.PcUI.ImageSourceAudit", "lines": 1662, "role": "图像源参数页" }
+    ]
+  },
+  "nativeMaterials": [
+    { "path": "_evidence/ghidra/ImageSourceModule.dll", "verified": "无 CLR 元数据，原生 C++" },
+    { "path": "_evidence/ghidra/IMVSBlobFindModu.dll", "verified": "无 CLR 元数据，原生 C++" },
+    { "path": "D:/Program Files/VisionMaster4.4.0 安装目录", "verified": "本批未重新读取，如需原生取体再确认可用性" }
+  ],
+  "oldConclusionRecheck": [
+    {
+      "id": "START-01",
+      "claim": "Program.BeforeStartPart 内依次执行 SoftEncrypt/InitColor/TrialVersionInit/CPUConfig/Culture/权限校验，随后 GetSolutionTakeState 决定是否 StartNewInstance",
+      "evidence": "VisionMaster.Exe.Audit/VisionMaster/Program.cs:111-134",
+      "result": "已证实",
+      "note": "与旧报告一致"
+    },
+    {
+      "id": "START-02",
+      "claim": "BeforeStartMian 调 InitMainWindow，内部 new MainWindowData → PreLoad → ServerManager.Instance.InitServer → 日志桥，且发生在主窗显示前",
+      "evidence": "Program.cs:136-140（BeforeStartMian）、Program.cs:159-166（InitMainWindow）",
+      "result": "已证实",
+      "note": "InitServer 在 PreLoad（读菜单/工具箱元数据）之后"
+    },
+    {
+      "id": "START-03-NEW",
+      "claim": "存在另一条启动入口 AppBeforStart()：TrialVersionInit → SoftEncrypt → CPUConfig → InitMainWindow，没有 GetSolutionTakeState/StartNewInstance 分支",
+      "evidence": "Program.cs:142-157",
+      "result": "新增发现",
+      "note": "旧报告 START-RE-01 未覆盖该路径；需确认它对应哪种启动模式（普通/服务器/远程），影响启动链复核完整性"
+    },
+    {
+      "id": "EXEC-01",
+      "claim": "VmSolution.Run 设置 IsGlobalRuning 后调 mGlobalModuleManager.GlobalScriptStartRunOnce",
+      "evidence": "VM.Core/VmSolution.cs:2236-2243",
+      "result": "已证实"
+    },
+    {
+      "id": "EXEC-02",
+      "claim": "VmProcedure.Run 调 mProcessManager.SyncExecuteOnce(ID)",
+      "evidence": "VM.Core/VmProcedure.cs:1094-1099",
+      "result": "已证实"
+    },
+    {
+      "id": "EXEC-03",
+      "claim": "VmModule.Run 方法体仅状态标志 + mModuleManager.SelfRun(nodeID) 转发",
+      "evidence": "VM.Core/VmModule.cs:3753-3770",
+      "result": "已证实"
+    },
+    {
+      "id": "EXEC-04",
+      "claim": "方案级 StartNewInstance / GetSolutionTakeState 为静态入口",
+      "evidence": "VM.Core/VmSolution.cs:2350（StartNewInstance）、2360（GetSolutionTakeState）",
+      "result": "已证实"
+    },
+    {
+      "id": "TOOLBOX-01",
+      "claim": "ToolBoxData 用 IsInit 标记按需展开，UpdateLoad 先置 IsInit 再枚举，GetItems 惰性构造集合，LoadData 为静态入口",
+      "evidence": "VMControls.Data/VMControls.Data/ToolBoxData.cs:25（isInit）、77（UpdateLoad）、84/88（IsInit 判定与置位）、196（GetItems）、266（LoadData）",
+      "result": "已证实",
+      "note": "旧结论“按展开读取子项”成立"
+    }
+  ],
+  "rightBottomControl": {
+    "question": "用户所称“右下角控件”在原厂指什么",
+    "answer": "图像视图底部状态栏（StatusBar），右侧承载缩放档位、模块耗时、算法耗时与运行状态",
+    "evidence": [
+      "VMControls.WPF/VMControls.WPF.Base/StatusBar.xaml.cs:21-47（StatusSymbol/StatusInfo/IsProcedure/IsModule/CurDiagramAreaSource/SelectedItemSource/SelectedItem/ModuleTime/AlgorithmTime/ZoomIndex/_ZoomTicks 0.1~2.0）",
+      "VMControls.WPF.Release/VMControls.WPF.Release.Front/StatusBar.xaml.cs:13-27（前端版为 ContentControl + BindingPath 薄包装，复用 Base）",
+      "截图 docs/collaboration/evidence/S4-blob-full-chain-20261026.png（图像区底部：位置(0,0)、图像 64x64、灰度 -；右上 1:1 缩放；右侧结果表）"
+    ],
+    "properties": ["StatusSymbol", "StatusInfo", "IsProcedure", "IsModule", "CurDiagramAreaSource", "SelectedItemSource", "SelectedItem", "ModuleTime", "AlgorithmTime", "ZoomIndex"],
+    "unresolved": "主界面（非工具窗口）右下角是否另有运行状态/日志控件，需在任务 4 用主窗布局证据确认"
+  },
+  "coverage": {
+    "checked": ["启动链 BeforeStartPart/BeforeStartMian/InitMainWindow", "执行链 方案→流程→模块→SDK", "工具箱按需展开", "图像视图状态栏"],
+    "notChecked": ["App.cs OnStartup 全链", "MainWindowData.PreLoad 细节", "ToolBox.OnMouseEnter 与 UpdateLoad 的绑定关系", "主界面整体布局与其余面板"]
+  },
+  "pendingEvidence": [
+    { "item": "AppBeforStart 的调用方与启动模式", "method": "静态：检索 Program.AppBeforStart 引用；必要时 Frida 观察启动分支" },
+    { "item": "主界面（非工具窗口）右下角控件职责", "method": "静态：VisionMasterMain/MainWindow.xaml 布局 + VM.PcUI 面板定义" }
+  ]
+}

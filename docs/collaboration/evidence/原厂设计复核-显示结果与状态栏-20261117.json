@@ -1,0 +1,87 @@
+{
+  "record": "原厂设计复核-图像显示/模块结果/图像源控件/状态栏",
+  "date": "2026-11-17",
+  "segment": "图像显示控件 + 模块结果 + 结果与图像联动 + 图像源控件 + 右下角控件",
+  "vmVersion": "VisionMaster 4.4.0 Build20250516@1555331",
+
+  "factoryEvidence": [
+    {
+      "id": "F-TOOLWIN-01",
+      "claim": "工具窗口为单容器：ParamsConfigWithResultViewControl 用 IsParamsEditState（默认 true）切换参数/结果态，并通过依赖属性路由 ModuleSource(IVmModule)、ParamsConfigSource(IParamsConfig)、ImageDataSource(IImageData)、ROIVisible、CoordinateInfoVisible、ParamsConfigWidth(380)",
+      "file": "VMControls.WPF/VMControls.WPF/ParamsConfigWithResultViewControl.xaml.cs",
+      "lines": "依赖属性注册段（类型级，共 234 行）",
+      "confidence": "已证实"
+    },
+    {
+      "id": "F-STATUSBAR-01",
+      "claim": "图像视图底部状态栏 StatusBar 承担 8 项职责：StatusSymbol/StatusInfo（运行状态）、IsProcedure/IsModule（当前对象）、CurDiagramAreaSource（画布区域）、SelectedItemSource/SelectedItem（选中项）、ModuleTime/AlgorithmTime（模块与算法耗时）、ZoomIndex(0.1~2.0 档位)",
+      "file": "VMControls.WPF/VMControls.WPF.Base/StatusBar.xaml.cs",
+      "lines": "21-47",
+      "confidence": "已证实"
+    },
+    {
+      "id": "F-STATUSBAR-02",
+      "claim": "前端（运行版）StatusBar 为 ContentControl + BindingPath 的薄包装，复用 Base 实现",
+      "file": "VMControls.WPF.Release/VMControls.WPF.Release.Front/StatusBar.xaml.cs",
+      "lines": "13-27",
+      "confidence": "已证实"
+    },
+    {
+      "id": "F-RESULT-01",
+      "claim": "原厂结果以“逐 Blob 字段数组”形式发布（BlobFindResult 的 MinGrayValue/MaxGrayValue/GrayContrast 均为逐 Blob float 数组），结果视图控件为 ModuleResultView，结果总览入口为 ResultOverviewPopupButton",
+      "file": "docs/collaboration/evidence/Blob-VM结果投影-灰度统计-20261108.txt（原厂声明）；VMControls.WPF/ModuleResultView.xaml.cs；VM.PcUI/ResultOverviewPopupButton.xaml.cs",
+      "lines": "类型级",
+      "confidence": "已证实（声明）+ 高置信（控件职责）"
+    },
+    {
+      "id": "F-IMGVIEW-01",
+      "claim": "图像区顶部工具条含图像源下拉、放大/缩小、1:1、适应窗口；底部显示“位置(x,y)、图像 WxH、灰度值”",
+      "file": "docs/collaboration/evidence/S4-blob-full-chain-20261026.png、S4-default-editor-20261026.png",
+      "lines": "截图",
+      "confidence": "已证实（界面证据）"
+    }
+  ],
+
+  "selfEvidence": [
+    { "id": "S-TOOLWIN-01", "claim": "工具调试会话由 ProductionEditorDebug（IAsyncDisposable）承担：执行（Task.Run）、ResultHistoryBuffer 历史、_snapshot/_snapshotDraft 快照、StopContinuous、OnDraftEdited/InvalidateDraft、RetireSnapshot/ReleasePreview", "file": "src/UI/Services/Editing/Nodes/ProductionEditorDebug.cs", "lines": "10、23、112-131、149、175-202", "confidence": "已证实" },
+    { "id": "S-IMGVIEW-01", "claim": "图像视图 ImageViewBox 自带像素信息：IsDisplayPixelAuto、PixelX/PixelY、PixelR/PixelG/PixelB、PixelInfo/PixelInfoLabel", "file": "src/Plugin.Wpf/Controls/Native/Display/ImageViewport/ImageViewport/ImageViewBox.xaml.cs", "lines": "95-109", "confidence": "已证实" },
+    { "id": "S-STATUSBAR-01", "claim": "主窗状态栏只暴露执行快照入口：ShowExecutionSnapshotRequested/ShowExecutionSnapshotCommand/SetExecutionSnapshot", "file": "src/UI/Shell/Controls/Shell/StatusBarViewModel.cs", "lines": "3 个成员", "confidence": "已证实" },
+    { "id": "S-RESULT-01", "claim": "结果模型为逐字段序列投影（BlobResultProjection.MinGrayValue 等为 IReadOnlyList<float>?），无值即进 Unavailable，不以默认值伪造", "file": "tools/SunEyeVision.BlobAnalysis/Runtime/Results/BlobResultProjection.cs", "lines": "19-21、57-59、80-83", "confidence": "已证实" },
+    { "id": "S-RESULT-02", "claim": "结果呈现为声明式：工具声明 ResultProjectionDescriptor/ResultDisplayDescriptor，宿主用 DeclaredResultTable/DeclaredPropertyList 统一渲染，显示需求通过 RequiredOutputs 回传执行链", "file": "tools/SunEyeVision.BlobAnalysis/Runtime/Results/BlobResultDisplay.cs:22-26；src/Plugin.Wpf/Presenters/Results/DeclaredResultTable.cs；src/Execution/ExecutionNodeSnapshot.cs:28-38", "lines": "如左", "confidence": "已证实" },
+    { "id": "S-RESULT-03", "claim": "结果与图像联动由 ResultWorkspacePresenter/ResultPresentationPresenter 承担，发布走 ResultStore 版本与租约", "file": "src/UI/Services/Images/ResultWorkspacePresenter.cs；src/UI/Services/Monitoring/ResultPresentationPresenter.cs；src/Execution/ResultStore.cs", "lines": "类型级", "confidence": "已证实（类型职责）；联动细节待核" }
+  ],
+
+  "axisOne": [
+    { "item": "工具窗口结构", "factory": "单容器 + IsParamsEditState 切换 + 依赖属性路由", "self": "调试会话对象（快照/草稿/历史/退役）+ 工具自有 Wpf 组件 + 公共控件组装", "verdict": "偏离·结构" },
+    { "item": "图像状态信息", "factory": "一个大 StatusBar 承担状态/对象/区域/选中/耗时/缩放 8 项职责", "self": "拆分：ImageViewBox 管像素坐标与值，主窗状态栏管执行快照入口", "verdict": "偏离·结构" },
+    { "item": "结果模型", "factory": "逐字段数组（BlobFindResult）", "self": "逐字段序列投影 + Unavailable 集合", "verdict": "一致" },
+    { "item": "结果呈现装配", "factory": "结果视图控件 + XML 元数据驱动", "self": "工具声明 ResultProjectionDescriptor/ResultDisplayDescriptor，宿主统一渲染", "verdict": "偏离·结构" },
+    { "item": "图像源控件", "factory": "ImageSourceModuleControl + Apps.PcUI.ImageSourceAudit", "self": "tools/SunEyeVision.ImageSource/Wpf + Infrastructure.ImageSources", "verdict": "未逐项对比（待补证）" }
+  ],
+
+  "axisTwo": [
+    { "criterion": "分层与依赖方向", "verdict": "通过", "note": "结果呈现只消费声明的投影，不触执行；工具 UI 不反依宿主" },
+    { "criterion": "职责单一", "verdict": "通过（优于原厂）", "note": "原厂 StatusBar 混合 8 项职责；自研按显示/结果/执行入口拆分" },
+    { "criterion": "所有权唯一", "verdict": "通过", "note": "结果由 ResultStore 版本 + 租约拥有；调试快照由 ProductionEditorDebug 拥有并显式退役" },
+    { "criterion": "生命周期完整", "verdict": "通过", "note": "RetireSnapshot/ReleasePreview 显式释放；结果历史走 ResultHistoryBuffer" },
+    { "criterion": "数据流单向", "verdict": "通过", "note": "工具出结果 → 快照 → 投影 → 呈现；显示需求通过 RequiredOutputs 回传，方向单一" },
+    { "criterion": "扩展点", "verdict": "通过（强项）", "note": "新工具只需声明 ResultProjection/ResultDisplay，无需改宿主渲染" },
+    { "criterion": "边界清晰", "verdict": "通过", "note": "结果表/属性列表在 Plugin.Wpf，业务字段在工具 Runtime" },
+    { "criterion": "并发与取消", "verdict": "待核", "note": "发布与刷新线程边界未逐行核对" },
+    { "criterion": "可测试性", "verdict": "通过", "note": "投影与显示声明可脱离 UI 构造" },
+    { "criterion": "失败可诊断", "verdict": "通过", "note": "Unavailable 显式表达缺失成员，不用默认值冒充" }
+  ],
+
+  "findings": [
+    { "level": "保持", "item": "声明式结果投影（ResultProjectionDescriptor + RequiredOutputs 回传）替代原厂 XML 驱动结果装配", "impact": "无阻断；这是批量实现其他工具的核心优势", "advice": "保持，并把它写进“新工具接入清单”作为必做项" },
+    { "level": "保持", "item": "图像像素信息归 ImageViewBox，执行快照入口归状态栏，避免原厂 StatusBar 的 8 项职责混装", "impact": "无阻断", "advice": "保持" },
+    { "level": "建议修", "item": "主窗/图像区状态栏未体现原厂的 ModuleTime/AlgorithmTime 与 ZoomIndex 档位", "impact": "用户在原厂习惯的“实时耗时/缩放档位”信息在自研界面上不可见（耗时需开窗口看）", "advice": "确认是否为产品决策；若不是，在状态栏补“模块耗时/算法耗时 + 缩放档位”，数据源已有（ModuleRunTime 端口与 ZoomIndex）" },
+    { "level": "待补证", "item": "图像源控件（本地文件列表/切换/序号/输出格式）与原厂 ImageSourceModuleControl 的逐项对照", "impact": "影响“图像源工具是否已达到可复制为其他工具范例”的判断", "advice": "任务 7 取体 ImageSourceModuleControl 与 Apps.PcUI.ImageSourceAudit" },
+    { "level": "待补证", "item": "结果与图像联动（选中结果行 → 图像高亮区域）的实际实现链路", "impact": "联动缺失会直接影响工具可用性", "advice": "沿 ResultWorkspacePresenter → 叠加层 → ImageViewport 追一次，必要时用 agent-desktop 实机验证" }
+  ],
+
+  "coverage": {
+    "checked": ["工具窗口容器结构（原厂）", "调试会话生命周期（自研）", "图像像素信息属性", "状态栏职责对比", "结果模型与呈现装配", "结果发布与租约"],
+    "notChecked": ["ModuleResultView 内部列/树装配逐行", "ResultOverviewPopupButton 与原厂结果总览行为", "图像源控件逐项对照", "结果选中与图像高亮的具体事件链", "缩放档位与耗时显示的实际渲染位置"]
+  }
+}

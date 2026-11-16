@@ -186,15 +186,6 @@
   <Folder Name="/Tests/ContinuousRunProbe/">
     <Project Path="tests/ContinuousRunProbe/ContinuousRunProbe.csproj" />
   </Folder>
-  <Folder Name="/Tools/SunEyeVision.BlobAnalysis/" />
-  <Folder Name="/Tools/SunEyeVision.BlobAnalysis/Runtime/" />
-  <Folder Name="/Tools/SunEyeVision.BlobAnalysis/Wpf/" />
-  <Folder Name="/Tools/SunEyeVision.ImageSource/" />
-  <Folder Name="/Tools/SunEyeVision.ImageSource/Runtime/" />
-  <Folder Name="/Tools/SunEyeVision.ImageSource/Wpf/" />
-  <Folder Name="/Tools/SunEyeVision.If/" />
-  <Folder Name="/Tools/SunEyeVision.If/Runtime/" />
-  <Folder Name="/Tools/SunEyeVision.If/Wpf/" />
   <Folder Name="/Tests/AdmissionPreparationComponent/">
     <Project Path="tests/AdmissionPreparationComponent/AdmissionPreparationComponent.csproj" />
   </Folder>

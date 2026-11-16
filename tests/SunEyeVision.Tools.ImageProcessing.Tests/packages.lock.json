@@ -272,6 +272,13 @@
           "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
         }
       },
+      "SunEyeVision.Tool.ColorExtract.Runtime": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.HalAdapter.Runtime": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
+        }
+      },
       "SunEyeVision.Tool.FrameMean.Runtime": {
         "type": "Project",
         "dependencies": {

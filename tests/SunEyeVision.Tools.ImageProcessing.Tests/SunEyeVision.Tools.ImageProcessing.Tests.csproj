@@ -30,6 +30,9 @@
     <ProjectReference Include="../../tools/SunEyeVision.FrameMean/Runtime/SunEyeVision.FrameMean.Runtime.csproj">
       <Private>false</Private>
     </ProjectReference>
+    <ProjectReference Include="../../tools/SunEyeVision.ColorExtract/Runtime/SunEyeVision.ColorExtract.Runtime.csproj">
+      <Private>false</Private>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\_shared\ProductRuntimeTestHost.cs" Link="_shared\ProductRuntimeTestHost.cs" />

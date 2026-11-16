@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>SunEyeVision.Tool.ColorExtract.Wpf</AssemblyName>
+    <RootNamespace>SunEyeVision.Tool.ColorExtract</RootNamespace>
+    <ToolComponentId>SunEyeVision.Tool.ColorExtract.Wpf</ToolComponentId>
+    <ToolComponentToolId>ColorExtract</ToolComponentToolId>
+    <ToolComponentRole>Editor</ToolComponentRole>
+    <ToolComponentEntryType>SunEyeVision.Tool.ColorExtract.Wpf.ColorExtractEditorFactory</ToolComponentEntryType>
+    <ToolComponentCompanionToolId>ColorExtract</ToolComponentCompanionToolId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Runtime/SunEyeVision.ColorExtract.Runtime.csproj"><Private>false</Private></ProjectReference>
+    <ProjectReference Include="../../../src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj"><Private>false</Private></ProjectReference>
+  </ItemGroup>
+</Project>

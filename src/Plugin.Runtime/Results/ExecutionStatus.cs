@@ -35,5 +35,11 @@ public enum ExecutionStatus
         /// <summary>
         /// 部分成功
         /// </summary>
-        PartialSuccess = 6
+        PartialSuccess = 6,
+
+        /// <summary>
+        /// 未被选中而跳过。与 NotExecuted 不同：NotExecuted 是上游失败导致无法执行，
+        /// 这里是分支控制流没有选它，属于正常运行结果，不参与合格判定。
+        /// </summary>
+        Skipped = 7
     }

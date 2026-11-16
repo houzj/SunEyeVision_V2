@@ -81,7 +81,7 @@ public sealed partial class DocumentSession
                         var controls = states[flow].Nodes.ToDictionary(item => item.Node.Id,
                             item => (IReadOnlyCollection<string>)states[flow].Edges.Where(edge => edge.TargetNodeId == item.Node.Id)
                                 .Select(edge => edge.SourceNodeId).Distinct(StringComparer.Ordinal).ToArray(), StringComparer.Ordinal);
-                        var edges = states[flow].Edges.Select(edge => new ExecutionControlEdge(edge.Edge.Id, edge.SourceNodeId, edge.TargetNodeId)).ToArray();
+                        var edges = states[flow].Edges.Select(edge => new ExecutionControlEdge(edge.Edge.Id, edge.SourceNodeId, edge.TargetNodeId, edge.Edge.SourcePort)).ToArray();
                         snapshots.Add(flow.Id, new ExecutionWorkflowSnapshot(flow.Id, ChangeRevision, _directory, _owner, nodes, predecessors, controls, edges));
                     }
                     states[targetFlow] = originalTargetState;

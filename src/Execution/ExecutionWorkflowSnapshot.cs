@@ -112,4 +112,11 @@ public sealed class ExecutionWorkflowSnapshot
 
 /// <summary>The execution snapshot and enabled state of the same captured node.</summary>
 public sealed record ExecutionWorkflowNode(ExecutionNodeSnapshot Node, bool IsEnabled);
-public sealed record ExecutionControlEdge(string Id, string SourceNodeId, string TargetNodeId);
+/// <summary>One execution dependency edge. <paramref name="sourcePort"/> is the data port it
+/// carries, or a control port (control.&lt;id&gt;) when the edge only expresses which branch was
+/// taken. A branch edge carries no value and is never a data dependency.</summary>
+public sealed record ExecutionControlEdge(string Id, string SourceNodeId, string TargetNodeId, string SourcePort)
+{
+    public bool IsBranchEdge => SourcePort.StartsWith(ToolSchema.ControlPortPrefix, StringComparison.Ordinal);
+    public string? ControlOutputId => IsBranchEdge ? SourcePort[ToolSchema.ControlPortPrefix.Length..] : null;
+}

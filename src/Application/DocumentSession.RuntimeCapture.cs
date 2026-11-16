@@ -125,7 +125,7 @@ public sealed partial class DocumentSession
                             var control = workflowPlan.Nodes.ToDictionary(item => item.Node.Id,
                                 item => (IReadOnlyCollection<string>)workflowPlan.Edges.Where(edge => edge.Edge.TargetNodeId == item.Node.Id)
                                     .Select(edge => edge.Edge.SourceNodeId).Distinct(StringComparer.Ordinal).ToArray(), StringComparer.Ordinal);
-                            var edges = workflowPlan.Edges.Select(edge => new ExecutionControlEdge(edge.Edge.Id, edge.Edge.SourceNodeId, edge.Edge.TargetNodeId)).ToArray();
+                            var edges = workflowPlan.Edges.Select(edge => new ExecutionControlEdge(edge.Edge.Id, edge.Edge.SourceNodeId, edge.Edge.TargetNodeId, edge.Edge.SourcePort)).ToArray();
                             runSnapshot = new ExecutionWorkflowSnapshot(flow.Id, ChangeRevision, _directory, _owner, nodes, predecessors, control, edges);
                             workflowPlan.CachedSnapshot = runSnapshot;
                         }

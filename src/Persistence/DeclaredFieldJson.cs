@@ -21,7 +21,8 @@ public static class DeclaredFieldJson
         var result=new Dictionary<string,ParameterSetting>(StringComparer.Ordinal);
         foreach(var property in fields.EnumerateObject())
         {
-            if(!ports.TryGetValue(property.Name,out var port))throw new JsonException("Unknown Runtime field: "+property.Name);
+            if(!ports.TryGetValue(property.Name,out var port))
+                throw new JsonException($"Unknown Runtime field: {property.Name} (tool={definition.ToolId}; currentValues={currentValues}; known fields={string.Join(",",ports.Keys)})");
             var behavior=behaviors.GetValueOrDefault(property.Name,ParameterReferenceBehavior.StrictExactlyOne);
             var item=property.Value;
             if(item.ValueKind!=JsonValueKind.Object||!item.TryGetProperty("Kind",out var kind))throw new JsonException("Runtime setting requires Kind.");

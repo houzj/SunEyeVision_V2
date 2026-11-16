@@ -317,8 +317,12 @@ public sealed class WorkflowExecutionEngine
                 var id = item.Node.NodeId;
                 if (!identities.TryGetValue(id, out var identity) || outputs.ContainsKey(id)) continue;
                 var schema = new ToolSchema(Array.Empty<Port>(), item.Node.Schema.Outputs, outputDisplay: item.Node.Schema.OutputDisplay);
-                var status = cancelled ? ExecutionStatus.Cancelled : nodes.TryGetValue(id, out var existing) && existing.Status == ExecutionStatus.Failed
-                    ? ExecutionStatus.Failed : ExecutionStatus.NotExecuted;
+                // A skipped node keeps its own identity: reporting it as NotExecuted would turn a
+                // branch that was simply not taken into an upstream failure.
+                var status = cancelled ? ExecutionStatus.Cancelled
+                    : nodes.TryGetValue(id, out var existing) && existing.Status == ExecutionStatus.Failed ? ExecutionStatus.Failed
+                    : nodes.TryGetValue(id, out var skipped) && skipped.Status == ExecutionStatus.Skipped ? ExecutionStatus.Skipped
+                    : ExecutionStatus.NotExecuted;
                 var diagnostics = nodes.TryGetValue(id, out var failed)
                     ? failed.ErrorMessages.Select(message => new Diagnostic("execution", message)) : Array.Empty<Diagnostic>();
                 var snapshot = DeclaredOutputSnapshot.WithoutValues(schema, 0, identity.ToInvocationIdentity(id), status,
@@ -327,7 +331,10 @@ public sealed class WorkflowExecutionEngine
                 if (!nodes.TryGetValue(id, out var result)) nodes[id] = result = new NodeExecutionResult { NodeId = id, Status = status };
                 result.Result = snapshot;
             }
-            var success = !cancelled && nodes.Values.All(node => node.Success || node.Status == ExecutionStatus.NotExecuted);
+            // A branch that was not taken is a normal outcome and must not turn the run into a
+            // failure; a genuinely failed node still does.
+            var success = !cancelled && nodes.Values.All(node => node.Success
+                || node.Status is ExecutionStatus.NotExecuted or ExecutionStatus.Skipped);
             foreach (var item in workflow.Nodes.Where(item => item.Node.HasResultDisplay))
             {
                 if (!outputs.TryGetValue(item.Node.NodeId, out var target) || !target.IsSuccess) continue;

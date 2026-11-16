@@ -79,7 +79,10 @@ public interface IToolSession<TSettings,TOutput> : IToolSession
     {
         if(invocation.Settings is not TSettings settings)throw new ArgumentException("Runtime invocation settings type differs.",nameof(invocation));
         var result=await ExecuteAsync(new ToolInvocation<TSettings>(settings,invocation.Inputs,invocation.Context,invocation.OutputRequests)).ConfigureAwait(false);
-        return new(result.Success,result.Output,result.Judgment,result.Diagnostics,result.Suppressed);
+        // The branch selection must survive this bridge: dropping it here would silently make
+        // every declaring tool look like it took no branch at all.
+        return new(result.Success,result.Output,result.Judgment,result.Diagnostics,result.Suppressed)
+            { SelectedControlOutputs = result.SelectedControlOutputs };
     }
 }
 public sealed class ToolInvocation<TSettings> where TSettings : IToolSettings<TSettings>

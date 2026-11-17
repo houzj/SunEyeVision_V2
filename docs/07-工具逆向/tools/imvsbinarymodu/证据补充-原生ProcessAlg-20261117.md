@@ -66,3 +66,20 @@
 3. 交叉验证：同一输入用 HALCON 等价算子（`threshold`/`binary_threshold`/`local_threshold`/`dyn_threshold`）复算，逐像素比对差异率
 
 该方法与项目 11-16 已用过的 Frida/Trace 受控取证一致，且产出的是**可判定的数值结论**而非伪代码推测。
+## 七、RTTI + 调用链定位结果（B 路线第一段）
+
+用 REA + Ghidra 对 `MVDImageBinaryCpp.dll`（40KB）做 RTTI 恢复，链路已闭合到核心库调用点：
+
+| 环节 | 证据 |
+|---|---|
+| 虚表 | 工厂 `CreateImageBinaryToolInstance @0x180001000` 中 `LEA RAX,[0x180007958]; MOV [RBX],RAX` → `CImageBinaryToolImpl::vftable = 0x180007958` |
+| 虚表规模 | 读取 160 字节得 20 个槽位，函数地址 0x1800019f0 … 0x180007f28 |
+| RTTI 类型名 | `. ?AVCImageBinaryToolImpl@ImageBinaryImpl@MVDInternal@@`、`IImageBinaryTool@ImageBinary@VisionDesigner@@`、`CImageBinaryResultImpl` |
+| 参数通道 | `FUN_180001f90` → `MVD_Algorithm_GetValueByString(handle, name, 0x100, value)`；`FUN_180002000` → `MVD_Algorithm_SetValueByString` |
+| **执行入口** | `FUN_1800021b0` → **`MVD_Algorithm_Process(handle)`** |
+| **内核 ID** | `MVD_Algorithm_CreateHandle(&handle, 0x25a, 0)`（`FUN_180002a30` 内）→ **算法内核 = 0x25a (602)** |
+| 前置 | 同时 `CreatePreproMaskToolInstance(param_1 + 8)` 创建掩膜预处理工具（`MVDPreproMaskCpp.dll`） |
+
+**核心库导出面**（`MVD_Algorithm.dll`，51MB，仅 19 个导出）：`CreateHandle` / `UpdateHandle` / `DestroyHandle` / `Process` / `SetValueByString` / `GetValueByString` / `SaveConfigData` / `LoadConfigData` / `GetAlgorithmRunTime` / `ReleaseResultMemory` / `ReleaseWorkingMemory` / 加密与狗信息等。均为薄 C 接口，具体内核实现按 ID 内部分发。
+
+**下一步（进行中）**：反编译 `MVD_Algorithm_CreateHandle @0x180014980`，定位「ID → 内核对象」的注册表，取得内核 602 的对象构造与 `Process` 实现，再按 `BinaryType` 常量（1/2/3/4/8）取各分支的阈值/核/系数实际用法。

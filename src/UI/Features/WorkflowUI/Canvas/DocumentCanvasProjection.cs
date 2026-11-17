@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -358,6 +358,8 @@ public sealed class CanvasNodeProjection : INotifyPropertyChanged, ICanvasToolIc
     public bool IsGroupLoopEnabled => false;
     public bool IsToolboxPreview => false;
     public NodeStyleConfig StyleConfigTyped => IsSubroutineNode ? NodeStyles.Group : NodeStyles.Standard;
+    // 节点宽度固定（与原件一致）：名称过长时由文本省略号截断，不能让名称把节点撑开，
+    // 否则长名称节点会破坏画布布局与端口固定间距。
     public double VisualWidth => StyleConfigTyped.NodeWidth;
     public double VisualHeight => StyleConfigTyped.NodeHeight;
     public double HitAreaWidth => VisualWidth + 20;

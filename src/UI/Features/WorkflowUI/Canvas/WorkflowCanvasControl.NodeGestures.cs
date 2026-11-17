@@ -105,14 +105,19 @@ public partial class WorkflowCanvasControl
         CancelCanvasNodeMove();
         var tab = _viewModel?.WorkflowTabViewModel.SelectedTab;
         if (tab == null || !CanEditCanvas) return;
+        // 原件 DiagramPage_PreviewMouseMove：批量移动用 CurBoxOfItems（框选集合），无框选才退化为选中节点。
+        var moving = (_canvasBoxSelection.Length > 0 ? _canvasBoxSelection :
+                (tab.DocumentCanvas?.Nodes ?? throw new InvalidOperationException("画布会话未绑定。")).Where(n => n.IsSelected))
+            .ToDictionary(n => n, n => new Point(n.PositionX, n.PositionY));
+        // 预览包围框必须按「实际要移动的节点」算。B1 后框选与 IsSelected 解耦，
+        // 若仍按 IsSelected 算，框选移动时 FrameRect=Empty → 预览直接被跳过（节点与外包框全都不显示）。
+        var frameRect = moving.Count == 0 ? Rect.Empty : SunEyeVision.UI.Services.Interaction.SelectionLayoutCalculator.Bounds(moving.Keys.Select(n => n.NodeRect).ToArray());
+        frameRect.Inflate(10, 10);
         _canvasNodeMove = new NodeDragSession
         {
             Owner = DataContext, Tab = tab, Pointer = pointer, Token = Guid.NewGuid().ToString("N"),
-            // 原件 DiagramPage_PreviewMouseMove：批量移动用 CurBoxOfItems（框选集合），无框选才退化为选中节点。
-            Before = (_canvasBoxSelection.Length > 0 ? _canvasBoxSelection :
-                    (tab.DocumentCanvas?.Nodes ?? throw new InvalidOperationException("画布会话未绑定。")).Where(n => n.IsSelected))
-                .ToDictionary(n => n, n => new Point(n.PositionX, n.PositionY)),
-            Stamp = CanvasGraphStamp(tab), ConfigurationStamp = CanvasConfigurationStamp(tab), FrameRect = NodeFrameRect(tab),
+            Before = moving,
+            Stamp = CanvasGraphStamp(tab), ConfigurationStamp = CanvasConfigurationStamp(tab), FrameRect = frameRect,
         };
     }
         /// <summary>选中节点包围框（含 10px 命中外扩），对应原件 RectDragPanalRect（ItemsPage.cs:604-609）。</summary>

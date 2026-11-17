@@ -1,0 +1,108 @@
+{
+  "schema": "ten-tools-requirement-audit",
+  "date": "2026-11-18",
+  "release_hash": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB",
+  "build": "0 errors / 3269 warnings",
+  "tools": [
+    {
+      "tool": "BlobLabels",
+      "evidence_file": "docs/evidence/bloblabels-review-20261118.json",
+      "evidence_exists": true,
+      "tests": 30,
+      "probe": "passed",
+      "release_hash_matches": true,
+      "static_recorded": true
+    },
+    {
+      "tool": "ContourMatch",
+      "evidence_file": "docs/evidence/contourmatch-review-20261118.json",
+      "evidence_exists": true,
+      "tests": 28,
+      "probe": "passed",
+      "release_hash_matches": true,
+      "static_recorded": true
+    },
+    {
+      "tool": "GrayMatch",
+      "evidence_file": "docs/evidence/graymatch-review-20261118.json",
+      "evidence_exists": true,
+      "tests": 30,
+      "probe": "passed",
+      "release_hash_matches": true,
+      "static_recorded": true
+    },
+    {
+      "tool": "MarkFind",
+      "evidence_file": "docs/evidence/markfind-review-20261118.json",
+      "evidence_exists": true,
+      "tests": 21,
+      "probe": "passed",
+      "release_hash_matches": true,
+      "static_recorded": true
+    },
+    {
+      "tool": "ColorExtract",
+      "evidence_file": "docs/evidence/color-extract-review-20261118.json",
+      "evidence_exists": true,
+      "tests": 20,
+      "probe": "passed",
+      "release_hash_matches": true,
+      "static_recorded": true
+    },
+    {
+      "tool": "DivideImage",
+      "evidence_file": "docs/evidence/divideimage-review-20261118.json",
+      "evidence_exists": true,
+      "tests": 23,
+      "probe": "passed",
+      "release_hash_matches": true,
+      "static_recorded": true
+    },
+    {
+      "tool": "FrameMean",
+      "evidence_file": "docs/evidence/framemean-review-20261118.json",
+      "evidence_exists": true,
+      "tests": 16,
+      "probe": "passed",
+      "release_hash_matches": true,
+      "static_recorded": true
+    },
+    {
+      "tool": "If",
+      "evidence_file": "docs/evidence/if-review-20261118.json",
+      "evidence_exists": true,
+      "tests": 25,
+      "probe": "passed",
+      "release_hash_matches": true,
+      "static_recorded": true
+    },
+    {
+      "tool": "IntensityMeasure",
+      "evidence_file": "docs/evidence/intensitymeasure-review-20261118.json",
+      "evidence_exists": true,
+      "tests": 27,
+      "probe": "passed",
+      "release_hash_matches": true,
+      "static_recorded": true
+    },
+    {
+      "tool": "PixelCount",
+      "evidence_file": "docs/evidence/pixelcount-review-20261118.json",
+      "evidence_exists": true,
+      "tests": 36,
+      "probe": "passed",
+      "release_hash_matches": true,
+      "static_recorded": true
+    }
+  ],
+  "deferred": [
+    "multi-node output consumption",
+    "cross-tool image flow",
+    "ROI/model inheritance",
+    "branch integration",
+    "workflow regression",
+    "multi-node result tree/image overlay/help"
+  ],
+  "conclusion": "single-tool evidence and execution probes are present; original dynamic behaviors and deferred multi-node surfaces remain open"
+}
+

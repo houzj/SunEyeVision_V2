@@ -9,7 +9,7 @@ namespace SunEyeVision.Tool.GrayMatch.Wpf.Views;
 
 /// <summary>
 /// 原件参数面板的迁移：页签（模板参数 / 运行参数 / 结果显示）来自参数声明，
-/// 模型面板（新建/清空/导出/导入 + 模型摘要）挂在「金字塔层数标记」之前，
+/// 模型面板（创建/载入/编辑模板/删除所有模板 + 模型列表和预览）挂在「金字塔层数标记」之前，
 /// 对应原件训练对话框 <c>GrayMatchPat</c>（GrayMatchVAConfigPanalData）的位置。
 /// 宿主仍独占执行、捕获与释放。
 /// </summary>

@@ -1,0 +1,109 @@
+{
+  "scope": "single-tool-functional-audit",
+  "deferred": [
+    "multi-node output consumption",
+    "cross-tool image flow",
+    "ROI/model inheritance",
+    "branch integration",
+    "workflow regression"
+  ],
+  "release_payload_sha256": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB",
+  "release_build": {
+    "configuration": "Release",
+    "errors": 0,
+    "warnings": 3269
+  },
+  "final_regression": {
+    "tool_filtered_passed": 256,
+    "tool_filtered_failed": 0,
+    "note": "按工具独立过滤运行；项目级 OR 过滤器不用于计数，避免过滤表达式合并歧义。"
+  },
+  "tools": [
+    {
+      "id": "BlobLabels",
+      "tests": 30,
+      "status": "runtime-verified"
+    },
+    {
+      "id": "ContourMatch",
+      "tests": 28,
+      "status": "template-surface-adjusted"
+    },
+    {
+      "id": "GrayMatch",
+      "tests": 30,
+      "status": "runtime-verified"
+    },
+    {
+      "id": "MarkFind",
+      "tests": 21,
+      "status": "runtime-verified"
+    },
+    {
+      "id": "ColorExtract",
+      "tests": 20,
+      "status": "evidence-driven-range-panel-adjusted-and-runtime-verified"
+    },
+    {
+      "id": "DivideImage",
+      "tests": 23,
+      "status": "catalog-fix-and-functional-verified"
+    },
+    {
+      "id": "FrameMean",
+      "tests": 16,
+      "status": "runtime-structure-confirmed; camera callback behavior pending"
+    },
+    {
+      "id": "If",
+      "tests": 25,
+      "status": "difference-confirmed; dynamic branch schema pending"
+    },
+    {
+      "id": "IntensityMeasure",
+      "tests": 27,
+      "status": "runtime-structure-confirmed; product ROI/result comparison pending"
+    },
+    {
+      "id": "PixelCount",
+      "tests": 36,
+      "status": "range-panel-adjusted"
+    }
+  ],
+  "agent_desktop": {
+    "solution_open_script": "scripts/agent-desktop/Open-SolutionReview.ps1",
+    "single_tool_script": "scripts/agent-desktop/Invoke-SingleToolAudit.ps1",
+    "product_solution": "11111",
+    "original_solution": "test",
+    "product_snapshot": "s3hcmgxdds8cl1",
+    "original_snapshot": "s1m09scv2itxlp",
+    "if_edit_probe": {
+      "snapshot": "s1lcqlcyvgx25z",
+      "result": "invalid enabled condition rejected with source-selection validation message"
+    }
+  },
+  "remaining_evidence_gaps": [
+    "ColorExtract HikHistogramSingle 原件依赖闭包、通道滑条编辑和原厂颜色卡片截图对照",
+    "FrameMean 原始相机回调和动态帧数回执",
+    "If 原始动态条件行、OK/NG 和 RunModuleId 映射",
+    "DivideImage ROI/边界交互、内部输入稳定编辑回执及保存重开",
+    "IntensityMeasure ROI 逐项编辑、结果读回和保存重开"
+  ],
+  "execute_probe_coverage": {
+    "script": "scripts/agent-desktop/Invoke-SingleToolAudit.ps1 -ProbeExecute",
+    "tools": [
+      "BlobLabels",
+      "ContourMatch",
+      "GrayMatch",
+      "MarkFind",
+      "ColorExtract",
+      "DivideImage",
+      "FrameMean",
+      "If",
+      "IntensityMeasure",
+      "PixelCount"
+    ],
+    "common_result": "每项均保存 execute-result-tree.json 并验证 close-app 进程退出",
+    "scope": "单工具输入校验和生命周期，不代表图像输入、结果树、叠加或多节点联调通过"
+  }
+}

@@ -10,7 +10,7 @@ using SunEyeVision.Tool.ContourMatch.Runtime;
 namespace SunEyeVision.Tool.ContourMatch.Wpf.Views;
 
 /// <summary>
-/// 原件「新建模型 / 修改模型 / 清空 / 导出 / 导入 + 模型预览」面板的迁移
+/// 原件「创建 / 载入 / 编辑模板 / 删除所有模板 + 模型列表与预览」面板的迁移
 /// （<c>FeatureMatchCommonControl/base/featurematchconfigpanal.xaml</c>、
 /// <c>FeatureMatchCommonControl/FeatureMatchConfigPanal.cs</c>）。
 /// 原型把模型存成模块字节数据并导出加密 <c>.contourmxml</c>；本工具模板由 Runtime 用当前发布图像 +
@@ -23,6 +23,8 @@ public sealed class ContourMatchTemplatePanel : UserControl
     private readonly NativeRoiFrameSource? _frames;
     private readonly TextBlock _summary = new() { FontSize = 12, TextWrapping = TextWrapping.Wrap, Foreground = Brushes.DimGray };
     private readonly TextBlock _error = new() { FontSize = 12, TextWrapping = TextWrapping.Wrap, Foreground = Brushes.Firebrick };
+    private readonly ListBox _modelList = new() { Height = 86, Margin = new Thickness(0, 4, 6, 0) };
+    private readonly Button _editButton;
 
     public ContourMatchTemplatePanel(IToolSettingsDraft draft, Action<FieldSettings>? acceptCandidate, NativeRoiFrameSource? frames)
     {
@@ -32,12 +34,33 @@ public sealed class ContourMatchTemplatePanel : UserControl
         _frames = frames;
         var root = new StackPanel { Orientation = Orientation.Vertical, Margin = new Thickness(0, 4, 0, 6) };
         var buttons = new StackPanel { Orientation = Orientation.Horizontal };
-        buttons.Children.Add(Button("新建模型", CreateTemplate));
-        buttons.Children.Add(Button("清空模型", ClearTemplate));
-        buttons.Children.Add(Button("导出", ExportTemplate));
-        buttons.Children.Add(Button("导入", ImportTemplate));
+        buttons.Children.Add(Button("创建", CreateTemplate));
+        buttons.Children.Add(Button("载入", ImportTemplate));
+        _editButton = Button("编辑模板", CreateTemplate);
+        _editButton.IsEnabled = false;
+        buttons.Children.Add(_editButton);
+        buttons.Children.Add(Button("删除所有模板", ClearTemplate));
         root.Children.Add(buttons);
-        root.Children.Add(_summary);
+        var modelArea = new Grid { Margin = new Thickness(0, 2, 0, 2) };
+        modelArea.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) });
+        modelArea.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        Grid.SetColumn(_modelList, 0);
+        modelArea.Children.Add(_modelList);
+        var preview = new Border
+        {
+            BorderBrush = new SolidColorBrush(Color.FromRgb(230, 230, 230)),
+            BorderThickness = new Thickness(1),
+            Margin = new Thickness(0, 4, 0, 0),
+            Padding = new Thickness(6),
+            Child = _summary
+        };
+        Grid.SetColumn(preview, 1);
+        modelArea.Children.Add(preview);
+        root.Children.Add(modelArea);
+        var fileButtons = new StackPanel { Orientation = Orientation.Horizontal };
+        fileButtons.Children.Add(Button("保存模型工程", ExportTemplate));
+        fileButtons.Children.Add(Button("载入模型工程", ImportTemplate));
+        root.Children.Add(fileButtons);
         root.Children.Add(_error);
         Content = root;
         Reload();
@@ -187,11 +210,13 @@ public sealed class ContourMatchTemplatePanel : UserControl
     private void Reload()
     {
         var payload = CurrentPayload();
+        _modelList.Items.Clear();
         if (payload.Length == 0)
         {
-            _summary.Text = "尚未创建模型：连接输入图像与搜索区域后点击“新建模型”。";
+            _summary.Text = "暂无模板";
             return;
         }
+        _modelList.Items.Add("轮廓模板");
         if (!ContourMatchTemplate.TryDecode(payload, out var template, out var error))
         {
             _summary.Text = "模型数据不可用：" + error;

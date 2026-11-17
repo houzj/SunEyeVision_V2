@@ -1,0 +1,126 @@
+{
+  "schema": "ten-tools-single-tool-functional-coverage",
+  "date": "2026-11-18",
+  "release_payload_sha256": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB",
+  "execution_probe": "scripts/agent-desktop/Invoke-SingleToolAudit.ps1 -ProbeExecute",
+  "deferred": [
+    "multi-node output consumption",
+    "cross-tool image flow",
+    "ROI/model inheritance",
+    "branch integration",
+    "workflow regression",
+    "multi-node result tree/image overlay/help"
+  ],
+  "tools": [
+    {
+      "id": "BlobLabels",
+      "tests": 30,
+      "probe": "passed",
+      "static": "threshold panel mapping",
+      "runtime": "parameter open, execute input validation, close release",
+      "gaps": [
+        "original run/result page comparison"
+      ]
+    },
+    {
+      "id": "ContourMatch",
+      "tests": 28,
+      "probe": "passed",
+      "static": "template surface mapping",
+      "runtime": "parameter open, execute input validation, close release",
+      "gaps": [
+        "template/model edit and save reopen"
+      ]
+    },
+    {
+      "id": "GrayMatch",
+      "tests": 30,
+      "probe": "passed",
+      "static": "template surface mapping",
+      "runtime": "parameter open, execute input validation, close release",
+      "gaps": [
+        "template/model edit and save reopen"
+      ]
+    },
+    {
+      "id": "MarkFind",
+      "tests": 21,
+      "probe": "passed",
+      "static": "model surface mapping",
+      "runtime": "parameter open, execute input validation, close release",
+      "gaps": [
+        "model edit and save reopen"
+      ]
+    },
+    {
+      "id": "ColorExtract",
+      "tests": 20,
+      "probe": "passed",
+      "static": "range card, six sliders, serialization; original also requires HikHistogramSingle",
+      "runtime": "add, toggle, hover delete, execute input validation, close release",
+      "gaps": [
+        "HikHistogramSingle dependency closure",
+        "slider value runtime receipt",
+        "original card screenshot"
+      ]
+    },
+    {
+      "id": "DivideImage",
+      "tests": 23,
+      "probe": "passed",
+      "static": "catalog IMAGE type, tiling fields",
+      "runtime": "parameter open, execute input validation, close release",
+      "gaps": [
+        "ROI/overlap interaction",
+        "stable editor receipt",
+        "save reopen"
+      ]
+    },
+    {
+      "id": "FrameMean",
+      "tests": 16,
+      "probe": "passed",
+      "static": "ProcStep and accumulator contract",
+      "runtime": "parameter open, execute input validation, close release",
+      "gaps": [
+        "original camera GetFrameMeanCount dynamic receipt"
+      ]
+    },
+    {
+      "id": "If",
+      "tests": 25,
+      "probe": "passed",
+      "static": "difference recorded: VM dynamic rows vs fixed four slots",
+      "runtime": "parameter open, no-enabled-condition execution, close release",
+      "gaps": [
+        "dynamic rows",
+        "OK/NG/RunModuleId",
+        "dynamic control outputs"
+      ]
+    },
+    {
+      "id": "IntensityMeasure",
+      "tests": 27,
+      "probe": "passed",
+      "static": "result display and ROI declaration",
+      "runtime": "parameter open, execute input validation, close release",
+      "gaps": [
+        "ROI edit",
+        "result readback",
+        "save reopen"
+      ]
+    },
+    {
+      "id": "PixelCount",
+      "tests": 36,
+      "probe": "passed",
+      "static": "range panel mapping",
+      "runtime": "parameter open, execute input validation, close release",
+      "gaps": [
+        "range editor runtime receipt"
+      ]
+    }
+  ],
+  "note": "ProbeExecute proves single-tool command entry, missing-input validation or no-op branch behavior, and process release; it does not prove actual image execution or multi-node behavior."
+}
+

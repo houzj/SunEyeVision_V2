@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
+using SunEyeVision.Tool.PixelCount.Runtime;
 
 namespace SunEyeVision.Tool.PixelCount.Wpf.Views;
 
@@ -14,6 +15,7 @@ public sealed class PixelCountParameterEditor : UserControl, IToolSettingsView, 
     private const string InputSection = "阈值范围";
 
     private readonly DeclaredSettingsView _editor;
+    private PixelCountRangePanel? _rangePanel;
     private bool _disposed;
 
     public PixelCountParameterEditor()
@@ -30,14 +32,22 @@ public sealed class PixelCountParameterEditor : UserControl, IToolSettingsView, 
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(draft);
         ArgumentNullException.ThrowIfNull(options);
-        _editor.Bind(draft, options with { InputSection = options.InputSection ?? InputSection });
+        var panel = new PixelCountRangePanel(draft, options.AcceptCandidate);
+        var suppressed = new HashSet<string>(options.SuppressedFieldRows ?? new HashSet<string>(), StringComparer.Ordinal)
+        {
+            PixelCountFields.ThresholdRanges
+        };
+        var anchored = (options.AdditionalAnchoredContents ?? Array.Empty<AnchoredSettingsContent>()).ToList();
+        anchored.Add(new AnchoredSettingsContent(PixelCountFields.ThresholdRanges, panel, InsertBefore: true));
+        _editor.Bind(draft, options with { InputSection = options.InputSection ?? InputSection, SuppressedFieldRows = suppressed, AdditionalAnchoredContents = anchored });
+        _rangePanel = panel;
     }
 
     public FrameworkElement View => this;
 
     public bool HasInvalidInput => _editor.HasInvalidInput;
 
-    public bool HasPendingEdits => _editor.HasPendingEdits;
+    public bool HasPendingEdits => _editor.HasPendingEdits || _rangePanel?.HasPendingEdits == true;
 
     public long AcceptedRevision => _editor.AcceptedRevision;
 
@@ -59,6 +69,7 @@ public sealed class PixelCountParameterEditor : UserControl, IToolSettingsView, 
     {
         if (_disposed) return;
         _disposed = true;
+        _rangePanel = null;
         _editor.Dispose();
     }
 }

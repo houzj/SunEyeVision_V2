@@ -19,7 +19,7 @@ public sealed class BlobLabelsThresholdAreaPanel : UserControl
     private readonly List<Row> _items = new();
     private bool _applying;
 
-    private sealed record Row(int Index, TextBlock Number, TextBox Gray, TextBox Minimum, TextBox Maximum, CheckBox Inverse, CheckBox Add, Button Delete);
+    private sealed record Row(int Index, TextBlock Number, TextBox Gray, TextBox Minimum, TextBox Maximum, CheckBox Inverse, Button Delete);
 
     public BlobLabelsThresholdAreaPanel(IToolSettingsDraft draft, Action<FieldSettings>? acceptCandidate)
     {
@@ -29,7 +29,7 @@ public sealed class BlobLabelsThresholdAreaPanel : UserControl
         var root = new StackPanel { Orientation = Orientation.Vertical, Margin = new Thickness(0, 4, 0, 4) };
         root.Children.Add(Header());
         root.Children.Add(new ScrollViewer { Content = _rows, MaxHeight = 220, VerticalScrollBarVisibility = ScrollBarVisibility.Auto });
-        root.Children.Add(new Button { Content = "添加阈值区域", HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 4, 0, 0) });
+        root.Children.Add(new Button { Width = 24, Height = 24, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 4, 0, 0), Padding = new Thickness(0) });
         ((Button)root.Children[^1]).Click += (_, _) => AppendRow();
         root.Children.Add(_error);
         Content = root;
@@ -49,17 +49,15 @@ public sealed class BlobLabelsThresholdAreaPanel : UserControl
         }
         Add("序号", 0);
         Add("灰度值", 1);
-        Add("面积下限", 2);
-        Add("面积上限", 3);
-        Add("反选", 4);
-        Add("新增", 5);
+        Add("面积范围", 2);
+        Add("反选", 3);
         return grid;
     }
 
     private static Grid Columns()
     {
         var grid = new Grid { Margin = new Thickness(0, 2, 0, 2) };
-        foreach (var width in new[] { 44d, 70d, 84d, 84d, 44d, 44d, 44d })
+        foreach (var width in new[] { 44d, 70d, 176d, 44d, 44d })
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(width) });
         return grid;
     }
@@ -105,27 +103,29 @@ public sealed class BlobLabelsThresholdAreaPanel : UserControl
         var minimum = Number(area.MinimumArea);
         var maximum = Number(area.MaximumArea);
         var inverse = new CheckBox { IsChecked = area.IsInverse, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
-        var add = new CheckBox { IsChecked = area.IsAdd, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
         var delete = new Button { Content = "×", Width = 24, Height = 24, Padding = new Thickness(0) };
         void OnEdit(object? sender, EventArgs args) => Commit();
         gray.LostFocus += OnEdit;
         minimum.LostFocus += OnEdit;
         maximum.LostFocus += OnEdit;
         inverse.Checked += OnEdit; inverse.Unchecked += OnEdit;
-        add.Checked += OnEdit; add.Unchecked += OnEdit;
         delete.Click += (_, _) =>
         {
             _items.RemoveAll(row => ReferenceEquals(row.Number, number));
             Commit(removed: number);
             Reload();
         };
-        foreach (var (element, column) in new (UIElement, int)[] { (number, 0), (gray, 1), (minimum, 2), (maximum, 3), (inverse, 4), (add, 5), (delete, 6) })
+        var range = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+        range.Children.Add(minimum);
+        range.Children.Add(new TextBlock { Text = " - ", VerticalAlignment = VerticalAlignment.Center });
+        range.Children.Add(maximum);
+        foreach (var (element, column) in new (UIElement, int)[] { (number, 0), (gray, 1), (range, 2), (inverse, 3), (delete, 4) })
         {
             Grid.SetColumn(element, column);
             grid.Children.Add(element);
         }
         _rows.Children.Add(grid);
-        _items.Add(new(area.Index, number, gray, minimum, maximum, inverse, add, delete));
+        _items.Add(new(area.Index, number, gray, minimum, maximum, inverse, delete));
     }
 
     private static TextBox Number(int value) => new()
@@ -147,7 +147,7 @@ public sealed class BlobLabelsThresholdAreaPanel : UserControl
             if (!TryNumber(row.Minimum, 1, 999_999_999, "面积下限", out var minimum)) return;
             if (!TryNumber(row.Maximum, 1, 999_999_999, "面积上限", out var maximum)) return;
             if (minimum > maximum) { _error.Text = "面积下限不能超过上限。"; return; }
-            areas.Add(new(areas.Count + 1, row.Add.IsChecked == true, gray, minimum, maximum, row.Inverse.IsChecked == true));
+            areas.Add(new(areas.Count + 1, true, gray, minimum, maximum, row.Inverse.IsChecked == true));
         }
         Apply(areas);
     }

@@ -1,0 +1,76 @@
+{
+  "tool": "IntensityMeasure",
+  "phase": "single-tool-functional-audit",
+  "status": "runtime-structure-and-input-validation-verified",
+  "vm_evidence": {
+    "sources": [
+      "docs/07-工具逆向/_reference-codex/site/工具/Measurement-IMVSIntensityMeasureModu-63aec40a.html",
+      "docs/07-工具逆向/pages/ResultView-IMVSIntensityMeasureModu.html",
+      "docs/07-工具逆向/tools/imvsintensitymeasuremodu/ui-preview.json",
+      "docs/07-工具逆向/tools/imvsintensitymeasuremodu/parameters.json"
+    ],
+    "confirmed": [
+      "原厂亮度测量的参数、结果显示和 ROI/图像输入证据已存在于工具逆向资料中"
+    ]
+  },
+  "product_difference": {
+    "sources": [
+      "tools/SunEyeVision.IntensityMeasure/Wpf/Views/IntensityMeasureParameterEditor.xaml",
+      "tools/SunEyeVision.IntensityMeasure/Runtime/IntensityMeasureFields.cs",
+      "tools/SunEyeVision.IntensityMeasure/Runtime/IntensityMeasureResultDisplay.cs"
+    ],
+    "confirmed": [
+      "当前产品已具备声明参数和结果显示链，但原厂 ROI 控件、结果页控件和资源身份尚未逐项运行对照"
+    ]
+  },
+  "runtime_observation": {
+    "source": "Agent Desktop VisionMaster.exe",
+    "solution": "C:\\Users\\Administrator\\Desktop\\test.sol",
+    "snapshot_id": "s2f38yvd9vteqs",
+    "window_title": "6 亮度测量",
+    "confirmed": [
+      "基本参数与结果显示两个页签",
+      "基本参数内有 Tab_Image Input 与 Tab_ROI Area 原厂分组",
+      "底栏连续执行、执行、确定命令",
+      "帮助按钮存在",
+      "原厂窗口标题与 test 方案节点序号一致"
+    ],
+    "product": {
+      "source": "Agent Desktop SunEyeVision.UI.exe",
+      "solution": "11111",
+      "script": "scripts/agent-desktop/Invoke-SingleToolAudit.ps1",
+      "run": "Release/_validation/AgentDesktopToolReview/intensity-final/20261117-190028-亮度测量1",
+      "snapshot_id": "s48gg7or1zw9f",
+      "window_title": "7 亮度测量1",
+      "confirmed": [
+        "产品窗口有基本参数与结果显示页",
+        "亮度区域字段和最大值判断、最小值判断、均值判断可见",
+        "底栏连续执行、执行、确定可见",
+        "最终 Release 关闭释放已验证"
+      ],
+      "execute_probe": {
+        "action": "点击单工具执行",
+        "snapshot": "s3nzxtt7hhc1z",
+        "result": "产品参数配置对话框显示 Missing required port input.image；无输入执行被明确拒绝",
+        "close": "点击确定关闭对话框，随后 close-app delivered_verified",
+        "script_run": "Release/_validation/AgentDesktopToolReview/single-tool/20261117-194000-亮度测量1",
+        "result_tree": "execute-result-tree.json"
+      }
+    }
+  },
+  "decision": {
+    "modification_allowed": false,
+    "reason": "运行已确认页签、ROI 分组和底栏命令，但内部 ROI 控件绑定和结果模板仍缺逐项映射，暂不替换控件或结果模板。"
+  },
+  "pending": [
+    "采集产品 IntensityMeasure 单工具页面中的 ROI 逐项编辑和结果读回",
+    "验证保存重开和释放"
+  ],
+  "validation": {
+    "passed": 27,
+    "failed": 0,
+    "command": "dotnet test tests/SunEyeVision.Tools.LogicData.Tests/SunEyeVision.Tools.LogicData.Tests.csproj -c Release --no-build --filter 'FullyQualifiedName~IntensityMeasure'",
+    "payload_sha256": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB"
+  }
+}
+

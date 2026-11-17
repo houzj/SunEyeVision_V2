@@ -1,0 +1,76 @@
+{
+  "tool": "DivideImage",
+  "phase": "single-tool-functional-audit",
+  "status": "evidence-driven-catalog-fix-and-functional-verified",
+  "vm_evidence": {
+    "sources": [
+      "docs/07-工具逆向/decompiled/Managed/DivideImage/IMVSDivideImageModuCs/DivideImageParam.cs",
+      "docs/07-工具逆向/decompiled/Managed/DivideImage/IMVSDivideImageModuCs/DivideImageRoiManager.cs",
+      "docs/07-工具逆向/tools/imvsdivideimagemodu/evidence.json",
+      "docs/07-工具逆向/tools/imvsdivideimagemodu/ui-preview.json",
+      "docs/07-工具逆向/tools/imvsdivideimagemodu/parameters.json"
+    ],
+    "confirmed": [
+      "原厂划片拆分包含图像输入、行列划分、ROI 管理和拆分结果协议",
+      "托管证据记录了划片边界重叠检查和 ROI 管理生命周期"
+    ]
+  },
+  "product_difference": {
+    "sources": [
+      "tools/SunEyeVision.DivideImage/Wpf/Views/DivideImageParameterEditor.xaml",
+      "tools/SunEyeVision.DivideImage/Runtime/DivideImageFields.cs",
+      "tools/SunEyeVision.DivideImage/Runtime/DivideImageTiling.cs"
+    ],
+    "confirmed": [
+      "当前产品已有划片参数和运行算法，但 ROI 管理、原厂控件资源和边界交互的同源映射仍未完成",
+      "工具目录 NodeDisplayType 必须为 IMAGE；原实现错误声明为 DEFAULT，已依据原厂 parameters.json Style=IMAGE 与契约测试修正"
+    ]
+  },
+  "runtime_observation": {
+    "source": "Agent Desktop SunEyeVision.UI.exe",
+    "solution": "11111",
+    "script": "scripts/agent-desktop/Invoke-SingleToolAudit.ps1",
+    "run": "Release/_validation/AgentDesktopToolReview/single-tool-product/20261117-182534-划片拆分1",
+    "snapshot_id": "s2mm9pl9ncpx6",
+    "window_title": "11 划片拆分1",
+    "confirmed": [
+      "产品参数窗口有基本参数页",
+      "X方向划片数量、Y方向划片数量、X方向重叠率 (%)、Y方向重叠率 (%) 均可见",
+      "底栏有连续执行、执行、确定",
+      "当前运行窗口可打开并关闭释放"
+    ],
+    "editing_probe": {
+      "initial": "四个数值行的可访问性树只暴露自定义 UC_Arrange 容器，未暴露内部输入框。",
+      "expanded_control": "点击第一行后，控件树临时暴露 SL_Bat1 slider 和 IncreaseLarge/DecreaseLarge。",
+      "set_value_attempt": "Agent Desktop RangeValuePattern.SetValue delivered but post-state value remained empty，未形成可验证的应用层回执。",
+      "decision": "未点击确定保存，随后关闭窗口并结束产品进程；参数编辑/保存重开继续待补。"
+    },
+    "execute_probe": {
+      "action": "点击单工具执行",
+      "snapshot": "s1yxfbxfdzkyx1",
+      "result": "产品参数配置对话框显示 Missing required port input.image；无输入执行被明确拒绝",
+      "close": "点击确定关闭对话框，随后 close-app delivered_verified",
+      "script_run": "Release/_validation/AgentDesktopToolReview/single-tool/20261117-193738-划片拆分1",
+      "result_tree": "execute-result-tree.json"
+    }
+  },
+  "decision": {
+    "modification_allowed": true,
+    "reason": "仅修正有原厂配置和现有契约测试双重证据支持的目录类型；未扩展 ROI 或控件行为。"
+  },
+  "pending": [
+    "采集原厂 DivideImage 参数页",
+    "验证行列、ROI、边界重叠、保存重开",
+    "补充产品输入控件稳定编辑回执"
+  ],
+  "validation": {
+    "status": "passed",
+    "test_project": "tests/SunEyeVision.Tools.ImageProcessing.Tests/SunEyeVision.Tools.ImageProcessing.Tests.csproj",
+    "filter": "FullyQualifiedName~DivideImage",
+    "passed": 23,
+    "failed": 0,
+    "payload_sha256": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB",
+    "note": "先清理受占用的生成缓存，再使用 pwsh Seal-ReleasePayload 重新封存后运行；本次为单工具契约、呈现和执行测试，不包含多节点联调。"
+  }
+}
+

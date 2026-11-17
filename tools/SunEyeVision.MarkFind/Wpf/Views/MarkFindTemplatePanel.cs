@@ -22,6 +22,10 @@ public sealed class MarkFindTemplatePanel : UserControl
     private readonly NativeRoiFrameSource? _frames;
     private readonly TextBlock _summary = new() { FontSize = 12, TextWrapping = TextWrapping.Wrap, Foreground = Brushes.DimGray };
     private readonly TextBlock _error = new() { FontSize = 12, TextWrapping = TextWrapping.Wrap, Foreground = Brushes.Firebrick };
+    private readonly Button _createButton;
+    private readonly Button _editButton;
+    private readonly Button _clearButton;
+    private readonly Button _exportButton;
 
     public MarkFindTemplatePanel(IToolSettingsDraft draft, Action<FieldSettings>? acceptCandidate, NativeRoiFrameSource? frames)
     {
@@ -31,12 +35,27 @@ public sealed class MarkFindTemplatePanel : UserControl
         _frames = frames;
         var root = new StackPanel { Orientation = Orientation.Vertical, Margin = new Thickness(0, 4, 0, 6) };
         var buttons = new StackPanel { Orientation = Orientation.Horizontal };
-        buttons.Children.Add(Button("新建模型", CreateTemplate));
-        buttons.Children.Add(Button("清空模型", ClearTemplate));
-        buttons.Children.Add(Button("导出", ExportTemplate));
+        _createButton = Button("新建模型", CreateTemplate);
+        _editButton = Button("编辑模型", CreateTemplate);
+        _clearButton = Button("清空模型", ClearTemplate);
+        _exportButton = Button("导出", ExportTemplate);
+        buttons.Children.Add(_createButton);
+        buttons.Children.Add(_editButton);
+        buttons.Children.Add(_clearButton);
+        buttons.Children.Add(_exportButton);
         buttons.Children.Add(Button("导入", ImportTemplate));
         root.Children.Add(buttons);
-        root.Children.Add(_summary);
+
+        var preview = new Border
+        {
+            Background = new SolidColorBrush(Color.FromRgb(252, 252, 252)),
+            BorderBrush = new SolidColorBrush(Color.FromRgb(224, 223, 222)),
+            BorderThickness = new Thickness(1),
+            MinHeight = 120,
+            Padding = new Thickness(8),
+            Child = _summary
+        };
+        root.Children.Add(preview);
         root.Children.Add(_error);
         Content = root;
         Reload();
@@ -188,9 +207,18 @@ public sealed class MarkFindTemplatePanel : UserControl
         var payload = CurrentPayload();
         if (payload.Length == 0)
         {
-            _summary.Text = "尚未创建模型：连接输入图像与搜索区域后点击“新建模型”。";
+            _summary.Text = "请添加模型";
+            _createButton.Visibility = Visibility.Visible;
+            _editButton.Visibility = Visibility.Collapsed;
+            _clearButton.IsEnabled = false;
+            _exportButton.IsEnabled = false;
             return;
         }
+        _createButton.Visibility = Visibility.Collapsed;
+        _editButton.Visibility = Visibility.Visible;
+        _editButton.IsEnabled = false;
+        _clearButton.IsEnabled = true;
+        _exportButton.IsEnabled = true;
         if (!MarkFindTemplate.TryDecode(payload, out var template, out var error))
         {
             _summary.Text = "模型数据不可用：" + error;

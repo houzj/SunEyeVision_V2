@@ -1,0 +1,65 @@
+{
+  "tool": "FrameMean",
+  "phase": "single-tool-functional-audit",
+  "status": "runtime-structure-and-input-validation-verified",
+  "vm_evidence": {
+    "sources": [
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSFrameMeanModuControl/Apps.XmlParser.ParamTab/FrameMeanData.cs",
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSFrameMeanModuControl/Apps.XmlParser.ParamTab/CommandSelecter_Frame.cs",
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSFrameMeanModuControl/datatemplate/paramusercontroldatatemplate.xaml"
+    ],
+    "confirmed": [
+      "原厂 FrameMean 参数通过 CommandSelecter_Frame 读取模块参数字符串并解析帧数",
+      "帧数来自相机业务回调 GetFrameMeanCount，运行状态和平均结果标志通过模块参数返回",
+      "参数页使用原厂 ParamUserControlDataTemplate 体系"
+    ]
+  },
+  "product_difference": {
+    "sources": [
+      "tools/SunEyeVision.FrameMean/Wpf/Views/FrameMeanParameterEditor.xaml",
+      "tools/SunEyeVision.FrameMean/Runtime/FrameMeanFields.cs",
+      "tools/SunEyeVision.FrameMean/Runtime/FrameMeanSession.cs"
+    ],
+    "confirmed": [
+      "当前产品有声明参数和运行会话，但原厂相机回调、参数字符串协议和结果标志的同源证据尚未完成"
+    ]
+  },
+  "runtime_observation": {
+    "source": "Agent Desktop SunEyeVision.UI.exe",
+    "solution": "11111",
+    "script": "scripts/agent-desktop/Invoke-SingleToolAudit.ps1",
+    "run": "Release/_validation/AgentDesktopToolReview/single-tool-product/20261117-182424-帧均值1",
+    "snapshot_id": "s26uo4kkztl1c2",
+    "window_title": "9 帧均值1",
+    "confirmed": [
+      "产品参数窗口有运行参数页",
+      "页内有处理步骤字段",
+      "底栏有重置参数、连续执行、执行、确定",
+      "当前运行窗口可打开并关闭释放"
+    ],
+    "execute_probe": {
+      "action": "点击单工具执行",
+      "snapshot": "s22xkouprn4w3i",
+      "result": "产品参数配置对话框显示 Missing required port input.image；明确拒绝无输入执行",
+      "close": "点击确定关闭对话框，随后 close-app delivered_verified",
+      "script_run": "Release/_validation/AgentDesktopToolReview/single-tool/20261117-193640-帧均值1",
+      "result_tree": "execute-result-tree.json"
+    }
+  },
+  "decision": {
+    "modification_allowed": false,
+    "reason": "产品窗口结构已确认，但原厂帧数来自相机业务回调，仍缺同版本动态回执证据，暂不猜测修改。"
+  },
+  "pending": [
+    "取得同版本原厂相机回调动态帧数回执"
+  ],
+  "validation": {
+    "command": "dotnet test tests/SunEyeVision.Tools.ImageProcessing.Tests/SunEyeVision.Tools.ImageProcessing.Tests.csproj -c Release --no-build --filter 'FullyQualifiedName~FrameMean'",
+    "exit_code": 0,
+    "passed": 16,
+    "failed": 0,
+    "payload_sha256": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB",
+    "final_baseline_passed": 16
+  }
+}
+

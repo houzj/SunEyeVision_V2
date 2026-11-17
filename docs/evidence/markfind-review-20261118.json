@@ -1,0 +1,73 @@
+{
+  "tool": "MarkFind",
+  "phase": "static-review",
+  "status": "evidence-driven-model-surface-adjusted-and-runtime-verified",
+  "vm_evidence": {
+    "sources": [
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSMarkFindModuControl/IMVSMarkFindModuControl/MarkFindDialogUI.xaml",
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSMarkFindModuControl/IMVSMarkFindModuControl/MarkFindConfigPanal.xaml",
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSMarkFindModuControl/IMVSMarkFindModuControl/MarkFindDialogUI.xaml.cs",
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSMarkFindModuControl/IMVSMarkFindModuControl/MarkFindConfigPanal.xaml.cs",
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSMarkFindModuControl/Apps.XmlParser.ParamTab/MarkFindDialogData.cs",
+      "C:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSMarkFindModu/IMVSMarkFindModuAlgorithmTab.xml"
+    ],
+    "confirmed": [
+      "原厂 MarkFind 配置面板有带图标的创建模型、编辑模型和清空模型命令",
+      "原厂模板配置与运行参数窗口分开，模型操作受 HasModel 状态控制",
+      "原厂参数页使用自定义 ComboBox、图标按钮和原厂资源字典",
+      "模板参数包含金字塔比例、阈值模式、定位方式、旋转、投影区间、Mark 类型和掩膜类型"
+    ]
+  },
+  "product_difference": {
+    "sources": [
+      "tools/SunEyeVision.MarkFind/Wpf/Views/MarkFindTemplatePanel.cs",
+      "tools/SunEyeVision.MarkFind/Wpf/Views/MarkFindParameterEditor.xaml",
+      "tools/SunEyeVision.MarkFind/Runtime/MarkFindFields.cs"
+    ],
+    "confirmed": [
+      "当前产品模板面已按证据加入新建模型、编辑模型、清空模型、导出、导入和无模型预览状态",
+      "当前产品编辑模型仍保持禁用，尚未实现原厂编辑语义",
+      "当前参数声明覆盖模板和运行字段，原厂图标资源仍未直接迁入",
+      "当前产品模板数据使用宿主自定义编码，原厂 MarkFind 模板文件格式和资源身份尚未完成映射"
+    ]
+  },
+  "decision": {
+    "modification_allowed": true,
+    "reason": "原厂静态 XAML 明确给出新建、编辑、清空、导出、导入和无模型预览状态，产品已按这些状态做最小视觉组装。编辑按钮保持禁用，避免无运行证据的编辑语义猜测。"
+  },
+  "pending": [
+    "采集原厂 MarkFind 参数窗四个页签和创建/编辑/清空状态",
+    "确认原厂模型文件扩展名、导入导出和保存重开行为",
+    "运行产品单工具模板操作并补充测试结果",
+    "完成证据后做最小差异修复"
+  ],
+  "validation": {
+    "command": "dotnet test tests/SunEyeVision.Tools.Inspection.Tests/SunEyeVision.Tools.Inspection.Tests.csproj -c Release --no-build --filter 'FullyQualifiedName~MarkFind'",
+    "exit_code": 0,
+    "passed": 21,
+    "failed": 0,
+    "payload_sha256": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB",
+    "full_release_build": {
+      "exit_code": 0,
+      "errors": 0,
+      "warnings": 3269
+    }
+  },
+  "runtime_after_patch": {
+    "product_snapshot": "s1xsl2b6vge7ld",
+    "window_title": "5 图形定位1",
+    "observed": [
+      "无模板时显示新建模型、导入，清空模型和导出禁用",
+      "编辑模型处于隐藏状态",
+      "预览区域显示请添加模型"
+    ],
+    "screenshot": "C:/Users/Administrator/.codex/visualizations/2026/11/09/01a1c08e-2257-7a32-8813-4fdf253c33e3/suneye-markfind-template-evidence.png"
+  },
+  "runtime_execute_probe": {
+    "script": "scripts/agent-desktop/Invoke-SingleToolAudit.ps1 -ProbeExecute",
+    "script_run": "Release/_validation/AgentDesktopToolReview/single-tool/20261117-194727-图形定位1",
+    "result": "execute-result-tree.json contains Missing required port input.image",
+    "close": "script close-app delivered_verified"
+  }
+}
+

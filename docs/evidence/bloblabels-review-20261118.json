@@ -1,0 +1,107 @@
+{
+  "tool": "BlobLabels",
+  "phase": "first-surface-repair",
+  "status": "single-tool-runtime-verified",
+  "vm_evidence": {
+    "module": "IMVSBlobFindLabelsModu",
+    "sources": [
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSBlobFindLabelsModuControl/IMVSBlobFindLabelsModuControl/ThresholdAreaPanel.xaml",
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSBlobFindLabelsModuControl/IMVSBlobFindLabelsModuControl/ThresholdAreaPanel.xaml.cs",
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSBlobFindLabelsModuControl/IMVSBlobFindLabelsModuControl/ThresholdAreaItem.cs",
+      "C:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSBlobFindLabelsModu/IMVSBlobFindLabelsModuAlgorithmTab.xml",
+      "C:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSBlobFindLabelsModu/IMVSBlobFindLabelsModu.xml"
+    ],
+    "confirmed": [
+      "ThresholdAreaPanel rows show index, gray value, combined area range, inverse and delete",
+      "IsAdd is persisted in ThresholdAreaItem but has no row checkbox in the original template",
+      "Add button adds a row and MaxAreaCount is 255",
+      "GrayValue is 1..255 and area range is 1..999999999",
+      "duplicate gray values are rejected",
+      "ThresholdAreaPanel writes ThresholdArea user data"
+    ]
+  },
+  "product_difference": {
+    "file": "tools/SunEyeVision.BlobLabels/Wpf/Views/BlobLabelsThresholdAreaPanel.cs",
+    "before": [
+      "extra per-row IsAdd checkbox",
+      "extra 新增 header/column",
+      "area range split into two headers"
+    ],
+    "after": [
+      "IsAdd remains hidden persistence value true",
+      "header uses combined 面积范围",
+      "row layout uses index, gray, min/max range, inverse and delete"
+    ]
+  },
+  "validation": {
+    "command": "dotnet build tools/SunEyeVision.BlobLabels/Wpf/SunEyeVision.BlobLabels.Wpf.csproj -c Release --no-restore -v:minimal",
+    "exit_code": 0,
+    "errors": 0,
+    "warnings": 1,
+    "log": "C:/Users/Administrator/.codex/visualizations/2026/11/09/01a1c08e-2257-7a32-8813-4fdf253c33e3/bloblabels-wpf-build.log",
+    "tests": {
+      "command": "dotnet test tests/SunEyeVision.Tools.Inspection.Tests/SunEyeVision.Tools.Inspection.Tests.csproj -c Release --no-restore --filter 'FullyQualifiedName~BlobLabels'",
+      "exit_code": 0,
+      "passed": 30,
+      "failed": 0,
+      "skipped": 0,
+      "note": "先因 payload SHA mismatch 阻断，改为封存后使用 --no-build 重跑，30 项通过"
+    },
+    "payload_sha256": "D68B5A2D5E674B499B6091E3EA75E5B3294AD34DED234BC730C418F1C8DCF95B",
+    "full_release": {
+      "command": "dotnet build SunEyeVision.slnx -c Release --no-restore -v:minimal",
+      "exit_code": 0,
+      "errors": 0,
+      "warnings": 3409,
+      "payload_sha256": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB",
+      "agent_desktop_launch": true,
+      "parameter_window_reopened": true,
+      "final_bloblabels_tests": {
+        "passed": 30,
+        "failed": 0
+      }
+    }
+  },
+  "runtime": {
+    "agent_desktop": "MCP Agent Desktop",
+    "product_release": "11111",
+    "solution_loaded": true,
+    "nodes_visible": 12,
+    "parameter_window_opened": true,
+    "parameter_window_title": "6 Blob标签分析1",
+    "parameter_window_snapshot": "s1q83lp1edaz5d",
+    "threshold_panel_snapshot_after_add": "s1632k6z67gnav",
+    "threshold_row_after_add": {
+      "index": "1",
+      "gray": "10",
+      "minimum": "1",
+      "maximum": "999999999",
+      "inverse": false
+    },
+    "save_reopen_snapshot": "sba0p6l4gnwi2",
+    "screenshots": [
+      "C:/Users/Administrator/.codex/visualizations/2026/11/09/01a1c08e-2257-7a32-8813-4fdf253c33e3/suneye-bloblabels-params-fixed.png",
+      "C:/Users/Administrator/.codex/visualizations/2026/11/09/01a1c08e-2257-7a32-8813-4fdf253c33e3/suneye-bloblabels-threshold-added.png"
+    ],
+    "verified": [
+      "Agent Desktop 打开产品 BlobLabels 参数窗",
+      "阈值面板显示原厂四个表头：序号、灰度值、面积范围、反选",
+      "新增一行并观察默认值",
+      "点击确定后再次打开，行值仍为 1 / 10 / 1 - 999999999 / 未反选",
+      "完整 SunEyeVision.slnx Release 构建后重新封存，Agent Desktop 再次打开 6 Blob标签分析1"
+    ],
+    "final_release_payload_sha256": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB",
+    "execute_probe": {
+      "script": "scripts/agent-desktop/Invoke-SingleToolAudit.ps1 -ProbeExecute",
+      "script_run": "Release/_validation/AgentDesktopToolReview/single-tool/20261117-194123-Blob标签分析1",
+      "result": "execute-result-tree.json contains Missing required port input.image",
+      "close": "script close-app delivered_verified"
+    }
+  },
+  "pending": [
+    "对照原厂 BlobLabels 运行参数和结果显示页",
+    "补充重复灰度、删除行和结果输出的 Agent Desktop 操作",
+    "完成输出树、图像叠加等多节点联调后再做跨节点审核"
+  ]
+}
+

@@ -1,0 +1,77 @@
+{
+  "authority": "controlled runtime observation via Agent Desktop MCP",
+  "vm": {
+    "app": "VisionMaster.exe",
+    "pid": 27120,
+    "window_title": "引导窗口",
+    "snapshot_id": "s2okwe1focvqzi",
+    "observed": [
+      "V4.4.0",
+      "最近打开方案含 test，路径 C:\\Users\\Administrator\\Desktop\\test.sol",
+      "欢迎页可访问"
+    ],
+    "main_observation": {
+      "snapshot_id": "s17o6q3mu8tniu",
+      "canvas": "empty",
+      "status": "等待添加模块",
+      "runtime_compare": "blocked-by-empty-solution"
+    },
+    "loaded_main_observation": {
+      "snapshot_id": "s2nnletlegiwra",
+      "screenshot": "C:\\Users\\Administrator\\.codex\\visualizations\\2026\\11\\09\\01a1c08e-2257-7a32-8813-4fdf253c33e3\\vm-test-main-afterwait.png",
+      "solution": "test.sol",
+      "nodes_observed": [
+        "图像源1",
+        "轮廓匹配1",
+        "灰度匹配1",
+        "Blob分析1",
+        "Blob标签分析1",
+        "图形定位1",
+        "亮度测量1",
+        "像素统计1",
+        "颜色抽取1",
+        "划片拆分1"
+      ],
+      "load_note": "首次进入主界面时仍在加载，等待后节点出现"
+    }
+  },
+  "product": {
+    "app": "SunEyeVision.UI.exe",
+    "pid": 9776,
+    "window_title": "SunEyeVision · 起始页",
+    "snapshot_id": "svajvvo8z9u9l",
+    "observed": [
+      "版本 V1.0.0",
+      "最近打开方案含 11111",
+      "欢迎页可访问"
+    ]
+  },
+  "script": {
+    "path": "scripts/agent-desktop/Open-SolutionReview.ps1",
+    "scenario": "scripts/agent-desktop/tool-review-scenario.json",
+    "status": "fixed-and-verified",
+    "run": "Release/_validation/AgentDesktopToolReview/script-test4/20261118-021443",
+    "solution": "11111",
+    "snapshot_id": "s3hcmgxdds8cl1",
+    "vm_run": "Release/_validation/AgentDesktopToolReview/script-vm-test/20261118-021822",
+    "vm_solution": "test",
+    "vm_snapshot_id": "s1m09scv2itxlp",
+    "single_tool_script": "scripts/agent-desktop/Invoke-SingleToolAudit.ps1",
+    "single_tool_product_run": "Release/_validation/AgentDesktopToolReview/single-tool/20261117-191223-颜色抽取1",
+    "single_tool_product_snapshot": "s18nkod29yyb09",
+    "single_tool_batch_runs": [
+      "Release/_validation/AgentDesktopToolReview/single-tool-product/20261117-182424-帧均值1",
+      "Release/_validation/AgentDesktopToolReview/single-tool-product/20261117-182459-条件分支1",
+      "Release/_validation/AgentDesktopToolReview/single-tool-product/20261117-182534-划片拆分1"
+    ],
+    "reason": "脚本现在对启动期窗口身份替换执行 fresh snapshot，并将 wait 超时作为观察记录而非产品失败；已成功打开 11111 并生成主界面快照。"
+  },
+  "next": "用固定脚本打开方案，再按场景逐工具采集节点、参数页、结果页和关闭释放证据。",
+  "release_reseal": {
+    "payload_sha256": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB",
+    "reason": "ColorExtract 原厂范围面板构建后重新生成发布清单",
+    "startup_verified": true,
+    "product_snapshot": "s18nkod29yyb09"
+  }
+}
+

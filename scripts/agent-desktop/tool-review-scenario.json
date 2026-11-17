@@ -1,0 +1,89 @@
+{
+  "policy": "每一步先 snapshot，再操作，再 snapshot 验证。ref 失效或身份不唯一时停止并重新取证。",
+  "tools": [
+    "If",
+    "BlobLabels",
+    "ColorExtract",
+    "DivideImage",
+    "FrameMean",
+    "IntensityMeasure",
+    "PixelCount",
+    "ContourMatch",
+    "GrayMatch",
+    "MarkFind"
+  ],
+  "steps": [
+    "welcome_snapshot",
+    "open_test_solution",
+    "workflow_snapshot",
+    "select_tool_node",
+    "node_style_snapshot",
+    "open_parameter_window",
+    "parameter_tabs_snapshot",
+    "edit_one_declared_field",
+    "save_reopen_snapshot",
+    "run_snapshot",
+    "optional_probe_execute_probe",
+    "result_snapshot",
+    "close_and_release_snapshot"
+  ],
+  "evidence_required_per_tool": [
+    "source_or_config_reference",
+    "before_after_snapshot",
+    "release_build_log",
+    "agent_desktop_command_log",
+    "unknowns"
+  ],
+  "stop_conditions": [
+    "evidence_missing",
+    "unexpected_window",
+    "ambiguous_ref",
+    "new_error",
+    "resource_release_failure"
+  ],
+  "solution_opening": {
+    "vm": {
+      "solution": "test",
+      "app": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\VisionMaster.exe"
+    },
+    "product": {
+      "solution": "11111",
+      "app": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.exe"
+    }
+  },
+  "surfaces": [
+    "toolbox",
+    "canvas_node",
+    "parameter_editor",
+    "resource_editor",
+    "roi_model_editor",
+    "runtime_view",
+    "result_overlay",
+    "result_tree",
+    "history_result",
+    "help",
+    "save_reopen",
+    "close_release"
+  ],
+  "audit_mode": {
+    "current": "single_tool_functional",
+    "required": [
+      "toolbox_create",
+      "node_open",
+      "parameter_edit",
+      "resource_edit",
+      "save_reopen",
+      "single_tool_run",
+      "own_result",
+      "close_release"
+    ],
+    "deferred": [
+      "multi_node_output_consumption",
+      "cross_tool_image_flow",
+      "roi_model_inheritance",
+      "branch_integration",
+      "workflow_regression"
+    ],
+    "optional_probe_execute": "Invoke-SingleToolAudit.ps1 -ProbeExecute; 保存 execute.json、execute-result-tree.json 和 execute-confirm.json"
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "tool": "ColorExtract",
+  "phase": "single-tool-functional-audit",
+  "status": "evidence-driven-range-panel-adjusted-and-runtime-verified",
+  "vm_evidence": {
+    "sources": [
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSColorExtractModuControl/IMVSColorExtractModuControl/UserScrollView.xaml",
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSColorExtractModuControl/IMVSColorExtractModuControl/UserScrollView.xaml.cs",
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSColorExtractModuControl/Apps.XmlParser.ParamTab/RangeInfo.cs",
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSColorExtractModuControl/Apps.XmlParser.ParamTab/ColorExtractList.cs"
+    ],
+    "confirmed": [
+      "原厂颜色范围以横向颜色卡列表呈现，每项有颜色圆形预览、勾选状态和悬停删除按钮",
+      "新增颜色范围使用原厂图标按钮，列表横向滚动",
+      "颜色范围项保存 RGB/HSV/HSI 三种颜色类型和三个通道上下限",
+      "原厂三个通道行各包含 HikHistogramSingle（宽108、高50，绑定 DataPoints1/2/3）和两条 0..255 SliderArrange"
+    ]
+  },
+  "product_difference": {
+    "sources": [
+      "tools/SunEyeVision.ColorExtract/Wpf/Views/ColorExtractParameterEditor.xaml",
+      "tools/SunEyeVision.ColorExtract/Runtime/ColorExtractFields.cs",
+      "tools/SunEyeVision.ColorExtract/Runtime/ColorExtractRange.cs"
+    ],
+    "confirmed": [
+      "当前参数页使用声明字段链，尚未证明复用了原厂颜色卡列表和图标资源",
+      "当前运行模型覆盖颜色范围数据，但原厂列表悬停/删除/横向滚动状态尚未完成运行证据对照",
+      "当前 ColorExtractRangePanel 尚未呈现原厂 HikHistogramSingle；仓库仅有 pending 迁移记录且依赖未闭合，不能用自绘图表替代"
+    ]
+  },
+  "runtime_observation": {
+    "source": "Agent Desktop VisionMaster.exe",
+    "solution": "C:\\Users\\Administrator\\Desktop\\test.sol",
+    "snapshot_id": "stlrg7nmpcrbn",
+    "window_title": "9 颜色抽取",
+    "confirmed": [
+      "基本参数、运行参数、结果显示三个页签",
+      "底栏连续执行、执行、确定命令",
+      "基本参数区由 Tab_Image Input 与 Tab_ROI Area 两个原厂组承载",
+      "原厂自定义组内部未完整暴露控件树，不能仅凭可访问性快照推断颜色卡片像素布局"
+    ],
+    "screenshot_note": "Agent Desktop screenshot 返回白色画布，未作为视觉证据使用；控件树与反编译 UserScrollView.xaml 作为结构证据。",
+    "product": {
+      "source": "Agent Desktop SunEyeVision.UI.exe",
+      "solution": "11111",
+      "snapshot_id": "s18nkod29yyb09",
+      "window_title": "10 颜色抽取1",
+      "confirmed": [
+        "颜色区间字段已由原厂证据面板接管，参数树显示为 464 像素自定义面板而非通用组合框",
+        "面板构建通过并可在最终 Release 参数窗口打开",
+        "面板树包含 16 个内部视觉子控件，产品底栏有连续执行、执行、确定",
+        "面板仍通过 proc.color-range 原厂九字段序列化值提交",
+        "最终 Release 关闭进程已验证",
+        "最终 Release 通过固定 Agent Desktop 单工具脚本重新打开颜色抽取窗口并在关闭阶段退出",
+        "最终 Release 通过固定 Agent Desktop 单工具脚本重新打开颜色抽取窗口并在关闭阶段退出"
+      ],
+      "edit_probe": {
+        "initial_snapshot": "s5m4390ypy39k",
+        "action": "按面板坐标点击新增卡片",
+        "after_add_snapshot": "s5m4390ypy39k",
+        "submit": "点击确定成功返回主界面，无错误对话框",
+        "reopen_snapshot": "s3nm5016i5f6kg",
+        "reopen_result": "参数面板再次打开，颜色区间自定义面板仍在，证明提交后的页面状态可重建",
+        "automation_note": "Agent Desktop AutomationPeer 已暴露“颜色区间1启用”和“新增颜色区间”稳定控件引用；新增按钮可定位并点击，删除/滑条继续待稳定引用验证。",
+        "release": "正常关闭超时后已用 Agent Desktop force close 确认进程退出",
+        "automation_refs": {
+          "checkbox": "颜色区间1启用",
+          "add": "新增颜色区间",
+          "checkbox_snapshot": "s1fenv4h0diz0h",
+          "add_snapshot": "s280495jkpxmy6"
+        },
+        "final_script_run": "Release/_validation/AgentDesktopToolReview/single-tool/20261117-191223-颜色抽取1",
+        "automation_probe_20261118": {
+          "add_button_snapshot": "sztnsfoaw83g9",
+          "add_click": "delivered_unverified",
+          "second_range_snapshot": "s2suu90hh65x46",
+          "second_range": "颜色区间2启用 found, checked",
+          "toggle_snapshot": "s3kd5qf09g0435",
+          "toggle_result": "颜色区间1启用 changed from checked to unchecked",
+          "delete_snapshot": "s13plhzfxgsajq",
+          "delete_result": "completed_after_hover",
+          "delete_block": "Agent Desktop reported target visible=false/offscreen and invalid scroll viewport metrics",
+          "lifecycle": "close-app delivered_verified, process_instance_exited",
+          "delete_verification": "删除颜色区间2后 find 无结果，颜色区间1启用仍存在；点击确定并正常退出",
+          "delete_visibility": "未悬停时 offscreen，悬停卡片后 states 为空并可点击，符合原厂悬停删除语义",
+          "slider_probe_20261118": {
+            "static_contract": "SliderArrange 下限/上限均使用 0..255，OnStartValueChange 回写九字段序列化值",
+            "runtime_snapshot": "s31v0f1df4tvsx",
+            "runtime_result": "参数页 UIA 只暴露颜色区间面板 children_count，SliderArrange 内部弹出滑条未进入稳定 UIA ref；物理点击候选区域未形成可验证数值变化",
+            "lifecycle": "close-app delivered_verified"
+          },
+          "slider_scroll_probe": {
+            "window": "w-4524344",
+            "snapshot": "s1v6ea6ivcwy0y",
+            "action": "focus-window + mouse-wheel dy=-8 + physical click at candidate SliderArrange region",
+            "result": "参数窗口保持，内部仍仅暴露颜色区间面板 children_count，未出现 Slider/RangeValue ref，未形成可验证数值回执",
+            "close": "close-app delivered_verified"
+          }
+        }
+      },
+      "execute_probe": {
+        "script": "scripts/agent-desktop/Invoke-SingleToolAudit.ps1 -ProbeExecute",
+        "script_run": "Release/_validation/AgentDesktopToolReview/single-tool/20261117-194332-颜色抽取1",
+        "result": "execute-result-tree.json contains Missing required port input.image",
+        "close": "script close-app delivered_verified"
+      },
+      "final_release_regression": {
+        "script_run": "Release/_validation/AgentDesktopToolReview/single-tool/20261117-200033-颜色抽取1",
+        "window": "10 颜色抽取1",
+        "close": "script close-app delivered_verified",
+        "payload_sha256": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB"
+      }
+    },
+    "original_runtime_probe": {
+      "app": "VisionMaster.exe",
+      "solution": "test",
+      "script_run": "Release/_validation/AgentDesktopToolReview/single-tool/20261117-195613-颜色抽取1",
+      "snapshot_id": "sh3d82e3v10rf",
+      "confirmed": [
+        "原厂参数窗包含 Tab_Basic Params、Tab_Run Params、ResultShow 三页",
+        "原厂基本参数页 UIA 暴露 Tab_Image Input 与 Tab_ROI Area 组",
+        "原厂底栏连续执行、执行、确定及帮助"
+      ],
+      "limitation": "颜色卡片和 HikHistogramSingle 属于自定义控件，UIA 未展开内部像素树；直方图结构以原厂 paramusercontroldatatemplate.xaml 静态证据为准",
+      "close": "script close-app delivered_verified"
+    }
+  },
+  "decision": {
+    "modification_allowed": true,
+    "reason": "原厂 UserScrollView、RangeInfo、paramusercontroldatatemplate 和资源均已提供逐控件证据；面板只通过现有声明字段接缝提交，不改变 Runtime 协议。"
+  },
+  "pending": [
+    "补齐 HikHistogramSingle 原件依赖闭包后再迁移三个通道直方图",
+    "完成通道 SliderArrange 运行时编辑和保存重开",
+    "补充原厂颜色卡片截图对照"
+  ],
+  "validation": {
+    "command": "dotnet test tests/SunEyeVision.Tools.ImageProcessing.Tests/SunEyeVision.Tools.ImageProcessing.Tests.csproj -c Release --no-build --filter 'FullyQualifiedName~ColorExtract'",
+    "exit_code": 0,
+    "passed": 20,
+    "failed": 0,
+    "payload_sha256": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB"
+  },
+  "evidence_driven_change_20261118": {
+    "source": "docs/07-工具逆向/decompiled/ModuleControls/IMVSColorExtractModuControl/Apps.XmlParser.ParamTab/RangeInfo.cs",
+    "change": "HSV/HSI 色相环回区间的卡片预览中，High<Low 时先加255再取中点，并在转换函数中按原厂逻辑环回",
+    "build": "WPF 0 errors; full Release 0 errors",
+    "tests": "ColorExtract 20/20",
+    "payload_sha256": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB"
+  }
+}

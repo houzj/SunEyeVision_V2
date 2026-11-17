@@ -12,6 +12,7 @@ public partial class ColorExtractParameterEditor : UserControl, IToolSettingsVie
     private event Action? ViewChanged;
     private bool _disposed;
     private long _generation;
+    private ColorExtractRangePanel? _rangePanel;
 
     public ColorExtractParameterEditor()
     {
@@ -36,17 +37,30 @@ public partial class ColorExtractParameterEditor : UserControl, IToolSettingsVie
         ArgumentNullException.ThrowIfNull(options);
         var generation = ++_generation;
         Editor.Changed -= OnFieldsChanged;
-        // 有图像输入就必须声明输入区落位；区间列表是本工具已声明的首个分组。
-        Editor.Bind(draft, options with { InputSection = options.InputSection ?? Runtime.ColorExtractFields.RangeSection });
+        var panel = new ColorExtractRangePanel(draft, options.AcceptCandidate);
+        var suppressed = new HashSet<string>(options.SuppressedFieldRows ?? new HashSet<string>(), StringComparer.Ordinal)
+        {
+            Runtime.ColorExtractFields.ColorRange
+        };
+        var anchored = (options.AdditionalAnchoredContents ?? Array.Empty<AnchoredSettingsContent>()).ToList();
+        anchored.Add(new AnchoredSettingsContent(Runtime.ColorExtractFields.ColorRange, panel, InsertBefore: true));
+        // 有图像输入就必须声明输入区落位；颜色卡片是本工具已声明的首个分组。
+        Editor.Bind(draft, options with
+        {
+            InputSection = options.InputSection ?? Runtime.ColorExtractFields.RangeSection,
+            SuppressedFieldRows = suppressed,
+            AdditionalAnchoredContents = anchored
+        });
         if (generation != _generation || _disposed) throw new InvalidOperationException("色彩提取参数组合已重新绑定或关闭。");
         Editor.Changed += OnFieldsChanged;
+        _rangePanel = panel;
     }
 
     public IReadOnlyList<NumericModelReadResult> ReadNumericModels(NumericModelReadScope scope, string? fieldId = null)
     { ObjectDisposedException.ThrowIf(_disposed, this); return Editor.ReadNumericModels(scope, fieldId); }
     public FrameworkElement View => this;
     public bool HasInvalidInput => Editor.HasInvalidInput;
-    public bool HasPendingEdits => Editor.HasPendingEdits;
+    public bool HasPendingEdits => Editor.HasPendingEdits || _rangePanel?.HasPendingEdits == true;
     public bool HasPendingEditsOutside(IReadOnlySet<string> excludedFields) => Editor.HasPendingEditsOutside(excludedFields);
     public long AcceptedRevision => Editor.AcceptedRevision;
     public IReadOnlyList<string> AcceptedFieldOrder => Editor.AcceptedFieldOrder;
@@ -61,6 +75,6 @@ public partial class ColorExtractParameterEditor : UserControl, IToolSettingsVie
     {
         if (_disposed) return; _disposed = true; _generation++;
         Editor.Changed -= OnFieldsChanged;
-        ViewChanged = null; Editor.Dispose();
+        ViewChanged = null; _rangePanel = null; Editor.Dispose();
     }
 }

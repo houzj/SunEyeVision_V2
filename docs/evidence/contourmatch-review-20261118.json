@@ -1,0 +1,58 @@
+{
+  "tool": "ContourMatch",
+  "phase": "static-review",
+  "status": "evidence-driven-template-surface-adjusted",
+  "vm_evidence": {
+    "sources": [
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSContourMatchModuControl/paramstabcontrolhppyramidfeaturematch.xaml",
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSContourMatchModuControl/IMVSContourMatchModuControl/ParamsTabControlHPPyramidFeatureMatch.cs",
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSContourMatchModuControl/IMVSContourMatchModuControl/HPPyramidFeaturepatMatchDialogUI.cs",
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSContourMatchModuControl/hppyramidfeaturepatmatchdialoguistyle.xaml",
+      "C:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSContourMatchModu/IMVSContourMatchModu.xml",
+      "C:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSContourMatchModu/IMVSContourMatchModuAlgorithmTab.xml"
+    ],
+    "confirmed": [
+      "原厂窗口由 ParamsTabControl4FeatureMatch 承载，标题带节点 ID 和工具类型，参数区由 ParamsConfigControlBase 组装",
+      "模板面包含金字塔比例、特征尺度、边缘阈值、链式/最小链长、掩膜模型等模板生成参数",
+      "模板生成、编辑、清空、导入导出属于模板面生命周期，不能只用运行参数行替代",
+      "原厂窗口具有帮助命令和进度遮罩接缝"
+    ]
+  },
+  "product_difference": {
+    "sources": [
+      "tools/SunEyeVision.ContourMatch/Wpf/Views/ContourMatchTemplatePanel.cs",
+      "tools/SunEyeVision.ContourMatch/Wpf/Views/ContourMatchParameterEditor.xaml",
+      "tools/SunEyeVision.ContourMatch/Runtime/ContourMatchFields.cs"
+    ],
+    "confirmed": [
+      "当前已存在模板新建/清空/导入/导出和模型摘要，且模型数据通过字段提交",
+      "当前模板操作仍是宿主自研按钮面板，尚未证明与原厂资源和 ParamConfigControlBase 完全同源",
+      "当前声明字段覆盖模板、运行和结果判断，但原厂模板窗口标题/帮助/进度遮罩的静态资源映射尚未闭合",
+      "模型新建需要输入图像和 ROI，属于单工具功能性前置条件，不在本阶段做多节点联调"
+    ]
+  },
+  "decision": {
+    "modification_allowed": true,
+    "reason": "原厂参数模板明确有模板生成、编辑、清空、载入和列表/预览职责，产品已按职责做最小组装调整，编辑语义继续保持禁用。"
+  },
+  "pending": [
+    "用 Agent Desktop 打开原厂 ContourMatch 参数窗并记录模板页、运行页、结果判断页",
+    "记录新建/清空/导入导出/帮助/取消关闭行为",
+    "在产品中完成单工具模板创建、保存重开和释放验证",
+    "确认后再做最小差异修改"
+  ],
+  "validation": {
+    "command": "dotnet test tests/SunEyeVision.Tools.Inspection.Tests/SunEyeVision.Tools.Inspection.Tests.csproj -c Release --no-build --filter 'FullyQualifiedName~ContourMatch'",
+    "exit_code": 0,
+    "passed": 28,
+    "failed": 0,
+    "payload_sha256": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB"
+  },
+  "runtime_execute_probe": {
+    "script": "scripts/agent-desktop/Invoke-SingleToolAudit.ps1 -ProbeExecute",
+    "script_run": "Release/_validation/AgentDesktopToolReview/single-tool/20261117-194505-轮廓匹配1",
+    "result": "execute-result-tree.json contains Missing required port input.image",
+    "close": "script close-app delivered_verified"
+  }
+}
+

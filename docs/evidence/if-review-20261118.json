@@ -1,0 +1,150 @@
+{
+  "tool": "If",
+  "phase": "comparison",
+  "status": "difference-confirmed-repair-not-started",
+  "vm": {
+    "assembly": "IfBranchModuleControl 1.0.0.0",
+    "artifact_sha256": "5c7446d7ff008a8089c4e38b4eb3f75bca3910a3d3def02901f99dc849102c3e",
+    "mvid": "b4056a05-a4ba-40f4-a562-c98973cfe5e4",
+    "source": [
+      "docs/07-工具逆向/decompiled/ModuleControls/IfBranchModuleControl/Apps.XmlParser.ParamTab/IfBranchModuleDynamicIO.cs",
+      "docs/07-工具逆向/decompiled/ModuleControls/IfBranchModuleControl/Apps.XmlParser.ParamTab/IfBranchDynamicIO.cs",
+      "docs/07-工具逆向/decompiled/ModuleControls/IfBranchModuleControl/Apps.XmlParser.ParamTab/ButtonSelecter_IfBranch.cs",
+      "docs/07-工具逆向/decompiled/ModuleControls/IfBranchModuleControl/datatemplate/paramusercontroldatatemplate.xaml",
+      "C:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Logic/IfBranchModule/IfBranchModuleAlgorithmTab.xml",
+      "C:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Logic/IfBranchModule/IfBranchModule.xml"
+    ],
+    "confirmed": [
+      "条件行通过 ItemsA 动态增删",
+      "每行包含来源/范围/判断/执行模块 ID/删除",
+      "类型选择为 int 或 float",
+      "int 范围为 ±999999999，float 范围为 ±100000",
+      "状态枚举包含 OK 和 NG",
+      "IfBranchText 持久化最小值、最大值、状态和 RunModuleId",
+      "AlgorithmTab 为一个 Tab_Basic Params，底部有 BottomCommandGroup"
+    ],
+    "runtime": {
+      "solution": "C:/Users/Administrator/Desktop/test.sol",
+      "snapshot_id": "s2nnletlegiwra",
+      "screenshot": "C:/Users/Administrator/.codex/visualizations/2026/11/09/01a1c08e-2257-7a32-8813-4fdf253c33e3/vm-test-main-afterwait.png",
+      "note": "原厂 test.sol 等待异步加载后显示节点。条件分支节点尚未定位到可操作坐标。"
+    },
+    "parameter_window": {
+      "window_id": "w-526940",
+      "snapshot_id": "s5zjebwvs0rsf",
+      "screenshot": "C:\\Users\\Administrator\\.codex\\visualizations\\2026\\11\\09\\01a1c08e-2257-7a32-8813-4fdf253c33e3\\vm-if-params.png",
+      "title": "10 条件分支",
+      "headers": [
+        "名称",
+        "条件",
+        "有效值范围",
+        "判断",
+        "执行模块ID",
+        "操作"
+      ],
+      "initial_row": "int",
+      "add_button": true,
+      "footer_buttons": [
+        "连续执行",
+        "执行",
+        "确定"
+      ],
+      "classification": "C运行观察/VM已证"
+    }
+  },
+  "product": {
+    "source": [
+      "tools/SunEyeVision.If/Runtime/IfFields.cs",
+      "tools/SunEyeVision.If/Runtime/IfSettings.cs",
+      "tools/SunEyeVision.If/Runtime/IfTool.cs",
+      "tools/SunEyeVision.If/Wpf/Views/IfParameterEditor.xaml"
+    ],
+    "confirmed": [
+      "固定四个条件槽位",
+      "四个槽位各声明启用、来源、最小值、最大值",
+      "所有槽位同时声明四个控制输出",
+      "统一使用 ±999999999 数值范围",
+      "参数页由 DeclaredSettingsView 组装"
+    ]
+  },
+  "differences": [
+    {
+      "id": "IF-DYN-001",
+      "type": "structure",
+      "finding": "VM 条件行动态增删，本方固定四槽位",
+      "confidence": "VM已证/本方已证",
+      "impact": "影响参数窗口行数、控制输出数量、端口映射、保存重开和执行分支索引",
+      "repair": "禁止直接把四槽位改成动态。先确认本方 Schema/Graph 是否支持运行期动态控制输出和持久化字段，再设计最小适配"
+    },
+    {
+      "id": "IF-RANGE-002",
+      "type": "parameter",
+      "finding": "VM float 行范围为 ±100000，本方统一为 ±999999999",
+      "confidence": "VM已证/本方已证",
+      "impact": "影响 float 参数校验和控件显示",
+      "repair": "需要在本方增加类型身份后才能精确迁移，当前不修改统一范围"
+    },
+    {
+      "id": "IF-STATE-003",
+      "type": "parameter",
+      "finding": "VM 行有 OK/NG 判断字段和 RunModuleId，本方条件槽只有启用/来源/区间",
+      "confidence": "VM已证/本方已证",
+      "impact": "影响参数页和结果/分支语义",
+      "repair": "需先确认 If 与 IfBranch 两个原厂模块在产品目标中的对应关系，当前不把 IfBranch 行字段直接塞入 If"
+    }
+  ],
+  "next_evidence": [
+    "在原厂 test.sol 中定位条件分支节点并打开参数页",
+    "确认本方 If 节点是否目标为 IfModule 还是 IfBranchModule",
+    "检查本方动态控制输出和字段持久化能力",
+    "补齐 If 运行、保存重开和关闭释放观察"
+  ],
+  "runtime_observation": {
+    "source": "Agent Desktop SunEyeVision.UI.exe",
+    "solution": "11111",
+    "script": "scripts/agent-desktop/Invoke-SingleToolAudit.ps1",
+    "run": "Release/_validation/AgentDesktopToolReview/single-tool-product/20261117-182459-条件分支1",
+    "snapshot_id": "s2rbf09bcfnwde",
+    "window_title": "12 条件分支1",
+    "confirmed": [
+      "产品参数窗口有基本参数页",
+      "当前页面暴露四组启用/未启用状态控件",
+      "底栏有连续执行、执行、确定",
+      "产品窗口可打开并关闭释放"
+    ],
+    "difference": "运行树未显示原厂动态条件行、类型选择或 OK/NG/RunModuleId 控件；这与静态 IfBranch 证据中的动态结构差异一致。",
+    "edit_probe": {
+      "session": "run-1794940310782-31124-0",
+      "action": "按新快照坐标切换首个启用开关后点击确定",
+      "result_snapshot_id": "s1lcqlcyvgx25z",
+      "result": "产品拒绝提交并显示参数配置模态框",
+      "message": "条件1已启用，但没有选择取值来源。",
+      "release": "已关闭产品进程，未保存无效编辑"
+    },
+    "execute_probe": {
+      "script": "scripts/agent-desktop/Invoke-SingleToolAudit.ps1 -ProbeExecute",
+      "script_run": "Release/_validation/AgentDesktopToolReview/single-tool/20261117-194831-条件分支1",
+      "result": "执行后仍停留在条件分支参数窗口，未弹出输入错误；当前四槽位均未启用时无分支选择，未作跨节点执行结论",
+      "close": "script close-app delivered_verified"
+    }
+  },
+  "modification_allowed": false,
+  "tests": {
+    "command": "dotnet test tests/SunEyeVision.Tools.LogicData.Tests/SunEyeVision.Tools.LogicData.Tests.csproj -c Release --no-restore --filter 'FullyQualifiedName~If'",
+    "exit_code": 0,
+    "passed": 25,
+    "failed": 0,
+    "skipped": 0,
+    "warnings": "既有编译警告，未计为测试失败"
+  },
+  "release_validation": {
+    "release_root": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
+    "payload_sha256": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB",
+    "startup": "Agent Desktop launch succeeded after payload reseal",
+    "welcome_solution": "11111",
+    "product_main_snapshot": "s26nivk0a2o0qd",
+    "product_if_window": "s2rbf09bcfnwde",
+    "reason": "已通过固定单工具审核脚本获得条件分支参数窗口；只确认当前结构，不把它当作原厂动态结构通过"
+  }
+}
+

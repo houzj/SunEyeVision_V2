@@ -17,7 +17,7 @@ public sealed class DivideImageTool : IToolDefinition<DivideImageSettings, Divid
 
     // 工具箱目录中 IMVSDivideImageModu 位于「拆分组合」组；运行时分类必须与之一致才能准入。
     public ToolCatalogDescriptor Catalog { get; } = new("划片拆分",
-        "按X/Y方向划片数量与重叠率计算分片矩形，输出分片矩形集合与分片个数", "divide-image", "拆分组合", 10, "DEFAULT");
+        "按X/Y方向划片数量与重叠率计算分片矩形，输出分片矩形集合与分片个数", "divide-image", "拆分组合", 10, "IMAGE");
 
     public ToolSchema SettingsSchema => DivideImageFields.Schema;
 

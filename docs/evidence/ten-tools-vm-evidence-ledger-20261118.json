@@ -1,0 +1,103 @@
+{
+  "baseline": {
+    "vm": "VisionMaster 4.4.0",
+    "build": "Build20250516",
+    "project_branch": "main",
+    "evidence_policy": "A反编译源码 > B原厂配置 > C原厂运行观察",
+    "status": "BlobLabels 已完成首个证据驱动视觉修复与单工具运行验证，If/ContourMatch/GrayMatch/MarkFind 取证中，其余工具已建立静态证据入口"
+  },
+  "items": [
+    {
+      "tool": "If",
+      "status": "evidence-collected",
+      "facts": [
+        {
+          "classification": "VM已证",
+          "authority": "REA shipped-artifact",
+          "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\IfBranchModuleControl.dll",
+          "evidence_id": "ev_10b3563b3ee5eea19526a0fe4b0586897d9106b48b1881cec8e4c8db26b38d2f",
+          "artifact_sha256": "5c7446d7ff008a8089c4e38b4eb3f75bca3910a3d3def02901f99dc849102c3e",
+          "mvid": "b4056a05-a4ba-40f4-a562-c98973cfe5e4",
+          "assembly": "IfBranchModuleControl 1.0.0.0, .NET Framework 4.6.1, CIL"
+        },
+        {
+          "classification": "VM已证",
+          "source": "docs/07-工具逆向/decompiled/ModuleControls/IfBranchModuleControl/datatemplate/paramusercontroldatatemplate.xaml",
+          "location": "DataTemplate IfBranchItem and ButtonSelecter_IfBranch_Container",
+          "facts": [
+            "动态行显示由 CustomVisibleA 控制",
+            "每行包含名称、来源选择器、有效区间、状态枚举、RunModuleId 选择器和删除按钮",
+            "底部提供 int/float 枚举选择和添加按钮"
+          ]
+        },
+        {
+          "classification": "VM已证",
+          "source": "docs/07-工具逆向/decompiled/ModuleControls/IfModuleControl/Apps.XmlParser.ParamTab/IfModuleDynamicIO.cs",
+          "location": "IfModuleDynamicIO.AddIO, Outputio, GetParam",
+          "facts": [
+            "类型支持 int 和 float",
+            "新增条件时同步创建输出、Min 和 Max 项",
+            "参数从 IFText 读取并按分号、冒号解析"
+          ]
+        },
+        {
+          "classification": "VM已证",
+          "source": "docs/07-工具逆向/decompiled/ModuleControls/IfBranchModuleControl/Apps.XmlParser.ParamTab/IfBranchModuleDynamicIO.cs",
+          "location": "IfBranchModuleDynamicIO.GetParam",
+          "facts": [
+            "参数从 IfBranchText 读取",
+            "每行读取最小值、最大值、状态和 RunModuleId",
+            "int/float 类型由 SelectTypeIndex 控制"
+          ]
+        },
+        {
+          "classification": "VM已证",
+          "source": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\ToolItemInfo.xml",
+          "location": "displayType",
+          "facts": ["IfBranchModule 的显示类型为 IFBRANCH"]
+        },
+        {
+          "classification": "VM已证",
+          "authority": "REA managed static analysis",
+          "source": "IfBranchModuleControl.dll",
+          "evidence_id": "ev_76fecc0146a2bdf2073dc59537f99cf828dfe2777a1fcfa27556d2d99220d6b2",
+          "facts": [
+            "类型 Apps.XmlParser.ParamTab.IfBranchDynamicIO 和 IfBranchModuleDynamicIO 存在",
+            "字符串包含 int、float、OK、NG、RunModuleId、IfBranchText、SelectTypeIndex、IsAllowSet、DecimalDigits"
+          ],
+          "limitations": ["REA 静态检查未加载、执行或解析 CLR 依赖，不能单独证明运行时行为"]
+        },
+        {
+          "classification": "C运行观察",
+          "source": "Agent Desktop",
+          "facts": [
+            "VisionMaster.exe 已通过 agent-desktop launch 启动，PID 27120，窗口可访问",
+            "欢迎页最近打开方案列表含 C:\\Users\\Administrator\\Desktop\\test.sol"
+          ],
+          "pending": "test.sol 行点击因 Windows 无障碍身份不唯一被安全拒绝，需用有界的 Agent Desktop headed 坐标点击或从唯一入口打开"
+        }
+      ],
+      "code_comparison_pending": true,
+      "modification_allowed": false,
+      "next": [
+        "读取本方 If Runtime/Wpf/宿主消费者并建立字段、端口、窗口组装差异",
+        "完成 Agent Desktop 原厂 test.sol 运行观察",
+        "只对 A/B/C 证据支持的差异打最小补丁"
+      ]
+    }
+  ],
+  "review_files": [
+    "docs/evidence/if-review-20261118.json",
+    "docs/evidence/bloblabels-review-20261118.json",
+    "docs/evidence/contourmatch-review-20261118.json",
+    "docs/evidence/graymatch-review-20261118.json",
+    "docs/evidence/markfind-review-20261118.json",
+    "docs/evidence/color-extract-review-20261118.json",
+    "docs/evidence/pixelcount-review-20261118.json",
+    "docs/evidence/framemean-review-20261118.json",
+    "docs/evidence/divideimage-review-20261118.json",
+    "docs/evidence/intensitymeasure-review-20261118.json"
+  ]
+}
+
+

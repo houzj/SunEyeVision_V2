@@ -1,0 +1,117 @@
+{
+  "tool": "GrayMatch",
+  "phase": "static-review",
+  "status": "evidence-driven-template-surface-adjusted-and-runtime-verified",
+  "vm_evidence": {
+    "sources": [
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSGrayMatchModuControl/paramstabcontrol4garymatch.xaml",
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSGrayMatchModuControl/IMVSGrayMatchModuControl/GrayMatchDialogUI.cs",
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSGrayMatchModuControl/IMVSGrayMatchModuControl/ParamsTabControl4GaryMatch.cs",
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSGrayMatchModuControl/IMVSGrayMatchModuControl/../Apps.XmlParser.ParamTab/GrayMatchDialogData.cs",
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSGrayMatchModuControl/graymatchdialoguistyle.xaml",
+      "C:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSGrayMatchModu/IMVSGrayMatchModuAlgorithmTab.xml",
+      "C:/Program Files/VisionMaster4.4.0/Applications/Module(sp)/x64/Location/IMVSGrayMatchModuVA/IMVSGrayMatchModuVAAlgorithmTab.xml"
+    ],
+    "confirmed": [
+      "原厂参数窗由 ParamsConfigControlBase 组装，标题包含节点 ID 和工具类型，并提供帮助按钮与进度遮罩",
+      "灰度模板训练继承 HPFeaturepatMatchDialogUI，使用图像、ROI、掩膜和固定点交互",
+      "灰度模板扩展名为 .gmxml，VA 版本运行参数清单与旧版不同",
+      "GrayMatchDialogData 默认金字塔层数为 5，新增 ROI 会限制为单个非十字 ROI，并关闭角度使能"
+    ]
+  },
+  "product_difference": {
+    "sources": [
+      "tools/SunEyeVision.GrayMatch/Wpf/Views/GrayMatchTemplatePanel.cs",
+      "tools/SunEyeVision.GrayMatch/Wpf/Views/GrayMatchParameterEditor.xaml",
+      "tools/SunEyeVision.GrayMatch/Runtime/GrayMatchFields.cs"
+    ],
+    "confirmed": [
+      "当前已提供模板新建、清空、导入、导出及模型摘要",
+      "当前模板面使用宿主自研文字按钮，原厂模板训练对话框与图像/掩膜交互尚未完成同源映射",
+      "当前参数声明覆盖模板、运行和结果判断，但原厂帮助、进度遮罩与 ROI 约束的资源和行为映射尚未闭合",
+      "当前工具声明同时引用旧版和 VA 版证据，需要继续确认当前产品对应的原厂模块身份"
+    ]
+  },
+  "decision": {
+    "modification_allowed": true,
+    "reason": "原厂运行窗口明确给出创建、载入、编辑模板（无模型时禁用）、删除所有模板和模型列表布局，产品已按这些视觉职责做最小组装调整。模型编辑行为仍保持禁用，避免无运行证据的语义猜测。"
+  },
+  "runtime_evidence": {
+    "source": "VisionMaster 4.4.0 Build20250516 via Agent Desktop",
+    "window_snapshot": "s1ztnj8q4vgyl6",
+    "template_tab_snapshot": "s1g69fzh0x0500",
+    "run_tab_snapshot": "s2bcn95xrtu009",
+    "title": "3 灰度匹配",
+    "tabs": [
+      "基本参数",
+      "灰度模板",
+      "运行参数",
+      "结果显示"
+    ],
+    "template_controls": [
+      "创建",
+      "载入",
+      "模型列表",
+      "编辑模板",
+      "删除所有模板",
+      "图像预览"
+    ],
+    "bottom_commands": [
+      "重置参数",
+      "连续执行",
+      "执行",
+      "确定"
+    ],
+    "product_snapshot": "s2zs06iabawtwc",
+    "product_window_title": "4 灰度匹配1",
+    "product_template_surface": [
+      "模板参数",
+      "新建模型",
+      "清空模型",
+      "导出",
+      "导入",
+      "金字塔层数标记",
+      "角度步长",
+      "模板角度范围"
+    ],
+    "product_difference_observed": [
+      "原厂灰度模板页显示创建、载入、模型列表、图像预览、编辑模板、删除所有模板",
+      "产品当前显示创建、载入、编辑模板、删除所有模板、模型列表和保存/载入工程按钮"
+    ],
+    "product_after_patch_snapshot": "s2srh0fjwsymu1",
+    "product_after_patch_window": "4 灰度匹配1",
+    "screenshots": [
+      "C:/Users/Administrator/.codex/visualizations/2026/11/09/01a1c08e-2257-7a32-8813-4fdf253c33e3/vm-graymatch-template.png",
+      "C:/Users/Administrator/.codex/visualizations/2026/11/09/01a1c08e-2257-7a32-8813-4fdf253c33e3/vm-graymatch-run.png",
+      "C:/Users/Administrator/.codex/visualizations/2026/11/09/01a1c08e-2257-7a32-8813-4fdf253c33e3/suneye-graymatch-template-evidence.png"
+    ]
+  },
+  "pending": [
+    "用 Agent Desktop 打开原厂灰度匹配参数窗，确认模板/运行/结果判断页面和窗口尺寸",
+    "记录模板训练、ROI 限制、擦除掩膜、固定点、保存重开和关闭释放",
+    "在产品中完成单工具功能性操作，再做最小证据驱动修改"
+  ],
+  "validation": {
+    "command": "dotnet test tests/SunEyeVision.Tools.Inspection.Tests/SunEyeVision.Tools.Inspection.Tests.csproj -c Release --no-build --filter 'FullyQualifiedName~GrayMatch'",
+    "exit_code": 0,
+    "passed": 30,
+    "failed": 0,
+    "payload_sha256": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB",
+    "template_surface_after_patch": true,
+    "graymatch_wpf_build_errors": 0,
+    "full_release_build": {
+      "exit_code": 0,
+      "errors": 0,
+      "warnings": 3275
+    },
+    "final_release_agentdesktop_launch": true,
+    "final_release_parameter_window": "4 灰度匹配1"
+  },
+  "runtime_execute_probe": {
+    "script": "scripts/agent-desktop/Invoke-SingleToolAudit.ps1 -ProbeExecute",
+    "script_run": "Release/_validation/AgentDesktopToolReview/single-tool/20261117-194621-灰度匹配1",
+    "result": "execute-result-tree.json contains Missing required port input.image",
+    "close": "script close-app delivered_verified"
+  }
+}
+

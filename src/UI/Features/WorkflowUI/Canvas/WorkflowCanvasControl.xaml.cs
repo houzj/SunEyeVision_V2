@@ -1691,12 +1691,10 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
             }
             else
             {
-                ClearAllSelections();
+                // 原件 ItemsPage.OnMouseLeftButtonDown（ItemsPage.cs:582-592）：点击空白仅进入框选准备，不清除既有选中。
                 _isBoxSelecting = true; _boxSelectStart = _mouseDownPosition;
                 SelectionBox?.StartSelection(_boxSelectStart);
             }
-            WorkflowCanvas.CaptureMouse();
-            e.Handled = true;
         }
 
 

@@ -1130,13 +1130,17 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
 
 
-            // 调试窗口打开时，禁止切换选中节点
+            // 原件 DiagramItem.OnPreviewMouseLeftButtonDown（DiagramItem.xaml.cs:471-484）：
+            // 参数窗打开时只拦单击；双击仍然允许切换选中。此前我方把双击也一起拦掉了。
             if (_viewModel?.IsDebugWindowOpen == true)
             {
+                if (e.ClickCount < 2) { e.Handled = true; return; }
+                ClearAllSelections();
+                node.IsSelected = true;
+                _viewModel.SelectedNode = node.Definition;
                 e.Handled = true;
                 return;
             }
-
             if (!CanEditCanvas) { e.Handled = true; return; }
             if (!node.IsSelected) { ClearAllSelections(); node.IsSelected = true; }
             _viewModel.SelectedNode = node.Definition;

@@ -67,6 +67,17 @@
       <EntryType>SunEyeVision.Tool.ColorExtract.Wpf.ColorExtractEditorFactory</EntryType>
       <CompanionToolId>ColorExtract</CompanionToolId>
     </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.DivideImage/Runtime/SunEyeVision.DivideImage.Runtime.csproj">
+      <ComponentId>SunEyeVision.Tool.DivideImage.Runtime</ComponentId>
+      <ToolId>DivideImage</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.DivideImage.Runtime.DivideImageTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.DivideImage/Wpf/SunEyeVision.DivideImage.Wpf.csproj">
+      <ComponentId>SunEyeVision.Tool.DivideImage.Wpf</ComponentId>
+      <ToolId>DivideImage</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.DivideImage.Wpf.DivideImageEditorFactory</EntryType>
+      <CompanionToolId>DivideImage</CompanionToolId>
+    </ProductToolComponent>
     <ProductToolComponent Include="tools/SunEyeVision.PixelCount/Runtime/SunEyeVision.PixelCount.Runtime.csproj">
       <ComponentId>SunEyeVision.Tool.PixelCount.Runtime</ComponentId>
       <ToolId>PixelCount</ToolId><Role>Runtime</Role>

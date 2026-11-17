@@ -31,6 +31,12 @@
     <ProjectReference Include="../../tools/SunEyeVision.MarkFind/Runtime/SunEyeVision.MarkFind.Runtime.csproj">
       <Private>false</Private>
     </ProjectReference>
+    <ProjectReference Include="../../tools/SunEyeVision.ContourMatch/Runtime/SunEyeVision.ContourMatch.Runtime.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="../../tools/SunEyeVision.ContourMatch/Wpf/SunEyeVision.ContourMatch.Wpf.csproj">
+      <Private>false</Private>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\_shared\ProductRuntimeTestHost.cs" Link="_shared\ProductRuntimeTestHost.cs" />

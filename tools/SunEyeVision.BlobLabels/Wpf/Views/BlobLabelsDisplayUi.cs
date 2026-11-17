@@ -41,7 +41,7 @@ internal static class BlobLabelsDisplayUi
             TextExpressions = expressions,
             GraphicDisplays = new[]
                 {
-                    BlobLabelsResultDisplay.Graphic, BlobLabelsResultDisplay.Inspection, BlobLabelsResultDisplay.Outline,
+                    BlobLabelsResultDisplay.Graphic, BlobLabelsResultDisplay.Inspection,
                     BlobLabelsResultDisplay.ReferencePoint, BlobLabelsResultDisplay.RunPoint, BlobLabelsResultDisplay.Mask,
                     BlobLabelsResultDisplay.Annulus
                 }

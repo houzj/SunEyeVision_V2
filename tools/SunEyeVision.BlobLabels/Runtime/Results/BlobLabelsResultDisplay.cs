@@ -49,7 +49,8 @@ public static class BlobLabelsResultDisplay
         var result = new List<Definition>();
         var order = 0;
         void Add(string id, string label, string section, TypeRef type, object value,
-            double? minimum = null, double? maximum = null, double? increment = null, int? decimals = 2)
+            double? minimum = null, double? maximum = null, double? increment = null, int? decimals = 2,
+            string? dialog = null, string? dialogTitle = null, bool primary = false)
         {
             var modes = id == Field(Text, "content") ? FieldEditModes.Constant | FieldEditModes.DisplayExpression
                 : id == Field(Text, "x") || id == Field(Text, "y") ? FieldEditModes.Constant | FieldEditModes.Reference
@@ -59,18 +60,19 @@ public static class BlobLabelsResultDisplay
                 type.Shape == ValueShape.Record ? FieldEditorKind.Record : FieldEditorKind.Scalar)
             {
                 Layout = new FieldLayout("结果显示", section, Minimum: minimum, Maximum: maximum,
-                    Increment: increment ?? 1, DecimalPlaces: type == DataType.Number ? decimals : 0)
+                    Increment: increment ?? 1, DecimalPlaces: type == DataType.Number ? decimals : 0,
+                    DialogGroup: dialog, DialogTitle: dialogTitle, DialogPrimary: primary)
             }, value));
         }
         var ok = PresentationDeclarations.Color(102, 255, 0);
         var ng = PresentationDeclarations.Color(255, 0, 0);
         void GraphicFields(string group, string label, RecordValue color, double opacity = 1, double width = 2)
         {
-            Add(Field(group, "visible"), label, "图像显示", DataType.Boolean, true);
-            Add(Field(group, "ok"), "OK颜色", "图像显示", PresentationDeclarations.Rgba, color);
-            Add(Field(group, "ng"), "NG颜色", "图像显示", PresentationDeclarations.Rgba, ng);
-            Add(Field(group, "opacity"), "透明度", "图像显示", DataType.Number, opacity, 0, 1, .01);
-            Add(Field(group, "width"), "线宽", "图像显示", DataType.Number, width, 1, 10, 1);
+            Add(Field(group, "visible"), label, "图像显示", DataType.Boolean, true, dialog: group, dialogTitle: label, primary: true);
+            Add(Field(group, "ok"), "OK颜色", "图像显示", PresentationDeclarations.Rgba, color, dialog: group, dialogTitle: label);
+            Add(Field(group, "ng"), "NG颜色", "图像显示", PresentationDeclarations.Rgba, ng, dialog: group, dialogTitle: label);
+            Add(Field(group, "opacity"), "透明度", "图像显示", DataType.Number, opacity, 0, 1, .01, dialog: group, dialogTitle: label);
+            Add(Field(group, "width"), "线宽", "图像显示", DataType.Number, width, 1, 10, 1, dialog: group, dialogTitle: label);
         }
         GraphicFields(Graphic, "Blob", ok);
         GraphicFields(Inspection, "检测区域", PresentationDeclarations.Color(0, 0, 255));

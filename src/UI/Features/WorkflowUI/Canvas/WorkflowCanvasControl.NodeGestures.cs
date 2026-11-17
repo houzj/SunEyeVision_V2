@@ -22,6 +22,8 @@ public partial class WorkflowCanvasControl
         public Dictionary<CanvasNodeProjection, Point> After { get; } = new();
         public List<FrameworkElement> Ghosts { get; } = new();
         public List<System.Windows.Shapes.Line> AlignLines { get; } = new();
+        /// <summary>节点 →（预览快照, 相对中心的偏移）。快照只在拖动开始时建一次，之后只改坐标。</summary>
+        public Dictionary<CanvasNodeProjection, (Rectangle Ghost, double Dx, double Dy)> GhostMap { get; } = new();
         public bool Copy { get; set; }
     }
     private NodeDragSession? _canvasNodeMove;
@@ -209,33 +211,42 @@ public partial class WorkflowCanvasControl
         var left = session.Before.Min(p => p.Value.X - p.Key.NodeRect.Width / 2);
         var top = session.Before.Min(p => p.Value.Y - p.Key.NodeRect.Height / 2);
         delta = new Vector(Math.Round((left + delta.X) / 5) * 5 - left, Math.Round((top + delta.Y) / 5) * 5 - top);
-        RemoveCanvasNodeGhosts();
         session.After.Clear();
         foreach (var pair in session.Before)
         {
             var node = pair.Key;
             var width = node.NodeRect.Width; var height = node.NodeRect.Height;
-            var position = new Point(Math.Clamp(pair.Value.X + delta.X, width / 2, 5000 - width / 2),
+            session.After[node] = new Point(
+                Math.Clamp(pair.Value.X + delta.X, width / 2, 5000 - width / 2),
                 Math.Clamp(pair.Value.Y + delta.Y, height / 2, 5000 - height / 2));
-            session.After[node] = position;
         }
-            // 预览镜像：每个节点各取一张 0.7 VisualBrush 快照，统一按同一 delta 平移，视觉上等效整体移动。
-            // 原件（DiagramPage.xaml.cs:636-643）用"节点层 Canvas + Viewbox=包围框"的单张快照，
-            // 我方画布没有独立节点层，若直接用 WorkflowCanvas 作源会把 ghost 自身也画进去（自引用渲染空白）。
+
+        // 预览快照只在首次移动时创建；之后每轮只更新坐标（原件 _dragOver 同样只 SetOffsets），
+        // 否则每轮重建 VisualBrush 会对整棵可视化树重新渲染，拖动明显卡顿。
+        if (session.GhostMap.Count == 0)
+        {
             foreach (var pair in session.Before)
             {
-                var node = pair.Key;
-                if (!session.After.TryGetValue(node, out var position)) continue;
-                var visual = FindCanvasNodeVisual(WorkflowCanvas, node);
+                var visual = FindCanvasNodeVisual(WorkflowCanvas, pair.Key);
                 if (visual == null) continue;
                 var bounds = VisualTreeHelper.GetDescendantBounds(visual);
                 if (bounds.IsEmpty) continue;
                 var brush = new VisualBrush(visual) { Stretch = Stretch.None, Opacity = .7 };
                 var ghost = new Rectangle { Width = bounds.Width, Height = bounds.Height, Fill = brush, IsHitTestVisible = false };
-                System.Windows.Controls.Canvas.SetLeft(ghost, position.X - node.NodeRect.Width / 2 - 10 + bounds.X);
-                System.Windows.Controls.Canvas.SetTop(ghost, position.Y - node.NodeRect.Height / 2 - 10 + bounds.Y);
-                Panel.SetZIndex(ghost, 9000); WorkflowCanvas.Children.Add(ghost); session.Ghosts.Add(ghost);
+                Panel.SetZIndex(ghost, 9000);
+                WorkflowCanvas.Children.Add(ghost);
+                session.Ghosts.Add(ghost);
+                session.GhostMap[pair.Key] = (ghost,
+                    -pair.Key.NodeRect.Width / 2 - 10 + bounds.X,
+                    -pair.Key.NodeRect.Height / 2 - 10 + bounds.Y);
             }
+        }
+        foreach (var pair in session.After)
+        {
+            if (!session.GhostMap.TryGetValue(pair.Key, out var entry)) continue;
+            System.Windows.Controls.Canvas.SetLeft(entry.Ghost, pair.Value.X + entry.Dx);
+            System.Windows.Controls.Canvas.SetTop(entry.Ghost, pair.Value.Y + entry.Dy);
+        }
         if (session.After.Count == 1)
         {
             var single = session.After.Single();

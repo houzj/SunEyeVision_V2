@@ -10,13 +10,24 @@ public partial class WorkflowCanvasControl
     private readonly List<Line> _canvasAlignmentGuides = new();
     private Rectangle? _canvasNodeHotRegion;
     private HotPlacement? _canvasHotPlacement;
+
+    /// <summary>每帧清反馈：对齐线按原件每帧重建；热区只隐藏复用（原件 CurrentHotRegion 建一次后只改 Margin/Visibility）。</summary>
     internal void ClearCanvasPlacementFeedback()
     {
         foreach (var line in _canvasAlignmentGuides) WorkflowCanvas.Children.Remove(line);
         _canvasAlignmentGuides.Clear();
-        if (_canvasNodeHotRegion != null) WorkflowCanvas.Children.Remove(_canvasNodeHotRegion);
-        _canvasNodeHotRegion = null; _canvasHotPlacement = null;
+        if (_canvasNodeHotRegion != null) _canvasNodeHotRegion.Visibility = Visibility.Collapsed;
+        _canvasHotPlacement = null;
     }
+
+    /// <summary>拖拽彻底结束时才销毁热区（原件 DoDragDrop 返回后移除 adornerPanel）。</summary>
+    internal void DisposeCanvasPlacementFeedback()
+    {
+        ClearCanvasPlacementFeedback();
+        if (_canvasNodeHotRegion != null) WorkflowCanvas.Children.Remove(_canvasNodeHotRegion);
+        _canvasNodeHotRegion = null;
+    }
+
     internal void UpdateCanvasPlacementFeedback(Point center, double height, IEnumerable<string>? excluded = null)
     {
         var tab = CurrentWorkflowTab;
@@ -37,10 +48,16 @@ public partial class WorkflowCanvasControl
         }
         if (_canvasHotPlacement != null)
         {
-            _canvasNodeHotRegion = new Rectangle { Width = 66, Height = 22, Fill = Brushes.Orange, IsHitTestVisible = false };
+            // 原件：CurrentHotRegion 只创建一次，之后 DrawHotRect 改 Margin / Visibility。
+            if (_canvasNodeHotRegion is null)
+            {
+                _canvasNodeHotRegion = new Rectangle { Width = 66, Height = 22, Fill = Brushes.Orange, IsHitTestVisible = false };
+                Panel.SetZIndex(_canvasNodeHotRegion, 56);
+                WorkflowCanvas.Children.Add(_canvasNodeHotRegion);
+            }
             System.Windows.Controls.Canvas.SetLeft(_canvasNodeHotRegion, _canvasHotPlacement.TopLeft.X + 55 - 33);
             System.Windows.Controls.Canvas.SetTop(_canvasNodeHotRegion, _canvasHotPlacement.TopLeft.Y + 15 - 11);
-            Panel.SetZIndex(_canvasNodeHotRegion, 56); WorkflowCanvas.Children.Add(_canvasNodeHotRegion);
+            _canvasNodeHotRegion.Visibility = Visibility.Visible;
         }
     }
     internal Point ResolveCanvasPlacement(Point fallback, double height) => _canvasHotPlacement == null ? fallback : new Point(_canvasHotPlacement.TopLeft.X + 55, _canvasHotPlacement.TopLeft.Y + height / 2);

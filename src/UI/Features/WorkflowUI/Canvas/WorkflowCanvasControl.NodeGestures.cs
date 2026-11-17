@@ -254,7 +254,7 @@ delta = new Vector(Math.Round((left + delta.X) / 5) * 5 - left, Math.Round((top 
         }
         return null;
     }
-    private void HideCanvasNodeGhosts() { RemoveCanvasNodeGhosts(); ClearCanvasPlacementFeedback(); ClearCanvasInsertionWire(); }
+    private void HideCanvasNodeGhosts() { RemoveCanvasNodeGhosts(); DisposeCanvasPlacementFeedback(); ClearCanvasInsertionWire(); }
     /// <summary>建预览根容器（只建一次）。原件：VisualTreeHelper.GetDescendantBounds + 0.7 不拉伸 VisualBrush。</summary>
     /// <summary>建拖动预览（只建一次）：挂在 Adorner 层，内容为各节点的 0.7 VisualBrush 快照。
     /// 原件 DiagramItem.xaml.cs:654-672 同样把预览放进 AdornerPanel，不让画布参与布局。</summary>

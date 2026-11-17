@@ -1,5 +1,6 @@
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Contracts.Results.Presentation;
+using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using SunEyeVision.Plugin.Wpf.Presenters.Results;
 using SunEyeVision.Tool.PixelCount.Wpf.Views;
 
@@ -11,6 +12,9 @@ namespace SunEyeVision.Tool.PixelCount.Wpf;
 /// </summary>
 public sealed class PixelCountEditorFactory : IToolPresentationFactory
 {
+    public IToolSettingsView CreateSettingsView(IToolSettingsDraft draft, ToolSettingsViewOptions options)
+        => new Views.PixelCountParameterEditor(draft, options);
+
     public IToolResultView CreateResultView(ToolSchema schema, ResultProjectionDescriptor projection)
     {
         ArgumentNullException.ThrowIfNull(schema);

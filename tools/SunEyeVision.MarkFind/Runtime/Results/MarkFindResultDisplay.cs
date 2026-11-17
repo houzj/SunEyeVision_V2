@@ -90,8 +90,8 @@ public static class MarkFindResultDisplay
         Add(Field(Text, "ng"), "NG颜色", "文本显示", PresentationDeclarations.Rgba, ng);
         Add(Field(Text, "size"), "字号", "文本显示", DataType.Number, 10d, 6, 72, 1);
         Add(Field(Text, "opacity"), "透明度", "文本显示", DataType.Number, 1d, 0, 1, .1);
-        Add(Field(Text, "x"), "位置X", "文本显示", DataType.Number, 0d, decimals: null);
-        Add(Field(Text, "y"), "位置Y", "文本显示", DataType.Number, 0d, decimals: null);
+        Add(Field(Text, "x"), "位置X", "文本显示", DataType.Number, 0d, decimals: 2);
+        Add(Field(Text, "y"), "位置Y", "文本显示", DataType.Number, 0d, decimals: 2);
         return result.AsReadOnly();
     }
 

@@ -80,9 +80,9 @@ public static class PixelCountResultDisplay
         Add(Field(Text, "opacity"), "透明度", "文本显示", DataType.Number, 1d, FieldEditModes.Constant, 0, 1, .1);
         // 原厂文本位置可被前序变量引用（PositionX/PositionY 独立取值）。
         Add(Field(Text, "x"), "位置X", "文本显示", DataType.Number, 0d,
-            FieldEditModes.Constant | FieldEditModes.Reference, decimals: null);
+            FieldEditModes.Constant | FieldEditModes.Reference, decimals: 2);
         Add(Field(Text, "y"), "位置Y", "文本显示", DataType.Number, 0d,
-            FieldEditModes.Constant | FieldEditModes.Reference, decimals: null);
+            FieldEditModes.Constant | FieldEditModes.Reference, decimals: 2);
         return result.AsReadOnly();
     }
 

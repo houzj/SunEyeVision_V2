@@ -7,24 +7,17 @@
              mc:Ignorable="d"
              d:DesignHeight="100" d:DesignWidth="100"
              Visibility="Collapsed">
-    <!-- 框选视觉对齐原件 rectdragpanalbasestyle.xaml：橙虚线 5,2 + 圆角3 + 极淡橙渐变 + 投影 -->
+    <!-- 框选过程中的橡皮筋框：原件 ItemsPage.cs:728-744 —— LightSlateGray 1px 虚线 2,1，无填充无投影。
+         框选完成后的「多节点外包框」是另一个元素 RectDragPanal（rectdragpanalbasestyle.xaml 橙虚线 5,2），不在这里。 -->
     <Canvas>
-        <Border x:Name="SelectionBorder"
-                CornerRadius="3"
-                BorderBrush="#7FDA780F"
-                BorderThickness="2"
-                Visibility="Collapsed">
-            <Rectangle Stroke="#7FDA780F" StrokeThickness="2" StrokeDashArray="5,2" RadiusX="3" RadiusY="3"/>
-            <Border.Background>
-                <LinearGradientBrush EndPoint="0,1" StartPoint="0,0" Opacity="0.03">
-                    <GradientStop Color="#FFC6570C" Offset="0"/>
-                    <GradientStop Color="#FFFD8112" Offset="1"/>
-                </LinearGradientBrush>
-            </Border.Background>
-            <Border.Effect>
-                <DropShadowEffect Color="Black" Opacity="0.65" ShadowDepth="4"/>
-            </Border.Effect>
-        </Border>
+        <Rectangle x:Name="SelectionBorder"
+                   Stroke="LightSlateGray"
+                   StrokeThickness="1"
+                   StrokeDashArray="2,1"
+                   StrokeLineJoin="Round"
+                   Fill="Transparent"
+                   IsHitTestVisible="False"
+                   Visibility="Collapsed"/>
         <TextBlock x:Name="ItemCountText"
                    Foreground="#FFA70F"
                    FontSize="12"

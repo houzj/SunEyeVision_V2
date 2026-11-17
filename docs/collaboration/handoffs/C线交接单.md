@@ -276,3 +276,131 @@ dotnet test tests\SunEyeVision.Tools.Inspection.Tests\SunEyeVision.Tools.Inspect
 2. 若要追平原件语义：优先补 `Process/ProcessAlg` 反编译（尺度搜索、极性、横切、掩膜/盲区、`ModuStatus`），再放开 §3.4 中对应限制。
 3. 多模板（C15）与掩膜图像（C6）建议作为独立批次，与公共控件（模板缩略预览、本地 ROI 宿主接缝）一并设计。
 
+---
+
+# 第四段 · 灰度匹配（原件 `IMVSGrayMatchModuVA`，ToolId `GrayMatch`）
+
+- 分支：`feature/tools-inspection`；工作树：`D:\MyWork\line-tools-inspect`
+- 执行者：CodeBuddy（C 线队员）
+- 起点基线：`a8db07988`（主线集成合并后，含轮廓匹配并入 main 与工具箱映射）
+- 允许修改：`tools/SunEyeVision.GrayMatch/**`、`tests/SunEyeVision.Tools.Inspection.Tests/**`；追加式 `SunEyeVision.slnx`、`product/ToolComponents.props`、本交接单
+- 独占资源：**未**使用动态取证 / 原厂程序 / Ghidra / REA；**未**使用 agent-desktop（冒烟由主线在独占时段执行）
+
+## 4.1 取证清单（S1）
+
+| # | 证据项 | 来源（文件 + 行号） | 结论 | 归属 |
+|---|---|---|---|---|
+| G1 | 工具身份 | `decompiled/Lang/zh-cn.xaml:5401-5402`（`IMVSGrayMatchModu`/`IMVSGrayMatchModuVA`＝灰度匹配）、`:8691`（Tip＝查找灰度相似的目标） | 工具箱条目 `IMVSGrayMatchModuVA`，类别定位 | 本工具 |
+| G2 | 与匹配家族的关系 | `IMVSGrayMatchModuVAControl/Apps.XmlParser.ParamTab/GrayMatchVADialogData.cs:5`（`: HPFeaturepatMatchDialogData`）、`:121-124`（`CreatePatE → CreateGrayPatEVA`）、`IMVSGrayMatchModuVAControl/GrayMatchVADialogUI.cs:37-40` | 训练＝灰度（NCC 型）模板，与轮廓/高精度匹配共用训练基类 | 本工具 |
+| G3 | 模板参数默认值 | `GrayMatchVADialogData.cs:7-15` | `pyramidNumLevelFlag=1`、`pyramidNumLevel=5`、`modelAngleStep=2`、`modelAngleStart=-45`、`modelAngleEnd=45` | 本工具 |
+| G4 | 训练对话框控件/范围/标签 | `IMVSGrayMatchModuVAControl/graymatchvadialoguistyle.xaml:860-872` | 5 行：金字塔层数标记（下拉）、金字塔层数（滑条 **1..8**，仅手动可用）、角度步长（**1..50**）、起始/终止角度（**-180..180** 互相夹取）；组标题 `Tab_Match Params`＝配置参数 | 本工具 |
+| G5 | flag ↔ 自动/手动 | `GrayMatchVADialogDataCvt.cs:15-30` | `Index`：flag 0↔index 1、flag 1↔index 0；`Enable`＝`flag==0` ⇒ **1=自动、0=手动** | 本工具 |
+| G6 | 中文显示名 | `zh-cn.xaml:6113-6114`（金字塔层数／金字塔层数标记）、`:6276`（角度步长）、`:3173`（起始角度）、`:3206`（终止角度） | 字段标签直接取自原件本地化 | 本工具 |
+| G7 | 运行/判断参数（VA 33 项） | `docs/07-工具逆向/tools/imvsgraymatchmoduva/parameters.json` | `MinScore=0.5`、`MaxMatchNum=1`、`MaxOverlap=**40**`、`Polarity=1`、`MatchingPolarity=1`、`AngleStart=-45`、`AngleEnd=45`、`SortType=2`、`TimeOut=0`、`EndPyramidLevel=0`、`UseMatchAllMode=False`、`OKWhenNumIsZero=False` + 7 组限位 | 本工具（默认值唯一来源） |
+| G8 | 与旧版差异（防串用） | 对比 `tools/imvsgraymatchmodu/parameters.json`（**31 项**） | 旧版有 `AngleStep=8`、`MaxOverlap=80`、无 `MatchingPolarity/EndPyramidLevel/UseMatchAllMode`；**VA 无 AngleStep** ⇒ 默认值必须逐工具取自本工具清单 | 交叉印证 |
+| G9 | 枚举/排序语义 | **同族工具托管 SDK 源码，非本工具二进制**：`decompiled/Managed/FastFeatureMatch/IMVSFastFeatureMatchModuCs/FastFeatureMatchParam.cs:28-54`（SortType 2..7 语义）、`:13-23`（Polarity 0=不考虑/1=考虑）、`:59-73`（MatchThresholdFlag 枚举，本工具 VA 无此参数） | SortType 六种语义、Polarity 两位语义 | 同族源码（交叉印证） |
+| G10 | 输入/输出（3/13） | `imvsgraymatchmoduva/parameters.json` | 输入：图像（InImage/Width/Height/PixelFormat 强制）、ROI（ROIBOX）、位置修正（FIXTURE）；输出：`ModuRunTime/ModuStatus/MatchStatus/MatchNum/MatchModelIndex/MatchModelName/MatchRect/Match Point/MatchScore/ROI/BlindPolygon/OutputMask/输出位置修正` | 本工具 |
+| G11 | 结果显示项（6 项） | `imvsgraymatchmoduva/ui-preview.json`（`controls` 37 项，含 6 个 `ImageViewConfig`） | `CheckZone`(检测区域)、`MatchResults`、`MatchLocation`、`FixtureInitPoint`、`FixtureRunPoint`、`ResutlText` | 本工具（声明级） |
+| G12 | `EndPyramidLevel` 含义 | `zh-cn.xaml:9868`（`RunParam_EndPyramidLevel Feature`＝**匹配结束层**）+ 本机 HALCON 反射签名 `find_ncc_model(..., NumLevels, ...)`（`NumLevels=0` 表示全部层） | **适配映射结论**：`EndPyramidLevel → NumLevels`（非原厂算法语义已证实） | 适配 |
+| G13 | 页签结构 | `imvsgraymatchmoduva/resources.json`（`status=inventory-only`，`xmlEvidence`/`uiTabs` 为空串）；`evidence.json` 的 `note` 记 Basic Params/Gray Scale Template/Run Params/ResultShow | 页签名只有文字线索，无逐控件绑定 | 已证（受限） |
+| G14 | 模型文件形态 | `GrayMatchVAConfigPanalData.cs:20`（`*.gmvaxml` 过滤）、`:22-25`（`GetModelData → new GrayMatchVADialogData()`）、`:32-34`（旧根节点名） | 原件模型＝模块内字节 + `.gmvaxml` 导出 | 本工具 |
+| G15 | 未闭合项 | `imvsgraymatchmoduva/evidence.json`（4 条 `unknowns`）、`algorithm-semantics.md`（9 步全 `unknown`） | 原生 `Process/ProcessAlg/ProcessOutput` 函数体、排序/阈值/失败发布、释放顺序未取证 | 缺口 |
+| G16 | **悬空引用** | `docs/plugins/GRAY-MATCH-IDENTITY-SOURCE-INVENTORY.md`、`…-MODULE-FIRST-CALLER-SOURCE.md`、`…-PARAMETER-MODEL-CORE-CHAIN.md`、`docs/plugins/inventory.json` | 仓内**均不存在**，不作证据 | 悬空 |
+| G17 | HALCON NCC 接口 | 本机 `libs/halcon/net/halcondotnetxl.dll` 反射：`CreateNccModel(template, numLevels, angleStart, angleExtent, angleStep, metric, out modelId)`、`FindNccModel(..., minScore, numMatches, maxOverlap, subPixel, numLevels, out row/column/angle/score)`、`GetNccModelParams`、`GetNccModelOrigin`、`GetNccModelRegion`、`Serialize/DeserializeNccModel`、`ClearNccModel` | 算法实现基础（「灰度相似」→归一化互相关 NCC，与原件训练函数 `CreateGrayPatEVA` 对应） | 本仓依赖 |
+| G18 | 参照实现 | `tools/SunEyeVision.MarkFind/**`、`tools/SunEyeVision.BlobLabels/**`、`tools/SunEyeVision.ContourMatch/**` | 沿用契约全家桶、显示组合、STA 组装用例 | 本仓源码 |
+
+## 4.2 实施结果（已完成）
+
+| 层 | 文件 | 内容 |
+|---|---|---|
+| Runtime | `GrayMatchSettings.cs` | 39 项冻结设置（模板 6 + 运行/判断 33）+ 组合校验（含 4 类「未支持语义」诊断）+ 模板角度/结束层覆盖校验 |
+| Runtime | `GrayMatchFields.cs` | 39 个字段声明（ID 哈希派生、默认值、范围、配对、显隐、引用能力、绑定名） |
+| Runtime | `GrayMatchTemplate.cs` / `GrayMatchTemplateBuilder.cs` | NCC 模板载荷（`SunEyeVision.GrayMatch.Model/1`，`.gmmodel`）；层数/角度范围/角度步长→建模板参数；存原点+外接框+角度覆盖；执行前校验角度范围与结束层 |
+| Runtime | `Algorithms/GrayMatchSession.cs` | 图像→灰度→ROI∩有效域（含位置修正）→`FindNccModel`→刚体变换求匹配框→排序（6 种）→判定→结果行/几何→输出 |
+| Runtime | `Results/*` | 9 个输出端口（原件的尺度/轮廓点本就不存在，故不设空端口）、结果行 schema、投影、显示需求、几何快照、输出对象（幂等 Dispose） |
+| Wpf | `GrayMatchParameterEditor` / `GrayMatchTemplatePanel` | 声明式参数页（模板参数/运行参数/结果显示）+ 模型面板（新建/清空/导出/导入/摘要） |
+| Wpf | `GrayMatchResultView` / `GrayMatchDisplayUi` / `Design/GrayMatchDesignData` | 结果表；显示组合（图形 5 组 + 文本 7 行 + 文本可见性）；设计时示例数据 |
+| 登记 | `SunEyeVision.slnx`、`product/ToolComponents.props` | 各追加 2 条（Runtime/Editor），纯新增 |
+| 测试 | `GrayMatch{Execution,ParameterContract,DisplayContract,PresentationView}Tests.cs` + `WpfPresentationHost.cs` | 新增 30 例 |
+
+### 呈现层五项契约（S2 / P1–P5）
+
+| # | 契约 | 落点 | 证据 |
+|---|---|---|---|
+| P1 | `IToolSettingsView` + `IToolSettingsViewReady` | `GrayMatchParameterEditor.xaml.cs`（类声明 + `ReadyTask => Task.CompletedTask`） | `GrayMatchPresentationViewTests.Parameter_view_binds_the_formal_draft_without_throwing` 断言 `ReadyTask.IsCompleted` |
+| P2 | 绑定前设 `InputSection`，且必须是本工具 schema 真实存在的组 | 同文件：`InputSection = options.InputSection ?? GrayMatchFields.TemplateSection` | 同测试；设计数据 `InputPage = GrayMatchFields.TemplateSection` |
+| P3 | 图形分组 `DialogGroup`+`DialogTitle` 同给、`visible` 为 `DialogPrimary` | `Results/GrayMatchResultDisplay.cs`（`GraphicFields()` 五角色同时带 dialog/title） | `Every_graphic_group_declares_visibility_primary_and_style_roles` |
+| P4 | 分组字段被 `GraphicDisplays` 完整消费 | `Wpf/Views/GrayMatchDisplayUi.cs`（5 组全覆盖） | 组装测试通过；分组字段数固定 5 的断言同上 |
+| P5 | `DecimalPlaces:null` 坐标用 `TextDisplays` 注册；组合式 Dispose | `GrayMatchDisplayUi.cs`；`GrayMatchParameterEditor.Dispose` / `GrayMatchResultView.Dispose` | 组装测试 + `Appearance_capture_rejects_out_of_range_values`、`Default_appearance_is_fully_captured` |
+
+**额外**：`Parameter_view_composes_every_page_when_all_pages_are_requested` 用 `EagerlyComposePages = true` 强制构建**全部页签**（模板参数/运行参数/结果显示），满足主线「STA 用例覆盖页签全构建」要求。
+
+## 4.3 与原件的差异
+
+| 项 | 原件 | 本工具 | 理由 |
+|---|---|---|---|
+| D1 模型文件 | 模块字节 + `*.gmvaxml` 加密导出 | 中立文本 `.gmmodel`（NCC 序列化项 base64 + 原点 + 外接框 + 角度覆盖） | 架构边界，不兼容旧格式 |
+| D2 多模板 | `MatchModelIndex/MatchModelName` + 模板列表 | 单模板 | 多模板未迁移（沿用轮廓匹配口径） |
+| D3 盲区/掩膜端口 | `BlindPolygon`、`OutputMask` 输入输出 | 未声明 | 语义未取证（G15），不臆造端口 |
+| D4 显示项 | `CheckZone/MatchResults/MatchLocation/FixtureInit/Run/ResutlText` | 5 个图形组 + 文本 7 行，一一对应，无合并 | 槽位足够 |
+| D5 结束层 | `EndPyramidLevel`（匹配结束层） | → HALCON `NumLevels`（0＝全部） | **适配映射结论**（G12），非原厂语义已证实 |
+| D6 训练交互 | 工具内 ROI 绘制 + 橡皮擦掩膜 | 走「图像/区域/位置修正」引用输入 | 无本地 ROI 宿主接缝 |
+
+## 4.4 未确认语义清单（当前处置：仅默认值放行 + 非默认显式报错）
+
+| 参数/端口 | 已知 | 未确认 | 处置与错误码 |
+|---|---|---|---|
+| `Polarity` | 同族源码：0=不考虑极性、1=考虑极性 | 本工具是否同枚举；HALCON metric 为**创建期**属性 | 仅 1；否则 `GRAYMATCH_POLARITY_NOT_READY` |
+| `MatchingPolarity` | VA 新增，默认 1 | 与 `Polarity` 的分工 | 仅 1；否则 `GRAYMATCH_MATCHING_POLARITY_NOT_READY` |
+| `TimeOut` | 本地化「超时时间(单位:毫秒)」，默认 0 | 是否可中断原生匹配 | 仅 0；否则 `GRAYMATCH_TIMEOUT_NOT_READY` |
+| `UseMatchAllMode` | VA 新增，默认 False | 「全部搜索模式」判定细节 | 仅 False；否则 `GRAYMATCH_MATCH_ALL_MODE_NOT_READY` |
+| `EndPyramidLevel` | 本地化「匹配结束层」，默认 0 | 与原厂金字塔编号是否同向 | 支持 0..8 并校验 ≤ 模板层数（`GRAYMATCH_END_LEVEL_INVALID`）；映射见 D5 |
+| `BlindPolygon`/`OutputMask` | 端口名 | 生成与消费语义 | 不声明端口 |
+| 多模板输出 | `MatchModelIndex/Name` | 选择与并发语义 | 单模板，不声明 |
+| `ModuStatus`/`MatchStatus` 取值域 | 端口名 | 取值定义 | 本方 `status=1/0`（Pass/Fail） |
+| 旧版 `AngleStep=8` | 旧版 31 项里有 | VA 版**没有**该参数 | 不声明（防串用，见 G8） |
+
+**已知限制**：原生 `Process/ProcessAlg` 未取证，当前仅支持默认值路径；所有非默认值走显式诊断。
+
+## 4.5 构建与测试（S3 / S4）
+
+```
+dotnet build SunEyeVision.slnx -c Release --no-incremental -m:1
+    6067 个警告
+    0 个错误
+已用时间 00:00:34.51
+```
+
+```
+dotnet test tests\SunEyeVision.Tools.Inspection.Tests\SunEyeVision.Tools.Inspection.Tests.csproj -c Release --no-build
+已通过! - 失败: 0，通过: 109，已跳过: 0，总计: 109，持续时间: 1 s
+```
+
+（109 = 本轮灰度匹配 30 + 轮廓匹配 26 + 既有 BlobLabels/MarkFind 53）
+
+**本轮遇到的三个环境/框架坑（供其他线避坑）**
+1. **增量构建会产出混合 BAML**：`dotnet build` 增量后运行呈现层用例报 `BAML TypeId 509 未知`，`--no-incremental` 重建即消失 ⇒ 跑呈现层用例前必须全量构建。
+2. **多 STA 线程争用 WPF 资源**：两个测试类各起 STA 线程会报「调用线程无法访问此对象，因为另一个线程拥有该对象」⇒ 新增 `WpfPresentationHost`（进程内单一 STA + `Dispatcher.Invoke`），轮廓匹配的呈现层用例一并切到该宿主。
+3. **`dotnet test` 会重建工具 DLL 导致 payload SHA 不一致**（上轮已记）：必须「全量构建 → `--no-build` 跑测试」。
+
+## 4.6 自检结果（S1–S8）
+
+| # | 项 | 结论 | 证据 |
+|---|---|---|---|
+| S1 | 取证 | ✅ | §4.1 G1–G18 逐条带文件+行号；G9 标注「同族工具托管 SDK 源码，非本工具二进制」；G12 标为「适配映射结论」；未确认项单列 §4.4；G16 悬空引用不作证据 |
+| S2 | 契约 | ✅ 6 必需 + P1–P5 | `GrayMatchTool.cs`（`IToolDefinition/IToolSettingsFields/IToolCatalogProvider/IToolResultPresentationProvider/IToolResultDisplayProvider/IToolParameterBindingNames/IToolResourceFieldDeclarations/IToolKnownSettingsValidation/IToolRuntimeInitialization`）、`GrayMatchSettings : IToolSettings<>`、`GrayMatchSession : IToolSession<,>, IReusableToolSession`、`GrayMatchOutput : IToolOutput, IToolResultRecordOutput, IToolResultGeometryOutput`；P1–P5 见 §4.2 表 |
+| S3 | 构建 | ✅ 0 错误 | §4.5 末 3 行 |
+| S4 | 测试 | ✅ 109/109 | §4.5 |
+| S5 | 登记 | ✅ 仅追加 | `git diff` 仅新增 `GrayMatchComponents` 2 行 + 2 个 `ProductToolComponent`，无 `-` 行 |
+| S6 | 边界 | ✅ | `git status --short` 仅 `tools/SunEyeVision.GrayMatch/`、`tests/.../GrayMatch*Tests.cs`、`WpfPresentationHost.cs`、测试项目 csproj+lock、`SunEyeVision.slnx`、`product/ToolComponents.props`、本交接单；未改 `src/**`、未改 `.gitignore`、未 push、未 merge main（本轮开始前按主线指示做过一次 `merge main` 同步） |
+| S7 | 提交 | ✅ | 中文 Conventional Commits，分两笔（实现+测试 / 交接单），无临时文件入库 |
+| S8 | 交接 | ✅ | 本节 §4.1–§4.7 |
+
+## 4.7 提交与下一步
+
+- 提交两笔（见汇报 `git log --oneline`），未 push、未 merge main。
+- 下一步建议：
+  1. 主线独占时段冒烟：工具箱可见「灰度匹配」→ 拖入 → 参数页三页签（模板参数/运行参数/结果显示）→ 关闭不崩 → 日志无 ERROR。
+  2. 若需追平原厂算法：优先补 `Process/ProcessAlg`（阈值/排序/失败发布）与 `BlindPolygon/OutputMask`，再放开 §4.4 的限制。
+  3. 类③剩余工具（边缘缺陷、标记检测等）沿用本单结构；多模板能力建议与模板列表控件一并设计后再统一。
+

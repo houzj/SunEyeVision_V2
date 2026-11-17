@@ -13,19 +13,7 @@ namespace SunEyeVision.Tools.Inspection.Tests;
 [SupportedOSPlatform("windows")]
 public sealed class ContourMatchPresentationViewTests
 {
-    private static void OnSta(Action action)
-    {
-        Exception? failure = null;
-        var thread = new Thread(() =>
-        {
-            try { action(); }
-            catch (Exception error) { failure = error; }
-        });
-        thread.SetApartmentState(ApartmentState.STA);
-        thread.Start();
-        Assert.True(thread.Join(TimeSpan.FromSeconds(30)), "STA 线程未在 30 秒内完成。");
-        if (failure is not null) throw new InvalidOperationException("参数/结果页组装失败：" + failure.Message, failure);
-    }
+    private static void OnSta(Action action) => WpfPresentationHost.Run(action);
 
     [Fact]
     public void Parameter_view_binds_the_formal_draft_without_throwing()

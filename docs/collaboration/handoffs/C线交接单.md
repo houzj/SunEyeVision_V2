@@ -135,3 +135,144 @@
 2. 若需追平原厂语义：优先补证 E15 的极性/时间/缩放语义与 E16 的原生算法，再替换本轮「非默认即报错」的限制。
 3. 类③后续工具（标记检测、轮廓匹配、灰度匹配、边缘缺陷）沿用本单结构与 §1.4 的契约全家桶模板。
 
+---
+
+# 第三段 · 轮廓匹配（原件 `IMVSContourMatchModu`，ToolId `ContourMatch`）
+
+- 分支：`feature/tools-inspection`；工作树：`D:\MyWork\line-tools-inspect`
+- 执行者：CodeBuddy（C 线队员）
+- 起点基线：`d8498ee93`（合入本轮第一版实现）；随后按主线指示 `git merge main`（取得 `aa3045bcd` 工具箱映射修复与 `工具自测闭环规范-20261117.md`）
+- 允许修改：`tools/SunEyeVision.ContourMatch/**`、`tests/SunEyeVision.Tools.Inspection.Tests/**`；追加式 `SunEyeVision.slnx`、`product/ToolComponents.props`、本交接单
+- 独占资源登记（agent-desktop 冒烟占用）：**2026-11-17 09:52:45 – 09:56:20**；结论见 §3.6（被并行线实例干扰，未取得有效参数页证据）
+
+## 3.1 取证清单（S1）
+
+| # | 证据项 | 来源（文件 + 行为/行号） | 结论 | 归属 |
+|---|---|---|---|---|
+| C1 | 工具身份 | `docs/07-工具逆向/decompiled/Lang/zh-cn.xaml:10015-10016`（`IMVSContourMatchModu`＝轮廓匹配，Tip＝按形状相似查找目标） | 原名「轮廓匹配」，类别定位 | 本工具 |
+| C2 | 本工具是「金字塔特征轮廓匹配」子类 | `ModuleControls/IMVSContourMatchModuControl/Apps.XmlParser.ParamTab/HPPyramidFeaturepatMatchDialogData.cs:5`（`: HPFeaturepatMatchDialogData`）、`:193-196`（`CreatePatE → CreateDipolePyramid`）、`:165-168`（`FeatureMatchName="IMVSContourMatchModu"`） | 训练产物是「双极金字塔」轮廓模型，与高精度匹配同族 | 本工具 |
+| C3 | 模板参数默认值 | 同文件 `:7-23`：`_IncludeImageFlag=0`、`_pyramidScaleFlag=1`、`_pyramidScaleLevel=5`、`_pyramidScaleRLevel=1`、`_edgeThresholdFlag=1f`、`_edgeThreshold=15`、`_maskModelFlag=0`；基类 `.../IMVSHPFeatureMatchModuControl/Apps.XmlParser.ParamTab/HPFeaturepatMatchDialogData.cs:26-42`：`_chainFlag=1`、`_minChainLen=4` | 9 项模板参数默认值 | 本工具 |
+| C4 | 模板对话框控件/范围/选项顺序 | `IMVSContourMatchModuControl/hppyramidfeaturepatmatchdialoguistyle.xaml:879-906`：`PyramidScaleFlag` 下拉 `:887-890`（0=手动,1=自动）、`PyramidScaleLevel` 滑条 1..10 `:891`、`PyramidScaleRLevel` 滑条 1..10 `:892`、`EdgeThresholdFlag` 下拉 `:893-896`、`EdgeThreshold` 滑条 1..255 `:897`、`ChainFlag` 下拉 `:898-901`、`MinChainLen` 滑条 2..1000 `:902`、`MaskModelFlag` 下拉 `:903-906`（0=全轮廓,1=外轮廓） | 控件类型/范围/枚举顺序 | 本工具 |
+| C5 | 运行/判断参数（56 项） | `docs/07-工具逆向/tools/imvscontourmatchmodu/parameters.json`（`parameters` 数组 56 项，名称+默认值） | `MinScore=0.5`、`MaxMatchNum=1`、`MaxOverlap=50`、`MultiModelMaxOverlap=50`、`AngleStart=-45`、`AngleEnd=45`、`Polarity=1`、`SortType=2`、`OutLineEnable=True`、`OutLinePointEnable=False`、`NumLimitHigh=99999`、`ScaleStart/End=1`、`SkewXStart/End=0` 等 | 本工具 |
+| C6 | 参数家族关系（交叉印证） | 与 `tools/imvshpfeaturematchmodu/parameters.json` 逐项比对：轮廓 56 项中 52 项与其同名同默认值，仅多出 `MultiModelMaxOverlap`、`OutLinePointEnable`、`SkewXStart`、`SkewXEnd` | 参数属于同族共享集 | 交叉印证 |
+| C7 | 枚举/取值语义 | **同族工具托管 SDK 源码，非本工具二进制**：`docs/07-工具逆向/decompiled/Managed/FastFeatureMatch/IMVSFastFeatureMatchModuCs/FastFeatureMatchParam.cs:13-23`（Polarity：0=不考虑极性/1=考虑极性）、`:28-54`（SortType：2 分数降序/3 角度降序/4 X 升序/5 Y 升序/6 X→Y/7 Y→X）、`:59-73`（MatchThresholdFlag：0 自动/1 模板/2 手动）、`:187-395`（各参数取值范围 XML 注释）、`:820-866`（$Limit$ 族上下限） | 上述三条枚举与范围 | 同族源码（交叉印证，非本工具结论） |
+| C8 | 运行参数取值（仅名称+默认值） | `parameters.json`（无值域与算法语义） | 默认值可用；非默认语义未取证 | 本工具（缺口） |
+| C9 | 输入端口 | `parameters.json.inputs`：`InputImage`（InImage/Width/Height/PixelFormat，强制）、`InputROI`（ROIBOX）、`Position Correction Info`（FIXTURE）、`InputMask`（IMAGE，非强制）、`InputBlindPolygonString` | 图像+ROI+位置修正为必需链；掩膜/盲区为可选 | 本工具 |
+| C10 | 输出端口（22 项） | `parameters.json.outputs`：`ModuRunTime/ModuStatus/MatchStatus/MatchNum/MatchModelIndex/MatchModelName/MatchRect/Match Point/MatchScale(X,Y)/MatchScore/SkewX/ROI/MatchOutline/MatchOutlineNum/ContourPoints/ContourIndex/BlindPolygon(Str)/OutputMask/Output Position Correction Info` | 匹配类输出 + 轮廓点 + 多模板字段 | 本工具 |
+| C11 | 结果显示项（9 项） | `docs/07-工具逆向/tools/imvscontourmatchmodu/ui-preview.json`（`controls` 中 9 个 `ImageViewConfig`：SensorFiled/MatchResults/MatchLocation/MatchOutlinePoints/FixtureInitPoint/FixtureRunPoint/ResutlText/BlindZone/BoundingBox） | 显示需求来源 | 本工具（声明级） |
+| C12 | 参数页控件顺序 | 同 `ui-preview.json`（58 控件）：掩膜图组、ROI 组、`HPPyramidMatchPat` 模型面板，运行参数与判断组顺序 | 页面结构 | 本工具（声明级） |
+| C13 | 训练链路：ROI→掩膜→建模型 | `IMVSHPFeatureMatchModuControl/IMVSHPFeatureMatchModuControl/HPFeaturepatMatchDialogUI.cs:1499-1539`（匹配按钮→`FeaturePatCreateByEraser`→`ShowPoints`）、`:1664-1744`（`CreatePatE` 在线程中执行、`ret!=0` 报错、`-3`＝模型内存申请失败）、`:1746-1782`（边点画 `#66FF00` 微点）、`:1549-1609`（ROI 类型 8 种：框/多边形/圆/扇环/十字/椭圆/线/多线） | 训练语义 | 本工具（基类，被 C2 继承） |
+| C14 | 模型与掩膜持久化 | `IMVSHPFeatureMatchModuControl/.../HPFeaturepatMatchDialogUI.cs:998-1054`（`CustomSave` 导加密 `.contourmxml`，含 BasicData/CurImageData/OtherMask/PointsData）、`IMVSContourMatchModuControl/HPPyramidFeaturepatMatchDialogUI.cs:10`（过滤器 `*.contourmxml`） | 原件模板＝模块内字节 + 加密导出 | 本工具 |
+| C15 | 多模板存储结构 | `FeatureMatchCommonControl/FeatureMatchCommonControl/FeaturepatMatchConfigPanalDataBase.cs:152-209`（`SpareModelName`/`AddSpareModel`/`DeleteCandidateByIndex`）、`:211-237`（`SolModelFile_{i}_BasicData/_CurImageData/_OtherMask/_PointsData/_PointsNums`） | 原件支持多模板（→C5 的多模板参数） | 本工具 |
+| C16 | 模板几何形态 | `FeaturepatMatchConfigPanalDataBase.cs:100-142`（`PointsData` 为 `MVBPATMATCH_EDGEPOINT_OUT{x,y,score_flag,weight_flag}`） | 模型＝一组带方向的边点 | 本工具 |
+| C17 | 原生算法体 | `resources.json` 仅有 18 个 XML 的 SHA256，无内容；`evidence.json` 指向的 `docs/plugins/IMVSCONTOURMATCHMODU-*.md` 共 10 份**在仓库中不存在** | `Process/ProcessAlg` 函数体、`ModuStatus` 取值域、掩膜/盲区语义**未确认**；上述 md 属**悬空引用**，不作为证据 | 缺口 |
+| C18 | 参照实现 | `tools/SunEyeVision.MarkFind/**`（本线上一交付）、`tools/SunEyeVision.BlobLabels/**` | 沿用其契约全家桶、结果投影/显示需求、锚定面板结构 | 本仓源码 |
+
+## 3.2 实施结果（已完成）
+
+| 层 | 文件 | 内容 |
+|---|---|---|
+| Runtime | `ContourMatchSettings.cs` | 65 项冻结设置（模板 9 + 运行/判断 56）+ 组合校验（含 16 种「未支持语义」显式诊断） |
+| Runtime | `ContourMatchFields.cs` | 65 个字段声明（ID 由字段名哈希派生、默认值、范围、配对、显隐、引用能力、绑定名） |
+| Runtime | `ContourMatchTemplate.cs` / `ContourMatchTemplateBuilder.cs` | HALCON 形状模板载荷（`SunEyeVision.ContourMatch.Model/1`，`.cmatchmodel`）；压缩比→建模板层数、边缘阈值→建模板对比度、角度覆盖 ±180° 并在执行前校验 |
+| Runtime | `Algorithms/ContourMatchSession.cs` | 图像→灰度→ROI∩有效域（含位置修正）→`FindShapeModel`→排序（6 种）→判定→结果行/几何→输出 |
+| Runtime | `Results/*` | 11 个输出端口、结果行 schema、结果投影、显示需求、几何快照、输出对象（幂等 Dispose） |
+| Wpf | `ContourMatchParameterEditor` / `ContourMatchTemplatePanel` | 声明式参数页 + 模型面板（新建/清空/导出/导入/摘要） |
+| Wpf | `ContourMatchResultView` / `ContourMatchDisplayUi` / `Design/ContourMatchDesignData` | 结果表；显示组合（图形 6 组 + 文本 7 行 + 可见性 2 项）；设计时示例数据 |
+| 登记 | `SunEyeVision.slnx`、`product/ToolComponents.props` | 各追加 2 条（Runtime/Editor） |
+| 测试 | `tests/SunEyeVision.Tools.Inspection.Tests/ContourMatch*Tests.cs` | 26 例（执行链 10、参数契约 7、显示契约 8 含 1 例文本表达式、呈现层组装 2 由独立文件 4 例中的 2 例） |
+
+### 呈现层五项契约（S2 / P1–P5）
+
+| # | 契约 | 落点 | 证据 |
+|---|---|---|---|
+| P1 | `IToolSettingsView` + `IToolSettingsViewReady`（`ReadyTask => Task.CompletedTask`） | `ContourMatchParameterEditor.xaml.cs:16`、`:69` | `ContourMatchPresentationViewTests.Parameter_view_binds_the_formal_draft_without_throwing` 断言 `ReadyTask.IsCompleted` |
+| P2 | 绑定前设 `InputSection` | 同上 `:50`：`options.InputSection ?? ContourMatchFields.TemplateSection`（**默认值必须是已声明分组**） | 同测试：组装成功；未设时抛 `An input content section is required.`（今日日志 09:15:46 同类） |
+| P3 | 图形分组 `DialogGroup`+`DialogTitle` 同给、`visible` 设 `DialogPrimary` | `Results/ContourMatchResultDisplay.cs`（`GraphicFields()` 五个角色同时带 dialog/title，`visible` 为 primary） | `Every_graphic_group_declares_visibility_primary_and_style_roles` |
+| P4 | 分组字段被 `GraphicDisplays` 完整消费 | `Wpf/Views/ContourMatchDisplayUi.cs`（6 组全覆盖） | 组装测试通过（漏项会抛「图形角色必须完整消费分组」）；分组字段数固定为 5 的断言同上 |
+| P5 | `DecimalPlaces:null` 坐标用 `TextDisplays` 注册；组合式 Dispose | `ContourMatchDisplayUi.cs`（`NativeTextDisplayOptions` 含 x/y）、`ContourMatchParameterEditor.Dispose`/`ContourMatchResultView.Dispose` | 组装测试 + `Appearance_capture_rejects_out_of_range_values`、`Default_appearance_is_fully_captured` |
+
+> 注：本工具默认输入区是「模板参数」组（第一页首个已声明分组）。原件把输入/ROI 放在基本参数页顶部，本工具第一页即模板参数页，故以此为锚点，避免落到不存在的「基本参数」组而崩。
+
+## 3.3 与原件的差异（已确认，非缺陷）
+
+| 项 | 原件 | 本工具 | 理由 |
+|---|---|---|---|
+| D1 模板文件格式 | 加密 `.contourmxml`（模块字节 + 加密导出） | 中立文本 `.cmatchmodel`（HALCON 序列化项 base64 + 外接框 + 角度覆盖） | 架构边界：不兼容旧加密格式 |
+| D2 模型面板 | 多模板列表 + 缩略预览 | 单模板 + 文本摘要 | 多模板未迁移（C15），缩略控件缺基础 |
+| D3 训练交互 | 工具内 ROI 8 类绘制 + 橡皮擦掩膜 + 手动基准点 | 走「图像/区域/位置修正」引用输入 | 无本地 ROI 宿主接缝（同 MarkFind D3） |
+| D4 轮廓输出打包 | `MatchOutline/MatchOutlineNum` 与 `ContourPoints/ContourIndex` 两套 | 统一 `output.outline-points{x,y,match-index,count}` | 两者是同一组点，避免双轨 |
+| D5 显示项 BoundingBox | 与 MatchResults 分别绘制 | 合并入「匹配结果」（唯一矩形槽位） | 框架只有一个匹配框外观槽位 |
+| D6 掩膜图像/盲区 | `InputMask` 图像、`InputBlindPolygonString` 输入与 `OutputMask`/`BlindPolygon*` 输出 | 未声明 | 语义未确认（C17），不臆造端口 |
+| D7 位置修正 | 输入端口 `Position Correction Info` | 搜索区域按 `FixtureDeclarations.ToAffine2D` 位移 | 与 MarkFind 同法（原件是否同法未取证） |
+
+## 3.4 未确认语义清单（请主线决定是否补动态取证）
+
+| 参数/端口 | 已知 | 未确认 | 当前处置 |
+|---|---|---|---|
+| `Polarity`=0 | 同族源码：0=不考虑极性 | 本工具是否同为该枚举；HALCON 侧 metric 在创建期固定 | 仅允许 1（默认），非默认报 `CONTOURMATCH_POLARITY_NOT_READY` |
+| `ScaleStart/End`、`ScaleX/YStart/End`、`RangeScaleType` | 同族源码：尺度范围 [0.1,10] | 本工具尺度搜索算法；`RangeScaleType` 取值含义 | 仅允许 1（默认）/0，非默认报 `CONTOURMATCH_SCALE_NOT_READY`、`CONTOURMATCH_RANGE_SCALE_TYPE_NOT_READY` |
+| `SkewXStart/End` | 本地化：起始/终止横切角度 | 算法语义、与角度/尺度的耦合 | 仅允许 0，非默认报 `CONTOURMATCH_SKEW_NOT_READY` |
+| `MatchThresholdFlag/High` | 同族源码：0 自动/1 模板/2 手动，边缘阈值 [1,255] | 运行期如何生效 | 仅允许 0，非默认报 `CONTOURMATCH_MATCH_THRESHOLD_NOT_READY` |
+| `SpotterFlag` | 同族源码：是否考虑噪点 | 具体判定 | 仅允许 False |
+| `MatchExtentRate` | 同族源码：延拓阈值 [0,90]，默认 0 | 算法语义 | 仅允许 0 |
+| `TimeOut` | 同族源码：超时控制 [0,10000] | 是否可中断原生匹配 | 仅允许 0（HALCON 单次调用不可中断） |
+| `UseMatchAllMode`、`MultiModelMaxOverlap` | 名称与默认值 | 全部搜索/多模板的判定细节 | 仅允许默认值（False / 50） |
+| `OutLinePointEnable` | 名称与默认值 False | 与 `MatchOutline` 的区别 | 仅允许 False（轮廓已由 `OutLineEnable` 输出） |
+| `MaskModelFlag`=1（外轮廓） | 下拉项名称 | 轮廓划分算法 | 仅允许 0（全轮廓） |
+| `ChainFlag`=0（手动链长） | 下拉项 0=手动 + 滑条 2..1000 | HALCON 无链长语义 | 仅允许 1（自动）；自动时 `MinChainLen` 按原件禁用（不参与执行） |
+| `IncludeImageFlag`、`HighThreshold`、`LowThreshold` | 字段默认值（0/0/0） | 用途：未出现在对话框 XAML 与控件清单 | 不暴露为设置项 |
+| `ModuStatus`、`MatchStatus` 取值域 | 端口名 | 取值定义 | 本方 `status=1/0`（Pass/Fail） |
+
+**已知限制**：原生算法体（`Process/ProcessAlg`）未取证，当前仅支持上述「默认值路径」；所有非默认值走显式诊断，不静默按标准语义实现。
+
+## 3.5 构建与测试（S3 / S4）
+
+```
+dotnet build SunEyeVision.slnx -c Release --no-incremental -m:1
+    6065 个警告
+    0 个错误
+已用时间 00:00:32.03
+```
+
+```
+dotnet test tests\SunEyeVision.Tools.Inspection.Tests\SunEyeVision.Tools.Inspection.Tests.csproj -c Release --no-build
+已通过! - 失败: 0，通过: 79，已跳过: 0，总计: 79，持续时间: 424 ms
+```
+
+（79 例 = 本轮轮廓匹配 26 例 + 既有 BlobLabels/MarkFind 53 例）
+
+> 构建/测试顺序注意：`dotnet test` 触发依赖构建会使工具 DLL 变化而 `release-payload.json` 仍为旧 SHA，故必须「全量构建 → `--no-build` 跑测试」，否则全部用例因 SHA 不一致报错。
+
+## 3.6 agent-desktop 冒烟（S2 补充；未取得有效证据）
+
+- 占用时间：**09:52:45 – 09:56:20**
+- 过程：启动本工作树 Release（`D:\MyWork\line-tools-inspect\Release\...\SunEyeVision.UI.exe`，pid 29260/25688）→ 起始页快照 → 点「＋ 新建方案」→ 空白工作区（流程1，nodes=0）与工具箱渲染成功；随后实例在无本线操作的情况下被关闭，同一日志文件 `%LOCALAPPDATA%\SunEyeVision\Logs\suneye.log2026-11-17.log` 出现**另一 worktree**（`D:\MyWork\SunEyeVision_V2-param-window-datatree`）实例的启动/退出记录。
+- 结论：**桌面与日志目录被多条线共用**，两次尝试均被并行线实例打断（09:53:47 我的实例日志出现「保存方案」对话框被答 No 后退出；09:54:00 另一实例退出；09:55:24 我的第二实例被最小化后消失）。未取得参数页/页签切换的有效截图与日志证据。
+- 本线未产生新 ERROR：今日 3 条 ERROR（05:27 P5、09:08 P4、09:15 P2）均早于本线占用时间。
+- 处置：参数页/结果页的「组装不崩」由自动化 STA 用例覆盖（真实 `DeclaredSettingsView` + 真实声明 + 真实显示组合）；**工具箱可见性 → 拖入 → 切页签 → 关闭**的人工/程序冒烟请主线在独占时段执行。
+- 建议：主线为 agent-desktop 冒烟设置互斥（文件锁或指定 `AGENT_DESKTOP_HOME` 与独立日志根），否则多线结果不可信。
+
+## 3.7 自检结果（S1–S8）
+
+| # | 项 | 结论 | 证据 |
+|---|---|---|---|
+| S1 | 取证 | ✅ | §3.1 C1–C18，逐条带文件+行号；C7 明确标注「同族工具托管 SDK 源码，非本工具二进制」；`IncludeImageFlag`/`HighThreshold`/`LowThreshold`/原生算法体/掩膜/盲区标「未确认」（§3.4）；`docs/plugins/IMVSCONTOURMATCHMODU-*.md` 标为悬空引用（C17） |
+| S2 | 契约 | ✅ 6 必需 + P1–P5 | 6 必需：`IToolDefinition` 全套（`ContourMatchTool.cs:11-13`）、`IToolSettings`（`ContourMatchSettings.cs`）、`IToolSession`（`ContourMatchSession.cs:12`）、`IToolResultPresentationProvider/Descriptor`、`IToolResultRecordOutput/GeometryOutput`（`ContourMatchResult.cs:84`）、`IToolResourceFieldDeclarations`；P1–P5 见 §3.2 表 |
+| S3 | 构建 | ✅ 0 错误 | §3.5 末 3 行（6065 警告 / 0 错误 / 32.03s） |
+| S4 | 测试 | ✅ 79/79 | §3.5（失败 0，通过 79） |
+| S5 | 登记 | ✅ 仅追加 | `git diff d8498ee93^ SunEyeVision.slnx product/ToolComponents.props` 仅新增 `ContourMatchComponents` 文件夹 2 行与 `ContourMatch` 2 个 `ProductToolComponent`；未改他人条目 |
+| S6 | 边界 | ✅（附说明） | `git status --short` 仅 `tools/SunEyeVision.ContourMatch/`、`tests/SunEyeVision.Tools.Inspection.Tests/{ContourMatch*Tests.cs,*.csproj,packages.lock.json}`、`SunEyeVision.slnx`、`product/ToolComponents.props`、本交接单；未改 `src/**`（`ToolboxDisplayCatalog.json` 由主线 `aa3045bcd` 修改）、未改 `.gitignore`、未 push；`git merge main` 为**主线明确指示**的一次性同步（合入到本特性分支，非合入 main） |
+| S7 | 提交 | ✅ | 见 §3.8 `git log --oneline`；中文 Conventional Commits，分阶段（实现+测试 / 交接单），无 `*-msg.txt` 等临时文件入库（提交信息经 `%TEMP%` 文件传入，不入库） |
+| S8 | 交接 | ✅ | 本节 §3.1–§3.8：基线/分支/执行者/已完成/未完成/构建测试/已知风险/下一步/自检结果 |
+
+## 3.8 提交
+
+见本轮汇报与 `git log --oneline`（两笔：`feat(工具-轮廓匹配)` 实现+测试、`docs(交接单)` 本段更新）。未 push、未合入 main。
+
+## 3.9 下一步
+
+1. 主线补/已补 `ToolboxDisplayCatalog.json`（`aa3045bcd` 已将 `IMVSContourMatchModu → ContourMatch` + `MappingVerified`）：需在独占时段做工具箱可见性→拖入→参数页→切页签→关闭冒烟。
+2. 若要追平原件语义：优先补 `Process/ProcessAlg` 反编译（尺度搜索、极性、横切、掩膜/盲区、`ModuStatus`），再放开 §3.4 中对应限制。
+3. 多模板（C15）与掩膜图像（C6）建议作为独立批次，与公共控件（模板缩略预览、本地 ROI 宿主接缝）一并设计。
+

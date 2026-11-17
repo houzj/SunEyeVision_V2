@@ -11,6 +11,11 @@ namespace SunEyeVision.UI.Services.Startup;
 public sealed class StartPageSettings
 {
     public bool HideStartPage { get; set; }
+    /// <summary>
+    /// 引导页四张卡片选择的工具箱优先分类（原厂 ToolBoxType：General/Position/Defect/Recognition）。
+    /// 只影响工具箱展开时的分类优先显示，不参与方案创建。
+    /// </summary>
+    public string? ToolboxPreset { get; set; }
     public SunEyeVision.UI.Shared.LayoutConfig? WindowLayout { get; set; }
     public List<RecentSolutionFile> RecentFiles { get; set; } = new();
     // 移除启动页建议不会删除方案文件或关闭当前工作区。

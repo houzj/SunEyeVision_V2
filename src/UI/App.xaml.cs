@@ -54,11 +54,6 @@ public partial class App : System.Windows.Application
     private ApplicationDataPaths? _dataPaths;
     private string? _requestedSolutionPath;
     // VM 的启动顺序是先进入方案管理器，用户选择方案后才创建工作区并显示方案加载遮罩。
-    // 这几个字段保存早期方案管理器的选择，避免插件准入完成后再次弹出一遍起始页。
-    private bool _startupSolutionManagerShown;
-    private StartPageAction _startupSelectedAction = StartPageAction.EmptyWorkspace;
-    private string? _startupSelectedPath;
-    private bool _startupNewSolutionRequested;
     public StartPageSettings StartPreferences { get; private set; } = new();
     private string StartPreferencesFile => _dataPaths!.ConfigFile;
     // Keep the named marker rooted through shutdown cleanup; the OS closes it at process exit.
@@ -332,8 +327,8 @@ public partial class App : System.Windows.Application
         // workspace remains hidden until the user chooses a solution.
         _startupLoadingWindow?.CloseProgrammatically();
         _startupLoadingWindow = null;
-        if (_requestedSolutionPath is null && !StartPreferences.HideStartPage)
-            ShowStartupSolutionManager();
+        // 原厂 GuideWindow 语义（证据见 docs/07-工具逆向/证据-原厂引导窗口启动语义-20261117.md）：
+        // 工作区必须先就绪，引导页只是盖在其上的模态引导层；关闭它不创建任何方案。
         await HandleStartupDecisionAsync(desktopAdmission, _mainWindow);
         _startupActivationReady = true;
         LogStartupStage("HandleStartupDecision returned");
@@ -481,83 +476,96 @@ public partial class App : System.Windows.Application
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
         mainWindow.UpdateSolutionLoadingOverlay("正在准备工作区", "启动服务已准备完成");
         await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Render);
-        // 方案管理器已在插件准入前完成选择；此处只把最终工作区壳交给用户，
-        // 并在已选择方案时保持加载遮罩连续可见。
-        if (!mainWindow.IsVisible)
+        // 原厂 GuideWindow 时序：引导层出现时主界面保持隐藏，关闭引导后才显示工作区，
+        // 避免“欢迎页浮在已可见主界面上”的双窗口观感。
+        var showShellBeforeGuide = _requestedSolutionPath != null;
+        if (showShellBeforeGuide && !mainWindow.IsVisible)
             ShowMainWindow(mainWindow, "workspace shell");
-        // 选择了方案时保持覆盖层连续可见，避免出现“主窗口先露出空壳、再闪回加载框”的
-        // 非 VM 跳变；只有空白工作区或关闭方案管理器才在这里撤掉覆盖层。
-        if (_requestedSolutionPath is null && !_startupNewSolutionRequested)
-            mainWindow.HideSolutionLoadingOverlay();
 
+        var openedByRequest = false;
         if (_requestedSolutionPath != null)
         {
             // A file launch never routes through the browser/registration dialog.
             mainWindow.ShowSolutionLoadingOverlay("正在打开方案", "正在读取方案并准备工作区");
+            string? failure = null;
             try
             {
-                if (mainWindow.DataContext is MainWindowViewModel vm && await vm.OpenExternalSolutionAsync(_requestedSolutionPath))
-                    return;
+                if (mainWindow.DataContext is MainWindowViewModel vm)
+                {
+                    if (await vm.OpenExternalSolutionAsync(_requestedSolutionPath)) openedByRequest = true;
+                    else failure = vm.LastWorkspaceOpenResult?.Error;
+                }
             }
             finally { mainWindow.HideSolutionLoadingOverlay(); }
-            // A failed file request remains recoverable via the start page, even when hidden by preference.
-            await ShowStartPageAsync(mainWindow);
-        }
-        else if (_startupSolutionManagerShown && _startupNewSolutionRequested)
-        {
-            // 方案管理器已完成“新建”选择；覆盖层从这里开始才出现，和 VM 的
-            // “先选方案、再进入工作区加载”时序一致。
-            mainWindow.ShowSolutionLoadingOverlay("正在创建方案", "正在准备空白方案工作区");
-            try
+            if (!openedByRequest)
             {
-                if (mainWindow.DataContext is MainWindowViewModel vm && await vm.NewEmptySolutionAsync())
-                    return;
+                // 打开失败绝不能停在空壳：先保证有可编辑工作区，再明确报错。
+                await EnsureEditableWorkspaceAsync(mainWindow);
+                ThemeMessageDialog.Show(
+                    string.IsNullOrWhiteSpace(failure) ? "该方案未被接纳，已为你保留可编辑的空白工作区。" : failure!,
+                    "方案打开失败", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
             }
-            finally { mainWindow.HideSolutionLoadingOverlay(); }
-        }
-        else if (_startupSolutionManagerShown)
-        {
-            // 原件 GuideWindow 语义：欢迎页只是引导层，主窗口在其之下已持有可编辑方案——
-            // 用户直接关闭欢迎页（未选择任何动作）也进入可编辑空白方案，不落“暂无流程”空态。
-            mainWindow.ShowSolutionLoadingOverlay("正在创建方案", "正在准备空白方案工作区");
-            try
-            {
-                if (mainWindow.DataContext is MainWindowViewModel vm && await vm.NewEmptySolutionAsync())
-                    return;
-            }
-            finally { mainWindow.HideSolutionLoadingOverlay(); }
-        }
-        else if (StartPreferences.HideStartPage)
-        {
-            // The shell is already visible. No second Show is needed.
         }
         else
+        {
+            // 未指定方案时先建立可编辑空白工作区：引导层关闭后才不会落到"无效方案"。
+            await EnsureEditableWorkspaceAsync(mainWindow);
+        }
+
+        mainWindow.HideSolutionLoadingOverlay();
+        if (!openedByRequest && !StartPreferences.HideStartPage)
             await ShowStartPageAsync(mainWindow);
+    }
+
+    /// <summary>
+    /// 应用引导页卡片选择的工具箱优先分类（原厂 ToolBoxType 语义：只影响工具箱显示，不建方案）。
+    /// </summary>
+    private void ApplyToolboxPreset(MainWindow mainWindow)
+    {
+        var category = StartPreferences.ToolboxPreset switch
+        {
+            "locate" or "Position" => "定位",
+            "detect" or "Defect" => "缺陷检测",
+            "identify" or "Recognition" => "识别",
+            _ => null
+        };
+        if (category is null || mainWindow.DataContext is not MainWindowViewModel vm) return;
+        try
+        {
+            vm.IsToolboxCollapsed = false;
+            vm.Toolbox.IsCompactMode = false;
+            vm.Toolbox.SelectedCategory = category;
+            // 展开态下列表按分类展开呈现，必须真正展开目标分类，否则选中项不可见。
+            var target = vm.Toolbox.Categories.FirstOrDefault(c => c.Name == category);
+            if (target is not null)
+            {
+                foreach (var item in vm.Toolbox.Categories) item.IsExpanded = ReferenceEquals(item, target);
+                target.IsExpanded = true;
+            }
+            LogStartupStage("StartPage.ToolboxPreset", $"preset={StartPreferences.ToolboxPreset}; category={category}; expanded={target is not null}");
+        }
+        catch (Exception ex) { LogStartupStage("StartPage.ToolboxPresetFailed", ex.Message); }
+    }
+
+    /// <summary>
+    /// 确保当前存在可编辑工作区（无会话时创建空白方案）。引导层出现前后都以此为不变量。
+    /// </summary>
+    private async Task<bool> EnsureEditableWorkspaceAsync(MainWindow mainWindow)
+    {
+        if (ServiceInitializer.SolutionManager.CurrentSession is not null) return true;
+        mainWindow.ShowSolutionLoadingOverlay("正在创建方案", "正在准备空白方案工作区");
+        try
+        {
+            if (mainWindow.DataContext is MainWindowViewModel vm && await vm.NewEmptySolutionAsync()) return true;
+            return false;
+        }
+        finally { mainWindow.HideSolutionLoadingOverlay(); }
     }
 
     /// <summary>
     /// 在插件准入之前显示方案管理器。这里仅收集用户选择，不创建工作区、工具箱
     /// 或节点编辑器；选择完成后 OnStartup 才创建 MainWindow 并进入加载覆盖层。
     /// </summary>
-    private void ShowStartupSolutionManager()
-    {
-        var recent = StartPreferences.BuildRecentFiles();
-        var page = new StartPageWindow(StartPreferences.HideStartPage, recent, SetStartPageHidden, RemoveRecentSolution);
-        LogStartupStage("SolutionManager.Visible", "before plugin admission");
-        System.Windows.Application.Current.MainWindow = page;
-        page.ShowDialog();
-
-        _startupSolutionManagerShown = true;
-        _startupSelectedAction = page.SelectedAction;
-        _startupSelectedPath = page.SelectedPath;
-        if (_startupSelectedAction == StartPageAction.OpenFile && !string.IsNullOrWhiteSpace(_startupSelectedPath))
-            _requestedSolutionPath = _startupSelectedPath;
-        else if (_startupSelectedAction == StartPageAction.NewSolution)
-            _startupNewSolutionRequested = true;
-
-        LogStartupStage("SolutionManager.Selection", $"action={_startupSelectedAction}; path={_startupSelectedPath ?? string.Empty}");
-    }
-
     /// <summary>
     /// 数据根和起始页偏好在方案管理器前准备一次。后续服务/方案管理器初始化
     /// 复用同一实例，避免重复读取配置和重新判定根目录。
@@ -633,20 +641,27 @@ public partial class App : System.Windows.Application
             var page = new StartPageWindow(StartPreferences.HideStartPage, recent, SetStartPageHidden, RemoveRecentSolution);
             if (wasVisible) page.Owner = mainWindow;
             page.ShowDialog();
+            // 原厂语义：卡片只记录工具箱优先分类，关闭只收尾，两者都不创建方案。
+            if (page.SelectedTemplate is { Length: > 0 } preset)
+            {
+                StartPreferences.ToolboxPreset = preset;
+                try { SaveShellPreferences(); } catch (Exception ex) { LogStartupStage("StartPage.PresetSaveFailed", ex.Message); }
+            }
             switch (page.SelectedAction)
             {
                 case StartPageAction.OpenFile:
                     if (page.SelectedPath == null || !await vm.OpenExternalSolutionAsync(page.SelectedPath)) continue;
                     break;
                 case StartPageAction.NewSolution:
-                    if (!await vm.NewEmptySolutionAsync()) continue;
+                    // 工作区在引导层出现前已建立；这里只保证不变量成立。
+                    if (!await EnsureEditableWorkspaceAsync(mainWindow)) continue;
                     break;
                 default:
-                    // Closing a start page never exits the application. With no open
-                    // workspace it enters an editable empty solution (original GuideWindow semantics).
-                    if (ServiceInitializer.SolutionManager.CurrentSession is null && !await vm.NewEmptySolutionAsync()) continue;
+                    // 关闭引导层：直接进入已有可编辑工作区，不新建、不退出。
+                    if (!await EnsureEditableWorkspaceAsync(mainWindow)) continue;
                     break;
             }
+            ApplyToolboxPreset(mainWindow);
             if (!mainWindow.IsVisible) ShowMainWindow(mainWindow, "start page selection");
             return;
         }

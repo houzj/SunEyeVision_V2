@@ -1,32 +1,234 @@
 <Window x:Class="SunEyeVision.UI.Shell.Windows.StartPageWindow"
  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
- Title="SunEyeVision · 起始页" Width="1000" Height="616" MinWidth="1000" MinHeight="616"
- WindowStartupLocation="CenterScreen" WindowStyle="None" ResizeMode="CanResize" Background="{DynamicResource Startup.Background}" Foreground="{DynamicResource Startup.Text}" FontFamily="{DynamicResource Startup.Font}">
+ Title="SunEyeVision · 起始页" Width="1000" Height="616" MinWidth="900" MinHeight="560"
+ WindowStartupLocation="CenterScreen" WindowStyle="None" ResizeMode="CanResizeWithGrip" Background="{DynamicResource Startup.Background}" Foreground="{DynamicResource Startup.Text}" FontFamily="{DynamicResource Startup.Font}">
  <Window.Resources>
- <ResourceDictionary>
- <ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/SunEyeVision.UI;component/Resources/Branding/StartupBranding.xaml"/></ResourceDictionary.MergedDictionaries>
-  <Style TargetType="Button">
-   <Setter Property="Foreground" Value="#EEF1F3"/><Setter Property="Background" Value="#242E36"/><Setter Property="BorderBrush" Value="#52616D"/><Setter Property="Padding" Value="14,10"/><Setter Property="Cursor" Value="Hand"/><Setter Property="HorizontalContentAlignment" Value="Center"/>
-   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button"><Border x:Name="Surface" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" RecognizesAccessKey="True"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Surface" Property="Background" Value="#30352F"/><Setter TargetName="Surface" Property="BorderBrush" Value="#FFAD52"/></Trigger><Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Surface" Property="BorderBrush" Value="#FFAD52"/></Trigger><Trigger Property="IsPressed" Value="True"><Setter TargetName="Surface" Property="Background" Value="#44382A"/></Trigger><Trigger Property="IsEnabled" Value="False"><Setter TargetName="Surface" Property="Opacity" Value="0.4"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
-  </Style>
-  <Style x:Key="Primary" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}"><Setter Property="Background" Value="#FFAD52"/><Setter Property="Foreground" Value="#211B13"/><Setter Property="BorderBrush" Value="#FFAD52"/><Setter Property="FontWeight" Value="SemiBold"/><Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="Foreground" Value="#FFFFFF"/></Trigger></Style.Triggers></Style>
-  <Style x:Key="TextButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}"><Setter Property="Background" Value="Transparent"/><Setter Property="BorderBrush" Value="Transparent"/><Setter Property="Padding" Value="7,5"/><Setter Property="Foreground" Value="#A8BAC7"/></Style>
-  <Style x:Key="Capability" TargetType="Border"><Setter Property="Background" Value="#20272D"/><Setter Property="BorderBrush" Value="#3C474F"/><Setter Property="BorderThickness" Value="1"/><Setter Property="CornerRadius" Value="6"/><Setter Property="Padding" Value="22"/><Setter Property="Margin" Value="0,0,14,14"/></Style>
-  <Style TargetType="CheckBox"><Setter Property="Foreground" Value="#A7B0B8"/><Setter Property="Cursor" Value="Hand"/><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="CheckBox"><StackPanel Orientation="Horizontal"><Border x:Name="Box" Width="15" Height="15" BorderBrush="#78858F" BorderThickness="1" Background="#20272D" CornerRadius="3"><TextBlock x:Name="Tick" Text="✓" Foreground="#211B13" HorizontalAlignment="Center" Visibility="Collapsed" FontSize="12"/></Border><ContentPresenter Margin="7,0,0,0" VerticalAlignment="Center"/></StackPanel><ControlTemplate.Triggers><Trigger Property="IsChecked" Value="True"><Setter TargetName="Box" Property="Background" Value="#FFAD52"/><Setter TargetName="Tick" Property="Visibility" Value="Visible"/></Trigger><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Box" Property="BorderBrush" Value="#FFAD52"/></Trigger><Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Box" Property="BorderBrush" Value="#FFAD52"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter></Style>
-  <Style TargetType="ListBox"><Setter Property="Background" Value="Transparent"/><Setter Property="Foreground" Value="#EEF1F3"/><Setter Property="BorderThickness" Value="0"/><Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/></Style>
-  <Style TargetType="ListBoxItem"><Setter Property="Padding" Value="0"/><Setter Property="Margin" Value="0,2"/><Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBoxItem"><Border x:Name="Row" Background="Transparent" BorderBrush="Transparent" BorderThickness="1" CornerRadius="6" Padding="6"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Row" Property="Background" Value="#22292F"/></Trigger><Trigger Property="IsSelected" Value="True"><Setter TargetName="Row" Property="Background" Value="#28333B"/><Setter TargetName="Row" Property="BorderBrush" Value="#52616D"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter></Style>
-  <DataTemplate x:Key="RecentRow"><Grid Margin="0,3"><Grid.ColumnDefinitions><ColumnDefinition Width="36"/><ColumnDefinition/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="30"/></Grid.ColumnDefinitions><Border Width="28" Height="34" BorderBrush="#53616B" BorderThickness="1" CornerRadius="4" Background="#1F2931"><TextBlock Text="SEV" FontSize="8" Foreground="#A3BDD0" VerticalAlignment="Center" HorizontalAlignment="Center"/></Border><Button Grid.Column="1" Style="{StaticResource TextButton}" HorizontalContentAlignment="Left" Click="Recent_OpenClick" ToolTip="{Binding Path}"><StackPanel><TextBlock Text="{Binding DisplayName}" FontSize="14" Foreground="#EEF1F3" TextTrimming="CharacterEllipsis"/><TextBlock Text="{Binding Path}" FontSize="10" Foreground="#8396A4" TextTrimming="CharacterEllipsis" Margin="0,4,0,0"/></StackPanel></Button><TextBlock Grid.Column="2" Text="{Binding DisplayTime}" VerticalAlignment="Center" FontSize="11" Margin="10,0,4,0"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Foreground" Value="#A7B0B8"/><Style.Triggers><DataTrigger Binding="{Binding IsMissing}" Value="True"><Setter Property="Foreground" Value="#FFAD52"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock><Button Grid.Column="3" Content="×" Style="{StaticResource TextButton}" Click="Remove_Click" ToolTip="移除记录，不删除文件" AutomationProperties.Name="移除最近记录"/></Grid></DataTemplate>
- </ResourceDictionary>
+  <ResourceDictionary>
+   <ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/SunEyeVision.UI;component/Resources/Branding/StartupBranding.xaml"/></ResourceDictionary.MergedDictionaries>
+
+   <!-- 扁平按钮：无边框，用于最近列表行与引导条 -->
+   <Style x:Key="Flat" TargetType="Button">
+    <Setter Property="Foreground" Value="#C8D2D8"/><Setter Property="Background" Value="Transparent"/><Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Cursor" Value="Hand"/><Setter Property="Padding" Value="6,4"/><Setter Property="HorizontalContentAlignment" Value="Left"/>
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+     <Border x:Name="S" Background="{TemplateBinding Background}" CornerRadius="3" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/></Border>
+     <ControlTemplate.Triggers>
+      <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="S" Property="Background" Value="#262C31"/><Setter Property="Foreground" Value="#FFFFFF"/></Trigger>
+      <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="S" Property="Background" Value="#262C31"/></Trigger>
+     </ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
+   </Style>
+
+   <!-- 方案模板卡片：整块可点，悬停高亮边框与底部说明条 -->
+   <Style x:Key="Card" TargetType="Button">
+    <Setter Property="Cursor" Value="Hand"/><Setter Property="Margin" Value="0,0,16,16"/><Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="VerticalContentAlignment" Value="Stretch"/>
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+     <Border x:Name="Shell" Background="#262B30" BorderBrush="#343B41" BorderThickness="1" CornerRadius="2">
+      <Grid><ContentPresenter/></Grid>
+     </Border>
+     <ControlTemplate.Triggers>
+      <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Shell" Property="Background" Value="#2A3136"/><Setter TargetName="Shell" Property="BorderBrush" Value="#FFAD52"/></Trigger>
+      <Trigger Property="IsPressed" Value="True"><Setter TargetName="Shell" Property="Background" Value="#313A40"/></Trigger>
+      <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Shell" Property="BorderBrush" Value="#FFAD52"/></Trigger>
+     </ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
+    <Setter Property="AutomationProperties.HelpText" Value="切换工具箱优先分类"/>
+   </Style>
+
+   <Style TargetType="CheckBox">
+    <Setter Property="Foreground" Value="#A7B0B8"/><Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="CheckBox">
+     <StackPanel Orientation="Horizontal">
+      <Border x:Name="Box" Width="15" Height="15" BorderBrush="#78858F" BorderThickness="1" Background="#20272D" CornerRadius="3">
+       <TextBlock x:Name="Tick" Text="✓" Foreground="#211B13" HorizontalAlignment="Center" Visibility="Collapsed" FontSize="12"/>
+      </Border>
+      <ContentPresenter Margin="7,0,0,0" VerticalAlignment="Center"/>
+     </StackPanel>
+     <ControlTemplate.Triggers>
+      <Trigger Property="IsChecked" Value="True"><Setter TargetName="Box" Property="Background" Value="#FFAD52"/><Setter TargetName="Tick" Property="Visibility" Value="Visible"/></Trigger>
+      <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Box" Property="BorderBrush" Value="#FFAD52"/></Trigger>
+     </ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
+   </Style>
+
+   <Style TargetType="ListBox"><Setter Property="Background" Value="Transparent"/><Setter Property="Foreground" Value="#EEF1F3"/><Setter Property="BorderThickness" Value="0"/><Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/></Style>
+   <Style TargetType="ListBoxItem">
+    <Setter Property="Padding" Value="0"/><Setter Property="Margin" Value="0,1"/><Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBoxItem">
+     <Border x:Name="Row" Background="Transparent" BorderBrush="Transparent" BorderThickness="1" CornerRadius="3" Padding="0">
+      <ContentPresenter/>
+     </Border>
+     <ControlTemplate.Triggers>
+      <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Row" Property="Background" Value="#242A2F"/></Trigger>
+      <Trigger Property="IsSelected" Value="True"><Setter TargetName="Row" Property="Background" Value="#282F35"/></Trigger>
+     </ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
+   </Style>
+
+   <!-- 最近方案行：名称 + 相对时间，路径放 ToolTip，与原厂一致不含缩略图 -->
+   <DataTemplate x:Key="RecentRow">
+    <Grid Margin="0,2" ToolTip="{Binding Path}">
+     <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="24"/></Grid.ColumnDefinitions>
+     <Button Style="{StaticResource Flat}" HorizontalContentAlignment="Left" Click="Recent_OpenClick" Padding="8,7">
+      <TextBlock Text="{Binding DisplayName}" FontSize="14" Foreground="#EEF1F3" TextTrimming="CharacterEllipsis"/>
+     </Button>
+     <TextBlock Grid.Column="1" Text="{Binding DisplayTime}" VerticalAlignment="Center" FontSize="12" Margin="8,0,4,0">
+      <TextBlock.Style><Style TargetType="TextBlock">
+       <Setter Property="Foreground" Value="#8B959C"/>
+       <Style.Triggers><DataTrigger Binding="{Binding IsMissing}" Value="True"><Setter Property="Foreground" Value="#FFAD52"/><Setter Property="Text" Value="文件不可用"/></DataTrigger></Style.Triggers>
+      </Style></TextBlock.Style>
+     </TextBlock>
+     <Button Grid.Column="2" Style="{StaticResource Flat}" Content="×" Padding="4,0" FontSize="14" Foreground="#7C868D" Click="Remove_Click" ToolTip="从列表移除（不删除文件）" AutomationProperties.Name="移除最近记录"/>
+    </Grid>
+   </DataTemplate>
+  </ResourceDictionary>
  </Window.Resources>
- <Border BorderBrush="#3C444B" BorderThickness="1" Background="#121518" PreviewMouseLeftButtonDown="Window_PreviewMouseLeftButtonDown"><Grid>
-  <Grid.RowDefinitions><RowDefinition Height="3"/><RowDefinition Height="Auto"/><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions><Border Background="{StaticResource Startup.Accent}"/>
-  <Grid Grid.Row="1" Margin="30,24" MouseLeftButtonDown="Header_MouseLeftButtonDown"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><StackPanel Orientation="Horizontal"><Image Source="{StaticResource Startup.BrandMark}" Width="44" Height="44" Margin="0,0,13,0"/><StackPanel VerticalAlignment="Center"><TextBlock Text="SunEyeVision" FontSize="29" FontWeight="SemiBold"/><TextBlock Text="BUILD YOUR VISION" Foreground="{StaticResource Startup.Muted}" FontSize="10"/></StackPanel></StackPanel><StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top"><CheckBox x:Name="HideStartPageBox" Content="不再显示" Margin="0,8,18,0" Checked="HideStartPage_Changed" Unchecked="HideStartPage_Changed" AutomationProperties.AutomationId="HideStartPage"/><Button Content="×" Style="{StaticResource TextButton}" FontSize="23" Padding="7,0" Click="Close_Click" AutomationProperties.AutomationId="CloseStartPage"/></StackPanel></Grid>
-  <Grid x:Name="WelcomePanel" Grid.Row="2" Margin="30,0,30,20"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition/></Grid.RowDefinitions><StackPanel Margin="0,0,0,24"><TextBlock Text="让视觉想法，成为可执行的流程。" FontSize="24"/><TextBlock Text="了解工具能力，或继续你的方案。" Foreground="#929DA6" Margin="0,7,0,0"/></StackPanel><Grid Grid.Row="1"><Grid.ColumnDefinitions><ColumnDefinition Width="1.15*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><UniformGrid Rows="2" Columns="2">
-<Border Style="{StaticResource Capability}"><Grid><StackPanel><Viewbox Width="36" Height="36" HorizontalAlignment="Left"><Canvas Width="40" Height="40"><Rectangle Canvas.Left="4" Canvas.Top="6" Width="32" Height="28" RadiusX="3" RadiusY="3" Stroke="#FFAD52" StrokeThickness="1.5"/><Path Data="M5 28 L14 18 21 26 26 20 35 29" Stroke="#FFAD52" StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"/><Ellipse Canvas.Left="24" Canvas.Top="11" Width="6" Height="6" Stroke="#FFAD52" StrokeThickness="1.5"/></Canvas></Viewbox><TextBlock Text="图像处理" FontSize="17" FontWeight="SemiBold" Margin="0,14,0,6"/><TextBlock Text="从原始图像到清晰的特征&#10;加载 · 滤波 · 二值化 · 形态学" TextWrapping="Wrap" Foreground="#A7B0B8" FontSize="12"/></StackPanel></Grid></Border>
-<Border Style="{StaticResource Capability}"><Grid><StackPanel><Viewbox Width="36" Height="36" HorizontalAlignment="Left"><Canvas Width="40" Height="40"><Ellipse Canvas.Left="8" Canvas.Top="8" Width="24" Height="24" Stroke="#FFAD52" StrokeThickness="1.5"/><Path Data="M20 2 V11 M20 29 V38 M2 20 H11 M29 20 H38" Stroke="#FFAD52" StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"/><Ellipse Canvas.Left="18" Canvas.Top="18" Width="4" Height="4" Stroke="#FFAD52" StrokeThickness="1.5"/></Canvas></Viewbox><TextBlock Text="定位与测量" FontSize="17" FontWeight="SemiBold" Margin="0,14,0,6"/><TextBlock Text="寻找目标，量化几何关系&#10;轮廓匹配 · 直线／圆 · 距离" TextWrapping="Wrap" Foreground="#A7B0B8" FontSize="12"/></StackPanel></Grid></Border>
-<Border Style="{StaticResource Capability}"><Grid><StackPanel><Viewbox Width="36" Height="36" HorizontalAlignment="Left"><Canvas Width="40" Height="40"><Path Data="M8 32 V6 M8 32 H34 M5 10 L8 5 11 10 M29 29 L35 32 29 35" Stroke="#FFAD52" StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"/><Path Data="M13 25 L22 15 31 20" Stroke="#FFAD52" StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"/><Ellipse Canvas.Left="11" Canvas.Top="23" Width="4" Height="4" Stroke="#FFAD52" StrokeThickness="1.5"/><Ellipse Canvas.Left="20" Canvas.Top="13" Width="4" Height="4" Stroke="#FFAD52" StrokeThickness="1.5"/><Ellipse Canvas.Left="29" Canvas.Top="18" Width="4" Height="4" Stroke="#FFAD52" StrokeThickness="1.5"/></Canvas></Viewbox><TextBlock Text="标定与坐标" FontSize="17" FontWeight="SemiBold" Margin="0,14,0,6"/><TextBlock Text="建立图像与物理坐标的联系&#10;N 点标定 · 坐标转换" TextWrapping="Wrap" Foreground="#A7B0B8" FontSize="12"/></StackPanel></Grid></Border>
-<Border Style="{StaticResource Capability}"><Grid><StackPanel><Viewbox Width="36" Height="36" HorizontalAlignment="Left"><Canvas Width="40" Height="40"><Rectangle Canvas.Left="3" Canvas.Top="15" Width="10" Height="10" RadiusX="2" RadiusY="2" Stroke="#FFAD52" StrokeThickness="1.5"/><Rectangle Canvas.Left="27" Canvas.Top="4" Width="10" Height="10" RadiusX="2" RadiusY="2" Stroke="#FFAD52" StrokeThickness="1.5"/><Rectangle Canvas.Left="27" Canvas.Top="26" Width="10" Height="10" RadiusX="2" RadiusY="2" Stroke="#FFAD52" StrokeThickness="1.5"/><Path Data="M13 20 H20 V9 H27 M20 20 V31 H27" Stroke="#FFAD52" StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"/></Canvas></Viewbox><TextBlock Text="流程与通信" FontSize="17" FontWeight="SemiBold" Margin="0,14,0,6"/><TextBlock Text="连接工具，组织业务逻辑&#10;条件分支 · 子程序 · 脚本 · 通信" TextWrapping="Wrap" Foreground="#A7B0B8" FontSize="12"/></StackPanel></Grid></Border>
-</UniformGrid><Border Grid.Column="1" BorderBrush="#343B42" BorderThickness="1,0,0,0" Padding="24,0,0,14" Margin="10,0,0,0"><Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions><DockPanel Margin="0,0,0,12"><Button Content="打开其他方案 ↗" DockPanel.Dock="Right" Style="{StaticResource TextButton}" Click="Open_Click" FontSize="11"/><TextBlock Text="▎最近打开" FontSize="17" VerticalAlignment="Center"/></DockPanel><ListBox x:Name="RecentFilesList" Grid.Row="1" ItemTemplate="{StaticResource RecentRow}" KeyDown="Recent_KeyDown" AutomationProperties.AutomationId="RecentFiles"/><TextBlock x:Name="EmptyRecentText" Grid.Row="1" Text="暂无最近方案，打开一个文件开始。" Foreground="#929DA6" VerticalAlignment="Center" HorizontalAlignment="Center" IsHitTestVisible="False" TextWrapping="Wrap"/><UniformGrid Grid.Row="2" Columns="2" Margin="0,14,0,0"><Button Content="＋ 新建方案" Style="{StaticResource Primary}" Margin="0,0,10,0" Click="New_Click" AutomationProperties.AutomationId="NewSolution"/><Button Content="打开方案" Click="Open_Click" AutomationProperties.AutomationId="OpenSolution"/></UniformGrid></Grid></Border></Grid></Grid>
-  <Border Grid.Row="3" Background="#1C2227" Padding="30,16"><DockPanel><TextBlock x:Name="StatusText" Text="新建空白方案，不使用模板。" Foreground="#929DA6" FontSize="12" VerticalAlignment="Center" TextWrapping="Wrap"/></DockPanel></Border>
- </Grid></Border>
+
+ <Border BorderBrush="#3C444B" BorderThickness="1" Background="#121518" PreviewMouseLeftButtonDown="Window_PreviewMouseLeftButtonDown">
+  <Grid>
+   <Grid.RowDefinitions><RowDefinition Height="3"/><RowDefinition Height="Auto"/><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+   <Border Background="{StaticResource Startup.Accent}"/>
+
+   <!-- 顶部：品牌 + 不再显示 + 关闭 -->
+   <Grid Grid.Row="1" Margin="28,20,20,0" MouseLeftButtonDown="Header_MouseLeftButtonDown">
+    <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+    <StackPanel Orientation="Horizontal">
+     <Image Source="{StaticResource Startup.BrandMark}" Width="42" Height="42" Margin="0,0,12,0"/>
+     <StackPanel VerticalAlignment="Center">
+      <TextBlock Text="SunEyeVision" FontSize="27" FontWeight="SemiBold"/>
+      <TextBlock Text="V1.0.0" Foreground="{StaticResource Startup.Muted}" FontSize="11" Margin="0,1,0,0"/>
+     </StackPanel>
+    </StackPanel>
+    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+     <CheckBox x:Name="HideStartPageBox" Content="不再显示" Margin="0,9,14,0" Checked="HideStartPage_Changed" Unchecked="HideStartPage_Changed" AutomationProperties.AutomationId="HideStartPage"/>
+     <Button Content="✕" Style="{StaticResource Flat}" FontSize="16" Padding="8,2" Click="Close_Click" ToolTip="关闭" AutomationProperties.AutomationId="CloseStartPage"/>
+    </StackPanel>
+   </Grid>
+
+   <!-- 主体：方案模板四宫格 + 最近打开 -->
+   <Grid x:Name="WelcomePanel" Grid.Row="2" Margin="28,22,20,18">
+    <Grid.ColumnDefinitions><ColumnDefinition Width="1.9*"/><ColumnDefinition Width="1*"/></Grid.ColumnDefinitions>
+
+    <UniformGrid Rows="2" Columns="2" Margin="0,0,4,0">
+     <!-- 通用方案 -->
+     <Button Style="{StaticResource Card}" Click="Template_Click" Tag="general" AutomationProperties.Name="通用方案">
+      <Grid>
+       <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="34"/></Grid.RowDefinitions>
+       <Grid Margin="20,0,18,4">
+        <TextBlock Text="通用方案" FontSize="19" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="#E6EBEE"/>
+        <Viewbox Width="112" Height="112" HorizontalAlignment="Right" VerticalAlignment="Center" Opacity="0.85">
+         <Canvas Width="40" Height="40">
+          <Rectangle Canvas.Left="5" Canvas.Top="8" Width="30" Height="24" RadiusX="2" RadiusY="2" Stroke="#FFAD52" StrokeThickness="1.6" StrokeDashArray="3 2"/>
+          <Path Data="M20 6 V34 M6 20 H34" Stroke="#FFAD52" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+         </Canvas>
+        </Viewbox>
+       </Grid>
+       <Border Grid.Row="1" Background="#1B1F22"><TextBlock Text="建立普通空白方案" FontSize="12.5" Foreground="#A2ACB3" Margin="20,0" VerticalAlignment="Center"/></Border>
+      </Grid>
+     </Button>
+
+     <!-- 定位测量 -->
+     <Button Style="{StaticResource Card}" Click="Template_Click" Tag="locate" AutomationProperties.Name="定位测量">
+      <Grid>
+       <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="34"/></Grid.RowDefinitions>
+       <Grid Margin="20,0,18,4">
+        <TextBlock Text="定位测量" FontSize="19" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="#E6EBEE"/>
+        <Viewbox Width="112" Height="112" HorizontalAlignment="Right" VerticalAlignment="Center" Opacity="0.85">
+         <Canvas Width="40" Height="40">
+          <Path Data="M4 20 A16 16 0 1 1 36 20 A16 16 0 1 1 4 20" Stroke="#FFAD52" StrokeThickness="1.6" StrokeDashArray="3 2"/>
+          <Path Data="M20 4 V10 M20 30 V36 M4 20 H10 M30 20 H36" Stroke="#FFAD52" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+          <Ellipse Canvas.Left="16" Canvas.Top="16" Width="8" Height="8" Fill="#FFAD52"/>
+         </Canvas>
+        </Viewbox>
+       </Grid>
+       <Border Grid.Row="1" Background="#1B1F22"><TextBlock Text="通过定位、测量工具进行设计" FontSize="12.5" Foreground="#A2ACB3" Margin="20,0" VerticalAlignment="Center"/></Border>
+      </Grid>
+     </Button>
+
+     <!-- 缺陷检测 -->
+     <Button Style="{StaticResource Card}" Click="Template_Click" Tag="detect" AutomationProperties.Name="缺陷检测">
+      <Grid>
+       <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="34"/></Grid.RowDefinitions>
+       <Grid Margin="20,0,18,4">
+        <TextBlock Text="缺陷检测" FontSize="19" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="#E6EBEE"/>
+        <Viewbox Width="112" Height="112" HorizontalAlignment="Right" VerticalAlignment="Center" Opacity="0.85">
+         <Canvas Width="40" Height="40">
+          <Path Data="M14 34 L30 8" Stroke="#FFAD52" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+          <Path Data="M22 30 A6 6 0 1 1 21.9 30" Stroke="#FFAD52" StrokeThickness="1.6"/>
+          <Path Data="M6 30 H34" Stroke="#FFAD52" StrokeThickness="1.4" StrokeDashArray="2 2"/>
+         </Canvas>
+        </Viewbox>
+       </Grid>
+       <Border Grid.Row="1" Background="#1B1F22"><TextBlock Text="借助检测工具查找工件缺陷" FontSize="12.5" Foreground="#A2ACB3" Margin="20,0" VerticalAlignment="Center"/></Border>
+      </Grid>
+     </Button>
+
+     <!-- 用于识别 -->
+     <Button Style="{StaticResource Card}" Click="Template_Click" Tag="identify" AutomationProperties.Name="用于识别">
+      <Grid>
+       <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="34"/></Grid.RowDefinitions>
+       <Grid Margin="20,0,18,4">
+        <TextBlock Text="用于识别" FontSize="19" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="#E6EBEE"/>
+        <Viewbox Width="112" Height="112" HorizontalAlignment="Right" VerticalAlignment="Center" Opacity="0.85">
+         <Canvas Width="40" Height="40">
+          <Path Data="M10 12 H8 V8 H12 M28 8 H32 V12 M32 28 V32 H28 M12 32 H8 V28" Stroke="#FFAD52" StrokeThickness="1.6" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+          <Path Data="M18 10 V30 M22 10 V30 M26 10 V30 M30 10 V30" Stroke="#FFAD52" StrokeThickness="1.8"/>
+         </Canvas>
+        </Viewbox>
+       </Grid>
+       <Border Grid.Row="1" Background="#1B1F22"><TextBlock Text="通过识别工具进行方案设计" FontSize="12.5" Foreground="#A2ACB3" Margin="20,0" VerticalAlignment="Center"/></Border>
+      </Grid>
+     </Button>
+    </UniformGrid>
+
+    <!-- 最近打开方案 -->
+    <Border Grid.Column="1" BorderBrush="#343B42" BorderThickness="1,0,0,0" Padding="18,0,0,4">
+     <Grid>
+      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+      <DockPanel Margin="0,0,0,10">
+       <Button DockPanel.Dock="Right" Style="{StaticResource Flat}" Click="Open_Click" ToolTip="打开其他方案" AutomationProperties.Name="打开其他方案" VerticalAlignment="Top">
+        <Viewbox Width="18" Height="18"><Canvas Width="20" Height="20">
+         <Path Data="M2 6 H8 L10 8 H18 V17 H2 Z" Stroke="#A8BAC7" StrokeThickness="1.4" StrokeLineJoin="Round" Fill="Transparent"/>
+        </Canvas></Viewbox>
+       </Button>
+       <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+        <Border Width="2" Height="16" Background="{StaticResource Startup.Accent}" Margin="0,0,8,0"/>
+        <TextBlock Text="最近打开方案" FontSize="16" VerticalAlignment="Center"/>
+       </StackPanel>
+      </DockPanel>
+      <ListBox x:Name="RecentFilesList" Grid.Row="1" ItemTemplate="{StaticResource RecentRow}" KeyDown="Recent_KeyDown" AutomationProperties.AutomationId="RecentFiles"/>
+      <TextBlock x:Name="EmptyRecentText" Grid.Row="1" Text="暂无最近方案" Foreground="#8B959C" VerticalAlignment="Center" HorizontalAlignment="Center" IsHitTestVisible="False"/>
+      <TextBlock Grid.Row="2" Text="关闭本窗口即进入空白方案，可直接拖入工具开始设计" Foreground="#7C868D" FontSize="11.5" Margin="2,10,0,0"/>
+      
+     </Grid>
+    </Border>
+   </Grid>
+
+   <!-- 底部三段引导条（对齐原厂 GuideWindow） -->
+   <Border Grid.Row="3" Background="#191D20" BorderBrush="#2A2F33" BorderThickness="0,1,0,0">
+    <Grid>
+     <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="1"/><ColumnDefinition/><ColumnDefinition Width="1"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+     <Button Style="{StaticResource Flat}" Click="Guide_Click" Tag="learn" Padding="18,10" HorizontalContentAlignment="Left">
+      <StackPanel Orientation="Horizontal">
+       <TextBlock Text="1" FontSize="34" FontWeight="Bold" Foreground="#3A4247" Margin="0,0,10,0" VerticalAlignment="Center"/>
+       <TextBlock Text="学习使用 SunEyeVision" FontSize="14" Foreground="#C8D2D8" VerticalAlignment="Center"/>
+      </StackPanel>
+     </Button>
+     <Border Grid.Column="1" Background="#2A2F33"/>
+     <Button Grid.Column="2" Style="{StaticResource Flat}" Click="Guide_Click" Tag="sample" Padding="18,10" HorizontalContentAlignment="Left">
+      <StackPanel Orientation="Horizontal">
+       <TextBlock Text="2" FontSize="34" FontWeight="Bold" Foreground="#3A4247" Margin="0,0,10,0" VerticalAlignment="Center"/>
+       <TextBlock Text="查看示例方案" FontSize="14" Foreground="#C8D2D8" VerticalAlignment="Center"/>
+      </StackPanel>
+     </Button>
+     <Border Grid.Column="3" Background="#2A2F33"/>
+     <Button Grid.Column="4" Style="{StaticResource Flat}" Click="Guide_Click" Tag="support" Padding="18,10" HorizontalContentAlignment="Left">
+      <StackPanel Orientation="Horizontal">
+       <TextBlock Text="3" FontSize="34" FontWeight="Bold" Foreground="#3A4247" Margin="0,0,10,0" VerticalAlignment="Center"/>
+       <TextBlock Text="获取更多支持和帮助" FontSize="14" Foreground="#C8D2D8" VerticalAlignment="Center"/>
+      </StackPanel>
+     </Button>
+     <TextBlock x:Name="StatusText" Grid.Column="5" Text="" Foreground="#8B959C" FontSize="11.5" VerticalAlignment="Center" Margin="16,0,18,0" TextWrapping="Wrap" MaxWidth="320">
+      <TextBlock.Style><Style TargetType="TextBlock"><Style.Triggers><DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource Self}}" Value=""><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
+     </TextBlock>
+    </Grid>
+   </Border>
+  </Grid>
+ </Border>
 </Window>

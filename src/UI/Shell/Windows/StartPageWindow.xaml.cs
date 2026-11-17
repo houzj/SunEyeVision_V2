@@ -19,6 +19,8 @@ public partial class StartPageWindow : Window
     private readonly Action<string>? _removeRecent;
     public StartPageAction SelectedAction { get; private set; }
     public string? SelectedPath { get; private set; }
+    /// <summary>用户点击的方案模板标识（general/locate/detect/identify）；当前创建空白方案，模板预置工具待接入。</summary>
+    public string? SelectedTemplate { get; private set; }
     public StartPageWindow() : this(false, Array.Empty<RecentSolutionFile>(), null) { }
     public StartPageWindow(bool hide, IEnumerable<RecentSolutionFile> recent, Action<bool>? savePreference,
         Action<string>? removeRecent = null)
@@ -40,7 +42,24 @@ public partial class StartPageWindow : Window
     {
         SelectedAction = action; SelectedPath = path; DialogResult = true;
     }
-    private void New_Click(object sender, RoutedEventArgs e) => Finish(StartPageAction.NewSolution);
+    /// <summary>方案模板卡片：只记录工具箱优先分类并关闭，不创建方案（对齐原件 GuideWindow）。</summary>
+    private void Template_Click(object sender, RoutedEventArgs e)
+    {
+        SelectedTemplate = (sender as FrameworkElement)?.Tag as string ?? "general";
+        Finish(StartPageAction.NewSolution);
+    }
+
+    /// <summary>底部引导条：入口尚未接入，就地给出明确提示而不是静默无响应。</summary>
+    private void Guide_Click(object sender, RoutedEventArgs e)
+    {
+        StatusText.Text = (sender as FrameworkElement)?.Tag as string switch
+        {
+            "learn" => "帮助文档站点待接入。",
+            "sample" => "示例方案包待接入。",
+            "support" => "技术支持入口待接入。",
+            _ => string.Empty
+        };
+    }
     private void Open_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new OpenFileDialog { Filter = "方案文件 (*.solution)|*.solution", CheckFileExists = true, Title = "打开方案" };

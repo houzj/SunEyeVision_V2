@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -323,25 +323,42 @@ delta = new Vector(Math.Round((left + delta.X) / 5) * 5 - left, Math.Round((top 
         var cx = left + w / 2; var cy = top + h / 2;
         var others = (session.Tab.DocumentCanvas?.Nodes ?? throw new InvalidOperationException("画布会话未绑定。"))
             .Where(n => !session.Before.ContainsKey(n)).ToArray();
-        foreach (var other in others)
+
+        // 原件 DiagramItem.DrawAlignLine（DiagramItem.xaml.cs:872-885）：同一方向即使命中多个目标，
+        // 也只对「最靠上/最靠左」的那一个画一条线（source2.Min → First），不是每个目标都画。
+        CanvasNodeProjection? hLeft = null, hRight = null, hCenter = null, vTop = null, vBottom = null, vCenter = null;
+        double kLeft = double.MaxValue, kRight = double.MaxValue, kCenter = double.MaxValue;
+        double kTop = double.MaxValue, kBottom = double.MaxValue, kVCenter = double.MaxValue;
+        foreach (var o in others)
         {
-            var ow = other.NodeRect.Width; var oh = other.NodeRect.Height;
-            var oLeft = other.PositionX - ow / 2; var oTop = other.PositionY - oh / 2;
+            var ow = o.NodeRect.Width; var oh = o.NodeRect.Height;
+            var oLeft = o.PositionX - ow / 2; var oTop = o.PositionY - oh / 2;
             var oRight = oLeft + ow; var oBottom = oTop + oh;
             var oCx = oLeft + ow / 2; var oCy = oTop + oh / 2;
-            if (Math.Abs(oLeft - left) < 0.5 || Math.Abs(oRight - right) < 0.5 || Math.Abs(oCx - cx) < 0.5)
-            {
-                var x = Math.Abs(oLeft - left) < 0.5 ? left : Math.Abs(oRight - right) < 0.5 ? right : cx;
-                AddCanvasAlignLine(x, Math.Min(top, oTop) - 5, x, Math.Max(bottom, oBottom) + 5);
-            }
-            if (Math.Abs(oTop - top) < 0.5 || Math.Abs(oBottom - bottom) < 0.5 || Math.Abs(oCy - cy) < 0.5)
-            {
-                var y = Math.Abs(oTop - top) < 0.5 ? top : Math.Abs(oBottom - bottom) < 0.5 ? bottom : cy;
-                AddCanvasAlignLine(Math.Min(left, oLeft) - 5, y, Math.Max(right, oRight) + 5, y);
-            }
+            if (Math.Abs(oLeft - left) < 0.5 && oTop < kLeft) { hLeft = o; kLeft = oTop; }
+            if (Math.Abs(oRight - right) < 0.5 && oTop < kRight) { hRight = o; kRight = oTop; }
+            if (Math.Abs(oCx - cx) < 0.5 && oTop < kCenter) { hCenter = o; kCenter = oTop; }
+            if (Math.Abs(oTop - top) < 0.5 && oLeft < kTop) { vTop = o; kTop = oLeft; }
+            if (Math.Abs(oBottom - bottom) < 0.5 && oLeft < kBottom) { vBottom = o; kBottom = oLeft; }
+            if (Math.Abs(oCy - cy) < 0.5 && oLeft < kVCenter) { vCenter = o; kVCenter = oLeft; }
         }
+        void Vertical(CanvasNodeProjection? other, double x)
+        {
+            if (other is null) return;
+            var ow = other.NodeRect.Width; var oh = other.NodeRect.Height;
+            var oTop = other.PositionY - oh / 2; var oBottom = oTop + oh;
+            AddCanvasAlignLine(x, Math.Min(top, oTop) - 5, x, Math.Max(bottom, oBottom) + 5);
+        }
+        void Horizontal(CanvasNodeProjection? other, double y)
+        {
+            if (other is null) return;
+            var ow = other.NodeRect.Width;
+            var oLeft = other.PositionX - ow / 2; var oRight = oLeft + ow;
+            AddCanvasAlignLine(Math.Min(left, oLeft) - 5, y, Math.Max(right, oRight) + 5, y);
+        }
+        Vertical(hLeft, left); Vertical(hRight, right); Vertical(hCenter, cx);
+        Horizontal(vTop, top); Horizontal(vBottom, bottom); Horizontal(vCenter, cy);
     }
-
     private void AddCanvasAlignLine(double x1, double y1, double x2, double y2)
     {
         var line = new System.Windows.Shapes.Line

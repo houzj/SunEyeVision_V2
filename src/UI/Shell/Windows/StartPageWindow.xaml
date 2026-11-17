@@ -171,12 +171,12 @@
    </Grid>
 
    <!-- 底部三段引导条（原件 ic_1/2/3 图标） -->
-   <Border Grid.Row="3" Height="80" Background="#191D20" BorderBrush="#2A2F33" BorderThickness="0,1,0,0">
+   <Border Grid.Row="3" Height="88" Background="#191D20" BorderBrush="#2A2F33" BorderThickness="0,1,0,0">
     <Grid>
      <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="1"/><ColumnDefinition/><ColumnDefinition Width="1"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
      <Button Style="{StaticResource Flat}" Click="Guide_Click" Tag="learn" Padding="18,12" VerticalAlignment="Center" HorizontalContentAlignment="Left">
       <StackPanel Orientation="Horizontal">
-       <Grid Width="34" Height="34" Margin="0,0,12,0">
+       <Grid Width="36" Height="50" Margin="0,0,12,0">
         <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Guide_1.png" Stretch="None"/>
         <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Guide_1_Click.png" Stretch="None" Style="{StaticResource ClickOverlay}"/>
        </Grid>
@@ -186,7 +186,7 @@
      <Border Grid.Column="1" Background="#2A2F33"/>
      <Button Grid.Column="2" Style="{StaticResource Flat}" Click="Guide_Click" Tag="sample" Padding="18,12" VerticalAlignment="Center" HorizontalContentAlignment="Left">
       <StackPanel Orientation="Horizontal">
-       <Grid Width="34" Height="34" Margin="0,0,12,0">
+       <Grid Width="36" Height="50" Margin="0,0,12,0">
         <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Guide_2.png" Stretch="None"/>
         <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Guide_2_Click.png" Stretch="None" Style="{StaticResource ClickOverlay}"/>
        </Grid>
@@ -196,7 +196,7 @@
      <Border Grid.Column="3" Background="#2A2F33"/>
      <Button Grid.Column="4" Style="{StaticResource Flat}" Click="Guide_Click" Tag="support" Padding="18,12" VerticalAlignment="Center" HorizontalContentAlignment="Left">
       <StackPanel Orientation="Horizontal">
-       <Grid Width="34" Height="34" Margin="0,0,12,0">
+       <Grid Width="36" Height="50" Margin="0,0,12,0">
         <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Guide_3.png" Stretch="None"/>
         <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Guide_3_Click.png" Stretch="None" Style="{StaticResource ClickOverlay}"/>
        </Grid>

@@ -494,38 +494,52 @@ public partial class App : System.Windows.Application
         {
             // A file launch never routes through the browser/registration dialog.
             mainWindow.ShowSolutionLoadingOverlay("正在打开方案", "正在读取方案并准备工作区");
+            string? failure = null;
             try
             {
-                if (mainWindow.DataContext is MainWindowViewModel vm && await vm.OpenExternalSolutionAsync(_requestedSolutionPath))
-                    return;
+                if (mainWindow.DataContext is MainWindowViewModel vm)
+                {
+                    if (await vm.OpenExternalSolutionAsync(_requestedSolutionPath)) return;
+                    failure = vm.LastWorkspaceOpenResult?.Error ?? "方案未被接纳。";
+                }
             }
             finally { mainWindow.HideSolutionLoadingOverlay(); }
-            // A failed file request remains recoverable via the start page, even when hidden by preference.
-            await ShowStartPageAsync(mainWindow);
+            // 打开失败不得留下"主窗口空壳 + 欢迎页叠加"的中间态：收起外壳，只保留引导层并明确报错。
+            await ShowOpenFailureAsync(mainWindow, "方案打开失败", failure ?? "方案未被接纳。");
         }
         else if (_startupSolutionManagerShown && _startupNewSolutionRequested)
         {
             // 方案管理器已完成“新建”选择；覆盖层从这里开始才出现，和 VM 的
             // “先选方案、再进入工作区加载”时序一致。
             mainWindow.ShowSolutionLoadingOverlay("正在创建方案", "正在准备空白方案工作区");
+            string? failure = null;
             try
             {
-                if (mainWindow.DataContext is MainWindowViewModel vm && await vm.NewEmptySolutionAsync())
-                    return;
+                if (mainWindow.DataContext is MainWindowViewModel vm)
+                {
+                    if (await vm.NewEmptySolutionAsync()) return;
+                    failure = vm.LastWorkspaceOpenResult?.Error ?? "空白方案未创建成功。";
+                }
             }
             finally { mainWindow.HideSolutionLoadingOverlay(); }
+            await ShowOpenFailureAsync(mainWindow, "新建方案失败", failure ?? "空白方案未创建成功。");
         }
         else if (_startupSolutionManagerShown)
         {
             // 原件 GuideWindow 语义：欢迎页只是引导层，主窗口在其之下已持有可编辑方案——
             // 用户直接关闭欢迎页（未选择任何动作）也进入可编辑空白方案，不落“暂无流程”空态。
             mainWindow.ShowSolutionLoadingOverlay("正在创建方案", "正在准备空白方案工作区");
+            string? failure = null;
             try
             {
-                if (mainWindow.DataContext is MainWindowViewModel vm && await vm.NewEmptySolutionAsync())
-                    return;
+                if (mainWindow.DataContext is MainWindowViewModel vm)
+                {
+                    if (await vm.NewEmptySolutionAsync()) return;
+                    failure = vm.LastWorkspaceOpenResult?.Error ?? "空白方案未创建成功。";
+                }
             }
             finally { mainWindow.HideSolutionLoadingOverlay(); }
+            await ShowOpenFailureAsync(mainWindow, "新建方案失败", failure ?? "空白方案未创建成功。");
         }
         else if (StartPreferences.HideStartPage)
         {
@@ -636,10 +650,19 @@ public partial class App : System.Windows.Application
             switch (page.SelectedAction)
             {
                 case StartPageAction.OpenFile:
-                    if (page.SelectedPath == null || !await vm.OpenExternalSolutionAsync(page.SelectedPath)) continue;
+                    if (page.SelectedPath == null) continue;
+                    if (!await vm.OpenExternalSolutionAsync(page.SelectedPath))
+                    {
+                        ShowOpenFailure(vm, "方案打开失败", "该方案未被接纳，请检查后重试或选择其他方案。");
+                        continue;
+                    }
                     break;
                 case StartPageAction.NewSolution:
-                    if (!await vm.NewEmptySolutionAsync()) continue;
+                    if (!await vm.NewEmptySolutionAsync())
+                    {
+                        ShowOpenFailure(vm, "新建方案失败", "空白方案未创建成功，请重试。");
+                        continue;
+                    }
                     break;
                 default:
                     // Closing a start page never exits the application. With no open
@@ -650,6 +673,22 @@ public partial class App : System.Windows.Application
             if (!mainWindow.IsVisible) ShowMainWindow(mainWindow, "start page selection");
             return;
         }
+    }
+
+    /// <summary>打开/新建失败时的统一错误呈现：显示具体原因，不做静默吞掉。</summary>
+    private static void ShowOpenFailure(MainWindowViewModel vm, string title, string fallback)
+    {
+        var reason = vm.LastWorkspaceOpenResult?.Error;
+        var message = string.IsNullOrWhiteSpace(reason) ? fallback : reason;
+        ThemeMessageDialog.Show(message, title, MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
+    }
+
+    /// <summary>启动决策阶段失败：收起主窗口空壳，报错后回到引导层，绝不停在"空壳 + 欢迎页"中间态。</summary>
+    private async Task ShowOpenFailureAsync(MainWindow mainWindow, string title, string message)
+    {
+        ThemeMessageDialog.Show(message, title, MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
+        if (mainWindow.IsVisible) mainWindow.Hide();
+        await ShowStartPageAsync(mainWindow);
     }
 
     private Task? _pendingWorkspaceDeviceRestore;

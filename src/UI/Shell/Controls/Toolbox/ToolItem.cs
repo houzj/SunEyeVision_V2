@@ -19,6 +19,8 @@ namespace SunEyeVision.UI.Shell.Controls.Toolbox
         public string? LoadError { get; init; }
         internal Func<bool>? AvailabilityProbe { get; init; }
         internal Func<string?>? NodeIconKey { get; init; }
+        /// <summary>节点显示类型（原厂 ToolItemInfo.xml 的 displayType），供拖拽预览决定形状与尺寸。</summary>
+        internal Func<string?>? NodeDisplayTypeProbe { get; init; }
         public bool CanActivate() { try { return IsAvailable && AvailabilityProbe?.Invoke() == true; } catch { return false; } }
         public string ToolTip => IsAvailable ? Name : Name + "：" + LoadError;
 

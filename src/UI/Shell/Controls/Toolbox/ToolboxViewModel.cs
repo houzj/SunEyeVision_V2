@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -118,7 +118,8 @@ public sealed class ToolboxViewModel : ViewModelBase
             yield return new ToolItem(entry.Name, entry.Category, "generic", entry.Name, id)
             { CatalogIcon = entry.Icon, IsAvailable = true, LoadError = null,
               AvailabilityProbe = error == null && runtime != null ? () => CheckRuntime(runtime) == null : null,
-              NodeIconKey = error == null && runtime != null ? () => CheckRuntime(runtime) == null ? _admission.Runtime.GetCatalog(runtime.Id)?.IconKey : null : null };
+              NodeIconKey = error == null && runtime != null ? () => CheckRuntime(runtime) == null ? _admission.Runtime.GetCatalog(runtime.Id)?.IconKey : null : null,
+              NodeDisplayTypeProbe = error == null && runtime != null ? () => CheckRuntime(runtime) == null ? _admission.Runtime.GetCatalog(runtime.Id)?.NodeDisplayType : null : null };
         }
         if (_directory == null) yield break;
         foreach (var runtime in _directory.GetCategory(name).Where(t => !verified.Contains(t.Id)))
@@ -128,7 +129,8 @@ public sealed class ToolboxViewModel : ViewModelBase
             yield return new ToolItem(runtime.DisplayName + "（已部署，未匹配目录）", runtime.Category, runtime.Icon, runtime.Description, runtime.Id)
             { IsAvailable = true, LoadError = null,
               AvailabilityProbe = error == null ? () => CheckRuntime(runtime) == null : null,
-              NodeIconKey = error == null ? () => CheckRuntime(runtime) == null ? _admission.Runtime.GetCatalog(runtime.Id)?.IconKey : null : null };
+              NodeIconKey = error == null ? () => CheckRuntime(runtime) == null ? _admission.Runtime.GetCatalog(runtime.Id)?.IconKey : null : null,
+              NodeDisplayTypeProbe = error == null && runtime != null ? () => CheckRuntime(runtime) == null ? _admission.Runtime.GetCatalog(runtime.Id)?.NodeDisplayType : null : null };
         }
     }
     private string? CheckRuntime(DirectoryTool runtime)

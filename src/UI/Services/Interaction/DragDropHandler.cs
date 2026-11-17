@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -110,18 +110,33 @@ namespace SunEyeVision.UI.Services.Interaction
             public bool IsGroupLoopEnabled => false;
             public bool IsSubroutineNode => string.Equals(ToolType, "Subroutine", StringComparison.OrdinalIgnoreCase);
             private SunEyeVision.UI.Shared.NodeStyleConfig Style => IsSubroutineNode ? SunEyeVision.UI.Shared.NodeStyles.Group : SunEyeVision.UI.Shared.NodeStyles.Standard;
-            public double VisualWidth => Style.NodeWidth;
-            public double VisualHeight => Style.NodeHeight;
+            /// <summary>与画布节点同一套类型判定：拖拽预览的形状/尺寸必须和落点后的节点一致。</summary>
+            public string NodeDisplayType => item.NodeDisplayTypeProbe?.Invoke() ?? "DEFAULT";
+            private bool IsSquareNode => NodeDisplayType is "FUNCTION" or "TIMER";
+            private bool IsBranchNode => string.Equals(NodeDisplayType, "IFBRANCH", StringComparison.OrdinalIgnoreCase);
+            public double VisualWidth => IsSquareNode ? 40d : Style.NodeWidth;
+            public double VisualHeight => IsSquareNode ? 40d : (IsBranchNode ? 40d : Style.NodeHeight);
             public double HitAreaWidth => VisualWidth + 20;
             public double HitAreaHeight => VisualHeight + 20;
         }
+
         /// <summary>
         /// 更新临时节点位置（跟随鼠标）
         /// </summary>
+        /// <summary>上次预览落点，用于 3px 防抖（原件 VirualForToolBoxGragDrop._dragOver 同规则）。</summary>
+        private Point _lastTempPoint = new(double.NaN, double.NaN);
+
         private void UpdateTempNodePosition(Point position)
         {
             position=SnapCanvasPoint(position);
-            _canvasControl.UpdateCanvasPlacementFeedback(position, _tempNodeHeight);
+            // 原件：鼠标位移小于 3px 时不重排预览，避免节点跟随抖动。
+            if(!double.IsNaN(_lastTempPoint.X)
+                && Math.Abs(position.X-_lastTempPoint.X)<=3
+                && Math.Abs(position.Y-_lastTempPoint.Y)<=3)
+                return;
+            _lastTempPoint=position;
+            var previewHeight = _tempDragNode is null ? _tempNodeHeight : Math.Max(0, _tempDragNode.Height - 20);
+            _canvasControl.UpdateCanvasPlacementFeedback(position, previewHeight);
             _canvasControl.UpdateCanvasInsertionWire(position, Array.Empty<string>());
             if (_tempDragNode != null)
             {

@@ -24,6 +24,7 @@
         ResizeMode="CanResize"
         WindowChrome.WindowChrome="{x:Static windows:MainWindow.MainWindowChrome}"
         Background="{DynamicResource ThemeWindowBackgroundBrush}"
+        FontFamily="{DynamicResource DefaultFont}"
         Loaded="MainWindow_Loaded">
 
     <Window.Resources>

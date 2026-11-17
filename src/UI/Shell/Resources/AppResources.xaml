@@ -50,7 +50,7 @@
     <SolidColorBrush x:Key="NodeBorderBrush" Color="{StaticResource PrimaryBrush}"/>
 
     <!-- ========== 字体资源 ========== -->
-    <FontFamily x:Key="DefaultFont">Microsoft YaHei UI</FontFamily>
+    <FontFamily x:Key="DefaultFont">Microsoft YaHei</FontFamily>
     <FontFamily x:Key="MonoFont">Consolas</FontFamily>
 
     <sys:Double x:Key="FontSizeSmall">10</sys:Double>

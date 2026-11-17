@@ -14,7 +14,7 @@ public sealed class ColorExtractTool : IToolDefinition<ColorExtractSettings, Col
     public string ToolId => Id;
 
     // 分类必须与工具箱目录里已核实映射的分类一致（原件位于「颜色处理」）。
-    public ToolCatalogDescriptor Catalog { get; } = new("颜色抽取", "按颜色区间提取符合范围的像素并输出提取面积与外接矩形", "image", "颜色处理", 10, "IMAGE");
+    public ToolCatalogDescriptor Catalog { get; } = new("颜色抽取", "按颜色区间提取符合范围的像素并输出提取面积与外接矩形", "color-extract", "颜色处理", 10, "IMAGE");
 
     public ToolSchema SettingsSchema => ColorExtractFields.Schema;
 

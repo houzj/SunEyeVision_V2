@@ -23,7 +23,7 @@ public sealed class PixelCountTool : IToolDefinition<PixelCountSettings, PixelCo
 
     public string ToolId => Id;
     public ToolCatalogDescriptor Catalog { get; } =
-        new("像素统计", "统计图像中落在各灰度区间的像素数与占比，并按数量/比率判定", "blob", "测量", 9, "DEFAULT");
+        new("像素统计", "统计图像中落在各灰度区间的像素数与占比，并按数量/比率判定", "pixel-count", "测量", 9, "DEFAULT");
     public ToolSchema SettingsSchema => PixelCountFields.Schema;
     public ToolSchema ResultSchema { get; } = new(Array.Empty<Port>(), PixelCountOutput.Ports,
         outputDisplay: PixelCountOutput.Display);

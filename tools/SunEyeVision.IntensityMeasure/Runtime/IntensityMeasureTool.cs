@@ -23,7 +23,7 @@ public sealed class IntensityMeasureTool : IToolDefinition<IntensityMeasureSetti
 
     public string ToolId => Id;
     public ToolCatalogDescriptor Catalog { get; } =
-        new("亮度测量", "统计检测区域内灰度的最小值、最大值、均值、标准差与直方图对比度，并按上下限判定", "axes", "测量", 9, "DEFAULT");
+        new("亮度测量", "统计检测区域内灰度的最小值、最大值、均值、标准差与直方图对比度，并按上下限判定", "intensity-measure", "测量", 9, "DEFAULT");
     public ToolSchema SettingsSchema => IntensityMeasureFields.Schema;
     public ToolSchema ResultSchema { get; } = new(Array.Empty<Port>(), IntensityMeasureOutput.Ports,
         outputDisplay: IntensityMeasureOutput.Display);

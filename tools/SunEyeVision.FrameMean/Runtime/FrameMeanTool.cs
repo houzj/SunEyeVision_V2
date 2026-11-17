@@ -11,7 +11,7 @@ public sealed class FrameMeanTool : IToolDefinition<FrameMeanSettings,FrameMeanO
     public const string Id="FrameMean";
     public const string ImageInput="input.image";
     public string ToolId=>Id;
-    public ToolCatalogDescriptor Catalog {get;}=new("帧均值","多帧图像统计平均，输出累计均值图像","image","图像处理",10,"IMAGE");
+    public ToolCatalogDescriptor Catalog {get;}=new("帧均值","多帧图像统计平均，输出累计均值图像","frame-mean","图像处理",10,"IMAGE");
     public ToolSchema SettingsSchema=>FrameMeanFields.Schema;
     public ToolSchema ResultSchema {get;}=new(Array.Empty<Port>(),FrameMeanOutput.Ports,outputDisplay:FrameMeanOutput.Display);
     public ResultProjectionDescriptor ResultProjection {get;}=new(ResultProjectionKind.PropertyList,ResultCardinality.One,new[] {

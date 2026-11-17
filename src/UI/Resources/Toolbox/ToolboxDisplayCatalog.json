@@ -61,7 +61,8 @@
         "Id": "IMVSGrayMatchModuVA",
         "Name": "灰度匹配",
         "Icon": "IMVSGrayMatchModuVAImageEnable.png",
-        "ToolId": null
+        "ToolId": "GrayMatch",
+        "MappingVerified": true
       },
       {
         "Id": "IMVSMarkFindModu",

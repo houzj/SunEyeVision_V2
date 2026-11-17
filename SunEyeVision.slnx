@@ -24,6 +24,10 @@
     <Project Path="tools/SunEyeVision.If/Runtime/SunEyeVision.If.Runtime.csproj" />
     <Project Path="tools/SunEyeVision.If/Wpf/SunEyeVision.If.Wpf.csproj" />
   </Folder>
+  <Folder Name="/Tools/PixelCountComponents/">
+    <Project Path="tools/SunEyeVision.PixelCount/Runtime/SunEyeVision.PixelCount.Runtime.csproj" />
+    <Project Path="tools/SunEyeVision.PixelCount/Wpf/SunEyeVision.PixelCount.Wpf.csproj" />
+  </Folder>
   <Folder Name="/Src/Foundation/">
     <Project Path="Src/Foundation/SunEyeVision.Foundation.csproj" />
   </Folder>

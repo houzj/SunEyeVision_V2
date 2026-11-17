@@ -42,7 +42,8 @@
         "Id": "IMVSContourMatchModu",
         "Name": "轮廓匹配",
         "Icon": "IMVSContourMatchModuImageEnable.png",
-        "ToolId": "ShapeMatch"
+        "ToolId": "ContourMatch",
+        "MappingVerified": true
       },
       {
         "Id": "IMVSHPFeatureMatchModu",
@@ -66,7 +67,8 @@
         "Id": "IMVSMarkFindModu",
         "Name": "图形定位",
         "Icon": "IMVSMarkFindModuImageEnable.png",
-        "ToolId": null
+        "ToolId": "MarkFind",
+        "MappingVerified": true
       },
       {
         "Id": "IMVSFixtureModu",
@@ -259,7 +261,8 @@
         "Id": "IMVSPixelCountModu",
         "Name": "像素统计",
         "Icon": "IMVSPixelCountModuImageEnable.png",
-        "ToolId": null
+        "ToolId": "PixelCount",
+        "MappingVerified": true
       },
       {
         "Id": "IMVSPixelCountModuVA",
@@ -662,7 +665,8 @@
         "Id": "IMVSColorExtractModu",
         "Name": "颜色抽取",
         "Icon": "IMVSColorExtractModuImageEnable.png",
-        "ToolId": null
+        "ToolId": "ColorExtract",
+        "MappingVerified": true
       },
       {
         "Id": "IMVSColorMeasureModu",
@@ -703,7 +707,8 @@
         "Id": "IMVSDivideImageModu",
         "Name": "划片拆分",
         "Icon": "IMVSDivideImageModuImageEnable.png",
-        "ToolId": null
+        "ToolId": "ImageSplit",
+        "MappingVerified": true
       },
       {
         "Id": "IMVS2dArrayCorrectModu",

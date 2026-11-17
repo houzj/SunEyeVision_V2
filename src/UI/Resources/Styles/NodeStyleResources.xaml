@@ -42,9 +42,9 @@
     <!-- ======================================== -->
     
     <!-- 端口颜色 -->
-    <Color x:Key="PortNormalColor">#0066CC</Color>
-    <Color x:Key="PortHoverColor">#FF6600</Color>
-    <Color x:Key="PortStrokeColor">#FFFFFF</Color>
+    <Color x:Key="PortNormalColor">#FFA719</Color>
+    <Color x:Key="PortHoverColor">#FFA719</Color>
+    <Color x:Key="PortStrokeColor">#444444</Color>
     
     <!-- 节点颜色 -->
     <Color x:Key="NodeDefaultBackground">#FFFFFF</Color>
@@ -91,7 +91,7 @@
     <!-- 端口样式 -->
     <!-- ======================================== -->
     
-    <Style x:Key="PortEllipseStyle" TargetType="rendering:ExecutionPortShape">
+    <Style x:Key="PortEllipseStyle" TargetType="rendering:ExecutionPortShape"><Setter Property="Cursor" Value="Cross"/>
         <Setter Property="Fill" Value="#FFA719"/><Setter Property="Stroke" Value="#444444"/>
         <Setter Property="StrokeThickness" Value="1"/><Setter Property="Cursor" Value="Cross"/>
         <Setter Property="Panel.ZIndex" Value="10"/><Setter Property="Stretch" Value="None"/>

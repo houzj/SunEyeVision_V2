@@ -1734,11 +1734,12 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
             var area = SelectionBox?.GetSelectionRect() ?? Rect.Empty;
             var tab = _viewModel?.WorkflowTabViewModel.SelectedTab;
             if (tab == null) return;
-            // 原件框选（ItemsPage.cs:642-651）：拖框过程与结束都只按矩形"追加"框内节点，
-            // 不取消框外节点——点击空白取消选中正是这条实时清除路径造成的。
-            foreach (var node in tab.WorkflowNodes.OfType<CanvasNodeProjection>()) { if (area.Contains(node.NodeRect)) node.IsSelected = true; }
+            // 原件 DiagramPage.xaml.cs:382-389 / ItemsPage.cs:642-652：拖框只收集框内节点，
+            // 绝不写 IsSelected——框选集合与节点选中是两套独立状态。
+            _canvasBoxSelection = tab.WorkflowNodes.OfType<CanvasNodeProjection>()
+                .Where(n => area.Contains(n.NodeRect)).ToArray();
             foreach (var connection in tab.WorkflowConnections) connection.IsSelected = false;
-            SelectionBox?.SetItemCount(tab.WorkflowNodes.Count(n => n.IsSelected));
+            SelectionBox?.SetItemCount(_canvasBoxSelection.Length);
             e.Handled = true;
         }
 
@@ -1756,8 +1757,9 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
             if (_isDraggingConnection) { FinishCanvasConnection(e.GetPosition(WorkflowCanvas)); e.Handled = true; return; }
             if (_isPanning || _isBoxSelecting)
             {
-                // 原件 ItemsPage.cs:642-652：框选完成只设框选集合与外包框，不改节点选中。
-                if (_isBoxSelecting) SetCanvasBoxSelection(CanvasSelectedNodes());
+                // 原件 ItemsPage.cs:642-652：框选完成用拖框收集到的集合设外包框，
+                // 绝不是"当前选中节点"——点击空白后节点仍选中，但框选集合已空，不能再画框。
+                if (_isBoxSelecting) SetCanvasBoxSelection(_canvasBoxSelection);
                 _isPanning = false; _isBoxSelecting = false;
                 DrawCanvasSelectionFrame();
                 SelectionBox?.EndSelection(); Cursor = Cursors.Arrow;

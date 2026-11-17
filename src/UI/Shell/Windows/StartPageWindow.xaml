@@ -6,7 +6,17 @@
   <ResourceDictionary>
    <ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/SunEyeVision.UI;component/Resources/Branding/StartupBranding.xaml"/></ResourceDictionary.MergedDictionaries>
 
-   <!-- 扁平按钮：无边框，用于最近列表行与引导条 -->
+   <!-- 悬停切换图：原件卡片/引导条均为 normal + click 两张整图 -->
+   <Style x:Key="ClickOverlay" TargetType="Image">
+    <Setter Property="Visibility" Value="Collapsed"/>
+    <Style.Triggers>
+     <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource FindAncestor, AncestorType=ButtonBase}}" Value="True">
+      <Setter Property="Visibility" Value="Visible"/>
+     </DataTrigger>
+    </Style.Triggers>
+   </Style>
+
+   <!-- 扁平按钮 -->
    <Style x:Key="Flat" TargetType="Button">
     <Setter Property="Foreground" Value="#C8D2D8"/><Setter Property="Background" Value="Transparent"/><Setter Property="BorderThickness" Value="0"/>
     <Setter Property="Cursor" Value="Hand"/><Setter Property="Padding" Value="6,4"/><Setter Property="HorizontalContentAlignment" Value="Left"/>
@@ -18,33 +28,27 @@
      </ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
    </Style>
 
-   <!-- 方案模板卡片：整块可点，悬停高亮边框与底部说明条 -->
+   <!-- 方案模板卡片：直接渲染原件 188x130 整图，悬停换 click 图 -->
    <Style x:Key="Card" TargetType="Button">
-    <Setter Property="Cursor" Value="Hand"/><Setter Property="Margin" Value="0,0,16,16"/><Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="VerticalContentAlignment" Value="Stretch"/>
+    <Setter Property="Cursor" Value="Hand"/><Setter Property="Width" Value="188"/><Setter Property="Height" Value="130"/>
+    <Setter Property="Margin" Value="0,0,22,22"/><Setter Property="FocusVisualStyle" Value="{x:Null}"/>
     <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
-     <Border x:Name="Shell" Background="#262B30" BorderBrush="#343B41" BorderThickness="1" CornerRadius="2">
-      <Grid><ContentPresenter/></Grid>
-     </Border>
-     <ControlTemplate.Triggers>
-      <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Shell" Property="Background" Value="#2A3136"/><Setter TargetName="Shell" Property="BorderBrush" Value="#FFAD52"/></Trigger>
-      <Trigger Property="IsPressed" Value="True"><Setter TargetName="Shell" Property="Background" Value="#313A40"/></Trigger>
-      <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Shell" Property="BorderBrush" Value="#FFAD52"/></Trigger>
-     </ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
-    <Setter Property="AutomationProperties.HelpText" Value="切换工具箱优先分类"/>
+     <Border Background="Transparent"><ContentPresenter/></Border>
+    </ControlTemplate></Setter.Value></Setter>
    </Style>
 
    <Style TargetType="CheckBox">
     <Setter Property="Foreground" Value="#A7B0B8"/><Setter Property="Cursor" Value="Hand"/>
     <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="CheckBox">
      <StackPanel Orientation="Horizontal">
-      <Border x:Name="Box" Width="15" Height="15" BorderBrush="#78858F" BorderThickness="1" Background="#20272D" CornerRadius="3">
-       <TextBlock x:Name="Tick" Text="✓" Foreground="#211B13" HorizontalAlignment="Center" Visibility="Collapsed" FontSize="12"/>
-      </Border>
+      <Grid Width="16" Height="16" VerticalAlignment="Center">
+       <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Check_Off.png" Stretch="None"/>
+       <Image x:Name="On" Source="/SunEyeVision.UI;component/Resources/StartPage/Check_On.png" Stretch="None" Visibility="Collapsed"/>
+      </Grid>
       <ContentPresenter Margin="7,0,0,0" VerticalAlignment="Center"/>
      </StackPanel>
      <ControlTemplate.Triggers>
-      <Trigger Property="IsChecked" Value="True"><Setter TargetName="Box" Property="Background" Value="#FFAD52"/><Setter TargetName="Tick" Property="Visibility" Value="Visible"/></Trigger>
-      <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Box" Property="BorderBrush" Value="#FFAD52"/></Trigger>
+      <Trigger Property="IsChecked" Value="True"><Setter TargetName="On" Property="Visibility" Value="Visible"/></Trigger>
      </ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
    </Style>
 
@@ -52,16 +56,13 @@
    <Style TargetType="ListBoxItem">
     <Setter Property="Padding" Value="0"/><Setter Property="Margin" Value="0,1"/><Setter Property="HorizontalContentAlignment" Value="Stretch"/>
     <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBoxItem">
-     <Border x:Name="Row" Background="Transparent" BorderBrush="Transparent" BorderThickness="1" CornerRadius="3" Padding="0">
-      <ContentPresenter/>
-     </Border>
+     <Border x:Name="Row" Background="Transparent" CornerRadius="3"><ContentPresenter/></Border>
      <ControlTemplate.Triggers>
       <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Row" Property="Background" Value="#242A2F"/></Trigger>
       <Trigger Property="IsSelected" Value="True"><Setter TargetName="Row" Property="Background" Value="#282F35"/></Trigger>
      </ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
    </Style>
 
-   <!-- 最近方案行：名称 + 相对时间，路径放 ToolTip，与原厂一致不含缩略图 -->
    <DataTemplate x:Key="RecentRow">
     <Grid Margin="0,2" ToolTip="{Binding Path}">
      <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="24"/></Grid.ColumnDefinitions>
@@ -97,82 +98,47 @@
     </StackPanel>
     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
      <CheckBox x:Name="HideStartPageBox" Content="不再显示" Margin="0,9,14,0" Checked="HideStartPage_Changed" Unchecked="HideStartPage_Changed" AutomationProperties.AutomationId="HideStartPage"/>
-     <Button Content="✕" Style="{StaticResource Flat}" FontSize="16" Padding="8,2" Click="Close_Click" ToolTip="关闭" AutomationProperties.AutomationId="CloseStartPage"/>
+     <Button Style="{StaticResource Flat}" Padding="6,2" Click="Close_Click" ToolTip="关闭" AutomationProperties.AutomationId="CloseStartPage" AutomationProperties.Name="关闭起始页">
+      <TextBlock Text="✕" FontSize="16"/>
+     </Button>
     </StackPanel>
    </Grid>
 
-   <!-- 主体：方案模板四宫格 + 最近打开 -->
+   <!-- 主体：原件卡片四宫格 + 最近打开 -->
    <Grid x:Name="WelcomePanel" Grid.Row="2" Margin="28,22,20,18">
     <Grid.ColumnDefinitions><ColumnDefinition Width="1.9*"/><ColumnDefinition Width="1*"/></Grid.ColumnDefinitions>
 
-    <UniformGrid Rows="2" Columns="2" Margin="0,0,4,0">
-     <!-- 通用方案 -->
+    <UniformGrid Rows="2" Columns="2" VerticalAlignment="Top" HorizontalAlignment="Left">
      <Button Style="{StaticResource Card}" Click="Template_Click" Tag="general" AutomationProperties.Name="通用方案">
       <Grid>
-       <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="34"/></Grid.RowDefinitions>
-       <Grid Margin="20,0,18,4">
-        <TextBlock Text="通用方案" FontSize="19" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="#E6EBEE"/>
-        <Viewbox Width="112" Height="112" HorizontalAlignment="Right" VerticalAlignment="Center" Opacity="0.85">
-         <Canvas Width="40" Height="40">
-          <Rectangle Canvas.Left="5" Canvas.Top="8" Width="30" Height="24" RadiusX="2" RadiusY="2" Stroke="#FFAD52" StrokeThickness="1.6" StrokeDashArray="3 2"/>
-          <Path Data="M20 6 V34 M6 20 H34" Stroke="#FFAD52" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
-         </Canvas>
-        </Viewbox>
-       </Grid>
-       <Border Grid.Row="1" Background="#1B1F22"><TextBlock Text="建立普通空白方案" FontSize="12.5" Foreground="#A2ACB3" Margin="20,0" VerticalAlignment="Center"/></Border>
+       <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Card_General.png" Stretch="Fill"/>
+       <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Card_General_Click.png" Stretch="Fill" Style="{StaticResource ClickOverlay}"/>
+       <TextBlock Text="通用方案" FontSize="18" FontWeight="Bold" Foreground="#E9EEF1" Margin="16,48,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+       <TextBlock Text="建立普通空白方案" FontSize="11" Foreground="#9AA4AC" Margin="16,0,0,16" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
       </Grid>
      </Button>
-
-     <!-- 定位测量 -->
      <Button Style="{StaticResource Card}" Click="Template_Click" Tag="locate" AutomationProperties.Name="定位测量">
       <Grid>
-       <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="34"/></Grid.RowDefinitions>
-       <Grid Margin="20,0,18,4">
-        <TextBlock Text="定位测量" FontSize="19" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="#E6EBEE"/>
-        <Viewbox Width="112" Height="112" HorizontalAlignment="Right" VerticalAlignment="Center" Opacity="0.85">
-         <Canvas Width="40" Height="40">
-          <Path Data="M4 20 A16 16 0 1 1 36 20 A16 16 0 1 1 4 20" Stroke="#FFAD52" StrokeThickness="1.6" StrokeDashArray="3 2"/>
-          <Path Data="M20 4 V10 M20 30 V36 M4 20 H10 M30 20 H36" Stroke="#FFAD52" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
-          <Ellipse Canvas.Left="16" Canvas.Top="16" Width="8" Height="8" Fill="#FFAD52"/>
-         </Canvas>
-        </Viewbox>
-       </Grid>
-       <Border Grid.Row="1" Background="#1B1F22"><TextBlock Text="通过定位、测量工具进行设计" FontSize="12.5" Foreground="#A2ACB3" Margin="20,0" VerticalAlignment="Center"/></Border>
+       <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Card_Position.png" Stretch="Fill"/>
+       <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Card_Position_Click.png" Stretch="Fill" Style="{StaticResource ClickOverlay}"/>
+       <TextBlock Text="定位测量" FontSize="18" FontWeight="Bold" Foreground="#E9EEF1" Margin="16,48,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+       <TextBlock Text="通过定位、测量工具进行设计" FontSize="11" Foreground="#9AA4AC" Margin="16,0,0,16" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
       </Grid>
      </Button>
-
-     <!-- 缺陷检测 -->
      <Button Style="{StaticResource Card}" Click="Template_Click" Tag="detect" AutomationProperties.Name="缺陷检测">
       <Grid>
-       <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="34"/></Grid.RowDefinitions>
-       <Grid Margin="20,0,18,4">
-        <TextBlock Text="缺陷检测" FontSize="19" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="#E6EBEE"/>
-        <Viewbox Width="112" Height="112" HorizontalAlignment="Right" VerticalAlignment="Center" Opacity="0.85">
-         <Canvas Width="40" Height="40">
-          <Path Data="M14 34 L30 8" Stroke="#FFAD52" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
-          <Path Data="M22 30 A6 6 0 1 1 21.9 30" Stroke="#FFAD52" StrokeThickness="1.6"/>
-          <Path Data="M6 30 H34" Stroke="#FFAD52" StrokeThickness="1.4" StrokeDashArray="2 2"/>
-         </Canvas>
-        </Viewbox>
-       </Grid>
-       <Border Grid.Row="1" Background="#1B1F22"><TextBlock Text="借助检测工具查找工件缺陷" FontSize="12.5" Foreground="#A2ACB3" Margin="20,0" VerticalAlignment="Center"/></Border>
+       <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Card_Defect.png" Stretch="Fill"/>
+       <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Card_Defect_Click.png" Stretch="Fill" Style="{StaticResource ClickOverlay}"/>
+       <TextBlock Text="缺陷检测" FontSize="18" FontWeight="Bold" Foreground="#E9EEF1" Margin="16,48,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+       <TextBlock Text="借助检测工具查找工件缺陷" FontSize="11" Foreground="#9AA4AC" Margin="16,0,0,16" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
       </Grid>
      </Button>
-
-     <!-- 用于识别 -->
      <Button Style="{StaticResource Card}" Click="Template_Click" Tag="identify" AutomationProperties.Name="用于识别">
       <Grid>
-       <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="34"/></Grid.RowDefinitions>
-       <Grid Margin="20,0,18,4">
-        <TextBlock Text="用于识别" FontSize="19" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="#E6EBEE"/>
-        <Viewbox Width="112" Height="112" HorizontalAlignment="Right" VerticalAlignment="Center" Opacity="0.85">
-         <Canvas Width="40" Height="40">
-          <Path Data="M10 12 H8 V8 H12 M28 8 H32 V12 M32 28 V32 H28 M12 32 H8 V28" Stroke="#FFAD52" StrokeThickness="1.6" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
-          <Path Data="M18 10 V30 M22 10 V30 M26 10 V30 M30 10 V30" Stroke="#FFAD52" StrokeThickness="1.8"/>
-         </Canvas>
-        </Viewbox>
-       </Grid>
-       <Border Grid.Row="1" Background="#1B1F22"><TextBlock Text="通过识别工具进行方案设计" FontSize="12.5" Foreground="#A2ACB3" Margin="20,0" VerticalAlignment="Center"/></Border>
+       <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Card_Recognition.png" Stretch="Fill"/>
+       <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Card_Recognition_Click.png" Stretch="Fill" Style="{StaticResource ClickOverlay}"/>
+       <TextBlock Text="用于识别" FontSize="18" FontWeight="Bold" Foreground="#E9EEF1" Margin="16,48,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+       <TextBlock Text="通过识别工具进行方案设计" FontSize="11" Foreground="#9AA4AC" Margin="16,0,0,16" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
       </Grid>
      </Button>
     </UniformGrid>
@@ -182,10 +148,11 @@
      <Grid>
       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
       <DockPanel Margin="0,0,0,10">
-       <Button DockPanel.Dock="Right" Style="{StaticResource Flat}" Click="Open_Click" ToolTip="打开其他方案" AutomationProperties.Name="打开其他方案" VerticalAlignment="Top">
-        <Viewbox Width="18" Height="18"><Canvas Width="20" Height="20">
-         <Path Data="M2 6 H8 L10 8 H18 V17 H2 Z" Stroke="#A8BAC7" StrokeThickness="1.4" StrokeLineJoin="Round" Fill="Transparent"/>
-        </Canvas></Viewbox>
+       <Button DockPanel.Dock="Right" Style="{StaticResource Flat}" Padding="2" Click="Open_Click" ToolTip="打开其他方案" AutomationProperties.Name="打开其他方案" VerticalAlignment="Top">
+        <Grid Width="22" Height="22">
+         <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Open_Normal.png" Stretch="None"/>
+         <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Open_Click.png" Stretch="None" Style="{StaticResource ClickOverlay}"/>
+        </Grid>
        </Button>
        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
         <Border Width="2" Height="16" Background="{StaticResource Startup.Accent}" Margin="0,0,8,0"/>
@@ -194,33 +161,41 @@
       </DockPanel>
       <ListBox x:Name="RecentFilesList" Grid.Row="1" ItemTemplate="{StaticResource RecentRow}" KeyDown="Recent_KeyDown" AutomationProperties.AutomationId="RecentFiles"/>
       <TextBlock x:Name="EmptyRecentText" Grid.Row="1" Text="暂无最近方案" Foreground="#8B959C" VerticalAlignment="Center" HorizontalAlignment="Center" IsHitTestVisible="False"/>
-      <TextBlock Grid.Row="2" Text="关闭本窗口即进入空白方案，可直接拖入工具开始设计" Foreground="#7C868D" FontSize="11.5" Margin="2,10,0,0"/>
-      
+      <TextBlock Grid.Row="2" Text="关闭本窗口即进入空白方案，可直接拖入工具开始设计" Foreground="#7C868D" FontSize="11.5" Margin="2,10,0,0" HorizontalAlignment="Left"/>
      </Grid>
     </Border>
    </Grid>
 
-   <!-- 底部三段引导条（对齐原厂 GuideWindow） -->
+   <!-- 底部三段引导条（原件 ic_1/2/3 图标） -->
    <Border Grid.Row="3" Background="#191D20" BorderBrush="#2A2F33" BorderThickness="0,1,0,0">
     <Grid>
      <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="1"/><ColumnDefinition/><ColumnDefinition Width="1"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
      <Button Style="{StaticResource Flat}" Click="Guide_Click" Tag="learn" Padding="18,10" HorizontalContentAlignment="Left">
       <StackPanel Orientation="Horizontal">
-       <TextBlock Text="1" FontSize="34" FontWeight="Bold" Foreground="#3A4247" Margin="0,0,10,0" VerticalAlignment="Center"/>
+       <Grid Width="30" Height="30" Margin="0,0,10,0">
+        <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Guide_1.png" Stretch="None"/>
+        <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Guide_1_Click.png" Stretch="None" Style="{StaticResource ClickOverlay}"/>
+       </Grid>
        <TextBlock Text="学习使用 SunEyeVision" FontSize="14" Foreground="#C8D2D8" VerticalAlignment="Center"/>
       </StackPanel>
      </Button>
      <Border Grid.Column="1" Background="#2A2F33"/>
      <Button Grid.Column="2" Style="{StaticResource Flat}" Click="Guide_Click" Tag="sample" Padding="18,10" HorizontalContentAlignment="Left">
       <StackPanel Orientation="Horizontal">
-       <TextBlock Text="2" FontSize="34" FontWeight="Bold" Foreground="#3A4247" Margin="0,0,10,0" VerticalAlignment="Center"/>
+       <Grid Width="30" Height="30" Margin="0,0,10,0">
+        <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Guide_2.png" Stretch="None"/>
+        <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Guide_2_Click.png" Stretch="None" Style="{StaticResource ClickOverlay}"/>
+       </Grid>
        <TextBlock Text="查看示例方案" FontSize="14" Foreground="#C8D2D8" VerticalAlignment="Center"/>
       </StackPanel>
      </Button>
      <Border Grid.Column="3" Background="#2A2F33"/>
      <Button Grid.Column="4" Style="{StaticResource Flat}" Click="Guide_Click" Tag="support" Padding="18,10" HorizontalContentAlignment="Left">
       <StackPanel Orientation="Horizontal">
-       <TextBlock Text="3" FontSize="34" FontWeight="Bold" Foreground="#3A4247" Margin="0,0,10,0" VerticalAlignment="Center"/>
+       <Grid Width="30" Height="30" Margin="0,0,10,0">
+        <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Guide_3.png" Stretch="None"/>
+        <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Guide_3_Click.png" Stretch="None" Style="{StaticResource ClickOverlay}"/>
+       </Grid>
        <TextBlock Text="获取更多支持和帮助" FontSize="14" Foreground="#C8D2D8" VerticalAlignment="Center"/>
       </StackPanel>
      </Button>

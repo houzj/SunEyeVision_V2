@@ -38,3 +38,31 @@
 
 - 在算法库证据补齐前，**不得**以"标准二值化语义"直接实现工具；`BinaryType` 各分支的阈值口径、Sauvola 公式、OTSU 统计域均属未确认。
 - 已确认可用的部分：参数名/类型/范围/默认值与枚举值（来自 `ImageBinaryParam` 反编译）、输入项（`InImage/InImageWidth/InImageHeight/InImagePixelFormat`）、结果字段结构、ROI 类型集合（Full/Box/SectorRing/Polygon/Sector）。
+
+## 五、算法链路追查结果（同日续查）
+
+| 层 | 文件 | 大小 | 事实 |
+|---|---|---|---|
+| 1 模块外壳 | `IMVSBinaryModu.dll` | 215KB | 已闭合（见上） |
+| 2 算法实现入口 | `MVDAlgorithmSDK\Runtime\x64\MVDImageBinaryCpp.dll` | 40KB | 导出仅 3 个：`CreateImageBinaryToolInstance`/`DestroyImageBinaryToolInstance`/`_Init_locks`；工厂 `operator_new(0x70)` 后挂 `MVDInternal::ImageBinaryImpl::CImageBinaryToolImpl::vftable` |
+| 3 核心算法库 | `MVDAlgorithmSDK\Runtime\x64\MVD_Algorithm.dll` | **51,454KB** | 导出仅 19 个且无 Threshold/Binary/Otsu/Sauvola 命名；算法体在 C++ 内部符号中，未导出 |
+
+`MVDImageBinaryCpp.dll` 导入：`MVD_Algorithm.dll`、`MVDImageCpp.dll`、`MVDShapeCpp.dll`、`MVDPreproMaskCpp.dll`、`MVDCommon.dll`。
+
+`CImageBinaryToolImpl` 的伪代码中不含参数名字符串（`LowThreshold`/`BinaryType`/`Sauvola` 均未出现），说明参数按索引访问、算法继续下沉。
+
+**结论**：静态取证继续下探需在 51MB、无导出符号的核心库内做符号重建与调用点定位，成本极高且收益不确定（最终仍是等价实现）。
+
+## 六、建议的替代取证路线（受控黑盒）
+
+用原厂程序 + 受控输入做黑盒测定，比静态挖 51MB 核心库更可靠：
+
+1. 构造已知灰度梯度图（0..255 全值），分别用 5 种 `BinaryType` 执行，读取输出二值图，反推：
+   - 硬阈值：`LowThreshold`/`HighThreshold` 与 `CompareType` 的端点包含关系（>= / <= / = / !=）
+   - OTSU：实际分割阈值（与原图直方图对比即可算出）
+   - 均值/高斯：`KernelWidth/Height`、`GaussKernelSize/GaussSigma`、`ThresholdOffset` 的参与方式（改参数看阈值漂移）
+   - Sauvola：`SauvolaAdjustCoef/Range/SegType/WinWidth/WinHeight` 的影响曲线
+2. `NonROIPrcType`（Zero/Src）对 ROI 外像素的处理，用单 ROI + 半幅梯度图直接观察
+3. 交叉验证：同一输入用 HALCON 等价算子（`threshold`/`binary_threshold`/`local_threshold`/`dyn_threshold`）复算，逐像素比对差异率
+
+该方法与项目 11-16 已用过的 Frida/Trace 受控取证一致，且产出的是**可判定的数值结论**而非伪代码推测。

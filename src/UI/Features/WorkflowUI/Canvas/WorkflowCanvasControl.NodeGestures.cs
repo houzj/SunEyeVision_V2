@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -24,6 +24,8 @@ public partial class WorkflowCanvasControl
         public List<System.Windows.Shapes.Line> AlignLines { get; } = new();
         /// <summary>节点 →（预览快照, 相对中心的偏移）。快照只在拖动开始时建一次，之后只改坐标。</summary>
         public Dictionary<CanvasNodeProjection, (Rectangle Ghost, double Dx, double Dy)> GhostMap { get; } = new();
+        /// <summary>预览根容器：装全部节点快照，整体平移只改容器坐标（原件 AdornerPanel 同构）。</summary>
+        public FrameworkElement? Preview { get; set; }
         public bool Copy { get; set; }
     }
     private NodeDragSession? _canvasNodeMove;
@@ -206,7 +208,7 @@ public partial class WorkflowCanvasControl
     private void PreviewCanvasNodeMove(NodeDragSession session, Point pointer)
     {
         var delta = pointer - session.Pointer;
-        if (session.Ghosts.Count == 0 && Math.Abs(delta.X) <= 3 && Math.Abs(delta.Y) <= 3)
+        if (session.Preview is null && Math.Abs(delta.X) <= 3 && Math.Abs(delta.Y) <= 3)
         { session.After.Clear(); return; }
         var left = session.Before.Min(p => p.Value.X - p.Key.NodeRect.Width / 2);
         var top = session.Before.Min(p => p.Value.Y - p.Key.NodeRect.Height / 2);
@@ -221,33 +223,14 @@ public partial class WorkflowCanvasControl
                 Math.Clamp(pair.Value.Y + delta.Y, height / 2, 5000 - height / 2));
         }
 
-        // 预览快照只在首次移动时创建；之后每轮只更新坐标（原件 _dragOver 同样只 SetOffsets），
-        // 否则每轮重建 VisualBrush 会对整棵可视化树重新渲染，拖动明显卡顿。
-        if (session.GhostMap.Count == 0)
+        // 预览：一个根容器装全部节点快照，之后整体只改容器坐标（与原件 AdornerPanel 同构）。
+        // 生命周期只有三处：Ensure 建、改坐标移、Dispose 清，避免多份状态不同步导致预览时有时无。
+        EnsureCanvasNodePreview(session);
+        if (session.Preview is not null)
         {
-            foreach (var pair in session.Before)
-            {
-                var visual = FindCanvasNodeVisual(WorkflowCanvas, pair.Key);
-                if (visual == null) continue;
-                var bounds = VisualTreeHelper.GetDescendantBounds(visual);
-                if (bounds.IsEmpty) continue;
-                var brush = new VisualBrush(visual) { Stretch = Stretch.None, Opacity = .7 };
-                var ghost = new Rectangle { Width = bounds.Width, Height = bounds.Height, Fill = brush, IsHitTestVisible = false };
-                Panel.SetZIndex(ghost, 9000);
-                WorkflowCanvas.Children.Add(ghost);
-                session.Ghosts.Add(ghost);
-                session.GhostMap[pair.Key] = (ghost,
-                    -pair.Key.NodeRect.Width / 2 - 10 + bounds.X,
-                    -pair.Key.NodeRect.Height / 2 - 10 + bounds.Y);
-            }
-        }
-        foreach (var pair in session.After)
-        {
-            if (!session.GhostMap.TryGetValue(pair.Key, out var entry)) continue;
-            System.Windows.Controls.Canvas.SetLeft(entry.Ghost, pair.Value.X + entry.Dx);
-            System.Windows.Controls.Canvas.SetTop(entry.Ghost, pair.Value.Y + entry.Dy);
-        }
-        if (session.After.Count == 1)
+            System.Windows.Controls.Canvas.SetLeft(session.Preview, session.FrameRect.X + delta.X);
+            System.Windows.Controls.Canvas.SetTop(session.Preview, session.FrameRect.Y + delta.Y);
+        }        if (session.After.Count == 1)
         {
             var single = session.After.Single();
             UpdateCanvasPlacementFeedback(single.Value, single.Key.NodeRect.Height, session.Before.Keys.Select(n => n.Id));
@@ -267,10 +250,52 @@ public partial class WorkflowCanvasControl
         return null;
     }
     private void HideCanvasNodeGhosts() { RemoveCanvasNodeGhosts(); ClearCanvasPlacementFeedback(); ClearCanvasInsertionWire(); }
+    /// <summary>建预览根容器（只建一次）。原件：VisualTreeHelper.GetDescendantBounds + 0.7 不拉伸 VisualBrush。</summary>
+    private void EnsureCanvasNodePreview(NodeDragSession session)
+    {
+        if (session.Preview is not null) return;
+        var frame = session.FrameRect;
+        if (frame.IsEmpty) return;
+        var root = new System.Windows.Controls.Canvas { Width = frame.Width, Height = frame.Height, IsHitTestVisible = false, Opacity = .7 };
+        foreach (var pair in session.Before)
+        {
+            var visual = FindCanvasNodeVisual(WorkflowCanvas, pair.Key);
+            if (visual == null) continue;
+            var bounds = VisualTreeHelper.GetDescendantBounds(visual);
+            if (bounds.IsEmpty) continue;
+            var ghost = new Rectangle
+            {
+                Width = bounds.Width, Height = bounds.Height, IsHitTestVisible = false,
+                Fill = new VisualBrush(visual) { Stretch = Stretch.None }
+            };
+            System.Windows.Controls.Canvas.SetLeft(ghost,
+                pair.Value.X - pair.Key.NodeRect.Width / 2 - 10 + bounds.X - frame.X);
+            System.Windows.Controls.Canvas.SetTop(ghost,
+                pair.Value.Y - pair.Key.NodeRect.Height / 2 - 10 + bounds.Y - frame.Y);
+            root.Children.Add(ghost);
+        }
+        Panel.SetZIndex(root, 9000);
+        System.Windows.Controls.Canvas.SetLeft(root, frame.X);
+        System.Windows.Controls.Canvas.SetTop(root, frame.Y);
+        WorkflowCanvas.Children.Add(root);
+        session.Preview = root;
+    }
+
+    /// <summary>销毁预览根容器与对齐线：三者一起清，避免残留。</summary>
+    private void DisposeCanvasNodePreview(NodeDragSession session)
+    {
+        if (session.Preview is not null)
+        {
+            WorkflowCanvas.Children.Remove(session.Preview);
+            session.Preview = null;
+        }
+        foreach (var line in session.AlignLines) WorkflowCanvas.Children.Remove(line);
+        session.AlignLines.Clear();
+    }
     private void RemoveCanvasNodeGhosts()
     {
         if (_canvasNodeMove == null) return;
-        foreach (var ghost in _canvasNodeMove.Ghosts) WorkflowCanvas.Children.Remove(ghost);
+        DisposeCanvasNodePreview(_canvasNodeMove);
         _canvasNodeMove.Ghosts.Clear();
     }
     /// <summary>拖动对齐线：原件 DiagramItem.DrawAlignLine（DiagramItem.xaml.cs:855-944）——

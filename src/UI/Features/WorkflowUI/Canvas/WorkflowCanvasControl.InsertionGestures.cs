@@ -7,6 +7,8 @@ public partial class WorkflowCanvasControl
 {
     private CanvasConnectionProjection? _canvasInsertionWire;
     private System.Windows.Shapes.Path? _canvasInsertionView;
+    // 原件 Connection 用 IsDragOver 触发器改粗细，不做几何命中；这里缓存 Pen 避免每次拖动重新构造。
+    private static readonly Pen InsertionHitPen = new(Brushes.Black, 10d);
     private static IEnumerable<System.Windows.Shapes.Path> CanvasVisualPaths(DependencyObject parent)
     {
         for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
@@ -23,7 +25,7 @@ public partial class WorkflowCanvasControl
         if (tab.DocumentCanvas.Nodes.Any(n => !ids.Contains(n.Id) && n.NodeRect.Contains(pointer))) return null;
         foreach (var edge in tab.DocumentCanvas.Connections.Reverse())
             if (!ids.Contains(edge.SourceNodeId) && !ids.Contains(edge.TargetNodeId) &&
-                _connectionPathCache?.GetPath(edge).StrokeContains(new Pen(Brushes.Black, 10), pointer) == true) return edge;
+                _connectionPathCache?.GetPath(edge).StrokeContains(InsertionHitPen, pointer) == true) return edge;
         return null;
     }
     internal void UpdateCanvasInsertionWire(Point pointer, IEnumerable<string> excluded)

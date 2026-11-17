@@ -249,7 +249,12 @@ delta = new Vector(Math.Round((left + delta.X) / 5) * 5 - left, Math.Round((top 
             UpdateCanvasPlacementFeedback(single.Value, single.Key.NodeRect.Height, session.Before.Keys.Select(n => n.Id));
         }
         else ClearCanvasPlacementFeedback();
-        UpdateCanvasInsertionWire(pointer, session.Before.Keys.Select(n => n.Id));
+        // 原件不在拖动每帧做插线命中：只有落点提示找到了可插入的前置节点时才检测，
+        // 否则跳过昂贵的 StrokeContains 几何命中 + 可视化树遍历（快移卡顿来源）。
+        if (CanvasAvailableHotPredecessor() is not null)
+            UpdateCanvasInsertionWire(pointer, session.Before.Keys.Select(n => n.Id));
+        else
+            ClearCanvasInsertionWire();
     }
     private static Border? FindCanvasNodeVisual(DependencyObject parent, CanvasNodeProjection node)
     {

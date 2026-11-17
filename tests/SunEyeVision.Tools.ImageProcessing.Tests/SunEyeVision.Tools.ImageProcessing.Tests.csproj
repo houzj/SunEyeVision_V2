@@ -33,6 +33,15 @@
     <ProjectReference Include="../../tools/SunEyeVision.ColorExtract/Runtime/SunEyeVision.ColorExtract.Runtime.csproj">
       <Private>false</Private>
     </ProjectReference>
+    <ProjectReference Include="../../tools/SunEyeVision.DivideImage/Runtime/SunEyeVision.DivideImage.Runtime.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="../../tools/SunEyeVision.DivideImage/Wpf/SunEyeVision.DivideImage.Wpf.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="../../src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj">
+      <Private>false</Private>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\_shared\ProductRuntimeTestHost.cs" Link="_shared\ProductRuntimeTestHost.cs" />

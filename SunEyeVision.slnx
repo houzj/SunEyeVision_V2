@@ -24,6 +24,10 @@
     <Project Path="tools/SunEyeVision.ColorExtract/Runtime/SunEyeVision.ColorExtract.Runtime.csproj" />
     <Project Path="tools/SunEyeVision.ColorExtract/Wpf/SunEyeVision.ColorExtract.Wpf.csproj" />
   </Folder>
+  <Folder Name="/Tools/DivideImageComponents/">
+    <Project Path="tools/SunEyeVision.DivideImage/Runtime/SunEyeVision.DivideImage.Runtime.csproj" />
+    <Project Path="tools/SunEyeVision.DivideImage/Wpf/SunEyeVision.DivideImage.Wpf.csproj" />
+  </Folder>
   <Folder Name="/Tools/IfComponents/">
     <Project Path="tools/SunEyeVision.If/Runtime/SunEyeVision.If.Runtime.csproj" />
     <Project Path="tools/SunEyeVision.If/Wpf/SunEyeVision.If.Wpf.csproj" />

@@ -179,22 +179,130 @@
 
 结论：10.3 的 1、2 项是工具核心语义，必须由**能访问原厂安装/VM 的取证线**用「托管控件反编译 + native `Process/ProcessAlg` 反汇编」补；本线静态材料已穷尽。
 
-## 10.5 本线判断（请主线定夺）
+## 10.5 用户决定（2026-11-17，已生效）
 
-按任务卡「先取证后开发、禁止猜语义」门槛，核心语义（分片公式、是否产出子图）未取证前不能写算法。三个选项：
+派单的「图像除法」无法对应任何原厂原件；用户确认：**就做「划片拆分」**——按 X方向块数 × Y方向块数 切分，输出每片矩形与片数；重叠率按百分比实现，除不尽余量等无资料处标注「未确认」，不当成已对齐。据此本线已实施（见第十一章）。
 
-- **方案 A（本线建议）**：取证线补 `IMVSDivideImageModu` 托管控件反编译 + native `ProcessAlg` 反汇编（登记独占资源占用），本线再按真实语义实施：参数 4 项 + ROI 输入 + `DivideRect` 矩形序列/`DivideCount`/耗时/状态输出。
-- **方案 B**：主线确认改做「产品自研图像算术除法」（原厂无对应原件）。这属于新产品工具而非逆向迁移，需明确参数面（I1/I2、常数、k/偏移、除零策略）后才可实现。
-- **方案 C**：本批换工具。但 `index.json` 显示仿射变换 / 颜色分割 / 图像归一化 / 图像组合 / 帧平均均为 `inventory-only`（证据弱于划片拆分的 `source-partial`），同样需要先取证。
-
-## 10.6 呈现层 5 项契约：预对齐状态
+## 10.6 呈现层 5 项契约：落地状态（已随第十一章实施）
 
 | # | 契约 | 本批状态 |
 |---|---|---|
-| 1 | `IToolSettingsView` + `IToolSettingsViewReady`（`public Task ReadyTask => Task.CompletedTask;`） | 已定位主仓最新写法（`ColorExtractParameterEditor.xaml.cs`），未落地 |
-| 2 | 绑定前设 `InputSection`（`options with { InputSection = options.InputSection ?? "基本参数" }`） | 同上，未落地 |
-| 3 | 结果页图形分组：`FieldLayout` 同时给 `DialogGroup` + `DialogTitle`，`visible` 字段 `DialogPrimary: true`，分组字段被 `GraphicDisplays` 完整消费 | 划片拆分结果主体是 `DivideRect` 图形序列，属该条适用场景；未落地 |
-| 4 | `DecimalPlaces: null` 的坐标字段走 `TextDisplays` | 参照 `BlobLabelsDisplayUi`，未落地 |
-| 5 | 组合式 Dispose（先置空面板引用，再 `Editor.Dispose()`） | 同上，未落地 |
+| P1 | `IToolSettingsView` + `IToolSettingsViewReady`（`ReadyTask => Task.CompletedTask`） | 已实现：`DivideImageParameterEditor.xaml.cs:17,52-53` |
+| P2 | 绑定前设 `InputSection`（`options with { InputSection = options.InputSection ?? "基本参数" }`） | 已实现：同文件 `36-37` 行 |
+| P3 | 结果页图形分组 `DialogGroup`+`DialogTitle`+`DialogPrimary` | **不适用**：本工具结果页没有图形显示分组字段（原件声明面只输出矩形数值，显示走属性列表），因此不声明 `GraphicDisplays`，无该崩溃面 |
+| P4 | 分组内字段被 `GraphicDisplays` 完整消费 | 同上，不适用（无分组即无遗漏） |
+| P5 | `DecimalPlaces: null` 坐标字段走 `TextDisplays`；组合式 Dispose | 前半不适用（结果页无文本显示字段）；后半已实现：`DivideImageParameterEditor.xaml.cs:57-63` |
 
-> 本批无代码、无构建、无测试、无工具提交；本条记录本身单独提交，供主线派工时引用。
+> 结果页用 `ResultProjectionKind.PropertyList` + `DeclaredPropertyList`，与已验收的色彩提取同一路径。
+
+---
+
+# 十一、实施与自检结果（2026-11-17，划片拆分）
+
+- 基线提交：`f4f976da7`（本工作树 merge main 后）
+- 当前分支：`feature/tools-image-processing`
+- 当前执行者：CodeBuddy（A 线队员）
+- 任务目标：`DivideImage`（原件 `IMVSDivideImageModu`，显示名「划片拆分」，原厂类别 SplitCombination）
+- 允许修改目录：`tools/SunEyeVision.DivideImage/`、`tests/SunEyeVision.Tools.ImageProcessing.Tests/`、`SunEyeVision.slnx`（追加）、`product/ToolComponents.props`（追加）、本交接单
+- 已完成：Runtime + Wpf 实现、单元/契约/呈现层测试、全量 Release 构建、启动冒烟、登记
+- 未完成：工具箱可见性与参数页运行期冒烟（被 `src/UI` 映射阻塞，见 §11.6）；原厂算法数值基线（见 §11.4）
+
+## 11.1 契约面与实施设计
+
+| 项 | 值 |
+|---|---|
+| ToolId / 分类 | `DivideImage` / `拆分组合`（必须与 `src/UI/Resources/Toolbox/ToolboxDisplayCatalog.json:707-711` 中 `IMVSDivideImageModu` 所在组一致） |
+| 输入端口 | `input.image`（`ResourceKind.Image`，`FieldEditModes.Reference`，`workflowImageInputId`） |
+| 设置（4 项，均 Constant + UseDeclaredDefault） | `proc.num-x`（X方向划片数量，默认 1）、`proc.num-y`（Y方向划片数量，默认 1）、`proc.overlap-rate-x`（X方向重叠率 %，默认 0）、`proc.overlap-rate-y`（Y方向重叠率 %，默认 0） |
+| 输出端口（5 项） | `output.roi`（检测框记录：center/width/height/angle）、`output.divide-rects`（同一记录类型的**序列**）、`output.divide-count`、`output.module-time-ms`、`output.module-status` |
+| 投影 | `PropertyList` + `One`：检测框、分片矩形、分片个数（0 位小数）、模块耗时（ms，3 位小数） |
+| 契约实现 | 6 必需（`IToolDefinition`/`IToolSettings`/`IToolOutput`/`IToolSettingsFields`/`IToolCatalogProvider`/`IToolResultPresentationProvider`）+ `IToolKnownSettingsValidation`（编辑期越界诊断）。**未实现** `IToolRuntimeInitialization`：本工具只读图像尺寸、不调用 HALCON，无原生平台需要预热 |
+| 分片几何 | 边长 = ⌈边 / (数量 − (数量−1) × 重叠率)⌉；间距 = (边 − 边长)/(数量−1)，起点四舍五入，末片贴边；顺序先横后竖 |
+| 矩形度量 | 平台既有约定（与 Blob 整图 ROI 一致）：整幅 8×6 → center=(4,3)、width=8、height=6 |
+
+## 11.2 与原件的差异（本实现 vs 原件）
+
+| 项 | 原件 | 本批实现 | 原因 |
+|---|---|---|---|
+| 输入 | InputImage + InputROI(ROIBOX) + 位置修正(FIXTURE) | 仅 `input.image` | 原件 `InputROI`/位置修正全部 `IsForce=false`，缺省即全图执行；本线禁改 `src/**`，宿主 ROI 编辑/继承合同尚不存在（色彩提取同一处置） |
+| 输出 | 6 项（含位置修正输出，`Visible=false`） | 5 项 | 位置修正输出无消费者且语义未取证，不声明无法产出的空端口 |
+| 分片产物 | 声明面只有 `DivideRect` 矩形序列 + `DivideCount`，**无图像端口** | 同（矩形序列 + 个数） | 跟随声明面；不猜「另传子图」 |
+| 重叠率单位 | 未取证 | 按百分比实现并在 UI 标注「%」 | 用户决定口径；已列未确认 |
+| 参数页 | Tab_Basic Params / Tab_Run Params | 单页「基本参数」+ 单段「划片参数」 | 四个数字控件已取证在同一 AlgorithmTab；Run Params 归属未取证 |
+| 分片数上限 | 未取证 | 65536 片保护上限，命中直接报错 | 防止笔误（40→4000）产生上千万结果行；**产品侧保护，非原厂证据**，已在代码注释与 §11.4 标注 |
+
+## 11.3 已执行构建与测试（S3/S4 证据）
+
+- `dotnet build SunEyeVision.slnx -c Release --no-incremental -m:1` → 输出末行 `0 个错误`（6064 个既有警告，均为历史测试/控件警告，未新增）
+- `dotnet test tests\SunEyeVision.Tools.ImageProcessing.Tests\SunEyeVision.Tools.ImageProcessing.Tests.csproj -c Release --no-build` → `失败: 0，通过: 60，已跳过: 0，总计: 60`
+  - 本批新增 24 项：契约/几何 13（`DivideImageDeclarationTests`）、执行 8（`DivideImageExecutionTests`）、呈现层 3（`DivideImagePresentationTests`）
+  - 覆盖：正常输出（整图单片、2×3 行优先、50% 重叠、列数多于像素）、边界（除不尽、超上限、重叠 100%）、参数校验失败（列数为 0、重叠越界）、缺失/释放（释放后拒绝使用）、显示需求声明完整（每个结果列都有结果面板节点与成员）
+- 构建顺序纪律：改动测试后必须**先全量构建**再 `test --no-build`；只建测试项目会触发 `Product assembly SHA mismatch: SunEyeVision.Application.dll`（本批实遇一次）
+
+## 11.4 未确认项（不得当成已对齐）
+
+1. **重叠率单位**：本实现按 0..99 百分比。原厂 `Overlaprate` 是百分比还是 0..1 比例，无证据。
+2. **除不尽时的取整与余量**：本实现向上取整保证不遗漏、余量分散到间距、末片贴边。原厂取整方向与余量分配未取证。
+3. **分片顺序**：本实现先横后竖（行优先）；原厂输出数组顺序未取证。
+4. **矩形度量**：本实现用平台既有「像素跨度」约定；原厂 `DivideRectWidth/Height` 是否同度量未取证。
+5. **是否另产出子图**：声明面没有图像端口，但「拆分组合」类别是否在别处下传子图、下游如何取子图无证据。
+6. **ROI / 位置修正**：`InputROI` 为空是否全图、划片是否被 ROI 裁剪、`InheritWayGroup`/`AssistGroup` 的继承链均未取证，本批未实现。
+7. **异常判定**：`NumX/NumY≤0`、重叠率≥100 的诊断文案是本产品口径，原厂文案与判定未取证。
+8. **分片数上限 65536**：产品保护，非原厂约束。
+9. **数值基线**：`algorithmComparison` 七维 `not-established`，本工具不声称与原厂数值等价。
+
+## 11.5 运行期自测记录（S 段 3，占用登记）
+
+- **占用起止**：2026-11-17 10:31 — 10:34（agent-desktop，单工具启动冒烟；期间未与其他线并发使用）
+- 程序：本工作树 `Release\SunEyeVision_v1.0.0\SunEyeVision\SunEyeVision.UI.exe`（`SunEyeVision.Tool.DivideImage.Runtime/Wpf` 已部署到该目录，`release-payload.json` 两个组件均在册）
+- 结果：主窗口正常显示（截图 `artifacts/divide-smoke/startup-divide.png`）；日志 `%LOCALAPPDATA%\SunEyeVision\Logs\suneye.log2026-11-17.log` 本次启动**无新增 ERROR**（最后一条 ERROR 为 10:24:47，早于本次启动）；一次正常退出（10:28:02 `MainWindow.Closed`/`插件卸载完成`）
+- **参数页运行期冒烟未能执行**：工具箱按 `ToolboxDisplayCatalog.json` 的 `MappingVerified` 过滤，`IMVSDivideImageModu` 当前 `ToolId=null` → 该条目显示为「尚未实现」并被跳过，工具不可从工具箱拖入。映射文件属 `src/**`（本线禁改），见 §11.6 请求。
+
+## 11.6 需要主线处理
+
+1. **工具箱映射（必须，否则工具不可见）**：`src/UI/Resources/Toolbox/ToolboxDisplayCatalog.json:707-711`
+   `{"Id":"IMVSDivideImageModu","Name":"划片拆分","Icon":"IMVSDivideImageModuImageEnable.png","ToolId":null}`
+   → 改为 `"ToolId": "DivideImage"` 并补 `"MappingVerified": true`。
+2. 映射落地后请复跑一次「工具箱出现 → 拖入画布 → 打开参数页 → 切页签 → 关闭」并向本线回报日志片段（或由本线在下批补做该段冒烟）。
+3. 若要接原件 `InputROI`/位置修正继承：需要宿主侧 ROI 编辑/继承合同（对应原件 RoiSelectGroup/RoiType/InheritWayGroup/AssistGroup），不建议各工具重复实现。
+
+## 11.7 自检结果（S1–S8）
+
+| # | 项 | 结果 | 证据 |
+|---|---|---|---|
+| S1 | 取证 | ✅（含未确认项） | §10.1 证据表（`zh-cn.xaml:9245`、`4568-4573`、`parameters.json`、`resources.json`、`_reference-codex` declarations 段）；未确认项见 §11.4 |
+| S2 | 契约 | ✅ 6 必需 + P1/P2/P5（P3/P4 不适用，理由见 §10.6） | `DivideImageTool.cs:9-10`、`DivideImageParameterEditor.xaml.cs:17,36-37,52-53,57-63`；`DivideImagePresentationTests` 3 项通过 |
+| S3 | 构建 | ✅ 0 错误 | §11.3 第 1 条 |
+| S4 | 测试 | ✅ 60/60 通过（本批新增 24） | §11.3 第 2 条 |
+| S5 | 登记 | ✅ 只追加自己条目 | `git diff` 片段见下 |
+| S6 | 边界 | ✅ 仅本工具目录 + 两个登记文件 + 本交接单 | `git status --short` 见下 |
+| S7 | 提交 | ✅ 中文 Conventional Commits，无 `*-msg.txt` 入库 | `git log --oneline` 见 §11.9 |
+| S8 | 交接 | ✅ 本节 | 本文件 |
+
+S5 登记 diff（追加，未改他人行）：
+
+```
++  <Folder Name="/Tools/DivideImageComponents/">
++    <Project Path="tools/SunEyeVision.DivideImage/Runtime/..." />
++    <Project Path="tools/SunEyeVision.DivideImage/Wpf/..." />
++  </Folder>
++    <ProductToolComponent Include="tools/SunEyeVision.DivideImage/Runtime/...">…</ProductToolComponent>
++    <ProductToolComponent Include="tools/SunEyeVision.DivideImage/Wpf/...">…</ProductToolComponent>
++    <ProjectReference Include="../../tools/SunEyeVision.DivideImage/Runtime/..."><Private>false</Private></ProjectReference>
++    <ProjectReference Include="../../tools/SunEyeVision.DivideImage/Wpf/..."><Private>false</Private></ProjectReference>
++    <ProjectReference Include="../../src/Plugin.Wpf/..."><Private>false</Private></ProjectReference>   ← 测试项目为验证 P1/P2/P5 组合路径新增
+```
+
+> 注意：测试项目新增的 `Plugin.Wpf` 引用只用于在真实 `DeclaredSettingsView` 上验证参数页组装，不改变产品依赖。
+
+## 11.8 交付物清单
+
+- `tools/SunEyeVision.DivideImage/Runtime/`：`SunEyeVision.DivideImage.Runtime.csproj`、`DivideImageTool.cs`、`DivideImageFields.cs`、`DivideImageSettings.cs`、`DivideImageTiling.cs`、`DivideImageSession.cs`、`DivideImageOutput.cs`
+- `tools/SunEyeVision.DivideImage/Wpf/`：`SunEyeVision.DivideImage.Wpf.csproj`、`DivideImageEditorFactory.cs`、`Views/DivideImageParameterEditor.xaml(.cs)`、`Design/DivideImageDesignData.cs`
+- `tests/SunEyeVision.Tools.ImageProcessing.Tests/`：`DivideImageDeclarationTests.cs`、`DivideImageExecutionTests.cs`、`DivideImagePresentationTests.cs`（csproj 追加 3 个引用）
+- 追加登记：`SunEyeVision.slnx`（`/Tools/DivideImageComponents/`）、`product/ToolComponents.props`（Runtime + Editor）
+
+## 11.9 提交
+
+- 待填：本批实施提交（见汇报消息）。前序取证记录提交 `b219a6f45`。
+

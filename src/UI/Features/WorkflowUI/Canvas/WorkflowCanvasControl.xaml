@@ -341,10 +341,9 @@
 
                                 <!-- 节点类型图标（非子程序）/ 子程序设置按钮；方案 §6 五态：状态色块 + 图标重叠 -->
                                 <Grid Grid.Column="0">
-                                    <!-- 原厂节点只有「序号 + 名称」，不带工具图标；仅子程序节点保留设置按钮占位。 -->
-                                    <Grid.Style><Style TargetType="Grid"><Setter Property="Width" Value="0"/><Style.Triggers><DataTrigger Binding="{Binding IsSubroutineNode}" Value="True"><Setter Property="Width" Value="31"/></DataTrigger></Style.Triggers></Style></Grid.Style>
+                                    <Grid.Style><Style TargetType="Grid"><Setter Property="Width" Value="24"/><Style.Triggers><DataTrigger Binding="{Binding IsSubroutineNode}" Value="True"><Setter Property="Width" Value="31"/></DataTrigger></Style.Triggers></Style></Grid.Style>
                                     <!-- 图标叠上居中；状态时反白；对子程序节点隐藏 -->
-                                    <Image Source="{Binding Converter={StaticResource ToolNodeIcon}}" Width="16" Height="16" Margin="4,0,0,0" VerticalAlignment="Center" Visibility="Collapsed">
+                                    <Image Source="{Binding Converter={StaticResource ToolNodeIcon}}" Width="16" Height="16" Margin="4,0,0,0" VerticalAlignment="Center">
                                         <Image.Style>
                                             <Style TargetType="Image">
                                                 <Style.Triggers>
@@ -373,7 +372,7 @@
                                 <!-- 全局序号 -->
                                 <TextBlock Grid.Column="1" x:Name="NodeIndexText"
                                            Text="{Binding GlobalIndex, StringFormat='{}{0}'}"
-                                           Margin="8,0,2,0"><TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource NodeGlobalIndexStyle}"><Style.Triggers><DataTrigger Binding="{Binding IsSubroutineNode}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger><DataTrigger Binding="{Binding IsToolboxPreview}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
+                                           Margin="0"><TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource NodeGlobalIndexStyle}"><Style.Triggers><DataTrigger Binding="{Binding IsSubroutineNode}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger><DataTrigger Binding="{Binding IsToolboxPreview}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
 
                                 <!-- 节点显示名称（重命名时切换到编辑框） -->
                                 <Grid Grid.Column="2">

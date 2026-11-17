@@ -250,7 +250,8 @@
         "Id": "IMVSIntensityMeasureModu",
         "Name": "亮度测量",
         "Icon": "IMVSIntensityMeasureModuImageEnable.png",
-        "ToolId": null
+        "ToolId": "IntensityMeasure",
+      "MappingVerified": true
       },
       {
         "Id": "IMVSEdgeWidthFindModu",

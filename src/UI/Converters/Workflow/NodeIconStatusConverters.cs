@@ -12,9 +12,9 @@ namespace SunEyeVision.UI.Converters.Workflow
     /// </summary>
     public class NodeIconStatusBackgroundConverter : IValueConverter
     {
-        private static readonly Brush RunningBrush = new SolidColorBrush(Color.FromRgb(33, 150, 243));    // #2196F3 蓝
-        private static readonly Brush GreenBrush = new SolidColorBrush(Color.FromRgb(76, 175, 80));      // #4CAF50 绿
-        private static readonly Brush RedBrush = new SolidColorBrush(Color.FromRgb(244, 67, 54));        // #F44336 红
+        private static readonly Brush RunningBrush = new SolidColorBrush(Color.FromRgb(255, 167, 15));    // #FFA70F 原厂激活色
+        private static readonly Brush GreenBrush = new SolidColorBrush(Color.FromRgb(10, 191, 61));      // #0ABF3D 原厂 OK
+        private static readonly Brush RedBrush = new SolidColorBrush(Color.FromRgb(236, 0, 0));          // #EC0000 原厂 NG
         private static readonly Brush GrayBrush = new SolidColorBrush(Color.FromRgb(158, 158, 158));     // #9E9E9E 灰
         private static readonly Brush TransparentBrush = Brushes.Transparent;
         private static string? _lastBackgroundLogKey;

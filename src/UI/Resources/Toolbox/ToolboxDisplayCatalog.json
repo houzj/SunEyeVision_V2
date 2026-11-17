@@ -708,7 +708,7 @@
         "Id": "IMVSDivideImageModu",
         "Name": "划片拆分",
         "Icon": "IMVSDivideImageModuImageEnable.png",
-        "ToolId": "ImageSplit",
+        "ToolId": "DivideImage",
         "MappingVerified": true
       },
       {

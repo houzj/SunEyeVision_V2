@@ -304,5 +304,7 @@ S5 登记 diff（追加，未改他人行）：
 
 ## 11.9 提交
 
-- 待填：本批实施提交（见汇报消息）。前序取证记录提交 `b219a6f45`。
+- `1571d5b82` — `feat(划片拆分): 新增 DivideImage 工具 Runtime/Wpf 实现与契约测试`（主交付：22 个文件，1462 行新增）
+- `b219a6f45` — `docs(交接单): 记录划片拆分 imvsdivideimagemodu 取证结论与阻塞点`（取证阶段）
+- 未 push、未 merge 到主分支；`color-commit-msg.txt` 为此前会话遗留的未跟踪临时文件，未入库。
 

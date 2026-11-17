@@ -36,7 +36,8 @@ public partial class ColorExtractParameterEditor : UserControl, IToolSettingsVie
         ArgumentNullException.ThrowIfNull(options);
         var generation = ++_generation;
         Editor.Changed -= OnFieldsChanged;
-        Editor.Bind(draft, options with { InputSection = null });
+        // 有图像输入就必须声明输入区落位；区间列表是本工具已声明的首个分组。
+        Editor.Bind(draft, options with { InputSection = options.InputSection ?? Runtime.ColorExtractFields.RangeSection });
         if (generation != _generation || _disposed) throw new InvalidOperationException("色彩提取参数组合已重新绑定或关闭。");
         Editor.Changed += OnFieldsChanged;
     }

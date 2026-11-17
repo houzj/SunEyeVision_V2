@@ -36,7 +36,8 @@ public partial class IfParameterEditor:UserControl,IToolSettingsView
         ArgumentNullException.ThrowIfNull(options);
         var generation=++_generation;
         Editor.Changed-=OnFieldsChanged;
-        Editor.Bind(draft,options);
+        // 条件分支的输入是参数引用（无图像输入），但宿主仍需一个已声明的分组来挂输入内容区。
+        Editor.Bind(draft,options with { InputSection = options.InputSection ?? SunEyeVision.Tool.If.Runtime.IfFields.ConditionName(0) });
         if(_disposed||generation!=_generation||!ReferenceEquals(Editor.Draft,draft))
             throw new InvalidOperationException("条件分支参数组合已重新绑定或关闭。");
         Editor.Changed+=OnFieldsChanged;

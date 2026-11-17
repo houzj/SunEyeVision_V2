@@ -47,7 +47,14 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
         try
         {
             Resources.MergedDictionaries.Add(SunEyeVision.Plugin.Wpf.EditorResources.Shared);
-            var declarations=(schema.Presentation??throw new ArgumentException("Input presentation is required.")).Fields
+            // 未声明输入内容呈现的工具（例如无图像输入、输入仅走参数引用的条件分支）没有可渲染的输入区，
+            // 这里视为「无输入内容」而不是抛异常——否则整张参数页组装失败。
+            if (schema.Presentation is not { } presentation)
+            {
+                Style=(Style)FindResource("ParamListViewStyleNoScro");
+                return;
+            }
+            var declarations=presentation.Fields
                 .Select(field=>(Field:field,Port:schema.Inputs.Single(port=>port.Id==field.FieldId),
                     Section:field.Layout?.Section??throw new ArgumentException("Input section is required."))).ToArray();
             if(declarations.Select(item=>item.Port.Id).Distinct(StringComparer.Ordinal).Count()!=declarations.Length)

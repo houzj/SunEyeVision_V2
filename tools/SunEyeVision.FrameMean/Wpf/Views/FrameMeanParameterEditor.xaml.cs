@@ -36,7 +36,8 @@ public partial class FrameMeanParameterEditor : UserControl, IToolSettingsView
         ArgumentNullException.ThrowIfNull(options);
         var generation=++_generation;
         Editor.Changed-=OnFieldsChanged;
-        Editor.Bind(draft, options with { InputSection = null });
+        // 有图像输入就必须声明输入区落位，否则参数页组装抛「An input content section is required.」。
+        Editor.Bind(draft, options with { InputSection = options.InputSection ?? "运行参数" });
         if(generation!=_generation||_disposed)throw new InvalidOperationException("帧均值参数组合已重新绑定或关闭。");
         Editor.Changed+=OnFieldsChanged;
     }

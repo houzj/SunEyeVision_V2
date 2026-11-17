@@ -24,7 +24,8 @@ public sealed class IfTool:IToolDefinition<IfSettings,IfOutput>,IToolSettingsFie
     {
         new ResultColumnDescriptor("branch-match","命中分支",new(IfOutput.BranchMatch)),
         new ResultColumnDescriptor("module-status","模块状态",new(IfOutput.ModuleStatus)),
-        new ResultColumnDescriptor("module-time","模块耗时",new(IfOutput.ModuleRunTime),Unit:"ms",DecimalPlaces:2,UseSinglePrecision:true)
+        // 单精度展示要求单元格为浮点且不固定小数位；模块耗时固定 2 位小数展示，故关闭单精度。
+        new ResultColumnDescriptor("module-time","模块耗时",new(IfOutput.ModuleRunTime),Unit:"ms",DecimalPlaces:2,UseSinglePrecision:false)
     });
     public IReadOnlyList<ManualReferenceSource> ManualReferenceSources{get;}=Array.AsReadOnly(new[]
     {

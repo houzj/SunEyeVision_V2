@@ -59,6 +59,33 @@ public sealed class ToolboxViewModel : ViewModelBase
             c.ToolCount = BuildCategory(c.Name, true).Count();
         }
     }
+    /// <summary>分类默认排列，用于“通用方案”恢复原序（首次应用时快照，之后不再变化）。</summary>
+    private readonly List<ToolCategory> _defaultOrder = new();
+
+    /// <summary>
+    /// 应用引导页选择的工具箱优先分类（对应原厂 ToolBoxData.ChangePriorityByInfo）：
+    /// 目标分类排到最前；传 null 或空表示恢复默认顺序。
+    /// </summary>
+    public void ApplyPriorityPreset(string? categoryName)
+    {
+        if (Categories.Count == 0) return;
+        if (_defaultOrder.Count == 0) _defaultOrder.AddRange(Categories);
+        var ordered = _defaultOrder.Where(Categories.Contains).ToList();
+        if (categoryName is { Length: > 0 })
+        {
+            var primary = Categories.FirstOrDefault(c => string.Equals(c.Name, categoryName, StringComparison.Ordinal));
+            if (primary is not null)
+            {
+                ordered.Remove(primary);
+                ordered.Insert(0, primary);
+            }
+        }
+        for (var i = 0; i < ordered.Count; i++)
+        {
+            var index = Categories.IndexOf(ordered[i]);
+            if (index != i) Categories.Move(index, i);
+        }
+    }
     public IReadOnlyList<ToolItem> GetCategoryTools(string name)
     {
         var category = Categories.FirstOrDefault(c => c.Name == name);

@@ -513,6 +513,8 @@ public partial class App : System.Windows.Application
         }
 
         mainWindow.HideSolutionLoadingOverlay();
+        // 回放上次引导页选择的工具箱优先分类：不显示引导层（已隐藏/直接开文件）时同样生效。
+        ApplyToolboxPreset(mainWindow);
         if (!openedByRequest && !StartPreferences.HideStartPage)
             await ShowStartPageAsync(mainWindow);
     }
@@ -529,18 +531,19 @@ public partial class App : System.Windows.Application
             "identify" or "Recognition" => "识别",
             _ => null
         };
-        if (category is null || mainWindow.DataContext is not MainWindowViewModel vm) return;
+        if (mainWindow.DataContext is not MainWindowViewModel vm) return;
         try
         {
-            // 默认保持工具箱收起（图标条），不做自动展开：引导页只决定优先分类。
-            // 仅在用户已手动展开列表时，才把目标分类展开到可见位置。
-            var target = vm.Toolbox.Categories.FirstOrDefault(c => c.Name == category);
+            // 原厂语义：按选定类型调整工具箱分类优先级（目标分类置顶；通用方案恢复默认排列）。
+            vm.Toolbox.ApplyPriorityPreset(category);
+            // 默认保持工具箱收起（图标条），不自动展开；仅在列表模式下把目标分类展开到可见位置。
+            var target = category is null ? null : vm.Toolbox.Categories.FirstOrDefault(c => c.Name == category);
             if (target is not null && !vm.Toolbox.IsCompactMode)
             {
                 foreach (var item in vm.Toolbox.Categories) item.IsExpanded = ReferenceEquals(item, target);
                 target.IsExpanded = true;
             }
-            LogStartupStage("StartPage.ToolboxPreset", $"preset={StartPreferences.ToolboxPreset}; category={category}; expanded={target is not null}");
+            LogStartupStage("StartPage.ToolboxPreset", $"preset={StartPreferences.ToolboxPreset ?? "-"}; category={category ?? "-"}; first={vm.Toolbox.Categories.FirstOrDefault()?.Name ?? "-"}");
         }
         catch (Exception ex) { LogStartupStage("StartPage.ToolboxPresetFailed", ex.Message); }
     }

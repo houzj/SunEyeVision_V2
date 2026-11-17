@@ -1,3 +1,11 @@
+**2026-11-17 三线第二批集成（12 工具共存，未人工验收）**：A3 划片拆分（`DivideImage`）、B3 亮度测量（`IntensityMeasure`）、C3 轮廓匹配（`ContourMatch`）与灰度匹配（`GrayMatch`）四条分支全部并入 main，合并冲突仅 `SunEyeVision.slnx` 与 `product/ToolComponents.props`，按并集解决（组件登记 24 条 = 12 工具 × Runtime/Editor）。
+
+- **参数页契约缺陷（本轮教训）**：依次修掉四处——Blob 标签分析（图形分组缺 `DialogGroup`/`DialogTitle`、x/y 未注册文本坐标）、图形定位（`InputSection` 回落到不存在的「基本参数」组）、像素统计（无参数页、输入区未落位、两处 `DecimalPlaces: null`）。根因统一为**呈现层五项隐性契约未对齐**（ReadyTask / InputSection / DialogGroup+Title+Primary / GraphicDisplays 完整消费 / TextDisplays 注册坐标）。
+- **欢迎页**：logo 由占位方框改为复用正式品牌图形 `SunEyeVision.BrandDrawing`；分类卡片图标改动已回退；`MinWidth/MinHeight` 提到 1000×616，避免边缘拖动缩放裁掉内容。
+- **工具箱映射**：`IMVSContourMatchModu→ContourMatch`、`IMVSGrayMatchModuVA→GrayMatch`、`IMVSDivideImageModu→DivideImage`、`IMVSIntensityMeasureModu→IntensityMeasure`、`IMVSPixelCountModu→PixelCount`、`IMVSMarkFindModu→MarkFind` 等全部 `MappingVerified: true`。
+- **已验**：全量 Release 构建 0 错误；测试 60（图像处理）+86（逻辑数据）+109（查找检测）=**255 项全通过**；启动后工具箱七类正常展开；10:42 之后的启动日志中**无**「参数页组装失败 / 不限固定小数位 / input content section」记录（三类异常最后出现时间为修复前的 10:20–10:24）。
+- **未验（不得记作通过）**：10 项验收检查表逐项人工执行（工具拖入、参数页分组联动、结果页叠加、连续执行、保存重开、异常路径、生命周期计数、分支 Skipped）、UI 与 VM 原件外观对照。
+- **遗留**：引擎未校验「分支源出边数 > 声明控制输出数」；画布不为分支源渲染多出口；二值化内核 602 原生算法取证已产出（`证据补充-核心内核602-20261117.md`）但尚未据此开工工具。
 **2026-11-17 三线并行首轮集成（帧均值 / 条件分支If / Blob标签分析，未人工验收）**：三条开发线按"开发一致性分类"并行，各自独立 worktree（`D:\MyWork\line-tools-image|logic|inspect`）与分支（`feature/tools-image-processing|logic-data|inspection`），基线 `945de540f`→`4dcb3cd72`。
 
 - **产出**：A 线帧均值工具 `2119916d7`（+合并 `b5cbe7720`）、B 线条件分支 If `a8c23fb50`（合并 `64e858bc7`）、C 线 Blob 标签分析 `a9f189720`（合并 `289620bed`）；合并到 main 时仅 `SunEyeVision.slnx` 与 `product/ToolComponents.props` 冲突，按并集解决。

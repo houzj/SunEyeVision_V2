@@ -1,0 +1,130 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<controls:BaseWindow x:Class="VisionMasterMain.AppMainWindow.SoftwareSet.RemoteServerVerification" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" xmlns:local="clr-namespace:VisionMasterMain.AppMainWindow.SoftwareSet" x:Name="RemoteServerWindow" WindowStartupLocation="CenterScreen" Title="{DynamicResource Lang_SecurityVerification}" Background="#F2F3F5" Height="300" Width="370">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Apps.Style;component/PasswordBoxStyle/PasswordBoxStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ProgressBarStyle/ProgressBarStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/BottomButtonStyle.xaml" />
+        <ResourceDictionary Source="/Apps.Style;component/ButtonStyle/ToggleButtonStyle.xaml" />
+        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+        <ResourceDictionary>
+          <BooleanToVisibilityConverter x:Key="BooleanToVisibilityCv" />
+          <Style x:Key="TextBlockStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="#666666" />
+            <Setter Property="FontFamily" Value="Microsoft YaHei" />
+            <Setter Property="Margin" Value="8,4" />
+          </Style>
+          <Style x:Key="TextBoxStyle" TargetType="{x:Type TextBox}">
+            <Setter Property="Width" Value="214" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Background" Value="#FCFCFC" />
+            <Setter Property="Padding" Value="5,0" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontFamily" Value="Microsoft YaHei" />
+            <Setter Property="Foreground" Value="#666666" />
+            <Setter Property="Margin" Value="0,3" />
+            <Setter Property="Template">
+              <Setter.Value>
+                <ControlTemplate TargetType="{x:Type TextBox}">
+                  <Border Background="{TemplateBinding Control.Background}" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" CornerRadius="2">
+                    <ScrollViewer Name="PART_ContentHost" VerticalAlignment="Center" />
+                  </Border>
+                </ControlTemplate>
+              </Setter.Value>
+            </Setter>
+          </Style>
+          <Style x:Key="IpTextBoxStyle" BasedOn="{StaticResource TextBoxStyle}" TargetType="{x:Type TextBox}">
+            <Setter Property="Template">
+              <Setter.Value>
+                <ControlTemplate TargetType="{x:Type TextBox}">
+                  <Border Name="BackBoder" Background="{TemplateBinding Control.Background}" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" CornerRadius="2">
+                    <ScrollViewer Name="PART_ContentHost" VerticalAlignment="Center" />
+                  </Border>
+                  <ControlTemplate.Triggers>
+                    <DataTrigger Value="False" Binding="{Binding ElementName=RemoteServerWindow, Path=IsLegalIP}">
+                      <Setter TargetName="BackBoder" Property="Border.BorderBrush" Value="#FF0000" />
+                    </DataTrigger>
+                  </ControlTemplate.Triggers>
+                </ControlTemplate>
+              </Setter.Value>
+            </Setter>
+          </Style>
+          <Style x:Key="PasswordBoxStyle" BasedOn="{StaticResource CommonPasswordBoxStyle}" TargetType="{x:Type PasswordBox}">
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="#666666" />
+            <Setter Property="Padding" Value="5,0" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Margin" Value="14,3,0,3" />
+            <Setter Property="Width" Value="214" />
+            <Setter Property="Height" Value="32" />
+          </Style>
+          <Style x:Key="ButtonStyle" BasedOn="{StaticResource Orange_ButtonStyle}" TargetType="{x:Type Button}">
+            <Setter Property="Foreground" Value="#666666" />
+            <Setter Property="FontFamily" Value="Microsoft YaHei" />
+            <Setter Property="FontSize" Value="12" />
+          </Style>
+          <Style x:Key="HikProgressBarStyle" BasedOn="{StaticResource ProgressBarStyle}" TargetType="{x:Type ProgressBar}">
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="#EF6C05" />
+          </Style>
+        </ResourceDictionary>
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*" />
+      <RowDefinition Height="33" />
+    </Grid.RowDefinitions>
+    <Grid Row="0" Margin="32,15">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="84" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource TextBlockStyle}" Text="{DynamicResource Lang_SelectServerIpAddress}" />
+      <TextBox Grid.Row="0" Grid.Column="1" Style="{StaticResource IpTextBoxStyle}" Text="{Binding ElementName=RemoteServerWindow, Path=ServerIp}" TextChanged="TextBox_TextChanged" />
+      <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource TextBlockStyle}" Text="{DynamicResource Lang_RemoteServerPort}" />
+      <TextBox Grid.Row="1" Grid.Column="1" Style="{StaticResource TextBoxStyle}" Text="{Binding ElementName=RemoteServerWindow, Path=ServerPort}" />
+      <StackPanel Name="InputStackPanel" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Visibility="Collapsed">
+        <TextBlock Name="InputTextBlock" Grid.Row="0" Grid.Column="0" Style="{StaticResource TextBlockStyle}" Text="{DynamicResource Lang_SetScriptPassword}" />
+        <PasswordBox Name="InputPasswordBox" Grid.Row="0" Grid.Column="1" Tag="{DynamicResource 请输入密码}" Style="{StaticResource PasswordBoxStyle}" PasswordChanged="PasswordBox_PasswordChanged" />
+      </StackPanel>
+      <StackPanel Name="ConfirmStackPanel" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Visibility="Collapsed">
+        <TextBlock Grid.Row="1" Grid.Column="0" HorizontalAlignment="Left" Style="{StaticResource TextBlockStyle}" Text="确认密码" />
+        <PasswordBox Name="ConfirmPasswordBox" Grid.Row="1" Grid.Column="1" Tag="{DynamicResource Lang_PasswordConfirm}" Style="{StaticResource PasswordBoxStyle}" PasswordChanged="PasswordBox_PasswordChanged" />
+      </StackPanel>
+      <StackPanel Name="VerificationStackPanel" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Top" Margin="0,10" Orientation="Horizontal" Visibility="Visible">
+        <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource TextBlockStyle}" Text="{DynamicResource Lang_InformationVerification}" />
+        <Button Grid.Row="0" Grid.Column="1" Width="66" Height="24" HorizontalAlignment="Left" Style="{StaticResource ButtonStyle}" Margin="14,0" Content="{DynamicResource 校验}" Click="VerificationButton_OnClick" />
+      </StackPanel>
+      <TextBlock Grid.Row="5" Grid.Column="1" Margin="12,5,0,0" Height="20" FontSize="12" Foreground="#FFFF1A1A" Visibility="Visible" Text="{Binding ElementName=RemoteServerWindow, Path=PasswordTips}" />
+    </Grid>
+    <Border Grid.Row="1" Background="#C8C4C1" BorderBrush="#666666" BorderThickness="1">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="66" />
+        </Grid.ColumnDefinitions>
+        <Button Name="LocalModeButton" Grid.Column="0" Margin="16,6" BorderThickness="0" Background="#00FFFFFF" Style="{StaticResource ButtonStyle}" Visibility="{Binding ElementName=RemoteServerWindow, Path=IsOpenNativeMode, Converter={StaticResource BooleanToVisibilityCv}}" Click="LocalMode_OnClick">
+          <TextBlock TextDecorations="Underline" FontSize="12" Foreground="#EF6C05" Text="{DynamicResource Lang_EnterNativeMode}" />
+        </Button>
+        <Border Grid.Column="1" Visibility="Hidden" />
+        <Button Name="ConfirmButton" Grid.Column="2" Height="22" Margin="10,0" Style="{StaticResource ButtonStyle}" Content="{DynamicResource 确定}" IsDefault="True" IsEnabled="False" Click="ConfirmButton_OnClick" />
+      </Grid>
+    </Border>
+    <Border Opacity="0.5" Background="#F2F2F2" Visibility="{Binding ElementName=ProgressBar, Path=Visibility}" />
+    <ProgressBar Name="ProgressBar" Grid.Row="1" Height="2" VerticalAlignment="Bottom" IsIndeterminate="True" Style="{StaticResource HikProgressBarStyle}" Visibility="{Binding ElementName=RemoteServerWindow, Path=ProgressBarVisibility}" />
+  </Grid>
+</controls:BaseWindow>

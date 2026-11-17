@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<controls:BaseWindow x:Class="VisionMaster.AppMainWindow.AboutMessageBox" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="clr-namespace:VM.Controls;assembly=VM.Controls" xmlns:Lang="clr-namespace:Apps.Localization;assembly=Apps.Localization" AllowsTransparency="True" WindowStartupLocation="CenterScreen" Title="{DynamicResource Lang_About}" Height="440" Width="400" BorderBrush="#FF958C8C" BorderThickness="1" MinButtonVisibility="Collapsed" ShowInTaskbar="False" xmlns:appmainwindow="clr-namespace:VisionMaster.AppMainWindow;assembly=VisionMasterMain">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Apps.Style;component/ScrollBarStyle/RecScrollBarStyle.xaml" />
+        <x:StaticExtension Member="Lang:LocalizationResourceDictionary.Instance" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid Background="#F2F3F5">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*" />
+      <RowDefinition Height="auto" />
+      <RowDefinition Height="auto" />
+    </Grid.RowDefinitions>
+    <Border Grid.Row="0" CornerRadius="2" Background="#FFFFFFFF" BorderThickness="1" BorderBrush="#D0CCC9" Width="350" Margin="20,20,20,0">
+      <ScrollViewer Style="{DynamicResource RecScrollViewer}" Tag="1">
+        <StackPanel>
+          <Image Name="aboutLogoImg" Width="140" Height="60" HorizontalAlignment="Center" Margin="20" Stretch="Fill" />
+          <ListBox Name="versionInfoListBox" VerticalAlignment="Center" HorizontalAlignment="Center" BorderBrush="#00FFFFFF">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid Margin="0,4">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="auto" />
+                  </Grid.ColumnDefinitions>
+                  <TextBlock HorizontalAlignment="Left" Text="{Binding Title}" />
+                  <TextBlock Grid.Column="1" HorizontalAlignment="Left" Text="{Binding Value}" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ListBox>
+        </StackPanel>
+      </ScrollViewer>
+    </Border>
+    <TextBlock Name="txtStatement" Grid.Row="1" Margin="0,10,0,10" Width="350" Text="{DynamicResource Lang_AwardInfo}" FontSize="12" Foreground="#FF999999" TextWrapping="Wrap" Visibility="Hidden" />
+    <TextBlock Name="txtCopyright" Grid.Row="2" Margin="0,0,0,20" Width="355" Text="{DynamicResource Lang_Company}" HorizontalAlignment="Center" FontSize="12" Foreground="#FF999999" TextWrapping="Wrap" Visibility="Hidden" />
+  </Grid>
+</controls:BaseWindow>

@@ -189,15 +189,19 @@ public sealed class DocumentCanvasProjection : IDisposable
     {
         using var result = _session.AcquirePublishedResult(_workflowId, node.Id);
         var snapshot = result?.Snapshot;
-        var state = snapshot switch
-        {
-            null => CanvasNodeRunState.None,
-                { Status:ExecutionStatus.Running } => CanvasNodeRunState.Running,
-                { Status:ExecutionStatus.Cancelled } => CanvasNodeRunState.Cancelled,
-            { IsSuccess:false } => CanvasNodeRunState.Failed,
-            { IsPass:true } => CanvasNodeRunState.Passed,
-            _ => CanvasNodeRunState.Rejected
-        };
+            // 原件状态语义：未执行 / 跳过 的节点保持常态外观，只有真正跑过的节点才着色。
+            var state = snapshot switch
+            {
+                null => CanvasNodeRunState.None,
+                { Status: ExecutionStatus.NotExecuted } => CanvasNodeRunState.None,
+                { Status: ExecutionStatus.Skipped } => CanvasNodeRunState.None,
+                { Status: ExecutionStatus.Running } => CanvasNodeRunState.Running,
+                { Status: ExecutionStatus.Cancelled } => CanvasNodeRunState.Cancelled,
+                { Status: ExecutionStatus.Timeout } => CanvasNodeRunState.Failed,
+                { IsSuccess: false } => CanvasNodeRunState.Failed,
+                { IsPass: true } => CanvasNodeRunState.Passed,
+                _ => CanvasNodeRunState.Rejected
+            };
         node.SetRunState(state);
     }
 

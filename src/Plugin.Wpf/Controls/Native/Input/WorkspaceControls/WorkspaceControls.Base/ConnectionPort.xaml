@@ -14,6 +14,12 @@
           <Setter TargetName="r1" Property="FrameworkElement.Width" Value="8.5" />
           <Setter TargetName="r1" Property="FrameworkElement.Height" Value="12" />
         </Trigger>
+        <Trigger Property="IsMouseOver" Value="True">
+          <Setter TargetName="r2" Property="Border.BorderThickness" Value="2,2,0,2" />
+          <Setter TargetName="r1" Property="FrameworkElement.Margin" Value="-8.5,0,0,0" />
+          <Setter TargetName="r1" Property="FrameworkElement.Width" Value="8.5" />
+          <Setter TargetName="r1" Property="FrameworkElement.Height" Value="12" />
+        </Trigger>
       </ControlTemplate.Triggers>
     </ControlTemplate>
   </Control.Template>

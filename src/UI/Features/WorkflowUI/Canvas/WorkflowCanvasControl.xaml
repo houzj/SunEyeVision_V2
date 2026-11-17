@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="SunEyeVision.UI.Features.WorkflowUI.Canvas.WorkflowCanvasControl"
+<UserControl x:Class="SunEyeVision.UI.Features.WorkflowUI.Canvas.WorkflowCanvasControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -19,13 +19,17 @@
 
     <UserControl.Resources>
       <ResourceDictionary>
-        <ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/SunEyeVision.UI;component/Resources/Styles/NodeStyleResources.xaml"/></ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary.MergedDictionaries>
+          <ResourceDictionary Source="/SunEyeVision.UI;component/Resources/Styles/NodeStyleResources.xaml"/>
+          <ResourceDictionary Source="/SunEyeVision.UI;component/Resources/Styles/ConnectionStyleResources.xaml"/>
+        </ResourceDictionary.MergedDictionaries>
         <convertersPath:SmartPathConverter x:Key="SmartPathConverter"/>
         <convertersPath:SmartPathMultiConverter x:Key="SmartPathMultiConverter"/>
         <convertersUI:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <convertersPath:CoordinateOffsetConverter x:Key="CoordinateOffsetConverter"/>
         <converters:PointCenterToOffsetConverter x:Key="PointCenterToOffsetConverter"/>
         <convertersNode:ToolNodeIconConverter x:Key="ToolNodeIcon"/>
+        <convertersNode:NodeShapeConverter x:Key="NodeShape"/>
         <convertersNode:GroupNodeBackgroundConverter x:Key="GroupNodeBackground"/>
 
         <!-- 使用缓存的节点转换器（性能优化） -->
@@ -118,35 +122,7 @@
                                 </MultiBinding>
                             </Path.Data>
                             <Path.Style>
-                                <Style TargetType="Path">
-                                    <Setter Property="Stroke" Value="#FFA70F"/>
-                                    <Setter Property="StrokeThickness" Value="2"/>
-                                    <Setter Property="StrokeLineJoin" Value="Round"/>
-                                    <Setter Property="StrokeStartLineCap" Value="Round"/>
-                                    <Setter Property="StrokeEndLineCap" Value="Round"/>
-                                    <Setter Property="Effect" Value="{x:Null}"/>
-
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsHovered}" Value="True">
-                                            <Setter Property="Stroke" Value="#E76900"/>
-                                            <Setter Property="StrokeThickness" Value="2"/>
-                                            <Setter Property="Effect">
-                                                <Setter.Value>
-                                                    <DropShadowEffect BlurRadius="0" ShadowDepth="0" Opacity="0"/>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                            <Setter Property="Stroke" Value="#E76900"/>
-                                            <Setter Property="StrokeThickness" Value="2"/>
-                                            <Setter Property="Effect">
-                                                <Setter.Value>
-                                                    <DropShadowEffect BlurRadius="0" ShadowDepth="0" Opacity="0"/>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
+                                <Style BasedOn="{StaticResource ConnectionLineStyle}" TargetType="Path"/>
                             </Path.Style>
                         </Path>
 
@@ -195,17 +171,7 @@
                               x:Name="ArrowPath">
                             <Path.RenderTransform><RotateTransform Angle="{Binding ArrowAngle}"/></Path.RenderTransform>
                             <Path.Style>
-                                <Style TargetType="Path">
-                                    <Setter Property="Fill" Value="#FFA70F"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsHovered}" Value="True">
-                                            <Setter Property="Fill" Value="#E76900"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                            <Setter Property="Fill" Value="#E76900"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
+                                <Style BasedOn="{StaticResource ConnectionArrowStyle}" TargetType="Path"/>
                             </Path.Style>
                         </Path>
                     </Canvas>
@@ -293,7 +259,7 @@
 
                                 <Grid>
                             <!-- 节点底板：原件 NormalModulePathStyle 的填充为 5 段渐变，末尾 #EB6600 让底边呈现一条橙色细线；形状随 NodeDisplayType 切换。 -->
-                            <Path x:Name="NodeSurface" Stretch="Fill" IsHitTestVisible="False">
+                            <Path x:Name="NodeSurface" Stretch="Fill" IsHitTestVisible="False" Stroke="#FFB8B8B8" StrokeThickness="1" Data="{Binding NodeDisplayType, Converter={StaticResource NodeShape}}">
                                 <Path.Style>
                                     <Style TargetType="Path">
                                 <Setter Property="Data" Value="{StaticResource StandardModuleOutline}"/>
@@ -320,35 +286,6 @@
                                 </Path.Style>
                             </Path>
                             
-                            <Canvas x:Name="StateFlag" Width="26" HorizontalAlignment="Left" Margin="-2,-2,0,-2"
-                                    Clip="{Binding Data, ElementName=NodeStatusBorder}" IsHitTestVisible="False">
-                                <Canvas.Style>
-                                    <Style TargetType="Canvas">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding RunState}" Value="Passed">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                                <Setter Property="Background" Value="{DynamicResource Col_EditProcess_Modular_OK_Status}"/>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding RunState}" Value="Rejected">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                                <Setter Property="Background" Value="{DynamicResource Col_EditProcess_Modular_NG_Status}"/>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding RunState}" Value="Failed">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                                <Setter Property="Background" Value="{DynamicResource Col_EditProcess_Modular_NG_Status}"/>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding IsEnabled}" Value="False">
-                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                <Setter Property="Background" Value="{x:Null}"/>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding IsSubroutineNode}" Value="True">
-                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Canvas.Style>
-                            </Canvas>
                             <Path x:Name="NodeStatusBorder" Margin="-2" Stretch="Fill" StrokeThickness="2" IsHitTestVisible="False">
                                 <Path.Style>
                                     <Style TargetType="Path">
@@ -518,17 +455,14 @@
                         <Border.Style>
                             <Style TargetType="Border">
                                 <!-- 原件 NORMAL 节点填充：浅色四段渐变 + 底部橙色收边 -->
-                                <Setter Property="Background"><Setter.Value><LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#FAF7F5" Offset="0"/><GradientStop Color="#F3F6F5" Offset="0.47"/><GradientStop Color="#ECEDF0" Offset="0.82"/><GradientStop Color="#EBE6E2" Offset="0.97"/><GradientStop Color="#EB6600" Offset="1"/></LinearGradientBrush></Setter.Value></Setter>
-                                <Setter Property="BorderBrush" Value="#66F9F5F2"/>
-                                <Setter Property="BorderThickness" Value="2"/><Setter Property="CornerRadius" Value="4"/>
-                                <!-- Effect 已移至 NodeGlowBorder 装饰层（选中/悬停辉光），避免内容子树位图化导致文字/图标模糊 -->
-                                <Setter Property="Effect"><Setter.Value><DropShadowEffect BlurRadius="3" ShadowDepth="3" Opacity="0.45" Color="#FF121111"/></Setter.Value></Setter>
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="BorderBrush" Value="Transparent"/>
+                                <Setter Property="BorderThickness" Value="0"/><Setter Property="CornerRadius" Value="0"/>
+                                <Setter Property="Effect" Value="{x:Null}"/>
 
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding HasUnconfiguredRequiredInputs}" Value="True">
-                                    <Setter Property="Background"><Setter.Value><LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#FFFAF7F5" Offset="0"/><GradientStop Color="#FFE1E5E1" Offset="1"/></LinearGradientBrush></Setter.Value></Setter>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding IsEnabled}" Value="False"><Setter Property="Background"><Setter.Value><LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#D3D3D3F5" Offset="0"/><GradientStop Color="#D3D3D3E1" Offset="1"/></LinearGradientBrush></Setter.Value></Setter></DataTrigger><DataTrigger Binding="{Binding NodeDisplayType}" Value="IMAGE"><Setter Property="CornerRadius" Value="15"/></DataTrigger><DataTrigger Binding="{Binding IsSubroutineNode}" Value="True">
+                                <DataTrigger Binding="{Binding HasUnconfiguredRequiredInputs}" Value="True"><Setter Property="Opacity" Value="0.86"/></DataTrigger>
+                                <DataTrigger Binding="{Binding IsSubroutineNode}" Value="True">
                                     <Setter Property="BorderThickness" Value="0"/><Setter Property="CornerRadius" Value="0"/><Setter Property="Effect" Value="{x:Null}"/>
                                     <Setter Property="Background"><Setter.Value><MultiBinding Converter="{StaticResource GroupNodeBackground}"><Binding Path="IsEnabled"/><Binding Path="IsSelected"/><Binding Path="Status"/></MultiBinding></Setter.Value></Setter>
                                 </DataTrigger>
@@ -539,7 +473,7 @@
                             <!-- 端口层：显隐由 WorkflowNodeView 代码直接控制，对应原件 DiagramItem 的端口触发器 -->
                             <Grid x:Name="PortLayer"
                                   Width="{Binding VisualWidth}" Height="{Binding VisualHeight}"
-                                  HorizontalAlignment="Center" VerticalAlignment="Center">
+                                  HorizontalAlignment="Center" VerticalAlignment="Center" Panel.ZIndex="100" IsHitTestVisible="True">
 
                                 <native:ConnectionPort Style="{StaticResource CanvasPortStyle}" x:Name="LeftPort" Index="0" Orientation="Left"
                                                        HorizontalAlignment="Left" VerticalAlignment="Center"

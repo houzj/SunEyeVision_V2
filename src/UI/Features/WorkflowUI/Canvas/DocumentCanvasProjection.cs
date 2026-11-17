@@ -322,7 +322,7 @@ public sealed class CanvasNodeProjection : INotifyPropertyChanged, ICanvasToolIc
     public int GlobalIndex => Definition.GlobalIndex;
     public string ToolType => Definition.ToolType;
     /// <summary>节点外观类型，由工具目录声明；未声明时按原件默认卡片呈现。</summary>
-    public string NodeDisplayType { get { var value = Catalog?.NodeDisplayType ?? "DEFAULT"; if (Environment.GetEnvironmentVariable("SUNEYE_DEBUG_NODE_TYPE") == "1") { try { SunEyeVision.Foundation.Logging.VisionLogger.Instance?.Log(SunEyeVision.Foundation.Logging.LogLevel.Info, $"节点类型: tool={Definition.ToolType}; display={value}", "NodeTypeProbe"); } catch { } } return value; } }
+    public string NodeDisplayType => Catalog?.NodeDisplayType ?? "DEFAULT";
     public string? SubroutineId => Definition.SubroutineId;
     public bool IsEnabled => Definition.IsEnabled;
     public bool HasUnconfiguredRequiredInputs { get; private set; }
@@ -365,7 +365,7 @@ public sealed class CanvasNodeProjection : INotifyPropertyChanged, ICanvasToolIc
     /// <summary>条件分支：原件 IfBranchPath 为 110×40。</summary>
     private bool IsBranchNode => string.Equals(NodeDisplayType, "IFBRANCH", StringComparison.OrdinalIgnoreCase);
     public double VisualWidth => IsSquareNode ? 40d : StyleConfigTyped.NodeWidth;
-    public double VisualHeight { get { var h = IsSquareNode ? 40d : (IsBranchNode ? 40d : StyleConfigTyped.NodeHeight); if (Environment.GetEnvironmentVariable("SUNEYE_DEBUG_NODE_TYPE") == "1") { try { SunEyeVision.Foundation.Logging.VisionLogger.Instance?.Log(SunEyeVision.Foundation.Logging.LogLevel.Info, $"节点高度: tool={Definition.ToolType}; type={NodeDisplayType}; h={h}", "NodeTypeProbe"); } catch { } } return h; } }
+    public double VisualHeight => IsSquareNode ? 40d : (IsBranchNode ? 40d : StyleConfigTyped.NodeHeight);
     public double HitAreaWidth => VisualWidth + 20;
     public double HitAreaHeight => VisualHeight + 20;
     public double HitAreaLeft => X - HitAreaWidth / 2;

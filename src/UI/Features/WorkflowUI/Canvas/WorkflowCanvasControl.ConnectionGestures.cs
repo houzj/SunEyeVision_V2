@@ -7,6 +7,12 @@ using SunEyeVision.UI.Services.Rendering;
 namespace SunEyeVision.UI.Features.WorkflowUI.Canvas;
 public partial class WorkflowCanvasControl
 {
+    private static void ConnectionProbe(string message)
+        => Foundation.Logging.VisionLogger.Instance?.Log(
+            Foundation.Logging.LogLevel.Info,
+            "[ConnectionProbe] " + message,
+            "WorkflowConnectionProbe");
+
     private WorkflowTabViewModel? _canvasConnectionTab;
     private string? _canvasConnectionStamp, _canvasConnectionConfigurationStamp;
     private CanvasNodeProjection? _canvasConnectionTarget;
@@ -16,11 +22,16 @@ public partial class WorkflowCanvasControl
     {
         CancelCanvasGesture();
         var tab = _viewModel?.WorkflowTabViewModel.SelectedTab;
-        if (!CanEditCanvas || tab?.DocumentCanvas == null || !tab.DocumentCanvas.Nodes.Contains(node) || !CanvasSides.Contains(side)) return;
+        if (!CanEditCanvas || tab?.DocumentCanvas == null || !tab.DocumentCanvas.Nodes.Contains(node) || !CanvasSides.Contains(side))
+        {
+            ConnectionProbe($"begin_rejected node={node.Id} side={side} canEdit={CanEditCanvas} hasCanvas={tab?.DocumentCanvas != null} validSide={CanvasSides.Contains(side)}");
+            return;
+        }
         ClearCanvasWireSelection(); WorkflowCanvas.Focus();
         _canvasConnectionTab = tab; _canvasConnectionStamp = CanvasGraphStamp(tab); _canvasConnectionConfigurationStamp = CanvasConfigurationStamp(tab); _canvasConnectionTarget = null; _canvasConnectionStarted = false;
         _dragConnectionSourceNode = node; _dragConnectionSourcePort = side; _isDraggingConnection = true;
         _dragConnectionStartPoint = GetPortPositionByName(node, side);
+        ConnectionProbe($"begin node={node.Id} side={side} start={_dragConnectionStartPoint}");
     }
     private bool ValidCanvasConnection() => CanEditCanvas && _canvasConnectionTab != null &&
         ReferenceEquals(_viewModel?.WorkflowTabViewModel.SelectedTab, _canvasConnectionTab) && CanvasGraphStamp(_canvasConnectionTab) == _canvasConnectionStamp;
@@ -52,6 +63,7 @@ public partial class WorkflowCanvasControl
             return bounds.Contains(pointer) || CanvasSides.Any(side => CanvasPortHitRect(node, side).Contains(pointer));
         });
         var targetSide = _canvasConnectionTarget == null ? null : CanvasNearestSide(_canvasConnectionTarget, pointer);
+        ConnectionProbe($"move pointer={pointer} target={_canvasConnectionTarget?.Id ?? "<none>"} targetSide={targetSide ?? "<none>"}");
         foreach (var port in CanvasPorts(WorkflowCanvas))
         {
             var node = port.DataContext as CanvasNodeProjection;
@@ -88,10 +100,12 @@ public partial class WorkflowCanvasControl
         var a = GetPortPositionByName(node, side);
         return side switch
         {
+            // ConnectionPort is 20x30. Its template margins place the left and
+            // right controls outside the node and the top control 25px above it.
             "LeftPort" => new Rect(a.X - 20, a.Y - 15, 20, 30),
             "RightPort" => new Rect(a.X, a.Y - 15, 20, 30),
-            "TopPort" => new Rect(a.X - 15, a.Y - 20, 30, 20),
-            _ => new Rect(a.X - 15, a.Y, 30, 20)
+            "TopPort" => new Rect(a.X - 10, a.Y - 25, 20, 30),
+            _ => new Rect(a.X - 10, a.Y, 20, 30)
         };
     }
     private string CanvasNearestSide(CanvasNodeProjection node, Point pointer) => CanvasSides.OrderBy(side => (GetPortPositionByName(node, side) - pointer).LengthSquared).First();
@@ -103,12 +117,13 @@ public partial class WorkflowCanvasControl
             _canvasConnectionConfigurationStamp == CanvasConfigurationStamp(_canvasConnectionTab!) && CanvasDropInside(pointer) && source != null && target != null;
         var targetSide = target == null ? null : CanvasNearestSide(target, pointer);
         var canvas = _canvasConnectionTab?.DocumentCanvas;
+        ConnectionProbe($"finish pointer={pointer} started={_canvasConnectionStarted} valid={ValidCanvasConnection()} inside={CanvasDropInside(pointer)} source={source?.Id ?? "<none>"} sourceSide={side ?? "<none>"} target={target?.Id ?? "<none>"} targetSide={targetSide ?? "<none>"}");
         // 清状态及释放捕获必须在提交之前，PortUp 不再有第二个创建机会。
         CancelCanvasGesture();
         if (commit && canvas != null)
         {
             try { canvas.Connect(new SunEyeVision.Domain.Workflows.ConnectionDefinition(Guid.NewGuid().ToString("N"), source!.Id, target!.Id, side!, targetSide!)); }
-            catch (Exception error) { if (_viewModel != null) _viewModel.StatusText = "连线未创建：" + error.Message; }
+            catch (Exception error) { ConnectionProbe($"commit_error message={error.Message}"); if (_viewModel != null) _viewModel.StatusText = "连线未创建：" + error.Message; }
         }
     }
 }

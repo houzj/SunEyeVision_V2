@@ -1,4 +1,4 @@
-using SunEyeVision.Domain.Workflows;
+﻿using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Contracts.Results.Presentation;
 
@@ -37,16 +37,17 @@ public sealed partial class DocumentSession
                 ValidateScopeCore(scope);
                 if (draft.OpeningHistoryRevision != History.Revision || !draft.Opening.MatchesCurrent(scope.Flow))
                     throw new InvalidOperationException("工具准入期间流程已变化。");
-                static int FirstFree(IEnumerable<int> allocated)
+                // 原厂节点编号为 0 基（0图像源1、1Blob分析1…）；实例序号仍从 1 开始（图像源1）。
+                static int FirstFree(IEnumerable<int> allocated, int start)
                 {
-                    var occupied = allocated.Where(value => value > 0).ToHashSet();
-                    var candidate = 1;
+                    var occupied = allocated.Where(value => value >= 0).ToHashSet();
+                    var candidate = start;
                     while (occupied.Contains(candidate)) candidate = checked(candidate + 1);
                     return candidate;
                 }
                 var otherNodes = Document.Workflows.Where(flow => !ReferenceEquals(flow, scope.Flow)).SelectMany(flow => flow.Nodes);
-                var global = FirstFree(otherNodes.Concat(draft.Nodes).Select(item => item.GlobalIndex));
-                var local = FirstFree(draft.Nodes.Where(item => item.ToolType == toolId).Select(item => item.LocalIndex));
+                var global = FirstFree(otherNodes.Concat(draft.Nodes).Select(item => item.GlobalIndex), 0);
+                var local = FirstFree(draft.Nodes.Where(item => item.ToolType == toolId).Select(item => item.LocalIndex), 1);
                 var displayName = (_directory.GetCatalog(toolId)?.DisplayName ?? toolId) + local;
                 node.GlobalIndex = global; node.LocalIndex = local; node.DispName = displayName;
                 node.Name = $"{global} {displayName}";

@@ -1,4 +1,4 @@
-using SunEyeVision.Domain.Solutions;
+﻿using SunEyeVision.Domain.Solutions;
 using SunEyeVision.Domain.Workflows;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Runtime;
@@ -158,20 +158,20 @@ public sealed partial class DocumentSession
         }
         var draft=PrepareGraphEdit(targetWorkflowId);
         var dx=anchor.X-frozen.Anchor.X;var dy=anchor.Y-frozen.Anchor.Y;
-        static int FirstFree(ISet<int> occupied)
+        static int FirstFree(ISet<int> occupied, int start)
         {
-            var value=1;while(occupied.Contains(value))value=checked(value+1);return value;
+            var value=start;while(occupied.Contains(value))value=checked(value+1);return value;
         }
-        var global=Document.Workflows.SelectMany(flow=>flow.Nodes).Select(node=>node.GlobalIndex).Where(index=>index>0).ToHashSet();
+        var global=Document.Workflows.SelectMany(flow=>flow.Nodes).Select(node=>node.GlobalIndex).Where(index=>index>=0).ToHashSet();
         var local=target.Flow.Nodes.Where(node=>node.LocalIndex>0).GroupBy(node=>node.ToolType,StringComparer.Ordinal)
             .ToDictionary(group=>group.Key,group=>group.Select(node=>node.LocalIndex).ToHashSet(),StringComparer.Ordinal);
         var usedNames=target.Flow.Nodes.Select(node=>node.DispName).ToHashSet(StringComparer.Ordinal);
         var issued=new Dictionary<string,FragmentIssuedNode>(StringComparer.Ordinal);
         foreach(var snapshot in frozen.Nodes)
         {
-            var globalIndex=FirstFree(global);global.Add(globalIndex);
+            var globalIndex=FirstFree(global, 0);global.Add(globalIndex);
             if(!local.TryGetValue(snapshot.ToolId,out var allocated)){allocated=new HashSet<int>();local.Add(snapshot.ToolId,allocated);}
-            var localIndex=FirstFree(allocated);allocated.Add(localIndex);
+            var localIndex=FirstFree(allocated, 1);allocated.Add(localIndex);
             var stem=snapshot.DisplayName.TrimEnd('0','1','2','3','4','5','6','7','8','9');
             if(string.IsNullOrWhiteSpace(stem))stem=_directory.GetCatalog(snapshot.ToolId)?.DisplayName??snapshot.ToolId;
             var suffix=localIndex;var display=stem+suffix;while(usedNames.Contains(display))display=stem+(++suffix);

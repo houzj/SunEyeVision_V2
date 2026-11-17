@@ -1,4 +1,4 @@
-using SunEyeVision.Application.Editing;
+﻿using SunEyeVision.Application.Editing;
 
 namespace SunEyeVision.Application;
 
@@ -28,11 +28,11 @@ public sealed partial class DocumentSession
             try
             {
                 var used = snapshot.Entries.Where(entry => !entry.Issued).SelectMany(entry => entry.Flow.Nodes)
-                    .Select(node => node.GlobalIndex).Where(index => index > 0).ToHashSet();
-                static int FirstFree(HashSet<int> values)
-                {
-                    var index = 1;
-                    while (values.Contains(index)) index = checked(index + 1);
+                    .Select(node => node.GlobalIndex).Where(index => index >= 0).ToHashSet();
+    static int FirstFree(HashSet<int> values, int start)
+    {
+        var index = start;
+        while (values.Contains(index)) index = checked(index + 1);
                     values.Add(index);
                     return index;
                 }
@@ -65,7 +65,7 @@ public sealed partial class DocumentSession
                         foreach (var node in nodes)
                         {
                             if (!local.TryGetValue(node.ToolId, out var localIds)) local.Add(node.ToolId, localIds = new HashSet<int>());
-                            var globalIndex = FirstFree(used); var localIndex = FirstFree(localIds);
+                            var globalIndex = FirstFree(used, 0); var localIndex = FirstFree(localIds, 1);
                             var stem = node.DisplayName.TrimEnd('0','1','2','3','4','5','6','7','8','9');
                             if (string.IsNullOrWhiteSpace(stem)) stem = _directory.GetCatalog(node.ToolId)?.DisplayName ?? node.ToolId;
                             var suffix = localIndex; var display = stem + suffix;

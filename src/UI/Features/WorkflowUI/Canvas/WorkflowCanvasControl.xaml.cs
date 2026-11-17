@@ -1287,7 +1287,13 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
         private void Port_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (sender is ConnectionPort port && port.DataContext is CanvasNodeProjection node && port.Tag is string side)
+            {
+                Foundation.Logging.VisionLogger.Instance?.Log(
+                    Foundation.Logging.LogLevel.Info,
+                    $"[ConnectionProbe] port_down node={node.Id} side={side} hited={port.IsHited} mouseOver={port.IsMouseOver}",
+                    "WorkflowConnectionProbe");
                 BeginCanvasConnection(node, side);
+            }
             e.Handled = true;
         }
 

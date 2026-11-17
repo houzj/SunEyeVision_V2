@@ -378,24 +378,13 @@ namespace SunEyeVision.UI.Services.Connection
             var targetPos = GetPortPosition(targetNode, connection.TargetPort);
 
             // 计算节点边界矩形
-            var sourceNodeRect = new Rect(
-                sourceNode.Position.X - sourceNode.StyleConfigTyped.NodeWidth / 2,
-                sourceNode.Position.Y - sourceNode.StyleConfigTyped.NodeHeight / 2,
-                sourceNode.StyleConfigTyped.NodeWidth,
-                sourceNode.StyleConfigTyped.NodeHeight);
-
-            var targetNodeRect = new Rect(
-                targetNode.Position.X - targetNode.StyleConfigTyped.NodeWidth / 2,
-                targetNode.Position.Y - targetNode.StyleConfigTyped.NodeHeight / 2,
-                targetNode.StyleConfigTyped.NodeWidth,
-                targetNode.StyleConfigTyped.NodeHeight);
+            var sourceNodeRect = sourceNode.NodeRect;
+            var targetNodeRect = targetNode.NodeRect;
 
             // 计算所有节点边界（用于碰撞检测）— 需要 CanvasNodeProjection 特有成员，安全转型
-            var allNodeRects = _nodes.OfType<CanvasNodeProjection>().Select(n => new Rect(
-                n.Position.X - n.StyleConfigTyped.NodeWidth / 2,
-                n.Position.Y - n.StyleConfigTyped.NodeHeight / 2,
-                n.StyleConfigTyped.NodeWidth,
-                n.StyleConfigTyped.NodeHeight)).ToArray();
+            var allNodeRects = _nodes.OfType<CanvasNodeProjection>()
+                .Select(n => n.NodeRect)
+                .ToArray();
 
             IReadOnlyList<SunEyeVision.Domain.Workflows.CanvasPoint>? manual=connection.PreviewPathPoints ?? connection.ManualPathPoints;
             var pathPoints=manual is {Count:>1}

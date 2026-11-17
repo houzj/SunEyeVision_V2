@@ -55,8 +55,34 @@
     <Style x:Key="ConnectionLineStyle" TargetType="Path">
         <Setter Property="Stroke" Value="{DynamicResource ConnectionNormalBrush}"/>
         <Setter Property="StrokeThickness" Value="{DynamicResource ConnectionDefaultThickness}"/>
+        <Setter Property="StrokeLineJoin" Value="Round"/>
+        <Setter Property="StrokeStartLineCap" Value="Round"/>
+        <Setter Property="StrokeEndLineCap" Value="Round"/>
         <Setter Property="Fill" Value="Transparent"/>
         <Setter Property="IsHitTestVisible" Value="False"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsHovered}" Value="True">
+                <Setter Property="Stroke" Value="{DynamicResource ConnectionHoverBrush}"/>
+                <Setter Property="StrokeThickness" Value="{DynamicResource ConnectionHoverThickness}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                <Setter Property="Stroke" Value="{DynamicResource ConnectionSelectedBrush}"/>
+                <Setter Property="StrokeThickness" Value="{DynamicResource ConnectionSelectedThickness}"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="ConnectionArrowStyle" TargetType="Path">
+        <Setter Property="Fill" Value="{DynamicResource ConnectionNormalBrush}"/>
+        <Setter Property="IsHitTestVisible" Value="False"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsHovered}" Value="True">
+                <Setter Property="Fill" Value="{DynamicResource ConnectionHoverBrush}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                <Setter Property="Fill" Value="{DynamicResource ConnectionSelectedBrush}"/>
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
     
     <!-- 预览线样式 -->

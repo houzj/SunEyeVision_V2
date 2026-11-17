@@ -115,9 +115,9 @@ public sealed class DivideImageDeclarationTests
             Assert.Equal(0, field.Layout.DecimalPlaces!.Value);
         });
         Assert.Equal(1d, fields[DivideImageFields.Columns].Layout!.Minimum!.Value);
-        Assert.Null(fields[DivideImageFields.Columns].Layout!.Maximum);
+        Assert.Equal((double)DivideImageFields.MaximumDivisionsPerAxis, fields[DivideImageFields.Columns].Layout!.Maximum!.Value);
         Assert.Equal(0d, fields[DivideImageFields.OverlapX].Layout!.Minimum!.Value);
-        Assert.Equal(99d, fields[DivideImageFields.OverlapX].Layout!.Maximum!.Value);
+        Assert.Equal(100d, fields[DivideImageFields.OverlapX].Layout!.Maximum!.Value);
     }
 
     [Fact]
@@ -155,7 +155,7 @@ public sealed class DivideImageDeclarationTests
         Assert.Throws<ArgumentException>(() => DivideImageTiling.Split(100, 0, 0, "X"));
         Assert.Throws<ArgumentException>(() => DivideImageTiling.Split(0, 2, 0, "X"));
         Assert.Throws<ArgumentException>(() => DivideImageTiling.Split(100, 2, -1, "X"));
-        Assert.Throws<ArgumentException>(() => DivideImageTiling.Split(100, 2, 100, "X"));
+        Assert.Throws<ArgumentException>(() => DivideImageTiling.Split(100, 2, 101, "X"));
     }
 
     [Fact]
@@ -184,7 +184,7 @@ public sealed class DivideImageDeclarationTests
         Assert.Equal("DIVIDE_IMAGE_ROWS", rows.Code);
         Assert.Equal(DivideImageFields.Rows, rows.FieldId);
 
-        var overlapX = Assert.Single(new DivideImageSettings { OverlapX = 100 }.Validate());
+        var overlapX = Assert.Single(new DivideImageSettings { OverlapX = 101 }.Validate());
         Assert.Equal("DIVIDE_IMAGE_OVERLAP_X", overlapX.Code);
         Assert.Equal(DivideImageFields.OverlapX, overlapX.FieldId);
 
@@ -255,8 +255,12 @@ public sealed class DivideImageDeclarationTests
         var invalid = Assert.Single(tool.ValidateKnownSettings(Known(0, 1, 0, 0)));
         Assert.Equal("DIVIDE_IMAGE_COLUMNS", invalid.Code);
         Assert.Equal(DivideImageFields.Columns, invalid.FieldId);
-        Assert.Single(tool.ValidateKnownSettings(Known(1, 1, 100, 0)));
+        Assert.Single(tool.ValidateKnownSettings(Known(1, 1, 101, 0)));
+        // 100% 是原厂声明上界，必须被接受。
+        Assert.Empty(tool.ValidateKnownSettings(Known(3, 3, 100, 100)));
         Assert.Empty(tool.ValidateKnownSettings(Known(3, 3, 99, 99)));
+        // 原厂 NumX/NumY 上界 50，51 必须被拒绝。
+        Assert.Single(tool.ValidateKnownSettings(Known(51, 1, 0, 0)));
     }
 
     [Fact]

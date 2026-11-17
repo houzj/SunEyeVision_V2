@@ -19,9 +19,9 @@ public sealed record DivideImageSettings : IToolSettings<DivideImageSettings>
     public IReadOnlyList<Diagnostic> Validate()
     {
         var errors = new List<Diagnostic>();
-        if (Columns < 1)
+        if (Columns < 1 || Columns > DivideImageFields.MaximumDivisionsPerAxis)
             errors.Add(new("DIVIDE_IMAGE_COLUMNS", "X方向划片数量必须≥1。", DivideImageFields.Columns));
-        if (Rows < 1)
+        if (Rows < 1 || Rows > DivideImageFields.MaximumDivisionsPerAxis)
             errors.Add(new("DIVIDE_IMAGE_ROWS", "Y方向划片数量必须≥1。", DivideImageFields.Rows));
         if (OverlapX is < DivideImageFields.MinimumOverlapPercent or > DivideImageFields.MaximumOverlapPercent)
             errors.Add(new("DIVIDE_IMAGE_OVERLAP_X",

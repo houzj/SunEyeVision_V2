@@ -34,10 +34,8 @@ internal sealed class DivideImageSession : IToolSession<DivideImageSettings, Div
         if (errors.Count != 0) return new(false, null, BusinessJudgment.NotEvaluated, errors);
         var image = invocation.Inputs.Get<IReadOnlyImage>(DivideImageTool.ImageInput);
         ResourceContractRules.ValidateImage(image);
-        var requested = (long)settings.Columns * settings.Rows;
-        if (requested > DivideImageFields.MaximumTileCount)
-            return ToolOutcome<DivideImageOutput>.Failed("DIVIDE_IMAGE_TILE_COUNT",
-                $"分片总数 {requested} 超出上限 {DivideImageFields.MaximumTileCount}。");
+        // 原厂单轴划片数上限 50（NumX/NumY 范围 1~50），分片总数最大 2500，
+        // 已由字段域校验覆盖，此处不再保留额外的总数防御分支。
 
         var started = Stopwatch.GetTimestamp();
         try

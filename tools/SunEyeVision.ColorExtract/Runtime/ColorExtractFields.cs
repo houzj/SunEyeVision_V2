@@ -14,7 +14,11 @@ public static class ColorExtractFields
     /// <summary>原厂 RangeAreaLimit 上限（AreaLimitHigh）。</summary>
     public const string AreaLimitHigh = "proc.area-limit-high";
 
-    public const int MinimumAreaLimit = 1;
+    /// <summary>
+    /// 面积下界 0：原厂 <c>IMVSColorExtractModuAlgorithmTab.xml</c> 声明
+    /// <c>AreaLimitLow/AreaLimitHigh</c> 范围均为 0~9999999（验收 D2 证据）。
+    /// </summary>
+    public const int MinimumAreaLimit = 0;
     /// <summary>原厂 AreaLimitHigh DefaultValue=9999999。</summary>
     public const int MaximumAreaLimit = 9999999;
 

@@ -53,7 +53,7 @@
         "choices": "",
         "page": "基本参数",
         "section": "参数设置",
-        "min": "1",
+        "min": "0",
         "max": "9999999",
         "increment": "1",
         "decimals": "0",
@@ -66,7 +66,7 @@
         "choices": "",
         "page": "基本参数",
         "section": "参数设置",
-        "min": "1",
+        "min": "0",
         "max": "9999999",
         "increment": "1",
         "decimals": "0",
@@ -86,7 +86,7 @@
         "page": "基本参数",
         "section": "划片参数",
         "min": "1",
-        "max": null,
+        "max": "50",
         "increment": "1",
         "decimals": "0",
         "advanced": "False"
@@ -99,7 +99,7 @@
         "page": "基本参数",
         "section": "划片参数",
         "min": "1",
-        "max": null,
+        "max": "50",
         "increment": "1",
         "decimals": "0",
         "advanced": "False"
@@ -112,7 +112,7 @@
         "page": "基本参数",
         "section": "划片参数",
         "min": "0",
-        "max": "99",
+        "max": "100",
         "increment": "1",
         "decimals": "0",
         "advanced": "False"
@@ -125,7 +125,7 @@
         "page": "基本参数",
         "section": "划片参数",
         "min": "0",
-        "max": "99",
+        "max": "100",
         "increment": "1",
         "decimals": "0",
         "advanced": "False"

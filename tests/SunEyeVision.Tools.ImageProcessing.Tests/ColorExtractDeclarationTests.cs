@@ -103,7 +103,7 @@ public sealed class ColorExtractDeclarationTests
         var high = fields[ColorExtractFields.AreaLimitHigh];
         Assert.Equal(ColorExtractFields.AreaLimitHigh, low.Layout!.PairWith);
         Assert.Equal("面积上限", low.Layout.PairDisplayName);
-        Assert.Equal(1d, low.Layout.Minimum!.Value);
+        Assert.Equal(0d, low.Layout.Minimum!.Value);
         Assert.Equal(9999999d, low.Layout.Maximum!.Value);
         Assert.Equal(0, low.Layout.DecimalPlaces!.Value);
         foreach (var field in new[] { low, high })

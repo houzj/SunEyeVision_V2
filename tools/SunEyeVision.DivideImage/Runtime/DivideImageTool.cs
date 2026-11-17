@@ -59,8 +59,8 @@ public sealed class DivideImageTool : IToolDefinition<DivideImageSettings, Divid
     {
         ArgumentNullException.ThrowIfNull(settings);
         var errors = new List<Diagnostic>();
-        CheckInteger(settings, DivideImageFields.Columns, "X方向划片数量", 1, null, "DIVIDE_IMAGE_COLUMNS", errors);
-        CheckInteger(settings, DivideImageFields.Rows, "Y方向划片数量", 1, null, "DIVIDE_IMAGE_ROWS", errors);
+        CheckInteger(settings, DivideImageFields.Columns, "X方向划片数量", 1, DivideImageFields.MaximumDivisionsPerAxis, "DIVIDE_IMAGE_COLUMNS", errors);
+        CheckInteger(settings, DivideImageFields.Rows, "Y方向划片数量", 1, DivideImageFields.MaximumDivisionsPerAxis, "DIVIDE_IMAGE_ROWS", errors);
         CheckInteger(settings, DivideImageFields.OverlapX, "X方向重叠率",
             DivideImageFields.MinimumOverlapPercent, DivideImageFields.MaximumOverlapPercent, "DIVIDE_IMAGE_OVERLAP_X", errors);
         CheckInteger(settings, DivideImageFields.OverlapY, "Y方向重叠率",

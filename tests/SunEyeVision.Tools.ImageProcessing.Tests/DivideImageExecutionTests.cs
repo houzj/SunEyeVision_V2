@@ -121,29 +121,22 @@ public sealed class DivideImageExecutionTests
     }
 
     [Fact]
-    public async Task Overlap_of_one_hundred_percent_is_rejected()
+    public async Task Overlap_of_one_hundred_percent_is_accepted_and_above_is_rejected()
     {
+        // 原厂 IMVSDivideImageModuAlgorithmTab.xml 声明 OverlaprateX/Y 范围 0~100，
+        // 因此 100% 必须被接受（各方向分片位置重合），101% 才越界。
         using var resources = new FrozenOutputResources();
         var image = resources.CreateGray8(4, 4, new byte[16]);
         await using var session = new DivideImageTool().CreateSession();
-        var outcome = await ExecuteAsync(session,
+        var accepted = await ExecuteAsync(session,
             new DivideImageSettings { Columns = 2, OverlapX = 100 }, ImageInput(image), resources);
-        Assert.False(outcome.Success);
-        Assert.Equal("DIVIDE_IMAGE_OVERLAP_X", Assert.Single(outcome.Diagnostics).Code);
-    }
+        Assert.True(accepted.Success);
 
-    [Fact]
-    public async Task Tile_count_above_the_product_limit_is_rejected()
-    {
-        using var resources = new FrozenOutputResources();
-        var image = resources.CreateGray8(4, 4, new byte[16]);
-        await using var session = new DivideImageTool().CreateSession();
-        var outcome = await ExecuteAsync(session,
-            new DivideImageSettings { Columns = 300, Rows = 300 }, ImageInput(image), resources);
-        Assert.False(outcome.Success);
-        var diagnostic = Assert.Single(outcome.Diagnostics);
-        Assert.Equal("DIVIDE_IMAGE_TILE_COUNT", diagnostic.Code);
-        Assert.Contains(DivideImageFields.MaximumTileCount.ToString(), diagnostic.Message);
+        await using var rejecting = new DivideImageTool().CreateSession();
+        var rejected = await ExecuteAsync(rejecting,
+            new DivideImageSettings { Columns = 2, OverlapX = 101 }, ImageInput(image), resources);
+        Assert.False(rejected.Success);
+        Assert.Equal("DIVIDE_IMAGE_OVERLAP_X", Assert.Single(rejected.Diagnostics).Code);
     }
 
     [Fact]

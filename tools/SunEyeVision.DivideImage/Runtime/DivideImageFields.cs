@@ -24,16 +24,17 @@ public static class DivideImageFields
     /// <summary>重叠率下界（无重叠）。</summary>
     public const int MinimumOverlapPercent = 0;
     /// <summary>
-    /// 重叠率上界取 99：100% 时所有分片完全重合、失去划片意义。
-    /// 原厂是否允许 100 未取证（见交接单未确认项），因此按显式上限拒绝而不是静默截断。
+    /// 重叠率上界 100：原厂 <c>IMVSDivideImageModuAlgorithmTab.xml</c> 声明
+    /// <c>OverlaprateX/Y</c> 范围为 0~100，默认 0（验收 D2 证据）。
+    /// 100% 时按公式 <c>wTile=W</c>、<c>stepX=0</c>，各列分片位置重合但仍产出 nX×nY 个分片。
     /// </summary>
-    public const int MaximumOverlapPercent = 99;
+    public const int MaximumOverlapPercent = 100;
 
     /// <summary>
-    /// 分片总数保护上限。原厂是否有分片数量上限未取证；此处只是防止把笔误（例如把 40 输成 4000）
-    /// 变成上千万个结果行的产品侧保护，命中即报错，不做静默截断。
+    /// 单方向划片数上界 50：原厂 <c>NumX/NumY</c> 声明范围 1~50（同上证据）。
     /// </summary>
-    public const int MaximumTileCount = 65536;
+    public const int MaximumDivisionsPerAxis = 50;
+
 
     private static readonly TypeRef Integer = DataType.Integer;
 
@@ -51,11 +52,11 @@ public static class DivideImageFields
     {
         new FieldPresentation(Columns, "X方向划片数量", Section, 0, FieldEditorKind.Scalar)
         {
-            Layout = new(Page, Section, Minimum: 1, DecimalPlaces: 0, AllowReference: false)
+            Layout = new(Page, Section, Minimum: 1, Maximum: MaximumDivisionsPerAxis, DecimalPlaces: 0, AllowReference: false)
         },
         new FieldPresentation(Rows, "Y方向划片数量", Section, 1, FieldEditorKind.Scalar)
         {
-            Layout = new(Page, Section, Minimum: 1, DecimalPlaces: 0, AllowReference: false)
+            Layout = new(Page, Section, Minimum: 1, Maximum: MaximumDivisionsPerAxis, DecimalPlaces: 0, AllowReference: false)
         },
         new FieldPresentation(OverlapX, "X方向重叠率 (%)", Section, 2, FieldEditorKind.Scalar)
         {

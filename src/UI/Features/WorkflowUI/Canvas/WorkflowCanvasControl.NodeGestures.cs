@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -230,14 +230,13 @@ delta = new Vector(Math.Round((left + delta.X) / 5) * 5 - left, Math.Round((top 
                 Math.Clamp(pair.Value.Y + delta.Y, height / 2, 5000 - height / 2));
         }
 
-        // 预览：一个根容器装全部节点快照，之后整体只改容器坐标（与原件 AdornerPanel 同构）。
-        // 生命周期只有三处：Ensure 建、改坐标移、Dispose 清，避免多份状态不同步导致预览时有时无。
         EnsureCanvasNodePreview(session);
         if (session.Preview is not null)
         {
-            System.Windows.Controls.Canvas.SetLeft(session.Preview.Layer, session.FrameRect.X + 10 + delta.X);
-            System.Windows.Controls.Canvas.SetTop(session.Preview.Layer, session.FrameRect.Y + 10 + delta.Y);
-        }        if (session.After.Count == 1)
+            // 原件 UIElementAdorner.SetOffsets：只改 TranslateTransform 并刷新 Adorner 层，不触碰画布布局。
+            session.Preview.SetOffsets(delta.X, delta.Y);
+        }
+        if (session.After.Count == 1)
         {
             var single = session.After.Single();
             UpdateCanvasPlacementFeedback(single.Value, single.Key.NodeRect.Height, session.Before.Keys.Select(n => n.Id));
@@ -268,10 +267,8 @@ delta = new Vector(Math.Round((left + delta.X) / 5) * 5 - left, Math.Round((top 
         var adornerLayer = System.Windows.Documents.AdornerLayer.GetAdornerLayer(WorkflowCanvas);
         if (adornerLayer is null) return;
         var adorner = new DragPreviewAdorner(WorkflowCanvas);
-        var originX = frame.X + 10; var originY = frame.Y + 10;
-        adorner.Layer.Width = frame.Width - 20;
-        adorner.Layer.Height = frame.Height - 20;
         adorner.Layer.Opacity = .7;
+
         foreach (var pair in session.Before)
         {
             var visual = FindCanvasNodeVisual(WorkflowCanvas, pair.Key);
@@ -284,13 +281,11 @@ delta = new Vector(Math.Round((left + delta.X) / 5) * 5 - left, Math.Round((top 
                 Fill = new VisualBrush(visual) { Stretch = Stretch.None }
             };
             System.Windows.Controls.Canvas.SetLeft(ghost,
-                pair.Value.X - pair.Key.NodeRect.Width / 2 - 10 + bounds.X - originX);
+                pair.Value.X - pair.Key.NodeRect.Width / 2 - 10 + bounds.X);
             System.Windows.Controls.Canvas.SetTop(ghost,
-                pair.Value.Y - pair.Key.NodeRect.Height / 2 - 10 + bounds.Y - originY);
+                pair.Value.Y - pair.Key.NodeRect.Height / 2 - 10 + bounds.Y);
             adorner.Layer.Children.Add(ghost);
         }
-        System.Windows.Controls.Canvas.SetLeft(adorner.Layer, originX);
-        System.Windows.Controls.Canvas.SetTop(adorner.Layer, originY);
         adornerLayer.Add(adorner);
         session.Preview = adorner;
     }
@@ -299,7 +294,8 @@ delta = new Vector(Math.Round((left + delta.X) / 5) * 5 - left, Math.Round((top 
     {
         if (session.Preview is not null)
         {
-            WorkflowCanvas.Children.Remove(session.Preview);
+            // 原件同样从 AdornerLayer 移除，不能从画布 Children 移除（它会一直留在层里叠加）。
+            System.Windows.Documents.AdornerLayer.GetAdornerLayer(WorkflowCanvas)?.Remove(session.Preview);
             session.Preview = null;
         }
         foreach (var line in session.AlignLines) WorkflowCanvas.Children.Remove(line);

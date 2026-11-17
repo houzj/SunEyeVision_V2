@@ -89,5 +89,16 @@
       <EntryType>SunEyeVision.Tool.MarkFind.Wpf.MarkFindEditorFactory</EntryType>
       <CompanionToolId>MarkFind</CompanionToolId>
     </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.ContourMatch/Runtime/SunEyeVision.ContourMatch.Runtime.csproj">
+      <ComponentId>SunEyeVision.Tool.ContourMatch.Runtime</ComponentId>
+      <ToolId>ContourMatch</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.ContourMatch.Runtime.ContourMatchTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.ContourMatch/Wpf/SunEyeVision.ContourMatch.Wpf.csproj">
+      <ComponentId>SunEyeVision.Tool.ContourMatch.Wpf</ComponentId>
+      <ToolId>ContourMatch</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.ContourMatch.Wpf.ContourMatchEditorFactory</EntryType>
+      <CompanionToolId>ContourMatch</CompanionToolId>
+    </ProductToolComponent>
   </ItemGroup>
 </Project>

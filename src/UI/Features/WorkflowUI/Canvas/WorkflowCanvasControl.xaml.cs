@@ -1695,6 +1695,11 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
             }
             else
             {
+                // 原件 DiagramPage.xaml.cs:554-557 / ItemsPage.cs:594-602：面板失焦即收起框选外包框，
+                // 但节点选中保持——两者是独立状态，点击空白只清外包框。
+                _canvasBoxSelectionActive = false;
+                ClearCanvasSelectionFrame();
+
                 // 原件 ItemsPage.OnMouseLeftButtonDown（ItemsPage.cs:582-592）：点击空白仅进入框选准备，不清除既有选中。
                 _isBoxSelecting = true; _boxSelectStart = _mouseDownPosition;
                 SelectionBox?.StartSelection(_boxSelectStart);

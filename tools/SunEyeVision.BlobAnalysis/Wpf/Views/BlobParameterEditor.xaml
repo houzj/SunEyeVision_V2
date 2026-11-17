@@ -6,5 +6,5 @@
  xmlns:parameters="clr-namespace:SunEyeVision.Plugin.Wpf.Presenters.Parameters;assembly=SunEyeVision.Plugin.Wpf"
  xmlns:design="clr-namespace:SunEyeVision.Tool.BlobAnalysis.Wpf.Design"
  mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="680">
- <parameters:DeclaredSettingsView x:Name="Editor" SelectedPageIndex="0" design:BlobDesignData.ParameterSample="True"/>
+ <parameters:DeclaredSettingsView x:Name="Editor" SelectedPageIndex="1" design:BlobDesignData.ParameterSample="True"/>
 </UserControl>

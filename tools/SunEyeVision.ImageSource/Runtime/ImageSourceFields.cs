@@ -61,7 +61,7 @@ public static class ImageSourceFields
     },Array.Empty<Port>(),new ToolPresentation(new[] {
         Choice(SourceKind,"图像源","基本参数",0,new[]{"local","camera","sdk"},new[]{"本地图像","相机","SDK"}),
         Choice(OutputFormat,"像素格式","基本参数",10,new[]{"mono8","rgb24","original"},new[]{"MONO8","RGB24","保持原图"},"local"),
-        new FieldPresentation(SaveImages,"保存图像","基本参数",15,FieldEditorKind.Scalar) {
+        new FieldPresentation(SaveImages,"方案存图","基本参数",15,FieldEditorKind.Scalar) {
             Layout=new("基本参数","基本参数",VisibleWhen:new(SourceKind,"local"),AllowReference:false,BooleanTips:new("最大保存120张图片"))},
         new FieldPresentation(OutputMono8,"输出Mono8","基本参数",70,FieldEditorKind.Scalar) {
             Layout=new("基本参数","基本参数",VisibleWhen:new(OutputFormat,"mono8",Negate:true),
@@ -82,7 +82,7 @@ public static class ImageSourceFields
             Layout=new("基本参数","订阅图片文件夹",VisibleWhen:new(SubscribeFolder,true),AllowReference:false)},
         new FieldPresentation(TriggerFolderRun,"触发流程运行","订阅图片文件夹",203,FieldEditorKind.Scalar) {
             Layout=new("基本参数","订阅图片文件夹",VisibleWhen:new(SubscribeFolder,true),AllowReference:false)},
-        new FieldPresentation(StitchEnabled,"拼接图像","基本参数",80,FieldEditorKind.Scalar) {
+        new FieldPresentation(StitchEnabled,"拼接使能","基本参数",80,FieldEditorKind.Scalar) {
             Layout=new("基本参数","基本参数",AllowReference:false)},
         new FieldPresentation(StitchStart,"拼接起始高度","基本参数",81,FieldEditorKind.Scalar) {
             Layout=new("基本参数","基本参数",VisibleWhen:new(StitchEnabled,true),Minimum:0,Maximum:20000,DecimalPlaces:0,AllowReference:false)},

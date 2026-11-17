@@ -59,7 +59,20 @@
 - 我方运行参数：`.codebuddy/tmp/our_blob_p1.png`
 - 我方结果显示：`.codebuddy/tmp/our_blob_disp.png`
 
-## 5 待办
+## 5 处理尝试与阻塞（重要）
+
+按「对齐原厂」口径尝试移除 `BlobDisplayUi.cs` 中 `BlobResultDisplay.Centroids` 图形组，结果参数页**组装失败**：
+
+```
+ERROR [MainWindowViewModel] 所有图形分组都需要显式完整角色配置。
+INFO  参数页组装失败：所有图形分组都需要显式完整角色配置。
+```
+
+原因：框架在 `DeclaredFieldsView.Displays.cs` 校验「声明里所有带 DialogGroup 的字段，其分组集合必须与提供的图形组集合完全相等」。只要 presentation 里仍声明 `presentation.graphics.centroids.*`，就不能少给该组。
+
+**已回滚**，参数页恢复正常。真正对齐需要连同 `BlobPresentation` 里的 centroids 字段声明一起移除（涉及显示设置 schema 与可能的测试断言），列为 P2 待办，不在本轮强改。
+
+## 6 待办
 
 1. 复核图像显示完整列表（滚动方案：改用 `scroll` 命令指向列表元素，或临时拉高参数窗）
 2. 汇总到全量对照报告后统一决定「按原厂改名/改序」还是「保留我方口径」

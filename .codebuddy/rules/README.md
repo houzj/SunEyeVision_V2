@@ -23,6 +23,7 @@ provider:
 │   └── version-single-source.mdc     # rule-022 版本号单一真源
 ├── 02-development-process/
 │   ├── solution-design.mdc           # rule-004 方案设计
+│   ├── vm-evidence-first.mdc        # rule-023 原厂证据先行
 │   ├── prototype-design-clean-principle.mdc  # rule-008 开发与代码纯净
 │   ├── solution-system-implementation.mdc    # rule-010 方案系统实现
 │   ├── parameter-system-constraints.mdc      # rule-012 参数系统

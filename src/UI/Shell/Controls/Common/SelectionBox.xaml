@@ -1,4 +1,5 @@
 <UserControl x:Class="SunEyeVision.UI.Shell.Controls.Common.SelectionBox"
+
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -6,14 +7,26 @@
              mc:Ignorable="d"
              d:DesignHeight="100" d:DesignWidth="100"
              Visibility="Collapsed">
+    <!-- 框选视觉对齐原件 rectdragpanalbasestyle.xaml：橙虚线 5,2 + 圆角3 + 极淡橙渐变 + 投影 -->
     <Canvas>
         <Border x:Name="SelectionBorder"
-                BorderBrush="#3F51B5"
+                CornerRadius="3"
+                BorderBrush="#7FDA780F"
                 BorderThickness="2"
-                Background="#3F51B533"
-                Visibility="Collapsed"/>
+                Visibility="Collapsed">
+            <Rectangle Stroke="#7FDA780F" StrokeThickness="2" StrokeDashArray="5,2" RadiusX="3" RadiusY="3"/>
+            <Border.Background>
+                <LinearGradientBrush EndPoint="0,1" StartPoint="0,0" Opacity="0.03">
+                    <GradientStop Color="#FFC6570C" Offset="0"/>
+                    <GradientStop Color="#FFFD8112" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Border.Effect>
+                <DropShadowEffect Color="Black" Opacity="0.65" ShadowDepth="4"/>
+            </Border.Effect>
+        </Border>
         <TextBlock x:Name="ItemCountText"
-                   Foreground="#3F51B5"
+                   Foreground="#FFA70F"
                    FontSize="12"
                    FontWeight="Bold"
                    Visibility="Collapsed"/>

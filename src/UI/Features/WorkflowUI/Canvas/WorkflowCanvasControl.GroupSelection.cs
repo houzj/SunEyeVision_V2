@@ -28,7 +28,9 @@ public partial class WorkflowCanvasControl
         DrawCanvasSelectionFrame();
     }
     /// <summary>外包框当前几何（原件 RectDragPanalRect），供批量移动双层预览使用。</summary>
-    internal Rect? CanvasBoxSelectionRect => _canvasSelectionFrame is null ? Rect.Empty :
+    // 原件 DiagramPage.xaml.cs:649 的 RectDragPanalRect：无框选时为空(null)，不是 Rect.Empty。
+    // 返回 Rect.Empty 会让Nullable有值且坐标为负无穷，导致快照层被创建却不可见。
+    internal Rect? CanvasBoxSelectionRect => _canvasSelectionFrame is null ? null :
         new Rect(System.Windows.Controls.Canvas.GetLeft(_canvasSelectionFrame),
                  System.Windows.Controls.Canvas.GetTop(_canvasSelectionFrame),
                  _canvasSelectionFrame.Width, _canvasSelectionFrame.Height);

@@ -291,16 +291,15 @@ delta = new Vector(Math.Round((left + delta.X) / 5) * 5 - left, Math.Round((top 
         // 有外包框（CurBoxOfItems）时才画第二层，单节点拖动没有这一层。
         if (session.Before.Count > 1 && CanvasBoxSelectionRect is { } boxRect)
         {
+            // 原件 rectdragpanalbasestyle.xaml：橙虚线5,2 + 圆角3 + 极淡橙渐变。
+            // 不直接用 VisualBrush(原框)——源与快照同元素会造成重入，原件用的是独立 rectDragMask。
             var frameGhost = new Rectangle
             {
-                Width = boxRect.Width, Height = boxRect.Height,
-                IsHitTestVisible = false,
-                Fill = new VisualBrush(_canvasSelectionFrame!)
-                {
-                    Viewbox = new Rect(0, 0, boxRect.Width, boxRect.Height),
-                    ViewboxUnits = BrushMappingMode.Absolute,
-                    Stretch = Stretch.None
-                }
+                Width = boxRect.Width, Height = boxRect.Height, RadiusX = 3, RadiusY = 3,
+                Stroke = new SolidColorBrush(Color.FromArgb(127, 218, 120, 15)),
+                StrokeThickness = 2, StrokeDashArray = new DoubleCollection { 5, 2 },
+                Fill = new LinearGradientBrush(Color.FromArgb(8, 198, 87, 12), Color.FromArgb(8, 253, 129, 18), 90),
+                IsHitTestVisible = false
             };
             System.Windows.Controls.Canvas.SetLeft(frameGhost, boxRect.X);
             System.Windows.Controls.Canvas.SetTop(frameGhost, boxRect.Y);

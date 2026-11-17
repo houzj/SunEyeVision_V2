@@ -9,12 +9,12 @@ namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 public static class BlobResultDisplay
 {
     public const string Graphic="display.blob";
-    public const string Centroids="display.centroids";
     public const string InnerRectangle="display.inner-rectangle";
     public const string ReferencePoint="display.reference-point", RunPoint="display.run-point";
     public const string Text="display.text";
     public const string Outline="display.outline";
     public const string Inspection="display.inspection",Mask="display.mask",Annulus="display.annulus";
+    public const string Centroids="display.centroids";
     public static string Field(string group,string role)=>group+"."+role;
     private sealed record Definition(Port Port,FieldPresentation Presentation,object Value);
     private static readonly IReadOnlyList<Definition> Definitions=Build();
@@ -39,7 +39,7 @@ public static class BlobResultDisplay
                 DialogGroup:dialog,DialogTitle:dialog is null?null:dialog switch
                 {
                     InnerRectangle=>"最大内接矩形",Inspection=>"检测区域",Mask=>"屏蔽区多边形",Annulus=>"扇环检测区域",
-                    Centroids=>"质心",ReferencePoint=>"基准点",RunPoint=>"运行点",_=>"Blob"
+                    ReferencePoint=>"基准点",RunPoint=>"运行点",_=>"Blob"
                 },DialogPrimary:primary)},value));
         }
         var ok=PresentationDeclarations.Color(102,255,0);var ng=PresentationDeclarations.Color(255,0,0);

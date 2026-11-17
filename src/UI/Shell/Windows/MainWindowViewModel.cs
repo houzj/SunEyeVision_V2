@@ -1,4 +1,4 @@
-using SunEyeVision.Plugin.Editing.Wpf;
+﻿using SunEyeVision.Plugin.Editing.Wpf;
 using SunEyeVision.Plugin.Runtime;
 using System;
 using System.Collections.Generic;
@@ -966,20 +966,6 @@ SplitterPosition = position;
         {
             var tab=WorkflowTabViewModel.SelectedTab;
             if(tab is null||tab.IsInSubroutine){StatusText="只能运行当前实际根流程。";return;}
-// 原件执行防呆：模块参数未配置完整时不进入执行，弹窗提示后中止。
-            // 证据：原厂实机提示「流程:1:3 灰度匹配1 模块参数未配置完整」，执行被拦截且节点状态不变。
-            var incompleteNode=tab.WorkflowNodes.FirstOrDefault(node=>node.HasUnconfiguredRequiredInputs);
-            if(incompleteNode is not null)
-            {
-                // 多流程场景下第二个数字应为页签序号，当前单流程固定 1。
-                var guarded=$"流程:1:{incompleteNode.GlobalIndex} {incompleteNode.DispName} 模块参数未配置完整";
-                StatusText=guarded;
-                System.Windows.MessageBox.Show(
-                    System.Windows.Application.Current?.MainWindow,
-                    guarded,"提示",System.Windows.MessageBoxButton.OK,System.Windows.MessageBoxImage.Error);
-                return;
-            }
-
             try{await RunFormalWorkflowsAsync(new[]{tab.RootWorkflowId});}
             catch(OperationCanceledException){StatusText="正式运行已取消并排空。";}
             catch(Exception error){StatusText="正式运行失败："+error.Message;AddLog(StatusText);}

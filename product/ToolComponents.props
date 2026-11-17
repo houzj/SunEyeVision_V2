@@ -89,5 +89,16 @@
       <EntryType>SunEyeVision.Tool.MarkFind.Wpf.MarkFindEditorFactory</EntryType>
       <CompanionToolId>MarkFind</CompanionToolId>
     </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.IntensityMeasure/Runtime/SunEyeVision.IntensityMeasure.Runtime.csproj">
+      <ComponentId>SunEyeVision.Tool.IntensityMeasure.Runtime</ComponentId>
+      <ToolId>IntensityMeasure</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.IntensityMeasure.Runtime.IntensityMeasureTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.IntensityMeasure/Wpf/SunEyeVision.IntensityMeasure.Wpf.csproj">
+      <ComponentId>SunEyeVision.Tool.IntensityMeasure.Wpf</ComponentId>
+      <ToolId>IntensityMeasure</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.IntensityMeasure.Wpf.IntensityMeasureEditorFactory</EntryType>
+      <CompanionToolId>IntensityMeasure</CompanionToolId>
+    </ProductToolComponent>
   </ItemGroup>
 </Project>

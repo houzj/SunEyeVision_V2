@@ -12,7 +12,7 @@ namespace SunEyeVision.Tool.BlobLabels.Wpf.Views;
 /// 阈值区域列表按原件 <c>ThresholdAreaPanel</c> 行为挂在「标签面积使能」之后。
 /// 宿主仍独占执行、捕获与释放。
 /// </summary>
-public partial class BlobLabelsParameterEditor : UserControl, IToolSettingsView
+public partial class BlobLabelsParameterEditor : UserControl, IToolSettingsView, IToolSettingsViewReady
 {
     private BlobLabelsThresholdAreaPanel? _thresholdPanel;
     private bool _disposed;
@@ -60,6 +60,8 @@ public partial class BlobLabelsParameterEditor : UserControl, IToolSettingsView
         => Editor.ReadNumericModels(scope, fieldId);
     public event Action? Changed { add => Editor.Changed += value; remove => Editor.Changed -= value; }
     public bool TryCapture(out FieldSettings fields, out string error) => Editor.TryCapture(out fields, out error);
+    /// <summary>参数页就绪信号：阈值区域面板在 Bind 内同步构建完成，无异步依赖。</summary>
+    public Task ReadyTask => Task.CompletedTask;
 
     public void Dispose()
     {

@@ -1725,7 +1725,9 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
             var area = SelectionBox?.GetSelectionRect() ?? Rect.Empty;
             var tab = _viewModel?.WorkflowTabViewModel.SelectedTab;
             if (tab == null) return;
-            foreach (var node in tab.WorkflowNodes.OfType<CanvasNodeProjection>()) node.IsSelected = area.Contains(node.NodeRect);
+            // 原件框选（ItemsPage.cs:642-651）：拖框过程与结束都只按矩形"追加"框内节点，
+            // 不取消框外节点——点击空白取消选中正是这条实时清除路径造成的。
+            foreach (var node in tab.WorkflowNodes.OfType<CanvasNodeProjection>()) { if (area.Contains(node.NodeRect)) node.IsSelected = true; }
             foreach (var connection in tab.WorkflowConnections) connection.IsSelected = false;
             SelectionBox?.SetItemCount(tab.WorkflowNodes.Count(n => n.IsSelected));
             e.Handled = true;

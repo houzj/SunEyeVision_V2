@@ -219,22 +219,21 @@ public partial class WorkflowCanvasControl
                 Math.Clamp(pair.Value.Y + delta.Y, height / 2, 5000 - height / 2));
             session.After[node] = position;
         }
-            // 原件 DiagramPage_PreviewMouseMove（DiagramPage.xaml.cs:636-643）：
-            // 原件 DiagramPage_PreviewMouseMove（DiagramPage.xaml.cs:636-643）：
-            // 批量移动的预览是"整个包围框一张 VisualBrush 快照"（Viewbox=RectDragPanalRect，0.7 不拉伸），
-            // 而不是每个节点各画一个镜像——这样拖动时所有节点作为整体一起平移。
-            var frameRect = session.FrameRect;
+            // 预览镜像：每个节点各取一张 0.7 VisualBrush 快照，统一按同一 delta 平移，视觉上等效整体移动。
+            // 原件（DiagramPage.xaml.cs:636-643）用"节点层 Canvas + Viewbox=包围框"的单张快照，
+            // 我方画布没有独立节点层，若直接用 WorkflowCanvas 作源会把 ghost 自身也画进去（自引用渲染空白）。
+            foreach (var pair in session.Before)
             {
-                var oldCenter = new Point(session.Before.Values.Average(p => p.X), session.Before.Values.Average(p => p.Y));
-                var newCenter = new Point(oldCenter.X + delta.X, oldCenter.Y + delta.Y);
-                var brush = new VisualBrush(WorkflowCanvas)
-                {
-                    Viewbox = frameRect, ViewboxUnits = BrushMappingMode.Absolute,
-                    Stretch = Stretch.None, Opacity = .7
-                };
-                var ghost = new Rectangle { Width = frameRect.Width, Height = frameRect.Height, Fill = brush, IsHitTestVisible = false };
-                System.Windows.Controls.Canvas.SetLeft(ghost, newCenter.X - frameRect.Width / 2);
-                System.Windows.Controls.Canvas.SetTop(ghost, newCenter.Y - frameRect.Height / 2);
+                var node = pair.Key;
+                if (!session.After.TryGetValue(node, out var position)) continue;
+                var visual = FindCanvasNodeVisual(WorkflowCanvas, node);
+                if (visual == null) continue;
+                var bounds = VisualTreeHelper.GetDescendantBounds(visual);
+                if (bounds.IsEmpty) continue;
+                var brush = new VisualBrush(visual) { Stretch = Stretch.None, Opacity = .7 };
+                var ghost = new Rectangle { Width = bounds.Width, Height = bounds.Height, Fill = brush, IsHitTestVisible = false };
+                System.Windows.Controls.Canvas.SetLeft(ghost, position.X - node.NodeRect.Width / 2 - 10 + bounds.X);
+                System.Windows.Controls.Canvas.SetTop(ghost, position.Y - node.NodeRect.Height / 2 - 10 + bounds.Y);
                 Panel.SetZIndex(ghost, 9000); WorkflowCanvas.Children.Add(ghost); session.Ghosts.Add(ghost);
             }
         if (session.After.Count == 1)

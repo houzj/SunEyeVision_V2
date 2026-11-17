@@ -27,5 +27,6 @@
     <ProjectReference Include="../../src/Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" />
     <ProjectReference Include="../../tools/SunEyeVision.If/Runtime/SunEyeVision.If.Runtime.csproj" />
     <ProjectReference Include="../../tools/SunEyeVision.PixelCount/Runtime/SunEyeVision.PixelCount.Runtime.csproj" />
+    <ProjectReference Include="../../tools/SunEyeVision.IntensityMeasure/Runtime/SunEyeVision.IntensityMeasure.Runtime.csproj" />
   </ItemGroup>
 </Project>

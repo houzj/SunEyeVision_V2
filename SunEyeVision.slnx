@@ -44,6 +44,10 @@
     <Project Path="tools/SunEyeVision.PixelCount/Runtime/SunEyeVision.PixelCount.Runtime.csproj" />
     <Project Path="tools/SunEyeVision.PixelCount/Wpf/SunEyeVision.PixelCount.Wpf.csproj" />
   </Folder>
+  <Folder Name="/Tools/IntensityMeasureComponents/">
+    <Project Path="tools/SunEyeVision.IntensityMeasure/Runtime/SunEyeVision.IntensityMeasure.Runtime.csproj" />
+    <Project Path="tools/SunEyeVision.IntensityMeasure/Wpf/SunEyeVision.IntensityMeasure.Wpf.csproj" />
+  </Folder>
   <Folder Name="/Src/Foundation/">
     <Project Path="Src/Foundation/SunEyeVision.Foundation.csproj" />
   </Folder>

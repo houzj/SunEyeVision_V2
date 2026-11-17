@@ -218,3 +218,136 @@
 - 未在正式 Release 程序中做人工交互验收（工具箱拖入、参数页显隐、结果页叠加、保存重开）；本次仅完成构建与 Runtime/声明级自动化验证。
 - 未取得原厂运行证据（未启动原厂程序），U1–U5 属本方定义。
 - 结果页叠加依赖宿主对 `output.rows[].region` 与 `output.roi` 的绘制；本线未做 WPF 视觉核验。
+
+## 第五段 · 强度测量（亮度测量）原厂取证
+
+- 基线：`aa3045bcd`（已 `git merge main` 快进）；分支 `feature/tools-logic-data`；执行者 B 线队员（houzj）。
+- 原件：`IMVSIntensityMeasureModu`（Measurement / 亮度测量），卡片状态 `source-partial`，`uiCategory=result-view`。
+
+### 5.1 证据清单（来源可复查，未取到一律标未确认）
+
+| # | 结论 | 证据来源 |
+|---|---|---|
+| E1 | 输入 5 路：`InputImage`(IMAGE)、`InputROI`(ROIBOX)、`InputROIAnnulus`(ROIANNULUS)、`Position Correction Info`(FIXTURE)、`InputMask`(IMAGE) | `docs/07-工具逆向/tools/imvsintensitymeasuremodu/parameters.json:292-733`（294 / 351 / 435 / 529 / 680 行为端口名） |
+| E2 | 输出：`ModuRunTime`(float)、`ModuStatus`(int)、`LumMin`(int)、`LumMax`(int)、`LumMean`(float)、`LumStd`(float)、`LumHistogram`(int 数组)、`HistContrast`(float，`StructName=HistContrast`)、`ROI`(ROIBOX)、`ROIAnnulus`(ROIANNULUS)、`OutputMask`(IMAGE)、`Output Position Correction Info`(Visible=false) | `parameters.json:735-1030`（739 / 750 / 760 / 770 / 780 / 790 / 800 / 811 / 822 / 906 / 1008 行） |
+| E3 | 15 个 `ParamItem`：`MaxValue/MinValue/Mean/Std/Contrast` × `Enable/LimitLow/LimitHigh`；默认 `Enable=False`、`Low=0`、`High=255` | `parameters.json:12-278`（`StdLimitHigh`=255@12、`MeanLimitLow`=0@31、`MaxValueLimitHigh`=255@50、`StdLimitEnable`=False@69、`ContrastLimitEnable`=False@240、`ContrastLimitLow`=0@259、`ContrastLimitHigh`=255@278） |
+| E4 | ROI 输出成员：`DetectCenterX/Y`、`DetectWidth/Height`、`DetectAngle`；扇环输出成员：`DetectAnnulusCenterX/Y`、`InnerRadius/OuterRadius`、`StartAngle/AngleExtend` | `parameters.json:835-995` |
+| E5 | 页面只有两个页签 `Tab_Basic Params` / `ResultShow`；控件 21 项，含 `ROISelecter`(RoiType) 与 5 个 `ImageViewConfig`（`SensorFiled`/`FixtureInitPoint`/`FixtureRunPoint`/`ResutlText`/`CheckZoneAnnular`） | `resources.json:41-134`（uiTabs 41、uiControls 49）；`ui-preview.json:2-87`（ROISelecter@16、SensorFiled@69、FixtureInitPoint@73、ResutlText@81、CheckZoneAnnular@85） |
+| E6 | 两页内容与顺序：基本参数＝ROI区域/输出掩膜/掩膜图像/ROI创建/继承方式/区域(矩形)/区域(圆形)/位置修正；结果显示＝**结果判断**（最大值判断+最大值范围、最小值、均值、标准差、对比度）＋**图像显示**（检测区域/基准点/运行点/文本/扇环检测区域） | `docs/08-工具预览/ui/Measurement-IMVSIntensityMeasureModu.html`（页签 2、分类 3、参数行 49、初始隐藏 36；分类与标签按原件 AlgorithmTab 顺序） |
+| E7 | 算法体（`Process`/`ProcessAlg`、native 统计入口）、逐控件绑定、显隐触发器均无源码级证据 | `docs/07-工具逆向/tools/imvsintensitymeasuremodu/algorithm-semantics.md`（source-partial，三段 unknown）、`ui-preview.json:90-99`（missing 4 条）、`resources.json:145`（inventory-only） |
+
+### 5.2 未确认项（本方定义，已上报）
+
+| # | 未确认 | 本方取值 | 影响 |
+|---|---|---|---|
+| U1 | `HistContrast` 的计算公式（只有单 float 通道，无公式证据） | 取灰度直方图非空量程 = `最大灰度 − 最小灰度`（与原件 `FloatBettween` 的 0..255 量程一致） | 判定口径可能与原件不同；已隔离在 `IntensityMeasureSession.Judge` 前的单行计算，便于按补证替换 |
+| U2 | 判据落在哪个页签的逐控件绑定 | 按 E6 的预览分类放在「结果显示 / 结果判断」 | 若原件确在基本参数页，只需改 `FieldLayout.Page` |
+| U3 | 统计采样是否含掩膜外像素、是否按 ROI 内 domain 逐点 | 有效统计域 = 全图 domain ∩ ROI ∩ 掩膜非零 | 语义明确、可复现，未做原件数值基线对比 |
+| U4 | 是否支持非 8 位灰度 | 只接受 `byte` 图像，其它类型直接报 `INTENSITYMEASURE_PIXEL_FORMAT` | 原件 `LumMin/Max` 为 int、直方图 256 级，故不做浮点取整兜底 |
+| U5 | 判据范围是否可引用前序变量 | 判据开关/范围按原件 ParamItem 语义声明为常量（`AllowReference=false`，与像素统计一致） | 引用能力待框架级统一后开放 |
+
+### 5.3 未实现项（入口不可误用，已从声明中剔除）
+
+| 项 | 原件依据 | 本批处理 |
+|---|---|---|
+| 位置修正（`Position Correction Info` 输入、基准点/运行点显示项、`Output Position Correction Info` 输出） | E1/E2/E5 | 未声明。与像素统计一致，缺回显与修正语义证据 |
+| 扇环回显 `ROIAnnulus`（6 成员） | E2/E4 | 未声明；ROI 合并为单一区域输入后无法区分扇环几何 |
+| `SensorFiled` 显示项与「基本参数」页的 ROI 创建/继承方式/区域参数组 | E5/E6 | 未声明；ROI/掩膜以输入端口承载，参数页不重复造 ROI 参数 |
+
+## 第六段 · 强度测量实现与验证
+
+### 6.1 交付物
+
+| 文件 | 说明 |
+|---|---|
+| `tools/SunEyeVision.IntensityMeasure/Runtime/IntensityMeasureTool.cs` | ToolId=`IntensityMeasure`；端口/投影/显示/引用来源声明，`IToolRuntimeInitialization` 预热 HALCON |
+| `.../Runtime/IntensityMeasureFields.cs` | 15 个判据字段（Int32 整数范围、Float64 浮点范围、显隐门、成对范围） |
+| `.../Runtime/IntensityMeasureSettings.cs` | 设置记录 + 0..255 与上下限校验 |
+| `.../Runtime/IntensityMeasureOutput.cs` | 11 路输出（含 256 级直方图、检测区域矩形、输出掩膜、单行结果集合） |
+| `.../Runtime/IntensityMeasureResultDisplay.cs` | 结果显示页 18 个显示字段 + 显示需求（行/身份/矩形/区域/文本数值/判定） |
+| `.../Runtime/IntensityMeasureSession.cs` | 执行链：灰度归一 → 有效域 → MinMaxGray/Intensity/GrayHisto → 判据 → 资源发布 |
+| `.../Wpf/Views/IntensityMeasureParameterEditor.xaml(.cs)` | 参数页：`IToolSettingsView` + `IToolSettingsViewReady`，绑定前设 `InputSection` |
+| `.../Wpf/Views/IntensityMeasureDisplayUi.cs` | 图形分组/文本七行的组合声明（`GraphicDisplays`/`TextDisplays`） |
+| `.../Wpf/Views/IntensityMeasureResultView.xaml(.cs)` | 结果页：属性列表 + 组合式释放 |
+| `.../Wpf/Design/IntensityMeasureDesignData.cs` | 设计时示例数据（同一组装链） |
+| `.../Wpf/IntensityMeasureEditorFactory.cs` | 呈现工厂 |
+| `SunEyeVision.slnx`、`product/ToolComponents.props` | 追加两个组件（Runtime/Editor，`CompanionToolId=IntensityMeasure`） |
+| `tests/SunEyeVision.Tools.LogicData.Tests/IntensityMeasureDeclarationTests.cs`、`IntensityMeasureExecutionTests.cs` | 声明面与执行语义用例（27 条） |
+
+### 6.2 端口与契约
+
+- 输入：`input.image`（必需，Reference）、`input.roi`（可选，Region）、`input.mask`（可选，Image）。
+- 输出：`output.module-status`、`output.module-time-ms`、`output.lum-min`(Int32)、`output.lum-max`(Int32)、`output.lum-mean`、`output.lum-std`、`output.hist-contrast`、`output.lum-histogram`(256 级 int 序列)、`output.roi`(矩形记录)、`output.mask`(图像记录)、`output.rows`(单行结果，含区域/矩形/判定)。
+- 六必需契约齐：`IToolDefinition`、`IToolSettings`、`IToolOutput`、`IToolSettingsFields`、`IToolCatalogProvider`、`IToolResultPresentationProvider`；另实现 `IToolResultDisplayProvider`、`IToolRuntimeInitialization`、`IToolManualReferenceSources`。
+- 结果投影：`PropertyList / One`（10 列）；显示需求：`rows` 单行 + 身份 `row-index` + 矩形 + 区域 + 文本数值 `lum-mean` + 判定。
+
+执行期失败码：`INTENSITYMEASURE_SETTINGS_INVALID`、`INTENSITYMEASURE_IMAGE_REQUIRED`、`INTENSITYMEASURE_PIXEL_FORMAT`（非 8 位）、`INTENSITYMEASURE_MASK_INVALID`（掩膜非 Gray8 或尺寸不同，不缩放兜底）、`INTENSITYMEASURE_ROI_EMPTY`（统计区域为空，不输出 0）、`INTENSITYMEASURE_HISTOGRAM`（级数非 256）、`INTENSITYMEASURE_CANCELLED`、`INTENSITYMEASURE_EXECUTION`。
+
+### 6.3 呈现层五项对齐（逐条给代码位置）
+
+| 项 | 状态 | 证据 |
+|---|---|---|
+| P1 `IToolSettingsViewReady`（`ReadyTask => Task.CompletedTask`） | 已对齐 | `IntensityMeasureParameterEditor.xaml.cs:14`、`:62` |
+| P2 绑定前设 `InputSection` | 已对齐（默认值取本工具真实存在的页） | `IntensityMeasureParameterEditor.xaml.cs:43-47`：`InputSection = options.InputSection ?? IntensityMeasureFields.ResultPage`。**不写「基本参数」的原因见 6.4 F1**（Release 实测：该页不存在时抛 `Unknown declared presentation group`；为空则抛 `An input content section is required.`） |
+| P3 分组 `DialogGroup`+`DialogTitle` 同给，`visible` 为 `DialogPrimary` | 已对齐 | `IntensityMeasureResultDisplay.cs:88-107`（`GraphicFields` 五行同时带 group/title，`visible` 置 `primary: true`） |
+| P4 分组字段被 `GraphicDisplays` 完整消费 | 已对齐 | `IntensityMeasureDisplayUi.cs:19-33`（两个分组各 5 角色；参数页校验由 Release 冒烟通过——遗漏会抛「图形角色必须完整消费分组」） |
+| P5 `DecimalPlaces:null` 坐标注册为文本坐标 + 组合式 Dispose | 已对齐 | 坐标声明 `IntensityMeasureResultDisplay.cs:118-123`；注册 `IntensityMeasureDisplayUi.cs:30-33`；组合式释放 `IntensityMeasureResultView.xaml.cs:63-77`（结果页 AggregateException 汇总）、参数页 `:65-71` |
+
+### 6.4 与原厂的差异（逐项）
+
+| # | 项 | 原件 | 本方 | 依据 |
+|---|---|---|---|---|
+| F1 | 页签数 | 2（基本参数 / 结果显示） | 1（结果显示；输入区随宿主注入该页顶部） | 原件基本参数页只有 ROI/掩膜/位置修正输入组（E6），本批以输入端口承载，声明里没有该页；框架按「声明字段所在页」建页，无字段即无页 |
+| F2 | ROI 承载 | `InputROI` + `InputROIAnnulus` + `RoiType` 选择 | 单一区域引用 `input.roi` | 与像素统计同一做法；不新造无证据的 ROI 类型参数 |
+| F3 | 对比度 | `HistContrast` 单 float（公式未确认） | 直方图量程（max−min） | U1，隔离在单行 |
+| F4 | 显示项 | 检测区域/基准点/运行点/文本/扇环/传感器视野 | 亮度区域、检测区域两个图形分组 + 文本七行 | 基准点/运行点随位置修正未实现；扇环回显未实现 |
+| F5 | 位置修正 | 输入 FIXTURE + 隐藏输出 | 未实现 | 5.3 |
+
+### 6.5 构建与测试（S3/S4）
+
+| 项 | 命令 | 结果 |
+|---|---|---|
+| 全量 Release | `dotnet build SunEyeVision.slnx -c Release --no-incremental -m:1` | `6064 个警告` / **`0 个错误`**（46.65s） |
+| 本线测试 | `dotnet test tests\SunEyeVision.Tools.LogicData.Tests\... -c Release --no-build` | **86 通过 / 0 失败**（其中本工具 27 条） |
+| 载荷登记 | `Release\SunEyeVision_v1.0.0\SunEyeVision\release-payload.json:152-158` | 含 `SunEyeVision.Tool.IntensityMeasure.Runtime/Wpf`、`toolId=IntensityMeasure` |
+
+用例覆盖：端口/无分支/可选 ROI 掩膜、输出类型与原件通道（Int32 整数、Float、256 级 int 序列）、投影与显示需求一致、18 个显示字段逐一有布局行、图形分组主字段与标题、每个分组恰五角色、不限小数位仅文本坐标两行、默认值准入、判据显隐与成对范围、设置越界/倒置/NaN 校验、Materialize 拒绝非法范围、非整数输入按声明类型拒绝、指纹稳定、五个统计量与直方图（`0..15` 渐变：min0/max15/mean7.5/std=√21.25/contrast15、直方图 16 个 1 其余 0、总和=面积）、结果行几何与区域、输出掩膜 Gray8 全 255、ROI 裁切、掩膜裁切、判据通过/失败与整体业务判定、对比度量程判据、空 ROI 明确失败、掩膜网格不符明确失败、必需端口冻结期拒绝、输出释放后拒绝读取。
+
+### 6.6 真实程序自测（占用登记）
+
+- 占用时间：**2026-11-17 10:18:29 – 10:28:37**（`agent-desktop`，仅本工作树 Release，无其他线同时占用声明）。
+- 准入探针：`SunEyeVision.UI.exe --toolbox-probe <json>` → `ExitCode=0`；`toolComponents` 含 `IntensityMeasure` Runtime(Role0)+Wpf(Role1)，`ContractMajor=6`；`toolboxTools` 含 `id=IntensityMeasure, category=测量, available=true`，名称显示为「亮度测量（已部署，未匹配目录）」（缺目录映射，见 6.7-1）。
+- 方案冒烟：用 SchemaVersion 5 临时方案（单节点 `ToolType=IntensityMeasure`，15 个判据字段取声明默认值）→ 日志 `会话安装通知：会话=intensity-smoke 流程数=1`（10:26:27）；双击节点后 `PageBuilt … 结果显示 rows=184ms`、`CreatePresentation elapsedMs=310.3`（10:27:15），**无「参数页组装失败」、无 ERROR**；窗口正常关闭 `CloseRequested → ReleaseView`。
+- 截图：`docs/collaboration/evidence/b3-intensity-param-page-20261117.png`（结果判断三行带「未启用」状态提示、文本显示七行、位置X/位置Y 带引用按钮）。
+- 修复前对照（同一流程）：`参数页组装失败：An input content section is required.`（10:24:47）——据此确定 P2 必须给真实存在的分区。
+- 未覆盖：画布拖入（工具箱条目缺目录映射，需主线补）、第二页签切换（本批单页）、执行后结果叠加（临时方案无可取图像源）。
+
+### 6.7 需要主线/宿主侧处理（`src/**` 不在本线边界）
+
+1. `src/UI/Resources/Toolbox/ToolboxDisplayCatalog.json` 中 `IMVSIntensityMeasureModu` 的 `ToolId` 现为 `null`：改为 `"ToolId": "IntensityMeasure"` 并加 `"MappingVerified": true`，否则工具箱只能以「亮度测量（已部署，未匹配目录）」出现（可用但名称带后缀）。
+2. 图标：本线声明 `IconKey=axes`（宿主已有 `tool-axes.png`）；若要与原件 `IMVSIntensityMeasureModuImageEnable.png` 一致，需在 `src/UI/Resources/Toolbox/` 增图标并改 IconKey。
+3. 同批发现的既有问题（**不属于本工具，未修改**）：`PixelCount`（4.1 段交付物）没有自定义参数页，其显示字段 `display.text.x/y` 声明为 `DecimalPlaces: null` 且未注册 `TextDisplays`，在正式程序中打开「像素统计1」参数页会失败：日志 `参数页组装失败：不限固定小数位仅适用于原订阅同槽数值文本。`（10:20:28、Release 复现）。建议主线为 PixelCount 补 `TextDisplays` 或改坐标精度声明。
+
+### 6.8 已知风险与下一步
+
+- 风险 1：U1 对比度口径未取得原件公式，判定可能与原件不同（已隔离，替换成本一行）。
+- 风险 2：单页参数页与原件两页不一致（F1），若要求还原需框架提供「无设置字段的输入页」或新增有证据的基本参数设置项。
+- 风险 3：位置修正、扇环回显、传感器视野显示未实现（5.3），相关输入/输出端口未声明，外部连线不会误连。
+- 下一步（主线）：补工具箱目录映射 → 集成后全量构建与全测试 → 画布拖入 + 两页签 + 执行结果叠加的人工验收。
+
+### 6.9 自检结果（S1–S8 逐条）
+
+| # | 项 | 结果 | 证据 |
+|---|---|---|---|
+| S1 | 取证 | ☑ | 5.1 表 E1–E7 每条带文件+行号/文本段；未取到项在 5.2 U1–U5 明确标未确认 |
+| S2 | 契约 | ☑ | 6.2 六必需契约 + 6.3 P1–P5 逐条代码行号 |
+| S3 | 构建 | ☑ | 6.5：`6064 个警告 / 0 个错误`（`--no-incremental -m:1`） |
+| S4 | 测试 | ☑ | 6.5：`失败: 0，通过: 86，已跳过: 0，总计: 86`（本工具 27 条） |
+| S5 | 登记 | ☑ | 仅追加：`SunEyeVision.slnx` 新增 `/Tools/IntensityMeasureComponents/`；`product/ToolComponents.props` 新增两条 `ProductToolComponent`；未改他人条目（见提交 diff） |
+| S6 | 边界 | ☑ | `git status --short` 仅：`SunEyeVision.slnx`、`product/ToolComponents.props`、`tests/SunEyeVision.Tools.LogicData.Tests/{csproj,packages.lock.json,IntensityMeasure*.cs}`、`tools/SunEyeVision.IntensityMeasure/`、交接单与截图；未改 `src/**`、公共控件、`.gitignore`；未 push、未 merge main |
+| S7 | 提交 | ☑ | 中文 Conventional Commits，见 6.10 |
+| S8 | 交接 | ☑ | 本段（第五/六段）含基线/分支/执行者/已完成/未完成/构建测试/风险/下一步/自检结果 |
+
+### 6.10 提交
+
+- `74a459a9b` feat(强度测量): 新增亮度测量工具（Runtime/Wpf、显示组合与声明及执行测试）

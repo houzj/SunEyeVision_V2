@@ -33,22 +33,35 @@
     <Setter Property="Cursor" Value="Hand"/><Setter Property="Width" Value="300"/><Setter Property="Height" Value="208"/>
     <Setter Property="Margin" Value="0,0,22,22"/><Setter Property="FocusVisualStyle" Value="{x:Null}"/>
     <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
-     <Border Background="Transparent"><ContentPresenter/></Border>
-    </ControlTemplate></Setter.Value></Setter>
+     <Border x:Name="Shell" Background="#23282D" BorderBrush="#313840" BorderThickness="1" CornerRadius="3">
+      <Grid>
+       <!-- 悬停时左侧亮起强调色竖条，与主题一致 -->
+       <Border x:Name="Accent" Width="3" HorizontalAlignment="Left" Background="#FFAD52" Opacity="0"/>
+       <ContentPresenter/>
+      </Grid>
+     </Border>
+     <ControlTemplate.Triggers>
+      <Trigger Property="IsMouseOver" Value="True">
+       <Setter TargetName="Shell" Property="Background" Value="#2A3137"/>
+       <Setter TargetName="Shell" Property="BorderBrush" Value="#FFAD52"/>
+       <Setter TargetName="Accent" Property="Opacity" Value="1"/>
+      </Trigger>
+      <Trigger Property="IsPressed" Value="True"><Setter TargetName="Shell" Property="Background" Value="#2F373E"/></Trigger>
+      <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Shell" Property="BorderBrush" Value="#FFAD52"/></Trigger>
+     </ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
    </Style>
 
    <Style TargetType="CheckBox">
     <Setter Property="Foreground" Value="#A7B0B8"/><Setter Property="Cursor" Value="Hand"/>
     <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="CheckBox">
      <StackPanel Orientation="Horizontal">
-      <Grid Width="16" Height="16" VerticalAlignment="Center">
-       <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Check_Off.png" Stretch="None"/>
-       <Image x:Name="On" Source="/SunEyeVision.UI;component/Resources/StartPage/Check_On.png" Stretch="None" Visibility="Collapsed"/>
-      </Grid>
+      <Border x:Name="Box" Width="15" Height="15" CornerRadius="3" BorderBrush="#78858F" BorderThickness="1" Background="#20272D" VerticalAlignment="Center">
+       <Path x:Name="Tick" Data="M3 8 L6.5 11.5 L12 4.5" Stroke="#211B13" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Visibility="Collapsed"/>
+      </Border>
       <ContentPresenter Margin="7,0,0,0" VerticalAlignment="Center"/>
      </StackPanel>
      <ControlTemplate.Triggers>
-      <Trigger Property="IsChecked" Value="True"><Setter TargetName="On" Property="Visibility" Value="Visible"/></Trigger>
+      <Trigger Property="IsChecked" Value="True"><Setter TargetName="Box" Property="Background" Value="#FFAD52"/><Setter TargetName="Box" Property="BorderBrush" Value="#FFAD52"/><Setter TargetName="Tick" Property="Visibility" Value="Visible"/></Trigger>
      </ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
    </Style>
 
@@ -87,13 +100,13 @@
    <Border Background="{StaticResource Startup.Accent}"/>
 
    <!-- 顶部：品牌 + 不再显示 + 关闭 -->
-   <Grid Grid.Row="1" Margin="28,20,20,0" MouseLeftButtonDown="Header_MouseLeftButtonDown">
+   <Grid Grid.Row="1" Margin="32,22,24,0" MouseLeftButtonDown="Header_MouseLeftButtonDown">
     <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
     <StackPanel Orientation="Horizontal">
-     <Image Source="{StaticResource Startup.BrandMark}" Width="42" Height="42" Margin="0,0,12,0"/>
+     <Image Source="{StaticResource Startup.BrandMark}" Width="62" Height="62" Margin="0,0,18,0"/>
      <StackPanel VerticalAlignment="Center">
-      <TextBlock Text="SunEyeVision" FontSize="27" FontWeight="SemiBold"/>
-      <TextBlock Text="V1.0.0" Foreground="{StaticResource Startup.Muted}" FontSize="11" Margin="0,1,0,0"/>
+      <TextBlock Text="SunEyeVision" FontSize="36" FontWeight="SemiBold" Foreground="#F2F6F8"/>
+      <TextBlock Text="V1.0.0" Foreground="#8B959C" FontSize="13" Margin="2,3,0,0"/>
      </StackPanel>
     </StackPanel>
     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
@@ -111,34 +124,80 @@
     <UniformGrid Rows="2" Columns="2" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,0,0,8">
      <Button Style="{StaticResource Card}" Click="Template_Click" Tag="general" AutomationProperties.Name="通用方案">
       <Grid>
-       <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Card_General.png" Stretch="Fill" RenderOptions.BitmapScalingMode="HighQuality"/>
-       <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Card_General_Click.png" Stretch="Fill" Style="{StaticResource ClickOverlay}"/>
-       <TextBlock Text="通用方案" FontSize="22" FontWeight="Bold" Foreground="#E9EEF1" Margin="26,70,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-       <TextBlock Text="建立普通空白方案" FontSize="13" Foreground="#9AA4AC" Margin="26,0,0,22" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
+       <Grid Margin="26,18,22,14">
+        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <TextBlock Text="通用方案" FontSize="22" FontWeight="SemiBold" Foreground="#E9EEF1" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,14,44"/>
+        <Viewbox Grid.Column="1" Width="104" Height="104" VerticalAlignment="Center" Margin="0,0,0,30">
+         <Canvas Width="100" Height="100">
+          <Rectangle Canvas.Left="8" Canvas.Top="14" Width="84" Height="72" RadiusX="5" RadiusY="5" Stroke="#55FFAD52" StrokeThickness="1.6" StrokeDashArray="4 3"/>
+          <Rectangle Canvas.Left="20" Canvas.Top="30" Width="22" Height="16" RadiusX="3" RadiusY="3" Stroke="#FFAD52" StrokeThickness="2"/>
+          <Rectangle Canvas.Left="58" Canvas.Top="52" Width="22" Height="16" RadiusX="3" RadiusY="3" Stroke="#FFAD52" StrokeThickness="2"/>
+          <Path Data="M42 38 H52 V60 H58" Stroke="#FFAD52" StrokeThickness="2" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+          <Ellipse Canvas.Left="38" Canvas.Top="34" Width="8" Height="8" Fill="#FFAD52"/>
+         </Canvas>
+        </Viewbox>
+       </Grid>
+       <Border VerticalAlignment="Bottom" Height="38" Background="#1B1F23" BorderBrush="#2A3036" BorderThickness="0,1,0,0">
+        <TextBlock Text="建立普通空白方案" FontSize="13" Foreground="#98A2A9" Margin="26,0" VerticalAlignment="Center"/>
+       </Border>
       </Grid>
      </Button>
      <Button Style="{StaticResource Card}" Click="Template_Click" Tag="locate" AutomationProperties.Name="定位测量">
       <Grid>
-       <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Card_Position.png" Stretch="Fill" RenderOptions.BitmapScalingMode="HighQuality"/>
-       <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Card_Position_Click.png" Stretch="Fill" Style="{StaticResource ClickOverlay}"/>
-       <TextBlock Text="定位测量" FontSize="22" FontWeight="Bold" Foreground="#E9EEF1" Margin="26,70,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-       <TextBlock Text="通过定位、测量工具进行设计" FontSize="13" Foreground="#9AA4AC" Margin="26,0,0,22" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
+       <Grid Margin="26,18,22,14">
+        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <TextBlock Text="定位测量" FontSize="22" FontWeight="SemiBold" Foreground="#E9EEF1" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,14,44"/>
+        <Viewbox Grid.Column="1" Width="104" Height="104" VerticalAlignment="Center" Margin="0,0,0,30">
+         <Canvas Width="100" Height="100">
+          <Ellipse Canvas.Left="22" Canvas.Top="22" Width="56" Height="56" Stroke="#FFAD52" StrokeThickness="2" StrokeDashArray="3 4"/>
+          <Path Data="M50 8 V26 M50 74 V92 M8 50 H26 M74 50 H92" Stroke="#FFAD52" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+          <Ellipse Canvas.Left="44" Canvas.Top="44" Width="12" Height="12" Stroke="#FFAD52" StrokeThickness="2"/>
+          <Path Data="M50 50 L72 34" Stroke="#FFAD52" StrokeThickness="1.6" StrokeDashArray="2 3"/>
+          <Ellipse Canvas.Left="47" Canvas.Top="47" Width="6" Height="6" Fill="#FFAD52"/>
+         </Canvas>
+        </Viewbox>
+       </Grid>
+       <Border VerticalAlignment="Bottom" Height="38" Background="#1B1F23" BorderBrush="#2A3036" BorderThickness="0,1,0,0">
+        <TextBlock Text="通过定位、测量工具进行设计" FontSize="13" Foreground="#98A2A9" Margin="26,0" VerticalAlignment="Center"/>
+       </Border>
       </Grid>
      </Button>
      <Button Style="{StaticResource Card}" Click="Template_Click" Tag="detect" AutomationProperties.Name="缺陷检测">
       <Grid>
-       <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Card_Defect.png" Stretch="Fill" RenderOptions.BitmapScalingMode="HighQuality"/>
-       <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Card_Defect_Click.png" Stretch="Fill" Style="{StaticResource ClickOverlay}"/>
-       <TextBlock Text="缺陷检测" FontSize="22" FontWeight="Bold" Foreground="#E9EEF1" Margin="26,70,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-       <TextBlock Text="借助检测工具查找工件缺陷" FontSize="13" Foreground="#9AA4AC" Margin="26,0,0,22" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
+       <Grid Margin="26,18,22,14">
+        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <TextBlock Text="缺陷检测" FontSize="22" FontWeight="SemiBold" Foreground="#E9EEF1" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,14,44"/>
+        <Viewbox Grid.Column="1" Width="104" Height="104" VerticalAlignment="Center" Margin="0,0,0,30">
+         <Canvas Width="100" Height="100">
+          <Path Data="M10 26 H90 M10 70 H90" Stroke="#55FFAD52" StrokeThickness="1.6" StrokeDashArray="4 3"/>
+          <Path Data="M32 34 L36 44 L31 52 L36 62 L32 68" Stroke="#FFAD52" StrokeThickness="2" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+          <Rectangle Canvas.Left="24" Canvas.Top="28" Width="24" Height="46" RadiusX="2" RadiusY="2" Stroke="#FFAD52" StrokeThickness="1.6" StrokeDashArray="3 2"/>
+          <Ellipse Canvas.Left="56" Canvas.Top="46" Width="28" Height="28" Stroke="#FFAD52" StrokeThickness="2"/>
+          <Path Data="M79 69 L89 79" Stroke="#FFAD52" StrokeThickness="2.6" StrokeStartLineCap="Round"/>
+         </Canvas>
+        </Viewbox>
+       </Grid>
+       <Border VerticalAlignment="Bottom" Height="38" Background="#1B1F23" BorderBrush="#2A3036" BorderThickness="0,1,0,0">
+        <TextBlock Text="借助检测工具查找工件缺陷" FontSize="13" Foreground="#98A2A9" Margin="26,0" VerticalAlignment="Center"/>
+       </Border>
       </Grid>
      </Button>
      <Button Style="{StaticResource Card}" Click="Template_Click" Tag="identify" AutomationProperties.Name="用于识别">
       <Grid>
-       <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Card_Recognition.png" Stretch="Fill" RenderOptions.BitmapScalingMode="HighQuality"/>
-       <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Card_Recognition_Click.png" Stretch="Fill" Style="{StaticResource ClickOverlay}"/>
-       <TextBlock Text="用于识别" FontSize="22" FontWeight="Bold" Foreground="#E9EEF1" Margin="26,70,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-       <TextBlock Text="通过识别工具进行方案设计" FontSize="13" Foreground="#9AA4AC" Margin="26,0,0,22" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
+       <Grid Margin="26,18,22,14">
+        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <TextBlock Text="用于识别" FontSize="22" FontWeight="SemiBold" Foreground="#E9EEF1" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,14,44"/>
+        <Viewbox Grid.Column="1" Width="104" Height="104" VerticalAlignment="Center" Margin="0,0,0,30">
+         <Canvas Width="100" Height="100">
+          <Path Data="M18 28 V18 H28 M72 18 H82 V28 M82 72 V82 H72 M28 82 H18 V72" Stroke="#FFAD52" StrokeThickness="2" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+          <Path Data="M32 34 V66 M38 34 V66 M44 34 V66 M50 34 V66 M56 34 V66 M62 34 V66 M68 34 V66" Stroke="#FFAD52" StrokeThickness="2.2"/>
+          <Path Data="M26 74 H74" Stroke="#55FFAD52" StrokeThickness="1.6" StrokeDashArray="4 3"/>
+         </Canvas>
+        </Viewbox>
+       </Grid>
+       <Border VerticalAlignment="Bottom" Height="38" Background="#1B1F23" BorderBrush="#2A3036" BorderThickness="0,1,0,0">
+        <TextBlock Text="通过识别工具进行方案设计" FontSize="13" Foreground="#98A2A9" Margin="26,0" VerticalAlignment="Center"/>
+       </Border>
       </Grid>
      </Button>
     </UniformGrid>
@@ -176,30 +235,21 @@
      <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="1"/><ColumnDefinition/><ColumnDefinition Width="1"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
      <Button Style="{StaticResource Flat}" Click="Guide_Click" Tag="learn" Padding="18,12" VerticalAlignment="Center" HorizontalContentAlignment="Left">
       <StackPanel Orientation="Horizontal">
-       <Grid Width="36" Height="50" Margin="0,0,12,0">
-        <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Guide_1.png" Stretch="None"/>
-        <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Guide_1_Click.png" Stretch="None" Style="{StaticResource ClickOverlay}"/>
-       </Grid>
+       <TextBlock Text="1" FontSize="36" FontWeight="Bold" Foreground="#FFAD52" Opacity="0.55" Width="30" TextAlignment="Center" VerticalAlignment="Center" Margin="0,0,14,0"/>
        <TextBlock Text="学习使用 SunEyeVision" FontSize="15" Foreground="#C8D2D8" VerticalAlignment="Center"/>
       </StackPanel>
      </Button>
      <Border Grid.Column="1" Background="#2A2F33"/>
      <Button Grid.Column="2" Style="{StaticResource Flat}" Click="Guide_Click" Tag="sample" Padding="18,12" VerticalAlignment="Center" HorizontalContentAlignment="Left">
       <StackPanel Orientation="Horizontal">
-       <Grid Width="36" Height="50" Margin="0,0,12,0">
-        <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Guide_2.png" Stretch="None"/>
-        <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Guide_2_Click.png" Stretch="None" Style="{StaticResource ClickOverlay}"/>
-       </Grid>
+       <TextBlock Text="2" FontSize="36" FontWeight="Bold" Foreground="#FFAD52" Opacity="0.55" Width="30" TextAlignment="Center" VerticalAlignment="Center" Margin="0,0,14,0"/>
        <TextBlock Text="查看示例方案" FontSize="15" Foreground="#C8D2D8" VerticalAlignment="Center"/>
       </StackPanel>
      </Button>
      <Border Grid.Column="3" Background="#2A2F33"/>
      <Button Grid.Column="4" Style="{StaticResource Flat}" Click="Guide_Click" Tag="support" Padding="18,12" VerticalAlignment="Center" HorizontalContentAlignment="Left">
       <StackPanel Orientation="Horizontal">
-       <Grid Width="36" Height="50" Margin="0,0,12,0">
-        <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Guide_3.png" Stretch="None"/>
-        <Image Source="/SunEyeVision.UI;component/Resources/StartPage/Guide_3_Click.png" Stretch="None" Style="{StaticResource ClickOverlay}"/>
-       </Grid>
+       <TextBlock Text="3" FontSize="36" FontWeight="Bold" Foreground="#FFAD52" Opacity="0.55" Width="30" TextAlignment="Center" VerticalAlignment="Center" Margin="0,0,14,0"/>
        <TextBlock Text="获取更多支持和帮助" FontSize="15" Foreground="#C8D2D8" VerticalAlignment="Center"/>
       </StackPanel>
      </Button>

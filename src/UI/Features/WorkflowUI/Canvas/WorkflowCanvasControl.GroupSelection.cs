@@ -27,6 +27,12 @@ public partial class WorkflowCanvasControl
         _canvasBoxSelectionActive = _canvasBoxSelection.Length > 0;
         DrawCanvasSelectionFrame();
     }
+    /// <summary>外包框当前几何（原件 RectDragPanalRect），供批量移动双层预览使用。</summary>
+    internal Rect? CanvasBoxSelectionRect => _canvasSelectionFrame is null ? Rect.Empty :
+        new Rect(System.Windows.Controls.Canvas.GetLeft(_canvasSelectionFrame),
+                 System.Windows.Controls.Canvas.GetTop(_canvasSelectionFrame),
+                 _canvasSelectionFrame.Width, _canvasSelectionFrame.Height);
+
     private void DrawCanvasSelectionFrame()
     {
         if (_canvasSelectionFrame != null) WorkflowCanvas.Children.Remove(_canvasSelectionFrame);

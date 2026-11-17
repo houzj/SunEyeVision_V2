@@ -287,6 +287,25 @@ delta = new Vector(Math.Round((left + delta.X) / 5) * 5 - left, Math.Round((top 
                 pair.Value.Y - pair.Key.NodeRect.Height / 2 - 10 + bounds.Y);
             adorner.Layer.Children.Add(ghost);
         }
+        // 原件 DiagramPage.xaml.cs:662-670：批量移动预览是两层——节点快照 + 外包框自身快照。
+        // 有外包框（CurBoxOfItems）时才画第二层，单节点拖动没有这一层。
+        if (session.Before.Count > 1 && CanvasBoxSelectionRect is { } boxRect)
+        {
+            var frameGhost = new Rectangle
+            {
+                Width = boxRect.Width, Height = boxRect.Height,
+                IsHitTestVisible = false,
+                Fill = new VisualBrush(_canvasSelectionFrame!)
+                {
+                    Viewbox = new Rect(0, 0, boxRect.Width, boxRect.Height),
+                    ViewboxUnits = BrushMappingMode.Absolute,
+                    Stretch = Stretch.None
+                }
+            };
+            System.Windows.Controls.Canvas.SetLeft(frameGhost, boxRect.X);
+            System.Windows.Controls.Canvas.SetTop(frameGhost, boxRect.Y);
+            adorner.Layer.Children.Add(frameGhost);
+        }
         adornerLayer.Add(adorner);
         session.Preview = adorner;
     }

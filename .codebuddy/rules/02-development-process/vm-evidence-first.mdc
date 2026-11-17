@@ -6,13 +6,13 @@ category: development-process
 priority: high
 alwaysApply: true
 enabled: true
-version: "1.0"
+version: "2.0"
 updatedAt: 2026-11-17
 ---
 
 # 原厂证据先行
 
-凡属于"对标 VisionMaster 原厂"的任何修改——UI 样式、交互行为、节点/画布/参数页、状态语义、数据结构——**必须在动手修改之前先取得原厂证据**，并保证证据可追溯。
+凡属于"对标 VisionMaster 原厂"的任何修改——UI 样式、交互行为、节点/画布/参数页、状态语义、数据结构——**必须在动手修改之前先取得原厂证据**，并按本规则的第 3 节五步流程执行。本规则 alwaysApply，每次会话自动生效，**不得依赖"技能是否被触发"**。
 
 ## 1 什么算原厂证据（按优先级）
 
@@ -29,18 +29,51 @@ updatedAt: 2026-11-17
 3. **禁止把推断写成已验证结论。** 目测截图得到的判断必须标注"待取证"，并与源码级证据交叉确认后方可定性。
 4. **证据与代码同批提交。** 修改代码的 commit 必须包含对应的证据更新（文档或注释中的行号引用）。
 5. **截图不是源码。** 像素级目测只能用于发现差异线索；最终定性与实现必须落到 ①② 级证据。
+6. **禁止整文件重写。** 即使已取证，也必须用精确补丁修改；整文件重写会丢失既有功能（曾一次重写 `GroupSelection.cs` 改出 70 个编译错误）。
 
-## 3 执行顺序
+## 3 五步流程（对标改动必须逐步执行）
 
 ```
-发现差异 → 查原厂源码/配置（①②）→ 源码无法覆盖时申请实机取证（③）
-        → 证据写入对照文档 → 按证据实施 → 实测回归 → 提交（证据+代码同批）
+① 取证    → 读到具体行号/配置原文，必要时取原厂实机图；记录到当轮回复
+② 定基线  → 写进 docs/collaboration/acceptance/<主题>.md 的证据表（条目 → 文件:行号 → 原厂值）
+③ 对照    → 逐项比对现有实现，产出"一致 / 缺失 / 不一致+原因"三分类清单
+④ 实施    → 一次只改一项，每项都能指出对应证据行；用精确补丁，改完立即构建
+⑤ 回归    → 能自动验证的自动验证；不能的（OLE 拖拽等）明确交回用户验并说明原因
 ```
 
-## 4 违例示例（历史教训）
+**禁止跳过 ②③ 直接进 ④。** 用户指出差异时，正确回应顺序是"先摆证据 → 再摆对照表 → 再改"，不是直接改代码。
+
+## 4 常用取证入口
+
+```
+decompiled/WpfControls/base/diagramitemtemplate.xaml          节点模板/状态触发器
+decompiled/WpfControls/VMControls.WPF.Base/DiagramItem.xaml.cs  节点容器交互
+decompiled/WpfControls/VMControls.WPF.Base/ItemsPage.cs          画布 ListView：框选/落点/空白点击
+decompiled/WpfControls/VMControls.WPF.Base/DiagramPage.xaml.cs   外包框/批量移动/寻路
+decompiled/WpfControls/VMControls.WPF.Base/Connector.xaml.cs     端口
+decompiled/WpfControls/VMControls.WPF.Base/Connection.xaml.cs    连线
+decompiled/WpfControls/VMControls.WPF.Base/ZoomArea.xaml.cs      缩放平移
+decompiled/Controls/VM.Controls.Core/UIElementAdorner.cs         Adorner 位移机制
+decompiled/WpfControls/base/rectdragpanalbasestyle.xaml          框选外包框样式
+decompiled/ColorFun/colorstyle1.xaml                             色值
+"C:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\x64\<模块>\ToolItemInfo.xml"  节点 displayType
+```
+
+区分易混淆对象：
+- **橡皮筋框**（框选过程）：`ItemsPage.cs:728-744`，`LightSlateGray` 1px 虚线 2,1
+- **外包框**（框选完成）：`rectdragpanalbasestyle.xaml`，橙 `#7FDA780F` 2px 虚线 5,2
+- **节点选中**：`ListBoxItem.IsSelected`，与 `CurBoxOfItems` 是两套独立状态
+- **运行 NG**（`RunState=False`）：只切状态条颜色，不压文字
+- **模块加载失败**（`IsModuleFailed`）：米灰底 + 白图标 + 文字 0.4
+
+## 5 违例示例（历史教训）
 
 - 依据我方截图目测判断"颜色抽取是胶囊节点"，实际原厂 `ToolItemInfo.xml` 未声明 displayType，默认矩形。
 - 未读 `diagramitemtemplate.xaml` 的状态触发器就修改节点状态色，导致状态条长期无色（资源键从未定义）。
 - 把条件分支节点改成矩形，实际原厂 `IfBranchModule` 声明 `IFBRANCH`（六边形 110×40）。
+- 用执行防呆基于"输入未连接"拦截，实际原厂判据是 `VmModule.IsReady`（`BottomCommand.cs:101-108`），错误判据阻挡正常执行。
+- 把"模块加载失败"的 0.4 压暗套到"运行 NG"上，实际原厂 `RunState=False` 只切红状态条。
+- 把"框选橡皮筋"和"多节点外包框"当成同一个元素，把外包框样式套到橡皮筋上。
+- 取证后直接整文件重写，丢失既有对齐/分布/快捷键功能，产生 70 个编译错误。
 
-以上均因**先动代码、后找证据（或根本没找）**造成返工。
+以上均因**先动代码、后找证据（或根本没找）**、以及**不按层级区分原厂对象**造成返工。

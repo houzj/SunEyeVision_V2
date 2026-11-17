@@ -391,7 +391,7 @@
                                 </Border.Style>
                             </Border>
                             <!-- 节点内容 -->
-                            <Grid Margin="26,0,0,0">
+                            <Grid>
                                 <Grid.Style>
                                     <Style TargetType="Grid">
                                         <Style.Triggers>

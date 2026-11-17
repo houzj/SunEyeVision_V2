@@ -37,6 +37,12 @@
     <ProjectReference Include="../../tools/SunEyeVision.ContourMatch/Wpf/SunEyeVision.ContourMatch.Wpf.csproj">
       <Private>false</Private>
     </ProjectReference>
+    <ProjectReference Include="../../tools/SunEyeVision.GrayMatch/Runtime/SunEyeVision.GrayMatch.Runtime.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="../../tools/SunEyeVision.GrayMatch/Wpf/SunEyeVision.GrayMatch.Wpf.csproj">
+      <Private>false</Private>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\_shared\ProductRuntimeTestHost.cs" Link="_shared\ProductRuntimeTestHost.cs" />

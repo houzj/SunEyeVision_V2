@@ -16,6 +16,10 @@
     <Project Path="tools/SunEyeVision.ContourMatch/Runtime/SunEyeVision.ContourMatch.Runtime.csproj" />
     <Project Path="tools/SunEyeVision.ContourMatch/Wpf/SunEyeVision.ContourMatch.Wpf.csproj" />
   </Folder>
+  <Folder Name="/Tools/GrayMatchComponents/">
+    <Project Path="tools/SunEyeVision.GrayMatch/Runtime/SunEyeVision.GrayMatch.Runtime.csproj" />
+    <Project Path="tools/SunEyeVision.GrayMatch/Wpf/SunEyeVision.GrayMatch.Wpf.csproj" />
+  </Folder>
   <Folder Name="/Tools/ImageSourceComponents/">
     <Project Path="tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj" />
     <Project Path="tools/SunEyeVision.ImageSource/Wpf/SunEyeVision.ImageSource.Wpf.csproj" />

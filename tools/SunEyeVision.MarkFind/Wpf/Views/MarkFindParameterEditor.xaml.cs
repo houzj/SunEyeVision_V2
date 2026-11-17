@@ -43,7 +43,7 @@ public partial class MarkFindParameterEditor : UserControl, IToolSettingsView, I
         anchored.Add(new AnchoredSettingsContent(MarkFindFields.PyramidScaleMode, panel, InsertBefore: true));
         var composed = options with
         {
-            InputSection = options.InputSection ?? "基本参数",
+            InputSection = options.InputSection ?? Runtime.MarkFindFields.TemplateSection,
             SuppressedFieldRows = suppressed,
             AdditionalAnchoredContents = anchored
         };

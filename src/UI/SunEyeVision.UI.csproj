@@ -89,6 +89,7 @@
     <Resource Include="Resources\Toolbox\*.png" />
     <Resource Include="Resources\Toolbox\ToolboxDisplayCatalog.json" />
     <Resource Include="Resources\Workflow\*.png" />
+    <Resource Include="Resources\StartPage\*.png" />
     <Resource Include="..\Plugin.Editing.Wpf\Metadata\ToolGroups.xml" Link="Resources\Toolbox\ToolGroups.xml" />
     <Content Include="..\Plugin.Editing.Wpf\Metadata\ToolGroups.xml" Link="ToolGroups.xml" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>

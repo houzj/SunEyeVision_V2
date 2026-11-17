@@ -242,7 +242,6 @@ delta = new Vector(Math.Round((left + delta.X) / 5) * 5 - left, Math.Round((top 
             UpdateCanvasPlacementFeedback(single.Value, single.Key.NodeRect.Height, session.Before.Keys.Select(n => n.Id));
         }
         else ClearCanvasPlacementFeedback();
-        DrawCanvasAlignLines(session, delta);
         UpdateCanvasInsertionWire(pointer, session.Before.Keys.Select(n => n.Id));
     }
     private static Border? FindCanvasNodeVisual(DependencyObject parent, CanvasNodeProjection node)
@@ -310,70 +309,5 @@ delta = new Vector(Math.Round((left + delta.X) / 5) * 5 - left, Math.Round((top 
     /// <summary>拖动对齐线：原件 DiagramItem.DrawAlignLine（DiagramItem.xaml.cs:855-944）——
     /// 左/右/水平中心、上/下/垂直中心共 6 组；命中的是 LightGreen 1px、虚线 5,2.5、Round join，
     /// 线段从自身边缘外 5px 延伸到目标边缘外 5px。</summary>
-    private void DrawCanvasAlignLines(NodeDragSession session, Vector delta)
-    {
-        foreach (var old in session.AlignLines) (session.Preview?.Layer.Children ?? WorkflowCanvas.Children).Remove(old);
-        session.AlignLines.Clear();
-        if (session.Before.Count == 0) return;
-        var anchor = session.Before.First().Key;
-        var w = anchor.NodeRect.Width; var h = anchor.NodeRect.Height;
-        var left = anchor.PositionX - w / 2 + delta.X;
-        var top = anchor.PositionY - h / 2 + delta.Y;
-        var right = left + w; var bottom = top + h;
-        var cx = left + w / 2; var cy = top + h / 2;
-        var others = (session.Tab.DocumentCanvas?.Nodes ?? throw new InvalidOperationException("画布会话未绑定。"))
-            .Where(n => !session.Before.ContainsKey(n)).ToArray();
-
-        // 原件 DiagramItem.DrawAlignLine（DiagramItem.xaml.cs:872-885）：同一方向即使命中多个目标，
-        // 也只对「最靠上/最靠左」的那一个画一条线（source2.Min → First），不是每个目标都画。
-        CanvasNodeProjection? hLeft = null, hRight = null, hCenter = null, vTop = null, vBottom = null, vCenter = null;
-        double kLeft = double.MaxValue, kRight = double.MaxValue, kCenter = double.MaxValue;
-        double kTop = double.MaxValue, kBottom = double.MaxValue, kVCenter = double.MaxValue;
-        foreach (var o in others)
-        {
-            var ow = o.NodeRect.Width; var oh = o.NodeRect.Height;
-            var oLeft = o.PositionX - ow / 2; var oTop = o.PositionY - oh / 2;
-            var oRight = oLeft + ow; var oBottom = oTop + oh;
-            var oCx = oLeft + ow / 2; var oCy = oTop + oh / 2;
-            if (Math.Abs(oLeft - left) < 0.5 && oTop < kLeft) { hLeft = o; kLeft = oTop; }
-            if (Math.Abs(oRight - right) < 0.5 && oTop < kRight) { hRight = o; kRight = oTop; }
-            if (Math.Abs(oCx - cx) < 0.5 && oTop < kCenter) { hCenter = o; kCenter = oTop; }
-            if (Math.Abs(oTop - top) < 0.5 && oLeft < kTop) { vTop = o; kTop = oLeft; }
-            if (Math.Abs(oBottom - bottom) < 0.5 && oLeft < kBottom) { vBottom = o; kBottom = oLeft; }
-            if (Math.Abs(oCy - cy) < 0.5 && oLeft < kVCenter) { vCenter = o; kVCenter = oLeft; }
-        }
-        void Vertical(CanvasNodeProjection? other, double x)
-        {
-            if (other is null) return;
-            var ow = other.NodeRect.Width; var oh = other.NodeRect.Height;
-            var oTop = other.PositionY - oh / 2; var oBottom = oTop + oh;
-            AddCanvasAlignLine(x, Math.Min(top, oTop) - 5, x, Math.Max(bottom, oBottom) + 5);
-        }
-        void Horizontal(CanvasNodeProjection? other, double y)
-        {
-            if (other is null) return;
-            var ow = other.NodeRect.Width;
-            var oLeft = other.PositionX - ow / 2; var oRight = oLeft + ow;
-            AddCanvasAlignLine(Math.Min(left, oLeft) - 5, y, Math.Max(right, oRight) + 5, y);
-        }
-        Vertical(hLeft, left); Vertical(hRight, right); Vertical(hCenter, cx);
-        Horizontal(vTop, top); Horizontal(vBottom, bottom); Horizontal(vCenter, cy);
-    }
-    private void AddCanvasAlignLine(double x1, double y1, double x2, double y2)
-    {
-        var line = new System.Windows.Shapes.Line
-        {
-            IsHitTestVisible = false,
-            Stroke = System.Windows.Media.Brushes.LightGreen,
-            StrokeThickness = 1.0,
-            StrokeDashArray = new DoubleCollection { 5.0, 2.5 },
-            StrokeLineJoin = PenLineJoin.Round,
-            X1 = x1, Y1 = y1, X2 = x2, Y2 = y2
-        };
-        // 对齐线也画在 Adorner 层：原件 DrawLine 就是往 adornerPanel.Children 里加，不参与画布布局。
-        var preview = _canvasNodeMove?.Preview;
-        if (preview is not null) { preview.Layer.Children.Add(line); } else { WorkflowCanvas.Children.Add(line); }
-        _canvasNodeMove?.AlignLines.Add(line);
-    }
     private void CancelCanvasNodeMove() { HideCanvasNodeGhosts(); _canvasNodeMove = null; }
 }

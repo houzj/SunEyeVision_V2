@@ -343,7 +343,7 @@
                             </Path>
                             <!-- 状态条：原件 StateFlag，左侧 26px 竖条，OK 绿 / NG 红 -->
                                 <Border x:Name="RunStateBar" Width="26" HorizontalAlignment="Left" VerticalAlignment="Stretch"
-                                        IsHitTestVisible="False" Background="Transparent"
+                                        IsHitTestVisible="False"
                                         Clip="{Binding Data, ElementName=NodeSurface}">
                                 <Border.Style>
                                     <Style TargetType="Border">

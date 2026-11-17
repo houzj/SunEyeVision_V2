@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -26,6 +26,8 @@ public partial class WorkflowCanvasControl
         public Dictionary<CanvasNodeProjection, (Rectangle Ghost, double Dx, double Dy)> GhostMap { get; } = new();
         /// <summary>预览根容器：装全部节点快照，整体平移只改容器坐标（原件 AdornerPanel 同构）。</summary>
         public FrameworkElement? Preview { get; set; }
+        /// <summary>上次吸附落点。吸附后位置没变就整帧跳过，避免每帧重排预览与对齐线。</summary>
+        public long LastSnapKey { get; set; } = long.MinValue;
         public bool Copy { get; set; }
     }
     private NodeDragSession? _canvasNodeMove;
@@ -212,7 +214,12 @@ public partial class WorkflowCanvasControl
         { session.After.Clear(); return; }
         var left = session.Before.Min(p => p.Value.X - p.Key.NodeRect.Width / 2);
         var top = session.Before.Min(p => p.Value.Y - p.Key.NodeRect.Height / 2);
-        delta = new Vector(Math.Round((left + delta.X) / 5) * 5 - left, Math.Round((top + delta.Y) / 5) * 5 - top);
+delta = new Vector(Math.Round((left + delta.X) / 5) * 5 - left, Math.Round((top + delta.Y) / 5) * 5 - top);
+        // 原件 _dragOver 只在吸附后的位置变化时才挪预览；位置没变就整帧跳过，
+        // 否则每帧重算 After、重绘对齐线、动视觉树，拖动会明显发飘/卡顿。
+        var snapKey = ((long)Math.Round(left + delta.X) * 100000L) + (long)Math.Round(top + delta.Y);
+        if (session.LastSnapKey == snapKey) return;
+        session.LastSnapKey = snapKey;
         session.After.Clear();
         foreach (var pair in session.Before)
         {
@@ -228,8 +235,8 @@ public partial class WorkflowCanvasControl
         EnsureCanvasNodePreview(session);
         if (session.Preview is not null)
         {
-            System.Windows.Controls.Canvas.SetLeft(session.Preview, session.FrameRect.X + delta.X);
-            System.Windows.Controls.Canvas.SetTop(session.Preview, session.FrameRect.Y + delta.Y);
+            System.Windows.Controls.Canvas.SetLeft(session.Preview, session.FrameRect.X + 10 + delta.X);
+            System.Windows.Controls.Canvas.SetTop(session.Preview, session.FrameRect.Y + 10 + delta.Y);
         }        if (session.After.Count == 1)
         {
             var single = session.After.Single();
@@ -256,7 +263,10 @@ public partial class WorkflowCanvasControl
         if (session.Preview is not null) return;
         var frame = session.FrameRect;
         if (frame.IsEmpty) return;
-        var root = new System.Windows.Controls.Canvas { Width = frame.Width, Height = frame.Height, IsHitTestVisible = false, Opacity = .7 };
+        // 原件用 VisualTreeHelper.GetDescendantBounds(this) 作预览尺寸，并把 bounds.X/Y 作为 Margin 抵消负偏移；
+        // FrameRect 是额外 inflate(10) 的包围框，作原点会整体偏 10px，这里还原成真实边界原点。
+        var originX = frame.X + 10; var originY = frame.Y + 10;
+        var root = new System.Windows.Controls.Canvas { Width = frame.Width - 20, Height = frame.Height - 20, IsHitTestVisible = false, Opacity = .7 };
         foreach (var pair in session.Before)
         {
             var visual = FindCanvasNodeVisual(WorkflowCanvas, pair.Key);
@@ -269,14 +279,14 @@ public partial class WorkflowCanvasControl
                 Fill = new VisualBrush(visual) { Stretch = Stretch.None }
             };
             System.Windows.Controls.Canvas.SetLeft(ghost,
-                pair.Value.X - pair.Key.NodeRect.Width / 2 - 10 + bounds.X - frame.X);
+                pair.Value.X - pair.Key.NodeRect.Width / 2 - 10 + bounds.X - originX);
             System.Windows.Controls.Canvas.SetTop(ghost,
-                pair.Value.Y - pair.Key.NodeRect.Height / 2 - 10 + bounds.Y - frame.Y);
+                pair.Value.Y - pair.Key.NodeRect.Height / 2 - 10 + bounds.Y - originY);
             root.Children.Add(ghost);
         }
         Panel.SetZIndex(root, 9000);
-        System.Windows.Controls.Canvas.SetLeft(root, frame.X);
-        System.Windows.Controls.Canvas.SetTop(root, frame.Y);
+        System.Windows.Controls.Canvas.SetLeft(root, originX);
+        System.Windows.Controls.Canvas.SetTop(root, originY);
         WorkflowCanvas.Children.Add(root);
         session.Preview = root;
     }

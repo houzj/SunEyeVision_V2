@@ -76,3 +76,12 @@ INFO  参数页组装失败：所有图形分组都需要显式完整角色配�
 
 1. 复核图像显示完整列表（滚动方案：改用 `scroll` 命令指向列表元素，或临时拉高参数窗）
 2. 汇总到全量对照报告后统一决定「按原厂改名/改序」还是「保留我方口径」
+
+## 7 处理结果（按用户裁定：迁移方案文件，不做加载宽容）
+
+1. 连带移除 BlobResultDisplay 的 Centroids 常量、GraphicFields 声明、Style(Centroids) 捕获、BlobDisplayUi 分组、BlobPresentation 标签映射
+2. 新增 scripts/migrate-solution-fields.ps1：从 .solution JSON 删除 display.centroids.*（Fields / CurrentValues / ParameterBindingOrder），写前自动 .bak 备份
+3. 对 11111.solution 执行迁移：删除 5 个字段，节点仍 12 个，方案正常加载（无 Unknown Runtime field）
+4. 实测结果页顺序与原厂一致：Blob / 最大内接矩形 / 检测区域 / 轮廓点 / 文本 / 屏蔽区多边形 / 扇环检测区域
+
+加载器保持严格模式：未知运行时字段仍然拒绝，不做静默容忍。

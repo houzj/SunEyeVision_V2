@@ -14,7 +14,6 @@ public static class BlobResultDisplay
     public const string Text="display.text";
     public const string Outline="display.outline";
     public const string Inspection="display.inspection",Mask="display.mask",Annulus="display.annulus";
-    public const string Centroids="display.centroids";
     public static string Field(string group,string role)=>group+"."+role;
     private sealed record Definition(Port Port,FieldPresentation Presentation,object Value);
     private static readonly IReadOnlyList<Definition> Definitions=Build();
@@ -52,7 +51,6 @@ public static class BlobResultDisplay
             Add(Field(group,"width"),"线宽","图像显示",DataType.Number,width,1,10,1,group);
         }
         GraphicFields(Graphic,"Blob",ok);
-        GraphicFields(Centroids,"质心",ok,width:1);
         GraphicFields(InnerRectangle,"最大内接矩形",ok);
         GraphicFields(Inspection,"检测区域",PresentationDeclarations.Color(0,0,255));
         Add(Field(Outline,"visible"),"轮廓点","图像显示",DataType.Boolean,true);
@@ -97,8 +95,7 @@ public static class BlobResultDisplay
             Style(Annulus) with { ShowMeasurements = true },
             new(Read<bool>(Field(Outline,"visible")),new(102,255,0),new(255,0,0)),Style(InnerRectangle),
             Style(ReferencePoint) with { FixedJudgment = true, PointLabel = "Fixture BasePoint" },
-            Style(RunPoint) with { FixedJudgment = true, PointLabel = "Fixture RunPoint" },
-            Style(Centroids));
+            Style(RunPoint) with { FixedJudgment = true, PointLabel = "Fixture RunPoint" });
     }
     public static void ValidateDisplayReference(OutputReference reference,bool numeric=false)
     {

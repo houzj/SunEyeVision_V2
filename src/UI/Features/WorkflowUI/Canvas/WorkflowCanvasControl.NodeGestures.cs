@@ -108,8 +108,10 @@ public partial class WorkflowCanvasControl
         _canvasNodeMove = new NodeDragSession
         {
             Owner = DataContext, Tab = tab, Pointer = pointer, Token = Guid.NewGuid().ToString("N"),
-            Before = (tab.DocumentCanvas?.Nodes ?? throw new InvalidOperationException("画布会话未绑定。"))
-                .Where(n => n.IsSelected).ToDictionary(n => n, n => new Point(n.PositionX, n.PositionY)),
+            // 原件 DiagramPage_PreviewMouseMove：批量移动用 CurBoxOfItems（框选集合），无框选才退化为选中节点。
+            Before = (_canvasBoxSelection.Length > 0 ? _canvasBoxSelection :
+                    (tab.DocumentCanvas?.Nodes ?? throw new InvalidOperationException("画布会话未绑定。")).Where(n => n.IsSelected))
+                .ToDictionary(n => n, n => new Point(n.PositionX, n.PositionY)),
             Stamp = CanvasGraphStamp(tab), ConfigurationStamp = CanvasConfigurationStamp(tab), FrameRect = NodeFrameRect(tab),
         };
     }

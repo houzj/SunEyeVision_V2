@@ -2071,7 +2071,9 @@ SplitterPosition = position;
                     return await TryCloseParameterWindowsForTransitionAsync();
                 }
                 // A transition prompt is not Apply/Save. Cancel must leave private drafts private.
-                if (manager.CurrentSession?.HasUnsavedChanges!=true) return await TryCloseParameterWindowsForTransitionAsync();
+                // 初始空白方案（未保存过、零节点）不算用户编辑：从引导页打开方案或直接关闭时不提示保存。
+                if (manager.CurrentSession?.HasUnsavedChanges != true || manager.CurrentSession.IsPristineBlank)
+                    return await TryCloseParameterWindowsForTransitionAsync();
                 var result = ThemeMessageDialog.Show("当前方案有未保存修改。是否保存？", "保存方案", MessageBoxButton.YesNoCancel, ThemeMessageDialog.MessageIcon.Question, owner);
                 if (result == MessageBoxResult.Cancel || result == MessageBoxResult.None) { EndSolutionTransition(); return false; }
                 if (result == MessageBoxResult.Yes && (!SaveCurrentDocumentWithPrompt(owner) || manager.CurrentSession?.HasUnsavedChanges == true))

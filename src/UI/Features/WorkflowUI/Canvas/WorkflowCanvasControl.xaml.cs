@@ -1756,7 +1756,8 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
             if (_isDraggingConnection) { FinishCanvasConnection(e.GetPosition(WorkflowCanvas)); e.Handled = true; return; }
             if (_isPanning || _isBoxSelecting)
             {
-                if (_isBoxSelecting) _canvasBoxSelectionActive = CanvasSelectedNodes().Length > 0;
+                // 原件 ItemsPage.cs:642-652：框选完成只设框选集合与外包框，不改节点选中。
+                if (_isBoxSelecting) SetCanvasBoxSelection(CanvasSelectedNodes());
                 _isPanning = false; _isBoxSelecting = false;
                 DrawCanvasSelectionFrame();
                 SelectionBox?.EndSelection(); Cursor = Cursors.Arrow;

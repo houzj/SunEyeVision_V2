@@ -11,16 +11,27 @@ public partial class WorkflowCanvasControl
 {
     private bool _canvasBoxSelectionActive;
     private Rectangle? _canvasSelectionFrame;
+    // 原件 ItemsPage.CurBoxOfItems：框选集合独立于 ListBoxItem.IsSelected。
+    private CanvasNodeProjection[] _canvasBoxSelection = Array.Empty<CanvasNodeProjection>();
     private CanvasNodeProjection[] CanvasSelectedNodes() => CurrentWorkflowTab?.DocumentCanvas?.Nodes.Where(n => n.IsSelected).ToArray() ?? Array.Empty<CanvasNodeProjection>();
     private void ClearCanvasSelectionFrame()
     {
         if (_canvasSelectionFrame != null) WorkflowCanvas.Children.Remove(_canvasSelectionFrame);
         _canvasSelectionFrame = null;
+        _canvasBoxSelection = Array.Empty<CanvasNodeProjection>();
+    }
+    /// <summary>原件 ItemsPage.cs:642-652：框选完成只设集合与外包框，不写节点 IsSelected。</summary>
+    internal void SetCanvasBoxSelection(CanvasNodeProjection[] nodes)
+    {
+        _canvasBoxSelection = nodes ?? Array.Empty<CanvasNodeProjection>();
+        _canvasBoxSelectionActive = _canvasBoxSelection.Length > 0;
+        DrawCanvasSelectionFrame();
     }
     private void DrawCanvasSelectionFrame()
     {
-        ClearCanvasSelectionFrame();
-        var nodes = CanvasSelectedNodes();
+        if (_canvasSelectionFrame != null) WorkflowCanvas.Children.Remove(_canvasSelectionFrame);
+        _canvasSelectionFrame = null;
+        var nodes = _canvasBoxSelection;
         if (!_canvasBoxSelectionActive || nodes.Length == 0 || !CanEditCanvas || _isBoxSelecting) return;
         var area = SelectionLayoutCalculator.Bounds(nodes.Select(n => n.NodeRect).ToArray());
         var frame = new Rectangle { Width = area.Width, Height = area.Height, RadiusX = 3, RadiusY = 3,
@@ -31,7 +42,7 @@ public partial class WorkflowCanvasControl
         frame.MouseLeftButtonDown += (_, e) =>
         {
             if (!CanEditCanvas) return;
-            WorkflowCanvas.Focus(); var selected = CanvasSelectedNodes();
+            WorkflowCanvas.Focus(); var selected = _canvasBoxSelection;
             if (selected.Length > 0) ArmCanvasNodeMove(selected[0], e.GetPosition(WorkflowCanvas));
             e.Handled = true;
         };

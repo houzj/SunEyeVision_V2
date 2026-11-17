@@ -34,6 +34,17 @@
       <EntryType>SunEyeVision.Tool.FrameMean.Wpf.FrameMeanEditorFactory</EntryType>
       <CompanionToolId>FrameMean</CompanionToolId>
     </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.ColorExtract/Runtime/SunEyeVision.ColorExtract.Runtime.csproj">
+      <ComponentId>SunEyeVision.Tool.ColorExtract.Runtime</ComponentId>
+      <ToolId>ColorExtract</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.ColorExtract.Runtime.ColorExtractTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.ColorExtract/Wpf/SunEyeVision.ColorExtract.Wpf.csproj">
+      <ComponentId>SunEyeVision.Tool.ColorExtract.Wpf</ComponentId>
+      <ToolId>ColorExtract</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.ColorExtract.Wpf.ColorExtractEditorFactory</EntryType>
+      <CompanionToolId>ColorExtract</CompanionToolId>
+    </ProductToolComponent>
     <ProductToolComponent Include="tools/SunEyeVision.If/Runtime/SunEyeVision.If.Runtime.csproj">
       <ComponentId>SunEyeVision.Tool.If.Runtime</ComponentId>
       <ToolId>If</ToolId><Role>Runtime</Role>

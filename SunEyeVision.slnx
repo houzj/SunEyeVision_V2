@@ -16,6 +16,10 @@
     <Project Path="tools/SunEyeVision.FrameMean/Runtime/SunEyeVision.FrameMean.Runtime.csproj" />
     <Project Path="tools/SunEyeVision.FrameMean/Wpf/SunEyeVision.FrameMean.Wpf.csproj" />
   </Folder>
+  <Folder Name="/Tools/ColorExtractComponents/">
+    <Project Path="tools/SunEyeVision.ColorExtract/Runtime/SunEyeVision.ColorExtract.Runtime.csproj" />
+    <Project Path="tools/SunEyeVision.ColorExtract/Wpf/SunEyeVision.ColorExtract.Wpf.csproj" />
+  </Folder>
   <Folder Name="/Tools/IfComponents/">
     <Project Path="tools/SunEyeVision.If/Runtime/SunEyeVision.If.Runtime.csproj" />
     <Project Path="tools/SunEyeVision.If/Wpf/SunEyeVision.If.Wpf.csproj" />

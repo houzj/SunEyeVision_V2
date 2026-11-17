@@ -1,0 +1,10 @@
+<UserControl x:Class="SunEyeVision.Tool.ColorExtract.Wpf.Views.ColorExtractParameterEditor"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+ xmlns:parameters="clr-namespace:SunEyeVision.Plugin.Wpf.Presenters.Parameters;assembly=SunEyeVision.Plugin.Wpf"
+ mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="360">
+ <!-- 原件 AlgorithmTab 已取证页只有 Tab_Basic Params；区间列表与面积上下限同页声明。 -->
+ <parameters:DeclaredSettingsView x:Name="Editor" SelectedPageIndex="0"/>
+</UserControl>

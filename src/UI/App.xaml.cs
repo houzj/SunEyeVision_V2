@@ -741,7 +741,11 @@ public partial class App : System.Windows.Application
     private void ShowMainWindow(MainWindow mainWindow, string reason)
     {
         LogStartupStage("MainWindow.Show begin", $"reason={reason}");
-        ShutdownMode = ShutdownMode.OnMainWindowClose;
+        // 始终使用显式关机：主窗口 OnClosed 里已显式调用 Shutdown()，退出行为不变；
+        // 但不能用 OnMainWindowClose——Application.MainWindow 可能被欢迎页或工具参数窗口占用，
+        // 那样关闭这些附属窗口会把整个应用一起关掉（缺陷 DEF-001）。
+        ShutdownMode = ShutdownMode.OnExplicitShutdown;
+        System.Windows.Application.Current.MainWindow = mainWindow;
         mainWindow.Show();
         LogMainWindowState(mainWindow, "after Show");
 

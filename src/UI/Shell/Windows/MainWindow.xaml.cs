@@ -266,6 +266,9 @@ namespace SunEyeVision.UI.Shell.Windows
         /// </summary>
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
+            // 取证：区分"代码调用 Close()"与"系统销毁（Shutdown 连带）"，用于定位误关闭。
+            var closingTrace = Environment.StackTrace.Replace(Environment.NewLine, " | ");
+            Foundation.Logging.PluginLogger.Info("主窗口开始关闭: " + closingTrace, nameof(MainWindow));
             // 启动壳尚未注入工作区时没有会话、插件消费者或保存状态，允许直接关闭。
             if (_viewModel is null)
             {
@@ -440,6 +443,10 @@ namespace SunEyeVision.UI.Shell.Windows
         }
         protected override void OnClosed(EventArgs e)
         {
+            // 主窗口关闭即触发应用退出，因此关闭来源必须可追溯：
+            // 历史上出现过"关闭工具参数窗口却把主窗口一起关掉"的缺陷，靠这段栈定位触发者。
+            var trace = Environment.StackTrace.Replace(Environment.NewLine, " | ");
+            Foundation.Logging.PluginLogger.Info("主窗口关闭来源: " + trace, nameof(MainWindow));
             base.OnClosed(e);
             System.Windows.Application.Current?.Shutdown();
         }

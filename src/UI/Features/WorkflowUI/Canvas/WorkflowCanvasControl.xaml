@@ -1,4 +1,4 @@
-<UserControl x:Class="SunEyeVision.UI.Features.WorkflowUI.Canvas.WorkflowCanvasControl"
+﻿<UserControl x:Class="SunEyeVision.UI.Features.WorkflowUI.Canvas.WorkflowCanvasControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -292,6 +292,17 @@
                                                 <DataTrigger Binding="{Binding NodeDisplayType}" Value="IFBRANCH">
                                                     <Setter Property="Data" Value="{StaticResource IfBranchOutline}"/>
                                                 </DataTrigger><DataTrigger Binding="{Binding NodeDisplayType}" Value="FUNCTION"><Setter Property="Data" Value="{StaticResource FunctionModuleOutline}"/></DataTrigger><DataTrigger Binding="{Binding NodeDisplayType}" Value="TIMER"><Setter Property="Data" Value="{StaticResource TimerModuleOutline}"/></DataTrigger><DataTrigger Binding="{Binding NodeDisplayType}" Value="SHELL"><Setter Property="Data" Value="{StaticResource ShellModuleOutline}"/></DataTrigger><DataTrigger Binding="{Binding NodeDisplayType}" Value="COMMUNCATION"><Setter Property="Data" Value="{StaticResource CommDataOutline}"/></DataTrigger>
+                                            <DataTrigger Binding="{Binding RunState}" Value="Failed">
+                                                <!-- 原件 IsModuleFailed（diagramitemtemplate.xaml:1003-1014）：底板换两段渐变，无橙框；红状态条/白图标/文字0.4 由其余触发器完成。 -->
+                                                <Setter Property="Fill">
+                                                    <Setter.Value>
+                                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                            <GradientStop Color="#FAF7F5" Offset="0"/>
+                                                            <GradientStop Color="#EBE6E2" Offset="1"/>
+                                                        </LinearGradientBrush>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
                                 </Path.Style>
@@ -310,12 +321,6 @@
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding IsEnabled}" Value="False">
                                                 <Setter Property="Visibility" Value="Visible"/>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding RunState}" Value="Failed">
-                                                <!-- 原件 IsModuleFailed：橙实线（虚线只用于"参数未配置完整"）。 -->
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                                <Setter Property="Stroke" Value="{DynamicResource Col_EditProcess_Modular_BorderBrush}"/>
-                                                <Setter Property="StrokeDashArray" Value="{x:Null}"/>
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding IsSelected}" Value="True">
                                                 <Setter Property="Visibility" Value="Visible"/>
@@ -475,7 +480,6 @@
                                 <Setter Property="Effect" Value="{x:Null}"/>
 
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding HasUnconfiguredRequiredInputs}" Value="True"><Setter Property="Opacity" Value="0.86"/></DataTrigger>
                                 <DataTrigger Binding="{Binding IsSubroutineNode}" Value="True">
                                     <Setter Property="BorderThickness" Value="0"/><Setter Property="CornerRadius" Value="0"/><Setter Property="Effect" Value="{x:Null}"/>
                                     <Setter Property="Background"><Setter.Value><MultiBinding Converter="{StaticResource GroupNodeBackground}"><Binding Path="IsEnabled"/><Binding Path="IsSelected"/><Binding Path="Status"/></MultiBinding></Setter.Value></Setter>

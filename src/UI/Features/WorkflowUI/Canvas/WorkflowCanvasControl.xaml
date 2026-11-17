@@ -51,7 +51,20 @@
         <SolidColorBrush x:Key="NodeTimeForeground" Color="#666666"/>
         <SolidColorBrush x:Key="NodeBorderBrush" Color="#CCCCCC"/>
         <SolidColorBrush x:Key="NodeBorderBrushSelected" Color="#0066CC"/>
-      </ResourceDictionary>
+        <!-- 端口可见性：默认透明但保留命中，节点悬停或端口自身悬停时显示。
+             用 Opacity 而不是 Collapsed，否则端口在节点外侧拿不到鼠标事件，永远放不大。 -->
+        <Style x:Key="CanvasPortStyle" TargetType="{x:Type native:ConnectionPort}">
+            <Setter Property="Opacity" Value="0"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=local:WorkflowNodeView}}" Value="True">
+                    <Setter Property="Opacity" Value="1"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsHited, RelativeSource={RelativeSource Self}}" Value="True">
+                    <Setter Property="Opacity" Value="1"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        </ResourceDictionary>
     </UserControl.Resources>
 
     <!-- 主容器 -->
@@ -331,8 +344,37 @@
                                     </Style>
                                 </Path.Style>
                             </Path>
+                            <!-- 状态条：原件 StateFlag，左侧 26px 竖条，OK 绿 / NG 红 -->
+                            <Border x:Name="RunStateBar" Width="26" HorizontalAlignment="Left" VerticalAlignment="Stretch"
+                                    IsHitTestVisible="False" CornerRadius="3,0,0,3">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding RunState}" Value="Passed">
+                                                <Setter Property="Background" Value="{DynamicResource Col_EditProcess_Modular_OK_Status}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding RunState}" Value="Rejected">
+                                                <Setter Property="Background" Value="{DynamicResource Col_EditProcess_Modular_NG_Status}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding RunState}" Value="Failed">
+                                                <Setter Property="Background" Value="{DynamicResource Col_EditProcess_Modular_NG_Status}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                            </Border>
                             <!-- 节点内容 -->
-                            <Grid Margin="{DynamicResource NodeContentMargin}">
+                            <Grid Margin="26,0,0,0">
+                                <Grid.Style>
+                                    <Style TargetType="Grid">
+                                        <Style.Triggers>
+                                            <!-- 原件：NG/失败时编号与名称整体压暗到 0.4 -->
+                                            <DataTrigger Binding="{Binding RunState}" Value="Rejected"><Setter Property="Opacity" Value="0.4"/></DataTrigger>
+                                            <DataTrigger Binding="{Binding RunState}" Value="Failed"><Setter Property="Opacity" Value="0.4"/></DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Grid.Style>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
@@ -388,7 +430,7 @@
                                 <!-- 全局序号 -->
                                 <TextBlock Grid.Column="1" x:Name="NodeIndexText"
                                            Text="{Binding GlobalIndex, StringFormat='{}{0}'}"
-                                           Margin="0" Foreground="#4C4C4C"><TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource NodeGlobalIndexStyle}"><Style.Triggers><DataTrigger Binding="{Binding IsSubroutineNode}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger><DataTrigger Binding="{Binding IsToolboxPreview}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
+                                           Margin="0" Foreground="#4C4C4C"><TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource NodeGlobalIndexStyle}"><Style.Triggers><DataTrigger Binding="{Binding IsSubroutineNode}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger><DataTrigger Binding="{Binding IsToolboxPreview}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger><DataTrigger Binding="{Binding RunState}" Value="Rejected"><Setter Property="Opacity" Value="0.4"/></DataTrigger><DataTrigger Binding="{Binding RunState}" Value="Failed"><Setter Property="Opacity" Value="0.4"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
 
                                 <!-- 节点显示名称（重命名时切换到编辑框） -->
                                 <Grid Grid.Column="2">
@@ -460,19 +502,8 @@
                             <Grid x:Name="PortLayer"
                                   Width="{Binding VisualWidth}" Height="{Binding VisualHeight}"
                                   HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Grid.Style>
-                                    <Style TargetType="Grid">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                        <Style.Triggers>
-                                            <!-- 原厂：节点悬停时四个端口以常态(5x8)出现；具体端口放大由该端口自身 IsHited 驱动。 -->
-                                            <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=local:WorkflowNodeView}}" Value="True">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Grid.Style>
 
-                                <native:ConnectionPort x:Name="LeftPort" Index="0" Orientation="Left"
+                                <native:ConnectionPort Style="{StaticResource CanvasPortStyle}" x:Name="LeftPort" Index="0" Orientation="Left"
                                                        HorizontalAlignment="Left" VerticalAlignment="Center"
                                                        Margin="-20,0,0,0" Tag="LeftPort"
                                                        MouseLeftButtonDown="Port_MouseLeftButtonDown"
@@ -486,14 +517,14 @@
                                     </native:ConnectionPort.RenderTransform>
                                 </native:ConnectionPort>
 
-                                <native:ConnectionPort x:Name="RightPort" Index="2" Orientation="Right"
+                                <native:ConnectionPort Style="{StaticResource CanvasPortStyle}" x:Name="RightPort" Index="2" Orientation="Right"
                                                        HorizontalAlignment="Right" VerticalAlignment="Center"
                                                        Margin="0,0,-20,0" Tag="RightPort"
                                                        MouseLeftButtonDown="Port_MouseLeftButtonDown"
                                                        MouseLeftButtonUp="Port_MouseLeftButtonUp"
                                                        MouseMove="Port_MouseMove"/>
 
-                                <native:ConnectionPort x:Name="TopPort" Index="1" Orientation="Top"
+                                <native:ConnectionPort Style="{StaticResource CanvasPortStyle}" x:Name="TopPort" Index="1" Orientation="Top"
                                                        HorizontalAlignment="Center" VerticalAlignment="Top"
                                                        Margin="0,-25,0,0" Tag="TopPort"
                                                        MouseLeftButtonDown="Port_MouseLeftButtonDown"
@@ -504,7 +535,7 @@
                                     </native:ConnectionPort.RenderTransform>
                                 </native:ConnectionPort>
 
-                                <native:ConnectionPort x:Name="BottomPort" Index="3" Orientation="Bottom"
+                                <native:ConnectionPort Style="{StaticResource CanvasPortStyle}" x:Name="BottomPort" Index="3" Orientation="Bottom"
                                                        HorizontalAlignment="Center" VerticalAlignment="Bottom"
                                                        Margin="0,0,0,-25" Tag="BottomPort"
                                                        MouseLeftButtonDown="Port_MouseLeftButtonDown"

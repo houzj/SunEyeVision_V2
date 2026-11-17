@@ -1,4 +1,4 @@
-<UserControl x:Class="SunEyeVision.UI.Features.WorkflowUI.Canvas.WorkflowCanvasControl"
+﻿<UserControl x:Class="SunEyeVision.UI.Features.WorkflowUI.Canvas.WorkflowCanvasControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -293,10 +293,10 @@
 
                                 <Grid>
                             <!-- 节点底板：原件 NormalModulePathStyle 的填充为 5 段渐变，末尾 #EB6600 让底边呈现一条橙色细线；形状随 NodeDisplayType 切换。 -->
-                            <Path x:Name="NodeBackground" Stretch="Fill" IsHitTestVisible="False">
+                            <Path x:Name="NodeSurface" Stretch="Fill" IsHitTestVisible="False">
                                 <Path.Style>
                                     <Style TargetType="Path">
-                                        <Setter Property="Data" Value="{StaticResource StandardModuleOutline}"/>
+                                <Setter Property="Data" Value="{StaticResource StandardModuleOutline}"/>
                                         <Setter Property="Fill">
                                             <Setter.Value>
                                                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
@@ -383,7 +383,7 @@
                             <!-- 状态条：原件 StateFlag，左侧 26px 竖条，OK 绿 / NG 红 -->
                                 <Border x:Name="RunStateBar" Width="26" HorizontalAlignment="Left" VerticalAlignment="Stretch"
                                         IsHitTestVisible="False" Background="Transparent"
-                                        Clip="{Binding Data, ElementName=NodeBackground}">
+                                        Clip="{Binding Data, ElementName=NodeSurface}">
                                 <Border.Style>
                                     <Style TargetType="Border">
                                         <Setter Property="Background" Value="Transparent"/>

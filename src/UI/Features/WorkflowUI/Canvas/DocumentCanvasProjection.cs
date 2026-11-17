@@ -192,7 +192,8 @@ public sealed class DocumentCanvasProjection : IDisposable
         var state = snapshot switch
         {
             null => CanvasNodeRunState.None,
-            { Status:ExecutionStatus.Cancelled } => CanvasNodeRunState.Cancelled,
+                { Status:ExecutionStatus.Running } => CanvasNodeRunState.Running,
+                { Status:ExecutionStatus.Cancelled } => CanvasNodeRunState.Cancelled,
             { IsSuccess:false } => CanvasNodeRunState.Failed,
             { IsPass:true } => CanvasNodeRunState.Passed,
             _ => CanvasNodeRunState.Rejected
@@ -292,8 +293,7 @@ public sealed class CanvasConnectionProjection : INotifyPropertyChanged
 /// <summary>只组合实际节点，不复制或修改正式领域实体。</summary>
 public interface ICanvasToolIconSource { string? ToolIconKey { get; } }
 
-public enum CanvasNodeRunState { None, Passed, Rejected, Failed, Cancelled }
-
+    public enum CanvasNodeRunState { None, Running, Passed, Rejected, Failed, Cancelled }
 public sealed class CanvasNodeProjection : INotifyPropertyChanged, ICanvasToolIconSource
 {
     private NodeDefinition _definition;
@@ -336,7 +336,8 @@ public sealed class CanvasNodeProjection : INotifyPropertyChanged, ICanvasToolIc
     /// <summary>原件 GroupNodeBackgroundConverter 期望的状态文本（成功/失败）；随 RunState 同步通知。</summary>
     public string? Status => RunState switch
     {
-        CanvasNodeRunState.Passed => "成功",
+            CanvasNodeRunState.Running => "运行中",
+            CanvasNodeRunState.Passed => "成功",
         CanvasNodeRunState.Failed or CanvasNodeRunState.Rejected => "失败",
         _ => null
     };

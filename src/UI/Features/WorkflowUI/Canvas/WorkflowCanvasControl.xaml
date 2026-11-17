@@ -325,6 +325,10 @@
                                     <Style TargetType="Border">
                                         <Setter Property="Background" Value="Transparent"/>
                                         <Style.Triggers>
+                                            <DataTrigger Binding="{Binding RunState}" Value="Running">
+                                                <!-- 原件激活色 #FFA70F：执行中的节点状态条与连线同为激活橙。 -->
+                                                <Setter Property="Background" Value="{DynamicResource Col_EditProcess_Modular_Running_Status}"/>
+                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding RunState}" Value="Passed">
                                                 <Setter Property="Background" Value="{DynamicResource Col_EditProcess_Modular_OK_Status}"/>
                                             </DataTrigger>

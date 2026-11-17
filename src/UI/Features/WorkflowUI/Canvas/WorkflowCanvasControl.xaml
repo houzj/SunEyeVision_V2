@@ -431,7 +431,7 @@
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding Status}" Value="{x:Null}"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
                                                     <DataTrigger Binding="{Binding IsSubroutineNode}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
-                                                </Style.Triggers>
+                                                <DataTrigger Binding="{Binding NodeDisplayType}" Value="FUNCTION"><Setter Property="HorizontalAlignment" Value="Center"/><Setter Property="VerticalAlignment" Value="Top"/><Setter Property="Margin" Value="0,4,0,0"/></DataTrigger><DataTrigger Binding="{Binding NodeDisplayType}" Value="TIMER"><Setter Property="HorizontalAlignment" Value="Center"/><Setter Property="VerticalAlignment" Value="Top"/><Setter Property="Margin" Value="0,4,0,0"/></DataTrigger></Style.Triggers>
                                             </Style>
                                         </Image.Style>
                                     </Image>
@@ -443,7 +443,7 @@
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding Status}" Value="{x:Null}"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
                                                     <DataTrigger Binding="{Binding IsSubroutineNode}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
-                                                </Style.Triggers>
+                                                <DataTrigger Binding="{Binding NodeDisplayType}" Value="FUNCTION"><Setter Property="HorizontalAlignment" Value="Center"/><Setter Property="VerticalAlignment" Value="Top"/><Setter Property="Margin" Value="0,4,0,0"/></DataTrigger><DataTrigger Binding="{Binding NodeDisplayType}" Value="TIMER"><Setter Property="HorizontalAlignment" Value="Center"/><Setter Property="VerticalAlignment" Value="Top"/><Setter Property="Margin" Value="0,4,0,0"/></DataTrigger></Style.Triggers>
                                             </Style>
                                         </Image.Style>
                                     </Image>

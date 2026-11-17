@@ -14,7 +14,7 @@ public sealed class ColorExtractTool : IToolDefinition<ColorExtractSettings, Col
     public string ToolId => Id;
 
     // 分类必须与工具箱目录里已核实映射的分类一致（原件位于「颜色处理」）。
-    public ToolCatalogDescriptor Catalog { get; } = new("颜色抽取", "按颜色区间提取符合范围的像素并输出提取面积与外接矩形", "color-extract", "颜色处理", 10, "IMAGE");
+    public ToolCatalogDescriptor Catalog { get; } = new("颜色抽取", "按颜色区间提取符合范围的像素并输出提取面积与外接矩形", "color-extract", "颜色处理", 10, "DEFAULT");
 
     public ToolSchema SettingsSchema => ColorExtractFields.Schema;
 
@@ -22,7 +22,7 @@ public sealed class ColorExtractTool : IToolDefinition<ColorExtractSettings, Col
 
     public ResultProjectionDescriptor ResultProjection { get; } = new(ResultProjectionKind.PropertyList, ResultCardinality.One, new[]
     {
-        new ResultColumnDescriptor("image", "提取图像", new(ColorExtractOutput.Image)),
+        new ResultColumnDescriptor("DEFAULT", "提取图像", new(ColorExtractOutput.Image)),
         new ResultColumnDescriptor("area", "提取总面积", new(ColorExtractOutput.TotalArea), DecimalPlaces: 0),
         new ResultColumnDescriptor("roi", "提取区域外接矩形", new(ColorExtractOutput.Roi)),
         new ResultColumnDescriptor("time", "模块耗时", new(ColorExtractOutput.ModuleRunTime), "ms", DecimalPlaces: 3)

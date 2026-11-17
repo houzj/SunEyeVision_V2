@@ -91,15 +91,18 @@ namespace SunEyeVision.UI.Shared
         /// <summary>
         /// 计算节点的边界矩形（Position为HitArea中心点）
         /// </summary>
-        public Rect GetNodeRect(Point position)
-        {
-            return new Rect(
-                position.X - NodeWidth / 2,
-                position.Y - NodeHeight / 2,
-                NodeWidth,
-                NodeHeight
-            );
-        }
+    public Rect GetNodeRect(Point position) => GetNodeRect(position, NodeWidth, NodeHeight);
+
+    /// <summary>按实际渲染宽高计算节点矩形（条件分支高度为 40）。</summary>
+    public Rect GetNodeRect(Point position, double width, double height)
+    {
+        return new Rect(
+            position.X - width / 2,
+            position.Y - height / 2,
+            width,
+            height
+        );
+    }
 
         /// <summary>
         /// 计算节点中心点（Position本身就是中心点）
@@ -112,18 +115,26 @@ namespace SunEyeVision.UI.Shared
         /// <summary>
         /// 计算上端口中心位置
         /// </summary>
-        public Point GetTopPortPosition(Point position)
-        {
-            return new Point(position.X, position.Y - NodeHeight / 2);
-        }
+
+    /// <summary>上端口：按实际渲染高度贴上边。</summary>
+    public Point GetTopPortPosition(Point position) => GetTopPortPosition(position, NodeHeight);
+
+    public Point GetTopPortPosition(Point position, double height)
+    {
+        return new Point(position.X, position.Y - height / 2);
+    }
 
         /// <summary>
         /// 计算下端口中心位置
         /// </summary>
-        public Point GetBottomPortPosition(Point position)
-        {
-            return new Point(position.X, position.Y + NodeHeight / 2);
-        }
+
+    /// <summary>下端口：按实际渲染高度贴下边（条件分支等变高节点使用）。</summary>
+    public Point GetBottomPortPosition(Point position) => GetBottomPortPosition(position, NodeHeight);
+
+    public Point GetBottomPortPosition(Point position, double height)
+    {
+        return new Point(position.X, position.Y + height / 2);
+    }
 
         /// <summary>
         /// 计算左端口中心位置

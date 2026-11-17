@@ -17,7 +17,7 @@ public sealed class IfTool:IToolDefinition<IfSettings,IfOutput>,IToolSettingsFie
     public static ToolSchema Schema{get;}=new(Array.Empty<Port>(),IfOutput.Ports,
         outputDisplay:IfOutput.Display,controlOutputs:Branches);
     public string ToolId=>Id;
-    public ToolCatalogDescriptor Catalog{get;}=new("条件分支","按取值是否落在有效区间选择分支走向","branch","逻辑工具",10,"DEFAULT");
+    public ToolCatalogDescriptor Catalog{get;}=new("条件分支","按取值是否落在有效区间选择分支走向","branch","逻辑工具",10,"IFBRANCH");
     public ToolSchema SettingsSchema=>IfFields.Schema;
     public ToolSchema ResultSchema{get;}=new(Array.Empty<Port>(),IfOutput.Ports,outputDisplay:IfOutput.Display);
     public ResultProjectionDescriptor ResultProjection{get;}=new(ResultProjectionKind.PropertyList,ResultCardinality.One,new[]

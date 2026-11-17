@@ -361,14 +361,16 @@ public sealed class CanvasNodeProjection : INotifyPropertyChanged, ICanvasToolIc
     // 节点宽度固定（与原件一致）：名称过长时由文本省略号截断，不能让名称把节点撑开，
     // 否则长名称节点会破坏画布布局与端口固定间距。
     public double VisualWidth => StyleConfigTyped.NodeWidth;
-    public double VisualHeight => StyleConfigTyped.NodeHeight;
+    /// <summary>条件分支(IFBRANCH)节点比普通节点高：原件 IfBranchPath 是 110×40。</summary>
+    public double VisualHeight => string.Equals(NodeDisplayType, "IFBRANCH", StringComparison.OrdinalIgnoreCase)
+        ? 40d : StyleConfigTyped.NodeHeight;
     public double HitAreaWidth => VisualWidth + 20;
     public double HitAreaHeight => VisualHeight + 20;
     public double HitAreaLeft => X - HitAreaWidth / 2;
     public double HitAreaTop => Y - HitAreaHeight / 2;
-    public Rect NodeRect => StyleConfigTyped.GetNodeRect(new Point(X, Y));
-    public Point TopPortPosition => StyleConfigTyped.GetTopPortPosition(new Point(X, Y));
-    public Point BottomPortPosition => StyleConfigTyped.GetBottomPortPosition(new Point(X, Y));
+    public Rect NodeRect => StyleConfigTyped.GetNodeRect(new Point(X, Y), VisualWidth, VisualHeight);
+    public Point TopPortPosition => StyleConfigTyped.GetTopPortPosition(new Point(X, Y), VisualHeight);
+    public Point BottomPortPosition => StyleConfigTyped.GetBottomPortPosition(new Point(X, Y), VisualHeight);
     public Point LeftPortPosition => StyleConfigTyped.GetLeftPortPosition(new Point(X, Y));
     public Point RightPortPosition => StyleConfigTyped.GetRightPortPosition(new Point(X, Y));
     public bool IsSelected { get => _selected; set { if (_selected != value) { _selected = value; Notify(nameof(IsSelected)); } } }

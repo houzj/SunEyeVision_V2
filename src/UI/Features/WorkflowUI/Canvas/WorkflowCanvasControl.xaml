@@ -33,6 +33,7 @@
         <converters:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
         <PathGeometry x:Key="StandardModuleOutline" Figures="M106,0 A4,4 0 0 1 110,4 L110,26 A4,4 0 0 1 106,30 L4,30 A4,4 0 0 1 0,26 L0,4 A4,4 0 0 1 4,0 Z"/>
         <PathGeometry x:Key="ImageModuleOutline" Figures="M15,0 L95,0 A15,15 0 0 1 110,15 A15,15 0 0 1 95,30 L15,30 A15,15 0 0 1 0,15 A15,15 0 0 1 15,0 Z"/>
+    <PathGeometry x:Key="IfBranchOutline" Figures="M0,12 A2,2 0 0 1 2,10 L54,1 A2,2 0 0 1 56,1 L108,10 A2,2 0 0 1 110,12 L110,28 A2,2 0 0 1 108,30 L56,39 A2,2 0 0 1 54,39 L2,30 A2,2 0 0 1 0,28 Z"/>
 
         <!-- 箭头标记 - 尖端指向右侧（度的方向），方便旋转 -->
         <!-- 箭头长度与 BezierPathCalculator.ArrowLength 保持一致（15px） -->
@@ -307,6 +308,9 @@
                                             <DataTrigger Binding="{Binding NodeDisplayType}" Value="IMAGE">
                                                 <Setter Property="Data" Value="{StaticResource ImageModuleOutline}"/>
                                             </DataTrigger>
+                                                <DataTrigger Binding="{Binding NodeDisplayType}" Value="IFBRANCH">
+                                                    <Setter Property="Data" Value="{StaticResource IfBranchOutline}"/>
+                                                </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
                                 </Path.Style>
@@ -362,6 +366,9 @@
                                             <DataTrigger Binding="{Binding NodeDisplayType}" Value="IMAGE">
                                                 <Setter Property="Data" Value="{StaticResource ImageModuleOutline}"/>
                                             </DataTrigger>
+                                                <DataTrigger Binding="{Binding NodeDisplayType}" Value="IFBRANCH">
+                                                    <Setter Property="Data" Value="{StaticResource IfBranchOutline}"/>
+                                                </DataTrigger>
                                             <DataTrigger Binding="{Binding IsSubroutineNode}" Value="True">
                                                 <Setter Property="Visibility" Value="Collapsed"/>
                                             </DataTrigger>

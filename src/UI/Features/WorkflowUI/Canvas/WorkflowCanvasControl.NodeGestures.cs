@@ -25,7 +25,7 @@ public partial class WorkflowCanvasControl
         /// <summary>节点 →（预览快照, 相对中心的偏移）。快照只在拖动开始时建一次，之后只改坐标。</summary>
         public Dictionary<CanvasNodeProjection, (Rectangle Ghost, double Dx, double Dy)> GhostMap { get; } = new();
         /// <summary>预览根容器：装全部节点快照，整体平移只改容器坐标（原件 AdornerPanel 同构）。</summary>
-        public FrameworkElement? Preview { get; set; }
+        public DragPreviewAdorner? Preview { get; set; }
         /// <summary>上次吸附落点。吸附后位置没变就整帧跳过，避免每帧重排预览与对齐线。</summary>
         public long LastSnapKey { get; set; } = long.MinValue;
         public bool Copy { get; set; }
@@ -235,8 +235,8 @@ delta = new Vector(Math.Round((left + delta.X) / 5) * 5 - left, Math.Round((top 
         EnsureCanvasNodePreview(session);
         if (session.Preview is not null)
         {
-            System.Windows.Controls.Canvas.SetLeft(session.Preview, session.FrameRect.X + 10 + delta.X);
-            System.Windows.Controls.Canvas.SetTop(session.Preview, session.FrameRect.Y + 10 + delta.Y);
+            System.Windows.Controls.Canvas.SetLeft(session.Preview.Layer, session.FrameRect.X + 10 + delta.X);
+            System.Windows.Controls.Canvas.SetTop(session.Preview.Layer, session.FrameRect.Y + 10 + delta.Y);
         }        if (session.After.Count == 1)
         {
             var single = session.After.Single();
@@ -258,15 +258,20 @@ delta = new Vector(Math.Round((left + delta.X) / 5) * 5 - left, Math.Round((top 
     }
     private void HideCanvasNodeGhosts() { RemoveCanvasNodeGhosts(); ClearCanvasPlacementFeedback(); ClearCanvasInsertionWire(); }
     /// <summary>建预览根容器（只建一次）。原件：VisualTreeHelper.GetDescendantBounds + 0.7 不拉伸 VisualBrush。</summary>
+    /// <summary>建拖动预览（只建一次）：挂在 Adorner 层，内容为各节点的 0.7 VisualBrush 快照。
+    /// 原件 DiagramItem.xaml.cs:654-672 同样把预览放进 AdornerPanel，不让画布参与布局。</summary>
     private void EnsureCanvasNodePreview(NodeDragSession session)
     {
         if (session.Preview is not null) return;
         var frame = session.FrameRect;
         if (frame.IsEmpty) return;
-        // 原件用 VisualTreeHelper.GetDescendantBounds(this) 作预览尺寸，并把 bounds.X/Y 作为 Margin 抵消负偏移；
-        // FrameRect 是额外 inflate(10) 的包围框，作原点会整体偏 10px，这里还原成真实边界原点。
+        var adornerLayer = System.Windows.Documents.AdornerLayer.GetAdornerLayer(WorkflowCanvas);
+        if (adornerLayer is null) return;
+        var adorner = new DragPreviewAdorner(WorkflowCanvas);
         var originX = frame.X + 10; var originY = frame.Y + 10;
-        var root = new System.Windows.Controls.Canvas { Width = frame.Width - 20, Height = frame.Height - 20, IsHitTestVisible = false, Opacity = .7 };
+        adorner.Layer.Width = frame.Width - 20;
+        adorner.Layer.Height = frame.Height - 20;
+        adorner.Layer.Opacity = .7;
         foreach (var pair in session.Before)
         {
             var visual = FindCanvasNodeVisual(WorkflowCanvas, pair.Key);
@@ -282,15 +287,13 @@ delta = new Vector(Math.Round((left + delta.X) / 5) * 5 - left, Math.Round((top 
                 pair.Value.X - pair.Key.NodeRect.Width / 2 - 10 + bounds.X - originX);
             System.Windows.Controls.Canvas.SetTop(ghost,
                 pair.Value.Y - pair.Key.NodeRect.Height / 2 - 10 + bounds.Y - originY);
-            root.Children.Add(ghost);
+            adorner.Layer.Children.Add(ghost);
         }
-        Panel.SetZIndex(root, 9000);
-        System.Windows.Controls.Canvas.SetLeft(root, originX);
-        System.Windows.Controls.Canvas.SetTop(root, originY);
-        WorkflowCanvas.Children.Add(root);
-        session.Preview = root;
+        System.Windows.Controls.Canvas.SetLeft(adorner.Layer, originX);
+        System.Windows.Controls.Canvas.SetTop(adorner.Layer, originY);
+        adornerLayer.Add(adorner);
+        session.Preview = adorner;
     }
-
     /// <summary>销毁预览根容器与对齐线：三者一起清，避免残留。</summary>
     private void DisposeCanvasNodePreview(NodeDragSession session)
     {
@@ -313,7 +316,7 @@ delta = new Vector(Math.Round((left + delta.X) / 5) * 5 - left, Math.Round((top 
     /// 线段从自身边缘外 5px 延伸到目标边缘外 5px。</summary>
     private void DrawCanvasAlignLines(NodeDragSession session, Vector delta)
     {
-        foreach (var old in session.AlignLines) WorkflowCanvas.Children.Remove(old);
+        foreach (var old in session.AlignLines) (session.Preview?.Layer.Children ?? WorkflowCanvas.Children).Remove(old);
         session.AlignLines.Clear();
         if (session.Before.Count == 0) return;
         var anchor = session.Before.First().Key;
@@ -354,8 +357,9 @@ delta = new Vector(Math.Round((left + delta.X) / 5) * 5 - left, Math.Round((top 
             StrokeLineJoin = PenLineJoin.Round,
             X1 = x1, Y1 = y1, X2 = x2, Y2 = y2
         };
-        Panel.SetZIndex(line, 8999);
-        WorkflowCanvas.Children.Add(line);
+        // 对齐线也画在 Adorner 层：原件 DrawLine 就是往 adornerPanel.Children 里加，不参与画布布局。
+        var preview = _canvasNodeMove?.Preview;
+        if (preview is not null) { preview.Layer.Children.Add(line); } else { WorkflowCanvas.Children.Add(line); }
         _canvasNodeMove?.AlignLines.Add(line);
     }
     private void CancelCanvasNodeMove() { HideCanvasNodeGhosts(); _canvasNodeMove = null; }

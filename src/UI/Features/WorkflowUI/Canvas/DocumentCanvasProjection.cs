@@ -360,10 +360,12 @@ public sealed class CanvasNodeProjection : INotifyPropertyChanged, ICanvasToolIc
     public NodeStyleConfig StyleConfigTyped => IsSubroutineNode ? NodeStyles.Group : NodeStyles.Standard;
     // 节点宽度固定（与原件一致）：名称过长时由文本省略号截断，不能让名称把节点撑开，
     // 否则长名称节点会破坏画布布局与端口固定间距。
-    public double VisualWidth => StyleConfigTyped.NodeWidth;
-    /// <summary>条件分支(IFBRANCH)节点比普通节点高：原件 IfBranchPath 是 110×40。</summary>
-    public double VisualHeight => string.Equals(NodeDisplayType, "IFBRANCH", StringComparison.OrdinalIgnoreCase)
-        ? 40d : StyleConfigTyped.NodeHeight;
+    /// <summary>方形模板族：原件用 40×40 模板（图标在上、编号在下），如 FUNCTION / TIMER。</summary>
+    private bool IsSquareNode => NodeDisplayType is "FUNCTION" or "TIMER";
+    /// <summary>条件分支：原件 IfBranchPath 为 110×40。</summary>
+    private bool IsBranchNode => string.Equals(NodeDisplayType, "IFBRANCH", StringComparison.OrdinalIgnoreCase);
+    public double VisualWidth => IsSquareNode ? 40d : StyleConfigTyped.NodeWidth;
+    public double VisualHeight => IsSquareNode ? 40d : (IsBranchNode ? 40d : StyleConfigTyped.NodeHeight);
     public double HitAreaWidth => VisualWidth + 20;
     public double HitAreaHeight => VisualHeight + 20;
     public double HitAreaLeft => X - HitAreaWidth / 2;

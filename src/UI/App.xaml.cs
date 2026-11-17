@@ -532,12 +532,10 @@ public partial class App : System.Windows.Application
         if (category is null || mainWindow.DataContext is not MainWindowViewModel vm) return;
         try
         {
-            vm.IsToolboxCollapsed = false;
-            vm.Toolbox.IsCompactMode = false;
-            vm.Toolbox.SelectedCategory = category;
-            // 展开态下列表按分类展开呈现，必须真正展开目标分类，否则选中项不可见。
+            // 默认保持工具箱收起（图标条），不做自动展开：引导页只决定优先分类。
+            // 仅在用户已手动展开列表时，才把目标分类展开到可见位置。
             var target = vm.Toolbox.Categories.FirstOrDefault(c => c.Name == category);
-            if (target is not null)
+            if (target is not null && !vm.Toolbox.IsCompactMode)
             {
                 foreach (var item in vm.Toolbox.Categories) item.IsExpanded = ReferenceEquals(item, target);
                 target.IsExpanded = true;
@@ -641,6 +639,7 @@ public partial class App : System.Windows.Application
             var page = new StartPageWindow(StartPreferences.HideStartPage, recent, SetStartPageHidden, RemoveRecentSolution);
             if (wasVisible) page.Owner = mainWindow;
             page.ShowDialog();
+            LogStartupStage("StartPage.Result", $"action={page.SelectedAction}; template={page.SelectedTemplate ?? "-"}");
             // 原厂语义：卡片只记录工具箱优先分类，关闭只收尾，两者都不创建方案。
             if (page.SelectedTemplate is { Length: > 0 } preset)
             {

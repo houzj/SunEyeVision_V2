@@ -107,8 +107,7 @@ public partial class StartPageWindow : Window
             return;
         if (IsInteractiveSource(e.OriginalSource as DependencyObject))
             return;
-        try { DragMove(); }
-        catch (InvalidOperationException) { /* window is closing */ }
+        BeginWindowDrag(e);
         e.Handled = true;
     }
 
@@ -120,10 +119,49 @@ public partial class StartPageWindow : Window
         // window, while controls retain their own click, selection and scrolling semantics.
         if (IsInteractiveSource(e.OriginalSource as DependencyObject))
             return;
-        try { DragMove(); }
-        catch (InvalidOperationException) { /* window is closing */ }
+        BeginWindowDrag(e);
         e.Handled = true;
     }
+
+    // 自定义拖动：系统的 Window.DragMove() 会走 WM_NCLBUTTONDOWN，桌面未开启
+    // “拖动时显示窗口内容”时只移动一个虚线框；这里改为直接跟随鼠标改写 Left/Top。
+    private bool _draggingWindow;
+    private System.Windows.Point _dragPointerOffset;
+
+    private void BeginWindowDrag(MouseEventArgs e)
+    {
+        if (WindowState != WindowState.Normal) return;
+        // 边缘 6px 留给系统缩放热区（WindowChrome.ResizeBorderThickness），不参与移动。
+        var local = e.GetPosition(this);
+        if (local.X < 6 || local.Y < 6 || local.X > ActualWidth - 6 || local.Y > ActualHeight - 6) return;
+        _dragPointerOffset = ToDip(PointToScreen(e.GetPosition(this)));
+        _dragPointerOffset.Offset(-Left, -Top);
+        _draggingWindow = CaptureMouse();
+    }
+
+    protected override void OnMouseMove(MouseEventArgs e)
+    {
+        base.OnMouseMove(e);
+        if (!_draggingWindow) return;
+        var pointer = ToDip(PointToScreen(e.GetPosition(this)));
+        Left = pointer.X - _dragPointerOffset.X;
+        Top = pointer.Y - _dragPointerOffset.Y;
+    }
+
+    protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
+    {
+        if (_draggingWindow)
+        {
+            _draggingWindow = false;
+            ReleaseMouseCapture();
+        }
+        base.OnMouseLeftButtonUp(e);
+    }
+
+    private System.Windows.Point ToDip(System.Windows.Point devicePoint)
+        => PresentationSource.FromVisual(this)?.CompositionTarget is { } target
+            ? target.TransformFromDevice.Transform(devicePoint)
+            : devicePoint;
 
     // 只拦真正需要鼠标交互的控件；Label/TextBlock/Border 等呈现元素放行拖动，
     // 对齐原件 GuideWindow「整窗任意空白处按住即可移动」的行为。

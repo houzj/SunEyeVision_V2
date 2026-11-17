@@ -7,7 +7,7 @@ using SunEyeVision.Tool.ColorExtract.Wpf.Design;
 namespace SunEyeVision.Tool.ColorExtract.Wpf.Views;
 
 /// <summary>设计器与运行时共用同一套参数组装链，不另造预览模型。</summary>
-public partial class ColorExtractParameterEditor : UserControl, IToolSettingsView
+public partial class ColorExtractParameterEditor : UserControl, IToolSettingsView, IToolSettingsViewReady
 {
     private event Action? ViewChanged;
     private bool _disposed;
@@ -54,6 +54,8 @@ public partial class ColorExtractParameterEditor : UserControl, IToolSettingsVie
     private void OnFieldsChanged() => ViewChanged?.Invoke();
     public bool TryCapture(out FieldSettings fields, out string error)
         => Editor.TryCapture(out fields, out error);
+    /// <summary>参数页就绪信号：字段组合在构造内同步完成。</summary>
+    public Task ReadyTask => Task.CompletedTask;
     public void Dispose()
     {
         if (_disposed) return; _disposed = true; _generation++;

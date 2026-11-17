@@ -11,7 +11,7 @@ namespace SunEyeVision.Tool.MarkFind.Wpf.Views;
 /// 模板面板（新建/清空/导出/导入 + 模型摘要）挂在模板参数页顶部，
 /// 对应原件 <c>MarkFindConfigPanal</c> 的位置。宿主仍独占执行、捕获与释放。
 /// </summary>
-public partial class MarkFindParameterEditor : UserControl, IToolSettingsView
+public partial class MarkFindParameterEditor : UserControl, IToolSettingsView, IToolSettingsViewReady
 {
     private MarkFindTemplatePanel? _templatePanel;
     private bool _disposed;
@@ -41,7 +41,13 @@ public partial class MarkFindParameterEditor : UserControl, IToolSettingsView
         };
         var anchored = (options.AdditionalAnchoredContents ?? Array.Empty<AnchoredSettingsContent>()).ToList();
         anchored.Add(new AnchoredSettingsContent(MarkFindFields.PyramidScaleMode, panel, InsertBefore: true));
-        Editor.Bind(draft, options with { SuppressedFieldRows = suppressed, AdditionalAnchoredContents = anchored });
+        var composed = options with
+        {
+            InputSection = options.InputSection ?? "基本参数",
+            SuppressedFieldRows = suppressed,
+            AdditionalAnchoredContents = anchored
+        };
+        Editor.Bind(draft, composed);
         _templatePanel = panel;
     }
 
@@ -55,6 +61,8 @@ public partial class MarkFindParameterEditor : UserControl, IToolSettingsView
         => Editor.ReadNumericModels(scope, fieldId);
     public event Action? Changed { add => Editor.Changed += value; remove => Editor.Changed -= value; }
     public bool TryCapture(out FieldSettings fields, out string error) => Editor.TryCapture(out fields, out error);
+    /// <summary>参数页就绪信号：模板面板在 Bind 内同步构建。</summary>
+    public Task ReadyTask => Task.CompletedTask;
 
     public void Dispose()
     {

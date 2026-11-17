@@ -287,6 +287,31 @@
                                     x:Name="NodeBorder">
 
                                 <Grid>
+                            <!-- 节点底板：原件 NormalModulePathStyle 的填充为 5 段渐变，末尾 #EB6600 让底边呈现一条橙色细线；形状随 NodeDisplayType 切换。 -->
+                            <Path x:Name="NodeBackground" Stretch="Fill" IsHitTestVisible="False">
+                                <Path.Style>
+                                    <Style TargetType="Path">
+                                        <Setter Property="Data" Value="{StaticResource StandardModuleOutline}"/>
+                                        <Setter Property="Fill">
+                                            <Setter.Value>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                    <GradientStop Color="#FAF7F5" Offset="0"/>
+                                                    <GradientStop Color="#F3F6F5" Offset="0.47"/>
+                                                    <GradientStop Color="#ECEDF0" Offset="0.82"/>
+                                                    <GradientStop Color="#EBE6E2" Offset="0.97"/>
+                                                    <GradientStop Color="#EB6600" Offset="1"/>
+                                                </LinearGradientBrush>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding NodeDisplayType}" Value="IMAGE">
+                                                <Setter Property="Data" Value="{StaticResource ImageModuleOutline}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Path.Style>
+                            </Path>
+                            
                             <Canvas x:Name="StateFlag" Width="26" HorizontalAlignment="Left" Margin="-2,-2,0,-2"
                                     Clip="{Binding Data, ElementName=NodeStatusBorder}" IsHitTestVisible="False">
                                 <Canvas.Style>
@@ -345,8 +370,9 @@
                                 </Path.Style>
                             </Path>
                             <!-- 状态条：原件 StateFlag，左侧 26px 竖条，OK 绿 / NG 红 -->
-                            <Border x:Name="RunStateBar" Width="26" HorizontalAlignment="Left" VerticalAlignment="Stretch"
-                                    IsHitTestVisible="False" CornerRadius="3,0,0,3">
+                                <Border x:Name="RunStateBar" Width="26" HorizontalAlignment="Left" VerticalAlignment="Stretch"
+                                        IsHitTestVisible="False" Background="Transparent"
+                                        Clip="{Binding Data, ElementName=NodeBackground}">
                                 <Border.Style>
                                     <Style TargetType="Border">
                                         <Setter Property="Background" Value="Transparent"/>

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 using System.Collections.Generic;
 
@@ -1054,8 +1054,13 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
                     if (parent == null) break;
                     portScope = parent;
                 }
-                var ellipses = WorkflowVisualHelper.FindAllVisualChildren<ConnectionPort>(portScope);
+                // 端口层默认 Collapsed：悬停节点时整体显示为小号端口，悬停具体端口时由该端口自身放大（与原厂一致）。
+            var portLayer = WorkflowVisualHelper.FindAllVisualChildren<Grid>(portScope)
+                .FirstOrDefault(g => g.Name == "PortLayer");
+            if (portLayer is not null) portLayer.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
 
+
+            var ellipses = WorkflowVisualHelper.FindAllVisualChildren<ConnectionPort>(portScope);
                 foreach (var ellipse in ellipses)
 
                 {
@@ -1070,7 +1075,7 @@ namespace SunEyeVision.UI.Features.WorkflowUI.Canvas
 
                         // Collapsed 的元素不可见且不响应鼠标事件
 
-                        ellipse.IsHited = isVisible;
+                        if (!isVisible) ellipse.IsHited = false;
 
                     }
 

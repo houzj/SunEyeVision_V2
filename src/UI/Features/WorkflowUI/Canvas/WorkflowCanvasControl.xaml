@@ -1,4 +1,4 @@
-<UserControl x:Class="SunEyeVision.UI.Features.WorkflowUI.Canvas.WorkflowCanvasControl"
+﻿<UserControl x:Class="SunEyeVision.UI.Features.WorkflowUI.Canvas.WorkflowCanvasControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -341,10 +341,10 @@
 
                                 <!-- 节点类型图标（非子程序）/ 子程序设置按钮；方案 §6 五态：状态色块 + 图标重叠 -->
                                 <Grid Grid.Column="0">
-                                    <Grid.Style><Style TargetType="Grid"><Setter Property="Width" Value="24"/><Style.Triggers><DataTrigger Binding="{Binding IsSubroutineNode}" Value="True"><Setter Property="Width" Value="31"/></DataTrigger></Style.Triggers></Style></Grid.Style>
+                                    <Grid.Style><Style TargetType="Grid"><Setter Property="Width" Value="26"/><Style.Triggers><DataTrigger Binding="{Binding IsSubroutineNode}" Value="True"><Setter Property="Width" Value="31"/></DataTrigger></Style.Triggers></Style></Grid.Style>
                                     <!-- 图标叠上居中；状态时反白；对子程序节点隐藏 -->
                                     <!-- 正常态彩色图标 / 状态态白色图标：与原件 LogoIm 双图机制一致 -->
-                                    <Image Width="16" Height="16" Margin="4,0,0,0" VerticalAlignment="Center">
+                                    <Image Width="20" Height="20" Margin="4,0,0,0" VerticalAlignment="Center">
                                         <Image.Source><Binding Converter="{StaticResource ToolNodeIcon}"/></Image.Source>
                                         <Image.Style>
                                             <Style TargetType="Image">
@@ -356,7 +356,7 @@
                                             </Style>
                                         </Image.Style>
                                     </Image>
-                                    <Image Width="16" Height="16" Margin="4,0,0,0" VerticalAlignment="Center">
+                                    <Image Width="20" Height="20" Margin="4,0,0,0" VerticalAlignment="Center">
                                         <Image.Source><Binding Converter="{StaticResource ToolNodeIcon}" ConverterParameter="state"/></Image.Source>
                                         <Image.Style>
                                             <Style TargetType="Image">
@@ -457,9 +457,20 @@
                     </Border>
                             <!-- 连接端口：原件 Connector 规格（20×30 命中区、5×8 橙条、命中放大 8.5×12），节点悬停时四个方位常驻显示 -->
                             <!-- 端口层：显隐由 WorkflowNodeView 代码直接控制，对应原件 DiagramItem 的端口触发器 -->
-                            <Grid x:Name="PortLayer" Visibility="Collapsed"
+                            <Grid x:Name="PortLayer"
                                   Width="{Binding VisualWidth}" Height="{Binding VisualHeight}"
                                   HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Grid.Style>
+                                    <Style TargetType="Grid">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <!-- 原厂：节点悬停时四个端口以常态(5x8)出现；具体端口放大由该端口自身 IsHited 驱动。 -->
+                                            <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=local:WorkflowNodeView}}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Grid.Style>
 
                                 <native:ConnectionPort x:Name="LeftPort" Index="0" Orientation="Left"
                                                        HorizontalAlignment="Left" VerticalAlignment="Center"

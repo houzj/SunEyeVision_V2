@@ -20,6 +20,20 @@ public partial class ConnectionPort : Control
     }
 
     /// <summary>端口是否被命中，命中时导向条放大。</summary>
+    /// <summary>悬停在端口上时进入命中态（放大），离开即恢复——与原件 Connector 的 IsHited 语义一致。</summary>
+    protected override void OnMouseEnter(System.Windows.Input.MouseEventArgs e)
+    {
+        base.OnMouseEnter(e);
+        IsHited = true;
+        e.Handled = true;
+    }
+
+    protected override void OnMouseLeave(System.Windows.Input.MouseEventArgs e)
+    {
+        base.OnMouseLeave(e);
+        IsHited = false;
+    }
+
     public bool IsHited
     {
         get => (bool)GetValue(IsHitedProperty);

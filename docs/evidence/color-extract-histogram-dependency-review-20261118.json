@@ -50,10 +50,21 @@
       "type": "HikPcUI.Controls resources GridBrushImg.png",
       "status": "original-resource-identity-not-registered-in-current-consumer",
       "evidence": "HikHistogramSingle.xaml ImageBrush source"
+    },
+    {
+      "type": "HikPcUI.ImageView.HikPolygon / HikPath",
+      "status": "unresolved",
+      "evidence": "SquareArea.xaml.cs ChangeTX/ChangeTY/ChangeX/ChangeY type checks",
+      "reason": "direct compile-time references; removing branches or replacing with reflection would alter original dependency semantics"
+    },
+    {
+      "type": "VM.PcUI ImageView/ROIDictionary.xaml",
+      "status": "unresolved-resource",
+      "evidence": "SquareArea.xaml merged dictionary and SquareArea.OriBrush",
+      "reason": "ROIBaseColor, ROIMouseOverColor, thickness2Double and RectangleAreaColor resource identities not registered in current consumer"
     }
   ],
   "decision": "do-not-migrate-into-ColorExtract-until-dependency-closure",
   "consumer": "ColorExtract paramusercontroldatatemplate channels 1-3",
   "evidence_boundary": "static source only; no dynamic histogram runtime proof"
 }
-

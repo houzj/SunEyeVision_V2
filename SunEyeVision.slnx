@@ -56,6 +56,14 @@
     <Project Path="tools/SunEyeVision.LineFind/Runtime/SunEyeVision.LineFind.Runtime.csproj" />
     <Project Path="tools/SunEyeVision.LineFind/Wpf/SunEyeVision.LineFind.Wpf.csproj" />
   </Folder>
+  <Folder Name="/Tools/CircleCircleMeasureComponents/">
+    <Project Path="tools/SunEyeVision.CircleCircleMeasure/Runtime/SunEyeVision.CircleCircleMeasure.Runtime.csproj" />
+    <Project Path="tools/SunEyeVision.CircleCircleMeasure/Wpf/SunEyeVision.CircleCircleMeasure.Wpf.csproj" />
+  </Folder>
+  <Folder Name="/Tools/PointPointMeasureComponents/">
+    <Project Path="tools/SunEyeVision.PointPointMeasure/Runtime/SunEyeVision.PointPointMeasure.Runtime.csproj" />
+    <Project Path="tools/SunEyeVision.PointPointMeasure/Wpf/SunEyeVision.PointPointMeasure.Wpf.csproj" />
+  </Folder>
   <Folder Name="/Tests/SunEyeVision.Tools.Find.Tests/">
     <Project Path="tests/SunEyeVision.Tools.Find.Tests/SunEyeVision.Tools.Find.Tests.csproj" />
   </Folder>
@@ -157,6 +165,9 @@
   </Folder>
   <Folder Name="/Tests/SunEyeVision.Tools.LogicData.Tests/">
     <Project Path="tests/SunEyeVision.Tools.LogicData.Tests/SunEyeVision.Tools.LogicData.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Tools.Measure.Tests/">
+    <Project Path="tests/SunEyeVision.Tools.Measure.Tests/SunEyeVision.Tools.Measure.Tests.csproj" />
   </Folder>
   <Folder Name="/Tests/SunEyeVision.DeviceDriver.Tests/">
     <Project Path="tests/SunEyeVision.DeviceDriver.Tests/SunEyeVision.DeviceDriver.Tests.csproj" />

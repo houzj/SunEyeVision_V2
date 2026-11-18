@@ -133,5 +133,27 @@
       <EntryType>SunEyeVision.Tool.IntensityMeasure.Wpf.IntensityMeasureEditorFactory</EntryType>
       <CompanionToolId>IntensityMeasure</CompanionToolId>
     </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.CircleCircleMeasure/Runtime/SunEyeVision.CircleCircleMeasure.Runtime.csproj">
+      <ComponentId>SunEyeVision.Tool.CircleCircleMeasure.Runtime</ComponentId>
+      <ToolId>CircleCircleMeasure</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.CircleCircleMeasure.Runtime.CircleCircleMeasureTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.CircleCircleMeasure/Wpf/SunEyeVision.CircleCircleMeasure.Wpf.csproj">
+      <ComponentId>SunEyeVision.Tool.CircleCircleMeasure.Wpf</ComponentId>
+      <ToolId>CircleCircleMeasure</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.CircleCircleMeasure.Wpf.CircleCircleMeasureEditorFactory</EntryType>
+      <CompanionToolId>CircleCircleMeasure</CompanionToolId>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.PointPointMeasure/Runtime/SunEyeVision.PointPointMeasure.Runtime.csproj">
+      <ComponentId>SunEyeVision.Tool.PointPointMeasure.Runtime</ComponentId>
+      <ToolId>PointPointMeasure</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.PointPointMeasure.Runtime.PointPointMeasureTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.PointPointMeasure/Wpf/SunEyeVision.PointPointMeasure.Wpf.csproj">
+      <ComponentId>SunEyeVision.Tool.PointPointMeasure.Wpf</ComponentId>
+      <ToolId>PointPointMeasure</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.PointPointMeasure.Wpf.PointPointMeasureEditorFactory</EntryType>
+      <CompanionToolId>PointPointMeasure</CompanionToolId>
+    </ProductToolComponent>
   </ItemGroup>
 </Project>

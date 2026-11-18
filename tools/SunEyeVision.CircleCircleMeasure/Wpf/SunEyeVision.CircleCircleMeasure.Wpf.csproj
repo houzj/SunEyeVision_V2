@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>SunEyeVision.Tool.CircleCircleMeasure.Wpf</AssemblyName>
+    <RootNamespace>SunEyeVision.Tool.CircleCircleMeasure.Wpf</RootNamespace>
+    <ToolComponentId>SunEyeVision.Tool.CircleCircleMeasure.Wpf</ToolComponentId>
+    <ToolComponentToolId>CircleCircleMeasure</ToolComponentToolId>
+    <ToolComponentRole>Editor</ToolComponentRole>
+    <ToolComponentEntryType>SunEyeVision.Tool.CircleCircleMeasure.Wpf.CircleCircleMeasureEditorFactory</ToolComponentEntryType>
+    <ToolComponentCompanionToolId>CircleCircleMeasure</ToolComponentCompanionToolId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Runtime/SunEyeVision.CircleCircleMeasure.Runtime.csproj"><Private>false</Private></ProjectReference>
+    <ProjectReference Include="../../../src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj"><Private>false</Private></ProjectReference>
+  </ItemGroup>
+</Project>

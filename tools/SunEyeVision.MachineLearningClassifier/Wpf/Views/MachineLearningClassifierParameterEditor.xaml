@@ -1,0 +1,12 @@
+<UserControl x:Class="SunEyeVision.Tool.MachineLearningClassifier.Wpf.Views.MachineLearningClassifierParameterEditor"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+ xmlns:parameters="clr-namespace:SunEyeVision.Plugin.Wpf.Presenters.Parameters;assembly=SunEyeVision.Plugin.Wpf"
+ mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="400">
+ <!-- 原厂四页签：Tab_Basic Params / ClassifierTrain / Tab_Run Params / ResultShow。
+      字段页签由 Runtime Layout.Page 自动分组：分类器训练 / 运行参数。
+      图像/ROI/位置修正输入由输入端口承载，落在基本参数页。 -->
+ <parameters:DeclaredSettingsView x:Name="Editor" SelectedPageIndex="0"/>
+</UserControl>

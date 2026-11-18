@@ -64,6 +64,14 @@
     <Project Path="tools/SunEyeVision.PointPointMeasure/Runtime/SunEyeVision.PointPointMeasure.Runtime.csproj" />
     <Project Path="tools/SunEyeVision.PointPointMeasure/Wpf/SunEyeVision.PointPointMeasure.Wpf.csproj" />
   </Folder>
+  <Folder Name="/Tools/DataClassificationComponents/">
+    <Project Path="tools/SunEyeVision.DataClassification/Runtime/SunEyeVision.DataClassification.Runtime.csproj" />
+    <Project Path="tools/SunEyeVision.DataClassification/Wpf/SunEyeVision.DataClassification.Wpf.csproj" />
+  </Folder>
+  <Folder Name="/Tools/MachineLearningClassifierComponents/">
+    <Project Path="tools/SunEyeVision.MachineLearningClassifier/Runtime/SunEyeVision.MachineLearningClassifier.Runtime.csproj" />
+    <Project Path="tools/SunEyeVision.MachineLearningClassifier/Wpf/SunEyeVision.MachineLearningClassifier.Wpf.csproj" />
+  </Folder>
   <Folder Name="/Tests/SunEyeVision.Tools.Find.Tests/">
     <Project Path="tests/SunEyeVision.Tools.Find.Tests/SunEyeVision.Tools.Find.Tests.csproj" />
   </Folder>
@@ -162,6 +170,9 @@
   </Folder>
   <Folder Name="/Tests/SunEyeVision.Tools.ImageProcessing.Tests/">
     <Project Path="tests/SunEyeVision.Tools.ImageProcessing.Tests/SunEyeVision.Tools.ImageProcessing.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Tools.ClassifyCalib.Tests/">
+    <Project Path="tests/SunEyeVision.Tools.ClassifyCalib.Tests/SunEyeVision.Tools.ClassifyCalib.Tests.csproj" />
   </Folder>
   <Folder Name="/Tests/SunEyeVision.Tools.LogicData.Tests/">
     <Project Path="tests/SunEyeVision.Tools.LogicData.Tests/SunEyeVision.Tools.LogicData.Tests.csproj" />

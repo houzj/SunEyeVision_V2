@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>SunEyeVision.Tool.LineFind.Wpf</AssemblyName>
+    <RootNamespace>SunEyeVision.Tool.LineFind.Wpf</RootNamespace>
+    <ToolComponentId>SunEyeVision.Tool.LineFind.Wpf</ToolComponentId>
+    <ToolComponentToolId>LineFind</ToolComponentToolId>
+    <ToolComponentRole>Editor</ToolComponentRole>
+    <ToolComponentEntryType>SunEyeVision.Tool.LineFind.Wpf.LineFindEditorFactory</ToolComponentEntryType>
+    <ToolComponentCompanionToolId>LineFind</ToolComponentCompanionToolId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Runtime/SunEyeVision.LineFind.Runtime.csproj"><Private>false</Private></ProjectReference>
+    <ProjectReference Include="../../../src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj"><Private>false</Private></ProjectReference>
+  </ItemGroup>
+</Project>

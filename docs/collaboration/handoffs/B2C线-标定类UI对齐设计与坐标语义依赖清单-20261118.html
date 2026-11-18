@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>B2-C 线 · 标定类 UI 对齐设计与坐标语义依赖清单（2026-11-18）</title>
+<style>
+body{font-family:"Microsoft YaHei",sans-serif;max-width:1280px;margin:0 auto;padding:24px;line-height:1.6;color:#222}
+h1{border-bottom:3px solid #2d6cdf;padding-bottom:8px}
+h2{color:#2d6cdf;border-left:4px solid #2d6cdf;padding-left:10px;margin-top:28px}
+h3{color:#444;margin-top:20px}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:.86em}
+th,td{border:1px solid #bbb;padding:5px 8px;text-align:left;vertical-align:top}
+th{background:#eef3fb}
+code{background:#f4f4f4;padding:1px 4px;border-radius:3px;font-size:.86em}
+.stop{background:#fdecec;border-left:4px solid #e05b5b;padding:10px 14px;margin:12px 0}
+.req{background:#eefaf0;border-left:4px solid #67c23a;padding:8px 12px;margin:10px 0}
+.warn{background:#fff6e5;border-left:4px solid #e6a23c;padding:8px 12px;margin:10px 0}
+.src{color:#666;font-size:.8em}
+.unk{color:#c0392b;font-weight:bold}
+.ok{color:#27863b;font-weight:bold}
+</style>
+</head>
+<body>
+<h1>B2-C 线 · 标定类 UI 对齐设计与坐标语义依赖清单</h1>
+<p class="src">日期 2026-11-18　工作树 <code>D:\MyWork\line-batch2-classify-calib</code>（基线 <code>1312120b4</code>）　证据全部取自本工作树 <code>docs/07-工具逆向/</code> 静态反编译清单与控件源码。</p>
+
+<div class="stop">
+<b>硬阻断声明（rule-023 原厂证据先行 / 任务卡 B2C L23）</b>：历史任务卡要求「标定类必须等主线完成坐标语义取证后才开工」，
+而 <code>CURRENT_TASK.md</code>、C 线交接单均记该取证<b>至今未完成</b>（「位置修正后的坐标语义仍待验」「原件是否同法未取证」）。
+因此本阶段标定类 10 个工具<b>禁止编码实现算法、禁止登记组件、禁止声称完成</b>，仅交付：①原厂 UI 取证 ②UI 对齐设计稿 ③坐标语义依赖清单（第六节）。
+</div>
+
+<h2>一、取证方法与证据等级</h2>
+<table>
+<tr><th>证据等级</th><th>来源</th><th>本次用途</th></tr>
+<tr><td>① UI 控件反编译</td><td><code>decompiled/ModuleControls/&lt;原件&gt;Control/*.xaml / *.cs</code></td><td>控件组合、页签、字段、显隐、序列化（分类类直接用；标定类控件多为资源清单级）</td></tr>
+<tr><td>② 资源/参数清单</td><td><code>tools/&lt;id&gt;/resources.json</code>（uiTabs/uiControls）、<code>parameters.json</code>（参数/输入/输出）、<code>evidence.json</code>（身份/状态）</td><td>页签名、控件类型、字段默认值、端口集合（本文件主要依据）</td></tr>
+<tr><td>③ 算法语义</td><td><code>tools/&lt;id&gt;/algorithm-semantics.md</code></td><td>执行语义链 9 步<span class="unk">全部 unknown</span>，标「待补证」</td></tr>
+</table>
+<p class="warn"><b>悬空引用提醒</b>：标定类 <code>evidence.json.sourceReports</code> 指向的 <code>docs/plugins/*-SOURCE-INVENTORY.md</code>、
+<code>*-RUNTIME-SOURCE.md</code>、<code>*-IMPLEMENTATION-MATRIX.md</code>、<code>NPOINT-SOURCE-INVENTORY.md</code> 等在本工作树内<b>均不存在</b>（与 C 线交接单 C17/G16 同类问题），
+不可作为证据。结论仅以本工作树内实际的 <code>tools/&lt;id&gt;/*.json</code> 与 <code>decompiled/ModuleControls/</code> 为准。</p>
+
+<h2>二、标定类 10 工具 UI 面汇总（证据：各 tools/&lt;id&gt;/resources.json + parameters.json）</h2>
+<table>
+<tr><th>#</th><th>原件 / 显示名</th><th>页签（resources.json.uiTabs）</th><th>参数页主要控件分组（uiControls）</th><th>结果/输出端口（parameters.json.outputs）</th></tr>
+<tr><td>1</td><td><code>IMVSNPointCalibModu</code><br>N点标定<br><span class="src">source-partial</span></td><td>Basic / Run / ResultShow</td><td>CalibPointGet(枚举)、CalibPointInput；图点 PicPoint/X/Y、物理点 PhyPoint/X/Y、ImageRotateAngle/WorldRotateAngle；点数 CalibPointTotalNum/RotPointTotalNum；基准 BasePointX/Y、MoveAlignX/Y、MoveFirstType、BaseAngle/MoveAngle、UseRelativeCoordinates、CalibOrigin；文件 SaveCalibPath/CalibPathName；模型 CameraMode/HomoFreedom/WeightFun/WeightFactor/DistThreshold/SampleRatio</td><td>28 项：ModuRunTime/Status、CalibStatus/CalibErrStatus、CalibImagePoint(X/Y)、CalibPhysicalPoint(WorldPointX/Y)、TransError/RotError、RotAxisPoint/RotPhysicalPoint(旋转中心)、Scale/DeltaX/DeltaY/Rotate/Tilt/DirectionRatio/PixelPrecision</td></tr>
+<tr><td>2</td><td><code>IMVSNImageCalibModu</code><br>N图像标定<br><span class="src">source-partial</span></td><td>Basic / Run / ResultShow</td><td>ImageSource、CalibPointInput；PhyPoint/MovePhysicalPointX/Y、RotateAngle；CalibPointTotalNum/RotPointTotalNum；基准与移动同 N点；HomoFixEnable、InputMode、Image/Physical Point、CalibBoardType/GrayContrast/FilterStatus/SubpixelWinAuto/SubPixelWindowSize</td><td>33 项：含 TransMotionErr*/RotMotionErr*（逐图运动误差）、Rotate CenterPoint、DirectionXVector/DirectionYVector Point、MoveDirec</td></tr>
+<tr><td>3</td><td><code>IMVSCalibBoardCalibModu</code><br>标定板标定<br><span class="src">source-partial</span></td><td>Basic / Run / ResultShow</td><td>ImageSource、RoiType、CalibPathName、OriginX/Y、RotationAngle、CoordinateMode、PhysicalSize、CalibBoardType；HomoFreedom/GrayContrast/FilterStatus/SubpixelWinAuto/SubPixelWindowSize/Circularity/EdgeThresh/CircleBoardCircleMode/CalibBoardWeightFun；图显示 CalibPoint/CalibOrignPoint</td><td>16 项：EstimationError、Scale、Calibration Point/Origin、PosXVector/PosYVector、TranslateX/Y、Rotate、Skew、Aspect、PixelPrecision</td></tr>
+<tr><td>4</td><td><code>IMVSCameraMapModu</code><br>相机映射<br><span class="src">source-partial</span></td><td>Basic / Run / ResultShow</td><td>InputWay、点对 Data1…Data8(PointPair)、AddButton、SaveCalibPath/CalibPathName、HomoFreedom/WeightFun/WeightFactor</td><td>10 项：ScaleX/ScaleY、CalibStatus、TranslateX/Y、Rotate、Scale、Skew、Aspect</td></tr>
+<tr><td>5</td><td><code>IMVSMapCalibModu</code><br>映射标定<br><span class="src">inventory-only</span></td><td>Basic / Run / ResultShow</td><td>InputType、双路 ImageSource_0/1 + RoiType_0/1；CalibPointInput/PhyPoint/WorldRotateAngle；TeachEnable/Trigger/TeachFlag；CalibPath0/1；两组标定板检测参数；图显示 CurCornersPoint/ObjCornersPoint/ProCornersPoint</td><td>17 项：XRatio/YRatio/MapError、Current/Object/Projection Corners Point、CalibStatus1/2、PixelScale1/2</td></tr>
+<tr><td>6</td><td><code>IMVSImageCalibModu</code><br>畸变标定<br><span class="src">source-partial</span></td><td>Basic / Run / ResultShow</td><td>ImageSource/RoiType、文件、CorrectCenterPointInput/X/Y、CorrectModel、DistortionEvaluationEnable/OutputPostCorrectionEnable、PointErrorThreshold、标定板检测参数、图显示 CalibPoint/ErrorText</td><td>10 项：EstimationError、CalibPointNum/Point/Status、EvaluationError、CalibPointError、ROI、PostCorrectionImage（<b>无矩阵输出</b>）</td></tr>
+<tr><td>7</td><td><code>TranslationCalibModu</code><br>平移旋转标定<br><span class="src">source-partial</span></td><td>Basic / ResultShow</td><td>CalibType/CalibPointGet/CameraMode/HomoFreedom、CalibPointInput、PicPoint/PhyPoint、Image/WorldRotateAngle、CalibPointTotalNum/RotPointTotalNum、UnionCalibEnable/TeachEnable/Trigger/TeachFlag、文件</td><td>28 项：同 N点 + IsRightCoorA</td></tr>
+<tr><td>8</td><td><code>RotateCalibModu</code><br>旋转标定<br><span class="src">source-partial</span></td><td>Basic / ResultShow</td><td>InputWay、ImagePoints/Xs/Ys、WorldRotateAngles、RotNums、RevOutputFlag、FilePath、RefreshSignal</td><td>7 项：remainCount、RotAxisPoint、RotPhysicalPoint、RotError、RotWorldError</td></tr>
+<tr><td>9</td><td><code>CoordinateModule</code><br>坐标系<br><span class="src">source-partial</span></td><td>Basic（仅一页）</td><td>CordinateCreate、RoiType、InputWay、SrcInputPoints/X/Y/Angle/Matrix</td><td>6 项：CorCalibMatrix、Coordinate Origin、CoordinateAxisX/Y</td></tr>
+<tr><td>10</td><td><code>ReadCalibFileModu</code><br>标定加载<br><span class="src">inventory-only</span></td><td>Basic（仅一页）</td><td>FilePath、RefreshSignal、SaveCalibDataEnable、SnapImagePointX/Y/R、SnapWorldPointX/Y/R、TeachWorldPointX/Y/R、CalibInputParam</td><td>12 项：RotDirectionState、IsRightCoorA、RotCenterImage/World、SnapImage/World、TeachWorld、SnapWorldCur/Obj、CalibMatrix</td></tr>
+</table>
+
+<h2>三、坐标相关字段登记（未确认项显式标注）</h2>
+<p>以下字段是本轮从 <code>parameters.json</code> 输入输出与 <code>resources.json</code> 控件中识别出的<b>坐标语义敏感项</b>。字段存在性是「已证」（清单级），但<b>数值语义/变换方向/单位/作用对象一律未确认</b>，须经第六节补证后才可实现算法。</p>
+<table>
+<tr><th>字段 / 端口</th><th>出现工具</th><th>已证（清单级）</th><th>未确认（语义级）</th></tr>
+<tr><td><code>ImagePointX/Y</code> → <code>WorldPointX/Y</code></td><td>N点、N图像、平移旋转</td><td>输入图点、输出世界点均 float</td><td class="unk">image→world 还是 world→image？像元中心/角点约定？单位？</td></tr>
+<tr><td><code>Scale/DeltaX/DeltaY/Rotate/Tilt/DirectionRatio/PixelPrecision</code></td><td>N点、平移旋转、标定板</td><td>输出 float</td><td class="unk">从标定矩阵分解的公式；Tilt/DirectionRatio 几何定义</td></tr>
+<tr><td><code>RotAxisPoint/RotPhysicalPoint</code>（旋转中心）</td><td>N点、平移旋转、旋转标定</td><td>输出 POINT（X/Y）</td><td class="unk">旋转中心几何定义与求解算法</td></tr>
+<tr><td><code>Position Correction Info</code>（FIXTURE）</td><td>N点等标定类</td><td>可作为位置修正输入（本方字段语义见下）</td><td class="unk">原件是否作用于标定点/输出点？作用方向/对象/时机？本方用 FixtureDeclarations.ToAffine2D，原件是否同法未取证</td></tr>
+<tr><td><code>HomoFreedom</code> / <code>CameraMode</code> / <code>CalibType</code> / <code>UseRelativeCoordinates</code></td><td>多工具</td><td>枚举，默认值 HomoFreedom=1/2、CameraMode=1、CalibType=0</td><td class="unk">取值对应的自由度模型（相似/仿射/射影）、相对坐标基准与 MoveAlignX/Y 语义</td></tr>
+<tr><td><code>CalibMatrix</code> → <code>CorCalibMatrix</code>/Origin/AxisX/AxisY</td><td>坐标系、标定加载</td><td>输入输出端口存在</td><td class="unk">矩阵元素排列、推导公式、坐标原点与轴方向约定</td></tr>
+<tr><td><code>CalibPathName</code>/<code>SaveCalibPath</code>/<code>FilePath</code></td><td>N点、N图像、标定板、相机映射、旋转标定、标定加载</td><td>文件对话框控件</td><td class="unk">标定文件格式、矩阵序列化/读回、与点组的关系</td></tr>
+<tr><td><code>CorrectModel</code>=1 / <code>CorrectCenterPoint</code> / <code>PointErrorThreshold</code></td><td>畸变标定</td><td>枚举/点/浮点，默认值已证</td><td class="unk">畸变模型类型、中心点用途、畸变系数输出位置（本工具无矩阵输出）</td></tr>
+</table>
+
+<h2>四、UI 对齐设计原则（本阶段只出设计，不建 Runtime）</h2>
+<div class="req">
+按任务卡 §1.1 契约矩阵与「呈现层五项契约」，标定类放行后每个工具的 UI 骨架应：
+①页签按 resources.json.uiTabs 原样迁移（不自行近似）；②参数页字段按 uiControls 分组，输入区锚定到真实存在的首组（避免「An input content section is required.」）；
+③坐标类字段用 TextDisplays 注册为文本坐标（DecimalPlaces:null），组合式 Dispose；④结果页按 outputs 列声明，缺失字段显示「不可用」而非 0；
+⑤结果显示需要叠加的点/区域资源写进 ResultDisplayDescriptor。本次仅给出上述设计约束，不生成代码、不登记组件。
+</div>
+
+<h2>五、分类类 UI 对齐设计（2 个，本阶段可做 UI 骨架，算法待补证）</h2>
+<h3>5.1 数据分类 DataClassificationModule</h3>
+<p>身份：显示名「数据分类」、类别 Logic、ToolCatalog 当前 <code>ToolId: null</code>（<code>src/UI/Resources/Toolbox/ToolboxDisplayCatalog.json</code> L889-892，需 main 改）。UI 两页签 <code>Tab_Basic Params</code>/<code>ClassificationSetting</code>（resources.json）。</p>
+<ul>
+<li>参数页 1（DataClassificationParamTab，证据 DataClassificationParam.xaml:78-154）：输入源下拉 FrontModules → 动态 IO 列表（列：参数名/类型/订阅关系），类型集 INT/FLOAT + ROIBOX/POINT/LINE/Rect/ROIPOLYGON/ELLIPSE/ROIANNULUS（DataClassificationBaseParam.cs:31,115-135），最多 10 项（:230）。</li>
+<li>参数页 2（DataClassificationConfigTab，证据 DataClassificationConfig.xaml:154-280）：三列布局——分类列表（ClassificationItem，可增删+上下排序+互斥开关 BooleanData）/条件组（OR，ConditionGroupItem）/条件项（AND，ConditionItem：字段选择器 + int/float 区间 + 删除），区间类型由 TypeFloat/IntToVisibilityConvert 切换（XAML:13-16,90-92）。</li>
+<li>序列化：InputText/IsIncompatible/ClassText/GroupText/ConditionText 五段字节，格式在 DataClassificationParam.cs:120-259 固定（分类「名:序号」、条件组「名:ID:类名」、条件「值%:类型:下限:上限:组ID:条件ID:类名」）。</li>
+<li>输出：仅 ModuRunTime/ModuStatus（parameters.json）。算法语义 <span class="unk">全 unknown</span> → 待补证。</li>
+</ul>
+<h3>5.2 ML分类 IMVSMachineLearningClassifierModu</h3>
+<p>身份：显示名「ML分类」、类别 Recognition、ToolCatalog 当前 <code>ToolId: null</code>（同 catalog L305-308，需 main 改）。UI 四页签 <code>Tab_Basic Params</code>/<code>ClassifierTrain</code>/<code>Tab_Run Params</code>/<code>ResultShow</code>。</p>
+<ul>
+<li>基本/运行页控件（resources.json.uiControls 15 项）：RoiSelectGroup/RoiType、InheritWayGroup、AssistGroup、RegisterClassify(MLClassifyData)、LoadModelPath(OpenFileForCNNDialog)、SaveModelDataEnable、NumLimitEnable/RangeNumLimit、LabelNameLimitEnable/LabelNameLimit；结果显示 4 组 FixtureInitPoint/FixtureRunPoint/ResultText/CheckZone。</li>
+<li>25 参数（parameters.json）：LoadModelPath=""、SaveModelDataEnable=False、TextureFeature=True、GrayFeature=True、HogFeature=True、LbpFeature/GlcmFeature/EdgeFeature/PolarFeature=False、GrayRangeFeature=True、GrayMean/Deviation/Entropy/Anisotropy/ProjHor/ProjVert=False、GrayHis=True、SvmMaxIter=1000、SvmEsp=1000、ClassifyType=0x1、NumLimit*（False/1/99999）、LabelNameLimit*。</li>
+<li>训练页（MLImagePage.xaml，证据充分）：左侧图像列表+ROI 框（Width/Height/CenterX/Y/Angle，SliderArrangeFloat :495-508）+标注计数；右侧分类类别列表（新增/搜索/排序/删除，:641-788）；训练参数 SVM/RF 下拉（:823-826）、SvmMaxIter/SvmEsp 滑条（:808-814）、Texture 组 6 开关（:841-875，TextureFeature 总开关控制 Hog/Lbp/Glcm/Edge/Polar 显隐）、Gray 组 9 开关（:882-930，GrayFeature 控制子项显隐）、训练按钮（:940）。</li>
+<li>输入：InputImage/InputROI/Position Correction Info(FIXTURE)；输出 7 项：ModuRunTime、ROI、ModuStatus、PredictNum、LabelsIndex[]、LabelName[]、位置修正输出（Visible=false）。算法/模型格式 <span class="unk">全 unknown</span> → 待补证，不得按经验实现。</li>
+</ul>
+
+<h2>六、坐标语义补证需求清单（交主线集中取证，逐条需附原件模块/函数/证据）</h2>
+<p class="warn">以下为本线根据 UI 取证识别的<b>最小必要补证集</b>。每条含「需要什么证据 / 原件哪里 / 验证什么」。任一 P0 未闭合，对应工具算法不启动。原件＝VM4.4.0 native，取证由主线用 REA+Ghidra/Frida 集中完成，本线不占用独占资源。</p>
+<table>
+<tr><th>ID</th><th>优先</th><th>需要什么证据</th><th>原件模块 / 函数</th><th>验证什么</th></tr>
+<tr><td>P0-1</td><td>P0</td><td>标定矩阵方向链：输出 Scale/DeltaX/DeltaY/Rotate/Tilt/DirectionRatio/PixelPrecision 与输入图点/物理点的变换关系；旋转中心 RotAxisPoint 几何定义</td><td><code>IMVSNPointCalibModu</code> Process/ProcessAlg → 原生标定函数；native DLL</td><td>矩阵 image→world 还是 world→image；分量分解公式；闭合后 N点/N图像/平移旋转共用</td></tr>
+<tr><td>P0-2</td><td>P0</td><td>位置修正(FIXTURE)与标定点耦合：原件是否/何时/对谁作用位置修正</td><td>同上 Process 输入准备段；对照本方 <code>FixtureDeclarations.ToAffine2D</code></td><td>作用对象（图点/物理点）、方向、时机；是否与本方同法（当前未取证）</td></tr>
+<tr><td>P1-3</td><td>P1</td><td>自由度与模型语义</td><td>N点/平移旋转/标定板 Process 参数读取</td><td>HomoFreedom=1/2/3 对应相似/仿射/射影；CameraMode/CalibType/UseRelativeCoordinates/BasePoint+MoveAlign 语义</td></tr>
+<tr><td>P1-4</td><td>P1</td><td>坐标系生成推导</td><td><code>CoordinateModule</code> Process/ProcessAlg</td><td>CalibMatrix→CorCalibMatrix/Origin/AxisX/Y 推导；CordinateCreate/InputWay 枚举语义</td></tr>
+<tr><td>P1-5</td><td>P1</td><td>标定文件持久化格式</td><td><code>ReadCalibFileModu</code> + 各 SaveCalibPath 写读路径</td><td>标定文件格式、矩阵序列化/读回、CalibMatrix 与 SnapWorld/TeachWorld 点组关系</td></tr>
+<tr><td>P2-6</td><td>P2</td><td>畸变模型参数</td><td><code>IMVSImageCalibModu</code> Process/ProcessAlg</td><td>CorrectModel=1 模型类型、CorrectCenterPoint 用途、畸变系数输出位置（本工具无矩阵输出）</td></tr>
+</table>
+<p>每个结论须附：原厂 DLL 路径 + 模块/函数名 + Ghidra 地址或 Frida hook 片段 + 输入/输出样例。补证结果由主线回写 <code>CURRENT_TASK.md</code> 并下达放行后，本线再进入对应工具算法实施与组件登记。</p>
+
+<h2>七、本阶段交付边界与自检</h2>
+<table>
+<tr><th>项</th><th>结论</th></tr>
+<tr><td>标定类 10 工具 UI 取证</td><td class="ok">完成（页签/控件/输入输出/坐标字段已固定，均附 tools/&lt;id&gt;/*.json 来源）</td></tr>
+<tr><td>标定类算法实现</td><td class="unk">禁止（坐标语义未取证，硬阻断）</td></tr>
+<tr><td>标定类 Runtime / 组件登记</td><td class="unk">本阶段不建、不登记</td></tr>
+<tr><td>分类类 UI 取证</td><td class="ok">完成（控件 XAML+cs 反编译，字段/页签/序列化已固定）</td></tr>
+<tr><td>分类类算法/模型格式</td><td class="unk">待补证（sourceEvidence=[]，algorithm-semantics 全 unknown）</td></tr>
+<tr><td>共享 UI 目录改动</td><td>需 main 改 ToolboxDisplayCatalog.json 两条 ToolId:null（分类类）；本线不改 src/**</td></tr>
+</table>
+</body>
+</html>

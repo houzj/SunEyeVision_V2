@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>SunEyeVision.Tool.CircleFind.Wpf</AssemblyName>
+    <RootNamespace>SunEyeVision.Tool.CircleFind.Wpf</RootNamespace>
+    <ToolComponentId>SunEyeVision.Tool.CircleFind.Wpf</ToolComponentId>
+    <ToolComponentToolId>CircleFind</ToolComponentToolId>
+    <ToolComponentRole>Editor</ToolComponentRole>
+    <ToolComponentEntryType>SunEyeVision.Tool.CircleFind.Wpf.CircleFindEditorFactory</ToolComponentEntryType>
+    <ToolComponentCompanionToolId>CircleFind</ToolComponentCompanionToolId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Runtime/SunEyeVision.CircleFind.Runtime.csproj"><Private>false</Private></ProjectReference>
+    <ProjectReference Include="../../../src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj"><Private>false</Private></ProjectReference>
+  </ItemGroup>
+</Project>

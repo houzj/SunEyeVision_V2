@@ -48,6 +48,17 @@
     <Project Path="tools/SunEyeVision.IntensityMeasure/Runtime/SunEyeVision.IntensityMeasure.Runtime.csproj" />
     <Project Path="tools/SunEyeVision.IntensityMeasure/Wpf/SunEyeVision.IntensityMeasure.Wpf.csproj" />
   </Folder>
+  <Folder Name="/Tools/CircleFindComponents/">
+    <Project Path="tools/SunEyeVision.CircleFind/Runtime/SunEyeVision.CircleFind.Runtime.csproj" />
+    <Project Path="tools/SunEyeVision.CircleFind/Wpf/SunEyeVision.CircleFind.Wpf.csproj" />
+  </Folder>
+  <Folder Name="/Tools/LineFindComponents/">
+    <Project Path="tools/SunEyeVision.LineFind/Runtime/SunEyeVision.LineFind.Runtime.csproj" />
+    <Project Path="tools/SunEyeVision.LineFind/Wpf/SunEyeVision.LineFind.Wpf.csproj" />
+  </Folder>
+  <Folder Name="/Tests/SunEyeVision.Tools.Find.Tests/">
+    <Project Path="tests/SunEyeVision.Tools.Find.Tests/SunEyeVision.Tools.Find.Tests.csproj" />
+  </Folder>
   <Folder Name="/Src/Foundation/">
     <Project Path="Src/Foundation/SunEyeVision.Foundation.csproj" />
   </Folder>

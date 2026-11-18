@@ -133,5 +133,27 @@
       <EntryType>SunEyeVision.Tool.IntensityMeasure.Wpf.IntensityMeasureEditorFactory</EntryType>
       <CompanionToolId>IntensityMeasure</CompanionToolId>
     </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.CircleFind/Runtime/SunEyeVision.CircleFind.Runtime.csproj">
+      <ComponentId>SunEyeVision.Tool.CircleFind.Runtime</ComponentId>
+      <ToolId>CircleFind</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.CircleFind.Runtime.CircleFindTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.CircleFind/Wpf/SunEyeVision.CircleFind.Wpf.csproj">
+      <ComponentId>SunEyeVision.Tool.CircleFind.Wpf</ComponentId>
+      <ToolId>CircleFind</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.CircleFind.Wpf.CircleFindEditorFactory</EntryType>
+      <CompanionToolId>CircleFind</CompanionToolId>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.LineFind/Runtime/SunEyeVision.LineFind.Runtime.csproj">
+      <ComponentId>SunEyeVision.Tool.LineFind.Runtime</ComponentId>
+      <ToolId>LineFind</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.LineFind.Runtime.LineFindTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.LineFind/Wpf/SunEyeVision.LineFind.Wpf.csproj">
+      <ComponentId>SunEyeVision.Tool.LineFind.Wpf</ComponentId>
+      <ToolId>LineFind</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.LineFind.Wpf.LineFindEditorFactory</EntryType>
+      <CompanionToolId>LineFind</CompanionToolId>
+    </ProductToolComponent>
   </ItemGroup>
 </Project>

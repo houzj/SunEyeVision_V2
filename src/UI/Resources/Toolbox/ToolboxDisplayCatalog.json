@@ -95,7 +95,8 @@
         "Id": "IMVSCircleFindModu",
         "Name": "圆查找",
         "Icon": "IMVSCircleFindModuImageEnable.png",
-        "ToolId": "CircleDetect"
+        "ToolId": "CircleFind",
+        "MappingVerified": true
       },
       {
         "Id": "IMVSEllipseFindModu",
@@ -113,7 +114,8 @@
         "Id": "IMVSLineFindModu",
         "Name": "直线查找",
         "Icon": "IMVSLineFindModuImageEnable.png",
-        "ToolId": "LineDetect"
+        "ToolId": "LineFind",
+        "MappingVerified": true
       },
       {
         "Id": "IMVSLineFindGroupModu",
@@ -220,7 +222,8 @@
         "Id": "IMVSC2CMeasureModu",
         "Name": "圆圆测量",
         "Icon": "IMVSC2CMeasureModuImageEnable.png",
-        "ToolId": "CircleCircleMeasure"
+        "ToolId": "CircleCircleMeasure",
+        "MappingVerified": true
       },
       {
         "Id": "IMVSP2CMeasureModu",
@@ -244,7 +247,8 @@
         "Id": "IMVSP2PMeasureModu",
         "Name": "点点测量",
         "Icon": "IMVSP2PMeasureModuImageEnable.png",
-        "ToolId": "PointPointMeasure"
+        "ToolId": "PointPointMeasure",
+        "MappingVerified": true
       },
       {
         "Id": "IMVSIntensityMeasureModu",
@@ -305,7 +309,8 @@
         "Id": "IMVSMachineLearningClassifierModu",
         "Name": "ML分类",
         "Icon": "IMVSMachineLearningClassifierModuImageEnable.png",
-        "ToolId": null
+        "ToolId": "MachineLearningClassifier",
+        "MappingVerified": true
       }
     ]
   },
@@ -889,7 +894,8 @@
         "Id": "DataClassificationModule",
         "Name": "数据分类",
         "Icon": "DataClassificationModuleImageEnable.png",
-        "ToolId": null
+        "ToolId": "DataClassification",
+        "MappingVerified": true
       },
       {
         "Id": "DataSortModule",

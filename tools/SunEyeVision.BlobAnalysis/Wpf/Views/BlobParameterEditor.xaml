@@ -6,5 +6,6 @@
  xmlns:parameters="clr-namespace:SunEyeVision.Plugin.Wpf.Presenters.Parameters;assembly=SunEyeVision.Plugin.Wpf"
  xmlns:design="clr-namespace:SunEyeVision.Tool.BlobAnalysis.Wpf.Design"
  mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="680">
- <parameters:DeclaredSettingsView x:Name="Editor" SelectedPageIndex="1" design:BlobDesignData.ParameterSample="True"/>
+ <!-- 默认页签为「基本参数」（页序：基本参数 / 运行参数 / 结果显示），与原厂一致。 -->
+<parameters:DeclaredSettingsView x:Name="Editor" SelectedPageIndex="0" design:BlobDesignData.ParameterSample="True"/>
 </UserControl>

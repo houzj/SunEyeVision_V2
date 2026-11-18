@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using SunEyeVision.Plugin.Contracts;
 
 namespace SunEyeVision.Tool.CircleFind.Runtime;
@@ -50,12 +54,31 @@ public static class CircleFindFields
     private static readonly TypeRef Boolean = TypeRef.ScalarOf(ScalarKind.Boolean);
     private static readonly TypeRef Integer = TypeRef.ScalarOf(ScalarKind.Int64);
     private static readonly TypeRef Number = TypeRef.ScalarOf(ScalarKind.Float64);
+    private static readonly TypeRef Text = TypeRef.ScalarOf(ScalarKind.Text);
+
+    // 原厂枚举在 XML 中以整数存储，界面以下拉中文显示；取值集合与显示名一一对应。
+    private static TextChoiceConstraint CodeChoice(params string[] codes) => new(codes);
+    private static IReadOnlyDictionary<string, string> CodeLabels(params (string Code, string Label)[] labels)
+        => labels.ToDictionary(item => item.Code, item => item.Label, StringComparer.Ordinal);
+
+    private static readonly string[] FindModeCodes = { "1", "2", "3" };
+    private static readonly IReadOnlyDictionary<string, string> FindModeLabels =
+        CodeLabels(("1", "最强"), ("2", "最后"), ("3", "第一条"));
+    private static readonly string[] EdgePolarityCodes = { "1", "2", "3" };
+    private static readonly IReadOnlyDictionary<string, string> EdgePolarityLabels =
+        CodeLabels(("1", "黑到白"), ("2", "白到黑"), ("3", "任意极性"));
+    private static readonly string[] InitTypeCodes = { "1", "2" };
+    private static readonly IReadOnlyDictionary<string, string> InitTypeLabels =
+        CodeLabels(("1", "全局ALS"), ("2", "局部LLS"));
+    private static readonly string[] FitFunCodes = { "1", "2", "3" };
+    private static readonly IReadOnlyDictionary<string, string> FitFunLabels =
+        CodeLabels(("1", "最小二乘"), ("2", "Huber"), ("3", "Tukey"));
 
     public static ToolSchema Schema { get; } = new(new[]
     {
         // Tab_Run Params / 边缘与卡尺
-        new Port(FindMode, Integer, Storage: NumericStorage.Int32, EditModes: FieldEditModes.Constant),
-        new Port(EdgePolarity, Integer, Storage: NumericStorage.Int32, EditModes: FieldEditModes.Constant),
+        new Port(FindMode, Text, Choices: CodeChoice(FindModeCodes), EditModes: FieldEditModes.Constant),
+        new Port(EdgePolarity, Text, Choices: CodeChoice(EdgePolarityCodes), EditModes: FieldEditModes.Constant),
         new Port(EdgeThresh, Integer, Storage: NumericStorage.Int32, EditModes: FieldEditModes.Constant),
         new Port(EdgeWidth, Integer, Storage: NumericStorage.Int32, EditModes: FieldEditModes.Constant),
         new Port(RadNum, Integer, Storage: NumericStorage.Int32, EditModes: FieldEditModes.Constant),
@@ -66,8 +89,8 @@ public static class CircleFindFields
         new Port(CcdCircleThresh, Integer, Storage: NumericStorage.Int32, EditModes: FieldEditModes.Constant),
         new Port(RejectDist, Integer, Storage: NumericStorage.Int32, EditModes: FieldEditModes.Constant),
         new Port(ProLength, Integer, Storage: NumericStorage.Int32, EditModes: FieldEditModes.Constant),
-        new Port(InitType, Integer, Storage: NumericStorage.Int32, EditModes: FieldEditModes.Constant),
-        new Port(FitFun, Integer, Storage: NumericStorage.Int32, EditModes: FieldEditModes.Constant),
+        new Port(InitType, Text, Choices: CodeChoice(InitTypeCodes), EditModes: FieldEditModes.Constant),
+        new Port(FitFun, Text, Choices: CodeChoice(FitFunCodes), EditModes: FieldEditModes.Constant),
         // ResultShow / 结果判断
         new Port(RadiusLimitEnable, Boolean, EditModes: FieldEditModes.Constant),
         new Port(RadiusLimitLow, Number, Storage: NumericStorage.Float32, EditModes: FieldEditModes.Constant),
@@ -87,10 +110,10 @@ public static class CircleFindFields
     }, Array.Empty<Port>(), new ToolPresentation(new[]
     {
         // Tab_Run Params / 边缘与卡尺
-        new FieldPresentation(FindMode, "边缘类型(1最强/2最后/3第一条)", EdgeSection, 0, FieldEditorKind.Scalar)
-        { Layout = new(RunPage, EdgeSection, AllowReference: false, Minimum: 1, Maximum: 3, DecimalPlaces: 0, Increment: 1) },
-        new FieldPresentation(EdgePolarity, "边缘极性(1黑到白/2白到黑/3任意)", EdgeSection, 1, FieldEditorKind.Scalar)
-        { Layout = new(RunPage, EdgeSection, AllowReference: false, Minimum: 1, Maximum: 3, DecimalPlaces: 0, Increment: 1) },
+        new FieldPresentation(FindMode, "边缘类型", EdgeSection, 0, FieldEditorKind.Choice, FindModeCodes, FindModeLabels)
+        { Layout = new(RunPage, EdgeSection, AllowReference: false) },
+        new FieldPresentation(EdgePolarity, "边缘极性", EdgeSection, 1, FieldEditorKind.Choice, EdgePolarityCodes, EdgePolarityLabels)
+        { Layout = new(RunPage, EdgeSection, AllowReference: false) },
         new FieldPresentation(EdgeThresh, "边缘阈值", EdgeSection, 2, FieldEditorKind.Scalar)
         { Layout = new(RunPage, EdgeSection, AllowReference: false, Minimum: 0, Maximum: 255, DecimalPlaces: 0, Increment: 1) },
         new FieldPresentation(EdgeWidth, "滤波尺寸", EdgeSection, 3, FieldEditorKind.Scalar)
@@ -110,10 +133,10 @@ public static class CircleFindFields
         { Layout = new(RunPage, LocateSection, AllowReference: false, Minimum: 1, Maximum: 1000, DecimalPlaces: 0, Increment: 1) },
         new FieldPresentation(ProLength, "投影宽度", LocateSection, 14, FieldEditorKind.Scalar)
         { Layout = new(RunPage, LocateSection, AllowReference: false, Minimum: 1, Maximum: 500, DecimalPlaces: 0, Increment: 1) },
-        new FieldPresentation(InitType, "初始拟合(1全局/2局部)", LocateSection, 15, FieldEditorKind.Scalar)
-        { Layout = new(RunPage, LocateSection, AllowReference: false, Minimum: 1, Maximum: 2, DecimalPlaces: 0, Increment: 1) },
-        new FieldPresentation(FitFun, "拟合方式(1最小二乘/2Huber/3Tukey)", LocateSection, 16, FieldEditorKind.Scalar)
-        { Layout = new(RunPage, LocateSection, AllowReference: false, Minimum: 1, Maximum: 3, DecimalPlaces: 0, Increment: 1) },
+        new FieldPresentation(InitType, "初始拟合", LocateSection, 15, FieldEditorKind.Choice, InitTypeCodes, InitTypeLabels)
+        { Layout = new(RunPage, LocateSection, AllowReference: false) },
+        new FieldPresentation(FitFun, "拟合方式", LocateSection, 16, FieldEditorKind.Choice, FitFunCodes, FitFunLabels)
+        { Layout = new(RunPage, LocateSection, AllowReference: false) },
         // ResultShow / 结果判断（原厂 LimitEnable + FloatBettween/IntegerBettween）
         new FieldPresentation(RadiusLimitEnable, "半径判断", JudgeSection, 20, FieldEditorKind.Scalar)
         { Layout = new(ResultPage, JudgeSection, AllowReference: false, BooleanTips: new("启用", "关闭")) },
@@ -152,12 +175,15 @@ public static class CircleFindFields
         ArgumentNullException.ThrowIfNull(settings);
         return new(Schema.Inputs, new Dictionary<string, object?>(StringComparer.Ordinal)
         {
-            [FindMode] = (long)settings.FindMode, [EdgePolarity] = (long)settings.EdgePolarity,
+            [FindMode] = settings.FindMode.ToString(CultureInfo.InvariantCulture),
+            [EdgePolarity] = settings.EdgePolarity.ToString(CultureInfo.InvariantCulture),
             [EdgeThresh] = (long)settings.EdgeThresh, [EdgeWidth] = (long)settings.EdgeWidth,
             [RadNum] = (long)settings.RadNum, [RejectNum] = (long)settings.RejectNum,
             [CoarseDetectFlag] = settings.CoarseDetectFlag, [CcdSampleScale] = (long)settings.CcdSampleScale,
             [CcdCircleThresh] = (long)settings.CcdCircleThresh, [RejectDist] = (long)settings.RejectDist,
-            [ProLength] = (long)settings.ProLength, [InitType] = (long)settings.InitType, [FitFun] = (long)settings.FitFun,
+            [ProLength] = (long)settings.ProLength,
+            [InitType] = settings.InitType.ToString(CultureInfo.InvariantCulture),
+            [FitFun] = settings.FitFun.ToString(CultureInfo.InvariantCulture),
             [RadiusLimitEnable] = settings.RadiusLimitEnable, [RadiusLimitLow] = settings.RadiusLimitLow, [RadiusLimitHigh] = settings.RadiusLimitHigh,
             [CenterXLimitEnable] = settings.CenterXLimitEnable, [CenterXLimitLow] = settings.CenterXLimitLow, [CenterXLimitHigh] = settings.CenterXLimitHigh,
             [CenterYLimitEnable] = settings.CenterYLimitEnable, [CenterYLimitLow] = settings.CenterYLimitLow, [CenterYLimitHigh] = settings.CenterYLimitHigh,
@@ -172,13 +198,14 @@ public static class CircleFindFields
         var candidate = new InputValues(Schema.Inputs, values.CopyValues());
         long I(string id) => ToInteger(candidate.Get<object?>(id), id);
         double N(string id) => ToNumber(candidate.Get<object?>(id), id);
+        int C(string id) => ToCode(candidate.Get<string>(id), id);
         var result = new CircleFindSettings
         {
-            FindMode = (int)I(FindMode), EdgePolarity = (int)I(EdgePolarity), EdgeThresh = (int)I(EdgeThresh),
+            FindMode = C(FindMode), EdgePolarity = C(EdgePolarity), EdgeThresh = (int)I(EdgeThresh),
             EdgeWidth = (int)I(EdgeWidth), RadNum = (int)I(RadNum), RejectNum = (int)I(RejectNum),
             CoarseDetectFlag = candidate.Get<bool>(CoarseDetectFlag), CcdSampleScale = (int)I(CcdSampleScale),
             CcdCircleThresh = (int)I(CcdCircleThresh), RejectDist = (int)I(RejectDist), ProLength = (int)I(ProLength),
-            InitType = (int)I(InitType), FitFun = (int)I(FitFun),
+            InitType = C(InitType), FitFun = C(FitFun),
             RadiusLimitEnable = candidate.Get<bool>(RadiusLimitEnable), RadiusLimitLow = N(RadiusLimitLow), RadiusLimitHigh = N(RadiusLimitHigh),
             CenterXLimitEnable = candidate.Get<bool>(CenterXLimitEnable), CenterXLimitLow = N(CenterXLimitLow), CenterXLimitHigh = N(CenterXLimitHigh),
             CenterYLimitEnable = candidate.Get<bool>(CenterYLimitEnable), CenterYLimitLow = N(CenterYLimitLow), CenterYLimitHigh = N(CenterYLimitHigh),
@@ -188,6 +215,14 @@ public static class CircleFindFields
         var errors = result.Validate();
         if (errors.Count != 0) throw new ArgumentException(string.Join("；", errors.Select(error => error.Message)));
         return result.Freeze();
+    }
+
+    /// <summary>把原厂整数枚举码（下拉选项文本）还原为整数值；未声明选项直接报错，不静默回退。</summary>
+    private static int ToCode(object? value, string field)
+    {
+        if (value is string text && int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var code))
+            return code;
+        throw new ArgumentException($"字段 {field} 必须是已声明的枚举选项，实际为 {value ?? "空值"}。");
     }
 
     private static long ToInteger(object? value, string field) => value switch

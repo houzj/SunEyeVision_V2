@@ -37,34 +37,50 @@
   "dependencies": [
     {
       "type": "HikPcUI.ImageView.SquareArea",
-      "status": "pending",
+      "status": "closed-for-color-extract-consumer",
       "evidence": "original XAML/code and pending migrated pair",
-      "reason": "HikHistogramSingle XAML embeds localcontrol:SquareArea and code manipulates IArea/RectangleRoi"
+      "reason": "HikHistogramSingle XAML embeds localcontrol:SquareArea and code manipulates IArea/RectangleRoi",
+      "migration": {
+        "xaml": "src/Plugin.Wpf/Controls/Native/Input/Interaction.Pc/Interaction.ImageView/SquareArea.xaml",
+        "code": "src/Plugin.Wpf/Controls/Native/Input/Interaction.Pc/Interaction.ImageView/SquareArea.xaml.cs",
+        "note": "ColorExtract uses RectangleRoi drag path. Original HikPolygon/HikPath point-sync branches remain explicitly pending because their original controls are not migrated."
+      }
     },
     {
       "type": "VM.Utility.ResourceHelper",
-      "status": "unresolved-in-current-Plugin.Wpf-contract",
-      "evidence": "HikHistogramSingle.xaml.cs LangType getter"
+      "status": "resolved-by-host-localization-contract",
+      "evidence": "HikHistogramSingle.xaml.cs LangType getter",
+      "migration": "SunEyeVision.Plugin.Wpf.Native.Common.Localization.AppLocalizationService.GetLang"
     },
     {
       "type": "HikPcUI.Controls resources GridBrushImg.png",
-      "status": "original-resource-identity-not-registered-in-current-consumer",
-      "evidence": "HikHistogramSingle.xaml ImageBrush source"
+      "status": "registered-exact-source-asset",
+      "evidence": "HikHistogramSingle.xaml ImageBrush source",
+      "migration": "src/Plugin.Wpf/Themes/Assets/Native/Input/Interaction.Pc/resources/gridbrushimg.png"
     },
     {
       "type": "HikPcUI.ImageView.HikPolygon / HikPath",
-      "status": "unresolved",
+      "status": "unresolved-outside-color-extract-consumer",
       "evidence": "SquareArea.xaml.cs ChangeTX/ChangeTY/ChangeX/ChangeY type checks",
       "reason": "direct compile-time references; removing branches or replacing with reflection would alter original dependency semantics"
     },
     {
       "type": "VM.PcUI ImageView/ROIDictionary.xaml",
-      "status": "unresolved-resource",
+      "status": "closed-for-squarearea-consumer",
       "evidence": "SquareArea.xaml merged dictionary and SquareArea.OriBrush",
-      "reason": "ROIBaseColor, ROIMouseOverColor, thickness2Double and RectangleAreaColor resource identities not registered in current consumer"
+      "reason": "ROIBaseColor, ROIMouseOverColor, thickness2Double and RectangleAreaColor resource identities not registered in current consumer",
+      "migration": "src/Plugin.Wpf/Themes/Native/Input/Interaction.Pc/imageview/roidictionary.xaml with exact ROIBaseColor, ROIMouseOverColor, RectangleAreaColor and thickness2Double entries"
     }
   ],
-  "decision": "do-not-migrate-into-ColorExtract-until-dependency-closure",
+  "decision": "minimal-original-consumer-chain-migrated; unresolved polygon/path branches remain pending and are not replaced by self-developed types",
   "consumer": "ColorExtract paramusercontroldatatemplate channels 1-3",
-  "evidence_boundary": "static source only; no dynamic histogram runtime proof"
+  "evidence_boundary": "static source evidence plus Plugin.Wpf/ColorExtract Release compile, 20 ColorExtract tests, and Agent Desktop runtime screenshot/close verification; dynamic image-source histogram data remain pending",
+  "validation": {
+    "targeted_release_build": "build_temp/color-extract-histogram-closure-1.log; 0 errors",
+    "full_release_build": "build_temp/full-release-color-histogram-closure.log; 0 errors; 3352 warnings",
+    "tests": "build_temp/color-extract-tests-after-release.log; 20 passed",
+    "consumer": "tools/SunEyeVision.ColorExtract/Wpf/Views/ColorExtractRangePanel.cs now composes three HikHistogramSingle controls with empty PointCollection when no image source is available",
+    "agent_desktop": "Release/_validation/AgentDesktopToolReview/post-color-histogram/color-extract-histogram-release-agent-desktop.json; parameter window screenshot confirms three histogram frames; close-app process_instance_exited and list-windows empty"
+  },
+  "status": "minimal-consumer-closure-built"
 }

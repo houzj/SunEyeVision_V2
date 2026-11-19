@@ -1,0 +1,69 @@
+{
+  "authority": "VisionMaster 4.4.0 Build20250516",
+  "vmPath": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule",
+  "selfPath": "D:\\MyWork\\SunEyeVision_V2\\tools\\SunEyeVision.ImageSource",
+  "vmFiles": [
+    "ImageSourceModule.dll",
+    "ImageSourceModuleControl.dll",
+    "ImageSourceModuleCs.dll",
+    "ImageSourceModule.xml",
+    "ImageSourceModuleAlgorithm.xml",
+    "ImageSourceModuleAlgorithmTab.xml",
+    "ImageSourceModuleCs.xml",
+    "ImageSourceModuleDisplay.xml",
+    "ToolItemInfo.xml",
+    "ImageSourceModule_NormalLogo.png",
+    "ImageSourceModule_StateLogo.png",
+    "ImageSourceModuleImageEnable.png"
+  ],
+  "basicTab": {
+    "name": "Tab_Basic Params",
+    "items": [
+      "ImageSourceType", "CurrentImagePath", "PixelFormat", "SolSaveImageData", "ShowImageName", "CameraID", "ExposureTimeInput", "GainInput", "InitialSN", "PathCache", "OutMono8", "StitchEnable", "StitchStartHeight", "StitchHeight", "ClearTrigger", "ClearTriggerCondition", "AutoPlay", "AutoStop", "TriggerStringEnable", "TriggerString", "TriggerFilter", "IsSubscribeFolderMode", "SubscribeFolderPath", "RefreshImage", "TriggerProcessRun"
+    ]
+  },
+  "selfProjects": [
+    "tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj",
+    "tools/SunEyeVision.ImageSource/Wpf/SunEyeVision.ImageSource.Wpf.csproj"
+  ],
+  "controlEvidence": {
+    "artifact": "ImageSourceModuleControl.dll",
+    "sha256": "04a73b135d18641b65b2815a292b795b922cb675122d6555f61947f372958906",
+    "architecture": "x86",
+    "assemblyVersion": "1.0.0.0",
+    "types": [
+      "ImageSourceModuleControl.ImageListPanel",
+      "ImageSourceModuleControl.LocalImageListView",
+      "Apps.XmlParser.ParamTab.LocalImageList",
+      "Apps.XmlParser.ParamTab.GeneralParamListVisibleOperation",
+      "Apps.XmlParser.ParamTab.GeneralParamListHiddenOperation"
+    ],
+    "evidenceId": "ev_745f722d6693179cfb443c04e969f20b388d76940689c2644e2096ac0e964078",
+    "userStringEvidenceId": "ev_cf94be90a814a17a2bed4d991a2aa4d33408a56a7c00cb6cf4773cc9bbdb74e6",
+    "embeddedWpfResources": [
+      "/ImageSourceModuleControl;component/imagelistpanel.xaml",
+      "/ImageSourceModuleControl;component/localimagelistview.xaml"
+    ],
+    "embeddedBamlResources": [
+      {"name":"localimagelistview.baml","bytes":5407,"sha256":"1D8FD72744160AA8BC5FDE50FA12996EBC938D3C4FEC763C0F9F2B871C41C9DB"},
+      {"name":"datatemplate/paramusercontroldatatemplate.baml","bytes":2769,"sha256":"D79E29C4D0D8372764B9ED7F4E19C1819FFCB4164ED16EDA1F3C23F78FBA845F"},
+      {"name":"imagelistpanel.baml","bytes":13302,"sha256":"A30B2027677A616D8FF41C6461904EBC5EBC7D9DFC31C0DE97B1E63C8F4CEFAD"}
+    ],
+    "methodEvidence": {
+      "ImageListPanel": ["ChangeShadowDataSource", "InitializeComponent", "System.Windows.Markup.IComponentConnector.Connect"],
+      "LocalImageListView": ["IsExpanded", "IsSelectMode", "Root", "ImageModes", "AutoPlay", "Interval", "CurrentImagePath", "ClearParamListView", "listViewUserDefinedKeyParam_SelectionChanged", "cbxMode_SelectionChanged", "OnApplyTemplate"],
+      "LocalImageList": ["IsShowLocalImageList", "ImageAlgorithmTabRoot", "DecorateSource"],
+      "evidenceId": "ev_e704799935dbd724037add2eb79873a8e35aa3b72639af62e666a151eecb6cdf"
+    },
+    "status": "static-confirmed-runtime-unconfirmed"
+  },
+  "differences": [
+    {"id":"IMG-STRUCT-001","area":"release-boundary","status":"confirmed-difference","evidence":"VM single ImageSourceModule release directory vs self Runtime/Wpf projects"},
+    {"id":"IMG-STRUCT-002","area":"parameter-defaults","status":"confirmed-difference","evidence":"VM ImageSourceModuleAlgorithm.xml vs self ImageSourceSettings/ImageSourceFields"},
+    {"id":"IMG-STRUCT-003","area":"parameter-tab","status":"confirmed-difference","evidence":"VM AlgorithmTab XML fixed order vs self C# Layout composition"},
+    {"id":"IMG-STRUCT-004","area":"display","status":"partial-mapping","evidence":"VM Display.xml objects vs self ImageSourceOutput.Display"},
+    {"id":"IMG-STRUCT-005","area":"special-control","status":"runtime-unconfirmed","evidence":"ImageSourceModuleControl.dll exists, internal behavior not yet runtime-verified"}
+  ],
+  "implementationAllowed": false,
+  "nextGate": "complete release-unit and control-entry evidence mapping before code migration"
+}

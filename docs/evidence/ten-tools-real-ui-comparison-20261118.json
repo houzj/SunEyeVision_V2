@@ -1,0 +1,112 @@
+{
+  "phase": "real-agent-desktop-ui-comparison",
+  "authority": "controlled-replay",
+  "status": "all-ten-tools-have-real-ui-evidence-or-explicit-entry-blocker",
+  "tools": [
+    {
+      "tool": "BlobLabels",
+      "phase": "real-ui-comparison",
+      "status": "captured-both-sides-with-fresh-product-entry-blocked",
+      "evidence": "D:\\MyWork\\SunEyeVision_V2\\docs\\evidence\\bloblabels-real-ui-comparison-20261118.json",
+      "vm_snapshot": "Release/_validation/BlobLabelsVM-tool-correct.json",
+      "product_snapshot": "Release/_validation/AgentDesktopToolReview/single-tool/20261117-194123-Blob标签分析1/tool-window.json",
+      "pending": [
+        "处理保存方案对话框造成的 AMBIGUOUS_TARGET 后补同批次产品快照",
+        "核对运行参数和结果显示页内部 UI",
+        "确认原厂分组与当前 NativeParameterGroup 的映射后再改代码"
+      ]
+    },
+    {
+      "tool": "ColorExtract",
+      "phase": "real-agent-desktop-ui-comparison",
+      "status": "captured-both-sides-with-dependency-gap",
+      "evidence": "D:\\MyWork\\SunEyeVision_V2\\docs\\evidence\\color-extract-ui-confirmation-20261118.json",
+      "vm_snapshot": "Release/_validation/ColorExtractVM-tool.json",
+      "product_snapshot": "Release/_validation/AgentDesktopToolReview/single-tool/20261117-200033-颜色抽取1/tool-window.json",
+      "pending": [
+        "解除当前 Release 保存方案模态框后重新采集运行参数和结果显示页",
+        "Close HikHistogramSingle, SquareArea, ROI resource and GridBrushImg dependency chain",
+        "Only after closure, align the three channel histogram rows and SliderArrange controls"
+      ]
+    },
+    {
+      "tool": "ContourMatch",
+      "phase": "runtime-ui-and-template-creation-confirmation",
+      "status": "tab-layer-verified-template-creation-gap-remains",
+      "evidence": "D:\\MyWork\\SunEyeVision_V2\\docs\\evidence\\contourmatch-ui-confirmation-20261118.json",
+      "vm_snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/ContourMatchVM/tool-dialog.json",
+      "product_snapshot": "Release/_validation/AgentDesktopToolReview/post-ui-check-2/latest-tool-window-2.json",
+      "pending": null
+    },
+    {
+      "tool": "DivideImage",
+      "phase": "real-agent-desktop-ui-comparison",
+      "status": "captured-both-sides",
+      "evidence": "D:\\MyWork\\SunEyeVision_V2\\docs\\evidence\\divideimage-ui-confirmation-20261118.json",
+      "vm_snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/DivideImageVM-tool.json",
+      "product_snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/AgentDesktopToolReview/single-tool/20261117-192808-划片拆分1/tool-window.json",
+      "pending": null
+    },
+    {
+      "tool": "FrameMean",
+      "phase": "real-agent-desktop-ui-comparison",
+      "status": "captured-both-sides",
+      "evidence": "D:\\MyWork\\SunEyeVision_V2\\docs\\evidence\\framemean-ui-confirmation-20261118.json",
+      "vm_snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/FrameMeanVM-tool.json",
+      "product_snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/AgentDesktopToolReview/single-tool/20261117-193640-帧均值1/tool-window.json",
+      "pending": null
+    },
+    {
+      "tool": "GrayMatch",
+      "phase": "real-agent-desktop-ui-comparison",
+      "status": "captured-both-sides",
+      "evidence": "D:\\MyWork\\SunEyeVision_V2\\docs\\evidence\\graymatch-ui-confirmation-20261118.json",
+      "vm_snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/GrayMatchVM-tool.json",
+      "product_snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/AgentDesktopToolReview/single-tool/20261117-194621-灰度匹配1/tool-window.json",
+      "pending": null
+    },
+    {
+      "tool": "If",
+      "phase": "real-agent-desktop-ui-comparison",
+      "status": "captured-both-sides-with-entry-replay",
+      "evidence": "D:\\MyWork\\SunEyeVision_V2\\docs\\evidence\\if-ui-confirmation-20261118.json",
+      "vm_snapshot": "D:/MyWork/SunEyeVision_V2/docs/evidence/if-review-20261118.json",
+      "product_snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/AgentDesktopToolReview/single-tool/20261117-194831-条件分支1/tool-window.json",
+      "pending": null
+    },
+    {
+      "tool": "IntensityMeasure",
+      "phase": "real-agent-desktop-ui-comparison",
+      "status": "captured-both-sides-with-inner-mapping-pending",
+      "evidence": "D:\\MyWork\\SunEyeVision_V2\\docs\\evidence\\intensitymeasure-ui-confirmation-20261118.json",
+      "vm_snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/IntensityMeasureVM-tool.json",
+      "product_snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/AgentDesktopToolReview/single-tool/20261117-194000-亮度测量1/tool-window.json",
+      "pending": [
+        "Capture product ROI edit and result readback against original control evidence",
+        "Verify save/reopen and resource release after inner mapping"
+      ]
+    },
+    {
+      "tool": "MarkFind",
+      "phase": "real-agent-desktop-ui-comparison",
+      "status": "captured-both-sides-post-release-resource-verified",
+      "evidence": "D:\\MyWork\\SunEyeVision_V2\\docs\\evidence\\markfind-ui-confirmation-20261118.json",
+      "vm_snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/MarkFindVM/original-markfind-tool.json",
+      "product_snapshot": "Release/_validation/AgentDesktopToolReview/post-ui-check-2/markfind-tool-window.json",
+      "pending": [
+        "补采资源按钮名称与图标状态的 Agent Desktop 快照",
+        "原厂编辑模型窗口和 .mfxml 文件格式仍未确认，不实现编辑语义"
+      ]
+    },
+    {
+      "tool": "PixelCount",
+      "phase": "real-agent-desktop-ui-comparison",
+      "status": "captured-both-sides",
+      "evidence": "D:\\MyWork\\SunEyeVision_V2\\docs\\evidence\\pixelcount-ui-confirmation-20261118.json",
+      "vm_snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/PixelCountVM-tool.json",
+      "product_snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/AgentDesktopToolReview/single-tool/20261117-194228-像素统计1/tool-window.json",
+      "pending": null
+    }
+  ],
+  "rule": "每个工具必须同时有原厂和自研窗口快照，记录 Tab、分组、底栏命令和入口阻塞；缺证据不进入 UI 修复。"
+}

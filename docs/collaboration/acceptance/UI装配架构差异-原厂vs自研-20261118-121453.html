@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI 装配架构差异 · 原厂 VisionMaster vs 自研 SunEyeVision</title>
+<style>
+  :root{
+    --ink:#151b26; --ink-2:#3d4657; --ink-3:#6b7688;
+    --line:#e3e7ee; --line-2:#eef1f6;
+    --bg:#f6f8fb; --card:#ffffff;
+    --brand:#1f4e8c; --brand-2:#e8f0fb;
+    --own:#0d7a5f; --own-2:#e6f5f0;
+    --warn:#b8541a; --warn-2:#fdf0e6;
+    --bad:#b02a37; --bad-2:#fbeaec;
+    --mono:'Cascadia Mono','Consolas','SF Mono',Menlo,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; padding:0 0 80px; background:var(--bg); color:var(--ink);
+    font-family:'Microsoft YaHei','PingFang SC','Segoe UI',system-ui,sans-serif;
+    font-size:15px; line-height:1.75; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px; margin:0 auto; padding:0 28px;}
+
+  /* ── 头部 ── */
+  header{
+    background:linear-gradient(135deg,#12253f 0%,#1f4e8c 55%,#2a6bb5 100%);
+    color:#fff; padding:54px 0 46px; margin-bottom:34px;
+    position:relative; overflow:hidden;
+  }
+  header::after{
+    content:''; position:absolute; right:-90px; top:-90px; width:340px; height:340px;
+    border-radius:50%; background:rgba(255,255,255,.055);
+  }
+  header::before{
+    content:''; position:absolute; right:120px; bottom:-140px; width:260px; height:260px;
+    border-radius:50%; background:rgba(255,255,255,.04);
+  }
+  header .wrap{position:relative; z-index:2;}
+  .kicker{
+    display:inline-block; font-size:12.5px; letter-spacing:.14em; text-transform:uppercase;
+    background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.22);
+    padding:5px 13px; border-radius:100px; margin-bottom:18px;
+  }
+  h1{margin:0 0 14px; font-size:33px; line-height:1.32; font-weight:700; letter-spacing:-.01em;}
+  .sub{margin:0; font-size:15.5px; color:rgba(255,255,255,.82); max-width:840px;}
+  .meta{margin-top:22px; font-size:13px; color:rgba(255,255,255,.62); display:flex; gap:22px; flex-wrap:wrap;}
+
+  /* ── 结论横幅 ── */
+  .verdict{
+    background:var(--card); border:1px solid var(--line); border-left:5px solid var(--brand);
+    border-radius:12px; padding:24px 28px; margin:-58px 0 38px; position:relative; z-index:3;
+    box-shadow:0 10px 30px rgba(20,35,60,.09);
+  }
+  .verdict h2{margin:0 0 10px; font-size:19px; color:var(--brand);}
+  .verdict p{margin:0; color:var(--ink-2); font-size:15px;}
+  .verdict strong{color:var(--ink); background:linear-gradient(transparent 62%, #ffe9a8 62%); padding:0 2px;}
+
+  /* ── 章节 ── */
+  section{margin:46px 0;}
+  .sec-title{
+    display:flex; align-items:center; gap:13px; margin:0 0 8px;
+    font-size:22px; font-weight:700; color:var(--ink);
+  }
+  .sec-title .num{
+    flex:none; width:30px; height:30px; border-radius:8px; background:var(--brand);
+    color:#fff; font-size:14px; font-weight:700; display:grid; place-items:center;
+  }
+  .sec-desc{margin:0 0 22px 43px; color:var(--ink-3); font-size:14px;}
+
+  /* ── 并排架构 ── */
+  .side-by-side{display:grid; grid-template-columns:1fr 1fr; gap:22px;}
+  .panel{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    overflow:hidden; display:flex; flex-direction:column;
+  }
+  .panel-head{padding:16px 20px; border-bottom:1px solid var(--line-2); display:flex; align-items:center; gap:10px;}
+  .panel-head .dot{width:9px; height:9px; border-radius:50%; flex:none;}
+  .panel-head h3{margin:0; font-size:15.5px; font-weight:700;}
+  .panel-head .tag{
+    margin-left:auto; font-size:11.5px; padding:3px 9px; border-radius:100px; font-weight:600;
+  }
+  .p-origin .dot{background:var(--brand);} .p-origin .tag{background:var(--brand-2); color:var(--brand);}
+  .p-own .dot{background:var(--own);} .p-own .tag{background:var(--own-2); color:var(--own);}
+  .panel-body{padding:20px; flex:1;}
+
+  /* ── 流动图（用 div 模拟） ── */
+  .flow{display:flex; flex-direction:column; gap:0;}
+  .node{
+    border:1.5px solid var(--line); background:#fbfcfe; border-radius:9px;
+    padding:11px 14px; font-size:13.2px; line-height:1.5;
+  }
+  .node .n-t{font-weight:700; font-size:13.5px; margin-bottom:2px;}
+  .node .n-d{color:var(--ink-3); font-size:12.2px; font-family:var(--mono);}
+  .p-origin .node{border-color:#cfe0f5; background:#f7fafe;}
+  .p-own .node{border-color:#c7e8dd; background:#f6fcf9;}
+  .node.leaf{background:#fff; border-style:dashed;}
+  .arrow{
+    align-self:center; color:var(--ink-3); font-size:12px; line-height:1;
+    padding:6px 0; font-family:var(--mono);
+  }
+
+  /* ── 能力条 ── */
+  .bars{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:26px 28px;}
+  .bar-row{margin-bottom:22px;}
+  .bar-row:last-child{margin-bottom:0;}
+  .bar-label{display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:9px;}
+  .bar-label b{font-weight:600;}
+  .bar-label .val{font-family:var(--mono); font-size:12.5px; color:var(--ink-3);}
+  .track{height:26px; background:var(--line-2); border-radius:7px; overflow:hidden; display:flex;}
+  .fill{height:100%; display:flex; align-items:center; padding-left:11px; font-size:11.5px; font-weight:700; color:#fff;}
+  .fill.o{background:linear-gradient(90deg,#2a6bb5,#1f4e8c);}
+  .fill.m{background:linear-gradient(90deg,#2aa184,#0d7a5f);}
+  .legend{display:flex; gap:20px; margin-bottom:20px; font-size:13px; color:var(--ink-2); flex-wrap:wrap;}
+  .legend span{display:flex; align-items:center; gap:7px;}
+  .legend i{width:13px; height:13px; border-radius:4px; display:inline-block;}
+  .legend .o{background:var(--brand);} .legend .m{background:var(--own);}
+
+  /* ── 代码对比 ── */
+  .code-pair{display:grid; grid-template-columns:1fr 1fr; gap:22px;}
+  .code-card{background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden;}
+  .code-head{
+    padding:11px 17px; font-size:12.8px; font-family:var(--mono);
+    background:#f0f3f8; border-bottom:1px solid var(--line); color:var(--ink-2);
+    display:flex; align-items:center; gap:9px;
+  }
+  .code-head .badge{font-size:10.5px; padding:2px 8px; border-radius:5px; font-weight:700; font-family:inherit;}
+  .cb-o{background:var(--brand-2); color:var(--brand);}
+  .cb-m{background:var(--own-2); color:var(--own);}
+  pre{
+    margin:0; padding:18px; overflow-x:auto; background:#1b2330; color:#dbe3ee;
+    font-family:var(--mono); font-size:12.6px; line-height:1.72;
+  }
+  pre .k{color:#7fb3f0;} pre .s{color:#a8d08d;} pre .a{color:#e6c07b;}
+  pre .c{color:#6d7b8d; font-style:italic;} pre .p{color:#c98fdb;}
+
+  /* ── 表格 ── */
+  .tbl-wrap{background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden;}
+  table{width:100%; border-collapse:collapse; font-size:13.8px;}
+  thead th{
+    background:#f0f4fa; text-align:left; padding:13px 16px; font-weight:700;
+    font-size:13px; color:var(--ink-2); border-bottom:1px solid var(--line); white-space:nowrap;
+  }
+  tbody td{padding:13px 16px; border-bottom:1px solid var(--line-2); vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:nth-child(even){background:#fafbfd;}
+  td.dim{color:var(--ink-3); font-weight:600; white-space:nowrap;}
+  .pill{display:inline-block; padding:2px 9px; border-radius:100px; font-size:11.5px; font-weight:700;}
+  .pill.g{background:var(--own-2); color:var(--own);}
+  .pill.r{background:var(--bad-2); color:var(--bad);}
+  .pill.y{background:var(--warn-2); color:var(--warn);}
+
+  /* ── 影响矩阵 ── */
+  .matrix{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+  .m-card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px 20px;}
+  .m-card h4{margin:0 0 10px; font-size:14.5px; display:flex; align-items:center; gap:8px;}
+  .m-card ul{margin:0; padding-left:19px; font-size:13.4px; color:var(--ink-2); line-height:1.9;}
+  .m-card.ok{border-top:3px solid var(--own);}
+  .m-card.part{border-top:3px solid var(--warn);}
+  .m-card.no{border-top:3px solid var(--bad);}
+
+  /* ── 路线卡片 ── */
+  .routes{display:grid; grid-template-columns:repeat(3,1fr); gap:18px;}
+  .route{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:22px; display:flex; flex-direction:column; position:relative;
+  }
+  .route.rec{border:2px solid var(--own); box-shadow:0 8px 26px rgba(13,122,95,.13);}
+  .route .rn{
+    font-size:11.5px; font-weight:700; letter-spacing:.08em; color:var(--ink-3);
+    text-transform:uppercase; margin-bottom:9px;
+  }
+  .route h4{margin:0 0 10px; font-size:16px;}
+  .route p{margin:0 0 14px; font-size:13.4px; color:var(--ink-2); flex:1;}
+  .route .cost{font-size:12.5px; padding-top:13px; border-top:1px dashed var(--line); color:var(--ink-3);}
+  .route .cost b{color:var(--ink);}
+  .rec-flag{
+    position:absolute; top:-11px; right:16px; background:var(--own); color:#fff;
+    font-size:11px; font-weight:700; padding:3px 11px; border-radius:100px;
+  }
+
+  /* ── 证据清单 ── */
+  .evidence{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px 26px;}
+  .evidence h4{margin:0 0 14px; font-size:14.5px;}
+  .ev{display:grid; grid-template-columns:1fr 1fr; gap:9px 26px; font-size:12.9px; font-family:var(--mono); color:var(--ink-2);}
+  .ev div{padding:5px 0; border-bottom:1px dotted var(--line); overflow-wrap:anywhere;}
+  .ev .k2{color:var(--brand); font-weight:600;}
+
+  footer{margin-top:52px; padding-top:22px; border-top:1px solid var(--line); font-size:12.5px; color:var(--ink-3);}
+
+  @media (max-width:900px){
+    .side-by-side,.code-pair,.routes,.matrix{grid-template-columns:1fr;}
+    .ev{grid-template-columns:1fr;}
+    h1{font-size:25px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="kicker">架构对照 · UI 装配层</div>
+    <h1>UI 装配逻辑：原厂与自研是两种不同的范式</h1>
+    <p class="sub">
+      本文对比 VisionMaster（原厂）与 SunEyeVision（自研）在"工具参数页如何被组装出来"这件事上的架构差异，
+      并说明该差异对"完整 UI 对齐"能达成到什么程度。
+    </p>
+    <div class="meta">
+      <span>2026-11-18</span>
+      <span>对照对象：VisionMaster 4.4.0 · SunEyeVision 2.0.0.8</span>
+      <span>证据：反编译源码 + 实机截图</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="verdict">
+    <h2>一句话结论</h2>
+    <p>
+      原厂是 <strong>每工具手写 XAML + 专属 ViewModel</strong>（像素级自由布局）；
+      自研是 <strong>元数据声明 + 通用渲染器自动生成</strong>（逻辑级结构）。
+      两者<strong>思路同为"声明 + 渲染"，但载体与控制粒度不同</strong>，因此结构可以对齐、像素级外观无法自动对齐。
+    </p>
+  </div>
+
+  <!-- 1. 两条链 -->
+  <section>
+    <h2 class="sec-title"><span class="num">1</span>装配链路对比</h2>
+    <p class="sec-desc">同一个参数页，从"定义"到"控件树"走过的路径完全不同。</p>
+
+    <div class="side-by-side">
+      <div class="panel p-origin">
+        <div class="panel-head">
+          <span class="dot"></span><h3>原厂 VisionMaster</h3>
+          <span class="tag">手写视图</span>
+        </div>
+        <div class="panel-body">
+          <div class="flow">
+            <div class="node">
+              <div class="n-t">元数据 XML</div>
+              <div class="n-d">AlgorithmTab.xml · uiControls · ToolItemInfo.xml</div>
+            </div>
+            <div class="arrow">▼ 解析</div>
+            <div class="node">
+              <div class="n-t">专属 ViewModel（每工具一个）</div>
+              <div class="n-d">Apps.XmlParser.ParamTab.DataClassificationParam</div>
+            </div>
+            <div class="arrow">▼ 数据绑定</div>
+            <div class="node">
+              <div class="n-t">手写 XAML 视图（每工具一份）</div>
+              <div class="n-d">DataClassificationParam.xaml · Config.xaml</div>
+            </div>
+            <div class="arrow">▼ 样式合并</div>
+            <div class="node leaf">
+              <div class="n-t">WPF 控件树</div>
+              <div class="n-d">Apps.Style 全局样式 + 像素级布局</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel p-own">
+        <div class="panel-head">
+          <span class="dot"></span><h3>自研 SunEyeVision</h3>
+          <span class="tag">元数据渲染</span>
+        </div>
+        <div class="panel-body">
+          <div class="flow">
+            <div class="node">
+              <div class="n-t">C# 声明（Runtime 层）</div>
+              <div class="n-d">ToolSchema · FieldPresentation · FieldLayout</div>
+            </div>
+            <div class="arrow">▼ 反射/只读消费</div>
+            <div class="node">
+              <div class="n-t">通用渲染器（唯一一套）</div>
+              <div class="n-d">DeclaredSettingsView → DeclaredFieldsView</div>
+            </div>
+            <div class="arrow">▼ 模板选择</div>
+            <div class="node">
+              <div class="n-t">控件模板注册表</div>
+              <div class="n-d">DeclaredFieldTemplateRegistry · DeclaredFieldRow</div>
+            </div>
+            <div class="arrow">▼ 扩展点</div>
+            <div class="node leaf">
+              <div class="n-t">WPF 控件树</div>
+              <div class="n-d">默认模板自动生成；复杂处经 InputContent 注入</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 能力对比 -->
+  <section>
+    <h2 class="sec-title"><span class="num">2</span>控制粒度与代价</h2>
+    <p class="sec-desc">两种范式各自把"自由度"和"一致性"放在了不同位置。</p>
+
+    <div class="bars">
+      <div class="legend">
+        <span><i class="o"></i>原厂 VisionMaster</span>
+        <span><i class="m"></i>自研 SunEyeVision</span>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label"><b>像素级布局控制力</b><span class="val">原厂 100 · 自研 30</span></div>
+        <div class="track">
+          <div class="fill o" style="width:100%">列宽 160/80/*/75、行高 32 全部手写</div>
+        </div>
+        <div class="track" style="margin-top:5px">
+          <div class="fill m" style="width:30%">由渲染器决定</div>
+        </div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label"><b>跨工具视觉一致性</b><span class="val">原厂 55 · 自研 95</span></div>
+        <div class="track">
+          <div class="fill o" style="width:55%">靠 Apps.Style + 各工具自觉</div>
+        </div>
+        <div class="track" style="margin-top:5px">
+          <div class="fill m" style="width:95%">同一渲染器天然统一</div>
+        </div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label"><b>单工具 UI 开发成本（越高越省）</b><span class="val">原厂 25 · 自研 90</span></div>
+        <div class="track">
+          <div class="fill o" style="width:25%">独立工程 + 上千行 XAML</div>
+        </div>
+        <div class="track" style="margin-top:5px">
+          <div class="fill m" style="width:90%">数十行声明</div>
+        </div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label"><b>个性化交互上限</b><span class="val">原厂 100 · 自研 45</span></div>
+        <div class="track">
+          <div class="fill o" style="width:100%">任意 DataTemplate / 触发器 / 转换器</div>
+        </div>
+        <div class="track" style="margin-top:5px">
+          <div class="fill m" style="width:45%">受模板约束，超出需注入自定义控件</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 同一 UI 两种写法 -->
+  <section>
+    <h2 class="sec-title"><span class="num">3</span>同一行控件的两种表达</h2>
+    <p class="sec-desc">以数据分类"输入变量行"为例，左边是原厂手写的像素级布局，右边是自研的声明。</p>
+
+    <div class="code-pair">
+      <div class="code-card">
+        <div class="code-head">
+          <span class="badge cb-o">原厂</span> DataClassificationParam.xaml
+        </div>
+<pre><span class="c">&lt;!-- 手写：列宽、行高、边框色全部固定 --&gt;</span>
+&lt;<span class="k">DataTemplate</span> <span class="a">x:Key</span>=<span class="s">"InputVar"</span>&gt;
+  &lt;<span class="k">Grid</span> <span class="a">Height</span>=<span class="s">"32"</span> <span class="a">Margin</span>=<span class="s">"0,0,5,6"</span>&gt;
+    &lt;<span class="k">Grid.ColumnDefinitions</span>&gt;
+      &lt;<span class="k">ColumnDefinition</span> <span class="a">Width</span>=<span class="s">"160"</span> /&gt;
+      &lt;<span class="k">ColumnDefinition</span> <span class="a">Width</span>=<span class="s">"80"</span>  /&gt;
+      &lt;<span class="k">ColumnDefinition</span> <span class="a">Width</span>=<span class="s">"*"</span>   /&gt;
+      &lt;<span class="k">ColumnDefinition</span> <span class="a">Width</span>=<span class="s">"75"</span>  /&gt;
+    &lt;/<span class="k">Grid.ColumnDefinitions</span>&gt;
+
+    &lt;<span class="k">Border</span> <span class="a">BorderBrush</span>=<span class="s">"#CCCCCD"</span>
+            <span class="a">CornerRadius</span>=<span class="s">"2"</span>&gt;
+      &lt;<span class="k">TextBox</span> <span class="a">Text</span>=<span class="s">"{Binding Name}"</span> /&gt;
+    &lt;/<span class="k">Border</span>&gt;
+    <span class="c">&lt;!-- 类型列、订阅选择器、显示勾选… --&gt;</span>
+  &lt;/<span class="k">Grid</span>&gt;
+&lt;/<span class="k">DataTemplate</span>&gt;</pre>
+      </div>
+
+      <div class="code-card">
+        <div class="code-head">
+          <span class="badge cb-m">自研</span> DataClassificationFields.cs
+        </div>
+<pre><span class="c">// 声明：只说"是什么"，不说"长什么样"</span>
+<span class="k">new</span> <span class="p">FieldPresentation</span>(
+    <span class="a">fieldId</span>: <span class="s">"settings.source-select"</span>,
+    <span class="a">displayName</span>: <span class="s">"来源选择"</span>,
+    <span class="a">group</span>: <span class="s">"基本参数"</span>,
+    <span class="a">order</span>: <span class="s">1</span>,
+    <span class="a">editor</span>: <span class="p">FieldEditorKind</span>.Choice,
+    <span class="a">choiceKeys</span>: <span class="k">new</span>[] { <span class="s">"1"</span>, <span class="s">"2"</span> },
+    <span class="a">choiceLabels</span>: <span class="k">new</span> <span class="p">Dictionary</span>&lt;<span class="k">string</span>,<span class="k">string</span>&gt; {
+        [<span class="s">"1"</span>] = <span class="s">"图像坐标系"</span>, [<span class="s">"2"</span>] = <span class="s">"物理坐标系"</span>
+    })
+{
+    Layout = <span class="k">new</span>(<span class="s">"基本参数"</span>, <span class="s">"测量设置"</span>)
+};
+
+<span class="c">// 具体外观由 DeclaredFieldRow 模板决定，工具不参与</span></pre>
+      </div>
+    </div>
+
+    <div style="margin-top:16px; padding:15px 20px; background:var(--warn-2); border-left:4px solid var(--warn); border-radius:9px; font-size:13.6px; color:#7a4a15;">
+      <b>关键差别：</b>原厂在 XAML 里能精确指定"这一列 160 像素、这个框 32 高、边框 #CCCCCD"；
+      自研只能声明"这是一个下拉，名字叫来源选择，排在基本参数页第 1 位"，
+      具体长什么样由 <code style="font-family:var(--mono);font-size:12.6px">DeclaredFieldRow</code> 的模板统一决定。
+    </div>
+  </section>
+
+  <!-- 4. 差异表 -->
+  <section>
+    <h2 class="sec-title"><span class="num">4</span>逐维度差异</h2>
+    <p class="sec-desc">下表每一项都可在两侧源码中定位核实。</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>维度</th><th>原厂 VisionMaster</th><th>自研 SunEyeVision</th><th>性质</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="dim">视图载体</td>
+            <td>每工具独立 WPF 工程 + 专属 <code>.xaml</code></td>
+            <td>无工具级 XAML，统一 <code>DeclaredFieldsView</code></td>
+            <td><span class="pill r">根本差异</span></td>
+          </tr>
+          <tr>
+            <td class="dim">ViewModel</td>
+            <td>每工具专属 VM（含 ObservableCollection / ICommand）</td>
+            <td>框架托管，工具无 UI 状态</td>
+            <td><span class="pill r">根本差异</span></td>
+          </tr>
+          <tr>
+            <td class="dim">页面定义位置</td>
+            <td>XML 元数据 + XAML 布局</td>
+            <td>Runtime 里的 C# <code>FieldPresentation</code></td>
+            <td><span class="pill y">载体不同</span></td>
+          </tr>
+          <tr>
+            <td class="dim">布局精度</td>
+            <td>像素级（列宽/行高/边距/边框色手写）</td>
+            <td>逻辑级（名/组/序/编辑器类型）</td>
+            <td><span class="pill r">能力差异</span></td>
+          </tr>
+          <tr>
+            <td class="dim">页签生成</td>
+            <td>XAML 中 TabControl 硬编码顺序</td>
+            <td>按 <code>Layout.Page</code> 首次出现顺序聚合</td>
+            <td><span class="pill y">机制不同</span></td>
+          </tr>
+          <tr>
+            <td class="dim">分组生成</td>
+            <td>XAML 中 GroupBox / Border 手写</td>
+            <td>按 <code>Layout.Section</code> 自动聚合</td>
+            <td><span class="pill y">机制不同</span></td>
+          </tr>
+          <tr>
+            <td class="dim">特殊交互</td>
+            <td>任意 DataTemplate、触发器、转换器</td>
+            <td>受模板注册表约束，超出需 <code>InputContent</code> 注入</td>
+            <td><span class="pill r">能力差异</span></td>
+          </tr>
+          <tr>
+            <td class="dim">本地化</td>
+            <td><code>Lang:ResourceBinding</code> 绑定资源键</td>
+            <td><code>zh-cn.xaml</code> 资源键 + 工具内硬编码标签</td>
+            <td><span class="pill y">载体不同</span></td>
+          </tr>
+          <tr>
+            <td class="dim">全局样式</td>
+            <td><code>Apps.Style</code> 按工具引用合并</td>
+            <td>统一主题字典继承</td>
+            <td><span class="pill g">等效</span></td>
+          </tr>
+          <tr>
+            <td class="dim">一致性保障</td>
+            <td>靠样式库 + 各工具自觉</td>
+            <td>同一渲染器强制统一</td>
+            <td><span class="pill g">自研更优</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 5. 影响 -->
+  <section>
+    <h2 class="sec-title"><span class="num">5</span>对"完整 UI 对齐"的实际影响</h2>
+    <p class="sec-desc">哪些能靠声明对齐，哪些必须写自定义控件——这是工作量预估的依据。</p>
+
+    <div class="matrix">
+      <div class="m-card ok">
+        <h4>✅ 能自动对齐（改声明即可）</h4>
+        <ul>
+          <li>页签名称与数量</li>
+          <li>页签排列顺序</li>
+          <li>字段显示名</li>
+          <li>字段分组归属</li>
+          <li>字段先后顺序</li>
+          <li>默认值 / 取值范围</li>
+          <li>枚举中文下拉（Choice + 标签）</li>
+          <li>开关文案（启用/关闭）</li>
+          <li>结果判断分组（Enable + 上下限）</li>
+          <li>数值区间成对显示</li>
+        </ul>
+      </div>
+      <div class="m-card part">
+        <h4>⚠︎ 需装配（复用现有控件）</h4>
+        <ul>
+          <li>基本参数页图像输入下拉<br><span style="font-size:12.4px;color:var(--ink-3)">ImageSources + InputSection</span></li>
+          <li>ROI 区域组<br><span style="font-size:12.4px;color:var(--ink-3)">NativeRoiEditor / RegionGeometryEditor</span></li>
+          <li>输入区绑定与校验<br><span style="font-size:12.4px;color:var(--ink-3)">DeclaredInputFieldsView</span></li>
+          <li>工具底部按钮组</li>
+        </ul>
+      </div>
+      <div class="m-card no">
+        <h4>✕ 必须写自定义控件</h4>
+        <ul>
+          <li>数据分类"订阅关系"三列表格<br><span style="font-size:12.4px;color:var(--ink-3)">动态行 + 多选下拉 + 增删</span></li>
+          <li>ML 分类训练页<br><span style="font-size:12.4px;color:var(--ink-3)">+训练按钮 + 图像注册区 + 下载</span></li>
+          <li>结果显示"眼睛图标 + 编辑弹窗"式显示项<br><span style="font-size:12.4px;color:var(--ink-3)">原厂为自定义 DataTemplate</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. 路线 -->
+  <section>
+    <h2 class="sec-title"><span class="num">6</span>三条可选路线</h2>
+    <p class="sec-desc">取决于"要多贴近原厂外观"与"愿意付多少成本"。</p>
+
+    <div class="routes">
+      <div class="route">
+        <div class="rn">路线 A</div>
+        <h4>保持声明式<br>只做结构对齐</h4>
+        <p>不动框架，仅调整 <code>FieldPresentation</code> 声明。页签、字段、默认值、枚举全部对齐，外观沿用自研统一风格。</p>
+        <div class="cost">成本 <b>低</b> · 一致性 <b>高</b> · 像素一致 <b>达不到</b></div>
+      </div>
+
+      <div class="route">
+        <div class="rn">路线 B</div>
+        <h4>对齐原厂范式<br>改为每工具自定义视图</h4>
+        <p>改造框架支持"工具级自定义视图"，复杂工具写专属 XAML + ViewModel，完全复刻原厂布局与交互。</p>
+        <div class="cost">成本 <b>很高</b> · 一致性 <b>下降</b> · 像素一致 <b>可达成</b></div>
+      </div>
+
+      <div class="route rec">
+        <span class="rec-flag">建议</span>
+        <div class="rn">路线 C</div>
+        <h4>混合<br>声明为默认 + 复杂处自定义</h4>
+        <p>四个查找测量类用声明式结构对齐；数据分类订阅表、ML 训练页、结果显示交互走 <code>InputContent</code> 注入自定义视图。</p>
+        <div class="cost">成本 <b>中</b> · 一致性 <b>高</b> · 覆盖率 <b>可满足要求</b></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. 证据 -->
+  <section>
+    <h2 class="sec-title"><span class="num">7</span>证据清单</h2>
+    <p class="sec-desc">以下路径均可在仓库内直接核对。</p>
+
+    <div class="evidence">
+      <h4>原厂（反编译）</h4>
+      <div class="ev">
+        <div><span class="k2">工程</span> decompiled/ModuleControls/DataClassificationModuleControl/*.csproj</div>
+        <div><span class="k2">视图</span> .../DataClassificationModuleControl/DataClassificationParam.xaml（10.9KB）</div>
+        <div><span class="k2">视图</span> .../DataClassificationModuleControl/DataClassificationConfig.xaml（18.8KB）</div>
+        <div><span class="k2">VM</span> .../Apps.XmlParser.ParamTab/DataClassificationParam.cs（9.3KB）</div>
+        <div><span class="k2">code-behind</span> .../DataClassificationParam.xaml.cs（451 字节）</div>
+        <div><span class="k2">转换器</span> .../BoolToVisibilityConvert.cs · ConditionConvert.cs</div>
+      </div>
+      <h4 style="margin-top:22px">自研（本仓库）</h4>
+      <div class="ev">
+        <div><span class="k2">渲染器</span> src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs（325 行）</div>
+        <div><span class="k2">渲染器</span> src/Plugin.Wpf/Fields/DeclaredFieldsView.cs（626 行）</div>
+        <div><span class="k2">行模板</span> src/Plugin.Wpf/Fields/DeclaredFieldRow.cs（699 行）</div>
+        <div><span class="k2">模板表</span> src/Plugin.Wpf/Fields/DeclaredFieldTemplateRegistry.cs（130 行）</div>
+        <div><span class="k2">输入区</span> src/Plugin.Wpf/Presenters/Parameters/DeclaredInputFieldsView.cs（208 行）</div>
+        <div><span class="k2">契约</span> src/Plugin.Contracts/FieldPresentation.cs</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    本文用于说明 UI 装配层的架构差异，不构成实施计划。差异与截图证据见同目录
+    <code style="font-family:var(--mono)">六工具UI对照差异清单-20261118.md</code>。
+  </footer>
+
+</div>
+</body>
+</html>

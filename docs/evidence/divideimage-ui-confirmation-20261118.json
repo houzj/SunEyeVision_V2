@@ -1,0 +1,48 @@
+{
+  "tool": "DivideImage",
+  "phase": "real-agent-desktop-ui-comparison",
+  "status": "captured-both-sides",
+  "vm_runtime": {
+    "snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/DivideImageVM-tool.json",
+    "window_title": "8 划片拆分",
+    "size": "420x500",
+    "tabs": [
+      "基本参数",
+      "运行参数"
+    ],
+    "groups": [
+      "Tab_Image Input",
+      "Tab_ROI Area"
+    ],
+    "commands": [
+      "连续执行",
+      "停止执行",
+      "执行",
+      "确定"
+    ]
+  },
+  "product_runtime": {
+    "snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/AgentDesktopToolReview/single-tool/20261117-192808-划片拆分1/tool-window.json",
+    "window_title": "8 划片拆分1",
+    "size": "420x500",
+    "tabs": [
+      "基本参数",
+      "结果显示",
+      "运行参数"
+    ],
+    "groups": [
+      "NativeParameterGroup（UIA 暴露）"
+    ],
+    "commands": [
+      "连续执行",
+      "停止执行（offscreen）",
+      "执行",
+      "确定"
+    ]
+  },
+  "differences": [
+    "原厂只有基本参数和运行参数两个 Tab，自研多出结果显示 Tab",
+    "原厂基本参数包含 Tab_Image Input 与 Tab_ROI Area 分组，自研使用未命名参数组",
+    "原厂停止执行存在但边界为 offscreen，自研同样未暴露可见停止命令"
+  ]
+}

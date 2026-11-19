@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-18",
+  "authority": "product/ToolComponents.props",
+  "scope": "all-registered-tools",
+  "registered_tool_count": 18,
+  "architecture_gate": "framework-first",
+  "current_states": {
+    "LegacyCompatibility": "当前工具入口可加载，但尚未迁移到统一原厂化 UI 架构",
+    "EvidenceBlocked": "当前入口存在，缺少同版本原厂 UI 证据或关键行为证据",
+    "NativeAligned": "公共架构和工具适配均完成，当前尚无工具达到此状态"
+  },
+  "tools": [
+    { "tool_id": "BlobAnalysis", "pattern": "image-roi-result", "current_state": "EvidenceBlocked", "evidence": null, "runtime_project": "tools/SunEyeVision.BlobAnalysis/Runtime/SunEyeVision.BlobAnalysis.Runtime.csproj", "editor_project": "tools/SunEyeVision.BlobAnalysis/Wpf/SunEyeVision.BlobAnalysis.Wpf.csproj" },
+    { "tool_id": "BlobLabels", "pattern": "image-roi-result", "current_state": "LegacyCompatibility", "evidence": "docs/evidence/bloblabels-ui-confirmation-20261118.json", "runtime_project": "tools/SunEyeVision.BlobLabels/Runtime/SunEyeVision.BlobLabels.Runtime.csproj", "editor_project": "tools/SunEyeVision.BlobLabels/Wpf/SunEyeVision.BlobLabels.Wpf.csproj" },
+    { "tool_id": "CircleCircleMeasure", "pattern": "measure", "current_state": "EvidenceBlocked", "evidence": null, "runtime_project": "tools/SunEyeVision.CircleCircleMeasure/Runtime/SunEyeVision.CircleCircleMeasure.Runtime.csproj", "editor_project": "tools/SunEyeVision.CircleCircleMeasure/Wpf/SunEyeVision.CircleCircleMeasure.Wpf.csproj" },
+    { "tool_id": "CircleFind", "pattern": "image-roi-result", "current_state": "EvidenceBlocked", "evidence": null, "runtime_project": "tools/SunEyeVision.CircleFind/Runtime/SunEyeVision.CircleFind.Runtime.csproj", "editor_project": "tools/SunEyeVision.CircleFind/Wpf/SunEyeVision.CircleFind.Wpf.csproj" },
+    { "tool_id": "ColorExtract", "pattern": "special-image-control", "current_state": "LegacyCompatibility", "evidence": "docs/evidence/color-extract-ui-confirmation-20261118.json", "runtime_project": "tools/SunEyeVision.ColorExtract/Runtime/SunEyeVision.ColorExtract.Runtime.csproj", "editor_project": "tools/SunEyeVision.ColorExtract/Wpf/SunEyeVision.ColorExtract.Wpf.csproj" },
+    { "tool_id": "ContourMatch", "pattern": "feature-template", "current_state": "LegacyCompatibility", "evidence": "docs/evidence/contourmatch-ui-confirmation-20261118.json", "runtime_project": "tools/SunEyeVision.ContourMatch/Runtime/SunEyeVision.ContourMatch.Runtime.csproj", "editor_project": "tools/SunEyeVision.ContourMatch/Wpf/SunEyeVision.ContourMatch.Wpf.csproj" },
+    { "tool_id": "DataClassification", "pattern": "dynamic-data", "current_state": "EvidenceBlocked", "evidence": null, "runtime_project": "tools/SunEyeVision.DataClassification/Runtime/SunEyeVision.DataClassification.Runtime.csproj", "editor_project": "tools/SunEyeVision.DataClassification/Wpf/SunEyeVision.DataClassification.Wpf.csproj" },
+    { "tool_id": "DivideImage", "pattern": "image-processing", "current_state": "LegacyCompatibility", "evidence": "docs/evidence/divideimage-ui-confirmation-20261118.json", "runtime_project": "tools/SunEyeVision.DivideImage/Runtime/SunEyeVision.DivideImage.Runtime.csproj", "editor_project": "tools/SunEyeVision.DivideImage/Wpf/SunEyeVision.DivideImage.Wpf.csproj" },
+    { "tool_id": "FrameMean", "pattern": "image-processing", "current_state": "LegacyCompatibility", "evidence": "docs/evidence/framemean-ui-confirmation-20261118.json", "runtime_project": "tools/SunEyeVision.FrameMean/Runtime/SunEyeVision.FrameMean.Runtime.csproj", "editor_project": "tools/SunEyeVision.FrameMean/Wpf/SunEyeVision.FrameMean.Wpf.csproj" },
+    { "tool_id": "GrayMatch", "pattern": "feature-template", "current_state": "LegacyCompatibility", "evidence": "docs/evidence/graymatch-ui-confirmation-20261118.json", "runtime_project": "tools/SunEyeVision.GrayMatch/Runtime/SunEyeVision.GrayMatch.Runtime.csproj", "editor_project": "tools/SunEyeVision.GrayMatch/Wpf/SunEyeVision.GrayMatch.Wpf.csproj" },
+    { "tool_id": "If", "pattern": "dynamic-branch", "current_state": "LegacyCompatibility", "evidence": "docs/evidence/if-ui-confirmation-20261118.json", "runtime_project": "tools/SunEyeVision.If/Runtime/SunEyeVision.If.Runtime.csproj", "editor_project": "tools/SunEyeVision.If/Wpf/SunEyeVision.If.Wpf.csproj" },
+    { "tool_id": "ImageLoad", "pattern": "image-source", "current_state": "EvidenceBlocked", "evidence": null, "runtime_project": "tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj", "editor_project": "tools/SunEyeVision.ImageSource/Wpf/SunEyeVision.ImageSource.Wpf.csproj" },
+    { "tool_id": "IntensityMeasure", "pattern": "image-roi-result", "current_state": "LegacyCompatibility", "evidence": "docs/evidence/intensitymeasure-ui-confirmation-20261118.json", "runtime_project": "tools/SunEyeVision.IntensityMeasure/Runtime/SunEyeVision.IntensityMeasure.Runtime.csproj", "editor_project": "tools/SunEyeVision.IntensityMeasure/Wpf/SunEyeVision.IntensityMeasure.Wpf.csproj" },
+    { "tool_id": "LineFind", "pattern": "image-roi-result", "current_state": "EvidenceBlocked", "evidence": null, "runtime_project": "tools/SunEyeVision.LineFind/Runtime/SunEyeVision.LineFind.Runtime.csproj", "editor_project": "tools/SunEyeVision.LineFind/Wpf/SunEyeVision.LineFind.Wpf.csproj" },
+    { "tool_id": "MachineLearningClassifier", "pattern": "special-training", "current_state": "EvidenceBlocked", "evidence": null, "runtime_project": "tools/SunEyeVision.MachineLearningClassifier/Runtime/SunEyeVision.MachineLearningClassifier.Runtime.csproj", "editor_project": "tools/SunEyeVision.MachineLearningClassifier/Wpf/SunEyeVision.MachineLearningClassifier.Wpf.csproj" },
+    { "tool_id": "MarkFind", "pattern": "feature-template", "current_state": "LegacyCompatibility", "evidence": "docs/evidence/markfind-ui-confirmation-20261118.json", "runtime_project": "tools/SunEyeVision.MarkFind/Runtime/SunEyeVision.MarkFind.Runtime.csproj", "editor_project": "tools/SunEyeVision.MarkFind/Wpf/SunEyeVision.MarkFind.Wpf.csproj" },
+    { "tool_id": "PixelCount", "pattern": "image-roi-result", "current_state": "LegacyCompatibility", "evidence": "docs/evidence/pixelcount-ui-confirmation-20261118.json", "runtime_project": "tools/SunEyeVision.PixelCount/Runtime/SunEyeVision.PixelCount.Runtime.csproj", "editor_project": "tools/SunEyeVision.PixelCount/Wpf/SunEyeVision.PixelCount.Wpf.csproj" },
+    { "tool_id": "PointPointMeasure", "pattern": "measure", "current_state": "EvidenceBlocked", "evidence": null, "runtime_project": "tools/SunEyeVision.PointPointMeasure/Runtime/SunEyeVision.PointPointMeasure.Runtime.csproj", "editor_project": "tools/SunEyeVision.PointPointMeasure/Wpf/SunEyeVision.PointPointMeasure.Wpf.csproj" }
+  ],
+  "next_gate": "complete-framework-audit-before-tool-migration",
+  "rule": "No tool enters NativeAligned until the shared architecture, static evidence mapping, code migration, Release build and Agent Desktop verification all pass."
+}

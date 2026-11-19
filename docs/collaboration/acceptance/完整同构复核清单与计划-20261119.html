@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>完整同构复核清单与计划</title>
+<style>
+body{margin:0;background:#f4f6f9;color:#263142;font:14px/1.65 "Microsoft YaHei",Segoe UI,sans-serif}
+.wrap{max-width:1280px;margin:auto;padding:28px 34px 70px}header,section{background:#fff;border-radius:10px;margin:0 0 20px;padding:26px 30px;box-shadow:0 2px 8px #20304a12}header{background:#203653;color:#fff}h1{margin:0 0 8px;font-size:28px}h2{color:#203653;border-bottom:2px solid #dce5f2;padding-bottom:8px;margin-top:0}h3{color:#2b5c91;margin-bottom:6px}p{margin:8px 0}code{background:#eef2f7;border-radius:4px;padding:1px 5px;color:#9b3158}table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}th{background:#eaf0f7;text-align:left}th,td{border:1px solid #d7e0eb;padding:8px;vertical-align:top}.tag{display:inline-block;border-radius:12px;padding:1px 9px;font-size:12px;font-weight:600}.a{background:#dff5e5;color:#176d35}.b{background:#e4efff;color:#1e5a9c}.c{background:#fff0d8;color:#9a5a00}.u{background:#fde4e4;color:#a12626}.gate{border-left:4px solid #3978bd;background:#f3f8ff;padding:12px 16px;margin:12px 0}.warn{border-left-color:#ca7a22;background:#fff7ea}.tree{white-space:pre;background:#1d2633;color:#d9e3ef;border-radius:7px;padding:14px;overflow:auto}.check{font-family:Segoe UI Symbol,"Microsoft YaHei"}.small{color:#64748b;font-size:12px}
+</style>
+</head>
+<body><div class="wrap">
+<header><h1>完整同构复核清单与计划</h1><div>SunEyeVision_V2 · VM 4.4.0 Build20250516 · 2026-11-19</div><p>当前阶段先完成静态证据、结构差异、代码迁移、自动测试和 Release 构建。人工视觉验收后置，不作为本阶段阻塞条件。</p></header>
+
+<section><h2>总目标</h2>
+<div class="gate"><b>目标</b><br>以 VisionMaster 4.4.0 Build20250516 为唯一对照基线，把当前项目的共享框架和十个工具迁移到同一条原厂对应链。工具只保留算法、参数声明、结果声明和必要的专属适配，参数页、公共控件、ROI、结果组合、执行会话和关闭释放由统一框架承接。</div>
+<table><tr><th>目标层</th><th>可验收结果</th></tr>
+<tr><td>架构目标</td><td>共享参数、声明加载、模板渲染、ROI 数据节点、结果组合和生命周期均有原厂对应入口，删除重复公共链。</td></tr>
+<tr><td>工具目标</td><td>BlobLabels、ContourMatch、GrayMatch、MarkFind、ColorExtract、DivideImage、FrameMean、If、IntensityMeasure、PixelCount 均有完整结构和消费者映射。</td></tr>
+<tr><td>功能目标</td><td>每个工具覆盖打开、参数编辑、资源编辑、执行、结果读取、保存重开、换节点和关闭释放自动链路。</td></tr>
+<tr><td>质量目标</td><td>差异表中的修改点全部有 A/B 级证据，自动测试新增失败为 0，Release 构建错误为 0。</td></tr>
+<tr><td>人工目标</td><td>Agent Desktop 和视觉对照作为后置验收，暂不阻塞当前架构和自动化阶段。</td></tr></table>
+<p><b>最终完成定义</b>：只有共享框架差异闭合、十个工具差异表闭合、自动化完整链路通过、Release 构建通过，并且所有未确认行为单独登记后，才允许称为“完整同构”。</p></section>
+
+<section><h2>原厂发布单元与本方同构目标</h2>
+<div class="gate warn"><b>唯一结构基线</b><br>原厂发布单元是结构同构验收标准。此前的 Tool.cs、Parameters.cs、Schema.cs、Session.cs、Runtime/Wpf 树只能作为内部源码映射，已从目标结构中移除，不再作为同构标准。</div>
+<div class="tree">原厂 Blob 发布单元
+IMVSBlobFindModu/
+├─ IMVSBlobFindModu.dll
+├─ IMVSBlobFindModuCs.dll
+├─ IMVSBlobFindModu.xml
+├─ IMVSBlobFindModuAlgorithm.xml
+├─ IMVSBlobFindModuAlgorithmTab.xml
+├─ IMVSBlobFindModuCs.xml
+├─ IMVSBlobFindModuDisplay.xml
+└─ ToolItemInfo.xml
+
+本方 Blob 同构发布单元
+SunEyeVision.Tool.BlobAnalysis/
+├─ BlobAnalysis.Algorithm.dll
+├─ BlobAnalysis.Bridge.dll
+├─ BlobAnalysis.xml
+├─ BlobAnalysis.Algorithm.xml
+├─ BlobAnalysis.AlgorithmTab.xml
+├─ BlobAnalysis.Bridge.xml
+├─ BlobAnalysis.Display.xml
+└─ ToolItemInfo.xml</div>
+<table><tr><th>原厂边界</th><th>本方同构职责</th><th>禁止偏差</th></tr>
+<tr><td>算法 DLL</td><td>独立算法运行单元</td><td>算法不能由 WPF 页面持有或调度</td></tr>
+<tr><td>Cs DLL</td><td>参数、结果、ROI 和宿主桥接单元</td><td>不能把桥接职责拆进多个工具视觉层</td></tr>
+<tr><td>Algorithm.xml</td><td>独立参数定义文件</td><td>不能只用 C# 默认值替代</td></tr>
+<tr><td>AlgorithmTab.xml</td><td>独立页签、分组、控件和顺序文件</td><td>未经证据不能与参数文件合并</td></tr>
+<tr><td>Cs.xml</td><td>独立参数和属性映射文件</td><td>不能删除映射职责</td></tr>
+<tr><td>Display.xml</td><td>独立结果显示和数据类型声明</td><td>不能用工具级表格包装器替代</td></tr>
+<tr><td>ToolItemInfo.xml</td><td>工具箱、节点、图标和端口元数据</td><td>不能由当前节点视觉反推原厂结构</td></tr></table>
+<h3>共享平台层的对应关系</h3>
+<div class="tree">原厂公共程序集/组件
+├─ ParamsTabControl / BaseWindow
+├─ AlgorithmTabRoot / ParamsConfigControlBase
+├─ FeatureMatchCommonControl
+├─ ROISelecter / RoiStruct / ButtonSelecter
+├─ ModuleResultView
+└─ NativeResource and DataTemplate dictionaries
+
+本方必须提供的等价平台边界
+├─ NativeToolWindowRoot
+├─ NativeParameterRoot
+├─ NativeFeatureMatchPanel
+├─ NativeFeatureTemplateDialog
+├─ NativeRoiDataModel + DataTemplate
+├─ NativeResultView
+└─ NativeResourceRegistry</div>
+<p>平台边界的类名和程序集名可以不同，职责、数据流、组装关系、资源所有权和生命周期不能不同。ContourMatch、GrayMatch 和 MarkFind 是否有额外 Control 发布单元，必须分别由原厂程序集证据决定。</p>
+<div class="gate"><b>最终判定</b><br>只有本方发布包、独立 XML 声明、平台公共边界和工具专属 Control 边界都能回指原厂证据，才允许称为结构同构。源码如何拆分只能作为实现细节，不能改变发布职责。</div>
+</section>
+<section><h2>一、强制复核原则</h2>
+<ol><li>先收集同版本原厂反编译源码、配置、模板和资源，再分析当前实现。</li><li>每个差异必须记录原厂路径、定位、证据等级、当前消费者和修复边界。</li><li>没有证据的动态行为标记为 <code>unconfirmed</code>，不得凭自研现状补齐。</li><li>自动测试证明本方实现稳定，不能替代原厂证据。</li><li>不新增第二套参数页、控件模板、结果视图或生命周期链。</li><li>测试失败先定位入口、模板、绑定、组装、执行或释放阶段，再决定是否改代码。</li></ol>
+<table><tr><th>状态</th><th>含义</th><th>使用规则</th></tr><tr><td><span class="tag a">verified</span></td><td>有直接原厂证据，当前实现已复现</td><td>允许进入实现和合并门禁</td></tr><tr><td><span class="tag b">derived</span></td><td>由多条直接证据推导</td><td>必须记录推导链</td></tr><tr><td><span class="tag c">inferred</span></td><td>合理推断但缺少直接证据</td><td>只能进入验证清单</td></tr><tr><td><span class="tag u">unconfirmed</span></td><td>证据不足</td><td>禁止作为设计依据</td></tr></table></section>
+
+<section><h2>二、复核层级清单</h2>
+<table><tr><th>层级</th><th>原厂复核内容</th><th>当前项目检查入口</th><th>通过条件</th></tr>
+<tr><td>工具部署</td><td>模块 DLL、托管桥、Control、XML、资源和工具箱元数据</td><td><code>tools/*</code>、工具注册、资源清单</td><td>每个工具有身份、版本和消费者映射</td></tr>
+<tr><td>节点画布</td><td>形状、尺寸、图标、状态色、端口方向、端口位置和命中区域</td><td>Workflow Canvas、节点模板、端口投影</td><td>端口和节点行为有原厂证据，不用截图猜测</td></tr>
+<tr><td>连线</td><td>创建、删除、重连、非法连接、上下左右端口和路由</td><td>Canvas connection、输入输出声明</td><td>连接规则与端口声明一致</td></tr>
+<tr><td>参数存储</td><td>参数句柄、模块 ID、名称、读写和默认值</td><td>Settings、Draft、Parameter binding</td><td>参数只有一个正式来源</td></tr>
+<tr><td>声明加载</td><td>Algorithm XML、AlgorithmTab XML、Display XML</td><td>ToolSchema、FieldPresentation、Result schema</td><td>字段、页签、分组和结果声明可追溯</td></tr>
+<tr><td>页面组装</td><td>AlgorithmTabRoot、ParamsConfigControlBase、ParamListView、DataTemplate</td><td>RuntimeToolEditorWindow、DeclaredSettingsView、DeclaredFieldsView</td><td>无工具级第二套参数视觉链</td></tr>
+<tr><td>公共控件</td><td>数值、枚举、引用、布尔、图像、ROI、范围、颜色和结果控件</td><td>DeclaredFieldTemplateRegistry、Native presenters、资源字典</td><td>模板来源、绑定和消费者都有记录</td></tr>
+<tr><td>工具专属控件</td><td>模板窗口、模型列表、训练窗口、特殊图表和帮助页</td><td>工具 WPF 入口和适配器</td><td>只保留原厂确有的专属差异</td></tr>
+<tr><td>ROI 和引用</td><td>ROI 数据节点、几何写值、继承、图像来源和资源释放</td><td>RoiGroup、ReferenceSession、Roi lease</td><td>数据模型与视觉模板分离</td></tr>
+<tr><td>结果显示</td><td>ModuleResultView、图像、图表、表格、结果树和帮助</td><td>ResultRendererRegistry、ResultWorkspacePresenter</td><td>组合显示由声明驱动</td></tr>
+<tr><td>执行会话</td><td>执行前、执行中、成功、失败、取消、连续执行和迟到回调</td><td>IToolSession、DebugSession、publication</td><td>UI 不调度算法，执行层不访问 WPF</td></tr>
+<tr><td>持久化</td><td>保存、重开、换节点、缺失工具、缺失资源和版本迁移</td><td>SolutionManager、DocumentSession、字段序列化</td><td>保存数据与运行快照一致</td></tr>
+<tr><td>生命周期</td><td>退订、关闭排空、publication 退役、ROI 释放、图像释放和迟到回调拒写</td><td>RuntimeToolEditorWindow、ProductionEditorContext、leases</td><td>关闭顺序有自动测试和日志</td></tr></table></section>
+
+<section><h2>三、共享框架复核计划</h2>
+<div class="tree">原厂证据链
+Algorithm XML / AlgorithmTab XML / Display XML / ToolItemInfo
+        ↓
+AlgorithmTabRoot / ParamsConfigControlBase / ModuleResultView / ROISelecter
+        ↓
+参数节点、DataTemplate、结果分区、会话和释放
+
+当前项目链
+ToolSchema / FieldPresentation / ResultProjection
+        ↓
+RuntimeToolEditorWindow / DeclaredSettingsView / DeclaredFieldsView
+        ↓
+DeclaredFieldRow / ParameterFieldHost / ResultWorkspace / ToolSession</div>
+<table><tr><th>共享层任务</th><th>先查证据</th><th>差异输出</th><th>实施门禁</th></tr>
+<tr><td>参数唯一来源</td><td>ParamItem、CModuleParamBase、SDK 读写</td><td>参数值、草稿、执行快照所有权</td><td>先改共享参数接缝，再迁工具</td></tr>
+<tr><td>声明加载器</td><td>AlgorithmTabRoot 和 XML 解析调用链</td><td>字段、页签、分组和模板选择映射</td><td>禁止每工具重复解析逻辑</td></tr>
+<tr><td>ROI 数据模型</td><td>ROISelecter、RoiStruct、ButtonSelecter</td><td>数据节点、模板和 lease 边界</td><td>禁止把外部 FrameworkElement 重新挂入 Panel</td></tr>
+<tr><td>结果组合容器</td><td>ModuleResultView、特殊数据类型分发</td><td>图像、图表、表格和结果树映射</td><td>禁止只用枚举选择一种结果形态</td></tr>
+<tr><td>窗口生命周期</td><td>BaseWindow、OnClosing、OnClosed、释放调用</td><td>打开、提交、取消、关闭和迟到回调时序</td><td>共享窗口测试通过后才迁工具</td></tr></table></section>
+
+<section><h2>四、十个工具复核清单</h2>
+<table><tr><th>工具</th><th>重点证据</th><th>必须覆盖的页面和能力</th><th>当前出口</th></tr>
+<tr><td>BlobLabels</td><td>BlobFindLabels 模块 XML、阈值/标签资源</td><td>基本参数、标签列表、结果判定、保存重开</td><td>单工具测试和 Display 证据</td></tr>
+<tr><td>ContourMatch</td><td>IMVSContourMatchModuControl、FeatureMatchCommonControl、模板 Dialog</td><td>基本参数、特征模板、模板创建、运行参数、结果显示</td><td>四 Tab 和模板窗口差异清单</td></tr>
+<tr><td>GrayMatch</td><td>灰度模板页和公共 FeatureMatch 面板</td><td>模板资源、搜索区域、运行参数、结果表</td><td>与 ContourMatch 分别取证</td></tr>
+<tr><td>MarkFind</td><td>定位模板和专属资源</td><td>基本参数、模板/模型、搜索区域、结果显示</td><td>独立适配器，不强套 ContourMatch</td></tr>
+<tr><td>ColorExtract</td><td>颜色范围和直方图资源</td><td>图像源、颜色范围、直方图、结果输出</td><td>确认 HikHistogram 依赖边界</td></tr>
+<tr><td>DivideImage</td><td>切片参数 XML、范围和输出声明</td><td>切片模式、范围控件、输出结果</td><td>声明与结果组合核对</td></tr>
+<tr><td>FrameMean</td><td>帧缓存、均值参数和图像输出</td><td>图像源、帧数、运行状态、结果图像</td><td>执行和释放链</td></tr>
+<tr><td>If</td><td>IfModule、IfBranch、节点 ToolItemInfo</td><td>条件页、上下端口、分支状态和连线</td><td>端口交互单独复核</td></tr>
+<tr><td>IntensityMeasure</td><td>参数 XML、ModuleResultView、HikHistogram</td><td>参数页、直方图、统计表、结果切换</td><td>组合结果容器重点</td></tr>
+<tr><td>PixelCount</td><td>计数参数、范围和结果 XML</td><td>图像源、范围、统计结果、保存重开</td><td>公共数值和结果链</td></tr></table>
+<p class="small">定位匹配类必须额外记录模板创建、加载、编辑、清空、模型文件更换、搜索区域和失败清理。</p></section>
+
+<section><h2>五、自动化复核清单</h2>
+<table><tr><th>测试组</th><th>用例</th><th>通过标准</th></tr>
+<tr><td>静态证据</td><td>工具身份、参数、页签、分组、输出和资源映射扫描</td><td>每个修改点都有证据 ID</td></tr>
+<tr><td>结构</td><td>Runtime/Wpf 项目、公共模板、工具专属入口和引用关系</td><td>无第二套参数视觉链</td></tr>
+<tr><td>参数</td><td>默认值、编辑、范围、枚举、常量/引用切换和非法值</td><td>提交与执行读取相同</td></tr>
+<tr><td>页面</td><td>打开、首屏、Tab 切换、重复切换、虚拟化和关闭重开</td><td>无异常、无重复视觉所有权</td></tr>
+<tr><td>资源</td><td>图像源、ROI、继承、模板/模型、缺失资源和释放</td><td>资源状态可观察且可退役</td></tr>
+<tr><td>执行</td><td>单次、连续、取消、失败、重复执行和迟到回调</td><td>结果 publication 与会话代次一致</td></tr>
+<tr><td>持久化</td><td>保存、重开、换节点、缺失工具拒绝和当前画布保持</td><td>不静默补默认、不覆盖当前会话</td></tr>
+<tr><td>生命周期</td><td>关闭排空、退订、图像句柄、ROI lease 和再次打开</td><td>关闭后迟到回调不能写入旧窗口</td></tr></table></section>
+
+<section><h2>六、阶段计划与出口</h2>
+<table><tr><th>阶段</th><th>工作</th><th>产物</th><th>出口</th></tr>
+<tr><td>P0 基线</td><td>冻结分支、提交、版本和工作区</td><td><code>baseline.json</code></td><td>基线可复现</td></tr>
+<tr><td>P1 共享框架取证</td><td>参数、声明、模板、ROI、结果和生命周期</td><td>共享差异矩阵</td><td>每个拟修改点有 A/B 证据</td></tr>
+<tr><td>P2 共享框架修复</td><td>只修闭合差异，不迁工具专属逻辑</td><td>共享代码和单元测试</td><td>公共回归通过</td></tr>
+<tr><td>P3 ImageSource/Blob</td><td>按统一框架迁移并验证完整自动链路</td><td>工具差异表、测试日志</td><td>目标回归和 Release 通过</td></tr>
+<tr><td>P4 三个匹配工具</td><td>ContourMatch、GrayMatch、MarkFind</td><td>模板/模型差异表和迁移</td><td>各自专属证据闭合</td></tr>
+<tr><td>P5 其余工具</td><td>If、BlobLabels、ColorExtract、DivideImage、FrameMean、IntensityMeasure、PixelCount</td><td>十工具完整映射</td><td>工具批次自动回归通过</td></tr>
+<tr><td>P6 后置人工验收</td><td>Agent Desktop、截图和手工交互</td><td>运行记录和视觉对照</td><td>当前阶段不阻塞</td></tr></table></section>
+
+<section><h2>七、最终判定规则</h2>
+<div class="gate"><b>可称为“框架同构”</b><br>共享参数、声明、模板、ROI、结果和生命周期链全部有原厂证据映射，且不存在第二套公共实现。</div>
+<div class="gate"><b>可称为“工具同构”</b><br>该工具的项目结构、页签、分组、控件、资源、执行、结果、保存和释放均有差异表，证据状态不是 <code>inferred</code> 或 <code>unconfirmed</code>。</div>
+<div class="gate warn"><b>不能称为“完整同构”</b><br>只有测试通过、Release 构建通过、窗口能打开或部分页面对齐时，不能下完整同构结论。</div>
+<p>当前准确结论为：ImageSource 与 Blob 已完成部分自动化链路验证，但项目整体仍处于原厂证据驱动的共享框架复核与分批迁移阶段。</p></section>
+
+<section><h2>方案一致性与证据链裁决</h2>
+<p>CodeBuddy 的《原厂架构逆向结论与优化方案》与本清单承担的职责不同。前者包含原厂静态结论和迁移设计，后者负责把结论拆成可验证的复核门禁。两份文档不能把所有内容都当作同等级事实。</p>
+<table><tr><th>内容</th><th>证据结论</th><th>裁决</th></tr>
+<tr><td><code>FeatureMatchCommonControl</code>、<code>FeaturepatMatchConfigPanalData</code>、模型列表、预览、创建/编辑/删除</td><td>有反编译目录、类名和职责映射</td><td><span class="tag a">原厂已证</span> 作为 ContourMatch、GrayMatch 的共享模板候选</td></tr>
+<tr><td>ContourMatch 的 <code>ParamsTabControlHPPyramidFeatureMatch</code>、<code>HPPyramidFeaturepatMatchDialogUI</code> 和 900×534 模板窗口</td><td>有专属程序集、XAML、代码和运行快照</td><td><span class="tag a">原厂已证</span> 作为轮廓匹配专属适配边界</td></tr>
+<tr><td>GrayMatch 共享面板但使用不同 Dialog 和配置数据</td><td>有 <code>IMVSGrayMatchModuControl</code> 证据</td><td><span class="tag a">原厂已证</span> 不得直接复制 ContourMatch 实现</td></tr>
+<tr><td>MarkFind 不属于 FeatureMatchCommonControl</td><td>有独立 <code>IMVSMarkFindModuControl</code> 证据</td><td><span class="tag a">原厂已证</span> 使用独立适配器</td></tr>
+<tr><td>原厂参数 XML、页签 XML、Display XML 分工</td><td>文件和 <code>AlgorithmTabRoot</code> 入口已证，解析内部仍未完全逐行复核</td><td><span class="tag b">部分已证</span> 不得直接合并 XML</td></tr>
+<tr><td>原厂 Blob 无专属 UI Control</td><td>目录清单支持，结果和页面完整消费链仍需逐项复核</td><td><span class="tag b">静态已证</span> 不能据此直接删除当前 Wpf 桥接层</td></tr>
+<tr><td><code>ParameterStore</code>、7 个文件、2 工程变 1 工程、1000 行 UI 变 0 行</td><td>属于迁移方案，不是原厂直接事实</td><td><span class="tag c">目标设计</span> 必须先验证消费者和替代链</td></tr>
+<tr><td>ModuleResultView 完整三区布局和 GetDisplayList 类型系统</td><td>代码入口和字段已见，完整布局及返回结构尚未闭合</td><td><span class="tag u">未确认</span> 不能提前宣布结果视图同构</td></tr></table>
+<div class="gate warn"><b>最终裁决</b><br>不能简单说“CodeBuddy 对”或“当前三层方案对”。CodeBuddy 方案中的原厂类、程序集、职责和工具专属边界是当前最具体的证据基础。它提出的统一 ParameterStore、单工程和文件收敛属于待验证迁移目标。本清单的三层结构也只是迁移组织方式，必须以这些已证原厂边界重新修订，不能作为原厂事实。</div>
+<h3>修订后的唯一目标结构</h3>
+<div class="tree">原厂证据对应的共享边界
+NativeToolWindowRoot
+├─ NativeFlatParameterPage
+├─ NativeResourceRegistry
+├─ NativeFeatureMatchPanel       ContourMatch / GrayMatch 证据成立时共用
+├─ NativeFeatureTemplateDialog   公共 Dialog 壳 + 工具派生 Dialog
+├─ FeatureTemplateAdapter        模型类型、扩展名、编解码和回调
+├─ NativeRoiDataModel + DataTemplate
+└─ NativeResultView              组合结果能力需继续取证
+
+工具差异边界
+├─ ContourMatchAdapter            Pyramid 专属参数、Dialog、模型类型
+├─ GrayMatchAdapter               GrayMatch 专属参数、Dialog、模型数据
+├─ MarkFindAdapter                独立 Control 和独立 Dialog
+├─ BlobAdapter                    以已证声明和资源消费链为准
+└─ 其余工具                      逐工具确认是否存在专属 Control</div>
+<p>后续所有代码修改都必须先回答两个问题。第一，原厂证据属于共享边界还是工具专属边界。第二，当前改动是原厂事实复现，还是我方迁移目标。两者必须分栏记录。</p></section>
+
+<section><h2>同构目标修正</h2>
+<div class="gate"><b>同构的目标不是“做出功能相同的另一套框架”</b><br>目标是保持原厂已经取证的职责边界、数据流、组装关系、资源所有权和生命周期。语言、程序集名称和算法实现语言可以因本方运行环境不同而变化，但不能因此改变原厂的架构职责。</div>
+<table><tr><th>原厂事实</th><th>同构目标</th><th>不能做的替代</th></tr>
+<tr><td>原厂平台统一参数根和 DataTemplate</td><td>本方由共享参数根和模板注册承接</td><td>每个工具再写一套参数页</td></tr>
+<tr><td>原厂 ROISelecter 是数据节点</td><td>本方 ROI 必须是数据模型加模板</td><td>用 StackPanel 搬运外部字段控件</td></tr>
+<tr><td>原厂 FeatureMatchCommonControl 是共享面板</td><td>ContourMatch、GrayMatch 按证据共用同一公共边界</td><td>两个工具复制两套模板列表和 Dialog</td></tr>
+<tr><td>原厂 MarkFind 使用独立 Control</td><td>本方保持独立适配边界</td><td>为了目录统一强行套 FeatureMatch</td></tr>
+<tr><td>原厂 ModuleResultView 按数据类型组合显示</td><td>本方结果容器必须支持组合显示</td><td>用每工具一个表格包装器替代</td></tr>
+<tr><td>原厂工具有专属 Control 时才保留专属 UI</td><td>本方专属 WPF 只承接有证据的差异</td><td>以“方便实现”为理由新增专属 UI</td></tr></table>
+<p>因此，当前目标结构应以原厂程序集和公共组件边界为准。工程数量、文件数量、类名和语言属于迁移实现细节，只有在不改变原厂职责的前提下才能调整。</p></section>
+
+<section><h2>发布单元级同构目标</h2>
+<div class="gate warn"><b>纠正</b><br>原厂目录树是部署和消费边界。此前的 <code>Runtime + Wpf</code> 源码树不能直接称为原厂同构。源码可以因语言和宿主不同而拆分，但最终必须生成与原厂职责等价的模块发布单元、独立声明文件和资源入口。</div>
+<table><tr><th>原厂发布事实</th><th>本方必须对应的目标</th><th>允许的差异</th></tr>
+<tr><td><code>IMVSBlobFindModu.dll</code></td><td>Blob 算法运行单元和独立算法资源</td><td>本方算法语言可不同，但不能把算法职责塞入 WPF</td></tr>
+<tr><td><code>IMVSBlobFindModuCs.dll</code></td><td>Blob 参数、结果、ROI 和 SDK/宿主桥接单元</td><td>程序集名称和宿主接口可不同</td></tr>
+<tr><td><code>IMVSBlobFindModu.xml</code></td><td>工具身份、依赖和模块元数据文件</td><td>文件名可不同，但发布包中必须有等价声明</td></tr>
+<tr><td><code>IMVSBlobFindModuAlgorithm.xml</code></td><td>参数定义文件</td><td>不能只由 C# 默认值替代</td></tr>
+<tr><td><code>IMVSBlobFindModuAlgorithmTab.xml</code></td><td>页签、分组、控件类型和顺序文件</td><td>不能未经证据合并进参数文件</td></tr>
+<tr><td><code>IMVSBlobFindModuCs.xml</code></td><td>参数名、桥接属性和类型映射文件</td><td>映射格式可不同，职责不能消失</td></tr>
+<tr><td><code>IMVSBlobFindModuDisplay.xml</code></td><td>结果显示和数据类型声明</td><td>不能用工具级结果表包装器替代完整声明</td></tr>
+<tr><td><code>ToolItemInfo.xml</code></td><td>工具箱、节点形状、图标、分类和端口元数据</td><td>宿主存储格式可不同，消费边界必须保留</td></tr></table>
+<h3>修订后的 Blob 源码与发布目标</h3>
+<div class="gate warn"><b>职责等价规则</b><br>原厂 DLL 名称用于确认职责和加载边界。本方工具只引用框架适配层和第三方算法库，不强制生成同名的 Algorithm.dll 或 Bridge.dll。程序集拆分只有在原厂证据或本方实际加载链要求时才实施。</div>
+<div class="tree">tools/
+└─ SunEyeVision.Tool.BlobAnalysis/
+   ├─ SunEyeVision.Tool.BlobAnalysis.csproj       工具运行工程，只声明工具差异和框架引用
+   ├─ BlobTool.cs                                  工具入口、输入输出、参数和会话注册
+   ├─ Algorithms/                                  算法执行和候选筛选
+   ├─ Parameters/                                  参数模型、XML 映射、ROI 和继承规则
+   ├─ Results/                                     输出、结果端口和显示声明
+   └─ Resources/
+      ├─ BlobParameters.xml                        工具参数声明
+      └─ BlobDisplay.xml                           工具结果显示声明
+
+src/
+└─ SunEyeVision.HalAdapter/Runtime/                HALCON 适配边界
+   └─ 引用 libs/halcon/net/halcondotnetxl.dll      工具只通过适配层使用第三方算法库
+
+src/Plugin.Wpf/                                   公共参数页、ROI、结果树和窗口生命周期</div>
+<table><tr><th>原厂职责</th><th>本方当前对应</th><th>验收要求</th></tr>
+<tr><td>算法模块</td><td>BlobAnalysis.Runtime 加第三方算法库</td><td>算法职责不进入 WPF，输入输出和资源生命周期可追溯</td></tr>
+<tr><td>参数/结果/ROI/宿主桥接</td><td>BlobAnalysis.Runtime 加 Plugin.Contracts</td><td>参数、结果、ROI 和执行会话边界闭合</td></tr>
+<tr><td>Algorithm.xml / AlgorithmTab.xml / Display.xml</td><td>BlobParameters.xml / BlobDisplay.xml 加公共解析器</td><td>页签、分组、字段顺序和结果声明逐项映射</td></tr>
+<tr><td>Control 程序集</td><td>暂不生成 Blob 专属 Control 工程</td><td>只有出现同版本 Control 证据才允许增加专属 UI 程序集</td></tr></table>
+<p>原厂证据副本只放在 <code>docs/evidence/original-release-units/</code>。工具工程中的 <code>OriginalReleaseUnit</code> 目录属于迁移期间的证据缓存，完成台账归档后应从产品源码树移除。</p><h3>专属 Control 工具的发布树</h3>
+<div class="tree">SunEyeVision.Tool.&lt;Tool&gt;/
+├─ &lt;Tool&gt;.Algorithm.dll
+├─ &lt;Tool&gt;.Bridge.dll
+├─ &lt;Tool&gt;.Control.dll                 仅有原厂专属 Control 证据时存在
+├─ &lt;Tool&gt;.xml
+├─ &lt;Tool&gt;.Algorithm.xml
+├─ &lt;Tool&gt;.AlgorithmTab.xml
+├─ &lt;Tool&gt;.Bridge.xml
+├─ &lt;Tool&gt;.Display.xml
+└─ ToolItemInfo.xml</div>
+<p>ContourMatch、GrayMatch 和 MarkFind 是否分别需要 Control 发布单元，必须按各自原厂程序集证据决定。不能由当前项目是否已有 Wpf 工程反推。</p>
+<div class="gate"><b>结论</b><br>你给出的原厂树是事实基线。我之前给出的 <code>Tool.cs / Parameters.cs / Schema.cs / Session.cs / Runtime + Wpf</code> 只是源码拆分建议，不是同构目标，现已从“目标结构”降级为“可能的内部实现映射”，不能再作为验收标准。</div></section>
+
+<section><h2>算法与适配层边界</h2><p>类型适配层只负责图像、区域和结果类型转换、第三方资源所有权、初始化、释放和异常边界。算法实现层可以直接使用 HALCON 或 OpenCvSharp 的处理方法，但必须作为独立算法实现边界存在。</p><div class="tree">工具入口 → 工具专属算法实现层 → 类型与资源适配层 → 第三方算法库</div><p>工具入口工程不能直接管理第三方库、原生 DLL、初始化和资源释放。算法实现层也不能承担工具参数页、窗口生命周期或工作流调度。</p></section><section><h2>算法实现差异规则</h2><p>原厂工具使用海康自研算法库，本方工具可以使用 HALCON 或 OpenCvSharp 完成同等算法应用。该差异只属于底层算法实现和第三方库依赖差异。HALCON 和 OpenCvSharp 必须通过独立适配层接入，工具不能直接管理第三方库、原生 DLL、初始化和资源释放。</p><p>工具入口、参数语义、页签分组、端口、输入输出、结果结构、资源所有权、窗口组装和生命周期仍必须按同版本原厂证据逐项对应。没有原厂证据的行为标记为未确认，不自行设计替代。</p></section><section><h2>本计划的工作边界</h2><p>本计划只覆盖工具结构同构，以及工具直接使用的公共框架链路。工具范围包括工具入口、参数声明、页签和分组映射、输入输出、算法调用接缝、结果声明、资源身份和工具生命周期。</p><p>框架范围包括该工具实际使用的参数组装器、字段模板、ROI 选择器、结果树、底栏命令、窗口会话和关闭释放链。HALCON 运行时库、通用适配器和全局基础设施由现有框架统一管理，本计划只验证工具与其引用关系。</p></section><section><h2>当前工程引用边界</h2><p>工具工程只引用框架合同、HalAdapter 和公共 WPF 组装器。第三方算法库由框架适配层统一管理，工具不复制或管理 HALCON DLL。</p><p>Blob 当前仍存在 WPF 过渡工程和证据缓存目录，它们不属于最终目标结构，必须在公共组装链闭合后清理或从产品注册中移除。</p></section><section><h2>Blob 首轮复核结果</h2><p>Blob 的工具入口、参数声明、原厂类别和 GroupLinkItem 静态消费者映射已通过检查。参数页和 ROI 当前使用公共声明驱动控件，但工具级 WPF 入口仍处于迁移过渡状态。ROI、结果显示、底栏命令的原厂模板、事件顺序和释放行为继续标记为未确认。</p><p>详细记录见 <code>docs/evidence/blob-structure-ui-function-review-20261119.md</code>。</p></section><footer class="small">本清单不替代原厂证据台账。所有结论必须回指同版本源码、配置、资源或运行记录。</footer>
+</div></body></html>
+
+
+
+
+
+
+

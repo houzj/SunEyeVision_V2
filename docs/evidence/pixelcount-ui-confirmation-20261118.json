@@ -1,0 +1,55 @@
+{
+  "tool": "PixelCount",
+  "phase": "real-agent-desktop-ui-comparison",
+  "status": "captured-both-sides",
+  "vm_runtime": {
+    "snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/PixelCountVM-tool.json",
+    "window_title": "7 像素统计",
+    "size": "420x500",
+    "tabs": [
+      "基本参数",
+      "运行参数",
+      "结果显示"
+    ],
+    "groups": [
+      "Tab_Image Input",
+      "Tab_ROI Area"
+    ],
+    "commands": [
+      "连续执行",
+      "停止执行",
+      "执行",
+      "确定"
+    ]
+  },
+  "product_runtime": {
+    "snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/AgentDesktopToolReview/single-tool/20261117-194228-像素统计1/tool-window.json",
+    "window_title": "7 像素统计1",
+    "size": "420x500",
+    "tabs": [
+      "基本参数",
+      "结果显示",
+      "运行参数"
+    ],
+    "groups": [
+      "NativeParameterGroup（UIA 暴露）"
+    ],
+    "commands": [
+      "连续执行",
+      "停止执行（offscreen）",
+      "执行",
+      "确定"
+    ]
+  },
+  "differences": [
+    "原厂 Tab 顺序为基本参数、运行参数、结果显示，自研为基本参数、结果显示、运行参数",
+    "原厂基本参数包含 Tab_Image Input 和 Tab_ROI Area 分组，自研 UIA 未暴露同名分组",
+    "原厂停止执行命令存在但边界为 offscreen，自研同样未暴露可见停止命令"
+  ],
+  "entry_blocker": "当前 Release 新鲜入口需单独处理保存方案未保存模态框，证据使用已有 Agent Desktop 真实快照并明确标注",
+  "sources": [
+    "docs/07-工具逆向/decompiled/ModuleControls/IMVSPixelCountModuControl",
+    "Release/_validation/PixelCountVM-tool.json",
+    "Release/_validation/AgentDesktopToolReview/single-tool/20261117-194228-像素统计1/tool-window.json"
+  ]
+}

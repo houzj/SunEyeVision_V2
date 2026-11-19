@@ -1,0 +1,19 @@
+{
+  "authority": "VisionMaster 4.4.0 Build20250516",
+  "original": {
+    "algorithmTab": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu\\IMVSBlobFindModuAlgorithmTab.xml",
+    "basicOrder": ["ImageSourceGroup","OutputMaskImageGroup","InputMaskImageGroup","RoiSelectGroup","RoiType","InheritWayGroup2","ExternROITypeGroup","AssistGroup"]
+  },
+  "self": {
+    "inputPresentation": "tools/SunEyeVision.BlobAnalysis/Runtime/Parameters/BlobParameterDefinition.cs",
+    "roiComposition": "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobRoiUi.cs",
+    "settingsHost": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+    "pageHost": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs"
+  },
+  "findings": [
+    {"id":"BLOB-BASIC-001","status":"confirmed","issue":"正式图像输入在页面构造完成后按缺失分组追加到末尾","fix":"显式 index 的新输入分组按索引插入"},
+    {"id":"BLOB-BASIC-002","status":"confirmed","issue":"输入注册后未重放 input.image 锚定的待处理组装","fix":"注册正式输入后重放该字段队列"},
+    {"id":"BLOB-BASIC-003","status":"confirmed-gap","issue":"当前多个 VM group 由一个自研组合承载","fix":"本轮不拆分，等待独立模板运行证据"},
+    {"id":"BLOB-BASIC-004","status":"unconfirmed","issue":"Assist 独立模板与位置修正视觉仍缺运行截图","fix":"本轮只修相对顺序，不猜测视觉"}
+  ]
+}

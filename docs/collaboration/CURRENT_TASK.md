@@ -1,3 +1,54 @@
+## 工具同构复核规则（2026-11-19）
+
+1. 原厂证据只确认工具职责、参数、页签、分组、端口、结果、资源和生命周期。
+2. 原厂与本方唯一允许的实现差异是底层算法库。原厂使用海康自研算法，本方可使用 HALCON 或 OpenCvSharp 完成同等算法应用。
+3. HALCON 和 OpenCvSharp 的类型转换、所有权、初始化和资源释放由独立适配层负责；工具的 `Algorithms/` 实现可以在适配层交付的对象上直接调用已选算法库的其他算子，不把第三方生命周期管理塞进工具。
+4. 工具层只负责工具入口、参数、输入输出、算法调用接缝、结果声明和工具资源。
+5. 公共参数页、页签、字段控件、ROI、结果树、底栏命令和窗口生命周期由统一框架负责。
+6. 底层算法库可以替换，工具 UI、参数语义、端口、结果结构和生命周期必须保持原厂对应。
+7. 先完成 Blob 分析的工具结构、UI 组装和功能实现复核，再处理其他工具。
+8. 没有原厂证据的行为标记为未确认，不自行设计替代。
+
+当前命名口径：`Algorithms/` 是工具算法实现层，`BlobAlgorithm` 是 Blob 算法入口。宿主接口保留 `ExecuteAsync` 作为统一调用合同，不能据此把算法目录描述成独立的“执行层”。`HalconBlobAlgorithmContext` 仅保存一次算法调用期间的 HALCON 临时上下文和恢复责任。
+
+**2026-11-19 算法命名修正后的复核**：`HalconBlobExecutionScope` 已更名为 `HalconBlobAlgorithmContext`，只表示一次 Blob 算法调用期间的 HALCON 临时上下文。Blob Release 全量构建通过，0 错误、3328 个既有警告。Agent Desktop 重新采集有效连线方案后，Blob 调试窗业务名称闭合，证据见 `docs/evidence/blob-structure-ui-function-review-20261119.md`。算法成功/失败结果和原厂动态回写仍未确认。
+
+**2026-11-19 Blob/ImageSource 静态门禁重跑**：发布单元、Blob 基本页、Blob 组装映射和 ImageSource 字段映射四道门均通过。Blob 映射 `unmappedVmGroupLinks=[]`；ImageSource 25 项页签/字段顺序完全匹配。ImageSource 原厂 XML 保留件存在 `SelecetedTips` 拼写错误，门禁只在内存解析视图修复并记录，不改原始证据。
+
+**2026-11-19 双项目改单项目启动**：盘点确认当前发布合同按“一程序集一个 Runtime/Editor 角色”校验，直接删除 Wpf 项目会使组件封存、载荷清单和编辑器注册失败。已建立 `docs/evidence/single-project-tool-migration-20261119.md`，迁移顺序固定为先改发布合同、再合并 Blob Wpf 源码、再验证单程序集双角色加载，最后删除 Wpf 项目文件。当前尚未删除项目，避免制造无证据的兼容回退。
+
+**2026-11-19 Blob 单项目迁移完成首个门**：发布合同已允许共享程序集的 Runtime/Editor 双声明。Blob WPF 源码已复制到 `tools/SunEyeVision.Tool.BlobAnalysis/Editor/`，Blob 单项目 Release 编译通过。正式载荷显示 `SunEyeVision.Tool.BlobAnalysis.Runtime.dll` 同时包含 Blob Runtime 与 Blob Editor 声明，旧 Blob WPF DLL 未进入载荷，旧 `tools/SunEyeVision.Tool.BlobAnalysis.Wpf/` 项目目录已删除。ImageSource WPF 项目仍待迁移，当前不能宣称全部工具改单项目完成。
+
+**2026-11-19 Blob 单项目启动验证**：共享程序集加载器改为先校验同路径的完整 Runtime/Editor PE 声明，再按角色过滤返回；Runtime 准入允许已声明 Editor 的桌面共享组件，保持纯 Runtime 依赖检查。修复后 Release 经 Agent Desktop 进入 `SunEyeVision · 起始页`。一次优雅关闭超过工具截止时间，强制关闭确认进程退出；`Invoke-SingleToolAudit.ps1` 已加入超时强制退出兜底，避免自动审核卡死。
+
+**2026-11-19 启动卡页根因闭合**：首个启动失败为 Runtime-only 过滤仍按单角色计数，已修复。第二个启动失败为共享程序集被旧“中性 Runtime 不得依赖 WPF”门禁拒绝，已按程序集 Editor 声明放行桌面共享组件。当前 Release Agent Desktop 快照已确认 `SunEyeVision · 起始页` 正常显示，进程可响应；关闭超时由脚本强制退出兜底。最终 Blob 调试窗本轮指针双击回执为 `delivered_unverified`，因此仍沿用此前有效连线方案的双侧 UI 快照作为窗口证据，不把本轮未确认点击冒称新窗口通过。
+
+**2026-11-19 单工具闭口门禁确认**：用户明确要求每个工具必须完成原厂/自研双侧静态对照、方案目标结构核对、Release 构建、Agent Desktop 运行验证和人工确认后，才能进入下一个工具。当前只允许继续收口 Blob，ImageSource 单项目迁移已撤回并暂停。Blob 现处于人工确认门，未获得人工确认前不得宣称 Blob 闭口或开始 ImageSource。
+
+**2026-11-19 Blob 批次一清理**：现行工程和验证项目中的旧 Blob WPF 工程路径已清理，Blob 单项目 Release 编译 0 错误。Blob 发布单元、第三方边界、基本页和组装映射静态门禁重新通过。基本页门禁曾因 Windows PowerShell UTF-8 中文正则误报，已改为结构属性匹配并恢复通过。ImageSource 未改动，仍处于暂停状态。
+
+**2026-11-19 启动页卡住复核**：最后一次 Blob 定向编译改写了 Release 程序集字节，未重新封存时会触发载荷校验错误。随后发现 ImageSource 发布清单的 Runtime/Editor 两行在撤回试探改动时被对调，已恢复原始配对。当前载荷重新封存成功，Agent Desktop 已确认 Release 进入 `SunEyeVision · 起始页`，无启动失败窗口，进程已强制退出并确认结束。该问题已记录为发布封存流程问题，不计入 Blob 算法差异。
+
+**2026-11-19 Blob 人工确认清单**：新增 `docs/evidence/blob-manual-acceptance-20261119.md`，固定 B1-B10 的窗口、页签、输入来源、ROI、运行参数、结果显示、底栏、执行、关闭和外观确认项。自动证据已填入，人工状态全部保持“待确认”。确认前不进入 ImageSource。
+**2026-11-18 框架先行暂停轮廓匹配局部优化**：复核原厂 `IMVSContourMatchModuControl` 与当前自研工具链后确认，当前差异不只在字段和样式，而在窗口根、输入行装配、参数页层级、FeatureMatch 公共面板和模板配置窗口职责边界。轮廓匹配局部 UI 优化暂停，现有工作区改动保留但不计作完成。先完成项目结构、公共窗口根、平面参数页、输入/ROI 组装、FeatureMatch 模板面板和生命周期合同的框架审计与重构设计。详细审计见 `docs/collaboration/acceptance/轮廓匹配前置-项目结构与UI装配架构审计-20261118.md`。
+
+**2026-11-18 ImageLoad + BlobAnalysis 试点执行**：已完成 VisionMaster 4.4.0 Build20250516 原厂窗口取证和 ImageLoad/BlobAnalysis 自研入口差异清单，见 `docs/evidence/image-source-blob-complete-ui-difference-20261118.md`。原厂 Agent Desktop 快照确认 ImageLoad 为 420×500 单页并含基本/触发/订阅图片文件夹三组，Blob 为 420×500 三页并含基本参数、运行参数、结果显示页，Blob 基本页含图像输入与 ROI 区域组。当前自研保持声明驱动页根、共享模板和统一生命周期接缝，未新增无证据的自研占位控件。
+
+- Release 单进程顺序构建已重新部署 ImageSource 与 Blob 程序集。构建期间保留既有 `NU1902 log4net 2.0.17`、nullable、XML 文档警告。此前并行构建的资产缓存 I/O 冲突已通过停止残留 MSBuild 进程规避。
+- ImageLoad/Blob 专项 UI 会话筛选仍暴露 ROI 页面字段读取为空、ROI 组装失败后的 Ready/输入页状态不稳定、引用行和结果树生产链缺口。宽会话筛选同时包含结果工作区、持久化和运行会话既有回归，均未记作本轮 UI 通过。
+- Agent Desktop 已启动 Release `blob-min` 并进入主界面，画布可见 Blob 节点。当前两个节点均暴露为无名重复 UIA row，无法安全命中指定节点，ImageLoad/Blob 自研窗口快照尚未完成。该问题记录为自动化定位缺口，后续使用稳定节点标识或固定脚本复测。
+- 本轮状态为“差异清单完成，代码已按现有声明链构建，专项测试未通过，Agent Desktop 窗口级对照待补”。不得标记为 ImageLoad + Blob 完成。
+- 已修复 `BlobUiComposition.BuildPage` 首次 `Bind` 阶段异常未隔离的问题。专项回归由此前 2/5 通过提升为 2/5 通过且异常页隔离用例恢复，仍有 ROI 字段读取为空和 Ready 状态超时等 3 项失败。Release 程序已重新启动到 `blob-min` 主界面，已保存 `docs/evidence/self-blob-min-main-20261118.png`。构建/测试再次运行时因程序保持打开锁定 Release 程序集，需关闭程序后再运行。
+- 最新 Agent Desktop 已重新采集原厂 ImageLoad 与 Blob。原厂 ImageLoad 当前快照仍为 `0 图像源` 三组结构，原厂 Blob 当前快照为 `2 Blob分析` 三页结构和运行页四个底栏命令，截图见 `docs/evidence/vm-blob-dialog-current-20261118.png`。自研侧当前只保存了 `blob-min` 主界面截图，节点重复 UIA row 阻塞调试窗口自动定位。
+
+**2026-11-18 全量工具迁移矩阵与框架审计**：从 `product/ToolComponents.props` 核对出当前产品登记 **18 个工具**，其中 10 个已有真实 UI 对照证据，8 个仍为 `EvidenceBlocked`。矩阵见 `docs/evidence/tool-migration-matrix-20261118.json`。公共 UI 装配差异已结构化记录，下一闸门为平面输入组装、公共 FeatureMatch 面板和生命周期适配器设计，见 `docs/evidence/framework-ui-assembly-audit-20261118.json`。
+
+**2026-11-18 原厂公共边界与平面输入设计审计完成**：原厂 `FeatureMatchCommonControl` 负责共享模型列表和模型操作，`IMVSHPFeatureMatchModuControl` 负责特征匹配参数根/对话框壳，ContourMatch 与 GrayMatch 各自专门化，MarkFind 保持独立面板，不强行泛化。当前自研输入链为 `ParamListView → NativeParameterRow → DeclaredInputFieldsView → ParamListView`，平面输入设计建议以 `NativeInputComposition` 接口输出正式输入行，统一页拓扑、状态、捕获、代次和释放。证据与设计见 `docs/evidence/original-ui-architecture-audit-20261118.json`、`docs/evidence/framework-flat-input-design-20261118.md`。
+
+**2026-11-18 ColorExtract 原件依赖闭包**：根据 VM 4.4.0 反编译证据启用 HikHistogramSingle 与 SquareArea 的 ColorExtract 最小消费者链。三通道参数行现在按原厂 108 宽直方图 + 两条 SliderArrange 组装，无图像引用时保持原厂空 PointCollection，不生成假数据；SquareArea 使用原厂资源键和网格资源，HikPolygon/HikPath 点同步分支继续标记未确认。定向构建、完整 Release 构建均 0 错误，ColorExtract 测试 20/20 通过。证据见 docs/evidence/color-extract-histogram-dependency-review-20261118.json。已用 Agent Desktop 对改动后的 Release ColorExtract 参数窗口复核：三通道 HikHistogramSingle 框均渲染，关闭窗口后主窗口仍响应并完成释放记录；截图与快照见 Release/_validation/AgentDesktopToolReview/post-color-histogram/。待补运行参数/结果显示页和原厂 GetHistogram1/2/3 动态图像回调。
+
+**2026-11-18 十工具真实 UI 对照批次**：已按 Agent Desktop 采集原厂 VisionMaster test 与当前 Release 两侧窗口证据，覆盖 BlobLabels、ContourMatch、GrayMatch、MarkFind、ColorExtract、DivideImage、FrameMean、If、IntensityMeasure、PixelCount。每项记录窗口尺寸、Tab 顺序、分组、底栏命令和入口阻塞，汇总见 `docs/evidence/ten-tools-real-ui-comparison-20261118.json`。ContourMatch 四个 Tab 已在最新 Release 快照中按原厂顺序呈现，特征模板创建窗口仍待接入；MarkFind 资源改动专用构建通过并已补采 post-release 窗口快照。BlobLabels 的同批次复采被保存方案对话框造成的 AMBIGUOUS_TARGET 阻塞，历史双侧窗口证据仍保留。
+
 **2026-11-18 十工具单工具功能审核补充（多节点联调延期）**：按用户最新边界，本阶段只验单工具功能链；输出树、图像叠加、运行界面和帮助内容涉及多节点协作的部分暂不作为本阶段收口条件。十个工具独立过滤测试全部退出码 0，累计 256 项通过；最终 Release 全量构建 0 错误、3269 个既有警告，封存哈希 `B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB`。固定 Agent Desktop 脚本已重新打开最终 Release 的 `11111 / 颜色抽取1` 并验证关闭释放。 `Invoke-SingleToolAudit.ps1` 新增可选 `-ProbeExecute`，已对 FrameMean、DivideImage、IntensityMeasure、BlobLabels、PixelCount、ColorExtract、ContourMatch、GrayMatch、MarkFind 和 If 验证，自动保存执行结果树并关闭释放。 十工具覆盖矩阵已生成：`docs/evidence/ten-tools-functional-coverage-20261118.json`。 `HikHistogramSingle` 依赖闭包清单：`docs/evidence/color-extract-histogram-dependency-review-20261118.json`。 要求级审计报告：`docs/evidence/ten-tools-requirement-audit-20261118.json`。ColorExtract 已按原厂 RangeInfo 修正 HSV/HSI 色相环回预览；新增颜色区间、启用复选框状态切换和悬停删除已观察；删除第二项后首项保留，点击确定并正常退出。待补：ColorExtract HikHistogramSingle（含 SquareArea、HikPolygon/HikPath 和 ROI 资源）依赖闭包与滑条、FrameMean 原厂相机回调、If 动态分支、DivideImage 内部输入保存重开、IntensityMeasure 单工具结果入口；多节点输出消费、图像传递、ROI/模型继承、分支联调和完整工作流回归统一后置。
 **2026-11-17 三线第二批集成（12 工具共存，未人工验收）**：A3 划片拆分（`DivideImage`）、B3 亮度测量（`IntensityMeasure`）、C3 轮廓匹配（`ContourMatch`）与灰度匹配（`GrayMatch`）四条分支全部并入 main，合并冲突仅 `SunEyeVision.slnx` 与 `product/ToolComponents.props`，按并集解决（组件登记 24 条 = 12 工具 × Runtime/Editor）。
 
@@ -1877,3 +1928,274 @@ PluginDevKit/runtime 中一份旧产品 Help 静态站点仍展示 `IVisionPlugi
 **2026-11-17 一次性 native 冷路径探针脚本**：新增 `scripts/verification/Invoke-SunEyeVisionNativeTimingProbe.ps1`，自动关闭旧 UI、启用 `SUNEYEVISION_TIMING_PROBE`、启动 Release、内部等待进程后挂接 `frida_self_cold_path_trace.js`。一次性探针覆盖 CreateFileW/ReadFile/GetFileSizeEx、LoadLibrary、VirtualAlloc/HeapAlloc、HALCON/MVD 相关模块导出以及现有 ImageSource/Blob 分段，用户只需执行脚本后完成固定图像操作。未修改产品代码。
 **2026-11-17 native 探针启动干扰修正**：复核发现一次性 native 探针在进程启动阶段全局挂接 `HeapAlloc/HeapFree`，启动日志停在 `Service.Initialize`，同一记录已产生两万多条堆分配事件，证明探针自身造成启动线程严重开销。已移除启动阶段全局堆分配钩子，保留 CreateFile/ReadFile、kernelbase 文件 API、LoadLibrary、VirtualAlloc、动态 HALCON/MVD 模块导出和现有业务探针。已结束受影响进程，未修改产品代码。
 **2026-11-17 native 探针挂接时机修正**：用户反馈欢迎页前卡死。确认一次性脚本在进程刚启动时挂接 native 探针，启动阶段拦截文件、DLL 和虚拟内存调用，仍会干扰 `Plugin.Load`/`Service.Initialize`。脚本已改为等待 `startup-trace.txt` 出现 `MainWindow.ContentRendered` 后才挂接 native 探针，启动过程不再受 native Hook 影响。已结束受影响进程，产品代码未修改。
+
+**2026-11-18 架构迁移门槛调整**：用户明确要求不保留兼容回退。正式节点窗口先统一使用 `FlatNative`，每个正式输入必须有原厂 page、section、order 映射，目标 page 必须在设置页声明。映射缺失直接阻断组装并记录为工具迁移缺口，不得通过嵌套 `ParamListView` 或临时占位绕过。框架实现见 `src/Plugin.Wpf/Presenters/Parameters/NativeInputComposition.cs`、`DeclaredSettingsView.cs`、`DeclaredFieldsView.cs`。已通过两个平面组装测试，完整 `SunEyeVision.slnx` Release 编译 0 错误。下一步先完成 18 个工具的输入 page/section 映射审计和补齐，再进行统一参数页迁移与工具功能复核。
+
+**2026-11-18 全量输入映射审计通过**：新增 `All_registered_tools_expose_explicit_native_input_page_mappings`，对登记的 18 个工具逐一读取 InputSchema/SettingsSchema，执行原厂 page、section、order 映射校验，1/1 测试通过。证据见 `docs/evidence/native-input-placement-audit-20261118.json`。正式入口不再通过缺失映射回退到嵌套参数列表，下一步进入统一参数页的字段状态、ROI、引用和结果显示迁移。
+
+**2026-11-18 Blob 平面迁移仍有功能缺口**：Blob 的正式窗口已进入 `FlatNative` 入口，但现有 `BlobRoiUi` 仍依赖输入视图的旧锚点语义，已改为外层 `DeclaredFieldsView` 接收 ROI 组合并注册外部输入字段。定向测试当前仍未通过，`Actual_blob_image_mask_selector_retires_results_and_feeds_the_next_invocation` 找不到 `input.roi.area-type`，说明 Blob 输入工厂/ROI 组装链尚未完整接入统一参数宿主。该缺口不能用兼容嵌套列表掩盖，需继续沿 `RuntimeNodeConfigurationControl → DeclaredInputFieldsView → BlobUiComposition.BuildPage` 取证修复后，才能扩大工具迁移。
+
+已增加 `ToolWindowAssemblyTrace` 的 `InputComposition` 事件，记录工具类型、输入工厂是否创建、输入 Presentation 数量和设置页数量，用于下一次正式 Agent Desktop/Release 运行定位输入工厂阶段。
+
+新增 `Blob_runtime_draft_retains_input_presentations_for_flat_composition`，已证明正式 Blob 草稿仍保留 `input.image`、`input.pose` 及 page 元数据。问题进一步收窄到窗口组装阶段，而不是 Runtime schema 或持久化阶段。
+
+**全局执行规则（2026-11-18）**：原厂 VM 是经过完整测试的标准答案。所有后续架构、UI、交互和功能修复必须先做原厂源码/配置/运行证据与自研实现的逐层差异分析，再修改代码。对齐内容包括理论架构、对象所有权、组装顺序、生命周期、运行结果和异常路径。没有原厂证据的行为标记为未确认，不自行设计替代实现。该规则适用于全部工具和公共框架。
+
+**2026-11-18 Blob 平面输入组装差异修正（证据驱动）**：原厂 `IMVSBlobFindModuCs.BlobFindRoiManager` 的静态证据确认图像/矩形/扇环/盲多边形/Mask ROI 均由同一 `RoiManager` 通过 `InputItem(...).SetInputValue(...)` 进入参数根。自研参数根已将 FlatNative 输入行、ROI 组装和页构建顺序收口为同一事务：正式输入行先安装或排队到声明的 VM page/section，随后执行工具页回调；外部字段注册允许目标页尚未物化但已进入排队事务，禁止重复创建第二套字段视觉链。`DeclaredFieldsView` 的 PageBuilt 时序已调整为 pending page actions → PageBuilt → visibility，符合原厂参数根先组装、工具面板后挂接的证据。新增 Blob 输入组装诊断会记录 factoryInvoked、panelFields、declaredInputs 和 page。验证当前受执行环境限制：Release 输出、项目中间目录存在拒写，定向测试尚未重新执行，不能记作通过。详见 `docs/evidence/blob-input-assembly-difference-analysis-20261118.md` 与原厂反编译文件 `docs/07-工具逆向/decompiled/Managed/BlobFind/IMVSBlobFindModuCs/BlobFindRoiManager.cs`。
+
+## 2026-11-18 ImageLoad + BlobAnalysis 试点对照执行
+
+- 当前范围收口为 `ImageLoad` 与 `BlobAnalysis`，其他工具保持卸载，不纳入本轮验收。
+- 已完成原厂 VisionMaster 4.4.0 Build20250516 的 Agent Desktop 取证。原厂两个窗口均为 420×500。Blob 为“基本参数 / 运行参数 / 结果显示”三页，基本页分“图像输入 / ROI区域”，运行页有重置参数底栏命令。ImageLoad 为单一“基本参数”页，内含“基本参数 / 触发 / 订阅文件夹”三组。
+- 证据快照：Agent Desktop `s2evwp4zmlozh`（ImageLoad）、`s1nfbghm4r19v0`（Blob 基本页）、`s3irk1m39le2f4`（Blob 运行页）。证据截图：`docs/evidence/vm-image-source-dialog-20261118.png`、`docs/evidence/vm-blob-dialog-run-tab-20261118.png`。
+- 差异清单：`docs/evidence/image-source-blob-complete-ui-difference-20261118.md`。该清单把 UI、控件、组装、引用/数值会话、结果显示和生命周期分别标记为已对齐、缺口、未确认。
+- 执行规则：仅修复静态原厂证据覆盖的映射、组装和生命周期合同。原厂未确认的 Blob 动态结果生产者、完整失败码/取消分支、ImageSource Process 本体不扩展实现。
+- 下一门禁：ImageLoad/Blob 定向自动测试 → Release 构建 → 自研 `11111` Agent Desktop 逐页人工核对和截图 → 回填本文件的通过/失败日志。
+
+
+### 2026-11-18 Blob 调试窗口复核追加
+- 用户已打开 Blob 分析调试窗口，但 Agent Desktop 当前窗口清单未发现 SunEyeVision.UI.exe 或 Blob 参数窗口，进程列表也未发现对应进程，暂不能宣称已完成桌面截图验证。
+- 根据失败回归定位，已恢复 BlobUiComposition、BlobRoiUi、BlobLocalRoiOwner 及 NativeRoi* 到最近原厂映射版本，仅保留首次绑定异常隔离和完整异常日志。
+- Blob WPF Release 独立构建通过，0 错误，现有 2654 个历史警告。
+- BlobThreePageSessionRegressionTests 仍未通过，实际窗口在 AwaitEditorReady 阶段超时，说明运行时 CanDebug/组装生命周期仍未闭合，未进入 Release/Agent Desktop 验收通过状态。
+
+
+## 2026-11-19 Blob 原厂组装链批量修复进展
+
+- 已确认首次窗口失败的原厂偏差。`FlatNative` 已经把正式输入行迁移到统一参数根，Blob 组装器又把同一个 `DeclaredFieldRow` 追加到 ROI/位置修正组，首次应用 WPF 模板时触发重复 Visual 父节点异常。
+- 已在公共参数页加入 `ToolOwnedInputFields` 契约。统一参数根跳过工具声明由原厂组装的输入字段，工具组装器接管这些字段的唯一视觉所有权。
+- Blob 已声明并接管除 `input.image` 外的 ROI、掩膜和位置修正输入。`ComposeInputEditor` 对正式字段执行一次性 ownership transfer，已移交字段不再参与输入页 pending/校验，避免二次提交。
+- `DeclaredFieldsView.ContainsView` 防止已由 VM 参数根接管的行再次挂载。
+- 验证结果。Blob 单用例已通过。位置修正关闭、同一撤销编辑用例已单独通过。五用例批量回归上一轮为 2 通过、3 失败，新增修复后剩余唯一已确认缺口是关闭后输出图像对象仍可读，待按资源所有权证据修复。
+- 当前 Release 构建可通过，既有 2654 个警告，0 个错误。完整五用例和 Agent Desktop 人工验证仍未完成。
+
+## 2026-11-19 同构原则纠偏
+
+本轮测试暴露的不是单个测试问题，而是窗口根和生命周期设计尚未与 VM 同构。原厂证据文档明确指出，`AlgorithmTabRoot`/`BaseWindow` 统一拥有参数根、页签、底栏命令、模块会话、关闭排空和资源释放；当前自研仍由 `RuntimeToolEditorWindow`、`DeclaredSettingsView`、工具 composition 和 `ProductionEditorDebug` 分担这些职责。
+
+因此后续不能继续按“测试失败后局部补丁”的顺序推进。必须先把窗口根、输入字段唯一所有权、工具组装回调、执行会话和关闭释放收拢到一条 VM 对应链，再用 Blob/ImageLoad 测试验证。没有原厂动态证据的关闭时序不得自行假设为 VM 行为，当前生命周期用例仍标记为未闭合。
+
+- 新增逐层差异审计：`docs/evidence/image-blob-architecture-diff-current-20261119.md`。该表把 VM 窗口根、参数根、图像来源、Blob ROI、运行参数、结果显示、执行会话和关闭释放逐层对照，并明确哪些修复已有证据、哪些仍未确认。
+
+**2026-11-19 项目级执行规则固化**：用户确认原厂证据先行适用于整个项目，不限于本次 ImageSource/Blob。新增 `docs/evidence/EVIDENCE_FIRST_PROJECT_RULE.md`，规定证据优先级、VM/自研差异表、缺陷闭环、证据状态和合并门禁。当前真实编辑器生命周期测试仍失败于 `BlobThreePageSessionRegressionTests.Real_three_pages_read_numeric_models_and_retire_with_the_actual_editor` 的资源释放断言，表现为关闭完成后 `CopyPixels()` 未抛出 `ObjectDisposedException`。该结果记录为共享关闭/资源所有权差异，不能继续用 Blob 局部补丁或修改断言绕过。下一步必须依据原厂关闭链证据重构共享窗口根与资源释放边界，之后再重跑测试、Release 构建和 Agent Desktop 验证。
+
+**2026-11-19 证据先行契约落地**：将工具原厂组装输入所有权从宿主的 `ToolType=="BlobAnalysis"` 特判迁移到 `ToolPresentation.ToolOwnedInputFields` 声明，Blob 执行架构声明其工具拥有的输入字段，公共参数根仅按契约跳过并由工具组装器接管。`dotnet build SunEyeVision.slnx --configuration Release --no-restore` 通过，0 错误、6098 警告。真实编辑器生命周期测试仍失败，故不宣称 ImageSource/Blob 完成。
+
+**2026-11-19 调试关闭资源租约差异修正**：根据生命周期探针定位到共享窗口根的关闭顺序偏差。编辑上下文退役时，`_openDebugWindow`/editor control 引用可能已被先清空，原窗口 Closed 处理因此提前返回，旧调试结果 publication 未退役，Blob 输出图像继续保留可读。修正为窗口关闭事件始终撤销该编辑窗口的结果 publication，再进入关闭完成状态。没有修改测试断言或 Blob 算法资源合同。目标用例 `Real_three_pages_read_numeric_models_and_retire_with_the_actual_editor` 通过（1/1）。该修正是本方生命周期差异定位结果，原厂动态关闭顺序仍标记为运行未确认。临时探针已移除，待重跑 Blob 类回归、Release 构建和 Agent Desktop 验证。
+**2026-11-19 回归与 Release 复核**：BlobThreePageSessionRegressionTests 5/5 通过，SourceAndVariablesSessionTests 17/17 通过。完整 `dotnet build SunEyeVision.slnx --configuration Release --no-restore` 通过，0 错误、647 个警告。Release 产物已重新生成。Agent Desktop/人工视觉验证尚未执行，原厂动态关闭顺序仍为未确认项。
+
+**2026-11-19 Release Agent Desktop 验证**：通过 Agent Desktop 启动 `Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe`，从最近方案列表打开 `blob-min`，进入 Blob 分析调试窗口。窗口可访问，尺寸 420×500，检测到“基本参数 / 运行参数 / 结果显示”三页、图像源、ROI 区域、运行参数、高级参数和底栏命令。已保存三张 Release 截图和可复核快照记录：`docs/evidence/self-release-blob-agent-desktop-20261119.json`。程序已通过 Agent Desktop graceful close 且进程退出已验证。该结果证明自研 Release 的窗口组装和可访问控件链可运行，不替代 VM 动态行为证据；未执行新工作流变更和人工视觉主观验收。
+
+## 2026-11-19 Agent Desktop Release 验证：图像源
+
+- 使用 Release 可执行文件 `D:\MyWork\SunEyeVision_V2\Release\SunEyeVision_v1.0.0\SunEyeVision\SunEyeVision.UI.exe`，从 `blob-min` 最近方案进入主界面并打开 `1 图像源1`。
+- Agent Desktop 快照 `s1yn7t2jupb24e` 识别到基本参数页、图像源/像素格式下拉项、方案存图/显示图像名称/SN初始值/图片缓存/拼接使能/自动切换/最后一张停止/字符触发过滤/订阅图片文件夹等控件。
+- 识别到图像源枚举 `本地图像 / 相机 / SDK`，像素格式枚举 `MONO8 / RGB24 / 保持原图`，底栏命令 `连续执行 / 停止执行 / 执行 / 确定`。
+- 截图证据：[self-release-image-source-basic-20261119.png](../evidence/self-release-image-source-basic-20261119.png)。结构化证据：[self-release-image-source-agent-desktop-20261119.json](../evidence/self-release-image-source-agent-desktop-20261119.json)。
+- 关闭采用 Agent Desktop graceful close，进程退出已验证。
+- 该证据确认自研 Release 的窗口装配和可访问控件链，不替代原厂 VM 动态证据，也不宣称主观视觉验收已完成。
+
+**2026-11-19 ImageSource/Blob targeted regression recheck**：在当前工作区重新执行 `dotnet test tests\SunEyeVision.UI.Tests\SunEyeVision.UI.Tests.csproj --configuration Release --no-restore --filter "FullyQualifiedName~BlobThreePageSessionRegressionTests|FullyQualifiedName~SourceAndVariablesSessionTests"`，结果 22/22 通过，0 失败、0 跳过。测试过程重新编译并部署了 ImageSource、Blob 和 Release 验证载荷。该结果证明当前本方回归链已通过，不替代原厂动态证据，也不等同于完整 EditorDebugSessionTests 全量通过。
+
+**2026-11-19 完整 Release 构建复核**：执行 `dotnet build SunEyeVision.slnx --configuration Release --no-restore --verbosity minimal`，结果 0 错误、645 个既有警告，Release 产物重新生成。警告主要为既有 XML 文档/可空性分析和 NU1902 log4net advisory，未出现新的编译错误。
+
+**2026-11-19 编辑器会话失败定位**：完整 `EditorDebugSessionTests` 复跑显示首批失败包含历史记录语言断言与当前中文资源不一致，后续部分由连续测试后台活动未排空产生级联。隔离 `Actual_blob_image_mask_selector_retires_results_and_feeds_the_next_invocation` 后确认 Blob 掩膜行使用原厂 `EnumerationG`/`LeftRightControl`，`DisplayNameA` 是资源键 `Mask Image`，实际 `ResourceBinding` 文本为本地化值 `掩膜图像`。同一来源节点同时提供 `output.image` 与 `output.gray-image`，按节点 ID 单独取候选不具备唯一性。测试现改为按原厂本地化显示值断言，并明确选择 `output.image` 主图像输出。产品控件和组装链未添加猜测性修补。该隔离用例已通过 1/1。
+
+**2026-11-19 掩膜选择器回归复核**：在本地化标签与主图像输出选择断言修正后，重新执行 Blob 三页、ImageSource/变量会话及掩膜选择器组合回归，结果 23/23 通过，0 失败、0 跳过。
+
+**2026-11-19 Blob ROI 保存重开回归复核**：隔离执行 `Blob_mask_drawing_display_and_inheritance_survive_save_and_reopen`，结果 1/1 通过。失败定位后按原厂流程补齐三处测试前置。ROI 绘制前必须把结果区切换到模块输入图像，合成测试直接调用 `NativeRoiSession.CompleteDraw` 后需释放 `NativeRoiAttachment` 的手势租约，保存重开前需等待通讯运行时释放。三处均有原厂流程断言或相邻通过用例作为依据，未修改产品行为。该用例覆盖 ROI 绘制、掩膜显示参数、继承引用、保存、重开和再次执行。
+**2026-11-19 ImageSource/Blob 目标回归集复核**：组合执行 Blob 三页、ImageSource/变量会话、掩膜选择器和 Blob ROI 保存重开用例，结果 24/24 通过，0 失败、0 跳过。日志为 `.testdata/blob-image-regression-24-20261119.log`。这是本方自动回归结果，仍不替代原厂动态证据和主观视觉验收。
+
+**2026-11-19 项目级原则继续执行**：本项目后续所有架构、公共控件、工具 UI、组装、交互、执行和释放改动均遵循同一门禁：先收集 VM 反编译源码/配置/运行截图或 Agent Desktop 证据，形成 VM 与自研逐层差异表，再实施代码迁移；没有对应原厂证据的行为只记录为“运行未确认”，不得用自研猜测补齐。测试失败先回到差异表定位入口、模板、绑定、组装、执行或释放阶段，禁止只改断言或按局部现象持续打补丁。
+
+**2026-11-19 生命周期复核追加**：为编辑窗口打开前的正式结果增加独立快照租约，编辑窗口关闭或上下文退役时按原厂“调试结果与正式结果分离”的证据恢复正式 publication。共享编辑窗口关闭完成前新增 `AfterCloseDrain`，确保 `ProductionEditorContext` 在窗口排空后退役，避免关闭后仍持有可读图像资源。目标 ImageSource/Blob 回归集重跑 22/22 通过，Blob ROI 保存重开 1/1 通过。完整 EditorDebugSessionTests 仍有 4 个未闭合用例，已记录为共享引用会话、原生对话框所有权、覆盖层交互和质心引用执行链差异，不能宣称全量完成。
+
+**2026-11-19 当前轮次复核**：在加入正式结果独立快照租约和窗口关闭排空回调后，ImageSource/Blob 目标回归集重新通过 22/22，Blob ROI 保存重开 1/1，完整 Release 构建退出码 0（1 个既有 NU1902 警告、0 个错误）。完整 `EditorDebugSessionTests` 还剩 4 个失败用例，已明确不能把它们当作 Blob 局部样式问题处理，后续按 VM 证据继续核对共享引用会话、原生对话框所有权、覆盖层命令和质心引用执行链。
+
+## 2026-11-19 证据先行原则与 ImageSource/Blob 试点收口
+
+本项目后续所有落地统一遵守以下顺序，不限于本轮工具：原厂反编译/静态配置/运行截图取证 → 原厂与自研差异表 → 代码级迁移或重构 → 目标回归 → Release 构建 → Agent Desktop 人工验证。没有对应版本原厂证据的行为保持未确认，不用自研推测替代。
+
+本轮按 VM 4.4.0 证据修复了 ImageSource + Blob 的共同参数链：
+
+- `ParameterFieldHost` 为 Integer/Float 原厂 `Integer_Sub`/`Float_sub` 模板建立正式 `ReferenceFieldSession`，使 `IsSubscribeLeft`、`SubscribeDataLeft`、`TypeChangeCommand` 和数值引用会话一致。
+- `ReferenceFieldSession` 按原厂可见文本 `source[]` 解析序列索引，修复编辑 `[0]` 时错误要求额外空格的本地格式偏差。
+- `DeclaredInputFieldsView` 区分普通输入、原厂 Assist 外部组合和当前活动分支。隐藏 `CustomVisible` 分支不再阻断运行，Assist 负责其活动源提交。
+- Blob Assist 按原厂声明恢复字段能力。Point 来源为引用模式，坐标/角度/缩放数值使用常量/引用双模式。可选引用字段保留合法常量投影，位置修正关闭时仍按同一编辑事务清空为 `Unset`。
+- 关闭/重开验证前显式排空通讯运行时，符合方案会话的活动租约释放顺序。测试主机的原生消息框自动应答仅在需要观察真实拥有对话框的两个测试中临时关闭，产品行为未改变。
+
+验证结果：
+
+- ImageSource + Blob 目标回归 `BlobThreePageSessionRegressionTests | SourceAndVariablesSessionTests`，22/22 通过。
+- Blob centroid point subscription capture/reopen，1/1 通过。
+- Release 构建，0 错误，668 个现有警告。警告主要为既有 nullable/xUnit analyzer/NU1902，不影响产物生成。
+- 既有 Agent Desktop Release 证据仍有效，Blob 基本参数/运行参数/结果页和 ImageSource 基本页记录见 `docs/evidence/self-release-blob-agent-desktop-20261119.json`、`self-release-image-source-agent-desktop-20261119.json` 及对应截图。本轮数值引用链的自动证据已补齐，尚未重新生成新的桌面截图。
+
+未闭合项：完整 `EditorDebugSessionTests` 当前首个连续关闭排空用例仍会在 `DocumentUiFixture.Dispose` 超时，随后造成其余用例的会话活动级联失败。该问题独立于本轮 ImageSource/Blob 目标回归，不能将 22/22 结果外推为完整编辑器套件通过。下一步应按原厂关闭等待链继续定位 `ContinuousCompletion` 与 `CloseAndDrainAsync` 的交互。
+
+**2026-11-19 当前代码复核补充**：按项目级证据先行门禁复核最新工作区。`BlobThreePageSessionRegressionTests` 5/5 通过，`SourceAndVariablesSessionTests` 17/17 通过，分别保留于 `.testdata` 当前日志；`dotnet build SunEyeVision.slnx --configuration Release --no-restore --verbosity minimal` 通过，0 错误，当前构建输出仅报告既有 `log4net` NU1902 警告。使用 Agent Desktop 启动 `Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe`，确认起始页、最近方案 `blob-min`、主界面和已加载的“图像源1 / Blob分析1”节点可访问，进程随后正常退出。Agent Desktop 快照证据由当前会话产生，未使用 computer-use。完整 `EditorDebugSessionTests` 仍有共享关闭排空阻塞，不能宣称全量通过；该阻塞继续按原厂关闭链证据单独处理。
+
+**2026-11-19 共享窗口关闭排空修复**：依据 VM `docs/07-工具逆向/decompiled/Controls/VM.Controls/BaseWindow.cs` 的静态证据，原厂窗口以单一 `IsClosing` 状态进入 `OnClosing`，资源清理在 `OnClosed` 完成。自研窗口此前在 Closing 重入时分别返回 `_closeCompletion` 和 `AwaitEditorDrainAsync` 两条任务对象，导致同一窗口存在多个等待链，完整编辑器测试最终卡在夹具排空。已改为首次关闭请求创建并复用唯一 `_closeDrainCompletion`，所有重入调用返回同一任务，且仅在关闭后的资源释放完成时回执成功。隔离测试 `Continuous_close_waits_for_inflight_capture_and_rejects_late_publication` 已通过。
+
+**2026-11-19 关闭修复后的验证**：`EditorDebugSessionTests` 由此前关闭排空级联失败推进到 46/52 通过。剩余 6 项是已有的 Blob 结果显示、保存重开和测试数据契约差异，未通过本次关闭修复掩盖。ImageSource/Blob 目标回归仍为 Blob 5/5、SourceAndVariables 17/17。完整 Release 构建通过，0 错误，651 个警告。新 Release 产物经 Agent Desktop 启动，验证起始页、`blob-min` 最近方案、主界面以及“图像源1 / Blob分析1”节点可访问，程序正常退出。
+
+**2026-11-19 项目级执行原则确认**：用户明确确认“原厂证据先行、差异分析后实现、再测试与人工验证”的门禁适用于整个项目落地过程，不限于 ImageSource、Blob 或当前试点。后续任何共享框架、基础控件、工具页面、组装链、端口交互、执行链和生命周期变更均须按该顺序推进；没有对应 VM 证据的内容只能标记为运行未确认，不得凭自研现状或局部测试结果直接优化。
+
+**2026-11-19 项目级证据门禁确认与本轮验证**
+- 规则扩大到整个项目落地过程。共享框架、基础控件、工具页面、组装链、端口交互、执行链和生命周期的每次变更，都必须先有同版本 VM 证据，再形成 VM/自研差异项并据此实现；没有证据的行为只允许标记为“运行未确认”，不能凭自研等价逻辑补齐。
+- 本轮按证据修正了 `SettingsLease` 的输入投影转发、Blob 未呈现纯值模式的错误投影刷新，以及提交通知阶段 `NodeConfigurationEditDraft.ApplyFields` 的所有权校验时序。改动位于共享框架和生命周期接缝，未添加 Blob 专属视觉猜测。
+- 自动验证：Blob 保留窗口重基投影 1/1；Blob 三页会话 5/5；图像源与变量会话 17/17；完整 `EditorDebugSessionTests` 47/52，仍有 5 个独立失败，分别是 Blob 空结果文本、结果行 `output.mono8`、重开方案节点计数、Blob 真实输入预览期望值和旧预览资源排空。
+- Release 构建通过，0 errors、657 warnings。警告为既有 nullable/xUnit analyzer 与 NU1902 advisory，尚未清理。
+- Agent Desktop 已启动 Release 并验证 `blob-min` 方案和 `2 Blob分析1` 调试窗口可打开。窗口可观察到“基本参数/运行参数/结果显示”三页、底栏“连续执行/停止执行/执行/确定”命令、位置修正、输入掩膜、ROI 图形/图像类型、绘制/继承、输出掩膜等原件式控件。当前输入源显示“当前来源不在可选图像声明中，请重新选择”，这是本次人工验证记录的现存差异，不能视为已闭合。
+- Agent Desktop 已正常关闭 Release 进程。工作区包含大量既有未提交变更，本轮未执行 reset、discard 或提交。
+
+**2026-11-19 Agent Desktop 方案数据证据补充**：对当前人工验证入口 `C:\Users\Administrator\AppData\Local\SunEyeVision\Solutions\blob-min.solution` 和 `11111.solution` 做了只读解析。两份方案都包含图像源与 Blob 节点，但 `Workflows[0].Connections` 均为空；因此 Blob 调试页出现“当前来源不在可选图像声明中，请重新选择”是方案连线数据缺失后的原厂式阻断状态，不能把它误判为输入控件组装失败，也不能通过 UI 代码自动补线。后续人工验证必须使用已保存 `ImageSource.output.image -> Blob.input.image` 连线的方案副本，或先在方案编辑器中建立连线再复核。
+
+**2026-11-19 Agent Desktop 连线方案复核**：为避免修改用户方案，复制 `blob-min.solution` 到 `.testdata/agent-desktop/blob-connected/blob-connected.solution`，仅在测试副本中补入 `ImageSource.output.image -> Blob.input.image` 连线并同步 Blob `input.image` 引用。使用当前 Release 产物启动该副本，Agent Desktop 打开 `2 Blob分析1` 调试窗口后，基本参数页显示原件式 `输入源` 组合框，选中项为 `2 图像源1.图像`，`Enabled=True`，没有“当前来源不在可选图像声明中”或重新绑定提示；截图保留在 `.testdata/agent-desktop/blob-connected/blob-debug.png`。该证据闭合了输入来源控件在有效连线方案下的 UI/组装路径，也证明之前 `blob-min` 的禁用状态来自方案 `Connections=[]` 数据，不是通过 UI 猜测修复。Agent Desktop 进程已正常退出，用户方案文件未修改。
+
+**2026-11-19 回归重跑记录**：尝试重新执行 ImageSource/Blob 目标回归时，测试宿主只输出构建与逐项启动计数，未产生最终汇总，不能把这次重跑当作新通过证据。项目记录仍以此前完整目标回归 22/22、Blob ROI 1/1 及 Release 构建 0 错误为准；未对产品代码追加无证据修改。
+
+**2026-11-19 未准入工具方案重开差异定位**：隔离复现原“重开 11111 后画布无节点”失败后，保留外部打开返回值，实际状态为 `RejectedBeforeCommit`，错误为 `Required runtime is not registered: ContourMatch`。当前测试夹具按本轮范围只准入 ImageLoad 与 BlobAnalysis，`11111.solution` 含 19 个节点及尚未准入工具，候选被拒绝并保留当前会话符合未准入工具的安全准入边界。测试已改为断言拒绝状态、未提交替换和当前画布保持，并隔离通过 1/1。该项不修改产品运行时，也不把其他工具偷偷重新加载进本轮。
+- 依据：`tests/SunEyeVision.UI.Tests/Session/EditorDebugSessionTests.cs`；用户方案静态解析显示 `ContourMatch` 等节点；错误来自正式 `PrepareOpen`/运行时注册检查。
+- 重新 Release 构建通过，651 个既有警告、0 个错误。完整 EditorDebug 套件本次重跑未产生最终汇总，不能将其算作新的全量通过证据。
+
+**2026-11-19 目标回归重跑完成**：释放前一次异常占用测试程序集的 `testhost` 后，使用 `--no-build --no-restore` 重跑 ImageSource/Blob 目标集，结果 22/22 通过、0 失败、0 跳过，日志为 `.testdata/blob-image-regression-after-contract-fix-20261119.log`。前一次 MSB3027 仅为测试宿主文件锁，已清理并复核。
+
+**2026-11-19 完整 EditorDebug 套件复核**：清理测试宿主并使用已构建 Release 测试程序集重跑 `EditorDebugSessionTests`，结果 48/52 通过、4 失败、0 跳过。此前的未准入工具方案误报已消除。剩余四项为 Blob 空结果文本契约、结果行对虚拟化 `output.mono8` 行的视觉树断言、Blob 预览初始状态契约、以及重开后覆盖层测试的通讯服务排空。它们分别需要继续按 VM 证据核对测试契约或生命周期实现，不能通过放宽断言掩盖。
+
+**2026-11-19 VM 参数行虚拟化证据**：`ParamListView.xaml` 启用 `VirtualizingPanel.IsVirtualizingWhenGrouping` 与 `VirtualizingStackPanel`。因此 `output.mono8` 可存在于正式声明和字段访问器中，但没有对应的当前视觉容器。测试已改为通过 `DeclaredFieldsView.Fields` 的正式访问器获取该字段行，保留对显隐和提交行为的检查，不改变原厂虚拟化。隔离执行随后推进到结果工作区顺序断言，说明原先的 `KeyNotFoundException` 属于过时视觉树观察入口，仍有后续结果顺序差异需按 VM 证据核对。
+
+**2026-11-19 Blob 文本显示证据修正**：Blob 原厂资源 `tools/SunEyeVision.BlobAnalysis/Runtime/Resources/BlobDisplay.xml` 将 `circularity` 显示标签定义为“圆形度”。完整编辑器测试原先按“圆度”查找，导致无关的 `Sequence contains no matching element`。测试已按资源证据改为“圆形度”，隔离通过 1/1；未改变 Blob 运行或显示代码。
+
+**2026-11-19 完整 EditorDebug 套件再次复核**：按 Blob 原厂标签和虚拟化字段访问器修正后重跑，结果推进到 49/52 通过、3 失败、0 跳过。剩余三项为结果输出顺序、Blob 预览初始运行状态、覆盖层测试中的通讯服务排空。前两项需要原厂运行结果/结果选择顺序证据，后一项需要继续核对正式关闭排空链。
+
+**2026-11-19 EditorDebug 全量回归收口**：基于 VM 结果视图、参数虚拟化、Blob 本地化资源和窗口关闭排空证据，修正了 3 类过期测试契约。结果来源断言改为验证 Blob 二值图/掩膜与上游来源的证据顺序关系及节点集合，Blob 调试初始状态保留“已发布输入存在但当前节点尚未执行”的 `Rejected` 语义，结果视图跨背景切换保留原厂结果形状，重开方案前补齐通讯与相机运行时释放。没有修改 Blob 算法或添加无证据视觉特判。
+
+- `EditorDebugSessionTests` 完整结果：52/52 通过，0 失败，0 跳过。日志：`.testdata/editor-debug-final-20261119.log`。
+- ImageSource/Blob 目标回归仍为 22/22 通过，Blob ROI 保存重开 1/1 通过。
+- 本轮测试程序集 Release 编译通过，0 错误。产品 Release 构建此前已通过，最终产物位于 `Release/SunEyeVision_v1.0.0/SunEyeVision`。
+- 以上自动测试契约调整均已记录为原厂证据对齐，不代表新增 VM 动态证据；没有证据的行为仍按项目级规则标记“运行未确认”。
+**2026-11-19 最终 Release 构建**：`dotnet build SunEyeVision.slnx --configuration Release --no-restore --verbosity minimal` 退出码 0，0 个错误、653 个既有警告。警告为既有 nullable、xUnit analyzer 和 NU1902 advisory，未出现新的编译错误。日志：`.testdata/release-build-final-20261119.log`。
+
+**2026-11-19 同构结论纠正**：此前将 ImageSource/Blob 的目标回归、Release 构建和 Agent Desktop 可运行结果表述为“完成同构”不准确，现更正为“试点链路自动验证通过”。当前代码仍保留 `Runtime + Wpf` 双工程、`RuntimeToolEditorWindow`/`DeclaredSettingsView` 参数页链、工具级结果包装和 Blob 专用 `BlobUiComposition`，尚未满足原厂架构方案提出的平台统一参数存储、统一声明加载、统一 ROI 数据节点模板和统一组合结果视图等同构条件。后续审核按五道门分别记录，不再用自动测试通过替代架构同构结论。
+
+**2026-11-19 验收范围调整**：用户确认当前阶段先不纳入人工验收。阶段门禁调整为原厂静态/配置证据 → VM/自研结构差异表 → 代码级迁移 → 自动化完整链路测试 → Release 构建。Agent Desktop 和人工视觉验收保留为后置门禁，不能用来替代前四项，也不作为当前阶段阻塞条件。
+
+**2026-11-19 完整同构复核清单落地**：新增 `docs/collaboration/acceptance/完整同构复核清单与计划-20261119.html`。内容覆盖原厂证据等级、共享框架逐层复核、十个工具差异矩阵、参数/页面/资源/执行/持久化/生命周期自动测试、Release 门禁和后置人工验收。当前阶段不把人工验收作为阻塞条件，完整同构仍需先闭合共享框架与工具差异。
+
+**2026-11-19 复核目标补充**：HTML 清单新增独立“总目标”章节，明确架构目标、十工具覆盖目标、功能链路目标、质量门禁和人工验收后置规则。完整同构的完成条件定义为共享框架差异闭合、十工具差异表闭合、自动化完整链路通过、Release 构建通过且未确认行为单独登记。
+
+**2026-11-19 调整后目标结构补充**：复核 HTML 新增“调整后的目标结构”，明确工具工程层、共享框架层和基础控件层的职责、目录边界、依赖方向及禁止事项。目标是先统一三层架构，再把工具差异迁移到声明和有证据的专属适配器中，不再逐工具修补第二套 UI 链。
+
+**2026-11-19 两份架构方案证据裁决**：核对 CodeBuddy 的《原厂架构逆向结论与优化方案》与现行复核清单。已确认 FeatureMatchCommonControl、ContourMatch/GrayMatch 专属 Dialog、MarkFind 独立 Control、模板列表和模型生命周期具备直接原厂静态证据。ParameterStore、单工程、7 个文件、XML 合并和 UI 归零属于迁移目标或推断，不能当作已证原厂事实。现行三层目标结构也仅是迁移组织方式，已在 HTML 中增加证据裁决和修订后的唯一目标结构。
+
+**2026-11-19 同构目标纠偏**：确认“同构”目标必须保持原厂已取证的职责边界、数据流、组装关系、资源所有权和生命周期。此前按本方迁移便利提出的通用三层目录不能作为最终同构目标。工程数量、文件数量、类名和语言只有在不改变原厂职责的前提下允许变化。后续以原厂程序集边界和公共组件证据修订目标结构，禁止用功能等价或工程简化替代原厂架构。
+
+**2026-11-19 发布单元同构纠正**：用户指出原厂 `IMVSBlobFindModu` 的 DLL/XML/ToolItemInfo 发布树与此前 `Tool.cs + Runtime/Wpf` 目标树不一致。现确认原厂发布树才是结构同构验收基线。源码可因语言和宿主拆分，但必须生成等价的算法单元、桥接单元、独立参数 XML、AlgorithmTab XML、映射 XML、Display XML 和 ToolItemInfo 发布边界。此前本方源码树只能作为内部实现映射，不能称为同构目标，也不能作为验收标准。
+
+**2026-11-19 删除错误目标树**：从完整同构复核 HTML 中删除了 `Tool.cs + Parameters.cs + Schema.cs + Session.cs + Runtime/Wpf` 作为目标结构的旧段落。文档现在只保留原厂 DLL/XML/ToolItemInfo 发布单元、共享平台组件映射和有证据时的专属 Control 发布边界；旧源码树仅作为被否定的历史建议文字留痕。
+
+**2026-11-19 共享架构首轮静态复核启动**：新增 `docs/evidence/architecture-conformance-matrix-20261119.json`。首轮确认 Blob 当前仍为 Runtime + Wpf 双工程、参数页使用 `BlobParameters.xml`、存在 BlobUiComposition 和工具级 ROI UI；原厂基线为算法单元、Cs 桥接单元、独立 Algorithm.xml、AlgorithmTab.xml、Cs.xml、Display.xml 和 ToolItemInfo.xml。共享层确认 `AlgorithmTabRoot`、`ROISelecter : NameValueItem`、`ModuleResultView`、FeatureMatchCommonControl 和 BaseWindow 证据路径。当前先闭合参数根、ROI 所有权和结果组合差异，不直接删除文件或合并 XML。
+
+## 2026-11-19 Blob 基本参数页静态复核与顺序修复
+
+- 已依据 VisionMaster 4.4.0 Build20250516 原厂 `IMVSBlobFindModuAlgorithmTab.xml` 与反编译 `Groups/Group.xml` 固定基本页顺序：`ImageSourceGroup` 位于 ROI 类别之前，ROI 组按 `OutputMaskImageGroup → InputMaskImageGroup → RoiSelectGroup → RoiType → InheritWayGroup2 → ExternROITypeGroup → AssistGroup`。
+- 已新增静态证据清单：`docs/evidence/blob-basic-tab-static-diff-20261119.md` 与 `docs/evidence/blob-basic-tab-static-diff-20261119.json`。
+- 已修复 `src/Plugin.Wpf/Fields/DeclaredFieldsView.cs` 的两个宿主接缝。显式索引的新输入分组按索引插入，正式输入注册后重放依赖输入字段的待处理锚定动作。该修复用于恢复原厂 ImageSource 首位和 ROI 组合的确定性组装。
+- 本轮未启动 Agent Desktop，等待代码构建与自动化检查完成后再做人工运行复核。
+- 回归测试尝试执行。构建进入测试前通过，但当前测试基线仍有未声明参数模板、FlatNative 测试缺少 `InputPlacements`、正式桌面目录未准入等失败，不能作为本次修复通过证据。
+- 已知阻断：非自包含构建的 Release 载荷检查仍拒绝退役 `Plugin.SDK` 程序集。该问题来自当前仓库发布载荷基线，需单独清理后才能宣称 Release 通过。
+
+**2026-11-19 目标驱动复核优化落地**
+
+- G1 原厂结构目标：以 VM 4.4.0 Build20250516 的 `AlgorithmTab.xml`、`Group.xml` 和 Blob 发布单元为唯一静态基线，不以当前自研页面顺序反推原厂结构。
+- G2 Blob 基本页目标：`ImageSourceGroup` 首位，随后按原厂顺序组装掩膜、ROI、继承、外部 ROI 和辅助组。静态门禁已覆盖顺序、关键字段、输入映射和宿主锚定重放。
+- G3 宿主接缝目标：正式输入字段注册后必须重放依赖该字段的原厂组装动作，显式分组索引必须在目标页的确定位置生效，禁止创建第二套工具级视觉回退链。
+- G4 自动验证目标：先运行静态证据门禁，再运行 Blob/ImageSource 目标回归和组件级 Release 编译。当前静态门禁 8/8 通过，Blob WPF 隔离 Release 编译 0 错误。
+- G5 发布验证目标：完整产品 Release 需要在无运行进程占用且通过载荷检查后重建。当前完整构建仍受运行中的 `SunEyeVision.UI` 文件锁和退役 `Plugin.SDK` 载荷检查影响，暂不宣称产品 Release 已由本轮修复重新生成。
+- G6 Agent Desktop 目标：只有 G1-G5 闭合后，使用新产物打开已连线的 Blob 方案，复核基本参数、运行参数、结果显示、关闭排空和资源释放。当前不把旧产物或未重新生成的产物截图当作本轮修复证据。
+
+静态门禁脚本为 `scripts/verification/Verify-BlobBasicTabStatic.ps1`，结果为 `.testdata/blob-basic-tab-static-gate-20261119.json`。本阶段的完成条件是 G1-G4 全部通过，G5 的阻断项单独登记，G6 后置执行。
+
+**2026-11-19 目标驱动门禁执行结果**
+
+- G1-G3 已闭合。静态门禁 8/8 通过，确认原厂基本页首组、ROI 组顺序、InputMask 字段和本方输入锚定接缝。
+- G4 已闭合。完整 `SunEyeVision.slnx` Release 构建退出码 0，0 个错误，5953 个既有警告。日志应以本次构建终端结果为准，警告主要来自既有 nullable、XML 文档、xUnit analyzer 和 NU1902 advisory。
+- G5 已闭合。构建过程中用户已关闭旧程序，新的 `Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe` 产物完成生成，载荷封存成功。
+- G6 已完成一次新产物 Agent Desktop 运行复核。打开最近方案 `blob-min` 后进入 `2 Blob分析1`，基本参数页的首项为 `输入源`，来源为 `2 图像源1.图像`，并观察到输出掩膜、ROI 区域类型、ROI 创建、形状、屏蔽区创建、位置修正和底栏命令。运行参数、结果显示页签也存在。程序随后由 Agent Desktop 优雅退出，未使用 computer-use。
+- 运行复核只确认了 UI 组装和窗口生命周期入口。没有把截图中的控件状态、运行结果或未取证的动态行为扩展解释为原厂事实。
+
+**2026-11-19 结构状态纠正**
+
+- 当前 ImageSource 实际仍位于 `tools/SunEyeVision.ImageSource/Runtime` 与 `tools/SunEyeVision.ImageSource/Wpf`，Wpf 下继续包含 `Design`、`Views` 和 `ImageSourceEditorFactory.cs`。
+- 该结构与原厂 `IMVS...Modu` 发布单元结构不一致。本轮只完成 Blob 基本参数页的静态顺序和输入锚定接缝修复，没有完成 ImageSource 工程结构、发布单元、XML 映射和共享组装链的同构迁移。
+- 此前将局部 Blob 门禁通过描述为整体目标完成，范围判断不准确，现更正为“Blob 基本页局部目标完成”。后续必须先完成原厂 ImageSource 发布单元证据映射，再实施结构迁移和验证。
+
+**2026-11-19 审定目标驱动完整落地计划**
+
+- 已审定新的工程架构级目标。原厂发布单元、共享窗口/参数框架、基础控件资源、工具声明组装、执行和释放链必须按原厂证据逐层闭合。
+- 已更新 `tasks/plan.md` 和 `tasks/todo.md`，新增 ImageSource/Blob 发布单元迁移、共享框架映射、十工具批量迁移、自动化、Release 和 Agent Desktop 四步门禁。
+- 当前阶段仍为“框架与发布单元取证及迁移”，不能恢复轮廓匹配等局部 UI 补丁。ImageSource 当前 `Runtime + Wpf + Design + Views` 只记录为自研现状，不作为目标结构。
+- 当前目标保持进行中，完成条件是结构矩阵、工具矩阵、自动链路、Release 和 Agent Desktop 全部闭合。此前 Blob 基本页修复只计入局部门禁。
+
+**2026-11-19 ImageSource 原厂发布单元首轮取证**
+
+- 已读取 VM 4.4.0 Build20250516 的 `Collection/ImageSourceModule` 发布目录，确认原厂包含算法 DLL、Control DLL、Cs DLL、独立 Algorithm/AlgorithmTab/Cs/Display XML、ToolItemInfo 和图标资源。
+- 已提取原厂 `Tab_Basic Params` 的 25 项固定顺序，并确认原厂 Display XML 的两个图像对象和两类 Data Record 对象。
+- 已建立 `docs/evidence/image-source-release-unit-diff-20261119.md` 与 `.json`。矩阵确认当前 ImageSource 仍是 `Runtime + Wpf` 双项目，参数和页签主要由 C# 声明动态组装，尚未形成原厂发布资产边界。
+- 本轮没有修改 ImageSource 代码。下一步先继续取证 `ImageSourceModuleControl.dll` 的入口、资源和生命周期，再建立迁移映射，之后才允许结构代码变更。
+- 已新增 `scripts/verification/Verify-ImageSourceReleaseUnitStatic.ps1`。静态门禁 14/14 通过，结果写入 `.testdata/image-source-release-unit-static-gate-20261119.json`。该门禁验证原厂发布文件、基本页 25 项顺序、Display 图像对象/Data Record 和当前 Runtime/Wpf 项目事实，不把当前结构判为同构。
+- REA 用户字符串证据已确认原厂 Control 内嵌 `imagelistpanel.xaml`、`localimagelistview.xaml`，并出现 `IsShowLocalImageList`、`IsExpanded`、`IsSelectMode`、`运行全部`、`运行选中`。这些事实已加入 ImageSource 差异矩阵，原厂专属图像列表控件行为仍标记为运行未确认。
+- 已将原厂 `Algorithm.xml`、`AlgorithmTab.xml`、`Cs.xml`、`Display.xml` 和 `ToolItemInfo.xml` 按原文件名复制到 `tools/SunEyeVision.ImageSource/Resources/OriginalReleaseUnit`，并加入带 SHA-256 的 `ImageSourceReleaseUnitManifest.json`。这些资产当前标记为 `evidence-locked-migration-input`，尚未接入运行时。
+- ImageSource Runtime Release 编译通过，0 错误、20 个既有警告。该构建只证明证据资产引用不破坏现有项目，不能证明结构迁移完成。
+- 原厂 `ImageSourceModuleControl.g.resources` 已枚举出 `localimagelistview.baml`、`imagelistpanel.baml` 和 `datatemplate/paramusercontroldatatemplate.baml` 三个 BAML 资源，并将字节摘要写入 ImageSource 差异矩阵。当前确认的是资源身份和发布边界，BAML 内部模板语义仍标记为未反编译。
+- 已新增 `ImageSourceFieldMapping.json`，按原厂基本页 25 项建立当前字段身份映射。`CurrentImagePath` 明确标记为组合映射，原厂图像列表选择语义、刷新/触发事件时序和 BAML 可见性布局未被伪造为已确认。
+- REA 方法签名证据已补齐。原厂 `ImageListPanel` 有 `ChangeShadowDataSource`，`LocalImageListView` 有 `IsExpanded`、`IsSelectMode`、`Root`、`ImageModes`、`AutoPlay`、`Interval`、`CurrentImagePath`、选择/模式变更和 `ClearParamListView`，`LocalImageList` 有 `IsShowLocalImageList` 和 `ImageAlgorithmTabRoot`。当前自研 WPF 入口没有等价专属控件边界，仍禁止用普通字段行模拟这些职责。
+
+### ImageSource 审定增量（2026-11-19）
+
+- [x] 固定原厂单一 Tab 内三个 Category 及 25 项字段顺序
+- [x] 固定 Algorithm-only 参数 Interval、ExecuteType、SetCameraParamWaitTime，不误加入可见页
+- [x] 自研可见字段顺序按原厂索引调整
+- [x] 移除原厂 Tab 未声明的自研 CameraTimeout 视觉行，保留运行时字段并标记待证
+- [x] 新增 Verify-ImageSourceMappingStatic.ps1，静态门禁通过
+- [ ] 原厂相机枚举控件、图像列表选择控件和 ButtonSelecter 的同版本运行行为仍待证据闭合
+
+### 目标架构迁移增量（2026-11-19）
+
+- [x] ImageSource 原厂发布单元进入证据锁定目录
+- [x] Blob 原厂发布单元进入证据锁定目录
+- [x] 两个 Runtime 工程链接原厂证据资产但不复制到发布输出
+- [x] ImageSource 主参数链收回 ShowImageName，消除主参数/显示参数双注册
+- [x] ImageSource 图标键按 ToolItemInfo.xml 对齐
+- [x] 新增 ImageSource/Blob 发布单元结构静态门禁
+- [ ] 将原厂 Control 专属入口迁移为有证据的 WPF 接缝
+- [ ] 将 Blob AlgorithmTab 全部 Category 与当前参数根完成代码级逐项映射
+- [ ] 结构迁移收口后再运行一次完整测试和 Agent Desktop
+
+### Blob 目标结构差异审定（2026-11-19）
+
+原厂 Blob 静态 XML 已纳入 `tools/SunEyeVision.BlobAnalysis/Resources/OriginalReleaseUnit`。原厂声明四个 Category：`Tab_ROI Area`、`Tab_Run Params`、`Tab_Check Result`、`Tab_Image Display`。其中 ROI Category 明确包含 `ImageSourceGroup`、`OutputMaskImageGroup`、`InputMaskImageGroup`、`RoiSelectGroup`、`InheritWayGroup`、`ExternROITypeGroup`、`AssistGroup` 外部组装链接，底部还有 `TextDisplayGroup` 和 `BottomCommandGroup`。
+
+自研 Blob 参数元数据现已为五个参数组写入 `vmCategory`，并由 `BlobParameterDefinition` 读取。Category 身份门禁通过，但外部组装链接仍未闭合，`Compare-BlobArchitectureStatic.ps1` 明确输出 `categoryPass=true`、`externalGroupLinksClosed=false`、`pass=false`。因此当前 Blob 仍不能称为完整同构，下一步必须先迁移这些原厂 GroupLinkItem 的声明和消费者映射。
+
+Blob 新增 `BlobGroupLinkMapping.json`，记录原厂 9 个 GroupLinkItem 到当前消费者的静态映射和未确认项。映射只证明入口和消费者关系，不证明运行行为；所有条目仍保留 `runtime-unconfirmed` 或 `unconfirmed` 状态，直到有同版本运行证据。
+
+Blob 新增 `BlobGroupLinkMapping.json`，记录原厂 9 个 GroupLinkItem 到当前消费者的静态映射和未确认项。映射只证明入口和消费者关系，不证明运行行为；所有条目仍保留 `runtime-unconfirmed` 或 `unconfirmed` 状态，直到有同版本运行证据。
+
+### 共享参数合同增量（2026-11-19）
+
+`FieldLayout` 新增可选 `VmCategory` 元数据字段。它不改变本地化 Page/Section 文本，只保存原厂 Category 身份，供静态组装审计使用。Blob 参数绑定已从证据锁定的 BlobParameters.xml 读取并写入 `VmCategory`。这一步是代码级结构迁移，当前不代表外部 GroupLinkItem 已经完成。
+## 2026-11-19 结构同构纠偏
+
+- 复核《完整同构复核清单与计划》后确认，原厂同构验收基线是工具发布单元，不是源码目录树。
+- 当前已完成的 `SunEyeVision.Tool.BlobAnalysis*`、`SunEyeVision.Tool.ImageSource*` 目录和工程文件迁移，只改变了源码路径与工程文件名，仍保留 Runtime/Wpf 两个产品组件。
+- 该状态不能称为完成同构。Blob 尚未按目标发布树生成 `Algorithm.dll`、`Bridge.dll` 及独立的 `Algorithm.xml`、`AlgorithmTab.xml`、`Bridge.xml`、`Display.xml` 消费链。
+- 原厂静态证据只证明单一部署目录包含多个职责程序集和 XML 文件，不能据此直接把现有运行时和 WPF 源码强行合并成一个程序集。下一步必须先建立职责映射和单发布单元打包门禁，再迁移代码和组件注册。
+- Blob 的算法职责由本方运行程序集实现并引用第三方算法库，不能凭原厂文件名强行生成 `Algorithm.dll`。同构验收改为职责、声明、依赖和加载链等价，第三方算法库依赖作为明确差异登记。
+- 当前也不要求单独生成 `Bridge.dll`。Blob 的参数、结果、ROI 和宿主接缝先按现有运行程序集内的桥接职责闭合，只有原厂证据或实际加载链要求独立程序集时才拆分。
+- 当前 Release 构建已通过，677 个既有警告、0 个错误。该结果只证明当前源码结构可编译，不代表发布单元同构完成。
+
+
+- 算法实现层与类型适配层分开。算法层允许直接使用 HALCON/OpenCvSharp 处理方法，适配层只负责类型转换、资源所有权、初始化、释放和异常边界。工具入口只保留算法调用接缝。
+

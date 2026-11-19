@@ -1,0 +1,93 @@
+{
+  "tool": "MarkFind",
+  "phase": "real-agent-desktop-ui-comparison",
+  "status": "captured-both-sides-post-release-resource-verified",
+  "vm_evidence": {
+    "sources": [
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSMarkFindModuControl/IMVSMarkFindModuControl/MarkFindConfigPanal.xaml",
+      "docs/07-工具逆向/decompiled/ModuleControls/IMVSMarkFindModuControl/IMVSMarkFindModuControl/MarkFindDialogUI.xaml"
+    ],
+    "confirmed": [
+      "原厂新建模型和编辑模型使用20x20状态图标及94宽文字按钮",
+      "原厂清空、导出、导入使用34x34图标按钮，HasModel控制显隐和禁用",
+      "原厂无模型状态显示请添加模型预览区"
+    ]
+  },
+  "product_change": {
+    "file": "tools/SunEyeVision.MarkFind/Wpf/Views/MarkFindTemplatePanel.cs",
+    "changes": [
+      "新建模型使用 btn_新建模板_normal.png 和文字按钮",
+      "编辑模型使用 ic_btn_edit_normal.png 和文字按钮，继续保持无运行证据时禁用",
+      "清空、导出、导入改为34x34图标按钮和工具提示",
+      "复用 Plugin.Wpf WorkspaceControls/resources 已注册图标"
+    ],
+    "runtime_pending": "关闭当前 Release 后重新打开 MarkFind 做 Agent Desktop 快照"
+  },
+  "decision": {
+    "modification_allowed": true,
+    "reason": "原厂 XAML 直接给出按钮资源、尺寸和 HasModel 状态门禁，已按证据做最小资源迁移。编辑语义仍保持禁用。"
+  },
+  "validation": {
+    "command": "dotnet build tools/SunEyeVision.MarkFind/Wpf/SunEyeVision.MarkFind.Wpf.csproj -c Release --no-restore -p:OutDir=D:/MyWork/SunEyeVision_V2/build_temp/markfind-check/ -v:minimal",
+    "exit_code": 0,
+    "errors": 0,
+    "warnings": 5269,
+    "output": "build_temp/markfind-check/"
+  },
+  "pending": [
+    "关闭运行中的 Release 进程后补 Agent Desktop MarkFind 图标按钮快照",
+    "原厂编辑模型窗口和 .mfxml 文件格式仍未确认，不实现编辑语义",
+    "全量 Release 构建由主线统一执行"
+  ],
+  "vm_runtime": {
+    "snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/MarkFindVM/original-markfind-tool.json",
+    "window_title": "5 图形定位",
+    "size": "420x500",
+    "tabs": [
+      "基本参数",
+      "特征模型",
+      "运行参数",
+      "结果显示"
+    ],
+    "groups": [
+      "Tab_Image Input",
+      "Tab_ROI Area"
+    ],
+    "commands": [
+      "连续执行",
+      "停止执行",
+      "执行",
+      "确定"
+    ]
+  },
+  "product_runtime": {
+    "snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/MarkFindVM/product-tool-window.json",
+    "window_title": "5 图形定位1",
+    "size": "420x500",
+    "tabs": [
+      "模板参数",
+      "结果显示",
+      "运行参数"
+    ],
+    "groups": [
+      "NativeParameterGroup（UIA 未命名）"
+    ],
+    "commands": [
+      "连续执行",
+      "停止执行（offscreen）",
+      "执行",
+      "确定"
+    ]
+  },
+  "post_ui_verification": {
+    "snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/AgentDesktopToolReview/post-ui-check-2/markfind-tool-window.json",
+    "build": "MarkFind Release project exit=0",
+    "status": "captured-after-release-build"
+  },
+  "confirmed_differences": [
+    "原厂 Tab 为基本参数、特征模型、运行参数、结果显示四页，当前为模板参数、结果显示、运行参数三页",
+    "原厂基本参数暴露 Tab_Image Input 和 Tab_ROI Area 分组，当前只暴露未命名 NativeParameterGroup 与参数行",
+    "原厂标题为 5 图形定位，当前标题为 5 图形定位1",
+    "原厂底栏含连续执行、停止执行、执行、确定，当前停止执行为 offscreen"
+  ]
+}

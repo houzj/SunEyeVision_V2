@@ -1,0 +1,87 @@
+{
+  "tool": "ContourMatch",
+  "phase": "runtime-ui-and-template-creation-confirmation",
+  "status": "tab-layer-verified-template-creation-gap-remains",
+  "vm_runtime": {
+    "authority": "controlled-replay",
+    "version": "V4.4.0 Build20250516",
+    "solution": "C:\\Users\\Administrator\\Desktop\\test.sol",
+    "snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/ContourMatchVM/tool-dialog.json",
+    "window": {
+      "title": "1 轮廓匹配",
+      "width": 420,
+      "height": 500
+    },
+    "tabs": [
+      "基本参数",
+      "特征模板",
+      "运行参数",
+      "结果显示"
+    ],
+    "scope": "仅记录 Tab 层 UI，不包含页签内部点击和关联窗口",
+    "commands": [
+      "连续执行",
+      "停止执行",
+      "执行",
+      "确定"
+    ]
+  },
+  "product_runtime": {
+    "authority": "controlled-replay",
+    "release": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB",
+    "snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/AgentDesktopToolReview/single-tool/20261117-194505-轮廓匹配1/tool-window.json",
+    "window": {
+      "title": "3 轮廓匹配1",
+      "width": 420,
+      "height": 500
+    },
+    "tabs": [
+      "模板参数",
+      "结果显示",
+      "运行参数"
+    ],
+    "image_panel": "未发现原厂流程图像区域",
+    "result_panel": "未发现原厂输出结果参数表",
+    "commands": [
+      "连续执行",
+      "执行",
+      "确定"
+    ]
+  },
+  "post_ui_verification": {
+    "snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/AgentDesktopToolReview/post-ui-check-2/latest-tool-window-2.json",
+    "tabs": ["基本参数", "特征模板", "运行参数", "结果显示"],
+    "status": "captured-after-release-build"
+  },
+  "confirmed_differences": [
+    "原厂轮廓匹配专用窗口标题为“1 轮廓匹配”，当前标题为“3 轮廓匹配1”",
+    "原厂 Tab 层有四个页签，顺序为基本参数、特征模板、运行参数、结果显示",
+    "当前 Tab 层只有三个页签，顺序为模板参数、结果显示、运行参数",
+    "当前缺少原厂“基本参数”和“特征模板”两个独立页签，且模板参数是宿主自定义命名",
+    "原厂底栏包含连续执行、停止执行、执行、确定，当前可见连续执行、执行、确定",
+    "原厂特征模板 Tab 的创建会打开 900x534 的模板配置窗口",
+    "原厂模板配置窗口包含图像选择、模板存图和工程保存、掩膜与画笔工具、生成模板、图像工具栏、模型列表、配置参数、匹配中心和确定命令",
+    "当前 ContourMatchTemplatePanel 只有宿主自定义按钮、模型列表摘要和文件导入导出，没有原厂模板配置窗口及图像、掩膜、配置参数链",
+    "创建特征模板是轮廓匹配的核心 UI 和功能入口，必须纳入首轮对齐"
+  ],
+  "template_creation": {
+    "authority": "controlled-replay",
+    "snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/ContourMatchVM/template-config.json",
+    "window": { "title": "模板配置", "width": 900, "height": 534 },
+    "top_controls": ["选择当前图像", "选择其他图像", "模板存图", "保存模板工程", "全部屏蔽"],
+    "mask_and_template_tools": ["移动图像", "创建扇形掩膜", "创建扇圆形掩膜", "创建矩形掩膜", "创建多边形掩膜", "选择模板匹配中心", "生成模板", "擦除轮廓点", "调整橡皮擦大小", "绘制感兴趣区域", "调整画笔大小", "清空", "撤销", "重做"],
+    "image_toolbar": ["放大", "缩小", "1:1", "全屏"],
+    "right_panel": ["列表", "配置参数"],
+    "config_fields": ["尺度模式", "速度尺度", "特征尺度", "阈值模式", "边缘阈值", "链长模式", "最小链长", "建模类型"],
+    "status_controls": ["匹配中心 X/Y", "锁定", "确定"]
+  },
+  "decision": {
+    "code_change_allowed": false,
+    "reason": "已确认 Tab 层与特征模板创建窗口的原厂结构。先按证据恢复四个 Tab 和模板配置窗口骨架，再进入模板生成功能实现。"
+  },
+  "next_steps": [
+    "恢复原厂四个 Tab 的名称和顺序",
+    "按模板配置快照建立特征模板创建窗口的原厂结构、图像区域、掩膜工具、参数区和底栏",
+    "完成 UI 快照对照后再接入模板生成和保存重开功能"
+  ]
+}

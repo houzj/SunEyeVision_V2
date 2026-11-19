@@ -1,0 +1,36 @@
+{
+  "tool": "If",
+  "phase": "real-agent-desktop-ui-comparison",
+  "status": "captured-both-sides-with-entry-replay",
+  "vm_runtime": {
+    "authority": "controlled-replay",
+    "snapshot": "D:/MyWork/SunEyeVision_V2/docs/evidence/if-review-20261118.json",
+    "screenshot": "C:/Users/Administrator/.codex/visualizations/2026/11/09/01a1c08e-2257-7a32-8813-4fdf253c33e3/vm-if-params.png",
+    "window_title": "10 条件分支",
+    "size": "420x500",
+    "tabs": ["基本参数"],
+    "headers": ["名称", "条件", "有效值范围", "判断", "执行模块ID", "操作"],
+    "commands": ["连续执行", "执行", "确定"],
+    "entry": "原厂 test.sol 条件分支窗口已有 Agent Desktop 运行记录，当前重新双击节点未稳定复现，保留已验证快照并记录入口复现阻塞。"
+  },
+  "product_runtime": {
+    "authority": "controlled-replay",
+    "snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/AgentDesktopToolReview/single-tool/20261117-194831-条件分支1/tool-window.json",
+    "window_title": "12 条件分支1",
+    "size": "420x500",
+    "tabs": ["基本参数"],
+    "groups": ["四组固定条件槽位"],
+    "commands": ["连续执行", "执行", "确定"],
+    "entry": "当前 Release 通过固定 Agent Desktop 单工具脚本打开并关闭释放。"
+  },
+  "differences": [
+    "原厂参数表是动态条件行，包含名称、条件、有效值范围、判断、执行模块ID和操作",
+    "当前 Release 暴露四个固定条件槽位，未显示原厂动态条件表头",
+    "原厂运行记录中的条件行支持动态增删和类型/范围/OK-NG/执行模块字段，当前实现仍需保持 pending",
+    "原厂与当前窗口尺寸均为 420x500，Tab 层均为基本参数"
+  ],
+  "decision": {
+    "code_change_allowed": false,
+    "reason": "真实运行证据确认了窗口尺寸和 Tab 层，动态条件行结构仍需按原厂证据闭合，当前不把固定槽位改成动态实现。"
+  }
+}

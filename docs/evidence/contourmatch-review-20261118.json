@@ -1,7 +1,7 @@
 {
   "tool": "ContourMatch",
-  "phase": "static-review",
-  "status": "evidence-driven-template-surface-adjusted",
+  "phase": "runtime-ui-and-template-creation-confirmation",
+  "status": "tab-layer-verified-template-creation-gap-remains",
   "vm_evidence": {
     "sources": [
       "docs/07-工具逆向/decompiled/ModuleControls/IMVSContourMatchModuControl/paramstabcontrolhppyramidfeaturematch.xaml",
@@ -32,14 +32,13 @@
     ]
   },
   "decision": {
-    "modification_allowed": true,
-    "reason": "原厂参数模板明确有模板生成、编辑、清空、载入和列表/预览职责，产品已按职责做最小组装调整，编辑语义继续保持禁用。"
+    "modification_allowed": false,
+    "reason": "Tab 层已在最新 Release 快照中按原厂顺序呈现。特征模板创建窗口仍有独立原厂图像、掩膜和参数链，当前宿主自定义面板不能视为完成。"
   },
   "pending": [
-    "用 Agent Desktop 打开原厂 ContourMatch 参数窗并记录模板页、运行页、结果判断页",
-    "记录新建/清空/导入导出/帮助/取消关闭行为",
-    "在产品中完成单工具模板创建、保存重开和释放验证",
-    "确认后再做最小差异修改"
+    "按原厂模板配置快照建立特征模板创建窗口的结构、图像区域、掩膜工具、参数区和底栏",
+    "完成模板创建 UI 对齐后再接入模板生成和保存重开",
+    "保留原厂 HikHistogram 等未闭合依赖的 pending 状态"
   ],
   "validation": {
     "command": "dotnet test tests/SunEyeVision.Tools.Inspection.Tests/SunEyeVision.Tools.Inspection.Tests.csproj -c Release --no-build --filter 'FullyQualifiedName~ContourMatch'",
@@ -53,6 +52,6 @@
     "script_run": "Release/_validation/AgentDesktopToolReview/single-tool/20261117-194505-轮廓匹配1",
     "result": "execute-result-tree.json contains Missing required port input.image",
     "close": "script close-app delivered_verified"
-  }
+  },
+  "runtime_ui_tab_confirmation": "docs/evidence/contourmatch-ui-confirmation-20261118.json"
 }
-

@@ -1,0 +1,42 @@
+{
+  "tool": "BlobLabels",
+  "phase": "tab-level-ui-confirmation",
+  "status": "threshold-ui-already-aligned",
+  "scope": "BlobLabels threshold panel and single-tool parameter window",
+  "vm_evidence": {
+    "source": "docs/07-工具逆向/decompiled/ModuleControls/IMVSBlobFindLabelsModuControl/IMVSBlobFindLabelsModuControl/ThresholdAreaPanel.xaml",
+    "confirmed": [
+      "原厂阈值表头为序号、灰度值、面积范围、反选",
+      "原厂行有灰度值、面积范围、反选和删除，不展示 IsAdd",
+      "新增按钮位于列表底部",
+      "灰度值范围 1..255，面积范围 1..999999999"
+    ]
+  },
+  "product_evidence": {
+    "source": "tools/SunEyeVision.BlobLabels/Wpf/Views/BlobLabelsThresholdAreaPanel.cs",
+    "confirmed": [
+      "当前阈值面板已采用序号、灰度值、面积范围、反选和删除布局",
+      "IsAdd 仅保留在持久化值中",
+      "当前已有新增、删除、范围校验和保存重开"
+    ]
+  },
+  "runtime": {
+    "snapshot": "Release/_validation/AgentDesktopToolReview/single-tool/20261117-194123-Blob标签分析1/tool-window.json",
+    "parameter_window": "6 Blob标签分析1",
+    "threshold_snapshot": "docs/evidence/bloblabels-review-20261118.json",
+    "verified": [
+      "Agent Desktop 打开参数窗",
+      "新增阈值行默认值 1 / 10 / 1 - 999999999 / 未反选",
+      "确定后重开值保持"
+    ]
+  },
+  "decision": {
+    "code_change_allowed": false,
+    "reason": "阈值面板已有原厂静态布局和运行快照证据，本轮不重复修改。其余基本参数、运行参数、结果显示页仍需独立原厂 UI 对照。"
+  },
+  "pending": [
+    "对照 BlobLabels 的基本参数、运行参数和结果显示 Tab 层",
+    "补充结果显示与图像叠加证据",
+    "多工具联调暂缓"
+  ]
+}

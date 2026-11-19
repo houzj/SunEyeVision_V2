@@ -1,0 +1,48 @@
+{
+  "tool": "BlobLabels",
+  "phase": "real-ui-comparison",
+  "status": "captured-both-sides-with-fresh-product-entry-blocked",
+  "authority": "controlled-replay",
+  "original": {
+    "application": "VisionMaster.exe",
+    "solution": "test.sol",
+    "snapshot": "Release/_validation/BlobLabelsVM-tool-correct.json",
+    "window_title": "4 Blob标签分析",
+    "window_bounds": {"x":269,"y":270,"width":420,"height":500},
+    "tabs": ["基本参数","运行参数","结果显示"],
+    "groups_basic": ["Tab_Image Input","Tab_ROI Area","ClassInfo"],
+    "bottom_commands": ["连续执行","停止执行(无可见边界)","执行","确定"]
+  },
+  "product": {
+    "application": "SunEyeVision.UI.exe",
+    "release_payload": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB",
+    "snapshot": "Release/_validation/AgentDesktopToolReview/single-tool/20261117-194123-Blob标签分析1/tool-window.json",
+    "window_title": "6 Blob标签分析1",
+    "window_bounds": {"x":750,"y":270,"width":420,"height":500},
+    "tabs": ["基本参数","结果显示","运行参数"],
+    "groups_basic": ["NativeParameterGroup x6, including threshold area panel"],
+    "bottom_commands": ["连续执行","停止执行(无可见边界)","执行","确定"]
+  },
+  "differences": [
+    "窗口尺寸一致，原厂标题为“4 Blob标签分析”，当前标题为“6 Blob标签分析1”",
+    "页签集合一致但顺序不同，原厂为基本参数→运行参数→结果显示，当前为基本参数→结果显示→运行参数",
+    "原厂基本参数通过 Image Input、ROI Area、ClassInfo 三个原件分组呈现，当前 UIA 树显示为六个 NativeParameterGroup，阈值面板嵌入声明组",
+    "底栏命令集合一致，停止执行在两侧均为无可见边界状态",
+    "当前阈值面板的表头和行布局已有独立证据，本对照只确认窗口 Tab、分组和底栏"
+  ],
+  "fresh_product_attempt": {
+    "main_snapshot": "Release/_validation/BlobLabelsProduct-main.json",
+    "run_directory": "Release/_validation/AgentDesktopToolReview/real-ui-comparison/product/20261118-004620-Blob标签分析1",
+    "status": "blocked",
+    "error": "Invoke-SingleToolAudit snapshot 命中保存方案对话框与主窗口两个窗口，导致 AMBIGUOUS_TARGET。随后手工双击无障碍行未打开工具窗口。历史 product snapshot 用于本次对照。"
+  },
+  "decision": {
+    "code_change_allowed": false,
+    "reason": "真实原厂与自研窗口快照已经同时存在，BlobLabels Tab 集合一致但顺序和基本参数分组映射存在差异。本轮只记录差异，不改代码。"
+  },
+  "pending": [
+    "确认 BlobLabels 页签顺序是否应按原厂恢复为基本参数→运行参数→结果显示",
+    "继续核对运行参数和结果显示页内部 UI",
+    "处理 Agent Desktop 当前产品入口的保存方案歧义后再补一份同批次产品快照"
+  ]
+}

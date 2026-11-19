@@ -1,0 +1,48 @@
+{
+  "tool": "FrameMean",
+  "phase": "real-agent-desktop-ui-comparison",
+  "status": "captured-both-sides",
+  "vm_runtime": {
+    "snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/FrameMeanVM-tool.json",
+    "window_title": "12 帧平均",
+    "size": "420x500",
+    "tabs": [
+      "基本参数",
+      "运行参数",
+      "结果显示"
+    ],
+    "groups": [
+      "Tab_Image Input"
+    ],
+    "commands": [
+      "连续执行",
+      "停止执行",
+      "执行",
+      "确定"
+    ]
+  },
+  "product_runtime": {
+    "snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/AgentDesktopToolReview/single-tool/20261117-193640-帧均值1/tool-window.json",
+    "window_title": "12 帧均值1",
+    "size": "420x500",
+    "tabs": [
+      "基本参数",
+      "结果显示",
+      "运行参数"
+    ],
+    "groups": [
+      "NativeParameterGroup（UIA 暴露）"
+    ],
+    "commands": [
+      "连续执行",
+      "停止执行（offscreen）",
+      "执行",
+      "确定"
+    ]
+  },
+  "differences": [
+    "原厂 Tab 顺序为基本参数、运行参数、结果显示，自研为基本参数、结果显示、运行参数",
+    "原厂基本参数包含 Tab_Image Input 分组，自研 UIA 未暴露同名分组",
+    "原厂停止执行存在但边界为 offscreen，自研同样未暴露可见停止命令"
+  ]
+}

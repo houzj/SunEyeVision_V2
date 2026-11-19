@@ -1,0 +1,127 @@
+{
+  "date": "2026-11-18",
+  "authority": "VM 4.4.0 Build20250516 decompiled assemblies and XAML",
+  "status": "static-audit-complete",
+  "shared_layers": [
+    {
+      "assembly": "FeatureMatchCommonControl",
+      "source_root": "docs/07-工具逆向/decompiled/ModuleControls/FeatureMatchCommonControl",
+      "components": [
+        "FeatureMatchConfigPanal",
+        "FeaturepatMatchConfigPanalDataBase",
+        "FeaturepatMatchConfigPanalData",
+        "FeaturepatMatchConfigPanalDataDecorate",
+        "FeaturepatMatchDialogUIBase",
+        "FeaturepatMatchDialogUIDataStore",
+        "ModelItem",
+        "FeaturepatMatchForGroupDecorate"
+      ],
+      "responsibility": "shared feature-model list, create/edit/delete commands, model selection, image preview, model data decoration and common panel resources"
+    },
+    {
+      "assembly": "IMVSHPFeatureMatchModuControl",
+      "source_root": "docs/07-工具逆向/decompiled/ModuleControls/IMVSHPFeatureMatchModuControl",
+      "components": [
+        "ParamsTabControl4HPFeatureMatch",
+        "HPFeaturepatMatchDialogUI",
+        "HPFeaturepatMatchDialogData",
+        "HPBottomCommand",
+        "hpfeaturepatmatchdialoguistyle.xaml",
+        "hpfeaturepatmatchdialoguibasestyle.xaml"
+      ],
+      "responsibility": "feature-match parameter root, common template dialog behavior, shared image/mask interaction shell, parameter templates and bottom command integration"
+    }
+  ],
+  "tool_specializations": [
+    {
+      "tool": "ContourMatch",
+      "assembly": "IMVSContourMatchModuControl",
+      "root": "paramstabcontrolhppyramidfeaturematch.xaml",
+      "dialog_style": "hppyramidfeaturepatmatchdialoguistyle.xaml",
+      "code": [
+        "ParamsTabControlHPPyramidFeatureMatch",
+        "HPPyramidFeaturepatMatchDialogUI",
+        "HPPyramidFeaturepatMatchDialogData",
+        "PyramidFeaturepatMatchConfigPanalData",
+        "HPPyramidBottomCommand",
+        "PyramidModeToEnableCvt"
+      ],
+      "shared_panel": "FeatureMatchConfigPanal",
+      "template_window": { "width": 900, "height": 534, "title_key": "Lang_ModelSet" }
+    },
+    {
+      "tool": "GrayMatch",
+      "assembly": "IMVSGrayMatchModuControl",
+      "root": "paramstabcontrol4garymatch.xaml",
+      "dialog_style": "graymatchdialoguistyle.xaml",
+      "code": [
+        "ParamsTabControl4GaryMatch",
+        "GrayMatchDialogUI",
+        "GrayMatchDialogData",
+        "GrayMatchConfigPanalData",
+        "GMBottomCommand"
+      ],
+      "shared_panel": "FeatureMatchConfigPanal"
+    },
+    {
+      "tool": "MarkFind",
+      "assembly": "IMVSMarkFindModuControl",
+      "code": [
+        "MarkFindDialogUI",
+        "MarkFindConfigPanal",
+        "MarkFindDialogData",
+        "MarkFindConfigPanalData",
+        "HiddenOperationForMarkFind"
+      ],
+      "shared_panel": null,
+      "note": "MarkFind has a separate custom panel and dialog path, so it must not be forced into the FeatureMatch adapter without evidence."
+    }
+  ],
+  "confirmed_lifecycle": [
+    "CreateModel creates an independent 900x534 BaseWindow and sets the tool dialog as its content.",
+    "New model acquires current image, binds dialog events, shows modally, then adds model data to the module on dialog success.",
+    "Edit model validates selected model and source image, deep-copies old data for rollback, refreshes dialog state, shows modally, and restores the copy when cancelled.",
+    "LoadModel decrypts and parses the model file, supports old and SDK roots, restores UI data and adds the model to the list.",
+    "Feature model list, preview, edit, delete and ordering are common panel responsibilities, while model encoding and file extension are tool adapters.",
+    "Progress mask, help command, bottom commands and close result belong to the parameter root/dialog shell."
+  ],
+  "migration_boundaries": [
+    {
+      "name": "NativeToolWindowRoot",
+      "source": "ParamsTabControl4FeatureMatch + BaseWindow title/help/bottom shell",
+      "consumer_scope": "all tools"
+    },
+    {
+      "name": "NativeFlatParameterPage",
+      "source": "ParamsConfigControlBase and native parameter list sections",
+      "consumer_scope": "all tools with parameter pages"
+    },
+    {
+      "name": "NativeFeatureMatchPanel",
+      "source": "FeatureMatchConfigPanal and FeaturepatMatchConfigPanalDataBase",
+      "consumer_scope": "ContourMatch, GrayMatch and tools proven to share the same original panel"
+    },
+    {
+      "name": "NativeFeatureTemplateDialog",
+      "source": "HPFeaturepatMatchDialogUI + tool-specific derived dialog UI",
+      "consumer_scope": "feature-template tools"
+    },
+    {
+      "name": "FeatureTemplateAdapter",
+      "source": "PyramidFeaturepatMatchConfigPanalData / GrayMatchConfigPanalData tool overrides",
+      "consumer_scope": "tool-specific model type, file extension, encode/decode and callbacks"
+    },
+    {
+      "name": "NativeResourceRegistry",
+      "source": "generic.xaml, paramusercontroldatatemplate.xaml and merged Apps.Style dictionaries",
+      "consumer_scope": "all migrated controls and templates"
+    }
+  ],
+  "do_not_generalize": [
+    "Do not treat every feature tool as a clone of ContourMatch. GrayMatch shares FeatureMatchCommonControl but has a different dialog and config data type.",
+    "Do not force MarkFind into the shared FeatureMatch panel without matching runtime or static evidence.",
+    "Do not replace model dialog lifecycle with a normal parameter row.",
+    "Do not infer original resource or command semantics from the generic self-owned renderer."
+  ],
+  "next_gate": "design-shared-framework-contracts-and-test-flat-parameter-composition"
+}

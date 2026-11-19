@@ -1,0 +1,57 @@
+{
+  "date": "2026-11-18",
+  "status": "architecture-audit-complete-migration-not-started",
+  "original": {
+    "window_root": "docs/07-工具逆向/decompiled/ModuleControls/IMVSContourMatchModuControl/paramstabcontrolhppyramidfeaturematch.xaml",
+    "tool_style": "docs/07-工具逆向/decompiled/ModuleControls/IMVSContourMatchModuControl/hppyramidfeaturepatmatchdialoguistyle.xaml",
+    "shared_feature_panel": "docs/07-工具逆向/decompiled/ModuleControls/FeatureMatchCommonControl/base/featurematchconfigpanal.xaml",
+    "shared_feature_lifecycle": "docs/07-工具逆向/decompiled/ModuleControls/IMVSHPFeatureMatchModuControl/Apps.XmlParser.ParamTab/FeaturepatMatchConfigPanalData.cs",
+    "assembly_shape": [
+      "tool-specific parameter root",
+      "single native parameter body",
+      "shared FeatureMatch panel",
+      "tool-specific template dialog",
+      "tool resources and DataTemplates",
+      "bottom command and close lifecycle"
+    ]
+  },
+  "self": {
+    "window_root": "src/UI/Services/Editing/Nodes/RuntimeToolEditorWindow.cs",
+    "frame": "src/Plugin.Wpf/Controls/Native/Composition/Parameters/NativeToolEditorFrame.xaml",
+    "settings_view": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs",
+    "parameter_view": "src/Plugin.Wpf/Fields/DeclaredFieldsView.cs",
+    "input_view": "src/Plugin.Wpf/Presenters/Parameters/DeclaredInputFieldsView.cs",
+    "assembly_shape": [
+      "common tool window root",
+      "metadata-driven declared settings view",
+      "declared parameter rows",
+      "input composition injected as content",
+      "tool-specific panels for complex controls",
+      "host-owned command and close lifecycle"
+    ]
+  },
+  "confirmed_gaps": [
+    {
+      "id": "flat-input-composition",
+      "severity": "blocking",
+      "description": "Input/ROI rows are currently represented by a nested DeclaredInputFieldsView row. The original page presents them in the same native parameter list and section topology."
+    },
+    {
+      "id": "shared-feature-panel-boundary",
+      "severity": "blocking-for-template-tools",
+      "description": "ContourMatch, GrayMatch and MarkFind do not yet share one public FeatureMatch panel and template dialog adapter."
+    },
+    {
+      "id": "tool-resource-registration",
+      "severity": "high",
+      "description": "The current registry resolves common field templates, while original tool-specific resources and DataTemplates still require an explicit migration boundary."
+    },
+    {
+      "id": "tool-state-lifecycle",
+      "severity": "high",
+      "description": "Original tool ViewModel/template dialog state and current host draft/input composition state are not represented by one shared adapter contract."
+    }
+  ],
+  "next_framework_gate": "design-and-test-flat-input-composition-before-tool-migration",
+  "rule": "No tool is marked NativeAligned until the confirmed gaps are closed by the shared framework and verified with representative tools."
+}

@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-18",
+  "rule": "FlatNative requires explicit evidence-backed page, section and order. Missing mapping blocks assembly.",
+  "source": "NativeInputPlacementMap.FromSchemas",
+  "test": "All_registered_tools_expose_explicit_native_input_page_mappings",
+  "result": "passed",
+  "toolCount": 18,
+  "tools": [
+    "BlobAnalysis",
+    "BlobLabels",
+    "CircleCircleMeasure",
+    "CircleFind",
+    "ColorExtract",
+    "ContourMatch",
+    "DataClassification",
+    "DivideImage",
+    "FrameMean",
+    "GrayMatch",
+    "If",
+    "ImageLoad",
+    "IntensityMeasure",
+    "LineFind",
+    "MachineLearningClassifier",
+    "MarkFind",
+    "PixelCount",
+    "PointPointMeasure"
+  ],
+  "notes": [
+    "The audit validates every declared input presentation against the tool settings page set.",
+    "Tools with no declared input presentation produce an empty placement set and still pass the schema contract.",
+    "This audit does not claim visual or behavioral parity. Those remain per-tool evidence gates."
+  ]
+}

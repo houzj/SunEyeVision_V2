@@ -1,0 +1,44 @@
+{
+  "tool": "GrayMatch",
+  "phase": "real-agent-desktop-ui-comparison",
+  "status": "captured-both-sides",
+  "authority": "controlled-replay",
+  "release_hash": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB",
+  "original": {
+    "app": "VisionMaster.exe",
+    "solution": "C:\\Users\\Administrator\\Desktop\\test.sol",
+    "snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/GrayMatchVM-tool.json",
+    "window": {"title": "3 灰度匹配", "width": 420, "height": 500},
+    "tabs": ["基本参数", "灰度模板", "运行参数", "结果显示"],
+    "tab_source_names": ["Tab_Basic Params", "Tab_Gray Scale Template", "Tab_Run Params", "ResultShow"],
+    "groups": ["Tab_Image Input", "Tab_ROI Area"],
+    "footer": ["连续执行", "停止执行", "执行", "确定"],
+    "node": "灰度匹配1",
+    "node_entry": "Agent Desktop focus VisionMaster, open test solution, physical double-click node text"
+  },
+  "product": {
+    "app": "SunEyeVision.UI.exe",
+    "solution": "11111",
+    "snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/AgentDesktopToolReview/single-tool/20261117-194621-灰度匹配1/tool-window.json",
+    "run": "D:/MyWork/SunEyeVision_V2/Release/_validation/AgentDesktopToolReview/single-tool/20261117-194621-灰度匹配1/run.json",
+    "window": {"title": "4 灰度匹配1", "width": 420, "height": 500},
+    "tabs": ["模板参数", "结果显示", "运行参数"],
+    "groups": ["NativeParameterGroup (unnamed in UIA)", "NativeParameterRow: 金字塔层数标记、角度步长、模板角度范围"],
+    "footer": ["连续执行", "停止执行 (UIA offscreen)", "执行", "确定"],
+    "node": "灰度匹配1",
+    "node_entry": "Invoke-SingleToolAudit.ps1 run 20261117-194621-灰度匹配1"
+  },
+  "differences": [
+    {"area": "Tab", "original": "基本参数 / 灰度模板 / 运行参数 / 结果显示", "product": "模板参数 / 结果显示 / 运行参数", "finding": "产品缺少独立灰度模板 Tab，顺序与原厂不一致"},
+    {"area": "输入与 ROI 分组", "original": "UIA 暴露 Tab_Image Input、Tab_ROI Area", "product": "UIA 只暴露未命名 NativeParameterGroup 和参数行", "finding": "输入/ROI 原厂组装身份未闭合"},
+    {"area": "模板参数", "original": "独立灰度模板页签", "product": "模板字段锚在模板参数页", "finding": "模板组装被压入模板参数页"},
+    {"area": "底栏", "original": "连续执行、停止执行、执行、确定", "product": "连续执行、停止执行项 UIA offscreen、执行、确定", "finding": "停止执行当前不可见"},
+    {"area": "窗口", "original": "420x500", "product": "420x500", "finding": "尺寸一致，页签和分组结构不一致"}
+  ],
+  "entry_blocker": {
+    "current_attempt": "重新打开当前 Release 时遇到保存方案未保存修改模态框，未覆盖既有快照",
+    "saved_snapshot_is_real": "既有 20261117 Agent Desktop 快照由 Release 程序实际打开并采集",
+    "blocked_entry": "当前 Release 新一轮 GrayMatch 入口受模态框阻塞，已保留旧快照，未把阻塞误报为 UI 对齐"
+  },
+  "decision": {"code_change_allowed": false, "reason": "真实双侧 Tab、分组和底栏差异已确认，先恢复原厂四 Tab 和输入/ROI 分组，再进入模板和功能修复"}
+}

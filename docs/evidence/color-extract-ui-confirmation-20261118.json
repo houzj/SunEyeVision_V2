@@ -1,0 +1,63 @@
+{
+  "tool": "ColorExtract",
+  "phase": "real-agent-desktop-ui-comparison",
+  "status": "captured-both-sides-post-migration-runtime-verified",
+  "vm_runtime": {
+    "authority": "controlled-replay",
+    "version": "V4.4.0 Build20250516",
+    "solution": "C:\\Users\\Administrator\\Desktop\\test.sol",
+    "snapshot": "Release/_validation/ColorExtractVM-tool.json",
+    "window_title": "9 颜色抽取",
+    "window_size": "420x500",
+    "tabs": [
+      "基本参数",
+      "运行参数",
+      "结果显示"
+    ],
+    "basic_groups": [
+      "Tab_Image Input",
+      "Tab_ROI Area"
+    ],
+    "bottom_commands": [
+      "连续执行",
+      "停止执行",
+      "执行",
+      "确定"
+    ],
+    "range_evidence": "docs/07-工具逆向/decompiled/ModuleControls/IMVSColorExtractModuControl/IMVSColorExtractModuControl/UserScrollView.xaml",
+    "histogram_evidence": "docs/07-工具逆向/decompiled/ModuleControls/IMVSColorExtractModuControl/datatemplate/paramusercontroldatatemplate.xaml"
+  },
+  "product_runtime": {
+    "authority": "controlled-replay",
+    "release_payload": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB",
+    "snapshot": "Release/_validation/AgentDesktopToolReview/post-color-histogram/color-extract-histogram-release-agent-desktop.json",
+    "window_title": "10 颜色抽取1",
+    "window_size": "420x500",
+    "tabs_observed": [
+      "基本参数"
+    ],
+    "bottom_commands_observed": [
+      "连续执行",
+      "停止执行(offscreen)",
+      "执行",
+      "确定"
+    ],
+    "range_panel": "ColorExtractRangePanel with add/check/delete and serialization runtime evidence",
+    "histogram": "Agent Desktop snapshot s1e9qkkpcumgaf and screenshot confirm three HikHistogramSingle channel frames rendered with empty PointCollection, matching original no-image-source state"
+  },
+  "confirmed_differences": [
+    "Original runtime has three tabs while the current product snapshot exposes only the basic-parameters tab",
+    "Original basic page has image-input and ROI-area groups, while the current UIA tree exposes the color-range panel in the basic page",
+    "The original three channel rows and current Release now both render histogram frames. Current no-image-source state is empty, so dynamic GetHistogram1/2/3 values are not claimed",
+    "HikPolygon/HikPath and dynamic image-source histogram data remain outside this consumer closure"
+  ],
+  "decision": {
+    "code_change_allowed": false,
+    "reason": "Agent Desktop runtime verification passed for the migrated histogram consumer chain and close release path. Full runtime parity still requires original evidence for image-source histogram callbacks and the remaining tabs."
+  },
+  "pending": [
+    "补采运行参数和结果显示页",
+    "按原厂 GetHistogram1/2/3 证据接入真实图像回调",
+    "继续保持 HikPolygon/HikPath 未确认"
+  ]
+}

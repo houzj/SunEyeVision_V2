@@ -1,0 +1,19 @@
+{
+  "authority": "controlled-replay",
+  "date": "2026-11-19",
+  "executable": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision\\SunEyeVision.UI.exe",
+  "solution": "blob-min",
+  "window": "1 图像源1",
+  "snapshot_id": "s1yn7t2jupb24e",
+  "observed": {
+    "tabs": ["基本参数"],
+    "fields": ["图像源", "像素格式", "方案存图", "显示图像名称", "SN初始值", "图片缓存", "拼接使能", "自动切换", "最后一张停止", "字符触发过滤", "订阅图片文件夹"],
+    "source_options": ["本地图像", "相机", "SDK"],
+    "pixel_format_options": ["MONO8", "RGB24", "保持原图"],
+    "bottom_commands": ["连续执行", "停止执行", "执行", "确定"],
+    "window_size": {"width": 420, "height": 500}
+  },
+  "screenshot": "D:\\MyWork\\SunEyeVision_V2\\docs\\evidence\\self-release-image-source-basic-20261119.png",
+  "close": {"method": "graceful", "process_exit_verified": true},
+  "limitations": ["This is self-dev Release accessibility evidence and does not replace original VM runtime evidence.", "No workflow mutation or subjective visual acceptance was claimed."]
+}

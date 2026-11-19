@@ -1,0 +1,110 @@
+{
+  "date": "2026-11-19",
+  "authority": "VisionMaster 4.4.0 Build20250516 static decompilation and installed module evidence",
+  "status": "baseline-difference-matrix",
+  "manual_acceptance": "deferred",
+  "rules": [
+    "Only verified or derived rows may authorize code changes.",
+    "Inferred and unconfirmed rows remain validation work.",
+    "Tests and Release builds prove the self implementation only."
+  ],
+  "shared": [
+    {
+      "id": "window-root",
+      "vm": "BaseWindow plus tool-specific ParamsTabControl root, bottom command and close lifecycle",
+      "vm_evidence": [
+        "docs/07-工具逆向/decompiled/Controls/VM.Controls/BaseWindow.cs",
+        "docs/evidence/original-ui-architecture-audit-20261118.json"
+      ],
+      "self": "src/UI/Services/Editing/Nodes/RuntimeToolEditorWindow.cs and RuntimeNodeConfigurationControl.cs",
+      "gap": "Self host is a common wrapper, but its ownership and command/close boundary is not yet mapped one-to-one to the original tool root.",
+      "status": "derived",
+      "next": "Map BaseWindow, tool root, bottom commands and close drain to one shared contract before tool migration."
+    },
+    {
+      "id": "parameter-root",
+      "vm": "AlgorithmTabRoot -> ParamsConfigControlBase -> ParamsTabUserControl -> ParamListView -> DataTemplate",
+      "vm_evidence": [
+        "docs/07-工具逆向/decompiled/XmlParser/Apps.XmlParser/Apps.XmlParser.ParamTab/AlgorithmTabRoot.cs",
+        "docs/evidence/original-ui-architecture-audit-20261118.json"
+      ],
+      "self": "src/Plugin.Wpf/Presenters/Parameters/DeclaredSettingsView.cs, DeclaredFieldsView.cs and ParameterFieldHost.cs",
+      "gap": "Self declarations and templates are metadata-driven, but the original parser and flat input/page topology are not fully equivalent.",
+      "status": "derived",
+      "next": "Close flat-input composition and declaration loading differences with source-level evidence."
+    },
+    {
+      "id": "roi-model",
+      "vm": "ROISelecter : NameValueItem : BaseNode, rendered through DataTemplate",
+      "vm_evidence": [
+        "docs/07-工具逆向/decompiled/XmlParser/Apps.XmlParser/Apps.XmlParser.ParamTab/ROISelecter.cs",
+        "docs/07-工具逆向/decompiled/XmlParser/Apps.XmlParser/Apps.XmlParser.ParamTab/NameValueItem.cs"
+      ],
+      "self": "src/Plugin.Wpf/Presenters/Regions/RoiGroupModel.cs plus NativeRoiUiDraftControls.cs and NativeAssistUiDraftControls.cs",
+      "gap": "The self model exists, but legacy UI draft controls remain and must be checked for external FrameworkElement ownership.",
+      "status": "derived",
+      "next": "Trace every Blob ROI consumer and replace only evidence-backed visual ownership paths."
+    },
+    {
+      "id": "result-view",
+      "vm": "VMControls.WPF.ModuleResultView with image, chart, table and data-type dispatch",
+      "vm_evidence": [
+        "docs/07-工具逆向/decompiled/WpfControls/VMControls.WPF/ModuleResultView.xaml.cs",
+        "docs/evidence/original-ui-architecture-audit-20261118.json"
+      ],
+      "self": "src/Plugin.Wpf/Presenters/Results/DeclaredResultTable.cs and src/UI/Services/Images/ResultWorkspacePresenter.cs",
+      "gap": "Self has table and image workspace pieces, but full combined result-view equivalence is not closed.",
+      "status": "unconfirmed",
+      "next": "Complete static mapping of display list, chart dispatch and current/module result ownership."
+    },
+    {
+      "id": "feature-panel",
+      "vm": "FeatureMatchCommonControl plus tool-specific derived parameter roots and template dialogs",
+      "vm_evidence": [
+        "docs/07-工具逆向/decompiled/ModuleControls/FeatureMatchCommonControl",
+        "docs/07-工具逆向/decompiled/ModuleControls/IMVSHPFeatureMatchModuControl",
+        "docs/evidence/original-ui-architecture-audit-20261118.json"
+      ],
+      "self": "No shared public FeatureMatch panel and adapter contract. ContourMatch has a tool-local ContourMatchTemplatePanel.",
+      "gap": "Shared panel, common dialog shell and tool-specific adapter boundary are missing.",
+      "status": "verified",
+      "next": "Implement only after the shared framework contract is fixed. MarkFind remains separate."
+    }
+  ],
+  "blob_release_unit": {
+    "vm": [
+      "IMVSBlobFindModu.dll",
+      "IMVSBlobFindModuCs.dll",
+      "IMVSBlobFindModu.xml",
+      "IMVSBlobFindModuAlgorithm.xml",
+      "IMVSBlobFindModuAlgorithmTab.xml",
+      "IMVSBlobFindModuCs.xml",
+      "IMVSBlobFindModuDisplay.xml",
+      "ToolItemInfo.xml"
+    ],
+    "vm_evidence": [
+      "docs/collaboration/acceptance/原厂架构逆向结论与优化方案-20261118-174559.html",
+      "docs/evidence/image-source-blob-complete-ui-difference-20261118.md"
+    ],
+    "self": [
+      "tools/SunEyeVision.BlobAnalysis/Runtime/SunEyeVision.BlobAnalysis.Runtime.csproj",
+      "tools/SunEyeVision.BlobAnalysis/Wpf/SunEyeVision.BlobAnalysis.Wpf.csproj",
+      "tools/SunEyeVision.BlobAnalysis/Runtime/Resources/BlobParameters.xml",
+      "tools/SunEyeVision.BlobAnalysis/Runtime/Resources/BlobDisplay.xml",
+      "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobUiComposition.cs"
+    ],
+    "confirmed_gaps": [
+      "Self has separate Runtime and Wpf projects while the VM Blob evidence shows no Blob-specific Control assembly.",
+      "Self currently has BlobParameters.xml rather than a separately verified Algorithm.xml and AlgorithmTab.xml pair.",
+      "Self has BlobUiComposition and Blob-specific ROI UI ownership that the VM platform boundary does not use."
+    ],
+    "status": "verified-static-gap",
+    "next": "Do not delete or merge files yet. First map the shared declaration loader and resource packaging, then migrate Blob against the release-unit contract."
+  },
+  "gates": [
+    "Shared matrix rows with status verified or derived have source locations and consumer mapping.",
+    "No code change is authorized for unconfirmed result-view or lifecycle behavior.",
+    "Blob migration starts only after parameter-root and ROI ownership contracts are tested.",
+    "Manual Agent Desktop acceptance is deferred and does not replace static or automated gates."
+  ]
+}

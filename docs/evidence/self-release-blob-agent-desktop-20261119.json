@@ -1,0 +1,30 @@
+{
+  "authority": "controlled-replay",
+  "releaseExecutable": "D:/MyWork/SunEyeVision_V2/Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe",
+  "solutionOpenedFromRecentList": "blob-min",
+  "process": "SunEyeVision.UI.exe",
+  "snapshots": {
+    "welcome": "s3qr4hoi4ssan5",
+    "blobBasic": "s3ond0mshau7fm",
+    "blobRun": "sydw30a650q4w"
+  },
+  "observed": {
+    "window": "2 Blob分析1",
+    "size": "420x500",
+    "tabs": ["基本参数", "运行参数", "结果显示"],
+    "basic": ["位置修正", "输出掩膜", "ROI区域类型", "ROI创建", "形状", "屏蔽区创建", "输入源"],
+    "run": ["阈值方式", "极性", "低阈值", "查找个数", "面积使能", "面积范围", "输出轮廓类型", "Blob图像输出", "二值化图输出", "高级参数"],
+    "bottomCommands": ["连续执行", "停止执行", "执行", "确定"],
+    "resultTabSelected": true
+  },
+  "screenshots": [
+    "self-release-blob-basic-20261119.png",
+    "self-release-blob-run-20261119.png",
+    "self-release-blob-result-20261119.png"
+  ],
+  "close": "graceful process exit verified",
+  "limitations": [
+    "Agent Desktop accessibility evidence confirms the self-developed Release tree and window assembly. It does not prove dynamic VM behavior beyond the captured controls.",
+    "The run was opened from the existing blob-min recent solution and no new workflow mutation was performed."
+  ]
+}

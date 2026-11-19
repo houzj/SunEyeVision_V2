@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>原厂架构逆向结论与优化方案</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+    background: #f5f6f8; color: #2c3038; line-height: 1.75; font-size: 15px;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px 80px; }
+  header {
+    background: linear-gradient(135deg, #1f2a44 0%, #2d3f66 100%);
+    color: #fff; padding: 52px 24px 44px; margin-bottom: 36px;
+  }
+  header .inner { max-width: 1180px; margin: 0 auto; }
+  header h1 { margin: 0 0 14px; font-size: 30px; letter-spacing: .5px; font-weight: 600; }
+  header .sub { font-size: 15px; opacity: .82; margin-bottom: 26px; }
+  header .meta { font-size: 13px; opacity: .62; }
+  .verdict {
+    background: rgba(255,255,255,.09); border-left: 4px solid #4da3ff;
+    padding: 16px 20px; border-radius: 6px; font-size: 15.5px; line-height: 1.8;
+  }
+  .verdict strong { color: #7cc0ff; }
+
+  section {
+    background: #fff; border-radius: 10px; padding: 30px 34px;
+    margin-bottom: 26px; box-shadow: 0 1px 3px rgba(20,30,50,.06);
+  }
+  h2 {
+    font-size: 21px; margin: 0 0 6px; color: #1f2a44;
+    display: flex; align-items: center; gap: 12px;
+  }
+  h2 .num {
+    flex: none; width: 30px; height: 30px; border-radius: 8px;
+    background: #2d3f66; color: #fff; font-size: 15px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  h3 { font-size: 16.5px; margin: 26px 0 10px; color: #2d3f66; }
+  .lead { color: #5b6474; font-size: 14.5px; margin-bottom: 20px; }
+  p { margin: 10px 0; }
+  code {
+    background: #f0f2f6; padding: 1px 6px; border-radius: 4px;
+    font-family: Consolas, "Courier New", monospace; font-size: 13.5px; color: #b5317a;
+  }
+  pre {
+    background: #1e2430; color: #d6dde8; padding: 16px 18px; border-radius: 8px;
+    overflow-x: auto; font-size: 13px; line-height: 1.6; margin: 14px 0;
+    font-family: Consolas, "Courier New", monospace;
+  }
+  pre .c { color: #6b7a8f; }
+  pre .k { color: #7cc0ff; }
+  pre .s { color: #a5e075; }
+  pre .n { color: #ffb86c; }
+
+  /* 证据徽标 */
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 20px; font-size: 12px; font-weight: 600; vertical-align: middle; }
+  .ok { background: #e3f6e8; color: #1b7a37; }
+  .maybe { background: #fff4e0; color: #a86300; }
+  .no { background: #fde8e8; color: #b32424; }
+
+  table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13.8px; }
+  th { background: #f3f5f9; text-align: left; padding: 10px 12px; font-weight: 600; color: #3a4253; border-bottom: 2px solid #e2e6ee; }
+  td { padding: 9px 12px; border-bottom: 1px solid #eef0f4; vertical-align: top; }
+  tr:hover td { background: #fafbfd; }
+
+  /* 分层图 */
+  .layers { margin: 22px 0 8px; }
+  .layer {
+    display: flex; align-items: center; gap: 14px; padding: 14px 18px;
+    border-radius: 8px; margin-bottom: 8px; position: relative;
+  }
+  .layer .lbl {
+    flex: none; width: 96px; font-weight: 700; font-size: 13px; color: #fff;
+    text-align: center; padding: 4px 0; border-radius: 5px;
+  }
+  .layer .txt { font-size: 13.8px; }
+  .layer .txt b { color: #1f2a44; }
+  .l1 { background: #eef4ff; } .l1 .lbl { background: #3b6fd4; }
+  .l2 { background: #f0f8f2; } .l2 .lbl { background: #2e9e56; }
+  .l3 { background: #fff8ec; } .l3 .lbl { background: #d98b1c; }
+  .l4 { background: #fdf0f4; } .l4 .lbl { background: #c2456e; }
+  .arrow-down { text-align: center; color: #b9c0cc; font-size: 15px; margin: -2px 0 2px; }
+
+  /* 参数流 */
+  .flow3 { display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px; align-items: center; margin: 20px 0; }
+  .box {
+    border: 2px solid #d7dde8; border-radius: 8px; padding: 14px 16px;
+    background: #fff; text-align: center; font-size: 13.5px;
+  }
+  .box .t { font-weight: 700; color: #1f2a44; display: block; margin-bottom: 4px; }
+  .box.key { border-color: #3b6fd4; background: #f4f8ff; }
+  .flow-arrow { font-size: 22px; color: #3b6fd4; text-align: center; }
+
+  /* 结果分区 */
+  .zones { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 18px 0; }
+  .zone { border-radius: 8px; padding: 14px; font-size: 13px; }
+  .zone .zt { font-weight: 700; display: block; margin-bottom: 6px; }
+  .z-img { background: #fdf0f4; border: 1px solid #f2ccd9; }
+  .z-chart { background: #fff8ec; border: 1px solid #f5dfb8; }
+  .z-table { background: #eef4ff; border: 1px solid #cddcf7; }
+
+  /* 对比双栏 */
+  .cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 18px 0; }
+  .cmp .col { border-radius: 8px; padding: 16px 18px; font-size: 13.6px; }
+  .cmp .vm { background: #f2f8f4; border: 1px solid #cfe6d6; }
+  .cmp .own { background: #fdf2f4; border: 1px solid #f0ccd4; }
+  .cmp h4 { margin: 0 0 10px; font-size: 14px; }
+
+  /* 树 */
+  .tree {
+    background: #fbfcfe; border: 1px solid #e4e9f2; border-radius: 8px;
+    padding: 16px 18px; font-family: Consolas, monospace; font-size: 13px;
+    line-height: 1.85; white-space: pre; overflow-x: auto; color: #3a4253;
+  }
+  .tree .del { color: #b32424; }
+  .tree .keep { color: #1b7a37; }
+  .tree .cmt { color: #8b95a7; }
+
+  /* 步骤 */
+  .steps { counter-reset: st; margin: 18px 0; }
+  .step {
+    position: relative; padding: 14px 16px 14px 54px; background: #fbfcfe;
+    border-left: 3px solid #3b6fd4; border-radius: 0 8px 8px 0; margin-bottom: 10px;
+  }
+  .step::before {
+    counter-increment: st; content: "P" counter(st);
+    position: absolute; left: 14px; top: 14px; width: 26px; height: 26px;
+    background: #3b6fd4; color: #fff; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+  }
+  .step .st { font-weight: 700; color: #1f2a44; display: block; margin-bottom: 3px; }
+
+  .note {
+    background: #fff8ec; border-left: 4px solid #d98b1c; border-radius: 0 6px 6px 0;
+    padding: 12px 16px; font-size: 13.6px; margin: 16px 0;
+  }
+  .note.warn { background: #fdf2f4; border-color: #c2456e; }
+
+  ul { margin: 10px 0; padding-left: 22px; }
+  li { margin: 5px 0; }
+
+  footer { text-align: center; color: #9aa3b2; font-size: 12.5px; padding: 20px 0 0; }
+  @media (max-width: 820px) {
+    .cmp, .zones, .flow3 { grid-template-columns: 1fr; }
+    section { padding: 22px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <h1>原厂架构逆向结论与优化方案</h1>
+    <div class="sub">以 Blob 分析、亮度测量为样本，逐层反编译取证后的完整对照与重构路径</div>
+    <div class="verdict">
+      <strong>一句话结论：</strong>原厂之所以稳，是因为它的参数只有一份（住在 C++ 引擎里），界面和结果都由平台统一渲染，工具只交声明。
+      我们之所以一直出问题，是因为把「参数值」和「界面渲染」都搬进了每个工具——多出一整层原厂没有的代码，而这层正好踩在 WPF 最容易出错的地方。
+    </div>
+    <div class="meta" style="margin-top:18px">2026-11-18 · 证据来源：原厂反编译源码 + 安装目录实地核查 + 我方代码逐行比对<br>
+    <b style="color:#7cc0ff">已修订：</b>参数布局 XML 不拆分；参数门面确认原厂为手写；删除清单区分「空壳 / 桥接器 / 装配逻辑」；新增三处不可避免偏离<br>
+    <b style="color:#7cc0ff">新增 6.7：</b>ROI 层根本差异 —— 原厂 <code>ROISelecter : NameValueItem</code>（数据节点），我方 <code>NativeRoiUiDraftControls : StackPanel</code>（UI 控件），这是双父级的结构性来源与同构方案</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- 1 -->
+<section>
+  <h2><span class="num">1</span>原厂一个工具到底长什么样</h2>
+  <p class="lead">先看清楚它，才能判断我们差在哪。以下全部来自反编译与安装目录核查。</p>
+
+  <h3>1.1 部署单元：8 个文件就是一个完整工具</h3>
+  <p>路径（Blob 分析）：<code>C:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\x64\Location\IMVSBlobFindModu\</code></p>
+  <div class="tree">IMVSBlobFindModu/
+├─ IMVSBlobFindModu.dll              <span class="keep">原生算法（C++ 产物，全部算法在这里）</span>
+├─ IMVSBlobFindModuCs.dll            <span class="keep">参数/结果桥接（C#）</span>
+├─ IMVSBlobFindModu.xml              ① 模块定义：名称/分类/依赖
+├─ IMVSBlobFindModuAlgorithm.xml     ② 参数定义：名字/默认值/类型/范围
+├─ IMVSBlobFindModuAlgorithmTab.xml  ③ 页面布局：页签/分组/控件/顺序
+├─ IMVSBlobFindModuCs.xml            ④ 参数名 ↔ C# 属性映射
+├─ IMVSBlobFindModuDisplay.xml       ⑤ 结果显示定义
+└─ ToolItemInfo.xml                  ⑥ 工具箱元数据（节点形状/图标/分类）</div>
+  <p><span class="tag ok">✅ 已证实</span> 六个 XML 的全路径来自 <code>docs/07-工具逆向/tools/imvsblobfindmodu/</code> 的 <code>evidence.json</code> 与参考页 <code>xmlEvidence</code>。</p>
+
+  <h3>1.2 层次：四层，最后一层是可选的</h3>
+  <div class="layers">
+    <div class="layer l1"><span class="lbl">平台 UI</span><span class="txt"><b>Apps.XmlUI / VMControls.WPF / VM.PcUI</b> — 参数页引擎、模板库、结果视图、直方图控件</span></div>
+    <div class="arrow-down">▲ 消费声明</div>
+    <div class="layer l2"><span class="lbl">托管桥接</span><span class="txt"><b>XxxCs.dll</b> — 参数注册、结果反序列化、ROI 写值。<b>全库只有 8 个工具才有</b></span></div>
+    <div class="arrow-down">▲ SDK 调用</div>
+    <div class="layer l3"><span class="lbl">原生算法</span><span class="txt"><b>XxxModu.dll</b> — C++ 写的业务算法，一个工具一个 dll</span></div>
+    <div class="arrow-down">▲ 可选</div>
+    <div class="layer l4"><span class="lbl">专属 UI</span><span class="txt"><b>XxxControl.dll</b> — 只有复杂工具才建（全库 72 个）。模板只做增量覆盖（实测某工具仅 390 字节）</span></div>
+  </div>
+  <p><span class="tag ok">✅ 已证实</span> 判据：<code>decompiled/Managed/</code> 只有 8 个目录，<code>decompiled/ModuleControls/</code> 有 72 个，两者真正重叠<b>仅 FastFeatureMatch 一个</b>。<b>Blob 分析既没有 Cs 之外的 UI 工程，亮度测量连 Cs 工程都没有。</b></p>
+</section>
+
+<!-- 2 -->
+<section>
+  <h2><span class="num">2</span>参数是怎么流动的（这是最关键的差异）</h2>
+  <p class="lead">反编译了 <code>VM.PlatformSDKCS.dll</code>（504KB）之后，这一层彻底清楚了。</p>
+
+  <h3>2.1 参数值只有一份，住在 C++ 引擎里</h3>
+  <pre><span class="c">// VM.PlatformSDKCS.ParamItem（ilspycmd 反编译原文）</span>
+<span class="k">public string</span> Value
+{
+    <span class="k">get</span> {
+        ServerSDKAPI.<span class="n">IMVS_GetParamValue</span>(CVmObjectBase.mhandle, RefModuParams.ModuleID, Name, <span class="k">ref</span> strValue);
+        <span class="k">return</span> strValue;
+    }
+    <span class="k">set</span> {
+        ServerSDKAPI.<span class="n">IMVS_SetParamValue</span>(CVmObjectBase.mhandle, RefModuParams.ModuleID, Name, value);
+    }
+}</pre>
+  <p>存取全靠三元组：<b>引擎句柄 + 模块实例 ID + 参数名</b>。<b>C# 侧不留任何副本</b>——<code>CModuleParamBase</code> 反编译出来只有一个 <code>ModuleID</code> 字段，没有任何值字段。</p>
+  <p><span class="tag ok">✅ 已证实</span> 反编译 <code>ParamItem.cs:34-56</code>、<code>CModuleParamBase</code> 全文。</p>
+
+  <h3>2.2 所以「代码看到的值」和「界面显示的值」必然是同一个</h3>
+  <div class="flow3">
+    <div class="box"><span class="t">代码访问</span>BlobFindParam.LowThreshold<br><span style="color:#8b95a7;font-size:12px">只是转发，不存值</span></div>
+    <div class="flow-arrow">→</div>
+    <div class="box key"><span class="t">C++ 参数表</span>唯一真相<br><span style="color:#8b95a7;font-size:12px">mhandle + ModuleID + Name</span></div>
+  </div>
+  <div class="flow3">
+    <div class="box"><span class="t">界面绑定</span>XML 解析出的节点树<br><span style="color:#8b95a7;font-size:12px">节点也不存值</span></div>
+    <div class="flow-arrow">→</div>
+    <div class="box key"><span class="t">C++ 参数表</span>同一份数据<br><span style="color:#8b95a7;font-size:12px">按名字读写</span></div>
+  </div>
+  <p>这就是原厂「代码改值，界面立刻变；界面改值，代码立刻读到」的结构性原因——<b>它们根本没有第二份数据可以不一致</b>。</p>
+
+  <h3>2.3 参数定义与页面布局是分开的两个文件</h3>
+  <table>
+    <tr><th>职责</th><th>文件</th><th>谁消费</th></tr>
+    <tr><td>参数有哪些、默认值、类型、范围</td><td><code>xxxAlgorithm.xml</code></td><td>参数表 + 参数门面</td></tr>
+    <tr><td>参数怎么显示（页签/分组/控件/顺序）</td><td><code>xxxAlgorithmTab.xml</code></td><td>平台参数页引擎 <code>Apps.XmlParser</code></td></tr>
+  </table>
+  <p>平台解析入口已确认存在：<code>Apps.XmlParser.AlgorithmTabRoot(string path, object owner, IParamsConfig userStringData)</code>，它实现 <code>INotifyPropertyChanged</code>，解析出的节点树直接做界面绑定。</p>
+  <p><span class="tag ok">✅ 已证实</span> <code>AlgorithmTabRoot.cs:27,650</code>。<span class="tag maybe">⚠️ 推断</span> 「XML → 节点树 → 绑界面」的完整链路，只验证了入口与接口，未逐行读 40KB 解析逻辑。</p>
+
+  <div class="note">
+    <b>顺带纠正一个常见误解：</b>构造函数 <code>new ParamItem(this,"LowThreshold",255.0)</code> 里的 255.0 <b>不是默认值</b>，而是 <code>maxValue</code>。
+    反编译签名：<code>ParamItem(CModuleParamBase, string paramName, double maxValue=0, double minValue=0)</code>。<b>默认值在 XML 里。</b>
+  </div>
+</section>
+
+<!-- 3 -->
+<section>
+  <h2><span class="num">3</span>结果视图：原厂只有一个组件</h2>
+  <p class="lead">这一点最反直觉，也是我们差距最大的地方。</p>
+
+  <h3>3.1 一个组件，内含四块区域</h3>
+  <pre><span class="c">// VMControls.WPF.ModuleResultView（2706 行，平台级 UserControl）</span>
+<span class="k">internal</span> DataGrid      m_ResultDataGrid;   <span class="c">// 结果表格</span>
+<span class="k">internal</span> <span class="n">HikHistogram</span>  m_HikHistogram;     <span class="c">// 直方图/图表</span>
+<span class="k">internal</span> DataGrid      m_DataGrid;         <span class="c">// 数据表格</span>
+<span class="k">private</span> LocalImageListView localView;     <span class="c">// 图像列表</span>
+
+<span class="c">// 六种"特殊数据类型"</span>
+<span class="k">private static readonly string</span>[] exceptTypes = { <span class="s">"image"</span>, <span class="s">"datachart"</span>, <span class="s">"hsilist"</span>,
+                                                 <span class="s">"sampleimage"</span>, <span class="s">"imagetitle"</span>, <span class="s">"pixelinfoimage"</span> };</pre>
+  <p><span class="tag ok">✅ 已证实</span> 反编译 <code>ModuleResultView.cs:144,248,250,254,164</code>。</p>
+
+  <h3>3.2 显示哪块，看数据里有什么</h3>
+  <div class="zones">
+    <div class="zone z-img"><span class="zt">图像区</span>数据含 image / sampleimage / imagetitle / pixelinfoimage → 显示图像</div>
+    <div class="zone z-chart"><span class="zt">图表区</span>数据含 hsilist / datachart → 显示 HikHistogram 直方图</div>
+    <div class="zone z-table"><span class="zt">表格区</span>普通标量结果 → 显示 DataGrid</div>
+  </div>
+  <p>分发逻辑证据：<code>m_CurrentInfo.ModuleParams.GetDisplayList()</code>（:1005）取显示项；<code>if (m_HikHistogram.Visibility == Visibility.Visible)</code>（:1026）按需参与；<code>m_HikHistogram.HistogramTypes.Clear()</code>（:1323）。</p>
+
+  <h3>3.3 这解释了你截图里的亮度测量</h3>
+  <p>亮度测量的界面是「左直方图 + 右统计表」。但反编译核查发现：</p>
+  <table>
+    <tr><th>项目</th><th>实际情况</th><th>证据</th></tr>
+    <tr><td>托管 Cs 工程</td><td><b>没有</b></td><td>Managed/ 8 个目录里无 IntensityMeasure</td></tr>
+    <tr><td>专属 UI Control 工程</td><td><b>没有</b></td><td>ModuleControls/ 72 个目录里无</td></tr>
+    <tr><td>参数页控件数</td><td>21 个，<b>全是参数控件，无图表</b></td><td><code>ui-preview.json</code> 控件名清单</td></tr>
+    <tr><td>那直方图哪来的</td><td><b>平台内置</b> <code>HikPcUI.Controls.HikHistogram</code></td><td><code>VM.PcUI.dll</code>（916KB）类型清单</td></tr>
+  </table>
+  <p><b>结论：工具一行 UI 代码都没写，界面却是复合形态——因为平台组件按数据类型自动摆了区域。</b></p>
+  <p><span class="tag ok">✅ 已证实</span> 上述四条均来自反编译与证据文件。<span class="tag maybe">⚠️ 推断</span> 「亮度测量的直方图就是 HikHistogram」——依据是它是平台唯一直方图控件，且该工具无任何 UI 代码。</p>
+</section>
+
+<!-- 4 -->
+<section>
+  <h2><span class="num">4</span>我们长什么样</h2>
+
+  <div class="cmp">
+    <div class="col vm">
+      <h4>原厂</h4>
+      <ul>
+        <li>工具工程：<b>1 个</b>（Cs 或 Control，二选一）</li>
+        <li>Blob 分析源文件：<b>5 个</b></li>
+        <li>工具 UI 代码：<b>0 行</b>（Blob 分析）</li>
+        <li>参数值：<b>C++ 引擎唯一一份</b></li>
+        <li>结果视图：<b>1 个平台组件</b>覆盖所有工具</li>
+        <li>界面生成：平台解析 XML</li>
+      </ul>
+    </div>
+    <div class="col own">
+      <h4>我方（Blob 为例）</h4>
+      <ul>
+        <li>工具工程：<b>2 个</b>（Runtime + Wpf）</li>
+        <li>源文件：<b>45 个</b>（33 Runtime + 12 Wpf）</li>
+        <li>工具 UI 代码：<b>约 1000 行</b></li>
+        <li>参数值：<b>BlobSettings C# 对象</b></li>
+        <li>结果视图：<b>每工具一个包装类</b>（同构复制）</li>
+        <li>界面生成：Runtime 里自己解析 XML（290 行/工具）</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>4.1 我们的结果视图是「同构复制」</h3>
+  <table>
+    <tr><th>工具</th><th>XAML</th><th>代码</th><th>内部实质</th></tr>
+    <tr><td>Blob 分析</td><td>9 行 ContentControl</td><td>63 行</td><td>包一层 DeclaredResultTable</td></tr>
+    <tr><td>圆查找</td><td>同构</td><td>同构</td><td>包一层 DeclaredResultTable</td></tr>
+    <tr><td>亮度测量</td><td>8 行 ContentControl</td><td>80 行</td><td>包 PropertyList 或 DeclaredResultTable</td></tr>
+  </table>
+  <p><span class="tag ok">✅ 已证实</span> 逐文件读取比对。<b>这些包装类互相复制，功能上可整体删除。</b></p>
+
+  <h3>4.2 亮度测量缺了左边那块</h3>
+  <pre><span class="c">// IntensityMeasureResultView.xaml.cs:43-49</span>
+<span class="k">private static</span> IToolResultView CreatePresenter(...)
+    => projection.Kind <span class="k">switch</span>
+    {
+        ResultProjectionKind.PropertyList  => <span class="k">new</span> DeclaredPropertyList(schema, projection),
+        ResultProjectionKind.StandardTable => <span class="k">new</span> DeclaredResultTable(schema, projection),
+        _ => <span class="k">throw new</span> ArgumentException(<span class="s">"亮度测量的结果投影必须是属性列表或标准表。"</span>)
+    };</pre>
+  <p><b>只支持两种形态，没有直方图区。</b>而平台其实已经有这个控件：</p>
+  <pre><span class="c">// 我方已有（355 行），且颜色抽取工具在用</span>
+src/Plugin.Wpf/.../Interaction.Controls/HikHistogramSingle.xaml      <span class="c">65 行</span>
+src/Plugin.Wpf/.../Interaction.Controls/HikHistogramSingle.xaml.cs  <span class="c">290 行</span>
+
+<span class="c">// tools/SunEyeVision.ColorExtract/Wpf/Views/ColorExtractRangePanel.cs:240</span>
+<span class="k">var</span> histogram = <span class="k">new</span> HikHistogramSingle { ... };</pre>
+  <p><b>缺的不是控件，是组装。</b></p>
+  <p><span class="tag ok">✅ 已证实</span> 文件存在与引用位置均已核实。</p>
+
+  <h3>4.3 我们的结果形态是「枚举选一种」</h3>
+  <pre><span class="c">// src/Plugin.Contracts/Results/Presentation/ResultProjectionDescriptor.cs:3</span>
+<span class="k">public enum</span> ResultProjectionKind { None, PropertyList, StandardTable, Renderer }
+
+<span class="c">// src/Plugin.Infrastructure/Managers/Plugin/DesktopToolPresentation.cs:58</span>
+ResultProjectionKind.StandardTable => <span class="k">new</span> DeclaredResultTable(schema, projection),
+_ => <span class="k">throw new</span> NotSupportedException(<span class="s">"No result renderer is registered for: "</span> + projection.RendererKey)</pre>
+  <p><b>四种枚举，三种能用，<code>Renderer</code> 只有值没有实现</b>（一进就抛异常）。所以任何「图 + 表」的组合形态都表达不了。</p>
+</section>
+
+<!-- 5 -->
+<section>
+  <h2><span class="num">5</span>差距的四个根源</h2>
+
+  <h3>根源一：参数多了一份副本</h3>
+  <p>原厂值在引擎，C# 无副本；我方值在 <code>BlobSettings</code>。这导致三件事必须由工具自己做：<b>序列化、校验、保证界面与代码一致</b>。原厂这三件都由引擎承担。</p>
+
+  <h3>根源二：界面渲染的责任被下沉</h3>
+  <p>原厂参数页由平台 <code>Apps.XmlParser</code> 解析 XML 生成；我方每个工具自己写 290 行解析器（<code>BlobParameterDefinition</code> + <code>.Settings.cs</code>）。</p>
+
+  <h3>根源三：ROI 从「写值」变成了「搬控件」</h3>
+  <table>
+    <tr><th></th><th>原厂</th><th>我方</th></tr>
+    <tr><td>ROI 代码量</td><td>约 90 行（<code>BlobFindRoiManager</code>，2KB）</td><td>约 650 行（RoiOwner 423 + Preview 145 + RoiUi 79）</td></tr>
+    <tr><td>做法</td><td>设类型 → 写几何值 → 结束</td><td>创建控件 → 交出控件行 → 再挂回去</td></tr>
+    <tr><td>后果</td><td>不会出现父子冲突</td><td>出现「控件已属于其他视图」崩溃</td></tr>
+  </table>
+  <p>原厂 ROI 编辑器是平台级的：<code>Apps.XmlParser</code> 下有 <code>ROISelecter.cs</code>（58KB）、<code>RoiStruct.cs</code>（19KB）、<code>ButtonSelecter.cs</code>（15KB）。<span class="tag ok">✅ 已证实</span></p>
+
+  <h3>根源四：结果视图按「枚举选一种」，原厂按「数据类型自动分区」</h3>
+  <p>原厂一个组件能吃下「图像+直方图+表格」；我方每种组合都要新写一套。这是亮度测量缺直方图的直接原因。</p>
+
+  <div class="note warn">
+    <b>一句话概括：</b>我们把原厂「平台承担的四件事」——参数存储、XML 解析、ROI 编辑、结果渲染——全部搬进了每个工具。
+    工具从 5 个文件变成 45 个文件，问题也就从「平台一处」变成了「18 个工具各一处」。
+  </div>
+</section>
+
+<!-- 6 -->
+<section>
+  <h2><span class="num">6</span>优化方案：平台补四件，工具瘦身</h2>
+  <p class="lead">核心原则：<b>凡是所有工具长得都一样的能力，收回平台；凡是这个工具特有的，留在工具。</b></p>
+
+  <h3>6.1 平台要补的四件事</h3>
+  <table>
+    <tr><th>#</th><th>平台组件</th><th>对应原厂</th><th>解决什么</th></tr>
+    <tr><td>1</td><td><b>ParameterStore</b><br>按 (节点, 参数名) 存取，唯一真相</td><td>C++ 参数表</td><td>消灭参数副本，序列化与校验收归平台</td></tr>
+    <tr><td>2</td><td><b>声明加载器</b><br>XML → Schema，一次实现</td><td><code>Apps.XmlParser</code></td><td>删掉每工具的 290 行解析器</td></tr>
+    <tr><td>3</td><td><b>RoiGroupEditor</b><br>声明式 ROI 组</td><td><code>ROISelecter</code>（58KB）</td><td>工具只交字段名，不再搬控件</td></tr>
+    <tr><td>4</td><td><b>结果视图组件</b><br>内含图像/图表/表格三区，按数据类型显示</td><td><code>ModuleResultView</code></td><td>一个组件覆盖所有工具，支持组合形态</td></tr>
+  </table>
+
+  <h3>6.2 工具瘦身后长什么样</h3>
+  <div class="cmp">
+    <div class="col own">
+      <h4>现在（Blob）</h4>
+      <div class="tree">BlobAnalysis/
+├─ Runtime/ <span style="color:#8b95a7">33 个文件</span>
+│   ├─ BlobParameterDefinition.cs   <span style="color:#b32424">290 行解析器</span>
+│   ├─ Parameters/BlobSettings.cs   <span style="color:#b32424">值对象</span>
+│   ├─ Algorithms/ <span style="color:#8b95a7">9 个文件</span>
+│   └─ Results/ <span style="color:#8b95a7">8 个文件</span>
+└─ Wpf/ <span style="color:#b32424">12 个文件 ≈1000 行</span>
+    ├─ BlobUiComposition.cs   237
+    ├─ BlobLocalRoiOwner.cs   423
+    ├─ BlobRoiUi.cs            79
+    └─ ... </div>
+    </div>
+    <div class="col vm">
+      <h4>目标</h4>
+      <div class="tree"><span style="color:#1b7a37">BlobAnalysis.csproj  ← 唯一工程</span>
+├─ BlobTool.cs          工具壳（↔ IMVSBlobFindModuTool.cs）
+├─ BlobParameters.cs    参数门面（↔ BlobFindParam.cs，手写）
+├─ BlobRoi.cs           ROI 写值声明（↔ BlobFindRoiManager.cs）
+├─ BlobResult.cs        结果契约（↔ BlobFindResult.cs）
+├─ BlobAlgorithm.cs     算法（↔ IMVSBlobFindModu.dll）
+└─ Resources/
+   ├─ BlobParameters.xml  参数定义 + 页面布局（合并）
+   └─ BlobDisplay.xml     显示项声明（↔ Display.xml）</div>
+    </div>
+  </div>
+  <p><b>45 个文件 → 7 个文件；2 个工程 → 1 个；1000 行 UI → 0 行。</b></p>
+
+  <div class="note">
+    <b>为什么不是 8 个？</b>原厂把「参数定义」（<code>Algorithm.xml</code>）和「页面布局」（<code>AlgorithmTab.xml</code>）分成两个文件，
+    但拆分的必要性<b>没有验证过</b>，我方也没有「同一批参数多套布局」的需求。拆开只会增加两个文件 id 对不上的风险，<b>因此合并为一个 XML</b>。
+  </div>
+
+  <h3>6.2.1 对照：原厂 C# 工程本来就只有 5 个源文件</h3>
+  <table>
+    <tr><th>原厂文件</th><th>我方对应</th><th>说明</th></tr>
+    <tr><td><code>IMVSBlobFindModuCs.csproj</code></td><td><code>SunEyeVision.BlobAnalysis.csproj</code></td><td>一致</td></tr>
+    <tr><td><code>IMVSBlobFindModuTool.cs</code></td><td><code>BlobTool.cs</code></td><td>一致（工具壳）</td></tr>
+    <tr><td><code>BlobFindParam.cs</code>（105 属性）</td><td><code>BlobParameters.cs</code></td><td>一致（手写门面）</td></tr>
+    <tr><td><code>BlobFindResult.cs</code></td><td><code>BlobResult.cs</code></td><td>一致</td></tr>
+    <tr><td><code>BlobFindRoiManager.cs</code></td><td><code>BlobRoi.cs</code></td><td>一致（<b>写值，不搬控件</b>）</td></tr>
+    <tr><td><code>IMVSBlobFindModu.dll</code>（C++）</td><td><code>BlobAlgorithm.cs</code></td><td><b>语言不同</b>，职责相同</td></tr>
+    <tr><td><code>Algorithm.xml</code> + <code>AlgorithmTab.xml</code></td><td><code>BlobParameters.xml</code></td><td>合并</td></tr>
+    <tr><td><code>Display.xml</code></td><td><code>BlobDisplay.xml</code></td><td>一致</td></tr>
+    <tr><td><code>ToolItemInfo.xml</code></td><td>平台 <code>ToolboxDisplayCatalog.json</code></td><td>平台维护，工具不写</td></tr>
+  </table>
+  <p><span class="tag ok">✅ 已证实</span> 原厂 C# 工程清单来自 <code>decompiled/Managed/BlobFind/IMVSBlobFindModuCs/</code> 实际文件。<b>原厂工具本来就这么小</b>，我方照做即同一量级。</p>
+
+  <h3>6.3 参数流动的新样子</h3>
+  <div class="flow3">
+    <div class="box"><span class="t">界面 / 代码</span>都通过 Store 读写</div>
+    <div class="flow-arrow">→</div>
+    <div class="box key"><span class="t">ParameterStore</span>唯一真相（平台）</div>
+  </div>
+  <div class="flow3">
+    <div class="box"><span class="t">执行</span>Store.Snapshot(节点) → 只读视图</div>
+    <div class="flow-arrow">→</div>
+    <div class="box key"><span class="t">算法</span>只读参数，不改仓库</div>
+  </div>
+  <div class="flow3">
+    <div class="box"><span class="t">保存</span>Store.Export(节点)</div>
+    <div class="flow-arrow">→</div>
+    <div class="box key"><span class="t">方案 JSON</span>格式保持不变</div>
+  </div>
+
+  <h3>6.4 三处不可避免的偏离（不能假装一致）</h3>
+  <table>
+    <tr><th>偏离</th><th>原因</th><th>后果</th></tr>
+    <tr>
+      <td><b>算法从 C++ 变 C#</b></td>
+      <td>原厂有原生 <code>IMVSBlobFindModu.dll</code>，我方只能用 HALCON 在 C# 里写</td>
+      <td>算法层工程结构<b>无原厂参照</b>，内部怎么拆是我方自由</td>
+    </tr>
+    <tr>
+      <td><b>参数值必须我方自己存</b></td>
+      <td>原厂值在 C++ 引擎，C# 无副本；我方没有这层</td>
+      <td>需要平台 <code>ParameterStore</code> 承担——<b>这是最大的一处额外建设</b></td>
+    </tr>
+    <tr>
+      <td><b>布局 XML 合并进参数 XML</b></td>
+      <td>原厂分 <code>Algorithm.xml</code> + <code>AlgorithmTab.xml</code>；我方无多布局需求</td>
+      <td>属于简化，不是能力缺失</td>
+    </tr>
+  </table>
+
+  <h3>6.5 参数门面为什么是手写的（原厂也是）</h3>
+  <p>原厂 <code>BlobFindParam.cs</code> 是<b>手写</b>的，不是从 XML 生成的：</p>
+  <pre><span class="c">// BlobFindParam.cs:1962 —— 参数名是手打的字符串</span>
+lowThreshold = <span class="k">new</span> ParamItem(<span class="k">this</span>, <span class="s">"LowThreshold"</span>, 255.0);</pre>
+  <p>所以「XML 声明」和「C# 门面」是<b>两处手写，靠人工保持一致</b>。原厂能承受，是因为它有 SDK 兜底：参数名写错时 <code>IMVS_GetParamValue</code> 返回错误码并抛 <code>VmException</code>。</p>
+  <p>我方没有 SDK 兜底，因此必须补一道<b>启动校验</b>：</p>
+  <div class="note warn">
+    <b>强制要求：</b>平台加载工具时，比对「XML 声明的参数名集合」与「C# 门面登记的参数名集合」，<b>不一致直接抛异常并列出差异</b>。<br>
+    否则会出现最坏情况——XML 里删了参数，CS 门面还留着，代码照常读写一个不存在的参数，<b>静默失效</b>。
+  </div>
+  <p>这是「禁止兜底」原则的落地：<b>宁可启动失败，也不要静默跑错。</b></p>
+
+  <h3>6.6 删除清单的准确表述（修正）</h3>
+  <p>此前文档写「删掉 Wpf 工程 12 文件 1000 行」过于笼统。<b>这些文件不是空壳，是「桥接器 + 装配逻辑」，删除有前置条件。</b></p>
+  <table>
+    <tr><th>文件</th><th>实际内容</th><th>能否删</th></tr>
+    <tr>
+      <td><code>BlobParameterEditor.xaml</code>（11 行）</td>
+      <td>只放了一个 <code>DeclaredSettingsView</code>，无任何自有布局</td>
+      <td>✅ 可删（声明里无实质内容）</td>
+    </tr>
+    <tr>
+      <td><code>BlobParameterEditor.xaml.cs</code>（61 行）</td>
+      <td><b>桥接器</b>：合并 <code>Editor</code> 与 <code>BlobUiComposition</code> 两套状态（<code>HasInvalidInput</code>、<code>HasPendingEdits</code>、<code>TryCapture</code>…）</td>
+      <td>⚠ <b>前提是平台接管 ROI 组装</b>，不再有两个源要合并</td>
+    </tr>
+    <tr>
+      <td><code>BlobUiComposition.cs</code>（237 行）</td>
+      <td>输入区 + ROI 组装配</td>
+      <td>⚠ 需 <code>RoiGroupEditor</code> 先就位</td>
+    </tr>
+    <tr>
+      <td><code>BlobLocalRoiOwner.cs</code>（423）<br><code>.Preview.cs</code>（145）<br><code>BlobRoiUi.cs</code>（79）</td>
+      <td>ROI 控件组装与预览</td>
+      <td>⚠ 同上</td>
+    </tr>
+    <tr>
+      <td><code>BlobResultView.xaml(.cs)</code>（72）<br><code>BlobResultViewFactory.cs</code>（16）</td>
+      <td>包装平台 <code>DeclaredResultTable</code>（该组件已实现 <code>IToolResultView</code>）</td>
+      <td>✅ 可删，零成本</td>
+    </tr>
+  </table>
+  <p><b>判断标准：</b>看这份文件里有没有「这个工具特有的实质内容」。</p>
+  <ul>
+    <li>有实质内容（如 <code>BlobParameters.xml</code> 的 104 个参数）→ <b>保留</b></li>
+    <li>只是包装通用控件（如 11 行薄壳 XAML）→ <b>可删</b></li>
+    <li>是桥接/装配逻辑（如 61 行 code-behind、423 行 RoiOwner）→ <b>需平台先行接管才能删</b></li>
+  </ul>
+
+  <h3>6.7 ROI 层的根本差异（决定性发现）</h3>
+  <p>前面所有排查都指向 ROI，但一直没回答「原厂为什么不出问题」。反编译原厂 <code>ROISelecter</code> 的类声明后，答案明确了。</p>
+
+  <table>
+    <tr><th></th><th>原厂</th><th>我方</th></tr>
+    <tr><td>ROI 组件类</td><td><code>ROISelecter</code></td><td><code>NativeRoiUiDraftControls</code></td></tr>
+    <tr><td>继承</td><td><b><code>NameValueItem</code></b></td><td><b><code>StackPanel</code></b></td></tr>
+    <tr><td><code>NameValueItem</code> 是</td><td><code>: BaseNode, INotifyPropertyChanged, IParamItem, ISaveNode, ...</code><br>纯数据节点，<b>无任何 UIElement 基类</b></td><td>—</td></tr>
+    <tr><td>本质</td><td><b>数据模型</b></td><td><b>WPF 控件</b></td></tr>
+    <tr><td>UI 从哪来</td><td>平台 <code>Apps.XmlUI</code> 的 <code>DataTemplate</code> 按类型渲染</td><td>自己 <code>Children.Add(...)</code> 装外部元素</td></tr>
+  </table>
+
+  <pre><span class="c">// 原厂</span>
+<span class="k">public class</span> ROISelecter : <span class="n">NameValueItem</span>, IGetROI, IGroupRunParam, IROISelecter, ...
+<span class="c">// NameValueItem : BaseNode, INotifyPropertyChanged, IParamItem, ISaveNode, IName, IRunService, ICanTriggerExecute</span>
+
+<span class="c">// 我方</span>
+<span class="k">public sealed class</span> NativeRoiUiDraftControls : <span class="n">StackPanel</span>, IDisposable</pre>
+
+  <h4>为什么这决定了崩不崩</h4>
+  <p>原厂参数页里每个元素都是<b>数据节点</b>，UI 由 <code>DataTemplate</code> 生成。WPF 每次应用模板都<b>创建全新元素</b>——同一个数据对象被多处绑定也没问题，因为元素从不共享。<b>结构上不存在「元素有第二个父亲」这回事。</b></p>
+  <p>我方 <code>NativeRoiUiDraftControls</code> 是 <code>StackPanel</code>，靠 <code>Children.Add</code> 装外部传入的 <code>DeclaredFieldRow</code>。<b>只要它是 Panel 且装外部元素，元素所有权就得靠代码正确性维护</b>——一处疏漏就崩。</p>
+
+  <div class="note warn">
+    <b>这解释了为什么之前的补丁只能缓解：</b>把「传实例」改成「传工厂」后，参数页组装失败从 3 次降到 1 次，但控件本身仍是 Panel，模式没变，所以没有根治。
+  </div>
+
+  <h4>完全同构的目标结构</h4>
+  <table>
+    <tr><th>层</th><th>原厂</th><th>我方目标</th><th>同构</th></tr>
+    <tr><td>参数项</td><td><code>NameValueItem : BaseNode</code></td><td><code>DeclaredFieldRow</code>（Content + 模板选择器）</td><td>✅ 已接近</td></tr>
+    <tr><td><b>ROI 组件</b></td><td><b><code>ROISelecter : NameValueItem</code>（数据）</b></td><td><b><code>RoiGroupModel</code>（纯数据）</b></td><td>改后 ✅</td></tr>
+    <tr><td>ROI 的 UI</td><td><code>DataTemplate</code></td><td><code>DataTemplate</code></td><td>改后 ✅</td></tr>
+    <tr><td>结果视图</td><td><code>ModuleResultView</code> 单组件</td><td>平台表格</td><td>⚠ 部分</td></tr>
+  </table>
+
+  <h4>实施五步</h4>
+  <div class="steps">
+    <div class="step">
+      <span class="st">定义 <code>RoiGroupModel</code>（纯数据）</span>
+      只含字段标识与值：模式字段、矩形/扇环几何字段组、Mask 字段、来源字段。实现 <code>INotifyPropertyChanged</code>。<b>不继承任何 UIElement</b>。
+    </div>
+    <div class="step">
+      <span class="st">为 <code>RoiGroupModel</code> 写 <code>DataTemplate</code></span>
+      用 <code>ItemsControl</code> + 嵌套 <code>DataTemplate</code> 渲染各字段行；行仍用 <code>DeclaredFieldRow</code>（它本身已是 Content + 模板模式）。
+    </div>
+    <div class="step">
+      <span class="st">平台提供行工厂（由模板调用）</span>
+      <code>Func&lt;string, DeclaredFieldRow&gt;</code>，模板内 <code>ContentControl</code> 触发创建。<b>每次模板应用生成新实例</b>，生命周期归 WPF。
+    </div>
+    <div class="step">
+      <span class="st">Blob 改造</span>
+      <code>BlobRoiUi</code> 只构造 <code>RoiGroupModel</code>（约 30 行）；删除 <code>NativeRoiUiDraftControls</code> 调用。
+    </div>
+    <div class="step">
+      <span class="st">清理旧 API</span>
+      删除 <code>NativeRoiUiDraftControls</code>（StackPanel 版）、<code>NativeAssistUiDraftControls</code>、<code>TakeField</code>、<code>AddAfterField</code>、<code>BlobUiComposition</code> 的 ROI 段。
+    </div>
+  </div>
+
+  <h4>验收标准（可客观判断）</h4>
+  <ul>
+    <li>ROI 相关代码里不再出现 <code>Children.Add(外部元素)</code></li>
+    <li>五个场景全过：打开参数页 / 切页签来回 / 关窗再开 / 同工具双开 / 切 ROI 模式</li>
+    <li>Blob 测试 39 项不新增失败（当前 20 失败 / 19 通过）</li>
+    <li><code>SkipRoiComposition</code> 与 <code>SkipAssistAttach</code> 两个降级开关<b>全部删除</b></li>
+  </ul>
+
+  <h4>成本与影响面</h4>
+  <table>
+    <tr><th>项</th><th>内容</th></tr>
+    <tr><td>工作量</td><td>ROI UI 层重写，约 400–500 行 + 一套 <code>DataTemplate</code></td></tr>
+    <tr><td>影响面</td><td>仅 Blob（<code>NativeRoiUiDraftControls</code> / <code>NativeAssistUiDraftControls</code> 均只被 Blob 调用）</td></tr>
+    <tr><td>保留不动</td><td>参数声明、算法、结果契约、<code>DeclaredFieldRow</code> 本身</td></tr>
+    <tr><td>收益</td><td>从结构上消除双父级；后续 ROI 类工具可直接复用</td></tr>
+  </table>
+</section>
+
+<!-- 7 -->
+<section>
+  <h2><span class="num">7</span>迁移路线：双轨推进，不推倒重来</h2>
+  <p class="lead">先建新能力，再迁一个工具验证，最后才删旧路径。反过来会一次性崩掉所有工具。</p>
+
+  <div class="steps">
+    <div class="step">
+      <span class="st">平台新增 ParameterStore（旧路径不动）</span>
+      按 (节点, 参数名) 存取 + 类型转换 + 范围校验 + 导出导入。单测覆盖 get/set/越界/序列化往返。
+    </div>
+    <div class="step">
+      <span class="st">Blob 试点：参数改走 Store</span>
+      <code>BlobSettings</code> 降级为只读视图，删除 <code>BlobParameterDefinition</code>（290 行），改用平台声明加载器。
+      <br>验收：参数页三页签正常、方案读写正常。
+    </div>
+    <div class="step">
+      <span class="st">平台接管 ROI 与结果视图后，删除 Blob 的 Wpf 装配层</span>
+      <b>顺序关键</b>：必须先有 <code>RoiGroupEditor</code> 与平台结果视图，<code>BlobUiComposition</code> 才失去存在理由，桥接器 <code>BlobParameterEditor.xaml.cs</code> 才会随之消失。<br>
+      验收：Blob 12 项真实交互测试；工具目录内搜不到 <code>FrameworkElement</code>。
+    </div>
+    <div class="step">
+      <span class="st">封旧入口 + 逐个推广</span>
+      删除 <code>TakeField</code> / <code>AddAfterField</code> / <code>ComposeInputEditor</code>；其余工具逐个迁移，每迁一个跑「参数页可打开」冒烟。
+    </div>
+  </div>
+
+  <div class="note">
+    <b>顺序不能反：</b>P1 是所有后续的基础；P4 必须最后，否则旧代码还在用被删的入口，会连锁编译失败。
+  </div>
+</section>
+
+<!-- 8 -->
+<section>
+  <h2><span class="num">8</span>不改的部分（避免过度改造）</h2>
+  <table>
+    <tr><th>保持不变</th><th>原因</th></tr>
+    <tr><td><code>Port</code> / <code>FieldPresentation</code> / <code>ToolSchema</code> 契约</td><td>稳定，只需新增字段，不重构既有字段</td></tr>
+    <tr><td>算法层</td><td>与 UI 无关，只改「怎么拿参数」</td></tr>
+    <tr><td>方案文件格式</td><td>Store 导出沿用现有 JSON 结构，不引入迁移成本</td></tr>
+    <tr><td>复杂工具的专属 UI（数据分类、ML 分类）</td><td>原厂本身也有专属 Control，保留一个薄工程只写差异</td></tr>
+  </table>
+</section>
+
+<!-- 9 -->
+<section>
+  <h2><span class="num">9</span>证据清单（可逐条复核）</h2>
+  <table>
+    <tr><th>结论</th><th>证据位置</th></tr>
+    <tr><td>模块目录 8 个文件</td><td><code>tools/imvsblobfindmodu/evidence.json</code> 的 originalSourcePath；参考页 xmlEvidence</td></tr>
+    <tr><td>Blob 分析无专属 UI 工程</td><td><code>decompiled/ModuleControls/</code> 72 个目录名清单</td></tr>
+    <tr><td>Managed 仅 8 个，重叠仅 1 个</td><td><code>decompiled/Managed/</code> 与 ModuleControls 目录比对</td></tr>
+    <tr><td>参数无副本、走 SDK 三元组</td><td>反编译 <code>VM.PlatformSDKCS.ParamItem.cs:34-56</code></td></tr>
+    <tr><td>CModuleParamBase 只有 ModuleID</td><td>反编译 <code>CModuleParamBase</code> 全文</td></tr>
+    <tr><td>构造函数第三参是 maxValue</td><td>反编译 <code>ParamItem</code> 签名 + <code>BlobFindParam.cs:1955-1971</code></td></tr>
+    <tr><td>类型化是字符串包装</td><td>反编译 <code>ParamItem.cs:113,121</code></td></tr>
+    <tr><td>XML 解析入口在平台</td><td><code>Apps.XmlParser.AlgorithmTabRoot.cs:27,650</code></td></tr>
+    <tr><td>ROI/订阅是平台组件</td><td><code>Apps.XmlParser</code> 下 ROISelecter 58KB / RoiStruct 19KB / ButtonSelecter 15KB</td></tr>
+    <tr><td>结果视图是单组件按类型分区</td><td>反编译 <code>ModuleResultView.cs:144,164,248,250,254,1005,1026</code></td></tr>
+    <tr><td>直方图在平台 UI 层</td><td><code>VM.PcUI.dll</code> 类型 <code>HikPcUI.Controls.HikHistogram／HikHistogramSingle</code></td></tr>
+    <tr><td>亮度测量无 Cs、无 Control</td><td>Managed/ 与 ModuleControls/ 名单均无；<code>ui-preview.json</code> 21 控件无图表</td></tr>
+    <tr><td>我方结果表已实现契约</td><td><code>DeclaredResultTable.cs:17</code> <code>: UserControl, IToolResultView</code></td></tr>
+    <tr><td>我方 Renderer 未实现</td><td><code>DesktopToolPresentation.cs:58</code> 的 <code>_ =&gt; throw</code></td></tr>
+    <tr><td>我方亮度测量只支持两种形态</td><td><code>IntensityMeasureResultView.xaml.cs:43-49</code></td></tr>
+    <tr><td>我方已有直方图控件且在用</td><td><code>HikHistogramSingle.xaml(.cs)</code> 355 行；<code>ColorExtractRangePanel.cs:240</code></td></tr>
+    <tr><td><b>原厂 C# 工程只有 5 个源文件</b></td><td><code>decompiled/Managed/BlobFind/IMVSBlobFindModuCs/</code> 实际文件清单</td></tr>
+    <tr><td><b>原厂参数门面是手写，不是生成</b></td><td><code>BlobFindParam.cs:1962</code> <code>new ParamItem(this,"LowThreshold",255.0)</code>；无 .g.cs / 无生成器</td></tr>
+    <tr><td><b><code>BlobParameterEditor.xaml.cs</code> 是桥接器</b></td><td>全文 61 行：持有 <code>BlobUiComposition</code>，合并 <code>Editor</code> 与 Composition 的状态与事件</td></tr>
+    <tr><td><code>DeclaredSettingsView</code> 已有 <code>SelectedPageIndex</code> 与 <code>SelectedPageChanged</code></td><td><code>DeclaredSettingsView.cs:27,29,31</code></td></tr>
+  </table>
+</section>
+
+<!-- 10 -->
+<section>
+  <h2><span class="num">10</span>尚未验证的部分（不作结论）</h2>
+  <table>
+    <tr><th>未验证项</th><th>影响</th></tr>
+    <tr><td><code>AlgorithmTabRoot</code> 内部 40KB 解析逻辑</td><td>影响「声明加载器」的照抄精度</td></tr>
+    <tr><td><code>ModuleResultView</code> 的 XAML 布局（三区怎么排）</td><td>影响结果视图组件的布局设计</td></tr>
+    <tr><td><code>GetDisplayList()</code> 返回结构与类型系统</td><td>影响「显示项」模型的建模</td></tr>
+    <tr><td>原厂亮度测量结果视图的组装代码</td><td>不确定是 ModuleResultView 内部实现还是另有组件</td></tr>
+    <tr><td>原生算法 dll（C++）内部流程</td><td>不影响 UI 重构，但影响算法对齐</td></tr>
+    <tr><td><code>IModuleResultView</code> 与 <code>IOutResultView</code> 分工</td><td>影响「当前结果」与「模块结果」两个 tab 的职责划分</td></tr>
+    <tr><td>原厂为什么把参数定义与页面布局拆成两个 XML</td><td>影响我方是否该跟着拆（当前结论：不拆）</td></tr>
+    <tr><td>原厂是否存在参数名一致性校验机制</td><td>影响我方启动校验是否属于「补强」还是「照抄」</td></tr>
+  </table>
+
+  <div class="note warn">
+    <b>说明：</b>以上六项未验证前，相关设计只能算「按我方习惯设计」，不能声称「对齐原厂」。
+    其中前两项（AlgorithmTabRoot 解析逻辑、ModuleResultView 布局）是可以继续反编译拿到的，建议在 P1 之前补齐。
+  </div>
+</section>
+
+<footer>
+  原厂架构逆向结论与优化方案 · 2026-11-18<br>
+  所有「已证实」结论均有文件路径或反编译行号，可逐条复核
+</footer>
+
+</div>
+</body>
+</html>

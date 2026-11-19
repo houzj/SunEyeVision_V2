@@ -1,0 +1,44 @@
+{
+  "tool": "IntensityMeasure",
+  "phase": "real-agent-desktop-ui-comparison",
+  "status": "captured-both-sides-with-inner-mapping-pending",
+  "scope": "tab layer, ROI/input group presence, bottom commands, title and help only",
+  "vm_runtime": {
+    "authority": "controlled-replay",
+    "solution": "C:\\Users\\Administrator\\Desktop\\test.sol",
+    "snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/IntensityMeasureVM-tool.json",
+    "snapshot_id": "fresh-agent-desktop",
+    "window_title": "6 \\u4eae\\u5ea6\\u6d4b\\u91cf",
+    "tabs": ["\\u57fa\\u672c\\u53c2\\u6570", "\\u7ed3\\u679c\\u663e\\u793a"],
+    "basic_groups": ["Tab_Image Input", "Tab_ROI Area"],
+    "commands": ["\\u8fde\\u7eed\\u6267\\u884c", "\\u505c\\u6b62\\u6267\\u884c", "\\u6267\\u884c", "\\u786e\\u5b9a"],
+    "help": true
+  },
+  "product_runtime": {
+    "authority": "controlled-replay",
+    "solution": "11111",
+    "snapshot": "D:/MyWork/SunEyeVision_V2/Release/_validation/AgentDesktopToolReview/single-tool/20261117-194000-亮度测量1/tool-window.json",
+    "snapshot_id": "existing-agent-desktop-release",
+    "window_title": "7 \\u4eae\\u5ea6\\u6d4b\\u91cf1",
+    "tabs": ["\\u7ed3\\u679c\\u663e\\u793a (snapshot exposes this page; basic tab requires fresh unblock)"],
+    "visible_sections": ["\\u4eae\\u5ea6\\u533a\\u57df", "\\u6700\\u5927\\u503c\\u5224\\u65ad", "\\u6700\\u5c0f\\u503c\\u5224\\u65ad", "\\u5747\\u503c\\u5224\\u65ad"],
+    "commands": ["\\u8fde\\u7eed\\u6267\\u884c", "\\u505c\\u6b62\\u6267\\u884c(offscreen)", "\\u6267\\u884c", "\\u786e\\u5b9a"],
+    "close_release": true
+  },
+  "confirmed_differences": [
+    "Original runtime has two tabs and explicit Tab_Image Input and Tab_ROI Area groups",
+    "Current Release snapshot exposes the result page and equivalent brightness/decision sections, while the basic page requires a fresh unobstructed capture",
+    "Original and current bottom command sets include continuous execution, execute and confirm, with stop execution offscreen in current UIA",
+    "Original ROI control binding and result templates have not been individually mapped",
+    "No code change is allowed until the inner ROI and result control mapping is proven"
+  ],
+  "decision": {
+    "modification_allowed": false,
+    "reason": "Observed Tab layer matches. Keep inner ROI and result controls pending until original control/resource bindings are individually evidenced."
+  },
+  "pending": [
+    "Capture product ROI edit and result readback against original control evidence",
+    "Verify save/reopen and resource release after inner mapping"
+  ],
+  "source_review": "docs/evidence/intensitymeasure-review-20261118.json"
+}

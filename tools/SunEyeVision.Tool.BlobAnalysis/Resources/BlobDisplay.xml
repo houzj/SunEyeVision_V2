@@ -1,4 +1,7 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Blob 结果页声明：表格列与输出显示节点。对应原厂 IMVSBlobFindModuDisplay.xml 的
+     对象清单，以及 AlgorithmTab.xml 的 Tab_Image Display 登记。
+     端口身份用 field:<序号> 简写，加载时由 BlobSchema.Field 展开为完整身份。 -->
 <BlobDisplay schemaVersion="1">
   <Table port="field:8ca10000000040008000000000000100" identity="element-id">
     <Column key="label" label="序号" labelResource="Number" member="label" />
@@ -12,4 +15,137 @@
     <Column key="circularity" label="圆形度" labelResource="Circularity" member="circularity" numericFormat="float32" />
     <Column key="rectangularity" label="矩形度" labelResource="Rectangularity" member="rectangularity" numericFormat="float32" />
   </Table>
+
+  <OutputNodes>
+    <Node id="field:123" label="耗时（ms）" summary="true" />
+    <Node id="field:4" label="模块状态" summary="true" />
+    <Node id="field:109" label="单体状态" />
+    <Node id="field:11" label="Blob个数" />
+    <Node id="field:19" label="面积" />
+    <Node id="field:12" label="总面积" />
+
+    <Node id="field:117" label="质心点">
+      <Node id="x" label="质心X" />
+      <Node id="y" label="质心Y" />
+    </Node>
+
+    <Node id="field:114" label="最小外接矩形">
+      <Node id="center" label="中心点">
+        <Node id="x" label="中心X" />
+        <Node id="y" label="中心Y" />
+      </Node>
+      <Node id="width" label="矩形宽度" />
+      <Node id="height" label="矩形高度" />
+      <Node id="angle-degrees" label="角度" />
+    </Node>
+
+    <Node id="field:110" label="最小灰度值" />
+    <Node id="field:111" label="最大灰度值" />
+    <Node id="field:112" label="对比度" />
+
+    <Node id="field:104" label="最大内接矩形">
+      <Node id="center" label="最大内接矩形中心点">
+        <Node id="x" label="最大内接矩形中心X" />
+        <Node id="y" label="最大内接矩形中心Y" />
+      </Node>
+      <Node id="width" label="最大内接矩形宽度" />
+      <Node id="height" label="最大内接矩形高度" />
+      <Node id="angle-degrees" label="最大内接矩形角度" />
+    </Node>
+
+    <!-- 「Blob矩形框」跨越四个输出端口：原点与宽高来自 bounds，
+         左上/右下点来自独立数组端口，主轴角度来自角度端口，因此子行显式给出目标端口。 -->
+    <Node id="field:118" label="Blob矩形框">
+      <Node id="origin" label="矩形框原点">
+        <Node id="x" label="Blob矩形框原点X" />
+        <Node id="y" label="Blob矩形框原点Y" />
+      </Node>
+      <Node id="width" label="Blob矩形框宽度" />
+      <Node id="height" label="Blob矩形框高度" />
+      <Node id="top-left-x" label="blob矩形左上点X" port="field:119" />
+      <Node id="top-left-y" label="blob矩形左上点Y" port="field:120" />
+      <Node id="bottom-right-x" label="blob矩形右下点X" port="field:121" />
+      <Node id="bottom-right-y" label="blob矩形右下点Y" port="field:122" />
+      <Node id="principal-angle" label="主轴角度" port="field:113" />
+    </Node>
+
+    <Node id="field:20" label="周长" />
+    <Node id="field:115" label="长轴" />
+    <Node id="field:116" label="短轴" />
+    <Node id="field:23" label="圆形度" />
+    <Node id="field:24" label="矩形度" />
+
+    <Node id="field:6" label="二值化图像数据">
+      <Node id="data" label="二值化图像数据" />
+      <Node id="width" label="二值化图像宽度" />
+      <Node id="height" label="二值化图像高度" />
+      <Node id="pixel-format" label="二值化图像像素格式" />
+    </Node>
+
+    <Node id="field:5" label="Blob图像数据">
+      <Node id="data" label="Blob图像数据" />
+      <Node id="width" label="Blob图像宽度" />
+      <Node id="height" label="Blob图像高度" />
+      <Node id="pixel-format" label="Blob图像像素格式" />
+    </Node>
+
+    <Node id="field:106" label="检测区域">
+      <Node id="center" label="检测区域中心点">
+        <Node id="x" label="检测区域中心点X" />
+        <Node id="y" label="检测区域中心点Y" />
+      </Node>
+      <Node id="width" label="检测区域宽度" />
+      <Node id="height" label="检测区域高度" />
+      <Node id="angle-degrees" label="检测区域角度" />
+    </Node>
+
+    <Node id="field:107" label="ROI圆弧">
+      <Node id="center" label="检测圆弧中心点">
+        <Node id="x" label="检测圆弧中心X" />
+        <Node id="y" label="检测圆弧中心Y" />
+      </Node>
+      <Node id="inner-radius" label="检测圆弧内径" />
+      <Node id="outer-radius" label="检测圆弧外径" />
+      <Node id="start-degrees" label="检测圆弧起始角度" />
+      <Node id="sweep-degrees" label="检测圆弧角度范围" />
+    </Node>
+
+    <Node id="field:108" label="轮廓点集">
+      <Node id="info" label="轮廓信息" />
+      <Node id="count" label="轮廓点个数" />
+    </Node>
+
+    <Node id="field:105" label="屏蔽区多边形">
+      <Node id="count" label="多边形点数" />
+      <Node id="vertex" label="多边形点集" port="field:105">
+        <Node id="x" label="多边形点X" port="field:105" member="x" />
+        <Node id="y" label="多边形点Y" port="field:105" member="y" />
+      </Node>
+      <Node id="mask-strings" label="屏蔽区" port="field:124" />
+    </Node>
+
+    <Node id="field:103" label="输出掩膜" auxiliary="true">
+      <Node id="data" label="输出掩膜图像" />
+      <Node id="width" label="输出掩膜宽度" />
+      <Node id="height" label="输出掩膜高度" />
+      <Node id="pixel-format" label="输出掩膜像素格式" />
+    </Node>
+
+    <!-- 原件清单之外的端口按证据隐藏：端口与 schema 指纹保持不动，只是不进结果树。 -->
+    <Hidden id="field:8" label="低阈值" />
+    <Hidden id="field:9" label="高阈值" />
+    <Hidden id="field:10" label="极性" />
+    <Hidden id="field:102" label="阈值方式" />
+    <Hidden id="field:13" label="平均面积" />
+    <Hidden id="field:14" label="平均圆度" />
+    <Hidden id="field:15" label="平均矩形度" />
+    <Hidden id="field:16" label="白色像素比例" />
+    <Hidden id="field:17" label="灰度直方图" />
+    <Hidden id="field:18" label="通道均值" />
+    <Hidden id="field:27" label="矩形尺寸" />
+    <Hidden id="field:30" label="最小面积" />
+    <Hidden id="field:31" label="最大面积" />
+    <Hidden id="field:100" label="Blob明细" />
+    <Hidden id="field:101" label="检测结果区域" />
+  </OutputNodes>
 </BlobDisplay>

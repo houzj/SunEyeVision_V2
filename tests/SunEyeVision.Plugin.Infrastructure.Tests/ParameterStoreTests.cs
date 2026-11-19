@@ -1,5 +1,4 @@
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.Infrastructure.Parameters;
 using Xunit;
 
 namespace SunEyeVision.Plugin.Infrastructure.Tests;

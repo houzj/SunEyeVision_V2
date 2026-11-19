@@ -2,9 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using SunEyeVision.Plugin.Contracts;
 
-namespace SunEyeVision.Plugin.Infrastructure.Parameters;
+namespace SunEyeVision.Plugin.Contracts;
 
 /// <summary>按节点持有唯一一份参数值；声明、校验与变更通知都在这里收口。</summary>
 public sealed class ParameterStore : IParameterStore

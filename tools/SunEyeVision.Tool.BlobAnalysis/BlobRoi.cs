@@ -130,6 +130,16 @@ public static class BlobRoiInheritance
         :throw new ArgumentException("Unknown inheritance parameter mode.");
     public static TypeRef RectangleType{get;}=Spec.Rectangle.SourceRecordType;
     public static TypeRef AnnulusType{get;}=Spec.Annulus.SourceRecordType;
+    /// <summary>
+    /// XML 自定义类型名到记录序列的映射。平台无法从参数模型属性推断这两种形态，
+    /// 由声明加载器在解析 &lt;Parameter type="RectangleArray"&gt; 时回调取得。
+    /// </summary>
+    public static TypeRef? ExplicitType(string declared)=>declared switch
+    {
+        "RectangleArray"=>RectangleType,
+        "AnnulusArray"=>AnnulusType,
+        _=>null
+    };
     public static IReadOnlyList<Port> Ports{get;}=RoiInheritanceMaterializer.DeclarePorts(Spec);
     public static string ReadMode(FieldSettings fields)=>ReadMode(fields.Read(ModeId));
     internal static string ReadMode(ParameterSetting setting)=>setting switch{

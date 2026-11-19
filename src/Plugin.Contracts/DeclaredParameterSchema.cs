@@ -20,8 +20,12 @@ public sealed class DeclaredParameterSchema
     private readonly IReadOnlyDictionary<string, XElement> _inputs;
     /// <summary>属性类型表；XML 显式声明 type 的字段在此补充，用于不对应 CLR 属性的界面字段。</summary>
     private readonly IDictionary<string, Type> _types;
+    /// <summary>工具提供的自定义类型解析器：平台无从从 CLR 类型推断的形态（如记录序列）由它给出。</summary>
+    private readonly Func<string, TypeRef?>? _explicitType;
+    private readonly Dictionary<string, TypeRef> _explicitRefs = new(StringComparer.Ordinal);
 
-    private DeclaredParameterSchema(XElement root, IReadOnlyDictionary<string, Type> types)
+    private DeclaredParameterSchema(XElement root, IReadOnlyDictionary<string, Type> types,
+        Func<string, TypeRef?>? explicitType)
     {
         // 根元素名属于工具身份，平台不据此限定；只校验声明版本。
         if ((string?)root.Attribute("schemaVersion") != "1")
@@ -30,6 +34,7 @@ public sealed class DeclaredParameterSchema
         // 消费图像的工具声明工作流图像输入；产出图像的工具（如图像源）不声明。
         WorkflowImageInputId = (string?)root.Attribute("workflowImageInputId") ?? string.Empty;
         _types = types as IDictionary<string, Type> ?? new Dictionary<string, Type>(types, StringComparer.Ordinal);
+        _explicitType = explicitType;
 
         // 输入编辑器声明可为空：图像源类工具自行产生图像，没有上游图像输入页。
         if (root.Elements("Inputs").Count() > 1)
@@ -70,8 +75,16 @@ public sealed class DeclaredParameterSchema
                 }, new[] { "Choice" });
                 Required(field, "id"); Required(field, "type"); Required(field, "label");
                 // 界面专用字段（原厂 ButtonSelecter 一类）不对应参数模型属性，由 type 显式给出形态。
-                if (ExplicitType((string?)field.Attribute("type")) is { } explicitType)
-                    _types.TryAdd(Required(field, "id"), explicitType);
+                var declaredType = (string?)field.Attribute("type");
+                if (ExplicitType(declaredType) is { } builtinType)
+                    _types.TryAdd(Required(field, "id"), builtinType);
+                // 记录序列等平台无法从 CLR 类型推断的形态，交由工具提供的解析器给出。
+                if (_explicitType?.Invoke(declaredType ?? string.Empty) is { } declaredRef)
+                {
+                    var declaredId = Required(field, "id");
+                    _types.TryAdd(declaredId, typeof(object));
+                    _explicitRefs[declaredId] = declaredRef;
+                }
                 FieldId(field, "fieldId");
                 if (field.Attribute("allowReference") is not null && Boolean(field, "allowReference")) Required(field, "bindingName");
                 else if (field.Attribute("bindingName") is not null)
@@ -164,6 +177,15 @@ public sealed class DeclaredParameterSchema
 
     public static DeclaredParameterSchema Load(Stream stream, Type settingsType,
         Func<PropertyInfo, bool>? includeProperty = null, params Type[] additionalTypes)
+        => LoadWithTypes(stream, settingsType, includeProperty, null, additionalTypes);
+
+    /// <summary>
+    /// 同 <see cref="Load"/>，另可由工具提供自定义类型名解析器：用于 XML 里声明、
+    /// 但平台无法从参数模型属性推断的形态（如矩形、圆形的记录序列）。
+    /// </summary>
+    public static DeclaredParameterSchema LoadWithTypes(Stream stream, Type settingsType,
+        Func<PropertyInfo, bool>? includeProperty, Func<string, TypeRef?>? explicitType,
+        params Type[] additionalTypes)
     {
         ArgumentNullException.ThrowIfNull(stream);
         ArgumentNullException.ThrowIfNull(settingsType);
@@ -187,7 +209,7 @@ public sealed class DeclaredParameterSchema
                 MaxCharactersInDocument = 1024 * 1024
             });
             var root = XDocument.Load(reader).Root ?? throw new InvalidDataException("Empty parameter metadata.");
-            return new DeclaredParameterSchema(root, types);
+            return new DeclaredParameterSchema(root, types, explicitType);
         }
         catch (XmlException error)
         {
@@ -278,13 +300,14 @@ public sealed class DeclaredParameterSchema
                     ? Boolean(field, "required")
                     : Nullable.GetUnderlyingType(type) is null
                         && !(underlyingType == typeof(string) && field.Attribute("default") is null),
-                Type: underlyingType == typeof(bool) ? DataType.Boolean
+                // 工具提供的显式类型优先：记录序列等平台无法从 CLR 类型推断的形态。
+                Type: _explicitRefs.GetValueOrDefault(name) ?? (underlyingType == typeof(bool) ? DataType.Boolean
                 : underlyingType == typeof(int) || underlyingType == typeof(long) ? DataType.Integer
                 : underlyingType == typeof(double) ? DataType.Number
                 : underlyingType == typeof(IReadOnlyList<string>) ? TypeRef.SequenceOf(DataType.Text)
                 // 界面专用引用字段：数值序列，与原厂 ButtonSelecter 订阅形态一致。
                 : underlyingType == typeof(IReadOnlyList<double>) ? DataType.NumberArray
-                : DataType.Text,
+                : DataType.Text),
                 Storage: (string?)field.Attribute("storage") switch
                 {
                     "int32" => NumericStorage.Int32,

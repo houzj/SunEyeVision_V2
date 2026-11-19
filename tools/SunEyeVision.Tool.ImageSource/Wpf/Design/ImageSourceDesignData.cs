@@ -12,7 +12,7 @@ public static class ImageSourceDesignData
 {
     public static (IToolSettingsDraft Draft, ToolSettingsViewOptions Options) CreateParameterContext(bool camera=false)
     {
-        var draft = new DesignDraft();
+        IToolSettingsDraft draft = new SunEyeVision.Plugin.Wpf.Presenters.Design.DesignTimeDraft(new ImageSourceTool());
         if(camera)draft.ApplyFields(new Dictionary<string,ParameterSetting>{[ImageSourceFields.SourceKind]=new ConstantSetting("camera")},_=>{});
         return (draft, new(InputSection: Views.ImageSourceParameterEditor.InputPage, InputContent: new DesignSourceContent()));
     }
@@ -34,32 +34,5 @@ public static class ImageSourceDesignData
         public void RefreshSourceDraft()
         {if(_draft is not null)Input.IsCamera=_draft.CaptureFields().Get<string>(ImageSourceFields.SourceKind)=="camera";}
         public void Dispose(){_draft=null;}
-    }
-
-    private sealed class DesignDraft : IToolSettingsDraft
-    {
-        internal ImageSourceTool Tool {get;}=new();
-        private readonly FieldSettingsDraft _draft;
-        public DesignDraft()
-        {
-            var declaration=(IToolSettingsFields)Tool;
-            var schema=ResultDisplayFields.EditorSchema(Tool);
-            var defaults=declaration.ReadSettings(new ImageSourceSettings()).CopyValues().Concat(Tool.CreateDisplaySettings().CopyValues());
-            _draft=new(schema,new FieldSettings(schema.Inputs,
-                defaults.ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal)));
-        }
-        public ToolSchema Schema=>_draft.Schema;
-        public long Revision=>_draft.Revision;
-        public FieldSettings CaptureFields()=>_draft.CaptureFields();
-        public FieldSettings CaptureValidatedFields()
-        {
-            var fields=_draft.CaptureValidatedFields();
-            if(fields.Capture().Values.Any(value=>value is ReferenceSetting))return fields;
-            var settings=Tool.MaterializeSettings(fields.Select(Tool.SettingsSchema.Inputs).Materialize(new Dictionary<string,object?>()));
-            var errors=((IToolDefinition)Tool).Validate(settings);
-            if(errors.Count!=0)throw new ArgumentException(string.Join("; ",errors.Select(error=>error.Message)));
-            return fields;
-        }
-        public void ApplyFields(IReadOnlyDictionary<string,ParameterSetting> changes,Action<FieldSettings> acceptCandidate)=>_draft.ApplyFields(changes,acceptCandidate);
     }
 }

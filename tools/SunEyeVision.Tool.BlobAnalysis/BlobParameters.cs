@@ -761,7 +761,7 @@ public static class BlobDesignData
     }
     public static (IToolSettingsDraft Draft,ToolSettingsViewOptions Options) CreateParameterContext()
     {
-        var draft=new DesignDraft();var schema=draft.Tool.Describe();
+        var draft=new SunEyeVision.Plugin.Wpf.Presenters.Design.DesignTimeDraft(new BlobTool());var schema=draft.Schema;
         var source = new DeclaredReferenceCandidate("图像源 · 图像", "sample-image", "sample-workflow",
             new Port("output.image", TypeRef.ResourceOf(ResourceKind.Image)), Array.Empty<string>());
         var inputDraft = new FieldSettingsDraft(schema, new FieldSettings(schema.Inputs, new Dictionary<string, ParameterSetting>
@@ -785,32 +785,6 @@ public static class BlobDesignData
             previous.Dispose();presenter.ClearValue(CompositionProperty);
         }
         var composition=new BlobUiComposition(presenter,context.Draft,context.Options);presenter.SetValue(CompositionProperty,composition);
-    }
-    private sealed class DesignDraft : IToolSettingsDraft
-    {
-        internal BlobTool Tool {get;}=new();
-        private readonly FieldSettingsDraft _draft;
-        public DesignDraft()
-        {
-            var declaration=(IToolSettingsFields)Tool;
-            var schema=SunEyeVision.Plugin.Contracts.Results.Presentation.ResultDisplayFields.EditorSchema(Tool);
-            var values=declaration.ReadSettings(new BlobSettings()).CopyValues().Concat(Tool.CreateDisplaySettings().CopyValues())
-                .ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal);
-            _draft=new(schema,new FieldSettings(schema.Inputs,values));
-        }
-        public ToolSchema Schema=>_draft.Schema;
-        public long Revision=>_draft.Revision;
-        public FieldSettings CaptureFields()=>_draft.CaptureFields();
-        public FieldSettings CaptureValidatedFields()
-        {
-            var fields=_draft.CaptureValidatedFields();
-            if(fields.Capture().Values.Any(value=>value is ReferenceSetting))return fields;
-            var settings=((IToolSettingsFields)Tool).MaterializeSettings(fields.Select(Tool.SettingsSchema.Inputs).Materialize(new Dictionary<string,object?>()));
-            var errors=((IToolDefinition)Tool).Validate(settings);
-            if(errors.Count!=0)throw new ArgumentException(string.Join("; ",errors.Select(error=>error.Message)));
-            return fields;
-        }
-        public void ApplyFields(IReadOnlyDictionary<string,ParameterSetting> changes,Action<FieldSettings> acceptCandidate)=>_draft.ApplyFields(changes,acceptCandidate);
     }
 }
 

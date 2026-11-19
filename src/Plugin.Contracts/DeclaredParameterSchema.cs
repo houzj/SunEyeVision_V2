@@ -303,6 +303,7 @@ public sealed class DeclaredParameterSchema
             {
                 null => type.IsEnum ? FieldEditorKind.Choice : FieldEditorKind.Scalar,
                 "folder" => FieldEditorKind.FolderPath,
+                "camera" => FieldEditorKind.Camera,
                 "sequence" => FieldEditorKind.Sequence,
                 "choice" => FieldEditorKind.Choice,
                 "scalar" => FieldEditorKind.Scalar,

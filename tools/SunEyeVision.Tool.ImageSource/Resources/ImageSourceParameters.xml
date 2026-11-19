@@ -39,7 +39,7 @@
                visibleWhen="SourceKind" visibleValue="camera" />
 
     <Parameter id="CameraDeviceId" fieldId="camera.device" type="Text" default="" label="相机"
-               allowReference="false" visibleWhen="SourceKind" visibleValue="camera" />
+               allowReference="false" editor="camera" visibleWhen="SourceKind" visibleValue="camera" />
 
     <Parameter id="CameraTimeoutMs" fieldId="camera.timeout-ms" type="Integer" default="3000" label="取帧超时(ms)"
                storage="int32" minimum="1" maximum="600000" decimals="0" increment="1" allowReference="false"

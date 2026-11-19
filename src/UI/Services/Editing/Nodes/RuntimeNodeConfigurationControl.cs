@@ -238,6 +238,18 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
                     InputPlacements:NativeInputPlacementMap.FromSchemas(inputSchema,draft.SettingsSchema),
                     ToolOwnedInputFields: inputSchema.Presentation?.ToolOwnedInputFields,
                     EagerlyComposePages:true,
+                    // 相机行由参数页渲染；设备列表、状态与打开命令都取自当前方案会话。
+                    CameraSources:new Dictionary<string,ICameraSelectionSource>(StringComparer.Ordinal)
+                    {
+                        ["camera.device"]=new SessionCameraSelectionSource(
+                            ()=>context.Session.Document.Devices
+                                .Where(device=>device.Type==DeviceType.Camera)
+                                .Select(device=>(device.Name,RuntimeId:SunEyeVision.UI.Features.Camera.CameraManagerViewModel.RuntimeDeviceId(device)))
+                                .Where(item=>!string.IsNullOrWhiteSpace(item.RuntimeId))
+                                .Select(item=>new CameraChoiceItem(item.Name,item.RuntimeId))
+                                .ToList(),
+                            ReadCameraStatus,OpenCameraSettings)
+                    },
                     CompositionMode:InputCompositionMode.FlatNative));
             if (!Current()) throw new InvalidOperationException("参数页创建期间节点已失效。");
             InputCompositionDiagnostic += $";createdInput={inputContent is not null || inputFactory is not null};declaredInputs={_inputs.Count}";

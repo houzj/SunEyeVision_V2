@@ -93,67 +93,9 @@ public sealed partial class BlobParameterDefinition
     }
     private static BlobParameterDefinition Load()
     {
-        var assembly=typeof(BlobSettings).Assembly;
-        return new(Compose(
-            ReadDeclaration(assembly,"BlobAnalysis.BlobAlgorithm.xml"),
-            ReadDeclaration(assembly,"BlobAnalysis.BlobAlgorithmTab.xml")));
-    }
-    private static XElement ReadDeclaration(Assembly assembly,string name)
-    {
-        using var stream=assembly.GetManifestResourceStream(name)
-            ??throw new InvalidDataException(name+" is missing from the Runtime component.");
-        try
-        {
-            using var reader=XmlReader.Create(stream,new XmlReaderSettings{DtdProcessing=DtdProcessing.Prohibit,XmlResolver=null,MaxCharactersInDocument=1024*1024});
-            return XDocument.Load(reader).Root??throw new InvalidDataException("Empty Blob declaration document: "+name);
-        }
-        catch(XmlException e){throw new InvalidDataException("Malformed Blob declaration XML: "+name,e);}
-    }
-    private static XElement Compose(XElement algorithm,XElement tab)
-    {
-        if(algorithm.Name!="AlgorithmParamList")throw new InvalidDataException("Unsupported Blob parameter definition root.");
-        if(tab.Name!="AlgorithmTabRoot")throw new InvalidDataException("Unsupported Blob tab declaration root.");
-        var defaults=new Dictionary<string,string>(StringComparer.Ordinal);
-        foreach(var item in algorithm.Elements("ParamItem"))
-        {
-            var name=(string?)item.Element("Name");
-            var value=(string?)item.Element("DefaultValue");
-            if(string.IsNullOrWhiteSpace(name)||value is null||!defaults.TryAdd(name,value))
-                throw new InvalidDataException("Invalid or duplicate Blob parameter default entry.");
-        }
-        var root=new XElement("BlobParameters",
-            new XAttribute("schemaVersion",Required(tab,"schemaVersion")),
-            new XAttribute("workflowImageInputId",Required(tab,"workflowImageInputId")));
-        var inputs=tab.Element("Inputs")??throw new InvalidDataException("Blob tab declaration has no input editor section.");
-        root.Add(new XElement("Inputs",inputs.Elements("Input").Select(input=>new XElement(input))));
-        var tabs=tab.Element("Tabs")??throw new InvalidDataException("Blob tab declaration has no tabs.");
-        var used=new HashSet<string>(StringComparer.Ordinal);
-        foreach(var pageTab in tabs.Elements("Tab"))
-        {
-            var page=Required(pageTab,"Name");
-            var categories=pageTab.Element("Categorys")??throw new InvalidDataException("Blob tab has no categories: "+page);
-            foreach(var category in categories.Elements("Category"))
-            {
-                var group=new XElement("Group",
-                    new XAttribute("page",page),
-                    new XAttribute("section",Required(category,"Name")),
-                    new XAttribute("vmCategory",Required(category,"vmCategory")));
-                if(category.Attribute("advanced") is { } advanced)group.Add(new XAttribute("advanced",advanced.Value));
-                var items=category.Element("Items")??throw new InvalidDataException("Blob category has no items.");
-                foreach(var declared in items.Elements("Parameter"))
-                {
-                    var parameter=new XElement(declared);
-                    var id=Required(parameter,"id");
-                    if(!defaults.TryGetValue(id,out var value))throw new InvalidDataException("Blob parameter has no algorithm default: "+id);
-                    if(!used.Add(id))throw new InvalidDataException("Duplicate Blob parameter in tab declaration: "+id);
-                    parameter.Add(new XAttribute("default",value));
-                    group.Add(parameter);
-                }
-                root.Add(group);
-            }
-        }
-        if(used.Count!=defaults.Count)throw new InvalidDataException("Blob algorithm defaults and tab parameters differ.");
-        return root;
+        using var stream=typeof(BlobSettings).Assembly.GetManifestResourceStream("BlobAnalysis.BlobParameters.xml")
+            ??throw new InvalidDataException("BlobParameters.xml is missing from the Runtime component.");
+        return Read(stream);
     }
     public static BlobParameterDefinition Read(Stream stream)
     {

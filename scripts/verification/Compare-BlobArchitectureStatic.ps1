@@ -1,13 +1,13 @@
 param([string]$RepoRoot='D:\MyWork\SunEyeVision_V2')
 $vmPath=Join-Path $RepoRoot 'docs\evidence\original-release-units\BlobAnalysis\IMVSBlobFindModuAlgorithmTab.xml'
-$selfPath=Join-Path $RepoRoot 'tools\SunEyeVision.Tool.BlobAnalysis\Resources\BlobAlgorithmTab.xml'
+$selfPath=Join-Path $RepoRoot 'tools\SunEyeVision.Tool.BlobAnalysis\Resources\BlobParameters.xml'
 $mappingPath=Join-Path $RepoRoot 'docs\evidence\original-release-units\BlobAnalysis\BlobGroupLinkMapping.json'
 [xml]$vm=[System.IO.File]::ReadAllText($vmPath,[System.Text.Encoding]::UTF8)
 [xml]$self=[System.IO.File]::ReadAllText($selfPath,[System.Text.Encoding]::UTF8)
 $vmCategories=@()
 foreach($tabNode in @($vm.AlgorithmTabRoot.Tabs.Tab)){ foreach($category in @($tabNode.Categorys.Category)){ $links=@(); foreach($link in @($category.Items.GroupLinkItem)){ if($link.Name){$links += [ordered]@{name=$link.Name; link=$link.LinkName} } }; $count=@($category.Items.ChildNodes | Where-Object NodeType -eq 'Element').Count; $vmCategories += [ordered]@{name=$category.Name; groupLinks=$links; itemCount=$count} } }
 $selfGroups=@()
-foreach($tab in @($self.AlgorithmTabRoot.Tabs.Tab)){ foreach($cat in @($tab.Categorys.Category)){ $ids=@($cat.Items.Parameter | ForEach-Object id); $selfGroups += [ordered]@{page=$tab.Name; section=$cat.Name; vmCategory=$cat.vmCategory; parameterCount=$ids.Count; ids=$ids} } }
+foreach($group in @($self.BlobParameters.Group)){ $ids=@($group.Parameter | ForEach-Object id); $selfGroups += [ordered]@{page=$group.page; section=$group.section; vmCategory=$group.vmCategory; parameterCount=$ids.Count; ids=$ids} }
 $checks=[ordered]@{'self groups preserve original category identity'=(@($selfGroups|Where-Object{-not $_.vmCategory}).Count -eq 0);'self has one mapped group for each non-display VM category'=(@('Tab_ROI Area','Tab_Run Params','Tab_Check Result'|Where-Object{ @($selfGroups.vmCategory) -notcontains $_}).Count -eq 0)}
 $mapping=if(Test-Path $mappingPath){[System.IO.File]::ReadAllText($mappingPath,[System.Text.Encoding]::UTF8)|ConvertFrom-Json}else{$null}
 $mappedNames=@($mapping.links|ForEach-Object {$_.vm})

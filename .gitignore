@@ -250,3 +250,6 @@ installer/Release.Local.props
 
 # local test data and automation session outputs (large, not tracked)
 /.testdata/
+
+# 临时提交消息文件
+.commit-msg.txt

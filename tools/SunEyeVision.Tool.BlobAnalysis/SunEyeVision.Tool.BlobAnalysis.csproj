@@ -15,7 +15,6 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources/BlobParameters.xml" LogicalName="BlobAnalysis.BlobParameters.xml" />
     <EmbeddedResource Include="Resources/BlobDisplay.xml" LogicalName="BlobAnalysis.BlobDisplay.xml" />
-    <None Include="Resources/OriginalReleaseUnit/**" Link="OriginalReleaseUnit/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Never" />
     <ProjectReference Include="../../src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj" />
     <ProjectReference Include="../../src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj"><Private>false</Private></ProjectReference>
     <ProjectReference Include="../../src/SunEyeVision.HalAdapter/Runtime/SunEyeVision.HalAdapter.Runtime.csproj" />

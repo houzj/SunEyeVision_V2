@@ -1,6 +1,6 @@
 param(
     [string]$RepoRoot = 'D:\MyWork\SunEyeVision_V2',
-    [string]$EvidenceRoot = 'D:\MyWork\SunEyeVision_V2\tools\SunEyeVision.Tool.BlobAnalysis\Resources\OriginalReleaseUnit'
+    [string]$EvidenceRoot = 'D:\MyWork\SunEyeVision_V2\docs\evidence\original-release-units\BlobAnalysis'
 )
 $ErrorActionPreference = 'Stop'
 $algorithmTab = Join-Path $EvidenceRoot 'IMVSBlobFindModuAlgorithmTab.xml'

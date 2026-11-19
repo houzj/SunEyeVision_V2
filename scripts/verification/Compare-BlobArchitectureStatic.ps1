@@ -1,7 +1,7 @@
 param([string]$RepoRoot='D:\MyWork\SunEyeVision_V2')
-$vmPath=Join-Path $RepoRoot 'tools\SunEyeVision.Tool.BlobAnalysis\Resources\OriginalReleaseUnit\IMVSBlobFindModuAlgorithmTab.xml'
+$vmPath=Join-Path $RepoRoot 'docs\evidence\original-release-units\BlobAnalysis\IMVSBlobFindModuAlgorithmTab.xml'
 $selfPath=Join-Path $RepoRoot 'tools\SunEyeVision.Tool.BlobAnalysis\Resources\BlobParameters.xml'
-$mappingPath=Join-Path $RepoRoot 'tools\SunEyeVision.Tool.BlobAnalysis\Resources\OriginalReleaseUnit\BlobGroupLinkMapping.json'
+$mappingPath=Join-Path $RepoRoot 'docs\evidence\original-release-units\BlobAnalysis\BlobGroupLinkMapping.json'
 [xml]$vm=[System.IO.File]::ReadAllText($vmPath,[System.Text.Encoding]::UTF8)
 [xml]$self=[System.IO.File]::ReadAllText($selfPath,[System.Text.Encoding]::UTF8)
 $vmCategories=@()

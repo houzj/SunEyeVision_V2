@@ -11,7 +11,7 @@ internal static class S2DocumentEditingCases
         try
         {
             using var resources=new FrozenOutputResources();
-            BlobOutput Run(HalImage image,BlobSettings settings){using var snapshot=image.CaptureSnapshot(new(Guid.NewGuid(),"native-input"));return new BlobSession().Execute(settings,snapshot,resources);}
+            BlobOutput Run(HalImage image,BlobSettings settings){using var snapshot=image.CaptureSnapshot(new(Guid.NewGuid(),"native-input"));return new BlobAlgorithm().Execute(settings,snapshot,resources);}
             var settings=new BlobSettings{Threshold=100,IsAreaFilterEnabled=false};
             HOperatorSet.SetSystem("max_connection",0);HOperatorSet.SetSystem("tsp_neighborhood",4);
             var bytes=new byte[64];bytes[18]=bytes[27]=200;using var input=HalImage.CreateFromBytes(bytes,8,8,1);
@@ -38,10 +38,10 @@ internal static class S2DocumentEditingCases
             var invalidConnectivity=settings with{Connectivity=(BlobConnectivity)6};
             var invalidRejected=false;try{using var output=Run(input,invalidConnectivity);}catch(ArgumentException){invalidRejected=true;}Require(invalidRejected,"非法连通值被执行");
             using(var canceled=new CancellationTokenSource())
-            {canceled.Cancel();using var source=input.CaptureSnapshot(new(Guid.NewGuid(),"canceled"));try{using var output=new BlobSession().Execute(settings with{Connectivity=BlobConnectivity.Connected_8},source,resources,cancellation:canceled.Token);throw new Exception("取消未拒绝");}catch(OperationCanceledException){}}
+            {canceled.Cancel();using var source=input.CaptureSnapshot(new(Guid.NewGuid(),"canceled"));try{using var output=new BlobAlgorithm().Execute(settings with{Connectivity=BlobConnectivity.Connected_8},source,resources,cancellation:canceled.Token);throw new Exception("取消未拒绝");}catch(OperationCanceledException){}}
             // 在作用域已安装后故意传入错误pose，证明异常finally恢复，而非只测预检拒绝。
             using(var source=input.CaptureSnapshot(new(Guid.NewGuid(),"pose-failure")))
-            {try{using var output=new BlobSession().Execute(settings with{IsPositionCorrectionEnabled=true,Connectivity=BlobConnectivity.Connected_8},source,resources);throw new Exception("缺失pose未拒绝");}catch(ArgumentException){}}
+            {try{using var output=new BlobAlgorithm().Execute(settings with{IsPositionCorrectionEnabled=true,Connectivity=BlobConnectivity.Connected_8},source,resources);throw new Exception("缺失pose未拒绝");}catch(ArgumentException){}}
             HOperatorSet.GetSystem("tsp_neighborhood",out var errorRestored);using(errorRestored)Require(errorRestored.I==4,"失败/取消污染调用者线程");
             Console.WriteLine("通过：显式4/8对角连通、默认8及非法/取消/安装后异常线程恢复");
             HOperatorSet.SetSystem("max_connection",1);var rejected=false;

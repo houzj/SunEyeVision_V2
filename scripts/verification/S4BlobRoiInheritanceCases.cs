@@ -367,7 +367,7 @@ internal static class S2DocumentEditingCases
             return BlobInput.Read(new InputValues(tool.Describe().Inputs,values));
         }
         BlobOutput Run(string mode,double[] numbers,bool combination=false)
-        {var session=new BlobSession();try{return session.Execute(settings,Definition(mode,numbers,combination),resources);}finally{session.DisposeAsync().GetAwaiter().GetResult();}}
+        {var session=new BlobAlgorithm();try{return session.Execute(settings,Definition(mode,numbers,combination),resources);}finally{session.DisposeAsync().GetAwaiter().GetResult();}}
         Case("本方矩形5叶每项敏感及组合与逐叶同值物化",()=>{
             var baseline=new[]{20d,20d,12d,4d,0d};
             using var original=Run(BlobRoiInheritance.RectangleParameters,baseline);Require(RegionContains(original.Region,25,20)&&!RegionContains(original.Region,20,25),"矩形宽高未消费");
@@ -425,7 +425,7 @@ internal static class S2DocumentEditingCases
             foreach(var sequence in new[]{false,true})
             {
                 var x=Enumerable.Range(0,65).Select(i=>i==64?60d:2d+i%8*6).ToArray();var y=Enumerable.Range(0,65).Select(i=>i==64?60d:2d+i/8*6).ToArray();var width=Enumerable.Repeat(1d,65).ToArray();var angle=new double[65];
-                var typed=MultipleInput(BlobRoiInheritance.RectangleParameters,new[]{x,y,width,width,angle},sequence);Require(BlobLocalRoi.Items(typed.LocalRoi!,BlobLocalRoi.Inspection).Count==64,"临时几何不是64项");var session=new BlobSession();try{using var output=session.Execute(settings,typed,resources);Require(output.Count==64&&!RegionContains(output.Region,60,60),"第65项未排除或64项未实际消费");}finally{session.DisposeAsync().GetAwaiter().GetResult();}
+                var typed=MultipleInput(BlobRoiInheritance.RectangleParameters,new[]{x,y,width,width,angle},sequence);Require(BlobLocalRoi.Items(typed.LocalRoi!,BlobLocalRoi.Inspection).Count==64,"临时几何不是64项");var session=new BlobAlgorithm();try{using var output=session.Execute(settings,typed,resources);Require(output.Count==64&&!RegionContains(output.Region,60,60),"第65项未排除或64项未实际消费");}finally{session.DisposeAsync().GetAwaiter().GetResult();}
                 var limited=MultipleInput(BlobRoiInheritance.RectangleParameters,new[]{x,y.Take(2).ToArray(),width,width,angle},sequence);Require(BlobLocalRoi.Items(limited.LocalRoi!,BlobLocalRoi.Inspection).Count==2,"不等长未取最小数量");
                 var singleton=MultipleInput(BlobRoiInheritance.RectangleParameters,new[]{x,y,new[]{1d},width,angle},sequence);Require(BlobLocalRoi.Items(singleton.LocalRoi!,BlobLocalRoi.Inspection).Count==1,"单常量被广播");
             }

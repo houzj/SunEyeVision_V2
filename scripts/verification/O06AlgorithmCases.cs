@@ -36,33 +36,33 @@ internal static class S2DocumentEditingCases
             var plugins=new PluginManager();plugins.LoadPlugins();PluginLoader.MarkAsLoaded();
             Case("单/双阈值闭区间端点、等阈值、反向和实际值",()=>{
                 using var resources=new FrozenOutputResources();using var input=Gray(new byte[]{0,99,100,101,199,200,201,255});
-                using var single=new BlobSession().Execute(Basic with{Threshold=100},input,resources);
+                using var single=new BlobAlgorithm().Execute(Basic with{Threshold=100},input,resources);
                 Require(single.TotalArea==6&&single.ThresholdMinUsed==100&&single.ThresholdMaxUsed==255,"单阈值端点错误");
-                using var range=new BlobSession().Execute(Basic with{SegmentationMode=Mode.DoubleThreshold,Threshold=100,UpperThreshold=200},input,resources);
+                using var range=new BlobAlgorithm().Execute(Basic with{SegmentationMode=Mode.DoubleThreshold,Threshold=100,UpperThreshold=200},input,resources);
                 Require(range.TotalArea==4&&range.ThresholdMaxUsed==200,"双阈值端点错误");
-                using var equal=new BlobSession().Execute(Basic with{SegmentationMode=Mode.DoubleThreshold,Threshold=100,UpperThreshold=100},input,resources);
+                using var equal=new BlobAlgorithm().Execute(Basic with{SegmentationMode=Mode.DoubleThreshold,Threshold=100,UpperThreshold=100},input,resources);
                 Require(equal.TotalArea==1,"等阈值应选择恰好一个灰度");
-                using var inverse=new BlobSession().Execute(Basic with{SegmentationMode=Mode.DoubleThreshold,Threshold=100,UpperThreshold=200,Type=BlobThresholdMode.BinaryInv},input,resources);
+                using var inverse=new BlobAlgorithm().Execute(Basic with{SegmentationMode=Mode.DoubleThreshold,Threshold=100,UpperThreshold=200,Type=BlobThresholdMode.BinaryInv},input,resources);
                 Require(inverse.TotalArea==4,"区间反向错误");
-                Throws(()=>new BlobSession().Execute(Basic with{SegmentationMode=Mode.DoubleThreshold,Threshold=200,UpperThreshold=100},input,resources),"双阈值");
+                Throws(()=>new BlobAlgorithm().Execute(Basic with{SegmentationMode=Mode.DoubleThreshold,Threshold=200,UpperThreshold=100},input,resources),"双阈值");
             });
             Case("不二值化原始Gray8、Domain内严格0/255和可空输出",()=>{
                 using var resources=new FrozenOutputResources();using var input=Gray(new byte[]{0,255,0,255});
                 var settings=Basic with{SegmentationMode=Mode.None,Threshold=-1,UpperThreshold=-1,Type=BlobThresholdMode.BinaryInv};
-                using var output=new BlobSession().Execute(settings,input,resources);
+                using var output=new BlobAlgorithm().Execute(settings,input,resources);
                 Require(output.TotalArea==2&&output.ThresholdMinUsed is null&&output.ThresholdMaxUsed is null&&output.TypeUsed=="NotApplied","None仍使用阈值或极性");
                 var values=new InputValues(BlobSchema.Outputs,output.ToValues());Require(values.Get<long?>(BlobSchema.Field(8)) is null&&values.Get<string>(BlobSchema.Field(102))=="None","可空声明不一致");
-                foreach(var bad in new byte[]{1,127,254}){using var invalid=Gray(new byte[]{255,bad});Throws(()=>new BlobSession().Execute(settings,invalid,resources),"BINARY_INPUT_VALUES");}
+                foreach(var bad in new byte[]{1,127,254}){using var invalid=Gray(new byte[]{255,bad});Throws(()=>new BlobAlgorithm().Execute(settings,invalid,resources),"BINARY_INPUT_VALUES");}
                 using var color=new FrozenImageResource(new(1,1,3,PixelLayout.Bgr24),new(Guid.NewGuid(),"color"),BlobSchema.ImageFrame,new byte[]{255,255,255},new[]{new RegionRun(0,0,0)});
-                Throws(()=>new BlobSession().Execute(settings,color,resources),"BINARY_INPUT_FORMAT");
-                using var outside=Gray(new byte[]{255,17},new[]{new RegionRun(0,0,0)});using var ok=new BlobSession().Execute(settings,outside,resources);Require(ok.TotalArea==1,"Domain外非法值不应参与准入");
+                Throws(()=>new BlobAlgorithm().Execute(settings,color,resources),"BINARY_INPUT_FORMAT");
+                using var outside=Gray(new byte[]{255,17},new[]{new RegionRun(0,0,0)});using var ok=new BlobAlgorithm().Execute(settings,outside,resources);Require(ok.TotalArea==1,"Domain外非法值不应参与准入");
                 using var domainBad=Gray(new byte[]{255,17});using var roi=new FrozenRegionResource(BlobSchema.ImageFrame,domainBad.Frame,new[]{new RegionRun(0,0,0)});
-                Throws(()=>new BlobSession().Execute(settings,domainBad,resources,roi),"BINARY_INPUT_VALUES");
+                Throws(()=>new BlobAlgorithm().Execute(settings,domainBad,resources,roi),"BINARY_INPUT_VALUES");
                 var frame=Guid.NewGuid();var document=Guid.NewGuid();var workflow=Guid.NewGuid();
                 using var prior=new FrozenImageResource(new(2,1,2,PixelLayout.Gray8),new(frame,"same-source",new(document,workflow,Guid.NewGuid(),"source",Guid.NewGuid())),BlobSchema.ImageFrame,new byte[]{0,255},new[]{new RegionRun(0,0,1)});
                 using var current=new FrozenImageResource(new(2,1,2,PixelLayout.Gray8),new(frame,"same-source",new(document,workflow,Guid.NewGuid(),"source",Guid.NewGuid())),BlobSchema.ImageFrame,new byte[]{0,255},new[]{new RegionRun(0,0,1)});
                 using var staleRegion=new FrozenRegionResource(BlobSchema.ImageFrame,prior.Frame,new[]{new RegionRun(0,1,1)});
-                Throws(()=>new BlobSession().Execute(settings,current,resources,staleRegion),"frame");
+                Throws(()=>new BlobAlgorithm().Execute(settings,current,resources,staleRegion),"frame");
             });
             Case("Runtime规范值可空阈值和最终集合统计",()=>{
                 using var image=HalImage.CreateFromBytes(new byte[]{0,255,255,0},4,1,1);

@@ -1049,13 +1049,13 @@ internal static class S2DocumentEditingCases
     private static string ReadRootMarkup(string name)
     {
         var repo=new DirectoryInfo(Environment.GetEnvironmentVariable("S2_PRODUCT_ROOT")!).Parent!.Parent!.Parent!;
-        var document=XDocument.Load(Path.Combine(repo.FullName,"tools/SunEyeVision.BlobAnalysis/Wpf/Views",name));
+        var document=XDocument.Load(Path.Combine(repo.FullName,"tools/SunEyeVision.Tool.BlobAnalysis/Editor/Views",name));
         document.Root!.Attribute(XName.Get("Class","http://schemas.microsoft.com/winfx/2006/xaml"))!.Remove();
         foreach(var attribute in document.Descendants().Attributes().Where(attribute=>attribute.Name.LocalName=="SelectionChanged").ToArray())attribute.Remove();
         foreach(var attribute in document.Root.Attributes().Where(attribute=>attribute.IsNamespaceDeclaration&&attribute.Value.StartsWith("clr-namespace:")&&!attribute.Value.Contains(";assembly=")).ToArray())
         {
             // Loose XAML has no containing project assembly; qualify the namespace, including expanded names.
-            var original=attribute.Value;var qualified=original+";assembly=SunEyeVision.Tool.BlobAnalysis.Wpf";
+            var original=attribute.Value;var qualified=original+";assembly=SunEyeVision.Tool.BlobAnalysis.Runtime";
             foreach(var element in document.Descendants().Where(element=>element.Name.NamespaceName==original).ToArray())
                 element.Name=XName.Get(element.Name.LocalName,qualified);
             foreach(var member in document.Descendants().Attributes().Where(member=>!member.IsNamespaceDeclaration&&member.Name.NamespaceName==original).ToArray())

@@ -59,7 +59,7 @@ if ($missingFromMapping.Count -ne 0 -or $missingFromSource.Count -ne 0) {
 }
 $srcSdk = Join-Path (Split-Path -Parent $PSScriptRoot | Split-Path -Parent) 'src\Plugin.SDK'
 $sdkEntries = @(if (Test-Path $srcSdk) { Get-ChildItem -LiteralPath $srcSdk -Force -ErrorAction Stop })
-$scoped = @($consumers | Where-Object { $_.Project -like 'tools/SunEyeVision.ImageSource/*' -or $_.Project -like 'tools/SunEyeVision.BlobAnalysis/*' })
+$scoped = @($consumers | Where-Object { $_.Project -like 'tools/SunEyeVision.Tool.ImageSource*' -or $_.Project -like 'tools/SunEyeVision.Tool.BlobAnalysis*' })
 $scopedLegacy = @($scoped | Where-Object {
     @($_.ProjectReferences) -match 'src[\\/]Plugin\.SDK[\\/]'
     -or @($_.ConsumerFiles) -match 'Plugin\.SDK'

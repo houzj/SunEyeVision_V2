@@ -2,6 +2,7 @@ param(
     [Parameter(Mandatory = $true)][string]$App,
     [Parameter(Mandatory = $true)][string]$SolutionText,
     [Parameter(Mandatory = $true)][string]$NodeText,
+    [string]$SolutionPath,
     [string]$OutputRoot = 'D:\MyWork\SunEyeVision_V2\Release\_validation\AgentDesktopToolReview\single-tool',
     [string]$AgentDesktopHome = 'C:\Users\Administrator\.codex\visualizations\2026\11\09\01a1c08e-2257-7a32-8813-4fdf253c33e3\agent-desktop-state',
     [switch]$ProbeExecute,
@@ -34,6 +35,7 @@ function Snapshot([string]$appName, [string]$label) {
     try { return Save-Json (Invoke-Agent @('snapshot','--app',$appName,'--include-bounds','--timeout-ms','20000')) "$label.json" }
     catch {
         Save-Json (Invoke-Agent @('list-apps')) "$label-list-apps.json" | Out-Null
+        Save-Json (Invoke-Agent @('list-windows','--app',$appName)) "$label-list-windows.json" | Out-Null
         Start-Sleep -Milliseconds 500
         return Save-Json (Invoke-Agent @('snapshot','--app',$appName,'--include-bounds','--timeout-ms','25000')) "$label.json"
     }
@@ -63,19 +65,28 @@ function Find-Match($matches, [string]$needle) {
 $appName = Split-Path -Leaf $App
 $closed = $false
 try {
-    Save-Json (Invoke-Agent @('launch',$App,'--activate','--timeout','30000')) 'launch.json' | Out-Null
-    try { Save-Json (Invoke-Agent @('wait','--app',$appName,'--text',$SolutionText,'--timeout','30000')) 'wait-solution.json' | Out-Null }
-    catch { @{ ok = $false; phase = 'wait-solution'; message = $_.Exception.Message } | ConvertTo-Json | Set-Content -Encoding UTF8 (Join-Path $run 'wait-solution.json') }
-    $welcome = Snapshot $appName 'welcome-before'
-    $solution = Find-Node $welcome.data.tree $SolutionText
-    if ($null -eq $solution) {
-        $found = Save-Json (Invoke-Agent @('find','--app',$appName,'--text',$SolutionText)) 'find-solution.json'
-        $solution = Find-Match $found.data.matches $SolutionText
+    if(-not [string]::IsNullOrWhiteSpace($SolutionPath)) {
+        $process=Start-Process -FilePath $App -ArgumentList @($SolutionPath) -PassThru
+        @{ok=$true;method='powershell-start-process';pid=$process.Id;solution=$SolutionPath}|ConvertTo-Json|Set-Content -Encoding UTF8 (Join-Path $run 'launch.json')
+        Start-Sleep -Milliseconds 800
+    } else {
+        Save-Json (Invoke-Agent @('launch',$App,'--activate','--timeout','30000')) 'launch.json' | Out-Null
     }
-    if ($null -eq $solution) { throw "欢迎页没有找到方案: $SolutionText" }
-    $x = [int]($solution.bounds.x + $solution.bounds.width / 2)
-    $y = [int]($solution.bounds.y + $solution.bounds.height / 2)
-    Save-Json (Invoke-Agent @('mouse-click','--headed','--xy',"$x,$y",'--count','2')) 'open-solution.json' | Out-Null
+    $x=0; $y=0
+    if([string]::IsNullOrWhiteSpace($SolutionPath)) {
+        try { Save-Json (Invoke-Agent @('wait','--app',$appName,'--text',$SolutionText,'--timeout','30000')) 'wait-solution.json' | Out-Null }
+        catch { @{ ok = $false; phase = 'wait-solution'; message = $_.Exception.Message } | ConvertTo-Json | Set-Content -Encoding UTF8 (Join-Path $run 'wait-solution.json') }
+        $welcome = Snapshot $appName 'welcome-before'
+        $solution = Find-Node $welcome.data.tree $SolutionText
+        if ($null -eq $solution) {
+            $found = Save-Json (Invoke-Agent @('find','--app',$appName,'--text',$SolutionText)) 'find-solution.json'
+            $solution = Find-Match $found.data.matches $SolutionText
+        }
+        if ($null -eq $solution) { throw "欢迎页没有找到方案: $SolutionText" }
+        $x = [int]($solution.bounds.x + $solution.bounds.width / 2)
+        $y = [int]($solution.bounds.y + $solution.bounds.height / 2)
+        Save-Json (Invoke-Agent @('mouse-click','--headed','--xy',"$x,$y",'--count','2')) 'open-solution.json' | Out-Null
+    }
     try { Save-Json (Invoke-Agent @('wait','--app',$appName,'--text','V4.4.0','--timeout','30000')) 'wait-main.json' | Out-Null }
     catch { @{ ok = $false; phase = 'wait-main'; message = $_.Exception.Message } | ConvertTo-Json | Set-Content -Encoding UTF8 (Join-Path $run 'wait-main.json') }
     $main = Snapshot $appName 'main-before-tool'
@@ -126,6 +137,12 @@ finally {
             $closed = $true
         } catch {
             @{ ok = $false; message = $_.Exception.Message } | ConvertTo-Json | Set-Content -Encoding UTF8 (Join-Path $run 'close-app.json')
+            try {
+                Save-Json (Invoke-Agent @('close-app',$appName,'--force')) 'close-app-force.json' | Out-Null
+                $closed = $true
+            } catch {
+                @{ ok = $false; message = $_.Exception.Message } | ConvertTo-Json | Set-Content -Encoding UTF8 (Join-Path $run 'close-app-force.json')
+            }
         }
     } else {
         @{ ok = $true; kept_open = $true; note = '调用方负责后续交互和关闭' } |

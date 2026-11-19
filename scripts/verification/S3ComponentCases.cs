@@ -79,7 +79,7 @@ internal static class S2DocumentEditingCases
             using var resultView=ToolRegistry.CreateCurrentResultView("BlobAnalysis")??throw new Exception("Runtime没有结果视图");
             if(expectEditor)
             {
-                Require(resultView.View.GetType().Assembly.GetName().Name=="SunEyeVision.Tool.BlobAnalysis.Wpf","可选Wpf结果视图错误");
+                Require(resultView.View.GetType().Assembly.GetName().Name=="SunEyeVision.Tool.BlobAnalysis.Runtime","Blob共享程序集结果视图错误");
                 var refs=resultView.View.GetType().Assembly.GetReferencedAssemblies().Select(reference=>reference.Name).ToArray();
                 Require(!refs.Contains("SunEyeVision.Plugin.SDK")&&!refs.Contains("SunEyeVision.UI"),"Blob.Wpf依赖SDK或UI宿主");
                 Console.WriteLine("通过：可选Wpf中立工厂供应真实Runtime结果页，不依赖SDK或UI宿主");
@@ -206,7 +206,7 @@ internal static class S2DocumentEditingCases
         var configuration=RuntimeToolConfiguration.Create("BlobAnalysis");
         var provider=(IToolSettingsFields)ToolRegistry.CreateRuntime("BlobAnalysis");
         using var view=ToolRegistry.CreateSettingsView("BlobAnalysis",configuration.Fields.Select(provider.SettingsSchema.Inputs));
-        Require(view.View.GetType().Assembly.GetName().Name==(expectEditor?"SunEyeVision.Tool.BlobAnalysis.Wpf":"SunEyeVision.Plugin.Wpf"),"设置编辑器有无Wpf回退错误");
+        Require(view.View.GetType().Assembly.GetName().Name==(expectEditor?"SunEyeVision.Tool.BlobAnalysis.Runtime":"SunEyeVision.Plugin.Wpf"),"设置编辑器有无Wpf回退错误");
         var fields=Find<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldsView>(view.View).Single().Fields.ToArray();
         Require(fields.Length==54,"设置编辑器未消费完整XML字段");
         var id=provider.SettingsSchema.Presentation!.Fields.Single(f=>f.DisplayName=="阈值").FieldId;

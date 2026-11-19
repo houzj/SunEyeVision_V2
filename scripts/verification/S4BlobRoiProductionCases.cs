@@ -284,7 +284,7 @@ internal static class S2DocumentEditingCases
     {
         using var resources=new FrozenOutputResources();var image=resources.CreateGray8(64,64,Enumerable.Repeat((byte)200,4096).ToArray());
         var settings=new BlobSettings{IsAreaFilterEnabled=false,IsCircularityFilterEnabled=false,IsRectangularityFilterEnabled=false,OutputBoundary=false,OutputGrayImage=false};
-        BlobOutput Run(RecordValue definition,IReadOnlyImage? input=null)=>new BlobSession().Execute(settings,input??image,resources,localRoi:definition);
+        BlobOutput Run(RecordValue definition,IReadOnlyImage? input=null)=>new BlobAlgorithm().Execute(settings,input??image,resources,localRoi:definition);
         Case("矩形正负45度遵循X右Y下合同",()=>{foreach(var sign in new[]{1d,-1d}){using var result=Run(Root(NativeShape("rectangle",45*sign)));Require(Contains(result.Region,24,sign>0?24:16)&&!Contains(result.Region,24,sign>0?16:24),"矩形旋转或宽高方向错误");}});
         Case("非对称多边形row/col与闭合填充",()=>{using var result=Run(Root(NativeShape("polygon")));Require(Contains(result.Region,6,7)&&!Contains(result.Region,14,6),"多边形坐标转置或未填充");});
         Case("环正负扫角跨边界及正负整环和内孔",()=>

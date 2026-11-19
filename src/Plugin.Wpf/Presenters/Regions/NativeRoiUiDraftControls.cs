@@ -105,8 +105,7 @@ public sealed class NativeRoiUiDraftControls : StackPanel, INativeRoiControls, I
         }
         if (Value(_detection)==1)
         {
-            if (!_positionCorrectionEnabled) yield break;
-            switch ((int)Value(_inherit))
+            if (_positionCorrectionEnabled) switch ((int)Value(_inherit))
             {
                 case 0: yield return _inheritance.RectangleSource; break;
                 case 1:

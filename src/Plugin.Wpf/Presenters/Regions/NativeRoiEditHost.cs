@@ -14,7 +14,9 @@ namespace SunEyeVision.Plugin.Wpf.Presenters.Regions;
 public sealed partial class NativeRoiEditHost : IDisposable
 {
     private readonly DeclaredInputFieldsView _inputs;
-    private readonly NativeRoiUiDraftControls _controls;
+    // 领域能力走接口，视觉联动走具体元素：容器更换实现时宿主无需改动。
+    private readonly INativeRoiControls _controls;
+    private readonly FrameworkElement _controlsVisual;
     private readonly NativeRoiFrameSource? _source;
     private readonly SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldRow _imageField;
     private readonly Dictionary<string,NativeRoiEditor> _editors=new();
@@ -46,7 +48,7 @@ public sealed partial class NativeRoiEditHost : IDisposable
     public event Action? Changed;
     public NativeRoiEditHost(DeclaredInputFieldsView inputs,NativeRoiUiDraftControls controls,NativeRoiFrameSource? source,INativeRoiEditDocument document,Func<string?>? drawBlockReason=null)
     {
-        _inputs=inputs;_controls=controls;_source=source;_drawBlockReason=drawBlockReason;_document=document;_observed=Read();
+        _inputs=inputs;_controls=controls;_controlsVisual=controls;_source=source;_drawBlockReason=drawBlockReason;_document=document;_observed=Read();
         _primaryGroup=document.Groups[0].Name;_secondaryGroup=document.Groups[1].Name;_localMode=document.LocalModeValue;
         _primaryMaximum=document.Groups[0].MaximumItems;_secondaryMaximum=document.Groups[1].MaximumItems;
         _scopes=new(){{_primaryGroup,Guid.NewGuid()},{_secondaryGroup,Guid.NewGuid()}};
@@ -98,7 +100,7 @@ public sealed partial class NativeRoiEditHost : IDisposable
     }
     private void AcquireFrame(bool interactive)
     {
-        if(_disposed||_refreshing||_accepting||_activating||!_controls.IsLoaded||!_controls.IsVisible)return;
+        if(_disposed||_refreshing||_accepting||_activating||!_controlsVisual.IsLoaded||!_controlsVisual.IsVisible)return;
         _refreshing=true;
         try
         {
@@ -186,14 +188,14 @@ public sealed partial class NativeRoiEditHost : IDisposable
             try{RetireFrame();Notify();}
             finally{_refreshing=false;}
         }
-        if(_controls.IsVisible&&_controls.IsLoaded&&_sessions.Count==0
+        if(_controlsVisual.IsVisible&&_controlsVisual.IsLoaded&&_sessions.Count==0
             &&(_controls.IsLocalDrawing(_primaryGroup)||_controls.IsLocalDrawing(_secondaryGroup)))
             AcquireFrame(interactive:false);
     }
     private void RebindCurrentFrame()
     {
         if(_disposed||_refreshing||_accepting||_activating)return;
-        if(!_controls.IsLoaded||!_controls.IsVisible)return;
+        if(!_controlsVisual.IsLoaded||!_controlsVisual.IsVisible)return;
         var reacquire=_controls.IsLocalDrawing(_primaryGroup)||_controls.IsLocalDrawing(_secondaryGroup);
         if(_active is {} active)_pendingActivate=active;
         _refreshing=true;
@@ -242,7 +244,7 @@ public sealed partial class NativeRoiEditHost : IDisposable
     }
     private bool Activate(string group)
     {
-        if(_disposed||_activating||_accepting||!_controls.IsLoaded||!_controls.IsVisible||!_controls.IsLocalDrawing(group))return false;
+        if(_disposed||_activating||_accepting||!_controlsVisual.IsLoaded||!_controlsVisual.IsVisible||!_controls.IsLocalDrawing(group))return false;
         if(!FrameCurrent(_generation))AcquireFrame(interactive:true);
         if(ActivateCore(group))return true;
         // A frame may have changed after the first borrow but before the
@@ -410,7 +412,7 @@ public sealed partial class NativeRoiEditHost
     internal string PreviewError {get;private set;}="";
     private void InitializePreview()
     {
-        _controls.Loaded+=PreviewLoaded;_controls.Unloaded+=PreviewUnloaded;_controls.IsVisibleChanged+=PreviewVisibilityChanged;
+        _controlsVisual.Loaded+=PreviewLoaded;_controlsVisual.Unloaded+=PreviewUnloaded;_controlsVisual.IsVisibleChanged+=PreviewVisibilityChanged;
         TrackPreviewSources();
         _controls.Changed+=QueuePreview;
         if(_source is not null)_source.Changed+=QueuePreview;
@@ -435,17 +437,17 @@ public sealed partial class NativeRoiEditHost
     }
     private void PreviewVisibilityChanged(object sender,DependencyPropertyChangedEventArgs args)
     {
-        if(_controls.IsVisible){QueuePreview();QueueFrameRefresh();}
+        if(_controlsVisual.IsVisible){QueuePreview();QueueFrameRefresh();}
         else{_frameRefresh?.Abort();_frameRefresh=null;}
     }
     private void QueueFrameRefresh()
     {
-        if(_disposed||!_controls.IsLoaded||!_controls.IsVisible)return;
+        if(_disposed||!_controlsVisual.IsLoaded||!_controlsVisual.IsVisible)return;
         _frameRefresh?.Abort();
-        _frameRefresh=_controls.Dispatcher.BeginInvoke(DispatcherPriority.Loaded,new Action(() =>
+        _frameRefresh=_controlsVisual.Dispatcher.BeginInvoke(DispatcherPriority.Loaded,new Action(() =>
         {
             _frameRefresh=null;
-            if(!_disposed&&_controls.IsLoaded&&_controls.IsVisible)RefreshFrame();
+            if(!_disposed&&_controlsVisual.IsLoaded&&_controlsVisual.IsVisible)RefreshFrame();
         }));
     }
     
@@ -456,14 +458,14 @@ public sealed partial class NativeRoiEditHost
         ClearPreview();
         if(_previewing){_previewAgain=true;return;}
         var request=_previewRequest;
-        _previewRefresh=_controls.Dispatcher.BeginInvoke(DispatcherPriority.Background,new Action(()=>
+        _previewRefresh=_controlsVisual.Dispatcher.BeginInvoke(DispatcherPriority.Background,new Action(()=>
         {
             if(_disposed||request!=_previewRequest)return;_previewRefresh=null;RefreshPreview(request);
         }));
     }
     private void RefreshPreview(long request)
     {
-        if(_disposed||_previewing||!_controls.IsLoaded||!_controls.IsVisible)return;
+        if(_disposed||_previewing||!_controlsVisual.IsLoaded||!_controlsVisual.IsVisible)return;
         _previewing=true;NativeRoiInputLease? inputs=null;NativeResultViewport.ReadOnlyRoiLayer? layer=null;
         try
         {
@@ -471,7 +473,7 @@ public sealed partial class NativeRoiEditHost
             if(mode==_localMode&&!maskInherited)return;
             if(!FrameCurrent(_generation)){AcquireFrame(interactive:false);if(request!=_previewRequest){if(FrameCurrent(_generation))QueuePreview();return;}}
             var frame=_frame;var generation=_generation;
-            bool OwnerCurrent(){var valid=!_disposed&&request==_previewRequest&&generation==_generation&&ReferenceEquals(frame,_frame)&&frame is not null&&FrameCurrent(generation)&&_controls.IsLoaded&&_controls.IsVisible;return valid&&!_disposed&&request==_previewRequest&&generation==_generation&&ReferenceEquals(frame,_frame);}
+            bool OwnerCurrent(){var valid=!_disposed&&request==_previewRequest&&generation==_generation&&ReferenceEquals(frame,_frame)&&frame is not null&&FrameCurrent(generation)&&_controlsVisual.IsLoaded&&_controlsVisual.IsVisible;return valid&&!_disposed&&request==_previewRequest&&generation==_generation&&ReferenceEquals(frame,_frame);}
             if(!OwnerCurrent())throw new InvalidOperationException("请选择与输入一致的已发布图像后预览。");
             var ids=_document.PreviewInputIds(mode,maskInherited).Concat(new[]{_document.ImageInputFieldId,_document.ModeFieldId}).ToArray();
             inputs=_source?.CaptureInputs(ids)??throw new InvalidOperationException("继承来源预览尚未就绪。");
@@ -492,7 +494,7 @@ public sealed partial class NativeRoiEditHost
         }
         catch(Exception failure)
         {
-            if(!_disposed&&request==_previewRequest){PreviewError=failure.Message;_controls.ToolTip=failure.Message;}
+            if(!_disposed&&request==_previewRequest){PreviewError=failure.Message;_controlsVisual.ToolTip=failure.Message;}
         }
         finally
         {
@@ -508,13 +510,13 @@ public sealed partial class NativeRoiEditHost
         if (PreviewError.Length != 0)
         {
             PreviewError = "";
-            _controls.ClearValue(FrameworkElement.ToolTipProperty);
+            _controlsVisual.ClearValue(FrameworkElement.ToolTipProperty);
         }
         Run(new Action[]{()=>pending?.Abort(),()=>layer?.Dispose(),()=>inputs?.Dispose()});
     }
     private void DisposePreview()
     {
-        _controls.Loaded-=PreviewLoaded;_controls.Unloaded-=PreviewUnloaded;_controls.IsVisibleChanged-=PreviewVisibilityChanged;
+        _controlsVisual.Loaded-=PreviewLoaded;_controlsVisual.Unloaded-=PreviewUnloaded;_controlsVisual.IsVisibleChanged-=PreviewVisibilityChanged;
         _frameRefresh?.Abort();_frameRefresh=null;
         foreach(var field in _previewFields)field.Changed-=QueuePreview;_previewFields.Clear();
         _controls.Changed-=QueuePreview;

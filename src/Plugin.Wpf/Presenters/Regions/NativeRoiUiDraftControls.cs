@@ -9,7 +9,7 @@ using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
 namespace SunEyeVision.Plugin.Wpf.Presenters.Regions;
 
 /// <summary>Original ROI groups over the formal source editors. Input view owns the field rows.</summary>
-public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
+public sealed class NativeRoiUiDraftControls : StackPanel, INativeRoiControls, IDisposable
 {
     private readonly List<DeclaredFieldState> _states = [];
     private readonly List<DeclaredFieldRow> _radios = [];
@@ -26,6 +26,8 @@ public sealed class NativeRoiUiDraftControls : StackPanel, IDisposable
     private bool _projectingModes;
     private long _interactionRevision;
     public event Action? Changed;
+    /// <summary>容器视觉根，供宿主做可见性与加载状态联动。</summary>
+    public FrameworkElement Element => this;
     public FrameworkElement GraphicVisibilitySource => _detectionRadio;
     public bool IsImageArea => !_disposed && _area.Setting is ConstantSetting { Value:1L };
     public bool IsInheritedMask => !_disposed && !IsImageArea && Value(_mask) == 1;

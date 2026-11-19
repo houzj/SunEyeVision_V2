@@ -726,6 +726,19 @@ public static class BlobDisplayDeclaration
     });
 
     public static string FieldId(string group,string role)=>BlobResultDisplay.Field(group,role);
+
+    /// <summary>供平台按声明生成的实例包装；静态成员保持不变，测试可直接断言。</summary>
+    public static SunEyeVision.Plugin.Wpf.Presenters.Display.IDisplayDeclaration Instance{get;}=new Declaration();
+
+    private sealed class Declaration : SunEyeVision.Plugin.Wpf.Presenters.Display.IDisplayDeclaration
+    {
+        public IReadOnlyList<string> GraphicGroups=>BlobDisplayDeclaration.GraphicGroups;
+        public IReadOnlyList<string> VisibilityGroups=>BlobDisplayDeclaration.VisibilityGroups;
+        public string? TextGroup=>BlobDisplayDeclaration.TextGroup;
+        public IReadOnlyList<string> GraphicRoles=>BlobDisplayDeclaration.GraphicRoles;
+        public IReadOnlyList<string> TextRoles=>BlobDisplayDeclaration.TextRoles;
+        public string FieldId(string group,string role)=>BlobDisplayDeclaration.FieldId(group,role);
+    }
 }
 
 }
@@ -1378,16 +1391,9 @@ internal static class BlobDisplayUi
             ?? new Dictionary<string,FrameworkElement>(StringComparer.Ordinal);
         visibilitySources.Add(Id(BlobResultDisplay.ReferencePoint,"visible"),pointVisibility);
         visibilitySources.Add(Id(BlobResultDisplay.RunPoint,"visible"),pointVisibility);
-        return options with {TextExpressions=expressions, FieldVisibilitySources=visibilitySources,
-            // 图像显示项与顺序对齐原厂（IMVSBlobFindModu 结果页）：
-            // Blob / 最大内接矩形 / 检测区域 / 轮廓点 / 文本 / 屏蔽区多边形 / 扇环检测区域。
-            // 原厂没有独立的「质心」行，但框架要求"所有图形分组都必须显式配置角色"，
-            // 因此暂保留该组（否则参数页组装失败）；最终对齐需连同 presentation 声明一起移除。
-            GraphicDisplays=BlobDisplayDeclaration.GraphicGroups
-                .Select(group=>new SunEyeVision.Plugin.Wpf.Fields.NativeGraphicDisplayOptions(group,Id(group,"visible"),Id(group,"ok"),Id(group,"ng"),Id(group,"opacity"),Id(group,"width"))).ToArray(),
-            VisibilityDisplays=BlobDisplayDeclaration.VisibilityGroups
-                .Select(group=>new SunEyeVision.Plugin.Wpf.Fields.NativeVisibilityDisplayOptions(Id(group,"visible"))).ToArray(),
-            TextDisplays=new[]{new SunEyeVision.Plugin.Wpf.Fields.NativeTextDisplayOptions(Id(text,"content"),Id(text,"ok"),Id(text,"ng"),Id(text,"size"),Id(text,"opacity"),Id(text,"x"),Id(text,"y"))}};
+        return SunEyeVision.Plugin.Wpf.Presenters.Display.DisplayOptionsFactory.Apply(
+            options with {TextExpressions=expressions, FieldVisibilitySources=visibilitySources},
+            BlobDisplayDeclaration.Instance);
     }
 
 }

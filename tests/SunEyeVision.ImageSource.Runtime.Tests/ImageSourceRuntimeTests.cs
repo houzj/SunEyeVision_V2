@@ -122,12 +122,12 @@ public sealed class ImageSourceRuntimeTests
         Assert.Equal(0L, defaulted.GetNodes(flow.Id).Single().Configuration.Fields.Get<long>(ImageSourceFields.PathCache));
     }
     [Fact]
-    public void Fields_freeze_input_collections_and_invalid_edit_never_mutates_previous_settings()
+    public void Invalid_edit_never_mutates_previous_settings()
     {
-        var paths=new List<string>{"a.png"};var original=new ImageSourceSettings{FileReferences=paths,StartIndex=0}.Freeze();
-        paths.Clear();Assert.Single(original.FileReferences);
+        // 文件列表与运行起点已改为输入项，不再属于设置模型；此处只验证设置项不被非法编辑污染。
+        var original=new ImageSourceSettings();
         Assert.ThrowsAny<Exception>(()=>ImageSourceFields.Apply(original,new Dictionary<string,object?>{{ImageSourceFields.CameraTimeout,0L}}));
-        Assert.Single(original.FileReferences);Assert.Equal(3000,original.CameraTimeoutMs);
+        Assert.Equal(3000,original.CameraTimeoutMs);
         Assert.Null(ImageSourceTool.Schema.WorkflowImageInputId);
     }
 

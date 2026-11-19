@@ -1,7 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net9.0-windows</TargetFramework>
     <PlatformTarget>x64</PlatformTarget>
+    <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>SunEyeVision.Tool.ImageSource.Runtime</AssemblyName>
@@ -11,11 +13,35 @@
     <ToolComponentRole>Runtime</ToolComponentRole>
     <ToolComponentEntryType>SunEyeVision.Tool.ImageSource.Runtime.ImageSourceTool</ToolComponentEntryType>
   </PropertyGroup>
+
   <ItemGroup>
+    <!-- 编辑器工程的源码并入本程序集，与 Blob 分析保持同一形态。 -->
+    <Compile Include="../SunEyeVision.Tool.ImageSource.Wpf/**/*.cs" Exclude="../SunEyeVision.Tool.ImageSource.Wpf/bin/**;../SunEyeVision.Tool.ImageSource.Wpf/obj/**" />
+    <Page Include="../SunEyeVision.Tool.ImageSource.Wpf/**/*.xaml" Exclude="../SunEyeVision.Tool.ImageSource.Wpf/bin/**;../SunEyeVision.Tool.ImageSource.Wpf/obj/**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources/ImageSourceParameters.xml" LogicalName="ImageSourceParameters.xml" />
     <ProjectReference Include="../../src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj" />
     <ProjectReference Include="../../src/Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" />
+    <ProjectReference Include="../../src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj"><Private>false</Private></ProjectReference>
     <ProjectReference Include="../../src/SunEyeVision.HalAdapter/Runtime/SunEyeVision.HalAdapter.Runtime.csproj" />
     <Reference Include="halcondotnetxl"><HintPath>../../libs/halcon/net/halcondotnetxl.dll</HintPath><Private>false</Private></Reference>
     <None Include="Resources/OriginalReleaseUnit/**" Link="OriginalReleaseUnit/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Never" />
   </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="SunEyeVision.Plugin.Contracts.ToolComponentAttribute">
+      <_Parameter1>SunEyeVision.Tool.ImageSource.Wpf</_Parameter1>
+      <_Parameter2>ImageLoad</_Parameter2>
+      <_Parameter3>Editor</_Parameter3>
+      <_Parameter4>global::SunEyeVision.Plugin.Contracts.FoundationContract.Major</_Parameter4>
+      <_Parameter4_IsLiteral>true</_Parameter4_IsLiteral>
+      <_Parameter5>global::SunEyeVision.Plugin.Contracts.FoundationContract.Minor</_Parameter5>
+      <_Parameter5_IsLiteral>true</_Parameter5_IsLiteral>
+      <_Parameter6>SunEyeVision.Tool.ImageSource.Wpf.ImageSourceEditorFactory</_Parameter6>
+      <_Parameter7>ImageLoad</_Parameter7>
+    </AssemblyAttribute>
+  </ItemGroup>
+
 </Project>

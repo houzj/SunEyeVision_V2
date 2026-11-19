@@ -6,11 +6,12 @@
       <ToolId>ImageLoad</ToolId><Role>Runtime</Role>
       <EntryType>SunEyeVision.Tool.ImageSource.Runtime.ImageSourceTool</EntryType>
     </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.Tool.ImageSource.Wpf/SunEyeVision.Tool.ImageSource.Wpf.csproj">
+    <ProductToolComponent Include="tools/SunEyeVision.Tool.ImageSource/SunEyeVision.Tool.ImageSource.csproj">
       <ComponentId>SunEyeVision.Tool.ImageSource.Wpf</ComponentId>
       <ToolId>ImageLoad</ToolId><Role>Editor</Role>
       <EntryType>SunEyeVision.Tool.ImageSource.Wpf.ImageSourceEditorFactory</EntryType>
       <CompanionToolId>ImageLoad</CompanionToolId>
+      <SharedAssembly>true</SharedAssembly>
     </ProductToolComponent>
     <ProductToolComponent Include="tools/SunEyeVision.Tool.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.csproj">
       <ComponentId>SunEyeVision.Tool.BlobAnalysis.Runtime</ComponentId>

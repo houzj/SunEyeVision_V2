@@ -43,7 +43,7 @@ public sealed class ImageSourceDeclarationAndFormatTests
         Assert.All(fields, field => Assert.Equal("基本参数", field.Layout!.Page));
         var categories = fields.GroupBy(field => field.Layout!.Section).ToArray();
         Assert.Equal(new[] { "基本参数", "触发设置", "订阅图片文件夹" }, categories.Select(group => group.Key));
-        Assert.Equal(new[] { "source.kind", "output.format", "local.save-images", "display.image-name", "camera.exposure-time", "camera.gain",
+        Assert.Equal(new[] { "source.kind", "output.format", "local.save-images", "display.image-name", "camera.exposure-time", "camera.gain", "camera.device", "camera.timeout-ms",
             "sequence.initial", "local.path-cache", "output.mono8", "stitch.enabled", "stitch.start",
             "stitch.height", "stitch.clear", "stitch.clear-value" }, categories[0].Select(field => field.FieldId));
         Assert.Equal(new[] { "local.auto-switch", "local.stop-at-last", "trigger.filter-enabled", "trigger.text", "trigger.filter-text" },
@@ -63,7 +63,10 @@ public sealed class ImageSourceDeclarationAndFormatTests
         Assert.Equal("image", tool.Catalog.IconKey);
         Assert.Equal(10, tool.Catalog.Order);
         Assert.False(string.IsNullOrWhiteSpace(tool.Catalog.Description));
-        var component = Assert.Single(typeof(ImageSourceTool).Assembly.GetCustomAttributes<ToolComponentAttribute>());
+        // 单工程同时声明 Runtime 与 Editor 两个组件，这里只断言 Runtime 角色。
+    var components = typeof(ImageSourceTool).Assembly.GetCustomAttributes<ToolComponentAttribute>().ToArray();
+    Assert.Equal(2, components.Length);
+    var component = Assert.Single(components, item => item.Metadata.Role == ToolComponentRole.Runtime);
         Assert.Equal("SunEyeVision.Tool.ImageSource.Runtime", component.Metadata.ComponentId);
         Assert.Equal(tool.ToolId, component.Metadata.ToolId);
         Assert.Equal(ToolComponentRole.Runtime, component.Metadata.Role);

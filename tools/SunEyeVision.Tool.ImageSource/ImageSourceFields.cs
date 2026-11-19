@@ -1,3 +1,4 @@
+using System.IO;
 using SunEyeVision.Plugin.Contracts;
 
 namespace SunEyeVision.Tool.ImageSource.Runtime;
@@ -23,84 +24,29 @@ public static class ImageSourceFields
     internal const long MaximumInitialSequence=100_000;
     public static ToolSchema DisplaySchema {get;}=new(Array.Empty<Port>(),Array.Empty<Port>(),new ToolPresentation(Array.Empty<FieldPresentation>()));
     public static TypeRef References {get;}=TypeRef.SequenceOf(Text,CountConstraint.Any);
-    public static ToolSchema Schema {get;}=new(new[] {
-        new Port(SourceKind,Text,EditModes:FieldEditModes.Constant,Choices:new(new[]{"local","camera","sdk"})),
-        new Port(ShowImageName,Boolean,EditModes:FieldEditModes.Constant,DefaultPresence:FieldDefaultPresence.UseDeclaredDefault),
-        new Port(SaveImages,Boolean,EditModes:FieldEditModes.Constant,DefaultPresence:FieldDefaultPresence.UseDeclaredDefault),
+    /// <summary>输入页字段：不进设置页，值随 Schema.Inputs 持久化，由输入编辑器提供。</summary>
+    private static readonly Port[] InputPorts=
+    {
         new Port(Paths,References,EditModes:FieldEditModes.Constant),
-        new Port(Start,Integer,Storage:NumericStorage.Int32,EditModes:FieldEditModes.Constant),
-        new Port(Selected,References,EditModes:FieldEditModes.Constant),
-        new Port(RunMode,Text,EditModes:FieldEditModes.Constant,Choices:new(new[]{"all","selected"})),
-        new Port(AutoSwitch,Boolean,EditModes:FieldEditModes.Constant),
-        new Port(StopAtLast,Boolean,EditModes:FieldEditModes.Constant),
-        new Port(CameraDevice,Text,EditModes:FieldEditModes.Constant),
-        new Port(CameraTimeout,Integer,Storage:NumericStorage.Int32,EditModes:FieldEditModes.Constant),
-        new Port(ExposureTime,DataType.Number,Required:false,Nullable:true,Storage:NumericStorage.Float32,EditModes:FieldEditModes.Reference),
-        new Port(Gain,DataType.Number,Required:false,Nullable:true,Storage:NumericStorage.Float32,EditModes:FieldEditModes.Reference),
-        new Port(OutputFormat,Text,EditModes:FieldEditModes.Constant,Choices:new(new[]{"mono8","rgb24","original"})),
-        new Port(OutputMono8,Boolean,EditModes:FieldEditModes.Constant),
-        new Port(InitialSequence,Integer,Storage:NumericStorage.Int64,EditModes:FieldEditModes.Constant),
-        new Port(PathCache,Integer,Storage:NumericStorage.Int32,EditModes:FieldEditModes.Constant,
-            DefaultPresence:FieldDefaultPresence.UseDeclaredDefault),
-        new Port(SubscribeFolder,Boolean,EditModes:FieldEditModes.Constant,DefaultPresence:FieldDefaultPresence.UseDeclaredDefault),
-        new Port(FolderPath,Text,EditModes:FieldEditModes.Constant,DefaultPresence:FieldDefaultPresence.UseDeclaredDefault),
-        new Port(RefreshFolder,Boolean,EditModes:FieldEditModes.Constant,DefaultPresence:FieldDefaultPresence.UseDeclaredDefault),
-        new Port(TriggerFolderRun,Boolean,EditModes:FieldEditModes.Constant,DefaultPresence:FieldDefaultPresence.UseDeclaredDefault),
-        new Port(StitchEnabled,Boolean,EditModes:FieldEditModes.Constant,DefaultPresence:FieldDefaultPresence.UseDeclaredDefault),
-        new Port(StitchStart,Integer,Storage:NumericStorage.Int32,EditModes:FieldEditModes.Constant,DefaultPresence:FieldDefaultPresence.UseDeclaredDefault),
-        new Port(StitchHeight,Integer,Storage:NumericStorage.Int32,EditModes:FieldEditModes.Constant,DefaultPresence:FieldDefaultPresence.UseDeclaredDefault),
-        new Port(ClearStitch,Boolean,EditModes:FieldEditModes.Constant,DefaultPresence:FieldDefaultPresence.UseDeclaredDefault),
-        new Port(ClearStitchValue,Integer,Required:false,Nullable:true,Storage:NumericStorage.Int32,EditModes:FieldEditModes.Reference),
-        new Port(TriggerFilterEnabled,Boolean,EditModes:FieldEditModes.Constant,DefaultPresence:FieldDefaultPresence.UseDeclaredDefault),
-        new Port(TriggerText,Text,Required:false,Nullable:true,EditModes:FieldEditModes.Reference),
-        new Port(TriggerFilterText,Text,Required:false,Nullable:true,EditModes:FieldEditModes.Reference)
-    },Array.Empty<Port>(),new ToolPresentation(new[] {
-        Choice(SourceKind,"图像源","基本参数",0,new[]{"local","camera","sdk"},new[]{"本地图像","相机","SDK"}),
-        Choice(OutputFormat,"像素格式","基本参数",2,new[]{"mono8","rgb24","original"},new[]{"MONO8","RGB24","保持原图"},"local"),
-        new FieldPresentation(SaveImages,"方案存图","基本参数",3,FieldEditorKind.Scalar) {
-            Layout=new("基本参数","基本参数",VisibleWhen:new(SourceKind,"local"),AllowReference:false,BooleanTips:new("最大保存120张图片"))},
-        new FieldPresentation(ShowImageName,"显示图像名称","基本参数",4,FieldEditorKind.Scalar) {
-            Layout=new("基本参数","基本参数",VisibleWhen:new(SourceKind,"local"),AllowReference:false)},
-        new FieldPresentation(OutputMono8,"输出Mono8","基本参数",10,FieldEditorKind.Scalar) {
-            Layout=new("基本参数","基本参数",VisibleWhen:new(OutputFormat,"mono8",Negate:true),
-                OrVisibleWhen:new(SourceKind,"local",Negate:true),AllowReference:false)},
-        new FieldPresentation(InitialSequence,"SN初始值","基本参数",8,FieldEditorKind.Scalar) {
-            Layout=new("基本参数","基本参数",Minimum:0,Maximum:MaximumInitialSequence,DecimalPlaces:0,AllowReference:false)},
-        new FieldPresentation(PathCache,"图片缓存","基本参数",9,FieldEditorKind.Scalar) {
-            Layout=new("基本参数","基本参数",VisibleWhen:new(SourceKind,"local"),Minimum:0,Maximum:5,DecimalPlaces:0,AllowReference:false)},
-        new FieldPresentation(AutoSwitch,"自动切换","触发设置",16,FieldEditorKind.Scalar) {
-            Layout=new("基本参数","触发设置",VisibleWhen:new(SourceKind,"local"),AllowReference:false)},
-        new FieldPresentation(StopAtLast,"最后一张停止","触发设置",17,FieldEditorKind.Scalar) {
-            Layout=new("基本参数","触发设置",VisibleWhen:new(SourceKind,"local"),AllowReference:false)},
-        new FieldPresentation(SubscribeFolder,"订阅图片文件夹","订阅图片文件夹",21,FieldEditorKind.Scalar) {
-            Layout=new("基本参数","订阅图片文件夹",VisibleWhen:new(SourceKind,"local"),AllowReference:false)},
-        new FieldPresentation(FolderPath,"图像路径","订阅图片文件夹",22,FieldEditorKind.FolderPath) {
-            Layout=new("基本参数","订阅图片文件夹",VisibleWhen:new(SubscribeFolder,true),AllowReference:false)},
-        new FieldPresentation(RefreshFolder,"刷新文件夹图片","订阅图片文件夹",23,FieldEditorKind.Scalar) {
-            Layout=new("基本参数","订阅图片文件夹",VisibleWhen:new(SubscribeFolder,true),AllowReference:false)},
-        new FieldPresentation(TriggerFolderRun,"触发文件夹图片","订阅图片文件夹",24,FieldEditorKind.Scalar) {
-            Layout=new("基本参数","订阅图片文件夹",VisibleWhen:new(SubscribeFolder,true),AllowReference:false)},
-        new FieldPresentation(StitchEnabled,"拼接使能","基本参数",11,FieldEditorKind.Scalar) {
-            Layout=new("基本参数","基本参数",AllowReference:false)},
-        new FieldPresentation(StitchStart,"拼接起始高度","基本参数",12,FieldEditorKind.Scalar) {
-            Layout=new("基本参数","基本参数",VisibleWhen:new(StitchEnabled,true),Minimum:0,Maximum:20000,DecimalPlaces:0,AllowReference:false)},
-        new FieldPresentation(StitchHeight,"拼接高度","基本参数",13,FieldEditorKind.Scalar) {
-            Layout=new("基本参数","基本参数",VisibleWhen:new(StitchEnabled,true),Minimum:0,Maximum:20000,DecimalPlaces:0,AllowReference:false)},
-        new FieldPresentation(ClearStitch,"清空触发","基本参数",14,FieldEditorKind.Scalar) {
-            Layout=new("基本参数","基本参数",VisibleWhen:new(StitchEnabled,true),AllowReference:false)},
-        new FieldPresentation(ClearStitchValue,"清空条件","基本参数",15,FieldEditorKind.Scalar) {
-            Layout=new("基本参数","基本参数",VisibleWhen:new(ClearStitch,true))},
-        new FieldPresentation(TriggerFilterEnabled,"字符触发过滤","触发设置",18,FieldEditorKind.Scalar) {
-            Layout=new("基本参数","触发设置",AllowReference:false)},
-        new FieldPresentation(TriggerText,"输入字符","触发设置",19,FieldEditorKind.Scalar) {
-            Layout=new("基本参数","触发设置",VisibleWhen:new(TriggerFilterEnabled,true))},
-        new FieldPresentation(TriggerFilterText,"触发字符","触发设置",20,FieldEditorKind.Scalar) {
-            Layout=new("基本参数","触发设置",VisibleWhen:new(TriggerFilterEnabled,true))},
-        new FieldPresentation(ExposureTime,"控制曝光","基本参数",6,FieldEditorKind.Scalar) {
-            Layout=new("基本参数","基本参数",VisibleWhen:new(SourceKind,"camera"))},
-        new FieldPresentation(Gain,"控制增益","基本参数",7,FieldEditorKind.Scalar) {
-            Layout=new("基本参数","基本参数",VisibleWhen:new(SourceKind,"camera"))}
-    }));
+        new Port(Start,Integer,Required:false,Storage:NumericStorage.Int32,EditModes:FieldEditModes.Constant),
+        new Port(Selected,References,Required:false,EditModes:FieldEditModes.Constant),
+        new Port(RunMode,Text,Required:false,EditModes:FieldEditModes.Constant,Choices:new(new[]{"all","selected"}))
+    };
+
+    private static readonly Lazy<DeclaredParameterSchema> Declared=new(()=>
+    {
+        using var stream=typeof(ImageSourceSettings).Assembly
+            .GetManifestResourceStream("ImageSourceParameters.xml")
+            ??throw new InvalidDataException("ImageSourceParameters.xml is missing from the Runtime component.");
+        return DeclaredParameterSchema.Load(stream,typeof(ImageSourceSettings));
+    });
+
+    /// <summary>设置页参数声明，来自 XML。</summary>
+    public static ToolSchema SettingsSchema=>Declared.Value.Schema;
+
+    /// <summary>完整输入契约：设置参数 + 输入页字段。</summary>
+    public static ToolSchema Schema {get;}=new(SettingsSchema.Inputs.Concat(InputPorts).ToArray(),
+        Array.Empty<Port>(),SettingsSchema.Presentation!);
 
     private static FieldPresentation Choice(string id,string label,string section,int order,string[] keys,string[] labels,string? sourceKind=null)
         =>new(id,label,section,order,FieldEditorKind.Choice,keys,keys.Zip(labels).ToDictionary(pair=>pair.First,pair=>pair.Second,StringComparer.Ordinal)) {
@@ -109,9 +55,12 @@ public static class ImageSourceFields
     public static InputValues Read(ImageSourceSettings settings)
     {
         var values=new Dictionary<string,object?> {
-        [SourceKind]=settings.SourceKind,[SaveImages]=settings.SaveImages,[ShowImageName]=settings.ShowImageName,[Paths]=new SequenceValue(References,settings.FileReferences),
-        [Start]=(long)settings.StartIndex,[Selected]=new SequenceValue(References,settings.SelectedReferences),
-        [RunMode]=settings.RunMode,[AutoSwitch]=settings.AutoSwitch,[StopAtLast]=settings.StopAtLast,
+        [SourceKind]=settings.SourceKind,[SaveImages]=settings.SaveImages,[ShowImageName]=settings.ShowImageName,
+        // 输入项在新建节点时给出初始值；之后的真实值由输入编辑器写入 FieldSettings。
+        [Paths]=new SequenceValue(References,Array.Empty<string>()),
+        [Selected]=new SequenceValue(References,Array.Empty<string>()),
+        [Start]=-1L,[RunMode]="all",
+        [AutoSwitch]=settings.AutoSwitch,[StopAtLast]=settings.StopAtLast,
         [CameraDevice]=settings.CameraDeviceId,[CameraTimeout]=(long)settings.CameraTimeoutMs,
         [OutputFormat]=settings.OutputFormat,[OutputMono8]=settings.OutputMono8,[InitialSequence]=settings.InitialSequence,
         [PathCache]=(long)settings.PathCache,[SubscribeFolder]=settings.SubscribeFolder,
@@ -128,21 +77,23 @@ public static class ImageSourceFields
     }
     public static ImageSourceSettings Apply(ImageSourceSettings original,IReadOnlyDictionary<string,object?> changes)
     {
-        var values=Read(original).CopyValues().ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal);
+        // 只保留设置项：输入项的值由输入编辑器维护，不参与设置往返。
+        var values=Read(original).CopyValues()
+            .Where(pair=>SettingsSchema.Inputs.Any(port=>port.Id==pair.Key))
+            .ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal);
         foreach(var pair in changes)
         {
-            if(!Schema.Inputs.Any(port=>port.Id==pair.Key))throw new ArgumentException("未声明的图像源字段："+pair.Key);
+            if(!SettingsSchema.Inputs.Any(port=>port.Id==pair.Key))throw new ArgumentException("未声明的图像源字段："+pair.Key);
             values[pair.Key]=pair.Value;
         }
-        return Materialize(new InputValues(Schema.Inputs,values));
+        return Materialize(new InputValues(SettingsSchema.Inputs,values));
     }
     public static ImageSourceSettings Materialize(InputValues values)
     {
-        var candidate=new InputValues(Schema.Inputs,values.CopyValues());
+        var candidate=new InputValues(SettingsSchema.Inputs,values.CopyValues()
+            .Where(pair=>SettingsSchema.Inputs.Any(port=>port.Id==pair.Key)).ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal));
         var result=new ImageSourceSettings {
             SourceKind=candidate.Get<string>(SourceKind),SaveImages=candidate.Get<bool>(SaveImages),ShowImageName=candidate.Contains(ShowImageName)?candidate.Get<bool>(ShowImageName):true,
-            FileReferences=ReadReferences(candidate,Paths),StartIndex=checked((int)candidate.Get<long>(Start)),
-            SelectedReferences=ReadReferences(candidate,Selected),RunMode=candidate.Get<string>(RunMode),
             AutoSwitch=candidate.Get<bool>(AutoSwitch),StopAtLast=candidate.Get<bool>(StopAtLast),
             CameraDeviceId=candidate.Get<string>(CameraDevice),CameraTimeoutMs=checked((int)candidate.Get<long>(CameraTimeout)),
             ExposureTime=ReadCameraValue(candidate,ExposureTime),Gain=ReadCameraValue(candidate,Gain),

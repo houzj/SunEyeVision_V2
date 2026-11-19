@@ -13,7 +13,6 @@
   </Folder>
   <Folder Name="/Tools/SunEyeVision.Tool.ImageSource/">
     <Project Path="tools/SunEyeVision.Tool.ImageSource/SunEyeVision.Tool.ImageSource.csproj" />
-    <Project Path="tools/SunEyeVision.Tool.ImageSource.Wpf/SunEyeVision.Tool.ImageSource.Wpf.csproj" />
   </Folder>
   <Folder Name="/Tools/FrameMeanComponents/">
   </Folder>

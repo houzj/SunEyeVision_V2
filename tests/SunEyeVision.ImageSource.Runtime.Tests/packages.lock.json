@@ -114,10 +114,20 @@
           "Newtonsoft.Json": "13.0.3"
         }
       },
+      "Microsoft.Xaml.Behaviors.Wpf": {
+        "type": "Transitive",
+        "resolved": "1.1.31",
+        "contentHash": "LZpuf82ACZWldmfMuv3CTUMDh3o0xo0uHUaybR5HgqVLDBJJ9RZLykplQ/bTJd0/VDt3EhD4iDgUgbdIUAM+Kg=="
+      },
       "Newtonsoft.Json": {
         "type": "Transitive",
         "resolved": "13.0.3",
         "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
+      },
+      "System.CodeDom": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "GLltyqEsE5/3IE+zYRP5sNa1l44qKl9v+bfdMcwg+M9qnQf47wK3H0SUR/T+3N4JEQXF3vV4CSuuo0rsg+nq2A=="
       },
       "System.Collections.Immutable": {
         "type": "Transitive",
@@ -137,6 +147,14 @@
         "type": "Transitive",
         "resolved": "6.0.0",
         "contentHash": "lcyUiXTsETK2ALsZrX+nWuHSIQeazhqPphLfaRxzdGaG93+0kELqpgEHtwWOlQe7+jSFnKwaCAgL4kjeZCQJnw=="
+      },
+      "System.Management": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "A4jed4QUviDOm7fJNKAJObEAEkEUXmkGL/w0iyCYTzrl1rezTj8LGFHfsVst4Vb9JwFcTpboiDrvdST48avBpw==",
+        "dependencies": {
+          "System.CodeDom": "7.0.0"
+        }
       },
       "System.Reflection.Metadata": {
         "type": "Transitive",
@@ -272,12 +290,21 @@
           "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
         }
       },
+      "suneyevision.plugin.wpf": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Xaml.Behaviors.Wpf": "[1.1.31, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "System.Management": "[7.0.0, )"
+        }
+      },
       "SunEyeVision.Tool.ImageSource.Runtime": {
         "type": "Project",
         "dependencies": {
           "SunEyeVision.HalAdapter.Runtime": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )"
+          "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )"
         }
       }
     },
@@ -286,6 +313,14 @@
         "type": "Transitive",
         "resolved": "6.0.0",
         "contentHash": "lcyUiXTsETK2ALsZrX+nWuHSIQeazhqPphLfaRxzdGaG93+0kELqpgEHtwWOlQe7+jSFnKwaCAgL4kjeZCQJnw=="
+      },
+      "System.Management": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "A4jed4QUviDOm7fJNKAJObEAEkEUXmkGL/w0iyCYTzrl1rezTj8LGFHfsVst4Vb9JwFcTpboiDrvdST48avBpw==",
+        "dependencies": {
+          "System.CodeDom": "7.0.0"
+        }
       },
       "System.Security.AccessControl": {
         "type": "Transitive",

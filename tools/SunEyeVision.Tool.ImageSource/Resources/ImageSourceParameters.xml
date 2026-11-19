@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 图像源参数页声明。取证自原厂 IMVSImageSourceModu 的 Algorithm.xml（23 项）与
+     AlgorithmTab.xml（3 个 Category）。文件列表、选中项、运行起点与模式属于输入项，
+     由 ImageSourceFields.InputPorts 声明，不在此文件。
+     defaultPresence="declared" 对应原实现的 FieldDefaultPresence.UseDeclaredDefault。 -->
+<ImageSourceParameters schemaVersion="1">
+  <Group page="基本参数" section="基本参数" vmCategory="Tab_Basic Params">
+    <Parameter id="SourceKind" fieldId="source.kind" type="Text" default="local" label="图像源"
+               allowReference="false" editor="choice">
+      <Choice key="local" label="本地图像" />
+      <Choice key="camera" label="相机" />
+      <Choice key="sdk" label="SDK" />
+    </Parameter>
+
+    <Parameter id="OutputFormat" fieldId="output.format" type="Text" default="mono8" label="像素格式"
+               allowReference="false" editor="choice"
+               visibleWhen="SourceKind" visibleValue="local">
+      <Choice key="mono8" label="MONO8" />
+      <Choice key="rgb24" label="RGB24" />
+      <Choice key="original" label="保持原图" />
+    </Parameter>
+
+    <Parameter id="SaveImages" fieldId="local.save-images" type="Boolean" default="false" label="方案存图"
+               allowReference="false" defaultPresence="declared" booleanTips="最大保存120张图片"
+               visibleWhen="SourceKind" visibleValue="local" />
+
+    <Parameter id="ShowImageName" fieldId="display.image-name" type="Boolean" default="true" label="显示图像名称"
+               allowReference="false" defaultPresence="declared"
+               visibleWhen="SourceKind" visibleValue="local" />
+
+    <Parameter id="ExposureTime" fieldId="camera.exposure-time" type="Number" label="控制曝光"
+               storage="float32" allowReference="true" bindingName="控制曝光"
+               increment="0.01" decimals="3"
+               visibleWhen="SourceKind" visibleValue="camera" />
+
+    <Parameter id="Gain" fieldId="camera.gain" type="Number" label="控制增益"
+               storage="float32" allowReference="true" bindingName="控制增益"
+               increment="0.01" decimals="3"
+               visibleWhen="SourceKind" visibleValue="camera" />
+
+    <Parameter id="CameraDeviceId" fieldId="camera.device" type="Text" default="" label="相机"
+               allowReference="false" visibleWhen="SourceKind" visibleValue="camera" />
+
+    <Parameter id="CameraTimeoutMs" fieldId="camera.timeout-ms" type="Integer" default="3000" label="取帧超时(ms)"
+               storage="int32" minimum="1" maximum="600000" decimals="0" increment="1" allowReference="false"
+               visibleWhen="SourceKind" visibleValue="camera" />
+
+    <Parameter id="InitialSequence" fieldId="sequence.initial" type="Integer" default="1" label="SN初始值"
+               minimum="0" maximum="100000" decimals="0" increment="1" allowReference="false" />
+
+    <Parameter id="PathCache" fieldId="local.path-cache" type="Integer" default="0" label="图片缓存"
+               storage="int32" minimum="0" maximum="5" decimals="0" increment="1" allowReference="false"
+               defaultPresence="declared"
+               visibleWhen="SourceKind" visibleValue="local" />
+
+    <Parameter id="OutputMono8" fieldId="output.mono8" type="Boolean" default="false" label="输出Mono8"
+               allowReference="false"
+               visibleWhen="OutputFormat" visibleValue="mono8" visibleNegate="true"
+               orVisibleWhen="SourceKind" orVisibleValue="local" orVisibleNegate="true" />
+
+    <Parameter id="StitchEnabled" fieldId="stitch.enabled" type="Boolean" default="false" label="拼接使能"
+               allowReference="false" defaultPresence="declared" />
+
+    <Parameter id="StitchStart" fieldId="stitch.start" type="Integer" default="0" label="拼接起始高度"
+               storage="int32" minimum="0" maximum="20000" decimals="0" increment="1" allowReference="false"
+               defaultPresence="declared"
+               visibleWhen="StitchEnabled" visibleValue="true" />
+
+    <Parameter id="StitchHeight" fieldId="stitch.height" type="Integer" default="2000" label="拼接高度"
+               storage="int32" minimum="0" maximum="20000" decimals="0" increment="1" allowReference="false"
+               defaultPresence="declared"
+               visibleWhen="StitchEnabled" visibleValue="true" />
+
+    <Parameter id="ClearStitch" fieldId="stitch.clear" type="Boolean" default="false" label="清空触发"
+               allowReference="false" defaultPresence="declared"
+               visibleWhen="StitchEnabled" visibleValue="true" />
+
+    <Parameter id="ClearStitchValue" fieldId="stitch.clear-value" type="Integer" label="清空条件"
+               storage="int32" allowReference="true" bindingName="清空条件"
+               minimum="0" maximum="1000000" decimals="0" increment="1"
+               visibleWhen="ClearStitch" visibleValue="true" />
+  </Group>
+
+  <Group page="基本参数" section="触发设置" vmCategory="Tab_Trigger">
+    <Parameter id="AutoSwitch" fieldId="local.auto-switch" type="Boolean" default="true" label="自动切换"
+               allowReference="false" visibleWhen="SourceKind" visibleValue="local" />
+
+    <Parameter id="StopAtLast" fieldId="local.stop-at-last" type="Boolean" default="false" label="最后一张停止"
+               allowReference="false" visibleWhen="SourceKind" visibleValue="local" />
+
+    <Parameter id="TriggerFilterEnabled" fieldId="trigger.filter-enabled" type="Boolean" default="false"
+               label="字符触发过滤" allowReference="false" defaultPresence="declared" />
+
+    <Parameter id="TriggerText" fieldId="trigger.text" type="Text" label="输入字符"
+               allowReference="true" bindingName="输入字符"
+               visibleWhen="TriggerFilterEnabled" visibleValue="true" />
+
+    <Parameter id="TriggerFilterText" fieldId="trigger.filter-text" type="Text" label="触发字符"
+               allowReference="true" bindingName="触发字符"
+               visibleWhen="TriggerFilterEnabled" visibleValue="true" />
+  </Group>
+
+  <Group page="基本参数" section="订阅图片文件夹" vmCategory="Tab_Subscribe_File">
+    <Parameter id="SubscribeFolder" fieldId="local.subscribe-folder" type="Boolean" default="false"
+               label="订阅图片文件夹" allowReference="false" defaultPresence="declared"
+               visibleWhen="SourceKind" visibleValue="local" />
+
+    <Parameter id="FolderPath" fieldId="local.folder-path" type="Text" default="" label="图像路径"
+               allowReference="false" defaultPresence="declared" editor="folder"
+               visibleWhen="SubscribeFolder" visibleValue="true" />
+
+    <Parameter id="RefreshFolder" fieldId="local.refresh-folder" type="Boolean" default="true"
+               label="刷新文件夹图片" allowReference="false" defaultPresence="declared"
+               visibleWhen="SubscribeFolder" visibleValue="true" />
+
+    <Parameter id="TriggerFolderRun" fieldId="local.trigger-folder-run" type="Boolean" default="false"
+               label="触发文件夹图片" allowReference="false" defaultPresence="declared"
+               visibleWhen="SubscribeFolder" visibleValue="true" />
+  </Group>
+</ImageSourceParameters>

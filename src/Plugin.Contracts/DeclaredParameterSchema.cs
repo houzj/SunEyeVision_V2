@@ -14,6 +14,7 @@ namespace SunEyeVision.Plugin.Contracts;
 public sealed class DeclaredParameterSchema
 {
     private readonly IReadOnlyDictionary<string, XElement> _fields;
+    private readonly IReadOnlyList<string> _fieldOrder = Array.Empty<string>();
     private readonly IReadOnlyDictionary<string, XElement> _inputs;
     private readonly IReadOnlyDictionary<string, Type> _types;
 
@@ -23,21 +24,30 @@ public sealed class DeclaredParameterSchema
         if ((string?)root.Attribute("schemaVersion") != "1")
             throw new InvalidDataException("Unsupported parameter metadata schema version: " + root.Name);
         Shape(root, new[] { "schemaVersion", "workflowImageInputId" }, new[] { "Inputs", "Group" });
-        WorkflowImageInputId = Required(root, "workflowImageInputId");
+        // 消费图像的工具声明工作流图像输入；产出图像的工具（如图像源）不声明。
+        WorkflowImageInputId = (string?)root.Attribute("workflowImageInputId") ?? string.Empty;
         _types = types;
 
-        if (root.Elements("Inputs").Count() != 1)
-            throw new InvalidDataException("Exactly one input editor declaration is required.");
-        var inputs = root.Element("Inputs")!;
-        Shape(inputs, Array.Empty<string>(), new[] { "Input" });
-        foreach (var input in inputs.Elements())
+        // 输入编辑器声明可为空：图像源类工具自行产生图像，没有上游图像输入页。
+        if (root.Elements("Inputs").Count() > 1)
+            throw new InvalidDataException("At most one input editor declaration is allowed.");
+        var inputs = root.Element("Inputs");
+        if (inputs is null)
         {
-            Shape(input, new[] { "id", "label", "page", "section" }, Array.Empty<string>());
-            Required(input, "id"); Required(input, "label"); Required(input, "page"); Required(input, "section");
+            _inputs = new Dictionary<string, XElement>(StringComparer.Ordinal);
         }
-        _inputs = inputs.Elements().ToDictionary(input => Required(input, "id"), StringComparer.Ordinal);
-        if (_inputs.Count != inputs.Elements().Count())
-            throw new InvalidDataException("Duplicate input editor identity.");
+        else
+        {
+            Shape(inputs, Array.Empty<string>(), new[] { "Input" });
+            foreach (var input in inputs.Elements())
+            {
+                Shape(input, new[] { "id", "label", "page", "section" }, Array.Empty<string>());
+                Required(input, "id"); Required(input, "label"); Required(input, "page"); Required(input, "section");
+            }
+            _inputs = inputs.Elements().ToDictionary(input => Required(input, "id"), StringComparer.Ordinal);
+            if (_inputs.Count != inputs.Elements().Count())
+                throw new InvalidDataException("Duplicate input editor identity.");
+        }
 
         foreach (var group in root.Elements("Group"))
         {
@@ -52,11 +62,12 @@ public sealed class DeclaredParameterSchema
                     "id", "fieldId", "allowReference", "bindingName", "type", "default", "label",
                     "minimum", "maximum", "decimals", "increment", "visibleWhen", "visibleValue",
                     "visibleNegate", "orVisibleWhen", "orVisibleValue", "orVisibleNegate",
-                    "pairWith", "pairMinimum", "pairMaximum", "pairLabel"
+                    "pairWith", "pairMinimum", "pairMaximum", "pairLabel", "editor",
+                    "storage", "defaultPresence", "booleanTips"
                 }, new[] { "Choice" });
                 Required(field, "id"); Required(field, "type"); Required(field, "label");
                 FieldId(field, "fieldId");
-                if (Boolean(field, "allowReference")) Required(field, "bindingName");
+                if (field.Attribute("allowReference") is not null && Boolean(field, "allowReference")) Required(field, "bindingName");
                 else if (field.Attribute("bindingName") is not null)
                     throw new InvalidDataException("Non-reference parameters cannot declare binding names.");
                 foreach (var choice in field.Elements("Choice"))
@@ -70,6 +81,7 @@ public sealed class DeclaredParameterSchema
         var ids = root.Elements("Group").Elements("Parameter").Select(field => Required(field, "id")).ToArray();
         if (ids.Distinct(StringComparer.Ordinal).Count() != ids.Length)
             throw new InvalidDataException("Duplicate parameter identity.");
+        _fieldOrder = ids;
         _fields = root.Elements("Group").Elements("Parameter")
             .ToDictionary(field => Required(field, "id"), StringComparer.Ordinal);
 
@@ -84,6 +96,7 @@ public sealed class DeclaredParameterSchema
                 : underlying == typeof(double) ? "Number"
                 : underlying == typeof(bool) ? "Boolean"
                 : underlying == typeof(string) ? "Text"
+                : underlying == typeof(IReadOnlyList<string>) ? "TextSequence"
                 : underlying.IsEnum ? "Enum" : null;
             if (expected is null)
                 throw new InvalidDataException("Unsupported parameter type: " + id + " (" + underlying.Name + ")");
@@ -92,33 +105,42 @@ public sealed class DeclaredParameterSchema
             var choices = _fields[id].Elements("Choice").Select(choice => Required(choice, "key")).ToArray();
             if (underlying.IsEnum
                 ? !choices.ToHashSet(StringComparer.Ordinal).SetEquals(Enum.GetNames(underlying)) || choices.Distinct().Count() != choices.Length
-                : choices.Length != 0)
+                : underlying != typeof(string) && choices.Length != 0)
                 throw new InvalidDataException("Parameter choices differ from the declared enum: " + id);
             var minimum = Minimum(id); var maximum = Maximum(id); var step = Increment(id);
             if (minimum > maximum || !double.IsFinite(step) || step <= 0)
                 throw new InvalidDataException("Invalid editor bounds: " + id);
             // 无默认值的参数由使用方按未设置处理，声明里不强制给出。
-            if (_fields[id].Attribute("default") is null)
+            // 序列默认由工具在设置模型里给出，声明层不解析非空列表。
+            if (_fields[id].Attribute("default") is null || underlying == typeof(IReadOnlyList<string>))
             {
                 if (underlying == typeof(int) || underlying == typeof(double)) { Required(_fields[id], "increment"); Required(_fields[id], "decimals"); }
                 continue;
             }
-            var raw = Required(_fields[id], "default");
+            // 文本参数的默认值允许为空串，缺失才算未声明。
+            var raw = (string?)_fields[id].Attribute("default") ?? string.Empty;
             try
             {
                 var value = type.IsEnum ? Enum.Parse(type, raw, false) : Convert.ChangeType(raw, type, CultureInfo.InvariantCulture);
                 if (type.IsEnum && !Enum.IsDefined(type, value))
                     throw new InvalidDataException("Unknown enum default: " + id);
-                if (type == typeof(int) || type == typeof(double))
+                if (type == typeof(int) || type == typeof(long) || type == typeof(double))
                 {
                     var number = Convert.ToDouble(value, CultureInfo.InvariantCulture);
                     if (minimum is null || maximum is null || !double.IsFinite(number) || number < minimum || number > maximum)
                         throw new InvalidDataException("Invalid numeric default or bounds: " + id);
                     Required(_fields[id], "increment"); Required(_fields[id], "decimals");
                     var decimals = DecimalPlaces(id);
-                    if (type == typeof(int) && (decimals != 0 || minimum < int.MinValue || maximum > int.MaxValue
-                        || minimum != Math.Truncate(minimum.Value) || maximum != Math.Truncate(maximum.Value) || step != Math.Truncate(step)))
-                        throw new InvalidDataException("Nonintegral integer metadata: " + id);
+                    // 整型（含 long）的元数据必须为整数且在类型范围内。
+                    if (type == typeof(int) || type == typeof(long))
+                    {
+                        var lower = type == typeof(int) ? (double)int.MinValue : (double)long.MinValue;
+                        var upper = type == typeof(int) ? (double)int.MaxValue : (double)long.MaxValue;
+                        if (decimals != 0 || minimum < lower || maximum > upper
+                            || minimum != Math.Truncate(minimum.Value) || maximum != Math.Truncate(maximum.Value)
+                            || step != Math.Truncate(step))
+                            throw new InvalidDataException("Nonintegral integer metadata: " + id);
+                    }
                 }
                 else if (_fields[id].Attributes().Any(attribute => attribute.Name.LocalName is "minimum" or "maximum" or "decimals" or "increment"))
                     throw new InvalidDataException("Numeric metadata on nonnumeric field: " + id);
@@ -229,32 +251,38 @@ public sealed class DeclaredParameterSchema
     private ToolSchema BuildSchema()
     {
         var bindings = new List<(Port Port, FieldPresentation Presentation)>();
-        foreach (var field in _fields.Values)
+        foreach (var field in _fieldOrder.Select(id => _fields[id]))
         {
             var name = Required(field, "id");
             var type = ParameterType(name);
             var choices = field.Elements("Choice").ToDictionary(choice => Required(choice, "key"), choice => Required(choice, "label"), StringComparer.Ordinal);
+            var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
             var port = new Port(FieldId(field, "fieldId"),
-                type == typeof(bool) ? DataType.Boolean : type == typeof(int) ? DataType.Integer
-                    : type == typeof(double) ? DataType.Number : DataType.Text,
-                Storage: type == typeof(int) ? NumericStorage.Int32 : type == typeof(double) ? NumericStorage.Float64 : null,
-                EditModes: FieldEditModes.Constant | (Boolean(field, "allowReference") ? FieldEditModes.Reference : FieldEditModes.None),
-                Choices: type.IsEnum ? new TextChoiceConstraint(choices.Keys) : null);
-            FieldCondition? condition = null;
-            if (field.Attribute("visibleWhen") is { } visible)
-            {
-                if (!_fields.TryGetValue(visible.Value, out var controller))
-                    throw new InvalidDataException("Unknown editor visibility source.");
-                var controllerType = ParameterType(visible.Value);
-                var raw = Required(field, "visibleValue");
-                object value = controllerType.IsEnum ? raw
-                    : controllerType == typeof(bool) ? Boolean(field, "visibleValue")
-                    : throw new InvalidDataException("Visibility requires a Boolean or enum controller.");
-                condition = new FieldCondition(FieldId(controller, "fieldId"), value,
-                    field.Attribute("visibleNegate") is not null && Boolean(field, "visibleNegate"));
-            }
-            else if (field.Attribute("visibleValue") is not null || field.Attribute("visibleNegate") is not null)
-                throw new InvalidDataException("Incomplete visibility declaration.");
+                // 值类型可空、或文本且未给出默认值，在契约上都按非必填处理。
+                Required: Nullable.GetUnderlyingType(type) is null
+                    && !(underlyingType == typeof(string) && field.Attribute("default") is null),
+                Type: underlyingType == typeof(bool) ? DataType.Boolean
+                : underlyingType == typeof(int) || underlyingType == typeof(long) ? DataType.Integer
+                : underlyingType == typeof(double) ? DataType.Number
+                : underlyingType == typeof(IReadOnlyList<string>) ? TypeRef.SequenceOf(DataType.Text)
+                : DataType.Text,
+                Storage: (string?)field.Attribute("storage") switch
+                {
+                    "int32" => NumericStorage.Int32,
+                    "int64" => NumericStorage.Int64,
+                    "float32" => NumericStorage.Float32,
+                    "float64" => NumericStorage.Float64,
+                    null => underlyingType == typeof(int) ? NumericStorage.Int32
+                        : underlyingType == typeof(long) ? NumericStorage.Int64
+                        : underlyingType == typeof(double) ? NumericStorage.Float64 : null,
+                    var unknown => throw new InvalidDataException("Unknown numeric storage: " + unknown)
+                },
+                EditModes: FieldEditModes.Constant | (field.Attribute("allowReference") is not null && Boolean(field, "allowReference") ? FieldEditModes.Reference : FieldEditModes.None),
+                DefaultPresence: (string?)field.Attribute("defaultPresence") == "declared"
+                    ? FieldDefaultPresence.UseDeclaredDefault : FieldDefaultPresence.Unset,
+                Choices: choices.Count != 0 ? new TextChoiceConstraint(choices.Keys) : null);
+            FieldCondition? condition = Condition(field, "visibleWhen", "visibleValue", "visibleNegate");
+            FieldCondition? orCondition = Condition(field, "orVisibleWhen", "orVisibleValue", "orVisibleNegate");
             string? pair = null;
             if (field.Attribute("pairWith") is { } partner)
             {
@@ -266,10 +294,23 @@ public sealed class DeclaredParameterSchema
                 Minimum: Minimum(name), Maximum: Maximum(name), DecimalPlaces: DecimalPlaces(name),
                 AllowReference: Boolean(field, "allowReference"), Increment: Increment(name),
                 PairMinimum: Number(name, "pairMinimum"), PairMaximum: Number(name, "pairMaximum"),
-                PairDisplayName: (string?)field.Attribute("pairLabel"), VmCategory: VmCategory(name));
+                PairDisplayName: (string?)field.Attribute("pairLabel"), VmCategory: VmCategory(name),
+                OrVisibleWhen: orCondition,
+                BooleanTips: (string?)field.Attribute("booleanTips") is { Length: > 0 } tips
+                    ? new BooleanStateTips(tips) : null);
+            // 显式 editor 覆盖类型推断；未声明时按类型选默认编辑器。
+            var editor = (string?)field.Attribute("editor") switch
+            {
+                null => type.IsEnum ? FieldEditorKind.Choice : FieldEditorKind.Scalar,
+                "folder" => FieldEditorKind.FolderPath,
+                "sequence" => FieldEditorKind.Sequence,
+                "choice" => FieldEditorKind.Choice,
+                "scalar" => FieldEditorKind.Scalar,
+                var unknown => throw new InvalidDataException("Unknown editor kind: " + unknown)
+            };
             var presentation = new FieldPresentation(port.Id, Label(name), Section(name), bindings.Count,
-                type.IsEnum ? FieldEditorKind.Choice : FieldEditorKind.Scalar,
-                type.IsEnum ? choices.Keys : null, type.IsEnum ? choices : null)
+                editor,
+                choices.Count != 0 ? choices.Keys : null, choices.Count != 0 ? choices : null)
             {
                 Layout = layout
             };
@@ -281,12 +322,33 @@ public sealed class DeclaredParameterSchema
             new ToolPresentation(bindings.Select(binding => binding.Presentation)));
     }
 
+    /// <summary>解析一组可见性条件；when/value/negate 三属性必须成组出现。</summary>
+    private FieldCondition? Condition(XElement field, string whenAttribute, string valueAttribute, string negateAttribute)
+    {
+        if (field.Attribute(whenAttribute) is not { } when)
+        {
+            if (field.Attribute(valueAttribute) is not null || field.Attribute(negateAttribute) is not null)
+                throw new InvalidDataException("Incomplete visibility declaration: " + whenAttribute);
+            return null;
+        }
+        if (!_fields.TryGetValue(when.Value, out var controller))
+            throw new InvalidDataException("Unknown editor visibility source: " + when.Value);
+        var controllerType = ParameterType(when.Value);
+        var raw = Required(field, valueAttribute);
+        // 带选项的文本参数与枚举等价，都可作为可见性控制器。
+        object value = controllerType.IsEnum ? raw
+            : controllerType == typeof(bool) ? Boolean(field, valueAttribute)
+            : controllerType == typeof(string) ? raw
+            : throw new InvalidDataException("Visibility requires a Boolean, enum, or text controller.");
+        return new FieldCondition(FieldId(controller, "fieldId"), value,
+            field.Attribute(negateAttribute) is not null && Boolean(field, negateAttribute));
+    }
+
     private static string FieldId(XElement item, string attribute)
     {
-        var id = Required(item, attribute);
-        if (!id.StartsWith("field:", StringComparison.Ordinal) || !Guid.TryParseExact(id[6..], "N", out _))
-            throw new InvalidDataException("Editor requires an explicit stable field ID: " + id);
-        return id;
+        // 字段身份只需稳定且唯一：可以是 field:<Guid>（Blob 的形态），
+        // 也可以是 source.kind 这类语义串（图像源的形态）。改名时机由工具自行保证。
+        return Required(item, attribute);
     }
 
     public static void Shape(XElement element, string[] attributes, string[] children)

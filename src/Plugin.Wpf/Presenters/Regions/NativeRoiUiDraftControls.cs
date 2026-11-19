@@ -23,6 +23,7 @@ public sealed class NativeRoiUiDraftControls : StackPanel, INativeRoiControls, I
     private readonly NativeRoiInheritanceBinding _inheritance;
     private readonly Func<bool> _readMaskMode;
     private bool _rectangleParametersRealized, _circleParametersRealized, _disposed;
+    private bool _positionCorrectionEnabled;
     private bool _projectingModes;
     private long _interactionRevision;
     public event Action? Changed;
@@ -31,6 +32,13 @@ public sealed class NativeRoiUiDraftControls : StackPanel, INativeRoiControls, I
     public FrameworkElement GraphicVisibilitySource => _detectionRadio;
     public bool IsImageArea => !_disposed && _area.Setting is ConstantSetting { Value:1L };
     public bool IsInheritedMask => !_disposed && !IsImageArea && Value(_mask) == 1;
+    public void SetPositionCorrectionEnabled(bool enabled)
+    {
+        if (_disposed || _positionCorrectionEnabled == enabled) return;
+        _positionCorrectionEnabled = enabled;
+        ProjectVisibility();
+        Notify();
+    }
 
     public NativeRoiUiDraftControls(NativeRoiInheritanceBinding inheritance, DeclaredFieldRow maskImage,
         DeclaredFieldRow area, DeclaredFieldRow outputMask,
@@ -97,6 +105,7 @@ public sealed class NativeRoiUiDraftControls : StackPanel, INativeRoiControls, I
         }
         if (Value(_detection)==1)
         {
+            if (!_positionCorrectionEnabled) yield break;
             switch ((int)Value(_inherit))
             {
                 case 0: yield return _inheritance.RectangleSource; break;
@@ -187,10 +196,10 @@ public sealed class NativeRoiUiDraftControls : StackPanel, INativeRoiControls, I
         var mode=(int)Value(_inherit);
         if (graphic&&!draw) EnsureParameterEditors(mode);
         _maskImage.Visibility=Shown(!graphic);
-        _inheritance.RectangleSource.Visibility=Shown(graphic&&!draw&&mode==0);
-        _inheritance.AnnulusSource.Visibility=Shown(graphic&&!draw&&mode==2);
-        foreach (var row in _rectangleParameters) row.Visibility=Shown(graphic&&!draw&&mode==1);
-        foreach (var row in _circleParameters) row.Visibility=Shown(graphic&&!draw&&mode==3);
+        _inheritance.RectangleSource.Visibility=Shown(_positionCorrectionEnabled&&graphic&&!draw&&mode==0);
+        _inheritance.AnnulusSource.Visibility=Shown(_positionCorrectionEnabled&&graphic&&!draw&&mode==2);
+        foreach (var row in _rectangleParameters) row.Visibility=Shown(_positionCorrectionEnabled&&graphic&&!draw&&mode==1);
+        foreach (var row in _circleParameters) row.Visibility=Shown(_positionCorrectionEnabled&&graphic&&!draw&&mode==3);
         _maskSource.Visibility=Shown(IsInheritedMask);
         _detectionRadio.Visibility=Shown(graphic);
         _detectionShapes.Visibility=Shown(graphic&&draw);

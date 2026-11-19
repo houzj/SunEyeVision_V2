@@ -784,8 +784,10 @@ internal sealed class BlobUiComposition : IDisposable
                 ?? (_baseOptions.InputContent as DeclaredInputFieldsView)?.ReadUnpresentedInput(BlobImageRoi.ModeId)
                 ?? new UnsetSetting();
             var correction = BlobParameterDefinition.Instance.SettingsFieldId(nameof(BlobSettings.IsPositionCorrectionEnabled));
-            _assistPointVisibility.Visibility = !BlobImageRoi.IsImageMode(mode) && Draft.CaptureFields().Read(correction) is ConstantSetting { Value:true }
+            var correctionEnabled = Draft.CaptureFields().Read(correction) is ConstantSetting { Value:true };
+            _assistPointVisibility.Visibility = !BlobImageRoi.IsImageMode(mode) && correctionEnabled
                 ? Visibility.Visible : Visibility.Collapsed;
+            _roiUi?.SetPositionCorrectionEnabled(correctionEnabled);
         }
         catch (Exception error) when (error is ArgumentException or InvalidOperationException)
         {
@@ -890,6 +892,7 @@ internal sealed class BlobUiComposition : IDisposable
                     _assistUi=pose;
                     _roiOwner=new NativeRoiEditHost(inputs,_roiUi!,_baseOptions.RoiFrames,BlobRoiDeclaration.Create(inputs),_baseOptions.RoiDrawBlockReason);
                     _supportedState=new BlobSupportedWindowState(Draft,inputs,pose);
+                    _roiUi!.SetPositionCorrectionEnabled(Draft.CaptureFields().Read(PositionCorrectionField) is ConstantSetting { Value:true });
                     fields.BindFieldVisibilityTo(PositionCorrectionField,_roiUi!.GraphicVisibilitySource);
                     // The row's visibility already follows the correction field
                     // through BindFieldVisibilityTo/followAnchorVisibility. Do

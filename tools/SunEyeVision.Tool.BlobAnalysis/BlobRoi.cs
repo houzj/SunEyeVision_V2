@@ -193,8 +193,8 @@ internal static class BlobRoiUi
     {
         var rectangleLabels=new[]{"roicenterx","roicentery","roiwidth","roiheight","roiangle"};
         var annulusLabels=new[]{"roiAnnulusCenterX","roiAnnulusCenterY","CircleInnerRadius","roiAnnulusOuterRadius","Angle Start","AngleRange"};
-        IReadOnlyList<DeclaredFieldRow> Fields(string mode,IReadOnlyList<string> members,IReadOnlyList<string> labels)
-            =>members.Select((member,index)=>inputs.ComposeInputEditor(BlobRoiInheritance.Leaf(mode,member),labels[index])).ToArray();
+        IReadOnlyList<RoiParameterRow> Rows(string mode,IReadOnlyList<string> members,IReadOnlyList<string> labels)
+            =>members.Select((member,index)=>new RoiParameterRow(BlobRoiInheritance.Leaf(mode,member),labels[index])).ToArray();
         // 控件行、继承绑定和插入位置都由平台按声明创建，工具只交字段名与模式取值。
         var controls=NativeRoiGroupComposer.Compose(inputs,new RoiGroupComposerSpec
         {
@@ -203,8 +203,8 @@ internal static class BlobRoiUi
             InheritedModes=new[]{BlobRoiInheritance.Rectangle,BlobRoiInheritance.RectangleParameters,BlobRoiInheritance.Annulus,BlobRoiInheritance.AnnulusParameters},
             RectangleSourceFieldId=BlobRoiInheritance.RectangleSource,
             AnnulusSourceFieldId=BlobRoiInheritance.AnnulusSource,
-            RectangleParameterFields=()=>Fields(BlobRoiInheritance.RectangleParameters,BlobRoiInheritance.RectangleMembers,rectangleLabels),
-            AnnulusParameterFields=()=>Fields(BlobRoiInheritance.AnnulusParameters,BlobRoiInheritance.AnnulusMembers,annulusLabels),
+            RectangleParameterRows=Rows(BlobRoiInheritance.RectangleParameters,BlobRoiInheritance.RectangleMembers,rectangleLabels),
+            AnnulusParameterRows=Rows(BlobRoiInheritance.AnnulusParameters,BlobRoiInheritance.AnnulusMembers,annulusLabels),
             AreaTypeFieldId=BlobImageRoi.ModeId,
             AreaTypeLabel="ROI Area Type",
             AreaTypeChoices=new[]
@@ -218,8 +218,7 @@ internal static class BlobRoiUi
             OutputMaskLabel="OutputMask",
             MaskSourceFieldId=BlobMaskInheritance.SourceId,
             MaskSourceLabel="屏蔽区",
-            ReadMaskInherited=()=>BlobMaskInheritance.IsInherited(inputs.ReadUnpresentedInput(BlobMaskInheritance.ModeId)),
-            AcceptMaskInherited=value=>inputs.WriteUnpresentedInput(BlobMaskInheritance.ModeId,new ConstantSetting(value)),
+            MaskInheritedFieldId=BlobMaskInheritance.ModeId,
             AttachAnchorFieldId=BlobTool.ImageInput,
             AttachSection="ROI区域"
         },attach,observe);

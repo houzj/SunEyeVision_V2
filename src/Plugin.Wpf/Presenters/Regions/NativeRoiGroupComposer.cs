@@ -9,6 +9,9 @@ using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 namespace SunEyeVision.Plugin.Wpf.Presenters.Regions;
 
 /// <summary>ROI 组声明：工具只交字段名、模式和标签，行与控件由平台创建。</summary>
+/// <summary>ROI 参数行：字段身份与显示标签，平台据此创建控件行。</summary>
+public sealed record RoiParameterRow(string FieldId,string Label);
+
 public sealed record RoiGroupComposerSpec
 {
     /// <summary>检测方式字段（本地绘制 / 继承）。</summary>
@@ -18,8 +21,8 @@ public sealed record RoiGroupComposerSpec
     public required IReadOnlyList<string> InheritedModes { get; init; }
     public required string RectangleSourceFieldId { get; init; }
     public required string AnnulusSourceFieldId { get; init; }
-    public required Func<IReadOnlyList<DeclaredFieldRow>> RectangleParameterFields { get; init; }
-    public required Func<IReadOnlyList<DeclaredFieldRow>> AnnulusParameterFields { get; init; }
+    public required IReadOnlyList<RoiParameterRow> RectangleParameterRows { get; init; }
+    public required IReadOnlyList<RoiParameterRow> AnnulusParameterRows { get; init; }
     public required string AreaTypeFieldId { get; init; }
     public required string AreaTypeLabel { get; init; }
     public required IReadOnlyList<NativeIntegerRadioChoice> AreaTypeChoices { get; init; }
@@ -29,8 +32,8 @@ public sealed record RoiGroupComposerSpec
     public required string OutputMaskLabel { get; init; }
     public required string MaskSourceFieldId { get; init; }
     public required string MaskSourceLabel { get; init; }
-    public required Func<bool> ReadMaskInherited { get; init; }
-    public required Action<bool> AcceptMaskInherited { get; init; }
+    /// <summary>屏蔽区继承开关所在字段；读写由平台按该字段完成。</summary>
+    public required string MaskInheritedFieldId { get; init; }
     public required string AttachAnchorFieldId { get; init; }
     public required string AttachSection { get; init; }
 }
@@ -44,6 +47,18 @@ public static class NativeRoiGroupComposer
         ArgumentNullException.ThrowIfNull(inputs);
         ArgumentNullException.ThrowIfNull(spec);
         ArgumentNullException.ThrowIfNull(attach);
+
+        Func<IReadOnlyList<DeclaredFieldRow>> Rows(IReadOnlyList<RoiParameterRow> rows)
+            => () => rows.Select(row => inputs.ComposeInputEditor(row.FieldId, row.Label)).ToArray();
+
+        bool ReadMaskInherited() => inputs.ReadUnpresentedInput(spec.MaskInheritedFieldId) switch
+        {
+            UnsetSetting => false,
+            ConstantSetting { Value: bool value } => value,
+            _ => throw new ArgumentException("屏蔽区创建方式必须是固定值。")
+        };
+        void AcceptMaskInherited(bool value)
+            => inputs.WriteUnpresentedInput(spec.MaskInheritedFieldId, new ConstantSetting(value));
 
         int? ReadMode()
         {
@@ -66,8 +81,8 @@ public static class NativeRoiGroupComposer
                 : spec.InheritedModes[selected.Value])),
             inputs.ComposeInputEditor(spec.RectangleSourceFieldId, "Region"),
             inputs.ComposeInputEditor(spec.AnnulusSourceFieldId, "Region"),
-            spec.RectangleParameterFields,
-            spec.AnnulusParameterFields);
+            Rows(spec.RectangleParameterRows),
+            Rows(spec.AnnulusParameterRows));
 
         var maskImage = inputs.ComposeInputEditor(spec.MaskImageFieldId, spec.MaskImageLabel, imageSource: true);
         var outputMask = inputs.ComposeInputEditor(spec.OutputMaskFieldId, spec.OutputMaskLabel,
@@ -78,7 +93,7 @@ public static class NativeRoiGroupComposer
         var maskSource = inputs.ComposeInputEditor(spec.MaskSourceFieldId, spec.MaskSourceLabel);
 
         var controls = new NativeRoiUiDraftControls(inheritance, maskImage, area, outputMask, maskSource,
-            spec.ReadMaskInherited, spec.AcceptMaskInherited);
+            ReadMaskInherited, AcceptMaskInherited);
         try
         {
             attach(spec.AttachAnchorFieldId, controls, spec.AttachSection);

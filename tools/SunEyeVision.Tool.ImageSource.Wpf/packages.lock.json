@@ -137,7 +137,8 @@
         "dependencies": {
           "SunEyeVision.HalAdapter.Runtime": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )"
+          "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )"
         }
       }
     },

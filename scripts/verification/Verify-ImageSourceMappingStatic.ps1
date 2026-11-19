@@ -3,7 +3,7 @@ param(
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-$unit = Join-Path $RepoRoot 'tools\SunEyeVision.Tool.ImageSource\Resources\OriginalReleaseUnit'
+$unit = Join-Path $RepoRoot 'docs\evidence\original-release-units\ImageSource'
 $tabPath = Join-Path $unit 'ImageSourceModuleAlgorithmTab.xml'
 $algorithmPath = Join-Path $unit 'ImageSourceModuleAlgorithm.xml'
 $mappingPath = Join-Path $unit 'ImageSourceFieldMapping.json'

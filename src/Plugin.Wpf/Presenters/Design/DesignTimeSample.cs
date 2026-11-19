@@ -19,9 +19,11 @@ public static class DesignTimeSample
     {
         ArgumentNullException.ThrowIfNull(tool);
         var draft = new DesignTimeDraft(tool);
-        var schema = draft.Schema;
-        var inputSection = schema.Presentation!.Fields.First().Layout!.Page;
-        if (imageInputFieldId is null)
+        // 输入视图与假引用需要完整契约；草稿内部用的编辑器 schema 不含输入项。
+        var schema = tool.Describe();
+        var inputSection = draft.Schema.Presentation!.Fields.First().Layout!.Page;
+        // 编辑器 schema 只含可编辑字段；该工具没有此输入项时退回不带假图像源的样本。
+        if (imageInputFieldId is null || !schema.Inputs.Any(port => port.Id == imageInputFieldId))
             return (draft, new(ReferenceOptions: ReferenceFieldOptions.Empty, InputSection: inputSection));
 
         var source = new DeclaredReferenceCandidate(sampleLabel, "sample-image", "sample-workflow",

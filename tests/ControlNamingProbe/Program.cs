@@ -49,7 +49,7 @@ internal static class Program
    if(presenter.SelectedPageKey!=key)throw new Exception("Blob designer page was not composed: "+key);
   }
  }
- var sourceContext=SunEyeVision.Tool.ImageSource.Wpf.Design.ImageSourceDesignData.CreateParameterContext();
+ var sourceContext=SunEyeVision.Plugin.Wpf.Presenters.Design.DesignTimeSample.Create(new SunEyeVision.Tool.ImageSource.Runtime.ImageSourceTool());
  using(var source=new SunEyeVision.Tool.ImageSource.Wpf.Views.ImageSourceParameterEditor(sourceContext.Draft,sourceContext.Options))
  { source.Measure(new Size(680,800)); source.Arrange(new Rect(0,0,680,800)); }
  Console.WriteLine("PASS: real Blob and image source editor assembly with design inputs");

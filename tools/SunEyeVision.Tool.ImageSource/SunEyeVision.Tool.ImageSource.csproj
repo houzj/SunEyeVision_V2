@@ -21,7 +21,7 @@
     <ProjectReference Include="../../src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj"><Private>false</Private></ProjectReference>
     <ProjectReference Include="../../src/SunEyeVision.HalAdapter/Runtime/SunEyeVision.HalAdapter.Runtime.csproj" />
     <Reference Include="halcondotnetxl"><HintPath>../../libs/halcon/net/halcondotnetxl.dll</HintPath><Private>false</Private></Reference>
-    <None Include="Resources/OriginalReleaseUnit/**" Link="OriginalReleaseUnit/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Never" />
+
   </ItemGroup>
 
   <ItemGroup>

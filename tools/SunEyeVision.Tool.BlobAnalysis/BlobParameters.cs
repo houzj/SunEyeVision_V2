@@ -898,8 +898,9 @@ internal sealed class BlobUiComposition : IDisposable
             {
                 Measure("ROI组合",() =>
                 {
+                    // ROI 组按分组归位，不依赖锚点字段：输入项不在编辑器 schema 内，用锚点会抛未知字段。
                     var pose=BlobRoiUi.Add(inputs,
-                        (field,content,group)=>fields.AddAfterField(field,content,groupOverride:group),
+                        (field,content,group)=>fields.AddToGroup(group??"ROI区域",content),
                         observe:value=>_roiUi=value);
                     _assistUi=pose;
                     _roiOwner=new NativeRoiEditHost(inputs,_roiUi!,_baseOptions.RoiFrames,BlobRoiDeclaration.Create(inputs),_baseOptions.RoiDrawBlockReason);

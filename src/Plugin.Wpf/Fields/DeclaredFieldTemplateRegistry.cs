@@ -86,6 +86,7 @@ public static class DeclaredFieldTemplateRegistry
             FieldEditorKind.Choice => Enumeration,
             FieldEditorKind.FolderPath => FolderPath,
     FieldEditorKind.Camera => CameraSelecter,
+    FieldEditorKind.Reference => Reference,
             // 对齐原编辑器：记录字段由行宿主展开子行（组合槽自渲染），不走行内模板。
             FieldEditorKind.Record => ComposedSlot,
             FieldEditorKind.Sequence => throw new NotSupportedException($"序列字段不支持行内模板：{port.Id}（{presentation.Editor}）。"),

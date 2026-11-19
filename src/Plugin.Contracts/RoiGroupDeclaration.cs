@@ -17,6 +17,7 @@ public sealed record RoiChoiceDeclaration(long Value, string Label);
 /// 平台据此在分组内直接创建控件，工具不再于运行时挂接。
 /// </summary>
 public sealed record RoiGroupDeclaration(
+    string Section,
     string ModeFieldId,
     string LocalModeValue,
     IReadOnlyList<string> InheritedModes,
@@ -35,14 +36,17 @@ public sealed record RoiGroupDeclaration(
     string MaskSourceLabel,
     string MaskInheritedFieldId)
 {
-    /// <summary>解析 &lt;RoiGroup&gt; 段；缺失返回空。</summary>
-    public static IReadOnlyList<RoiGroupDeclaration> Load(XElement? section)
+    /// <summary>解析 &lt;RoiGroup&gt; 段；分组归属由所在 &lt;Group&gt; 决定，与原厂 GroupLinkItem 一致。</summary>
+    public static IReadOnlyList<RoiGroupDeclaration> Load(XElement? root)
     {
-        if (section is null) return Array.Empty<RoiGroupDeclaration>();
-        return section.Elements("RoiGroup").Select(Parse).ToArray();
+        if (root is null) return Array.Empty<RoiGroupDeclaration>();
+        return root.Elements("Group")
+            .SelectMany(group => group.Elements("RoiGroup")
+                .Select(item => Parse(item, Required(group, "section"))))
+            .ToArray();
     }
 
-    private static RoiGroupDeclaration Parse(XElement element)
+    private static RoiGroupDeclaration Parse(XElement element, string section)
     {
         var rows = element.Elements("Row").Select(Row).ToArray();
         var rectangle = rows.Where(row => row.Kind == "rectangle").Select(row => row.Row).ToArray();
@@ -51,6 +55,7 @@ public sealed record RoiGroupDeclaration(
             long.Parse(Required(choice, "value"), System.Globalization.CultureInfo.InvariantCulture),
             Required(choice, "label"))).ToArray();
         return new RoiGroupDeclaration(
+            section,
             Required(element, "modeField"),
             Required(element, "localMode"),
             Required(element, "inheritedModes").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
@@ -90,19 +95,23 @@ public sealed record RoiAssistSourceDeclaration(int Mode, string FieldId, string
 /// 位置修正辅助组声明，对应原厂 AlgorithmTab 的 AssistGroup 链接。
 /// </summary>
 public sealed record RoiAssistDeclaration(
+    string Section,
     string PoseFieldId,
     string ModeFieldId,
     IReadOnlyList<RoiChoiceDeclaration> ModeChoices,
     IReadOnlyList<RoiAssistSourceDeclaration> Sources)
 {
-    /// <summary>解析 &lt;AssistGroup&gt; 段；缺失返回空。</summary>
-    public static IReadOnlyList<RoiAssistDeclaration> Load(XElement? section)
+    /// <summary>解析 &lt;AssistGroup&gt; 段；分组归属由所在 &lt;Group&gt; 决定。</summary>
+    public static IReadOnlyList<RoiAssistDeclaration> Load(XElement? root)
     {
-        if (section is null) return Array.Empty<RoiAssistDeclaration>();
-        return section.Elements("AssistGroup").Select(Parse).ToArray();
+        if (root is null) return Array.Empty<RoiAssistDeclaration>();
+        return root.Elements("Group")
+            .SelectMany(group => group.Elements("AssistGroup")
+                .Select(item => Parse(item, Required(group, "section"))))
+            .ToArray();
     }
 
-    private static RoiAssistDeclaration Parse(XElement element)
+    private static RoiAssistDeclaration Parse(XElement element, string section)
     {
         var choices = element.Elements("Choice").Select(choice => new RoiChoiceDeclaration(
             long.Parse(Required(choice, "value"), System.Globalization.CultureInfo.InvariantCulture),
@@ -111,7 +120,7 @@ public sealed record RoiAssistDeclaration(
             int.Parse(Required(source, "mode"), System.Globalization.CultureInfo.InvariantCulture),
             Required(source, "field"), Required(source, "label"))).ToArray();
         return new RoiAssistDeclaration(
-            Required(element, "poseField"), Required(element, "modeField"), choices, sources);
+            section, Required(element, "poseField"), Required(element, "modeField"), choices, sources);
     }
 
     private static string Required(XElement element, string name)

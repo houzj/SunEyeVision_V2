@@ -18,7 +18,8 @@ public sealed class DeclaredParameterSchema
     private readonly IReadOnlyList<RoiGroupDeclaration> _roiGroups = Array.Empty<RoiGroupDeclaration>();
     private readonly IReadOnlyList<RoiAssistDeclaration> _assistGroups = Array.Empty<RoiAssistDeclaration>();
     private readonly IReadOnlyDictionary<string, XElement> _inputs;
-    private readonly IReadOnlyDictionary<string, Type> _types;
+    /// <summary>属性类型表；XML 显式声明 type 的字段在此补充，用于不对应 CLR 属性的界面字段。</summary>
+    private readonly IDictionary<string, Type> _types;
 
     private DeclaredParameterSchema(XElement root, IReadOnlyDictionary<string, Type> types)
     {
@@ -28,7 +29,7 @@ public sealed class DeclaredParameterSchema
         Shape(root, new[] { "schemaVersion", "workflowImageInputId" }, new[] { "Inputs", "Group" });
         // 消费图像的工具声明工作流图像输入；产出图像的工具（如图像源）不声明。
         WorkflowImageInputId = (string?)root.Attribute("workflowImageInputId") ?? string.Empty;
-        _types = types;
+        _types = types as IDictionary<string, Type> ?? new Dictionary<string, Type>(types, StringComparer.Ordinal);
 
         // 输入编辑器声明可为空：图像源类工具自行产生图像，没有上游图像输入页。
         if (root.Elements("Inputs").Count() > 1)
@@ -65,9 +66,12 @@ public sealed class DeclaredParameterSchema
                     "minimum", "maximum", "decimals", "increment", "visibleWhen", "visibleValue",
                     "visibleNegate", "orVisibleWhen", "orVisibleValue", "orVisibleNegate",
                     "pairWith", "pairMinimum", "pairMaximum", "pairLabel", "editor",
-                    "storage", "defaultPresence", "booleanTips"
+                    "storage", "defaultPresence", "booleanTips", "required"
                 }, new[] { "Choice" });
                 Required(field, "id"); Required(field, "type"); Required(field, "label");
+                // 界面专用字段（原厂 ButtonSelecter 一类）不对应参数模型属性，由 type 显式给出形态。
+                if (ExplicitType((string?)field.Attribute("type")) is { } explicitType)
+                    _types.TryAdd(Required(field, "id"), explicitType);
                 FieldId(field, "fieldId");
                 if (field.Attribute("allowReference") is not null && Boolean(field, "allowReference")) Required(field, "bindingName");
                 else if (field.Attribute("bindingName") is not null)
@@ -204,6 +208,13 @@ public sealed class DeclaredParameterSchema
         ? FieldId(field, "fieldId")
         : throw new ArgumentException("Unknown setting: " + property, nameof(property));
 
+    /// <summary>XML 里可直接声明形态的界面字段类型；其余仍由参数模型的 CLR 属性决定。</summary>
+    private static Type? ExplicitType(string? declared) => declared switch
+    {
+        "NumberArray" or "numberArray" => typeof(IReadOnlyList<double>),
+        _ => null
+    };
+
     public Type ParameterType(string id) => _types.TryGetValue(id, out var type)
         ? type
         : throw new InvalidDataException("Unknown parameter: " + id);
@@ -262,13 +273,17 @@ public sealed class DeclaredParameterSchema
             var choices = field.Elements("Choice").ToDictionary(choice => Required(choice, "key"), choice => Required(choice, "label"), StringComparer.Ordinal);
             var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
             var port = new Port(FieldId(field, "fieldId"),
-                // 值类型可空、或文本且未给出默认值，在契约上都按非必填处理。
-                Required: Nullable.GetUnderlyingType(type) is null
-                    && !(underlyingType == typeof(string) && field.Attribute("default") is null),
+                // 显式声明优先；否则值类型可空、或文本且未给出默认值按非必填处理。
+                Required: field.Attribute("required") is { } requiredAttribute
+                    ? Boolean(field, "required")
+                    : Nullable.GetUnderlyingType(type) is null
+                        && !(underlyingType == typeof(string) && field.Attribute("default") is null),
                 Type: underlyingType == typeof(bool) ? DataType.Boolean
                 : underlyingType == typeof(int) || underlyingType == typeof(long) ? DataType.Integer
                 : underlyingType == typeof(double) ? DataType.Number
                 : underlyingType == typeof(IReadOnlyList<string>) ? TypeRef.SequenceOf(DataType.Text)
+                // 界面专用引用字段：数值序列，与原厂 ButtonSelecter 订阅形态一致。
+                : underlyingType == typeof(IReadOnlyList<double>) ? DataType.NumberArray
                 : DataType.Text,
                 Storage: (string?)field.Attribute("storage") switch
                 {
@@ -281,7 +296,9 @@ public sealed class DeclaredParameterSchema
                         : underlyingType == typeof(double) ? NumericStorage.Float64 : null,
                     var unknown => throw new InvalidDataException("Unknown numeric storage: " + unknown)
                 },
-                EditModes: FieldEditModes.Constant | (field.Attribute("allowReference") is not null && Boolean(field, "allowReference") ? FieldEditModes.Reference : FieldEditModes.None),
+                EditModes: (string?)field.Attribute("editor") == "reference"
+                    ? FieldEditModes.Reference
+                    : FieldEditModes.Constant | (field.Attribute("allowReference") is not null && Boolean(field, "allowReference") ? FieldEditModes.Reference : FieldEditModes.None),
                 DefaultPresence: (string?)field.Attribute("defaultPresence") == "declared"
                     ? FieldDefaultPresence.UseDeclaredDefault : FieldDefaultPresence.Unset,
                 Choices: choices.Count != 0 ? new TextChoiceConstraint(choices.Keys) : null);
@@ -308,6 +325,7 @@ public sealed class DeclaredParameterSchema
                 null => type.IsEnum ? FieldEditorKind.Choice : FieldEditorKind.Scalar,
                 "folder" => FieldEditorKind.FolderPath,
                 "camera" => FieldEditorKind.Camera,
+                "reference" => FieldEditorKind.Reference,
                 "sequence" => FieldEditorKind.Sequence,
                 "choice" => FieldEditorKind.Choice,
                 "scalar" => FieldEditorKind.Scalar,

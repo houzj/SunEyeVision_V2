@@ -164,7 +164,12 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
  }
 
  public void AddToGroup(string group,UIElement content,int? index=null,FieldCondition? condition=null)
-  => AddToGroupCore(group,group,content,index,condition);
+  {
+   ObjectDisposedException.ThrowIf(_disposed,this);
+   // 与 AddAfterField 同一条约束：同一元素只能归属一个父级，重复添加必须显式失败。
+   if(content is FrameworkElement element)EnsureAttachable(element);
+   AddToGroupCore(group,group,content,index,condition);
+  }
 
  /// <summary>Attach a row to a known page while preserving an input-only section title.</summary>
  internal void AddToPage(string page,string section,UIElement content,int? index=null,FieldCondition? condition=null)

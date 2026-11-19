@@ -97,6 +97,8 @@ public static class NativeRoiGroupComposer
         try
         {
             attach(spec.AttachAnchorFieldId, controls, spec.AttachSection);
+            // 回传装配结果：调用方（工具的页面装配器）需要这份引用挂接编辑宿主。
+            observe?.Invoke(controls);
             return controls;
         }
         catch

@@ -31,10 +31,17 @@ internal static class Program
  using(var blob=new SunEyeVision.Tool.BlobAnalysis.Wpf.Views.BlobParameterEditor(blobContext.Draft,blobOptions))
  { blob.Measure(new Size(680,800)); blob.Arrange(new Rect(0,0,680,800)); }
  // 走生产装配路径：有参构造会创建 BlobUiComposition 并装配完整参数页。
- using(var sample=new SunEyeVision.Tool.BlobAnalysis.Wpf.Views.BlobParameterEditor(blobContext.Draft,blobContext.Options))
+ // 传 PageBuilt 让页面构建钩子真正执行，覆盖 ROI 组与位置修正组的装配路径。
+using(var sample=new SunEyeVision.Tool.BlobAnalysis.Wpf.Views.BlobParameterEditor(blobContext.Draft,
+ blobContext.Options with { PageBuilt=(page,built,input)=>{ } }))
  {
   var presenter=(SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView)sample.FindName("Editor");
   var parameterTree=presenter.Content??throw new Exception("Blob design parameter tree was not built");
+ if(parameterTree is SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldsView fieldsView)
+ {
+  if(sample.CompositionError is {} compositionError)throw new Exception("Blob composition error: "+compositionError);
+  sample.Measure(new Size(680,800));sample.Arrange(new Rect(0,0,680,800));
+ }
   if(presenter.SelectedPageKey!="基本参数")throw new Exception("Blob designer does not open the production first page");
   var designInputs=(SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredInputFieldsView)blobContext.Options.InputContent!;
   var imageRow=designInputs.Fields.Single(row=>row.FieldId==SunEyeVision.Tool.BlobAnalysis.Runtime.BlobTool.ImageInput);
@@ -43,7 +50,8 @@ internal static class Program
   foreach(var (index,key) in new[]{(1,"运行参数"),(2,"结果显示"),(0,"基本参数")})
   {
    presenter.SelectedPageIndex=index;
-   sample.Measure(new Size(680,800));sample.Arrange(new Rect(0,0,680,800));
+   if(sample.CompositionError is {} compositionError)throw new Exception("Blob composition error: "+compositionError);
+  sample.Measure(new Size(680,800));sample.Arrange(new Rect(0,0,680,800));
    if(presenter.SelectedPageKey!=key)throw new Exception("Blob designer page was not composed: "+key);
   }
  }
@@ -97,7 +105,19 @@ Console.WriteLine("PASS: image source camera row renders through the injected de
    if(stream.Length==0) throw new Exception("empty resource "+path);
  foreach(var name in new[]{"鼠标双向箭头.png","旋转光标.png","鼠标旋转箭头.png"})
   using (var stream=typeof(NativeResultViewport).Assembly.GetManifestResourceStream("SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.Resources."+name) ?? throw new Exception("missing cursor "+name)) { if(stream.Length==0) throw new Exception("empty cursor"); }
- Console.WriteLine("PASS: real slider, result viewport and embedded cursor resources");return 0;
+ /// <summary>在视觉树里按类型查找后代控件。</summary>
+static T? FindChild<T>(System.Windows.DependencyObject root) where T : System.Windows.DependencyObject
+{
+    for(var i=0;i<System.Windows.Media.VisualTreeHelper.GetChildrenCount(root);i++)
+    {
+        var child=System.Windows.Media.VisualTreeHelper.GetChild(root,i);
+        if(child is T match)return match;
+        if(FindChild<T>(child) is {} nested)return nested;
+    }
+    return null;
+}
+
+    Console.WriteLine("PASS: real slider, result viewport and embedded cursor resources");return 0;
  } catch(Exception e){Console.Error.WriteLine(e);return 1;} }
 }
 
@@ -110,3 +130,4 @@ internal sealed class SampleCameraSource : SunEyeVision.Plugin.Contracts.ICamera
     public string Status(string? deviceId) => deviceId is null ? "未选择" : "已连接（示例）";
     public void Open(string? deviceId) { }
 }
+

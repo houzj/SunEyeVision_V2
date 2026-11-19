@@ -15,6 +15,8 @@ public sealed class DeclaredParameterSchema
 {
     private readonly IReadOnlyDictionary<string, XElement> _fields;
     private readonly IReadOnlyList<string> _fieldOrder = Array.Empty<string>();
+    private readonly IReadOnlyList<RoiGroupDeclaration> _roiGroups = Array.Empty<RoiGroupDeclaration>();
+    private readonly IReadOnlyList<RoiAssistDeclaration> _assistGroups = Array.Empty<RoiAssistDeclaration>();
     private readonly IReadOnlyDictionary<string, XElement> _inputs;
     private readonly IReadOnlyDictionary<string, Type> _types;
 
@@ -51,7 +53,7 @@ public sealed class DeclaredParameterSchema
 
         foreach (var group in root.Elements("Group"))
         {
-            Shape(group, new[] { "page", "section", "advanced", "vmCategory" }, new[] { "Parameter" });
+            Shape(group, new[] { "page", "section", "advanced", "vmCategory" }, new[] { "Parameter", "RoiGroup", "AssistGroup" });
             Required(group, "page"); Required(group, "section"); Required(group, "vmCategory");
             if (group.Attribute("advanced") is not null) Boolean(group, "advanced");
             if (!group.HasElements) throw new InvalidDataException("Empty parameter group.");
@@ -81,6 +83,8 @@ public sealed class DeclaredParameterSchema
         var ids = root.Elements("Group").Elements("Parameter").Select(field => Required(field, "id")).ToArray();
         if (ids.Distinct(StringComparer.Ordinal).Count() != ids.Length)
             throw new InvalidDataException("Duplicate parameter identity.");
+        _roiGroups = RoiGroupDeclaration.Load(root);
+        _assistGroups = RoiAssistDeclaration.Load(root);
         _fieldOrder = ids;
         _fields = root.Elements("Group").Elements("Parameter")
             .ToDictionary(field => Required(field, "id"), StringComparer.Ordinal);
@@ -320,7 +324,8 @@ public sealed class DeclaredParameterSchema
         if (bindings.Select(binding => binding.Port.Id).Distinct(StringComparer.Ordinal).Count() != bindings.Count)
             throw new InvalidDataException("Duplicate editor field IDs.");
         return new ToolSchema(bindings.Select(binding => binding.Port), Array.Empty<Port>(),
-            new ToolPresentation(bindings.Select(binding => binding.Presentation)));
+            new ToolPresentation(bindings.Select(binding => binding.Presentation)),
+            roiGroups: _roiGroups, assistGroups: _assistGroups);
     }
 
     /// <summary>解析一组可见性条件；when/value/negate 三属性必须成组出现。</summary>

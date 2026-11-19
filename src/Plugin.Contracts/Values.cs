@@ -13,8 +13,11 @@ public sealed record ControlOutput(string Id, string DisplayName);
 public sealed class ToolSchema
 {
     public ToolSchema(IEnumerable<Port> inputs, IEnumerable<Port> outputs,ToolPresentation? presentation=null,string? workflowImageInputId=null,
-        IEnumerable<OutputDisplayNode>? outputDisplay=null, IEnumerable<ControlOutput>? controlOutputs=null)
+        IEnumerable<OutputDisplayNode>? outputDisplay=null, IEnumerable<ControlOutput>? controlOutputs=null,
+        IEnumerable<RoiGroupDeclaration>? roiGroups=null, IEnumerable<RoiAssistDeclaration>? assistGroups=null)
     {
+        RoiGroups=Array.AsReadOnly((roiGroups??Array.Empty<RoiGroupDeclaration>()).ToArray());
+        AssistGroups=Array.AsReadOnly((assistGroups??Array.Empty<RoiAssistDeclaration>()).ToArray());
         Inputs=Array.AsReadOnly(inputs.ToArray()); Outputs=Array.AsReadOnly(outputs.ToArray());
         if (workflowImageInputId is not null && !Inputs.Any(port => port is not null && port.Id == workflowImageInputId && port.Type == TypeRef.ResourceOf(ResourceKind.Image)))
             throw new ArgumentException("Workflow image fallback must name a declared image input.", nameof(workflowImageInputId));
@@ -97,6 +100,10 @@ public sealed class ToolSchema
         return null;
     }
     public string? WorkflowImageInputId { get; }
+    /// <summary>参数页 ROI 组声明；空表示该工具没有 ROI 组。</summary>
+    public IReadOnlyList<RoiGroupDeclaration> RoiGroups { get; }
+    /// <summary>参数页位置修正组声明；空表示该工具没有位置修正组。</summary>
+    public IReadOnlyList<RoiAssistDeclaration> AssistGroups { get; }
     public string Fingerprint { get; }
 }
 public sealed class InputValues

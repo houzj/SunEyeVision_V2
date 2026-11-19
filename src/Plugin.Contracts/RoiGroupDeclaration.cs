@@ -83,3 +83,39 @@ public sealed record RoiGroupDeclaration(
             ? attribute.Value
             : throw new InvalidDataException("缺少 ROI 声明属性：" + name);
 }
+/// <summary>位置修正来源行：模式序号、字段身份与显示名。</summary>
+public sealed record RoiAssistSourceDeclaration(int Mode, string FieldId, string Label);
+
+/// <summary>
+/// 位置修正辅助组声明，对应原厂 AlgorithmTab 的 AssistGroup 链接。
+/// </summary>
+public sealed record RoiAssistDeclaration(
+    string PoseFieldId,
+    string ModeFieldId,
+    IReadOnlyList<RoiChoiceDeclaration> ModeChoices,
+    IReadOnlyList<RoiAssistSourceDeclaration> Sources)
+{
+    /// <summary>解析 &lt;AssistGroup&gt; 段；缺失返回空。</summary>
+    public static IReadOnlyList<RoiAssistDeclaration> Load(XElement? section)
+    {
+        if (section is null) return Array.Empty<RoiAssistDeclaration>();
+        return section.Elements("AssistGroup").Select(Parse).ToArray();
+    }
+
+    private static RoiAssistDeclaration Parse(XElement element)
+    {
+        var choices = element.Elements("Choice").Select(choice => new RoiChoiceDeclaration(
+            long.Parse(Required(choice, "value"), System.Globalization.CultureInfo.InvariantCulture),
+            Required(choice, "label"))).ToArray();
+        var sources = element.Elements("Source").Select(source => new RoiAssistSourceDeclaration(
+            int.Parse(Required(source, "mode"), System.Globalization.CultureInfo.InvariantCulture),
+            Required(source, "field"), Required(source, "label"))).ToArray();
+        return new RoiAssistDeclaration(
+            Required(element, "poseField"), Required(element, "modeField"), choices, sources);
+    }
+
+    private static string Required(XElement element, string name)
+        => element.Attribute(name) is { } attribute && !string.IsNullOrWhiteSpace(attribute.Value)
+            ? attribute.Value
+            : throw new InvalidDataException("缺少位置修正声明属性：" + name);
+}

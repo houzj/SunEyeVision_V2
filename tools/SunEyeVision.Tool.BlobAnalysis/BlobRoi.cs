@@ -924,58 +924,46 @@ internal static class BlobLocalRoiProjection
     }
 }
 
-
-
-
-
 internal static class BlobRoiUi
 {
     internal static NativeAssistUiDraftControls? Add(DeclaredInputFieldsView inputs,Action<string,FrameworkElement,string?> attach,Action<NativeRoiUiDraftControls> observe)
     {
-        var modes=new[]{BlobRoiInheritance.Rectangle,BlobRoiInheritance.RectangleParameters,BlobRoiInheritance.Annulus,BlobRoiInheritance.AnnulusParameters};
-        int? ReadMode()
-        {
-            var mode=inputs.ReadUnpresentedInput(BlobRoiInheritance.ModeId) switch
-            {
-                UnsetSetting=>BlobRoiInheritance.Local,
-                ConstantSetting {Value:string value}=>BlobRoiInheritance.ValidateMode(value),
-                _=>throw new ArgumentException("ROI继承方式无效。")
-            };
-            return mode==BlobRoiInheritance.Local?null:Array.IndexOf(modes,mode);
-        }
         var rectangleLabels=new[]{"roicenterx","roicentery","roiwidth","roiheight","roiangle"};
         var annulusLabels=new[]{"roiAnnulusCenterX","roiAnnulusCenterY","CircleInnerRadius","roiAnnulusOuterRadius","Angle Start","AngleRange"};
         IReadOnlyList<DeclaredFieldRow> Fields(string mode,IReadOnlyList<string> members,IReadOnlyList<string> labels)
             =>members.Select((member,index)=>inputs.ComposeInputEditor(BlobRoiInheritance.Leaf(mode,member),labels[index])).ToArray();
-        var inheritance=new NativeRoiInheritanceBinding(ReadMode,selected=>
-            inputs.WriteUnpresentedInput(BlobRoiInheritance.ModeId,new ConstantSetting(selected is null?BlobRoiInheritance.Local:modes[selected.Value])),
-            inputs.ComposeInputEditor(BlobRoiInheritance.RectangleSource,"Region"),
-            inputs.ComposeInputEditor(BlobRoiInheritance.AnnulusSource,"Region"),
-            ()=>Fields(BlobRoiInheritance.RectangleParameters,BlobRoiInheritance.RectangleMembers,rectangleLabels),
-            ()=>Fields(BlobRoiInheritance.AnnulusParameters,BlobRoiInheritance.AnnulusMembers,annulusLabels));
-        var maskImage=inputs.ComposeInputEditor(BlobImageRoi.ImageId,"Mask Image",imageSource:true);
-        var outputMask=inputs.ComposeInputEditor(BlobImageRoi.OutputEnabledId,"OutputMask",defaultWhenUnset:new ConstantSetting(false),showClearButton:false);
-        var area=inputs.ComposeInputEditor(BlobImageRoi.ModeId,"ROI Area Type",defaultWhenUnset:new ConstantSetting(0L),
-            integerRadioOptions:new NativeIntegerRadioOptions(new[]
+        // 控件行、继承绑定和插入位置都由平台按声明创建，工具只交字段名与模式取值。
+        var controls=NativeRoiGroupComposer.Compose(inputs,new RoiGroupComposerSpec
+        {
+            ModeFieldId=BlobRoiInheritance.ModeId,
+            LocalModeValue=BlobRoiInheritance.Local,
+            InheritedModes=new[]{BlobRoiInheritance.Rectangle,BlobRoiInheritance.RectangleParameters,BlobRoiInheritance.Annulus,BlobRoiInheritance.AnnulusParameters},
+            RectangleSourceFieldId=BlobRoiInheritance.RectangleSource,
+            AnnulusSourceFieldId=BlobRoiInheritance.AnnulusSource,
+            RectangleParameterFields=()=>Fields(BlobRoiInheritance.RectangleParameters,BlobRoiInheritance.RectangleMembers,rectangleLabels),
+            AnnulusParameterFields=()=>Fields(BlobRoiInheritance.AnnulusParameters,BlobRoiInheritance.AnnulusMembers,annulusLabels),
+            AreaTypeFieldId=BlobImageRoi.ModeId,
+            AreaTypeLabel="ROI Area Type",
+            AreaTypeChoices=new[]
             {
                 new NativeIntegerRadioChoice(0,AppLocalizationService.GetLang("Type")!),
                 new NativeIntegerRadioChoice(1,AppLocalizationService.GetLang("RunParam_Image Type")!)
-            }));
-        var maskSource=inputs.ComposeInputEditor(BlobMaskInheritance.SourceId,"屏蔽区");
-        var controls=new NativeRoiUiDraftControls(inheritance,maskImage,area,outputMask,maskSource,
-            ()=>BlobMaskInheritance.IsInherited(inputs.ReadUnpresentedInput(BlobMaskInheritance.ModeId)),
-            value=>inputs.WriteUnpresentedInput(BlobMaskInheritance.ModeId,new ConstantSetting(value)));
+            },
+            MaskImageFieldId=BlobImageRoi.ImageId,
+            MaskImageLabel="Mask Image",
+            OutputMaskFieldId=BlobImageRoi.OutputEnabledId,
+            OutputMaskLabel="OutputMask",
+            MaskSourceFieldId=BlobMaskInheritance.SourceId,
+            MaskSourceLabel="屏蔽区",
+            ReadMaskInherited=()=>BlobMaskInheritance.IsInherited(inputs.ReadUnpresentedInput(BlobMaskInheritance.ModeId)),
+            AcceptMaskInherited=value=>inputs.WriteUnpresentedInput(BlobMaskInheritance.ModeId,new ConstantSetting(value)),
+            AttachAnchorFieldId=BlobTool.ImageInput,
+            AttachSection="ROI区域"
+        },attach,observe);
         try
         {
             var pose=inputs.Fields.SingleOrDefault(field=>field.FieldId==BlobTool.PoseInput);
-            if(pose is null)
-            {
-                observe(controls);
-                attach("input.image",controls,"ROI区域");
-                return null;
-            }
-            observe(controls);
-            attach("input.image",controls,"ROI区域");
+            if(pose is null)return null;
             var mode=inputs.ComposeInputEditor(BlobFixtureInputs.PositionCorrectionModeId,"Choose Mode",defaultWhenUnset:new ConstantSetting(0L),
                 integerRadioOptions:new NativeIntegerRadioOptions(new[]
                 {
@@ -983,10 +971,9 @@ internal static class BlobRoiUi
                     new NativeIntegerRadioChoice(1,AppLocalizationService.GetLang("RunParam_By Point","按点")),
                     new NativeIntegerRadioChoice(2,AppLocalizationService.GetLang("RunParam_By Coordinate","按坐标"))
                 },useFiveSlotTemplate:true));
-            var assist=new NativeAssistUiDraftControls(mode,pose,
+            return new NativeAssistUiDraftControls(mode,pose,
                 Sources("reference","Fixtured Point","Init",BlobFixtureInputs.ReferencePoint)
                 .Concat(Sources("run","Unfixtured Point","Run",BlobFixtureInputs.RunPoint)));
-            return assist;
         }
         catch {controls.Dispose();throw;}
         IEnumerable<(int Mode, Func<DeclaredFieldRow> Create)> Sources(string pose,string pointLabel,string labelPrefix,string point)

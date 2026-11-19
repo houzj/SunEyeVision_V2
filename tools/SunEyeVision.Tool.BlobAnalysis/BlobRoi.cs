@@ -440,6 +440,45 @@ internal sealed class BlobRoiDocument
     }
 }
 
+/// <summary>把一个 Blob 本地 ROI 文档投影成平台可读的 ROI 文档视图。</summary>
+internal sealed class BlobRoiDocumentView : IRoiDocument
+{
+    private readonly RecordValue _root;
+
+    public BlobRoiDocumentView(RecordValue root) => _root = root;
+
+    public IReadOnlyList<string> Groups { get; } =
+        Array.AsReadOnly(new[] { BlobLocalRoi.Inspection, BlobLocalRoi.Mask });
+
+    public string Title(string group) => group == BlobLocalRoi.Inspection ? "形状" : "屏蔽区";
+    public bool PolygonOnly(string group) => group == BlobLocalRoi.Mask;
+
+    public int MaximumItems(string group) => group == BlobLocalRoi.Inspection
+        ? BlobLocalRoi.MaximumLocalInspectionCount
+        : BlobLocalRoi.MaximumLocalMaskCount;
+
+    public string DefaultCoverage(string group) => group == BlobLocalRoi.Inspection
+        ? BlobLocalRoi.FullDomain
+        : BlobLocalRoi.None;
+
+    public string Coverage(string group) => BlobLocalRoi.Coverage(_root, group);
+
+    public IReadOnlyList<RoiDocumentItem> Items(string group) => BlobLocalRoi.Items(_root, group)
+        .Select(item => new RoiDocumentItem(Guid.ParseExact(item.Get<string>("id"), "N"),
+            item.Get<string>("name"), item.Get<RecordValue>("shape"),
+            item.Get<bool>("enabled"), item.Get<bool>("visible")))
+        .ToArray();
+
+    public IRoiDocument WithItems(string group, IReadOnlyList<RoiDocumentItem> items, string coverage)
+    {
+        var rows = items.Select(item => BlobLocalRoi.Item(item.Id, item.Name, item.Geometry, item.Enabled, item.Visible));
+        var next = group == BlobLocalRoi.Inspection
+            ? BlobLocalRoi.Root(BlobLocalRoi.Group(coverage, rows), _root.Get<RecordValue>(BlobLocalRoi.Mask))
+            : BlobLocalRoi.Root(_root.Get<RecordValue>(BlobLocalRoi.Inspection), BlobLocalRoi.Group(coverage, rows));
+        return new BlobRoiDocumentView(next);
+    }
+}
+
 internal sealed partial class BlobLocalRoiOwner : IDisposable
 {
     private readonly DeclaredInputFieldsView _inputs;
@@ -508,16 +547,8 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
         return Project(root,editableGroup,_projectionRevision,_frame!.Image.Frame);
     }
     private RoiEditSnapshot Project(RecordValue root,string editableGroup,long revision,ImageFrameAddress frame)
-    {
-        var rows=new List<RoiEditItem>();var groups=new List<RoiGroupState>();
-        foreach(var group in new[]{BlobLocalRoi.Inspection,BlobLocalRoi.Mask})
-        {
-            groups.Add(new(group,Enum.Parse<RoiCoverage>(BlobLocalRoi.Coverage(root,group)),group==BlobLocalRoi.Inspection?RoiCoverage.FullDomain:RoiCoverage.None));
-            foreach(var item in BlobLocalRoi.Items(root,group))rows.Add(new(group,Guid.ParseExact(item.Get<string>("id"),"N"),item.Get<string>("name"),
-                BlobLocalRoiProjection.ToNative(item.Get<RecordValue>("shape")),item.Get<bool>("enabled")&&_controls.IsLocalDrawing(group),item.Get<bool>("visible")&&_controls.IsLocalDrawing(group)));
-        }
-        return new(new(_scopes[editableGroup],revision,frame),rows.AsReadOnly(),groups.AsReadOnly());
-    }
+        => RoiDocumentProjection.Project(new BlobRoiDocumentView(root),editableGroup,_scopes[editableGroup],revision,frame,
+            _controls.IsLocalDrawing,BlobLocalRoiProjection.ToNative);
     private bool FrameCurrent(long generation)
     {
         // VM keeps the ROI objects attached to the module result view while

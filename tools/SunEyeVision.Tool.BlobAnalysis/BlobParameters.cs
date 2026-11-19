@@ -692,6 +692,42 @@ public static class BlobThresholdCapabilities
         _=>false
     };
 }
+
+/// <summary>Blob 结果页图形显示声明：只给组名与角色，控件由平台按声明生成。</summary>
+public static class BlobDisplayDeclaration
+{
+    public static IReadOnlyList<string> GraphicGroups{get;}=Array.AsReadOnly(new[]
+    {
+        BlobResultDisplay.Graphic,
+        BlobResultDisplay.InnerRectangle,
+        BlobResultDisplay.Inspection,
+        BlobResultDisplay.ReferencePoint,
+        BlobResultDisplay.RunPoint,
+        BlobResultDisplay.Mask,
+        BlobResultDisplay.Annulus
+    });
+
+    public static IReadOnlyList<string> VisibilityGroups{get;}=Array.AsReadOnly(new[]
+    {
+        BlobResultDisplay.Text,
+        BlobResultDisplay.Outline
+    });
+
+    public static string TextGroup=>BlobResultDisplay.Text;
+
+    public static IReadOnlyList<string> GraphicRoles{get;}=Array.AsReadOnly(new[]
+    {
+        "visible","ok","ng","opacity","width"
+    });
+
+    public static IReadOnlyList<string> TextRoles{get;}=Array.AsReadOnly(new[]
+    {
+        "content","ok","ng","size","opacity","x","y"
+    });
+
+    public static string FieldId(string group,string role)=>BlobResultDisplay.Field(group,role);
+}
+
 }
 
 namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Design
@@ -1320,7 +1356,6 @@ internal static class BlobDisplayUi
 {
     internal static ToolSettingsViewOptions Configure(ToolSettingsViewOptions options,FrameworkElement pointVisibility)
     {
-        var graphic=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Graphic;
         var text=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Text;
         string Id(string group,string role)=>SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Field(group,role);
         var expressions=options.TextExpressions?.ToDictionary(item=>item.Key,item=>item.Value,StringComparer.Ordinal)??new();
@@ -1348,10 +1383,10 @@ internal static class BlobDisplayUi
             // Blob / 最大内接矩形 / 检测区域 / 轮廓点 / 文本 / 屏蔽区多边形 / 扇环检测区域。
             // 原厂没有独立的「质心」行，但框架要求"所有图形分组都必须显式配置角色"，
             // 因此暂保留该组（否则参数页组装失败）；最终对齐需连同 presentation 声明一起移除。
-            GraphicDisplays=new[]{graphic,BlobResultDisplay.InnerRectangle,BlobResultDisplay.Inspection,BlobResultDisplay.ReferencePoint,
-                BlobResultDisplay.RunPoint,BlobResultDisplay.Mask,BlobResultDisplay.Annulus}
+            GraphicDisplays=BlobDisplayDeclaration.GraphicGroups
                 .Select(group=>new SunEyeVision.Plugin.Wpf.Fields.NativeGraphicDisplayOptions(group,Id(group,"visible"),Id(group,"ok"),Id(group,"ng"),Id(group,"opacity"),Id(group,"width"))).ToArray(),
-            VisibilityDisplays=new[]{new SunEyeVision.Plugin.Wpf.Fields.NativeVisibilityDisplayOptions(Id(text,"visible")),new SunEyeVision.Plugin.Wpf.Fields.NativeVisibilityDisplayOptions(Id(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Outline,"visible"))},
+            VisibilityDisplays=BlobDisplayDeclaration.VisibilityGroups
+                .Select(group=>new SunEyeVision.Plugin.Wpf.Fields.NativeVisibilityDisplayOptions(Id(group,"visible"))).ToArray(),
             TextDisplays=new[]{new SunEyeVision.Plugin.Wpf.Fields.NativeTextDisplayOptions(Id(text,"content"),Id(text,"ok"),Id(text,"ng"),Id(text,"size"),Id(text,"opacity"),Id(text,"x"),Id(text,"y"))}};
     }
 

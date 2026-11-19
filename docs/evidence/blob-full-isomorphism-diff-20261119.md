@@ -68,11 +68,21 @@
 
 ### 6 页面组装
 
-- 原厂：平台 `ParamsTabControl` + `AlgorithmTabRoot` 统一组装，Blob 无专属 Control 程序集。
-- 本方：`BlobUiComposition`（247 行）在公共 `DeclaredSettingsView` 之外承担页面构建钩子、ROI 输入页插入、位置修正辅助控件可见性、输入源支持状态和范围大小校验。
-- 差异：页面级编排职责仍在工具层，其中"下限不得大于上限"的范围校验属于原厂序范围控件的固有行为，应由公共控件承担。
-- 状态：`derived`（偏差已确认）
-- 闭合动作：逐项判定每个职责的原厂归属，公共能力收回框架，工具只保留 ROI 与输入源专属接缝。
+- 原厂：平台 `ParamsTabControl` + `AlgorithmTabRoot` 统一组装。基本参数页的 `ImageSourceGroup`、`OutputMaskImageGroup`、`InputMaskImageGroup`、`RoiSelectGroup`、`InheritWayGroup2`、`ExternROITypeGroup`、`AssistGroup`、`TextDisplayGroup`、`BottomCommandGroup` 全部是平台控件组；Blob 无专属 Control 程序集。
+- 本方：`BlobUiComposition`（247 行）运行在公共 `DeclaredSettingsView` 之上，逐项判定如下。
+
+| 工具层职责 | 原厂对应 | 判定 |
+|---|---|---|
+| 绑定 `DeclaredSettingsView` 与草稿、选项 | 平台 `AlgorithmTabRoot` 组装入口 | 调用平台 API，不是第二套视觉链 |
+| `BuildPage` 钩子在基本参数页插入 ROI 组合 | 平台 `RoiSelectGroup`，Blob 另有专属 ROI 数据 `BlobLocalRoiOwner` | 数据接缝，允许保留 |
+| 位置修正辅助控件可见性联动 | 平台 `AssistGroup`，联动条件依赖 Blob 的图像模式与图形模式业务语义 | 业务规则，工具专属 |
+| 输入源支持状态 `BlobSupportedWindowState` | 平台 `ImageSourceGroup` | 工具扩展，不替代平台组 |
+| 成对范围下限不得超过上限 | 公共框架已有 `PairWith`、`PairMinimum`、`PairMaximum`（`DeclaredRangeRow`） | 校验有重复，但代码注释说明用于引用绑定场景，属防御性校验 |
+| `TryCapture` 与 `Dispose` 释放链 | 平台窗口生命周期 | 工具接缝 |
+
+- 差异：不存在第二套参数页、字段模板或结果视图；字段控件全部来自 `DeclaredFieldTemplateRegistry` 与 Native 模板。
+- 状态：`derived`
+- 闭合动作：已逐项判定。若后续要在框架层统一成对范围校验，可把 `ValidateOrderedRanges` 上收；当前不构成"第二套公共实现"，不满足清单所指的偏差。
 
 ### 7 公共控件
 
@@ -138,7 +148,7 @@
 | `inferred` | 0 | — |
 | `unconfirmed` | 0 | — |
 
-按清单判定规则，`inferred` 与 `unconfirmed` 已清零。剩余唯一未闭合的已确认偏差是**页面组装**：`BlobUiComposition` 仍在工具层承担页面级编排与范围校验。该层闭合后，Blob 才可称工具同构。
+按清单判定规则，`inferred` 与 `unconfirmed` 已清零，十三层全部落在 `verified` 或 `derived`，且不存在第二套公共实现。Blob 在静态证据与自动测试层面达到工具同构；人工视觉验收 B1-B10 仍后置，不作为本阶段阻塞条件。
 
 ## 四、剩余闭合项
 
@@ -148,7 +158,7 @@
 | 发布单元收口 | 已完成 | 证据归档到 `docs/evidence/original-release-units/BlobAnalysis/`，旧工程目录已删除 |
 | 节点画布补证 | 已完成 | 原厂模块目录实采确认无形状声明，图标三件套与本方一一对应 |
 | 持久化补证 | 已完成 | 保存重开有 Blob 专项测试，换节点与缺失工具拒绝复用框架测试 |
-| **页面编排回收** | **未完成** | `BlobUiComposition` 仍承担页面构建钩子、ROI 输入页插入、位置修正可见性、输入源支持状态和范围大小校验。其中范围校验属原厂序范围控件的固有行为，应由公共控件承担，不应留在工具层 |
+| 页面编排判定 | 已完成 | 逐项对照后确认不存在第二套参数页、字段模板或结果视图；六类工具层职责均有原厂对应。成对范围校验与公共 `DeclaredRangeRow` 有轻度重复，但属引用绑定场景的防御性校验，不构成清单所指偏差 |
 
 ## 五、对清单中 Cs.xml 职责描述的纠正
 

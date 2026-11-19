@@ -11,6 +11,8 @@
 
 当前命名口径：`Algorithms/` 是工具算法实现层，`BlobAlgorithm` 是 Blob 算法入口。宿主接口保留 `ExecuteAsync` 作为统一调用合同，不能据此把算法目录描述成独立的“执行层”。`HalconBlobAlgorithmContext` 仅保存一次算法调用期间的 HALCON 临时上下文和恢复责任。
 
+**2026-11-19 Blob 十三层差异表闭合**：Blob 同构按十三层逐项复核，`inferred` 与 `unconfirmed` 清零。本轮完成三批：① 证据缓存归档到 `docs/evidence/original-release-units/BlobAnalysis/`（含原厂图标三件套），发布单元、基本页、组装映射三道门禁改读归档路径，旧 `tools/SunEyeVision.BlobAnalysis` 工程删除；② 参数声明按原厂文件边界拆为 `BlobAlgorithm.xml`（104 项 Name+DefaultValue）与 `BlobAlgorithmTab.xml`（3 页签/5 分组/104 参数），解析器加载时按参数名合并回原结构，104 项属性逐项等价；③ 节点画布与持久化由 `inferred` 升 `derived`，节点形状经原厂模块目录实采取证确认两侧均无工具级形状声明。取证纠正：《完整同构复核清单与计划》所述 `IMVSBlobFindModuCs.xml` 实为 C# XML 文档注释，不是参数映射配置，本方无需新增 Cs 映射文件。验证：Blob 测试 131 项全通过；四道静态门禁全通过；全量 Release 构建 0 错误；Release 程序启动正常。未做：人工视觉验收 B1-B10。
+
 **2026-11-19 P0 基线冻结与 P1 差异矩阵补齐**：`main` 上 368 项在途改动按用途归并为 8 条中文提交（锁文件、框架合同、工具迁移、工程清单、测试、验证脚本、忽略规则、文档证据），工作区已干净。`docs/collaboration/acceptance/baseline.json` 记录基线 `da7ac8b78`、版本 2.0.0 alpha、Release 路径，全量 Release 构建 `dotnet build SunEyeVision.slnx -c Release --no-restore` 退出码 0。`docs/evidence/architecture-conformance-matrix-20261119.json` 升级到 revision 2：修正 Blob 发布单元指向已删除 Wpf 工程的过期路径，补充十个工具行（模块名、原厂参数数、我方字段数、自研入口、覆盖项、证据状态与缺口）。关键结论：十个工具**全部仍是 Runtime+Wpf 双工程**，且**全部没有原厂式独立参数/页签/显示声明文件**；If 因原厂模块名仅来自生成脚本、原厂 0 项参数与我方 16 项字段差异无证据解释，标为 `unconfirmed`；ColorExtract 因直方图依赖链未闭合标为 `inferred`。未做：Blob 人工验收 B1-B10 仍全部待确认，ImageSource 单项目迁移未完成。
 
 **2026-11-19 算法命名修正后的复核**：`HalconBlobExecutionScope` 已更名为 `HalconBlobAlgorithmContext`，只表示一次 Blob 算法调用期间的 HALCON 临时上下文。Blob Release 全量构建通过，0 错误、3328 个既有警告。Agent Desktop 重新采集有效连线方案后，Blob 调试窗业务名称闭合，证据见 `docs/evidence/blob-structure-ui-function-review-20261119.md`。算法成功/失败结果和原厂动态回写仍未确认。

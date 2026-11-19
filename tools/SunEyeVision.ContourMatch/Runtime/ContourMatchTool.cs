@@ -38,9 +38,28 @@ public sealed class ContourMatchTool : IToolDefinition<ContourMatchSettings, Con
                 EditModes: FieldEditModes.Reference),
             new Port(ContourMatchSchema.FixtureInput, FixtureDeclarations.Info, Required: false, Nullable: true,
                 EditModes: FieldEditModes.Constant | FieldEditModes.Reference)
-        }, ContourMatchSchema.Outputs, new ToolPresentation(Array.Empty<FieldPresentation>()),
+        }, ContourMatchSchema.Outputs, new ToolPresentation(ExecutionInputPresentations()),
             workflowImageInputId: ContourMatchSchema.ImageInput, outputDisplay: ContourMatchSchema.OutputDisplay);
 
+    private static IReadOnlyList<FieldPresentation> ExecutionInputPresentations()
+        => new FieldPresentation[]
+        {
+            new(ContourMatchSchema.ImageInput, "输入图像", ContourMatchFields.ImageInputSection, 0, FieldEditorKind.Image)
+            {
+                Layout = new FieldLayout(ContourMatchFields.BasicPage, ContourMatchFields.ImageInputSection,
+                    AllowReference: true)
+            },
+            new(ContourMatchSchema.RoiInput, "输入ROI区域", ContourMatchFields.RoiInputSection, 1, FieldEditorKind.Region)
+            {
+                Layout = new FieldLayout(ContourMatchFields.BasicPage, ContourMatchFields.RoiInputSection,
+                    AllowReference: true)
+            },
+            new(ContourMatchSchema.FixtureInput, "位置修正", ContourMatchFields.RoiInputSection, 2, FieldEditorKind.Record)
+            {
+                Layout = new FieldLayout(ContourMatchFields.BasicPage, ContourMatchFields.RoiInputSection,
+                    AllowReference: true)
+            }
+        };
     private static ResultProjectionDescriptor BuildProjection()
     {
         ResultColumnDescriptor Column(string key, string label, params string[] member)
@@ -115,3 +134,4 @@ public sealed class ContourMatchTool : IToolDefinition<ContourMatchSettings, Con
         return errors.AsReadOnly();
     }
 }
+

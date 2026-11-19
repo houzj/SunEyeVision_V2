@@ -1,0 +1,36 @@
+{
+  "authority": "VisionMaster 4.4.0 Build20250516",
+  "toolId": "BlobAnalysis",
+  "releaseDirectory": "SunEyeVision.Tool.BlobAnalysis",
+  "status": "responsibility-mapping-pending",
+  "originalUnit": {
+    "algorithmAssembly": "IMVSBlobFindModu.dll",
+    "bridgeAssembly": "IMVSBlobFindModuCs.dll",
+    "identity": "IMVSBlobFindModu.xml",
+    "algorithmDefinition": "IMVSBlobFindModuAlgorithm.xml",
+    "algorithmTabDefinition": "IMVSBlobFindModuAlgorithmTab.xml",
+    "bridgeDefinition": "IMVSBlobFindModuCs.xml",
+    "displayDefinition": "IMVSBlobFindModuDisplay.xml",
+    "toolItemInfo": "ToolItemInfo.xml"
+  },
+  "targetUnit": {
+    "algorithmImplementation": "SunEyeVision.Tool.BlobAnalysis.Runtime.dll plus referenced third-party algorithm library",
+    "bridgeImplementation": "in-process bridge responsibilities in SunEyeVision.Tool.BlobAnalysis.Runtime.dll plus shared host contracts",
+    "identity": "SunEyeVision.Tool.BlobAnalysis.xml",
+    "algorithmDefinition": "SunEyeVision.Tool.BlobAnalysis.Algorithm.xml",
+    "algorithmTabDefinition": "SunEyeVision.Tool.BlobAnalysis.AlgorithmTab.xml",
+    "bridgeDefinition": "SunEyeVision.Tool.BlobAnalysis.Bridge.xml",
+    "displayDefinition": "SunEyeVision.Tool.BlobAnalysis.Display.xml",
+    "toolItemInfo": "ToolItemInfo.xml"
+  },
+  "currentSourceComponents": [
+    "tools/SunEyeVision.Tool.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.csproj",
+    "tools/SunEyeVision.Tool.BlobAnalysis.Wpf/SunEyeVision.Tool.BlobAnalysis.Wpf.csproj"
+  ],
+  "unresolvedMappings": [
+    "algorithm responsibility and third-party library boundary",
+    "in-process bridge responsibility and shared host boundary",
+    "independent bridge XML",
+    "shared framework ownership of parameter and result UI"
+  ]
+}

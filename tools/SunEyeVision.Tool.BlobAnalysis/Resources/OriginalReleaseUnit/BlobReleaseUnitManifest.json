@@ -1,0 +1,38 @@
+{
+  "authority": "VisionMaster 4.4.0 Build20250516",
+  "originalSource": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Location\\IMVSBlobFindModu",
+  "status": "evidence-locked-migration-input",
+  "runtimeConsumption": "not-connected",
+  "files": [
+    {
+      "name": "IMVSBlobFindModu.xml",
+      "length": 15873,
+      "sha256": "F1B2F279717DCE3EC61C11C41F858BD100359095BCF13672422A3C73EFE47F6C"
+    },
+    {
+      "name": "IMVSBlobFindModuAlgorithm.xml",
+      "length": 10827,
+      "sha256": "D5DE2D5888D0767552C3077457EADD796171B4447F1C92F93BC9BB60854A7B2B"
+    },
+    {
+      "name": "IMVSBlobFindModuAlgorithmTab.xml",
+      "length": 123949,
+      "sha256": "34A0CC5423A3D66B92DC272E0F50B013310E5180E801C648005383C3ADDDFDEC"
+    },
+    {
+      "name": "IMVSBlobFindModuCs.xml",
+      "length": 42157,
+      "sha256": "C3C46D0DD1CF4765034791783B6085478F26928F2D86BF5C50AB8D5FD3B205F4"
+    },
+    {
+      "name": "IMVSBlobFindModuDisplay.xml",
+      "length": 10611,
+      "sha256": "B3BC63E6CF7C8CA120BAF5B632BBE1359843138CF77CB5A64FC698EF22465112"
+    },
+    {
+      "name": "ToolItemInfo.xml",
+      "length": 242,
+      "sha256": "014BA2ED410F030748F83FED87A0CE7ACDE5DFA68B9E98CB0BC43AA31B074F95"
+    }
+  ]
+}

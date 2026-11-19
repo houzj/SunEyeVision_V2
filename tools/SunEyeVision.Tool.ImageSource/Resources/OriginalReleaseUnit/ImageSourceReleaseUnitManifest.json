@@ -1,0 +1,22 @@
+{
+  "authority": "VisionMaster 4.4.0 Build20250516",
+  "sourceDirectory": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Collection\\ImageSourceModule",
+  "status": "evidence-locked-migration-input",
+  "runtimeConsumption": "not-connected",
+  "files": [
+    { "name": "ImageSourceModuleAlgorithm.xml", "sha256": "C9177BF6D0365EAB0F12E65FDF3E8BE51BF7833F69E3D7AC8EED8BB7961787C8" },
+    { "name": "ImageSourceModuleAlgorithmTab.xml", "sha256": "001A57675192867594D3BBC7EFA94462C19F056583659D759CEB5648E55091E0" },
+    { "name": "ImageSourceModuleCs.xml", "sha256": "886C21ABAA52160653C52B557DB9CEAFC02233FEB83C5C235A1A38396A93AF28" },
+    { "name": "ImageSourceModuleDisplay.xml", "sha256": "D2F3129C6D3CF86C5E935277B67004043BB98976B4E845A4492451D78A607AE5" },
+    { "name": "ToolItemInfo.xml", "sha256": "0E8EE15A8907363644CE294C686A11B2F9AC183BE8DD073F78EB07A4BD8676DA" }
+  ],
+  "missingOriginalFiles": [
+    "ImageSourceModule.dll",
+    "ImageSourceModuleControl.dll",
+    "ImageSourceModuleCs.dll",
+    "ImageSourceModule_NormalLogo.png",
+    "ImageSourceModule_StateLogo.png",
+    "ImageSourceModuleImageEnable.png"
+  ],
+  "migrationRule": "Do not connect or reinterpret these assets until the corresponding runtime and control behavior has an evidence mapping."
+}

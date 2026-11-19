@@ -1,0 +1,174 @@
+{
+  "authority": "VisionMaster 4.4.0 Build20250516 ImageSourceModuleAlgorithmTab.xml",
+  "status": "static-mapping-only",
+  "items": [
+    {
+      "vm": "ImageSourceType",
+      "self": "source.kind",
+      "status": "mapped"
+    },
+    {
+      "vm": "CurrentImagePath",
+      "self": "local.paths",
+      "status": "composite-mapping-requires-original-control"
+    },
+    {
+      "vm": "PixelFormat",
+      "self": "output.format",
+      "status": "mapped"
+    },
+    {
+      "vm": "SolSaveImageData",
+      "self": "local.save-images",
+      "status": "mapped"
+    },
+    {
+      "vm": "ShowImageName",
+      "self": "display.image-name",
+      "status": "mapped"
+    },
+    {
+      "vm": "CameraID",
+      "self": "camera.device",
+      "status": "mapped"
+    },
+    {
+      "vm": "ExposureTimeInput",
+      "self": "camera.exposure-time",
+      "status": "mapped"
+    },
+    {
+      "vm": "GainInput",
+      "self": "camera.gain",
+      "status": "mapped"
+    },
+    {
+      "vm": "InitialSN",
+      "self": "sequence.initial",
+      "status": "mapped"
+    },
+    {
+      "vm": "PathCache",
+      "self": "local.path-cache",
+      "status": "mapped"
+    },
+    {
+      "vm": "OutMono8",
+      "self": "output.mono8",
+      "status": "mapped"
+    },
+    {
+      "vm": "StitchEnable",
+      "self": "stitch.enabled",
+      "status": "mapped"
+    },
+    {
+      "vm": "StitchStartHeight",
+      "self": "stitch.start",
+      "status": "mapped"
+    },
+    {
+      "vm": "StitchHeight",
+      "self": "stitch.height",
+      "status": "mapped"
+    },
+    {
+      "vm": "ClearTrigger",
+      "self": "stitch.clear",
+      "status": "mapped"
+    },
+    {
+      "vm": "ClearTriggerCondition",
+      "self": "stitch.clear-value",
+      "status": "mapped"
+    },
+    {
+      "vm": "AutoPlay",
+      "self": "local.auto-switch",
+      "status": "mapped"
+    },
+    {
+      "vm": "AutoStop",
+      "self": "local.stop-at-last",
+      "status": "mapped"
+    },
+    {
+      "vm": "TriggerStringEnable",
+      "self": "trigger.filter-enabled",
+      "status": "mapped"
+    },
+    {
+      "vm": "TriggerString",
+      "self": "trigger.text",
+      "status": "mapped"
+    },
+    {
+      "vm": "TriggerFilter",
+      "self": "trigger.filter-text",
+      "status": "mapped"
+    },
+    {
+      "vm": "IsSubscribeFolderMode",
+      "self": "local.subscribe-folder",
+      "status": "mapped"
+    },
+    {
+      "vm": "SubscribeFolderPath",
+      "self": "local.folder-path",
+      "status": "mapped"
+    },
+    {
+      "vm": "RefreshImage",
+      "self": "local.refresh-folder",
+      "status": "mapped"
+    },
+    {
+      "vm": "TriggerProcessRun",
+      "self": "local.trigger-folder-run",
+      "status": "mapped"
+    }
+  ],
+  "unconfirmed": [
+    "Original Control selection semantics for CurrentImagePath",
+    "Original Control event timing for RefreshImage and TriggerProcessRun",
+    "Original BAML visibility and layout semantics"
+  ],
+  "categories": {
+    "Tab_Basic Params": [
+      "ImageSourceType",
+      "CurrentImagePath",
+      "PixelFormat",
+      "SolSaveImageData",
+      "ShowImageName",
+      "CameraID",
+      "ExposureTimeInput",
+      "GainInput",
+      "InitialSN",
+      "PathCache",
+      "OutMono8",
+      "StitchEnable",
+      "StitchStartHeight",
+      "StitchHeight",
+      "ClearTrigger",
+      "ClearTriggerCondition"
+    ],
+    "Tab_Trigger": [
+      "AutoPlay",
+      "AutoStop",
+      "TriggerStringEnable",
+      "TriggerString",
+      "TriggerFilter"
+    ],
+    "Tab_Subscribe_File": [
+      "IsSubscribeFolderMode",
+      "SubscribeFolderPath",
+      "RefreshImage",
+      "TriggerProcessRun"
+    ]
+  },
+  "algorithmOnlyParameters": [
+    "Interval",
+    "ExecuteType",
+    "SetCameraParamWaitTime"
+  ]
+}

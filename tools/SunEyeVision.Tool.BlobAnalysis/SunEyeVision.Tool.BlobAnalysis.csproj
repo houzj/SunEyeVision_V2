@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>SunEyeVision.Tool.BlobAnalysis.Runtime</AssemblyName>
+    <RootNamespace>SunEyeVision.Tool.BlobAnalysis.Runtime</RootNamespace>
+    <ToolComponentId>SunEyeVision.Tool.BlobAnalysis.Runtime</ToolComponentId>
+    <ToolComponentToolId>BlobAnalysis</ToolComponentToolId>
+    <ToolComponentRole>Runtime</ToolComponentRole>
+    <ToolComponentEntryType>SunEyeVision.Tool.BlobAnalysis.Runtime.BlobTool</ToolComponentEntryType>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources/BlobParameters.xml" LogicalName="BlobAnalysis.BlobParameters.xml" />
+    <EmbeddedResource Include="Resources/BlobDisplay.xml" LogicalName="BlobAnalysis.BlobDisplay.xml" />
+    <None Include="Resources/OriginalReleaseUnit/**" Link="OriginalReleaseUnit/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Never" />
+    <ProjectReference Include="../../src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj" />
+    <ProjectReference Include="../../src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj"><Private>false</Private></ProjectReference>
+    <ProjectReference Include="../../src/SunEyeVision.HalAdapter/Runtime/SunEyeVision.HalAdapter.Runtime.csproj" />
+    <Reference Include="halcondotnetxl"><HintPath>../../libs/halcon/net/halcondotnetxl.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="SunEyeVision.Plugin.Contracts.ToolComponentAttribute">
+      <_Parameter1>SunEyeVision.Tool.BlobAnalysis.Wpf</_Parameter1>
+      <_Parameter2>BlobAnalysis</_Parameter2>
+      <_Parameter3>Editor</_Parameter3>
+      <_Parameter4>global::SunEyeVision.Plugin.Contracts.FoundationContract.Major</_Parameter4>
+      <_Parameter4_IsLiteral>true</_Parameter4_IsLiteral>
+      <_Parameter5>global::SunEyeVision.Plugin.Contracts.FoundationContract.Minor</_Parameter5>
+      <_Parameter5_IsLiteral>true</_Parameter5_IsLiteral>
+      <_Parameter6>SunEyeVision.Tool.BlobAnalysis.Wpf.BlobEditorFactory</_Parameter6>
+      <_Parameter7>BlobAnalysis</_Parameter7>
+    </AssemblyAttribute>
+  </ItemGroup>
+</Project>

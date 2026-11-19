@@ -1,0 +1,949 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>IMVSBlobFindModuCs</name>
+    </assembly>
+    <members>
+        <member name="T:IMVSBlobFindModuCs.IMVSBlobFindModuTool">
+            \addtogroup BLOB分析
+            @{
+            <summary>
+            @~chinese BLOB分析工具 @~english Blob Analysis Tool
+            </summary>
+        </member>
+        <member name="M:IMVSBlobFindModuCs.IMVSBlobFindModuTool.#ctor">
+            @cond
+        </member>
+        <member name="F:IMVSBlobFindModuCs.IMVSBlobFindModuTool._result">
+            @endcond
+        </member>
+        <member name="P:IMVSBlobFindModuCs.IMVSBlobFindModuTool.ModuResult">
+            <summary>
+            @~chinese 模块结果对象 @~english Module Result Object
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.IMVSBlobFindModuTool.ModuParams">
+            <summary>
+            @~chinese 模块参数对象 @~english Module Param Object
+            </summary>
+        </member>
+        <member name="M:IMVSBlobFindModuCs.IMVSBlobFindModuTool.Run">
+            <summary>
+            @~chinese 模块自执行 @~english Module Self Run
+            </summary>
+        </member>
+        <member name="T:IMVSBlobFindModuCs.BlobFindRoiManager">
+            \addtogroup Blob分析
+            @{
+            <summary>
+            @~chinese ROI管理类 @~english ROI Manager Class
+            </summary>
+        </member>
+        <member name="M:IMVSBlobFindModuCs.BlobFindRoiManager.#ctor">
+            @cond
+            <summary>
+            构造函数
+            </summary>
+        </member>
+        <member name="M:IMVSBlobFindModuCs.BlobFindRoiManager.#ctor(VM.PlatformSDKCS.CModuleParamBase,System.String,System.String)">
+            <summary>
+            构造函数
+            </summary>
+        </member>
+        <!-- 对于成员“P:IMVSBlobFindModuCs.BlobFindRoiManager.RoiRectangle”忽略有格式错误的 XML 注释 -->
+        <!-- 对于成员“P:IMVSBlobFindModuCs.BlobFindRoiManager.RoiAnnulus”忽略有格式错误的 XML 注释 -->
+        <!-- 对于成员“P:IMVSBlobFindModuCs.BlobFindRoiManager.BlindPolygonString”忽略有格式错误的 XML 注释 -->
+        <!-- 对于成员“P:IMVSBlobFindModuCs.BlobFindRoiManager.MaskImage”忽略有格式错误的 XML 注释 -->
+        <member name="T:IMVSBlobFindModuCs.BlobFindParam">
+            <summary>
+            @~chinese Blob分析参数 @~english Blob Analysis Param
+            </summary>
+        </member>
+        <!-- 对于成员“P:IMVSBlobFindModuCs.BlobFindParam.InputImage”忽略有格式错误的 XML 注释 -->
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.ModuRoiManager">
+            <summary>
+            @~chinese ROI管理器 @~english ROI Manager
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.ThresholdType">
+            <summary>
+            @~chinese 阈值方式 @~english Threshold Mode
+            </summary>
+        </member>
+        <member name="T:IMVSBlobFindModuCs.BlobFindParam.ThresholdTypeEnum">
+            <summary>
+            @~chinese 阈值方式 @~english Threshold Mode
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.ThresholdTypeEnum.BinaryImage">
+            <summary>
+            @~chinese 不进行二值化 @~english No Binarization
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.ThresholdTypeEnum.SingleThreshold">
+            <summary>
+            @~chinese 单阈值 @~english Single Threshold
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.ThresholdTypeEnum.DoubleThreshold">
+            <summary>
+            @~chinese 双阈值 @~english Double Threshold
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.ThresholdTypeEnum.AutoThreshold">
+            <summary>
+            @~chinese 自动阈值 @~english Auto Threshold
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.ThresholdTypeEnum.FixedSoftThreshold">
+            <summary>
+            @~chinese 软阈值（固定） @~english Soft Threshld(Fixed)
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.ThresholdTypeEnum.RelativeSoftThreshold">
+            <summary>
+            @~chinese 软阈值（相对） @~english Soft Threshold(Relative)
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.Polarity">
+            <summary>
+            @~chinese 极性 @~english Polarity
+            </summary>
+        </member>
+        <member name="T:IMVSBlobFindModuCs.BlobFindParam.PolarityEnum">
+            <summary>
+            @~chinese 极性 @~english Polarity
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.PolarityEnum.DarkOnBright">
+            <summary>
+            @~chinese 亮于背景 @~english Brighter Than Background
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.PolarityEnum.BrightOnDark">
+            <summary>
+            @~chinese 暗于背景 @~english Darker Than Background
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.LowThreshold">
+            <summary>
+            @~chinese 低阈值，范围：[0,255] @~english Low Threshold, Range:[0,255]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.HightThreshold">
+            <summary>
+            @~chinese 高阈值，范围：[0,255] @~english High Threshold, Range:[0,255]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.LowSoftThreshold">
+            <summary>
+            @~chinese 阈值范围，范围：[0,255] @~english Threshold Range, Range:[0,255]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.HightSoftThreshold">
+            <summary>
+            @~chinese 阈值范围，范围：[0,255] @~english Threshold Range, Range:[0,255]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.Softness">
+            <summary>
+            @~chinese 软阈值柔和度，范围：[0,254] @~english Soft Threshold Softness, Range:[0,254]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.SoftLeftRatio">
+            <summary>
+            @~chinese 低尾部比例，范围：[0,100] @~english Low Tail Ratio, Range:[0,100]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.SoftRightRatio">
+            <summary>
+            @~chinese 高尾部比例，范围：[0,100] @~english High Tail Ratio, Range:[0,100]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.SoftLowRatio">
+            <summary>
+            @~chinese 低阈值比例，范围：[0,100] @~english Low Threshold Ratio, Range:[0,100]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.SoftHighRatio">
+            <summary>
+            @~chinese 高阈值比例，范围：[0,100] @~english High Threshold Ratio, Range:[0,100]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.FindNum">
+            <summary>
+            @~chinese 查找个数，范围：[1,20000] @~english Number of Fund Blobs, Range:[1,20000]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.HoleMinArea">
+            <summary>
+            @~chinese 填充面积阈值，范围：[0,999999999] @~english Fill Area Threshold, Range:[0,999999999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.SelectByArea">
+            <summary>
+            @~chinese 面积使能 @~english Area Enable
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.MinArea">
+            <summary>
+            @~chinese 面积范围，范围：[1,999999999] @~english Area Range, Range:[1,999999999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.MaxArea">
+            <summary>
+            @~chinese 面积范围，范围：[1,999999999] @~english Area Range, Range:[1,999999999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.BolbOutLineEnable">
+            <summary>
+            @~chinese 轮廓输出使能(废弃) @~english Contour Output(Obsoleted)
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.BlobContourType">
+            <summary>
+            @~chinese 输出轮廓类型 @~english Output Contour Type
+            </summary>
+        </member>
+        <member name="T:IMVSBlobFindModuCs.BlobFindParam.BlobContourTypeEnum">
+            <summary>
+            @~chinese 输出轮廓类型 @~english Output Contour Type
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.BlobContourTypeEnum.NoneContour">
+            <summary>
+            @~chinese 不输出轮廓 @~english No Contour Output
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.BlobContourTypeEnum.NoneSequentialContour">
+            <summary>
+            @~chinese 输出无序轮廓 @~english None-Sequential Contour
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.BlobContourTypeEnum.SequentialContour">
+            <summary>
+            @~chinese 输出有序轮廓 @~english Sequential Contour
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.BolbImageEnable">
+            <summary>
+            @~chinese Blob图像输出 @~english Blob Image Output
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.BinaryImageEnable">
+            <summary>
+            @~chinese 二值化图输出 @~english Binary Image Enable
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.SelectByHistInfo">
+            <summary>
+            @~chinese 直方图信息输出 @~english Hist Info Output
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.SelectByBoxAngle">
+            <summary>
+            @~chinese 角度使能 @~english Angle Enable
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.MinBoxAngle">
+            <summary>
+            @~chinese 角度范围，范围：[-9000,9000] @~english Angle Range, Range:[-9000,9000]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.MaxBoxAngle">
+            <summary>
+            @~chinese 角度范围，范围：[-9000,9000] @~english Angle Range, Range:[-9000,9000]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.SelectByRectWidth">
+            <summary>
+            @~chinese RECT宽使能 @~english RectWidth Enable
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.MinRectWidth">
+            <summary>
+            @~chinese RECT宽范围，范围：[1,1000000] @~english RectWidth Range, Range:[1,1000000]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.MaxRectWidth">
+            <summary>
+            @~chinese RECT宽范围，范围：[1,1000000] @~english RectWidth Range, Range:[1,1000000]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.SelectByRectHeight">
+            <summary>
+            @~chinese RECT高使能 @~english RectHeight Enable
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.MinRectHeight">
+            <summary>
+            @~chinese RECT高范围，范围：[1,1000000] @~english RectHeight Range, Range:[1,1000000]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.MaxRectHeight">
+            <summary>
+            @~chinese RECT高范围，范围：[1,1000000] @~english RectHeight Range, Range:[1,1000000]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.SelectByPerimeter">
+            <summary>
+            @~chinese 周长使能 @~english Perimeter
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.MinPerimeter">
+            <summary>
+            @~chinese 周长范围，范围：[1,999999999] @~english Perimeter Range, Range:[1,999999999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.MaxPerimeter">
+            <summary>
+            @~chinese 周长范围，范围：[1,999999999] @~english Perimeter Range, Range:[1,999999999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.SelectByShortAxis">
+            <summary>
+            @~chinese 短轴使能 @~english Minor Axis
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.MinShortAxis">
+            <summary>
+            @~chinese 短轴范围，范围：[1,999999999] @~english Minor Axis Range, Range:[1,999999999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.MaxShortAxis">
+            <summary>
+            @~chinese 短轴范围，范围：[1,999999999] @~english Minor Axis Range, Range:[1,999999999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.SelectByLongAxis">
+            <summary>
+            @~chinese 长轴使能 @~english Major Axis
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.MinLongAxis">
+            <summary>
+            @~chinese 长轴范围，范围：[1,999999999] @~english Major Axis Range, Range:[1,999999999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.MaxLongAxis">
+            <summary>
+            @~chinese 长轴范围，范围：[1,999999999] @~english Major Axis Range, Range:[1,999999999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.SelectByCircularuty">
+            <summary>
+            @~chinese 圆形度使能 @~english Circularity
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.MinCircularity">
+            <summary>
+            @~chinese 圆形度范围，范围：[0,1] @~english Circularity Range, Range:[0,1]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.MaxCircularity">
+            <summary>
+            @~chinese 圆形度范围，范围：[0,1] @~english Circularity Range, Range:[0,1]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.SelectByRectangularity">
+            <summary>
+            @~chinese 矩形度使能 @~english Rectangularity
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.MinRectangularity">
+            <summary>
+            @~chinese 矩形度范围，范围：[0,1] @~english Rectangularity Range, Range:[0,1]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.MaxRectangularity">
+            <summary>
+            @~chinese 矩形度范围，范围：[0,1] @~english Rectangularity Range, Range:[0,1]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.SelectByCentraBias">
+            <summary>
+            @~chinese 质心偏移使能 @~english Barycenter Offset
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.MinCenterBias">
+            <summary>
+            @~chinese 质心偏移范围，范围：[0,9999999.99] @~english Barycenter Offset Range, Range:[0,9999999.99]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.MaxCenterBias">
+            <summary>
+            @~chinese 质心偏移范围，范围：[0,9999999.99] @~english Barycenter Offset Range, Range:[0,9999999.99]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.AxisRatioEnable">
+            <summary>
+            @~chinese 轴比范围 @~english Axial Ratio
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.MinAxisRatio">
+            <summary>
+            @~chinese 轴比范围，范围：[0.01,1] @~english Axial Ratio, Range:[0.01,1]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.MaxAxisRatio">
+            <summary>
+            @~chinese 轴比范围，范围：[0.01,1] @~english Axial Ratio, Range:[0.01,1]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.SortFeature">
+            <summary>
+            @~chinese 排序特征 @~english Sort Feature
+            </summary>
+        </member>
+        <member name="T:IMVSBlobFindModuCs.BlobFindParam.SortFeatureEnum">
+            <summary>
+            @~chinese 排序特征 @~english Sort Feature
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.SortFeatureEnum.SortFeatureArea">
+            <summary>
+            @~chinese 面积 @~english Area
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.SortFeatureEnum.SortFeaturePerimeter">
+            <summary>
+            @~chinese 周长 @~english Perimeter
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.SortFeatureEnum.SortFeatureCircularity">
+            <summary>
+            @~chinese 圆形度 @~english CircleScore
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.SortFeatureEnum.SortFeatureRect">
+            <summary>
+            @~chinese 矩形度 @~english RectScore
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.SortFeatureEnum.SortFeatureCentroidX">
+            <summary>
+            @~chinese 连通域中心x @~english Connectivity center X
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.SortFeatureEnum.SortFeatureCentroidY">
+            <summary>
+            @~chinese 连通域中心y @~english Connectivity center Y
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.SortFeatureEnum.SortFeatureBoxAngle">
+            <summary>
+            @~chinese box角度 @~english box angle
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.SortFeatureEnum.SortFeatureBoxWidth">
+            <summary>
+            @~chinese box宽 @~english box width
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.SortFeatureEnum.SortFeatureBoxHeight">
+            <summary>
+            @~chinese box高 @~english box height
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.SortFeatureEnum.SortFeatureRectX">
+            <summary>
+            @~chinese 矩形左上顶点x @~english Rectangle left upper x
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.SortFeatureEnum.SortFeatureRectY">
+            <summary>
+            @~chinese 矩形左上顶点y @~english Rectangle left upper y
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.SortFeatureEnum.SortFeatureAxisAngle">
+            <summary>
+            @~chinese 二阶中心距主轴角度 @~english Two step spindle angle
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.SortFeatureEnum.SortFeatureAxisRatio">
+            <summary>
+            @~chinese 轴比(box短轴/box长轴) @~english MinAxis / LongAxis
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.SortMode">
+            <summary>
+            @~chinese 排序方式 @~english Sort Type
+            </summary>
+        </member>
+        <member name="T:IMVSBlobFindModuCs.BlobFindParam.SortModeEnum">
+            <summary>
+            @~chinese 排序方式 @~english Sort Type
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.SortModeEnum.SortModeAscend">
+            <summary>
+            @~chinese 升序 @~english Ascending
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.SortModeEnum.SortModeDecend">
+            <summary>
+            @~chinese 降序 @~english Descending
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.SortModeEnum.SortModeNotSort">
+            <summary>
+            @~chinese 不排序 @~english Not Sorted
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.Connectivity">
+            <summary>
+            @~chinese 连通性 @~english Connectivity 
+            </summary>
+        </member>
+        <member name="T:IMVSBlobFindModuCs.BlobFindParam.ConnectivityEnum">
+            <summary>
+            @~chinese 连通性 @~english Connectivity 
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.ConnectivityEnum.Connected_8">
+            <summary>
+            @~chinese 8连通 @~english 8-connected
+            </summary>
+        </member>
+        <member name="F:IMVSBlobFindModuCs.BlobFindParam.ConnectivityEnum.Connected_4">
+            <summary>
+            @~chinese 4连通 @~english 4-connected
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.MaxAreaInnerRectNum">
+            <summary>
+            @~chinese 最大内接矩形输出数量，范围：[0,10] @~english Max Area Inner Rect Output Number, Range:[0,10]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.OverlapRatio">
+            <summary>
+            @~chinese 最小重叠率，范围：[0,100] @~english Min. Overlap Rate, Range:[0,100]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.MaxOutPixelNumEnable">
+            <summary>
+            @~chinese 像素超界使能 @~english RunParam_MaxOutPixelNumEnable
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.MaxOutPixelNum">
+            <summary>
+            @~chinese 最大超界像素，范围：[0,9000000] @~english MaxOutPixelNum, Range:[0,9000000]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.OKWhenNumIsZero">
+            <summary>
+            @~chinese Blob个数为0 @~english OKWhenNumIsZero
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.BlobNumLimitEnable">
+            <summary>
+            @~chinese Blob个数判断 @~english Blob Number Check
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.BlobNumLimitLow">
+            <summary>
+            @~chinese Blob个数范围，范围：[1,99999] @~english Blob Number Range, Range:[1,99999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.BlobNumLimitHigh">
+            <summary>
+            @~chinese Blob个数范围，范围：[1,99999] @~english Blob Number Range, Range:[1,99999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.BlobAreaLimitEnable">
+            <summary>
+            @~chinese Blob面积判断 @~english Blob Area Check
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.BlobAreaLimitLow">
+            <summary>
+            @~chinese Blob面积范围，范围：[1,999999999] @~english Blob Area Range, Range:[1,999999999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.BlobAreaLimitHigh">
+            <summary>
+            @~chinese Blob面积范围，范围：[1,999999999] @~english Blob Area Range, Range:[1,999999999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.BlobTotalAreaLimitEnable">
+            <summary>
+            @~chinese Blob总面积 @~english Blob Total Area Check
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.BlobTotalAreaLimitLow">
+            <summary>
+            @~chinese 总面积范围，范围：[1,999999999] @~english Blob Total Area Range, Range:[1,999999999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.BlobTotalAreaLimitHigh">
+            <summary>
+            @~chinese 总面积范围，范围：[1,999999999] @~english Blob Total Area Range, Range:[1,999999999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.CentroidXLimitEnable">
+            <summary>
+            @~chinese 质心X判断 @~english Barycenter X Check
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.CentroidXLimitLow">
+            <summary>
+            @~chinese 质心X范围，范围：[-99999,99999] @~english Barycenter X Range, Range:[-99999,99999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.CentroidXLimitHigh">
+            <summary>
+            @~chinese 质心X范围，范围：[-99999,99999] @~english Barycenter X Range, Range:[-99999,99999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.CentroidYLimitEnable">
+            <summary>
+            @~chinese 质心Y判断 @~english Barycenter Y Check
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.CentroidYLimitLow">
+            <summary>
+            @~chinese 质心Y范围，范围：[-99999,99999] @~english Barycenter Y Range, Range:[-99999,99999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.CentroidYLimitHigh">
+            <summary>
+            @~chinese 质心Y范围，范围：[-99999,99999] @~english Barycenter Y Range, Range:[-99999,99999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.AngleLimitEnable">
+            <summary>
+            @~chinese Box角度判断 @~english BoxAngle Check
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.AngleLimitLow">
+            <summary>
+            @~chinese Box角度范围，范围：[-180,180] @~english BoxAngle Range, Range:[-180,180]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.AngleLimitHigh">
+            <summary>
+            @~chinese Box角度范围，范围：[-180,180] @~english BoxAngle Range, Range:[-180,180]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.CenterXLimitEnable">
+            <summary>
+            @~chinese 中心X判断 @~english Center X Check
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.CenterXLimitLow">
+            <summary>
+            @~chinese 中心X范围，范围：[-99999,99999] @~english Center X Range, Range:[-99999,99999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.CenterXLimitHigh">
+            <summary>
+            @~chinese 中心X范围，范围：[-99999,99999] @~english Center X Range, Range:[-99999,99999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.CenterYLimitEnable">
+            <summary>
+            @~chinese 中心Y判断 @~english Center Y Check
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.CenterYLimitLow">
+            <summary>
+            @~chinese 中心Y范围，范围：[-99999,99999] @~english Center Y Range, Range:[-99999,99999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.CenterYLimitHigh">
+            <summary>
+            @~chinese 中心Y范围，范围：[-99999,99999] @~english Center Y Range, Range:[-99999,99999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.BoxHeightLimitEnable">
+            <summary>
+            @~chinese Box高度判断 @~english Box Height Check
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.BoxHeightLimitLow">
+            <summary>
+            @~chinese Box高度范围，范围：[1,99999] @~english Box Height Range, Range:[1,99999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.BoxHeightLimitHigh">
+            <summary>
+            @~chinese Box高度范围，范围：[1,99999] @~english Box Height Range, Range:[1,99999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.BoxWidthLimitEnable">
+            <summary>
+            @~chinese Box宽度判断 @~english Box Width Check
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.BoxWidthLimitLow">
+            <summary>
+            @~chinese Box宽度范围，范围：[1,99999] @~english Box Width Range, Range:[1,99999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.BoxWidthLimitHigh">
+            <summary>
+            @~chinese Box宽度范围，范围：[1,99999] @~english Box Width Range, Range:[1,99999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.PerimeterLimitEnable">
+            <summary>
+            @~chinese 周长判断 @~english Perimeter Check
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.PerimeterLimitLow">
+            <summary>
+            @~chinese 周长范围，范围：[1,999999999] @~english Perimeter Range, Range:[1,999999999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.PerimeterLimitHigh">
+            <summary>
+            @~chinese 周长范围，范围：[1,999999999] @~english Perimeter Range, Range:[1,999999999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.LongAxisLimitEnable">
+            <summary>
+            @~chinese 长轴判断 @~english Major Axis Check
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.LongAxisLimitLow">
+            <summary>
+            @~chinese 长轴范围，范围：[1,999999999] @~english Major Axis Range, Range:[1,999999999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.LongAxisLimitHigh">
+            <summary>
+            @~chinese 长轴范围，范围：[1,999999999] @~english Major Axis Range, Range:[1,999999999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.ShortAxisLimitEnable">
+            <summary>
+            @~chinese 短轴判断 @~english Minor Axis Check
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.ShortAxisLimitLow">
+            <summary>
+            @~chinese 短轴范围，范围：[1,999999999] @~english Minor Axis Range, Range:[1,999999999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.ShortAxisLimitHigh">
+            <summary>
+            @~chinese 短轴范围，范围：[1,999999999] @~english Minor Axis Range, Range:[1,999999999]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.CircularityLimitEnable">
+            <summary>
+            @~chinese 圆形度判断 @~english Circularity Check
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.CircularityLimitLow">
+            <summary>
+            @~chinese 圆形度范围，范围：[0,1] @~english Circularity Range, Range:[0,1]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.CircularityLimitHigh">
+            <summary>
+            @~chinese 圆形度范围，范围：[0,1] @~english Circularity Range, Range:[0,1]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.RectangularityLimitEnable">
+            <summary>
+            @~chinese 矩形度判断 @~english Rectangularity Check
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.RectangularityLimitLow">
+            <summary>
+            @~chinese 矩形度范围，范围：[0,1] @~english Rectangularity Range, Range:[0,1]
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindParam.RectangularityLimitHigh">
+            <summary>
+            @~chinese 矩形度范围，范围：[0,1] @~english Rectangularity Range, Range:[0,1]
+            </summary>
+        </member>
+        <member name="M:IMVSBlobFindModuCs.BlobFindParam.#ctor(System.UInt32)">
+            @cond
+            <summary>
+            @~chinese 构造函数 @~english Constructor
+            </summary>
+        </member>
+        <member name="T:IMVSBlobFindModuCs.BlobFindResult">
+            \addtogroup Blob分析
+            @{
+            <summary>
+            @~chinese Blob分析结果 @~english Blob Analysis Result
+            </summary>
+        </member>
+        <member name="M:IMVSBlobFindModuCs.BlobFindResult.#ctor">
+            @cond
+            <summary>
+            @~chinese 构造函数 @~english Constructor
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.ModuStatus">
+            @endcond
+            <summary>
+            @~chinese 模块状态 @~english ModuStatus
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.BlobStatus">
+            <summary>
+            @~chinese 单体状态 @~english BlobStatus
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.BlobNum">
+            <summary>
+            @~chinese Blob个数 @~english BlobNum
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.Area">
+            <summary>
+            @~chinese 面积 @~english Area
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.TotalArea">
+            <summary>
+            @~chinese 总面积 @~english TotalArea
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.CentroidPoint">
+            <summary>
+            @~chinese 质心点 @~english CentroidPoint
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.MinBoudingRect">
+            <summary>
+            @~chinese 最小外接矩形 @~english MinBoudingRect
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.MinGrayValue">
+            <summary>
+            @~chinese 最小灰度值 @~english MinGrayValue
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.MaxGrayValue">
+            <summary>
+            @~chinese 最大灰度值 @~english MaxGrayValue
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.GrayContrast">
+            <summary>
+            @~chinese 对比度 @~english GrayContrast
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.MaxAreaInnerRect">
+            <summary>
+            @~chinese 最大内接矩形 @~english MaxAreaInnerRect
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.BlobRect">
+            <summary>
+            @~chinese Blob矩形框 @~english BlobRect
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.BlobRectUpLeftX">
+            <summary>
+            @~chinese blob矩形左上点X @~english BlobRectUpLeftX
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.BlobRectUpLeftY">
+            <summary>
+            @~chinese blob矩形左上点Y @~english BlobRectUpLeftY
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.BlobRectBottomRightX">
+            <summary>
+            @~chinese blob矩形右下点X @~english BlobRectBottomRightX
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.BlobRectBottomRightY">
+            <summary>
+            @~chinese blob矩形右下点Y @~english BlobRectBottomRightY
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.BlobAngle">
+            <summary>
+            @~chinese 主轴角度 @~english BlobAngle
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.Perimeter">
+            <summary>
+            @~chinese 周长 @~english Perimeter
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.LongAxis">
+            <summary>
+            @~chinese 长轴 @~english LongAxis
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.ShortAxis">
+            <summary>
+            @~chinese 短轴 @~english ShortAxis
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.Circularity">
+            <summary>
+            @~chinese 圆形度 @~english Circularity
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.Rectangularity">
+            <summary>
+            @~chinese 矩形度 @~english Rectangularity
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.Score">
+            <summary>
+            @~chinese 分数 @~english Score
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.BinaryImageComb">
+            <summary>
+            @~chinese 二值化图像数据 @~english BinaryImageComb
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.BlobImageComb">
+            <summary>
+            @~chinese Blob图像数据 @~english BlobImageComb
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.ROI">
+            <summary>
+            @~chinese 检测区域 @~english ROI
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.ROIAnnulus">
+            <summary>
+            @~chinese ROI圆弧 @~english ROIAnnulus
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.ContourInfo">
+            <summary>
+            @~chinese 轮廓信息 @~english ContourInfo
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.ContourNum">
+            <summary>
+            @~chinese 轮廓点个数 @~english ContourNum
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.BlindPolygonPointNum">
+            <summary>
+            @~chinese 多边形点数 @~english PolygonPointNum
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.BlindPolygonPoints">
+            <summary>
+            @~chinese 多边形点集 @~english PolygonPoints
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.BlindPolygonString">
+            <summary>
+            @~chinese 屏蔽区字符串 @~english BlindPolygonString
+            </summary>
+        </member>
+        <member name="P:IMVSBlobFindModuCs.BlobFindResult.OutputMask">
+            <summary>
+            @~chinese 输出掩膜 @~english Output Mask
+            </summary>
+        </member>
+    </members>
+</doc>

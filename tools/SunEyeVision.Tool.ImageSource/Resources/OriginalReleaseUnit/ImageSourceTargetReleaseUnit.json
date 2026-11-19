@@ -1,0 +1,28 @@
+{
+  "authority": "VisionMaster 4.4.0 Build20250516",
+  "toolId": "ImageLoad",
+  "releaseDirectory": "SunEyeVision.Tool.ImageSource",
+  "status": "responsibility-mapping-pending",
+  "originalUnit": {
+    "algorithmAssembly": "ImageSourceModule.dll",
+    "bridgeAssembly": "ImageSourceModuleCs.dll",
+    "controlAssembly": "ImageSourceModuleControl.dll",
+    "identity": "ImageSourceModule.xml",
+    "algorithmDefinition": "ImageSourceModuleAlgorithm.xml",
+    "algorithmTabDefinition": "ImageSourceModuleAlgorithmTab.xml",
+    "bridgeDefinition": "ImageSourceModuleCs.xml",
+    "displayDefinition": "ImageSourceModuleDisplay.xml",
+    "toolItemInfo": "ToolItemInfo.xml"
+  },
+  "currentSourceComponents": [
+    "tools/SunEyeVision.Tool.ImageSource/SunEyeVision.Tool.ImageSource.csproj",
+    "tools/SunEyeVision.Tool.ImageSource.Wpf/SunEyeVision.Tool.ImageSource.Wpf.csproj"
+  ],
+  "unresolvedMappings": [
+    "algorithm responsibility and referenced library boundary",
+    "bridge responsibility and shared host boundary",
+    "control responsibility and shared host boundary",
+    "independent bridge XML",
+    "shared framework ownership of image source control"
+  ]
+}

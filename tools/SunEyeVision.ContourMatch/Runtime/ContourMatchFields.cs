@@ -45,11 +45,16 @@ public sealed class ContourMatchFieldSpec
 /// </summary>
 public static class ContourMatchFields
 {
-    public const string TemplatePage = "模板参数";
+    public const string BasicPage = "基本参数";
+    public const string TemplatePage = "特征模板";
     public const string RunPage = "运行参数";
-    public const string TemplateSection = "模板参数";
+    public const string ResultPage = "结果显示";
+    public const string ImageInputSection = "Tab_Image Input";
+    public const string RoiInputSection = "Tab_ROI Area";
+    public const string BasicSection = ImageInputSection;
+    public const string TemplateSection = "特征模板";
     public const string RunSection = "运行参数";
-    public const string JudgeSection = "结果判断";
+    public const string JudgeSection = "结果显示";
 
     private static readonly IReadOnlyDictionary<string, PropertyInfo> Properties =
         typeof(ContourMatchSettings).GetProperties(BindingFlags.Public | BindingFlags.Instance)
@@ -136,42 +141,42 @@ public static class ContourMatchFields
         => "field:" + new Guid(SHA256.HashData(Encoding.UTF8.GetBytes("SunEyeVision.Tool.ContourMatch:" + name)).AsSpan(0, 16)).ToString("N");
 
     private static ContourMatchFieldSpec B(string vm, string name, string label, string section, bool value,
-        string? when = null, bool advanced = false, string page = RunPage)
+        string? when = null, bool advanced = false, string? page = null)
         => new()
         {
             VirtualMachineName = vm, Name = name, Id = StableId(name), Type = typeof(bool), Default = value,
-            Label = label, Page = page, Section = section, VisibleWhen = when, Advanced = advanced
+            Label = label, Page = page ?? (section == JudgeSection ? ResultPage : RunPage), Section = section, VisibleWhen = when, Advanced = advanced
         };
 
     private static ContourMatchFieldSpec I(string vm, string name, string label, string section, int value, double minimum, double maximum,
         string? when = null, string? pair = null, string? pairLabel = null, bool advanced = false, bool reference = true,
-        string page = RunPage)
+        string? page = null)
         => new()
         {
             VirtualMachineName = vm, Name = name, Id = StableId(name), Type = typeof(int), Default = value,
-            Label = label, Page = page, Section = section, VisibleWhen = when, PairWith = pair, PairLabel = pairLabel,
+            Label = label, Page = page ?? (section == JudgeSection ? ResultPage : RunPage), Section = section, VisibleWhen = when, PairWith = pair, PairLabel = pairLabel,
             Advanced = advanced, AllowReference = reference, Minimum = minimum, Maximum = maximum,
             PairMinimum = pair is null ? null : minimum, PairMaximum = pair is null ? null : maximum, DecimalPlaces = 0, Increment = 1
         };
 
     private static ContourMatchFieldSpec N(string vm, string name, string label, string section, double value, double minimum, double maximum,
         string? when = null, string? pair = null, string? pairLabel = null, int decimals = 2, double increment = 0.01,
-        bool advanced = false, bool reference = true, string page = RunPage)
+        bool advanced = false, bool reference = true, string? page = null)
         => new()
         {
             VirtualMachineName = vm, Name = name, Id = StableId(name), Type = typeof(double), Default = value,
-            Label = label, Page = page, Section = section, VisibleWhen = when, PairWith = pair, PairLabel = pairLabel,
+            Label = label, Page = page ?? (section == JudgeSection ? ResultPage : RunPage), Section = section, VisibleWhen = when, PairWith = pair, PairLabel = pairLabel,
             Advanced = advanced, AllowReference = reference, Minimum = minimum, Maximum = maximum,
             PairMinimum = pair is null ? null : minimum, PairMaximum = pair is null ? null : maximum,
             DecimalPlaces = decimals, Increment = increment
         };
 
     private static ContourMatchFieldSpec E(string vm, string name, string label, string section, Type enumType, int value,
-        IEnumerable<string> keys, IEnumerable<string> labels, string? when = null, bool advanced = false, string page = RunPage)
+        IEnumerable<string> keys, IEnumerable<string> labels, string? when = null, bool advanced = false, string? page = null)
         => new()
         {
             VirtualMachineName = vm, Name = name, Id = StableId(name), Type = enumType,
-            Default = Enum.ToObject(enumType, value), Label = label, Page = page, Section = section,
+            Default = Enum.ToObject(enumType, value), Label = label, Page = page ?? (section == JudgeSection ? ResultPage : RunPage), Section = section,
             VisibleWhen = when, Advanced = advanced,
             Choices = keys.ToArray(), ChoiceLabels = keys.Zip(labels).ToDictionary(item => item.First, item => item.Second, StringComparer.Ordinal)
         };
@@ -188,7 +193,7 @@ public static class ContourMatchFields
         var fields = new List<ContourMatchFieldSpec>
         {
             // 模板参数（原件训练对话框「匹配参数」组；全部不走变量引用）
-            S("ModelData", nameof(ContourMatchSettings.ModelData), "模板数据", TemplateSection, "", TemplatePage),
+            S("ModelData", nameof(ContourMatchSettings.ModelData), "模板数据", ImageInputSection, "", BasicPage),
             E("PyramidScaleFlag", nameof(ContourMatchSettings.PyramidMode), "金字塔比例", TemplateSection,
                 typeof(ContourMatchPyramidMode), 1, Enum.GetNames<ContourMatchPyramidMode>(), new[] { "手动", "自动" }, page: TemplatePage),
             I("PyramidScaleLevel", nameof(ContourMatchSettings.PyramidScaleLevel), "压缩比", TemplateSection, 5, 1, 10,
@@ -199,11 +204,11 @@ public static class ContourMatchFields
                 typeof(ContourMatchThresholdMode), 1, Enum.GetNames<ContourMatchThresholdMode>(), new[] { "手动", "自动" }, page: TemplatePage),
             I("EdgeThreshold", nameof(ContourMatchSettings.EdgeThreshold), "边缘阈值", TemplateSection, 15, 1, 255,
                 when: nameof(ContourMatchSettings.EdgeThresholdMode), reference: false, page: TemplatePage),
-            E("ChainFlag", nameof(ContourMatchSettings.ChainMode), "链式", TemplateSection,
+            E("ChainFlag", nameof(ContourMatchSettings.ChainMode), "链长模式", TemplateSection,
                 typeof(ContourMatchChainMode), 1, Enum.GetNames<ContourMatchChainMode>(), new[] { "手动", "自动" }, page: TemplatePage),
             I("MinChainLen", nameof(ContourMatchSettings.MinChainLen), "最小链长", TemplateSection, 4, 2, 1000,
                 when: nameof(ContourMatchSettings.ChainMode), reference: false, page: TemplatePage),
-            E("MaskModelFlag", nameof(ContourMatchSettings.MaskModel), "掩膜模型", TemplateSection,
+            E("MaskModelFlag", nameof(ContourMatchSettings.MaskModel), "建模类型", TemplateSection,
                 typeof(ContourMatchMaskModel), 0, Enum.GetNames<ContourMatchMaskModel>(), new[] { "全轮廓", "外轮廓" }, page: TemplatePage),
 
             // 运行参数（原件 56 项 ParamItem）
@@ -241,11 +246,11 @@ public static class ContourMatchFields
             I("SkewXEnd", nameof(ContourMatchSettings.SkewXEnd), "终止横切角度", RunSection, 0, -180, 180, advanced: true),
 
             // 结果判断：数量限位
-            B("NumLimitEnable", nameof(ContourMatchSettings.CountLimitEnabled), "匹配个数判断", JudgeSection, false),
+            B("NumLimitEnable", nameof(ContourMatchSettings.CountLimitEnabled), "匹配个数判断", JudgeSection, false, page: ResultPage),
             I("NumLimitLow", nameof(ContourMatchSettings.CountLimitLow), "匹配个数下限", JudgeSection, 0, 0, 99_999,
-                when: nameof(ContourMatchSettings.CountLimitEnabled), pair: nameof(ContourMatchSettings.CountLimitHigh), pairLabel: "匹配个数范围"),
+                when: nameof(ContourMatchSettings.CountLimitEnabled), pair: nameof(ContourMatchSettings.CountLimitHigh), pairLabel: "匹配个数范围", page: ResultPage),
             I("NumLimitHigh", nameof(ContourMatchSettings.CountLimitHigh), "匹配个数上限", JudgeSection, 99_999, 0, 99_999,
-                when: nameof(ContourMatchSettings.CountLimitEnabled)),
+                when: nameof(ContourMatchSettings.CountLimitEnabled), page: ResultPage),
 
             // 结果判断：角度/分数限位
             B("AngleLimitEnable", nameof(ContourMatchSettings.AngleLimitEnabled), "角度判断", JudgeSection, false, advanced: true),
@@ -329,7 +334,8 @@ public static class ContourMatchFields
                 PairMinimum: field.PairWith is null ? null : field.PairMinimum,
                 PairMaximum: field.PairWith is null ? null : field.PairMaximum,
                 PairDisplayName: field.PairLabel);
-            presentations.Add(new FieldPresentation(field.Id, field.Label, field.Section, index,
+            var presentationOrder = field.Page == ResultPage ? 10_000 + index : index;
+            presentations.Add(new FieldPresentation(field.Id, field.Label, field.Section, presentationOrder,
                 field.Choices.Count == 0 ? FieldEditorKind.Scalar : FieldEditorKind.Choice,
                 field.Choices, field.ChoiceLabels) { Layout = layout });
         }
@@ -403,3 +409,4 @@ public static class ContourMatchFields
             _ => Convert.ToString(field.Default, CultureInfo.InvariantCulture) ?? ""
         };
 }
+

@@ -2,6 +2,7 @@ using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Imaging;
 using System.Windows.Media;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.Regions;
@@ -35,15 +36,15 @@ public sealed class MarkFindTemplatePanel : UserControl
         _frames = frames;
         var root = new StackPanel { Orientation = Orientation.Vertical, Margin = new Thickness(0, 4, 0, 6) };
         var buttons = new StackPanel { Orientation = Orientation.Horizontal };
-        _createButton = Button("新建模型", CreateTemplate);
-        _editButton = Button("编辑模型", CreateTemplate);
-        _clearButton = Button("清空模型", ClearTemplate);
-        _exportButton = Button("导出", ExportTemplate);
+        _createButton = TextIconButton("新建模型", "btn_新建模板_normal.png", CreateTemplate, 94);
+        _editButton = TextIconButton("编辑模型", "ic_btn_edit_normal.png", CreateTemplate, 94);
+        _clearButton = IconButton("ic_清空图片_normal.png", "清空模型", ClearTemplate);
+        _exportButton = IconButton("ic_导出2_normal.png", "导出", ExportTemplate);
         buttons.Children.Add(_createButton);
         buttons.Children.Add(_editButton);
         buttons.Children.Add(_clearButton);
         buttons.Children.Add(_exportButton);
-        buttons.Children.Add(Button("导入", ImportTemplate));
+        buttons.Children.Add(IconButton("ic_导入_normal.png", "导入", ImportTemplate));
         root.Children.Add(buttons);
 
         var preview = new Border
@@ -75,6 +76,37 @@ public sealed class MarkFindTemplatePanel : UserControl
         button.Click += (_, _) => action();
         return button;
     }
+
+    private static Button TextIconButton(string caption, string imageName, Action action, double width)
+    {
+        var button = Button(caption, action);
+        button.Width = width;
+        button.Content = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Children =
+            {
+                new Image { Width = 20, Height = 20, Stretch = System.Windows.Media.Stretch.None, Source = Resource(imageName) },
+                new TextBlock { Text = caption, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0) }
+            }
+        };
+        return button;
+    }
+
+    private static Button IconButton(string imageName, string tooltip, Action action)
+    {
+        var button = Button(tooltip, action);
+        button.Width = 34;
+        button.Height = 34;
+        button.MinWidth = 0;
+        button.Padding = new Thickness(0);
+        button.ToolTip = tooltip;
+        button.Content = new Image { Width = 34, Height = 34, Stretch = System.Windows.Media.Stretch.None, Source = Resource(imageName) };
+        return button;
+    }
+
+    private static BitmapImage Resource(string imageName)
+        => new(new Uri("pack://application:,,,/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/WorkspaceControls/resources/" + imageName, UriKind.Absolute));
 
     // ── 新建 / 清空 ─────────────────────────────────────────────────────
 

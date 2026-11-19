@@ -61,7 +61,7 @@ public static class ContourMatchResultDisplay
                 : id == Field(Text, "x") || id == Field(Text, "y") ? FieldEditModes.Constant | FieldEditModes.Reference
                 : FieldEditModes.Constant;
             var port = new Port(id, type, EditModes: modes);
-            result.Add(new(port, new(id, label, section, order++,
+            result.Add(new(port, new(id, label, section, 10_000 + order++,
                 type.Shape == ValueShape.Record ? FieldEditorKind.Record : FieldEditorKind.Scalar)
             {
                 Layout = new FieldLayout("结果显示", section, Minimum: minimum, Maximum: maximum,

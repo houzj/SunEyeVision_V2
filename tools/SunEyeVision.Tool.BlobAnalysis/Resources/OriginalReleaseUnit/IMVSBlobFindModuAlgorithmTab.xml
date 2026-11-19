@@ -1,0 +1,2733 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AlgorithmTabRoot>
+  <Tabs>
+    <Tab Name="Tab_Basic Params">
+      <Categorys>
+        <!-- <Category Name="%事件配置%">
+		   <Items>
+				<EventsConfig>
+				   <Actions>
+				      <EnumEntryStr>
+					     <Description>修改参数</Description>
+						 <DisplayName>修改参数</DisplayName>
+						 <Value>ChangeParam</Value>
+					  </EnumEntryStr>
+					  <EnumEntryStr>
+					     <Description>修改参数2</Description>
+						 <DisplayName>修改参数2</DisplayName>
+						 <Value>ChangeParam2</Value>
+					  </EnumEntryStr>
+				   </Actions>
+				   <Headers>
+					  <HeadItem>
+						 <DisplayName>%事件%</DisplayName>
+						 <Width>100</Width>
+					  </HeadItem>
+					  <HeadItem>
+						 <DisplayName>%动作%</DisplayName>
+						 <Width>100</Width>
+					  </HeadItem>
+				   </Headers>
+				   <EventConfigTemplate>
+					   <EnumEntrys>
+						  <EnumerationObj_sub Name="event">
+                            <AccessMode>O</AccessMode>
+							<Initers>
+                                <Setter>
+                                    <TargetName>EnumEntrys</TargetName>
+									<OperationName>GetProEventsOperation</OperationName>
+                                </Setter>
+                            </Initers>
+							<Triggers>
+                                <Trigger>
+								    <Property>CurValue</Property>
+                                    <Setters>									    
+									    
+                                        <Setter>
+                                            <OperationName>ExcuteParentMethodOperation</OperationName>
+                                            <OperationParams>EventsConfig;SetConfigInfo</OperationParams>
+                                        </Setter>
+                                    </Setters>
+                                </Trigger>
+                            </Triggers>
+						  </EnumerationObj_sub>
+						  
+						  <EnumerationObj_sub Name="action">
+                            <AccessMode>O</AccessMode>
+                            <Initers>
+                                <Setter>
+                                    <TargetName>EnumEntrys</TargetName>
+									<OperationName>GetParentPropertyOperation</OperationName>
+									<OperationParams>EventsConfig;Actions</OperationParams>
+                                </Setter>
+                            </Initers>
+							<Triggers>
+                                <Trigger>
+								    <Property>CurValue</Property>
+                                    <Setters>									    
+									    
+                                        <Setter>
+                                            <OperationName>ExcuteParentMethodOperation</OperationName>
+                                            <OperationParams>EventsConfig;SetConfigInfo</OperationParams>
+                                        </Setter>
+                                    </Setters>
+                                </Trigger>
+                            </Triggers>
+                        </EnumerationObj_sub>
+						  
+					   </EnumEntrys>
+				   </EventConfigTemplate>
+				   
+				</EventsConfig>
+			</Items>
+		</Category>	  -->
+        <GroupLinkItem Name="ImageSourceGroup">
+          <LinkName>ImageSourceGroup</LinkName>
+        </GroupLinkItem>
+        <Category Name="Tab_ROI Area" CanTriggerRun = "TRUE">
+          <Items>
+            <GroupLinkItem Name="OutputMaskImageGroup">
+              <LinkName>OutputMaskImageGroup</LinkName>
+            </GroupLinkItem>
+            <GroupLinkItem Name="InputMaskImageGroup">
+              <LinkName>InputMaskImageGroup</LinkName>
+            </GroupLinkItem>
+            <GroupLinkItem Name="RoiSelectGroup">
+              <LinkName>RoiSelectGroup</LinkName>
+            </GroupLinkItem>
+            <!--多ROI的xml配置-->
+            <ROISelecter Name="RoiType">
+              <Description>Shape</Description>
+              <DisplayName>Shape</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <!--是否全屏True/False-->
+              <FullScreenEnable>True</FullScreenEnable>
+              <SelectType>Mul</SelectType>
+              <!--ROI的可选类型（根据实际情况选择）-->
+              <ROISelection>Box SectorRing Polygon Sector</ROISelection>
+              <RoiMaxNum>16</RoiMaxNum>
+            </ROISelecter>
+            <GroupLinkItem Name="InheritWayGroup">
+              <LinkName>InheritWayGroup2</LinkName>
+            </GroupLinkItem>
+            <GroupLinkItem Name="ExternROITypeGroup">
+              <LinkName>ExternROITypeGroup</LinkName>
+            </GroupLinkItem>
+            <GroupLinkItem Name="AssistGroup">
+              <LinkName>AssistGroup</LinkName>
+            </GroupLinkItem>
+          </Items>
+        </Category>
+      </Categorys>
+    </Tab>
+    <Tab Name="Tab_Run Params">
+      <Categorys>
+        <Category Name="Tab_Run Params" CanTriggerRun = "TRUE">
+          <Items>
+            <Enumeration Name="ThresholdType">
+              <Description>Threshold Type</Description>
+              <DisplayName>RunParam_Threshold Mode</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x0601</AlgorithmIndex>
+              <CurValue>0x2</CurValue>
+              <DefaultValue>0x2</DefaultValue>
+              <Triggers>
+                <Trigger>
+                  <Property>CurValue</Property>
+                  <Value>0x1</Value>
+                  <Setters>
+                    <Setter>
+                      <TargetName>Polarity</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </Trigger>
+                <Trigger>
+                  <Property>CurValue</Property>
+                  <Value>0x2</Value>
+                  <Setters>
+                    <Setter>
+                      <TargetName>Polarity</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>LowThreshold</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </Trigger>
+                <Trigger>
+                  <Property>CurValue</Property>
+                  <Value>0x3</Value>
+                  <Setters>
+                    <Setter>
+                      <TargetName>LowThreshold</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>HightThreshold</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </Trigger>
+                <Trigger>
+                  <Property>CurValue</Property>
+                  <Value>0x4</Value>
+                  <Setters>
+                    <Setter>
+                      <TargetName>Polarity</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </Trigger>
+                <Trigger>
+                  <Property>CurValue</Property>
+                  <Value>0x5</Value>
+                  <Setters>
+                    <Setter>
+                      <TargetName>Polarity</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>ThresholdRangArea</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>Softness</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </Trigger>
+                <Trigger>
+                  <Property>CurValue</Property>
+                  <Value>0x6</Value>
+                  <Setters>
+                    <Setter>
+                      <TargetName>Polarity</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>Softness</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>SoftLeftRatio</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>SoftRightRatio</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>SoftLowRatio</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>SoftHighRatio</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </Trigger>
+              </Triggers>
+              <EnumEntrys>
+                <EnumEntry Name="BinaryImage">
+                  <Description>Already binarized</Description>
+                  <DisplayName>RunParam_No Binarization</DisplayName>
+                  <IsImplemented>0x1</IsImplemented>
+                  <Value>0x1</Value>
+                </EnumEntry>
+                <EnumEntry Name="SingleThreshold">
+                  <Description>Single Threshold</Description>
+                  <DisplayName>Single Threshold</DisplayName>
+                  <IsImplemented>0x1</IsImplemented>
+                  <Value>2</Value>
+                </EnumEntry>
+                <EnumEntry Name="DoubleThreshold">
+                  <Description>Double Threshold</Description>
+                  <DisplayName>Double Threshold</DisplayName>
+                  <IsImplemented>1</IsImplemented>
+                  <Value>3</Value>
+                </EnumEntry>
+                <EnumEntry Name="AutoThreshold">
+                  <Description>Auto Threshold</Description>
+                  <DisplayName>Auto Threshold</DisplayName>
+                  <IsImplemented>1</IsImplemented>
+                  <Value>4</Value>
+                </EnumEntry>
+                <EnumEntry Name="FixedSoftThreshold">
+                  <Description>Soft Threshld(Fixed)</Description>
+                  <DisplayName>Soft Threshld(Fixed)</DisplayName>
+                  <IsImplemented>1</IsImplemented>
+                  <Value>5</Value>
+                </EnumEntry>
+                <EnumEntry Name="RelativeSoftThreshold">
+                  <Description>Soft Threshold(Relative)</Description>
+                  <DisplayName>Soft Threshold(Relative)</DisplayName>
+                  <IsImplemented>1</IsImplemented>
+                  <Value>6</Value>
+                </EnumEntry>
+              </EnumEntrys>
+            </Enumeration>
+            <Enumeration Name="Polarity">
+              <Description>Dark Blobs Light Background, or Light Blobs Dark Background</Description>
+              <DisplayName>Polarity</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x0602</AlgorithmIndex>
+              <CurValue>0</CurValue>
+              <DefaultValue>0</DefaultValue>
+              <CustomVisible>False</CustomVisible>
+              <EnumEntrys>
+                <EnumEntry Name="DarkOnBright">
+                  <Description>Brighter Than Background</Description>
+                  <DisplayName>Brighter Than Background</DisplayName>
+                  <IsImplemented>1</IsImplemented>
+                  <Value>0</Value>
+                </EnumEntry>
+                <EnumEntry Name="BrightOnDark">
+                  <Description>Darker Than Background</Description>
+                  <DisplayName>Darker Than Background</DisplayName>
+                  <IsImplemented>1</IsImplemented>
+                  <Value>1</Value>
+                </EnumEntry>
+              </EnumEntrys>
+            </Enumeration>
+            <Integer Name="LowThreshold">
+              <Description>Low Threshold</Description>
+              <DisplayName>Low Threshold</DisplayName>
+              <AccessMode>Rw</AccessMode>
+              <AlgorithmIndex>0x0603</AlgorithmIndex>
+              <CurValue>0x64</CurValue>
+              <DefaultValue>0x64</DefaultValue>
+              <MinValue>0x0</MinValue>
+              <MaxValue>0xff</MaxValue>
+              <IncValue>0x1</IncValue>
+              <CustomVisible>False</CustomVisible>
+            </Integer>
+            <Integer Name="HightThreshold">
+              <Description>High Threshold</Description>
+              <DisplayName>High Threshold</DisplayName>
+              <AccessMode>Rw</AccessMode>
+              <AlgorithmIndex>0x0604</AlgorithmIndex>
+              <CurValue>0x96</CurValue>
+              <DefaultValue>0x96</DefaultValue>
+              <MinValue>0x0</MinValue>
+              <MaxValue>0xff</MaxValue>
+              <IncValue>0x1</IncValue>
+              <CustomVisible>False</CustomVisible>
+            </Integer>
+            <IntegerBettween Name="ThresholdRangArea">
+              <Description>Threshold Range</Description>
+              <DisplayName>Threshold Range</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x0000</AlgorithmIndex>
+              <DefaultValue>10000</DefaultValue>
+              <MinValue>0</MinValue>
+              <MaxValue>255</MaxValue>
+              <IncValue>0x1</IncValue>
+              <CustomVisible>False</CustomVisible>
+              <Integers>
+                <Integer Name="LowSoftThreshold">
+                  <Description>RunParam_Soft Low Threshold</Description>
+                  <DisplayName>RunParam_Soft Low Threshold</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x060C</AlgorithmIndex>
+                  <CurValue>0x64</CurValue>
+                  <DefaultValue>0x64</DefaultValue>
+                  <MinValue>0x1</MinValue>
+                  <MaxValue>255</MaxValue>
+                  <IncValue>0x1</IncValue>
+                </Integer>
+                <Integer Name="HightSoftThreshold">
+                  <Description>RunParam_Soft High Threshold</Description>
+                  <DisplayName>RunParam_Soft High Threshold</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x060D</AlgorithmIndex>
+                  <CurValue>0x96</CurValue>
+                  <DefaultValue>0x96</DefaultValue>
+                  <MinValue>0</MinValue>
+                  <MaxValue>255</MaxValue>
+                  <IncValue>0x1</IncValue>
+                </Integer>
+              </Integers>
+            </IntegerBettween>
+            <Integer Name="Softness">
+              <Description>Soft Threshold Softness</Description>
+              <DisplayName>Soft Threshold Softness</DisplayName>
+              <AccessMode>Rw</AccessMode>
+              <AlgorithmIndex>0x0605</AlgorithmIndex>
+              <CurValue>254</CurValue>
+              <DefaultValue>254</DefaultValue>
+              <MinValue>0x0</MinValue>
+              <MaxValue>254</MaxValue>
+              <IncValue>0x1</IncValue>
+              <CustomVisible>False</CustomVisible>
+            </Integer>
+            <Integer Name="SoftLeftRatio">
+              <Description>Low Tail of Soft Threshold(Relative)</Description>
+              <DisplayName>RunParam_Low Tail Ratio</DisplayName>
+              <AccessMode>Rw</AccessMode>
+              <AlgorithmIndex>0x0606</AlgorithmIndex>
+              <CurValue>5</CurValue>
+              <DefaultValue>5</DefaultValue>
+              <MinValue>0x0</MinValue>
+              <MaxValue>100</MaxValue>
+              <IncValue>0x1</IncValue>
+              <CustomVisible>False</CustomVisible>
+            </Integer>
+            <Integer Name="SoftRightRatio">
+              <Description>High Tail of Soft Threshold(Relative)</Description>
+              <DisplayName>RunParam_High Tail Ratio</DisplayName>
+              <AccessMode>Rw</AccessMode>
+              <AlgorithmIndex>0x0607</AlgorithmIndex>
+              <CurValue>5</CurValue>
+              <DefaultValue>5</DefaultValue>
+              <MinValue>0x0</MinValue>
+              <MaxValue>100</MaxValue>
+              <IncValue>0x1</IncValue>
+              <CustomVisible>False</CustomVisible>
+            </Integer>
+            <Integer Name="SoftLowRatio">
+              <Description>Low Threshold of Soft Threshold(Relative)</Description>
+              <DisplayName>Low Threshold Ratio</DisplayName>
+              <AccessMode>Rw</AccessMode>
+              <AlgorithmIndex>0x0608</AlgorithmIndex>
+              <CurValue>40</CurValue>
+              <DefaultValue>40</DefaultValue>
+              <MinValue>0x0</MinValue>
+              <MaxValue>100</MaxValue>
+              <IncValue>0x1</IncValue>
+              <CustomVisible>False</CustomVisible>
+            </Integer>
+            <Integer Name="SoftHighRatio">
+              <Description>Hight Threshold of Soft Threshold(Relative)</Description>
+              <DisplayName>High Threshold Ratio</DisplayName>
+              <AccessMode>Rw</AccessMode>
+              <AlgorithmIndex>0x0609</AlgorithmIndex>
+              <CurValue>60</CurValue>
+              <DefaultValue>60</DefaultValue>
+              <MinValue>0x0</MinValue>
+              <MaxValue>100</MaxValue>
+              <IncValue>0x1</IncValue>
+              <CustomVisible>False</CustomVisible>
+            </Integer>
+            <Integer Name="FindNum">
+              <Description>Num of Found Blobs</Description>
+              <DisplayName>RunParam_Number to Find</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x0622</AlgorithmIndex>
+              <CurValue>100</CurValue>
+              <DefaultValue>100</DefaultValue>
+              <MinValue>1</MinValue>
+              <MaxValue>20000</MaxValue>
+              <IncValue>1</IncValue>
+            </Integer>
+            <Integer Name="HoleMinArea">
+              <Description>Fill Area Threshold</Description>
+              <DisplayName>Fill Area Threshold</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x0622</AlgorithmIndex>
+              <CurValue>0</CurValue>
+              <DefaultValue>0</DefaultValue>
+              <MinValue>0</MinValue>
+              <MaxValue>999999999</MaxValue>
+              <IncValue>1</IncValue>
+            </Integer>
+            <Boolean Name="SelectByArea">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>True</CurValue>
+              <DefaultValue>True</DefaultValue>
+              <Description>Area Enable</Description>
+              <DisplayName>Area Enable</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <Triggers>
+                <Trigger>
+                  <Property>CurValue</Property>
+                  <Value>False</Value>
+                  <Setters>
+                    <Setter>
+                      <TargetName>RangArea</TargetName>
+                      <OperationName>HiddenOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </Trigger>
+              </Triggers>
+            </Boolean>
+            <IntegerBettween Name="RangArea">
+              <Description>This Value is the range of Blob Area</Description>
+              <DisplayName>RunParam_Area Range</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x0000</AlgorithmIndex>
+              <DefaultValue>10000</DefaultValue>
+              <MinValue>0x1</MinValue>
+              <MaxValue>999999999</MaxValue>
+              <IncValue>0x1</IncValue>
+              <Integers>
+                <Integer Name="MinArea">
+                  <Description>Min Area</Description>
+                  <DisplayName>Min Area</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x060C</AlgorithmIndex>
+                  <CurValue>10</CurValue>
+                  <DefaultValue>10</DefaultValue>
+                  <MinValue>0x1</MinValue>
+                  <MaxValue>999999999</MaxValue>
+                  <IncValue>0x1</IncValue>
+                </Integer>
+                <Integer Name="MaxArea">
+                  <Description>Max Area</Description>
+                  <DisplayName>Max Area</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x060D</AlgorithmIndex>
+                  <CurValue>999999999</CurValue>
+                  <DefaultValue>999999999</DefaultValue>
+                  <MinValue>0x1</MinValue>
+                  <MaxValue>999999999</MaxValue>
+                  <IncValue>0x1</IncValue>
+                </Integer>
+              </Integers>
+            </IntegerBettween>
+			
+            <!--<Boolean Name="BolbOutLineEnable">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>RunParam_BolbOutLineEnable</Description>
+              <DisplayName>RunParam_BolbOutLineEnable</DisplayName>
+              <AccessMode>RW</AccessMode>
+            </Boolean>-->
+			
+			<Enumeration Name="BlobContourType">
+              <Description>RunParam_BlobContourType</Description>
+              <DisplayName>RunParam_BlobContourType</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x20630</AlgorithmIndex>
+              <CurValue>0</CurValue>
+              <DefaultValue>0</DefaultValue>
+              <CustomVisible>True</CustomVisible>
+              <EnumEntrys>
+                <EnumEntry Name="NoneContour">
+                  <Description>RunParam_NoneContour</Description>
+                  <DisplayName>RunParam_NoneContour</DisplayName>
+                  <IsImplemented>1</IsImplemented>
+                  <Value>0</Value>
+                </EnumEntry>
+                <EnumEntry Name="NoneSequentialContour">
+                  <Description>RunParam_NoneSequentialContour</Description>
+                  <DisplayName>RunParam_NoneSequentialContour</DisplayName>
+                  <IsImplemented>1</IsImplemented>
+                  <Value>1</Value>
+                </EnumEntry>
+				<EnumEntry Name="SequentialContour">
+                  <Description>RunParam_SequentialContour</Description>
+                  <DisplayName>RunParam_SequentialContour</DisplayName>
+                  <IsImplemented>1</IsImplemented>
+                  <Value>2</Value>
+                </EnumEntry>
+              </EnumEntrys>
+            </Enumeration>
+
+            <Boolean Name="BolbImageEnable">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>True</CurValue>
+              <DefaultValue>True</DefaultValue>
+              <Description>RunParam_BolbImageEnable</Description>
+              <DisplayName>RunParam_BolbImageEnable</DisplayName>
+              <AccessMode>RW</AccessMode>
+            </Boolean>
+            <Boolean Name="BinaryImageEnable">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>True</CurValue>
+              <DefaultValue>True</DefaultValue>
+              <Description>RunParam_BinaryImageEnable</Description>
+              <DisplayName>RunParam_BinaryImageEnable</DisplayName>
+              <AccessMode>RW</AccessMode>
+            </Boolean>
+            <Expand Name="Expert">
+              <CurValue>False</CurValue>
+              <Triggers>
+                <Trigger>
+                  <Property>CurValue</Property>
+                  <Value>True</Value>
+                  <Setters>
+					<Setter>
+                      <TargetName>SelectByHistInfo</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+					<Setter>
+                      <TargetName>MaxAreaInnerRectNum</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>SelectByBoxAngle</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>SelectByRectWidth</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>SelectByRectHeight</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>SelectByPerimeter</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>SelectByShortAxis</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>SelectByLongAxis</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>SelectByCircularuty</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>SelectByRectangularity</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>SelectByCentraBias</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>AxisRatioEnable</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>SortFeature</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>SortMode</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>connectivity</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+					<Setter>
+                      <TargetName>MaxOutPixelNumEnable</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+
+                  </Setters>
+                </Trigger>
+              </Triggers>
+            </Expand>
+			<Boolean Name="SelectByHistInfo">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>RunParam_SelectByHistInfoEnable</Description>
+              <DisplayName>RunParam_SelectByHistInfoEnable</DisplayName>
+              <AccessMode>RW</AccessMode>
+			  <CustomVisible>False</CustomVisible>
+            </Boolean>
+            <Boolean Name="SelectByBoxAngle">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>Angle Enable</Description>
+              <DisplayName>Angle Enable</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <Triggers>
+                <MultiTrigger>
+                  <Conditions>
+                    <Condition>
+                      <Property>CurValue</Property>
+                      <Value>True</Value>
+                    </Condition>
+                    <Condition>
+                      <Property>CustomVisible</Property>
+                      <Value>True</Value>
+                    </Condition>
+                  </Conditions>
+                  <Setters>
+                    <Setter>
+                      <TargetName>RangBoxAngle</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </MultiTrigger>
+              </Triggers>
+            </Boolean>
+			<IntegerBettween Name="RangBoxAngle" NameSpace="Standard">
+              <Description>This Value is the range of Blob BoxAngle</Description>
+              <DisplayName>RunParam_Angle Range</DisplayName>
+              <Visibility>Beginner</Visibility>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>1528</AlgorithmIndex>
+              <DefaultValue>0x0</DefaultValue>
+              <MinValue>-9000</MinValue>
+              <MaxValue>9000</MaxValue>
+              <IncValue>0x1</IncValue>
+              <CustomVisible>False</CustomVisible>
+              <Integers>
+                <Integer Name="MinBoxAngle" NameSpace="Standard">
+                  <Description>Min BoxAngle</Description>
+                  <DisplayName>RunParam_Min BoxAngle</DisplayName>
+                  <Visibility>Beginner</Visibility>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x20626</AlgorithmIndex>
+                  <CurValue>-9000</CurValue>
+                  <DefaultValue>-9000</DefaultValue>
+                  <MinValue>-9000</MinValue>
+                  <MaxValue>9000</MaxValue>
+                  <IncValue>0x1</IncValue>
+                </Integer>
+                <Integer Name="MaxBoxAngle" NameSpace="Standard">
+                  <Description>Max BoxAngle</Description>
+                  <DisplayName>RunParam_Max BoxAngle</DisplayName>
+                  <Visibility>Beginner</Visibility>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x20627</AlgorithmIndex>
+                  <CurValue>9000</CurValue>
+                  <DefaultValue>9000</DefaultValue>
+                  <MinValue>-9000</MinValue>
+                  <MaxValue>9000</MaxValue>
+                  <IncValue>0x1</IncValue>
+                </Integer>
+              </Integers>
+            </IntegerBettween>
+            <Boolean Name="SelectByRectWidth">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>RectWidth Enable</Description>
+              <DisplayName>RectWidth Enable</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <Triggers>
+                <MultiTrigger>
+                  <Conditions>
+                    <Condition>
+                      <Property>CurValue</Property>
+                      <Value>True</Value>
+                    </Condition>
+                    <Condition>
+                      <Property>CustomVisible</Property>
+                      <Value>True</Value>
+                    </Condition>
+                  </Conditions>
+                  <Setters>
+                    <Setter>
+                      <TargetName>RangRectWidth</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </MultiTrigger>
+              </Triggers>
+            </Boolean>
+            <IntegerBettween Name="RangRectWidth">
+              <Description>This Value is the range of Blob RectWidth</Description>
+              <DisplayName>RunParam_RectWidth Range</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>1529</AlgorithmIndex>
+              <DefaultValue>0x0</DefaultValue>
+              <MinValue>1</MinValue>
+              <MaxValue>1000000</MaxValue>
+              <IncValue>0x1</IncValue>
+              <CustomVisible>False</CustomVisible>
+              <Integers>
+                <Integer Name="MinRectWidth">
+                  <Description>Min RectWidth</Description>
+                  <DisplayName>Min RectWidth</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x20629</AlgorithmIndex>
+                  <CurValue>100</CurValue>
+                  <DefaultValue>100</DefaultValue>
+                  <MinValue>1</MinValue>
+                  <MaxValue>1000000</MaxValue>
+                  <IncValue>0x1</IncValue>
+                </Integer>
+                <Integer Name="MaxRectWidth">
+                  <Description>Max RectWidth</Description>
+                  <DisplayName>Max RectWidth</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x2062A</AlgorithmIndex>
+                  <CurValue>200</CurValue>
+                  <DefaultValue>200</DefaultValue>
+                  <MinValue>1</MinValue>
+                  <MaxValue>1000000</MaxValue>
+                  <IncValue>0x1</IncValue>
+                </Integer>
+              </Integers>
+            </IntegerBettween>
+            <Boolean Name="SelectByRectHeight">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>RectHeight Enable</Description>
+              <DisplayName>RectHeight Enable</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <Triggers>
+                <MultiTrigger>
+                  <Conditions>
+                    <Condition>
+                      <Property>CurValue</Property>
+                      <Value>True</Value>
+                    </Condition>
+                    <Condition>
+                      <Property>CustomVisible</Property>
+                      <Value>True</Value>
+                    </Condition>
+                  </Conditions>
+                  <Setters>
+                    <Setter>
+                      <TargetName>RangRectHeight</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </MultiTrigger>
+              </Triggers>
+            </Boolean>
+            <IntegerBettween Name="RangRectHeight">
+              <Description>This Value is the range of Blob RectHeight</Description>
+              <DisplayName>RunParam_RectHeight Range</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>1530</AlgorithmIndex>
+              <DefaultValue>0x0</DefaultValue>
+              <MinValue>1</MinValue>
+              <MaxValue>1000000</MaxValue>
+              <IncValue>0x1</IncValue>
+              <CustomVisible>False</CustomVisible>
+              <Integers>
+                <Integer Name="MinRectHeight">
+                  <Description>Min RectHeight</Description>
+                  <DisplayName>Min RectHeight</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x2062C</AlgorithmIndex>
+                  <CurValue>100</CurValue>
+                  <DefaultValue>100</DefaultValue>
+                  <MinValue>1</MinValue>
+                  <MaxValue>1000000</MaxValue>
+                  <IncValue>0x1</IncValue>
+                </Integer>
+                <Integer Name="MaxRectHeight">
+                  <Description>Max RectHeight</Description>
+                  <DisplayName>Max RectHeight</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x2062D</AlgorithmIndex>
+                  <CurValue>200</CurValue>
+                  <DefaultValue>200</DefaultValue>
+                  <MinValue>1</MinValue>
+                  <MaxValue>1000000</MaxValue>
+                  <IncValue>0x1</IncValue>
+                </Integer>
+              </Integers>
+            </IntegerBettween>
+            <Boolean Name="SelectByPerimeter">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>RunParam_Perimeter Enable</Description>
+              <DisplayName>RunParam_Perimeter Enable</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <Triggers>
+                <MultiTrigger>
+                  <Conditions>
+                    <Condition>
+                      <Property>CurValue</Property>
+                      <Value>True</Value>
+                    </Condition>
+                    <Condition>
+                      <Property>CustomVisible</Property>
+                      <Value>True</Value>
+                    </Condition>
+                  </Conditions>
+                  <Setters>
+                    <Setter>
+                      <TargetName>RangPerimeter</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </MultiTrigger>
+              </Triggers>
+            </Boolean>
+            <IntegerBettween Name="RangPerimeter">
+              <Description>This Value is the range of Blob Perimeter</Description>
+              <DisplayName>Perimeter Range</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x0001</AlgorithmIndex>
+              <DefaultValue>1000</DefaultValue>
+              <MinValue>0x1</MinValue>
+              <MaxValue>999999999</MaxValue>
+              <IncValue>0x1</IncValue>
+              <CustomVisible>False</CustomVisible>
+              <Integers>
+                <Integer Name="MinPerimeter">
+                  <Description>Min Perimeter</Description>
+                  <DisplayName>Min Perimeter</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x060F</AlgorithmIndex>
+                  <CurValue>10</CurValue>
+                  <DefaultValue>10</DefaultValue>
+                  <MinValue>0x1</MinValue>
+                  <MaxValue>999999999</MaxValue>
+                  <IncValue>0x1</IncValue>
+                </Integer>
+                <Integer Name="MaxPerimeter">
+                  <Description>Max Perimeter</Description>
+                  <DisplayName>Max Perimeter</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0610</AlgorithmIndex>
+                  <CurValue>999999999</CurValue>
+                  <DefaultValue>999999999</DefaultValue>
+                  <MinValue>0x1</MinValue>
+                  <MaxValue>999999999</MaxValue>
+                  <IncValue>0x1</IncValue>
+                </Integer>
+              </Integers>
+            </IntegerBettween>
+            <Boolean Name="SelectByShortAxis">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>Minor Axis Enable</Description>
+              <DisplayName>Minor Axis Enable</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <Triggers>
+                <MultiTrigger>
+                  <Conditions>
+                    <Condition>
+                      <Property>CurValue</Property>
+                      <Value>True</Value>
+                    </Condition>
+                    <Condition>
+                      <Property>CustomVisible</Property>
+                      <Value>True</Value>
+                    </Condition>
+                  </Conditions>
+                  <Setters>
+                    <Setter>
+                      <TargetName>RangShortAxis</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </MultiTrigger>
+              </Triggers>
+            </Boolean>
+            <IntegerBettween Name="RangShortAxis">
+              <Description>This Value is the range of Blob Short Axis</Description>
+              <DisplayName>Minor Axis Range</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x0001</AlgorithmIndex>
+              <DefaultValue>1000</DefaultValue>
+              <MinValue>0x1</MinValue>
+              <MaxValue>999999999</MaxValue>
+              <IncValue>0x1</IncValue>
+              <CustomVisible>False</CustomVisible>
+              <Integers>
+                <Integer Name="MinShortAxis">
+                  <Description>Min Minor Axis</Description>
+                  <DisplayName>Min Minor Axis</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0612</AlgorithmIndex>
+                  <CurValue>1</CurValue>
+                  <DefaultValue>1</DefaultValue>
+                  <MinValue>0x1</MinValue>
+                  <MaxValue>999999999</MaxValue>
+                  <IncValue>0x1</IncValue>
+                </Integer>
+                <Integer Name="MaxShortAxis">
+                  <Description>Max Minor Axis</Description>
+                  <DisplayName>Max Minor Axis</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0610</AlgorithmIndex>
+                  <CurValue>999999999</CurValue>
+                  <DefaultValue>999999999</DefaultValue>
+                  <MinValue>0x1</MinValue>
+                  <MaxValue>999999999</MaxValue>
+                  <IncValue>0x1</IncValue>
+                </Integer>
+              </Integers>
+            </IntegerBettween>
+            <Boolean Name="SelectByLongAxis">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>Major Axis Enable</Description>
+              <DisplayName>Major Axis Enable</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <Triggers>
+                <MultiTrigger>
+                  <Conditions>
+                    <Condition>
+                      <Property>CurValue</Property>
+                      <Value>True</Value>
+                    </Condition>
+                    <Condition>
+                      <Property>CustomVisible</Property>
+                      <Value>True</Value>
+                    </Condition>
+                  </Conditions>
+                  <Setters>
+                    <Setter>
+                      <TargetName>RangLongAxis</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </MultiTrigger>
+              </Triggers>
+            </Boolean>
+            <IntegerBettween Name="RangLongAxis">
+              <Description>This Value is the range of Blob Long Axis</Description>
+              <DisplayName>Major Axis Range</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x0001</AlgorithmIndex>
+              <MinValue>0x1</MinValue>
+              <MaxValue>999999999</MaxValue>
+              <IncValue>0x1</IncValue>
+              <CustomVisible>False</CustomVisible>
+              <Integers>
+                <Integer Name="MinLongAxis">
+                  <Description>Min Major Axis</Description>
+                  <DisplayName>Min Major Axis</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0615</AlgorithmIndex>
+                  <CurValue>10</CurValue>
+                  <DefaultValue>10</DefaultValue>
+                  <MinValue>0x1</MinValue>
+                  <MaxValue>999999999</MaxValue>
+                  <IncValue>0x1</IncValue>
+                </Integer>
+                <Integer Name="MaxLongAxis">
+                  <Description>Max Major Axis</Description>
+                  <DisplayName>Max Major Axis</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0616</AlgorithmIndex>
+                  <CurValue>999999999</CurValue>
+                  <DefaultValue>999999999</DefaultValue>
+                  <MinValue>0x1</MinValue>
+                  <MaxValue>999999999</MaxValue>
+                  <IncValue>0x1</IncValue>
+                </Integer>
+              </Integers>
+            </IntegerBettween>
+            <Boolean Name="SelectByCircularuty">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>Circularity Enable</Description>
+              <DisplayName>Circularity Enable</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <Triggers>
+                <MultiTrigger>
+                  <Conditions>
+                    <Condition>
+                      <Property>CurValue</Property>
+                      <Value>True</Value>
+                    </Condition>
+                    <Condition>
+                      <Property>CustomVisible</Property>
+                      <Value>True</Value>
+                    </Condition>
+                  </Conditions>
+                  <Setters>
+                    <Setter>
+                      <TargetName>RangCircularity</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </MultiTrigger>
+              </Triggers>
+            </Boolean>
+            <FloatBettween Name="RangCircularity">
+              <Description>This Value is the range of Blob Roundness</Description>
+              <DisplayName>Circularity Range</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x0001</AlgorithmIndex>
+              <DefaultValue>1</DefaultValue>
+              <MinValue>0</MinValue>
+              <MaxValue>1</MaxValue>
+              <IncValue>0.01</IncValue>
+              <CustomVisible>False</CustomVisible>
+              <Floats>
+                <Float Name="MinCircularity">
+                  <Description>Min Circularity</Description>
+                  <DisplayName>Min Circularity</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0618</AlgorithmIndex>
+                  <CurValue>0.1</CurValue>
+                  <DefaultValue>0.1</DefaultValue>
+                  <MinValue>0</MinValue>
+                  <MaxValue>1</MaxValue>
+                  <IncValue>0.01</IncValue>
+                </Float>
+                <Float Name="MaxCircularity">
+                  <Description>Max Circularity</Description>
+                  <DisplayName>Max Circularity</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0619</AlgorithmIndex>
+                  <CurValue>1</CurValue>
+                  <DefaultValue>1</DefaultValue>
+                  <MinValue>0</MinValue>
+                  <MaxValue>1</MaxValue>
+                  <IncValue>0.01</IncValue>
+                </Float>
+              </Floats>
+            </FloatBettween>
+            <Boolean Name="SelectByRectangularity">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>Rectangularity Enable</Description>
+              <DisplayName>Rectangularity Enable</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <Triggers>
+                <MultiTrigger>
+                  <Conditions>
+                    <Condition>
+                      <Property>CurValue</Property>
+                      <Value>True</Value>
+                    </Condition>
+                    <Condition>
+                      <Property>CustomVisible</Property>
+                      <Value>True</Value>
+                    </Condition>
+                  </Conditions>
+                  <Setters>
+                    <Setter>
+                      <TargetName>RangRectangularity</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </MultiTrigger>
+              </Triggers>
+            </Boolean>
+            <FloatBettween Name="RangRectangularity">
+              <Description>This Value is the range of Blob Rectangularity</Description>
+              <DisplayName>Rectangularity Range</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x0001</AlgorithmIndex>
+              <DefaultValue>1</DefaultValue>
+              <MinValue>0</MinValue>
+              <MaxValue>1</MaxValue>
+              <IncValue>0.01</IncValue>
+              <CustomVisible>False</CustomVisible>
+              <Floats>
+                <Float Name="MinRectangularity">
+                  <Description>Min Rectangularity</Description>
+                  <DisplayName>Min Rectangularity</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x061b</AlgorithmIndex>
+                  <CurValue>0.1</CurValue>
+                  <DefaultValue>0.1</DefaultValue>
+                  <MinValue>0</MinValue>
+                  <MaxValue>1</MaxValue>
+                  <IncValue>0.01</IncValue>
+                </Float>
+                <Float Name="MaxRectangularity">
+                  <Description>Max Rectangularity</Description>
+                  <DisplayName>Max Rectangularity</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x061c</AlgorithmIndex>
+                  <CurValue>1.0</CurValue>
+                  <DefaultValue>1.0</DefaultValue>
+                  <MinValue>0</MinValue>
+                  <MaxValue>1</MaxValue>
+                  <IncValue>0.01</IncValue>
+                </Float>
+              </Floats>
+            </FloatBettween>
+            <Boolean Name="SelectByCentraBias">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>Enable Checking shift between center and mass center</Description>
+              <DisplayName>RunParam_Barycenter Offset Enable</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <Triggers>
+                <MultiTrigger>
+                  <Conditions>
+                    <Condition>
+                      <Property>CurValue</Property>
+                      <Value>True</Value>
+                    </Condition>
+                    <Condition>
+                      <Property>CustomVisible</Property>
+                      <Value>True</Value>
+                    </Condition>
+                  </Conditions>
+                  <Setters>
+                    <Setter>
+                      <TargetName>RangCenterBias</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </MultiTrigger>
+              </Triggers>
+            </Boolean>
+            <FloatBettween Name="RangCenterBias">
+              <Description>This value is the range of Blob mass center shift</Description>
+              <DisplayName>RunParam_Barycenter Offset Range</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x0001</AlgorithmIndex>
+              <DefaultValue>10</DefaultValue>
+              <MinValue>0</MinValue>
+              <MaxValue>9999999.99</MaxValue>
+              <IncValue>0.01</IncValue>
+              <CustomVisible>False</CustomVisible>
+              <Floats>
+                <Float Name="MinCenterBias">
+                  <Description>Min Barycenter Offset</Description>
+                  <DisplayName>Min Barycenter Offset</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x061e</AlgorithmIndex>
+                  <CurValue>0</CurValue>
+                  <DefaultValue>0</DefaultValue>
+                  <MinValue>0</MinValue>
+                  <MaxValue>9999999.99</MaxValue>
+                  <IncValue>0.01</IncValue>
+                </Float>
+                <Float Name="MaxCenterBias">
+                  <Description>Max Barycenter Offset</Description>
+                  <DisplayName>Max Barycenter Offset</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x061f</AlgorithmIndex>
+                  <CurValue>9999999.99</CurValue>
+                  <DefaultValue>9999999.99</DefaultValue>
+                  <MinValue>0</MinValue>
+                  <MaxValue>9999999.99</MaxValue>
+                  <IncValue>0.01</IncValue>
+                </Float>
+              </Floats>
+            </FloatBettween>
+            <Boolean Name="AxisRatioEnable">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>Minor Axis/Long Axis</Description>
+              <DisplayName>RunParam_Axial Ratio</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <Triggers>
+                <MultiTrigger>
+                  <Conditions>
+                    <Condition>
+                      <Property>CurValue</Property>
+                      <Value>True</Value>
+                    </Condition>
+                    <Condition>
+                      <Property>CustomVisible</Property>
+                      <Value>True</Value>
+                    </Condition>
+                  </Conditions>
+                  <Setters>
+                    <Setter>
+                      <TargetName>AxisRatioRange</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </MultiTrigger>
+              </Triggers>
+            </Boolean>
+            <FloatBettween Name="AxisRatioRange">
+              <Description>该值是轴比范围</Description>
+              <DisplayName>RunParam_Axial Ratio</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x0001</AlgorithmIndex>
+              <DefaultValue>1</DefaultValue>
+              <MinValue>0.01</MinValue>
+              <MaxValue>1</MaxValue>
+              <IncValue>0.01</IncValue>
+              <CustomVisible>False</CustomVisible>
+              <Floats>
+                <Float Name="MinAxisRatio">
+                  <Description>MinAxis</Description>
+                  <DisplayName>MinAxis</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x061b</AlgorithmIndex>
+                  <CurValue>0.01</CurValue>
+                  <DefaultValue>0.01</DefaultValue>
+                  <MinValue>0.01</MinValue>
+                  <MinValue>0.01</MinValue>
+                  <MaxValue>1</MaxValue>
+                  <IncValue>0.01</IncValue>
+                </Float>
+                <Float Name="MaxAxisRatio">
+                  <Description>RunParam_MaxAxis</Description>
+                  <DisplayName>RunParam_MaxAxis</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x061c</AlgorithmIndex>
+                  <CurValue>1.0</CurValue>
+                  <DefaultValue>1.0</DefaultValue>
+                  <MinValue>0</MinValue>
+                  <MaxValue>1</MaxValue>
+                  <IncValue>0.01</IncValue>
+                </Float>
+              </Floats>
+            </FloatBettween>
+            <Enumeration Name="SortFeature">
+              <Description>Ranking</Description>
+              <DisplayName>Ranking</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x0621</AlgorithmIndex>
+              <CurValue>1</CurValue>
+              <DefaultValue>1</DefaultValue>
+              <CustomVisible>False</CustomVisible>
+              <EnumEntrys>
+                <EnumEntry Name="SortFeatureArea">
+                  <Description>Area</Description>
+                  <DisplayName>Area</DisplayName>
+                  <IsImplemented>0x1</IsImplemented>
+                  <Value>0x1</Value>
+                </EnumEntry>
+                <EnumEntry Name="SortFeaturePerimeter">
+                  <Description>Perimeter</Description>
+                  <DisplayName>Perimeter</DisplayName>
+                  <IsImplemented>0x1</IsImplemented>
+                  <Value>0x2</Value>
+                </EnumEntry>
+                <EnumEntry Name="SortFeatureCircularity">
+                  <Description>CircleScore</Description>
+                  <DisplayName>CircleScore</DisplayName>
+                  <IsImplemented>0x1</IsImplemented>
+                  <Value>0x3</Value>
+                </EnumEntry>
+                <EnumEntry Name="SortFeatureRect">
+                  <Description>RectScore</Description>
+                  <DisplayName>RectScore</DisplayName>
+                  <IsImplemented>0x1</IsImplemented>
+                  <Value>0x4</Value>
+                </EnumEntry>
+                <EnumEntry Name="SortFeatureCentroidX">
+                  <Description>Connectivity center X</Description>
+                  <DisplayName>Connectivity center X</DisplayName>
+                  <IsImplemented>0x1</IsImplemented>
+                  <Value>0x5</Value>
+                </EnumEntry>
+                <EnumEntry Name="SortFeatureCentroidY">
+                  <Description>Connectivity center Y</Description>
+                  <DisplayName>Connectivity center Y</DisplayName>
+                  <IsImplemented>0x1</IsImplemented>
+                  <Value>0x6</Value>
+                </EnumEntry>
+                <EnumEntry Name="SortFeatureBoxAngle">
+                  <Description>box angle</Description>
+                  <DisplayName>box angle</DisplayName>
+                  <IsImplemented>0x1</IsImplemented>
+                  <Value>0x7</Value>
+                </EnumEntry>
+                <EnumEntry Name="SortFeatureBoxWidth">
+                  <Description>box width</Description>
+                  <DisplayName>box width</DisplayName>
+                  <IsImplemented>0x1</IsImplemented>
+                  <Value>0x8</Value>
+                </EnumEntry>
+                <EnumEntry Name="SortFeatureBoxHeight">
+                  <Description>box height</Description>
+                  <DisplayName>box height</DisplayName>
+                  <IsImplemented>0x1</IsImplemented>
+                  <Value>0x9</Value>
+                </EnumEntry>
+                <EnumEntry Name="SortFeatureRectX">
+                  <Description>Rectangle left upper x</Description>
+                  <DisplayName>Rectangle left upper x</DisplayName>
+                  <IsImplemented>0x1</IsImplemented>
+                  <Value>0xA</Value>
+                </EnumEntry>
+                <EnumEntry Name="SortFeatureRectY">
+                  <Description>Rectangle left upper y</Description>
+                  <DisplayName>Rectangle left upper y</DisplayName>
+                  <IsImplemented>0x1</IsImplemented>
+                  <Value>0xB</Value>
+                </EnumEntry>
+                <EnumEntry Name="SortFeatureAxisAngle">
+                  <Description>Two step spindle angle</Description>
+                  <DisplayName>Two step spindle angle</DisplayName>
+                  <IsImplemented>0x1</IsImplemented>
+                  <Value>0xC</Value>
+                </EnumEntry>
+                <EnumEntry Name="SortFeatureAxisRatio">
+                  <Description>MinAxis / LongAxis</Description>
+                  <DisplayName>MinAxis / LongAxis</DisplayName>
+                  <IsImplemented>0x1</IsImplemented>
+                  <Value>0xD</Value>
+                </EnumEntry>
+              </EnumEntrys>
+            </Enumeration>
+            <Enumeration Name="SortMode">
+              <Description>Sort Type</Description>
+              <DisplayName>Sort Type</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x0621</AlgorithmIndex>
+              <CurValue>2</CurValue>
+              <DefaultValue>2</DefaultValue>
+              <CustomVisible>False</CustomVisible>
+              <EnumEntrys>
+                <EnumEntry Name="SortModeAscend">
+                  <Description>Grade Up</Description>
+                  <DisplayName>Grade Up</DisplayName>
+                  <IsImplemented>0x1</IsImplemented>
+                  <Value>0x1</Value>
+                </EnumEntry>
+                <EnumEntry Name="SortModeDecend">
+                  <Description>Grade Down</Description>
+                  <DisplayName>Grade Down</DisplayName>
+                  <IsImplemented>0x1</IsImplemented>
+                  <Value>0x2</Value>
+                </EnumEntry>
+                <EnumEntry Name="SortModeNotSort">
+                  <Description>Donot Grade</Description>
+                  <DisplayName>Donot Grade</DisplayName>
+                  <IsImplemented>0x1</IsImplemented>
+                  <Value>0x3</Value>
+                </EnumEntry>
+              </EnumEntrys>
+            </Enumeration>
+            <Enumeration Name="connectivity">
+              <Description>Connectivity </Description>
+              <DisplayName>Connectivity </DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x060B</AlgorithmIndex>
+              <CurValue>0x8</CurValue>
+              <DefaultValue>0x8</DefaultValue>
+              <CustomVisible>False</CustomVisible>
+              <EnumEntrys>
+                <EnumEntry Name="Connected_8">
+                  <Description>8-connected</Description>
+                  <DisplayName>8-connected</DisplayName>
+                  <IsImplemented>0x1</IsImplemented>
+                  <Value>0x8</Value>
+                </EnumEntry>
+                <EnumEntry Name="Connected_4">
+                  <Description>4-connected</Description>
+                  <DisplayName>4-connected</DisplayName>
+                  <IsImplemented>0x1</IsImplemented>
+                  <Value>0x4</Value>
+                </EnumEntry>
+              </EnumEntrys>
+            </Enumeration>
+			<Integer Name="MaxAreaInnerRectNum">
+              <Description>RunParam_MaxAreaInnerRectNum</Description>
+              <DisplayName>RunParam_MaxAreaInnerRectNum</DisplayName>
+              <AccessMode>RW</AccessMode>
+			  <CustomVisible>False</CustomVisible>
+              <AlgorithmIndex>0x2064A</AlgorithmIndex>
+              <CurValue>0x0</CurValue>
+              <DefaultValue>0x0</DefaultValue>
+              <MinValue>0x0</MinValue>
+              <MaxValue>10</MaxValue>
+              <IncValue>0x1</IncValue>
+            </Integer>
+			<Integer Name="OverlapRatio">
+              <Description>MinOverlap</Description>
+              <DisplayName>MinOverlap</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <AlgorithmIndex>0x0622</AlgorithmIndex>
+              <CurValue>0</CurValue>
+              <DefaultValue>0</DefaultValue>
+              <MinValue>0</MinValue>
+              <MaxValue>100</MaxValue>
+              <IncValue>1</IncValue>
+            </Integer>
+            <Boolean Name="MaxOutPixelNumEnable">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>RunParam_MaxOutPixelNumEnable</Description>
+              <DisplayName>RunParam_MaxOutPixelNumEnable</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <Triggers>
+                <MultiTrigger>
+                  <Conditions>
+                    <Condition>
+                      <Property>CurValue</Property>
+                      <Value>True</Value>
+                    </Condition>
+                    <Condition>
+                      <Property>CustomVisible</Property>
+                      <Value>True</Value>
+                    </Condition>
+                  </Conditions>
+                  <Setters>
+                    <Setter>
+                      <TargetName>MaxOutPixelNum</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </MultiTrigger>
+              </Triggers>
+            </Boolean>
+			<Integer Name="MaxOutPixelNum">
+              <Description>MaxOutPixelNum</Description>
+              <DisplayName>MaxOutPixelNum</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <AlgorithmIndex>0x0622</AlgorithmIndex>
+              <CurValue>0</CurValue>
+              <DefaultValue>0</DefaultValue>
+              <MinValue>0</MinValue>
+              <MaxValue>9000000</MaxValue>
+              <IncValue>1</IncValue>
+            </Integer>
+          </Items>
+        </Category>
+      </Categorys>
+    </Tab>
+    <Tab Name="ResultShow">
+      <Categorys>
+        <Category Name="Tab_Check Result" SubscribeVisible="False" CanTriggerRun = "TRUE">
+          <Items>
+            <Boolean Name="OKWhenNumIsZero">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>OKWhenNumIsZero</Description>
+              <DisplayName>OKWhenNumIsZero</DisplayName>
+              <AccessMode>RW</AccessMode>
+            </Boolean>
+            <Boolean Name="BlobNumLimitEnable">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>Blob Number Check</Description>
+              <DisplayName>Blob Number Check</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <Triggers>
+                <Trigger>
+                  <Property>CurValue</Property>
+                  <Value>False</Value>
+                  <Setters>
+                    <Setter>
+                      <TargetName>RangBlobNumLimit</TargetName>
+                      <OperationName>HiddenOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </Trigger>
+              </Triggers>
+            </Boolean>
+            <IntegerBettween Name="RangBlobNumLimit">
+              <Description>Blob Number Range</Description>
+              <DisplayName>Blob Number Range</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x000</AlgorithmIndex>
+              <DefaultValue>1</DefaultValue>
+              <MinValue>1</MinValue>
+              <MaxValue>99999</MaxValue>
+              <IncValue>1</IncValue>
+              <Integers>
+                <Integer Name="BlobNumLimitLow">
+                  <Description>Blob Number Lower Limit</Description>
+                  <DisplayName>Blob Number Lower Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>1</CurValue>
+                  <DefaultValue>1</DefaultValue>
+                  <MinValue>1</MinValue>
+                  <MaxValue>99999</MaxValue>
+                  <IncValue>1</IncValue>
+                </Integer>
+                <Integer Name="BlobNumLimitHigh">
+                  <Description>Blob Number Upper Limit</Description>
+                  <DisplayName>Blob Number Upper Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>99999</CurValue>
+                  <DefaultValue>99999</DefaultValue>
+                  <MinValue>0</MinValue>
+                  <MaxValue>99999</MaxValue>
+                  <IncValue>1</IncValue>
+                </Integer>
+              </Integers>
+            </IntegerBettween>
+            <Boolean Name="BlobAreaLimitEnable">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>Blob Area Check</Description>
+              <DisplayName>Blob Area Check</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <Triggers>
+                <Trigger>
+                  <Property>CurValue</Property>
+                  <Value>False</Value>
+                  <Setters>
+                    <Setter>
+                      <TargetName>RangBlobAreaLimit</TargetName>
+                      <OperationName>HiddenOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </Trigger>
+              </Triggers>
+            </Boolean>
+            <FloatBettween Name="RangBlobAreaLimit">
+              <Description>Blob Area Range</Description>
+              <DisplayName>Blob Area Range</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x000</AlgorithmIndex>
+              <DefaultValue>99999</DefaultValue>
+              <MinValue>1</MinValue>
+              <MaxValue>999999999</MaxValue>
+              <IncValue>1</IncValue>
+              <Floats>
+                <Float Name="BlobAreaLimitLow">
+                  <Description>Blob Area Lower Limit</Description>
+                  <DisplayName>Blob Area Lower Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>1</CurValue>
+                  <DefaultValue>1</DefaultValue>
+                  <MinValue>1</MinValue>
+                  <MaxValue>999999999</MaxValue>
+                  <IncValue>1</IncValue>
+                </Float>
+                <Float Name="BlobAreaLimitHigh">
+                  <Description>Blob Area Upper Limit</Description>
+                  <DisplayName>Blob Area Upper Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>999999999</CurValue>
+                  <DefaultValue>999999999</DefaultValue>
+                  <MinValue>1</MinValue>
+                  <MaxValue>999999999</MaxValue>
+                  <IncValue>1</IncValue>
+                </Float>
+              </Floats>
+            </FloatBettween>
+            <Boolean Name="BlobTotalAreaLimitEnable">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>Blob Total Area Check</Description>
+              <DisplayName>RunParam_Blob Total Area Check</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <Triggers>
+                <Trigger>
+                  <Property>CurValue</Property>
+                  <Value>False</Value>
+                  <Setters>
+                    <Setter>
+                      <TargetName>RangBlobTotalAreaLimit</TargetName>
+                      <OperationName>HiddenOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </Trigger>
+              </Triggers>
+            </Boolean>
+            <FloatBettween Name="RangBlobTotalAreaLimit">
+              <Description>Blob Total Area Range</Description>
+              <DisplayName>RunParam_Blob Total Area Range</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x000</AlgorithmIndex>
+              <DefaultValue>99999</DefaultValue>
+              <MinValue>1</MinValue>
+              <MaxValue>999999999</MaxValue>
+              <IncValue>1</IncValue>
+              <Floats>
+                <Float Name="BlobTotalAreaLimitLow">
+                  <Description>Blob Total Area Lower Limit</Description>
+                  <DisplayName>Blob Total Area Lower Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>1</CurValue>
+                  <DefaultValue>1</DefaultValue>
+                  <MinValue>1</MinValue>
+                  <MaxValue>999999999</MaxValue>
+                  <IncValue>1</IncValue>
+                </Float>
+                <Float Name="BlobTotalAreaLimitHigh">
+                  <Description>Blob Total Area Upper Limit</Description>
+                  <DisplayName>Blob Total Area Upper Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>999999999</CurValue>
+                  <DefaultValue>999999999</DefaultValue>
+                  <MinValue>1</MinValue>
+                  <MaxValue>999999999</MaxValue>
+                  <IncValue>1</IncValue>
+                </Float>
+              </Floats>
+            </FloatBettween>
+            <Expand>
+              <CurValue>False</CurValue>
+              <Triggers>
+                <Trigger>
+                  <Property>CurValue</Property>
+                  <Value>True</Value>
+                  <Setters>
+                    <Setter>
+                      <TargetName>CentroidXLimitEnable</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>CentroidYLimitEnable</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>AngleLimitEnable</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>CenterXLimitEnable</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>CenterYLimitEnable</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>BoxHeightLimitEnable</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>BoxWidthLimitEnable</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>PerimeterLimitEnable</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>LongAxisLimitEnable</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>ShortAxisLimitEnable</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>CircularityLimitEnable</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>RectangularityLimitEnable</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                    <Setter>
+                      <TargetName>ScoreLimitEnable</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </Trigger>
+              </Triggers>
+            </Expand>
+            <Boolean Name="CentroidXLimitEnable">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>Barycenter X Check</Description>
+              <DisplayName>Barycenter X Check</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <Triggers>
+                <MultiTrigger>
+                  <Conditions>
+                    <Condition>
+                      <Property>CurValue</Property>
+                      <Value>True</Value>
+                    </Condition>
+                    <Condition>
+                      <Property>CustomVisible</Property>
+                      <Value>True</Value>
+                    </Condition>
+                  </Conditions>
+                  <Setters>
+                    <Setter>
+                      <TargetName>RangCentroidXLimit</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </MultiTrigger>
+              </Triggers>
+            </Boolean>
+            <FloatBettween Name="RangCentroidXLimit">
+              <Description>Barycenter X Range</Description>
+              <DisplayName>Barycenter X Range</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x000</AlgorithmIndex>
+              <DefaultValue>99999</DefaultValue>
+              <MinValue>-99999</MinValue>
+              <MaxValue>99999</MaxValue>
+              <IncValue>1</IncValue>
+              <CustomVisible>False</CustomVisible>
+              <Floats>
+                <Float Name="CentroidXLimitLow">
+                  <Description>Barycenter X Lower Limit</Description>
+                  <DisplayName>Barycenter X Lower Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>-99999</CurValue>
+                  <DefaultValue>-99999</DefaultValue>
+                  <MinValue>-99999</MinValue>
+                  <MaxValue>99999</MaxValue>
+                  <IncValue>1</IncValue>
+                </Float>
+                <Float Name="CentroidXLimitHigh">
+                  <Description>Barycenter X Upper Limit</Description>
+                  <DisplayName>Barycenter X Upper Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>99999</CurValue>
+                  <DefaultValue>99999</DefaultValue>
+                  <MinValue>-99999</MinValue>
+                  <MaxValue>99999</MaxValue>
+                  <IncValue>1</IncValue>
+                </Float>
+              </Floats>
+            </FloatBettween>
+            <Boolean Name="CentroidYLimitEnable">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>Barycenter Y Check</Description>
+              <DisplayName>Barycenter Y Check</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <Triggers>
+                <MultiTrigger>
+                  <Conditions>
+                    <Condition>
+                      <Property>CurValue</Property>
+                      <Value>True</Value>
+                    </Condition>
+                    <Condition>
+                      <Property>CustomVisible</Property>
+                      <Value>True</Value>
+                    </Condition>
+                  </Conditions>
+                  <Setters>
+                    <Setter>
+                      <TargetName>RangCentroidYLimit</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </MultiTrigger>
+              </Triggers>
+            </Boolean>
+            <FloatBettween Name="RangCentroidYLimit">
+              <Description>Barycenter Y Range</Description>
+              <DisplayName>Barycenter Y Range</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x000</AlgorithmIndex>
+              <DefaultValue>99999</DefaultValue>
+              <MinValue>-99999</MinValue>
+              <MaxValue>99999</MaxValue>
+              <IncValue>1</IncValue>
+              <CustomVisible>False</CustomVisible>
+              <Floats>
+                <Float Name="CentroidYLimitLow">
+                  <Description>Barycenter Y Lower Limit</Description>
+                  <DisplayName>Barycenter Y Lower Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>-99999</CurValue>
+                  <DefaultValue>-99999</DefaultValue>
+                  <MinValue>-99999</MinValue>
+                  <MaxValue>99999</MaxValue>
+                  <IncValue>1</IncValue>
+                </Float>
+                <Float Name="CentroidYLimitHigh">
+                  <Description>Barycenter Y Upper Limit</Description>
+                  <DisplayName>Barycenter Y Upper Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>99999</CurValue>
+                  <DefaultValue>99999</DefaultValue>
+                  <MinValue>-99999</MinValue>
+                  <MaxValue>99999</MaxValue>
+                  <IncValue>1</IncValue>
+                </Float>
+              </Floats>
+            </FloatBettween>
+            <Boolean Name="AngleLimitEnable">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>RunParam_BoxAngle Check</Description>
+              <DisplayName>RunParam_BoxAngle Check</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <Triggers>
+                <MultiTrigger>
+                  <Conditions>
+                    <Condition>
+                      <Property>CurValue</Property>
+                      <Value>True</Value>
+                    </Condition>
+                    <Condition>
+                      <Property>CustomVisible</Property>
+                      <Value>True</Value>
+                    </Condition>
+                  </Conditions>
+                  <Setters>
+                    <Setter>
+                      <TargetName>RangAngleLimit</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </MultiTrigger>
+              </Triggers>
+            </Boolean>
+            <FloatBettween Name="RangAngleLimit">
+              <Description>RunParam_BoxAngle Range</Description>
+              <DisplayName>RunParam_BoxAngle Range</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x000</AlgorithmIndex>
+              <DefaultValue>100</DefaultValue>
+              <MinValue>-180</MinValue>
+              <MaxValue>180</MaxValue>
+              <IncValue>0.1</IncValue>
+              <CustomVisible>False</CustomVisible>
+              <Floats>
+                <Float Name="AngleLimitLow">
+                  <Description>Angle Lowe Limit</Description>
+                  <DisplayName>Angle Lowe Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>-180</CurValue>
+                  <DefaultValue>-180</DefaultValue>
+                  <MinValue>-180</MinValue>
+                  <MaxValue>180</MaxValue>
+                  <IncValue>0.1</IncValue>
+                </Float>
+                <Float Name="AngleLimitHigh">
+                  <Description>Angle Upper Limit</Description>
+                  <DisplayName>Angle Upper Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>180</CurValue>
+                  <DefaultValue>180</DefaultValue>
+                  <MinValue>-180</MinValue>
+                  <MaxValue>180</MaxValue>
+                  <IncValue>0.1</IncValue>
+                </Float>
+              </Floats>
+            </FloatBettween>
+            <Boolean Name="CenterXLimitEnable">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>Center X Check</Description>
+              <DisplayName>Center X Check</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <Triggers>
+                <MultiTrigger>
+                  <Conditions>
+                    <Condition>
+                      <Property>CurValue</Property>
+                      <Value>True</Value>
+                    </Condition>
+                    <Condition>
+                      <Property>CustomVisible</Property>
+                      <Value>True</Value>
+                    </Condition>
+                  </Conditions>
+                  <Setters>
+                    <Setter>
+                      <TargetName>RangCenterXLimit</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </MultiTrigger>
+              </Triggers>
+            </Boolean>
+            <FloatBettween Name="RangCenterXLimit">
+              <Description>Center X Range</Description>
+              <DisplayName>Center X Range</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x000</AlgorithmIndex>
+              <DefaultValue>99999</DefaultValue>
+              <MinValue>-99999</MinValue>
+              <MaxValue>99999</MaxValue>
+              <IncValue>1</IncValue>
+              <CustomVisible>False</CustomVisible>
+              <Floats>
+                <Float Name="CenterXLimitLow">
+                  <Description>Center X Lower Limit</Description>
+                  <DisplayName>Center X Lower Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>-99999</CurValue>
+                  <DefaultValue>-99999</DefaultValue>
+                  <MinValue>-99999</MinValue>
+                  <MaxValue>99999</MaxValue>
+                  <IncValue>1</IncValue>
+                </Float>
+                <Float Name="CenterXLimitHigh">
+                  <Description>Center X Upper Limit</Description>
+                  <DisplayName>Center X Upper Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>99999</CurValue>
+                  <DefaultValue>99999</DefaultValue>
+                  <MinValue>-99999</MinValue>
+                  <MaxValue>99999</MaxValue>
+                  <IncValue>1</IncValue>
+                </Float>
+              </Floats>
+            </FloatBettween>
+            <Boolean Name="CenterYLimitEnable">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>Center Y Check</Description>
+              <DisplayName>Center Y Check</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <Triggers>
+                <MultiTrigger>
+                  <Conditions>
+                    <Condition>
+                      <Property>CurValue</Property>
+                      <Value>True</Value>
+                    </Condition>
+                    <Condition>
+                      <Property>CustomVisible</Property>
+                      <Value>True</Value>
+                    </Condition>
+                  </Conditions>
+                  <Setters>
+                    <Setter>
+                      <TargetName>RangCenterYLimit</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </MultiTrigger>
+              </Triggers>
+            </Boolean>
+            <FloatBettween Name="RangCenterYLimit">
+              <Description>Center Y Range</Description>
+              <DisplayName>Center Y Range</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x000</AlgorithmIndex>
+              <DefaultValue>99999</DefaultValue>
+              <MinValue>-99999</MinValue>
+              <MaxValue>99999</MaxValue>
+              <IncValue>1</IncValue>
+              <CustomVisible>False</CustomVisible>
+              <Floats>
+                <Float Name="CenterYLimitLow">
+                  <Description>Center Y Lower Limit</Description>
+                  <DisplayName>Center Y Lower Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>-99999</CurValue>
+                  <DefaultValue>-99999</DefaultValue>
+                  <MinValue>-99999</MinValue>
+                  <MaxValue>99999</MaxValue>
+                  <IncValue>1</IncValue>
+                </Float>
+                <Float Name="CenterYLimitHigh">
+                  <Description>Center Y Upper Limit</Description>
+                  <DisplayName>Center Y Upper Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>99999</CurValue>
+                  <DefaultValue>99999</DefaultValue>
+                  <MinValue>-99999</MinValue>
+                  <MaxValue>99999</MaxValue>
+                  <IncValue>1</IncValue>
+                </Float>
+              </Floats>
+            </FloatBettween>
+            <Boolean Name="BoxHeightLimitEnable">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>Box Height Check</Description>
+              <DisplayName>Box Height Check</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <Triggers>
+                <MultiTrigger>
+                  <Conditions>
+                    <Condition>
+                      <Property>CurValue</Property>
+                      <Value>True</Value>
+                    </Condition>
+                    <Condition>
+                      <Property>CustomVisible</Property>
+                      <Value>True</Value>
+                    </Condition>
+                  </Conditions>
+                  <Setters>
+                    <Setter>
+                      <TargetName>BoxHeightLimit</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </MultiTrigger>
+              </Triggers>
+            </Boolean>
+            <FloatBettween Name="BoxHeightLimit">
+              <Description>Surrending Box Height Range</Description>
+              <DisplayName>RunParam_Box Height Range</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x000</AlgorithmIndex>
+              <DefaultValue>99999</DefaultValue>
+              <MinValue>1</MinValue>
+              <MaxValue>99999</MaxValue>
+              <IncValue>1</IncValue>
+              <CustomVisible>False</CustomVisible>
+              <Floats>
+                <Float Name="BoxHeightLimitLow">
+                  <Description>Surrending Box Height Lower Limit</Description>
+                  <DisplayName>RunParam_Box Height Lower Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>1</CurValue>
+                  <DefaultValue>1</DefaultValue>
+                  <MinValue>1</MinValue>
+                  <MaxValue>99999</MaxValue>
+                  <IncValue>1</IncValue>
+                </Float>
+                <Float Name="BoxHeightLimitHigh">
+                  <Description>Surrending Box Height Upper Limit</Description>
+                  <DisplayName>RunParam_Box Height Upper Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>99999</CurValue>
+                  <DefaultValue>99999</DefaultValue>
+                  <MinValue>1</MinValue>
+                  <MaxValue>99999</MaxValue>
+                  <IncValue>1</IncValue>
+                </Float>
+              </Floats>
+            </FloatBettween>
+            <Boolean Name="BoxWidthLimitEnable">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>Surrending Box Width Check</Description>
+              <DisplayName>RunParam_Box Width Check</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <Triggers>
+                <MultiTrigger>
+                  <Conditions>
+                    <Condition>
+                      <Property>CurValue</Property>
+                      <Value>True</Value>
+                    </Condition>
+                    <Condition>
+                      <Property>CustomVisible</Property>
+                      <Value>True</Value>
+                    </Condition>
+                  </Conditions>
+                  <Setters>
+                    <Setter>
+                      <TargetName>BoxWidthLimit</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </MultiTrigger>
+              </Triggers>
+            </Boolean>
+            <FloatBettween Name="BoxWidthLimit">
+              <Description>Surrending Box Width Range</Description>
+              <DisplayName>RunParam_Box Width Range</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x000</AlgorithmIndex>
+              <DefaultValue>99999</DefaultValue>
+              <MinValue>1</MinValue>
+              <MaxValue>99999</MaxValue>
+              <IncValue>1</IncValue>
+              <CustomVisible>False</CustomVisible>
+              <Floats>
+                <Float Name="BoxWidthLimitLow">
+                  <Description>Surrending Box Width Lower Limit</Description>
+                  <DisplayName>RunParam_Box Width Lower Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>1</CurValue>
+                  <DefaultValue>1</DefaultValue>
+                  <MinValue>1</MinValue>
+                  <MaxValue>99999</MaxValue>
+                  <IncValue>1</IncValue>
+                </Float>
+                <Float Name="BoxWidthLimitHigh">
+                  <Description>Surrending Box Width Upper Limit</Description>
+                  <DisplayName>RunParam_Box Width Upper Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>99999</CurValue>
+                  <DefaultValue>99999</DefaultValue>
+                  <MinValue>1</MinValue>
+                  <MaxValue>99999</MaxValue>
+                  <IncValue>1</IncValue>
+                </Float>
+              </Floats>
+            </FloatBettween>
+            <Boolean Name="PerimeterLimitEnable">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>Perimeter Check</Description>
+              <DisplayName>Perimeter Check</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <Triggers>
+                <MultiTrigger>
+                  <Conditions>
+                    <Condition>
+                      <Property>CurValue</Property>
+                      <Value>True</Value>
+                    </Condition>
+                    <Condition>
+                      <Property>CustomVisible</Property>
+                      <Value>True</Value>
+                    </Condition>
+                  </Conditions>
+                  <Setters>
+                    <Setter>
+                      <TargetName>RangPerimeterLimit</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </MultiTrigger>
+              </Triggers>
+            </Boolean>
+            <FloatBettween Name="RangPerimeterLimit">
+              <Description>Perimeter Range</Description>
+              <DisplayName>Perimeter Range</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x000</AlgorithmIndex>
+              <DefaultValue>1000000</DefaultValue>
+              <MinValue>1</MinValue>
+              <MaxValue>999999999</MaxValue>
+              <IncValue>1</IncValue>
+              <CustomVisible>False</CustomVisible>
+              <Floats>
+                <Float Name="PerimeterLimitLow">
+                  <Description>Perimeter Lower Limit</Description>
+                  <DisplayName>Perimeter Lower Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>1</CurValue>
+                  <DefaultValue>1</DefaultValue>
+                  <MinValue>1</MinValue>
+                  <MaxValue>999999999</MaxValue>
+                  <IncValue>1</IncValue>
+                </Float>
+                <Float Name="PerimeterLimitHigh">
+                  <Description>Perimeter Upper Limit</Description>
+                  <DisplayName>Perimeter Upper Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>999999999</CurValue>
+                  <DefaultValue>999999999</DefaultValue>
+                  <MinValue>1</MinValue>
+                  <MaxValue>999999999</MaxValue>
+                  <IncValue>1</IncValue>
+                </Float>
+              </Floats>
+            </FloatBettween>
+            <Boolean Name="LongAxisLimitEnable">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>Major Axis Check</Description>
+              <DisplayName>Major Axis Check</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <Triggers>
+                <MultiTrigger>
+                  <Conditions>
+                    <Condition>
+                      <Property>CurValue</Property>
+                      <Value>True</Value>
+                    </Condition>
+                    <Condition>
+                      <Property>CustomVisible</Property>
+                      <Value>True</Value>
+                    </Condition>
+                  </Conditions>
+                  <Setters>
+                    <Setter>
+                      <TargetName>RangLongAxisLimit</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </MultiTrigger>
+              </Triggers>
+            </Boolean>
+            <FloatBettween Name="RangLongAxisLimit">
+              <Description>Major Axis Range</Description>
+              <DisplayName>Major Axis Range</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x000</AlgorithmIndex>
+              <DefaultValue>1000000</DefaultValue>
+              <MinValue>1</MinValue>
+              <MaxValue>999999999</MaxValue>
+              <IncValue>1</IncValue>
+              <CustomVisible>False</CustomVisible>
+              <Floats>
+                <Float Name="LongAxisLimitLow">
+                  <Description>Major Axis Lower Limit</Description>
+                  <DisplayName>Major Axis Lower Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>1</CurValue>
+                  <DefaultValue>1</DefaultValue>
+                  <MinValue>1</MinValue>
+                  <MaxValue>999999999</MaxValue>
+                  <IncValue>1</IncValue>
+                </Float>
+                <Float Name="LongAxisLimitHigh">
+                  <Description>Major Axis Upper Limit</Description>
+                  <DisplayName>Major Axis Upper Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>999999999</CurValue>
+                  <DefaultValue>999999999</DefaultValue>
+                  <MinValue>1</MinValue>
+                  <MaxValue>999999999</MaxValue>
+                  <IncValue>1</IncValue>
+                </Float>
+              </Floats>
+            </FloatBettween>
+            <Boolean Name="ShortAxisLimitEnable">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>Minor Axis Check</Description>
+              <DisplayName>Minor Axis Check</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <Triggers>
+                <MultiTrigger>
+                  <Conditions>
+                    <Condition>
+                      <Property>CurValue</Property>
+                      <Value>True</Value>
+                    </Condition>
+                    <Condition>
+                      <Property>CustomVisible</Property>
+                      <Value>True</Value>
+                    </Condition>
+                  </Conditions>
+                  <Setters>
+                    <Setter>
+                      <TargetName>RangShortAxisLimit</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </MultiTrigger>
+              </Triggers>
+            </Boolean>
+            <FloatBettween Name="RangShortAxisLimit">
+              <Description>Minor Axis Range</Description>
+              <DisplayName>Minor Axis Range</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x000</AlgorithmIndex>
+              <DefaultValue>1000000</DefaultValue>
+              <MinValue>1</MinValue>
+              <MaxValue>999999999</MaxValue>
+              <IncValue>1</IncValue>
+              <CustomVisible>False</CustomVisible>
+              <Floats>
+                <Float Name="ShortAxisLimitLow">
+                  <Description>Minor Axis Lower Limit</Description>
+                  <DisplayName>Minor Axis Lower Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>1</CurValue>
+                  <DefaultValue>1</DefaultValue>
+                  <MinValue>1</MinValue>
+                  <MaxValue>999999999</MaxValue>
+                  <IncValue>1</IncValue>
+                </Float>
+                <Float Name="ShortAxisLimitHigh">
+                  <Description>Minor Axis Upper Limit</Description>
+                  <DisplayName>Minor Axis Upper Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>999999999</CurValue>
+                  <DefaultValue>999999999</DefaultValue>
+                  <MinValue>1</MinValue>
+                  <MaxValue>999999999</MaxValue>
+                  <IncValue>1</IncValue>
+                </Float>
+              </Floats>
+            </FloatBettween>
+            <Boolean Name="CircularityLimitEnable">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>Circularity Check</Description>
+              <DisplayName>Circularity Check</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <Triggers>
+                <MultiTrigger>
+                  <Conditions>
+                    <Condition>
+                      <Property>CurValue</Property>
+                      <Value>True</Value>
+                    </Condition>
+                    <Condition>
+                      <Property>CustomVisible</Property>
+                      <Value>True</Value>
+                    </Condition>
+                  </Conditions>
+                  <Setters>
+                    <Setter>
+                      <TargetName>RangCircularityLimit</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </MultiTrigger>
+              </Triggers>
+            </Boolean>
+            <FloatBettween Name="RangCircularityLimit">
+              <Description>Circularity Range</Description>
+              <DisplayName>Circularity Range</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x000</AlgorithmIndex>
+              <DefaultValue>100</DefaultValue>
+              <MinValue>0</MinValue>
+              <MaxValue>1</MaxValue>
+              <IncValue>0.01</IncValue>
+              <CustomVisible>False</CustomVisible>
+              <Floats>
+                <Float Name="CircularityLimitLow">
+                  <Description>Circularity Lower Limit</Description>
+                  <DisplayName>Circularity Lower Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>0</CurValue>
+                  <DefaultValue>0</DefaultValue>
+                  <MinValue>0</MinValue>
+                  <MaxValue>1</MaxValue>
+                  <IncValue>0.01</IncValue>
+                </Float>
+                <Float Name="CircularityLimitHigh">
+                  <Description>Circularity Upper Limit</Description>
+                  <DisplayName>Circularity Upper Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>1</CurValue>
+                  <DefaultValue>1</DefaultValue>
+                  <MinValue>0</MinValue>
+                  <MaxValue>1</MaxValue>
+                  <IncValue>0.01</IncValue>
+                </Float>
+              </Floats>
+            </FloatBettween>
+            <Boolean Name="RectangularityLimitEnable">
+              <AlgorithmIndex>0</AlgorithmIndex>
+              <CurValue>False</CurValue>
+              <DefaultValue>False</DefaultValue>
+              <Description>Rectangularity Check</Description>
+              <DisplayName>Rectangularity Check</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <Triggers>
+                <MultiTrigger>
+                  <Conditions>
+                    <Condition>
+                      <Property>CurValue</Property>
+                      <Value>True</Value>
+                    </Condition>
+                    <Condition>
+                      <Property>CustomVisible</Property>
+                      <Value>True</Value>
+                    </Condition>
+                  </Conditions>
+                  <Setters>
+                    <Setter>
+                      <TargetName>RangRectangularityLimit</TargetName>
+                      <OperationName>VisibleOperation</OperationName>
+                    </Setter>
+                  </Setters>
+                </MultiTrigger>
+              </Triggers>
+            </Boolean>
+            <FloatBettween Name="RangRectangularityLimit">
+              <Description>Rectangularity Range</Description>
+              <DisplayName>Rectangularity Range</DisplayName>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x000</AlgorithmIndex>
+              <DefaultValue>100</DefaultValue>
+              <MinValue>0</MinValue>
+              <MaxValue>1</MaxValue>
+              <IncValue>0.01</IncValue>
+              <CustomVisible>False</CustomVisible>
+              <Floats>
+                <Float Name="RectangularityLimitLow">
+                  <Description>Rectangularity Lower Limit</Description>
+                  <DisplayName>Rectangularity Lower Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>0</CurValue>
+                  <DefaultValue>0</DefaultValue>
+                  <MinValue>0</MinValue>
+                  <MaxValue>1</MaxValue>
+                  <IncValue>0.01</IncValue>
+                </Float>
+                <Float Name="RectangularityLimitHigh">
+                  <Description>Rectangularity Upper Limit</Description>
+                  <DisplayName>Rectangularity Upper Limit</DisplayName>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>1</CurValue>
+                  <DefaultValue>1</DefaultValue>
+                  <MinValue>0</MinValue>
+                  <MaxValue>1</MaxValue>
+                  <IncValue>0.01</IncValue>
+                </Float>
+              </Floats>
+            </FloatBettween>
+            <!-- <Boolean Name="ScoreLimitEnable" NameSpace="Standard"> -->
+            <!-- <AlgorithmIndex>0</AlgorithmIndex> -->
+            <!-- <CurValue>False</CurValue> -->
+            <!-- <DefaultValue>False</DefaultValue> -->
+            <!-- <Description>Score Check</Description> -->
+            <!-- <DisplayName>Score Check</DisplayName> -->
+            <!-- <Visibility>Expert</Visibility> -->
+            <!-- <AccessMode>RW</AccessMode> -->
+            <!-- <CustomVisible>False</CustomVisible> -->
+            <!-- <Triggers> -->
+            <!-- <MultiTrigger> -->
+            <!-- <Conditions> -->
+            <!-- <Condition> -->
+            <!-- <Property>CurValue</Property> -->
+            <!-- <Value>True</Value> -->
+            <!-- </Condition> -->
+            <!-- <Condition> -->
+            <!-- <Property>CustomVisible</Property> -->
+            <!-- <Value>True</Value> -->
+            <!-- </Condition> -->
+            <!-- </Conditions> -->
+            <!-- <Setters> -->
+            <!-- <Setter> -->
+            <!-- <TargetName>RangScoreLimit</TargetName> -->
+            <!-- <OperationName>VisibleOperation</OperationName> -->
+            <!-- </Setter> -->
+            <!-- </Setters> -->
+            <!-- </MultiTrigger> -->
+            <!-- </Triggers> -->
+            <!-- </Boolean> -->
+            <!-- <FloatBettween Name="RangScoreLimit" NameSpace="Standard">
+              <Description>Score Range</Description>
+              <DisplayName>Score Range</DisplayName>
+              <Visibility>Expert</Visibility>
+              <AccessMode>RW</AccessMode>
+              <AlgorithmIndex>0x000</AlgorithmIndex>
+              <DefaultValue>100</DefaultValue>
+              <MinValue>0</MinValue>
+              <MaxValue>1</MaxValue>
+              <IncValue>0.01</IncValue>
+              <CustomVisible>False</CustomVisible>
+              <Floats>
+                <Float Name="ScoreLimitLow" NameSpace="Standard">
+                  <Description>Score Lower Limit</Description>
+                  <DisplayName>Score Lower Limit</DisplayName>
+                  <Visibility>Expert</Visibility>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>0</CurValue>
+                  <DefaultValue>0</DefaultValue>
+                  <MinValue>0</MinValue>
+                  <MaxValue>1</MaxValue>
+                  <IncValue>0.01</IncValue>
+                </Float>
+                <Float Name="ScoreLimitHigh" NameSpace="Standard">
+                  <Description>Score Upper Limit</Description>
+                  <DisplayName>Score Upper Limit</DisplayName>
+                  <Visibility>Expert</Visibility>
+                  <AccessMode>RW</AccessMode>
+                  <AlgorithmIndex>0x0</AlgorithmIndex>
+                  <CurValue>1</CurValue>
+                  <DefaultValue>1</DefaultValue>
+                  <MinValue>0</MinValue>
+                  <MaxValue>1</MaxValue>
+                  <IncValue>0.01</IncValue>
+                </Float>
+              </Floats>
+            </FloatBettween> -->
+          </Items>
+        </Category>
+        <Category Name="Tab_Image Display">
+          <Items>
+            <ImageViewConfig Name="BlobFiled">
+              <Description>Blob</Description>
+              <DisplayName>Blob</DisplayName>
+              <AccessMode>O</AccessMode>
+              <BrigdgeSetter>
+                <TargetName>BridgeObj</TargetName>
+                <OperationName>GetDisplayObjectOperation</OperationName>
+                <OperationParams>Blob</OperationParams>
+              </BrigdgeSetter>
+            </ImageViewConfig>
+			<ImageViewConfig Name="BlobMaxAreaInnerRect">
+              <Description>Blob Max Area Inner Rect</Description>
+              <DisplayName>Blob Max Area Inner Rect</DisplayName>
+              <AccessMode>O</AccessMode>
+              <BrigdgeSetter>
+                <TargetName>BridgeObj</TargetName>
+                <OperationName>GetDisplayObjectOperation</OperationName>
+                <OperationParams>Blob Max Area Inner Rect</OperationParams>
+              </BrigdgeSetter>
+            </ImageViewConfig>
+            <ImageViewConfig Name="CheckZone">
+              <Description>ROI</Description>
+              <DisplayName>ROI</DisplayName>
+              <AccessMode>O</AccessMode>
+              <BrigdgeSetter>
+                <TargetName>BridgeObj</TargetName>
+                <OperationName>GetDisplayObjectOperation</OperationName>
+                <OperationParams>ROI</OperationParams>
+              </BrigdgeSetter>
+            </ImageViewConfig>
+            <ImageViewConfig Name="MatchLocation">
+              <Description>Contour Point</Description>
+              <DisplayName>Contour Point</DisplayName>
+              <PanVisible>False</PanVisible>
+              <AccessMode>O</AccessMode>
+              <BrigdgeSetter>
+                <TargetName>BridgeObj</TargetName>
+                <OperationName>GetDisplayObjectOperation</OperationName>
+                <OperationParams>Contour Point</OperationParams>
+              </BrigdgeSetter>
+            </ImageViewConfig>
+            <ImageViewConfig Name="FixtureInitPoint">
+              <Description>Fixtured Point</Description>
+              <DisplayName>Fixtured Point</DisplayName>
+              <AccessMode>O</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <BrigdgeSetter>
+                <TargetName>BridgeObj</TargetName>
+                <OperationName>GetDisplayObjectOperation</OperationName>
+                <OperationParams>Fixtured Point</OperationParams>
+              </BrigdgeSetter>
+              <Triggers>
+                <Trigger>
+                  <Property>CustomVisible</Property>
+                  <!--<Value>False</Value>-->
+                  <Setters>
+                    <Setter>
+                      <OperationName>SetDisplayObjectPropertyOperation</OperationName>
+                      <OperationParams>Fixtured Point;IsDisplay</OperationParams>
+                    </Setter>
+                  </Setters>
+                </Trigger>
+              </Triggers>
+            </ImageViewConfig>
+            <ImageViewConfig Name="FixtureRunPoint">
+              <Description>Unfixtured Point</Description>
+              <DisplayName>Unfixtured Point</DisplayName>
+              <AccessMode>O</AccessMode>
+              <CustomVisible>False</CustomVisible>
+              <BrigdgeSetter>
+                <TargetName>BridgeObj</TargetName>
+                <OperationName>GetDisplayObjectOperation</OperationName>
+                <OperationParams>Unfixtured Point</OperationParams>
+              </BrigdgeSetter>
+              <Triggers>
+                <Trigger>
+                  <Property>CustomVisible</Property>
+                  <!--<Value>False</Value>-->
+                  <Setters>
+                    <Setter>
+                      <OperationName>SetDisplayObjectPropertyOperation</OperationName>
+                      <OperationParams>Unfixtured Point;IsDisplay</OperationParams>
+                    </Setter>
+                  </Setters>
+                </Trigger>
+              </Triggers>
+            </ImageViewConfig>
+            <!--面积和数量暂时注释掉，不删/caoweiqaing-->
+            <!--<ImageViewConfig Name="BlobArea">
+                            <Description>Blob面积</Description>
+                            <DisplayName>Blob面积</DisplayName>
+                            <Visibility>Beginner</Visibility>
+                            <AccessMode>O</AccessMode>
+                            <BrigdgeSetter>
+                                <TargetName>BridgeObj</TargetName>
+                                <OperationName>GetDisplayObjectOperation</OperationName>
+                                <OperationParams>blob面积</OperationParams>
+                            </BrigdgeSetter>
+                        </ImageViewConfig>
+                        <ImageViewConfig Name="BlobCount">
+                            <Description>Blob数量</Description>
+                            <DisplayName>Blob数量</DisplayName>
+                            <Visibility>Beginner</Visibility>
+                            <AccessMode>O</AccessMode>
+                            <BrigdgeSetter>
+                                <TargetName>BridgeObj</TargetName>
+                                <OperationName>GetDisplayObjectOperation</OperationName>
+                                <OperationParams>blob个数</OperationParams>
+                            </BrigdgeSetter>
+                        </ImageViewConfig>
+                        <ImageViewConfig Name="MatchLocation">
+                            <Description>Blob轮廓</Description>
+                            <DisplayName>Blob轮廓</DisplayName>
+                            <PanVisible>False</PanVisible>
+                            <Visibility>Beginner</Visibility>
+                            <AccessMode>O</AccessMode>
+                            <BrigdgeSetter>
+                                <TargetName>BridgeObj</TargetName>
+                                <OperationName>GetDisplayObjectOperation</OperationName>
+                                <OperationParams>边缘</OperationParams>
+                            </BrigdgeSetter>
+                        </ImageViewConfig>-->
+            <ImageViewConfig Name="ResutlText">
+              <Description>Text</Description>
+              <DisplayName>RunParam_Text</DisplayName>
+              <AccessMode>O</AccessMode>
+              <PanVisible>False</PanVisible>
+              <BrigdgeSetter>
+                <TargetName>BridgeObj</TargetName>
+                <OperationName>GetDisplayObjectOperation</OperationName>
+                <OperationParams>Show Text</OperationParams>
+              </BrigdgeSetter>
+            </ImageViewConfig>
+            <ImageViewConfig Name="BlindZone">
+              <Description>ExternROI</Description>
+              <DisplayName>ExternROI</DisplayName>
+              <PanVisible>True</PanVisible>
+              <AccessMode>O</AccessMode>
+              <BrigdgeSetter>
+                <TargetName>BridgeObj</TargetName>
+                <OperationName>GetDisplayObjectOperation</OperationName>
+                <OperationParams>ExternROI</OperationParams>
+              </BrigdgeSetter>
+            </ImageViewConfig>
+            <ImageViewConfig Name="CheckZoneAnnular">
+              <Description>Annular</Description>
+              <DisplayName>Annular</DisplayName>
+              <AccessMode>O</AccessMode>
+              <BrigdgeSetter>
+                <TargetName>BridgeObj</TargetName>
+                <OperationName>GetDisplayObjectOperation</OperationName>
+                <OperationParams>Annular</OperationParams>
+              </BrigdgeSetter>
+            </ImageViewConfig>
+          </Items>
+        </Category>
+        <GroupLinkItem Name="TextDisplayGroup">
+          <LinkName>TextDisplayGroup</LinkName>
+        </GroupLinkItem>
+      </Categorys>
+    </Tab>
+  </Tabs>
+  <BottomExcuteButtonsLeft>
+    <Button_ResetAlgoParams Name="Button_ResetAlgoParams">
+      <AccessMode>O</AccessMode>
+    </Button_ResetAlgoParams>
+  </BottomExcuteButtonsLeft>
+  <BottomExcuteButtons>
+    <GroupLinkItem Name="BottomCommandGroup">
+      <LinkName>BottomCommandGroup</LinkName>
+    </GroupLinkItem>
+  </BottomExcuteButtons>
+</AlgorithmTabRoot>

@@ -1,0 +1,147 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ParamRoot>
+  <Categorys>
+    <Category Name="Display" okcolor="#7cfc00" ngcolor="#ff0000">
+      <Items>
+        <Object Name="Display Input Image" Type="image" okcolor="#66ff00" ngcolor="#ff0000" hotcolor="#66ff00" opacity="1" linetype="1" linewidth="1" IsDisplay="true">
+          <Features>
+            <Feature Name="Image" Mapping="InImage" Value="{0}" />
+            <Feature Name="Height" Mapping="InImageHeight" Value="0" />
+            <Feature Name="Width" Mapping="InImageWidth" Value="0" />
+            <Feature Name="PixelFormat" Value="0" Mapping="InImagePixelFormat" />
+          </Features>
+        </Object>
+		<Object Name="Display Blob Image" Type="image" okcolor="#66ff00" ngcolor="#ff0000" hotcolor="#66ff00" opacity="1" linetype="1" linewidth="1" IsDisplay="true">
+          <Features>
+            <Feature Name="Image" Mapping="BlobImage" Value="{0}" />
+            <Feature Name="Height" Mapping="BlobImageHeight" Value="0" />
+            <Feature Name="Width" Mapping="BlobImageWidth" Value="0" />
+            <Feature Name="PixelFormat" Value="0" Mapping="BlobImagePixelFormat" />
+          </Features>
+        </Object>
+        <Object Name="Display Binary Image" Type="image" okcolor="#66ff00" ngcolor="#ff0000" hotcolor="#66ff00" opacity="1" linetype="1" linewidth="1" IsDisplay="true">
+          <Features>
+            <Feature Name="Image" Mapping="BinaryImage" Value="{0}" />
+            <Feature Name="Height" Mapping="BinaryImageHeight" Value="0" />
+            <Feature Name="Width" Mapping="BinaryImageWidth" Value="0" />
+            <Feature Name="PixelFormat" Value="0" Mapping="BinaryImagePixelFormat" />
+          </Features>
+        </Object>
+        <Object Name="Blob" Type="rect" okcolor="#66ff00" ngcolor="#ff0000" hotcolor="#66ff00" opacity="1" linetype="1" linewidth="2" IsDisplay="true">
+          <Features>
+            <Feature Name="CenterX" Mapping="CenterX" Value="0" ArrayMatch="true" />
+            <Feature Name="CenterY" Mapping="CenterY" Value="0" ArrayMatch="true" />
+            <Feature Name="Width" Mapping="BoxWidth" Value="0" ArrayMatch="true" />
+            <Feature Name="Height" Mapping="BoxHeight" Value="0" ArrayMatch="true" />
+            <Feature Name="Angle" Value="0" Mapping="Angle" ArrayMatch="true" />
+            <Feature Name="Tips" Value="CenterX:{0},CenterY:{1} Width:{2} Height:{3} Angle:{4}" Mapping="CenterX,CenterY,BoxWidth,BoxHeight,Angle" ArrayMatch="true" />
+            <Feature Name="Status" Value="1" Mapping="BlobStatus" ArrayMatch="true" />
+            <Feature Name="Num" Value="0" Mapping="BlobNum" />
+          </Features>
+        </Object>
+		<Object Name="Blob Max Area Inner Rect" Type="rect" okcolor="#66ff00" ngcolor="#ff0000" hotcolor="#66ff00" opacity="1" linetype="1" linewidth="2" IsDisplay="true">
+          <Features>
+            <Feature Name="CenterX" Mapping="MaxAreaInnerRectCenterX" Value="0" ArrayMatch="true" />
+            <Feature Name="CenterY" Mapping="MaxAreaInnerRectCenterY" Value="0" ArrayMatch="true" />
+            <Feature Name="Width" Mapping="MaxAreaInnerRectWidth" Value="0" ArrayMatch="true" />
+            <Feature Name="Height" Mapping="MaxAreaInnerRectHeight" Value="0" ArrayMatch="true" />
+            <Feature Name="Angle" Value="0" Mapping="MaxAreaInnerRectAngle" ArrayMatch="true" />
+            <Feature Name="Tips" Value="CenterX:{0},CenterY:{1} Width:{2} Height:{3} Angle:{4}" Mapping="MaxAreaInnerRectCenterX,MaxAreaInnerRectCenterY,MaxAreaInnerRectWidth,MaxAreaInnerRectHeight,MaxAreaInnerRectAngle" ArrayMatch="true" />
+            <Feature Name="Status" Value="1" Mapping="BlobStatus" ArrayMatch="true" />
+            <Feature Name="Num" Value="0" Mapping="BlobNum" />
+          </Features>
+        </Object>
+        <Object Name="ROI" Type="rect" okcolor="#0000ff" ngcolor="#ff0000" hotcolor="#66ff00" opacity="1" linetype="1" linewidth="2" IsDisplay="true" highLightEnable="false" IsShowIndex="false">
+          <Features>
+            <Feature Name="CenterX" Mapping="DetectCenterX" Value="0" />
+            <Feature Name="CenterY" Mapping="DetectCenterY" Value="0" />
+            <Feature Name="Width" Mapping="DetectWidth" Value="0" />
+            <Feature Name="Height" Mapping="DetectHeight" Value="0" />
+            <Feature Name="Angle" Value="0" Mapping="DetectAngle" />
+            <Feature Name="Tips" Value="CenterX:{0},CenterY:{1} Width:{2} Height:{3} Angle:{4}" Mapping="DetectCenterX,DetectCenterY,DetectWidth,DetectHeight,DetectAngle" />
+            <Feature Name="Status" Value="1" Mapping="ModuStatus" />
+          </Features>
+        </Object>
+        <Object Name="Contour Point" Type="outlinepoint" okcolor="#66ff00" ngcolor="#ff0000" hotcolor="#66ff00" opacity="1" linetype="1" linewidth="2" IsDisplay="true">
+          <Features>
+            <Feature Name="OutLineInfo" Mapping="ContourInfo" Value="{0}" />
+            <Feature Name="Num" Value="0" Mapping="ContourNum" />
+          </Features>
+        </Object>
+        <Object Name="Fixtured Point" Type="point" okcolor="#66ff00" ngcolor="#ff0000" hotcolor="#66ff00" opacity="1" linetype="1" linewidth="1" IsDisplay="true">
+          <Features>
+            <Feature Name="CenterX" Mapping="OutputFixtureInitPointX" Value="0" />
+            <Feature Name="CenterY" Mapping="OutputFixtureInitPointY" Value="0" />
+            <Feature Name="Tips" Value="Fixture BasePoint:({0},{1}) " Mapping="OutputFixtureInitPointX,OutputFixtureInitPointY" />
+            <Feature Name="Status" Mapping="NULL" Value="1" />
+          </Features>
+        </Object>
+        <Object Name="Unfixtured Point" Type="point" okcolor="#ff0000" ngcolor="#ff0000" hotcolor="#66ff00" opacity="1" linetype="1" linewidth="1" IsDisplay="true">
+          <Features>
+            <Feature Name="CenterX" Mapping="OutputFixtureRunPointX" Value="0" />
+            <Feature Name="CenterY" Mapping="OutputFixtureRunPointY" Value="0" />
+            <Feature Name="Tips" Value="Fixture RunPoint:({0},{1}) " Mapping="OutputFixtureRunPointX,OutputFixtureRunPointY" />
+            <Feature Name="Status" Value="1" Mapping="NULL" />
+          </Features>
+        </Object>
+        <Object Name="Show Text" Type="text" okcolor="#66ff00" ngcolor="#ff0000" hotcolor="#66ff00" opacity="1" IsDisplay="true">
+          <Features>
+            <Feature Name="PositionX" Mapping="NULL" Value="0" />
+            <Feature Name="PositionY" Mapping="NULL" Value="0" />
+            <Feature Name="FontSize" Mapping="NULL" Value="10" />
+            <Feature Name="Angle" Mapping="NULL" Value="0" />
+            <Feature Name="Content" Value="Blob Area:{0}" Mapping="Area" />
+            <Feature Name="Status" Value="0" Mapping="BlobStatus" ArrayMatch="true" />
+          </Features>
+        </Object>
+        <Object Name="Data Record" Type="datarecord" okcolor="#66ff00" ngcolor="#ff0000" hotcolor="#66ff00" opacity="1" linetype="1" linewidth="2" IsDisplay="true">
+          <Features>
+            <Feature Name="Content" Value="Module Status:{0}Blob Numer{1}Total Area{2}" Mapping="ModuStatus,BlobNum,TotalArea" />
+            <Feature Name="Num" Value="1" Mapping="NULL" />
+          </Features>
+        </Object>
+        <Object Name="Data Record" Type="datarecord" okcolor="#66ff00" ngcolor="#ff0000" hotcolor="#66ff00" opacity="1" linetype="1" linewidth="2" IsDisplay="true">
+          <Features>
+            <Feature Name="Content" Value="BlobInfo{ID}:Area{0},Circumference{1},CentroidX{2},CentroidY{3},Angle{4}" Mapping="Area,Perimeter,CentroidX,CentroidY,Angle" ArrayMatch="true" />
+            <Feature Name="Num" Value="0" Mapping="BlobNum" />
+          </Features>
+        </Object>
+        <Object Name="Result List" Type="datalist" okcolor="#66ff00" ngcolor="#ff0000" hotcolor="#66ff00" opacity="1" linetype="1" linewidth="2" IsDisplay="true">
+          <Features>
+            <Feature Name="Colume" Value="Area,Perimeter,CentroidX,CentroidY,Angle,LongAxis,ShortAxis,Circularity,Rectangularity" Mapping="NULL" ArrayMatch="true" />
+            <Feature Name="Num" Value="0" Mapping="BlobNum" />
+          </Features>
+        </Object>
+        <Object Name="ExternROI" Type="polygon" okcolor="#0000ff" ngcolor="#ff0000" hotcolor="#66ff00" opacity="0.5" linetype="1" linewidth="2" IsDisplay="true" highLightEnable="false">
+          <Features>
+            <Feature Name="PointNum" Mapping="BlindPolygonPointNum" Value="0" />
+            <Feature Name="PointXArray" Mapping="BlindPolygonPointsX" Value="NULL" Type="Array" />
+            <Feature Name="PointYArray" Mapping="BlindPolygonPointsY" Value="NULL" Type="Array" />
+            <Feature Name="FillColor" Mapping="NULL" Value="#FF5400" />
+            <Feature Name="Status" Value="1" Mapping="ModuStatus" />
+          </Features>
+        </Object>
+        <Object Name="OutputMask" Type="image" okcolor="#66ff00" ngcolor="#ff0000" hotcolor="#66ff00" opacity="1" linetype="1" linewidth="1" IsDisplay="true">
+          <Features>
+            <Feature Name="Image" Mapping="OutMask" Value="{0}" />
+            <Feature Name="Height" Mapping="OutMaskHeight" Value="0" />
+            <Feature Name="Width" Mapping="OutMaskWidth" Value="0" />
+            <Feature Name="PixelFormat" Value="0" Mapping="OutMaskPixelFormat" />
+          </Features>
+        </Object>
+        <Object Name="Annular" Type="annularsector" okcolor="#0000ff" ngcolor="#ff0000" hotcolor="#66ff00" opacity="1" linetype="1" linewidth="2" IsDisplay="true">
+          <Features>
+            <Feature Name="CenterX" Mapping="DetectAnnulusCenterX" Value="0" />
+            <Feature Name="CenterY" Mapping="DetectAnnulusCenterY" Value="0" />
+            <Feature Name="OuterRadius" Mapping="DetectAnnulusOuterRadius" Value="0" />
+            <Feature Name="InnerRadius" Mapping="DetectAnnulusInnerRadius" Value="0" />
+            <Feature Name="StartAngle" Mapping="DetectAnnulusStartAngle" Value="0" />
+            <Feature Name="AngleRange" Mapping="DetectAnnulusAngleExtend" Value="0" />
+            <Feature Name="Tips" Value="CenterX:{0} CenterY:{1} OuterRadius:{2} InnerRadius:{3} StartAngle:{4} AngleRange:{5}" Mapping="DetectAnnulusCenterX,DetectAnnulusCenterY,DetectAnnulusOuterRadius,DetectAnnulusInnerRadius,DetectAnnulusStartAngle,DetectAnnulusAngleExtend" />
+            <Feature Name="Status" Value="1" Mapping="ModuStatus" />
+          </Features>
+        </Object>
+      </Items>
+    </Category>
+  </Categorys>
+</ParamRoot>

@@ -1,0 +1,272 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ParamRoot>
+  <Categorys>
+    <Category Name="Base">
+      <Items>
+        <String Name="ServerRepAddress">
+          <CurValue>tcp://127.0.0.1:5555</CurValue>
+        </String>
+        <String Name="ModuleName">
+          <CurValue>IMVSBlobFindModu</CurValue>
+        </String>
+        <Bool Name="IsLoalModule">
+          <CurValue>0</CurValue>
+        </Bool>
+        <Integer Name="ModuleViewMode">
+          <CurValue>1</CurValue>
+        </Integer>
+        <String Name="ModuleDisplayName">
+          <CurValue>IMVSBlobFindModu</CurValue>
+        </String>
+        <String Name="ModuleHelp">
+          <CurValue>Reserve</CurValue>
+        </String>
+        <String Name="IsSaveTabXml">
+          <CurValue>False</CurValue>
+        </String>
+      </Items>
+    </Category>
+    <Category Name="Input">
+      <Items>
+        <Combination Name="InputImage" Style="IMAGE">
+          <Filters>
+            <Filter Name="InImage" ValueType="image" IsForce="true"></Filter>
+            <Filter Name="InImageWidth" ValueType="int" IsForce="true"></Filter>
+            <Filter Name="InImageHeight" ValueType="int" IsForce="true"></Filter>
+            <Filter Name="InImagePixelFormat" ValueType="int" IsForce="true"></Filter>
+          </Filters>
+        </Combination>
+        <Combination Name="InputROI" Style="ROIBOX">
+          <Filters>
+            <Combination Name="ROI CenterPoint" Style="POINT">
+              <Filters>
+                <Filter Name="roicenterx" ValueType="float" IsForce="false"></Filter>
+                <Filter Name="roicentery" ValueType="float" IsForce="false"></Filter>
+              </Filters>
+            </Combination>
+            <Filter Name="roiwidth" ValueType="float" IsForce="false"></Filter>
+            <Filter Name="roiheight" ValueType="float" IsForce="false"></Filter>
+            <Filter Name="roiangle" ValueType="float" IsForce="false"></Filter>
+          </Filters>
+        </Combination>
+        <Combination Name="InputROIAnnulus" Style="ROIANNULUS">
+          <Filters>
+            <Combination Name="ROI Annulus CenterPoint" Style="POINT">
+              <Filters>
+                <Filter Name="roiAnnulusCenterX" ValueType="float" IsForce="false"></Filter>
+                <Filter Name="roiAnnulusCenterY" ValueType="float" IsForce="false"></Filter>
+              </Filters>
+            </Combination>
+            <Filter Name="roiAnnulusInnerRadius" ValueType="float" IsForce="false"></Filter>
+            <Filter Name="roiAnnulusOuterRadius" ValueType="float" IsForce="false"></Filter>
+            <Filter Name="roiAnnulusStartAngle" ValueType="float" IsForce="false"></Filter>
+            <Filter Name="roiAnnulusAngleExtend" ValueType="float" IsForce="false"></Filter>
+          </Filters>
+        </Combination>
+        <Combination Name="Position Correction Info" Style="FIXTURE">
+          <Filters>
+            <Combination Name="Fixtured Point" Style="POINT">
+              <Filters>
+                <Filter Name="FixtureInitPointX" ValueType="float" IsForce="false"></Filter>
+                <Filter Name="FixtureInitPointY" ValueType="float" IsForce="false"></Filter>
+              </Filters>
+            </Combination>
+            <Filter Name="FixtureInitAngle" ValueType="float" IsForce="false"></Filter>
+            <Filter Name="FixtureInitScaleX" ValueType="float" IsForce="false"></Filter>
+            <Filter Name="FixtureInitScaleY" ValueType="float" IsForce="false"></Filter>
+            <Combination Name="Unfixtured Point" Style="POINT">
+              <Filters>
+                <Filter Name="FixtureRunPointX" ValueType="float" IsForce="false"></Filter>
+                <Filter Name="FixtureRunPointY" ValueType="float" IsForce="false"></Filter>
+              </Filters>
+            </Combination>
+            <Filter Name="FixtureRunAngle" ValueType="float" IsForce="false"></Filter>
+            <Filter Name="FixtureRunScaleX" ValueType="float" IsForce="false"></Filter>
+            <Filter Name="FixtureRunScaleY" ValueType="float" IsForce="false"></Filter>
+          </Filters>
+        </Combination>
+        <Combination Name="InputMask" Style="IMAGE">
+          <Filters>
+            <Filter Name="InMask" ValueType="image" IsForce="false"></Filter>
+            <Filter Name="InMaskWidth" ValueType="int" IsForce="false"></Filter>
+            <Filter Name="InMaskHeight" ValueType="int" IsForce="false"></Filter>
+            <Filter Name="InMaskPixelFormat" ValueType="int" IsForce="false"></Filter>
+          </Filters>
+        </Combination>
+        <Filter Name="InputBlindPolygonString" ValueType="string" IsForce="false"></Filter>
+      </Items>
+    </Category>
+    <Category Name="Output">
+      <Items>
+        <Filter Name="ModuRunTime" ValueType="float" IsForce="true" IsArray="false"></Filter>
+        <Filter Name="ModuStatus" ValueType="int" IsForce="true"></Filter>
+        <Filter Name="BlobStatus" ValueType="int" IsForce="true" IsArray="true"></Filter>
+        <Filter Name="BlobNum" ValueType="int" IsForce="true"></Filter>
+        <Filter Name="Area" ValueType="float" IsForce="true" IsArray="true"></Filter>
+        <Filter Name="TotalArea" ValueType="float" IsForce="true"></Filter>
+        <Combination Name="CentroidPoint" Style="POINT" IsArray="true">
+          <Filters>
+            <Filter Name="CentroidX" ValueType="float" IsForce="true"></Filter>
+            <Filter Name="CentroidY" ValueType="float" IsForce="true"></Filter>
+          </Filters>
+        </Combination>
+        <Combination Name="MinBoudingRect" Style="ROIBOX" IsArray="true">
+          <Filters>
+            <Combination Name="CenterPoint" Style="POINT">
+              <Filters>
+                <Filter Name="CenterX" ValueType="float" IsForce="true"></Filter>
+                <Filter Name="CenterY" ValueType="float" IsForce="true"></Filter>
+              </Filters>
+            </Combination>
+            <Filter Name="BoxWidth" ValueType="float" IsForce="true"></Filter>
+            <Filter Name="BoxHeight" ValueType="float" IsForce="true"></Filter>
+            <Filter Name="Angle" ValueType="float" IsForce="true"></Filter>
+          </Filters>
+        </Combination>		
+		<Filter Name="MinGrayValue" ValueType="float" IsForce="true" IsArray="true"></Filter>
+		<Filter Name="MaxGrayValue" ValueType="float" IsForce="true" IsArray="true"></Filter>
+		<Filter Name="GrayContrast" ValueType="float" IsForce="true" IsArray="true"></Filter>
+		<Combination Name="MaxAreaInnerRect" Style="ROIBOX" IsArray="true">
+          <Filters>
+            <Combination Name="MaxAreaInnerRectCenterPoint" Style="POINT">
+              <Filters>
+                <Filter Name="MaxAreaInnerRectCenterX" ValueType="float" IsForce="true"></Filter>
+                <Filter Name="MaxAreaInnerRectCenterY" ValueType="float" IsForce="true"></Filter>
+              </Filters>
+            </Combination>
+            <Filter Name="MaxAreaInnerRectWidth" ValueType="float" IsForce="true"></Filter>
+            <Filter Name="MaxAreaInnerRectHeight" ValueType="float" IsForce="true"></Filter>
+            <Filter Name="MaxAreaInnerRectAngle" ValueType="float" IsForce="true"></Filter>
+          </Filters>
+        </Combination>
+        <Combination Name="BlobRect" Style="Rect" IsArray="true">
+          <Filters>
+            <Combination Name="RectPoint" Style="POINT">
+              <Filters>
+                <Filter Name="BlobRectX" ValueType="float" IsForce="true"></Filter>
+                <Filter Name="BlobRectY" ValueType="float" IsForce="true"></Filter>
+              </Filters>
+            </Combination>
+            <Filter Name="BlobRectWidth" ValueType="float" IsForce="true"></Filter>
+            <Filter Name="BlobRectHeight" ValueType="float" IsForce="true"></Filter>
+          </Filters>
+        </Combination>
+        <Filter Name="BlobRectUpLeftX" ValueType="float" IsForce="true" IsArray="true"></Filter>
+        <Filter Name="BlobRectUpLeftY" ValueType="float" IsForce="true" IsArray="true"></Filter>
+        <Filter Name="BlobRectBottomRightX" ValueType="float" IsForce="true" IsArray="true"></Filter>
+        <Filter Name="BlobRectBottomRightY" ValueType="float" IsForce="true" IsArray="true"></Filter>
+        <Filter Name="BlobAngle" ValueType="float" IsForce="true" IsArray="true"></Filter>
+        <Filter Name="Perimeter" ValueType="float" IsForce="true" IsArray="true"></Filter>
+        <Filter Name="LongAxis" ValueType="float" IsForce="true" IsArray="true"></Filter>
+        <Filter Name="ShortAxis" ValueType="float" IsForce="true" IsArray="true"></Filter>
+        <Filter Name="Circularity" ValueType="float" IsForce="true" IsArray="true"></Filter>
+        <Filter Name="Rectangularity" ValueType="float" IsForce="true" IsArray="true"></Filter>
+        <Filter Name="Score" ValueType="float" IsForce="true" IsArray="true"></Filter>
+        <Combination Name="BinaryImageComb" Style="IMAGE">
+          <Filters>
+            <Filter Name="BinaryImage" ValueType="image" IsForce="false"></Filter>
+            <Filter Name="BinaryImageWidth" ValueType="int" IsForce="false"></Filter>
+            <Filter Name="BinaryImageHeight" ValueType="int" IsForce="false"></Filter>
+            <Filter Name="BinaryImagePixelFormat" ValueType="int" IsForce="false"></Filter>
+          </Filters>
+        </Combination>
+        <Combination Name="BlobImageComb" Style="IMAGE">
+          <Filters>
+            <Filter Name="BlobImage" ValueType="image" IsForce="false"></Filter>
+            <Filter Name="BlobImageWidth" ValueType="int" IsForce="false"></Filter>
+            <Filter Name="BlobImageHeight" ValueType="int" IsForce="false"></Filter>
+            <Filter Name="BlobImagePixelFormat" ValueType="int" IsForce="false"></Filter>
+          </Filters>
+        </Combination>
+        <Combination Name="ROI" Style="ROIBOX" IsArray="true">
+          <Filters>
+            <Combination Name="DetectRectCenterPoint" Style="POINT">
+              <Filters>
+                <Filter Name="DetectCenterX" ValueType="float" IsForce="false"></Filter>
+                <Filter Name="DetectCenterY" ValueType="float" IsForce="false"></Filter>
+              </Filters>
+            </Combination>
+            <Filter Name="DetectWidth" ValueType="float" IsForce="false"></Filter>
+            <Filter Name="DetectHeight" ValueType="float" IsForce="false"></Filter>
+            <Filter Name="DetectAngle" ValueType="float" IsForce="false"></Filter>
+          </Filters>
+        </Combination>
+        <Combination Name="ROIAnnulus" Style="ROIANNULUS" IsArray="true">
+          <Filters>
+            <Combination Name="DetectAnnulusCenterPoint" Style="POINT">
+              <Filters>
+                <Filter Name="DetectAnnulusCenterX" ValueType="float" IsForce="false"></Filter>
+                <Filter Name="DetectAnnulusCenterY" ValueType="float" IsForce="false"></Filter>
+              </Filters>
+            </Combination>
+            <Filter Name="DetectAnnulusInnerRadius" ValueType="float" IsForce="false"></Filter>
+            <Filter Name="DetectAnnulusOuterRadius" ValueType="float" IsForce="false"></Filter>
+            <Filter Name="DetectAnnulusStartAngle" ValueType="float" IsForce="false"></Filter>
+            <Filter Name="DetectAnnulusAngleExtend" ValueType="float" IsForce="false"></Filter>
+          </Filters>
+        </Combination>
+        <Combination Name="ContourPoints" Style="CONTOURPOINTS">
+          <Filters>
+            <Filter Name="ContourInfo" ValueType="pointset" IsForce="false"></Filter>
+            <Filter Name="ContourNum" ValueType="int" IsForce="false" AutoSubscribe="false"></Filter>
+          </Filters>
+        </Combination>
+        <!-- <Combination Name="Contour Point" Style="POINT" AccessMode="RW" IsArray="true">
+          <Filters>
+            <Filter Name="ContourX" ValueType="float" IsForce="false" IsShow="true" AccessMode="RW" CanSubscribe="false" AutoSubscribe="false">
+            </Filter>
+            <Filter Name="ContourY" ValueType="float" IsForce="false" IsShow="true" AccessMode="RW" CanSubscribe="false" AutoSubscribe="false">
+            </Filter>
+          </Filters>
+        </Combination>
+        <Filter Name="ContourScore" ValueType="float" IsForce="false" IsShow="true" AccessMode="RW" CanSubscribe="false" AutoSubscribe="false" IsArray="true">
+        </Filter>
+        <Filter Name="ContourIndex" ValueType="int" IsForce="false" IsShow="true" AccessMode="RW" CanSubscribe="false" AutoSubscribe="false" IsArray="true">
+        </Filter> -->
+        <Combination Name="BlindPolygon" Style="ROIPOLYGON" IsArray="true">
+          <Filters>
+            <Filter Name="BlindPolygonPointNum" ValueType="int" IsForce="false" IsArray="true"></Filter>
+            <Combination Name="BlindPolygonPoints" Style="POINT" IsArray="true">
+              <Filters>
+                <Filter Name="BlindPolygonPointsX" ValueType="float" IsForce="false" IsArray="true"></Filter>
+                <Filter Name="BlindPolygonPointsY" ValueType="float" IsForce="false" IsArray="true"></Filter>
+              </Filters>
+            </Combination>
+          </Filters>
+        </Combination>
+        <Filter Name="BlindPolygonString" ValueType="string" IsForce="false" IsArray="true"></Filter>
+        <Combination Name="OutputMask" Style="IMAGE" IsArray="false">
+          <Filters>
+            <Filter Name="OutMask" ValueType="image" IsForce="false" AllowAutoSubscribeByOther="False" IsArray="false"></Filter>
+            <Filter Name="OutMaskWidth" ValueType="int" IsForce="false" AllowAutoSubscribeByOther="False" IsArray="false"></Filter>
+            <Filter Name="OutMaskHeight" ValueType="int" IsForce="false" AllowAutoSubscribeByOther="False" IsArray="false"></Filter>
+            <Filter Name="OutMaskPixelFormat" ValueType="int" IsForce="false" AllowAutoSubscribeByOther="False" IsArray="false"></Filter>
+          </Filters>
+        </Combination>
+        <Combination Name="Output Position Correction Info" Style="FIXTURE" Visible="false">
+          <Filters>
+            <Combination Name="Output Fixtured Point" Style="POINT" Visible="false">
+              <Filters>
+                <Filter Name="OutputFixtureInitPointX" ValueType="float" IsForce="false" Visible="false"></Filter>
+                <Filter Name="OutputFixtureInitPointY" ValueType="float" IsForce="false" Visible="false"></Filter>
+              </Filters>
+            </Combination>
+            <Filter Name="OutputFixtureInitAngle" ValueType="float" IsForce="false" Visible="false"></Filter>
+            <Filter Name="OutputFixtureInitScaleX" ValueType="float" IsForce="false" Visible="false"></Filter>
+            <Filter Name="OutputFixtureInitScaleY" ValueType="float" IsForce="false" Visible="false"></Filter>
+            <Combination Name="Output Unfixtured Point" Style="POINT" Visible="false">
+              <Filters>
+                <Filter Name="OutputFixtureRunPointX" ValueType="float" IsForce="false" Visible="false"></Filter>
+                <Filter Name="OutputFixtureRunPointY" ValueType="float" IsForce="false" Visible="false"></Filter>
+              </Filters>
+            </Combination>
+            <Filter Name="OutputFixtureRunAngle" ValueType="float" IsForce="false" Visible="false"></Filter>
+            <Filter Name="OutputFixtureRunScaleX" ValueType="float" IsForce="false" Visible="false"></Filter>
+            <Filter Name="OutputFixtureRunScaleY" ValueType="float" IsForce="false" Visible="false"></Filter>
+          </Filters>
+        </Combination>
+      </Items>
+    </Category>
+    <Category Name="TransmitInfo"></Category>
+  </Categorys>
+</ParamRoot>

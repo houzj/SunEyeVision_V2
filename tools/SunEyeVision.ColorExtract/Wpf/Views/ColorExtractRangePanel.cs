@@ -8,6 +8,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Native.Numeric.ParameterPresentation.ParamTabControl;
+using SunEyeVision.Plugin.Wpf.Native.Input.Interaction.Controls;
 using SunEyeVision.Tool.ColorExtract.Runtime;
 
 namespace SunEyeVision.Tool.ColorExtract.Wpf.Views;
@@ -232,11 +233,39 @@ public sealed class ColorExtractRangePanel : UserControl
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(108) });
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             row.Children.Add(new TextBlock { Text = $"通道{index + 1}", VerticalAlignment = VerticalAlignment.Center });
-            var sliders = new StackPanel { Orientation = Orientation.Vertical, Width = 182 };
+
+            // 原厂 ColorExtractList 每个通道由 108x50 的 HikHistogramSingle
+            // 和右侧两条 SliderArrange 组成。没有图像引用时，原厂 DataPoints 为空，
+            // 因此这里保持空 PointCollection，不生成未取证的假直方图数据。
+            var histogram = new HikHistogramSingle
+            {
+                Width = 108,
+                InnerHeight = 50,
+                DataPoints = new PointCollection()
+            };
+            AutomationProperties.SetName(histogram, $"通道{index + 1}直方图");
+            var histogramBorder = new Border
+            {
+                Width = 108,
+                BorderThickness = new Thickness(1),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(211, 211, 211)),
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(5, 0, 0, 0),
+                Child = histogram
+            };
+            var sliders = new StackPanel
+            {
+                Orientation = Orientation.Vertical,
+                Width = 68,
+                Margin = new Thickness(10, 0, 0, 0)
+            };
             sliders.Children.Add(_low[index]);
             sliders.Children.Add(_high[index]);
-            Grid.SetColumn(sliders, 1);
-            row.Children.Add(sliders);
+            var channelContent = new StackPanel { Orientation = Orientation.Horizontal };
+            channelContent.Children.Add(histogramBorder);
+            channelContent.Children.Add(sliders);
+            Grid.SetColumn(channelContent, 1);
+            row.Children.Add(channelContent);
             _details.Children.Add(row);
         }
     }
@@ -248,7 +277,7 @@ public sealed class ColorExtractRangePanel : UserControl
             Minimum = ChannelMinimum,
             Maximum = ChannelMaximum,
             SliderTickFrequency = 1,
-            Width = 182,
+            Width = 68,
             Height = 28
         };
         slider.OnStartValueChange += (_, _) => changed();
@@ -456,3 +485,4 @@ public sealed class ColorExtractRangePanel : UserControl
         }
     }
 }
+

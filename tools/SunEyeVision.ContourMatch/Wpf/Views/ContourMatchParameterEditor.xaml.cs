@@ -45,9 +45,8 @@ public partial class ContourMatchParameterEditor : UserControl, IToolSettingsVie
         anchored.Add(new AnchoredSettingsContent(ContourMatchFields.PyramidMode, panel, InsertBefore: true));
         var composed = ContourMatchDisplayUi.Configure(options) with
         {
-            // 输入区必须落在已声明的分组上（否则 DeclaredFieldsView.AddToGroup 直接抛“未知分组”）：
-            // 原件把输入/ROI 放在基本参数页顶部，本工具对应第一页的「模板参数」组。
-            InputSection = options.InputSection ?? ContourMatchFields.TemplateSection,
+            // 输入区必须落在已声明的分组上。ModelData 是隐藏的基本页锚点，承载原厂图像输入和 ROI 区域。
+            InputSection = options.InputSection ?? ContourMatchFields.ImageInputSection,
             SuppressedFieldRows = suppressed,
             AdditionalAnchoredContents = anchored
         };
@@ -76,3 +75,4 @@ public partial class ContourMatchParameterEditor : UserControl, IToolSettingsVie
         Editor.Dispose();
     }
 }
+

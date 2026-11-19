@@ -21,6 +21,7 @@ public sealed record ToolSettingsViewOptions(
     IReadOnlyDictionary<string,NativeIntegerRadioOptions>? IntegerRadios=null,
     Func<FieldGroupCandidate,string?>? ValidateComposition=null,
     IReadOnlyDictionary<string,Func<IReadOnlyList<DeclaredReferenceCandidate>>>? ImageSources=null,
+IReadOnlyDictionary<string,ICameraSelectionSource>? CameraSources=null,
     IReadOnlyDictionary<string,IReadOnlyList<FieldCondition>>? ParentConditions=null,
     IReadOnlySet<string>? InlineConstants=null,
     IReadOnlyDictionary<string,TextExpressionOptions>? TextExpressions=null,

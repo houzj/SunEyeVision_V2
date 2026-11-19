@@ -169,6 +169,15 @@
     </localParamTab:LeftRightControl>
   </DataTemplate>
 
+    <!-- Camera：设备下拉 + 状态文本 + 打开按钮，槽内容由平台按注入的设备源构建。 -->
+    <DataTemplate x:Key="CameraSelecter">
+        <localParamTab:LeftRightControl Height="34">
+            <localParamTab:LeftRightControl.RightContent>
+                <ContentPresenter Content="{Binding CameraSelector}" />
+            </localParamTab:LeftRightControl.RightContent>
+        </localParamTab:LeftRightControl>
+    </DataTemplate>
+
   <!-- Reference：内联常量|订阅（原 ButtonSelecter 订阅行） -->
   <DataTemplate x:Key="Reference">
     <localParamTab:LeftRightControl Height="32">

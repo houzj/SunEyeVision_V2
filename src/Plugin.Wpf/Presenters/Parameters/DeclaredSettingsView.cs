@@ -247,7 +247,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
                 }
                 var pageInput=StringComparer.Ordinal.Equals(page,inputPage)?createdInput:null;
                 options.PageBuilt?.Invoke(page,built,pageInput);
-            },SelectedPageIndex,eagerlyComposePages:options.EagerlyComposePages);
+            },SelectedPageIndex,eagerlyComposePages:options.EagerlyComposePages,cameraSources:options.CameraSources);
 
             if(!Current()){candidate.Dispose();return;}
             if(nextInput is not null)

@@ -19,6 +19,7 @@ public static class DeclaredFieldTemplateRegistry
     public const string Float = "Float";
     public const string String = "String";
     public const string FolderPath = "OpenFileDialog";
+    public const string CameraSelecter = "CameraSelecter";
     public const string Boolean = "Boolean";
     public const string BooleanTips = "BooleanTips";
     public const string BooleanEye = "BooleanEye";
@@ -84,6 +85,7 @@ public static class DeclaredFieldTemplateRegistry
             FieldEditorKind.Scalar => ResolveScalar(port, presentation, numericSequence, isDialogPrimary),
             FieldEditorKind.Choice => Enumeration,
             FieldEditorKind.FolderPath => FolderPath,
+    FieldEditorKind.Camera => CameraSelecter,
             // 对齐原编辑器：记录字段由行宿主展开子行（组合槽自渲染），不走行内模板。
             FieldEditorKind.Record => ComposedSlot,
             FieldEditorKind.Sequence => throw new NotSupportedException($"序列字段不支持行内模板：{port.Id}（{presentation.Editor}）。"),

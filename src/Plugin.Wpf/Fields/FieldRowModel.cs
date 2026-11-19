@@ -105,6 +105,8 @@ public sealed class FieldRowModel : INotifyPropertyChanged
     /// <summary>引用模板会话；与常量文本会话分别投影，共享同一字段状态。</summary>
     public object? ReferenceDataA => _referenceDataA;
     public object? ImageSourceSelector { get; private set; }
+    /// <summary>相机选择槽：下拉、状态文本与打开按钮的组合控件。</summary>
+    public object? CameraSelector { get; private set; }
     public object? TextDataA => _textDataA;
 
     // ---- 命令 ----
@@ -194,6 +196,12 @@ public sealed class FieldRowModel : INotifyPropertyChanged
     {
         ImageSourceSelector = value;
         Notify(nameof(ImageSourceSelector));
+    }
+
+    internal void SetCameraSelector(object value)
+    {
+        CameraSelector = value;
+        Notify(nameof(CameraSelector));
     }
 
     internal void SetTextData(object? value)

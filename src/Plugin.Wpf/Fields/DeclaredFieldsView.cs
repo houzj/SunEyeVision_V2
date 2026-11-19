@@ -321,7 +321,8 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   IReadOnlyDictionary<string,double>? pageLabelWidths=null,
   IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? choiceDisplays=null,
   IReadOnlyList<NativeVisibilityDisplayOptions>? visibilityDisplays=null,
-  Action<string,DeclaredFieldsView>? pageBuilt=null,int selectedPageIndex=0,bool eagerlyComposePages=false)
+  Action<string,DeclaredFieldsView>? pageBuilt=null,int selectedPageIndex=0,bool eagerlyComposePages=false,
+        IReadOnlyDictionary<string,ICameraSelectionSource>? cameraSources=null)
  {
   ArgumentNullException.ThrowIfNull(writeDraft);
   _pageBuilt=pageBuilt;
@@ -525,6 +526,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
         _editors[field.Port.Id]=row;
         var ctorMs=ctorProbe.ElapsedMilliseconds;ctorProbe.Restart();
         if(textOptions.TryGetValue(field.Port.Id,out var textOption))row.UseTextExpressions(textOption);
+        if(cameraSources is not null&&cameraSources.TryGetValue(field.Port.Id,out var cameraSource))row.UseCameraSelector(cameraSource);
         if(imageProviders.TryGetValue(field.Port.Id,out var provider))row.UseImageSourceSelector(() =>
         {if(!CurrentGroup())throw new InvalidOperationException("图像来源编辑范围已失效。");var candidates=provider();if(!CurrentGroup())throw new InvalidOperationException("图像来源编辑范围已重绑。");return candidates;});
         _fieldsById[fieldId].AttachVisual(new(row));

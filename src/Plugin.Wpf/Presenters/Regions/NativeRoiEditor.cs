@@ -70,6 +70,19 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
     public string? Title {get;set;}
     public bool AllowUnboundFullDomain {get;set;}=true;
     public bool PolygonOnly {get;set;}
+    /// <summary>允许绘制的形状集合，对应原厂 ROISelection；为空时退回按 PolygonOnly 的默认。</summary>
+    public IReadOnlyList<string> AvailableShapes {get;private set;}=Array.Empty<string>();
+    /// <summary>按声明设置可绘制形状，并让工具条按钮可见性重算。</summary>
+    public void SetAvailableShapes(IReadOnlyList<string>? shapes)
+    {
+        AvailableShapes=shapes?.ToArray()??Array.Empty<string>();
+        // 未绑定与已绑定两种上下文都持有形状选择，任一在用时都要重算。
+        switch(NativeView.DataContext)
+        {
+            case UnboundContext unbound:unbound.RaiseShapesChanged();break;
+            case Context bound:bound.RaiseShapesChanged();break;
+        }
+    }
     public bool UnboundFullDomain {get;set;}
     // 原厂两段式：阻断态（无 session）点形状按钮仍呈现选中样式（用户实机对照）。
     // UnboundContext 每次 Bind(null) 都会重建，选中态必须落在 owner 上才能跨重建保持。
@@ -389,7 +402,10 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         public bool FullScreen_ModuleEnableA=>_owner.UnboundFullDomain;
         public bool FullScreenA {get=>_owner.UnboundFullDomain;set{}}
         public bool IsAvoid=>!_owner.AllowUnboundFullDomain;public bool Is3DROI=>false;
-        public string ROISelectionA=>_owner.PolygonOnly?"Polygon":"Box SectorRing Sector Polygon";
+        public string ROISelectionA=>_owner.AvailableShapes.Count!=0
+            ?string.Join(" ",_owner.AvailableShapes)
+            :_owner.PolygonOnly?"Polygon":"Box SectorRing Sector Polygon";
+        internal void RaiseShapesChanged()=>PropertyChanged?.Invoke(this,new(nameof(ROISelectionA)));
         public string DisplayNameA=>_owner.Title??"ROI形状";public string DescriptionA=>DisplayNameA;
         public ICommand ValueChangedCommand {get;}
         public ICommand ROIValueChangedCommand=>ValueChangedCommand;
@@ -432,7 +448,10 @@ public sealed class NativeRoiEditor : Decorator,IDisposable
         public bool FullScreenA {get=>_session.FullScreenA;set=>_session.FullScreenA=value;}
         public bool IsAvoid=>_session.IsAvoid;
         public bool Is3DROI=>false;
-        public string ROISelectionA=>_owner.PolygonOnly?"Polygon":_session.ROISelectionA;
+        public string ROISelectionA=>_owner.AvailableShapes.Count!=0
+            ?string.Join(" ",_owner.AvailableShapes)
+            :_owner.PolygonOnly?"Polygon":_session.ROISelectionA;
+        internal void RaiseShapesChanged()=>PropertyChanged?.Invoke(this,new(nameof(ROISelectionA)));
         public string DisplayNameA=>_owner.Title??_session.DisplayNameA;
         public string DescriptionA=>_session.DescriptionA;
         public ICommand ValueChangedCommand {get;}

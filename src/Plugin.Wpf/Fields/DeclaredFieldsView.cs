@@ -37,6 +37,8 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
  private readonly Dictionary<string,string> _groupPageKeys=new(StringComparer.Ordinal);
  private readonly Dictionary<string,List<Action>> _pendingPageActions=new(StringComparer.Ordinal);
  private readonly HashSet<FrameworkElement> _pendingContent=new(ReferenceEqualityComparer.Instance);
+ /// <summary>模式切换时临时折叠的参数行；不改声明可见性，恢复时按原策略重算。</summary>
+ private readonly HashSet<FrameworkElement> _modeHidden=new(ReferenceEqualityComparer.Instance);
  private readonly Dictionary<string,Action> _pageBuilders=new(StringComparer.Ordinal);
  private readonly HashSet<string> _builtPages=new(StringComparer.Ordinal);
  private readonly Action<string,DeclaredFieldsView>? _pageBuilt;
@@ -118,7 +120,26 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   property.AddValueChanged(source,changed);_visualSourceCleanup.Add(()=>property.RemoveValueChanged(source,changed));
   UpdateVisibility();
  }
- public void SuppressFieldRows(IEnumerable<string> fieldIds)
+ /// <summary>
+/// 按字段集合显隐参数行。与 <see cref="SuppressFieldRows"/> 的永久隐藏不同，这里可恢复：
+/// 折叠集合单独记录，恢复时按原有的声明可见性策略重算，不会丢失条件。
+/// </summary>
+public void SetFieldRowsVisibility(IEnumerable<string> fieldIds,bool visible)
+{
+ ObjectDisposedException.ThrowIf(_disposed,this);
+ var ids=fieldIds.Distinct(StringComparer.Ordinal).ToArray();
+ if(ids.Any(id=>!_fieldsById.ContainsKey(id)))throw new ArgumentException("显隐切换引用未知字段。");
+ foreach(var id in ids.Where(id=>!_rows.ContainsKey(id)))QueuePageAction(id,()=>SetFieldRowsVisibility(new[]{id},visible));
+ var rows=ids.Where(_rows.ContainsKey).Select(id=>_rows[id]).Distinct().ToArray();
+ foreach(var row in rows)
+ {
+  var changed=visible?_modeHidden.Remove(row):_modeHidden.Add(row);
+  if(!changed)continue;
+  if(!visible)(row as IParameterVisibility)?.PrepareForVisibility(false);
+ }
+ UpdateVisibility();
+}
+public void SuppressFieldRows(IEnumerable<string> fieldIds)
  {
   ObjectDisposedException.ThrowIf(_disposed,this);
   var ids=fieldIds.Distinct(StringComparer.Ordinal).ToArray();
@@ -643,6 +664,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
     var targets=_visibility.ToArray().Select(item=>(item.Key,Visible:(item.Value.Advanced?.IsExpanded??true)
      &&(item.Value.Condition is not {} condition||Meets(condition))
      &&hiddenRows?.Contains(item.Key)!=true
+     &&!_modeHidden.Contains(item.Key)
      &&(!_rowGateAnchors.TryGetValue(item.Key,out var anchor)||IsFieldActive(anchor))
      &&(!_advancedFields.TryGetValue(item.Key,out var members)||members.Any(IsFieldActive)))).ToArray();
     void ApplyVisibility(FrameworkElement row,bool visible)

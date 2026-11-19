@@ -30,6 +30,7 @@
   <ItemGroup>
     <Compile Include="Infrastructure\IPluginManager.cs" />
     <Compile Include="ImageSources\*.cs" />
+    <Compile Include="Parameters\*.cs" />
 
 
     <Compile Include="Managers\Plugin\PluginManager.cs" />

@@ -72,9 +72,21 @@
 | `Tab_ROI Area` | `CanTriggerRun="TRUE"` | 基本参数 / ROI区域 | 对应 |
 | `Tab_Run Params` | `CanTriggerRun="TRUE"` | 运行参数 / 运行参数 + 高级 | 本方拆两个 section |
 | `Tab_Check Result` | `SubscribeVisible="False"` `CanTriggerRun="TRUE"` | 结果显示 / 结果判定 + 高级判定 | 本方拆两个 section |
-| `Tab_Image Display` | 无 | **无对应** | **缺** |
+| `Tab_Image Display` | 无（12 项只读登记，`AccessMode="O"`） | 无此分组；图形叠加写在 `BlobDisplayUi` 代码里（7 组齐全） | 声明位置不同，界面无可见差异 |
 
-`Tab_Image Display` 缺失意味着：原厂在结果页有一个独立的图像显示配置区，本方没有对应声明。
+`Tab_Image Display` 下方是 12 个 `ImageViewConfig`（第 7 项 `BlobArea` 已被原厂自行注释），每项形如：
+
+```xml
+<ImageViewConfig Name="BlobFiled">
+  <DisplayName>Blob</DisplayName>
+  <AccessMode>O</AccessMode>
+  <BrigdgeSetter><OperationParams>Blob</OperationParams></BrigdgeSetter>
+</ImageViewConfig>
+```
+
+`AccessMode="O"` 表示只读登记，界面不提供可编辑控件；`BrigdgeSetter` 指向桥接方法 `GetDisplayObjectOperation(<对象名>)`，由桥接层返回图形对象。
+
+本方对应能力齐备：`BlobDisplayUi` 配置 7 个图形组、2 个显隐项、1 个文本项，覆盖 12 项中约 10 项（缺 `BlobCount`，`Contour Point` 只有显隐开关）。差异在于**声明位置**：原厂在 XML，本方在代码。附注：该分组在界面上不产生可操作控件，因此用户侧不可见。
 
 ### 2.2 参数
 
@@ -118,6 +130,12 @@
 
 本方 `BlobDisplay.xml` 实际内容是结果表格列（`Table/Column`），与原厂 `Display.xml` 的「显示对象 + 映射」不是同一职责。
 
+上表按 `Display.xml` 的 16 个外观定义对照，需要按用途分层理解：
+
+- `Display Input Image`、`Display Blob Image`、`Display Binary Image` 属输入图与中间图层，本方由平台视口统一承担，不计入工具侧缺口。
+- 工具真正需要挂到图像视图上的对象，由 `AlgorithmTab.xml` 的 `Tab_Image Display` 单独登记（行 2559–2720，12 个 `ImageViewConfig`，第 7 项 `BlobArea` 原厂已注释）。按这份清单对照：`BlobFiled`、`BlobMaxAreaInnerRect`、`CheckZone`、`FixtureInitPoint`、`FixtureRunPoint`、`BlobCount`、第二个 `MatchLocation`（显示名「Blob轮廓」）、`ResutlText`、`BlindZone`、`CheckZoneAnnular` 共 10 项有效登记，本方覆盖 9 项，仅缺 `BlobCount`。
+- `Data Record`、`ExternROI`、`OutputMask` 出现在 `Display.xml` 的外观定义中，但没有出现在 `Tab_Image Display` 的挂载清单里，因此不构成工具侧缺失。
+
 ### 2.5 执行
 
 | 项 | 原厂 | 本方 | 判定 |
@@ -140,9 +158,9 @@
 
 | # | 差异 | 原厂证据 | 本方现状 | 影响 |
 |---|---|---|---|---|
-| D1 | 缺 `Tab_Image Display` 分类 | `IMVSBlobFindModuAlgorithmTab.xml` 的 `<Category Name="Tab_Image Display">` | 无 | 结果页图像显示配置无处声明 |
+| D1 | `Tab_Image Display` 分组未落地为声明 | `IMVSBlobFindModuAlgorithmTab.xml` 行 2559–2720，12 个 `ImageViewConfig`，全部 `AccessMode="O"`（只读登记） | 图形叠加功能齐全：7 个图形组 + 2 个显隐 + 1 个文本，配置写在 `BlobDisplayUi` | **界面无可操作项，不构成功能缺口**；仅声明位置不同，优先级降为低 |
 | D2 | 显示声明职责错位 | `Display.xml` 16 个 `Object` + `Features/Mapping` | `BlobDisplay.xml` 是表格列；显示对象写在 `BlobDisplayUi` 代码里 | 声明驱动被绕开 |
-| D3 | 缺 7 个显示对象 | `Display.xml`：Blob Image、Binary Image、Contour Point、Data Record ×2、ExternROI、OutputMask | 无对应 | 叠加显示不完整 |
+| D3 | 显示对象清单缺 1 项 | `AlgorithmTab.xml` 行 2559–2720 的 `Tab_Image Display` 登记 12 项（第 7 项 `BlobArea` 原厂已注释） | 覆盖 10 项；缺 `BlobCount`（原厂 `Display.xml` 也未定义其外观） | 影响接近于零 |
 | D4 | ROI 编辑编排未分层 | `BlobFindRoiManager` 90 行 vs 平台 `ROISelecter` 分离 | `BlobLocalRoiOwner` 570 行混合两者，内部仍有 38 个 Blob 静态引用 | 职责边界不清 |
 
 ### 3.2 已证实的对齐项
@@ -168,6 +186,8 @@
 
 按差异编号推进，顺序固定：
 
-1. **D1 + D2 + D3**：把 `Display.xml` 的 16 个对象读全，补齐 `Tab_Image Display` 与显示对象声明，让显示回到声明驱动。
+1. **D2 + D3**：把 `Display.xml` 的 16 个对象读全，让图形显示回到声明驱动。这条是真正的偏差：原厂用 `Display.xml` 声明外观、用 `Tab_Image Display` 声明挂载清单，两者都是声明；本方把挂载清单写进 `BlobDisplayUi` 代码，改一个对象要重新编译。
 2. **D4**：按 38 个成员逐个判断归属，把纯会话编排移出 `BlobLocalRoiOwner`，Blob 业务留在工具侧。
 3. **U1**：补原厂关闭时序证据后再动生命周期。
+
+D1 不列为待办：该分组下的 12 项全部 `AccessMode="O"`，是只读登记而非可操作参数，界面不可见，功能上原厂有本方也有。

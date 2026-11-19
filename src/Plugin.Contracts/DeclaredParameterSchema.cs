@@ -154,6 +154,7 @@ public sealed class DeclaredParameterSchema
     public ToolSchema Schema { get; }
     public string WorkflowImageInputId { get; }
     public IReadOnlyDictionary<string, XElement> Fields => _fields;
+    public IReadOnlyList<string> InputIds => _inputs.Keys.ToArray();
 
     public IReadOnlyDictionary<string, string> BindingNames => _fields.Values
         .Where(field => Boolean(field, "allowReference"))
@@ -274,7 +275,7 @@ public sealed class DeclaredParameterSchema
         return id;
     }
 
-    internal static void Shape(XElement element, string[] attributes, string[] children)
+    public static void Shape(XElement element, string[] attributes, string[] children)
     {
         if (element.Name.NamespaceName.Length != 0
             || element.Attributes().Any(attribute => attribute.Name.NamespaceName.Length != 0 || !attributes.Contains(attribute.Name.LocalName))
@@ -283,22 +284,22 @@ public sealed class DeclaredParameterSchema
             throw new InvalidDataException("Unknown metadata element/attribute/content: " + element.Name);
     }
 
-    internal static string Required(XElement element, string name) => (string?)element.Attribute(name) is { } value && !string.IsNullOrWhiteSpace(value)
+    public static string Required(XElement element, string name) => (string?)element.Attribute(name) is { } value && !string.IsNullOrWhiteSpace(value)
         ? value
         : throw new InvalidDataException("Missing/empty XML attribute: " + name);
 
-    internal static double Finite(XElement element, string name) => double.TryParse(Required(element, name),
+    public static double Finite(XElement element, string name) => double.TryParse(Required(element, name),
         NumberStyles.Float, CultureInfo.InvariantCulture, out var number) && double.IsFinite(number)
         ? number
         : throw new InvalidDataException("Invalid finite number: " + name);
 
-    internal static int Integer(XElement element, string name, int minimum, int maximum) =>
+    public static int Integer(XElement element, string name, int minimum, int maximum) =>
         int.TryParse(Required(element, name), NumberStyles.Integer, CultureInfo.InvariantCulture, out var number)
         && number >= minimum && number <= maximum
             ? number
             : throw new InvalidDataException("Invalid integer: " + name);
 
-    internal static bool Boolean(XElement element, string name) => bool.TryParse(Required(element, name), out var value)
+    public static bool Boolean(XElement element, string name) => bool.TryParse(Required(element, name), out var value)
         ? value
         : throw new InvalidDataException("Invalid Boolean: " + name);
 }

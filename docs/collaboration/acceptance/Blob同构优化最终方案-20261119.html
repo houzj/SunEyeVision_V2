@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Blob 同构优化最终方案</title>
+<style>
+body{margin:0;background:#f4f6f9;color:#263142;font:15px/1.75 "Microsoft YaHei",Segoe UI,sans-serif}
+.wrap{max-width:1180px;margin:auto;padding:28px 30px 70px}
+header{background:#203653;color:#fff;border-radius:10px;padding:26px 30px;margin-bottom:20px}
+header h1{margin:0 0 8px;font-size:27px}
+header p{margin:6px 0 0;color:#c8d6e8}
+section{background:#fff;border-radius:10px;margin:0 0 20px;padding:24px 28px;box-shadow:0 2px 8px #20304a12}
+h2{color:#203653;border-bottom:2px solid #dce5f2;padding-bottom:8px;margin:0 0 16px;font-size:20px}
+h3{color:#2b5c91;margin:22px 0 8px;font-size:16px}
+p{margin:9px 0}
+code{background:#eef2f7;border-radius:4px;padding:1px 5px;color:#9b3158;font-size:13px}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+th{background:#eaf0f7;text-align:left}
+th,td{border:1px solid #d7e0eb;padding:8px 10px;vertical-align:top}
+.tag{display:inline-block;border-radius:12px;padding:1px 9px;font-size:12px;font-weight:600}
+.ok{background:#dff5e5;color:#176d35}
+.bad{background:#fde4e4;color:#a12626}
+.mid{background:#fff0d8;color:#9a5a00}
+.info{background:#e4efff;color:#1e5a9c}
+.quote{border-left:4px solid #3978bd;background:#f3f8ff;padding:12px 16px;margin:14px 0;border-radius:0 8px 8px 0}
+.quote.warn{border-left-color:#ca7a22;background:#fff7ea}
+.quote.stop{border-left-color:#b54141;background:#fdf3f3}
+.path{font-family:Consolas,monospace;font-size:12px;color:#64748b;word-break:break-all}
+.ch{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:14px 0}
+.ch>div{border-radius:9px;padding:16px 18px;border:2px solid #d7e0eb}
+.ch .a{background:#f7fafd;border-color:#b9d2ee}
+.ch .b{background:#fbf9f4;border-color:#e6d4b4}
+.ch h4{margin:0 0 10px;font-size:15px}
+.ch ul{margin:8px 0 0;padding-left:20px}
+.ch li{margin:4px 0}
+.stage{border:2px solid #d7e0eb;border-radius:10px;padding:16px 20px;margin:14px 0;background:#fcfdff}
+.stage h3{margin-top:0;color:#203653}
+.stage .meta{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px;font-size:13px;color:#4a5b70}
+.stage .meta span{background:#eef3fa;border-radius:6px;padding:3px 10px}
+.flow{background:#203653;color:#dce8f6;border-radius:9px;padding:16px 20px;font-family:Consolas,monospace;font-size:13px;line-height:2}
+.foot{color:#64748b;font-size:13px;text-align:center;margin-top:24px}
+</style>
+</head>
+<body><div class="wrap">
+
+<header>
+  <h1>Blob 同构优化：最终方案</h1>
+  <p>2026-11-19　·　目标不是"长得像原厂"，是"第 11 个工具接得进来"</p>
+</header>
+
+<section>
+  <h2>一句话目标</h2>
+  <p><b>让新工具接入 ROI 编辑的成本从 570 行降到 60 行，接入参数声明的成本从 200 行降到 10 行。</b></p>
+  <p>衡量标准不是"和 VisionMaster 文件一一对应"，而是"平台替工具承担了多少"。</p>
+</section>
+
+<section>
+  <h2>一、先看清原厂有两条独立通道</h2>
+  <p>这是 172 个类继承 <code>NameValueItem</code> 查出来的，不是猜的。</p>
+
+  <div class="ch">
+    <div class="a">
+      <h4>通道 A：参数总线</h4>
+      <ul>
+        <li>承载：数值、字符串、<b>ROI 二进制</b></li>
+        <li>形态：<code>string</code> / <code>byte[]</code></li>
+        <li>取法：<code>InnerGetStringParamValue(名字)</code></li>
+        <li>写回：<code>InnerSetStringParamValue(名字, 值)</code></li>
+        <li>谁用：<b>172 个</b> <code>NameValueItem</code> 子类</li>
+      </ul>
+    </div>
+    <div class="b">
+      <h4>通道 B：桥接方法</h4>
+      <ul>
+        <li>承载：图形、图像、结果列表</li>
+        <li>形态：对象引用</li>
+        <li>取法：<code>GetDisplayObjectOperation(名字)</code></li>
+        <li>谁用：<code>Object</code> / <code>Feature</code>（16 个显示对象）</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="quote">
+    <b>ROI 属于通道 A。</b>证据：<code>ROISelecter.cs:1156</code>
+    <code>new MemoryStream(CurValueA)</code> — <code>CurValueA</code> 就是参数值（<code>byte[]</code>），
+    控件里的 <code>RoiByteData</code> 只是反序列化缓存。
+  </div>
+</section>
+
+<section>
+  <h2>二、我们和原厂的真实差距</h2>
+  <p>不是"有没有总线"，是<b>数据结构由谁定义</b>。</p>
+
+  <table>
+    <tr><th>#</th><th>差距</th><th>原厂</th><th>本方</th><th>证据</th></tr>
+    <tr>
+      <td>G1</td>
+      <td><b>ROI 记录结构定义在工具里</b></td>
+      <td>由平台定义（<code>ROIType</code> + <code>ROIBox</code> 等结构体），72 个模块共用</td>
+      <td>由 Blob 定义（<code>BlobLocalRoi</code> 四层类型在 <code>BlobRoi.cs</code>）</td>
+      <td class="path">BlobRoi.cs:58-90</td>
+    </tr>
+    <tr>
+      <td>G2</td>
+      <td><b>显示对象装配写在代码里</b></td>
+      <td><code>Display.xml</code> 声明 16 个对象外观 + <code>Tab_Image Display</code> 声明挂载清单</td>
+      <td><code>BlobDisplayUi</code> 40 行硬写 7 组；<code>BlobDisplay.xml</code> 被拿去装表格列</td>
+      <td class="path">BlobParameters.cs:1424</td>
+    </tr>
+    <tr>
+      <td>G3</td>
+      <td><b>其余 9 个工具没有参数声明</b></td>
+      <td>每个工具都有 <code>Algorithm.xml</code></td>
+      <td>参数全在 C# 里，0 个 XML</td>
+      <td class="path">全仓扫描 0 命中</td>
+    </tr>
+    <tr>
+      <td>G4</td>
+      <td><b>UI 装配零测试覆盖</b></td>
+      <td>—</td>
+      <td>140 个测试全在数据层/执行层</td>
+      <td class="path">测试清单</td>
+    </tr>
+    <tr>
+      <td>G5</td>
+      <td>参数值多份投影</td>
+      <td>一份（引擎参数表）</td>
+      <td>草稿 → 冻结 → <code>InputValues</code> 三次投影</td>
+      <td class="path">FieldSettingsDraft / FieldSettings / InputValues</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>二·五、Blob 用的其他共享控件要不要都接总线</h2>
+  <p>Blob 引用了 9 个平台命名空间、约 30 个类型，看起来很多。按职责分三类：</p>
+  <table>
+    <tr><th>类别</th><th>类型</th><th>读写参数？</th><th>怎么处理</th></tr>
+    <tr>
+      <td>参数字段</td>
+      <td><code>DeclaredInputFieldsView</code>(15)、<code>DeclaredFieldsView</code>(5)、<code>DeclaredFieldRow</code>(6)</td>
+      <td><span class="tag mid">是</span></td>
+      <td>阶段 4 改统一入口，<b>控件零改动</b></td>
+    </tr>
+    <tr>
+      <td>ROI 编辑</td>
+      <td><code>NativeRoiEditor</code>、<code>NativeRoiSession</code>、<code>RoiEditProposal/Snapshot/Acceptance</code>、<code>NativeRoiUiDraftControls</code>、<code>NativeAssistUiDraftControls</code>、<code>RoiDeclarations</code>(11)</td>
+      <td><span class="tag mid">是</span></td>
+      <td>阶段 1 结构标准化解决</td>
+    </tr>
+    <tr>
+      <td>纯渲染</td>
+      <td><code>NativeIntegerRadioChoice</code>(5)、<code>NativeResultViewport</code>(2)、<code>DeclaredSettingsView</code>(5，容器不存值)</td>
+      <td><span class="tag ok">否</span></td>
+      <td>不用接</td>
+    </tr>
+  </table>
+  <div class="quote">
+    <b>结论：没有一个控件需要单独改。</b>参数字段共用一个读写入口，ROI 走结构标准化，纯渲染类根本不碰值。
+  </div>
+</section>
+
+<section>
+  <h2>三、四个阶段</h2>
+
+  <div class="stage">
+    <h3>阶段 0：补测试地基（前置）</h3>
+    <p>结果页装配现在零覆盖，改它没有兜底。先补 3 条冒烟：</p>
+    <ul>
+      <li>图形组数量与顺序 = 声明里的 7 组</li>
+      <li>文本项绑定到正确的 7 个字段</li>
+      <li>可见性项 = 2 项</li>
+    </ul>
+    <div class="meta"><span>规模：3 个测试</span><span>风险：无</span><span>产出：改 UI 的安全网</span></div>
+  </div>
+
+  <div class="stage">
+    <h3>阶段 1：ROI 记录结构标准化（解 G1）</h3>
+    <p><b>核心动作：把数据结构从工具搬到平台。</b>不是搬 570 行代码，是把 4 个类型定义换个程序集。</p>
+    <table>
+      <tr><th>现在（tools/&hellip;/BlobRoi.cs）</th><th>改后（src/Plugin.Contracts）</th></tr>
+      <tr><td><code>BlobLocalRoi.ShapeType</code></td><td><code>RoiShapeValue</code></td></tr>
+      <tr><td><code>BlobLocalRoi.ItemType</code></td><td><code>RoiItemValue</code></td></tr>
+      <tr><td><code>BlobLocalRoi.GroupType</code></td><td><code>RoiGroupValue</code></td></tr>
+      <tr><td><code>BlobLocalRoi.Declaration</code></td><td><code>RoiDocumentValue</code></td></tr>
+    </table>
+    <p>连带来一起搬的：<code>Root</code>/<code>Group</code>/<code>Item</code>/<code>Items</code>/<code>Coverage</code> 构造与访问、<code>Validate</code>/<code>ValidateShape</code>/<code>NormalizeDegrees</code>/<code>Point</code>、<code>Empty</code>/<code>Explicit</code>/<code>FullDomain</code>/<code>None</code> 常量。</p>
+    <p>留在工具里的：<code>InputId</code>（字段名）、<code>MaximumLocalInspectionCount</code>/<code>MaximumLocalMaskCount</code>（Blob 特有容量）。</p>
+    <p>然后新建 <code>NativeRoiEditHost</code>（平台）管编辑器/会话/帧/选中/待提交/预览/释放，工具侧只剩一个声明：</p>
+    <div class="flow">public sealed record BlobRoiDeclaration : INativeRoiDeclaration
+{
+    RoiDocumentValue Read(InputValues values);      // 从字段读
+    void Write(RoiDocumentValue document, ...);     // 写回字段
+    IReadOnlyList&lt;NativeRoiEditGroup&gt; Groups =&gt; ...  // 两个组
+}</div>
+    <div class="meta">
+      <span>平台 +350 行</span><span>工具 −510 行</span><span>风险：中（7 条基线兜底）</span>
+      <span>验收：ROI 基线通过 + 手工验证绘制/继承/屏蔽区/撤销/重开</span>
+      <span>方案格式：不变</span>
+    </div>
+  </div>
+
+  <div class="stage">
+    <h3>阶段 2：显示声明标准化（解 G2）</h3>
+    <p><code>BlobDisplay.xml</code> 增加三段声明，只写组名不写 id：</p>
+    <div class="flow">&lt;GraphicGroups&gt;
+  &lt;Group key="display.blob" /&gt;
+  &lt;Group key="display.inner-rectangle" /&gt;
+  ...
+&lt;/GraphicGroups&gt;
+&lt;VisibilityItems&gt;&lt;Item key="display.text" /&gt;&lt;Item key="display.outline" /&gt;&lt;/VisibilityItems&gt;
+&lt;TextItems&gt;&lt;Item key="display.text" /&gt;&lt;/TextItems&gt;</div>
+    <p>平台加 <code>IDisplayDeclaration</code> + <code>DisplayOptionsFactory</code>，把声明转成 <code>GraphicDisplays</code>/<code>VisibilityDisplays</code>/<code>TextDisplays</code>。工具侧 <code>BlobDisplayUi</code> 40 → 18 行（只留文本表达式解析）。</p>
+    <div class="meta">
+      <span>平台 +150 行</span><span>工具 −22 行</span><span>风险：中（阶段 0 兜底）</span>
+      <span>验收：3 条冒烟 + 目视结果页</span>
+    </div>
+  </div>
+
+  <div class="stage">
+    <h3>阶段 3：9 个工具参数声明化（解 G3）</h3>
+    <p>每个工具三步：</p>
+    <ol>
+      <li>从现有 C# 参数定义导出 <code>&lt;Tool&gt;Parameters.xml</code></li>
+      <li>接 <code>DeclaredParameterSchema</code>（已有，Blob 已验证逐字段等价）</li>
+      <li>删掉工具自己那份解析代码</li>
+    </ol>
+    <div class="meta">
+      <span>每工具 −200 行</span><span>风险：低</span>
+      <span>验收：参数逐项比对一致 + 参数页打开正常 + 方案读写正常</span>
+    </div>
+  </div>
+
+  <div class="stage">
+    <h3>阶段 4：参数总线接入（解 G5）</h3>
+    <p><b>所有字段控件都不用改。</b>它们写值时都走同一个入口，换存储只改入口本身：</p>
+    <div class="flow">DeclaredInputFieldsView.ReadUnpresentedInput(id)          ← 读，改这里
+DeclaredInputFieldsView.WriteUnpresentedInput(id, 值)      ← 写，改这里
+DeclaredFieldRow(port, label, initial,
+                 Action&lt;ParameterSetting&gt; write)          ← 注入源，改这里</div>
+    <p>控件照旧往入口塞值，不知道自己背后的存储换了。这和原厂一样——172 个 <code>NameValueItem</code> 子类共用基类的 <code>InnerGet/SetStringParamValue</code>，换存储不动控件。</p>
+    <p>真正要配套解决三件事：</p>
+    <table>
+      <tr><th>配套</th><th>问题</th></tr>
+      <tr><td>节点 ID</td><td>仓库按「节点 + 参数名」存，得知道当前编辑的是哪个节点</td></tr>
+      <tr><td>变更通知</td><td>Store 有 <code>Changed</code> 事件，要接到字段行的刷新链上</td></tr>
+      <tr><td>方案保存</td><td>现在读 <code>Fields.Capture()</code>，改后读 <code>Store.Snapshot()</code></td></tr>
+    </table>
+    <div class="meta">
+      <span>控件改动：0 行</span><span>核心改动：2 个方法 + 1 处注入</span>
+      <span>风险：中</span><span>前提：阶段 3 完成</span><span>收益：消除多份投影</span>
+    </div>
+  </div>
+
+  <div class="quote">
+    <b>为什么控件不用改：</b>本方的 <code>DeclaredFieldRow</code> 在构造时收一个
+    <code>Action&lt;ParameterSetting&gt; write</code> 委托，所有字段行共用；<code>DeclaredInputFieldsView</code>
+    提供唯一的 <code>ReadUnpresentedInput</code> / <code>WriteUnpresentedInput</code> 通道。
+    控件与存储之间本来就隔着一层，换存储只换这层。
+  </div>
+</section>
+
+<section>
+  <h2>四、顺序不能反</h2>
+  <div class="flow">阶段 0（测试地基）
+    ↓
+阶段 1（ROI 结构标准化）   ← 让新工具接 ROI 只写 60 行
+    ↓
+阶段 2（显示声明标准化）   ← 让新工具接显示只写 0 行
+    ↓
+阶段 3（9 个工具声明化）   ← 用新方式改造旧工具
+    ↓
+阶段 4（总线接入）         ← 改 2 个入口，控件零改动</div>
+  <div class="quote warn">
+    <b>反过来会返工：</b>如果先做阶段 3，9 个工具按"自带解析"的方式改造，等阶段 1、2 做完还得再改一遍。
+  </div>
+</section>
+
+<section>
+  <h2>五、明确不做的事</h2>
+  <table>
+    <tr><th>不做</th><th>理由</th></tr>
+    <tr><td>拆成 <code>Algorithm.dll</code> + <code>Bridge.dll</code></td><td>全 C#，没有跨语言边界；原厂拆是因为 C++/C# 必须分</td></tr>
+    <tr><td>把 ROI 拆成散装数值参数</td><td><b>原厂也没这么做</b>——它也是 <code>byte[]</code> 整体存（<code>Algorithm.xml</code> 里 ROI 只有 <code>RoiType</code>/<code>MulRoiType</code> 两项）</td></tr>
+    <tr><td>拆 <code>Algorithm.xml</code> / <code>AlgorithmTab.xml</code></td><td>方案 6.2 明确合并，拆分只会增加 id 对不上的风险</td></tr>
+    <tr><td>补 <code>BlobCount</code> 显示项</td><td>原厂自己都没给它定义外观；表格里几行 Blob 一眼可见</td></tr>
+    <tr><td>让控件直接传 <code>HRegion</code></td><td>原生句柄不能序列化、不能跨线程，覆盖不了保存/重开/无 UI</td></tr>
+    <tr><td>参数改回弱类型（字符串）</td><td>全 C# 环境，强类型是优势；原厂弱类型是被跨语言逼的</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>六、收益量化</h2>
+  <table>
+    <tr><th>场景</th><th>现在</th><th>方案完成后</th></tr>
+    <tr><td>新工具接入 ROI 编辑</td><td>570 行</td><td>60 行</td></tr>
+    <tr><td>新工具接入显示装配</td><td>40 行</td><td>0 行</td></tr>
+    <tr><td>新工具接入参数声明</td><td>200 行</td><td>10 行</td></tr>
+    <tr><td><b>10 个工具总成本</b></td><td><b>约 8,000 行</b></td><td><b>约 1,500 行</b></td></tr>
+  </table>
+  <p>按 80% 的工具需要 ROI 算，阶段 1 单项就能省约 3,000 行。</p>
+</section>
+
+<section>
+  <h2>七、当前已完成的基础件</h2>
+  <table>
+    <tr><th>件</th><th>位置</th><th>状态</th></tr>
+    <tr><td><code>ParameterStore</code></td><td><code>Plugin.Contracts</code></td><td><span class="tag ok">已建</span> 150 行 + 10 测试，未接入</td></tr>
+    <tr><td><code>DeclaredParameterSchema</code></td><td><code>Plugin.Contracts</code></td><td><span class="tag ok">已建</span> Blob 已切换（待编译验证）</td></tr>
+    <tr><td><code>IRoiDocument</code> + <code>RoiDocumentProjection</code></td><td><code>Plugin.Wpf/Adapters/Regions</code></td><td><span class="tag ok">已建</span> Blob 已用</td></tr>
+    <tr><td><code>INativeRoiEditDocument</code></td><td>同上</td><td><span class="tag ok">已建</span> Blob 已实现</td></tr>
+    <tr><td><code>NativeRoiGroupComposer</code></td><td><code>Plugin.Wpf/Presenters/Regions</code></td><td><span class="tag ok">已建</span> Blob 已用</td></tr>
+    <tr><td><code>RoiShapeValue</code> 等 4 个类型</td><td>—</td><td><span class="tag bad">未做</span> 阶段 1 的核心</td></tr>
+    <tr><td>统一读写入口</td><td><code>DeclaredInputFieldsView</code></td><td><span class="tag ok">已存在</span> 阶段 4 只需替换内部实现</td></tr>
+  </table>
+  <div class="quote stop">
+    <b>当前阻塞：</b>编译验证被运行中的 <code>SunEyeVision.UI</code>（PID 2676）锁住 Release 目录。关掉它就能继续。
+  </div>
+</section>
+
+<div class="foot">证据：docs/evidence/original-release-units/BlobAnalysis/　·　反编译：docs/07-工具逆向/decompiled/</div>
+
+</div></body></html>

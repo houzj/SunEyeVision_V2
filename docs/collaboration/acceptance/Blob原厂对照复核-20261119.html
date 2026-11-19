@@ -67,9 +67,9 @@ th,td{border:1px solid #d7e0eb;padding:8px 10px;vertical-align:top}
 
 <section>
   <h2>一句话结论</h2>
-  <p>骨架对上了，细节有四个真差距。最要紧的是<b>结果页的图像显示声明</b>——原厂写在一个 XML 里，我们写在代码里，而且把那个 XML 拿去装了表格列。</p>
+  <p>骨架对上了，真正要处理的是三个差距。最要紧的是<b>结果页的显示声明</b>——原厂把「叠哪些图形、长什么样」写进 XML，我们写在代码里，而且把那个 XML 拿去装了表格列。界面看不出差异，但改一个对象要重新编译。</p>
   <div class="sum">
-    <div class="s1"><b>4</b><span>已证实的差距</span></div>
+    <div class="s1"><b>3</b><span>真差距</span></div>
     <div class="s2"><b>6</b><span>已对齐</span></div>
     <div class="s3"><b>3</b><span>还没查清</span></div>
     <div class="s4"><b>1</b><span>清单写错了的名字</span></div>
@@ -124,17 +124,18 @@ th,td{border:1px solid #d7e0eb;padding:8px 10px;vertical-align:top}
 <section>
   <h2>二、四个真正的差距</h2>
 
-  <h3>差距 1：少了一个配置区（Tab_Image Display）</h3>
-  <p>原厂的参数页 XML 里有四个分组：</p>
+  <h3>先澄清一条：Tab_Image Display 不算功能缺口</h3>
+  <p>原厂的参数页 XML 里确实有四个分组：</p>
   <table>
     <tr><th>原厂分组</th><th>标记</th><th>我们有吗</th></tr>
     <tr><td><code>Tab_ROI Area</code></td><td>CanTriggerRun=TRUE</td><td><span class="tag ok">有</span> 基本参数 / ROI区域</td></tr>
     <tr><td><code>Tab_Run Params</code></td><td>CanTriggerRun=TRUE</td><td><span class="tag ok">有</span> 运行参数（我们拆成两组）</td></tr>
     <tr><td><code>Tab_Check Result</code></td><td>SubscribeVisible=False</td><td><span class="tag ok">有</span> 结果显示（我们拆成两组）</td></tr>
-    <tr><td><code>Tab_Image Display</code></td><td>无</td><td><span class="tag bad">没有</span></td></tr>
+    <tr><td><code>Tab_Image Display</code></td><td>无（12 项只读登记，<code>AccessMode="O"</code>）</td><td><span class="tag mid">无此分组</span> 图形叠加写在代码里，7 组都在</td></tr>
   </table>
-  <p>差的是结果页里那块「图像怎么显示」的配置区。原厂把它当参数页的一个分组，我们没这个分组。</p>
-  <p class="path">证据：docs/evidence/original-release-units/BlobAnalysis/IMVSBlobFindModuAlgorithmTab.xml</p>
+  <div class="quote">这个分组的 12 项全是 <code>AccessMode="O"</code> 只读登记，界面上没有可操作控件。它只是告诉平台「本工具要叠哪些图形、去桥接层取哪个对象」。本方的图形叠加一样不少（7 个组 + 2 个显隐 + 1 个文本），只是清单写在 <code>BlobDisplayUi</code> 代码里。</div>
+  <p>所以这条不构成功能缺口：界面看不出、行为一致，差别只在「改一个对象要不要重新编译」。真正要处理的是下面两条。</p>
+  <p class="path">证据：docs/evidence/original-release-units/BlobAnalysis/IMVSBlobFindModuAlgorithmTab.xml 行 2559–2720</p>
 
   <h3>差距 2：Display.xml 被我们拿错用途了（最要紧）</h3>
   <div class="vs">
@@ -159,26 +160,24 @@ th,td{border:1px solid #d7e0eb;padding:8px 10px;vertical-align:top}
     <b>结果就是</b>：图形显示（哪 7 个组、什么顺序、什么角色）写死在代码 <code>BlobDisplayUi</code> 里，没走声明。原厂这块是声明驱动的。
   </div>
 
-  <h3>差距 3：16 个显示对象，我们缺 7 个</h3>
+  <h3>差距 3：显示对象清单，实际只差一项</h3>
+  <p>按原厂 <code>Tab_Image Display</code> 登记的 12 项对照（第 7 项 <code>BlobArea</code> 由原厂自行注释）：</p>
   <div class="obj">
-    <span class="have">输入图像<small>平台视口承担</small></span>
-    <span class="miss">Blob 图像<small>缺</small></span>
-    <span class="miss">二值图像<small>缺</small></span>
-    <span class="have">Blob 轮廓<small>有</small></span>
+    <span class="have">Blob（BlobFiled）<small>有</small></span>
     <span class="have">最大内接矩形<small>有</small></span>
-    <span class="have">ROI 区域<small>有</small></span>
+    <span class="have">ROI 检测区<small>有</small></span>
     <span class="part">轮廓点<small>只有显隐开关</small></span>
-    <span class="have">定位点（参考）<small>有</small></span>
-    <span class="have">定位点（运行）<small>有</small></span>
+    <span class="have">定位点-初始<small>有</small></span>
+    <span class="have">定位点-运行<small>有</small></span>
+    <span class="miss">Blob 数量<small>缺</small></span>
+    <span class="have">Blob 轮廓<small>有</small></span>
     <span class="have">显示文本<small>有</small></span>
-    <span class="miss">数据记录 1<small>缺</small></span>
-    <span class="miss">数据记录 2<small>缺</small></span>
-    <span class="part">结果列表<small>才当表格列</small></span>
-    <span class="miss">外部 ROI<small>缺</small></span>
-    <span class="miss">输出掩膜<small>缺</small></span>
-    <span class="have">扇环<small>有</small></span>
+    <span class="have">屏蔽区<small>有</small></span>
+    <span class="have">扇环检测区<small>有</small></span>
+    <span class="have">输入图 / Blob 图 / 二值图<small>平台视口承担</small></span>
   </div>
-  <p class="path">证据：IMVSBlobFindModuDisplay.xml 的 16 个 &lt;Object Name="..."&gt;</p>
+  <div class="quote">真正缺的只有 <code>BlobCount</code>（显示名「Blob数量」）。原厂 <code>Display.xml</code> 里也没给它定义外观，走平台默认；本方结果表格里几行 Blob 一眼能看出数量，影响接近于零。</div>
+  <p class="path">证据：IMVSBlobFindModuAlgorithmTab.xml 行 2559–2720，12 个 ImageViewConfig</p>
 
   <h3>差距 4：ROI 那块，业务和编排混在一个类里</h3>
   <div class="vs">
@@ -238,7 +237,7 @@ th,td{border:1px solid #d7e0eb;padding:8px 10px;vertical-align:top}
   <h2>六、接下来按顺序做</h2>
   <table>
     <tr><th>顺序</th><th>做什么</th><th>解决哪个差距</th></tr>
-    <tr><td>1</td><td>把 Display.xml 的 16 个对象读全，补齐图像显示配置区，让显示回到声明驱动</td><td>差距 1、2、3</td></tr>
+    <tr><td>1</td><td>把 Display.xml 的 16 个对象读全，让图形显示回到声明驱动</td><td>差距 2、3</td></tr>
     <tr><td>2</td><td>把 38 处 Blob 静态引用逐个判断归属，纯会话编排移出工具</td><td>差距 4</td></tr>
     <tr><td>3</td><td>补原厂关闭时序证据，再动生命周期</td><td>未查清 1</td></tr>
   </table>

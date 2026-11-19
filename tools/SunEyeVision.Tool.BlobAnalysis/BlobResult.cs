@@ -10,6 +10,7 @@ using System.Xml;
 namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
 
 using static SunEyeVision.Tool.BlobAnalysis.Runtime.BlobParameterDefinition;
+using static SunEyeVision.Plugin.Contracts.DeclaredParameterSchema;
 
 
 /// <summary>Declared Blob table metadata. Runtime appearance belongs only to BlobResultDisplay fields.</summary>

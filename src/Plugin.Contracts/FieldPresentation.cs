@@ -12,7 +12,7 @@ public sealed record FieldLayout(string Page, string Section, FieldCondition? Vi
     double Increment=1, double? PairMinimum=null, double? PairMaximum=null, FieldCondition? OrVisibleWhen=null,
     BooleanStateTips? BooleanTips=null, string? PairDisplayName=null, string? VmCategory=null);
 
-public enum FieldEditorKind { Scalar, Choice, Record, Sequence, Geometry, Region, ResultPresentation, Image, FolderPath }
+public enum FieldEditorKind { Scalar, Choice, Record, Sequence, Geometry, Region, ResultPresentation, Image, FolderPath, Camera }
 [Flags] public enum FieldEditModes { None=0, Constant=1, Reference=2, NumericGeometry=4, Gesture=8, DisplayExpression=16 }
 public enum FieldDefaultPresence { Unset, ExplicitValueRequired, UseDeclaredDefault }
 public enum RegionFieldMode { LocalGeometry, InheritedGeometry, InheritedRegion,
@@ -84,6 +84,8 @@ public sealed class ToolPresentation
                 FieldEditorKind.Scalar=>port.Type.Shape==ValueShape.Scalar,
                 FieldEditorKind.Choice=>port.Type.Shape==ValueShape.Scalar&&port.Type.Scalar==ScalarKind.Text,
                 FieldEditorKind.FolderPath=>port.Type==TypeRef.ScalarOf(ScalarKind.Text)&&port.EditModes==FieldEditModes.Constant,
+    // 相机选择与文件夹路径同形：常量文本，取值由宿主注入的设备列表约束。
+    FieldEditorKind.Camera=>port.Type==TypeRef.ScalarOf(ScalarKind.Text)&&port.EditModes==FieldEditModes.Constant,
                 FieldEditorKind.Record or FieldEditorKind.ResultPresentation=>port.Type.Shape==ValueShape.Record,
                 FieldEditorKind.Sequence=>port.Type.Shape==ValueShape.Sequence,
                 FieldEditorKind.Geometry=>IsGeometryDefinition(port.Type),

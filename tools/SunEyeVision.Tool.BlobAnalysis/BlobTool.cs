@@ -1,8 +1,11 @@
 using SunEyeVision.HalAdapter;
-using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Contracts.Results.Presentation;
+using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
+using SunEyeVision.Plugin.Wpf.Presenters.Results;
 
-namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
+namespace SunEyeVision.Tool.BlobAnalysis.Runtime
+{
 
 /// <summary>Blob runtime entry. One invocation only; workflow scheduling belongs to the host.</summary>
 public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolResultPresentationProvider, IToolSettingsFields, IToolCatalogProvider,IToolParameterBindingNames,IToolManualReferenceSources,IToolKnownSettingsValidation,IToolParameterReferenceBehavior,IToolExecutionInputs,IToolResultDisplayProvider,IToolDormantParameterDefaults,IToolFieldTransitions,IToolRuntimeInitialization
@@ -207,4 +210,19 @@ public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolR
     public ToolCapabilities Capabilities() => new(new[] { "halcon" });
     public void InitializeRuntime() => HalconPlatform.Initialise();
     public IToolSession<BlobSettings, BlobOutput> CreateSession() => new BlobAlgorithm();
+}
+}
+
+namespace SunEyeVision.Tool.BlobAnalysis.Wpf
+{
+
+public sealed class BlobEditorFactory : IToolPresentationFactory
+{
+    public IToolSettingsView CreateSettingsView(IToolSettingsDraft draft,ToolSettingsViewOptions options)
+        // The selected page builds first. The other declared pages compose on selection.
+        =>new Views.BlobParameterEditor(draft,options with { EagerlyComposePages = true });
+    // 平台组件已完整实现 IToolResultView，工具侧不再保留包装层（原 BlobResultView 只是转发四个成员）。
+    public IToolResultView CreateResultView(ToolSchema schema,ResultProjectionDescriptor projection)
+        =>new DeclaredResultTable(schema,projection);
+}
 }

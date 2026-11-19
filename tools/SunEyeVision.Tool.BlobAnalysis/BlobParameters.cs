@@ -1,13 +1,25 @@
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Wpf.Adapters.References;
+using SunEyeVision.Plugin.Wpf.Fields;
+using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
+using SunEyeVision.Plugin.Wpf.Presenters.Regions;
+using SunEyeVision.Plugin.Wpf.Presenters.Results;
+using SunEyeVision.Tool.BlobAnalysis.Runtime;
+using SunEyeVision.Tool.BlobAnalysis.Wpf.Views;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text.Json.Serialization;
+using System.Windows.Controls;
+using System.Windows;
 using System.Xml.Linq;
 using System.Xml;
 
-namespace SunEyeVision.Tool.BlobAnalysis.Runtime;
+namespace SunEyeVision.Tool.BlobAnalysis.Runtime
+{
 
 /// <summary>Blob运行参数的中性快照。宿主资源和ROI不在此状态中。</summary>
 public enum BlobThresholdType { BinaryImage = 1, SingleThreshold, DoubleThreshold, AutoThreshold, FixedSoftThreshold, RelativeSoftThreshold }
@@ -784,4 +796,669 @@ public static class BlobThresholdCapabilities
         nameof(BlobSettings.RelativeLeftRatio) or nameof(BlobSettings.RelativeRightRatio) or nameof(BlobSettings.RelativeLowerRatio) or nameof(BlobSettings.RelativeUpperRatio)=>mode==BlobSegmentationMode.RelativeSoftThreshold,
         _=>false
     };
+}
+}
+
+namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Design
+{
+
+/// <summary>Private design-only values. No discovery, documents, algorithm sessions or native resources.</summary>
+public static class BlobDesignData
+{
+    public static readonly DependencyProperty ParameterSampleProperty=DependencyProperty.RegisterAttached(
+        "ParameterSample",typeof(bool),typeof(BlobDesignData),new PropertyMetadata(false,AttachParameterSample));
+    public static bool GetParameterSample(DependencyObject view)=>(bool)view.GetValue(ParameterSampleProperty);
+    public static void SetParameterSample(DependencyObject view,bool value)=>view.SetValue(ParameterSampleProperty,value);
+    private static void AttachParameterSample(DependencyObject view,DependencyPropertyChangedEventArgs args)
+    {
+        // Attach to the real child, so displaying the root XAML does not depend on its code-behind constructor.
+        if(args.NewValue is true&&DesignerProperties.GetIsInDesignMode(view)&&view is DeclaredSettingsView presenter)
+        {var sample=CreateParameterContext();BindParameterContext(presenter,sample);}
+    }
+    public static (IToolSettingsDraft Draft,ToolSettingsViewOptions Options) CreateParameterContext()
+    {
+        var draft=new DesignDraft();var schema=draft.Tool.Describe();
+        var source = new DeclaredReferenceCandidate("图像源 · 图像", "sample-image", "sample-workflow",
+            new Port("output.image", TypeRef.ResourceOf(ResourceKind.Image)), Array.Empty<string>());
+        var inputDraft = new FieldSettingsDraft(schema, new FieldSettings(schema.Inputs, new Dictionary<string, ParameterSetting>
+        {
+            [BlobTool.ImageInput] = new ReferenceSetting(source.Reference(BindingSelection.All))
+        }));
+        var inputs = new DeclaredInputFieldsView(schema, port => inputDraft.CaptureFields().Read(port.Id),
+            (port, value) => inputDraft.ApplyFields(new Dictionary<string, ParameterSetting> { [port.Id] = value }, _ => { }),
+            new ReferenceFieldOptions(port => port.Id == BlobTool.ImageInput
+                ? new ReferenceCandidates(new[] { source }, Array.Empty<DeclaredReferenceCandidate>())
+                : ReferenceCandidates.Empty));
+        return(draft,new(ReferenceOptions:ReferenceFieldOptions.Empty,InputSection:schema.Presentation!.Fields.First().Layout!.Page,InputContent:inputs));
+    }
+    private static readonly DependencyProperty CompositionProperty=DependencyProperty.RegisterAttached("Composition",typeof(BlobUiComposition),typeof(BlobDesignData));
+    internal static BlobUiComposition? GetComposition(DeclaredSettingsView presenter)=>presenter.GetValue(CompositionProperty) as BlobUiComposition;
+    public static void BindParameterContext(DeclaredSettingsView presenter,(IToolSettingsDraft Draft,ToolSettingsViewOptions Options) context)
+    {
+        if(GetComposition(presenter) is {} previous)
+        {
+            if(previous.OwnsContext(context.Draft,context.Options))return;
+            previous.Dispose();presenter.ClearValue(CompositionProperty);
+        }
+        var composition=new BlobUiComposition(presenter,context.Draft,context.Options);presenter.SetValue(CompositionProperty,composition);
+    }
+    private sealed class DesignDraft : IToolSettingsDraft
+    {
+        internal BlobTool Tool {get;}=new();
+        private readonly FieldSettingsDraft _draft;
+        public DesignDraft()
+        {
+            var declaration=(IToolSettingsFields)Tool;
+            var schema=SunEyeVision.Plugin.Contracts.Results.Presentation.ResultDisplayFields.EditorSchema(Tool);
+            var values=declaration.ReadSettings(new BlobSettings()).CopyValues().Concat(Tool.CreateDisplaySettings().CopyValues())
+                .ToDictionary(pair=>pair.Key,pair=>(ParameterSetting)new ConstantSetting(pair.Value),StringComparer.Ordinal);
+            _draft=new(schema,new FieldSettings(schema.Inputs,values));
+        }
+        public ToolSchema Schema=>_draft.Schema;
+        public long Revision=>_draft.Revision;
+        public FieldSettings CaptureFields()=>_draft.CaptureFields();
+        public FieldSettings CaptureValidatedFields()
+        {
+            var fields=_draft.CaptureValidatedFields();
+            if(fields.Capture().Values.Any(value=>value is ReferenceSetting))return fields;
+            var settings=((IToolSettingsFields)Tool).MaterializeSettings(fields.Select(Tool.SettingsSchema.Inputs).Materialize(new Dictionary<string,object?>()));
+            var errors=((IToolDefinition)Tool).Validate(settings);
+            if(errors.Count!=0)throw new ArgumentException(string.Join("; ",errors.Select(error=>error.Message)));
+            return fields;
+        }
+        public void ApplyFields(IReadOnlyDictionary<string,ParameterSetting> changes,Action<FieldSettings> acceptCandidate)=>_draft.ApplyFields(changes,acceptCandidate);
+    }
+}
+
+/// <summary>Designer uses the same declared table as runtime, without a workflow or algorithm session.</summary>
+public static class BlobResultDesignData
+{
+    public static readonly DependencyProperty DeclarationPreviewProperty=DependencyProperty.RegisterAttached(
+        "DeclarationPreview",typeof(bool),typeof(BlobResultDesignData),new PropertyMetadata(false,Attach));
+    public static bool GetDeclarationPreview(DependencyObject target)=>(bool)target.GetValue(DeclarationPreviewProperty);
+    public static void SetDeclarationPreview(DependencyObject target,bool value)=>target.SetValue(DeclarationPreviewProperty,value);
+    private static void Attach(DependencyObject target,DependencyPropertyChangedEventArgs args)
+    {
+        if(target is not ContentControl host)throw new ArgumentException("结果预览需要内容宿主。");
+        if(args.NewValue is true&&DesignerProperties.GetIsInDesignMode(host))
+        {
+            var tool=new BlobTool();
+            var schema=tool.ResultSchema;
+            var table=new DeclaredResultTable(schema,tool.ResultProjection);
+            var region=new SampleRegion();
+            var points=new[]{new Point2(20,20),new Point2(40,20),new Point2(40,32),new Point2(20,32)};
+            var secondPoints=new[]{new Point2(49,33),new Point2(61,33),new Point2(61,41),new Point2(49,41)};
+            var records=new[] {
+                new BlobMeasurement(1,0,240,64,30,26,0.74,0.92,new BlobBounds(20,20,20,12),new BlobOrientedBounds(30,26,20,12,0),points,Array.Empty<BlobBoundaryPath>(),region,true),
+                new BlobMeasurement(2,1,96,40,55,37,0.81,0.88,new BlobBounds(49,33,12,8),new BlobOrientedBounds(55,37,12,8,0),secondPoints,Array.Empty<BlobBoundaryPath>(),region,true)
+            };
+            object? Sample(Port port)
+            {
+                if(port.Id==BlobSchema.BlobsPort)
+                    return new SequenceValue(BlobSchema.BlobsType,records.Select(record=>(object?)BlobSchema.Freeze(record)));
+                if(port.Nullable)return null;
+                return port.Type.Shape switch {
+                    ValueShape.Resource when port.Type.Resource==ResourceKind.Region=>region,
+                    ValueShape.Scalar=>port.Type.Scalar switch {
+                        ScalarKind.Boolean=>true,ScalarKind.Int64=>0L,ScalarKind.Float64=>0d,ScalarKind.Text=>string.Empty,
+                        _=>throw new NotSupportedException("未知结果示例标量类型。")},
+                    ValueShape.Sequence when port.Type.Element==(TypeRef)DataType.Number=>Array.Empty<double>(),
+                    ValueShape.Sequence=>new SequenceValue(port.Type,Array.Empty<object?>()),
+                    _=>throw new NotSupportedException("未知结果示例声明类型。")};
+            }
+            var values=new InputValues(schema.Outputs,schema.Outputs.ToDictionary(port=>port.Id,Sample,StringComparer.Ordinal));
+            var run=new RunIdentity(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid(),"design",Guid.NewGuid());
+            var publication=new ResultPublication(schema,new(Guid.NewGuid(),run,0,schema.Fingerprint),
+                ResultViewState.Success,values,null,()=>true);
+            table.Present(publication);
+            host.Content=table;
+        }
+    }
+
+    // Managed-only sample: no image acquisition, native handle, workflow or algorithm execution.
+    private sealed class SampleRegion : IReadOnlyRegion
+    {
+        public CoordinateFrame Frame=>BlobSchema.ImageFrame;
+        public ImageFrameAddress SourceFrame {get;}=new(Guid.NewGuid(),"design-result");
+        public IRegionReadLease AcquireReader()=>new Reader(this);
+        private sealed class Reader(SampleRegion region) : IRegionReadLease
+        {
+            public CoordinateFrame Frame=>region.Frame;
+            public ImageFrameAddress SourceFrame=>region.SourceFrame;
+            public bool IsEmpty=>true;
+            public int RunCount=>0;
+            public ReadOnlyMemory<RegionRun> ReadRuns(int offset,int maximumCount)
+            {
+                ResourceContractRules.ValidateBatch(offset,maximumCount,0);
+                return ReadOnlyMemory<RegionRun>.Empty;
+            }
+            public void Dispose() { }
+        }
+    }
+}
+}
+
+namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Views
+{
+
+/// <summary>The same real three-page composition for runtime and the XAML designer.</summary>
+internal sealed class BlobUiComposition : IDisposable
+{
+    private const string PositionCorrectionField = "field:c95f3a26edf55097863a7ec47d17cce5";
+    private readonly DeclaredSettingsView _editor;
+    internal IToolSettingsDraft Draft {get;}
+    private readonly ToolSettingsViewOptions _sourceOptions;
+    private readonly ToolSettingsViewOptions _baseOptions;
+    private NativeAssistUiDraftControls? _assistUi;
+    private readonly FrameworkElement _assistPointVisibility = new() { Visibility = Visibility.Collapsed };
+    private BlobSupportedWindowState? _supportedState;
+    internal BlobLocalRoiOwner? _roiOwner;
+    private NativeRoiUiDraftControls? _roiUi;
+    private readonly ToolSettingsViewOptions _composed;
+    private bool _disposed,_bound;
+    private int _buildingPages;
+    private DeclaredFieldsView? _pageHost;
+    private string? _compositionError;
+    private readonly Dictionary<string,long> _stageMs=new(StringComparer.Ordinal);
+
+    private readonly TaskCompletionSource<bool> _ready = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    internal IReadOnlyDictionary<string,long> StageMs=>_stageMs;
+    internal Task ReadyTask=>_ready.Task;
+    internal bool IsReady=>!_disposed&&_bound&&_buildingPages==0&&_compositionError is null;
+    internal string? CompositionError=>_compositionError;
+    internal event Action? Changed;
+    internal bool HasPending=>_roiOwner?.HasPending==true||_roiUi?.HasPendingEdits==true||_assistUi is {HasPendingEdits:true,Visibility:Visibility.Visible};
+    internal long RoiRevision=>_roiOwner?.Revision??0;
+    internal BlobUiComposition(DeclaredSettingsView editor,IToolSettingsDraft draft,ToolSettingsViewOptions options)
+    {
+        _editor=editor;Draft=draft;_sourceOptions=options;
+        options=options with{HeaderlessSectionAnchors=new HashSet<string>{PositionCorrectionField}};
+        _baseOptions=BlobRunUi.Configure(options);
+        try
+        {
+            _composed=BlobDisplayUi.Configure(_baseOptions,_assistPointVisibility) with {ValidateUiState=ValidateUiState,PageBuilt=BuildPage};
+            RefreshSupported();editor.Bind(draft,_composed);_bound=true;
+            editor.Changed+=RefreshSupported;
+            editor.SelectedPageChanged+=OnPageChanged;editor.IsVisibleChanged+=OnVisibility;editor.Unloaded+=OnUnloaded;
+            _ready.TrySetResult(true);
+        }
+        catch(Exception failure){try{Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}throw;}
+    }
+    internal bool OwnsContext(IToolSettingsDraft draft,ToolSettingsViewOptions options)=>
+        !_disposed&&ReferenceEquals(Draft,draft)&&ReferenceEquals(_editor.Draft,draft)&&ReferenceEquals(_sourceOptions,options);
+    private void Notify(){if(!_disposed)Changed?.Invoke();}
+    private void OnInputChanged(){RefreshSupported();Notify();}
+    internal void RefreshAcceptedInputs()
+    {
+        if(_disposed||_roiUi is null||_supportedState is null)return;
+        _supportedState.RefreshAcceptedInputs(_roiUi);
+    }
+    private void RefreshSupported()
+    {
+        if(_disposed)return;
+        try
+        {
+            var mode = _baseOptions.ReadInputSetting?.Invoke(BlobImageRoi.ModeId)
+                ?? (_baseOptions.InputContent as DeclaredInputFieldsView)?.ReadUnpresentedInput(BlobImageRoi.ModeId)
+                ?? new UnsetSetting();
+            var correction = BlobParameterDefinition.Instance.SettingsFieldId(nameof(BlobSettings.IsPositionCorrectionEnabled));
+            _assistPointVisibility.Visibility = !BlobImageRoi.IsImageMode(mode) && Draft.CaptureFields().Read(correction) is ConstantSetting { Value:true }
+                ? Visibility.Visible : Visibility.Collapsed;
+        }
+        catch (Exception error) when (error is ArgumentException or InvalidOperationException)
+        {
+            _assistPointVisibility.Visibility = Visibility.Collapsed;
+        }
+        if(_assistUi is {} assist)
+            assist.Visibility=_assistPointVisibility.Visibility;
+        if(_supportedState is {} state)state.Refresh();
+        else BlobSupportedWindowState.ProjectSources(Draft,_baseOptions.InputContent as DeclaredInputFieldsView,()=>!_disposed);
+    }
+    private string? ValidateUiState()
+    {
+        if(_disposed||!ReferenceEquals(_editor.Draft,Draft))return "参数窗口已失效，请重新打开。";
+        var hostError=_sourceOptions.ValidateUiState?.Invoke();
+        if(!string.IsNullOrEmpty(hostError))return hostError;
+        return BlobSupportedWindowState.ValidateSettings(Draft)??ValidateOrderedRanges()
+            ??(_supportedState is not null?_supportedState.Validate():_baseOptions.InputContent is DeclaredInputFieldsView inputs?BlobSupportedWindowState.ValidateInputs(inputs,Draft)
+                :_baseOptions.InputContentFactory is not null?"基本参数输入页尚未建立，无法核验原有输入保护；请先打开基本参数页再确认或执行。":null);
+    }
+    private string? ValidateOrderedRanges()
+    {
+        var fields=Draft.CaptureFields();
+        string Id(string property)=>BlobParameterDefinition.Instance.SettingsFieldId(property);
+        var pairs=new List<(string Low,string High,string Name)>();
+        if(fields.Read(Id(nameof(BlobSettings.SegmentationMode))) is ConstantSetting{Value:"FixedSoftThreshold"})
+            pairs.Add((Id(nameof(BlobSettings.FixedSoftLowerThreshold)),Id(nameof(BlobSettings.FixedSoftUpperThreshold)),"固定软阈值"));
+        if(fields.Read(Id(nameof(BlobSettings.IsAreaFilterEnabled))) is ConstantSetting{Value:true})
+            pairs.Add((Id(nameof(BlobSettings.FilterAreaMin)),Id(nameof(BlobSettings.FilterAreaMax)),"面积"));
+        foreach(var pair in pairs)
+        {
+            // Subscription values are resolved by the invocation. Last accepted current values
+            // do not describe a newly selected source or index. Native model/readback checks are distinct from binding proposals.
+            if(fields.Read(pair.Low) is not ConstantSetting lower||fields.Read(pair.High) is not ConstantSetting upper)continue;
+            if(lower.Value is not long low||upper.Value is not long high)return pair.Name+"范围常量类型无效。";
+            if(low>high)return pair.Name+"使用原有序范围控件，当前下限超过上限；原设置保持不变。";
+        }
+        return null;
+    }
+    private void BuildPage(string page,DeclaredFieldsView fields,FrameworkElement? pageInput)
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);
+        if(ReferenceEquals(_pageHost,fields)&&_compositionError is not null)return;
+        _buildingPages++;
+        try
+        {
+            if(!ReferenceEquals(_pageHost,fields))ResetPageHost(fields);
+            BuildPageCore(page,fields,pageInput);
+        }
+        catch(Exception error)
+        {
+            _compositionError=error.Message;
+            SunEyeVision.Foundation.Logging.PluginLogger.Error(error.Message,nameof(BlobUiComposition),error);
+            try{ReleaseInputComposition();}
+            catch(Exception cleanup)
+            {
+                SunEyeVision.Foundation.Logging.PluginLogger.Error(cleanup.Message,nameof(BlobUiComposition),cleanup);
+            }
+        }
+        finally
+        {
+            _buildingPages--;
+        }
+        if(_bound)Notify();
+    }
+    private void BuildPageCore(string page,DeclaredFieldsView fields,FrameworkElement? pageInput)
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);
+        void Measure(string stage,Action action)
+        {
+            var clock=Stopwatch.StartNew();
+            try{action();}
+            finally{_stageMs[$"{page}:{stage}"]=clock.ElapsedMilliseconds;}
+        }
+        var basicPage=Draft.Schema.Inputs.Count==0?null:_baseOptions.InputSection;
+        // The input page is identified by the actual input view as well as its
+        // metadata key.  A lazy settings host may report the page key before
+        // the schema's section key is normalized; the concrete input view is
+        // the authoritative signal and keeps the composition from disappearing
+        // on a second editor opened with page zero selected.
+        if((StringComparer.Ordinal.Equals(page,basicPage)||pageInput is DeclaredInputFieldsView)&&_roiUi is null)
+        {
+            var input=pageInput??_baseOptions.InputContent;
+            if(input is DeclaredInputFieldsView inputs)
+            {
+                Measure("ROI组合",() =>
+                {
+                    var pose=BlobRoiUi.Add(inputs,
+                        (field,content,group)=>fields.AddAfterField(field,content,groupOverride:group),
+                        observe:value=>_roiUi=value);
+                    _assistUi=pose;
+                    _roiOwner=new BlobLocalRoiOwner(inputs,_roiUi!,_baseOptions.RoiFrames,_baseOptions.RoiDrawBlockReason);
+                    _supportedState=new BlobSupportedWindowState(Draft,inputs,pose);
+                    fields.BindFieldVisibilityTo(PositionCorrectionField,_roiUi!.GraphicVisibilitySource);
+                    // The row's visibility already follows the correction field
+                    // through BindFieldVisibilityTo/followAnchorVisibility. Do
+                    // not add a second conditional gate: that gate prevents the
+                    // collapsed VM control from being materialized in the WPF
+                    // visual tree when the editor opens with correction off.
+                    if(pose is null)
+                    {
+                        _roiUi.Changed+=OnInputChanged;
+                        _roiOwner.Changed+=Notify;
+                        return;
+                    }
+                    // FlatNative may already have transferred input.pose into the
+                    // VM settings root. Reuse that original row instead of
+                    // attaching the same Visual a second time.
+                    if(!fields.ContainsView(pose))
+                        fields.AddAfterField(PositionCorrectionField,pose);
+                    // Materialize the VM assist control once even when the
+                    // correction switch starts off.  WPF defers a collapsed
+                    // ContentPresenter, which otherwise makes the real control
+                    // disappear from the page until the switch is toggled.
+                    if(_assistPointVisibility.Visibility!=Visibility.Visible)
+                    {
+                        pose.Visibility=Visibility.Visible;
+                        RoutedEventHandler? loaded=null;
+                        loaded=(_,_)=>
+                        {
+                            pose.Loaded-=loaded;
+                            if(!_disposed)pose.Visibility=_assistPointVisibility.Visibility;
+                        };
+                        pose.Loaded+=loaded;
+                    }
+                    pose.Changed+=OnInputChanged;
+                    if(_roiUi is not null)_roiUi.Changed+=OnInputChanged;
+                    _roiOwner.Changed+=Notify;
+                });
+            }
+        }
+        _baseOptions.PageBuilt?.Invoke(page,fields,pageInput);
+    }
+
+    private void ResetPageHost(DeclaredFieldsView next)
+    {
+        ReleaseInputComposition();
+        _pageHost=next;_compositionError=null;RefreshSupported();
+    }
+    private void ReleaseInputComposition()
+    {
+        var oldOwner=_roiOwner;_roiOwner=null;
+        var oldSupported=_supportedState;_supportedState=null;
+        var oldAssist=_assistUi;_assistUi=null;
+        var oldRoi=_roiUi;_roiUi=null;
+        if(oldOwner is not null)oldOwner.Changed-=Notify;
+        if(oldAssist is not null)oldAssist.Changed-=OnInputChanged;
+        if(oldRoi is not null)oldRoi.Changed-=OnInputChanged;
+        var errors=new List<Exception>();
+        foreach(var action in new Action[]{()=>oldOwner?.Dispose(),()=>oldSupported?.Dispose(),()=>oldAssist?.Dispose(),()=>oldRoi?.Dispose()})
+            try{action();}catch(Exception error){errors.Add(error);}
+        if(errors.Count!=0)throw new AggregateException("基本参数交互清理失败。",errors);
+    }
+    internal bool TryCapture(out FieldSettings fields,out string error)
+    {
+        fields=null!;
+        if(!IsReady){error="参数组合仍在组装，请稍候。";return false;}
+        if(!ReferenceEquals(_editor.Draft,Draft)){error="参数窗口已失效，请重新打开。";return false;}
+        if(_roiUi is not null&&!_roiUi.TryCaptureActiveSources(out error))return false;
+        if(_roiOwner is not null&&!_roiOwner.TryCapture(out error))return false;
+        return _editor.TryCapture(out fields,out error);
+    }
+    private void OnPageChanged(object? sender,EventArgs args)=>_assistUi?.RetireInteractions();
+    private void OnVisibility(object sender,DependencyPropertyChangedEventArgs args){if(!_editor.IsVisible)_assistUi?.RetireInteractions();}
+    private void OnUnloaded(object sender,RoutedEventArgs args)=>_assistUi?.RetireInteractions();
+    public void Dispose()
+    {
+        if(_disposed)return;_disposed=true;Changed=null;
+        if(!_ready.Task.IsCompleted)_ready.TrySetCanceled();
+        _editor.Changed-=RefreshSupported;_editor.SelectedPageChanged-=OnPageChanged;_editor.IsVisibleChanged-=OnVisibility;_editor.Unloaded-=OnUnloaded;
+        var errors=new List<Exception>();foreach(var action in new Action[]{ReleaseInputComposition,()=>{if(!_bound&&_baseOptions.InputContent is IDisposable input)input.Dispose();}})
+            try{action();}catch(Exception error){errors.Add(error);}
+        if(errors.Count!=0)throw new AggregateException("Blob界面作用域清理失败。",errors);
+    }
+}
+
+
+
+/// <summary>Read-only capability projection over the real draft; never stores settings or runtime values.</summary>
+internal sealed class BlobSupportedWindowState : IDisposable
+{
+    private readonly IToolSettingsDraft _draft;
+    private readonly DeclaredInputFieldsView _inputs;
+    private readonly NativeAssistUiDraftControls? _assist;
+    private bool _disposed, _refreshing, _correctionEnabled;
+    internal BlobSupportedWindowState(IToolSettingsDraft draft,DeclaredInputFieldsView inputs,NativeAssistUiDraftControls? assist)
+    {
+        _draft=draft;_inputs=inputs;_assist=assist;
+        _correctionEnabled = draft.CaptureFields().Read(Id(nameof(BlobSettings.IsPositionCorrectionEnabled))) is ConstantSetting { Value:true };
+        foreach(var field in inputs.Fields)field.Changed+=Refresh;
+        Refresh();
+    }
+    private static string Id(string property)=>BlobParameterDefinition.Instance.SettingsFieldId(property);
+    internal string? Validate()
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);
+        if (_assist is { Visibility: Visibility.Visible } assist && assist.CommitActiveSources() is {} sourceError)
+            return sourceError;
+        return ValidateInputs(_inputs, _draft);
+    }
+    internal static string? ValidateInputs(DeclaredInputFieldsView inputs, IToolSettingsDraft draft)
+    {
+        if (BlobImageRoi.IsImageMode(inputs.ReadUnpresentedInput(BlobImageRoi.ModeId)))
+        {
+            var mask = inputs.Fields.Single(field => field.FieldId == BlobImageRoi.ImageId);
+            if (mask.Setting is UnsetSetting) return "请选择屏蔽图像。";
+            return mask.TryCommitPending() ? null : mask.Error;
+        }
+        var roiValues=new Dictionary<string,ParameterSetting>(StringComparer.Ordinal);
+        foreach(var port in BlobRoiInheritance.Ports)
+        {
+            var setting=port.Id==BlobRoiInheritance.ModeId
+                ?inputs.ReadUnpresentedInput(port.Id)
+                :inputs.Fields.FirstOrDefault(field=>field.FieldId==port.Id)?.Setting??new UnsetSetting();
+            if(setting is not UnsetSetting)roiValues.Add(port.Id,setting);
+        }
+        var roiDiagnostics=BlobRoiInheritance.ValidateConfiguration(new FieldSettings(BlobRoiInheritance.Ports,roiValues));
+        if(roiDiagnostics.Count!=0)return roiDiagnostics[0].Message;
+        if (BlobMaskInheritance.IsInherited(inputs.ReadUnpresentedInput(BlobMaskInheritance.ModeId)))
+        {
+            var mask=inputs.Fields.Single(field=>field.FieldId==BlobMaskInheritance.SourceId);
+            if (mask.Setting is UnsetSetting) return "请选择继承屏蔽区来源。";
+            if (!mask.TryCommitPending()) return mask.Error;
+        }
+        var correction = draft.CaptureFields().Read(Id(nameof(BlobSettings.IsPositionCorrectionEnabled))) is ConstantSetting { Value:true };
+        if (correction && BlobFixtureInputs.LeafIds.Any(id => inputs.ReadInputProjection(id) is UnsetSetting))
+            return "请选择完整的位置修正来源。";
+        return null;
+    }
+    // These guards must also run before the lazy Basic page has created its input-owned state.
+    internal static string? ValidateSettings(IToolSettingsDraft draft)
+    {
+        var values=draft.CaptureFields();
+        if(!BlobThresholdCapabilities.IsSupported((values.Read(Id(nameof(BlobSettings.SegmentationMode))) as ConstantSetting)?.Value as string))
+            return "当前阈值模式尚未就绪；原设置保留，不能确认或执行。";
+        // Result judgments and boundary output are formal settings consumed by
+        // BlobAlgorithm. Their enabled state is not an unsupported UI capability.
+        return null;
+    }
+    internal void Refresh()
+    {
+        if (_disposed || _refreshing) return;
+        _refreshing = true;
+        try
+        {
+            var enabled = _draft.CaptureFields().Read(Id(nameof(BlobSettings.IsPositionCorrectionEnabled))) is ConstantSetting { Value:true };
+            if (_correctionEnabled && !enabled)
+            {
+                var pose = _assist?.Children.OfType<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldRow>()
+                    .SingleOrDefault(field => field.FieldId == BlobTool.PoseInput);
+                if (pose is not null && !pose.TryClear())
+                    throw new InvalidOperationException("位置修正来源清理未被参数草稿接纳。");
+            }
+            _correctionEnabled = enabled;
+            ProjectSources(_draft,_inputs,()=>!_disposed);
+        }
+        finally { _refreshing = false; }
+    }
+    internal void RefreshAcceptedInputs(NativeRoiUiDraftControls roi)
+    {
+        if (_disposed) return;
+        roi.RefreshAcceptedModes(()=>
+        {
+            _inputs.RefreshInputProjection(BlobTool.ImageInput);
+            _inputs.RefreshInputProjection(BlobImageRoi.OutputEnabledId,new ConstantSetting(false));
+            _inputs.RefreshInputProjection(BlobImageRoi.ImageId);
+        });
+        Refresh();
+    }
+    // Refresh the shared sources without forcing the lazy Basic input page into existence.
+    internal static void ProjectSources(IToolSettingsDraft draft,DeclaredInputFieldsView? inputs,
+        Func<bool> current)
+    {
+        if (inputs is null) return;
+        try
+        {
+            var revision=draft.Revision;
+            if(!current())return;
+            if (inputs.Fields.Any(field => field.FieldId == BlobMaskInheritance.SourceId))
+                inputs.RefreshInputProjection(BlobMaskInheritance.SourceId);
+            foreach (var field in inputs.Fields.Where(field => BlobRoiInheritance.Ports.Any(port => port.Id == field.FieldId)).ToArray())
+            {
+                if (!current() || revision != draft.Revision) return;
+                inputs.RefreshInputProjection(field.FieldId);
+            }
+            foreach (var field in inputs.Fields.Where(field => field.FieldId.StartsWith(BlobTool.PoseInput, StringComparison.Ordinal)).ToArray())
+            {
+                if (!current() || revision != draft.Revision) return;
+                // VM's SelectWay is a real persisted radio with default value 0.
+                // The projection may be unset while the optional fixture leaves are
+                // dormant, but that must not clear the selected radio or make the
+                // three choices appear inert after the enable switch is accepted.
+                inputs.RefreshInputProjection(field.FieldId,
+                    field.FieldId == BlobFixtureInputs.PositionCorrectionModeId ? new ConstantSetting(0L) : null);
+                if (field.FieldId is not (BlobTool.PoseInput or BlobFixtureInputs.ReferencePoint or BlobFixtureInputs.RunPoint)) continue;
+                var members = BlobFixtureInputs.LeavesFor(field.FieldId).Select(inputs.ReadInputProjection).ToArray();
+                field.SetReferenceSummary(field.Setting is UnsetSetting && members.Any(member => member is not UnsetSetting)
+                    ? "(" + string.Join(", ", members.Select(Describe)) + ")" : null);
+            }
+            string Describe(ParameterSetting value)
+            {
+                try { return inputs.DescribeInputSource(value); }
+                catch (Exception error) when (error is ArgumentException or InvalidOperationException) { return "来源不可用"; }
+            }
+        }
+        catch(Exception error)when(error is ArgumentException or InvalidOperationException) { }
+    }
+    public void Dispose()
+    {
+        if(_disposed)return;_disposed=true;
+        foreach(var field in _inputs.Fields)field.Changed-=Refresh;
+    }
+}
+
+
+
+/// <summary>
+/// VM 参数树中的运行参数页接缝。
+///
+/// 运行参数已经由 BlobParameters.xml、BlobParameterDefinition 和
+/// DeclaredFieldsView 组成；这里仅挂接运行态能力，不再保留一套按代码
+/// 逐行创建的备用参数界面。这样运行参数的字段身份、模板和释放路径只有
+/// 一个来源，避免旧元数据分支重新引入旧控件组合。
+/// </summary>
+internal static class BlobRunUi
+{
+    internal static ToolSettingsViewOptions Configure(ToolSettingsViewOptions options)
+    {
+        var definition=BlobParameterDefinition.Instance;
+        var controller=definition.SettingsFieldId(nameof(BlobSettings.SegmentationMode));
+        var conditions=options.ParentConditions?.ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal)
+            ??new Dictionary<string,IReadOnlyList<FieldCondition>>(StringComparer.Ordinal);
+        // Original ThresholdType triggers select the active controls. Apply the
+        // same activity before materialization, including both range endpoints.
+        foreach(var property in BlobThresholdCapabilities.ControlledFields)
+        {
+            var id=definition.SettingsFieldId(property);
+            var hidden=Enum.GetValues<BlobSegmentationMode>()
+                .Where(mode=>!BlobThresholdCapabilities.IsThresholdFieldActive(mode,property))
+                .Select(mode=>new FieldCondition(controller,mode.ToString(),true));
+            conditions[id]=(conditions.GetValueOrDefault(id)??Array.Empty<FieldCondition>()).Concat(hidden).Distinct().ToArray();
+        }
+        // 原件 0x3 双阈值 Trigger（IMVSBlobFindModuAlgorithmTab.xml:160-173）只显示
+        // LowThreshold/HightThreshold，隐藏 Polarity 行——极性由端点顺序决定
+        // （BlobThresholdCapabilities.IsInverse 同源约定）。
+        var polarityId=definition.SettingsFieldId(nameof(BlobSettings.Type));
+        conditions[polarityId]=(conditions.GetValueOrDefault(polarityId)??Array.Empty<FieldCondition>())
+            .Append(new FieldCondition(controller,BlobSegmentationMode.DoubleThreshold.ToString(),true)).Distinct().ToArray();
+        // The original advanced expander never exposes OverlapRatio.
+        var suppressed = new HashSet<string>(options.SuppressedFieldRows ?? Enumerable.Empty<string>(), StringComparer.Ordinal)
+        {
+            definition.SettingsFieldId(nameof(BlobFindParameters.OverlapRatio))
+        };
+        return options with { ParentConditions = conditions, SuppressedFieldRows = suppressed };
+    }
+
+}
+
+
+
+/// <summary>Real tool view; the document owner controls execution, capture and disposal.</summary>
+public partial class BlobParameterEditor : UserControl,IToolSettingsView,IToolSettingsViewReady,IToolSettingsViewInputProjection
+{
+    private static readonly DependencyPropertyKey SelectedPageIndexPropertyKey=DependencyProperty.RegisterReadOnly(nameof(SelectedPageIndex),typeof(int),typeof(BlobParameterEditor),new PropertyMetadata(0));
+    public static readonly DependencyProperty SelectedPageIndexProperty=SelectedPageIndexPropertyKey.DependencyProperty;
+    public int SelectedPageIndex=>(int)GetValue(SelectedPageIndexProperty);
+    private BlobUiComposition? _composition;
+    private BlobUiComposition? Composition=>_composition??Design.BlobDesignData.GetComposition(Editor);
+    public Task ReadyTask=>Composition?.ReadyTask??Task.CompletedTask;
+    public string? CompositionError=>Composition?.CompositionError;
+    public IReadOnlyDictionary<string,long> CompositionStageMs=>Composition?.StageMs??new Dictionary<string,long>();
+    private Action? _uiOnlyChanged;
+    private bool _disposed;
+    private void SelectedPageChanged(object? sender,EventArgs args)=>SetValue(SelectedPageIndexPropertyKey,Editor.SelectedPageIndex);
+    public BlobParameterEditor()
+    {InitializeComponent();Editor.SelectedPageChanged+=SelectedPageChanged;SelectedPageChanged(this,EventArgs.Empty);}
+    public BlobParameterEditor(IToolSettingsDraft draft,ToolSettingsViewOptions options):this()
+    {
+        try
+        {
+            _composition=new(Editor,draft,options);_composition.Changed+=OnUiOnlyChanged;
+            SelectedPageChanged(Editor,EventArgs.Empty);
+        }
+        catch(Exception failure)
+        {
+            try{Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}
+            throw;
+        }
+    }
+    public FrameworkElement View=>this;
+    public void RefreshAcceptedInputs()=>Composition?.RefreshAcceptedInputs();
+    public bool HasInvalidInput=>Editor.HasInvalidInput||Composition?.IsReady!=true||Composition?.CompositionError is not null;
+    public bool HasPendingEdits=>Editor.HasPendingEdits||Composition?.HasPending==true;
+    public bool HasPendingEditsOutside(IReadOnlySet<string> excludedFields)=>Editor.HasPendingEditsOutside(excludedFields)
+        ||Composition is not {IsReady:true,HasPending:false};
+    public long AcceptedRevision=>Editor.AcceptedRevision+(Composition?.RoiRevision??0);
+    public IReadOnlyList<string> AcceptedFieldOrder=>Editor.AcceptedFieldOrder;
+    public FieldSettings CaptureAcceptedFields()=>Editor.CaptureAcceptedFields();
+    public IReadOnlyList<NumericModelReadResult> ReadNumericModels(NumericModelReadScope scope,string? fieldId=null)
+        =>Editor.ReadNumericModels(scope,fieldId);
+    public event Action? Changed {add{Editor.Changed+=value;_uiOnlyChanged+=value;}remove{Editor.Changed-=value;_uiOnlyChanged-=value;}}
+    public bool TryCapture(out FieldSettings fields,out string error)
+    {
+        if(Composition is {} composition&&composition.CompositionError is {} failure){fields=null!;error=failure;return false;}
+        if(Composition is {} ready&&!ready.IsReady){fields=null!;error="参数组合仍在组装，请稍候。";return false;}
+        return Composition is {} current?current.TryCapture(out fields,out error):Editor.TryCapture(out fields,out error);
+    }
+    private void OnUiOnlyChanged(){if(!_disposed){_uiOnlyChanged?.Invoke();System.Windows.Input.CommandManager.InvalidateRequerySuggested();}}
+    public void Dispose()
+    {
+        if(_disposed)return;_disposed=true;Editor.SelectedPageChanged-=SelectedPageChanged;_uiOnlyChanged=null;
+        var composition=Composition;if(composition is not null)composition.Changed-=OnUiOnlyChanged;
+        try{composition?.Dispose();}finally{Editor.Dispose();}
+    }
+}
+}
+namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Views
+{
+internal static class BlobDisplayUi
+{
+    internal static ToolSettingsViewOptions Configure(ToolSettingsViewOptions options,FrameworkElement pointVisibility)
+    {
+        var graphic=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Graphic;
+        var text=SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Text;
+        string Id(string group,string role)=>SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Field(group,role);
+        var expressions=options.TextExpressions?.ToDictionary(item=>item.Key,item=>item.Value,StringComparer.Ordinal)??new();
+        var contentId=Id(text,"content");var sourceOptions=expressions.GetValueOrDefault(contentId);
+        expressions[contentId]=new(sourceOptions?.ReadCandidates??(()=>new(Array.Empty<SunEyeVision.Plugin.Wpf.Adapters.References.DeclaredReferenceCandidate>(),
+            _=>throw new InvalidOperationException("文本来源尚未就绪。"),()=>true)),CreateSetting:proposal=>
+        {
+            var slots=proposal.Accepted is DisplayExpressionSetting existing?existing.Slots.ToList():new List<DisplayExpressionSlot>();
+            if(proposal.Selected is {} selected)
+            {
+                if(proposal.Token is not {Length:>0} token)throw new ArgumentException("文本来源标记无效。");
+                var reference=selected.Reference(BindingSelection.All);
+                if(proposal.Text.Split("{"+token+"}",StringSplitOptions.None).Length>2&&slots.Any(slot=>slot.Token==token&&slot.Reference is {} old&&SunEyeVision.Plugin.Contracts.Results.Presentation.ResultDisplayFields.SameReferenceIdentity(old,reference)==false))
+                    throw new ArgumentException("文本来源名称不唯一，请使用不同的来源名称。");
+                slots.RemoveAll(slot=>slot.Token==token);slots.Add(new(token,reference));
+            }
+            return SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.ParseContent(proposal.Text,slots);
+        });
+        var visibilitySources = options.FieldVisibilitySources?.ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal)
+            ?? new Dictionary<string,FrameworkElement>(StringComparer.Ordinal);
+        visibilitySources.Add(Id(BlobResultDisplay.ReferencePoint,"visible"),pointVisibility);
+        visibilitySources.Add(Id(BlobResultDisplay.RunPoint,"visible"),pointVisibility);
+        return options with {TextExpressions=expressions, FieldVisibilitySources=visibilitySources,
+            // 图像显示项与顺序对齐原厂（IMVSBlobFindModu 结果页）：
+            // Blob / 最大内接矩形 / 检测区域 / 轮廓点 / 文本 / 屏蔽区多边形 / 扇环检测区域。
+            // 原厂没有独立的「质心」行，但框架要求"所有图形分组都必须显式配置角色"，
+            // 因此暂保留该组（否则参数页组装失败）；最终对齐需连同 presentation 声明一起移除。
+            GraphicDisplays=new[]{graphic,BlobResultDisplay.InnerRectangle,BlobResultDisplay.Inspection,BlobResultDisplay.ReferencePoint,
+                BlobResultDisplay.RunPoint,BlobResultDisplay.Mask,BlobResultDisplay.Annulus}
+                .Select(group=>new SunEyeVision.Plugin.Wpf.Fields.NativeGraphicDisplayOptions(group,Id(group,"visible"),Id(group,"ok"),Id(group,"ng"),Id(group,"opacity"),Id(group,"width"))).ToArray(),
+            VisibilityDisplays=new[]{new SunEyeVision.Plugin.Wpf.Fields.NativeVisibilityDisplayOptions(Id(text,"visible")),new SunEyeVision.Plugin.Wpf.Fields.NativeVisibilityDisplayOptions(Id(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobResultDisplay.Outline,"visible"))},
+            TextDisplays=new[]{new SunEyeVision.Plugin.Wpf.Fields.NativeTextDisplayOptions(Id(text,"content"),Id(text,"ok"),Id(text,"ng"),Id(text,"size"),Id(text,"opacity"),Id(text,"x"),Id(text,"y"))}};
+    }
+
+}
 }

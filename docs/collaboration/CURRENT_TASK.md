@@ -11,6 +11,8 @@
 
 当前命名口径：`Algorithms/` 是工具算法实现层，`BlobAlgorithm` 是 Blob 算法入口。宿主接口保留 `ExecuteAsync` 作为统一调用合同，不能据此把算法目录描述成独立的“执行层”。`HalconBlobAlgorithmContext` 仅保存一次算法调用期间的 HALCON 临时上下文和恢复责任。
 
+**2026-11-19 P0 基线冻结与 P1 差异矩阵补齐**：`main` 上 368 项在途改动按用途归并为 8 条中文提交（锁文件、框架合同、工具迁移、工程清单、测试、验证脚本、忽略规则、文档证据），工作区已干净。`docs/collaboration/acceptance/baseline.json` 记录基线 `da7ac8b78`、版本 2.0.0 alpha、Release 路径，全量 Release 构建 `dotnet build SunEyeVision.slnx -c Release --no-restore` 退出码 0。`docs/evidence/architecture-conformance-matrix-20261119.json` 升级到 revision 2：修正 Blob 发布单元指向已删除 Wpf 工程的过期路径，补充十个工具行（模块名、原厂参数数、我方字段数、自研入口、覆盖项、证据状态与缺口）。关键结论：十个工具**全部仍是 Runtime+Wpf 双工程**，且**全部没有原厂式独立参数/页签/显示声明文件**；If 因原厂模块名仅来自生成脚本、原厂 0 项参数与我方 16 项字段差异无证据解释，标为 `unconfirmed`；ColorExtract 因直方图依赖链未闭合标为 `inferred`。未做：Blob 人工验收 B1-B10 仍全部待确认，ImageSource 单项目迁移未完成。
+
 **2026-11-19 算法命名修正后的复核**：`HalconBlobExecutionScope` 已更名为 `HalconBlobAlgorithmContext`，只表示一次 Blob 算法调用期间的 HALCON 临时上下文。Blob Release 全量构建通过，0 错误、3328 个既有警告。Agent Desktop 重新采集有效连线方案后，Blob 调试窗业务名称闭合，证据见 `docs/evidence/blob-structure-ui-function-review-20261119.md`。算法成功/失败结果和原厂动态回写仍未确认。
 
 **2026-11-19 Blob/ImageSource 静态门禁重跑**：发布单元、Blob 基本页、Blob 组装映射和 ImageSource 字段映射四道门均通过。Blob 映射 `unmappedVmGroupLinks=[]`；ImageSource 25 项页签/字段顺序完全匹配。ImageSource 原厂 XML 保留件存在 `SelecetedTips` 拼写错误，门禁只在内存解析视图修复并记录，不改原始证据。

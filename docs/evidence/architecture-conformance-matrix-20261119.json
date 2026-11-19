@@ -1,12 +1,17 @@
 {
   "date": "2026-11-19",
+  "revision": 2,
   "authority": "VisionMaster 4.4.0 Build20250516 static decompilation and installed module evidence",
   "status": "baseline-difference-matrix",
   "manual_acceptance": "deferred",
+  "baseline": "docs/collaboration/acceptance/baseline.json",
+  "revision_note": "revision 2 修正 Blob 发布单元已过期的 self 路径，并按完整同构复核清单补充十个工具行",
   "rules": [
     "Only verified or derived rows may authorize code changes.",
     "Inferred and unconfirmed rows remain validation work.",
-    "Tests and Release builds prove the self implementation only."
+    "Tests and Release builds prove the self implementation only.",
+    "Every tool row must cite both the original module evidence and the current self entry path.",
+    "A tool row cannot claim closure while its declaration files or dedicated control evidence are missing."
   ],
   "shared": [
     {
@@ -40,8 +45,8 @@
         "docs/07-工具逆向/decompiled/XmlParser/Apps.XmlParser/Apps.XmlParser.ParamTab/ROISelecter.cs",
         "docs/07-工具逆向/decompiled/XmlParser/Apps.XmlParser/Apps.XmlParser.ParamTab/NameValueItem.cs"
       ],
-      "self": "src/Plugin.Wpf/Presenters/Regions/RoiGroupModel.cs plus NativeRoiUiDraftControls.cs and NativeAssistUiDraftControls.cs",
-      "gap": "The self model exists, but legacy UI draft controls remain and must be checked for external FrameworkElement ownership.",
+      "self": "src/Plugin.Wpf/Presenters/Regions/RoiGroupModel.cs plus RoiGroupView.xaml, RoiFieldRowPresenter.cs and RoiEditorPresenter.cs",
+      "gap": "The self model exists as data plus template, but legacy drafts and per-tool ROI UI ownership still need consumer-by-consumer verification.",
       "status": "derived",
       "next": "Trace every Blob ROI consumer and replace only evidence-backed visual ownership paths."
     },
@@ -52,8 +57,8 @@
         "docs/07-工具逆向/decompiled/WpfControls/VMControls.WPF/ModuleResultView.xaml.cs",
         "docs/evidence/original-ui-architecture-audit-20261118.json"
       ],
-      "self": "src/Plugin.Wpf/Presenters/Results/DeclaredResultTable.cs and src/UI/Services/Images/ResultWorkspacePresenter.cs",
-      "gap": "Self has table and image workspace pieces, but full combined result-view equivalence is not closed.",
+      "self": "src/Plugin.Wpf/Presenters/Results/DeclaredResultTable.cs, ResultRendererRegistry.cs and src/UI/Services/Images/ResultWorkspacePresenter.cs",
+      "gap": "Self has table, renderer registry and image workspace pieces, but full combined result-view equivalence is not closed.",
       "status": "unconfirmed",
       "next": "Complete static mapping of display list, chart dispatch and current/module result ownership."
     },
@@ -84,27 +89,299 @@
     ],
     "vm_evidence": [
       "docs/collaboration/acceptance/原厂架构逆向结论与优化方案-20261118-174559.html",
-      "docs/evidence/image-source-blob-complete-ui-difference-20261118.md"
+      "docs/evidence/image-source-blob-complete-ui-difference-20261118.md",
+      "docs/evidence/single-project-tool-migration-20261119.md"
     ],
     "self": [
-      "tools/SunEyeVision.BlobAnalysis/Runtime/SunEyeVision.BlobAnalysis.Runtime.csproj",
-      "tools/SunEyeVision.BlobAnalysis/Wpf/SunEyeVision.BlobAnalysis.Wpf.csproj",
-      "tools/SunEyeVision.BlobAnalysis/Runtime/Resources/BlobParameters.xml",
-      "tools/SunEyeVision.BlobAnalysis/Runtime/Resources/BlobDisplay.xml",
-      "tools/SunEyeVision.BlobAnalysis/Wpf/Views/BlobUiComposition.cs"
+      "tools/SunEyeVision.Tool.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.csproj",
+      "tools/SunEyeVision.Tool.BlobAnalysis/BlobTool.cs",
+      "tools/SunEyeVision.Tool.BlobAnalysis/Algorithms/",
+      "tools/SunEyeVision.Tool.BlobAnalysis/Editor/",
+      "tools/SunEyeVision.Tool.BlobAnalysis/Resources/BlobParameters.xml",
+      "tools/SunEyeVision.Tool.BlobAnalysis/Resources/BlobDisplay.xml"
     ],
     "confirmed_gaps": [
-      "Self has separate Runtime and Wpf projects while the VM Blob evidence shows no Blob-specific Control assembly.",
-      "Self currently has BlobParameters.xml rather than a separately verified Algorithm.xml and AlgorithmTab.xml pair.",
-      "Self has BlobUiComposition and Blob-specific ROI UI ownership that the VM platform boundary does not use."
+      "Self single assembly now declares both Runtime and Editor roles, but the release payload still lists one shared DLL rather than the original Algorithm and Cs split.",
+      "Self has BlobParameters.xml and BlobDisplay.xml rather than a separately verified Algorithm.xml and AlgorithmTab.xml pair.",
+      "Legacy tools/SunEyeVision.BlobAnalysis project directory still exists in the repository after migration."
     ],
     "status": "verified-static-gap",
-    "next": "Do not delete or merge files yet. First map the shared declaration loader and resource packaging, then migrate Blob against the release-unit contract."
+    "next": "Archive the OriginalReleaseUnit evidence cache, then remove the legacy BlobAnalysis project directory after shared assembly chain closure."
+  },
+  "tools": [
+    {
+      "tool": "BlobLabels",
+      "vm_module": "IMVSBlobFindLabelsModu",
+      "vm_params": 101,
+      "self_params": 82,
+      "vm_evidence": [
+        "docs/collaboration/acceptance/D2v2-对照-BlobLabels.md",
+        "docs/evidence/bloblabels-real-ui-comparison-20261118.json"
+      ],
+      "self_entry": [
+        "tools/SunEyeVision.BlobLabels/Runtime/SunEyeVision.BlobLabels.Runtime.csproj",
+        "tools/SunEyeVision.BlobLabels/Wpf/SunEyeVision.BlobLabels.Wpf.csproj"
+      ],
+      "self_declaration": "C# 字段声明，无独立参数 XML",
+      "self_structure": "legacy-dual-project",
+      "must_cover": ["基本参数", "标签列表", "结果判定", "保存重开"],
+      "status": "derived",
+      "status_basis": "原厂 AlgorithmTab.xml 参数与双侧窗口快照均已取得；运行参数页和结果显示页内部未逐项核对",
+      "gaps": [
+        "参数 101 项对 82 项，缺 19 项映射记录",
+        "无独立参数与显示声明文件",
+        "产品侧首次采集曾因保存方案模态框阻塞"
+      ],
+      "exit": "单工具测试和 Display 证据"
+    },
+    {
+      "tool": "ContourMatch",
+      "vm_module": "IMVSContourMatchModu",
+      "vm_params": 71,
+      "self_params": 65,
+      "vm_evidence": [
+        "docs/collaboration/acceptance/D2v2-对照-ContourMatch.md",
+        "docs/collaboration/acceptance/D4-原厂对照-04-轮廓匹配-全页.md",
+        "docs/evidence/contourmatch-ui-confirmation-20261118.json"
+      ],
+      "self_entry": [
+        "tools/SunEyeVision.ContourMatch/Runtime/SunEyeVision.ContourMatch.Runtime.csproj",
+        "tools/SunEyeVision.ContourMatch/Wpf/SunEyeVision.ContourMatch.Wpf.csproj",
+        "tools/SunEyeVision.ContourMatch/Wpf/Views/ContourMatchTemplatePanel.cs"
+      ],
+      "self_declaration": "C# 字段声明，无独立参数 XML",
+      "self_structure": "legacy-dual-project",
+      "must_cover": ["基本参数", "特征模板", "模板创建", "运行参数", "结果显示"],
+      "status": "derived",
+      "status_basis": "四 Tab 页签层已与原厂对照，专属模板面板已单独取证；模板创建完整流程仍缺证据",
+      "gaps": [
+        "参数 71 项对 65 项",
+        "模板创建、加载、清空、模型文件更换流程未闭合",
+        "尚未共用 FeatureMatchCommonControl 公共面板边界"
+      ],
+      "exit": "四 Tab 和模板窗口差异清单"
+    },
+    {
+      "tool": "GrayMatch",
+      "vm_module": "IMVSGrayMatchModuVA",
+      "vm_params": 41,
+      "self_params": 39,
+      "vm_evidence": [
+        "docs/collaboration/acceptance/D2v2-对照-GrayMatch.md",
+        "docs/collaboration/acceptance/D4-原厂对照-05-灰度匹配-全页.md",
+        "docs/evidence/graymatch-ui-confirmation-20261118.json"
+      ],
+      "self_entry": [
+        "tools/SunEyeVision.GrayMatch/Runtime/SunEyeVision.GrayMatch.Runtime.csproj",
+        "tools/SunEyeVision.GrayMatch/Wpf/SunEyeVision.GrayMatch.Wpf.csproj"
+      ],
+      "self_declaration": "C# 字段声明，无独立参数 XML",
+      "self_structure": "legacy-dual-project",
+      "must_cover": ["模板资源", "搜索区域", "运行参数", "结果表"],
+      "status": "derived",
+      "status_basis": "双侧窗口快照已采集，原厂模块名带 VA 后缀并与 ContourMatch 分页对照完成",
+      "gaps": [
+        "参数 41 项对 39 项",
+        "模块名 VA 后缀的语义差异未单独确认",
+        "未与 ContourMatch 共用公共 FeatureMatch 面板"
+      ],
+      "exit": "与 ContourMatch 分别取证"
+    },
+    {
+      "tool": "MarkFind",
+      "vm_module": "IMVSMarkFindModu",
+      "vm_params": 60,
+      "self_params": 59,
+      "vm_evidence": [
+        "docs/collaboration/acceptance/D2v2-对照-MarkFind.md",
+        "docs/evidence/markfind-ui-confirmation-20261118.json"
+      ],
+      "self_entry": [
+        "tools/SunEyeVision.MarkFind/Runtime/SunEyeVision.MarkFind.Runtime.csproj",
+        "tools/SunEyeVision.MarkFind/Wpf/SunEyeVision.MarkFind.Wpf.csproj",
+        "tools/SunEyeVision.MarkFind/Wpf/Views/MarkFindTemplatePanel.cs"
+      ],
+      "self_declaration": "C# 字段声明，无独立参数 XML",
+      "self_structure": "legacy-dual-project",
+      "must_cover": ["基本参数", "模板/模型", "搜索区域", "结果显示"],
+      "status": "derived",
+      "status_basis": "独立 Control 与原厂资源按钮已取证；编辑模型窗口语义明确为未确认",
+      "gaps": [
+        "参数 60 项对 59 项",
+        "原厂编辑模型窗口与 .mfxml 文件格式未确认，不实现编辑语义",
+        "资源按钮名称与图标状态缺快照"
+      ],
+      "exit": "独立适配器，不强套 ContourMatch"
+    },
+    {
+      "tool": "ColorExtract",
+      "vm_module": "IMVSColorExtractModu",
+      "vm_params": 4,
+      "self_params": 4,
+      "vm_evidence": [
+        "docs/collaboration/acceptance/D2v2-对照-ColorExtract.md",
+        "docs/evidence/color-extract-ui-confirmation-20261118.json",
+        "docs/evidence/color-extract-histogram-dependency-review-20261118.json"
+      ],
+      "self_entry": [
+        "tools/SunEyeVision.ColorExtract/Runtime/SunEyeVision.ColorExtract.Runtime.csproj",
+        "tools/SunEyeVision.ColorExtract/Wpf/SunEyeVision.ColorExtract.Wpf.csproj",
+        "tools/SunEyeVision.ColorExtract/Wpf/Views/ColorExtractRangePanel.cs"
+      ],
+      "self_declaration": "C# 字段声明，无独立参数 XML",
+      "self_structure": "legacy-dual-project",
+      "must_cover": ["图像源", "颜色范围", "直方图", "结果输出"],
+      "status": "inferred",
+      "status_basis": "参数 4 项已一一对上，但 HikHistogramSingle、SquareArea、ROI 与 GridBrushImg 依赖链未闭合，运行参数页和结果显示页未采集",
+      "gaps": [
+        "直方图与颜色范围依赖链未闭合",
+        "三通道直方图行与 SliderArrange 控件未对齐"
+      ],
+      "exit": "确认 HikHistogram 依赖边界"
+    },
+    {
+      "tool": "DivideImage",
+      "vm_module": "IMVSDivideImageModu",
+      "vm_params": 4,
+      "self_params": 4,
+      "vm_evidence": [
+        "docs/collaboration/acceptance/D2v2-对照-DivideImage.md",
+        "docs/evidence/divideimage-ui-confirmation-20261118.json"
+      ],
+      "self_entry": [
+        "tools/SunEyeVision.DivideImage/Runtime/SunEyeVision.DivideImage.Runtime.csproj",
+        "tools/SunEyeVision.DivideImage/Wpf/SunEyeVision.DivideImage.Wpf.csproj"
+      ],
+      "self_declaration": "C# 字段声明，无独立参数 XML",
+      "self_structure": "legacy-dual-project",
+      "must_cover": ["切片模式", "范围控件", "输出结果"],
+      "status": "derived",
+      "status_basis": "参数 4 项一一对应，双侧窗口快照已采集且无遗留待办",
+      "gaps": [
+        "无独立参数与结果声明文件",
+        "输出结果声明未单独取证"
+      ],
+      "exit": "声明与结果组合核对"
+    },
+    {
+      "tool": "FrameMean",
+      "vm_module": "IMVSFrameMeanModu",
+      "vm_params": 1,
+      "self_params": 1,
+      "vm_evidence": [
+        "docs/collaboration/acceptance/D2v2-对照-FrameMean.md",
+        "docs/evidence/framemean-ui-confirmation-20261118.json"
+      ],
+      "self_entry": [
+        "tools/SunEyeVision.FrameMean/Runtime/SunEyeVision.FrameMean.Runtime.csproj",
+        "tools/SunEyeVision.FrameMean/Wpf/SunEyeVision.FrameMean.Wpf.csproj"
+      ],
+      "self_declaration": "C# 字段声明，无独立参数 XML",
+      "self_structure": "legacy-dual-project",
+      "must_cover": ["图像源", "帧数", "运行状态", "结果图像"],
+      "status": "derived",
+      "status_basis": "参数 1 项对应，双侧窗口快照已采集；原件显示名与工具自查显示名不一致已登记",
+      "gaps": [
+        "原件名“帧平均”与工具显示名“帧均值”口径未统一",
+        "执行与释放链未单独验证"
+      ],
+      "exit": "执行和释放链"
+    },
+    {
+      "tool": "If",
+      "vm_module": "ifbranchmodule",
+      "vm_module_basis": "仅来自 D2 自动生成脚本标注，未在反编译源码中定位同类名",
+      "vm_params": 0,
+      "self_params": 16,
+      "vm_evidence": [
+        "docs/collaboration/acceptance/D2-声明对照-If.md",
+        "docs/evidence/if-review-20261118.json"
+      ],
+      "self_entry": [
+        "tools/SunEyeVision.If/Runtime/SunEyeVision.If.Runtime.csproj",
+        "tools/SunEyeVision.If/Wpf/SunEyeVision.If.Wpf.csproj"
+      ],
+      "self_declaration": "C# 字段声明，无独立参数 XML",
+      "self_structure": "legacy-dual-project",
+      "must_cover": ["条件页", "上下端口", "分支状态", "连线"],
+      "status": "unconfirmed",
+      "status_basis": "原厂模块名仅来自生成脚本；原厂运行参数 0 项与我方 16 项字段的差异没有任何原厂证据解释",
+      "gaps": [
+        "原厂模块身份未确认",
+        "0 项对 16 项差异未解释",
+        "分支端口数量与出边校验行为未取证"
+      ],
+      "exit": "端口交互单独复核"
+    },
+    {
+      "tool": "IntensityMeasure",
+      "vm_module": "IMVSIntensityMeasureModu",
+      "vm_params": 20,
+      "self_params": 15,
+      "vm_evidence": [
+        "docs/collaboration/acceptance/D2v2-对照-IntensityMeasure.md",
+        "docs/evidence/intensitymeasure-ui-confirmation-20261118.json"
+      ],
+      "self_entry": [
+        "tools/SunEyeVision.IntensityMeasure/Runtime/SunEyeVision.IntensityMeasure.Runtime.csproj",
+        "tools/SunEyeVision.IntensityMeasure/Wpf/SunEyeVision.IntensityMeasure.Wpf.csproj"
+      ],
+      "self_declaration": "C# 字段声明，无独立参数 XML",
+      "self_structure": "legacy-dual-project",
+      "must_cover": ["参数页", "直方图", "统计表", "结果切换"],
+      "status": "derived",
+      "status_basis": "双侧窗口快照已采集，参数页对照完成；内部映射与结果回读仍待办",
+      "gaps": [
+        "参数 20 项对 15 项",
+        "ROI 编辑与结果回读未对照原厂控件",
+        "组合结果容器未闭合"
+      ],
+      "exit": "组合结果容器重点"
+    },
+    {
+      "tool": "PixelCount",
+      "vm_module": "IMVSPixelCountModu",
+      "vm_params": 11,
+      "self_params": 7,
+      "vm_evidence": [
+        "docs/collaboration/acceptance/D2v2-对照-PixelCount.md",
+        "docs/evidence/pixelcount-ui-confirmation-20261118.json"
+      ],
+      "self_entry": [
+        "tools/SunEyeVision.PixelCount/Runtime/SunEyeVision.PixelCount.Runtime.csproj",
+        "tools/SunEyeVision.PixelCount/Wpf/SunEyeVision.PixelCount.Wpf.csproj"
+      ],
+      "self_declaration": "C# 字段声明，无独立参数 XML",
+      "self_structure": "legacy-dual-project",
+      "must_cover": ["图像源", "范围", "统计结果", "保存重开"],
+      "status": "derived",
+      "status_basis": "双侧窗口快照已采集且无遗留待办；参数差额未逐项说明",
+      "gaps": [
+        "参数 11 项对 7 项，缺 4 项映射记录",
+        "无独立结果声明文件"
+      ],
+      "exit": "公共数值和结果链"
+    }
+  ],
+  "tool_summary": {
+    "covered": 10,
+    "no_xml_declaration": 10,
+    "single_project_migrated": 0,
+    "status_counts": {
+      "derived": 7,
+      "inferred": 1,
+      "unconfirmed": 1,
+      "verified": 1
+    },
+    "status_counts_note": "verified 计数对应 BlobAnalysis 发布单元静态差异，不计入十个工具行；十个工具行中 verified 为 0",
+    "finding": "十个工具全部仍为 Runtime+Wpf 双工程结构，且没有任何工具具备原厂式独立参数、页签或显示声明文件"
   },
   "gates": [
     "Shared matrix rows with status verified or derived have source locations and consumer mapping.",
     "No code change is authorized for unconfirmed result-view or lifecycle behavior.",
     "Blob migration starts only after parameter-root and ROI ownership contracts are tested.",
-    "Manual Agent Desktop acceptance is deferred and does not replace static or automated gates."
+    "Manual Agent Desktop acceptance is deferred and does not replace static or automated gates.",
+    "No tool row may move to verified while its parameter XML, tab XML or display XML declaration is missing.",
+    "If remains unconfirmed until the original module identity and the zero-versus-sixteen parameter difference are explained by source evidence."
   ]
 }

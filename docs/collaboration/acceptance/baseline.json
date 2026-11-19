@@ -1,0 +1,88 @@
+{
+  "date": "2026-11-19",
+  "purpose": "P0 基线冻结：让完整同构复核从可复现起点执行",
+  "authority": "VisionMaster 4.4.0 Build20250516",
+  "repository": {
+    "branch": "main",
+    "commit": "da7ac8b781b5fe1b3d3333b60cb09b92c789ec68",
+    "commitShort": "da7ac8b78",
+    "worktree": "clean",
+    "baselineCommits": [
+      {
+        "commit": "002672a3f",
+        "subject": "build(deps): 补充各工程 NuGet 锁文件"
+      },
+      {
+        "commit": "53e4b8571",
+        "subject": "feat(框架): 补齐参数/ROI/结果呈现与发布准入合同"
+      },
+      {
+        "commit": "fd9353086",
+        "subject": "refactor(工具): Blob 与 ImageSource 迁移到 Tool 单项目结构"
+      },
+      {
+        "commit": "5050a9619",
+        "subject": "build(工具): 工程清单与发布组件切换单项目工具"
+      },
+      {
+        "commit": "91a9c2185",
+        "subject": "test(工具): 补充单项目迁移、Blob 参数执行与参数页交互用例"
+      },
+      {
+        "commit": "5bb8e4091",
+        "subject": "chore(验证): 补充同构静态门禁与真机对比脚本"
+      },
+      {
+        "commit": "f3a8a4789",
+        "subject": "chore(build): 忽略本地测试数据目录并同步任务账本"
+      },
+      {
+        "commit": "da7ac8b78",
+        "subject": "docs(证据): 归档原厂对照证据、同构复核清单与迁移记录"
+      }
+    ]
+  },
+  "version": {
+    "source": "version.json",
+    "version": "2.0.0",
+    "channel": "alpha",
+    "fileRevision": 8,
+    "releaseDate": "2026-10-09"
+  },
+  "release": {
+    "path": "Release/SunEyeVision_v1.0.0/SunEyeVision",
+    "note": "目录名沿用 v1.0.0，实际产品版本取 version.json 的 2.0.0"
+  },
+  "excluded_from_baseline": [
+    {
+      "path": ".testdata/",
+      "reason": "本地自动化会话产物，1030 个文件约 424 MB，已加入 .gitignore"
+    },
+    {
+      "path": "SunEyeVision.slnx.bak-before-offline-20261118",
+      "reason": "离线改造前的临时备份，已移至 .codebuddy/tmp/backup-20261119/"
+    },
+    {
+      "path": "product/ToolComponents.props.bak-before-offline-20261118",
+      "reason": "离线改造前的临时备份，已移至 .codebuddy/tmp/backup-20261119/"
+    }
+  ],
+  "build_verification": {
+    "status": "passed",
+    "command": "dotnet build SunEyeVision.slnx -c Release --no-restore -v:m",
+    "exitCode": 0,
+    "executedAt": "2026-11-19T15:49",
+    "artifacts": [
+      "Release/SunEyeVision_v1.0.0/SunEyeVision/SunEyeVision.UI.exe",
+      "SunEyeVision.Tool.BlobAnalysis.Runtime.dll"
+    ],
+    "note": "本轮基线提交涉及 tools、product、installer 发布规则，已按项目规则执行全量 Release 构建"
+  },
+  "open_items": [
+    "Blob 人工验收 B1-B10 全部待确认，见 docs/evidence/blob-manual-acceptance-20261119.md",
+    "ImageSource 仍是 Tool.ImageSource 与 Tool.ImageSource.Wpf 双项目，未完成单项目迁移",
+    "tools/SunEyeVision.BlobAnalysis 与 tools/SunEyeVision.ImageSource 旧工程目录仍在仓库中，需在公共组装链闭合后清理",
+    "tools/*/Resources/OriginalReleaseUnit 证据缓存需在台账归档后从产品源码树移除",
+    "共享差异矩阵仍缺十个工具行，且 Blob 发布单元行指向已删除的旧 Wpf 工程"
+  ]
+}

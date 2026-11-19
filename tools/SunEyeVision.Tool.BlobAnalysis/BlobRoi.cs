@@ -328,6 +328,8 @@ internal sealed class BlobRoiDocument : INativeRoiEditDocument
     public RecordValue FromNative(RecordValue geometry, RecordValue? previous) =>
         BlobLocalRoiProjection.FromNative(geometry, previous);
     public bool Same(RecordValue left, RecordValue right) => BlobLocalRoi.Same(left, right);
+    public string ImageInputFieldId => BlobTool.ImageInput;
+    public string Coverage(RecordValue document, string group) => BlobLocalRoi.Coverage(document, group);
     public string PreviewMode() =>
         BlobRoiInheritance.ReadMode(_inputs.ReadUnpresentedInput(BlobRoiInheritance.ModeId));
 

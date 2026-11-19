@@ -746,25 +746,6 @@ public static class BlobDisplayDeclaration
 namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Design
 {
 
-/// <summary>Private design-only values. No discovery, documents, algorithm sessions or native resources.</summary>
-public static class BlobDesignData
-{
-    public static (IToolSettingsDraft Draft,ToolSettingsViewOptions Options) CreateParameterContext()
-        =>SunEyeVision.Plugin.Wpf.Presenters.Design.DesignTimeSample.Create(new BlobTool(),BlobTool.ImageInput);
-    private static readonly DependencyProperty CompositionProperty=DependencyProperty.RegisterAttached("Composition",typeof(BlobUiComposition),typeof(BlobDesignData));
-    internal static BlobUiComposition? GetComposition(DeclaredSettingsView presenter)=>presenter.GetValue(CompositionProperty) as BlobUiComposition;
-    public static void BindParameterContext(DeclaredSettingsView presenter,(IToolSettingsDraft Draft,ToolSettingsViewOptions Options) context)
-    {
-        if(GetComposition(presenter) is {} previous)
-        {
-            if(previous.OwnsContext(context.Draft,context.Options))return;
-            previous.Dispose();presenter.ClearValue(CompositionProperty);
-        }
-        var composition=new BlobUiComposition(presenter,context.Draft,context.Options);presenter.SetValue(CompositionProperty,composition);
-    }
-}
-
-/// <summary>Designer uses the same declared table as runtime, without a workflow or algorithm session.</summary>
 }
 
 namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Views
@@ -813,8 +794,6 @@ internal sealed class BlobUiComposition : IDisposable
         }
         catch(Exception failure){try{Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}throw;}
     }
-    internal bool OwnsContext(IToolSettingsDraft draft,ToolSettingsViewOptions options)=>
-        !_disposed&&ReferenceEquals(Draft,draft)&&ReferenceEquals(_editor.Draft,draft)&&ReferenceEquals(_sourceOptions,options);
     private void Notify(){if(!_disposed)Changed?.Invoke();}
     private void OnInputChanged(){RefreshSupported();Notify();}
     internal void RefreshAcceptedInputs()
@@ -1199,7 +1178,7 @@ public partial class BlobParameterEditor : UserControl,IToolSettingsView,IToolSe
     public static readonly DependencyProperty SelectedPageIndexProperty=SelectedPageIndexPropertyKey.DependencyProperty;
     public int SelectedPageIndex=>(int)GetValue(SelectedPageIndexProperty);
     private BlobUiComposition? _composition;
-    private BlobUiComposition? Composition=>_composition??Design.BlobDesignData.GetComposition(Editor);
+    private BlobUiComposition? Composition=>_composition;
     public Task ReadyTask=>Composition?.ReadyTask??Task.CompletedTask;
     public string? CompositionError=>Composition?.CompositionError;
     public IReadOnlyDictionary<string,long> CompositionStageMs=>Composition?.StageMs??new Dictionary<string,long>();

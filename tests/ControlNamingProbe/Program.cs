@@ -24,19 +24,17 @@ internal static class Program
  Console.WriteLine("PASS: neutral application labels and factual third-party board keys in both locales");
  var slider=new SliderArrange{Minimum=0,Maximum=100000,StartValue=123,SliderTickFrequency=10};
  if(slider.StartValue!=123) throw new Exception("slider value");
- var blobContext=SunEyeVision.Tool.BlobAnalysis.Wpf.Design.BlobDesignData.CreateParameterContext();
+ var blobContext=SunEyeVision.Plugin.Wpf.Presenters.Design.DesignTimeSample.Create(new SunEyeVision.Tool.BlobAnalysis.Runtime.BlobTool(),SunEyeVision.Tool.BlobAnalysis.Runtime.BlobTool.ImageInput);
  var blobSchema=new SunEyeVision.Tool.BlobAnalysis.Runtime.BlobTool().Describe();
  var input=new SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredInputFieldsView(blobSchema,_=>new SunEyeVision.Plugin.Contracts.UnsetSetting(),(_,_)=>{},SunEyeVision.Plugin.Wpf.Adapters.References.ReferenceFieldOptions.Empty);
  var blobOptions=new SunEyeVision.Plugin.Wpf.Presenters.Parameters.ToolSettingsViewOptions(ReferenceOptions:SunEyeVision.Plugin.Wpf.Adapters.References.ReferenceFieldOptions.Empty,InputSection:blobSchema.Presentation!.Fields.First().Layout!.Page,InputContent:input);
  using(var blob=new SunEyeVision.Tool.BlobAnalysis.Wpf.Views.BlobParameterEditor(blobContext.Draft,blobOptions))
  { blob.Measure(new Size(680,800)); blob.Arrange(new Rect(0,0,680,800)); }
- using(var sample=new SunEyeVision.Tool.BlobAnalysis.Wpf.Views.BlobParameterEditor())
+ // 走生产装配路径：有参构造会创建 BlobUiComposition 并装配完整参数页。
+ using(var sample=new SunEyeVision.Tool.BlobAnalysis.Wpf.Views.BlobParameterEditor(blobContext.Draft,blobContext.Options))
  {
   var presenter=(SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView)sample.FindName("Editor");
-  SunEyeVision.Tool.BlobAnalysis.Wpf.Design.BlobDesignData.BindParameterContext(presenter,blobContext);
   var parameterTree=presenter.Content??throw new Exception("Blob design parameter tree was not built");
-  SunEyeVision.Tool.BlobAnalysis.Wpf.Design.BlobDesignData.BindParameterContext(presenter,blobContext);
-  if(!ReferenceEquals(parameterTree,presenter.Content))throw new Exception("Same Blob design context rebuilt its parameter tree");
   if(presenter.SelectedPageKey!="基本参数")throw new Exception("Blob designer does not open the production first page");
   var designInputs=(SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredInputFieldsView)blobContext.Options.InputContent!;
   var imageRow=designInputs.Fields.Single(row=>row.FieldId==SunEyeVision.Tool.BlobAnalysis.Runtime.BlobTool.ImageInput);

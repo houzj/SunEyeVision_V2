@@ -47,4 +47,19 @@ public interface INativeRoiEditDocument
 
     /// <summary>读取某个组当前的覆盖模式。</summary>
     string Coverage(RecordValue document, string group);
+
+    /// <summary>继承模式字段身份，预览时需要随输入一起借用。</summary>
+    string ModeFieldId { get; }
+
+    /// <summary>表示"本地绘制"的模式取值。</summary>
+    string LocalModeValue { get; }
+
+    /// <summary>该字段变化后是否需要重算预览。</summary>
+    bool IsPreviewSource(string fieldId);
+
+    /// <summary>预览需要借用的输入字段：模式对应的来源或参数成员。</summary>
+    IReadOnlyList<string> PreviewInputIds(string mode, bool maskInherited);
+
+    /// <summary>按当前模式与屏蔽区状态物化出用于预览的区域文档。</summary>
+    RecordValue MaterializePreview(InputValues inputs, RecordValue document);
 }

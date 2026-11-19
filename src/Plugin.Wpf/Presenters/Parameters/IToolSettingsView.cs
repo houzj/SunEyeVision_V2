@@ -43,7 +43,10 @@ public sealed record ToolSettingsViewOptions(
     Action<string,DeclaredFieldsView,FrameworkElement?>? PageBuilt=null,
     Func<DeclaredFieldsView,FrameworkElement>? InputContentFactory=null,
     bool EagerlyComposePages=false,
-    Func<string,ParameterSetting>? ReadInputSetting=null)
+    Func<string,ParameterSetting>? ReadInputSetting=null,
+    IReadOnlyDictionary<string,NativeInputPlacement>? InputPlacements=null,
+    IReadOnlySet<string>? ToolOwnedInputFields=null,
+    InputCompositionMode CompositionMode=InputCompositionMode.NestedLegacy)
 {
     private IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? _choiceDisplays=FreezeChoiceDisplays(ChoiceDisplays);
     public IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? ChoiceDisplays

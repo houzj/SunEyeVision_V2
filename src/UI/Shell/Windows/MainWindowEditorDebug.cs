@@ -25,6 +25,8 @@ public partial class MainWindowViewModel
  private DeclaredOutputSnapshot? _workspaceEditorSnapshot;
  private DeclaredOutputSnapshot? _retainedEditorDebugSnapshot;
  private IDisposable? _retainedEditorDebugLease;
+ private DeclaredOutputSnapshot? _formalSnapshotBeforeEditor;
+ private IDisposable? _formalSnapshotBeforeEditorLease;
  private string[] _workspaceEditorImages=[];
  private ProductionEditorContext? SelectedEditorContext=>_editorDebugContext is {IsValid:true} context
   &&ReferenceEquals(DocumentManager.CurrentSession,context.Session)&&ReferenceEquals(SelectedNode,context.FormalNode)?context:null;
@@ -50,6 +52,19 @@ public partial class MainWindowViewModel
  {
   _retainedEditorDebugSnapshot=null;
   _retainedEditorDebugLease?.Dispose();_retainedEditorDebugLease=null;
+ }
+ private void CaptureFormalSnapshotBeforeEditor(DeclaredOutputSnapshot? snapshot)
+ {
+  _formalSnapshotBeforeEditorLease?.Dispose();
+  _formalSnapshotBeforeEditor=snapshot is {IsComplete:true}?snapshot:null;
+  _formalSnapshotBeforeEditorLease=_formalSnapshotBeforeEditor?.Retain();
+ }
+ private DeclaredOutputSnapshot? TakeFormalSnapshotBeforeEditor()
+ {
+  var snapshot=_formalSnapshotBeforeEditor;
+  _formalSnapshotBeforeEditor=null;
+  _formalSnapshotBeforeEditorLease?.Dispose();_formalSnapshotBeforeEditorLease=null;
+  return snapshot;
  }
  private void RefreshEditorDebugResult()
  {

@@ -33,6 +33,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
  private readonly ReferenceWindowOwner? _referenceWindowOwner;
  private readonly bool _ownsReferenceWindowOwner;
  private readonly Dictionary<string,NativeParameterPage> _groups=new(StringComparer.Ordinal);
+ private readonly Dictionary<string,NativeParameterGroup> _groupMetadata=new(StringComparer.Ordinal);
  private readonly Dictionary<string,string> _groupPageKeys=new(StringComparer.Ordinal);
  private readonly Dictionary<string,List<Action>> _pendingPageActions=new(StringComparer.Ordinal);
  private readonly HashSet<FrameworkElement> _pendingContent=new(ReferenceEqualityComparer.Instance);
@@ -86,6 +87,10 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   }
  }
  public bool HasInvalidActiveFields=>ChoiceReadinessError() is not null||_fields.Any(field=>IsFieldActive(field.FieldId)&&field.HasInvalidText)||AssistCompletenessError() is not null;
+ public string? InvalidActiveFieldDiagnostic=>ChoiceReadinessError()
+  ??_fields.FirstOrDefault(field=>IsFieldActive(field.FieldId)&&field.HasInvalidText)?.Error
+  ??AssistCompletenessError();
+ public string InvalidActiveFieldIds=>string.Join(",",_fields.Where(field=>IsFieldActive(field.FieldId)&&field.HasInvalidText).Select(field=>field.FieldId));
  public bool HasPendingActiveFields=>ChoiceReadinessError() is not null||_fields.Any(field=>IsFieldActive(field.FieldId)&&field.HasPendingEdits)||AssistCompletenessError() is not null;
  internal bool HasPendingActiveFieldsOutside(IReadOnlySet<string> excludedFields)=>ChoiceReadinessError() is not null
   ||_fields.Any(field=>!excludedFields.Contains(field.FieldId)&&IsFieldActive(field.FieldId)&&(field.HasInvalidText||field.HasPendingEdits))
@@ -127,22 +132,88 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
    (row as IParameterVisibility)?.PrepareForVisibility(false);
    row.Visibility=Visibility.Collapsed;
   }
+  foreach(var (_,host) in _pages)host.RefreshGroups();
  }
- public void AddToGroup(string group,UIElement content,int? index=null,FieldCondition? condition=null)
+ internal bool HasDeclaredGroup(string group)
+  => !_disposed&&_groups.ContainsKey(group);
+ /// <summary>Reports whether a visual is already owned by this VM parameter root.</summary>
+ public bool ContainsView(FrameworkElement view)
+  => !_disposed&&(_positions.ContainsKey(view)||_pendingContent.Contains(view)||_rows.Values.Contains(view));
+
+ internal void RegisterExternalField(string fieldId,FrameworkElement view)
  {
   ObjectDisposedException.ThrowIf(_disposed,this);
-  if(!_groups.TryGetValue(group,out var page))throw new ArgumentException("Unknown declared presentation group.");
+  ArgumentException.ThrowIfNullOrWhiteSpace(fieldId);
+  ArgumentNullException.ThrowIfNull(view);
+  if(_rows.ContainsKey(fieldId))throw new ArgumentException("参数字段身份重复。",nameof(fieldId));
+  // Flat-native composition may register a formal input before its declared
+  // page is materialized. The row is already queued for that page and will
+  // receive its position during the page transaction before PageBuilt runs.
+  // Keep the field identity now so the same input can be addressed by the
+  // tool-specific composition callback without inventing a second row.
+  if(!_positions.ContainsKey(view)&&!_pendingContent.Contains(view))
+      throw new ArgumentException("外部字段必须先安装到参数页。",nameof(view));
+  _rows.Add(fieldId,view);
+  // A tool-specific original composition may have been declared while the
+  // page was being built, before FlatNative installed its formal input row.
+  // Replay that field's queued anchor actions now that the real row owns the
+  // field identity. This keeps the original host topology without creating a
+  // second editor or a tool-side fallback visual.
+  if(_pendingPageActions.Remove(fieldId,out var actions))
+      foreach(var action in actions.ToArray())action();
+ }
+
+ public void AddToGroup(string group,UIElement content,int? index=null,FieldCondition? condition=null)
+  => AddToGroupCore(group,group,content,index,condition);
+
+ /// <summary>Attach a row to a known page while preserving an input-only section title.</summary>
+ internal void AddToPage(string page,string section,UIElement content,int? index=null,FieldCondition? condition=null)
+  => AddToGroupCore(page,section,content,index,condition);
+
+ private void AddToGroupCore(string pageOrGroup,string metadataKey,UIElement content,int? index,FieldCondition? condition)
+ {
+  ObjectDisposedException.ThrowIf(_disposed,this);
+  if(!_groups.TryGetValue(pageOrGroup,out var page))throw new ArgumentException("Unknown declared presentation group.");
   if(content is not FrameworkElement view)throw new ArgumentException("参数组合必须提供真实FrameworkElement。");
   if(!_pages.Any(entry=>ReferenceEquals(entry.Page,page)))
-  {QueueContent(view);QueuePageAction(_groupPageKeys[group],()=>{_pendingContent.Remove(view);AddToGroup(group,view,index,condition);});return;}
+  {
+   QueueContent(view);
+   var pageKey=_groupPageKeys.GetValueOrDefault(pageOrGroup)??pageOrGroup;
+   QueuePageAction(pageKey,()=>{
+       _pendingContent.Remove(view);
+       // 页构建后重放排队动作时，输入视图可能已通过同一页的其它路径安装完成。
+       // 同页重复安装按幂等跳过；跨页冲突仍由 EnsureAttachable 拒绝，避免掩盖真实配置错误。
+       if(_positions.TryGetValue(view,out var installed)&&ReferenceEquals(installed.Page,page))return;
+       AddToGroupCore(pageKey,metadataKey,view,index,condition);
+   });
+   return;
+  }
   ValidateCondition(condition);
-  EnsureAttachable(view);var position=index??page.Rows.Count;
+  EnsureAttachable(view);
+  // Reuse declared section metadata. Input-only sections use the same native
+  // group host as settings rows, even when the settings schema has no field in
+  // that section yet.
+  var metadata=_groupMetadata.GetValueOrDefault(metadataKey)
+      ?? (metadataKey==pageOrGroup&&index.HasValue&&page.Rows.FirstOrDefault()?.GroupName is {DisplayType:"CategoryNoHead"} existing
+          ?existing:new NativeParameterGroup(metadataKey));
+  // The input composition already owns the original Image/ROI subgroups.
+  // Its host row is structural and must not add a second visible section title.
+  if(view is SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredInputFieldsView)
+      metadata=new NativeParameterGroup(metadata.NameA,true);
+  var groupPositions=page.Rows.Select((row,rowIndex)=>(row,rowIndex))
+      .Where(item=>ReferenceEquals(item.row.GroupName,metadata))
+      .Select(item=>item.rowIndex).ToArray();
+  var position=index is null
+      ?page.Rows.Count
+      :groupPositions.Length==0
+          ?Math.Clamp(index.Value,0,page.Rows.Count)
+          :
+      Math.Min(groupPositions.Min()+index.Value,groupPositions.Max()+1);
   if(position<0||position>page.Rows.Count)throw new ArgumentOutOfRangeException(nameof(index));
-  var metadata=index.HasValue&&page.Rows.FirstOrDefault()?.GroupName is {DisplayType:"CategoryNoHead"} existing?existing:new NativeParameterGroup("",true);
   var row=BorrowRow(metadata,view);InstallRow(page,position,row,view);
   _visibility.Add(view,(null,condition));UpdateVisibility();
  }
- public void AddAfterField(string fieldId,FrameworkElement content,FieldCondition? condition=null,bool followAnchorVisibility=true,bool insertBefore=false)
+ public void AddAfterField(string fieldId,FrameworkElement content,FieldCondition? condition=null,bool followAnchorVisibility=true,bool insertBefore=false,string? groupOverride=null)
  {
   ObjectDisposedException.ThrowIf(_disposed,this);EnsureAttachable(content);
   if(!_rows.TryGetValue(fieldId,out var anchor))
@@ -156,7 +227,10 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   var advanced=_visibility.TryGetValue(anchor,out var policy)?policy.Advanced:null;
   _visibility.Add(content,(advanced,condition));
   if(followAnchorVisibility)_rowGateAnchors.Add(content,fieldId);
-  var row=BorrowRow(position.Row.GroupName,content);
+  var group=groupOverride is null
+      ?position.Row.GroupName
+      :_groupMetadata.GetValueOrDefault(groupOverride)??new NativeParameterGroup(groupOverride);
+  var row=BorrowRow(group,content);
   try
   {
    content.Visibility=(advanced?.IsExpanded??true)&&(!followAnchorVisibility||IsFieldActive(fieldId))&&(condition is null||Meets(condition))?Visibility.Visible:Visibility.Collapsed;
@@ -465,6 +539,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
       {
        var section=sectionNode.Fields.Select(field=>declarations[field.FieldId]).ToArray();
        var metadata=new NativeParameterGroup(sectionNode.Key,sectionNode.IsAdvanced||section.Any(field=>headerlessSectionAnchors?.Contains(field.Port.Id)==true));
+       _groupMetadata[sectionNode.Key]=metadata;
        NativeAdvancedPresenter? advanced=null;
        if(sectionNode.IsAdvanced)
        {
@@ -489,8 +564,11 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
       body.SetRows(pageRows.Rows);
       var layoutMs=buildProbe.ElapsedMilliseconds-rowsMs;_lastBuildStageMs[pageNode.Key]=(rowsMs,layoutMs);
       tab.Content=body;
-      _pageBuilt?.Invoke(pageNode.Key,this);
       if(_pendingPageActions.Remove(pageNode.Key,out var actions))foreach(var action in actions.ToArray())action();
+      // Formal input rows and other queued page slots must exist before the
+      // tool-specific page composition callback observes the page. VM builds
+      // the parameter root first, then lets the tool attach ROI/model panels.
+      _pageBuilt?.Invoke(pageNode.Key,this);
       UpdateVisibility();
      }
      catch(Exception failure)
@@ -600,7 +678,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   cleanup.AddRange(_fieldStates.ToArray().Select(state=>(Action)state.Dispose));
   cleanup.Add(()=>
   {
-  _numericTabPages.Clear();_numericModelPages.Clear();_parameterRows.Clear();_pages.Clear();_positions.Clear();_visibility.Clear();_advanced.Clear();_ranges.Clear();_editors.Clear();_rows.Clear();
+  _numericTabPages.Clear();_numericModelPages.Clear();_groupMetadata.Clear();_parameterRows.Clear();_pages.Clear();_positions.Clear();_visibility.Clear();_advanced.Clear();_ranges.Clear();_editors.Clear();_rows.Clear();
    _appliedVisibility.Clear();
    _groups.Clear();_groupPageKeys.Clear();_pendingPageActions.Clear();_pendingContent.Clear();_pageBuilders.Clear();_builtPages.Clear();
    _fieldStates.Clear();_displayCompositions.Clear();_fields.Clear();_fieldsById.Clear();_fieldConditions.Clear();_groups.Clear();

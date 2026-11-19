@@ -94,8 +94,14 @@ public sealed class ProductionEditorContext : IToolEditorDraftContext, IDocument
             throw new InvalidOperationException("编辑回执不属于当前参数页。");
         // A raw, unparsed control edit made during publication must survive the receipt.
         // The draft is rebased in either case; rebuilding WPF would lose that raw text.
-        var preserveForClose = _committingBeforeClose && PreserveViewAfterRebase is not null;
-        var rebind = !preserveForClose && prepared.Matches(_draft) && HasPendingViewEdits?.Invoke() != true;
+        // The VM parameter window keeps its composed view alive while the
+        // accepted draft is rebased. Rebinding here would replace the native
+        // page tree during a synchronous change notification and lose the
+        // current ROI/page identity. The adapter refreshes accepted projections
+        // in place through PreserveViewAfterRebase.
+        var rebind = PreserveViewAfterRebase is null
+            && prepared.Matches(_draft)
+            && HasPendingViewEdits?.Invoke() != true;
         _draft = Host.RebaseAcceptedDraft(_draft, prepared);
         if (rebind) _bindDraft(_draft); else PreserveViewAfterRebase?.Invoke(_draft);
         try { _published?.Invoke(receipt); } catch (Exception error) { LastRefreshError = error.Message; }

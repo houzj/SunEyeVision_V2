@@ -76,12 +76,12 @@ public sealed class NodeConfigurationEditDraft
     /// <summary>Apply a complete group through the admitted declaration before replacing the candidate.</summary>
     public void ApplyFields(IReadOnlyDictionary<string, ParameterSetting> changes, IReadOnlyList<string>? acceptedFieldOrder = null)
     {
-        EnsureCurrent();
+        EnsureOwner();
         var next = _candidate.WithFieldSettings(changes, acceptedFieldOrder);
         var revisions=_fieldRevisions?.Fork(next.Configuration.Fields.Select(next.SettingsSchema.Inputs));
         var affectsExecution = changes.Keys.Any(id => !_candidate.IsDisplayField(id))
             || _candidate.ExecutionConfigurationIdentity != next.ExecutionConfigurationIdentity;
-        EnsureCurrent();
+        EnsureOwner();
         Interlocked.Exchange(ref _revision, checked(_revision + 1));
         if (affectsExecution) Interlocked.Increment(ref _executionRevision);
         _candidate = next;

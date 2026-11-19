@@ -11,12 +11,16 @@ namespace SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 
 /// <summary>Original grouped input rows, without an inner scroll owner.
 /// The accepting settings view owns this composition; field values remain host-owned.</summary>
-public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
+public sealed class DeclaredInputFieldsView : NativeHost, INativeInputComposition
 {
     private readonly NativeParameterPage _page=new();
     private readonly List<DeclaredFieldRow> _fields=new();
+    private readonly List<NativeInputField> _inputFields=new();
     private readonly List<(DeclaredFieldRow Field,Action Handler)> _handlers=new();
     private readonly Dictionary<string,NativeParameterRow> _fieldRows=new(StringComparer.Ordinal);
+    private readonly Dictionary<string,DeclaredFieldRow> _movedFields=new(StringComparer.Ordinal);
+    private readonly HashSet<string> _externallyValidatedFields=new(StringComparer.Ordinal);
+    private readonly HashSet<string> _referenceOnlyFields=new(StringComparer.Ordinal);
     private readonly List<IDisposable> _additionalContents=new();
     private bool _disposed;
     private readonly ToolSchema _schema;
@@ -27,10 +31,28 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
     private readonly ReferenceWindowOwner _referenceWindowOwner;
     private readonly bool _ownsReferenceWindowOwner;
     public IReadOnlyList<DeclaredFieldRow> Fields {get;}
-    internal IReadOnlyList<NumericModelReadResult> ReadNumericModels(NumericModelReadScope scope,string? fieldId,bool pageKnown,bool currentPage,Func<bool> current,
+    public IReadOnlyList<NativeInputField> InputFields=>_inputFields.AsReadOnly();
+    // VM's CustomVisible branches only participate in validation while their
+    // projected row is active. Assist/ROI compositions own the hidden branches
+    // and expose the active branch through their own commit contract.
+    private bool IsActive(DeclaredFieldRow field)
+        => !_movedFields.ContainsKey(field.FieldId) && !_externallyValidatedFields.Contains(field.FieldId)
+            && field.Visibility == Visibility.Visible && field.IsEnabled;
+    /// <summary>Transfers validation ownership to an original composite such as Blob Assist.</summary>
+    public void MarkExternallyValidated(IEnumerable<string> fieldIds)
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);
+        foreach(var id in fieldIds) _externallyValidatedFields.Add(id);
+    }
+    public bool HasInvalidInput=>_fields.Any(field=>IsActive(field)&&field.HasInvalidText);
+    public string? InvalidInputDiagnostic=>_fields.FirstOrDefault(field=>IsActive(field)&&field.HasInvalidText)?.Error;
+    public string InvalidInputFieldIds=>string.Join(",",_fields.Where(field=>IsActive(field)&&field.HasInvalidText).Select(field=>field.FieldId));
+    public bool HasPendingEdits=>_fields.Any(field=>IsActive(field)&&field.HasPendingEdits);
+    public event Action? Changed;
+    public IReadOnlyList<NumericModelReadResult> ReadNumericModels(NumericModelReadScope scope,string? fieldId,bool pageKnown,bool currentPage,Func<bool> current,
         IReadOnlyDictionary<string,ConstantSetting?>? currentValues=null)
     {
-        var candidates=_fields.Where(field=>scope==NumericModelReadScope.Field?field.FieldId==fieldId:field.HasNumericModel).ToArray();
+        var candidates=_fields.Where(field=>IsActive(field)&&(scope==NumericModelReadScope.Field?field.FieldId==fieldId:field.HasNumericModel)).ToArray();
         if(scope==NumericModelReadScope.CurrentPage&&!currentPage)
             return pageKnown?Array.Empty<NumericModelReadResult>():Array.AsReadOnly(candidates.Select(field=>new NumericModelReadResult(field.FieldId,NumericModelReadStatus.NotApplicable,"输入组合未声明可证明的页面归属。" )).ToArray());
         return Array.AsReadOnly(candidates.Select(field=>field.ReadNumericModel(()=>!_disposed&&current(),
@@ -71,13 +93,14 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
                         field.DisplayName,read(port),setting=>write(port,setting),references,formatReference:format,
                         presentation:field,allowUnboundReference:!port.Required||schema.WorkflowImageInputId==port.Id);
                     _fields.Add(editor);
+                    _inputFields.Add(new NativeInputField(field.FieldId, field.Layout?.Section ?? throw new ArgumentException("Input section is required."), field.Order, port, field, editor));
                     if(port.Id==schema.WorkflowImageInputId)
                         editor.UseImageSourceSelector(()=>references.ReadCandidates(port));
                     var row=new NativeParameterRow(metadata,editor,()=>editor.NativeItemState,
                         ()=>{if(!_disposed)ReferenceExpansionCoordinator.ClearSelectionFor(_referenceWindowOwner);});
                     _fieldRows.Add(port.Id,row);
                     _page.Rows.Add(row);
-                    Action handler=row.Refresh;_handlers.Add((editor,handler));editor.Changed+=handler;
+                    Action handler=()=>{row.Refresh();Changed?.Invoke();};_handlers.Add((editor,handler));editor.Changed+=handler;
                 }
             }
             SetRows(_page.Rows);
@@ -105,6 +128,8 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
             return value is UnsetSetting&&defaultWhenUnset is not null?defaultWhenUnset:value;
         }
         var accepted = ReadAccepted();
+        if (_referenceOnlyFields.Contains(id) && state.Accepted is UnsetSetting && accepted is ConstantSetting)
+            return;
         if (DeclaredFieldState.SameSetting(state.Accepted, accepted)) return;
         row.RetireInteractions();
         if (!_disposed) state.ProjectAcceptedInput(ReadAccepted());
@@ -116,11 +141,21 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
         var port=_schema.Inputs.SingleOrDefault(port=>port.Id==id)??throw new ArgumentException("输入未声明。");
-        if(_fields.Any(field=>field.FieldId==id)||_schema.Presentation!.Fields.Any(field=>field.FieldId==id))
+        // 对齐原厂"节点唯一"语义：原厂节点树（NameValueItem）按 id 唯一存在，
+        // 切页只是重新呈现节点，从不重建节点。因此同一字段的编辑器实例也必须唯一——
+        // 重复请求返回已有实例，而不是抛异常（否则页面重建必然失败）。
+        var existing=_fields.FirstOrDefault(field=>field.FieldId==id);
+        if(existing is not null)
+        {
+            if(_fieldRows.ContainsKey(id)) return TakeField(id);
+            return existing;
+        }
+        if(_schema.Presentation!.Fields.Any(field=>field.FieldId==id))
             throw new ArgumentException("输入已有编辑器。");
         var value = _read(port);
         ObjectDisposedException.ThrowIf(_disposed,this);
         if (value is UnsetSetting && defaultWhenUnset is not null) value = defaultWhenUnset;
+        if (referenceOnly) _referenceOnlyFields.Add(id);
         // An optional host input with an explicit presentation default is a selected
         // constant in the original radio control. Keep the formal input optional;
         // only its editor projection has no unset branch.
@@ -185,12 +220,26 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
     public DeclaredFieldRow TakeField(string fieldId)
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
+        if(_movedFields.TryGetValue(fieldId,out var moved))return moved;
         if(!_fieldRows.Remove(fieldId,out var row))throw new ArgumentException("输入字段不存在或已移出。",nameof(fieldId));
         var editor=_fields.Single(field=>field.FieldId==fieldId);
         var handler=_handlers.Single(item=>ReferenceEquals(item.Field,editor));
         editor.Changed-=handler.Handler;_handlers.Remove(handler);
         _page.Rows.Remove(row);row.Dispose();
+        _movedFields.Add(fieldId,editor);
         return editor;
+    }
+    public bool TryValidate(out string error)
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);
+        foreach(var field in _fields.Where(IsActive))
+        {
+            if(field.TryCommitPending())continue;
+            error=field.Error.Length==0?"输入参数未能提交。":field.Error;
+            return false;
+        }
+        error=_fields.FirstOrDefault(field=>IsActive(field)&&field.HasInvalidText)?.Error??"";
+        return error.Length==0;
     }
     public void Dispose()
     {
@@ -201,6 +250,8 @@ public sealed class DeclaredInputFieldsView : NativeHost,IDisposable
         cleanup.Add(()=>SetRows(null));cleanup.Add(_page.Dispose);
         cleanup.AddRange(_additionalContents.Select(content=>(Action)content.Dispose));_additionalContents.Clear();_fieldRows.Clear();
         cleanup.AddRange(_fields.Select(field=>(Action)field.Dispose));
+        cleanup.Add(()=>Changed=null);
+        _inputFields.Clear();_movedFields.Clear();_externallyValidatedFields.Clear();_referenceOnlyFields.Clear();
         cleanup.Add(()=>{BindingOperations.ClearBinding(this,ChildLeftWidthProperty);BindingOperations.ClearBinding(this,ChildMarginProperty);BindingOperations.ClearBinding(this,ChildHeaderMarginProperty);});
         if(_ownsReferenceWindowOwner)cleanup.Add(_referenceWindowOwner.Dispose);
         ParameterCleanup.Run(cleanup);

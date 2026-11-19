@@ -1164,7 +1164,13 @@ SplitterPosition = position;
         {
             if (node is null) return;
             try { await OpenFormalNodeEditor(node); }
-            catch (Exception error) { StatusText="节点打开失败："+error.Message; AddLog(StatusText); }
+            catch (Exception error)
+            {
+                StatusText="节点打开失败："+error.Message;
+                AddLog(StatusText);
+                // 只写 StatusText 会把堆栈丢掉，节点打开失败时无法定位到失败环节。
+                SunEyeVision.Foundation.Logging.PluginLogger.Error(StatusText,nameof(MainWindowViewModel),error);
+            }
         }
 
         /// <summary>

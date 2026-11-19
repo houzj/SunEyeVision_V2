@@ -242,7 +242,7 @@ internal sealed class ParameterFieldHost : IDisposable
 
         // 订阅会话：引用行常驻；默认数值/文本行创建（引用分支模板按 IsSubA 显隐）。
         if (_referenceSession is null && !_row.UsesImageSourceSelector
-            && (_isReferenceKind || (_canReference && (_isPlainNumericKind || _isTextKind))))
+            && (_isReferenceKind || (_canReference && (_isPlainNumericKind || _templateKey is DeclaredFieldTemplateRegistry.Integer or DeclaredFieldTemplateRegistry.Float || _isTextKind))))
         {
             _expansion = new ReferenceExpansionCoordinator(_row, _references?.WindowOwner);
             _referenceSession = new ReferenceFieldSession(_state, _references ?? ReferenceFieldOptions.Empty, _formatReference,
@@ -618,3 +618,4 @@ internal sealed class ParameterFieldHost : IDisposable
         _scope?.Refresh();
     }
 }
+

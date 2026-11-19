@@ -65,7 +65,7 @@
     <Setter Property="Width" Value="66" />
   </Style>
   <DataTemplate x:Key="BottomCommand">
-    <Button Width="auto" MinWidth="66" Margin="2.5,0" Padding="10,0,10,0" Content="{language:ResourceBinding DisplayNameA}" Visibility="{Binding CustomVisibleA, Converter={StaticResource bool2VisibilityConverter}}">
+    <Button Width="auto" MinWidth="66" Margin="2.5,0" Padding="10,0,10,0" Content="{language:ResourceBinding DisplayNameA}" AutomationProperties.Name="{Binding AutomationNameA}" Visibility="{Binding CustomVisibleA, Converter={StaticResource bool2VisibilityConverter}}">
       <FrameworkElement.Style>
         <Style BasedOn="{StaticResource BottomButtonStyle}" TargetType="{x:Type Button}">
           <Setter Property="Command" Value="{Binding ClickCommand}" />
@@ -74,7 +74,7 @@
     </Button>
   </DataTemplate>
   <DataTemplate x:Key="ContinuousExecuteBottomCommand">
-    <Button Width="auto" MinWidth="66" Margin="2.5,0" Padding="10,0,10,0" Content="{language:ResourceBinding DisplayNameA}">
+    <Button Width="auto" MinWidth="66" Margin="2.5,0" Padding="10,0,10,0" Content="{language:ResourceBinding DisplayNameA}" AutomationProperties.Name="{Binding AutomationNameA}">
       <FrameworkElement.Style>
         <Style BasedOn="{StaticResource BottomButtonStyle}" TargetType="{x:Type Button}">
           <Setter Property="Command" Value="{Binding ClickCommand}" />
@@ -95,7 +95,7 @@
     </Button>
   </DataTemplate>
   <DataTemplate x:Key="ExecuteOnceBottomCommand">
-    <Button Width="auto" MinWidth="66" Margin="2.5,0" Padding="10,0,10,0" Content="{language:ResourceBinding DisplayNameA}">
+    <Button Width="auto" MinWidth="66" Margin="2.5,0" Padding="10,0,10,0" Content="{language:ResourceBinding DisplayNameA}" AutomationProperties.Name="{Binding AutomationNameA}">
       <FrameworkElement.Style>
         <Style BasedOn="{StaticResource BottomButtonStyle}" TargetType="{x:Type Button}">
           <Setter Property="Command" Value="{Binding ClickCommand}" />
@@ -116,7 +116,7 @@
     </Button>
   </DataTemplate>
   <DataTemplate x:Key="StopExecuteBottomCommand">
-    <Button Width="auto" MinWidth="66" Margin="2.5,0" Padding="10,0,10,0" Content="{language:ResourceBinding DisplayNameA}">
+    <Button Width="auto" MinWidth="66" Margin="2.5,0" Padding="10,0,10,0" Content="{language:ResourceBinding DisplayNameA}" AutomationProperties.Name="{Binding AutomationNameA}">
       <FrameworkElement.Style>
         <Style BasedOn="{StaticResource BottomButtonStyle}" TargetType="{x:Type Button}">
           <Setter Property="Command" Value="{Binding ClickCommand}" />

@@ -108,7 +108,11 @@ public partial class MainWindowViewModel
         // formal publication. VM keeps the last completed result visible while
         // the draft is being edited, so retain it before creating the context.
         if(_resultPublicationSnapshot is { IsComplete:true } published&&SelectedNode?.Id==node.Id)
+        {
+            CaptureFormalSnapshotBeforeEditor(published);
             RetainEditorDebugSnapshot(published);
+        }
+        else CaptureFormalSnapshotBeforeEditor(null);
         if (!node.IsEnabled) return;
         var session=DocumentManager.CurrentSession!;
         var workflowId=WorkflowTabViewModel.SelectedTab!.CurrentWorkflowId;
@@ -143,13 +147,7 @@ public partial class MainWindowViewModel
         perf.Mark("前置");
         var control=new RuntimeNodeConfigurationControl();
         var window=new RuntimeToolEditorWindow(control,node.ToolType) {Title=node.Name};
-        window.BeforeClose=() =>
-        {
-            if(_resultPublicationSnapshot is { IsComplete:true } published&&SelectedNode?.Id==node.Id)
-                RetainEditorDebugSnapshot(published);
-            if(control.CurrentDebugSnapshot is { IsComplete:true } debug&&SelectedNode?.Id==node.Id)
-                RetainEditorDebugSnapshot(debug);
-        };
+        window.BeforeClose=ClearRetainedEditorDebugSnapshot;
         if (ResolveSolutionDialogOwner(null) is {} owner) window.Owner=owner;
         _openDebugWindow=window;
         perf.Mark("构造");
@@ -159,8 +157,22 @@ public partial class MainWindowViewModel
         };
         window.Closed += (_, _) =>
         {
-            if (!ReferenceEquals(_openDebugWindow, window)) return;
-            _openDebugWindow = null;
+            if (ReferenceEquals(_openDebugWindow, window)) _openDebugWindow = null;
+            if (ReferenceEquals(_editorDebugControl, control))
+            {
+                var formalSnapshot=TakeFormalSnapshotBeforeEditor();
+                _editorDebugControl = null;
+                _editorDebugContext = null;
+                ClearRetainedEditorDebugSnapshot();
+                RetireResultPublication();
+                if(formalSnapshot is {IsComplete:true}&&SelectedNode?.Id==formalSnapshot.Identity.NodeId
+                    &&formalSnapshot.SourceWorkflowId==WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId)
+                {
+                    RetainEditorDebugSnapshot(formalSnapshot);
+                    RefreshFormalPublishedResult();
+                }
+                else RefreshFormalPublishedResult();
+            }
             SetEditorRelatedImage(null);ResultWorkspaceChanged?.Invoke();
             NotifyParameterWindowStateChanged();
         };
@@ -216,6 +228,10 @@ public partial class MainWindowViewModel
             context.Deactivated+=control.Dispose;
             context.Deactivated+=()=>{if(window.IsLoaded)window.Close();};
             _editorDebugContext=context;_editorDebugControl=control;
+            window.AfterCloseDrain=()=>{if(context.IsActive)context.Discard();};
+            // Normal window closure is also a context ownership boundary. The VM
+            // editor retires its parameter session when the dialog closes.
+            window.Closed += (_, _) => { if (context.IsActive) context.Discard(); };
             control.ConfigureDebug(context,()=>FormalImageInputs,
                 ()=>Current()&&!IsRunning&&!_solutionTransitionPrepared&&!_transitionPreparationInProgress,
                 message=>control.Dispatcher.BeginInvoke(new Action(()=>AddLog(message))),
@@ -267,17 +283,42 @@ public partial class MainWindowViewModel
             };
             control.ExecutionCompleted+=retainDebugResult;
             context.Deactivated+=()=>control.ExecutionCompleted-=retainDebugResult;
+            context.Deactivated+=() =>
+            {
+                // 调试快照只在编辑窗口生命周期内保活。正式结果若已被主窗口
+                // 保留，则继续由正式 publication 持有；关闭时只撤销当前调试快照。
+                var currentDebug=control.CurrentDebugSnapshot;
+                if(currentDebug is not null&&ReferenceEquals(_retainedEditorDebugSnapshot,currentDebug))
+                    ClearRetainedEditorDebugSnapshot();
+            };
             RoiFrameAvailabilityChanged+=control.RefreshRoiFrame;
             RoiInputViewportClicked+=control.NotifyRoiDrawRequested;
             context.Deactivated+=()=>
             {
+                var formalSnapshot=TakeFormalSnapshotBeforeEditor();
                 RoiFrameAvailabilityChanged-=control.RefreshRoiFrame;
                 RoiInputViewportClicked-=control.NotifyRoiDrawRequested;
                 if(ReferenceEquals(_editorDebugControl,control))
                 {
                     _editorDebugControl=null;_editorDebugContext=null;
+                    // The debug publication is owned by the editor context. Retire it
+                    // before restoring the formal result. RefreshEditorDebugResult used
+                    // to leave the old publication installed when the formal session
+                    // had no published result, keeping the private debug snapshot alive
+                    // after the editor was closed.
                     RefreshEditorDebugResult();
                 }
+            // The editor window is the ownership boundary even if the context
+            // callback cleared the control reference earlier in the close turn.
+            // Always retire the publication before exposing the closed state.
+            RetireResultPublication();
+            if(formalSnapshot is {IsComplete:true}&&SelectedNode?.Id==formalSnapshot.Identity.NodeId
+                &&formalSnapshot.SourceWorkflowId==WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId)
+            {
+                RetainEditorDebugSnapshot(formalSnapshot);
+                RefreshFormalPublishedResult();
+            }
+            else RefreshFormalPublishedResult();
             };
             window.SetRunAvailability(()=>Current()&&!IsRunning&&!_solutionTransitionPrepared&&!_transitionPreparationInProgress);
             TrackProductionEditor(_productionEditors,context,window);

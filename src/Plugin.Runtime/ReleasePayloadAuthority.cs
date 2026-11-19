@@ -194,7 +194,12 @@ public sealed class ReleasePayloadAuthority
             LoadApprovedDependencies(assembly,_entries[group.Key],new HashSet<string>(StringComparer.Ordinal));
             dependencyMs+=stage.ElapsedMilliseconds; stage.Restart();
             var actual=assembly.GetCustomAttributes<ToolComponentAttribute>().ToArray();
-            if(actual.Length!=group.Count()||actual.Any(a=>!group.Any(c=>a.Metadata==c.Metadata&&a.EntryType==c.EntryType)))
+            // runtimeOnly filters which registrations are returned, while the PE still
+            // legitimately carries the companion Editor declaration in a shared assembly.
+            // Validate against every payload declaration for this path, then publish only
+            // the requested role below.
+            var allDeclarationsForPath=_components.Where(c=>string.Equals(c.Path,group.Key,StringComparison.OrdinalIgnoreCase)).ToArray();
+            if(actual.Length!=allDeclarationsForPath.Length||actual.Any(a=>!allDeclarationsForPath.Any(c=>a.Metadata==c.Metadata&&a.EntryType==c.EntryType)))
                 throw new InvalidDataException("Component PE declarations differ from the release payload: "+group.Key);
             foreach(var declaration in group)
             {

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:com="clr-namespace:SunEyeVision.Plugin.Wpf.Native.Input.Interaction.Commom">
+  <com:Thickness2DoubleConverter x:Key="thickness2Double" />
+  <SolidColorBrush x:Key="ROIBaseColor" Color="#0F6AF3" />
+  <SolidColorBrush x:Key="ROIMouseOverColor" Color="#F76900" />
+  <SolidColorBrush x:Key="RectangleAreaColor" Color="#3585FD" />
+</ResourceDictionary>

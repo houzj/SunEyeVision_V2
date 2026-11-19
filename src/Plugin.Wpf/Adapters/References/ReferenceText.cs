@@ -15,8 +15,11 @@ public static class ReferenceText
     /// </summary>
     public const string ResourceMemberId = "data";
 
-    /// <summary>模块编号按原件从 0 开始：节点全局序号从 1 起，投影时左移一位。</summary>
-    public static int ModuleNumber(int globalIndex) => globalIndex - 1;
+    /// <summary>
+    /// 模块编号用于显示，取 1 基：<c>GlobalIndex</c> 由 <c>FirstFree(used, 0)</c> 分配，本身是 0 基，
+    /// 投影时右移一位。此前误按“全局序号从 1 起”左移一位，导致首个节点显示 -1、第二个显示 0。
+    /// </summary>
+    public static int ModuleNumber(int globalIndex) => globalIndex + 1;
 
     /// <summary>IO 名取端口名或最深成员名；成员路径只指向资源本体时折叠为端口名。</summary>
     public static string IoName(string portCaption, IReadOnlyList<string> memberIds, IReadOnlyList<string> memberNames)

@@ -15,6 +15,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
 {
     private DeclaredFieldsView? _fields;
     private FrameworkElement? _inputContent;
+    private INativeInputComposition? _inputComposition;
     private IReadOnlyList<FrameworkElement> _additionalContents=Array.Empty<FrameworkElement>();
     private long _generation;
     private DispatcherOperation? _pendingNumericRead;
@@ -31,10 +32,13 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
     public IToolSettingsDraft? Draft {get=>(IToolSettingsDraft?)GetValue(DraftProperty);set=>SetValue(DraftProperty,value);}
     public ToolSettingsViewOptions? Options {get=>(ToolSettingsViewOptions?)GetValue(OptionsProperty);set=>SetValue(OptionsProperty,value);}
     public FrameworkElement View=>this;
-    public bool HasInvalidInput=>!_disposed&&_fields?.HasInvalidActiveFields==true;
-    public bool HasPendingEdits=>!_disposed&&_fields?.HasPendingActiveFields==true;
+    public bool HasInvalidInput=>!_disposed&&(_fields?.HasInvalidActiveFields==true||_inputComposition?.HasInvalidInput==true);
+    public string? InvalidActiveFieldDiagnostic=>_fields?.InvalidActiveFieldDiagnostic;
+    public string? InvalidInputDiagnostic=>_inputComposition is DeclaredInputFieldsView inputs?inputs.InvalidInputDiagnostic:null;
+    public string InvalidFieldIds=>string.Join(";",new[]{_fields?.InvalidActiveFieldIds,_inputComposition is DeclaredInputFieldsView inputs?inputs.InvalidInputFieldIds:null}.Where(value=>!string.IsNullOrEmpty(value)));
+    public bool HasPendingEdits=>!_disposed&&(_fields?.HasPendingActiveFields==true||_inputComposition?.HasPendingEdits==true);
     public bool HasPendingEditsOutside(IReadOnlySet<string> excludedFields)=>
-        !_disposed&&_fields?.HasPendingActiveFieldsOutside(excludedFields)==true;
+        !_disposed&&(_fields?.HasPendingActiveFieldsOutside(excludedFields)==true||_inputComposition?.HasPendingEdits==true);
     public long AcceptedRevision=>Draft?.Revision??throw new InvalidOperationException("A settings draft is required.");
     public IReadOnlyList<string> AcceptedFieldOrder {get;private set;}=Array.Empty<string>();
     public FieldSettings CaptureAcceptedFields()
@@ -54,10 +58,10 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
         var fields=_fields;var generation=_generation;var draft=Draft;long? batchRevision=null;
         bool Current()=>!_disposed&&generation==_generation&&ReferenceEquals(fields,_fields)&&ReferenceEquals(draft,Draft)&&(!batchRevision.HasValue||draft?.Revision==batchRevision.Value);
         if(!Current()||fields is null)return new[]{new NumericModelReadResult(fieldId??"",_disposed?NumericModelReadStatus.Retired:NumericModelReadStatus.Unavailable)};
-        var input=_inputContent as DeclaredInputFieldsView;var options=Options??new();
+        var input=_inputComposition;var options=Options??new();
         bool OwnsInput()=>Current()&&ReferenceEquals(input,_inputContent);
         IReadOnlyDictionary<string,ConstantSetting?>? currentValues=null;
-        if(scope==NumericModelReadScope.All&&(fields.HasNumericModels||input?.Fields.Any(field=>field.HasNumericModel)==true)
+        if(scope==NumericModelReadScope.All&&(fields.HasNumericModels||input?.InputFields.Any(field=>field.Editor.HasNumericModel)==true)
             &&options.ReferenceOptions?.ReadCurrentValues is {} readCurrentValues)
         {
             // A batch optimization must not change the established contract that a failed
@@ -65,7 +69,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
             batchRevision=draft?.Revision;
             try{currentValues=readCurrentValues();}catch{currentValues=null;}
         }
-        if(scope==NumericModelReadScope.Field&&input?.Fields.Any(field=>field.FieldId==fieldId)==true)
+        if(scope==NumericModelReadScope.Field&&input?.InputFields.Any(field=>field.FieldId==fieldId)==true)
             return input.ReadNumericModels(scope,fieldId,true,true,OwnsInput);
         var result=fields.ReadNumericModels(scope,fieldId,Current,currentValues);
         if(input is null||scope==NumericModelReadScope.Field)return result;
@@ -86,21 +90,65 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
     }
     private static void Rebind(DependencyObject sender,DependencyPropertyChangedEventArgs args)
     {var view=(DeclaredSettingsView)sender;if(!view._binding)view.Rebuild();}
+    private static void AttachInputContent(DeclaredFieldsView built, FrameworkElement content, ToolSettingsViewOptions options)
+    {
+        if(options.CompositionMode!=InputCompositionMode.FlatNative||content is not INativeInputComposition composition)
+        {
+            if(options.InputAfterField is { } anchor)
+                built.AddAfterField(anchor,content,options.InputCondition);
+            else
+                built.AddToGroup(options.InputSection??throw new ArgumentException("An input content section is required."),content,0,options.InputCondition);
+            return;
+        }
+
+        var fields=composition.InputFields
+            .Where(field=>options.ToolOwnedInputFields?.Contains(field.FieldId)!=true)
+            .OrderBy(field=>field.Order).ToArray();
+        if(fields.Length==0)return;
+        var placements=options.InputPlacements??throw new InvalidOperationException("FlatNative 输入必须声明原厂 page/section 映射。");
+        if(fields.Any(field=>!placements.ContainsKey(field.FieldId)))
+            throw new InvalidOperationException("FlatNative 输入存在未映射的正式字段。");
+        if(options.InputAfterField is { } inputAnchor)
+        {
+            foreach(var field in fields.Reverse())
+            {
+                var editor=composition.TakeField(field.FieldId);
+                built.AddAfterField(inputAnchor,editor,options.InputCondition);
+                built.RegisterExternalField(field.FieldId,editor);
+            }
+        }
+        else
+        {
+            foreach(var field in fields)
+            {
+                var editor=composition.TakeField(field.FieldId);
+                var placement=placements[field.FieldId];
+                if(!built.HasDeclaredGroup(placement.Page))
+                    throw new InvalidOperationException($"FlatNative 输入 page 未在设置页实现：{field.FieldId} -> {placement.Page}");
+                if(built.HasDeclaredGroup(placement.Section))
+                    built.AddToGroup(placement.Section,editor,placement.Order,options.InputCondition);
+                else
+                    built.AddToPage(placement.Page,placement.Section,editor,placement.Order,options.InputCondition);
+                built.RegisterExternalField(field.FieldId,editor);
+            }
+        }
+    }
     private void Detach(FrameworkElement? retainInput=null,IReadOnlySet<FrameworkElement>? retainAdditional=null)
     {
         _generation++;
         var pendingRead = _pendingNumericRead;
         _pendingNumericRead = null;
-        var fields=_fields;var input=_inputContent;
+        var fields=_fields;var input=_inputContent;var composition=_inputComposition;
         var additional=_additionalContents;
         _additionalContents=additional.Where(item=>retainAdditional?.Contains(item)==true).ToArray();
-        _fields=null;_inputContent=ReferenceEquals(input,retainInput)?input:null;
+        _fields=null;_inputContent=ReferenceEquals(input,retainInput)?input:null;_inputComposition=ReferenceEquals(input,retainInput)?composition:null;
         var cleanup=new List<Action>{()=>Content=null,()=>pendingRead?.Abort()};
         if(fields is not null)
         {
             foreach(var field in fields.Fields)field.Changed-=OnChanged;
             fields.PageChanged-=OnPageChanged;cleanup.Add(fields.Dispose);
         }
+        if(composition is not null)composition.Changed-=OnChanged;
         if(input is IDisposable disposable&&!ReferenceEquals(input,retainInput))cleanup.Add(disposable.Dispose);
         cleanup.AddRange(additional.Where(item=>retainAdditional?.Contains(item)!=true).OfType<IDisposable>().Select(item=>(Action)item.Dispose));
         ParameterCleanup.Run(cleanup);
@@ -140,6 +188,14 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
                 ?schema.Presentation.Fields.FirstOrDefault(field=>field.Group==inputSection) is {} sectionField?sectionField.Layout?.Page??sectionField.Group
                     :schema.Presentation.Fields.Any(field=>StringComparer.Ordinal.Equals(field.Layout?.Page??field.Group,inputSection))?inputSection:null
                 :schema.Presentation.Fields.FirstOrDefault()?.Layout?.Page;
+        if(options.CompositionMode==InputCompositionMode.FlatNative&&options.InputPlacements is { Count: > 0 } placements)
+        {
+            var placementPages=placements.Values.Select(placement=>placement.Page).Distinct(StringComparer.Ordinal).ToArray();
+            if(placementPages.Length!=1)throw new InvalidOperationException("FlatNative 输入必须属于同一个原厂设置页。");
+            inputPage=placementPages[0];
+        }
+        if(inputFactory is not null&&inputPage is null)
+            throw new InvalidOperationException("FlatNative 输入工厂没有对应的原厂设置页映射。");
         var images=options.ImageSources?.ToDictionary(pair=>pair.Key,pair=>pair.Value??throw new ArgumentException("图像来源函数不能为空。"),StringComparer.Ordinal);
         T Observe<T>(Func<T> callback)
         {
@@ -183,12 +239,11 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
             inputFactory is null&&options.PageBuilt is null?null:(page,built)=>
             {
                 if(!Current())throw new InvalidOperationException("参数页工厂所属会话已退役。");
-                if(inputFactory is not null&&createdInput is null&&StringComparer.Ordinal.Equals(page,inputPage))
+                if(inputFactory is not null&&createdInput is null)
                 {
                     var content=inputFactory(built)??throw new InvalidOperationException("输入页工厂返回空内容。");
                     createdInput=content;
-                    if(options.InputAfterField is {} anchor)built.AddAfterField(anchor,content,options.InputCondition);
-                    else built.AddToGroup(options.InputSection??throw new ArgumentException("An input content section is required."),content,0,options.InputCondition);
+                    AttachInputContent(built,content,options);
                 }
                 var pageInput=StringComparer.Ordinal.Equals(page,inputPage)?createdInput:null;
                 options.PageBuilt?.Invoke(page,built,pageInput);
@@ -197,10 +252,7 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
             if(!Current()){candidate.Dispose();return;}
             if(nextInput is not null)
             {
-                if(options.InputAfterField is { } anchor)
-                    candidate.AddAfterField(anchor,nextInput,options.InputCondition);
-                else
-                    candidate.AddToGroup(options.InputSection??throw new ArgumentException("An input content section is required."),nextInput,0,options.InputCondition);
+                AttachInputContent(candidate,nextInput,options);
             }
             if(options.AdditionalAfterContent is {} after)
                 candidate.AddAfterField(options.AdditionalAfterField??throw new ArgumentException("附加输入需要关联字段。"),after,options.AdditionalAfterCondition);
@@ -222,7 +274,8 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
             candidate.SelectedPageIndex=SelectedPageIndex;
             foreach(var field in candidate.Fields)field.Changed+=OnChanged;
             candidate.PageChanged+=OnPageChanged;
-            _fields=candidate;_inputContent=createdInput;
+            _fields=candidate;_inputContent=createdInput;_inputComposition=createdInput as INativeInputComposition;
+            if(_inputComposition is not null)_inputComposition.Changed+=OnChanged;
             Content=candidate;
             if(Current()&&ReferenceEquals(_fields,candidate))
             {
@@ -303,12 +356,13 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
             if(!Current()){error="界面校验期间参数视图已重新绑定或释放。";return false;}
             if(!string.IsNullOrEmpty(uiError)){error=uiError;return false;}
             if(!view.TryValidate(out error))return false;
+            if(_inputComposition is not null&&!_inputComposition.TryValidate(out error))return false;
             if(!Current()){error="参数视图已经重新绑定。";return false;}
             var revision=draft.Revision;
             try{fields=draft.CaptureValidatedFields();}
             catch(Exception failure)when(failure is ArgumentException or InvalidOperationException or FormatException or OverflowException)
             {error=failure.Message;return false;}
-            if(!Current()||revision!=draft.Revision||view.HasPendingActiveFields)
+            if(!Current()||revision!=draft.Revision||view.HasPendingActiveFields||_inputComposition?.HasPendingEdits==true)
             {fields=null!;error="参数捕获期间视图已重新绑定或发生新的编辑。";return false;}
             return true;
         }

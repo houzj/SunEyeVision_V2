@@ -32,11 +32,13 @@ public sealed class RuntimeToolEditorWindow : BaseWindow, INativeToolCommands
     private bool _closed, _running, _closing, _closeAllowed, _assemblyReady;
     private readonly TaskCompletionSource<bool> _assemblyCompletion = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private TaskCompletionSource<bool>? _closeCompletion;
+    private TaskCompletionSource<bool>? _closeDrainCompletion;
     private Func<bool> _canRun = () => false;
     public RuntimeNodeConfigurationControl Editor { get; }
     public event EventHandler<RuntimeToolExecutionEventArgs>? ToolExecutionCompleted;
     public event EventHandler? Changed;
     internal Action? BeforeClose { get; set; }
+    internal Action? AfterCloseDrain { get; set; }
     public bool IsCurrent => !_closed;
     internal bool CanCompleteAssembly => !_closed && !_closing;
     public NativeToolCommandState State => new(Editor.IsContinuousDebugRequested, _running || Editor.IsDebugBusy, RunVisible: true, ConfirmVisible: true);
@@ -77,11 +79,18 @@ public sealed class RuntimeToolEditorWindow : BaseWindow, INativeToolCommands
             void Release(Action action) { try { action(); } catch (Exception error) { Foundation.Logging.PluginLogger.Error(error.Message, nameof(RuntimeToolEditorWindow), error); } }
             Release(() => editor.ExecutionCompleted -= ForwardResult);
             Release(() => editor.DebugStateChanged -= Notify);
+            // Closed is the public drain boundary. Ensure the editor's async
+            // debug retirement, including result resource disposal, has
+            // completed before callers observe CloseAndDrainAsync success.
+            Release(() => editor.CloseDebugAsync().GetAwaiter().GetResult());
             Release(editor.Dispose);
             Release(() => editor.ParameterPageChanged -= PageChanged);
             Release(() => _commands?.Dispose()); _commands = null;
             Release(_frame.Dispose);
+            Release(() => AfterCloseDrain?.Invoke());
+            AfterCloseDrain = null;
             _closeCompletion?.TrySetResult(true);
+            _closeDrainCompletion?.TrySetResult(true);
         };
     }
     private static Uri? ResolveHelpTopic(string? toolId)
@@ -200,9 +209,10 @@ public sealed class RuntimeToolEditorWindow : BaseWindow, INativeToolCommands
     {
         Dispatcher.VerifyAccess();
         if (_closed) return Task.FromResult(true);
-        if (_closeCompletion is { } pending) return pending.Task;
+        if (_closeDrainCompletion is { } pendingDrain) return pendingDrain.Task;
+        _closeDrainCompletion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         Close();
-        return _closeCompletion?.Task ?? Task.FromResult(_closed);
+        return _closeDrainCompletion.Task;
     }
     protected override void OnClosing(System.ComponentModel.CancelEventArgs args)
     {
@@ -213,6 +223,7 @@ public sealed class RuntimeToolEditorWindow : BaseWindow, INativeToolCommands
             {
                 var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _closeCompletion = completion;
+                _closeDrainCompletion ??= new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _closing = true;
                 try { Notify(); }
                 catch (Exception error) { Foundation.Logging.PluginLogger.Error(error.Message, nameof(RuntimeToolEditorWindow), error); }
@@ -247,6 +258,7 @@ public sealed class RuntimeToolEditorWindow : BaseWindow, INativeToolCommands
         else if (args.Cancel)
         {
             _closeCompletion?.TrySetResult(false);
+            _closeDrainCompletion?.TrySetResult(false);
             _closeCompletion = null;
         }
     }
@@ -267,6 +279,7 @@ public sealed class RuntimeToolEditorWindow : BaseWindow, INativeToolCommands
     private void FailClosing(TaskCompletionSource<bool> completion, Exception error)
     {
         completion.TrySetResult(false);
+        _closeDrainCompletion?.TrySetResult(false);
         Foundation.Logging.PluginLogger.Error(error.Message, nameof(RuntimeToolEditorWindow), error);
         Dispatcher.BeginInvoke(DispatcherPriority.Background,
             new Action(() => ShowDiagnostic("调试资源尚未释放：" + error.Message, duringClose: true)));

@@ -57,6 +57,11 @@
                     ContentTemplate="{StaticResource Button_ResetAlgoParams}"
                     Visibility="{Binding ResetVisibility,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
    <ItemsControl x:Name="BottomCommands" Height="32" HorizontalAlignment="Right">
+    <ItemsControl.ItemContainerStyle>
+     <Style TargetType="ContentPresenter">
+      <Setter Property="AutomationProperties.Name" Value="{Binding AutomationNameA}" />
+     </Style>
+    </ItemsControl.ItemContainerStyle>
     <ItemsControl.Style><Style TargetType="ItemsControl"><Style.Triggers><Trigger Property="ItemsSource" Value="{x:Null}"><Setter Property="Visibility" Value="Collapsed"/></Trigger></Style.Triggers></Style></ItemsControl.Style>
     <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,14,4"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
    </ItemsControl>

@@ -94,7 +94,7 @@ internal sealed class DeclaredFieldState : IDisposable
     internal long AcceptanceVersion {get;private set;}
     public bool ReferenceCleared => _referenceCleared;
     public bool MissingReference => IsReferenceMode && (_referenceCleared || _accepted is not (ReferenceSetting or VariableSetting))
-        && !((_allowUnboundReference || !Port.Required) && _accepted is UnsetSetting);
+        && !((_allowUnboundReference || !Port.Required) && _accepted is UnsetSetting or ConstantSetting);
     public bool HasInvalidInput => MissingReference || (_accepted is UnsetSetting && Port.Required && !_allowUnboundReference)
         || (IsReferenceMode && (_accepted is ReferenceSetting {RebindingReason:{Length:>0}} or VariableSetting {RebindingReason:{Length:>0}}))
         || EditError.Length != 0 || SourceError.Length != 0;

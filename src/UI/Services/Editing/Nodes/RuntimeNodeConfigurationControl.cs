@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using SunEyeVision.Application;
 using SunEyeVision.Application.Editing;
 using SunEyeVision.Domain.Workflows;
@@ -95,6 +97,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
     private bool _disposed, _capturing;
     private Action? _debugResultChanged;
     private string _captureError = "";
+    internal string InputCompositionDiagnostic { get; private set; } = "";
     public event EventHandler<RuntimeToolExecutionEventArgs>? ExecutionCompleted;
     internal event Action? ResultDisplayEdited;
     internal event Action<NodeDefinition, long>? ResultDisplayBound;
@@ -172,6 +175,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
         FrameworkElement CreateInputContent(DeclaredFieldsView pageHost)
         {
             if(!Current())throw new InvalidOperationException("输入页创建期间编辑会话已失效。");
+            InputCompositionDiagnostic += ";factoryInvoked";
             var panel=new DeclaredInputFieldsView(inputSchema,
                 port=>CurrentContext().PreparedDraft.ReadInputSetting(port.Id),
                 (port,value)=>
@@ -190,7 +194,9 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
                     if(port.Type==TypeRef.ResourceOf(ResourceKind.Image))_debugResultChanged?.Invoke();
                 },
                 references,FormatReference);
-            _inputs.Clear();_inputs.AddRange(panel.Fields);return panel;
+            _inputs.Clear();_inputs.AddRange(panel.Fields);
+            InputCompositionDiagnostic += $";panelPresentation={inputSchema.Presentation?.Fields.Count ?? 0};panelFields={panel.Fields.Count}";
+            return panel;
         }
         if(declaration is { CapabilityId:"image-source",Version:1 })
             inputContent=_imageSourceContent=new ImageSourceDraftContent(context.Session,
@@ -212,6 +218,8 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
             }),StringComparer.Ordinal);
         bindProbe.Stop();
         ToolWindowAssemblyTrace.Event("BindStage", $"{draft.Node.Id}:输入与表达式={bindProbe.ElapsedMilliseconds}ms");
+        ToolWindowAssemblyTrace.Event("InputComposition", $"{draft.Node.ToolType}:factory={inputFactory is not null} inputPresentation={inputSchema.Presentation?.Fields.Count ?? 0} settingsPages={draft.SettingsSchema.Presentation?.Fields.Select(field=>field.Layout?.Page ?? field.Group).Distinct(StringComparer.Ordinal).Count() ?? 0}");
+        InputCompositionDiagnostic = $"{draft.Node.ToolType};factory={inputFactory is not null};inputPresentation={inputSchema.Presentation?.Fields.Count ?? 0};settingsPages={draft.SettingsSchema.Presentation?.Fields.Select(field=>field.Layout?.Page ?? field.Group).Distinct(StringComparer.Ordinal).Count() ?? 0}";
         bindProbe.Restart();
         var editorPorts = draft.SettingsSchema.Inputs.Concat(draft.DisplaySchema.Inputs).ToArray();
         IToolSettingsView? candidate = null;
@@ -219,12 +227,24 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
         {
             candidate = DesktopToolPresentation.CreateSettingsView(admission, draft.Configuration.Fields.Select(editorPorts),
                 new ToolSettingsViewOptions(references, FormatReference, inputSchema.Presentation?.Fields.FirstOrDefault()?.Layout?.Page, inputContent, ValidateComposition:group=>ValidateChanges(group.Changes), TextExpressions:textExpressions, RoiFrames:_roiFrames, RoiDrawBlockReason:_roiDrawBlockReason, InputContentFactory:inputFactory,
-                    PageBuilt:(page,built,_)=>ToolWindowAssemblyTrace.Event("PageBuilt", built.LastBuildStageMs.TryGetValue(page,out var stages)
-                        ?$"{draft.Node.Id}:{page} rows={stages.RowsMs}ms layout={stages.LayoutMs}ms 构造[{string.Join(" ",built.ConstructionStages.Select(mark=>$"{mark.Stage}={mark.Ms}ms"))}]"
-                        :$"{draft.Node.Id}:{page}"),
-                    ReadInputSetting:id=>CurrentContext().PreparedDraft.ReadInputSetting(id)));
+                    PageBuilt:(page,built,_)=>
+                    {
+                        InputCompositionDiagnostic += $";page={page}";
+                        ToolWindowAssemblyTrace.Event("PageBuilt", built.LastBuildStageMs.TryGetValue(page,out var stages)
+                            ?$"{draft.Node.Id}:{page} rows={stages.RowsMs}ms layout={stages.LayoutMs}ms 构造[{string.Join(" ",built.ConstructionStages.Select(mark=>$"{mark.Stage}={mark.Ms}ms"))}]"
+                            :$"{draft.Node.Id}:{page}");
+                    },
+                    ReadInputSetting:id=>CurrentContext().PreparedDraft.ReadInputSetting(id),
+                    InputPlacements:NativeInputPlacementMap.FromSchemas(inputSchema,draft.SettingsSchema),
+                    ToolOwnedInputFields: inputSchema.Presentation?.ToolOwnedInputFields,
+                    EagerlyComposePages:true,
+                    CompositionMode:InputCompositionMode.FlatNative));
             if (!Current()) throw new InvalidOperationException("参数页创建期间节点已失效。");
+            InputCompositionDiagnostic += $";createdInput={inputContent is not null || inputFactory is not null};declaredInputs={_inputs.Count}";
             _view = candidate; _acceptedFields=candidate.CaptureAcceptedFields(); _syncedRevision = candidate.AcceptedRevision; _captureError = "";
+            var declaredView=FindDescendant<SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView>(candidate.View);
+            var compositionError=candidate.View.GetType().GetProperty("CompositionError", BindingFlags.Instance|BindingFlags.Public)?.GetValue(candidate.View) as string;
+            InputCompositionDiagnostic += $";viewInvalid={candidate.HasInvalidInput};viewPending={candidate.HasPendingEdits};viewError={declaredView?.InvalidActiveFieldDiagnostic ?? "none"};inputError={declaredView?.InvalidInputDiagnostic ?? "none"};invalidIds={declaredView?.InvalidFieldIds ?? "none"};compositionError={compositionError ?? "none"}";
             candidate.Changed += Changed; Content = candidate.View;
             ResultDisplayBound?.Invoke(draft.Node, generation);
             if(Current()&&ReferenceEquals(_view,candidate))
@@ -235,14 +255,29 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
             bindProbe.Stop();
             ToolWindowAssemblyTrace.Event("BindStage", $"{draft.Node.Id}:视图创建={bindProbe.ElapsedMilliseconds}ms");
         }
-        catch
+        catch(Exception error)
         {
+            InputCompositionDiagnostic += $";bindFailure={error.GetType().Name}:{error.Message}";
+            SunEyeVision.Foundation.Logging.PluginLogger.Error(
+                $"参数视图组装失败: {draft.Node.ToolType} {error.Message}",
+                nameof(RuntimeNodeConfigurationControl), error);
             if(ReferenceEquals(_view,candidate))ObserveParameterPage(null);
             candidate?.Dispose();
             if (candidate is null && inputContent is IDisposable disposable) disposable.Dispose();
             _inputs.Clear(); _view = null; _referenceOwner?.Dispose(); _referenceOwner = null;
             throw;
         }
+    }
+
+    private static T? FindDescendant<T>(DependencyObject root) where T:DependencyObject
+    {
+        for(var index=0;index<VisualTreeHelper.GetChildrenCount(root);index++)
+        {
+            var child=VisualTreeHelper.GetChild(root,index);
+            if(child is T match)return match;
+            if(FindDescendant<T>(child) is {} nested)return nested;
+        }
+        return null;
     }
 
     internal Task WaitForViewReadyAsync()

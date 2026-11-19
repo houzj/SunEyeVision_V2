@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Windows.Input;
 using System.Windows.Threading;
+using SunEyeVision.Plugin.Wpf.Native.Common.Localization;
 
 namespace SunEyeVision.Plugin.Wpf.Presenters.Commands;
 
@@ -191,6 +192,7 @@ internal sealed class NativeToolCommandItem(string templateKey,string displayNam
     private NativeToolCommandState _state;
     public string TemplateKey {get;}=templateKey;
     public string DisplayNameA {get;}=displayName;
+    public string AutomationNameA=>AppLocalizationService.GetLang(DisplayNameA,DisplayNameA);
     public ICommand ClickCommand {get;}=command;
     public bool CustomVisibleA {get;private set;}
     public bool IsContinuous=>_state.IsContinuous;

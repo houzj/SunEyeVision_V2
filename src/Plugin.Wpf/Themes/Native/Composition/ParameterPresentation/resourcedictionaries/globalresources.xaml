@@ -11,7 +11,7 @@
 <CollectionViewSource x:Key="src" IsLiveGroupingRequested="True"><CollectionViewSource.GroupDescriptions><PropertyGroupDescription PropertyName="GroupName"/></CollectionViewSource.GroupDescriptions></CollectionViewSource>
 <DataTemplate x:Key="DeclaredParameterRow"><ContentPresenter Content="{Binding View}"/></DataTemplate>
 <DataTemplate x:Key="ParamItemTemplate">
-    <Border Name="bd" BorderThickness="1" BorderBrush="{Binding MyItemState, Converter={StaticResource CheckConverter}}" IsEnabled="{Binding EnableA}">
+    <Border Name="bd" BorderThickness="1" BorderBrush="{Binding MyItemState, Converter={StaticResource CheckConverter}}" IsEnabled="{Binding EnableA}" AutomationProperties.Name="{Binding GroupName.NameA}">
       <local:ParamUserControl>
       </local:ParamUserControl>
     </Border>
@@ -25,12 +25,13 @@
     </Style.Triggers>
   </Style>
 <Style x:Key="ParamGroupItemStyle" TargetType="{x:Type GroupItem}">
+    <Setter Property="AutomationProperties.Name" Value="{Binding Name.NameA}" />
     <Setter Property="Margin" Value="0,0,0,5" />
     <Setter Property="FontSize" Value="14" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type GroupItem}">
-          <HeaderedContentControl Name="groupContainer" BorderThickness="0">
+          <HeaderedContentControl Name="groupContainer" BorderThickness="0" AutomationProperties.Name="{Binding Name.NameA}">
             <HeaderedContentControl.Header>
               <DockPanel Margin="{Binding ChildHeaderMargin, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:ParamListView}}}">
                 <Rectangle Name="rec" Fill="#FFE0DFDE" Height="1" HorizontalAlignment="Stretch" DockPanel.Dock="Top" Margin="0,0,18,0" />
@@ -55,6 +56,7 @@
     </Setter>
   </Style>
 <Style x:Key="ParamItemStyle" TargetType="{x:Type ContentPresenter}">
+    <Setter Property="AutomationProperties.Name" Value="{Binding GroupName.NameA}" />
     <Style.Triggers>
       <DataTrigger Value="false" Binding="{Binding CustomVisibleA}">
         <Setter Property="Visibility" Value="Collapsed" />

@@ -394,7 +394,10 @@ internal sealed class ReferenceFieldSession : INotifyPropertyChanged,IDisposable
                 return true;
             }
             if(!_options.EditableIndex)throw new ArgumentException("请输入有效数值，或选择来源。");
-            var prefix=Label(source)+" [";
+            // VM renders an indexed subscription as `source[]` with no
+            // separator. Accept the exact visible prefix so editing the
+            // index does not manufacture a local-only format requirement.
+            var prefix=Label(source)+"[";
             var projected=ProjectedType(source);
             if(projected is not {Shape:ValueShape.Sequence}||!_pendingText.StartsWith(prefix,StringComparison.Ordinal)
                 ||!_pendingText.EndsWith("]",StringComparison.Ordinal))throw new ArgumentException("只能编辑当前来源括号中的索引。");

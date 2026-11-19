@@ -55,7 +55,11 @@ public static class DesktopToolPresentation
             inner=editor is not null ?
                 CreateFactory(editor).CreateResultView(schema,projection)
                     ??throw new InvalidOperationException("Result view factory returned null.") :
-                projection.Kind switch {ResultProjectionKind.StandardTable=>new DeclaredResultTable(schema,projection),_=>throw new NotSupportedException("No result renderer is registered for: "+projection.RendererKey)};
+                projection.Kind switch
+                {
+                    ResultProjectionKind.StandardTable=>new DeclaredResultTable(schema,projection),
+                    ResultProjectionKind.Renderer=>SunEyeVision.Plugin.Wpf.Presenters.Results.ResultRendererRegistry.Create(projection.RendererKey,schema,projection),
+                    _=>throw new NotSupportedException("No result renderer is registered for: "+projection.RendererKey)};
             admission.EnsureCurrent();
             lease=new ResultLease(inner,generation,admission);
             admission.EnsureCurrent();
@@ -73,7 +77,7 @@ public static class DesktopToolPresentation
         return Activator.CreateInstance(editor) as IToolPresentationFactory
             ??throw new InvalidOperationException("桌面编辑组件不是正式呈现工厂。 "+editor.FullName);
     }
-    private sealed class SettingsLease:IToolSettingsView,IToolSettingsViewReady
+    private sealed class SettingsLease:IToolSettingsView,IToolSettingsViewReady,IToolSettingsViewInputProjection
     {
         private readonly IToolSettingsView _view;
         private readonly RuntimeGenerationLease _generation;
@@ -91,6 +95,12 @@ public static class DesktopToolPresentation
         public FrameworkElement View=>_view.View;
         public System.Threading.Tasks.Task ReadyTask=>_view is IToolSettingsViewReady ready
             ?ready.ReadyTask:System.Threading.Tasks.Task.CompletedTask;
+        public void RefreshAcceptedInputs()
+        {
+            _admission.EnsureCurrent();
+            if (_view is IToolSettingsViewInputProjection projection) projection.RefreshAcceptedInputs();
+            _admission.EnsureCurrent();
+        }
         public bool HasInvalidInput=>_view.HasInvalidInput;
         public bool HasPendingEdits=>_view.HasPendingEdits;
         public bool HasPendingEditsOutside(IReadOnlySet<string> excludedFields)=>_view.HasPendingEditsOutside(excludedFields);

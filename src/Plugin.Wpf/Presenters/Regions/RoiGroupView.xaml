@@ -1,0 +1,35 @@
+<UserControl x:Class="SunEyeVision.Plugin.Wpf.Presenters.Regions.RoiGroupView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:regions="clr-namespace:SunEyeVision.Plugin.Wpf.Presenters.Regions">
+  <!--
+    ROI 组的界面完全由数据 + 模板生成（对齐原厂 Apps.XmlUI 的 DataTemplate 模式）。
+    字段行与两块绘制区都由呈现器实例化，元素生命周期归 WPF，
+    代码中不再出现 Children.Add(外部元素)。
+  -->
+  <StackPanel>
+    <!-- 检测区绘制区 -->
+    <regions:RoiEditorPresenter
+        Slot="inspection"
+        Owner="{Binding RelativeSource={RelativeSource AncestorType=regions:RoiGroupView}}"
+        EditorFactory="{Binding DetectionEditorFactory, RelativeSource={RelativeSource AncestorType=regions:RoiGroupView}}" />
+
+    <!-- 字段行 -->
+    <ItemsControl ItemsSource="{Binding Model.Fields, RelativeSource={RelativeSource AncestorType=regions:RoiGroupView}}">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <regions:RoiFieldRowPresenter
+              Field="{Binding}"
+              Owner="{Binding RelativeSource={RelativeSource AncestorType=regions:RoiGroupView}}"
+              FieldFactory="{Binding FieldFactory, RelativeSource={RelativeSource AncestorType=regions:RoiGroupView}}" />
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+
+    <!-- 屏蔽区绘制区 -->
+    <regions:RoiEditorPresenter
+        Slot="mask"
+        Owner="{Binding RelativeSource={RelativeSource AncestorType=regions:RoiGroupView}}"
+        EditorFactory="{Binding MaskEditorFactory, RelativeSource={RelativeSource AncestorType=regions:RoiGroupView}}" />
+  </StackPanel>
+</UserControl>

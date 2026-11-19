@@ -10,7 +10,7 @@ public sealed record FieldLayout(string Page, string Section, FieldCondition? Vi
     int? DecimalPlaces=2, bool AllowReference=true,
     string? DialogGroup=null, string? DialogTitle=null, bool DialogPrimary=false,
     double Increment=1, double? PairMinimum=null, double? PairMaximum=null, FieldCondition? OrVisibleWhen=null,
-    BooleanStateTips? BooleanTips=null, string? PairDisplayName=null);
+    BooleanStateTips? BooleanTips=null, string? PairDisplayName=null, string? VmCategory=null);
 
 public enum FieldEditorKind { Scalar, Choice, Record, Sequence, Geometry, Region, ResultPresentation, Image, FolderPath }
 [Flags] public enum FieldEditModes { None=0, Constant=1, Reference=2, NumericGeometry=4, Gesture=8, DisplayExpression=16 }
@@ -57,16 +57,23 @@ public sealed class FieldPresentation
 }
 public sealed class ToolPresentation
 {
-    public ToolPresentation(IEnumerable<FieldPresentation> fields,bool hasProfessionalView=false,IEnumerable<RegionFieldGroup>? regions=null)
+    public ToolPresentation(IEnumerable<FieldPresentation> fields,bool hasProfessionalView=false,IEnumerable<RegionFieldGroup>? regions=null,
+        IEnumerable<string>? toolOwnedInputFields=null)
     {
         Fields=Array.AsReadOnly(fields.ToArray());Regions=Array.AsReadOnly((regions??Array.Empty<RegionFieldGroup>()).ToArray());HasProfessionalView=hasProfessionalView;
+        ToolOwnedInputFields=(toolOwnedInputFields??Array.Empty<string>()).Distinct(StringComparer.Ordinal).ToHashSet(StringComparer.Ordinal);
         if(Fields.Any(field=>field is null)||Fields.Select(field=>field.FieldId).Distinct(StringComparer.Ordinal).Count()!=Fields.Count)
             throw new ArgumentException("Presentation fields must be unique.");
+        if(ToolOwnedInputFields.Any(string.IsNullOrWhiteSpace))
+            throw new ArgumentException("Tool-owned input fields must have stable identifiers.");
     }
     public IReadOnlyList<FieldPresentation> Fields{get;} public IReadOnlyList<RegionFieldGroup> Regions{get;} public bool HasProfessionalView{get;}
+    public IReadOnlySet<string> ToolOwnedInputFields{get;}
     internal void Validate(IReadOnlyList<Port> inputs)
     {
         var ports=inputs.ToDictionary(port=>port.Id,StringComparer.Ordinal);
+        if(ToolOwnedInputFields.Any(id=>!ports.ContainsKey(id)))
+            throw new ArgumentException("Tool-owned input presentation references an undeclared input.");
         foreach(var field in Fields)
         {
             if(!ports.TryGetValue(field.FieldId,out var port))throw new ArgumentException("Presentation references an undeclared input.");

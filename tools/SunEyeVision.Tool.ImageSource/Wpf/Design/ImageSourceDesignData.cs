@@ -12,9 +12,9 @@ public static class ImageSourceDesignData
 {
     public static (IToolSettingsDraft Draft, ToolSettingsViewOptions Options) CreateParameterContext(bool camera=false)
     {
-        IToolSettingsDraft draft = new SunEyeVision.Plugin.Wpf.Presenters.Design.DesignTimeDraft(new ImageSourceTool());
+        var (draft, options) = SunEyeVision.Plugin.Wpf.Presenters.Design.DesignTimeSample.Create(new ImageSourceTool());
         if(camera)draft.ApplyFields(new Dictionary<string,ParameterSetting>{[ImageSourceFields.SourceKind]=new ConstantSetting("camera")},_=>{});
-        return (draft, new(InputSection: Views.ImageSourceParameterEditor.InputPage, InputContent: new DesignSourceContent()));
+        return (draft, options with { InputContent = new DesignSourceContent() });
     }
 
     private sealed class DesignSourceContent : System.Windows.Controls.UserControl,IImageSourceSettingsContent,IDisposable

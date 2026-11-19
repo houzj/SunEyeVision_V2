@@ -750,21 +750,7 @@ namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Design
 public static class BlobDesignData
 {
     public static (IToolSettingsDraft Draft,ToolSettingsViewOptions Options) CreateParameterContext()
-    {
-        var draft=new SunEyeVision.Plugin.Wpf.Presenters.Design.DesignTimeDraft(new BlobTool());var schema=draft.Schema;
-        var source = new DeclaredReferenceCandidate("图像源 · 图像", "sample-image", "sample-workflow",
-            new Port("output.image", TypeRef.ResourceOf(ResourceKind.Image)), Array.Empty<string>());
-        var inputDraft = new FieldSettingsDraft(schema, new FieldSettings(schema.Inputs, new Dictionary<string, ParameterSetting>
-        {
-            [BlobTool.ImageInput] = new ReferenceSetting(source.Reference(BindingSelection.All))
-        }));
-        var inputs = new DeclaredInputFieldsView(schema, port => inputDraft.CaptureFields().Read(port.Id),
-            (port, value) => inputDraft.ApplyFields(new Dictionary<string, ParameterSetting> { [port.Id] = value }, _ => { }),
-            new ReferenceFieldOptions(port => port.Id == BlobTool.ImageInput
-                ? new ReferenceCandidates(new[] { source }, Array.Empty<DeclaredReferenceCandidate>())
-                : ReferenceCandidates.Empty));
-        return(draft,new(ReferenceOptions:ReferenceFieldOptions.Empty,InputSection:schema.Presentation!.Fields.First().Layout!.Page,InputContent:inputs));
-    }
+        =>SunEyeVision.Plugin.Wpf.Presenters.Design.DesignTimeSample.Create(new BlobTool(),BlobTool.ImageInput);
     private static readonly DependencyProperty CompositionProperty=DependencyProperty.RegisterAttached("Composition",typeof(BlobUiComposition),typeof(BlobDesignData));
     internal static BlobUiComposition? GetComposition(DeclaredSettingsView presenter)=>presenter.GetValue(CompositionProperty) as BlobUiComposition;
     public static void BindParameterContext(DeclaredSettingsView presenter,(IToolSettingsDraft Draft,ToolSettingsViewOptions Options) context)

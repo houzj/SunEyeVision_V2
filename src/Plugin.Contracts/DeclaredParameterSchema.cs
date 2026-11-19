@@ -67,7 +67,8 @@ public sealed class DeclaredParameterSchema
             Required(group, "page"); Required(group, "section"); Required(group, "vmCategory");
             if (group.Attribute("advanced") is not null) Boolean(group, "advanced");
             if (!group.HasElements) throw new InvalidDataException("Empty parameter group.");
-            foreach (var field in group.Elements())
+            // 只对 <Parameter> 应用参数属性白名单；<Field>、<RoiGroup>、<AssistGroup> 各自有专属校验。
+            foreach (var field in group.Elements("Parameter"))
             {
                 Shape(field, new[]
                 {

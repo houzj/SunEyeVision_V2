@@ -23,7 +23,9 @@ public sealed class ToolSettingsEditSession : IToolSettingsDraft
         _=SunEyeVision.Plugin.Contracts.Results.Presentation.ResultDisplayFields.Capture(_definition,candidate);
         foreach(var presentation in SunEyeVision.Plugin.Contracts.Results.Presentation.ResultDisplayFields.EditorSchema(_definition).Presentation?.Fields??Array.Empty<FieldPresentation>())
         {
-            if(presentation.Layout is not { } layout||candidate.Read(presentation.FieldId) is not ConstantSetting {Value:long or double} value)continue;
+            // 外部端口呈现行（原厂 ButtonSelecter 订阅槽）不在编辑会话的设置声明里，跳过取值校验。
+            if(presentation.Layout is not { } layout||!candidate.Declarations.ContainsKey(presentation.FieldId)
+                ||candidate.Read(presentation.FieldId) is not ConstantSetting {Value:long or double} value)continue;
             var number=Convert.ToDouble(value.Value,System.Globalization.CultureInfo.InvariantCulture);
             if(!double.IsFinite(number)||layout.Minimum is {} min&&number<min||layout.Maximum is {} max&&number>max)
                 throw new ArgumentException("Setting is outside its declared range: "+presentation.FieldId);

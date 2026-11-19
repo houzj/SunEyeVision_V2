@@ -184,7 +184,9 @@ public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolR
         object? Constant(string name)=>settings.Read(definition.SettingsFieldId(name)) is ConstantSetting constant?constant.Value:null;
         foreach(var presentation in SettingsSchema.Presentation!.Fields)
         {
-            if(settings.Read(presentation.FieldId) is not ConstantSetting {Value:long or double} constant)continue;
+        // 13 个 ROI 订阅槽（原厂 ButtonSelecter）的端口属于执行契约，只承担呈现，不在设置值校验范围。
+        if(!settings.Declarations.ContainsKey(presentation.FieldId))continue;
+        if(settings.Read(presentation.FieldId) is not ConstantSetting {Value:long or double} constant)continue;
             var number=Convert.ToDouble(constant.Value,System.Globalization.CultureInfo.InvariantCulture);
             var layout=presentation.Layout;
             if(!double.IsFinite(number)||layout?.Minimum is double minimum&&number<minimum

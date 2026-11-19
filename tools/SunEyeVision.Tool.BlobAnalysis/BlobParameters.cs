@@ -366,8 +366,11 @@ public sealed partial class BlobParameterDefinition
         return Read(stream);
     }
     public static BlobParameterDefinition Read(Stream stream)=>new(
-        DeclaredParameterSchema.Load(stream??throw new ArgumentNullException(nameof(stream)),typeof(BlobSettings),
+        DeclaredParameterSchema.LoadWithTypes(stream??throw new ArgumentNullException(nameof(stream)),typeof(BlobSettings),
             property=>property.GetCustomAttribute<BlobNonFieldAttribute>() is null,
+            // 矩形、圆形的记录序列由工具定义；ROI 继承字段的端口由执行契约声明，供 <Field> 引用呈现。
+            BlobRoiInheritance.ExplicitType,
+            BlobRoiInheritance.Ports,
             typeof(BlobFindParameters)));
     private IReadOnlyDictionary<string,XElement> _fields=>_schema.Fields;
     internal static IReadOnlyDictionary<string,Type> ParameterTypes()
@@ -753,7 +756,8 @@ internal sealed class BlobUiComposition : IDisposable
     {
         _editor=editor;Draft=draft;_sourceOptions=options;
         options=options with{HeaderlessSectionAnchors=new HashSet<string>{PositionCorrectionField}};
-        _baseOptions=BlobRunUi.Configure(options);
+        // 13 个 ROI 订阅槽的端口由执行契约声明，参数页据此为 <Field> 呈现行补端口建行。
+        _baseOptions=BlobRunUi.Configure(options with {PresentationPorts=BlobRoiInheritance.Ports});
         try
         {
             _composed=BlobDisplayUi.Configure(_baseOptions,_assistPointVisibility) with {ValidateUiState=ValidateUiState,PageBuilt=BuildPage};

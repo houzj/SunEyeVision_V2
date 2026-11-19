@@ -94,8 +94,10 @@ public static class ResultDisplayFields
             ||(port.EditModes&FieldEditModes.DisplayExpression)!=0&&port.Type!=DataType.Text)||display.Outputs.Count!=0
             ||display.Inputs.Select(port=>port.Id).Intersect(algorithm.Inputs.Concat(definition.Describe().Inputs).Select(port=>port.Id),StringComparer.Ordinal).Any())
             throw new ArgumentException("Display fields must have unique presentation-only identities.");
+        // 合并契约时带上设置契约的外部端口：呈现行可能引用执行契约的端口（原厂 AlgorithmTab 引用 Algorithm 端口）。
         return display.Inputs.Count==0?algorithm:new ToolSchema(algorithm.Inputs.Concat(display.Inputs),Array.Empty<Port>(),
-            new ToolPresentation((algorithm.Presentation?.Fields??Array.Empty<FieldPresentation>()).Concat(display.Presentation?.Fields??Array.Empty<FieldPresentation>())));
+            new ToolPresentation((algorithm.Presentation?.Fields??Array.Empty<FieldPresentation>()).Concat(display.Presentation?.Fields??Array.Empty<FieldPresentation>())),
+            externalInputs: algorithm.ExternalInputs);
     }
     public static ResultDisplayAppearance? Capture(IToolDefinition definition,FieldSettings fields)
         =>definition is IToolResultDisplayProvider provider?provider.CaptureResultDisplay(fields.Select(provider.DisplaySettingsSchema.Inputs)):null;

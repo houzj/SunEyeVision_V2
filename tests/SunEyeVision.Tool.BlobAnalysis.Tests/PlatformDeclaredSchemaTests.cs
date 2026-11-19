@@ -13,7 +13,8 @@ public sealed class PlatformDeclaredSchemaTests
         using var stream = typeof(BlobSettings).Assembly
             .GetManifestResourceStream("BlobAnalysis.BlobParameters.xml");
         Assert.NotNull(stream);
-        var platform = DeclaredParameterSchema.Load(stream!, typeof(BlobSettings), null,
+        var platform = DeclaredParameterSchema.LoadWithTypes(stream!, typeof(BlobSettings), null,
+            BlobRoiInheritance.ExplicitType, BlobRoiInheritance.Ports,
             typeof(BlobFindParameters));
 
         var tool = BlobParameterDefinition.Instance.SettingsSchema;
@@ -39,7 +40,8 @@ public sealed class PlatformDeclaredSchemaTests
     {
         using var stream = typeof(BlobSettings).Assembly
             .GetManifestResourceStream("BlobAnalysis.BlobParameters.xml");
-        var platform = DeclaredParameterSchema.Load(stream!, typeof(BlobSettings), null,
+        var platform = DeclaredParameterSchema.LoadWithTypes(stream!, typeof(BlobSettings), null,
+            BlobRoiInheritance.ExplicitType, BlobRoiInheritance.Ports,
             typeof(BlobFindParameters));
         var tool = BlobParameterDefinition.Instance;
 

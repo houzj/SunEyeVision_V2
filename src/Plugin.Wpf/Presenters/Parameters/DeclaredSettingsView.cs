@@ -222,14 +222,18 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
         candidate=new(schema.Presentation.Fields.Select(presentation=>
         {
             var port=ports[presentation.FieldId];
-            ParameterSetting initial=values.Read(port.Id);
+            // 外部端口呈现行（原厂 ButtonSelecter 订阅槽）不在设置值里，按未设值起行。
+            ParameterSetting initial=values.Declarations.ContainsKey(port.Id)
+                ?values.Read(port.Id):new UnsetSetting();
             return(port,presentation,initial);
         }),proposals=>
         {
             if(_disposed||generation!=_generation)throw new InvalidOperationException("The settings view has been rebound or disposed.");
             WriteGroup(proposals);
         },options.ReferenceOptions is {} referenceOptions?referenceOptions with {ValidateProposal=null}:null,
-            id=>draft.CaptureFields().Read(id) as ConstantSetting,options.FormatReference,options.IntegerRadios,options.ValidateComposition,Current,
+            // 外部端口呈现行不在设置值里，常量回读返回空即可。
+            id=>draft.CaptureFields().Declarations.ContainsKey(id)?draft.CaptureFields().Read(id) as ConstantSetting:null,
+            options.FormatReference,options.IntegerRadios,options.ValidateComposition,Current,
             images?.ToDictionary(pair=>pair.Key,pair=>(Func<IReadOnlyList<SunEyeVision.Plugin.Wpf.Adapters.References.DeclaredReferenceCandidate>>)(()=>
             {
                 if(!Current())throw new InvalidOperationException("图像来源视图已重绑或释放。");

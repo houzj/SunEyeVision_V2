@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using HalconDotNet;
 using System.Diagnostics;
 using SunEyeVision.HalAdapter;

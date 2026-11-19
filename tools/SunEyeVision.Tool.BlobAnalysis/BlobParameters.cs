@@ -874,7 +874,18 @@ internal sealed class BlobUiComposition : IDisposable
                 {
                     // ROI 组按分组归位，不依赖锚点字段：输入项不在编辑器 schema 内，用锚点会抛未知字段。
                     var pose=BlobRoiUi.Add(inputs,
-                        (field,content,group)=>fields.AddToGroup(group??"ROI区域",content),
+                        (field,content,group)=>
+                        {
+                            // VM 的 ROI 区域先完整呈现，位置修正行固定在该组末尾，
+                            // 位置修正来源紧随开关之后按启用模式展开。
+                            if(content is NativeRoiUiDraftControls)
+                            {
+                                fields.AddAfterField(PositionCorrectionField,content,
+                                    followAnchorVisibility:false,insertBefore:true);
+                                return;
+                            }
+                            fields.AddToGroup(group??"ROI区域",content);
+                        },
                         observe:value=>_roiUi=value);
                     _assistUi=pose;
                     _roiOwner=new NativeRoiEditHost(inputs,_roiUi!,_baseOptions.RoiFrames,BlobRoiDeclaration.Create(inputs),_baseOptions.RoiDrawBlockReason);

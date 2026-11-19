@@ -10,10 +10,10 @@
 |---|---|---|---|
 | 运行单元 | `IMVSBlobFindModu.dll` | `SunEyeVision.Tool.BlobAnalysis.Runtime.dll` | 允许（语言与宿主不同） |
 | 桥接单元 | `IMVSBlobFindModuCs.dll` | 同一共享程序集 | 程序集拆分未实施，见职责等价规则 |
-| 模块元数据 | `IMVSBlobFindModu.xml` (16 KB) | `BlobReleaseUnitManifest.json` | 格式不同，职责需逐项对应 |
-| 参数定义 | `IMVSBlobFindModuAlgorithm.xml` (11 KB) | `BlobParameters.xml` | **与页签文件合并** |
-| 页签与控件 | `IMVSBlobFindModuAlgorithmTab.xml` (121 KB) | 合并在 `BlobParameters.xml` | **未分离** |
-| 属性映射 | `IMVSBlobFindModuCs.xml` (41 KB) | `ParameterDefinition` 绑定表 | 格式不同 |
+| 模块运行配置 | `IMVSBlobFindModu.xml` (16 KB) | 无对应文件 | 原厂该文件是模块实例运行参数（ServerRepAddress、ModuleName、ModuleViewMode），不是工具参数定义 |
+| 参数定义 | `IMVSBlobFindModuAlgorithm.xml` (11 KB) | `BlobParameters.xml` | **与页签文件合并**；原厂文件仅含 `Name` 与 `DefaultValue` |
+| 页签与控件 | `IMVSBlobFindModuAlgorithmTab.xml` (121 KB) | 合并在 `BlobParameters.xml` | **未分离**；原厂按 Tab→Category→Items 组织并引用平台控件组 |
+| 属性映射 | `IMVSBlobFindModuCs.xml` (41 KB) | `ParameterDefinition` 绑定表 | **原厂该文件是 C# XML 文档注释（`<doc><members><member>`），不是映射配置** |
 | 结果显示 | `IMVSBlobFindModuDisplay.xml` (10 KB) | `BlobDisplay.xml` | 对应 |
 | 工具箱元数据 | `ToolItemInfo.xml` | `ToolItemInfo.xml` 未随工具发布 | **未进入发布包** |
 
@@ -55,11 +55,15 @@
 
 ### 5 声明加载
 
-- 原厂：参数定义、页签与控件、属性映射、结果显示四个独立文件。
-- 本方：参数定义与页签分组**合并在** `BlobParameters.xml`，`Group` 元素同时携带 `page`、`section`、`vmCategory`。
-- 差异：清单明确"未经证据不能与参数文件合并"，当前为合并实现。
-- 状态：`derived`（偏差已确认）
-- 闭合动作：拆出独立页签声明文件，解析器与门禁同步改读。
+- 原厂元素级证据：
+  - `IMVSBlobFindModuAlgorithm.xml` 根为 `AlgorithmParamList`，每项只有 `Name` 与 `DefaultValue`，没有类型、范围、标签。
+  - `IMVSBlobFindModuAlgorithmTab.xml` 根为 `AlgorithmTabRoot`，按 `Tabs/Tab` → `Categorys/Category` → `Items` 组织，控件通过 `GroupLinkItem/LinkName` 引用平台控件组（ImageSourceGroup、OutputMaskImageGroup、RoiSelectGroup、InheritWayGroup2、AssistGroup、BottomCommandGroup 等）。
+  - `IMVSBlobFindModuCs.xml` 是 `<doc><members><member name="P:...">` 形式的 C# XML 文档注释，不承载参数映射。
+  - 因此原厂参数类型来自 C# 属性类型，默认值来自 Algorithm.xml，页签与分组来自 AlgorithmTab.xml。
+- 本方：`BlobParameterDefinition` 同样用 `typeof(BlobSettings).GetProperties()` 反射属性类型，与原厂取类型方式一致；但默认值、页签、分组、范围、可见性全部合并在 `BlobParameters.xml` 的 `Group/Parameter` 结构里。
+- 差异：文件边界与原厂不一致，参数定义与页签职责未分离。
+- 状态：`derived`（偏差已确认，元素级证据已到齐）
+- 闭合动作：拆成 `BlobAlgorithm.xml`（Name + DefaultValue）与 `BlobAlgorithmTab.xml`（Tab/Category/Items，含 page、section、vmCategory、顺序与控件属性），解析器与门禁同步改读；`BlobDisplay.xml` 保持独立。
 
 ### 6 页面组装
 
@@ -142,3 +146,15 @@
 4. **两项 inferred 转 derived 或 verified**：节点画布补原厂模块目录证据，持久化补保存重开自动链路。
 
 前三项不依赖新的原厂运行证据，可立即实施；第四项中节点画布需要补采原厂模块目录文件，持久化需要自动链路用例。
+
+## 五、对清单中 Cs.xml 职责描述的纠正
+
+《完整同构复核清单与计划-20261119》的发布单元章节把 `IMVSBlobFindModuCs.xml` 描述为"参数名、桥接属性和类型映射文件"，并要求本方保留等价映射职责。
+
+本对照取得的实际证据与该描述不符：
+
+- `IMVSBlobFindModuCs.xml` 的根元素是 `<doc>`，子元素是 `<assembly>` 与 `<members>`，成员条目形如 `<member name="P:IMVSBlobFindModuCs.BlobFindParam.ThresholdType">`，内容是中文与英文摘要注释。这是 C# 编译生成的 XML 文档注释，等同于本方程序集的 XML doc 输出，不是运行期配置。
+- 真正承载参数名与默认值的是 `IMVSBlobFindModuAlgorithm.xml`；参数类型来自 C# 属性类型；页签与分组来自 `IMVSBlobFindModuAlgorithmTab.xml`。
+- `IMVSBlobFindModu.xml` 是模块实例运行配置（`ServerRepAddress`、`ModuleName`、`ModuleViewMode` 等），不是工具参数定义。
+
+因此本方不需要新增"Cs 映射 XML"。本方 `BlobSettings` 属性类型加 `ParameterDefinition` 绑定表已经承担原厂同一职责，该职责没有缺失，清单中对应的"不能删除映射职责"要求当前已满足。清单的这一条描述应以本节证据为准修正。

@@ -1,205 +1,30 @@
 <Project>
   <!-- 当前产品唯一工具集合；项目PE声明由封包校验，不从旧工具目录推断。 -->
   <ItemGroup>
-    <ProductToolComponent Include="tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj">
+    <ProductToolComponent Include="tools/SunEyeVision.Tool.ImageSource/SunEyeVision.Tool.ImageSource.csproj">
       <ComponentId>SunEyeVision.Tool.ImageSource.Runtime</ComponentId>
       <ToolId>ImageLoad</ToolId><Role>Runtime</Role>
       <EntryType>SunEyeVision.Tool.ImageSource.Runtime.ImageSourceTool</EntryType>
     </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.ImageSource/Wpf/SunEyeVision.ImageSource.Wpf.csproj">
+    <ProductToolComponent Include="tools/SunEyeVision.Tool.ImageSource.Wpf/SunEyeVision.Tool.ImageSource.Wpf.csproj">
       <ComponentId>SunEyeVision.Tool.ImageSource.Wpf</ComponentId>
       <ToolId>ImageLoad</ToolId><Role>Editor</Role>
       <EntryType>SunEyeVision.Tool.ImageSource.Wpf.ImageSourceEditorFactory</EntryType>
       <CompanionToolId>ImageLoad</CompanionToolId>
     </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.BlobAnalysis/Runtime/SunEyeVision.BlobAnalysis.Runtime.csproj">
+    <ProductToolComponent Include="tools/SunEyeVision.Tool.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.csproj">
       <ComponentId>SunEyeVision.Tool.BlobAnalysis.Runtime</ComponentId>
       <ToolId>BlobAnalysis</ToolId><Role>Runtime</Role>
       <EntryType>SunEyeVision.Tool.BlobAnalysis.Runtime.BlobTool</EntryType>
     </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.BlobAnalysis/Wpf/SunEyeVision.BlobAnalysis.Wpf.csproj">
+    <ProductToolComponent Include="tools/SunEyeVision.Tool.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.csproj">
       <ComponentId>SunEyeVision.Tool.BlobAnalysis.Wpf</ComponentId>
       <ToolId>BlobAnalysis</ToolId><Role>Editor</Role>
       <EntryType>SunEyeVision.Tool.BlobAnalysis.Wpf.BlobEditorFactory</EntryType>
       <CompanionToolId>BlobAnalysis</CompanionToolId>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.FrameMean/Runtime/SunEyeVision.FrameMean.Runtime.csproj">
-      <ComponentId>SunEyeVision.Tool.FrameMean.Runtime</ComponentId>
-      <ToolId>FrameMean</ToolId><Role>Runtime</Role>
-      <EntryType>SunEyeVision.Tool.FrameMean.Runtime.FrameMeanTool</EntryType>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.FrameMean/Wpf/SunEyeVision.FrameMean.Wpf.csproj">
-      <ComponentId>SunEyeVision.Tool.FrameMean.Wpf</ComponentId>
-      <ToolId>FrameMean</ToolId><Role>Editor</Role>
-      <EntryType>SunEyeVision.Tool.FrameMean.Wpf.FrameMeanEditorFactory</EntryType>
-      <CompanionToolId>FrameMean</CompanionToolId>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.If/Runtime/SunEyeVision.If.Runtime.csproj">
-      <ComponentId>SunEyeVision.Tool.If.Runtime</ComponentId>
-      <ToolId>If</ToolId><Role>Runtime</Role>
-      <EntryType>SunEyeVision.Tool.If.Runtime.IfTool</EntryType>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.If/Wpf/SunEyeVision.If.Wpf.csproj">
-      <ComponentId>SunEyeVision.Tool.If.Wpf</ComponentId>
-      <ToolId>If</ToolId><Role>Editor</Role>
-      <EntryType>SunEyeVision.Tool.If.Wpf.IfEditorFactory</EntryType>
-      <CompanionToolId>If</CompanionToolId>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.ColorExtract/Runtime/SunEyeVision.ColorExtract.Runtime.csproj">
-      <ComponentId>SunEyeVision.Tool.ColorExtract.Runtime</ComponentId>
-      <ToolId>ColorExtract</ToolId><Role>Runtime</Role>
-      <EntryType>SunEyeVision.Tool.ColorExtract.Runtime.ColorExtractTool</EntryType>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.ColorExtract/Wpf/SunEyeVision.ColorExtract.Wpf.csproj">
-      <ComponentId>SunEyeVision.Tool.ColorExtract.Wpf</ComponentId>
-      <ToolId>ColorExtract</ToolId><Role>Editor</Role>
-      <EntryType>SunEyeVision.Tool.ColorExtract.Wpf.ColorExtractEditorFactory</EntryType>
-      <CompanionToolId>ColorExtract</CompanionToolId>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.PixelCount/Runtime/SunEyeVision.PixelCount.Runtime.csproj">
-      <ComponentId>SunEyeVision.Tool.PixelCount.Runtime</ComponentId>
-      <ToolId>PixelCount</ToolId><Role>Runtime</Role>
-      <EntryType>SunEyeVision.Tool.PixelCount.Runtime.PixelCountTool</EntryType>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.PixelCount/Wpf/SunEyeVision.PixelCount.Wpf.csproj">
-      <ComponentId>SunEyeVision.Tool.PixelCount.Wpf</ComponentId>
-      <ToolId>PixelCount</ToolId><Role>Editor</Role>
-      <EntryType>SunEyeVision.Tool.PixelCount.Wpf.PixelCountEditorFactory</EntryType>
-      <CompanionToolId>PixelCount</CompanionToolId>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.MarkFind/Runtime/SunEyeVision.MarkFind.Runtime.csproj">
-      <ComponentId>SunEyeVision.Tool.MarkFind.Runtime</ComponentId>
-      <ToolId>MarkFind</ToolId><Role>Runtime</Role>
-      <EntryType>SunEyeVision.Tool.MarkFind.Runtime.MarkFindTool</EntryType>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.MarkFind/Wpf/SunEyeVision.MarkFind.Wpf.csproj">
-      <ComponentId>SunEyeVision.Tool.MarkFind.Wpf</ComponentId>
-      <ToolId>MarkFind</ToolId><Role>Editor</Role>
-      <EntryType>SunEyeVision.Tool.MarkFind.Wpf.MarkFindEditorFactory</EntryType>
-      <CompanionToolId>MarkFind</CompanionToolId>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.BlobLabels/Runtime/SunEyeVision.BlobLabels.Runtime.csproj">
-      <ComponentId>SunEyeVision.Tool.BlobLabels.Runtime</ComponentId>
-      <ToolId>BlobLabels</ToolId><Role>Runtime</Role>
-      <EntryType>SunEyeVision.Tool.BlobLabels.Runtime.BlobLabelsTool</EntryType>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.BlobLabels/Wpf/SunEyeVision.BlobLabels.Wpf.csproj">
-      <ComponentId>SunEyeVision.Tool.BlobLabels.Wpf</ComponentId>
-      <ToolId>BlobLabels</ToolId><Role>Editor</Role>
-      <EntryType>SunEyeVision.Tool.BlobLabels.Wpf.BlobLabelsEditorFactory</EntryType>
-      <CompanionToolId>BlobLabels</CompanionToolId>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.ContourMatch/Runtime/SunEyeVision.ContourMatch.Runtime.csproj">
-      <ComponentId>SunEyeVision.Tool.ContourMatch.Runtime</ComponentId>
-      <ToolId>ContourMatch</ToolId><Role>Runtime</Role>
-      <EntryType>SunEyeVision.Tool.ContourMatch.Runtime.ContourMatchTool</EntryType>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.ContourMatch/Wpf/SunEyeVision.ContourMatch.Wpf.csproj">
-      <ComponentId>SunEyeVision.Tool.ContourMatch.Wpf</ComponentId>
-      <ToolId>ContourMatch</ToolId><Role>Editor</Role>
-      <EntryType>SunEyeVision.Tool.ContourMatch.Wpf.ContourMatchEditorFactory</EntryType>
-      <CompanionToolId>ContourMatch</CompanionToolId>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.GrayMatch/Runtime/SunEyeVision.GrayMatch.Runtime.csproj">
-      <ComponentId>SunEyeVision.Tool.GrayMatch.Runtime</ComponentId>
-      <ToolId>GrayMatch</ToolId><Role>Runtime</Role>
-      <EntryType>SunEyeVision.Tool.GrayMatch.Runtime.GrayMatchTool</EntryType>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.GrayMatch/Wpf/SunEyeVision.GrayMatch.Wpf.csproj">
-      <ComponentId>SunEyeVision.Tool.GrayMatch.Wpf</ComponentId>
-      <ToolId>GrayMatch</ToolId><Role>Editor</Role>
-      <EntryType>SunEyeVision.Tool.GrayMatch.Wpf.GrayMatchEditorFactory</EntryType>
-      <CompanionToolId>GrayMatch</CompanionToolId>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.DivideImage/Runtime/SunEyeVision.DivideImage.Runtime.csproj">
-      <ComponentId>SunEyeVision.Tool.DivideImage.Runtime</ComponentId>
-      <ToolId>DivideImage</ToolId><Role>Runtime</Role>
-      <EntryType>SunEyeVision.Tool.DivideImage.Runtime.DivideImageTool</EntryType>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.DivideImage/Wpf/SunEyeVision.DivideImage.Wpf.csproj">
-      <ComponentId>SunEyeVision.Tool.DivideImage.Wpf</ComponentId>
-      <ToolId>DivideImage</ToolId><Role>Editor</Role>
-      <EntryType>SunEyeVision.Tool.DivideImage.Wpf.DivideImageEditorFactory</EntryType>
-      <CompanionToolId>DivideImage</CompanionToolId>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.IntensityMeasure/Runtime/SunEyeVision.IntensityMeasure.Runtime.csproj">
-      <ComponentId>SunEyeVision.Tool.IntensityMeasure.Runtime</ComponentId>
-      <ToolId>IntensityMeasure</ToolId><Role>Runtime</Role>
-      <EntryType>SunEyeVision.Tool.IntensityMeasure.Runtime.IntensityMeasureTool</EntryType>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.IntensityMeasure/Wpf/SunEyeVision.IntensityMeasure.Wpf.csproj">
-      <ComponentId>SunEyeVision.Tool.IntensityMeasure.Wpf</ComponentId>
-      <ToolId>IntensityMeasure</ToolId><Role>Editor</Role>
-      <EntryType>SunEyeVision.Tool.IntensityMeasure.Wpf.IntensityMeasureEditorFactory</EntryType>
-      <CompanionToolId>IntensityMeasure</CompanionToolId>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.CircleFind/Runtime/SunEyeVision.CircleFind.Runtime.csproj">
-      <ComponentId>SunEyeVision.Tool.CircleFind.Runtime</ComponentId>
-      <ToolId>CircleFind</ToolId><Role>Runtime</Role>
-      <EntryType>SunEyeVision.Tool.CircleFind.Runtime.CircleFindTool</EntryType>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.CircleFind/Wpf/SunEyeVision.CircleFind.Wpf.csproj">
-      <ComponentId>SunEyeVision.Tool.CircleFind.Wpf</ComponentId>
-      <ToolId>CircleFind</ToolId><Role>Editor</Role>
-      <EntryType>SunEyeVision.Tool.CircleFind.Wpf.CircleFindEditorFactory</EntryType>
-      <CompanionToolId>CircleFind</CompanionToolId>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.LineFind/Runtime/SunEyeVision.LineFind.Runtime.csproj">
-      <ComponentId>SunEyeVision.Tool.LineFind.Runtime</ComponentId>
-      <ToolId>LineFind</ToolId><Role>Runtime</Role>
-      <EntryType>SunEyeVision.Tool.LineFind.Runtime.LineFindTool</EntryType>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.LineFind/Wpf/SunEyeVision.LineFind.Wpf.csproj">
-      <ComponentId>SunEyeVision.Tool.LineFind.Wpf</ComponentId>
-      <ToolId>LineFind</ToolId><Role>Editor</Role>
-      <EntryType>SunEyeVision.Tool.LineFind.Wpf.LineFindEditorFactory</EntryType>
-      <CompanionToolId>LineFind</CompanionToolId>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.CircleCircleMeasure/Runtime/SunEyeVision.CircleCircleMeasure.Runtime.csproj">
-      <ComponentId>SunEyeVision.Tool.CircleCircleMeasure.Runtime</ComponentId>
-      <ToolId>CircleCircleMeasure</ToolId><Role>Runtime</Role>
-      <EntryType>SunEyeVision.Tool.CircleCircleMeasure.Runtime.CircleCircleMeasureTool</EntryType>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.CircleCircleMeasure/Wpf/SunEyeVision.CircleCircleMeasure.Wpf.csproj">
-      <ComponentId>SunEyeVision.Tool.CircleCircleMeasure.Wpf</ComponentId>
-      <ToolId>CircleCircleMeasure</ToolId><Role>Editor</Role>
-      <EntryType>SunEyeVision.Tool.CircleCircleMeasure.Wpf.CircleCircleMeasureEditorFactory</EntryType>
-      <CompanionToolId>CircleCircleMeasure</CompanionToolId>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.PointPointMeasure/Runtime/SunEyeVision.PointPointMeasure.Runtime.csproj">
-      <ComponentId>SunEyeVision.Tool.PointPointMeasure.Runtime</ComponentId>
-      <ToolId>PointPointMeasure</ToolId><Role>Runtime</Role>
-      <EntryType>SunEyeVision.Tool.PointPointMeasure.Runtime.PointPointMeasureTool</EntryType>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.PointPointMeasure/Wpf/SunEyeVision.PointPointMeasure.Wpf.csproj">
-      <ComponentId>SunEyeVision.Tool.PointPointMeasure.Wpf</ComponentId>
-      <ToolId>PointPointMeasure</ToolId><Role>Editor</Role>
-      <EntryType>SunEyeVision.Tool.PointPointMeasure.Wpf.PointPointMeasureEditorFactory</EntryType>
-      <CompanionToolId>PointPointMeasure</CompanionToolId>
+      <SharedAssembly>true</SharedAssembly>
     </ProductToolComponent>
     <!-- B2-C 线分类类 UI 骨架（算法待补证）：数据分类 -->
-    <ProductToolComponent Include="tools/SunEyeVision.DataClassification/Runtime/SunEyeVision.DataClassification.Runtime.csproj">
-      <ComponentId>SunEyeVision.Tool.DataClassification.Runtime</ComponentId>
-      <ToolId>DataClassification</ToolId><Role>Runtime</Role>
-      <EntryType>SunEyeVision.Tool.DataClassification.Runtime.DataClassificationTool</EntryType>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.DataClassification/Wpf/SunEyeVision.DataClassification.Wpf.csproj">
-      <ComponentId>SunEyeVision.Tool.DataClassification.Wpf</ComponentId>
-      <ToolId>DataClassification</ToolId><Role>Editor</Role>
-      <EntryType>SunEyeVision.Tool.DataClassification.Wpf.DataClassificationEditorFactory</EntryType>
-      <CompanionToolId>DataClassification</CompanionToolId>
-    </ProductToolComponent>
     <!-- B2-C 线分类类 UI 骨架（算法待补证）：ML分类 -->
-    <ProductToolComponent Include="tools/SunEyeVision.MachineLearningClassifier/Runtime/SunEyeVision.MachineLearningClassifier.Runtime.csproj">
-      <ComponentId>SunEyeVision.Tool.MachineLearningClassifier.Runtime</ComponentId>
-      <ToolId>MachineLearningClassifier</ToolId><Role>Runtime</Role>
-      <EntryType>SunEyeVision.Tool.MachineLearningClassifier.Runtime.MachineLearningClassifierTool</EntryType>
-    </ProductToolComponent>
-    <ProductToolComponent Include="tools/SunEyeVision.MachineLearningClassifier/Wpf/SunEyeVision.MachineLearningClassifier.Wpf.csproj">
-      <ComponentId>SunEyeVision.Tool.MachineLearningClassifier.Wpf</ComponentId>
-      <ToolId>MachineLearningClassifier</ToolId><Role>Editor</Role>
-      <EntryType>SunEyeVision.Tool.MachineLearningClassifier.Wpf.MachineLearningClassifierEditorFactory</EntryType>
-      <CompanionToolId>MachineLearningClassifier</CompanionToolId>
-    </ProductToolComponent>
   </ItemGroup>
 </Project>

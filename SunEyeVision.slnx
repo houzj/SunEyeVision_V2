@@ -1,76 +1,43 @@
 <Solution>
   <Folder Name="/Tools/" />
-  <Folder Name="/Tools/BlobComponents/">
-    <Project Path="tools/SunEyeVision.BlobAnalysis/Wpf/SunEyeVision.BlobAnalysis.Wpf.csproj" />
-    <Project Path="tools/SunEyeVision.BlobAnalysis/Runtime/SunEyeVision.BlobAnalysis.Runtime.csproj" />
+  <Folder Name="/Tools/SunEyeVision.Tool.BlobAnalysis/">
+    <Project Path="tools/SunEyeVision.Tool.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.csproj" />
   </Folder>
   <Folder Name="/Tools/BlobLabelsComponents/">
-    <Project Path="tools/SunEyeVision.BlobLabels/Runtime/SunEyeVision.BlobLabels.Runtime.csproj" />
-    <Project Path="tools/SunEyeVision.BlobLabels/Wpf/SunEyeVision.BlobLabels.Wpf.csproj" />
   </Folder>
   <Folder Name="/Tools/MarkFindComponents/">
-    <Project Path="tools/SunEyeVision.MarkFind/Runtime/SunEyeVision.MarkFind.Runtime.csproj" />
-    <Project Path="tools/SunEyeVision.MarkFind/Wpf/SunEyeVision.MarkFind.Wpf.csproj" />
   </Folder>
   <Folder Name="/Tools/ContourMatchComponents/">
-    <Project Path="tools/SunEyeVision.ContourMatch/Runtime/SunEyeVision.ContourMatch.Runtime.csproj" />
-    <Project Path="tools/SunEyeVision.ContourMatch/Wpf/SunEyeVision.ContourMatch.Wpf.csproj" />
   </Folder>
   <Folder Name="/Tools/GrayMatchComponents/">
-    <Project Path="tools/SunEyeVision.GrayMatch/Runtime/SunEyeVision.GrayMatch.Runtime.csproj" />
-    <Project Path="tools/SunEyeVision.GrayMatch/Wpf/SunEyeVision.GrayMatch.Wpf.csproj" />
   </Folder>
-  <Folder Name="/Tools/ImageSourceComponents/">
-    <Project Path="tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj" />
-    <Project Path="tools/SunEyeVision.ImageSource/Wpf/SunEyeVision.ImageSource.Wpf.csproj" />
+  <Folder Name="/Tools/SunEyeVision.Tool.ImageSource/">
+    <Project Path="tools/SunEyeVision.Tool.ImageSource/SunEyeVision.Tool.ImageSource.csproj" />
+    <Project Path="tools/SunEyeVision.Tool.ImageSource.Wpf/SunEyeVision.Tool.ImageSource.Wpf.csproj" />
   </Folder>
   <Folder Name="/Tools/FrameMeanComponents/">
-    <Project Path="tools/SunEyeVision.FrameMean/Runtime/SunEyeVision.FrameMean.Runtime.csproj" />
-    <Project Path="tools/SunEyeVision.FrameMean/Wpf/SunEyeVision.FrameMean.Wpf.csproj" />
   </Folder>
   <Folder Name="/Tools/ColorExtractComponents/">
-    <Project Path="tools/SunEyeVision.ColorExtract/Runtime/SunEyeVision.ColorExtract.Runtime.csproj" />
-    <Project Path="tools/SunEyeVision.ColorExtract/Wpf/SunEyeVision.ColorExtract.Wpf.csproj" />
   </Folder>
   <Folder Name="/Tools/DivideImageComponents/">
-    <Project Path="tools/SunEyeVision.DivideImage/Runtime/SunEyeVision.DivideImage.Runtime.csproj" />
-    <Project Path="tools/SunEyeVision.DivideImage/Wpf/SunEyeVision.DivideImage.Wpf.csproj" />
   </Folder>
   <Folder Name="/Tools/IfComponents/">
-    <Project Path="tools/SunEyeVision.If/Runtime/SunEyeVision.If.Runtime.csproj" />
-    <Project Path="tools/SunEyeVision.If/Wpf/SunEyeVision.If.Wpf.csproj" />
   </Folder>
   <Folder Name="/Tools/PixelCountComponents/">
-    <Project Path="tools/SunEyeVision.PixelCount/Runtime/SunEyeVision.PixelCount.Runtime.csproj" />
-    <Project Path="tools/SunEyeVision.PixelCount/Wpf/SunEyeVision.PixelCount.Wpf.csproj" />
   </Folder>
   <Folder Name="/Tools/IntensityMeasureComponents/">
-    <Project Path="tools/SunEyeVision.IntensityMeasure/Runtime/SunEyeVision.IntensityMeasure.Runtime.csproj" />
-    <Project Path="tools/SunEyeVision.IntensityMeasure/Wpf/SunEyeVision.IntensityMeasure.Wpf.csproj" />
   </Folder>
   <Folder Name="/Tools/CircleFindComponents/">
-    <Project Path="tools/SunEyeVision.CircleFind/Runtime/SunEyeVision.CircleFind.Runtime.csproj" />
-    <Project Path="tools/SunEyeVision.CircleFind/Wpf/SunEyeVision.CircleFind.Wpf.csproj" />
   </Folder>
   <Folder Name="/Tools/LineFindComponents/">
-    <Project Path="tools/SunEyeVision.LineFind/Runtime/SunEyeVision.LineFind.Runtime.csproj" />
-    <Project Path="tools/SunEyeVision.LineFind/Wpf/SunEyeVision.LineFind.Wpf.csproj" />
   </Folder>
   <Folder Name="/Tools/CircleCircleMeasureComponents/">
-    <Project Path="tools/SunEyeVision.CircleCircleMeasure/Runtime/SunEyeVision.CircleCircleMeasure.Runtime.csproj" />
-    <Project Path="tools/SunEyeVision.CircleCircleMeasure/Wpf/SunEyeVision.CircleCircleMeasure.Wpf.csproj" />
   </Folder>
   <Folder Name="/Tools/PointPointMeasureComponents/">
-    <Project Path="tools/SunEyeVision.PointPointMeasure/Runtime/SunEyeVision.PointPointMeasure.Runtime.csproj" />
-    <Project Path="tools/SunEyeVision.PointPointMeasure/Wpf/SunEyeVision.PointPointMeasure.Wpf.csproj" />
   </Folder>
   <Folder Name="/Tools/DataClassificationComponents/">
-    <Project Path="tools/SunEyeVision.DataClassification/Runtime/SunEyeVision.DataClassification.Runtime.csproj" />
-    <Project Path="tools/SunEyeVision.DataClassification/Wpf/SunEyeVision.DataClassification.Wpf.csproj" />
   </Folder>
   <Folder Name="/Tools/MachineLearningClassifierComponents/">
-    <Project Path="tools/SunEyeVision.MachineLearningClassifier/Runtime/SunEyeVision.MachineLearningClassifier.Runtime.csproj" />
-    <Project Path="tools/SunEyeVision.MachineLearningClassifier/Wpf/SunEyeVision.MachineLearningClassifier.Wpf.csproj" />
   </Folder>
   <Folder Name="/Tests/SunEyeVision.Tools.Find.Tests/">
     <Project Path="tests/SunEyeVision.Tools.Find.Tests/SunEyeVision.Tools.Find.Tests.csproj" />

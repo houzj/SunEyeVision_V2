@@ -16,11 +16,15 @@ function Get-ProductToolComponents {
             $values[$field]=if($nodes.Count){$nodes[0].InnerText}else{''}
         }
         $companion=if($item.SelectSingleNode('CompanionToolId')){[string]$item.CompanionToolId}else{''}
+        $sharedAssemblyNode = $item.SelectSingleNode('SharedAssembly')
+        $sharedAssembly = ($null -ne $sharedAssemblyNode -and [string]$sharedAssemblyNode.InnerText -ieq 'true')
         foreach($pair in @(@('ToolComponentId',[string]$item.ComponentId),@('ToolComponentToolId',[string]$item.ToolId),@('ToolComponentRole',[string]$item.Role),@('ToolComponentEntryType',[string]$item.EntryType),@('ToolComponentCompanionToolId',$companion))) {
             if([string]::IsNullOrWhiteSpace($pair[1]) -and $pair[0] -ne 'ToolComponentCompanionToolId'){throw '产品组件字段为空'}
-            if($values[$pair[0]] -cne $pair[1]){throw "产品清单与工程声明不一致：$relative/$($pair[0])"}
+            if(!$sharedAssembly -and $values[$pair[0]] -cne $pair[1]){throw "产品清单与工程声明不一致：$relative/$($pair[0])"}
         }
-        if($values.IsToolPlugin -eq 'true' -or $values.AssemblyName -cne [string]$item.ComponentId){throw '产品组件不能使用旧SDK入口或不同程序集名'}
+        if($values.IsToolPlugin -eq 'true'){throw '产品组件不能使用旧SDK入口'}
+        if(!$sharedAssembly -and $values.AssemblyName -cne [string]$item.ComponentId){throw '产品组件不能使用不同程序集名'}
+        if($sharedAssembly -and [string]::IsNullOrWhiteSpace($values.AssemblyName)){throw '共享程序集组件缺少程序集名'}
         [pscustomobject]@{project=$relative;componentId=[string]$item.ComponentId;toolId=[string]$item.ToolId;role=[string]$item.Role;entryType=[string]$item.EntryType;companionToolId=$companion;path=$values.AssemblyName+'.dll'}
     })
     if($components.Count -eq 0 -or @($components.componentId|Sort-Object -Unique).Count -ne $components.Count){throw '产品组件为空或ID重复'}

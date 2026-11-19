@@ -318,8 +318,10 @@ function New-ReleasePayload {
         if($admitted.ContainsKey($expected.componentId)){throw 'Duplicate admitted component.'}
         $admitted[$expected.componentId]=$true
         $owner=@($componentEntries|Where-Object {$_.path -ceq $expected.path})
-        if($owner.Count -ne 1 -or $owner[0].components.Count -ne 1){throw "Product component assembly mismatch: $($expected.componentId)"}
-        $actual=$owner[0].components[0]
+        if($owner.Count -ne 1){throw "Product component assembly mismatch: $($expected.componentId)"}
+        $actual=@($owner[0].components|Where-Object {$_.componentId -ceq $expected.componentId})
+        if($actual.Count -ne 1){throw "Product component declaration missing from assembly: $($expected.componentId)"}
+        $actual=$actual[0]
         foreach($field in 'componentId','toolId','role','entryType') {
             if($actual[$field] -cne $expected.$field){throw "Product component declaration mismatch: $($expected.componentId)/$field"}
         }

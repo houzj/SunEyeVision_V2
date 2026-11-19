@@ -247,3 +247,6 @@ installer/Release.Local.props
 # ??????????????
 /_validation/
 /.codebuddy/tmp/
+
+# local test data and automation session outputs (large, not tracked)
+/.testdata/

@@ -227,7 +227,8 @@ public sealed class BlobThreePageSessionRegressionTests
             fixture.Main.SelectedNode = blob;
             fixture.Main.OpenDebugWindowCommand.Execute(blob);
             UiRuntime.Pump();
-            var window = System.Windows.Application.Current.Windows.OfType<RuntimeToolEditorWindow>().Single();
+            var window = System.Windows.Application.Current.Windows.OfType<RuntimeToolEditorWindow>().SingleOrDefault()
+                ?? throw new InvalidOperationException($"Blob 调试窗口未创建。状态={fixture.Main.StatusText}");
             try
             {
                 UiRuntime.AwaitEditorReady(window);

@@ -38,13 +38,13 @@ public sealed class ImageSourceDeclarationAndFormatTests
     public void Image_source_categories_follow_the_original_single_page_and_declaration_order()
     {
         // Installed ImageSourceModuleAlgorithmTab.xml: Tab_Basic Params, Tab_Trigger, Tab_Subscribe_File.
-        var fields = ImageSourceFields.Schema.Presentation!.Fields.Concat(ImageSourceFields.DisplaySchema.Presentation!.Fields)
+        var fields = ImageSourceFields.Schema.Presentation!.Fields
             .OrderBy(field => field.Order).ToArray();
         Assert.All(fields, field => Assert.Equal("基本参数", field.Layout!.Page));
         var categories = fields.GroupBy(field => field.Layout!.Section).ToArray();
         Assert.Equal(new[] { "基本参数", "触发设置", "订阅图片文件夹" }, categories.Select(group => group.Key));
         Assert.Equal(new[] { "source.kind", "output.format", "local.save-images", "display.image-name", "camera.exposure-time", "camera.gain",
-            "camera.timeout-ms", "sequence.initial", "local.path-cache", "output.mono8", "stitch.enabled", "stitch.start",
+            "sequence.initial", "local.path-cache", "output.mono8", "stitch.enabled", "stitch.start",
             "stitch.height", "stitch.clear", "stitch.clear-value" }, categories[0].Select(field => field.FieldId));
         Assert.Equal(new[] { "local.auto-switch", "local.stop-at-last", "trigger.filter-enabled", "trigger.text", "trigger.filter-text" },
             categories[1].Select(field => field.FieldId));

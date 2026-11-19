@@ -52,7 +52,7 @@ public sealed class BlobParameterExecutionTests
             try
             {
                 _image = _resources.CreateGray8(Size, Size, pixels);
-                Output = new BlobSession().Execute(settings, _image, _resources);
+                Output = new BlobAlgorithm().Execute(settings, _image, _resources);
             }
             catch
             {
@@ -99,7 +99,7 @@ public sealed class BlobParameterExecutionTests
     public async Task Hole_fill_keeps_excluded_mask_pixels_and_openings_out_of_the_retained_blob()
     {
         using var resources=new FrozenOutputResources();
-        await using var session=new BlobSession();
+        await using var session=new BlobAlgorithm();
         var pixels=Block((3,3),(5,5));
         var maskPixels=Enumerable.Repeat((byte)255,pixels.Length).ToArray();
         var excluded=4*Size+3;
@@ -245,7 +245,7 @@ public sealed class BlobParameterExecutionTests
     {
         const int width = 12, height = 9;
         using var resources = new FrozenOutputResources();
-        await using var session = new BlobSession();
+        await using var session = new BlobAlgorithm();
         var pixels = new byte[width * height];
         var left = boundary == "image" ? 0 : 2;
         var touching = new[] { 3 * width + left, 4 * width + left, 3 * width + left + 1 };

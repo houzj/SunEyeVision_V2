@@ -9,7 +9,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/UI/SunEyeVision.UI.csproj" />
-    <ProjectReference Include="../../tools/SunEyeVision.ImageSource/Wpf/SunEyeVision.ImageSource.Wpf.csproj" />
-    <ProjectReference Include="../../tools/SunEyeVision.BlobAnalysis/Wpf/SunEyeVision.BlobAnalysis.Wpf.csproj" />
+    <ProjectReference Include="../../tools/SunEyeVision.ImageSource/Wpf/SunEyeVision.Tool.ImageSource.Wpf.csproj" />
+    <ProjectReference Include="../../tools/SunEyeVision.Tool.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.csproj" />
   </ItemGroup>
 </Project>

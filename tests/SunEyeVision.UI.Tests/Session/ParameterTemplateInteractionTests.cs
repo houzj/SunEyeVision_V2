@@ -745,4 +745,179 @@ public sealed class ParameterTemplateInteractionTests
             Assert.IsType<UnsetSetting>(row.Setting);
         });
     }
+
+    [Fact]
+    public void Flat_input_composition_uses_one_native_parameter_list_and_validates_input()
+    {
+        if (System.Windows.Application.Current is null) SunEyeVision.TestShared.WpfTestDispatcher.RequireHiddenDesktop();
+        UiRuntime.Run(() =>
+        {
+            var settingAnchor = new Port("input.anchor", DataType.Text, EditModes: FieldEditModes.Constant);
+            var threshold = new Port("threshold", DataType.Integer, EditModes: FieldEditModes.Constant);
+            var settingsSchema = new ToolSchema(new[] { settingAnchor, threshold }, Array.Empty<Port>(), new ToolPresentation(new[]
+            {
+                new FieldPresentation(settingAnchor.Id, "输入锚点", "输入", 0, FieldEditorKind.Scalar)
+                    { Layout = new("基本参数", "输入") },
+                new FieldPresentation(threshold.Id, "阈值", "设置", 0, FieldEditorKind.Scalar)
+                    { Layout = new("基本参数", "设置") }
+            }));
+            var input = new Port("image", TypeRef.ResourceOf(ResourceKind.Image), Required: false, Nullable: true,
+                EditModes: FieldEditModes.Reference);
+            var inputSchema = new ToolSchema(new[] { input }, Array.Empty<Port>(), new ToolPresentation(new[]
+            {
+                new FieldPresentation(input.Id, "输入图像", "输入", 0, FieldEditorKind.Image)
+                    { Layout = new("基本参数", "输入") }
+            }), workflowImageInputId: input.Id);
+            ParameterSetting acceptedInput = new UnsetSetting();
+            var inputWrites = 0;
+            var draft = new FieldSettingsDraft(settingsSchema, new FieldSettings(settingsSchema.Inputs,
+                new Dictionary<string, ParameterSetting>
+                {
+                    [settingAnchor.Id] = new ConstantSetting("anchor"),
+                    [threshold.Id] = new ConstantSetting(10L)
+                }));
+            var options = new ToolSettingsViewOptions(
+                InputSection: "输入",
+                InputContentFactory: _ => new DeclaredInputFieldsView(inputSchema,
+                    _ => acceptedInput,
+                    (_, setting) => { acceptedInput = setting; inputWrites++; },
+                    ReferenceFieldOptions.Empty),
+                SuppressedFieldRows: new HashSet<string> { settingAnchor.Id },
+                CompositionMode: InputCompositionMode.FlatNative);
+            using var view = new DeclaredSettingsView(draft, options);
+            var window = new Window { Content = view, Width = 520, Height = 360, ShowInTaskbar = false };
+            window.Resources.MergedDictionaries.Add(EditorResources.Shared);
+            try
+            {
+                window.Show(); window.UpdateLayout(); UiRuntime.Pump();
+                var lists = UiRuntime.Visuals<SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamListView>(view).ToArray();
+                Assert.Single(lists);
+                Assert.True(view.TryCapture(out _, out var error), error);
+                Assert.False(view.HasInvalidInput);
+                Assert.Equal(0, inputWrites);
+                Assert.IsType<UnsetSetting>(acceptedInput);
+            }
+            finally { window.Close(); UiRuntime.Pump(); }
+        });
+    }
+
+    [Fact]
+    public void Flat_input_composition_preserves_input_only_section_on_existing_page()
+    {
+        if (System.Windows.Application.Current is null) SunEyeVision.TestShared.WpfTestDispatcher.RequireHiddenDesktop();
+        UiRuntime.Run(() =>
+        {
+            var threshold = new Port("threshold", DataType.Integer, EditModes: FieldEditModes.Constant);
+            var settingsSchema = new ToolSchema(new[] { threshold }, Array.Empty<Port>(), new ToolPresentation(new[]
+            {
+                new FieldPresentation(threshold.Id, "阈值", "设置", 0, FieldEditorKind.Scalar)
+                { Layout = new("基本参数", "设置") }
+            }));
+            var input = new Port("image", TypeRef.ResourceOf(ResourceKind.Image), Required: false, Nullable: true,
+                EditModes: FieldEditModes.Reference);
+            var inputSchema = new ToolSchema(new[] { input }, Array.Empty<Port>(), new ToolPresentation(new[]
+            {
+                new FieldPresentation(input.Id, "输入图像", "图像输入", 0, FieldEditorKind.Image)
+                { Layout = new("基本参数", "图像输入") }
+            }), workflowImageInputId: input.Id);
+            ParameterSetting acceptedInput = new UnsetSetting();
+            var draft = new FieldSettingsDraft(settingsSchema, new FieldSettings(settingsSchema.Inputs,
+                new Dictionary<string, ParameterSetting> { [threshold.Id] = new ConstantSetting(10L) }));
+            var options = new ToolSettingsViewOptions(
+                InputContentFactory: _ => new DeclaredInputFieldsView(inputSchema,
+                    _ => acceptedInput,
+                    (_, setting) => acceptedInput = setting,
+                    ReferenceFieldOptions.Empty),
+                InputSection: "基本参数",
+                CompositionMode: InputCompositionMode.FlatNative);
+            using var view = new DeclaredSettingsView(draft, options);
+            var window = new Window { Content = view, Width = 520, Height = 360, ShowInTaskbar = false };
+            window.Resources.MergedDictionaries.Add(EditorResources.Shared);
+            try
+            {
+                window.Show(); window.UpdateLayout(); UiRuntime.Pump();
+                Assert.Single(UiRuntime.Visuals<SunEyeVision.Plugin.Wpf.Native.Composition.ParameterPresentation.ParamListView>(view));
+                Assert.Equal(2, UiRuntime.Visuals<DeclaredFieldRow>(view).Count());
+                Assert.True(view.TryCapture(out _, out var error), error);
+                Assert.IsType<UnsetSetting>(acceptedInput);
+            }
+            finally { window.Close(); UiRuntime.Pump(); }
+        });
+    }
+
+    [Fact]
+    public void All_registered_tools_expose_explicit_native_input_page_mappings()
+    {
+        if (System.Windows.Application.Current is null) SunEyeVision.TestShared.WpfTestDispatcher.RequireHiddenDesktop();
+        UiRuntime.Run(() =>
+        {
+            var toolIds = new[]
+            {
+                "BlobAnalysis", "BlobLabels", "CircleCircleMeasure", "CircleFind", "ColorExtract",
+                "ContourMatch", "DataClassification", "DivideImage", "FrameMean", "GrayMatch", "If",
+                "ImageLoad", "IntensityMeasure", "LineFind", "MachineLearningClassifier", "MarkFind",
+                "PixelCount", "PointPointMeasure"
+            };
+            using var fixture = new DocumentUiFixture();
+            var failures = new List<string>();
+            foreach (var toolId in toolIds)
+            {
+                try
+                {
+                    var node = fixture.Add(toolId, 120 + failures.Count * 20, 120);
+                    var draft = fixture.Session.Editing.Host.BeginEdit(fixture.Root.Id, node.Id);
+                    var placements = NativeInputPlacementMap.FromSchemas(draft.InputSchema, draft.SettingsSchema);
+                    var inputs = draft.InputSchema.Presentation?.Fields.Select(field => field.FieldId).ToArray() ?? Array.Empty<string>();
+                    Assert.True(inputs.All(placements.ContainsKey), $"{toolId} 存在未映射输入：{string.Join(",", inputs.Where(id => !placements.ContainsKey(id)))}");
+                }
+                catch (Exception error)
+                {
+                    failures.Add($"{toolId}: {error.Message}");
+                }
+            }
+            Assert.True(failures.Count == 0, string.Join(Environment.NewLine, failures));
+        });
+    }
+
+    [Fact]
+    public void Blob_runtime_draft_retains_input_presentations_for_flat_composition()
+    {
+        if (System.Windows.Application.Current is null) SunEyeVision.TestShared.WpfTestDispatcher.RequireHiddenDesktop();
+        UiRuntime.Run(() =>
+        {
+            using var fixture = new DocumentUiFixture();
+            var node = fixture.Add("BlobAnalysis");
+            var draft = fixture.Session.Editing.Host.BeginEdit(fixture.Root.Id, node.Id);
+            var presentations = draft.InputSchema.Presentation?.Fields ?? Array.Empty<FieldPresentation>();
+            Assert.Contains(presentations, field => field.FieldId == "input.image");
+            Assert.Contains(presentations, field => field.FieldId == "input.pose");
+            Assert.All(presentations, field => Assert.NotNull(field.Layout?.Page));
+        });
+    }
+
+    [Fact]
+    public void Blob_runtime_window_reports_input_composition_stage()
+    {
+        if (System.Windows.Application.Current is null) SunEyeVision.TestShared.WpfTestDispatcher.RequireHiddenDesktop();
+        UiRuntime.Run(() =>
+        {
+            using var fixture = new DocumentUiFixture();
+            var node = fixture.Add("BlobAnalysis");
+            fixture.Main.SelectedNode = node;
+            fixture.Main.OpenDebugWindowCommand.Execute(node);
+            UiRuntime.Pump();
+            var window = System.Windows.Application.Current.Windows
+                .OfType<SunEyeVision.UI.Services.Editing.RuntimeToolEditorWindow>().Single();
+            try
+            {
+                UiRuntime.AwaitEditorReady(window);
+                var diagnostic = UiRuntime.Prop<string>(window.Editor, "InputCompositionDiagnostic") ?? "";
+                Assert.Contains("factory=True", diagnostic, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("inputPresentation=", diagnostic, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("declaredInputs=", diagnostic, StringComparison.OrdinalIgnoreCase);
+                Assert.True(diagnostic.Contains("declaredInputs=2", StringComparison.OrdinalIgnoreCase), diagnostic);
+            }
+            finally { UiRuntime.Await(window.CloseAndDrainAsync()); }
+        });
+    }
 }

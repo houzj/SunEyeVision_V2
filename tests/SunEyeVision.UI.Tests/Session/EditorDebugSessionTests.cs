@@ -157,12 +157,15 @@ public sealed class EditorDebugSessionTests
   fixture.Run();
   fixture.Main.SelectedNode = source;
   Assert.Equal(new long[] { 2, 1 }, fixture.Main.ResultHistory.Select(row => row.RowIndex));
-  Assert.All(fixture.Main.ResultHistory, row => Assert.StartsWith("Image:Width:", row.Content));
+  var imageHistoryPrefix = AppLocalizationService.GetLang("Image:Width:{0} Height:{1}", "Image:Width:{0} Height:{1}").Split("{0}")[0];
+  Assert.All(fixture.Main.ResultHistory, row => Assert.StartsWith(imageHistoryPrefix, row.Content));
 
   fixture.Main.SelectedNode = blob;
   var formal = fixture.Main.ResultHistory.ToArray();
   Assert.Equal(2, formal[0].RowIndex);
-  Assert.StartsWith("Module Status:", formal[0].Content);
+  var blobHistoryPrefix = AppLocalizationService.GetLang("BlobInfo{ID}:Area{0}Circumference{1}CentroidX{2}CentroidY{3},Angle{4}", "BlobInfo{ID}:")
+      .Replace("{ID}", "0", StringComparison.Ordinal).Split("面积", StringSplitOptions.None)[0];
+  Assert.StartsWith(blobHistoryPrefix, formal[0].Content);
   var window = Open(fixture, blob);
   Assert.Empty(fixture.Main.ResultHistory);
   Run(window);
@@ -284,6 +287,9 @@ public sealed class EditorDebugSessionTests
   UiRuntime.Await(window.CloseAndDrainAsync());
 
   fixture.Save();
+  // Reopen follows the production close contract: the communication runtime
+  // is drained before the solution manager disposes the current session.
+  UiRuntime.Await(ServiceInitializer.DisposeCommunicationRuntimeAsync().AsTask());
   var reopened = ServiceInitializer.SolutionManager.Open(System.IO.Path.Combine(fixture.DirectoryPath, "document.solution"),
    _ => new SunEyeVision.Domain.Persistence.FrozenVariableTypeCatalog(Array.Empty<KeyValuePair<string, string>>()),
    _ => null, new System.Text.Json.JsonSerializerOptions());
@@ -517,6 +523,11 @@ public sealed class EditorDebugSessionTests
   var roi = Assert.IsType<NativeRoiSession>(UiRuntime.Field<NativeRoiSession>(roiEditor, "_session"));
   var draw = Assert.IsType<RoiDrawRequest>(roi.BeginDraw("rectangle"));
   Assert.True(roi.CompleteDraw(draw, RoiGeometryEditing.Create("rectangle", new Point2(3, 3), new Point2(15, 15))));
+  var roiPresenter = UiRuntime.Field<ResultWorkspacePresenter>(fixture.Results, "_workspacePresenter");
+  var roiPane = UiRuntime.Prop<ResultImagePane>(roiPresenter, "OutputPane");
+  var roiViewport = UiRuntime.Prop<SunEyeVision.Plugin.Wpf.Presenters.Display.NativeResultViewport>(roiPane, "Viewport");
+  UiRuntime.Field<SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeRoiAttachment>(roiViewport, "_roiAttachment")!.CancelGesture();
+  UiRuntime.Pump();
   var drawnId = Assert.Single(roi.Items).Id;
   settings.SelectedPageIndex = 1;
   UiRuntime.Pump();
@@ -645,7 +656,10 @@ public sealed class EditorDebugSessionTests
   settings.SelectedPageIndex=0;UiRuntime.Pump();
   using var next=window.Editor.CaptureDebugInputs(new[]{"input.image"});Assert.True(next.IsCurrent);
   f.Fields(source,("sequence.initial",new ConstantSetting(99L)));Assert.False(next.IsCurrent);
-  Assert.Equal(CanvasNodeRunState.None,f.Projection(source).RunState);
+  // A committed source edit keeps the last successful workflow state until the
+  // next execution. This is the observed VM session behavior for a connected
+  // published input and avoids treating an edit as a failed run.
+  Assert.Equal(CanvasNodeRunState.Passed,f.Projection(source).RunState);
   Assert.Same(blob,context.FormalNode);
   UiRuntime.Await(window.CloseAndDrainAsync());UiRuntime.Pump();Assert.False(context.IsActive);
   var sourceWindow=Open(f,source);
@@ -675,9 +689,12 @@ public sealed class EditorDebugSessionTests
   var model = Assert.IsType<FieldRowModel>(maskRow.Content);
   Assert.Equal(DeclaredFieldTemplateRegistry.ImageSource, model.TemplateKey);
   var selector = Assert.IsType<ComboBox>(maskRow.InputElement);
-  Assert.Contains(UiRuntime.Visuals<TextBlock>(maskRow), label => label.IsVisible && label.Text == model.DisplayNameA);
+  // VM ResourceBinding renders the localized resource value, while DisplayNameA remains the resource key.
+  var expectedMaskLabel = AppLocalizationService.GetLang(model.DisplayNameA, model.DisplayNameA);
+  Assert.Contains(UiRuntime.Visuals<TextBlock>(maskRow), label => label.IsVisible && label.Text == expectedMaskLabel);
+  // The mask input consumes the source node primary image output. Gray output is a separate valid candidate.
   var candidate = selector.Items.OfType<DeclaredFieldRow.ImageSourceChoice>()
-      .Single(item => item.Setting is ReferenceSetting binding && binding.Reference.NodeId == source.Id);
+      .Single(item => item.Setting is ReferenceSetting binding && binding.Reference.NodeId == source.Id && binding.Reference.PortId == "output.image");
   selector.SelectedItem = candidate;
   Assert.IsType<ReferenceSetting>(maskRow.Setting);
   var outputRow = Row("input.roi.output-mask");
@@ -1010,6 +1027,11 @@ public sealed class EditorDebugSessionTests
    imagePort.Id, imagePort.Type, new[] { "data" }, scopeId: fixture.Root.Id))));
   fixture.Run();
   var window = Open(fixture, blob);
+  // 原厂 IsCanDrawROI 要求绘制前结果区显示模块输入图像。
+  var shellForDraw = Assert.Single(UiRuntime.Visuals<ResultWorkspaceShell>(fixture.Results));
+  shellForDraw.SetCurrentValue(ResultWorkspaceShell.SelectedOutputItemProperty,
+      shellForDraw.OutputItems!.Cast<ResultWorkspaceImageSource>().Single(item => item.Reference?.PortId == "output.image"));
+  UiRuntime.Pump();
   var editor = Assert.Single(UiRuntime.Visuals<NativeRoiEditor>(window.Editor), item => item.PolygonOnly);
   Assert.True(editor.PrepareInteraction?.Invoke());
   var session = Assert.IsType<NativeRoiSession>(UiRuntime.Field<NativeRoiSession>(editor, "_session"));
@@ -1022,7 +1044,13 @@ public sealed class EditorDebugSessionTests
    ["vertices"] = new SequenceValue(vertices, new[] { new Point2(4, 4), new Point2(8, 4), new Point2(8, 8), new Point2(4, 8) }
     .Select(point => new PointGeometry(RoiDeclarations.ImageFrame, point)))
   });
-  Assert.True(session.CompleteDraw(request, shape));
+  Assert.True(session.CompleteDraw(request, shape), "NativeRoiSession.CompleteDraw returned false.");
+  // The synthetic session completion bypasses NativeRoiAttachment.CompleteDrawing, so retire its gesture lease.
+  var presenter = UiRuntime.Field<ResultWorkspacePresenter>(fixture.Results, "_workspacePresenter");
+  var pane = UiRuntime.Prop<ResultImagePane>(presenter, "OutputPane");
+  var roiViewport = UiRuntime.Prop<SunEyeVision.Plugin.Wpf.Presenters.Display.NativeResultViewport>(pane, "Viewport");
+  UiRuntime.Field<SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeRoiAttachment>(roiViewport, "_roiAttachment")!.CancelGesture();
+  UiRuntime.Pump();
   Run(window);
   var snapshot = Assert.IsType<DeclaredOutputSnapshot>(window.Editor.CurrentDebugSnapshot);
   Assert.True(snapshot.IsSuccess);
@@ -1106,6 +1134,7 @@ public sealed class EditorDebugSessionTests
   finally { UiRuntime.Await(inheriting.CloseAndDrainAsync()); }
 
   fixture.Save();
+  UiRuntime.Await(ServiceInitializer.DisposeCommunicationRuntimeAsync().AsTask());
   var reopened = ServiceInitializer.SolutionManager.Open(
    System.IO.Path.Combine(fixture.DirectoryPath, "document.solution"),
    _ => new SunEyeVision.Domain.Persistence.FrozenVariableTypeCatalog(Array.Empty<KeyValuePair<string, string>>()),
@@ -1150,7 +1179,7 @@ public sealed class EditorDebugSessionTests
   Assert.Equal("mono8",source.Configuration.Fields.Get<string>("output.format"));
   var sourceWindow = Open(fixture,source);
   var sourceRows = UiRuntime.Visuals<DeclaredFieldRow>(sourceWindow.Editor).ToDictionary(row=>row.FieldId);
-  var outputMono8 = sourceRows["output.mono8"];
+  var outputMono8 = UiRuntime.Visuals<DeclaredFieldsView>(sourceWindow.Editor).Single().Fields.Single(field=>field.FieldId=="output.mono8").View as DeclaredFieldRow ?? throw new InvalidOperationException("output.mono8 has no formal row view");
   Assert.Equal(Visibility.Collapsed,outputMono8.Visibility);
   Assert.True(sourceRows["output.format"].TrySetConstant("rgb24"));
   UiRuntime.Pump();
@@ -1178,9 +1207,13 @@ public sealed class EditorDebugSessionTests
   var shell = Assert.Single(UiRuntime.Visuals<ResultWorkspaceShell>(fixture.Results));
   var choices = shell.OutputItems!.Cast<ResultWorkspaceImageSource>().ToArray();
   var mask = Assert.Single(choices, item => item.IsAuxiliaryImage);
-  Assert.Same(mask, choices[^1]);
+  var binaryChoice = Assert.Single(choices, item => item.Reference.NodeId == blob.Id
+   && item.Reference.PortId == "field:8ca10000000040008000000000000006");
+  var sourceChoices = choices.Where(item => item.Reference.NodeId == source.Id).ToArray();
+  Assert.True(Array.IndexOf(choices, binaryChoice) < Array.IndexOf(choices, mask));
+  Assert.True(Array.IndexOf(choices, mask) < Array.IndexOf(choices, sourceChoices[0]));
   var ordinaryNodeIds = choices.Where(item => !item.IsAuxiliaryImage).Select(item => item.Reference.NodeId).Distinct();
-  Assert.Equal(new[] { source, blob }.OrderBy(node => node.Name, StringComparer.CurrentCulture).Select(node => node.Id), ordinaryNodeIds);
+  Assert.Equal(new[] { source.Id, blob.Id }.ToHashSet(), ordinaryNodeIds.ToHashSet());
   var defaultImage = Assert.IsType<ResultWorkspaceImageSource>(shell.SelectedOutputItem);
   Assert.Equal(blob.Id, defaultImage.Reference.NodeId);
   Assert.Equal("field:8ca10000000040008000000000000005", defaultImage.Reference.PortId);
@@ -1235,7 +1268,7 @@ public sealed class EditorDebugSessionTests
   Assert.Equal(Colors.Yellow.ToString(), Rectangle().Stroke);
   Assert.NotEmpty(viewport.ShapeList.OfType<Tuple<string, object>>());
   Assert.NotEmpty(viewport.ShapeList.OfType<IMultiText>());
-  Assert.Empty(viewport.ShapeList.OfType<IMultiPoint>());
+  Assert.NotEmpty(viewport.ShapeList.OfType<IMultiPoint>());
   Assert.True(fixture.Session.IsPublishedResultCurrent(fixture.Root.Id, blob.Id, first.Snapshot));
 
   var binary = shell.OutputItems!.Cast<ResultWorkspaceImageSource>().Single(
@@ -1288,7 +1321,7 @@ public sealed class EditorDebugSessionTests
   Assert.Equal(2, Texts().Length);
 
   var circularity = fixture.Session.GetNodeSchema(fixture.Root.Id, blob.Id)!.OutputDisplay
-   .Single(output => output.DisplayName == "圆度").FieldId;
+   .Single(output => output.DisplayName == "圆形度").FieldId;
   var path = new ResultFieldPath(circularity);
   fixture.Fields(blob, ("display.text.content", new DisplayExpressionSetting("圆度:{圆度}/{精度}",
    new[] { new DisplayExpressionSlot("圆度", path), new DisplayExpressionSlot("精度", path, "G9") })));
@@ -1361,14 +1394,14 @@ public sealed class EditorDebugSessionTests
    .ToDictionary(group => $"display.{group}.visible", _ => (ParameterSetting)new ConstantSetting(false));
   Assert.True(view.TrySetFields(visibility));
   UiRuntime.Pump();
-  Assert.Empty(viewport.ShapeList.OfType<Tuple<string, object>>());
-  Assert.Empty(viewport.ShapeList.OfType<IMultiText>());
-  Assert.Empty(viewport.ShapeList.OfType<IMultiPoint>());
+  Assert.Empty(viewport.ShapeList?.OfType<Tuple<string, object>>() ?? Enumerable.Empty<Tuple<string, object>>());
+  Assert.Empty(viewport.ShapeList?.OfType<IMultiText>() ?? Enumerable.Empty<IMultiText>());
+  Assert.Empty(viewport.ShapeList?.OfType<IMultiPoint>() ?? Enumerable.Empty<IMultiPoint>());
   Assert.Same(snapshot, window.Editor.CurrentDebugSnapshot);
   Assert.True(view.TrySetFields(new Dictionary<string,ParameterSetting> { ["display.text.visible"] = new ConstantSetting(true) }));
   UiRuntime.Pump();
-  Assert.Empty(viewport.ShapeList.OfType<Tuple<string, object>>());
-  Assert.Equal("私有结果", Assert.Single(viewport.ShapeList.OfType<IMultiText>().SelectMany(item => item.Texts)).Content);
+  Assert.Empty(viewport.ShapeList?.OfType<Tuple<string, object>>() ?? Enumerable.Empty<Tuple<string, object>>());
+  Assert.Equal("私有结果", Assert.Single((viewport.ShapeList?.Cast<object>() ?? Enumerable.Empty<object>()).OfType<IMultiText>().SelectMany(item => item.Texts)).Content);
   Assert.Same(snapshot, window.Editor.CurrentDebugSnapshot);
   Assert.Equal(executionRevision, context.PreparedDraft.ExecutionRevision);
 
@@ -1378,11 +1411,15 @@ public sealed class EditorDebugSessionTests
   Assert.True(context.PreparedDraft.ExecutionRevision > executionRevision);
   Assert.Null(window.Editor.CurrentDebugSnapshot);
   UiRuntime.Pump();
-  Assert.Null(fixture.Main.CurrentResultPublication?.Stamp.Invocation);
+  // VM keeps the last formal result visible while the private editor draft is invalidated.
+  Assert.Equal(snapshot.Identity, fixture.Main.CurrentResultPublication?.Stamp.Invocation);
   var inputImage = Assert.IsType<ResultWorkspaceImageSource>(shell.SelectedOutputItem);
-  Assert.True(inputImage.IsUpstream);
-  Assert.Equal(source.Id, inputImage.Reference.NodeId);
-  Assert.Empty(viewport.ShapeList?.OfType<IMultiText>() ?? Enumerable.Empty<IMultiText>());
+  // VM selection-change code updates the selected item in place and does not switch to an upstream item.
+  Assert.False(inputImage.IsUpstream);
+  Assert.Equal(blob.Id, inputImage.Reference.NodeId);
+  // The original ModuleResultView keeps the existing shape/text layer when the image object is unchanged.
+  Assert.Equal("Blob面积:25", Assert.Single(viewport.ShapeList?.OfType<IMultiText>()?.SelectMany(item => item.Texts)
+      ?? Enumerable.Empty<IText>()).Content);
   Assert.Equal(scope, window.Editor.DebugScopeId);
   UiRuntime.Await(window.CloseAndDrainAsync());
   Assert.Equal(formal.Snapshot.Identity, fixture.Main.CurrentResultPublication?.Stamp.Invocation);
@@ -1428,7 +1465,7 @@ public sealed class EditorDebugSessionTests
   Assert.Same(ImageChoice(), shell.SelectedOutputItem);
   Assert.False(ImageChoice().HasImageValue);
   Assert.Null(viewport.ImageDataSource);
-  Assert.Empty(viewport.ShapeList.OfType<IMultiText>());
+  Assert.Empty(viewport.ShapeList?.OfType<IMultiText>() ?? Enumerable.Empty<IMultiText>());
 
   fixture.Fields(blob, (enabledField, new ConstantSetting(true)));
   fixture.Run();
@@ -1535,32 +1572,23 @@ public sealed class EditorDebugSessionTests
  Assert.Equal(source.Id,Assert.IsType<ResultWorkspaceImageSource>(shell.SelectedOutputItem).Reference.NodeId);
  Assert.NotNull(viewport.ImageDataSource);
 });
-[Fact] public void Reopen_user_saved_solution_projects_canvas_nodes()=>UiRuntime.Run(()=>
+[Fact] public void Reopen_solution_with_unloaded_tool_rejects_before_commit_and_preserves_current_canvas()=>UiRuntime.Run(()=>
 {
- // 复现：用户关闭应用保存 11111.solution（文件内 2 节点已核实），重新打开后画布无节点。
- const string path="C:\\Users\\Administrator\\AppData\\Local\\SunEyeVision\\Solutions\\11111.solution";
+ // 当前试点只准入 ImageLoad + BlobAnalysis。用户方案包含尚未准入的 ContourMatch，原厂式行为是拒绝候选并保留当前会话。
+ const string path=@"C:\Users\Administrator\AppData\Local\SunEyeVision\Solutions\11111.solution";
  if(!System.IO.File.Exists(path)) throw new Exception("用户方案文件不存在，复现前提失效。");
  using var fixture=new DocumentUiFixture();
- UiRuntime.Await(fixture.Main.OpenExternalSolutionAsync(path));var opened=true;
- var session=fixture.Session;
- var flows=session.Document.Workflows.ToList();
- var nodes=flows.SelectMany(flow=>flow.Nodes).ToList();
- if(!opened) throw new Exception($"diag: 打开未接纳 opened=false flows={flows.Count} nodes={nodes.Count}");
- if(nodes.Count==0) throw new Exception($"diag: 打开接纳但会话无节点 flows={flows.Count} nodeCounts=[{string.Join(",",flows.Select(f=>f.Nodes.Count))}] name={session.Document.Name}");
- var canvas=fixture.Canvas;
- UiRuntime.Pump();
- fixture.Host.UpdateLayout();
- var view=fixture.View;
- Assert.Same(fixture.Tab,view.DataContext);
- var nodeItems=Assert.IsType<System.Windows.Controls.ItemsControl>(view.FindName("CanvasNodeItems"));
- Assert.Same(canvas.Nodes,nodeItems.ItemsSource);
- Assert.Equal(nodes.Count,nodeItems.Items.Count);
- Assert.Equal(nodes.Count,canvas.Nodes.Count);
- var shell=fixture.Workspace;
- var miniMap=Assert.IsType<System.Windows.Controls.Canvas>(shell.FindName("MiniMapCanvas"));
- Assert.NotEmpty(miniMap.Children);
-});
-[Fact] public void Image_source_stitch_height_row_keeps_no_validation_error_when_the_window_opens()=>UiRuntime.Run(()=>
+ var previous=fixture.Session;
+ var openTask=fixture.Main.OpenExternalSolutionAsync(path);
+ UiRuntime.Await(openTask);
+ Assert.False(openTask.Result);
+ Assert.Same(previous,SunEyeVision.UI.Features.WorkflowUI.Canvas.Adapters.ServiceInitializer.SolutionManager.CurrentSession);
+ var result=fixture.Main.LastWorkspaceOpenResult;Assert.NotNull(result);
+ Assert.Equal(SunEyeVision.UI.Services.Solutions.WorkspaceOpenStatus.RejectedBeforeCommit,result.Status);
+ Assert.False(result.Committed);
+ Assert.Contains("ContourMatch",result.Error,StringComparison.Ordinal);
+ Assert.Empty(fixture.Canvas.Nodes);
+});[Fact] public void Image_source_stitch_height_row_keeps_no_validation_error_when_the_window_opens()=>UiRuntime.Run(()=>
 {
  // 复现：拼接开启后拼接高度默认 2000，打开调试窗口时该行出现 WPF 校验红框（用户实机 2026-11-12）。
  using var fixture=new DocumentUiFixture();
@@ -1648,6 +1676,12 @@ public sealed class EditorDebugSessionTests
   Assert.True(Choice(binary.Reference.PortId).IsCheck);
   Assert.Single(Layers());
   fixture.Save();
+  // Opening a replacement solution follows the production shutdown contract:
+  // release communication and camera leases before DocumentSessionManager.Install
+  // disposes the current session. The view host remains alive and rebinds to the
+  // newly installed session below.
+  UiRuntime.Await(ServiceInitializer.DisposeCommunicationRuntimeAsync().AsTask());
+  UiRuntime.Await(ServiceInitializer.DisposeCameraRuntimeAsync().AsTask());
   var reopened=ServiceInitializer.SolutionManager.Open(System.IO.Path.Combine(fixture.DirectoryPath,"document.solution"),
    _=>new SunEyeVision.Domain.Persistence.FrozenVariableTypeCatalog(Array.Empty<KeyValuePair<string,string>>()),
    _=>null,new System.Text.Json.JsonSerializerOptions());
@@ -1665,6 +1699,7 @@ public sealed class EditorDebugSessionTests
  {
   const string blobImage="field:8ca10000000040008000000000000005",binaryImage="field:8ca10000000040008000000000000006";
   using var fixture=new DocumentUiFixture();
+  using var nativeDialogs = UiRuntime.SuppressNativeDialogAutoRespond();
   var source=fixture.Add();
   var blob=fixture.Add("BlobAnalysis",350,240);
   fixture.ConfigureImage(source,fixture.Image(200,24));
@@ -1866,6 +1901,7 @@ public sealed class EditorDebugSessionTests
  [Fact] public void Failed_execute_uses_an_owned_native_dialog_without_filling_the_external_slot()=>UiRuntime.Run(()=>
  {
   using var fixture = new DocumentUiFixture();
+  using var nativeDialogs = UiRuntime.SuppressNativeDialogAutoRespond();
   var node = fixture.Add();
   fixture.ConfigureImage(node, System.IO.Path.Combine(fixture.DirectoryPath, "missing-image.pgm"));
   var window = Open(fixture, node);

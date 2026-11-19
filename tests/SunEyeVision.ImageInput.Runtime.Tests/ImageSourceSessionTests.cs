@@ -13,7 +13,7 @@ using SunEyeVision.Plugin.Contracts.Acquisition;
 using Xunit;
 namespace SunEyeVision.ImageInput.Runtime.Tests;
 [Collection("正式WPF owner")]
-public sealed class ImageSourceSessionTests
+public sealed class ImageSourceModuleTests
 {
  [Fact] public void Accepted_source_events_reset_counts_even_without_intermediate_runs_and_private_rebase_preserves_them()=>RuntimeHost.Run(()=>
  {

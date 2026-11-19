@@ -63,7 +63,10 @@ internal static class UiRuntime
         };
     }
     internal static string ProductRoot => Path.GetFullPath(typeof(UiRuntime).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().Single(item=>item.Key=="HostDebugRoot").Value!);
-    internal static string Cases => Path.GetFullPath(Path.Combine(ProductRoot,"..","..","_validation","UiSessionTests"));
+    internal static string Cases
+        => Environment.GetEnvironmentVariable("SUNEYE_TEST_CASES") is { Length: > 0 } configured
+            ? Path.GetFullPath(configured)
+            : Path.GetFullPath(Path.Combine(ProductRoot,"..","..","_validation","UiSessionTests"));
     internal static DesktopToolAdmission Admission
     {
         get
@@ -87,6 +90,17 @@ internal static class UiRuntime
     {
         var frame=new DispatcherFrame();Dispatcher.CurrentDispatcher.BeginInvoke(priority,new Action(()=>frame.Continue=false));Dispatcher.PushFrame(frame);
     }
+    internal static IDisposable SuppressNativeDialogAutoRespond()
+    {
+        var previous = SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls.NativeMessageBox.TestAutoRespond;
+        SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls.NativeMessageBox.TestAutoRespond = null;
+        return new CallbackDisposable(() => SunEyeVision.Plugin.Wpf.Native.Display.PresentationControls.NativeMessageBox.TestAutoRespond = previous);
+    }
+    private sealed class CallbackDisposable(Action release) : IDisposable
+    {
+        private Action? _release = release;
+        public void Dispose() => Interlocked.Exchange(ref _release, null)?.Invoke();
+    }
     internal static void Await(Task task)
     {
         Await(task,DispatcherPriority.ApplicationIdle);
@@ -103,7 +117,7 @@ internal static class UiRuntime
         var deadline=DateTime.UtcNow.AddSeconds(35);
         while(!window.Editor.CanDebug)
         {
-            if(DateTime.UtcNow>deadline)throw new TimeoutException("实际参数页未进入可调试状态。");
+            if(DateTime.UtcNow>deadline)throw new TimeoutException($"实际参数页未进入可调试状态。诊断={window.Editor.InputCompositionDiagnostic}");
             Pump(DispatcherPriority.SystemIdle);Thread.Sleep(1);
         }
     }
@@ -188,3 +202,4 @@ internal sealed class DocumentUiFixture:IDisposable
         Host.Content=null;Host.Close();ServiceInitializer.SolutionManager.CloseCurrent(discardPendingEdits:true);UiRuntime.Pump();
     }
 }
+

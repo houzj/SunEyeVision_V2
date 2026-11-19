@@ -10,13 +10,13 @@ using Xunit;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Tests;
 
-public sealed class BlobSessionChainRegressionTests
+public sealed class BlobAlgorithmChainRegressionTests
 {
     [Fact]
     public async Task Drawn_and_subscribed_masks_keep_separate_count_limits_through_execution()
     {
         using var resources = new FrozenOutputResources();
-        await using var session = new BlobSession();
+        await using var session = new BlobAlgorithm();
         var image = resources.CreateGray8(24, 24, Enumerable.Repeat((byte)200, 24 * 24).ToArray());
         var points = new[] { new Point2(2, 2), new Point2(8, 2), new Point2(2, 8) };
         var shape = new RecordValue(BlobLocalRoi.ShapeType, new Dictionary<string, object?>
@@ -70,7 +70,7 @@ public sealed class BlobSessionChainRegressionTests
         const int side = 5;
         using var inputs = new FrozenOutputResources();
         using var outputs = new FrozenOutputResources();
-        await using var session = new BlobSession();
+        await using var session = new BlobAlgorithm();
         var image = inputs.CreateGray8(side, side, Enumerable.Repeat((byte)200, side * side).ToArray());
         var white = Enumerable.Repeat((byte)255, side * side).ToArray();
         var settings = Base(BlobSegmentationMode.SingleThreshold) with { Threshold = 100, Type = BlobThresholdMode.Binary };
@@ -129,7 +129,7 @@ public sealed class BlobSessionChainRegressionTests
     public async Task Published_detection_annulus_is_consumable_by_the_next_blob(string kind)
     {
         using var resources = new FrozenOutputResources();
-        await using var session = new BlobSession();
+        await using var session = new BlobAlgorithm();
         var image = resources.CreateGray8(32, 32, Enumerable.Repeat((byte)200, 32 * 32).ToArray());
         var ring = new RecordValue(BlobLocalRoi.ShapeType, new Dictionary<string, object?>
         {
@@ -163,7 +163,7 @@ public sealed class BlobSessionChainRegressionTests
     {
         using var inputs=new FrozenOutputResources();
         using var outputs=new FrozenOutputResources();
-        await using var session=new BlobSession();
+        await using var session=new BlobAlgorithm();
         var image=inputs.CreateGray8(8,8,Enumerable.Repeat((byte)200,64).ToArray());
         var shape=new RecordValue(BlobLocalRoi.ShapeType,new Dictionary<string,object?>
         {
@@ -225,7 +225,7 @@ public sealed class BlobSessionChainRegressionTests
     public async Task Corrected_annulus_keeps_the_declaration_only_when_its_radii_remain_circular(bool uniform)
     {
         using var resources = new FrozenOutputResources();
-        await using var session = new BlobSession();
+        await using var session = new BlobAlgorithm();
         var image = resources.CreateGray8(32, 32, Enumerable.Repeat((byte)200, 1024).ToArray());
         var shape = new RecordValue(BlobLocalRoi.ShapeType, new Dictionary<string, object?>
         {
@@ -283,7 +283,7 @@ public sealed class BlobSessionChainRegressionTests
     {
         using var inputs=new FrozenOutputResources();
         using var outputs=new FrozenOutputResources();
-        await using var session=new BlobSession();
+        await using var session=new BlobAlgorithm();
         var image=inputs.CreateGray8(4,4,Enumerable.Repeat((byte)200,16).ToArray());
         var settings=Base(BlobSegmentationMode.SingleThreshold) with {FindParameters=new BlobFindParameters {BlobContourType=mode}};
         using var output=session.Execute(settings,image,outputs);
@@ -332,7 +332,7 @@ public sealed class BlobSessionChainRegressionTests
     {
         using var inputs=new FrozenOutputResources();
         using var outputs=new FrozenOutputResources();
-        await using var session=new BlobSession();
+        await using var session=new BlobAlgorithm();
         var pixels=Enumerable.Repeat((byte)200,16).ToArray();pixels[5]=0;
         var image=inputs.CreateGray8(4,4,pixels);
         var maskPixels=new byte[]{0,0,0,0,0,1,127,0,0,255,1,0,0,0,0,0};
@@ -368,7 +368,7 @@ public sealed class BlobSessionChainRegressionTests
     {
         using var inputs=new FrozenOutputResources();
         using var outputs=new FrozenOutputResources();
-        await using var session=new BlobSession();
+        await using var session=new BlobAlgorithm();
         var image=inputs.CreateGray8(6,6,Enumerable.Repeat((byte)200,36).ToArray());
         var pixels=new byte[36];
         for(var y=1;y<=4;y++)
@@ -388,7 +388,7 @@ public sealed class BlobSessionChainRegressionTests
     public async Task Published_polygon_mask_can_be_inherited_by_the_next_blob()
     {
         using var resources=new FrozenOutputResources();
-        await using var session=new BlobSession();
+        await using var session=new BlobAlgorithm();
         var image=resources.CreateGray8(8,8,Enumerable.Repeat((byte)200,64).ToArray());
         var vertices=new SequenceValue(TypeRef.SequenceOf(BlobLocalRoi.PointType),
             new[]{BlobLocalRoi.Point(2,2),BlobLocalRoi.Point(4,2),BlobLocalRoi.Point(4,4),BlobLocalRoi.Point(2,4)});
@@ -628,7 +628,7 @@ public sealed class BlobSessionChainRegressionTests
     {
         using var inputs = new FrozenOutputResources();
         using var outputs = new FrozenOutputResources();
-        await using var session = new BlobSession();
+        await using var session = new BlobAlgorithm();
         var mask = inputs.CreateGray8(3, 3, new byte[] { 0, 255, 0, 255, 0, 255, 0, 255, 0 });
         var settings = Base(mode) with
         {
@@ -724,7 +724,7 @@ public sealed class BlobSessionChainRegressionTests
         var actualOutput=Assert.IsType<BlobOutput>(execution.Run.NodeResults[host.Node.Id].Result!.Output);
         Assert.Equal(100,actualOutput.ThresholdMinUsed); Assert.Equal(150,actualOutput.ThresholdMaxUsed);
         using var directResources = new FrozenOutputResources();
-        var directSession = new BlobSession();
+        var directSession = new BlobAlgorithm();
         using var direct = directSession.Execute(settings,host.Input,directResources);
         Assert.Equal((byte)5,direct.BinaryImage!.CopyPixels()[149]);
         directSession.DisposeAsync().AsTask().GetAwaiter().GetResult();        var actual=reader.Values!.Get<RecordValue>(BlobSchema.Field(6)).Get<IReadOnlyImage>("data").CopyPixels();
@@ -793,7 +793,7 @@ public sealed class BlobSessionChainRegressionTests
     public async Task Uniform_blob_publishes_zero_gray_contrast()
     {
         using var resources=new FrozenOutputResources();
-        await using var session=new BlobSession();
+        await using var session=new BlobAlgorithm();
         var pixels=Enumerable.Repeat((byte)140,16).ToArray();
         var input=resources.CreateGray8(4,4,pixels);
         using var output=session.Execute(Base(BlobSegmentationMode.None),input,resources);
@@ -962,7 +962,7 @@ public sealed class BlobSessionChainRegressionTests
         var pixels=Enumerable.Range(0,256).Select(i=>(byte)i).ToArray();
         using var inputOwner=new FrozenOutputResources();
         var input=inputOwner.CreateGray8(256,1,pixels);
-        var directSession=new BlobSession();
+        var directSession=new BlobAlgorithm();
         using var noBoundaryResources=new FrozenOutputResources();
         using var boundaryResources=new FrozenOutputResources();
         using var noBoundary=directSession.Execute(settings,input,noBoundaryResources,requested:BlobOutputRequest.None);

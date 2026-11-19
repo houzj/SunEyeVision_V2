@@ -27,7 +27,7 @@
     <ProjectReference Include="../../src/Application/SunEyeVision.Application.csproj" />
     <ProjectReference Include="../../src/Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" />
     <!-- Runtime角色组件唯一部署宿主根，由EnsureComponentLoaded精确加载，不copy-local。 -->
-    <ProjectReference Include="../../tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj">
+    <ProjectReference Include="../../tools/SunEyeVision.Tool.ImageSource/SunEyeVision.Tool.ImageSource.csproj">
       <Private>false</Private>
     </ProjectReference>
   </ItemGroup>

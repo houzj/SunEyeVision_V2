@@ -3,7 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="../../src/Application/SunEyeVision.Application.csproj" />
     <ProjectReference Include="../../src/Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" />
-    <ProjectReference Include="../../tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.ImageSource.Runtime.csproj" />
-    <ProjectReference Include="../../tools/SunEyeVision.BlobAnalysis/Runtime/SunEyeVision.BlobAnalysis.Runtime.csproj" />
+    <ProjectReference Include="../../tools/SunEyeVision.ImageSource/Runtime/SunEyeVision.Tool.ImageSource.csproj" />
+    <ProjectReference Include="../../tools/SunEyeVision.Tool.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.csproj" />
   </ItemGroup>
 </Project>

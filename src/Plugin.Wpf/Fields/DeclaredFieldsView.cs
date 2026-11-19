@@ -219,7 +219,7 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
   if(!_rows.TryGetValue(fieldId,out var anchor))
   {
    if(!_fieldsById.ContainsKey(fieldId))throw new ArgumentException("附加内容引用未知字段。");
-   QueueContent(content);QueuePageAction(fieldId,()=>{_pendingContent.Remove(content);AddAfterField(fieldId,content,condition,followAnchorVisibility,insertBefore);});return;
+   QueueContent(content);QueuePageAction(fieldId,()=>{_pendingContent.Remove(content);AddAfterField(fieldId,content,condition,followAnchorVisibility,insertBefore,groupOverride);});return;
   }
   ValidateCondition(condition);
   if(!_positions.TryGetValue(anchor,out var position))throw new InvalidOperationException("字段不属于当前原参数行宿主。");

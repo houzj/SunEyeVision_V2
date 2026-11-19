@@ -182,6 +182,8 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
         var schema=draft.Schema;var values=draft.CaptureFields();
         if(schema.Presentation is null)throw new ArgumentException("Runtime settings require explicit presentation metadata.");
         var ports=schema.Inputs.ToDictionary(port=>port.Id,StringComparer.Ordinal);
+        // 引用式呈现字段（原厂 ButtonSelecter 一类）的端口由工具执行契约声明，这里补入以便建行。
+        foreach(var presentationPort in options.PresentationPorts??Array.Empty<Port>())ports.TryAdd(presentationPort.Id,presentationPort);
         var inputPage=options.InputAfterField is {} inputAnchor
             ?schema.Presentation.Fields.FirstOrDefault(field=>field.FieldId==inputAnchor) is {} anchorField?anchorField.Layout?.Page??anchorField.Group:null
             :options.InputSection is {} inputSection

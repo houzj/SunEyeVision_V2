@@ -1,0 +1,7 @@
+refactor(imagesource): 编辑器源码并入主工程目录
+
+把 ImageSource.Wpf 的六个源文件（编辑器工厂、设计时样本、参数页控件与其视图）
+移到 ImageSource/Wpf/ 子目录，删除独立工程文件及原目录。
+主工程不再跨目录 include，SDK 默认通配即可覆盖源码与 XAML。
+
+验证：图像源 45 项、Blob 152 项全部通过；全量 Release 构建 0 错误。

@@ -15,12 +15,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- 编辑器工程的源码并入本程序集，与 Blob 分析保持同一形态。 -->
-    <Compile Include="../SunEyeVision.Tool.ImageSource.Wpf/**/*.cs" Exclude="../SunEyeVision.Tool.ImageSource.Wpf/bin/**;../SunEyeVision.Tool.ImageSource.Wpf/obj/**" />
-    <Page Include="../SunEyeVision.Tool.ImageSource.Wpf/**/*.xaml" Exclude="../SunEyeVision.Tool.ImageSource.Wpf/bin/**;../SunEyeVision.Tool.ImageSource.Wpf/obj/**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Include="Resources/ImageSourceParameters.xml" LogicalName="ImageSourceParameters.xml" />
     <ProjectReference Include="../../src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj" />
     <ProjectReference Include="../../src/Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" />

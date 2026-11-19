@@ -38,6 +38,9 @@
   </Folder>
   <Folder Name="/Tools/MachineLearningClassifierComponents/">
   </Folder>
+  <Folder Name="/Tests/ControlNamingProbe/">
+    <Project Path="tests/ControlNamingProbe/ControlNamingProbe.csproj" />
+  </Folder>
   <Folder Name="/Tests/SunEyeVision.Tools.Find.Tests/">
     <Project Path="tests/SunEyeVision.Tools.Find.Tests/SunEyeVision.Tools.Find.Tests.csproj" />
   </Folder>

@@ -349,16 +349,38 @@ namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Views
 
 /// <summary>One private formal-input owner; the two sessions are read-only projections of that same value.</summary>
 /// <summary>ROI 文档的操作与历史：只处理 Blob 数据结构，不碰编辑器、帧和会话。</summary>
-internal sealed class BlobRoiDocument
+internal sealed class BlobRoiDocument : INativeRoiEditDocument
 {
+    private readonly DeclaredInputFieldsView _inputs;
     private readonly Stack<RecordValue> _undo = new(), _redo = new();
+
+    public BlobRoiDocument(DeclaredInputFieldsView inputs) => _inputs = inputs;
+
+    public IReadOnlyList<NativeRoiEditGroup> Groups { get; } = Array.AsReadOnly(new[]
+    {
+        new NativeRoiEditGroup(BlobLocalRoi.Inspection, "形状", false,
+            BlobLocalRoi.MaximumLocalInspectionCount, BlobLocalRoi.FullDomain),
+        new NativeRoiEditGroup(BlobLocalRoi.Mask, "屏蔽区", true,
+            BlobLocalRoi.MaximumLocalMaskCount, BlobLocalRoi.None)
+    });
+
+    public RecordValue Empty => BlobLocalRoi.Empty;
+    public void Write(RecordValue document) =>
+        _inputs.WriteUnpresentedInput(BlobLocalRoi.InputId, new ConstantSetting(document));
+    public IRoiDocument View(RecordValue document) => new BlobRoiDocumentView(document);
+    public RecordValue ToNative(RecordValue geometry) => BlobLocalRoiProjection.ToNative(geometry);
+    public RecordValue FromNative(RecordValue geometry, RecordValue? previous) =>
+        BlobLocalRoiProjection.FromNative(geometry, previous);
+    public bool Same(RecordValue left, RecordValue right) => BlobLocalRoi.Same(left, right);
+    public string PreviewMode() =>
+        BlobRoiInheritance.ReadMode(_inputs.ReadUnpresentedInput(BlobRoiInheritance.ModeId));
 
     public bool CanUndo => _undo.Count > 0;
     public bool CanRedo => _redo.Count > 0;
 
-    public static RecordValue Read(DeclaredInputFieldsView inputs)
+    public RecordValue Read()
     {
-        var setting = inputs.ReadUnpresentedInput(BlobLocalRoi.InputId);
+        var setting = _inputs.ReadUnpresentedInput(BlobLocalRoi.InputId);
         var value = setting switch
         {
             UnsetSetting => BlobLocalRoi.Empty,
@@ -490,8 +512,9 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
     private readonly Dictionary<string,Guid> _selectedRoiIds=new();
     private readonly Dictionary<NativeRoiSession,Action> _retirementHandlers=new();
     private bool _recordingRetirement;
-    private readonly Dictionary<string,Guid> _scopes=new(){{BlobLocalRoi.Inspection,Guid.NewGuid()},{BlobLocalRoi.Mask,Guid.NewGuid()}};
-    private readonly BlobRoiDocument _document=new();
+    private readonly Dictionary<string,Guid> _scopes=new(){{_primaryGroup,Guid.NewGuid()},{_secondaryGroup,Guid.NewGuid()}};
+    private readonly BlobRoiDocument _document;
+    private const string _primaryGroup=BlobLocalRoi.Inspection,_secondaryGroup=BlobLocalRoi.Mask;
     private readonly Dictionary<string,NativeRoiPendingInput> _pending=new();
     private string? _unrestoredInput;
     private NativeRoiFrameLease? _frame;
@@ -512,22 +535,22 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
     public event Action? Changed;
     internal BlobLocalRoiOwner(DeclaredInputFieldsView inputs,NativeRoiUiDraftControls controls,NativeRoiFrameSource? source,Func<string?>? drawBlockReason=null)
     {
-        _inputs=inputs;_controls=controls;_source=source;_drawBlockReason=drawBlockReason;_observed=Read();
+        _inputs=inputs;_controls=controls;_source=source;_drawBlockReason=drawBlockReason;_document=new(inputs);_observed=Read();
         _imageField=inputs.Fields.Single(field=>field.FieldId==BlobTool.ImageInput);
         try
         {
-            foreach(var group in new[]{BlobLocalRoi.Inspection,BlobLocalRoi.Mask})
+            foreach(var group in new[]{_primaryGroup,_secondaryGroup})
             {
-                var editor=new NativeRoiEditor{Title=group==BlobLocalRoi.Inspection?"形状":"屏蔽区",PolygonOnly=group==BlobLocalRoi.Mask,
+                var editor=new NativeRoiEditor{Title=group==_primaryGroup?"形状":"屏蔽区",PolygonOnly=group==_secondaryGroup,
                     ToolTip="先运行图像来源，再编辑区域。"};
-                editor.PrepareInteraction=()=>Activate(group);editor.InteractionFailureText=()=>_drawBlockReason?.Invoke()??(string.IsNullOrWhiteSpace(Error)?null:Error);editor.AllowUnboundFullDomain=group==BlobLocalRoi.Inspection;editor.UnboundFullDomain=BlobLocalRoi.Coverage(_observed,group)==BlobLocalRoi.FullDomain;editor.PendingChanged+=Notify;_editors.Add(group,editor);editor.Bind(null);
+                editor.PrepareInteraction=()=>Activate(group);editor.InteractionFailureText=()=>_drawBlockReason?.Invoke()??(string.IsNullOrWhiteSpace(Error)?null:Error);editor.AllowUnboundFullDomain=group==_primaryGroup;editor.UnboundFullDomain=BlobLocalRoi.Coverage(_observed,group)==BlobLocalRoi.FullDomain;editor.PendingChanged+=Notify;_editors.Add(group,editor);editor.Bind(null);
             }
-            controls.BindLocalEditors(_editors[BlobLocalRoi.Inspection],_editors[BlobLocalRoi.Mask]);
+            controls.BindLocalEditors(_editors[_primaryGroup],_editors[_secondaryGroup]);
             controls.Changed+=OnModesChanged;
             _imageField.Changed+=RefreshFrame;
             if(source is not null){source.Changed+=RefreshFrame;source.FrameReplaced+=RebindCurrentFrame;}
             if(source is not null)source.InputViewportClicked+=OnInputViewportClicked;
-            _localInspection=_controls.IsLocalDrawing(BlobLocalRoi.Inspection);_localMask=_controls.IsLocalDrawing(BlobLocalRoi.Mask);
+            _localInspection=_controls.IsLocalDrawing(_primaryGroup);_localMask=_controls.IsLocalDrawing(_secondaryGroup);
             _observedPreviewMode=PreviewMode();InitializePreview();
         }
         catch(Exception failure)
@@ -539,16 +562,16 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
     }
 
     private void Notify(){if(!_disposed)Changed?.Invoke();}
-    private RecordValue Read()=>BlobRoiDocument.Read(_inputs);
+    private RecordValue Read()=>_document.Read();
     private RoiEditSnapshot Snapshot(string editableGroup)
     {
         var root=Read();
-        if(!BlobLocalRoi.Same(root,_observed))throw new InvalidOperationException("本地区域已被其他编辑替换，请重新打开窗口。");
+        if(!_document.Same(root,_observed))throw new InvalidOperationException("本地区域已被其他编辑替换，请重新打开窗口。");
         return Project(root,editableGroup,_projectionRevision,_frame!.Image.Frame);
     }
     private RoiEditSnapshot Project(RecordValue root,string editableGroup,long revision,ImageFrameAddress frame)
         => RoiDocumentProjection.Project(new BlobRoiDocumentView(root),editableGroup,_scopes[editableGroup],revision,frame,
-            _controls.IsLocalDrawing,BlobLocalRoiProjection.ToNative);
+            _controls.IsLocalDrawing,_document.ToNative);
     private bool FrameCurrent(long generation)
     {
         // VM keeps the ROI objects attached to the module result view while
@@ -570,13 +593,13 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
             var frame=_source?.Borrow(BlobTool.ImageInput,interactive);
             if(frame is null){Error=_drawBlockReason?.Invoke()??"请先运行并选择图像来源。";Notify();return;}
             if(_disposed||generation!=_generation||!frame.IsCurrent){frame.Dispose();return;}_frame=frame;
-            foreach(var group in new[]{BlobLocalRoi.Inspection,BlobLocalRoi.Mask})
+            foreach(var group in new[]{_primaryGroup,_secondaryGroup})
             {
                 NativeRoiSession? session=null;
                 session=new NativeRoiSession(frame.Image,()=>Snapshot(group),(stamp,proposal)=>Accept(ProposalGroup(proposal,session!.DrawingGroup),stamp,proposal),()=>FrameCurrent(generation),
-                    ()=>new(_document.CanUndo,_document.CanRedo),group,isAvoid:group==BlobLocalRoi.Mask,
+                    ()=>new(_document.CanUndo,_document.CanRedo),group,isAvoid:group==_secondaryGroup,
                     canDraw:target=>target==group&&_controls.IsLocalDrawing(group),canSetCoverage:target=>target==group&&_controls.IsLocalDrawing(group),
-                    maximumDrawItems:group==BlobLocalRoi.Inspection?BlobLocalRoi.MaximumLocalInspectionCount:BlobLocalRoi.MaximumLocalMaskCount);
+                    maximumDrawItems:group==_primaryGroup?BlobLocalRoi.MaximumLocalInspectionCount:BlobLocalRoi.MaximumLocalMaskCount);
                 _sessions.Add(group,session);
                 var observedSession=session;
                 observedSession.Changed+=()=>SyncSelection(observedSession);
@@ -650,14 +673,14 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
             finally{_refreshing=false;}
         }
         if(_controls.IsVisible&&_controls.IsLoaded&&_sessions.Count==0
-            &&(_controls.IsLocalDrawing(BlobLocalRoi.Inspection)||_controls.IsLocalDrawing(BlobLocalRoi.Mask)))
+            &&(_controls.IsLocalDrawing(_primaryGroup)||_controls.IsLocalDrawing(_secondaryGroup)))
             AcquireFrame(interactive:false);
     }
     private void RebindCurrentFrame()
     {
         if(_disposed||_refreshing||_accepting||_activating)return;
         if(!_controls.IsLoaded||!_controls.IsVisible)return;
-        var reacquire=_controls.IsLocalDrawing(BlobLocalRoi.Inspection)||_controls.IsLocalDrawing(BlobLocalRoi.Mask);
+        var reacquire=_controls.IsLocalDrawing(_primaryGroup)||_controls.IsLocalDrawing(_secondaryGroup);
         if(_active is {} active)_pendingActivate=active;
         _refreshing=true;
         try
@@ -726,8 +749,8 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
     {
         if(_disposed||_refreshing||_accepting||_activating)return;
         if(_active is not null)return;
-        var group=_controls.IsLocalDrawing(BlobLocalRoi.Inspection)?BlobLocalRoi.Inspection
-            :_controls.IsLocalDrawing(BlobLocalRoi.Mask)?BlobLocalRoi.Mask:null;
+        var group=_controls.IsLocalDrawing(_primaryGroup)?_primaryGroup
+            :_controls.IsLocalDrawing(_secondaryGroup)?_secondaryGroup:null;
         if(group is null)return;
         if(!Activate(group)&&_drawBlockReason?.Invoke() is not null)
             _editors[group].ShowInteractionFeedback();
@@ -750,7 +773,7 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
         _accepting=true;
         try
         {
-            _inputs.WriteUnpresentedInput(BlobLocalRoi.InputId,new ConstantSetting(next));
+            _document.Write(next);
             _observed=next;++Revision;++_projectionRevision;var after=Project(next,group,_projectionRevision,expected.Frame);
             var generation=_generation;
             var actions=_sessions.Where(pair=>pair.Key!=group).Select(pair=>(Action)(()=>
@@ -761,14 +784,14 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
         }
         finally{_accepting=false;}
     }
-    private static IReadOnlyList<RoiEditTarget> Affected(RoiEditSnapshot before,RoiEditSnapshot after)
+    private IReadOnlyList<RoiEditTarget> Affected(RoiEditSnapshot before,RoiEditSnapshot after)
     {
         var targets=before.Items.Concat(after.Items).Select(row=>new RoiEditTarget(row.Group,row.Id)).Distinct();
         return targets.Where(target=>
         {
             var a=before.Items.SingleOrDefault(row=>row.Group==target.Group&&row.Id==target.Id);var b=after.Items.SingleOrDefault(row=>row.Group==target.Group&&row.Id==target.Id);
             return a is null||b is null||a.Name!=b.Name||a.Enabled!=b.Enabled||a.Visible!=b.Visible
-                ||!BlobLocalRoi.Same(BlobLocalRoiProjection.FromNative(a.Geometry),BlobLocalRoiProjection.FromNative(b.Geometry));
+                ||!_document.Same(_document.FromNative(a.Geometry,null),_document.FromNative(b.Geometry,null));
         }).ToArray();
     }
     internal bool TryCapture(out string error)
@@ -786,7 +809,7 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
         // The ROI control creates the inherited parameter rows when their mode first becomes visible.
         TrackPreviewSources();
         if(_accepting||_activating||_refreshing)return;
-        var inspection=_controls.IsLocalDrawing(BlobLocalRoi.Inspection);var mask=_controls.IsLocalDrawing(BlobLocalRoi.Mask);
+        var inspection=_controls.IsLocalDrawing(_primaryGroup);var mask=_controls.IsLocalDrawing(_secondaryGroup);
         var mode=PreviewMode();var previewChanged=inspection!=_localInspection||mask!=_localMask||mode!=_observedPreviewMode;_observedPreviewMode=mode;
         if(inspection==_localInspection&&mask==_localMask){if(previewChanged)QueuePreview();Notify();return;}
         _localInspection=inspection;_localMask=mask;
@@ -950,17 +973,17 @@ internal sealed partial class BlobLocalRoiOwner
             if(image.Frame!=frame!.Image.Frame||image.EffectiveDomain.Frame!=frame.Image.EffectiveDomain.Frame)
                 throw new InvalidOperationException("继承输入与可见图像不是同一物理帧和坐标域。");
             var root=BlobMaskInheritance.Materialize(inputs.Inputs,BlobRoiInheritance.Materialize(inputs.Inputs,Read()))!;
-            var rows=(mode==BlobRoiInheritance.Local?Enumerable.Empty<RoiEditItem>():Items(BlobLocalRoi.Inspection))
-                .Concat(maskInherited?Items(BlobLocalRoi.Mask):Enumerable.Empty<RoiEditItem>()).ToArray();
+            var rows=(mode==BlobRoiInheritance.Local?Enumerable.Empty<RoiEditItem>():Items(_primaryGroup))
+                .Concat(maskInherited?Items(_secondaryGroup):Enumerable.Empty<RoiEditItem>()).ToArray();
             IEnumerable<RoiEditItem> Items(string group)=>BlobLocalRoi.Items(root,group)
                 .Select(item=>new RoiEditItem(group,Guid.ParseExact(item.Get<string>("id"),"N"),item.Get<string>("name"),
-                    BlobLocalRoiProjection.ToNative(item.Get<RecordValue>("shape")),Enabled:false,Visible:true));
+                    _document.ToNative(item.Get<RecordValue>("shape")),Enabled:false,Visible:true));
             if(!OwnerCurrent()||!inputs.IsCurrent||!OwnerCurrent())return;
             var captured=inputs;layer=frame.CreateReadOnlyLayer();
             bool Current()=>OwnerCurrent()&&captured.IsCurrent&&OwnerCurrent();
             if(!layer.Present(frame.Receipt,++_previewRevision,rows,Current)||!Current())return;
             _previewInputs=inputs;inputs=null;_previewLayer=layer;layer=null;
-            if(_interaction is null&&_controls.IsLocalDrawing(BlobLocalRoi.Mask)&&BlobLocalRoi.Items(Read(),BlobLocalRoi.Mask).Any(item=>item.Get<bool>("enabled")&&item.Get<bool>("visible")))Activate(BlobLocalRoi.Mask);
+            if(_interaction is null&&_controls.IsLocalDrawing(_secondaryGroup)&&BlobLocalRoi.Items(Read(),_secondaryGroup).Any(item=>item.Get<bool>("enabled")&&item.Get<bool>("visible")))Activate(_secondaryGroup);
         }
         catch(Exception failure)
         {

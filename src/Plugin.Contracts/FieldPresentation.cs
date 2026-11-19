@@ -69,9 +69,12 @@ public sealed class ToolPresentation
     }
     public IReadOnlyList<FieldPresentation> Fields{get;} public IReadOnlyList<RegionFieldGroup> Regions{get;} public bool HasProfessionalView{get;}
     public IReadOnlySet<string> ToolOwnedInputFields{get;}
-    internal void Validate(IReadOnlyList<Port> inputs)
+    internal void Validate(IReadOnlyList<Port> inputs, IReadOnlyList<Port>? externalInputs = null)
     {
-        var ports=inputs.ToDictionary(port=>port.Id,StringComparer.Ordinal);
+        // 呈现字段的端口可以来自本契约，也可以来自另一份契约（原厂 AlgorithmTab 引用 Algorithm 的端口）。
+        var ports=inputs.Concat(externalInputs??Array.Empty<Port>())
+            .GroupBy(port=>port.Id,StringComparer.Ordinal)
+            .ToDictionary(group=>group.Key,group=>group.First(),StringComparer.Ordinal);
         if(ToolOwnedInputFields.Any(id=>!ports.ContainsKey(id)))
             throw new ArgumentException("Tool-owned input presentation references an undeclared input.");
         foreach(var field in Fields)

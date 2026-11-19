@@ -14,11 +14,19 @@ public sealed class ToolSchema
 {
     public ToolSchema(IEnumerable<Port> inputs, IEnumerable<Port> outputs,ToolPresentation? presentation=null,string? workflowImageInputId=null,
         IEnumerable<OutputDisplayNode>? outputDisplay=null, IEnumerable<ControlOutput>? controlOutputs=null,
-        IEnumerable<RoiGroupDeclaration>? roiGroups=null, IEnumerable<RoiAssistDeclaration>? assistGroups=null)
+        IEnumerable<RoiGroupDeclaration>? roiGroups=null, IEnumerable<RoiAssistDeclaration>? assistGroups=null,
+        IEnumerable<Port>? externalInputs=null)
     {
         RoiGroups=Array.AsReadOnly((roiGroups??Array.Empty<RoiGroupDeclaration>()).ToArray());
         AssistGroups=Array.AsReadOnly((assistGroups??Array.Empty<RoiAssistDeclaration>()).ToArray());
+        ExternalInputs=Array.AsReadOnly((externalInputs??Array.Empty<Port>()).ToArray());
         Inputs=Array.AsReadOnly(inputs.ToArray()); Outputs=Array.AsReadOnly(outputs.ToArray());
+        // 外部端口由另一份契约声明（原厂 Algorithm.xml 的端口 + AlgorithmTab.xml 的界面），
+        // 本契约只借它校验呈现，不重复登记身份。
+        if (ExternalInputs.Any(port => port is null || string.IsNullOrWhiteSpace(port.Id))
+            || ExternalInputs.Select(port => port.Id).Distinct(StringComparer.Ordinal).Count() != ExternalInputs.Count
+            || ExternalInputs.Any(port => Inputs.Concat(Outputs).Any(own => own.Id == port.Id)))
+            throw new ArgumentException("External ports must be unique and disjoint from this contract.", nameof(externalInputs));
         if (workflowImageInputId is not null && !Inputs.Any(port => port is not null && port.Id == workflowImageInputId && port.Type == TypeRef.ResourceOf(ResourceKind.Image)))
             throw new ArgumentException("Workflow image fallback must name a declared image input.", nameof(workflowImageInputId));
         WorkflowImageInputId=workflowImageInputId;
@@ -34,7 +42,7 @@ public sealed class ToolSchema
         if(Inputs.Concat(Outputs).Any(port=>(port.EditModes&FieldEditModes.DisplayExpression)!=0&&(port.Type!=DataType.Text||port.Choices is not null)))
             throw new ArgumentException("Display expressions require a scalar non-enum text declaration.");
         if(Inputs.Concat(Outputs).Any(port=>port.Choices is not null&&port.Type!=TypeRef.ScalarOf(ScalarKind.Text)))throw new ArgumentException("Closed text choices require a scalar text port.");
-        presentation?.Validate(Inputs);Presentation=presentation;
+        presentation?.Validate(Inputs, ExternalInputs);Presentation=presentation;
         OutputDisplay=OutputDisplayNode.Freeze(outputDisplay??Array.Empty<OutputDisplayNode>());
         OutputDisplayNode.Validate(OutputDisplay,Outputs);
         ControlOutputs=Array.AsReadOnly((controlOutputs??Array.Empty<ControlOutput>()).ToArray());
@@ -76,6 +84,8 @@ public sealed class ToolSchema
         Fingerprint=Convert.ToHexString(SHA256.HashData(buffer.ToArray()));
     }
     public IReadOnlyList<Port> Inputs { get; }
+    /// <summary>由其他契约声明、本契约呈现可引用的端口；不参与本契约的身份登记。</summary>
+    public IReadOnlyList<Port> ExternalInputs { get; }
     public IReadOnlyList<Port> Outputs { get; }
     public ToolPresentation? Presentation { get; }
     public IReadOnlyList<OutputDisplayNode> OutputDisplay {get;}

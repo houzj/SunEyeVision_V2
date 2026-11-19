@@ -15,7 +15,7 @@ public sealed class NativeRoiUiDraftControls : StackPanel, INativeRoiControls, I
     private readonly List<DeclaredFieldRow> _radios = [];
     private readonly List<DeclaredFieldRow> _sources = [];
     private readonly Dictionary<DeclaredFieldRow,bool> _interactionVisibility = new();
-    private readonly StackPanel _rectangleParameters = new(), _circleParameters = new();
+    private readonly List<DeclaredFieldRow> _rectangleParameters = [], _circleParameters = [];
     private readonly ContentControl _detectionShapes = new(), _maskShapes = new();
     private readonly DeclaredFieldState _detection, _inherit, _mask;
     private readonly FrameworkElement _detectionRadio, _inheritRadio, _maskRadio;
@@ -54,8 +54,6 @@ public sealed class NativeRoiUiDraftControls : StackPanel, INativeRoiControls, I
             value=>{if(Value(_detection)==1)inheritance.AcceptMode((int)value);});
         AddSource(Children,inheritance.RectangleSource);
         AddSource(Children,inheritance.AnnulusSource);
-        Children.Add(_rectangleParameters);
-        Children.Add(_circleParameters);
         (_mask,_maskRadio) = AddRadio("roi-mask-creation","ExternROI Creation",["RunParam_Draw","RunParam_Inherit"],readMaskMode()?1:0,value=>acceptMaskMode(value==1));
         Children.Add(_maskShapes);
         AddSource(Children,maskSource);
@@ -103,11 +101,11 @@ public sealed class NativeRoiUiDraftControls : StackPanel, INativeRoiControls, I
             {
                 case 0: yield return _inheritance.RectangleSource; break;
                 case 1:
-                    foreach (var row in _rectangleParameters.Children.OfType<DeclaredFieldRow>()) yield return row;
+                    foreach (var row in _rectangleParameters) yield return row;
                     break;
                 case 2: yield return _inheritance.AnnulusSource; break;
                 case 3:
-                    foreach (var row in _circleParameters.Children.OfType<DeclaredFieldRow>()) yield return row;
+                    foreach (var row in _circleParameters) yield return row;
                     break;
             }
         }
@@ -159,12 +157,12 @@ public sealed class NativeRoiUiDraftControls : StackPanel, INativeRoiControls, I
     {
         if (mode==1 && !_rectangleParametersRealized)
         {
-            foreach (var row in _inheritance.RectangleParametersFactory()) AddSource(_rectangleParameters.Children,row);
+            foreach (var row in _inheritance.RectangleParametersFactory()) { _rectangleParameters.Add(row); AddSource(Children,row); }
             _rectangleParametersRealized=true;
         }
         if (mode==3 && !_circleParametersRealized)
         {
-            foreach (var row in _inheritance.AnnulusParametersFactory()) AddSource(_circleParameters.Children,row);
+            foreach (var row in _inheritance.AnnulusParametersFactory()) { _circleParameters.Add(row); AddSource(Children,row); }
             _circleParametersRealized=true;
         }
     }
@@ -191,8 +189,8 @@ public sealed class NativeRoiUiDraftControls : StackPanel, INativeRoiControls, I
         _maskImage.Visibility=Shown(!graphic);
         _inheritance.RectangleSource.Visibility=Shown(graphic&&!draw&&mode==0);
         _inheritance.AnnulusSource.Visibility=Shown(graphic&&!draw&&mode==2);
-        _rectangleParameters.Visibility=Shown(graphic&&!draw&&mode==1);
-        _circleParameters.Visibility=Shown(graphic&&!draw&&mode==3);
+        foreach (var row in _rectangleParameters) row.Visibility=Shown(graphic&&!draw&&mode==1);
+        foreach (var row in _circleParameters) row.Visibility=Shown(graphic&&!draw&&mode==3);
         _maskSource.Visibility=Shown(IsInheritedMask);
         _detectionRadio.Visibility=Shown(graphic);
         _detectionShapes.Visibility=Shown(graphic&&draw);
@@ -230,8 +228,8 @@ public sealed class NativeRoiUiDraftControls : StackPanel, INativeRoiControls, I
         _detectionShapes.Content=null;
         _maskShapes.Content=null;
         Children.Clear();
-        _rectangleParameters.Children.Clear();
-        _circleParameters.Children.Clear();
+        _rectangleParameters.Clear();
+        _circleParameters.Clear();
         ParameterCleanup.Run(_sources.Select(row=>(Action)(()=>((IParameterVisibility)row).PrepareForVisibility(false)))
             .Concat(_radios.Select(radio=>(Action)radio.Dispose)).Concat(_states.Select(state=>(Action)state.Dispose)));
     }

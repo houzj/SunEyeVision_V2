@@ -20,11 +20,6 @@ public partial class ImageSourceParameterEditor : UserControl, IToolSettingsView
     public ImageSourceParameterEditor()
     {
         InitializeComponent();
-        if(System.ComponentModel.DesignerProperties.GetIsInDesignMode(this))
-        {
-            var context=Design.ImageSourceDesignData.CreateParameterContext();
-            Bind(context.Draft,context.Options);
-        }
     }
 
     public ImageSourceParameterEditor(IToolSettingsDraft draft, ToolSettingsViewOptions options)

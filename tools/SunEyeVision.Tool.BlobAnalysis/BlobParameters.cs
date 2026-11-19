@@ -749,16 +749,6 @@ namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Design
 /// <summary>Private design-only values. No discovery, documents, algorithm sessions or native resources.</summary>
 public static class BlobDesignData
 {
-    public static readonly DependencyProperty ParameterSampleProperty=DependencyProperty.RegisterAttached(
-        "ParameterSample",typeof(bool),typeof(BlobDesignData),new PropertyMetadata(false,AttachParameterSample));
-    public static bool GetParameterSample(DependencyObject view)=>(bool)view.GetValue(ParameterSampleProperty);
-    public static void SetParameterSample(DependencyObject view,bool value)=>view.SetValue(ParameterSampleProperty,value);
-    private static void AttachParameterSample(DependencyObject view,DependencyPropertyChangedEventArgs args)
-    {
-        // Attach to the real child, so displaying the root XAML does not depend on its code-behind constructor.
-        if(args.NewValue is true&&DesignerProperties.GetIsInDesignMode(view)&&view is DeclaredSettingsView presenter)
-        {var sample=CreateParameterContext();BindParameterContext(presenter,sample);}
-    }
     public static (IToolSettingsDraft Draft,ToolSettingsViewOptions Options) CreateParameterContext()
     {
         var draft=new SunEyeVision.Plugin.Wpf.Presenters.Design.DesignTimeDraft(new BlobTool());var schema=draft.Schema;

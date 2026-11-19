@@ -961,8 +961,13 @@ internal sealed class BlobUiComposition : IDisposable
         if(oldAssist is not null)oldAssist.Changed-=OnInputChanged;
         if(oldRoi is not null)oldRoi.Changed-=OnInputChanged;
         var errors=new List<Exception>();
-        foreach(var action in new Action[]{()=>oldOwner?.Dispose(),()=>oldSupported?.Dispose(),()=>oldAssist?.Dispose(),()=>oldRoi?.Dispose()})
-            try{action();}catch(Exception error){errors.Add(error);}
+        // 先清容器再销毁编辑器：编辑器销毁时若仍挂在画布上，WPF 会拒绝重新归属。
+        foreach(var (name,action) in new (string,Action)[]
+        {
+            ("roi",()=>oldRoi?.Dispose()),("owner",()=>oldOwner?.Dispose()),
+            ("supported",()=>oldSupported?.Dispose()),("assist",()=>oldAssist?.Dispose())
+        })
+            try{action();}catch(Exception error){errors.Add(new InvalidOperationException(name+" 清理失败",error));}
         if(errors.Count!=0)throw new AggregateException("基本参数交互清理失败。",errors);
     }
     internal bool TryCapture(out FieldSettings fields,out string error)

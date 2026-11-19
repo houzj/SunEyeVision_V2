@@ -363,7 +363,9 @@ public sealed partial class NativeRoiEditHost : IDisposable
             else _unrestoredInput="区域对象已改变，未提交原文不能应用；请取消窗口后重新编辑。";
         }
     }
-    private void RetireFrame()
+    /// <summary>退役当前帧。<paramref name="unbindEditors"/> 为假时用于销毁路径：
+    /// 编辑器随容器一起释放，此时解绑会因仍挂在画布上触发 WPF 归属冲突。</summary>
+    private void RetireFrame(bool unbindEditors = true)
     {
         if(!_disposed)CapturePendingEditors();
         foreach(var pair in _sessions)
@@ -377,7 +379,10 @@ public sealed partial class NativeRoiEditHost : IDisposable
         var handlers=sessions.Where(session=>_retirementHandlers.ContainsKey(session)).Select(session=>(Session:session,Handler:_retirementHandlers[session])).ToArray();
         foreach(var item in handlers)_retirementHandlers.Remove(item.Session);
         var coverage=_observed;
-        Run(handlers.Select(item=>(Action)(()=>item.Session.InteractionRetiring-=item.Handler)).Concat(_editors.Select(pair=>(Action)(()=>{pair.Value.UnboundFullDomain=_document.Coverage(coverage,pair.Key)==RoiDocumentValue.FullDomain;pair.Value.Bind(null);})).ToArray()).Concat(new Action[]{()=>interaction?.Dispose()})
+        var unbind=unbindEditors
+            ? _editors.Select(pair=>(Action)(()=>{pair.Value.UnboundFullDomain=_document.Coverage(coverage,pair.Key)==RoiDocumentValue.FullDomain;pair.Value.Bind(null);})).ToArray()
+            : Array.Empty<Action>();
+        Run(handlers.Select(item=>(Action)(()=>item.Session.InteractionRetiring-=item.Handler)).Concat(unbind).Concat(new Action[]{()=>interaction?.Dispose()})
             .Concat(sessions.Select(session=>(Action)session.Dispose)).Append(()=>frame?.Dispose()));
     }
     private static void Run(IEnumerable<Action> actions)
@@ -389,7 +394,7 @@ public sealed partial class NativeRoiEditHost : IDisposable
     {
         if(_disposed)return;_disposed=true;_pendingActivate=null;_controls.Changed-=OnModesChanged;
         _imageField.Changed-=RefreshFrame;if(_source is not null){_source.Changed-=RefreshFrame;_source.FrameReplaced-=RebindCurrentFrame;_source.InputViewportClicked-=OnInputViewportClicked;}Changed=null;
-        Run(new Action[]{DisposePreview,RetireFrame}.Concat(_editors.Values.Select(editor=>(Action)(()=>{editor.PendingChanged-=Notify;editor.Dispose();}))));
+        Run(new Action[]{DisposePreview,()=>RetireFrame(false)}.Concat(_editors.Values.Select(editor=>(Action)(()=>{editor.PendingChanged-=Notify;editor.Dispose();}))));
     }
 }
 

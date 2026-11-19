@@ -41,6 +41,8 @@ using(var sample=new SunEyeVision.Tool.BlobAnalysis.Wpf.Views.BlobParameterEdito
  {
   if(sample.CompositionError is {} compositionError)throw new Exception("Blob composition error: "+compositionError);
   sample.Measure(new Size(680,800));sample.Arrange(new Rect(0,0,680,800));
+  Console.WriteLine("PASS: Blob ROI group composed without a composition error");
+  sample.Measure(new Size(680,800));sample.Arrange(new Rect(0,0,680,800));
  }
   if(presenter.SelectedPageKey!="基本参数")throw new Exception("Blob designer does not open the production first page");
   var designInputs=(SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredInputFieldsView)blobContext.Options.InputContent!;
@@ -51,6 +53,8 @@ using(var sample=new SunEyeVision.Tool.BlobAnalysis.Wpf.Views.BlobParameterEdito
   {
    presenter.SelectedPageIndex=index;
    if(sample.CompositionError is {} compositionError)throw new Exception("Blob composition error: "+compositionError);
+  sample.Measure(new Size(680,800));sample.Arrange(new Rect(0,0,680,800));
+  Console.WriteLine("PASS: Blob ROI group composed without a composition error");
   sample.Measure(new Size(680,800));sample.Arrange(new Rect(0,0,680,800));
    if(presenter.SelectedPageKey!=key)throw new Exception("Blob designer page was not composed: "+key);
   }

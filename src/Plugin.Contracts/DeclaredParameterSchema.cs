@@ -15,6 +15,8 @@ public sealed class DeclaredParameterSchema
 {
     private readonly IReadOnlyDictionary<string, XElement> _fields;
     private readonly IReadOnlyList<string> _fieldOrder = Array.Empty<string>();
+    /// <summary>引用式呈现字段：fieldId 指向工具已声明的端口，本表只用于建行。</summary>
+    private readonly IReadOnlyDictionary<string, XElement> _fieldRows = new Dictionary<string, XElement>();
     private readonly IReadOnlyList<RoiGroupDeclaration> _roiGroups = Array.Empty<RoiGroupDeclaration>();
     private readonly IReadOnlyList<RoiAssistDeclaration> _assistGroups = Array.Empty<RoiAssistDeclaration>();
     private readonly IReadOnlyDictionary<string, XElement> _inputs;
@@ -59,7 +61,7 @@ public sealed class DeclaredParameterSchema
 
         foreach (var group in root.Elements("Group"))
         {
-            Shape(group, new[] { "page", "section", "advanced", "vmCategory" }, new[] { "Parameter", "RoiGroup", "AssistGroup" });
+            Shape(group, new[] { "page", "section", "advanced", "vmCategory" }, new[] { "Parameter", "Field", "RoiGroup", "AssistGroup" });
             Required(group, "page"); Required(group, "section"); Required(group, "vmCategory");
             if (group.Attribute("advanced") is not null) Boolean(group, "advanced");
             if (!group.HasElements) throw new InvalidDataException("Empty parameter group.");
@@ -102,6 +104,10 @@ public sealed class DeclaredParameterSchema
             throw new InvalidDataException("Duplicate parameter identity.");
         _roiGroups = RoiGroupDeclaration.Load(root);
         _assistGroups = RoiAssistDeclaration.Load(root);
+        // 引用式呈现字段（对应原厂 ButtonSelecter）：只贡献参数页行，端口由工具的执行契约提供，
+        // 因此不进入 SettingsSchema.Inputs，避免与 Schema.Inputs 的身份重复。
+        _fieldRows = root.Elements("Group").Elements("Field")
+            .ToDictionary(field => Required(field, "id"), StringComparer.Ordinal);
         _fieldOrder = ids;
         _fields = root.Elements("Group").Elements("Parameter")
             .ToDictionary(field => Required(field, "id"), StringComparer.Ordinal);

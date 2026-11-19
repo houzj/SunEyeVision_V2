@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Blob 分析：原厂对照复核</title>
+<style>
+body{margin:0;background:#f4f6f9;color:#263142;font:15px/1.7 "Microsoft YaHei",Segoe UI,sans-serif}
+.wrap{max-width:1180px;margin:auto;padding:28px 30px 70px}
+header{background:#203653;color:#fff;border-radius:10px;padding:26px 30px;margin-bottom:20px}
+header h1{margin:0 0 8px;font-size:27px}
+header p{margin:6px 0 0;color:#c8d6e8}
+section{background:#fff;border-radius:10px;margin:0 0 20px;padding:24px 28px;box-shadow:0 2px 8px #20304a12}
+h2{color:#203653;border-bottom:2px solid #dce5f2;padding-bottom:8px;margin:0 0 16px;font-size:20px}
+h3{color:#2b5c91;margin:20px 0 8px;font-size:16px}
+p{margin:9px 0}
+code{background:#eef2f7;border-radius:4px;padding:1px 5px;color:#9b3158;font-size:13px}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+th{background:#eaf0f7;text-align:left}
+th,td{border:1px solid #d7e0eb;padding:8px 10px;vertical-align:top}
+.tag{display:inline-block;border-radius:12px;padding:1px 9px;font-size:12px;font-weight:600}
+.ok{background:#dff5e5;color:#176d35}
+.bad{background:#fde4e4;color:#a12626}
+.mid{background:#fff0d8;color:#9a5a00}
+.info{background:#e4efff;color:#1e5a9c}
+.sum{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:6px 0 4px}
+.sum div{border-radius:9px;padding:14px 16px;text-align:center}
+.sum b{display:block;font-size:30px;line-height:1.2}
+.sum span{font-size:13px}
+.s1{background:#fde9e9;color:#a12626}
+.s2{background:#e6f6ea;color:#176d35}
+.s3{background:#fff4e0;color:#9a5a00}
+.s4{background:#e8effa;color:#1e5a9c}
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:14px 0}
+.vs>div{border-radius:9px;padding:16px 18px;border:2px solid #d7e0eb}
+.vs .vm{background:#f7fafd;border-color:#b9d2ee}
+.vs .us{background:#fbf9f4;border-color:#e6d4b4}
+.vs h4{margin:0 0 10px;font-size:15px}
+.vs ul{margin:8px 0 0;padding-left:20px}
+.vs li{margin:4px 0}
+.layers{margin:16px 0}
+.layer{border-radius:8px;padding:12px 16px;margin:0 0 8px;color:#fff;font-size:14px}
+.layer b{font-size:15px}
+.l1{background:#2b5c91}
+.l2{background:#3d7cb8}
+.l3{background:#5b9bd1}
+.l4{background:#8fb8dd;color:#203653}
+.obj{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:14px 0}
+.obj span{border-radius:7px;padding:9px 10px;font-size:13px;border:1px solid transparent}
+.obj .have{background:#e9f7ee;border-color:#bfe3cb;color:#176d35}
+.obj .miss{background:#fdeaea;border-color:#f0bcbc;color:#a12626}
+.obj .part{background:#fff5e3;border-color:#efd7ab;color:#9a5a00}
+.obj small{display:block;font-size:11px;opacity:.75;margin-top:2px}
+.quote{border-left:4px solid #3978bd;background:#f3f8ff;padding:12px 16px;margin:14px 0;border-radius:0 8px 8px 0}
+.quote.warn{border-left-color:#ca7a22;background:#fff7ea}
+.path{font-family:Consolas,monospace;font-size:12px;color:#64748b;word-break:break-all}
+.foot{color:#64748b;font-size:13px;text-align:center;margin-top:24px}
+</style>
+</head>
+<body><div class="wrap">
+
+<header>
+  <h1>Blob 分析：和 VisionMaster 原厂逐项对照</h1>
+  <p>对照基线：VisionMaster 4.4.0 Build20250516　·　2026-11-19</p>
+  <p>这份文档只讲三件事：哪里已经一样了、哪里真的不一样、还有哪些没查清。</p>
+</header>
+
+<section>
+  <h2>一句话结论</h2>
+  <p>骨架对上了，细节有四个真差距。最要紧的是<b>结果页的图像显示声明</b>——原厂写在一个 XML 里，我们写在代码里，而且把那个 XML 拿去装了表格列。</p>
+  <div class="sum">
+    <div class="s1"><b>4</b><span>已证实的差距</span></div>
+    <div class="s2"><b>6</b><span>已对齐</span></div>
+    <div class="s3"><b>3</b><span>还没查清</span></div>
+    <div class="s4"><b>1</b><span>清单写错了的名字</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>一、原厂长什么样，我们长什么样</h2>
+
+  <h3>原厂是四层，最后一层 Blob 用不上</h3>
+  <div class="layers">
+    <div class="layer l1"><b>① 平台界面</b>　参数页引擎、模板库、结果视图、ROI 选择器——所有工具共用</div>
+    <div class="layer l2"><b>② 托管桥接 XxxCs.dll</b>　参数、结果、ROI 写值。全库只有 8 个工具有这层，Blob 是其中之一</div>
+    <div class="layer l3"><b>③ 原生算法 XxxModu.dll</b>　C++ 写的算法，一个工具一个 dll</div>
+    <div class="layer l4"><b>④ 专属界面 XxxControl.dll</b>　只有复杂工具才建，全库 72 个——<b>Blob 不在其中</b></div>
+  </div>
+  <p>我们用 <code>src/Plugin.Wpf</code> 对第 ① 层，用同一个程序集对 ②③ 层，第 ④ 层本来就不该有。这一条<b>对上了</b>。</p>
+
+  <h3>发布单元：原厂 12 个文件，我们 5 个源文件 + 2 个 XML</h3>
+  <div class="vs">
+    <div class="vm">
+      <h4>原厂目录（安装路径实采）</h4>
+      <ul>
+        <li><code>IMVSBlobFindModu.dll</code> 243 KB　算法</li>
+        <li><code>IMVSBlobFindModuCs.dll</code> 36.5 KB　桥接</li>
+        <li><code>IMVSBlobFindModu.xml</code> 15.5 KB　模块运行配置</li>
+        <li><code>...Algorithm.xml</code> 10.6 KB　参数名 + 默认值</li>
+        <li><code>...AlgorithmTab.xml</code> 121 KB　页签布局</li>
+        <li><code>...Cs.xml</code> 41.2 KB　<strong>其实是文档注释</strong></li>
+        <li><code>...Display.xml</code> 10.4 KB　16 个显示对象</li>
+        <li><code>ToolItemInfo.xml</code> 0.2 KB　4 项元数据</li>
+        <li>3 个 PNG 图标</li>
+      </ul>
+    </div>
+    <div class="us">
+      <h4>我们目录</h4>
+      <ul>
+        <li><code>BlobTool.cs</code> 228 行　工具壳</li>
+        <li><code>BlobParameters.cs</code> 约 1500 行　参数 + 页面装配</li>
+        <li><code>BlobRoi.cs</code> 约 1100 行　ROI</li>
+        <li><code>BlobResult.cs</code> 937 行　结果</li>
+        <li><code>BlobAlgorithm.cs</code> 1290 行　算法</li>
+        <li><code>Resources/BlobParameters.xml</code>　参数 + 页签（按方案合并）</li>
+        <li><code>Resources/BlobDisplay.xml</code>　<strong>只有表格列</strong></li>
+        <li>图标在 <code>src/UI/Resources/Toolbox/</code></li>
+      </ul>
+    </div>
+  </div>
+  <p>文件数不是问题。清单第 198 行写得很清楚：<b>工程数量、文件数量、类名属于实现细节</b>，只要职责对得上就不算偏差。</p>
+</section>
+
+<section>
+  <h2>二、四个真正的差距</h2>
+
+  <h3>差距 1：少了一个配置区（Tab_Image Display）</h3>
+  <p>原厂的参数页 XML 里有四个分组：</p>
+  <table>
+    <tr><th>原厂分组</th><th>标记</th><th>我们有吗</th></tr>
+    <tr><td><code>Tab_ROI Area</code></td><td>CanTriggerRun=TRUE</td><td><span class="tag ok">有</span> 基本参数 / ROI区域</td></tr>
+    <tr><td><code>Tab_Run Params</code></td><td>CanTriggerRun=TRUE</td><td><span class="tag ok">有</span> 运行参数（我们拆成两组）</td></tr>
+    <tr><td><code>Tab_Check Result</code></td><td>SubscribeVisible=False</td><td><span class="tag ok">有</span> 结果显示（我们拆成两组）</td></tr>
+    <tr><td><code>Tab_Image Display</code></td><td>无</td><td><span class="tag bad">没有</span></td></tr>
+  </table>
+  <p>差的是结果页里那块「图像怎么显示」的配置区。原厂把它当参数页的一个分组，我们没这个分组。</p>
+  <p class="path">证据：docs/evidence/original-release-units/BlobAnalysis/IMVSBlobFindModuAlgorithmTab.xml</p>
+
+  <h3>差距 2：Display.xml 被我们拿错用途了（最要紧）</h3>
+  <div class="vs">
+    <div class="vm">
+      <h4>原厂 Display.xml 装的是「显示什么」</h4>
+      <ul>
+        <li>16 个显示对象：输入图、Blob 图、二值图、轮廓点、文本、结果列表…</li>
+        <li>每个对象带颜色、线宽、透明度</li>
+        <li>每个对象带 <code>Mapping</code>：映射到哪个参数或结果</li>
+      </ul>
+    </div>
+    <div class="us">
+      <h4>我们的 BlobDisplay.xml 装的是「表格几列」</h4>
+      <ul>
+        <li>一个 <code>Table</code>，10 个 <code>Column</code></li>
+        <li>序号、面积、周长、质心 X/Y、角度、长轴、短轴、圆形度、矩形度</li>
+        <li>没有任何图形显示声明</li>
+      </ul>
+    </div>
+  </div>
+  <div class="quote warn">
+    <b>结果就是</b>：图形显示（哪 7 个组、什么顺序、什么角色）写死在代码 <code>BlobDisplayUi</code> 里，没走声明。原厂这块是声明驱动的。
+  </div>
+
+  <h3>差距 3：16 个显示对象，我们缺 7 个</h3>
+  <div class="obj">
+    <span class="have">输入图像<small>平台视口承担</small></span>
+    <span class="miss">Blob 图像<small>缺</small></span>
+    <span class="miss">二值图像<small>缺</small></span>
+    <span class="have">Blob 轮廓<small>有</small></span>
+    <span class="have">最大内接矩形<small>有</small></span>
+    <span class="have">ROI 区域<small>有</small></span>
+    <span class="part">轮廓点<small>只有显隐开关</small></span>
+    <span class="have">定位点（参考）<small>有</small></span>
+    <span class="have">定位点（运行）<small>有</small></span>
+    <span class="have">显示文本<small>有</small></span>
+    <span class="miss">数据记录 1<small>缺</small></span>
+    <span class="miss">数据记录 2<small>缺</small></span>
+    <span class="part">结果列表<small>才当表格列</small></span>
+    <span class="miss">外部 ROI<small>缺</small></span>
+    <span class="miss">输出掩膜<small>缺</small></span>
+    <span class="have">扇环<small>有</small></span>
+  </div>
+  <p class="path">证据：IMVSBlobFindModuDisplay.xml 的 16 个 &lt;Object Name="..."&gt;</p>
+
+  <h3>差距 4：ROI 那块，业务和编排混在一个类里</h3>
+  <div class="vs">
+    <div class="vm">
+      <h4>原厂分得很开</h4>
+      <ul>
+        <li><code>BlobFindRoiManager.cs</code> 90 行　只给字段名</li>
+        <li><code>ROISelecter</code> 2824 行　画、选、改都在平台</li>
+      </ul>
+    </div>
+    <div class="us">
+      <h4>我们混在一起</h4>
+      <ul>
+        <li><code>BlobLocalRoiOwner</code> 约 570 行</li>
+        <li>既管编辑器、帧、会话，又直接算 ROI 模式、形状、屏蔽区</li>
+        <li>内部还有 38 处直接调用 Blob 数据结构</li>
+      </ul>
+    </div>
+  </div>
+  <p>本轮已经把「读文档、写文档、投影、形状转换」收进接口 <code>INativeRoiEditDocument</code>，但整体搬迁会把 Blob 业务带进平台，所以停在契约层。</p>
+</section>
+
+<section>
+  <h2>三、已经对齐的六项</h2>
+  <table>
+    <tr><th>项</th><th>怎么证明</th></tr>
+    <tr><td>四层结构，Blob 不该有专属界面</td><td>原厂 72 个 Control 目录里没有 Blob</td></tr>
+    <tr><td>三个页签名称与顺序</td><td>基本参数 / 运行参数 / 结果显示，与原厂三个 Tab 一致</td></tr>
+    <tr><td>四个分组对了三个</td><td>见差距 1 的表格</td></tr>
+    <tr><td>ROI 的画、选、改在平台</td><td><code>NativeRoiEditor</code> + <code>NativeRoiSession</code></td></tr>
+    <tr><td>参数类型由 C# 属性决定</td><td>双方都靠属性反射取类型，XML 只给默认值</td></tr>
+    <tr><td>工具箱元数据与三个图标</td><td>原厂只声明 4 项；三个 PNG 与本方图标体积一一对应</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>四、清单里写错的一个名字</h2>
+  <p>清单说 <code>IMVSBlobFindModuCs.xml</code> 是「参数名 ↔ C# 属性映射文件」。打开一看：</p>
+  <div class="quote">
+    <code>&lt;doc&gt;&lt;assembly&gt;&lt;name&gt;IMVSBlobFindModuCs&lt;/name&gt;&lt;/assembly&gt;</code><br>
+    <code>&lt;members&gt;&lt;member name="P:IMVSBlobFindModuCs.BlobFindParam.ThresholdType"&gt;</code>
+  </div>
+  <p>这是 C# 编译出来的<b>代码注释文件</b>，跟本方程序集旁边的 .xml 是一回事。它不承载任何配置，<b>我们不需要造一个对应文件</b>。</p>
+</section>
+
+<section>
+  <h2>五、还没查清的三件事</h2>
+  <table>
+    <tr><th>#</th><th>问题</th><th>缺什么证据</th></tr>
+    <tr><td>1</td><td>窗口关闭后，晚到的回调会不会写进旧窗口</td><td>原厂关闭时序的运行记录</td></tr>
+    <tr><td>2</td><td><code>Tab_Image Display</code> 里面到底有哪些控件</td><td>该分组下的 Items 还没逐项展开</td></tr>
+    <tr><td>3</td><td>16 个显示对象各自的映射含义</td><td>只取了名字，Features/Mapping 还没逐条读</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>六、接下来按顺序做</h2>
+  <table>
+    <tr><th>顺序</th><th>做什么</th><th>解决哪个差距</th></tr>
+    <tr><td>1</td><td>把 Display.xml 的 16 个对象读全，补齐图像显示配置区，让显示回到声明驱动</td><td>差距 1、2、3</td></tr>
+    <tr><td>2</td><td>把 38 处 Blob 静态引用逐个判断归属，纯会话编排移出工具</td><td>差距 4</td></tr>
+    <tr><td>3</td><td>补原厂关闭时序证据，再动生命周期</td><td>未查清 1</td></tr>
+  </table>
+  <div class="quote">
+    第 1 步做完之前，结果页的同构只能算「结构对齐、声明没对齐」。
+  </div>
+</section>
+
+<div class="foot">证据副本：docs/evidence/original-release-units/BlobAnalysis/　·　反编译源码：docs/07-工具逆向/decompiled/</div>
+
+</div></body></html>

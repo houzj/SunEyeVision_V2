@@ -15,16 +15,21 @@ public static class DesignTimeSample
 {
     /// <summary>构造样本上下文；给出图像输入字段时同时投影一个假图像源。</summary>
     public static (IToolSettingsDraft Draft, ToolSettingsViewOptions Options) Create(
-        IToolDefinition tool, string? imageInputFieldId = null, string sampleLabel = "图像源 · 图像")
+        IToolDefinition tool, string? imageInputFieldId = null, string sampleLabel = "图像源 · 图像",
+        ICameraSelectionSource? cameraSource = null)
     {
         ArgumentNullException.ThrowIfNull(tool);
         var draft = new DesignTimeDraft(tool);
         // 输入视图与假引用需要完整契约；草稿内部用的编辑器 schema 不含输入项。
         var schema = tool.Describe();
         var inputSection = draft.Schema.Presentation!.Fields.First().Layout!.Page;
+        var cameraSources = cameraSource is null
+            ? null
+            : new Dictionary<string, ICameraSelectionSource>(StringComparer.Ordinal) { ["camera.device"] = cameraSource };
         // 编辑器 schema 只含可编辑字段；该工具没有此输入项时退回不带假图像源的样本。
         if (imageInputFieldId is null || !schema.Inputs.Any(port => port.Id == imageInputFieldId))
-            return (draft, new(ReferenceOptions: ReferenceFieldOptions.Empty, InputSection: inputSection));
+            return (draft, new(ReferenceOptions: ReferenceFieldOptions.Empty, InputSection: inputSection,
+                CameraSources: cameraSources));
 
         var source = new DeclaredReferenceCandidate(sampleLabel, "sample-image", "sample-workflow",
             new Port("output.image", TypeRef.ResourceOf(ResourceKind.Image)), Array.Empty<string>());
@@ -41,6 +46,6 @@ public static class DesignTimeSample
                 ? new ReferenceCandidates(new[] { source }, Array.Empty<DeclaredReferenceCandidate>())
                 : ReferenceCandidates.Empty));
         return (draft, new(ReferenceOptions: ReferenceFieldOptions.Empty,
-            InputSection: inputSection, InputContent: inputs));
+            InputSection: inputSection, InputContent: inputs, CameraSources: cameraSources));
     }
 }

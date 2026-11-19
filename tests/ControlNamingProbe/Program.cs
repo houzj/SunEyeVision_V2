@@ -47,10 +47,11 @@ internal static class Program
    if(presenter.SelectedPageKey!=key)throw new Exception("Blob designer page was not composed: "+key);
   }
  }
- var sourceContext=SunEyeVision.Plugin.Wpf.Presenters.Design.DesignTimeSample.Create(new SunEyeVision.Tool.ImageSource.Runtime.ImageSourceTool());
+ var sourceContext=SunEyeVision.Plugin.Wpf.Presenters.Design.DesignTimeSample.Create(new SunEyeVision.Tool.ImageSource.Runtime.ImageSourceTool(),cameraSource:new SampleCameraSource());
  using(var source=new SunEyeVision.Tool.ImageSource.Wpf.Views.ImageSourceParameterEditor(sourceContext.Draft,sourceContext.Options))
  { source.Measure(new Size(680,800)); source.Arrange(new Rect(0,0,680,800)); }
  Console.WriteLine("PASS: real Blob and image source editor assembly with design inputs");
+Console.WriteLine("PASS: image source camera row renders through the injected device source");
  var corner=new SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.Base.ImageView.ROI.EditRoundedWindow(100,5);
  corner.Close();
  var normalized=new SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.Base.ImageView.ROI.NormalizedRectROI();
@@ -98,4 +99,14 @@ internal static class Program
   using (var stream=typeof(NativeResultViewport).Assembly.GetManifestResourceStream("SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.Resources."+name) ?? throw new Exception("missing cursor "+name)) { if(stream.Length==0) throw new Exception("empty cursor"); }
  Console.WriteLine("PASS: real slider, result viewport and embedded cursor resources");return 0;
  } catch(Exception e){Console.Error.WriteLine(e);return 1;} }
+}
+
+/// <summary>探针用的相机源：一台假设备，验证参数页相机行可渲染。</summary>
+internal sealed class SampleCameraSource : SunEyeVision.Plugin.Contracts.ICameraSelectionSource
+{
+    public IReadOnlyList<SunEyeVision.Plugin.Contracts.CameraChoiceItem> Choices { get; } =
+        new[] { new SunEyeVision.Plugin.Contracts.CameraChoiceItem("示例相机", "sample-camera") };
+    public event Action? Changed { add { } remove { } }
+    public string Status(string? deviceId) => deviceId is null ? "未选择" : "已连接（示例）";
+    public void Open(string? deviceId) { }
 }

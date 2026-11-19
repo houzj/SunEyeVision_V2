@@ -13,7 +13,8 @@
     <ToolComponentEntryType>SunEyeVision.Tool.BlobAnalysis.Runtime.BlobTool</ToolComponentEntryType>
   </PropertyGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources/BlobParameters.xml" LogicalName="BlobAnalysis.BlobParameters.xml" />
+    <EmbeddedResource Include="Resources/BlobAlgorithm.xml" LogicalName="BlobAnalysis.BlobAlgorithm.xml" />
+    <EmbeddedResource Include="Resources/BlobAlgorithmTab.xml" LogicalName="BlobAnalysis.BlobAlgorithmTab.xml" />
     <EmbeddedResource Include="Resources/BlobDisplay.xml" LogicalName="BlobAnalysis.BlobDisplay.xml" />
     <ProjectReference Include="../../src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj" />
     <ProjectReference Include="../../src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj"><Private>false</Private></ProjectReference>

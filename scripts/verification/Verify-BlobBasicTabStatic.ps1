@@ -5,7 +5,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $algorithmTab = Join-Path $EvidenceRoot 'IMVSBlobFindModuAlgorithmTab.xml'
 $groups = @(Get-ChildItem -LiteralPath (Join-Path $RepoRoot 'docs') -Filter 'Group.xml' -File -Recurse | Select-Object -First 1).FullName
-$selfParams = Join-Path $RepoRoot 'tools\SunEyeVision.Tool.BlobAnalysis\Resources\BlobParameters.xml'
+$selfParams = Join-Path $RepoRoot 'tools\SunEyeVision.Tool.BlobAnalysis\Resources\BlobAlgorithmTab.xml'
 $fieldsView = Join-Path $RepoRoot 'src\Plugin.Wpf\Fields\DeclaredFieldsView.cs'
 foreach ($path in @($algorithmTab,$groups,$selfParams,$fieldsView)) { if ([string]::IsNullOrWhiteSpace($path) -or -not (Test-Path -LiteralPath $path)) { throw "missing evidence file: $path" } }
 $utf8 = [System.Text.Encoding]::UTF8

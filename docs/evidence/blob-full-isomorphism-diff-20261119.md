@@ -31,11 +31,12 @@
 
 ### 2 节点画布
 
-- 原厂：`ToolItemInfo.xml` 仅四项元数据，无 `displayType`；节点形状由平台按模块目录声明决定。
-- 本方：节点通过工具目录注册，未单独声明形状。
-- 差异：原厂模块目录层的 `displayType` 未在本方对应位置取证，当前无法确认 Blob 是否与其它工具一致走默认形状。
-- 状态：`inferred`
-- 闭合动作：补采原厂模块目录 `ToolItemInfo.xml` 完整副本，核对 `displayType` 缺省行为。
+- 原厂实采（`C:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\x64\Location\IMVSBlobFindModu`）：目录内 `ToolItemInfo.xml` 只有 `name`、`priority`、`toolTip`、`helpUrl` 四项，**没有 `displayType`、形状或图标声明**；`IMVSBlobFindModu.xml` 只有 `ModuleViewMode=1`，同样没有显示类型声明。
+- 原厂图标三件套：`IMVSBlobFindModuImageEnable.png`(1.7 KB)、`IMVSBlobFindModu_NormalLogo.png`(0.7 KB)、`IMVSBlobFindModu_StateLogo.png`(0.5 KB)，已归档到证据目录。
+- 本方：`product/ToolComponents.props` 的 Blob 条目只有 ComponentId、ToolId、Role、EntryType，没有形状声明；工具箱图标 `IMVSBlobFindModuImageEnable.png`、`tool-blob.png`、`tool-blob-state.png` 与原厂三件套一一对应且体积一致。
+- 差异：无。两侧都由平台默认形状承载。
+- 状态：`derived`
+- 闭合动作：已完成，无需改代码。
 
 ### 3 连线
 
@@ -61,9 +62,9 @@
   - `IMVSBlobFindModuCs.xml` 是 `<doc><members><member name="P:...">` 形式的 C# XML 文档注释，不承载参数映射。
   - 因此原厂参数类型来自 C# 属性类型，默认值来自 Algorithm.xml，页签与分组来自 AlgorithmTab.xml。
 - 本方：`BlobParameterDefinition` 同样用 `typeof(BlobSettings).GetProperties()` 反射属性类型，与原厂取类型方式一致；但默认值、页签、分组、范围、可见性全部合并在 `BlobParameters.xml` 的 `Group/Parameter` 结构里。
-- 差异：文件边界与原厂不一致，参数定义与页签职责未分离。
-- 状态：`derived`（偏差已确认，元素级证据已到齐）
-- 闭合动作：拆成 `BlobAlgorithm.xml`（Name + DefaultValue）与 `BlobAlgorithmTab.xml`（Tab/Category/Items，含 page、section、vmCategory、顺序与控件属性），解析器与门禁同步改读；`BlobDisplay.xml` 保持独立。
+- 差异：原为合并实现，2026-11-19 已按原厂文件边界拆分。
+- 状态：`derived`（偏差已闭合，待 Release 运行验证）
+- 闭合动作：已完成。`BlobAlgorithm.xml`（104 项 Name + DefaultValue）与 `BlobAlgorithmTab.xml`（3 页签 / 5 分组 / 104 参数）分离，`BlobParameterDefinition` 加载时按 id 合并回原结构，104 项属性经逐项比对完全等价，`BlobDisplay.xml` 保持独立。
 
 ### 6 页面组装
 
@@ -114,10 +115,11 @@
 ### 12 持久化
 
 - 原厂：参数经 `CModuleParamBase` 序列化，方案保存重开由宿主承担。
-- 本方：`BlobSettings` 为可持久化记录，字段由 XML 声明驱动。
-- 差异：保存重开在 Blob 上仅做过人工清单登记，未形成自动化证据。
-- 状态：`inferred`
-- 闭合动作：执行保存、关闭、重开、换节点自动链路。
+- 本方自动化证据：`Seven_soft_fields_survive_real_copy_and_v4_save_reopen`（真实复制加 v4 保存重开）、`Original_filter_defaults_match_new_settings_and_formal_roundtrip`（参数往返）、`Dormant_high_threshold_binding_is_saved_in_configuration_but_not_resolved_until_active`（保存但未激活不解析）。
+- 换节点与缺失工具拒绝由框架层覆盖：`Deleted_actual_node_cannot_publish_or_be_replaced_by_a_same_id_object`、`Same_id_replacement_remains_new_and_never_acquires_old_actual_identity`、`Missing_endpoint_is_rejected_at_construction`。
+- 差异：无 Blob 专属缺口；换节点与缺失工具拒绝复用框架测试，未在 Blob 特定链上重复。
+- 状态：`derived`
+- 闭合动作：如需更严，可在 Blob 链补一条换节点用例。
 
 ### 13 生命周期
 
@@ -132,20 +134,21 @@
 | 状态 | 层数 | 层 |
 |---|---|---|
 | `verified` | 2 | 公共控件、工具专属控件 |
-| `derived` | 9 | 工具部署、连线、参数存储、声明加载、页面组装、ROI、结果显示、执行会话、生命周期 |
-| `inferred` | 2 | 节点画布、持久化 |
+| `derived` | 11 | 工具部署、节点画布、连线、参数存储、声明加载、页面组装、ROI、结果显示、执行会话、持久化、生命周期 |
+| `inferred` | 0 | — |
 | `unconfirmed` | 0 | — |
 
-按清单判定规则，Blob 尚不能称为工具同构：存在 2 个 `inferred` 层，且声明加载与页面组装两层为已确认偏差。
+按清单判定规则，`inferred` 与 `unconfirmed` 已清零。剩余唯一未闭合的已确认偏差是**页面组装**：`BlobUiComposition` 仍在工具层承担页面级编排与范围校验。该层闭合后，Blob 才可称工具同构。
 
-## 四、必须先闭合的四项
+## 四、剩余闭合项
 
-1. **声明分离**：参数定义与页签分组分离，解析器与门禁改读两个文件。
-2. **页面编排回收**：Blob 工具层不再承担公共范围校验与页面级编排。
-3. **发布单元收口**：证据缓存归档出产品源码树，旧工程目录删除。
-4. **两项 inferred 转 derived 或 verified**：节点画布补原厂模块目录证据，持久化补保存重开自动链路。
-
-前三项不依赖新的原厂运行证据，可立即实施；第四项中节点画布需要补采原厂模块目录文件，持久化需要自动链路用例。
+| 项 | 状态 | 说明 |
+|---|---|---|
+| 声明分离 | 已完成 | 拆为 `BlobAlgorithm.xml` 与 `BlobAlgorithmTab.xml`，104 项逐项等价 |
+| 发布单元收口 | 已完成 | 证据归档到 `docs/evidence/original-release-units/BlobAnalysis/`，旧工程目录已删除 |
+| 节点画布补证 | 已完成 | 原厂模块目录实采确认无形状声明，图标三件套与本方一一对应 |
+| 持久化补证 | 已完成 | 保存重开有 Blob 专项测试，换节点与缺失工具拒绝复用框架测试 |
+| **页面编排回收** | **未完成** | `BlobUiComposition` 仍承担页面构建钩子、ROI 输入页插入、位置修正可见性、输入源支持状态和范围大小校验。其中范围校验属原厂序范围控件的固有行为，应由公共控件承担，不应留在工具层 |
 
 ## 五、对清单中 Cs.xml 职责描述的纠正
 

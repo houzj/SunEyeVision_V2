@@ -276,11 +276,13 @@ public sealed class BlobAlgorithmChainRegressionTests
         });
 
     [Theory]
-    [InlineData(BlobContourType.NoneContour,false,false)]
-    [InlineData(BlobContourType.NoneSequentialContour,true,false)]
-    [InlineData(BlobContourType.SequentialContour,true,true)]
-    public async Task Contour_modes_publish_points_and_topology_independently(BlobContourType mode,bool hasPoints,bool hasBoundary)
+    [InlineData("NoneContour",false,false)]
+    [InlineData("NoneSequentialContour",true,false)]
+    [InlineData("SequentialContour",true,true)]
+    public async Task Contour_modes_publish_points_and_topology_independently(string modeName,bool hasPoints,bool hasBoundary)
     {
+        // 特性参数保持字符串，避免 xunit 探测阶段加载产品程序集。
+        var mode=Enum.Parse<BlobContourType>(modeName);
         using var inputs=new FrozenOutputResources();
         using var outputs=new FrozenOutputResources();
         await using var session=new BlobAlgorithm();

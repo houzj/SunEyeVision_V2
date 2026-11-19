@@ -269,9 +269,10 @@ public sealed class BlobAnalysisParameterContractTests
         Assert.Contains(tool.SettingsSchema.Presentation!.Fields,field=>field.DisplayName==BlobParameterDefinition.Instance.Label(nameof(BlobSettings.FilterAreaMin)));
         Assert.Equal(new[]{"input.image","input.pose"},
             tool.Describe().Presentation!.Fields.Select(field=>field.FieldId));
+        // 单项目迁移后 Runtime 与 Editor 同程序集，编辑器必须引用 WPF；
+        // 守卫改为只禁止工具依赖宿主和编辑宿主程序集。
         var references=typeof(BlobTool).Assembly.GetReferencedAssemblies().Select(a=>a.Name).ToArray();
         Assert.DoesNotContain("SunEyeVision.Plugin.Editing.Wpf",references);
-        Assert.DoesNotContain("PresentationFramework",references);
         Assert.DoesNotContain("SunEyeVision.UI",references);
     }
     [Fact]

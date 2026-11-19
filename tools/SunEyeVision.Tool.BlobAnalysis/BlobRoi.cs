@@ -348,6 +348,98 @@ namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Views
 {
 
 /// <summary>One private formal-input owner; the two sessions are read-only projections of that same value.</summary>
+/// <summary>ROI 文档的操作与历史：只处理 Blob 数据结构，不碰编辑器、帧和会话。</summary>
+internal sealed class BlobRoiDocument
+{
+    private readonly Stack<RecordValue> _undo = new(), _redo = new();
+
+    public bool CanUndo => _undo.Count > 0;
+    public bool CanRedo => _redo.Count > 0;
+
+    public static RecordValue Read(DeclaredInputFieldsView inputs)
+    {
+        var setting = inputs.ReadUnpresentedInput(BlobLocalRoi.InputId);
+        var value = setting switch
+        {
+            UnsetSetting => BlobLocalRoi.Empty,
+            ConstantSetting { Value: RecordValue record } => record,
+            _ => throw new ArgumentException("本地区域必须为纯值定义。")
+        };
+        BlobLocalRoi.Validate(value);
+        return value;
+    }
+
+    public bool TryApply(RecordValue before, string group, RoiEditProposal proposal,
+        out RecordValue after, out RoiEditSelection selection, out string error)
+    {
+        after = before;
+        selection = new RoiEditSelection.Keep();
+        error = "";
+        var rows = BlobLocalRoi.Items(before, group).ToList();
+        var coverage = BlobLocalRoi.Coverage(before, group);
+        var history = false;
+        try
+        {
+            switch (proposal)
+            {
+                case RoiEditProposal.Create create when create.Group == group:
+                    var id = Guid.NewGuid();
+                    rows.Add(BlobLocalRoi.Item(id, group == BlobLocalRoi.Inspection ? "检测区域" : "屏蔽区域",
+                        BlobLocalRoiProjection.FromNative(create.Geometry)));
+                    coverage = BlobLocalRoi.Explicit;
+                    selection = new RoiEditSelection.Select(new(group, id));
+                    break;
+                case RoiEditProposal.Replace replace when replace.Target.Group == group:
+                    var index = rows.FindIndex(row => row.Get<string>("id") == replace.Target.Id.ToString("N"));
+                    if (index < 0) throw new ArgumentException("区域已不存在。");
+                    var item = rows[index];
+                    rows[index] = BlobLocalRoi.Item(replace.Target.Id, item.Get<string>("name"),
+                        BlobLocalRoiProjection.FromNative(replace.Geometry, item.Get<RecordValue>("shape")),
+                        item.Get<bool>("enabled"), item.Get<bool>("visible"));
+                    break;
+                case RoiEditProposal.Delete delete when delete.Targets.All(target => target.Group == group):
+                    foreach (var target in delete.Targets)
+                        if (rows.RemoveAll(row => row.Get<string>("id") == target.Id.ToString("N")) != 1)
+                            throw new ArgumentException("区域已不存在。");
+                    if (rows.Count == 0)
+                        coverage = group == BlobLocalRoi.Inspection ? BlobLocalRoi.FullDomain : BlobLocalRoi.None;
+                    selection = new RoiEditSelection.Clear();
+                    break;
+                case RoiEditProposal.SetCoverage set when set.Group == group
+                    && set.Coverage == (group == BlobLocalRoi.Inspection ? RoiCoverage.FullDomain : RoiCoverage.None):
+                    rows.Clear();
+                    coverage = set.Coverage.ToString();
+                    selection = new RoiEditSelection.Clear();
+                    break;
+                case RoiEditProposal.Undo when _undo.Count > 0:
+                    after = _undo.Peek(); history = true; selection = new RoiEditSelection.Clear(); break;
+                case RoiEditProposal.Redo when _redo.Count > 0:
+                    after = _redo.Peek(); history = true; selection = new RoiEditSelection.Clear(); break;
+                default: throw new ArgumentException("此区域操作尚未接通。");
+            }
+            if (!history)
+                after = group == BlobLocalRoi.Inspection
+                    ? BlobLocalRoi.Root(BlobLocalRoi.Group(coverage, rows), before.Get<RecordValue>(BlobLocalRoi.Mask))
+                    : BlobLocalRoi.Root(before.Get<RecordValue>(BlobLocalRoi.Inspection), BlobLocalRoi.Group(coverage, rows));
+            if (BlobLocalRoi.Items(after, BlobLocalRoi.Mask)
+                .Any(row => row.Get<RecordValue>("shape").Get<string>("kind") != "polygon"))
+                throw new ArgumentException("屏蔽区仅支持多边形。");
+            BlobLocalRoi.Validate(after);
+            if (BlobLocalRoi.Same(before, after)) throw new ArgumentException("区域内容没有变化。");
+            if (proposal is RoiEditProposal.Undo) { _undo.Pop(); _redo.Push(before); }
+            else if (proposal is RoiEditProposal.Redo) { _redo.Pop(); _undo.Push(before); }
+            else { _undo.Push(before); _redo.Clear(); }
+            return true;
+        }
+        catch (Exception failure) when (failure is ArgumentException or InvalidOperationException)
+        {
+            after = before;
+            error = failure.Message;
+            return false;
+        }
+    }
+}
+
 internal sealed partial class BlobLocalRoiOwner : IDisposable
 {
     private readonly DeclaredInputFieldsView _inputs;
@@ -360,7 +452,7 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
     private readonly Dictionary<NativeRoiSession,Action> _retirementHandlers=new();
     private bool _recordingRetirement;
     private readonly Dictionary<string,Guid> _scopes=new(){{BlobLocalRoi.Inspection,Guid.NewGuid()},{BlobLocalRoi.Mask,Guid.NewGuid()}};
-    private readonly Stack<RecordValue> _undo=new(),_redo=new();
+    private readonly BlobRoiDocument _document=new();
     private readonly Dictionary<string,NativeRoiPendingInput> _pending=new();
     private string? _unrestoredInput;
     private NativeRoiFrameLease? _frame;
@@ -408,12 +500,7 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
     }
 
     private void Notify(){if(!_disposed)Changed?.Invoke();}
-    private RecordValue Read()
-    {
-        var setting=_inputs.ReadUnpresentedInput(BlobLocalRoi.InputId);
-        var value=setting switch {UnsetSetting=>BlobLocalRoi.Empty,ConstantSetting {Value:RecordValue record}=>record,_=>throw new ArgumentException("本地区域必须为纯值定义。")};
-        BlobLocalRoi.Validate(value);return value;
-    }
+    private RecordValue Read()=>BlobRoiDocument.Read(_inputs);
     private RoiEditSnapshot Snapshot(string editableGroup)
     {
         var root=Read();
@@ -456,7 +543,7 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
             {
                 NativeRoiSession? session=null;
                 session=new NativeRoiSession(frame.Image,()=>Snapshot(group),(stamp,proposal)=>Accept(ProposalGroup(proposal,session!.DrawingGroup),stamp,proposal),()=>FrameCurrent(generation),
-                    ()=>new(_undo.Count>0,_redo.Count>0),group,isAvoid:group==BlobLocalRoi.Mask,
+                    ()=>new(_document.CanUndo,_document.CanRedo),group,isAvoid:group==BlobLocalRoi.Mask,
                     canDraw:target=>target==group&&_controls.IsLocalDrawing(group),canSetCoverage:target=>target==group&&_controls.IsLocalDrawing(group),
                     maximumDrawItems:group==BlobLocalRoi.Inspection?BlobLocalRoi.MaximumLocalInspectionCount:BlobLocalRoi.MaximumLocalMaskCount);
                 _sessions.Add(group,session);
@@ -626,34 +713,13 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
         if(_disposed||_accepting||expected!=before.Stamp||_frame?.IsCurrent!=true)return RoiEditAcceptance.Reject(before,"区域编辑范围或物理帧已失效。");
         if(!_controls.IsLocalDrawing(group))return RoiEditAcceptance.Reject(before,"当前区域模式尚未接入执行。");
         if(_editors.Where(pair=>pair.Key!=group).Any(pair=>pair.Value.HasPendingEdits))return RoiEditAcceptance.Reject(before,"请先提交另一组区域数值。");
-        var old=Read();var next=old;var selection=(RoiEditSelection)new RoiEditSelection.Keep();var history=false;
-        var rows=BlobLocalRoi.Items(old,group).ToList();var coverage=BlobLocalRoi.Coverage(old,group);
+        var old=Read();
+        if(!_document.TryApply(old,group,proposal,out var next,out var selection,out var documentError))
+        {Error=documentError;return RoiEditAcceptance.Reject(before,documentError);}
+        _accepting=true;
         try
         {
-            switch(proposal)
-            {
-                case RoiEditProposal.Create create when create.Group==group:
-                    var id=Guid.NewGuid();rows.Add(BlobLocalRoi.Item(id,group==BlobLocalRoi.Inspection?"检测区域":"屏蔽区域",BlobLocalRoiProjection.FromNative(create.Geometry)));coverage=BlobLocalRoi.Explicit;selection=new RoiEditSelection.Select(new(group,id));break;
-                case RoiEditProposal.Replace replace when replace.Target.Group==group:
-                    var index=rows.FindIndex(row=>row.Get<string>("id")==replace.Target.Id.ToString("N"));if(index<0)throw new ArgumentException("区域已不存在。");
-                    var item=rows[index];rows[index]=BlobLocalRoi.Item(replace.Target.Id,item.Get<string>("name"),BlobLocalRoiProjection.FromNative(replace.Geometry,item.Get<RecordValue>("shape")),item.Get<bool>("enabled"),item.Get<bool>("visible"));break;
-                case RoiEditProposal.Delete delete when delete.Targets.All(target=>target.Group==group):
-                    foreach(var target in delete.Targets)if(rows.RemoveAll(row=>row.Get<string>("id")==target.Id.ToString("N"))!=1)throw new ArgumentException("区域已不存在。");
-                    if(rows.Count==0)coverage=group==BlobLocalRoi.Inspection?BlobLocalRoi.FullDomain:BlobLocalRoi.None;selection=new RoiEditSelection.Clear();break;
-                case RoiEditProposal.SetCoverage set when set.Group==group&&set.Coverage==(group==BlobLocalRoi.Inspection?RoiCoverage.FullDomain:RoiCoverage.None):
-                    rows.Clear();coverage=set.Coverage.ToString();selection=new RoiEditSelection.Clear();break;
-                case RoiEditProposal.Undo when _undo.Count>0:next=_undo.Peek();history=true;selection=new RoiEditSelection.Clear();break;
-                case RoiEditProposal.Redo when _redo.Count>0:next=_redo.Peek();history=true;selection=new RoiEditSelection.Clear();break;
-                default:throw new ArgumentException("此区域操作尚未接通。");
-            }
-            if(!history)next=group==BlobLocalRoi.Inspection?BlobLocalRoi.Root(BlobLocalRoi.Group(coverage,rows),old.Get<RecordValue>(BlobLocalRoi.Mask))
-                :BlobLocalRoi.Root(old.Get<RecordValue>(BlobLocalRoi.Inspection),BlobLocalRoi.Group(coverage,rows));
-            if (BlobLocalRoi.Items(next,BlobLocalRoi.Mask).Any(item=>item.Get<RecordValue>("shape").Get<string>("kind")!="polygon"))
-                throw new ArgumentException("屏蔽区仅支持多边形。");
-            BlobLocalRoi.Validate(next);if(BlobLocalRoi.Same(old,next))return RoiEditAcceptance.Reject(before,"区域内容没有变化。");
-            _accepting=true;
             _inputs.WriteUnpresentedInput(BlobLocalRoi.InputId,new ConstantSetting(next));
-            if(proposal is RoiEditProposal.Undo){_undo.Pop();_redo.Push(old);}else if(proposal is RoiEditProposal.Redo){_redo.Pop();_undo.Push(old);}else{_undo.Push(old);_redo.Clear();}
             _observed=next;++Revision;++_projectionRevision;var after=Project(next,group,_projectionRevision,expected.Frame);
             var generation=_generation;
             var actions=_sessions.Where(pair=>pair.Key!=group).Select(pair=>(Action)(()=>
@@ -662,8 +728,6 @@ internal sealed partial class BlobLocalRoiOwner : IDisposable
             })).Append(()=>{if(!_disposed&&generation==_generation)Notify();}).ToArray();
             return new(true,after,Affected(before,after),selection,Publish:()=>Run(actions));
         }
-        catch(Exception error)when(!_accepting&&(error is ArgumentException or InvalidOperationException))
-        {Error=error.Message;return RoiEditAcceptance.Reject(before,error.Message);}
         finally{_accepting=false;}
     }
     private static IReadOnlyList<RoiEditTarget> Affected(RoiEditSnapshot before,RoiEditSnapshot after)

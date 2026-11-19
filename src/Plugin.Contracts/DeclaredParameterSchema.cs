@@ -293,7 +293,7 @@ public sealed class DeclaredParameterSchema
 
     private ToolSchema BuildSchema()
     {
-        var bindings = new List<(Port Port, FieldPresentation Presentation)>();
+        var bindings = new List<(Port? Port, FieldPresentation Presentation)>();
         foreach (var field in _fieldOrder.Select(id => _fields[id]))
         {
             var name = Required(field, "id");
@@ -368,9 +368,25 @@ public sealed class DeclaredParameterSchema
             };
             bindings.Add((port, presentation));
         }
-        if (bindings.Select(binding => binding.Port.Id).Distinct(StringComparer.Ordinal).Count() != bindings.Count)
+        // 引用式呈现字段：只为参数页贡献行，端口归属由工具的执行契约声明，此处不重复登记。
+        foreach (var row in _fieldRows.Values)
+        {
+            var editor = (string?)row.Attribute("editor") == "reference"
+                ? FieldEditorKind.Reference
+                : FieldEditorKind.Scalar;
+            bindings.Add((null, new FieldPresentation(Required(row, "portRef"), Required(row, "label"),
+                Required(row, "section"), bindings.Count, editor, null, null)
+            {
+                Layout = new FieldLayout(Required(row, "page"), Required(row, "section"))
+            }));
+        }
+        if (bindings.Where(binding => binding.Port is not null)
+                .Select(binding => binding.Port!.Id).Distinct(StringComparer.Ordinal).Count()
+            != bindings.Count(binding => binding.Port is not null))
             throw new InvalidDataException("Duplicate editor field IDs.");
-        return new ToolSchema(bindings.Select(binding => binding.Port), Array.Empty<Port>(),
+        return new ToolSchema(
+            bindings.Where(binding => binding.Port is not null).Select(binding => binding.Port!),
+            Array.Empty<Port>(),
             new ToolPresentation(bindings.Select(binding => binding.Presentation)),
             roiGroups: _roiGroups, assistGroups: _assistGroups);
     }

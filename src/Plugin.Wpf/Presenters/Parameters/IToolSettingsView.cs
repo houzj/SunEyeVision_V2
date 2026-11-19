@@ -47,7 +47,10 @@ IReadOnlyDictionary<string,ICameraSelectionSource>? CameraSources=null,
     Func<string,ParameterSetting>? ReadInputSetting=null,
     IReadOnlyDictionary<string,NativeInputPlacement>? InputPlacements=null,
     IReadOnlySet<string>? ToolOwnedInputFields=null,
-    InputCompositionMode CompositionMode=InputCompositionMode.NestedLegacy)
+    InputCompositionMode CompositionMode=InputCompositionMode.NestedLegacy,
+    // 引用式呈现字段（原厂 ButtonSelecter 一类）的端口来源：它们的端口由工具执行契约声明，
+    // 不进设置契约，参数页据此为这些字段建行。
+    IReadOnlyList<Port>? PresentationPorts=null)
 {
     private IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? _choiceDisplays=FreezeChoiceDisplays(ChoiceDisplays);
     public IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? ChoiceDisplays

@@ -19,8 +19,9 @@ public sealed class DeclaredParameterSchema
 
     private DeclaredParameterSchema(XElement root, IReadOnlyDictionary<string, Type> types)
     {
-        if (root.Name != "BlobParameters" || (string?)root.Attribute("schemaVersion") != "1")
-            throw new InvalidDataException("Unsupported parameter metadata root.");
+        // 根元素名属于工具身份，平台不据此限定；只校验声明版本。
+        if ((string?)root.Attribute("schemaVersion") != "1")
+            throw new InvalidDataException("Unsupported parameter metadata schema version: " + root.Name);
         Shape(root, new[] { "schemaVersion", "workflowImageInputId" }, new[] { "Inputs", "Group" });
         WorkflowImageInputId = Required(root, "workflowImageInputId");
         _types = types;
@@ -50,9 +51,10 @@ public sealed class DeclaredParameterSchema
                 {
                     "id", "fieldId", "allowReference", "bindingName", "type", "default", "label",
                     "minimum", "maximum", "decimals", "increment", "visibleWhen", "visibleValue",
-                    "visibleNegate", "pairWith", "pairMinimum", "pairMaximum", "pairLabel"
+                    "visibleNegate", "orVisibleWhen", "orVisibleValue", "orVisibleNegate",
+                    "pairWith", "pairMinimum", "pairMaximum", "pairLabel"
                 }, new[] { "Choice" });
-                Required(field, "id"); Required(field, "type"); Required(field, "default"); Required(field, "label");
+                Required(field, "id"); Required(field, "type"); Required(field, "label");
                 FieldId(field, "fieldId");
                 if (Boolean(field, "allowReference")) Required(field, "bindingName");
                 else if (field.Attribute("bindingName") is not null)
@@ -76,19 +78,31 @@ public sealed class DeclaredParameterSchema
 
         foreach (var (id, type) in _fields.Keys.Select(id => (id, _types[id])))
         {
-            var expected = type == typeof(int) ? "Integer" : type == typeof(double) ? "Number"
-                : type == typeof(bool) ? "Boolean" : type.IsEnum ? "Enum"
-                : throw new InvalidDataException("Unsupported parameter type: " + id);
+            // 可空包装不改变声明的种类，解包后再判定。
+            var underlying = Nullable.GetUnderlyingType(type) ?? type;
+            var expected = underlying == typeof(int) || underlying == typeof(long) ? "Integer"
+                : underlying == typeof(double) ? "Number"
+                : underlying == typeof(bool) ? "Boolean"
+                : underlying == typeof(string) ? "Text"
+                : underlying.IsEnum ? "Enum" : null;
+            if (expected is null)
+                throw new InvalidDataException("Unsupported parameter type: " + id + " (" + underlying.Name + ")");
             if (Required(_fields[id], "type") != expected)
                 throw new InvalidDataException("Parameter field type differs: " + id);
             var choices = _fields[id].Elements("Choice").Select(choice => Required(choice, "key")).ToArray();
-            if (type.IsEnum
-                ? !choices.ToHashSet(StringComparer.Ordinal).SetEquals(Enum.GetNames(type)) || choices.Distinct().Count() != choices.Length
+            if (underlying.IsEnum
+                ? !choices.ToHashSet(StringComparer.Ordinal).SetEquals(Enum.GetNames(underlying)) || choices.Distinct().Count() != choices.Length
                 : choices.Length != 0)
                 throw new InvalidDataException("Parameter choices differ from the declared enum: " + id);
             var minimum = Minimum(id); var maximum = Maximum(id); var step = Increment(id);
             if (minimum > maximum || !double.IsFinite(step) || step <= 0)
                 throw new InvalidDataException("Invalid editor bounds: " + id);
+            // 无默认值的参数由使用方按未设置处理，声明里不强制给出。
+            if (_fields[id].Attribute("default") is null)
+            {
+                if (underlying == typeof(int) || underlying == typeof(double)) { Required(_fields[id], "increment"); Required(_fields[id], "decimals"); }
+                continue;
+            }
             var raw = Required(_fields[id], "default");
             try
             {

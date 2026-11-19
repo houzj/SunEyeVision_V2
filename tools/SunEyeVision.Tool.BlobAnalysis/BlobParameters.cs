@@ -1038,7 +1038,7 @@ internal sealed class BlobUiComposition : IDisposable
                         (field,content,group)=>fields.AddAfterField(field,content,groupOverride:group),
                         observe:value=>_roiUi=value);
                     _assistUi=pose;
-                    _roiOwner=new NativeRoiEditHost(inputs,_roiUi!,_baseOptions.RoiFrames,new BlobRoiDocument(inputs),_baseOptions.RoiDrawBlockReason);
+                    _roiOwner=new NativeRoiEditHost(inputs,_roiUi!,_baseOptions.RoiFrames,BlobRoiDeclaration.Create(inputs),_baseOptions.RoiDrawBlockReason);
                     _supportedState=new BlobSupportedWindowState(Draft,inputs,pose);
                     fields.BindFieldVisibilityTo(PositionCorrectionField,_roiUi!.GraphicVisibilitySource);
                     // The row's visibility already follows the correction field

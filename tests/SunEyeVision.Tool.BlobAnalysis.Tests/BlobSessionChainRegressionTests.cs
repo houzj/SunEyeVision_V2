@@ -19,19 +19,19 @@ public sealed class BlobAlgorithmChainRegressionTests
         await using var session = new BlobAlgorithm();
         var image = resources.CreateGray8(24, 24, Enumerable.Repeat((byte)200, 24 * 24).ToArray());
         var points = new[] { new Point2(2, 2), new Point2(8, 2), new Point2(2, 8) };
-        var shape = new RecordValue(BlobLocalRoi.ShapeType, new Dictionary<string, object?>
+        var shape = new RecordValue(RoiDocumentValue.ShapeType, new Dictionary<string, object?>
         {
             ["kind"] = "polygon",
-            ["vertices"] = new SequenceValue(TypeRef.SequenceOf(BlobLocalRoi.PointType),
-                points.Select(point => BlobLocalRoi.Point(point.X, point.Y)))
+            ["vertices"] = new SequenceValue(TypeRef.SequenceOf(RoiDocumentValue.PointType),
+                points.Select(point => RoiDocumentValue.Point(point.X, point.Y)))
         });
         var tool = new BlobTool();
         var ports = tool.Describe().Inputs;
         var fields = new FieldSettings(ports.Concat(tool.SettingsSchema.Inputs), new Dictionary<string, ParameterSetting>());
-        RecordValue LocalMask(int count) => BlobLocalRoi.Root(
-            BlobLocalRoi.Empty.Get<RecordValue>(BlobLocalRoi.Inspection),
-            BlobLocalRoi.Group(BlobLocalRoi.Explicit,
-                Enumerable.Range(0, count).Select(index => BlobLocalRoi.Item(Guid.NewGuid(), $"屏蔽区{index + 1}", shape))));
+        RecordValue LocalMask(int count) => RoiDocumentValue.Root(
+            RoiDocumentValue.Empty.Get<RecordValue>(RoiDocumentValue.Inspection),
+            RoiDocumentValue.Group(RoiDocumentValue.Explicit,
+                Enumerable.Range(0, count).Select(index => RoiDocumentValue.Item(Guid.NewGuid(), $"屏蔽区{index + 1}", shape))));
         InputValues LocalInput(RecordValue roi) => new(ports, new Dictionary<string, object?>
         {
             [BlobTool.ImageInput] = image, [BlobLocalRoi.InputId] = roi
@@ -81,14 +81,14 @@ public sealed class BlobAlgorithmChainRegressionTests
         };
         if (selection == "rectangle")
         {
-            var shape = new RecordValue(BlobLocalRoi.ShapeType, new Dictionary<string, object?>
+            var shape = new RecordValue(RoiDocumentValue.ShapeType, new Dictionary<string, object?>
             {
-                ["kind"] = "rectangle", ["center"] = BlobLocalRoi.Point(side / 2d, side / 2d),
+                ["kind"] = "rectangle", ["center"] = RoiDocumentValue.Point(side / 2d, side / 2d),
                 ["width"] = (double)side, ["height"] = (double)side, ["angle-degrees"] = 0d
             });
-            values[BlobLocalRoi.InputId] = BlobLocalRoi.Root(
-                BlobLocalRoi.Group(BlobLocalRoi.Explicit, new[] { BlobLocalRoi.Item(Guid.NewGuid(), "矩形", shape) }),
-                BlobLocalRoi.Group(BlobLocalRoi.None, Array.Empty<RecordValue>()));
+            values[BlobLocalRoi.InputId] = RoiDocumentValue.Root(
+                RoiDocumentValue.Group(RoiDocumentValue.Explicit, new[] { RoiDocumentValue.Item(Guid.NewGuid(), "矩形", shape) }),
+                RoiDocumentValue.Group(RoiDocumentValue.None, Array.Empty<RecordValue>()));
         }
         else if (selection == "image-mask")
         {
@@ -131,13 +131,13 @@ public sealed class BlobAlgorithmChainRegressionTests
         using var resources = new FrozenOutputResources();
         await using var session = new BlobAlgorithm();
         var image = resources.CreateGray8(32, 32, Enumerable.Repeat((byte)200, 32 * 32).ToArray());
-        var ring = new RecordValue(BlobLocalRoi.ShapeType, new Dictionary<string, object?>
+        var ring = new RecordValue(RoiDocumentValue.ShapeType, new Dictionary<string, object?>
         {
-            ["kind"] = kind, ["center"] = BlobLocalRoi.Point(16, 16), ["inner-radius"] = 4d,
+            ["kind"] = kind, ["center"] = RoiDocumentValue.Point(16, 16), ["inner-radius"] = 4d,
             ["outer-radius"] = 9d, ["start-radians"] = Math.PI / 4d, ["end-radians"] = 3d * Math.PI / 4d
         });
-        var roi = BlobLocalRoi.Root(BlobLocalRoi.Group(BlobLocalRoi.Explicit, new[] { BlobLocalRoi.Item(Guid.NewGuid(), "扇环", ring) }),
-            BlobLocalRoi.Group(BlobLocalRoi.None, Array.Empty<RecordValue>()));
+        var roi = RoiDocumentValue.Root(RoiDocumentValue.Group(RoiDocumentValue.Explicit, new[] { RoiDocumentValue.Item(Guid.NewGuid(), "扇环", ring) }),
+            RoiDocumentValue.Group(RoiDocumentValue.None, Array.Empty<RecordValue>()));
         var ports = new BlobTool().Describe().Inputs;
         var settings = Base(BlobSegmentationMode.SingleThreshold);
         using var producer = session.Execute(settings, BlobInput.Read(new InputValues(ports, new Dictionary<string, object?>
@@ -165,19 +165,19 @@ public sealed class BlobAlgorithmChainRegressionTests
         using var outputs=new FrozenOutputResources();
         await using var session=new BlobAlgorithm();
         var image=inputs.CreateGray8(8,8,Enumerable.Repeat((byte)200,64).ToArray());
-        var shape=new RecordValue(BlobLocalRoi.ShapeType,new Dictionary<string,object?>
+        var shape=new RecordValue(RoiDocumentValue.ShapeType,new Dictionary<string,object?>
         {
-            ["kind"]="rectangle",["center"]=BlobLocalRoi.Point(-3,2),["width"]=2d,["height"]=2d,["angle-degrees"]=0d
+            ["kind"]="rectangle",["center"]=RoiDocumentValue.Point(-3,2),["width"]=2d,["height"]=2d,["angle-degrees"]=0d
         });
-        var maskShape = new RecordValue(BlobLocalRoi.ShapeType, new Dictionary<string, object?>
+        var maskShape = new RecordValue(RoiDocumentValue.ShapeType, new Dictionary<string, object?>
         {
             ["kind"] = "polygon",
-            ["vertices"] = new SequenceValue(TypeRef.SequenceOf(BlobLocalRoi.PointType),
-                new[] { BlobLocalRoi.Point(-5, 5), BlobLocalRoi.Point(-3, 5), BlobLocalRoi.Point(-3, 7), BlobLocalRoi.Point(-5, 7) })
+            ["vertices"] = new SequenceValue(TypeRef.SequenceOf(RoiDocumentValue.PointType),
+                new[] { RoiDocumentValue.Point(-5, 5), RoiDocumentValue.Point(-3, 5), RoiDocumentValue.Point(-3, 7), RoiDocumentValue.Point(-5, 7) })
         });
-        var roi=BlobLocalRoi.Root(
-            BlobLocalRoi.Group(BlobLocalRoi.Explicit,new[]{BlobLocalRoi.Item(Guid.NewGuid(),"矩形",shape)}),
-            BlobLocalRoi.Group(BlobLocalRoi.Explicit,new[]{BlobLocalRoi.Item(Guid.NewGuid(),"屏蔽区",maskShape)}));
+        var roi=RoiDocumentValue.Root(
+            RoiDocumentValue.Group(RoiDocumentValue.Explicit,new[]{RoiDocumentValue.Item(Guid.NewGuid(),"矩形",shape)}),
+            RoiDocumentValue.Group(RoiDocumentValue.Explicit,new[]{RoiDocumentValue.Item(Guid.NewGuid(),"屏蔽区",maskShape)}));
         var tool=new BlobTool();var descriptor=tool.Describe();
         var fixture=new RecordValue(FixtureDeclarations.Info,new Dictionary<string,object?>
         {
@@ -227,15 +227,15 @@ public sealed class BlobAlgorithmChainRegressionTests
         using var resources = new FrozenOutputResources();
         await using var session = new BlobAlgorithm();
         var image = resources.CreateGray8(32, 32, Enumerable.Repeat((byte)200, 1024).ToArray());
-        var shape = new RecordValue(BlobLocalRoi.ShapeType, new Dictionary<string, object?>
+        var shape = new RecordValue(RoiDocumentValue.ShapeType, new Dictionary<string, object?>
         {
-            ["kind"] = "annulus", ["center"] = BlobLocalRoi.Point(4, 4),
+            ["kind"] = "annulus", ["center"] = RoiDocumentValue.Point(4, 4),
             ["inner-radius"] = 2d, ["outer-radius"] = 5d,
             ["start-radians"] = Math.PI / 4, ["end-radians"] = 3 * Math.PI / 4
         });
-        var roi = BlobLocalRoi.Root(
-            BlobLocalRoi.Group(BlobLocalRoi.Explicit, new[] { BlobLocalRoi.Item(Guid.NewGuid(), "扇环", shape) }),
-            BlobLocalRoi.Group(BlobLocalRoi.None, Array.Empty<RecordValue>()));
+        var roi = RoiDocumentValue.Root(
+            RoiDocumentValue.Group(RoiDocumentValue.Explicit, new[] { RoiDocumentValue.Item(Guid.NewGuid(), "扇环", shape) }),
+            RoiDocumentValue.Group(RoiDocumentValue.None, Array.Empty<RecordValue>()));
         var pose = new RecordValue(SpatialDeclarations.Affine2D, new Dictionary<string, object?>
         {
             ["from"] = BlobSchema.ImageFrame.Id, ["to"] = BlobSchema.ImageFrame.Id,
@@ -392,11 +392,11 @@ public sealed class BlobAlgorithmChainRegressionTests
         using var resources=new FrozenOutputResources();
         await using var session=new BlobAlgorithm();
         var image=resources.CreateGray8(8,8,Enumerable.Repeat((byte)200,64).ToArray());
-        var vertices=new SequenceValue(TypeRef.SequenceOf(BlobLocalRoi.PointType),
-            new[]{BlobLocalRoi.Point(2,2),BlobLocalRoi.Point(4,2),BlobLocalRoi.Point(4,4),BlobLocalRoi.Point(2,4)});
-        var polygon=new RecordValue(BlobLocalRoi.ShapeType,new Dictionary<string,object?> {["kind"]="polygon",["vertices"]=vertices});
-        var root=BlobLocalRoi.Root(BlobLocalRoi.Group(BlobLocalRoi.FullDomain,Array.Empty<RecordValue>()),
-            BlobLocalRoi.Group(BlobLocalRoi.Explicit,new[]{BlobLocalRoi.Item(Guid.NewGuid(),"屏蔽区",polygon)}));
+        var vertices=new SequenceValue(TypeRef.SequenceOf(RoiDocumentValue.PointType),
+            new[]{RoiDocumentValue.Point(2,2),RoiDocumentValue.Point(4,2),RoiDocumentValue.Point(4,4),RoiDocumentValue.Point(2,4)});
+        var polygon=new RecordValue(RoiDocumentValue.ShapeType,new Dictionary<string,object?> {["kind"]="polygon",["vertices"]=vertices});
+        var root=RoiDocumentValue.Root(RoiDocumentValue.Group(RoiDocumentValue.FullDomain,Array.Empty<RecordValue>()),
+            RoiDocumentValue.Group(RoiDocumentValue.Explicit,new[]{RoiDocumentValue.Item(Guid.NewGuid(),"屏蔽区",polygon)}));
         var settings=Base(BlobSegmentationMode.SingleThreshold);
         using var producer=session.Execute(settings,image,resources,localRoi:root);
         Assert.Equal(55d,Assert.Single(producer.Measurements).Area);
@@ -425,7 +425,7 @@ public sealed class BlobAlgorithmChainRegressionTests
             [BlobMaskInheritance.ModeId] = true,
             [BlobMaskInheritance.SourceId] = new[] { payload }
         });
-        Assert.Throws<ArgumentException>(() => BlobMaskInheritance.Materialize(inputs, BlobLocalRoi.Empty));
+        Assert.Throws<ArgumentException>(() => BlobMaskInheritance.Materialize(inputs, RoiDocumentValue.Empty));
     }
 
     [Fact]

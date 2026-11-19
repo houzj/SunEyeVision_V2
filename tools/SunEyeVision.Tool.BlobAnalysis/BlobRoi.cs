@@ -55,54 +55,31 @@ public static class BlobImageRoi
 /// constructing this view does not copy or dispose image/region resources.
 /// </summary>
 
+/// <summary>Blob 的 ROI 字段身份与容量上限；记录结构由平台 RoiDocumentValue 提供。</summary>
 public static class BlobLocalRoi
 {
     public const string InputId="input.roi.local";
-    public const string Inspection=RoiDocumentValue.Inspection,Mask=RoiDocumentValue.Mask;
-    public const string None=RoiDocumentValue.None,FullDomain=RoiDocumentValue.FullDomain,Explicit=RoiDocumentValue.Explicit;
-    public static TypeRef PointType=>RoiDocumentValue.PointType;
-    public static TypeRef ShapeType=>RoiDocumentValue.ShapeType;
-    public static TypeRef ItemType=>RoiDocumentValue.ItemType;
-    public static TypeRef ItemsType=>RoiDocumentValue.ItemsType;
-    public static TypeRef GroupType=>RoiDocumentValue.GroupType;
-    public static TypeRef Declaration=>RoiDocumentValue.Declaration;
-    public static Port Port {get;}=new(InputId,RoiDocumentValue.Declaration,Required:false,EditModes:FieldEditModes.Constant);
-    public static RecordValue Empty=>RoiDocumentValue.Empty;
-    public static RecordValue Point(double x,double y)=>RoiDocumentValue.Point(x,y);
-    public static RecordValue Item(Guid id,string name,RecordValue shape,bool enabled=true,bool visible=true)
-        =>RoiDocumentValue.Item(id,name,shape,enabled,visible);
-    public static RecordValue Group(string coverage,IEnumerable<RecordValue> items)
-        =>RoiDocumentValue.Group(coverage,items);
-    public static RecordValue Root(RecordValue inspection,RecordValue mask)
-        =>RoiDocumentValue.Root(inspection,mask);
-    public static IReadOnlyList<RecordValue> Items(RecordValue root,string group)
-        =>RoiDocumentValue.Items(root,group);
-    public static string Coverage(RecordValue root,string group)=>RoiDocumentValue.Coverage(root,group);
-    public static bool Same(object? left,object? right)=>RoiDocumentValue.Same(left,right);
-    public static double NormalizeDegrees(double angle)=>RoiDocumentValue.NormalizeDegrees(angle);
-    public static void ValidateShape(RecordValue shape)=>RoiDocumentValue.ValidateShape(shape);
+    public static Port Port{get;}=new(InputId,RoiDocumentValue.Declaration,Required:false,EditModes:FieldEditModes.Constant);
     public const int MaximumLocalInspectionCount=16;
     public const int MaximumLocalMaskCount=8;
     internal const int MaximumInheritedCount=64;
+
     /// <summary>通用结构校验之后追加 Blob 的容量规则。</summary>
     public static void Validate(RecordValue root,int maximumInspectionCount=MaximumLocalInspectionCount,bool inheritedMask=false)
     {
         RoiDocumentValue.Validate(root);
         if(maximumInspectionCount is not (MaximumLocalInspectionCount or MaximumInheritedCount))
             throw new ArgumentException("区域数量合同无效。");
-        foreach(var group in new[]{Inspection,Mask})
+        foreach(var group in new[]{RoiDocumentValue.Inspection,RoiDocumentValue.Mask})
         {
-            var count=Items(root,group).Count;
-            if(group==Inspection&&count>maximumInspectionCount)
+            var count=RoiDocumentValue.Items(root,group).Count;
+            if(group==RoiDocumentValue.Inspection&&count>maximumInspectionCount)
                 throw new ArgumentException("检测区域数量超出允许范围。");
-            if(group==Mask&&count>(inheritedMask?MaximumInheritedCount:MaximumLocalMaskCount))
+            if(group==RoiDocumentValue.Mask&&count>(inheritedMask?MaximumInheritedCount:MaximumLocalMaskCount))
                 throw new ArgumentException("屏蔽区数量超出允许范围。");
         }
     }
 }
-
-
-/// <summary>Blind-region subscription uses one comma-delimited coordinate string per polygon.</summary>
 
 public static class BlobMaskInheritance
 {
@@ -194,10 +171,10 @@ internal static class BlobRoiDeclaration
 {
     internal static IReadOnlyList<NativeRoiEditGroup> Groups { get; } = Array.AsReadOnly(new[]
     {
-        new NativeRoiEditGroup(BlobLocalRoi.Inspection, "形状", false,
-            BlobLocalRoi.MaximumLocalInspectionCount, BlobLocalRoi.FullDomain),
-        new NativeRoiEditGroup(BlobLocalRoi.Mask, "屏蔽区", true,
-            BlobLocalRoi.MaximumLocalMaskCount, BlobLocalRoi.None)
+        new NativeRoiEditGroup(RoiDocumentValue.Inspection, "形状", false,
+            BlobLocalRoi.MaximumLocalInspectionCount, RoiDocumentValue.FullDomain),
+        new NativeRoiEditGroup(RoiDocumentValue.Mask, "屏蔽区", true,
+            BlobLocalRoi.MaximumLocalMaskCount, RoiDocumentValue.None)
     });
 
     internal static readonly string[] ItemNames = { "检测区域", "屏蔽区域" };

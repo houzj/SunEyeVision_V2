@@ -312,7 +312,7 @@ public sealed record BlobInput(IReadOnlyImage Image, IReadOnlyRegion? Inspection
             return result;
         }
         var fixture = BlobFixtureInputs.Read(values);
-        var localRoi = values.Contains(BlobLocalRoi.InputId) ? values.Get<RecordValue>(BlobLocalRoi.InputId) : BlobLocalRoi.Empty;
+        var localRoi = values.Contains(BlobLocalRoi.InputId) ? values.Get<RecordValue>(BlobLocalRoi.InputId) : RoiDocumentValue.Empty;
         BlobLocalRoi.Validate(localRoi);
         var roi = BlobRoiInheritance.Materialize(values, localRoi);
         var output = new BlobInput(values.Get<IReadOnlyImage>(BlobTool.ImageInput), null, null,

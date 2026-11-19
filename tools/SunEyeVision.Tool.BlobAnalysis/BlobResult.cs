@@ -660,9 +660,9 @@ public static class BlobRoiDisplayProjection
 {
     public static RecordValue Shape(RecordValue shape)
     {
-        BlobLocalRoi.ValidateShape(shape);
+        RoiDocumentValue.ValidateShape(shape);
         var fields=shape.CopyFields().ToDictionary(pair=>pair.Key,pair=>pair.Value);
-        if(shape.Contains("angle-degrees"))fields["angle-degrees"]=BlobLocalRoi.NormalizeDegrees(shape.Get<double>("angle-degrees"));
+        if(shape.Contains("angle-degrees"))fields["angle-degrees"]=RoiDocumentValue.NormalizeDegrees(shape.Get<double>("angle-degrees"));
         PointGeometry Point(RecordValue point)=>new(RoiDeclarations.ImageFrame,new(point.Get<double>("x"),point.Get<double>("y")));
         if(shape.Contains("center"))fields["center"]=Point(shape.Get<RecordValue>("center"));
         if(shape.Contains("vertices"))

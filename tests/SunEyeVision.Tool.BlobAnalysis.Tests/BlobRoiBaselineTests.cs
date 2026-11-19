@@ -28,17 +28,17 @@ public sealed class BlobRoiBaselineTests
             [BlobRoiInheritance.ModeId] = BlobRoiInheritance.Local
         };
 
-        var result = BlobRoiInheritance.Materialize(Inputs(values), BlobLocalRoi.Empty);
+        var result = BlobRoiInheritance.Materialize(Inputs(values), RoiDocumentValue.Empty);
 
-        Assert.Same(BlobLocalRoi.Empty, result);
+        Assert.Same(RoiDocumentValue.Empty, result);
     }
 
     [Fact]
     public void Unset_mode_is_treated_as_local_drawing()
     {
-        var result = BlobRoiInheritance.Materialize(Inputs(new Dictionary<string, object?>()), BlobLocalRoi.Empty);
+        var result = BlobRoiInheritance.Materialize(Inputs(new Dictionary<string, object?>()), RoiDocumentValue.Empty);
 
-        Assert.Same(BlobLocalRoi.Empty, result);
+        Assert.Same(RoiDocumentValue.Empty, result);
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public sealed class BlobRoiBaselineTests
         var result = BlobRoiInheritance.Materialize(Inputs(values), null);
 
         Assert.NotNull(result);
-        var items = BlobLocalRoi.Items(result!, BlobLocalRoi.Inspection);
+        var items = RoiDocumentValue.Items(result!, RoiDocumentValue.Inspection);
         var item = Assert.Single(items);
         var shape = item.Get<RecordValue>("shape");
         Assert.Equal("rectangle", shape.Get<string>("kind"));
@@ -58,7 +58,7 @@ public sealed class BlobRoiBaselineTests
         Assert.Equal(200d, shape.Get<RecordValue>("center").Get<double>("y"), 3);
         Assert.Equal(50d, shape.Get<double>("width"), 3);
         Assert.Equal(30d, shape.Get<double>("height"), 3);
-        Assert.Equal(BlobLocalRoi.Explicit, BlobLocalRoi.Coverage(result!, BlobLocalRoi.Inspection));
+        Assert.Equal(RoiDocumentValue.Explicit, RoiDocumentValue.Coverage(result!, RoiDocumentValue.Inspection));
     }
 
     [Fact]
@@ -78,7 +78,7 @@ public sealed class BlobRoiBaselineTests
         var result = BlobRoiInheritance.Materialize(Inputs(values), null);
 
         Assert.NotNull(result);
-        var shape = Assert.Single(BlobLocalRoi.Items(result!, BlobLocalRoi.Inspection)).Get<RecordValue>("shape");
+        var shape = Assert.Single(RoiDocumentValue.Items(result!, RoiDocumentValue.Inspection)).Get<RecordValue>("shape");
         Assert.Equal("annulus", shape.Get<string>("kind"));
         Assert.Equal(10d, shape.Get<double>("inner-radius"), 3);
         Assert.Equal(40d, shape.Get<double>("outer-radius"), 3);
@@ -105,17 +105,17 @@ public sealed class BlobRoiBaselineTests
                 new object?[] { "0,0,10,0,10,10" })
         };
 
-        var result = BlobMaskInheritance.Materialize(new InputValues(BlobMaskInheritance.Ports, values), BlobLocalRoi.Empty);
+        var result = BlobMaskInheritance.Materialize(new InputValues(BlobMaskInheritance.Ports, values), RoiDocumentValue.Empty);
 
         Assert.NotNull(result);
-        var maskItems = BlobLocalRoi.Items(result!, BlobLocalRoi.Mask);
+        var maskItems = RoiDocumentValue.Items(result!, RoiDocumentValue.Mask);
         var shape = Assert.Single(maskItems).Get<RecordValue>("shape");
         Assert.Equal("polygon", shape.Get<string>("kind"));
         var vertices = shape.Get<SequenceValue>("vertices").Cast<RecordValue>().ToArray();
         Assert.Equal(3, vertices.Length);
         Assert.Equal(0d, vertices[0].Get<double>("x"), 3);
         Assert.Equal(10d, vertices[2].Get<double>("y"), 3);
-        Assert.Equal(BlobLocalRoi.Explicit, BlobLocalRoi.Coverage(result!, BlobLocalRoi.Mask));
+        Assert.Equal(RoiDocumentValue.Explicit, RoiDocumentValue.Coverage(result!, RoiDocumentValue.Mask));
     }
 
     [Fact]
@@ -126,8 +126,8 @@ public sealed class BlobRoiBaselineTests
             [BlobMaskInheritance.ModeId] = false
         };
 
-        var result = BlobMaskInheritance.Materialize(new InputValues(BlobMaskInheritance.Ports, values), BlobLocalRoi.Empty);
+        var result = BlobMaskInheritance.Materialize(new InputValues(BlobMaskInheritance.Ports, values), RoiDocumentValue.Empty);
 
-        Assert.Same(BlobLocalRoi.Empty, result);
+        Assert.Same(RoiDocumentValue.Empty, result);
     }
 }

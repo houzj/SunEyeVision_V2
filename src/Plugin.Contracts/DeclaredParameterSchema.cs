@@ -17,6 +17,8 @@ public sealed class DeclaredParameterSchema
     private readonly IReadOnlyList<string> _fieldOrder = Array.Empty<string>();
     /// <summary>引用式呈现字段：fieldId 指向工具已声明的端口，本表只用于建行。</summary>
     private readonly IReadOnlyDictionary<string, XElement> _fieldRows = new Dictionary<string, XElement>();
+    /// <summary>外部已声明的端口（工具执行契约），供 &lt;Field&gt; 引用呈现。</summary>
+    private readonly IReadOnlyDictionary<string, Port> _knownPorts = new Dictionary<string, Port>();
     private readonly IReadOnlyList<RoiGroupDeclaration> _roiGroups = Array.Empty<RoiGroupDeclaration>();
     private readonly IReadOnlyList<RoiAssistDeclaration> _assistGroups = Array.Empty<RoiAssistDeclaration>();
     private readonly IReadOnlyDictionary<string, XElement> _inputs;
@@ -27,7 +29,7 @@ public sealed class DeclaredParameterSchema
     private readonly Dictionary<string, TypeRef> _explicitRefs = new(StringComparer.Ordinal);
 
     private DeclaredParameterSchema(XElement root, IReadOnlyDictionary<string, Type> types,
-        Func<string, TypeRef?>? explicitType)
+        Func<string, TypeRef?>? explicitType, IEnumerable<Port>? knownPorts = null)
     {
         // 根元素名属于工具身份，平台不据此限定；只校验声明版本。
         if ((string?)root.Attribute("schemaVersion") != "1")
@@ -102,6 +104,7 @@ public sealed class DeclaredParameterSchema
         var ids = root.Elements("Group").Elements("Parameter").Select(field => Required(field, "id")).ToArray();
         if (ids.Distinct(StringComparer.Ordinal).Count() != ids.Length)
             throw new InvalidDataException("Duplicate parameter identity.");
+        _knownPorts = (knownPorts??Array.Empty<Port>()).ToDictionary(port => port.Id, StringComparer.Ordinal);
         _roiGroups = RoiGroupDeclaration.Load(root);
         _assistGroups = RoiAssistDeclaration.Load(root);
         // 引用式呈现字段（对应原厂 ButtonSelecter）：只贡献参数页行，端口由工具的执行契约提供，
@@ -183,7 +186,7 @@ public sealed class DeclaredParameterSchema
 
     public static DeclaredParameterSchema Load(Stream stream, Type settingsType,
         Func<PropertyInfo, bool>? includeProperty = null, params Type[] additionalTypes)
-        => LoadWithTypes(stream, settingsType, includeProperty, null, additionalTypes);
+        => LoadWithTypes(stream, settingsType, includeProperty, null, null, additionalTypes);
 
     /// <summary>
     /// 同 <see cref="Load"/>，另可由工具提供自定义类型名解析器：用于 XML 里声明、
@@ -191,7 +194,7 @@ public sealed class DeclaredParameterSchema
     /// </summary>
     public static DeclaredParameterSchema LoadWithTypes(Stream stream, Type settingsType,
         Func<PropertyInfo, bool>? includeProperty, Func<string, TypeRef?>? explicitType,
-        params Type[] additionalTypes)
+        IEnumerable<Port>? knownPorts, params Type[] additionalTypes)
     {
         ArgumentNullException.ThrowIfNull(stream);
         ArgumentNullException.ThrowIfNull(settingsType);
@@ -215,7 +218,7 @@ public sealed class DeclaredParameterSchema
                 MaxCharactersInDocument = 1024 * 1024
             });
             var root = XDocument.Load(reader).Root ?? throw new InvalidDataException("Empty parameter metadata.");
-            return new DeclaredParameterSchema(root, types, explicitType);
+            return new DeclaredParameterSchema(root, types, explicitType, knownPorts);
         }
         catch (XmlException error)
         {
@@ -369,12 +372,17 @@ public sealed class DeclaredParameterSchema
             bindings.Add((port, presentation));
         }
         // 引用式呈现字段：只为参数页贡献行，端口归属由工具的执行契约声明，此处不重复登记。
+        var external = new List<Port>();
         foreach (var row in _fieldRows.Values)
         {
+            var portRef = Required(row, "portRef");
+            if (_knownPorts.TryGetValue(portRef, out var externalPort)) external.Add(externalPort);
+            else if (_knownPorts.Count != 0)
+                throw new InvalidDataException("Presentation field references an unknown externally declared port: " + portRef);
             var editor = (string?)row.Attribute("editor") == "reference"
                 ? FieldEditorKind.Reference
                 : FieldEditorKind.Scalar;
-            bindings.Add((null, new FieldPresentation(Required(row, "portRef"), Required(row, "label"),
+            bindings.Add((null, new FieldPresentation(portRef, Required(row, "label"),
                 Required(row, "section"), bindings.Count, editor, null, null)
             {
                 Layout = new FieldLayout(Required(row, "page"), Required(row, "section"))
@@ -388,7 +396,7 @@ public sealed class DeclaredParameterSchema
             bindings.Where(binding => binding.Port is not null).Select(binding => binding.Port!),
             Array.Empty<Port>(),
             new ToolPresentation(bindings.Select(binding => binding.Presentation)),
-            roiGroups: _roiGroups, assistGroups: _assistGroups);
+            roiGroups: _roiGroups, assistGroups: _assistGroups, externalInputs: external);
     }
 
     /// <summary>解析一组可见性条件；when/value/negate 三属性必须成组出现。</summary>

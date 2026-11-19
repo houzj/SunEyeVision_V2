@@ -37,8 +37,8 @@
       },
       "log4net": {
         "type": "Transitive",
-        "resolved": "2.0.17",
-        "contentHash": "qnnDf/ubJzwm2i1xH7nRMjEDoD+ctse7nZDqb+p7L1PvZc6ykpMoEesWr1/9hFqlsbII2v9e8yyQHJhoDQh7ZA==",
+        "resolved": "3.3.0",
+        "contentHash": "wtZ7K4XGWDxeQqHbUybwIug/3AAzhKcmroLf4ENfE5GsaDIMqT3GLX24f18XPFY8Qg9vaxfMSAODwWAXqkjI/Q==",
         "dependencies": {
           "System.Configuration.ConfigurationManager": "4.5.0"
         }
@@ -97,20 +97,10 @@
           "Newtonsoft.Json": "13.0.3"
         }
       },
-      "Microsoft.Xaml.Behaviors.Wpf": {
-        "type": "Transitive",
-        "resolved": "1.1.31",
-        "contentHash": "LZpuf82ACZWldmfMuv3CTUMDh3o0xo0uHUaybR5HgqVLDBJJ9RZLykplQ/bTJd0/VDt3EhD4iDgUgbdIUAM+Kg=="
-      },
       "Newtonsoft.Json": {
         "type": "Transitive",
         "resolved": "13.0.3",
         "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
-      },
-      "System.CodeDom": {
-        "type": "Transitive",
-        "resolved": "7.0.0",
-        "contentHash": "GLltyqEsE5/3IE+zYRP5sNa1l44qKl9v+bfdMcwg+M9qnQf47wK3H0SUR/T+3N4JEQXF3vV4CSuuo0rsg+nq2A=="
       },
       "System.Collections.Immutable": {
         "type": "Transitive",
@@ -124,14 +114,6 @@
         "dependencies": {
           "System.Security.Cryptography.ProtectedData": "4.5.0",
           "System.Security.Permissions": "4.5.0"
-        }
-      },
-      "System.Management": {
-        "type": "Transitive",
-        "resolved": "7.0.0",
-        "contentHash": "A4jed4QUviDOm7fJNKAJObEAEkEUXmkGL/w0iyCYTzrl1rezTj8LGFHfsVst4Vb9JwFcTpboiDrvdST48avBpw==",
-        "dependencies": {
-          "System.CodeDom": "7.0.0"
         }
       },
       "System.Reflection.Metadata": {
@@ -241,7 +223,7 @@
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection": "[9.0.0, )",
           "Microsoft.Extensions.Options": "[9.0.0, )",
-          "log4net": "[2.0.17, )"
+          "log4net": "[3.3.0, )"
         }
       },
       "suneyevision.haladapter.runtime": {
@@ -268,14 +250,6 @@
           "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
         }
       },
-      "suneyevision.plugin.wpf": {
-        "type": "Project",
-        "dependencies": {
-          "Microsoft.Xaml.Behaviors.Wpf": "[1.1.31, )",
-          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
-          "System.Management": "[7.0.0, )"
-        }
-      },
       "SunEyeVision.Tool.If.Runtime": {
         "type": "Project",
         "dependencies": {
@@ -289,13 +263,6 @@
           "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
         }
       },
-      "SunEyeVision.Tool.IntensityMeasure.Wpf": {
-        "type": "Project",
-        "dependencies": {
-          "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Tool.IntensityMeasure.Runtime": "[2.0.0-alpha.8, )"
-        }
-      },
       "SunEyeVision.Tool.PixelCount.Runtime": {
         "type": "Project",
         "dependencies": {
@@ -305,14 +272,6 @@
       }
     },
     "net9.0-windows7.0/win-x64": {
-      "System.Management": {
-        "type": "Transitive",
-        "resolved": "7.0.0",
-        "contentHash": "A4jed4QUviDOm7fJNKAJObEAEkEUXmkGL/w0iyCYTzrl1rezTj8LGFHfsVst4Vb9JwFcTpboiDrvdST48avBpw==",
-        "dependencies": {
-          "System.CodeDom": "7.0.0"
-        }
-      },
       "System.Security.AccessControl": {
         "type": "Transitive",
         "resolved": "4.5.0",

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Source: IMVSPixelCountModuVA.xml. ROIAnnulus is normalized to the shared Region input contract. -->
+<PixelCountTool originalModule="IMVSPixelCountModuVA">
+  <Input id="input.image" originalId="InputImage" resource="Image" required="true" />
+  <Input id="input.roi" originalId="InputROI|InputROIAnnulus" resource="Region" required="false" />
+  <Input id="input.mask" originalId="InputMask" resource="Image" required="false" />
+  <Output id="output.module-status" originalId="ModuStatus" />
+  <Output id="output.module-time-ms" originalId="ModuRunTime" />
+  <Output id="output.count" originalId="Count" />
+  <Output id="output.ratio" originalId="Ratio" />
+  <Output id="output.roi" originalId="ROI|ROIAnnulus" />
+  <Output id="output.mask" originalId="OutputMask" />
+</PixelCountTool>

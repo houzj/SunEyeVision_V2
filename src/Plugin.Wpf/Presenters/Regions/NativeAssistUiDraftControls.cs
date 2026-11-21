@@ -55,6 +55,18 @@ public sealed class NativeAssistUiDraftControls : StackPanel, IDisposable
         return row.Editor;
     }
     public event Action? Changed;
+    public void SetPositionCorrectionEnabled(bool enabled)
+    {
+        if (_disposed) return;
+        Visibility = enabled ? Visibility.Visible : Visibility.Collapsed;
+        if (!enabled)
+        {
+            foreach (var child in Children.OfType<UIElement>()) child.Visibility = Visibility.Collapsed;
+            return;
+        }
+        foreach (var child in Children.OfType<UIElement>()) child.Visibility = Visibility.Visible;
+        ProjectVisibility();
+    }
     private void OnUiChanged(){if(!_disposed)Changed?.Invoke();}
     public bool TrySetMode(long mode)=>!_disposed&&_mode.TrySetConstant(mode);
     private IEnumerable<DeclaredFieldRow> ActiveSources => _rows.Select(row => row.Editor).OfType<DeclaredFieldRow>()

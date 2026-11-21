@@ -1,0 +1,28 @@
+{
+  "date": "2026-11-21",
+  "scope": [
+    "DivideImage",
+    "BlobLabels",
+    "ContourMatch",
+    "GrayMatch",
+    "MarkFind",
+    "If"
+  ],
+  "releasePayloadSha256": "5CDC77BBD3004318EA47A8EDF00AE833BDD06F008C413D0BC42C61AC9594C5BE",
+  "source": "Release/_validation/AgentDesktopToolReview/batch-all/batch-summary-exact.json",
+  "method": "Agent Desktop isolated solution audit, open each tool window and close it",
+  "results": [
+    { "toolId": "DivideImage", "node": "划片拆分1", "status": "Passed", "run": "20261120-001241-划片拆分1" },
+    { "toolId": "BlobLabels", "node": "Blob标签分析1", "status": "Passed", "run": "20261120-001458-Blob标签分析1" },
+    { "toolId": "ContourMatch", "node": "轮廓匹配1", "status": "Passed", "run": "20261120-001315-轮廓匹配1" },
+    { "toolId": "GrayMatch", "node": "灰度匹配1", "status": "Passed", "run": "20261120-001349-灰度匹配1" },
+    { "toolId": "MarkFind", "node": "图形定位1", "status": "Passed", "run": "20261120-001424-图形定位1" },
+    { "toolId": "If", "node": "条件分支1", "status": "Passed", "run": "20261120-001532-条件分支1" }
+  ],
+  "notes": [
+    "The first name-based batch used numbered node names and failed to locate nodes. The exact-name rerun is the authoritative result.",
+    "This probe verifies Release window admission and close behavior. It does not establish numerical equivalence with the original algorithm.",
+    "RuntimeEditorProductionProbe still has a documented long ImageSource-to-Blob chain timeout. It is not used as a pass claim for these six tools."
+  ]
+}
+

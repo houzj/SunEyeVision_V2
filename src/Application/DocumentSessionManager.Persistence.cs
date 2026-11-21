@@ -128,7 +128,7 @@ public sealed partial class DocumentSessionManager
             IVariableValueExtensionCodec? codec;
             try { codec=createCodec(scope); }
             catch(Exception failure) { try { scope.Dispose(); } catch(Exception cleanup) { throw new AggregateException("创建解码器和释放候选资源均失败。",failure,cleanup); } throw; }
-            using var candidate=SolutionDocumentReader.Read(bytes,declarations,types,options,scope,codec,Path.GetDirectoryName(targetPath));
+            using var candidate=SolutionDocumentReader.Read(bytes,declarations,types,options,scope,codec,Path.GetDirectoryName(targetPath),CreateExpansionHook(_directory));
             cancellationToken.ThrowIfCancellationRequested();
             using(var admitted=DocumentSession.FromPersistenceCandidate(candidate,_directory,declarations)) { }
             cancellationToken.ThrowIfCancellationRequested();
@@ -159,7 +159,7 @@ public sealed partial class DocumentSessionManager
                 try { scope.Dispose(); } catch(Exception cleanup) { throw new AggregateException("创建解码器和释放候选资源均失败。",failure,cleanup); }
                 throw;
             }
-            using var candidate=SolutionDocumentReader.Read(bytes,declarations,types,options,scope,codec,Path.GetDirectoryName(path));
+            using var candidate=SolutionDocumentReader.Read(bytes,declarations,types,options,scope,codec,Path.GetDirectoryName(path),CreateExpansionHook(_directory));
             cancellationToken.ThrowIfCancellationRequested();
             var session=DocumentSession.FromPersistenceCandidate(candidate,_directory,declarations);
             try { session.SetOpenedPersistenceBaseline(candidate.PrepareSave(path,TargetExpectation.Match(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(bytes))))); cancellationToken.ThrowIfCancellationRequested(); }
@@ -173,8 +173,17 @@ public sealed partial class DocumentSessionManager
         }
         finally { _busy=false; }
     }
-    private static IReadOnlyDictionary<string,FrozenToolDeclarations> FreezeDeclarations(byte[] bytes,RuntimeDirectorySnapshot directory)
-    {
+    private static Func<string,FieldSettings,ToolSchema,ToolSchema> CreateExpansionHook(RuntimeDirectorySnapshot directory)
+        => (tool, fields, declared) =>
+        {
+            using var lease = directory.AcquireInvocation("动态声明展开");
+            var definition = directory.CreateDefinition(tool);
+            return definition is IToolDynamicSettings dynamicSettings
+                ? dynamicSettings.ExpandSettings(declared, fields)
+                : declared;
+        };
+
+    private static IReadOnlyDictionary<string,FrozenToolDeclarations> FreezeDeclarations(byte[] bytes,RuntimeDirectorySnapshot directory)    {
         using var json=JsonDocument.Parse(bytes); SolutionFormatPolicy.ValidateReadable(json.RootElement);
         var ids=new HashSet<string>(StringComparer.Ordinal);
         if(json.RootElement.TryGetProperty("Workflows",out var flows) && flows.ValueKind==JsonValueKind.Array)

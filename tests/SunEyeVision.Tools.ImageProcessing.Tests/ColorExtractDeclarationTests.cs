@@ -19,14 +19,18 @@ public sealed class ColorExtractDeclarationTests
         // 工具箱目录中 IMVSColorExtractModu 位于「颜色处理」；运行时分类必须与之一致才能准入。
         Assert.Equal("颜色处理", tool.Catalog.Category);
         Assert.False(string.IsNullOrWhiteSpace(tool.Catalog.Description));
-        var component = Assert.Single(typeof(ColorExtractTool).Assembly.GetCustomAttributes<ToolComponentAttribute>());
+        var components = typeof(ColorExtractTool).Assembly.GetCustomAttributes<ToolComponentAttribute>().ToArray();
+        Assert.Equal(2, components.Length);
+        var component = Assert.Single(components, item => item.Metadata.Role == ToolComponentRole.Runtime);
         Assert.Equal("SunEyeVision.Tool.ColorExtract.Runtime", component.Metadata.ComponentId);
         Assert.Equal(tool.ToolId, component.Metadata.ToolId);
-        Assert.Equal(ToolComponentRole.Runtime, component.Metadata.Role);
         Assert.Equal(FoundationContract.Major, component.Metadata.ContractMajor);
         Assert.Equal(FoundationContract.Minor, component.Metadata.ContractMinor);
         Assert.Null(component.Metadata.CompanionToolId);
         Assert.Equal(typeof(ColorExtractTool).FullName, component.EntryType);
+        var editor = Assert.Single(components, item => item.Metadata.Role == ToolComponentRole.Editor);
+        Assert.Equal("SunEyeVision.Tool.ColorExtract.Wpf", editor.Metadata.ComponentId);
+        Assert.Equal(tool.ToolId, editor.Metadata.CompanionToolId);
         Assert.IsAssignableFrom<IToolRuntimeInitialization>(tool);
     }
 
@@ -96,9 +100,10 @@ public sealed class ColorExtractDeclarationTests
     public void Presentation_keeps_the_original_page_grouping_choice_and_range_layout()
     {
         var fields = ColorExtractFields.Schema.Presentation!.Fields.ToDictionary(field => field.FieldId, StringComparer.Ordinal);
-        Assert.All(fields.Values, field => Assert.Equal(ColorExtractFields.Page, field.Layout!.Page));
+        Assert.Equal(ColorExtractFields.RunPage, fields[ColorExtractFields.ColorRange].Layout!.Page);
+        Assert.Equal(ColorExtractFields.ResultPage, fields[ColorExtractFields.AreaLimitLow].Layout!.Page);
         Assert.Equal(ColorExtractFields.RangeSection, fields[ColorExtractFields.ColorRange].Group);
-        Assert.Equal(ColorExtractFields.ParamsSection, fields[ColorExtractFields.AreaLimitLow].Group);
+        Assert.Equal(ColorExtractFields.LimitSection, fields[ColorExtractFields.AreaLimitLow].Group);
         var low = fields[ColorExtractFields.AreaLimitLow];
         var high = fields[ColorExtractFields.AreaLimitHigh];
         Assert.Equal(ColorExtractFields.AreaLimitHigh, low.Layout!.PairWith);
@@ -199,9 +204,11 @@ public sealed class ColorExtractDeclarationTests
         var schema = ResultDisplayFields.EditorSchema(tool);
         var defaults = ((IToolSettingsFields)tool).ReadSettings(new ColorExtractSettings()).CopyValues()
             .ToDictionary(pair => pair.Key, pair => (ParameterSetting)new ConstantSetting(pair.Value), StringComparer.Ordinal);
+        foreach (var pair in tool.CreateDisplaySettings().CopyValues())
+            defaults[pair.Key] = new ConstantSetting(pair.Value);
         var session = new ToolSettingsEditSession(tool, new FieldSettings(schema.Inputs, defaults));
         var captured = session.CaptureValidatedFields();
-        Assert.Equal(4, captured.Declarations.Count);
+        Assert.Equal(schema.Inputs.Count, captured.Declarations.Count);
         session.ApplyFields(new Dictionary<string, ParameterSetting>
         {
             [ColorExtractFields.ColorRange] = new ConstantSetting("255,0,255,0,0,0,1,0,1"),

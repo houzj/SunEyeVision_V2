@@ -12,6 +12,7 @@ internal sealed class AdmittedToolConfiguration
 {
     private readonly IToolDefinition _definition;
     internal IToolDefinition Definition => _definition;
+    private readonly ToolSchema _staticSettingsSchema;
     private readonly Func<ToolConfiguration, AdmittedToolConfiguration> _factory;
     internal RuntimeDirectorySnapshot Directory { get; }
     internal ToolConfiguration Configuration { get; }
@@ -138,12 +139,35 @@ internal sealed class AdmittedToolConfiguration
             throw new ArgumentException("当前值必须属于已准入的参数字段。", nameof(fieldId));
         return WithConfiguration(Configuration.WithAcceptedParameterValue(fieldId, value));
     }
+    private FieldSettings EnsureDynamicDeclarations(FieldSettings fields)
+    {
+        if (_definition is not IToolDynamicSettings dynamicSettings) return fields;
+        var expanded = dynamicSettings.ExpandSettings(_staticSettingsSchema, fields);
+        if (string.Equals(expanded.Fingerprint, SettingsSchema.Fingerprint, StringComparison.Ordinal)) return fields;
+        var declarations = Schema.Inputs.Concat(expanded.Inputs).Concat(DisplaySchema.Inputs).ToArray();
+        var rebuilt = fields.Select(declarations);
+        var defaults = dynamicSettings.ExpandDefaults(expanded, rebuilt);
+        return defaults.Count != 0 ? rebuilt.Apply(defaults) : rebuilt;
+    }
     internal AdmittedToolConfiguration WithFieldSettings(IReadOnlyDictionary<string, ParameterSetting> changes, IReadOnlyList<string>? acceptedFieldOrder = null)
     {
         ArgumentNullException.ThrowIfNull(changes);
         if (_definition is IToolFieldTransitions transitions)
             changes = transitions.ExpandChanges(Configuration.Fields, changes);
-        var fields = Configuration.Fields.Apply(changes);
+        var currentFields = EnsureDynamicDeclarations(Configuration.Fields);
+        var fields = currentFields.Apply(changes);
+        // 动态子项：数量变化会改变端口集合，必须在提交前重建声明并补齐新端点的默认值。
+        if (_definition is IToolDynamicSettings dynamicSettings)
+        {
+            var expanded = dynamicSettings.ExpandSettings(_staticSettingsSchema, fields);
+            if (!string.Equals(expanded.Fingerprint, SettingsSchema.Fingerprint, StringComparison.Ordinal))
+            {
+                var declarations = Schema.Inputs.Concat(expanded.Inputs).Concat(DisplaySchema.Inputs).ToArray();
+                fields = fields.Select(declarations);
+                var defaults = dynamicSettings.ExpandDefaults(expanded, fields);
+                if (defaults.Count != 0) fields = fields.Apply(defaults);
+            }
+        }
         var parameters = SettingsSchema.Inputs.Select(port => port.Id).ToHashSet(StringComparer.Ordinal);
         bool Referenced(string id) => parameters.Contains(id) && fields.Read(id) is ReferenceSetting or VariableSetting;
         static string Identity(string id, ParameterSetting setting)
@@ -201,7 +225,13 @@ internal sealed class AdmittedToolConfiguration
         Directory = directory; Configuration = configuration;
         Schema = definition.Describe();
         var settings = definition as IToolSettingsFields ?? throw new ArgumentException("工具缺少参数声明。");
-        SettingsSchema = settings.SettingsSchema; DisplaySchema = ResultDisplayFields.Schema(definition);
+        var declaredSettings = settings.SettingsSchema;
+        _staticSettingsSchema = declaredSettings;
+        // 动态子项（原厂 IDynamicChild）：工具按当前保存状态扩展端口，编辑器、绑定目标和执行材质化
+        // 都使用这一份扩展结果，避免三处身份不一致。
+        SettingsSchema = (definition as IToolDynamicSettings)?.ExpandSettings(declaredSettings, configuration.Fields)
+            ?? declaredSettings;
+        DisplaySchema = ResultDisplayFields.Schema(definition);
         HostDeclarations = ToolHostDeclarationRules.Capture(definition);
         ManualReferenceSources = CaptureManualSources(definition);
         var targets = Schema.Inputs.Concat(SettingsSchema.Inputs).Concat(DisplaySchema.Inputs).ToArray();

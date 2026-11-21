@@ -1,7 +1,7 @@
 {
   "tool": "ColorExtract",
   "phase": "single-tool-functional-audit",
-  "status": "evidence-driven-range-panel-adjusted-and-runtime-verified",
+  "status": "evidence-driven-range-panel-and-histogram-verified",
   "vm_evidence": {
     "sources": [
       "docs/07-工具逆向/decompiled/ModuleControls/IMVSColorExtractModuControl/IMVSColorExtractModuControl/UserScrollView.xaml",
@@ -25,7 +25,7 @@
     "confirmed": [
       "当前参数页使用声明字段链，尚未证明复用了原厂颜色卡列表和图标资源",
       "当前运行模型覆盖颜色范围数据，但原厂列表悬停/删除/横向滚动状态尚未完成运行证据对照",
-      "当前 ColorExtractRangePanel 尚未呈现原厂 HikHistogramSingle；仓库仅有 pending 迁移记录且依赖未闭合，不能用自绘图表替代"
+      "当前 ColorExtractRangePanel 已呈现公共框架迁移的 HikHistogramSingle，三通道按原厂 108x50 尺寸接入，缺少图像引用时保持空 DataPoints，不生成伪造直方图"
     ]
   },
   "runtime_observation": {
@@ -130,7 +130,6 @@
     "reason": "原厂 UserScrollView、RangeInfo、paramusercontroldatatemplate 和资源均已提供逐控件证据；面板只通过现有声明字段接缝提交，不改变 Runtime 协议。"
   },
   "pending": [
-    "补齐 HikHistogramSingle 原件依赖闭包后再迁移三个通道直方图",
     "完成通道 SliderArrange 运行时编辑和保存重开",
     "补充原厂颜色卡片截图对照"
   ],
@@ -139,7 +138,15 @@
     "exit_code": 0,
     "passed": 20,
     "failed": 0,
-    "payload_sha256": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB"
+    "payload_sha256": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB",
+    "histogram_control": {
+      "type": "SunEyeVision.Plugin.Wpf.Native.Input.Interaction.Controls.HikHistogramSingle",
+      "source": "src/Plugin.Wpf/Controls/Native/Input/Interaction.Pc/Interaction.Controls/HikHistogramSingle.xaml",
+      "channels": 3,
+      "width": 108,
+      "inner_height": 50,
+      "empty_data_points_policy": "preserve-empty"
+    }
   },
   "evidence_driven_change_20261118": {
     "source": "docs/07-工具逆向/decompiled/ModuleControls/IMVSColorExtractModuControl/Apps.XmlParser.ParamTab/RangeInfo.cs",

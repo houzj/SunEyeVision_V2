@@ -25,7 +25,115 @@
       <CompanionToolId>BlobAnalysis</CompanionToolId>
       <SharedAssembly>true</SharedAssembly>
     </ProductToolComponent>
-    <!-- B2-C 线分类类 UI 骨架（算法待补证）：数据分类 -->
-    <!-- B2-C 线分类类 UI 骨架（算法待补证）：ML分类 -->
+    <ProductToolComponent Include="tools/SunEyeVision.PixelCount/SunEyeVision.Tool.PixelCount.csproj">
+      <ComponentId>SunEyeVision.Tool.PixelCount.Runtime</ComponentId>
+      <ToolId>PixelCount</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.PixelCount.Runtime.PixelCountTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.PixelCount/SunEyeVision.Tool.PixelCount.csproj">
+      <ComponentId>SunEyeVision.Tool.PixelCount.Wpf</ComponentId>
+      <ToolId>PixelCount</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.PixelCount.Wpf.PixelCountEditorFactory</EntryType>
+      <CompanionToolId>PixelCount</CompanionToolId><SharedAssembly>true</SharedAssembly>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.FrameMean/SunEyeVision.Tool.FrameMean.csproj">
+      <ComponentId>SunEyeVision.Tool.FrameMean.Runtime</ComponentId>
+      <ToolId>FrameMean</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.FrameMean.Runtime.FrameMeanTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.FrameMean/SunEyeVision.Tool.FrameMean.csproj">
+      <ComponentId>SunEyeVision.Tool.FrameMean.Wpf</ComponentId>
+      <ToolId>FrameMean</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.FrameMean.Wpf.FrameMeanEditorFactory</EntryType>
+      <CompanionToolId>FrameMean</CompanionToolId><SharedAssembly>true</SharedAssembly>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.IntensityMeasure/SunEyeVision.Tool.IntensityMeasure.csproj">
+      <ComponentId>SunEyeVision.Tool.IntensityMeasure.Runtime</ComponentId>
+      <ToolId>IntensityMeasure</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.IntensityMeasure.Runtime.IntensityMeasureTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.IntensityMeasure/SunEyeVision.Tool.IntensityMeasure.csproj">
+      <ComponentId>SunEyeVision.Tool.IntensityMeasure.Wpf</ComponentId>
+      <ToolId>IntensityMeasure</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.IntensityMeasure.Wpf.IntensityMeasureEditorFactory</EntryType>
+      <CompanionToolId>IntensityMeasure</CompanionToolId><SharedAssembly>true</SharedAssembly>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.ColorExtract/SunEyeVision.Tool.ColorExtract.csproj">
+      <ComponentId>SunEyeVision.Tool.ColorExtract.Runtime</ComponentId>
+      <ToolId>ColorExtract</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.ColorExtract.Runtime.ColorExtractTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.ColorExtract/SunEyeVision.Tool.ColorExtract.csproj">
+      <ComponentId>SunEyeVision.Tool.ColorExtract.Wpf</ComponentId>
+      <ToolId>ColorExtract</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.ColorExtract.Wpf.ColorExtractEditorFactory</EntryType>
+      <CompanionToolId>ColorExtract</CompanionToolId><SharedAssembly>true</SharedAssembly>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.DivideImage/SunEyeVision.Tool.DivideImage.csproj">
+      <ComponentId>SunEyeVision.Tool.DivideImage.Runtime</ComponentId>
+      <ToolId>DivideImage</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.DivideImage.Runtime.DivideImageTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.DivideImage/SunEyeVision.Tool.DivideImage.csproj">
+      <ComponentId>SunEyeVision.Tool.DivideImage.Wpf</ComponentId>
+      <ToolId>DivideImage</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.DivideImage.Wpf.DivideImageEditorFactory</EntryType>
+      <CompanionToolId>DivideImage</CompanionToolId><SharedAssembly>true</SharedAssembly>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.ContourMatch/SunEyeVision.Tool.ContourMatch.csproj">
+      <ComponentId>SunEyeVision.Tool.ContourMatch.Runtime</ComponentId>
+      <ToolId>ContourMatch</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.ContourMatch.Runtime.ContourMatchTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.ContourMatch/SunEyeVision.Tool.ContourMatch.csproj">
+      <ComponentId>SunEyeVision.Tool.ContourMatch.Wpf</ComponentId>
+      <ToolId>ContourMatch</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.ContourMatch.Wpf.ContourMatchEditorFactory</EntryType>
+      <CompanionToolId>ContourMatch</CompanionToolId><SharedAssembly>true</SharedAssembly>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.GrayMatch/SunEyeVision.Tool.GrayMatch.csproj">
+      <ComponentId>SunEyeVision.Tool.GrayMatch.Runtime</ComponentId>
+      <ToolId>GrayMatch</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.GrayMatch.Runtime.GrayMatchTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.GrayMatch/SunEyeVision.Tool.GrayMatch.csproj">
+      <ComponentId>SunEyeVision.Tool.GrayMatch.Wpf</ComponentId>
+      <ToolId>GrayMatch</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.GrayMatch.Wpf.GrayMatchEditorFactory</EntryType>
+      <CompanionToolId>GrayMatch</CompanionToolId><SharedAssembly>true</SharedAssembly>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.MarkFind/SunEyeVision.Tool.MarkFind.csproj">
+      <ComponentId>SunEyeVision.Tool.MarkFind.Runtime</ComponentId>
+      <ToolId>MarkFind</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.MarkFind.Runtime.MarkFindTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.MarkFind/SunEyeVision.Tool.MarkFind.csproj">
+      <ComponentId>SunEyeVision.Tool.MarkFind.Wpf</ComponentId>
+      <ToolId>MarkFind</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.MarkFind.Wpf.MarkFindEditorFactory</EntryType>
+      <CompanionToolId>MarkFind</CompanionToolId><SharedAssembly>true</SharedAssembly>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.BlobLabels/SunEyeVision.Tool.BlobLabels.csproj">
+      <ComponentId>SunEyeVision.Tool.BlobLabels.Runtime</ComponentId>
+      <ToolId>BlobLabels</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.BlobLabels.Runtime.BlobLabelsTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.BlobLabels/SunEyeVision.Tool.BlobLabels.csproj">
+      <ComponentId>SunEyeVision.Tool.BlobLabels.Wpf</ComponentId>
+      <ToolId>BlobLabels</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.BlobLabels.Wpf.BlobLabelsEditorFactory</EntryType>
+      <CompanionToolId>BlobLabels</CompanionToolId><SharedAssembly>true</SharedAssembly>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.If/SunEyeVision.Tool.If.csproj">
+      <ComponentId>SunEyeVision.Tool.If.Runtime</ComponentId>
+      <ToolId>If</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.If.Runtime.IfTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.If/SunEyeVision.Tool.If.csproj">
+      <ComponentId>SunEyeVision.Tool.If.Wpf</ComponentId>
+      <ToolId>If</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.If.Wpf.IfEditorFactory</EntryType>
+      <CompanionToolId>If</CompanionToolId><SharedAssembly>true</SharedAssembly>
+    </ProductToolComponent>
   </ItemGroup>
 </Project>

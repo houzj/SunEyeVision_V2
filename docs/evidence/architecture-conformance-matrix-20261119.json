@@ -119,8 +119,8 @@
         "docs/evidence/bloblabels-real-ui-comparison-20261118.json"
       ],
       "self_entry": [
-        "tools/SunEyeVision.BlobLabels/Runtime/SunEyeVision.BlobLabels.Runtime.csproj",
-        "tools/SunEyeVision.BlobLabels/Wpf/SunEyeVision.BlobLabels.Wpf.csproj"
+        "tools/SunEyeVision.BlobLabels/SunEyeVision.Tool.BlobLabels.csproj",
+        "tools/SunEyeVision.BlobLabels/SunEyeVision.Tool.BlobLabels.csproj"
       ],
       "self_declaration": "C# 字段声明，无独立参数 XML",
       "self_structure": "legacy-dual-project",
@@ -145,15 +145,14 @@
         "docs/evidence/contourmatch-ui-confirmation-20261118.json"
       ],
       "self_entry": [
-        "tools/SunEyeVision.ContourMatch/Runtime/SunEyeVision.ContourMatch.Runtime.csproj",
-        "tools/SunEyeVision.ContourMatch/Wpf/SunEyeVision.ContourMatch.Wpf.csproj",
-        "tools/SunEyeVision.ContourMatch/Wpf/Views/ContourMatchTemplatePanel.cs"
+        "tools/SunEyeVision.ContourMatch/SunEyeVision.Tool.ContourMatch.csproj",
+        "tools/SunEyeVision.ContourMatch/Editor/Views/ContourMatchTemplatePanel.cs"
       ],
       "self_declaration": "C# 字段声明，无独立参数 XML",
-      "self_structure": "legacy-dual-project",
+      "self_structure": "single-project-shared-assembly",
       "must_cover": ["基本参数", "特征模板", "模板创建", "运行参数", "结果显示"],
       "status": "derived",
-      "status_basis": "四 Tab 页签层已与原厂对照，专属模板面板已单独取证；模板创建完整流程仍缺证据",
+      "status_basis": "四 Tab 页签层已与原厂对照，单项目 Release 迁移和算法链静态复核完成；模板创建完整流程仍缺证据",
       "gaps": [
         "参数 71 项对 65 项",
         "模板创建、加载、清空、模型文件更换流程未闭合",
@@ -172,14 +171,13 @@
         "docs/evidence/graymatch-ui-confirmation-20261118.json"
       ],
       "self_entry": [
-        "tools/SunEyeVision.GrayMatch/Runtime/SunEyeVision.GrayMatch.Runtime.csproj",
-        "tools/SunEyeVision.GrayMatch/Wpf/SunEyeVision.GrayMatch.Wpf.csproj"
+        "tools/SunEyeVision.GrayMatch/SunEyeVision.Tool.GrayMatch.csproj"
       ],
       "self_declaration": "C# 字段声明，无独立参数 XML",
-      "self_structure": "legacy-dual-project",
+      "self_structure": "single-project-shared-assembly",
       "must_cover": ["模板资源", "搜索区域", "运行参数", "结果表"],
       "status": "derived",
-      "status_basis": "双侧窗口快照已采集，原厂模块名带 VA 后缀并与 ContourMatch 分页对照完成",
+      "status_basis": "双侧窗口快照已采集，单项目 Release 迁移完成，原厂模块名带 VA 后缀并与 ContourMatch 分页对照完成",
       "gaps": [
         "参数 41 项对 39 项",
         "模块名 VA 后缀的语义差异未单独确认",
@@ -197,15 +195,14 @@
         "docs/evidence/markfind-ui-confirmation-20261118.json"
       ],
       "self_entry": [
-        "tools/SunEyeVision.MarkFind/Runtime/SunEyeVision.MarkFind.Runtime.csproj",
-        "tools/SunEyeVision.MarkFind/Wpf/SunEyeVision.MarkFind.Wpf.csproj",
-        "tools/SunEyeVision.MarkFind/Wpf/Views/MarkFindTemplatePanel.cs"
+        "tools/SunEyeVision.MarkFind/SunEyeVision.Tool.MarkFind.csproj",
+        "tools/SunEyeVision.MarkFind/Editor/Views/MarkFindTemplatePanel.cs"
       ],
       "self_declaration": "C# 字段声明，无独立参数 XML",
-      "self_structure": "legacy-dual-project",
+      "self_structure": "single-project-shared-assembly",
       "must_cover": ["基本参数", "模板/模型", "搜索区域", "结果显示"],
       "status": "derived",
-      "status_basis": "独立 Control 与原厂资源按钮已取证；编辑模型窗口语义明确为未确认",
+      "status_basis": "独立 Control 与原厂资源按钮已取证，单项目 Release 迁移完成；编辑模型窗口语义和算法数值仍未确认",
       "gaps": [
         "参数 60 项对 59 项",
         "原厂编辑模型窗口与 .mfxml 文件格式未确认，不实现编辑语义",
@@ -249,11 +246,11 @@
         "docs/evidence/divideimage-ui-confirmation-20261118.json"
       ],
       "self_entry": [
-        "tools/SunEyeVision.DivideImage/Runtime/SunEyeVision.DivideImage.Runtime.csproj",
-        "tools/SunEyeVision.DivideImage/Wpf/SunEyeVision.DivideImage.Wpf.csproj"
+        "tools/SunEyeVision.DivideImage/SunEyeVision.Tool.DivideImage.csproj",
+        "tools/SunEyeVision.DivideImage/Editor/Views/DivideImageParameterEditor.xaml"
       ],
       "self_declaration": "C# 字段声明，无独立参数 XML",
-      "self_structure": "legacy-dual-project",
+      "self_structure": "single-project-shared-assembly",
       "must_cover": ["切片模式", "范围控件", "输出结果"],
       "status": "derived",
       "status_basis": "参数 4 项一一对应，双侧窗口快照已采集且无遗留待办",
@@ -298,14 +295,14 @@
         "docs/evidence/if-review-20261118.json"
       ],
       "self_entry": [
-        "tools/SunEyeVision.If/Runtime/SunEyeVision.If.Runtime.csproj",
-        "tools/SunEyeVision.If/Wpf/SunEyeVision.If.Wpf.csproj"
+        "tools/SunEyeVision.If/SunEyeVision.Tool.If.csproj",
+        "tools/SunEyeVision.If/Editor/Views/IfBranchPanel.cs"
       ],
       "self_declaration": "C# 字段声明，无独立参数 XML",
-      "self_structure": "legacy-dual-project",
+      "self_structure": "single-project-shared-assembly",
       "must_cover": ["条件页", "上下端口", "分支状态", "连线"],
-      "status": "unconfirmed",
-      "status_basis": "原厂模块名仅来自生成脚本；原厂运行参数 0 项与我方 16 项字段的差异没有任何原厂证据解释",
+      "status": "derived",
+      "status_basis": "单项目 Release 迁移、动态条件面板和固定槽位算法链已完成静态复核；原厂动态端口与运行语义仍未确认",
       "gaps": [
         "原厂模块身份未确认",
         "0 项对 16 项差异未解释",
@@ -385,3 +382,4 @@
     "If remains unconfirmed until the original module identity and the zero-versus-sixteen parameter difference are explained by source evidence."
   ]
 }
+

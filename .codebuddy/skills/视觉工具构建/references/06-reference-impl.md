@@ -1,6 +1,6 @@
 # 参考实现与代码锚点
 
-## 1. 参考源选择矩阵（Step1 用）
+## 1. 工程范式源选择矩阵（Step1 用，不替代原厂证据）
 
 | 需求 | 参考实现 | 可借鉴 |
 |---|---|---|
@@ -15,7 +15,8 @@
 | 形态学算子链 | `tools/SunEyeVision.Tool.Morphology/` | 结构元素参数 |
 
 > ⚠️ **禁止**参考 `tools/SunEyeVision.Tool.ImageLoad/`（`HasDebugWindow=false`，无调试窗口，非本技能对象）。
-> ⚠️ Blob 目录为 `SunEyeVision.BlobAnalysis`（**无 `Tool.` 前缀**），csproj 名为 `SunEyeVision.Tool.BlobAnalysis.csproj`。
+> ⚠️ 本表是**工程范式源**（代码骨架 / 装配写法），不替代原厂证据；语义以 [07](07-evidence-pipeline.md) §4 的证据包为准。
+> ⚠️ 工具目录命名不统一：Blob 已迁到 `tools/SunEyeVision.Tool.BlobAnalysis/`，PixelCount 为 `tools/SunEyeVision.PixelCount/`；以 `product/ToolComponents.props` 与台账登记为准。
 
 ## 2. 最新测量范式文件清单（`LineLineMeasure`，v4 定稿）
 
@@ -71,6 +72,7 @@
 |---|---|
 | `[skill:构建验证]` | MSBuild 验证，区分配置错误与业务错误 |
 | `[skill:方案测试]` | 全链路验收 + 测试报告 |
+| `references/07-evidence-pipeline.md` | 生产状态机、证据门禁、台账、算法等价与差异队列 |
 | `[skill:halcon-docs]` | 核对 Halcon 算子参数语义（极性/返回值） |
 | rule-004 | 复用优先（禁止重复造轮子） |
 | rule-014 | Halcon 算子一律 `HOperatorSet` 静态方法 |

@@ -21,9 +21,9 @@
   },
   "product_difference": {
     "sources": [
-      "tools/SunEyeVision.GrayMatch/Wpf/Views/GrayMatchTemplatePanel.cs",
-      "tools/SunEyeVision.GrayMatch/Wpf/Views/GrayMatchParameterEditor.xaml",
-      "tools/SunEyeVision.GrayMatch/Runtime/GrayMatchFields.cs"
+      "tools/SunEyeVision.GrayMatch/Editor/Views/GrayMatchTemplatePanel.cs",
+      "tools/SunEyeVision.GrayMatch/Editor/Views/GrayMatchParameterEditor.xaml",
+      "tools/SunEyeVision.GrayMatch/Parameters/GrayMatchFields.cs"
     ],
     "confirmed": [
       "当前已提供模板新建、清空、导入、导出及模型摘要",
@@ -96,7 +96,7 @@
     "exit_code": 0,
     "passed": 30,
     "failed": 0,
-    "payload_sha256": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB",
+    "payload_sha256": "3EFFA27852B21F99DF6B56274672C492C0C9DB94653F10C897A4890BCEAA882C",
     "template_surface_after_patch": true,
     "graymatch_wpf_build_errors": 0,
     "full_release_build": {

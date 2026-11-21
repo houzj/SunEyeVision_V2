@@ -1,42 +1,51 @@
 # 工程骨架（csproj 模板 + slnx 登记 + 构建验证衔接）
 
-## 1. csproj 模板（新建工具工程直接复制）
+## 1. csproj 模板（单项目双角色，直接复制真实样板）
+
+> 真实样板：`tools/SunEyeVision.PixelCount/SunEyeVision.Tool.PixelCount.csproj`。
+> 一个 csproj 同时声明 **Runtime** 与 **Editor** 两个 `ToolComponent`，程序集名为 `*.Runtime.dll`；不再有独立 `.Wpf` 工程。
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net9.0-windows</TargetFramework>
     <PlatformTarget>x64</PlatformTarget>
-    <OutputType>Library</OutputType>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-    <RootNamespace>SunEyeVision.Tool.XxxMeasure</RootNamespace>
-    <AssemblyName>SunEyeVision.Tool.XxxMeasure</AssemblyName>
-    <IsToolPlugin>true</IsToolPlugin>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>SunEyeVision.Tool.Xxx.Runtime</AssemblyName>
+    <RootNamespace>SunEyeVision.Tool.Xxx.Runtime</RootNamespace>
+    <ToolComponentId>SunEyeVision.Tool.Xxx.Runtime</ToolComponentId>
+    <ToolComponentToolId>Xxx</ToolComponentToolId>
+    <ToolComponentRole>Runtime</ToolComponentRole>
+    <ToolComponentEntryType>SunEyeVision.Tool.Xxx.Runtime.XxxTool</ToolComponentEntryType>
   </PropertyGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Plugin.SDK\SunEyeVision.Plugin.SDK.csproj">
-      <Private>false</Private>
-    </ProjectReference>
+    <!-- 原厂证据 XML 作为嵌入资源；文件名与 LogicalName 按工具证据调整 -->
+    <EmbeddedResource Include="Resources/XxxParameters.xml" LogicalName="Xxx.XxxParameters.xml" />
+    <EmbeddedResource Include="Resources/XxxAlgorithmTab.xml" LogicalName="Xxx.XxxAlgorithmTab.xml" />
+    <EmbeddedResource Include="Resources/XxxTool.xml" LogicalName="Xxx.XxxTool.xml" />
+    <EmbeddedResource Include="Resources/XxxDisplay.xml" LogicalName="Xxx.XxxDisplay.xml" />
+    <EmbeddedResource Include="Resources/ToolItemInfo.xml" LogicalName="Xxx.ToolItemInfo.xml" />
+    <ProjectReference Include="../../src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj" />
+    <ProjectReference Include="../../src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj"><Private>false</Private></ProjectReference>
+    <ProjectReference Include="../../src/SunEyeVision.HalAdapter/Runtime/SunEyeVision.HalAdapter.Runtime.csproj" />
+    <Reference Include="halcondotnetxl"><HintPath>../../libs/halcon/net/halcondotnetxl.dll</HintPath><Private>false</Private></Reference>
   </ItemGroup>
-
   <ItemGroup>
-    <Reference Include="halcondotnetxl">
-      <HintPath>..\..\dev\Debug\halcondotnetxl.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
+    <!-- 同一程序集声明 Editor 角色（双角色共享程序集） -->
+    <AssemblyAttribute Include="SunEyeVision.Plugin.Contracts.ToolComponentAttribute">
+      <_Parameter1>SunEyeVision.Tool.Xxx.Wpf</_Parameter1>
+      <_Parameter2>Xxx</_Parameter2>
+      <_Parameter3>Editor</_Parameter3>
+      <_Parameter4>global::SunEyeVision.Plugin.Contracts.FoundationContract.Major</_Parameter4>
+      <_Parameter4_IsLiteral>true</_Parameter4_IsLiteral>
+      <_Parameter5>global::SunEyeVision.Plugin.Contracts.FoundationContract.Minor</_Parameter5>
+      <_Parameter5_IsLiteral>true</_Parameter5_IsLiteral>
+      <_Parameter6>SunEyeVision.Tool.Xxx.Wpf.XxxEditorFactory</_Parameter6>
+      <_Parameter7>Xxx</_Parameter7>
+    </AssemblyAttribute>
   </ItemGroup>
-
-  <ItemGroup>
-    <!-- Hal 实现（HalImage/GetHalconImage/HOperatorSet 扩展）；按实际引擎需要增删 -->
-    <ProjectReference Include="..\..\src\SunEyeVision.HalAdapter\SunEyeVision.HalAdapter.csproj">
-      <Private>false</Private>
-    </ProjectReference>
-  </ItemGroup>
-
 </Project>
 ```
 
@@ -44,16 +53,16 @@
 
 | 要点 | 值 | 原因 |
 |---|---|---|
-| `IsToolPlugin` | `true` | 输出到 `dev\Debug\plugins\<ToolAssemblyName>\`（唯一部署源） |
-| `Private` | 一律 `false` | 宿主依赖不复制进插件目录（否则插件目录膨胀/版本冲突） |
+| 单项目 | 一个 csproj 同时声明 Runtime + Editor | 发布合同按"一程序集一个 Runtime/Editor 角色"校验；缺任一角色 → 组件封存/编辑器注册失败 |
+| `AssemblyName` | `SunEyeVision.Tool.Xxx.Runtime`（带 `.Runtime`） | 与 `ToolComponentId` 一致，载荷按此登记 |
+| `ToolComponentRole` | PropertyGroup 写 `Runtime` + `AssemblyAttribute` 写 `Editor` | 双角色共享同一程序集 |
+| `EmbeddedResource` | 原厂 XML 按证据归档，LogicalName 与工具约定一致 | 生成器只填证据明确的内容；无证据不造声明文件（见 [07](07-evidence-pipeline.md) §4） |
+| `Private` | 宿主依赖一律 `false` | 宿主依赖不复制进插件目录（否则插件目录膨胀/版本冲突） |
 | `PlatformTarget` | `x64` | 对齐 Halcon native |
-| `ImplicitUsings` | `disable` | 项目统一风格（显式 using） |
-| `Nullable` | `enable` | — |
-| `UseWPF` | `true` | 调试控件为 WPF |
-| halcondotnetxl | `HintPath` 指 `..\..\dev\Debug\halcondotnetxl.dll`，`Private=false` | 与 Plugin.SDK 先例一致，保证 P/Invoke 与 native 同目录 |
-| 引擎引用 | **仅引所需** | 线-线先引 HalAdapter；后续工具按实际 measure 需要收敛 |
+| halcondotnetxl | HintPath `../../libs/halcon/net/halcondotnetxl.dll`，`Private=false` | 与真实样板一致（旧 `dev/Debug` 路径已弃用） |
+| 引擎引用 | **仅引所需**（HalAdapter.Runtime / CvAdapter） | 不污染插件输出目录 |
 
-> ⚠️ **禁止**在工具 csproj 里写 OpenCvSharp `PackageReference`（除非确实走 Cv 引擎）——会污染插件输出目录（rule-016 §5.2）。
+> ⚠️ 旧模板（`IsToolPlugin=true` / 独立 `.Wpf` 工程 / `dev/Debug/halcondotnetxl.dll`）**已弃用，禁止照抄**。禁止在工具 csproj 写 OpenCvSharp `PackageReference`（除非确实走 Cv 引擎）——会污染插件输出目录（rule-016 §5.2）。
 
 ## 2. slnx 登记（必做，漏登记 = IDE 不编译）
 
@@ -98,9 +107,11 @@ Select-String -Path SunEyeVision.slnx,SunEyeVision.App.slnx -Pattern "XxxMeasure
 **验证部署**（`dev\` 被 `.gitignore` 屏蔽，`search_*` 工具看不到 → **必须用 PowerShell**，rule-017）：
 
 ```powershell
-Get-ChildItem -Path "d:\MyWork\SunEyeVision_V2\dev\Debug\plugins\SunEyeVision.Tool.XxxMeasure" -File |
-    Select-Object Name, Length
+Get-ChildItem -Path "d:\MyWork\SunEyeVision_V2\dev\Debug\plugins" -Directory |
+    Where-Object Name -like "*Xxx*" | Select-Object -ExpandProperty FullName
 ```
+
+> 目录名以程序集 `AssemblyName`（单项目通常带 `.Runtime`）为准，不凭工具目录名猜测。
 
 插件目录应**只有**主程序集 + pdb（+ 资源），不应出现 `halcondotnetxl.dll` / `OpenCvSharp.dll`。
 
@@ -129,3 +140,4 @@ Start-Process "d:\MyWork\SunEyeVision_V2\dev\Debug\SunEyeVision.UI.exe"
 | 生命周期 | 打开→运行→关闭→重开：无残留、无重复订阅 |
 | 引擎引用独立 | 插件目录不含 halcon 托管 dll / OpenCvSharp |
 | 结果分组 | 结果树分组顺序符合 `ModuleResultGroupOrder`（见 references/04） |
+| 算法等价 | 有 GoldenCase 才判 `AlgorithmEquivalent`；无基准保持 `AlgorithmUnconfirmed` 并登记台账（见 [07](07-evidence-pipeline.md) §7） |

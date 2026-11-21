@@ -5,36 +5,7 @@
     <Input id="input.pose" label="位置来源" page="基本参数" section="ROI区域" />
   </Inputs>
   <Group page="基本参数" section="ROI区域" vmCategory="Tab_ROI Area">
-    <!-- ROI 继承：与原厂 InheritWayGroup2 的 13 个 ButtonSelecter 一一对应、平级排列。
-         端口由执行契约（BlobRoiInheritance.Ports）声明，这里只声明呈现并引用它，
-         因此不重复登记身份。 -->
-    <Field id="RoiRectangleSource" portRef="input.roi.rectangle" label="Region"
-           page="基本参数" section="ROI区域" editor="reference" />
-    <Field id="RoiCenterX" portRef="input.roi.rectangle.center-x" label="roicenterx"
-           page="基本参数" section="ROI区域" editor="reference" />
-    <Field id="RoiCenterY" portRef="input.roi.rectangle.center-y" label="roicentery"
-           page="基本参数" section="ROI区域" editor="reference" />
-    <Field id="RoiWidth" portRef="input.roi.rectangle.width" label="roiwidth"
-           page="基本参数" section="ROI区域" editor="reference" />
-    <Field id="RoiHeight" portRef="input.roi.rectangle.height" label="roiheight"
-           page="基本参数" section="ROI区域" editor="reference" />
-    <Field id="RoiAngle" portRef="input.roi.rectangle.angle-degrees" label="roiangle"
-           page="基本参数" section="ROI区域" editor="reference" />
-    <Field id="RoiAnnulusSource" portRef="input.roi.annulus" label="Region2"
-           page="基本参数" section="ROI区域" editor="reference" />
-    <Field id="RoiAnnulusCenterX" portRef="input.roi.annulus.center-x" label="roiAnnulusCenterX"
-           page="基本参数" section="ROI区域" editor="reference" />
-    <Field id="RoiAnnulusCenterY" portRef="input.roi.annulus.center-y" label="roiAnnulusCenterY"
-           page="基本参数" section="ROI区域" editor="reference" />
-    <Field id="RoiAnnulusInner" portRef="input.roi.annulus.inner-radius" label="CircleInnerRadius"
-           page="基本参数" section="ROI区域" editor="reference" />
-    <Field id="RoiAnnulusOuter" portRef="input.roi.annulus.outer-radius" label="roiAnnulusOuterRadius"
-           page="基本参数" section="ROI区域" editor="reference" />
-    <Field id="RoiAnnulusStart" portRef="input.roi.annulus.start-degrees" label="Angle Start"
-           page="基本参数" section="ROI区域" editor="reference" />
-    <Field id="RoiAnnulusSweep" portRef="input.roi.annulus.sweep-degrees" label="AngleRange"
-           page="基本参数" section="ROI区域" editor="reference" />
-
+    <!-- ROI inputs are mounted by NativeRoiGroupComposer from BlobRoiInheritance.Ports. -->
     <Parameter id="IsPositionCorrectionEnabled" type="Boolean" default="false" label="位置修正" fieldId="field:c95f3a26edf55097863a7ec47d17cce5" allowReference="false" />
   </Group>
   <Group page="运行参数" section="运行参数" vmCategory="Tab_Run Params">

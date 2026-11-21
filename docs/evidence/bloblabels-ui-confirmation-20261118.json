@@ -13,7 +13,7 @@
     ]
   },
   "product_evidence": {
-    "source": "tools/SunEyeVision.BlobLabels/Wpf/Views/BlobLabelsThresholdAreaPanel.cs",
+    "source": "tools/SunEyeVision.BlobLabels/Editor/Views/BlobLabelsThresholdAreaPanel.cs",
     "confirmed": [
       "当前阈值面板已采用序号、灰度值、面积范围、反选和删除布局",
       "IsAdd 仅保留在持久化值中",
@@ -40,3 +40,4 @@
     "多工具联调暂缓"
   ]
 }
+

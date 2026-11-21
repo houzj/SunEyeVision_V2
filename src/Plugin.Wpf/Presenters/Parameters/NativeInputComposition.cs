@@ -38,7 +38,8 @@ public static class NativeInputPlacementMap
                 var page=field.Layout?.Page??throw new InvalidOperationException($"正式输入缺少原厂 page 映射：{field.FieldId}");
                 var section=field.Layout?.Section??field.Group;
                 if(string.IsNullOrWhiteSpace(section))throw new InvalidOperationException($"正式输入缺少原厂 section 映射：{field.FieldId}");
-                if(!settingsPages.Contains(page))throw new InvalidOperationException($"正式输入 page 未在设置页声明：{field.FieldId} -> {page}");
+                // 原厂存在仅由图像来源或 ROI 组成的输入页。编辑器通过 PageOnlyPages 声明该页，
+                // 输入行不需要伪装成持久化设置字段。
                 return new NativeInputPlacement(field.FieldId,page,section,field.Order);
             }).ToArray();
         if(placements.Select(item=>item.FieldId).Distinct(StringComparer.Ordinal).Count()!=placements.Length)
@@ -59,6 +60,7 @@ public interface INativeInputComposition : IDisposable
     bool HasPendingEdits { get; }
     event Action? Changed;
     DeclaredFieldRow TakeField(string fieldId);
+    void SetFieldRowsVisibility(IEnumerable<string> fieldIds, bool visible);
     IReadOnlyList<NumericModelReadResult> ReadNumericModels(NumericModelReadScope scope, string? fieldId,
         bool pageKnown, bool currentPage, Func<bool> current,
         IReadOnlyDictionary<string, ConstantSetting?>? currentValues = null);

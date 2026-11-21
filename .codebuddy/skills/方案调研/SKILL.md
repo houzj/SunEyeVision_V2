@@ -2,15 +2,15 @@
 name: 方案调研
 description: >
   方案调研技能。定位为「方案设计」的前置阶段。
-  出方案前必须先完成三类调研：源码实现调研（成熟开源项目如何实现同类问题）、
-  架构方案调研（业界 3+ 框架的官方文档与设计思路）、
-  代码库现状调研（当前项目的真实上下文与已有约束）。
-  调研结论必须有可追溯引用（URL+锚点+源码行号），
+  本项目是逆向同构路线：涉及原厂对标的主题，调研默认从**原厂证据**开始——
+  静态链路（反编译源码 / 配置 XML / XAML 资源，带文件:行号）+ 实机链路（agent-desktop 打开原厂含该节点方案，逐页签/弹窗快照+截图），
+  再加代码库现状调研（本方已迁移控件与缺口）。调研结论必须有可追溯引用（原厂文件:行号 / 快照编号+截图 / 本方文件:行号），
   输出独立调研报告沉淀到 .codebuddy/research/ 目录，可跨方案复用。
+  不做业界/开源项目调研；本项目所有方案以原厂证据为准。
   然后移交「方案设计」技能基于调研报告出方案。
 
-  Trigger keywords: 方案调研/调研/竞品调研/技术调研/行业对标/源码调研/
-  业界对标/技术选型调研/可行性调研/参考实现
+  Trigger keywords: 方案调研/调研/原厂取证/逆向调研/竞品调研/技术调研/源码调研/
+  行业对标/技术选型调研/可行性调研/参考实现
 
   DO NOT trigger on: 简单编码、bug 修复、单文件改动、纯文档阅读。
 ---
@@ -18,16 +18,18 @@ description: >
 # 方案调研 — 方案设计的前置阶段
 
 > 本技能是「方案设计」的前置依赖，避免方案设计陷入"以现有实现为基线做调研"的死循环。
-> 调研必须从"成熟开源项目 + 官方文档"开始，而非从"我们的实现"开始。
-> 任何"先出方案再说"、"以我们的实现为基线"、"调研做不做都行"的判断均视为违规。
+> **本项目是逆向同构路线**：与原厂对标的主题，调研必须从**原厂证据**（反编译源码 + 配置 XML + 实机快照）开始，
+> 而非从"成熟开源项目/业界最佳实践"开始——用业界做法替代原厂证据，等于把同构做成自研近似。
+> 任何"先出方案再说"、"以我们的实现为基线"、"用业界经验代替原厂取证"、"调研做不做都行"均视为违规。
 
 ## 目的
 
-解决方案设计阶段的 3 类典型陷阱：
+解决方案设计阶段的 4 类典型陷阱：
 
-1. **以自己为基线** — 看到现有实现就以为找到了"标准做法"，没去查成熟项目怎么做的
-2. **泛泛而谈** — 引用"业界最佳实践"但没说哪家、哪份文档、什么特征
-3. **调研不沉淀** — 每次方案设计都从零搜一遍，浪费 token 也无法复用
+1. **以自己为基线** — 看到现有实现就以为找到了"标准做法"，没去查原厂怎么做的
+2. **用业界替代原厂** — 引用"业界最佳实践/某框架做法"来定原厂对标项，没有原厂反编译行号或实机快照支撑
+3. **只有静态没有实机** — 只查了源码"字段齐全"就判定 UI 对齐，缺 agent-desktop 实机逐页签/弹窗快照
+4. **调研不沉淀** — 每次方案设计都从零搜一遍，浪费 token 也无法复用
 
 工作流产出：
 
@@ -48,30 +50,31 @@ description: >
 按顺序回答：
 
 1. **方案设计的核心问题是什么？** — 用户的功能性视角原话
-2. **这个问题在业界属于哪个领域？** — 通用 Agent 框架 / 协议层 / WPF 桌面 / 搜索/抓取 / 数据库 / 错误处理 / ...
-3. **调研要回答的关键问题清单** — 列出 3~7 个 yes/no 或可对比的问题
-4. **调研完成判据** — 满足什么条件可以停止调研
+2. **原厂对应的是哪个模块/工具？** — 找到 VisionMaster 模块目录、反编译源码、配置 XML
+3. **调研要回答的关键问题清单** — 列出 3~7 个关于原厂实现与本方差异的 yes/no 问题
+4. **调研完成判据** — 静态 + 实机双链路证据齐备、阻碍/成本/接缝分离
 
 示例：
 
 ```markdown
-## 调研主题：RAG 混合检索（BM25 + 向量）架构
+## 调研主题：轮廓匹配模板配置窗口 UI 对齐
 
-**核心问题**: BM25 与向量检索的融合方式（并行 vs 串行，权重如何分配）
+**核心问题**: 原厂模板窗口的布局/工具条/参数行/底栏到底是什么，本方差在哪
 
-**领域**: 搜索/检索 / RAG
+**原厂模块**: IMVSContourMatchModu（C:\Program Files\VisionMaster4.4.0\...\Location\IMVSContourMatchModu）
 
 **关键问题清单**:
-1. Elasticsearch / Qdrant / Weaviate / Milvus 等向量库是否支持 hybrid search 原语？
-2. 融合算法 RRF（Reciprocal Rank Fusion）的标准实现是什么？
-3. BM25 与向量是否应该并行执行？
-4. 倒排索引（inverted index）的标准预计算结构是什么？
-5. 主流 RAG 框架（LangChain / LlamaIndex / Haystack）怎么做 hybrid search？
+1. 原厂窗口尺寸与布局骨架？（静态：FeaturepatMatchConfigPanalData.cs:250-251）
+2. 图像工具条有哪些按钮、什么顺序？（静态 style xaml + 实机 snapshot）
+3. 右侧配置参数行是哪几行？（静态 hppyramid...xaml:879-906 + 实机截图）
+4. 底栏是匹配中心锁定还是坐标灰度？（静态 basestyle:16-45 + 实机截图）
+5. 本方有哪些已迁移控件可直接复用、哪些停在 .pending？
+6. 有无不可逾越的同构阻碍？
 
 **完成判据**:
-- 找到 3+ 主流框架的 hybrid search 实现源码或官方文档
-- 每种实现的关键参数（并行/串行、融合算法、权重）有可追溯引用
-- 形成"业界做法"对比表
+- 静态证据（文件:行号）+ 实机证据（快照编号+PNG）双链路齐备
+- 原厂 ↔ 本方逐项对照表，分"已一致/未实现/不一致"
+- 阻碍/成本/接缝三分类，每项带证据
 ```
 
 #### Step 2 — 调研分类判定
@@ -80,10 +83,17 @@ description: >
 
 | 调研类型 | 何时触发 | 关键产出 |
 |---------|---------|---------|
-| **源码实现调研** | 想知道"成熟项目具体怎么写" | 源码片段 + 行号 + 注释 |
-| **架构方案调研** | 想知道"业界主流方案有哪些" | 框架对比表 + 关键设计决策 |
-| **代码库现状调研** | 想知道"我们项目里现在是怎么做的" | path/file.cs:行号 + 上下文 |
-| **官方文档调研** | 想知道"标准/规范是怎么定义的" | URL+锚点 + 原文摘录 |
+| **原厂逆向调研** | 所有主题（UI/交互/字段/端口/算法语义） | 静态证据（反编译源码/配置 XML/XAML，带 `文件:行号`）+ 实机证据（agent-desktop 逐页签/弹窗快照+截图）+ 阻碍/成本/接缝判定 |
+| **代码库现状调研** | 盘点本方现状与可复用资产 | path/file.cs:行号 + 上下文 + `.pending` 资产清单 |
+
+> **不做什么**：不做业界对标、不查开源项目实现、不引用通用最佳实践——本项目只以原厂证据为准。
+> 原厂逆向调研的实机链路：先复用用户已备好的原厂方案；逐状态抓 `agent-desktop snapshot --window-id` + `screenshot`，存 `docs/evidence/<工具>-ui-<日期>/`。只有静态证据不得判定 UI 对齐。
+>
+> **取证以静态为主、真机补充复核**（详见 skill:视觉工具构建 references/07-evidence-pipeline.md §4.1）：①先查**本工具自己的静态声明**（AlgorithmTab.xml 的 ROISelection/GroupLinkItem、Modu.xml 端口、DialogUI xaml、zh-cn.xaml、DialogData.cs）——控件体系具备时照静态即可快速高保证同构；②静态充分即落地，只有 LinkName 引用/定不了项数标签展开态才标"需真机补"；③真机**只补缺项**并针对性交叉验证；④逐工具固化绑 Evidence ID。**禁止把双链路做成每次全量真机（拖慢开发）；平台默认值和其它工具范式永远不是原厂事实。**
+>
+> **取证必须递归覆盖所有窗口层级**：页签集合 → **每页签内分组与功能控件（展开每组）** → 功能弹窗 → **弹窗内子交互** → 弹窗里再开的子弹窗直到最深层；并做**页签↔弹窗关联取证**。每个可配置能力（ROI绘制/继承方式/位置修正等）都要取**所有状态**（如 ROI创建绘制 vs 继承×各继承方式、位置修正关/按信息/按点/按坐标）。只取表面或单一默认态会漏整组功能（历史返工：漏基本页 ROI 区域、继承方式项数、形状集）。
+>
+> **取证完成后必须先评估控件体系**：把取到的每个控件/样式键/Converter/图标映射到本方 `src/Plugin.Wpf`，判状态（已激活/.pending/等价件/缺失），有缺口先逐字迁移补齐（中立命名）再进入工具落地——详见 skill:视觉工具构建 references/07-evidence-pipeline.md §4.2。禁止边做工具边补控件。
 
 > **本项目的方案设计 skill 中 Phase 1（代码库现状调研）会复用本技能的"代码库现状调研"子模块。**
 
@@ -94,106 +104,71 @@ description: >
 ```markdown
 ## 调研资源池
 
-### 源码资源
-- LangChain: github.com/langchain-ai/langchain → langchain/retrievers/ 目录
-- LlamaIndex: github.com/run-llama/llama_index → llama-index-core/retrievers/
-- Haystack: github.com/deepset-ai/haystack → haystack/components/retrievers/
-- Elasticsearch: github.com/elastic/elasticsearch → server/src/main/java/org/elasticsearch/search/
+### 原厂静态资源
+- 反编译：docs/07-工具逆向/decompiled/ModuleControls/<模块>/（UI/Data/style xaml）
+- 配置：C:\Program Files\VisionMaster4.4.0\...\<模块>\*.xml（AlgorithmTab/Display/Cs）
+- 中立副本：docs/evidence/original-release-units/<工具>/
 
-### 文档资源
-- Elasticsearch hybrid search 文档：elastic.co/guide/...
-- Qdrant prefetch 文档：qdrant.tech/documentation/...
-- LangChain4j RRF 文档：docs.langchain4j.dev/...
+### 原厂实机资源
+- 用户已备好的含该节点原厂方案
+- agent-desktop：snapshot + screenshot → docs/evidence/<工具>-ui-<日期>/
 
-### 项目现状资源
-- search_content "BM25" → 找到 LocalKnowledgeBase.cs
-- search_content "FuseRrf" → 找到融合函数位置
+### 本方现状资源
+- tools/<工具>/Editor/Views/ — 参数页/结果页/模板窗口组装方式
+- src/Plugin.Wpf/ — 已迁移控件与 *.pending 未激活资产
 ```
 
 ---
 
-### ━━━ Phase R1: 源码实现调研（第一优先）━━━
+### ━━━ Phase R1: 原厂静态证据取证（第一优先）━━━
 
-> **核心原则**：先看成熟项目怎么写，再看文档怎么说，最后看我们怎么做。
-> 顺序不能颠倒 — 颠倒就回到"以我们为基线"的陷阱。
+> **核心原则**：从原厂反编译源码 + 配置 XML + XAML 资源取证，带 `文件:行号`；不从"成熟项目/官方文档"取证。
 
-#### Step 1 — 候选项目选择
+#### Step 1 — 定位原厂模块证据
 
-按主题选 3+ 个成熟项目：
+1. 反编译源码：`docs/07-工具逆向/decompiled/ModuleControls/<模块>/`（UI/Data/style xaml）与 `Apps.XmlParser.ParamTab/`（字段/生命周期）
+2. 配置 XML：`C:\Program Files\VisionMaster4.4.0\Applications\Module(sp)\x64\<分类>\<模块>\` 下 `*.xml`（AlgorithmTab 定页签/控件/默认值、Display 定结果显示、Cs 定中文文案）
+3. 中立化副本：`docs/evidence/original-release-units/<工具>/`
 
-| 领域 | 候选项目 |
-|------|---------|
-| RAG / 检索 | LangChain / LlamaIndex / Haystack / Vespa / Weaviate |
-| 向量数据库 | Qdrant / Milvus / Weaviate / Pinecone / Chroma |
-| 搜索引擎 | Elasticsearch / OpenSearch / Meilisearch / Typesense |
-| WPF / .NET 桌面 | Avalonia UI / CommunityToolkit.Mvvm / Prism / Caliburn.Micro |
-| Agent 框架 | Anthropic Agent SDK / LangGraph / CrewAI / AutoGen |
-| 错误处理 / 重试 | Polly / Resilience4j / Tenacity |
-| 日志框架 | Serilog / NLog / log4net / Microsoft.Extensions.Logging |
-| 协议 | MCP / OpenAI Function Calling / Anthropic Tool Use |
+#### Step 2 — 精读并记录
 
-#### Step 2 — 源码定位与阅读
+- 控件组合：style xaml 的 ControlTemplate（按钮、分组、参数行、底栏）
+- 字段语义：DialogData.cs 的字段、默认值、生命周期（`Init`/`CopyParam`/`CreatePatE`/`DeepCopyModelData`）
+- 命令/状态：DialogUI.cs 的 ICommand、SignList、history、ModelData
+- 阻碍判定：建模算法体、模型加密是否有反编译实现；缺失即登记未确认
 
-对每个候选项目：
-
-1. 用 `web_fetch` 或 `web_search` 定位关键文件路径
-2. 用 `web_fetch` 拉取源码（GitHub raw URL 或 raw.githubusercontent.com）
-3. 精读关键类/方法，记录：
-   - 入口方法签名
-   - 关键算法/数据结构
-   - 并发模型（并行/串行）
-   - 错误处理
-   - 配置/参数
-
-#### Step 3 — 源码引用格式
-
-每个引用必须包含：
+#### Step 3 — 静态证据引用格式（5 元素）
 
 ```markdown
-- [来源] github.com/langchain-ai/langchain/blob/master/libs/community/langchain_community/retrievers/bm25.py:42-78
-  - **做法**: BM25Retriever 使用 rank_bm25 库，初始化时一次性建好倒排索引
-  - **关键点**: from_documents() 中预处理 tokenize + 计算 IDF，避免查询时重复算
-  - **对我们的启示**: 倒排索引预计算 vs 查询时 O(N) 计算的差异
+- [来源-静态] docs/07-工具逆向/decompiled/.../hppyramidfeaturepatmatchdialoguistyle.xaml:879-906
+  - **内容**: 右侧 8 行配置参数标签与控件绑定
+  - **字段**: PyramidScaleFlag/PyramidScaleLevel/.../MaskModelFlag
+  - **依据类型**: 反编译 XAML（级别①）
+  - **结论**: 原厂模板窗口右侧为 8 行，控件为下拉+滑条
 ```
-
-#### Step 4 — 源码引用 5 元素
-
-每条源码引用必须包含 5 个元素：
-
-1. **URL 或 path** — 唯一可定位
-2. **行号范围** — 不是整文件
-3. **做法摘要** — 一句话说清这段代码做了什么
-4. **关键决策** — 为什么这样写（设计意图）
-5. **对方案的启示** — 借鉴/不借鉴/折中
 
 ---
 
-### ━━━ Phase R2: 架构方案调研（第二优先）━━━
+### ━━━ Phase R2: 原厂实机证据取证（第二优先）━━━
 
-> 当源码调研不能完全回答"业界标准做法"时，必须辅以官方文档与权威博客。
+> 静态证据定语义，实机证据定呈现与顺序；缺实机不得判定 UI 对齐。
 
-#### Step 1 — 主流框架官方文档
+#### Step 1 — 准备原厂方案
 
-对每个候选项目：
+- 优先复用用户已备好的、含该工具节点的原厂方案（先问，不重复造）
+- 启动原厂程序，用 agent-desktop `list-apps`/`list-windows` 定位窗口
 
-1. 找到官方文档对应章节（不是泛泛的官网）
-2. 记录**章节锚点**（#anchor 或 URL 片段）
-3. 摘录**关键定义/原话**（不是 LLM 转述）
-4. 记录**对我们的启示**
+#### Step 2 — 逐状态抓取
 
-#### Step 2 — 权威博客/论文补充
+- 每个页签、每个弹窗：`agent-desktop snapshot --window-id <id> --include-bounds` + `screenshot --window-id <id> <png>`
+- 存 `docs/evidence/<工具>-ui-<日期>/`，命名体现工具-页签/弹窗
 
-- 优先：项目官方博客、作者发表的设计文章
-- 次优：Google Research / Microsoft Research / 各厂技术博客
-- 谨慎：Medium / 知乎 / CSDN — 仅作辅助参考，必须二次确认
-
-#### Step 3 — 文档引用格式
+#### Step 3 — 实机证据引用格式
 
 ```markdown
-- [来源] https://www.elastic.co/guide/en/elasticsearch/reference/current/rrf.html
-  - **标题**: Reciprocal Rank Fusion
-  - **关键定义**: RRF combines rankings by assigning 1/(k+rank) to each document, then summing across rankings. Default k=60.
-  - **对我们的启示**: 我们的 FuseRrf 用 1/(60+rank) 是标准做法，参数无需调整
+- [来源-实机] docs/evidence/vm-contourmatch-ui-20261121/template-config.png（snapshot_id=s12501z7mwmr8o）
+  - **观察**: 窗口 900×534，顶部选图/存图，左侧图像工具条，右侧 8 行参数，底栏匹配中心+锁定+确定
+  - **用途**: 与静态 style xaml 交叉验证，判定 UI 对齐
 ```
 
 ---
@@ -218,8 +193,8 @@ description: >
 #### Step 2 — 引用格式
 
 ```markdown
-- [来源] AgentWpf/Services/LocalKnowledgeBase.cs:293-338 — SearchAsync 当前实现
-- [来源] AgentWpf/Services/LocalKnowledgeBase.cs:514-602 — FuseRrf 与 ScoreBm25 实现
+- [来源-本方] tools/<工具>/Editor/Views/XxxParameterEditor.cs:34-53 — 参数页当前组装方式
+- [来源-本方] src/Plugin.Wpf/Presenters/Parameters/NativeStandardBasicPage.cs:55-89 — 可复用的共享基本页
 ```
 
 > **重要**：项目 .gitignore 第 174 行 /dev/ 屏蔽整个构建输出目录。
@@ -237,8 +212,8 @@ description: >
 ```
 .codebuddy/research/
 ├── README.md                              # 调研报告索引
-├── 2026-07-16_rag-hybrid-search.md        # 主题_日期.md
-├── 2026-07-12_kb-search-perf.md
+├── 2026-11-21_contourmatch-template-ui.md # 主题_日期.md
+├── 2026-11-20_graymatch-roi-chain.md
 ├── ...
 ```
 
@@ -261,23 +236,22 @@ description: >
 1. ...
 2. ...
 
-## 3. 源码实现调研
+## 3. 原厂静态证据
 
-### 3.1 项目 A（如 LangChain）
-- [来源] github.com/.../bm25.py:42-78
-  - 做法: ...
-  - 关键决策: ...
-  - 启示: ...
+### 3.1 反编译源码 / 配置 XML
+- [来源-静态] docs/07-工具逆向/decompiled/.../File.cs:行号
+  - 内容: ...
+  - 证据级别: ①反编译源码 / ②配置 XML
+  - 结论: ...
 
-### 3.2 项目 B（如 LlamaIndex）
+### 3.2 XAML 资源 / 样式
 ...
 
-## 4. 架构方案调研
+## 4. 原厂实机证据
 
-### 4.1 官方文档对比
-| 框架 | 文档章节 | 关键做法 | URL |
-|------|---------|---------|-----|
-| ... | ... | ... | ... |
+| 状态 | 快照编号 | 截图 | 观察 |
+|------|---------|------|------|
+| {页签/弹窗} | snapshot_id | docs/evidence/...png | ... |
 
 ## 5. 代码库现状
 
@@ -288,44 +262,43 @@ description: >
 - 约束 1: ...
 - 约束 2: ...
 
-## 6. 业界做法对比表
+## 6. 原厂 ↔ 本方逐项对照表
 
-| 维度 | 方案 A | 方案 B | 方案 C | 我们当前 |
-|------|--------|--------|--------|---------|
-| 并行/串行 | 并行 | 串行 | 并行 | 串行 |
-| 融合算法 | RRF | 线性加权 | RRF | RRF |
-| 倒排索引 | 预计算 | 查询时算 | 预计算 | 查询时算 |
-| ... | ... | ... | ... | ... |
+| 维度 | 原厂（证据） | 本方（证据） | 判定 |
+|------|-------------|-------------|------|
+| {页签/控件/字段/状态} | `反编译:行号` / `快照编号` | `本方:行号` | 已一致/未实现/不一致 |
 
 ## 7. 结论与建议
 
-### 7.1 业界共识
-- 共识 1: ...
-- 共识 2: ...
+### 7.1 原厂实现共识（带证据）
+- 结论 1: ...（静态 `文件:行号` + 实机 `快照编号`）
+- 结论 2: ...
 
-### 7.2 业界分歧
-- 分歧 1: ...
+### 7.2 阻碍 / 成本 / 接缝判定
+- 硬阻碍: ...（无则写"无"）
+- 成本项: ...（可通过迁移/重构解决）
+- 宿主接缝: ...（执行调度/借帧/资源释放等必须改写项）
 
 ### 7.3 对方案的硬性约束
-- 约束 1: <必须满足>
+- 约束 1: <必须满足，来自原厂证据>
 - 约束 2: <应当满足>
 
 ### 7.4 后续行动
 - [ ] 行动 1 — 移交「方案设计」技能
 - [ ] 行动 2 — 更新 README.md 索引
 
-## 8. 参考资料
+## 8. 参考资料（仅原厂证据）
 
-### 源码引用
-- [1] github.com/.../bm25.py:42-78 — LangChain BM25Retriever 实现
-- [2] github.com/.../base.py:120-180 — LlamaIndex BaseRetriever
+### 反编译源码 / 配置
+- [1] `docs/07-工具逆向/decompiled/.../File.cs:行号` — 原厂实现
+- [2] `C:\Program Files\VisionMaster4.4.0\...\<模块>\AlgorithmTab.xml:行号` — 字段/控件配置
 
-### 文档引用
-- [3] https://www.elastic.co/guide/.../rrf.html — RRF 标准定义
-- [4] https://qdrant.tech/.../hybrid-search/ — Qdrant hybrid search 文档
+### 实机快照
+- [3] `docs/evidence/<工具>-ui-<日期>/xxx.png`（snapshot_id=...）— 原厂运行界面
 
-### 项目内引用
-- [5] AgentWpf/Services/LocalKnowledgeBase.cs:293-338 — 当前 SearchAsync 实现
+### 本方代码引用
+- [5] `tools/<工具>/Editor/Views/XxxParameterEditor.cs:行号` — 当前 UI 组装实现
+- [6] `src/Plugin.Wpf/...` — 已迁移控件/`.pending` 资产
 ```
 
 #### Step 3 — README 索引更新
@@ -335,15 +308,15 @@ description: >
 ```markdown
 # 调研报告索引
 
-| 日期 | 主题 | 关联方案 | 状态 |
-|------|------|---------|------|
-| 2026-07-16 | RAG 混合检索架构 | 知识库查询卡死 | 已完成 |
-| 2026-07-12 | 知识库搜索性能 | 知识库查询卡死 | 已完成 |
+| 日期 | 主题 | 关联方案 | 原厂模块 | 状态 |
+|------|------|---------|---------|------|
+| 2026-11-21 | 轮廓匹配模板窗口 UI | 模板窗口同构 | IMVSContourMatchModu | 已完成 |
+| 2026-11-20 | 灰度匹配 ROI 链 | GrayMatch 对齐 | IMVSGrayMatchModu | 已完成 |
 
 ## 主题分类索引
 
-### RAG / 检索
-- 2026-07-16 RAG 混合检索架构
+### 匹配类工具
+- 2026-11-21 轮廓匹配模板窗口 UI
 ```
 
 ---
@@ -353,13 +326,14 @@ description: >
 ```
 □ R0. 调研主题、关键问题清单、完成判据已明确
 □ R1. 源码实现调研 3+ 成熟项目，每条引用含 URL+行号+做法+决策+启示
-□ R2. 架构方案调研 3+ 官方文档/权威来源，每条引用含 URL+锚点+原话
-□ R3. 代码库现状调研覆盖定义/实现/调用方/UI绑定/同类 pattern
-□ R4. 调研报告已沉淀到 .codebuddy/research/<topic>.md
-□ R5. README.md 索引已更新
-□ R6. 业界做法对比表已输出
-□ R7. 结论与建议章节有"对方案的硬性约束"小节
-□ R8. 调研报告可独立被方案设计技能引用，不依赖对话上下文
+□ R2. 原厂静态证据齐备（反编译/配置/XAML，每条带 文件:行号）
+□ R3. 原厂实机证据齐备（逐页签/弹窗快照编号+PNG）；只有静态证据不得判定 UI 对齐
+□ R4. 代码库现状调研覆盖定义/实现/调用方/UI绑定/同类 pattern + .pending 资产
+□ R5. 调研报告已沉淀到 .codebuddy/research/<topic>.md
+□ R6. 原厂↔本方逐项对照表已输出（已一致/未实现/不一致）
+□ R7. 阻碍/成本/接缝三分类，每项带证据
+□ R8. 结论与建议章节有"对方案的硬性约束"小节
+□ R9. 调研报告可独立被方案设计技能引用，不依赖对话上下文
 ```
 
 任一项未通过 → 补充调研，不要移交方案设计。
@@ -372,8 +346,8 @@ description: >
 
 1. 在对话中告知用户"调研报告已生成于 .codebuddy/research/<topic>.md"
 2. 移交「方案设计」技能，方案设计应：
-   - 直接读取调研报告作为 Phase 0.7（业界对标）和 Phase 1（信息调研）的输入
-   - 引用格式如 `[调研报告 §3.1] LangChain BM25Retriever 实现`
+   - 直接读取调研报告作为 Phase 0.7（逆向原厂取证）和 Phase 1（信息调研）的输入
+   - 引用格式如 `[调研报告 §3.1] 原厂 hppyramid...xaml:879-906 + 快照 s12501z7mwmr8o`
    - 避免重复做已沉淀的调研
 
 ## 与方案设计技能的关系
@@ -403,19 +377,20 @@ description: >
 
 ### 避免的陷阱
 
-1. **以自己为基线** — 看到现有实现就以为找到了标准做法。必须先看成熟项目。
-2. **泛泛引用** — "业界最佳实践"、"参考了某框架" → 违规。必须说哪家、哪份文档、什么特征。
-3. **调研不沉淀** — 每次方案都从零搜一遍。必须输出独立报告，可跨方案复用。
-4. **调研被方案设计绑架** — 方案设计进入"先出方案再说"循环。调研是独立前置阶段，不依附于方案设计。
-5. **只搜英文** — 中文技术社区、GitHub README 中文版、官方文档中文版都可作为补充来源。
+1. **以自己为基线** — 看到现有实现就以为找到了标准做法。必须先看原厂反编译与配置。
+2. **用业界替代原厂** — "业界最佳实践"、"参考了某框架" → 违规。原厂对标项必须有反编译行号或实机快照。
+3. **只有静态没有实机** — 只查源码"字段齐全"就判定 UI 对齐 → 违规。必须抓 agent-desktop 实机快照。
+4. **调研不沉淀** — 每次方案都从零搜一遍。必须输出独立报告，可跨方案复用。
+5. **调研被方案设计绑架** — 方案设计进入"先出方案再说"循环。调研是独立前置阶段，不依附于方案设计。
+6. **把成本当阻碍** — 把"像素画笔要新写"当成"不可同构" → 违规。能通过重构/补代码解决的都是成本，只有真正无法实现的才是阻碍。
 
 ### 与"方案设计"内部调研的边界
 
 | 职责 | 方案调研（本技能） | 方案设计 |
 |------|------------------|---------|
-| 调研起点 | 成熟项目 + 官方文档 | 调研报告 + 项目现状 |
+| 调研起点 | 原厂反编译/配置 + 实机快照 + 本方现状 | 调研报告 |
 | 核心产出 | 独立调研报告 | 方案报告 |
-| 决策重点 | 业界共识 + 分歧 | 方案推荐 + 长期 ROI |
+| 决策重点 | 原厂↔本方差异 + 阻碍/成本/接缝 | 基于原厂证据的方案推荐 |
 | 复用范围 | 跨方案可复用 | 单方案专用 |
 
 ## 参考
@@ -423,6 +398,5 @@ description: >
 - skill:方案设计 — 调研完成后移交方案设计
 - skill:方案实施 — 方案通过后执行
 - skill:方案测试 — 实施完成后全链路验证
-- rule:agent-025 — 方案输出规则（最佳实践导向）
-- rule:agent-024 — 测试分层规则
-- rule:agent-022 — 禁止防御性编程
+- rule-023 — 原厂证据先行（逆向同构路线）
+- docs/collaboration/EVIDENCE_AGREEMENT.md — 取证协作约定

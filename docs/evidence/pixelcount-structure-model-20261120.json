@@ -1,0 +1,49 @@
+{
+  "toolId": "PixelCount",
+  "version": "VisionMaster 4.4.0 Build20250516",
+  "originalArtifacts": [
+    {"file": "IMVSPixelCountModuVA.dll", "role": "algorithm-runtime", "evidence": "shipped-artifact"},
+    {"file": "IMVSPixelCountModuVACs.dll", "role": "parameter-result-roi-bridge", "evidence": "shipped-artifact"},
+    {"file": "IMVSPixelCountModuVAControl.dll", "role": "special-editor-control", "evidence": "shipped-artifact", "types": ["IMVSPixelCountModuVAControl.UI.RangeConfigListPanel"]},
+    {"file": "IMVSPixelCountModuVA.xml", "role": "module-input-output-contract", "evidence": "xml"},
+    {"file": "IMVSPixelCountModuVAAlgorithm.xml", "role": "algorithm-parameter-contract", "evidence": "xml"},
+    {"file": "IMVSPixelCountModuVAAlgorithmTab.xml", "role": "tabs-groups-controls-order", "evidence": "xml"},
+    {"file": "IMVSPixelCountModuVADisplay.xml", "role": "display-contract", "evidence": "xml"},
+    {"file": "ToolItemInfo.xml", "role": "toolbox-identity", "evidence": "xml"}
+  ],
+  "originalAssemblyResponsibilities": {
+    "algorithm-runtime": "PixelCountVA tool execution and native algorithm implementation",
+    "parameter-result-roi-bridge": "PixelCountVAParam, PixelCountVARoiManager, PixelCountVAResult and dynamic parameters",
+    "special-editor-control": "PixelModuRangeConfigList and PixelModuRangeConfigItem dynamic range UI",
+    "tabs-groups-controls-order": "ImageSourceGroup, RoiSelectGroup, InputMaskImageGroup, OutputMaskImageGroup, InheritWayGroup, AssistGroup, ResultShow and bottom commands"
+  },
+  "targetProject": {
+    "project": "tools/SunEyeVision.PixelCount/SunEyeVision.Tool.PixelCount.csproj",
+    "singleAssemblyRoles": ["Runtime", "Editor"],
+    "algorithmFolder": "Algorithms",
+    "parameterFolder": "Parameters",
+    "resultFolder": "Results",
+    "editorFolder": "Editor",
+    "resourceFolder": "Resources"
+  },
+  "sharedFrameworkBoundary": [
+    "Tab.Collection",
+    "CollectionViewSource",
+    "ParamListView",
+    "ParamUserControl",
+    "ROISelecter",
+    "AssistGroup",
+    "BottomCommandGroup"
+  ],
+  "toolOwnedBoundary": [
+    "PixelCountTool",
+    "PixelCountSettings",
+    "PixelCountOutput",
+    "PixelCountRangePanel",
+    "HALCON algorithm adapter seam"
+  ],
+  "algorithmEquivalence": {
+    "status": "unconfirmed",
+    "reason": "Original and HALCON executions do not yet have a shared golden input/output corpus"
+  }
+}

@@ -76,7 +76,7 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
     {
         if (_debug is not null) throw new InvalidOperationException("参数页已拥有调试会话。");
         _debugResultChanged=changed;
-        _debug = new ProductionEditorDebug(context,this,factory,canRun,log,()=>{DebugStateChanged?.Invoke();changed();});
+        _debug = new ProductionEditorDebug(context,this,factory,canRun,log,()=>{DebugStateChanged?.Invoke();changed();RefreshRuntimeState();});
         _roiDrawBlockReason = blockReason;
         _roiFrames = new(borrowFrame,CaptureDebugInputs);
     }
@@ -84,6 +84,23 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
     internal Task CloseDebugAsync() => _debugRetirement ??= _debug?.DisposeAsync().AsTask() ?? Task.CompletedTask;
     internal void StopContinuousDebug() => _debug?.StopContinuous();
     internal void PublishDebugCompletion(SunEyeVision.Plugin.Runtime.DeclaredOutputSnapshot? result,string? error) => ExecutionCompleted?.Invoke(this,new RuntimeToolExecutionEventArgs(result,error));
+    internal long? ReadDebugInteger(string portId)
+    {
+        var snapshot=_debug?.CurrentSnapshot;
+        if(snapshot is null||!snapshot.IsSuccess)return null;
+        try
+        {
+            using var reader=snapshot.AcquireReader();
+            return reader.Values?.Get<long>(portId);
+        }
+        catch(InvalidOperationException){return null;}
+    }
+    internal void RefreshRuntimeState()
+    {
+        if(_disposed)return;
+        if(_view is SunEyeVision.Plugin.Wpf.Presenters.Parameters.IToolSettingsRuntimeState state)
+            state.RefreshRuntimeState();
+    }
     private IToolSettingsView? _view;
     private FieldSettings? _acceptedFields;
     private ImageSourceDraftContent? _imageSourceContent;
@@ -238,6 +255,13 @@ public sealed class RuntimeNodeConfigurationControl : UserControl, IToolEditorPe
                     InputPlacements:NativeInputPlacementMap.FromSchemas(inputSchema,draft.SettingsSchema),
                     ToolOwnedInputFields: inputSchema.Presentation?.ToolOwnedInputFields,
                     EagerlyComposePages:true,
+                    ReadRuntimeInteger:ReadDebugInteger,
+                    ReadRuntimeModuleIds:() => context.Session.GetNodes(draft.WorkflowId)
+                        .Select(node => node.GlobalIndex)
+                        .Where(index => index >= 0)
+                        .Distinct()
+                        .OrderBy(index => index)
+                        .ToArray(),
                     // 相机行由参数页渲染；设备列表、状态与打开命令都取自当前方案会话。
                     CameraSources:new Dictionary<string,ICameraSelectionSource>(StringComparer.Ordinal)
                     {

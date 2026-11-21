@@ -131,3 +131,15 @@
 - [x] 2026-11-19 ImageSource/Blob 原厂发布单元资产与静态结构门禁已建立
 - [x] 2026-11-19 Blob 参数组写入原厂 VmCategory 身份
 - [ ] 2026-11-19 Blob 外部 GroupLinkItem 和 ImageSource 专属 Control 尚未闭合
+
+## 2026-11-21 UI 与算法重新复核批次
+
+- [ ] 建立十工具原厂 UI 证据、Release 快照和差异矩阵
+- [ ] BlobLabels 完成 UI 与算法双轨复核
+- [ ] PixelCount 完成 UI 与算法双轨复核
+- [ ] ImageSource 完成图像输入 UI 与本地图像算法入口复核
+- [ ] 第一检查点审定 BlobLabels/PixelCount/ImageSource 差异清单
+- [ ] 批量复核 FrameMean、IntensityMeasure、ColorExtract、DivideImage
+- [ ] 批量复核 ContourMatch、GrayMatch、MarkFind、If
+- [ ] 每个工具通过专项测试、Release 构建和 Agent Desktop 验证
+- [ ] 未取得原厂动态证据的算法行为单独标记“运行未确认”

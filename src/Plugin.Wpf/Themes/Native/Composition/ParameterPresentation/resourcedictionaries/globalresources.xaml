@@ -8,7 +8,7 @@
 <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter"/>
 <local:ItemCheckConverter x:Key="CheckConverter"/>
 <local:LeftWidthConverter x:Key="LeftWidthConverter"/>
-<CollectionViewSource x:Key="src" IsLiveGroupingRequested="True"><CollectionViewSource.GroupDescriptions><PropertyGroupDescription PropertyName="GroupName"/></CollectionViewSource.GroupDescriptions></CollectionViewSource>
+<CollectionViewSource x:Key="src" IsLiveGroupingRequested="True" Source="{Binding Collection}"><CollectionViewSource.GroupDescriptions><PropertyGroupDescription PropertyName="GroupName"/></CollectionViewSource.GroupDescriptions></CollectionViewSource>
 <DataTemplate x:Key="DeclaredParameterRow"><ContentPresenter Content="{Binding View}"/></DataTemplate>
 <DataTemplate x:Key="ParamItemTemplate">
     <Border Name="bd" BorderThickness="1" BorderBrush="{Binding MyItemState, Converter={StaticResource CheckConverter}}" IsEnabled="{Binding EnableA}" AutomationProperties.Name="{Binding GroupName.NameA}">

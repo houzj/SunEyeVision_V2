@@ -948,7 +948,12 @@ internal sealed class DeclaredRangeRow : ContentControl, IDisposable, IParameter
             }
             else if (_states[i].NumericModel is not null)
             {
-                if (!_states[i].TryUseConstant(value => TryAcceptEndpoint(i, value)) && !_states[i].IsReferenceMode)
+                // 成对范围退出订阅必须经范围组提交；单字段提交会被参数页拒绝。
+                if (_states[i].ConstantBackup is { } backup)
+                {
+                    if (!TryAcceptEndpoint(i, backup)) _commits[i]?.BeginConstantEntry();
+                }
+                else if (!_states[i].TryUseConstant(value => TryAcceptEndpoint(i, value)) && !_states[i].IsReferenceMode)
                     _commits[i]?.BeginConstantEntry();
             }
             else if (_states[i].ConstantBackup is {} backup)

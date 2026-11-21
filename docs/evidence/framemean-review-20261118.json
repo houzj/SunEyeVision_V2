@@ -1,7 +1,7 @@
 {
   "tool": "FrameMean",
   "phase": "single-tool-functional-audit",
-  "status": "runtime-structure-and-input-validation-verified",
+  "status": "evidence-driven-command-selector-static-migrated",
   "vm_evidence": {
     "sources": [
       "docs/07-工具逆向/decompiled/ModuleControls/IMVSFrameMeanModuControl/Apps.XmlParser.ParamTab/FrameMeanData.cs",
@@ -21,7 +21,7 @@
       "tools/SunEyeVision.FrameMean/Runtime/FrameMeanSession.cs"
     ],
     "confirmed": [
-      "当前产品有声明参数和运行会话，但原厂相机回调、参数字符串协议和结果标志的同源证据尚未完成"
+      "当前产品已迁移原厂三态命令选择器图标和统计数量显示面板，统计数量由统一调试结果回执读取；原厂相机回调的实时更新时序仍未确认"
     ]
   },
   "runtime_observation": {
@@ -51,7 +51,7 @@
     "reason": "产品窗口结构已确认，但原厂帧数来自相机业务回调，仍缺同版本动态回执证据，暂不猜测修改。"
   },
   "pending": [
-    "取得同版本原厂相机回调动态帧数回执"
+    "取得同版本原厂相机回调动态帧数回执并对照执行前后的刷新时序"
   ],
   "validation": {
     "command": "dotnet test tests/SunEyeVision.Tools.ImageProcessing.Tests/SunEyeVision.Tools.ImageProcessing.Tests.csproj -c Release --no-build --filter 'FullyQualifiedName~FrameMean'",
@@ -59,7 +59,11 @@
     "passed": 16,
     "failed": 0,
     "payload_sha256": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB",
-    "final_baseline_passed": 16
+    "final_baseline_passed": 16,
+    "shared_control_probe": {
+      "exit_code": 0,
+      "assertion": "FrameMean 原厂命令选择器面板已物化"
+    }
   }
 }
 

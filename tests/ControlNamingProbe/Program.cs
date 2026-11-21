@@ -64,6 +64,18 @@ using(var sample=new SunEyeVision.Tool.BlobAnalysis.Wpf.Views.BlobParameterEdito
  { source.Measure(new Size(680,800)); source.Arrange(new Rect(0,0,680,800)); }
  Console.WriteLine("PASS: real Blob and image source editor assembly with design inputs");
 Console.WriteLine("PASS: image source camera row renders through the injected device source");
+ CheckBatchTool("PixelCount",new SunEyeVision.Tool.PixelCount.Runtime.PixelCountTool(),new SunEyeVision.Tool.PixelCount.Wpf.PixelCountEditorFactory(),SunEyeVision.Tool.PixelCount.Runtime.PixelCountTool.ImageInput);
+ CheckBatchTool("FrameMean",new SunEyeVision.Tool.FrameMean.Runtime.FrameMeanTool(),new SunEyeVision.Tool.FrameMean.Wpf.FrameMeanEditorFactory(),SunEyeVision.Tool.FrameMean.Runtime.FrameMeanTool.ImageInput);
+ CheckBatchTool("IntensityMeasure",new SunEyeVision.Tool.IntensityMeasure.Runtime.IntensityMeasureTool(),new SunEyeVision.Tool.IntensityMeasure.Wpf.IntensityMeasureEditorFactory(),SunEyeVision.Tool.IntensityMeasure.Runtime.IntensityMeasureTool.ImageInput);
+ Console.WriteLine("PASS: batch-1 PixelCount/FrameMean/IntensityMeasure settings and result views use the shared presentation path");
+ CheckBatchTool("ColorExtract",new SunEyeVision.Tool.ColorExtract.Runtime.ColorExtractTool(),new SunEyeVision.Tool.ColorExtract.Wpf.ColorExtractEditorFactory(),SunEyeVision.Tool.ColorExtract.Runtime.ColorExtractTool.ImageInput);
+ CheckBatchTool("DivideImage",new SunEyeVision.Tool.DivideImage.Runtime.DivideImageTool(),new SunEyeVision.Tool.DivideImage.Wpf.DivideImageEditorFactory(),SunEyeVision.Tool.DivideImage.Runtime.DivideImageTool.ImageInput);
+ CheckBatchTool("ContourMatch",new SunEyeVision.Tool.ContourMatch.Runtime.ContourMatchTool(),new SunEyeVision.Tool.ContourMatch.Wpf.ContourMatchEditorFactory(),SunEyeVision.Tool.ContourMatch.Runtime.ContourMatchSchema.ImageInput);
+ CheckBatchTool("GrayMatch",new SunEyeVision.Tool.GrayMatch.Runtime.GrayMatchTool(),new SunEyeVision.Tool.GrayMatch.Wpf.GrayMatchEditorFactory(),SunEyeVision.Tool.GrayMatch.Runtime.GrayMatchSchema.ImageInput);
+ CheckBatchTool("MarkFind",new SunEyeVision.Tool.MarkFind.Runtime.MarkFindTool(),new SunEyeVision.Tool.MarkFind.Wpf.MarkFindEditorFactory(),SunEyeVision.Tool.MarkFind.Runtime.MarkFindSchema.ImageInput);
+ CheckBatchTool("BlobLabels",new SunEyeVision.Tool.BlobLabels.Runtime.BlobLabelsTool(),new SunEyeVision.Tool.BlobLabels.Wpf.BlobLabelsEditorFactory(),SunEyeVision.Tool.BlobLabels.Runtime.BlobLabelsSchema.ImageInput);
+ CheckBatchTool("If",new SunEyeVision.Tool.If.Runtime.IfTool(),new SunEyeVision.Tool.If.Wpf.IfEditorFactory(),string.Empty);
+ Console.WriteLine("PASS: batch-2/3/4 ColorExtract/DivideImage/ContourMatch/GrayMatch/MarkFind/BlobLabels/If settings and result views use the shared presentation path");
  var corner=new SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.Base.ImageView.ROI.EditRoundedWindow(100,5);
  corner.Close();
  var normalized=new SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.Base.ImageView.ROI.NormalizedRectROI();
@@ -123,6 +135,149 @@ static T? FindChild<T>(System.Windows.DependencyObject root) where T : System.Wi
 
     Console.WriteLine("PASS: real slider, result viewport and embedded cursor resources");return 0;
  } catch(Exception e){Console.Error.WriteLine(e);return 1;} }
+
+ static void CheckBatchTool(string name,SunEyeVision.Plugin.Contracts.IToolDefinition tool,SunEyeVision.Plugin.Wpf.Presenters.Results.IToolPresentationFactory factory,string imageInput)
+ {
+  var defaultSettings=tool.CreateSettings();
+  var diagnostics=tool.Validate(defaultSettings);
+  if(name=="DivideImage")
+  {
+   var divideSchema=tool.Describe();
+   var roiPort=divideSchema.Inputs.SingleOrDefault(port=>port.Id==SunEyeVision.Tool.DivideImage.Runtime.DivideImageTool.RoiInput);
+   if(roiPort is null || roiPort.Type!=SunEyeVision.Plugin.Contracts.TypeRef.ResourceOf(SunEyeVision.Plugin.Contracts.ResourceKind.Region) || roiPort.Required || !roiPort.Nullable)
+    throw new Exception("DivideImage 缺少原厂 InputROI 可选输入端口。");
+  }
+  var runtime=tool.CreateSession(); runtime.DisposeAsync().GetAwaiter().GetResult();
+  Console.WriteLine($"PASS: {name} runtime settings/session diagnostics={diagnostics.Count}");
+  var context=SunEyeVision.Plugin.Wpf.Presenters.Design.DesignTimeSample.Create(tool,imageInput);
+  using var settings=factory.CreateSettingsView(context.Draft,context.Options);
+  settings.View.Measure(new Size(680,800));settings.View.Arrange(new Rect(0,0,680,800));
+  if(settings.View.ActualWidth<=0 || settings.HasInvalidInput) throw new Exception(name+" 参数页未能通过共享模板组装");
+  var declaredPages=FindDescendant<SunEyeVision.Plugin.Wpf.Presenters.Parameters.DeclaredSettingsView>(settings.View);
+  if(declaredPages is {} pageDiagnostic)
+  {
+   var fieldHost=FindDescendant<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldsView>(settings.View);
+   Console.WriteLine($"INFO: {name} declared pages={string.Join('/', fieldHost?.DeclaredPageKeys ?? Array.Empty<string>())}");
+  }
+  var expectedPagesByTool = name switch
+  {
+   "PixelCount" => new[] { "基本参数", "运行参数", "结果显示" },
+   "FrameMean" => new[] { "基本参数", "运行参数", "结果显示" },
+   "IntensityMeasure" => new[] { "基本参数", "结果显示" },
+   "ColorExtract" => new[] { "基本参数", "运行参数", "结果显示" },
+   "DivideImage" => new[] { "基本参数", "运行参数" },
+   "ContourMatch" => new[] { "基本参数", "特征模板", "运行参数", "结果显示" },
+   "GrayMatch" => new[] { "基本参数", "灰度模板", "运行参数", "结果显示" },
+   "MarkFind" => new[] { "基本参数", "特征模型", "运行参数", "结果显示" },
+   "BlobLabels" => new[] { "基本参数", "运行参数", "结果显示" },
+   "If" => new[] { "基本参数" },
+   _ => Array.Empty<string>()
+  };
+  if(expectedPagesByTool.Length>0 && declaredPages is {} mappedPages)
+  {
+   for(var index=0;index<expectedPagesByTool.Length;index++)
+   {
+    mappedPages.SelectedPageIndex=index;
+    if(mappedPages.SelectedPageKey!=expectedPagesByTool[index])throw new Exception(name+" 页签顺序不符合原厂证据："+mappedPages.SelectedPageKey);
+   }
+   mappedPages.SelectedPageIndex=0;
+   Console.WriteLine($"PASS: {name} pages {string.Join('/', expectedPagesByTool)} order");
+   if(name=="PixelCount")
+   {
+    mappedPages.SelectedPageIndex=1;
+    var pixelFields=FindDescendant<SunEyeVision.Plugin.Wpf.Fields.DeclaredFieldsView>(settings.View);
+    pixelFields?.RealizePage("运行参数");
+    settings.View.Measure(new Size(680,800));settings.View.Arrange(new Rect(0,0,680,800));
+    var pixelEditor=settings.View as SunEyeVision.Tool.PixelCount.Wpf.Views.PixelCountParameterEditor
+        ?? FindDescendant<SunEyeVision.Tool.PixelCount.Wpf.Views.PixelCountParameterEditor>(settings.View);
+    var rangePanel= pixelEditor?.GetType().GetField("_rangePanel",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)?.GetValue(pixelEditor)
+        as SunEyeVision.Tool.PixelCount.Wpf.Views.PixelCountRangePanel;
+    if(rangePanel is null || pixelFields is null || !pixelFields.ContainsView(rangePanel))
+     throw new Exception("PixelCount 缺少原厂范围列表面板接缝。");
+    mappedPages.SelectedPageIndex=0;
+    Console.WriteLine("PASS: PixelCount 原厂范围列表面板已在运行参数页物化");
+   }
+   if(name=="FrameMean")
+   {
+    var frameEditor=settings.View as SunEyeVision.Tool.FrameMean.Wpf.Views.FrameMeanParameterEditor
+        ?? FindDescendant<SunEyeVision.Tool.FrameMean.Wpf.Views.FrameMeanParameterEditor>(settings.View);
+    var commandPanel=frameEditor?.GetType().GetField("_commandPanel",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)?.GetValue(frameEditor);
+    if(commandPanel is null)
+     throw new Exception("FrameMean 缺少原厂命令选择器面板接缝。");
+    Console.WriteLine("PASS: FrameMean 原厂命令选择器面板已物化");
+   }
+   if(name=="ColorExtract")
+   {
+    var editor=settings.View as SunEyeVision.Tool.ColorExtract.Wpf.Views.ColorExtractParameterEditor
+        ?? FindDescendant<SunEyeVision.Tool.ColorExtract.Wpf.Views.ColorExtractParameterEditor>(settings.View);
+    var panel=editor?.GetType().GetField("_rangePanel",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)?.GetValue(editor);
+    if(panel is not SunEyeVision.Tool.ColorExtract.Wpf.Views.ColorExtractRangePanel)
+     throw new Exception("ColorExtract 缺少原厂颜色范围/直方图面板接缝。");
+    Console.WriteLine("PASS: ColorExtract 原厂颜色范围面板已物化");
+   }
+   if(name=="ContourMatch")
+   {
+    var editor=settings.View as SunEyeVision.Tool.ContourMatch.Wpf.Views.ContourMatchParameterEditor
+        ?? FindDescendant<SunEyeVision.Tool.ContourMatch.Wpf.Views.ContourMatchParameterEditor>(settings.View);
+    var panel=editor?.GetType().GetField("_templatePanel",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)?.GetValue(editor);
+    if(panel is not SunEyeVision.Tool.ContourMatch.Wpf.Views.ContourMatchTemplatePanel)
+     throw new Exception("ContourMatch 缺少原厂特征模板面板接缝。");
+    Console.WriteLine("PASS: ContourMatch 原厂特征模板面板已物化");
+   }
+   if(name=="GrayMatch")
+   {
+    var editor=settings.View as SunEyeVision.Tool.GrayMatch.Wpf.Views.GrayMatchParameterEditor
+        ?? FindDescendant<SunEyeVision.Tool.GrayMatch.Wpf.Views.GrayMatchParameterEditor>(settings.View);
+    var panel=editor?.GetType().GetField("_templatePanel",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)?.GetValue(editor);
+    if(panel is not SunEyeVision.Tool.GrayMatch.Wpf.Views.GrayMatchTemplatePanel)
+     throw new Exception("GrayMatch 缺少原厂灰度模板面板接缝。");
+    Console.WriteLine("PASS: GrayMatch 原厂灰度模板面板已物化");
+   }
+   if(name=="MarkFind")
+   {
+    var editor=settings.View as SunEyeVision.Tool.MarkFind.Wpf.Views.MarkFindParameterEditor
+        ?? FindDescendant<SunEyeVision.Tool.MarkFind.Wpf.Views.MarkFindParameterEditor>(settings.View);
+    var panel=editor?.GetType().GetField("_templatePanel",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)?.GetValue(editor);
+    if(panel is not SunEyeVision.Tool.MarkFind.Wpf.Views.MarkFindTemplatePanel)
+     throw new Exception("MarkFind 缺少原厂特征模型面板接缝。");
+    Console.WriteLine("PASS: MarkFind 原厂特征模型面板已物化");
+   }
+   if(name=="BlobLabels")
+   {
+    var editor=settings.View as SunEyeVision.Tool.BlobLabels.Wpf.Views.BlobLabelsParameterEditor
+        ?? FindDescendant<SunEyeVision.Tool.BlobLabels.Wpf.Views.BlobLabelsParameterEditor>(settings.View);
+    var panel=editor?.GetType().GetField("_thresholdPanel",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)?.GetValue(editor);
+    if(panel is not SunEyeVision.Tool.BlobLabels.Wpf.Views.BlobLabelsThresholdAreaPanel)
+     throw new Exception("BlobLabels 缺少原厂阈值面积面板接缝。");
+    Console.WriteLine("PASS: BlobLabels 原厂阈值面积面板已物化");
+   }
+   if(name=="If")
+   {
+    var ifEditor=settings.View as SunEyeVision.Tool.If.Wpf.Views.IfParameterEditor
+        ?? FindDescendant<SunEyeVision.Tool.If.Wpf.Views.IfParameterEditor>(settings.View);
+    var branchPanel=ifEditor?.GetType().GetField("_branchPanel",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)?.GetValue(ifEditor);
+    if(branchPanel is null)
+     throw new Exception("If 缺少原厂动态条件行面板接缝。");
+    Console.WriteLine("PASS: If 原厂动态条件行面板已物化");
+   }
+  }
+  if(tool is not SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultPresentationProvider provider)
+   throw new Exception(name+" 缺少结果投影声明");
+  using var result=factory.CreateResultView(provider.ResultSchema,provider.ResultProjection);
+  result.View.Measure(new Size(680,800));result.View.Arrange(new Rect(0,0,680,800));
+  if(result.Sources.Count==0 && provider.ResultSchema.Outputs.Count==0) throw new Exception(name+" 结果视图没有输出声明");
+  Console.WriteLine($"PASS: {name} settings fields={settings.AcceptedFieldOrder.Count} outputs={provider.ResultSchema.Outputs.Count}");
+ }
+ static T? FindDescendant<T>(System.Windows.DependencyObject root) where T : System.Windows.DependencyObject
+ {
+  for(var i=0;i<System.Windows.Media.VisualTreeHelper.GetChildrenCount(root);i++)
+  {
+   var child=System.Windows.Media.VisualTreeHelper.GetChild(root,i);
+   if(child is T match)return match;
+   if(FindDescendant<T>(child) is {} nested)return nested;
+  }
+  return null;
+ }
 }
 
 /// <summary>探针用的相机源：一台假设备，验证参数页相机行可渲染。</summary>

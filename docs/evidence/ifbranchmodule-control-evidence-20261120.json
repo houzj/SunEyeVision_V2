@@ -1,0 +1,32 @@
+{
+  "toolId": "ifbranchmodule",
+  "artifact": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\IfBranchModuleControl.dll",
+  "sha256": "5c7446d7ff008a8089c4e38b4eb3f75bca3910a3d3def02901f99dc849102c3e",
+  "mvid": "b4056a05-a4ba-40f4-a562-c98973cfe5e4",
+  "evidenceIds": [
+    "ev_10b3563b3ee5eea19526a0fe4b0586897d9106b48b1881cec8e4c8db26b38d2f",
+    "ev_90756cad7609d185c84815a5422e6e1fec230a5a159d35595a1d226a261a9532",
+    "ev_821fc9d5214f6ee74e688fd4640ddde5b1d79a2f5170d41899933029d2a50a4a"
+  ],
+  "observedTypes": [
+    "Apps.XmlParser.ParamTab.IfBranchDynamicIO",
+    "Apps.XmlParser.ParamTab.IfBranchModuleDynamicIO",
+    "Apps.XmlParser.ParamTab.ButtonSelecter_IfBranch"
+  ],
+  "observedMembers": {
+    "selectValueBasicTypes": ["int", "float"],
+    "dynamicRow": ["FloatBettween", "Enumeration", "RunModuleId", "EnumEntrys", "SelectedChangedCommand"],
+    "moduleDynamicIO": ["SelectTypeIndex", "IsAllowSet", "DecimalDigits", "EnumEntrys", "AddIO", "RemoveIO", "InitSource", "GetParam"],
+    "buttonSelector": ["PreviewMouseWheelCommand", "DecimalDigitsA"]
+  },
+  "observedStrings": ["O", "OK", "NG", "RunModuleId", "IdList", "IfBranchText", "SelectTypeIndex", "IsAllowSet", "DecimalDigits", "DecimalDigitsA"],
+  "resources": {
+    "name": "IfBranchModuleControl.g.resources",
+    "sha256": "74380b43ca39cd7f76f6f93152e65a02986becf5263b0b722845f15e678b1d07",
+    "length": 4277
+  },
+  "limitations": [
+    "Static metadata proves the dynamic row model and add/remove methods, but not the exact WPF resource binding expressions.",
+    "The current tool schema is fixed-port and cannot safely expose AddIO/RemoveIO without a dynamic port and persistence contract."
+  ]
+}

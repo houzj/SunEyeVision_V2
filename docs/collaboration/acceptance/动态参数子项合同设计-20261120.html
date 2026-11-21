@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>动态参数子项合同设计（PixelCount 阈值范围）</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--ink:#172033;--muted:#5d6b82;--line:#dbe3ef;--blue:#2563eb;--teal:#0f766e;--amber:#b45309;--red:#b91c1c}
+*{box-sizing:border-box}body{margin:0;color:var(--ink);background:var(--bg);font:15px/1.7 "Segoe UI","Microsoft YaHei",sans-serif}
+main{max-width:1120px;margin:auto;padding:32px 28px 60px}h1{margin:0 0 8px;font-size:30px}
+h2{margin:32px 0 12px;font-size:21px;border-left:5px solid var(--blue);padding-left:12px}
+.lead{color:var(--muted);font-size:16px}.meta{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.tag{background:#e8f0ff;color:#1d4ed8;border:1px solid #c9d9ff;border-radius:999px;padding:3px 10px;font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin:14px 0;box-shadow:0 5px 18px #23395d0d}
+.notice{border-left:4px solid var(--teal);background:#ecfdf5}.warning{border-left:4px solid var(--amber);background:#fff7ed}
+code{background:#eef2f7;border-radius:4px;padding:1px 5px;font-family:Consolas,monospace}
+pre{overflow:auto;background:#111827;color:#e5e7eb;border-radius:10px;padding:14px;line-height:1.5}
+table{width:100%;border-collapse:collapse;background:#fff;margin:12px 0}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:#eef4ff;color:#1e3a8a}.ok{color:var(--teal);font-weight:700}.open{color:var(--amber);font-weight:700}
+</style></head>
+<body><main>
+<h1>动态参数子项合同设计</h1>
+<p class="lead">让工具的参数集合随保存状态变化：父项持有子项、增删命令、逐项持久化和可订阅端点。首个消费者是 PixelCount 阈值范围，后续 If 动态行复用。</p>
+<div class="meta"><span class="tag">VisionMaster 4.4.0 对照</span><span class="tag">PixelCount</span><span class="tag">设计稿</span><span class="tag">2026-11-20</span></div>
+
+<h2>1. 原厂机制（证据）</h2>
+<div class="card">
+<p><code>IMVSPixelCountModuVAControl.dll</code>（ilspycmd 11.2，BAML 已还原）：</p>
+<ul>
+<li><code>PixelModuRangeConfigList : NameValueItem, IDynamicChild</code>：<code>ConfigList</code>、<code>AddCommand</code>、<code>DeleteCommand</code>、<code>DelEnable = Count &gt; 1</code>、上限 32。</li>
+<li>新增写 <code>add_Threshold</code>，删除写 <code>del_Threshold_{n}</code>；条数存 <code>Threshold_nums</code>。</li>
+<li><code>PixelModuRangeConfigItem : IntegerBettween</code>：两个 <code>Integer</code> 子项 <code>min_Threshold_i</code> / <code>max_Threshold_i</code>，默认 0/255/1。</li>
+<li><code>Integer → ValueBase</code>，含 <code>IsSubA</code>、<code>TypeChangeCommand</code>、<code>SubData</code>，端点可订阅。</li>
+<li>行视觉来自共享 <code>IntegerBettween</code> 模板；容器只提供标题、ItemsControl、增删按钮。</li>
+</ul>
+</div>
+
+<h2>2. 目标合同</h2>
+<div class="card notice">
+<p>工具在已知当前设置快照时，可以给出额外的端口和呈现。宿主在“配置准入、参数页、执行快照”三处使用同一扩展结果。</p>
+<pre>public interface IToolDynamicSettings
+{
+    // declared: 工具静态设置契约；current: 当前字段快照
+    ToolSchema ExpandSettings(ToolSchema declared, FieldSettings current);
+    // 可选：扩展字段的引用行为与绑定名
+    IReadOnlyDictionary&lt;string, ParameterReferenceBehavior&gt; DynamicReferenceBehaviors { get; }
+}</pre>
+</div>
+
+<h3>端口身份</h3>
+<table>
+<tr><th>项</th><th>规则</th></tr>
+<tr><td>数量</td><td><code>range.count</code>，整数，默认 1，范围 1..32</td></tr>
+<tr><td>端点</td><td><code>range.{i}.min</code>、<code>range.{i}.max</code>，<code>i</code> 从 0 连续</td></tr>
+<tr><td>配对</td><td>两个端点使用 <code>PairWith</code> 共用一行，行标题为序号</td></tr>
+<tr><td>编辑模式</td><td><code>Constant | Reference</code></td></tr>
+<tr><td>持久化</td><td>按字段 id 扁平保存；数量变化时裁掉越界端点</td></tr>
+</table>
+
+<h3>引用语义</h3>
+<ul>
+<li>端点值与普通数值字段一致：接受引用会话，执行前由 <code>ExecutionBindingPlan</code> 编译。</li>
+<li>未解析引用按现有执行校验失败处理，不落回默认值。</li>
+<li>端点范围校验（0..255、下限 ≤ 上限）在编辑期和运行期各执行一次。</li>
+</ul>
+
+<h2>3. 宿主改造点</h2>
+<table>
+<tr><th>层</th><th>改动</th></tr>
+<tr><td>Plugin.Contracts</td><td>新增 <code>IToolDynamicSettings</code></td></tr>
+<tr><td>Application</td><td>配置准入时用当前字段扩展 <code>SettingsSchema</code>；字段变化导致扩展到新结构时重建节点配置并触发参数页重绑</td></tr>
+<tr><td>Execution</td><td><code>ExecutionNodeSnapshot</code> 的 <code>SettingsSchema</code> 与 <code>BindingTargets</code> 使用扩展结果；材质化按扩展端口读取</td></tr>
+<tr><td>Plugin.Wpf</td><td>参数页按扩展 schema 建行；动态行复用 <code>DeclaredRangeRow</code>（真实引用会话）；删除工具自绘编辑器</td></tr>
+<tr><td>工具</td><td>只实现扩展函数、默认值、上限和持久化模型</td></tr>
+</table>
+
+<h2>4. PixelCount 映射</h2>
+<div class="card">
+<ul>
+<li>设置模型：<code>RangeCount</code> + 端点数组（值或引用），不再使用 <code>ThresholdRanges</code> 字符串。</li>
+<li>页面：<code>运行参数</code> 页显示一个「阈值范围」组，行序号 0..n-1，底部 <code>+</code>/<code>×</code>。</li>
+<li>新增：数量 +1，端点默认 0/255；删除：数量 -1 并从末尾裁掉端点；<code>DelEnable = Count &gt; 1</code>。</li>
+<li>执行：按数量读取端点，引用在运行期解析。</li>
+</ul>
+</div>
+
+<h2>5. If 复用</h2>
+<p>If 的动态行是“名称 + 来源引用 + 范围 + 状态 + 模块”，同样需要动态数量和逐行端口。它能复用本合同的<strong>数量和扩展端口</strong>部分，行模板与命令由 If 自己声明，不复制 PixelCount 的容器。</p>
+
+<h2>6. 验收矩阵</h2>
+<table>
+<tr><th>项</th><th>标准</th></tr>
+<tr><td>端点订阅</td><td>链接按钮可选择变量，保存重开后引用保留</td></tr>
+<tr><td>增删</td><td>上限 32，1 行时无删除，删除只作用于末行</td></tr>
+<tr><td>执行</td><td>常量与引用两种输入都产生正确阈值区间；未解析引用阻止执行</td></tr>
+<tr><td>UI</td><td>行外观、标题、命令条与原厂一致；参数页无多余页头</td></tr>
+<tr><td>回归</td><td>PixelCount 专项测试、ControlNamingProbe、Release 构建、Agent Desktop</td></tr>
+</table>
+
+<h2>7. 非目标</h2>
+<ul>
+<li>不做旧字符串格式兼容。</li>
+<li>不把动态端口暴露为执行输出或全局变量。</li>
+<li>不做任意深度的嵌套动态结构；只支持一层子项集合。</li>
+</ul>
+
+<div class="card warning">
+<p><b>风险</b>：配置准入与参数页需要感知“结构变化”，当前节点配置是不可变快照。实现时必须明确重建时机，避免编辑中把正在使用的旧引用裁掉。</p>
+</div>
+</main></body></html>

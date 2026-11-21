@@ -19,9 +19,11 @@ public sealed class NativeRoiUiDraftControls : StackPanel, INativeRoiControls, I
     private readonly ContentControl _detectionShapes = new(), _maskShapes = new();
     private readonly DeclaredFieldState _detection, _inherit, _mask;
     private readonly FrameworkElement _detectionRadio, _inheritRadio, _maskRadio;
-    private readonly DeclaredFieldRow _area, _outputMask, _maskImage, _maskSource;
+    private readonly DeclaredFieldRow? _area, _outputMask, _maskImage, _maskSource;
     private readonly NativeRoiInheritanceBinding _inheritance;
     private readonly Func<bool> _readMaskMode;
+    private readonly bool _showMaskGroup, _showAreaType, _showMaskImage, _showOutputMask, _showAnnulusSource;
+    private readonly IReadOnlyList<string> _inheritanceLabels;
     private bool _rectangleParametersRealized, _circleParametersRealized, _disposed;
     private bool _positionCorrectionEnabled;
     private bool _projectingModes;
@@ -30,21 +32,32 @@ public sealed class NativeRoiUiDraftControls : StackPanel, INativeRoiControls, I
     /// <summary>容器视觉根，供宿主做可见性与加载状态联动。</summary>
     public FrameworkElement Element => this;
     public FrameworkElement GraphicVisibilitySource => _detectionRadio;
-    public bool IsImageArea => !_disposed && _area.Setting is ConstantSetting { Value:1L };
-    public bool IsInheritedMask => !_disposed && !IsImageArea && Value(_mask) == 1;
+    public bool IsImageArea => !_disposed && _showAreaType && _area?.Setting is ConstantSetting { Value:1L };
+    public bool IsInheritedMask => _showMaskGroup && !_disposed && !IsImageArea && Value(_mask) == 1;
     public void SetPositionCorrectionEnabled(bool enabled)
     {
-        if (_disposed || _positionCorrectionEnabled == enabled) return;
+        if (_disposed) return;
+        var changed = _positionCorrectionEnabled != enabled;
         _positionCorrectionEnabled = enabled;
+        // Re-project even when unchanged because AssistGroup can attach after
+        // the first state projection.
         ProjectVisibility();
-        Notify();
+        if (changed) Notify();
     }
-
-    public NativeRoiUiDraftControls(NativeRoiInheritanceBinding inheritance, DeclaredFieldRow maskImage,
-        DeclaredFieldRow area, DeclaredFieldRow outputMask,
-        DeclaredFieldRow maskSource, Func<bool> readMaskMode, Action<bool> acceptMaskMode)
+    public NativeRoiUiDraftControls(NativeRoiInheritanceBinding inheritance, DeclaredFieldRow? maskImage,
+        DeclaredFieldRow? area, DeclaredFieldRow? outputMask,
+        DeclaredFieldRow? maskSource, Func<bool> readMaskMode, Action<bool> acceptMaskMode,
+        bool showMaskGroup = true, bool showAreaType = true, bool showMaskImage = true,
+        bool showOutputMask = true, bool showAnnulusSource = true,
+        IReadOnlyList<string>? inheritanceLabels = null)
     {
         _inheritance = inheritance;
+        _showMaskGroup = showMaskGroup;
+        _showAreaType = showAreaType;
+        _showMaskImage = showMaskImage;
+        _showOutputMask = showOutputMask;
+        _showAnnulusSource = showAnnulusSource;
+        _inheritanceLabels = inheritanceLabels?.ToArray() ?? ["By rectangle area", "By rectangle parameter", "By circle area", "By circle parameter"];
         _area = area;
         _outputMask = outputMask;
         _maskImage = maskImage;
@@ -52,21 +65,21 @@ public sealed class NativeRoiUiDraftControls : StackPanel, INativeRoiControls, I
         _readMaskMode=readMaskMode;
         var initialMode=inheritance.ReadMode();
         ValidateMode(initialMode);
-        AddSource(Children,outputMask);
-        Children.Add(area);
-        AddSource(Children,_maskImage);
+        if (_showOutputMask && outputMask is not null) AddSource(Children, outputMask);
+        if (_showAreaType && area is not null) Children.Add(area);
+        if (_showMaskImage && _maskImage is not null) AddSource(Children, _maskImage);
         (_detection,_detectionRadio) = AddRadio("roi-creation","ROI Creation",["RunParam_Draw","RunParam_Inherit"],initialMode is null?0:1,
             value=>inheritance.AcceptMode(value==0?null:(int)Value(_inherit)));
         Children.Add(_detectionShapes);
-        (_inherit,_inheritRadio) = AddRadio("roi-inheritance","Inheritance Mode",["By rectangle area","By rectangle parameter","By circle area","By circle parameter"],initialMode??0,
+        (_inherit,_inheritRadio) = AddRadio("roi-inheritance","Inheritance Mode",_inheritanceLabels,initialMode??0,
             value=>{if(Value(_detection)==1)inheritance.AcceptMode((int)value);});
         AddSource(Children,inheritance.RectangleSource);
-        AddSource(Children,inheritance.AnnulusSource);
+        if (_showAnnulusSource) AddSource(Children, inheritance.AnnulusSource);
         (_mask,_maskRadio) = AddRadio("roi-mask-creation","ExternROI Creation",["RunParam_Draw","RunParam_Inherit"],readMaskMode()?1:0,value=>acceptMaskMode(value==1));
         Children.Add(_maskShapes);
-        AddSource(Children,maskSource);
+        if (_showMaskGroup && _maskSource is not null) AddSource(Children,maskSource);
         foreach (var state in _states) state.Changed += OnModeChanged;
-        _area.Changed += OnModeChanged;
+        if (_area is not null) _area.Changed += OnModeChanged;
         IsVisibleChanged += OnVisibilityChanged;
         ProjectVisibility();
     }
@@ -97,27 +110,26 @@ public sealed class NativeRoiUiDraftControls : StackPanel, INativeRoiControls, I
     private IEnumerable<DeclaredFieldRow> ActiveSources()
     {
         if (_disposed) yield break;
-        yield return _outputMask;
+        if (_showOutputMask && _outputMask is not null) yield return _outputMask;
         if (IsImageArea)
         {
-            yield return _maskImage;
+            if (_maskImage is not null) yield return _maskImage;
             yield break;
         }
-        if (Value(_detection)==1)
+        // VM declares ROI sources independently from the fixture input. The
+        // position-correction switch must not remove an ROI source from capture.
+        if (Value(_detection)==1) switch ((int)Value(_inherit))
         {
-            if (_positionCorrectionEnabled) switch ((int)Value(_inherit))
-            {
-                case 0: yield return _inheritance.RectangleSource; break;
-                case 1:
-                    foreach (var row in _rectangleParameters) yield return row;
-                    break;
-                case 2: yield return _inheritance.AnnulusSource; break;
-                case 3:
-                    foreach (var row in _circleParameters) yield return row;
-                    break;
-            }
+            case 0: yield return _inheritance.RectangleSource; break;
+            case 1:
+                foreach (var row in _rectangleParameters) yield return row;
+                break;
+            case 2: yield return _inheritance.AnnulusSource; break;
+            case 3:
+                foreach (var row in _circleParameters) yield return row;
+                break;
         }
-        if (IsInheritedMask) yield return _maskSource;
+        if (IsInheritedMask && _maskSource is not null) yield return _maskSource;
     }
     public bool HasPendingEdits => ActiveSources().Any(row => row.HasPendingEdits);
     public bool TryCaptureActiveSources(out string error)
@@ -161,26 +173,38 @@ public sealed class NativeRoiUiDraftControls : StackPanel, INativeRoiControls, I
         _sources.Add(field);
         field.Changed += Notify;
     }
+    /// <summary>
+    /// 参数行必须紧跟继承方式（原厂 Tab_ROI Area：继承方式 → 参数行 → 屏蔽区创建 → 屏蔽区）。
+    /// 不能用 AddSource(Children,row) 追加到末尾，否则参数行会落到屏蔽区/位置修正之后。
+    /// </summary>
+    private void InsertParameterSource(DeclaredFieldRow field)
+    {
+        var index = _maskRadio is null ? Children.Count : Children.IndexOf(_maskRadio);
+        if (index < 0) index = Children.Count;
+        Children.Insert(index, field);
+        _sources.Add(field);
+        field.Changed += Notify;
+    }
     private void EnsureParameterEditors(int mode)
     {
         if (mode==1 && !_rectangleParametersRealized)
         {
-            foreach (var row in _inheritance.RectangleParametersFactory()) { _rectangleParameters.Add(row); AddSource(Children,row); }
+            foreach (var row in _inheritance.RectangleParametersFactory()) { _rectangleParameters.Add(row); InsertParameterSource(row); }
             _rectangleParametersRealized=true;
         }
         if (mode==3 && !_circleParametersRealized)
         {
-            foreach (var row in _inheritance.AnnulusParametersFactory()) { _circleParameters.Add(row); AddSource(Children,row); }
+            foreach (var row in _inheritance.AnnulusParametersFactory()) { _circleParameters.Add(row); InsertParameterSource(row); }
             _circleParametersRealized=true;
         }
     }
-    private (DeclaredFieldState,FrameworkElement) AddRadio(string id,string label,string[] choices,long initial,Action<long> accept)
+    private (DeclaredFieldState,FrameworkElement) AddRadio(string id,string label,IReadOnlyList<string> choices,long initial,Action<long> accept)
     {
         var state = new DeclaredFieldState(new Port(id,DataType.Integer),new ConstantSetting(initial),
             proposal=>accept((long)((ConstantSetting)proposal).Value!));
         _states.Add(state);
         var radio = new DeclaredFieldRow(state,label,
-            integerRadioOptions:new NativeIntegerRadioOptions(choices.Select((value,index)=>new NativeIntegerRadioChoice(index,AppLocalizationService.GetLang(value)??value)),useFiveSlotTemplate:choices.Length>2));
+            integerRadioOptions:new NativeIntegerRadioOptions(choices.Select((value,index)=>new NativeIntegerRadioChoice(index,AppLocalizationService.GetLang(value)??value)),useFiveSlotTemplate:choices.Count>2));
         _radios.Add(radio);
         Children.Add(radio);
         return (state,radio);
@@ -194,17 +218,19 @@ public sealed class NativeRoiUiDraftControls : StackPanel, INativeRoiControls, I
         var draw=Value(_detection)==0;
         var mode=(int)Value(_inherit);
         if (graphic&&!draw) EnsureParameterEditors(mode);
-        _maskImage.Visibility=Shown(!graphic);
-        _inheritance.RectangleSource.Visibility=Shown(_positionCorrectionEnabled&&graphic&&!draw&&mode==0);
-        _inheritance.AnnulusSource.Visibility=Shown(_positionCorrectionEnabled&&graphic&&!draw&&mode==2);
-        foreach (var row in _rectangleParameters) row.Visibility=Shown(_positionCorrectionEnabled&&graphic&&!draw&&mode==1);
-        foreach (var row in _circleParameters) row.Visibility=Shown(_positionCorrectionEnabled&&graphic&&!draw&&mode==3);
-        _maskSource.Visibility=Shown(IsInheritedMask);
+        if (_maskImage is not null) _maskImage.Visibility=Shown(_showMaskImage&&_showMaskGroup&&!graphic);
+        // ROI 继承是 RoiSelectGroup/InheritWayGroup 的状态，位置修正属于
+        // AssistGroup。原厂两组独立，位置修正关闭不能隐藏已选择的 ROI 来源。
+        _inheritance.RectangleSource.Visibility=Shown(graphic&&!draw&&mode==0);
+        _inheritance.AnnulusSource.Visibility=Shown(_showAnnulusSource&&graphic&&!draw&&mode==2);
+        foreach (var row in _rectangleParameters) row.Visibility=Shown(graphic&&!draw&&mode==1);
+        foreach (var row in _circleParameters) row.Visibility=Shown(graphic&&!draw&&mode==3);
+        if (_maskSource is not null) _maskSource.Visibility=Shown(_showMaskGroup&&IsInheritedMask);
         _detectionRadio.Visibility=Shown(graphic);
         _detectionShapes.Visibility=Shown(graphic&&draw);
-        _inheritRadio.Visibility=Shown(graphic&&!draw);
-        _maskRadio.Visibility=Shown(graphic);
-        _maskShapes.Visibility=Shown(graphic&&!IsInheritedMask);
+        _inheritRadio.Visibility=Shown(graphic&&!draw&&_inheritanceLabels.Count>1);
+        _maskRadio.Visibility=Shown(_showMaskGroup&&graphic);
+        _maskShapes.Visibility=Shown(_showMaskGroup&&graphic&&!IsInheritedMask);
         PrepareSourceInteractions();
     }
     private void OnVisibilityChanged(object sender,DependencyPropertyChangedEventArgs args)=>PrepareSourceInteractions();
@@ -229,7 +255,7 @@ public sealed class NativeRoiUiDraftControls : StackPanel, INativeRoiControls, I
         _disposed=true;
         Changed=null;
         IsVisibleChanged-=OnVisibilityChanged;
-        _area.Changed-=OnModeChanged;
+        if (_area is not null) _area.Changed-=OnModeChanged;
         _interactionVisibility.Clear();
         foreach (var field in _sources) field.Changed-=Notify;
         foreach (var state in _states) state.Changed-=OnModeChanged;

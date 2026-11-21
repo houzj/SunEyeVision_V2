@@ -1,0 +1,40 @@
+{
+  "batch": 1,
+  "toolId": "PixelCount",
+  "status": "static-ui-closed-runtime-covered",
+  "project": "tools/SunEyeVision.PixelCount/SunEyeVision.Tool.PixelCount.csproj",
+  "runtimeProject": "tools/SunEyeVision.PixelCount/SunEyeVision.Tool.PixelCount.csproj",
+  "wpfProject": "tools/SunEyeVision.PixelCount/SunEyeVision.Tool.PixelCount.csproj",
+  "evidence": [
+    "docs/evidence/pixelcount-ui-static-20261120.md",
+    "docs/evidence/pixelcount-tool-layer-diff-20261120.md"
+  ],
+  "pages": ["基本参数", "运行参数", "结果显示"],
+  "sharedChain": ["Tab.Collection", "CollectionViewSource", "ParamListView", "ParamUserControl"],
+  "specialControls": [
+    {
+      "type": "PixelModuRangeConfigList",
+      "editorType": "SunEyeVision.Tool.PixelCount.Wpf.Views.PixelCountRangePanel",
+      "evidence": "pixelcount-ui-static-20261120"
+    }
+  ],
+  "architecture": {
+    "singleProject": true,
+    "runtimeAndEditorSameAssembly": true,
+    "sharedParameterRoot": true,
+    "toolOwnsWindowLifecycle": false,
+    "toolOwnsThirdPartyInitialization": false
+  },
+  "algorithm": {
+    "adapter": "SunEyeVision.HalAdapter.Runtime",
+    "originalModule": "IMVSPixelCountModuVA.dll",
+    "originalModuleSha256": "8A1EBF7A0BC0F6ADE87994EDCAE788DDA3FD9AB66B1E328BD8733E1D6D6A9EEF",
+    "goldenCases": [],
+    "equivalenceStatus": "unconfirmed",
+    "comparisonRequired": ["module-status", "count", "ratio", "roi", "mask", "error-behavior"]
+  },
+  "unconfirmed": [
+    "original dynamic range row event timing",
+    "original position correction display objects"
+  ]
+}

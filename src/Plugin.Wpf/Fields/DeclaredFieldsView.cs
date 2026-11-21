@@ -64,6 +64,8 @@ public sealed partial class DeclaredFieldsView : UserControl,IDisposable
  /// <summary>PROBE-KEEP：单字段行装配耗时（边距绑定 + 行对象 + 入列）。</summary>
  public IReadOnlyDictionary<string,long> LastRowAssemblyMs=>_rowAssemblyMs;
  private readonly List<(NativeParameterPage Page,NativeHost Host)> _pages=new();
+ /// <summary>整页内容页：原厂 DataTemplate 根承载，独占 Tab 内容区，不建原生参数行。</summary>
+ private readonly IReadOnlyDictionary<string,FrameworkElement>? _pageContents;
  private readonly Dictionary<FrameworkElement,(NativeParameterPage Page,NativeParameterRow Row)> _positions=new();
  private readonly List<NativeAdvancedPresenter> _advanced=new();
  private readonly Dictionary<FrameworkElement,(NativeAdvancedPresenter? Advanced,FieldCondition? Condition)> _visibility=new();
@@ -129,7 +131,7 @@ public void SetFieldRowsVisibility(IEnumerable<string> fieldIds,bool visible)
  ObjectDisposedException.ThrowIf(_disposed,this);
  var ids=fieldIds.Distinct(StringComparer.Ordinal).ToArray();
  if(ids.Any(id=>!_fieldsById.ContainsKey(id)))throw new ArgumentException("显隐切换引用未知字段。");
- foreach(var id in ids.Where(id=>!_rows.ContainsKey(id)))QueuePageAction(id,()=>SetFieldRowsVisibility(new[]{id},visible));
+ foreach(var id in ids.Where(id=>!_rows.ContainsKey(id)&&!IsWholePageField(id)))QueuePageAction(id,()=>SetFieldRowsVisibility(new[]{id},visible));
  var rows=ids.Where(_rows.ContainsKey).Select(id=>_rows[id]).Distinct().ToArray();
  foreach(var row in rows)
  {
@@ -144,7 +146,7 @@ public void SuppressFieldRows(IEnumerable<string> fieldIds)
   ObjectDisposedException.ThrowIf(_disposed,this);
   var ids=fieldIds.Distinct(StringComparer.Ordinal).ToArray();
   if(ids.Any(id=>!_fieldsById.ContainsKey(id)))throw new ArgumentException("隐藏行引用未知字段。");
-  foreach(var id in ids.Where(id=>!_rows.ContainsKey(id)))QueuePageAction(id,()=>SuppressFieldRows(new[]{id}));
+  foreach(var id in ids.Where(id=>!_rows.ContainsKey(id)&&!IsWholePageField(id)))QueuePageAction(id,()=>SuppressFieldRows(new[]{id}));
   var rows=ids.Where(_rows.ContainsKey).Select(id=>_rows[id]).Distinct().ToArray();
   foreach(var row in rows)
   {
@@ -152,6 +154,18 @@ public void SuppressFieldRows(IEnumerable<string> fieldIds)
    _appliedVisibility.Remove(row);
    (row as IParameterVisibility)?.PrepareForVisibility(false);
    row.Visibility=Visibility.Collapsed;
+  }
+  foreach(var (_,host) in _pages)host.RefreshGroups();
+ }
+ public void SetRowsVisibilityAfter(string anchorFieldId,bool visible)
+ {
+  ObjectDisposedException.ThrowIf(_disposed,this);
+  if(!_rows.TryGetValue(anchorFieldId,out var anchor)||!_positions.TryGetValue(anchor,out var position))return;
+  var rows=position.Page.Rows; var start=rows.IndexOf(position.Row);
+  for(var i=start+1;i<rows.Count;i++)
+  {
+   var row=rows[i]; if(!string.Equals(row.GroupName.NameA,"ROI区域",StringComparison.Ordinal))continue;
+   if(row.View is {} view)view.Visibility=visible?Visibility.Visible:Visibility.Collapsed;
   }
   foreach(var (_,host) in _pages)host.RefreshGroups();
  }
@@ -270,10 +284,14 @@ public void SuppressFieldRows(IEnumerable<string> fieldIds)
   }
   UpdateVisibility();
  }
+ private bool IsWholePageField(string fieldId)
+  =>_pageContents is not null&&_numericModelPages.TryGetValue(fieldId,out var fieldPage)&&_pageContents.ContainsKey(fieldPage);
  private void QueuePageAction(string fieldOrPage,Action action)
  {
   var page=_groupPageKeys.TryGetValue(fieldOrPage,out var groupPage)?groupPage:
       _numericModelPages.GetValueOrDefault(fieldOrPage)??fieldOrPage;
+  if(_pageContents?.ContainsKey(page)==true)
+   throw new InvalidOperationException($"整页内容页“{page}”不支持行锚点内容；请直接挂载到整页内容视图。");
   if(_builtPages.Contains(page)){action();return;}
   if(!_pendingPageActions.TryGetValue(page,out var actions))_pendingPageActions.Add(page,actions=[]);
   actions.Add(action);
@@ -348,10 +366,12 @@ public void SuppressFieldRows(IEnumerable<string> fieldIds)
   IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? choiceDisplays=null,
   IReadOnlyList<NativeVisibilityDisplayOptions>? visibilityDisplays=null,
   Action<string,DeclaredFieldsView>? pageBuilt=null,int selectedPageIndex=0,bool eagerlyComposePages=false,
-        IReadOnlyDictionary<string,ICameraSelectionSource>? cameraSources=null)
+        IReadOnlyDictionary<string,ICameraSelectionSource>? cameraSources=null,
+        IReadOnlyList<string>? pageOnlyPages=null,
+        IReadOnlyDictionary<string,FrameworkElement>? pageContents=null)
  {
   ArgumentNullException.ThrowIfNull(writeDraft);
-  _pageBuilt=pageBuilt;
+  _pageBuilt=pageBuilt;_pageContents=pageContents;
   if(references is not null){_ownsReferenceWindowOwner=references.WindowOwner is null;_referenceWindowOwner=references.WindowOwner??new ReferenceWindowOwner(this,()=>!_disposed,new(),false);references=references with{WindowOwner=_referenceWindowOwner};}
   _writeGroup=writeDraft;_validateComposition=validateComposition;_isCurrent=isCurrent;_groupReferences=references;
   Resources.MergedDictionaries.Add(EditorResources.Shared);Background=new SolidColorBrush(Color.FromRgb(242,243,245));Foreground=new SolidColorBrush(Color.FromRgb(102,102,102));FontSize=14;FontWeight=FontWeights.Normal;
@@ -477,7 +497,7 @@ public void SuppressFieldRows(IEnumerable<string> fieldIds)
    tabs.Resources.MergedDictionaries.Add(OriginalThemeResources.Shared);
    _tabTextScope=new NativeTabHeaderTextScope(tabs);
    tabs.SetResourceReference(StyleProperty,"TabControlStyle");
-   var presentationTree=ParameterPresentationTree.Create(all.Select(field=>field.Presentation));
+   var presentationTree=ParameterPresentationTree.Create(all.Select(field=>field.Presentation),pageOnlyPages);
    foreach(var pageNode in presentationTree.Pages)
    {
     var pageRows=new NativeParameterPage();_groups[pageNode.Key]=pageRows;
@@ -490,6 +510,15 @@ public void SuppressFieldRows(IEnumerable<string> fieldIds)
     
      try
      {
+      // 原厂整页内容（如 FeatureMatchConfigPanal 独占"特征模板"Tab）：面板作为 DataTemplate 根
+      // 直接铺满页内容区，不经 NativeParameterRow 行宿主；字段状态仍在 _fieldStates 中保留。
+      if(_pageContents?.TryGetValue(pageNode.Key,out var pageContent)==true)
+      {
+       tab.Content=pageContent;
+       _pageBuilt?.Invoke(pageNode.Key,this);
+       UpdateVisibility();
+       return;
+      }
       var pageFields=pageNode.Fields.Select(field=>declarations[field.FieldId]).ToArray();var pageIds=pageFields.Select(field=>field.Port.Id).ToHashSet(StringComparer.Ordinal);
       var body=new NativeHost();if(pageLabelWidths?.TryGetValue(pageNode.Key,out var width)==true)body.ChildLeftWidth=width;
       _pages.Add((pageRows,body));
@@ -548,7 +577,8 @@ public void SuppressFieldRows(IEnumerable<string> fieldIds)
         var fieldId=field.Port.Id;
         var ctorProbe=System.Diagnostics.Stopwatch.StartNew();
         var row=new DeclaredFieldRow(states[field.Port.Id],field.Presentation.DisplayName,references,formatReference,field.Presentation.ChoiceLabels,field.Presentation,
-         integerRadioOptions:radios.GetValueOrDefault(field.Port.Id),inlineConstantReference:_inlineConstants.Contains(field.Port.Id),choiceDisplay:_choiceDisplays.GetValueOrDefault(field.Port.Id));
+         integerRadioOptions:radios.GetValueOrDefault(field.Port.Id),inlineConstantReference:_inlineConstants.Contains(field.Port.Id),choiceDisplay:_choiceDisplays.GetValueOrDefault(field.Port.Id),
+         showClearButton:field.Presentation.Layout?.ShowClearButton ?? true);
         _editors[field.Port.Id]=row;
         var ctorMs=ctorProbe.ElapsedMilliseconds;ctorProbe.Restart();
         if(textOptions.TryGetValue(field.Port.Id,out var textOption))row.UseTextExpressions(textOption);

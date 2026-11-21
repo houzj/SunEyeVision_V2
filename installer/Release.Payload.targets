@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <!-- Machine-specific portable PowerShell paths do not belong in source control. -->
   <Import Project="$(MSBuildThisFileDirectory)Release.Local.props" Condition="Exists('$(MSBuildThisFileDirectory)Release.Local.props')" />
   <PropertyGroup>
@@ -26,12 +26,53 @@
                       Lines="@(ResolvedFileToPublish->'winner|%(FullPath)|%(RelativePath)')" />
   </Target>
 
+  <!-- 记录本工程本次构建是否真的编译过；未编译的依赖工程不重复封存。 -->
+  <Target Name="MarkProductCompiled" AfterTargets="CoreCompile">
+    <PropertyGroup>
+      <_SunEyeVisionCompiledThisBuild>true</_SunEyeVisionCompiledThisBuild>
+    </PropertyGroup>
+  </Target>
+  <Target Name="MarkProductMarkupCompiled" AfterTargets="MarkupCompilePass2">
+    <PropertyGroup>
+      <_SunEyeVisionCompiledThisBuild>true</_SunEyeVisionCompiledThisBuild>
+    </PropertyGroup>
+  </Target>
+
   <Target Name="SealDevelopmentReleasePayload" AfterTargets="Build" DependsOnTargets="ResolveReleasePowerShell"
-          Condition="'$(MSBuildProjectName)'=='SunEyeVision.UI' And '$(SelfContained)'!='true' And '$(DesignTimeBuild)'!='true' And '$(BuildingProject)'!='false'">
+          Condition="'$(MSBuildProjectName)'=='SunEyeVision.UI' And '$(SelfContained)'!='true' And '$(DesignTimeBuild)'!='true' And '$(BuildingProject)'!='false' And '$(SunEyeVisionSkipPayloadSeal)'!='true'">
     <PropertyGroup>
       <_ReleaseSealSourceArgument Condition="'$(SourceRevisionId)'!=''">-SourceCommit &quot;$(SourceRevisionId)&quot;</_ReleaseSealSourceArgument>
     </PropertyGroup>
-    <Exec Command="&quot;$(ReleasePowerShellPath)&quot; -NoProfile -File &quot;$(MSBuildThisFileDirectory)Seal-ReleasePayload.ps1&quot; -AppPath &quot;$(OutDir).&quot; $(_ReleaseSealSourceArgument)" IgnoreExitCode="true">
+    <Exec Command="&quot;$(ReleasePowerShellPath)&quot; -NoProfile -File &quot;$(MSBuildThisFileDirectory)Seal-ReleasePayloadDebounced.ps1&quot; -AppPath &quot;$(OutDir).&quot; -Force $(_ReleaseSealSourceArgument)" IgnoreExitCode="true">
+      <Output TaskParameter="ExitCode" PropertyName="_ReleaseSealExitCode" />
+    </Exec>
+    <Error Condition="'$(_ReleaseSealExitCode)'=='9009'"
+           Text="构建进程找不到 PowerShell 7。请安装 PowerShell 7 并重新打开 VS，或在 installer/Release.Local.props 配置 ReleasePowerShellPath。" />
+    <Error Condition="'$(_ReleaseSealExitCode)'!='0'" Text="Release 载荷封装失败，退出码 $(_ReleaseSealExitCode)。请查看上方脚本输出。" />
+  </Target>
+
+  <!-- 单独构建任一产品工程（工具、插件、框架）后也立即封存载荷。
+       否则改完工具直接启动 Release 会因载荷哈希不一致而启动失败。
+       解决方案构建由 UI 工程统一封存一次；并发工程通过互斥锁和新鲜度检查合并，
+       最后一个工程（UI 或被直接构建的工具）写入最终载荷。 -->
+  <PropertyGroup>
+    <_ReleaseSealAppDir>$([System.IO.Path]::GetFullPath('$(WorktreeBasePath)Release\SunEyeVision_v1.0.0\SunEyeVision\'))</_ReleaseSealAppDir>
+  </PropertyGroup>
+  <Target Name="SealDevelopmentReleasePayloadAfterProject" AfterTargets="Build" DependsOnTargets="ResolveReleasePowerShell"
+          Condition="'$(MSBuildProjectName)'!='SunEyeVision.UI'
+                     And '$(BuildingSolutionFile)'!='true'
+                     And '$(SelfContained)'!='true'
+                     And '$(DesignTimeBuild)'!='true'
+                     And '$(BuildingProject)'!='false'
+                     And '$(PackagingRoot)'==''
+                     And '$(IsTestProject)'!='true'
+                     And '$(SunEyeVisionSkipPayloadSeal)'!='true'
+                     And '$(_SunEyeVisionCompiledThisBuild)'=='true'
+                     And '$([System.IO.Path]::GetFullPath($(OutDir)))'=='$(_ReleaseSealAppDir)'">
+    <PropertyGroup>
+      <_ReleaseSealSourceArgument Condition="'$(SourceRevisionId)'!=''">-SourceCommit &quot;$(SourceRevisionId)&quot;</_ReleaseSealSourceArgument>
+    </PropertyGroup>
+    <Exec Command="&quot;$(ReleasePowerShellPath)&quot; -NoProfile -File &quot;$(MSBuildThisFileDirectory)Seal-ReleasePayloadDebounced.ps1&quot; -AppPath &quot;$(OutDir).&quot; -Force $(_ReleaseSealSourceArgument)" IgnoreExitCode="true">
       <Output TaskParameter="ExitCode" PropertyName="_ReleaseSealExitCode" />
     </Exec>
     <Error Condition="'$(_ReleaseSealExitCode)'=='9009'"

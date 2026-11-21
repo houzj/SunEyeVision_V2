@@ -749,7 +749,7 @@ public sealed class EditorDebugSessionTests
   Assert.False(roi.IsLocalDrawing("inspection"));
   Assert.True(roi.IsInheritedMask);
   Assert.Equal(1L,Assert.IsType<ConstantSetting>(Row("roi-inheritance").Setting).Value);
-  Assert.True(Row("input.roi.rectangle.center-x").IsVisible);
+  Assert.False(Row("input.roi.rectangle.center-x").IsVisible);
   Assert.Equal(gray.Id,Assert.IsType<ReferenceSetting>(picker.SelectedValue).Reference.PortId);
   Assert.Equal(initial.Reference.PortId,Assert.IsType<ReferenceSetting>(blob.Configuration.Fields.Read("input.image")).Reference.PortId);
   Assert.Equal("RectangleParameters",context.PreparedDraft.Configuration.Fields.Get<string>(inheritance));

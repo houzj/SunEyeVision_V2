@@ -10,6 +10,7 @@ public sealed class FrozenToolDeclarations
         IReadOnlyDictionary<string, ParameterReferenceBehavior> referenceBehaviors, ToolHostDeclarationSnapshot hostDeclarations,
         IReadOnlyList<ManualReferenceSource> manualReferenceSources, InputValues? displayDefaults=null, InputValues? settingsDefaults=null)
     {
+        _displayDefaults=displayDefaults;
         if(string.IsNullOrWhiteSpace(toolId))throw new ArgumentException("Tool identity is required.",nameof(toolId));
         ToolId=toolId; Schema=schema ?? throw new ArgumentNullException(nameof(schema));
         SettingsSchema=settingsSchema ?? throw new ArgumentNullException(nameof(settingsSchema));
@@ -45,11 +46,18 @@ public sealed class FrozenToolDeclarations
             .Select(source => new ManualReferenceSource(source.PortId, source.MemberPath)).ToArray());
     }
     public string ToolId { get; }
+    private readonly InputValues? _displayDefaults;
     public ToolSchema Schema { get; }
-    public ToolSchema SettingsSchema { get; }
-    public ToolSchema DisplaySchema { get; }
+    public ToolSchema SettingsSchema { get; }    public ToolSchema DisplaySchema { get; }
     public FieldSettings DisplayDefaults { get; }
     public FieldSettings SettingsDefaults { get; }
+
+    /// <summary>Derives a declaration snapshot with a node-specific settings schema (dynamic children).
+    /// Display defaults and reference behaviors are retained; dynamic ports fall back to the default
+    /// reference behavior.</summary>
+    public FrozenToolDeclarations WithSettingsSchema(ToolSchema settingsSchema) =>
+        new(ToolId, Schema, settingsSchema, DisplaySchema, ReferenceBehaviors, HostDeclarations, ManualReferenceSources,
+            _displayDefaults, null);
     public IReadOnlyDictionary<string,ParameterReferenceBehavior> ReferenceBehaviors { get; }
     public ToolHostDeclarationSnapshot HostDeclarations { get; }
     public IReadOnlyList<ManualReferenceSource> ManualReferenceSources { get; }

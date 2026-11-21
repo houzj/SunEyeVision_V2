@@ -249,42 +249,33 @@
         "type": "Project",
         "dependencies": {
           "SunEyeVision.HalAdapter.Runtime": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )"
         }
       },
       "SunEyeVision.Tool.ContourMatch.Runtime": {
         "type": "Project",
         "dependencies": {
+          "Microsoft.Xaml.Behaviors.Wpf": "[1.1.31, )",
           "SunEyeVision.HalAdapter.Runtime": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
-        }
-      },
-      "SunEyeVision.Tool.ContourMatch.Wpf": {
-        "type": "Project",
-        "dependencies": {
-          "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Tool.ContourMatch.Runtime": "[2.0.0-alpha.8, )"
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )"
         }
       },
       "SunEyeVision.Tool.GrayMatch.Runtime": {
         "type": "Project",
         "dependencies": {
           "SunEyeVision.HalAdapter.Runtime": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
-        }
-      },
-      "SunEyeVision.Tool.GrayMatch.Wpf": {
-        "type": "Project",
-        "dependencies": {
-          "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Tool.GrayMatch.Runtime": "[2.0.0-alpha.8, )"
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )"
         }
       },
       "SunEyeVision.Tool.MarkFind.Runtime": {
         "type": "Project",
         "dependencies": {
           "SunEyeVision.HalAdapter.Runtime": "[2.0.0-alpha.8, )",
-          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )"
         }
       }
     },

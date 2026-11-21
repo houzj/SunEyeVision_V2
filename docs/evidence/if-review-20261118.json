@@ -1,7 +1,7 @@
 {
   "tool": "If",
   "phase": "comparison",
-  "status": "difference-confirmed-repair-not-started",
+  "status": "internal-branch-text-contract-implemented-dynamic-ui-pending",
   "vm": {
     "assembly": "IfBranchModuleControl 1.0.0.0",
     "artifact_sha256": "5c7446d7ff008a8089c4e38b4eb3f75bca3910a3d3def02901f99dc849102c3e",
@@ -54,13 +54,15 @@
   },
   "product": {
     "source": [
-      "tools/SunEyeVision.If/Runtime/IfFields.cs",
-      "tools/SunEyeVision.If/Runtime/IfSettings.cs",
-      "tools/SunEyeVision.If/Runtime/IfTool.cs",
-      "tools/SunEyeVision.If/Wpf/Views/IfParameterEditor.xaml"
+      "tools/SunEyeVision.If/Parameters/IfFields.cs",
+      "tools/SunEyeVision.If/Parameters/IfSettings.cs",
+      "tools/SunEyeVision.If/IfTool.cs",
+      "tools/SunEyeVision.If/Editor/Views/IfParameterEditor.xaml",
+      "tools/SunEyeVision.If/Editor/Views/IfBranchPanel.cs"
     ],
     "confirmed": [
       "固定四个条件槽位",
+      "共享参数页已接入原厂动态条件行面板，面板读写 IfBranchText 并复用正式引用行模板",
       "四个槽位各声明启用、来源、最小值、最大值",
       "所有槽位同时声明四个控制输出",
       "统一使用 ±999999999 数值范围",
@@ -91,6 +93,14 @@
       "confidence": "VM已证/本方已证",
       "impact": "影响参数页和结果/分支语义",
       "repair": "需先确认 If 与 IfBranch 两个原厂模块在产品目标中的对应关系，当前不把 IfBranch 行字段直接塞入 If"
+    },
+    {
+      "id": "IF-STATE-004",
+      "type": "persistence",
+      "finding": "本方已增加 branch.text 内部设置字段，承载原厂 IfBranchText，但尚未由专属动态面板编辑",
+      "confidence": "VM已证/本方已证",
+      "impact": "为动态行保存重开提供稳定字段身份，不改变 Algorithm.xml 数据输入端口",
+      "repair": "已接入 IfBranchPanel，仍需补 IdList 来源选择和动态端口契约"
     }
   ],
   "next_evidence": [
@@ -128,7 +138,7 @@
       "close": "script close-app delivered_verified"
     }
   },
-  "modification_allowed": false,
+  "modification_allowed": true,
   "tests": {
     "command": "dotnet test tests/SunEyeVision.Tools.LogicData.Tests/SunEyeVision.Tools.LogicData.Tests.csproj -c Release --no-restore --filter 'FullyQualifiedName~If'",
     "exit_code": 0,
@@ -139,12 +149,24 @@
   },
   "release_validation": {
     "release_root": "D:\\MyWork\\SunEyeVision_V2\\Release\\SunEyeVision_v1.0.0\\SunEyeVision",
-    "payload_sha256": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB",
+    "payload_sha256": "5CDC77BBD3004318EA47A8EDF00AE833BDD06F008C413D0BC42C61AC9594C5BE",
     "startup": "Agent Desktop launch succeeded after payload reseal",
     "welcome_solution": "11111",
     "product_main_snapshot": "s26nivk0a2o0qd",
     "product_if_window": "s2rbf09bcfnwde",
     "reason": "已通过固定单工具审核脚本获得条件分支参数窗口；只确认当前结构，不把它当作原厂动态结构通过"
+  },
+  "dynamic_panel_release_probe": {
+    "solution": "D:\\MyWork\\SunEyeVision_V2\\.testdata\\agent-desktop\\if-dynamic\\if-dynamic.solution",
+    "script_run": "Release/_validation/AgentDesktopToolReview/single-tool-if-dynamic/20261119-234951-条件分支1",
+    "window_title": "12 条件分支1",
+    "confirmed": [
+      "产品参数页通过 Agent Desktop 打开",
+      "动态面板自动化名称为 条件分支动态行",
+      "面板处于基本参数页内部组装链"
+    ],
+    "limitation": "UIA 未展开面板内部自定义行控件，按钮和引用选择仍以代码组装探针为准"
   }
 }
+
 

@@ -46,7 +46,7 @@ public sealed partial class NativeRoiEditHost : IDisposable
     private bool UnacceptedGesture=>_sessions.Values.Any(session=>session.ActiveDraw is not null||session.Items.Any(item=>item.HasPending))||_interaction?.HasPendingGesture==true;
     public bool HasPending=>_unrestoredInput is not null||_pending.Count>0||_editors.Values.Any(editor=>editor.HasPendingEdits)||UnacceptedGesture;
     public event Action? Changed;
-    public NativeRoiEditHost(DeclaredInputFieldsView inputs,NativeRoiUiDraftControls controls,NativeRoiFrameSource? source,INativeRoiEditDocument document,Func<string?>? drawBlockReason=null)
+    public NativeRoiEditHost(DeclaredInputFieldsView inputs,NativeRoiUiDraftControls controls,NativeRoiFrameSource? source,INativeRoiEditDocument document,Func<string?>? drawBlockReason=null,IReadOnlyList<string>? availableShapes=null)
     {
         _inputs=inputs;_controls=controls;_controlsVisual=controls;_source=source;_drawBlockReason=drawBlockReason;_document=document;_observed=Read();
         _primaryGroup=document.Groups[0].Name;_secondaryGroup=document.Groups[1].Name;_localMode=document.LocalModeValue;
@@ -59,6 +59,8 @@ public sealed partial class NativeRoiEditHost : IDisposable
             {
                 var editor=new NativeRoiEditor{Title=group==_primaryGroup?"形状":"屏蔽区",PolygonOnly=group==_secondaryGroup,
                     ToolTip="先运行图像来源，再编辑区域。"};
+                if (availableShapes is not null && group==_primaryGroup)
+                    editor.SetAvailableShapes(availableShapes);
                 editor.PrepareInteraction=()=>Activate(group);editor.InteractionFailureText=()=>_drawBlockReason?.Invoke()??(string.IsNullOrWhiteSpace(Error)?null:Error);editor.AllowUnboundFullDomain=group==_primaryGroup;editor.UnboundFullDomain=_document.Coverage(_observed,group)==RoiDocumentValue.FullDomain;editor.PendingChanged+=Notify;_editors.Add(group,editor);editor.Bind(null);
             }
             controls.BindLocalEditors(_editors[_primaryGroup],_editors[_secondaryGroup]);

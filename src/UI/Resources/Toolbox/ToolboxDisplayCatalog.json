@@ -267,14 +267,14 @@
         "Id": "IMVSPixelCountModu",
         "Name": "像素统计",
         "Icon": "IMVSPixelCountModuImageEnable.png",
-        "ToolId": "PixelCount",
-        "MappingVerified": true
+        "ToolId": null
       },
       {
         "Id": "IMVSPixelCountModuVA",
         "Name": "像素统计",
         "Icon": "IMVSPixelCountModuVAImageEnable.png",
-        "ToolId": null
+        "ToolId": "PixelCount",
+        "MappingVerified": true
       },
       {
         "Id": "IMVSHistToolModu",

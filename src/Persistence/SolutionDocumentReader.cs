@@ -13,7 +13,8 @@ namespace SunEyeVision.Persistence;
 public static class SolutionDocumentReader
 {
     public static SolutionReadCandidate Read(ReadOnlySpan<byte> utf8,IReadOnlyDictionary<string,FrozenToolDeclarations> declarations,
-        FrozenVariableTypeCatalog variableTypes,JsonSerializerOptions sourceOptions,DecodedResourcesScope scope,IVariableValueExtensionCodec? extension=null,string? baseDirectory=null)
+        FrozenVariableTypeCatalog variableTypes,JsonSerializerOptions sourceOptions,DecodedResourcesScope scope,IVariableValueExtensionCodec? extension=null,string? baseDirectory=null,
+        Func<string,FieldSettings,ToolSchema,ToolSchema>? expandSettings=null)
     {
         ArgumentNullException.ThrowIfNull(declarations);ArgumentNullException.ThrowIfNull(variableTypes);
         ArgumentNullException.ThrowIfNull(sourceOptions);ArgumentNullException.ThrowIfNull(scope);
@@ -36,7 +37,7 @@ public static class SolutionDocumentReader
             var files=EmbeddedFileCatalog.Parse(root);scope.RegisterNew(files);
             var resources=new SolutionResourceResolver(baseDirectory,files).Inspect(root,diagnostics,declarations);
             files.ValidateReferences(resources);
-            var workflows=Array.AsReadOnly(((JsonArray?)root["Workflows"] ?? new JsonArray()).Select(flow=>ReadWorkflow(flow!,declarations,options)).ToArray());
+            var workflows=Array.AsReadOnly(((JsonArray?)root["Workflows"] ?? new JsonArray()).Select(flow=>ReadWorkflow(flow!,declarations,options,expandSettings)).ToArray());
             return new SolutionReadCandidate(scope,utf8)
             {
                 EmbeddedFiles=files,
@@ -52,15 +53,17 @@ public static class SolutionDocumentReader
         }
         catch (Exception error) { scope.ReleaseAfterFailure(error); throw; }
     }
-    private static WorkflowReadCandidate ReadWorkflow(JsonNode node,IReadOnlyDictionary<string,FrozenToolDeclarations> declarations,JsonSerializerOptions options)
+    private static WorkflowReadCandidate ReadWorkflow(JsonNode node,IReadOnlyDictionary<string,FrozenToolDeclarations> declarations,JsonSerializerOptions options,
+        Func<string,FieldSettings,ToolSchema,ToolSchema>? expandSettings)
     {
         var root=node as JsonObject ?? throw new JsonException("Workflow must be an object.");
-        var nodes=Array.AsReadOnly(((JsonArray?)root["Nodes"] ?? new JsonArray()).Select(n=>ReadNode(n!,declarations)).ToArray());
+        var nodes=Array.AsReadOnly(((JsonArray?)root["Nodes"] ?? new JsonArray()).Select(n=>ReadNode(n!,declarations,expandSettings)).ToArray());
         var edges=Array.AsReadOnly(((JsonArray?)root["Connections"] ?? new JsonArray()).Select(e=>ReadEdge(e!,options)).ToArray());
         return new(Required(root,"Id"),Text(root,"Name",string.Empty),Bool(root,"IsSubroutine",false),
             Value(root,"RootConfiguration",options,new RootWorkflowConfiguration())!,Value(root,"WorkspaceSettings",options,new RootWorkspaceSettings())!,nodes,edges,ReadAdditionalData(root));
     }
-    private static NodeReadCandidate ReadNode(JsonNode node,IReadOnlyDictionary<string,FrozenToolDeclarations> declarations)
+    private static NodeReadCandidate ReadNode(JsonNode node,IReadOnlyDictionary<string,FrozenToolDeclarations> declarations,
+        Func<string,FieldSettings,ToolSchema,ToolSchema>? expandSettings)
     {
         var root=node as JsonObject ?? throw new JsonException("Node must be an object.");
         var tool=Required(root,"ToolType");
@@ -70,8 +73,23 @@ public static class SolutionDocumentReader
         var keys=value.EnumerateObject().Select(p=>p.Name).ToHashSet(StringComparer.Ordinal);
         if(!keys.SetEquals(new[]{"ToolId","Fields","CurrentValues","ParameterBindingOrder"}) || value.GetProperty("ToolId").GetString()!=tool)
             throw new JsonException("Configuration requires the same ToolId and exact fields.");
-        var fields=DeclaredFieldJson.Read(declared,value.GetProperty("Fields"))
+        var fieldsElement=value.GetProperty("Fields");
+        var declaredPorts=declared.Schema.Inputs.Concat(declared.SettingsSchema.Inputs).Concat(declared.DisplaySchema.Inputs).ToArray();
+        var fields=DeclaredFieldJson.Read(declared,fieldsElement,false,ignoreUnknown:true)
             .ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal);
+        // 动态子项（原厂 IDynamicChild）：先按静态声明读取数量，再按节点条数展开设置端口并重新解析。
+        if(expandSettings is not null)
+        {
+            var probe=new SunEyeVision.Plugin.Contracts.FieldSettings(declaredPorts,fields);
+            var expanded=expandSettings(tool,probe,declared.SettingsSchema);
+            if(!string.Equals(expanded.Fingerprint,declared.SettingsSchema.Fingerprint,StringComparison.Ordinal))
+            {
+                declared=declared.WithSettingsSchema(expanded);
+                declaredPorts=declared.Schema.Inputs.Concat(declared.SettingsSchema.Inputs).Concat(declared.DisplaySchema.Inputs).ToArray();
+                fields=DeclaredFieldJson.Read(declared,fieldsElement,false,ignoreUnknown:true)
+                    .ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal);
+            }
+        }
         foreach(var port in declared.DisplaySchema.Inputs.Where(port=>port.Required))
             if(declared.DisplayDefaults.Read(port.Id) is ConstantSetting fallback)
                 fields.TryAdd(port.Id,fallback);
@@ -79,7 +97,7 @@ public static class SolutionDocumentReader
             fields.TryAdd(pair.Key,pair.Value);
         var current=DeclaredFieldJson.Read(declared,value.GetProperty("CurrentValues"),true).ToDictionary(p=>p.Key,p=>p.Value as ConstantSetting ?? throw new JsonException("Current values require constants."),StringComparer.Ordinal);
         var order=value.GetProperty("ParameterBindingOrder").EnumerateArray().Select(p=>p.ValueKind==JsonValueKind.String?p.GetString()!:throw new JsonException("Binding order requires field identities.")).ToArray();
-        var ports=declared.Schema.Inputs.Concat(declared.SettingsSchema.Inputs).Concat(declared.DisplaySchema.Inputs);
+        var ports=declaredPorts;
         var config=new ToolConfiguration(tool,new FieldSettings(ports,fields),current,parameterBindingOrder:order);
         return new(Required(root,"Id"),Text(root,"Name",string.Empty),Text(root,"DispName",string.Empty),tool,Int(root,"GlobalIndex",-1),Int(root,"LocalIndex",-1),Bool(root,"IsEnabled",true),
             OptionalText(root,"SubroutineId"),OptionalText(root,"SelectedDisplayReference"),ReadDisplayOverlays(root),Finite(root,"PositionX",0),Finite(root,"PositionY",0),Finite(root,"Width",140),Finite(root,"Height",90),config,ReadAdditionalData(root));

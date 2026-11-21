@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Source: IMVSPixelCountModuVAAlgorithmTab.xml. The public framework consumes this normalized mapping. -->
+<PixelCountAlgorithmTab source="IMVSPixelCountModuVAAlgorithmTab.xml" originalModule="IMVSPixelCountModuVA">
+  <Tab id="Tab_Basic Params" title="基本参数" order="0">
+    <Group id="ImageSourceGroup" title="图像输入" />
+    <Group id="Tab_ROI Area" title="ROI区域">
+      <GroupLink id="OutputMaskImageGroup" />
+      <GroupLink id="InputMaskImageGroup" />
+      <GroupLink id="RoiSelectGroup" />
+      <GroupLink id="InheritWayGroup" />
+      <GroupLink id="AssistGroup" />
+    </Group>
+  </Tab>
+  <Tab id="Tab_Run Params" title="运行参数" order="1">
+    <Group id="PixelModuRangeConfigList" title="阈值范围" fieldId="range.thresholds" specialControl="PixelModuRangeConfigList" />
+  </Tab>
+  <Tab id="ResultShow" title="结果显示" order="2">
+    <Group id="CheckZone" title="结果判定">
+      <Field ref="limit.count.enabled" />
+      <Field ref="limit.count.low" />
+      <Field ref="limit.count.high" />
+      <Field ref="limit.ratio.enabled" />
+      <Field ref="limit.ratio.low" />
+      <Field ref="limit.ratio.high" />
+    </Group>
+    <Group id="TextDisplayGroup" title="文本显示" />
+  </Tab>
+  <BottomCommandGroup ids="Button_ResetAlgoParams" />
+</PixelCountAlgorithmTab>

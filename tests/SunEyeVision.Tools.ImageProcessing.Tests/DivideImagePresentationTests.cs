@@ -32,6 +32,7 @@ public sealed class DivideImagePresentationTests
             Assert.False(editor.HasInvalidInput);
             Assert.Equal(new[]
             {
+                DivideImageFields.PositionCorrectionEnabled,
                 DivideImageFields.Columns, DivideImageFields.Rows, DivideImageFields.OverlapX, DivideImageFields.OverlapY
             }, editor.CaptureAcceptedFields().Declarations.Keys.ToArray());
         });
@@ -48,7 +49,7 @@ public sealed class DivideImagePresentationTests
                 InputContentFactory = _ => new Border()
             });
             Assert.False(editor.HasInvalidInput);
-            Assert.Equal(4, editor.CaptureAcceptedFields().Declarations.Count);
+            Assert.Equal(5, editor.CaptureAcceptedFields().Declarations.Count);
         });
     }
 

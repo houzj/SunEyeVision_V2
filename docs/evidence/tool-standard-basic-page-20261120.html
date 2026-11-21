@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>工具标准基本参数页（2026-11-20）</title>
+<style>body{font:15px/1.7 "Segoe UI","Microsoft YaHei",sans-serif;max-width:1100px;margin:auto;padding:28px;color:#172033;background:#f6f8fb}h1{font-size:28px}h2{margin-top:30px;border-left:5px solid #2563eb;padding-left:12px;font-size:21px}table{width:100%;border-collapse:collapse;background:#fff;margin:12px 0}th,td{border:1px solid #dbe3ef;padding:8px 10px;text-align:left;vertical-align:top}th{background:#eef4ff}code{background:#eef2f7;padding:1px 5px;border-radius:4px}.card{background:#fff;border:1px solid #dbe3ef;border-radius:12px;padding:14px 18px;margin:12px 0}.ok{color:#0f766e;font-weight:700}</style></head>
+<body>
+<h1>工具标准基本参数页</h1>
+<p>目标：大多数工具的基本参数页共用同一套装配，不再由每个工具重复拼控件、抑制行或接位置修正。</p>
+
+<h2>标准结构</h2>
+<pre>图像输入（共享输入行，标签「输入源」）
+ROI区域
+  输出掩膜
+  ROI区域类型
+  ROI创建（绘制 / 继承）
+  形状
+  位置修正（开关）
+  ↳ Assist 组（仅在开关开启时显示）
+工具差异：是否显示屏蔽区、标签、字段身份</pre>
+
+<h2>共享实现</h2>
+<table>
+<tr><th>职责</th><th>实现</th></tr>
+<tr><td>标准页装配</td><td><code>SunEyeVision.Plugin.Wpf.Presenters.Parameters.NativeStandardBasicPage</code></td></tr>
+<tr><td>ROI 组</td><td><code>NativeRoiGroupComposer</code> + <code>NativeRoiUiDraftControls</code></td></tr>
+<tr><td>ROI 编辑宿主</td><td><code>NativeRoiEditHost</code> + <code>RoiDocumentStore</code></td></tr>
+<tr><td>位置修正</td><td><code>NativeAssistUiDraftControls</code></td></tr>
+<tr><td>字段行与抑制</td><td><code>DeclaredFieldsView</code> / <code>DeclaredInputFieldsView</code></td></tr>
+</table>
+
+<h2>工具只声明</h2>
+<table>
+<tr><th>项</th><th>说明</th></tr>
+<tr><td>ROI 字段身份</td><td>模式、矩形/圆环来源、区域类型、掩膜、输出掩膜、屏蔽区</td></tr>
+<tr><td>位置修正字段</td><td>开关字段、Assist 模式/信息/基准点/运行点</td></tr>
+<tr><td>原厂差异</td><td>是否显示屏蔽区行、字段标签、分组标题</td></tr>
+</table>
+
+<h2>已接入</h2>
+<table>
+<tr><th>工具</th><th>状态</th></tr>
+<tr><td>IntensityMeasure</td><td class="ok">已接入标准页（本批）</td></tr>
+<tr><td>PixelCount</td><td class="ok">已接入标准页（本批，36/36 测试通过）</td></tr>
+<tr><td>Blob / 其它工具</td><td>按需接入，先补该工具原厂差异</td></tr>
+</table>
+
+<h2>规则</h2>
+<div class="card">
+<p>1. 新增工具不得复制 ROI/Assist 装配代码，只提供 <code>NativeStandardBasicPageSpec</code>。</p>
+<p>2. 工具差异必须能指向原厂证据；没有证据的差异不进入标准页。</p>
+<p>3. 标准页之外的专属内容只允许作为锚定内容插入，不改共享行模板。</p>
+<p>4. 字段身份变化后必须同步测试与保存的测试方案；旧方案缺字段时由工具在 Bind 前补默认值。</p>
+</div>
+</body></html>

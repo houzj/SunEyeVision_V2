@@ -126,6 +126,69 @@ public sealed class IfDeclarationTests
         Assert.Null(dormant[IfFields.SourceField(1)].Value);
     }
 
+    [Fact]
+    public void IfBranchText_round_trips_original_row_format()
+    {
+        var text=IfBranchTextCodec.Serialize(new[]
+        {
+            new IfBranchTextCodec.Row("int0",1,100,IfBranchTextCodec.OkState,7),
+            new IfBranchTextCodec.Row("float1",-2.5,100000,IfBranchTextCodec.NgState,IfBranchTextCodec.UnselectedRunModuleId)
+        });
+        Assert.Equal("int0:1:100:1:7;float1:-2.5:100000:2:-1;",text);
+        Assert.Equal(new[] { "int0", "float1" },IfBranchTextCodec.Parse(text).Select(row=>row.Name));
+    }
+
+    [Fact]
+    public void BranchText_is_persisted_as_internal_settings_state_without_becoming_a_data_input()
+    {
+        var text="int0:1:100:1:-1;";
+        var settings=new IfSettings{BranchText=text};
+        var values=IfFields.Read(settings);
+        Assert.Equal(text,values.Get<string>(IfFields.BranchText));
+        Assert.DoesNotContain(IfTool.Schema.Inputs,port=>port.Id==IfFields.BranchText);
+        var materialized=IfFields.Materialize(values);
+        Assert.Equal(text,materialized.BranchText);
+    }
+
+    [Fact]
+    public void IfBranchText_uses_type_specific_original_bounds()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(()=>IfBranchTextCodec.Serialize(new[]
+        {
+            new IfBranchTextCodec.Row("int0",-1000000000,0,IfBranchTextCodec.OkState,-1)
+        }));
+        Assert.Throws<ArgumentOutOfRangeException>(()=>IfBranchTextCodec.Serialize(new[]
+        {
+            new IfBranchTextCodec.Row("float0",-100001,0,IfBranchTextCodec.OkState,-1)
+        }));
+    }
+
+    [Fact]
+    public void Dynamic_model_matches_original_add_remove_and_reload_contract()
+    {
+        var model=new IfBranchDynamicModel();
+        model.InitSource(2);
+        var integer=model.AddIO();
+        model.SelectTypeIndex=1;
+        var floating=model.AddIO();
+        Assert.Equal(new[]{"int0","float0"},model.Items.Select(row=>row.Name));
+        Assert.Equal(2,integer.DecimalDigits);
+        Assert.Equal(2,floating.DecimalDigits);
+
+        integer.Minimum=-10;
+        integer.Maximum=10;
+        integer.RunModuleId=3;
+        model.RemoveIO(floating);
+        var text=model.SetParamUnit();
+        model.GetParam(text);
+
+        Assert.Single(model.Items);
+        Assert.Equal("int0",model.Items[0].Name);
+        Assert.Equal(-10,model.Items[0].Minimum);
+        Assert.Equal(10,model.Items[0].Maximum);
+        Assert.Equal(3,model.Items[0].RunModuleId);
+    }
+
     private static ReferenceSetting Reference()
         =>new(new OutputReference("source","output.value",DataType.Number));
 

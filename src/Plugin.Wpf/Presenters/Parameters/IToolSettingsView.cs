@@ -30,6 +30,9 @@ IReadOnlyDictionary<string,ICameraSelectionSource>? CameraSources=null,
     IReadOnlyList<NativeAssistOptions>? AssistCompositions=null,
     string? InputAfterField=null,FieldCondition? InputCondition=null,
     IReadOnlyDictionary<string,FrameworkElement>? AdditionalPageContents=null,
+    // 整页内容：对应原厂 DataTemplate 根承载（如 FeatureMatchConfigPanal 独占"特征模板"Tab）。
+    // key=参数页名，value=独占该页内容区的视图；不进 NativeParameterRow，由页容器直接 Stretch 铺满。
+    IReadOnlyDictionary<string,FrameworkElement>? PageContents=null,
     string? AdditionalAfterField=null,FrameworkElement? AdditionalAfterContent=null,
     FieldCondition? AdditionalAfterCondition=null,IReadOnlySet<string>? HeaderlessSectionAnchors=null,
     IReadOnlyList<AnchoredSettingsContent>? AdditionalAnchoredContents=null,
@@ -47,10 +50,13 @@ IReadOnlyDictionary<string,ICameraSelectionSource>? CameraSources=null,
     Func<string,ParameterSetting>? ReadInputSetting=null,
     IReadOnlyDictionary<string,NativeInputPlacement>? InputPlacements=null,
     IReadOnlySet<string>? ToolOwnedInputFields=null,
+    IReadOnlyList<string>? PageOnlyPages=null,
     InputCompositionMode CompositionMode=InputCompositionMode.NestedLegacy,
     // 引用式呈现字段（原厂 ButtonSelecter 一类）的端口来源：它们的端口由工具执行契约声明，
     // 不进设置契约，参数页据此为这些字段建行。
-    IReadOnlyList<Port>? PresentationPorts=null)
+    IReadOnlyList<Port>? PresentationPorts=null,
+    Func<string,long?>? ReadRuntimeInteger=null,
+    Func<IReadOnlyList<int>>? ReadRuntimeModuleIds=null)
 {
     private IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? _choiceDisplays=FreezeChoiceDisplays(ChoiceDisplays);
     public IReadOnlyDictionary<string,DeclaredChoiceDisplayOptions>? ChoiceDisplays
@@ -87,4 +93,10 @@ public interface IToolSettingsViewReady
 public interface IToolSettingsViewInputProjection
 {
     void RefreshAcceptedInputs();
+}
+
+/// <summary>Refreshes an original control whose visible state comes from the latest debug result.</summary>
+public interface IToolSettingsRuntimeState
+{
+    void RefreshRuntimeState();
 }

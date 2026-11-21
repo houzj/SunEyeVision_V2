@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>SunEyeVision.Tool.PixelCount.Runtime</AssemblyName>
+    <RootNamespace>SunEyeVision.Tool.PixelCount.Runtime</RootNamespace>
+    <ToolComponentId>SunEyeVision.Tool.PixelCount.Runtime</ToolComponentId>
+    <ToolComponentToolId>PixelCount</ToolComponentToolId>
+    <ToolComponentRole>Runtime</ToolComponentRole>
+    <ToolComponentEntryType>SunEyeVision.Tool.PixelCount.Runtime.PixelCountTool</ToolComponentEntryType>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources/PixelCountParameters.xml" LogicalName="PixelCount.PixelCountParameters.xml" />
+    <EmbeddedResource Include="Resources/PixelCountAlgorithmTab.xml" LogicalName="PixelCount.PixelCountAlgorithmTab.xml" />
+    <EmbeddedResource Include="Resources/PixelCountTool.xml" LogicalName="PixelCount.PixelCountTool.xml" />
+    <EmbeddedResource Include="Resources/PixelCountDisplay.xml" LogicalName="PixelCount.PixelCountDisplay.xml" />
+    <EmbeddedResource Include="Resources/ToolItemInfo.xml" LogicalName="PixelCount.ToolItemInfo.xml" />
+    <ProjectReference Include="../../src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj" />
+    <ProjectReference Include="../../src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj"><Private>false</Private></ProjectReference>
+    <ProjectReference Include="../../src/SunEyeVision.HalAdapter/Runtime/SunEyeVision.HalAdapter.Runtime.csproj" />
+    <Reference Include="halcondotnetxl"><HintPath>../../libs/halcon/net/halcondotnetxl.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="SunEyeVision.Plugin.Contracts.ToolComponentAttribute">
+      <_Parameter1>SunEyeVision.Tool.PixelCount.Wpf</_Parameter1>
+      <_Parameter2>PixelCount</_Parameter2>
+      <_Parameter3>Editor</_Parameter3>
+      <_Parameter4>global::SunEyeVision.Plugin.Contracts.FoundationContract.Major</_Parameter4>
+      <_Parameter4_IsLiteral>true</_Parameter4_IsLiteral>
+      <_Parameter5>global::SunEyeVision.Plugin.Contracts.FoundationContract.Minor</_Parameter5>
+      <_Parameter5_IsLiteral>true</_Parameter5_IsLiteral>
+      <_Parameter6>SunEyeVision.Tool.PixelCount.Wpf.PixelCountEditorFactory</_Parameter6>
+      <_Parameter7>PixelCount</_Parameter7>
+    </AssemblyAttribute>
+  </ItemGroup>
+</Project>

@@ -140,12 +140,91 @@
           "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )"
         }
       },
+      "SunEyeVision.Tool.BlobLabels.Runtime": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.HalAdapter.Runtime": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )"
+        }
+      },
+      "SunEyeVision.Tool.ColorExtract.Runtime": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.HalAdapter.Runtime": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )"
+        }
+      },
+      "SunEyeVision.Tool.ContourMatch.Runtime": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Xaml.Behaviors.Wpf": "[1.1.31, )",
+          "SunEyeVision.HalAdapter.Runtime": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )"
+        }
+      },
+      "SunEyeVision.Tool.DivideImage.Runtime": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )"
+        }
+      },
+      "SunEyeVision.Tool.FrameMean.Runtime": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.HalAdapter.Runtime": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )"
+        }
+      },
+      "SunEyeVision.Tool.GrayMatch.Runtime": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.HalAdapter.Runtime": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )"
+        }
+      },
+      "SunEyeVision.Tool.If.Runtime": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )"
+        }
+      },
       "SunEyeVision.Tool.ImageSource.Runtime": {
         "type": "Project",
         "dependencies": {
           "SunEyeVision.HalAdapter.Runtime": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Runtime": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )"
+        }
+      },
+      "SunEyeVision.Tool.IntensityMeasure.Runtime": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.HalAdapter.Runtime": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )"
+        }
+      },
+      "SunEyeVision.Tool.MarkFind.Runtime": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.HalAdapter.Runtime": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )"
+        }
+      },
+      "SunEyeVision.Tool.PixelCount.Runtime": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.HalAdapter.Runtime": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )"
         }
       }

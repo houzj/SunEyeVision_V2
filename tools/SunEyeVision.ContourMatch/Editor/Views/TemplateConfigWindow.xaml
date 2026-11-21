@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<b08n0:BaseWindow xmlns:b08n0="clr-namespace:SunEyeVision.Plugin.Wpf.Controls.Foundation;assembly=SunEyeVision.Plugin.Wpf"
+                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                  x:Class="SunEyeVision.Tool.ContourMatch.Wpf.Views.TemplateConfigWindow"
+                  Title="模板配置" Width="900" Height="534" MinWidth="900" MinHeight="534"
+                  WindowStartupLocation="CenterOwner" Background="#F2F3F4" FontSize="14" FontFamily="Microsoft YaHei" />

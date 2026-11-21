@@ -1,0 +1,101 @@
+[
+  {
+    "toolId": "PixelCount",
+    "declaredPages": [
+      "基本参数",
+      "运行参数",
+      "结果显示"
+    ],
+    "sharedSmoke": "pass",
+    "releaseComponentCount": 2
+  },
+  {
+    "toolId": "FrameMean",
+    "declaredPages": [
+      "基本参数",
+      "运行参数",
+      "结果显示"
+    ],
+    "sharedSmoke": "pass",
+    "releaseComponentCount": 2
+  },
+  {
+    "toolId": "IntensityMeasure",
+    "declaredPages": [
+      "基本参数",
+      "结果显示"
+    ],
+    "sharedSmoke": "pass",
+    "releaseComponentCount": 2
+  },
+  {
+    "toolId": "ColorExtract",
+    "declaredPages": [
+      "基本参数",
+      "运行参数",
+      "结果显示"
+    ],
+    "sharedSmoke": "pass",
+    "releaseComponentCount": 2
+  },
+  {
+    "toolId": "DivideImage",
+    "declaredPages": [
+      "基本参数",
+      "运行参数"
+    ],
+    "sharedSmoke": "pass",
+    "releaseComponentCount": 2
+  },
+  {
+    "toolId": "ContourMatch",
+    "declaredPages": [
+      "基本参数",
+      "特征模板",
+      "运行参数",
+      "结果显示"
+    ],
+    "sharedSmoke": "pass",
+    "releaseComponentCount": 2
+  },
+  {
+    "toolId": "GrayMatch",
+    "declaredPages": [
+      "基本参数",
+      "灰度模板",
+      "运行参数",
+      "结果显示"
+    ],
+    "sharedSmoke": "pass",
+    "releaseComponentCount": 2
+  },
+  {
+    "toolId": "MarkFind",
+    "declaredPages": [
+      "基本参数",
+      "特征模型",
+      "运行参数",
+      "结果显示"
+    ],
+    "sharedSmoke": "pass",
+    "releaseComponentCount": 2
+  },
+  {
+    "toolId": "BlobLabels",
+    "declaredPages": [
+      "基本参数",
+      "运行参数",
+      "结果显示"
+    ],
+    "sharedSmoke": "pass",
+    "releaseComponentCount": 2
+  },
+  {
+    "toolId": "If",
+    "declaredPages": [
+      "基本参数"
+    ],
+    "sharedSmoke": "pass",
+    "releaseComponentCount": 2
+  }
+]

@@ -21,7 +21,7 @@
     ]
   },
   "product_difference": {
-    "file": "tools/SunEyeVision.BlobLabels/Wpf/Views/BlobLabelsThresholdAreaPanel.cs",
+    "file": "tools/SunEyeVision.BlobLabels/Editor/Views/BlobLabelsThresholdAreaPanel.cs",
     "before": [
       "extra per-row IsAdd checkbox",
       "extra 新增 header/column",
@@ -34,7 +34,7 @@
     ]
   },
   "validation": {
-    "command": "dotnet build tools/SunEyeVision.BlobLabels/Wpf/SunEyeVision.BlobLabels.Wpf.csproj -c Release --no-restore -v:minimal",
+    "command": "dotnet build tools/SunEyeVision.BlobLabels/SunEyeVision.Tool.BlobLabels.csproj -c Release --no-restore -v:minimal",
     "exit_code": 0,
     "errors": 0,
     "warnings": 1,
@@ -104,4 +104,5 @@
     "完成输出树、图像叠加等多节点联调后再做跨节点审核"
   ]
 }
+
 

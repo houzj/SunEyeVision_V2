@@ -33,7 +33,7 @@
 | E14 | 匹配点语义 | `.../MarkFindDialogData.cs:423-447`、`MarkFindDialogUI.xaml.cs:903-933` | `centerPoint` 为标记中心，`outputLine` 为边点外接框；无逐点置信度输出证据 | 已证（源码结构） |
 | E15 | 未取到算法语义的参数 | `parameters.json` 只给名称+默认值；`ui-preview.json` 只给控件类型 | `Polarity`、`ScaleStart/End`、`ScaleX/YStart/End`、`MatchThresholdFlag/High`、`SpotterFlag`、`MatchExtentRate`、`TimeOut`、`MarkLocationType`、`ProjectionInterval`、`MarkType`、`MaskType` 的运行时语义未取证 | 缺口（本轮「默认值可用 + 非默认显式报未支持」，不猜语义） |
 | E16 | 原生算法桥 | 同目录 `resources.json` 只有 5 个 XML 的 SHA256；本库无 XML 内容与 `PatCreateCSharp` 反编译 | 原生模板创建/匹配函数体、错误码、`ModuStatus` 取值域未取证 | 缺口（冻结） |
-| E17 | 同族样板（本仓） | `tools/SunEyeVision.BlobLabels/Runtime/*`（上一轮 C 线交付） | 契约全家桶、结果投影、显示需求、锚定面板结构（本工具沿用） | 已证（本仓源码） |
+| E17 | 同族样板（本仓） | `tools/SunEyeVision.BlobLabels/Algorithms/*, tools/SunEyeVision.BlobLabels/Parameters/*, tools/SunEyeVision.BlobLabels/Results/*`（上一轮 C 线交付） | 契约全家桶、结果投影、显示需求、锚定面板结构（本工具沿用） | 已证（本仓源码） |
 
 ### 1.2 原厂完整链路
 
@@ -403,4 +403,5 @@ dotnet test tests\SunEyeVision.Tools.Inspection.Tests\SunEyeVision.Tools.Inspect
   1. 主线独占时段冒烟：工具箱可见「灰度匹配」→ 拖入 → 参数页三页签（模板参数/运行参数/结果显示）→ 关闭不崩 → 日志无 ERROR。
   2. 若需追平原厂算法：优先补 `Process/ProcessAlg`（阈值/排序/失败发布）与 `BlindPolygon/OutputMask`，再放开 §4.4 的限制。
   3. 类③剩余工具（边缘缺陷、标记检测等）沿用本单结构；多模板能力建议与模板列表控件一并设计后再统一。
+
 

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>三工具控件与统一架构链路复核（2026-11-20）</title>
+<style>body{font:15px/1.7 "Segoe UI","Microsoft YaHei",sans-serif;max-width:1100px;margin:auto;padding:28px;color:#172033;background:#f6f8fb}h1{font-size:28px}h2{margin-top:30px;border-left:5px solid #2563eb;padding-left:12px;font-size:21px}table{width:100%;border-collapse:collapse;background:#fff;margin:12px 0}th,td{border:1px solid #dbe3ef;padding:8px 10px;text-align:left;vertical-align:top}th{background:#eef4ff}code{background:#eef2f7;padding:1px 5px;border-radius:4px}.ok{color:#0f766e;font-weight:700}.bad{color:#b91c1c;font-weight:700}.warn{color:#b45309;font-weight:700}.card{background:#fff;border:1px solid #dbe3ef;border-radius:12px;padding:14px 18px;margin:12px 0}</style></head>
+<body>
+<h1>控件身份与统一架构链路复核</h1>
+<p>本复核不看外观相似度，只看两件事：页面是否由公共参数链组装，页面上的控件是否使用原厂对应控件的迁移件，而不是工具手写替代。原厂依据为 VisionMaster 4.4.0 的模块控制 DLL 反编译模板与运行窗口截图；本方目标结构使用 SunEyeVision 职责命名，不保留原厂产品名或品牌名。</p>
+
+<h2>统一链路基线</h2>
+<pre>AlgorithmTab 声明 → 公共参数树/字段 → DeclaredSettingsView
+→ 行模板（ParamItemStyle / ParamUserControl）
+→ 专属控件只以“外部内容槽/接缝”形式挂入</pre>
+<p>结果页基线：<code>DisplayOptionsFactory</code> → <code>NativeGraphicStylePresenter</code>（原厂 ImageViewConfig 模板）。</p>
+<p>本轮新增的共享控件：<code>NativeCommandSelector</code>、<code>NativeColorRangeList</code>，均在 <code>src/Plugin.Wpf/Presenters/Parameters/</code>。</p>
+
+<h2>逐工具核查</h2>
+<table>
+<tr><th>工具 / 页</th><th>原厂控件</th><th>本方实现</th><th>结论</th></tr>
+<tr><td>FrameMean / 运行参数</td><td><code>CommandSelecter_Frame</code>（两命令 + 已统计数量 + 清空）</td><td>共享 <code>NativeCommandSelector</code>；工具 <code>FrameMeanCommandPanel</code> 只提供命令值、标签键、图标和运行数量读取</td><td class="ok">符合：按钮、样式、网格、图标均由共享控件组装</td></tr>
+<tr><td>FrameMean / 结果显示</td><td><code>ImageViewConfig</code> CheckZone</td><td><code>FrameMeanDisplayUi</code> → <code>DisplayOptionsFactory</code> → <code>NativeGraphicStylePresenter</code></td><td class="ok">符合：走公共 ImageViewConfig 链</td></tr>
+<tr><td>IntensityMeasure / 基本参数</td><td><code>ImageSourceGroup</code> + <code>ROISelecter</code> + 掩膜/继承/Assist 组</td><td>仅图像输入行；ROI 组未实现</td><td class="bad">不符合：公共 ROI 组已存在（NativeRoiGroupComposer），本工具未接入</td></tr>
+<tr><td>IntensityMeasure / 结果显示</td><td><code>ImageViewConfig</code> + <code>TextDisplayGroup</code></td><td>图形组走 <code>DisplayOptionsFactory</code>，文本组用本工具字段</td><td class="warn">部分符合：图形链路正确；文本组是否为共享组未确认</td></tr>
+<tr><td>ColorExtract / 基本参数</td><td><code>ROISelecter</code> + 掩膜/形状/位置修正</td><td>仅图像输入行</td><td class="bad">不符合：公共 ROI 组未接入</td></tr>
+<tr><td>ColorExtract / 运行参数</td><td><code>ColorExtractList</code>、<code>UserScrollView</code>、颜色空间、颜色区域选择、三通道、颜色反转</td><td>共享 <code>NativeColorRangeList</code>：卡片列表 + 颜色空间 + 三通道直方图/滑条 + 颜色反转；颜色区域选择行仍缺</td><td class="warn">部分符合：除颜色区域选择外均走共享控件与原厂模板</td></tr>
+<tr><td>ColorExtract / 结果显示</td><td><code>ImageViewConfig</code> ×4 + <code>TextDisplayGroup</code></td><td>4 组走 <code>DisplayOptionsFactory</code>；公共文本组已存在但本工具未声明</td><td class="warn">部分符合：图形链路正确；未接入 TextDisplayGroup</td></tr>
+</table>
+
+<h2>共享控件与原厂对照</h2>
+<h3>NativeCommandSelector（原厂 CommandSelecter_Frame）</h3>
+<table>
+<tr><th>项</th><th>原厂</th><th>本方共享控件</th><th>结论</th></tr>
+<tr><td>命令按钮</td><td>2 个 RadioButton + 1 个清空 RadioButton</td><td>2 个命令 RadioButton + 1 个清空 RadioButton</td><td class="ok">一致</td></tr>
+<tr><td>样式</td><td><code>CmdTypeRadioButtonStyle</code>、<code>CmdTypeRadbtnDeleteStyle</code></td><td>同一对共享样式（SourceComboBoxes.xaml）</td><td class="ok">一致</td></tr>
+<tr><td>布局</td><td>Grid Margin 37/35；行 73/16/32；中间列 46</td><td>同尺寸网格</td><td class="ok">一致</td></tr>
+<tr><td>图标与文案</td><td>统计当前图像、不统计当前图像、清空图标</td><td>同一套共享资源；文案由 <code>Record CurrentImage</code> / <code>NoRecord CurrentImage</code> 本地化键解析</td><td class="ok">一致</td></tr>
+<tr><td>命令模型</td><td><code>EnumEntrysA[i].IsSelectedA</code> + Checked/Click 命令</td><td>选中值 + <code>CommandSelected</code> 事件；工具负责提交字段</td><td class="ok">等价接缝</td></tr>
+</table>
+
+<h3>NativeColorRangeList（原厂 ColorExtractList + UserScrollView）</h3>
+<table>
+<tr><th>项</th><th>原厂</th><th>本方共享控件</th><th>结论</th></tr>
+<tr><td>整体容器</td><td>Grid 行 18/92/*；标题 抽取列表；Border 82；参数区 ScrollViewer</td><td>同结构</td><td class="ok">一致</td></tr>
+<tr><td>卡片列表</td><td><code>ListView</code> + <code>UserScrollView</code>，<code>FouerColorBorder</code> + 54×54 Ellipse + CheckBox + 悬停删除</td><td><code>ListView</code> + 同结构项模板；四色边框与图标来自共享资源</td><td class="ok">一致</td></tr>
+<tr><td>新增按钮</td><td><code>btn_add color_*</code> + 橙色按钮样式 + 横向滚动到末尾</td><td>同一组资源与行为</td><td class="ok">一致</td></tr>
+<tr><td>颜色空间</td><td>ComboBox 182，<code>GlobalItemComboBoxStyle</code>，LeftRightControl 行</td><td>同控件、同样式、同行容器</td><td class="ok">一致</td></tr>
+<tr><td>通道</td><td>LeftRightControl 64；108×50 直方图；两条 0..255 SliderArrange；标签通道一/二/三</td><td>同控件、同尺寸、同标签键</td><td class="ok">一致</td></tr>
+<tr><td>颜色反转</td><td><code>BooleanControl</code> + swith_on/off 图片</td><td>同控件与图片</td><td class="ok">一致</td></tr>
+<tr><td>颜色区域选择</td><td><code>RoiSelectControl</code></td><td>未接入（需要 ROI 参数模型）</td><td class="bad">缺失，已登记</td></tr>
+<tr><td>九字段语义</td><td>C1High,C1Low,C2High,C2Low,C3High,C3Low,色彩空间,反色,启用</td><td>共享 <code>ColorRangeValue</code> 同顺序；工具只负责序列化</td><td class="ok">一致</td></tr>
+</table>
+
+<h2>命名与品牌约束</h2>
+<div class="card">
+<p>新增共享控件与数据类型使用职责命名：<code>NativeCommandSelector</code>、<code>NativeColorRangeList</code>、<code>ColorRangeValue</code>、<code>ColorRangeSpace</code>，不含原厂产品名或品牌名。</p>
+<p>本轮同时把共享直方图控件 <code>HikHistogramSingle</code> 更名为 <code>HistogramSingle</code>（文件、x:Class、类型名同步），调用方仍只依赖共享控件。</p>
+<p>仍保留的原厂命名：<code>IMVS_PATMATCH_POINT_INFO</code>、<code>MVBPATMATCH_EDGEPOINT_OUT</code>，属于其它批次的匹配交互结构体，本轮未改动，登记为命名债务。</p>
+</div>
+
+<h2>已具备的公共能力（不是缺失）</h2>
+<table>
+<tr><th>原厂控件/能力</th><th>本方已有实现</th><th>使用现状</th></tr>
+<tr><td>ROI 组（ROISelecter、掩膜、继承、Assist）</td><td><code>NativeRoiGroupComposer</code>、<code>NativeRoiEditHost</code>、<code>RoiGroupView</code>、<code>RoiEditorPresenter</code></td><td>PixelCount 已用（<code>PixelCountRoi.Add</code> + <code>NativeRoiEditHost</code>）；Blob 已用 <code>NativeRoiGroupComposer.Compose</code>；IntensityMeasure/ColorExtract 未接</td></tr>
+<tr><td>TextDisplayGroup 文本显示</td><td><code>NativeTextDisplayOptions</code>、<code>NativeTextViewport</code>、<code>DisplayOptionsFactory</code> 的 TextGroup</td><td>PixelCount 已用；ColorExtract 未声明，IntensityMeasure 部分声明</td></tr>
+<tr><td>ImageViewConfig 图像显示行</td><td><code>NativeGraphicStylePresenter</code> + <code>DisplayOptionsFactory</code></td><td>三工具均已使用</td></tr>
+<tr><td>直方图 / 颜色选择</td><td><code>HistogramSingle</code>、<code>ColorPickerControlView</code>、<code>AdvancedColorPickerDialog</code></td><td>ColorExtract 已用直方图；颜色卡片容器已上移共享层</td></tr>
+</table>
+
+<h2>运行截图对照</h2>
+<table>
+<tr><th>页面</th><th>原厂</th><th>本方（共享控件）</th><th>结论</th></tr>
+<tr><td>FrameMean 运行参数</td><td><code>vm-original/vm-frame-run.png</code></td><td><code>framemean/run-shared-final.png</code></td><td class="ok">命令块、样式、数量、清空位置一致</td></tr>
+<tr><td>ColorExtract 运行参数</td><td><code>vm-original/vm-color-run.png</code></td><td><code>colorextract/run-shared-final.png</code></td><td class="warn">卡片、颜色空间、三通道、反转一致；缺颜色区域选择行</td></tr>
+</table>
+
+<h2>结论</h2>
+<div class="card">
+<p>FrameMean 运行参数与 ColorExtract 运行参数的专属区域已从工具手写改为共享控件，并按原厂模板组合；工具层只保留命令/区间语义与提交接缝。</p>
+<p>仍存在的差异：ColorExtract 的 <code>RoiSelectControl</code> 行未接入；IntensityMeasure 与 ColorExtract 的基本页 ROI 组未接入；ColorExtract 结果页缺 TextDisplayGroup。这些是接线/能力缺口，不是本轮共享控件问题。</p>
+<p>未确认项保持登记：原厂运行窗口逐项视觉对照（本轮已补命令页与颜色页）、FrameMean 相机回调时序、ColorExtract 滑条编辑保存重开。</p>
+</div>
+</body></html>

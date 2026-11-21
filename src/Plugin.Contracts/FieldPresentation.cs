@@ -10,7 +10,7 @@ public sealed record FieldLayout(string Page, string Section, FieldCondition? Vi
     int? DecimalPlaces=2, bool AllowReference=true,
     string? DialogGroup=null, string? DialogTitle=null, bool DialogPrimary=false,
     double Increment=1, double? PairMinimum=null, double? PairMaximum=null, FieldCondition? OrVisibleWhen=null,
-    BooleanStateTips? BooleanTips=null, string? PairDisplayName=null, string? VmCategory=null);
+    BooleanStateTips? BooleanTips=null, string? PairDisplayName=null, string? VmCategory=null, bool ShowClearButton=true);
 
 public enum FieldEditorKind { Scalar, Choice, Record, Sequence, Geometry, Region, ResultPresentation, Image, FolderPath, Camera, Reference }
 [Flags] public enum FieldEditModes { None=0, Constant=1, Reference=2, NumericGeometry=4, Gesture=8, DisplayExpression=16 }

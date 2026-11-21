@@ -87,6 +87,8 @@ public partial class ParamListView : ItemsControl, IComponentConnector
 
     private CollectionViewSource _view;
     private IEnumerable? _rows;
+    // Flattened Tab.Collection surface used by the VM CollectionViewSource contract.
+    public IEnumerable? Collection => _rows;
     private long _sourceGeneration,_orderGeneration;
     public void SetRows(IEnumerable? rows)
     {

@@ -14,8 +14,11 @@ public sealed class IntensityMeasureDeclarationTests
     public void Declares_image_roi_and_mask_inputs_without_branch_outputs()
     {
         var schema = Tool.Describe();
-        Assert.Equal(new[] { IntensityMeasureTool.ImageInput, IntensityMeasureTool.RoiInput, IntensityMeasureTool.MaskInput },
-            schema.Inputs.Select(port => port.Id));
+        var inputIds = schema.Inputs.Select(port => port.Id).ToArray();
+        Assert.Equal(new[] { IntensityMeasureTool.ImageInput, IntensityMeasureTool.RoiInput, IntensityMeasureTool.MaskInput,
+            IntensityMeasureRoi.LocalDocumentId }, inputIds.Take(4));
+        Assert.Contains(IntensityMeasureRoi.ModeId, inputIds);
+        Assert.Contains(IntensityMeasureAssist.ModeId, inputIds);
         Assert.Equal(IntensityMeasureTool.ImageInput, schema.WorkflowImageInputId);
         Assert.Empty(schema.ControlOutputs);
         Assert.Equal(new[]
@@ -83,7 +86,7 @@ public sealed class IntensityMeasureDeclarationTests
     public void Display_settings_declare_one_row_per_field_and_capture_defaults()
     {
         var schema = Tool.DisplaySettingsSchema;
-        Assert.Equal(18, schema.Inputs.Count);
+        Assert.Equal(33, schema.Inputs.Count);
         Assert.Equal(schema.Inputs.Count, schema.Presentation!.Fields.Count);
         Assert.All(schema.Inputs, port => Assert.Single(schema.Presentation!.Fields, field => field.FieldId == port.Id));
         var displayIdentities = schema.Inputs.Select(port => port.Id).ToHashSet(StringComparer.Ordinal);
@@ -106,7 +109,9 @@ public sealed class IntensityMeasureDeclarationTests
             .Where(field => field.Layout?.DialogGroup is not null)
             .GroupBy(field => field.Layout!.DialogGroup!, StringComparer.Ordinal)
             .ToDictionary(group => group.Key, group => group.ToArray(), StringComparer.Ordinal);
-        Assert.Equal(new[] { IntensityMeasureResultDisplay.Region, IntensityMeasureResultDisplay.Roi }, groups.Keys);
+        Assert.Equal(new[] { IntensityMeasureResultDisplay.Region, IntensityMeasureResultDisplay.Roi,
+            IntensityMeasureResultDisplay.ReferencePoint, IntensityMeasureResultDisplay.RunPoint,
+            IntensityMeasureResultDisplay.Annulus }, groups.Keys);
         foreach (var (id, fields) in groups)
         {
             Assert.All(fields, field =>
@@ -133,7 +138,7 @@ public sealed class IntensityMeasureDeclarationTests
         var groups = fields.Where(field => field.Layout?.DialogGroup is not null)
             .GroupBy(field => field.Layout!.DialogGroup!, StringComparer.Ordinal)
             .ToArray();
-        Assert.Equal(2, groups.Length);
+        Assert.Equal(5, groups.Length);
         foreach (var group in groups)
         {
             var roles = group.Select(field => field.FieldId[(field.FieldId.LastIndexOf('.') + 1)..])
@@ -155,7 +160,7 @@ public sealed class IntensityMeasureDeclarationTests
         var schema = IntensityMeasureFields.Schema;
         var presentation = schema.Presentation ?? throw new InvalidOperationException("亮度测量必须声明参数页布局。");
         Assert.Equal(schema.Inputs.Count, presentation.Fields.Count);
-        Assert.Equal(15, presentation.Fields.Count);
+        Assert.Equal(17, presentation.Fields.Count);
         Assert.All(schema.Inputs, port => Assert.Single(presentation.Fields, field => field.FieldId == port.Id));
     }
 
@@ -173,7 +178,7 @@ public sealed class IntensityMeasureDeclarationTests
         })
         {
             Assert.Null(fields[enabled].Layout?.VisibleWhen);
-            Assert.Equal(new BooleanStateTips("已启用", "未启用"), fields[enabled].Layout?.BooleanTips);
+            Assert.Null(fields[enabled].Layout?.BooleanTips);
             foreach (var id in new[] { low, high })
             {
                 var condition = fields[id].Layout?.VisibleWhen;

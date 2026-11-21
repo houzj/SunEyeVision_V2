@@ -14,8 +14,10 @@ public sealed class PixelCountDeclarationTests
     public void Declares_image_roi_and_mask_inputs_without_branch_outputs()
     {
         var schema = Tool.Describe();
+        // 图像、ROI、掩膜是前三个主输入；ROI 组还会追加本地几何/继承等明细端口。
         Assert.Equal(new[] { PixelCountTool.ImageInput, PixelCountTool.RoiInput, PixelCountTool.MaskInput },
-            schema.Inputs.Select(port => port.Id));
+            schema.Inputs.Take(3).Select(port => port.Id));
+        Assert.Contains(schema.Inputs, port => port.Id == PixelCountTool.RoiInput);
         Assert.Equal(PixelCountTool.ImageInput, schema.WorkflowImageInputId);
         Assert.Empty(schema.ControlOutputs);
         Assert.Equal(new[]
@@ -62,7 +64,7 @@ public sealed class PixelCountDeclarationTests
     public void Display_settings_declare_one_row_per_field_and_capture_defaults()
     {
         var schema = Tool.DisplaySettingsSchema;
-        Assert.Equal(18, schema.Inputs.Count);
+        Assert.Equal(23, schema.Inputs.Count);
         Assert.Equal(schema.Inputs.Count, schema.Presentation!.Fields.Count);
         Assert.All(schema.Inputs, port => Assert.Single(schema.Presentation!.Fields, field => field.FieldId == port.Id));
         var displayIdentities = schema.Inputs.Select(port => port.Id).ToHashSet(StringComparer.Ordinal);
@@ -108,7 +110,7 @@ public sealed class PixelCountDeclarationTests
     public void Limit_rows_follow_their_enable_switch_and_pair_into_a_range()
     {
         var fields = PixelCountFields.Schema.Presentation!.Fields.ToDictionary(field => field.FieldId, StringComparer.Ordinal);
-        Assert.Null(fields[PixelCountFields.ThresholdRanges].Layout?.VisibleWhen);
+        Assert.Null(fields[PixelCountFields.RangeCount].Layout?.VisibleWhen);
         foreach (var (enabled, low, high, label) in new[]
         {
             (PixelCountFields.CountLimitEnabled, PixelCountFields.CountLimitLow, PixelCountFields.CountLimitHigh, "数量范围"),
@@ -161,19 +163,25 @@ public sealed class PixelCountDeclarationTests
     }
 
     [Fact]
-    public void Threshold_text_round_trips_through_the_settings_field()
+    public void Threshold_slots_round_trip_through_the_settings_model()
     {
         var ranges = new[] { new PixelCountRange(0, 127), new PixelCountRange(128, 255) };
-        var settings = new PixelCountSettings { ThresholdRanges = PixelCountRanges.Format(ranges) };
+        var slots = PixelCountRanges.CreateSlots(2).ToArray();
+        slots[0] = ranges[0];
+        slots[1] = ranges[1];
+        var settings = new PixelCountSettings { RangeCount = 2, Ranges = slots };
         Assert.Equal(ranges, settings.ReadRanges());
-        Assert.Equal("0-127;128-255", settings.ThresholdRanges);
+        var materialized = PixelCountFields.Materialize(PixelCountFields.Read(settings));
+        Assert.Equal(ranges, materialized.ReadRanges());
     }
 
     [Fact]
     public void Settings_validation_reports_threshold_and_limit_problems()
     {
+        var invalid = PixelCountRanges.CreateSlots(1).ToArray();
+        invalid[0] = new PixelCountRange(300, 400);
         Assert.Equal("PIXELCOUNT_THRESHOLD",
-            Assert.Single(new PixelCountSettings { ThresholdRanges = "300-400" }.Validate()).Code);
+            Assert.Single(new PixelCountSettings { RangeCount = 1, Ranges = invalid }.Validate()).Code);
         var count = Assert.Single(new PixelCountSettings
         {
             CountLimitEnabled = true, CountLimitLow = 10, CountLimitHigh = 5

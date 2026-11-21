@@ -51,13 +51,21 @@ public sealed class PixelCountExecutionTests
         => Assert.IsType<SequenceValue>(values[PixelCountOutput.Count])
             .Select(item => Assert.IsType<long>(item)).ToArray();
 
+    /// <summary>按原厂 32 槽位构造设置；只有前 N 组生效。</summary>
+    private static PixelCountSettings Ranges(params (int Minimum, int Maximum)[] ranges)
+    {
+        var slots = new List<PixelCountRange>(PixelCountRanges.MaximumCount);
+        for (var i = 0; i < PixelCountRanges.MaximumCount; i++)
+            slots.Add(i < ranges.Length ? new PixelCountRange(ranges[i].Minimum, ranges[i].Maximum) : PixelCountRanges.Default);
+        return new PixelCountSettings { RangeCount = ranges.Length, Ranges = slots.AsReadOnly() };
+    }
+
     [Fact]
     public async Task Counts_and_ratios_are_reported_per_declared_range()
     {
         using var resources = new FrozenOutputResources();
         var image = resources.CreateGray8(Size, Size, Gradient());
-        var outcome = await RunAsync(ImageOnly(image),
-            new PixelCountSettings { ThresholdRanges = "0-5;6-15" }, resources);
+        var outcome = await RunAsync(ImageOnly(image), Ranges((0, 5), (6, 15)), resources);
         using var output = Succeed(outcome);
         Assert.Equal(BusinessJudgment.NotEvaluated, outcome.Judgment);
         var values = output.ToValues();
@@ -105,7 +113,7 @@ public sealed class PixelCountExecutionTests
         var image = resources.CreateGray8(Size, Size, Gradient());
         var roi = resources.CreateRegion(RoiDeclarations.ImageFrame, image.Frame, new[] { new RegionRun(0, 0, Size - 1) });
         using var output = Succeed(await RunAsync(Inputs(image, roi),
-            new PixelCountSettings { ThresholdRanges = "0-5" }, resources));
+            Ranges((0, 5)), resources));
         var values = output.ToValues();
         Assert.Equal(new long[] { 4 }, Counts(values));
         Assert.Equal(new double[] { 1d }, Assert.IsType<double[]>(values[PixelCountOutput.Ratio]));
@@ -129,12 +137,12 @@ public sealed class PixelCountExecutionTests
                 mask[row * Size + column] = 255;
         var maskImage = resources.CreateGray8(Size, Size, mask);
         using var output = Succeed(await RunAsync(Inputs(image, mask: maskImage),
-            new PixelCountSettings { ThresholdRanges = "0-15" }, resources));
+            Ranges((0, 15)), resources));
         var values = output.ToValues();
         Assert.Equal(new long[] { 8 }, Counts(values));
         // 左半列像素值 0,1,4,5,8,9,12,13：区间 0-5 命中 4 个。
         using var second = Succeed(await RunAsync(Inputs(image, mask: maskImage),
-            new PixelCountSettings { ThresholdRanges = "0-5" }, resources));
+            Ranges((0, 5)), resources));
         Assert.Equal(new long[] { 4 }, Counts(second.ToValues()));
     }
 
@@ -143,9 +151,8 @@ public sealed class PixelCountExecutionTests
     {
         using var resources = new FrozenOutputResources();
         var image = resources.CreateGray8(Size, Size, Gradient());
-        var outcome = await RunAsync(ImageOnly(image), new PixelCountSettings
+        var outcome = await RunAsync(ImageOnly(image), Ranges((0, 5), (6, 15)) with
         {
-            ThresholdRanges = "0-5;6-15",
             CountLimitEnabled = true,
             CountLimitLow = 6,
             CountLimitHigh = 6
@@ -162,9 +169,8 @@ public sealed class PixelCountExecutionTests
     {
         using var resources = new FrozenOutputResources();
         var image = resources.CreateGray8(Size, Size, Gradient());
-        var outcome = await RunAsync(ImageOnly(image), new PixelCountSettings
+        var outcome = await RunAsync(ImageOnly(image), Ranges((0, 5), (6, 15)) with
         {
-            ThresholdRanges = "0-5;6-15",
             RatioLimitEnabled = true,
             RatioLimitLow = 0.3,
             RatioLimitHigh = 0.7
@@ -211,8 +217,7 @@ public sealed class PixelCountExecutionTests
     {
         using var resources = new FrozenOutputResources();
         var image = resources.CreateGray8(Size, Size, Gradient());
-        var outcome = await RunAsync(ImageOnly(image),
-            new PixelCountSettings { ThresholdRanges = "300-400" }, resources);
+        var outcome = await RunAsync(ImageOnly(image), Ranges((300, 400)), resources);
         Assert.False(outcome.Success);
         Assert.Equal("PIXELCOUNT_SETTINGS_INVALID", Assert.Single(outcome.Diagnostics).Code);
     }

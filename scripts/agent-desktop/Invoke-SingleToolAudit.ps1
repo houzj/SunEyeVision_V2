@@ -35,7 +35,28 @@ function Snapshot([string]$appName, [string]$label) {
     try { return Save-Json (Invoke-Agent @('snapshot','--app',$appName,'--include-bounds','--timeout-ms','20000')) "$label.json" }
     catch {
         Save-Json (Invoke-Agent @('list-apps')) "$label-list-apps.json" | Out-Null
-        Save-Json (Invoke-Agent @('list-windows','--app',$appName)) "$label-list-windows.json" | Out-Null
+        $windows = Save-Json (Invoke-Agent @('list-windows','--app',$appName)) "$label-list-windows.json"
+        # 一个进程可能同时暴露启动失败提示、欢迎页和主窗口。按可见面积与标题过滤，
+        # 再把唯一窗口 ID 传给 snapshot，避免把多窗口歧义误报成工具 UI 失败。
+        $candidate = @($windows.data | Where-Object {
+            $_.id -and
+            $_.visible -ne $false -and
+            $_.title -notlike '*方案打开失败*' -and
+            $_.title -notlike '*启动失败*' -and
+            $_.bounds -and
+            [double]$_.bounds.width -gt 100 -and
+            [double]$_.bounds.height -gt 100
+        })
+        foreach ($window in $candidate) {
+            $rank = if ($window.title -like '*机器视觉平台*') { 0 } elseif ($window.title -like '*SunEyeVision*') { 1 } else { 2 }
+            $window | Add-Member -NotePropertyName _rank -NotePropertyValue $rank -Force
+            $window | Add-Member -NotePropertyName _area -NotePropertyValue ([double]$window.bounds.width * [double]$window.bounds.height) -Force
+        }
+        $candidate = @($candidate | Sort-Object _rank, @{Expression='_area';Descending=$true} | Select-Object -First 1)
+        if ($candidate.Count -eq 1) {
+            Start-Sleep -Milliseconds 500
+            return Save-Json (Invoke-Agent @('snapshot','--window-id',[string]$candidate[0].id,'--include-bounds','--timeout-ms','25000')) "$label.json"
+        }
         Start-Sleep -Milliseconds 500
         return Save-Json (Invoke-Agent @('snapshot','--app',$appName,'--include-bounds','--timeout-ms','25000')) "$label.json"
     }

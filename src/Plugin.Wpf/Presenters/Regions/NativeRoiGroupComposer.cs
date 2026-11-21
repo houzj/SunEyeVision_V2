@@ -19,23 +19,33 @@ public sealed record RoiGroupComposerSpec
     /// <summary>表示本地绘制的取值，其余取值按 <see cref="InheritedModes"/> 顺序解释为继承模式。</summary>
     public required string LocalModeValue { get; init; }
     public required IReadOnlyList<string> InheritedModes { get; init; }
-    public required string RectangleSourceFieldId { get; init; }
-    public required string AnnulusSourceFieldId { get; init; }
+    public string? RectangleSourceFieldId { get; init; }
+    public string? AnnulusSourceFieldId { get; init; }
     public required IReadOnlyList<RoiParameterRow> RectangleParameterRows { get; init; }
     public required IReadOnlyList<RoiParameterRow> AnnulusParameterRows { get; init; }
-    public required string AreaTypeFieldId { get; init; }
-    public required string AreaTypeLabel { get; init; }
-    public required IReadOnlyList<NativeIntegerRadioChoice> AreaTypeChoices { get; init; }
-    public required string MaskImageFieldId { get; init; }
-    public required string MaskImageLabel { get; init; }
-    public required string OutputMaskFieldId { get; init; }
-    public required string OutputMaskLabel { get; init; }
-    public required string MaskSourceFieldId { get; init; }
-    public required string MaskSourceLabel { get; init; }
+    public string? AreaTypeFieldId { get; init; }
+    public string? AreaTypeLabel { get; init; }
+    public IReadOnlyList<NativeIntegerRadioChoice>? AreaTypeChoices { get; init; }
+    public string? MaskImageFieldId { get; init; }
+    public string? MaskImageLabel { get; init; }
+    public string? OutputMaskFieldId { get; init; }
+    public string? OutputMaskLabel { get; init; }
+    public string? MaskSourceFieldId { get; init; }
+    public string? MaskSourceLabel { get; init; }
     /// <summary>屏蔽区继承开关所在字段；读写由平台按该字段完成。</summary>
-    public required string MaskInheritedFieldId { get; init; }
+    public string? MaskInheritedFieldId { get; init; }
     public required string AttachAnchorFieldId { get; init; }
     public required string AttachSection { get; init; }
+    /// <summary>继承模式在原厂页签中显示的选项。缺省保持 Blob/PixelCount 的四种模式。</summary>
+    public IReadOnlyList<string>? InheritedModeLabels { get; init; }
+    /// <summary>是否呈现 ROI 区域类型、掩膜输入和输出掩膜行。</summary>
+    public bool ShowAreaType { get; init; } = true;
+    public bool ShowMaskImage { get; init; } = true;
+    public bool ShowOutputMask { get; init; } = true;
+    /// <summary>仅保留原厂声明的矩形来源时关闭圆形来源行。</summary>
+    public bool ShowAnnulusSource { get; init; } = true;
+    /// <summary>是否显示原厂屏蔽区创建/屏蔽区行；不是所有工具的原厂基本页都包含它们。</summary>
+    public bool ShowMaskGroup { get; init; } = true;
 }
 
 /// <summary>按声明装配 ROI 组：字段行、继承绑定、屏蔽区控件和插入位置都由平台决定。</summary>
@@ -51,14 +61,22 @@ public static class NativeRoiGroupComposer
         Func<IReadOnlyList<DeclaredFieldRow>> Rows(IReadOnlyList<RoiParameterRow> rows)
             => () => rows.Select(row => inputs.ComposeInputEditor(row.FieldId, row.Label)).ToArray();
 
-        bool ReadMaskInherited() => inputs.ReadUnpresentedInput(spec.MaskInheritedFieldId) switch
-        {
-            UnsetSetting => false,
-            ConstantSetting { Value: bool value } => value,
-            _ => throw new ArgumentException("屏蔽区创建方式必须是固定值。")
-        };
+        DeclaredFieldRow Synthetic(string id, string label, TypeRef type, ParameterSetting value)
+            => new(new Port(id, type, Required: false), label, value, _ => { });
+
+        bool ReadMaskInherited() => spec.MaskInheritedFieldId is not { } maskId
+            ? false
+            : inputs.ReadUnpresentedInput(maskId) switch
+            {
+                UnsetSetting => false,
+                ConstantSetting { Value: bool value } => value,
+                _ => throw new ArgumentException("屏蔽区创建方式必须是固定值。")
+            };
         void AcceptMaskInherited(bool value)
-            => inputs.WriteUnpresentedInput(spec.MaskInheritedFieldId, new ConstantSetting(value));
+        {
+            if (spec.MaskInheritedFieldId is { } maskId)
+                inputs.WriteUnpresentedInput(maskId, new ConstantSetting(value));
+        }
 
         int? ReadMode()
         {
@@ -79,21 +97,34 @@ public static class NativeRoiGroupComposer
             inputs.WriteUnpresentedInput(spec.ModeFieldId, new ConstantSetting(selected is null
                 ? spec.LocalModeValue
                 : spec.InheritedModes[selected.Value])),
-            inputs.ComposeInputEditor(spec.RectangleSourceFieldId, "Region"),
-            inputs.ComposeInputEditor(spec.AnnulusSourceFieldId, "Region"),
+            spec.RectangleSourceFieldId is { } rectangleId
+                ? inputs.ComposeInputEditor(rectangleId, "Region")
+                : Synthetic("roi.rectangle.hidden", "Region", TypeRef.ResourceOf(ResourceKind.Region), new UnsetSetting()),
+            spec.AnnulusSourceFieldId is { } annulusId
+                ? inputs.ComposeInputEditor(annulusId, "Region")
+                : Synthetic("roi.annulus.hidden", "Region", TypeRef.ResourceOf(ResourceKind.Region), new UnsetSetting()),
             Rows(spec.RectangleParameterRows),
             Rows(spec.AnnulusParameterRows));
 
-        var maskImage = inputs.ComposeInputEditor(spec.MaskImageFieldId, spec.MaskImageLabel, imageSource: true);
-        var outputMask = inputs.ComposeInputEditor(spec.OutputMaskFieldId, spec.OutputMaskLabel,
-            defaultWhenUnset: new ConstantSetting(false), showClearButton: false);
-        var area = inputs.ComposeInputEditor(spec.AreaTypeFieldId, spec.AreaTypeLabel,
-            defaultWhenUnset: new ConstantSetting(0L),
-            integerRadioOptions: new NativeIntegerRadioOptions(spec.AreaTypeChoices));
-        var maskSource = inputs.ComposeInputEditor(spec.MaskSourceFieldId, spec.MaskSourceLabel);
+        var maskImage = spec.MaskImageFieldId is { } maskImageId
+            ? inputs.ComposeInputEditor(maskImageId, spec.MaskImageLabel ?? "输入掩膜", imageSource: true)
+            : null;
+        var outputMask = spec.OutputMaskFieldId is { } outputMaskId
+            ? inputs.ComposeInputEditor(outputMaskId, spec.OutputMaskLabel ?? "输出掩膜",
+                defaultWhenUnset: new ConstantSetting(false), showClearButton: false)
+            : null;
+        var area = spec.AreaTypeFieldId is { } areaId
+            ? inputs.ComposeInputEditor(areaId, spec.AreaTypeLabel ?? "ROI区域类型",
+                defaultWhenUnset: new ConstantSetting(0L),
+                integerRadioOptions: new NativeIntegerRadioOptions(spec.AreaTypeChoices ?? Array.Empty<NativeIntegerRadioChoice>()))
+            : null;
+        var maskSource = spec.MaskSourceFieldId is { } maskSourceId
+            ? inputs.ComposeInputEditor(maskSourceId, spec.MaskSourceLabel ?? "屏蔽区")
+            : null;
 
         var controls = new NativeRoiUiDraftControls(inheritance, maskImage, area, outputMask, maskSource,
-            ReadMaskInherited, AcceptMaskInherited);
+            ReadMaskInherited, AcceptMaskInherited, spec.ShowMaskGroup, spec.ShowAreaType,
+            spec.ShowMaskImage, spec.ShowOutputMask, spec.ShowAnnulusSource, spec.InheritedModeLabels);
         try
         {
             attach(spec.AttachAnchorFieldId, controls, spec.AttachSection);

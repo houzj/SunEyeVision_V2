@@ -20,9 +20,9 @@
   },
   "product_difference": {
     "sources": [
-      "tools/SunEyeVision.ContourMatch/Wpf/Views/ContourMatchTemplatePanel.cs",
-      "tools/SunEyeVision.ContourMatch/Wpf/Views/ContourMatchParameterEditor.xaml",
-      "tools/SunEyeVision.ContourMatch/Runtime/ContourMatchFields.cs"
+      "tools/SunEyeVision.ContourMatch/Editor/Views/ContourMatchTemplatePanel.cs",
+      "tools/SunEyeVision.ContourMatch/Editor/Views/ContourMatchParameterEditor.xaml",
+      "tools/SunEyeVision.ContourMatch/Parameters/ContourMatchFields.cs"
     ],
     "confirmed": [
       "当前已存在模板新建/清空/导入/导出和模型摘要，且模型数据通过字段提交",
@@ -45,7 +45,7 @@
     "exit_code": 0,
     "passed": 28,
     "failed": 0,
-    "payload_sha256": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB"
+    "payload_sha256": "923F9B3CE228A5833E8712A4DE6E26EF19FE4C451566E8DEFF1D40E511059887"
   },
   "runtime_execute_probe": {
     "script": "scripts/agent-desktop/Invoke-SingleToolAudit.ps1 -ProbeExecute",

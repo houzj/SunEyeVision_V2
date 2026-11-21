@@ -1,7 +1,7 @@
 {
   "tool": "PixelCount",
   "phase": "static-review",
-  "status": "evidence-driven-range-panel-adjusted",
+  "status": "evidence-driven-range-panel-closed-static",
   "vm_evidence": {
     "sources": [
       "docs/07-工具逆向/decompiled/ModuleControls/IMVSPixelCountModuVAControl/IMVSPixelCountModuVAControl.UI/RangeConfigListPanel.xaml",
@@ -20,17 +20,16 @@
       "tools/SunEyeVision.PixelCount/Runtime/PixelCountFields.cs"
     ],
     "confirmed": [
-      "当前产品参数字段和范围模型已经存在，但原厂 RangeConfigListPanel 的标题、项目模板、添加/删除命令映射尚未闭合"
+      "产品范围面板已按原厂 RangeConfigListPanel 和 PixelModuRangeConfigList 映射，行项呈现序号与上下限，底部添加/删除命令和单项删除禁用状态已对齐"
     ]
   },
   "decision": {
     "modification_allowed": true,
-    "reason": "原厂 RangeConfigListPanel 明确给出阈值范围标题、动态项目、添加和删除命令，产品已接入对应动态范围面板并保留严格字段提交。"
+    "reason": "原厂 RangeConfigListPanel 与 PixelModuRangeConfigList 已提供完整静态布局和命令边界，产品已按该边界迁移并保留严格字段提交。"
   },
   "pending": [
-    "采集原厂 PixelCount 参数页",
-    "确认范围默认值、上限和删除状态",
-    "完成产品保存重开验证"
+    "采集原厂 PixelCount 参数页视觉截图",
+    "完成产品保存重开和 Agent Desktop 范围增删验证"
   ],
   "validation": {
     "command": "dotnet test tests/SunEyeVision.Tools.LogicData.Tests/SunEyeVision.Tools.LogicData.Tests.csproj -c Release --no-restore --filter 'FullyQualifiedName~PixelCount'",
@@ -38,6 +37,11 @@
     "passed": 36,
     "failed": 0,
     "payload_sha256": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB",
+    "shared_control_probe": {
+      "command": "dotnet Release/_validation/bin/ControlNamingProbe/Release/ControlNamingProbe.dll",
+      "exit_code": 0,
+      "assertion": "运行参数页已安装 PixelCountRangePanel 到 DeclaredFieldsView"
+    },
     "range_panel_build_errors": 0
   },
   "runtime_execute_probe": {

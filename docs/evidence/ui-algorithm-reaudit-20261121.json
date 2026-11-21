@@ -1,0 +1,585 @@
+{
+  "date": "2026-11-21",
+  "scope": "UI and algorithm full re-audit",
+  "rule": "原厂 AlgorithmTab/Display/资源/源码或运行证据先行",
+  "acceptance": [
+    "UI逐项截图和声明对照",
+    "算法输入输出与边界参数对照",
+    "执行关闭资源链路",
+    "Release与Agent Desktop当前产物验证"
+  ],
+  "tools": [
+    {
+      "toolId": "BlobLabels",
+      "uiStatus": "partial",
+      "algorithmStatus": "basic-runtime-only",
+      "evidence": [
+        "docs/07-工具逆向/tools/imvsblobfindlabelsmodu/ui-preview.json",
+        "docs/07-工具逆向/tools/imvsblobfindlabelsmodu/parameters.json",
+        "docs/evidence/bloblabels-review-20261118.json"
+      ],
+      "confirmed": [
+        "阈值区域面板静态证据",
+        "30项BlobLabels专项测试",
+        "公共ROI/Assist组装探针"
+      ],
+      "missing": [
+        "基本参数完整当前截图对照",
+        "运行参数与结果显示逐项对照",
+        "固定图像下与VM输出对照"
+      ]
+    },
+    {
+      "toolId": "PixelCount",
+      "uiStatus": "partial",
+      "algorithmStatus": "basic-runtime-only",
+      "evidence": [
+        "docs/07-工具逆向/tools/imvspixelcountmodu/ui-preview.json",
+        "docs/evidence/pixelcount-review-20261118.json"
+      ],
+      "confirmed": [
+        "范围列表静态映射",
+        "36项PixelCount专项测试",
+        "共享参数页组装探针"
+      ],
+      "missing": [
+        "完整基本参数/运行参数/结果显示当前截图对照",
+        "固定输入结果与VM输出对照"
+      ]
+    },
+    {
+      "toolId": "ImageSource",
+      "uiStatus": "pending",
+      "algorithmStatus": "pending",
+      "evidence": [
+        "docs/07-工具逆向/tools/imagesourcemodule/ui-preview.json",
+        "docs/07-工具逆向/tools/imagesourcemodule/algorithm-semantics.md"
+      ],
+      "confirmed": [
+        "本地图像输入作为优先复核范围"
+      ],
+      "missing": [
+        "多设备差异边界",
+        "当前Release完整截图",
+        "固定图像读取结果对照"
+      ]
+    }
+  ],
+  "gates": [
+    "静态证据清单",
+    "当前Release截图",
+    "专项测试",
+    "Release构建封存",
+    "Agent Desktop验证",
+    "未确认项登记"
+  ],
+  "conclusion": "昨天的探针和专项测试不能作为十工具UI或算法同构闭口。本文件记录重新复核起点。",
+  "staticOrderAudit": {
+    "BlobLabelsOriginalControls": [
+      "OutputMaskImageGroup",
+      "InputMaskImageGroup",
+      "RoiSelectGroup",
+      "RoiType",
+      "InheritWayGroup",
+      "ExternROITypeGroup",
+      "AssistGroup",
+      "ClassName",
+      "GrayValue",
+      "LabelWiseAreaSelectEnable",
+      "ThresholdAreaList",
+      "FindNum",
+      "SelectByArea",
+      "RangArea",
+      "BolbOutLineEnable",
+      "BolbImageEnable",
+      "Expert",
+      "SelectByPerimeter",
+      "RangPerimeter",
+      "SelectByShortAxis",
+      "RangShortAxis",
+      "SelectByLongAxis",
+      "RangLongAxis",
+      "SelectByCircularuty",
+      "RangCircularity",
+      "SelectByRectangularity",
+      "RangRectangularity",
+      "SelectByCentraBias",
+      "RangCenterBias",
+      "AxisRatioEnable",
+      "AxisRatioRange",
+      "SortFeature",
+      "SortMode",
+      "connectivity",
+      "OverlapRatio",
+      "MaxOutPixelNumEnable",
+      "MaxOutPixelNum",
+      "BlobNumLimitEnable",
+      "RangBlobNumLimit",
+      "BlobAreaLimitEnable",
+      "RangBlobAreaLimit",
+      "BlobTotalAreaLimitEnable",
+      "RangBlobTotalAreaLimit",
+      "CentroidXLimitEnable",
+      "RangCentroidXLimit",
+      "CentroidYLimitEnable",
+      "RangCentroidYLimit",
+      "AngleLimitEnable",
+      "RangAngleLimit",
+      "CenterXLimitEnable",
+      "RangCenterXLimit",
+      "CenterYLimitEnable",
+      "RangCenterYLimit",
+      "BoxHeightLimitEnable",
+      "BoxHeightLimit",
+      "BoxWidthLimitEnable",
+      "BoxWidthLimit",
+      "PerimeterLimitEnable",
+      "RangPerimeterLimit",
+      "LongAxisLimitEnable",
+      "RangLongAxisLimit",
+      "ShortAxisLimitEnable",
+      "RangShortAxisLimit",
+      "CircularityLimitEnable",
+      "RangCircularityLimit",
+      "RectangularityLimitEnable",
+      "RangRectangularityLimit",
+      "BlobFiled",
+      "CheckZone",
+      "MatchLocation",
+      "FixtureInitPoint",
+      "FixtureRunPoint",
+      "ResutlText",
+      "BlindZone",
+      "CheckZoneAnnular"
+    ],
+    "PixelCountOriginalControls": [
+      "OutputMaskImageGroup",
+      "InputMaskImageGroup",
+      "RoiSelectGroup",
+      "RoiType",
+      "InheritWayGroup",
+      "AssistGroup",
+      "LowThresh",
+      "HighThresh",
+      "CountLimitEnable",
+      "RangCountLimit",
+      "RatioLimitEnable",
+      "RangRatioLimit",
+      "BinaryEnable",
+      "CheckZone",
+      "FixtureInitPoint",
+      "FixtureRunPoint",
+      "ResutlText",
+      "CheckZoneAnnular"
+    ],
+    "BlobLabelsRuntimeDeclarations": [
+      "PositionCorrectionEnable",
+      "ClassName",
+      "GrayValue",
+      "LabelWiseAreaSelectEnable",
+      "ThresholdArea",
+      "FindNum",
+      "SelectByArea",
+      "MinArea",
+      "MaxArea",
+      "BolbOutLineEnable",
+      "BolbImageEnable",
+      "SelectByPerimeter",
+      "MinPerimeter",
+      "MaxPerimeter",
+      "SelectByShortAxis",
+      "MinShortAxis",
+      "MaxShortAxis",
+      "SelectByLongAxis",
+      "MinLongAxis",
+      "MaxLongAxis",
+      "SelectByCircularuty",
+      "MinCircularity",
+      "MaxCircularity",
+      "SelectByRectangularity",
+      "MinRectangularity",
+      "MaxRectangularity",
+      "SelectByCentraBias",
+      "MinCenterBias",
+      "MaxCenterBias",
+      "AxisRatioEnable",
+      "MinAxisRatio",
+      "MaxAxisRatio",
+      "SortFeature",
+      "SortMode",
+      "connectivity",
+      "OverlapRatio",
+      "MaxOutPixelNumEnable",
+      "MaxOutPixelNum",
+      "BlobNumLimitEnable",
+      "BlobNumLimitLow",
+      "BlobNumLimitHigh",
+      "BlobAreaLimitEnable",
+      "BlobAreaLimitLow",
+      "BlobAreaLimitHigh",
+      "BlobTotalAreaLimitEnable",
+      "BlobTotalAreaLimitLow",
+      "BlobTotalAreaLimitHigh",
+      "CentroidXLimitEnable",
+      "CentroidXLimitLow",
+      "CentroidXLimitHigh",
+      "CentroidYLimitEnable",
+      "CentroidYLimitLow",
+      "CentroidYLimitHigh",
+      "AngleLimitEnable",
+      "AngleLimitLow",
+      "AngleLimitHigh",
+      "CenterXLimitEnable",
+      "CenterXLimitLow",
+      "CenterXLimitHigh",
+      "CenterYLimitEnable",
+      "CenterYLimitLow",
+      "CenterYLimitHigh",
+      "BoxHeightLimitEnable",
+      "BoxHeightLimitLow",
+      "BoxHeightLimitHigh",
+      "BoxWidthLimitEnable",
+      "BoxWidthLimitLow",
+      "BoxWidthLimitHigh",
+      "PerimeterLimitEnable",
+      "PerimeterLimitLow",
+      "PerimeterLimitHigh",
+      "LongAxisLimitEnable",
+      "LongAxisLimitLow",
+      "LongAxisLimitHigh",
+      "ShortAxisLimitEnable",
+      "ShortAxisLimitLow",
+      "ShortAxisLimitHigh",
+      "CircularityLimitEnable",
+      "CircularityLimitLow",
+      "CircularityLimitHigh",
+      "RectangularityLimitEnable",
+      "RectangularityLimitLow",
+      "RectangularityLimitHigh"
+    ],
+    "PixelCountRuntimeDeclarations": ""
+  },
+  "vmRuntimeObservation": {
+    "application": "VisionMaster.exe",
+    "snapshotId": "s2jb2zs3fwgj29",
+    "toolWindowTitle": "4 Blob标签分析",
+    "tabs": [
+      "基本参数",
+      "运行参数",
+      "结果显示"
+    ],
+    "basicGroups": [
+      "Tab_Image Input",
+      "Tab_ROI Area",
+      "ClassInfo"
+    ],
+    "bottomCommands": [
+      "连续执行",
+      "执行",
+      "确定"
+    ],
+    "observation": "Agent Desktop live snapshot of original VisionMaster parameter window",
+    "note": "当前窗口位于屏幕坐标，子控件部分需按滚动区域继续采集"
+  },
+  "currentReleaseObservation": {
+    "application": "SunEyeVision.UI.exe",
+    "snapshotId": "s3tinej4zbl7ng",
+    "solution": "test",
+    "observedNodes": [
+      "图像源1",
+      "划片拆分1",
+      "Blob分析1"
+    ],
+    "blobLabelsNodePresent": false,
+    "blocker": "当前 test 方案没有 BlobLabels 节点，旧 BlobLabels 方案会因持久化字段缺失触发方案打开失败；需要新建或更新验证方案后再采集本方 BlobLabels 实时窗口"
+  },
+  "blobLabelsLiveComparison": {
+    "vmSnapshot": "s2jb2zs3fwgj29",
+    "releaseSnapshot": "s2ozrm2nd784i8",
+    "vmWindow": "4 Blob标签分析",
+    "releaseWindow": "6 Blob标签分析1",
+    "tabsMatch": true,
+    "vmGroups": {
+      "image": "Tab_Image Input",
+      "roi": "Tab_ROI Area",
+      "class": "ClassInfo"
+    },
+    "releaseGroups": {
+      "image": "图像输入",
+      "roi": "ROI区域",
+      "class": "类别信息"
+    },
+    "vmRoiHeight": 297,
+    "releaseRoiHeight": 323,
+    "vmClassTop": 731,
+    "releaseClassTop": 757,
+    "difference": "Release ROI区域组比原厂高26像素，类别信息整体下移26像素；需继续按子行和分隔线定位，不在未确认原因前直接改布局"
+  },
+  "blobLabelsRunResultComparison": {
+    "vmRunGroup": {
+      "name": "Tab_Run Params",
+      "height": 218
+    },
+    "releaseRunGroups": [
+      {
+        "name": "运行参数",
+        "height": 186
+      },
+      {
+        "name": "运行参数",
+        "height": 41
+      }
+    ],
+    "vmResultGroups": [
+      {
+        "name": "Tab_Check Result",
+        "height": 183
+      },
+      {
+        "name": "Tab_Image Display",
+        "height": 258
+      }
+    ],
+    "releaseResultGroups": [
+      {
+        "name": "图像显示",
+        "height": 326
+      },
+      {
+        "name": "文本显示",
+        "height": 293
+      }
+    ],
+    "difference": "当前 Release 结果显示已展开为图像显示/文本显示并包含更多显示项，需要继续按原厂 XML 与滚动状态核对是否有额外项或分组高度差异"
+  },
+  "blobLabelsRoiChildObservation": {
+    "releaseRows": [
+      "输出掩膜",
+      "ROI区域类型",
+      "ROI创建",
+      "形状",
+      "屏蔽区创建",
+      "屏蔽区",
+      "位置修正"
+    ],
+    "releaseShapeControls": [
+      "全屏",
+      "扇形",
+      "矩形",
+      "多边形"
+    ],
+    "releaseRoiGroupHeight": 323,
+    "vmRoiGroupHeight": 297,
+    "rowEvidence": "当前 Release ROI 行均有真实可访问性节点，未发现缺失行；26像素差异来自行间距/容器边界，需要继续核对原厂控件的真实边界"
+  },
+  "blobLabelsCurrentScreenshot": {
+    "path": "Release/_validation/bloblabels-current-window.png",
+    "snapshot": "s3ajuj93das5ug",
+    "visualNote": "当前 Release 基本参数页顶部 ROI 行与原厂截图逐行对齐，形状控件和屏蔽区控件均出现；几何高度差主要位于滚动容器边界，未观察到顶部视觉错位"
+  },
+  "blobLabelsAlgorithmAudit": {
+    "vmStatus": "partially-confirmed",
+    "vmConfirmed": [
+      "Process -> ProcessAlg -> LimitJudge -> ProcessOutput",
+      "GetAllParamList/SetParam parameter names",
+      "input image/mask/ROI/threshold host boundaries",
+      "external algorithm ABI and lifecycle symbols",
+      "result field names and output status path"
+    ],
+    "currentImplementation": [
+      "HALCON image admission and Gray8 mask threshold",
+      "ROI/mask effective domain",
+      "threshold segmentation and area filtering",
+      "connected components and feature extraction",
+      "sorting/filtering/judgment/result projection",
+      "output resource scope and cancellation checks"
+    ],
+    "equivalenceStatus": "not closed",
+    "unconfirmed": [
+      "VM numeric equivalence for threshold inversion/addition",
+      "class label and label value semantics",
+      "overlap ratio and max outside pixel semantics",
+      "cancel timing and exact release order",
+      "fixed-image output-by-output comparison"
+    ]
+  },
+  "imageSourceAudit": {
+    "vmControls": [
+      "ImageSourceType",
+      "CurrentImagePath",
+      "PixelFormat",
+      "SolSaveImageData",
+      "ShowImageName",
+      "CameraID",
+      "ExposureTimeInput",
+      "GainInput",
+      "InitialSN",
+      "PathCache",
+      "OutMono8",
+      "StitchEnable",
+      "StitchStartHeight",
+      "StitchHeight",
+      "ClearTrigger",
+      "ClearTriggerCondition",
+      "AutoPlay",
+      "AutoStop",
+      "TriggerStringEnable",
+      "TriggerString",
+      "TriggerFilter",
+      "IsSubscribeFolderMode",
+      "SubscribeFolderPath",
+      "RefreshImage",
+      "TriggerProcessRun"
+    ],
+    "vmConfirmed": [
+      "本地图像列表计数与当前图像选择",
+      "运行全部/运行选中 ExecuteType",
+      "AutoPlay 自动切换",
+      "本地图像路径 CurrentImagePath",
+      "本地文件夹订阅与图像列表"
+    ],
+    "productScope": [
+      "本地图像输入与统一 ImageSource 组装"
+    ],
+    "productDifference": "设备管理和海康相机接入留在平台设备层，本批只闭合本地图像入口",
+    "missing": [
+      "当前 Release ImageSource 实时窗口快照",
+      "固定本地图像读取输出对照",
+      "多相机设备差异边界"
+    ]
+  },
+  "pixelCountAlgorithmAudit": {
+    "vmStatus": "inventory-only",
+    "vmConfirmed": [],
+    "currentImplementation": [
+      "HALCON gray normalization",
+      "effective ROI and nonzero Gray8 mask",
+      "closed interval threshold bands",
+      "pixel count and ratio",
+      "count/ratio judgment",
+      "oriented ROI result and resource capture",
+      "cancellation and resource scope"
+    ],
+    "equivalenceStatus": "not closed",
+    "missing": [
+      "原厂 Process/ProcessAlg 证据",
+      "端点包含关系固定输入对照",
+      "ROI与掩膜交集语义动态对照",
+      "判定边界固定输入对照",
+      "结果状态和取消释放对照"
+    ]
+  },
+  "tenToolAlgorithmStatus": {
+    "PixelCount": "unknown",
+    "FrameMean": "unknown",
+    "IntensityMeasure": "unknown",
+    "ColorExtract": "unknown",
+    "DivideImage": "unknown",
+    "ContourMatch": "unknown",
+    "GrayMatch": "unknown",
+    "MarkFind": "unknown",
+    "BlobLabels": "partially-confirmed",
+    "If": "inferred/unknown"
+  },
+  "tenToolUiSmoke": [
+    {
+      "toolId": "PixelCount",
+      "declaredPages": [
+        "基本参数",
+        "运行参数",
+        "结果显示"
+      ],
+      "sharedSmoke": "pass",
+      "releaseComponentCount": 2
+    },
+    {
+      "toolId": "FrameMean",
+      "declaredPages": [
+        "基本参数",
+        "运行参数",
+        "结果显示"
+      ],
+      "sharedSmoke": "pass",
+      "releaseComponentCount": 2
+    },
+    {
+      "toolId": "IntensityMeasure",
+      "declaredPages": [
+        "基本参数",
+        "结果显示"
+      ],
+      "sharedSmoke": "pass",
+      "releaseComponentCount": 2
+    },
+    {
+      "toolId": "ColorExtract",
+      "declaredPages": [
+        "基本参数",
+        "运行参数",
+        "结果显示"
+      ],
+      "sharedSmoke": "pass",
+      "releaseComponentCount": 2
+    },
+    {
+      "toolId": "DivideImage",
+      "declaredPages": [
+        "基本参数",
+        "运行参数"
+      ],
+      "sharedSmoke": "pass",
+      "releaseComponentCount": 2
+    },
+    {
+      "toolId": "ContourMatch",
+      "declaredPages": [
+        "基本参数",
+        "特征模板",
+        "运行参数",
+        "结果显示"
+      ],
+      "sharedSmoke": "pass",
+      "releaseComponentCount": 2
+    },
+    {
+      "toolId": "GrayMatch",
+      "declaredPages": [
+        "基本参数",
+        "灰度模板",
+        "运行参数",
+        "结果显示"
+      ],
+      "sharedSmoke": "pass",
+      "releaseComponentCount": 2
+    },
+    {
+      "toolId": "MarkFind",
+      "declaredPages": [
+        "基本参数",
+        "特征模型",
+        "运行参数",
+        "结果显示"
+      ],
+      "sharedSmoke": "pass",
+      "releaseComponentCount": 2
+    },
+    {
+      "toolId": "BlobLabels",
+      "declaredPages": [
+        "基本参数",
+        "运行参数",
+        "结果显示"
+      ],
+      "sharedSmoke": "pass",
+      "releaseComponentCount": 2
+    },
+    {
+      "toolId": "If",
+      "declaredPages": [
+        "基本参数"
+      ],
+      "sharedSmoke": "pass",
+      "releaseComponentCount": 2
+    }
+  ]
+}

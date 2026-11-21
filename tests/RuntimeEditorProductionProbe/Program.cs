@@ -31,7 +31,27 @@ internal static class Program
     [("ImageLoad","Runtime")]=typeof(SunEyeVision.Tool.ImageSource.Runtime.ImageSourceTool),
     [("ImageLoad","Editor")]=typeof(SunEyeVision.Tool.ImageSource.Wpf.ImageSourceEditorFactory),
     [("BlobAnalysis","Runtime")]=typeof(SunEyeVision.Tool.BlobAnalysis.Runtime.BlobTool),
-    [("BlobAnalysis","Editor")]=typeof(SunEyeVision.Tool.BlobAnalysis.Wpf.BlobEditorFactory)
+    [("BlobAnalysis","Editor")]=typeof(SunEyeVision.Tool.BlobAnalysis.Wpf.BlobEditorFactory),
+    [("PixelCount","Runtime")]=typeof(SunEyeVision.Tool.PixelCount.Runtime.PixelCountTool),
+    [("PixelCount","Editor")]=typeof(SunEyeVision.Tool.PixelCount.Wpf.PixelCountEditorFactory),
+    [("FrameMean","Runtime")]=typeof(SunEyeVision.Tool.FrameMean.Runtime.FrameMeanTool),
+    [("FrameMean","Editor")]=typeof(SunEyeVision.Tool.FrameMean.Wpf.FrameMeanEditorFactory),
+    [("IntensityMeasure","Runtime")]=typeof(SunEyeVision.Tool.IntensityMeasure.Runtime.IntensityMeasureTool),
+    [("IntensityMeasure","Editor")]=typeof(SunEyeVision.Tool.IntensityMeasure.Wpf.IntensityMeasureEditorFactory),
+    [("ColorExtract","Runtime")]=typeof(SunEyeVision.Tool.ColorExtract.Runtime.ColorExtractTool),
+    [("ColorExtract","Editor")]=typeof(SunEyeVision.Tool.ColorExtract.Wpf.ColorExtractEditorFactory),
+    [("DivideImage","Runtime")]=typeof(SunEyeVision.Tool.DivideImage.Runtime.DivideImageTool),
+    [("DivideImage","Editor")]=typeof(SunEyeVision.Tool.DivideImage.Wpf.DivideImageEditorFactory),
+    [("ContourMatch","Runtime")]=typeof(SunEyeVision.Tool.ContourMatch.Runtime.ContourMatchTool),
+    [("ContourMatch","Editor")]=typeof(SunEyeVision.Tool.ContourMatch.Wpf.ContourMatchEditorFactory),
+    [("GrayMatch","Runtime")]=typeof(SunEyeVision.Tool.GrayMatch.Runtime.GrayMatchTool),
+    [("GrayMatch","Editor")]=typeof(SunEyeVision.Tool.GrayMatch.Wpf.GrayMatchEditorFactory),
+    [("MarkFind","Runtime")]=typeof(SunEyeVision.Tool.MarkFind.Runtime.MarkFindTool),
+    [("MarkFind","Editor")]=typeof(SunEyeVision.Tool.MarkFind.Wpf.MarkFindEditorFactory),
+    [("BlobLabels","Runtime")]=typeof(SunEyeVision.Tool.BlobLabels.Runtime.BlobLabelsTool),
+    [("BlobLabels","Editor")]=typeof(SunEyeVision.Tool.BlobLabels.Wpf.BlobLabelsEditorFactory),
+    [("If","Runtime")]=typeof(SunEyeVision.Tool.If.Runtime.IfTool),
+    [("If","Editor")]=typeof(SunEyeVision.Tool.If.Wpf.IfEditorFactory)
    };
    var catalog=System.Xml.Linq.XDocument.Load(Path.Combine(Path.GetFullPath(args[0]),"product/ToolComponents.props"));
    var components=catalog.Descendants("ProductToolComponent").Select(element=>
@@ -41,8 +61,22 @@ internal static class Program
     if(type.FullName!=Read("EntryType"))throw new Exception("产品声明入口不一致。");
     return new ToolComponentRegistration(new ToolComponentMetadata(Read("ComponentId"),tool,role,FoundationContract.Major,FoundationContract.Minor,role==ToolComponentRole.Editor?Read("CompanionToolId"):null),type);
    }).ToArray();
-   var directory=(RuntimeDirectorySnapshot)typeof(RuntimeDirectorySnapshot).GetMethod("Prepare",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static)!.Invoke(null,new object[]{components})!;
-   using var session=DocumentSession.CreateNew(directory,"正式参数页定位");var flow=session.GetWorkflows().Single();
+   // The UI chain exercised by this probe remains the closed ImageSource + Blob slice.
+   // All four-batch entries are still validated above. Batch-specific UI probes will
+   // prepare their own tool slice so one slow editor cannot block this baseline probe.
+   // Prepare the complete declared product set first. This is the batch
+   // registration gate. The focused production scenario below still uses the
+   // ImageSource -> Blob graph, but every runtime/editor pair must be admitted
+   // before that graph is allowed to run.
+   var allDirectory=(RuntimeDirectorySnapshot)typeof(RuntimeDirectorySnapshot).GetMethod("Prepare",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static)!.Invoke(null,new object[]{components})!;
+   var expectedToolIds=new[]{"ImageLoad","BlobAnalysis","PixelCount","FrameMean","IntensityMeasure","ColorExtract","DivideImage","ContourMatch","GrayMatch","MarkFind","BlobLabels","If"};
+   var admittedToolIds=allDirectory.ToolIds.OrderBy(id=>id,StringComparer.Ordinal).ToArray();
+   if(!expectedToolIds.OrderBy(id=>id,StringComparer.Ordinal).SequenceEqual(admittedToolIds,StringComparer.Ordinal))
+    throw new Exception($"批量工具准入集合不完整：{string.Join(',',admittedToolIds)}");
+   Console.WriteLine($"PASS: complete product directory admitted {admittedToolIds.Length} tool ids");
+   var baselineComponents=components.Where(component=>component.Metadata.ToolId is "ImageLoad" or "BlobAnalysis").ToArray();
+   var directory=(RuntimeDirectorySnapshot)typeof(RuntimeDirectorySnapshot).GetMethod("Prepare",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static)!.Invoke(null,new object[]{baselineComponents})!;
+   using var session=DocumentSession.CreateNew(directory,"正式参数页定位"); var flow=session.GetWorkflows().Single();
    using var inputFactory=new ImageSourceHostInputFactory();
    var graph=session.PrepareGraphEdit(flow.Id);
    var source=session.CreateNode(graph,"ImageLoad",new CanvasPoint(100,100));
@@ -73,7 +107,7 @@ internal static class Program
     using var context=new ProductionEditorContext(session,flow.Id,node,()=>true,control.BindDraft);
     ToolEditorCommit.AttachDraftContext(control,context);context.PrepareView=()=>control.TryCapture(out var error)?null:error;
     context.HasPendingViewEdits=()=>control.HasPendingEdits;context.PreserveViewAfterRebase=control.AdoptRebasedDraft;
-    control.ConfigureDebug(context,()=>inputFactory,()=>true,Console.WriteLine,_=>null,()=>{});
+     control.ConfigureDebug(context,()=>inputFactory,()=>true,Console.WriteLine,(_,_)=>null,()=>null,()=>{});
     window.Closed+=(_,_)=>context.Discard();
     try
     {

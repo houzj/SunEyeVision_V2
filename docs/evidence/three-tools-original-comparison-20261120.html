@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>三工具原厂对照复核（2026-11-20）</title>
+<style>body{font:15px/1.7 "Segoe UI","Microsoft YaHei",sans-serif;max-width:1100px;margin:auto;padding:28px;color:#172033;background:#f6f8fb}h1{font-size:28px}h2{margin-top:30px;border-left:5px solid #2563eb;padding-left:12px;font-size:21px}table{width:100%;border-collapse:collapse;background:#fff;margin:12px 0}th,td{border:1px solid #dbe3ef;padding:8px 10px;text-align:left;vertical-align:top}th{background:#eef4ff}code{background:#eef2f7;padding:1px 5px;border-radius:4px}.ok{color:#0f766e;font-weight:700}.diff{color:#b45309;font-weight:700}.unk{color:#b91c1c;font-weight:700}.card{background:#fff;border:1px solid #dbe3ef;border-radius:12px;padding:14px 18px;margin:12px 0}</style></head>
+<body>
+<h1>FrameMean / IntensityMeasure / ColorExtract 原厂对照复核</h1>
+<p>对照方法：VisionMaster 4.4.0 安装目录的 AlgorithmTab / Display XML，与本方当前单项目声明、编辑器与 Agent Desktop 截图逐项比较。原厂运行窗口本轮未取到（VM 画布节点 UIA 定位阻塞），纯视觉项标注未确认。</p>
+
+<h2>1. FrameMean</h2>
+<table>
+<tr><th>项</th><th>原厂</th><th>本方</th><th>结论</th></tr>
+<tr><td>页签</td><td>Tab_Basic Params / Tab_Run Params / ResultShow</td><td>基本参数 / 运行参数 / 结果显示</td><td class="ok">一致</td></tr>
+<tr><td>基本参数</td><td>ImageSourceGroup（图像源组）</td><td>图像输入行</td><td class="ok">一致（组内相机项未实现）</td></tr>
+<tr><td>运行参数</td><td>CommandSelecter_Frame，3 个 Command_EnumEntry：Accumulate、Calculate、Abort</td><td>2 个单选命令 + 清空图标按钮</td><td class="diff">差异：第三命令以图标按钮呈现，不是原厂三块命令</td></tr>
+<tr><td>结果显示</td><td>Tab_Image Display 下仅 ImageViewConfig CheckZone</td><td>图像显示 / 检测区域一行（眼睛+样式）</td><td class="ok">结构一致</td></tr>
+<tr><td>显示对象</td><td>Display.xml：InImage、OutImage、ROI、Data Record</td><td>仅 CheckZone 配置行；叠加未实现</td><td class="diff">差异：输出图像与数据记录未声明</td></tr>
+<tr><td>相机回调时序</td><td>GetFrameMeanCount 刷新时机</td><td>未实现原厂回调</td><td class="unk">未确认</td></tr>
+</table>
+
+<h2>2. IntensityMeasure</h2>
+<table>
+<tr><th>项</th><th>原厂</th><th>本方</th><th>结论</th></tr>
+<tr><td>页签</td><td>Tab_Basic Params / ResultShow</td><td>基本参数 / 结果显示</td><td class="ok">一致</td></tr>
+<tr><td>基本参数</td><td>ImageSourceGroup + Tab_ROI Area（OutputMaskImageGroup、InputMaskImageGroup、RoiSelectGroup、ROISelecter、InheritWayGroup、AssistGroup）</td><td>仅图像输入行</td><td class="diff">差异：ROI 与掩膜组未迁移</td></tr>
+<tr><td>结果判定</td><td>Tab_Check Result：最大值/最小值/均值/标准差/对比度，各 Enable + IntegerBettween/FloatBettween（0..255）</td><td>5 个开关 + 成对范围，全部字段存在</td><td class="ok">一致</td></tr>
+<tr><td>结果显示页图像项</td><td>Tab_Image Display（ImageViewConfig 项）+ TextDisplayGroup</td><td>图像显示两行 + 文本显示组（部分）</td><td class="diff">差异：显示对象数量与文本组未逐项闭合</td></tr>
+<tr><td>视觉</td><td>原厂运行窗口</td><td>截图 basic-final/result-final</td><td class="unk">未做原厂运行对照</td></tr>
+</table>
+
+<h2>3. ColorExtract</h2>
+<table>
+<tr><th>项</th><th>原厂</th><th>本方</th><th>结论</th></tr>
+<tr><td>页签</td><td>Tab_Basic Params / Tab_Run Params / ResultShow</td><td>基本参数 / 运行参数 / 结果显示</td><td class="ok">一致</td></tr>
+<tr><td>基本参数</td><td>Tab_ROI Area（掩膜、ROI 选择、继承、位置修正）</td><td>仅图像输入行</td><td class="diff">差异：ROI 组未迁移</td></tr>
+<tr><td>运行参数</td><td>ColorExtractList（InputColorRange）</td><td>区间列表卡片 + 颜色空间 + 三通道滑条 + 反转</td><td class="diff">结构一致，滑条/卡片视觉未与原厂逐项对照</td></tr>
+<tr><td>结果显示-判定</td><td>Tab_Check Result：AreaLimitEnable + FloatBettween 0..9999999</td><td>启用面积上下限 + 成对范围</td><td class="ok">一致</td></tr>
+<tr><td>结果显示-图像</td><td>4 个 ImageViewConfig：CheckZone、FixtureInitPoint、FixtureRunPoint、CheckZoneAnnular</td><td>4 行：检测区域、基准点、运行点、扇环区域</td><td class="ok">结构一致</td></tr>
+<tr><td>文本显示</td><td>GroupLinkItem TextDisplayGroup</td><td>未实现</td><td class="diff">差异：文本显示组缺失</td></tr>
+<tr><td>视觉</td><td>原厂运行窗口</td><td>截图 basic2/run3/result</td><td class="unk">未做原厂运行对照</td></tr>
+</table>
+
+<h2>原厂运行对照（Agent Desktop，test.sol）</h2>
+<div class="card">
+<p>已打开 VisionMaster 4.4.0 的 test.sol，并逐个打开三个工具窗口截图：</p>
+<table>
+<tr><th>工具</th><th>原厂运行观察到</th><th>本方运行截图</th><th>结论</th></tr>
+<tr><td>FrameMean（12 帧平均1）</td><td>基本：图像输入/输入源；运行：统计当前图像、不统计当前图像、已统计图像数量 0、清空图标；结果：图像显示/检测区域</td><td>basic/run/result-new</td><td class="ok">三页结构一致</td></tr>
+<tr><td>IntensityMeasure（6 亮度测量1）</td><td>基本：图像输入/输入源 + ROI区域（输出掩膜、ROI区域类型、ROI创建、形状、位置修正）；结果：结果判断（5 开关）→ 图像显示（检测区域、文本、扇环检测区域）</td><td>basic-final/result-final</td><td class="diff">基本缺 ROI 组；结果页顺序与行集合不同（本方图像显示在前，且为亮度区域/检测区域）</td></tr>
+<tr><td>ColorExtract（9 颜色抽取1）</td><td>基本：图像输入/输入源 + ROI区域（ROI创建、形状、位置修正）；运行：抽取列表（颜色卡片+加号）、颜色空间、颜色区域选择、通道一/二/三；结果：颜色面积判断 → 图像显示（检测区域、扇环检测区域）→ 文本显示（内容、OK/NG颜色、字号…）</td><td>basic2/run3/result</td><td class="diff">基本缺 ROI 组；运行参数标签不同（颜色区域选择 vs 颜色反转、通道一 vs 通道1）；结果显示顺序不同、多出基准点/运行点且缺文本显示</td></tr>
+</table>
+<p class="unk">原厂窗口截图：<code>Release/_validation/AgentDesktopToolReview/vm-original/</code>（vm-frame-basic/run/result、vm-intensity-result、vm-color-basic/run/result）。</p>
+</div>
+
+<h2>结论</h2>
+<div class="card">
+<p><b>结构与声明层面：</b>三工具的页签、结果判定字段、结果显示图像行已对齐；ColorExtract 四行图像显示与 FrameMean CheckZone 行一致。</p>
+<p><b>仍存在差异：</b>FrameMean 第三命令形态；IntensityMeasure 与 ColorExtract 的 ROI/掩膜组；ColorExtract 文本显示组；FrameMean 输出图像与数据记录。</p>
+<p><b>未确认：</b>原厂运行窗口的逐项视觉对照（VM 节点定位阻塞）、相机回调时序、滑条编辑保存重开。</p>
+</div>
+</body></html>

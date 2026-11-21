@@ -38,14 +38,16 @@ public sealed class NativeParameterRow : INotifyPropertyChanged,IDisposable
     // choice. MissingReference still blocks capture; it is not a failed write.
     internal static NativeParameterItemState ProjectState(IEnumerable<DeclaredFieldState> states,bool otherInvalid=false)
     {
-        var readError=false;var invalid=otherInvalid;
+        // 原厂状态机（NameValueItem.cs:927-973）：红=写模块失败（SetParamErro），黄=读模块失败（GetParamErro），
+        // 初始 Normal，静态界面永不红——原厂参数项解析即有值（DefaultValue/CurValue），不存在"必填未赋值"红态。
+        // 故这里只映射 EditError（写失败）与 SourceError（读失败），HasInvalidInput 的未赋值态不驱动行红色。
+        var readError=false;
         foreach(var state in states)
         {
             if(state.EditError.Length!=0)return NativeParameterItemState.WriteError;
             readError|=state.SourceError.Length!=0;
-            invalid|=state.HasInvalidInput&&!state.MissingReference;
         }
-        return readError?NativeParameterItemState.ReadError:invalid?NativeParameterItemState.WriteError:NativeParameterItemState.Normal;
+        return readError?NativeParameterItemState.ReadError:otherInvalid?NativeParameterItemState.WriteError:NativeParameterItemState.Normal;
     }
     public ICommand ParamItemSelectedCommand {get;}
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -76,6 +78,9 @@ public sealed class NativeParameterRow : INotifyPropertyChanged,IDisposable
 internal sealed class NativeParameterPage : IDisposable
 {
     internal ObservableCollection<NativeParameterRow> Rows {get;}=new();
+    // VM ParamTab exposes the flattened page through Tab.Collection. Keep the same contract
+    // on the host page so CollectionViewSource groups the live row collection.
+    internal ObservableCollection<NativeParameterRow> Collection => Rows;
     public void Dispose(){ParameterCleanup.Run(Rows.ToArray().Select(row=>(Action)row.Dispose).Append(()=>Rows.Clear()));}
 }
 

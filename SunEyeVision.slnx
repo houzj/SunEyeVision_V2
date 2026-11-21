@@ -4,27 +4,37 @@
     <Project Path="tools/SunEyeVision.Tool.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.csproj" />
   </Folder>
   <Folder Name="/Tools/BlobLabelsComponents/">
+    <Project Path="tools/SunEyeVision.BlobLabels/SunEyeVision.Tool.BlobLabels.csproj" />
   </Folder>
   <Folder Name="/Tools/MarkFindComponents/">
+    <Project Path="tools/SunEyeVision.MarkFind/SunEyeVision.Tool.MarkFind.csproj" />
   </Folder>
   <Folder Name="/Tools/ContourMatchComponents/">
+    <Project Path="tools/SunEyeVision.ContourMatch/SunEyeVision.Tool.ContourMatch.csproj" />
   </Folder>
   <Folder Name="/Tools/GrayMatchComponents/">
+    <Project Path="tools/SunEyeVision.GrayMatch/SunEyeVision.Tool.GrayMatch.csproj" />
   </Folder>
   <Folder Name="/Tools/SunEyeVision.Tool.ImageSource/">
     <Project Path="tools/SunEyeVision.Tool.ImageSource/SunEyeVision.Tool.ImageSource.csproj" />
   </Folder>
   <Folder Name="/Tools/FrameMeanComponents/">
+    <Project Path="tools/SunEyeVision.FrameMean/SunEyeVision.Tool.FrameMean.csproj" />
   </Folder>
   <Folder Name="/Tools/ColorExtractComponents/">
+    <Project Path="tools/SunEyeVision.ColorExtract/SunEyeVision.Tool.ColorExtract.csproj" />
   </Folder>
   <Folder Name="/Tools/DivideImageComponents/">
+    <Project Path="tools/SunEyeVision.DivideImage/SunEyeVision.Tool.DivideImage.csproj" />
   </Folder>
   <Folder Name="/Tools/IfComponents/">
+    <Project Path="tools/SunEyeVision.If/SunEyeVision.Tool.If.csproj" />
   </Folder>
   <Folder Name="/Tools/PixelCountComponents/">
+    <Project Path="tools/SunEyeVision.PixelCount/SunEyeVision.Tool.PixelCount.csproj" />
   </Folder>
   <Folder Name="/Tools/IntensityMeasureComponents/">
+    <Project Path="tools/SunEyeVision.IntensityMeasure/SunEyeVision.Tool.IntensityMeasure.csproj" />
   </Folder>
   <Folder Name="/Tools/CircleFindComponents/">
   </Folder>

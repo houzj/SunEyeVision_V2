@@ -12,14 +12,14 @@ public sealed class ParameterPresentationTree
         Pages = pages;
     }
 
-    public static ParameterPresentationTree Create(IEnumerable<FieldPresentation> fields)
+    public static ParameterPresentationTree Create(IEnumerable<FieldPresentation> fields, IEnumerable<string>? pageOnlyPages = null)
     {
         ArgumentNullException.ThrowIfNull(fields);
-        var ordered = fields.OrderBy(field => field.Order).ToArray();
-        if (ordered.Any(field => field is null))
+        var orderedFields = fields.OrderBy(field => field.Order).ToArray();
+        if (orderedFields.Any(field => field is null))
             throw new ArgumentException("参数展示树不能包含空字段。", nameof(fields));
 
-        var pages = ordered
+        var pages = orderedFields
             .GroupBy(PageKey, StringComparer.Ordinal)
             .Select(page => new ParameterPresentationPage(
                 page.Key,
@@ -33,7 +33,18 @@ public sealed class ParameterPresentationTree
                 page.ToArray()))
             .ToArray();
 
-        return new ParameterPresentationTree(pages);
+        var byKey = pages.ToDictionary(page => page.Key, StringComparer.Ordinal);
+        var requestedOrder = (pageOnlyPages ?? Array.Empty<string>())
+            .Where(page => !string.IsNullOrWhiteSpace(page))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        var orderedPages = requestedOrder
+            .Select(page => byKey.TryGetValue(page, out var declared)
+                ? declared
+                : new ParameterPresentationPage(page, Array.Empty<ParameterPresentationSection>(), Array.Empty<FieldPresentation>()))
+            .Concat(pages.Where(page => !requestedOrder.Contains(page.Key, StringComparer.Ordinal)))
+            .ToArray();
+        return new ParameterPresentationTree(orderedPages);
 
         static string PageKey(FieldPresentation field) => field.Layout?.Page ?? field.Group;
         static string SectionKey(FieldPresentation field) => field.Layout?.Section ?? field.Group;

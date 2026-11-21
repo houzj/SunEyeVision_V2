@@ -1,0 +1,377 @@
+[
+  {
+    "batch": 0,
+    "toolId": "ImageLoad",
+    "runtimeProject": "tools/SunEyeVision.Tool.ImageSource/SunEyeVision.Tool.ImageSource.csproj",
+    "wpfProject": "tools/SunEyeVision.Tool.ImageSource/SunEyeVision.Tool.ImageSource.csproj",
+    "evidence": "docs/evidence/image-source-release-unit-diff-20261119.json",
+    "pages": [
+      "基本参数"
+    ],
+    "status": "local-image-baseline-verified",
+    "unconfirmed": [
+      "original camera-specific behavior"
+    ]
+  },
+  {
+    "batch": 0,
+    "toolId": "BlobAnalysis",
+    "runtimeProject": "tools/SunEyeVision.Tool.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.csproj",
+    "wpfProject": "tools/SunEyeVision.Tool.BlobAnalysis/SunEyeVision.Tool.BlobAnalysis.csproj",
+    "evidence": "docs/evidence/blob-full-isomorphism-diff-20261119.md",
+    "pages": [
+      "基本参数",
+      "运行参数",
+      "结果显示"
+    ],
+    "status": "full-ui-and-lifecycle-baseline-verified",
+    "unconfirmed": [
+      "same-version native algorithm dynamic behavior"
+    ]
+  },
+  {
+    "batch": 1,
+    "toolId": "PixelCount",
+    "runtimeProject": "tools/SunEyeVision.PixelCount/SunEyeVision.Tool.PixelCount.csproj",
+    "wpfProject": "tools/SunEyeVision.PixelCount/SunEyeVision.Tool.PixelCount.csproj",
+    "evidence": "docs/evidence/pixelcount-review-20261118.json",
+    "pages": [
+      "基本参数",
+      "运行参数",
+      "结果显示"
+    ],
+    "status": "code-logic-aligned-standard-page-build-tested",
+    "unconfirmed": [
+      "original manual visual acceptance"
+    ]
+  },
+  {
+    "batch": 1,
+    "toolId": "FrameMean",
+    "runtimeProject": "tools/SunEyeVision.FrameMean/SunEyeVision.Tool.FrameMean.csproj",
+    "wpfProject": "tools/SunEyeVision.FrameMean/SunEyeVision.Tool.FrameMean.csproj",
+    "evidence": "docs/evidence/framemean-review-20261118.json",
+    "pages": [
+      "基本参数",
+      "运行参数",
+      "结果显示"
+    ],
+    "status": "shared-command-selector-wired",
+    "unconfirmed": [
+      "original callback refresh timing",
+      "result-page CheckZone row not compared against original runtime snapshot",
+      "basic input label differs: original 输入源 vs ours 图像输入"
+    ]
+  },
+  {
+    "batch": 1,
+    "toolId": "IntensityMeasure",
+    "runtimeProject": "tools/SunEyeVision.IntensityMeasure/SunEyeVision.Tool.IntensityMeasure.csproj",
+    "wpfProject": "tools/SunEyeVision.IntensityMeasure/SunEyeVision.Tool.IntensityMeasure.csproj",
+    "evidence": "docs/evidence/intensitymeasure-review-20261118.json",
+    "pages": [
+      "基本参数",
+      "结果显示"
+    ],
+    "status": "code-logic-aligned-build-tested",
+    "unconfirmed": [
+      "annulus/reference/run point overlay geometry not produced by session",
+      "text placeholder runtime resolution unconfirmed",
+      "algorithm equivalence unconfirmed"
+    ]
+  },
+  {
+    "batch": 2,
+    "toolId": "ColorExtract",
+    "runtimeProject": "tools/SunEyeVision.ColorExtract/SunEyeVision.Tool.ColorExtract.csproj",
+    "wpfProject": "tools/SunEyeVision.ColorExtract/SunEyeVision.Tool.ColorExtract.csproj",
+    "evidence": "docs/evidence/color-extract-review-20261118.json",
+    "pages": [
+      "基本参数",
+      "运行参数",
+      "结果显示"
+    ],
+    "status": "shared-color-range-list-wired-roi-select-missing",
+    "unconfirmed": [
+      "slider edit/save-reopen and color-card visual comparison",
+      "TextDisplayGroup text display not implemented",
+      "basic ROI/mask groups not migrated",
+      "ColorRange RoiSelectControl row not wired",
+      "result page order and row set differ: original 结果判断→图像显示(检测区域/扇环检测区域)→文本显示, ours 图像显示(4 rows)→结果判断"
+    ]
+  },
+  {
+    "batch": 2,
+    "toolId": "DivideImage",
+    "runtimeProject": "tools/SunEyeVision.DivideImage/SunEyeVision.Tool.DivideImage.csproj",
+    "wpfProject": "tools/SunEyeVision.DivideImage/SunEyeVision.Tool.DivideImage.csproj",
+    "evidence": [
+      "docs/evidence/divideimage-review-20261118.json",
+      "docs/evidence/divideimage-single-project-review-20261120.md",
+      "docs/evidence/six-tool-agentdesktop-runtime-20261121.json"
+    ],
+    "pages": [
+      "基本参数",
+      "运行参数"
+    ],
+    "status": "single-project-structure-and-algorithm-formula-verified",
+    "unconfirmed": [
+      "ROI geometry consumption, empty ROI and rounding semantics"
+    ],
+    "architecture": {
+      "singleProject": true,
+      "runtimeEditorSharedAssembly": true
+    },
+    "algorithm": {
+      "adapter": "tool-native-geometry",
+      "originalModule": "IMVSDivideImageModu.dll",
+      "evidence": "docs/07-工具逆向/tools/imvsdivideimagemodu/证据补充-划片拆分托管与原生算法-20261117.md",
+      "goldenCases": [],
+      "equivalenceStatus": "unconfirmed",
+      "comparisonRequired": [
+        "floating-point tile size and step",
+        "ROI geometry and angle",
+        "empty ROI and pixel rounding",
+        "FIXTURE position correction",
+        "status and output rectangle order"
+      ]
+    }
+  },
+  {
+    "batch": 3,
+    "toolId": "ContourMatch",
+    "runtimeProject": "tools/SunEyeVision.ContourMatch/SunEyeVision.Tool.ContourMatch.csproj",
+    "wpfProject": "tools/SunEyeVision.ContourMatch/SunEyeVision.Tool.ContourMatch.csproj",
+    "evidence": [
+      "docs/evidence/contourmatch-review-20261118.json",
+      "docs/evidence/contourmatch-single-project-review-20261120.md",
+      "docs/07-工具逆向/tools/imvscontourmatchmodu/evidence.json",
+      "docs/evidence/six-tool-agentdesktop-runtime-20261121.json"
+    ],
+    "pages": [
+      "基本参数",
+      "特征模板",
+      "运行参数",
+      "结果显示"
+    ],
+    "status": "single-project-release-built-template-surface-present-algorithm-unconfirmed",
+    "unconfirmed": [
+      "original template dialog resources, help and progress-mask mapping",
+      "original native algorithm numerical semantics and model file equivalence",
+      "original overlap, timeout, extension, multi-model and failure cleanup semantics"
+    ],
+    "architecture": {
+      "singleProject": true,
+      "runtimeEditorSharedAssembly": true
+    },
+    "algorithm": {
+      "adapter": "HalAdapter.Runtime",
+      "originalModule": "IMVSContourMatchModu.dll",
+      "evidence": [
+        "docs/07-工具逆向/tools/imvscontourmatchmodu/evidence.json",
+        "docs/plugins/IMVSCONTOURMATCHMODU-CORE-ENTRY-CHAIN.md",
+        "docs/plugins/IMVSCONTOURMATCHMODU-NATIVE-RUNTIME-CHAIN.md",
+        "docs/plugins/IMVSCONTOURMATCHMODU-TRAINING-ENTRY.md"
+      ],
+      "goldenCases": [],
+      "equivalenceStatus": "unconfirmed",
+      "comparisonRequired": [
+        "原厂模型编码和训练输出",
+        "金字塔、边缘阈值、链长和掩膜参数",
+        "搜索、重叠率、超时、延拓和多模板语义",
+        "结果矩形、轮廓点、排序和失败状态",
+        "取消、进度和释放时序"
+      ]
+    }
+  },
+  {
+    "batch": 3,
+    "toolId": "GrayMatch",
+    "runtimeProject": "tools/SunEyeVision.GrayMatch/SunEyeVision.Tool.GrayMatch.csproj",
+    "wpfProject": "tools/SunEyeVision.GrayMatch/SunEyeVision.Tool.GrayMatch.csproj",
+    "evidence": [
+      "docs/evidence/graymatch-review-20261118.json",
+      "docs/evidence/graymatch-single-project-review-20261121.md",
+      "docs/07-工具逆向/tools/imvsgraymatchmoduva/evidence.json",
+      "docs/evidence/six-tool-agentdesktop-runtime-20261121.json"
+    ],
+    "pages": [
+      "基本参数",
+      "灰度模板",
+      "运行参数",
+      "结果显示"
+    ],
+    "status": "single-project-release-built-template-surface-present-algorithm-unconfirmed",
+    "unconfirmed": [
+      "original template dialog visual comparison",
+      "original VA algorithm numerical semantics and model file equivalence",
+      "original ROI constraint, mask, fixed-point and release timing semantics"
+    ],
+    "architecture": {
+      "singleProject": true,
+      "runtimeEditorSharedAssembly": true
+    },
+    "algorithm": {
+      "adapter": "HalAdapter.Runtime",
+      "originalModule": "IMVSGrayMatchModuVA.dll",
+      "evidence": [
+        "docs/07-工具逆向/tools/imvsgraymatchmoduva/evidence.json",
+        "docs/evidence/graymatch-review-20261118.json",
+        "docs/evidence/graymatch-single-project-review-20261121.md"
+      ],
+      "goldenCases": [],
+      "equivalenceStatus": "unconfirmed",
+      "comparisonRequired": [
+        "原厂灰度模板编码和训练输出",
+        "NCC 金字塔层、角度、步长和分数边界",
+        "ROI 限制、掩膜、固定点和位置修正",
+        "结果矩形、排序、状态和失败路径",
+        "取消、进度和释放时序"
+      ]
+    }
+  },
+  {
+    "batch": 3,
+    "toolId": "MarkFind",
+    "runtimeProject": "tools/SunEyeVision.MarkFind/SunEyeVision.Tool.MarkFind.csproj",
+    "wpfProject": "tools/SunEyeVision.MarkFind/SunEyeVision.Tool.MarkFind.csproj",
+    "evidence": [
+      "docs/evidence/markfind-review-20261118.json",
+      "docs/evidence/markfind-single-project-review-20261121.md",
+      "docs/07-工具逆向/tools/imvsmarkfindmodu/evidence.json",
+      "docs/evidence/six-tool-agentdesktop-runtime-20261121.json"
+    ],
+    "pages": [
+      "基本参数",
+      "特征模型",
+      "运行参数",
+      "结果显示"
+    ],
+    "status": "single-project-release-built-model-surface-present-algorithm-unconfirmed",
+    "unconfirmed": [
+      "original model dialog visual comparison",
+      "original mark algorithm numerical semantics and model file equivalence",
+      "original mask, projection, mark type and failure cleanup semantics"
+    ],
+    "architecture": {
+      "singleProject": true,
+      "runtimeEditorSharedAssembly": true
+    },
+    "algorithm": {
+      "adapter": "HalAdapter.Runtime",
+      "originalModule": "IMVSMarkFindModu.dll",
+      "evidence": [
+        "docs/07-工具逆向/tools/imvsmarkfindmodu/evidence.json",
+        "docs/evidence/markfind-review-20261118.json",
+        "docs/evidence/markfind-single-project-review-20261121.md"
+      ],
+      "goldenCases": [],
+      "equivalenceStatus": "unconfirmed",
+      "comparisonRequired": [
+        "原厂模型编码和训练输出",
+        "金字塔、阈值、定位方式、旋转和投影参数",
+        "Mark 类型、掩膜和 ROI 约束",
+        "结果中心、角度、框、排序和状态",
+        "取消、失败和释放时序"
+      ]
+    }
+  },
+  {
+    "batch": 4,
+    "toolId": "BlobLabels",
+    "runtimeProject": "tools/SunEyeVision.BlobLabels/SunEyeVision.Tool.BlobLabels.csproj",
+    "wpfProject": "tools/SunEyeVision.BlobLabels/SunEyeVision.Tool.BlobLabels.csproj",
+    "evidence": [
+      "docs/evidence/bloblabels-review-20261118.json",
+      "docs/evidence/bloblabels-single-project-review-20261120.md",
+      "docs/07-工具逆向/tools/imvsblobfindlabelsmodu/imvsblobfindlabelsmodu-reverse.md",
+      "docs/evidence/bloblabels-rea-algorithm-evidence-20261120.json",
+      "docs/evidence/bloblabels-external-algorithm-evidence-20261120.json",
+      "docs/evidence/six-tool-agentdesktop-runtime-20261121.json"
+    ],
+    "pages": [
+      "基本参数",
+      "运行参数",
+      "结果显示"
+    ],
+    "status": "single-project-structure-release-built-algorithm-unconfirmed",
+    "unconfirmed": [
+      "原厂算法 DLL 内部阈值合并、反选、标签面积、特征计算和动态输入输出尚未闭合",
+      "HALCON 分割、连通域特征、排序和判定与原厂的数值等价性",
+      "ClassInfo/ClassLabel/LabelValue、OverlapRatio、MaxOutPixelNum 的运行语义",
+      "原厂完整结果显示/状态动态对照",
+      "外部算法实例、通用句柄、BinaryImage/BlobImage/ContourInfo 的精确释放时序",
+      "MVDMultiCategoryBlobFindCpp.dll 的 PDB 未加载，内部 FUN_ 函数语义仍不可命名确认"
+    ],
+    "architecture": {
+      "singleProject": true,
+      "runtimeEditorSharedAssembly": true
+    },
+    "algorithm": {
+      "adapter": "HalAdapter.Runtime",
+      "originalModule": "IMVSBlobFindLabelsModu.dll",
+      "evidence": [
+        "docs/07-工具逆向/tools/imvsblobfindlabelsmodu/imvsblobfindlabelsmodu-reverse.md",
+        "docs/evidence/bloblabels-rea-algorithm-evidence-20261120.json",
+        "docs/evidence/bloblabels-external-algorithm-evidence-20261120.json"
+      ],
+      "goldenCases": "",
+      "equivalenceStatus": "unconfirmed",
+      "comparisonRequired": "原厂 GetProcessInput→ProcessAlg→LimitJudge→ProcessOutput 边界、算法 DLL 内阈值合并与反选、连通性、面积/特征筛选、OverlapRatio、MaxOutPixelNum、排序/FindNum、逐 Blob 判定状态、结果字段和资源释放",
+      "externalLibrary": {
+        "path": "C:\\Program Files\\VisionMaster4.4.0\\MVDAlgorithmSDK\\Runtime\\x64\\MVDMultiCategoryBlobFindCpp.dll",
+        "sha256": "7627e0698acef65892bdd56c199dcff6c42e893aba7718b394f3d2485754b76d",
+        "evidence": "docs/evidence/bloblabels-external-algorithm-evidence-20261120.json",
+        "confirmed": [
+          "Create/Destroy instance",
+          "MVD_Algorithm_CreateHandle(0x139)",
+          "MVD_Algorithm_Process(0x139)",
+          "result image outputs",
+          "working/result memory release imports"
+        ]
+      }
+    }
+  },
+  {
+    "batch": 4,
+    "toolId": "If",
+    "runtimeProject": "tools/SunEyeVision.If/SunEyeVision.Tool.If.csproj",
+    "wpfProject": "tools/SunEyeVision.If/SunEyeVision.Tool.If.csproj",
+    "evidence": [
+      "docs/evidence/if-review-20261118.json",
+      "docs/evidence/if-single-project-review-20261121.md",
+      "docs/evidence/ifbranchmodule-managed-evidence-20261120.json",
+      "docs/evidence/ifbranchmodule-control-evidence-20261120.json",
+      "docs/evidence/six-tool-agentdesktop-runtime-20261121.json"
+    ],
+    "pages": [
+      "基本参数"
+    ],
+    "status": "single-project-release-built-dynamic-panel-static-verified-algorithm-unconfirmed",
+    "unconfirmed": [
+      "same-version IdList equivalence, dynamic port contract, runtime BranchMatch semantics",
+      "original interval endpoint, multi-hit and failure cleanup semantics"
+    ],
+    "architecture": {
+      "singleProject": true,
+      "runtimeEditorSharedAssembly": true
+    },
+    "algorithm": {
+      "adapter": "none-required-scalar-condition-evaluation",
+      "originalModule": "IfBranchModuleCs.dll",
+      "evidence": [
+        "docs/evidence/ifbranchmodule-managed-evidence-20261120.json",
+        "docs/evidence/ifbranchmodule-control-evidence-20261120.json"
+      ],
+      "goldenCases": [],
+      "equivalenceStatus": "unconfirmed",
+      "comparisonRequired": [
+        "动态行增删与条件端口持久化",
+        "int/float 类型和各自范围",
+        "OK/NG 状态、RunModuleId 与 BranchMatch",
+        "区间端点、多个命中分支和排序",
+        "取消、失败和释放时序"
+      ]
+    }
+  }
+]

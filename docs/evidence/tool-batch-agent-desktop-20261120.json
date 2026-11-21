@@ -1,0 +1,69 @@
+{
+  "date": "2026-11-20",
+  "source": "C:\\Users\\Administrator\\AppData\\Local\\SunEyeVision\\Solutions\\11111.solution",
+  "isolatedSolution": ".testdata/agent-desktop/batch-all/batch-all.solution",
+  "method": "Agent Desktop CLI with Invoke-SingleToolAudit",
+  "sourceModified": false,
+  "results": [
+    {
+      "node": "图像源1",
+      "status": "Passed",
+      "run": "Release\\_validation\\AgentDesktopToolReview\\batch-all\\20261120-000906-图像源1"
+    },
+    {
+      "node": "Blob分析1",
+      "status": "Passed",
+      "run": "Release\\_validation\\AgentDesktopToolReview\\batch-all\\20261120-000942-Blob分析1"
+    },
+    {
+      "node": "像素统计1",
+      "status": "Passed",
+      "run": "Release\\_validation\\AgentDesktopToolReview\\batch-all\\20261120-001019-像素统计1"
+    },
+    {
+      "node": "帧均值1",
+      "status": "Passed",
+      "run": "Release\\_validation\\AgentDesktopToolReview\\batch-all\\20261120-001055-帧均值1"
+    },
+    {
+      "node": "亮度测量1",
+      "status": "Passed",
+      "run": "Release\\_validation\\AgentDesktopToolReview\\batch-all\\20261120-001131-亮度测量1"
+    },
+    {
+      "node": "颜色抽取1",
+      "status": "Passed",
+      "run": "Release\\_validation\\AgentDesktopToolReview\\batch-all\\20261120-001207-颜色抽取1"
+    },
+    {
+      "node": "划片拆分1",
+      "status": "Passed",
+      "run": "Release\\_validation\\AgentDesktopToolReview\\batch-all\\20261120-001241-划片拆分1"
+    },
+    {
+      "node": "轮廓匹配1",
+      "status": "Passed",
+      "run": "Release\\_validation\\AgentDesktopToolReview\\batch-all\\20261120-001315-轮廓匹配1"
+    },
+    {
+      "node": "灰度匹配1",
+      "status": "Passed",
+      "run": "Release\\_validation\\AgentDesktopToolReview\\batch-all\\20261120-001349-灰度匹配1"
+    },
+    {
+      "node": "图形定位1",
+      "status": "Passed",
+      "run": "Release\\_validation\\AgentDesktopToolReview\\batch-all\\20261120-001424-图形定位1"
+    },
+    {
+      "node": "Blob标签分析1",
+      "status": "Passed",
+      "run": "Release\\_validation\\AgentDesktopToolReview\\batch-all\\20261120-001458-Blob标签分析1"
+    },
+    {
+      "node": "条件分支1",
+      "status": "Passed",
+      "run": "Release\\_validation\\AgentDesktopToolReview\\batch-all\\20261120-001532-条件分支1"
+    }
+  ]
+}

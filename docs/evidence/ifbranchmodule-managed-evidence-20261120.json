@@ -1,0 +1,26 @@
+{
+  "toolId": "ifbranchmodule",
+  "artifact": "C:\\Program Files\\VisionMaster4.4.0\\Applications\\Module(sp)\\x64\\Logic\\IfBranchModule\\IfBranchModuleCs.dll",
+  "sha256": "c1a2b07fb4e4a459592cf8352c728116c076d2bb006255c1deffb217d3112177",
+  "mvid": "c9bcd721-dbe7-40b1-8016-408ad472215a",
+  "evidenceIds": [
+    "ev_644b65b0e5a2233afc269d48af373f343423cab0828e88eecf92c362c650f32f",
+    "ev_1d344469dac6e5895e64326b51a1cbfb4d551ed4158bf082e592993c00799f3e",
+    "ev_69a71d65c8def386cee2307e6b8a42f61240e7a5c7ce710ab366d50604643a33",
+    "ev_bff6e96c7760fbc473598e6e56c17f8817318f86cdb67ce05047f25ccfd5c5c9"
+  ],
+  "observed": {
+    "types": ["IfBranchModuleCs.IfBranchModuleTool", "IfBranchModuleCs.IfBranchParam", "IfBranchModuleCs.IfBranchResult", "BranchStateEnum"],
+    "parameterKeySuffixes": ["_Min", "_Max", "_State"],
+    "integerBounds": [-999999999, 999999999],
+    "floatBounds": [-100000, 100000],
+    "branchStateEnum": {"BranchState_OK": 1, "BranchState_NG": 2},
+    "resultProperties": ["ModuStatus", "BranchMatch"],
+    "serializationStrings": ["IfBranchText", "NextModuleListChange", "NewIdList"]
+  },
+  "limitations": [
+    "Static CIL evidence does not establish the exact table row creation and deletion event sequence.",
+    "The original UI control inventory identifies HeadBar/ListHead and RangeConFFields, but does not expose XAML binding details.",
+    "Runtime branch matching and BranchMatch cardinality still require controlled original execution evidence."
+  ]
+}

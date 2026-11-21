@@ -17,14 +17,18 @@ public sealed class FrameMeanDeclarationTests
         Assert.Equal("帧均值",tool.Catalog.DisplayName);
         Assert.Equal("图像处理",tool.Catalog.Category);
         Assert.False(string.IsNullOrWhiteSpace(tool.Catalog.Description));
-        var component=Assert.Single(typeof(FrameMeanTool).Assembly.GetCustomAttributes<ToolComponentAttribute>());
+        var components=typeof(FrameMeanTool).Assembly.GetCustomAttributes<ToolComponentAttribute>().ToArray();
+        Assert.Equal(2,components.Length);
+        var component=Assert.Single(components,item=>item.Metadata.Role==ToolComponentRole.Runtime);
         Assert.Equal("SunEyeVision.Tool.FrameMean.Runtime",component.Metadata.ComponentId);
         Assert.Equal(tool.ToolId,component.Metadata.ToolId);
-        Assert.Equal(ToolComponentRole.Runtime,component.Metadata.Role);
         Assert.Equal(FoundationContract.Major,component.Metadata.ContractMajor);
         Assert.Equal(FoundationContract.Minor,component.Metadata.ContractMinor);
         Assert.Null(component.Metadata.CompanionToolId);
         Assert.Equal(typeof(FrameMeanTool).FullName,component.EntryType);
+        var editor=Assert.Single(components,item=>item.Metadata.Role==ToolComponentRole.Editor);
+        Assert.Equal("SunEyeVision.Tool.FrameMean.Wpf",editor.Metadata.ComponentId);
+        Assert.Equal(tool.ToolId,editor.Metadata.CompanionToolId);
         Assert.IsAssignableFrom<IToolRuntimeInitialization>(tool);
     }
 

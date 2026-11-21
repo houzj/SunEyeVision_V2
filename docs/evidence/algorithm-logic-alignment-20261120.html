@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>工具算法逻辑对齐（代码层，2026-11-20）</title>
+<style>body{font:15px/1.7 "Segoe UI","Microsoft YaHei",sans-serif;max-width:1100px;margin:auto;padding:28px;color:#172033;background:#f6f8fb}h1{font-size:28px}h2{margin-top:30px;border-left:5px solid #2563eb;padding-left:12px;font-size:21px}table{width:100%;border-collapse:collapse;background:#fff;margin:12px 0}th,td{border:1px solid #dbe3ef;padding:8px 10px;text-align:left;vertical-align:top}th{background:#eef4ff}code{background:#eef2f7;padding:1px 5px;border-radius:4px}.card{background:#fff;border:1px solid #dbe3ef;border-radius:12px;padding:14px 18px;margin:12px 0}.ok{color:#0f766e;font-weight:700}.unk{color:#b45309;font-weight:700}</style></head>
+<body>
+<h1>工具算法逻辑对齐（代码层）</h1>
+<p>范围：只核对代码链路是否按原厂声明的参数、顺序、区域和结果语义实现。结果数值与精度留给工程验证，不在本表判定。</p>
+
+<h2>IntensityMeasure</h2>
+<table>
+<tr><th>步骤</th><th>原厂语义</th><th>本方实现</th><th>结论</th></tr>
+<tr><td>输入</td><td>InputImage + InputROI + InputMask</td><td>图像、区域、掩膜交集</td><td class="ok">一致</td></tr>
+<tr><td>灰度</td><td>8 位灰度统计</td><td><code>HalconImageAdmission.Gray</code>，非 byte 直接报错</td><td class="ok">一致</td></tr>
+<tr><td>最小值/最大值</td><td>LumMin / LumMax</td><td><code>MinMaxGray</code></td><td class="ok">一致</td></tr>
+<tr><td>均值/标准差</td><td>LumMean / LumStd</td><td><code>Intensity</code> 的 mean/deviation</td><td class="ok">一致</td></tr>
+<tr><td>直方图</td><td>LumHistogram 256 级</td><td><code>GrayHisto</code> 绝对计数</td><td class="ok">一致</td></tr>
+<tr><td>对比度</td><td>HistContrast，范围 0..255</td><td>最大灰度 − 最小灰度</td><td class="unk">公式未取到原厂源码，代码层按量程差实现</td></tr>
+<tr><td>判据</td><td>五类开关 + 闭区间</td><td>逐项 <code>low &lt;= value &lt;= high</code></td><td class="ok">一致</td></tr>
+<tr><td>位置修正</td><td>AssistGroup 基准/运行点</td><td>字段已声明并进入输入，区域变换尚未消费</td><td class="unk">代码链路未闭合</td></tr>
+</table>
+
+<h2>PixelCount</h2>
+<table>
+<tr><th>步骤</th><th>原厂语义</th><th>本方实现</th><th>结论</th></tr>
+<tr><td>输入</td><td>Image + ROI + Mask</td><td>同一个有效统计域</td><td class="ok">一致</td></tr>
+<tr><td>阈值</td><td>多区间 0..255</td><td><code>Threshold(min,max)</code> 闭区间</td><td class="ok">一致</td></tr>
+<tr><td>计数</td><td>每区间像素数</td><td>区域行程面积求和</td><td class="ok">一致</td></tr>
+<tr><td>比例</td><td>区间计数 / 统计域</td><td>count / effective area</td><td class="ok">一致</td></tr>
+<tr><td>判定</td><td>计数/比例上下限</td><td>逐项闭区间判定</td><td class="ok">一致</td></tr>
+</table>
+
+<h2>FrameMean</h2>
+<table>
+<tr><th>步骤</th><th>原厂语义</th><th>本方实现</th><th>结论</th></tr>
+<tr><td>累加</td><td>统计当前图像 / 不统计 / 清空</td><td>按命令分支，real 累加</td><td class="ok">一致</td></tr>
+<tr><td>均值</td><td>已统计帧平均</td><td>sum × (1/count) → byte</td><td class="ok">一致</td></tr>
+<tr><td>上限</td><td>100 帧</td><td><code>MaximumFrameCount = 100</code></td><td class="ok">一致</td></tr>
+<tr><td>清空</td><td>清空帧数</td><td>清空累加和与计数</td><td class="ok">一致</td></tr>
+</table>
+
+<h2>ColorExtract</h2>
+<table>
+<tr><th>步骤</th><th>原厂语义</th><th>本方实现</th><th>结论</th></tr>
+<tr><td>色彩空间</td><td>RGB / HSV / HSI，通道 0..255</td><td>HALCON <code>trans_from_rgb</code></td><td class="ok">一致</td></tr>
+<tr><td>区间</td><td>三通道闭区间</td><td>逐通道 <code>Threshold</code> 后交集</td><td class="ok">一致</td></tr>
+<tr><td>反色</td><td>区间外</td><td>对输入域取补集</td><td class="ok">一致</td></tr>
+<tr><td>面积筛选</td><td>AreaLimitEnable + 上下限</td><td>连通域 <code>SelectShape(area)</code> 后合并</td><td class="ok">一致</td></tr>
+<tr><td>输出</td><td>抽取图 + 面积 + ROI</td><td>降域图像、行程面积、外接矩形</td><td class="ok">一致</td></tr>
+</table>
+
+<h2>未纳入代码层判定的项</h2>
+<div class="card">
+<p>1. 原厂 native 模块无法反编译出 C# 源码；上述结论基于参数/结果声明与平台语义。</p>
+<p>2. 数值精度、舍入、直方图对比度公式和位置修正变换属于工程验证/黄金对照范围。</p>
+<p>3. 扇环、基准点、运行点的结果叠加几何尚未由执行会话输出。</p>
+</div>
+</body></html>

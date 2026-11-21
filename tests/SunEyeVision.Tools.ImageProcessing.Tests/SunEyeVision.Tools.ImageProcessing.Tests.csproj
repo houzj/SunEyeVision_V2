@@ -27,16 +27,13 @@
     <ProjectReference Include="../../src/Application/SunEyeVision.Application.csproj" />
     <ProjectReference Include="../../src/Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" />
     <!-- 工具插件真实部署在 Release 宿主根（封包载荷），测试运行时从封包解析，不 copy-local。 -->
-    <ProjectReference Include="../../tools/SunEyeVision.FrameMean/Runtime/SunEyeVision.FrameMean.Runtime.csproj">
+    <ProjectReference Include="../../tools/SunEyeVision.FrameMean/SunEyeVision.Tool.FrameMean.csproj">
       <Private>false</Private>
     </ProjectReference>
-    <ProjectReference Include="../../tools/SunEyeVision.ColorExtract/Runtime/SunEyeVision.ColorExtract.Runtime.csproj">
+    <ProjectReference Include="../../tools/SunEyeVision.ColorExtract/SunEyeVision.Tool.ColorExtract.csproj">
       <Private>false</Private>
     </ProjectReference>
-    <ProjectReference Include="../../tools/SunEyeVision.DivideImage/Runtime/SunEyeVision.DivideImage.Runtime.csproj">
-      <Private>false</Private>
-    </ProjectReference>
-    <ProjectReference Include="../../tools/SunEyeVision.DivideImage/Wpf/SunEyeVision.DivideImage.Wpf.csproj">
+    <ProjectReference Include="../../tools/SunEyeVision.DivideImage/SunEyeVision.Tool.DivideImage.csproj">
       <Private>false</Private>
     </ProjectReference>
     <ProjectReference Include="../../src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj">
@@ -52,3 +49,4 @@
     </ItemGroup>
   </Target>
 </Project>
+

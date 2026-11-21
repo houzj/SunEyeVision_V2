@@ -10,11 +10,11 @@ public sealed class ContourMatchDisplayContractTests
 {
     /// <summary>
     /// 原件结果显示项的显示名（ui-preview.json 的 ImageViewConfig）。
-    /// 「BoundingBox」与「MatchResults」在原件画同一组匹配框线，本框架只有一个匹配框槽位，合并为一项。
+    /// 原厂 result-tab.png 图像显示项：检测区域(ROI)/匹配结果/匹配点/匹配轮廓点；另本方保留的文本显示。
     /// </summary>
     private static readonly string[] OriginalDisplayItems =
     {
-        "匹配结果", "匹配位置", "传感器区域", "匹配轮廓点", "基准点", "运行点", "文本", "盲区"
+        "检测区域", "匹配结果", "匹配点", "匹配轮廓点", "文本", "盲区"
     };
 
     [Fact]

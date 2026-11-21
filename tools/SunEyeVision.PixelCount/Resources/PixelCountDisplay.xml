@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Source: IMVSPixelCountModuVADisplay.xml -->
+<PixelCountDisplay originalModule="IMVSPixelCountModuVA">
+  <Table id="rows" />
+  <Overlay id="roi" originalId="ROI" />
+  <Overlay id="mask" originalId="OutputMask" />
+  <Text id="judgment" originalId="ResultText" />
+</PixelCountDisplay>

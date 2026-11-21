@@ -49,6 +49,20 @@ public sealed class DeclaredInputFieldsView : NativeHost, INativeInputCompositio
     public string InvalidInputFieldIds=>string.Join(",",_fields.Where(field=>IsActive(field)&&field.HasInvalidText).Select(field=>field.FieldId));
     public bool HasPendingEdits=>_fields.Any(field=>IsActive(field)&&field.HasPendingEdits);
     public event Action? Changed;
+    public void SetFieldRowsVisibility(IEnumerable<string> fieldIds,bool visible)
+    {
+        ObjectDisposedException.ThrowIf(_disposed,this);
+        var ids=fieldIds.Distinct(StringComparer.Ordinal).ToArray();
+        if(ids.Any(id=>!_fieldRows.ContainsKey(id)&&!_movedFields.ContainsKey(id)))
+            throw new ArgumentException("显隐切换引用未知输入字段。",nameof(fieldIds));
+        foreach(var id in ids)
+        {
+            if(!_fieldRows.TryGetValue(id,out var row))continue;
+            row.View!.Visibility=visible?Visibility.Visible:Visibility.Collapsed;
+            if(!visible)_fields.Single(field=>field.FieldId==id).RetireInteractions();
+        }
+        SetRows(_page.Rows);
+    }
     public IReadOnlyList<NumericModelReadResult> ReadNumericModels(NumericModelReadScope scope,string? fieldId,bool pageKnown,bool currentPage,Func<bool> current,
         IReadOnlyDictionary<string,ConstantSetting?>? currentValues=null)
     {

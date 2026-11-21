@@ -71,6 +71,41 @@ public sealed class ContourMatchExecutionTests
         return pixels;
     }
 
+    private static RecordValue PositiveSample(double x, double y, double width, double height)
+    {
+        var shape = new RecordValue(RoiDocumentValue.ShapeType, new Dictionary<string, object?>
+        {
+            ["kind"] = "rectangle",
+            ["center"] = RoiDocumentValue.Point(x, y),
+            ["width"] = width, ["height"] = height, ["angle-degrees"] = 0d
+        });
+        return RoiDocumentValue.Item(Guid.NewGuid(), "正样本", shape);
+    }
+
+    [Fact]
+    public void Training_rois_positive_sample_builds_a_template()
+    {
+        using var owner = new FrozenOutputResources();
+        var document = RoiDocumentValue.Root(
+            RoiDocumentValue.Group(RoiDocumentValue.Explicit, new[] { PositiveSample(32, 23, 24, 6) }),
+            RoiDocumentValue.Group(RoiDocumentValue.None, Array.Empty<RecordValue>()));
+        var settings = new ContourMatchSettings { TrainingRois = document };
+        var payload = CreateTemplate(owner, Mark(Size, 20, 20), settings);
+        var template = ContourMatchTemplate.Decode(payload);
+        Assert.True(template.PointCount > 0);
+    }
+
+    [Fact]
+    public void Training_rois_without_positive_sample_fail_fast()
+    {
+        using var owner = new FrozenOutputResources();
+        var document = RoiDocumentValue.Empty;
+        var settings = new ContourMatchSettings { TrainingRois = document };
+        var image = owner.CreateGray8(Size, Size, Mark(Size, 20, 20));
+        // 无正样本且无 ROI 时训练必须明确报错，不能退化成全图模板。
+        Assert.ThrowsAny<Exception>(() => ContourMatchTemplateBuilder.Create(image, null, settings));
+    }
+
     [Fact]
     public void Template_payload_round_trips_and_describes_the_contour()
     {
@@ -117,11 +152,11 @@ public sealed class ContourMatchExecutionTests
         Assert.True(row.Contains("region"));
         Assert.True(row.Contains("outline"));
         Assert.True(row.Get<bool>("judgment-passed"));
-        Assert.Null(row.Get<object?>("scale"));
+        Assert.InRange(row.Get<double>("scale"), 0.5, 2.0);
         Assert.Equal(1L, values[ContourMatchSchema.Count]);
-        Assert.Null(values[ContourMatchSchema.Scales]);
+        Assert.NotNull(values[ContourMatchSchema.Scales]);
         Assert.NotNull(values[ContourMatchSchema.OutlinePoints]);
-        Assert.Contains(nameof(ContourMatchResultProjection.Scales), output.Projection.Unavailable);
+        Assert.DoesNotContain(nameof(ContourMatchResultProjection.Scales), output.Projection.Unavailable);
 
         Assert.True(output.ResultGeometry.Passed);
         Assert.Contains(output.ResultGeometry.Groups, group => group.Role == ResultGeometryRole.Inspection);
@@ -215,21 +250,32 @@ public sealed class ContourMatchExecutionTests
     [Fact]
     public void Unsupported_settings_are_rejected_explicitly_instead_of_being_ignored()
     {
-        Assert.Contains(new ContourMatchSettings { Polarity = 0 }.Validate(), item => item.Code == "CONTOURMATCH_POLARITY_NOT_READY");
-        Assert.Contains(new ContourMatchSettings { ScaleStart = 0.8, ScaleEnd = 1.2 }.Validate(), item => item.Code == "CONTOURMATCH_SCALE_NOT_READY");
-        Assert.Contains(new ContourMatchSettings { ScaleXStart = 1.1 }.Validate(), item => item.Code == "CONTOURMATCH_SCALE_NOT_READY");
-        Assert.Contains(new ContourMatchSettings { ScaleLimitEnabled = true }.Validate(), item => item.Code == "CONTOURMATCH_SCALE_LIMIT_NOT_READY");
-        Assert.Contains(new ContourMatchSettings { TimeOut = 100 }.Validate(), item => item.Code == "CONTOURMATCH_TIMEOUT_NOT_READY");
-        Assert.Contains(new ContourMatchSettings { MatchThresholdMode = 2 }.Validate(), item => item.Code == "CONTOURMATCH_MATCH_THRESHOLD_NOT_READY");
-        Assert.Contains(new ContourMatchSettings { SpotterEnabled = true }.Validate(), item => item.Code == "CONTOURMATCH_SPOTTER_NOT_READY");
-        Assert.Contains(new ContourMatchSettings { MatchExtentRate = 10 }.Validate(), item => item.Code == "CONTOURMATCH_MATCH_EXTENT_NOT_READY");
-        Assert.Contains(new ContourMatchSettings { OutlinePointsEnabled = true }.Validate(), item => item.Code == "CONTOURMATCH_OUTLINE_POINTS_NOT_READY");
-        Assert.Contains(new ContourMatchSettings { UseMatchAllMode = true }.Validate(), item => item.Code == "CONTOURMATCH_MATCH_ALL_MODE_NOT_READY");
-        Assert.Contains(new ContourMatchSettings { RangeScaleType = 1 }.Validate(), item => item.Code == "CONTOURMATCH_RANGE_SCALE_TYPE_NOT_READY");
-        Assert.Contains(new ContourMatchSettings { MultiModelMaxOverlap = 30 }.Validate(), item => item.Code == "CONTOURMATCH_MULTI_MODEL_NOT_READY");
-        Assert.Contains(new ContourMatchSettings { SkewXStart = 5 }.Validate(), item => item.Code == "CONTOURMATCH_SKEW_NOT_READY");
-        Assert.Contains(new ContourMatchSettings { MaskModel = ContourMatchMaskModel.OuterOutline }.Validate(), item => item.Code == "CONTOURMATCH_MASK_MODEL_NOT_READY");
-        Assert.Contains(new ContourMatchSettings { ChainMode = ContourMatchChainMode.Manual }.Validate(), item => item.Code == "CONTOURMATCH_CHAIN_MODE_NOT_READY");
+        // 极性(0x0303)、等比尺度(0x0307/0308)、尺度判断已按静态源码逻辑对照实现，不再拒绝。
+        Assert.Empty(new ContourMatchSettings { Polarity = 0 }.Validate());
+        Assert.Empty(new ContourMatchSettings { ScaleStart = 0.8, ScaleEnd = 1.2 }.Validate());
+        Assert.Empty(new ContourMatchSettings { ScaleLimitEnabled = true }.Validate());
+        Assert.Empty(new ContourMatchSettings { TimeOut = 100 }.Validate()); // 0x030A 超时已实现
+        // 未取证能力拒绝属于执行边界：编辑期 Validate 放行（原厂参数页可切换这些开关），
+        // ValidateCapability 显式拒绝（rule-015 不静默执行）。
+        var capabilityCases = new (ContourMatchSettings Settings, string Code)[]
+        {
+            (new() { ScaleXStart = 1.1 }, "CONTOURMATCH_SCALE_XY_NOT_READY"),
+            (new() { MatchThresholdMode = 2 }, "CONTOURMATCH_MATCH_THRESHOLD_NOT_READY"),
+            (new() { SpotterEnabled = true }, "CONTOURMATCH_SPOTTER_NOT_READY"),
+            (new() { MatchExtentRate = 10 }, "CONTOURMATCH_MATCH_EXTENT_NOT_READY"),
+            (new() { OutlinePointsEnabled = true }, "CONTOURMATCH_OUTLINE_POINTS_NOT_READY"),
+            (new() { UseMatchAllMode = true }, "CONTOURMATCH_MATCH_ALL_MODE_NOT_READY"),
+            (new() { RangeScaleType = 1 }, "CONTOURMATCH_RANGE_SCALE_TYPE_NOT_READY"),
+            (new() { MultiModelMaxOverlap = 30 }, "CONTOURMATCH_MULTI_MODEL_NOT_READY"),
+            (new() { SkewXStart = 5 }, "CONTOURMATCH_SKEW_NOT_READY"),
+            (new() { MaskModel = ContourMatchMaskModel.OuterOutline }, "CONTOURMATCH_MASK_MODEL_NOT_READY"),
+            (new() { ChainMode = ContourMatchChainMode.Manual }, "CONTOURMATCH_CHAIN_MODE_NOT_READY")
+        };
+        foreach (var (settings, code) in capabilityCases)
+        {
+            Assert.Empty(settings.Validate()); // 编辑期不拒绝，开关可正常切换。
+            Assert.Contains(settings.ValidateCapability(), item => item.Code == code);
+        }
         var inverted = new ContourMatchSettings
         {
             PyramidMode = ContourMatchPyramidMode.Manual,
@@ -238,6 +284,7 @@ public sealed class ContourMatchExecutionTests
         }.Validate();
         Assert.Contains(inverted, item => item.Message.Contains("特征尺度", StringComparison.Ordinal));
         Assert.Empty(new ContourMatchSettings().Validate());
+        Assert.Empty(new ContourMatchSettings().ValidateCapability());
     }
 
     [Fact]

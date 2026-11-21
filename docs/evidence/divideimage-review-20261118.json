@@ -1,7 +1,7 @@
 {
   "tool": "DivideImage",
   "phase": "single-tool-functional-audit",
-  "status": "evidence-driven-catalog-fix-and-functional-verified",
+  "status": "evidence-driven-input-schema-expanded-and-functional-verified",
   "vm_evidence": {
     "sources": [
       "docs/07-工具逆向/decompiled/Managed/DivideImage/IMVSDivideImageModuCs/DivideImageParam.cs",
@@ -22,7 +22,7 @@
       "tools/SunEyeVision.DivideImage/Runtime/DivideImageTiling.cs"
     ],
     "confirmed": [
-      "当前产品已有划片参数和运行算法，但 ROI 管理、原厂控件资源和边界交互的同源映射仍未完成",
+      "当前产品已有划片参数和运行算法，已补齐原厂 InputROI 对应的可选 Region 输入端口；ROI 几何消费和边界交互仍待同版本运行证据",
       "工具目录 NodeDisplayType 必须为 IMAGE；原实现错误声明为 DEFAULT，已依据原厂 parameters.json Style=IMAGE 与契约测试修正"
     ]
   },
@@ -60,6 +60,7 @@
   },
   "pending": [
     "采集原厂 DivideImage 参数页",
+    "用 Agent Desktop 验证 InputROI 输入行和保存重开",
     "验证行列、ROI、边界重叠、保存重开",
     "补充产品输入控件稳定编辑回执"
   ],

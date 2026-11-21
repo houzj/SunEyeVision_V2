@@ -164,10 +164,13 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
         if(nextInput is not null&&inputFactory is not null)throw new ArgumentException("输入内容不能同时声明实例和按页工厂。");
         var additions=draft is null?Array.Empty<KeyValuePair<string,FrameworkElement>>():(options.AdditionalPageContents?.ToArray()??[]);
         var anchored=draft is null?Array.Empty<AnchoredSettingsContent>():(options.AdditionalAnchoredContents?.ToArray()??[]);
+        var pageContents=draft is null?Array.Empty<KeyValuePair<string,FrameworkElement>>():(options.PageContents?.ToArray()??[]);
         if(anchored.Any(entry=>entry is null||string.IsNullOrWhiteSpace(entry.FieldId)||entry.Content is null))
             throw new ArgumentException("附加内容必须有有效锚点和视图实例。");
-        var owned=additions.Select(entry=>entry.Value).Concat(anchored.Select(entry=>entry.Content)).ToArray();
+        var owned=additions.Select(entry=>entry.Value).Concat(anchored.Select(entry=>entry.Content))
+            .Concat(pageContents.Select(entry=>entry.Value)).ToArray();
         if(additions.Any(entry=>string.IsNullOrWhiteSpace(entry.Key)||entry.Value is null)
+            ||pageContents.Any(entry=>string.IsNullOrWhiteSpace(entry.Key)||entry.Value is null)
             ||owned.Distinct(ReferenceEqualityComparer.Instance).Count()!=owned.Length
             ||owned.Any(entry=>ReferenceEquals(entry,nextInput)||ReferenceEquals(entry,options.AdditionalAfterContent)))
             throw new ArgumentException("附加内容必须有有效锚点和唯一视图实例。");
@@ -188,7 +191,9 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
             ?schema.Presentation.Fields.FirstOrDefault(field=>field.FieldId==inputAnchor) is {} anchorField?anchorField.Layout?.Page??anchorField.Group:null
             :options.InputSection is {} inputSection
                 ?schema.Presentation.Fields.FirstOrDefault(field=>field.Group==inputSection) is {} sectionField?sectionField.Layout?.Page??sectionField.Group
-                    :schema.Presentation.Fields.Any(field=>StringComparer.Ordinal.Equals(field.Layout?.Page??field.Group,inputSection))?inputSection:null
+                    :schema.Presentation.Fields.Any(field=>StringComparer.Ordinal.Equals(field.Layout?.Page??field.Group,inputSection))
+                        || options.PageOnlyPages?.Contains(inputSection,StringComparer.Ordinal)==true
+                        ?inputSection:null
                 :schema.Presentation.Fields.FirstOrDefault()?.Layout?.Page;
         if(options.CompositionMode==InputCompositionMode.FlatNative&&options.InputPlacements is { Count: > 0 } placements)
         {
@@ -253,7 +258,9 @@ public sealed class DeclaredSettingsView : ContentControl,IToolSettingsView
                 }
                 var pageInput=StringComparer.Ordinal.Equals(page,inputPage)?createdInput:null;
                 options.PageBuilt?.Invoke(page,built,pageInput);
-            },SelectedPageIndex,eagerlyComposePages:options.EagerlyComposePages,cameraSources:options.CameraSources);
+            },SelectedPageIndex,eagerlyComposePages:options.EagerlyComposePages,cameraSources:options.CameraSources,
+            pageOnlyPages:options.PageOnlyPages,
+            pageContents:pageContents.Length==0?null:pageContents.ToDictionary(entry=>entry.Key,entry=>entry.Value,StringComparer.Ordinal));
 
             if(!Current()){candidate.Dispose();return;}
             if(nextInput is not null)

@@ -10,7 +10,7 @@ namespace SunEyeVision.Persistence;
 
 public static class DeclaredFieldJson
 {
-    public static IReadOnlyDictionary<string,ParameterSetting> Read(FrozenToolDeclarations definition,JsonElement fields,bool currentValues=false)
+    public static IReadOnlyDictionary<string,ParameterSetting> Read(FrozenToolDeclarations definition,JsonElement fields,bool currentValues=false,bool ignoreUnknown=false)
     {
         ArgumentNullException.ThrowIfNull(definition);
         if(fields.ValueKind != JsonValueKind.Object) throw new JsonException("Runtime fields must be an object.");
@@ -22,7 +22,11 @@ public static class DeclaredFieldJson
         foreach(var property in fields.EnumerateObject())
         {
             if(!ports.TryGetValue(property.Name,out var port))
+            {
+                // 动态子项：旧格式或尚未展开的端点按忽略处理，等待展开后重新解析。
+                if(ignoreUnknown) continue;
                 throw new JsonException($"Unknown Runtime field: {property.Name} (tool={definition.ToolId}; currentValues={currentValues}; known fields={string.Join(",",ports.Keys)})");
+            }
             var behavior=behaviors.GetValueOrDefault(property.Name,ParameterReferenceBehavior.StrictExactlyOne);
             var item=property.Value;
             if(item.ValueKind!=JsonValueKind.Object||!item.TryGetProperty("Kind",out var kind))throw new JsonException("Runtime setting requires Kind.");

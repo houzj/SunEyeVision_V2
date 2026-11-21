@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Source: IMVSPixelCountModuVA.xml / IMVSPixelCountModuVAAlgorithm.xml / IMVSPixelCountModuVAAlgorithmTab.xml -->
+<PixelCountParameters schemaVersion="1" workflowImageInputId="input.image">
+  <Inputs>
+    <Input id="input.image" label="输入源" page="基本参数" section="图像输入" />
+    <Input id="input.roi" label="ROI区域" page="基本参数" section="ROI区域" />
+    <Input id="input.mask" label="输入掩膜" page="基本参数" section="ROI区域" />
+  </Inputs>
+  <Group page="基本参数" section="ROI区域" vmCategory="Tab_ROI Area">
+    <Parameter id="RoiAreaType" type="Integer" default="0" defaultPresence="declared" label="ROI区域类型" minimum="0" maximum="1" decimals="0" increment="1" fieldId="roi.area-type" allowReference="false" />
+    <Parameter id="OutputMaskEnabled" type="Boolean" default="false" defaultPresence="declared" label="输出掩膜" fieldId="roi.output-mask" allowReference="false" />
+    <Parameter id="PositionCorrectionEnabled" type="Boolean" default="false" defaultPresence="declared" label="位置修正" fieldId="roi.position-correction" allowReference="false" />
+    <RoiGroup modeField="input.roi.inheritance-mode" localMode="Local" inheritedModes="Rectangle,Annulus"
+              rectangleSource="input.roi.rectangle" annulusSource="input.roi.annulus"
+              areaTypeField="input.roi.area-type" areaTypeLabel="ROI区域类型"
+              maskImageField="input.roi.mask-image" maskImageLabel="输入掩膜"
+              outputMaskField="input.roi.output-mask" outputMaskLabel="输出掩膜"
+              maskSourceField="input.roi.mask-source" maskSourceLabel="屏蔽区"
+              maskInheritedField="input.roi.mask-inherited">
+      <Choice value="0" label="图形类型" />
+      <Choice value="1" label="图像类型" />
+      <Row kind="rectangle" field="input.roi.rectangle.center-x" label="ROI中心X" />
+      <Row kind="rectangle" field="input.roi.rectangle.center-y" label="ROI中心Y" />
+      <Row kind="rectangle" field="input.roi.rectangle.width" label="ROI宽度" />
+      <Row kind="rectangle" field="input.roi.rectangle.height" label="ROI高度" />
+      <Row kind="rectangle" field="input.roi.rectangle.angle-degrees" label="ROI角度" />
+      <Row kind="annulus" field="input.roi.annulus.center-x" label="圆中心X" />
+      <Row kind="annulus" field="input.roi.annulus.center-y" label="圆中心Y" />
+      <Row kind="annulus" field="input.roi.annulus.inner-radius" label="内径" />
+      <Row kind="annulus" field="input.roi.annulus.outer-radius" label="外径" />
+      <Row kind="annulus" field="input.roi.annulus.start-degrees" label="起始角" />
+      <Row kind="annulus" field="input.roi.annulus.sweep-degrees" label="角度范围" />
+    </RoiGroup>
+  </Group>
+  <Group page="运行参数" section="阈值范围" vmCategory="Tab_Run Params">
+    <Parameter id="RangeCount" type="Integer" default="1" defaultPresence="declared" label="区间数量" minimum="1" maximum="32" decimals="0" increment="1" fieldId="range.count" allowReference="false" />
+  </Group>
+  <Group page="结果显示" section="结果判定" vmCategory="ResultShow">
+    <Parameter id="CountLimitEnabled" type="Boolean" default="false" defaultPresence="declared" label="数量判断" fieldId="limit.count.enabled" allowReference="false" booleanTips="已启用|未启用" />
+    <Parameter id="CountLimitLow" type="Integer" default="0" defaultPresence="declared" label="数量范围下限" minimum="0" maximum="999999999" decimals="0" increment="1" fieldId="limit.count.low" allowReference="false" visibleWhen="CountLimitEnabled" visibleValue="true" pairWith="CountLimitHigh" pairMinimum="0" pairMaximum="999999999" pairLabel="数量范围" />
+    <Parameter id="CountLimitHigh" type="Integer" default="999999999" defaultPresence="declared" label="数量范围上限" minimum="0" maximum="999999999" decimals="0" increment="1" fieldId="limit.count.high" allowReference="false" visibleWhen="CountLimitEnabled" visibleValue="true" />
+    <Parameter id="RatioLimitEnabled" type="Boolean" default="false" defaultPresence="declared" label="比率判断" fieldId="limit.ratio.enabled" allowReference="false" booleanTips="已启用|未启用" />
+    <Parameter id="RatioLimitLow" type="Number" default="0" defaultPresence="declared" label="比率范围下限" minimum="0" maximum="1" decimals="2" increment="0.01" fieldId="limit.ratio.low" allowReference="false" visibleWhen="RatioLimitEnabled" visibleValue="true" pairWith="RatioLimitHigh" pairMinimum="0" pairMaximum="1" pairLabel="比率范围" />
+    <Parameter id="RatioLimitHigh" type="Number" default="1" defaultPresence="declared" label="比率范围上限" minimum="0" maximum="1" decimals="2" increment="0.01" fieldId="limit.ratio.high" allowReference="false" visibleWhen="RatioLimitEnabled" visibleValue="true" />
+  </Group>
+</PixelCountParameters>
+

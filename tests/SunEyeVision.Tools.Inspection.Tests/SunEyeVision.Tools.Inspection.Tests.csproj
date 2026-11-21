@@ -25,22 +25,16 @@
   <ItemGroup>
     <ProjectReference Include="../../src/Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" />
     <!-- 工具插件真实部署在 plugins/<Tool>/，测试运行时从正式 Release 目录加载，不 copy-local。 -->
-    <ProjectReference Include="../../tools/SunEyeVision.BlobLabels/Runtime/SunEyeVision.BlobLabels.Runtime.csproj">
+    <ProjectReference Include="../../tools/SunEyeVision.BlobLabels/SunEyeVision.Tool.BlobLabels.csproj">
       <Private>false</Private>
     </ProjectReference>
-    <ProjectReference Include="../../tools/SunEyeVision.MarkFind/Runtime/SunEyeVision.MarkFind.Runtime.csproj">
+    <ProjectReference Include="../../tools/SunEyeVision.MarkFind/SunEyeVision.Tool.MarkFind.csproj">
       <Private>false</Private>
     </ProjectReference>
-    <ProjectReference Include="../../tools/SunEyeVision.ContourMatch/Runtime/SunEyeVision.ContourMatch.Runtime.csproj">
+    <ProjectReference Include="../../tools/SunEyeVision.ContourMatch/SunEyeVision.Tool.ContourMatch.csproj">
       <Private>false</Private>
     </ProjectReference>
-    <ProjectReference Include="../../tools/SunEyeVision.ContourMatch/Wpf/SunEyeVision.ContourMatch.Wpf.csproj">
-      <Private>false</Private>
-    </ProjectReference>
-    <ProjectReference Include="../../tools/SunEyeVision.GrayMatch/Runtime/SunEyeVision.GrayMatch.Runtime.csproj">
-      <Private>false</Private>
-    </ProjectReference>
-    <ProjectReference Include="../../tools/SunEyeVision.GrayMatch/Wpf/SunEyeVision.GrayMatch.Wpf.csproj">
+    <ProjectReference Include="../../tools/SunEyeVision.GrayMatch/SunEyeVision.Tool.GrayMatch.csproj">
       <Private>false</Private>
     </ProjectReference>
   </ItemGroup>

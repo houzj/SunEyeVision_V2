@@ -20,7 +20,11 @@ public sealed class DivideImageDeclarationTests
         Assert.Equal("拆分组合", tool.Catalog.Category);
         Assert.Equal("IMAGE", tool.Catalog.NodeDisplayType);
         Assert.False(string.IsNullOrWhiteSpace(tool.Catalog.Description));
-        var component = Assert.Single(typeof(DivideImageTool).Assembly.GetCustomAttributes<ToolComponentAttribute>());
+        // 单项目程序集同时承载运行时和编辑器入口，按角色选取运行时声明。
+        var component = Assert.Single(
+            typeof(DivideImageTool).Assembly
+                .GetCustomAttributes<ToolComponentAttribute>()
+                .Where(attribute => attribute.Metadata.Role == ToolComponentRole.Runtime));
         Assert.Equal("SunEyeVision.Tool.DivideImage.Runtime", component.Metadata.ComponentId);
         Assert.Equal(tool.ToolId, component.Metadata.ToolId);
         Assert.Equal(ToolComponentRole.Runtime, component.Metadata.Role);
@@ -31,17 +35,20 @@ public sealed class DivideImageDeclarationTests
     }
 
     [Fact]
-    public void Describe_declares_one_image_reference_input_and_all_original_output_ports()
+    public void Describe_declares_image_and_optional_roi_reference_inputs_and_all_original_output_ports()
     {
         var schema = DivideImageTool.Schema;
-        var input = Assert.Single(schema.Inputs);
-        Assert.Equal(DivideImageTool.ImageInput, input.Id);
+        var input = Assert.Single(schema.Inputs, port => port.Id == DivideImageTool.ImageInput);
         Assert.Equal(TypeRef.ResourceOf(ResourceKind.Image), input.Type);
         Assert.True(input.Required);
         Assert.Equal(FieldEditModes.Reference, input.EditModes);
+        var roi = Assert.Single(schema.Inputs, port => port.Id == DivideImageTool.RoiInput);
+        Assert.Equal(TypeRef.ResourceOf(ResourceKind.Region), roi.Type);
+        Assert.False(roi.Required);
+        Assert.True(roi.Nullable);
+        Assert.Equal(FieldEditModes.Reference, roi.EditModes);
         Assert.Equal(DivideImageTool.ImageInput, schema.WorkflowImageInputId);
         Assert.Equal(DivideImageOutput.Ports, schema.Outputs);
-        // 原件输入还有 InputROI(ROIBOX) 与位置修正(FIXTURE)；本批未实现，不得声明成无法消费的端口。
         var tool = new DivideImageTool();
         Assert.Equal(DivideImageOutput.Ports, tool.ResultSchema.Outputs);
     }
@@ -84,7 +91,8 @@ public sealed class DivideImageDeclarationTests
     [Fact]
     public void Settings_declare_the_four_original_algorithm_parameters_with_original_defaults()
     {
-        // 原厂证据：IMVSDivideImageModuAlgorithm.xml 只有 NumX=1、NumY=1、OverlaprateX=0、OverlaprateY=0。
+        // 原厂算法 XML 只有四个划片参数。位置修正开关属于基本参数页 AssistGroup，
+        // 因此在本方设置声明中与四个算法参数并列，但不改变原厂算法参数集合。
         var settings = new DivideImageSettings();
         Assert.Equal(1L, settings.Columns);
         Assert.Equal(1L, settings.Rows);
@@ -92,6 +100,7 @@ public sealed class DivideImageDeclarationTests
         Assert.Equal(0L, settings.OverlapY);
         Assert.Equal(new[]
         {
+            DivideImageFields.PositionCorrectionEnabled,
             DivideImageFields.Columns, DivideImageFields.Rows, DivideImageFields.OverlapX, DivideImageFields.OverlapY
         }, DivideImageFields.Schema.Inputs.Select(port => port.Id).ToArray());
         Assert.All(DivideImageFields.Schema.Inputs,
@@ -100,14 +109,18 @@ public sealed class DivideImageDeclarationTests
     }
 
     [Fact]
-    public void Presentation_keeps_the_original_basic_page_and_field_layout()
+    public void Presentation_keeps_the_original_run_page_and_field_layout()
     {
         var fields = DivideImageFields.Schema.Presentation!.Fields.ToDictionary(field => field.FieldId, StringComparer.Ordinal);
         Assert.Equal(new[]
         {
+            DivideImageFields.PositionCorrectionEnabled,
             DivideImageFields.Columns, DivideImageFields.Rows, DivideImageFields.OverlapX, DivideImageFields.OverlapY
         }, DivideImageFields.Schema.Presentation.Fields.Select(field => field.FieldId).ToArray());
-        Assert.All(fields.Values, field =>
+        Assert.Equal("基本参数", fields[DivideImageFields.PositionCorrectionEnabled].Layout!.Page);
+        Assert.Equal("ROI区域", fields[DivideImageFields.PositionCorrectionEnabled].Group);
+        Assert.False(fields[DivideImageFields.PositionCorrectionEnabled].Layout!.AllowReference);
+        Assert.All(fields.Values.Where(field => field.FieldId != DivideImageFields.PositionCorrectionEnabled), field =>
         {
             Assert.Equal(DivideImageFields.Page, field.Layout!.Page);
             Assert.Equal(DivideImageFields.Section, field.Group);
@@ -121,26 +134,39 @@ public sealed class DivideImageDeclarationTests
     }
 
     [Fact]
+    public void Input_presentation_keeps_the_original_basic_page_order_and_groups()
+    {
+        var presentation = DivideImageTool.Schema.Presentation!;
+        // InputROI 是公共 ROI 组合器的外部输入端口，由基本参数页组装，
+        // 不再作为第二个裸字段行重复呈现。
+        Assert.Equal(new[] { DivideImageTool.ImageInput },
+            presentation.Fields.Select(field => field.FieldId).ToArray());
+        Assert.Equal("基本参数", presentation.Fields[0].Layout!.Page);
+        Assert.Equal("图像输入", presentation.Fields[0].Layout.Section);
+        Assert.Equal(FieldEditorKind.Image, presentation.Fields[0].Editor);
+    }
+
+    [Fact]
     public void Single_axis_split_covers_the_extent_without_gaps()
     {
-        Assert.Equal(new[] { (0, 100) }, DivideImageTiling.Split(100, 1, 0, "X"));
-        Assert.Equal(new[] { (0, 50), (50, 50) }, DivideImageTiling.Split(100, 2, 0, "X"));
-        // 100 / 3 除不尽：向上取整到 34，余量分散到间距，末片贴边。
+        Assert.Equal(new[] { (0d, 100d) }, DivideImageTiling.Split(100, 1, 0, "X"));
+        Assert.Equal(new[] { (0d, 50d), (50d, 50d) }, DivideImageTiling.Split(100, 2, 0, "X"));
+        // 原生输出为浮点几何，不在工具层将 100/3 提前取整。
         var three = DivideImageTiling.Split(100, 3, 0, "X");
-        Assert.Equal(new[] { 34, 34, 34 }, three.Select(span => span.Size).ToArray());
-        Assert.Equal(0, three[0].Start);
-        Assert.Equal(66, three[2].Start);
+        Assert.All(three, span => Assert.Equal(100d / 3d, span.Size, 5));
+        Assert.Equal(0d, three[0].Start);
+        Assert.Equal(200d / 3d, three[2].Start, 5);
         AssertCovers(three, 100);
     }
 
     [Fact]
     public void Overlap_rate_enlarges_tiles_and_keeps_both_ends_anchored()
     {
-        // 2 片、50% 重叠：边长 = ⌈100 / 1.5⌉ = 67，间距 = 33 ⇒ 相邻重叠 34 像素 ≈ 分片边长的 50%。
+        // 原生 ProcessAlg：2 片、50% 重叠时尺寸 75，步进 25，中心分别为 37.5 和 62.5。
         var half = DivideImageTiling.Split(100, 2, 50, "X");
-        Assert.Equal(new[] { 67, 67 }, half.Select(span => span.Size).ToArray());
-        Assert.Equal(0, half[0].Start);
-        Assert.Equal(33, half[1].Start);
+        Assert.All(half, span => Assert.Equal(75d, span.Size, 5));
+        Assert.Equal(0d, half[0].Start);
+        Assert.Equal(25d, half[1].Start, 5);
         AssertCovers(half, 100);
         // 重叠率提高，分片边长单调不减。
         var sizes = new[] { 0, 20, 50, 80, 99 }
@@ -164,7 +190,7 @@ public sealed class DivideImageDeclarationTests
         var tiles = DivideImageTiling.Compute(8, 6, 2, 3, 0, 0);
         Assert.Equal(6, tiles.Count);
         Assert.Equal(Enumerable.Range(0, 6), tiles.Select(tile => tile.Index));
-        Assert.Equal(new[] { (0, 0), (4, 0), (0, 2), (4, 2), (0, 4), (4, 4) },
+        Assert.Equal(new[] { (0d, 0d), (4d, 0d), (0d, 2d), (4d, 2d), (0d, 4d), (4d, 4d) },
             tiles.Select(tile => (tile.Column, tile.Row)).ToArray());
         Assert.All(tiles, tile =>
         {
@@ -230,7 +256,7 @@ public sealed class DivideImageDeclarationTests
             .ToDictionary(pair => pair.Key, pair => (ParameterSetting)new ConstantSetting(pair.Value), StringComparer.Ordinal);
         var session = new ToolSettingsEditSession(tool, new FieldSettings(schema.Inputs, defaults));
         var captured = session.CaptureValidatedFields();
-        Assert.Equal(4, captured.Declarations.Count);
+        Assert.Equal(5, captured.Declarations.Count);
         session.ApplyFields(new Dictionary<string, ParameterSetting>
         {
             [DivideImageFields.Columns] = new ConstantSetting(4L),
@@ -277,17 +303,18 @@ public sealed class DivideImageDeclarationTests
             tool.ResultProjection.Columns.Select(column => column.Value!.PortId).ToArray());
     }
 
-    private static void AssertCovers(IReadOnlyList<(int Start, int Size)> spans, int extent)
+    private static void AssertCovers(IReadOnlyList<(double Start, double Size)> spans, int extent)
     {
-        Assert.Equal(0, spans[0].Start);
-        Assert.Equal(extent, spans[^1].Start + spans[^1].Size);
+        Assert.Equal(0d, spans[0].Start, 5);
+        Assert.Equal(extent, spans[^1].Start + spans[^1].Size, 5);
         for (var index = 1; index < spans.Count; index++)
             Assert.True(spans[index].Start <= spans[index - 1].Start + spans[index - 1].Size,
                 $"第 {index} 片与前一片之间出现空隙。");
         Assert.All(spans, span =>
         {
-            Assert.True(span.Size >= 1);
-            Assert.InRange(span.Start, 0, extent - span.Size);
+            Assert.True(span.Size > 0);
+            Assert.InRange(span.Start, 0d, extent);
+            Assert.True(span.Start + span.Size <= extent + 0.00001d);
         });
     }
 }

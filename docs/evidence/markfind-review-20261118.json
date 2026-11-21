@@ -20,9 +20,9 @@
   },
   "product_difference": {
     "sources": [
-      "tools/SunEyeVision.MarkFind/Wpf/Views/MarkFindTemplatePanel.cs",
-      "tools/SunEyeVision.MarkFind/Wpf/Views/MarkFindParameterEditor.xaml",
-      "tools/SunEyeVision.MarkFind/Runtime/MarkFindFields.cs"
+      "tools/SunEyeVision.MarkFind/Editor/Views/MarkFindTemplatePanel.cs",
+      "tools/SunEyeVision.MarkFind/Editor/Views/MarkFindParameterEditor.xaml",
+      "tools/SunEyeVision.MarkFind/Parameters/MarkFindFields.cs"
     ],
     "confirmed": [
       "当前产品模板面已按证据加入新建模型、编辑模型、清空模型、导出、导入和无模型预览状态",
@@ -46,7 +46,7 @@
     "exit_code": 0,
     "passed": 21,
     "failed": 0,
-    "payload_sha256": "B6411C46AF402665D9C4ABAE0395F077177683D302C0CE5ECEEDFD49270096FB",
+    "payload_sha256": "5CDC77BBD3004318EA47A8EDF00AE833BDD06F008C413D0BC42C61AC9594C5BE",
     "full_release_build": {
       "exit_code": 0,
       "errors": 0,
@@ -70,4 +70,5 @@
     "close": "script close-app delivered_verified"
   }
 }
+
 

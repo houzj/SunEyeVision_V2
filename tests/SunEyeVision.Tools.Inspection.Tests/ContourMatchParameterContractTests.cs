@@ -36,8 +36,13 @@ public sealed class ContourMatchParameterContractTests
         Assert.Equal(56, RunParameters.Length);
         Assert.Equal(9, TemplateParameters.Length);
         foreach (var name in RunParameters.Concat(TemplateParameters)) Assert.Contains(name, names);
-        Assert.Equal(RunParameters.Length + TemplateParameters.Length, ContourMatchFields.All.Count);
-        Assert.Equal(65, ContourMatchFields.Schema.Inputs.Count);
+        // TrainingRois 是本方为对齐原厂 SignList 训练样本新增的区域文档字段（非原厂标量参数），
+        // 因此声明总数 = 原厂 65 项 + 1 项区域文档。
+        Assert.Equal(RunParameters.Length + TemplateParameters.Length + 1, ContourMatchFields.All.Count);
+        Assert.Equal(66, ContourMatchFields.Schema.Inputs.Count);
+        Assert.Contains("TrainingRois", ContourMatchFields.All.Select(field => field.Name));
+        Assert.Equal(SunEyeVision.Plugin.Contracts.RoiDocumentValue.Declaration,
+            ContourMatchFields.Schema.Inputs.Single(port => port.Id == ContourMatchFields.TrainingRois).Type);
     }
 
     [Fact]

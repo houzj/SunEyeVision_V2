@@ -91,7 +91,7 @@ public sealed class DivideImageExecutionTests
         using var resources = new FrozenOutputResources();
         var image = resources.CreateGray8(8, 4, new byte[32]);
         await using var session = new DivideImageTool().CreateSession();
-        // X 方向 2 片、50% 重叠：边长 ⌈8/1.5⌉=6，间距 2 ⇒ 相邻重叠 4 像素。
+        // 原生 ProcessAlg：X 方向 2 片、50% 重叠，片宽 6，步进 2。
         var outcome = await ExecuteAsync(session,
             new DivideImageSettings { Columns = 2, OverlapX = 50 }, ImageInput(image), resources);
         Assert.True(outcome.Success, string.Join(";", outcome.Diagnostics.Select(item => item.Message)));
@@ -99,11 +99,11 @@ public sealed class DivideImageExecutionTests
         var rects = Assert.IsType<SequenceValue>(output.ToValues()[DivideImageOutput.Rects]);
         var first = ReadRect(Assert.IsType<RecordValue>(rects[0]));
         var second = ReadRect(Assert.IsType<RecordValue>(rects[1]));
-        Assert.Equal(6d, first.Width);
-        Assert.Equal(6d, second.Width);
-        Assert.Equal(3d, first.X);
-        Assert.Equal(5d, second.X);
-        Assert.Equal(4d, first.X + first.Width / 2 - (second.X - second.Width / 2));
+        Assert.Equal(6d, first.Width, 5);
+        Assert.Equal(6d, second.Width, 5);
+        Assert.Equal(3d, first.X, 5);
+        Assert.Equal(5d, second.X, 5);
+        Assert.Equal(4d, first.X + first.Width / 2 - (second.X - second.Width / 2), 5);
     }
 
     [Fact]
@@ -151,15 +151,15 @@ public sealed class DivideImageExecutionTests
         using var output = outcome.Output!;
         var rects = Assert.IsType<SequenceValue>(output.ToValues()[DivideImageOutput.Rects]);
         Assert.Equal(5, rects.Count);
-        // 分片数多于像素数时每片至少 1 像素，首列 0、末列贴住右边界。
+        // 原生输出保持浮点几何，首列为 0，末片仍覆盖到右边界。
         var first = ReadRect(Assert.IsType<RecordValue>(rects[0]));
         var last = ReadRect(Assert.IsType<RecordValue>(rects[^1]));
-        Assert.Equal(0d, first.X - first.Width / 2);
-        Assert.Equal(4d, last.X + last.Width / 2);
+        Assert.Equal(0d, first.X - first.Width / 2, 5);
+        Assert.Equal(4d, last.X + last.Width / 2, 5);
         Assert.All(Enumerable.Range(0, rects.Count), index =>
         {
             var box = ReadRect(Assert.IsType<RecordValue>(rects[index]));
-            Assert.True(box.Width >= 1d);
+            Assert.True(box.Width > 0d);
         });
     }
 

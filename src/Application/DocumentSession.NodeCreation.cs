@@ -31,7 +31,21 @@ public sealed partial class DocumentSession
                     foreach (var pair in display.CreateDisplaySettings().CopyValues()) defaults.Add(pair.Key, new ConstantSetting(pair.Value));
                 var declarations = definition.Describe().Inputs.Concat(settings.SettingsSchema.Inputs)
                     .Concat(ResultDisplayFields.Schema(definition).Inputs).ToArray();
-                var configuration = new ToolConfiguration(toolId, new FieldSettings(declarations, defaults));
+                var declaredFields = new FieldSettings(declarations, defaults);
+                if (definition is IToolDynamicSettings dynamicSettings)
+                {
+                    var expanded = dynamicSettings.ExpandSettings(settings.SettingsSchema, declaredFields);
+                    if (!string.Equals(expanded.Fingerprint, settings.SettingsSchema.Fingerprint, StringComparison.Ordinal))
+                    {
+                        declarations = definition.Describe().Inputs.Concat(expanded.Inputs)
+                            .Concat(ResultDisplayFields.Schema(definition).Inputs).ToArray();
+                        var dynamicDefaults = dynamicSettings.ExpandDefaults(expanded, declaredFields);
+                        var merged = new Dictionary<string, ParameterSetting>(defaults, StringComparer.Ordinal);
+                        foreach (var (id, value) in dynamicDefaults) merged.TryAdd(id, value);
+                        declaredFields = new FieldSettings(declarations, merged);
+                    }
+                }
+                var configuration = new ToolConfiguration(toolId, declaredFields);
                 var node = new NodeDefinition(Guid.NewGuid().ToString("N"), string.Empty, toolId, configuration);
                 _ = AdmitConfiguration(node, configuration);
                 ValidateScopeCore(scope);

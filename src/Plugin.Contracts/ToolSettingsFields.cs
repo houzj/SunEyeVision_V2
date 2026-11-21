@@ -15,6 +15,22 @@ public interface IToolKnownSettingsValidation
 {
     IReadOnlyList<Diagnostic> ValidateKnownSettings(FieldSettings settings);
 }
+
+/// <summary>
+/// Lets a tool contribute ports that depend on its current saved state (the original
+/// platform's <c>IDynamicChild</c>): the host expands the static settings schema once per
+/// configuration snapshot so editor rows, binding targets and execution materialization all
+/// agree on the same identities. Implementations must be deterministic and must not read
+/// anything beyond the supplied fields.
+/// </summary>
+public interface IToolDynamicSettings
+{
+    ToolSchema ExpandSettings(ToolSchema declared, FieldSettings current);
+    /// <summary>Values for ports introduced by <see cref="ExpandSettings"/> that the snapshot does
+    /// not carry yet (new child identities). Only called when the expanded structure grows.</summary>
+    IReadOnlyDictionary<string, ParameterSetting> ExpandDefaults(ToolSchema expanded, FieldSettings current);
+}
+
 /// <summary>Private, model-only editor state. Applying a rejected proposal must leave
 /// the current settings unchanged. Raw text and source selection remain view concerns.</summary>
 public interface IToolSettingsDraft

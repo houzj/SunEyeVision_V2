@@ -78,6 +78,11 @@ public partial class App : System.Windows.Application
     private int _startupWatchdogStopped;
     private static readonly TimeSpan StartupTimeout = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan StartupCancellationTimeout = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan StartupDispatcherGrace = TimeSpan.FromSeconds(3);
+    private static readonly string StartupTracePath = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "SunEyeVision", "Logs", "startup-trace.txt");
+    private string? _lastStartupStage;
 
     static App()
     {
@@ -87,6 +92,7 @@ public partial class App : System.Windows.Application
 
     protected override async void OnStartup(StartupEventArgs e)
     {
+        ResetStartupTrace();
         // First-run directory dialogs may temporarily be the only window; do not exit when they close.
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
         // 与 VM 原件一致：工作目录固定为程序目录，保证从快捷方式、文件关联或任意目录启动时相对路径可用。
@@ -258,6 +264,19 @@ public partial class App : System.Windows.Application
             await CancelStartupAsync();
             return;
         }
+        catch (Exception ex)
+        {
+            // 载荷哈希与磁盘程序不一致时，明确提示重新封存，而不是落到
+            // Dispatcher 未处理异常对话框里只显示堆栈。
+            LogStartupStage("Plugin.Load failed", ex.ToString());
+            _startupRejected = true;
+            ThemeMessageDialog.Show(
+                "模块加载失败：" + ex.Message +
+                "\n\n如果刚刚重新构建过程序，请重新封存 Release 载荷，或使用 scripts/verification/Invoke-ReleaseLaunch.ps1 启动。",
+                "启动失败", MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Error);
+            Shutdown(1);
+            return;
+        }
         if (await StopStartupIfRequestedAsync()) return;
         LogStartupStage("Plugin.Load task joined");
         LogStartupStage("Plugin.Load stages",
@@ -415,17 +434,66 @@ public partial class App : System.Windows.Application
     {
         try
         {
-            await Task.Delay(StartupTimeout, _startupWatchdogCancellation.Token);
+            await Task.Delay(StartupTimeout, _startupWatchdogCancellation.Token).ConfigureAwait(false);
             if (Volatile.Read(ref _startupWatchdogStopped) != 0 || _startupRejected || _startupActivationReady)
                 return;
             LogStartupStage("Startup timeout", $"timeoutMs={StartupTimeout.TotalMilliseconds:0}");
-            await Dispatcher.InvokeAsync(async () => await FailStartupTimeoutAsync());
+            // UI 线程被同步阶段堵住时，InvokeAsync 会一直排队：先探测 Dispatcher
+            // 是否还能处理消息；无响应则走硬中止，保证不会出现只能杀进程的卡死窗口。
+            var dispatcher = Dispatcher;
+            var ping = dispatcher.InvokeAsync(() => { }, DispatcherPriority.Send);
+            var completed = await Task.WhenAny(ping.Task, Task.Delay(StartupDispatcherGrace)).ConfigureAwait(false);
+            if (!ReferenceEquals(completed, ping.Task))
+            {
+                AbortHungStartup("启动超时且界面线程无响应");
+                return;
+            }
+            try { await ping.Task.ConfigureAwait(false); } catch { }
+            await dispatcher.InvokeAsync(async () => await FailStartupTimeoutAsync());
         }
         catch (OperationCanceledException) when (_startupWatchdogCancellation.IsCancellationRequested) { }
         catch (Exception error)
         {
             LogStartupStage("Startup watchdog failed", error.ToString());
         }
+    }
+
+    /// <summary>
+    /// UI 线程无响应或清理阶段无法退出时的最后一道保障：写独立轨迹、用独立 STA 线程
+    /// 显示失败原因，然后强制结束进程。不能依赖 Dispatcher，否则同样被堵死。
+    /// </summary>
+    private void AbortHungStartup(string reason)
+    {
+        var stage = _lastStartupStage ?? "unknown";
+        try
+        {
+            LogStartupStage("Startup hard abort", reason);
+            var directory = Path.GetDirectoryName(StartupTracePath);
+            if (!string.IsNullOrWhiteSpace(directory)) Directory.CreateDirectory(directory);
+            File.AppendAllText(StartupTracePath,
+                $"{DateTime.Now:O} [StartupTrace] HARD-ABORT reason={reason}; lastStage={stage}{Environment.NewLine}");
+        }
+        catch { }
+        var thread = new Thread(() =>
+        {
+            try
+            {
+                MessageBox.Show(
+                    $"启动已超过 {StartupTimeout.TotalSeconds:0} 秒且界面无响应，程序将强制退出。\n\n" +
+                    $"最后阶段：{stage}\n\n启动轨迹：{StartupTracePath}",
+                    "SunEyeVision 启动失败",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+            catch { }
+            Environment.Exit(1);
+        })
+        {
+            IsBackground = false,
+            Name = "SunEyeVision.StartupAbort"
+        };
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
     }
 
     private async Task FailStartupTimeoutAsync()
@@ -806,6 +874,7 @@ public partial class App : System.Windows.Application
     {
         var message = $"[StartupTrace] +{_startupStopwatch.ElapsedMilliseconds}ms {stage}" +
             (string.IsNullOrWhiteSpace(detail) ? string.Empty : $" | {detail}");
+        _lastStartupStage = string.IsNullOrWhiteSpace(detail) ? stage : $"{stage} | {detail}";
         try
         {
             VisionLogger.Instance.Log(
@@ -818,18 +887,33 @@ public partial class App : System.Windows.Application
             // 启动早期日志系统可能尚未完成初始化，埋点不能阻断应用启动。
         }
 
-        // 隔离启动在日志系统初始化前也必须保留时间线，否则最慢的准入/服务阶段
-        // 会被吞掉，只能看到后半段。正常用户启动不写该文件。
+        // 启动卡死时 UI 线程可能无法再写日志，因此无论是否隔离启动都同步落一份
+        // 独立时间线；硬超时中止时据此报告最后阶段。
         try
         {
             var isolatedRoot = StartupLaunchContext.Current.IsolatedRoot;
-            if (!string.IsNullOrWhiteSpace(isolatedRoot))
-                File.AppendAllText(Path.Combine(isolatedRoot, "startup-trace.txt"),
-                    $"{DateTime.Now:O} {message}{Environment.NewLine}");
+            var path = string.IsNullOrWhiteSpace(isolatedRoot)
+                ? StartupTracePath
+                : Path.Combine(isolatedRoot, "startup-trace.txt");
+            var directory = Path.GetDirectoryName(path);
+            if (!string.IsNullOrWhiteSpace(directory)) Directory.CreateDirectory(directory);
+            File.AppendAllText(path, $"{DateTime.Now:O} {message}{Environment.NewLine}");
         }
         catch
         {
             // 诊断文件失败不能改变启动语义。
+        }
+    }
+
+    private static void ResetStartupTrace()
+    {
+        try
+        {
+            if (File.Exists(StartupTracePath)) File.Delete(StartupTracePath);
+        }
+        catch
+        {
+            // 删除失败时保留旧文件，后续追加仍可定位本次启动。
         }
     }
 

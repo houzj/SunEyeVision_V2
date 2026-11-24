@@ -16,11 +16,18 @@
 
 | 项 | 结果 |
 |---|---|
-| 全量 Release 构建 | 0 错误，6008 个既有警告 |
-| ContourMatch 专项测试 | 43/43 通过 |
+| 全量 Release 构建 | 0 错误，6012 个既有警告 |
+| ContourMatch 专项测试 | 51/51 通过；ImageSource→ContourMatch 正式链 1/1 通过 |
 | 手工验收 | 8 项已由用户确认通过 |
 
-本批闭口范围为 ContourMatch 工具层和节点调试窗口内的模板/ROI/掩膜行为。多模板真实运行、跨节点生产链和运行后结果空间联动列入后续节点整链验收；橡皮擦源码形状矛盾不阻断本批。
+本批闭口范围已扩展为 ContourMatch 工具层、ImageSource→ContourMatch 正式执行与结果 publication 合同；多模板真实运行、跨节点下游人工操作和运行后结果空间人工联动仍列后续验收；橡皮擦源码形状矛盾不阻断本批。
+
+## 1.1 2026-11-25 节点联动代码增量
+
+- `ContourMatchSearchRois` 以 canonical `input.roi.inheritance-mode` 为优先，旧 `input.roi.search-source` 仅在 canonical 未持久化时回退；矩形/圆环来源和参数在执行前物化为平台 ROI 文档，参数模式不再错误要求本地文档。
+- `ContourMatchFixtureControl` 按原厂一个 `input.fixture` 端口合同聚合按信息、按点、按坐标三种来源，并按当前 Assist 模式裁剪执行快照；`ContourMatchSession` 统一消费聚合后的 Fixture。
+- `ContourMatchTool` 实现 `IToolManualReferenceSources`，声明 `output.roi`、`output.fixture`、`contourmatch.rows` 及合法成员路径，兼容下游引用由框架统一准入。
+- 自动回归：ContourMatch 相关测试 51/51；正式 ImageSource→ContourMatch 运行读取源图、完成匹配并发布 `status/count/rows` 1/1；用户仍需统一执行 Release 界面、断线重连、帧切换、真实下游节点和关闭链人工验收。
 
 ## 2. 本轮改动清单（按功能域）
 

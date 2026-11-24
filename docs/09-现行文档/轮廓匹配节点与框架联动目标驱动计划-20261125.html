@@ -11,9 +11,9 @@ pre{background:#17232d;color:#e7f3fa;padding:15px;border-radius:7px;overflow:aut
 </style></head><body>
 <h1>轮廓匹配节点与框架联动目标驱动计划</h1>
 <p class="small">日期：2026-11-25　范围：节点、连线、调试窗口、结果工作区、跨节点执行、保存重开和关闭释放。目标是按原厂完整链路闭口，不把单个工具窗口通过当作产品链通过。</p>
-<div class="lead"><b>当前事实：</b>ContourMatch 模板窗口 8 项人工验收已通过；工具层专项 43/43，全量 Release 0 错误、6001 个既有警告。ImageSource→ContourMatch 工作流已能执行完成，但节点间引用/结果联动尚未闭合。多模板真实运行、橡皮擦形状取证和用户统一人工验收不计入本批。</div>
+<div class="lead"><b>当前事实：</b>ContourMatch 模板窗口 8 项人工验收已通过；本批新增 ROI/Fixture/下游引用与正式工作流回归，ContourMatch 相关测试 51/51、ImageSource→ContourMatch 正式执行链 1/1 通过。最终全量 Release 构建 0 错误、6012 个既有警告。多模板真实运行、橡皮擦形状取证和用户统一人工验收不计入本批。</div>
 <div class="p0"><b>P0 当前缺陷：</b>正式运行后打开调试窗口、绘制 ROI、在调试窗口运行、关闭窗口，主界面 ViewBox 被清空。原厂链路要求打开编辑器保留正式 publication；关闭时停止/退订/退役私有结果，再恢复同一节点的正式结果、图像、表格和叠加。该现象优先判定为框架/节点宿主的 publication 生命周期问题，不能在 Blob 或 ContourMatch 内各做一套保留图像的补丁。已在 <code>MainWindowRuntimeEditing.cs</code> 增加窗口关闭后的正式 publication 恢复兜底，并加入 Blob 正式运行→ROI→私有运行→关闭回归；定向回归已通过，用户统一人工验收仍待进行。</div>
-<div class="p0"><b>P1 当前缺陷：</b>ImageSource→ContourMatch 工作流虽完成执行，ContourMatch 的输入引用、ROI/Fixture 依赖、输出结果到工作区及下游消费者联动仍表现为断链；必须先按公共端口/引用/快照/结果合同修复，再由用户统一验收。共享图合同已补“ImageSource→ContourMatch 自动图像引用”回归并通过 1/1；真实运行结果、ROI/Fixture 依赖和下游消费仍待继续代码闭口。</div>
+<div class="p0"><b>P1 代码状态：</b>已按原厂单组 ROI 与单一 FIXTURE 端口合同接通执行：canonical ROI 模式优先、旧 <code>search-source</code> 回退、矩形/圆环参数物化、本地/上游来源裁剪、位置修正按信息/按点/按坐标聚合，以及 ContourMatch 输出父端口和嵌套成员的手动引用声明。正式 ImageSource→ContourMatch 回归已确认结果 publication、状态和 rows 可读；用户统一 Release 验收仍待进行。若下游使用未在声明清单中的自定义路径，仍应按端口/成员合同拒绝。</div>
 
 <h2>一、原厂证据基线</h2>
 <table>
@@ -74,7 +74,7 @@ pre{background:#17232d;color:#e7f3fa;padding:15px;border-radius:7px;overflow:aut
 <tr><td>F0 证据冻结</td><td>所有行为先有原厂证据和本方入口</td><td>冻结上表；补 P0 复现的 publication、snapshot、lease、epoch、ViewBox 状态证据</td><td>证据等级、未确认项和消费者齐全</td></tr>
 <tr><td>F1 框架合同</td><td>所有节点共用一条身份/引用/执行/结果链</td><td>检查/补通用端口接纳、依赖图、执行快照、ResultStore、epoch/generation、迟到回调门禁；不加 ContourMatch 特判</td><td>ImageSource/Blob/Probe 公共回归通过</td></tr>
 <tr><td>F2 调试开关链</td><td>P0：关闭调试后恢复正式 ViewBox</td><td>按原厂顺序核对 <code>OpenFormalNodeEditor</code> → <code>CloseAndDrainAsync</code> → <code>CloseDebugAsync</code> → <code>DisposeAsync</code> → <code>RetireResultPublication</code> → <code>RefreshFormalPublishedResult</code>；已补窗口关闭后的正式 publication 恢复兜底和 Blob ROI 回归</td><td>定向代码回归已通过；正式运行→调试 ROI→私有运行→关闭后的用户 Release 验收仍待完成</td></tr>
-<tr><td>F3 跨节点代码</td><td>ImageSource→ContourMatch 及兼容下游不再断链</td><td>复用 <code>OutputReference</code>、<code>ConnectionBindingPolicy</code>、<code>ExecutionBindingInputResolver</code>、<code>WorkflowExecutionEngine</code>；补 Image/Region/Fixture/member-path 的真实链测试；修复 stale “ContourMatch 未准入”测试假设</td><td>端口/类型/引用、依赖顺序、资源借阅、重跑替换、断线失效、保存重开自动通过</td></tr>
+<tr><td>F3 跨节点代码</td><td>ImageSource→ContourMatch 及兼容下游不再断链</td><td>复用 <code>OutputReference</code>、<code>ConnectionBindingPolicy</code>、<code>ExecutionBindingInputResolver</code>、<code>WorkflowExecutionEngine</code>；ContourMatch 补 ROI 物化、Fixture 聚合、手动引用声明；新增正式工作流结果回归</td><td class="done">ImageSource→ContourMatch 端口/类型/引用、依赖顺序、ROI 执行、publication 与 rows 读取 1/1 通过；保存重开、断线失效和用户下游节点仍在 A02/A09 验收范围。</td></tr>
 <tr><td>F4 结果空间</td><td>表格、几何、文字和 ViewBox 同一 publication</td><td>复用 <code>MainWindowResultPublication</code>、<code>ResultWorkspacePresenter</code>、<code>ResultDisplayDescriptor</code>；ContourMatch 只给 rows/geometry/display descriptor</td><td>行高亮、换图、重跑、切节点清理行为一致</td></tr>
 <tr><td>F5 持久化/退出</td><td>方案切换和关闭不泄漏</td><td>保存节点/连线/字段/ROI/Fixture/display reference；复制重映射；删除/断线失效；停止、关闭、插件退役排空</td><td>无活动任务、窗口、回调、lease；重开后身份和引用一致</td></tr>
 <tr><td>F6 统一验收</td><td>用户一次性验收完整链</td><td>新 Release 先自动回归和构建，再集中人工执行 A01-A16</td><td>人工结果与代码自测、Release 状态分开记录</td></tr>
@@ -85,7 +85,7 @@ pre{background:#17232d;color:#e7f3fa;padding:15px;border-radius:7px;overflow:aut
 <li>在 <code>tests/SunEyeVision.UI.Tests/Session/EditorDebugSessionTests.cs</code> 固定 P0 回归：正式运行→打开调试→显示输入图→绘制 ROI→私有运行→关闭，断言正式 ViewBox、结果表、几何、文字仍在。</li>
 <li>定位并修复关闭顺序：正式快照在打开时保留；私有结果只在调试会话内保活；关闭时停止/退订/退役私有 publication，再恢复正式 publication。任何中间清理不得成为最终状态。</li>
 <li>为关闭重入、运行中关闭、迟到完成、节点删除/撤销、切节点/切方案增加公共回归；旧 identity 必须拒绝写入新 ViewBox。</li>
-<li>以公共引用和快照接入 ContourMatch 的 Image/ROI/Fixture；兼容下游只通过声明端口读取 <code>output.roi</code>、<code>output.fixture</code>、<code>contourmatch.rows</code>，不新增工具专属调度。</li>
+<li class="done">以公共引用和快照接入 ContourMatch 的 Image/ROI/Fixture；兼容下游只通过声明端口读取 <code>output.roi</code>、<code>output.fixture</code>、<code>contourmatch.rows</code>，不新增工具专属调度；ROI 参数物化、Fixture 三模式聚合和手动成员声明已完成，并有工具级及正式工作流回归。</li>
 <li>补保存重开和复制删除：稳定 NodeId/WorkflowId/PortId/MemberPath 保存；复制生成新身份；旧结果 lease 不复用。</li>
 <li>完成专项测试、UI 调试窗口测试、跨节点应用测试和全量 Release；最后再交用户人工验收。</li>
 </ol>
@@ -93,14 +93,14 @@ pre{background:#17232d;color:#e7f3fa;padding:15px;border-radius:7px;overflow:aut
 <table>
 <tr><th>验收编号</th><th>操作</th><th>通过标准</th><th>状态</th></tr>
 <tr><td>A01</td><td>创建 ImageSource、Blob、ContourMatch，切换节点</td><td>节点、画布、参数页、结果工作区 identity 一致</td><td class="todo">待代码/人工</td></tr>
-<tr><td>A02</td><td>ImageSource→ContourMatch 连线、断线、重连</td><td>候选、正式字段、依赖和失效原因一致</td><td class="todo">待代码</td></tr>
-<tr><td>A03</td><td>ROI/Fixture 引用、帧切换</td><td>类型/坐标/lease 正确，旧帧不能回写</td><td class="todo">待代码</td></tr>
+<tr><td>A02</td><td>ImageSource→ContourMatch 连线、断线、重连</td><td>候选、正式字段、依赖和失效原因一致</td><td class="todo">自动连线/执行已通过；断线重连待人工</td></tr>
+<tr><td>A03</td><td>ROI/Fixture 引用、帧切换</td><td>类型/坐标/lease 正确，旧帧不能回写</td><td class="todo">ROI/Fixture 代码回归已通过；帧切换待人工</td></tr>
 <tr><td>A04</td><td>正式运行后打开调试窗口</td><td>正式 ViewBox/表格/几何/文字保持</td><td class="todo">P0</td></tr>
 <tr><td>A05</td><td>调试绘制 ROI、私有运行</td><td>私有结果同一 publication，正式结果不被覆盖</td><td class="todo">待代码</td></tr>
 <tr><td>A06</td><td>关闭调试窗口（当前复现步骤）</td><td>ViewBox 不清空，正式结果恢复，私有资源释放</td><td class="todo">P0 人工</td></tr>
 <tr><td>A07</td><td>结果行选择、高亮和输出图切换</td><td>表格/几何/文字/图像不串、不清</td><td class="todo">待代码</td></tr>
 <tr><td>A08</td><td>重跑/连续/失败/跳过</td><td>结果原子替换，节点状态和 lease 正确</td><td class="todo">待代码</td></tr>
-<tr><td>A09</td><td>ContourMatch 输出到兼容下游</td><td>下游消费同轮 region/fixture/rows，端口严格匹配</td><td class="todo">代码先行</td></tr>
+<tr><td>A09</td><td>ContourMatch 输出到兼容下游</td><td>下游消费同轮 region/fixture/rows，端口严格匹配</td><td class="todo">手动引用声明与 publication 回归已通过；真实下游节点待人工</td></tr>
 <tr><td>A10</td><td>保存重开、复制、删除、撤销</td><td>身份/连线/参数/ROI/Fixture/display 恢复或失效可解释</td><td class="todo">待代码</td></tr>
 <tr><td>A11</td><td>切流程/切方案/关闭主程序</td><td>执行、窗口、结果、通讯和插件目录完整排空</td><td class="todo">待代码/人工</td></tr>
 </table>

@@ -209,6 +209,28 @@ public sealed class ContourMatchExecutionTests
     }
 
     [Fact]
+    public void Rectangle_parameter_roi_is_resolved_without_local_document_or_upstream_region()
+    {
+        using var owner = new FrozenOutputResources();
+        var image = owner.CreateGray8(Size, Size, Mark(Size, 20, 20));
+        var tool = new ContourMatchTool();
+        var values = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            [ContourMatchSchema.ImageInput] = image,
+            [ContourMatchRoi.ModeId] = ContourMatchRoi.RectangleParameters,
+            [ContourMatchRoi.RectangleSource + ".center-x"] = 64d,
+            [ContourMatchRoi.RectangleSource + ".center-y"] = 64d,
+            [ContourMatchRoi.RectangleSource + ".width"] = 96d,
+            [ContourMatchRoi.RectangleSource + ".height"] = 96d,
+            [ContourMatchRoi.RectangleSource + ".angle-degrees"] = 0d
+        };
+        var inputs = new InputValues(tool.Describe().Inputs, values);
+        var region = ContourMatchSearchRois.ResolveLocal(inputs, Size, Size);
+        Assert.NotNull(region);
+        region!.Dispose();
+    }
+
+    [Fact]
     public async Task Count_limit_judges_the_number_of_matches()
     {
         using var owner = new FrozenOutputResources();

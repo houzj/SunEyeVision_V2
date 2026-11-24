@@ -24,6 +24,9 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" />
+    <ProjectReference Include="../../src/Application/SunEyeVision.Application.csproj" />
+    <ProjectReference Include="../../src/Domain/SunEyeVision.Domain.csproj" />
+    <ProjectReference Include="../../src/Infrastructure.ImageSources/SunEyeVision.Infrastructure.ImageSources.csproj" />
     <!-- 工具插件真实部署在 plugins/<Tool>/，测试运行时从正式 Release 目录加载，不 copy-local。 -->
     <ProjectReference Include="../../tools/SunEyeVision.BlobLabels/SunEyeVision.Tool.BlobLabels.csproj">
       <Private>false</Private>

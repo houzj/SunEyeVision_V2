@@ -33,6 +33,7 @@ public static class ContourMatchRoi
 
     public const string LocalDocumentId = "input.roi.local";
     public const int MaximumInherited = RoiDocumentValue.MaximumInheritedCount;
+    private static readonly Guid InheritedItemId = new("c8a845d3-1695-4761-ac6b-165fe86dc248");
 
     public static TypeRef RectangleType { get; } = TypeRef.RecordOf("contourmatch.roi.rectangle", new[]
     {
@@ -64,4 +65,125 @@ public static class ContourMatchRoi
      .Concat(new[] { "center-x", "center-y", "inner-radius", "outer-radius", "start-degrees", "sweep-degrees" }
         .Select(id => new Port(AnnulusSource + "." + id, DataType.Number, Required: false, EditModes: FieldEditModes.Reference)))
      .ToArray();
+
+    public static string ReadMode(FieldSettings fields)
+        => fields.Declarations.ContainsKey(ModeId)
+            ? fields.Read(ModeId) switch
+            {
+                ConstantSetting { Value: string mode } => ValidateMode(mode),
+                UnsetSetting => Local,
+                _ => throw new ArgumentException("ROI继承方式必须是固定模式。")
+            }
+            : Local;
+
+    public static string ReadMode(InputValues inputs)
+        => inputs.Contains(ModeId)
+            ? inputs.Get<string>(ModeId) is { } mode ? ValidateMode(mode) : Local
+            : Local;
+
+    public static string ValidateMode(string mode)
+        => mode is Local or Rectangle or RectangleParameters or Annulus or AnnulusParameters
+            ? mode
+            : throw new ArgumentException("ROI继承方式无效：" + mode);
+
+    public static bool IsLocalMode(string mode)
+        => mode is Local or Rectangle or RectangleParameters or Annulus or AnnulusParameters;
+
+    /// <summary>
+    /// 将原厂单 ROI 的“按区域/按参数”字段物化为平台 ROI 文档。
+    /// ContourMatch 的原厂端口是单个 Record/Scalar；不能直接套用 Blob 的多 ROI Sequence/NumberArray 合同。
+    /// </summary>
+    public static RecordValue Materialize(InputValues inputs, RecordValue? local)
+    {
+        var mode = ReadMode(inputs);
+        var mask = (local ?? RoiDocumentValue.Empty).Get<RecordValue>(RoiDocumentValue.Mask);
+        if (mode == Local) return local ?? RoiDocumentValue.Empty;
+
+        RecordValue shape;
+        if (mode == Rectangle)
+        {
+            if (!inputs.Contains(RectangleSource))
+                throw new ArgumentException("请选择完整的矩形 ROI 继承来源。");
+            shape = RectangleShape(inputs.Get<RecordValue>(RectangleSource));
+        }
+        else if (mode == RectangleParameters)
+        {
+            shape = RectangleShape(
+                Number(inputs, RectangleSource + ".center-x"),
+                Number(inputs, RectangleSource + ".center-y"),
+                Number(inputs, RectangleSource + ".width"),
+                Number(inputs, RectangleSource + ".height"),
+                Number(inputs, RectangleSource + ".angle-degrees"));
+        }
+        else if (mode == Annulus)
+        {
+            if (!inputs.Contains(AnnulusSource))
+                throw new ArgumentException("请选择完整的圆环 ROI 继承来源。");
+            shape = AnnulusShape(inputs.Get<RecordValue>(AnnulusSource));
+        }
+        else
+        {
+            shape = AnnulusShape(
+                Number(inputs, AnnulusSource + ".center-x"),
+                Number(inputs, AnnulusSource + ".center-y"),
+                Number(inputs, AnnulusSource + ".inner-radius"),
+                Number(inputs, AnnulusSource + ".outer-radius"),
+                Number(inputs, AnnulusSource + ".start-degrees"),
+                Number(inputs, AnnulusSource + ".sweep-degrees"));
+        }
+
+        var item = RoiDocumentValue.Item(InheritedItemId, "继承区域", shape);
+        return RoiDocumentValue.Root(RoiDocumentValue.Group(RoiDocumentValue.Explicit, new[] { item }), mask);
+    }
+
+    public static IReadOnlyList<string> ActiveInputs(FieldSettings fields, IEnumerable<Port> inputs)
+    {
+        var mode = ReadMode(fields);
+        var own = Ports.Select(port => port.Id).ToHashSet(StringComparer.Ordinal);
+        var active = new HashSet<string>(StringComparer.Ordinal) { ModeId };
+        if (mode == Rectangle) active.Add(RectangleSource);
+        else if (mode == RectangleParameters)
+            foreach (var member in new[] { "center-x", "center-y", "width", "height", "angle-degrees" })
+                active.Add(RectangleSource + "." + member);
+        else if (mode == Annulus) active.Add(AnnulusSource);
+        else if (mode == AnnulusParameters)
+            foreach (var member in new[] { "center-x", "center-y", "inner-radius", "outer-radius", "start-degrees", "sweep-degrees" })
+                active.Add(AnnulusSource + "." + member);
+        return Array.AsReadOnly(inputs.Where(port => !own.Contains(port.Id) || active.Contains(port.Id))
+            .Select(port => port.Id).ToArray());
+    }
+
+    private static double Number(InputValues inputs, string id)
+    {
+        var value = inputs.Get<double>(id);
+        if (!double.IsFinite(value)) throw new ArgumentException("ROI继承参数必须有限。");
+        return value;
+    }
+
+    private static RecordValue RectangleShape(RecordValue source)
+        => RectangleShape(source.Get<double>("center-x"), source.Get<double>("center-y"),
+            source.Get<double>("width"), source.Get<double>("height"), source.Get<double>("angle-degrees"));
+
+    private static RecordValue RectangleShape(double centerX, double centerY, double width, double height, double angle)
+        => new(RoiDocumentValue.ShapeType, new Dictionary<string, object?>
+        {
+            ["kind"] = "rectangle", ["center"] = RoiDocumentValue.Point(centerX, centerY),
+            ["width"] = width, ["height"] = height, ["angle-degrees"] = angle
+        });
+
+    private static RecordValue AnnulusShape(RecordValue source)
+        => AnnulusShape(source.Get<double>("center-x"), source.Get<double>("center-y"),
+            source.Get<double>("inner-radius"), source.Get<double>("outer-radius"),
+            source.Get<double>("start-degrees"), source.Get<double>("sweep-degrees"));
+
+    private static RecordValue AnnulusShape(double centerX, double centerY, double inner, double outer, double start, double sweep)
+    {
+        var startRadians = RoiDocumentValue.NormalizeDegrees(start) * Math.PI / 180d;
+        return new(RoiDocumentValue.ShapeType, new Dictionary<string, object?>
+        {
+            ["kind"] = "annulus", ["center"] = RoiDocumentValue.Point(centerX, centerY),
+            ["inner-radius"] = inner, ["outer-radius"] = outer,
+            ["start-radians"] = startRadians, ["end-radians"] = startRadians + sweep * Math.PI / 180d
+        });
+    }
 }

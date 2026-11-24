@@ -11,7 +11,7 @@ namespace SunEyeVision.Tool.ContourMatch.Runtime;
 public sealed class ContourMatchTool : IToolDefinition<ContourMatchSettings, ContourMatchOutput>,
     IToolSettingsFields, IToolCatalogProvider, IToolResultPresentationProvider, IToolResultDisplayProvider,
     IToolParameterBindingNames, IToolResourceFieldDeclarations, IToolKnownSettingsValidation, IToolRuntimeInitialization,
-    IToolExecutionInputs
+    IToolExecutionInputs, IToolManualReferenceSources
 {
     public const string Id = "ContourMatch";
 
@@ -28,6 +28,7 @@ public sealed class ContourMatchTool : IToolDefinition<ContourMatchSettings, Con
     public ToolSchema DisplaySettingsSchema => ContourMatchResultDisplay.Schema;
     public ResultProjectionDescriptor ResultProjection => Projection;
     public ResultDisplayDescriptor ResultDisplay => ContourMatchResultDisplay.Descriptor;
+    public IReadOnlyList<ManualReferenceSource> ManualReferenceSources { get; } = BuildManualReferenceSources();
 
     public ToolSchema Describe() => ExecutionSchema;
 
@@ -56,14 +57,19 @@ public sealed class ContourMatchTool : IToolDefinition<ContourMatchSettings, Con
         var inputs = new List<string>
         {
             ContourMatchSchema.ImageInput,
-            ContourMatchSchema.FixtureInput,
-            ContourMatchSearchRois.ModeId
+            ContourMatchSchema.FixtureInput
         };
+        // 旧方案只持久化 search-source 时，必须把旧模式字段一并冻结，
+        // 否则 SelectExecutionInputs 已选 Local，但运行时会因字段缺失回到默认 Inherited。
+        if (!configuration.Declarations.ContainsKey(ContourMatchRoi.ModeId)
+            || configuration.Read(ContourMatchRoi.ModeId) is UnsetSetting)
+            inputs.Add(ContourMatchSearchRois.ModeId);
         if (local) inputs.Add(ContourMatchSearchRois.LocalId);
         else inputs.Add(ContourMatchSchema.RoiInput);
-        // ROI 组合字段（绘制/继承/掩膜/区域类型）由工具自有，编辑期承载 UI，执行期保持激活以便草稿读写一致。
-        inputs.AddRange(ContourMatchRoi.Ports.Select(port => port.Id));
-        inputs.AddRange(ContourMatchFixtureControl.Ports.Select(port => port.Id));
+        // ROI 组合字段按原厂单组语义只激活当前模式的来源/参数；
+        // Runtime 会把单 ROI Record/Scalar 物化为统一 ROI 文档后再建搜索域。
+        inputs.AddRange(ContourMatchRoi.ActiveInputs(configuration, ContourMatchRoi.Ports));
+        inputs.AddRange(ContourMatchFixtureControl.ActiveInputs(configuration, ContourMatchFixtureControl.Ports));
         return inputs.AsReadOnly();
     }
 
@@ -79,6 +85,33 @@ public sealed class ContourMatchTool : IToolDefinition<ContourMatchSettings, Con
             // 原厂基本页只有一组"ROI区域"（RoiSelectGroup/InheritWayGroup+AssistGroup），
             // 上游 Region 连线由 composer 的"ROI创建=继承"承载；位置修正由 Assist 组（修正信息行绑 FixtureInput 端口）承载。
         };
+
+    private static IReadOnlyList<ManualReferenceSource> BuildManualReferenceSources()
+    {
+        var sources = ContourMatchSchema.Outputs
+            .Select(port => new ManualReferenceSource(port.Id))
+            .ToList();
+        void Add(string port, params string[] path) => sources.Add(new ManualReferenceSource(port, path));
+
+        foreach (var member in new[] { "element-id", "center-x", "center-y", "angle-degrees", "scale", "score", "match-point", "box", "region", "outline", "judgment-passed", "failed-limits" })
+            Add(ContourMatchSchema.Rows, member);
+        foreach (var member in new[] { "x", "y" }) Add(ContourMatchSchema.Rows, "box", "center", member);
+        foreach (var member in new[] { "width", "height", "angle-degrees" }) Add(ContourMatchSchema.Rows, "box", member);
+        foreach (var member in new[] { "x", "y" })
+        {
+            Add(ContourMatchSchema.OutputFixture, "reference", "point", member);
+            Add(ContourMatchSchema.OutputFixture, "run", "point", member);
+        }
+        foreach (var member in new[] { "angle", "scale-x", "scale-y" })
+        {
+            Add(ContourMatchSchema.OutputFixture, "reference", member);
+            Add(ContourMatchSchema.OutputFixture, "run", member);
+        }
+        foreach (var member in new[] { "x", "y" }) Add(ContourMatchSchema.DetectRoi, "center", member);
+        foreach (var member in new[] { "width", "height", "angle-degrees" }) Add(ContourMatchSchema.DetectRoi, member);
+        foreach (var member in new[] { "x", "y", "match-index", "count" }) Add(ContourMatchSchema.OutlinePoints, member);
+        return Array.AsReadOnly(sources.ToArray());
+    }
     private static ResultProjectionDescriptor BuildProjection()
     {
         ResultColumnDescriptor Column(string key, string label, params string[] member)

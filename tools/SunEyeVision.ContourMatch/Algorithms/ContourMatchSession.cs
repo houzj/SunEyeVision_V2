@@ -234,7 +234,7 @@ public sealed class ContourMatchSession : IToolSession<ContourMatchSettings, Con
         => values.Contains(id) ? values.Get<IReadOnlyRegion?>(id) : null;
 
     private static RecordValue? OptionalFixture(InputValues values)
-        => values.Contains(ContourMatchSchema.FixtureInput) ? values.Get<RecordValue?>(ContourMatchSchema.FixtureInput) : null;
+        => ContourMatchFixtureControl.Read(values);
 
     private static void RequireSearchArea(HRegion search)
     {

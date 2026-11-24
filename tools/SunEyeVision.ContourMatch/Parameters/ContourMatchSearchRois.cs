@@ -55,7 +55,16 @@ public static class ContourMatchSearchRois
 
     /// <summary>从配置读取搜索区域来源模式；缺项/未设置为 Inherited，保持存量方案行为。</summary>
     public static string ReadMode(FieldSettings fields)
-        => fields.Declarations.ContainsKey(ModeId)
+    {
+        // 原厂基本页只有一组 ROI 创建/继承控件；当前 UI 的 canonical mode 是
+        // ContourMatchRoi.ModeId。旧 search-source 只作为没有 canonical 字段的配置回退，
+        // 不能让默认 Upstream 覆盖用户刚绘制的本地 ROI。
+        // FieldSettings.Declarations 是完整 schema，不代表该字段在旧方案中已持久化；
+        // 只有 canonical 值实际存在时才覆盖历史 search-source 回退。
+        if (fields.Declarations.ContainsKey(ContourMatchRoi.ModeId)
+            && fields.Read(ContourMatchRoi.ModeId) is not UnsetSetting)
+            return ContourMatchRoi.IsLocalMode(ContourMatchRoi.ReadMode(fields)) ? Local : Inherited;
+        return fields.Declarations.ContainsKey(ModeId)
             ? fields.Read(ModeId) switch
             {
                 ConstantSetting { Value: string mode } => ValidateMode(mode),
@@ -63,6 +72,7 @@ public static class ContourMatchSearchRois
                 _ => throw new ArgumentException("搜索区域来源必须是固定模式。")
             }
             : Inherited;
+    }
 
     private static string ValidateMode(string mode)
         => mode is Inherited or Local ? mode : throw new ArgumentException("未知的搜索区域来源：" + mode);
@@ -87,18 +97,28 @@ public static class ContourMatchSearchRois
     public static HRegion? ResolveLocal(InputValues values, int imageWidth, int imageHeight)
     {
         if (ReadMode(values) != Local) return null;
-        if (!values.Contains(LocalId))
-            throw new ContourMatchCapabilityException("CONTOURMATCH_LOCAL_ROI_REQUIRED", "本地搜索区域尚未绘制。");
-        var document = values.Get<RecordValue?>(LocalId)
-            ?? throw new ContourMatchCapabilityException("CONTOURMATCH_LOCAL_ROI_REQUIRED", "本地搜索区域尚未绘制。");
-        Validate(document);
+        // Rectangle/Annulus 的参数继承模式本身就是完整来源，不要求同时存在绘制文档；
+        // 只有 Local 模式在物化后仍为空时才会由 BuildDomain 给出“尚未绘制”诊断。
+        var document = values.Contains(LocalId) ? values.Get<RecordValue?>(LocalId) : null;
+        try
+        {
+            document = ContourMatchRoi.Materialize(values, document);
+            Validate(document);
+        }
+        catch (Exception error) when (error is ArgumentException or InvalidOperationException or KeyNotFoundException)
+        {
+            throw new ContourMatchCapabilityException("CONTOURMATCH_LOCAL_ROI_REQUIRED", error.Message);
+        }
         var region = ContourMatchTrainingRois.BuildDomain(document, imageWidth, imageHeight)
             ?? throw new ContourMatchCapabilityException("CONTOURMATCH_LOCAL_ROI_REQUIRED", "本地搜索区域没有有效图形，请先绘制。");
         return region;
     }
 
     private static string ReadMode(InputValues values)
-        => values.Contains(ModeId)
+    {
+        if (values.Contains(ContourMatchRoi.ModeId))
+            return ContourMatchRoi.IsLocalMode(ContourMatchRoi.ReadMode(values)) ? Local : Inherited;
+        return values.Contains(ModeId)
             ? values.Get<object?>(ModeId) switch
             {
                 string mode => ValidateMode(mode),
@@ -106,4 +126,5 @@ public static class ContourMatchSearchRois
                 _ => throw new ArgumentException("搜索区域来源必须是固定模式。")
             }
             : Inherited;
+    }
 }

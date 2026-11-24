@@ -157,6 +157,129 @@ public sealed class ContourMatchParameterContractTests
     }
 
     [Fact]
+    public void Roi_composer_mode_selects_local_runtime_input_without_an_upstream_region()
+    {
+        var fields = new FieldSettings(
+            ContourMatchRoi.Ports,
+            new Dictionary<string, ParameterSetting>
+            {
+                [ContourMatchRoi.ModeId] = new ConstantSetting(ContourMatchRoi.Local)
+            });
+        var tool = new ContourMatchTool();
+        Assert.Equal(ContourMatchSearchRois.Local, ContourMatchSearchRois.ReadMode(fields));
+        var active = tool.SelectExecutionInputs(fields);
+        Assert.Contains(ContourMatchSearchRois.LocalId, active);
+        Assert.DoesNotContain(ContourMatchSchema.RoiInput, active);
+    }
+
+    [Fact]
+    public void Legacy_search_source_remains_upstream_when_canonical_roi_mode_is_unset()
+    {
+        var fields = new FieldSettings(
+            ContourMatchSearchRois.Ports.Concat(ContourMatchRoi.Ports),
+            new Dictionary<string, ParameterSetting>
+            {
+                [ContourMatchSearchRois.ModeId] = new ConstantSetting(ContourMatchSearchRois.Inherited)
+            });
+        var tool = new ContourMatchTool();
+        Assert.Equal(ContourMatchSearchRois.Inherited, ContourMatchSearchRois.ReadMode(fields));
+        var active = tool.SelectExecutionInputs(fields);
+        Assert.Contains(ContourMatchSchema.RoiInput, active);
+        Assert.DoesNotContain(ContourMatchSearchRois.LocalId, active);
+        Assert.Contains(ContourMatchSearchRois.ModeId, active);
+
+        var localFields = new FieldSettings(
+            ContourMatchSearchRois.Ports.Concat(ContourMatchRoi.Ports),
+            new Dictionary<string, ParameterSetting>
+            {
+                [ContourMatchSearchRois.ModeId] = new ConstantSetting(ContourMatchSearchRois.Local)
+            });
+        var localActive = tool.SelectExecutionInputs(localFields);
+        Assert.Contains(ContourMatchSearchRois.LocalId, localActive);
+        Assert.Contains(ContourMatchSearchRois.ModeId, localActive);
+        Assert.DoesNotContain(ContourMatchSchema.RoiInput, localActive);
+    }
+
+    [Fact]
+    public void Single_rectangle_parameter_mode_is_materialized_to_the_runtime_roi_document()
+    {
+        var ports = ContourMatchRoi.Ports;
+        var values = new Dictionary<string, object?>
+        {
+            [ContourMatchRoi.ModeId] = ContourMatchRoi.RectangleParameters,
+            [ContourMatchRoi.RectangleSource + ".center-x"] = 12d,
+            [ContourMatchRoi.RectangleSource + ".center-y"] = 14d,
+            [ContourMatchRoi.RectangleSource + ".width"] = 20d,
+            [ContourMatchRoi.RectangleSource + ".height"] = 16d,
+            [ContourMatchRoi.RectangleSource + ".angle-degrees"] = 5d
+        };
+        var input = new InputValues(ports, values);
+        var document = ContourMatchRoi.Materialize(input, null);
+        var item = Assert.Single(RoiDocumentValue.Items(document, RoiDocumentValue.Inspection));
+        var shape = item.Get<RecordValue>("shape");
+        Assert.Equal("rectangle", shape.Get<string>("kind"));
+        Assert.Equal(12d, shape.Get<RecordValue>("center").Get<double>("x"));
+        Assert.Equal(16d, shape.Get<double>("height"));
+    }
+
+    [Fact]
+    public void Fixture_active_inputs_follow_the_selected_assist_mode()
+    {
+        var fields = new FieldSettings(
+            ContourMatchFixtureControl.Ports,
+            new Dictionary<string, ParameterSetting>
+            {
+                [ContourMatchFixtureControl.EnabledId] = new ConstantSetting(true),
+                [ContourMatchFixtureControl.ModeId] = new ConstantSetting(1L)
+            });
+        var active = ContourMatchFixtureControl.ActiveInputs(fields, ContourMatchFixtureControl.Ports);
+        Assert.Contains(ContourMatchFixtureControl.PointBasePoint, active);
+        Assert.DoesNotContain(ContourMatchFixtureControl.CoordBaseX, active);
+    }
+
+    [Fact]
+    public void Point_fixture_controls_materialize_to_the_shared_fixture_contract()
+    {
+        static RecordValue Point(double x, double y)
+            => new(FixtureDeclarations.Point, new Dictionary<string, object?> { ["x"] = x, ["y"] = y });
+        var values = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            [ContourMatchFixtureControl.EnabledId] = true,
+            [ContourMatchFixtureControl.ModeId] = 1L,
+            [ContourMatchFixtureControl.PointBasePoint] = Point(10, 20),
+            [ContourMatchFixtureControl.PointBaseAngle] = 0d,
+            [ContourMatchFixtureControl.PointBaseScaleX] = 1d,
+            [ContourMatchFixtureControl.PointBaseScaleY] = 1d,
+            [ContourMatchFixtureControl.PointRunPoint] = Point(15, 25),
+            [ContourMatchFixtureControl.PointRunAngle] = 0d,
+            [ContourMatchFixtureControl.PointRunScaleX] = 1d,
+            [ContourMatchFixtureControl.PointRunScaleY] = 1d
+        };
+        var fixture = ContourMatchFixtureControl.Read(new InputValues(ContourMatchFixtureControl.Ports, values));
+        Assert.NotNull(fixture);
+        var run = fixture!.Get<RecordValue>("run").Get<RecordValue>("point");
+        Assert.Equal(15d, run.Get<double>("x"));
+        Assert.Equal(25d, run.Get<double>("y"));
+        Assert.NotNull(FixtureDeclarations.ToAffine2D(fixture, ContourMatchSchema.ImageFrame));
+    }
+
+    [Fact]
+    public void Contour_match_declares_rows_and_fixture_members_for_downstream_manual_references()
+    {
+        var tool = new ContourMatchTool();
+        foreach (var source in tool.ManualReferenceSources)
+            new OutputValueRequest(source.PortId, source.MemberPath).Validate(tool.ResultSchema);
+        Assert.Contains(tool.ManualReferenceSources,
+            source => source.PortId == ContourMatchSchema.Rows && source.MemberPath.SequenceEqual(new[] { "score" }));
+        Assert.Contains(tool.ManualReferenceSources,
+            source => source.PortId == ContourMatchSchema.OutputFixture
+                && source.MemberPath.SequenceEqual(new[] { "run", "point", "x" }));
+        Assert.Contains(tool.ManualReferenceSources,
+            source => source.PortId == ContourMatchSchema.DetectRoi
+                && source.MemberPath.SequenceEqual(new[] { "center", "x" }));
+    }
+
+    [Fact]
     public void Known_settings_validation_reports_out_of_range_constants()
     {
         var tool = new ContourMatchTool();

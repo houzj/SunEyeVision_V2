@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<title>轮廓匹配节点与框架联动目标驱动计划（2026-11-25）</title>
+<style>
+body{font-family:"Microsoft YaHei",Segoe UI,sans-serif;line-height:1.65;max-width:1450px;margin:auto;padding:26px;color:#263238;background:#f6f8fb}
+h1{color:#123b62}h2{color:#165a8a;border-bottom:2px solid #b9d3e8;padding-bottom:4px;margin-top:30px}
+table{border-collapse:collapse;width:100%;background:#fff;margin:12px 0 20px;font-size:14px}th,td{border:1px solid #cbd7e0;padding:7px 9px;vertical-align:top}th{background:#e9f1f7;color:#164a6c}
+code{font-family:Consolas,monospace;background:#eef2f5;padding:1px 4px;border-radius:3px}
+.lead,.p0,.gate,.ok{padding:14px 18px;border-radius:7px;margin:12px 0}.lead{background:#eaf3fb;border-left:5px solid #2574a9}.p0{background:#fff0f0;border-left:5px solid #c43b3b}.gate{background:#fff8df;border-left:5px solid #d59b00}.ok{background:#edf8ef;border-left:5px solid #2e8b57}
+pre{background:#17232d;color:#e7f3fa;padding:15px;border-radius:7px;overflow:auto}.small{font-size:13px;color:#5b6b75}.done{color:#147a3d;font-weight:600}.todo{color:#a56600;font-weight:600}
+</style></head><body>
+<h1>轮廓匹配节点与框架联动目标驱动计划</h1>
+<p class="small">日期：2026-11-25　范围：节点、连线、调试窗口、结果工作区、跨节点执行、保存重开和关闭释放。目标是按原厂完整链路闭口，不把单个工具窗口通过当作产品链通过。</p>
+<div class="lead"><b>当前事实：</b>ContourMatch 模板窗口 8 项人工验收已通过；工具层专项 43/43，全量 Release 0 错误、6001 个既有警告。ImageSource→ContourMatch 工作流已能执行完成，但节点间引用/结果联动尚未闭合。多模板真实运行、橡皮擦形状取证和用户统一人工验收不计入本批。</div>
+<div class="p0"><b>P0 当前缺陷：</b>正式运行后打开调试窗口、绘制 ROI、在调试窗口运行、关闭窗口，主界面 ViewBox 被清空。原厂链路要求打开编辑器保留正式 publication；关闭时停止/退订/退役私有结果，再恢复同一节点的正式结果、图像、表格和叠加。该现象优先判定为框架/节点宿主的 publication 生命周期问题，不能在 Blob 或 ContourMatch 内各做一套保留图像的补丁。已在 <code>MainWindowRuntimeEditing.cs</code> 增加窗口关闭后的正式 publication 恢复兜底，并加入 Blob 正式运行→ROI→私有运行→关闭回归；定向回归已通过，用户统一人工验收仍待进行。</div>
+<div class="p0"><b>P1 当前缺陷：</b>ImageSource→ContourMatch 工作流虽完成执行，ContourMatch 的输入引用、ROI/Fixture 依赖、输出结果到工作区及下游消费者联动仍表现为断链；必须先按公共端口/引用/快照/结果合同修复，再由用户统一验收。共享图合同已补“ImageSource→ContourMatch 自动图像引用”回归并通过 1/1；真实运行结果、ROI/Fixture 依赖和下游消费仍待继续代码闭口。</div>
+
+<h2>一、原厂证据基线</h2>
+<table>
+<tr><th>证据</th><th>原厂已证实链路</th><th>本方对照入口</th><th>结论</th></tr>
+<tr><td><code>docs/01-方案设计/2026/11/VM调试窗口体感全链设计审计-20261110.html#full-chain-gap-20261111</code>；原件 <code>ModuleResultView</code>/<code>BaseWindow</code></td><td>节点身份、当前流程、窗口和结果使用同一选择代次；打开窗口不应清正式结果；回调在窗口关闭后拒绝。</td><td><code>MainWindowRuntimeEditing.cs:100-329</code>、<code>RuntimeToolEditorWindow.cs:27-302</code>、<code>ProductionEditorDebug.cs:10-214</code></td><td>静态接线存在；P0 关闭恢复运行未闭合。</td></tr>
+<tr><td><code>#parameter-binding-chain-20261111</code>、<code>#current-release-manual-chain-20261111</code></td><td>引用按完整端口路径/作用域生成；确认写正式配置，取消不写；执行开始冻结参数、变量、引用和上游结果。</td><td><code>RuntimeNodeConfigurationControl.cs:131-444</code>、<code>ExecutionBindingInputResolver.cs</code>、<code>DocumentSession.RuntimeAcceptance.cs</code></td><td>公共合同已存在；ContourMatch Image/ROI/Fixture 真实联动待修。</td></tr>
+<tr><td><code>#result-tree-order-20261111</code>、<code>#result-display-consumer-closure-20261111</code>；原件 <code>m_ResultDataGrid_SelectionChanged</code>、<code>SetRectHighLight</code>、<code>UpdateModuleViewResultShow</code></td><td>表格、图像、几何、文字来自同一 publication/物理帧；结果行选择高亮对应图形；换图只换视图；新执行才替换结果。</td><td><code>MainWindowResultPublication.cs:69-190</code>、<code>ResultWorkspacePresenter*.cs</code>、<code>INodeResultSink.cs</code></td><td>公共投影已实现；ContourMatch 结果与工作区运行接线待修。</td></tr>
+<tr><td><code>#roi-radio-column-and-transition-20261111</code>；原件 <code>OnRelatedIOChanged</code>、<code>IsCanDrawROI</code></td><td>绘制前必须显示模块输入图；输入切换改变显示和绘制资格，不隐式重跑；帧/窗口退役不能回写旧 ROI。</td><td><code>ResultWorkspacePresenter.RoiEditing.cs</code>、<code>NativeRoiSession</code></td><td>工具窗口 8 项通过；调试与正式结果切换待闭口。</td></tr>
+<tr><td><code>docs/collaboration/acceptance/轮廓匹配模板窗口-ROI掩膜历史对照.md</code></td><td>模板窗口管理草稿、模板、ROI、掩膜、历史和工具回调；不管理节点图、调度或结果清理。</td><td><code>tools/SunEyeVision.ContourMatch/ContourMatchTool.cs:28-157</code>、<code>ContourMatchSession.cs</code></td><td class="done">工具层本批已闭口。</td></tr>
+</table>
+<p class="small">证据等级严格区分：反编译源码/REA 确认内部顺序；配置确认端口和显示声明；截图只发现差异。没有动态原厂证据的内容保持“运行未确认”。</p>
+
+<h2>二、目标生产链</h2>
+<pre>目录准入 → 创建节点 → 画布/小地图投影 → 选中节点
+→ Image/ROI/Fixture 引用候选 → 草稿参数/模板/ROI/显示编辑
+→ 确认接纳（正式配置、修订号、显示声明）
+→ 执行开始快照（输入、引用、变量、资源）
+→ 依赖调度与上游结果借阅 → 工具 Runtime 执行
+→ ResultStore publication（表格、几何、文字、图像、状态）
+→ 结果工作区/画布/节点状态投影
+→ 行选中高亮、输出图像切换（不重跑）
+→ 重跑原子替换；切节点/流程/方案按身份退役
+→ 打开调试保留正式 publication → 私有运行 → 关闭恢复正式结果
+→ 保存重开恢复节点/连线/参数/ROI/Fixture/显示引用，拒绝旧代次回调</pre>
+
+<h2>三、职责边界</h2>
+<table>
+<tr><th>层</th><th>负责</th><th>不负责</th><th>当前代码证据</th></tr>
+<tr><td><b>框架层（共享）</b></td><td>NodeId/WorkflowId/DocumentRevision/RunId/RequestId；节点与连线身份；端口类型/必填/作用域；引用候选和接纳；执行快照、依赖调度、取消/连续/失败/跳过；ResultStore/publication/epoch；图像/ROI/Fixture/结果 lease；节点/流程/方案切换、保存重开、关闭排空和迟到回调；画布、结果视口、表格、高亮、显示选择。</td><td>不解析 ContourMatch 模板，不写工具算法，不在工具内清结果或管理窗口。</td><td><code>WorkflowDefinition.cs:6-83</code>；<code>DocumentCanvasProjection.cs:29-256</code>；<code>ExecutionWorkflowSnapshot.cs:23-118</code>；<code>ExecutionNodeSnapshot.cs:11-106</code>；<code>WorkflowExecutionEngine.cs:17-287</code>；<code>ToolExecutionIdentity.cs:7-245</code>。</td></tr>
+<tr><td><b>节点宿主层</b></td><td>目录注册；创建/选中/重命名/启停/复制/删除；草稿和参数页绑定；引用窗口；调试窗口打开、重复打开、切节点、关闭；输入帧借用；私有执行；确认回写；结果绑定；节点状态；向框架发出退役。</td><td>不复制执行队列、publication 清理、lease 管理、全局选择策略或算法。</td><td><code>MainWindowRuntimeEditing.cs:100-329</code>；<code>RuntimeToolEditorWindow.cs:27-302</code>；<code>RuntimeNodeConfigurationControl.cs:70-444</code>；<code>ProductionEditorDebug.cs:10-214</code>。</td></tr>
+<tr><td><b>公共 UI/结果层</b></td><td>原厂参数/ROI/结果模板、图像视口、结果表、文本和几何投影；消费声明和快照。</td><td>不调度工作流，不直接访问 Runtime，不复制工具专属渲染。</td><td><code>src/Plugin.Wpf</code>、<code>ResultWorkspacePresenter</code>、<code>INodeResultSink</code>。</td></tr>
+<tr><td><b>工具层</b></td><td>ContourMatch 输入/输出 schema、参数默认值、模板窗口、ROI/掩膜/历史、模型构建和匹配、rows/boxes/regions/outlines/fixture 的值和结果显示声明。</td><td>不管理 graph、连线、窗口生命周期、执行计划、结果空间选择/清理和跨节点 lease。</td><td><code>ContourMatchTool.cs:28-157</code>；<code>ContourMatchSession.cs:84-228</code>；<code>ContourMatchResultDisplay.cs</code>；<code>ContourMatchResultGeometry.cs</code>。</td></tr>
+</table>
+
+<h2>四、节点操作与其他控件联动清单</h2>
+<table>
+<tr><th>编号</th><th>操作</th><th>联动对象</th><th>归属</th><th>代码/验收出口</th></tr>
+<tr><td>N01</td><td>工具箱创建/拖入节点</td><td>目录准入、图标、画布、小地图、撤销</td><td>框架+节点</td><td>同一 ToolId 创建；复制生成新 NodeId。</td></tr>
+<tr><td>N02</td><td>单击/双击/右键/切换节点</td><td>画布、参数页、结果树、ViewBox、菜单</td><td>框架+节点</td><td>当前 NodeId/WorkflowId 一致；旧节点结果不投影到新节点。</td></tr>
+<tr><td>N03</td><td>重命名/启停/删除/复制/撤销重做</td><td>连线、下游引用、结果、历史、lease</td><td>框架</td><td>删除/断线保留失效诊断；撤销不复活旧窗口/结果。</td></tr>
+<tr><td>N04</td><td>端口连线/改线/断线</td><td>ConnectionDefinition、候选、依赖图、正式字段</td><td>框架</td><td>类型、形状、作用域、必填严格校验；不静默取首项。</td></tr>
+<tr><td>N05</td><td>Image 输入选择</td><td>ImageSource 输出、结果图像条、ROI 绘制资格、调试输入 lease</td><td>框架+公共 UI</td><td>选图不重跑；绘制前必须显示模块输入图。</td></tr>
+<tr><td>N06</td><td>ROI/Fixture 输入</td><td>ROI 编辑器、引用候选、坐标系、帧、Fixture、草稿和快照</td><td>框架合同+工具适配</td><td>工具只声明/消费；公共链管理引用、借帧和释放。</td></tr>
+<tr><td>N07</td><td>打开/重复打开调试窗口</td><td>旧窗、节点选择、正式 publication、参数草稿、节点菜单</td><td>节点+框架</td><td>先保留正式快照；旧窗口先 drain；打开本身不清 ViewBox。</td></tr>
+<tr><td>N08</td><td>调试页签/模板窗口/显示页往返</td><td>同一草稿、模板确认、显示预览、ROI 输入图</td><td>节点+工具 UI+公共控件</td><td>确认才写正式配置；取消不污染；显示设置不混算法参数。</td></tr>
+<tr><td>N09</td><td>调试单次/连续/停止/取消</td><td>执行按钮、状态、输入快照、私有会话和私有结果</td><td>框架执行+节点适配</td><td>私有结果不写正式 ResultStore；停止先取消再 drain。</td></tr>
+<tr><td>N10</td><td>关闭调试窗口（运行中/ROI 中/引用弹层中/未提交）</td><td>回调、结果 lease、正式快照、ViewBox、节点菜单</td><td>框架+节点</td><td><b>P0：</b>私有结果退役后恢复正式结果，ViewBox/表格/几何/文字不清，无迟到回调。</td></tr>
+<tr><td>N11</td><td>结果行选择/高亮</td><td>结果表、匹配框、区域、轮廓、文本、画布叠加</td><td>框架/公共结果</td><td>当前 publication 行与几何一一对应，刷新清旧选择。</td></tr>
+<tr><td>N12</td><td>输入/输出图像、背景、overlay 切换</td><td>ResultWorkspaceShell、ViewBox、ROI 编辑器、显示引用</td><td>框架/公共结果</td><td>只换视图；不清表、不隐式重跑；显式空输出保持空。</td></tr>
+<tr><td>N13</td><td>正式运行/重跑/连续/失败/跳过</td><td>执行快照、依赖调度、状态、ResultStore、历史</td><td>框架</td><td>同轮原子替换；失败/跳过语义明确；lease 不跨轮串联。</td></tr>
+<tr><td>N14</td><td>ImageSource→ContourMatch→兼容下游</td><td>Image、ROI、Fixture、ContourMatch rows/region/fixture、下游字段</td><td>框架+节点+工具声明</td><td>先代码验证端口/引用/快照/资源；再人工统一验收。</td></tr>
+<tr><td>N15</td><td>保存重开/切流程/切方案/关闭主程序</td><td>节点、连线、参数、ROI、Fixture、显示引用、结果、插件目录</td><td>框架</td><td>身份和引用恢复；旧 lease 拒绝；关闭先完整排空。</td></tr>
+</table>
+
+<h2>五、目标驱动实施步骤</h2>
+<table>
+<tr><th>阶段</th><th>目标</th><th>实施</th><th>完成条件</th></tr>
+<tr><td>F0 证据冻结</td><td>所有行为先有原厂证据和本方入口</td><td>冻结上表；补 P0 复现的 publication、snapshot、lease、epoch、ViewBox 状态证据</td><td>证据等级、未确认项和消费者齐全</td></tr>
+<tr><td>F1 框架合同</td><td>所有节点共用一条身份/引用/执行/结果链</td><td>检查/补通用端口接纳、依赖图、执行快照、ResultStore、epoch/generation、迟到回调门禁；不加 ContourMatch 特判</td><td>ImageSource/Blob/Probe 公共回归通过</td></tr>
+<tr><td>F2 调试开关链</td><td>P0：关闭调试后恢复正式 ViewBox</td><td>按原厂顺序核对 <code>OpenFormalNodeEditor</code> → <code>CloseAndDrainAsync</code> → <code>CloseDebugAsync</code> → <code>DisposeAsync</code> → <code>RetireResultPublication</code> → <code>RefreshFormalPublishedResult</code>；已补窗口关闭后的正式 publication 恢复兜底和 Blob ROI 回归</td><td>定向代码回归已通过；正式运行→调试 ROI→私有运行→关闭后的用户 Release 验收仍待完成</td></tr>
+<tr><td>F3 跨节点代码</td><td>ImageSource→ContourMatch 及兼容下游不再断链</td><td>复用 <code>OutputReference</code>、<code>ConnectionBindingPolicy</code>、<code>ExecutionBindingInputResolver</code>、<code>WorkflowExecutionEngine</code>；补 Image/Region/Fixture/member-path 的真实链测试；修复 stale “ContourMatch 未准入”测试假设</td><td>端口/类型/引用、依赖顺序、资源借阅、重跑替换、断线失效、保存重开自动通过</td></tr>
+<tr><td>F4 结果空间</td><td>表格、几何、文字和 ViewBox 同一 publication</td><td>复用 <code>MainWindowResultPublication</code>、<code>ResultWorkspacePresenter</code>、<code>ResultDisplayDescriptor</code>；ContourMatch 只给 rows/geometry/display descriptor</td><td>行高亮、换图、重跑、切节点清理行为一致</td></tr>
+<tr><td>F5 持久化/退出</td><td>方案切换和关闭不泄漏</td><td>保存节点/连线/字段/ROI/Fixture/display reference；复制重映射；删除/断线失效；停止、关闭、插件退役排空</td><td>无活动任务、窗口、回调、lease；重开后身份和引用一致</td></tr>
+<tr><td>F6 统一验收</td><td>用户一次性验收完整链</td><td>新 Release 先自动回归和构建，再集中人工执行 A01-A16</td><td>人工结果与代码自测、Release 状态分开记录</td></tr>
+</table>
+
+<h2>六、代码层任务与验收清单</h2>
+<ol>
+<li>在 <code>tests/SunEyeVision.UI.Tests/Session/EditorDebugSessionTests.cs</code> 固定 P0 回归：正式运行→打开调试→显示输入图→绘制 ROI→私有运行→关闭，断言正式 ViewBox、结果表、几何、文字仍在。</li>
+<li>定位并修复关闭顺序：正式快照在打开时保留；私有结果只在调试会话内保活；关闭时停止/退订/退役私有 publication，再恢复正式 publication。任何中间清理不得成为最终状态。</li>
+<li>为关闭重入、运行中关闭、迟到完成、节点删除/撤销、切节点/切方案增加公共回归；旧 identity 必须拒绝写入新 ViewBox。</li>
+<li>以公共引用和快照接入 ContourMatch 的 Image/ROI/Fixture；兼容下游只通过声明端口读取 <code>output.roi</code>、<code>output.fixture</code>、<code>contourmatch.rows</code>，不新增工具专属调度。</li>
+<li>补保存重开和复制删除：稳定 NodeId/WorkflowId/PortId/MemberPath 保存；复制生成新身份；旧结果 lease 不复用。</li>
+<li>完成专项测试、UI 调试窗口测试、跨节点应用测试和全量 Release；最后再交用户人工验收。</li>
+</ol>
+
+<table>
+<tr><th>验收编号</th><th>操作</th><th>通过标准</th><th>状态</th></tr>
+<tr><td>A01</td><td>创建 ImageSource、Blob、ContourMatch，切换节点</td><td>节点、画布、参数页、结果工作区 identity 一致</td><td class="todo">待代码/人工</td></tr>
+<tr><td>A02</td><td>ImageSource→ContourMatch 连线、断线、重连</td><td>候选、正式字段、依赖和失效原因一致</td><td class="todo">待代码</td></tr>
+<tr><td>A03</td><td>ROI/Fixture 引用、帧切换</td><td>类型/坐标/lease 正确，旧帧不能回写</td><td class="todo">待代码</td></tr>
+<tr><td>A04</td><td>正式运行后打开调试窗口</td><td>正式 ViewBox/表格/几何/文字保持</td><td class="todo">P0</td></tr>
+<tr><td>A05</td><td>调试绘制 ROI、私有运行</td><td>私有结果同一 publication，正式结果不被覆盖</td><td class="todo">待代码</td></tr>
+<tr><td>A06</td><td>关闭调试窗口（当前复现步骤）</td><td>ViewBox 不清空，正式结果恢复，私有资源释放</td><td class="todo">P0 人工</td></tr>
+<tr><td>A07</td><td>结果行选择、高亮和输出图切换</td><td>表格/几何/文字/图像不串、不清</td><td class="todo">待代码</td></tr>
+<tr><td>A08</td><td>重跑/连续/失败/跳过</td><td>结果原子替换，节点状态和 lease 正确</td><td class="todo">待代码</td></tr>
+<tr><td>A09</td><td>ContourMatch 输出到兼容下游</td><td>下游消费同轮 region/fixture/rows，端口严格匹配</td><td class="todo">代码先行</td></tr>
+<tr><td>A10</td><td>保存重开、复制、删除、撤销</td><td>身份/连线/参数/ROI/Fixture/display 恢复或失效可解释</td><td class="todo">待代码</td></tr>
+<tr><td>A11</td><td>切流程/切方案/关闭主程序</td><td>执行、窗口、结果、通讯和插件目录完整排空</td><td class="todo">待代码/人工</td></tr>
+</table>
+
+<h2>七、本批边界与完成判定</h2>
+<div class="gate"><b>不提前纳入：</b>多模板真实运行、橡皮擦形状原厂实机补证、D12 盲区端口、Group 新增/循环语义。它们继续列为后续批次。</div>
+<div class="ok"><b>完成判定：</b>原厂证据映射、框架/节点/工具职责、代码实现、自动回归、Release 构建和用户人工验收必须分别有记录。只有工具层通过，不能称节点整链完成；只有工作流返回 Completed，也不能称结果联动完成。</div>
+</body></html>

@@ -17,12 +17,14 @@
             <Border BorderThickness="1" CornerRadius="4">
               <parameters:TemplateTextBox Name="FixX" Width="76" TextAlignment="Center" HorizontalContentAlignment="Center" HorizontalAlignment="Left"
                                           Style="{StaticResource TemplateTextBoxStyle}" Text="{Binding FixPointX, Converter={StaticResource cvtDoubleToFloat}}"
+                                          IsEnabled="{Binding IsMatchPointEditable}"
                                           ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Self}}" />
             </Border>
             <StatusBarItem Content="," />
             <Border BorderThickness="1" CornerRadius="4">
               <parameters:TemplateTextBox Name="FixY" Width="76" TextAlignment="Center" HorizontalContentAlignment="Center" HorizontalAlignment="Left"
                                           Style="{StaticResource TemplateTextBoxStyle}" Text="{Binding FixPointY, Converter={StaticResource cvtDoubleToFloat}}"
+                                          IsEnabled="{Binding IsMatchPointEditable}"
                                           ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Self}}" />
             </Border>
             <StatusBarItem Content=")" />

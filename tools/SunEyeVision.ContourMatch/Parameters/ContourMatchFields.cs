@@ -74,9 +74,8 @@ public static class ContourMatchFields
     public static string PyramidScaleRLevel => IdOf(nameof(ContourMatchSettings.PyramidScaleRLevel));
     public static string EdgeThresholdMode => IdOf(nameof(ContourMatchSettings.EdgeThresholdMode));
     public static string EdgeThreshold => IdOf(nameof(ContourMatchSettings.EdgeThreshold));
-    public static string ChainMode => IdOf(nameof(ContourMatchSettings.ChainMode));
-    public static string MinChainLen => IdOf(nameof(ContourMatchSettings.MinChainLen));
-    public static string MaskModel => IdOf(nameof(ContourMatchSettings.MaskModel));
+    public static string MinContrast => IdOf(nameof(ContourMatchSettings.MinContrast));
+    public static string Optimization => IdOf(nameof(ContourMatchSettings.Optimization));
     public static string MinScore => IdOf(nameof(ContourMatchSettings.MinScore));
     public static string MaxMatchCount => IdOf(nameof(ContourMatchSettings.MaxMatchCount));
     public static string Polarity => IdOf(nameof(ContourMatchSettings.Polarity));
@@ -91,9 +90,8 @@ public static class ContourMatchFields
     public static string MaxOverlap => IdOf(nameof(ContourMatchSettings.MaxOverlap));
     public static string MultiModelMaxOverlap => IdOf(nameof(ContourMatchSettings.MultiModelMaxOverlap));
     public static string SortType => IdOf(nameof(ContourMatchSettings.SortType));
-    public static string MatchThresholdMode => IdOf(nameof(ContourMatchSettings.MatchThresholdMode));
-    public static string MatchThreshold => IdOf(nameof(ContourMatchSettings.MatchThreshold));
-    public static string SpotterEnabled => IdOf(nameof(ContourMatchSettings.SpotterEnabled));
+    public static string Greediness => IdOf(nameof(ContourMatchSettings.Greediness));
+    public static string SubPixel => IdOf(nameof(ContourMatchSettings.SubPixel));
     public static string MatchExtentRate => IdOf(nameof(ContourMatchSettings.MatchExtentRate));
     public static string TimeOut => IdOf(nameof(ContourMatchSettings.TimeOut));
     public static string OutlineEnabled => IdOf(nameof(ContourMatchSettings.OutlineEnabled));
@@ -101,8 +99,6 @@ public static class ContourMatchFields
     public static string UseMatchAllMode => IdOf(nameof(ContourMatchSettings.UseMatchAllMode));
     public static string RangeScaleType => IdOf(nameof(ContourMatchSettings.RangeScaleType));
     public static string OkWhenCountIsZero => IdOf(nameof(ContourMatchSettings.OkWhenCountIsZero));
-    public static string SkewXStart => IdOf(nameof(ContourMatchSettings.SkewXStart));
-    public static string SkewXEnd => IdOf(nameof(ContourMatchSettings.SkewXEnd));
     public static string CountLimitEnabled => IdOf(nameof(ContourMatchSettings.CountLimitEnabled));
     public static string CountLimitLow => IdOf(nameof(ContourMatchSettings.CountLimitLow));
     public static string CountLimitHigh => IdOf(nameof(ContourMatchSettings.CountLimitHigh));
@@ -140,6 +136,11 @@ public static class ContourMatchFields
         => FieldList.FirstOrDefault(field => field.VirtualMachineName == virtualMachineName)
             ?? throw new ArgumentException("无关的原厂参数名：" + virtualMachineName, nameof(virtualMachineName));
 
+    /// <summary>按字段标识（field:GUID）查声明；界面侧拿到的是 Id 而不是属性名。</summary>
+    public static ContourMatchFieldSpec SpecById(string id)
+        => FieldList.FirstOrDefault(field => field.Id == id)
+            ?? throw new ArgumentException("未知的 ContourMatch 字段标识：" + id, nameof(id));
+
     private static string StableId(string name)
         => "field:" + new Guid(SHA256.HashData(Encoding.UTF8.GetBytes("SunEyeVision.Tool.ContourMatch:" + name)).AsSpan(0, 16)).ToString("N");
 
@@ -163,7 +164,8 @@ public static class ContourMatchFields
             VirtualMachineName = vm, Name = name, Id = StableId(name), Type = typeof(int), Default = value,
             Label = label, Page = page ?? (section == JudgeSection ? ResultPage : RunPage), Section = section, VisibleWhen = when, PairWith = pair, PairLabel = pairLabel,
             Advanced = advanced, AllowReference = reference, Minimum = minimum, Maximum = maximum,
-            PairMinimum = pair is null ? null : minimum, PairMaximum = pair is null ? null : maximum, DecimalPlaces = 0, Increment = 1
+            PairMinimum = pair is null ? null : minimum, PairMaximum = pair is null ? null : maximum, DecimalPlaces = 0, Increment = 1,
+            DefaultPresence = FieldDefaultPresence.UseDeclaredDefault
         };
 
     private static ContourMatchFieldSpec N(string vm, string name, string label, string section, double value, double minimum, double maximum,
@@ -175,7 +177,8 @@ public static class ContourMatchFields
             Label = label, Page = page ?? (section == JudgeSection ? ResultPage : RunPage), Section = section, VisibleWhen = when, PairWith = pair, PairLabel = pairLabel,
             Advanced = advanced, AllowReference = reference, Minimum = minimum, Maximum = maximum,
             PairMinimum = pair is null ? null : minimum, PairMaximum = pair is null ? null : maximum,
-            DecimalPlaces = decimals, Increment = increment
+            DecimalPlaces = decimals, Increment = increment,
+            DefaultPresence = FieldDefaultPresence.UseDeclaredDefault
         };
 
     private static ContourMatchFieldSpec E(string vm, string name, string label, string section, Type enumType, int value,
@@ -185,14 +188,18 @@ public static class ContourMatchFields
             VirtualMachineName = vm, Name = name, Id = StableId(name), Type = enumType,
             Default = Enum.ToObject(enumType, value), Label = label, Page = page ?? (section == JudgeSection ? ResultPage : RunPage), Section = section,
             VisibleWhen = when, Advanced = advanced,
-            Choices = keys.ToArray(), ChoiceLabels = keys.Zip(labels).ToDictionary(item => item.First, item => item.Second, StringComparer.Ordinal)
+            Choices = keys.ToArray(), ChoiceLabels = keys.Zip(labels).ToDictionary(item => item.First, item => item.Second, StringComparer.Ordinal),
+            DefaultPresence = FieldDefaultPresence.UseDeclaredDefault
         };
 
     private static ContourMatchFieldSpec S(string vm, string name, string label, string section, string value, string page)
         => new()
         {
             VirtualMachineName = vm, Name = name, Id = StableId(name), Type = typeof(string), Default = value,
-            Label = label, Page = page, Section = section, DecimalPlaces = 0
+            Label = label, Page = page, Section = section, DecimalPlaces = 0,
+            // 新建节点时该字段尚无值，必须按声明默认值补齐；否则物化设置直接报
+            // "Missing required port field:..."，表现为点“生成模板”无反应。
+            DefaultPresence = FieldDefaultPresence.UseDeclaredDefault
         };
 
     private static ContourMatchFieldSpec D(string vm, string name, string label, string section, string page)
@@ -220,17 +227,23 @@ public static class ContourMatchFields
                 typeof(ContourMatchThresholdMode), 1, Enum.GetNames<ContourMatchThresholdMode>(), new[] { "手动", "自动" }, page: TemplatePage),
             I("EdgeThreshold", nameof(ContourMatchSettings.EdgeThreshold), "边缘阈值", TemplateSection, 15, 1, 255,
                 when: nameof(ContourMatchSettings.EdgeThresholdMode), reference: false, page: TemplatePage),
-            E("ChainFlag", nameof(ContourMatchSettings.ChainMode), "链长模式", TemplateSection,
-                typeof(ContourMatchChainMode), 1, Enum.GetNames<ContourMatchChainMode>(), new[] { "手动", "自动" }, page: TemplatePage),
-            I("MinChainLen", nameof(ContourMatchSettings.MinChainLen), "最小链长", TemplateSection, 4, 2, 1000,
-                when: nameof(ContourMatchSettings.ChainMode), reference: false, page: TemplatePage),
-            E("MaskModelFlag", nameof(ContourMatchSettings.MaskModel), "建模类型", TemplateSection,
-                typeof(ContourMatchMaskModel), 0, Enum.GetNames<ContourMatchMaskModel>(), new[] { "全轮廓", "外轮廓" }, page: TemplatePage),
+            // HALCON 原生创建参数：库链长/建模类型在 HALCON 形状模板中不存在，已移除；
+            // 改由 min_contrast（忽略低于此对比度的边缘）与 optimization（轮廓点约简）开放给用户。
+            I("MinContrast", nameof(ContourMatchSettings.MinContrast), "最小对比度", TemplateSection, 5, 1, 255,
+                reference: false, page: TemplatePage),
+            E("Optimization", nameof(ContourMatchSettings.Optimization), "轮廓优化", TemplateSection,
+                typeof(ContourMatchOptimization), 0, Enum.GetNames<ContourMatchOptimization>(),
+                new[] { "自动", "不优化", "低", "中", "高" }, page: TemplatePage),
 
             // 运行参数（原件 56 项 ParamItem）
             // 原厂首屏顺序：全部搜索模式 → 最小匹配分数 → 最大匹配个数 → 匹配极性 → 角度范围 → 尺度范围类型 → 尺度范围。
             B("UseMatchAllMode", nameof(ContourMatchSettings.UseMatchAllMode), "全部搜索模式", RunSection, false),
-            N("MinScore", nameof(ContourMatchSettings.MinScore), "最小匹配分数", RunSection, 0.5, 0, 1),
+            // 原厂 AlgorithmTab.xml：MultiModelMaxOverlap 紧跟全部搜索模式，默认 CustomVisible=False，
+            // 由 UseMatchAllMode 的 Triggers(CurValue=True→Visible) 控制显示（NMS Overlap Threshold）。
+            I("MultiModelMaxOverlap", nameof(ContourMatchSettings.MultiModelMaxOverlap), "多模板重叠率", RunSection, 50, 0, 100,
+                when: nameof(ContourMatchSettings.UseMatchAllMode)),
+            // 原厂 AlgorithmTab.xml MinScore/DefaultValue=0.8（Min Match Score），范围 0~1 步长 0.01。
+            N("MinScore", nameof(ContourMatchSettings.MinScore), "最小匹配分数", RunSection, 0.8, 0, 1),
             I("MaxMatchNum", nameof(ContourMatchSettings.MaxMatchCount), "最大匹配个数", RunSection, 1, 1, 50_000),
             // 原厂标签「匹配极性」。算法层限制：极性在 HALCON 模板创建期固定，运行期只支持 1（考虑极性），
             // 故保持整数显示而非枚举（枚举会误导用户以为可切换）——属算法约束，非 UI 可修复差异。
@@ -238,32 +251,42 @@ public static class ContourMatchFields
             I("AngleStart", nameof(ContourMatchSettings.AngleStart), "角度下限", RunSection, -45, -180, 180,
                 pair: nameof(ContourMatchSettings.AngleEnd), pairLabel: "角度范围"),
             I("AngleEnd", nameof(ContourMatchSettings.AngleEnd), "角度上限", RunSection, 45, -180, 180),
-            I("RangeScaleType", nameof(ContourMatchSettings.RangeScaleType), "尺度范围类型", RunSection, 0, 0, 10),
+            // 原厂 AlgorithmTab.xml RangeScaleType：EnumEntrys 尺度范围/尺度范围XY，=XY 时显示 X/Y 尺度范围。
+            E("RangeScaleType", nameof(ContourMatchSettings.RangeScaleType), "尺度范围类型", RunSection,
+                typeof(ContourMatchRangeScaleType), 0, Enum.GetNames<ContourMatchRangeScaleType>(), new[] { "尺度范围", "尺度范围XY" }),
             N("ScaleStart", nameof(ContourMatchSettings.ScaleStart), "尺度下限", RunSection, 1, 0.1, 10,
                 pair: nameof(ContourMatchSettings.ScaleEnd), pairLabel: "尺度范围"),
             N("ScaleEnd", nameof(ContourMatchSettings.ScaleEnd), "尺度上限", RunSection, 1, 0.1, 10),
+            // 原厂 AlgorithmTab.xml：RangScaleX/Y 默认 CustomVisible=False，由 RangeScaleType=XY 触发显示。
             N("ScaleXStart", nameof(ContourMatchSettings.ScaleXStart), "X尺度下限", RunSection, 1, 0.1, 10,
+                when: nameof(ContourMatchSettings.RangeScaleType) + "=XY",
                 pair: nameof(ContourMatchSettings.ScaleXEnd), pairLabel: "X尺度范围", advanced: true),
-            N("ScaleXEnd", nameof(ContourMatchSettings.ScaleXEnd), "X尺度上限", RunSection, 1, 0.1, 10, advanced: true),
+            N("ScaleXEnd", nameof(ContourMatchSettings.ScaleXEnd), "X尺度上限", RunSection, 1, 0.1, 10,
+                when: nameof(ContourMatchSettings.RangeScaleType) + "=XY", advanced: true),
             N("ScaleYStart", nameof(ContourMatchSettings.ScaleYStart), "Y尺度下限", RunSection, 1, 0.1, 10,
+                when: nameof(ContourMatchSettings.RangeScaleType) + "=XY",
                 pair: nameof(ContourMatchSettings.ScaleYEnd), pairLabel: "Y尺度范围", advanced: true),
-            N("ScaleYEnd", nameof(ContourMatchSettings.ScaleYEnd), "Y尺度上限", RunSection, 1, 0.1, 10, advanced: true),
-            // 原厂高级顺序（AlgorithmTab.xml）：X尺度(260)→Y尺度(296)→横切角度(333)→最大重叠率(413)→排序(424)。
-            I("SkewXStart", nameof(ContourMatchSettings.SkewXStart), "起始横切角度", RunSection, 0, -180, 180, advanced: true),
-            I("SkewXEnd", nameof(ContourMatchSettings.SkewXEnd), "终止横切角度", RunSection, 0, -180, 180, advanced: true),
+            N("ScaleYEnd", nameof(ContourMatchSettings.ScaleYEnd), "Y尺度上限", RunSection, 1, 0.1, 10,
+                when: nameof(ContourMatchSettings.RangeScaleType) + "=XY", advanced: true),
+            // 横切角度（SkewX）在 HALCON 形状模板中无对应语义，已移除。
             I("MaxOverlap", nameof(ContourMatchSettings.MaxOverlap), "最大重叠率", RunSection, 50, 0, 100, advanced: true),
-            I("MultiModelMaxOverlap", nameof(ContourMatchSettings.MultiModelMaxOverlap), "多模板重叠率", RunSection, 50, 0, 100, advanced: true),
             E("SortType", nameof(ContourMatchSettings.SortType), "排序类型", RunSection, typeof(ContourMatchSortType), 2,
                 Enum.GetNames<ContourMatchSortType>(),
                 new[] { "按分数降序排序", "按角度降序排序", "按X升序排序", "按Y升序排序", "按X升序·Y升序排序", "按Y升序·X升序排序" }, advanced: true),
-            // 阈值类型/极性：算法层 HALCON 模板创建期固定，运行期只支持单一值，保持整数显示（非 UI 可修复）。
-            I("MatchThresholdFlag", nameof(ContourMatchSettings.MatchThresholdMode), "阈值类型", RunSection, 0, 0, 2, advanced: true),
-            I("MatchThresholdHigh", nameof(ContourMatchSettings.MatchThreshold), "匹配边缘阈值", RunSection, 40, 1, 255, advanced: true),
-            B("SpotterFlag", nameof(ContourMatchSettings.SpotterEnabled), "是否考虑噪点", RunSection, false, advanced: true),
+            // 运行期阈值类型/边缘阈值在 HALCON 中不可切换（模型创建期固定），已移除；
+            // 创建期阈值由模板页「边缘阈值」「最小对比度」承担。
+            // 新增 HALCON 匹配参数：贪婪度与亚像素模式。
+            N("Greediness", nameof(ContourMatchSettings.Greediness), "贪婪度", RunSection, 0.9, 0, 1, advanced: true),
+            E("SubPixel", nameof(ContourMatchSettings.SubPixel), "亚像素模式", RunSection,
+                typeof(ContourMatchSubPixel), 2, Enum.GetNames<ContourMatchSubPixel>(),
+                new[] { "无", "插值", "最小二乘" }, advanced: true),
             I("MatchExtentRate", nameof(ContourMatchSettings.MatchExtentRate), "延拓阈值", RunSection, 0, 0, 90, advanced: true),
             I("TimeOut", nameof(ContourMatchSettings.TimeOut), "超时控制", RunSection, 0, 0, 10_000, advanced: true),
             B("OutLineEnable", nameof(ContourMatchSettings.OutlineEnabled), "是否获取轮廓", RunSection, true, advanced: true),
-            B("OutLinePointEnable", nameof(ContourMatchSettings.OutlinePointsEnabled), "是否输出轮廓", RunSection, false, advanced: true),
+            // 原厂 AlgorithmTab.xml：OutLineEnable 的 Triggers(CurValue=False→OutLinePointEnable Hidden)，
+            // 即关闭"是否获取轮廓"时隐藏"是否输出轮廓"。
+            B("OutLinePointEnable", nameof(ContourMatchSettings.OutlinePointsEnabled), "是否输出轮廓", RunSection, false,
+                when: nameof(ContourMatchSettings.OutlineEnabled), advanced: true),
             // 原厂 ResultShow 页首项「忽略匹配个数」（OKWhenNumIsZero，AlgorithmTab.xml:596-603），属结果判断。
             B("OKWhenNumIsZero", nameof(ContourMatchSettings.OkWhenCountIsZero), "忽略匹配个数", JudgeSection, false, page: ResultPage),
 
@@ -276,7 +299,8 @@ public static class ContourMatchFields
 
             // 结果判断：角度/分数限位（原厂 ResultShow 首屏四项判断开关之一，不折叠）
             B("AngleLimitEnable", nameof(ContourMatchSettings.AngleLimitEnabled), "角度判断", JudgeSection, false),
-            N("AngleLimitLow", nameof(ContourMatchSettings.AngleLimitLow), "角度下限", JudgeSection, -180, -180, 180,
+            // 原厂 AlgorithmTab.xml RangeAngleLimit/DefaultValue=0（范围仍为 -180~180）。
+            N("AngleLimitLow", nameof(ContourMatchSettings.AngleLimitLow), "角度下限", JudgeSection, 0, -180, 180,
                 when: nameof(ContourMatchSettings.AngleLimitEnabled), pair: nameof(ContourMatchSettings.AngleLimitHigh), pairLabel: "角度范围", advanced: true),
             N("AngleLimitHigh", nameof(ContourMatchSettings.AngleLimitHigh), "角度上限", JudgeSection, 180, -180, 180,
                 when: nameof(ContourMatchSettings.AngleLimitEnabled), advanced: true),
@@ -307,23 +331,24 @@ public static class ContourMatchFields
 
             // 结果判断：匹配点 / 中心点限位。原厂 BoxPoint* 的界面标签是 "Central Point * Check/Range"，
             // 中文为"中心点X/Y判断、中心点X/Y范围"（decompiled/Lang/zh-cn.xaml:3379-3386）。
+            // 原厂 AlgorithmTab.xml Range*Limit 的 DefaultValue 均为 0，MinValue -99999（范围下限仍可到 -99999）。
             B("MatchPointXLimitEnable", nameof(ContourMatchSettings.MatchPointXLimitEnabled), "匹配点X判断", JudgeSection, false, advanced: true),
-            N("MatchPointXLimitLow", nameof(ContourMatchSettings.MatchPointXLimitLow), "匹配点X下限", JudgeSection, -99_999, -99_999, 99_999,
+            N("MatchPointXLimitLow", nameof(ContourMatchSettings.MatchPointXLimitLow), "匹配点X下限", JudgeSection, 0, -99_999, 99_999,
                 when: nameof(ContourMatchSettings.MatchPointXLimitEnabled), pair: nameof(ContourMatchSettings.MatchPointXLimitHigh), pairLabel: "匹配点X范围", advanced: true),
             N("MatchPointXLimitHigh", nameof(ContourMatchSettings.MatchPointXLimitHigh), "匹配点X上限", JudgeSection, 99_999, -99_999, 99_999,
                 when: nameof(ContourMatchSettings.MatchPointXLimitEnabled), advanced: true),
             B("MatchPointYLimitEnable", nameof(ContourMatchSettings.MatchPointYLimitEnabled), "匹配点Y判断", JudgeSection, false, advanced: true),
-            N("MatchPointYLimitLow", nameof(ContourMatchSettings.MatchPointYLimitLow), "匹配点Y下限", JudgeSection, -99_999, -99_999, 99_999,
+            N("MatchPointYLimitLow", nameof(ContourMatchSettings.MatchPointYLimitLow), "匹配点Y下限", JudgeSection, 0, -99_999, 99_999,
                 when: nameof(ContourMatchSettings.MatchPointYLimitEnabled), pair: nameof(ContourMatchSettings.MatchPointYLimitHigh), pairLabel: "匹配点Y范围", advanced: true),
             N("MatchPointYLimitHigh", nameof(ContourMatchSettings.MatchPointYLimitHigh), "匹配点Y上限", JudgeSection, 99_999, -99_999, 99_999,
                 when: nameof(ContourMatchSettings.MatchPointYLimitEnabled), advanced: true),
             B("BoxPointXLimitEnable", nameof(ContourMatchSettings.BoxPointXLimitEnabled), "中心点X判断", JudgeSection, false, advanced: true),
-            N("BoxPointXLimitLow", nameof(ContourMatchSettings.BoxPointXLimitLow), "中心点X下限", JudgeSection, -99_999, -99_999, 99_999,
+            N("BoxPointXLimitLow", nameof(ContourMatchSettings.BoxPointXLimitLow), "中心点X下限", JudgeSection, 0, -99_999, 99_999,
                 when: nameof(ContourMatchSettings.BoxPointXLimitEnabled), pair: nameof(ContourMatchSettings.BoxPointXLimitHigh), pairLabel: "中心点X范围", advanced: true),
             N("BoxPointXLimitHigh", nameof(ContourMatchSettings.BoxPointXLimitHigh), "中心点X上限", JudgeSection, 99_999, -99_999, 99_999,
                 when: nameof(ContourMatchSettings.BoxPointXLimitEnabled), advanced: true),
             B("BoxPointYLimitEnable", nameof(ContourMatchSettings.BoxPointYLimitEnabled), "中心点Y判断", JudgeSection, false, advanced: true),
-            N("BoxPointYLimitLow", nameof(ContourMatchSettings.BoxPointYLimitLow), "中心点Y下限", JudgeSection, -99_999, -99_999, 99_999,
+            N("BoxPointYLimitLow", nameof(ContourMatchSettings.BoxPointYLimitLow), "中心点Y下限", JudgeSection, 0, -99_999, 99_999,
                 when: nameof(ContourMatchSettings.BoxPointYLimitEnabled), pair: nameof(ContourMatchSettings.BoxPointYLimitHigh), pairLabel: "中心点Y范围", advanced: true),
             N("BoxPointYLimitHigh", nameof(ContourMatchSettings.BoxPointYLimitHigh), "中心点Y上限", JudgeSection, 99_999, -99_999, 99_999,
                 when: nameof(ContourMatchSettings.BoxPointYLimitEnabled), advanced: true)
@@ -353,14 +378,8 @@ public static class ContourMatchFields
             // 不给它生成 presentation（与 Blob/PixelCount 的 ROI 文档字段同一做法），避免建行时抛异常。
             if (field.Name == nameof(ContourMatchSettings.TrainingRois)) continue;
             // 原厂这些字段是条件触发才显示（RangeScaleType=XY / UseMatchAllMode / 阈值类型=手动），
-            // 本方算法层均只支持默认值（Settings.Validate 拒绝非默认），用户无法合法启用——
-            // 按原厂默认态不生成 presentation（字段仍在 schema/settings 保留，存量数据兼容）。
-            if (field.Name is nameof(ContourMatchSettings.ScaleXStart) or nameof(ContourMatchSettings.ScaleXEnd)
-                or nameof(ContourMatchSettings.ScaleYStart) or nameof(ContourMatchSettings.ScaleYEnd)
-                or nameof(ContourMatchSettings.SkewXStart) or nameof(ContourMatchSettings.SkewXEnd)
-                or nameof(ContourMatchSettings.MultiModelMaxOverlap)
-                or nameof(ContourMatchSettings.MatchThreshold)) continue;
-            var condition = field.VisibleWhen is { } controller ? new FieldCondition(IdOf(controller), VisibilityValue(Spec(controller))) : null;
+            // 已按 AlgorithmTab.xml 的 Triggers 建行并用 VisibleWhen 控制显隐，不再整体跳过。
+            var condition = BuildCondition(field.VisibleWhen);
             var layout = new FieldLayout(field.Page, field.Section, condition,
                 PairWith: field.PairWith is { } partner ? IdOf(partner) : null,
                 Advanced: field.Advanced,
@@ -385,8 +404,24 @@ public static class ContourMatchFields
     /// <summary>
     /// 可见性条件的取值：三个模式下拉都是“选手动才显示跟随数值”，枚举控制器取 <c>Manual</c>。
     /// </summary>
-    private static object VisibilityValue(ContourMatchFieldSpec controller)
-        => controller.Type.IsEnum ? "Manual" : true;
+    /// <summary>
+    /// 解析 VisibleWhen：支持 "Field"（旧写法，枚举取 Manual、布尔取 true）与 "Field=Value"。
+    /// 枚举字段的值以字符串存储（Port 类型为 Text），布尔为 bool，整数为 long。
+    /// </summary>
+    private static FieldCondition? BuildCondition(string? visibleWhen)
+    {
+        if (string.IsNullOrWhiteSpace(visibleWhen)) return null;
+        var parts = visibleWhen.Split('=', 2);
+        var controller = Spec(parts[0].Trim());
+        if (parts.Length == 1)
+            return new FieldCondition(IdOf(controller.Name), controller.Type.IsEnum ? "Manual" : true);
+        var raw = parts[1].Trim();
+        object value = controller.Type == typeof(bool) ? bool.Parse(raw)
+            : controller.Type.IsEnum ? raw
+            : controller.Type == typeof(int) ? long.Parse(raw, System.Globalization.CultureInfo.InvariantCulture)
+            : throw new ArgumentException("VisibleWhen 只能引用布尔、整数或枚举字段：" + controller.Name);
+        return new FieldCondition(IdOf(controller.Name), value);
+    }
 
     private static TypeRef PortType(ContourMatchFieldSpec field)
         => field.Type == typeof(bool) ? DataType.Boolean
@@ -460,4 +495,6 @@ public static class ContourMatchFields
             _ => Convert.ToString(field.Default, CultureInfo.InvariantCulture) ?? ""
         };
 }
+
+
 

@@ -173,6 +173,18 @@ public partial class MainWindowViewModel
                 }
                 else RefreshFormalPublishedResult();
             }
+            else if (_editorDebugContext is null)
+            {
+                // RuntimeToolEditorWindow raises its Closed event after the
+                // editor context has drained.  In that order the context
+                // callback may already have detached _editorDebugControl and
+                // consumed the saved formal snapshot, so the branch above is
+                // skipped.  The final window-close boundary must still
+                // re-present the current formal publication; otherwise the
+                // private debug retirement leaves the shared ViewBox empty.
+                RetireResultPublication();
+                RefreshFormalPublishedResult();
+            }
             SetEditorRelatedImage(null);ResultWorkspaceChanged?.Invoke();
             NotifyParameterWindowStateChanged();
         };

@@ -53,7 +53,9 @@ public partial class ContourMatchParameterEditor : UserControl, IToolSettingsVie
             // 训练参数只在模板配置窗口出现（原厂 hppyramid...xaml:879-906）。
             ContourMatchFields.PyramidMode, ContourMatchFields.PyramidScaleLevel, ContourMatchFields.PyramidScaleRLevel,
             ContourMatchFields.EdgeThresholdMode, ContourMatchFields.EdgeThreshold,
-            ContourMatchFields.ChainMode, ContourMatchFields.MinChainLen, ContourMatchFields.MaskModel
+            // HALCON 创建参数（最小对比度/轮廓优化）只在模板窗口暴露；
+            // 贪婪度/亚像素属于匹配参数，保留在运行参数页显示。
+            ContourMatchFields.MinContrast, ContourMatchFields.Optimization
             // 注意：input.roi 是执行输入呈现字段，不属于 settings presentation，不能加入 SuppressedFieldRows。
         };
         // 原厂 FeatureMatchConfigPanal 是 DataTemplate 根、独占"特征模板"Tab 内容区，无自身宽高：

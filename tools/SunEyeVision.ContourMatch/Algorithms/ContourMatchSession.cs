@@ -27,11 +27,7 @@ public sealed class ContourMatchSession : IToolSession<ContourMatchSettings, Con
         {
             ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
             ArgumentNullException.ThrowIfNull(invocation);
-            // 未取证/未迁移语义在真实执行边界显式拒绝（rule-015）。编辑期不拒绝是因为
-            // 原厂参数页允许切换这些开关（G3a/G4 证据：全部搜索模式=开、是否考虑噪点=开均合法）。
-            var capability = invocation.Settings.ValidateCapability();
-            if (capability.Count != 0)
-                return ValueTask.FromResult(ToolOutcome<ContourMatchOutput>.Failed(capability[0].Code, capability[0].Message));
+            // 参数集已按 HALCON 能力重构：无原生对应的原厂参数已删除，不再需要执行期能力拒绝。
             // 原厂 0x030A TimeOut（秒）：用 linked CTS 做超时取消（0 表示不限），
             // Find 循环内已有 ThrowIfCancellationRequested，故超时可在匹配中途生效。
             var timeoutSeconds = invocation.Settings.Freeze().TimeOut;
@@ -58,7 +54,8 @@ public sealed class ContourMatchSession : IToolSession<ContourMatchSettings, Con
     }
 
     private sealed record Candidate(long ElementId, double CenterX, double CenterY, double AngleDegrees, double Score, double Scale,
-        HRegion Region, ContourMatchBox Box, IReadOnlyList<Point2> Outline, bool Passed, IReadOnlyList<string> FailedLimits);
+        HRegion Region, ContourMatchBox Box, IReadOnlyList<Point2> Outline, bool Passed, IReadOnlyList<string> FailedLimits,
+        int ModelIndex = 0, string ModelName = "", double ScaleX = 0, double ScaleY = 0);
 
     private static ContourMatchOutput Execute(ToolInvocation<ContourMatchSettings> invocation, CancellationToken cancellation)
     {
@@ -67,8 +64,21 @@ public sealed class ContourMatchSession : IToolSession<ContourMatchSettings, Con
         var errors = settings.Validate();
         if (errors.Count != 0)
             throw new ContourMatchCapabilityException("CONTOURMATCH_SETTINGS_INVALID", string.Join("；", errors.Select(error => error.Message)));
-        var template = ContourMatchTemplate.Decode(settings.ModelData);
-        template.RequireAngleCoverage(settings);
+        // 多模板：原厂每个模板挂一个原生模型（FeaturepatMatchConfigPanalDataBase.cs:152-180），
+        // 本方把多个模板序列化进 ModelData，逐个建模型后合并结果并做跨模型 NMS。
+        var entries = ContourMatchTemplateSet.DecodeEntries(settings.ModelData);
+        // 原厂「全部搜索模式」(UseMatchAllMode)：开=搜索全部模板；关=只搜列表里勾选的模板。
+        var indexed = entries.Select((entry, index) => (entry, index)).ToArray();
+        var active = settings.UseMatchAllMode ? indexed : indexed.Where(item => item.entry.Selected).ToArray();
+        if (active.Length == 0)
+            throw new ContourMatchCapabilityException("CONTOURMATCH_TEMPLATE_EMPTY",
+                "没有可搜索的模板：请勾选“加入搜索列表”的模板，或开启“全部搜索模式”。");
+        var templates = active.Select(item => item.entry.Template).ToArray();
+        var modelIndices = active.Select(item => item.index).ToArray();
+        var modelNames = active.Select(item => string.IsNullOrWhiteSpace(item.entry.Name)
+            ? ContourMatchTemplateSet.NewTemplateName(item.index) : item.entry.Name).ToArray();
+        foreach (var template in templates) template.RequireAngleCoverage(settings);
+        var templateName = TemplateName(settings);
 
         var inputs = invocation.Inputs;
         var image = inputs.Get<IReadOnlyImage>(ContourMatchSchema.ImageInput)
@@ -89,15 +99,21 @@ public sealed class ContourMatchSession : IToolSession<ContourMatchSettings, Con
         // Inherited 走上游 RoiInput 端口。两条路径都产出 HRegion，后续位置修正/求交/ReduceDomain 共用。
         using var roiRegion = ResolveSearchRegion(inputs, image, frame, width, height);
         using var posedRoi = fixture is null ? roiRegion.Clone() : HalconResourceBridge.TransformRegion(roiRegion, FixtureDeclarations.ToAffine2D(fixture, ContourMatchSchema.ImageFrame));
-        using var search = domain.Intersection(posedRoi);
+        using var baseSearch = domain.Intersection(posedRoi);
+        // 原厂 MatchExtentRate「延拓阈值」(0~90) 等价映射：把搜索域按图像短边的百分比外扩，
+        // 使目标跨越 ROI 边界时仍可被找到；外扩结果再与有效域相交，不越界。
+        // 说明：这是基于参数名与取值范围的可解释等价，不是复刻原厂原生算法的轮廓延拓。
+        using var dilated = DilateForExtent(baseSearch, settings.MatchExtentRate, width, height);
+        using var search = settings.MatchExtentRate > 0 ? domain.Intersection(dilated) : dilated.Clone();
         RequireSearchArea(search);
 
         using var reduced = gray.ReduceDomain(search);
-        var modelId = template.LoadModel();
+        var modelIds = new List<HTuple>(templates.Length);
         var outputResources = invocation.Context.Resources.CreateScope();
         try
         {
-            var matches = Find(reduced, modelId, template, settings, cancellation);
+            foreach (var template in templates) modelIds.Add(template.LoadModel());
+            var matches = FindAll(reduced, modelIds, templates, modelIndices, modelNames, settings, templateName, cancellation);
             var judged = Judge(settings, matches);
             try
             {
@@ -107,15 +123,17 @@ public sealed class ContourMatchSession : IToolSession<ContourMatchSettings, Con
                     cancellation.ThrowIfCancellationRequested();
                     var captured = HalconResourceBridge.CaptureRegion(candidate.Region, ContourMatchSchema.ImageFrame, frame, outputResources);
                     measurements.Add(new(candidate.ElementId, candidate.CenterX, candidate.CenterY, candidate.AngleDegrees,
-                        candidate.Score, candidate.Scale, candidate.Box, candidate.Outline, captured, candidate.Passed, candidate.FailedLimits));
+                        candidate.Score, candidate.Scale, candidate.Box, candidate.Outline, captured, candidate.Passed, candidate.FailedLimits,
+                        candidate.ModelIndex, candidate.ModelName, candidate.ScaleX, candidate.ScaleY));
                 }
                 var modulePassed = judged.Overall && (measurements.Count > 0 || settings.OkWhenCountIsZero) && measurements.All(item => item.Passed);
+                // 原厂 ROI 输出 = 检测区域外接框（DetectRectCenterPoint/DetectWidth/Height/Angle）。
                 var projection = ContourMatchResultProjection.Create(measurements, modulePassed,
-                    Stopwatch.GetElapsedTime(started).TotalMilliseconds, fixture);
+                    Stopwatch.GetElapsedTime(started).TotalMilliseconds, fixture, DetectRoiBox(search), templateName);
                 var geometry = ContourMatchResultGeometry.Capture(image, modulePassed, search, fixture, cancellation);
                 var output = new ContourMatchOutput(settings, projection, measurements.AsReadOnly(),
                     judged.Messages, geometry, new IDisposable[] { outputResources });
-                invocation.Context.Log($"[Perf] tool=ContourMatch count={projection.Count} elapsed={projection.ModuleRunTime:0.###}ms");
+                invocation.Context.Log($"[Perf] tool=ContourMatch count={projection.Count} templates={templates.Length} elapsed={projection.ModuleRunTime:0.###}ms");
                 return output;
             }
             finally
@@ -131,7 +149,71 @@ public sealed class ContourMatchSession : IToolSession<ContourMatchSettings, Con
         }
         finally
         {
-            ContourMatchTemplate.Clear(modelId);
+            foreach (var modelId in modelIds) ContourMatchTemplate.Clear(modelId);
+        }
+    }
+
+    /// <summary>
+    /// 多模板匹配：逐模板 Find 后合并，按原厂「多模板重叠率」(NMS Overlap Threshold) 做跨模型去重，
+    /// 再按排序类型重排并统一编号（原厂 MatchModelIndex 因此有真实值）。
+    /// </summary>
+    private static Candidate[] FindAll(HImage reduced, IReadOnlyList<HTuple> modelIds, IReadOnlyList<ContourMatchTemplate> templates,
+        IReadOnlyList<int> modelIndices, IReadOnlyList<string> modelNames,
+        ContourMatchSettings settings, string templateName, CancellationToken cancellation)
+    {
+        if (modelIds.Count == 1)
+        {
+            var single = Find(reduced, modelIds[0], templates[0], settings, cancellation);
+            var name = modelNames.Count > 0 ? modelNames[0] : templateName;
+            var modelIndex = modelIndices.Count > 0 ? modelIndices[0] : 0;
+            return single.Select(candidate => candidate with { ModelIndex = modelIndex, ModelName = name }).ToArray();
+        }
+        var pool = new List<Candidate>();
+        try
+        {
+            for (var index = 0; index < modelIds.Count; index++)
+                foreach (var candidate in Find(reduced, modelIds[index], templates[index], settings, cancellation))
+                    pool.Add(candidate with { ModelIndex = modelIndices[index], ModelName = modelNames[index] });
+            var threshold = Math.Clamp(settings.MultiModelMaxOverlap, 0, 100) / 100d;
+            var kept = new List<Candidate>(pool.Count);
+            foreach (var candidate in pool.OrderByDescending(item => item.Score))
+            {
+                if (kept.Any(item => OverlapRatio(candidate.Region, item.Region) > threshold))
+                {
+                    candidate.Region.Dispose();
+                    continue;
+                }
+                kept.Add(candidate);
+                if (kept.Count >= settings.MaxMatchCount) break;
+            }
+            foreach (var candidate in pool.Where(item => !kept.Contains(item))) candidate.Region.Dispose();
+            return Number(Order(kept, settings));
+        }
+        catch
+        {
+            foreach (var candidate in pool) candidate.Region.Dispose();
+            throw;
+        }
+    }
+
+    /// <summary>两匹配框的交并比（HALCON 区域面积，精确值而非轴对齐近似）。</summary>
+    private static double OverlapRatio(HRegion left, HRegion right)
+    {
+        HOperatorSet.Intersection(left, right, out var intersection);
+        using (intersection)
+        using (var intersectionArea = new HRegion(intersection))
+        {
+            HOperatorSet.AreaCenter(left, out var leftArea, out var ignoredRow1, out var ignoredColumn1);
+            HOperatorSet.AreaCenter(right, out var rightArea, out var ignoredRow2, out var ignoredColumn2);
+            using (leftArea) using (rightArea) using (ignoredRow1) using (ignoredColumn1) using (ignoredRow2) using (ignoredColumn2)
+            {
+                HOperatorSet.AreaCenter(intersectionArea, out var overlapArea, out var ignoredRow3, out var ignoredColumn3);
+                using (overlapArea) using (ignoredRow3) using (ignoredColumn3)
+                {
+                    var union = leftArea.D + rightArea.D - overlapArea.D;
+                    return union <= 0 ? 0 : overlapArea.D / union;
+                }
+            }
         }
     }
 
@@ -162,6 +244,66 @@ public sealed class ContourMatchSession : IToolSession<ContourMatchSettings, Con
                 throw new ContourMatchCapabilityException("CONTOURMATCH_ROI_EMPTY", "搜索区域与图像有效域没有交集：请检查区域与位置修正。");
     }
 
+    /// <summary>
+    /// 原厂 MatchModelName：本方单模板，名称取训练样本（TrainingRois 的 inspection 组首个命名项）。
+    /// 无命名样本时返回空串（不臆造名称）。
+    /// </summary>
+    private static string TemplateName(ContourMatchSettings settings)
+    {
+        try
+        {
+            foreach (var item in RoiDocumentValue.Items(settings.TrainingRois, RoiDocumentValue.Inspection))
+            {
+                var name = item.Get<string?>("name");
+                if (!string.IsNullOrWhiteSpace(name)) return name;
+            }
+        }
+        catch (Exception error) when (error is InvalidOperationException or ArgumentException or KeyNotFoundException)
+        {
+            // 文档结构异常时按未命名处理，由执行结果体现为空名称，不掩盖真实异常类型。
+        }
+        return "";
+    }
+
+    /// <summary>
+    /// 搜索域按延拓阈值外扩（原厂 MatchExtentRate 0~90，按图像短边百分比）。
+    /// 0 表示不延拓。
+    /// </summary>
+    private static HRegion DilateForExtent(HRegion region, int extentRate, int imageWidth, int imageHeight)
+    {
+        if (extentRate <= 0) return region.Clone();
+        var span = (int)Math.Round(Math.Min(imageWidth, imageHeight) * Math.Clamp(extentRate, 0, 90) / 100.0);
+        if (span <= 0) return region.Clone();
+        HOperatorSet.DilationRectangle1(region, out var dilated, span * 2 + 1, span * 2 + 1);
+        return new HRegion(dilated);
+    }
+
+    /// <summary>
+    /// 原厂 ROI 输出（检测区域）：本次实际搜索区域的外接框。HALCON 坐标为 row=y / column=x。
+    /// </summary>
+    private static ContourMatchBox? DetectRoiBox(HRegion search)
+    {
+        try
+        {
+            HOperatorSet.SmallestRectangle1(search, out var row1, out var column1, out var row2, out var column2);
+            using (row1) using (column1) using (row2) using (column2)
+            {
+                if (row1.Length == 0 || column1.Length == 0 || row2.Length == 0 || column2.Length == 0) return null;
+                var top = row1.D;
+                var left = column1.D;
+                var bottom = row2.D;
+                var right = column2.D;
+                if (bottom < top || right < left) return null;
+                return new ContourMatchBox((left + right) / 2, (top + bottom) / 2,
+                    right - left + 1, bottom - top + 1, 0);
+            }
+        }
+        catch (HalconException)
+        {
+            return null;
+        }
+    }
+
     /// <summary>形状模板匹配；返回按设置排序后的候选（仍未判定）。</summary>
     private static Candidate[] Find(HImage reduced, HTuple modelId, ContourMatchTemplate template, ContourMatchSettings settings,
         CancellationToken cancellation)
@@ -171,33 +313,56 @@ public sealed class ContourMatchSession : IToolSession<ContourMatchSettings, Con
         using var minScore = new HTuple(settings.MinScore);
         using var numMatches = new HTuple(settings.MaxMatchCount);
         using var maxOverlap = new HTuple(Math.Clamp(settings.MaxOverlap, 0, 100) / 100d);
-        using var subPixel = new HTuple("least_squares");
+        using var subPixel = new HTuple(ContourMatchSettings.HalconSubPixel(settings.SubPixel));
         // 特征尺度（PyramidScaleRLevel）→ 匹配期使用的模板层数；自动模式由 HALCON 自行决定。
         using var numLevels = new HTuple(settings.PyramidMode == ContourMatchPyramidMode.Manual
             ? Math.Clamp(settings.PyramidScaleRLevel, 0, Math.Max(1, template.LevelCount))
             : 0);
-        using var greediness = new HTuple(Greediness);
-        // 原厂 0x0307/0308 尺度范围作为运行期筛选；创建期已建 0.5~2.0 宽范围模型。
+        using var greediness = new HTuple(Math.Clamp(settings.Greediness, 0, 1));
+        // 原厂 0x0307/0308 尺度范围作为运行期筛选；创建期模型范围已覆盖运行期设置。
         using var scaleMin = new HTuple(settings.ScaleStart);
         using var scaleMax = new HTuple(Math.Max(settings.ScaleStart, settings.ScaleEnd));
+        // 各向异性模型：X/Y（列/行）尺度独立，对应原厂「尺度范围XY」与 X/Y 独立尺度搜索。
+        using var scaleRowMin = new HTuple(settings.ScaleYStart);
+        using var scaleRowMax = new HTuple(Math.Max(settings.ScaleYStart, settings.ScaleYEnd));
+        using var scaleColumnMin = new HTuple(settings.ScaleXStart);
+        using var scaleColumnMax = new HTuple(Math.Max(settings.ScaleXStart, settings.ScaleXEnd));
 
-        HOperatorSet.FindScaledShapeModel(reduced, modelId, angleStart, angleExtent, scaleMin, scaleMax,
-            minScore, numMatches, maxOverlap, subPixel, numLevels, greediness,
-            out var rows, out var columns, out var angles, out var scales, out var scores);
-        using (rows) using (columns) using (angles) using (scales) using (scores)
+        HTuple rows, columns, angles, scores, scaleRows, scaleColumns;
+        if (template.Anisotropic)
+            HOperatorSet.FindAnisoShapeModel(reduced, modelId, angleStart, angleExtent,
+                scaleRowMin, scaleRowMax, scaleColumnMin, scaleColumnMax,
+                minScore, numMatches, maxOverlap, subPixel, numLevels, greediness,
+                out rows, out columns, out angles, out scaleRows, out scaleColumns, out scores);
+        else
         {
-            if (rows.Length != columns.Length || rows.Length != angles.Length || rows.Length != scales.Length || rows.Length != scores.Length)
+            HOperatorSet.FindScaledShapeModel(reduced, modelId, angleStart, angleExtent, scaleMin, scaleMax,
+                minScore, numMatches, maxOverlap, subPixel, numLevels, greediness,
+                out rows, out columns, out angles, out var scales, out scores);
+            // 等比模型的行列尺度相同（同一元组，由 scaleRows/scaleColumns 共用持有）。
+            scaleRows = scales; scaleColumns = scales;
+        }
+        using (rows) using (columns) using (angles) using (scores) using (scaleRows) using (scaleColumns)
+        {
+            var aniso = template.Anisotropic;
+            var count = rows.Length;
+            if (count != columns.Length || count != angles.Length || count != scores.Length
+                || count != scaleRows.Length || count != scaleColumns.Length)
                 throw new ContourMatchCapabilityException("CONTOURMATCH_NATIVE_RESULT", "HALCON 返回的匹配元组长度不一致。");
-            if (rows.Length == 0) return Array.Empty<Candidate>();
+            if (count == 0) return Array.Empty<Candidate>();
             cancellation.ThrowIfCancellationRequested();
             using var modelContours = ModelContours(modelId);
-            var candidates = new List<Candidate>(rows.Length);
+            var candidates = new List<Candidate>(count);
             try
             {
-                for (var index = 0; index < rows.Length; index++)
+                for (var index = 0; index < count; index++)
                 {
                     cancellation.ThrowIfCancellationRequested();
-                    using var homMat = HomMat(rows[index].D, columns[index].D, angles[index].D, scales[index].D);
+                    var scaleRow = scaleRows[index].D;
+                    var scaleColumn = scaleColumns[index].D;
+                    // 等比模型时行列尺度相同，几何平均即原始尺度。
+                    var scaleGeometric = Math.Sqrt(Math.Abs(scaleRow * scaleColumn));
+                    using var homMat = HomMatAniso(rows[index].D, columns[index].D, angles[index].D, scaleRow, scaleColumn);
                     HOperatorSet.AffineTransContourXld(modelContours, out var moved, homMat);
                     using (moved)
                     {
@@ -209,11 +374,15 @@ public sealed class ContourMatchSession : IToolSession<ContourMatchSettings, Con
                             HOperatorSet.GenRectangle2(out var boxRegion, boxRow, boxColumn, boxPhi, length1, length2);
                             using (boxRegion)
                             {
-                                var outline = settings.OutlineEnabled ? ReadPoints(moved, cancellation) : Array.Empty<Point2>();
+                                // 原厂 OutLineEnable（轮廓）/ OutLinePointEnable（轮廓点）任一开启都需要轮廓点集：
+                                // 本方 output.outline-points 承载逐点明细（含 match-index），故两者取或。
+                                var outline = settings.OutlineEnabled || settings.OutlinePointsEnabled
+                                    ? ReadPoints(moved, cancellation) : Array.Empty<Point2>();
                                 var box = new ContourMatchBox(boxColumn.D, boxRow.D, length1.D * 2, length2.D * 2,
                                     NormalizeDegrees(-boxPhi.D * 180d / Math.PI));
                                 candidates.Add(new(0, boxColumn.D, boxRow.D, NormalizeDegrees(angles[index].D * 180d / Math.PI),
-                                    scores[index].D, scales[index].D, new HRegion(boxRegion), box, outline, true, Array.Empty<string>()));
+                                    scores[index].D, scaleGeometric, new HRegion(boxRegion), box, outline, true, Array.Empty<string>(),
+                                    ScaleX: scaleColumn, ScaleY: scaleRow));
                             }
                         }
                     }
@@ -234,6 +403,23 @@ public sealed class ContourMatchSession : IToolSession<ContourMatchSettings, Con
         HOperatorSet.GetShapeModelContours(out var contours, modelId, level);
         if (contours is null) throw new ContourMatchCapabilityException("CONTOURMATCH_TEMPLATE_EMPTY", "模板没有可用轮廓。");
         return contours;
+    }
+
+    /// <summary>各向异性仿射：列方向(x)与行方向(y)分别缩放，再旋转平移到目标位姿。</summary>
+    private static HTuple HomMatAniso(double row, double column, double angle, double scaleRow, double scaleColumn)
+    {
+        using var zero = new HTuple(0d);
+        using var rowTuple = new HTuple(row);
+        using var columnTuple = new HTuple(column);
+        using var angleTuple = new HTuple(angle);
+        HOperatorSet.VectorAngleToRigid(zero, zero, zero, rowTuple, columnTuple, angleTuple, out var rigid);
+        using (rigid)
+        {
+            using var scaleX = new HTuple(scaleColumn);
+            using var scaleY = new HTuple(scaleRow);
+            HOperatorSet.HomMat2dScale(rigid, scaleX, scaleY, zero, zero, out var homMat);
+            return homMat;
+        }
     }
 
     private static HTuple HomMat(double row, double column, double angle, double scale)
@@ -320,6 +506,9 @@ public sealed class ContourMatchSession : IToolSession<ContourMatchSettings, Con
             }
             if (settings.AngleLimitEnabled) PerMatch("角度判断", InRange(candidate.AngleDegrees, settings.AngleLimitLow, settings.AngleLimitHigh));
             if (settings.ScaleLimitEnabled) PerMatch("尺度判断", InRange(candidate.Scale, settings.ScaleLimitLow, settings.ScaleLimitHigh));
+            // 原厂 X/Y 尺度判断：各向异性模型用列/行真实尺度，等比模型两者相同。
+            if (settings.ScaleXLimitEnabled) PerMatch("X尺度判断", InRange(candidate.ScaleX, settings.ScaleXLimitLow, settings.ScaleXLimitHigh));
+            if (settings.ScaleYLimitEnabled) PerMatch("Y尺度判断", InRange(candidate.ScaleY, settings.ScaleYLimitLow, settings.ScaleYLimitHigh));
             if (settings.ScoreLimitEnabled) PerMatch("分数判断", InRange(candidate.Score, settings.ScoreLimitLow, settings.ScoreLimitHigh));
             if (settings.MatchPointXLimitEnabled) PerMatch("匹配点X判断", InRange(candidate.CenterX, settings.MatchPointXLimitLow, settings.MatchPointXLimitHigh));
             if (settings.MatchPointYLimitEnabled) PerMatch("匹配点Y判断", InRange(candidate.CenterY, settings.MatchPointYLimitLow, settings.MatchPointYLimitHigh));

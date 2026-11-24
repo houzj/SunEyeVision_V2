@@ -24,23 +24,31 @@ public enum ContourMatchThresholdMode
 }
 
 /// <summary>
-/// 原件「链式」（<c>ChainFlag</c>，默认 1）。下拉项 0=手动、1=自动
-/// （<c>hppyramidfeaturepatmatchdialoguistyle.xaml:898-902</c>），自动时最小链长由原件自行决定、控件禁用。
+/// 原件「尺度范围类型」（RangeScaleType，默认 0）。AlgorithmTab.xml 的 EnumEntrys：
+/// 0=尺度范围（Scale Range）、1=尺度范围XY（Scale RangeXY）；=1 时显示 X/Y 尺度范围行。
 /// </summary>
-public enum ContourMatchChainMode
+public enum ContourMatchRangeScaleType
 {
-    Manual = 0,
-    Auto = 1
+    Range = 0,
+    XY = 1
 }
 
-/// <summary>
-/// 原件「掩膜模型」（<c>MaskModelFlag</c>，默认 0）。下拉项 0=全轮廓、1=外轮廓
-/// （<c>hppyramidfeaturepatmatchdialoguistyle.xaml:903-906</c>）。
-/// </summary>
-public enum ContourMatchMaskModel
+/// <summary>HALCON sub_pixel：匹配结果亚像素精度模式。</summary>
+public enum ContourMatchSubPixel
 {
-    FullOutline = 0,
-    OuterOutline = 1
+    None = 0,
+    Interpolation = 1,
+    LeastSquares = 2
+}
+
+/// <summary>HALCON optimization：模型轮廓点约简方式。</summary>
+public enum ContourMatchOptimization
+{
+    Auto = 0,
+    None = 1,
+    PointReductionLow = 2,
+    PointReductionMedium = 3,
+    PointReductionHigh = 4
 }
 
 /// <summary>
@@ -90,13 +98,13 @@ public sealed record ContourMatchSettings : IToolSettings<ContourMatchSettings>
     public ContourMatchThresholdMode EdgeThresholdMode { get; init; } = ContourMatchThresholdMode.Auto;
     /// <summary>原件「边缘阈值」（EdgeThreshold，滑条 1..255，默认 15）。</summary>
     public int EdgeThreshold { get; init; } = 15;
-    public ContourMatchChainMode ChainMode { get; init; } = ContourMatchChainMode.Auto;
-    /// <summary>原件「最小链长」（MinChainLen，滑条 2..1000，默认 4）；链式为自动时原件禁用该控件。</summary>
-    public int MinChainLen { get; init; } = 4;
-    public ContourMatchMaskModel MaskModel { get; init; } = ContourMatchMaskModel.FullOutline;
+    /// <summary>HALCON min_contrast（1..255，默认 5）：忽略低于此对比度的边缘，抑制噪点与弱边。</summary>
+    public int MinContrast { get; init; } = 5;
+    /// <summary>HALCON optimization：模型轮廓点约简方式，默认 auto。</summary>
+    public ContourMatchOptimization Optimization { get; init; } = ContourMatchOptimization.Auto;
 
     // 运行参数（原件 56 项 ParamItem）
-    public double MinScore { get; init; } = 0.5;
+    public double MinScore { get; init; } = 0.8;
     public int MaxMatchCount { get; init; } = 1;
     /// <summary>原件 Polarity：同族 SDK 枚举 0=不考虑极性、1=考虑极性；默认 1。</summary>
     public int Polarity { get; init; } = 1;
@@ -109,38 +117,34 @@ public sealed record ContourMatchSettings : IToolSettings<ContourMatchSettings>
     public double ScaleYStart { get; init; } = 1;
     public double ScaleYEnd { get; init; } = 1;
     public int MaxOverlap { get; init; } = 50;
-    /// <summary>原件 MultiModelMaxOverlap：默认 50，只在多模板匹配时生效；本工具单模板，非默认值显式拒绝。</summary>
+    /// <summary>原件 MultiModelMaxOverlap：默认 50，只在多模板匹配时用于跨模型候选去重。</summary>
     public int MultiModelMaxOverlap { get; init; } = 50;
     public ContourMatchSortType SortType { get; init; } = ContourMatchSortType.Score;
-    /// <summary>原件 MatchThresholdFlag：同族 SDK 枚举 0=自动、1=模板、2=手动；默认 0。</summary>
-    public int MatchThresholdMode { get; init; }
-    public int MatchThreshold { get; init; } = 40;
-    /// <summary>原件 SpotterFlag：是否考虑噪点，默认 False。匹配期语义未取证，启用即拒绝。</summary>
-    public bool SpotterEnabled { get; init; }
-    /// <summary>原件 MatchExtentRate：延拓阈值 0..90，默认 0。语义未取证，非 0 即拒绝。</summary>
+    /// <summary>HALCON greediness（0..1，默认 0.9）：越大越快、候选越少。</summary>
+    public double Greediness { get; init; } = 0.9;
+    /// <summary>HALCON sub_pixel：匹配结果亚像素精度模式，默认 least_squares。</summary>
+    public ContourMatchSubPixel SubPixel { get; init; } = ContourMatchSubPixel.LeastSquares;
+    /// <summary>搜索域延拓比例 0..90（按图像短边百分比）；0 表示不延拓。</summary>
     public int MatchExtentRate { get; init; }
-    /// <summary>原件 TimeOut：超时控制 0..10000，默认 0（不限）。原生匹配不可中断，非 0 即拒绝。</summary>
+    /// <summary>原件 TimeOut：超时控制 0..10000 秒，默认 0（不限）。执行入口用 linked CTS 实现超时取消。</summary>
     public int TimeOut { get; init; }
     public bool OutlineEnabled { get; init; } = true;
-    /// <summary>原件 OutLinePointEnable：轮廓点使能，默认 False。逐点明细语义未取证，启用即拒绝。</summary>
+    /// <summary>原件 OutLinePointEnable：轮廓点使能，默认 False。与轮廓使能取或，共同驱动逐点明细输出。</summary>
     public bool OutlinePointsEnabled { get; init; }
-    /// <summary>原件 UseMatchAllMode：全部搜索模式，默认 False。语义未取证，启用即拒绝。</summary>
+    /// <summary>原件 UseMatchAllMode：全部搜索模式，默认 False；开启后参与搜索的模板集合扩展为全部模板。</summary>
     public bool UseMatchAllMode { get; init; }
-    /// <summary>原件 RangeScaleType：尺度范围类型，默认 0（等比）。非默认即拒绝。</summary>
-    public int RangeScaleType { get; init; }
+    /// <summary>原件 RangeScaleType：尺度范围类型，0=等比、1=X/Y 独立（走 HALCON 各向异性模型）。</summary>
+    public ContourMatchRangeScaleType RangeScaleType { get; init; }
     /// <summary>原件 OKWhenNumIsZero：匹配个数为 0 时判定 OK，默认 False。</summary>
     public bool OkWhenCountIsZero { get; init; }
-    /// <summary>原件 SkewXStart：起始横切角度，默认 0。HALCON 形状模板无横切语义，非 0 即拒绝。</summary>
-    public int SkewXStart { get; init; }
-    /// <summary>原件 SkewXEnd：终止横切角度，默认 0。</summary>
-    public int SkewXEnd { get; init; }
+
 
     // 结果判断（原件限位组）
     public bool CountLimitEnabled { get; init; }
     public int CountLimitLow { get; init; }
     public int CountLimitHigh { get; init; } = 99_999;
     public bool AngleLimitEnabled { get; init; }
-    public double AngleLimitLow { get; init; } = -180;
+    public double AngleLimitLow { get; init; } = 0;
     public double AngleLimitHigh { get; init; } = 180;
     public bool ScaleLimitEnabled { get; init; }
     public double ScaleLimitLow { get; init; } = 0.1;
@@ -155,20 +159,38 @@ public sealed record ContourMatchSettings : IToolSettings<ContourMatchSettings>
     public double ScoreLimitLow { get; init; }
     public double ScoreLimitHigh { get; init; } = 1;
     public bool MatchPointXLimitEnabled { get; init; }
-    public double MatchPointXLimitLow { get; init; } = -99_999;
+    public double MatchPointXLimitLow { get; init; } = 0;
     public double MatchPointXLimitHigh { get; init; } = 99_999;
     public bool MatchPointYLimitEnabled { get; init; }
-    public double MatchPointYLimitLow { get; init; } = -99_999;
+    public double MatchPointYLimitLow { get; init; } = 0;
     public double MatchPointYLimitHigh { get; init; } = 99_999;
     public bool BoxPointXLimitEnabled { get; init; }
-    public double BoxPointXLimitLow { get; init; } = -99_999;
+    public double BoxPointXLimitLow { get; init; } = 0;
     public double BoxPointXLimitHigh { get; init; } = 99_999;
     public bool BoxPointYLimitEnabled { get; init; }
-    public double BoxPointYLimitLow { get; init; } = -99_999;
+    public double BoxPointYLimitLow { get; init; } = 0;
     public double BoxPointYLimitHigh { get; init; } = 99_999;
 
     /// <summary>冻结只做文本规范化，不改数值；可执行性由 <see cref="Validate"/> 明确判定。</summary>
     public ContourMatchSettings Freeze() => this with { ModelData = ModelData?.Trim() ?? "" };
+
+    /// <summary>枚举 → HALCON optimization 字符串。</summary>
+    public static string HalconOptimization(ContourMatchOptimization value) => value switch
+    {
+        ContourMatchOptimization.None => "none",
+        ContourMatchOptimization.PointReductionLow => "point_reduction_low",
+        ContourMatchOptimization.PointReductionMedium => "point_reduction_medium",
+        ContourMatchOptimization.PointReductionHigh => "point_reduction_high",
+        _ => "auto"
+    };
+
+    /// <summary>枚举 → HALCON sub_pixel 字符串。</summary>
+    public static string HalconSubPixel(ContourMatchSubPixel value) => value switch
+    {
+        ContourMatchSubPixel.None => "none",
+        ContourMatchSubPixel.Interpolation => "interpolation",
+        _ => "least_squares"
+    };
 
     /// <summary>参数组合校验；任何一项不成立都返回明确诊断，不做静默降级（rule-015）。</summary>
     public IReadOnlyList<Diagnostic> Validate()
@@ -189,11 +211,11 @@ public sealed record ContourMatchSettings : IToolSettings<ContourMatchSettings>
         if (PyramidMode == ContourMatchPyramidMode.Manual && PyramidScaleRLevel > PyramidScaleLevel)
             Fail("CONTOURMATCH_SETTINGS_INVALID", "特征尺度不能大于压缩比。", ContourMatchFields.PyramidScaleRLevel);
         if (EdgeThreshold is < 1 or > 255) Fail("CONTOURMATCH_SETTINGS_INVALID", "边缘阈值必须在 1 到 255 之间。", ContourMatchFields.EdgeThreshold);
-        if (MinChainLen is < 2 or > 1000) Fail("CONTOURMATCH_SETTINGS_INVALID", "最小链长必须在 2 到 1000 之间。", ContourMatchFields.MinChainLen);
+        if (MinContrast is < 1 or > 255) Fail("CONTOURMATCH_SETTINGS_INVALID", "最小对比度必须在 1 到 255 之间。", ContourMatchFields.MinContrast);
         if (!Enum.IsDefined(PyramidMode)) Fail("CONTOURMATCH_SETTINGS_INVALID", "金字塔比例取值非法。", ContourMatchFields.PyramidMode);
         if (!Enum.IsDefined(EdgeThresholdMode)) Fail("CONTOURMATCH_SETTINGS_INVALID", "阈值模式取值非法。", ContourMatchFields.EdgeThresholdMode);
-        if (!Enum.IsDefined(ChainMode)) Fail("CONTOURMATCH_SETTINGS_INVALID", "链式取值非法。", ContourMatchFields.ChainMode);
-        if (!Enum.IsDefined(MaskModel)) Fail("CONTOURMATCH_SETTINGS_INVALID", "掩膜模型取值非法。", ContourMatchFields.MaskModel);
+        if (!Enum.IsDefined(Optimization)) Fail("CONTOURMATCH_SETTINGS_INVALID", "轮廓优化取值非法。", ContourMatchFields.Optimization);
+        if (!Enum.IsDefined(SubPixel)) Fail("CONTOURMATCH_SETTINGS_INVALID", "亚像素模式取值非法。", ContourMatchFields.SubPixel);
         if (!Enum.IsDefined(SortType)) Fail("CONTOURMATCH_SETTINGS_INVALID", "排序方式取值非法。", ContourMatchFields.SortType);
 
         // 运行参数
@@ -204,8 +226,10 @@ public sealed record ContourMatchSettings : IToolSettings<ContourMatchSettings>
         else if (AngleStart > AngleEnd) Fail("CONTOURMATCH_SETTINGS_INVALID", "角度范围下限不能超过上限。", ContourMatchFields.AngleStart);
         if (Polarity is not (0 or 1))
             Fail("CONTOURMATCH_SETTINGS_INVALID", "匹配极性必须是 0（忽略）或 1（考虑）。", ContourMatchFields.Polarity);
-        if (ScaleStart < 0.5 || ScaleEnd > 2.0 || ScaleStart > ScaleEnd)
-            Fail("CONTOURMATCH_SETTINGS_INVALID", "尺度搜索范围必须在 0.5~2.0 且下限不超过上限。", ContourMatchFields.ScaleStart);
+        // 原厂 AlgorithmTab.xml RangScale：MinValue 0.1 / MaxValue 10 / Inc 0.01（本方曾误限 0.5~2.0）。
+        if (ScaleStart < 0.1 || ScaleEnd > 10 || ScaleStart > ScaleEnd)
+            Fail("CONTOURMATCH_SETTINGS_INVALID", "尺度搜索范围必须在 0.1~10 且下限不超过上限。", ContourMatchFields.ScaleStart);
+        if (Greediness is < 0 or > 1) Fail("CONTOURMATCH_SETTINGS_INVALID", "贪婪度必须在 0 到 1 之间。", ContourMatchFields.Greediness);
         if (TimeOut is < 0 or > 10_000)
             Fail("CONTOURMATCH_SETTINGS_INVALID", "超时控制必须在 0 到 10000 秒之间。", ContourMatchFields.TimeOut);
 
@@ -222,42 +246,6 @@ public sealed record ContourMatchSettings : IToolSettings<ContourMatchSettings>
             Fail("CONTOURMATCH_SETTINGS_INVALID", "分数判断范围必须在 0 到 1 之间。", ContourMatchFields.ScoreLimitLow);
         if (AngleLimitEnabled && (AngleLimitLow < -180 || AngleLimitHigh > 180))
             Fail("CONTOURMATCH_SETTINGS_INVALID", "角度判断范围必须在 -180 到 180 度之间。", ContourMatchFields.AngleLimitLow);
-        return errors.AsReadOnly();
-    }
-
-    /// <summary>
-    /// 能力边界校验：未取证/未迁移语义的取值显式拒绝，不静默忽略（rule-015）。
-    /// 原厂参数页允许切换这些开关（G3a/G4 证据：全部搜索模式=开、是否考虑噪点=开均为合法测试态），
-    /// 故编辑期不拒绝；仅执行入口调用，把拒绝放在真实执行边界上。
-    /// </summary>
-    public IReadOnlyList<Diagnostic> ValidateCapability()
-    {
-        var errors = new List<Diagnostic>();
-        void Fail(string code, string message, string? fieldId = null) => errors.Add(new(code, message, fieldId));
-        if (ChainMode != ContourMatchChainMode.Auto)
-            Fail("CONTOURMATCH_CHAIN_MODE_NOT_READY", "手动链长在 HALCON 形状模板中没有对应语义，暂只支持自动。", ContourMatchFields.ChainMode);
-        if (MaskModel != ContourMatchMaskModel.FullOutline)
-            Fail("CONTOURMATCH_MASK_MODEL_NOT_READY", "外轮廓掩膜模型依赖原件轮廓划分语义，暂只支持全轮廓。", ContourMatchFields.MaskModel);
-        if (ScaleXStart != 1 || ScaleXEnd != 1 || ScaleYStart != 1 || ScaleYEnd != 1)
-            Fail("CONTOURMATCH_SCALE_XY_NOT_READY", "HALCON 形状模板仅支持等比尺度，X/Y 独立尺度搜索暂不支持。", ContourMatchFields.ScaleXStart);
-        if (ScaleXLimitEnabled || ScaleYLimitEnabled)
-            Fail("CONTOURMATCH_SCALE_XY_NOT_READY", "X/Y 独立尺度未实现，对应判断暂不可用。", ContourMatchFields.ScaleXLimitEnabled);
-        if (MatchThresholdMode != 0)
-            Fail("CONTOURMATCH_MATCH_THRESHOLD_NOT_READY", "边缘阈值在 HALCON 形状模板创建期固定，运行期无法切换，暂只支持 0（自动）。", ContourMatchFields.MatchThresholdMode);
-        if (SpotterEnabled)
-            Fail("CONTOURMATCH_SPOTTER_NOT_READY", "噪点考虑语义尚未取证，暂不支持执行。", ContourMatchFields.SpotterEnabled);
-        if (MatchExtentRate != 0)
-            Fail("CONTOURMATCH_MATCH_EXTENT_NOT_READY", "延拓阈值语义尚未取证，暂只支持 0。", ContourMatchFields.MatchExtentRate);
-        if (OutlinePointsEnabled)
-            Fail("CONTOURMATCH_OUTLINE_POINTS_NOT_READY", "轮廓点逐点明细语义尚未取证，轮廓已由“轮廓使能”输出，暂不支持执行。", ContourMatchFields.OutlinePointsEnabled);
-        if (UseMatchAllMode)
-            Fail("CONTOURMATCH_MATCH_ALL_MODE_NOT_READY", "全部搜索模式语义尚未取证，暂不支持执行。", ContourMatchFields.UseMatchAllMode);
-        if (MultiModelMaxOverlap != 50)
-            Fail("CONTOURMATCH_MULTI_MODEL_NOT_READY", "多模板匹配未迁移，多模板重叠率不具备执行语义，暂只支持默认值 50。", ContourMatchFields.MultiModelMaxOverlap);
-        if (RangeScaleType != 0)
-            Fail("CONTOURMATCH_RANGE_SCALE_TYPE_NOT_READY", "尺度范围类型语义尚未取证，暂只支持默认值 0。", ContourMatchFields.RangeScaleType);
-        if (SkewXStart != 0 || SkewXEnd != 0)
-            Fail("CONTOURMATCH_SKEW_NOT_READY", "横切角度在 HALCON 形状模板中没有对应语义，暂只支持 0。", ContourMatchFields.SkewXStart);
         return errors.AsReadOnly();
     }
 }

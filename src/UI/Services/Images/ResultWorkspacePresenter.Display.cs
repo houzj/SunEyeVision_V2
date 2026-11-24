@@ -12,6 +12,33 @@ namespace SunEyeVision.UI.Services.Images;
 
 internal sealed partial class ResultWorkspacePresenter
 {
+    private sealed record GlobalOutlineGroup(int BlobIndex, List<Point2> Points);
+
+    private static IReadOnlyList<GlobalOutlineGroup> ReadGlobalOutline(DeclaredValueReader payload)
+    {
+        var info = payload.GetField("info");
+        if(info.IsMissing || info.IsNull) return Array.Empty<GlobalOutlineGroup>();
+        var xs = info.GetField("x");
+        var ys = info.GetField("y");
+        var indices = info.GetField("blob-index");
+        if(xs.Count != ys.Count || xs.Count != indices.Count)
+            throw new InvalidOperationException("ContourInfo point arrays have different lengths.");
+        var groups = new Dictionary<int, GlobalOutlineGroup>();
+        for(var index=0; index<xs.Count; index++)
+        {
+            var blobIndex = checked((int)indices.GetElement(index).GetScalar<long>());
+            if(blobIndex < 0) throw new InvalidOperationException("ContourInfo blob index is invalid.");
+            if(!groups.TryGetValue(blobIndex, out var group))
+            {
+                group = new GlobalOutlineGroup(blobIndex, new List<Point2>());
+                groups.Add(blobIndex, group);
+            }
+            group.Points.Add(new Point2(xs.GetElement(index).GetScalar<double>(),
+                ys.GetElement(index).GetScalar<double>()));
+        }
+        return groups.Values.OrderBy(group=>group.BlobIndex).ToArray();
+    }
+
     private static string? PointTip(string? label, RecordValue shape)
     {
         if (label is null || shape.Get<string>("kind") != "point")
@@ -24,6 +51,14 @@ internal sealed partial class ResultWorkspacePresenter
     {
         for (var index = 0; index < paths.Count; index++)
             yield return paths.GetElement(index).GetField("points");
+    }
+
+    private static DeclaredValueReader ReadPath(DeclaredValueReader root, ResultFieldPath path)
+    {
+        var value = root;
+        foreach (var member in path.MemberFieldPath)
+            value = value.GetField(member);
+        return value;
     }
 
     private sealed class DisplayScene : IDisposable
@@ -101,8 +136,10 @@ internal sealed partial class ResultWorkspacePresenter
             var appearance = state.Appearance;
             var innerPath = appearance.InnerRectangle is { Visible: true } ? state.Descriptor.InnerRectangle : null;
             var centroidPath = appearance.Centroids is { Visible: true } ? state.Descriptor.Centroid : null;
-            var outlinePath = appearance.Outline is { Visible: true } ? state.Descriptor.Outline : null;
-            var showRows = appearance.Graphic.Visible || centroidPath is not null || innerPath is not null || outlinePath is not null;
+            var showOutline = appearance.Outline is { Visible: true }
+                && (state.Descriptor.Outline is not null || state.Descriptor.GlobalOutline is not null);
+            var outlinePath = showOutline ? state.Descriptor.Outline : null;
+            var showRows = appearance.Graphic.Visible || centroidPath is not null || innerPath is not null || showOutline;
             var roiGroups = frozen?.Groups
                 .Where(group => group.Coverage == ResultGeometryCoverage.Explicit && group.Shapes.Count != 0)
                 .Select(group => (Group:group, Style:RoiStyle(appearance,group.Role)))
@@ -120,6 +157,9 @@ internal sealed partial class ResultWorkspacePresenter
                     rows=values.Values.Read(state.Descriptor.Rows.PortId);
                     foreach(var member in state.Descriptor.Rows.MemberFieldPath)rows=rows.GetField(member);
                 }
+                DeclaredValueReader? globalOutline = null;
+                if(showOutline && state.Descriptor.GlobalOutline is {} globalPath)
+                    globalOutline = ReadPath(values!.Values.Read(globalPath.PortId), globalPath);
                 if(appearance.Text.Visible)
                 {
                     textLease=state.BorrowText();
@@ -161,6 +201,9 @@ internal sealed partial class ResultWorkspacePresenter
                 var selectedId = selection?.ElementIdentity as long?;
                 DeclaredValueReader Member(DeclaredValueReader row,ResultFieldPath path)=>row.GetField(path.MemberFieldPath.Last());
                 var rowCount=showRows?rows!.Count:0;
+                var globalOutlineGroups = globalOutline is { IsMissing:false, IsNull:false }
+                    ? ReadGlobalOutline(globalOutline)
+                    : null;
                 for(var i=0;i<rowCount;i++)
                 {
                     if(!Current())throw new InvalidOperationException("显示准备期间结果或样式已失效。");
@@ -233,6 +276,21 @@ internal sealed partial class ResultWorkspacePresenter
                         }
                         if(points.Count!=0)
                             outlines.Add(new(receipt.Frame,receipt.Coordinates,points.ToArray(),i,passed,Color(outlineStyle.Ok),Color(outlineStyle.Ng)));
+                    }
+                }
+                if(globalOutlineGroups is not null && appearance.Outline is {} globalOutlineStyle)
+                {
+                    foreach(var group in globalOutlineGroups)
+                    {
+                        if(group.Points.Count==0) continue;
+                        var resultIndex = group.BlobIndex;
+                        var passed = resultIndex >= 0 && resultIndex < rowCount
+                            && Member(rows!.GetElement(resultIndex), state.Descriptor.Passed).GetScalar<bool>();
+                        outlinePoints = checked(outlinePoints + group.Points.Count);
+                        if(outlinePoints > 1_000_000)
+                            throw new ArgumentException("outline-budget: 场景轮廓点超过预算。");
+                        outlines.Add(new(receipt.Frame, receipt.Coordinates, group.Points.ToArray(),
+                            resultIndex, passed, Color(globalOutlineStyle.Ok), Color(globalOutlineStyle.Ng)));
                     }
                 }
                 if(textLease is not null)

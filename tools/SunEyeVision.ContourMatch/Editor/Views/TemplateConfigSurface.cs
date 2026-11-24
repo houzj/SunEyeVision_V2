@@ -27,6 +27,15 @@ public sealed class TemplateConfigSurface : ContentControl, INotifyPropertyChang
         _data.PropertyChanged += (_, e) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(e.PropertyName));
     }
 
+    public override void OnApplyTemplate()
+    {
+        base.OnApplyTemplate();
+        if (Template.FindName("Match", this) is Button match)
+        {
+            match.Command = _data.MatchCommand;
+            match.CommandParameter = true;
+        }
+    }
     // ── 命令 ──
     public ICommand SelectCurImageCommand => _data.SelectCurImageCommand;
     public ICommand SelectOtherImageCommand => _data.SelectOtherImageCommand;
@@ -52,19 +61,19 @@ public sealed class TemplateConfigSurface : ContentControl, INotifyPropertyChang
     public IList? SignList => _data.SignList;
     public IList? ROILists => _data.ROILists;
     public IList? ShapeList => _data.ShapeList;
-    public IList? SelectedROIList { get => _data.SelectedROIList; set => _data.SelectedROIList = value; }
-    public Type DrawROIType { get => _data.DrawROIType; set => _data.DrawROIType = value; }
-    public bool IsStateForDrawROI { get => _data.IsStateForDrawROI; set => _data.IsStateForDrawROI = value; }
+    public IList? SelectedROIList => _data.SelectedROIList;
+    public Type DrawROIType => _data.DrawROIType;
+    public bool IsStateForDrawROI => _data.IsStateForDrawROI;
     public bool IsUsePen { get => _data.IsUsePen; set => _data.IsUsePen = value; }
-    public bool MatchPointLock { get; set; }
+    public bool MatchPointLock { get => _data.MatchPointLock; set => _data.MatchPointLock = value; }
     public int PyramidScaleFlag { get => _data.PyramidScaleFlag; set => _data.PyramidScaleFlag = value; }
     public int PyramidScaleLevel { get => _data.PyramidScaleLevel; set => _data.PyramidScaleLevel = value; }
     public int PyramidScaleRLevel { get => _data.PyramidScaleRLevel; set => _data.PyramidScaleRLevel = value; }
     public int EdgeThresholdFlag { get => _data.EdgeThresholdFlag; set => _data.EdgeThresholdFlag = value; }
     public int EdgeThreshold { get => _data.EdgeThreshold; set => _data.EdgeThreshold = value; }
-    public int ChainFlag { get => _data.ChainFlag; set => _data.ChainFlag = value; }
-    public int MinChainLen { get => _data.MinChainLen; set => _data.MinChainLen = value; }
-    public int MaskModelFlag { get => _data.MaskModelFlag; set => _data.MaskModelFlag = value; }
+    public int OptimizationIndex { get => _data.OptimizationIndex; set => _data.OptimizationIndex = value; }
+    public int MinContrast { get => _data.MinContrast; set => _data.MinContrast = value; }
+    public int SubPixelIndex { get => _data.SubPixelIndex; set => _data.SubPixelIndex = value; }
     public double PanRectWidth { get => _data.PanRectWidth; set => _data.PanRectWidth = value; }
     public double PanRectWidth2 { get => _data.PanRectWidth2; set => _data.PanRectWidth2 = value; }
     public bool BackEnable => _data.BackEnable;
@@ -73,4 +82,17 @@ public sealed class TemplateConfigSurface : ContentControl, INotifyPropertyChang
     public double FixPointY { get => _data.FixPointY; set => _data.FixPointY = value; }
 
     internal TemplateConfigData Model => _data;
+
+    /// <summary>
+    /// 原厂 XAML 的 PxSlider 用 CallMethodAction 在 DataContext 上回调这两个方法
+    /// （TargetObject="{Binding}" 解析到本控件，而不是 PxSlider 自己）：
+    /// 原厂 HPFeaturepatMatchDialogUI 用它们在拖动笔刷尺寸滑块期间抑制画布 ROI 绘制。
+    /// 本方浮层与画布分离，拖动时鼠标不在画布上，无额外状态需要抑制。
+    /// 缺这两个方法会让 CallMethodAction 抛 “Could not find method named …”，中断滑块拖动。
+    /// </summary>
+    public void ThumbMouseLeftButtonDown() { }
+
+    /// <summary>见 <see cref="ThumbMouseLeftButtonDown"/>。</summary>
+    public void ThumbMouseLeftButtonUp() { }
 }
+

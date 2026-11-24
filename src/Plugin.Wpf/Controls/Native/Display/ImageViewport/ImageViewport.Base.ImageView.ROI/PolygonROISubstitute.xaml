@@ -9,7 +9,7 @@
   </FrameworkElement.Resources>
   <Control.Template>
     <ControlTemplate>
-      <Path Stroke="#0F6AF3" StrokeThickness="{Binding StrokeThickness, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+      <Path Fill="{Binding DataContext.RoiFill, RelativeSource={RelativeSource Mode=TemplatedParent}}" Stroke="#0F6AF3" StrokeThickness="{Binding StrokeThickness, RelativeSource={RelativeSource Mode=TemplatedParent}}">
         <Path.Data>
           <PathGeometry>
             <PathFigure IsClosed="True" StartPoint="{Binding Points[0], RelativeSource={RelativeSource Mode=TemplatedParent}}">

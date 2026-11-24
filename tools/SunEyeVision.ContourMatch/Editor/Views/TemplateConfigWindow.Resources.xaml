@@ -556,7 +556,7 @@
                         <Button Width="95" Margin="0,7,5,6" Content="{DynamicResource Lang_SelectOtherImage}" Style="{StaticResource Orange_ButtonStyle}" Command="{Binding SelectOtherImageCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
                         <StackPanel Orientation="Horizontal">
                           <TextBlock Text="{DynamicResource 模板存图}" Foreground="{DynamicResource ParamsTabForeground}" FontFamily="Microsoft YaHei" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                          <ToggleButton Name="cbIsSaveImage" Width="80" IsChecked="True" Margin="-5,0,0,0" Template="{StaticResource switchbutton}" />
+                          <ToggleButton Name="cbIsSaveImage" Width="80" IsChecked="{Binding IsSaveImage, Mode=TwoWay}" Margin="-5,0,0,0" Template="{StaticResource switchbutton}" />
                         </StackPanel>
                         <commomcontrol:SuperImageButton Name="Save" Width="30" ToolTip="{DynamicResource 保存模型工程}" Command="{Binding SaveCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}">
                           <commomcontrol:SuperImageButton.NormalConnent>
@@ -805,8 +805,30 @@
                               </StackPanel>
                             </StackPanel>
                             <UniformGrid Grid.Row="0" Columns="4" Width="150" HorizontalAlignment="Right">
-                              <pcUiControl:ZoomOutButton Width="34" Height="34" ToolTip="放大" HookImageViewBox="{Binding ElementName=imageViewBox}"><pcUiControl:ZoomOutButton.Template><ControlTemplate TargetType="Button"><Image Width="34" Height="34" Stretch="None" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/zoomout.png" /></ControlTemplate></pcUiControl:ZoomOutButton.Template></pcUiControl:ZoomOutButton>
-                              <pcUiControl:ZoomInButton Width="34" Height="34" ToolTip="缩小" HookImageViewBox="{Binding ElementName=imageViewBox}"><pcUiControl:ZoomInButton.Template><ControlTemplate TargetType="Button"><Image Width="34" Height="34" Stretch="None" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/zoomin.png" /></ControlTemplate></pcUiControl:ZoomInButton.Template></pcUiControl:ZoomInButton>
+                              <pcUiControl:ZoomOutButton Width="34" Height="34" ToolTip="放大" HookImageViewBox="{Binding ElementName=imageViewBox}">
+                                <pcUiControl:ZoomOutButton.Template>
+                                  <ControlTemplate TargetType="Button">
+                                    <Image Name="ZoomOutIcon" Width="34" Height="34" Stretch="None" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/zoomout.png" />
+                                    <ControlTemplate.Triggers>
+                                      <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="ZoomOutIcon" Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/zoomout_1.png" /></Trigger>
+                                      <Trigger Property="IsPressed" Value="True"><Setter TargetName="ZoomOutIcon" Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/zoomout_1.png" /></Trigger>
+                                      <Trigger Property="IsEnabled" Value="False"><Setter TargetName="ZoomOutIcon" Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/zoomout.png" /></Trigger>
+                                    </ControlTemplate.Triggers>
+                                  </ControlTemplate>
+                                </pcUiControl:ZoomOutButton.Template>
+                              </pcUiControl:ZoomOutButton>
+                              <pcUiControl:ZoomInButton Width="34" Height="34" ToolTip="缩小" HookImageViewBox="{Binding ElementName=imageViewBox}">
+                                <pcUiControl:ZoomInButton.Template>
+                                  <ControlTemplate TargetType="Button">
+                                    <Image Name="ZoomInIcon" Width="34" Height="34" Stretch="None" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/zoomin.png" />
+                                    <ControlTemplate.Triggers>
+                                      <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="ZoomInIcon" Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/zoomin_1.png" /></Trigger>
+                                      <Trigger Property="IsPressed" Value="True"><Setter TargetName="ZoomInIcon" Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/zoomin_1.png" /></Trigger>
+                                      <Trigger Property="IsEnabled" Value="False"><Setter TargetName="ZoomInIcon" Property="Source" Value="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/SharedStyles/resources/zoomin.png" /></Trigger>
+                                    </ControlTemplate.Triggers>
+                                  </ControlTemplate>
+                                </pcUiControl:ZoomInButton.Template>
+                              </pcUiControl:ZoomInButton>
                               <Button Name="BtnToolRegionScale" Width="34" Height="34" Content="%1:1%" Style="{StaticResource ClientOriginScaleBtn}" Command="{Binding ZoomOrgBtnCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
                               <Button Name="BtnToolFullScreen" Width="34" Height="34" Content="{DynamicResource 全屏}" Style="{StaticResource ClientFullScreenBtn}" Command="{Binding ZoomFullBtnCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
                             </UniformGrid>
@@ -855,8 +877,11 @@
                                             <Grid.ColumnDefinitions>
                                               <ColumnDefinition Width="14" />
                                               <ColumnDefinition Width="*" />
+                                              <ColumnDefinition Width="*" />
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="1" HorizontalAlignment="Left" FontSize="14" Foreground="#666666" FontFamily="Microsoft YaHei" VerticalAlignment="Center" Text="{Lang:ResourceBinding Name}" />
+                                            <!-- 序号 + 名称：直接绑样本属性（原厂用本地化标记显示名称，本方样本名是用户数据，不做语言转换）。 -->
+                                            <TextBlock Grid.Column="0" HorizontalAlignment="Left" FontSize="12" Foreground="#999999" FontFamily="Microsoft YaHei" VerticalAlignment="Center" Text="{Binding Index}" />
+                                            <TextBlock Grid.Column="1" Margin="2,0,0,0" HorizontalAlignment="Left" FontSize="14" Foreground="#666666" FontFamily="Microsoft YaHei" VerticalAlignment="Center" Text="{Binding Name}" />
                                           </Grid>
                                           <Grid Column="1" HorizontalAlignment="Right">
                                             <Grid.ColumnDefinitions>
@@ -867,14 +892,16 @@
                                               <ColumnDefinition Width="24" />
                                               <ColumnDefinition Width="8" />
                                             </Grid.ColumnDefinitions>
-                                            <ToggleButton Name="Eye" Grid.Column="0" Background="#00FFFFFF" Style="{StaticResource showCrossToggleButtonStyle2}" IsChecked="{Binding Path=(Interface:IROIVisible.IsVisible), Mode=TwoWay}">
+                                            <ToggleButton Name="Eye" Grid.Column="0" Background="#00FFFFFF" Style="{StaticResource showCrossToggleButtonStyle2}" IsChecked="{Binding Visible, Mode=TwoWay}">
                                               <Image Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/ParameterPresentation/resources/window_visible_normal.png" Height="24" Width="24" />
                                               <FrameworkElement.Tag>
                                                 <Image Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/ParameterPresentation/resources/window_invisible_normal.png" Height="24" Width="24" />
                                               </FrameworkElement.Tag>
                                             </ToggleButton>
-                                            <ComboBox Name="Sign" Grid.Column="2" Background="#00FFFFFF" Style="{StaticResource ComboBoxSignList}" ItemsSource="{Binding SignList, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=baseData:FeaturepatMatchDialogUIBase}}" SelectedIndex="{Binding Sign, Converter={StaticResource cvtBoolToInt}}" SelectedItem="{Binding SelectedSignItem, Mode=TwoWay}" />
-                                            <Button Name="Delete" Grid.Column="4" Background="#00FFFFFF" Style="{StaticResource ImageButtonStyleK}" Tag="{Binding}" Command="{Binding DeleteCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=baseData:FeaturepatMatchDialogUIBase}}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}">
+                                            <!-- 原厂绑到 FeaturepatMatchDialogUIBase 祖先；本方窗口 DataContext 是 TemplateConfigData，
+                                                 必须改绑 Window 祖先的 DataContext，否则符号列表与删除命令永远解析失败（功能"未接入"）。 -->
+                                            <ComboBox Name="Sign" Grid.Column="2" Background="#00FFFFFF" Style="{StaticResource ComboBoxSignList}" ItemsSource="{Binding DataContext.SignList, RelativeSource={RelativeSource AncestorType=Window}}" SelectedIndex="{Binding SignIndex, Mode=TwoWay}" />
+                                            <Button Name="Delete" Grid.Column="4" Background="#00FFFFFF" Style="{StaticResource ImageButtonStyleK}" Tag="{Binding}" Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}">
                                               <Image Margin="0" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/ParameterPresentation/resources/window_cross_normal.png" Height="24" Width="24" />
                                             </Button>
                                           </Grid>
@@ -923,9 +950,9 @@
                               <TextBlock Grid.Row="2" Grid.Column="0" FontFamily="Microsoft YaHei" Foreground="#666666" VerticalAlignment="Center" FontSize="12" Text="{DynamicResource PyramidScaleRLevel}" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
                               <TextBlock Grid.Row="3" Grid.Column="0" FontFamily="Microsoft YaHei" Foreground="#666666" VerticalAlignment="Center" FontSize="12" Text="{DynamicResource Thresh Mode}" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
                               <TextBlock Grid.Row="4" Grid.Column="0" FontFamily="Microsoft YaHei" Foreground="#666666" VerticalAlignment="Center" FontSize="12" Text="{DynamicResource EdgeThreshold}" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
-                              <TextBlock Grid.Row="5" Grid.Column="0" FontFamily="Microsoft YaHei" Foreground="#666666" VerticalAlignment="Center" FontSize="12" Text="{DynamicResource ChainFlag}" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
-                              <TextBlock Grid.Row="6" Grid.Column="0" FontFamily="Microsoft YaHei" Foreground="#666666" VerticalAlignment="Center" FontSize="12" Text="{DynamicResource MinChainLen}" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
-                              <TextBlock Grid.Row="7" Grid.Column="0" FontFamily="Microsoft YaHei" Foreground="#666666" VerticalAlignment="Center" FontSize="12" Text="{DynamicResource MaskModelFlag}" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                              <TextBlock Grid.Row="5" Grid.Column="0" FontFamily="Microsoft YaHei" Foreground="#666666" VerticalAlignment="Center" FontSize="12" Text="轮廓优化" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                              <TextBlock Grid.Row="6" Grid.Column="0" FontFamily="Microsoft YaHei" Foreground="#666666" VerticalAlignment="Center" FontSize="12" Text="最小对比度" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                              <TextBlock Grid.Row="7" Grid.Column="0" FontFamily="Microsoft YaHei" Foreground="#666666" VerticalAlignment="Center" FontSize="12" Text="亚像素模式" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
                               <ComboBox Name="ComboBoxPyramidScaleFlag" Grid.Row="0" Grid.Column="1" Width="100" Margin="0,0,10,0" Style="{StaticResource ComboxStyleNormal}" SelectedIndex="{Binding PyramidScaleFlag, Mode=TwoWay}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Self}}">
                                 <ComboBoxItem Content="{DynamicResource Mannual}" />
                                 <ComboBoxItem Content="{DynamicResource RunParam_Auto}" />
@@ -937,14 +964,18 @@
                                 <ComboBoxItem Content="{DynamicResource RunParam_Auto}" />
                               </ComboBox>
                               <pcuicontrol:SliderArrange Grid.Row="4" Grid.Column="1" Width="100" Margin="0,0,10,0" SliderTickFrequency="1" Minimum="1" Maximum="255" StartValue="{Binding EdgeThreshold, Mode=TwoWay}" IsEnabled="{Binding ElementName=ComboBoxEdgeThresholdFlag, Path=SelectedIndex, Converter={x:Static views:PyramidModeToEnableCvt.Cvt}}" />
-                              <ComboBox Name="ComboBoxChainFlag" Grid.Row="5" Grid.Column="1" Width="100" Margin="0,0,10,0" Style="{StaticResource ComboxStyleNormal}" SelectedIndex="{Binding ChainFlag, Mode=TwoWay}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Self}}">
-                                <ComboBoxItem Content="{DynamicResource Mannual}" />
-                                <ComboBoxItem Content="{DynamicResource RunParam_Auto}" />
+                              <ComboBox Name="ComboBoxOptimization" Grid.Row="5" Grid.Column="1" Width="100" Margin="0,0,10,0" Style="{StaticResource ComboxStyleNormal}" SelectedIndex="{Binding OptimizationIndex, Mode=TwoWay}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Self}}">
+                                <ComboBoxItem Content="自动" />
+                                <ComboBoxItem Content="不优化" />
+                                <ComboBoxItem Content="低" />
+                                <ComboBoxItem Content="中" />
+                                <ComboBoxItem Content="高" />
                               </ComboBox>
-                              <pcuicontrol:SliderArrange Grid.Row="6" Grid.Column="1" Width="100" Margin="0,0,10,0" SliderTickFrequency="1" Minimum="2" Maximum="1000" StartValue="{Binding MinChainLen, Mode=TwoWay}" IsEnabled="{Binding ElementName=ComboBoxChainFlag, Path=SelectedIndex, Converter={x:Static views:PyramidModeToEnableCvt.Cvt}}" />
-                              <ComboBox Grid.Row="7" Grid.Column="1" Width="100" Margin="0,0,10,0" Style="{StaticResource ComboxStyleNormal}" SelectedIndex="{Binding MaskModelFlag, Mode=TwoWay}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Self}}">
-                                <ComboBoxItem Content="{Lang:LangResource 全轮廓}" />
-                                <ComboBoxItem Content="{Lang:LangResource 外轮廓}" />
+                              <pcuicontrol:SliderArrange Grid.Row="6" Grid.Column="1" Width="100" Margin="0,0,10,0" SliderTickFrequency="1" Minimum="1" Maximum="255" StartValue="{Binding MinContrast, Mode=TwoWay}" />
+                              <ComboBox Name="ComboBoxSubPixel" Grid.Row="7" Grid.Column="1" Width="100" Margin="0,0,10,0" Style="{StaticResource ComboxStyleNormal}" SelectedIndex="{Binding SubPixelIndex, Mode=TwoWay}" ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Self}}">
+                                <ComboBoxItem Content="无" />
+                                <ComboBoxItem Content="插值" />
+                                <ComboBoxItem Content="最小二乘" />
                               </ComboBox>
                             </Grid>
                           </ScrollViewer>

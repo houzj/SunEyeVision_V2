@@ -125,6 +125,29 @@ public sealed class RootCollectionTests
         Assert.Equal(copiedImage.Id, loadedCopy.RootConfiguration.RunParameters.Single().NodeId);
     }
     [Fact]
+    public void Contour_match_connection_admits_the_image_reference_through_the_shared_graph_contract()
+    {
+        using var manager = Manager();
+        var session = manager.CreateNew("轮廓匹配跨节点");
+        var root = session.GetWorkflows().Single();
+        var graph = session.PrepareGraphEdit(root.Id);
+        var source = session.CreateNode(graph, "ImageLoad", new SunEyeVision.Domain.Workflows.CanvasPoint(0, 0));
+        var contour = session.CreateNode(graph, "ContourMatch", new SunEyeVision.Domain.Workflows.CanvasPoint(250, 0));
+        var edge = new SunEyeVision.Domain.Workflows.ConnectionDefinition(
+            "image-to-contour", source.Id, contour.Id, "output.image", "input.image");
+        graph.AddConnection(edge);
+        session.CommitGraphEdit(graph, "图像源连接轮廓匹配");
+
+        var binding = Assert.IsType<SunEyeVision.Plugin.Contracts.ReferenceSetting>(
+            contour.Configuration.Fields.Read("input.image"));
+        Assert.Equal(source.Id, binding.Reference.NodeId);
+        Assert.Equal(root.Id, binding.Reference.ScopeId);
+        Assert.Equal("output.image", binding.Reference.PortId);
+        Assert.Equal(new[] { "data" }, binding.Reference.MemberFieldPath);
+        Assert.Equal("connection:" + edge.Id, binding.OriginId);
+        Assert.True(string.IsNullOrWhiteSpace(binding.RebindingReason));
+    }
+    [Fact]
     public void Delete_rejects_live_producer_unless_dependents_are_explicitly_marked_and_undo_restores_binding()
     {
         using var manager = Manager();

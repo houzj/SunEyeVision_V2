@@ -18,7 +18,7 @@ internal static partial class NativeShapeProjection
         SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.ImageViewBox view)
     {
         var result = new List<object>();
-        if(items.Any(item=>item is IOutlinePoint))result.Add(new OutlineBatch());
+        if(items.Any(item=>item is IOutlinePoint))result.Add(new MultiPoint());
         for (var index = 0; index < items.Length;)
         {
             var first = items[index];

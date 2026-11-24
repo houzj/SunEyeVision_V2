@@ -9,7 +9,7 @@
   </FrameworkElement.Resources>
   <Control.Template>
     <ControlTemplate>
-      <Path Stroke="{StaticResource ROIBaseColor}" StrokeThickness="{Binding StrokeThickness, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+      <Path Fill="{Binding DataContext.RoiFill, RelativeSource={RelativeSource Mode=TemplatedParent}}" Stroke="{StaticResource ROIBaseColor}" StrokeThickness="{Binding StrokeThickness, RelativeSource={RelativeSource Mode=TemplatedParent}}">
         <Path.Data>
           <EllipseGeometry Center="{Binding CenterPoint, RelativeSource={RelativeSource Mode=TemplatedParent}}" RadiusX="{Binding Radius, RelativeSource={RelativeSource Mode=TemplatedParent}}" RadiusY="{Binding RadiusX, RelativeSource={RelativeSource Mode=Self}}" />
         </Path.Data>

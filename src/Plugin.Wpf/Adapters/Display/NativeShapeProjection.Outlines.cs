@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Buffers.Binary;
 using System.Windows.Media;
 using SunEyeVision.Plugin.Contracts;
@@ -34,7 +33,7 @@ internal static partial class NativeShapeProjection
                 BinaryPrimitives.WriteSingleLittleEndian(record[8..],overlay.Passed?0f:2f);
                 BinaryPrimitives.WriteInt32LittleEndian(record[12..],overlay.ResultIndex);
             }
-            if(points.Length!=0)items.Add(new OutlineProjection(bytes,overlay.Ok.ToString(),overlay.Ng.ToString()));
+            if(points.Length!=0)items.Add(new OutlinePoint(bytes,overlay.Ok.ToString(),overlay.Ng.ToString()));
         }
         NativeResultRaster.CheckCurrent(current);
         return new(items.ToArray(),items.Count,count);
@@ -45,7 +44,7 @@ internal static partial class NativeShapeProjection
     {
         var batches=items.OfType<IMultiPoint>().ToArray();
         if(batches.Length<2)return items;
-        var merged=new OutlineBatch();
+        var merged=new MultiPoint();
         foreach(var batch in batches)
         {
             foreach(var point in batch.OutlinePoints)merged.OutlinePoints.Add(point);
@@ -56,27 +55,5 @@ internal static partial class NativeShapeProjection
         foreach(var item in items)
         {if(item is not IMultiPoint)result.Add(item);else if(!inserted){result.Add(merged);inserted=true;}}
         return result.ToArray();
-    }
-    private sealed class OutlineProjection(byte[] data,string stroke,string ng):IOutlinePoint
-    {
-        private readonly byte[] _data=data;
-        public byte[] OutlineData=>_data;
-        public string Stroke=>stroke;
-        public string NgColor=>ng;
-        public double Opacity=>1;
-        public string Fill=>"Transparent";
-        public double StrokeThickness=>1;
-        public string ToolTip=>"";
-    }
-    private sealed class OutlineBatch:IMultiPoint
-    {
-        public ObservableCollection<IOutlinePoint> OutlinePoints{get;}=new();
-        public ObservableCollection<IMicroPoint> MicroPoints{get;}=new();
-        public ObservableCollection<IRectangle> Rectangles{get;}=new();
-        public string Stroke=>"Transparent";
-        public double Opacity=>1;
-        public string Fill=>"Transparent";
-        public double StrokeThickness=>1;
-        public string ToolTip=>"";
     }
 }

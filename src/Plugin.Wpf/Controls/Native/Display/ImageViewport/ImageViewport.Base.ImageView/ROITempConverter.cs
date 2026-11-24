@@ -88,10 +88,17 @@ public class ROITempConverter : IValueConverter
 	{
 		if (value != null && !(value.ToString() == "{DisconnectedItem}"))
 		{
-			Type controlTypeByInterfaceType = GetControlTypeByInterfaceType(value.GetType());
-			ROIControlBase rOIControlBase = Activator.CreateInstance(controlTypeByInterfaceType) as ROIControlBase;
-			rOIControlBase.DataContext = value;
-			return rOIControlBase;
+			try
+			{
+				Type controlTypeByInterfaceType = GetControlTypeByInterfaceType(value.GetType());
+				ROIControlBase rOIControlBase = Activator.CreateInstance(controlTypeByInterfaceType) as ROIControlBase;
+				rOIControlBase.DataContext = value;
+				return rOIControlBase;
+			}
+			catch (Exception error)
+			{
+				throw;
+			}
 		}
 		return null;
 	}

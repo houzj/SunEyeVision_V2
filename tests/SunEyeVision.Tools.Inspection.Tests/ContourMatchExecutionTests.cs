@@ -2,6 +2,7 @@ using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Contracts.Results.Presentation;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Tool.ContourMatch.Runtime;
+using SunEyeVision.Tool.ContourMatch.Wpf.Views;
 using Xunit;
 
 namespace SunEyeVision.Tools.Inspection.Tests;
@@ -255,27 +256,13 @@ public sealed class ContourMatchExecutionTests
         Assert.Empty(new ContourMatchSettings { ScaleStart = 0.8, ScaleEnd = 1.2 }.Validate());
         Assert.Empty(new ContourMatchSettings { ScaleLimitEnabled = true }.Validate());
         Assert.Empty(new ContourMatchSettings { TimeOut = 100 }.Validate()); // 0x030A 超时已实现
-        // 未取证能力拒绝属于执行边界：编辑期 Validate 放行（原厂参数页可切换这些开关），
-        // ValidateCapability 显式拒绝（rule-015 不静默执行）。
-        var capabilityCases = new (ContourMatchSettings Settings, string Code)[]
-        {
-            (new() { ScaleXStart = 1.1 }, "CONTOURMATCH_SCALE_XY_NOT_READY"),
-            (new() { MatchThresholdMode = 2 }, "CONTOURMATCH_MATCH_THRESHOLD_NOT_READY"),
-            (new() { SpotterEnabled = true }, "CONTOURMATCH_SPOTTER_NOT_READY"),
-            (new() { MatchExtentRate = 10 }, "CONTOURMATCH_MATCH_EXTENT_NOT_READY"),
-            (new() { OutlinePointsEnabled = true }, "CONTOURMATCH_OUTLINE_POINTS_NOT_READY"),
-            (new() { UseMatchAllMode = true }, "CONTOURMATCH_MATCH_ALL_MODE_NOT_READY"),
-            (new() { RangeScaleType = 1 }, "CONTOURMATCH_RANGE_SCALE_TYPE_NOT_READY"),
-            (new() { MultiModelMaxOverlap = 30 }, "CONTOURMATCH_MULTI_MODEL_NOT_READY"),
-            (new() { SkewXStart = 5 }, "CONTOURMATCH_SKEW_NOT_READY"),
-            (new() { MaskModel = ContourMatchMaskModel.OuterOutline }, "CONTOURMATCH_MASK_MODEL_NOT_READY"),
-            (new() { ChainMode = ContourMatchChainMode.Manual }, "CONTOURMATCH_CHAIN_MODE_NOT_READY")
-        };
-        foreach (var (settings, code) in capabilityCases)
-        {
-            Assert.Empty(settings.Validate()); // 编辑期不拒绝，开关可正常切换。
-            Assert.Contains(settings.ValidateCapability(), item => item.Code == code);
-        }
+        // 参数集已按 HALCON 能力重构：无原生对应的原厂参数（链长/建模类型/横切角度/运行期阈值/噪点开关）
+        // 已删除，不再存在"执行期能力拒绝"。
+        Assert.Empty(new ContourMatchSettings { MinContrast = 3 }.Validate());
+        Assert.Empty(new ContourMatchSettings { Greediness = 0.5, SubPixel = ContourMatchSubPixel.Interpolation }.Validate());
+        Assert.Empty(new ContourMatchSettings { Optimization = ContourMatchOptimization.PointReductionHigh }.Validate());
+        Assert.NotEmpty(new ContourMatchSettings { Greediness = 1.5 }.Validate());
+        Assert.NotEmpty(new ContourMatchSettings { MinContrast = 0 }.Validate());
         var inverted = new ContourMatchSettings
         {
             PyramidMode = ContourMatchPyramidMode.Manual,
@@ -284,7 +271,6 @@ public sealed class ContourMatchExecutionTests
         }.Validate();
         Assert.Contains(inverted, item => item.Message.Contains("特征尺度", StringComparison.Ordinal));
         Assert.Empty(new ContourMatchSettings().Validate());
-        Assert.Empty(new ContourMatchSettings().ValidateCapability());
     }
 
     [Fact]
@@ -330,5 +316,228 @@ public sealed class ContourMatchExecutionTests
         Assert.Equal(settings.PyramidScaleLevel, materialized.PyramidScaleLevel);
         Assert.Equal(settings.EdgeThreshold, materialized.EdgeThreshold);
         Assert.Equal(settings.ModelData, materialized.ModelData);
+    }
+
+    /// <summary>
+    /// 模板训练原图的载荷往返：写入后 Encode/Decode 必须带回原图与尺寸；
+    /// 旧模型（无 image 段）解码必须返回 null 而不是报错，保证存量模型可继续使用。
+    /// 原厂语义：模板存图开才带原图（decompiled HPFeaturepatMatchDialogUI.cs:1019-1040、:1650-1656）。
+    /// </summary>
+    [Fact]
+    public void Template_payload_round_trips_optional_training_image()
+    {
+        using var owner = new FrozenOutputResources();
+        var payload = CreateTemplate(owner, Mark(Size, 20, 20));
+        var template = ContourMatchTemplate.Decode(payload);
+        Assert.Null(template.Image); // 旧模型/未存图：无原图但不是错误
+
+        var pixels = Enumerable.Range(0, Size * Size).Select(index => (byte)(index % 256)).ToArray();
+        var withImage = template.WithImage(pixels, Size, Size);
+        var roundTrip = ContourMatchTemplate.Decode(withImage.Encode());
+        Assert.NotNull(roundTrip.Image);
+        Assert.Equal(Size, roundTrip.ImageWidth);
+        Assert.Equal(Size, roundTrip.ImageHeight);
+        Assert.Equal(pixels, roundTrip.Image);
+        Assert.Null(roundTrip.WithoutImage().Image); // 存图关闭时丢弃
+    }
+
+    /// <summary>
+    /// 原厂模板同时持久化 otherMask（擦除轮廓点）与 otherMask2（画笔屏蔽区）。
+    /// 两层必须独立往返；仅保存合并掩膜会导致再次打开模板后无法继续编辑原工具状态。
+    /// </summary>
+    [Fact]
+    public void Template_payload_round_trips_two_independent_masks()
+    {
+        using var owner = new FrozenOutputResources();
+        var template = ContourMatchTemplate.Decode(CreateTemplate(owner, Mark(Size, 20, 20)));
+        var erase = new byte[Size * Size];
+        var paint = new byte[Size * Size];
+        erase[3] = 1;
+        paint[Size + 4] = 1;
+
+        var roundTrip = ContourMatchTemplate.Decode(template.WithMasks(erase, paint, Size, Size).Encode());
+        Assert.Equal(erase, roundTrip.Mask);
+        Assert.Equal(paint, roundTrip.Mask2);
+        Assert.Equal(Size, roundTrip.MaskWidth);
+        Assert.Equal(Size, roundTrip.Mask2Width);
+        // 旧 API 仍只替换 otherMask，并保留 otherMask2。
+        var replaced = roundTrip.WithMask(null, Size, Size);
+        Assert.Null(replaced.Mask);
+        Assert.Equal(paint, replaced.Mask2);
+    }
+
+    /// <summary>
+    /// 原厂清空后建模只读取当前会话的 otherMask/otherMask2，不回读旧 ModelData。
+    /// 本方必须区分“未修改”与“明确清空”：清空擦除层后不能让旧擦除层重新参与建模，
+    /// 同时保留未修改的屏蔽层，避免两层掩膜互相覆盖。
+    /// </summary>
+    [Fact]
+    public void Cleared_template_window_mask_does_not_reuse_stored_erase_layer()
+    {
+        using var owner = new FrozenOutputResources();
+        var template = ContourMatchTemplate.Decode(CreateTemplate(owner, Mark(Size, 20, 20)));
+        var erase = new byte[Size * Size];
+        var paint = new byte[Size * Size];
+        erase[3] = 1;
+        paint[Size + 4] = 1;
+        var stored = ContourMatchTemplate.Decode(template.WithMasks(erase, paint, Size, Size).Encode());
+
+        var untouched = TemplateMaskResolver.Resolve(
+            new TemplateMaskSnapshot(null, false, null, false, 0, 0), stored);
+        Assert.Equal(erase, untouched.EraseMask);
+        Assert.Equal(paint, untouched.PaintMask);
+
+        // ClearEraseMask() produces this explicit two-layer state: the erase layer is null,
+        // while the paint layer remains independently unspecified and therefore comes from storage.
+        var clearedErase = TemplateMaskResolver.Resolve(
+            new TemplateMaskSnapshot(null, true, null, false, Size, Size), stored);
+        Assert.Null(clearedErase.EraseMask);
+        Assert.Equal(paint, clearedErase.PaintMask);
+
+        var clearedBoth = TemplateMaskResolver.Resolve(
+            new TemplateMaskSnapshot(null, true, null, true, Size, Size), stored);
+        Assert.Null(clearedBoth.EraseMask);
+        Assert.Null(clearedBoth.PaintMask);
+    }
+
+    /// <summary>
+    /// 多模板集合载荷：旧单模型载荷解析为 1 项（存量兼容）；多模型集合往返一致。
+    /// 原厂多模板是逐模型挂到模块（FeaturepatMatchConfigPanalDataBase.cs:152-180）。
+    /// </summary>
+    [Fact]
+    public void Template_set_decodes_single_payload_and_round_trips_multiple()
+    {
+        using var owner = new FrozenOutputResources();
+        var single = ContourMatchTemplate.Decode(CreateTemplate(owner, Mark(Size, 20, 20)));
+        var legacyPayload = single.Encode();
+
+        var legacy = ContourMatchTemplateSet.Decode(legacyPayload);
+        Assert.Single(legacy);
+        Assert.Equal(ContourMatchTemplateSet.Decode(ContourMatchTemplateSet.Encode(legacy)).Count, 1);
+
+        var two = ContourMatchTemplateSet.Decode(ContourMatchTemplateSet.Encode(new[] { single, single }));
+        Assert.Equal(2, two.Count);
+        Assert.Equal(single.PointCount, two[0].PointCount);
+        Assert.Throws<ContourMatchCapabilityException>(() => ContourMatchTemplateSet.Decode(null));
+        Assert.Throws<ContourMatchCapabilityException>(() => ContourMatchTemplateSet.Encode(Array.Empty<ContourMatchTemplate>()));
+    }
+
+    /// <summary>
+    /// 多模板执行：ModelSet 载荷 + 全部搜索模式必须真正跑通，输出模型索引落在他模板范围内。
+    /// 验证多模型匹配与跨模型 NMS 分支不是"只编译不执行"。
+    /// </summary>
+    [Fact]
+    public async Task Multi_template_execution_reports_model_index()
+    {
+        using var owner = new FrozenOutputResources();
+        var baseSettings = new ContourMatchSettings { MinScore = 0.3 };
+        var template = ContourMatchTemplate.Decode(CreateTemplate(owner, Mark(Size, 20, 20), baseSettings));
+        var set = ContourMatchTemplateSet.Encode(new[]
+        {
+            new ContourMatchTemplateSet.Entry(template, "模板A", true),
+            new ContourMatchTemplateSet.Entry(template, "模板B", false)
+        });
+        var settings = baseSettings with { ModelData = set, UseMatchAllMode = true };
+        var outcome = await RunAsync(settings, Mark(Size, 33, 41), owner);
+        Assert.True(outcome.Success, string.Join(";", outcome.Diagnostics.Select(item => item.Code + ":" + item.Message)));
+        using var output = outcome.Output!;
+        Assert.True(output.Projection.Count >= 1);
+        Assert.All(output.Projection.ModelIndexes, index => Assert.InRange(index, 0L, 1L));
+        Assert.All(output.Projection.ModelNames, name => Assert.Contains(name, new[] { "模板A", "模板B" }));
+    }
+
+    /// <summary>
+    /// 各向异性（尺度范围XY）执行：走 CreateAnisoShapeModel / FindAnisoShapeModel 分支，
+    /// 输出必须带 X/Y 尺度且与等比尺度同量级（目标等比时两轴相同）。
+    /// </summary>
+    [Fact]
+    public async Task Anisotropic_scale_mode_executes_and_reports_axes()
+    {
+        using var owner = new FrozenOutputResources();
+        var baseSettings = new ContourMatchSettings
+        {
+            MinScore = 0.3,
+            RangeScaleType = ContourMatchRangeScaleType.XY,
+            ScaleXStart = 0.9, ScaleXEnd = 1.1,
+            ScaleYStart = 0.9, ScaleYEnd = 1.1
+        };
+        var payload = CreateTemplate(owner, Mark(Size, 20, 20), baseSettings);
+        Assert.True(ContourMatchTemplate.Decode(payload).Anisotropic);
+        var outcome = await RunAsync(baseSettings with { ModelData = payload }, Mark(Size, 33, 41), owner);
+        Assert.True(outcome.Success, string.Join(";", outcome.Diagnostics.Select(item => item.Code + ":" + item.Message)));
+        using var output = outcome.Output!;
+        Assert.True(output.Projection.Count >= 1);
+        Assert.Equal(output.Projection.Count, output.Projection.ScaleX.Count);
+        Assert.Equal(output.Projection.Count, output.Projection.ScaleY.Count);
+        for (var index = 0; index < output.Projection.Count; index++)
+            Assert.Equal(output.Projection.ScaleX[index], output.Projection.ScaleY[index], 3);
+    }
+
+    /// <summary>
+    /// 新建节点（默认设置）必须能读回全部声明字段：ModelData 在创建模板前是空串，
+    /// 缺少默认值补齐会让物化设置报 "Missing required port field:..."，表现为点"生成模板"无反应。
+    /// </summary>
+    [Fact]
+    public void Default_settings_materialize_with_empty_template_data()
+    {
+        var tool = new ContourMatchTool();
+        var values = tool.ReadSettings(new ContourMatchSettings());
+        Assert.Equal("", values.Get<string>(ContourMatchFields.ModelData));
+        var materialized = (ContourMatchSettings)tool.MaterializeSettings(values);
+        Assert.Equal("", materialized.ModelData);
+        Assert.Empty(materialized.Validate());
+    }
+
+    /// <summary>
+    /// 多模板元数据往返：每项名称与"加入搜索列表"勾选必须原样保存（原厂 ModelItem.Name / IsSelected）。
+    /// </summary>
+    [Fact]
+    public void Template_set_round_trips_entry_metadata()
+    {
+        using var owner = new FrozenOutputResources();
+        var template = ContourMatchTemplate.Decode(CreateTemplate(owner, Mark(Size, 20, 20)));
+        var entries = new[]
+        {
+            new ContourMatchTemplateSet.Entry(template, "模板A", true),
+            new ContourMatchTemplateSet.Entry(template, "模板B", false)
+        };
+        var decoded = ContourMatchTemplateSet.DecodeEntries(ContourMatchTemplateSet.Encode(entries));
+        Assert.Equal(2, decoded.Count);
+        Assert.Equal("模板A", decoded[0].Name);
+        Assert.True(decoded[0].Selected);
+        Assert.Equal("模板B", decoded[1].Name);
+        Assert.False(decoded[1].Selected);
+    }
+
+    /// <summary>
+    /// 新建节点的枚举字段往返：Read（枚举→枚举名文本）与 Materialize（文本→枚举）必须闭合，
+    /// 否则新方案节点在保存/重开时会因声明与常量不符被拒（历史问题：JSON constant differs from its declaration）。
+    /// </summary>
+    [Fact]
+    public void Enum_fields_round_trip_through_declared_settings()
+    {
+        var tool = new ContourMatchTool();
+        var settings = new ContourMatchSettings
+        {
+            RangeScaleType = ContourMatchRangeScaleType.XY,
+            Optimization = ContourMatchOptimization.PointReductionMedium,
+            SubPixel = ContourMatchSubPixel.Interpolation,
+            MinContrast = 12,
+            Greediness = 0.6,
+            PyramidMode = ContourMatchPyramidMode.Manual,
+            EdgeThresholdMode = ContourMatchThresholdMode.Manual
+        };
+        var values = tool.ReadSettings(settings);
+        Assert.Equal(nameof(ContourMatchRangeScaleType.XY), values.Get<string>(ContourMatchFields.RangeScaleType));
+        Assert.Equal(nameof(ContourMatchOptimization.PointReductionMedium), values.Get<string>(ContourMatchFields.Optimization));
+        Assert.Equal(nameof(ContourMatchSubPixel.Interpolation), values.Get<string>(ContourMatchFields.SubPixel));
+        var materialized = (ContourMatchSettings)tool.MaterializeSettings(values);
+        Assert.Equal(settings.RangeScaleType, materialized.RangeScaleType);
+        Assert.Equal(settings.Optimization, materialized.Optimization);
+        Assert.Equal(settings.SubPixel, materialized.SubPixel);
+        Assert.Equal(settings.MinContrast, materialized.MinContrast);
+        Assert.Equal(settings.Greediness, materialized.Greediness);
+        Assert.Equal(settings.PyramidMode, materialized.PyramidMode);
+        Assert.Equal(settings.EdgeThresholdMode, materialized.EdgeThresholdMode);
     }
 }

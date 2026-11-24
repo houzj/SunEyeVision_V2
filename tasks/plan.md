@@ -246,6 +246,20 @@ ROI 按钮 -> RequestCommand -> PrepareInteraction -> BlobLocalRoiOwner.Activate
 - [ ] CURRENT_TASK、HTML 复核清单、差异矩阵和测试日志同步更新。
 # 当前执行策略
 
+## 2026-11-25 ContourMatch 节点与框架联动目标驱动批次
+
+现行详细计划与验收矩阵见 `docs/09-现行文档/轮廓匹配节点与框架联动目标驱动计划-20261125.html`。本批以框架共享合同和原厂完整链为前置，不能把 ContourMatch 工具窗口通过当成节点整链完成。
+
+- [ ] F0：冻结原厂证据、框架/节点/工具职责和 P0 复现证据。
+- [ ] F1：完成共享节点身份、端口/引用、执行快照、结果 publication、资源 lease、迟到回调和关闭排空链。
+- [ ] F2：修复“正式运行→打开调试→绘制 ROI→调试运行→关闭后 ViewBox 清空”，按原厂顺序恢复正式 publication。
+- [ ] F3：代码层接通 ImageSource→ContourMatch 及兼容下游的 Image/Region/Fixture/rows/geometry 引用和依赖快照。
+- [ ] F4：统一结果表、图像、几何、文字、行高亮、输出切换、重跑替换和节点/方案切换清理。
+- [ ] F5：完成保存重开、复制删除、撤销重做、取消/停止/关闭和插件目录退役。
+- [ ] F6：完成自动回归和 Release 构建后，由用户统一人工验收。
+
+当前现场事实：ImageSource→ContourMatch 工作流可执行完成，但跨节点引用/结果工作区联动未闭口；Blob/ImageSource 复现的调试窗口关闭后 ViewBox 清空属于共享 publication 生命周期 P0，禁止在单工具内打补丁。8 项模板窗口人工验收已通过；多模板真实运行、橡皮擦形状取证、D12 盲区端口和 Group/循环语义不纳入本批。
+
 统一迁移采用四批次流水线，不再逐方法零散修复。批次定义、公共门禁、固定脚本和 Release 验收见 `docs/collaboration/acceptance/工具全量统一迁移-批量执行策略-20261118.md`。当前停在批次 D 的 Blob 专用 ROI 接缝，先闭合 `input.roi.area-type` 进入统一参数宿主，再继续批量迁移。
 
 

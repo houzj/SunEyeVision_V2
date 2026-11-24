@@ -17,7 +17,11 @@ public sealed record ContourMatchMeasurement(
     IReadOnlyList<Point2> Outline,
     IReadOnlyRegion Region,
     bool Passed,
-    IReadOnlyList<string> FailedLimits);
+    IReadOnlyList<string> FailedLimits,
+    int ModelIndex = 0,
+    string ModelName = "",
+    double ScaleX = 0,
+    double ScaleY = 0);
 
 /// <summary>原件输出的中立投影；尺度搜索已按 0x0307/0308 逻辑对照实现（创建宽范围模型 + 运行期筛选）。</summary>
 public sealed record ContourMatchResultProjection(
@@ -28,17 +32,24 @@ public sealed record ContourMatchResultProjection(
     IReadOnlyList<Point2> MatchPoints,
     IReadOnlyList<float> Angles,
     IReadOnlyList<float> Scales,
+    IReadOnlyList<float> ScaleX,
+    IReadOnlyList<float> ScaleY,
+    IReadOnlyList<float> SkewX,
+    IReadOnlyList<long> ModelIndexes,
+    IReadOnlyList<string> ModelNames,
+    ContourMatchBox? DetectRoi,
     IReadOnlyList<ContourMatchBox> Boxes,
     RecordValue? OutlinePoints,
     RecordValue? OutputFixture,
     IReadOnlySet<string> Unavailable)
 {
     public static ContourMatchResultProjection Create(IReadOnlyList<ContourMatchMeasurement> measurements, bool modulePassed,
-        double runTimeMilliseconds, RecordValue? fixture)
+        double runTimeMilliseconds, RecordValue? fixture, ContourMatchBox? detectRoi = null, string modelName = "")
     {
         var unavailable = new HashSet<string>(StringComparer.Ordinal);
         var outline = Outline(measurements);
         if (outline is null) unavailable.Add(nameof(OutlinePoints));
+        var scales = measurements.Select(item => (float)item.Scale).ToArray();
         return new(
             ModuleStatus: modulePassed ? 1 : 0,
             ModuleRunTime: runTimeMilliseconds,
@@ -46,7 +57,18 @@ public sealed record ContourMatchResultProjection(
             Scores: Array.AsReadOnly(measurements.Select(item => (float)item.Score).ToArray()),
             MatchPoints: Array.AsReadOnly(measurements.Select(item => new Point2(item.CenterX, item.CenterY)).ToArray()),
             Angles: Array.AsReadOnly(measurements.Select(item => (float)item.AngleDegrees).ToArray()),
-            Scales: Array.AsReadOnly(measurements.Select(item => (float)item.Scale).ToArray()),
+            Scales: Array.AsReadOnly(scales),
+            // 原厂 MatchScaleX/MatchScaleY：各向异性模型取列/行真实尺度；等比模型两者相同。
+            ScaleX: Array.AsReadOnly(measurements.Select(item => (float)(item.ScaleX != 0 ? item.ScaleX : item.Scale)).ToArray()),
+            ScaleY: Array.AsReadOnly(measurements.Select(item => (float)(item.ScaleY != 0 ? item.ScaleY : item.Scale)).ToArray()),
+            // 横切角度语义在 HALCON 形状模板中没有对应实现，恒为 0（与原厂字段存在性对齐，不造假数据）。
+            SkewX: Array.AsReadOnly(new float[measurements.Count]),
+            // 原厂 MatchModelIndex：多模板时为真实模板序号，单模板为 0。
+            ModelIndexes: Array.AsReadOnly(measurements.Select(item => (long)item.ModelIndex).ToArray()),
+            // 原厂 MatchModelName：逐匹配取所属模板名（单模板沿用训练样本名）。
+            ModelNames: Array.AsReadOnly(measurements
+                .Select(item => string.IsNullOrEmpty(item.ModelName) ? modelName : item.ModelName).ToArray()),
+            DetectRoi: detectRoi,
             Boxes: Array.AsReadOnly(measurements.Select(item => item.Box).ToArray()),
             OutlinePoints: outline,
             OutputFixture: fixture,
@@ -119,12 +141,24 @@ public sealed class ContourMatchOutput : IToolOutput, IDisposable, IToolResultRe
             [ContourMatchSchema.RunTime] = (double)(float)projection.ModuleRunTime,
             [ContourMatchSchema.Status] = (long)projection.ModuleStatus,
             [ContourMatchSchema.Count] = (long)projection.Count,
+            [ContourMatchSchema.ModelIndex] = new SequenceValue(
+                ContourMatchSchema.Outputs.Single(port => port.Id == ContourMatchSchema.ModelIndex).Type,
+                projection.ModelIndexes.Select(value => (object?)value)),
+            [ContourMatchSchema.ModelName] = new SequenceValue(
+                ContourMatchSchema.Outputs.Single(port => port.Id == ContourMatchSchema.ModelName).Type,
+                projection.ModelNames.Select(value => (object?)value)),
             [ContourMatchSchema.Scores] = Numbers(ContourMatchSchema.Scores, projection.Scores),
             [ContourMatchSchema.MatchPoints] = new SequenceValue(
                 ContourMatchSchema.Outputs.Single(port => port.Id == ContourMatchSchema.MatchPoints).Type,
                 projection.MatchPoints.Select(point => (object?)ContourMatchSchema.Point(point.X, point.Y))),
             [ContourMatchSchema.Angles] = Numbers(ContourMatchSchema.Angles, projection.Angles),
             [ContourMatchSchema.Scales] = Numbers(ContourMatchSchema.Scales, projection.Scales),
+            [ContourMatchSchema.ScaleX] = Numbers(ContourMatchSchema.ScaleX, projection.ScaleX),
+            [ContourMatchSchema.ScaleY] = Numbers(ContourMatchSchema.ScaleY, projection.ScaleY),
+            [ContourMatchSchema.SkewX] = Numbers(ContourMatchSchema.SkewX, projection.SkewX),
+            [ContourMatchSchema.DetectRoi] = projection.DetectRoi is { } detect
+                ? ContourMatchSchema.FreezeBox(detect.CenterX, detect.CenterY, detect.Width, detect.Height, detect.AngleDegrees)
+                : null,
             [ContourMatchSchema.Boxes] = new SequenceValue(
                 ContourMatchSchema.Outputs.Single(port => port.Id == ContourMatchSchema.Boxes).Type,
                 projection.Boxes.Select(Box)),

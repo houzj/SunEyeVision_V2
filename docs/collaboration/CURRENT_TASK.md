@@ -1,3 +1,9 @@
+**2026-11-25 轮廓匹配节点与框架联动目标驱动批次**：工具层 8 项人工验收已通过，ContourMatch 专项 **43/43**、全量 Release **0 错误/6001 个既有警告**。现行目标驱动计划已落到 `docs/09-现行文档/轮廓匹配节点与框架联动目标驱动计划-20261125.html`，按原厂证据拆分框架共享层、节点宿主层、公共结果层和工具层。当前现场事实：ImageSource→ContourMatch 工作流可执行完成；共享图合同新增“ImageSource→ContourMatch 自动图像引用”回归 **1/1** 通过，但 ROI/Fixture、真实运行结果、结果工作区和下游消费者联动仍未闭口。正式运行后打开调试、绘制 ROI、调试运行并关闭窗口会清空主界面 ViewBox，已在 `MainWindowRuntimeEditing.cs` 增加关闭后正式 publication 恢复兜底，并补“正式运行→调试 ROI→私有运行→关闭”回归，P0 定向 UI 回归 **2/2** 通过，用户 Release 验收仍待完成。多模板真实运行、橡皮擦形状取证、D12 盲区端口和 Group/循环语义不纳入本批。
+
+**2026-11-25 轮廓匹配模板窗口 ROI/掩膜/橡皮擦/历史 交接给 Codex**：本轮按「逆向对标」技能重建证据基线（`docs/collaboration/acceptance/轮廓匹配模板窗口-ROI掩膜历史对照.md`，28 条证据 + 24 项对照），并修九块——① 公共形状类 `ShapePrimitive/MultiPoint/MicroPoint/OutlinePoint` 迁入 `src/Plugin.Wpf/Presenters/Display/ShapePrimitives/`，删除三处私有实现；② 模板存训练原图 + 缩略图先缩 98 再画绿点；③ 新建/编辑索引隔离（四处 `TemplateIndex >= entries.Count`）；④ 列表 8 列操作区、序号 0 基、勾选样式、名称焦点切选中；⑤ 匹配中心改 `CrossRoiItem:ICrossROI`（草绿准星）+ 像素坐标 + 生成后写回 Find 姿态，`PreviewPose` 门槛由“点数”改“外接框短边”（`GetShapeModelParams.NumPoints` 实为金字塔层数）；⑥ 锁定禁用底栏输入框 + 禁止点选改中心；⑦ 橡皮擦：`PxSlider` 回 `Slider` 基类、尺寸实时派生、`ToolRoiItem:IToolROI` 屏蔽 ROI 命中与图像平移、笔刷光标、覆盖层延迟初始化 `EnsureOverlays`；⑧ 建模端擦除层 `Difference` 与屏蔽层 `Union2` 分离（原 `MergeMasks` 用 OR 把屏蔽也扣掉），`MaskToRegion` 改 `GenImage1Extern` 修 HALCON `#1404`；⑨ 历史快照按 `RecordHistory:789` 移除模型载荷。验证：全量 Release 0 错误，ContourMatch 41/41。遗留决策三项（删样本后是否重匹配、网格点选中心是否保留、坏模型行是否保留）、待取证一项（`wipe` 菱形填充与 `RemovePoints` 收集 `==0` 矛盾）已如实登记。完整交接见 `docs/collaboration/HANDOFF_轮廓匹配模板窗口-ROI掩膜橡皮擦-20261125.md`。人工验收：部分（见交接单第 6 节）。
+
+**2026-11-22 轮廓匹配模板窗口与多模板交接给 Codex**：本轮在 ContourMatch 上完成三块并已实测——① 修 `Missing required port field:...`（字段声明缺 `DefaultPresence`，新建节点点「生成模板」无反应）；② 多模板载荷 `ContourMatchTemplateSet`（`ModelSet/1`，含名称/勾选/独立训练样本与旧单模板兼容）、模板列表多行（命名/上下移/删除/勾选/真实像素预览）、执行链按「全部搜索模式」筛模板并做跨模型 NMS、补 6 个输出端口；③ 共享层补 ROI/形状样式字典，修「ROI 能创建但画布不显示/绘制即空引用」。验证：全量 Release 0 错误（5995 警告），ContourMatch 专项 38/38，产物 `2.0.0.8_alpha`。未完成并已如实登记：擦除掩膜只有数据生效、画布无视觉反馈（`TemplateConfigData.WipeAt` 不通知不重绘）；多模板未实机验证；`ContourMatchTemplatePanel` 勾选框列号越界疑点；`ROITempConverter` 临时诊断分支待删；两处注释与多模板实现不一致。完整交接见 `docs/collaboration/HANDOFF_轮廓匹配模板窗口与多模板-20261122.md`。人工验收：无。
+
 **2026-11-20 Blob 标签分析算法与单项目复核**：BlobLabels 已从 Runtime+Wpf 双项目迁移为 `tools/SunEyeVision.BlobLabels/SunEyeVision.Tool.BlobLabels.csproj`，Runtime/Editor 组件注册、解决方案、产品清单和生产探针已统一到单项目。HALCON 算法链执行静态复核，现有 30 项 BlobLabels 测试通过，覆盖阈值区域、连通域、筛选排序、FindCount、判定、结果几何、参数往返和资源释放。原厂 `IMVSBlobFindLabelsModu` 的 Process/ProcessAlg/LimitJudge/ProcessOutput 宿主边界已由 REA 静态确认，外部算法 DLL 已定位并取证，但没有动态黄金样例，因此算法数值等价、阈值合并/反选顺序、连通性、特征定义、排序稳定性、ClassInfo/OverlapRatio/MaxOutPixelNum 和结果资源释放时序继续标记为未确认。完整 Release 构建封存通过，载荷哈希 `423C0BACCBEE835254D9A37AFE1A41D2F990EB9FD2267A66FBD4A5576958D535`；Agent Desktop 启动 Release 进入“太阳眼视觉 - 机器视觉平台”并强制关闭确认进程退出。证据：`docs/evidence/bloblabels-single-project-review-20261120.md`、`docs/evidence/tool-batch-manifest-20261120.json`。**2026-11-20 启动失败与启动卡死修复**：两个独立问题。① 构建后启动失败：`release-payload.json` 只在 UI 工程构建时封存，单独构建工具/插件或探针重建依赖后载荷哈希与磁盘程序不一致，启动被载荷校验拒绝。现在 `installer/Release.Payload.targets` 在任一产品工程（写 Release 根且本次确实编译过）构建后自动封存；解决方案构建仍只由 UI 工程封存一次；并发构建用 `Global\SunEyeVision.ReleaseSeal` 互斥锁串行，并在 `installer/Seal-ReleasePayloadDebounced.ps1` 内按清单新鲜度合并重复请求，UI 最终强制封存。验证：单工具构建封存 1 次、UI 工程构建 5 次+27 次跳过、解决方案构建 1 次，均 0 错误；构建后直接启动 Release 正常。② 启动窗口卡死：UI 线程被同步阶段堵住时，原看门狗只 `Dispatcher.InvokeAsync`，同样排队无法执行，表现为无提示、不超时、关闭按钮无效。现在看门狗在 30 秒后用 `DispatcherPriority.Send` 探测 UI 线程，3 秒无响应即由独立 STA 线程显示最后阶段并强制退出；启动轨迹无条件写入 `%LOCALAPPDATA%\SunEyeVision\Logs\startup-trace.txt`。插件加载异常改为明确提示重新封存/使用启动器。验证：Release 启动 1.3s 进入起始页，轨迹文件正常；FrameMean+ColorExtract 测试 36/36；ControlNamingProbe 退出码 0。
 
 **2026-11-20 FrameMean/ColorExtract 专属控件上移共享层**：原厂 `CommandSelecter_Frame` 与 `ColorExtractList`+`UserScrollView` 不再由工具手写。新增共享 `NativeCommandSelector`（两命令 + 已统计数量 + 清空，使用 CmdTypeRadioButtonStyle/CmdTypeRadbtnDeleteStyle 与 73/16/32 网格）和 `NativeColorRangeList`（卡片列表、颜色空间、三通道直方图/滑条、颜色反转，使用 FourColorBorder/SliderArrange/BooleanControl/LeftRightControl），工具只保留命令值、九字段区间序列化和提交接缝。共享直方图 `HikHistogramSingle` 更名 `HistogramSingle`，新控件不含原厂产品名或品牌名。Agent Desktop 复核：`framemean/run-shared-final.png`、`framemean/basic-shared-final.png`、`framemean/result-shared-final.png`、`colorextract/run-shared-final.png`、`colorextract/basic-shared-final.png`、`colorextract/result-shared-final2.png` 与 VM 原厂运行页对照；ColorExtract 结果页标题与「颜色面积判断」已按原厂修正。ColorExtract 的「颜色区域选择」（RoiSelectControl）仍缺，已登记。验证：全量 Release 构建 0 错误；FrameMean+ColorExtract 测试 36/36；ControlNamingProbe 退出码 0；封存 `F705EAAF52671A3AA4BB8567FB69B9C82CB35F810ADC945785CD7FDFACC37F61`。未做：ColorExtract RoiSelectControl、基本页 ROI 组、TextDisplayGroup、滑条保存重开人工复核。
@@ -2259,3 +2265,49 @@ Blob 新增 `BlobGroupLinkMapping.json`，记录原厂 9 个 GroupLinkItem 到�
 ## 2026-11-21 UI与算法重新复核
 
 昨天完成的是共享参数页组装、专项声明测试和部分窗口开关验证。BlobLabels与PixelCount的算法只完成本方基础运行测试，未完成与VM固定输入输出对照。当前按全方位门禁重新复核，第一检查点为BlobLabels、PixelCount、ImageSource。证据基线见 docs/evidence/ui-algorithm-reaudit-20261121.json。
+
+## 2026-11-22 ContourMatch 复核更新
+
+按原厂 `HPFeaturepatMatchDialogUI.DrawMask`、`rubber_OnWipe` 与 `RubberControl.RegisterRoi` 完成擦除覆盖层、Loaded 挂载、handledEventsToo 鼠标接入、模板列表勾选列和诊断代码清理。ContourMatch Release 构建 0 错误，专项测试 38/38，ControlNamingProbe 通过。Agent Desktop 已打开 Release 宿主、轮廓匹配调试窗口和模板配置窗口；最终 handledEventsToo 版本的擦除后红色覆盖层截图仍待补采，当前人工状态为 `unconfirmed`，暂不闭口。
+
+**2026-11-23 轮廓匹配模板配置全按钮链复核增量**：按原厂 `HPFeaturepatMatchDialogUI.cs` 与 `RubberControl.xaml.cs` 逐项补齐模板配置窗口命令接缝：连续笔刷轨迹插值、`otherMask/otherMask2` 工作态区分、清空/撤销/重做掩膜状态、匹配中心锁定与自动中心、`IROIVisible` 可见性回写、模板列表 Sign/Delete、保存前参数/掩膜提交，以及新建模板的掩膜回调传递。新增模板命令契约测试后 ContourMatch 专项为 **39/39**；完整 Release 构建 **0 错误**；批量 Release 门禁通过（ControlNamingProbe、LogicData 90/90、ImageProcessing 60/60、Inspection 120/120）。构建后使用项目 pwsh7 重新封存，最新载荷哈希为 `19AEC935BA2D819C19905140E2A5E3570CFE17F53CDF420A7B0234A1C831D559`。D:\MyWork Release 进程已确认可启动；最终窗口级按钮人工验证仍被旧 E:\SunEyeVision_V2 单实例的“是否保存已有方案？”对话框阻塞，待用户在该对话框点“取消”后继续，不把 D/E 混用的运行结果写成闭口结论。技能前置脚本仍因仓库文件编码损坏无法解析，已记录为门禁工具问题。
+
+## 2026-11-23 全按钮链增量（最终代码状态）
+
+按原厂 `HPFeaturepatMatchUI`、`HPFeaturepatMatchDialogData` 和 `RubberControl` 证据又闭合了四个实际缺口：
+
+- 新建模板在窗口会话内固定槽位，重复点击“生成模型”更新同一模板，不再追加副本；编辑模板的训练样本继续回写原模板。
+- “确定”/“保存模型工程”在模型缺失或 ROI/掩膜变更时先走当前窗口建模，再提交 ROI、训练参数和模板原图；新建模板原图按实际模板索引写回。
+- 图像点击设置匹配中心增加十字工具门控，普通矩形/圆/扇形/多边形绘制不会误写匹配中心。
+- 清空模板同步清理形状列表，底部坐标字段为可回写的双向绑定。
+
+验证：轮廓匹配定向测试 **39/39 通过**；完整 Release 构建 **0 错误**（本次重建显示 5991 个既有警告）；最终封存哈希 `022E1E00AF3CF12C634C4623C77B2668622760FDCAF9E3E072C9C094EF948B54`。
+
+批量验证：ControlNamingProbe、LogicData **90/90**、ImageProcessing **60/60**、Inspection **120/120** 通过；批量脚本最后的 product-directory-gate 因脚本自身缺少 `ChildPath` 必填参数退出，属于验证脚本问题，不能当作产品失败。
+
+人工按钮验证仍未闭口。Agent Desktop 确认原厂 VisionMaster 无弹窗但旧实例仍占用单实例入口；自动审核拒绝直接关闭它，因为可能再次触发未保存方案流程。需要用户手动退出旧 VisionMaster 后，才能启动 D:\MyWork Release 逐项点击模板配置按钮并采集最终截图。此前所有构建/自动化结果不替代这一步人工证据。
+
+## 2026-11-23 模板窗口最终静态增量
+
+- 全屏按钮按原厂 FullScreen 边界改为独立模态窗口承载同一个 ImageViewBox，关闭后恢复原 viewGrid；不再把全屏误实现成 Enlarge。
+- 放大/缩小按钮补齐原厂 normal、hover/pressed、disabled 三态资源触发器。
+- 轮廓匹配定向测试仍为 39/39；最终 Release 封存哈希更新为 `06C796D592BBEA6EAEF1E5597732377AA90610592F1D036F0C14BEBD57FACE27`。
+- 代码与自动化验证已完成；人工按钮点击和截图仍等待用户退出旧 VisionMaster 后进行，不能以自动化结果代替。
+
+## 2026-11-23 最终 Release 重建
+
+全屏模态窗口与缩放三态代码已纳入完整解决方案，`dotnet build SunEyeVision.slnx -c Release --no-restore --nologo` 通过：**0 错误，5998 个既有警告**。最终封存哈希 `1892C86D2525CAB63B8FB75FEF1DD14ECD6B3AF0C91ECB2F410C8D31ECC54728`。轮廓匹配定向测试 39/39 仍通过。人工按钮点击/截图继续等待用户退出旧 VisionMaster 后完成。
+
+## 2026-11-23 原厂绘制状态机对齐
+
+- 原厂证据：`HPFeaturepatMatchDialogUI.cs:490-497` 的 `ImageViewBox.RoiAddEvent` 取消当前图形 RadioButton；`HPFeaturepatMatchDialogData.cs:252-298` 的 `DrawROIType`、`IsStateForDrawROI`、`SelectedROIList` 均通知绑定；`AddROICommandExecute:469-490` 先退出绘制态；`ImageViewBox.xaml.cs:2244-2256` 顺序为列表加入、RoiAddEvent、RoiAddCommand。
+- 本方修复：三项绘制状态属性改为通知属性；Checked/Unchecked 分支分离；ROI 完成触发窗口取消当前图形按钮；普通图形一次一项，重新绘制需重新选择；Rubber/Rubber2 保持持续笔刷直到取消。
+- Release 构建：0 错误；轮廓匹配定向测试 40/40；封存哈希：`B2CC1B50994C66648C9F4B4F98512086396208DD43AC6A4277CDF30355F26D1A`。
+- 人工验证入口：Release 启动后打开“轮廓模版测试”→轮廓匹配节点→双击节点→选择“特征模板”。
+
+## 2026-11-23 原厂一次绘制状态机严格对齐
+
+- 原厂证据：`ImageViewBox.xaml.cs:2312-2325` 顺序为 ROI 加入列表 → `RoiAddEvent` → `RoiAddCommand`；`HPFeaturepatMatchDialogUI.cs:490-497` 在 `RoiAddEvent` 中取消当前 RadioButton；`HPFeaturepatMatchDialogData.cs:469-490` 再关闭 `IsStateForDrawROI` 并写入 ROI。
+- 本方修复：`TemplateConfigWindow` 直接订阅 `ImageViewBox.RoiAddEvent`，先取消图形按钮；`TemplateConfigData` 的 `DrawROIType`、`SelectedROIList`、`IsStateForDrawROI` 改为通知属性；Checked/Unchecked 分支按原厂处理。普通图形与中心点一发一收，Rubber/Rubber2 仍保持连续笔刷模式。
+- Release 构建：0 错误；ContourMatch 定向测试 40/40；构建封存哈希：`25CFBF0E6C0EAAC9925C09936C9F93F807FB8B4D03AA25BEC246F3D76ECCEB7A`。
+

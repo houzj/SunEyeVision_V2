@@ -496,6 +496,65 @@ public sealed class EditorDebugSessionTests
   Run(window);Assert.Equal(scope,window.Editor.DebugScopeId);Assert.True(window.CloseAndDrainAsync().GetAwaiter().GetResult());UiRuntime.Pump();Assert.Null(f.Main.CurrentResultPublication?.Stamp.Invocation);
   f.Run();using var formal=f.Session.AcquirePublishedResult(f.Root.Id,node.Id);Assert.NotNull(formal);Assert.Equal(second,FileOf(formal.Snapshot));
  });
+ [Fact] public void Closing_debug_after_formal_run_restores_formal_publication_and_viewbox()=>UiRuntime.Run(()=>
+ {
+  using var fixture=new DocumentUiFixture();
+  var source=fixture.Add();
+  var blob=fixture.Add("BlobAnalysis",350,240);
+  fixture.ConfigureImage(source,fixture.Image(51,12));
+  fixture.Connect(source,blob);
+  fixture.Main.SelectedNode=blob;
+  fixture.Run();
+  using(var formal=fixture.Session.AcquirePublishedResult(fixture.Root.Id,blob.Id))
+   Assert.NotNull(formal);
+  var shell=Assert.Single(UiRuntime.Visuals<ResultWorkspaceShell>(fixture.Results));
+  var viewport=Assert.IsType<ImageViewBox>(shell.OutputViewport);
+  var window=Open(fixture,blob);
+  Run(window);
+  Assert.NotNull(fixture.Main.CurrentResultPublication);
+  Assert.True(window.Editor.CurrentDebugSnapshot?.IsSuccess);
+  UiRuntime.Await(window.CloseAndDrainAsync());
+  UiRuntime.Pump();
+  using var restored=fixture.Session.AcquirePublishedResult(fixture.Root.Id,blob.Id);
+  Assert.NotNull(restored);
+  Assert.NotNull(fixture.Main.CurrentResultPublication);
+  Assert.Equal(restored.Snapshot.Identity,fixture.Main.CurrentResultPublication!.Stamp.Invocation);
+  Assert.NotNull(viewport.ImageDataSource);
+ });
+ [Fact] public void Closing_blob_debug_after_roi_and_private_run_restores_formal_viewbox()=>UiRuntime.Run(()=>
+ {
+  using var fixture=new DocumentUiFixture();
+  var source=fixture.Add();
+  var blob=fixture.Add("BlobAnalysis",350,240);
+  fixture.ConfigureImage(source,fixture.Image(51,24));
+  fixture.Connect(source,blob);
+  fixture.Main.SelectedNode=blob;
+  fixture.Run();
+  using(var formal=fixture.Session.AcquirePublishedResult(fixture.Root.Id,blob.Id))
+   Assert.NotNull(formal);
+  var shell=Assert.Single(UiRuntime.Visuals<ResultWorkspaceShell>(fixture.Results));
+  shell.SetCurrentValue(ResultWorkspaceShell.SelectedOutputItemProperty,
+      shell.OutputItems!.Cast<ResultWorkspaceImageSource>().Single(item=>item.Reference?.PortId=="output.image"));
+  UiRuntime.Pump();
+  var window=Open(fixture,blob);
+  var roiEditor=Assert.Single(UiRuntime.Visuals<NativeRoiEditor>(window.Editor),item=>!item.PolygonOnly);
+  Assert.True(roiEditor.PrepareInteraction?.Invoke());
+  var roi=Assert.IsType<NativeRoiSession>(UiRuntime.Field<NativeRoiSession>(roiEditor,"_session"));
+  var draw=Assert.IsType<RoiDrawRequest>(roi.BeginDraw("rectangle"));
+  Assert.True(roi.CompleteDraw(draw,RoiGeometryEditing.Create("rectangle",new Point2(3,3),new Point2(15,15))));
+  var presenter=UiRuntime.Field<ResultWorkspacePresenter>(fixture.Results,"_workspacePresenter");
+  var pane=UiRuntime.Prop<ResultImagePane>(presenter,"OutputPane");
+  var viewport=UiRuntime.Prop<SunEyeVision.Plugin.Wpf.Presenters.Display.NativeResultViewport>(pane,"Viewport");
+  UiRuntime.Field<SunEyeVision.Plugin.Wpf.Presenters.Regions.NativeRoiAttachment>(viewport,"_roiAttachment")!.CancelGesture();
+  UiRuntime.Pump();
+  Run(window);
+  UiRuntime.Await(window.CloseAndDrainAsync());
+  UiRuntime.Pump();
+  using var restored=fixture.Session.AcquirePublishedResult(fixture.Root.Id,blob.Id);
+  Assert.NotNull(restored);
+  Assert.NotNull(fixture.Main.CurrentResultPublication);
+  Assert.NotNull(Assert.IsType<ImageViewBox>(shell.OutputViewport).ImageDataSource);
+ });
  [Fact] public void Confirmed_blob_roi_threshold_and_display_reopen_on_the_same_image_source_connection()=>UiRuntime.Run(()=>
  {
   const string threshold = "field:43bda03261df55b88f963bd18f2ba4d9";

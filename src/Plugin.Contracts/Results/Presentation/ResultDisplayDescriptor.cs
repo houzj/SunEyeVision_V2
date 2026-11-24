@@ -30,8 +30,9 @@ public sealed class ResultDisplayDescriptor
 {
     public ResultDisplayDescriptor(ResultFieldPath rows,ResultFieldPath identity,ResultFieldPath rectangle,
         ResultFieldPath geometrySource,ResultFieldPath textValue,ResultFieldPath passed,ResultFieldPath? outline=null,
-        ResultFieldPath? innerRectangle=null,ResultDisplayColor? selectedRectangleColor=null,ResultFieldPath? centroid=null)
-    {Rows=rows;Identity=identity;Rectangle=rectangle;GeometrySource=geometrySource;TextValue=textValue;Passed=passed;Outline=outline;InnerRectangle=innerRectangle;SelectedRectangleColor=selectedRectangleColor;Centroid=centroid;}
+        ResultFieldPath? innerRectangle=null,ResultDisplayColor? selectedRectangleColor=null,ResultFieldPath? centroid=null,
+        ResultFieldPath? globalOutline=null)
+    {Rows=rows;Identity=identity;Rectangle=rectangle;GeometrySource=geometrySource;TextValue=textValue;Passed=passed;Outline=outline;InnerRectangle=innerRectangle;SelectedRectangleColor=selectedRectangleColor;Centroid=centroid;GlobalOutline=globalOutline;}
     public ResultFieldPath Rows {get;}
     public ResultFieldPath Identity {get;}
     public ResultFieldPath Rectangle {get;}
@@ -42,7 +43,11 @@ public sealed class ResultDisplayDescriptor
     public ResultFieldPath? InnerRectangle {get;}
     public ResultDisplayColor? SelectedRectangleColor {get;}
     public ResultFieldPath? Centroid {get;}
-    public IReadOnlyList<OutputValueRequest> RequiredOutputs=>Outline is null?Array.Empty<OutputValueRequest>():new[]{new OutputValueRequest(Outline.PortId,Outline.MemberFieldPath)};
+    /// <summary>Optional global contour payload, matching the original CONTOURPOINTS object.</summary>
+    public ResultFieldPath? GlobalOutline {get;}
+    public IReadOnlyList<OutputValueRequest> RequiredOutputs
+        => new[]{Outline,GlobalOutline}.Where(path=>path is not null)
+            .Select(path=>new OutputValueRequest(path!.PortId,path.MemberFieldPath)).ToArray();
     public void Validate(ToolSchema schema)
     {
         var rows=Rows.Resolve(schema);
@@ -66,6 +71,19 @@ public sealed class ResultDisplayDescriptor
             var pointSet=boundary.Shape==ValueShape.Sequence&&boundary.Element?.Geometry==GeometryKind.Point;
             if(!pointSet&&(boundary.Shape!=ValueShape.Record||paths?.Shape!=ValueShape.Sequence||points?.Shape!=ValueShape.Sequence||points.Element?.Geometry!=GeometryKind.Point))
                 throw new ArgumentException("Outline requires point geometry or boundary paths.");
+        }
+        if(GlobalOutline is {} global)
+        {
+            var payload=global.Resolve(schema);
+            if(payload.Shape!=ValueShape.Record)
+                throw new ArgumentException("Global outline requires a declared record payload.");
+            var info=payload.Fields.SingleOrDefault(port=>port.Id=="info")?.Type;
+            var count=payload.Fields.SingleOrDefault(port=>port.Id=="count")?.Type;
+            if(info is null || count!=DataType.Integer || info.Shape!=ValueShape.Record)
+                throw new ArgumentException("Global outline requires contour info and contour count.");
+            foreach(var id in new[]{"x","y","score","blob-index"})
+                if(info.Fields.SingleOrDefault(port=>port.Id==id)?.Type is not {Shape:ValueShape.Sequence})
+                    throw new ArgumentException("Global outline contour info is incomplete.");
         }
         var bounds=Element(Rectangle);
         if(bounds.Shape!=ValueShape.Record

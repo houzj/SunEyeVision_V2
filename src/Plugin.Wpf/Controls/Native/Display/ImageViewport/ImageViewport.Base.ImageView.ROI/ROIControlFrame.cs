@@ -150,8 +150,19 @@ public class ROIControlFrame : Control, INotifyPropertyChanged
 	{
 		SetStrokeThickness(d);
 		ROIControlFrame rOIControlFrame = d as ROIControlFrame;
+		if (rOIControlFrame == null) return;
 		SubROIItemsPage parent = rOIControlFrame.GetParent<SubROIItemsPage>();
+		// ItemsControl 删除 ROI 时，容器会先从可视树脱离，随后仍可能触发
+		// IsSelected 的最后一次变更。此时父级链不存在，直接结束解绑回调。
+		if (parent == null)
+		{
+			return;
+		}
 		ImageViewBox parent2 = parent.GetParent<ImageViewBox>();
+		if (parent2 == null)
+		{
+			return;
+		}
 		if ((bool)e.NewValue && parent2.ROIVisible)
 		{
 			parent2.NotifyROISelected(parent.DataContext, rOIControlFrame.DataContext);

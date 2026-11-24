@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Media.Media3D;
 using Microsoft.Win32;
 
 namespace SunEyeVision.Plugin.Wpf.Interop.Windows;
@@ -16,21 +17,23 @@ public static class UIHelper
 
 	public static T GetParent<T>(this DependencyObject source) where T : class
 	{
-		DependencyObject dependencyObject = VisualTreeHelper.GetParent(source);
-		if (dependencyObject == null)
+		// 原厂树查找在控件脱离 ItemsControl 时返回 null。
+		if (source == null) return null;
+		DependencyObject dependencyObject = source switch
 		{
-			dependencyObject = (source as FrameworkElement)?.Parent;
-		}
-		if (dependencyObject == null)
-		{
-			return null;
-		}
+			ContentElement contentElement => ContentOperations.GetParent(contentElement) ?? (contentElement as FrameworkContentElement)?.Parent,
+			FrameworkElement frameworkElement when frameworkElement.Parent != null => frameworkElement.Parent,
+			Visual visual => VisualTreeHelper.GetParent(visual),
+			Visual3D visual3D => VisualTreeHelper.GetParent(visual3D),
+			_ => null
+		};
 		while (dependencyObject != null && !(dependencyObject is T))
 		{
 			dependencyObject = dependencyObject.GetParent<T>() as DependencyObject;
 		}
 		return dependencyObject as T;
 	}
+
 
 	public static T GetChild<T>(DependencyObject obj) where T : DependencyObject
 	{

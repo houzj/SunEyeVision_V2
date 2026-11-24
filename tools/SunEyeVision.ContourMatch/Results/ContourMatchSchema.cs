@@ -22,6 +22,17 @@ public static class ContourMatchSchema
     public const string MatchPoints = "output.match-points";
     public const string Angles = "output.angles";
     public const string Scales = "output.scales";
+    /// <summary>原厂 MatchModelIndex（int[]）：本方单模板，恒为 0。</summary>
+    public const string ModelIndex = "output.model-index";
+    /// <summary>原厂 MatchModelName（string[]）：本方单模板，取训练样本名称。</summary>
+    public const string ModelName = "output.model-name";
+    /// <summary>原厂 MatchScaleX/MatchScaleY（float[]）：HALCON 形状模板仅等比，等于 MatchScale。</summary>
+    public const string ScaleX = "output.scale-x";
+    public const string ScaleY = "output.scale-y";
+    /// <summary>原厂 SkewX（float[]）：横切角度语义未实现，恒为 0。</summary>
+    public const string SkewX = "output.skew-x";
+    /// <summary>原厂 ROI（检测区域）：本次搜索区域的外接框。</summary>
+    public const string DetectRoi = "output.roi";
     public const string Boxes = "output.boxes";
     public const string OutlinePoints = "output.outline-points";
     public const string OutputFixture = "output.fixture";
@@ -64,10 +75,16 @@ public static class ContourMatchSchema
         new Port(RunTime, DataType.Number, Storage: NumericStorage.Float32),
         new Port(Status, DataType.Integer, Storage: NumericStorage.Int32),
         new Port(Count, DataType.Integer, Storage: NumericStorage.Int32),
+        new Port(ModelIndex, TypeRef.SequenceOf(DataType.Integer), Storage: NumericStorage.Int32),
+        new Port(ModelName, TypeRef.SequenceOf(DataType.Text)),
         new Port(Scores, DataType.NumberArray, Storage: NumericStorage.Float32),
         new Port(MatchPoints, TypeRef.SequenceOf(PointType)),
         new Port(Angles, DataType.NumberArray, Storage: NumericStorage.Float32),
         new Port(Scales, DataType.NumberArray, Nullable: true, Storage: NumericStorage.Float32),
+        new Port(ScaleX, DataType.NumberArray, Storage: NumericStorage.Float32),
+        new Port(ScaleY, DataType.NumberArray, Storage: NumericStorage.Float32),
+        new Port(SkewX, DataType.NumberArray, Storage: NumericStorage.Float32),
+        new Port(DetectRoi, BoxType, Nullable: true),
         new Port(Boxes, TypeRef.SequenceOf(BoxType)),
         new Port(OutlinePoints, OutlineSetType, Nullable: true),
         new Port(OutputFixture, FixtureDeclarations.Info, Nullable: true),
@@ -79,10 +96,16 @@ public static class ContourMatchSchema
         new OutputDisplayNode(Status, "模块状态", isModuleExecutionSummary: true),
         new OutputDisplayNode(RunTime, "模块耗时", isModuleExecutionSummary: true),
         new OutputDisplayNode(Count, "匹配个数"),
+        new OutputDisplayNode(ModelIndex, "模型索引"),
+        new OutputDisplayNode(ModelName, "模型名称"),
         new OutputDisplayNode(Scores, "匹配分数"),
         new OutputDisplayNode(MatchPoints, "匹配点"),
         new OutputDisplayNode(Angles, "匹配角度"),
         new OutputDisplayNode(Scales, "匹配尺度"),
+        new OutputDisplayNode(ScaleX, "X匹配尺度"),
+        new OutputDisplayNode(ScaleY, "Y匹配尺度"),
+        new OutputDisplayNode(SkewX, "横切角度"),
+        new OutputDisplayNode(DetectRoi, "检测区域"),
         new OutputDisplayNode(Boxes, "匹配框"),
         new OutputDisplayNode(OutlinePoints, "轮廓点"),
         new OutputDisplayNode(OutputFixture, "位置修正"),

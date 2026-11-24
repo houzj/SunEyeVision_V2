@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,6 +20,12 @@ namespace SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport.Base.ImageView;
 
 internal class ShapeItemsPage : ImageViewItemsPage
 {
+	private static int _traceCount;
+	private static void Trace(string text)
+	{
+		if (System.Threading.Interlocked.Increment(ref _traceCount) > 40) return;
+		try { File.AppendAllText(Path.Combine(Path.GetTempPath(), "SunEyeVision.ShapeItemsPage.log"), $"{DateTime.Now:O} {text}{Environment.NewLine}"); } catch { }
+	}
 	public static readonly DependencyProperty ImageSourceWidthProperty;
 
 	public static readonly DependencyProperty ImageSourceHeightProperty;
@@ -36,6 +43,25 @@ internal class ShapeItemsPage : ImageViewItemsPage
 	private ImageViewBox imageView;
 
 	private int shapeCount = 0;
+
+	/// <summary>
+	/// Repaints the external point bitmap using the current ImageViewBox
+	/// scale/offset.  The original HikImageView calls CreatPointK directly
+	/// after a viewport change; dynamic MultiPointShape instances cannot rely
+	/// on a one-shot style binding pulse for that lifecycle event.
+	/// </summary>
+	internal void RefreshMultiPointShapes()
+	{
+		if (maincanvas is null)
+		{
+			return;
+		}
+
+		foreach (var shape in maincanvas.Children.OfType<MultiPointShape>())
+		{
+			shape.CreatPointK();
+		}
+	}
 
 	public int ImageSourceWidth
 	{
@@ -113,6 +139,7 @@ internal class ShapeItemsPage : ImageViewItemsPage
 
 	private void OnItemsSourceChanged(DependencyPropertyChangedEventArgs e)
 	{
+		Trace($"items-source old={e.OldValue?.GetType().FullName ?? "null"};new={e.NewValue?.GetType().FullName ?? "null"};count={(e.NewValue as IList)?.Count ?? -1};canvas={maincanvas is not null}");
 		ClearShapes();
 		if (e.OldValue is ObservableCollection<object> source)
 		{
@@ -178,6 +205,7 @@ internal class ShapeItemsPage : ImageViewItemsPage
 
 	private void AddShape(object data)
 	{
+		Trace($"add-shape type={data?.GetType().FullName ?? "null"};multi={data is IMultiPoint};count={shapeCount};canvas={maincanvas is not null}");
 		if (shapeCount >= GlobalRenderVariable.ShapeRenderingMaxNumber)
 		{
 			return;
@@ -195,10 +223,38 @@ internal class ShapeItemsPage : ImageViewItemsPage
 				shapeCount += TextShape.AddMultiText(multiText, ImageSourceWidth, ImageSourceHeight, ControlToImageRadio, visualcanvas, imageView);
 				return;
 			}
-			if (data is IMultiPoint)
+			if (data is IMultiPoint multiPoint)
 			{
-				frameworkElement = new MultiPointShape();
-				frameworkElement.DataContext = data;
+				// The VM shape contract supplies the three point collections through the
+				// MultiPointShape style.  A dynamically added ShapeList item can be
+				// created after NeedRefreshShapes has already pulsed, so the style-only
+				// binding misses the initial paint.  Attach the same contract at the
+				// creation boundary and let MultiPointShape perform its normal paint.
+				// The host may publish the image source before ImageSourceWidth/Height
+				// reaches this dynamically-created page.  VM's shape contract still
+				// requires the source dimensions at paint time; use the bound values
+				// first and the actual source bitmap as the same-host fallback.
+				var sourceWidth = ImageSourceWidth > 0
+					? ImageSourceWidth
+					: imageView?.ImageSourceWidth > 0
+						? imageView.ImageSourceWidth
+						: (int)Math.Round(imageView?.SourceImage?.Source?.Width ?? 0);
+				var sourceHeight = ImageSourceHeight > 0
+					? ImageSourceHeight
+					: imageView?.ImageSourceHeight > 0
+						? imageView.ImageSourceHeight
+						: (int)Math.Round(imageView?.SourceImage?.Source?.Height ?? 0);
+				var multiPointShape = new MultiPointShape
+				{
+					DataContext = data,
+					Tag = imageView,
+					ImageSourceWidth = sourceWidth,
+					ImageSourceHeight = sourceHeight,
+					OutlinePoints = multiPoint.OutlinePoints,
+					MicroPoints = multiPoint.MicroPoints,
+					Rectangles = multiPoint.Rectangles
+				};
+				frameworkElement = multiPointShape;
 			}
 			else if (data is IRectangle rect)
 			{
@@ -452,6 +508,7 @@ internal class ShapeItemsPage : ImageViewItemsPage
 		shapeGrid = Template.FindName("shapeGrid", this) as Grid;
 		maincanvas = Template.FindName("maincanvas", this) as Canvas;
 		visualcanvas = Template.FindName("visualcanvas", this) as ShapeCanvas;
+		Trace($"apply-template source={ItemsSource?.GetType().FullName ?? "null"};count={(ItemsSource as IList)?.Count ?? -1};canvas={maincanvas is not null}");
 		try
 		{
 			imageView = this.GetParent<ImageViewBox>();

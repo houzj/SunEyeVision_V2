@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Collections.Specialized;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -32,6 +33,12 @@ namespace SunEyeVision.Plugin.Wpf.Native.Display.ImageViewport;
 
 public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentConnector, IStyleConnector
 {
+	private static int _pointsImageTraceCount;
+	private static void TracePointsImage(string text)
+	{
+		if (System.Threading.Interlocked.Increment(ref _pointsImageTraceCount) > 200) return;
+		try { File.AppendAllText(Path.Combine(Path.GetTempPath(), "SunEyeVision.PointsImage.log"), $"{DateTime.Now:O} {text}{Environment.NewLine}"); } catch { }
+	}
 	public delegate void ControlAlert(object sender, string msg);
 
 	public delegate void SetImageEnd(object sender, string msg);
@@ -86,7 +93,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 
 	public static readonly DependencyProperty ShapeHitTestVisibleProperty = DependencyProperty.Register("ShapeHitTestVisible", typeof(bool), typeof(ImageViewBox), new PropertyMetadata(true));
 
-	public static readonly DependencyProperty ShapeListProperty = DependencyProperty.Register("ShapeList", typeof(IList), typeof(ImageViewBox), new PropertyMetadata(null));
+	public static readonly DependencyProperty ShapeListProperty = DependencyProperty.Register("ShapeList", typeof(IList), typeof(ImageViewBox), new PropertyMetadata(null, OnShapeListChanged));
 
 	public static readonly DependencyProperty GriddingGeometryProperty = DependencyProperty.Register("GriddingGeometry", typeof(GeometryGroup), typeof(ImageViewBox), new PropertyMetadata(null));
 
@@ -209,6 +216,11 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 	private Thickness imageMargin;
 
 	private bool needFlashExtern = false;
+
+	// pointsImage is an external bitmap overlay in mapcanvas coordinates. It
+	// must be rebuilt after WPF applies the Viewbox scale/offset/layout change.
+	// This mirrors the original HikImageView.needFlashPoint path.
+	private bool needFlashPoints = false;
 
 	public bool needFlash = false;
 
@@ -574,6 +586,36 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 		{
 			SetValue(ShapeListProperty, value);
 		}
+	}
+
+	private static void OnShapeListChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		var view = (ImageViewBox)d;
+		view.DetachShapeList(e.OldValue as INotifyCollectionChanged);
+		view.AttachShapeList(e.NewValue as INotifyCollectionChanged);
+		view.RefreshShapeItemsPage();
+		view.NeedRefreshShapes = true;
+	}
+
+	private void AttachShapeList(INotifyCollectionChanged? list)
+	{
+		if (list is not null) list.CollectionChanged += ShapeListCollectionChanged;
+	}
+
+	private void DetachShapeList(INotifyCollectionChanged? list)
+	{
+		if (list is not null) list.CollectionChanged -= ShapeListCollectionChanged;
+	}
+
+	private void ShapeListCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+	{
+		NeedRefreshShapes = true;
+	}
+
+	private void RefreshShapeItemsPage()
+	{
+		if (Template?.FindName("mShapeView", this) is ShapeItemsPage page)
+			page.ItemsSource = ShapeList;
 	}
 
 	public GeometryGroup GriddingGeometry
@@ -1414,6 +1456,20 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 	{
 		ImageViewBox imageViewBox = d as ImageViewBox;
 		imageViewBox.OnPropertyChanged("ThicknessScale");
+		imageViewBox.RequestExternalShapeRefresh();
+	}
+
+	private void RequestExternalShapeRefresh()
+	{
+		needFlashPoints = true;
+	}
+
+	private void RefreshExternalShapes()
+	{
+		if (Template?.FindName("mShapeView", this) is ShapeItemsPage page)
+		{
+			page.RefreshMultiPointShapes();
+		}
 	}
 
 	private static void ImageSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -1471,6 +1527,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 		above = Template.FindName("above", this) as Canvas;
 		extenAbove = Template.FindName("ExtenAbove", this) as Canvas;
 		mROIView = Template.FindName("mROIView", this) as ROIItemsPage;
+		RefreshShapeItemsPage();
 		ImageLayers = Template.FindName("ImageLayers", this) as Grid;
 		srf = Template.FindName("srf", this) as ScaleTransform;
 		background = new ImageBrush
@@ -1730,6 +1787,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 			ClipImage();
 			needFlash = true;
 			needFlashExtern = true;
+			RequestExternalShapeRefresh();
 		}
 	}
 
@@ -1941,6 +1999,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 	private void sfr_Changed(object sender, EventArgs e)
 	{
 		SetImageSource(isDirect: false, isInner: true);
+		RequestExternalShapeRefresh();
 		EnableZoomIn = ImageScale > 0.3;
 		double num = viewbox.ActualWidth * ImageScale;
 		double num2 = num / (double)ImageSourceWidth;
@@ -2002,6 +2061,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 			viewbox.SetValue(Canvas.LeftProperty, position.X - mouseOffset.X + theLeft);
 			ClipImage();
 			needFlash = true;
+			RequestExternalShapeRefresh();
 			if (OnFreshExtendContent != null)
 			{
 				OnFreshExtendContent(this, null);
@@ -2168,6 +2228,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 	{
 		OnPropertyChanged("ViewBoxScale");
 		OnPropertyChanged("ThicknessScale");
+		RequestExternalShapeRefresh();
 	}
 
 	private void mainGrid_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -2185,6 +2246,7 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 		InitClipImage();
 		SetImageSource();
 		needFlashExtern = true;
+		RequestExternalShapeRefresh();
 	}
 
 	private void InitClipImage()
@@ -2203,6 +2265,13 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 			needFlash = false;
 			SetAboveCanvas();
 			NeedRefreshShapes = true;
+			RefreshExternalShapes();
+		}
+		if (needFlashPoints)
+		{
+			needFlashPoints = false;
+			NeedRefreshShapes = true;
+			RefreshExternalShapes();
 		}
 		if (needFlashExtern)
 		{
@@ -2529,14 +2598,32 @@ public partial class ImageViewBox : Control, INotifyPropertyChanged, IComponentC
 
 	internal void SetPointsImage(ImageSource source)
 	{
+		TracePointsImage($"set source={source?.Width:0.##}x{source?.Height:0.##};control={(pointsImage is null ? "null" : "ready")};actual={pointsImage?.ActualWidth:0.##}x{pointsImage?.ActualHeight:0.##};visibility={pointsImage?.Visibility};opacity={pointsImage?.Opacity:0.##}");
 		if (pointsImage != null)
 		{
+			// 原厂 ExtenAbove 随模板布局获得与 MapCanvas 相同的承载尺寸。
+			// 本方模板窗口动态套用 ControlTemplate 时 Canvas 可能保持 0×0，
+			// 造成位图虽已设置 Source 却不可见；显式同步尺寸和层级。
+			var canvasWidth = (mapcanvas as Canvas)?.ActualWidth ?? source.Width;
+			var canvasHeight = (mapcanvas as Canvas)?.ActualHeight ?? source.Height;
+			if (extenAbove is not null)
+			{
+				extenAbove.Width = canvasWidth > 0 ? canvasWidth : source.Width;
+				extenAbove.Height = canvasHeight > 0 ? canvasHeight : source.Height;
+				Panel.SetZIndex(extenAbove, 100);
+			}
+			pointsImage.Width = source.Width;
+			pointsImage.Height = source.Height;
+			Canvas.SetLeft(pointsImage, 0);
+			Canvas.SetTop(pointsImage, 0);
+			Panel.SetZIndex(pointsImage, 101);
 			pointsImage.Source = source;
 		}
 	}
 
 	public void ClearExternShapes()
 	{
+		TracePointsImage($"clear control={(pointsImage is null ? "null" : "ready")};source={(pointsImage?.Source is null ? "null" : "set")}");
 		if (pointsImage != null)
 		{
 			pointsImage.Source = null;

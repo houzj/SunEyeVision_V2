@@ -9,7 +9,7 @@
   </FrameworkElement.Resources>
   <Control.Template>
     <ControlTemplate>
-      <Path Stroke="{StaticResource ROIBaseColor}" StrokeThickness="{Binding StrokeThickness, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+      <Path Fill="{Binding DataContext.RoiFill, RelativeSource={RelativeSource Mode=TemplatedParent}}" Stroke="{StaticResource ROIBaseColor}" StrokeThickness="{Binding StrokeThickness, RelativeSource={RelativeSource Mode=TemplatedParent}}">
         <Path.Data>
           <RectangleGeometry x:Name="RG" />
         </Path.Data>

@@ -71,9 +71,9 @@ public static class ContourMatchResultDisplay
         }
         var ok = PresentationDeclarations.Color(102, 255, 0);
         var ng = PresentationDeclarations.Color(255, 0, 0);
-        void GraphicFields(string group, string label, RecordValue color, double opacity = 1, double width = 2)
+        void GraphicFields(string group, string label, RecordValue color, double opacity = 1, double width = 2, bool visible = true)
         {
-            Add(Field(group, "visible"), label, "图像显示", DataType.Boolean, true, dialog: group, dialogTitle: label, primary: true);
+            Add(Field(group, "visible"), label, "图像显示", DataType.Boolean, visible, dialog: group, dialogTitle: label, primary: true);
             Add(Field(group, "ok"), "OK颜色", "图像显示", PresentationDeclarations.Rgba, color, dialog: group, dialogTitle: label);
             Add(Field(group, "ng"), "NG颜色", "图像显示", PresentationDeclarations.Rgba, ng, dialog: group, dialogTitle: label);
             Add(Field(group, "opacity"), "透明度", "图像显示", DataType.Number, opacity, 0, 1, .01, dialog: group, dialogTitle: label);
@@ -84,8 +84,10 @@ public static class ContourMatchResultDisplay
         GraphicFields(Match, "匹配结果", ok);
         GraphicFields(Location, "匹配点", ok, width: 1);
         Add(Field(Outline, "visible"), "匹配轮廓点", "图像显示", DataType.Boolean, true);
-        GraphicFields(ReferencePoint, "基准点", ok, width: 1);
-        GraphicFields(RunPoint, "运行点", ng, width: 1);
+        // 原厂 AlgorithmTab.xml：FixtureInitPoint / FixtureRunPoint 的 CustomVisible=False（默认隐藏，
+        // 由位置修正使能触发显示）。本方先对齐默认隐藏，联动待位置修正映射接入。
+        GraphicFields(ReferencePoint, "基准点", ok, width: 1, visible: false);
+        GraphicFields(RunPoint, "运行点", ng, width: 1, visible: false);
         GraphicFields(Mask, "盲区", PresentationDeclarations.Color(255, 84, 0), .5);
         Add(Field(Text, "visible"), "文本", "图像显示", DataType.Boolean, true);
         Add(Field(Text, "content"), "内容", "文本显示", DataType.Text, "匹配分数:{分数}");

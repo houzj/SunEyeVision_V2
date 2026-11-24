@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -61,6 +62,12 @@ public class MultiPointShape : ShapeContainer
 	private int[] PointColor_Buffer;
 
 	private bool needCreatePoint = false;
+	private static int _traceCount;
+	private static void Trace(string text)
+	{
+		if (System.Threading.Interlocked.Increment(ref _traceCount) > 40) return;
+		try { File.AppendAllText(Path.Combine(Path.GetTempPath(), "SunEyeVision.MultiPointShape.log"), $"{DateTime.Now:O} {text}{Environment.NewLine}"); } catch { }
+	}
 
 	public static readonly DependencyProperty OutlinePointsProperty;
 
@@ -248,17 +255,21 @@ public class MultiPointShape : ShapeContainer
 	public unsafe void CreatPointK()
 	{
 		ImageViewBox imageViewBox = Tag as ImageViewBox;
+		Trace($"create-enter data={DataContext?.GetType().FullName ?? "null"};tag={Tag?.GetType().FullName ?? "null"}");
 		if (DataContext == null || imageViewBox == null)
 		{
+			Trace("create-early missing-data-or-tag");
 			return;
 		}
 		IList shapeList = imageViewBox.ShapeList;
 		if (shapeList == null || !shapeList.Contains(DataContext) || imageViewBox.SourceImage?.Source == null)
 		{
+			Trace($"create-early shapeList={(shapeList?.Count ?? 0)};contains={shapeList?.Contains(DataContext)};source={imageViewBox.SourceImage?.Source is not null}");
 			return;
 		}
 		if (PointLenth <= 0 && (ExternPoint_Buffer == null || ExternPoint_Buffer.Count == 0) && (ShapeList == null || ShapeList.Count == 0))
 		{
+			Trace("create-early no-points");
 			b2SConvertor.Clear();
 			return;
 		}
@@ -271,6 +282,7 @@ public class MultiPointShape : ShapeContainer
 		double temp = num / (double)ImageSourceWidth;
 		int num2 = 0;
 		int num3 = 0;
+		int drawnPointCount = 0;
 		int num4 = (int)(imageViewBox.MapCanvas as Canvas).ActualWidth;
 		int num5 = (int)(imageViewBox.MapCanvas as Canvas).ActualHeight;
 		if (num4 == 0 || num5 == 0)
@@ -282,6 +294,10 @@ public class MultiPointShape : ShapeContainer
 		{
 			return;
 		}
+		// 原厂 HikImageView.CreatPointK 在 Lock 前先把同一 WriteableBitmap
+		// 交给 pointsImage，随后通过 dirty rect 刷新绘制内容；不能等绘制
+		// 完成后才替换 Source，否则模板轮廓可能只留下左上角初始像素。
+		imageViewBox.SetPointsImage(writeableBitmap);
 		writeableBitmap.Lock();
 		byte* ptr = (byte*)writeableBitmap.BackBuffer.ToPointer();
 		int wwe_Stride = writeableBitmap.BackBufferStride / 4;
@@ -418,6 +434,7 @@ public class MultiPointShape : ShapeContainer
 							num3 = (int)(((double)pointY_Buffer[num14] + fy) * temp);
 							if (num3 >= 0 && num3 <= Heeh)
 							{
+					drawnPointCount++;
 								int* ptr3 = pointColor_Buffer + num14;
 								int* ptr4 = ztemp + num3 * wwe_Stride + num2;
 								*ptr4 = *ptr3;
@@ -435,7 +452,7 @@ public class MultiPointShape : ShapeContainer
 		}
 		writeableBitmap.AddDirtyRect(new Int32Rect(0, 0, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight));
 		writeableBitmap.Unlock();
-		imageViewBox.SetPointsImage(writeableBitmap);
+		Trace($"create-drawn pointLength={PointLenth};visible={drawnPointCount};bitmap={num4}x{num5};image={ImageSourceWidth}x{ImageSourceHeight};temp={temp:0.######};fx={fx:0.######};fy={fy:0.######};extern={ExternPoint_Buffer.Count};rects={ShapeList.Count}");
 		needCreatePoint = false;
 	}
 
@@ -468,6 +485,7 @@ public class MultiPointShape : ShapeContainer
 		{
 			AddNewPointK((float)microPoint.Point.X, (float)microPoint.Point.Y, (DrawShapeHelper.XmlColorToInt(microPoint.Stroke) & 0xFFFFFF) | ((int)(microPoint.Opacity * 255.0) << 24));
 		}
+		Trace($"micro-updated count={MicroPoints.Count};pointLength={PointLenth}");
 		needCreatePoint = true;
 	}
 

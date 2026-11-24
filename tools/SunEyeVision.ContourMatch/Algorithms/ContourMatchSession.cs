@@ -316,10 +316,11 @@ public sealed class ContourMatchSession : IToolSession<ContourMatchSettings, Con
         using var numMatches = new HTuple(settings.MaxMatchCount);
         using var maxOverlap = new HTuple(Math.Clamp(settings.MaxOverlap, 0, 100) / 100d);
         using var subPixel = new HTuple(ContourMatchSettings.HalconSubPixel(settings.SubPixel));
-        // 特征尺度（PyramidScaleRLevel）→ 匹配期使用的模板层数；自动模式由 HALCON 自行决定。
-        using var numLevels = new HTuple(settings.PyramidMode == ContourMatchPyramidMode.Manual
-            ? Math.Clamp(settings.PyramidScaleRLevel, 0, Math.Max(1, template.LevelCount))
-            : 0);
+        // 原厂字段默认 PyramidScaleFlag=1、PyramidScaleRLevel=1（证据见
+        // hppyramidfeaturepatmatchdialoguistyle.xaml:887-892）。本方实测当前大轮廓
+        // 模型在 FindScaledShapeModel 的 NumLevels=0 路径会返回零匹配，而使用持久化
+        // 的特征尺度 1 可命中；因此这里保留该字段语义，并按实际模型层数收敛范围。
+        using var numLevels = new HTuple(Math.Clamp(settings.PyramidScaleRLevel, 1, Math.Max(1, template.LevelCount)));
         using var greediness = new HTuple(Math.Clamp(settings.Greediness, 0, 1));
         // 原厂 0x0307/0308 尺度范围作为运行期筛选；创建期模型范围已覆盖运行期设置。
         using var scaleMin = new HTuple(settings.ScaleStart);

@@ -14,6 +14,7 @@ pre{background:#17232d;color:#e7f3fa;padding:15px;border-radius:7px;overflow:aut
 <div class="lead"><b>当前事实：</b>ContourMatch 模板窗口 8 项人工验收已通过；本批新增 ROI/Fixture/下游引用与正式工作流回归，ContourMatch 相关测试 51/51、ImageSource→ContourMatch 正式执行链 1/1 通过。最终全量 Release 构建 0 错误、6012 个既有警告。多模板真实运行、橡皮擦形状取证和用户统一人工验收不计入本批。</div>
 <div class="p0"><b>P0 当前缺陷：</b>正式运行后打开调试窗口、绘制 ROI、在调试窗口运行、关闭窗口，主界面 ViewBox 被清空。原厂链路要求打开编辑器保留正式 publication；关闭时停止/退订/退役私有结果，再恢复同一节点的正式结果、图像、表格和叠加。该现象优先判定为框架/节点宿主的 publication 生命周期问题，不能在 Blob 或 ContourMatch 内各做一套保留图像的补丁。已在 <code>MainWindowRuntimeEditing.cs</code> 增加窗口关闭后的正式 publication 恢复兜底，并加入 Blob 正式运行→ROI→私有运行→关闭回归；定向回归已通过，用户统一人工验收仍待进行。</div>
 <div class="p0"><b>P1 代码状态：</b>已按原厂单组 ROI 与单一 FIXTURE 端口合同接通执行：canonical ROI 模式优先、旧 <code>search-source</code> 回退、矩形/圆环参数物化、本地/上游来源裁剪、位置修正按信息/按点/按坐标聚合，以及 ContourMatch 输出父端口和嵌套成员的手动引用声明。原厂 <code>InputROI</code> 字段为 <code>IsForce=false</code>，未选择本地 ROI 且未连接上游 ROI 时使用输入图像有效域；模板训练 ROI 不替代运行时 ROI。正式 ImageSource→ContourMatch 回归已确认结果 publication、状态和 rows 可读；用户统一 Release 验收仍待进行。若下游使用未在声明清单中的自定义路径，仍应按端口/成员合同拒绝。</div>
+<div class="p0"><b>2026-11-25 正式 Release 复核：</b>Agent Desktop 已关闭旧进程并启动正式 Release 路径。对方案“轮廓模版测试1125”执行全屏匹配后，日志记录 <code>tool=ContourMatch count=1</code>、<code>流程1：Success</code>，截图确认图像源、轮廓匹配、Blob 分析节点均为绿色。当前大轮廓模型在本方 HALCON <code>NumLevels=0</code> 路径下出现零匹配；运行期改为使用已持久化的原厂默认特征尺度 <code>PyramidScaleRLevel=1</code> 后恢复命中。该层级映射是本方同图实测修正，原厂 backend 调用仍标为未完全取证；人工统一验收继续保留。</div>
 
 <h2>一、原厂证据基线</h2>
 <table>

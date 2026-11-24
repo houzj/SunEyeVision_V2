@@ -97,7 +97,7 @@ public sealed class ContourMatchSession : IToolSession<ContourMatchSettings, Con
 
         // 搜索区域二选一（原厂 Tab_ROI Area 的绘制/继承）：Local 走本模块 ROI 文档栅格化，
         // Inherited 走上游 RoiInput 端口。两条路径都产出 HRegion，后续位置修正/求交/ReduceDomain 共用。
-        using var roiRegion = ResolveSearchRegion(inputs, image, frame, width, height);
+        using var roiRegion = ResolveSearchRegion(inputs, image, frame, width, height, domain);
         using var posedRoi = fixture is null ? roiRegion.Clone() : HalconResourceBridge.TransformRegion(roiRegion, FixtureDeclarations.ToAffine2D(fixture, ContourMatchSchema.ImageFrame));
         using var baseSearch = domain.Intersection(posedRoi);
         // 原厂 MatchExtentRate「延拓阈值」(0~90) 等价映射：把搜索域按图像短边的百分比外扩，
@@ -221,13 +221,15 @@ public sealed class ContourMatchSession : IToolSession<ContourMatchSettings, Con
     /// 解析运行时搜索域：Local 模式栅格化本地 ROI 文档；Inherited（默认）走上游 RoiInput 端口。
     /// 本地路径是 Halcon 原生 HRegion（已按像素坐标构造），无需再经 CopyRegion 转换。
     /// </summary>
-    private static HRegion ResolveSearchRegion(InputValues values, IReadOnlyImage image, ImageFrameAddress frame, int width, int height)
+    private static HRegion ResolveSearchRegion(InputValues values, IReadOnlyImage image, ImageFrameAddress frame,
+        int width, int height, HRegion domain)
     {
         var local = ContourMatchSearchRois.ResolveLocal(values, width, height);
         if (local is not null) return local;
-        var roi = OptionalRegion(values, ContourMatchSchema.RoiInput)
-            ?? throw new ContourMatchCapabilityException("CONTOURMATCH_ROI_REQUIRED", "请为搜索区域连接区域输入，或在参数页本地绘制搜索区域。");
-        return HalconResourceBridge.CopyRegion(roi, frame, width, height);
+        var roi = OptionalRegion(values, ContourMatchSchema.RoiInput);
+        // 原厂 InputROI 的字段声明为 IsForce=false：未连接上游区域时允许全屏搜索。
+        // 只有显式选择 Local 后，空本地文档才由 ResolveLocal 报“本地搜索区域未配置”。
+        return roi is null ? domain.Clone() : HalconResourceBridge.CopyRegion(roi, frame, width, height);
     }
 
     private static IReadOnlyRegion? OptionalRegion(InputValues values, string id)

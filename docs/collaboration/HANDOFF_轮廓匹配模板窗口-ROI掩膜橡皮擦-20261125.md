@@ -28,6 +28,7 @@
 - `ContourMatchFixtureControl` 按原厂一个 `input.fixture` 端口合同聚合按信息、按点、按坐标三种来源，并按当前 Assist 模式裁剪执行快照；`ContourMatchSession` 统一消费聚合后的 Fixture。
 - `ContourMatchTool` 实现 `IToolManualReferenceSources`，声明 `output.roi`、`output.fixture`、`contourmatch.rows` 及合法成员路径，兼容下游引用由框架统一准入。
 - 自动回归：ContourMatch 相关测试 51/51；正式 ImageSource→ContourMatch 运行读取源图、完成匹配并发布 `status/count/rows` 1/1；用户仍需统一执行 Release 界面、断线重连、帧切换、真实下游节点和关闭链人工验收。
+- ROI 语义纠偏：模板训练 ROI 与运行搜索 ROI 保持两条链；按原厂 `InputROI IsForce=false`，未连接运行时 ROI 时由执行层使用输入图像有效域，全屏匹配不应报 `CONTOURMATCH_ROI_REQUIRED`。本次已补代码回归，正式 Release 复测需在关闭当前占用 DLL 的程序后执行。
 
 ## 2. 本轮改动清单（按功能域）
 

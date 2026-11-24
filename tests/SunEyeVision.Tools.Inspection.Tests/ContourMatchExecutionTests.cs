@@ -195,13 +195,14 @@ public sealed class ContourMatchExecutionTests
     }
 
     [Fact]
-    public async Task Missing_roi_and_missing_template_fail_with_explicit_diagnostics()
+    public async Task Full_screen_search_without_roi_is_allowed_but_missing_template_still_fails()
     {
         using var owner = new FrozenOutputResources();
         var payload = CreateTemplate(owner, Mark(Size, 20, 20));
         var noRoi = await RunAsync(new ContourMatchSettings { ModelData = payload }, Mark(Size, 20, 20), owner, withRoi: false);
-        Assert.False(noRoi.Success);
-        Assert.Contains(noRoi.Diagnostics, item => item.Code == "CONTOURMATCH_ROI_REQUIRED");
+        Assert.True(noRoi.Success, string.Join(";", noRoi.Diagnostics.Select(item => item.Code + ":" + item.Message)));
+        Assert.Equal(BusinessJudgment.Pass, noRoi.Judgment);
+        using (var output = noRoi.Output!) Assert.True(output.Projection.Count > 0);
 
         var noTemplate = await RunAsync(new ContourMatchSettings(), Mark(Size, 20, 20), owner);
         Assert.False(noTemplate.Success);

@@ -10,7 +10,8 @@ namespace SunEyeVision.Tool.ContourMatch.Runtime;
 /// Tab_ROI Area 的 RoiSelectGroup/InheritWayGroup，与模块输入 InputROI xml:39 共存）。
 ///
 /// 与原厂一致，搜索区域有两条来源，按模式二选一：
-/// - Inherited（默认）：使用上游输入端口 ContourMatchSchema.RoiInput（对应原厂 InputROI）。
+/// - Inherited（默认）：优先使用上游输入端口 ContourMatchSchema.RoiInput（对应原厂 InputROI），
+///   未连接时使用输入图像有效域，匹配全屏是合法默认行为。
 /// - Local：使用本模块字段 input.roi.local 的 ROI 文档（对应原厂本地绘制 RoiSelecter）。
 ///
 /// 这是**运行时搜索域**，与模板训练样本 ContourMatchTrainingRois（建模用）是两条独立链路，不得混用。
@@ -91,8 +92,8 @@ public static class ContourMatchSearchRois
 
     /// <summary>
     /// 解析运行时搜索域：Local 模式把本地 ROI 文档栅格化为 HRegion；Inherited 模式返回 null，
-    /// 由调用方回退到上游 ContourMatchSchema.RoiInput。空本地文档（FullDomain/None）视为未配置，
-    /// 直接报错，不静默放大到全图（rule-015）。
+    /// 由调用方回退到上游 ContourMatchSchema.RoiInput；若未选 Local 且没有上游区域，
+    /// 调用方按原厂 IsForce=false 语义使用图像有效域。显式 Local 的空文档仍直接报错。
     /// </summary>
     public static HRegion? ResolveLocal(InputValues values, int imageWidth, int imageHeight)
     {

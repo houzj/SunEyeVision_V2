@@ -48,8 +48,8 @@ public sealed class ContourMatchTool : IToolDefinition<ContourMatchSettings, Con
             workflowImageInputId: ContourMatchSchema.ImageInput, outputDisplay: ContourMatchSchema.OutputDisplay);
 
     /// <summary>
-    /// 按搜索区域来源二选一：Local 激活本地 ROI 文档字段，Inherited 激活上游 RoiInput 端口。
-    /// 存量方案默认 Inherited，行为不变（AdmittedToolConfiguration.cs:257 只校验 Required 输入）。
+    /// 按搜索区域来源二选一：Local 激活本地 ROI 文档字段，Inherited 优先使用上游 RoiInput；
+    /// 未连接上游时由 Runtime 使用输入图像有效域，保持原厂全屏默认行为。
     /// </summary>
     public IReadOnlyList<string> SelectExecutionInputs(FieldSettings configuration)
     {

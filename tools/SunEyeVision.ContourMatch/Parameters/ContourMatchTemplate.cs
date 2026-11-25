@@ -362,13 +362,8 @@ public sealed class ContourMatchTemplate
         HOperatorSet.GetShapeModelContours(out var contours, modelId, level);
         using (contours)
         {
-            HOperatorSet.SmallestRectangle2Xld(contours, out var row, out var column, out var phi, out var length1, out var length2);
-            using (row) using (column) using (phi) using (length1) using (length2)
-            {
-                if (length1.D <= 0 || length2.D <= 0)
-                    throw new ContourMatchCapabilityException("CONTOURMATCH_TEMPLATE_EMPTY", "模板轮廓退化：区域内没有可用的边缘特征。");
-                return new ContourMatchTemplateBox(row.D, column.D, phi.D, length1.D, length2.D);
-            }
+            var box = ContourMatchContourGeometry.SmallestRectangle2Xld(contours);
+            return new ContourMatchTemplateBox(box.Row, box.Column, box.Phi, box.Length1, box.Length2);
         }
     }
 
@@ -733,28 +728,7 @@ public sealed class ContourMatchTemplate
     {
         using var level = new HTuple(1);
         HOperatorSet.GetShapeModelContours(out var contours, modelId, level);
-        using (contours)
-        {
-            HOperatorSet.CountObj(contours, out var count);
-            using (count)
-            {
-                var points = new List<Point2>(Math.Max(0, count.I * 256));
-                for (var index = 1; index <= count.I; index++)
-                {
-                    HOperatorSet.SelectObj(contours, out var selected, index);
-                    using (selected)
-                    {
-                        HOperatorSet.GetContourXld(selected, out var rows, out var columns);
-                        using (rows) using (columns)
-                        {
-                            for (var point = 0; point < rows.Length; point++)
-                                points.Add(new Point2(columns[point].D, rows[point].D));
-                        }
-                    }
-                }
-                return points.AsReadOnly();
-            }
-        }
+        using (contours) return ContourMatchContourGeometry.ReadPoints(contours);
     }
 
     public static void Clear(HTuple modelId)

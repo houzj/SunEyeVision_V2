@@ -147,7 +147,7 @@ public partial class MainWindowViewModel
         perf.Mark("前置");
         var control=new RuntimeNodeConfigurationControl();
         var window=new RuntimeToolEditorWindow(control,node.ToolType) {Title=node.Name};
-        window.BeforeClose=ClearRetainedEditorDebugSnapshot;
+        window.BeforeClose=CaptureEditorSnapshotForClose;
         if (ResolveSolutionDialogOwner(null) is {} owner) window.Owner=owner;
         _openDebugWindow=window;
         perf.Mark("构造");

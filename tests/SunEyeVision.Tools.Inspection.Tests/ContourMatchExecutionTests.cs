@@ -1,3 +1,4 @@
+using HalconDotNet;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Contracts.Results.Presentation;
 using SunEyeVision.Plugin.Runtime;
@@ -49,13 +50,15 @@ public sealed class ContourMatchExecutionTests
     }
 
     private static async Task<ToolOutcome<ContourMatchOutput>> RunAsync(ContourMatchSettings settings, byte[] pixels,
-        FrozenOutputResources owner, bool withRoi = true)
+        FrozenOutputResources owner, bool withRoi = true, IReadOnlyDictionary<string, object?>? additionalInputs = null)
     {
         var tool = new ContourMatchTool();
         tool.InitializeRuntime();
         var image = owner.CreateGray8(Size, Size, pixels);
         var values = new Dictionary<string, object?>(StringComparer.Ordinal) { [ContourMatchSchema.ImageInput] = image };
         if (withRoi) values[ContourMatchSchema.RoiInput] = FullRegion(owner, image);
+        if (additionalInputs is not null)
+            foreach (var pair in additionalInputs) values[pair.Key] = pair.Value;
         var inputs = new InputValues(tool.Describe().Inputs, values);
         await using var session = tool.CreateSession();
         return await session.ExecuteAsync(new ToolInvocation<ContourMatchSettings>(settings, inputs, new StubContext(owner)));
@@ -81,6 +84,38 @@ public sealed class ContourMatchExecutionTests
             ["width"] = width, ["height"] = height, ["angle-degrees"] = 0d
         });
         return RoiDocumentValue.Item(Guid.NewGuid(), "正样本", shape);
+    }
+
+    private static RecordValue RectangleItem(string name, double centerX, double centerY, double width, double height)
+    {
+        var shape = new RecordValue(RoiDocumentValue.ShapeType, new Dictionary<string, object?>
+        {
+            ["kind"] = "rectangle",
+            ["center"] = RoiDocumentValue.Point(centerX, centerY),
+            ["width"] = width, ["height"] = height, ["angle-degrees"] = 0d
+        });
+        return RoiDocumentValue.Item(Guid.NewGuid(), name, shape);
+    }
+
+    private static RecordValue RuntimeRoi(params RecordValue[] inspection)
+        => RoiDocumentValue.Root(
+            RoiDocumentValue.Group(RoiDocumentValue.Explicit, inspection),
+            RoiDocumentValue.Group(RoiDocumentValue.None, Array.Empty<RecordValue>()));
+
+    private static RecordValue RuntimeRoiWithMask(RecordValue inspection, params RecordValue[] masks)
+        => RoiDocumentValue.Root(
+            RoiDocumentValue.Group(RoiDocumentValue.Explicit, new[] { inspection }),
+            RoiDocumentValue.Group(RoiDocumentValue.Explicit, masks));
+
+    private static RecordValue PolygonItem(string name, params (double X, double Y)[] vertices)
+    {
+        var points = new SequenceValue(TypeRef.SequenceOf(RoiDocumentValue.PointType),
+            vertices.Select(point => (object?)RoiDocumentValue.Point(point.X, point.Y)));
+        var shape = new RecordValue(RoiDocumentValue.ShapeType, new Dictionary<string, object?>
+        {
+            ["kind"] = "polygon", ["vertices"] = points
+        });
+        return RoiDocumentValue.Item(Guid.NewGuid(), name, shape);
     }
 
     [Fact]
@@ -207,6 +242,42 @@ public sealed class ContourMatchExecutionTests
         var noTemplate = await RunAsync(new ContourMatchSettings(), Mark(Size, 20, 20), owner);
         Assert.False(noTemplate.Success);
         Assert.Contains(noTemplate.Diagnostics, item => item.Code == "CONTOURMATCH_TEMPLATE_REQUIRED");
+    }
+
+    [Fact]
+    public async Task Runtime_drawn_roi_and_mask_are_applied_before_matching()
+    {
+        using var owner = new FrozenOutputResources();
+        var settings = new ContourMatchSettings { ModelData = CreateTemplate(owner, Mark(Size, 20, 20)) };
+
+        // 目标位于 (20..44, 20..38)，搜索框完全位于图像底部，不能产生匹配。
+        var outside = await RunAsync(settings, Mark(Size, 20, 20), owner, withRoi: false,
+            additionalInputs: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                [ContourMatchRoi.ModeId] = ContourMatchRoi.Local,
+                [ContourMatchSearchRois.LocalId] = RuntimeRoi(RectangleItem("底部搜索区", 64, 104, 48, 24))
+            });
+        Assert.True(outside.Success, string.Join(";", outside.Diagnostics.Select(item => item.Code + ":" + item.Message)));
+        using (var output = outside.Output!) Assert.Empty(output.Measurements);
+
+        // 搜索域覆盖整幅图像，但屏蔽区覆盖目标本身，同样不能产生匹配。
+        var maskedDocument = RuntimeRoiWithMask(
+            RectangleItem("全图搜索区", Size / 2d, Size / 2d, Size, Size),
+            PolygonItem("目标屏蔽区", (12, 12), (52, 12), (52, 48), (12, 48)));
+        using (var maskedDomain = ContourMatchTrainingRois.BuildDomain(maskedDocument, Size, Size)!)
+        {
+            HOperatorSet.AreaCenter(maskedDomain, out var maskedArea, out var ignoredRow, out var ignoredColumn);
+            using (maskedArea) using (ignoredRow) using (ignoredColumn)
+                Assert.True(maskedArea.D < Size * Size, $"屏蔽区未从搜索域扣除，面积为 {maskedArea.D}。");
+        }
+        var masked = await RunAsync(settings, Mark(Size, 20, 20), owner, withRoi: false,
+            additionalInputs: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                [ContourMatchRoi.ModeId] = ContourMatchRoi.Local,
+                [ContourMatchSearchRois.LocalId] = maskedDocument
+            });
+        Assert.True(masked.Success, string.Join(";", masked.Diagnostics.Select(item => item.Code + ":" + item.Message)));
+        using (var output = masked.Output!) Assert.Empty(output.Measurements);
     }
 
     [Fact]

@@ -369,24 +369,24 @@ public sealed class ContourMatchSession : IToolSession<ContourMatchSettings, Con
                     HOperatorSet.AffineTransContourXld(modelContours, out var moved, homMat);
                     using (moved)
                     {
-                        HOperatorSet.SmallestRectangle2Xld(moved, out var boxRow, out var boxColumn, out var boxPhi, out var length1, out var length2);
-                        using (boxRow) using (boxColumn) using (boxPhi) using (length1) using (length2)
+                        var geometry = ContourMatchContourGeometry.SmallestRectangle2Xld(moved, cancellation);
+                        using var boxRow = new HTuple(geometry.Row);
+                        using var boxColumn = new HTuple(geometry.Column);
+                        using var boxPhi = new HTuple(geometry.Phi);
+                        using var length1 = new HTuple(geometry.Length1);
+                        using var length2 = new HTuple(geometry.Length2);
+                        HOperatorSet.GenRectangle2(out var boxRegion, boxRow, boxColumn, boxPhi, length1, length2);
+                        using (boxRegion)
                         {
-                            if (length1.D <= 0 || length2.D <= 0)
-                                throw new ContourMatchCapabilityException("CONTOURMATCH_NATIVE_RESULT", "匹配结果外接矩形退化。");
-                            HOperatorSet.GenRectangle2(out var boxRegion, boxRow, boxColumn, boxPhi, length1, length2);
-                            using (boxRegion)
-                            {
-                                // 原厂 OutLineEnable（轮廓）/ OutLinePointEnable（轮廓点）任一开启都需要轮廓点集：
-                                // 本方 output.outline-points 承载逐点明细（含 match-index），故两者取或。
-                                var outline = settings.OutlineEnabled || settings.OutlinePointsEnabled
-                                    ? ReadPoints(moved, cancellation) : Array.Empty<Point2>();
-                                var box = new ContourMatchBox(boxColumn.D, boxRow.D, length1.D * 2, length2.D * 2,
-                                    NormalizeDegrees(-boxPhi.D * 180d / Math.PI));
-                                candidates.Add(new(0, boxColumn.D, boxRow.D, NormalizeDegrees(angles[index].D * 180d / Math.PI),
-                                    scores[index].D, scaleGeometric, new HRegion(boxRegion), box, outline, true, Array.Empty<string>(),
-                                    ScaleX: scaleColumn, ScaleY: scaleRow));
-                            }
+                            // 原厂 OutLineEnable（轮廓）/ OutLinePointEnable（轮廓点）任一开启都需要轮廓点集：
+                            // 本方 output.outline-points 承载逐点明细（含 match-index），故两者取或。
+                            var outline = settings.OutlineEnabled || settings.OutlinePointsEnabled
+                                ? ContourMatchContourGeometry.ReadPoints(moved, cancellation) : Array.Empty<Point2>();
+                            var box = new ContourMatchBox(geometry.Column, geometry.Row, geometry.Length1 * 2, geometry.Length2 * 2,
+                                NormalizeDegrees(-geometry.Phi * 180d / Math.PI));
+                            candidates.Add(new(0, geometry.Column, geometry.Row, NormalizeDegrees(angles[index].D * 180d / Math.PI),
+                                scores[index].D, scaleGeometric, new HRegion(boxRegion), box, outline, true, Array.Empty<string>(),
+                                ScaleX: scaleColumn, ScaleY: scaleRow));
                         }
                     }
                 }
@@ -438,31 +438,6 @@ public sealed class ContourMatchSession : IToolSession<ContourMatchSettings, Con
             using var scaleCol = new HTuple(scale);
             HOperatorSet.HomMat2dScale(rigid, scaleRow, scaleCol, zero, zero, out var homMat);
             return homMat;
-        }
-    }
-
-    private static IReadOnlyList<Point2> ReadPoints(HObject contours, CancellationToken cancellation)
-    {
-        HOperatorSet.CountObj(contours, out var count);
-        using (count)
-        {
-            var points = new List<Point2>(256);
-            for (var index = 1; index <= count.I; index++)
-            {
-                cancellation.ThrowIfCancellationRequested();
-                HOperatorSet.SelectObj(contours, out var selected, index);
-                using (selected)
-                {
-                    HOperatorSet.GetContourXld(selected, out var rows, out var columns);
-                    using (rows) using (columns)
-                        for (var point = 0; point < rows.Length; point++)
-                        {
-                            if ((point & 4095) == 0) cancellation.ThrowIfCancellationRequested();
-                            points.Add(new Point2(columns[point].D, rows[point].D));
-                        }
-                }
-            }
-            return points.AsReadOnly();
         }
     }
 

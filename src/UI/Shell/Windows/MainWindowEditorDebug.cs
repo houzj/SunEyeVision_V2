@@ -53,6 +53,22 @@ public partial class MainWindowViewModel
   _retainedEditorDebugSnapshot=null;
   _retainedEditorDebugLease?.Dispose();_retainedEditorDebugLease=null;
  }
+ /// <summary>
+ /// 关闭参数窗口前把最后一次完整的私有调试结果转成交互窗口外仍可呈现的快照。
+ /// 原件关闭参数页只撤销编辑交互层，结果图层仍由同一次调用结果持有；如果这里只
+ /// 清理编辑器租约，Blob/ContourMatch 等工具在没有正式执行快照时会同时丢失结果 ROI。
+ /// </summary>
+ private void CaptureEditorSnapshotForClose()
+ {
+  var debug=_editorDebugControl?.CurrentDebugSnapshot??_retainedEditorDebugSnapshot;
+  if(_formalSnapshotBeforeEditor is null
+     &&debug is {IsComplete:true}
+     &&SelectedNode is {} node
+     &&debug.Identity.NodeId==node.Id
+     &&debug.SourceWorkflowId==WorkflowTabViewModel.SelectedTab?.CurrentWorkflowId)
+   CaptureFormalSnapshotBeforeEditor(debug);
+  ClearRetainedEditorDebugSnapshot();
+ }
  private void CaptureFormalSnapshotBeforeEditor(DeclaredOutputSnapshot? snapshot)
  {
   _formalSnapshotBeforeEditorLease?.Dispose();

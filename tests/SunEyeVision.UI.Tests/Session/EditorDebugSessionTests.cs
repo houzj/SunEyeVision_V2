@@ -521,6 +521,30 @@ public sealed class EditorDebugSessionTests
   Assert.Equal(restored.Snapshot.Identity,fixture.Main.CurrentResultPublication!.Stamp.Invocation);
   Assert.NotNull(viewport.ImageDataSource);
  });
+ [Fact] public void Closing_debug_restores_the_result_view_and_geometry()=>UiRuntime.Run(()=>
+ {
+  using var fixture=new DocumentUiFixture();
+  var source=fixture.Add();
+  var blob=fixture.Add("BlobAnalysis",350,240);
+  fixture.ConfigureImage(source,fixture.Image(51,24));
+  fixture.Connect(source,blob);
+  fixture.Main.SelectedNode=blob;
+  fixture.Run();
+  var shell=Assert.Single(UiRuntime.Visuals<ResultWorkspaceShell>(fixture.Results));
+  var viewport=Assert.IsType<ImageViewBox>(shell.OutputViewport);
+  var window=Open(fixture,blob);
+  Run(window);
+  UiRuntime.Pump();
+  Assert.NotNull(fixture.Main.CurrentResultPublication);
+  Assert.NotNull(viewport.ImageDataSource);
+  Assert.NotNull(viewport.ShapeList);
+  UiRuntime.Await(window.CloseAndDrainAsync());
+  UiRuntime.Pump();
+  Assert.NotNull(fixture.Main.CurrentResultPublication);
+  Assert.NotNull(viewport.ImageDataSource);
+  Assert.NotNull(viewport.ShapeList);
+  Assert.NotEmpty(viewport.ShapeList!);
+ });
  [Fact] public void Closing_blob_debug_after_roi_and_private_run_restores_formal_viewbox()=>UiRuntime.Run(()=>
  {
   using var fixture=new DocumentUiFixture();

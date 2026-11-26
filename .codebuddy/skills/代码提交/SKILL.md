@@ -15,8 +15,9 @@ description: >
 ## 1. 硬性红线（防止乱码与格式违规）
 
 - ❌ **禁止** `git commit -m "中文内容"` 直接传中文参数：命令行参数经 shell/PowerShell 传递时编码会被破坏（已多次导致 message 落库为乱码）。
-- ✅ **必须** 将 message 写入 UTF-8 文本文件，再 `git commit -F <文件>` 提交。
-- ✅ 提交后用 `git log -1 --format=%s` 自查，若出现乱码立即修正。
+- ❌ **禁止**在 PowerShell 里用 here-string 或字符串拼接构造中文 message 再落盘（如 `$msg = "中文`n..."` + `WriteAllText`）。字符串在进入 PowerShell 时编码就已受损，即使随后用 `commit -F` 提交，落库仍是乱码。**踩过：标题正常，正文「工具侧」被破坏成含 U+FFFD 的乱码。**
+- ✅ **必须**用文件写入工具（`write_to_file` 之类）**直接写入** UTF-8 无 BOM 文件，再 `git commit -F <文件>`。中文不经过任何 shell 字符串。
+- ✅ 提交后自查**全文**：`git log -1 --format=%B`，并检查 `\uFFFD` 等替换字符。**只查 `%s`（首行）不够**——真实发生过标题正常、正文含 U+FFFD 替换字符。
 - ❌ 禁止用英文 message 规避中文（除非仓库明确英文规范）。
 - ❌ 禁止 force push；如需修正已推送历史需先征得用户明确授权。
 
@@ -90,8 +91,9 @@ git commit -F <message文件路径>
 
 ### Step D: 自查（必须）
 
-1. `git log -1 --format="%h %s"` 检查标题：无乱码、格式为 `type(scope): 描述`。
-2. 若乱码：`git commit --amend -F <修正后的message文件>`（仅未推送时）；已推送则报告用户并征得授权再处理。
+1. `git log -1 --format="%h %s"` 检查**标题**：无乱码、格式为 `type(scope): 描述`。
+2. `git log -1 --format=%B` 检查**正文全文**：逐行匹配 `\uFFFD|?`，命中即为乱码。**只查标题会漏掉正文的乱码**（真实发生过：标题正确、正文含 U+FFFD 替换字符）。
+3. 若乱码：用 `write_to_file` 重写 message 文件，`git commit --amend -F <文件>`（仅未推送时）；已推送则报告用户并征得授权再处理。
 
 ### Step E: 推送
 

@@ -1,7 +1,7 @@
 using System.Runtime.Versioning;
 using SunEyeVision.Tool.GrayMatch.Runtime;
-using SunEyeVision.Tool.GrayMatch.Wpf.Design;
 using SunEyeVision.Tool.GrayMatch.Wpf.Views;
+using SunEyeVision.Tools.Inspection.Tests.Fixtures;
 using Xunit;
 
 namespace SunEyeVision.Tools.Inspection.Tests;
@@ -21,7 +21,7 @@ public sealed class GrayMatchPresentationViewTests
     {
         OnSta(() =>
         {
-            var context = GrayMatchDesignData.CreateParameterContext();
+            var context = EditorFixture.GrayMatch();
             var editor = new GrayMatchParameterEditor(context.Draft, context.Options);
             try
             {
@@ -41,7 +41,7 @@ public sealed class GrayMatchPresentationViewTests
     {
         OnSta(() =>
         {
-            var context = GrayMatchDesignData.CreateParameterContext();
+            var context = EditorFixture.GrayMatch();
             var options = context.Options with { EagerlyComposePages = true };
             var editor = new GrayMatchParameterEditor(context.Draft, options);
             try

@@ -2,9 +2,9 @@ using System.Runtime.Versioning;
 using System.Collections;
 using System.Windows;
 using SunEyeVision.Tool.ContourMatch.Runtime;
-using SunEyeVision.Tool.ContourMatch.Wpf.Design;
 using SunEyeVision.Tool.ContourMatch.Wpf.Views;
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Tools.Inspection.Tests.Fixtures;
 using Xunit;
 
 namespace SunEyeVision.Tools.Inspection.Tests;
@@ -23,7 +23,7 @@ public sealed class ContourMatchPresentationViewTests
     {
         OnSta(() =>
         {
-            var context = ContourMatchDesignData.CreateParameterContext();
+            var context = EditorFixture.ContourMatch();
             var editor = new ContourMatchParameterEditor(context.Draft, context.Options);
             try
             {
@@ -47,7 +47,7 @@ public sealed class ContourMatchPresentationViewTests
     {
         OnSta(() =>
         {
-            var context = ContourMatchDesignData.CreateParameterContext();
+            var context = EditorFixture.ContourMatch();
             var data = new TemplateConfigData(context.Draft, null, () => { }, () => { }, () => { },
                 SunEyeVision.Plugin.Contracts.RoiDocumentValue.Empty, null);
             // 测试直接驱动命令接缝，不能让建模失败框弹进测试宿主（会阻塞并弹到桌面）。
@@ -63,7 +63,7 @@ public sealed class ContourMatchPresentationViewTests
     {
         OnSta(() =>
         {
-            var context = ContourMatchDesignData.CreateParameterContext();
+            var context = EditorFixture.ContourMatch();
             var data = new TemplateConfigData(context.Draft, null, () => { }, () => { }, () => { },
                 SunEyeVision.Plugin.Contracts.RoiDocumentValue.Empty, null);
 
@@ -101,7 +101,7 @@ public sealed class ContourMatchPresentationViewTests
     {
         OnSta(() =>
         {
-            var context = ContourMatchDesignData.CreateParameterContext();
+            var context = EditorFixture.ContourMatch();
             RecordValue? accepted = null;
             var data = new TemplateConfigData(context.Draft, null, () => { }, () => { }, () => { },
                 SunEyeVision.Plugin.Contracts.RoiDocumentValue.Empty, null,

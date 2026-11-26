@@ -190,12 +190,15 @@ static T? FindChild<T>(System.Windows.DependencyObject root) where T : System.Wi
     settings.View.Measure(new Size(680,800));settings.View.Arrange(new Rect(0,0,680,800));
     var pixelEditor=settings.View as SunEyeVision.Tool.PixelCount.Wpf.Views.PixelCountParameterEditor
         ?? FindDescendant<SunEyeVision.Tool.PixelCount.Wpf.Views.PixelCountParameterEditor>(settings.View);
-    var rangePanel= pixelEditor?.GetType().GetField("_rangePanel",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)?.GetValue(pixelEditor)
-        as SunEyeVision.Tool.PixelCount.Wpf.Views.PixelCountRangePanel;
-    if(rangePanel is null || pixelFields is null || !pixelFields.ContainsView(rangePanel))
-     throw new Exception("PixelCount 缺少原厂范围列表面板接缝。");
+    if(!SunEyeVision.Plugin.Wpf.Fields.ParameterTemplateResources.IsRegistered("PixelCountRangeList"))
+     throw new Exception("PixelCount 未登记参数行模板 PixelCountRangeList。");
+    // 未选中页签的内容不进视觉树，因此这里验证「键可解析 + 承载控件可构造」，
+    // 而不是在视觉树里找实例。
+    if(SunEyeVision.Plugin.Wpf.Fields.ParameterTemplateResources.Find("PixelCountRangeList") is null)
+     throw new Exception("PixelCount 模板键无法解析。");
+    _ = new SunEyeVision.Tool.PixelCount.Wpf.Views.PixelCountRangeCommands();
     mappedPages.SelectedPageIndex=0;
-    Console.WriteLine("PASS: PixelCount 原厂范围列表面板已在运行参数页物化");
+    Console.WriteLine("PASS: PixelCount 原厂范围列表命令条已按模板物化");
    }
    if(name=="FrameMean")
    {

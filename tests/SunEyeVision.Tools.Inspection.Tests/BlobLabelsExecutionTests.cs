@@ -20,15 +20,18 @@ public sealed class BlobLabelsExecutionTests
     }
 
     private static async Task<ToolOutcome<BlobLabelsOutput>> RunAsync(BlobLabelsSettings settings, byte[] pixels, int size,
-        FrozenOutputResources owner)
+        FrozenOutputResources owner, IReadOnlyDictionary<string, object?>? additionalInputs = null)
     {
         var tool = new BlobLabelsTool();
         tool.InitializeRuntime();
         var image = owner.CreateGray8(size, size, pixels);
-        var inputs = new InputValues(tool.Describe().Inputs, new Dictionary<string, object?>
+        var values = new Dictionary<string, object?>
         {
             [BlobLabelsSchema.ImageInput] = image
-        });
+        };
+        if (additionalInputs is not null)
+            foreach (var pair in additionalInputs) values[pair.Key] = pair.Value;
+        var inputs = new InputValues(tool.Describe().Inputs, values);
         await using var session = tool.CreateSession();
         return await session.ExecuteAsync(new ToolInvocation<BlobLabelsSettings>(settings, inputs, new StubContext(owner)));
     }
@@ -69,6 +72,77 @@ public sealed class BlobLabelsExecutionTests
         Assert.True(output.ResultGeometry.Passed);
         Assert.Contains(output.ResultGeometry.Groups, group => group.Role == ResultGeometryRole.Inspection);
         Assert.NotEmpty(output.DescribeResultRecords());
+    }
+
+    [Fact]
+    public async Task Local_roi_document_limits_the_search_domain()
+    {
+        using var owner = new FrozenOutputResources();
+        var pixels = new byte[64 * 64];
+        void Paint(int x, int y)
+        {
+            for (var row = 0; row < 4; row++)
+            for (var column = 0; column < 4; column++)
+                pixels[(y + row) * 64 + x + column] = 255;
+        }
+        Paint(2, 2);
+        Paint(50, 50);
+        var settings = new BlobLabelsSettings { ThresholdArea = "1#1#255#1#999999999#0" };
+
+        var withoutRoi = await RunAsync(settings, pixels, 64, owner);
+        Assert.True(withoutRoi.Success, string.Join(";", withoutRoi.Diagnostics.Select(item => item.Message)));
+        using (var output = withoutRoi.Output!) Assert.Equal(2, output.Projection.Count);
+
+        // 本地 ROI 只框左上目标：原件参数页绘制后直接参与搜索域，不依赖重新执行。
+        var document = RoiDocumentValue.Root(
+            RoiDocumentValue.Group(RoiDocumentValue.Explicit, new[]
+            {
+                RoiDocumentValue.Item(Guid.NewGuid(), "左上", new RecordValue(RoiDocumentValue.ShapeType, new Dictionary<string, object?>
+                {
+                    ["kind"] = "rectangle", ["center"] = RoiDocumentValue.Point(4, 4),
+                    ["width"] = 16d, ["height"] = 16d, ["angle-degrees"] = 0d
+                }))
+            }),
+            RoiDocumentValue.Group(RoiDocumentValue.None, Array.Empty<RecordValue>()));
+        var withRoi = await RunAsync(settings, pixels, 64, owner, new Dictionary<string, object?>
+        {
+            [BlobLabelsRoi.ModeId] = BlobLabelsRoi.Local,
+            [BlobLabelsRoi.LocalDocumentId] = document
+        });
+        Assert.True(withRoi.Success, string.Join(";", withRoi.Diagnostics.Select(item => item.Message)));
+        using var limited = withRoi.Output!;
+        Assert.Equal(1, limited.Projection.Count);
+        Assert.Contains(limited.ResultGeometry.Groups, group => group.Role == ResultGeometryRole.Inspection);
+    }
+
+    [Theory]
+    [InlineData(BlobLabelsRoi.RectangleParameters)]
+    [InlineData(BlobLabelsRoi.AnnulusParameters)]
+    public async Task Inherited_parameter_roi_is_applied_to_execution(string mode)
+    {
+        using var owner = new FrozenOutputResources();
+        var settings = new BlobLabelsSettings { ThresholdArea = "1#1#255#1#999999999#0" };
+        var values = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            [BlobLabelsRoi.ModeId] = mode,
+            [BlobLabelsRoi.RectangleSource + ".center-x"] = 4d,
+            [BlobLabelsRoi.RectangleSource + ".center-y"] = 4d,
+            [BlobLabelsRoi.RectangleSource + ".width"] = 16d,
+            [BlobLabelsRoi.RectangleSource + ".height"] = 16d,
+            [BlobLabelsRoi.RectangleSource + ".angle-degrees"] = 0d,
+            [BlobLabelsRoi.AnnulusSource + ".center-x"] = 4d,
+            [BlobLabelsRoi.AnnulusSource + ".center-y"] = 4d,
+            [BlobLabelsRoi.AnnulusSource + ".inner-radius"] = 0d,
+            [BlobLabelsRoi.AnnulusSource + ".outer-radius"] = 12d,
+            [BlobLabelsRoi.AnnulusSource + ".start-degrees"] = 0d,
+            [BlobLabelsRoi.AnnulusSource + ".sweep-degrees"] = 360d
+        };
+        var outcome = await RunAsync(settings, Square(64, 2, 2, 4, 4), 64, owner, values);
+        Assert.True(outcome.Success, string.Join(";", outcome.Diagnostics.Select(item => item.Code + ":" + item.Message)));
+        using var output = outcome.Output!;
+        // ROI 显隐由平台编辑会话统一控制；工具只把继承参数物化为执行用 ROI 文档，
+        // 能否执行由结果几何（实际搜索域）证明，不再从工具输出读取 ROI 快照。
+        Assert.Contains(output.ResultGeometry.Groups, group => group.Role == ResultGeometryRole.Inspection);
     }
 
     [Fact]

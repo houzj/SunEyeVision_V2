@@ -28,8 +28,9 @@ public sealed class ContourMatchDisplayContractTests
         Assert.Equal(new[] { "region" }, descriptor.GeometrySource.MemberFieldPath);
         Assert.Equal(new[] { "score" }, descriptor.TextValue.MemberFieldPath);
         Assert.Equal(new[] { "judgment-passed" }, descriptor.Passed.MemberFieldPath);
-        Assert.NotNull(descriptor.Outline);
-        Assert.Equal(new[] { "outline" }, descriptor.Outline!.MemberFieldPath);
+        // 轮廓点是系统类型：工具只声明出口端口，不再在显示合同里声明通道。
+        var outline = Assert.IsAssignableFrom<IToolResultOutlineDeclaration>(tool);
+        Assert.Equal(ContourMatchSchema.OutlinePoints, outline.OutlinePortId);
         Assert.NotNull(descriptor.Centroid);
         Assert.Equal(new[] { "match-point" }, descriptor.Centroid!.MemberFieldPath);
         Assert.NotNull(descriptor.SelectedRectangleColor);
@@ -39,10 +40,9 @@ public sealed class ContourMatchDisplayContractTests
     [Fact]
     public void Outline_points_are_requested_from_the_host_so_geometry_is_published()
     {
-        var descriptor = new ContourMatchTool().ResultDisplay;
-        var request = Assert.Single(descriptor.RequiredOutputs);
-        Assert.Equal(ContourMatchSchema.Rows, request.PortId);
-        Assert.Equal(new[] { "outline" }, request.FieldPath);
+        // 系统按 IToolResultOutlineDeclaration.OutlinePortId 统一请求轮廓点输出。
+        var outline = Assert.IsAssignableFrom<IToolResultOutlineDeclaration>(new ContourMatchTool());
+        Assert.Equal(ContourMatchSchema.OutlinePoints, outline.OutlinePortId);
     }
 
     [Fact]

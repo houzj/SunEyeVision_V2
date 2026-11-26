@@ -1,0 +1,89 @@
+{
+  "kind": "VM 原件取证（反编译源码，ilspycmd 产物；本机安装件同版本）",
+  "batch": "关闭调试窗口后结果层 ROI 消失：区分结果层 ROI 与交互层 ROI 的完整链路",
+  "evidenceSource": {
+    "product": "VisionMaster 4.4.0（本机正式安装反编译）",
+    "files": [
+      "docs/07-工具逆向/decompiled/WpfControls/VMControls.WPF.DataForUI/ModuleDisplayDecorator.cs",
+      "docs/07-工具逆向/decompiled/WpfControls/VMControls.WPF/ModuleResultView.xaml",
+      "docs/07-工具逆向/decompiled/WpfControls/VMControls.WPF/ModuleResultView.xaml.cs",
+      "docs/07-工具逆向/decompiled/BaseControls/VMBaseControls/ImageViewBox.xaml.cs",
+      "docs/07-工具逆向/decompiled/PcUi/HikPcUI.ImageView/HikImageView.xaml",
+      "docs/07-工具逆向/decompiled/XmlParser/Apps.XmlParser/Apps.XmlParser.ParamTab/ROISelecter.cs",
+      "docs/07-工具逆向/decompiled/XmlParser/Apps.XmlParser/Apps.XmlParser.ParamTab/AlgorithmTabRoot.cs",
+      "docs/07-工具逆向/decompiled/XmlParser/Apps.XmlParser/Apps.XmlParser.ParamTab/Tab.cs",
+      "docs/07-工具逆向/decompiled/WpfControls/VMControls.WPF/ProcedureConfigControl.xaml.cs",
+      "docs/07-工具逆向/decompiled/WpfControls/VMControls.WPF/ParamsConfigWithResultViewControl.xaml.cs",
+      "docs/07-工具逆向/decompiled/WpfControls/VMControls.WPF.Base/ROISelecterHolder.cs"
+    ],
+    "note": "全部结论按文件+行号可复核；未使用本方截图作为实现证据。"
+  },
+  "keyFindings": [
+    {
+      "id": "result-layer-data",
+      "finding": "结果视图的 ROI 数据源是模块参数树：ModuleDisplayDecorator.cs:512 `public IList<ObservableRangeCollection<IROI>> ROIList => AlgorithmItems?.ROISelecters.Select((IROISelecter p) => p.ROIList).ToList();`",
+      "implication": "结果层 ROI 不是执行输出几何，也不是参数页控件实例，而是常驻参数节点对象的 ROI 集合。"
+    },
+    {
+      "id": "roi-node-permanent",
+      "finding": "ROISelecter 是参数节点：ROISelecter.cs:28 `public class ROISelecter : NameValueItem, IGetROI, IGroupRunParam, IROISelecter...`；ROIList 直接返回 NormalizeROIList（:264、:1045）；节点在参数树加载时注册：Tab.cs:243-245 `algorithmTabRoot.ROISelecters.Add(item)`。",
+      "implication": "参数页窗口关闭不销毁这些节点，ROIList 依旧存在；结果视图始终能取到 ROI 数据。"
+    },
+    {
+      "id": "result-layer-binding",
+      "finding": "ModuleResultView.xaml:142/153 给 imageView/imageViewIn 绑定 `ROIList={Binding m_CurrentInfo.ROIList}`；:126/128 为双图输入视图的同类绑定。ROISelecterHolder.cs:19/29 以 ROIListOfHikImageView/ROIList 两列把 ROI 数据送入原 ImageView 的 ROI 容器。",
+      "implication": "结果视图与参数页交互控件是两套呈现，但共用同一批 ROI 数据对象。"
+    },
+    {
+      "id": "result-layer-visible",
+      "finding": "ImageViewBox.cs:64 `ROIVisible` 默认 true；HikImageView.xaml:41-49 ROI 画布 mROIView 的 Visibility 绑定 ROIVisible；ImageViewBox.cs:1367-1372 ChangeHitTestVisible 只切命中测试（ROIHitTestVisible/ShapeHitTestVisible），不改 ROI 数据。",
+      "implication": "结果层 ROI 显隐由 ROIVisible 控制，与 ROI 数据建设/销毁无关。"
+    },
+    {
+      "id": "interaction-layer-only",
+      "finding": "参数页交互控件单独挂在参数窗口结果视图上：ParamsConfigWithResultViewControl.xaml.cs:155 `ParamsConfig.ROIPartUI = ModuleResultControl.imageView`；:238-247 打开时 IsOpenParams=true + SetRoiVisible()，Unloaded 时 IsOpenParams=false。ProcedureConfigControl.xaml.cs:257 `ROIPartUI => GetParent<MainViewControl>()?.ROIPartUI`；:849-859 SetRoiVisible 对 ModuleResultView 调其 SetRoiVisible()，对 ImageViewBox 直接置 ROIVisible。",
+      "implication": "SetRoiVisible 作用对象是“参数页所属的结果视图/图像视图”，不是主结果视图；参数窗口关闭只退役交互视图的 ROI 可见性。"
+    },
+    {
+      "id": "set-roi-visible-scope",
+      "finding": "ModuleResultView.xaml.cs:2250-2273 SetRoiVisible：IsOpenParams=true 时 imageView.ROIVisible = IsCanDrawROI；false 时 imageView/imageViewIn.ROIVisible=false。该 DP 注册无变更回调（:140 `new PropertyMetadata(false)`），只在 :521（OnRelatedIOChanged）、:2220（imageListCombobox_SelectionChanged）、:2242（双图输入选择）、:2538（双图切换）以及参数页宿主显式调用。",
+      "implication": "参数页关闭时宿主显式调用 SetRoiVisible，else 分支把结果视图 ROI 层置为不可见；所以关窗后 ROI 不显示属原厂设计，不是缺陷。开窗时可见性还取决于 IsCanDrawROI（当前显示图是否为模块输入图）。"
+    },
+    {
+      "id": "result-layer-refresh",
+      "finding": "ModuleResultView.xaml.cs:602-606 执行回调后 `if (imageViewBox.ROIVisible && !imageViewBox.IsDragROI) ModuleSource.UpdateROI();`；AlgorithmTabRoot.cs:469-475 UpdateROI 对每个 IROISelecter 调 UpdateROI()。",
+      "implication": "结果层 ROI 在执行回调后重投影到新帧，属于结果链而非编辑链；ROI 数据在参数节点内更新，结果视图自动跟随。"
+    },
+    {
+      "id": "no-double-render",
+      "finding": "参数页交互与结果层呈现共用同一 ROI 数据集合（ModuleDisplayDecorator.ROIList 引自 AlgorithmItems.ROISelecters），不存在第二份数据副本；两者差异只在呈现控件与 ROIVisible。",
+      "implication": "本方修复必须让结果层 ROI 使用与参数同一份 ROI 文档数据，并在交互会话占用同一视口时让交互层独占，避免同屏双份 ROI。"
+    },
+    {
+      "id": "result-layer-editable",
+      "finding": "ImageViewBox.xaml.cs:62 `ROIHitTestVisible` 默认 true；:2442-2445 `RoiEnableExecute(string b) => ROIHitTestVisible = Convert.ToBoolean(b)`；ModuleResultView.xaml.cs:2250-2273 SetRoiVisible：IsOpenParams=true 时 `ROIVisible=IsCanDrawROI`，else 分支 `imageView.ROIVisible=false; imageViewIn.ROIVisible=false`。",
+      "implication": "原厂只在参数窗口打开时显示结果视图 ROI（且当前显示图必须是模块输入图）；关闭参数窗口后 ROI 层直接隐藏（ROIVisible=false），既不可见也不可编辑。ROIHitTestVisible 只决定可见层的命中测试，不改变显隐。"
+    },
+    {
+      "id": "roi-context-menu",
+      "finding": "ImageViewBox.xaml:51-56 右键菜单：保存原始图、保存渲染图（Visibility=IsSaveRenderImageVisible）、粘贴（Visibility=IsEnabled）、锁定（CommandParameter=False，IsEnabled=ROIHitTestVisible，Visibility=ROIVisible）、解锁（CommandParameter=True，IsEnabled=取反 ROIHitTestVisible，Visibility=ROIVisible）。",
+      "implication": "结果层与交互层共用同一套右键菜单；锁定/解锁只是命中测试开关，ROI 数据与写回通道在两处相同。"
+    },
+    {
+      "id": "parameter-live-follow",
+      "finding": "ROISelecter.cs:264 `ROIList` 直接返回 NormalizeROIList；:2481 给每个 roi 设置 `DataChangedCommand = RoiParamChange`；:2483 编辑后 `SetValue()` 写参数值。",
+      "implication": "参数 ROI 编辑即时写参数对象，结果视图因绑定同一集合立即跟随，不需要重新执行；本方结果层必须读当前配置文档而不是仅执行快照。"
+    }
+  ],
+  "conclusion": "原厂存在两条独立链路：(1) 结果层 ROI：参数树常驻 ROISelecter.ROIList -> ModuleDisplayDecorator.ROIList -> ModuleResultView.imageView.ROIList，显隐由 ROIVisible 控制，执行回调后 UpdateROI 重投影，与参数窗口生命周期无关；(2) 交互层 ROI：参数页窗口内结果视图 + ROIPartUI 承担绘制/编辑命令，关窗只退役该视图的 ROI 可见性。本方只实现了交互层（NativeRoiEditHost/NativeRoiSession/NativeRoiAttachment，随参数编辑控件 Dispose），结果视口在 NativeResultViewport.cs:61-65 明确关闭 ROI 命中测试并注明“ROI 编辑视图另走 NativeRoiViewport”，从未建立结果层 ROI 通道，故关闭调试窗口后 ROI 整层消失。",
+  "mappingToFix": {
+    "contract": "新增结果 ROI 快照契约（组/项/形状/可见/启用），由工具在执行时输出“本次有效 ROI（含继承）”，等价原厂 UpdateROI 后的 ROIList。",
+    "viewport": "结果视口新增独立只读 ROI 通道，与交互层共用 ROIList 但显式仲裁：交互会话占用时结果层暂存让位，会话结束恢复。",
+    "presenter": "结果工作区按显示合同投影 ROI 快照；关闭调试窗口只退役交互层，不清理结果层。",
+    "liveDocument": "结果层本地项取当前配置的 ROI 文档字段（IToolResultRoiOutput.LocalRoiDocumentFieldId），继承项取执行快照；参数编辑提交后无需重新执行即刷新。",
+    "readOnly": "已实现批次的结果层 ROI 只读（ROIHitTestVisible=false）。原厂结果层可直接编辑，需按 resultLayerEditing 单独实施。",
+    "resultLayerEditing": "下一批：契约暴露 ROI 编辑声明（字段/组/继承/容量）→ 宿主按选中节点创建常驻 RoiDocumentStore 与 NativeRoiSession → 结果视口 BeginRoiEditing 绑定该会话（参数页复用同一会话）→ accept 走节点配置提交 → ROIHitTestVisible 按原厂默认 true，右键锁定/解锁直接切换。无会话时锁定项禁用，不做假编辑。"
+  },
+  "limitation": "Qt 层流程调度未逆向；本证据覆盖 WPF 结果视图与参数树 ROI 数据链的静态实现，约束“关窗后结果层 ROI 仍在”的用户可见行为。ROIVisible 在切换显示图像时被置 false 的原厂细节保留为已知行为，不在本次修复范围。",
+  "acceptance": "关闭调试窗口后结果视口 ROIList 非空且形状与参数一致；打开调试窗口时不出现双份 ROI；切换选中节点后 ROI 跟随；执行后 ROI 随新帧重投影。"
+}

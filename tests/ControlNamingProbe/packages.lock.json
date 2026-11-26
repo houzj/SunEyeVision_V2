@@ -124,6 +124,13 @@
           "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
         }
       },
+      "suneyevision.plugin.templatestudio": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )"
+        }
+      },
       "suneyevision.plugin.wpf": {
         "type": "Project",
         "dependencies": {
@@ -162,6 +169,7 @@
           "Microsoft.Xaml.Behaviors.Wpf": "[1.1.31, )",
           "SunEyeVision.HalAdapter.Runtime": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.TemplateStudio": "[2.0.0-alpha.8, )",
           "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )"
         }
       },

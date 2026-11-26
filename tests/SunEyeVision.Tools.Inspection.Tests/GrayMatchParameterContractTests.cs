@@ -35,7 +35,7 @@ public sealed class GrayMatchParameterContractTests
         Assert.Equal(6, TemplateParameters.Length);
         foreach (var name in RunParameters.Concat(TemplateParameters)) Assert.Contains(name, names);
         Assert.Equal(39, GrayMatchFields.All.Count);
-        Assert.Equal(39, GrayMatchFields.Schema.Inputs.Count);
+        Assert.Equal(39, new GrayMatchTool().SettingsSchema.Inputs.Count);
         // VA 版没有 AngleStep（那是旧版 31 项里的运行参数）。
         Assert.DoesNotContain("AngleStep", names);
     }
@@ -103,7 +103,7 @@ public sealed class GrayMatchParameterContractTests
         var tool = new GrayMatchTool();
         var names = tool.ParameterBindingNames;
         Assert.NotEmpty(names);
-        Assert.All(names, pair => Assert.Contains(pair.Key, GrayMatchFields.Schema.Inputs.Select(port => port.Id)));
+        Assert.All(names, pair => Assert.Contains(pair.Key, tool.SettingsSchema.Inputs.Select(port => port.Id)));
         Assert.DoesNotContain(GrayMatchFields.ModelData, names.Keys);
         Assert.DoesNotContain(GrayMatchFields.PyramidLevel, names.Keys);
         Assert.DoesNotContain(GrayMatchFields.ModelAngleStep, names.Keys);

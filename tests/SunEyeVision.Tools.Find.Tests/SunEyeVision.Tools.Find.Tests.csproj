@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -20,7 +21,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../../tools/SunEyeVision.CircleFind/Runtime/SunEyeVision.CircleFind.Runtime.csproj" />
-    <ProjectReference Include="../../tools/SunEyeVision.LineFind/Runtime/SunEyeVision.LineFind.Runtime.csproj" />
+    <ProjectReference Include="../../tools/SunEyeVision.CircleFind/SunEyeVision.Tool.CircleFind.csproj" />
+    <ProjectReference Include="../../tools/SunEyeVision.LineFind/SunEyeVision.Tool.LineFind.csproj" />
   </ItemGroup>
 </Project>

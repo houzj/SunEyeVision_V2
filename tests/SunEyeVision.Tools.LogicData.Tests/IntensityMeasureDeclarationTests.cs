@@ -86,13 +86,14 @@ public sealed class IntensityMeasureDeclarationTests
     public void Display_settings_declare_one_row_per_field_and_capture_defaults()
     {
         var schema = Tool.DisplaySettingsSchema;
+        // 文本组没有总开关行（原厂只有 content/ok/ng/size/opacity/x/y 七个角色）。
         Assert.Equal(33, schema.Inputs.Count);
         Assert.Equal(schema.Inputs.Count, schema.Presentation!.Fields.Count);
         Assert.All(schema.Inputs, port => Assert.Single(schema.Presentation!.Fields, field => field.FieldId == port.Id));
         var displayIdentities = schema.Inputs.Select(port => port.Id).ToHashSet(StringComparer.Ordinal);
-        Assert.DoesNotContain(IntensityMeasureFields.Schema.Inputs, port => displayIdentities.Contains(port.Id));
+        Assert.DoesNotContain(new IntensityMeasureTool().SettingsSchema.Inputs, port => displayIdentities.Contains(port.Id));
         Assert.Equal(ResultDisplayFields.EditorSchema(Tool).Inputs.Count,
-            IntensityMeasureFields.Schema.Inputs.Count + schema.Inputs.Count);
+            new IntensityMeasureTool().SettingsSchema.Inputs.Count + schema.Inputs.Count);
         var defaults = Tool.CreateDisplaySettings();
         var appearance = Tool.CaptureResultDisplay(new FieldSettings(schema.Inputs, defaults.CopyValues()
             .ToDictionary(pair => pair.Key, pair => (ParameterSetting)new ConstantSetting(pair.Value), StringComparer.Ordinal)));
@@ -157,7 +158,7 @@ public sealed class IntensityMeasureDeclarationTests
     [Fact]
     public void Every_settings_field_has_one_presentation_row()
     {
-        var schema = IntensityMeasureFields.Schema;
+        var schema = new IntensityMeasureTool().SettingsSchema;
         var presentation = schema.Presentation ?? throw new InvalidOperationException("亮度测量必须声明参数页布局。");
         Assert.Equal(schema.Inputs.Count, presentation.Fields.Count);
         Assert.Equal(17, presentation.Fields.Count);
@@ -167,7 +168,7 @@ public sealed class IntensityMeasureDeclarationTests
     [Fact]
     public void Limit_rows_follow_their_enable_switch_and_pair_into_a_range()
     {
-        var fields = IntensityMeasureFields.Schema.Presentation!.Fields.ToDictionary(field => field.FieldId, StringComparer.Ordinal);
+        var fields = new IntensityMeasureTool().SettingsSchema.Presentation!.Fields.ToDictionary(field => field.FieldId, StringComparer.Ordinal);
         foreach (var (enabled, low, high, label) in new[]
         {
             (IntensityMeasureFields.MaxValueLimitEnabled, IntensityMeasureFields.MaxValueLimitLow, IntensityMeasureFields.MaxValueLimitHigh, "最大值范围"),
@@ -198,7 +199,7 @@ public sealed class IntensityMeasureDeclarationTests
     {
         var definition = (IToolDefinition)Tool;
         Assert.Empty(definition.Validate(definition.CreateSettings()));
-        var settings = IntensityMeasureFields.Materialize(IntensityMeasureFields.Read(new IntensityMeasureSettings()));
+        var settings = (IntensityMeasureSettings)new IntensityMeasureTool().MaterializeSettings(new IntensityMeasureTool().ReadSettings(new IntensityMeasureSettings()));
         Assert.False(settings.MaxValueLimitEnabled);
         Assert.Equal(0L, settings.MaxValueLimitLow);
         Assert.Equal(255L, settings.MaxValueLimitHigh);
@@ -235,22 +236,22 @@ public sealed class IntensityMeasureDeclarationTests
     [Fact]
     public void Materialize_rejects_an_invalid_limit_pair_instead_of_clamping_it()
     {
-        var values = new Dictionary<string, object?>(IntensityMeasureFields.Read(new IntensityMeasureSettings
+        var values = new Dictionary<string, object?>(new IntensityMeasureTool().ReadSettings(new IntensityMeasureSettings
         {
             MinValueLimitEnabled = true, MinValueLimitLow = 200, MinValueLimitHigh = 10
         }).CopyValues(), StringComparer.Ordinal);
         Assert.Throws<ArgumentException>(() =>
-            IntensityMeasureFields.Materialize(new InputValues(IntensityMeasureFields.Schema.Inputs, values)));
+            (IntensityMeasureSettings)new IntensityMeasureTool().MaterializeSettings(new InputValues(new IntensityMeasureTool().SettingsSchema.Inputs, values)));
     }
 
     [Fact]
     public void A_non_numeric_field_value_is_rejected_by_its_declared_type()
     {
-        var values = new Dictionary<string, object?>(IntensityMeasureFields.Read(new IntensityMeasureSettings()).CopyValues(), StringComparer.Ordinal)
+        var values = new Dictionary<string, object?>(new IntensityMeasureTool().ReadSettings(new IntensityMeasureSettings()).CopyValues(), StringComparer.Ordinal)
         {
             [IntensityMeasureFields.MaxValueLimitLow] = "不是整数"
         };
-        Assert.ThrowsAny<ArithmeticException>(() => new InputValues(IntensityMeasureFields.Schema.Inputs, values));
+        Assert.ThrowsAny<ArithmeticException>(() => new InputValues(new IntensityMeasureTool().SettingsSchema.Inputs, values));
     }
 
     [Fact]

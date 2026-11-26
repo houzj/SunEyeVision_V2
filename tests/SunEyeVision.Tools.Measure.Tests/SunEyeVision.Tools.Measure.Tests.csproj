@@ -23,9 +23,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../../tools/SunEyeVision.CircleCircleMeasure/Runtime/SunEyeVision.CircleCircleMeasure.Runtime.csproj" />
-    <ProjectReference Include="../../tools/SunEyeVision.CircleCircleMeasure/Wpf/SunEyeVision.CircleCircleMeasure.Wpf.csproj" />
-    <ProjectReference Include="../../tools/SunEyeVision.PointPointMeasure/Runtime/SunEyeVision.PointPointMeasure.Runtime.csproj" />
-    <ProjectReference Include="../../tools/SunEyeVision.PointPointMeasure/Wpf/SunEyeVision.PointPointMeasure.Wpf.csproj" />
+    <ProjectReference Include="../../tools/SunEyeVision.CircleCircleMeasure/SunEyeVision.Tool.CircleCircleMeasure.csproj" />
+    <ProjectReference Include="../../tools/SunEyeVision.PointPointMeasure/SunEyeVision.Tool.PointPointMeasure.csproj" />
   </ItemGroup>
 </Project>

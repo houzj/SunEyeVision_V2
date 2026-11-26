@@ -24,8 +24,9 @@ public sealed class BlobLabelsDisplayContractTests
         Assert.Equal(new[] { "region" }, descriptor.GeometrySource.MemberFieldPath);
         Assert.Equal(new[] { "area" }, descriptor.TextValue.MemberFieldPath);
         Assert.Equal(new[] { "judgment-passed" }, descriptor.Passed.MemberFieldPath);
-        Assert.NotNull(descriptor.Outline);
-        Assert.Equal(new[] { "contour" }, descriptor.Outline!.MemberFieldPath);
+        // 轮廓点是系统类型：工具只声明出口端口，不再在显示合同里声明通道。
+        var outline = Assert.IsAssignableFrom<IToolResultOutlineDeclaration>(tool);
+        Assert.Equal(BlobLabelsSchema.ContourPoints, outline.OutlinePortId);
         Assert.NotNull(descriptor.Centroid);
         Assert.NotNull(descriptor.SelectedRectangleColor);
         descriptor.Validate(tool.ResultSchema);
@@ -34,10 +35,8 @@ public sealed class BlobLabelsDisplayContractTests
     [Fact]
     public void Outline_is_requested_from_the_host_so_geometry_is_published()
     {
-        var descriptor = new BlobLabelsTool().ResultDisplay;
-        var request = Assert.Single(descriptor.RequiredOutputs);
-        Assert.Equal(BlobLabelsSchema.Rows, request.PortId);
-        Assert.Equal(new[] { "contour" }, request.FieldPath);
+        var outline = Assert.IsAssignableFrom<IToolResultOutlineDeclaration>(new BlobLabelsTool());
+        Assert.Equal(BlobLabelsSchema.ContourPoints, outline.OutlinePortId);
     }
 
     [Fact]

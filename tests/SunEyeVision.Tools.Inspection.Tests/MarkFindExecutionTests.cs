@@ -176,7 +176,7 @@ public sealed class MarkFindExecutionTests
         Assert.Contains(new MarkFindSettings { ProjectionInterval = 5 }.Validate(), item => item.Code == "MARKFIND_PROJECTION_NOT_READY");
         Assert.Contains(new MarkFindSettings { MarkType = MarkFindMarkType.HollowCross }.Validate(), item => item.Code == "MARKFIND_MARK_TYPE_NOT_READY");
         Assert.Contains(new MarkFindSettings { TimeOut = 100 }.Validate(), item => item.Code == "MARKFIND_TIMEOUT_NOT_READY");
-        Assert.Contains(new MarkFindSettings { MatchThresholdMode = 1 }.Validate(), item => item.Code == "MARKFIND_MATCH_THRESHOLD_NOT_READY");
+        // MatchThresholdFlag 的三态（Auto/Model/Manual）已按原厂取证，不再拒绝非 0 取值。
         var inverted = new MarkFindSettings { PyramidScaleMode = MarkFindPyramidMode.Manual, RoughPyramidScale = 3, FinePyramidScale = 5 }.Validate();
         Assert.Contains(inverted, item => item.Message.Contains("特征尺度", StringComparison.Ordinal));
         Assert.Empty(new MarkFindSettings().Validate());

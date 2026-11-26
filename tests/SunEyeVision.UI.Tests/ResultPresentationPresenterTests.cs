@@ -31,6 +31,22 @@ public sealed class ResultPresentationPresenterTests:IDisposable
     });
 
     [Fact]
+    public void Skipped_snapshot_maps_to_skipped_and_presents_like_not_executed() => Sta(() =>
+    {
+        // 分支未选中的节点是正常运行结果，不是失败：既不能抛异常（原缺枚举值），也不能显示成结果。
+        var schema=Schema();
+        using var snapshot=DeclaredOutputSnapshot.WithoutValues(schema,1,Identity(),ExecutionStatus.Skipped,
+            Array.Empty<Diagnostic>());
+        using var publication=ToolResultViews.FromSnapshot(snapshot,()=>true);
+        Assert.Equal(ResultViewState.Skipped,publication.State);
+        using(var lease=publication.Borrow())Assert.Null(lease.Values);
+        var rows=new ObservableCollection<FlatResultRow>();
+        using var presenter=new ResultPresentationPresenter(rows,_=>{});
+        presenter.Present(publication);
+        Assert.Empty(rows);
+    });
+
+    [Fact]
     public void Failed_publication_displays_produced_scalars_and_keeps_missing_images_and_failure_status() => Sta(() =>
     {
         var schema=Schema(new Port("sn",DataType.Integer),new Port("image",TypeRef.ResourceOf(ResourceKind.Image)));

@@ -11,6 +11,19 @@ public sealed class PixelCountDeclarationTests
     private static readonly PixelCountTool Tool = new();
 
     [Fact]
+    public void Every_field_declares_its_original_template_key()
+    {
+        // 原厂语义：模板键由声明直给（XML 的 DisplayType），平台不推导。
+        // 这条断言是"删除推导分支"的前置：PixelCount 不允许残留未声明的字段。
+        var fields = PixelCountFields.Schema.Presentation!.Fields
+            .Concat(PixelCountResultDisplay.Schema.Presentation!.Fields)
+            .ToArray();
+        Assert.NotEmpty(fields);
+        Assert.All(fields, field => Assert.False(string.IsNullOrWhiteSpace(field.DisplayType),
+            $"字段 {field.FieldId} 未声明 DisplayType"));
+    }
+
+    [Fact]
     public void Declares_image_roi_and_mask_inputs_without_branch_outputs()
     {
         var schema = Tool.Describe();

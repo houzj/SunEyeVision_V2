@@ -102,8 +102,8 @@ public sealed class DivideImageDeclarationTests
         {
             DivideImageFields.PositionCorrectionEnabled,
             DivideImageFields.Columns, DivideImageFields.Rows, DivideImageFields.OverlapX, DivideImageFields.OverlapY
-        }, DivideImageFields.Schema.Inputs.Select(port => port.Id).ToArray());
-        Assert.All(DivideImageFields.Schema.Inputs,
+        }, new DivideImageTool().SettingsSchema.Inputs.Select(port => port.Id).ToArray());
+        Assert.All(new DivideImageTool().SettingsSchema.Inputs,
             port => Assert.Equal(FieldDefaultPresence.UseDeclaredDefault, port.DefaultPresence));
         Assert.Empty(settings.Validate());
     }
@@ -111,12 +111,12 @@ public sealed class DivideImageDeclarationTests
     [Fact]
     public void Presentation_keeps_the_original_run_page_and_field_layout()
     {
-        var fields = DivideImageFields.Schema.Presentation!.Fields.ToDictionary(field => field.FieldId, StringComparer.Ordinal);
+        var fields = new DivideImageTool().SettingsSchema.Presentation!.Fields.ToDictionary(field => field.FieldId, StringComparer.Ordinal);
         Assert.Equal(new[]
         {
             DivideImageFields.PositionCorrectionEnabled,
             DivideImageFields.Columns, DivideImageFields.Rows, DivideImageFields.OverlapX, DivideImageFields.OverlapY
-        }, DivideImageFields.Schema.Presentation.Fields.Select(field => field.FieldId).ToArray());
+        }, new DivideImageTool().SettingsSchema.Presentation.Fields.Select(field => field.FieldId).ToArray());
         Assert.Equal("基本参数", fields[DivideImageFields.PositionCorrectionEnabled].Layout!.Page);
         Assert.Equal("ROI区域", fields[DivideImageFields.PositionCorrectionEnabled].Group);
         Assert.False(fields[DivideImageFields.PositionCorrectionEnabled].Layout!.AllowReference);
@@ -229,15 +229,20 @@ public sealed class DivideImageDeclarationTests
         Assert.Equal(4L, materialized.Rows);
         Assert.Equal(10L, materialized.OverlapX);
         Assert.Equal(25L, materialized.OverlapY);
-        var applied = DivideImageFields.Apply(new DivideImageSettings(),
-            new Dictionary<string, object?> { [DivideImageFields.Rows] = 2L, [DivideImageFields.OverlapY] = 5L });
+        var merged = tool.ReadSettings(new DivideImageSettings()).CopyValues()
+            .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+        merged[DivideImageFields.Rows] = 2L;
+        merged[DivideImageFields.OverlapY] = 5L;
+        var applied = Assert.IsType<DivideImageSettings>(
+            tool.MaterializeSettings(new InputValues(tool.SettingsSchema.Inputs, merged)));
         Assert.Equal(1L, applied.Columns);
         Assert.Equal(2L, applied.Rows);
         Assert.Equal(5L, applied.OverlapY);
-        Assert.Throws<ArgumentException>(() => DivideImageFields.Apply(new DivideImageSettings(),
+        // 鏈０鏄庡瓧娈典笉鍦ㄥ０鏄庣鍙ｅ唴锛氭瀯閫?InputValues 鏃跺嵆琚嫆缁濓紝涓嶉渶瑕佸伐鍏疯嚜宸卞厹搴曘€?
+        Assert.Throws<ArgumentException>(() => new InputValues(tool.SettingsSchema.Inputs,
             new Dictionary<string, object?> { ["unknown.field"] = 1L }));
         Assert.Throws<ArgumentException>(() => tool.MaterializeSettings(
-            new InputValues(DivideImageFields.Schema.Inputs, new Dictionary<string, object?>
+            new InputValues(new DivideImageTool().SettingsSchema.Inputs, new Dictionary<string, object?>
             {
                 [DivideImageFields.Columns] = 0L,
                 [DivideImageFields.Rows] = 1L,
@@ -271,7 +276,7 @@ public sealed class DivideImageDeclarationTests
         Assert.Equal(0L, Assert.IsType<ConstantSetting>(edited.Read(DivideImageFields.OverlapY)).Value);
 
         FieldSettings Known(long columns, long rows, long overlapX, long overlapY)
-            => new(DivideImageFields.Schema.Inputs, new Dictionary<string, ParameterSetting>
+            => new(new DivideImageTool().SettingsSchema.Inputs, new Dictionary<string, ParameterSetting>
             {
                 [DivideImageFields.Columns] = new ConstantSetting(columns),
                 [DivideImageFields.Rows] = new ConstantSetting(rows),

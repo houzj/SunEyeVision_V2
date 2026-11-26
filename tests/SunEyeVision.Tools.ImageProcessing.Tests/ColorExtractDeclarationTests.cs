@@ -92,14 +92,14 @@ public sealed class ColorExtractDeclarationTests
         {
             ColorExtractFields.ColorRange, ColorExtractFields.AreaLimitEnabled,
             ColorExtractFields.AreaLimitLow, ColorExtractFields.AreaLimitHigh
-        }, ColorExtractFields.Schema.Inputs.Select(port => port.Id).ToArray());
+        }, new ColorExtractTool().SettingsSchema.Inputs.Select(port => port.Id).ToArray());
         Assert.Empty(settings.Validate());
     }
 
     [Fact]
     public void Presentation_keeps_the_original_page_grouping_choice_and_range_layout()
     {
-        var fields = ColorExtractFields.Schema.Presentation!.Fields.ToDictionary(field => field.FieldId, StringComparer.Ordinal);
+        var fields = new ColorExtractTool().SettingsSchema.Presentation!.Fields.ToDictionary(field => field.FieldId, StringComparer.Ordinal);
         Assert.Equal(ColorExtractFields.RunPage, fields[ColorExtractFields.ColorRange].Layout!.Page);
         Assert.Equal(ColorExtractFields.ResultPage, fields[ColorExtractFields.AreaLimitLow].Layout!.Page);
         Assert.Equal(ColorExtractFields.RangeSection, fields[ColorExtractFields.ColorRange].Group);
@@ -181,18 +181,21 @@ public sealed class ColorExtractDeclarationTests
         Assert.True(materialized.AreaLimitEnabled);
         Assert.Equal(3L, materialized.AreaLimitLow);
         Assert.Equal(40L, materialized.AreaLimitHigh);
-        var applied = ColorExtractFields.Apply(new ColorExtractSettings(),
-            new Dictionary<string, object?> { [ColorExtractFields.ColorRange] = "10,0,20,0,30,0,3,0,1" });
+        var merged = tool.ReadSettings(new ColorExtractSettings()).CopyValues()
+            .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+        merged[ColorExtractFields.ColorRange] = "10,0,20,0,30,0,3,0,1";
+        var applied = Assert.IsType<ColorExtractSettings>(
+            tool.MaterializeSettings(new InputValues(tool.SettingsSchema.Inputs, merged)));
         Assert.Equal("10,0,20,0,30,0,3,0,1", applied.ColorRange);
         Assert.Throws<ArgumentException>(() => tool.MaterializeSettings(
-            new InputValues(ColorExtractFields.Schema.Inputs, new Dictionary<string, object?>
+            new InputValues(new ColorExtractTool().SettingsSchema.Inputs, new Dictionary<string, object?>
             {
                 [ColorExtractFields.ColorRange] = "255",
                 [ColorExtractFields.AreaLimitEnabled] = false,
                 [ColorExtractFields.AreaLimitLow] = 1L,
                 [ColorExtractFields.AreaLimitHigh] = 9999999L
             })));
-        Assert.Throws<ArgumentException>(() => ColorExtractFields.Apply(new ColorExtractSettings(),
+        Assert.Throws<ArgumentException>(() => new InputValues(tool.SettingsSchema.Inputs,
             new Dictionary<string, object?> { ["unknown.field"] = "1" }));
     }
 
@@ -223,7 +226,7 @@ public sealed class ColorExtractDeclarationTests
         Assert.Equal(20L, Assert.IsType<ConstantSetting>(edited.Read(ColorExtractFields.AreaLimitHigh)).Value);
         // 非法区间文本与颠倒的面积上下限在编辑期给出明确诊断（IToolKnownSettingsValidation）。
         FieldSettings Known(object range, bool enabled, long low, long high)
-            => new(ColorExtractFields.Schema.Inputs, new Dictionary<string, ParameterSetting>
+            => new(new ColorExtractTool().SettingsSchema.Inputs, new Dictionary<string, ParameterSetting>
             {
                 [ColorExtractFields.ColorRange] = new ConstantSetting(range),
                 [ColorExtractFields.AreaLimitEnabled] = new ConstantSetting(enabled),

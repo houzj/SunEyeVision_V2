@@ -25,8 +25,8 @@ public sealed class GrayMatchDisplayContractTests
         Assert.Equal(new[] { "region" }, descriptor.GeometrySource.MemberFieldPath);
         Assert.Equal(new[] { "score" }, descriptor.TextValue.MemberFieldPath);
         Assert.Equal(new[] { "judgment-passed" }, descriptor.Passed.MemberFieldPath);
-        Assert.Null(descriptor.Outline);
-        Assert.Empty(descriptor.RequiredOutputs);
+        // 灰度匹配没有轮廓点输出：不实现系统轮廓点契约。
+        Assert.False(tool is IToolResultOutlineOutput);
         Assert.NotNull(descriptor.Centroid);
         Assert.Equal(new[] { "match-point" }, descriptor.Centroid!.MemberFieldPath);
         Assert.NotNull(descriptor.SelectedRectangleColor);

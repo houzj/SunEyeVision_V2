@@ -26,9 +26,9 @@
   <ItemGroup>
     <ProjectReference Include="../../src/Application/SunEyeVision.Application.csproj" />
     <ProjectReference Include="../../src/Plugin.Runtime/SunEyeVision.Plugin.Runtime.csproj" />
-    <ProjectReference Include="../../tools/SunEyeVision.DataClassification/Runtime/SunEyeVision.DataClassification.Runtime.csproj"><Private>false</Private></ProjectReference>
+    <ProjectReference Include="../../tools/SunEyeVision.DataClassification/SunEyeVision.Tool.DataClassification.csproj"><Private>false</Private></ProjectReference>
     <ProjectReference Include="../../tools/SunEyeVision.DataClassification/Wpf/SunEyeVision.DataClassification.Wpf.csproj"><Private>false</Private></ProjectReference>
-    <ProjectReference Include="../../tools/SunEyeVision.MachineLearningClassifier/Runtime/SunEyeVision.MachineLearningClassifier.Runtime.csproj"><Private>false</Private></ProjectReference>
+    <ProjectReference Include="../../tools/SunEyeVision.MachineLearningClassifier/SunEyeVision.Tool.MachineLearningClassifier.csproj"><Private>false</Private></ProjectReference>
     <ProjectReference Include="../../tools/SunEyeVision.MachineLearningClassifier/Wpf/SunEyeVision.MachineLearningClassifier.Wpf.csproj"><Private>false</Private></ProjectReference>
     <ProjectReference Include="../../src/Plugin.Wpf/SunEyeVision.Plugin.Wpf.csproj"><Private>false</Private></ProjectReference>
   </ItemGroup>

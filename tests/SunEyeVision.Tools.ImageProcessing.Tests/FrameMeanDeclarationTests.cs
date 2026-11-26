@@ -76,14 +76,16 @@ public sealed class FrameMeanDeclarationTests
         // 原厂证据：IMVSFrameMeanModuAlgorithm.xml ProcStep DefaultValue="1"；
         // AlgorithmTab.xml Tab_Run Params 三项 DisplayTitle：统计当前图像/不统计当前图像/清空统计图像。
         Assert.Equal("1",new FrameMeanSettings().ProcStep);
-        var field=Assert.Single(FrameMeanFields.Schema.Presentation!.Fields);
+        // 声明由 manifest 生成，不再有工具自建 Schema。
+        var tool=new FrameMeanTool();
+        var field=Assert.Single(tool.SettingsSchema.Presentation!.Fields);
         Assert.Equal(FrameMeanFields.ProcStep,field.FieldId);
         Assert.Equal("处理步骤",field.DisplayName);
         Assert.Equal(FieldEditorKind.Choice,field.Editor);
         Assert.Equal(FrameMeanFields.ProcStepKeys,field.ChoiceKeys.ToArray());
         Assert.Equal(new[]{"统计当前图像","不统计当前图像","清空统计图像"},
             FrameMeanFields.ProcStepKeys.Select(key=>field.ChoiceLabels[key]).ToArray());
-        var read=FrameMeanFields.Read(new FrameMeanSettings());
+        var read=tool.ReadSettings(new FrameMeanSettings());
         Assert.Equal("1",read.Get<string>(FrameMeanFields.ProcStep));
     }
 
@@ -94,12 +96,11 @@ public sealed class FrameMeanDeclarationTests
         var values=tool.ReadSettings(new FrameMeanSettings{ProcStep="2"});
         var materialized=Assert.IsType<FrameMeanSettings>(tool.MaterializeSettings(values));
         Assert.Equal("2",materialized.ProcStep);
-        var applied=FrameMeanFields.Apply(new FrameMeanSettings(),new Dictionary<string,object?>{[FrameMeanFields.ProcStep]="3"});
-        Assert.Equal("3",applied.ProcStep);
         Assert.Throws<ArgumentException>(()=>tool.MaterializeSettings(
-            new InputValues(FrameMeanFields.Schema.Inputs,new Dictionary<string,object?>{[FrameMeanFields.ProcStep]="9"})));
-        Assert.Throws<ArgumentException>(()=>FrameMeanFields.Apply(new FrameMeanSettings(),
-            new Dictionary<string,object?>{["unknown.field"]="1"}));
+            new InputValues(tool.SettingsSchema.Inputs,new Dictionary<string,object?>{[FrameMeanFields.ProcStep]="9"})));
+        // 未声明的字段不在声明端口内：构造 InputValues 时就应被拒绝，不需要工具自己兜底。
+        Assert.Throws<ArgumentException>(()=>new InputValues(tool.SettingsSchema.Inputs,
+            new Dictionary<string,object?>{[FrameMeanFields.ProcStep]="1",["unknown.field"]="1"}));
     }
 
     [Fact]

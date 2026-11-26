@@ -191,7 +191,20 @@ public sealed class ContourMatchExecutionTests
         Assert.InRange(row.Get<double>("scale"), 0.5, 2.0);
         Assert.Equal(1L, values[ContourMatchSchema.Count]);
         Assert.NotNull(values[ContourMatchSchema.Scales]);
-        Assert.NotNull(values[ContourMatchSchema.OutlinePoints]);
+        // 原件 MatchOutlinePoints 打包：count + info{x,y,score,match-index}，与 Blob 的
+        // CONTOURPOINTS 同一形态，供结果层逐点三色渲染。
+        var outline = Assert.IsType<RecordValue>(values[ContourMatchSchema.OutlinePoints]);
+        var count = outline.Get<long>("count");
+        var info = outline.Get<RecordValue>("info");
+        var xs = info.Get<double[]>("x");
+        var ys = info.Get<double[]>("y");
+        var scores = info.Get<double[]>("score");
+        var indices = info.Get<SequenceValue>("match-index");
+        Assert.Equal(count, xs.Length);
+        Assert.Equal(count, ys.Length);
+        Assert.Equal(count, scores.Length);
+        Assert.Equal(count, indices.Count);
+        Assert.All(scores, score => Assert.True(score is 0d or 2d));
         Assert.DoesNotContain(nameof(ContourMatchResultProjection.Scales), output.Projection.Unavailable);
 
         Assert.True(output.ResultGeometry.Passed);
@@ -281,6 +294,49 @@ public sealed class ContourMatchExecutionTests
     }
 
     [Fact]
+    public async Task Runtime_inherited_roi_by_region_and_by_parameters_are_applied_before_matching()
+    {
+        using var owner = new FrozenOutputResources();
+        var settings = new ContourMatchSettings { ModelData = CreateTemplate(owner, Mark(Size, 20, 20)) };
+
+        var byRegion = await RunAsync(settings, Mark(Size, 20, 20), owner, withRoi: false,
+            additionalInputs: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                [ContourMatchRoi.ModeId] = ContourMatchRoi.Rectangle,
+                [ContourMatchRoi.RectangleSource] = new RecordValue(ContourMatchRoi.RectangleType,
+                    new Dictionary<string, object?>
+                    {
+                        ["center-x"] = 64d, ["center-y"] = 104d,
+                        ["width"] = 48d, ["height"] = 24d, ["angle-degrees"] = 0d
+                    })
+            });
+        Assert.True(byRegion.Success, string.Join(";", byRegion.Diagnostics.Select(item => item.Code + ":" + item.Message)));
+        using (var output = byRegion.Output!)
+        {
+            Assert.Empty(output.Measurements);
+            // 继承 ROI 物化后参与实际搜索域；ROI 显隐由平台编辑会话统一控制，工具输出不再附带 ROI 快照。
+            Assert.Contains(output.ResultGeometry.Groups, group => group.Role == ResultGeometryRole.Inspection);
+        }
+
+        var byParameters = await RunAsync(settings, Mark(Size, 20, 20), owner, withRoi: false,
+            additionalInputs: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                [ContourMatchRoi.ModeId] = ContourMatchRoi.RectangleParameters,
+                [ContourMatchRoi.RectangleSource + ".center-x"] = 64d,
+                [ContourMatchRoi.RectangleSource + ".center-y"] = 104d,
+                [ContourMatchRoi.RectangleSource + ".width"] = 48d,
+                [ContourMatchRoi.RectangleSource + ".height"] = 24d,
+                [ContourMatchRoi.RectangleSource + ".angle-degrees"] = 0d
+            });
+        Assert.True(byParameters.Success, string.Join(";", byParameters.Diagnostics.Select(item => item.Code + ":" + item.Message)));
+        using (var output = byParameters.Output!)
+        {
+            Assert.Empty(output.Measurements);
+            Assert.Contains(output.ResultGeometry.Groups, group => group.Role == ResultGeometryRole.Inspection);
+        }
+    }
+
+    [Fact]
     public void Rectangle_parameter_roi_is_resolved_without_local_document_or_upstream_region()
     {
         using var owner = new FrozenOutputResources();
@@ -320,6 +376,25 @@ public sealed class ContourMatchExecutionTests
         Assert.Equal(2, output.Projection.Count);
         Assert.Equal(BusinessJudgment.Fail, outcome.Judgment);
         Assert.Contains(output.LimitMessages, message => message.Contains("匹配个数判断", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task Runtime_roi_is_not_a_tool_output_contract()
+    {
+        // 原件所有工具共用常驻 ROISelecter.ROIList -> ModuleDisplayDecorator 系统层路径，
+        // 工具执行输出只给结果几何；ROI 显隐由平台编辑会话统一控制，不按工具分支。
+        using var owner = new FrozenOutputResources();
+        var settings = new ContourMatchSettings { ModelData = CreateTemplate(owner, Mark(Size, 20, 20)) };
+        var document = RuntimeRoi(RectangleItem("搜索区", Size / 2d, Size / 2d, 96, 96));
+        var outcome = await RunAsync(settings, Mark(Size, 20, 20), owner, withRoi: false,
+            additionalInputs: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                [ContourMatchRoi.ModeId] = ContourMatchRoi.Local,
+                [ContourMatchSearchRois.LocalId] = document
+            });
+        Assert.True(outcome.Success, string.Join(";", outcome.Diagnostics.Select(item => item.Code + ":" + item.Message)));
+        using var output = outcome.Output!;
+        Assert.Contains(output.ResultGeometry.Groups, group => group.Role == ResultGeometryRole.Inspection);
     }
 
     [Fact]

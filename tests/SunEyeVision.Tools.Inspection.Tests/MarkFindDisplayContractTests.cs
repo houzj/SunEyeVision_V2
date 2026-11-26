@@ -28,8 +28,9 @@ public sealed class MarkFindDisplayContractTests
         Assert.Equal(new[] { "region" }, descriptor.GeometrySource.MemberFieldPath);
         Assert.Equal(new[] { "score" }, descriptor.TextValue.MemberFieldPath);
         Assert.Equal(new[] { "judgment-passed" }, descriptor.Passed.MemberFieldPath);
-        Assert.NotNull(descriptor.Outline);
-        Assert.Equal(new[] { "outline" }, descriptor.Outline!.MemberFieldPath);
+        // 轮廓点是系统类型：工具只声明出口端口，不再在显示合同里声明通道。
+        var outline = Assert.IsAssignableFrom<IToolResultOutlineDeclaration>(tool);
+        Assert.Equal(MarkFindSchema.OutlinePoints, outline.OutlinePortId);
         Assert.NotNull(descriptor.Centroid);
         Assert.Equal(new[] { "match-point" }, descriptor.Centroid!.MemberFieldPath);
         Assert.NotNull(descriptor.SelectedRectangleColor);
@@ -39,10 +40,9 @@ public sealed class MarkFindDisplayContractTests
     [Fact]
     public void Outline_points_are_requested_from_the_host_so_geometry_is_published()
     {
-        var descriptor = new MarkFindTool().ResultDisplay;
-        var request = Assert.Single(descriptor.RequiredOutputs);
-        Assert.Equal(MarkFindSchema.Rows, request.PortId);
-        Assert.Equal(new[] { "outline" }, request.FieldPath);
+        // 系统按 IToolResultOutlineDeclaration.OutlinePortId 统一请求轮廓点输出。
+        var outline = Assert.IsAssignableFrom<IToolResultOutlineDeclaration>(new MarkFindTool());
+        Assert.Equal(MarkFindSchema.OutlinePoints, outline.OutlinePortId);
     }
 
     [Fact]
@@ -111,5 +111,67 @@ public sealed class MarkFindDisplayContractTests
         Assert.Equal(new[] { "score" }, score.Value!.MemberFieldPath);
         Assert.Equal(new[] { "region" }, score.GeometrySource!.MemberFieldPath);
         Assert.Equal(new[] { "match-point" }, score.Geometry!.MemberFieldPath);
+    }
+
+    /// <summary>
+    /// 原厂 IMVSMarkFindModuAlgorithmTab.xml 对 RangScale/RangScaleX/RangScaleY/
+    /// ScaleXLimitEnable/RangeScaleXLimit/ScaleYLimitEnable/RangeScaleYLimit 标了
+    /// IsAbandon="True"：参数留在配置里，界面不渲染。
+    /// </summary>
+    [Fact]
+    public void Abandoned_parameters_keep_ports_but_render_no_row()
+    {
+        var tool = new MarkFindTool();
+        var abandoned = new[]
+        {
+            nameof(MarkFindSettings.ScaleStart), nameof(MarkFindSettings.ScaleEnd),
+            nameof(MarkFindSettings.ScaleXStart), nameof(MarkFindSettings.ScaleXEnd),
+            nameof(MarkFindSettings.ScaleYStart), nameof(MarkFindSettings.ScaleYEnd),
+            nameof(MarkFindSettings.ScaleXLimitEnabled), nameof(MarkFindSettings.ScaleXLimitLow),
+            nameof(MarkFindSettings.ScaleXLimitHigh),
+            nameof(MarkFindSettings.ScaleYLimitEnabled), nameof(MarkFindSettings.ScaleYLimitLow),
+            nameof(MarkFindSettings.ScaleYLimitHigh)
+        }.Select(MarkFindFields.IdOf).ToArray();
+        var ports = tool.SettingsSchema.Inputs.Select(port => port.Id).ToHashSet(StringComparer.Ordinal);
+        var rows = tool.SettingsSchema.Presentation!.Fields.Select(field => field.FieldId).ToHashSet(StringComparer.Ordinal);
+        // 端口与取值保留：算法与已保存方案不受影响。
+        Assert.All(abandoned, id => Assert.Contains(id, ports));
+        // 参数页不渲染这些行。
+        Assert.All(abandoned, id => Assert.DoesNotContain(id, rows));
+    }
+
+    /// <summary>
+    /// 原厂 AlgorithmTab.xml 两个 Expand 收起时显式隐藏 8 + 5 个控件。
+    /// 本方等价机制：标 Advanced 的字段按 (Section, IsAdvanced) 独立成折叠区，
+    /// 收起时隐藏该区全部字段。因此 advanced 集合必须与那 13 个逐项一致。
+    /// </summary>
+    [Fact]
+    public void Advanced_fields_match_the_original_expand_groups()
+    {
+        var expected = new[]
+        {
+            // Expand #1（Tab_Run Params 页）：原厂 MarkLocationType / MaxOverlap / SortType /
+            // TimeOut / OutLineEnable / MatchThresholdFlag / MatchExtentRate / SpotterFlag
+            nameof(MarkFindSettings.MarkLocationType), nameof(MarkFindSettings.MaxOverlap),
+            nameof(MarkFindSettings.SortType), nameof(MarkFindSettings.TimeOut),
+            nameof(MarkFindSettings.OutlineEnabled), nameof(MarkFindSettings.MatchThresholdMode),
+            nameof(MarkFindSettings.MatchExtentRate), nameof(MarkFindSettings.SpotterEnabled),
+            // Expand #2（ResultShow 页）：原厂 ScoreLimitEnable / MatchPointX/YLimitEnable /
+            // BoxPointX/YLimitEnable
+            nameof(MarkFindSettings.ScoreLimitEnabled),
+            nameof(MarkFindSettings.MatchPointXLimitEnabled), nameof(MarkFindSettings.MatchPointYLimitEnabled),
+            nameof(MarkFindSettings.BoxPointXLimitEnabled), nameof(MarkFindSettings.BoxPointYLimitEnabled)
+        }.Select(MarkFindFields.IdOf).ToHashSet(StringComparer.Ordinal);
+        // 只比较有 XML 证据的两页（Tab_Run Params / ResultShow）；模板页参数由
+        // MarkFindConfigPanal 代码控件承载，无 AlgorithmTab.xml 证据，不在本断言范围。
+        var actual = new MarkFindTool().SettingsSchema.Presentation!.Fields
+            .Where(field => field.Layout?.Advanced == true)
+            .Where(field => field.Layout!.Section == MarkFindFields.RunSection
+                || field.Layout.Section == MarkFindFields.JudgeSection)
+            .Select(field => field.FieldId)
+            .ToHashSet(StringComparer.Ordinal);
+        // 逐项断言：缺项与多项都能直接报出字段身份。
+        Assert.All(expected, id => Assert.Contains(id, actual));
+        Assert.All(actual, id => Assert.Contains(id, expected));
     }
 }

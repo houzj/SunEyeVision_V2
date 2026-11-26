@@ -41,8 +41,12 @@ internal static class ContourMatchDisplayUi
             TextExpressions = expressions,
             GraphicDisplays = new[]
                 {
-                    ContourMatchResultDisplay.Match, ContourMatchResultDisplay.Location,
-                    ContourMatchResultDisplay.Sensor, ContourMatchResultDisplay.ReferencePoint,
+                    // 原厂 result-tab 顺序：检测区域 → 匹配结果 → 匹配点 → 匹配轮廓点。
+                    // 轮廓点在原厂 Display.xml 里是 outlinepoint（带 okcolor/ngcolor/opacity/linewidth），
+                    // 因此属于图形组，不是纯可见性项。
+                    ContourMatchResultDisplay.Sensor, ContourMatchResultDisplay.Match,
+                    ContourMatchResultDisplay.Location, ContourMatchResultDisplay.Outline,
+                    ContourMatchResultDisplay.ReferencePoint,
                     ContourMatchResultDisplay.RunPoint, ContourMatchResultDisplay.Mask
                 }
                 .Select(group => new SunEyeVision.Plugin.Wpf.Fields.NativeGraphicDisplayOptions(
@@ -50,8 +54,7 @@ internal static class ContourMatchDisplayUi
                 .ToArray(),
             VisibilityDisplays = new[]
             {
-                new SunEyeVision.Plugin.Wpf.Fields.NativeVisibilityDisplayOptions(Id(ContourMatchResultDisplay.Text, "visible")),
-                new SunEyeVision.Plugin.Wpf.Fields.NativeVisibilityDisplayOptions(Id(ContourMatchResultDisplay.Outline, "visible"))
+                new SunEyeVision.Plugin.Wpf.Fields.NativeVisibilityDisplayOptions(Id(ContourMatchResultDisplay.Text, "visible"))
             },
             TextDisplays = new[]
             {

@@ -83,7 +83,10 @@ public static class ContourMatchResultDisplay
         GraphicFields(Sensor, "检测区域", PresentationDeclarations.Color(0, 0, 255));
         GraphicFields(Match, "匹配结果", ok);
         GraphicFields(Location, "匹配点", ok, width: 1);
-        Add(Field(Outline, "visible"), "匹配轮廓点", "图像显示", DataType.Boolean, true);
+        // 证据 IMVSContourMatchModuDisplay.xml 的 <Object Name="Feature Match Contour Points"
+        // Type="outlinepoint" okcolor="#66ff00" ngcolor="#ff0000" opacity="1" linewidth="2">。
+        // 此前只声明了眼睛开关，颜色硬编码、无透明度/线宽。
+        GraphicFields(Outline, "匹配轮廓点", ok, opacity: 1, width: 2);
         // 原厂 AlgorithmTab.xml：FixtureInitPoint / FixtureRunPoint 的 CustomVisible=False（默认隐藏，
         // 由位置修正使能触发显示）。本方先对齐默认隐藏，联动待位置修正映射接入。
         GraphicFields(ReferencePoint, "基准点", ok, width: 1, visible: false);
@@ -147,7 +150,8 @@ public static class ContourMatchResultDisplay
             Inspection: Style(Sensor) with { ShowMeasurements = true },
             Mask: Style(Mask) with { Fill = new(255, 84, 0) },
             Annulus: null,
-            Outline: new(Read<bool>(Field(Outline, "visible")), new(102, 255, 0), new(255, 0, 0)),
+            Outline: new(Read<bool>(Field(Outline, "visible")), Color(Outline, "ok"), Color(Outline, "ng"),
+                Number(Outline, "opacity"), Number(Outline, "width")),
             InnerRectangle: null,
             ReferencePoint: Style(ReferencePoint) with { FixedJudgment = true, PointLabel = "Fixture BasePoint" },
             RunPoint: Style(RunPoint) with { FixedJudgment = true, PointLabel = "Fixture RunPoint" },

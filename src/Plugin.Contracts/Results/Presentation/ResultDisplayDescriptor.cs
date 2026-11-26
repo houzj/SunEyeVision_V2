@@ -16,7 +16,12 @@ public interface IToolResultDisplayProvider : IToolDisplaySettingsProvider
 public sealed record ResultDisplayColor(byte Red,byte Green,byte Blue,byte Alpha=255);
 public sealed record ResultGraphicAppearance(bool Visible,ResultDisplayColor Ok,ResultDisplayColor Ng,double Opacity,double Width,
     ResultDisplayColor? Fill=null,bool? FixedJudgment=null,bool ShowMeasurements=false,string? PointLabel=null);
-public sealed record ResultOutlineAppearance(bool Visible,ResultDisplayColor Ok,ResultDisplayColor Ng);
+/// <summary>
+/// 轮廓点外观。对应原件 Display.xml 的 <c>&lt;Object Type="outlinepoint"&gt;</c>：
+/// okcolor / ngcolor / opacity / linewidth（如 ContourMatch 的 #66ff00 / #ff0000 / 1 / 2）。
+/// </summary>
+public sealed record ResultOutlineAppearance(bool Visible,ResultDisplayColor Ok,ResultDisplayColor Ng,
+    double Opacity=1,double Width=2);
 public sealed record ResultTextAppearance(bool Visible,string Content,ResultDisplayColor Ok,ResultDisplayColor Ng,
     double FontSize,double Opacity,double X,double Y,DisplayExpressionSetting? Expression=null,ParameterSetting? PositionX=null,ParameterSetting? PositionY=null);
 /// <summary>Pure immutable appearance. Its host revision is independent of invocation/run identity.</summary>

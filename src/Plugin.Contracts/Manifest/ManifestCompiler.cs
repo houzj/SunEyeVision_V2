@@ -389,7 +389,6 @@ public static class ManifestCompiler
             }
             Add(DisplayField(group, OkRole), "OK颜色", section, PresentationDeclarations.Rgba);
             Add(DisplayField(group, NgRole), "NG颜色", section, PresentationDeclarations.Rgba);
-            if (item.Role == ToolDisplayRole.Outline) continue;
             Add(DisplayField(group, OpacityRole), "透明度", section, DataType.Number, 0, 1, .01, decimals: 2);
             Add(DisplayField(group, WidthRole), "线宽", section, DataType.Number, 1, 10, 1, decimals: 2);
         }
@@ -423,7 +422,6 @@ public static class ManifestCompiler
                 values[DisplayField(group, PositionYRole)] = 0d;
                 continue;
             }
-            if (item.Role == ToolDisplayRole.Outline) continue;
             values[DisplayField(group, OpacityRole)] = item.Opacity;
             values[DisplayField(group, WidthRole)] = item.Width;
         }
@@ -526,7 +524,8 @@ public static class ManifestCompiler
         ResultOutlineAppearance? outline = outlineItem is null
             ? null
             : new(fields.Get<bool>(DisplayField(outlineItem.GroupKey, VisibleRole)),
-                Color(outlineItem.GroupKey, OkRole), Color(outlineItem.GroupKey, NgRole));
+                Color(outlineItem.GroupKey, OkRole), Color(outlineItem.GroupKey, NgRole),
+                Number(outlineItem.GroupKey, OpacityRole, 0, 1), Number(outlineItem.GroupKey, WidthRole, 1, 10));
 
         return new ResultDisplayAppearance(graphic, text,
             Inspection: Graphic(ToolDisplayRole.Inspection),

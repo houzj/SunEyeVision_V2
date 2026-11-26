@@ -257,7 +257,8 @@ internal sealed partial class ResultWorkspacePresenter
                         var passed = resultIndex >= 0 && resultIndex < rowCount
                             && Member(rows!.GetElement(resultIndex), state.Descriptor.Passed).GetScalar<bool>();
                         outlines.Add(new(receipt.Frame, receipt.Coordinates, group.Points, resultIndex, passed,
-                            Color(outlineStyle.Ok), Color(outlineStyle.Ng), group.Scores));
+                            Color(outlineStyle.Ok), Color(outlineStyle.Ng), group.Scores,
+                            outlineStyle.Opacity, outlineStyle.Width));
                     }
                 }
                 if(textLease is not null)

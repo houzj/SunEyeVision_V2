@@ -63,7 +63,9 @@ public sealed class ContourMatchDisplayContractTests
         var fields = tool.DisplaySettingsSchema.Presentation!.Fields;
         var groups = fields.Where(field => field.Layout?.DialogGroup is not null)
             .GroupBy(field => field.Layout!.DialogGroup!, StringComparer.Ordinal).ToArray();
-        Assert.Equal(6, groups.Length);
+        // 原厂 Display.xml 有 9 个显示对象，其中 InputImage/Data Record/Result List 不是叠加图形；
+        // 我方保留 7 个可配组：检测区域 / 匹配结果 / 匹配点 / 匹配轮廓点 / 基准点 / 运行点 / 盲区。
+        Assert.Equal(7, groups.Length);
         foreach (var group in groups)
         {
             var members = group.ToArray();

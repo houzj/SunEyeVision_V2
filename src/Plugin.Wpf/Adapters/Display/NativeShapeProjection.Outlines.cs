@@ -39,7 +39,14 @@ internal static partial class NativeShapeProjection
                 BinaryPrimitives.WriteSingleLittleEndian(record[8..],marker);
                 BinaryPrimitives.WriteInt32LittleEndian(record[12..],overlay.ResultIndex);
             }
-            if(points.Length!=0)items.Add(new OutlinePoint(bytes,overlay.Ok.ToString(),overlay.Ng.ToString()));
+            if(points.Length!=0)
+                items.Add(new OutlinePoint(bytes,overlay.Ok.ToString(),overlay.Ng.ToString())
+                {
+                    // 原件 Display.xml 的 outlinepoint 带 opacity/linewidth（如 #66ff00 配 1 / 2）；
+                    // 渲染基类 ShapePrimitive 已提供这两个属性，此前未按声明写入。
+                    Opacity=overlay.Opacity,
+                    StrokeThickness=overlay.Width
+                });
         }
         NativeResultRaster.CheckCurrent(current);
         return new(items.ToArray(),items.Count,count);

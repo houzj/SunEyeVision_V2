@@ -10,4 +10,4 @@ namespace SunEyeVision.Plugin.Wpf.Presenters.Display;
 /// </param>
 public sealed record NativeOutlineOverlay(ImageFrameAddress SourceFrame,CoordinateFrame Coordinates,
     IReadOnlyList<Point2> Points,int ResultIndex,bool Passed,Color Ok,Color Ng,
-    IReadOnlyList<float>? Scores=null);
+    IReadOnlyList<float>? Scores=null,double Opacity=1,double Width=2);

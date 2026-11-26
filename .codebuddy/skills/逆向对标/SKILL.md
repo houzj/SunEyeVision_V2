@@ -115,6 +115,7 @@ Select-String -Path docs/07-工具逆向/decompiled/Lang/zh-cn.xaml -Pattern 'Ta
 | 落点 | `DiagramItem.xaml.cs:727` | 直接取预览 offset，无二次取整 |
 | 对齐线 | `DiagramItem.xaml.cs:855-944` | 6 组精确相等，LightGreen 1px 虚线 5,2.5，两端留 5px |
 | 执行防呆 | 原厂实机截图 | 参数未配置完整 → 弹「流程:1:3 节点名 模块参数未配置完整」并中止 |
+| **特征匹配系列的工具关系** | `IMVSHPFeatureMatchModuCs.xml` vs `IMVSContourMatchModuCs.xml` | **HP 参数 53 ⊂ CM 参数 59，HP 独有 = 空**；CM 多出 NMS 多模型（`MultiModelMaxOverlap`/`NMSMaxOverlap`/`NMSSortType`）、`SkewX*`、`OutLinePointEnable`。两者 `Algorithm.xml` 差 7%、`dialoguistyle.xaml` 差 5 行。**HP 是 CM 的参数子集，不存在「HP 独有功能」**；`DialogUI` 39 vs 1874 行是窗口实现风格差异（CM 逻辑在 Data + XAML 触发器）。推论：共用层 `FeatureMatchCommonControl` 虽有 2 个引用者，但功能上是一个包含另一个 |
 
 ## 7 已知陷阱（真实踩过）
 

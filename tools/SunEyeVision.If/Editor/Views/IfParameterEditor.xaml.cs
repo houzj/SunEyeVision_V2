@@ -19,11 +19,6 @@ public partial class IfParameterEditor:UserControl,IToolSettingsView
     public IfParameterEditor()
     {
         InitializeComponent();
-        if(System.ComponentModel.DesignerProperties.GetIsInDesignMode(this))
-        {
-            var context=Design.IfDesignData.CreateParameterContext();
-            Bind(context.Draft,context.Options);
-        }
     }
 
     public IfParameterEditor(IToolSettingsDraft draft,ToolSettingsViewOptions options)

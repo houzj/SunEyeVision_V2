@@ -19,11 +19,6 @@ public partial class CircleCircleMeasureParameterEditor : UserControl, IToolSett
     public CircleCircleMeasureParameterEditor()
     {
         InitializeComponent();
-        if (DesignerProperties.GetIsInDesignMode(this))
-        {
-            var context = Design.CircleCircleMeasureDesignData.CreateParameterContext();
-            Bind(context.Draft, context.Options);
-        }
     }
 
     public CircleCircleMeasureParameterEditor(IToolSettingsDraft draft, ToolSettingsViewOptions options) : this()

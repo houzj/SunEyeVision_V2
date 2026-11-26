@@ -21,11 +21,6 @@ public partial class GrayMatchParameterEditor : UserControl, IToolSettingsView, 
     public GrayMatchParameterEditor()
     {
         InitializeComponent();
-        if (DesignerProperties.GetIsInDesignMode(this))
-        {
-            var context = Design.GrayMatchDesignData.CreateParameterContext();
-            Bind(context.Draft, context.Options);
-        }
     }
 
     public GrayMatchParameterEditor(IToolSettingsDraft draft, ToolSettingsViewOptions options) : this()

@@ -17,12 +17,6 @@ public partial class ContourMatchResultView : UserControl, IToolResultView
     public ContourMatchResultView()
     {
         InitializeComponent();
-        if (DesignerProperties.GetIsInDesignMode(this))
-        {
-            var tool = new ContourMatchTool();
-            _table = new DeclaredResultTable(tool.ResultSchema, tool.ResultProjection);
-            ResultHost.Content = _table;
-        }
         if (_table is not null) _table.SelectionHighlightChanged += OnSelectionHighlightChanged;
     }
 

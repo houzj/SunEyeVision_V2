@@ -31,11 +31,6 @@ public partial class IntensityMeasureParameterEditor : UserControl, IToolSetting
     public IntensityMeasureParameterEditor()
     {
         InitializeComponent();
-        if (DesignerProperties.GetIsInDesignMode(this))
-        {
-            var context = Design.IntensityMeasureDesignData.CreateParameterContext();
-            Bind(context.Draft, context.Options);
-        }
     }
 
     public IntensityMeasureParameterEditor(IToolSettingsDraft draft, ToolSettingsViewOptions options) : this()

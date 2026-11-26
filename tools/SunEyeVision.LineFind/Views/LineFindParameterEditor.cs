@@ -20,11 +20,6 @@ public sealed class LineFindParameterEditor : UserControl, IToolSettingsView, IT
     {
         _editor = new DeclaredSettingsView { SelectedPageIndex = 0 };
         Content = _editor;
-        if (DesignerProperties.GetIsInDesignMode(this))
-        {
-            var context = Design.LineFindDesignData.CreateParameterContext();
-            Bind(context.Draft, context.Options);
-        }
     }
 
     public LineFindParameterEditor(IToolSettingsDraft draft, ToolSettingsViewOptions options) : this()

@@ -19,11 +19,6 @@ public partial class MarkFindParameterEditor : UserControl, IToolSettingsView, I
     public MarkFindParameterEditor()
     {
         InitializeComponent();
-        if (DesignerProperties.GetIsInDesignMode(this))
-        {
-            var context = Design.MarkFindDesignData.CreateParameterContext();
-            Bind(context.Draft, context.Options);
-        }
     }
 
     public MarkFindParameterEditor(IToolSettingsDraft draft, ToolSettingsViewOptions options) : this()

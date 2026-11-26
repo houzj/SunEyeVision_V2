@@ -28,11 +28,6 @@ public partial class DivideImageParameterEditor : UserControl, IToolSettingsView
     public DivideImageParameterEditor()
     {
         InitializeComponent();
-        if (DesignerProperties.GetIsInDesignMode(this))
-        {
-            var context = Design.DivideImageDesignData.CreateParameterContext();
-            Bind(context.Draft, context.Options);
-        }
     }
 
     public DivideImageParameterEditor(IToolSettingsDraft draft, ToolSettingsViewOptions options) : this()

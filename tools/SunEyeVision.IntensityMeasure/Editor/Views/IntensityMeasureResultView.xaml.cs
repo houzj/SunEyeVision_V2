@@ -22,13 +22,6 @@ public partial class IntensityMeasureResultView : UserControl, IToolResultView
     public IntensityMeasureResultView()
     {
         InitializeComponent();
-        if (DesignerProperties.GetIsInDesignMode(this))
-        {
-            var tool = new IntensityMeasureTool();
-            _presenter = CreatePresenter(tool.ResultSchema, tool.ResultProjection);
-            ResultHost.Content = _presenter.View;
-            _presenter.SelectionHighlightChanged += OnSelectionHighlightChanged;
-        }
     }
 
     public IntensityMeasureResultView(ToolSchema schema, ResultProjectionDescriptor projection)

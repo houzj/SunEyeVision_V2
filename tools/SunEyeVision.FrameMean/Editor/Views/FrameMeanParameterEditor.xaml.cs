@@ -2,7 +2,6 @@ using System.Windows;
 using System.Windows.Controls;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
-using SunEyeVision.Tool.FrameMean.Wpf.Design;
 using SunEyeVision.Tool.FrameMean.Wpf;
 using SunEyeVision.Tool.FrameMean.Runtime;
 
@@ -19,11 +18,6 @@ public partial class FrameMeanParameterEditor : UserControl, IToolSettingsView, 
     public FrameMeanParameterEditor()
     {
         InitializeComponent();
-        if(System.ComponentModel.DesignerProperties.GetIsInDesignMode(this))
-        {
-            var context=FrameMeanDesignData.CreateParameterContext();
-            Bind(context.Draft,context.Options);
-        }
     }
 
     public FrameMeanParameterEditor(IToolSettingsDraft draft, ToolSettingsViewOptions options)

@@ -19,11 +19,6 @@ public partial class PointPointMeasureParameterEditor : UserControl, IToolSettin
     public PointPointMeasureParameterEditor()
     {
         InitializeComponent();
-        if (DesignerProperties.GetIsInDesignMode(this))
-        {
-            var context = Design.PointPointMeasureDesignData.CreateParameterContext();
-            Bind(context.Draft, context.Options);
-        }
     }
 
     public PointPointMeasureParameterEditor(IToolSettingsDraft draft, ToolSettingsViewOptions options) : this()

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
-using SunEyeVision.Tool.ColorExtract.Wpf.Design;
 
 namespace SunEyeVision.Tool.ColorExtract.Wpf.Views;
 
@@ -19,11 +18,6 @@ public partial class ColorExtractParameterEditor : UserControl, IToolSettingsVie
     public ColorExtractParameterEditor()
     {
         InitializeComponent();
-        if (System.ComponentModel.DesignerProperties.GetIsInDesignMode(this))
-        {
-            var context = ColorExtractDesignData.CreateParameterContext();
-            Bind(context.Draft, context.Options);
-        }
     }
 
     public ColorExtractParameterEditor(IToolSettingsDraft draft, ToolSettingsViewOptions options)

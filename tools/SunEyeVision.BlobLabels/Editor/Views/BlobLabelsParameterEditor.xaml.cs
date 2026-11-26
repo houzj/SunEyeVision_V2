@@ -43,11 +43,6 @@ public partial class BlobLabelsParameterEditor : UserControl, IToolSettingsView,
     public BlobLabelsParameterEditor()
     {
         InitializeComponent();
-        if (DesignerProperties.GetIsInDesignMode(this))
-        {
-            var context = Design.BlobLabelsDesignData.CreateParameterContext();
-            Bind(context.Draft, context.Options);
-        }
     }
 
     public BlobLabelsParameterEditor(IToolSettingsDraft draft, ToolSettingsViewOptions options) : this()
@@ -68,7 +63,7 @@ public partial class BlobLabelsParameterEditor : UserControl, IToolSettingsView,
         var displayOptions = BlobLabelsDisplayUi.Configure(options);
         var composed = displayOptions with
         {
-            InputSection = options.InputSection ?? Design.BlobLabelsDesignData.InputPage,
+            InputSection = options.InputSection ?? "鍩烘湰鍙傛暟",
             PageOnlyPages = (options.PageOnlyPages ?? Array.Empty<string>())
                 .Concat(new[] { "基本参数", "运行参数", "结果显示" })
                 .Distinct(StringComparer.Ordinal)

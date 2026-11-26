@@ -22,13 +22,6 @@ public partial class CircleCircleMeasureResultView : UserControl, IToolResultVie
     public CircleCircleMeasureResultView()
     {
         InitializeComponent();
-        if (DesignerProperties.GetIsInDesignMode(this))
-        {
-            var tool = new CircleCircleMeasureTool();
-            _presenter = CreatePresenter(tool.ResultSchema, tool.ResultProjection);
-            ResultHost.Content = _presenter.View;
-            _presenter.SelectionHighlightChanged += OnSelectionHighlightChanged;
-        }
     }
 
     public CircleCircleMeasureResultView(ToolSchema schema, ResultProjectionDescriptor projection)

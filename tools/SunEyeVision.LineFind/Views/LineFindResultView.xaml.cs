@@ -17,12 +17,6 @@ public partial class LineFindResultView : UserControl, IToolResultView
     public LineFindResultView()
     {
         InitializeComponent();
-        if (DesignerProperties.GetIsInDesignMode(this))
-        {
-            var tool = new LineFindTool();
-            _table = new DeclaredResultTable(tool.ResultSchema, tool.ResultProjection);
-            ResultHost.Content = _table;
-        }
         if (_table is not null) _table.SelectionHighlightChanged += OnSelectionHighlightChanged;
     }
 

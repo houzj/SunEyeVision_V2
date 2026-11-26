@@ -22,11 +22,6 @@ public sealed class CircleFindParameterEditor : UserControl, IToolSettingsView, 
     {
         _editor = new DeclaredSettingsView { SelectedPageIndex = 0 };
         Content = _editor;
-        if (DesignerProperties.GetIsInDesignMode(this))
-        {
-            var context = Design.CircleFindDesignData.CreateParameterContext();
-            Bind(context.Draft, context.Options);
-        }
     }
 
     public CircleFindParameterEditor(IToolSettingsDraft draft, ToolSettingsViewOptions options) : this()

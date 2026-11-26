@@ -29,11 +29,6 @@ public partial class ContourMatchParameterEditor : UserControl, IToolSettingsVie
     public ContourMatchParameterEditor()
     {
         InitializeComponent();
-        if (DesignerProperties.GetIsInDesignMode(this))
-        {
-            var context = Design.ContourMatchDesignData.CreateParameterContext();
-            Bind(context.Draft, context.Options);
-        }
     }
 
     public ContourMatchParameterEditor(IToolSettingsDraft draft, ToolSettingsViewOptions options) : this()

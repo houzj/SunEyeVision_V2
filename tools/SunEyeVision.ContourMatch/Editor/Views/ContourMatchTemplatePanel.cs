@@ -71,15 +71,18 @@ public sealed class ContourMatchTemplatePanel : IDisposable, ITemplatePanelHost
         return (string.IsNullOrEmpty(_error), _error);
     }
 
+    /// <summary>面板直接绑定本类的集合：排序/勾选/改名即宿主状态，无需两侧同步。</summary>
+    TemplateModelCollection ITemplatePanelHost.Items => _models;
+
     /// <summary>面板改过顺序/勾选/名称后，把当前集合整体写回 ModelData。</summary>
-    void ITemplatePanelHost.Persist(IReadOnlyList<TemplateModelItem<object>> items) => WriteEntries();
+    void ITemplatePanelHost.Persist() => WriteEntries();
 
     private void OpenCreate()
     {
         _error = "";
         // 原厂新建窗口在整个对话期间拥有一个固定的 ModelItem 槽位：
         // 首次“生成模型”追加到该槽位，后续再次生成只更新它，不能每次点击都追加副本。
-        _editIndex = _entries.Count;
+        _editIndex = _models.Count;
         ShowConfigWindow(requireStoredImage: false);
     }
 
@@ -87,7 +90,7 @@ public sealed class ContourMatchTemplatePanel : IDisposable, ITemplatePanelHost
     {
         _error = "";
         // 选中项索引由共用面板经 ITemplatePanelHost.Edit(index) 传入；单模板时按原厂默认选中它。
-        if (_editIndex < 0 && _entries.Count == 1) _editIndex = 0;
+        if (_editIndex < 0 && _models.Count == 1) _editIndex = 0;
         if (_editIndex < 0)
         {
             _error = "请先在列表中选择要编辑的模板。";
@@ -103,20 +106,20 @@ public sealed class ContourMatchTemplatePanel : IDisposable, ITemplatePanelHost
         // 否则弹「模型不包含原图，不允许编辑」并且不打开窗口。
         if (requireStoredImage)
         {
-            if (_editIndex < 0 || _editIndex >= _entries.Count)
+            if (_editIndex < 0 || _editIndex >= _models.Count)
             {
                 _error = "尚未创建模板：请先点“创建”生成模板。";
                 return;
             }
-            if (_entries[_editIndex].Template.Image is not { Length: > 0 })
+            if (ModelAt(_editIndex)?.Model?.Image is not { Length: > 0 })
             {
                 _error = "模型不包含原图，不允许编辑。请在创建模板时保持“模板存图”开启。";
                 return;
             }
         }
         // 每模板独立样本：编辑已有模板用该模板存档的样本集；新建时样本为空（不继承其他模板）。
-        var initial = _editIndex >= 0 && _editIndex < _entries.Count
-            ? TemplateTrainingCodec.Decode(_entries[_editIndex].Training)
+        var initial = _editIndex >= 0 && _editIndex < _models.Count
+            ? TemplateTrainingCodec.Decode(_models.Items[_editIndex].Training ?? "")
             : SunEyeVision.Plugin.Contracts.RoiDocumentValue.Empty;
         // 样本编辑复用平台 NativeRoiEditHost，必须拿到调试帧来源；无帧来源时明确提示，不降级为空画布。
         if (_frames is null)
@@ -146,9 +149,9 @@ public sealed class ContourMatchTemplatePanel : IDisposable, ITemplatePanelHost
     /// </summary>
     private void AcceptTrainingRois(RecordValue document)
     {
-        if (_editIndex >= 0 && _editIndex < _entries.Count)
+        if (_editIndex >= 0 && _editIndex < _models.Count)
         {
-            _entries[_editIndex] = _entries[_editIndex] with { Training = TemplateTrainingCodec.Encode(document) };
+            _models.Items[_editIndex].Training = TemplateTrainingCodec.Encode(document);
             WriteEntries();
             return;
         }
@@ -183,9 +186,8 @@ public sealed class ContourMatchTemplatePanel : IDisposable, ITemplatePanelHost
             // 擦除掩膜（原厂 otherMask）与屏蔽掩膜（otherMask2）由窗口会话分别决定。
             // 未修改的层沿用存档值；明确清空的层以 null 为当前值，不能用 null-coalescing
             // 回退到旧载荷，否则会出现“画布已清空、建模仍使用旧擦除区域”。
-            var currentEntries = ReadEntries();
-            var currentTemplate = _editIndex >= 0 && _editIndex < currentEntries.Count
-                ? currentEntries[_editIndex].Template : null;
+            var currentTemplate = _editIndex >= 0 && _editIndex < _models.Count
+                ? ModelAt(_editIndex)?.Model : null;
             var resolvedMasks = TemplateMaskResolver.Resolve(maskSnapshot, currentTemplate);
             var effectiveWidth = resolvedMasks.Width;
             var effectiveHeight = resolvedMasks.Height;
@@ -223,14 +225,14 @@ public sealed class ContourMatchTemplatePanel : IDisposable, ITemplatePanelHost
         {
             // 配置窗口的会话载荷已经是完整模板集合；原厂此时才执行
             // AddModelToModuleCommandExecute，把 ModelItem 一次性提交到列表。
-            var entries = ContourMatchTemplateSet.DecodeEntries(payload).ToList();
-            if (_editIndex >= 0 && _editIndex < entries.Count)
-                entries[_editIndex] = entries[_editIndex] with { Training = training };
-            _entries = entries;
+            var models = ContourMatchTemplateSet.DecodeModels(payload);
+            if (_editIndex >= 0 && _editIndex < models.Count)
+                models.Items[_editIndex].Training = training;
+            ReplaceModels(models);
             _draft.ApplyFields(
                 new Dictionary<string, ParameterSetting>
                 {
-                    [ContourMatchFields.ModelData] = new ConstantSetting(ContourMatchTemplateSet.Encode(entries))
+                    [ContourMatchFields.ModelData] = new ConstantSetting(ContourMatchTemplateSet.EncodeModels(models))
                 },
                 candidate => _acceptCandidate?.Invoke(candidate));
             HasPendingEdits = true;
@@ -338,30 +340,34 @@ public sealed class ContourMatchTemplatePanel : IDisposable, ITemplatePanelHost
     {
         try
         {
-            var entries = ReadEntries();
             if (payload.Length == 0)
             {
                 // 删除所有模板
-                entries.Clear();
+                _models.Clear();
             }
             else
             {
                 var template = ContourMatchTemplate.Decode(payload);
-                if (_editIndex >= 0 && _editIndex < entries.Count)
-                    entries[_editIndex] = entries[_editIndex] with
-                    {
-                        Template = template,
-                        Training = training ?? entries[_editIndex].Training
-                    };
+                if (_editIndex >= 0 && _editIndex < _models.Count)
+                {
+                    var existing = ModelAt(_editIndex);
+                    if (existing is not null) existing.Model = template;
+                    if (existing is not null) existing.Training = training ?? existing.Training;
+                }
                 else
                 {
-                    _editIndex = entries.Count;
-                    entries.Add(new ContourMatchTemplateSet.Entry(template,
-                        ContourMatchTemplateSet.NewTemplateName(entries.Count), true, training ?? ""));
+                    _editIndex = _models.Count;
+                    // 原厂 MaxModelNum=36：满额时 Add 返回 null，此处不新增、不抛错。
+                    var added = new TemplateModelItem<ContourMatchTemplate>(0, ContourMatchTemplateSet.NewTemplateName(_models.Count));
+                    if (added is not null)
+                    {
+                        added.Model = template;
+                        added.Training = training ?? "";
+                        added.Selected = true;
+                    }
                 }
             }
-            _entries = entries;
-            var encoded = entries.Count == 0 ? "" : ContourMatchTemplateSet.Encode(entries);
+            var encoded = _models.Count == 0 ? "" : ContourMatchTemplateSet.EncodeModels(_models);
             _draft.ApplyFields(
                 new Dictionary<string, ParameterSetting> { [ContourMatchFields.ModelData] = new ConstantSetting(encoded) },
                 candidate => _acceptCandidate?.Invoke(candidate));
@@ -380,19 +386,33 @@ public sealed class ContourMatchTemplatePanel : IDisposable, ITemplatePanelHost
         }
     }
 
-    /// <summary>模板集合缓存；列表操作都作用在它上面，再整体写回 ModelData。</summary>
-    private List<ContourMatchTemplateSet.Entry> _entries = new();
+    /// <summary>
+    /// 模板集合（内存模型）。对应原厂 <c>FeaturepatMatchConfigPanalDataDecorate</c> 的模型列表：
+    /// 列表操作作用在它上面，再整体编码回 ModelData。上限 36 与原厂 <c>MaxModelNum</c> 一致。
+    /// </summary>
+    private TemplateModelCollection _models = new();
 
     /// <summary>重新读取集合缓存；列表由共用面板从集合渲染，本类不再构建任何控件。</summary>
-    private void Reload() => _entries = ReadEntries();
+    private void Reload() => ReplaceModels(ReadModels());
 
-    private List<ContourMatchTemplateSet.Entry> ReadEntries()
+    /// <summary>
+    /// 原地替换集合内容。面板直接绑定 <see cref="_models"/> 实例，
+    /// 若此处换成新实例，XAML 的 ItemsSource 会仍旧指向旧对象而不再刷新。
+    /// </summary>
+    private void ReplaceModels(TemplateModelCollection source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        _models.Clear();
+        foreach (var item in source.Items) _models.Add(item);
+    }
+
+    private TemplateModelCollection ReadModels()
     {
         var payload = CurrentPayload();
         if (payload.Length == 0) return new();
         try
         {
-            return ContourMatchTemplateSet.DecodeEntries(payload).ToList();
+            return ContourMatchTemplateSet.DecodeModels(payload);
         }
         catch (Exception error) when (error is ContourMatchCapabilityException or ArgumentException)
         {
@@ -400,6 +420,13 @@ public sealed class ContourMatchTemplatePanel : IDisposable, ITemplatePanelHost
             return new();
         }
     }
+
+    /// <summary>
+    /// 按下标取本工具的强类型模板项。集合只认识基类（与原厂 ModelItem 一致），
+    /// 工具在读模板本体时向下转型；不是本工具类型时返回 null。
+    /// </summary>
+    private TemplateModelItem<ContourMatchTemplate>? ModelAt(int index)
+        => _models.At(index) as TemplateModelItem<ContourMatchTemplate>;
 
     /// <summary>
     /// 把当前模板集合写回 ModelData；空集合写空串（等价"删除所有模板"）。
@@ -410,7 +437,7 @@ public sealed class ContourMatchTemplatePanel : IDisposable, ITemplatePanelHost
     {
         try
         {
-            var payload = _entries.Count == 0 ? "" : ContourMatchTemplateSet.Encode(_entries);
+            var payload = _models.Count == 0 ? "" : ContourMatchTemplateSet.EncodeModels(_models);
             _draft.ApplyFields(
                 new Dictionary<string, ParameterSetting> { [ContourMatchFields.ModelData] = new ConstantSetting(payload) },
                 candidate => _acceptCandidate?.Invoke(candidate));

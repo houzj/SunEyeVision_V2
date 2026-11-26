@@ -5,13 +5,16 @@ namespace SunEyeVision.Plugin.TemplateStudio;
 /// <summary>
 /// 一个可训练模板项（对应原厂 <c>FeatureMatchCommonControl.ModelItem</c>）。
 ///
+/// 非泛型基类承载**列表所需的全部状态**，模板本体留给工具子类给出——
+/// 与原厂形态一致：<c>ModelItem.modelData</c> 是共用基类字段，各工具用子类。
+/// 这样共用面板只需认识基类，不需要知道具体工具有什么模板类型。
+///
 /// 字段与原厂对齐：
 /// <list type="bullet">
 /// <item><c>Name</c> ↔ 原厂 ModelName（列表内可改名）</item>
 /// <item><c>Selected</c> ↔ 原厂 IsSelected（列表选中）</item>
 /// <item><c>Visible</c> ↔ 原厂 PatternVisible（眼睛开关）</item>
-/// <item><c>Model</c> ↔ 原厂 ModelData（工具自有强类型模板对象）</item>
-/// <item><c>Training</c> ↔ 原厂 modelData.ItemsData（每模板独立样本，按工具既有编码保存）</item>
+/// <item><c>Training</c> ↔ 原厂 modelData.ItemsData（每模板独立样本）</item>
 /// </list>
 /// 选中与可见是两个独立状态，不能合并成一个布尔。
 ///
@@ -19,14 +22,14 @@ namespace SunEyeVision.Plugin.TemplateStudio;
 /// （<c>SolModelFile_{Index}_BasicData / _CurImage / _OtherMask / _OtherMask2 / _Points</c>），
 /// 那是原厂框架键值存储的约定；本方按工具既有格式整包保存，因此不复制那套命名。
 /// </summary>
-public sealed class TemplateModelItem<TModel> : INotifyPropertyChanged
-    where TModel : class
+public class TemplateModelItem : INotifyPropertyChanged
 {
     private string _name;
     private bool _visible = true;
     private bool _selected;
 
-    public TemplateModelItem(int index, string? name = null)
+    /// <summary>由集合创建，工具不应直接 new 基类。</summary>
+    protected internal TemplateModelItem(int index, string? name = null)
     {
         Index = index;
         _name = string.IsNullOrWhiteSpace(name) ? "模板" + (index + 1) : name;
@@ -72,13 +75,25 @@ public sealed class TemplateModelItem<TModel> : INotifyPropertyChanged
         }
     }
 
-    /// <summary>模板本体（工具自有强类型对象，对应原厂 ModelData）。</summary>
-    public TModel? Model { get; set; }
-
     /// <summary>模板样本（原厂 modelData.ItemsData），按工具既有格式保存。</summary>
     public string? Training { get; set; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    private void Raise(string property) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
+    protected void Raise(string property) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
+}
+
+/// <summary>
+/// 工具侧强类型模板项：在基类之上携带模板本体（对应原厂 <c>ModelData</c>）。
+/// 共用面板只操作基类成员，工具在读模板时向下转型。
+/// </summary>
+public sealed class TemplateModelItem<TModel> : TemplateModelItem
+    where TModel : class
+{
+    public TemplateModelItem(int index, string? name = null) : base(index, name)
+    {
+    }
+
+    /// <summary>模板本体（工具自有强类型对象，对应原厂 ModelData）。</summary>
+    public TModel? Model { get; set; }
 }

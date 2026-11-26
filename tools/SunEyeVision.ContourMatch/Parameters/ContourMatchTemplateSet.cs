@@ -86,29 +86,31 @@ public static class ContourMatchTemplateSet
     /// 本方法是「线上格式 → 内存模型」的边界：<see cref="Entry"/> 是载荷格式，
     /// <see cref="TemplateModelItem{TModel}"/> 是内存模型，两者不合并，避免格式与 UI 生命周期耦合。
     /// </summary>
-    public static TemplateModelCollection<ContourMatchTemplate> DecodeModels(string? payload)
+    public static TemplateModelCollection DecodeModels(string? payload)
     {
-        var collection = new TemplateModelCollection<ContourMatchTemplate>();
+        var collection = new TemplateModelCollection();
         foreach (var entry in DecodeEntries(payload))
         {
-            var item = collection.Add(entry.Name);
-            if (item is null) break; // 超出原厂上限 36：多出的模板不进内存集合
-            item.Model = entry.Template;
-            item.Selected = entry.Selected;
-            item.Training = entry.Training;
+            var item = new TemplateModelItem<ContourMatchTemplate>(0, entry.Name)
+            {
+                Model = entry.Template,
+                Selected = entry.Selected,
+                Training = entry.Training
+            };
+            if (!collection.Add(item)) break; // 超出原厂上限 36：多出的模板不进内存集合
         }
         return collection;
     }
 
     /// <summary>把共用层模板集合编码回载荷格式。</summary>
-    public static string EncodeModels(TemplateModelCollection<ContourMatchTemplate> collection)
+    public static string EncodeModels(TemplateModelCollection collection)
     {
         ArgumentNullException.ThrowIfNull(collection);
         var entries = new List<Entry>(collection.Count);
         foreach (var item in collection.Items)
         {
-            if (item.Model is null) continue;
-            entries.Add(new Entry(item.Model, item.Name, item.Selected, item.Training ?? ""));
+            if (item is not TemplateModelItem<ContourMatchTemplate> { Model: { } template }) continue;
+            entries.Add(new Entry(template, item.Name, item.Selected, item.Training ?? ""));
         }
         return Encode(entries);
     }

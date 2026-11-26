@@ -672,7 +672,25 @@ public void SuppressFieldRows(IEnumerable<string> fieldIds)
  {
   var source=_fieldsById.GetValueOrDefault(condition.FieldId);
   // UI never resolves a reference: its dependents remain explicitly visible and active for review.
-  return source?.Setting is ReferenceSetting||source?.Setting is ConstantSetting literal&&(Equals(literal.Value,condition.Value)!=condition.Negate);
+  if(source?.Setting is ReferenceSetting)return true;
+  if(source?.Setting is not ConstantSetting literal)return false;
+  // 原厂 MultiTrigger 的「同一控制器多取值 → 同一目标」：如阈值类型 Single/Double/Auto 都显示下阈值。
+  // 单值条件保持原语义，多值（数组）条件按「任一相等」判定。
+  var hit=condition.Value is object?[] many
+      ? System.Array.Exists(many,value=>Equals(literal.Value,value))
+      : Equals(literal.Value,condition.Value);
+  return hit!=condition.Negate;
+ }
+ /// <summary>
+ /// 原厂 DisEnableOperation：条件成立时禁用该行（仍可见）。
+ /// 禁用不隐藏，因此与可见性分开处理，避免影响行布局与取值。
+ /// </summary>
+ private void ApplyEnabled(string fieldId,FrameworkElement row)
+ {
+  if(_disposed)return;
+  var condition=(row as DeclaredFieldRow)?.Presentation?.Layout?.EnabledWhen;
+  var enabled=condition is null||Meets(condition);
+  if(row.IsEnabled!=enabled)row.IsEnabled=enabled;
  }
  private void UpdateVisibility()
  {
@@ -713,6 +731,8 @@ public void SuppressFieldRows(IEnumerable<string> fieldIds)
     try
     {
      ParameterCleanup.Run(targets.Select(item=>(Action)(()=>ApplyVisibility(item.Key,item.Visible)))
+     // 禁用态随同一轮刷新：条件成立即禁用，不隐藏。
+     .Concat(_rows.ToArray().Select(pair=>(Action)(()=>{if(Current())ApplyEnabled(pair.Key,pair.Value);})))
      .Concat(_parameterRows.ToArray().Select(row=>(Action)(()=>{if(Current())row.Refresh();})))
      .Concat(_pages.ToArray().Select(page=>(Action)(()=>{if(Current())page.Host.RefreshGroups(Current);}))));
     }

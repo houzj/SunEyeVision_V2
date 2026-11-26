@@ -1,6 +1,7 @@
 using System;
 using SunEyeVision.Application;
 using SunEyeVision.Domain.Workflows;
+using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Contracts.Results.Presentation;
 using SunEyeVision.Plugin.Runtime;
 using SunEyeVision.Plugin.Wpf.Presenters.Results;
@@ -8,7 +9,7 @@ using SunEyeVision.UI.Services.Editing;
 namespace SunEyeVision.UI.Shell.Windows;
 public partial class MainWindowViewModel
 {
- internal sealed record ResultDisplayState(ResultDisplayDescriptor Descriptor,ResultDisplayAppearance Appearance,long Revision,Func<bool> IsCurrent,ResultGeometrySnapshot? Geometry,Func<ResultDisplayTextLease> BorrowText);
+ internal sealed record ResultDisplayState(ResultDisplayDescriptor Descriptor,ResultDisplayAppearance Appearance,long Revision,Func<bool> IsCurrent,ResultGeometrySnapshot? Geometry,Func<ResultDisplayTextLease> BorrowText,ResultOutlineSet? Outline=null);
  private sealed class DisplayPreview : IDisposable
  {
   internal required MainWindowViewModel Main;
@@ -36,7 +37,7 @@ public partial class MainWindowViewModel
  internal event Action? ResultDisplayChanged;
  internal void NotifyResultDisplayChanged()
  {
-  ++_resultDisplayRevision;UpdateCurrentSolutionInfo();
+  ++_resultDisplayRevision;UpdateCurrentSolutionInfo();SyncNodeRoiEditing();
   foreach(Action callback in ResultDisplayChanged?.GetInvocationList()??Array.Empty<Delegate>())
    try{callback();}catch(Exception error){AddLog("结果显示刷新失败："+error.Message);}
  }
@@ -88,6 +89,6 @@ public partial class MainWindowViewModel
    if(!Current())throw new InvalidOperationException("文字显示来源已失效。");
    var lease=new ResultDisplayTextLease(snapshot,appearance.Text);
    if(Current())return lease;lease.Dispose();throw new InvalidOperationException("文字显示来源已变化。");
-  });
+   },(snapshot.Output as IToolResultOutlineOutput)?.ResultOutline);
  }
 }

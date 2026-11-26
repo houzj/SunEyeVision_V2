@@ -34,7 +34,9 @@ public sealed partial class DeclaredFieldsView
                 throw new ArgumentException("不限固定小数位仅适用于原订阅同槽数值文本。");
         foreach(var id in textCoordinates??new HashSet<string>())
         {
-            if(!declarations.TryGetValue(id,out var field))throw new ArgumentException("文本坐标引用未知字段。");
+            if(!declarations.TryGetValue(id,out var field))
+    throw new ArgumentException("文本坐标引用未知字段："+id
+        +"。已声明字段=["+string.Join(",",declarations.Keys)+"]");
             if(field.Port.EditModes is FieldEditModes.Constant or (FieldEditModes.Constant|FieldEditModes.Reference))
             {
                 SunEyeVision.Plugin.Wpf.Adapters.Fields.InlineConstantRules.Validate(field.Port,field.Presentation,field.Value);

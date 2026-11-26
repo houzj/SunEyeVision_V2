@@ -13,6 +13,11 @@ public interface IToolDefinition
     IReadOnlyList<Diagnostic> Validate(object settings);
     ToolCapabilities Capabilities();
     IToolSession CreateSession();
+    /// <summary>
+    /// ROI 编辑声明：有本地 ROI 文档的工具返回它，宿主用同一份声明在结果视图与
+    /// 参数页建立 ROI 读写与会话（原件参数树 ROISelecter 常驻语义）。
+    /// </summary>
+    RoiEditDeclaration? RoiEdit => null;
 }
 
 public interface IToolSession : IAsyncDisposable

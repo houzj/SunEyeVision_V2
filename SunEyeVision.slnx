@@ -37,16 +37,22 @@
     <Project Path="tools/SunEyeVision.IntensityMeasure/SunEyeVision.Tool.IntensityMeasure.csproj" />
   </Folder>
   <Folder Name="/Tools/CircleFindComponents/">
+    <Project Path="tools/SunEyeVision.CircleFind/SunEyeVision.Tool.CircleFind.csproj" />
   </Folder>
   <Folder Name="/Tools/LineFindComponents/">
+    <Project Path="tools/SunEyeVision.LineFind/SunEyeVision.Tool.LineFind.csproj" />
   </Folder>
   <Folder Name="/Tools/CircleCircleMeasureComponents/">
+    <Project Path="tools/SunEyeVision.CircleCircleMeasure/SunEyeVision.Tool.CircleCircleMeasure.csproj" />
   </Folder>
   <Folder Name="/Tools/PointPointMeasureComponents/">
+    <Project Path="tools/SunEyeVision.PointPointMeasure/SunEyeVision.Tool.PointPointMeasure.csproj" />
   </Folder>
   <Folder Name="/Tools/DataClassificationComponents/">
+    <Project Path="tools/SunEyeVision.DataClassification/SunEyeVision.Tool.DataClassification.csproj" />
   </Folder>
   <Folder Name="/Tools/MachineLearningClassifierComponents/">
+    <Project Path="tools/SunEyeVision.MachineLearningClassifier/SunEyeVision.Tool.MachineLearningClassifier.csproj" />
   </Folder>
   <Folder Name="/Tests/ControlNamingProbe/">
     <Project Path="tests/ControlNamingProbe/ControlNamingProbe.csproj" />
@@ -84,6 +90,9 @@
   </Folder>
   <Folder Name="/Src/Core/">
     <Project Path="Src/Core/SunEyeVision.Core.csproj" />
+  </Folder>
+  <Folder Name="/Src/Plugin.TemplateStudio/">
+    <Project Path="Src/Plugin.TemplateStudio/SunEyeVision.Plugin.TemplateStudio.csproj" />
   </Folder>
   <Folder Name="/Src/Plugin.Contracts/">
     <Project Path="Src/Plugin.Contracts/SunEyeVision.Plugin.Contracts.csproj" />

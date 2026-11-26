@@ -4,39 +4,36 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Contracts.Results.Presentation;
+using SunEyeVision.Plugin.Wpf.Adapters.Regions;
 using SunEyeVision.Plugin.Wpf.Presenters.Display;
+using SunEyeVision.Plugin.Wpf.Regions;
 using SunEyeVision.Plugin.Wpf.Presenters.Results;
 using SunEyeVision.Plugin.Wpf.Native.Dependencies.PresentationControls.RenderInterface;
+using SunEyeVision.UI.Shell.Windows;
 
 namespace SunEyeVision.UI.Services.Images;
 
 internal sealed partial class ResultWorkspacePresenter
 {
-    private sealed record GlobalOutlineGroup(int BlobIndex, List<Point2> Points);
+    private sealed record OutlineGroup(int Index, Point2[] Points, float[] Scores);
 
-    private static IReadOnlyList<GlobalOutlineGroup> ReadGlobalOutline(DeclaredValueReader payload)
+    /// <summary>系统级轮廓点按归属结果序号分组；同组点共用一份 Ok/Ng 颜色。</summary>
+    private static IReadOnlyList<OutlineGroup> GroupOutline(ResultOutlineSet set)
     {
-        var info = payload.GetField("info");
-        if(info.IsMissing || info.IsNull) return Array.Empty<GlobalOutlineGroup>();
-        var xs = info.GetField("x");
-        var ys = info.GetField("y");
-        var indices = info.GetField("blob-index");
-        if(xs.Count != ys.Count || xs.Count != indices.Count)
-            throw new InvalidOperationException("ContourInfo point arrays have different lengths.");
-        var groups = new Dictionary<int, GlobalOutlineGroup>();
-        for(var index=0; index<xs.Count; index++)
+        var builders = new SortedDictionary<int, (List<Point2> Points, List<float> Scores)>();
+        for (var index = 0; index < set.Count; index++)
         {
-            var blobIndex = checked((int)indices.GetElement(index).GetScalar<long>());
-            if(blobIndex < 0) throw new InvalidOperationException("ContourInfo blob index is invalid.");
-            if(!groups.TryGetValue(blobIndex, out var group))
+            var resultIndex = set.ResultIndices[index];
+            if (!builders.TryGetValue(resultIndex, out var builder))
             {
-                group = new GlobalOutlineGroup(blobIndex, new List<Point2>());
-                groups.Add(blobIndex, group);
+                builder = (new List<Point2>(), new List<float>());
+                builders.Add(resultIndex, builder);
             }
-            group.Points.Add(new Point2(xs.GetElement(index).GetScalar<double>(),
-                ys.GetElement(index).GetScalar<double>()));
+            builder.Points.Add(set.Points[index]);
+            builder.Scores.Add(set.Scores[index]);
         }
-        return groups.Values.OrderBy(group=>group.BlobIndex).ToArray();
+        return builders.Select(pair => new OutlineGroup(pair.Key, pair.Value.Points.ToArray(),
+            pair.Value.Scores.ToArray())).ToArray();
     }
 
     private static string? PointTip(string? label, RecordValue shape)
@@ -45,12 +42,6 @@ internal sealed partial class ResultWorkspacePresenter
             return null;
         var point = shape.Get<PointGeometry>("center").Point;
         return $"{label}:({(float)point.X},{(float)point.Y}) ";
-    }
-
-    private static IEnumerable<DeclaredValueReader> OutlinePaths(DeclaredValueReader paths)
-    {
-        for (var index = 0; index < paths.Count; index++)
-            yield return paths.GetElement(index).GetField("points");
     }
 
     private static DeclaredValueReader ReadPath(DeclaredValueReader root, ResultFieldPath path)
@@ -73,6 +64,7 @@ internal sealed partial class ResultWorkspacePresenter
     }
     private DispatcherOperation? _displayRefresh;
     private long _displayRequest,_displayAttempt;
+    private object? _loggedGeometryMiss;
     private void QueueResultDisplay()
     {
         if(_disposed)return;var request=++_displayRequest;
@@ -136,14 +128,22 @@ internal sealed partial class ResultWorkspacePresenter
             var appearance = state.Appearance;
             var innerPath = appearance.InnerRectangle is { Visible: true } ? state.Descriptor.InnerRectangle : null;
             var centroidPath = appearance.Centroids is { Visible: true } ? state.Descriptor.Centroid : null;
-            var showOutline = appearance.Outline is { Visible: true }
-                && (state.Descriptor.Outline is not null || state.Descriptor.GlobalOutline is not null);
-            var outlinePath = showOutline ? state.Descriptor.Outline : null;
+            // 轮廓点是系统类型：显示只受「轮廓点」显示项开关与工具是否产出点集控制。
+            var showOutline = appearance.Outline is { Visible: true } && state.Outline is not null;
             var showRows = appearance.Graphic.Visible || centroidPath is not null || innerPath is not null || showOutline;
             var roiGroups = frozen?.Groups
                 .Where(group => group.Coverage == ResultGeometryCoverage.Explicit && group.Shapes.Count != 0)
                 .Select(group => (Group:group, Style:RoiStyle(appearance,group.Role)))
                 .Where(item => item.Style?.Visible == true).ToArray() ?? [];
+            // 结果几何存在但没有可绘制组时，一次性说明是几何缺失还是显示开关关闭，避免用户猜。
+            if(roiGroups.Length==0&&frozen is not null&&frozen.Groups.Count!=0&&!ReferenceEquals(_loggedGeometryMiss,frozen))
+            {
+                _loggedGeometryMiss=frozen;
+                _main.AddLog("结果几何未显示：组="+string.Join(";",frozen.Groups.Select(group=>$"{group.Role}/{group.Coverage}/{group.Shapes.Count}"))
+                    +"；检测区域样式="+(appearance.Inspection is {} inspection
+                        ?$"visible={inspection.Visible},width={inspection.Width},fill={(inspection.Fill is null?"无":"有")}"
+                        :"未声明"));
+            }
             if (!showRows && !appearance.Text.Visible && roiGroups.Length == 0)
             {ClearOriginal();continue;}
             IResultValueLease? values=null;DisplayScene? candidate=null;SunEyeVision.Plugin.Runtime.ResultDisplayTextLease? textLease=null;
@@ -157,9 +157,6 @@ internal sealed partial class ResultWorkspacePresenter
                     rows=values.Values.Read(state.Descriptor.Rows.PortId);
                     foreach(var member in state.Descriptor.Rows.MemberFieldPath)rows=rows.GetField(member);
                 }
-                DeclaredValueReader? globalOutline = null;
-                if(showOutline && state.Descriptor.GlobalOutline is {} globalPath)
-                    globalOutline = ReadPath(values!.Values.Read(globalPath.PortId), globalPath);
                 if(appearance.Text.Visible)
                 {
                     textLease=state.BorrowText();
@@ -185,7 +182,7 @@ internal sealed partial class ResultWorkspacePresenter
                             IncludeMeasurements:style.ShowMeasurements,ToolTip:PointTip(style.PointLabel,shape)));
                     }
                 }
-                var outlines=new List<NativeOutlineOverlay>();long outlinePoints=0;
+                var outlines=new List<NativeOutlineOverlay>();
                 var rectangles=new List<NativeMeasuredRectangle>();
                 var geometry=new List<NativeGeometryOverlay>();var texts=new List<NativeTextOverlay>();var ids=new HashSet<long>();long textCharacters=0;
                 var selection = _sceneSelection;
@@ -201,9 +198,6 @@ internal sealed partial class ResultWorkspacePresenter
                 var selectedId = selection?.ElementIdentity as long?;
                 DeclaredValueReader Member(DeclaredValueReader row,ResultFieldPath path)=>row.GetField(path.MemberFieldPath.Last());
                 var rowCount=showRows?rows!.Count:0;
-                var globalOutlineGroups = globalOutline is { IsMissing:false, IsNull:false }
-                    ? ReadGlobalOutline(globalOutline)
-                    : null;
                 for(var i=0;i<rowCount;i++)
                 {
                     if(!Current())throw new InvalidOperationException("显示准备期间结果或样式已失效。");
@@ -253,44 +247,17 @@ internal sealed partial class ResultWorkspacePresenter
                                 IncludeMeasurements:true));
                         }
                     }
-                    if(outlinePath is not null && appearance.Outline is {} outlineStyle)
-                    {
-                        var outline = Member(row, outlinePath);
-                        var sources = outline.IsMissing || outline.IsNull ? Enumerable.Empty<DeclaredValueReader>()
-                            : outline.Declaration.Shape == ValueShape.Sequence ? new[] { outline }
-                            : OutlinePaths(outline.GetField("paths"));
-                        var points=new List<Point2>();
-                        foreach(var sourcePoints in sources)
-                        {
-                            outlinePoints=checked(outlinePoints+sourcePoints.Count);
-                            if(outlinePoints>1_000_000)throw new ArgumentException("outline-budget: 场景轮廓点超过预算。");
-                            for(var pointIndex=0;pointIndex<sourcePoints.Count;pointIndex++)
-                            {
-                                // The held result lease protects these immutable points. Check retirement in bounded chunks.
-                                if((pointIndex & 255)==0&&!Current())
-                                    throw new InvalidOperationException("轮廓准备期间结果已失效。");
-                                if(sourcePoints.GetElement(pointIndex).GetGeometry() is not PointGeometry point)
-                                    throw new InvalidOperationException("轮廓点不是有效的点几何。");
-                                points.Add(point.Point);
-                            }
-                        }
-                        if(points.Count!=0)
-                            outlines.Add(new(receipt.Frame,receipt.Coordinates,points.ToArray(),i,passed,Color(outlineStyle.Ok),Color(outlineStyle.Ng)));
-                    }
                 }
-                if(globalOutlineGroups is not null && appearance.Outline is {} globalOutlineStyle)
+                if(state.Outline is {} outlineSet && appearance.Outline is {} outlineStyle)
                 {
-                    foreach(var group in globalOutlineGroups)
+                    // 系统级轮廓点：按归属结果序号分组，逐点分数交给原生多点图形做三色渲染。
+                    foreach(var group in GroupOutline(outlineSet))
                     {
-                        if(group.Points.Count==0) continue;
-                        var resultIndex = group.BlobIndex;
+                        var resultIndex = group.Index;
                         var passed = resultIndex >= 0 && resultIndex < rowCount
                             && Member(rows!.GetElement(resultIndex), state.Descriptor.Passed).GetScalar<bool>();
-                        outlinePoints = checked(outlinePoints + group.Points.Count);
-                        if(outlinePoints > 1_000_000)
-                            throw new ArgumentException("outline-budget: 场景轮廓点超过预算。");
-                        outlines.Add(new(receipt.Frame, receipt.Coordinates, group.Points.ToArray(),
-                            resultIndex, passed, Color(globalOutlineStyle.Ok), Color(globalOutlineStyle.Ng)));
+                        outlines.Add(new(receipt.Frame, receipt.Coordinates, group.Points, resultIndex, passed,
+                            Color(outlineStyle.Ok), Color(outlineStyle.Ng), group.Scores));
                     }
                 }
                 if(textLease is not null)

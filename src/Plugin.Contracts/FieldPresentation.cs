@@ -10,7 +10,13 @@ public sealed record FieldLayout(string Page, string Section, FieldCondition? Vi
     int? DecimalPlaces=2, bool AllowReference=true,
     string? DialogGroup=null, string? DialogTitle=null, bool DialogPrimary=false,
     double Increment=1, double? PairMinimum=null, double? PairMaximum=null, FieldCondition? OrVisibleWhen=null,
-    BooleanStateTips? BooleanTips=null, string? PairDisplayName=null, string? VmCategory=null, bool ShowClearButton=true);
+    BooleanStateTips? BooleanTips=null, string? PairDisplayName=null, string? VmCategory=null, bool ShowClearButton=true,
+    // 原厂 Category 级开关：分组不显示标题 / 改本组参数即触发运行。
+    bool NoHeader=false, bool CanTriggerRun=false,
+    // 原厂 IsAbandon：端口与取值保留（算法兼容），但参数页不渲染这一行。
+    bool Abandon=false,
+    // 原厂 DisEnableOperation：条件成立时该行禁用（仍可见）。为空表示恒可用。
+    FieldCondition? EnabledWhen=null);
 
 public enum FieldEditorKind { Scalar, Choice, Record, Sequence, Geometry, Region, ResultPresentation, Image, FolderPath, Camera, Reference }
 [Flags] public enum FieldEditModes { None=0, Constant=1, Reference=2, NumericGeometry=4, Gesture=8, DisplayExpression=16 }
@@ -35,11 +41,18 @@ public sealed record RegionFieldGroup(string Role, string ModeFieldId, string Lo
 /// <summary>Presentation only points at declared stable fields; it never infers types or stores values.</summary>
 public sealed class FieldPresentation
 {
+    /// <param name="displayType">
+    /// 参数行模板键（原厂 XML 的 <c>DisplayType</c>，或 <c>ExternDisplayType</c> 的直给形态）。
+    /// 非空时平台按它取模板，不再按端口类型推导；找不到模板直接报错。
+    /// 为空走迁移期推导（原厂无此分支，迁移完成后删除）。
+    /// </param>
     public FieldPresentation(string fieldId,string displayName,string group,int order,FieldEditorKind editor,
-        IEnumerable<string>? choiceKeys=null,IReadOnlyDictionary<string,string>? choiceLabels=null)
+        IEnumerable<string>? choiceKeys=null,IReadOnlyDictionary<string,string>? choiceLabels=null,
+        string? displayType=null)
     {
         if(string.IsNullOrWhiteSpace(fieldId)||!Enum.IsDefined(editor))throw new ArgumentException("A declared field and known editor kind are required.");
         FieldId=fieldId;DisplayName=displayName??throw new ArgumentNullException(nameof(displayName));Group=group??"";Order=order;Editor=editor;
+        DisplayType=string.IsNullOrWhiteSpace(displayType)?null:displayType.Trim();
         var choices=(choiceKeys??Array.Empty<string>()).ToArray();
         if(choices.Any(string.IsNullOrWhiteSpace)||choices.Distinct(StringComparer.Ordinal).Count()!=choices.Length
             ||editor==FieldEditorKind.Choice&&choices.Length==0||editor!=FieldEditorKind.Choice&&choices.Length!=0)
@@ -54,6 +67,8 @@ public sealed class FieldPresentation
     public string FieldId{get;} public string DisplayName{get;} public string Group{get;} public int Order{get;}
     public IReadOnlyDictionary<string,string> ChoiceLabels{get;}
     public FieldEditorKind Editor{get;} public IReadOnlyList<string> ChoiceKeys{get;}
+    /// <summary>参数行模板键（原厂 DisplayType）；为空表示尚未迁移，走推导。</summary>
+    public string? DisplayType{get;}
 }
 public sealed class ToolPresentation
 {

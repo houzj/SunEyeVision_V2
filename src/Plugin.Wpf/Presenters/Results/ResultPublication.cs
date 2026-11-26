@@ -6,7 +6,10 @@ namespace SunEyeVision.Plugin.Wpf.Presenters.Results;
 
 public enum ResultViewState
 {
-    Declaration, NotExecuted, Running, Success, PartialSuccess, Failed, Timeout, Cancelled
+    Declaration, NotExecuted, Running, Success, PartialSuccess, Failed, Timeout, Cancelled,
+    /// <summary>分支未选中而跳过。与 NotExecuted 不同：这是正常运行结果，不参与合格判定；
+    /// 显示层按“无结果”处理（原件：跳过节点保持常态外观）。</summary>
+    Skipped
 }
 
 public sealed record ResultPublicationStamp(Guid PublicationId, RunIdentity? Invocation,

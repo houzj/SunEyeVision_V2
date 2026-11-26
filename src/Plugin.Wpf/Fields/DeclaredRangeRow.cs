@@ -202,7 +202,10 @@ internal sealed class DeclaredRangeRow : ContentControl, IDisposable, IParameter
     {
         if (port.Type.Scalar == ScalarKind.Int64)
         {
-            var r = NumericStorageRules.IntegerRange(NumericStorageRules.Effective(port.Type, port.Storage)!.Value);
+            // 原厂 Integer 节点即 int32：未声明存储精度时按 Int32 处理，
+            // 否则成对行无法确定整数范围（诊断带字段身份，便于定位声明缺口）。
+            var storage = NumericStorageRules.Effective(port.Type, port.Storage) ?? NumericStorage.Int32;
+            var r = NumericStorageRules.IntegerRange(storage);
             return (Math.Max(layout.Minimum ?? r.Minimum, r.Minimum), Math.Min(layout.Maximum ?? r.Maximum, r.Maximum));
         }
 

@@ -102,8 +102,13 @@ public sealed partial class DeclaredFieldsView
                     throw new ArgumentException("图形样式与其他输入组合冲突："+id);
             }
             var members=declarations.Values.Where(field=>field.Presentation.Layout?.DialogGroup==option.GroupId).ToArray();
-            if(!ids.ToHashSet(StringComparer.Ordinal).SetEquals(members.Select(field=>field.Port.Id)))
-                throw new ArgumentException("图形角色必须完整消费分组，不能遗漏或隐藏额外字段。");
+            var declared=ids.ToHashSet(StringComparer.Ordinal);
+            var actual=members.Select(field=>field.Port.Id).ToHashSet(StringComparer.Ordinal);
+            if(!declared.SetEquals(actual))
+                throw new ArgumentException(
+                    $"图形角色必须完整消费分组（{option.GroupId}）："
+                    +"缺少=["+string.Join(",",actual.Except(declared))+"] "
+                    +"多余=["+string.Join(",",declared.Except(actual))+"]");
             var primary=members.Where(field=>field.Presentation.Layout!.DialogPrimary).ToArray();
             if(primary.Length!=1||primary[0].Port.Id!=option.VisibleFieldId)throw new ArgumentException("图形显示主字段错误。");
             var first=primary[0].Presentation;var a=first.Layout!;
@@ -119,8 +124,12 @@ public sealed partial class DeclaredFieldsView
             if(option.ThicknessFieldId is {} thickness)Number(thickness,1,10,1);
             result.Add(option.VisibleFieldId,option);
         }
-        if(!groups.SetEquals(declarations.Values.Where(field=>field.Presentation.Layout?.DialogGroup is not null)
-            .Select(field=>field.Presentation.Layout!.DialogGroup!)))throw new ArgumentException("所有图形分组都需要显式完整角色配置。");
+        var declaredGroups=declarations.Values.Where(field=>field.Presentation.Layout?.DialogGroup is not null)
+            .Select(field=>field.Presentation.Layout!.DialogGroup!).ToHashSet(StringComparer.Ordinal);
+        if(!groups.SetEquals(declaredGroups))
+            throw new ArgumentException("所有图形分组都需要显式完整角色配置："
+                +"声明未覆盖=["+string.Join(",",declaredGroups.Except(groups))+"] "
+                +"多余=["+string.Join(",",groups.Except(declaredGroups))+"]");
         return result;
 
         IReadOnlyList<FieldCondition> Gates(string id)=>_parentConditions.GetValueOrDefault(id)??Array.Empty<FieldCondition>();

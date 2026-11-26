@@ -69,13 +69,13 @@ public sealed partial class NativeRoiInheritanceSample : Grid,IDisposable
         Session=new(_image,Read,AcceptGeometry,()=>!_disposed,()=>new(_undo.Count>0,_redo.Count>0),"detect",canDraw:group=>!_disposed&&GraphicMode&&Local(group),canSetCoverage:group=>!_disposed&&GraphicMode&&Local(group));
         var declarations=groups.SelectMany((group,i)=>new[]{
             (new Port(Mode(group),DataType.Integer,EditModes:FieldEditModes.Constant),
-             new FieldPresentation(Mode(group),group=="detect"?"ROI创建":"屏蔽区创建","来源组合",i*2,FieldEditorKind.Scalar),_root.Fields[Mode(group)]),
+             new FieldPresentation(Mode(group),group=="detect"?"ROI创建":"屏蔽区创建","来源组合",i*2,FieldEditorKind.Scalar,null,null,DeclaredFieldTemplateKey.Enumeration),_root.Fields[Mode(group)]),
             (new Port(Source(group),RoiDeclarations.Shape,Required:false,EditModes:FieldEditModes.Reference),
-             new FieldPresentation(Source(group),group=="detect"?"检测区域来源":"屏蔽区域来源","来源组合",i*2+1,FieldEditorKind.Record){Layout=new("来源组合","来源组合",VisibleWhen:group=="detect"?new("detect.inherit-way",0L):null)},_root.Fields[Source(group)])})
+             new FieldPresentation(Source(group),group=="detect"?"检测区域来源":"屏蔽区域来源","来源组合",i*2+1,FieldEditorKind.Record,null,null,DeclaredFieldTemplateKey.ComposedSlot){Layout=new("来源组合","来源组合",VisibleWhen:group=="detect"?new("detect.inherit-way",0L):null)},_root.Fields[Source(group)])})
             .Concat(new[]{
-                (new Port("area.mode",DataType.Integer),new FieldPresentation("area.mode","ROI区域类型","来源组合",-2,FieldEditorKind.Scalar),_root.Fields["area.mode"]),
+                (new Port("area.mode",DataType.Integer),new FieldPresentation("area.mode","ROI区域类型","来源组合",-2,FieldEditorKind.Scalar,null,null,DeclaredFieldTemplateKey.Integer),_root.Fields["area.mode"]),
                 (new Port("mask.image",TypeRef.ResourceOf(ResourceKind.Image),Required:false,EditModes:FieldEditModes.Reference),
-                    new FieldPresentation("mask.image","屏蔽图像","来源组合",-1,FieldEditorKind.Image){Layout=new("来源组合","来源组合",VisibleWhen:new("area.mode",1L))},_root.Fields["mask.image"])
+                    new FieldPresentation("mask.image","屏蔽图像","来源组合",-1,FieldEditorKind.Image,null,null,DeclaredFieldTemplateKey.ComposedSlot){Layout=new("来源组合","来源组合",VisibleWhen:new("area.mode",1L))},_root.Fields["mask.image"])
             }).Concat(ComponentDeclarations()).ToArray();
         var options=groups.ToDictionary(Mode,_=>new NativeIntegerRadioOptions(new[]{new NativeIntegerRadioChoice(0,"绘制"),new NativeIntegerRadioChoice(1,"继承")}),StringComparer.Ordinal);
         options.Add("area.mode",new(new[]{new NativeIntegerRadioChoice(0,"图形类型"),new NativeIntegerRadioChoice(1,"图像类型")}));

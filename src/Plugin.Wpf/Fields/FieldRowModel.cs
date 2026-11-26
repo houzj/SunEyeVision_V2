@@ -68,6 +68,39 @@ public sealed class FieldRowModel : INotifyPropertyChanged
     // ---- 静态投影 ----
     /// <summary>原厂模板键（DeclaredFieldTemplateRegistry 常量）。</summary>
     public string TemplateKey { get; internal set; }
+
+    /// <summary>
+    /// 模板命令条用的步进命令（原厂原则：命令属于模型，模板只做布局）。
+    /// 参数是整数增量：读当前值 → 加增量 → 经模板写通道 <see cref="CurValueA"/> 提交；
+    /// 越界由宿主校验拒绝，模型保持原值，错误经行状态投影。
+    /// </summary>
+    public System.Windows.Input.ICommand StepCommand => _stepCommand ??= new NumericStepCommand(this);
+
+    private System.Windows.Input.ICommand? _stepCommand;
+
+    private sealed class NumericStepCommand : System.Windows.Input.ICommand
+    {
+        private readonly FieldRowModel _model;
+        public NumericStepCommand(FieldRowModel model) => _model = model;
+        // 可执行性只取决于当前值是否数值：无 disabled 态，越界靠宿主校验拒绝。
+        public event EventHandler? CanExecuteChanged { add { } remove { } }
+        public bool CanExecute(object? parameter) => parameter is int or long;
+        public void Execute(object? parameter)
+        {
+            var delta = parameter switch { int value => value, long value => value, _ => 0L };
+            if (delta == 0) return;
+            var next = _model.CurValueA switch
+            {
+                long value => (object?)(value + delta),
+                int value => (long)value + delta,
+                double value => value + delta,
+                _ => null
+            };
+            if (next is null) return;
+            try { _model.CurValueA = next; }
+            catch (ArgumentException) { /* 越界被拒：保持原值，错误由行状态投影。 */ }
+        }
+    }
     /// <summary>字段身份（声明稳定 ID）。</summary>
     public string FieldId => _owner.FieldId;
     public string DisplayNameA => _displayNameA;
@@ -90,6 +123,12 @@ public sealed class FieldRowModel : INotifyPropertyChanged
         get => _curValueA;
         set => _owner.HandleTemplateValueProposal(value);
     }
+
+    /// <summary>行当前错误文案（越界、无效输入等）；模板命令条据此提示，不改写宿主校验。</summary>
+    public string ErrorA => _owner.Error;
+
+    /// <summary>行是否处于错误态（供模板做视觉指示，无需解析文案）。</summary>
+    public bool HasErrorA => !string.IsNullOrEmpty(_owner.Error);
 
     public bool IsSubA => _isSubA;
     public bool SubscribeVisibleA => _subscribeVisibleA;
@@ -238,7 +277,7 @@ public sealed class FieldRowModel : INotifyPropertyChanged
             () => Notify(nameof(ImageSourceSelector)) });
     }
 
-    private void Notify(string property)
+    internal void Notify(string property)
     {
         var handlers = PropertyChanged?.GetInvocationList().Cast<PropertyChangedEventHandler>() ?? Enumerable.Empty<PropertyChangedEventHandler>();
         ParameterCleanup.Run(handlers.Select(handler => (Action)(() => handler(this, new PropertyChangedEventArgs(property)))));

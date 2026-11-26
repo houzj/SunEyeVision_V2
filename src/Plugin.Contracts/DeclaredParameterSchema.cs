@@ -286,10 +286,15 @@ public sealed class DeclaredParameterSchema
     public FieldPresentation InputPresentation(Port port, int order)
     {
         var input = _inputs[port.Id];
+        var inputEditor = port.Type.Resource == ResourceKind.Image ? FieldEditorKind.Image
+            : port.Type.Resource == ResourceKind.Region ? FieldEditorKind.Region
+            : FieldEditorKind.Record;
+        // 引用型资源输入走引用行；未设置时由引用态占位，不进组合槽。
+        var inputKey = (port.EditModes & FieldEditModes.Reference) != 0
+            ? DeclaredFieldTemplateKey.Reference
+            : DeclaredFieldTemplateKey.FromPort(port.Type, inputEditor);
         return new FieldPresentation(port.Id, Required(input, "label"), Required(input, "section"), order,
-            port.Type.Resource == ResourceKind.Image ? FieldEditorKind.Image
-                : port.Type.Resource == ResourceKind.Region ? FieldEditorKind.Region
-                : FieldEditorKind.Record)
+            inputEditor, null, null, inputKey)
         {
             Layout = new FieldLayout(Required(input, "page"), Required(input, "section"))
         };
@@ -364,9 +369,14 @@ public sealed class DeclaredParameterSchema
                 "scalar" => FieldEditorKind.Scalar,
                 var unknown => throw new InvalidDataException("Unknown editor kind: " + unknown)
             };
+            // 纯引用端口（EditModes 只有 Reference）走订阅行，不按数值类型取模板。
+            var rowKey = port.EditModes == FieldEditModes.Reference
+                ? DeclaredFieldTemplateKey.Reference
+                : DeclaredFieldTemplateKey.FromPort(port.Type, editor);
             var presentation = new FieldPresentation(port.Id, Label(name), Section(name), bindings.Count,
                 editor,
-                choices.Count != 0 ? choices.Keys : null, choices.Count != 0 ? choices : null)
+                choices.Count != 0 ? choices.Keys : null, choices.Count != 0 ? choices : null,
+                rowKey)
             {
                 Layout = layout
             };
@@ -377,14 +387,16 @@ public sealed class DeclaredParameterSchema
         foreach (var row in _fieldRows.Values)
         {
             var portRef = Required(row, "portRef");
-            if (_knownPorts.TryGetValue(portRef, out var externalPort)) external.Add(externalPort);
+            var known = _knownPorts.TryGetValue(portRef, out var externalPort);
+            if (known) external.Add(externalPort);
             else if (_knownPorts.Count != 0)
                 throw new InvalidDataException("Presentation field references an unknown externally declared port: " + portRef);
             var editor = (string?)row.Attribute("editor") == "reference"
                 ? FieldEditorKind.Reference
                 : FieldEditorKind.Scalar;
             bindings.Add((null, new FieldPresentation(portRef, Required(row, "label"),
-                Required(row, "section"), bindings.Count, editor, null, null)
+                Required(row, "section"), bindings.Count, editor, null, null,
+                DeclaredFieldTemplateKey.FromPort(known ? externalPort!.Type : DataType.Text, editor))
             {
                 Layout = new FieldLayout(Required(row, "page"), Required(row, "section"))
             }));

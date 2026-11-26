@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Data;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Adapters.Fields;
+using SunEyeVision.Plugin.Wpf.Adapters.Regions;
 using SunEyeVision.Plugin.Wpf.Adapters.References;
 using SunEyeVision.Plugin.Wpf.Fields;
 using SunEyeVision.Plugin.Wpf.Presenters.References;
@@ -11,7 +12,7 @@ namespace SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 
 /// <summary>Original grouped input rows, without an inner scroll owner.
 /// The accepting settings view owns this composition; field values remain host-owned.</summary>
-public sealed class DeclaredInputFieldsView : NativeHost, INativeInputComposition
+public sealed class DeclaredInputFieldsView : NativeHost, INativeInputComposition, IRoiInputAccess
 {
     private readonly NativeParameterPage _page=new();
     private readonly List<DeclaredFieldRow> _fields=new();
@@ -124,6 +125,8 @@ public sealed class DeclaredInputFieldsView : NativeHost, INativeInputCompositio
             try{Dispose();}catch(Exception cleanup){throw new AggregateException(failure,cleanup);}throw;
         }
     }
+    ParameterSetting IRoiInputAccess.Read(string fieldId)=>ReadUnpresentedInput(fieldId);
+    void IRoiInputAccess.Write(string fieldId,ParameterSetting setting)=>WriteUnpresentedInput(fieldId,setting);
     /// <summary>A tool's nonvisual pure-value input uses the same formal owner callbacks; no extra field state is retained.</summary>
     public ParameterSetting ReadUnpresentedInput(string id)
     {

@@ -34,7 +34,9 @@ public sealed record RoiGroupDeclaration(
     string OutputMaskLabel,
     string MaskSourceFieldId,
     string MaskSourceLabel,
-    string MaskInheritedFieldId)
+    string MaskInheritedFieldId,
+    // 原厂 ROISelecter 的四个属性属于同一 ROI 组，不是独立节点。
+    RoiSelectDeclaration? Selection = null)
 {
     /// <summary>解析 &lt;RoiGroup&gt; 段；分组归属由所在 &lt;Group&gt; 决定，与原厂 GroupLinkItem 一致。</summary>
     public static IReadOnlyList<RoiGroupDeclaration> Load(XElement? root)

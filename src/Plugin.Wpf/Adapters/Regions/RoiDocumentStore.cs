@@ -16,7 +16,7 @@ public sealed record MaskInheritanceSpec(string ModeFieldId, string SourceFieldI
 /// </summary>
 public sealed class RoiDocumentStore : INativeRoiEditDocument
 {
-    private readonly DeclaredInputFieldsView _inputs;
+    private readonly IRoiInputAccess _inputs;
     private readonly string _documentFieldId;
     private readonly string _imageInputFieldId;
     private readonly RoiInheritanceSpec _inheritance;
@@ -24,7 +24,26 @@ public sealed class RoiDocumentStore : INativeRoiEditDocument
     private readonly IReadOnlyList<string> _itemNames;
     private readonly Stack<RecordValue> _undo = new(), _redo = new();
 
-    public RoiDocumentStore(DeclaredInputFieldsView inputs, string documentFieldId,
+    /// <summary>
+    /// 按工具 ROI 编辑声明构造：结果视图与参数页共用同一份声明，不各自复制组与继承规则。
+    /// </summary>
+    public static RoiDocumentStore From(RoiEditDeclaration declaration, DeclaredInputFieldsView inputs)
+    {
+        ArgumentNullException.ThrowIfNull(declaration);
+        ArgumentNullException.ThrowIfNull(inputs);
+        var inheritance = declaration.Inheritance
+            ?? throw new InvalidOperationException("该工具没有平台 ROI 继承声明，不能构造公共 ROI 文档。");
+        var mask = declaration.MaskInheritance is { } value
+            ? new MaskInheritanceSpec(value.ModeFieldId, value.SourceFieldId, value.MaximumInherited)
+            : null;
+        var groups = declaration.Groups
+            .Select(group => new NativeRoiEditGroup(group.Group, group.Title, group.IsMask, group.MaximumCount, group.EmptyCoverage))
+            .ToArray();
+        return new RoiDocumentStore(inputs, declaration.DocumentFieldId, Array.AsReadOnly(groups),
+            declaration.ImageFieldId, inheritance, mask, declaration.ItemNames);
+    }
+
+    public RoiDocumentStore(IRoiInputAccess inputs, string documentFieldId,
         IReadOnlyList<NativeRoiEditGroup> groups, string imageInputFieldId,
         RoiInheritanceSpec inheritance, MaskInheritanceSpec? mask = null,
         IReadOnlyList<string>? itemNames = null)
@@ -47,7 +66,7 @@ public sealed class RoiDocumentStore : INativeRoiEditDocument
     public RecordValue Empty => RoiDocumentValue.Empty;
 
     public void Write(RecordValue document)
-        => _inputs.WriteUnpresentedInput(_documentFieldId, new ConstantSetting(document));
+        => _inputs.Write(_documentFieldId, new ConstantSetting(document));
 
     public IRoiDocument View(RecordValue document) => new RoiDocumentView(document, Groups);
     public RecordValue ToNative(RecordValue geometry) => RoiShapeProjection.ToNative(geometry);
@@ -99,14 +118,14 @@ public sealed class RoiDocumentStore : INativeRoiEditDocument
     }
 
     public string PreviewMode()
-        => RoiInheritanceMaterializer.ReadMode(_inputs.ReadUnpresentedInput(_inheritance.ModeFieldId), _inheritance);
+        => RoiInheritanceMaterializer.ReadMode(_inputs.Read(_inheritance.ModeFieldId), _inheritance);
 
     public bool CanUndo => _undo.Count > 0;
     public bool CanRedo => _redo.Count > 0;
 
     public RecordValue Read()
     {
-        var setting = _inputs.ReadUnpresentedInput(_documentFieldId);
+        var setting = _inputs.Read(_documentFieldId);
         var value = setting switch
         {
             UnsetSetting => RoiDocumentValue.Empty,

@@ -187,7 +187,8 @@ public sealed class DeclaredPropertyList : IToolResultView
         ResultPresentationValueState.Null => "null",
         ResultPresentationValueState.Unavailable => model.State is ResultViewState.Success or ResultViewState.PartialSuccess ? "值不可用" : StatusText(model.State),
         ResultPresentationValueState.ResourcePending when node.Declaration.Resource==ResourceKind.Image &&
-            model.State is ResultViewState.Declaration or ResultViewState.NotExecuted or ResultViewState.Success or ResultViewState.PartialSuccess => "",
+            model.State is ResultViewState.Declaration or ResultViewState.NotExecuted or ResultViewState.Skipped
+                or ResultViewState.Success or ResultViewState.PartialSuccess => "",
         ResultPresentationValueState.ResourcePending => model.State is ResultViewState.Success or ResultViewState.PartialSuccess ? "资源显示未提供" : StatusText(model.State),
         _ => node.Declaration.Shape switch
         {
@@ -229,7 +230,8 @@ public sealed class DeclaredPropertyList : IToolResultView
     {
         ResultViewState.Declaration => "声明（未运行）", ResultViewState.NotExecuted => "未执行", ResultViewState.Running => "运行中",
         ResultViewState.Success => "成功", ResultViewState.PartialSuccess => "部分成功", ResultViewState.Failed => "失败",
-        ResultViewState.Timeout => "超时", ResultViewState.Cancelled => "已取消", _ => throw new ArgumentOutOfRangeException(nameof(state))
+        ResultViewState.Timeout => "超时", ResultViewState.Cancelled => "已取消", ResultViewState.Skipped => "已跳过",
+        _ => throw new ArgumentOutOfRangeException(nameof(state))
     };
     private sealed class Entry(ResultPresentationNode node, Row row)
     {

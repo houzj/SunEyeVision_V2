@@ -38,7 +38,7 @@ public sealed class NativeAssistSample : Decorator,IDisposable
         var point=TypeRef.GeometryOf(GeometryKind.Point,new("design-assist-image",CoordinateDomain.Image,CoordinateUnit.Pixel));
         var rows=new List<(Port Port,FieldPresentation Presentation,ParameterSetting Value)>();
         void Add(Port port,string label,ParameterSetting initial,int? digits=2)
-        {rows.Add((port,new FieldPresentation(port.Id,label,"位置修正",rows.Count,FieldEditorKind.Scalar)
+        {rows.Add((port,new FieldPresentation(port.Id,label,"位置修正",rows.Count,FieldEditorKind.Scalar,null,null,DeclaredFieldTemplateKey.Boolean)
             {Layout=new("基本参数","位置修正",DecimalPlaces:digits)},initial));}
         Add(new(Assist.EnabledFieldId,DataType.Boolean,EditModes:FieldEditModes.Constant),"位置修正",new ConstantSetting(false));
         Add(new(Assist.ModeFieldId,DataType.Integer,EditModes:FieldEditModes.Constant),"选择方式",new ConstantSetting(0L));

@@ -135,5 +135,71 @@
       <EntryType>SunEyeVision.Tool.If.Wpf.IfEditorFactory</EntryType>
       <CompanionToolId>If</CompanionToolId><SharedAssembly>true</SharedAssembly>
     </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.CircleFind/SunEyeVision.Tool.CircleFind.csproj">
+      <ComponentId>SunEyeVision.Tool.CircleFind.Runtime</ComponentId>
+      <ToolId>CircleFind</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.CircleFind.Runtime.CircleFindTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.CircleFind/SunEyeVision.Tool.CircleFind.csproj">
+      <ComponentId>SunEyeVision.Tool.CircleFind.Wpf</ComponentId>
+      <ToolId>CircleFind</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.CircleFind.Wpf.CircleFindEditorFactory</EntryType>
+      <CompanionToolId>CircleFind</CompanionToolId><SharedAssembly>true</SharedAssembly>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.LineFind/SunEyeVision.Tool.LineFind.csproj">
+      <ComponentId>SunEyeVision.Tool.LineFind.Runtime</ComponentId>
+      <ToolId>LineFind</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.LineFind.Runtime.LineFindTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.LineFind/SunEyeVision.Tool.LineFind.csproj">
+      <ComponentId>SunEyeVision.Tool.LineFind.Wpf</ComponentId>
+      <ToolId>LineFind</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.LineFind.Wpf.LineFindEditorFactory</EntryType>
+      <CompanionToolId>LineFind</CompanionToolId><SharedAssembly>true</SharedAssembly>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.CircleCircleMeasure/SunEyeVision.Tool.CircleCircleMeasure.csproj">
+      <ComponentId>SunEyeVision.Tool.CircleCircleMeasure.Runtime</ComponentId>
+      <ToolId>CircleCircleMeasure</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.CircleCircleMeasure.Runtime.CircleCircleMeasureTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.CircleCircleMeasure/SunEyeVision.Tool.CircleCircleMeasure.csproj">
+      <ComponentId>SunEyeVision.Tool.CircleCircleMeasure.Wpf</ComponentId>
+      <ToolId>CircleCircleMeasure</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.CircleCircleMeasure.Wpf.CircleCircleMeasureEditorFactory</EntryType>
+      <CompanionToolId>CircleCircleMeasure</CompanionToolId><SharedAssembly>true</SharedAssembly>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.PointPointMeasure/SunEyeVision.Tool.PointPointMeasure.csproj">
+      <ComponentId>SunEyeVision.Tool.PointPointMeasure.Runtime</ComponentId>
+      <ToolId>PointPointMeasure</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.PointPointMeasure.Runtime.PointPointMeasureTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.PointPointMeasure/SunEyeVision.Tool.PointPointMeasure.csproj">
+      <ComponentId>SunEyeVision.Tool.PointPointMeasure.Wpf</ComponentId>
+      <ToolId>PointPointMeasure</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.PointPointMeasure.Wpf.PointPointMeasureEditorFactory</EntryType>
+      <CompanionToolId>PointPointMeasure</CompanionToolId><SharedAssembly>true</SharedAssembly>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.DataClassification/SunEyeVision.Tool.DataClassification.csproj">
+      <ComponentId>SunEyeVision.Tool.DataClassification.Runtime</ComponentId>
+      <ToolId>DataClassification</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.DataClassification.Runtime.DataClassificationTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.DataClassification/SunEyeVision.Tool.DataClassification.csproj">
+      <ComponentId>SunEyeVision.Tool.DataClassification.Wpf</ComponentId>
+      <ToolId>DataClassification</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.DataClassification.Wpf.DataClassificationEditorFactory</EntryType>
+      <CompanionToolId>DataClassification</CompanionToolId><SharedAssembly>true</SharedAssembly>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.MachineLearningClassifier/SunEyeVision.Tool.MachineLearningClassifier.csproj">
+      <ComponentId>SunEyeVision.Tool.MachineLearningClassifier.Runtime</ComponentId>
+      <ToolId>MachineLearningClassifier</ToolId><Role>Runtime</Role>
+      <EntryType>SunEyeVision.Tool.MachineLearningClassifier.Runtime.MachineLearningClassifierTool</EntryType>
+    </ProductToolComponent>
+    <ProductToolComponent Include="tools/SunEyeVision.MachineLearningClassifier/SunEyeVision.Tool.MachineLearningClassifier.csproj">
+      <ComponentId>SunEyeVision.Tool.MachineLearningClassifier.Wpf</ComponentId>
+      <ToolId>MachineLearningClassifier</ToolId><Role>Editor</Role>
+      <EntryType>SunEyeVision.Tool.MachineLearningClassifier.Wpf.MachineLearningClassifierEditorFactory</EntryType>
+      <CompanionToolId>MachineLearningClassifier</CompanionToolId><SharedAssembly>true</SharedAssembly>
+    </ProductToolComponent>
   </ItemGroup>
 </Project>

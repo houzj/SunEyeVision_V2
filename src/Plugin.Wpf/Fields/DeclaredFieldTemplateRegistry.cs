@@ -14,23 +14,24 @@ namespace SunEyeVision.Plugin.Wpf.Fields;
 /// </summary>
 public static class DeclaredFieldTemplateRegistry
 {
-    public const string NumericPlain = "Default";
-    public const string Integer = "Integer";
-    public const string Float = "Float";
-    public const string String = "String";
-    public const string FolderPath = "OpenFileDialog";
-    public const string CameraSelecter = "CameraSelecter";
-    public const string Boolean = "Boolean";
-    public const string BooleanTips = "BooleanTips";
-    public const string BooleanEye = "BooleanEye";
-    public const string Enumeration = "Enumeration";
-    public const string IntegerBettween = "IntegerBettween";
-    public const string FloatBettween = "FloatBettween";
-    public const string IntegerRadio = "IntegerRadio";
-    public const string Reference = "Reference";
-    public const string ImageSource = "EnumerationG";
+    // 键名统一由契约层给出，避免两处各写一份产生漂移。
+    public const string NumericPlain = DeclaredFieldTemplateKey.Default;
+    public const string Integer = DeclaredFieldTemplateKey.Integer;
+    public const string Float = DeclaredFieldTemplateKey.Float;
+    public const string String = DeclaredFieldTemplateKey.String;
+    public const string FolderPath = DeclaredFieldTemplateKey.FolderPath;
+    public const string CameraSelecter = DeclaredFieldTemplateKey.CameraSelecter;
+    public const string Boolean = DeclaredFieldTemplateKey.Boolean;
+    public const string BooleanTips = DeclaredFieldTemplateKey.BooleanTips;
+    public const string BooleanEye = DeclaredFieldTemplateKey.BooleanEye;
+    public const string Enumeration = DeclaredFieldTemplateKey.Enumeration;
+    public const string IntegerBettween = DeclaredFieldTemplateKey.IntegerBettween;
+    public const string FloatBettween = DeclaredFieldTemplateKey.FloatBettween;
+    public const string IntegerRadio = DeclaredFieldTemplateKey.IntegerRadio;
+    public const string Reference = DeclaredFieldTemplateKey.Reference;
+    public const string ImageSource = DeclaredFieldTemplateKey.ImageSource;
     /// <summary>组合槽占位：图像来源等由消费者在构造后挂接显式组合控件的字段（UseImageSourceSelector 等）。</summary>
-    public const string ComposedSlot = "Slot";
+    public const string ComposedSlot = DeclaredFieldTemplateKey.ComposedSlot;
 
     /// <summary>
     /// Resolves one declared field to the original VM-aligned template key.
@@ -59,43 +60,25 @@ public static class DeclaredFieldTemplateRegistry
             ||isNumericPair||hasIntegerRadio||inlineConstantReference||isDialogPrimary||presentation.Layout.DialogGroup is not null))
             throw new ArgumentException("State tips require an ordinary constant Boolean template.",nameof(presentation));
 
-        if (isNumericPair)
-        {
-            return port.Type == TypeRef.ScalarOf(ScalarKind.Int64) ? IntegerBettween : FloatBettween;
-        }
-
-        if (hasIntegerRadio)
-            return IntegerRadio;
-
+        // 原厂 ExternDisplayType：宿主在运行期把该行绑定成“常量|订阅”内联控件时，
+        // 用运行时键覆盖声明键（原件 ParamUserControl 的同名依赖属性就是这么做的）。
         if (inlineConstantReference)
             return Reference;
 
-        // Resource ports are VM reference rows. They must enter the reference
-        // template even when the current setting is unset; a resource text
-        // placeholder is not a visual substitute for the native source picker.
-        if (port.Type.Shape == ValueShape.Resource && (port.EditModes & FieldEditModes.Reference) != 0)
-            return Reference;
+        // 原厂 IntegerRadio 是独立节点类型：本方由宿主登记的单选选项声明该行，
+        // 因此这里取登记的键，而不是按端口类型推。
+        if (hasIntegerRadio)
+            return IntegerRadio;
 
-        // 仅引用字段（区域/图像等任意形态，对齐原编辑器引用模式分支）：订阅链接行。
-        if (port.EditModes == FieldEditModes.Reference)
-            return Reference;
+        // 原厂语义：声明直给模板键（XML 的 DisplayType）优先，平台不再推导。
+        // 键是否真的存在由 ParameterRowTemplateSelector 查资源树校验（找不到直接报错）。
+        if (presentation.DisplayType is { } declared)
+            return declared;
 
-        return presentation.Editor switch
-        {
-            FieldEditorKind.Scalar => ResolveScalar(port, presentation, numericSequence, isDialogPrimary),
-            FieldEditorKind.Choice => Enumeration,
-            FieldEditorKind.FolderPath => FolderPath,
-    FieldEditorKind.Camera => CameraSelecter,
-    FieldEditorKind.Reference => Reference,
-            // 对齐原编辑器：记录字段由行宿主展开子行（组合槽自渲染），不走行内模板。
-            FieldEditorKind.Record => ComposedSlot,
-            FieldEditorKind.Sequence => throw new NotSupportedException($"序列字段不支持行内模板：{port.Id}（{presentation.Editor}）。"),
-            FieldEditorKind.Geometry => throw new NotSupportedException($"几何字段不支持行内模板：{port.Id}（{presentation.Editor}）。"),
-            FieldEditorKind.Region => throw new NotSupportedException($"区域字段不支持行内模板：{port.Id}（{presentation.Editor}）。"),
-            FieldEditorKind.Image when port.Type == TypeRef.ResourceOf(ResourceKind.Image) && port.EditModes == FieldEditModes.Reference => ComposedSlot,
-            FieldEditorKind.Image => throw new NotSupportedException($"图像字段不支持行内模板：{port.Id}（{presentation.Editor}）。"),
-            _ => throw new NotSupportedException($"未注册的参数模板类型：{presentation.Editor}")
-        };
+        // 原厂 UserTempConverter 的语义：键只能由声明给出（DisplayType / ExternDisplayType）。
+        // 声明缺键属于声明错误，不是运行时可猜的情形——直接失败，不落 Default、不推导。
+        throw new ArgumentException(
+            $"字段 {presentation.FieldId} 未声明参数行模板键（原厂 DisplayType）。", nameof(presentation));
     }
 
     /// <summary>数值是否走原厂滑条模式（对齐原 NativeNumberPresenter.UsesOriginalModes 判定）。</summary>

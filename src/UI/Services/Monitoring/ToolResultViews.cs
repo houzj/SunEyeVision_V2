@@ -42,7 +42,8 @@ internal static class ToolResultViews
                 ExecutionStatus.NotExecuted=>ResultViewState.NotExecuted,ExecutionStatus.Running=>ResultViewState.Running,
                 ExecutionStatus.Success=>ResultViewState.Success,ExecutionStatus.PartialSuccess=>ResultViewState.PartialSuccess,
                 ExecutionStatus.Failed=>ResultViewState.Failed,ExecutionStatus.Timeout=>ResultViewState.Timeout,
-                ExecutionStatus.Cancelled=>ResultViewState.Cancelled,_=>throw new ArgumentOutOfRangeException(nameof(snapshot))
+                ExecutionStatus.Cancelled=>ResultViewState.Cancelled,ExecutionStatus.Skipped=>ResultViewState.Skipped,
+                _=>throw new ArgumentOutOfRangeException(nameof(snapshot))
             };
             return new ResultPublication(snapshot.Schema,
                 new(Identities.GetValue(snapshot,_=>new()).Id,snapshot.Identity,snapshot.SchemaRevision,snapshot.Schema.Fingerprint),

@@ -25,7 +25,8 @@ internal static class RootParameterCatalog
   {
    var port = item.Port;
    var presentation = item.Schema.Presentation?.Fields.SingleOrDefault(field => field.FieldId == port.Id)
-    ?? new FieldPresentation(port.Id, port.Id, "运行参数", 0, FieldEditorKind.Scalar);
+    ?? new FieldPresentation(port.Id, port.Id, "运行参数", 0, FieldEditorKind.Scalar, null, null,
+        DeclaredFieldTemplateKey.FromPort(port.Type, FieldEditorKind.Scalar));
    var adapter = new RootResourceProxyBinding(port.Id, port);
    var unavailable = !Supports(port.Type) && (port.EditModes & FieldEditModes.Reference) == 0
     ? "需要专用集合或资源编辑器" : null;

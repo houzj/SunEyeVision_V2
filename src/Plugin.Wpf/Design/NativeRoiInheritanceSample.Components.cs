@@ -66,14 +66,14 @@ public sealed partial class NativeRoiInheritanceSample
                 new KeyValuePair<string,ParameterSetting>("detect.annulus-source",new UnsetSetting())});
     private IEnumerable<(Port Port,FieldPresentation Presentation,ParameterSetting Value)> ComponentDeclarations()
     {
-        yield return(new("detect.inherit-way",DataType.Integer),new("detect.inherit-way","继承方式","来源组合",10,FieldEditorKind.Scalar),_root.Fields["detect.inherit-way"]);
+        yield return(new("detect.inherit-way",DataType.Integer),new("detect.inherit-way","继承方式","来源组合",10,FieldEditorKind.Scalar,null,null,DeclaredFieldTemplateKey.Enumeration),_root.Fields["detect.inherit-way"]);
         yield return(new("detect.annulus-source",RoiDeclarations.Shape,Required:false,EditModes:FieldEditModes.Reference),
-            new FieldPresentation("detect.annulus-source","圆环区域来源","来源组合",11,FieldEditorKind.Record){Layout=new("来源组合","来源组合",VisibleWhen:new("detect.inherit-way",2L))},_root.Fields["detect.annulus-source"]);
+            new FieldPresentation("detect.annulus-source","圆环区域来源","来源组合",11,FieldEditorKind.Record,null,null,DeclaredFieldTemplateKey.ComposedSlot){Layout=new("来源组合","来源组合",VisibleWhen:new("detect.inherit-way",2L))},_root.Fields["detect.annulus-source"]);
         foreach(var component in Components)
         {
             var id=ComponentId(component);
             yield return(new(id,DataType.Number,Required:false,Storage:NumericStorage.Float32,EditModes:FieldEditModes.Constant|FieldEditModes.Reference),
-                new FieldPresentation(id,AppLocalizationService.GetLang(component.Label),"来源组合",20+Array.IndexOf(Components,component),FieldEditorKind.Scalar){Layout=new("来源组合","来源组合",VisibleWhen:new("detect.inherit-way",(long)component.Way),DecimalPlaces:null)},_root.Fields[id]);
+                new FieldPresentation(id,AppLocalizationService.GetLang(component.Label),"来源组合",20+Array.IndexOf(Components,component),FieldEditorKind.Scalar,null,null,DeclaredFieldTemplateKey.Enumeration){Layout=new("来源组合","来源组合",VisibleWhen:new("detect.inherit-way",(long)component.Way),DecimalPlaces:null)},_root.Fields[id]);
         }
     }
     private static NativeIntegerRadioOptions InheritanceOptions()=>new(new[]{

@@ -90,25 +90,31 @@
 
   <!-- Integer/Float：原厂滑条行，未设置时切占位 -->
   <DataTemplate x:Key="Integer">
-    <localParamTab:LeftRightControl Height="32">
+    <localParamTab:LeftRightControl Height="32" ToolTip="{Binding ErrorA}">
       <localParamTab:LeftRightControl.RightContent>
         <Grid>
           <ContentControl ContentTemplate="{StaticResource Integer_Sub}" Content="{Binding}"
                           Visibility="{Binding NormalVisibilityA}"/>
           <ContentControl ContentTemplate="{StaticResource Unset_sub}" Content="{Binding}"
                           Visibility="{Binding UnsetVisibilityA}"/>
+          <!-- 行错误指示：底部一条红边，不改变 32 的行高；详情走 ToolTip。 -->
+          <Border Height="1" VerticalAlignment="Bottom" Background="Firebrick"
+                  Visibility="{Binding HasErrorA, Converter={StaticResource bool2VisibilityConverter}}"/>
         </Grid>
       </localParamTab:LeftRightControl.RightContent>
     </localParamTab:LeftRightControl>
   </DataTemplate>
   <DataTemplate x:Key="Float">
-    <localParamTab:LeftRightControl Height="32">
+    <localParamTab:LeftRightControl Height="32" ToolTip="{Binding ErrorA}">
       <localParamTab:LeftRightControl.RightContent>
         <Grid>
           <ContentControl ContentTemplate="{StaticResource Float_Sub}" Content="{Binding}"
                           Visibility="{Binding NormalVisibilityA}"/>
           <ContentControl ContentTemplate="{StaticResource Unset_sub}" Content="{Binding}"
                           Visibility="{Binding UnsetVisibilityA}"/>
+          <!-- 行错误指示：底部一条红边，不改变 32 的行高；详情走 ToolTip。 -->
+          <Border Height="1" VerticalAlignment="Bottom" Background="Firebrick"
+                  Visibility="{Binding HasErrorA, Converter={StaticResource bool2VisibilityConverter}}"/>
         </Grid>
       </localParamTab:LeftRightControl.RightContent>
     </localParamTab:LeftRightControl>

@@ -15,8 +15,8 @@ public abstract class NativeRoiProjection : IROI,IROIVisible
     private NativeRoiSession? _scope;
     protected RoiEditItem Accepted {get;private set;}
     private readonly Dictionary<string,double> _pending=new();
-    protected int ImageWidth {get;}
-    protected int ImageHeight {get;}
+    protected int ImageWidth {get; private set;}
+    protected int ImageHeight {get; private set;}
     public string Group=>Accepted.Group;
     /// <summary>Mask ROI keeps the original filled interaction appearance.</summary>
     public bool IsAvoid=>_scope?.IsAvoid==true;
@@ -34,6 +34,16 @@ public abstract class NativeRoiProjection : IROI,IROIVisible
     public ICommand DataChangedCommand {get;set;}
     protected NativeRoiProjection(NativeRoiSession scope,RoiEditItem item)
     {_scope=scope;Accepted=item;ImageWidth=scope.ImageWidth;ImageHeight=scope.ImageHeight;DataChangedCommand=new CommitCommand(this);}
+    /// <summary>
+    /// 常驻投影：不持有会话，只按节点 ROI 文档与当前显示尺寸归一化呈现。
+    /// 编辑时经 AttachScope 临时绑定会话；会话退役后仍保留对象（原厂 ROISelecter 常驻语义）。
+    /// </summary>
+    protected NativeRoiProjection(RoiEditItem item,int imageWidth,int imageHeight)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        if(imageWidth<=0||imageHeight<=0)throw new ArgumentException("常驻 ROI 投影需要有效图像尺寸。");
+        Accepted=item;ImageWidth=imageWidth;ImageHeight=imageHeight;DataChangedCommand=new CommitCommand(this);
+    }
     internal static Type ProjectionType(RoiEditItem item)=>item.Geometry.Get<string>("kind") switch
     {"rectangle"=>typeof(NativeBoxRoiProjection),"sector"=>typeof(NativeSectorRoiProjection),"annulus" when !item.Enabled=>typeof(NativeInheritedAnnulusProjection),"annulus" when !IsFullAnnulus(item.Geometry)=>typeof(NativeSectorRoiProjection),"annulus"=>typeof(NativeRingRoiProjection),"polygon"=>typeof(NativePolygonRoiProjection),_=>throw new NotSupportedException()};
     internal static bool IsFullAnnulus(RecordValue geometry)=>Math.Abs(Math.Abs(geometry.Get<double>("end-radians")-geometry.Get<double>("start-radians"))-2*Math.PI)<=1e-9;
@@ -45,6 +55,16 @@ public abstract class NativeRoiProjection : IROI,IROIVisible
         var type when type==typeof(NativeRingRoiProjection)=>new NativeRingRoiProjection(scope,item),
         _=>new NativePolygonRoiProjection(scope,item)
     };
+    /// <summary>节点级常驻投影工厂；无会话，编辑时再挂载。</summary>
+    public static NativeRoiProjection CreateResident(RoiEditItem item,int imageWidth,int imageHeight)
+        =>ProjectionType(item) switch
+        {
+            var type when type==typeof(NativeBoxRoiProjection)=>new NativeBoxRoiProjection(item,imageWidth,imageHeight),
+            var type when type==typeof(NativeSectorRoiProjection)=>new NativeSectorRoiProjection(item,imageWidth,imageHeight),
+            var type when type==typeof(NativeInheritedAnnulusProjection)=>new NativeInheritedAnnulusProjection(item,imageWidth,imageHeight),
+            var type when type==typeof(NativeRingRoiProjection)=>new NativeRingRoiProjection(item,imageWidth,imageHeight),
+            _=>new NativePolygonRoiProjection(item,imageWidth,imageHeight)
+        };
     protected bool CanStage=>_scope is {} scope&&scope.CanEdit(this);
     protected abstract double AcceptedValue(string key);
     protected double Value(string key)=>_pending.TryGetValue(key,out var value)?value:AcceptedValue(key);
@@ -85,7 +105,18 @@ public abstract class NativeRoiProjection : IROI,IROIVisible
     }
     internal void Install(RoiEditItem accepted,bool cancel){Accepted=accepted;if(cancel){_pending.Clear();PendingStamp=null;}OnInstalled(cancel);}
     public void Cancel(){_pending.Clear();PendingStamp=null;Notify();}
-    internal void Detach(){_scope=null;_pending.Clear();PendingStamp=null;OnDetached();PropertyChanged=null;}
+    /// <summary>会话退役只解除绑定；投影常驻，等待节点级服务重新挂载会话。</summary>
+    internal void Detach(){_scope=null;_pending.Clear();PendingStamp=null;}
+    /// <summary>把常驻投影挂到新会话；尺寸随当前图像帧更新。</summary>
+    internal void AttachScope(NativeRoiSession scope,int imageWidth,int imageHeight)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        if(_scope is not null&&!ReferenceEquals(_scope,scope))throw new InvalidOperationException("ROI 投影已绑定到另一会话。");
+        if(imageWidth<=0||imageHeight<=0)throw new ArgumentException("ROI 投影需要有效图像尺寸。");
+        _scope=scope;ImageWidth=imageWidth;ImageHeight=imageHeight;_pending.Clear();PendingStamp=null;
+    }
+    /// <summary>节点级生命周期结束才真正回收投影，解除原生控件订阅。</summary>
+    internal void Retire(){_scope=null;_pending.Clear();PendingStamp=null;OnDetached();PropertyChanged=null;}
     protected virtual void OnInstalled(bool cancel){}
     protected virtual void OnDetached(){}
     protected virtual IEnumerable<Action> AdditionalNotifications()=>Array.Empty<Action>();
@@ -108,6 +139,7 @@ public abstract class NativeRoiProjection : IROI,IROIVisible
 public sealed class NativeBoxRoiProjection : NativeRoiProjection,INormalizedRectROI
 {
     internal NativeBoxRoiProjection(NativeRoiSession scope,RoiEditItem item):base(scope,item){}
+    internal NativeBoxRoiProjection(RoiEditItem item,int imageWidth,int imageHeight):base(item,imageWidth,imageHeight){}
     internal override IReadOnlyList<NativeRoiField> Fields {get;}=new NativeRoiField[]{new("x",true),new("y",true),new("width",true),new("height",true),new("angle-degrees",false)};
     protected override IEnumerable<string> PropertyNames=>new[]{nameof(Width),nameof(Height),nameof(Angle)};
     protected override IEnumerable<string> GeometryKeys=>new[]{"width","height","angle-degrees"};
@@ -129,6 +161,7 @@ public sealed class NativeBoxRoiProjection : NativeRoiProjection,INormalizedRect
 public sealed class NativeSectorRoiProjection : NativeRoiProjection,INormalizedSectorROI
 {
     internal NativeSectorRoiProjection(NativeRoiSession scope,RoiEditItem item):base(scope,item){}
+    internal NativeSectorRoiProjection(RoiEditItem item,int imageWidth,int imageHeight):base(item,imageWidth,imageHeight){}
     internal override IReadOnlyList<NativeRoiField> Fields {get;}=new NativeRoiField[]{new("x",true),new("y",true),new("outer-radius",true),new("inner-radius",true),new("begin",false),new("sweep",false)};
     protected override IEnumerable<string> PropertyNames=>new[]{nameof(Radius),nameof(MinRadius),nameof(StartAngle),nameof(EndAngle),nameof(BeginAngle),nameof(AngleRange)};
     protected override IEnumerable<string> GeometryKeys=>new[]{"outer-radius","inner-radius","start-radians","end-radians"};
@@ -195,6 +228,7 @@ public sealed class NativeSectorRoiProjection : NativeRoiProjection,INormalizedS
 public sealed class NativeRingRoiProjection : NativeRoiProjection,INormalizedCircleROI
 {
     internal NativeRingRoiProjection(NativeRoiSession scope,RoiEditItem item):base(scope,item){}
+    internal NativeRingRoiProjection(RoiEditItem item,int imageWidth,int imageHeight):base(item,imageWidth,imageHeight){}
     internal override IReadOnlyList<NativeRoiField> Fields {get;}=new NativeRoiField[]{new("x",true),new("y",true),new("outer-radius",true),new("inner-radius",true)};
     protected override IEnumerable<string> PropertyNames=>new[]{nameof(Radius),nameof(MinRadius)};
     // The preserved formal full-circle endpoints also participate in host snapshot identity.
@@ -228,6 +262,8 @@ public sealed class NativePolygonRoiProjection : NativeRoiProjection,INormalized
     private long _topology;
     public long TopologyGeneration=>_topology;
     internal NativePolygonRoiProjection(NativeRoiSession scope,RoiEditItem item):base(scope,item)
+    {_points=new(this,++_topology,Normalized());}
+    internal NativePolygonRoiProjection(RoiEditItem item,int imageWidth,int imageHeight):base(item,imageWidth,imageHeight)
     {_points=new(this,++_topology,Normalized());}
     internal override IReadOnlyList<NativeRoiField> Fields=>Enumerable.Range(0,RoiGeometryEditing.Vertices(Accepted.Geometry).Length)
         .SelectMany(index=>new[]{new NativeRoiField(Key(index,true),true),new NativeRoiField(Key(index,false),true)}).ToArray();

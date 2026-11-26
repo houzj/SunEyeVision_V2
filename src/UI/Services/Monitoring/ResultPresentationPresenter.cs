@@ -245,14 +245,14 @@ public sealed class ResultPresentationPresenter : IDisposable
         foreach (var node in model.Outputs)
         {if(!Current(generation)){Abandon(generation);return;}var entry=GetEntry(node,1);if(entry is null||!Current(generation))return;_outputs.Add(entry);}
         _root.IsGroup=_outputs.Count>0;
-        if(_outputs.Count==0&&model.State is ResultViewState.Declaration or ResultViewState.NotExecuted)_root=null;
+        if(_outputs.Count==0&&model.State is ResultViewState.Declaration or ResultViewState.NotExecuted or ResultViewState.Skipped)_root=null;
         UpdateRootMetadata(names, bindings,generation);
     }
 
     private void InstallExecutionSummary(ResultViewState state,double? elapsed)
     {
         if(_root is null)return;
-        var available=state is not (ResultViewState.Declaration or ResultViewState.NotExecuted);
+        var available=state is not (ResultViewState.Declaration or ResultViewState.NotExecuted or ResultViewState.Skipped);
         _root.DisplayValue=null;
         // 工具自身已按原厂输出「模块状态」（ModuStatus 0/1），汇总行改用「执行状态」避免同名两行不同义。
         _summaryRows.Add(new FlatResultRow{Key="@execution/status",DisplayName="执行状态",DisplayValue=available?StatusLabel(state):null,Level=1});
@@ -384,7 +384,8 @@ public sealed class ResultPresentationPresenter : IDisposable
         ResultViewState.Declaration=>"未运行",ResultViewState.NotExecuted=>"未运行",ResultViewState.Running=>"运行中",
         ResultViewState.Success=>"成功",ResultViewState.PartialSuccess=>"部分成功",
         ResultViewState.Failed=>"失败",ResultViewState.Timeout=>"超时",
-        ResultViewState.Cancelled=>"已取消",_=>throw new ArgumentOutOfRangeException(nameof(state))
+        ResultViewState.Cancelled=>"已取消",ResultViewState.Skipped=>"已跳过",
+        _=>throw new ArgumentOutOfRangeException(nameof(state))
     };
     // 值占位使用：值不可用时需要带上原因，否则用户只看到"失败"不知道为何没有值。
     private string StatusText(ResultViewState state)
@@ -402,7 +403,8 @@ public sealed class ResultPresentationPresenter : IDisposable
             ResultPresentationValueState.Missing => "missing",
             ResultPresentationValueState.Null => "null",
             ResultPresentationValueState.ResourcePending when node.Declaration.Resource==ResourceKind.Image &&
-                _model!.State is ResultViewState.Declaration or ResultViewState.NotExecuted or ResultViewState.Success or ResultViewState.PartialSuccess => "",
+                _model!.State is ResultViewState.Declaration or ResultViewState.NotExecuted or ResultViewState.Skipped
+                    or ResultViewState.Success or ResultViewState.PartialSuccess => "",
             ResultPresentationValueState.ResourcePending => _model!.State is ResultViewState.Success or ResultViewState.PartialSuccess?"资源待接入":StatusText(_model.State),
             ResultPresentationValueState.Unavailable => _model!.State is ResultViewState.Success or ResultViewState.PartialSuccess ? "值不可用" : StatusText(_model.State),
             _ => node.Declaration.Shape switch

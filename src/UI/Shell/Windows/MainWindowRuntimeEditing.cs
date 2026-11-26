@@ -77,7 +77,7 @@ public partial class MainWindowViewModel
         }
         // 提交会重建节点实例：先把选择重新绑定到当前实例，再走后续引用判定，避免选择被误判失效。
         if (SelectedNode is {} stale && FindCurrentNode(stale.Id) is {} rebound && !ReferenceEquals(rebound, stale))
-        { SelectedNode = rebound; return; }
+        { SelectedNode = rebound; SyncNodeRoiEditing(); return; }
         ReleaseActiveResultView();
         if(!preserveStablePresentation)ClearResultDisplay();
         if (node is null) { HasDataAnalysisControl=false; SelectedNodeDataAnalysisControl=null; ClearFormalImageSourceSelection(); NotifyResultHistoryChanged(); return; }

@@ -50,6 +50,8 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
     private IResultPublication? _displayDefinitionNotice;
     internal ResultImagePane InputPane=>_input.Image;
     internal ResultImagePane OutputPane=>_output.Image;
+    /// <summary>输出视口：节点级常驻 ROI 服务绑定到它。</summary>
+    public SunEyeVision.Plugin.Wpf.Presenters.Display.NativeResultViewport OutputRoiViewport=>_output.Image.Viewport;
     internal ResultWorkspacePresenter(MainWindowViewModel main,ResultWorkspaceShell shell)
     {
         _main=main;_shell=shell;
@@ -263,18 +265,16 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
         ++_selectionGeneration;
         bool Current()=>!_disposed&&epoch==_epoch&&ReferenceEquals(_plan,plan)&&pane.Generation==paneGeneration;
         if(!Current())return;
-        // The output pane is a shared result surface: changing the selected
-        // image source replaces only its background frame. Keep the current
-        // result scene alive until the new frame has a valid receipt and the
-        // replacement scene is ready; disposing it here creates the observed
-        // image+table-without-graphics gap during source navigation.
+        // 原厂 UpdateModuleViewResultShow：图像与形状（含轮廓点）一次性重建。
+        // 换帧时保留结果场景（数据表不清），但图形层不保留——否则新图配旧点、
+        // 下一帧再换新点，用户看到跳变；图形层由下方同一调用栈的同步重建立即填回。
         var preserveResultScene=ReferenceEquals(pane,_output);
         if(!preserveResultScene)pane.ClearDisplay();
         if(!Current())return;
         if(source is null||source.Publication is null&&source.VariableImage is null){pane.Image.Clear();return;}
         if(!source.HasImageValue){pane.Image.Clear();return;}
         bool SourceCurrent()=>Current()&&source.Current()&&Current();
-        var preserveShapeLayers=preserveResultScene;
+        var preserveShapeLayers=false;
         var presented=source.VariableImage is {} variable
             ? pane.Image.TryPresentPreview(variable,SourceCurrent,out var error,filePreview:false,preserveShapeLayers:preserveShapeLayers)
             : pane.Image.TryPresent(source.Publication!,source.Reference!,source.Reference!.ScopeId!,SourceCurrent,out error,preserveShapeLayers);
@@ -282,7 +282,13 @@ internal sealed partial class ResultWorkspacePresenter:IDisposable
             _main.AddLog("图像来源未显示："+source.DisplayName+"，"+error);
         else if(Current())RefreshImageName(pane,source);
         if(presented&&Current())QueueRoiRebind();
-        if(Current())QueueResultDisplay();
+        if(Current())
+        {
+            // 图像已同步换帧；轮廓点等结果图形必须在同一 UI 调用栈重建，
+            // 否则 Render 优先级的异步重建会让"新图+旧点"先渲染一帧，形成跳变。
+            _displayRefresh?.Abort();_displayRefresh=null;++_displayRequest;
+            RefreshResultDisplay();
+        }
     }
     private void QueueRoiRebind()
     {

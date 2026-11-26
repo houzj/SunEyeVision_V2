@@ -44,6 +44,12 @@ public sealed class RuntimeDirectorySnapshot
         _runtimes.Values.Select(entry => entry.Registration.EntryType.Assembly).Distinct().ToArray();
     public bool Contains(string toolId)=>_runtimes.ContainsKey(toolId);
     public ToolCatalogDescriptor? GetCatalog(string toolId)=>_runtimes.TryGetValue(toolId,out var entry)?entry.Catalog:null;
+    /// <summary>
+    /// 宿主侧按 ToolId 取已准入定义（结果视图 ROI 编辑声明等宿主接缝使用）；
+    /// 未注册的工具返回 null，不做名称猜测或回退。
+    /// </summary>
+    public IToolDefinition? TryCreateDefinition(string toolId)
+        => string.IsNullOrWhiteSpace(toolId)||!_runtimes.ContainsKey(toolId)?null:CreateDefinition(toolId);
     internal IToolDefinition CreateDefinition(string toolId)
     {
         using var creation=AcquireInvocation();

@@ -93,15 +93,18 @@ public partial class App : System.Windows.Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         ResetStartupTrace();
+        WriteStartupMarker("after-reset");
         // First-run directory dialogs may temporarily be the only window; do not exit when they close.
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
         // 与 VM 原件一致：工作目录固定为程序目录，保证从快捷方式、文件关联或任意目录启动时相对路径可用。
         Directory.SetCurrentDirectory(AppContext.BaseDirectory);
         try
         {
+            WriteStartupMarker("before-application-lifetime-gate");
             _runningApplicationRegistration = ApplicationLifetimeGate.TryRegister();
             if (_runningApplicationRegistration == null)
                 throw new InvalidOperationException("SunEyeVision 正在卸载或维护，请等待操作结束后再启动。");
+            WriteStartupMarker("after-application-lifetime-gate");
         }
         catch (Exception ex)
         {
@@ -161,8 +164,10 @@ public partial class App : System.Windows.Application
         }
         try
         {
+            WriteStartupMarker("before-argument-parse");
             StartupLaunchContext.Current = StartupLaunchContext.Parse(e.Args);
             _requestedSolutionPath = StartupLaunchContext.Current.SolutionPath;
+            WriteStartupMarker("after-argument-parse");
         }
         catch (Exception ex)
         {
@@ -172,11 +177,15 @@ public partial class App : System.Windows.Application
         }
         try
         {
+            WriteStartupMarker("before-single-instance-register");
             _singleInstance = SingleInstanceCoordinator.TryStart(HandleInstanceActivationAsync, StartupLaunchContext.Current.InstanceIdentity);
+            WriteStartupMarker(_singleInstance == null ? "after-single-instance-register-null" : "after-single-instance-register");
             if (_singleInstance == null)
             {
                 _startupRejected = true;
+                WriteStartupMarker("before-single-instance-forward");
                 var activation = await SingleInstanceCoordinator.SendAsync(_requestedSolutionPath, identity: StartupLaunchContext.Current.InstanceIdentity);
+                WriteStartupMarker($"after-single-instance-forward-accepted={activation.Accepted}");
                 if (!activation.Accepted)
                     ThemeMessageDialog.Show(activation.Message, "SunEyeVision 已在运行",
                         MessageBoxButton.OK, ThemeMessageDialog.MessageIcon.Info);
@@ -585,6 +594,11 @@ public partial class App : System.Windows.Application
         ApplyToolboxPreset(mainWindow);
         if (!openedByRequest && !StartPreferences.HideStartPage)
             await ShowStartPageAsync(mainWindow);
+        else if (!mainWindow.IsVisible)
+            // 引导页被隐藏或直接打开方案失败时没有走 ShowStartPageAsync 的收尾，
+            // 必须在这里显式显示工作区，否则进程持有单实例锁但没有任何可见窗口，
+            // 后续启动会被单实例转发拒绝（exit=2）。
+            ShowMainWindow(mainWindow, "start page hidden or solution request");
     }
 
     /// <summary>
@@ -914,6 +928,24 @@ public partial class App : System.Windows.Application
         catch
         {
             // 删除失败时保留旧文件，后续追加仍可定位本次启动。
+        }
+    }
+
+    /// <summary>
+    /// 启动早期不能依赖 StartupLaunchContext 或日志服务；用固定路径留下最小路径证据。
+    /// </summary>
+    private static void WriteStartupMarker(string stage)
+    {
+        try
+        {
+            var directory = Path.GetDirectoryName(StartupTracePath);
+            if (!string.IsNullOrWhiteSpace(directory)) Directory.CreateDirectory(directory);
+            File.AppendAllText(StartupTracePath,
+                $"{DateTime.Now:O} [StartupMarker] {stage}{Environment.NewLine}");
+        }
+        catch
+        {
+            // 启动标记只用于诊断，不能改变启动语义。
         }
     }
 

@@ -1,0 +1,182 @@
+<UserControl x:Class="SunEyeVision.Plugin.TemplateStudio.Views.TemplateConfigPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FocusVisualStyle="{x:Null}">
+    <!--
+        模板列表面板。结构逐条对应原厂 FeatureMatchCommonControl/base/featurematchconfigpanal.xaml:36-224：
+          Border(#FFEADFDE,1,CornerRadius=1, 背景 #FFFCFCFC)
+            Grid 两列 * / 120
+              列0  Border(0,0,1,0) → Grid(Margin=12,0,12,0) 两行 33 / *
+                Row0 UniformGrid Columns=2：创建 / 载入
+                Row1 列表（顶部 Border(0,1,0,0)）
+              列1  StackPanel：98×98 imageView + 编辑模板 + 删除所有模板（Margin=7）
+        行内四操作对应原厂 :147/153/159/165（上移 / 下移 / 删除 / 勾选），
+        图标与命令名都沿用原厂资源。
+        本文件不出现任何 Click：交互全部走命令绑定（与原厂一致）。
+    -->
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/SunEyeVision.Plugin.Wpf;component/Themes/Native/Composition/Commands/BottomCommands.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <Style x:Key="PanelIconButton" TargetType="Button">
+                <Setter Property="Height" Value="20" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="HorizontalContentAlignment" Value="Left" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter VerticalAlignment="Center" />
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- 行内操作按钮：原厂 ImageButtonStyle（高度 24、透明底、无边框）。 -->
+            <Style x:Key="RowIconButton" TargetType="Button">
+                <Setter Property="Height" Value="24" />
+                <Setter Property="Width" Value="24" />
+                <Setter Property="Background" Value="#00FFFFFF" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Border BorderBrush="#FFEADFDE" BorderThickness="1" CornerRadius="1" Background="#FFFCFCFC"
+            HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="120" />
+            </Grid.ColumnDefinitions>
+
+            <!-- ── 列0：操作条 + 列表 ── -->
+            <Border Grid.Column="0" BorderBrush="#FFEADFDE" BorderThickness="0,0,1,0"
+                    UseLayoutRounding="True" SnapsToDevicePixels="True">
+                <Grid Margin="12,0,12,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="33" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <UniformGrid Grid.Row="0" Columns="2">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Style="{StaticResource PanelIconButton}" Command="{Binding CreateCommand}"
+                                    ToolTip="创建模板">
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/WorkspaceControls/resources/fm_ic_creat_normal.png" />
+                                    <TextBlock Text="创建" Padding="6,0,0,0" Foreground="#FF808080" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Style="{StaticResource PanelIconButton}" Command="{Binding LoadCommand}"
+                                    ToolTip="载入模板工程">
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Input/WorkspaceControls/resources/fm_ic_load_normal.png" />
+                                    <TextBlock Text="载入" Padding="6,0,0,0" Foreground="#FF808080" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </UniformGrid>
+
+                    <Border Grid.Row="1" BorderBrush="#FFEADFDE" BorderThickness="0,1,0,0">
+                        <ListView x:Name="ModelList" FocusVisualStyle="{x:Null}" BorderThickness="0"
+                                  Background="Transparent" FontSize="14" Foreground="#FF666666"
+                                  HorizontalContentAlignment="Stretch"
+                                  ItemsSource="{Binding Models}"
+                                  SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}">
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="Height" Value="30" />
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                    <Setter Property="Padding" Value="0" />
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Height="30" Background="Transparent">
+                                        <!-- 原厂 GridViewColumn 三列固定宽 28 / 92 / 106。 -->
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="28" />
+                                            <ColumnDefinition Width="92" />
+                                            <ColumnDefinition Width="106" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding Index}" Foreground="DimGray"
+                                                   VerticalAlignment="Center" Margin="4,0,0,0" />
+                                        <TextBox Grid.Column="1"
+                                                 Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                 BorderThickness="0" Background="Transparent" MinWidth="80"
+                                                 MaxLength="63" Foreground="DimGray"
+                                                 VerticalContentAlignment="Center" />
+                                        <!-- 原厂 :136-168：1px 分隔线穿插四个操作位。 -->
+                                        <Grid Grid.Column="2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="1" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="1" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="1" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="1" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Button Grid.Column="1" Style="{StaticResource RowIconButton}"
+                                                    ToolTip="上移"
+                                                    Command="{Binding DataContext.MoveUpCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                                    CommandParameter="{Binding}">
+                                                <Image Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/ParameterPresentation/resources/特征模板_ic_排序上_normal.png" />
+                                            </Button>
+                                            <Button Grid.Column="3" Style="{StaticResource RowIconButton}"
+                                                    ToolTip="下移"
+                                                    Command="{Binding DataContext.MoveDownCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                                    CommandParameter="{Binding}">
+                                                <Image Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/ParameterPresentation/resources/特征模板_ic_排序下_normal.png" />
+                                            </Button>
+                                            <Button Grid.Column="5" Style="{StaticResource RowIconButton}"
+                                                    ToolTip="删除模板"
+                                                    Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                                    CommandParameter="{Binding}">
+                                                <Image Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/ParameterPresentation/resources/delete_normal.png" />
+                                            </Button>
+                                            <!-- 原厂 select：勾选后加入搜索列表（IsSelected），与眼睛可见性不同。 -->
+                                            <CheckBox Grid.Column="7" Height="24" Background="#00FFFFFF"
+                                                      VerticalAlignment="Center" ToolTip="加入搜索列表"
+                                                      IsChecked="{Binding Selected, Mode=TwoWay}"
+                                                      Command="{Binding DataContext.SelectedCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                                      CommandParameter="{Binding}" />
+                                        </Grid>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- ── 列1：预览 + 底部按钮（原厂 :209-212，Margin=7） ── -->
+            <StackPanel Grid.Column="1">
+                <Image Source="{Binding Preview}" Margin="11,11,11,0" Width="98" Height="98" Stretch="Uniform" />
+                <Button Content="编辑模板" Height="24" Width="98" VerticalAlignment="Top" Margin="7"
+                        Command="{Binding EditCommand}" />
+                <Button Content="删除所有模板" Height="24" Width="98" VerticalAlignment="Top" Margin="7"
+                        Command="{Binding DeleteAllCommand}" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

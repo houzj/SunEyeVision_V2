@@ -37,16 +37,17 @@ public static class NumericStorageRules
             IEnumerable<object?> items=value switch { SequenceValue sequence=>sequence, Array array when array.Rank==1=>array.Cast<object?>(), _=>throw new ArgumentException("A declared sequence is required.") };
             foreach(var item in items)EnsureFits(item,storage);
         }
-        else EnsureFits(value,storage);
+        else EnsureFits(value,storage,port);
     }
-    public static object EnsureFits(object? value,NumericStorage storage)
+    public static object EnsureFits(object? value,NumericStorage storage,Port? port=null)
     {
         if(!Enum.IsDefined(storage))throw new ArgumentOutOfRangeException(nameof(storage));
+        var owner=port is null?"":$"（字段 {port.Id}）";
         if(IsInteger(storage))
         {
             var (minimum,maximum)=IntegerRange(storage);
             if(value is not long integer || integer<minimum || integer>maximum)
-                throw new OverflowException($"Value is outside the declared {storage} range.");
+                throw new OverflowException($"Value is outside the declared {storage} range{owner}.");
         }
         else if(value is not double number || !double.IsFinite(number) ||
             storage==NumericStorage.Float32 && (!float.IsFinite((float)number) || (double)(float)number!=number))

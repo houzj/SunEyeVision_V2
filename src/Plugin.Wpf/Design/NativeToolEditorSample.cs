@@ -26,7 +26,7 @@ public sealed class NativeToolEditorSample:Decorator,IDisposable
     {
         var pages=new[]{"基本参数","运行参数","结果显示"};
         Fields=new(Enumerable.Range(0,24).Select(index=>(new Port("sample."+index,DataType.Boolean),
-            new FieldPresentation("sample."+index,"独立示例 "+(index%8+1),"控件组合",index,FieldEditorKind.Scalar)
+            new FieldPresentation("sample."+index,"独立示例 "+(index%8+1),"控件组合",index,FieldEditorKind.Scalar,null,null,DeclaredFieldTemplateKey.Float)
             {Layout=new(pages[index/8],"控件组合")},(ParameterSetting)new ConstantSetting(index%2==0))),_=>{});
         Frame.EditorContent=Fields;Frame.BindCommands(Commands);Frame.Loaded+=OnLoaded;Fields.PageChanged+=OnPageChanged;OnPageChanged();Child=Frame;
     }

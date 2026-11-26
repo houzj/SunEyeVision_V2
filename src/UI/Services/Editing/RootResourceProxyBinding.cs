@@ -8,7 +8,7 @@ namespace SunEyeVision.UI.Services.Editing;
 internal sealed record RootResourceProxyBinding(string StoragePath, Port Port)
 {
  internal ConfigurationFieldAccessor Field(string display, NodeConfigurationEditDraft draft) =>
-  new(Port, new(Port.Id, display, "输入订阅", 0, FieldEditorKind.Scalar), StoragePath,
+  new(Port, new(Port.Id, display, "输入订阅", 0, FieldEditorKind.Scalar, null, null, DeclaredFieldTemplateKey.Reference), StoragePath,
    () => Literal(draft), value => Write(draft, new ConstantSetting(value)));
  internal ParameterSetting Read(NodeConfigurationEditDraft draft) => draft.Configuration.Fields.Read(StoragePath);
  internal void Write(NodeConfigurationEditDraft draft, ParameterSetting setting) =>

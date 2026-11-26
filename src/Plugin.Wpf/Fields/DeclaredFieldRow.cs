@@ -241,9 +241,22 @@ public sealed partial class DeclaredFieldRow : ContentControl, IDisposable, IPar
                     minimum = -double.MaxValue;
                     maximum = double.MaxValue;
                 }
+                else if (key == DeclaredFieldTemplateRegistry.Float)
+                {
+                    // 浮点行没有显式边界即不设限（整数行才由存储精度定范围）。
+                    minimum = -double.MaxValue;
+                    maximum = double.MaxValue;
+                }
                 else
                 {
-                    var range = NumericStorageRules.IntegerRange(NumericStorageRules.Effective(_port.Type, _port.Storage)!.Value);
+                    // 原厂 Integer 节点即 int32：未声明存储精度时按 Int32 处理。
+                    var storage = NumericStorageRules.Effective(_port.Type, _port.Storage)
+                        ?? NumericStorage.Int32;
+                    if (storage is not (NumericStorage.Int32 or NumericStorage.Int64))
+                        throw new InvalidOperationException(
+                            $"字段 {_port.Id} 的模板键是 {key}，但端口类型 {_port.Type} 的存储精度是 {storage}；" +
+                            "整数行必须声明 Int32/Int64 存储（原厂 Integer 节点即 int32）。");
+                    var range = NumericStorageRules.IntegerRange(storage);
                     minimum = range.Minimum;
                     maximum = range.Maximum;
                 }
@@ -379,6 +392,9 @@ public sealed partial class DeclaredFieldRow : ContentControl, IDisposable, IPar
         if (_disposed)
             return;
         ProjectTemplate();
+        // 错误态投影给模板：行校验失败时由平台模板做视觉指示（工具不再自绘提示）。
+        _model.Notify(nameof(FieldRowModel.ErrorA));
+        _model.Notify(nameof(FieldRowModel.HasErrorA));
         _projectImageSourceSelection?.Invoke();
         Changed?.Invoke();
     }

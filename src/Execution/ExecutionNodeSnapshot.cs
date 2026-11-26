@@ -27,9 +27,11 @@ public sealed class ExecutionNodeSnapshot
             ?? throw new InvalidOperationException("工具运行资源键缺失。")).ToArray()));
         var projection = (definition as SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultPresentationProvider)?.ResultProjection;
         HasResultDisplay = definition is SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultDisplayProvider;
-        RequiredDisplayOutputs = Array.AsReadOnly((definition as SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultDisplayProvider)
-            ?.ResultDisplay.RequiredOutputs.Select(request => new OutputValueRequest(request.PortId, request.FieldPath)).ToArray()
-            ?? Array.Empty<OutputValueRequest>());
+        // 轮廓点是系统类型：工具定义只声明出口端口，宿主按统一契约请求该输出。
+        RequiredDisplayOutputs = Array.AsReadOnly(
+            definition is SunEyeVision.Plugin.Contracts.Results.Presentation.IToolResultOutlineDeclaration outline
+                ? new[] { new OutputValueRequest(outline.OutlinePortId) }
+                : Array.Empty<OutputValueRequest>());
         foreach (var request in RequiredDisplayOutputs) request.Validate(schema);
         var shown = projection?.Kind == SunEyeVision.Plugin.Contracts.Results.Presentation.ResultProjectionKind.PropertyList
             ? projection.Columns.Where(column => column.Value is not null).Select(column => column.Value!.PortId).ToHashSet(StringComparer.Ordinal) : null;

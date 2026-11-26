@@ -22,7 +22,6 @@ public sealed partial class NativeResultViewport
     private RoiShapeLayer? _roiShapes;
     private long _roiVersion, _roiRevision, _roiRequest;
     private bool _roiResources;
-
     /// <summary>Borrow one session on this actual frame. The lease owns interactions, never the session or image.</summary>
     public INativeRoiEditLease BeginRoiEditing(NativeResultFrameReceipt receipt, NativeRoiSession session, Func<bool> isCurrent)
     {
@@ -44,6 +43,9 @@ public sealed partial class NativeResultViewport
         var candidate = new NativeRoiAttachment(this, receipt, isCurrent);
         if (request != _roiRequest || version != _roiVersion || !Current(receipt) || request != _roiRequest || version != _roiVersion) { candidate.Dispose(); throw new NativeRoiLeaseRetiredException("ROI编辑接纳已过期。"); }
         _roiAttachment = candidate; _roiShapes = new(this); _shapeLayers.Add(_roiShapes);
+        // 原件 SetRoiVisible(IsOpenParams=true)：交互会话接管即显示 ROI 层。
+        // Initialize 读取 ROIVisible 计算命中测试，必须先打开。
+        _view.ROIVisible = true;
         try
         {
             candidate.Initialize(); candidate.Bind(session);
@@ -56,6 +58,25 @@ public sealed partial class NativeResultViewport
             try { candidate.Dispose(); } catch (Exception cleanup) { throw new AggregateException(failure, cleanup); }
             throw;
         }
+    }
+    /// <summary>节点级常驻 ROIList：交互会话未接管时始终绑定；会话占用让位，退役后恢复。</summary>
+    private IList? _residentRoiRows;
+    public void SetResidentRoiRows(IList rows)
+    {
+        ArgumentNullException.ThrowIfNull(rows);
+        _residentRoiRows = rows;
+        if (_roiAttachment is null && !_disposed) _view.ROIList = rows;
+    }
+    public void ClearResidentRoiRows(IList rows)
+    {
+        if (!ReferenceEquals(_residentRoiRows, rows)) return;
+        _residentRoiRows = null;
+        if (_roiAttachment is null && !_disposed) { _view.ROIList = null; _view.ROIVisible = false; _view.ROIHitTestVisible = false; }
+    }
+    private void RestoreResidentRoi()
+    {
+        if (_disposed || _roiAttachment is not null) return;
+        _view.ROIList = _residentRoiRows;
     }
     internal bool IsFrameCurrent(NativeResultFrameReceipt receipt) => Current(receipt);
     internal bool OwnsRoi(NativeRoiAttachment attachment) => !_disposed && ReferenceEquals(_roiAttachment, attachment);
@@ -82,7 +103,11 @@ public sealed partial class NativeResultViewport
         var version = ++_roiVersion; var attachment = _roiAttachment; _roiAttachment = null;
         var shapes = _roiShapes; _roiShapes = null; _roiRevision = 0;
         ParameterCleanup.Run(new Action[] { () => attachment?.Dispose(),
-            () => { if (version == _roiVersion && _roiAttachment is null) _view.ROIList = null; }, () => shapes?.Dispose() });
+            // 原厂 SetRoiVisible(IsOpenParams=false)：关窗只切可见性，ROIList 常驻不拆。
+            // 投影对象由节点级生命周期持有；这里只释放交互/帧租约与结果图形叠加层。
+            () => { if (version == _roiVersion && _roiAttachment is null && !_disposed)
+                    { RestoreResidentRoi(); _view.ROIVisible = false; _view.ROIHitTestVisible = false; } },
+            () => shapes?.Dispose() });
     }
     private void EnsureRoiResources()
     {

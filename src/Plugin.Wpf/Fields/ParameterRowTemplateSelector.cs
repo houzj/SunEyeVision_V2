@@ -21,8 +21,12 @@ public sealed class ParameterRowTemplateSelector : DataTemplateSelector
             throw new ArgumentException("参数行模板选择器只接受 FieldRowModel 行视图模型。", nameof(item));
 
         var host = (FrameworkElement)container;
+        // 原厂查找顺序：宿主（平台）资源优先，其次才是合并进来的工具字典。
         var template = host.TryFindResource(model.TemplateKey) as DataTemplate
-            ?? throw new InvalidOperationException($"未声明的原参数行模板：{model.TemplateKey}（字段 {model.FieldId}）");
+            ?? ParameterTemplateResources.Find(model.TemplateKey)
+            ?? throw new InvalidOperationException(
+                $"未声明的原参数行模板：{model.TemplateKey}（字段 {model.FieldId}）" +
+                "；工具自定义模板需按约定路径贡献 DataTemplate/ParamUserControlDataTemplate.xaml，或显式登记。");
         return template;
     }
 }

@@ -302,7 +302,7 @@ namespace SunEyeVision.UI.Shell.Windows
             set
             {
                 if (value is not null && !OwnsSelectedDocumentNode(value)) throw new InvalidOperationException("节点不属于当前实际方案与流程。");
-                if (SetSelectedNodeIdentity(value)) RefreshFormalNodeSelection();
+                if (SetSelectedNodeIdentity(value)) { RefreshFormalNodeSelection(); SyncNodeRoiEditing(); }
             }
         }
 
@@ -621,6 +621,20 @@ SplitterPosition = position;
         public ICommand ShowCommunicationManagerCommand { get; }
 
         private readonly SunEyeVision.Plugin.Runtime.RuntimeDirectorySnapshot _directory;
+        /// <summary>节点级常驻 ROI 投影服务：按选中节点持有 ROIList，窗口开合只切可见性。</summary>
+        internal SunEyeVision.UI.Services.Editing.NodeRoiEditingService? NodeRoiEditing { get; private set; }
+        internal void AttachNodeRoiEditing(SunEyeVision.Plugin.Wpf.Presenters.Display.NativeResultViewport viewport)
+        {
+            NodeRoiEditing?.Dispose();
+            NodeRoiEditing = new(() => DocumentManager.CurrentSession, _directory, viewport);
+            SyncNodeRoiEditing();
+        }
+        internal void SyncNodeRoiEditing() => NodeRoiEditing?.Sync(SelectedNode);
+        internal void ReleaseNodeRoiEditing()
+        {
+            NodeRoiEditing?.Dispose();
+            NodeRoiEditing = null;
+        }
         public MainWindowViewModel(SunEyeVision.Plugin.Infrastructure.Managers.Plugin.DesktopToolAdmission admission)
         {
             _directory=admission?.Runtime??throw new ArgumentNullException(nameof(admission));

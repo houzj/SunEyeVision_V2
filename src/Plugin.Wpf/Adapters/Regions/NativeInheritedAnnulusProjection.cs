@@ -9,6 +9,7 @@ namespace SunEyeVision.Plugin.Wpf.Adapters.Regions;
 public sealed class NativeInheritedAnnulusProjection : NativeRoiProjection,IAnnularSector
 {
     internal NativeInheritedAnnulusProjection(NativeRoiSession scope,RoiEditItem item):base(scope,item){}
+    internal NativeInheritedAnnulusProjection(RoiEditItem item,int imageWidth,int imageHeight):base(item,imageWidth,imageHeight){}
     internal override IReadOnlyList<NativeRoiField> Fields=>Array.Empty<NativeRoiField>();
     protected override IEnumerable<string> PropertyNames=>new[]{nameof(OuterRadius),nameof(InnerRadius),nameof(StartAngle),nameof(AngleRange)};
     protected override IEnumerable<string> GeometryKeys=>new[]{"outer-radius","inner-radius","start-radians","end-radians"};

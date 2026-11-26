@@ -25,9 +25,9 @@ public sealed class NativeIntegerRadioSample : Decorator,IDisposable
         };
         Fields=new(new[]{("two","两项选择",10L),("five","五槽选择",-1L),("invalid","待修复值",99L)}
             .Select((item,i)=>(new Port(item.Item1,DataType.Integer,EditModes:FieldEditModes.Constant),
-                new FieldPresentation(item.Item1,item.Item2,"原单选示例",i,FieldEditorKind.Scalar),
+                new FieldPresentation(item.Item1,item.Item2,"原单选示例",i,FieldEditorKind.Scalar,null,null,DeclaredFieldTemplateKey.IntegerRadio),
                 (ParameterSetting)new ConstantSetting(item.Item3)))
-            .Append((new Port("ordinary",DataType.Boolean),new FieldPresentation("ordinary","普通参数","原单选示例",3,FieldEditorKind.Scalar),
+            .Append((new Port("ordinary",DataType.Boolean),new FieldPresentation("ordinary","普通参数","原单选示例",3,FieldEditorKind.Scalar,null,null,DeclaredFieldTemplateKey.Boolean),
                 (ParameterSetting)new ConstantSetting(false))),_=>{},integerRadios:options);
         Child=Fields;
     }

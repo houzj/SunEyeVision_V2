@@ -553,6 +553,7 @@ public sealed partial class NativeRoiSession : INotifyPropertyChanged,IDisposabl
     public void Dispose()
     {
         if(_disposed)return;_disposed=true;
+        // 投影由节点级生命周期持有，会话退役只解除引用，不销毁投影订阅。
         foreach(var item in _rows)item.Detach();_items.Clear();_selected=null;_editorCommit=null;_rows.Install([]);
         try{NativeRoiCallbacks.Run([CancelDraw,_rows.NotifyReset,Notify]);}
         finally{PropertyChanged=null;Changed=null;InteractionRetiring=null;DrawRequested=null;DrawCancelled=null;DrawLimitReached=null;}

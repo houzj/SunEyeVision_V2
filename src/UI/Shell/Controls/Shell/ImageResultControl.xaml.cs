@@ -225,6 +225,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
         {
             if(_shutdown||!IsLoaded||_viewModel is null||_workspacePresenter is not null)return;
             _workspacePresenter=new(_viewModel,Workspace);
+            _viewModel.AttachNodeRoiEditing(_workspacePresenter.OutputRoiViewport);
             var presenter=_workspacePresenter;
             _roiBorrow=(reference,interactive,current)=>!_shutdown&&ReferenceEquals(_workspacePresenter,presenter)?presenter.BorrowRoiFrame(reference,interactive,current):null;
             _roiBorrowOwner=_viewModel;_viewModel.RuntimeRoiFrameBorrow=_roiBorrow;
@@ -234,6 +235,7 @@ namespace SunEyeVision.UI.Shell.Controls.Shell
             if(_roiBorrowOwner is {} owner&&ReferenceEquals(owner.RuntimeRoiFrameBorrow,_roiBorrow))owner.RuntimeRoiFrameBorrow=null;
             _roiBorrowOwner=null;_roiBorrow=null;
             var presenter=_workspacePresenter;_workspacePresenter=null;presenter?.Dispose();
+            _viewModel?.ReleaseNodeRoiEditing();
         }
         public void ToggleFullscreen()
         {

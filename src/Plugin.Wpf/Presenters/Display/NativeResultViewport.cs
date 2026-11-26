@@ -35,6 +35,8 @@ public sealed partial class NativeResultViewport : IDisposable
     public FrameworkElement View => _view;
     public ImageLayout? Layout => _frame?.OriginalLayout;
     public NativeResultFrameReceipt? CurrentFrame => _frame is {} frame ? new(_ownerId, _epoch, frame.Frame, frame.Coordinates) : null;
+    /// <summary>当前呈现图像的像素尺寸；结果层 ROI 归一化投影使用。</summary>
+    public (int Width,int Height)? ResultImageSize => _frame is {} frame ? (frame.Width, frame.Height) : null;
     public (int Width,int Height) OverlaySamplingSize
     {
         get
@@ -63,6 +65,9 @@ public sealed partial class NativeResultViewport : IDisposable
         // ROI 编辑视图另走 NativeRoiViewport，不复用此呈现器。
         view.ShapeHitTestVisible = false;
         view.ROIHitTestVisible = false;
+        // 原厂 SetRoiVisible：参数窗口关闭时 ROIVisible=false（ModuleResultView.xaml.cs:2268-2272）。
+        // 结果视口默认不显示 ROI 层，只有交互会话接管时才打开；结果图形走 ShapeList，不受影响。
+        view.ROIVisible = false;
         view.ImageDragEanble = true;
         _templateDescriptor = DependencyPropertyDescriptor.FromProperty(Control.TemplateProperty, typeof(ImageViewBox));
         Owners.Add(view, this);
@@ -233,7 +238,7 @@ public sealed partial class NativeResultViewport : IDisposable
         ++_request; var epoch = ++_epoch; var frame = _frame; _frame = null; _imageCurrent = null;
         var refresh = _refresh; _refresh = null;
         var actions = new List<Action> { () => refresh?.Abort() };
-        actions.Add(() => { if (epoch == _epoch) RetireRoi(); });
+        actions.Add(() => { if (epoch == _epoch) { RetireRoi(); _view.ROIList = null; } });
         actions.AddRange(_layers.ToArray().Select<RegionLayer, Action>(layer => () => { if (epoch == _epoch) layer.RetireFrame(); }));
         if (!preserveShapeLayers)
             actions.Add(() => { if (epoch == _epoch) RetireShapes(() => epoch == _epoch); });

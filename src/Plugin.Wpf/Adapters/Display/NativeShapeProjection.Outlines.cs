@@ -22,6 +22,9 @@ internal static partial class NativeShapeProjection
                 throw new ArgumentException("轮廓与当前物理帧、像素坐标或结果序号不符。");
             var points=overlay.Points.ToArray();count=checked(count+points.Length);
             if(count>maximumPoints)throw new ArgumentException("shape-budget: 轮廓点超过预算。");
+            var scores=overlay.Scores;
+            if(scores is not null&&scores.Count!=points.Length)
+                throw new ArgumentException("轮廓点分数与点数不一致。");
             var bytes=new byte[checked(points.Length*16)];
             for(var i=0;i<points.Length;i++)
             {
@@ -30,7 +33,10 @@ internal static partial class NativeShapeProjection
                 if(!float.IsFinite(x)||!float.IsFinite(y))throw new ArgumentException("轮廓坐标超出原float点集范围。");
                 var record=bytes.AsSpan(i*16,16);
                 BinaryPrimitives.WriteSingleLittleEndian(record,x);BinaryPrimitives.WriteSingleLittleEndian(record[4..],y);
-                BinaryPrimitives.WriteSingleLittleEndian(record[8..],overlay.Passed?0f:2f);
+                // 原件 MultiPointShape：逐点分数 0→OK色、1→黄色、其余→NG色。
+                var marker=scores is null?(overlay.Passed?0f:2f):scores[i];
+                if(!float.IsFinite(marker))throw new ArgumentException("轮廓点分数不是有限值。");
+                BinaryPrimitives.WriteSingleLittleEndian(record[8..],marker);
                 BinaryPrimitives.WriteInt32LittleEndian(record[12..],overlay.ResultIndex);
             }
             if(points.Length!=0)items.Add(new OutlinePoint(bytes,overlay.Ok.ToString(),overlay.Ng.ToString()));

@@ -701,4 +701,36 @@
       </Setter.Value>
     </Setter>
   </Style>
+
+  <!--
+    图标命令按钮（原厂 Apps.Style 的图标按钮角色）：透明底、无边框、24×24，
+    内容由工具提供的图标资源决定。放在公共层是因为原厂规则里
+    “按钮样式与图标来自公共层，工具只提供容器”。
+  -->
+  <Style x:Key="IconCommandButtonStyle" TargetType="{x:Type Button}">
+    <Setter Property="Width" Value="24" />
+    <Setter Property="Height" Value="24" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="FlowDirection" Value="LeftToRight" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type Button}">
+          <Border Background="{TemplateBinding Background}" BorderThickness="0" CornerRadius="2">
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+              <Setter Property="Background" Value="{DynamicResource BottomLineBtnEnableBB}" />
+            </Trigger>
+            <Trigger Property="UIElement.IsEnabled" Value="False">
+              <Setter Property="Opacity" Value="0.4" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
 </ResourceDictionary>
